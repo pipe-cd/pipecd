@@ -134,5 +134,3 @@ done
 # Reset the root BUILD file
 cat ${GENERATED_BUILD_FILE} > ${BUILD_FILE}
 rm ${GENERATED_BUILD_FILE}
-
-ln -nsf "../../../bazel-out/host/bin/pkg/app/web/grpc/grpc_web/pkg/app/api/service/service_pb.d.ts" "${ROOT}/pkg/app/web/"

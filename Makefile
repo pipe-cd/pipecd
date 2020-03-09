@@ -18,6 +18,10 @@ build:
 test:
 	bazelisk ${BAZEL_FLAGS} test ${BAZEL_COMMAND_FLAGS} -- //pkg/...
 
+.PHONY: test-debug
+test-debug:
+	bazelisk ${BAZEL_FLAGS} test ${BAZEL_COMMAND_FLAGS} --test_output=all -- //pkg/...
+
 .PHONY: test-integration
 test-integration:
 	bazelisk ${BAZEL_FLAGS} test ${BAZEL_COMMAND_FLAGS} --config=integration -- //pkg/...

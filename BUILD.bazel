@@ -32,32 +32,5 @@ buildifier(
         "./vendor/*",
     ],
 )
-
-# gazelle:exclude pkg/config/ownerconfig/config.pb.validate.go
-# gazelle:exclude pkg/config/dianomiconfig/config.pb.validate.go
-# gazelle:exclude pkg/buildevent/buildevent.pb.validate.go
-# gazelle:exclude pkg/buildevent/service.pb.validate.go
-# gazelle:exclude pkg/app/livelog/service/service.pb.validate.go
+# gazelle:exclude pkg/config/config.pb.validate.go
 # gazelle:exclude pkg/app/helloworld/service/service.pb.validate.go
-# gazelle:exclude pkg/app/githubagent/service/error.pb.validate.go
-# gazelle:exclude pkg/app/githubagent/service/service.pb.validate.go
-# gazelle:exclude pkg/app/githubagent/model/model.pb.validate.go
-# gazelle:exclude pkg/app/configagent/service/service.pb.validate.go
-# gazelle:exclude pkg/config/secretconfig/config.pb.validate.go
-# gazelle:exclude pkg/config/pluginconfig/config.pb.validate.go
-# gazelle:exclude pkg/config/buildconfig/config.pb.validate.go
-# gazelle:exclude pkg/config/commonconfig/config.pb.validate.go
-# gazelle:exclude pkg/app/builder/service/artifact_service.pb.validate.go
-# gazelle:exclude pkg/app/builder/service/service.pb.validate.go
-# gazelle:exclude pkg/app/builder/model/buildmeta.pb.validate.go
-# gazelle:exclude pkg/app/builder/model/remotebuild.pb.validate.go
-# gazelle:exclude pkg/app/account/service/service.pb.validate.go
-# gazelle:exclude pkg/app/account/model/account.pb.validate.go
-# gazelle:exclude pkg/plugin/terraform/templates.embed.go
-# gazelle:exclude pkg/plugin/terraform/formats.embed.go
-# gazelle:exclude pkg/plugin/storybook/templates.embed.go
-# gazelle:exclude pkg/plugin/envoy/templates.embed.go
-# gazelle:exclude pkg/plugin/docker/templates.embed.go
-# gazelle:exclude pkg/plugin/coverage/templates.embed.go
-# gazelle:exclude pkg/plugin/approve/formats.embed.go
-# gazelle:exclude pkg/app/api/plugins/storybookhandler/templates.embed.go

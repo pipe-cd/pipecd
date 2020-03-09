@@ -4,6 +4,7 @@ name: account
 steps:
   - name: CANARY_OUT
     desc: Deploy Canary
+    weight: 10
   - name: VERIFICATION
     desc: Verify Canary
   - name: APPROVAL

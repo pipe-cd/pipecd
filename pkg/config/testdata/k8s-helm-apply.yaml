@@ -1,0 +1,10 @@
+version: v1
+kind: K8sApp
+name: account
+steps:
+  - name: K8S_APPLY
+    desc: Rolling Update
+  - name: VERIFICATION
+    desc: Verify New Version
+helm:
+  version: 3.1.1

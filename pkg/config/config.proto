@@ -19,6 +19,11 @@ option go_package = "github.com/nghialv/dianomi/pkg/config";
 
 import "validate/validate.proto";
 
+enum Kind {
+    K8sApp = 0;
+    Terraform = 1;
+}
+
 enum StepName {
     // Common steps.
     APPROVAL = 0;
@@ -42,31 +47,60 @@ enum StepName {
 }
 
 message Config {
-    string version = 1 [(validate.rules).string = {in: ["v1"]}];
+    string version = 1 [(validate.rules).string = {in: [
+        "v1"
+    ]}];
+    string kind = 2 [(validate.rules).string = {in: [
+        "K8sApp",
+        "Terraform"
+    ]}];
+    string name = 3 [(validate.rules).string.min_len = 1];
+    repeated Step steps = 4 [(validate.rules).repeated.min_items = 1];
+    KubectlConfig kubectl = 5;
+    KustomizeConfig kustomize = 6;
+    HelmConfig helm = 7;
+    TerraformConfig terraform = 8;
 }
 
 message Step {
-    StepName name = 1;
+    string name = 1 [(validate.rules).string = {in: [
+        "APPROVAL",
+        "VERIFICATION",
+        "K8S_APPLY",
+        "K8S_CANARY_OUT",
+        "K8S_CANARY_IN",
+        "K8S_BLUE_GREEN_OUT",
+        "K8S_BLUE_GREEN_ROUTE_UPDATE",
+        "K8S_BLUE_GREEN_IN",
+        "TERRAFORM_PLAN",
+        "TERRAFORM_APPLY"
+    ]}];
     string desc = 2;
     string timeout = 3;
     string wait = 4;
 }
 
 message ApprovalStep {
+    repeated string approvers = 1;
 }
 
 message VerificationStep {
+    string interval = 1;
 }
 
 message K8sApplyStep {
 }
 
 message K8sCanaryOutStep {
-    int32 count = 1;
+    // Percentage of canary pods after scale out.
+    // Default is 1 pod.
+    int32 weight = 1;
 }
 
 message K8sCanaryInStep {
-    int32 count = 1;
+    // Percentage of canary pods after scale in.
+    // Default is 0.
+    int32 weight = 1;
 }
 
 message K8sBlueGreenOutStep {
@@ -82,6 +116,22 @@ message TerraformPlan {
 }
 
 message TerraformApply {
+}
+
+message KubectlConfig {
+    string version = 1;
+}
+
+message KustomizeConfig {
+}
+
+message HelmConfig {
+    string version = 1;
+}
+
+message TerraformConfig {
+    string version = 1;
+    repeated string dependencies = 2;
 }
 
 // Verification
