@@ -1,0 +1,12 @@
+version: v1
+kind: K8sApp
+name: account
+steps:
+  - name: K8S_BLUE_GREEN_OUT
+    desc: BlueGreen Out
+  - name: VERIFICATION
+    desc: Verify New Version
+  - name: APPROVAL
+    desc: Approval
+  - name: K8S_BLUE_GREEN_IN
+    desc: BlueGreen In

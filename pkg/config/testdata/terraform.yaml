@@ -1,0 +1,12 @@
+version: v1
+kind: Terraform
+name: account
+steps:
+  - name: TERRAFORM_PLAN
+    desc: Terraform Plan
+  - name: APPROVAL
+    desc: Approval
+  - name: TERRAFORM_APPLY
+    desc: Terraform Apply
+  - name: VERIFICATION
+    desc: Verify New Update

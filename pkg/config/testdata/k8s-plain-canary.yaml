@@ -1,0 +1,14 @@
+version: v1
+kind: K8sApp
+name: account
+steps:
+  - name: CANARY_OUT
+    desc: Deploy Canary
+  - name: VERIFICATION
+    desc: Verify Canary
+  - name: APPROVAL
+    desc: Approval
+  - name: DEPLOY
+    desc: Deploy application
+  - name: CANARY_IN
+    desc: Delete Canary
