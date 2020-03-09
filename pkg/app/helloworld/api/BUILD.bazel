@@ -1,0 +1,19 @@
+load("@io_bazel_rules_go//go:def.bzl", "go_library")
+
+go_library(
+    name = "go_default_library",
+    srcs = [
+        "api.go",
+        "metrics.go",
+    ],
+    importpath = "github.com/nghialv/dianomi/pkg/app/helloworld/api",
+    visibility = ["//visibility:public"],
+    deps = [
+        "//pkg/app/helloworld/service:go_default_library",
+        "@io_opencensus_go//stats:go_default_library",
+        "@io_opencensus_go//stats/view:go_default_library",
+        "@io_opencensus_go//tag:go_default_library",
+        "@org_golang_google_grpc//:go_default_library",
+        "@org_uber_go_zap//:go_default_library",
+    ],
+)

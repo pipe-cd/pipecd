@@ -1,0 +1,45 @@
+load("@io_bazel_rules_go//go:def.bzl", "go_library", "go_test")
+
+go_library(
+    name = "go_default_library",
+    srcs = [
+        "interceptor.go",
+        "request_validation_interceptor.go",
+        "server.go",
+    ],
+    importpath = "github.com/nghialv/dianomi/pkg/rpc",
+    visibility = ["//visibility:public"],
+    deps = [
+        "//pkg/jwt:go_default_library",
+        "//pkg/rpc/rpcauth:go_default_library",
+        "@io_opencensus_go//plugin/ocgrpc:go_default_library",
+        "@org_golang_google_grpc//:go_default_library",
+        "@org_golang_google_grpc//codes:go_default_library",
+        "@org_golang_google_grpc//credentials:go_default_library",
+        "@org_golang_google_grpc//status:go_default_library",
+        "@org_uber_go_zap//:go_default_library",
+    ],
+)
+
+go_test(
+    name = "go_default_test",
+    size = "small",
+    srcs = [
+        "grpc_test.go",
+        "interceptor_test.go",
+        "request_validation_interceptor_test.go",
+        "server_test.go",
+    ],
+    data = glob(["testdata/**"]),
+    embed = [":go_default_library"],
+    deps = [
+        "//pkg/app/helloworld/api:go_default_library",
+        "//pkg/app/helloworld/service:go_default_library",
+        "//pkg/rpc/rpcauth:go_default_library",
+        "//pkg/rpc/rpcclient:go_default_library",
+        "@com_github_stretchr_testify//assert:go_default_library",
+        "@com_github_stretchr_testify//require:go_default_library",
+        "@org_golang_google_grpc//:go_default_library",
+        "@org_uber_go_zap//:go_default_library",
+    ],
+)

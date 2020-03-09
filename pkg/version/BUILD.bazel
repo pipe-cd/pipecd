@@ -1,0 +1,10 @@
+load("@io_bazel_rules_go//go:def.bzl", "go_library")
+load("//pkg/version:def.bzl", "version_x_defs")
+
+go_library(
+    name = "go_default_library",
+    srcs = ["version.go"],
+    importpath = "github.com/nghialv/dianomi/pkg/version",
+    visibility = ["//visibility:public"],
+    x_defs = version_x_defs(),
+)

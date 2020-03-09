@@ -1,0 +1,9 @@
+docs
+dockers
+manifests
+terraform
+vendor
+.git
+.github
+hack
+template
