@@ -32,14 +32,14 @@ func TestConfig(t *testing.T) {
 				Version: "v1",
 				Kind:    "K8sApp",
 				Name:    "account",
-				Steps: []*Step{
-					&Step{
+				Stages: []*Stage{
+					&Stage{
 						Name: "K8S_APPLY",
 						Desc: "Rolling Update",
 					},
-					&Step{
+					&Stage{
 						Name: "VERIFICATION",
-						Desc: "Verify New Version",
+						Desc: "Smoke Test",
 					},
 				},
 			},

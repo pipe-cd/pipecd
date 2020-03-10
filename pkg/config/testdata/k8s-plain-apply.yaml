@@ -1,8 +1,8 @@
 version: v1
 kind: K8sApp
 name: account
-steps:
+stages:
   - name: K8S_APPLY
     desc: Rolling Update
   - name: VERIFICATION
-    desc: Verify New Version
+    desc: Smoke Test

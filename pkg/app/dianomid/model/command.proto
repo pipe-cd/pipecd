@@ -27,13 +27,13 @@ message Command {
         string id = 1 [(validate.rules).string.min_len = 1];
         bool keep_current_state = 2;
     }
-    message ApproveStep {
+    message ApproveStage {
         string pipeline_id = 1 [(validate.rules).string.min_len = 1];
-        string step_id = 2 [(validate.rules).string.min_len = 1];
+        string stage_id = 2 [(validate.rules).string.min_len = 1];
     }
-    message RetryStep {
+    message RetryStage {
         string pipeline_id = 1 [(validate.rules).string.min_len = 1];
-        string step_id = 2 [(validate.rules).string.min_len = 1];
+        string stage_id = 2 [(validate.rules).string.min_len = 1];
     }
     message GitHookMerge {
         string hook_event_id = 1 [(validate.rules).string.min_len = 1];
@@ -51,8 +51,8 @@ message Command {
 
     oneof inner {
         CancelPipeline cancel_pipeline = 100;
-        ApproveStep approve_step = 101;
-        RetryStep retry_step = 102;
+        ApproveStage approve_stage = 101;
+        RetryStage retry_stage = 102;
 
         GitHookMerge git_hook_merge = 200;
         GitHookPullRequest git_hook_pull_request = 201;

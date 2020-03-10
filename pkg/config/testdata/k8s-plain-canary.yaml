@@ -1,15 +1,23 @@
 version: v1
 kind: K8sApp
 name: account
-steps:
+stages:
   - name: CANARY_OUT
-    desc: Deploy Canary
+    desc: Deploy canary with 10% of pods
     weight: 10
   - name: VERIFICATION
-    desc: Verify Canary
+    desc: Verify canary by metrics and run some smoke tests
+    # verification:
+    #   interval: 1m
+    #   metrics:
+    #     - query: grpc_error_percentage
+    #       threshold: 0
+    #   http:
+    #     - url: https://your-endpoint
+    #       epxected: 200
   - name: APPROVAL
-    desc: Approval
+    desc: Require approval from someone
   - name: DEPLOY
-    desc: Deploy application
+    desc: Rollout new version
   - name: CANARY_IN
-    desc: Delete Canary
+    desc: Delete canary pods

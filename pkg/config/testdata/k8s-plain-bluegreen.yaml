@@ -1,7 +1,7 @@
 version: v1
 kind: K8sApp
 name: account
-steps:
+stages:
   - name: K8S_BLUE_GREEN_OUT
     desc: BlueGreen Out
   - name: VERIFICATION

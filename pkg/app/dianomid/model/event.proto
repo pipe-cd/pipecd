@@ -28,7 +28,7 @@ enum PipelineStatus {
     PIPELINE_ERROR = 5;
 }
 
-enum StepStatus {
+enum StageStatus {
     STEP_NOT_STARTED_YET = 0;
     STEP_RUNNING = 1;
     STEP_SUCCESS = 2;
@@ -55,14 +55,14 @@ message Event {
         PipelineStatus current = 4;
         string description = 5;
     }
-    message StepStatusChanged {
-        StepStatus previous = 1;
-        StepStatus current = 2;
+    message StageStatusChanged {
+        StageStatus previous = 1;
+        StageStatus current = 2;
         string description = 3;
     }
 
     oneof inner {
         PipelineStatusChanged pipeline_status_changed = 100;
-        StepStatusChanged step_status_changed = 101;
+        StageStatusChanged stage_status_changed = 101;
     }
 }

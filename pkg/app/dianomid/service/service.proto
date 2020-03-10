@@ -26,8 +26,8 @@ service Dianomid {
     rpc Ping(PingRequest) returns (PingResponse) {}
     // RegisterEvents is called by runner to submit an event from executing jobs.
     rpc RegisterEvents(RegisterEventsRequest) returns (RegisterEventsResponse) {}
-    // SendStepLog is called by runner to append the log of a specific step.
-    rpc SendStepLog(SendStepLogRequest) returns (SendStepLogResponse) {}
+    // SendStageLog is called by runner to append the log of a specific stage.
+    rpc SendStageLog(SendStageLogRequest) returns (SendStageLogResponse) {}
     // ListCommands is called by runner to obtain the commands should be executed.
     // Results are streamed rather than returned at once.
     rpc ListCommands(ListCommandsRequest) returns (stream ListCommandsResponse) {}
@@ -48,12 +48,12 @@ message RegisterEventsRequest {
 message RegisterEventsResponse {
 }
 
-message SendStepLogRequest {
+message SendStageLogRequest {
     string pipeline_id = 1 [(validate.rules).string.min_len = 1];
-    string step_id = 2 [(validate.rules).string.min_len = 1];
+    string stage_id = 2 [(validate.rules).string.min_len = 1];
 }
 
-message SendStepLogResponse {
+message SendStageLogResponse {
 }
 
 message ListCommandsRequest {

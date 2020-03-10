@@ -24,13 +24,13 @@ enum Kind {
     Terraform = 1;
 }
 
-enum StepName {
-    // Common steps.
+enum StageName {
+    // Common stages.
     APPROVAL = 0;
     VERIFICATION = 1;
     // NOTIFICATION = 2; This should be configured via Web GUI.
 
-    // Kubenetes steps.
+    // Kubenetes stages.
     K8S_APPLY = 100;
     K8S_CANARY_OUT = 101;
     K8S_CANARY_IN = 102;
@@ -38,12 +38,12 @@ enum StepName {
     K8S_BLUE_GREEN_ROUTE_UPDATE = 104;
     K8S_BLUE_GREEN_IN = 105;
 
-    // Terraform steps.
+    // Terraform stages.
     TERRAFORM_PLAN = 200;
     TERRAFORM_APPLY = 201;
 
-    // CloudRun steps.
-    // Lambda steps.
+    // CloudRun stages.
+    // Lambda stages.
 }
 
 message Config {
@@ -55,14 +55,14 @@ message Config {
         "Terraform"
     ]}];
     string name = 3 [(validate.rules).string.min_len = 1];
-    repeated Step steps = 4 [(validate.rules).repeated.min_items = 1];
+    repeated Stage stages = 4 [(validate.rules).repeated.min_items = 1];
     KubectlConfig kubectl = 5;
     KustomizeConfig kustomize = 6;
     HelmConfig helm = 7;
     TerraformConfig terraform = 8;
 }
 
-message Step {
+message Stage {
     string name = 1 [(validate.rules).string = {in: [
         "APPROVAL",
         "VERIFICATION",
@@ -80,36 +80,36 @@ message Step {
     string wait = 4;
 }
 
-message ApprovalStep {
+message ApprovalStage {
     repeated string approvers = 1;
 }
 
-message VerificationStep {
+message VerificationStage {
     string interval = 1;
 }
 
-message K8sApplyStep {
+message K8sApplyStage {
 }
 
-message K8sCanaryOutStep {
+message K8sCanaryOutStage {
     // Percentage of canary pods after scale out.
     // Default is 1 pod.
     int32 weight = 1;
 }
 
-message K8sCanaryInStep {
+message K8sCanaryInStage {
     // Percentage of canary pods after scale in.
     // Default is 0.
     int32 weight = 1;
 }
 
-message K8sBlueGreenOutStep {
+message K8sBlueGreenOutStage {
 }
 
 message K8sBlueGreenRouteUpdate {
 }
 
-message K8sBlueGreenInStep {
+message K8sBlueGreenInStage {
 }
 
 message TerraformPlan {

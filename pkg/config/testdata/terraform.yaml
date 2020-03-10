@@ -1,7 +1,7 @@
 version: v1
 kind: Terraform
 name: account
-steps:
+stages:
   - name: TERRAFORM_PLAN
     desc: Terraform Plan
   - name: APPROVAL
