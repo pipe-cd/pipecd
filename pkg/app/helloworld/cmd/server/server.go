@@ -1,4 +1,4 @@
-// Copyright 2020 The Dianomi Authors.
+// Copyright 2020 The Pipe Authors.
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -22,10 +22,10 @@ import (
 	"github.com/spf13/cobra"
 	"go.uber.org/zap"
 
-	"github.com/nghialv/dianomi/pkg/admin"
-	"github.com/nghialv/dianomi/pkg/app/helloworld/api"
-	"github.com/nghialv/dianomi/pkg/cli"
-	"github.com/nghialv/dianomi/pkg/rpc"
+	"github.com/nghialv/pipe/pkg/admin"
+	"github.com/nghialv/pipe/pkg/app/helloworld/api"
+	"github.com/nghialv/pipe/pkg/cli"
+	"github.com/nghialv/pipe/pkg/rpc"
 )
 
 type server struct {

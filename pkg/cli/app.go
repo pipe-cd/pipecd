@@ -1,4 +1,4 @@
-// Copyright 2020 The Dianomi Authors.
+// Copyright 2020 The Pipe Authors.
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -20,8 +20,8 @@ import (
 	"github.com/spf13/cobra"
 	"github.com/spf13/pflag"
 
-	"github.com/nghialv/dianomi/pkg/log"
-	"github.com/nghialv/dianomi/pkg/version"
+	"github.com/nghialv/pipe/pkg/log"
+	"github.com/nghialv/pipe/pkg/version"
 )
 
 type App struct {

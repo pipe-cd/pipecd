@@ -1,4 +1,4 @@
-// Copyright 2020 The Dianomi Authors.
+// Copyright 2020 The Pipe Authors.
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -23,7 +23,7 @@ import (
 	"go.uber.org/zap"
 	"google.golang.org/grpc"
 
-	"github.com/nghialv/dianomi/pkg/app/helloworld/service"
+	"github.com/nghialv/pipe/pkg/app/helloworld/service"
 )
 
 type api struct {

@@ -13,7 +13,7 @@ load("@bazel_gazelle//:def.bzl", "gazelle")
 # gazelle:exclude pkg/app/kapetool/cmd/godifflinter/pkg/linters/ineffassign/testdata
 
 # gazelle:build_file_name BUILD.bazel
-# gazelle:prefix github.com/nghialv/dianomi
+# gazelle:prefix github.com/nghialv/pipe
 
 gazelle(
     name = "gazelle",

@@ -11,7 +11,7 @@ proto_library(
 
 go_proto_library(
     name = "role_go_proto",
-    importpath = "github.com/nghialv/dianomi/pkg/role",
+    importpath = "github.com/nghialv/pipe/pkg/role",
     proto = ":role_proto",
     visibility = ["//visibility:public"],
 )
@@ -20,6 +20,6 @@ go_library(
     name = "go_default_library",
     srcs = ["doc.go"],
     embed = [":role_go_proto"],
-    importpath = "github.com/nghialv/dianomi/pkg/role",
+    importpath = "github.com/nghialv/pipe/pkg/role",
     visibility = ["//visibility:public"],
 )

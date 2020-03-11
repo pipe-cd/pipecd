@@ -1,4 +1,4 @@
-// Copyright 2020 The Dianomi Authors.
+// Copyright 2020 The Pipe Authors.
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -14,8 +14,8 @@
 
 syntax = "proto3";
 
-package dianomi.role;
-option go_package = "github.com/nghialv/dianomi/pkg/role";
+package pipe.role;
+option go_package = "github.com/nghialv/pipe/pkg/role";
 
 import "google/protobuf/descriptor.proto";
 
@@ -33,7 +33,7 @@ message Role {
     ADMIN = 2;
   }
 
-  // Owner represents the permissions for managing Dianomi system,
+  // Owner represents the permissions for managing Pipe system,
   // such as: create a new project, see inside metrics data.
   bool owner = 1;
   // Project ID represents the ID of project account associated with this role.

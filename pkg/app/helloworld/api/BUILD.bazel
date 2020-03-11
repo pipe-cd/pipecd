@@ -6,7 +6,7 @@ go_library(
         "api.go",
         "metrics.go",
     ],
-    importpath = "github.com/nghialv/dianomi/pkg/app/helloworld/api",
+    importpath = "github.com/nghialv/pipe/pkg/app/helloworld/api",
     visibility = ["//visibility:public"],
     deps = [
         "//pkg/app/helloworld/service:go_default_library",

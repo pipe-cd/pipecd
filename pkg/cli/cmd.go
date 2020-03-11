@@ -1,4 +1,4 @@
-// Copyright 2020 The Dianomi Authors.
+// Copyright 2020 The Pipe Authors.
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -32,12 +32,12 @@ import (
 	"go.uber.org/zap"
 	"google.golang.org/api/option"
 
-	"github.com/nghialv/dianomi/pkg/log"
-	"github.com/nghialv/dianomi/pkg/version"
+	"github.com/nghialv/pipe/pkg/log"
+	"github.com/nghialv/pipe/pkg/version"
 )
 
 const (
-	metricsNamespace    = "dianomi"
+	metricsNamespace    = "pipe"
 	PrometheusExporter  = "prometheus"
 	StackdriverExporter = "stackdriver"
 )

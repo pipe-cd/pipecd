@@ -1,4 +1,4 @@
-// Copyright 2020 The Dianomi Authors.
+// Copyright 2020 The Pipe Authors.
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -17,5 +17,5 @@ package jwttest
 import (
 	_ "github.com/golang/mock/gomock"
 
-	_ "github.com/nghialv/dianomi/pkg/jwt"
+	_ "github.com/nghialv/pipe/pkg/jwt"
 )

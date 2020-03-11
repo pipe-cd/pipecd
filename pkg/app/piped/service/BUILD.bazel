@@ -7,7 +7,7 @@ proto_library(
     visibility = ["//visibility:public"],
     #keep
     deps = [
-        "//pkg/app/dianomid/model:model_proto",
+        "//pkg/app/piped/model:model_proto",
         "@com_github_envoyproxy_protoc_gen_validate//validate:validate_proto",
     ],
 )
@@ -17,15 +17,15 @@ load("//bazel:pgv_go_proto.bzl", "pgv_go_proto_library")
 pgv_go_proto_library(
     name = "service_go_proto",
     compilers = ["@io_bazel_rules_go//proto:go_grpc"],
-    importpath = "github.com/nghialv/dianomi/pkg/app/dianomid/service",
+    importpath = "github.com/nghialv/pipe/pkg/app/piped/service",
     proto = ":service_proto",
     visibility = ["//visibility:public"],
-    deps = ["//pkg/app/dianomid/model:go_default_library"],
+    deps = ["//pkg/app/piped/model:go_default_library"],
 )
 
 go_library(
     name = "go_default_library",
     embed = [":service_go_proto"],
-    importpath = "github.com/nghialv/dianomi/pkg/app/dianomid/service",
+    importpath = "github.com/nghialv/pipe/pkg/app/piped/service",
     visibility = ["//visibility:public"],
 )

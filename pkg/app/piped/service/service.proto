@@ -1,4 +1,4 @@
-// Copyright 2020 The Dianomi Authors.
+// Copyright 2020 The Pipe Authors.
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -14,15 +14,15 @@
 
 syntax = "proto3";
 
-package dianomi.dianomid.service;
-option go_package = "github.com/nghialv/dianomi/pkg/app/dianomid/service";
+package pipe.piped.service;
+option go_package = "github.com/nghialv/pipe/pkg/app/piped/service";
 
 import "validate/validate.proto";
-import "pkg/app/dianomid/model/command.proto";
-import "pkg/app/dianomid/model/event.proto";
+import "pkg/app/piped/model/command.proto";
+import "pkg/app/piped/model/event.proto";
 
-service Dianomid {
-    // Ping is periodically called by runner to report its status to dianomid.
+service RunnerAPI {
+    // Ping is periodically called by runner to report its status to piped.
     rpc Ping(PingRequest) returns (PingResponse) {}
     // RegisterEvents is called by runner to submit an event from executing jobs.
     rpc RegisterEvents(RegisterEventsRequest) returns (RegisterEventsResponse) {}
@@ -42,7 +42,7 @@ message PingResponse {
 }
 
 message RegisterEventsRequest {
-    repeated dianomi.dianomid.model.Event events = 1;
+    repeated pipe.piped.model.Event events = 1;
 }
 
 message RegisterEventsResponse {
@@ -60,7 +60,7 @@ message ListCommandsRequest {
 }
 
 message ListCommandsResponse {
-    repeated dianomi.dianomid.model.Command commands = 1;
+    repeated pipe.piped.model.Command commands = 1;
     // If true, all commands must be executed in order.
     bool serial = 2;
 }

@@ -1,4 +1,4 @@
-// Copyright 2020 The Dianomi Authors.
+// Copyright 2020 The Pipe Authors.
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -14,8 +14,8 @@
 
 syntax = "proto3";
 
-package dianomi.dianomid.model;
-option go_package = "github.com/nghialv/dianomi/pkg/app/dianomid/model";
+package pipe.piped.model;
+option go_package = "github.com/nghialv/pipe/pkg/app/piped/model";
 
 import "validate/validate.proto";
 

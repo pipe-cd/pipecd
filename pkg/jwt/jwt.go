@@ -1,4 +1,4 @@
-// Copyright 2020 The Dianomi Authors.
+// Copyright 2020 The Pipe Authors.
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -21,17 +21,17 @@ import (
 
 	jwtgo "github.com/dgrijalva/jwt-go"
 
-	"github.com/nghialv/dianomi/pkg/role"
+	"github.com/nghialv/pipe/pkg/role"
 )
 
 const (
-	// Issuer is the name of the issuer for Dianomi token.
-	Issuer = "Dianomi"
+	// Issuer is the name of the issuer for Pipe token.
+	Issuer = "Pipe"
 	// SignedTokenKey is the name of singed token key in cookie.
 	SignedTokenKey = "token"
 )
 
-// Claims extends the StandardClaims with the role to access Dianomi resources.
+// Claims extends the StandardClaims with the role to access Pipe resources.
 type Claims struct {
 	jwtgo.StandardClaims
 	AvatarURL string    `json:"avatarUrl,omitempty"`

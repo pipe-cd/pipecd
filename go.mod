@@ -1,4 +1,4 @@
-module github.com/nghialv/dianomi
+module github.com/nghialv/pipe
 
 go 1.14
 

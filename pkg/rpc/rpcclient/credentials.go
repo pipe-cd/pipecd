@@ -1,4 +1,4 @@
-// Copyright 2020 The Dianomi Authors.
+// Copyright 2020 The Pipe Authors.
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -22,7 +22,7 @@ import (
 
 	"google.golang.org/grpc/credentials"
 
-	"github.com/nghialv/dianomi/pkg/rpc/rpcauth"
+	"github.com/nghialv/pipe/pkg/rpc/rpcauth"
 )
 
 type perRPCCredentials struct {

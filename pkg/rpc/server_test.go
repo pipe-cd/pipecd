@@ -1,4 +1,4 @@
-// Copyright 2020 The Dianomi Authors.
+// Copyright 2020 The Pipe Authors.
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -24,10 +24,10 @@ import (
 	"github.com/stretchr/testify/require"
 	"go.uber.org/zap"
 
-	"github.com/nghialv/dianomi/pkg/app/helloworld/api"
-	"github.com/nghialv/dianomi/pkg/app/helloworld/service"
-	"github.com/nghialv/dianomi/pkg/rpc/rpcauth"
-	"github.com/nghialv/dianomi/pkg/rpc/rpcclient"
+	"github.com/nghialv/pipe/pkg/app/helloworld/api"
+	"github.com/nghialv/pipe/pkg/app/helloworld/service"
+	"github.com/nghialv/pipe/pkg/rpc/rpcauth"
+	"github.com/nghialv/pipe/pkg/rpc/rpcclient"
 )
 
 func TestMain(m *testing.M) {

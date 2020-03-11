@@ -7,7 +7,7 @@ go_library(
         "request_validation_interceptor.go",
         "server.go",
     ],
-    importpath = "github.com/nghialv/dianomi/pkg/rpc",
+    importpath = "github.com/nghialv/pipe/pkg/rpc",
     visibility = ["//visibility:public"],
     deps = [
         "//pkg/jwt:go_default_library",

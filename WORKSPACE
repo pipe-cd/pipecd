@@ -1,5 +1,5 @@
 workspace(
-    name = "dianomi",
+    name = "pipe",
     managed_directories = {"@npm": ["node_modules"]},
 )
 

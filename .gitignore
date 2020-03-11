@@ -16,7 +16,7 @@
 # Bazel
 /bazel-bin
 /bazel-genfiles
-/bazel-dianomi
+/bazel-pipe
 /bazel-out
 /bazel-testlogs
 /BUILD.bazel.generated
