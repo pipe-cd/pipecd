@@ -3,7 +3,7 @@ load("@io_bazel_rules_go//go:def.bzl", "go_binary", "go_library")
 go_library(
     name = "go_default_library",
     srcs = ["main.go"],
-    importpath = "github.com/nghialv/pipe/cmd/helloworld",
+    importpath = "github.com/kapetaniosci/pipe/cmd/helloworld",
     visibility = ["//visibility:private"],
     deps = [
         "//pkg/app/helloworld/cmd/samplecli:go_default_library",

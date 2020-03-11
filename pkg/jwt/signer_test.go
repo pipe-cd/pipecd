@@ -21,7 +21,7 @@ import (
 	jwtgo "github.com/dgrijalva/jwt-go"
 	"github.com/stretchr/testify/require"
 
-	"github.com/nghialv/pipe/pkg/role"
+	"github.com/kapetaniosci/pipe/pkg/role"
 )
 
 func TestSign(t *testing.T) {

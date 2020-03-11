@@ -22,10 +22,10 @@ import (
 	"github.com/spf13/cobra"
 	"go.uber.org/zap"
 
-	"github.com/nghialv/pipe/pkg/admin"
-	"github.com/nghialv/pipe/pkg/app/helloworld/api"
-	"github.com/nghialv/pipe/pkg/cli"
-	"github.com/nghialv/pipe/pkg/rpc"
+	"github.com/kapetaniosci/pipe/pkg/admin"
+	"github.com/kapetaniosci/pipe/pkg/app/helloworld/api"
+	"github.com/kapetaniosci/pipe/pkg/cli"
+	"github.com/kapetaniosci/pipe/pkg/rpc"
 )
 
 type server struct {

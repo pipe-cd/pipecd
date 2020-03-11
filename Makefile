@@ -63,4 +63,4 @@ verify-codegen:
 
 .PHONY: expose-generated-go
 expose-generated-go:
-	./hack/expose-generated-go.sh nghialv pipe
+	./hack/expose-generated-go.sh kapetaniosci pipe

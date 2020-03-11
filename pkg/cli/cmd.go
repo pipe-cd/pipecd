@@ -32,8 +32,8 @@ import (
 	"go.uber.org/zap"
 	"google.golang.org/api/option"
 
-	"github.com/nghialv/pipe/pkg/log"
-	"github.com/nghialv/pipe/pkg/version"
+	"github.com/kapetaniosci/pipe/pkg/log"
+	"github.com/kapetaniosci/pipe/pkg/version"
 )
 
 const (

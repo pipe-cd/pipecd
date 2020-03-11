@@ -24,7 +24,7 @@ CODEGEN_PKG=${CODEGEN_PKG:-$(cd ${SCRIPT_ROOT}; ls -d -1 ./vendor/k8s.io/code-ge
 chmod +x ${CODEGEN_PKG}/generate-groups.sh
 
 ${CODEGEN_PKG}/generate-groups.sh "deepcopy,client,informer,lister" \
-  github.com/nghialv/pipe/pkg/crd/client github.com/nghialv/pipe/pkg/crd/apis \
+  github.com/kapetaniosci/pipe/pkg/crd/client github.com/kapetaniosci/pipe/pkg/crd/apis \
   build:v1beta1 \
   --output-base "$(dirname ${BASH_SOURCE})/../../../.." \
   --go-header-file ${SCRIPT_ROOT}/hack/boilerplate.go.txt

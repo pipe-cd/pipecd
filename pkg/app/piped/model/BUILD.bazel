@@ -19,7 +19,7 @@ load("//bazel:pgv_go_proto.bzl", "pgv_go_proto_library")
 pgv_go_proto_library(
     name = "model_go_proto",
     compilers = ["@io_bazel_rules_go//proto:go_proto"],
-    importpath = "github.com/nghialv/pipe/pkg/app/piped/model",
+    importpath = "github.com/kapetaniosci/pipe/pkg/app/piped/model",
     proto = ":model_proto",
     visibility = ["//visibility:public"],
 )
@@ -27,6 +27,6 @@ pgv_go_proto_library(
 go_library(
     name = "go_default_library",
     embed = [":model_go_proto"],
-    importpath = "github.com/nghialv/pipe/pkg/app/piped/model",
+    importpath = "github.com/kapetaniosci/pipe/pkg/app/piped/model",
     visibility = ["//visibility:public"],
 )

@@ -15,7 +15,7 @@
 syntax = "proto3";
 
 package pipe.config;
-option go_package = "github.com/nghialv/pipe/pkg/config";
+option go_package = "github.com/kapetaniosci/pipe/pkg/config";
 
 import "validate/validate.proto";
 

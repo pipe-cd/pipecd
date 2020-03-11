@@ -24,8 +24,8 @@ import (
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/credentials"
 
-	"github.com/nghialv/pipe/pkg/jwt"
-	"github.com/nghialv/pipe/pkg/rpc/rpcauth"
+	"github.com/kapetaniosci/pipe/pkg/jwt"
+	"github.com/kapetaniosci/pipe/pkg/rpc/rpcauth"
 )
 
 // Service represents a gRPC service will be registered to server.

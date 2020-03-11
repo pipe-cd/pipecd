@@ -24,7 +24,7 @@ import (
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 
-	"github.com/nghialv/pipe/pkg/role"
+	"github.com/kapetaniosci/pipe/pkg/role"
 )
 
 func TestVerify(t *testing.T) {

@@ -19,7 +19,7 @@ proto_library(
 pgv_go_proto_library(
     name = "service_go_proto",
     compilers = ["@io_bazel_rules_go//proto:go_grpc"],
-    importpath = "github.com/nghialv/pipe/pkg/app/piped/service",
+    importpath = "github.com/kapetaniosci/pipe/pkg/app/piped/service",
     proto = ":service_proto",
     visibility = ["//visibility:public"],
     deps = [
@@ -30,6 +30,6 @@ pgv_go_proto_library(
 go_library(
     name = "go_default_library",
     embed = [":service_go_proto"],
-    importpath = "github.com/nghialv/pipe/pkg/app/piped/service",
+    importpath = "github.com/kapetaniosci/pipe/pkg/app/piped/service",
     visibility = ["//visibility:public"],
 )

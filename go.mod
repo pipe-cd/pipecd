@@ -1,4 +1,4 @@
-module github.com/nghialv/pipe
+module github.com/kapetaniosci/pipe
 
 go 1.14
 
