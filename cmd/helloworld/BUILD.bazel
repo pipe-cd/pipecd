@@ -17,3 +17,12 @@ go_binary(
     embed = [":go_default_library"],
     visibility = ["//visibility:public"],
 )
+
+load("//bazel:image.bzl", "app_image")
+
+app_image(
+    name = "helloworld",
+    binary = ":helloworld",
+    repository = "pipe-helloworld",
+    visibility = ["//visibility:public"],
+)
