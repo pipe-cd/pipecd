@@ -1,18 +1,20 @@
 load("@rules_proto//proto:defs.bzl", "proto_library")
 load("@io_bazel_rules_go//go:def.bzl", "go_library")
+load("//bazel:pgv_go_proto.bzl", "pgv_go_proto_library")
 
 proto_library(
     name = "service_proto",
-    srcs = ["service.proto"],
+    srcs = [
+        "runnerapi.proto",
+        "webapi.proto",
+    ],
     visibility = ["//visibility:public"],
-    #keep
+    # keep
     deps = [
         "//pkg/app/piped/model:model_proto",
         "@com_github_envoyproxy_protoc_gen_validate//validate:validate_proto",
     ],
 )
-
-load("//bazel:pgv_go_proto.bzl", "pgv_go_proto_library")
 
 pgv_go_proto_library(
     name = "service_go_proto",
@@ -20,7 +22,9 @@ pgv_go_proto_library(
     importpath = "github.com/nghialv/pipe/pkg/app/piped/service",
     proto = ":service_proto",
     visibility = ["//visibility:public"],
-    deps = ["//pkg/app/piped/model:go_default_library"],
+    deps = [
+        "//pkg/app/piped/model:go_default_library",
+    ],
 )
 
 go_library(
