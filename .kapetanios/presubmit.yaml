@@ -26,7 +26,6 @@ spec:
       runner: gcr.io/kapetanios/kapetanios-runner:0.2.0
       commands:
         - make test
-        - make test-integration
       envs:
         - IS_CI=true
       secrets:
