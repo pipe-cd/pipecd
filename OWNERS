@@ -1,0 +1,16 @@
+reviewers:
+  - sig-dev
+requiredReviewers:
+  - nghialv
+approvers:
+  - sig-dev
+
+matches:
+- matchers:
+    - "\\.bzl$"
+  requiredReviewers:
+    - sig-build
+  approvers:
+    - sig-build
+  labels:
+    - area/build

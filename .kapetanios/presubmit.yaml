@@ -1,0 +1,53 @@
+version: v1
+kind: Build
+spec:
+  presubmits:
+  - name: build
+    timeout: 30m
+    machine:
+      resource: medium
+    steps:
+    - description: Build all services
+      runner: gcr.io/kapetanios/kapetanios-runner:0.2.0
+      commands:
+        - make build
+      envs:
+        - IS_CI=true
+      secrets:
+      - name: bazel_cache_service_account
+        type: PROJECT
+
+  - name: test
+    timeout: 30m
+    machine:
+      resource: large
+    steps:
+    - description: Run all tests
+      runner: gcr.io/kapetanios/kapetanios-runner:0.2.0
+      commands:
+        - make test
+        - make test-integration
+      envs:
+        - IS_CI=true
+      secrets:
+      - name: bazel_cache_service_account
+        type: PROJECT
+
+    - description: Run coverage for unit tests
+      runner: gcr.io/kapetanios/kapetanios-runner:0.2.0
+      commands:
+        - make coverage
+      envs:
+        - IS_CI=true
+      secrets:
+      - name: bazel_cache_service_account
+        type: PROJECT
+
+    - name: collect-coverage
+      description: Collect coverage profiles
+      runner: kapetanios@collect-go-cover-profiles
+      params:
+        - root-path=bazel-testlogs
+        - profile-matcher="**/coverage.dat"
+        - source-exclude-matcher="**/*.mock.go,**/*.pb.go,**/*.validate.go,**/*.embed.go,**/*.deepcopy.go"
+        - base-import-path=github.com/kapetaniosci/pipe

@@ -1,0 +1,15 @@
+sig-dev:
+  users:
+    - nghialv
+    - gkuga
+    - nakabonne
+    - cakecatz
+
+sig-build:
+  users:
+    - nghialv
+
+sig-release:
+  users:
+    - nghialv
+    - gkuga
