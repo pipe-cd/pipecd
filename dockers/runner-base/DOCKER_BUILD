@@ -1,0 +1,2 @@
+version: 0.0.1
+registry: gcr.io/kapetanios/pipe-runner-base
