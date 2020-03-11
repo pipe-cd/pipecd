@@ -3,10 +3,15 @@ kind: K8sApp
 name: account
 stages:
   - name: K8S_BLUE_GREEN_OUT
-    desc: BlueGreen Out
   - name: VERIFICATION
-    desc: Verify New Version
+    desc: Run smoke test
+    with:
+      interval: 1m
+      http:
+        - url: https://your-endpoint
+          epxected: 200
   - name: APPROVAL
-    desc: Approval
+  - name: K8S_BLUE_GREEN_ROUTE_UPDATE
   - name: K8S_BLUE_GREEN_IN
-    desc: BlueGreen In
+kubectl:
+  version: 1.15.5

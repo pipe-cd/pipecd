@@ -22,3 +22,5 @@ stages:
     desc: Rollout new version
   - name: K8S_CANARY_IN
     desc: Delete canary pods
+helm:
+  version: 3.1.1

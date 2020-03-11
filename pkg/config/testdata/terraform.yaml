@@ -3,10 +3,10 @@ kind: Terraform
 name: account
 stages:
   - name: TERRAFORM_PLAN
-    desc: Terraform Plan
   - name: APPROVAL
-    desc: Approval
+    desc: Require approval from someone
   - name: TERRAFORM_APPLY
-    desc: Terraform Apply
   - name: VERIFICATION
     desc: Verify New Update
+terraform:
+  version: 0.12.23

@@ -78,6 +78,7 @@ message Stage {
     string desc = 2;
     string timeout = 3;
     string wait = 4;
+    int32 max_retry = 5;
 }
 
 message ApprovalStage {
