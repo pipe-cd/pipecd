@@ -1,0 +1,45 @@
+// Copyright 2020 The Pipe Authors.
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//     http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+syntax = "proto3";
+
+package pipe.model;
+option go_package = "github.com/kapetaniosci/pipe/pkg/model";
+
+import "validate/validate.proto";
+import "pkg/model/application.proto";
+
+enum PipelineStatus {
+    PIPELINE_NOT_STARTED_YET = 0;
+    PIPELINE_RUNNING = 1;
+    PIPELINE_SUCCESS = 2;
+    PIPELINE_FAILURE = 3;
+    PIPELINE_CANCELLED = 4;
+    PIPELINE_ERROR = 5;
+}
+
+enum StageStatus {
+    STEP_NOT_STARTED_YET = 0;
+    STEP_RUNNING = 1;
+    STEP_SUCCESS = 2;
+    STEP_FAILURE = 3;
+    STEP_CANCELLED = 4;
+    STEP_ERROR = 5;
+}
+
+message Pipeline {
+    string id = 1 [(validate.rules).string.min_len = 1];
+    pipe.model.Application application = 2 [(validate.rules).message.required = true];
+    string trigger_commit = 3 [(validate.rules).string.min_len = 1];
+}

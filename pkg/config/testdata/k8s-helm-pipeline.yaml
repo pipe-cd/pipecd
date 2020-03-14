@@ -1,0 +1,69 @@
+version: v1
+kind: Pipeline
+name: demoapp
+stages:
+  - name: K8S_APPLY
+    desc: Rolling Update
+  - name: VERIFICATION
+    desc: Smoke Test
+  - name: PROMOTION
+    desc: Promote to prod
+    with:
+      pipeline: demoapp-prod
+      inputs:
+        chart: ${input.helm.chart}
+input:
+  appType: K8sApp
+  helm:
+    chart: git@github.com:org/config-repo.git:charts/demoapp?ref=master
+    values:
+      - demo-param=abc
+    valueFiles:
+      - dev-values.yaml
+    helmVersion: 3.1.1
+
+---
+version: v1
+kind: Pipeline
+name: demoapp
+stages:
+  - name: K8S_APPLY
+    desc: Rolling Update
+  - name: VERIFICATION
+    desc: Smoke Test
+input:
+  appType: K8sApp
+  manifest: .
+  plainYAML:
+    kubectlVersion: 2.1.1
+
+---
+version: v1
+kind: Pipeline
+name: demoapp
+stages:
+  - name: K8S_APPLY
+    desc: Rolling Update
+  - name: VERIFICATION
+    desc: Smoke Test
+input:
+  appType: K8sApp
+  kustomize:
+    kustomization: .
+    kubectlVersion: 3.1.1
+
+---
+version: v1
+kind: Pipeline
+name: demoapp
+stages:
+  - name: TERRAFORM_PLAN
+  - name: APPROVAL
+    desc: Require approval from someone
+  - name: TERRAFORM_APPLY
+  - name: VERIFICATION
+    desc: Verify New Update
+input:
+  appType: Terraform
+  rootModule: .
+  terraformVersion: 0.12.23
