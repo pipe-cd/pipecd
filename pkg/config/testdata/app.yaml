@@ -1,0 +1,54 @@
+kind: K8sApp
+pipeline:
+  stages:
+    - name: K8S_CANARY_OUT
+    - name: VERIFICATION
+    - name: K8S_APPLY
+    - name: K8S_CANARY_IN
+  input:
+    helm:
+      chart: git@github.com:org/config-repo.git:charts/demoapp?ref=master
+      valueFiles:
+      - dev-values.yaml
+      helmVersion: 3.1.1
+
+---
+kind: K8sApp
+pipeline:
+  stages:
+    - name: K8S_CANARY_OUT
+    - name: VERIFICATION
+    - name: K8S_APPLY
+    - name: K8S_CANARY_IN
+  input:
+    plainYaml:
+      manifests:
+      - demoapp-deployment.yaml
+      kubectlVersion: 2.1.1
+
+---
+kind: K8sApp
+pipeline:
+  on: ["configmap_change", "secret_change", "pod_spec_change", "revert"]
+  stages:
+    - name: K8S_BLUEGREEN_OUT
+    - name: VERIFICATION
+    - name: K8S_BLUEGREEN_SWITCH_TRAFFIC
+    - name: K8S_BLUEGREEN_IN
+  input:
+    kustomize:
+      kustomization: .
+      kubectlVersion: 3.1.1
+
+---
+kind: TerraformApp
+pipeline:
+  stages:
+    - name: K8S_CANARY_OUT
+    - name: VERIFICATION
+    - name: K8S_APPLY
+    - name: K8S_CANARY_IN
+  input:
+    terraform:
+      rootModule: .
+      terraformVersion: 0.12.23
