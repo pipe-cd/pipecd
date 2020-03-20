@@ -18,51 +18,51 @@ package pipe.api.model;
 option go_package = "github.com/kapetaniosci/pipe/pkg/app/api/model";
 
 import "validate/validate.proto";
-
-enum PipelineStatus {
-    PIPELINE_NOT_STARTED_YET = 0;
-    PIPELINE_RUNNING = 1;
-    PIPELINE_SUCCESS = 2;
-    PIPELINE_FAILURE = 3;
-    PIPELINE_CANCELLED = 4;
-    PIPELINE_ERROR = 5;
-}
-
-enum StageStatus {
-    STEP_NOT_STARTED_YET = 0;
-    STEP_RUNNING = 1;
-    STEP_SUCCESS = 2;
-    STEP_FAILURE = 3;
-    STEP_CANCELLED = 4;
-    STEP_ERROR = 5;
-}
-
-message Application {
-    string name = 1 [(validate.rules).string.min_len = 1];
-    string git_host = 2;
-    string repository = 3 [(validate.rules).string.min_len = 1];
-    string path = 4 [(validate.rules).string.min_len = 1];
-}
+import "pkg/model/application.proto";
+import "pkg/model/pipeline.proto";
+import "pkg/model/application_resource.proto";
 
 message Event {
     string id = 1;
     int64 timestamp = 2;
 
+    // Pipeline Events.
     message PipelineStatusChanged {
-        string id = 1 [(validate.rules).string.min_len = 1];
-        Application application = 2 [(validate.rules).message.required = true];
-        PipelineStatus previous = 3;
-        PipelineStatus current = 4;
+        string pipeline_id = 1 [(validate.rules).string.min_len = 1];
+        pipe.model.Application application = 2 [(validate.rules).message.required = true];
+        pipe.model.PipelineStatus previous = 3;
+        pipe.model.PipelineStatus current = 4;
         string description = 5;
     }
     message StageStatusChanged {
-        StageStatus previous = 1;
-        StageStatus current = 2;
-        string description = 3;
+        string pipeline_id = 1 [(validate.rules).string.min_len = 1];
+        string stage_id = 2 [(validate.rules).string.min_len = 1];
+        pipe.model.StageStatus previous = 3;
+        pipe.model.StageStatus current = 4;
+        string description = 5;
+    }
+
+    // ApplicationResource Events.
+    message ApplicationResourceAdded {
+        string application_id = 1 [(validate.rules).string.min_len = 1];
+        pipe.model.ApplicationResource resource = 2 [(validate.rules).message.required = true];
+    }
+    message ApplicationResourceUpdated {
+        string application_id = 1 [(validate.rules).string.min_len = 1];
+        pipe.model.ApplicationResource before = 2 [(validate.rules).message.required = true];
+        pipe.model.ApplicationResource after = 3 [(validate.rules).message.required = true];
+    }
+    message ApplicationResourceDeleted {
+        string application_id = 1 [(validate.rules).string.min_len = 1];
+        pipe.model.ApplicationResource resource = 2 [(validate.rules).message.required = true];
     }
 
     oneof inner {
         PipelineStatusChanged pipeline_status_changed = 100;
         StageStatusChanged stage_status_changed = 101;
+
+        ApplicationResourceAdded application_resource_added = 200;
+        ApplicationResourceUpdated application_resource_updated = 201;
+        ApplicationResourceDeleted applicaiton_resource_deleted = 202;
     }
 }

@@ -32,6 +32,10 @@ service RunnerAPI {
     // ListPipelineCommands is called by runner to obtain the commands
     // that should be executed for the required pipelines.
     rpc ListPipelineCommands(ListPipelineCommandsRequest) returns (ListPipelineCommandsResponse) {}
+    // PipelineCompleted marks the pipeline has just been completed and sends its full state.
+    rpc PipelineCompleted(PipelineCompletedRequest) returns (PipelineCompletedResponse) {}
+    // UpdateApplicationResourceTree sends the full tree of application resources.
+    rpc UpdateApplicationResourceTree(UpdateApplicationResourceTreeRequest) returns (UpdateApplicationResourceTreeResponse) {}
 }
 
 message PingRequest {
@@ -63,4 +67,19 @@ message ListPipelineCommandsRequest {
 
 message ListPipelineCommandsResponse {
     repeated pipe.api.model.PipelineCommand commands = 1;
+}
+
+message PipelineCompletedRequest {
+    string pipeline_id = 1 [(validate.rules).string.min_len = 1];
+}
+
+message PipelineCompletedResponse {
+}
+
+message UpdateApplicationResourceTreeRequest {
+    string application_id = 1 [(validate.rules).string.min_len = 1];
+    int64 timestamp = 2 [(validate.rules).int64.gt = 0];
+}
+
+message UpdateApplicationResourceTreeResponse {
 }

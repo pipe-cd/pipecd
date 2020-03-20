@@ -5,6 +5,7 @@ proto_library(
     name = "model_proto",
     srcs = [
         "application.proto",
+        "application_resource.proto",
         "pipeline.proto",
     ],
     visibility = ["//visibility:public"],

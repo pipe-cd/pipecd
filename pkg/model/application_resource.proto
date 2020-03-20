@@ -19,12 +19,10 @@ option go_package = "github.com/kapetaniosci/pipe/pkg/model";
 
 import "validate/validate.proto";
 
-message Application {
+message ApplicationResourceTree {
     string id = 1 [(validate.rules).string.min_len = 1];
-    string name = 2 [(validate.rules).string.min_len = 1];
-    string environment = 3 [(validate.rules).string.min_len = 1];
-    string repository = 4 [(validate.rules).string.min_len = 1];
-    string branch = 5 [(validate.rules).string.min_len = 1];
-    string path = 6 [(validate.rules).string.min_len = 1];
-    bool disable = 15;
+    repeated ApplicationResource resources = 2;
+}
+
+message ApplicationResource {
 }
