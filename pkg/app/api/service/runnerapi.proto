@@ -18,19 +18,20 @@ package pipe.api.service;
 option go_package = "github.com/kapetaniosci/pipe/pkg/app/api/service";
 
 import "validate/validate.proto";
-import "pkg/app/api/model/command.proto";
+import "pkg/app/api/model/pipeline_command.proto";
 import "pkg/app/api/model/event.proto";
 
 service RunnerAPI {
     // Ping is periodically called by runner to report its status to api.
     rpc Ping(PingRequest) returns (PingResponse) {}
+
     // RegisterEvents is called by runner to submit an event from executing jobs.
     rpc RegisterEvents(RegisterEventsRequest) returns (RegisterEventsResponse) {}
-    // SendStageLog is called by runner to append the log of a specific stage.
-    rpc SendStageLog(SendStageLogRequest) returns (SendStageLogResponse) {}
-    // ListCommands is called by runner to obtain the commands should be executed.
-    // Results are streamed rather than returned at once.
-    rpc ListCommands(ListCommandsRequest) returns (stream ListCommandsResponse) {}
+    // SendStageFullLog is called by runner to save the full log of a specific stage.
+    rpc SendStageFullLog(SendStageFullLogRequest) returns (SendStageFullLogResponse) {}
+    // ListPipelineCommands is called by runner to obtain the commands
+    // that should be executed for the required pipelines.
+    rpc ListPipelineCommands(ListPipelineCommandsRequest) returns (ListPipelineCommandsResponse) {}
 }
 
 message PingRequest {
@@ -48,19 +49,18 @@ message RegisterEventsRequest {
 message RegisterEventsResponse {
 }
 
-message SendStageLogRequest {
+message SendStageFullLogRequest {
     string pipeline_id = 1 [(validate.rules).string.min_len = 1];
     string stage_id = 2 [(validate.rules).string.min_len = 1];
 }
 
-message SendStageLogResponse {
+message SendStageFullLogResponse {
 }
 
-message ListCommandsRequest {
+message ListPipelineCommandsRequest {
+    repeated string pipelines = 1;
 }
 
-message ListCommandsResponse {
-    repeated pipe.api.model.Command commands = 1;
-    // If true, all commands must be executed in order.
-    bool serial = 2;
+message ListPipelineCommandsResponse {
+    repeated pipe.api.model.PipelineCommand commands = 1;
 }

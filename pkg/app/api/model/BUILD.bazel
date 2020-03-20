@@ -4,8 +4,8 @@ load("@io_bazel_rules_go//go:def.bzl", "go_library")
 proto_library(
     name = "model_proto",
     srcs = [
-        "command.proto",
         "event.proto",
+        "pipeline_command.proto",
     ],
     visibility = ["//visibility:public"],
     #keep
