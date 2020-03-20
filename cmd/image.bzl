@@ -1,7 +1,7 @@
 def all_images():
     # TODO: Auto detect the list of images.
     cmds = {
-        "helloworld": "pipe-helloworld",
+        "livelog": "pipe-livelog",
     }
     images = {}
 
