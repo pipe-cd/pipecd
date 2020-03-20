@@ -14,8 +14,8 @@
 
 syntax = "proto3";
 
-package pipe.piped.service;
-option go_package = "github.com/kapetaniosci/pipe/pkg/app/piped/service";
+package pipe.api.service;
+option go_package = "github.com/kapetaniosci/pipe/pkg/app/api/service";
 
 import "validate/validate.proto";
 

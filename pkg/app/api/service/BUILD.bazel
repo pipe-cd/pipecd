@@ -11,7 +11,7 @@ proto_library(
     visibility = ["//visibility:public"],
     # keep
     deps = [
-        "//pkg/app/piped/model:model_proto",
+        "//pkg/app/api/model:model_proto",
         "@com_github_envoyproxy_protoc_gen_validate//validate:validate_proto",
     ],
 )
@@ -19,17 +19,17 @@ proto_library(
 pgv_go_proto_library(
     name = "service_go_proto",
     compilers = ["@io_bazel_rules_go//proto:go_grpc"],
-    importpath = "github.com/kapetaniosci/pipe/pkg/app/piped/service",
+    importpath = "github.com/kapetaniosci/pipe/pkg/app/api/service",
     proto = ":service_proto",
     visibility = ["//visibility:public"],
     deps = [
-        "//pkg/app/piped/model:go_default_library",
+        "//pkg/app/api/model:go_default_library",
     ],
 )
 
 go_library(
     name = "go_default_library",
     embed = [":service_go_proto"],
-    importpath = "github.com/kapetaniosci/pipe/pkg/app/piped/service",
+    importpath = "github.com/kapetaniosci/pipe/pkg/app/api/service",
     visibility = ["//visibility:public"],
 )

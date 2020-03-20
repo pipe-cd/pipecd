@@ -14,8 +14,8 @@
 
 syntax = "proto3";
 
-package pipe.piped.model;
-option go_package = "github.com/kapetaniosci/pipe/pkg/app/piped/model";
+package pipe.api.model;
+option go_package = "github.com/kapetaniosci/pipe/pkg/app/api/model";
 
 import "validate/validate.proto";
 

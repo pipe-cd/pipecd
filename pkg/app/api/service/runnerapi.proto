@@ -14,15 +14,15 @@
 
 syntax = "proto3";
 
-package pipe.piped.service;
-option go_package = "github.com/kapetaniosci/pipe/pkg/app/piped/service";
+package pipe.api.service;
+option go_package = "github.com/kapetaniosci/pipe/pkg/app/api/service";
 
 import "validate/validate.proto";
-import "pkg/app/piped/model/command.proto";
-import "pkg/app/piped/model/event.proto";
+import "pkg/app/api/model/command.proto";
+import "pkg/app/api/model/event.proto";
 
 service RunnerAPI {
-    // Ping is periodically called by runner to report its status to piped.
+    // Ping is periodically called by runner to report its status to api.
     rpc Ping(PingRequest) returns (PingResponse) {}
     // RegisterEvents is called by runner to submit an event from executing jobs.
     rpc RegisterEvents(RegisterEventsRequest) returns (RegisterEventsResponse) {}
@@ -42,7 +42,7 @@ message PingResponse {
 }
 
 message RegisterEventsRequest {
-    repeated pipe.piped.model.Event events = 1;
+    repeated pipe.api.model.Event events = 1;
 }
 
 message RegisterEventsResponse {
@@ -60,7 +60,7 @@ message ListCommandsRequest {
 }
 
 message ListCommandsResponse {
-    repeated pipe.piped.model.Command commands = 1;
+    repeated pipe.api.model.Command commands = 1;
     // If true, all commands must be executed in order.
     bool serial = 2;
 }
