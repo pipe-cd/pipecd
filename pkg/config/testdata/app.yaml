@@ -29,7 +29,6 @@ input:
 ---
 kind: K8sApp
 pipeline:
-  on: ["configmap_change", "secret_change", "pod_spec_change", "revert"]
   stages:
     - name: K8S_BLUEGREEN_OUT
     - name: VERIFICATION
