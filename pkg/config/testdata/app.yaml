@@ -2,14 +2,48 @@ kind: K8sApp
 pipeline:
   stages:
     - name: K8S_CANARY_OUT
+      with:
+        weight: 10%
     - name: VERIFICATION
+      with:
+        duration: 10m
+        metrics:
+          - query: grpc_error_percentage
+            expected: < 0.1
+            interval: 1m
+            provider:
+              prometheus:
+                address: https://your-prometheus.dev
+          - query: http_error_percentage
+            expected: < 0.1
+            interval: 1m
+            provider:
+              stackdriver:
+                serviceAccountFile: /etc/stackdriver.serviceaccount
+          - query: internal_error_percentage
+            expected: < 0.1
+            interval: 1m
+            provider:
+              datadog:
+                apiKeyFile: /etc/datadog.apikey
+                applicationKeyFile: /etc/datadog.applicationkey
+          - query: client_error_percentage
+            expected: < 0.1
+            interval: 1m
+            provider:
+              cloudwatch:
+                region: ap-northeast-1
+        https:
+          - url: https://your-endpoint.dev
+            expected: 200
+            interval: 1m
     - name: K8S_APPLY
     - name: K8S_CANARY_IN
 input:
   helm:
     chart: git@github.com:org/config-repo.git:charts/demoapp?ref=v1.0.0
     valueFiles:
-    - dev-values.yaml
+    - values.yaml
     helmVersion: 3.1.1
 
 ---
