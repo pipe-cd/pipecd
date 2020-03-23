@@ -1,5 +1,4 @@
 kind: Notification
-version: v1
 spec:
   triggers:
     - on: ["*"]

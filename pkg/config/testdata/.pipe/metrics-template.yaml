@@ -1,5 +1,4 @@
 kind: MetricsTemplate
-version: v1
 spec:
   metrics:
     - name: app_grpc_error_percenage

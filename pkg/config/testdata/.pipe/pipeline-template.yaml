@@ -1,5 +1,4 @@
 kind: PipelineTemplate
-version: v1
 spec:
   pipelines:
     - name: k8s-apply
