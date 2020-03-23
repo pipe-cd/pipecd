@@ -1,0 +1,45 @@
+kind: Notification
+version: v1
+spec:
+  triggers:
+    - on: ["*"]
+      from:
+        env: dev
+        apps: ["*"]
+      to: slack-dev-channel
+      message: any-slack-message
+    - on:
+        - all-sync-completed
+      from:
+        env: dev
+        apps: ["*"]
+      to: slack-dev-channel
+      message: sync-completed-slack-message
+
+  notifiers:
+    - name: slack-dev-channel
+      slack:
+        token: slack-token
+        username: slack-username
+    - name: ci-hook
+      webhook:
+        url: https://ci.hook
+        path: /apps/{{ .App.Name }}
+        method: POST
+
+  messages:
+    - name: any-slack-message
+      slack:
+        title: ""
+        body: ""
+    - name: sync-completed-slack-message
+      slack:
+        title: ""
+        body: ""
+    - name: all-syncs-complated-webhook-message
+      webhook:
+        headers:
+          - name:
+            value:
+        body: |
+          foo

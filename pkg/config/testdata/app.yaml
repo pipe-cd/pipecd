@@ -14,31 +14,24 @@ pipeline:
             provider:
               prometheus:
                 address: https://your-prometheus.dev
-          - query: http_error_percentage
-            expected: < 0.1
-            interval: 1m
-            provider:
-              stackdriver:
-                serviceAccountFile: /etc/stackdriver.serviceaccount
-          - query: internal_error_percentage
-            expected: < 0.1
-            interval: 1m
-            provider:
-              datadog:
-                apiKeyFile: /etc/datadog.apikey
-                applicationKeyFile: /etc/datadog.applicationkey
-          - query: client_error_percentage
-            expected: < 0.1
-            interval: 1m
-            provider:
-              cloudwatch:
-                region: ap-northeast-1
+          - template: app_http_error_percentage
         https:
           - url: https://your-endpoint.dev
             expected: 200
             interval: 1m
     - name: K8S_APPLY
     - name: K8S_CANARY_IN
+input:
+  helm:
+    chart: git@github.com:org/config-repo.git:charts/demoapp?ref=v1.0.0
+    valueFiles:
+    - values.yaml
+    helmVersion: 3.1.1
+
+---
+kind: K8sApp
+pipeline:
+  template: k8s-canary-with-analysis
 input:
   helm:
     chart: git@github.com:org/config-repo.git:charts/demoapp?ref=v1.0.0
@@ -83,3 +76,4 @@ pipeline:
 input:
   terraform:
     terraformVersion: 0.12.23
+

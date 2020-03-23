@@ -1,0 +1,37 @@
+kind: PipelineTemplate
+version: v1
+spec:
+  pipelines:
+    - name: k8s-apply
+      stages:
+        - name: K8S_APPLY
+
+    - name: k8s-canary-with-analysis
+      stages:
+        - name: K8S_CANARY_OUT
+        - name: VERIFICATION
+          with:
+            duration: 10m
+            metrics:
+              - template: grpc_error_percentage
+              - template: app_http_error_percentage
+            https:
+              - url: https://{{ .App.Name }}.dev
+                expected: 200
+                interval: 1m
+        - name: K8S_APPLY
+        - name: K8S_CANARY_IN
+
+    - name: k8s-canary-with-confirm
+      stages:
+        - name: K8S_CANARY_OUT
+        - name: APPROVAL
+        - name: K8S_APPLY
+        - name: K8S_CANARY_IN
+
+    - name: terraform-confirm
+      stages:
+        - name: K8S_CANARY_OUT
+        - name: VERIFICATION
+        - name: K8S_APPLY
+        - name: K8S_CANARY_IN      

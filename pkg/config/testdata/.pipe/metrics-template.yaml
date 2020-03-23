@@ -1,0 +1,28 @@
+kind: MetricsTemplate
+version: v1
+spec:
+  metrics:
+    - name: app_grpc_error_percenage
+      query: grpc_error_percentage{env={{ .App.Env}}, app={{ .App.Name }}}
+      expected: < 0.1
+      interval: 1m
+      provider: dev-prometheus
+    - name: app_http_error_percentage
+      query: http_error_percentage{env={{ .App.Env}}, app={{ .App.Name }}}
+      expected: < 0.1
+      interval: 1m
+      provider: datadog
+  providers:
+    - name: dev-prometheus
+      prometheus:
+        address: https://your-prometheus.dev
+    - name: stackdriver
+      stackdriver:
+        serviceAccountFile: /etc/stackdriver.serviceaccount
+    - name: datadog
+      datadog:
+        apiKeyFile: /etc/datadog.apikey
+        applicationKeyFile: /etc/datadog.applicationkey
+    - name: cloudwatch
+      cloudwatch:
+        region: ap-northeast-1
