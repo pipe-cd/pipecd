@@ -26,25 +26,25 @@ func TestConfig(t *testing.T) {
 		expected      *Config
 		expectedError error
 	}{
-		{
-			fileName: "testdata/k8s-plain-apply.yaml",
-			expected: &Config{
-				Version: "v1",
-				Kind:    "K8sApp",
-				Name:    "account",
-				Stages: []*Stage{
-					&Stage{
-						Name: "K8S_APPLY",
-						Desc: "Rolling Update",
-					},
-					&Stage{
-						Name: "VERIFICATION",
-						Desc: "Smoke Test",
-					},
-				},
-			},
-			expectedError: nil,
-		},
+		// {
+		// 	fileName: "testdata/k8s-plain-apply.yaml",
+		// 	expected: &Config{
+		// 		Version: "v1",
+		// 		Kind:    "K8sApp",
+		// 		Name:    "account",
+		// 		Stages: []*Stage{
+		// 			&Stage{
+		// 				Name: "K8S_APPLY",
+		// 				Desc: "Rolling Update",
+		// 			},
+		// 			&Stage{
+		// 				Name: "VERIFICATION",
+		// 				Desc: "Smoke Test",
+		// 			},
+		// 		},
+		// 	},
+		// 	expectedError: nil,
+		// },
 	}
 	for _, tc := range testcases {
 		t.Run(tc.fileName, func(t *testing.T) {

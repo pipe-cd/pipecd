@@ -1,8 +1,10 @@
-version: v1
 kind: K8sApp
-name: account
-stages:
-  - name: K8S_APPLY
-    desc: Rolling Update
-  - name: VERIFICATION
-    desc: Smoke Test
+spec:
+  pipeline:
+    stages:
+      - name: K8S_APPLY
+  input:
+    plainYaml:
+      manifests:
+      - demoapp-deployment.yaml
+      kubectlVersion: 2.1.1

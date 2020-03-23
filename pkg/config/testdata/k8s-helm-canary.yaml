@@ -1,26 +1,23 @@
-version: v1
 kind: K8sApp
-name: account
-stages:
-  - name: K8S_CANARY_OUT
-    desc: Deploy canary with 10% of pods
-    with:
-      weight: 10
-  - name: VERIFICATION
-    desc: Verify canary by metrics and smoke test
-    with:
-      interval: 1m
-      metrics:
-        - query: grpc_error_percentage
-          threshold: 0
-      http:
-        - url: https://your-endpoint
-          epxected: 200
-  - name: APPROVAL
-    desc: Require approval from someone
-  - name: K8S_APPLY
-    desc: Rollout new version
-  - name: K8S_CANARY_IN
-    desc: Delete canary pods
-helm:
-  version: 3.1.1
+spec:
+  pipeline:
+    stages:
+      - name: K8S_CANARY_OUT
+        with:
+          weight: 10
+      - name: VERIFICATION
+        with:
+          duration: 10m
+          https:
+            - url: http://smock.test
+              expected: 200
+              internal: 1m
+      - name: APPROVAL
+      - name: K8S_APPLY
+      - name: K8S_CANARY_IN
+  input:
+    helm:
+      chart: charts/demoapp
+      valueFiles:
+      - values.yaml
+      helmVersion: 3.1.1

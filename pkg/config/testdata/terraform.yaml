@@ -1,12 +1,11 @@
-version: v1
-kind: Terraform
-name: account
-stages:
-  - name: TERRAFORM_PLAN
-  - name: APPROVAL
-    desc: Require approval from someone
-  - name: TERRAFORM_APPLY
-  - name: VERIFICATION
-    desc: Verify New Update
-terraform:
-  version: 0.12.23
+kind: TerraformApp
+spec:
+  pipeline:
+    stages:
+      - name: K8S_CANARY_OUT
+      - name: VERIFICATION
+      - name: K8S_APPLY
+      - name: K8S_CANARY_IN
+  input:
+    terraform:
+      terraformVersion: 0.12.23

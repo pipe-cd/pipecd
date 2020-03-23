@@ -1,3 +1,0 @@
-chart: github.com/org/helmrepo/demoapp?ref=v1.0.0
-valueFiles:
-- values.yaml
