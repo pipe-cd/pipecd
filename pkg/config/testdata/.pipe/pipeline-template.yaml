@@ -29,7 +29,7 @@ spec:
         - name: K8S_APPLY
         - name: K8S_CANARY_IN
 
-    - name: terraform-confirm
+    - name: terraform-with-confirm
       stages:
         - name: K8S_CANARY_OUT
         - name: VERIFICATION
