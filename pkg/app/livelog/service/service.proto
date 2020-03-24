@@ -20,20 +20,23 @@ option go_package = "github.com/kapetaniosci/pipe/pkg/app/livelog/service";
 import "validate/validate.proto";
 
 service LiveLog {
-    // WriteStageLog defines a client-side streaming RPC
-    // to stream the live-log of a stage from runner to server.
-    rpc WriteStageLog(stream WriteStageLogRequest) returns (WriteStageLogResponse) {}
+    // SendStageLiveLog defines a client-side streaming RPC
+    // to stream the live-log of a pipeline stage from runner to server.
+    // The live-log data will not be persisted into the filestore,
+    // instead of that they will be treated as temporary data.
+    rpc SendStageLiveLog(stream SendStageLiveLogRequest) returns (SendStageLiveLogResponse) {}
+
     // GetStageLogSnapshot returns latest log snapshot of a stage.
     rpc GetStageLogSnapshot(GetStageLogSnapshotRequest) returns (GetStageLogSnapshotResponse) {}
 }
 
-message WriteStageLogRequest {
+message SendStageLiveLogRequest {
     string pipeline_id = 1 [(validate.rules).string.min_len = 1];
     string stage_id = 2 [(validate.rules).string.min_len = 1];
     string log = 3;
 }
 
-message WriteStageLogResponse {
+message SendStageLiveLogResponse {
 }
 
 message GetStageLogSnapshotRequest {
