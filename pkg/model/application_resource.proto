@@ -20,8 +20,17 @@ option go_package = "github.com/kapetaniosci/pipe/pkg/model";
 import "validate/validate.proto";
 
 message ApplicationResourceTree {
-    string id = 1 [(validate.rules).string.min_len = 1];
-    repeated ApplicationResource resources = 2;
+    message Edge {
+        string from = 1 [(validate.rules).string.min_len = 1];
+        string to = 2 [(validate.rules).string.min_len = 1];
+    }
+
+    string application_id = 1 [(validate.rules).string.min_len = 1];
+    string project_id = 2 [(validate.rules).string.min_len = 1];
+    string env_id = 3 [(validate.rules).string.min_len = 1];
+    string runner_id = 4 [(validate.rules).string.min_len = 1];
+    repeated ApplicationResource resources = 5;
+    repeated Edge edges = 6;
 }
 
 message ApplicationResource {

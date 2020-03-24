@@ -20,6 +20,8 @@ option go_package = "github.com/kapetaniosci/pipe/pkg/app/api/service";
 import "validate/validate.proto";
 import "pkg/app/api/service/event.proto";
 import "pkg/model/command.proto";
+import "pkg/model/common.proto";
+import "pkg/model/runner_stats.proto";
 
 service RunnerAPI {
     // Ping is periodically sent by runner to report its status/stats to API.
@@ -81,14 +83,7 @@ service RunnerAPI {
 }
 
 message PingRequest {
-    // Local time of runner.
-    int64 timestamp = 1 [(validate.rules).int64.gt = 0];
-    // The version of runner.
-    string version = 2;
-    // Number of pipelines are running currently.
-    int32 running_pipelines = 3;
-    // Total number of api requests to k8s from the previous ping.
-    int64 k8s_api_requests = 4;
+    pipe.model.RunnerStats runner_stats = 1 [(validate.rules).message.required = true];
 }
 
 message PingResponse {
@@ -99,6 +94,7 @@ message ListApplicationsByRunnerRequest {
 }
 
 message ListApplicationsByRunnerResponse {
+    repeated pipe.model.Application applications = 1;
 }
 
 message RegisterEventsRequest {
@@ -106,18 +102,19 @@ message RegisterEventsRequest {
 }
 
 message RegisterEventsResponse {
+    repeated string failed_ids = 1;
 }
 
 message SendStageCompleteLogRequest {
     string pipeline_id = 1 [(validate.rules).string.min_len = 1];
     string stage_id = 2 [(validate.rules).string.min_len = 1];
+    bytes log = 3;
 }
 
 message SendStageCompleteLogResponse {
 }
 
 message GetCommandsRequest {
-    repeated string pipelines = 1;
 }
 
 message GetCommandsResponse {
@@ -134,6 +131,7 @@ message ReportCommandHandledResponse {
 }
 
 message ReportPipelineStartedRequest {
+    string pipeline_id = 1 [(validate.rules).string.min_len = 1];
 }
 
 message ReportPipelineStartedResponse {
