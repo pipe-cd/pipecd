@@ -19,23 +19,28 @@ option go_package = "github.com/kapetaniosci/pipe/pkg/model";
 
 import "validate/validate.proto";
 
-message Command {
+message CommandState {
     enum Type {
         PIPELINE = 0;
         APPLICATION = 1;
         REPO_HOOK = 2;
     }
+    enum Status {
+        NOT_HANDLED_YET = 0;
+        SUCCEEDED = 1;
+        FAILED = 2;
+    }
     string id = 1 [(validate.rules).string.min_len = 1];
     string runner_id = 2 [(validate.rules).string.min_len = 1];
     Type type = 3;
-    bytes payload = 4;
-    map<string,string> result = 5;
-    bool handled = 6;
+    bytes command = 4;
+    Status status = 5;
+    map<string,string> result = 6;
     int64 created_at = 14 [(validate.rules).int64.gt = 0];
     int64 updated_at = 15 [(validate.rules).int64.gt = 0];
 }
 
-message CommandPayload {
+message Command {
     string command_id = 1 [(validate.rules).string.min_len = 1];
     int64 timestamp = 2 [(validate.rules).int64.gt = 0];
 

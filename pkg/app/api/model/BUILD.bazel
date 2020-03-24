@@ -3,10 +3,7 @@ load("@io_bazel_rules_go//go:def.bzl", "go_library")
 
 proto_library(
     name = "model_proto",
-    srcs = [
-        "event.proto",
-        "pipeline_command.proto",
-    ],
+    srcs = ["event.proto"],
     visibility = ["//visibility:public"],
     #keep
     deps = [
@@ -30,12 +27,7 @@ pgv_go_proto_library(
 
 go_library(
     name = "go_default_library",
-    srcs = ["command.pb.go"],
     embed = [":model_go_proto"],
     importpath = "github.com/kapetaniosci/pipe/pkg/app/api/model",
     visibility = ["//visibility:public"],
-    deps = [
-        "@com_github_envoyproxy_protoc_gen_validate//validate:go_default_library",
-        "@com_github_golang_protobuf//proto:go_default_library",
-    ],
 )

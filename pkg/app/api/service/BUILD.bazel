@@ -12,6 +12,7 @@ proto_library(
     # keep
     deps = [
         "//pkg/app/api/model:model_proto",
+        "//pkg/model:model_proto",
         "@com_github_envoyproxy_protoc_gen_validate//validate:validate_proto",
     ],
 )
@@ -24,6 +25,7 @@ pgv_go_proto_library(
     visibility = ["//visibility:public"],
     deps = [
         "//pkg/app/api/model:go_default_library",
+        "//pkg/model:go_default_library",
     ],
 )
 

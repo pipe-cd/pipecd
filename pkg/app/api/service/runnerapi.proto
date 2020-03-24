@@ -18,8 +18,8 @@ package pipe.api.service;
 option go_package = "github.com/kapetaniosci/pipe/pkg/app/api/service";
 
 import "validate/validate.proto";
-import "pkg/app/api/model/pipeline_command.proto";
 import "pkg/app/api/model/event.proto";
+import "pkg/model/command.proto";
 
 service RunnerAPI {
     // Ping is periodically sent by runner to report its status/stats to API.
@@ -133,10 +133,13 @@ message GetCommandsRequest {
 }
 
 message GetCommandsResponse {
-    repeated pipe.api.model.PipelineCommand commands = 1;
+    repeated pipe.model.Command commands = 1;
 }
 
 message ReportCommandHandledRequest {
+    string command_id = 1 [(validate.rules).string.min_len = 1];
+    pipe.model.CommandState.Status status = 2 [(validate.rules).enum.defined_only = true];
+    map<string,string> result = 3;
 }
 
 message ReportCommandHandledResponse {
