@@ -20,7 +20,137 @@ option go_package = "github.com/kapetaniosci/pipe/pkg/app/api/service";
 import "validate/validate.proto";
 
 service WebAPI {
+    // Runner
+    rpc RegisterRunner(RegisterRunnerRequest) returns (RegisterRunnerResponse) {}
+    rpc DisableRunner(DisableRunnerRequest) returns (DisableRunnerResponse) {}
+    rpc ListRunners(ListRunnerRequest) returns (ListRunnerResponse) {}
+
+    // Environment
+    rpc AddEnvironment(AddEnvironmentRequest) returns (AddEnvironmentResponse) {}
+    rpc RenameEnvironment(RenameEnvironmentRequest) returns (RenameEnvironmentResponse) {}
+    rpc ListEnvironments(ListEnvironmentsRequest) returns (ListEnvironmentResponse) {}
+
+    // Application
+    rpc AddApplication(AddApplicationRequest) returns (AddApplicationResponse) {}
+    rpc DisableApplication(DisableApplicationRequest) returns (DisableApplicationResponse) {}
+    rpc ListApplications(ListApplicationsRequest) returns (ListApplicationsResponse) {}
+    rpc SyncApplication(SyncApplicationRequest) returns (SyncApplicationResponse) {}
+
+    // Pipeline
+    rpc ListPipelines(ListPipelinesRequest) returns (ListPipelinesResponse) {}
+    rpc GetPipeline(GetPipelineRequest) returns (GetPipelineResponse) {}
+    rpc CancelPipeline(CancelPipelineRequest) returns (CancelPipelineResponse) {}
+    rpc ApprovePipelineStage(ApprovePipelineStageRequest) returns (ApprovePipelineStageResponse) {}
+    rpc RetryPipelineStage(RetryPipelineStageRequest) returns (RetryPipelineStageResponse) {}
+
+    // ApplicationState
+    rpc GetApplicationState(GetApplicationStateRequest) returns (GetApplicationStateResponse) {}
+    
+    // Account
+    rpc GetProject(GetProjectRequest) returns (GetProjectResponse) {}
     rpc GetMe(GetMeRequest) returns (GetMeResponse) {}
+}
+
+message RegisterRunnerRequest {
+}
+
+message RegisterRunnerResponse {
+}
+
+message DisableRunnerRequest {
+}
+
+message DisableRunnerResponse {
+}
+
+message ListRunnerRequest {
+}
+
+message ListRunnerResponse {
+}
+
+message AddEnvironmentRequest {
+}
+
+message AddEnvironmentResponse {
+}
+
+message RenameEnvironmentRequest {
+}
+
+message RenameEnvironmentResponse {
+}
+
+message ListEnvironmentsRequest {
+}
+
+message ListEnvironmentResponse {
+}
+
+message AddApplicationRequest {
+}
+
+message AddApplicationResponse {
+}
+
+message DisableApplicationRequest {
+}
+
+message DisableApplicationResponse {
+}
+
+message ListApplicationsRequest {
+}
+
+message ListApplicationsResponse {
+}
+
+message SyncApplicationRequest {
+}
+
+message SyncApplicationResponse {
+}
+
+message ListPipelinesRequest {
+}
+
+message ListPipelinesResponse {
+}
+
+message GetPipelineRequest {
+}
+
+message GetPipelineResponse {
+}
+
+message CancelPipelineRequest {
+}
+
+message CancelPipelineResponse {
+}
+
+message ApprovePipelineStageRequest {
+}
+
+message ApprovePipelineStageResponse {
+}
+
+message RetryPipelineStageRequest {
+}
+
+message RetryPipelineStageResponse {
+}
+
+message GetApplicationStateRequest {
+}
+
+message GetApplicationStateResponse {
+}
+
+message GetProjectRequest {
+}
+
+message GetProjectResponse {
 }
 
 message GetMeRequest {

@@ -22,28 +22,51 @@ import "pkg/app/api/model/pipeline_command.proto";
 import "pkg/app/api/model/event.proto";
 
 service RunnerAPI {
-    // Ping is periodically called by runner to report its status to api.
+    // Ping is periodically called by runner to report its status/stats to API.
     rpc Ping(PingRequest) returns (PingResponse) {}
-
-    // RegisterEvents is called by runner to submit an event from executing jobs.
+    // ListApplicationsByRunner returns a list of registered applications
+    // that should be managed by a given runner.
+    rpc ListApplicationsByRunner(ListApplicationsByRunnerRequest) returns (ListApplicationsByRunnerResponse) {}
+    // RegisterEvents is called by runner to submit one or multiple events
+    // about executing pipelines and application resources.
     rpc RegisterEvents(RegisterEventsRequest) returns (RegisterEventsResponse) {}
-    // SendStageFullLog is called by runner to save the full log of a specific stage.
-    rpc SendStageFullLog(SendStageFullLogRequest) returns (SendStageFullLogResponse) {}
-    // ListPipelineCommands is called by runner to obtain the commands
-    // that should be executed for the required pipelines.
-    rpc ListPipelineCommands(ListPipelineCommandsRequest) returns (ListPipelineCommandsResponse) {}
-    // PipelineCompleted marks the pipeline has just been completed and sends its full state.
-    rpc PipelineCompleted(PipelineCompletedRequest) returns (PipelineCompletedResponse) {}
-    // UpdateApplicationResourceTree sends the full tree of application resources.
-    rpc UpdateApplicationResourceTree(UpdateApplicationResourceTreeRequest) returns (UpdateApplicationResourceTreeResponse) {}
+    // SendStageLiveLog makes a client-stream to send the live-log of a stage.
+    rpc SendStageLiveLog(stream SendStageLiveLogRequest) returns (SendStageLiveLogResponse) {}
+    // SendStageCompleteLog is called by runner to save the complete log
+    // of a specific stage after its completion.
+    rpc SendStageCompleteLog(SendStageCompleteLogRequest) returns (SendStageCompleteLogResponse) {}
+    // GetCommands is periodically called by runner to obtain the commands
+    // that should be handled.
+    rpc GetCommands(GetCommandsRequest) returns (GetCommandsResponse) {}
+    // ReportPipelineStarted used by runner to send initial state
+    // of the pipeline that has just been started.
+    rpc ReportPipelineStarted(ReportPipelineStartedRequest) returns (ReportPipelineStartedResponse) {}
+    // ReportPipelineCompleted used by runner to send the final state
+    // of the pipeline that has just been completed.
+    rpc ReportPipelineCompleted(ReportPipelineCompletedRequest) returns (ReportPipelineCompletedResponse) {}
+    // ReportApplicationResourceTree periodically sends the full tree of application resources.
+    rpc ReportApplicationResourceTree(ReportApplicationResourceTreeRequest) returns (ReportApplicationResourceTreeResponse) {}
 }
 
 message PingRequest {
-    int64 local_time = 1 [(validate.rules).int64.gt = 0];
+    // Local time of runner.
+    int64 timestamp = 1 [(validate.rules).int64.gt = 0];
+    // The version of runner.
     string version = 2;
+    // Number of pipelines are running currently.
+    int32 running_pipelines = 3;
+    // Total number of api requests to k8s from the previous ping.
+    int64 k8s_api_requests = 4;
 }
 
 message PingResponse {
+    int64 ping_interval = 1;
+}
+
+message ListApplicationsByRunnerRequest {
+}
+
+message ListApplicationsByRunnerResponse {
 }
 
 message RegisterEventsRequest {
@@ -53,33 +76,45 @@ message RegisterEventsRequest {
 message RegisterEventsResponse {
 }
 
-message SendStageFullLogRequest {
+message SendStageLiveLogRequest {
+}
+
+message SendStageLiveLogResponse {
+}
+
+message SendStageCompleteLogRequest {
     string pipeline_id = 1 [(validate.rules).string.min_len = 1];
     string stage_id = 2 [(validate.rules).string.min_len = 1];
 }
 
-message SendStageFullLogResponse {
+message SendStageCompleteLogResponse {
 }
 
-message ListPipelineCommandsRequest {
+message GetCommandsRequest {
     repeated string pipelines = 1;
 }
 
-message ListPipelineCommandsResponse {
+message GetCommandsResponse {
     repeated pipe.api.model.PipelineCommand commands = 1;
 }
 
-message PipelineCompletedRequest {
+message ReportPipelineStartedRequest {
+}
+
+message ReportPipelineStartedResponse {
+}
+
+message ReportPipelineCompletedRequest {
     string pipeline_id = 1 [(validate.rules).string.min_len = 1];
 }
 
-message PipelineCompletedResponse {
+message ReportPipelineCompletedResponse {
 }
 
-message UpdateApplicationResourceTreeRequest {
+message ReportApplicationResourceTreeRequest {
     string application_id = 1 [(validate.rules).string.min_len = 1];
     int64 timestamp = 2 [(validate.rules).int64.gt = 0];
 }
 
-message UpdateApplicationResourceTreeResponse {
+message ReportApplicationResourceTreeResponse {
 }
