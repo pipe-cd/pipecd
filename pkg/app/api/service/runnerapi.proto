@@ -22,28 +22,66 @@ import "pkg/app/api/model/pipeline_command.proto";
 import "pkg/app/api/model/event.proto";
 
 service RunnerAPI {
-    // Ping is periodically called by runner to report its status/stats to API.
+    // Ping is periodically sent by runner to report its status/stats to API.
+    // The received stats will be written to the cache immediately.
+    // The cache data may be lost anytime so we need a singleton Persister
+    // to persist those data into datastore every n minutes.
     rpc Ping(PingRequest) returns (PingResponse) {}
+
     // ListApplicationsByRunner returns a list of registered applications
-    // that should be managed by a given runner.
+    // that should be managed by the requested runner.
+    // Disabled applications should not be included in the response.
+    // Runner uses this RPC to fetch and sync the application configuration into its local database.
     rpc ListApplicationsByRunner(ListApplicationsByRunnerRequest) returns (ListApplicationsByRunnerResponse) {}
-    // RegisterEvents is called by runner to submit one or multiple events
+
+    // RegisterEvents is sent by runner to submit one or multiple events
     // about executing pipelines and application resources.
+    // Control plane uses the received events to update the state of pipeline/application-resource-tree.
+    // We want to start by a simple solution at this initial stage of development,
+    // so the API server just handles as below:
+    // - loads the releated pipeline/application-resource-tree from datastore
+    // - checks and builds new state for the pipeline/application-resource-tree
+    // - updates new state into datastore and cache (cache data is for reading while handling web requests)
+    // In the future, we may want to redesign the behavior of this RPC by using pubsub/queue pattern.
+    // After receiving the events, all of them will be publish into a queue immediately,
+    // and then another Handler service will pick them inorder to apply to build new state.
+    // By that way we can control the traffic to the datastore in a better way.
     rpc RegisterEvents(RegisterEventsRequest) returns (RegisterEventsResponse) {}
-    // SendStageLiveLog makes a client-stream to send the live-log of a stage.
+
+    // SendStageLiveLog defines a client-side streaming RPC
+    // to stream the live-log of a pipeline stage from runner to server.
+    // The live-log data will not be persisted into the filestore,
+    // instead of that they will be treated as temporary data.
     rpc SendStageLiveLog(stream SendStageLiveLogRequest) returns (SendStageLiveLogResponse) {}
-    // SendStageCompleteLog is called by runner to save the complete log
-    // of a specific stage after its completion.
+
+    // SendStageCompleteLog is sent by runner to save the complete log
+    // of a pipeline stage after its completion.
+    // The complete log will be persisted into the filestore immediately.
     rpc SendStageCompleteLog(SendStageCompleteLogRequest) returns (SendStageCompleteLogResponse) {}
+
     // GetCommands is periodically called by runner to obtain the commands
     // that should be handled.
+    // Whenever an user makes an interaction from WebUI (cancel/approve/retry/sync)
+    // a new command with a unique identifier will be generated an saved into the datastore.
+    // Runner uses this RPC to list all still-not-handled commands to handle them,
+    // then report back the result to server.
+    // On other side, the web will periodically check the command status and feedback the result to user.
+    // In the future, we may need a solution to remove all old-handled commands from datastore for space.
     rpc GetCommands(GetCommandsRequest) returns (GetCommandsResponse) {}
+
+    // ReportCommandHandled is called by runner to mark a specific command as handled.
+    // The request payload will contain the handle status as well as any additional result data.
+    // The handle result should be updated to both datastore and cache (for reading from web).
+    rpc ReportCommandHandled(ReportCommandHandledRequest) returns (ReportCommandHandledResponse) {}
+
     // ReportPipelineStarted used by runner to send initial state
     // of the pipeline that has just been started.
     rpc ReportPipelineStarted(ReportPipelineStartedRequest) returns (ReportPipelineStartedResponse) {}
+
     // ReportPipelineCompleted used by runner to send the final state
     // of the pipeline that has just been completed.
     rpc ReportPipelineCompleted(ReportPipelineCompletedRequest) returns (ReportPipelineCompletedResponse) {}
+
     // ReportApplicationResourceTree periodically sends the full tree of application resources.
     rpc ReportApplicationResourceTree(ReportApplicationResourceTreeRequest) returns (ReportApplicationResourceTreeResponse) {}
 }
@@ -96,6 +134,12 @@ message GetCommandsRequest {
 
 message GetCommandsResponse {
     repeated pipe.api.model.PipelineCommand commands = 1;
+}
+
+message ReportCommandHandledRequest {
+}
+
+message ReportCommandHandledResponse {
 }
 
 message ReportPipelineStartedRequest {
