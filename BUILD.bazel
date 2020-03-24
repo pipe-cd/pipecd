@@ -35,9 +35,9 @@ buildifier(
 # gazelle:exclude pkg/config/config.pb.validate.go
 # gazelle:exclude pkg/app/livelog/service/service.pb.validate.go
 # gazelle:exclude pkg/app/helloworld/service/service.pb.validate.go
+# gazelle:exclude pkg/app/api/service/event.pb.validate.go
 # gazelle:exclude pkg/app/api/service/runnerapi.pb.validate.go
 # gazelle:exclude pkg/app/api/service/webapi.pb.validate.go
-# gazelle:exclude pkg/app/api/model/event.pb.validate.go
 # gazelle:exclude pkg/model/application_resource.pb.validate.go
 # gazelle:exclude pkg/model/command.pb.validate.go
 # gazelle:exclude pkg/model/common.pb.validate.go

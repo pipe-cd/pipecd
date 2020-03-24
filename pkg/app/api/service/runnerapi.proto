@@ -18,7 +18,7 @@ package pipe.api.service;
 option go_package = "github.com/kapetaniosci/pipe/pkg/app/api/service";
 
 import "validate/validate.proto";
-import "pkg/app/api/model/event.proto";
+import "pkg/app/api/service/event.proto";
 import "pkg/model/command.proto";
 
 service RunnerAPI {
@@ -108,7 +108,7 @@ message ListApplicationsByRunnerResponse {
 }
 
 message RegisterEventsRequest {
-    repeated pipe.api.model.Event events = 1;
+    repeated Event events = 1;
 }
 
 message RegisterEventsResponse {
