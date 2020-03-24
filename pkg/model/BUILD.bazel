@@ -4,9 +4,11 @@ load("@io_bazel_rules_go//go:def.bzl", "go_library")
 proto_library(
     name = "model_proto",
     srcs = [
-        "application.proto",
         "application_resource.proto",
+        "command.proto",
+        "common.proto",
         "pipeline.proto",
+        "runner_stats.proto",
     ],
     visibility = ["//visibility:public"],
     #keep

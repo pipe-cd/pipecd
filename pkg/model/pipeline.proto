@@ -18,7 +18,6 @@ package pipe.model;
 option go_package = "github.com/kapetaniosci/pipe/pkg/model";
 
 import "validate/validate.proto";
-import "pkg/model/application.proto";
 
 enum PipelineStatus {
     PIPELINE_NOT_STARTED_YET = 0;
@@ -39,7 +38,22 @@ enum StageStatus {
 }
 
 message Pipeline {
+    message Trigger {
+        string commit = 1 [(validate.rules).string.min_len = 1];
+        string user = 2 [(validate.rules).string.min_len = 1];
+    }
+    message State {
+    }
+
     string id = 1 [(validate.rules).string.min_len = 1];
-    pipe.model.Application application = 2 [(validate.rules).message.required = true];
-    string trigger_commit = 3 [(validate.rules).string.min_len = 1];
+    string application_id = 2 [(validate.rules).string.min_len = 1];
+    string env_id = 3 [(validate.rules).string.min_len = 1];
+    string runner_id = 4 [(validate.rules).string.min_len = 1];
+    string project_id = 5 [(validate.rules).string.min_len = 1];
+    Trigger trigger = 6 [(validate.rules).message.required = true];
+    PipelineStatus status = 7 [(validate.rules).enum.defined_only = true];
+    State realtime_state = 8 [(validate.rules).message.required = true];
+    State complete_state = 9;
+    int64 created_at = 14 [(validate.rules).int64.gt = 0];
+    int64 updated_at = 15 [(validate.rules).int64.gt = 0];
 }
