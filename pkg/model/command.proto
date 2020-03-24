@@ -20,7 +20,63 @@ option go_package = "github.com/kapetaniosci/pipe/pkg/model";
 import "validate/validate.proto";
 
 message Command {
+    enum Type {
+        PIPELINE = 0;
+        APPLICATION = 1;
+        REPO_HOOK = 2;
+    }
     string id = 1 [(validate.rules).string.min_len = 1];
+    string runner_id = 2 [(validate.rules).string.min_len = 1];
+    Type type = 3;
+    bytes payload = 4;
+    map<string,string> result = 5;
+    bool handled = 6;
     int64 created_at = 14 [(validate.rules).int64.gt = 0];
     int64 updated_at = 15 [(validate.rules).int64.gt = 0];
+}
+
+message CommandPayload {
+    string command_id = 1 [(validate.rules).string.min_len = 1];
+    int64 timestamp = 2 [(validate.rules).int64.gt = 0];
+
+    // Pipeline Command.
+    message CancelPipeline {
+        string pipeline_id = 1 [(validate.rules).string.min_len = 1];
+        bool keep_current_state = 2;
+    }
+    message ApproveStage {
+        string pipeline_id = 1 [(validate.rules).string.min_len = 1];
+        string stage_id = 2 [(validate.rules).string.min_len = 1];
+    }
+    message RetryStage {
+        string pipeline_id = 1 [(validate.rules).string.min_len = 1];
+        string stage_id = 2 [(validate.rules).string.min_len = 1];
+    }
+
+    // Application Command.
+    message SyncApplication {
+        string application_id = 1 [(validate.rules).string.min_len = 1];
+    }
+    message UpdateApplicationConfig {
+        string application_id = 1 [(validate.rules).string.min_len = 1];
+        string config_path = 2 [(validate.rules).string.min_len = 1];
+        string config = 3 [(validate.rules).string.min_len = 1];
+    }
+
+    // Repo Hook Event Command.
+    message HandlePullRequestEvent {
+        string repo = 1 [(validate.rules).string.min_len = 1];
+        string action = 2 [(validate.rules).string.min_len = 1];
+    }
+
+    oneof inner {
+        CancelPipeline cancel_pipeline = 100;
+        ApproveStage approve_stage = 101;
+        RetryStage retry_stage = 102;
+
+        SyncApplication sync_application = 200;
+        UpdateApplicationConfig update_application_config = 201;
+
+        HandlePullRequestEvent handle_pull_request_event = 300;
+    }
 }
