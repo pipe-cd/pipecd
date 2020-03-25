@@ -38,18 +38,18 @@ func TestMain(m *testing.M) {
 		WithTLS("testdata/tls.crt", "testdata/tls.key"),
 		WithPort(9090),
 		WithLogger(logger),
-		WithRunnerKeyAuthUnaryInterceptor(testRunnerKeyVerifier{"test-runner-key"}, logger),
+		WithRunnerTokenAuthUnaryInterceptor(testRunnerTokenVerifier{"test-runner-key"}, logger),
 	)
 	defer server.Stop(time.Second)
 	go server.Run()
 	os.Exit(m.Run())
 }
 
-type testRunnerKeyVerifier struct {
+type testRunnerTokenVerifier struct {
 	runnerKey string
 }
 
-func (v testRunnerKeyVerifier) Verify(projectID, runnerID, runnerKey string) error {
+func (v testRunnerTokenVerifier) Verify(projectID, runnerID, runnerKey string) error {
 	if runnerKey != v.runnerKey {
 		return fmt.Errorf("invalid runner key, want: %s, got: %s", v.runnerKey, runnerKey)
 	}
@@ -58,7 +58,8 @@ func (v testRunnerKeyVerifier) Verify(projectID, runnerID, runnerKey string) err
 
 func TestRPCRequestOK(t *testing.T) {
 	ctx := context.Background()
-	creds := rpcclient.NewPerRPCCredentials("runer-key", rpcauth.RunnerKeyCredentials, true)
+	runnerToken := rpcauth.MakeRunnerToken("test-project-id", "test-runner-id", "test-runner-key")
+	creds := rpcclient.NewPerRPCCredentials(runnerToken, rpcauth.RunnerTokenCredentials, true)
 	var cli service.Client
 	var err error
 	// Waiting the gRPC server.

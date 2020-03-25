@@ -35,56 +35,66 @@ func (s *fakeServerStream) Context() context.Context {
 	return s.ctx
 }
 
-type testRunnerKeyVerifier struct {
+type testRunnerTokenVerifier struct {
 	runnerKey string
 }
 
-func (v testRunnerKeyVerifier) Verify(projectID, runnerID, runnerKey string) error {
+func (v testRunnerTokenVerifier) Verify(projectID, runnerID, runnerKey string) error {
 	if runnerKey != v.runnerKey {
 		return fmt.Errorf("invalid runner key, want: %s, got: %s", v.runnerKey, runnerKey)
 	}
 	return nil
 }
 
-func TestRunnerKeyUnaryServerInterceptor(t *testing.T) {
-	verifier := testRunnerKeyVerifier{"test-runner-key"}
-	in := RunnerKeyUnaryServerInterceptor(verifier, zap.NewNop())
+func TestRunnerTokenUnaryServerInterceptor(t *testing.T) {
+	verifier := testRunnerTokenVerifier{"test-runner-key"}
+	in := RunnerTokenUnaryServerInterceptor(verifier, zap.NewNop())
 	testcases := []struct {
-		name                    string
-		ctx                     context.Context
-		expectedCredentials     string
-		expectedCredentialsType CredentialsType
-		failed                  bool
+		name              string
+		ctx               context.Context
+		expectedRunnerKey string
+		failed            bool
 	}{
 		{
-			name:                    "missing credentials",
-			ctx:                     context.TODO(),
-			expectedCredentials:     "",
-			expectedCredentialsType: UnknownCredentials,
-			failed:                  true,
+			name:              "missing credentials",
+			ctx:               context.TODO(),
+			expectedRunnerKey: "",
+			failed:            true,
 		},
 		{
-			name: "should be ok with IDToken",
+			name: "wrong credentials type",
 			ctx: metadata.NewIncomingContext(context.Background(), metadata.MD{
-				"authorization": []string{"ID-TOKEN token"},
+				"authorization": []string{"ID-TOKEN test-project-id,test-runner-id,test-runner-key"},
 			}),
-			expectedCredentials:     "token",
-			expectedCredentialsType: IDTokenCredentials,
-			failed:                  false,
+			expectedRunnerKey: "",
+			failed:            true,
+		},
+		{
+			name: "malformed runner token",
+			ctx: metadata.NewIncomingContext(context.Background(), metadata.MD{
+				"authorization": []string{"RUNNER-TOKEN test-runner-key"},
+			}),
+			expectedRunnerKey: "",
+			failed:            true,
+		},
+		{
+			name: "should be ok with RunnerToken",
+			ctx: metadata.NewIncomingContext(context.Background(), metadata.MD{
+				"authorization": []string{"RUNNER-TOKEN test-project-id,test-runner-id,test-runner-key"},
+			}),
+			expectedRunnerKey: "test-runner-key",
+			failed:            false,
 		},
 	}
 	for _, tc := range testcases {
 		t.Run(tc.name, func(t *testing.T) {
 			_, err := in(tc.ctx, nil, nil, func(ctx context.Context, req interface{}) (interface{}, error) {
-				creds, err := ExtractCredentials(ctx)
+				_, _, runnerKey, err := ExtractRunnerToken(ctx)
 				if err != nil {
 					return nil, err
 				}
-				if creds.Type != tc.expectedCredentialsType {
-					return nil, errors.New("different credentials type")
-				}
-				if creds.Data != tc.expectedCredentials {
-					return nil, errors.New("different credentials data")
+				if runnerKey != tc.expectedRunnerKey {
+					return nil, errors.New("invalid runner key")
 				}
 				return nil, nil
 			})
@@ -93,31 +103,44 @@ func TestRunnerKeyUnaryServerInterceptor(t *testing.T) {
 	}
 }
 
-func TestRunnerKeyStreamServerInterceptor(t *testing.T) {
-	verifier := testRunnerKeyVerifier{"test-runner-key"}
-	in := RunnerKeyStreamServerInterceptor(verifier, zap.NewNop())
+func TestRunnerTokenStreamServerInterceptor(t *testing.T) {
+	verifier := testRunnerTokenVerifier{"test-runner-key"}
+	in := RunnerTokenStreamServerInterceptor(verifier, zap.NewNop())
 	testcases := []struct {
-		name                    string
-		ctx                     context.Context
-		expectedCredentials     string
-		expectedCredentialsType CredentialsType
-		failed                  bool
+		name              string
+		ctx               context.Context
+		expectedRunnerKey string
+		failed            bool
 	}{
 		{
-			name:                    "missing credentials",
-			ctx:                     context.TODO(),
-			expectedCredentials:     "",
-			expectedCredentialsType: UnknownCredentials,
-			failed:                  true,
+			name:              "missing credentials",
+			ctx:               context.TODO(),
+			expectedRunnerKey: "",
+			failed:            true,
 		},
 		{
-			name: "should be ok with IDToken",
+			name: "wrong credentials type",
 			ctx: metadata.NewIncomingContext(context.Background(), metadata.MD{
-				"authorization": []string{"ID-TOKEN token"},
+				"authorization": []string{"ID-TOKEN test-project-id,test-runner-id,test-runner-key"},
 			}),
-			expectedCredentials:     "token",
-			expectedCredentialsType: IDTokenCredentials,
-			failed:                  false,
+			expectedRunnerKey: "",
+			failed:            true,
+		},
+		{
+			name: "malformed runner token",
+			ctx: metadata.NewIncomingContext(context.Background(), metadata.MD{
+				"authorization": []string{"RUNNER-TOKEN test-runner-key"},
+			}),
+			expectedRunnerKey: "",
+			failed:            true,
+		},
+		{
+			name: "should be ok with RunnerToken",
+			ctx: metadata.NewIncomingContext(context.Background(), metadata.MD{
+				"authorization": []string{"RUNNER-TOKEN test-project-id,test-runner-id,test-runner-key"},
+			}),
+			expectedRunnerKey: "test-runner-key",
+			failed:            false,
 		},
 	}
 
@@ -128,15 +151,12 @@ func TestRunnerKeyStreamServerInterceptor(t *testing.T) {
 			}
 			err := in(nil, stream, nil, func(srv interface{}, stream grpc.ServerStream) error {
 				ctx := stream.Context()
-				creds, err := ExtractCredentials(ctx)
+				_, _, runnerKey, err := ExtractRunnerToken(ctx)
 				if err != nil {
 					return err
 				}
-				if creds.Type != tc.expectedCredentialsType {
-					return errors.New("different credentials type")
-				}
-				if creds.Data != tc.expectedCredentials {
-					return errors.New("different credentials data")
+				if runnerKey != tc.expectedRunnerKey {
+					return errors.New("invalid runner key")
 				}
 				return nil
 			})

@@ -74,12 +74,12 @@ func TestExtractToken(t *testing.T) {
 			failed:                  false,
 		},
 		{
-			name: "should be ok with RunnerKey",
+			name: "should be ok with RunnerToken",
 			ctx: metadata.NewIncomingContext(context.Background(), metadata.MD{
-				"authorization": []string{"RUNNER-KEY key"},
+				"authorization": []string{"RUNNER-TOKEN key"},
 			}),
 			expectedCredentials:     "key",
-			expectedCredentialsType: RunnerKeyCredentials,
+			expectedCredentialsType: RunnerTokenCredentials,
 			failed:                  false,
 		},
 	}

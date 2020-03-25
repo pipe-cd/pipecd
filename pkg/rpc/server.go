@@ -59,17 +59,17 @@ func WithPort(port int) Option {
 	}
 }
 
-// WithRunnerKeyAuthUnaryInterceptor sets an interceptor for validating runner key.
-func WithRunnerKeyAuthUnaryInterceptor(verifier rpcauth.RunnerKeyVerifier, logger *zap.Logger) Option {
+// WithRunnerTokenAuthUnaryInterceptor sets an interceptor for validating runner key.
+func WithRunnerTokenAuthUnaryInterceptor(verifier rpcauth.RunnerTokenVerifier, logger *zap.Logger) Option {
 	return func(s *Server) {
-		s.runnerKeyAuthUnaryInterceptor = rpcauth.RunnerKeyUnaryServerInterceptor(verifier, logger)
+		s.runnerKeyAuthUnaryInterceptor = rpcauth.RunnerTokenUnaryServerInterceptor(verifier, logger)
 	}
 }
 
-// WithRunnerKeyAuthStreamInterceptor sets an interceptor for validating runner key.
-func WithRunnerKeyAuthStreamInterceptor(verifier rpcauth.RunnerKeyVerifier, logger *zap.Logger) Option {
+// WithRunnerTokenAuthStreamInterceptor sets an interceptor for validating runner key.
+func WithRunnerTokenAuthStreamInterceptor(verifier rpcauth.RunnerTokenVerifier, logger *zap.Logger) Option {
 	return func(s *Server) {
-		s.runnerKeyAuthStreamInterceptor = rpcauth.RunnerKeyStreamServerInterceptor(verifier, logger)
+		s.runnerKeyAuthStreamInterceptor = rpcauth.RunnerTokenStreamServerInterceptor(verifier, logger)
 	}
 }
 

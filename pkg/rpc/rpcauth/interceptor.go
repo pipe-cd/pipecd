@@ -32,52 +32,83 @@ var (
 	errPermissionDenied = status.Error(codes.PermissionDenied, "permission denied")
 )
 
-// RBACAuthorizer defines a function to check required role for a specific method.
+// RBACAuthorizer defines a function to check required role for a specific RPC method.
 type RBACAuthorizer interface {
 	Authorize(string, role.Role) bool
 }
 
-type RunnerKeyVerifier interface {
+// RunnerTokenVerifier defines a function to check runner token.
+type RunnerTokenVerifier interface {
 	Verify(projectID, runnerID, runnerKey string) error
 }
 
 type (
-	credentialsContextKey struct{}
-	claimsContextKey      struct{}
+	claimsContextKey        struct{}
+	runnerTokenContextKey   struct{}
+	runnerTokenContextValue struct {
+		ProjectID string
+		RunnerID  string
+		RunnerKey string
+	}
 )
 
 var (
-	credentialsKey = credentialsContextKey{}
 	claimsKey      = claimsContextKey{}
+	runnerTokenKey = runnerTokenContextKey{}
 )
 
-// RunnerKeyUnaryServerInterceptor extracts credentials from gRPC metadata
-// and set the extracted credentials to the context with a fixed key.
-// This interceptor will returns a gPRC error when the credentials
-// was not set or was malformed.
-func RunnerKeyUnaryServerInterceptor(verifier RunnerKeyVerifier, logger *zap.Logger) grpc.UnaryServerInterceptor {
+// RunnerTokenUnaryServerInterceptor extracts credentials from gRPC metadata
+// and validates it by the specified Verifier.
+// If the token was valid the parsed ProjectID, RunnerID, RunnerKey will be set to the context.
+func RunnerTokenUnaryServerInterceptor(verifier RunnerTokenVerifier, logger *zap.Logger) grpc.UnaryServerInterceptor {
 	return func(ctx context.Context, req interface{}, info *grpc.UnaryServerInfo, handler grpc.UnaryHandler) (interface{}, error) {
 		creds, err := extractCredentials(ctx)
 		if err != nil {
 			return nil, err
 		}
-		ctx = context.WithValue(ctx, credentialsKey, creds)
+		if creds.Type != RunnerTokenCredentials {
+			logger.Warn("wrong credentials type for RunnerTokenCredentials", zap.Any("credentials", creds))
+			return nil, errUnauthenticated
+		}
+		projectID, runnerID, runnerKey, err := parseRunnerToken(creds.Data)
+		if err != nil {
+			logger.Warn(fmt.Sprintf("malformed credentials: %s, err: %v", creds.Data, err))
+			return nil, errUnauthenticated
+		}
+		ctx = context.WithValue(ctx, runnerTokenKey, runnerTokenContextValue{
+			ProjectID: projectID,
+			RunnerID:  runnerID,
+			RunnerKey: runnerKey,
+		})
 		return handler(ctx, req)
 	}
 }
 
-// RunnerKeyStreamServerInterceptor extracts credentials from gRPC metadata
+// RunnerTokenStreamServerInterceptor extracts credentials from gRPC metadata
 // and set the extracted credentials to the context with a fixed key.
 // This interceptor will returns a gPRC error when the credentials
 // was not set or was malformed.
-func RunnerKeyStreamServerInterceptor(verifier RunnerKeyVerifier, logger *zap.Logger) grpc.StreamServerInterceptor {
+func RunnerTokenStreamServerInterceptor(verifier RunnerTokenVerifier, logger *zap.Logger) grpc.StreamServerInterceptor {
 	return func(srv interface{}, stream grpc.ServerStream, _ *grpc.StreamServerInfo, handler grpc.StreamHandler) error {
 		ctx := stream.Context()
 		creds, err := extractCredentials(ctx)
 		if err != nil {
 			return err
 		}
-		ctx = context.WithValue(ctx, credentialsKey, creds)
+		if creds.Type != RunnerTokenCredentials {
+			logger.Warn("wrong credentials type for RunnerTokenCredentials", zap.Any("credentials", creds))
+			return errUnauthenticated
+		}
+		projectID, runnerID, runnerKey, err := parseRunnerToken(creds.Data)
+		if err != nil {
+			logger.Warn(fmt.Sprintf("malformed credentials: %s, err: %v", creds.Data, err))
+			return errUnauthenticated
+		}
+		ctx = context.WithValue(ctx, runnerTokenKey, runnerTokenContextValue{
+			ProjectID: projectID,
+			RunnerID:  runnerID,
+			RunnerKey: runnerKey,
+		})
 		wrappedStream := &wrappedServerStream{
 			ServerStream: stream,
 			ctx:          ctx,
@@ -116,13 +147,17 @@ func JWTUnaryServerInterceptor(verifier jwt.Verifier, authorizer RBACAuthorizer,
 	}
 }
 
-// ExtractCredentials returns the credentials inside a given context.
-func ExtractCredentials(ctx context.Context) (Credentials, error) {
-	creds, ok := ctx.Value(credentialsKey).(Credentials)
+// ExtractRunnerToken returns the verified runner key inside a given context.
+func ExtractRunnerToken(ctx context.Context) (projectID, runnerID, runnerKey string, err error) {
+	v, ok := ctx.Value(runnerTokenKey).(runnerTokenContextValue)
 	if !ok {
-		return creds, errUnauthenticated
+		err = errUnauthenticated
+		return
 	}
-	return creds, nil
+	projectID = v.ProjectID
+	runnerID = v.RunnerID
+	runnerKey = v.RunnerKey
+	return
 }
 
 // ExtractClaims returns the claims inside a given context.

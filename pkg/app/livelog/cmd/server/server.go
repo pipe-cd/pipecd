@@ -96,8 +96,8 @@ func (s *server) run(ctx context.Context, t cli.Telemetry) error {
 	opts := []rpc.Option{
 		rpc.WithPort(s.grpcPort),
 		rpc.WithLogger(t.Logger),
-		//rpc.WithRunnerKeyAuthUnaryInterceptor(),
-		//rpc.WithRunnerKeyAuthStreamInterceptor(),
+		//rpc.WithRunnerTokenAuthUnaryInterceptor(),
+		//rpc.WithRunnerTokenAuthStreamInterceptor(),
 		rpc.WithRequestValidationUnaryInterceptor(),
 	}
 	if s.tls {

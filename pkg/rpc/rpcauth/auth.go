@@ -16,6 +16,7 @@ package rpcauth
 
 import (
 	"context"
+	"fmt"
 	"strings"
 
 	"google.golang.org/grpc/codes"
@@ -31,9 +32,9 @@ const (
 	// IDTokenCredentials represents JWT IDToken for a web user.
 	// They can be used for project admin, project viewer or owner.
 	IDTokenCredentials CredentialsType = "ID-TOKEN"
-	// RunnerKeyCredentials represents a short-lived token for authenticating
+	// RunnerTokenCredentials represents a generated token for authenticating
 	// between Runner and microservices.
-	RunnerKeyCredentials CredentialsType = "RUNNER-KEY"
+	RunnerTokenCredentials CredentialsType = "RUNNER-TOKEN"
 	// UnknownCredentials represents an unsupported credentials.
 	// It is used as a return result in case of error.
 	UnknownCredentials CredentialsType = "UNKNOWN"
@@ -43,6 +44,37 @@ const (
 type Credentials struct {
 	Type CredentialsType
 	Data string
+}
+
+// MakeRunnerToken builds a runner token can be used as data of Credentials.
+// TODO: Add test for this function.
+func MakeRunnerToken(projectID, runnerID, runnerKey string) string {
+	return fmt.Sprintf("%s,%s,%s", projectID, runnerID, runnerKey)
+}
+
+// TODO: Add test for this function.
+func parseRunnerToken(token string) (projectID, runnerID, runnerKey string, err error) {
+	parts := strings.Split(token, ",")
+	if len(parts) != 3 {
+		err = fmt.Errorf("malformed runner token")
+		return
+	}
+	projectID = parts[0]
+	if projectID == "" {
+		err = fmt.Errorf("malformed runner token: projectID was empty")
+		return
+	}
+	runnerID = parts[1]
+	if runnerID == "" {
+		err = fmt.Errorf("malformed runner token: runnerID was empty")
+		return
+	}
+	runnerKey = parts[2]
+	if runnerKey == "" {
+		err = fmt.Errorf("malformed runner token: runnerKey was empty")
+		return
+	}
+	return
 }
 
 func extractCredentials(ctx context.Context) (creds Credentials, err error) {
@@ -66,9 +98,9 @@ func extractCredentials(ctx context.Context) (creds Credentials, err error) {
 	case IDTokenCredentials:
 		creds.Data = subs[1]
 		creds.Type = IDTokenCredentials
-	case RunnerKeyCredentials:
+	case RunnerTokenCredentials:
 		creds.Data = subs[1]
-		creds.Type = RunnerKeyCredentials
+		creds.Type = RunnerTokenCredentials
 	default:
 		err = status.Error(codes.Unauthenticated, "unsupported credentials type")
 	}
