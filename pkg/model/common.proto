@@ -51,9 +51,9 @@ message Runner {
 message Application {
     string id = 1 [(validate.rules).string.min_len = 1];
     string name = 2 [(validate.rules).string.min_len = 1];
-    string project_id = 3 [(validate.rules).string.min_len = 1];
-    string env_id = 4 [(validate.rules).string.min_len = 1];
-    string runner_id = 5 [(validate.rules).string.min_len = 1];
+    string env_id = 3 [(validate.rules).string.min_len = 1];
+    string runner_id = 4 [(validate.rules).string.min_len = 1];
+    string project_id = 5 [(validate.rules).string.min_len = 1];
     string git_host = 6 [(validate.rules).string.min_len = 1];
     string org = 7 [(validate.rules).string.min_len = 1];
     string repo = 8 [(validate.rules).string.min_len = 1];

@@ -20,20 +20,28 @@ option go_package = "github.com/kapetaniosci/pipe/pkg/model";
 import "validate/validate.proto";
 
 message ApplicationResourceTree {
+    enum SyncStatus {
+        UNKNOWN = 0;
+        SYNCED = 1;
+        OUT_OF_SYNC = 2;
+    }
     message Edge {
         string from = 1 [(validate.rules).string.min_len = 1];
         string to = 2 [(validate.rules).string.min_len = 1];
     }
 
     string application_id = 1 [(validate.rules).string.min_len = 1];
-    string project_id = 2 [(validate.rules).string.min_len = 1];
-    string env_id = 3 [(validate.rules).string.min_len = 1];
-    string runner_id = 4 [(validate.rules).string.min_len = 1];
-    repeated ApplicationResource resources = 5;
-    repeated Edge edges = 6;
+    string env_id = 2 [(validate.rules).string.min_len = 1];
+    string runner_id = 3 [(validate.rules).string.min_len = 1];
+    string project_id = 4 [(validate.rules).string.min_len = 1];
+    SyncStatus sync_status = 5 [(validate.rules).enum.defined_only = true];
+    repeated K8sResource k8s_resources = 6;
+    repeated Edge edges = 7;
+    int64 created_at = 14 [(validate.rules).int64.gt = 0];
+    int64 updated_at = 15 [(validate.rules).int64.gt = 0];
 }
 
-message ApplicationResource {
+message K8sResource {
     string id = 1 [(validate.rules).string.min_len = 1];
     string name = 2 [(validate.rules).string.min_len = 1];
     string group = 3 [(validate.rules).string.min_len = 1];

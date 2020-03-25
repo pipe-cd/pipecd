@@ -41,6 +41,7 @@ message Pipeline {
     message Trigger {
         string commit = 1 [(validate.rules).string.min_len = 1];
         string user = 2 [(validate.rules).string.min_len = 1];
+        int64 timestamp = 3 [(validate.rules).int64.gt = 0];
     }
     message State {
     }

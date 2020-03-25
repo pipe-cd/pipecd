@@ -42,27 +42,27 @@ message Event {
         string description = 5;
     }
 
-    // ApplicationResource Events.
-    message ApplicationResourceAdded {
+    // K8sResource Events.
+    message K8sResourceAdded {
         string application_id = 1 [(validate.rules).string.min_len = 1];
-        pipe.model.ApplicationResource resource = 2 [(validate.rules).message.required = true];
+        pipe.model.K8sResource resource = 2 [(validate.rules).message.required = true];
     }
-    message ApplicationResourceUpdated {
+    message K8sResourceUpdated {
         string application_id = 1 [(validate.rules).string.min_len = 1];
-        pipe.model.ApplicationResource before = 2 [(validate.rules).message.required = true];
-        pipe.model.ApplicationResource after = 3 [(validate.rules).message.required = true];
+        pipe.model.K8sResource before = 2 [(validate.rules).message.required = true];
+        pipe.model.K8sResource after = 3 [(validate.rules).message.required = true];
     }
-    message ApplicationResourceDeleted {
+    message K8sResourceDeleted {
         string application_id = 1 [(validate.rules).string.min_len = 1];
-        pipe.model.ApplicationResource resource = 2 [(validate.rules).message.required = true];
+        pipe.model.K8sResource resource = 2 [(validate.rules).message.required = true];
     }
 
     oneof inner {
         PipelineStatusChanged pipeline_status_changed = 100;
         StageStatusChanged stage_status_changed = 101;
 
-        ApplicationResourceAdded application_resource_added = 200;
-        ApplicationResourceUpdated application_resource_updated = 201;
-        ApplicationResourceDeleted applicaiton_resource_deleted = 202;
+        K8sResourceAdded application_resource_added = 200;
+        K8sResourceUpdated application_resource_updated = 201;
+        K8sResourceDeleted applicaiton_resource_deleted = 202;
     }
 }

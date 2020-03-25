@@ -78,7 +78,8 @@ service RunnerAPI {
     // of the pipeline that has just been completed.
     rpc ReportPipelineCompleted(ReportPipelineCompletedRequest) returns (ReportPipelineCompletedResponse) {}
 
-    // ReportApplicationResourceTree periodically sends the full tree of application resources.
+    // ReportApplicationResourceTree is periodically sent by runner to refresh the full tree of application resources.
+    // The tree data will be written into filestore and the cache inmmediately.
     rpc ReportApplicationResourceTree(ReportApplicationResourceTreeRequest) returns (ReportApplicationResourceTreeResponse) {}
 }
 
