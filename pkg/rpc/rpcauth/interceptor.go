@@ -32,9 +32,13 @@ var (
 	errPermissionDenied = status.Error(codes.PermissionDenied, "permission denied")
 )
 
-// Authorizer defines a function to check required role for a specific method.
-type Authorizer interface {
+// RBACAuthorizer defines a function to check required role for a specific method.
+type RBACAuthorizer interface {
 	Authorize(string, role.Role) bool
+}
+
+type RunnerKeyVerifier interface {
+	Verify(projectID, runnerID, runnerKey string) error
 }
 
 type (
@@ -47,11 +51,11 @@ var (
 	claimsKey      = claimsContextKey{}
 )
 
-// UnaryServerInterceptor extracts credentials from gRPC metadata
+// RunnerKeyUnaryServerInterceptor extracts credentials from gRPC metadata
 // and set the extracted credentials to the context with a fixed key.
 // This interceptor will returns a gPRC error when the credentials
 // was not set or was malformed.
-func UnaryServerInterceptor() grpc.UnaryServerInterceptor {
+func RunnerKeyUnaryServerInterceptor(verifier RunnerKeyVerifier, logger *zap.Logger) grpc.UnaryServerInterceptor {
 	return func(ctx context.Context, req interface{}, info *grpc.UnaryServerInfo, handler grpc.UnaryHandler) (interface{}, error) {
 		creds, err := extractCredentials(ctx)
 		if err != nil {
@@ -62,11 +66,11 @@ func UnaryServerInterceptor() grpc.UnaryServerInterceptor {
 	}
 }
 
-// StreamServerInterceptor extracts credentials from gRPC metadata
+// RunnerKeyStreamServerInterceptor extracts credentials from gRPC metadata
 // and set the extracted credentials to the context with a fixed key.
 // This interceptor will returns a gPRC error when the credentials
 // was not set or was malformed.
-func StreamServerInterceptor() grpc.StreamServerInterceptor {
+func RunnerKeyStreamServerInterceptor(verifier RunnerKeyVerifier, logger *zap.Logger) grpc.StreamServerInterceptor {
 	return func(srv interface{}, stream grpc.ServerStream, _ *grpc.StreamServerInfo, handler grpc.StreamHandler) error {
 		ctx := stream.Context()
 		creds, err := extractCredentials(ctx)
@@ -82,9 +86,9 @@ func StreamServerInterceptor() grpc.StreamServerInterceptor {
 	}
 }
 
-// JWTUnaryServerInterceptor ensures that the credentials included in the context
+// JWTUnaryServerInterceptor ensures that the JWT credentials included in the context
 // must be verified by verifier.
-func JWTUnaryServerInterceptor(verifier jwt.Verifier, authorizer Authorizer, logger *zap.Logger) grpc.UnaryServerInterceptor {
+func JWTUnaryServerInterceptor(verifier jwt.Verifier, authorizer RBACAuthorizer, logger *zap.Logger) grpc.UnaryServerInterceptor {
 	return func(ctx context.Context, req interface{}, info *grpc.UnaryServerInfo, handler grpc.UnaryHandler) (interface{}, error) {
 		cookie, err := extractCookie(ctx)
 		if err != nil {

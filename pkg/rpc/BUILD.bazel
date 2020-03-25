@@ -3,7 +3,7 @@ load("@io_bazel_rules_go//go:def.bzl", "go_library", "go_test")
 go_library(
     name = "go_default_library",
     srcs = [
-        "interceptor.go",
+        "chain_interceptor.go",
         "request_validation_interceptor.go",
         "server.go",
     ],
@@ -25,8 +25,8 @@ go_test(
     name = "go_default_test",
     size = "small",
     srcs = [
+        "chain_interceptor_test.go",
         "grpc_test.go",
-        "interceptor_test.go",
         "request_validation_interceptor_test.go",
         "server_test.go",
     ],

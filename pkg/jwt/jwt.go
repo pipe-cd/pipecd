@@ -25,13 +25,13 @@ import (
 )
 
 const (
-	// Issuer is the name of the issuer for Pipe token.
-	Issuer = "Pipe"
+	// Issuer is the name of the issuer for PipeCD token.
+	Issuer = "PipeCD"
 	// SignedTokenKey is the name of singed token key in cookie.
 	SignedTokenKey = "token"
 )
 
-// Claims extends the StandardClaims with the role to access Pipe resources.
+// Claims extends the StandardClaims with the role to access PipeCD resources.
 type Claims struct {
 	jwtgo.StandardClaims
 	AvatarURL string    `json:"avatarUrl,omitempty"`

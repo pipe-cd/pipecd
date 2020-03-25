@@ -16,6 +16,7 @@ package rpc
 
 import (
 	"context"
+	"fmt"
 	"os"
 	"testing"
 	"time"
@@ -37,11 +38,22 @@ func TestMain(m *testing.M) {
 		WithTLS("testdata/tls.crt", "testdata/tls.key"),
 		WithPort(9090),
 		WithLogger(logger),
-		WithAuthUnaryInterceptor(),
+		WithRunnerKeyAuthUnaryInterceptor(testRunnerKeyVerifier{"test-runner-key"}, logger),
 	)
 	defer server.Stop(time.Second)
 	go server.Run()
 	os.Exit(m.Run())
+}
+
+type testRunnerKeyVerifier struct {
+	runnerKey string
+}
+
+func (v testRunnerKeyVerifier) Verify(projectID, runnerID, runnerKey string) error {
+	if runnerKey != v.runnerKey {
+		return fmt.Errorf("invalid runner key, want: %s, got: %s", v.runnerKey, runnerKey)
+	}
+	return nil
 }
 
 func TestRPCRequestOK(t *testing.T) {

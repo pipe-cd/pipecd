@@ -21,8 +21,8 @@ import (
 
 type authorizer struct{}
 
-// NewAuthorizer returns an Authorizer object for checking requested method based on RBAC.
-func NewAuthorizer() rpcauth.Authorizer {
+// NewRBACAuthorizer returns an RBACAuthorizer object for checking requested method based on RBAC.
+func NewRBACAuthorizer() rpcauth.RBACAuthorizer {
 	return &authorizer{}
 }
 

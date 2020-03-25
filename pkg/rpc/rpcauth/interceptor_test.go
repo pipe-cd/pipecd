@@ -17,9 +17,11 @@ package rpcauth
 import (
 	"context"
 	"errors"
+	"fmt"
 	"testing"
 
 	"github.com/stretchr/testify/assert"
+	"go.uber.org/zap"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/metadata"
 )
@@ -33,8 +35,20 @@ func (s *fakeServerStream) Context() context.Context {
 	return s.ctx
 }
 
-func TestUnaryServerInterceptor(t *testing.T) {
-	in := UnaryServerInterceptor()
+type testRunnerKeyVerifier struct {
+	runnerKey string
+}
+
+func (v testRunnerKeyVerifier) Verify(projectID, runnerID, runnerKey string) error {
+	if runnerKey != v.runnerKey {
+		return fmt.Errorf("invalid runner key, want: %s, got: %s", v.runnerKey, runnerKey)
+	}
+	return nil
+}
+
+func TestRunnerKeyUnaryServerInterceptor(t *testing.T) {
+	verifier := testRunnerKeyVerifier{"test-runner-key"}
+	in := RunnerKeyUnaryServerInterceptor(verifier, zap.NewNop())
 	testcases := []struct {
 		name                    string
 		ctx                     context.Context
@@ -79,8 +93,9 @@ func TestUnaryServerInterceptor(t *testing.T) {
 	}
 }
 
-func TestStreamServerInterceptor(t *testing.T) {
-	in := StreamServerInterceptor()
+func TestRunnerKeyStreamServerInterceptor(t *testing.T) {
+	verifier := testRunnerKeyVerifier{"test-runner-key"}
+	in := RunnerKeyStreamServerInterceptor(verifier, zap.NewNop())
 	testcases := []struct {
 		name                    string
 		ctx                     context.Context

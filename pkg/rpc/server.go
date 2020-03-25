@@ -43,11 +43,10 @@ type Server struct {
 	grpcServer *grpc.Server
 	logger     *zap.Logger
 
-	authUnaryInterceptor              grpc.UnaryServerInterceptor
-	serviceKeyAuthUnaryInterceptor    grpc.UnaryServerInterceptor
+	runnerKeyAuthUnaryInterceptor     grpc.UnaryServerInterceptor
+	runnerKeyAuthStreamInterceptor    grpc.StreamServerInterceptor
 	jwtAuthUnaryInterceptor           grpc.UnaryServerInterceptor
 	requestValidationUnaryInterceptor grpc.UnaryServerInterceptor
-	authStreamInterceptor             grpc.StreamServerInterceptor
 }
 
 // Option defines a function to set configurable field of Server.
@@ -60,15 +59,22 @@ func WithPort(port int) Option {
 	}
 }
 
-// WithAuthUnaryInterceptor sets an interceptor for extracting token in imcoming metadata.
-func WithAuthUnaryInterceptor() Option {
+// WithRunnerKeyAuthUnaryInterceptor sets an interceptor for validating runner key.
+func WithRunnerKeyAuthUnaryInterceptor(verifier rpcauth.RunnerKeyVerifier, logger *zap.Logger) Option {
 	return func(s *Server) {
-		s.authUnaryInterceptor = rpcauth.UnaryServerInterceptor()
+		s.runnerKeyAuthUnaryInterceptor = rpcauth.RunnerKeyUnaryServerInterceptor(verifier, logger)
+	}
+}
+
+// WithRunnerKeyAuthStreamInterceptor sets an interceptor for validating runner key.
+func WithRunnerKeyAuthStreamInterceptor(verifier rpcauth.RunnerKeyVerifier, logger *zap.Logger) Option {
+	return func(s *Server) {
+		s.runnerKeyAuthStreamInterceptor = rpcauth.RunnerKeyStreamServerInterceptor(verifier, logger)
 	}
 }
 
 // WithJWTAuthUnaryInterceptor sets an interceprot for checking JWT token.
-func WithJWTAuthUnaryInterceptor(verifier jwt.Verifier, authorizer rpcauth.Authorizer, logger *zap.Logger) Option {
+func WithJWTAuthUnaryInterceptor(verifier jwt.Verifier, authorizer rpcauth.RBACAuthorizer, logger *zap.Logger) Option {
 	return func(s *Server) {
 		s.jwtAuthUnaryInterceptor = rpcauth.JWTUnaryServerInterceptor(verifier, authorizer, logger)
 	}
@@ -78,13 +84,6 @@ func WithJWTAuthUnaryInterceptor(verifier jwt.Verifier, authorizer rpcauth.Autho
 func WithRequestValidationUnaryInterceptor() Option {
 	return func(s *Server) {
 		s.requestValidationUnaryInterceptor = RequestValidationUnaryServerInterceptor()
-	}
-}
-
-// WithAuthStreamInterceptor sets an interceptor for extracting token in stream.
-func WithAuthStreamInterceptor() Option {
-	return func(s *Server) {
-		s.authStreamInterceptor = rpcauth.StreamServerInterceptor()
 	}
 }
 
@@ -145,11 +144,8 @@ func (s *Server) Run() error {
 	}
 	// Builds a chain of enabled interceptors.
 	var unaryInterceptors []grpc.UnaryServerInterceptor
-	if s.authUnaryInterceptor != nil {
-		unaryInterceptors = append(unaryInterceptors, s.authUnaryInterceptor)
-	}
-	if s.serviceKeyAuthUnaryInterceptor != nil {
-		unaryInterceptors = append(unaryInterceptors, s.serviceKeyAuthUnaryInterceptor)
+	if s.runnerKeyAuthUnaryInterceptor != nil {
+		unaryInterceptors = append(unaryInterceptors, s.runnerKeyAuthUnaryInterceptor)
 	}
 	if s.jwtAuthUnaryInterceptor != nil {
 		unaryInterceptors = append(unaryInterceptors, s.jwtAuthUnaryInterceptor)
@@ -161,8 +157,8 @@ func (s *Server) Run() error {
 		c := ChainUnaryServerInterceptors(unaryInterceptors...)
 		opts = append(opts, grpc.UnaryInterceptor(c))
 	}
-	if s.authStreamInterceptor != nil {
-		opts = append(opts, grpc.StreamInterceptor(s.authStreamInterceptor))
+	if s.runnerKeyAuthStreamInterceptor != nil {
+		opts = append(opts, grpc.StreamInterceptor(s.runnerKeyAuthStreamInterceptor))
 	}
 	s.grpcServer = grpc.NewServer(opts...)
 
