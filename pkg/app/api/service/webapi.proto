@@ -23,12 +23,12 @@ service WebAPI {
     // Runner
     rpc RegisterRunner(RegisterRunnerRequest) returns (RegisterRunnerResponse) {}
     rpc DisableRunner(DisableRunnerRequest) returns (DisableRunnerResponse) {}
-    rpc ListRunners(ListRunnerRequest) returns (ListRunnerResponse) {}
+    rpc ListRunners(ListRunnersRequest) returns (ListRunnersResponse) {}
 
     // Environment
     rpc AddEnvironment(AddEnvironmentRequest) returns (AddEnvironmentResponse) {}
     rpc RenameEnvironment(RenameEnvironmentRequest) returns (RenameEnvironmentResponse) {}
-    rpc ListEnvironments(ListEnvironmentsRequest) returns (ListEnvironmentResponse) {}
+    rpc ListEnvironments(ListEnvironmentsRequest) returns (ListEnvironmentsResponse) {}
 
     // Application
     rpc AddApplication(AddApplicationRequest) returns (AddApplicationResponse) {}
@@ -63,10 +63,10 @@ message DisableRunnerRequest {
 message DisableRunnerResponse {
 }
 
-message ListRunnerRequest {
+message ListRunnersRequest {
 }
 
-message ListRunnerResponse {
+message ListRunnersResponse {
 }
 
 message AddEnvironmentRequest {
@@ -84,7 +84,7 @@ message RenameEnvironmentResponse {
 message ListEnvironmentsRequest {
 }
 
-message ListEnvironmentResponse {
+message ListEnvironmentsResponse {
 }
 
 message AddApplicationRequest {
