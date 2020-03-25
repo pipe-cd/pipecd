@@ -12,11 +12,9 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-package cachetest
+package pipeline
 
-
-import (
-	_ "github.com/golang/mock/gomock"
-
-	_ "github.com/kapetaniosci/pipe/pkg/cache"
+// GroupName is the group name used in this package
+const (
+	GroupName = "pipecd.dev"
 )

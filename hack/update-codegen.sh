@@ -25,7 +25,7 @@ chmod +x ${CODEGEN_PKG}/generate-groups.sh
 
 ${CODEGEN_PKG}/generate-groups.sh "deepcopy,client,informer,lister" \
   github.com/kapetaniosci/pipe/pkg/crd/client github.com/kapetaniosci/pipe/pkg/crd/apis \
-  build:v1beta1 \
+  pipeline:v1beta1 \
   --output-base "$(dirname ${BASH_SOURCE})/../../../.." \
   --go-header-file ${SCRIPT_ROOT}/hack/boilerplate.go.txt
 

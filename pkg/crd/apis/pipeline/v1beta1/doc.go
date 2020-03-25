@@ -12,11 +12,8 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-package cachetest
+// +k8s:deepcopy-gen=package
+// +groupName=pipecd.dev
 
-
-import (
-	_ "github.com/golang/mock/gomock"
-
-	_ "github.com/kapetaniosci/pipe/pkg/cache"
-)
+// Package v1beta1 is the v1beta1 version of the API.
+package v1beta1

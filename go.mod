@@ -11,6 +11,7 @@ require (
 	github.com/golang/mock v1.4.3
 	github.com/golang/protobuf v1.3.5
 	github.com/gomodule/redigo v2.0.0+incompatible
+	github.com/hashicorp/golang-lru v0.5.1
 	github.com/prometheus/client_golang v0.9.3
 	github.com/spf13/cobra v0.0.5
 	github.com/spf13/pflag v1.0.5
@@ -21,13 +22,16 @@ require (
 	go.uber.org/zap v1.10.1-0.20190709142728-9a9fa7d4b5f0
 	google.golang.org/api v0.20.0
 	google.golang.org/grpc v1.28.0
-	k8s.io/code-generator v0.0.0-20191220033320-6b257a9d6f46
-	sigs.k8s.io/yaml v1.1.0
+	//k8s.io/api v0.0.0-20200320042356-1fc28ea2498c
+	k8s.io/apimachinery v0.0.0-20200324202305-1aec6bc431a9
+	k8s.io/client-go v0.0.0-20200325043332-c20e80a28e46
+	k8s.io/code-generator v0.0.0-20200324222716-134829e366d8
+	sigs.k8s.io/yaml v1.2.0
 )
 
 replace (
-	k8s.io/api => k8s.io/api v0.0.0-20191221033533-72223a9f9901
-	k8s.io/apimachinery => k8s.io/apimachinery v0.0.0-20191221033353-3253b0a30d67
-	k8s.io/client-go => k8s.io/client-go v0.0.0-20191222113738-1b1a35e41a57
-	k8s.io/code-generator => k8s.io/code-generator v0.0.0-20191220033320-6b257a9d6f46
+	k8s.io/api => k8s.io/api v0.0.0-20200320042356-1fc28ea2498c
+	k8s.io/apimachinery => k8s.io/apimachinery v0.0.0-20200324202305-1aec6bc431a9
+	k8s.io/client-go => k8s.io/client-go v0.0.0-20200325043332-c20e80a28e46
+	k8s.io/code-generator => k8s.io/code-generator v0.0.0-20200324222716-134829e366d8
 )
