@@ -17,6 +17,7 @@ go_binary(
 
 app_image(
     name = "runner",
+    base = "@runner-base//image",
     binary = ":runner",
     repository = "pipe-runner",
     visibility = ["//visibility:public"],

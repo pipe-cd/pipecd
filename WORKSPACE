@@ -109,6 +109,19 @@ load(
 
 _go_image_repos()
 
+load(
+    "@io_bazel_rules_docker//container:container.bzl",
+    "container_pull",
+)
+
+container_pull(
+    name = "runner-base",
+    digest = "sha256:ef428e0084bf3968b4b90115c9f0f789493e981ad74463b515d7cb99f252607a",
+    registry = "gcr.io",
+    repository = "kapetanios/pipe-runner-base",
+    tag = "0.0.1",
+)
+
 ### Protoc-gen-validate
 git_repository(
     name = "com_github_envoyproxy_protoc_gen_validate",
