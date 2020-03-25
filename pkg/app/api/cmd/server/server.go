@@ -87,7 +87,6 @@ func (s *server) run(ctx context.Context, t cli.Telemetry) error {
 	// 	t.Logger.Error("failed to create a new signer", zap.Error(err))
 	// 	return err
 	// }
-
 	verifier, err := jwt.NewVerifier(defaultSigningMethod, s.tokenSigningKeyFile)
 	if err != nil {
 		t.Logger.Error("failed to create a new verifier", zap.Error(err))
@@ -139,45 +138,47 @@ func (s *server) run(ctx context.Context, t cli.Telemetry) error {
 	}
 
 	// Start an  http server for handling incoming webhook events.
-	mux := http.NewServeMux()
-	httpServer := &http.Server{
-		Addr:    fmt.Sprintf(":%d", s.webhookPort),
-		Handler: mux,
-	}
-
-	handlers := []httpHandler{
-		//authhandler.NewHandler(signer, verifier, config, ac, t.Logger),
-	}
-	for _, h := range handlers {
-		h.Register(mux.HandleFunc)
-	}
-
-	go func() {
-		if err := httpServer.ListenAndServe(); err != nil && err != http.ErrServerClosed {
-			t.Logger.Error("failed to listen and server", zap.Error(err))
-			doneCh <- err
+	{
+		mux := http.NewServeMux()
+		httpServer := &http.Server{
+			Addr:    fmt.Sprintf(":%d", s.webhookPort),
+			Handler: mux,
 		}
-		doneCh <- nil
-	}()
-	defer func() {
-		ctx, _ := context.WithTimeout(context.Background(), s.gracePeriod)
-		if err := httpServer.Shutdown(ctx); err != nil {
-			t.Logger.Error("failed to shutdown http server", zap.Error(err))
+		handlers := []httpHandler{
+			//authhandler.NewHandler(signer, verifier, config, ac, t.Logger),
 		}
-	}()
+		for _, h := range handlers {
+			h.Register(mux.HandleFunc)
+		}
+		go func() {
+			if err := httpServer.ListenAndServe(); err != nil && err != http.ErrServerClosed {
+				t.Logger.Error("failed to listen and server", zap.Error(err))
+				doneCh <- err
+			}
+			doneCh <- nil
+		}()
+		defer func() {
+			ctx, _ := context.WithTimeout(context.Background(), s.gracePeriod)
+			if err := httpServer.Shutdown(ctx); err != nil {
+				t.Logger.Error("failed to shutdown http server", zap.Error(err))
+			}
+		}()
+	}
 
 	// Start admin server.
-	admin := admin.NewAdmin(s.adminPort, t.Logger)
-	if exporter, ok := t.PrometheusMetricsExporter(); ok {
-		admin.Handle("/metrics", exporter)
+	{
+		admin := admin.NewAdmin(s.adminPort, t.Logger)
+		if exporter, ok := t.PrometheusMetricsExporter(); ok {
+			admin.Handle("/metrics", exporter)
+		}
+		admin.HandleFunc("/healthz", func(w http.ResponseWriter, r *http.Request) {
+			w.Write([]byte("ok"))
+		})
+		go func() {
+			doneCh <- admin.Run()
+		}()
+		defer admin.Stop(s.gracePeriod)
 	}
-	admin.HandleFunc("/healthz", func(w http.ResponseWriter, r *http.Request) {
-		w.Write([]byte("ok"))
-	})
-	go func() {
-		doneCh <- admin.Run()
-	}()
-	defer admin.Stop(s.gracePeriod)
 
 	// Wait the signals.
 	select {
