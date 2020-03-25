@@ -4,23 +4,20 @@ load("//bazel:image.bzl", "app_image")
 go_library(
     name = "go_default_library",
     srcs = ["main.go"],
-    importpath = "github.com/kapetaniosci/pipe/cmd/livelog",
+    importpath = "github.com/kapetaniosci/pipe/cmd/runner",
     visibility = ["//visibility:private"],
-    deps = [
-        "//pkg/app/livelog/cmd/server:go_default_library",
-        "//pkg/cli:go_default_library",
-    ],
+    deps = ["//pkg/cli:go_default_library"],
 )
 
 go_binary(
-    name = "livelog",
+    name = "runner",
     embed = [":go_default_library"],
     visibility = ["//visibility:public"],
 )
 
 app_image(
-    name = "livelog",
-    binary = ":livelog",
-    repository = "pipe-livelog",
+    name = "runner",
+    binary = ":runner",
+    repository = "pipe-runner",
     visibility = ["//visibility:public"],
 )

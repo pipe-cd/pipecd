@@ -1,4 +1,5 @@
 load("@io_bazel_rules_go//go:def.bzl", "go_binary", "go_library")
+load("//bazel:image.bzl", "app_image")
 
 go_library(
     name = "go_default_library",
@@ -17,8 +18,6 @@ go_binary(
     embed = [":go_default_library"],
     visibility = ["//visibility:public"],
 )
-
-load("//bazel:image.bzl", "app_image")
 
 app_image(
     name = "helloworld",
