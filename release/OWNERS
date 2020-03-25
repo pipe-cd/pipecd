@@ -1,0 +1,6 @@
+reviewers:
+  - sig-release
+approvers:
+  - sig-release
+labels:
+  - area/release
