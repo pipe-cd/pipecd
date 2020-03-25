@@ -46,7 +46,7 @@ func TestMain(m *testing.M) {
 
 func TestRPCRequestOK(t *testing.T) {
 	ctx := context.Background()
-	creds := rpcclient.NewPerRPCCredentials("service-key", rpcauth.ServiceKeyCredentials, true)
+	creds := rpcclient.NewPerRPCCredentials("runer-key", rpcauth.RunnerKeyCredentials, true)
 	var cli service.Client
 	var err error
 	// Waiting the gRPC server.

@@ -67,17 +67,10 @@ func WithAuthUnaryInterceptor() Option {
 	}
 }
 
-// WithServiceKeyAuthUnaryInterceptor sets an interceptor for checking service key.
-func WithServiceKeyAuthUnaryInterceptor(key string, logger *zap.Logger) Option {
+// WithJWTAuthUnaryInterceptor sets an interceprot for checking JWT token.
+func WithJWTAuthUnaryInterceptor(verifier jwt.Verifier, authorizer rpcauth.Authorizer, logger *zap.Logger) Option {
 	return func(s *Server) {
-		s.serviceKeyAuthUnaryInterceptor = rpcauth.ServiceKeyUnaryServerInterceptor(key, logger)
-	}
-}
-
-// WithJwtAuthUnaryInterceptor sets an interceprot for checking JWT token.
-func WithJwtAuthUnaryInterceptor(verifier jwt.Verifier, authorizer rpcauth.Authorizer, logger *zap.Logger) Option {
-	return func(s *Server) {
-		s.jwtAuthUnaryInterceptor = rpcauth.JwtUnaryServerInterceptor(verifier, authorizer, logger)
+		s.jwtAuthUnaryInterceptor = rpcauth.JWTUnaryServerInterceptor(verifier, authorizer, logger)
 	}
 }
 

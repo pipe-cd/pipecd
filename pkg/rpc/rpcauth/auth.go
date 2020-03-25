@@ -31,12 +31,9 @@ const (
 	// IDTokenCredentials represents JWT IDToken for a web user.
 	// They can be used for project admin, project viewer or owner.
 	IDTokenCredentials CredentialsType = "ID-TOKEN"
-	// ServiceKeyCredentials represents the credentials for authenticating
-	// at communication between microservices.
-	ServiceKeyCredentials CredentialsType = "SERVICE-KEY"
-	// AgentKeyCredentials represents a short-lived token for authenticating
-	// between Agent and microservices.
-	AgentKeyCredentials CredentialsType = "AGENT-KEY"
+	// RunnerKeyCredentials represents a short-lived token for authenticating
+	// between Runner and microservices.
+	RunnerKeyCredentials CredentialsType = "RUNNER-KEY"
 	// UnknownCredentials represents an unsupported credentials.
 	// It is used as a return result in case of error.
 	UnknownCredentials CredentialsType = "UNKNOWN"
@@ -69,12 +66,9 @@ func extractCredentials(ctx context.Context) (creds Credentials, err error) {
 	case IDTokenCredentials:
 		creds.Data = subs[1]
 		creds.Type = IDTokenCredentials
-	case ServiceKeyCredentials:
+	case RunnerKeyCredentials:
 		creds.Data = subs[1]
-		creds.Type = ServiceKeyCredentials
-	case AgentKeyCredentials:
-		creds.Data = subs[1]
-		creds.Type = AgentKeyCredentials
+		creds.Type = RunnerKeyCredentials
 	default:
 		err = status.Error(codes.Unauthenticated, "unsupported credentials type")
 	}

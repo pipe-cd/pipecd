@@ -124,7 +124,7 @@ func (s *server) run(ctx context.Context, t cli.Telemetry) error {
 		opts := []rpc.Option{
 			rpc.WithPort(s.runnerAPIPort),
 			rpc.WithLogger(t.Logger),
-			rpc.WithJwtAuthUnaryInterceptor(verifier, apiservice.NewAuthorizer(), t.Logger),
+			rpc.WithJWTAuthUnaryInterceptor(verifier, apiservice.NewAuthorizer(), t.Logger),
 			rpc.WithRequestValidationUnaryInterceptor(),
 		}
 		if s.tls {

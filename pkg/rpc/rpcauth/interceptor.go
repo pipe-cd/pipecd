@@ -82,42 +82,9 @@ func StreamServerInterceptor() grpc.StreamServerInterceptor {
 	}
 }
 
-// ServiceKeyUnaryServerInterceptor ensures that the credentials included in the context
-// must be same with the give service key.
-// This interceptor must be appended after UnaryServerInterceptor.
-func ServiceKeyUnaryServerInterceptor(key string, logger *zap.Logger) grpc.UnaryServerInterceptor {
-	return func(ctx context.Context, req interface{}, info *grpc.UnaryServerInfo, handler grpc.UnaryHandler) (interface{}, error) {
-		if msg, err := RequireServiceKey(ctx, key); err != nil {
-			logger.Warn(msg, zap.Error(err))
-			return nil, err
-		}
-		return handler(ctx, req)
-	}
-}
-
-// RequireServiceKey is a helper to check service key from gRPC request context.
-func RequireServiceKey(ctx context.Context, expected string) (msg string, err error) {
-	err = errUnauthenticated
-	creds, e := ExtractCredentials(ctx)
-	if e != nil {
-		msg = "service key credentials has not been set in context by interceptor"
-		return
-	}
-	if creds.Type != ServiceKeyCredentials {
-		msg = fmt.Sprintf("expected %v but got %v type", ServiceKeyCredentials, creds.Type)
-		return
-	}
-	if creds.Data != expected {
-		msg = fmt.Sprintf("invalid service key: %s", creds.Data)
-		return
-	}
-	err = nil
-	return
-}
-
-// JwtUnaryServerInterceptor ensures that the credentials included in the context
+// JWTUnaryServerInterceptor ensures that the credentials included in the context
 // must be verified by verifier.
-func JwtUnaryServerInterceptor(verifier jwt.Verifier, authorizer Authorizer, logger *zap.Logger) grpc.UnaryServerInterceptor {
+func JWTUnaryServerInterceptor(verifier jwt.Verifier, authorizer Authorizer, logger *zap.Logger) grpc.UnaryServerInterceptor {
 	return func(ctx context.Context, req interface{}, info *grpc.UnaryServerInfo, handler grpc.UnaryHandler) (interface{}, error) {
 		cookie, err := extractCookie(ctx)
 		if err != nil {
