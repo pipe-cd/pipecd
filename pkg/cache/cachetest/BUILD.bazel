@@ -1,0 +1,30 @@
+load("@io_bazel_rules_go//go:def.bzl", "go_library")
+
+go_library(
+    name = "go_default_library",
+    srcs = [
+        "cache.mock.go",
+        "mock.go",
+    ],
+    importpath = "github.com/kapetaniosci/pipe/pkg/cache/cachetest",
+    visibility = ["//visibility:public"],
+    deps = [
+        "//pkg/cache:go_default_library",
+        "@com_github_golang_mock//gomock:go_default_library",
+    ],
+)
+
+load("//bazel:gomock.bzl", "gomock")
+
+gomock(
+    name = "mock_cache",
+    out = "cache.mock.go",
+    interfaces = [
+        "Getter",
+        "Putter",
+        "Deleter",
+        "Cache",
+    ],
+    library = "//pkg/cache:go_default_library",
+    package = "cachetest",
+)
