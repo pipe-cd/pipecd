@@ -17,6 +17,7 @@ package main
 import (
 	"log"
 
+	"github.com/kapetaniosci/pipe/pkg/app/api/cmd/server"
 	"github.com/kapetaniosci/pipe/pkg/cli"
 )
 
@@ -25,9 +26,9 @@ func main() {
 		"api",
 		"A service for incoming gRPC requests from runners, web and hook events from git provider.",
 	)
-	// app.AddCommands(
-	// 	server.NewCommand(),
-	// )
+	app.AddCommands(
+		server.NewCommand(),
+	)
 	if err := app.Run(); err != nil {
 		log.Fatal(err)
 	}

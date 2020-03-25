@@ -6,7 +6,10 @@ go_library(
     srcs = ["main.go"],
     importpath = "github.com/kapetaniosci/pipe/cmd/api",
     visibility = ["//visibility:private"],
-    deps = ["//pkg/cli:go_default_library"],
+    deps = [
+        "//pkg/app/api/cmd/server:go_default_library",
+        "//pkg/cli:go_default_library",
+    ],
 )
 
 go_binary(
