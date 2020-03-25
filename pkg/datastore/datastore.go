@@ -14,7 +14,11 @@
 
 package datastore
 
-import "github.com/kapetaniosci/pipe/pkg/model"
+import (
+	"context"
+
+	"github.com/kapetaniosci/pipe/pkg/model"
+)
 
 type ListFilter struct {
 	Field    string
@@ -28,16 +32,37 @@ type ListOption struct {
 	Filters  []ListFilter
 }
 
-type ApplicationStore interface {
-	AddApplication(app *model.Application) error
-	DisableApplication(id string) error
-	ListApplications(opts ListOption) ([]model.Application, error)
+type ProjectStore interface {
+	AddProject(ctx context.Context, proj *model.Project) error
+	ListProjects(ctx context.Context, opts ListOption) ([]model.Project, error)
 }
 
-type ApplicationResourceStore interface {
-	GetApplicationResourceTree(id string) (*model.ApplicationResourceTree, error)
+type EnvironmentStore interface {
+	AddEnvironment(ctx context.Context, proj *model.Environment) error
+	ListEnvironments(ctx context.Context, opts ListOption) ([]model.Environment, error)
+}
+
+type RunnerStore interface {
+	AddRunner(ctx context.Context, proj *model.Runner) error
+	ListRunners(ctx context.Context, opts ListOption) ([]model.Runner, error)
+}
+
+type ApplicationStore interface {
+	AddApplication(ctx context.Context, app *model.Application) error
+	DisableApplication(ctx context.Context, id string) error
+	ListApplications(ctx context.Context, opts ListOption) ([]model.Application, error)
+}
+
+type CommandStateStore interface {
+	AddCommandState(ctx context.Context, proj *model.CommandState) error
+	ListCommandStates(ctx context.Context, opts ListOption) ([]model.CommandState, error)
+}
+
+type RunnerStatsStore interface {
+	AddRunnerStats(ctx context.Context, proj *model.RunnerStats) error
+	ListRunnerStatss(ctx context.Context, opts ListOption) ([]model.RunnerStats, error)
 }
 
 type PipelineStore interface {
-	ListPipelines(opts ListOption) ([]model.Pipeline, error)
+	ListPipelines(ctx context.Context, opts ListOption) ([]model.Pipeline, error)
 }
