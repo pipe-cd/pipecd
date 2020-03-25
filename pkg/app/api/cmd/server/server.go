@@ -20,13 +20,20 @@ import (
 	"net/http"
 	"time"
 
+	jwtgo "github.com/dgrijalva/jwt-go"
 	"github.com/spf13/cobra"
 	"go.uber.org/zap"
 
 	"github.com/kapetaniosci/pipe/pkg/admin"
 	"github.com/kapetaniosci/pipe/pkg/app/api/api"
+	apiservice "github.com/kapetaniosci/pipe/pkg/app/api/service"
 	"github.com/kapetaniosci/pipe/pkg/cli"
+	"github.com/kapetaniosci/pipe/pkg/jwt"
 	"github.com/kapetaniosci/pipe/pkg/rpc"
+)
+
+var (
+	defaultSigningMethod = jwtgo.SigningMethodHS256
 )
 
 type httpHandler interface {
@@ -40,9 +47,10 @@ type server struct {
 	adminPort     int
 	gracePeriod   time.Duration
 
-	tls      bool
-	certFile string
-	keyFile  string
+	tls                 bool
+	certFile            string
+	keyFile             string
+	tokenSigningKeyFile string
 }
 
 func NewCommand() *cobra.Command {
@@ -68,11 +76,24 @@ func NewCommand() *cobra.Command {
 	cmd.Flags().BoolVar(&s.tls, "tls", s.tls, "Whether running the gRPC server with TLS or not.")
 	cmd.Flags().StringVar(&s.certFile, "cert-file", s.certFile, "The path to the TLS certificate file.")
 	cmd.Flags().StringVar(&s.keyFile, "key-file", s.keyFile, "The path to the TLS key file.")
+	cmd.Flags().StringVar(&s.tokenSigningKeyFile, "token-signing-key-file", s.tokenSigningKeyFile, "The path to key file used to sign ID token.")
 
 	return cmd
 }
 
 func (s *server) run(ctx context.Context, t cli.Telemetry) error {
+	// signer, err := jwt.NewSigner(defaultSigningMethod, s.tokenSigningKeyFile)
+	// if err != nil {
+	// 	t.Logger.Error("failed to create a new signer", zap.Error(err))
+	// 	return err
+	// }
+
+	verifier, err := jwt.NewVerifier(defaultSigningMethod, s.tokenSigningKeyFile)
+	if err != nil {
+		t.Logger.Error("failed to create a new verifier", zap.Error(err))
+		return err
+	}
+
 	var (
 		runnerAPIServer *rpc.Server
 		webAPIServer    *rpc.Server
@@ -103,7 +124,7 @@ func (s *server) run(ctx context.Context, t cli.Telemetry) error {
 		opts := []rpc.Option{
 			rpc.WithPort(s.runnerAPIPort),
 			rpc.WithLogger(t.Logger),
-			//rpc.WithJwtAuthUnaryInterceptor(verifier, apiservice.NewAuthorizer(), t.Logger),
+			rpc.WithJwtAuthUnaryInterceptor(verifier, apiservice.NewAuthorizer(), t.Logger),
 			rpc.WithRequestValidationUnaryInterceptor(),
 		}
 		if s.tls {
