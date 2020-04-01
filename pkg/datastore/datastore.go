@@ -26,7 +26,7 @@ type ListFilter struct {
 	Value    interface{}
 }
 
-type ListOption struct {
+type ListOptions struct {
 	Page     int
 	PageSize int
 	Filters  []ListFilter
@@ -34,35 +34,35 @@ type ListOption struct {
 
 type ProjectStore interface {
 	AddProject(ctx context.Context, proj *model.Project) error
-	ListProjects(ctx context.Context, opts ListOption) ([]model.Project, error)
+	ListProjects(ctx context.Context, opts ListOptions) ([]model.Project, error)
 }
 
 type EnvironmentStore interface {
 	AddEnvironment(ctx context.Context, proj *model.Environment) error
-	ListEnvironments(ctx context.Context, opts ListOption) ([]model.Environment, error)
+	ListEnvironments(ctx context.Context, opts ListOptions) ([]model.Environment, error)
 }
 
 type RunnerStore interface {
 	AddRunner(ctx context.Context, proj *model.Runner) error
-	ListRunners(ctx context.Context, opts ListOption) ([]model.Runner, error)
+	ListRunners(ctx context.Context, opts ListOptions) ([]model.Runner, error)
 }
 
 type ApplicationStore interface {
 	AddApplication(ctx context.Context, app *model.Application) error
 	DisableApplication(ctx context.Context, id string) error
-	ListApplications(ctx context.Context, opts ListOption) ([]model.Application, error)
+	ListApplications(ctx context.Context, opts ListOptions) ([]model.Application, error)
 }
 
 type CommandStateStore interface {
 	AddCommandState(ctx context.Context, proj *model.CommandState) error
-	ListCommandStates(ctx context.Context, opts ListOption) ([]model.CommandState, error)
+	ListCommandStates(ctx context.Context, opts ListOptions) ([]model.CommandState, error)
 }
 
 type RunnerStatsStore interface {
 	AddRunnerStats(ctx context.Context, proj *model.RunnerStats) error
-	ListRunnerStatss(ctx context.Context, opts ListOption) ([]model.RunnerStats, error)
+	ListRunnerStatss(ctx context.Context, opts ListOptions) ([]model.RunnerStats, error)
 }
 
 type PipelineStore interface {
-	ListPipelines(ctx context.Context, opts ListOption) ([]model.Pipeline, error)
+	ListPipelines(ctx context.Context, opts ListOptions) ([]model.Pipeline, error)
 }

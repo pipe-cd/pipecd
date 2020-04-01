@@ -1,0 +1,42 @@
+kind: K8sApp
+spec:
+  selector:
+    app: demoapp
+  input:
+    helm:
+      chart: git@github.com:org/config-repo.git:charts/demoapp?ref=v1.0.0
+      valueFiles:
+      - values.yaml
+      namespace: dev
+      helmVersion: 3.1.1
+  pipeline:
+    stages:
+      - name: K8S_CANARY_OUT
+        with:
+          weight: 10
+          canaryService:
+            name: demoapp-canary
+          timeout: 10m
+          postDelay: 1m
+      - name: ANALYSIS
+        with:
+          duration: 10m
+          threshold: 2
+          metrics:
+            - query: grpc_error_percentage
+              expected: < 0.1
+              interval: 1m
+              provider: prometheus-dev
+            - useTemplate: app_http_error_percentage
+          logs:
+            - query: 'logName = "projects/demo/logs/error'
+              interval: 1m
+              provider: stackdriver-dev
+          https:
+            - url: https://your-endpoint.dev
+              method: GET
+              expected: 200
+              interval: 1m
+              timeout: 30s
+      - name: K8S_ROLLOUT
+      - name: K8S_CANARY_IN

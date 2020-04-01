@@ -1,0 +1,7 @@
+kind: ControlPlane
+spec:
+  projects:
+    - name: abc
+      adminTeam: admin
+      editorTeam: editor
+      viewerTeam: viewer

@@ -1,0 +1,8 @@
+kind: K8sApp
+spec:
+  input:
+    helm:
+      chart: git@github.com:org/config-repo.git:charts/demoapp?ref=v1.0.0
+      valueFiles:
+      - values.yaml
+      helmVersion: 3.1.1

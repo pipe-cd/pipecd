@@ -1,0 +1,44 @@
+kind: RunnerConfig
+spec:
+  git:
+    sshKeyFile: /ect/runner/ssh.key
+    accessTokenFile: /etc/runner/git.token
+  repositories:
+    - repo: git@github.com:org/repo1
+      syncInterval: 5m
+      pollInterval: 5m
+    - repo: git@github.com:org/repo2
+      syncInterval: 10m
+      pollInterval: 10m    
+  destinations:
+    - name: default
+      type: Kubernetes
+      kubernetes:
+        allowNamespaces: []
+    - name: gcp-terraform
+      type: Terraform
+      terraform:
+        gcp:
+          project: gcp-project
+          region: us-central1
+          credentials: /etc/runner/credentials.serviceaccount
+    - name: aws-terraform
+      type: Terraform
+      terraform:
+        aws:
+          region: us-east-1
+  analysisProviders:
+    - name: dev-prometheus
+      prometheus:
+        address: https://your-prometheus.dev
+    - name: stackdriver
+      stackdriver:
+        projectId: demo
+        serviceAccountFile: /etc/stackdriver.serviceaccount
+    - name: datadog
+      datadog:
+        apiKeyFile: /etc/datadog.apikey
+        applicationKeyFile: /etc/datadog.applicationkey
+    - name: cloudwatch
+      cloudwatch:
+        region: ap-northeast-1

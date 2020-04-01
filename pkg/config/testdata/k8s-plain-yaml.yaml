@@ -1,10 +1,7 @@
 kind: K8sApp
 spec:
-  pipeline:
-    stages:
-      - name: K8S_APPLY
   input:
     plainYaml:
       manifests:
-      - demoapp-deployment.yaml
+        - demoapp-deployment.yaml
       kubectlVersion: 2.1.1

@@ -1,0 +1,16 @@
+kind: K8sApp
+spec:
+  pipeline:
+    stages:
+      - name: K8S_CANARY_OUT
+        with:
+          weight: 10
+          timeout: 10m
+          postDelay: 1m
+      - name: APPROVAL
+        with:
+          approvers:
+            - foo
+            - bar
+      - name: K8S_ROLLOUT
+      - name: K8S_CANARY_IN

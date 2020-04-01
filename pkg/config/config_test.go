@@ -15,42 +15,156 @@
 package config
 
 import (
+	"fmt"
 	"testing"
+	"time"
 
 	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/require"
 )
 
 func TestConfig(t *testing.T) {
 	testcases := []struct {
-		fileName      string
-		expected      *Config
-		expectedError error
+		fileName        string
+		expectedKind    Kind
+		expectedVersion string
+		expectedSpec    interface{}
+		expectedError   error
 	}{
-		// {
-		// 	fileName: "testdata/k8s-plain-apply.yaml",
-		// 	expected: &Config{
-		// 		Version: "v1",
-		// 		Kind:    "K8sApp",
-		// 		Name:    "account",
-		// 		Stages: []*Stage{
-		// 			&Stage{
-		// 				Name: "K8S_APPLY",
-		// 				Desc: "Rolling Update",
-		// 			},
-		// 			&Stage{
-		// 				Name: "VERIFICATION",
-		// 				Desc: "Smoke Test",
-		// 			},
-		// 		},
-		// 	},
-		// 	expectedError: nil,
-		// },
+		{
+			fileName:      "testdata/terraform-app-missing-destination.yaml",
+			expectedError: fmt.Errorf("spec.destination for terraform application is required"),
+		},
+		{
+			fileName:        "testdata/terraform-app.yaml",
+			expectedKind:    KindTerraformApp,
+			expectedVersion: "",
+			expectedSpec: &AppSpec{
+				kind: KindTerraformApp,
+				Input: AppInput{
+					Terraform: &InputTerraform{
+						Workspace:        "dev",
+						TerraformVersion: "0.12.23",
+					},
+				},
+				Pipeline: AppPipeline{
+					Stages: nil,
+				},
+				Destination: "dev-terraform",
+			},
+			expectedError: nil,
+		},
+		{
+			fileName:        "testdata/terraform-app-with-approval.yaml",
+			expectedKind:    KindTerraformApp,
+			expectedVersion: "",
+			expectedSpec: &AppSpec{
+				kind: KindTerraformApp,
+				Input: AppInput{
+					Terraform: &InputTerraform{
+						Workspace:        "dev",
+						TerraformVersion: "0.12.23",
+					},
+				},
+				Pipeline: AppPipeline{
+					Stages: []PipelineStage{
+						PipelineStage{
+							Name:                      StageNameTerraformPlan,
+							TerraformPlanStageOptions: &TerraformPlanStageOptions{},
+						},
+						PipelineStage{
+							Name: StageNameApproval,
+							ApprovalStageOptions: &ApprovalStageOptions{
+								Approvers: []string{"foo", "bar"},
+							},
+						},
+						PipelineStage{
+							Name:                       StageNameTerraformApply,
+							TerraformApplyStageOptions: &TerraformApplyStageOptions{},
+						},
+					},
+				},
+				Destination: "dev-terraform",
+			},
+			expectedError: nil,
+		},
+		{
+			fileName:        "testdata/k8s-app-helm.yaml",
+			expectedKind:    KindK8sApp,
+			expectedVersion: "",
+			expectedSpec: &AppSpec{
+				kind: KindK8sApp,
+				Input: AppInput{
+					Helm: &InputHelm{
+						Chart:       "git@github.com:org/config-repo.git:charts/demoapp?ref=v1.0.0",
+						ValueFiles:  []string{"values.yaml"},
+						HelmVersion: "3.1.1",
+					},
+				},
+				Pipeline: AppPipeline{
+					Stages: nil,
+				},
+			},
+			expectedError: nil,
+		},
+		{
+			fileName:        "testdata/k8s-app-canary.yaml",
+			expectedKind:    KindK8sApp,
+			expectedVersion: "",
+			expectedSpec: &AppSpec{
+				kind: KindK8sApp,
+				Pipeline: AppPipeline{
+					Stages: []PipelineStage{
+						PipelineStage{
+							Name: StageNameK8sCanaryOut,
+							K8sCanaryOutStageOptions: &K8sCanaryOutStageOptions{
+								StageCommonOptions: StageCommonOptions{
+									Timeout:   Duration(10 * time.Minute),
+									PostDelay: Duration(time.Minute),
+								},
+								Weight: 10,
+							},
+						},
+						PipelineStage{
+							Name: StageNameApproval,
+							ApprovalStageOptions: &ApprovalStageOptions{
+								Approvers: []string{"foo", "bar"},
+							},
+						},
+						PipelineStage{
+							Name:                   StageNameK8sRollout,
+							K8sRolloutStageOptions: &K8sRolloutStageOptions{},
+						},
+						PipelineStage{
+							Name:                    StageNameK8sCanaryIn,
+							K8sCanaryInStageOptions: &K8sCanaryInStageOptions{},
+						},
+					},
+				},
+			},
+			expectedError: nil,
+		},
 	}
 	for _, tc := range testcases {
 		t.Run(tc.fileName, func(t *testing.T) {
 			cfg, err := LoadFromYAML(tc.fileName)
-			assert.Equal(t, tc.expected, cfg)
-			assert.Equal(t, tc.expectedError, err)
+			require.Equal(t, tc.expectedError, err)
+			if err == nil {
+				assert.Equal(t, tc.expectedKind, cfg.Kind)
+				assert.Equal(t, tc.expectedVersion, cfg.Version)
+				switch cfg.Kind {
+				case KindK8sApp, KindTerraformApp:
+					assert.Equal(t, tc.expectedSpec, cfg.AppSpec)
+				case KindNotification:
+					assert.Equal(t, tc.expectedSpec, cfg.NotificationSpec)
+				case KindAnalysisTemplate:
+					assert.Equal(t, tc.expectedSpec, cfg.AnalysisTemplateSpec)
+				case KindRunner:
+					assert.Equal(t, tc.expectedSpec, cfg.RunnerSpec)
+				case KindControlPlane:
+					assert.Equal(t, tc.expectedSpec, cfg.ControlPlaneSpec)
+				}
+			}
 		})
 	}
 }

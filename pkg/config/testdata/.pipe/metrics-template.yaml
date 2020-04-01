@@ -11,17 +11,3 @@ spec:
       expected: < 0.1
       interval: 1m
       provider: datadog
-  providers:
-    - name: dev-prometheus
-      prometheus:
-        address: https://your-prometheus.dev
-    - name: stackdriver
-      stackdriver:
-        serviceAccountFile: /etc/stackdriver.serviceaccount
-    - name: datadog
-      datadog:
-        apiKeyFile: /etc/datadog.apikey
-        applicationKeyFile: /etc/datadog.applicationkey
-    - name: cloudwatch
-      cloudwatch:
-        region: ap-northeast-1

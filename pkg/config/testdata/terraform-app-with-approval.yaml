@@ -1,0 +1,16 @@
+kind: TerraformApp
+spec:
+  pipeline:
+    stages:
+      - name: TERRAFORM_PLAN
+      - name: APPROVAL
+        with:
+          approvers:
+            - foo
+            - bar
+      - name: TERRAFORM_APPLY
+  input:
+    terraform:
+      workspace: dev
+      terraformVersion: 0.12.23
+  destination: dev-terraform
