@@ -33,7 +33,7 @@ const (
 	completionMarkFileName = "completed"
 )
 
-func (a *api) SendStageLiveLog(stream service.LiveLog_SendStageLiveLogServer) error {
+func (a *api) SendPipelineLiveLog(stream service.LiveLog_SendPipelineLiveLogServer) error {
 	// Wait the first packet to get more information about pipeline stage.
 	req, streamErr := stream.Recv()
 	if streamErr != nil {
@@ -56,7 +56,7 @@ func (a *api) SendStageLiveLog(stream service.LiveLog_SendStageLiveLogServer) er
 	if err != nil {
 		return err
 	}
-	return stream.SendAndClose(&service.SendStageLiveLogResponse{})
+	return stream.SendAndClose(&service.SendPipelineLiveLogResponse{})
 }
 
 func appendLog(dataDir, pipelineID, buildStep string, logger *zap.Logger, next func() (string, error)) error {
