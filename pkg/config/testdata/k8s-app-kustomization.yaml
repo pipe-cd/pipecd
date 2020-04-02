@@ -1,14 +1,4 @@
-kind: K8sApp
+kind: K8sKustomizationApp
 spec:
-  pipeline:
-    stages:
-      - name: K8S_BLUEGREEN_OUT
-      - name: ANALYSIS
-      - name: K8S_BLUEGREEN_SWITCH_TRAFFIC
-      - name: APPROVAL
-      - name: K8S_ROLLOUT
-      - name: K8S_BLUEGREEN_SWITCH_TRAFFIC
-      - name: K8S_BLUEGREEN_IN
   input:
-    kustomization:
-      kubectlVersion: 3.1.1
+    kubectlVersion: 3.1.1

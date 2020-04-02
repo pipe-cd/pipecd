@@ -10,7 +10,6 @@ spec:
             - bar
       - name: TERRAFORM_APPLY
   input:
-    terraform:
-      workspace: dev
-      terraformVersion: 0.12.23
+    workspace: dev
+    terraformVersion: 0.12.23
   destination: dev-terraform

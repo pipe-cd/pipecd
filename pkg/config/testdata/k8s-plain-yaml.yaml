@@ -1,7 +1,6 @@
 kind: K8sApp
 spec:
   input:
-    plainYaml:
-      manifests:
-        - demoapp-deployment.yaml
-      kubectlVersion: 2.1.1
+    manifests:
+      - demoapp-deployment.yaml
+    kubectlVersion: 2.1.1

@@ -1,8 +1,7 @@
-kind: K8sApp
+kind: K8sHelmApp
 spec:
   input:
-    helm:
-      chart: git@github.com:org/config-repo.git:charts/demoapp?ref=v1.0.0
-      valueFiles:
-      - values.yaml
-      helmVersion: 3.1.1
+    chart: git@github.com:org/config-repo.git:charts/demoapp?ref=v1.0.0
+    valueFiles:
+    - values.yaml
+    helmVersion: 3.1.1

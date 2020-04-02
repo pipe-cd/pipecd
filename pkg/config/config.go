@@ -24,14 +24,19 @@ import (
 
 const version = "v1"
 
-// Kind represents which kind of configuration the data contains.
+// Kind represents the kind of configuration the data contains.
 type Kind string
 
 const (
 	// KindK8sApp represents configuration for a Kubernetes application.
-	// This application can be a group of plain-YAML Kubernetes manifests,
-	// or manifest templates, package (helm, kustomize).
+	// This application can be a group of plain-YAML Kubernetes manifests.
 	KindK8sApp Kind = "K8sApp"
+	// KindK8sKustomizationApp represents configuration for a Kubernetes application
+	// that using kustomization for templating.
+	KindK8sKustomizationApp Kind = "K8sKustomizationApp"
+	// KindK8sHelmApp represents configuration for a Kubernetes application.
+	// that using helm for templating.
+	KindK8sHelmApp Kind = "K8sHelmApp"
 	// KindTerraformApp represents configuration for a Terraform application.
 	// This application contains a single workspace of a terraform root module.
 	KindTerraformApp Kind = "TerraformApp"
@@ -55,19 +60,51 @@ const (
 // Config represents configuration data load from file.
 // The spec is depend on the kind of configuration.
 type Config struct {
-	Kind                 Kind
-	Version              string
-	AppSpec              *AppSpec
+	Kind    Kind
+	Version string
+
+	// Application Specs.
+	K8sAppSpec              *K8sAppSpec
+	K8sKustomizationAppSpec *K8sKustomizationAppSpec
+	K8sHelmAppSpec          *K8sHelmAppSpec
+	TerraformAppSpec        *TerraformAppSpec
+
+	// Repositori Shared Specs.
 	NotificationSpec     *NotificationSpec
 	AnalysisTemplateSpec *AnalysisTemplateSpec
-	RunnerSpec           *RunnerSpec
-	ControlPlaneSpec     *ControlPlaneSpec
+
+	// Runner and Server Specs.
+	RunnerSpec       *RunnerSpec
+	ControlPlaneSpec *ControlPlaneSpec
 }
 
 type genericConfig struct {
 	Kind    Kind            `json:"kind"`
 	Version string          `json:"version,omitempty"`
 	Spec    json.RawMessage `json:"spec"`
+}
+
+// Spec returns the actual spec inside for this kind of configuration.
+func (c *Config) Spec() interface{} {
+	switch c.Kind {
+	case KindK8sApp:
+		return c.K8sAppSpec
+	case KindK8sKustomizationApp:
+		return c.K8sKustomizationAppSpec
+	case KindK8sHelmApp:
+		return c.K8sHelmAppSpec
+	case KindTerraformApp:
+		return c.TerraformAppSpec
+	case KindNotification:
+		return c.NotificationSpec
+	case KindAnalysisTemplate:
+		return c.AnalysisTemplateSpec
+	case KindRunner:
+		return c.RunnerSpec
+	case KindControlPlane:
+		return c.ControlPlaneSpec
+	}
+	return nil
 }
 
 // UnmarshalJSON customizes the way to unmarshal json data into Config struct.
@@ -83,12 +120,25 @@ func (c *Config) UnmarshalJSON(data []byte) error {
 	c.Version = gc.Version
 
 	switch gc.Kind {
-	case KindK8sApp, KindTerraformApp:
-		c.AppSpec = &AppSpec{
-			kind: c.Kind,
-		}
+	case KindK8sApp:
+		c.K8sAppSpec = &K8sAppSpec{}
 		if len(gc.Spec) > 0 {
-			err = json.Unmarshal(gc.Spec, c.AppSpec)
+			err = json.Unmarshal(gc.Spec, c.K8sAppSpec)
+		}
+	case KindK8sKustomizationApp:
+		c.K8sKustomizationAppSpec = &K8sKustomizationAppSpec{}
+		if len(gc.Spec) > 0 {
+			err = json.Unmarshal(gc.Spec, c.K8sKustomizationAppSpec)
+		}
+	case KindK8sHelmApp:
+		c.K8sHelmAppSpec = &K8sHelmAppSpec{}
+		if len(gc.Spec) > 0 {
+			err = json.Unmarshal(gc.Spec, c.K8sHelmAppSpec)
+		}
+	case KindTerraformApp:
+		c.TerraformAppSpec = &TerraformAppSpec{}
+		if len(gc.Spec) > 0 {
+			err = json.Unmarshal(gc.Spec, c.TerraformAppSpec)
 		}
 	case KindNotification:
 		c.NotificationSpec = &NotificationSpec{}
@@ -116,29 +166,20 @@ func (c *Config) UnmarshalJSON(data []byte) error {
 	return err
 }
 
+type validator interface {
+	Validate() error
+}
+
 // Validate validates the value of all fields.
 func (c *Config) Validate() error {
 	if c.Version != "v1" && c.Version != "" {
 		return fmt.Errorf("unsupported version: %s", c.Version)
 	}
-	if c.AppSpec != nil {
-		if err := c.AppSpec.Validate(); err != nil {
-			return err
-		}
-	}
-	if c.RunnerSpec != nil {
-		if err := c.RunnerSpec.Validate(); err != nil {
-			return err
-		}
-	}
-	if c.NotificationSpec != nil {
-		if err := c.NotificationSpec.Validate(); err != nil {
-			return err
-		}
-	}
-	if c.AnalysisTemplateSpec != nil {
-		if err := c.AnalysisTemplateSpec.Validate(); err != nil {
-			return err
+	if spec := c.Spec(); spec != nil {
+		if v, ok := spec.(validator); ok {
+			if err := v.Validate(); err != nil {
+				return err
+			}
 		}
 	}
 	return nil

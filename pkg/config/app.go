@@ -35,30 +35,53 @@ const (
 	StageNameTerraformApply            StageName = "TERRAFORM_APPLY"
 )
 
-// AppSpec represents spec for an application configuration.
-type AppSpec struct {
-	kind Kind
+type K8sAppSpec struct {
 	// Selector is a list of labels used to query all resources of this application.
 	Selector    map[string]string `json:"selector"`
-	Input       AppInput          `json:"input"`
-	Pipeline    AppPipeline       `json:"pipeline"`
+	Input       *K8sAppInput      `json:"input"`
+	Pipeline    *AppPipeline      `json:"pipeline"`
 	Destination string            `json:"destination"`
 }
 
-func (s *AppSpec) Validate() error {
-	if s.kind == KindTerraformApp {
-		if s.Destination == "" {
-			return fmt.Errorf("spec.destination for terraform application is required")
-		}
-	}
+func (s *K8sAppSpec) Validate() error {
 	return nil
 }
 
-type AppInput struct {
-	PlainYAML     *InputPlainYAML     `json:"plainYaml"`
-	Kustomization *InputKustomization `json:"kustomization"`
-	Helm          *InputHelm          `json:"helm"`
-	Terraform     *InputTerraform     `json:"terraform"`
+type K8sKustomizationAppSpec struct {
+	// Selector is a list of labels used to query all resources of this application.
+	Selector    map[string]string         `json:"selector"`
+	Input       *K8sKustomizationAppInput `json:"input"`
+	Pipeline    *AppPipeline              `json:"pipeline"`
+	Destination string                    `json:"destination"`
+}
+
+func (s *K8sKustomizationAppSpec) Validate() error {
+	return nil
+}
+
+type K8sHelmAppSpec struct {
+	// Selector is a list of labels used to query all resources of this application.
+	Selector    map[string]string `json:"selector"`
+	Input       *K8sHelmAppInput  `json:"input"`
+	Pipeline    *AppPipeline      `json:"pipeline"`
+	Destination string            `json:"destination"`
+}
+
+func (s *K8sHelmAppSpec) Validate() error {
+	return nil
+}
+
+type TerraformAppSpec struct {
+	Input       *TerraformAppInput `json:"input"`
+	Pipeline    *AppPipeline       `json:"pipeline"`
+	Destination string             `json:"destination"`
+}
+
+func (s *TerraformAppSpec) Validate() error {
+	if s.Destination == "" {
+		return fmt.Errorf("spec.destination for terraform application is required")
+	}
+	return nil
 }
 
 // AppPipeline represents the way to deploy the application.
@@ -248,23 +271,23 @@ type AnalysisHTTP struct {
 	UseTemplate      string
 }
 
-type InputPlainYAML struct {
+type K8sAppInput struct {
 	Manifests      []string
 	KubectlVersion string
 }
 
-type InputKustomization struct {
+type K8sKustomizationAppInput struct {
 	KubectlVersion string
 }
 
-type InputHelm struct {
+type K8sHelmAppInput struct {
 	Chart       string
 	ValueFiles  []string
 	Namespace   string
 	HelmVersion string
 }
 
-type InputTerraform struct {
+type TerraformAppInput struct {
 	Workspace        string
 	TerraformVersion string
 }

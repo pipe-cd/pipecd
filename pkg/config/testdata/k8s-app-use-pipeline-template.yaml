@@ -2,9 +2,3 @@ kind: K8sApp
 spec:
   pipeline:
     useTemplate: k8s-canary-with-analysis
-  input:
-    helm:
-      chart: git@github.com:org/config-repo.git:charts/demoapp?ref=v1.0.0
-      valueFiles:
-      - values.yaml
-      helmVersion: 3.1.1

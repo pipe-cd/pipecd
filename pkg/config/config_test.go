@@ -39,17 +39,12 @@ func TestConfig(t *testing.T) {
 			fileName:        "testdata/terraform-app.yaml",
 			expectedKind:    KindTerraformApp,
 			expectedVersion: "",
-			expectedSpec: &AppSpec{
-				kind: KindTerraformApp,
-				Input: AppInput{
-					Terraform: &InputTerraform{
-						Workspace:        "dev",
-						TerraformVersion: "0.12.23",
-					},
+			expectedSpec: &TerraformAppSpec{
+				Input: &TerraformAppInput{
+					Workspace:        "dev",
+					TerraformVersion: "0.12.23",
 				},
-				Pipeline: AppPipeline{
-					Stages: nil,
-				},
+				Pipeline:    nil,
 				Destination: "dev-terraform",
 			},
 			expectedError: nil,
@@ -58,15 +53,12 @@ func TestConfig(t *testing.T) {
 			fileName:        "testdata/terraform-app-with-approval.yaml",
 			expectedKind:    KindTerraformApp,
 			expectedVersion: "",
-			expectedSpec: &AppSpec{
-				kind: KindTerraformApp,
-				Input: AppInput{
-					Terraform: &InputTerraform{
-						Workspace:        "dev",
-						TerraformVersion: "0.12.23",
-					},
+			expectedSpec: &TerraformAppSpec{
+				Input: &TerraformAppInput{
+					Workspace:        "dev",
+					TerraformVersion: "0.12.23",
 				},
-				Pipeline: AppPipeline{
+				Pipeline: &AppPipeline{
 					Stages: []PipelineStage{
 						PipelineStage{
 							Name:                      StageNameTerraformPlan,
@@ -90,20 +82,15 @@ func TestConfig(t *testing.T) {
 		},
 		{
 			fileName:        "testdata/k8s-app-helm.yaml",
-			expectedKind:    KindK8sApp,
+			expectedKind:    KindK8sHelmApp,
 			expectedVersion: "",
-			expectedSpec: &AppSpec{
-				kind: KindK8sApp,
-				Input: AppInput{
-					Helm: &InputHelm{
-						Chart:       "git@github.com:org/config-repo.git:charts/demoapp?ref=v1.0.0",
-						ValueFiles:  []string{"values.yaml"},
-						HelmVersion: "3.1.1",
-					},
+			expectedSpec: &K8sHelmAppSpec{
+				Input: &K8sHelmAppInput{
+					Chart:       "git@github.com:org/config-repo.git:charts/demoapp?ref=v1.0.0",
+					ValueFiles:  []string{"values.yaml"},
+					HelmVersion: "3.1.1",
 				},
-				Pipeline: AppPipeline{
-					Stages: nil,
-				},
+				Pipeline: nil,
 			},
 			expectedError: nil,
 		},
@@ -111,9 +98,8 @@ func TestConfig(t *testing.T) {
 			fileName:        "testdata/k8s-app-canary.yaml",
 			expectedKind:    KindK8sApp,
 			expectedVersion: "",
-			expectedSpec: &AppSpec{
-				kind: KindK8sApp,
-				Pipeline: AppPipeline{
+			expectedSpec: &K8sAppSpec{
+				Pipeline: &AppPipeline{
 					Stages: []PipelineStage{
 						PipelineStage{
 							Name: StageNameK8sCanaryOut,
@@ -153,8 +139,8 @@ func TestConfig(t *testing.T) {
 				assert.Equal(t, tc.expectedKind, cfg.Kind)
 				assert.Equal(t, tc.expectedVersion, cfg.Version)
 				switch cfg.Kind {
-				case KindK8sApp, KindTerraformApp:
-					assert.Equal(t, tc.expectedSpec, cfg.AppSpec)
+				case KindK8sApp:
+					assert.Equal(t, tc.expectedSpec, cfg.K8sAppSpec)
 				case KindNotification:
 					assert.Equal(t, tc.expectedSpec, cfg.NotificationSpec)
 				case KindAnalysisTemplate:
