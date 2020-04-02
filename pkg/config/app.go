@@ -198,9 +198,9 @@ type K8sCanaryOutStageOptions struct {
 	StageCommonOptions
 	// Percentage of canary traffic/pods after scale out.
 	// Default is 10%.
-	Weight        int       `json:"weight"`
-	CanaryService string    `json:"canaryService"`
-	Target        TargetRef `json:"target"`
+	Weight        int             `json:"weight"`
+	CanaryService K8sService      `json:"canaryService"`
+	Target        K8sDeployTarget `json:"target"`
 }
 
 type K8sCanaryInStageOptions struct {
@@ -292,7 +292,11 @@ type TerraformAppInput struct {
 	TerraformVersion string
 }
 
-type TargetRef struct {
+type K8sDeployTarget struct {
 	Kind string
+	Name string
+}
+
+type K8sService struct {
 	Name string
 }

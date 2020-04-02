@@ -138,18 +138,7 @@ func TestConfig(t *testing.T) {
 			if err == nil {
 				assert.Equal(t, tc.expectedKind, cfg.Kind)
 				assert.Equal(t, tc.expectedVersion, cfg.Version)
-				switch cfg.Kind {
-				case KindK8sApp:
-					assert.Equal(t, tc.expectedSpec, cfg.K8sAppSpec)
-				case KindNotification:
-					assert.Equal(t, tc.expectedSpec, cfg.NotificationSpec)
-				case KindAnalysisTemplate:
-					assert.Equal(t, tc.expectedSpec, cfg.AnalysisTemplateSpec)
-				case KindRunner:
-					assert.Equal(t, tc.expectedSpec, cfg.RunnerSpec)
-				case KindControlPlane:
-					assert.Equal(t, tc.expectedSpec, cfg.ControlPlaneSpec)
-				}
+				assert.Equal(t, tc.expectedSpec, cfg.spec)
 			}
 		})
 	}
