@@ -9,3 +9,23 @@ spec:
       - name: K8S_ROLLOUT
       - name: K8S_BLUEGREEN_SWITCH_TRAFFIC
       - name: K8S_BLUEGREEN_IN
+
+# kind: K8sApp
+# spec:
+#   pipeline:
+#     stages:
+#       - name: K8S_BLUEGREEN_OUT
+#       - name: K8S_BLUEGREEN_SWITCH_TRAFFIC
+#       - name: K8S_ROLLOUT
+#       - name: K8S_BLUEGREEN_SWITCH_TRAFFIC
+#         with:
+#           destination: primary
+#       - name: K8S_BLUEGREEN_IN
+
+# kind: K8sApp
+# spec:
+#   pipeline:
+#     stages:
+#       - name: K8S_BLUEGREEN_OUT
+#       - name: K8S_BLUEGREEN_SWITCH_TRAFFIC
+#       - name: K8S_BLUEGREEN_IN

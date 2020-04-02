@@ -93,8 +93,11 @@ type AppPipeline struct {
 }
 
 type PipelineStage struct {
-	Name                                  StageName
-	Desc                                  string
+	Name      StageName
+	Desc      string
+	Timeout   Duration
+	PostDelay Duration
+
 	ApprovalStageOptions                  *ApprovalStageOptions
 	AnalysisStageOptions                  *AnalysisStageOptions
 	K8sRolloutStageOptions                *K8sRolloutStageOptions
@@ -108,9 +111,11 @@ type PipelineStage struct {
 }
 
 type genericPipelineStage struct {
-	Name StageName       `json:"name"`
-	Desc string          `json:"desc,omitempty"`
-	With json.RawMessage `json:"with"`
+	Name      StageName       `json:"name"`
+	Desc      string          `json:"desc,omitempty"`
+	Timeout   Duration        `json:"timeout"`
+	PostDelay Duration        `json:"postDelay"`
+	With      json.RawMessage `json:"with"`
 }
 
 func (s *PipelineStage) UnmarshalJSON(data []byte) error {
@@ -121,6 +126,8 @@ func (s *PipelineStage) UnmarshalJSON(data []byte) error {
 	}
 	s.Name = gs.Name
 	s.Desc = gs.Desc
+	s.Timeout = gs.Timeout
+	s.PostDelay = gs.PostDelay
 
 	switch s.Name {
 	case StageNameApproval:
@@ -179,23 +186,15 @@ func (s *PipelineStage) UnmarshalJSON(data []byte) error {
 	return err
 }
 
-type StageCommonOptions struct {
-	Timeout   Duration `json:"timeout"`
-	PostDelay Duration `json:"postDelay"`
-}
-
 type ApprovalStageOptions struct {
-	StageCommonOptions
 	Approvers []string `json:"approvers"`
 }
 
 type K8sRolloutStageOptions struct {
-	StageCommonOptions
 	Manifests []string `json:"manifests"`
 }
 
 type K8sCanaryOutStageOptions struct {
-	StageCommonOptions
 	// Percentage of canary traffic/pods after scale out.
 	// Default is 10%.
 	Weight        int             `json:"weight"`
@@ -204,35 +203,28 @@ type K8sCanaryOutStageOptions struct {
 }
 
 type K8sCanaryInStageOptions struct {
-	StageCommonOptions
 	// Percentage of canary traffic/pods after scale in.
 	// Default is 0.
 	Weight int
 }
 
 type K8sBlueGreenOutStageOptions struct {
-	StageCommonOptions
 	StageService string `json:"stageService"`
 }
 
 type K8sBlueGreenSwitchTrafficStageOptions struct {
-	StageCommonOptions
 }
 
 type K8sBlueGreenInStageOptions struct {
-	StageCommonOptions
 }
 
 type TerraformPlanStageOptions struct {
-	StageCommonOptions
 }
 
 type TerraformApplyStageOptions struct {
-	StageCommonOptions
 }
 
 type AnalysisStageOptions struct {
-	StageCommonOptions
 	Duration Duration
 	// Maximum number of failed checks before the stage is considered as failure.
 	Threshold int               `json:"threshold"`

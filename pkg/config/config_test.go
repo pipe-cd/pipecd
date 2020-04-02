@@ -104,12 +104,10 @@ func TestConfig(t *testing.T) {
 						PipelineStage{
 							Name: StageNameK8sCanaryOut,
 							K8sCanaryOutStageOptions: &K8sCanaryOutStageOptions{
-								StageCommonOptions: StageCommonOptions{
-									Timeout:   Duration(10 * time.Minute),
-									PostDelay: Duration(time.Minute),
-								},
 								Weight: 10,
 							},
+							Timeout:   Duration(10 * time.Minute),
+							PostDelay: Duration(time.Minute),
 						},
 						PipelineStage{
 							Name: StageNameApproval,

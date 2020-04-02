@@ -5,8 +5,8 @@ spec:
       - name: K8S_CANARY_OUT
         with:
           weight: 10
-          timeout: 10m
-          postDelay: 1m
+        timeout: 10m
+        postDelay: 1m
       - name: APPROVAL
         with:
           approvers:

@@ -15,8 +15,8 @@ spec:
           weight: 10
           canaryService:
             name: demoapp-canary
-          timeout: 10m
-          postDelay: 1m
+        timeout: 10m
+        postDelay: 1m
       - name: ANALYSIS
         with:
           duration: 10m
