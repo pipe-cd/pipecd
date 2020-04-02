@@ -62,6 +62,7 @@ const (
 type Config struct {
 	Kind    Kind
 	Version string
+	spec    interface{}
 
 	// Application Specs.
 	K8sAppSpec              *K8sAppSpec
@@ -84,25 +85,37 @@ type genericConfig struct {
 	Spec    json.RawMessage `json:"spec"`
 }
 
-// Spec returns the actual spec inside for this kind of configuration.
-func (c *Config) Spec() interface{} {
-	switch c.Kind {
+func (c *Config) init(kind Kind, version string) error {
+	c.Kind = kind
+	c.Version = version
+
+	switch kind {
 	case KindK8sApp:
-		return c.K8sAppSpec
+		c.K8sAppSpec = &K8sAppSpec{}
+		c.spec = c.K8sAppSpec
 	case KindK8sKustomizationApp:
-		return c.K8sKustomizationAppSpec
+		c.K8sKustomizationAppSpec = &K8sKustomizationAppSpec{}
+		c.spec = c.K8sKustomizationAppSpec
 	case KindK8sHelmApp:
-		return c.K8sHelmAppSpec
+		c.K8sHelmAppSpec = &K8sHelmAppSpec{}
+		c.spec = c.K8sHelmAppSpec
 	case KindTerraformApp:
-		return c.TerraformAppSpec
+		c.TerraformAppSpec = &TerraformAppSpec{}
+		c.spec = c.TerraformAppSpec
 	case KindNotification:
-		return c.NotificationSpec
+		c.NotificationSpec = &NotificationSpec{}
+		c.spec = c.NotificationSpec
 	case KindAnalysisTemplate:
-		return c.AnalysisTemplateSpec
+		c.AnalysisTemplateSpec = &AnalysisTemplateSpec{}
+		c.spec = c.AnalysisTemplateSpec
 	case KindRunner:
-		return c.RunnerSpec
+		c.RunnerSpec = &RunnerSpec{}
+		c.spec = c.RunnerSpec
 	case KindControlPlane:
-		return c.ControlPlaneSpec
+		c.ControlPlaneSpec = &ControlPlaneSpec{}
+		c.spec = c.ControlPlaneSpec
+	default:
+		return fmt.Errorf("unsupported kind: %s", c.Kind)
 	}
 	return nil
 }
@@ -111,57 +124,18 @@ func (c *Config) Spec() interface{} {
 // Firstly, this unmarshal to a generic config and then unmarshal the spec
 // which depend on the kind of configuration.
 func (c *Config) UnmarshalJSON(data []byte) error {
-	var err error
-	gc := genericConfig{}
+	var (
+		err error
+		gc  = genericConfig{}
+	)
 	if err = json.Unmarshal(data, &gc); err != nil {
 		return err
 	}
-	c.Kind = gc.Kind
-	c.Version = gc.Version
-
-	switch gc.Kind {
-	case KindK8sApp:
-		c.K8sAppSpec = &K8sAppSpec{}
-		if len(gc.Spec) > 0 {
-			err = json.Unmarshal(gc.Spec, c.K8sAppSpec)
-		}
-	case KindK8sKustomizationApp:
-		c.K8sKustomizationAppSpec = &K8sKustomizationAppSpec{}
-		if len(gc.Spec) > 0 {
-			err = json.Unmarshal(gc.Spec, c.K8sKustomizationAppSpec)
-		}
-	case KindK8sHelmApp:
-		c.K8sHelmAppSpec = &K8sHelmAppSpec{}
-		if len(gc.Spec) > 0 {
-			err = json.Unmarshal(gc.Spec, c.K8sHelmAppSpec)
-		}
-	case KindTerraformApp:
-		c.TerraformAppSpec = &TerraformAppSpec{}
-		if len(gc.Spec) > 0 {
-			err = json.Unmarshal(gc.Spec, c.TerraformAppSpec)
-		}
-	case KindNotification:
-		c.NotificationSpec = &NotificationSpec{}
-		if len(gc.Spec) > 0 {
-			err = json.Unmarshal(gc.Spec, c.NotificationSpec)
-		}
-	case KindAnalysisTemplate:
-		c.AnalysisTemplateSpec = &AnalysisTemplateSpec{}
-		if len(gc.Spec) > 0 {
-			err = json.Unmarshal(gc.Spec, c.AnalysisTemplateSpec)
-		}
-	case KindRunner:
-		c.RunnerSpec = &RunnerSpec{}
-		if len(gc.Spec) > 0 {
-			err = json.Unmarshal(gc.Spec, c.RunnerSpec)
-		}
-	case KindControlPlane:
-		c.ControlPlaneSpec = &ControlPlaneSpec{}
-		if len(gc.Spec) > 0 {
-			err = json.Unmarshal(gc.Spec, c.ControlPlaneSpec)
-		}
-	default:
-		err = fmt.Errorf("unsupported kind: %s", c.Kind)
+	if err = c.init(gc.Kind, gc.Version); err != nil {
+		return err
+	}
+	if len(gc.Spec) > 0 {
+		err = json.Unmarshal(gc.Spec, c.spec)
 	}
 	return err
 }
@@ -175,11 +149,9 @@ func (c *Config) Validate() error {
 	if c.Version != "v1" && c.Version != "" {
 		return fmt.Errorf("unsupported version: %s", c.Version)
 	}
-	if spec := c.Spec(); spec != nil {
-		if v, ok := spec.(validator); ok {
-			if err := v.Validate(); err != nil {
-				return err
-			}
+	if spec, ok := c.spec.(validator); ok && spec != nil {
+		if err := spec.Validate(); err != nil {
+			return err
 		}
 	}
 	return nil
