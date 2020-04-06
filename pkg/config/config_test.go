@@ -25,20 +25,20 @@ import (
 
 func TestConfig(t *testing.T) {
 	testcases := []struct {
-		fileName        string
-		expectedKind    Kind
-		expectedVersion string
-		expectedSpec    interface{}
-		expectedError   error
+		fileName           string
+		expectedKind       Kind
+		expectedAPIVersion string
+		expectedSpec       interface{}
+		expectedError      error
 	}{
 		{
 			fileName:      "testdata/terraform-app-missing-destination.yaml",
 			expectedError: fmt.Errorf("spec.destination for terraform application is required"),
 		},
 		{
-			fileName:        "testdata/terraform-app.yaml",
-			expectedKind:    KindTerraformApp,
-			expectedVersion: "",
+			fileName:           "testdata/terraform-app.yaml",
+			expectedKind:       KindTerraformApp,
+			expectedAPIVersion: "pipecd.dev/v1beta1",
 			expectedSpec: &TerraformAppSpec{
 				Input: &TerraformAppInput{
 					Workspace:        "dev",
@@ -50,9 +50,9 @@ func TestConfig(t *testing.T) {
 			expectedError: nil,
 		},
 		{
-			fileName:        "testdata/terraform-app-with-approval.yaml",
-			expectedKind:    KindTerraformApp,
-			expectedVersion: "",
+			fileName:           "testdata/terraform-app-with-approval.yaml",
+			expectedKind:       KindTerraformApp,
+			expectedAPIVersion: "pipecd.dev/v1beta1",
 			expectedSpec: &TerraformAppSpec{
 				Input: &TerraformAppInput{
 					Workspace:        "dev",
@@ -81,9 +81,9 @@ func TestConfig(t *testing.T) {
 			expectedError: nil,
 		},
 		{
-			fileName:        "testdata/k8s-app-helm.yaml",
-			expectedKind:    KindK8sHelmApp,
-			expectedVersion: "",
+			fileName:           "testdata/k8s-app-helm.yaml",
+			expectedKind:       KindK8sHelmApp,
+			expectedAPIVersion: "pipecd.dev/v1beta1",
 			expectedSpec: &K8sHelmAppSpec{
 				Input: &K8sHelmAppInput{
 					Chart:       "git@github.com:org/config-repo.git:charts/demoapp?ref=v1.0.0",
@@ -95,9 +95,9 @@ func TestConfig(t *testing.T) {
 			expectedError: nil,
 		},
 		{
-			fileName:        "testdata/k8s-app-canary.yaml",
-			expectedKind:    KindK8sApp,
-			expectedVersion: "",
+			fileName:           "testdata/k8s-app-canary.yaml",
+			expectedKind:       KindK8sApp,
+			expectedAPIVersion: "pipecd.dev/v1beta1",
 			expectedSpec: &K8sAppSpec{
 				Pipeline: &AppPipeline{
 					Stages: []PipelineStage{
@@ -135,7 +135,7 @@ func TestConfig(t *testing.T) {
 			require.Equal(t, tc.expectedError, err)
 			if err == nil {
 				assert.Equal(t, tc.expectedKind, cfg.Kind)
-				assert.Equal(t, tc.expectedVersion, cfg.Version)
+				assert.Equal(t, tc.expectedAPIVersion, cfg.APIVersion)
 				assert.Equal(t, tc.expectedSpec, cfg.spec)
 			}
 		})

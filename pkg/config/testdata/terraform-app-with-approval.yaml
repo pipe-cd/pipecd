@@ -1,3 +1,4 @@
+apiVersion: pipecd.dev/v1beta1
 kind: TerraformApp
 spec:
   pipeline:
@@ -13,3 +14,26 @@ spec:
     workspace: dev
     terraformVersion: 0.12.23
   destination: dev-terraform
+
+#---
+# apiVersion: pipecd.dev/v1beta1
+# kind: TerraformApp
+# spec:
+#   pipeline:
+#     stages:
+#       - name: TERRAFORM_PLAN
+#         with:
+#           workspace: dev
+#       - name: TERRAFORM_APPLY
+#         with:
+#           workspace: dev
+#       - name: APPROVAL
+#       - name: TERRAFORM_PLAN
+#         with:
+#           workspace: prod
+#       - name: TERRAFORM_APPLY
+#         with:
+#           workspace: prod
+#   input:
+#     terraformVersion: 0.12.23
+#   destination: gcp-terraform

@@ -22,7 +22,7 @@ import (
 	"sigs.k8s.io/yaml"
 )
 
-const version = "v1"
+const versionV1Beta1 = "pipecd.dev/v1beta1"
 
 // Kind represents the kind of configuration the data contains.
 type Kind string
@@ -60,9 +60,9 @@ const (
 // Config represents configuration data load from file.
 // The spec is depend on the kind of configuration.
 type Config struct {
-	Kind    Kind
-	Version string
-	spec    interface{}
+	Kind       Kind
+	APIVersion string
+	spec       interface{}
 
 	// Application Specs.
 	K8sAppSpec              *K8sAppSpec
@@ -80,14 +80,14 @@ type Config struct {
 }
 
 type genericConfig struct {
-	Kind    Kind            `json:"kind"`
-	Version string          `json:"version,omitempty"`
-	Spec    json.RawMessage `json:"spec"`
+	Kind       Kind            `json:"kind"`
+	APIVersion string          `json:"apiVersion,omitempty"`
+	Spec       json.RawMessage `json:"spec"`
 }
 
-func (c *Config) init(kind Kind, version string) error {
+func (c *Config) init(kind Kind, apiVersion string) error {
 	c.Kind = kind
-	c.Version = version
+	c.APIVersion = apiVersion
 
 	switch kind {
 	case KindK8sApp:
@@ -131,7 +131,7 @@ func (c *Config) UnmarshalJSON(data []byte) error {
 	if err = json.Unmarshal(data, &gc); err != nil {
 		return err
 	}
-	if err = c.init(gc.Kind, gc.Version); err != nil {
+	if err = c.init(gc.Kind, gc.APIVersion); err != nil {
 		return err
 	}
 	if len(gc.Spec) > 0 {
@@ -146,8 +146,8 @@ type validator interface {
 
 // Validate validates the value of all fields.
 func (c *Config) Validate() error {
-	if c.Version != "v1" && c.Version != "" {
-		return fmt.Errorf("unsupported version: %s", c.Version)
+	if c.APIVersion != versionV1Beta1 {
+		return fmt.Errorf("unsupported version: %s", c.APIVersion)
 	}
 	if spec, ok := c.spec.(validator); ok && spec != nil {
 		if err := spec.Validate(); err != nil {

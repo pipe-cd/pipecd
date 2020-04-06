@@ -1,3 +1,4 @@
+apiVersion: pipecd.dev/v1beta1
 kind: K8sApp
 spec:
   pipeline:
@@ -10,6 +11,7 @@ spec:
       - name: K8S_BLUEGREEN_SWITCH_TRAFFIC
       - name: K8S_BLUEGREEN_IN
 
+# apiVersion: pipecd.dev/v1beta1
 # kind: K8sApp
 # spec:
 #   pipeline:
@@ -18,10 +20,9 @@ spec:
 #       - name: K8S_BLUEGREEN_SWITCH_TRAFFIC
 #       - name: K8S_ROLLOUT
 #       - name: K8S_BLUEGREEN_SWITCH_TRAFFIC
-#         with:
-#           destination: primary
 #       - name: K8S_BLUEGREEN_IN
 
+# apiVersion: pipecd.dev/v1beta1
 # kind: K8sApp
 # spec:
 #   pipeline:

@@ -39,3 +39,25 @@ spec:
               timeout: 30s
       - name: K8S_ROLLOUT
       - name: K8S_CANARY_IN
+  # List of deployments for the same commit
+  # that must be succeeded before running the deployment for this application.
+  requireDeployments:
+    - app: demoapp
+      env: dev
+    - app: anotherapp
+  # Make a pull request to promote other applicationzwww
+  # (or promote changes through environments of the same application)
+  # after the success of this deployment.
+  promote:
+    - app: demoapp
+      env: prod
+      transforms:
+      - source: pipe.yaml
+        destination: pipe.yaml
+        regex: git@github.com:org/config-repo.git:charts/demoapp?ref=(.*)
+        replacement: git@github.com:org/config-repo.git:charts/demoapp?ref={{ $1 }}
+      pullRequest:
+        title: Update demoapp service in prod
+        commit: Update demo app service in prod
+        desc: |
+          Update demoapp service to {{ .App.Input.Version }}
