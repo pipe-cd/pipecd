@@ -16,7 +16,9 @@ spec:
           canaryService:
             name: demoapp-canary
         timeout: 10m
-        postDelay: 1m
+      - name: WAIT
+        with:
+          duration: 10m
       - name: ANALYSIS
         with:
           duration: 10m

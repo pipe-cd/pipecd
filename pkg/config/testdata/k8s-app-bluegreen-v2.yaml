@@ -1,0 +1,56 @@
+apiVersion: pipecd.dev/v1beta1
+kind: K8sApp
+spec:
+  pipeline:
+    stages:
+      - name: K8S_STAGE_OUT
+        with:
+          trafficWeight: 0
+          workloadWeight: 100
+      - name: K8S_STAGE_OUT
+        with:
+          trafficWeight: 100
+      - name: K8S_ROLLOUT
+      - name: K8S_STAGE_OUT
+        with:
+          trafficWeight: 0
+      - name: K8S_STAGE_IN
+
+---
+
+apiVersion: pipecd.dev/v1beta1
+kind: K8sApp
+spec:
+  pipeline:
+    stages:
+      - name: K8S_STAGE_OUT
+        with:
+          trafficWeight: 0
+          workloadWeight: 100
+      - name: K8S_SWICTH_TRAFFIC
+        with:
+          target: stage
+      - name: K8S_ROLLOUT
+      - name: K8S_STAGE_OUT
+        with:
+          trafficWeight: 0
+      - name: K8S_STAGE_IN
+
+---
+
+apiVersion: pipecd.dev/v1beta1
+kind: K8sApp
+spec:
+  pipeline:
+    stages:
+      - name: K8S_STAGE_OUT
+        with:
+          weight: 100
+      - name: K8S_TRAFFIC_WEIGHT
+        with:
+          stage: 100
+      - name: K8S_ROLLOUT
+      - name: K8S_TRAFFIC_WEIGHT
+        with:
+          primary: 100
+      - name: K8S_STAGE_IN
