@@ -65,7 +65,7 @@ func TestConfig(t *testing.T) {
 							TerraformPlanStageOptions: &TerraformPlanStageOptions{},
 						},
 						PipelineStage{
-							Name: StageNameApproval,
+							Name: StageNameWaitApproval,
 							ApprovalStageOptions: &ApprovalStageOptions{
 								Approvers: []string{"foo", "bar"},
 							},
@@ -110,7 +110,7 @@ func TestConfig(t *testing.T) {
 							PostDelay: Duration(time.Minute),
 						},
 						PipelineStage{
-							Name: StageNameApproval,
+							Name: StageNameWaitApproval,
 							ApprovalStageOptions: &ApprovalStageOptions{
 								Approvers: []string{"foo", "bar"},
 							},

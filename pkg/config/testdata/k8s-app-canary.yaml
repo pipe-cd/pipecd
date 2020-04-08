@@ -8,7 +8,7 @@ spec:
           weight: 10
         timeout: 10m
         postDelay: 1m
-      - name: APPROVAL
+      - name: WAIT_APPROVAL
         with:
           approvers:
             - foo

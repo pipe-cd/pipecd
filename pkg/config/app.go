@@ -23,7 +23,8 @@ import (
 type StageName string
 
 const (
-	StageNameApproval                  StageName = "APPROVAL"
+	StageNameWait                      StageName = "WAIT"
+	StageNameWaitApproval              StageName = "WAIT_APPROVAL"
 	StageNameAnalysis                  StageName = "ANALYSIS"
 	StageNameK8sRollout                StageName = "K8S_ROLLOUT"
 	StageNameK8sCanaryOut              StageName = "K8S_CANARY_OUT"
@@ -34,6 +35,24 @@ const (
 	StageNameTerraformPlan             StageName = "TERRAFORM_PLAN"
 	StageNameTerraformApply            StageName = "TERRAFORM_APPLY"
 )
+
+// StageName represents temporary desired state
+// before reaching the final desired state.
+// type StageName string
+
+// const (
+// 	StageNameWait            StageName = "WAIT"
+// 	StageNameWaitApproval    StageName = "WAIT_APPROVAL"
+// 	StageNameAnalysis        StageName = "ANALYSIS"
+// 	StageNameK8sPrimaryOut   StageName = "K8S_PRIMARY_OUT"
+// 	StageNameK8sStageOut     StageName = "K8S_STAGE_OUT"
+// 	StageNameK8sStageIn      StageName = "K8S_STAGE_IN"
+// 	StageNameK8sBaselineOut  StageName = "K8S_BASELINE_OUT"
+// 	StageNameK8sBaselineIn   StageName = "K8S_BASELINE_IN"
+// 	StageNameK8sTrafficRoute StageName = "K8S_TRAFFIC_ROUTE"
+// 	StageNameTerraformPlan   StageName = "TERRAFORM_PLAN"
+// 	StageNameTerraformApply  StageName = "TERRAFORM_APPLY"
+// )
 
 type K8sAppSpec struct {
 	// Selector is a list of labels used to query all resources of this application.
@@ -130,7 +149,7 @@ func (s *PipelineStage) UnmarshalJSON(data []byte) error {
 	s.PostDelay = gs.PostDelay
 
 	switch s.Name {
-	case StageNameApproval:
+	case StageNameWaitApproval:
 		s.ApprovalStageOptions = &ApprovalStageOptions{}
 		if len(gs.With) > 0 {
 			err = json.Unmarshal(gs.With, s.ApprovalStageOptions)

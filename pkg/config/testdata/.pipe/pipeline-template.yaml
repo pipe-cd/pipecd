@@ -24,7 +24,7 @@ spec:
     - name: k8s-canary-with-confirm
       stages:
         - name: K8S_CANARY_OUT
-        - name: APPROVAL
+        - name: WAIT_APPROVAL
         - name: K8S_APPLY
         - name: K8S_CANARY_IN
 

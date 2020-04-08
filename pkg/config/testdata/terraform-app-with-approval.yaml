@@ -4,7 +4,7 @@ spec:
   pipeline:
     stages:
       - name: TERRAFORM_PLAN
-      - name: APPROVAL
+      - name: WAIT_APPROVAL
         with:
           approvers:
             - foo
@@ -27,7 +27,7 @@ spec:
 #       - name: TERRAFORM_APPLY
 #         with:
 #           workspace: dev
-#       - name: APPROVAL
+#       - name: WAIT_APPROVAL
 #       - name: TERRAFORM_PLAN
 #         with:
 #           workspace: prod
