@@ -19,40 +19,41 @@ import (
 	"fmt"
 )
 
-// StageName represents predefined Stage that can be used in the pipeline.
+// StageName represents temporary desired state
+// before reaching the final desired state.
 type StageName string
 
 const (
-	StageNameWait                      StageName = "WAIT"
-	StageNameWaitApproval              StageName = "WAIT_APPROVAL"
-	StageNameAnalysis                  StageName = "ANALYSIS"
-	StageNameK8sRollout                StageName = "K8S_ROLLOUT"
-	StageNameK8sCanaryOut              StageName = "K8S_CANARY_OUT"
-	StageNameK8sCanaryIn               StageName = "K8S_CANARY_IN"
-	StageNameK8sBlueGreenOut           StageName = "K8S_BLUEGREEN_OUT"
-	StageNameK8sBlueGreenSwitchTraffic StageName = "K8S_BLUEGREEN_SWITCH_TRAFFIC"
-	StageNameK8sBlueGreenIn            StageName = "K8S_BLUEGREEN_IN"
-	StageNameTerraformPlan             StageName = "TERRAFORM_PLAN"
-	StageNameTerraformApply            StageName = "TERRAFORM_APPLY"
+	StageNameWait            StageName = "WAIT"
+	StageNameWaitApproval    StageName = "WAIT_APPROVAL"
+	StageNameAnalysis        StageName = "ANALYSIS"
+	StageNameK8sRollout      StageName = "K8S_ROLLOUT"
+	StageNameK8sPrimaryOut   StageName = "K8S_PRIMARY_OUT"
+	StageNameK8sStageOut     StageName = "K8S_STAGE_OUT"
+	StageNameK8sStageIn      StageName = "K8S_STAGE_IN"
+	StageNameK8sBaselineOut  StageName = "K8S_BASELINE_OUT"
+	StageNameK8sBaselineIn   StageName = "K8S_BASELINE_IN"
+	StageNameK8sTrafficRoute StageName = "K8S_TRAFFIC_ROUTE"
+	StageNameTerraformPlan   StageName = "TERRAFORM_PLAN"
+	StageNameTerraformApply  StageName = "TERRAFORM_APPLY"
 )
 
-// StageName represents temporary desired state
-// before reaching the final desired state.
-// type StageName string
+// StageName represents predefined Stage that can be used in the pipeline.
+//   type StageName string
 
-// const (
-// 	StageNameWait            StageName = "WAIT"
-// 	StageNameWaitApproval    StageName = "WAIT_APPROVAL"
-// 	StageNameAnalysis        StageName = "ANALYSIS"
-// 	StageNameK8sPrimaryOut   StageName = "K8S_PRIMARY_OUT"
-// 	StageNameK8sStageOut     StageName = "K8S_STAGE_OUT"
-// 	StageNameK8sStageIn      StageName = "K8S_STAGE_IN"
-// 	StageNameK8sBaselineOut  StageName = "K8S_BASELINE_OUT"
-// 	StageNameK8sBaselineIn   StageName = "K8S_BASELINE_IN"
-// 	StageNameK8sTrafficRoute StageName = "K8S_TRAFFIC_ROUTE"
-// 	StageNameTerraformPlan   StageName = "TERRAFORM_PLAN"
-// 	StageNameTerraformApply  StageName = "TERRAFORM_APPLY"
-// )
+//   const (
+// 	  StageNameWait                      StageName = "WAIT"
+// 	  StageNameWaitApproval              StageName = "WAIT_APPROVAL"
+// 	  StageNameAnalysis                  StageName = "ANALYSIS"
+// 	  StageNameK8sRollout                StageName = "K8S_ROLLOUT"
+// 	  StageNameK8sCanaryOut              StageName = "K8S_CANARY_OUT"
+// 	  StageNameK8sCanaryIn               StageName = "K8S_CANARY_IN"
+// 	  StageNameK8sBlueGreenOut           StageName = "K8S_BLUEGREEN_OUT"
+// 	  StageNameK8sBlueGreenSwitchTraffic StageName = "K8S_BLUEGREEN_SWITCH_TRAFFIC"
+// 	  StageNameK8sBlueGreenIn            StageName = "K8S_BLUEGREEN_IN"
+// 	  StageNameTerraformPlan             StageName = "TERRAFORM_PLAN"
+// 	  StageNameTerraformApply            StageName = "TERRAFORM_APPLY"
+//   )
 
 type K8sAppSpec struct {
 	// Selector is a list of labels used to query all resources of this application.
@@ -112,29 +113,28 @@ type AppPipeline struct {
 }
 
 type PipelineStage struct {
-	Name      StageName
-	Desc      string
-	Timeout   Duration
-	PostDelay Duration
+	Name    StageName
+	Desc    string
+	Timeout Duration
 
-	ApprovalStageOptions                  *ApprovalStageOptions
-	AnalysisStageOptions                  *AnalysisStageOptions
-	K8sRolloutStageOptions                *K8sRolloutStageOptions
-	K8sCanaryOutStageOptions              *K8sCanaryOutStageOptions
-	K8sCanaryInStageOptions               *K8sCanaryInStageOptions
-	K8sBlueGreenOutStageOptions           *K8sBlueGreenOutStageOptions
-	K8sBlueGreenSwitchTrafficStageOptions *K8sBlueGreenSwitchTrafficStageOptions
-	K8sBlueGreenInStageOptions            *K8sBlueGreenInStageOptions
-	TerraformPlanStageOptions             *TerraformPlanStageOptions
-	TerraformApplyStageOptions            *TerraformApplyStageOptions
+	WaitStageOptions            *WaitStageOptions
+	WaitApprovalStageOptions    *WaitApprovalStageOptions
+	AnalysisStageOptions        *AnalysisStageOptions
+	K8sPrimaryOutStageOptions   *K8sPrimaryOutStageOptions
+	K8sStageOutStageOptions     *K8sStageOutStageOptions
+	K8sStageInStageOptions      *K8sStageInStageOptions
+	K8sBaselineOutStageOptions  *K8sBaselineOutStageOptions
+	K8sBaselineInStageOptions   *K8sBaselineInStageOptions
+	K8sTrafficRouteStageOptions *K8sTrafficRouteStageOptions
+	TerraformPlanStageOptions   *TerraformPlanStageOptions
+	TerraformApplyStageOptions  *TerraformApplyStageOptions
 }
 
 type genericPipelineStage struct {
-	Name      StageName       `json:"name"`
-	Desc      string          `json:"desc,omitempty"`
-	Timeout   Duration        `json:"timeout"`
-	PostDelay Duration        `json:"postDelay"`
-	With      json.RawMessage `json:"with"`
+	Name    StageName       `json:"name"`
+	Desc    string          `json:"desc,omitempty"`
+	Timeout Duration        `json:"timeout"`
+	With    json.RawMessage `json:"with"`
 }
 
 func (s *PipelineStage) UnmarshalJSON(data []byte) error {
@@ -146,48 +146,52 @@ func (s *PipelineStage) UnmarshalJSON(data []byte) error {
 	s.Name = gs.Name
 	s.Desc = gs.Desc
 	s.Timeout = gs.Timeout
-	s.PostDelay = gs.PostDelay
 
 	switch s.Name {
-	case StageNameWaitApproval:
-		s.ApprovalStageOptions = &ApprovalStageOptions{}
+	case StageNameWait:
+		s.WaitStageOptions = &WaitStageOptions{}
 		if len(gs.With) > 0 {
-			err = json.Unmarshal(gs.With, s.ApprovalStageOptions)
+			err = json.Unmarshal(gs.With, s.WaitStageOptions)
+		}
+	case StageNameWaitApproval:
+		s.WaitApprovalStageOptions = &WaitApprovalStageOptions{}
+		if len(gs.With) > 0 {
+			err = json.Unmarshal(gs.With, s.WaitApprovalStageOptions)
 		}
 	case StageNameAnalysis:
 		s.AnalysisStageOptions = &AnalysisStageOptions{}
 		if len(gs.With) > 0 {
 			err = json.Unmarshal(gs.With, s.AnalysisStageOptions)
 		}
-	case StageNameK8sRollout:
-		s.K8sRolloutStageOptions = &K8sRolloutStageOptions{}
+	case StageNameK8sPrimaryOut:
+		s.K8sPrimaryOutStageOptions = &K8sPrimaryOutStageOptions{}
 		if len(gs.With) > 0 {
-			err = json.Unmarshal(gs.With, s.K8sRolloutStageOptions)
+			err = json.Unmarshal(gs.With, s.K8sPrimaryOutStageOptions)
 		}
-	case StageNameK8sCanaryOut:
-		s.K8sCanaryOutStageOptions = &K8sCanaryOutStageOptions{}
+	case StageNameK8sStageOut:
+		s.K8sStageOutStageOptions = &K8sStageOutStageOptions{}
 		if len(gs.With) > 0 {
-			err = json.Unmarshal(gs.With, s.K8sCanaryOutStageOptions)
+			err = json.Unmarshal(gs.With, s.K8sStageOutStageOptions)
 		}
-	case StageNameK8sCanaryIn:
-		s.K8sCanaryInStageOptions = &K8sCanaryInStageOptions{}
+	case StageNameK8sStageIn:
+		s.K8sStageInStageOptions = &K8sStageInStageOptions{}
 		if len(gs.With) > 0 {
-			err = json.Unmarshal(gs.With, s.K8sCanaryInStageOptions)
+			err = json.Unmarshal(gs.With, s.K8sStageInStageOptions)
 		}
-	case StageNameK8sBlueGreenOut:
-		s.K8sBlueGreenOutStageOptions = &K8sBlueGreenOutStageOptions{}
+	case StageNameK8sBaselineOut:
+		s.K8sBaselineOutStageOptions = &K8sBaselineOutStageOptions{}
 		if len(gs.With) > 0 {
-			err = json.Unmarshal(gs.With, s.K8sBlueGreenOutStageOptions)
+			err = json.Unmarshal(gs.With, s.K8sBaselineOutStageOptions)
 		}
-	case StageNameK8sBlueGreenSwitchTraffic:
-		s.K8sBlueGreenSwitchTrafficStageOptions = &K8sBlueGreenSwitchTrafficStageOptions{}
+	case StageNameK8sBaselineIn:
+		s.K8sBaselineInStageOptions = &K8sBaselineInStageOptions{}
 		if len(gs.With) > 0 {
-			err = json.Unmarshal(gs.With, s.K8sBlueGreenSwitchTrafficStageOptions)
+			err = json.Unmarshal(gs.With, s.K8sBaselineInStageOptions)
 		}
-	case StageNameK8sBlueGreenIn:
-		s.K8sBlueGreenInStageOptions = &K8sBlueGreenInStageOptions{}
+	case StageNameK8sTrafficRoute:
+		s.K8sTrafficRouteStageOptions = &K8sTrafficRouteStageOptions{}
 		if len(gs.With) > 0 {
-			err = json.Unmarshal(gs.With, s.K8sBlueGreenInStageOptions)
+			err = json.Unmarshal(gs.With, s.K8sTrafficRouteStageOptions)
 		}
 	case StageNameTerraformPlan:
 		s.TerraformPlanStageOptions = &TerraformPlanStageOptions{}
@@ -205,15 +209,19 @@ func (s *PipelineStage) UnmarshalJSON(data []byte) error {
 	return err
 }
 
-type ApprovalStageOptions struct {
+type WaitStageOptions struct {
+	Duration Duration `json:"duration"`
+}
+
+type WaitApprovalStageOptions struct {
 	Approvers []string `json:"approvers"`
 }
 
-type K8sRolloutStageOptions struct {
+type K8sPrimaryOutStageOptions struct {
 	Manifests []string `json:"manifests"`
 }
 
-type K8sCanaryOutStageOptions struct {
+type K8sStageOutStageOptions struct {
 	// Percentage of canary traffic/pods after scale out.
 	// Default is 10%.
 	Weight        int             `json:"weight"`
@@ -221,20 +229,20 @@ type K8sCanaryOutStageOptions struct {
 	Target        K8sDeployTarget `json:"target"`
 }
 
-type K8sCanaryInStageOptions struct {
+type K8sStageInStageOptions struct {
 	// Percentage of canary traffic/pods after scale in.
 	// Default is 0.
 	Weight int
 }
 
-type K8sBlueGreenOutStageOptions struct {
+type K8sBaselineOutStageOptions struct {
 	StageService string `json:"stageService"`
 }
 
-type K8sBlueGreenSwitchTrafficStageOptions struct {
+type K8sBaselineInStageOptions struct {
 }
 
-type K8sBlueGreenInStageOptions struct {
+type K8sTrafficRouteStageOptions struct {
 }
 
 type TerraformPlanStageOptions struct {

@@ -3,15 +3,83 @@ kind: K8sApp
 spec:
   pipeline:
     stages:
-      - name: K8S_CANARY_OUT
+      - name: K8S_STAGE_OUT
         with:
           weight: 10
-        timeout: 10m
-        postDelay: 1m
-      - name: WAIT_APPROVAL
+      - name: K8S_PRIMARY_OUT
+      - name: K8S_STAGE_IN
+---
+
+apiVersion: pipecd.dev/v1beta1
+kind: K8sApp
+spec:
+  pipeline:
+    stages:
+      - name: K8S_STAGE_OUT
         with:
-          approvers:
-            - foo
-            - bar
-      - name: K8S_ROLLOUT
-      - name: K8S_CANARY_IN
+          weight: 10
+      - name: ANALYSIS
+      - name: K8S_PRIMARY_OUT
+      - name: K8S_STAGE_IN
+---
+
+apiVersion: pipecd.dev/v1beta1
+kind: K8sApp
+spec:
+  pipeline:
+    # Users can declarative describe how they want to progress to the new version.
+    stages:
+      - name: K8S_BASELINE_OUT
+        with:
+          weight: 10
+      - name: K8S_STAGE_OUT
+        with:
+          weight: 10
+      - name: ANALYSIS
+        with:
+          compare: true
+      - name: K8S_PRIMARY_OUT
+      - name: K8S_BASELINE_IN
+      - name: K8S_STAGE_IN
+  baseline:
+  stage:
+
+# Stage represents a temporary desired state for the applicaiton.
+# Users can declarative a list of stages to archive the final desired state.
+
+# Rollout the new version to primary.
+# K8S_PRIMARY_OUT
+
+# K8S_STAGE_OUT
+
+# This is a pod that is based on our currently running production version.
+# We want to collect metrics against a “new” copy of our old container so
+# we don’t muddy the waters testing against a pod that might have been running for a long time.
+# https://www.spinnaker.io/guides/user/canary/best-practices/#compare-canary-against-baseline-not-against-production
+# K8S_BASELINE_OUT
+
+# Requirements:
+# Multiple canary stages
+# Automated analysis
+# - between baseline and canary
+# - based on metrics, logs of only canary
+# Various targets: deployment, daemonset, statefulset
+
+
+# apiVersion: pipecd.dev/v1beta1
+# kind: K8sApp
+# spec:
+#   pipeline:
+#     stages:
+#       - name: K8S_CANARY_OUT
+#         with:
+#           weight: 10
+#         timeout: 10m
+#         postDelay: 1m
+#       - name: WAIT_APPROVAL
+#         with:
+#           approvers:
+#             - foo
+#             - bar
+#       - name: K8S_ROLLOUT
+#       - name: K8S_CANARY_IN
