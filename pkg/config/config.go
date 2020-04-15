@@ -28,18 +28,16 @@ const versionV1Beta1 = "pipecd.dev/v1beta1"
 type Kind string
 
 const (
-	// KindK8sApp represents configuration for a Kubernetes application.
-	// This application can be a group of plain-YAML Kubernetes manifests.
-	KindK8sApp Kind = "K8sApp"
-	// KindK8sKustomizationApp represents configuration for a Kubernetes application
-	// that using kustomization for templating.
-	KindK8sKustomizationApp Kind = "K8sKustomizationApp"
-	// KindK8sHelmApp represents configuration for a Kubernetes application.
-	// that using helm for templating.
-	KindK8sHelmApp Kind = "K8sHelmApp"
+	// KindKubernetesApp represents configuration for a Kubernetes application.
+	// This application can be a group of plain-YAML Kubernetes manifests,
+	// or kustomization manifests,
+	// or helm manifests.
+	KindKubernetesApp Kind = "KubernetesApp"
 	// KindTerraformApp represents configuration for a Terraform application.
 	// This application contains a single workspace of a terraform root module.
 	KindTerraformApp Kind = "TerraformApp"
+	// KindCrossplaneApp represents configuration for a Crossplane applicaiton.
+	KindCrossplaneApp Kind = "CrossplaneApp"
 	// KindLambdaApp represents configuration for an AWS Lambda application.
 	KindLambdaApp Kind = "LambdaApp"
 	// KindNotification represents shared notification configuration for a repository.
@@ -65,10 +63,9 @@ type Config struct {
 	spec       interface{}
 
 	// Application Specs.
-	K8sAppSpec              *K8sAppSpec
-	K8sKustomizationAppSpec *K8sKustomizationAppSpec
-	K8sHelmAppSpec          *K8sHelmAppSpec
-	TerraformAppSpec        *TerraformAppSpec
+	KubernetesAppSpec *KubernetesAppSpec
+	TerraformAppSpec  *TerraformAppSpec
+	// CrossplaneAppSpec *CrossplaneAppSpec
 
 	// Repositori Shared Specs.
 	NotificationSpec     *NotificationSpec
@@ -90,15 +87,9 @@ func (c *Config) init(kind Kind, apiVersion string) error {
 	c.APIVersion = apiVersion
 
 	switch kind {
-	case KindK8sApp:
-		c.K8sAppSpec = &K8sAppSpec{}
-		c.spec = c.K8sAppSpec
-	case KindK8sKustomizationApp:
-		c.K8sKustomizationAppSpec = &K8sKustomizationAppSpec{}
-		c.spec = c.K8sKustomizationAppSpec
-	case KindK8sHelmApp:
-		c.K8sHelmAppSpec = &K8sHelmAppSpec{}
-		c.spec = c.K8sHelmAppSpec
+	case KindKubernetesApp:
+		c.KubernetesAppSpec = &KubernetesAppSpec{}
+		c.spec = c.KubernetesAppSpec
 	case KindTerraformApp:
 		c.TerraformAppSpec = &TerraformAppSpec{}
 		c.spec = c.TerraformAppSpec

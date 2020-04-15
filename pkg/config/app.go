@@ -27,7 +27,6 @@ const (
 	StageNameWait            StageName = "WAIT"
 	StageNameWaitApproval    StageName = "WAIT_APPROVAL"
 	StageNameAnalysis        StageName = "ANALYSIS"
-	StageNameK8sRollout      StageName = "K8S_ROLLOUT"
 	StageNameK8sPrimaryOut   StageName = "K8S_PRIMARY_OUT"
 	StageNameK8sStageOut     StageName = "K8S_STAGE_OUT"
 	StageNameK8sStageIn      StageName = "K8S_STAGE_IN"
@@ -38,56 +37,15 @@ const (
 	StageNameTerraformApply  StageName = "TERRAFORM_APPLY"
 )
 
-// StageName represents predefined Stage that can be used in the pipeline.
-//   type StageName string
-
-//   const (
-// 	  StageNameWait                      StageName = "WAIT"
-// 	  StageNameWaitApproval              StageName = "WAIT_APPROVAL"
-// 	  StageNameAnalysis                  StageName = "ANALYSIS"
-// 	  StageNameK8sRollout                StageName = "K8S_ROLLOUT"
-// 	  StageNameK8sCanaryOut              StageName = "K8S_CANARY_OUT"
-// 	  StageNameK8sCanaryIn               StageName = "K8S_CANARY_IN"
-// 	  StageNameK8sBlueGreenOut           StageName = "K8S_BLUEGREEN_OUT"
-// 	  StageNameK8sBlueGreenSwitchTraffic StageName = "K8S_BLUEGREEN_SWITCH_TRAFFIC"
-// 	  StageNameK8sBlueGreenIn            StageName = "K8S_BLUEGREEN_IN"
-// 	  StageNameTerraformPlan             StageName = "TERRAFORM_PLAN"
-// 	  StageNameTerraformApply            StageName = "TERRAFORM_APPLY"
-//   )
-
-type K8sAppSpec struct {
+type KubernetesAppSpec struct {
 	// Selector is a list of labels used to query all resources of this application.
-	Selector    map[string]string `json:"selector"`
-	Input       *K8sAppInput      `json:"input"`
-	Pipeline    *AppPipeline      `json:"pipeline"`
-	Destination string            `json:"destination"`
+	Selector    map[string]string   `json:"selector"`
+	Input       *KubernetesAppInput `json:"input"`
+	Pipeline    *AppPipeline        `json:"pipeline"`
+	Destination string              `json:"destination"`
 }
 
-func (s *K8sAppSpec) Validate() error {
-	return nil
-}
-
-type K8sKustomizationAppSpec struct {
-	// Selector is a list of labels used to query all resources of this application.
-	Selector    map[string]string         `json:"selector"`
-	Input       *K8sKustomizationAppInput `json:"input"`
-	Pipeline    *AppPipeline              `json:"pipeline"`
-	Destination string                    `json:"destination"`
-}
-
-func (s *K8sKustomizationAppSpec) Validate() error {
-	return nil
-}
-
-type K8sHelmAppSpec struct {
-	// Selector is a list of labels used to query all resources of this application.
-	Selector    map[string]string `json:"selector"`
-	Input       *K8sHelmAppInput  `json:"input"`
-	Pipeline    *AppPipeline      `json:"pipeline"`
-	Destination string            `json:"destination"`
-}
-
-func (s *K8sHelmAppSpec) Validate() error {
+func (s *KubernetesAppSpec) Validate() error {
 	return nil
 }
 
@@ -290,20 +248,13 @@ type AnalysisHTTP struct {
 	UseTemplate      string
 }
 
-type K8sAppInput struct {
+type KubernetesAppInput struct {
 	Manifests      []string
 	KubectlVersion string
-}
-
-type K8sKustomizationAppInput struct {
-	KubectlVersion string
-}
-
-type K8sHelmAppInput struct {
-	Chart       string
-	ValueFiles  []string
-	Namespace   string
-	HelmVersion string
+	HelmChart      string
+	HelmValueFiles []string
+	HelmVersion    string
+	Namespace      string
 }
 
 type TerraformAppInput struct {

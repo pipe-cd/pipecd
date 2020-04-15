@@ -95,7 +95,7 @@ func TestConfig(t *testing.T) {
 		// },
 		// {
 		// 	fileName:           "testdata/k8s-app-canary.yaml",
-		// 	expectedKind:       KindK8sApp,
+		// 	expectedKind:       KindKubernetesApp,
 		// 	expectedAPIVersion: "pipecd.dev/v1beta1",
 		// 	expectedSpec: &K8sAppSpec{
 		// 		Pipeline: &AppPipeline{
