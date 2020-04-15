@@ -5,9 +5,8 @@ spec:
     stages:
       - name: K8S_STAGE_OUT
         with:
-          trafficWeight: 10
-          workloadWeight: 10
-      - name: K8S_ROLLOUT
+          weight: 10
+      - name: K8S_PRIMARY_OUT
       - name: K8S_STAGE_IN
 ---
 
@@ -18,9 +17,9 @@ spec:
     stages:
       - name: K8S_STAGE_OUT
         with:
-          trafficWeight: 10
+          weight: 10
       - name: ANALYSIS
-      - name: K8S_ROLLOUT
+      - name: K8S_PRIMARY_OUT
       - name: K8S_STAGE_IN
 ---
 
@@ -31,21 +30,17 @@ spec:
     # Users can declarative describe how they want to progress to the new version.
     stages:
       - name: K8S_BASELINE_OUT
-        desc: Rollout Baseline
         with:
-          trafficWeight: 10
+          weight: 10
       - name: K8S_STAGE_OUT
-        desc: Rollout Canary
         with:
-          trafficWeight: 10
+          weight: 10
       - name: ANALYSIS
         with:
           compare: true
-      - name: K8S_ROLLOUT
+      - name: K8S_PRIMARY_OUT
       - name: K8S_BASELINE_IN
-        desc: Delete Baseline
       - name: K8S_STAGE_IN
-        desc: Delete Canary
   baseline:
   stage:
 
@@ -53,7 +48,7 @@ spec:
 # Users can declarative a list of stages to archive the final desired state.
 
 # Rollout the new version to primary.
-# K8S_ROLLOUT
+# K8S_PRIMARY_OUT
 
 # K8S_STAGE_OUT
 
