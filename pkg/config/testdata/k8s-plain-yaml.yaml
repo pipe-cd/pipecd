@@ -1,5 +1,5 @@
 apiVersion: pipecd.dev/v1beta1
-kind: K8sApp
+kind: KubernetesApp
 spec:
   input:
     manifests:

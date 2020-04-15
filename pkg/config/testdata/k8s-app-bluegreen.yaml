@@ -1,5 +1,5 @@
 apiVersion: pipecd.dev/v1beta1
-kind: K8sApp
+kind: KubernetesApp
 spec:
   pipeline:
     stages:
@@ -12,36 +12,44 @@ spec:
         with:
           target: primary
       - name: K8S_STAGE_IN
-
-# apiVersion: pipecd.dev/v1beta1
-# kind: K8sApp
-# spec:
-#   pipeline:
-#     stages:
-#       - name: K8S_BLUEGREEN_OUT
-#       - name: ANALYSIS
-#       - name: K8S_BLUEGREEN_SWITCH_TRAFFIC
-#       - name: WAIT_APPROVAL
-#       - name: K8S_ROLLOUT
-#       - name: K8S_BLUEGREEN_SWITCH_TRAFFIC
-#       - name: K8S_BLUEGREEN_IN
-
-# apiVersion: pipecd.dev/v1beta1
-# kind: K8sApp
-# spec:
-#   pipeline:
-#     stages:
-#       - name: K8S_BLUEGREEN_OUT
-#       - name: K8S_BLUEGREEN_SWITCH_TRAFFIC
-#       - name: K8S_ROLLOUT
-#       - name: K8S_BLUEGREEN_SWITCH_TRAFFIC
-#       - name: K8S_BLUEGREEN_IN
-
-# apiVersion: pipecd.dev/v1beta1
-# kind: K8sApp
-# spec:
-#   pipeline:
-#     stages:
-#       - name: K8S_BLUEGREEN_OUT
-#       - name: K8S_BLUEGREEN_SWITCH_TRAFFIC
-#       - name: K8S_BLUEGREEN_IN
+---
+apiVersion: pipecd.dev/v1beta1
+kind: KubernetesApp
+spec:
+  pipeline:
+    stages:
+      - name: K8S_STAGE_OUT
+      - name: WAIT_APPROVAL
+        with:
+          approvers:
+            - user-foo
+            - user-bar
+      - name: K8S_TRAFFIC_ROUTE
+        with:
+          target: stage
+      - name: K8S_PRIMARY_OUT
+      - name: K8S_TRAFFIC_ROUTE
+        with:
+          target: primary
+      - name: K8S_STAGE_IN
+---
+apiVersion: pipecd.dev/v1beta1
+kind: KubernetesApp
+spec:
+  pipeline:
+    stages:
+      - name: K8S_STAGE_OUT
+      - name: ANALYSIS
+        with:
+          duration: 10m
+          threshold: 2
+          https:
+            - useTemplate: http_stage_check
+      - name: K8S_TRAFFIC_ROUTE
+        with:
+          target: stage
+      - name: K8S_PRIMARY_OUT
+      - name: K8S_TRAFFIC_ROUTE
+        with:
+          target: primary
+      - name: K8S_STAGE_IN

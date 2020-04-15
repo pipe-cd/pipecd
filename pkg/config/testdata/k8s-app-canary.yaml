@@ -1,5 +1,7 @@
+# Simple canary deployment.
+# This deploys canary with 10% of pods before rolling out the primary.
 apiVersion: pipecd.dev/v1beta1
-kind: K8sApp
+kind: KubernetesApp
 spec:
   pipeline:
     stages:
@@ -8,10 +10,31 @@ spec:
           weight: 10
       - name: K8S_PRIMARY_OUT
       - name: K8S_STAGE_IN
----
 
+---
+# Simple canary deployment that requires an approval
+# before rolling out the primary.
 apiVersion: pipecd.dev/v1beta1
-kind: K8sApp
+kind: KubernetesApp
+spec:
+  pipeline:
+    stages:
+      - name: K8S_STAGE_OUT
+        with:
+          weight: 10
+      - name: WAIT_APPROVAL
+        with:
+          approvers:
+            - user-foo
+            - user-bar
+      - name: K8S_PRIMARY_OUT
+      - name: K8S_STAGE_IN
+
+---
+# Canary deployment that has an analysis stage to verify canary.
+# The analysis is just based on the metrics, log, http response from canary version.
+apiVersion: pipecd.dev/v1beta1
+kind: KubernetesApp
 spec:
   pipeline:
     stages:
@@ -19,15 +42,62 @@ spec:
         with:
           weight: 10
       - name: ANALYSIS
+        with:
+          duration: 10m
+          threshold: 2
+          metrics:
+            - query: grpc_error_percentage
+              expected: < 0.1
+              interval: 1m
+              provider: prometheus-dev
+          logs:
+            - query: 'logName = "projects/demo/logs/error'
+              interval: 1m
+              provider: stackdriver-dev
+          https:
+            - url: https://canary-endpoint.dev
+              method: GET
+              expected: 200
+              interval: 1m
       - name: K8S_PRIMARY_OUT
       - name: K8S_STAGE_IN
----
 
+---
+# Canary deployment that has an analysis stage to verify canary.
+# The analysis is using metrics templates.
 apiVersion: pipecd.dev/v1beta1
-kind: K8sApp
+kind: KubernetesApp
 spec:
   pipeline:
-    # Users can declarative describe how they want to progress to the new version.
+    stages:
+      - name: K8S_STAGE_OUT
+        with:
+          weight: 10
+      - name: ANALYSIS
+        with:
+          duration: 10m
+          threshold: 2
+          metrics:
+            - useTemplate: prometheus_grpc_error_percentage
+            - useTemplate: prometheus_app_http_error_percentage
+          logs:
+            - useTemplate: stackdriver_log_error
+          https:
+            - useTemplate: http_canary_check
+      - name: K8S_PRIMARY_OUT
+      - name: K8S_STAGE_IN
+
+---
+# Canary deployment that has an analysis stage to verify canary.
+# This deploys both canary and baseline version.
+# The baseline pod is a pod that is based on our currently running production version.
+# We want to collect metrics against a “new” copy of our old container so
+# we don’t muddy the waters testing against a pod that might have been running for a long time.
+# The analysis stage is based on the comparision between baseline and stage workloads.
+apiVersion: pipecd.dev/v1beta1
+kind: KubernetesApp
+spec:
+  pipeline:
     stages:
       - name: K8S_BASELINE_OUT
         with:
@@ -37,21 +107,14 @@ spec:
           weight: 10
       - name: ANALYSIS
         with:
-          compare: true
+          duration: 10m
+          compareWithBaseline: true
       - name: K8S_PRIMARY_OUT
       - name: K8S_BASELINE_IN
       - name: K8S_STAGE_IN
-  baseline:
-  stage:
 
 # Stage represents a temporary desired state for the applicaiton.
 # Users can declarative a list of stages to archive the final desired state.
-
-# Rollout the new version to primary.
-# K8S_PRIMARY_OUT
-
-# K8S_STAGE_OUT
-
 # This is a pod that is based on our currently running production version.
 # We want to collect metrics against a “new” copy of our old container so
 # we don’t muddy the waters testing against a pod that might have been running for a long time.
@@ -65,21 +128,25 @@ spec:
 # - based on metrics, logs of only canary
 # Various targets: deployment, daemonset, statefulset
 
-
-# apiVersion: pipecd.dev/v1beta1
-# kind: K8sApp
-# spec:
-#   pipeline:
-#     stages:
-#       - name: K8S_CANARY_OUT
-#         with:
-#           weight: 10
-#         timeout: 10m
-#         postDelay: 1m
-#       - name: WAIT_APPROVAL
-#         with:
-#           approvers:
-#             - foo
-#             - bar
-#       - name: K8S_ROLLOUT
-#       - name: K8S_CANARY_IN
+#   # List of deployments for the same commit
+#   # that must be succeeded before running the deployment for this application.
+#   requireDeployments:
+#     - app: demoapp
+#       env: dev
+#     - app: anotherapp
+#   # Make a pull request to promote other applicationzwww
+#   # (or promote changes through environments of the same application)
+#   # after the success of this deployment.
+#   promote:
+#     - app: demoapp
+#       env: prod
+#       transforms:
+#       - source: pipe.yaml
+#         destination: pipe.yaml
+#         regex: git@github.com:org/config-repo.git:charts/demoapp?ref=(.*)
+#         replacement: git@github.com:org/config-repo.git:charts/demoapp?ref={{ $1 }}
+#       pullRequest:
+#         title: Update demoapp service in prod
+#         commit: Update demo app service in prod
+#         desc: |
+#           Update demoapp service to {{ .App.Input.Version }}

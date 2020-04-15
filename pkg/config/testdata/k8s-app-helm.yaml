@@ -1,8 +1,8 @@
 apiVersion: pipecd.dev/v1beta1
-kind: K8sHelmApp
+kind: KubernetesApp
 spec:
   input:
-    chart: git@github.com:org/config-repo.git:charts/demoapp?ref=v1.0.0
-    valueFiles:
+    helmChart: git@github.com:org/config-repo.git:charts/demoapp?ref=v1.0.0
+    helmValueFiles:
     - values.yaml
     helmVersion: 3.1.1
