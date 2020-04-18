@@ -1,5 +1,5 @@
-# Simple canary deployment.
-# This deploys canary with 10% of pods before rolling out the primary.
+# Simple canary pipeline for a Kubernetes application.
+# This makes a progressive delivery with canary strategy.
 apiVersion: pipecd.dev/v1beta1
 kind: KubernetesApp
 spec:

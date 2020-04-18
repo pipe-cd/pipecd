@@ -1,3 +1,5 @@
+# Pipeline for a Kubernetes application.
+# This makes a progressive delivery with BlueGreen strategy.
 apiVersion: pipecd.dev/v1beta1
 kind: KubernetesApp
 spec:
@@ -12,7 +14,11 @@ spec:
         with:
           target: primary
       - name: K8S_STAGE_IN
+
 ---
+# Pipeline for a Kubernetes application.
+# This makes a progressive delivery with BlueGreen strategy.
+# This also requires an approval before switch traffic to the stage.
 apiVersion: pipecd.dev/v1beta1
 kind: KubernetesApp
 spec:
@@ -32,7 +38,11 @@ spec:
         with:
           target: primary
       - name: K8S_STAGE_IN
+
 ---
+# Pipeline for a Kubernetes application.
+# This makes a progressive delivery with BlueGreen strategy.
+# This also has a ANALYSIS stage for running smoke test againts the stage.
 apiVersion: pipecd.dev/v1beta1
 kind: KubernetesApp
 spec:

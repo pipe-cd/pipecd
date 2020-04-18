@@ -19,24 +19,45 @@ import (
 	"fmt"
 )
 
-// StageName represents temporary desired state
-// before reaching the final desired state.
-type StageName string
+// Stage represents the middle and temporary state of application
+// before reaching its final desired state.
+type Stage string
 
 const (
-	StageNameWait            StageName = "WAIT"
-	StageNameWaitApproval    StageName = "WAIT_APPROVAL"
-	StageNameAnalysis        StageName = "ANALYSIS"
-	StageNameK8sPrimaryOut   StageName = "K8S_PRIMARY_OUT"
-	StageNameK8sStageOut     StageName = "K8S_STAGE_OUT"
-	StageNameK8sStageIn      StageName = "K8S_STAGE_IN"
-	StageNameK8sBaselineOut  StageName = "K8S_BASELINE_OUT"
-	StageNameK8sBaselineIn   StageName = "K8S_BASELINE_IN"
-	StageNameK8sTrafficRoute StageName = "K8S_TRAFFIC_ROUTE"
-	StageNameTerraformPlan   StageName = "TERRAFORM_PLAN"
-	StageNameTerraformApply  StageName = "TERRAFORM_APPLY"
+	// StageWait represents the waiting state for a specified period of time.
+	StageWait Stage = "WAIT"
+	// StageWaitApproval represents the waiting state until getting an approval
+	// from one of the specified approvers.
+	StageWaitApproval Stage = "WAIT_APPROVAL"
+	// StageAnalysis represents the waiting state for analysing
+	// the application status based on metrics, log, http request...
+	StageAnalysis Stage = "ANALYSIS"
+	// StageK8sPrimaryOut represents the state where the PRIMARY
+	// has been updated to the new version/configuration.
+	StageK8sPrimaryOut Stage = "K8S_PRIMARY_OUT"
+	// StageK8sStageOut represents the state where the STAGE workloads
+	// has been rolled out with the new version/configuration.
+	StageK8sStageOut Stage = "K8S_STAGE_OUT"
+	// StageK8sStageIn represents the state where the STAGE workloads
+	// has been cleaned.
+	StageK8sStageIn Stage = "K8S_STAGE_IN"
+	// StageK8sBaselineOut represents the state where the BASELINE workloads
+	// has been rolled out with the new version/configuration.
+	StageK8sBaselineOut Stage = "K8S_BASELINE_OUT"
+	// StageK8sBaselineIn represents the state where the BASELINE workloads
+	// has been cleaned.
+	StageK8sBaselineIn Stage = "K8S_BASELINE_IN"
+	// StageK8sTrafficRoute represents the state where the traffic to application
+	// should be routed as the specified percentage to PRIMARY, STAGE, BASELINE.
+	StageK8sTrafficRoute Stage = "K8S_TRAFFIC_ROUTE"
+	// StageTerraformPlan shows terraform plan result.
+	StageTerraformPlan Stage = "TERRAFORM_PLAN"
+	// StageTerraformApply represents the state where
+	// the new configuration has been applied.
+	StageTerraformApply Stage = "TERRAFORM_APPLY"
 )
 
+// KubernetesAppSpec represents configuration for a Kubernetes application.
 type KubernetesAppSpec struct {
 	// Selector is a list of labels used to query all resources of this application.
 	Selector    map[string]string   `json:"selector"`
@@ -45,16 +66,19 @@ type KubernetesAppSpec struct {
 	Destination string              `json:"destination"`
 }
 
+// Validate returns an error if any wrong configuration value was found.
 func (s *KubernetesAppSpec) Validate() error {
 	return nil
 }
 
+// TerraformAppSpec represents configuration for a Terraform application.
 type TerraformAppSpec struct {
 	Input       *TerraformAppInput `json:"input"`
 	Pipeline    *AppPipeline       `json:"pipeline"`
 	Destination string             `json:"destination"`
 }
 
+// Validate returns an error if any wrong configuration value was found.
 func (s *TerraformAppSpec) Validate() error {
 	if s.Destination == "" {
 		return fmt.Errorf("spec.destination for terraform application is required")
@@ -67,11 +91,25 @@ func (s *TerraformAppSpec) Validate() error {
 // - Target PodSpec (Target can be Deployment, DaemonSet, StatefullSet)
 // - ConfigMaps, Secrets that are mounted as volumes or envs in the deployment.
 type AppPipeline struct {
-	Stages []PipelineStage `json:"stages"`
+	Stages        []PipelineStage      `json:"stages"`
+	StageTrack    StageTrackOptions    `json:"stageTrack"`
+	BaselineTrack BaselineTrackOptions `json:"baselineTrack"`
 }
 
+type StageTrackOptions struct {
+	Target  *K8sDeployTarget
+	Service *K8sService
+}
+
+type BaselineTrackOptions struct {
+	Target  *K8sDeployTarget
+	Service *K8sService
+}
+
+// PiplineStage represents a single stage of a pipeline.
+// This is used as a generic struct for all stage type.
 type PipelineStage struct {
-	Name    StageName
+	Name    Stage
 	Desc    string
 	Timeout Duration
 
@@ -89,7 +127,7 @@ type PipelineStage struct {
 }
 
 type genericPipelineStage struct {
-	Name    StageName       `json:"name"`
+	Name    Stage           `json:"name"`
 	Desc    string          `json:"desc,omitempty"`
 	Timeout Duration        `json:"timeout"`
 	With    json.RawMessage `json:"with"`
@@ -106,57 +144,57 @@ func (s *PipelineStage) UnmarshalJSON(data []byte) error {
 	s.Timeout = gs.Timeout
 
 	switch s.Name {
-	case StageNameWait:
+	case StageWait:
 		s.WaitStageOptions = &WaitStageOptions{}
 		if len(gs.With) > 0 {
 			err = json.Unmarshal(gs.With, s.WaitStageOptions)
 		}
-	case StageNameWaitApproval:
+	case StageWaitApproval:
 		s.WaitApprovalStageOptions = &WaitApprovalStageOptions{}
 		if len(gs.With) > 0 {
 			err = json.Unmarshal(gs.With, s.WaitApprovalStageOptions)
 		}
-	case StageNameAnalysis:
+	case StageAnalysis:
 		s.AnalysisStageOptions = &AnalysisStageOptions{}
 		if len(gs.With) > 0 {
 			err = json.Unmarshal(gs.With, s.AnalysisStageOptions)
 		}
-	case StageNameK8sPrimaryOut:
+	case StageK8sPrimaryOut:
 		s.K8sPrimaryOutStageOptions = &K8sPrimaryOutStageOptions{}
 		if len(gs.With) > 0 {
 			err = json.Unmarshal(gs.With, s.K8sPrimaryOutStageOptions)
 		}
-	case StageNameK8sStageOut:
+	case StageK8sStageOut:
 		s.K8sStageOutStageOptions = &K8sStageOutStageOptions{}
 		if len(gs.With) > 0 {
 			err = json.Unmarshal(gs.With, s.K8sStageOutStageOptions)
 		}
-	case StageNameK8sStageIn:
+	case StageK8sStageIn:
 		s.K8sStageInStageOptions = &K8sStageInStageOptions{}
 		if len(gs.With) > 0 {
 			err = json.Unmarshal(gs.With, s.K8sStageInStageOptions)
 		}
-	case StageNameK8sBaselineOut:
+	case StageK8sBaselineOut:
 		s.K8sBaselineOutStageOptions = &K8sBaselineOutStageOptions{}
 		if len(gs.With) > 0 {
 			err = json.Unmarshal(gs.With, s.K8sBaselineOutStageOptions)
 		}
-	case StageNameK8sBaselineIn:
+	case StageK8sBaselineIn:
 		s.K8sBaselineInStageOptions = &K8sBaselineInStageOptions{}
 		if len(gs.With) > 0 {
 			err = json.Unmarshal(gs.With, s.K8sBaselineInStageOptions)
 		}
-	case StageNameK8sTrafficRoute:
+	case StageK8sTrafficRoute:
 		s.K8sTrafficRouteStageOptions = &K8sTrafficRouteStageOptions{}
 		if len(gs.With) > 0 {
 			err = json.Unmarshal(gs.With, s.K8sTrafficRouteStageOptions)
 		}
-	case StageNameTerraformPlan:
+	case StageTerraformPlan:
 		s.TerraformPlanStageOptions = &TerraformPlanStageOptions{}
 		if len(gs.With) > 0 {
 			err = json.Unmarshal(gs.With, s.TerraformPlanStageOptions)
 		}
-	case StageNameTerraformApply:
+	case StageTerraformApply:
 		s.TerraformApplyStageOptions = &TerraformApplyStageOptions{}
 		if len(gs.With) > 0 {
 			err = json.Unmarshal(gs.With, s.TerraformApplyStageOptions)
@@ -167,50 +205,78 @@ func (s *PipelineStage) UnmarshalJSON(data []byte) error {
 	return err
 }
 
+// WaitStageOptions contains all configurable values for a WAIT stage.
 type WaitStageOptions struct {
 	Duration Duration `json:"duration"`
 }
 
+// WaitStageOptions contains all configurable values for a WAIT_APPROVAL stage.
 type WaitApprovalStageOptions struct {
 	Approvers []string `json:"approvers"`
 }
 
+// WaitStageOptions contains all configurable values for a K8S_PRIMARY_OUT stage.
 type K8sPrimaryOutStageOptions struct {
 	Manifests []string `json:"manifests"`
 }
 
+// K8sStageOutStageOptions contains all configurable values for a K8S_STAGE_OUT stage.
 type K8sStageOutStageOptions struct {
-	// Percentage of canary traffic/pods after scale out.
-	// Default is 10%.
-	Weight        int             `json:"weight"`
-	CanaryService K8sService      `json:"canaryService"`
-	Target        K8sDeployTarget `json:"target"`
+	// Percentage of pods for STAGE workloads.
+	// Default is 1 pod.
+	Weight int `json:"weight"`
+	// Suffix that should be used when naming the STAGE resources.
+	// Default is "stage".
+	Suffix string
+	// If true the service resource for the STAGE will be created.
+	WithService bool
 }
 
+// K8sStageInStageOptions contains all configurable values for a K8S_STAGE_IN stage.
 type K8sStageInStageOptions struct {
-	// Percentage of canary traffic/pods after scale in.
-	// Default is 0.
-	Weight int
 }
 
+// K8sBaselineOutStageOptions contains all configurable values for a K8S_BASELINE_OUT stage.
 type K8sBaselineOutStageOptions struct {
-	StageService string `json:"stageService"`
+	// Percentage of pods for BASELINE workloads.
+	// Default is 1 pod.
+	Weight int `json:"weight"`
+	// Suffix that should be used when naming the STAGE resources.
+	// Default is "baseline".
+	Suffix string
+	// If true the service resource for the BASELINE will be created.
+	WithService bool
 }
 
+// K8sBaselineInStageOptions contains all configurable values for a K8S_BASELINE_IN stage.
 type K8sBaselineInStageOptions struct {
 }
 
+// K8sTrafficRouteStageOptions contains all configurable values for a K8S_TRAFFIC_ROUTE stage.
 type K8sTrafficRouteStageOptions struct {
+	// Target can be "primary", "stage", "baseline".
+	// If this field was configured, all of the traffic to the applicaiton
+	// should be routing to the target.
+	Target string `json:"target,omitempty"`
+	// The percentage of traffic should be routed to PRIMARY.
+	Primary int `json:"primary"`
+	// The percentage of traffic should be routed to STAGE.
+	Stage int `json:"stage"`
+	// The percentage of traffic should be routed to BASELINE.
+	Baseline int `json:"baseline"`
 }
 
+// TerraformPlanStageOptions contains all configurable values for a K8S_TERRAFORM_PLAN stage.
 type TerraformPlanStageOptions struct {
 }
 
+// TerraformApplyStageOptions contains all configurable values for a K8S_TERRAFORM_APPLY stage.
 type TerraformApplyStageOptions struct {
 }
 
+// AnalysisStageOptions contains all configurable values for a K8S_ANALYSIS stage.
 type AnalysisStageOptions struct {
-	Duration Duration
+	Duration Duration `json:"duration"`
 	// Maximum number of failed checks before the stage is considered as failure.
 	Threshold int               `json:"threshold"`
 	Metrics   []AnalysisMetrics `json:"metrics"`
@@ -258,15 +324,15 @@ type KubernetesAppInput struct {
 }
 
 type TerraformAppInput struct {
-	Workspace        string
-	TerraformVersion string
+	Workspace        string `json:"workspace,omitempty"`
+	TerraformVersion string `json:"terraformVersion,omitempty"`
 }
 
 type K8sDeployTarget struct {
-	Kind string
-	Name string
+	Kind string `json:"kind"`
+	Name string `json:"name"`
 }
 
 type K8sService struct {
-	Name string
+	Name string `json:"name"`
 }

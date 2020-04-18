@@ -31,11 +31,11 @@ func TestConfig(t *testing.T) {
 		expectedError      error
 	}{
 		{
-			fileName:      "testdata/terraform-app-missing-destination.yaml",
+			fileName:      "testdata/application/terraform-app-missing-destination.yaml",
 			expectedError: fmt.Errorf("spec.destination for terraform application is required"),
 		},
 		{
-			fileName:           "testdata/terraform-app.yaml",
+			fileName:           "testdata/application/terraform-app.yaml",
 			expectedKind:       KindTerraformApp,
 			expectedAPIVersion: "pipecd.dev/v1beta1",
 			expectedSpec: &TerraformAppSpec{
@@ -49,7 +49,7 @@ func TestConfig(t *testing.T) {
 			expectedError: nil,
 		},
 		{
-			fileName:           "testdata/terraform-app-with-approval.yaml",
+			fileName:           "testdata/application/terraform-app-with-approval.yaml",
 			expectedKind:       KindTerraformApp,
 			expectedAPIVersion: "pipecd.dev/v1beta1",
 			expectedSpec: &TerraformAppSpec{
@@ -60,17 +60,17 @@ func TestConfig(t *testing.T) {
 				Pipeline: &AppPipeline{
 					Stages: []PipelineStage{
 						PipelineStage{
-							Name:                      StageNameTerraformPlan,
+							Name:                      StageTerraformPlan,
 							TerraformPlanStageOptions: &TerraformPlanStageOptions{},
 						},
 						PipelineStage{
-							Name: StageNameWaitApproval,
+							Name: StageWaitApproval,
 							WaitApprovalStageOptions: &WaitApprovalStageOptions{
 								Approvers: []string{"foo", "bar"},
 							},
 						},
 						PipelineStage{
-							Name:                       StageNameTerraformApply,
+							Name:                       StageTerraformApply,
 							TerraformApplyStageOptions: &TerraformApplyStageOptions{},
 						},
 					},
@@ -80,7 +80,7 @@ func TestConfig(t *testing.T) {
 			expectedError: nil,
 		},
 		// {
-		// 	fileName:           "testdata/k8s-app-helm.yaml",
+		// 	fileName:           "testdata/application/k8s-app-helm.yaml",
 		// 	expectedKind:       KindK8sHelmApp,
 		// 	expectedAPIVersion: "pipecd.dev/v1beta1",
 		// 	expectedSpec: &K8sHelmAppSpec{
@@ -94,14 +94,14 @@ func TestConfig(t *testing.T) {
 		// 	expectedError: nil,
 		// },
 		// {
-		// 	fileName:           "testdata/k8s-app-canary.yaml",
+		// 	fileName:           "testdata/application/k8s-app-canary.yaml",
 		// 	expectedKind:       KindKubernetesApp,
 		// 	expectedAPIVersion: "pipecd.dev/v1beta1",
 		// 	expectedSpec: &K8sAppSpec{
 		// 		Pipeline: &AppPipeline{
 		// 			Stages: []PipelineStage{
 		// 				PipelineStage{
-		// 					Name: StageNameK8sCanaryOut,
+		// 					Name: StageK8sCanaryOut,
 		// 					K8sCanaryOutStageOptions: &K8sCanaryOutStageOptions{
 		// 						Weight: 10,
 		// 					},
@@ -109,17 +109,17 @@ func TestConfig(t *testing.T) {
 		// 					PostDelay: Duration(time.Minute),
 		// 				},
 		// 				PipelineStage{
-		// 					Name: StageNameWaitApproval,
+		// 					Name: StageWaitApproval,
 		// 					ApprovalStageOptions: &ApprovalStageOptions{
 		// 						Approvers: []string{"foo", "bar"},
 		// 					},
 		// 				},
 		// 				PipelineStage{
-		// 					Name:                   StageNameK8sRollout,
+		// 					Name:                   StageK8sRollout,
 		// 					K8sRolloutStageOptions: &K8sRolloutStageOptions{},
 		// 				},
 		// 				PipelineStage{
-		// 					Name:                    StageNameK8sCanaryIn,
+		// 					Name:                    StageK8sCanaryIn,
 		// 					K8sCanaryInStageOptions: &K8sCanaryInStageOptions{},
 		// 				},
 		// 			},
