@@ -2,8 +2,8 @@ apiVersion: pipecd.dev/v1beta1
 kind: RunnerConfig
 spec:
   git:
-    sshKeyFile: /ect/runner/ssh.key
-    accessTokenFile: /etc/runner/git.token
+    sshKeyFile: /etc/pipecd-runner/ssh.key
+    accessTokenFile: /etc/pipecd-runner/git.token
   repositories:
     - repo: git@github.com:org/repo1
       branch: master
@@ -24,7 +24,7 @@ spec:
         gcp:
           project: gcp-project
           region: us-central1
-          credentials: /etc/runner/credentials.serviceaccount
+          credentials: /etc/pipecd-runner/terraform.serviceaccount
     - name: aws-terraform
       type: Terraform
       terraform:
@@ -37,11 +37,11 @@ spec:
     - name: stackdriver
       stackdriver:
         projectId: demo
-        serviceAccountFile: /etc/stackdriver.serviceaccount
+        serviceAccountFile: /etc/pipecd-runner/stackdriver.serviceaccount
     - name: datadog
       datadog:
-        apiKeyFile: /etc/datadog.apikey
-        applicationKeyFile: /etc/datadog.applicationkey
+        apiKeyFile: /etc/pipecd-runner/datadog.apikey
+        applicationKeyFile: /etc/pipecd-runner/datadog.applicationkey
     - name: cloudwatch
       cloudwatch:
         region: ap-northeast-1
