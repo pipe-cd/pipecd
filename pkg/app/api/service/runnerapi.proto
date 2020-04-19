@@ -133,6 +133,8 @@ message ReportCommandHandledResponse {
 
 message ReportPipelineStartedRequest {
     string pipeline_id = 1 [(validate.rules).string.min_len = 1];
+    string application_id = 2 [(validate.rules).string.min_len = 1];
+    pipe.model.Commit commit = 3 [(validate.rules).message.required = true];
 }
 
 message ReportPipelineStartedResponse {
