@@ -139,7 +139,7 @@ func (s *server) run(ctx context.Context, t cli.Telemetry) error {
 		})
 	}
 
-	// Start an  http server for handling incoming webhook events.
+	// Start an http server for handling incoming webhook events.
 	{
 		mux := http.NewServeMux()
 		httpServer := &http.Server{

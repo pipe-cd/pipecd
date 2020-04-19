@@ -50,10 +50,8 @@ service RunnerAPI {
     // By that way we can control the traffic to the datastore in a better way.
     rpc RegisterEvents(RegisterEventsRequest) returns (RegisterEventsResponse) {}
 
-    // SendStageCompleteLog is sent by runner to save the complete log
-    // of a pipeline stage after its completion.
-    // The complete log will be persisted into the filestore immediately.
-    rpc SendStageCompleteLog(SendStageCompleteLogRequest) returns (SendStageCompleteLogResponse) {}
+    // SendStageLog is sent by runner to save the log of a pipeline stage.
+    rpc SendStageLog(SendStageLogRequest) returns (SendStageLogResponse) {}
 
     // GetCommands is periodically called by runner to obtain the commands
     // that should be handled.
@@ -106,13 +104,14 @@ message RegisterEventsResponse {
     repeated string failed_ids = 1;
 }
 
-message SendStageCompleteLogRequest {
+message SendStageLogRequest {
     string pipeline_id = 1 [(validate.rules).string.min_len = 1];
     string stage_id = 2 [(validate.rules).string.min_len = 1];
     bytes log = 3;
+    bool complete = 4;
 }
 
-message SendStageCompleteLogResponse {
+message SendStageLogResponse {
 }
 
 message GetCommandsRequest {

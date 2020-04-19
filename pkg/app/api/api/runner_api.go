@@ -75,10 +75,8 @@ func (a *RunnerAPI) RegisterEvents(ctx context.Context, req *service.RegisterEve
 	return nil, status.Error(codes.Unimplemented, "")
 }
 
-// SendStageCompleteLog is sent by runner to save the complete log
-// of a pipeline stage after its completion.
-// The complete log will be persisted into the filestore immediately.
-func (a *RunnerAPI) SendStageCompleteLog(ctx context.Context, req *service.SendStageCompleteLogRequest) (*service.SendStageCompleteLogResponse, error) {
+// SendStageLog is sent by runner to save the log of a pipeline stage.
+func (a *RunnerAPI) SendStageLog(ctx context.Context, req *service.SendStageLogRequest) (*service.SendStageLogResponse, error) {
 	return nil, status.Error(codes.Unimplemented, "")
 }
 
