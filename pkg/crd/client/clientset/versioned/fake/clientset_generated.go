@@ -18,8 +18,8 @@ package fake
 
 import (
 	clientset "github.com/kapetaniosci/pipe/pkg/crd/client/clientset/versioned"
-	pipecdv1beta1 "github.com/kapetaniosci/pipe/pkg/crd/client/clientset/versioned/typed/pipeline/v1beta1"
-	fakepipecdv1beta1 "github.com/kapetaniosci/pipe/pkg/crd/client/clientset/versioned/typed/pipeline/v1beta1/fake"
+	pipecdv1beta1 "github.com/kapetaniosci/pipe/pkg/crd/client/clientset/versioned/typed/deployment/v1beta1"
+	fakepipecdv1beta1 "github.com/kapetaniosci/pipe/pkg/crd/client/clientset/versioned/typed/deployment/v1beta1/fake"
 	"k8s.io/apimachinery/pkg/runtime"
 	"k8s.io/apimachinery/pkg/watch"
 	"k8s.io/client-go/discovery"

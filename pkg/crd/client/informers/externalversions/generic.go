@@ -19,7 +19,7 @@ package externalversions
 import (
 	"fmt"
 
-	v1beta1 "github.com/kapetaniosci/pipe/pkg/crd/apis/pipeline/v1beta1"
+	v1beta1 "github.com/kapetaniosci/pipe/pkg/crd/apis/deployment/v1beta1"
 	schema "k8s.io/apimachinery/pkg/runtime/schema"
 	cache "k8s.io/client-go/tools/cache"
 )
@@ -51,8 +51,8 @@ func (f *genericInformer) Lister() cache.GenericLister {
 func (f *sharedInformerFactory) ForResource(resource schema.GroupVersionResource) (GenericInformer, error) {
 	switch resource {
 	// Group=pipecd.dev, Version=v1beta1
-	case v1beta1.SchemeGroupVersion.WithResource("pipelines"):
-		return &genericInformer{resource: resource.GroupResource(), informer: f.Pipecd().V1beta1().Pipelines().Informer()}, nil
+	case v1beta1.SchemeGroupVersion.WithResource("deployments"):
+		return &genericInformer{resource: resource.GroupResource(), informer: f.Pipecd().V1beta1().Deployments().Informer()}, nil
 
 	}
 

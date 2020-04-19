@@ -21,32 +21,32 @@ import (
 // +genclient
 // +k8s:deepcopy-gen:interfaces=k8s.io/apimachinery/pkg/runtime.Object
 
-// Pipeline is a specification for a Pipeline resource.
-type Pipeline struct {
+// Deployment is a specification for a Deployment resource.
+type Deployment struct {
 	metav1.TypeMeta   `json:",inline"`
 	metav1.ObjectMeta `json:"metadata,omitempty"`
 
-	Spec   PipelineSpec   `json:"spec"`
-	Status PipelineStatus `json:"status"`
+	Spec   DeploymentSpec   `json:"spec"`
+	Status DeploymentStatus `json:"status"`
 }
 
-// PipelineSpec is the spec for a Pipeline resource.
-type PipelineSpec struct {
+// DeploymentSpec is the spec for a Deployment resource.
+type DeploymentSpec struct {
 	DeploymentName string `json:"deploymentName"`
 	Replicas       *int32 `json:"replicas"`
 }
 
-// PipelineStatus is the status for a Pipeline resource.
-type PipelineStatus struct {
+// DeploymentStatus is the status for a Deployment resource.
+type DeploymentStatus struct {
 	AvailableReplicas int32 `json:"availableReplicas"`
 }
 
 // +k8s:deepcopy-gen:interfaces=k8s.io/apimachinery/pkg/runtime.Object
 
-// PipelineList is a list of Pipeline resources.
-type PipelineList struct {
+// DeploymentList is a list of Deployment resources.
+type DeploymentList struct {
 	metav1.TypeMeta `json:",inline"`
 	metav1.ListMeta `json:"metadata"`
 
-	Items []Pipeline `json:"items"`
+	Items []Deployment `json:"items"`
 }

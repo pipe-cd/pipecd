@@ -19,7 +19,7 @@ package versioned
 import (
 	"fmt"
 
-	pipecdv1beta1 "github.com/kapetaniosci/pipe/pkg/crd/client/clientset/versioned/typed/pipeline/v1beta1"
+	pipecdv1beta1 "github.com/kapetaniosci/pipe/pkg/crd/client/clientset/versioned/typed/deployment/v1beta1"
 	discovery "k8s.io/client-go/discovery"
 	rest "k8s.io/client-go/rest"
 	flowcontrol "k8s.io/client-go/util/flowcontrol"

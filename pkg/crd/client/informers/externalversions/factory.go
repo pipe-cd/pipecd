@@ -22,8 +22,8 @@ import (
 	time "time"
 
 	versioned "github.com/kapetaniosci/pipe/pkg/crd/client/clientset/versioned"
+	deployment "github.com/kapetaniosci/pipe/pkg/crd/client/informers/externalversions/deployment"
 	internalinterfaces "github.com/kapetaniosci/pipe/pkg/crd/client/informers/externalversions/internalinterfaces"
-	pipeline "github.com/kapetaniosci/pipe/pkg/crd/client/informers/externalversions/pipeline"
 	v1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	runtime "k8s.io/apimachinery/pkg/runtime"
 	schema "k8s.io/apimachinery/pkg/runtime/schema"
@@ -170,9 +170,9 @@ type SharedInformerFactory interface {
 	ForResource(resource schema.GroupVersionResource) (GenericInformer, error)
 	WaitForCacheSync(stopCh <-chan struct{}) map[reflect.Type]bool
 
-	Pipecd() pipeline.Interface
+	Pipecd() deployment.Interface
 }
 
-func (f *sharedInformerFactory) Pipecd() pipeline.Interface {
-	return pipeline.New(f, f.namespace, f.tweakListOptions)
+func (f *sharedInformerFactory) Pipecd() deployment.Interface {
+	return deployment.New(f, f.namespace, f.tweakListOptions)
 }

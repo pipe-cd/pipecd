@@ -9,7 +9,7 @@ go_library(
     importpath = "github.com/kapetaniosci/pipe/pkg/crd/client/clientset/versioned",
     visibility = ["//visibility:public"],
     deps = [
-        "//pkg/crd/client/clientset/versioned/typed/pipeline/v1beta1:go_default_library",
+        "//pkg/crd/client/clientset/versioned/typed/deployment/v1beta1:go_default_library",
         "@io_k8s_client_go//discovery:go_default_library",
         "@io_k8s_client_go//rest:go_default_library",
         "@io_k8s_client_go//util/flowcontrol:go_default_library",

@@ -20,69 +20,69 @@ import (
 	"context"
 	time "time"
 
-	pipelinev1beta1 "github.com/kapetaniosci/pipe/pkg/crd/apis/pipeline/v1beta1"
+	deploymentv1beta1 "github.com/kapetaniosci/pipe/pkg/crd/apis/deployment/v1beta1"
 	versioned "github.com/kapetaniosci/pipe/pkg/crd/client/clientset/versioned"
 	internalinterfaces "github.com/kapetaniosci/pipe/pkg/crd/client/informers/externalversions/internalinterfaces"
-	v1beta1 "github.com/kapetaniosci/pipe/pkg/crd/client/listers/pipeline/v1beta1"
+	v1beta1 "github.com/kapetaniosci/pipe/pkg/crd/client/listers/deployment/v1beta1"
 	v1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	runtime "k8s.io/apimachinery/pkg/runtime"
 	watch "k8s.io/apimachinery/pkg/watch"
 	cache "k8s.io/client-go/tools/cache"
 )
 
-// PipelineInformer provides access to a shared informer and lister for
-// Pipelines.
-type PipelineInformer interface {
+// DeploymentInformer provides access to a shared informer and lister for
+// Deployments.
+type DeploymentInformer interface {
 	Informer() cache.SharedIndexInformer
-	Lister() v1beta1.PipelineLister
+	Lister() v1beta1.DeploymentLister
 }
 
-type pipelineInformer struct {
+type deploymentInformer struct {
 	factory          internalinterfaces.SharedInformerFactory
 	tweakListOptions internalinterfaces.TweakListOptionsFunc
 	namespace        string
 }
 
-// NewPipelineInformer constructs a new informer for Pipeline type.
+// NewDeploymentInformer constructs a new informer for Deployment type.
 // Always prefer using an informer factory to get a shared informer instead of getting an independent
 // one. This reduces memory footprint and number of connections to the server.
-func NewPipelineInformer(client versioned.Interface, namespace string, resyncPeriod time.Duration, indexers cache.Indexers) cache.SharedIndexInformer {
-	return NewFilteredPipelineInformer(client, namespace, resyncPeriod, indexers, nil)
+func NewDeploymentInformer(client versioned.Interface, namespace string, resyncPeriod time.Duration, indexers cache.Indexers) cache.SharedIndexInformer {
+	return NewFilteredDeploymentInformer(client, namespace, resyncPeriod, indexers, nil)
 }
 
-// NewFilteredPipelineInformer constructs a new informer for Pipeline type.
+// NewFilteredDeploymentInformer constructs a new informer for Deployment type.
 // Always prefer using an informer factory to get a shared informer instead of getting an independent
 // one. This reduces memory footprint and number of connections to the server.
-func NewFilteredPipelineInformer(client versioned.Interface, namespace string, resyncPeriod time.Duration, indexers cache.Indexers, tweakListOptions internalinterfaces.TweakListOptionsFunc) cache.SharedIndexInformer {
+func NewFilteredDeploymentInformer(client versioned.Interface, namespace string, resyncPeriod time.Duration, indexers cache.Indexers, tweakListOptions internalinterfaces.TweakListOptionsFunc) cache.SharedIndexInformer {
 	return cache.NewSharedIndexInformer(
 		&cache.ListWatch{
 			ListFunc: func(options v1.ListOptions) (runtime.Object, error) {
 				if tweakListOptions != nil {
 					tweakListOptions(&options)
 				}
-				return client.PipecdV1beta1().Pipelines(namespace).List(context.TODO(), options)
+				return client.PipecdV1beta1().Deployments(namespace).List(context.TODO(), options)
 			},
 			WatchFunc: func(options v1.ListOptions) (watch.Interface, error) {
 				if tweakListOptions != nil {
 					tweakListOptions(&options)
 				}
-				return client.PipecdV1beta1().Pipelines(namespace).Watch(context.TODO(), options)
+				return client.PipecdV1beta1().Deployments(namespace).Watch(context.TODO(), options)
 			},
 		},
-		&pipelinev1beta1.Pipeline{},
+		&deploymentv1beta1.Deployment{},
 		resyncPeriod,
 		indexers,
 	)
 }
 
-func (f *pipelineInformer) defaultInformer(client versioned.Interface, resyncPeriod time.Duration) cache.SharedIndexInformer {
-	return NewFilteredPipelineInformer(client, f.namespace, resyncPeriod, cache.Indexers{cache.NamespaceIndex: cache.MetaNamespaceIndexFunc}, f.tweakListOptions)
+func (f *deploymentInformer) defaultInformer(client versioned.Interface, resyncPeriod time.Duration) cache.SharedIndexInformer {
+	return NewFilteredDeploymentInformer(client, f.namespace, resyncPeriod, cache.Indexers{cache.NamespaceIndex: cache.MetaNamespaceIndexFunc}, f.tweakListOptions)
 }
 
-func (f *pipelineInformer) Informer() cache.SharedIndexInformer {
-	return f.factory.InformerFor(&pipelinev1beta1.Pipeline{}, f.defaultInformer)
+func (f *deploymentInformer) Informer() cache.SharedIndexInformer {
+	return f.factory.InformerFor(&deploymentv1beta1.Deployment{}, f.defaultInformer)
 }
 
-func (f *pipelineInformer) Lister() v1beta1.PipelineLister {
-	return v1beta1.NewPipelineLister(f.Informer().GetIndexer())
+func (f *deploymentInformer) Lister() v1beta1.DeploymentLister {
+	return v1beta1.NewDeploymentLister(f.Informer().GetIndexer())
 }

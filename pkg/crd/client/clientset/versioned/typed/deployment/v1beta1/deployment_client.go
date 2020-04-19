@@ -17,14 +17,14 @@
 package v1beta1
 
 import (
-	v1beta1 "github.com/kapetaniosci/pipe/pkg/crd/apis/pipeline/v1beta1"
+	v1beta1 "github.com/kapetaniosci/pipe/pkg/crd/apis/deployment/v1beta1"
 	"github.com/kapetaniosci/pipe/pkg/crd/client/clientset/versioned/scheme"
 	rest "k8s.io/client-go/rest"
 )
 
 type PipecdV1beta1Interface interface {
 	RESTClient() rest.Interface
-	PipelinesGetter
+	DeploymentsGetter
 }
 
 // PipecdV1beta1Client is used to interact with features provided by the pipecd.dev group.
@@ -32,8 +32,8 @@ type PipecdV1beta1Client struct {
 	restClient rest.Interface
 }
 
-func (c *PipecdV1beta1Client) Pipelines(namespace string) PipelineInterface {
-	return newPipelines(c, namespace)
+func (c *PipecdV1beta1Client) Deployments(namespace string) DeploymentInterface {
+	return newDeployments(c, namespace)
 }
 
 // NewForConfig creates a new PipecdV1beta1Client for the given config.

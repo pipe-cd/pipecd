@@ -17,7 +17,7 @@
 package scheme
 
 import (
-	pipecdv1beta1 "github.com/kapetaniosci/pipe/pkg/crd/apis/pipeline/v1beta1"
+	pipecdv1beta1 "github.com/kapetaniosci/pipe/pkg/crd/apis/deployment/v1beta1"
 	v1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	runtime "k8s.io/apimachinery/pkg/runtime"
 	schema "k8s.io/apimachinery/pkg/runtime/schema"
