@@ -23,6 +23,7 @@ import (
 	jwtgo "github.com/dgrijalva/jwt-go"
 	"github.com/spf13/cobra"
 	"go.uber.org/zap"
+	"golang.org/x/sync/errgroup"
 
 	"github.com/kapetaniosci/pipe/pkg/admin"
 	"github.com/kapetaniosci/pipe/pkg/app/api/api"
@@ -82,6 +83,8 @@ func NewCommand() *cobra.Command {
 }
 
 func (s *server) run(ctx context.Context, t cli.Telemetry) error {
+	group, ctx := errgroup.WithContext(ctx)
+
 	// signer, err := jwt.NewSigner(defaultSigningMethod, s.tokenSigningKeyFile)
 	// if err != nil {
 	// 	t.Logger.Error("failed to create a new signer", zap.Error(err))
@@ -96,7 +99,6 @@ func (s *server) run(ctx context.Context, t cli.Telemetry) error {
 	var (
 		runnerAPIServer *rpc.Server
 		webAPIServer    *rpc.Server
-		doneCh          = make(chan error)
 	)
 
 	// Start a gRPC server for handling RunnerAPI requests.
@@ -104,6 +106,7 @@ func (s *server) run(ctx context.Context, t cli.Telemetry) error {
 		service := api.NewRunnerAPIService(t.Logger)
 		opts := []rpc.Option{
 			rpc.WithPort(s.runnerAPIPort),
+			rpc.WithGracePeriod(s.gracePeriod),
 			rpc.WithLogger(t.Logger),
 			// rpc.WithRunnerTokenAuthUnaryInterceptor(verifier, t.Logger),
 			rpc.WithRequestValidationUnaryInterceptor(),
@@ -112,10 +115,9 @@ func (s *server) run(ctx context.Context, t cli.Telemetry) error {
 			opts = append(opts, rpc.WithTLS(s.certFile, s.keyFile))
 		}
 		runnerAPIServer = rpc.NewServer(service, opts...)
-		go func() {
-			doneCh <- runnerAPIServer.Run()
-		}()
-		defer runnerAPIServer.Stop(s.gracePeriod)
+		group.Go(func() error {
+			return runnerAPIServer.Run(ctx)
+		})
 	}
 
 	// Start a gRPC server for handling WebAPI requests.
@@ -123,6 +125,7 @@ func (s *server) run(ctx context.Context, t cli.Telemetry) error {
 		service := api.NewWebAPIService(t.Logger)
 		opts := []rpc.Option{
 			rpc.WithPort(s.runnerAPIPort),
+			rpc.WithGracePeriod(s.gracePeriod),
 			rpc.WithLogger(t.Logger),
 			rpc.WithJWTAuthUnaryInterceptor(verifier, apiservice.NewRBACAuthorizer(), t.Logger),
 			rpc.WithRequestValidationUnaryInterceptor(),
@@ -131,10 +134,9 @@ func (s *server) run(ctx context.Context, t cli.Telemetry) error {
 			opts = append(opts, rpc.WithTLS(s.certFile, s.keyFile))
 		}
 		webAPIServer = rpc.NewServer(service, opts...)
-		go func() {
-			doneCh <- webAPIServer.Run()
-		}()
-		defer webAPIServer.Stop(s.gracePeriod)
+		group.Go(func() error {
+			return webAPIServer.Run(ctx)
+		})
 	}
 
 	// Start an  http server for handling incoming webhook events.
@@ -150,45 +152,57 @@ func (s *server) run(ctx context.Context, t cli.Telemetry) error {
 		for _, h := range handlers {
 			h.Register(mux.HandleFunc)
 		}
-		go func() {
-			if err := httpServer.ListenAndServe(); err != nil && err != http.ErrServerClosed {
-				t.Logger.Error("failed to listen and server", zap.Error(err))
-				doneCh <- err
-			}
-			doneCh <- nil
-		}()
-		defer func() {
-			ctx, _ := context.WithTimeout(context.Background(), s.gracePeriod)
-			if err := httpServer.Shutdown(ctx); err != nil {
-				t.Logger.Error("failed to shutdown http server", zap.Error(err))
-			}
-		}()
+		group.Go(func() error {
+			return runHttpServer(ctx, httpServer, s.gracePeriod, t.Logger)
+		})
 	}
 
-	// Start admin server.
+	// Start running admin server.
 	{
-		admin := admin.NewAdmin(s.adminPort, t.Logger)
+		admin := admin.NewAdmin(s.adminPort, s.gracePeriod, t.Logger)
 		if exporter, ok := t.PrometheusMetricsExporter(); ok {
 			admin.Handle("/metrics", exporter)
 		}
 		admin.HandleFunc("/healthz", func(w http.ResponseWriter, r *http.Request) {
 			w.Write([]byte("ok"))
 		})
-		go func() {
-			doneCh <- admin.Run()
-		}()
-		defer admin.Stop(s.gracePeriod)
+		group.Go(func() error {
+			return admin.Run(ctx)
+		})
 	}
 
-	// Wait the signals.
-	select {
-	case <-ctx.Done():
-		return nil
-	case err := <-doneCh:
-		if err != nil {
-			t.Logger.Error("failed while running", zap.Error(err))
-			return err
-		}
-		return nil
+	// Wait until all components have finished.
+	// A terminating signal or a finish of any components
+	// could trigger the finish of server.
+	// This ensures that all components are good or no one.
+	if err := group.Wait(); err != nil {
+		t.Logger.Error("failed while running", zap.Error(err))
+		return err
 	}
+	return nil
+}
+
+func runHttpServer(ctx context.Context, httpServer *http.Server, gracePeriod time.Duration, logger *zap.Logger) error {
+	doneCh := make(chan error, 1)
+	ctx, cancel := context.WithCancel(ctx)
+
+	go func() {
+		defer cancel()
+		logger.Info("start running http server")
+		if err := httpServer.ListenAndServe(); err != nil && err != http.ErrServerClosed {
+			logger.Error("failed to listen and http server", zap.Error(err))
+			doneCh <- err
+		}
+		doneCh <- nil
+	}()
+
+	<-ctx.Done()
+
+	ctx, _ = context.WithTimeout(context.Background(), gracePeriod)
+	logger.Info("stopping http server")
+	if err := httpServer.Shutdown(ctx); err != nil {
+		logger.Error("failed to shutdown http server", zap.Error(err))
+	}
+
+	return <-doneCh
 }

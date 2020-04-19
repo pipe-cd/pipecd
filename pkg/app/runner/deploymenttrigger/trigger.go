@@ -21,19 +21,24 @@
 // based on the diff between the repo state (desired state) and cluster state (actual state).
 package deploymenttrigger
 
-import "time"
+import (
+	"context"
+	"time"
+)
 
 type DeploymentTrigger struct {
+	gracePeriod time.Duration
 }
 
-func NewTrigger() *DeploymentTrigger {
-	return &DeploymentTrigger{}
+// NewTrigger creates a new instance for DeploymentTrigger.
+func NewTrigger(gracePeriod time.Duration) *DeploymentTrigger {
+	return &DeploymentTrigger{
+		gracePeriod: gracePeriod,
+	}
 }
 
-func (t *DeploymentTrigger) Run() error {
-	return nil
-}
-
-func (t *DeploymentTrigger) Stop(timeout time.Duration) error {
+// Run starts running DeploymentTrigger until the specified context
+// has done. This also waits for its cleaning up before returning.
+func (t *DeploymentTrigger) Run(ctx context.Context) error {
 	return nil
 }

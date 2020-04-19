@@ -21,6 +21,7 @@ import (
 
 	"github.com/spf13/cobra"
 	"go.uber.org/zap"
+	"golang.org/x/sync/errgroup"
 
 	"github.com/kapetaniosci/pipe/pkg/admin"
 	"github.com/kapetaniosci/pipe/pkg/app/helloworld/api"
@@ -52,42 +53,44 @@ func NewCommand() *cobra.Command {
 }
 
 func (s *server) run(ctx context.Context, t cli.Telemetry) error {
-	doneCh := make(chan error)
+	group, ctx := errgroup.WithContext(ctx)
 
-	// Start grpc server.
-	service := api.NewHelloWorldService(
-		api.WithLogger(t.Logger),
-	)
-	server := rpc.NewServer(service,
-		rpc.WithPort(s.grpcPort),
-		rpc.WithLogger(t.Logger),
-	)
-	go func() {
-		doneCh <- server.Run()
-	}()
-	defer server.Stop(s.gracePeriod)
-
-	// Start admin server.
-	admin := admin.NewAdmin(s.adminPort, t.Logger)
-	if exporter, ok := t.PrometheusMetricsExporter(); ok {
-		admin.Handle("/metrics", exporter)
+	// Start running gRPC server.
+	{
+		service := api.NewHelloWorldService(
+			api.WithLogger(t.Logger),
+		)
+		server := rpc.NewServer(service,
+			rpc.WithPort(s.grpcPort),
+			rpc.WithGracePeriod(s.gracePeriod),
+			rpc.WithLogger(t.Logger),
+		)
+		group.Go(func() error {
+			return server.Run(ctx)
+		})
 	}
-	admin.HandleFunc("/healthz", func(w http.ResponseWriter, r *http.Request) {
-		w.Write([]byte("ok"))
-	})
-	go func() {
-		doneCh <- admin.Run()
-	}()
-	defer admin.Stop(s.gracePeriod)
 
-	select {
-	case <-ctx.Done():
-		return nil
-	case err := <-doneCh:
-		if err != nil {
-			t.Logger.Error("failed while running", zap.Error(err))
-			return err
+	// Start running admin server.
+	{
+		admin := admin.NewAdmin(s.adminPort, s.gracePeriod, t.Logger)
+		if exporter, ok := t.PrometheusMetricsExporter(); ok {
+			admin.Handle("/metrics", exporter)
 		}
-		return nil
+		admin.HandleFunc("/healthz", func(w http.ResponseWriter, r *http.Request) {
+			w.Write([]byte("ok"))
+		})
+		group.Go(func() error {
+			return admin.Run(ctx)
+		})
 	}
+
+	// Wait until all components have finished.
+	// A terminating signal or a finish of any components
+	// could trigger the finish of server.
+	// This ensures that all components are good or no one.
+	if err := group.Wait(); err != nil {
+		t.Logger.Error("failed while running", zap.Error(err))
+		return err
+	}
+	return nil
 }

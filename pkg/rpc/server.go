@@ -15,6 +15,7 @@
 package rpc
 
 import (
+	"context"
 	"fmt"
 	"net"
 	"time"
@@ -35,13 +36,14 @@ type Service interface {
 
 // Server used to register gRPC services then start and serve incoming requests.
 type Server struct {
-	port       int
-	tls        bool
-	certFile   string
-	keyFile    string
-	services   []Service
-	grpcServer *grpc.Server
-	logger     *zap.Logger
+	port        int
+	tls         bool
+	certFile    string
+	keyFile     string
+	services    []Service
+	grpcServer  *grpc.Server
+	gracePeriod time.Duration
+	logger      *zap.Logger
 
 	runnerKeyAuthUnaryInterceptor     grpc.UnaryServerInterceptor
 	runnerKeyAuthStreamInterceptor    grpc.StreamServerInterceptor
@@ -103,6 +105,13 @@ func WithService(service Service) Option {
 	}
 }
 
+// WithGracePeriod sets maximum time to wait for gracefully shutdown.
+func WithGracePeriod(d time.Duration) Option {
+	return func(s *Server) {
+		s.gracePeriod = d
+	}
+}
+
 // WithLogger sets logger to server.
 func WithLogger(logger *zap.Logger) Option {
 	return func(s *Server) {
@@ -113,7 +122,8 @@ func WithLogger(logger *zap.Logger) Option {
 // NewServer creates a new server for handling gPRC services.
 func NewServer(service Service, opts ...Option) *Server {
 	s := &Server{
-		logger: zap.NewNop(),
+		gracePeriod: 15 * time.Second,
+		logger:      zap.NewNop(),
 	}
 	for _, opt := range opts {
 		opt(s)
@@ -127,7 +137,21 @@ func NewServer(service Service, opts ...Option) *Server {
 }
 
 // Run starts running gRPC server for handling incoming requests.
-func (s *Server) Run() error {
+func (s *Server) Run(ctx context.Context) error {
+	doneCh := make(chan error, 1)
+	ctx, cancel := context.WithCancel(ctx)
+
+	go func() {
+		defer cancel()
+		doneCh <- s.run()
+	}()
+
+	<-ctx.Done()
+	s.stop()
+	return <-doneCh
+}
+
+func (s *Server) run() error {
 	opts := []grpc.ServerOption{
 		grpc.StatsHandler(&ocgrpc.ServerHandler{}),
 	}
@@ -182,8 +206,8 @@ func (s *Server) Run() error {
 	return nil
 }
 
-// Stop stops running gRPC server gracefully.
-func (s *Server) Stop(timeout time.Duration) {
+// stop stops running gRPC server gracefully.
+func (s *Server) stop() {
 	ch := make(chan struct{})
 	go func() {
 		s.logger.Info("gracefulStop is running")
@@ -194,7 +218,7 @@ func (s *Server) Stop(timeout time.Duration) {
 	select {
 	case <-ch:
 		s.logger.Info("gracefulStop completed before timing out")
-	case <-time.After(timeout):
+	case <-time.After(s.gracePeriod):
 		s.logger.Info("force server to stop")
 		s.grpcServer.Stop()
 	}

@@ -31,14 +31,15 @@ import (
 // - service health check
 // - runtime configuration
 type Admin struct {
-	port     int
-	mux      *http.ServeMux
-	server   *http.Server
-	patterns []string
-	logger   *zap.Logger
+	port        int
+	mux         *http.ServeMux
+	server      *http.Server
+	patterns    []string
+	gracePeriod time.Duration
+	logger      *zap.Logger
 }
 
-func NewAdmin(port int, logger *zap.Logger) *Admin {
+func NewAdmin(port int, gracePeriod time.Duration, logger *zap.Logger) *Admin {
 	mux := http.NewServeMux()
 	a := &Admin{
 		port: port,
@@ -47,7 +48,8 @@ func NewAdmin(port int, logger *zap.Logger) *Admin {
 			Addr:    fmt.Sprintf(":%d", port),
 			Handler: mux,
 		},
-		logger: logger.Named("admin"),
+		gracePeriod: gracePeriod,
+		logger:      logger.Named("admin"),
 	}
 	mux.HandleFunc("/", a.handleTop)
 	return a
@@ -72,7 +74,21 @@ func (a *Admin) handleTop(w http.ResponseWriter, r *http.Request) {
 	w.Write(buf.Bytes())
 }
 
-func (a *Admin) Run() error {
+func (a *Admin) Run(ctx context.Context) error {
+	doneCh := make(chan error, 1)
+	ctx, cancel := context.WithCancel(ctx)
+
+	go func() {
+		defer cancel()
+		doneCh <- a.run()
+	}()
+
+	<-ctx.Done()
+	a.stop()
+	return <-doneCh
+}
+
+func (a *Admin) run() error {
 	a.logger.Info(fmt.Sprintf("admin server is running on %d", a.port))
 	if err := a.server.ListenAndServe(); err != nil && err != http.ErrServerClosed {
 		a.logger.Error("failed to listen and serve admin server", zap.Error(err))
@@ -81,8 +97,8 @@ func (a *Admin) Run() error {
 	return nil
 }
 
-func (a *Admin) Stop(timeout time.Duration) error {
-	ctx, cancel := context.WithTimeout(context.Background(), timeout)
+func (a *Admin) stop() error {
+	ctx, cancel := context.WithTimeout(context.Background(), a.gracePeriod)
 	defer cancel()
 	a.logger.Info("stopping admin server")
 	if err := a.server.Shutdown(ctx); err != nil {

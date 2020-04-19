@@ -20,19 +20,24 @@
 // The DeploymentExecutor will update the deployment state back to its Deployment CRD.
 package deploymentcontroller
 
-import "time"
+import (
+	"context"
+	"time"
+)
 
 type DeploymentController struct {
+	gracePeriod time.Duration
 }
 
-func NewController() *DeploymentController {
-	return &DeploymentController{}
+// NewController creates a new instance for DeploymentController.
+func NewController(gracePeriod time.Duration) *DeploymentController {
+	return &DeploymentController{
+		gracePeriod: gracePeriod,
+	}
 }
 
-func (t *DeploymentController) Run() error {
-	return nil
-}
-
-func (t *DeploymentController) Stop(timeout time.Duration) error {
+// Run starts running DeploymentController until the specified context
+// has done. This also waits for its cleaning up before returning.'
+func (t *DeploymentController) Run(ctx context.Context) error {
 	return nil
 }

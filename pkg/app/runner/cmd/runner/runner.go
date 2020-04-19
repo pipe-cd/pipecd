@@ -23,6 +23,7 @@ import (
 
 	"github.com/spf13/cobra"
 	"go.uber.org/zap"
+	"golang.org/x/sync/errgroup"
 
 	"github.com/kapetaniosci/pipe/pkg/admin"
 	apiservice "github.com/kapetaniosci/pipe/pkg/app/api/service"
@@ -77,7 +78,7 @@ func NewCommand() *cobra.Command {
 }
 
 func (r *runner) run(ctx context.Context, t cli.Telemetry) error {
-	doneCh := make(chan error)
+	group, ctx := errgroup.WithContext(ctx)
 
 	// Load runner configuration from specified file.
 	_, err := r.loadConfig()
@@ -93,48 +94,43 @@ func (r *runner) run(ctx context.Context, t cli.Telemetry) error {
 
 	// Start running admin server.
 	{
-		admin := admin.NewAdmin(r.adminPort, t.Logger)
+		admin := admin.NewAdmin(r.adminPort, r.gracePeriod, t.Logger)
 		if exporter, ok := t.PrometheusMetricsExporter(); ok {
 			admin.Handle("/metrics", exporter)
 		}
 		admin.HandleFunc("/healthz", func(w http.ResponseWriter, r *http.Request) {
 			w.Write([]byte("ok"))
 		})
-		go func() {
-			doneCh <- admin.Run()
-		}()
-		defer admin.Stop(r.gracePeriod)
+		group.Go(func() error {
+			return admin.Run(ctx)
+		})
 	}
 
 	// Start running deployment controller.
 	{
-		controller := deploymentcontroller.NewController()
-		go func() {
-			doneCh <- controller.Run()
-		}()
-		defer controller.Stop(r.gracePeriod)
+		c := deploymentcontroller.NewController(r.gracePeriod)
+		group.Go(func() error {
+			return c.Run(ctx)
+		})
 	}
 
 	// Start running deployment trigger.
 	{
-		trigger := deploymenttrigger.NewTrigger()
-		go func() {
-			doneCh <- trigger.Run()
-		}()
-		defer trigger.Stop(r.gracePeriod)
+		t := deploymenttrigger.NewTrigger(r.gracePeriod)
+		group.Go(func() error {
+			return t.Run(ctx)
+		})
 	}
 
-	// Wait a signal or any error.
-	select {
-	case <-ctx.Done():
-		return nil
-	case err := <-doneCh:
-		if err != nil {
-			t.Logger.Error("failed while running", zap.Error(err))
-			return err
-		}
-		return nil
+	// Wait until all runner components have finished.
+	// A terminating signal or a finish of any components
+	// could trigger the finish of runner.
+	// This ensures that all components are good or no one.
+	if err := group.Wait(); err != nil {
+		t.Logger.Error("failed while running", zap.Error(err))
+		return err
 	}
+	return nil
 }
 
 // createAPIClient makes a gRPC client to connect to the API.

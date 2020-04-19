@@ -37,11 +37,12 @@ func TestMain(m *testing.M) {
 		api.NewHelloWorldService(api.WithLogger(logger)),
 		WithTLS("testdata/tls.crt", "testdata/tls.key"),
 		WithPort(9090),
+		WithGracePeriod(time.Second),
 		WithLogger(logger),
 		WithRunnerTokenAuthUnaryInterceptor(testRunnerTokenVerifier{"test-runner-key"}, logger),
 	)
-	defer server.Stop(time.Second)
-	go server.Run()
+	ctx, _ := context.WithTimeout(context.Background(), 30*time.Second)
+	go server.Run(ctx)
 	os.Exit(m.Run())
 }
 
