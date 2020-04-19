@@ -12,24 +12,19 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-package main
+// Package appstatemonitor provides a runner component
+// that ...
+package appstatemonitor
 
-import (
-	"log"
+import "time"
 
-	"github.com/kapetaniosci/pipe/pkg/app/runner/cmd/runner"
-	"github.com/kapetaniosci/pipe/pkg/cli"
-)
+type AppStateMonitor struct {
+}
 
-func main() {
-	app := cli.NewApp(
-		"runner",
-		"An operator running in k8s cluster for executing/managing pipelines.",
-	)
-	app.AddCommands(
-		runner.NewCommand(),
-	)
-	if err := app.Run(); err != nil {
-		log.Fatal(err)
-	}
+func (t *AppStateMonitor) Run() error {
+	return nil
+}
+
+func (t *AppStateMonitor) Stop(timeout time.Duration) error {
+	return nil
 }

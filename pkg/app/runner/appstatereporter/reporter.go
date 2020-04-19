@@ -12,24 +12,19 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-package main
+// Package appstatereporter provides a runner component
+// that ...
+package appstatereporter
 
-import (
-	"log"
+import "time"
 
-	"github.com/kapetaniosci/pipe/pkg/app/runner/cmd/runner"
-	"github.com/kapetaniosci/pipe/pkg/cli"
-)
+type AppStateReporter struct {
+}
 
-func main() {
-	app := cli.NewApp(
-		"runner",
-		"An operator running in k8s cluster for executing/managing pipelines.",
-	)
-	app.AddCommands(
-		runner.NewCommand(),
-	)
-	if err := app.Run(); err != nil {
-		log.Fatal(err)
-	}
+func (t *AppStateReporter) Run() error {
+	return nil
+}
+
+func (t *AppStateReporter) Stop(timeout time.Duration) error {
+	return nil
 }

@@ -12,24 +12,23 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-package main
+// Package deploymentcontroller provides a runner component
+// that managing all of the Deployment CRDs.
+// This manages a pool of DeploymentExecutors.
+// Whenever a new Deployment CRD is created, this created a new DeploymentExecutor
+// for that DeploymentCRD to handle the deployment.
+// The DeploymentExecutor will update the deployment state back to its Deployment CRD.
+package deploymentcontroller
 
-import (
-	"log"
+import "time"
 
-	"github.com/kapetaniosci/pipe/pkg/app/runner/cmd/runner"
-	"github.com/kapetaniosci/pipe/pkg/cli"
-)
+type DeploymentController struct {
+}
 
-func main() {
-	app := cli.NewApp(
-		"runner",
-		"An operator running in k8s cluster for executing/managing pipelines.",
-	)
-	app.AddCommands(
-		runner.NewCommand(),
-	)
-	if err := app.Run(); err != nil {
-		log.Fatal(err)
-	}
+func (t *DeploymentController) Run() error {
+	return nil
+}
+
+func (t *DeploymentController) Stop(timeout time.Duration) error {
+	return nil
 }
