@@ -16,14 +16,20 @@ package runner
 
 import (
 	"context"
+	"fmt"
 	"io/ioutil"
+	"net/http"
 	"time"
 
 	"github.com/spf13/cobra"
 	"go.uber.org/zap"
 
+	"github.com/kapetaniosci/pipe/pkg/admin"
 	apiservice "github.com/kapetaniosci/pipe/pkg/app/api/service"
+	"github.com/kapetaniosci/pipe/pkg/app/runner/deploymentcontroller"
+	"github.com/kapetaniosci/pipe/pkg/app/runner/deploymenttrigger"
 	"github.com/kapetaniosci/pipe/pkg/cli"
+	"github.com/kapetaniosci/pipe/pkg/config"
 	"github.com/kapetaniosci/pipe/pkg/rpc/rpcauth"
 	"github.com/kapetaniosci/pipe/pkg/rpc/rpcclient"
 )
@@ -36,12 +42,14 @@ type runner struct {
 	tls           bool
 	certFile      string
 	apiAddress    string
+	adminPort     int
 	gracePeriod   time.Duration
 }
 
 func NewCommand() *cobra.Command {
 	r := &runner{
 		apiAddress:  "pipecd-api:9091",
+		adminPort:   9085,
 		gracePeriod: 30 * time.Second,
 	}
 	cmd := &cobra.Command{
@@ -57,6 +65,7 @@ func NewCommand() *cobra.Command {
 	cmd.Flags().BoolVar(&r.tls, "tls", r.tls, "Whether running the gRPC server with TLS or not.")
 	cmd.Flags().StringVar(&r.certFile, "cert-file", r.certFile, "The path to the TLS certificate file.")
 	cmd.Flags().StringVar(&r.apiAddress, "api-address", r.apiAddress, "The address used to connect to API server.")
+	cmd.Flags().IntVar(&r.adminPort, "admin-port", r.adminPort, "The port number used to run a HTTP server for admin tasks such as metrics, healthz.")
 	cmd.Flags().DurationVar(&r.gracePeriod, "grace-period", r.gracePeriod, "How long to wait for graceful shutdown.")
 
 	cmd.MarkFlagRequired("project-id")
@@ -68,9 +77,67 @@ func NewCommand() *cobra.Command {
 }
 
 func (r *runner) run(ctx context.Context, t cli.Telemetry) error {
-	return nil
+	doneCh := make(chan error)
+
+	// Load runner configuration from specified file.
+	_, err := r.loadConfig()
+	if err != nil {
+		return err
+	}
+
+	// Make gRPC client and connect to the API.
+	_, err = r.createAPIClient(ctx, t.Logger)
+	if err != nil {
+		return err
+	}
+
+	// Start running admin server.
+	{
+		admin := admin.NewAdmin(r.adminPort, t.Logger)
+		if exporter, ok := t.PrometheusMetricsExporter(); ok {
+			admin.Handle("/metrics", exporter)
+		}
+		admin.HandleFunc("/healthz", func(w http.ResponseWriter, r *http.Request) {
+			w.Write([]byte("ok"))
+		})
+		go func() {
+			doneCh <- admin.Run()
+		}()
+		defer admin.Stop(r.gracePeriod)
+	}
+
+	// Start running deployment controller.
+	{
+		controller := deploymentcontroller.NewController()
+		go func() {
+			doneCh <- controller.Run()
+		}()
+		defer controller.Stop(r.gracePeriod)
+	}
+
+	// Start running deployment trigger.
+	{
+		trigger := deploymenttrigger.NewTrigger()
+		go func() {
+			doneCh <- trigger.Run()
+		}()
+		defer trigger.Stop(r.gracePeriod)
+	}
+
+	// Wait a signal or any error.
+	select {
+	case <-ctx.Done():
+		return nil
+	case err := <-doneCh:
+		if err != nil {
+			t.Logger.Error("failed while running", zap.Error(err))
+			return err
+		}
+		return nil
+	}
 }
 
+// createAPIClient makes a gRPC client to connect to the API.
 func (r *runner) createAPIClient(ctx context.Context, logger *zap.Logger) (apiservice.Client, error) {
 	ctx, cancel := context.WithTimeout(ctx, 15*time.Second)
 	defer cancel()
@@ -91,7 +158,6 @@ func (r *runner) createAPIClient(ctx context.Context, logger *zap.Logger) (apise
 			rpcclient.WithPerRPCCredentials(creds),
 		}
 	)
-
 	if tls {
 		options = append(options, rpcclient.WithTLS(r.certFile))
 	} else {
@@ -104,4 +170,16 @@ func (r *runner) createAPIClient(ctx context.Context, logger *zap.Logger) (apise
 		return nil, err
 	}
 	return client, nil
+}
+
+// loadConfig reads the Runner configuration data from the specified file.
+func (r *runner) loadConfig() (*config.RunnerSpec, error) {
+	cfg, err := config.LoadFromYAML(r.configFile)
+	if err != nil {
+		return nil, err
+	}
+	if cfg.Kind != config.KindRunner {
+		return nil, fmt.Errorf("wrong configuration kind for runner: %v", cfg.Kind)
+	}
+	return cfg.RunnerSpec, nil
 }

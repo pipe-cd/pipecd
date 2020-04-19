@@ -6,8 +6,12 @@ go_library(
     importpath = "github.com/kapetaniosci/pipe/pkg/app/runner/cmd/runner",
     visibility = ["//visibility:public"],
     deps = [
+        "//pkg/admin:go_default_library",
         "//pkg/app/api/service:go_default_library",
+        "//pkg/app/runner/deploymentcontroller:go_default_library",
+        "//pkg/app/runner/deploymenttrigger:go_default_library",
         "//pkg/cli:go_default_library",
+        "//pkg/config:go_default_library",
         "//pkg/rpc/rpcauth:go_default_library",
         "//pkg/rpc/rpcclient:go_default_library",
         "@com_github_spf13_cobra//:go_default_library",

@@ -26,6 +26,10 @@ import "time"
 type DeploymentTrigger struct {
 }
 
+func NewTrigger() *DeploymentTrigger {
+	return &DeploymentTrigger{}
+}
+
 func (t *DeploymentTrigger) Run() error {
 	return nil
 }

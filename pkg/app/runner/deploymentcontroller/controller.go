@@ -25,6 +25,10 @@ import "time"
 type DeploymentController struct {
 }
 
+func NewController() *DeploymentController {
+	return &DeploymentController{}
+}
+
 func (t *DeploymentController) Run() error {
 	return nil
 }
