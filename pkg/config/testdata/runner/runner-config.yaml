@@ -6,9 +6,11 @@ spec:
     accessTokenFile: /etc/runner/git.token
   repositories:
     - repo: git@github.com:org/repo1
+      branch: master
       syncInterval: 5m
       pollInterval: 5m
     - repo: git@github.com:org/repo2
+      branch: master
       syncInterval: 10m
       pollInterval: 10m    
   destinations:

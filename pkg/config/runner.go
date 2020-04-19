@@ -15,10 +15,10 @@
 package config
 
 type RunnerSpec struct {
-	Git               RunnerGit
-	Repositories      []RunnerRepository
-	Destinations      []RunnerDestination
-	AnalysisProviders []AnalysisProvider
+	Git               RunnerGit           `json:"git"`
+	Repositories      []RunnerRepository  `json:"repositories"`
+	Destinations      []RunnerDestination `json:"destinations"`
+	AnalysisProviders []AnalysisProvider  `json:"analysisProviders"`
 }
 
 func (s *RunnerSpec) Validate() error {
@@ -31,9 +31,10 @@ type RunnerGit struct {
 }
 
 type RunnerRepository struct {
-	Repo         string
-	SyncInterval Duration
-	PollInterval Duration
+	Repo         string   `json:"repo"`
+	Branch       string   `json:"branch"`
+	SyncInterval Duration `json:"syncInterval"`
+	PollInterval Duration `json:"pollInterval"`
 }
 
 type DestinationType string
@@ -44,10 +45,10 @@ const (
 )
 
 type RunnerDestination struct {
-	Name string
-	Type DestinationType
+	Name string          `json:"name"`
+	Type DestinationType `json:"type"`
 }
 
 type AnalysisProvider struct {
-	Name string
+	Name string `json:"name"`
 }
