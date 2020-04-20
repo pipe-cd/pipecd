@@ -324,11 +324,13 @@ type KubernetesAppInput struct {
 	HelmValueFiles []string
 	HelmVersion    string
 	Namespace      string
+	Dependencies   []string `json:"dependencies,omitempty"`
 }
 
 type TerraformAppInput struct {
-	Workspace        string `json:"workspace,omitempty"`
-	TerraformVersion string `json:"terraformVersion,omitempty"`
+	Workspace        string   `json:"workspace,omitempty"`
+	TerraformVersion string   `json:"terraformVersion,omitempty"`
+	Dependencies     []string `json:"dependencies,omitempty"`
 }
 
 type K8sDeployTarget struct {

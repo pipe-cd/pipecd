@@ -31,6 +31,9 @@ type DeploymentTrigger struct {
 }
 
 // NewTrigger creates a new instance for DeploymentTrigger.
+// What does this need to do its task?
+// - A way to get commit/source-code of a specific repository
+// - A way to get the current state of applicaion
 func NewTrigger(gracePeriod time.Duration) *DeploymentTrigger {
 	return &DeploymentTrigger{
 		gracePeriod: gracePeriod,
@@ -40,5 +43,16 @@ func NewTrigger(gracePeriod time.Duration) *DeploymentTrigger {
 // Run starts running DeploymentTrigger until the specified context
 // has done. This also waits for its cleaning up before returning.
 func (t *DeploymentTrigger) Run(ctx context.Context) error {
+	// heahCommitSHA
+
+	// Current version:
+	// 1. Periodically check the new commit in the specified branch.
+	// 2. Determine the list of applications should be the target from the new commit.
+	// 3. Create Deployment CRDs to trigger their deployments.
+
+	// Future version:
+	// 1. Periodically check the diff between repo state (desired state) and cluster state (current state).
+	// 2. Create Deployment CRDs to trigger their deployments.
+
 	return nil
 }

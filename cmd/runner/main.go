@@ -24,7 +24,7 @@ import (
 func main() {
 	app := cli.NewApp(
 		"runner",
-		"An operator running in k8s cluster for executing/managing pipelines.",
+		"An operator running inside k8s cluster for executing/managing deployments.",
 	)
 	app.AddCommands(
 		runner.NewCommand(),
