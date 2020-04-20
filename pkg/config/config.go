@@ -30,8 +30,7 @@ type Kind string
 const (
 	// KindKubernetesApp represents configuration for a Kubernetes application.
 	// This application can be a group of plain-YAML Kubernetes manifests,
-	// or kustomization manifests,
-	// or helm manifests.
+	// or kustomization manifests or helm manifests.
 	KindKubernetesApp Kind = "KubernetesApp"
 	// KindTerraformApp represents configuration for a Terraform application.
 	// This application contains a single workspace of a terraform root module.
@@ -40,6 +39,14 @@ const (
 	KindCrossplaneApp Kind = "CrossplaneApp"
 	// KindLambdaApp represents configuration for an AWS Lambda application.
 	KindLambdaApp Kind = "LambdaApp"
+)
+
+const (
+	// KindRunner represents configuration for runner.
+	// This configuration will be loaded while the runner is starting up.
+	KindRunner Kind = "Runner"
+	// KindControlPlane represents configuration for control plane's services.
+	KindControlPlane Kind = "ControlPlane"
 	// KindNotification represents shared notification configuration for a repository.
 	// This configuration file should be placed in .pipe directory
 	// at the root of the repository.
@@ -48,11 +55,6 @@ const (
 	// This configuration file should be placed in .pipe directory
 	// at the root of the repository.
 	KindAnalysisTemplate Kind = "AnalysisTemplate"
-	// KindRunner represents configuration for runner.
-	// This configuration will be loaded while the runner is starting up.
-	KindRunner Kind = "Runner"
-	// KindControlPlane represents configuration for control plane's services.
-	KindControlPlane Kind = "ControlPlane"
 )
 
 // Config represents configuration data load from file.
@@ -62,18 +64,14 @@ type Config struct {
 	APIVersion string
 	spec       interface{}
 
-	// Application Specs.
+	// Application specs.
 	KubernetesAppSpec *KubernetesAppSpec
 	TerraformAppSpec  *TerraformAppSpec
-	// CrossplaneAppSpec *CrossplaneAppSpec
 
-	// Repositori Shared Specs.
+	RunnerSpec           *RunnerSpec
+	ControlPlaneSpec     *ControlPlaneSpec
 	NotificationSpec     *NotificationSpec
 	AnalysisTemplateSpec *AnalysisTemplateSpec
-
-	// Runner and Server Specs.
-	RunnerSpec       *RunnerSpec
-	ControlPlaneSpec *ControlPlaneSpec
 }
 
 type genericConfig struct {
@@ -93,18 +91,18 @@ func (c *Config) init(kind Kind, apiVersion string) error {
 	case KindTerraformApp:
 		c.TerraformAppSpec = &TerraformAppSpec{}
 		c.spec = c.TerraformAppSpec
-	case KindNotification:
-		c.NotificationSpec = &NotificationSpec{}
-		c.spec = c.NotificationSpec
-	case KindAnalysisTemplate:
-		c.AnalysisTemplateSpec = &AnalysisTemplateSpec{}
-		c.spec = c.AnalysisTemplateSpec
 	case KindRunner:
 		c.RunnerSpec = &RunnerSpec{}
 		c.spec = c.RunnerSpec
 	case KindControlPlane:
 		c.ControlPlaneSpec = &ControlPlaneSpec{}
 		c.spec = c.ControlPlaneSpec
+	case KindNotification:
+		c.NotificationSpec = &NotificationSpec{}
+		c.spec = c.NotificationSpec
+	case KindAnalysisTemplate:
+		c.AnalysisTemplateSpec = &AnalysisTemplateSpec{}
+		c.spec = c.AnalysisTemplateSpec
 	default:
 		return fmt.Errorf("unsupported kind: %s", c.Kind)
 	}
