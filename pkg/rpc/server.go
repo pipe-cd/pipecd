@@ -115,7 +115,7 @@ func WithGracePeriod(d time.Duration) Option {
 // WithLogger sets logger to server.
 func WithLogger(logger *zap.Logger) Option {
 	return func(s *Server) {
-		s.logger = logger
+		s.logger = logger.Named("rpc-server")
 	}
 }
 
@@ -128,11 +128,13 @@ func NewServer(service Service, opts ...Option) *Server {
 	for _, opt := range opts {
 		opt(s)
 	}
-	s.logger = s.logger.Named("rpc-server")
-	if service == nil {
-		s.logger.Fatal("service must not be nil")
-	}
 	s.services = append(s.services, service)
+	if len(s.services) == 0 {
+		s.logger.Fatal("at least one service must be specified")
+	}
+	if err := s.init(); err != nil {
+		s.logger.Fatal(err.Error())
+	}
 	return s
 }
 
@@ -151,7 +153,7 @@ func (s *Server) Run(ctx context.Context) error {
 	return <-doneCh
 }
 
-func (s *Server) run() error {
+func (s *Server) init() error {
 	opts := []grpc.ServerOption{
 		grpc.StatsHandler(&ocgrpc.ServerHandler{}),
 	}
@@ -160,7 +162,7 @@ func (s *Server) run() error {
 	if s.tls {
 		creds, err := credentials.NewServerTLSFromFile(s.certFile, s.keyFile)
 		if err != nil {
-			s.logger.Fatal("failed to load tls certificate file", zap.Error(err))
+			return fmt.Errorf("failed to load tls certificate file: %v", err)
 		}
 		opts = append(opts, grpc.Creds(creds))
 	} else {
@@ -190,7 +192,11 @@ func (s *Server) run() error {
 	for _, service := range s.services {
 		service.Register(s.grpcServer)
 	}
-	// Start open a tcp connection.
+	return nil
+}
+
+func (s *Server) run() error {
+	// Start listening at the specified port.
 	lis, err := net.Listen("tcp", fmt.Sprintf(":%d", s.port))
 	if err != nil {
 		s.logger.Error("failed to listen", zap.Error(err))
