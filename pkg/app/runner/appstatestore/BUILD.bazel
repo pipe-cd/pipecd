@@ -2,7 +2,7 @@ load("@io_bazel_rules_go//go:def.bzl", "go_library")
 
 go_library(
     name = "go_default_library",
-    srcs = ["monitor.go"],
-    importpath = "github.com/kapetaniosci/pipe/pkg/app/runner/appstatemonitor",
+    srcs = ["store.go"],
+    importpath = "github.com/kapetaniosci/pipe/pkg/app/runner/appstatestore",
     visibility = ["//visibility:public"],
 )

@@ -16,15 +16,21 @@
 // that ...
 package appstatereporter
 
-import "time"
+import (
+	"context"
+	"time"
+)
 
 type AppStateReporter struct {
+	gracePeriod time.Duration
 }
 
-func (t *AppStateReporter) Run() error {
-	return nil
+func NewReporter(gracePeriod time.Duration) *AppStateReporter {
+	return &AppStateReporter{
+		gracePeriod: gracePeriod,
+	}
 }
 
-func (t *AppStateReporter) Stop(timeout time.Duration) error {
+func (t *AppStateReporter) Run(ctx context.Context) error {
 	return nil
 }

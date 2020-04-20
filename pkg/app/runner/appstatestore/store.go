@@ -12,19 +12,27 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-// Package appstatemonitor provides a runner component
-// that ...
-package appstatemonitor
+// Package appstatestore provides a runner component
+// that watches the live state of applications in the cluster
+// to construct it cache data that will be used to provide
+// data to another components quickly.
+package appstatestore
 
-import "time"
+import (
+	"context"
+	"time"
+)
 
-type AppStateMonitor struct {
+type AppStateStore struct {
+	gracePeriod time.Duration
 }
 
-func (t *AppStateMonitor) Run() error {
-	return nil
+func NewStore(gracePeriod time.Duration) *AppStateStore {
+	return &AppStateStore{
+		gracePeriod: gracePeriod,
+	}
 }
 
-func (t *AppStateMonitor) Stop(timeout time.Duration) error {
+func (t *AppStateStore) Run(ctx context.Context) error {
 	return nil
 }

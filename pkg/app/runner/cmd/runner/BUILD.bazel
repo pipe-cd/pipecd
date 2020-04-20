@@ -8,6 +8,8 @@ go_library(
     deps = [
         "//pkg/admin:go_default_library",
         "//pkg/app/api/service:go_default_library",
+        "//pkg/app/runner/appstatereporter:go_default_library",
+        "//pkg/app/runner/appstatestore:go_default_library",
         "//pkg/app/runner/deploymentcontroller:go_default_library",
         "//pkg/app/runner/deploymenttrigger:go_default_library",
         "//pkg/cli:go_default_library",

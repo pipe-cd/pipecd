@@ -27,6 +27,8 @@ import (
 
 	"github.com/kapetaniosci/pipe/pkg/admin"
 	apiservice "github.com/kapetaniosci/pipe/pkg/app/api/service"
+	"github.com/kapetaniosci/pipe/pkg/app/runner/appstatereporter"
+	"github.com/kapetaniosci/pipe/pkg/app/runner/appstatestore"
 	"github.com/kapetaniosci/pipe/pkg/app/runner/deploymentcontroller"
 	"github.com/kapetaniosci/pipe/pkg/app/runner/deploymenttrigger"
 	"github.com/kapetaniosci/pipe/pkg/cli"
@@ -103,6 +105,22 @@ func (r *runner) run(ctx context.Context, t cli.Telemetry) error {
 		})
 		group.Go(func() error {
 			return admin.Run(ctx)
+		})
+	}
+
+	// Start running application state store.
+	{
+		s := appstatestore.NewStore(r.gracePeriod)
+		group.Go(func() error {
+			return s.Run(ctx)
+		})
+	}
+
+	// Start running application state reporter.
+	{
+		r := appstatereporter.NewReporter(r.gracePeriod)
+		group.Go(func() error {
+			return r.Run(ctx)
 		})
 	}
 
