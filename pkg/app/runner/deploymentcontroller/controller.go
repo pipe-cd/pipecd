@@ -25,6 +25,11 @@ import (
 	"time"
 )
 
+const (
+	subsetLabel    = "pipecd.dev/subset"
+	managedByLabel = "pipecd.dev/managed-by"
+)
+
 type DeploymentController struct {
 	gracePeriod time.Duration
 }
