@@ -15,10 +15,10 @@ load(
 ### Rules_go and gazelle
 http_archive(
     name = "io_bazel_rules_go",
-    sha256 = "221cf4a69eb30aa9b05a87b585f7b06a44cf3caff782e486a344fce8251dd4e3",
+    sha256 = "7b9bbe3ea1fccb46dcfa6c3f3e29ba7ec740d8733370e21cdc8937467b4a4349",
     urls = [
-        "https://mirror.bazel.build/github.com/bazelbuild/rules_go/releases/download/v0.21.4/rules_go-v0.21.4.tar.gz",
-        "https://github.com/bazelbuild/rules_go/releases/download/v0.21.4/rules_go-v0.21.4.tar.gz",
+        "https://mirror.bazel.build/github.com/bazelbuild/rules_go/releases/download/v0.22.4/rules_go-v0.22.4.tar.gz",
+        "https://github.com/bazelbuild/rules_go/releases/download/v0.22.4/rules_go-v0.22.4.tar.gz",
     ],
 )
 
@@ -31,7 +31,7 @@ load(
 go_rules_dependencies()
 
 go_register_toolchains(
-    go_version = "1.14",
+    go_version = "1.14.2",
 )
 
 load(
