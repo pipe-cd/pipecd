@@ -43,6 +43,18 @@ func (a *WebAPI) Register(server *grpc.Server) {
 	service.RegisterWebAPIServer(server, a)
 }
 
+func (a *WebAPI) AddEnvironment(ctx context.Context, req *service.AddEnvironmentRequest) (*service.AddEnvironmentResponse, error) {
+	return nil, status.Error(codes.Unimplemented, "")
+}
+
+func (a *WebAPI) UpdateEnvironmentDesc(ctx context.Context, req *service.UpdateEnvironmentDescRequest) (*service.UpdateEnvironmentDescResponse, error) {
+	return nil, status.Error(codes.Unimplemented, "")
+}
+
+func (a *WebAPI) ListEnvironments(ctx context.Context, req *service.ListEnvironmentsRequest) (*service.ListEnvironmentsResponse, error) {
+	return nil, status.Error(codes.Unimplemented, "")
+}
+
 func (a *WebAPI) RegisterRunner(ctx context.Context, req *service.RegisterRunnerRequest) (*service.RegisterRunnerResponse, error) {
 	return nil, status.Error(codes.Unimplemented, "")
 }
@@ -52,18 +64,6 @@ func (a *WebAPI) DisableRunner(ctx context.Context, req *service.DisableRunnerRe
 }
 
 func (a *WebAPI) ListRunners(ctx context.Context, req *service.ListRunnersRequest) (*service.ListRunnersResponse, error) {
-	return nil, status.Error(codes.Unimplemented, "")
-}
-
-func (a *WebAPI) AddEnvironment(ctx context.Context, req *service.AddEnvironmentRequest) (*service.AddEnvironmentResponse, error) {
-	return nil, status.Error(codes.Unimplemented, "")
-}
-
-func (a *WebAPI) RenameEnvironment(ctx context.Context, req *service.RenameEnvironmentRequest) (*service.RenameEnvironmentResponse, error) {
-	return nil, status.Error(codes.Unimplemented, "")
-}
-
-func (a *WebAPI) ListEnvironments(ctx context.Context, req *service.ListEnvironmentsRequest) (*service.ListEnvironmentsResponse, error) {
 	return nil, status.Error(codes.Unimplemented, "")
 }
 
@@ -83,23 +83,23 @@ func (a *WebAPI) SyncApplication(ctx context.Context, req *service.SyncApplicati
 	return nil, status.Error(codes.Unimplemented, "")
 }
 
-func (a *WebAPI) ListPipelines(ctx context.Context, req *service.ListPipelinesRequest) (*service.ListPipelinesResponse, error) {
+func (a *WebAPI) ListDeployments(ctx context.Context, req *service.ListDeploymentsRequest) (*service.ListDeploymentsResponse, error) {
 	return nil, status.Error(codes.Unimplemented, "")
 }
 
-func (a *WebAPI) GetPipeline(ctx context.Context, req *service.GetPipelineRequest) (*service.GetPipelineResponse, error) {
+func (a *WebAPI) GetDeployment(ctx context.Context, req *service.GetDeploymentRequest) (*service.GetDeploymentResponse, error) {
 	return nil, status.Error(codes.Unimplemented, "")
 }
 
-func (a *WebAPI) CancelPipeline(ctx context.Context, req *service.CancelPipelineRequest) (*service.CancelPipelineResponse, error) {
+func (a *WebAPI) CancelDeployment(ctx context.Context, req *service.CancelDeploymentRequest) (*service.CancelDeploymentResponse, error) {
 	return nil, status.Error(codes.Unimplemented, "")
 }
 
-func (a *WebAPI) ApprovePipelineStage(ctx context.Context, req *service.ApprovePipelineStageRequest) (*service.ApprovePipelineStageResponse, error) {
+func (a *WebAPI) ApproveDeploymentStage(ctx context.Context, req *service.ApproveDeploymentStageRequest) (*service.ApproveDeploymentStageResponse, error) {
 	return nil, status.Error(codes.Unimplemented, "")
 }
 
-func (a *WebAPI) RetryPipelineStage(ctx context.Context, req *service.RetryPipelineStageRequest) (*service.RetryPipelineStageResponse, error) {
+func (a *WebAPI) RetryDeploymentStage(ctx context.Context, req *service.RetryDeploymentStageRequest) (*service.RetryDeploymentStageResponse, error) {
 	return nil, status.Error(codes.Unimplemented, "")
 }
 

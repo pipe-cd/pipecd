@@ -29,7 +29,10 @@ pgv_go_proto_library(
 
 go_library(
     name = "go_default_library",
-    srcs = ["doc.go"],
+    srcs = [
+        "common.go",
+        "doc.go",
+    ],
     embed = [":model_go_proto"],
     importpath = "github.com/kapetaniosci/pipe/pkg/model",
     visibility = ["//visibility:public"],

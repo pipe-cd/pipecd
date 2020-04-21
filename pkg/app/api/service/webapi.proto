@@ -20,15 +20,15 @@ option go_package = "github.com/kapetaniosci/pipe/pkg/app/api/service";
 import "validate/validate.proto";
 
 service WebAPI {
+    // Environment
+    rpc AddEnvironment(AddEnvironmentRequest) returns (AddEnvironmentResponse) {}
+    rpc UpdateEnvironmentDesc(UpdateEnvironmentDescRequest) returns (UpdateEnvironmentDescResponse) {}
+    rpc ListEnvironments(ListEnvironmentsRequest) returns (ListEnvironmentsResponse) {}
+
     // Runner
     rpc RegisterRunner(RegisterRunnerRequest) returns (RegisterRunnerResponse) {}
     rpc DisableRunner(DisableRunnerRequest) returns (DisableRunnerResponse) {}
     rpc ListRunners(ListRunnersRequest) returns (ListRunnersResponse) {}
-
-    // Environment
-    rpc AddEnvironment(AddEnvironmentRequest) returns (AddEnvironmentResponse) {}
-    rpc RenameEnvironment(RenameEnvironmentRequest) returns (RenameEnvironmentResponse) {}
-    rpc ListEnvironments(ListEnvironmentsRequest) returns (ListEnvironmentsResponse) {}
 
     // Application
     rpc AddApplication(AddApplicationRequest) returns (AddApplicationResponse) {}
@@ -36,12 +36,12 @@ service WebAPI {
     rpc ListApplications(ListApplicationsRequest) returns (ListApplicationsResponse) {}
     rpc SyncApplication(SyncApplicationRequest) returns (SyncApplicationResponse) {}
 
-    // Pipeline
-    rpc ListPipelines(ListPipelinesRequest) returns (ListPipelinesResponse) {}
-    rpc GetPipeline(GetPipelineRequest) returns (GetPipelineResponse) {}
-    rpc CancelPipeline(CancelPipelineRequest) returns (CancelPipelineResponse) {}
-    rpc ApprovePipelineStage(ApprovePipelineStageRequest) returns (ApprovePipelineStageResponse) {}
-    rpc RetryPipelineStage(RetryPipelineStageRequest) returns (RetryPipelineStageResponse) {}
+    // Deployment
+    rpc ListDeployments(ListDeploymentsRequest) returns (ListDeploymentsResponse) {}
+    rpc GetDeployment(GetDeploymentRequest) returns (GetDeploymentResponse) {}
+    rpc CancelDeployment(CancelDeploymentRequest) returns (CancelDeploymentResponse) {}
+    rpc ApproveDeploymentStage(ApproveDeploymentStageRequest) returns (ApproveDeploymentStageResponse) {}
+    rpc RetryDeploymentStage(RetryDeploymentStageRequest) returns (RetryDeploymentStageResponse) {}
 
     // ApplicationState
     rpc GetApplicationState(GetApplicationStateRequest) returns (GetApplicationStateResponse) {}
@@ -49,6 +49,21 @@ service WebAPI {
     // Account
     rpc GetProject(GetProjectRequest) returns (GetProjectResponse) {}
     rpc GetMe(GetMeRequest) returns (GetMeResponse) {}
+}
+
+message AddEnvironmentResponse {
+}
+
+message UpdateEnvironmentDescRequest {
+}
+
+message UpdateEnvironmentDescResponse {
+}
+
+message ListEnvironmentsRequest {
+}
+
+message ListEnvironmentsResponse {
 }
 
 message RegisterRunnerRequest {
@@ -70,21 +85,6 @@ message ListRunnersResponse {
 }
 
 message AddEnvironmentRequest {
-}
-
-message AddEnvironmentResponse {
-}
-
-message RenameEnvironmentRequest {
-}
-
-message RenameEnvironmentResponse {
-}
-
-message ListEnvironmentsRequest {
-}
-
-message ListEnvironmentsResponse {
 }
 
 message AddApplicationRequest {
@@ -111,34 +111,34 @@ message SyncApplicationRequest {
 message SyncApplicationResponse {
 }
 
-message ListPipelinesRequest {
+message ListDeploymentsRequest {
 }
 
-message ListPipelinesResponse {
+message ListDeploymentsResponse {
 }
 
-message GetPipelineRequest {
+message GetDeploymentRequest {
 }
 
-message GetPipelineResponse {
+message GetDeploymentResponse {
 }
 
-message CancelPipelineRequest {
+message CancelDeploymentRequest {
 }
 
-message CancelPipelineResponse {
+message CancelDeploymentResponse {
 }
 
-message ApprovePipelineStageRequest {
+message ApproveDeploymentStageRequest {
 }
 
-message ApprovePipelineStageResponse {
+message ApproveDeploymentStageResponse {
 }
 
-message RetryPipelineStageRequest {
+message RetryDeploymentStageRequest {
 }
 
-message RetryPipelineStageResponse {
+message RetryDeploymentStageResponse {
 }
 
 message GetApplicationStateRequest {
