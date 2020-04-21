@@ -1,0 +1,12 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: api
+spec:
+  replicas: 1
+  template:
+    spec:
+      containers:
+      - name: api-server
+        image: gcr.io/kapetanios/pipe-api:{{ .VERSION }}
+        imagePullPolicy: IfNotPresent

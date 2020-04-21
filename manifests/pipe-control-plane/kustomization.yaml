@@ -1,0 +1,18 @@
+commonLabels:
+  app.kubernetes.io/name: pipe-control-plane
+  app.kubernetes.io/component: pipe-control-plane
+  app.kubernetes.io/org: pipecd
+
+resources:
+- api-deployment.yaml
+- api-service.yaml
+- cache-deployment.yaml
+- cache-service.yaml
+
+configMapGenerator:
+- name: api-envoy-config
+  files:
+    - api-envoy-config.yaml
+- name: cache-envoy-config
+  files:
+    - cache-envoy-config.yaml

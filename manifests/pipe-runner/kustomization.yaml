@@ -1,0 +1,8 @@
+commonLabels:
+  app.kubernetes.io/name: pipe-runner
+  app.kubernetes.io/component: pipe-runner
+  app.kubernetes.io/org: pipecd
+
+resources:
+- crd.yaml
+- deployment.yaml

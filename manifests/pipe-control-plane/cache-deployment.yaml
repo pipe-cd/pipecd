@@ -1,0 +1,53 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: rediscache
+spec:
+  replicas: 1
+  template:
+    spec:
+      containers:
+      - name: rediscache-redis
+        image: redis:5.0.5-alpine3.9
+        imagePullPolicy: IfNotPresent
+        # TODO: Add redis password.
+        # args:
+        #   - --requirepass
+        #   - password
+        ports:
+          - name: redis
+            containerPort: 6379
+            protocol: TCP
+      - name: rediscache-envoy
+        image: envoyproxy/envoy-alpine:v1.10.0
+        imagePullPolicy: IfNotPresent
+        command:
+        - envoy
+        args:
+          - -c
+          - /etc/envoy/envoy-config.yaml
+        ports:
+        - name: service
+          containerPort: 9090
+          protocol: TCP
+        - name: envoy-admin
+          containerPort: 9095
+          protocol: TCP
+        livenessProbe:
+          initialDelaySeconds: 15
+          httpGet:
+            path: /server_info
+            port: envoy-admin
+        readinessProbe:
+          initialDelaySeconds: 15
+          httpGet:
+            path: /server_info
+            port: envoy-admin
+        volumeMounts:
+        - name: envoy-config
+          mountPath: /etc/envoy
+          readOnly: true
+      volumes:
+      - name: envoy-config
+        configMap:
+          name: rediscache-envoy-config
