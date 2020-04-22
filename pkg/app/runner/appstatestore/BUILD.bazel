@@ -5,4 +5,12 @@ go_library(
     srcs = ["store.go"],
     importpath = "github.com/kapetaniosci/pipe/pkg/app/runner/appstatestore",
     visibility = ["//visibility:public"],
+    deps = [
+        "@io_k8s_apimachinery//pkg/apis/meta/v1:go_default_library",
+        "@io_k8s_apimachinery//pkg/runtime/schema:go_default_library",
+        "@io_k8s_client_go//discovery:go_default_library",
+        "@io_k8s_client_go//dynamic:go_default_library",
+        "@io_k8s_client_go//rest:go_default_library",
+        "@org_uber_go_zap//:go_default_library",
+    ],
 )

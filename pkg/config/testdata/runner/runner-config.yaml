@@ -1,5 +1,5 @@
 apiVersion: pipecd.dev/v1beta1
-kind: RunnerConfig
+kind: Runner
 spec:
   git:
     sshKeyFile: /etc/pipecd-runner/ssh.key

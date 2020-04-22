@@ -45,3 +45,6 @@ pkg/app/web/src/service
 *.pb.validate.go
 *.mock.go
 *.embed.go
+
+.dev
+

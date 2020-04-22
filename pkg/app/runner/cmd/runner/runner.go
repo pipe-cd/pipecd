@@ -24,6 +24,10 @@ import (
 	"github.com/spf13/cobra"
 	"go.uber.org/zap"
 	"golang.org/x/sync/errgroup"
+	"k8s.io/client-go/tools/clientcmd"
+
+	// The following line to load the gcp plugin (only required to authenticate against GKE clusters).
+	_ "k8s.io/client-go/plugin/pkg/client/auth/gcp"
 
 	"github.com/kapetaniosci/pipe/pkg/admin"
 	apiservice "github.com/kapetaniosci/pipe/pkg/app/api/service"
@@ -46,7 +50,12 @@ type runner struct {
 	certFile      string
 	apiAddress    string
 	adminPort     int
-	gracePeriod   time.Duration
+
+	kubeconfig string
+	masterURL  string
+	namespace  string
+
+	gracePeriod time.Duration
 }
 
 func NewCommand() *cobra.Command {
@@ -69,6 +78,11 @@ func NewCommand() *cobra.Command {
 	cmd.Flags().StringVar(&r.certFile, "cert-file", r.certFile, "The path to the TLS certificate file.")
 	cmd.Flags().StringVar(&r.apiAddress, "api-address", r.apiAddress, "The address used to connect to API server.")
 	cmd.Flags().IntVar(&r.adminPort, "admin-port", r.adminPort, "The port number used to run a HTTP server for admin tasks such as metrics, healthz.")
+
+	cmd.Flags().StringVar(&r.kubeconfig, "kube-config", r.kubeconfig, "Path to a kubeconfig. Only required if out-of-cluster.")
+	cmd.Flags().StringVar(&r.masterURL, "master", r.masterURL, "The address of the Kubernetes API server. Overrides any value in kubeconfig. Only required if out-of-cluster.")
+	cmd.Flags().StringVar(&r.namespace, "namespace", r.namespace, "The namespace where this runner is running.")
+
 	cmd.Flags().DurationVar(&r.gracePeriod, "grace-period", r.gracePeriod, "How long to wait for graceful shutdown.")
 
 	cmd.MarkFlagRequired("project-id")
@@ -85,12 +99,14 @@ func (r *runner) run(ctx context.Context, t cli.Telemetry) error {
 	// Load runner configuration from specified file.
 	_, err := r.loadConfig()
 	if err != nil {
+		t.Logger.Error("failed to load runner configuration", zap.Error(err))
 		return err
 	}
 
 	// Make gRPC client and connect to the API.
 	_, err = r.createAPIClient(ctx, t.Logger)
 	if err != nil {
+		t.Logger.Error("failed to create gRPC client to control plane", zap.Error(err))
 		return err
 	}
 
@@ -108,9 +124,16 @@ func (r *runner) run(ctx context.Context, t cli.Telemetry) error {
 		})
 	}
 
+	// Build kubeconfig for initialing kubernetes clients later.
+	kubeConfig, err := clientcmd.BuildConfigFromFlags(r.masterURL, r.kubeconfig)
+	if err != nil {
+		t.Logger.Error("failed to build kube config", zap.Error(err))
+		return err
+	}
+
 	// Start running application state store.
 	{
-		s := appstatestore.NewStore(r.gracePeriod)
+		s := appstatestore.NewStore(kubeConfig, r.gracePeriod, t.Logger)
 		group.Go(func() error {
 			return s.Run(ctx)
 		})
