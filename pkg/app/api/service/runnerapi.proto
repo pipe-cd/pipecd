@@ -152,4 +152,5 @@ message ReportApplicationResourceTreeRequest {
 }
 
 message ReportApplicationResourceTreeResponse {
+    int64 latest_timestamp = 1 [(validate.rules).int64.gt = 0];
 }

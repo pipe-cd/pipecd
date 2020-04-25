@@ -104,11 +104,11 @@ func (r *runner) run(ctx context.Context, t cli.Telemetry) error {
 	}
 
 	// Make gRPC client and connect to the API.
-	_, err = r.createAPIClient(ctx, t.Logger)
-	if err != nil {
-		t.Logger.Error("failed to create gRPC client to control plane", zap.Error(err))
-		return err
-	}
+	// _, err = r.createAPIClient(ctx, t.Logger)
+	// if err != nil {
+	// 	t.Logger.Error("failed to create gRPC client to control plane", zap.Error(err))
+	// 	return err
+	// }
 
 	// Start running admin server.
 	{
@@ -137,6 +137,9 @@ func (r *runner) run(ctx context.Context, t cli.Telemetry) error {
 		group.Go(func() error {
 			return s.Run(ctx)
 		})
+		if err := s.WaitForReady(ctx, time.Minute); err != nil {
+			return err
+		}
 	}
 
 	// Start running application state reporter.
