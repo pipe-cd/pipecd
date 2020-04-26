@@ -23,9 +23,10 @@ import (
 )
 
 const (
-	appIDAnnotationKey              = "pipecd.dev/app-id"
-	commitAnnotationKey             = "pipecd.dev/commit"
-	originalAPIVersionAnnotationKey = "pipecd.dev/original-api-version"
+	annotationKeyAppID       = "pipecd.dev/app-id"
+	annotationKeyResourceKey = "pipecd.dev/resource-key"
+	annotationKeyAPIVersion  = "pipecd.dev/api-version"
+	annotationKeyCommit      = "pipecd.dev/commit"
 )
 
 type store struct {
@@ -118,7 +119,7 @@ func (s *store) findAppIDByOwners(owners []metav1.OwnerReference) string {
 func (s *store) onAddResource(obj *unstructured.Unstructured) {
 	var (
 		uid    = string(obj.GetUID())
-		appID  = obj.GetAnnotations()[appIDAnnotationKey]
+		appID  = obj.GetAnnotations()[annotationKeyAppID]
 		key    = makeResourceKey(obj)
 		owners = obj.GetOwnerReferences()
 	)
@@ -172,7 +173,7 @@ func (s *store) onUpdateResource(oldObj, obj *unstructured.Unstructured) {
 func (s *store) onDeleteResource(obj *unstructured.Unstructured) {
 	var (
 		uid    = string(obj.GetUID())
-		appID  = obj.GetAnnotations()[appIDAnnotationKey]
+		appID  = obj.GetAnnotations()[annotationKeyAppID]
 		key    = makeResourceKey(obj)
 		owners = obj.GetOwnerReferences()
 	)
@@ -226,7 +227,7 @@ func (s *store) getDependedNodesForApp(appID string) map[string]*node {
 }
 
 func (a *appLiveNodes) addManagingResource(uid string, key resourceKey, obj *unstructured.Unstructured) {
-	originalAPIVersion := obj.GetAnnotations()[originalAPIVersionAnnotationKey]
+	originalAPIVersion := obj.GetAnnotations()[annotationKeyAPIVersion]
 
 	if cur, ok := a.managingNodes[uid]; ok {
 		cur.resources[key] = obj
