@@ -137,6 +137,7 @@ func (r *runner) run(ctx context.Context, t cli.Telemetry) error {
 		group.Go(func() error {
 			return s.Run(ctx)
 		})
+		// TODO: Do not block other components until this component becomes ready.
 		if err := s.WaitForReady(ctx, time.Minute); err != nil {
 			return err
 		}
