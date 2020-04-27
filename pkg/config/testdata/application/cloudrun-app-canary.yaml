@@ -1,0 +1,16 @@
+apiVersion: pipecd.dev/v1beta1
+kind: CloudRunApp
+spec:
+  input:
+    image: gcr.io/demo-project/demoapp:v1.0.0
+    region: asia-east-1
+    platform: managed
+  pipeline:
+    stages:
+      - name: CLOUDRUN_NEW_VERSION_OUT
+      - name: CLOUDRUN_TRAFFIC_ROUTE
+        with:
+          newVersion: 10
+      - name: CLOUDRUN_TRAFFIC_ROUTE
+        with:
+          newVersion: 100
