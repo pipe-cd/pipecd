@@ -1,0 +1,17 @@
+# Using version, alias, additional version to do canary, bluegreen.
+# https://docs.aws.amazon.com/lambda/latest/dg/configuration-aliases.html
+apiVersion: pipecd.dev/v1beta1
+kind: LambdaApp
+spec:
+  input:
+    # Where to fetch the source code to create lambda package.
+    git: git@github.com:org/source-repo.git
+    path: lambdas/demoapp
+    ref: v1.0.0
+  pipeline:
+    stages:
+      - name: LAMBDA_NEW_VERSION_OUT
+      - name: LAMBDA_TRAFFIC_ROUTE
+        with:
+          newVersion: 100
+      - name: LAMBDA_OLD_VERSION_OUT
