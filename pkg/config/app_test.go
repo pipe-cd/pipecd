@@ -22,7 +22,7 @@ import (
 	"github.com/stretchr/testify/require"
 )
 
-func TestConfig(t *testing.T) {
+func TestAppConfig(t *testing.T) {
 	testcases := []struct {
 		fileName           string
 		expectedKind       Kind

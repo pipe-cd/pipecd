@@ -3,45 +3,41 @@ kind: Runner
 spec:
   git:
     sshKeyFile: /etc/pipecd-runner/ssh.key
-    accessTokenFile: /etc/pipecd-runner/git.token
+    accessTokenFile: /etc/pipecd-runner/github.token
   repositories:
     - repo: git@github.com:org/repo1
       branch: master
-      syncInterval: 5m
-      pollInterval: 5m
+      pollInterval: 1m
     - repo: git@github.com:org/repo2
       branch: master
-      syncInterval: 10m
-      pollInterval: 10m    
+      pollInterval: 2m    
   destinations:
     - name: default
-      type: Kubernetes
       kubernetes:
-        allowNamespaces: []
+        allowNamespaces:
+          - dev
     - name: gcp-terraform
-      type: Terraform
       terraform:
         gcp:
           project: gcp-project
           region: us-central1
-          credentials: /etc/pipecd-runner/terraform.serviceaccount
+          credentialsFile: /etc/pipecd-runner/terraform.serviceaccount
     - name: aws-terraform
-      type: Terraform
       terraform:
         aws:
           region: us-east-1
-  analysisProviders:
-    - name: dev-prometheus
-      prometheus:
-        address: https://your-prometheus.dev
-    - name: stackdriver
-      stackdriver:
-        projectId: demo
-        serviceAccountFile: /etc/pipecd-runner/stackdriver.serviceaccount
-    - name: datadog
-      datadog:
-        apiKeyFile: /etc/pipecd-runner/datadog.apikey
-        applicationKeyFile: /etc/pipecd-runner/datadog.applicationkey
-    - name: cloudwatch
-      cloudwatch:
-        region: ap-northeast-1
+  # analysisProviders:
+  #   - name: dev-prometheus
+  #     prometheus:
+  #       address: https://your-prometheus.dev
+  #   - name: stackdriver
+  #     stackdriver:
+  #       projectId: demo
+  #       serviceAccountFile: /etc/pipecd-runner/stackdriver.serviceaccount
+  #   - name: datadog
+  #     datadog:
+  #       apiKeyFile: /etc/pipecd-runner/datadog.apikey
+  #       applicationKeyFile: /etc/pipecd-runner/datadog.applicationkey
+  #   - name: cloudwatch
+  #     cloudwatch:
+  #       region: ap-northeast-1

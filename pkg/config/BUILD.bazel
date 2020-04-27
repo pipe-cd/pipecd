@@ -19,7 +19,13 @@ go_library(
 go_test(
     name = "go_default_test",
     size = "small",
-    srcs = ["config_test.go"],
+    srcs = [
+        "analysis_template_test.go",
+        "app_test.go",
+        "control_plane_test.go",
+        "notification_test.go",
+        "runner_test.go",
+    ],
     data = glob(["testdata/**"]),
     embed = [":go_default_library"],
     deps = [

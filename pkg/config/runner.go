@@ -14,6 +14,7 @@
 
 package config
 
+// RunnerSpec contains configurable data used to while running Runner.
 type RunnerSpec struct {
 	Git               RunnerGit           `json:"git"`
 	Repositories      []RunnerRepository  `json:"repositories"`
@@ -21,19 +22,24 @@ type RunnerSpec struct {
 	AnalysisProviders []AnalysisProvider  `json:"analysisProviders"`
 }
 
+// Validate validates configured data of all fields.
 func (s *RunnerSpec) Validate() error {
 	return nil
 }
 
 type RunnerGit struct {
-	SSSKeyFile      string `json:"sshKeyFile"`
+	// The path to the private ssh key file.
+	// This will be used to clone the source code of the git repositories.
+	SSHKeyFile string `json:"sshKeyFile"`
+	// The path to the GitHub/GitLab access token file.
+	// This will be used to authenticate while creating pull request...
 	AccessTokenFile string `json:"accessTokenFile"`
 }
 
 type RunnerRepository struct {
-	Repo         string   `json:"repo"`
-	Branch       string   `json:"branch"`
-	SyncInterval Duration `json:"syncInterval"`
+	Repo   string `json:"repo"`
+	Branch string `json:"branch"`
+	// How often to check the new commit merged into the branch.
 	PollInterval Duration `json:"pollInterval"`
 }
 
@@ -45,8 +51,29 @@ const (
 )
 
 type RunnerDestination struct {
-	Name string          `json:"name"`
-	Type DestinationType `json:"type"`
+	Name       string                       `json:"name"`
+	Type       DestinationType              `json:"-"`
+	Kubernetes *RunnerDestinationKubernetes `json:"kubernetes"`
+	Terraform  *RunnerDestinationTerraform  `json:"terraform"`
+}
+
+type RunnerDestinationKubernetes struct {
+	AllowNamespaces []string `json:"allowNamespaces"`
+}
+
+type RunnerDestinationTerraform struct {
+	GCP *RunnerTerraformGCP `json:"gcp"`
+	AWS *RunnerTerraformAWS `json:"aws"`
+}
+
+type RunnerTerraformGCP struct {
+	Project         string `json:"project"`
+	Region          string `json:"region"`
+	CredentialsFile string `json:"credentialsFile"`
+}
+
+type RunnerTerraformAWS struct {
+	Region string `json:"region"`
 }
 
 type AnalysisProvider struct {
