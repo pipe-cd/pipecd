@@ -318,19 +318,27 @@ type AnalysisHTTP struct {
 }
 
 type KubernetesAppInput struct {
-	Manifests      []string
-	KubectlVersion string
-	HelmChart      string
-	HelmValueFiles []string
-	HelmVersion    string
-	Namespace      string
-	Dependencies   []string `json:"dependencies,omitempty"`
+	Manifests      []string        `json:"manifests"`
+	KubectlVersion string          `json:"kubectlVersion"`
+	HelmChart      *InputHelmChart `json:"helmChart"`
+	HelmValueFiles []string        `json:"helmValueFiles"`
+	HelmVersion    string          `json:"helmVersion"`
+	Dependencies   []string        `json:"dependencies,omitempty"`
 }
 
 type TerraformAppInput struct {
 	Workspace        string   `json:"workspace,omitempty"`
 	TerraformVersion string   `json:"terraformVersion,omitempty"`
 	Dependencies     []string `json:"dependencies,omitempty"`
+}
+
+type InputHelmChart struct {
+	Git        string `json:"git"`
+	Path       string `json:"path"`
+	Ref        string `json:"ref"`
+	Repository string `json:"repository"`
+	Name       string `json:"name"`
+	Version    string `json:"version"`
 }
 
 type K8sDeployTarget struct {
