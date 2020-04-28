@@ -34,54 +34,54 @@ var (
 	// At this version, we only care about Ingress, Service, Deployment and Pod,
 	// but in the next version we will expand to watch all resource kinds.
 	groupWhitelist = map[string]struct{}{
-		"":                  struct{}{},
-		"apps":              struct{}{},
-		"extensions":        struct{}{},
-		"networking.k8s.io": struct{}{},
+		"":                  {},
+		"apps":              {},
+		"extensions":        {},
+		"networking.k8s.io": {},
 	}
 	versionWhitelist = map[string]struct{}{
-		"v1":      struct{}{},
-		"v1beta1": struct{}{},
-		"v1beta2": struct{}{},
+		"v1":      {},
+		"v1beta1": {},
+		"v1beta2": {},
 	}
 	kindWhitelist = map[string]struct{}{
-		"Ingress":     struct{}{},
-		"Service":     struct{}{},
-		"Deployment":  struct{}{},
-		"DaemonSet":   struct{}{},
-		"StatefulSet": struct{}{},
-		"ReplicaSet":  struct{}{},
-		"Pod":         struct{}{},
-		"ConfigMap":   struct{}{},
-		"Secret":      struct{}{},
+		"Ingress":     {},
+		"Service":     {},
+		"Deployment":  {},
+		"DaemonSet":   {},
+		"StatefulSet": {},
+		"ReplicaSet":  {},
+		"Pod":         {},
+		"ConfigMap":   {},
+		"Secret":      {},
 	}
 	ignoreResourceKeys = map[string]struct{}{
-		"v1/Service/default/kubernetes":               struct{}{},
-		"v1/Service/kube-system/heapster":             struct{}{},
-		"v1/Service/kube-system/metrics-server":       struct{}{},
-		"v1/Service/kube-system/kube-dns":             struct{}{},
-		"v1/Service/kube-system/kubernetes-dashboard": struct{}{},
-		"v1/Service/kube-system/default-http-backend": struct{}{},
+		"v1/Service/default/kubernetes":               {},
+		"v1/Service/kube-system/heapster":             {},
+		"v1/Service/kube-system/metrics-server":       {},
+		"v1/Service/kube-system/kube-dns":             {},
+		"v1/Service/kube-system/kubernetes-dashboard": {},
+		"v1/Service/kube-system/default-http-backend": {},
 
-		"apps/v1/Deployment/kube-system/kube-dns":                                 struct{}{},
-		"apps/v1/Deployment/kube-system/kube-dns-autoscaler":                      struct{}{},
-		"apps/v1/Deployment/kube-system/fluentd-gcp-scaler":                       struct{}{},
-		"apps/v1/Deployment/kube-system/kubernetes-dashboard":                     struct{}{},
-		"apps/v1/Deployment/kube-system/l7-default-backend":                       struct{}{},
-		"apps/v1/Deployment/kube-system/heapster-gke":                             struct{}{},
-		"apps/v1/Deployment/kube-system/stackdriver-metadata-agent-cluster-level": struct{}{},
+		"apps/v1/Deployment/kube-system/kube-dns":                                 {},
+		"apps/v1/Deployment/kube-system/kube-dns-autoscaler":                      {},
+		"apps/v1/Deployment/kube-system/fluentd-gcp-scaler":                       {},
+		"apps/v1/Deployment/kube-system/kubernetes-dashboard":                     {},
+		"apps/v1/Deployment/kube-system/l7-default-backend":                       {},
+		"apps/v1/Deployment/kube-system/heapster-gke":                             {},
+		"apps/v1/Deployment/kube-system/stackdriver-metadata-agent-cluster-level": {},
 
-		"extensions/v1beta1/Deployment/kube-system/kube-dns":                                 struct{}{},
-		"extensions/v1beta1/Deployment/kube-system/kube-dns-autoscaler":                      struct{}{},
-		"extensions/v1beta1/Deployment/kube-system/fluentd-gcp-scaler":                       struct{}{},
-		"extensions/v1beta1/Deployment/kube-system/kubernetes-dashboard":                     struct{}{},
-		"extensions/v1beta1/Deployment/kube-system/l7-default-backend":                       struct{}{},
-		"extensions/v1beta1/Deployment/kube-system/heapster-gke":                             struct{}{},
-		"extensions/v1beta1/Deployment/kube-system/stackdriver-metadata-agent-cluster-level": struct{}{},
+		"extensions/v1beta1/Deployment/kube-system/kube-dns":                                 {},
+		"extensions/v1beta1/Deployment/kube-system/kube-dns-autoscaler":                      {},
+		"extensions/v1beta1/Deployment/kube-system/fluentd-gcp-scaler":                       {},
+		"extensions/v1beta1/Deployment/kube-system/kubernetes-dashboard":                     {},
+		"extensions/v1beta1/Deployment/kube-system/l7-default-backend":                       {},
+		"extensions/v1beta1/Deployment/kube-system/heapster-gke":                             {},
+		"extensions/v1beta1/Deployment/kube-system/stackdriver-metadata-agent-cluster-level": {},
 
-		"v1/ConfigMap/kube-system/ingress-gce-lock":          struct{}{},
-		"v1/ConfigMap/kube-system/gke-common-webhook-lock":   struct{}{},
-		"v1/ConfigMap/kube-system/cluster-autoscaler-status": struct{}{},
+		"v1/ConfigMap/kube-system/ingress-gce-lock":          {},
+		"v1/ConfigMap/kube-system/gke-common-webhook-lock":   {},
+		"v1/ConfigMap/kube-system/cluster-autoscaler-status": {},
 	}
 )
 
@@ -136,6 +136,9 @@ func (r *reflector) start(ctx context.Context) error {
 	// Use dynamic to perform generic operations on arbitrary Kubernets API objects.
 	// https://godoc.org/k8s.io/client-go/dynamic
 	dynamicClient, err := dynamic.NewForConfig(r.kubeConfig)
+	if err != nil {
+		return fmt.Errorf("failed to create dynamic client: %v", err)
+	}
 	factory := dynamicinformer.NewFilteredDynamicSharedInformerFactory(dynamicClient, 30*time.Minute, metav1.NamespaceAll, nil)
 	stopCh := make(chan struct{})
 
