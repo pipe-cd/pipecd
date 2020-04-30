@@ -14,11 +14,11 @@
 
 syntax = "proto3";
 
-package pipe.api.service;
-option go_package = "github.com/kapetaniosci/pipe/pkg/app/api/service";
+package pipe.api.service.runnerservice;
+option go_package = "github.com/kapetaniosci/pipe/pkg/app/api/service/runnerservice";
 
 import "validate/validate.proto";
-import "pkg/app/api/service/event.proto";
+import "pkg/app/api/service/runnerservice/event.proto";
 import "pkg/model/command.proto";
 import "pkg/model/common.proto";
 import "pkg/model/runner_stats.proto";
@@ -30,14 +30,24 @@ service RunnerAPI {
     // to persist those data into datastore every n minutes.
     rpc Ping(PingRequest) returns (PingResponse) {}
 
-    // ListApplicationsByRunner returns a list of registered applications
+    // ListApplications returns a list of registered applications
     // that should be managed by the requested runner.
     // Disabled applications should not be included in the response.
     // Runner uses this RPC to fetch and sync the application configuration into its local database.
-    rpc ListApplicationsByRunner(ListApplicationsByRunnerRequest) returns (ListApplicationsByRunnerResponse) {}
+    rpc ListApplications(ListApplicationsRequest) returns (ListApplicationsResponse) {}
+
+    // CreateDeployment creates/triggers a new deployment for an application
+    // that is managed by this runner.
+    // This will be used by DeploymentTrigger component.
+    rpc CreateDeployment(CreateDeploymentRequest) returns (CreateDeploymentResponse) {}
+
+    // ListNotCompletedDeployments returns a list of not completed deployments
+    // which are managed by this runner.
+    // DeploymentController component uses this RPC to spawns/syncs its local deployment executors.
+    rpc ListNotCompletedDeployments(ListNotCompletedDeploymentsRequest) returns (ListNotCompletedDeploymentsResponse) {}
 
     // RegisterEvents is sent by runner to submit one or multiple events
-    // about executing pipelines and application resources.
+    // about executing pipelines and application state.
     // Control plane uses the received events to update the state of pipeline/application-resource-tree.
     // We want to start by a simple solution at this initial stage of development,
     // so the API server just handles as below:
@@ -68,17 +78,14 @@ service RunnerAPI {
     // The handle result should be updated to both datastore and cache (for reading from web).
     rpc ReportCommandHandled(ReportCommandHandledRequest) returns (ReportCommandHandledResponse) {}
 
-    // ReportPipelineStarted used by runner to send initial state
-    // of the pipeline that has just been started.
-    rpc ReportPipelineStarted(ReportPipelineStartedRequest) returns (ReportPipelineStartedResponse) {}
-
     // ReportPipelineCompleted used by runner to send the final state
     // of the pipeline that has just been completed.
     rpc ReportPipelineCompleted(ReportPipelineCompletedRequest) returns (ReportPipelineCompletedResponse) {}
 
-    // ReportApplicationResourceTree is periodically sent by runner to refresh the full tree of application resources.
+    // ReportApplicationState is periodically sent by runner to refresh the current state of application.
+    // This may contain a full tree of application resources for Kubernetes application.
     // The tree data will be written into filestore and the cache inmmediately.
-    rpc ReportApplicationResourceTree(ReportApplicationResourceTreeRequest) returns (ReportApplicationResourceTreeResponse) {}
+    rpc ReportApplicationState(ReportApplicationStateRequest) returns (ReportApplicationStateResponse) {}
 }
 
 message PingRequest {
@@ -89,11 +96,26 @@ message PingResponse {
     int64 ping_interval = 1;
 }
 
-message ListApplicationsByRunnerRequest {
+message ListApplicationsRequest {
 }
 
-message ListApplicationsByRunnerResponse {
+message ListApplicationsResponse {
     repeated pipe.model.Application applications = 1;
+}
+
+message CreateDeploymentRequest {
+    string application_id = 1 [(validate.rules).string.min_len = 1];
+    pipe.model.Commit commit = 2 [(validate.rules).message.required = true];
+    string author = 3 [(validate.rules).string.min_len = 1];
+}
+
+message CreateDeploymentResponse {
+}
+
+message ListNotCompletedDeploymentsRequest {
+}
+
+message ListNotCompletedDeploymentsResponse {
 }
 
 message RegisterEventsRequest {
@@ -146,11 +168,11 @@ message ReportPipelineCompletedRequest {
 message ReportPipelineCompletedResponse {
 }
 
-message ReportApplicationResourceTreeRequest {
+message ReportApplicationStateRequest {
     string application_id = 1 [(validate.rules).string.min_len = 1];
     int64 timestamp = 2 [(validate.rules).int64.gt = 0];
 }
 
-message ReportApplicationResourceTreeResponse {
+message ReportApplicationStateResponse {
     int64 latest_timestamp = 1 [(validate.rules).int64.gt = 0];
 }

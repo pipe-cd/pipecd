@@ -14,8 +14,8 @@
 
 syntax = "proto3";
 
-package pipe.api.service;
-option go_package = "github.com/kapetaniosci/pipe/pkg/app/api/service";
+package pipe.api.service.runnerservice;
+option go_package = "github.com/kapetaniosci/pipe/pkg/app/api/service/runnerservice";
 
 import "validate/validate.proto";
 import "pkg/model/common.proto";

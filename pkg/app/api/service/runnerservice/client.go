@@ -12,7 +12,7 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-package service
+package runnerservice
 
 import (
 	"context"
@@ -39,7 +39,7 @@ func NewClient(ctx context.Context, addr string, opts ...rpcclient.DialOption) (
 	}
 	return &client{
 		RunnerAPIClient: NewRunnerAPIClient(conn),
-		conn:          conn,
+		conn:            conn,
 	}, nil
 }
 

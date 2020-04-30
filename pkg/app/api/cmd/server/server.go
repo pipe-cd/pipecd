@@ -27,7 +27,7 @@ import (
 
 	"github.com/kapetaniosci/pipe/pkg/admin"
 	"github.com/kapetaniosci/pipe/pkg/app/api/api"
-	apiservice "github.com/kapetaniosci/pipe/pkg/app/api/service"
+	"github.com/kapetaniosci/pipe/pkg/app/api/service/webservice"
 	"github.com/kapetaniosci/pipe/pkg/cli"
 	"github.com/kapetaniosci/pipe/pkg/jwt"
 	"github.com/kapetaniosci/pipe/pkg/rpc"
@@ -127,7 +127,7 @@ func (s *server) run(ctx context.Context, t cli.Telemetry) error {
 			rpc.WithPort(s.runnerAPIPort),
 			rpc.WithGracePeriod(s.gracePeriod),
 			rpc.WithLogger(t.Logger),
-			rpc.WithJWTAuthUnaryInterceptor(verifier, apiservice.NewRBACAuthorizer(), t.Logger),
+			rpc.WithJWTAuthUnaryInterceptor(verifier, webservice.NewRBACAuthorizer(), t.Logger),
 			rpc.WithRequestValidationUnaryInterceptor(),
 		}
 		if s.tls {

@@ -3,11 +3,10 @@ load("@io_bazel_rules_go//go:def.bzl", "go_library")
 load("//bazel:pgv_go_proto.bzl", "pgv_go_proto_library")
 
 proto_library(
-    name = "service_proto",
+    name = "runnerservice_proto",
     srcs = [
         "event.proto",
         "runnerapi.proto",
-        "webapi.proto",
     ],
     visibility = ["//visibility:public"],
     # keep
@@ -18,10 +17,10 @@ proto_library(
 )
 
 pgv_go_proto_library(
-    name = "service_go_proto",
+    name = "runnerservice_go_proto",
     compilers = ["@io_bazel_rules_go//proto:go_grpc"],
-    importpath = "github.com/kapetaniosci/pipe/pkg/app/api/service",
-    proto = ":service_proto",
+    importpath = "github.com/kapetaniosci/pipe/pkg/app/api/service/runnerservice",
+    proto = ":runnerservice_proto",
     visibility = ["//visibility:public"],
     deps = [
         "//pkg/model:go_default_library",
@@ -30,16 +29,11 @@ pgv_go_proto_library(
 
 go_library(
     name = "go_default_library",
-    srcs = [
-        "client.go",
-        "webapi.pb.auth.go",
-    ],
-    embed = [":service_go_proto"],
-    importpath = "github.com/kapetaniosci/pipe/pkg/app/api/service",
+    srcs = ["client.go"],
+    embed = [":runnerservice_go_proto"],
+    importpath = "github.com/kapetaniosci/pipe/pkg/app/api/service/runnerservice",
     visibility = ["//visibility:public"],
     deps = [
-        "//pkg/role:go_default_library",
-        "//pkg/rpc/rpcauth:go_default_library",
         "//pkg/rpc/rpcclient:go_default_library",
         "@org_golang_google_grpc//:go_default_library",
     ],

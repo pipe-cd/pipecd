@@ -22,7 +22,7 @@ import (
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
 
-	"github.com/kapetaniosci/pipe/pkg/app/api/service"
+	"github.com/kapetaniosci/pipe/pkg/app/api/service/webservice"
 )
 
 // RunnerAPI implements the behaviors for the gRPC definitions of WebAPI.
@@ -40,77 +40,77 @@ func NewWebAPIService(logger *zap.Logger) *WebAPI {
 
 // Register registers all handling of this service into the specified gRPC server.
 func (a *WebAPI) Register(server *grpc.Server) {
-	service.RegisterWebAPIServer(server, a)
+	webservice.RegisterWebAPIServer(server, a)
 }
 
-func (a *WebAPI) AddEnvironment(ctx context.Context, req *service.AddEnvironmentRequest) (*service.AddEnvironmentResponse, error) {
+func (a *WebAPI) AddEnvironment(ctx context.Context, req *webservice.AddEnvironmentRequest) (*webservice.AddEnvironmentResponse, error) {
 	return nil, status.Error(codes.Unimplemented, "")
 }
 
-func (a *WebAPI) UpdateEnvironmentDesc(ctx context.Context, req *service.UpdateEnvironmentDescRequest) (*service.UpdateEnvironmentDescResponse, error) {
+func (a *WebAPI) UpdateEnvironmentDesc(ctx context.Context, req *webservice.UpdateEnvironmentDescRequest) (*webservice.UpdateEnvironmentDescResponse, error) {
 	return nil, status.Error(codes.Unimplemented, "")
 }
 
-func (a *WebAPI) ListEnvironments(ctx context.Context, req *service.ListEnvironmentsRequest) (*service.ListEnvironmentsResponse, error) {
+func (a *WebAPI) ListEnvironments(ctx context.Context, req *webservice.ListEnvironmentsRequest) (*webservice.ListEnvironmentsResponse, error) {
 	return nil, status.Error(codes.Unimplemented, "")
 }
 
-func (a *WebAPI) RegisterRunner(ctx context.Context, req *service.RegisterRunnerRequest) (*service.RegisterRunnerResponse, error) {
+func (a *WebAPI) RegisterRunner(ctx context.Context, req *webservice.RegisterRunnerRequest) (*webservice.RegisterRunnerResponse, error) {
 	return nil, status.Error(codes.Unimplemented, "")
 }
 
-func (a *WebAPI) DisableRunner(ctx context.Context, req *service.DisableRunnerRequest) (*service.DisableRunnerResponse, error) {
+func (a *WebAPI) DisableRunner(ctx context.Context, req *webservice.DisableRunnerRequest) (*webservice.DisableRunnerResponse, error) {
 	return nil, status.Error(codes.Unimplemented, "")
 }
 
-func (a *WebAPI) ListRunners(ctx context.Context, req *service.ListRunnersRequest) (*service.ListRunnersResponse, error) {
+func (a *WebAPI) ListRunners(ctx context.Context, req *webservice.ListRunnersRequest) (*webservice.ListRunnersResponse, error) {
 	return nil, status.Error(codes.Unimplemented, "")
 }
 
-func (a *WebAPI) AddApplication(ctx context.Context, req *service.AddApplicationRequest) (*service.AddApplicationResponse, error) {
+func (a *WebAPI) AddApplication(ctx context.Context, req *webservice.AddApplicationRequest) (*webservice.AddApplicationResponse, error) {
 	return nil, status.Error(codes.Unimplemented, "")
 }
 
-func (a *WebAPI) DisableApplication(ctx context.Context, req *service.DisableApplicationRequest) (*service.DisableApplicationResponse, error) {
+func (a *WebAPI) DisableApplication(ctx context.Context, req *webservice.DisableApplicationRequest) (*webservice.DisableApplicationResponse, error) {
 	return nil, status.Error(codes.Unimplemented, "")
 }
 
-func (a *WebAPI) ListApplications(ctx context.Context, req *service.ListApplicationsRequest) (*service.ListApplicationsResponse, error) {
+func (a *WebAPI) ListApplications(ctx context.Context, req *webservice.ListApplicationsRequest) (*webservice.ListApplicationsResponse, error) {
 	return nil, status.Error(codes.Unimplemented, "")
 }
 
-func (a *WebAPI) SyncApplication(ctx context.Context, req *service.SyncApplicationRequest) (*service.SyncApplicationResponse, error) {
+func (a *WebAPI) SyncApplication(ctx context.Context, req *webservice.SyncApplicationRequest) (*webservice.SyncApplicationResponse, error) {
 	return nil, status.Error(codes.Unimplemented, "")
 }
 
-func (a *WebAPI) ListDeployments(ctx context.Context, req *service.ListDeploymentsRequest) (*service.ListDeploymentsResponse, error) {
+func (a *WebAPI) ListDeployments(ctx context.Context, req *webservice.ListDeploymentsRequest) (*webservice.ListDeploymentsResponse, error) {
 	return nil, status.Error(codes.Unimplemented, "")
 }
 
-func (a *WebAPI) GetDeployment(ctx context.Context, req *service.GetDeploymentRequest) (*service.GetDeploymentResponse, error) {
+func (a *WebAPI) GetDeployment(ctx context.Context, req *webservice.GetDeploymentRequest) (*webservice.GetDeploymentResponse, error) {
 	return nil, status.Error(codes.Unimplemented, "")
 }
 
-func (a *WebAPI) CancelDeployment(ctx context.Context, req *service.CancelDeploymentRequest) (*service.CancelDeploymentResponse, error) {
+func (a *WebAPI) CancelDeployment(ctx context.Context, req *webservice.CancelDeploymentRequest) (*webservice.CancelDeploymentResponse, error) {
 	return nil, status.Error(codes.Unimplemented, "")
 }
 
-func (a *WebAPI) ApproveDeploymentStage(ctx context.Context, req *service.ApproveDeploymentStageRequest) (*service.ApproveDeploymentStageResponse, error) {
+func (a *WebAPI) ApproveDeploymentStage(ctx context.Context, req *webservice.ApproveDeploymentStageRequest) (*webservice.ApproveDeploymentStageResponse, error) {
 	return nil, status.Error(codes.Unimplemented, "")
 }
 
-func (a *WebAPI) RetryDeploymentStage(ctx context.Context, req *service.RetryDeploymentStageRequest) (*service.RetryDeploymentStageResponse, error) {
+func (a *WebAPI) RetryDeploymentStage(ctx context.Context, req *webservice.RetryDeploymentStageRequest) (*webservice.RetryDeploymentStageResponse, error) {
 	return nil, status.Error(codes.Unimplemented, "")
 }
 
-func (a *WebAPI) GetApplicationState(ctx context.Context, req *service.GetApplicationStateRequest) (*service.GetApplicationStateResponse, error) {
+func (a *WebAPI) GetApplicationState(ctx context.Context, req *webservice.GetApplicationStateRequest) (*webservice.GetApplicationStateResponse, error) {
 	return nil, status.Error(codes.Unimplemented, "")
 }
 
-func (a *WebAPI) GetProject(ctx context.Context, req *service.GetProjectRequest) (*service.GetProjectResponse, error) {
+func (a *WebAPI) GetProject(ctx context.Context, req *webservice.GetProjectRequest) (*webservice.GetProjectResponse, error) {
 	return nil, status.Error(codes.Unimplemented, "")
 }
 
-func (a *WebAPI) GetMe(ctx context.Context, req *service.GetMeRequest) (*service.GetMeResponse, error) {
+func (a *WebAPI) GetMe(ctx context.Context, req *webservice.GetMeRequest) (*webservice.GetMeResponse, error) {
 	return nil, status.Error(codes.Unimplemented, "")
 }

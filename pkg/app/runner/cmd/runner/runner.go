@@ -30,7 +30,7 @@ import (
 	_ "k8s.io/client-go/plugin/pkg/client/auth/gcp"
 
 	"github.com/kapetaniosci/pipe/pkg/admin"
-	apiservice "github.com/kapetaniosci/pipe/pkg/app/api/service"
+	"github.com/kapetaniosci/pipe/pkg/app/api/service/runnerservice"
 	"github.com/kapetaniosci/pipe/pkg/app/runner/appstatereporter"
 	"github.com/kapetaniosci/pipe/pkg/app/runner/appstatestore"
 	"github.com/kapetaniosci/pipe/pkg/app/runner/deploymentcontroller"
@@ -179,7 +179,7 @@ func (r *runner) run(ctx context.Context, t cli.Telemetry) error {
 }
 
 // createAPIClient makes a gRPC client to connect to the API.
-func (r *runner) createAPIClient(ctx context.Context, logger *zap.Logger) (apiservice.Client, error) {
+func (r *runner) createAPIClient(ctx context.Context, logger *zap.Logger) (runnerservice.Client, error) {
 	ctx, cancel := context.WithTimeout(ctx, 15*time.Second)
 	defer cancel()
 
@@ -205,7 +205,7 @@ func (r *runner) createAPIClient(ctx context.Context, logger *zap.Logger) (apise
 		options = append(options, rpcclient.WithInsecure())
 	}
 
-	client, err := apiservice.NewClient(ctx, r.apiAddress, options...)
+	client, err := runnerservice.NewClient(ctx, r.apiAddress, options...)
 	if err != nil {
 		logger.Error("failed to create api client", zap.Error(err))
 		return nil, err
