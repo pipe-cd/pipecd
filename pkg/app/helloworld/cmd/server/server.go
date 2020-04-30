@@ -57,7 +57,7 @@ func (s *server) run(ctx context.Context, t cli.Telemetry) error {
 
 	// Start running gRPC server.
 	{
-		service := api.NewHelloWorldService(
+		service := api.NewHelloWorldAPI(
 			api.WithLogger(t.Logger),
 		)
 		server := rpc.NewServer(service,

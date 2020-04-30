@@ -23,7 +23,7 @@ import "pkg/model/command.proto";
 import "pkg/model/common.proto";
 import "pkg/model/runner_stats.proto";
 
-service RunnerAPI {
+service RunnerService {
     // Ping is periodically sent by runner to report its status/stats to API.
     // The received stats will be written to the cache immediately.
     // The cache data may be lost anytime so we need a singleton Persister

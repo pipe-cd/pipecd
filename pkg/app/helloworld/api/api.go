@@ -38,7 +38,8 @@ func WithLogger(logger *zap.Logger) Option {
 	}
 }
 
-func NewHelloWorldService(opts ...Option) *api {
+// NewHelloWorldAPI creates new instance for api.
+func NewHelloWorldAPI(opts ...Option) *api {
 	a := &api{
 		logger: zap.NewNop(),
 	}

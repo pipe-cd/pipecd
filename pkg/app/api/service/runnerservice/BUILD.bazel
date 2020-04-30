@@ -6,7 +6,7 @@ proto_library(
     name = "runnerservice_proto",
     srcs = [
         "event.proto",
-        "runnerapi.proto",
+        "service.proto",
     ],
     visibility = ["//visibility:public"],
     # keep

@@ -19,7 +19,7 @@ option go_package = "github.com/kapetaniosci/pipe/pkg/app/api/service/webservice
 
 import "validate/validate.proto";
 
-service WebAPI {
+service WebService {
     // Environment
     rpc AddEnvironment(AddEnvironmentRequest) returns (AddEnvironmentResponse) {}
     rpc UpdateEnvironmentDesc(UpdateEnvironmentDescRequest) returns (UpdateEnvironmentDescResponse) {}

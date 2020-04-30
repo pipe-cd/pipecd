@@ -34,7 +34,7 @@ import (
 func TestMain(m *testing.M) {
 	logger := zap.NewExample()
 	server := NewServer(
-		api.NewHelloWorldService(api.WithLogger(logger)),
+		api.NewHelloWorldAPI(api.WithLogger(logger)),
 		WithTLS("testdata/tls.crt", "testdata/tls.key"),
 		WithPort(9090),
 		WithGracePeriod(time.Second),

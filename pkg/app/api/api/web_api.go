@@ -30,8 +30,8 @@ type WebAPI struct {
 	logger *zap.Logger
 }
 
-// NewWebAPIService creates a new service instance.
-func NewWebAPIService(logger *zap.Logger) *WebAPI {
+// NewWebAPI creates a new WebAPI instance.
+func NewWebAPI(logger *zap.Logger) *WebAPI {
 	a := &WebAPI{
 		logger: logger.Named("web-api"),
 	}
@@ -40,7 +40,7 @@ func NewWebAPIService(logger *zap.Logger) *WebAPI {
 
 // Register registers all handling of this service into the specified gRPC server.
 func (a *WebAPI) Register(server *grpc.Server) {
-	webservice.RegisterWebAPIServer(server, a)
+	webservice.RegisterWebServiceServer(server, a)
 }
 
 func (a *WebAPI) AddEnvironment(ctx context.Context, req *webservice.AddEnvironmentRequest) (*webservice.AddEnvironmentResponse, error) {

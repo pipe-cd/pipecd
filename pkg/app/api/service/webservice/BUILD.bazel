@@ -5,7 +5,7 @@ load("//bazel:pgv_go_proto.bzl", "pgv_go_proto_library")
 proto_library(
     name = "webservice_proto",
     srcs = [
-        "webapi.proto",
+        "service.proto",
     ],
     visibility = ["//visibility:public"],
     # keep
@@ -24,7 +24,7 @@ pgv_go_proto_library(
 
 go_library(
     name = "go_default_library",
-    srcs = ["webapi.pb.auth.go"],
+    srcs = ["service.pb.auth.go"],
     embed = [":webservice_go_proto"],
     importpath = "github.com/kapetaniosci/pipe/pkg/app/api/service/webservice",
     visibility = ["//visibility:public"],

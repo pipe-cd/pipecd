@@ -30,8 +30,8 @@ type RunnerAPI struct {
 	logger *zap.Logger
 }
 
-// NewRunnerAPIService creates a new service instance.
-func NewRunnerAPIService(logger *zap.Logger) *RunnerAPI {
+// NewRunnerAPI creates a new RunnerAPI instance.
+func NewRunnerAPI(logger *zap.Logger) *RunnerAPI {
 	a := &RunnerAPI{
 		logger: logger.Named("runner-api"),
 	}
@@ -40,7 +40,7 @@ func NewRunnerAPIService(logger *zap.Logger) *RunnerAPI {
 
 // Register registers all handling of this service into the specified gRPC server.
 func (a *RunnerAPI) Register(server *grpc.Server) {
-	runnerservice.RegisterRunnerAPIServer(server, a)
+	runnerservice.RegisterRunnerServiceServer(server, a)
 }
 
 // Ping is periodically sent by runner to report its status/stats to API.

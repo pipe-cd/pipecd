@@ -23,12 +23,12 @@ import (
 )
 
 type Client interface {
-	RunnerAPIClient
+	RunnerServiceClient
 	Close() error
 }
 
 type client struct {
-	RunnerAPIClient
+	RunnerServiceClient
 	conn *grpc.ClientConn
 }
 
@@ -38,8 +38,8 @@ func NewClient(ctx context.Context, addr string, opts ...rpcclient.DialOption) (
 		return nil, err
 	}
 	return &client{
-		RunnerAPIClient: NewRunnerAPIClient(conn),
-		conn:            conn,
+		RunnerServiceClient: NewRunnerServiceClient(conn),
+		conn:                conn,
 	}, nil
 }
 

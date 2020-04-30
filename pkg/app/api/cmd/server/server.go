@@ -103,7 +103,7 @@ func (s *server) run(ctx context.Context, t cli.Telemetry) error {
 
 	// Start a gRPC server for handling RunnerAPI requests.
 	{
-		service := api.NewRunnerAPIService(t.Logger)
+		service := api.NewRunnerAPI(t.Logger)
 		opts := []rpc.Option{
 			rpc.WithPort(s.runnerAPIPort),
 			rpc.WithGracePeriod(s.gracePeriod),
@@ -122,7 +122,7 @@ func (s *server) run(ctx context.Context, t cli.Telemetry) error {
 
 	// Start a gRPC server for handling WebAPI requests.
 	{
-		service := api.NewWebAPIService(t.Logger)
+		service := api.NewWebAPI(t.Logger)
 		opts := []rpc.Option{
 			rpc.WithPort(s.runnerAPIPort),
 			rpc.WithGracePeriod(s.gracePeriod),
