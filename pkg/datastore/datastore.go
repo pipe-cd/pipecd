@@ -53,6 +53,10 @@ type ApplicationStore interface {
 	ListApplications(ctx context.Context, opts ListOptions) ([]model.Application, error)
 }
 
+type DeploymentStore interface {
+	ListDeployments(ctx context.Context, opts ListOptions) ([]model.Deployment, error)
+}
+
 type CommandStateStore interface {
 	AddCommandState(ctx context.Context, proj *model.CommandState) error
 	ListCommandStates(ctx context.Context, opts ListOptions) ([]model.CommandState, error)
@@ -61,8 +65,4 @@ type CommandStateStore interface {
 type RunnerStatsStore interface {
 	AddRunnerStats(ctx context.Context, proj *model.RunnerStats) error
 	ListRunnerStatss(ctx context.Context, opts ListOptions) ([]model.RunnerStats, error)
-}
-
-type PipelineStore interface {
-	ListPipelines(ctx context.Context, opts ListOptions) ([]model.Pipeline, error)
 }

@@ -32,14 +32,15 @@ buildifier(
         "./vendor/*",
     ],
 )
-# gazelle:exclude pkg/config/config.pb.validate.go
-# gazelle:exclude pkg/app/livelog/service/service.pb.validate.go
 # gazelle:exclude pkg/app/helloworld/service/service.pb.validate.go
-# gazelle:exclude pkg/app/api/service/event.pb.validate.go
-# gazelle:exclude pkg/app/api/service/runnerapi.pb.validate.go
-# gazelle:exclude pkg/app/api/service/webapi.pb.validate.go
-# gazelle:exclude pkg/model/application_resource.pb.validate.go
+# gazelle:exclude pkg/app/api/service/webservice/service.pb.validate.go
+# gazelle:exclude pkg/app/api/service/runnerservice/event.pb.validate.go
+# gazelle:exclude pkg/app/api/service/runnerservice/service.pb.validate.go
+# gazelle:exclude pkg/model/application.pb.validate.go
+# gazelle:exclude pkg/model/application_state.pb.validate.go
 # gazelle:exclude pkg/model/command.pb.validate.go
-# gazelle:exclude pkg/model/common.pb.validate.go
-# gazelle:exclude pkg/model/pipeline.pb.validate.go
+# gazelle:exclude pkg/model/deployment.pb.validate.go
+# gazelle:exclude pkg/model/environment.pb.validate.go
+# gazelle:exclude pkg/model/project.pb.validate.go
+# gazelle:exclude pkg/model/runner.pb.validate.go
 # gazelle:exclude pkg/model/runner_stats.pb.validate.go

@@ -113,9 +113,9 @@ func (a *RunnerAPI) ReportCommandHandled(ctx context.Context, req *runnerservice
 	return nil, status.Error(codes.Unimplemented, "")
 }
 
-// ReportPipelineCompleted used by runner to send the final state
+// ReportDeploymentCompleted used by runner to send the final state
 // of the pipeline that has just been completed.
-func (a *RunnerAPI) ReportPipelineCompleted(ctx context.Context, req *runnerservice.ReportPipelineCompletedRequest) (*runnerservice.ReportPipelineCompletedResponse, error) {
+func (a *RunnerAPI) ReportDeploymentCompleted(ctx context.Context, req *runnerservice.ReportDeploymentCompletedRequest) (*runnerservice.ReportDeploymentCompletedResponse, error) {
 	return nil, status.Error(codes.Unimplemented, "")
 }
 

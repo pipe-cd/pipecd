@@ -25,7 +25,7 @@ enum AppSyncStatus {
     OUT_OF_SYNC = 2;
 }
 
-message ApplicationResourceTree {
+message ApplicationState {
     string application_id = 1 [(validate.rules).string.min_len = 1];
     string env_id = 2 [(validate.rules).string.min_len = 1];
     string runner_id = 3 [(validate.rules).string.min_len = 1];

@@ -19,13 +19,13 @@ option go_package = "github.com/kapetaniosci/pipe/pkg/model";
 
 import "validate/validate.proto";
 
-enum PipelineStatus {
-    PIPELINE_NOT_STARTED_YET = 0;
-    PIPELINE_RUNNING = 1;
-    PIPELINE_SUCCESS = 2;
-    PIPELINE_FAILURE = 3;
-    PIPELINE_CANCELLED = 4;
-    PIPELINE_ERROR = 5;
+enum DeploymentStatus {
+    DEPLOYMENT_NOT_STARTED_YET = 0;
+    DEPLOYMENT_RUNNING = 1;
+    DEPLOYMENT_SUCCESS = 2;
+    DEPLOYMENT_FAILURE = 3;
+    DEPLOYMENT_CANCELLED = 4;
+    DEPLOYMENT_ERROR = 5;
 }
 
 enum StageStatus {
@@ -37,13 +37,11 @@ enum StageStatus {
     STEP_ERROR = 5;
 }
 
-message Pipeline {
+message Deployment {
     message Trigger {
-        string commit = 1 [(validate.rules).string.min_len = 1];
-        string user = 2 [(validate.rules).string.min_len = 1];
+        Commit commit = 1 [(validate.rules).message.required = true];
+        string author = 2 [(validate.rules).string.min_len = 1];
         int64 timestamp = 3 [(validate.rules).int64.gt = 0];
-    }
-    message State {
     }
 
     string id = 1 [(validate.rules).string.min_len = 1];
@@ -51,10 +49,28 @@ message Pipeline {
     string env_id = 3 [(validate.rules).string.min_len = 1];
     string runner_id = 4 [(validate.rules).string.min_len = 1];
     string project_id = 5 [(validate.rules).string.min_len = 1];
+
     Trigger trigger = 6 [(validate.rules).message.required = true];
-    PipelineStatus status = 7 [(validate.rules).enum.defined_only = true];
-    State realtime_state = 8 [(validate.rules).message.required = true];
-    State complete_state = 9;
+    DeploymentStatus status = 7 [(validate.rules).enum.defined_only = true];
+    repeated PipelineStage stages = 8;
+
     int64 created_at = 14 [(validate.rules).int64.gt = 0];
     int64 updated_at = 15 [(validate.rules).int64.gt = 0];
+}
+
+message PipelineStage {
+    string id = 1 [(validate.rules).string.min_len = 1];
+    repeated string requires = 2;
+    StageStatus status = 3 [(validate.rules).enum.defined_only = true];
+    int64 created_at = 14 [(validate.rules).int64.gt = 0];
+    int64 updated_at = 15 [(validate.rules).int64.gt = 0];
+}
+
+message Commit {
+    string revision = 1 [(validate.rules).string.min_len = 1];
+    string message = 2 [(validate.rules).string.min_len = 1];
+    string author = 3 [(validate.rules).string.min_len = 1];
+    string branch = 4 [(validate.rules).string.min_len = 1];
+    int64 pull_request = 5;
+    int64 created_at = 14 [(validate.rules).int64.gt = 0];
 }

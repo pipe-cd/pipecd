@@ -21,7 +21,7 @@ import "validate/validate.proto";
 
 message CommandState {
     enum Type {
-        PIPELINE = 0;
+        DEPLOYMENT = 0;
         APPLICATION = 1;
         REPO_HOOK = 2;
     }
@@ -30,12 +30,17 @@ message CommandState {
         SUCCEEDED = 1;
         FAILED = 2;
     }
+
     string id = 1 [(validate.rules).string.min_len = 1];
     string runner_id = 2 [(validate.rules).string.min_len = 1];
-    Type type = 3;
-    bytes command = 4;
-    Status status = 5;
-    map<string,string> result = 6;
+    string application_id = 3;
+    string deployment_id = 4;
+
+    Type type = 5;
+    bytes command = 6;
+    Status status = 7;
+    map<string,string> result = 8;
+    
     int64 created_at = 14 [(validate.rules).int64.gt = 0];
     int64 updated_at = 15 [(validate.rules).int64.gt = 0];
 }
@@ -44,17 +49,17 @@ message Command {
     string command_id = 1 [(validate.rules).string.min_len = 1];
     int64 timestamp = 2 [(validate.rules).int64.gt = 0];
 
-    // Pipeline Command.
-    message CancelPipeline {
-        string pipeline_id = 1 [(validate.rules).string.min_len = 1];
+    // Deployment Command.
+    message CancelDeployment {
+        string deployment_id = 1 [(validate.rules).string.min_len = 1];
         bool keep_current_state = 2;
     }
     message ApproveStage {
-        string pipeline_id = 1 [(validate.rules).string.min_len = 1];
+        string deployment_id = 1 [(validate.rules).string.min_len = 1];
         string stage_id = 2 [(validate.rules).string.min_len = 1];
     }
     message RetryStage {
-        string pipeline_id = 1 [(validate.rules).string.min_len = 1];
+        string deployment_id = 1 [(validate.rules).string.min_len = 1];
         string stage_id = 2 [(validate.rules).string.min_len = 1];
     }
 
@@ -75,7 +80,7 @@ message Command {
     }
 
     oneof inner {
-        CancelPipeline cancel_pipeline = 100;
+        CancelDeployment cancel_deployment = 100;
         ApproveStage approve_stage = 101;
         RetryStage retry_stage = 102;
 

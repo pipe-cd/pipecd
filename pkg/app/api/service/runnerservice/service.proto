@@ -20,7 +20,8 @@ option go_package = "github.com/kapetaniosci/pipe/pkg/app/api/service/runnerserv
 import "validate/validate.proto";
 import "pkg/app/api/service/runnerservice/event.proto";
 import "pkg/model/command.proto";
-import "pkg/model/common.proto";
+import "pkg/model/application.proto";
+import "pkg/model/deployment.proto";
 import "pkg/model/runner_stats.proto";
 
 service RunnerService {
@@ -78,9 +79,9 @@ service RunnerService {
     // The handle result should be updated to both datastore and cache (for reading from web).
     rpc ReportCommandHandled(ReportCommandHandledRequest) returns (ReportCommandHandledResponse) {}
 
-    // ReportPipelineCompleted used by runner to send the final state
+    // ReportDeploymentCompleted used by runner to send the final state
     // of the pipeline that has just been completed.
-    rpc ReportPipelineCompleted(ReportPipelineCompletedRequest) returns (ReportPipelineCompletedResponse) {}
+    rpc ReportDeploymentCompleted(ReportDeploymentCompletedRequest) returns (ReportDeploymentCompletedResponse) {}
 
     // ReportApplicationState is periodically sent by runner to refresh the current state of application.
     // This may contain a full tree of application resources for Kubernetes application.
@@ -152,20 +153,11 @@ message ReportCommandHandledRequest {
 message ReportCommandHandledResponse {
 }
 
-message ReportPipelineStartedRequest {
-    string pipeline_id = 1 [(validate.rules).string.min_len = 1];
-    string application_id = 2 [(validate.rules).string.min_len = 1];
-    pipe.model.Commit commit = 3 [(validate.rules).message.required = true];
+message ReportDeploymentCompletedRequest {
+    string deployment_id = 1 [(validate.rules).string.min_len = 1];
 }
 
-message ReportPipelineStartedResponse {
-}
-
-message ReportPipelineCompletedRequest {
-    string pipeline_id = 1 [(validate.rules).string.min_len = 1];
-}
-
-message ReportPipelineCompletedResponse {
+message ReportDeploymentCompletedResponse {
 }
 
 message ReportApplicationStateRequest {

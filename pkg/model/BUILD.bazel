@@ -4,10 +4,13 @@ load("@io_bazel_rules_go//go:def.bzl", "go_library")
 proto_library(
     name = "model_proto",
     srcs = [
-        "application_resource.proto",
+        "application.proto",
+        "application_state.proto",
         "command.proto",
-        "common.proto",
-        "pipeline.proto",
+        "deployment.proto",
+        "environment.proto",
+        "project.proto",
+        "runner.proto",
         "runner_stats.proto",
     ],
     visibility = ["//visibility:public"],
@@ -29,10 +32,7 @@ pgv_go_proto_library(
 
 go_library(
     name = "go_default_library",
-    srcs = [
-        "common.go",
-        "doc.go",
-    ],
+    srcs = ["model.go"],
     embed = [":model_go_proto"],
     importpath = "github.com/kapetaniosci/pipe/pkg/model",
     visibility = ["//visibility:public"],

@@ -18,24 +18,15 @@ package pipe.api.service.runnerservice;
 option go_package = "github.com/kapetaniosci/pipe/pkg/app/api/service/runnerservice";
 
 import "validate/validate.proto";
-import "pkg/model/common.proto";
-import "pkg/model/pipeline.proto";
-import "pkg/model/application_resource.proto";
+import "pkg/model/deployment.proto";
 
 message Event {
     string id = 1;
     int64 timestamp = 2;
 
-    // Pipeline Events.
-    message PipelineStatusChanged {
-        string pipeline_id = 1 [(validate.rules).string.min_len = 1];
-        pipe.model.Application application = 2 [(validate.rules).message.required = true];
-        pipe.model.PipelineStatus previous = 3;
-        pipe.model.PipelineStatus current = 4;
-        string description = 5;
-    }
-    message StageStatusChanged {
-        string pipeline_id = 1 [(validate.rules).string.min_len = 1];
+    // Deployment Events.
+    message DeploymentStageStatusChanged {
+        string deployment_id = 1 [(validate.rules).string.min_len = 1];
         string stage_id = 2 [(validate.rules).string.min_len = 1];
         pipe.model.StageStatus previous = 3;
         pipe.model.StageStatus current = 4;
@@ -58,8 +49,7 @@ message Event {
     // }
 
     oneof inner {
-        PipelineStatusChanged pipeline_status_changed = 100;
-        StageStatusChanged stage_status_changed = 101;
+        DeploymentStageStatusChanged deployment_stage_status_changed = 100;
 
     //    K8sResourceAdded application_resource_added = 200;
     //    K8sResourceUpdated application_resource_updated = 201;

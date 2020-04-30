@@ -15,3 +15,13 @@
 // Package model contains definitions of model objects
 // that are stored in the datastore.
 package model
+
+import fmt "fmt"
+
+func EnvironmentID(projectID, envName string) string {
+	return fmt.Sprintf("%s.%s", projectID, envName)
+}
+
+func ApplicationID(projectID, envName, appName string) string {
+	return fmt.Sprintf("%s.%s.%s", projectID, envName, appName)
+}
