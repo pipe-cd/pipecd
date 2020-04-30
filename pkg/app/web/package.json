@@ -1,0 +1,10 @@
+{
+  "name": "pipe-web",
+  "version": "1.0.0",
+  "main": "index.js",
+  "private": true,
+  "license": "Apache-2.0",
+  "devDependencies": {
+    "@bazel/labs": "^1.6.1"
+  }
+}

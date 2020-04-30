@@ -1,0 +1,6 @@
+load("@npm_bazel_labs//:index.bzl", "ts_proto_library")
+
+ts_proto_library(
+    name = "api_client",
+    proto = "//pkg/app/api/service/webservice:webservice_proto",
+)
