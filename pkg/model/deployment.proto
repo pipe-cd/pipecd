@@ -18,6 +18,7 @@ package pipe.model;
 option go_package = "github.com/kapetaniosci/pipe/pkg/model";
 
 import "validate/validate.proto";
+import "pkg/model/application.proto";
 
 enum DeploymentStatus {
     DEPLOYMENT_NOT_STARTED_YET = 0;
@@ -37,13 +38,17 @@ enum StageStatus {
     STEP_ERROR = 5;
 }
 
+// Deployment represents a particular deployment for an application.
 message Deployment {
     message Trigger {
         Commit commit = 1 [(validate.rules).message.required = true];
-        string author = 2 [(validate.rules).string.min_len = 1];
+        // Who triggered this deployment.
+        // This may be different to the commit.author when the deployment is trigger from webUI.
+        string user = 2 [(validate.rules).string.min_len = 1];
         int64 timestamp = 3 [(validate.rules).int64.gt = 0];
     }
 
+    // The generated unique identifier.
     string id = 1 [(validate.rules).string.min_len = 1];
     string application_id = 2 [(validate.rules).string.min_len = 1];
     string env_id = 3 [(validate.rules).string.min_len = 1];
@@ -51,9 +56,11 @@ message Deployment {
     string project_id = 5 [(validate.rules).string.min_len = 1];
 
     Trigger trigger = 6 [(validate.rules).message.required = true];
-    DeploymentStatus status = 7 [(validate.rules).enum.defined_only = true];
-    repeated PipelineStage stages = 8;
+    ApplicationGitPath git_path = 7 [(validate.rules).message.required = true];
+    DeploymentStatus status = 8 [(validate.rules).enum.defined_only = true];
+    map<string, PipelineStage> stages = 9;
 
+    int64 completed_at = 13 [(validate.rules).int64.gt = 0];
     int64 created_at = 14 [(validate.rules).int64.gt = 0];
     int64 updated_at = 15 [(validate.rules).int64.gt = 0];
 }
@@ -62,6 +69,8 @@ message PipelineStage {
     string id = 1 [(validate.rules).string.min_len = 1];
     repeated string requires = 2;
     StageStatus status = 3 [(validate.rules).enum.defined_only = true];
+    bytes metadata = 4;
+    int64 completed_at = 13 [(validate.rules).int64.gt = 0];
     int64 created_at = 14 [(validate.rules).int64.gt = 0];
     int64 updated_at = 15 [(validate.rules).int64.gt = 0];
 }

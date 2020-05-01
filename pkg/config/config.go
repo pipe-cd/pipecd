@@ -28,17 +28,19 @@ const versionV1Beta1 = "pipecd.dev/v1beta1"
 type Kind string
 
 const (
-	// KindKubernetesApp represents configuration for a Kubernetes application.
+	// KindKubernetesApp represents deployment configuration for a Kubernetes application.
 	// This application can be a group of plain-YAML Kubernetes manifests,
 	// or kustomization manifests or helm manifests.
 	KindKubernetesApp Kind = "KubernetesApp"
-	// KindTerraformApp represents configuration for a Terraform application.
+	// KindTerraformApp represents deployment configuration for a Terraform application.
 	// This application contains a single workspace of a terraform root module.
 	KindTerraformApp Kind = "TerraformApp"
-	// KindCrossplaneApp represents configuration for a Crossplane applicaiton.
+	// KindCrossplaneApp represents deployment configuration for a Crossplane applicaiton.
 	KindCrossplaneApp Kind = "CrossplaneApp"
-	// KindLambdaApp represents configuration for an AWS Lambda application.
+	// KindLambdaApp represents deployment configuration for an AWS Lambda application.
 	KindLambdaApp Kind = "LambdaApp"
+	// KindCloudRunApp represents deployment configuration for a CloudRun application.
+	KindCloudRunApp Kind = "CloudRunApp"
 )
 
 const (

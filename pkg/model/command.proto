@@ -31,6 +31,8 @@ message CommandState {
         FAILED = 2;
     }
 
+    // The generated unique identifier.
+    // This will be same value with the ID of command.
     string id = 1 [(validate.rules).string.min_len = 1];
     string runner_id = 2 [(validate.rules).string.min_len = 1];
     string application_id = 3;
@@ -48,6 +50,8 @@ message CommandState {
 message Command {
     string command_id = 1 [(validate.rules).string.min_len = 1];
     int64 timestamp = 2 [(validate.rules).int64.gt = 0];
+    string application_id = 3;
+    string deployment_id = 4;
 
     // Deployment Command.
     message CancelDeployment {

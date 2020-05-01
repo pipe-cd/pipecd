@@ -21,6 +21,7 @@ import "validate/validate.proto";
 import "pkg/app/api/service/runnerservice/event.proto";
 import "pkg/model/command.proto";
 import "pkg/model/application.proto";
+import "pkg/model/application_state.proto";
 import "pkg/model/deployment.proto";
 import "pkg/model/runner_stats.proto";
 
@@ -105,9 +106,7 @@ message ListApplicationsResponse {
 }
 
 message CreateDeploymentRequest {
-    string application_id = 1 [(validate.rules).string.min_len = 1];
-    pipe.model.Commit commit = 2 [(validate.rules).message.required = true];
-    string author = 3 [(validate.rules).string.min_len = 1];
+    pipe.model.Deployment deployment = 1 [(validate.rules).message.required = true];
 }
 
 message CreateDeploymentResponse {
@@ -117,6 +116,7 @@ message ListNotCompletedDeploymentsRequest {
 }
 
 message ListNotCompletedDeploymentsResponse {
+    repeated pipe.model.Deployment deployments = 1;
 }
 
 message RegisterEventsRequest {
@@ -131,7 +131,7 @@ message SendStageLogRequest {
     string pipeline_id = 1 [(validate.rules).string.min_len = 1];
     string stage_id = 2 [(validate.rules).string.min_len = 1];
     bytes log = 3;
-    bool complete = 4;
+    bool completed = 4;
 }
 
 message SendStageLogResponse {
@@ -155,14 +155,16 @@ message ReportCommandHandledResponse {
 
 message ReportDeploymentCompletedRequest {
     string deployment_id = 1 [(validate.rules).string.min_len = 1];
+    pipe.model.DeploymentStatus status = 2 [(validate.rules).enum.defined_only = true];
+    map<string, pipe.model.PipelineStage> stages = 3;
+    int64 completed_at = 4 [(validate.rules).int64.gt = 0];
 }
 
 message ReportDeploymentCompletedResponse {
 }
 
 message ReportApplicationStateRequest {
-    string application_id = 1 [(validate.rules).string.min_len = 1];
-    int64 timestamp = 2 [(validate.rules).int64.gt = 0];
+    pipe.model.ApplicationState state = 1 [(validate.rules).message.required = true];
 }
 
 message ReportApplicationStateResponse {
