@@ -27,7 +27,6 @@ require (
 	//k8s.io/api v0.0.0-20200410021914-5778e4f3d00d
 	k8s.io/apimachinery v0.0.0-20200410021338-ff54c5b023af
 	k8s.io/client-go v0.0.0-20200410022504-7b0589a2468d
-	k8s.io/code-generator v0.0.0-20200410020940-986da3785c57
 	sigs.k8s.io/yaml v1.2.0
 )
 
@@ -35,5 +34,4 @@ replace (
 	k8s.io/api => k8s.io/api v0.0.0-20200410021914-5778e4f3d00d
 	k8s.io/apimachinery => k8s.io/apimachinery v0.0.0-20200410021338-ff54c5b023af
 	k8s.io/client-go => k8s.io/client-go v0.0.0-20200410022504-7b0589a2468d
-	k8s.io/code-generator => k8s.io/code-generator v0.0.0-20200410020940-986da3785c57
 )

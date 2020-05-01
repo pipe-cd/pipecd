@@ -4,5 +4,4 @@ commonLabels:
   app.kubernetes.io/org: pipecd
 
 resources:
-- crd.yaml
 - deployment.yaml

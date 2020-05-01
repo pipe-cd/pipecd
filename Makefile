@@ -53,14 +53,6 @@ push-images:
 	bazelisk ${BAZEL_FLAGS} run ${BAZEL_COMMAND_FLAGS} --config=stamping //cmd:push_images
 	#./hack/push-images.sh ${BAZEL_FLAGS}
 
-.PHONY: update-codegen
-update-codegen:
-	./hack/update-codegen.sh
-
-.PHONY: verify-codegen
-verify-codegen:
-	./hack/verify-codegen.sh
-
 .PHONY: expose-generated-go
 expose-generated-go:
 	./hack/expose-generated-go.sh kapetaniosci pipe
