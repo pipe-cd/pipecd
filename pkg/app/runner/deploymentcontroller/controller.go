@@ -13,16 +13,22 @@
 // limitations under the License.
 
 // Package deploymentcontroller provides a runner component
-// that managing all of the Deployment CRDs.
+// that managing all of the not completed deployments.
 // This manages a pool of DeploymentExecutors.
-// Whenever a new Deployment CRD is created, this created a new DeploymentExecutor
-// for that DeploymentCRD to handle the deployment.
-// The DeploymentExecutor will update the deployment state back to its Deployment CRD.
+// Whenever a new uncompleted Deployment is detected, this creates a new DeploymentExecutor
+// for that Deployment to handle the deployment pipeline.
+// The DeploymentExecutor will update the deployment status back to the API.
 package deploymentcontroller
 
 import (
 	"context"
 	"time"
+
+	"go.uber.org/zap"
+	"google.golang.org/grpc"
+
+	"github.com/kapetaniosci/pipe/pkg/app/api/service/runnerservice"
+	"github.com/kapetaniosci/pipe/pkg/config"
 )
 
 const (
@@ -30,14 +36,29 @@ const (
 	managedByLabel = "pipecd.dev/managed-by"
 )
 
+type apiClient interface {
+	ListNotCompletedDeployments(ctx context.Context, in *runnerservice.ListNotCompletedDeploymentsRequest, opts ...grpc.CallOption) (*runnerservice.ListNotCompletedDeploymentsResponse, error)
+	SendStageLog(ctx context.Context, in *runnerservice.SendStageLogRequest, opts ...grpc.CallOption) (*runnerservice.SendStageLogResponse, error)
+	RegisterEvents(ctx context.Context, in *runnerservice.RegisterEventsRequest, opts ...grpc.CallOption) (*runnerservice.RegisterEventsResponse, error)
+	GetCommands(ctx context.Context, in *runnerservice.GetCommandsRequest, opts ...grpc.CallOption) (*runnerservice.GetCommandsResponse, error)
+	ReportCommandHandled(ctx context.Context, in *runnerservice.ReportCommandHandledRequest, opts ...grpc.CallOption) (*runnerservice.ReportCommandHandledResponse, error)
+	ReportDeploymentCompleted(ctx context.Context, in *runnerservice.ReportDeploymentCompletedRequest, opts ...grpc.CallOption) (*runnerservice.ReportDeploymentCompletedResponse, error)
+}
+
 type DeploymentController struct {
+	apiClient   apiClient
+	config      *config.RunnerSpec
 	gracePeriod time.Duration
+	logger      *zap.Logger
 }
 
 // NewController creates a new instance for DeploymentController.
-func NewController(gracePeriod time.Duration) *DeploymentController {
+func NewController(apiClient apiClient, cfg *config.RunnerSpec, gracePeriod time.Duration, logger *zap.Logger) *DeploymentController {
 	return &DeploymentController{
+		apiClient:   apiClient,
+		config:      cfg,
 		gracePeriod: gracePeriod,
+		logger:      logger.Named("deployment-controller"),
 	}
 }
 

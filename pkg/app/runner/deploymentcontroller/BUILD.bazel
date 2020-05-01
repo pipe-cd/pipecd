@@ -5,4 +5,10 @@ go_library(
     srcs = ["controller.go"],
     importpath = "github.com/kapetaniosci/pipe/pkg/app/runner/deploymentcontroller",
     visibility = ["//visibility:public"],
+    deps = [
+        "//pkg/app/api/service/runnerservice:go_default_library",
+        "//pkg/config:go_default_library",
+        "@org_golang_google_grpc//:go_default_library",
+        "@org_uber_go_zap//:go_default_library",
+    ],
 )

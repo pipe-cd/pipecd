@@ -156,7 +156,7 @@ func (r *runner) run(ctx context.Context, t cli.Telemetry) error {
 
 	// Start running deployment controller.
 	{
-		c := deploymentcontroller.NewController(r.gracePeriod)
+		c := deploymentcontroller.NewController(apiClient, runnerConfig, r.gracePeriod, t.Logger)
 		group.Go(func() error {
 			return c.Run(ctx)
 		})
