@@ -31,6 +31,7 @@ import (
 
 	"github.com/kapetaniosci/pipe/pkg/admin"
 	"github.com/kapetaniosci/pipe/pkg/app/api/service/runnerservice"
+	"github.com/kapetaniosci/pipe/pkg/app/api/service/runnerservice/runnerclientfake"
 	"github.com/kapetaniosci/pipe/pkg/app/runner/appstatereporter"
 	"github.com/kapetaniosci/pipe/pkg/app/runner/appstatestore"
 	"github.com/kapetaniosci/pipe/pkg/app/runner/deploymentcontroller"
@@ -55,7 +56,8 @@ type runner struct {
 	masterURL  string
 	namespace  string
 
-	gracePeriod time.Duration
+	useFakeAPIClient bool
+	gracePeriod      time.Duration
 }
 
 func NewCommand() *cobra.Command {
@@ -83,6 +85,7 @@ func NewCommand() *cobra.Command {
 	cmd.Flags().StringVar(&r.masterURL, "master", r.masterURL, "The address of the Kubernetes API server. Overrides any value in kubeconfig. Only required if out-of-cluster.")
 	cmd.Flags().StringVar(&r.namespace, "namespace", r.namespace, "The namespace where this runner is running.")
 
+	cmd.Flags().BoolVar(&r.useFakeAPIClient, "use-fake-api-client", r.useFakeAPIClient, "Whether the fake api client should be used instead of the real one or not.")
 	cmd.Flags().DurationVar(&r.gracePeriod, "grace-period", r.gracePeriod, "How long to wait for graceful shutdown.")
 
 	cmd.MarkFlagRequired("project-id")
@@ -104,11 +107,11 @@ func (r *runner) run(ctx context.Context, t cli.Telemetry) error {
 	}
 
 	// Make gRPC client and connect to the API.
-	// _, err = r.createAPIClient(ctx, t.Logger)
-	// if err != nil {
-	// 	t.Logger.Error("failed to create gRPC client to control plane", zap.Error(err))
-	// 	return err
-	// }
+	_, err = r.createAPIClient(ctx, t.Logger)
+	if err != nil {
+		t.Logger.Error("failed to create gRPC client to control plane", zap.Error(err))
+		return err
+	}
 
 	// Start running admin server.
 	{
@@ -180,6 +183,9 @@ func (r *runner) run(ctx context.Context, t cli.Telemetry) error {
 
 // createAPIClient makes a gRPC client to connect to the API.
 func (r *runner) createAPIClient(ctx context.Context, logger *zap.Logger) (runnerservice.Client, error) {
+	if r.useFakeAPIClient {
+		return runnerclientfake.NewClient(logger), nil
+	}
 	ctx, cancel := context.WithTimeout(ctx, 15*time.Second)
 	defer cancel()
 
