@@ -39,6 +39,10 @@ enum StageStatus {
 }
 
 // Deployment represents a particular deployment for an application.
+// When a new deployment can be created:
+// - New commit was added and it mades a change on application configuration.
+// - User clicked on Sync button at application web page.
+// - Promoted from another enviroment.
 message Deployment {
     message Trigger {
         Commit commit = 1 [(validate.rules).message.required = true];
@@ -58,6 +62,7 @@ message Deployment {
     Trigger trigger = 6 [(validate.rules).message.required = true];
     ApplicationGitPath git_path = 7 [(validate.rules).message.required = true];
     DeploymentStatus status = 8 [(validate.rules).enum.defined_only = true];
+    // TODO: Think about retry case.
     map<string, PipelineStage> stages = 9;
 
     int64 completed_at = 13 [(validate.rules).int64.gt = 0];

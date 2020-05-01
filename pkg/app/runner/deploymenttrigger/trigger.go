@@ -14,8 +14,7 @@
 
 // Package deploymenttrigger provides a runner component
 // that detects a list of application should be synced
-// and then trigger their deployments by applying new
-// Deployment-CRDs for them.
+// and then trigger their deployments by calling to API to create a new Deployment model.
 // Until V1, we detect based on the new merged commit and its changes.
 // But in the next versions, we also want to enable the ability to detect
 // based on the diff between the repo state (desired state) and cluster state (actual state).
@@ -23,6 +22,7 @@ package deploymenttrigger
 
 import (
 	"context"
+	"sync"
 	"time"
 
 	"github.com/google/uuid"
@@ -34,16 +34,24 @@ import (
 	"github.com/kapetaniosci/pipe/pkg/model"
 )
 
+type repoStore interface {
+	GetHeadCommit(ctx context.Context, org, repo string) (string, error)
+	ListChangedFiles(ctx context.Context, org, repo, from, to string) error
+}
+
 type apiClient interface {
 	ListApplications(ctx context.Context, in *runnerservice.ListApplicationsRequest, opts ...grpc.CallOption) (*runnerservice.ListApplicationsResponse, error)
 	CreateDeployment(ctx context.Context, in *runnerservice.CreateDeploymentRequest, opts ...grpc.CallOption) (*runnerservice.CreateDeploymentResponse, error)
 }
 
 type DeploymentTrigger struct {
-	apiClient   apiClient
-	config      *config.RunnerSpec
-	gracePeriod time.Duration
-	logger      *zap.Logger
+	config           *config.RunnerSpec
+	apiClient        apiClient
+	repoStore        repoStore
+	triggeredCommits map[string]string
+	mu               sync.Mutex
+	gracePeriod      time.Duration
+	logger           *zap.Logger
 }
 
 // NewTrigger creates a new instance for DeploymentTrigger.
@@ -52,8 +60,8 @@ type DeploymentTrigger struct {
 // - A way to get the current state of applicaion
 func NewTrigger(apiClient apiClient, cfg *config.RunnerSpec, gracePeriod time.Duration, logger *zap.Logger) *DeploymentTrigger {
 	return &DeploymentTrigger{
-		apiClient:   apiClient,
 		config:      cfg,
+		apiClient:   apiClient,
 		gracePeriod: gracePeriod,
 		logger:      logger.Named("deployment-trigger"),
 	}
@@ -61,12 +69,79 @@ func NewTrigger(apiClient apiClient, cfg *config.RunnerSpec, gracePeriod time.Du
 
 // Run starts running DeploymentTrigger until the specified context
 // has done. This also waits for its cleaning up before returning.
-// 1. Periodically check the new commit in the specified branch.
-// 2. Determine the list of applications which were touched by the new commit.
-// 3. Detect the update type (just scale or need rollout with pipeline) by checking the change.
-// 4. Create Deployment CRDs to trigger their deployments.
 func (t *DeploymentTrigger) Run(ctx context.Context) error {
-	// heahCommitSHA
+	ticker := time.NewTicker(10 * time.Second)
+	defer ticker.Stop()
+
+	go func() {
+		for {
+			select {
+			case <-ctx.Done():
+				return
+			case <-ticker.C:
+				t.check(ctx)
+			}
+		}
+	}()
+
+	return nil
+}
+
+func (t *DeploymentTrigger) check(ctx context.Context) error {
+	// List all applications that should be handled by this runner
+	// and then group them by repository.
+	applications, err := t.listApplications(ctx)
+	if err != nil {
+		return err
+	}
+
+	for repo, apps := range applications {
+		// Get the head commit of the repository.
+		headCommitSHA, err := t.repoStore.GetHeadCommit(ctx, repo.Org, repo.Repo)
+		if err != nil {
+			continue
+		}
+		for _, app := range apps {
+			// Get the most recently applied commit of this application.
+			// If it is not in the memory cache, we have to call the API to list the deployments
+			// and use the commit sha of the most recent one.
+			triggeredCommitSHA, ok := t.triggeredCommits[app.Id]
+			if !ok {
+				t.triggeredCommits[app.Id] = "retrieved-one"
+			}
+
+			// Check whether the most recently applied one is the head commit or not.
+			// If not, nothing to do for this time.
+			if triggeredCommitSHA == headCommitSHA {
+				continue
+			}
+
+			// List the changed files between those two commits
+			// Determine whether this application was touch by those changed files.
+
+			// Send a request to API to create a new deployment.
+			if err := t.triggerDeployment(ctx, app, headCommitSHA); err != nil {
+				continue
+			}
+			t.triggeredCommits[app.Id] = headCommitSHA
+		}
+	}
+	return nil
+}
+
+type repo struct {
+	Host   string
+	Org    string
+	Repo   string
+	Branch string
+}
+
+func (t *DeploymentTrigger) listApplications(ctx context.Context) (map[repo][]*model.Application, error) {
+	return nil, nil
+}
+
+func (t *DeploymentTrigger) triggerDeployment(ctx context.Context, app *model.Application, commit string) error {
+	// Detect the update type (just scale or need rollout with pipeline) by checking the change
 	deployment := &model.Deployment{
 		Id:            uuid.New().String(),
 		ApplicationId: "fake-application-id",

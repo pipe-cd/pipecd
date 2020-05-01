@@ -60,3 +60,18 @@ message ApplicationGitPath {
     string path = 5 [(validate.rules).string.min_len = 1];
     string config_path = 6;
 }
+
+message GitRepo {
+    // The git hosting service. e.g. github.com.
+    string host = 1 [(validate.rules).string.min_len = 1];
+    string org = 2 [(validate.rules).string.min_len = 1];
+    string repo = 3 [(validate.rules).string.min_len = 1];
+}
+
+message GitRepoBranch {
+    // The git hosting service. e.g. github.com.
+    string host = 1 [(validate.rules).string.min_len = 1];
+    string org = 2 [(validate.rules).string.min_len = 1];
+    string repo = 3 [(validate.rules).string.min_len = 1];
+    string branch = 4 [(validate.rules).string.min_len = 1];
+}

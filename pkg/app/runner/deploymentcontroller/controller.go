@@ -63,7 +63,7 @@ func NewController(apiClient apiClient, cfg *config.RunnerSpec, gracePeriod time
 }
 
 // Run starts running DeploymentController until the specified context
-// has done. This also waits for its cleaning up before returning.'
+// has done. This also waits for its cleaning up before returning.
 func (t *DeploymentController) Run(ctx context.Context) error {
 	return nil
 }
