@@ -24,19 +24,38 @@ package deploymenttrigger
 import (
 	"context"
 	"time"
+
+	"github.com/google/uuid"
+	"go.uber.org/zap"
+	"google.golang.org/grpc"
+
+	"github.com/kapetaniosci/pipe/pkg/app/api/service/runnerservice"
+	"github.com/kapetaniosci/pipe/pkg/config"
+	"github.com/kapetaniosci/pipe/pkg/model"
 )
 
+type apiClient interface {
+	ListApplications(ctx context.Context, in *runnerservice.ListApplicationsRequest, opts ...grpc.CallOption) (*runnerservice.ListApplicationsResponse, error)
+	CreateDeployment(ctx context.Context, in *runnerservice.CreateDeploymentRequest, opts ...grpc.CallOption) (*runnerservice.CreateDeploymentResponse, error)
+}
+
 type DeploymentTrigger struct {
+	apiClient   apiClient
+	config      *config.RunnerSpec
 	gracePeriod time.Duration
+	logger      *zap.Logger
 }
 
 // NewTrigger creates a new instance for DeploymentTrigger.
 // What does this need to do its task?
 // - A way to get commit/source-code of a specific repository
 // - A way to get the current state of applicaion
-func NewTrigger(gracePeriod time.Duration) *DeploymentTrigger {
+func NewTrigger(apiClient apiClient, cfg *config.RunnerSpec, gracePeriod time.Duration, logger *zap.Logger) *DeploymentTrigger {
 	return &DeploymentTrigger{
+		apiClient:   apiClient,
+		config:      cfg,
 		gracePeriod: gracePeriod,
+		logger:      logger.Named("deployment-trigger"),
 	}
 }
 
@@ -48,5 +67,15 @@ func NewTrigger(gracePeriod time.Duration) *DeploymentTrigger {
 // 4. Create Deployment CRDs to trigger their deployments.
 func (t *DeploymentTrigger) Run(ctx context.Context) error {
 	// heahCommitSHA
+	deployment := &model.Deployment{
+		Id:            uuid.New().String(),
+		ApplicationId: "fake-application-id",
+	}
+	_, err := t.apiClient.CreateDeployment(ctx, &runnerservice.CreateDeploymentRequest{
+		Deployment: deployment,
+	})
+	if err != nil {
+		t.logger.Error("failed to create deployment", zap.Error(err))
+	}
 	return nil
 }

@@ -12,6 +12,7 @@ require (
 	github.com/golang/mock v1.4.3
 	github.com/golang/protobuf v1.3.5
 	github.com/gomodule/redigo v2.0.0+incompatible
+	github.com/google/uuid v1.1.1
 	github.com/hashicorp/golang-lru v0.5.1
 	github.com/prometheus/client_golang v0.9.3
 	github.com/spf13/cobra v0.0.5

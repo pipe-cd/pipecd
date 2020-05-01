@@ -100,14 +100,14 @@ func (r *runner) run(ctx context.Context, t cli.Telemetry) error {
 	group, ctx := errgroup.WithContext(ctx)
 
 	// Load runner configuration from specified file.
-	_, err := r.loadConfig()
+	runnerConfig, err := r.loadConfig()
 	if err != nil {
 		t.Logger.Error("failed to load runner configuration", zap.Error(err))
 		return err
 	}
 
 	// Make gRPC client and connect to the API.
-	_, err = r.createAPIClient(ctx, t.Logger)
+	apiClient, err := r.createAPIClient(ctx, t.Logger)
 	if err != nil {
 		t.Logger.Error("failed to create gRPC client to control plane", zap.Error(err))
 		return err
@@ -164,7 +164,7 @@ func (r *runner) run(ctx context.Context, t cli.Telemetry) error {
 
 	// Start running deployment trigger.
 	{
-		t := deploymenttrigger.NewTrigger(r.gracePeriod)
+		t := deploymenttrigger.NewTrigger(apiClient, runnerConfig, r.gracePeriod, t.Logger)
 		group.Go(func() error {
 			return t.Run(ctx)
 		})
