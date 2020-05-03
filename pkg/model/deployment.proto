@@ -58,12 +58,13 @@ message Deployment {
     string env_id = 3 [(validate.rules).string.min_len = 1];
     string runner_id = 4 [(validate.rules).string.min_len = 1];
     string project_id = 5 [(validate.rules).string.min_len = 1];
+    ApplicationKind kind = 6 [(validate.rules).enum.defined_only = true];
 
-    Trigger trigger = 6 [(validate.rules).message.required = true];
-    ApplicationGitPath git_path = 7 [(validate.rules).message.required = true];
-    DeploymentStatus status = 8 [(validate.rules).enum.defined_only = true];
+    Trigger trigger = 7 [(validate.rules).message.required = true];
+    ApplicationGitPath git_path = 8 [(validate.rules).message.required = true];
+    DeploymentStatus status = 9 [(validate.rules).enum.defined_only = true];
     // TODO: Think about retry case.
-    map<string, PipelineStage> stages = 9;
+    map<string, PipelineStage> stages = 10;
 
     int64 completed_at = 13 [(validate.rules).int64.gt = 0];
     int64 created_at = 14 [(validate.rules).int64.gt = 0];

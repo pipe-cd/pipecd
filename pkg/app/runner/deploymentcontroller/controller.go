@@ -22,6 +22,7 @@ package deploymentcontroller
 
 import (
 	"context"
+	"sync"
 	"time"
 
 	"go.uber.org/zap"
@@ -48,6 +49,8 @@ type apiClient interface {
 type DeploymentController struct {
 	apiClient   apiClient
 	config      *config.RunnerSpec
+	executors   map[string]*executor
+	mu          sync.Mutex
 	gracePeriod time.Duration
 	logger      *zap.Logger
 }
@@ -64,6 +67,43 @@ func NewController(apiClient apiClient, cfg *config.RunnerSpec, gracePeriod time
 
 // Run starts running DeploymentController until the specified context
 // has done. This also waits for its cleaning up before returning.
-func (t *DeploymentController) Run(ctx context.Context) error {
+func (c *DeploymentController) Run(ctx context.Context) error {
+	ticker := time.NewTicker(30 * time.Second)
+	defer ticker.Stop()
+
+	go func() {
+		for {
+			select {
+			case <-ctx.Done():
+				return
+			case <-ticker.C:
+				c.syncExecutor(ctx)
+			}
+		}
+	}()
+	return nil
+}
+
+func (c *DeploymentController) syncExecutor(ctx context.Context) error {
+	resp, err := c.apiClient.ListNotCompletedDeployments(ctx, &runnerservice.ListNotCompletedDeploymentsRequest{})
+	if err != nil {
+		return err
+	}
+	// Add missing executors.
+	for _, d := range resp.Deployments {
+		if _, ok := c.executors[d.Id]; ok {
+			continue
+		}
+		e := newExecutor(d, c.logger)
+		c.executors[e.Id()] = e
+		go e.Run(ctx)
+	}
+
+	// Remove done executors.
+	for id, e := range c.executors {
+		if e.IsDone() {
+			delete(c.executors, id)
+		}
+	}
 	return nil
 }
