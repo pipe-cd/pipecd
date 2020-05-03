@@ -49,7 +49,7 @@ type apiClient interface {
 type DeploymentController struct {
 	apiClient   apiClient
 	config      *config.RunnerSpec
-	executors   map[string]*executor
+	schedulers  map[string]*scheduler
 	mu          sync.Mutex
 	gracePeriod time.Duration
 	logger      *zap.Logger
@@ -89,20 +89,20 @@ func (c *DeploymentController) syncExecutor(ctx context.Context) error {
 	if err != nil {
 		return err
 	}
-	// Add missing executors.
+	// Add missing schedulers.
 	for _, d := range resp.Deployments {
-		if _, ok := c.executors[d.Id]; ok {
+		if _, ok := c.schedulers[d.Id]; ok {
 			continue
 		}
 		e := newExecutor(d, c.logger)
-		c.executors[e.Id()] = e
+		c.schedulers[e.Id()] = e
 		go e.Run(ctx)
 	}
 
-	// Remove done executors.
-	for id, e := range c.executors {
+	// Remove done schedulers.
+	for id, e := range c.schedulers {
 		if e.IsDone() {
-			delete(c.executors, id)
+			delete(c.schedulers, id)
 		}
 	}
 	return nil

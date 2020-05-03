@@ -27,9 +27,8 @@ type repoStore interface {
 	CloneReadOnlyRepo(repo, branch, revision string) (string, error)
 }
 
-// executor is a dedicated object for a specific deployment
-// of a single application.
-type executor struct {
+// scheduler is a dedicated object for a specific deployment of a single application.
+type scheduler struct {
 	deployment *model.Deployment
 	// Deployment configuration for this application.
 	appConfig  *config.Config
@@ -37,33 +36,33 @@ type executor struct {
 	logger     *zap.Logger
 }
 
-func newExecutor(d *model.Deployment, logger *zap.Logger) *executor {
-	logger = logger.Named("executor").With(
+func newExecutor(d *model.Deployment, logger *zap.Logger) *scheduler {
+	logger = logger.Named("scheduler").With(
 		zap.String("deployment-id", d.Id),
 		zap.String("application-id", d.ApplicationId),
 		zap.String("env-id", d.EnvId),
 		zap.String("project-id", d.ProjectId),
 		zap.String("application-kind", d.Kind.String()),
 	)
-	return &executor{
+	return &scheduler{
 		deployment: d,
 		logger:     logger,
 	}
 }
 
-func (e *executor) Id() string {
+func (e *scheduler) Id() string {
 	return e.deployment.Id
 }
 
-func (e *executor) IsCompleted() bool {
+func (e *scheduler) IsCompleted() bool {
 	return false
 }
 
-func (e *executor) IsDone() bool {
+func (e *scheduler) IsDone() bool {
 	return false
 }
 
-func (e *executor) Run(ctx context.Context) error {
+func (e *scheduler) Run(ctx context.Context) error {
 	// Prepare a working space for this deployment.
 	// Load deployment configuration data.
 	// Restore previous executed state.
@@ -71,10 +70,10 @@ func (e *executor) Run(ctx context.Context) error {
 	return nil
 }
 
-func (e *executor) prepare(ctx context.Context) error {
+func (e *scheduler) prepare(ctx context.Context) error {
 	return nil
 }
 
-func (e *executor) run(ctx context.Context) error {
+func (e *scheduler) run(ctx context.Context) error {
 	return nil
 }

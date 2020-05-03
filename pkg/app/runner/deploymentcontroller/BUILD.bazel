@@ -4,7 +4,7 @@ go_library(
     name = "go_default_library",
     srcs = [
         "controller.go",
-        "executor.go",
+        "scheduler.go",
     ],
     importpath = "github.com/kapetaniosci/pipe/pkg/app/runner/deploymentcontroller",
     visibility = ["//visibility:public"],
