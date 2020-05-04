@@ -70,6 +70,10 @@ func (e *scheduler) Run(ctx context.Context) error {
 	return nil
 }
 
+// prepare does all needed things before start executing the deployment.
+// Includes:
+// - Clone a readonly repository at the required revision
+// - Restore previous executed state from deployment data.
 func (e *scheduler) prepare(ctx context.Context) error {
 	return nil
 }

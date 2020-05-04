@@ -73,6 +73,23 @@ func (a *RunnerAPI) ListNotCompletedDeployments(ctx context.Context, req *runner
 	return nil, status.Error(codes.Unimplemented, "")
 }
 
+// ReportDeploymentStageStatusChanged used by runner to update the status
+// of a specific stage of a deployment.
+func (a *RunnerAPI) ReportDeploymentStageStatusChanged(ctx context.Context, req *runnerservice.ReportDeploymentStageStatusChangedRequest) (*runnerservice.ReportDeploymentStageStatusChangedResponse, error) {
+	return nil, status.Error(codes.Unimplemented, "")
+}
+
+// SendStageLog is sent by runner to save the log of a pipeline stage.
+func (a *RunnerAPI) SendStageLog(ctx context.Context, req *runnerservice.SendStageLogRequest) (*runnerservice.SendStageLogResponse, error) {
+	return nil, status.Error(codes.Unimplemented, "")
+}
+
+// ReportDeploymentCompleted used by runner to send the final state
+// of the pipeline that has just been completed.
+func (a *RunnerAPI) ReportDeploymentCompleted(ctx context.Context, req *runnerservice.ReportDeploymentCompletedRequest) (*runnerservice.ReportDeploymentCompletedResponse, error) {
+	return nil, status.Error(codes.Unimplemented, "")
+}
+
 // RegisterEvents is sent by runner to submit one or multiple events
 // about executing pipelines and application resources.
 // Control plane uses the received events to update the state of pipeline/application-resource-tree.
@@ -86,11 +103,6 @@ func (a *RunnerAPI) ListNotCompletedDeployments(ctx context.Context, req *runner
 // and then another Handler service will pick them inorder to apply to build new state.
 // By that way we can control the traffic to the datastore in a better way.
 func (a *RunnerAPI) RegisterEvents(ctx context.Context, req *runnerservice.RegisterEventsRequest) (*runnerservice.RegisterEventsResponse, error) {
-	return nil, status.Error(codes.Unimplemented, "")
-}
-
-// SendStageLog is sent by runner to save the log of a pipeline stage.
-func (a *RunnerAPI) SendStageLog(ctx context.Context, req *runnerservice.SendStageLogRequest) (*runnerservice.SendStageLogResponse, error) {
 	return nil, status.Error(codes.Unimplemented, "")
 }
 
@@ -110,12 +122,6 @@ func (a *RunnerAPI) GetCommands(ctx context.Context, req *runnerservice.GetComma
 // The request payload will contain the handle status as well as any additional result data.
 // The handle result should be updated to both datastore and cache (for reading from web).
 func (a *RunnerAPI) ReportCommandHandled(ctx context.Context, req *runnerservice.ReportCommandHandledRequest) (*runnerservice.ReportCommandHandledResponse, error) {
-	return nil, status.Error(codes.Unimplemented, "")
-}
-
-// ReportDeploymentCompleted used by runner to send the final state
-// of the pipeline that has just been completed.
-func (a *RunnerAPI) ReportDeploymentCompleted(ctx context.Context, req *runnerservice.ReportDeploymentCompletedRequest) (*runnerservice.ReportDeploymentCompletedResponse, error) {
 	return nil, status.Error(codes.Unimplemented, "")
 }
 

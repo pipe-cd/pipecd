@@ -63,7 +63,6 @@ message Deployment {
     Trigger trigger = 7 [(validate.rules).message.required = true];
     ApplicationGitPath git_path = 8 [(validate.rules).message.required = true];
     DeploymentStatus status = 9 [(validate.rules).enum.defined_only = true];
-    // TODO: Think about retry case.
     map<string, PipelineStage> stages = 10;
 
     int64 completed_at = 13 [(validate.rules).int64.gt = 0];
@@ -76,6 +75,7 @@ message PipelineStage {
     repeated string requires = 2;
     StageStatus status = 3 [(validate.rules).enum.defined_only = true];
     bytes metadata = 4;
+    int32 retried_count = 5;
     int64 completed_at = 13 [(validate.rules).int64.gt = 0];
     int64 created_at = 14 [(validate.rules).int64.gt = 0];
     int64 updated_at = 15 [(validate.rules).int64.gt = 0];

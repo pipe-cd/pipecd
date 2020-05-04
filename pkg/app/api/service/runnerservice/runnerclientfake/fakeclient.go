@@ -60,16 +60,25 @@ func NewClient(logger *zap.Logger) *fakeClient {
 	}
 }
 
+// Close closes the connection to server.
 func (c *fakeClient) Close() error {
 	c.logger.Info("fakeClient client is closing")
 	return nil
 }
 
+// Ping is periodically sent by runner to report its status/stats to API.
+// The received stats will be written to the cache immediately.
+// The cache data may be lost anytime so we need a singleton Persister
+// to persist those data into datastore every n minutes.
 func (c *fakeClient) Ping(ctx context.Context, in *runnerservice.PingRequest, opts ...grpc.CallOption) (*runnerservice.PingResponse, error) {
 	c.logger.Info("received Ping rpc", zap.Any("request", in))
 	return &runnerservice.PingResponse{}, nil
 }
 
+// ListApplications returns a list of registered applications
+// that should be managed by the requested runner.
+// Disabled applications should not be included in the response.
+// Runner uses this RPC to fetch and sync the application configuration into its local database.
 func (c *fakeClient) ListApplications(ctx context.Context, in *runnerservice.ListApplicationsRequest, opts ...grpc.CallOption) (*runnerservice.ListApplicationsResponse, error) {
 	c.logger.Info("received ListApplications rpc", zap.Any("request", in))
 	apps := make([]*model.Application, 0, len(c.applications))
@@ -81,6 +90,9 @@ func (c *fakeClient) ListApplications(ctx context.Context, in *runnerservice.Lis
 	}, nil
 }
 
+// CreateDeployment creates/triggers a new deployment for an application
+// that is managed by this runner.
+// This will be used by DeploymentTrigger component.
 func (c *fakeClient) CreateDeployment(ctx context.Context, in *runnerservice.CreateDeploymentRequest, opts ...grpc.CallOption) (*runnerservice.CreateDeploymentResponse, error) {
 	c.logger.Info("received CreateDeployment rpc", zap.Any("request", in))
 	c.mu.Lock()
@@ -92,6 +104,9 @@ func (c *fakeClient) CreateDeployment(ctx context.Context, in *runnerservice.Cre
 	return &runnerservice.CreateDeploymentResponse{}, nil
 }
 
+// ListNotCompletedDeployments returns a list of not completed deployments
+// which are managed by this runner.
+// DeploymentController component uses this RPC to spawns/syncs its local deployment executors.
 func (c *fakeClient) ListNotCompletedDeployments(ctx context.Context, in *runnerservice.ListNotCompletedDeploymentsRequest, opts ...grpc.CallOption) (*runnerservice.ListNotCompletedDeploymentsResponse, error) {
 	c.logger.Info("received ListNotCompletedDeployments rpc", zap.Any("request", in))
 	deployments := make([]*model.Deployment, 0, len(c.deployments))
@@ -106,31 +121,67 @@ func (c *fakeClient) ListNotCompletedDeployments(ctx context.Context, in *runner
 	}, nil
 }
 
-func (c *fakeClient) RegisterEvents(ctx context.Context, in *runnerservice.RegisterEventsRequest, opts ...grpc.CallOption) (*runnerservice.RegisterEventsResponse, error) {
-	c.logger.Info("received RegisterEvents rpc", zap.Any("request", in))
+// ReportDeploymentStageStatusChanged used by runner to update the status
+// of a specific stage of a deployment.
+func (c *fakeClient) ReportDeploymentStageStatusChanged(ctx context.Context, in *runnerservice.ReportDeploymentStageStatusChangedRequest, opts ...grpc.CallOption) (*runnerservice.ReportDeploymentStageStatusChangedResponse, error) {
+	c.logger.Info("received ReportDeploymentStageStatusChanged rpc", zap.Any("request", in))
 	return nil, nil
 }
 
+// SendStageLog is sent by runner to save the log of a pipeline stage.
 func (c *fakeClient) SendStageLog(ctx context.Context, in *runnerservice.SendStageLogRequest, opts ...grpc.CallOption) (*runnerservice.SendStageLogResponse, error) {
 	c.logger.Info("received SendStageLog rpc", zap.Any("request", in))
 	return nil, nil
 }
 
-func (c *fakeClient) GetCommands(ctx context.Context, in *runnerservice.GetCommandsRequest, opts ...grpc.CallOption) (*runnerservice.GetCommandsResponse, error) {
-	c.logger.Info("received GetCommands rpc", zap.Any("request", in))
-	return nil, nil
-}
-
-func (c *fakeClient) ReportCommandHandled(ctx context.Context, in *runnerservice.ReportCommandHandledRequest, opts ...grpc.CallOption) (*runnerservice.ReportCommandHandledResponse, error) {
-	c.logger.Info("received ReportCommandHandled rpc", zap.Any("request", in))
-	return nil, nil
-}
-
+// ReportDeploymentCompleted used by runner to send the final state
+// of the pipeline that has just been completed.
 func (c *fakeClient) ReportDeploymentCompleted(ctx context.Context, in *runnerservice.ReportDeploymentCompletedRequest, opts ...grpc.CallOption) (*runnerservice.ReportDeploymentCompletedResponse, error) {
 	c.logger.Info("received ReportDeploymentCompleted rpc", zap.Any("request", in))
 	return nil, nil
 }
 
+// RegisterEvents is sent by runner to submit one or multiple events
+// about executing pipelines and application resources.
+// Control plane uses the received events to update the state of pipeline/application-resource-tree.
+// We want to start by a simple solution at this initial stage of development,
+// so the API server just handles as below:
+// - loads the releated pipeline/application-resource-tree from datastore
+// - checks and builds new state for the pipeline/application-resource-tree
+// - updates new state into datastore and cache (cache data is for reading while handling web requests)
+// In the future, we may want to redesign the behavior of this RPC by using pubsub/queue pattern.
+// After receiving the events, all of them will be publish into a queue immediately,
+// and then another Handler service will pick them inorder to apply to build new state.
+// By that way we can control the traffic to the datastore in a better way.
+func (c *fakeClient) RegisterEvents(ctx context.Context, in *runnerservice.RegisterEventsRequest, opts ...grpc.CallOption) (*runnerservice.RegisterEventsResponse, error) {
+	c.logger.Info("received RegisterEvents rpc", zap.Any("request", in))
+	return nil, nil
+}
+
+// GetCommands is periodically called by runner to obtain the commands
+// that should be handled.
+// Whenever an user makes an interaction from WebUI (cancel/approve/retry/sync)
+// a new command with a unique identifier will be generated an saved into the datastore.
+// Runner uses this RPC to list all still-not-handled commands to handle them,
+// then report back the result to server.
+// On other side, the web will periodically check the command status and feedback the result to user.
+// In the future, we may need a solution to remove all old-handled commands from datastore for space.
+func (c *fakeClient) GetCommands(ctx context.Context, in *runnerservice.GetCommandsRequest, opts ...grpc.CallOption) (*runnerservice.GetCommandsResponse, error) {
+	c.logger.Info("received GetCommands rpc", zap.Any("request", in))
+	return nil, nil
+}
+
+// ReportCommandHandled is called by runner to mark a specific command as handled.
+// The request payload will contain the handle status as well as any additional result data.
+// The handle result should be updated to both datastore and cache (for reading from web).
+func (c *fakeClient) ReportCommandHandled(ctx context.Context, in *runnerservice.ReportCommandHandledRequest, opts ...grpc.CallOption) (*runnerservice.ReportCommandHandledResponse, error) {
+	c.logger.Info("received ReportCommandHandled rpc", zap.Any("request", in))
+	return nil, nil
+}
+
+// ReportApplicationState is periodically sent by runner to refresh the current state of application.
+// This may contain a full tree of application resources for Kubernetes application.
+// The tree data will be written into filestore and the cache inmmediately.
 func (c *fakeClient) ReportApplicationState(ctx context.Context, in *runnerservice.ReportApplicationStateRequest, opts ...grpc.CallOption) (*runnerservice.ReportApplicationStateResponse, error) {
 	c.logger.Info("received ReportApplicationState rpc", zap.Any("request", in))
 	return nil, nil

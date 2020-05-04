@@ -13,3 +13,34 @@
 // limitations under the License.
 
 package kubernetes
+
+type Executor struct {
+}
+
+func (e *Executor) Run() error {
+	return nil
+}
+
+func (e *Executor) ensureStageRollOut() error {
+	return nil
+}
+
+func (e *Executor) ensureStageRemove() error {
+	return nil
+}
+
+func (e *Executor) ensurePrimaryUpdate() error {
+	return nil
+}
+
+func (e *Executor) ensureBaselineRollout() error {
+	return nil
+}
+
+func (e *Executor) ensureBaselineRemove() error {
+	return nil
+}
+
+func (e *Executor) ensureTrafficRoute() error {
+	return nil
+}

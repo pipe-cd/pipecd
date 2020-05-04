@@ -13,3 +13,21 @@
 // limitations under the License.
 
 package executor
+
+import (
+	"github.com/kapetaniosci/pipe/pkg/model"
+)
+
+type Executor interface {
+	Execute() error
+}
+
+type cloudProvider interface {
+}
+
+type persister interface {
+}
+
+func NewExecutor(stage *model.PipelineStage) Executor {
+	return nil
+}

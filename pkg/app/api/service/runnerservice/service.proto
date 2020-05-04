@@ -48,6 +48,17 @@ service RunnerService {
     // DeploymentController component uses this RPC to spawns/syncs its local deployment executors.
     rpc ListNotCompletedDeployments(ListNotCompletedDeploymentsRequest) returns (ListNotCompletedDeploymentsResponse) {}
 
+    // ReportDeploymentStageStatusChanged used by runner to update the status
+    // of a specific stage of a deployment.
+    rpc ReportDeploymentStageStatusChanged(ReportDeploymentStageStatusChangedRequest) returns (ReportDeploymentStageStatusChangedResponse) {}
+
+    // SendStageLog is sent by runner to save the log of a pipeline stage.
+    rpc SendStageLog(SendStageLogRequest) returns (SendStageLogResponse) {}
+
+    // ReportDeploymentCompleted used by runner to send the final state
+    // of the pipeline that has just been completed.
+    rpc ReportDeploymentCompleted(ReportDeploymentCompletedRequest) returns (ReportDeploymentCompletedResponse) {}
+
     // RegisterEvents is sent by runner to submit one or multiple events
     // about executing pipelines and application state.
     // Control plane uses the received events to update the state of pipeline/application-resource-tree.
@@ -61,9 +72,6 @@ service RunnerService {
     // and then another Handler service will pick them inorder to apply to build new state.
     // By that way we can control the traffic to the datastore in a better way.
     rpc RegisterEvents(RegisterEventsRequest) returns (RegisterEventsResponse) {}
-
-    // SendStageLog is sent by runner to save the log of a pipeline stage.
-    rpc SendStageLog(SendStageLogRequest) returns (SendStageLogResponse) {}
 
     // GetCommands is periodically called by runner to obtain the commands
     // that should be handled.
@@ -79,10 +87,6 @@ service RunnerService {
     // The request payload will contain the handle status as well as any additional result data.
     // The handle result should be updated to both datastore and cache (for reading from web).
     rpc ReportCommandHandled(ReportCommandHandledRequest) returns (ReportCommandHandledResponse) {}
-
-    // ReportDeploymentCompleted used by runner to send the final state
-    // of the pipeline that has just been completed.
-    rpc ReportDeploymentCompleted(ReportDeploymentCompletedRequest) returns (ReportDeploymentCompletedResponse) {}
 
     // ReportApplicationState is periodically sent by runner to refresh the current state of application.
     // This may contain a full tree of application resources for Kubernetes application.
@@ -119,12 +123,16 @@ message ListNotCompletedDeploymentsResponse {
     repeated pipe.model.Deployment deployments = 1;
 }
 
-message RegisterEventsRequest {
-    repeated Event events = 1;
+message ReportDeploymentStageStatusChangedRequest {
+    string id = 1 [(validate.rules).string.min_len = 1];
+    string deployment_id = 2 [(validate.rules).string.min_len = 1];
+    pipe.model.StageStatus status = 3 [(validate.rules).enum.defined_only = true];
+    bytes metadata = 4;
+    int32 retried_count = 5;
+    int64 completed_at = 13 [(validate.rules).int64.gt = 0];
 }
 
-message RegisterEventsResponse {
-    repeated string failed_ids = 1;
+message ReportDeploymentStageStatusChangedResponse {
 }
 
 message SendStageLogRequest {
@@ -135,6 +143,23 @@ message SendStageLogRequest {
 }
 
 message SendStageLogResponse {
+}
+
+message ReportDeploymentCompletedRequest {
+    string deployment_id = 1 [(validate.rules).string.min_len = 1];
+    pipe.model.DeploymentStatus status = 2 [(validate.rules).enum.defined_only = true];
+    int64 completed_at = 13 [(validate.rules).int64.gt = 0];
+}
+
+message ReportDeploymentCompletedResponse {
+}
+
+message RegisterEventsRequest {
+    repeated Event events = 1;
+}
+
+message RegisterEventsResponse {
+    repeated string failed_ids = 1;
 }
 
 message GetCommandsRequest {
@@ -151,16 +176,6 @@ message ReportCommandHandledRequest {
 }
 
 message ReportCommandHandledResponse {
-}
-
-message ReportDeploymentCompletedRequest {
-    string deployment_id = 1 [(validate.rules).string.min_len = 1];
-    pipe.model.DeploymentStatus status = 2 [(validate.rules).enum.defined_only = true];
-    map<string, pipe.model.PipelineStage> stages = 3;
-    int64 completed_at = 4 [(validate.rules).int64.gt = 0];
-}
-
-message ReportDeploymentCompletedResponse {
 }
 
 message ReportApplicationStateRequest {
