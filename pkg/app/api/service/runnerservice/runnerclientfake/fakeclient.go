@@ -128,9 +128,9 @@ func (c *fakeClient) ReportDeploymentStageStatusChanged(ctx context.Context, in 
 	return nil, nil
 }
 
-// SendStageLog is sent by runner to save the log of a pipeline stage.
-func (c *fakeClient) SendStageLog(ctx context.Context, in *runnerservice.SendStageLogRequest, opts ...grpc.CallOption) (*runnerservice.SendStageLogResponse, error) {
-	c.logger.Info("received SendStageLog rpc", zap.Any("request", in))
+// ReportStageLog is sent by runner to save the log of a pipeline stage.
+func (c *fakeClient) ReportStageLog(ctx context.Context, in *runnerservice.ReportStageLogRequest, opts ...grpc.CallOption) (*runnerservice.ReportStageLogResponse, error) {
+	c.logger.Info("received ReportStageLog rpc", zap.Any("request", in))
 	return nil, nil
 }
 
@@ -138,23 +138,6 @@ func (c *fakeClient) SendStageLog(ctx context.Context, in *runnerservice.SendSta
 // of the pipeline that has just been completed.
 func (c *fakeClient) ReportDeploymentCompleted(ctx context.Context, in *runnerservice.ReportDeploymentCompletedRequest, opts ...grpc.CallOption) (*runnerservice.ReportDeploymentCompletedResponse, error) {
 	c.logger.Info("received ReportDeploymentCompleted rpc", zap.Any("request", in))
-	return nil, nil
-}
-
-// RegisterEvents is sent by runner to submit one or multiple events
-// about executing pipelines and application resources.
-// Control plane uses the received events to update the state of pipeline/application-resource-tree.
-// We want to start by a simple solution at this initial stage of development,
-// so the API server just handles as below:
-// - loads the releated pipeline/application-resource-tree from datastore
-// - checks and builds new state for the pipeline/application-resource-tree
-// - updates new state into datastore and cache (cache data is for reading while handling web requests)
-// In the future, we may want to redesign the behavior of this RPC by using pubsub/queue pattern.
-// After receiving the events, all of them will be publish into a queue immediately,
-// and then another Handler service will pick them inorder to apply to build new state.
-// By that way we can control the traffic to the datastore in a better way.
-func (c *fakeClient) RegisterEvents(ctx context.Context, in *runnerservice.RegisterEventsRequest, opts ...grpc.CallOption) (*runnerservice.RegisterEventsResponse, error) {
-	c.logger.Info("received RegisterEvents rpc", zap.Any("request", in))
 	return nil, nil
 }
 
@@ -184,6 +167,23 @@ func (c *fakeClient) ReportCommandHandled(ctx context.Context, in *runnerservice
 // The tree data will be written into filestore and the cache inmmediately.
 func (c *fakeClient) ReportApplicationState(ctx context.Context, in *runnerservice.ReportApplicationStateRequest, opts ...grpc.CallOption) (*runnerservice.ReportApplicationStateResponse, error) {
 	c.logger.Info("received ReportApplicationState rpc", zap.Any("request", in))
+	return nil, nil
+}
+
+// ReportAppStateEvents is sent by runner to submit one or multiple events
+// about the changes of application state.
+// Control plane uses the received events to update the state of application-resource-tree.
+// We want to start by a simple solution at this initial stage of development,
+// so the API server just handles as below:
+// - loads the releated application-resource-tree from filestore
+// - checks and builds new state for the application-resource-tree
+// - updates new state into fielstore and cache (cache data is for reading while handling web requests)
+// In the future, we may want to redesign the behavior of this RPC by using pubsub/queue pattern.
+// After receiving the events, all of them will be publish into a queue immediately,
+// and then another Handler service will pick them inorder to apply to build new state.
+// By that way we can control the traffic to the datastore in a better way.
+func (c *fakeClient) ReportAppStateEvents(ctx context.Context, in *runnerservice.ReportAppStateEventsRequest, opts ...grpc.CallOption) (*runnerservice.ReportAppStateEventsResponse, error) {
+	c.logger.Info("received ReportAppStateEvents rpc", zap.Any("request", in))
 	return nil, nil
 }
 

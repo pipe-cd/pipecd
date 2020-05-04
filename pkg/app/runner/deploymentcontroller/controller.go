@@ -39,8 +39,8 @@ const (
 
 type apiClient interface {
 	ListNotCompletedDeployments(ctx context.Context, in *runnerservice.ListNotCompletedDeploymentsRequest, opts ...grpc.CallOption) (*runnerservice.ListNotCompletedDeploymentsResponse, error)
-	SendStageLog(ctx context.Context, in *runnerservice.SendStageLogRequest, opts ...grpc.CallOption) (*runnerservice.SendStageLogResponse, error)
-	RegisterEvents(ctx context.Context, in *runnerservice.RegisterEventsRequest, opts ...grpc.CallOption) (*runnerservice.RegisterEventsResponse, error)
+	ReportStageLog(ctx context.Context, in *runnerservice.ReportStageLogRequest, opts ...grpc.CallOption) (*runnerservice.ReportStageLogResponse, error)
+	ReportAppStateEvents(ctx context.Context, in *runnerservice.ReportAppStateEventsRequest, opts ...grpc.CallOption) (*runnerservice.ReportAppStateEventsResponse, error)
 	GetCommands(ctx context.Context, in *runnerservice.GetCommandsRequest, opts ...grpc.CallOption) (*runnerservice.GetCommandsResponse, error)
 	ReportCommandHandled(ctx context.Context, in *runnerservice.ReportCommandHandledRequest, opts ...grpc.CallOption) (*runnerservice.ReportCommandHandledResponse, error)
 	ReportDeploymentCompleted(ctx context.Context, in *runnerservice.ReportDeploymentCompletedRequest, opts ...grpc.CallOption) (*runnerservice.ReportDeploymentCompletedResponse, error)

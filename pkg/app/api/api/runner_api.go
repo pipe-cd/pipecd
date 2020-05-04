@@ -79,30 +79,14 @@ func (a *RunnerAPI) ReportDeploymentStageStatusChanged(ctx context.Context, req 
 	return nil, status.Error(codes.Unimplemented, "")
 }
 
-// SendStageLog is sent by runner to save the log of a pipeline stage.
-func (a *RunnerAPI) SendStageLog(ctx context.Context, req *runnerservice.SendStageLogRequest) (*runnerservice.SendStageLogResponse, error) {
+// ReportStageLog is sent by runner to save the log of a pipeline stage.
+func (a *RunnerAPI) ReportStageLog(ctx context.Context, req *runnerservice.ReportStageLogRequest) (*runnerservice.ReportStageLogResponse, error) {
 	return nil, status.Error(codes.Unimplemented, "")
 }
 
 // ReportDeploymentCompleted used by runner to send the final state
 // of the pipeline that has just been completed.
 func (a *RunnerAPI) ReportDeploymentCompleted(ctx context.Context, req *runnerservice.ReportDeploymentCompletedRequest) (*runnerservice.ReportDeploymentCompletedResponse, error) {
-	return nil, status.Error(codes.Unimplemented, "")
-}
-
-// RegisterEvents is sent by runner to submit one or multiple events
-// about executing pipelines and application resources.
-// Control plane uses the received events to update the state of pipeline/application-resource-tree.
-// We want to start by a simple solution at this initial stage of development,
-// so the API server just handles as below:
-// - loads the releated pipeline/application-resource-tree from datastore
-// - checks and builds new state for the pipeline/application-resource-tree
-// - updates new state into datastore and cache (cache data is for reading while handling web requests)
-// In the future, we may want to redesign the behavior of this RPC by using pubsub/queue pattern.
-// After receiving the events, all of them will be publish into a queue immediately,
-// and then another Handler service will pick them inorder to apply to build new state.
-// By that way we can control the traffic to the datastore in a better way.
-func (a *RunnerAPI) RegisterEvents(ctx context.Context, req *runnerservice.RegisterEventsRequest) (*runnerservice.RegisterEventsResponse, error) {
 	return nil, status.Error(codes.Unimplemented, "")
 }
 
@@ -129,5 +113,21 @@ func (a *RunnerAPI) ReportCommandHandled(ctx context.Context, req *runnerservice
 // This may contain a full tree of application resources for Kubernetes application.
 // The tree data will be written into filestore and the cache inmmediately.
 func (a *RunnerAPI) ReportApplicationState(ctx context.Context, req *runnerservice.ReportApplicationStateRequest) (*runnerservice.ReportApplicationStateResponse, error) {
+	return nil, status.Error(codes.Unimplemented, "")
+}
+
+// ReportAppStateEvents is sent by runner to submit one or multiple events
+// about the changes of application state.
+// Control plane uses the received events to update the state of application-resource-tree.
+// We want to start by a simple solution at this initial stage of development,
+// so the API server just handles as below:
+// - loads the releated application-resource-tree from filestore
+// - checks and builds new state for the application-resource-tree
+// - updates new state into fielstore and cache (cache data is for reading while handling web requests)
+// In the future, we may want to redesign the behavior of this RPC by using pubsub/queue pattern.
+// After receiving the events, all of them will be publish into a queue immediately,
+// and then another Handler service will pick them inorder to apply to build new state.
+// By that way we can control the traffic to the datastore in a better way.
+func (a *RunnerAPI) ReportAppStateEvents(ctx context.Context, req *runnerservice.ReportAppStateEventsRequest) (*runnerservice.ReportAppStateEventsResponse, error) {
 	return nil, status.Error(codes.Unimplemented, "")
 }
