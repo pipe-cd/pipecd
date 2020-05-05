@@ -14,10 +14,23 @@
 
 package kubernetes
 
+import (
+	"context"
+
+	"github.com/kapetaniosci/pipe/pkg/app/runner/executor"
+)
+
 type Executor struct {
 }
 
-func (e *Executor) Run() error {
+func init() {
+	factory := func() executor.Executor {
+		return &Executor{}
+	}
+	executor.DefaultRegistry().Register("K8S_STAGE_OUT", factory)
+}
+
+func (e *Executor) Execute(ctx context.Context) error {
 	return nil
 }
 

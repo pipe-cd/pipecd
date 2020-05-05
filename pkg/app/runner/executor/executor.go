@@ -12,4 +12,22 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-package lambda
+package executor
+
+import (
+	"context"
+)
+
+type Executor interface {
+	Execute(ctx context.Context) error
+}
+
+type ExecutorFactory func() Executor
+
+type cloudProvider interface {
+}
+
+type persister interface {
+	SaveLog(log []byte) error
+	SaveResult(metadata []byte) error
+}

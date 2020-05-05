@@ -13,3 +13,22 @@
 // limitations under the License.
 
 package cloudrun
+
+import (
+	"context"
+
+	"github.com/kapetaniosci/pipe/pkg/app/runner/executor"
+)
+
+type Executor struct {
+}
+
+func init() {
+	_ = func() executor.Executor {
+		return &Executor{}
+	}
+}
+
+func (e *Executor) Execute(ctx context.Context) error {
+	return nil
+}

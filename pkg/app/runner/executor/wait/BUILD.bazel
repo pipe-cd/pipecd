@@ -1,0 +1,9 @@
+load("@io_bazel_rules_go//go:def.bzl", "go_library")
+
+go_library(
+    name = "go_default_library",
+    srcs = ["wait.go"],
+    importpath = "github.com/kapetaniosci/pipe/pkg/app/runner/executor/wait",
+    visibility = ["//visibility:public"],
+    deps = ["//pkg/app/runner/executor:go_default_library"],
+)

@@ -14,10 +14,9 @@
 
 // Package deploymentcontroller provides a runner component
 // that managing all of the not completed deployments.
-// This manages a pool of DeploymentExecutors.
-// Whenever a new uncompleted Deployment is detected, this creates a new DeploymentExecutor
+// This manages a pool of DeploymentSchedulers.
+// Whenever a new uncompleted Deployment is detected, this creates a new DeploymentScheduler
 // for that Deployment to handle the deployment pipeline.
-// The DeploymentExecutor will update the deployment status back to the API.
 package deploymentcontroller
 
 import (
@@ -77,24 +76,27 @@ func (c *DeploymentController) Run(ctx context.Context) error {
 			case <-ctx.Done():
 				return
 			case <-ticker.C:
-				c.syncExecutor(ctx)
+				c.syncScheduler(ctx)
 			}
 		}
 	}()
 	return nil
 }
 
-func (c *DeploymentController) syncExecutor(ctx context.Context) error {
+// syncScheduler adds new scheduler for newly aaded deployments
+// as well as removes the removeable deployments.
+func (c *DeploymentController) syncScheduler(ctx context.Context) error {
 	resp, err := c.apiClient.ListNotCompletedDeployments(ctx, &runnerservice.ListNotCompletedDeploymentsRequest{})
 	if err != nil {
 		return err
 	}
+
 	// Add missing schedulers.
 	for _, d := range resp.Deployments {
 		if _, ok := c.schedulers[d.Id]; ok {
 			continue
 		}
-		e := newExecutor(d, c.logger)
+		e := newScheduler(d, c.logger)
 		c.schedulers[e.Id()] = e
 		go e.Run(ctx)
 	}

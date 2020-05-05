@@ -12,4 +12,24 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-package analysis
+package waitapproval
+
+import (
+	"context"
+
+	"github.com/kapetaniosci/pipe/pkg/app/runner/executor"
+)
+
+type Executor struct {
+}
+
+func init() {
+	factory := func() executor.Executor {
+		return &Executor{}
+	}
+	executor.DefaultRegistry().Register("WAIT_APPROVAL", factory)
+}
+
+func (e *Executor) Execute(ctx context.Context) error {
+	return nil
+}

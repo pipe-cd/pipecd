@@ -12,22 +12,25 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-package executor
+package terraform
 
 import (
-	"github.com/kapetaniosci/pipe/pkg/model"
+	"context"
+
+	"github.com/kapetaniosci/pipe/pkg/app/runner/executor"
 )
 
-type Executor interface {
-	Execute() error
+type Executor struct {
 }
 
-type cloudProvider interface {
+func init() {
+	factory := func() executor.Executor {
+		return &Executor{}
+	}
+	executor.DefaultRegistry().Register("TERRAFORM_PLAN", factory)
+	executor.DefaultRegistry().Register("TERRAFORM_APPLY", factory)
 }
 
-type persister interface {
-}
-
-func NewExecutor(stage *model.PipelineStage) Executor {
+func (e *Executor) Execute(ctx context.Context) error {
 	return nil
 }

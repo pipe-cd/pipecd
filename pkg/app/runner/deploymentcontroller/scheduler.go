@@ -19,6 +19,7 @@ import (
 
 	"go.uber.org/zap"
 
+	"github.com/kapetaniosci/pipe/pkg/app/runner/executor"
 	"github.com/kapetaniosci/pipe/pkg/config"
 	"github.com/kapetaniosci/pipe/pkg/model"
 )
@@ -27,16 +28,21 @@ type repoStore interface {
 	CloneReadOnlyRepo(repo, branch, revision string) (string, error)
 }
 
+type executorRegistry interface {
+	Executor(stageName string) (executor.Executor, error)
+}
+
 // scheduler is a dedicated object for a specific deployment of a single application.
 type scheduler struct {
 	deployment *model.Deployment
 	// Deployment configuration for this application.
-	appConfig  *config.Config
-	workingDir string
-	logger     *zap.Logger
+	appConfig        *config.Config
+	workingDir       string
+	executorRegistry executorRegistry
+	logger           *zap.Logger
 }
 
-func newExecutor(d *model.Deployment, logger *zap.Logger) *scheduler {
+func newScheduler(d *model.Deployment, logger *zap.Logger) *scheduler {
 	logger = logger.Named("scheduler").With(
 		zap.String("deployment-id", d.Id),
 		zap.String("application-id", d.ApplicationId),
@@ -45,24 +51,25 @@ func newExecutor(d *model.Deployment, logger *zap.Logger) *scheduler {
 		zap.String("application-kind", d.Kind.String()),
 	)
 	return &scheduler{
-		deployment: d,
-		logger:     logger,
+		deployment:       d,
+		executorRegistry: executor.DefaultRegistry(),
+		logger:           logger,
 	}
 }
 
-func (e *scheduler) Id() string {
-	return e.deployment.Id
+func (s *scheduler) Id() string {
+	return s.deployment.Id
 }
 
-func (e *scheduler) IsCompleted() bool {
+func (s *scheduler) IsCompleted() bool {
 	return false
 }
 
-func (e *scheduler) IsDone() bool {
+func (s *scheduler) IsDone() bool {
 	return false
 }
 
-func (e *scheduler) Run(ctx context.Context) error {
+func (s *scheduler) Run(ctx context.Context) error {
 	// Prepare a working space for this deployment.
 	// Load deployment configuration data.
 	// Restore previous executed state.
@@ -74,10 +81,24 @@ func (e *scheduler) Run(ctx context.Context) error {
 // Includes:
 // - Clone a readonly repository at the required revision
 // - Restore previous executed state from deployment data.
-func (e *scheduler) prepare(ctx context.Context) error {
+func (s *scheduler) prepare(ctx context.Context) error {
 	return nil
 }
 
-func (e *scheduler) run(ctx context.Context) error {
+func (s *scheduler) run(ctx context.Context) error {
+	// Loop until one of the following conditions occurs:
+	// - context has done
+	// - no stage to execute
+	// - executing stage has completed with an error
+	// Determine the next stage that should be executed.
+	stageName := ""
+	ex, err := s.executorRegistry.Executor(stageName)
+	if err != nil {
+		return nil
+	}
+	err = ex.Execute(ctx)
+	if err != nil {
+		return err
+	}
 	return nil
 }
