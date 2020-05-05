@@ -17,44 +17,8 @@ package config
 import (
 	"encoding/json"
 	"fmt"
-)
 
-// Stage represents the middle and temporary state of application
-// before reaching its final desired state.
-type Stage string
-
-const (
-	// StageWait represents the waiting state for a specified period of time.
-	StageWait Stage = "WAIT"
-	// StageWaitApproval represents the waiting state until getting an approval
-	// from one of the specified approvers.
-	StageWaitApproval Stage = "WAIT_APPROVAL"
-	// StageAnalysis represents the waiting state for analysing
-	// the application status based on metrics, log, http request...
-	StageAnalysis Stage = "ANALYSIS"
-	// StageK8sPrimaryOut represents the state where the PRIMARY
-	// has been updated to the new version/configuration.
-	StageK8sPrimaryOut Stage = "K8S_PRIMARY_OUT"
-	// StageK8sStageOut represents the state where the STAGE workloads
-	// has been rolled out with the new version/configuration.
-	StageK8sStageOut Stage = "K8S_STAGE_OUT"
-	// StageK8sStageIn represents the state where the STAGE workloads
-	// has been cleaned.
-	StageK8sStageIn Stage = "K8S_STAGE_IN"
-	// StageK8sBaselineOut represents the state where the BASELINE workloads
-	// has been rolled out with the new version/configuration.
-	StageK8sBaselineOut Stage = "K8S_BASELINE_OUT"
-	// StageK8sBaselineIn represents the state where the BASELINE workloads
-	// has been cleaned.
-	StageK8sBaselineIn Stage = "K8S_BASELINE_IN"
-	// StageK8sTrafficRoute represents the state where the traffic to application
-	// should be routed as the specified percentage to PRIMARY, STAGE, BASELINE.
-	StageK8sTrafficRoute Stage = "K8S_TRAFFIC_ROUTE"
-	// StageTerraformPlan shows terraform plan result.
-	StageTerraformPlan Stage = "TERRAFORM_PLAN"
-	// StageTerraformApply represents the state where
-	// the new configuration has been applied.
-	StageTerraformApply Stage = "TERRAFORM_APPLY"
+	"github.com/kapetaniosci/pipe/pkg/model"
 )
 
 // KubernetesAppSpec represents configuration for a Kubernetes application.
@@ -109,7 +73,7 @@ type BaselineTrackOptions struct {
 // PiplineStage represents a single stage of a pipeline.
 // This is used as a generic struct for all stage type.
 type PipelineStage struct {
-	Name    Stage
+	Name    model.Stage
 	Desc    string
 	Timeout Duration
 
@@ -127,7 +91,7 @@ type PipelineStage struct {
 }
 
 type genericPipelineStage struct {
-	Name    Stage           `json:"name"`
+	Name    model.Stage     `json:"name"`
 	Desc    string          `json:"desc,omitempty"`
 	Timeout Duration        `json:"timeout"`
 	With    json.RawMessage `json:"with"`
@@ -144,57 +108,57 @@ func (s *PipelineStage) UnmarshalJSON(data []byte) error {
 	s.Timeout = gs.Timeout
 
 	switch s.Name {
-	case StageWait:
+	case model.StageWait:
 		s.WaitStageOptions = &WaitStageOptions{}
 		if len(gs.With) > 0 {
 			err = json.Unmarshal(gs.With, s.WaitStageOptions)
 		}
-	case StageWaitApproval:
+	case model.StageWaitApproval:
 		s.WaitApprovalStageOptions = &WaitApprovalStageOptions{}
 		if len(gs.With) > 0 {
 			err = json.Unmarshal(gs.With, s.WaitApprovalStageOptions)
 		}
-	case StageAnalysis:
+	case model.StageAnalysis:
 		s.AnalysisStageOptions = &AnalysisStageOptions{}
 		if len(gs.With) > 0 {
 			err = json.Unmarshal(gs.With, s.AnalysisStageOptions)
 		}
-	case StageK8sPrimaryOut:
+	case model.StageK8sPrimaryOut:
 		s.K8sPrimaryOutStageOptions = &K8sPrimaryOutStageOptions{}
 		if len(gs.With) > 0 {
 			err = json.Unmarshal(gs.With, s.K8sPrimaryOutStageOptions)
 		}
-	case StageK8sStageOut:
+	case model.StageK8sStageOut:
 		s.K8sStageOutStageOptions = &K8sStageOutStageOptions{}
 		if len(gs.With) > 0 {
 			err = json.Unmarshal(gs.With, s.K8sStageOutStageOptions)
 		}
-	case StageK8sStageIn:
+	case model.StageK8sStageIn:
 		s.K8sStageInStageOptions = &K8sStageInStageOptions{}
 		if len(gs.With) > 0 {
 			err = json.Unmarshal(gs.With, s.K8sStageInStageOptions)
 		}
-	case StageK8sBaselineOut:
+	case model.StageK8sBaselineOut:
 		s.K8sBaselineOutStageOptions = &K8sBaselineOutStageOptions{}
 		if len(gs.With) > 0 {
 			err = json.Unmarshal(gs.With, s.K8sBaselineOutStageOptions)
 		}
-	case StageK8sBaselineIn:
+	case model.StageK8sBaselineIn:
 		s.K8sBaselineInStageOptions = &K8sBaselineInStageOptions{}
 		if len(gs.With) > 0 {
 			err = json.Unmarshal(gs.With, s.K8sBaselineInStageOptions)
 		}
-	case StageK8sTrafficRoute:
+	case model.StageK8sTrafficRoute:
 		s.K8sTrafficRouteStageOptions = &K8sTrafficRouteStageOptions{}
 		if len(gs.With) > 0 {
 			err = json.Unmarshal(gs.With, s.K8sTrafficRouteStageOptions)
 		}
-	case StageTerraformPlan:
+	case model.StageTerraformPlan:
 		s.TerraformPlanStageOptions = &TerraformPlanStageOptions{}
 		if len(gs.With) > 0 {
 			err = json.Unmarshal(gs.With, s.TerraformPlanStageOptions)
 		}
-	case StageTerraformApply:
+	case model.StageTerraformApply:
 		s.TerraformApplyStageOptions = &TerraformApplyStageOptions{}
 		if len(gs.With) > 0 {
 			err = json.Unmarshal(gs.With, s.TerraformApplyStageOptions)

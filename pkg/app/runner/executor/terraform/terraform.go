@@ -18,6 +18,7 @@ import (
 	"context"
 
 	"github.com/kapetaniosci/pipe/pkg/app/runner/executor"
+	"github.com/kapetaniosci/pipe/pkg/model"
 )
 
 type Executor struct {
@@ -27,8 +28,9 @@ func init() {
 	factory := func() executor.Executor {
 		return &Executor{}
 	}
-	executor.DefaultRegistry().Register("TERRAFORM_PLAN", factory)
-	executor.DefaultRegistry().Register("TERRAFORM_APPLY", factory)
+	r := executor.DefaultRegistry()
+	r.Register(model.StageTerraformPlan, factory)
+	r.Register(model.StageTerraformApply, factory)
 }
 
 func (e *Executor) Execute(ctx context.Context) error {

@@ -17,35 +17,37 @@ package executor
 import (
 	"fmt"
 	"sync"
+
+	"github.com/kapetaniosci/pipe/pkg/model"
 )
 
 type Registry interface {
-	Register(stageName string, f ExecutorFactory) error
-	Executor(stageName string) (Executor, error)
+	Register(stage model.Stage, f ExecutorFactory) error
+	Executor(stage model.Stage) (Executor, error)
 }
 
 type registry struct {
-	factories map[string]ExecutorFactory
+	factories map[model.Stage]ExecutorFactory
 	mu        sync.RWMutex
 }
 
-func (r *registry) Register(stageName string, f ExecutorFactory) error {
+func (r *registry) Register(stage model.Stage, f ExecutorFactory) error {
 	r.mu.Lock()
 	defer r.mu.Unlock()
 
-	if _, ok := r.factories[stageName]; ok {
-		return fmt.Errorf("executor for %s stage has already registered", stageName)
+	if _, ok := r.factories[stage]; ok {
+		return fmt.Errorf("executor for %s stage has already registered", stage)
 	}
-	r.factories[stageName] = f
+	r.factories[stage] = f
 	return nil
 }
 
-func (r *registry) Executor(stageName string) (Executor, error) {
+func (r *registry) Executor(stage model.Stage) (Executor, error) {
 	r.mu.RLock()
 	defer r.mu.RUnlock()
-	f, ok := r.factories[stageName]
+	f, ok := r.factories[stage]
 	if !ok {
-		return nil, fmt.Errorf("no registered executor for %s", stageName)
+		return nil, fmt.Errorf("no registered executor for %s", stage)
 	}
 	return f(), nil
 }

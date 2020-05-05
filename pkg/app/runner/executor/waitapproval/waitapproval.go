@@ -18,6 +18,7 @@ import (
 	"context"
 
 	"github.com/kapetaniosci/pipe/pkg/app/runner/executor"
+	"github.com/kapetaniosci/pipe/pkg/model"
 )
 
 type Executor struct {
@@ -27,7 +28,7 @@ func init() {
 	factory := func() executor.Executor {
 		return &Executor{}
 	}
-	executor.DefaultRegistry().Register("WAIT_APPROVAL", factory)
+	executor.DefaultRegistry().Register(model.StageWaitApproval, factory)
 }
 
 func (e *Executor) Execute(ctx context.Context) error {

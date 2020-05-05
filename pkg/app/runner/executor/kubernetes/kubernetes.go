@@ -18,6 +18,7 @@ import (
 	"context"
 
 	"github.com/kapetaniosci/pipe/pkg/app/runner/executor"
+	"github.com/kapetaniosci/pipe/pkg/model"
 )
 
 type Executor struct {
@@ -27,7 +28,14 @@ func init() {
 	factory := func() executor.Executor {
 		return &Executor{}
 	}
-	executor.DefaultRegistry().Register("K8S_STAGE_OUT", factory)
+	r := executor.DefaultRegistry()
+	r.Register(model.StageK8sPrimaryOut, factory)
+	r.Register(model.StageK8sStageOut, factory)
+	r.Register(model.StageK8sStageIn, factory)
+	r.Register(model.StageK8sBaselineOut, factory)
+	r.Register(model.StageK8sBaselineIn, factory)
+	r.Register(model.StageK8sPrimaryOut, factory)
+	r.Register(model.StageK8sTrafficRoute, factory)
 }
 
 func (e *Executor) Execute(ctx context.Context) error {

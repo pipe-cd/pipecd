@@ -13,7 +13,10 @@ go_library(
     ],
     importpath = "github.com/kapetaniosci/pipe/pkg/config",
     visibility = ["//visibility:public"],
-    deps = ["@io_k8s_sigs_yaml//:go_default_library"],
+    deps = [
+        "//pkg/model:go_default_library",
+        "@io_k8s_sigs_yaml//:go_default_library",
+    ],
 )
 
 go_test(
@@ -29,6 +32,7 @@ go_test(
     data = glob(["testdata/**"]),
     embed = [":go_default_library"],
     deps = [
+        "//pkg/model:go_default_library",
         "@com_github_stretchr_testify//assert:go_default_library",
         "@com_github_stretchr_testify//require:go_default_library",
     ],

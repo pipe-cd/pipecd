@@ -18,6 +18,7 @@ import (
 	"fmt"
 	"testing"
 
+	"github.com/kapetaniosci/pipe/pkg/model"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 )
@@ -60,17 +61,17 @@ func TestAppConfig(t *testing.T) {
 				Pipeline: &AppPipeline{
 					Stages: []PipelineStage{
 						PipelineStage{
-							Name:                      StageTerraformPlan,
+							Name:                      model.StageTerraformPlan,
 							TerraformPlanStageOptions: &TerraformPlanStageOptions{},
 						},
 						PipelineStage{
-							Name: StageWaitApproval,
+							Name: model.StageWaitApproval,
 							WaitApprovalStageOptions: &WaitApprovalStageOptions{
 								Approvers: []string{"foo", "bar"},
 							},
 						},
 						PipelineStage{
-							Name:                       StageTerraformApply,
+							Name:                       model.StageTerraformApply,
 							TerraformApplyStageOptions: &TerraformApplyStageOptions{},
 						},
 					},
