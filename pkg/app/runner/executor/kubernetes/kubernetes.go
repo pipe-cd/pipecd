@@ -22,24 +22,30 @@ import (
 )
 
 type Executor struct {
+	executor.Input
 }
 
 func init() {
-	factory := func() executor.Executor {
-		return &Executor{}
-	}
-	r := executor.DefaultRegistry()
-	r.Register(model.StageK8sPrimaryOut, factory)
-	r.Register(model.StageK8sStageOut, factory)
-	r.Register(model.StageK8sStageIn, factory)
-	r.Register(model.StageK8sBaselineOut, factory)
-	r.Register(model.StageK8sBaselineIn, factory)
-	r.Register(model.StageK8sPrimaryOut, factory)
-	r.Register(model.StageK8sTrafficRoute, factory)
+	var (
+		f = func(in executor.Input) executor.Executor {
+			return &Executor{
+				Input: in,
+			}
+		}
+		r = executor.DefaultRegistry()
+	)
+
+	r.Register(model.StageK8sPrimaryOut, f)
+	r.Register(model.StageK8sStageOut, f)
+	r.Register(model.StageK8sStageIn, f)
+	r.Register(model.StageK8sBaselineOut, f)
+	r.Register(model.StageK8sBaselineIn, f)
+	r.Register(model.StageK8sPrimaryOut, f)
+	r.Register(model.StageK8sTrafficRoute, f)
 }
 
-func (e *Executor) Execute(ctx context.Context) error {
-	return nil
+func (e *Executor) Execute(ctx context.Context) (model.StageStatus, error) {
+	return model.StageStatus_STAGE_SUCCESS, nil
 }
 
 func (e *Executor) ensureStageRollOut() error {

@@ -18,17 +18,24 @@ import (
 	"context"
 
 	"github.com/kapetaniosci/pipe/pkg/app/runner/executor"
+	"github.com/kapetaniosci/pipe/pkg/model"
 )
 
 type Executor struct {
+	executor.Input
 }
 
 func init() {
-	_ = func() executor.Executor {
-		return &Executor{}
-	}
+	var (
+		_ = func(in executor.Input) executor.Executor {
+			return &Executor{
+				Input: in,
+			}
+		}
+		_ = executor.DefaultRegistry()
+	)
 }
 
-func (e *Executor) Execute(ctx context.Context) error {
-	return nil
+func (e *Executor) Execute(ctx context.Context) (model.StageStatus, error) {
+	return model.StageStatus_STAGE_SUCCESS, nil
 }

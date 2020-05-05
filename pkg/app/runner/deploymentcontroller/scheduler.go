@@ -29,7 +29,7 @@ type repoStore interface {
 }
 
 type executorRegistry interface {
-	Executor(stage model.Stage) (executor.Executor, error)
+	Executor(stage model.Stage, in executor.Input) (executor.Executor, error)
 }
 
 // scheduler is a dedicated object for a specific deployment of a single application.
@@ -91,12 +91,15 @@ func (s *scheduler) run(ctx context.Context) error {
 	// - no stage to execute
 	// - executing stage has completed with an error
 	// Determine the next stage that should be executed.
-	stageName := model.Stage("")
-	ex, err := s.executorRegistry.Executor(stageName)
+	var (
+		stageName = model.Stage("")
+		input     = executor.Input{}
+	)
+	ex, err := s.executorRegistry.Executor(stageName, input)
 	if err != nil {
 		return nil
 	}
-	err = ex.Execute(ctx)
+	_, err = ex.Execute(ctx)
 	if err != nil {
 		return err
 	}

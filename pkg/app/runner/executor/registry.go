@@ -22,16 +22,16 @@ import (
 )
 
 type Registry interface {
-	Register(stage model.Stage, f ExecutorFactory) error
-	Executor(stage model.Stage) (Executor, error)
+	Register(stage model.Stage, f Factory) error
+	Executor(stage model.Stage, in Input) (Executor, error)
 }
 
 type registry struct {
-	factories map[model.Stage]ExecutorFactory
+	factories map[model.Stage]Factory
 	mu        sync.RWMutex
 }
 
-func (r *registry) Register(stage model.Stage, f ExecutorFactory) error {
+func (r *registry) Register(stage model.Stage, f Factory) error {
 	r.mu.Lock()
 	defer r.mu.Unlock()
 
@@ -42,14 +42,14 @@ func (r *registry) Register(stage model.Stage, f ExecutorFactory) error {
 	return nil
 }
 
-func (r *registry) Executor(stage model.Stage) (Executor, error) {
+func (r *registry) Executor(stage model.Stage, in Input) (Executor, error) {
 	r.mu.RLock()
 	defer r.mu.RUnlock()
 	f, ok := r.factories[stage]
 	if !ok {
-		return nil, fmt.Errorf("no registered executor for %s", stage)
+		return nil, fmt.Errorf("no registered executor for stage %s", stage)
 	}
-	return f(), nil
+	return f(in), nil
 }
 
 var defaultRegistry = &registry{}

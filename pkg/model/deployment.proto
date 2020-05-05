@@ -26,16 +26,14 @@ enum DeploymentStatus {
     DEPLOYMENT_SUCCESS = 2;
     DEPLOYMENT_FAILURE = 3;
     DEPLOYMENT_CANCELLED = 4;
-    DEPLOYMENT_ERROR = 5;
 }
 
 enum StageStatus {
-    STEP_NOT_STARTED_YET = 0;
-    STEP_RUNNING = 1;
-    STEP_SUCCESS = 2;
-    STEP_FAILURE = 3;
-    STEP_CANCELLED = 4;
-    STEP_ERROR = 5;
+    STAGE_NOT_STARTED_YET = 0;
+    STAGE_RUNNING = 1;
+    STAGE_SUCCESS = 2;
+    STAGE_FAILURE = 3;
+    STAGE_CANCELLED = 4;
 }
 
 // Deployment represents a particular deployment for an application.

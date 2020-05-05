@@ -16,21 +16,43 @@ package wait
 
 import (
 	"context"
+	"fmt"
+	"time"
 
 	"github.com/kapetaniosci/pipe/pkg/app/runner/executor"
 	"github.com/kapetaniosci/pipe/pkg/model"
 )
 
+var defaultDuration = time.Minute
+
 type Executor struct {
+	executor.Input
 }
 
 func init() {
-	factory := func() executor.Executor {
-		return &Executor{}
-	}
-	executor.DefaultRegistry().Register(model.StageWait, factory)
+	var (
+		f = func(in executor.Input) executor.Executor {
+			return &Executor{
+				Input: in,
+			}
+		}
+		r = executor.DefaultRegistry()
+	)
+	r.Register(model.StageWait, f)
 }
 
-func (e *Executor) Execute(ctx context.Context) error {
-	return nil
+func (e *Executor) Execute(ctx context.Context) (model.StageStatus, error) {
+	duration := defaultDuration
+	timer := time.NewTimer(duration)
+	defer timer.Stop()
+
+	e.LogPersister.Append(fmt.Sprintf("Waiting for %v...", duration))
+	select {
+	case <-timer.C:
+	case <-ctx.Done():
+		return model.StageStatus_STAGE_CANCELLED, fmt.Errorf("context cancelled")
+	}
+	e.LogPersister.Append(fmt.Sprintf("Waited for %v", duration))
+
+	return model.StageStatus_STAGE_SUCCESS, nil
 }

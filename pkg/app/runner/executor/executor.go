@@ -16,18 +16,33 @@ package executor
 
 import (
 	"context"
+
+	"go.uber.org/zap"
+
+	"github.com/kapetaniosci/pipe/pkg/config"
+	"github.com/kapetaniosci/pipe/pkg/model"
 )
 
 type Executor interface {
-	Execute(ctx context.Context) error
+	Execute(ctx context.Context) (model.StageStatus, error)
 }
 
-type ExecutorFactory func() Executor
+type Factory func(in Input) Executor
 
-type cloudProvider interface {
+type Input struct {
+	Stage             *config.PipelineStage
+	AppConfig         *config.Config
+	WorkingDir        string
+	Deployment        *model.Deployment
+	LogPersister      LogPersister
+	MetadataPersister MetadataPersister
+	Logger            *zap.Logger
 }
 
-type persister interface {
-	SaveLog(log []byte) error
-	SaveResult(metadata []byte) error
+type LogPersister interface {
+	Append(log string)
+}
+
+type MetadataPersister interface {
+	Save(metadata []byte) error
 }
