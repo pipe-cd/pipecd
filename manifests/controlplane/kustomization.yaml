@@ -1,6 +1,6 @@
 commonLabels:
-  app.kubernetes.io/name: pipe-control-plane
-  app.kubernetes.io/component: pipe-control-plane
+  app.kubernetes.io/name: pipecd-control-plane
+  app.kubernetes.io/component: control-plane
   app.kubernetes.io/org: pipecd
 
 resources:
@@ -10,9 +10,9 @@ resources:
 - cache-service.yaml
 
 configMapGenerator:
-- name: api-envoy-config
+- name: pipecd-api-envoy-config
   files:
     - api-envoy-config.yaml
-- name: cache-envoy-config
+- name: pipecd-cache-envoy-config
   files:
     - cache-envoy-config.yaml

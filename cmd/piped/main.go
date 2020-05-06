@@ -24,7 +24,7 @@ import (
 func main() {
 	app := cli.NewApp(
 		"piped",
-		"An operator running inside k8s cluster for executing/managing deployments.",
+		"A component that runs inside target environment to execute deployment and report its state.",
 	)
 	app.AddCommands(
 		piped.NewCommand(),

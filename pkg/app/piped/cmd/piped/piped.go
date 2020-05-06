@@ -61,32 +61,32 @@ type piped struct {
 }
 
 func NewCommand() *cobra.Command {
-	r := &piped{
+	p := &piped{
 		apiAddress:  "pipecd-api:9091",
 		adminPort:   9085,
 		gracePeriod: 30 * time.Second,
 	}
 	cmd := &cobra.Command{
 		Use:   "piped",
-		Short: "Start running Piped.",
-		RunE:  cli.WithContext(r.run),
+		Short: "Start running piped.",
+		RunE:  cli.WithContext(p.run),
 	}
 
-	cmd.Flags().StringVar(&r.projectID, "project-id", r.projectID, "The identifier of the project which this piped belongs to.")
-	cmd.Flags().StringVar(&r.pipedID, "piped-id", r.pipedID, "The unique identifier generated for this piped.")
-	cmd.Flags().StringVar(&r.pipedKeyFile, "piped-key-file", r.pipedKeyFile, "The path to the key generated for this piped.")
-	cmd.Flags().StringVar(&r.configFile, "config-file", r.configFile, "The path to the configuration file.")
-	cmd.Flags().BoolVar(&r.tls, "tls", r.tls, "Whether running the gRPC server with TLS or not.")
-	cmd.Flags().StringVar(&r.certFile, "cert-file", r.certFile, "The path to the TLS certificate file.")
-	cmd.Flags().StringVar(&r.apiAddress, "api-address", r.apiAddress, "The address used to connect to API server.")
-	cmd.Flags().IntVar(&r.adminPort, "admin-port", r.adminPort, "The port number used to run a HTTP server for admin tasks such as metrics, healthz.")
+	cmd.Flags().StringVar(&p.projectID, "project-id", p.projectID, "The identifier of the project which this piped belongs to.")
+	cmd.Flags().StringVar(&p.pipedID, "piped-id", p.pipedID, "The unique identifier generated for this piped.")
+	cmd.Flags().StringVar(&p.pipedKeyFile, "piped-key-file", p.pipedKeyFile, "The path to the key generated for this piped.")
+	cmd.Flags().StringVar(&p.configFile, "config-file", p.configFile, "The path to the configuration file.")
+	cmd.Flags().BoolVar(&p.tls, "tls", p.tls, "Whether running the gRPC server with TLS or not.")
+	cmd.Flags().StringVar(&p.certFile, "cert-file", p.certFile, "The path to the TLS certificate file.")
+	cmd.Flags().StringVar(&p.apiAddress, "api-address", p.apiAddress, "The address used to connect to API server.")
+	cmd.Flags().IntVar(&p.adminPort, "admin-port", p.adminPort, "The port number used to run a HTTP server for admin tasks such as metrics, healthz.")
 
-	cmd.Flags().StringVar(&r.kubeconfig, "kube-config", r.kubeconfig, "Path to a kubeconfig. Only required if out-of-cluster.")
-	cmd.Flags().StringVar(&r.masterURL, "master", r.masterURL, "The address of the Kubernetes API server. Overrides any value in kubeconfig. Only required if out-of-cluster.")
-	cmd.Flags().StringVar(&r.namespace, "namespace", r.namespace, "The namespace where this piped is running.")
+	cmd.Flags().StringVar(&p.kubeconfig, "kube-config", p.kubeconfig, "Path to a kubeconfig. Only required if out-of-cluster.")
+	cmd.Flags().StringVar(&p.masterURL, "master", p.masterURL, "The address of the Kubernetes API server. Overrides any value in kubeconfig. Only required if out-of-cluster.")
+	cmd.Flags().StringVar(&p.namespace, "namespace", p.namespace, "The namespace where this piped is running.")
 
-	cmd.Flags().BoolVar(&r.useFakeAPIClient, "use-fake-api-client", r.useFakeAPIClient, "Whether the fake api client should be used instead of the real one or not.")
-	cmd.Flags().DurationVar(&r.gracePeriod, "grace-period", r.gracePeriod, "How long to wait for graceful shutdown.")
+	cmd.Flags().BoolVar(&p.useFakeAPIClient, "use-fake-api-client", p.useFakeAPIClient, "Whether the fake api client should be used instead of the real one or not.")
+	cmd.Flags().DurationVar(&p.gracePeriod, "grace-period", p.gracePeriod, "How long to wait for graceful shutdown.")
 
 	cmd.MarkFlagRequired("project-id")
 	cmd.MarkFlagRequired("piped-id")
@@ -96,18 +96,18 @@ func NewCommand() *cobra.Command {
 	return cmd
 }
 
-func (r *piped) run(ctx context.Context, t cli.Telemetry) error {
+func (p *piped) run(ctx context.Context, t cli.Telemetry) error {
 	group, ctx := errgroup.WithContext(ctx)
 
 	// Load piped configuration from specified file.
-	pipedConfig, err := r.loadConfig()
+	pipedConfig, err := p.loadConfig()
 	if err != nil {
 		t.Logger.Error("failed to load piped configuration", zap.Error(err))
 		return err
 	}
 
 	// Make gRPC client and connect to the API.
-	apiClient, err := r.createAPIClient(ctx, t.Logger)
+	apiClient, err := p.createAPIClient(ctx, t.Logger)
 	if err != nil {
 		t.Logger.Error("failed to create gRPC client to control plane", zap.Error(err))
 		return err
@@ -115,7 +115,7 @@ func (r *piped) run(ctx context.Context, t cli.Telemetry) error {
 
 	// Start running admin server.
 	{
-		admin := admin.NewAdmin(r.adminPort, r.gracePeriod, t.Logger)
+		admin := admin.NewAdmin(p.adminPort, p.gracePeriod, t.Logger)
 		if exporter, ok := t.PrometheusMetricsExporter(); ok {
 			admin.Handle("/metrics", exporter)
 		}
@@ -128,7 +128,7 @@ func (r *piped) run(ctx context.Context, t cli.Telemetry) error {
 	}
 
 	// Build kubeconfig for initialing kubernetes clients later.
-	kubeConfig, err := clientcmd.BuildConfigFromFlags(r.masterURL, r.kubeconfig)
+	kubeConfig, err := clientcmd.BuildConfigFromFlags(p.masterURL, p.kubeconfig)
 	if err != nil {
 		t.Logger.Error("failed to build kube config", zap.Error(err))
 		return err
@@ -136,7 +136,7 @@ func (r *piped) run(ctx context.Context, t cli.Telemetry) error {
 
 	// Start running application state store.
 	{
-		s := appstatestore.NewStore(kubeConfig, r.gracePeriod, t.Logger)
+		s := appstatestore.NewStore(kubeConfig, p.gracePeriod, t.Logger)
 		group.Go(func() error {
 			return s.Run(ctx)
 		})
@@ -148,7 +148,7 @@ func (r *piped) run(ctx context.Context, t cli.Telemetry) error {
 
 	// Start running application state reporter.
 	{
-		r := appstatereporter.NewReporter(r.gracePeriod)
+		r := appstatereporter.NewReporter(p.gracePeriod)
 		group.Go(func() error {
 			return r.Run(ctx)
 		})
@@ -156,7 +156,7 @@ func (r *piped) run(ctx context.Context, t cli.Telemetry) error {
 
 	// Start running deployment controller.
 	{
-		c := deploymentcontroller.NewController(apiClient, pipedConfig, r.gracePeriod, t.Logger)
+		c := deploymentcontroller.NewController(apiClient, pipedConfig, p.gracePeriod, t.Logger)
 		group.Go(func() error {
 			return c.Run(ctx)
 		})
@@ -164,7 +164,7 @@ func (r *piped) run(ctx context.Context, t cli.Telemetry) error {
 
 	// Start running deployment trigger.
 	{
-		t := deploymenttrigger.NewTrigger(apiClient, pipedConfig, r.gracePeriod, t.Logger)
+		t := deploymenttrigger.NewTrigger(apiClient, pipedConfig, p.gracePeriod, t.Logger)
 		group.Go(func() error {
 			return t.Run(ctx)
 		})
@@ -182,22 +182,22 @@ func (r *piped) run(ctx context.Context, t cli.Telemetry) error {
 }
 
 // createAPIClient makes a gRPC client to connect to the API.
-func (r *piped) createAPIClient(ctx context.Context, logger *zap.Logger) (pipedservice.Client, error) {
-	if r.useFakeAPIClient {
+func (p *piped) createAPIClient(ctx context.Context, logger *zap.Logger) (pipedservice.Client, error) {
+	if p.useFakeAPIClient {
 		return pipedclientfake.NewClient(logger), nil
 	}
 	ctx, cancel := context.WithTimeout(ctx, 15*time.Second)
 	defer cancel()
 
-	pipedKey, err := ioutil.ReadFile(r.pipedKeyFile)
+	pipedKey, err := ioutil.ReadFile(p.pipedKeyFile)
 	if err != nil {
 		logger.Error("failed to read piped key file", zap.Error(err))
 		return nil, err
 	}
 
 	var (
-		token   = rpcauth.MakePipedToken(r.projectID, r.pipedID, string(pipedKey))
-		tls     = r.certFile != ""
+		token   = rpcauth.MakePipedToken(p.projectID, p.pipedID, string(pipedKey))
+		tls     = p.certFile != ""
 		creds   = rpcclient.NewPerRPCCredentials(token, rpcauth.PipedTokenCredentials, tls)
 		options = []rpcclient.DialOption{
 			rpcclient.WithBlock(),
@@ -206,12 +206,12 @@ func (r *piped) createAPIClient(ctx context.Context, logger *zap.Logger) (pipeds
 		}
 	)
 	if tls {
-		options = append(options, rpcclient.WithTLS(r.certFile))
+		options = append(options, rpcclient.WithTLS(p.certFile))
 	} else {
 		options = append(options, rpcclient.WithInsecure())
 	}
 
-	client, err := pipedservice.NewClient(ctx, r.apiAddress, options...)
+	client, err := pipedservice.NewClient(ctx, p.apiAddress, options...)
 	if err != nil {
 		logger.Error("failed to create api client", zap.Error(err))
 		return nil, err
@@ -220,8 +220,8 @@ func (r *piped) createAPIClient(ctx context.Context, logger *zap.Logger) (pipeds
 }
 
 // loadConfig reads the Piped configuration data from the specified file.
-func (r *piped) loadConfig() (*config.PipedSpec, error) {
-	cfg, err := config.LoadFromYAML(r.configFile)
+func (p *piped) loadConfig() (*config.PipedSpec, error) {
+	cfg, err := config.LoadFromYAML(p.configFile)
 	if err != nil {
 		return nil, err
 	}

@@ -1,7 +1,7 @@
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  name: rediscache
+  name: pipecd-rediscache
 spec:
   replicas: 1
   template:
