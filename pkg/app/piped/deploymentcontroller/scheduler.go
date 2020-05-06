@@ -35,26 +35,31 @@ type executorRegistry interface {
 
 // scheduler is a dedicated object for a specific deployment of a single application.
 type scheduler struct {
-	deployment *model.Deployment
-	// Deployment configuration for this application.
-	appConfig         *config.Config
+	deployment        *model.Deployment
+	pipedConfig       *config.PipedSpec
 	workingDir        string
 	executorRegistry  executorRegistry
 	logPersister      logpersister.Persister
 	metadataPersister metadataPersister
 	logger            *zap.Logger
+
+	// Deployment configuration for this application.
+	appConfig *config.Config
 }
 
-func newScheduler(d *model.Deployment, lp logpersister.Persister, mdp metadataPersister, logger *zap.Logger) *scheduler {
+func newScheduler(d *model.Deployment, cfg *config.PipedSpec, workingDir string, lp logpersister.Persister, mdp metadataPersister, logger *zap.Logger) *scheduler {
 	logger = logger.Named("scheduler").With(
 		zap.String("deployment-id", d.Id),
 		zap.String("application-id", d.ApplicationId),
 		zap.String("env-id", d.EnvId),
 		zap.String("project-id", d.ProjectId),
 		zap.String("application-kind", d.Kind.String()),
+		zap.String("working-dir", workingDir),
 	)
 	return &scheduler{
 		deployment:        d,
+		pipedConfig:       cfg,
+		workingDir:        workingDir,
 		executorRegistry:  executor.DefaultRegistry(),
 		logPersister:      lp,
 		metadataPersister: mdp,
@@ -79,6 +84,8 @@ func (s *scheduler) Run(ctx context.Context) error {
 	// Load deployment configuration data.
 	// Restore previous executed state.
 	// Start executing the next stages.
+	s.logger.Info("start running scheduler")
+
 	return nil
 }
 

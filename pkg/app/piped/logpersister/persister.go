@@ -72,12 +72,13 @@ func (p *persister) Run(ctx context.Context) error {
 	ticker := time.NewTicker(p.flushInterval)
 	defer ticker.Stop()
 
+L:
 	for {
 		select {
 		case <-ticker.C:
 			p.flush(ctx)
 		case <-ctx.Done():
-			break
+			break L
 		}
 	}
 

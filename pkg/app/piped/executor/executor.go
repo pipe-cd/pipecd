@@ -32,6 +32,7 @@ type Factory func(in Input) Executor
 type Input struct {
 	Stage             *config.PipelineStage
 	AppConfig         *config.Config
+	PipedConfig       *config.PipedSpec
 	WorkingDir        string
 	Deployment        *model.Deployment
 	LogPersister      LogPersister
