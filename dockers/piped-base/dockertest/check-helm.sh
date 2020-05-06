@@ -15,10 +15,10 @@
 # limitations under the License.
 
 declare -A pathcases
-pathcases["helm-2.16.3"]="/usr/local/runner/helm-2.16.3"
-pathcases["helm-2.16"]="/usr/local/runner/helm-2.16"
-pathcases["helm-3.1.1"]="/usr/local/runner/helm-3.1.1"
-pathcases["helm-3.1"]="/usr/local/runner/helm-3.1"
+pathcases["helm-2.16.3"]="/usr/local/piped/helm-2.16.3"
+pathcases["helm-2.16"]="/usr/local/piped/helm-2.16"
+pathcases["helm-3.1.1"]="/usr/local/piped/helm-3.1.1"
+pathcases["helm-3.1"]="/usr/local/piped/helm-3.1"
 
 for h in "${!pathcases[@]}"
 do

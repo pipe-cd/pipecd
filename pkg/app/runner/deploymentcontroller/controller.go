@@ -32,11 +32,6 @@ import (
 	"github.com/kapetaniosci/pipe/pkg/config"
 )
 
-const (
-	subsetLabel    = "pipecd.dev/subset"
-	managedByLabel = "pipecd.dev/managed-by"
-)
-
 type apiClient interface {
 	ListNotCompletedDeployments(ctx context.Context, in *runnerservice.ListNotCompletedDeploymentsRequest, opts ...grpc.CallOption) (*runnerservice.ListNotCompletedDeploymentsResponse, error)
 	SaveStageMetadata(ctx context.Context, in *runnerservice.SaveStageMetadataRequest, opts ...grpc.CallOption) (*runnerservice.SaveStageMetadataResponse, error)
@@ -79,10 +74,11 @@ func (c *DeploymentController) Run(ctx context.Context) error {
 
 	go c.logPersister.Run(ctx)
 
+L:
 	for {
 		select {
 		case <-ctx.Done():
-			break
+			break L
 		case <-ticker.C:
 			c.syncScheduler(ctx)
 		}

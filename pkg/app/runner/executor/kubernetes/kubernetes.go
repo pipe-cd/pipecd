@@ -21,6 +21,11 @@ import (
 	"github.com/kapetaniosci/pipe/pkg/model"
 )
 
+const (
+	subsetLabel    = "pipecd.dev/subset"
+	managedByLabel = "pipecd.dev/managed-by"
+)
+
 type Executor struct {
 	executor.Input
 }
