@@ -34,7 +34,7 @@ message CommandState {
     // The generated unique identifier.
     // This will be same value with the ID of command.
     string id = 1 [(validate.rules).string.min_len = 1];
-    string runner_id = 2 [(validate.rules).string.min_len = 1];
+    string piped_id = 2 [(validate.rules).string.min_len = 1];
     string application_id = 3;
     string deployment_id = 4;
 

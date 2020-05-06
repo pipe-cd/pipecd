@@ -27,7 +27,7 @@ import (
 
 func TestRunWithContext(t *testing.T) {
 	calls := 0
-	runner := func(ctx context.Context, t Telemetry) error {
+	piped := func(ctx context.Context, t Telemetry) error {
 		calls++
 		timeout := time.NewTimer(time.Second)
 		select {
@@ -40,7 +40,7 @@ func TestRunWithContext(t *testing.T) {
 	ch := make(chan os.Signal, 1)
 	ch <- syscall.SIGINT
 	app := NewApp("app", "test")
-	err := runWithContext(app.rootCmd, ch, runner)
+	err := runWithContext(app.rootCmd, ch, piped)
 	assert.NoError(t, err)
 	assert.Equal(t, 1, calls)
 }

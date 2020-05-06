@@ -1,0 +1,12 @@
+load("@io_bazel_rules_go//go:def.bzl", "go_library")
+
+go_library(
+    name = "go_default_library",
+    srcs = ["cloudrun.go"],
+    importpath = "github.com/kapetaniosci/pipe/pkg/app/piped/executor/cloudrun",
+    visibility = ["//visibility:public"],
+    deps = [
+        "//pkg/app/piped/executor:go_default_library",
+        "//pkg/model:go_default_library",
+    ],
+)

@@ -1,7 +1,7 @@
 def all_images():
     cmds = {
-        "api": "pipe-api",
-        "runner": "pipe-runner",
+        "api": "pipecd-api",
+        "piped": "pipecd-piped",
     }
     images = {}
 

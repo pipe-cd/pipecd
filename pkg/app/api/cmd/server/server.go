@@ -42,11 +42,11 @@ type httpHandler interface {
 }
 
 type server struct {
-	runnerAPIPort int
-	webAPIPort    int
-	webhookPort   int
-	adminPort     int
-	gracePeriod   time.Duration
+	pipedAPIPort int
+	webAPIPort   int
+	webhookPort  int
+	adminPort    int
+	gracePeriod  time.Duration
 
 	tls                 bool
 	certFile            string
@@ -56,11 +56,11 @@ type server struct {
 
 func NewCommand() *cobra.Command {
 	s := &server{
-		runnerAPIPort: 9080,
-		webAPIPort:    9081,
-		webhookPort:   9082,
-		adminPort:     9085,
-		gracePeriod:   15 * time.Second,
+		pipedAPIPort: 9080,
+		webAPIPort:   9081,
+		webhookPort:  9082,
+		adminPort:    9085,
+		gracePeriod:  15 * time.Second,
 	}
 	cmd := &cobra.Command{
 		Use:   "server",
@@ -68,7 +68,7 @@ func NewCommand() *cobra.Command {
 		RunE:  cli.WithContext(s.run),
 	}
 
-	cmd.Flags().IntVar(&s.runnerAPIPort, "runner-api-port", s.runnerAPIPort, "The port number used to run a grpc server that serving serves incoming runner requests.")
+	cmd.Flags().IntVar(&s.pipedAPIPort, "piped-api-port", s.pipedAPIPort, "The port number used to run a grpc server that serving serves incoming piped requests.")
 	cmd.Flags().IntVar(&s.webAPIPort, "web-api-port", s.webAPIPort, "The port number used to run a grpc server that serves incoming web requests.")
 	cmd.Flags().IntVar(&s.webhookPort, "webhook-port", s.webhookPort, "The port number used to run a http server that serves incoming webhook events.")
 	cmd.Flags().IntVar(&s.adminPort, "admin-port", s.adminPort, "The port number used to run a HTTP server for admin tasks such as metrics, healthz.")
@@ -97,26 +97,26 @@ func (s *server) run(ctx context.Context, t cli.Telemetry) error {
 	}
 
 	var (
-		runnerAPIServer *rpc.Server
-		webAPIServer    *rpc.Server
+		pipedAPIServer *rpc.Server
+		webAPIServer   *rpc.Server
 	)
 
-	// Start a gRPC server for handling RunnerAPI requests.
+	// Start a gRPC server for handling PipedAPI requests.
 	{
-		service := api.NewRunnerAPI(t.Logger)
+		service := api.NewPipedAPI(t.Logger)
 		opts := []rpc.Option{
-			rpc.WithPort(s.runnerAPIPort),
+			rpc.WithPort(s.pipedAPIPort),
 			rpc.WithGracePeriod(s.gracePeriod),
 			rpc.WithLogger(t.Logger),
-			// rpc.WithRunnerTokenAuthUnaryInterceptor(verifier, t.Logger),
+			// rpc.WithPipedTokenAuthUnaryInterceptor(verifier, t.Logger),
 			rpc.WithRequestValidationUnaryInterceptor(),
 		}
 		if s.tls {
 			opts = append(opts, rpc.WithTLS(s.certFile, s.keyFile))
 		}
-		runnerAPIServer = rpc.NewServer(service, opts...)
+		pipedAPIServer = rpc.NewServer(service, opts...)
 		group.Go(func() error {
-			return runnerAPIServer.Run(ctx)
+			return pipedAPIServer.Run(ctx)
 		})
 	}
 
@@ -124,7 +124,7 @@ func (s *server) run(ctx context.Context, t cli.Telemetry) error {
 	{
 		service := api.NewWebAPI(t.Logger)
 		opts := []rpc.Option{
-			rpc.WithPort(s.runnerAPIPort),
+			rpc.WithPort(s.pipedAPIPort),
 			rpc.WithGracePeriod(s.gracePeriod),
 			rpc.WithLogger(t.Logger),
 			rpc.WithJWTAuthUnaryInterceptor(verifier, webservice.NewRBACAuthorizer(), t.Logger),

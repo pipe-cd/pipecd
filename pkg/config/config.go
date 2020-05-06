@@ -44,9 +44,9 @@ const (
 )
 
 const (
-	// KindRunner represents configuration for runner.
-	// This configuration will be loaded while the runner is starting up.
-	KindRunner Kind = "Runner"
+	// KindPiped represents configuration for piped.
+	// This configuration will be loaded while the piped is starting up.
+	KindPiped Kind = "Piped"
 	// KindControlPlane represents configuration for control plane's services.
 	KindControlPlane Kind = "ControlPlane"
 	// KindNotification represents shared notification configuration for a repository.
@@ -70,7 +70,7 @@ type Config struct {
 	KubernetesAppSpec *KubernetesAppSpec
 	TerraformAppSpec  *TerraformAppSpec
 
-	RunnerSpec           *RunnerSpec
+	PipedSpec            *PipedSpec
 	ControlPlaneSpec     *ControlPlaneSpec
 	NotificationSpec     *NotificationSpec
 	AnalysisTemplateSpec *AnalysisTemplateSpec
@@ -93,9 +93,9 @@ func (c *Config) init(kind Kind, apiVersion string) error {
 	case KindTerraformApp:
 		c.TerraformAppSpec = &TerraformAppSpec{}
 		c.spec = c.TerraformAppSpec
-	case KindRunner:
-		c.RunnerSpec = &RunnerSpec{}
-		c.spec = c.RunnerSpec
+	case KindPiped:
+		c.PipedSpec = &PipedSpec{}
+		c.spec = c.PipedSpec
 	case KindControlPlane:
 		c.ControlPlaneSpec = &ControlPlaneSpec{}
 		c.spec = c.ControlPlaneSpec

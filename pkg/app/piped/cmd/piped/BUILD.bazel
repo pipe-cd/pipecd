@@ -1,0 +1,26 @@
+load("@io_bazel_rules_go//go:def.bzl", "go_library")
+
+go_library(
+    name = "go_default_library",
+    srcs = ["piped.go"],
+    importpath = "github.com/kapetaniosci/pipe/pkg/app/piped/cmd/piped",
+    visibility = ["//visibility:public"],
+    deps = [
+        "//pkg/admin:go_default_library",
+        "//pkg/app/api/service/pipedservice:go_default_library",
+        "//pkg/app/api/service/pipedservice/pipedclientfake:go_default_library",
+        "//pkg/app/piped/appstatereporter:go_default_library",
+        "//pkg/app/piped/appstatestore:go_default_library",
+        "//pkg/app/piped/deploymentcontroller:go_default_library",
+        "//pkg/app/piped/deploymenttrigger:go_default_library",
+        "//pkg/cli:go_default_library",
+        "//pkg/config:go_default_library",
+        "//pkg/rpc/rpcauth:go_default_library",
+        "//pkg/rpc/rpcclient:go_default_library",
+        "@com_github_spf13_cobra//:go_default_library",
+        "@io_k8s_client_go//plugin/pkg/client/auth/gcp:go_default_library",
+        "@io_k8s_client_go//tools/clientcmd:go_default_library",
+        "@org_golang_x_sync//errgroup:go_default_library",
+        "@org_uber_go_zap//:go_default_library",
+    ],
+)

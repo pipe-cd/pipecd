@@ -1,7 +1,7 @@
 FROM alpine:3.10.1
 
-ENV RUNNER_BIN_DIR=/usr/local/piped
-ENV PATH="${RUNNER_BIN_DIR}:${PATH}"
+ENV PIPED_BIN_DIR=/usr/local/piped
+ENV PATH="${PIPED_BIN_DIR}:${PATH}"
 
 ADD install-helm.sh /installer/install-helm.sh
 
@@ -13,7 +13,7 @@ RUN \
         curl \
         bash && \
     update-ca-certificates && \
-    mkdir ${RUNNER_BIN_DIR} && \
+    mkdir ${PIPED_BIN_DIR} && \
     # Pre-install helm.
     /installer/install-helm.sh && \
     # Delete installer directory.

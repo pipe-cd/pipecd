@@ -25,7 +25,7 @@ import (
 	"github.com/kapetaniosci/pipe/pkg/app/api/service/webservice"
 )
 
-// RunnerAPI implements the behaviors for the gRPC definitions of WebAPI.
+// PipedAPI implements the behaviors for the gRPC definitions of WebAPI.
 type WebAPI struct {
 	logger *zap.Logger
 }
@@ -55,15 +55,15 @@ func (a *WebAPI) ListEnvironments(ctx context.Context, req *webservice.ListEnvir
 	return nil, status.Error(codes.Unimplemented, "")
 }
 
-func (a *WebAPI) RegisterRunner(ctx context.Context, req *webservice.RegisterRunnerRequest) (*webservice.RegisterRunnerResponse, error) {
+func (a *WebAPI) RegisterPiped(ctx context.Context, req *webservice.RegisterPipedRequest) (*webservice.RegisterPipedResponse, error) {
 	return nil, status.Error(codes.Unimplemented, "")
 }
 
-func (a *WebAPI) DisableRunner(ctx context.Context, req *webservice.DisableRunnerRequest) (*webservice.DisableRunnerResponse, error) {
+func (a *WebAPI) DisablePiped(ctx context.Context, req *webservice.DisablePipedRequest) (*webservice.DisablePipedResponse, error) {
 	return nil, status.Error(codes.Unimplemented, "")
 }
 
-func (a *WebAPI) ListRunners(ctx context.Context, req *webservice.ListRunnersRequest) (*webservice.ListRunnersResponse, error) {
+func (a *WebAPI) ListPipeds(ctx context.Context, req *webservice.ListPipedsRequest) (*webservice.ListPipedsResponse, error) {
 	return nil, status.Error(codes.Unimplemented, "")
 }
 

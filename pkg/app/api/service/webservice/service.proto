@@ -25,10 +25,10 @@ service WebService {
     rpc UpdateEnvironmentDesc(UpdateEnvironmentDescRequest) returns (UpdateEnvironmentDescResponse) {}
     rpc ListEnvironments(ListEnvironmentsRequest) returns (ListEnvironmentsResponse) {}
 
-    // Runner
-    rpc RegisterRunner(RegisterRunnerRequest) returns (RegisterRunnerResponse) {}
-    rpc DisableRunner(DisableRunnerRequest) returns (DisableRunnerResponse) {}
-    rpc ListRunners(ListRunnersRequest) returns (ListRunnersResponse) {}
+    // Piped
+    rpc RegisterPiped(RegisterPipedRequest) returns (RegisterPipedResponse) {}
+    rpc DisablePiped(DisablePipedRequest) returns (DisablePipedResponse) {}
+    rpc ListPipeds(ListPipedsRequest) returns (ListPipedsResponse) {}
 
     // Application
     rpc AddApplication(AddApplicationRequest) returns (AddApplicationResponse) {}
@@ -66,22 +66,22 @@ message ListEnvironmentsRequest {
 message ListEnvironmentsResponse {
 }
 
-message RegisterRunnerRequest {
+message RegisterPipedRequest {
 }
 
-message RegisterRunnerResponse {
+message RegisterPipedResponse {
 }
 
-message DisableRunnerRequest {
+message DisablePipedRequest {
 }
 
-message DisableRunnerResponse {
+message DisablePipedResponse {
 }
 
-message ListRunnersRequest {
+message ListPipedsRequest {
 }
 
-message ListRunnersResponse {
+message ListPipedsResponse {
 }
 
 message AddEnvironmentRequest {

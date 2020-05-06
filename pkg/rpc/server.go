@@ -45,8 +45,8 @@ type Server struct {
 	gracePeriod time.Duration
 	logger      *zap.Logger
 
-	runnerKeyAuthUnaryInterceptor     grpc.UnaryServerInterceptor
-	runnerKeyAuthStreamInterceptor    grpc.StreamServerInterceptor
+	pipedKeyAuthUnaryInterceptor      grpc.UnaryServerInterceptor
+	pipedKeyAuthStreamInterceptor     grpc.StreamServerInterceptor
 	jwtAuthUnaryInterceptor           grpc.UnaryServerInterceptor
 	requestValidationUnaryInterceptor grpc.UnaryServerInterceptor
 }
@@ -61,17 +61,17 @@ func WithPort(port int) Option {
 	}
 }
 
-// WithRunnerTokenAuthUnaryInterceptor sets an interceptor for validating runner key.
-func WithRunnerTokenAuthUnaryInterceptor(verifier rpcauth.RunnerTokenVerifier, logger *zap.Logger) Option {
+// WithPipedTokenAuthUnaryInterceptor sets an interceptor for validating piped key.
+func WithPipedTokenAuthUnaryInterceptor(verifier rpcauth.PipedTokenVerifier, logger *zap.Logger) Option {
 	return func(s *Server) {
-		s.runnerKeyAuthUnaryInterceptor = rpcauth.RunnerTokenUnaryServerInterceptor(verifier, logger)
+		s.pipedKeyAuthUnaryInterceptor = rpcauth.PipedTokenUnaryServerInterceptor(verifier, logger)
 	}
 }
 
-// WithRunnerTokenAuthStreamInterceptor sets an interceptor for validating runner key.
-func WithRunnerTokenAuthStreamInterceptor(verifier rpcauth.RunnerTokenVerifier, logger *zap.Logger) Option {
+// WithPipedTokenAuthStreamInterceptor sets an interceptor for validating piped key.
+func WithPipedTokenAuthStreamInterceptor(verifier rpcauth.PipedTokenVerifier, logger *zap.Logger) Option {
 	return func(s *Server) {
-		s.runnerKeyAuthStreamInterceptor = rpcauth.RunnerTokenStreamServerInterceptor(verifier, logger)
+		s.pipedKeyAuthStreamInterceptor = rpcauth.PipedTokenStreamServerInterceptor(verifier, logger)
 	}
 }
 
@@ -170,8 +170,8 @@ func (s *Server) init() error {
 	}
 	// Builds a chain of enabled interceptors.
 	var unaryInterceptors []grpc.UnaryServerInterceptor
-	if s.runnerKeyAuthUnaryInterceptor != nil {
-		unaryInterceptors = append(unaryInterceptors, s.runnerKeyAuthUnaryInterceptor)
+	if s.pipedKeyAuthUnaryInterceptor != nil {
+		unaryInterceptors = append(unaryInterceptors, s.pipedKeyAuthUnaryInterceptor)
 	}
 	if s.jwtAuthUnaryInterceptor != nil {
 		unaryInterceptors = append(unaryInterceptors, s.jwtAuthUnaryInterceptor)
@@ -183,8 +183,8 @@ func (s *Server) init() error {
 		c := ChainUnaryServerInterceptors(unaryInterceptors...)
 		opts = append(opts, grpc.UnaryInterceptor(c))
 	}
-	if s.runnerKeyAuthStreamInterceptor != nil {
-		opts = append(opts, grpc.StreamInterceptor(s.runnerKeyAuthStreamInterceptor))
+	if s.pipedKeyAuthStreamInterceptor != nil {
+		opts = append(opts, grpc.StreamInterceptor(s.pipedKeyAuthStreamInterceptor))
 	}
 	s.grpcServer = grpc.NewServer(opts...)
 

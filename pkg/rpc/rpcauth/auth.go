@@ -32,9 +32,9 @@ const (
 	// IDTokenCredentials represents JWT IDToken for a web user.
 	// They can be used for project admin, project viewer or owner.
 	IDTokenCredentials CredentialsType = "ID-TOKEN"
-	// RunnerTokenCredentials represents a generated token for authenticating
-	// between Runner and microservices.
-	RunnerTokenCredentials CredentialsType = "RUNNER-TOKEN"
+	// PipedTokenCredentials represents a generated token for authenticating
+	// between Piped and microservices.
+	PipedTokenCredentials CredentialsType = "PIPED-TOKEN"
 	// UnknownCredentials represents an unsupported credentials.
 	// It is used as a return result in case of error.
 	UnknownCredentials CredentialsType = "UNKNOWN"
@@ -46,32 +46,32 @@ type Credentials struct {
 	Data string
 }
 
-// MakeRunnerToken builds a runner token can be used as data of Credentials.
+// MakePipedToken builds a piped token can be used as data of Credentials.
 // TODO: Add test for this function.
-func MakeRunnerToken(projectID, runnerID, runnerKey string) string {
-	return fmt.Sprintf("%s,%s,%s", projectID, runnerID, runnerKey)
+func MakePipedToken(projectID, pipedID, pipedKey string) string {
+	return fmt.Sprintf("%s,%s,%s", projectID, pipedID, pipedKey)
 }
 
 // TODO: Add test for this function.
-func parseRunnerToken(token string) (projectID, runnerID, runnerKey string, err error) {
+func parsePipedToken(token string) (projectID, pipedID, pipedKey string, err error) {
 	parts := strings.Split(token, ",")
 	if len(parts) != 3 {
-		err = fmt.Errorf("malformed runner token")
+		err = fmt.Errorf("malformed piped token")
 		return
 	}
 	projectID = parts[0]
 	if projectID == "" {
-		err = fmt.Errorf("malformed runner token: projectID was empty")
+		err = fmt.Errorf("malformed piped token: projectID was empty")
 		return
 	}
-	runnerID = parts[1]
-	if runnerID == "" {
-		err = fmt.Errorf("malformed runner token: runnerID was empty")
+	pipedID = parts[1]
+	if pipedID == "" {
+		err = fmt.Errorf("malformed piped token: pipedID was empty")
 		return
 	}
-	runnerKey = parts[2]
-	if runnerKey == "" {
-		err = fmt.Errorf("malformed runner token: runnerKey was empty")
+	pipedKey = parts[2]
+	if pipedKey == "" {
+		err = fmt.Errorf("malformed piped token: pipedKey was empty")
 		return
 	}
 	return
@@ -98,9 +98,9 @@ func extractCredentials(ctx context.Context) (creds Credentials, err error) {
 	case IDTokenCredentials:
 		creds.Data = subs[1]
 		creds.Type = IDTokenCredentials
-	case RunnerTokenCredentials:
+	case PipedTokenCredentials:
 		creds.Data = subs[1]
-		creds.Type = RunnerTokenCredentials
+		creds.Type = PipedTokenCredentials
 	default:
 		err = status.Error(codes.Unauthenticated, "unsupported credentials type")
 	}

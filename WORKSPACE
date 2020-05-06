@@ -115,10 +115,10 @@ load(
 )
 
 container_pull(
-    name = "runner-base",
-    digest = "sha256:ef428e0084bf3968b4b90115c9f0f789493e981ad74463b515d7cb99f252607a",
+    name = "piped-base",
+    digest = "sha256:62d9b1a12c8e83a62fc140c9a4ebbde78d03f0164e6979b734962dcc6cb9dc31",
     registry = "gcr.io",
-    repository = "kapetanios/pipe-runner-base",
+    repository = "kapetanios/piped-base",
     tag = "0.0.1",
 )
 

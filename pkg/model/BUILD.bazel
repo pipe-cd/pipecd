@@ -10,9 +10,9 @@ proto_library(
         "deployment.proto",
         "environment.proto",
         "logblock.proto",
+        "piped.proto",
+        "piped_stats.proto",
         "project.proto",
-        "runner.proto",
-        "runner_stats.proto",
     ],
     visibility = ["//visibility:public"],
     #keep

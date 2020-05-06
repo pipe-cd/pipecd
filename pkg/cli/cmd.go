@@ -49,18 +49,18 @@ type Telemetry struct {
 	Flags           TelemetryFlags
 }
 
-type Runner func(ctx context.Context, telemetry Telemetry) error
+type Piped func(ctx context.Context, telemetry Telemetry) error
 
-func WithContext(runner Runner) func(cmd *cobra.Command, args []string) error {
+func WithContext(piped Piped) func(cmd *cobra.Command, args []string) error {
 	return func(cmd *cobra.Command, args []string) error {
 		ch := make(chan os.Signal, 1)
 		signal.Notify(ch, syscall.SIGINT, syscall.SIGTERM)
 		defer signal.Stop(ch)
-		return runWithContext(cmd, ch, runner)
+		return runWithContext(cmd, ch, piped)
 	}
 }
 
-func runWithContext(cmd *cobra.Command, signalCh <-chan os.Signal, runner Runner) error {
+func runWithContext(cmd *cobra.Command, signalCh <-chan os.Signal, piped Piped) error {
 	flags, err := parseTelemetryFlags(cmd.Flags())
 	if err != nil {
 		return err
@@ -119,7 +119,7 @@ func runWithContext(cmd *cobra.Command, signalCh <-chan os.Signal, runner Runner
 		}
 	}()
 	logger.Info(fmt.Sprintf("start running %s %s", service, version))
-	return runner(ctx, telemetry)
+	return piped(ctx, telemetry)
 }
 
 func newLogger(service, version, level, encoding string) (*zap.Logger, error) {

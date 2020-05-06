@@ -35,8 +35,8 @@ message Application {
     string name = 2 [(validate.rules).string.min_len = 1];
     // The name of environment this application belongs to.
     string env = 3 [(validate.rules).string.min_len = 1];
-    // The ID of the runner that should handle this application.
-    string runner_id = 4 [(validate.rules).string.min_len = 1];
+    // The ID of the piped that should handle this application.
+    string piped_id = 4 [(validate.rules).string.min_len = 1];
     // The ID of the project this enviroment belongs to.
     string project_id = 5 [(validate.rules).string.min_len = 1];
     // What kind of this application.

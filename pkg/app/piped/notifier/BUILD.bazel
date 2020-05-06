@@ -1,0 +1,8 @@
+load("@io_bazel_rules_go//go:def.bzl", "go_library")
+
+go_library(
+    name = "go_default_library",
+    srcs = ["notifier.go"],
+    importpath = "github.com/kapetaniosci/pipe/pkg/app/piped/notifier",
+    visibility = ["//visibility:public"],
+)

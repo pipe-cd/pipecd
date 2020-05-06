@@ -35,66 +35,66 @@ func (s *fakeServerStream) Context() context.Context {
 	return s.ctx
 }
 
-type testRunnerTokenVerifier struct {
-	runnerKey string
+type testPipedTokenVerifier struct {
+	pipedKey string
 }
 
-func (v testRunnerTokenVerifier) Verify(projectID, runnerID, runnerKey string) error {
-	if runnerKey != v.runnerKey {
-		return fmt.Errorf("invalid runner key, want: %s, got: %s", v.runnerKey, runnerKey)
+func (v testPipedTokenVerifier) Verify(projectID, pipedID, pipedKey string) error {
+	if pipedKey != v.pipedKey {
+		return fmt.Errorf("invalid piped key, want: %s, got: %s", v.pipedKey, pipedKey)
 	}
 	return nil
 }
 
-func TestRunnerTokenUnaryServerInterceptor(t *testing.T) {
-	verifier := testRunnerTokenVerifier{"test-runner-key"}
-	in := RunnerTokenUnaryServerInterceptor(verifier, zap.NewNop())
+func TestPipedTokenUnaryServerInterceptor(t *testing.T) {
+	verifier := testPipedTokenVerifier{"test-piped-key"}
+	in := PipedTokenUnaryServerInterceptor(verifier, zap.NewNop())
 	testcases := []struct {
-		name              string
-		ctx               context.Context
-		expectedRunnerKey string
-		failed            bool
+		name             string
+		ctx              context.Context
+		expectedPipedKey string
+		failed           bool
 	}{
 		{
-			name:              "missing credentials",
-			ctx:               context.TODO(),
-			expectedRunnerKey: "",
-			failed:            true,
+			name:             "missing credentials",
+			ctx:              context.TODO(),
+			expectedPipedKey: "",
+			failed:           true,
 		},
 		{
 			name: "wrong credentials type",
 			ctx: metadata.NewIncomingContext(context.Background(), metadata.MD{
-				"authorization": []string{"ID-TOKEN test-project-id,test-runner-id,test-runner-key"},
+				"authorization": []string{"ID-TOKEN test-project-id,test-piped-id,test-piped-key"},
 			}),
-			expectedRunnerKey: "",
-			failed:            true,
+			expectedPipedKey: "",
+			failed:           true,
 		},
 		{
-			name: "malformed runner token",
+			name: "malformed piped token",
 			ctx: metadata.NewIncomingContext(context.Background(), metadata.MD{
-				"authorization": []string{"RUNNER-TOKEN test-runner-key"},
+				"authorization": []string{"PIPED-TOKEN test-piped-key"},
 			}),
-			expectedRunnerKey: "",
-			failed:            true,
+			expectedPipedKey: "",
+			failed:           true,
 		},
 		{
-			name: "should be ok with RunnerToken",
+			name: "should be ok with PipedToken",
 			ctx: metadata.NewIncomingContext(context.Background(), metadata.MD{
-				"authorization": []string{"RUNNER-TOKEN test-project-id,test-runner-id,test-runner-key"},
+				"authorization": []string{"PIPED-TOKEN test-project-id,test-piped-id,test-piped-key"},
 			}),
-			expectedRunnerKey: "test-runner-key",
-			failed:            false,
+			expectedPipedKey: "test-piped-key",
+			failed:           false,
 		},
 	}
 	for _, tc := range testcases {
 		t.Run(tc.name, func(t *testing.T) {
 			_, err := in(tc.ctx, nil, nil, func(ctx context.Context, req interface{}) (interface{}, error) {
-				_, _, runnerKey, err := ExtractRunnerToken(ctx)
+				_, _, pipedKey, err := ExtractPipedToken(ctx)
 				if err != nil {
 					return nil, err
 				}
-				if runnerKey != tc.expectedRunnerKey {
-					return nil, errors.New("invalid runner key")
+				if pipedKey != tc.expectedPipedKey {
+					return nil, errors.New("invalid piped key")
 				}
 				return nil, nil
 			})
@@ -103,44 +103,44 @@ func TestRunnerTokenUnaryServerInterceptor(t *testing.T) {
 	}
 }
 
-func TestRunnerTokenStreamServerInterceptor(t *testing.T) {
-	verifier := testRunnerTokenVerifier{"test-runner-key"}
-	in := RunnerTokenStreamServerInterceptor(verifier, zap.NewNop())
+func TestPipedTokenStreamServerInterceptor(t *testing.T) {
+	verifier := testPipedTokenVerifier{"test-piped-key"}
+	in := PipedTokenStreamServerInterceptor(verifier, zap.NewNop())
 	testcases := []struct {
-		name              string
-		ctx               context.Context
-		expectedRunnerKey string
-		failed            bool
+		name             string
+		ctx              context.Context
+		expectedPipedKey string
+		failed           bool
 	}{
 		{
-			name:              "missing credentials",
-			ctx:               context.TODO(),
-			expectedRunnerKey: "",
-			failed:            true,
+			name:             "missing credentials",
+			ctx:              context.TODO(),
+			expectedPipedKey: "",
+			failed:           true,
 		},
 		{
 			name: "wrong credentials type",
 			ctx: metadata.NewIncomingContext(context.Background(), metadata.MD{
-				"authorization": []string{"ID-TOKEN test-project-id,test-runner-id,test-runner-key"},
+				"authorization": []string{"ID-TOKEN test-project-id,test-piped-id,test-piped-key"},
 			}),
-			expectedRunnerKey: "",
-			failed:            true,
+			expectedPipedKey: "",
+			failed:           true,
 		},
 		{
-			name: "malformed runner token",
+			name: "malformed piped token",
 			ctx: metadata.NewIncomingContext(context.Background(), metadata.MD{
-				"authorization": []string{"RUNNER-TOKEN test-runner-key"},
+				"authorization": []string{"PIPED-TOKEN test-piped-key"},
 			}),
-			expectedRunnerKey: "",
-			failed:            true,
+			expectedPipedKey: "",
+			failed:           true,
 		},
 		{
-			name: "should be ok with RunnerToken",
+			name: "should be ok with PipedToken",
 			ctx: metadata.NewIncomingContext(context.Background(), metadata.MD{
-				"authorization": []string{"RUNNER-TOKEN test-project-id,test-runner-id,test-runner-key"},
+				"authorization": []string{"PIPED-TOKEN test-project-id,test-piped-id,test-piped-key"},
 			}),
-			expectedRunnerKey: "test-runner-key",
-			failed:            false,
+			expectedPipedKey: "test-piped-key",
+			failed:           false,
 		},
 	}
 
@@ -151,12 +151,12 @@ func TestRunnerTokenStreamServerInterceptor(t *testing.T) {
 			}
 			err := in(nil, stream, nil, func(srv interface{}, stream grpc.ServerStream) error {
 				ctx := stream.Context()
-				_, _, runnerKey, err := ExtractRunnerToken(ctx)
+				_, _, pipedKey, err := ExtractPipedToken(ctx)
 				if err != nil {
 					return err
 				}
-				if runnerKey != tc.expectedRunnerKey {
-					return errors.New("invalid runner key")
+				if pipedKey != tc.expectedPipedKey {
+					return errors.New("invalid piped key")
 				}
 				return nil
 			})

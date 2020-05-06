@@ -23,11 +23,11 @@ BASE_URL="https://get.helm.sh"
 for version in "2.16.3" "3.1.1"
 do
   shortversion=${version%.*}
-  echo "Installing helm-${version} into ${RUNNER_BIN_DIR}/helm-${shortversion}..."
+  echo "Installing helm-${version} into ${PIPED_BIN_DIR}/helm-${shortversion}..."
   curl -L ${BASE_URL}/helm-v${version}-linux-amd64.tar.gz | tar xvz
-  mv linux-amd64/helm ${RUNNER_BIN_DIR}/helm-${shortversion}
-  chmod +x ${RUNNER_BIN_DIR}/helm-${shortversion}
-  ln -s ${RUNNER_BIN_DIR}/helm-${shortversion} ${RUNNER_BIN_DIR}/helm-${version}
+  mv linux-amd64/helm ${PIPED_BIN_DIR}/helm-${shortversion}
+  chmod +x ${PIPED_BIN_DIR}/helm-${shortversion}
+  ln -s ${PIPED_BIN_DIR}/helm-${shortversion} ${PIPED_BIN_DIR}/helm-${version}
   rm -rf linux-amd64
-  echo "Successfully installed helm-${version} into ${RUNNER_BIN_DIR}/helm-${shortversion}..."
+  echo "Successfully installed helm-${version} into ${PIPED_BIN_DIR}/helm-${shortversion}..."
 done

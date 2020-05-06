@@ -24,7 +24,7 @@ import (
 func main() {
 	app := cli.NewApp(
 		"api",
-		"A service for incoming gRPC requests from runners, web and hook events from git provider.",
+		"A service for incoming gRPC requests from pipeds, web and hook events from git provider.",
 	)
 	app.AddCommands(
 		server.NewCommand(),

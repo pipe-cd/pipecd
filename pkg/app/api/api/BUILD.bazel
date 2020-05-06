@@ -3,13 +3,13 @@ load("@io_bazel_rules_go//go:def.bzl", "go_library")
 go_library(
     name = "go_default_library",
     srcs = [
-        "runner_api.go",
+        "piped_api.go",
         "web_api.go",
     ],
     importpath = "github.com/kapetaniosci/pipe/pkg/app/api/api",
     visibility = ["//visibility:public"],
     deps = [
-        "//pkg/app/api/service/runnerservice:go_default_library",
+        "//pkg/app/api/service/pipedservice:go_default_library",
         "//pkg/app/api/service/webservice:go_default_library",
         "@org_golang_google_grpc//:go_default_library",
         "@org_golang_google_grpc//codes:go_default_library",

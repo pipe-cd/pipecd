@@ -39,28 +39,28 @@ func TestMain(m *testing.M) {
 		WithPort(9090),
 		WithGracePeriod(time.Second),
 		WithLogger(logger),
-		WithRunnerTokenAuthUnaryInterceptor(testRunnerTokenVerifier{"test-runner-key"}, logger),
+		WithPipedTokenAuthUnaryInterceptor(testPipedTokenVerifier{"test-piped-key"}, logger),
 	)
 	ctx, _ := context.WithTimeout(context.Background(), 30*time.Second)
 	go server.Run(ctx)
 	os.Exit(m.Run())
 }
 
-type testRunnerTokenVerifier struct {
-	runnerKey string
+type testPipedTokenVerifier struct {
+	pipedKey string
 }
 
-func (v testRunnerTokenVerifier) Verify(projectID, runnerID, runnerKey string) error {
-	if runnerKey != v.runnerKey {
-		return fmt.Errorf("invalid runner key, want: %s, got: %s", v.runnerKey, runnerKey)
+func (v testPipedTokenVerifier) Verify(projectID, pipedID, pipedKey string) error {
+	if pipedKey != v.pipedKey {
+		return fmt.Errorf("invalid piped key, want: %s, got: %s", v.pipedKey, pipedKey)
 	}
 	return nil
 }
 
 func TestRPCRequestOK(t *testing.T) {
 	ctx := context.Background()
-	runnerToken := rpcauth.MakeRunnerToken("test-project-id", "test-runner-id", "test-runner-key")
-	creds := rpcclient.NewPerRPCCredentials(runnerToken, rpcauth.RunnerTokenCredentials, true)
+	pipedToken := rpcauth.MakePipedToken("test-project-id", "test-piped-id", "test-piped-key")
+	creds := rpcclient.NewPerRPCCredentials(pipedToken, rpcauth.PipedTokenCredentials, true)
 	var cli service.Client
 	var err error
 	// Waiting the gRPC server.

@@ -1,0 +1,25 @@
+load("@io_bazel_rules_go//go:def.bzl", "go_library")
+
+go_library(
+    name = "go_default_library",
+    srcs = [
+        "appstatestore.go",
+        "reflector.go",
+        "resource.go",
+        "store.go",
+    ],
+    importpath = "github.com/kapetaniosci/pipe/pkg/app/piped/appstatestore",
+    visibility = ["//visibility:public"],
+    deps = [
+        "//pkg/model:go_default_library",
+        "@io_k8s_apimachinery//pkg/apis/meta/v1:go_default_library",
+        "@io_k8s_apimachinery//pkg/apis/meta/v1/unstructured:go_default_library",
+        "@io_k8s_apimachinery//pkg/runtime/schema:go_default_library",
+        "@io_k8s_client_go//discovery:go_default_library",
+        "@io_k8s_client_go//dynamic:go_default_library",
+        "@io_k8s_client_go//dynamic/dynamicinformer:go_default_library",
+        "@io_k8s_client_go//rest:go_default_library",
+        "@io_k8s_client_go//tools/cache:go_default_library",
+        "@org_uber_go_zap//:go_default_library",
+    ],
+)

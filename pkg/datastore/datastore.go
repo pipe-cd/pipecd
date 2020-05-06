@@ -42,9 +42,9 @@ type EnvironmentStore interface {
 	ListEnvironments(ctx context.Context, opts ListOptions) ([]model.Environment, error)
 }
 
-type RunnerStore interface {
-	AddRunner(ctx context.Context, proj *model.Runner) error
-	ListRunners(ctx context.Context, opts ListOptions) ([]model.Runner, error)
+type PipedStore interface {
+	AddPiped(ctx context.Context, proj *model.Piped) error
+	ListPipeds(ctx context.Context, opts ListOptions) ([]model.Piped, error)
 }
 
 type ApplicationStore interface {
@@ -62,7 +62,7 @@ type CommandStateStore interface {
 	ListCommandStates(ctx context.Context, opts ListOptions) ([]model.CommandState, error)
 }
 
-type RunnerStatsStore interface {
-	AddRunnerStats(ctx context.Context, proj *model.RunnerStats) error
-	ListRunnerStatss(ctx context.Context, opts ListOptions) ([]model.RunnerStats, error)
+type PipedStatsStore interface {
+	AddPipedStats(ctx context.Context, proj *model.PipedStats) error
+	ListPipedStatss(ctx context.Context, opts ListOptions) ([]model.PipedStats, error)
 }

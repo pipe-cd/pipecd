@@ -46,7 +46,7 @@ func isViewer(r role.Role) bool {
 // Todo: Auto generate this file from protobuf.
 func (a *authorizer) Authorize(method string, r role.Role) bool {
 	switch method {
-	case "/pipe.api.service.WebAPI/RegisterRunner":
+	case "/pipe.api.service.WebAPI/RegisterPiped":
 		return isAdmin(r)
 	}
 	return false
