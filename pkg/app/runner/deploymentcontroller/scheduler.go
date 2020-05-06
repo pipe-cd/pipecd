@@ -37,14 +37,15 @@ type executorRegistry interface {
 type scheduler struct {
 	deployment *model.Deployment
 	// Deployment configuration for this application.
-	appConfig        *config.Config
-	workingDir       string
-	executorRegistry executorRegistry
-	logPersister     logpersister.Persister
-	logger           *zap.Logger
+	appConfig         *config.Config
+	workingDir        string
+	executorRegistry  executorRegistry
+	logPersister      logpersister.Persister
+	metadataPersister metadataPersister
+	logger            *zap.Logger
 }
 
-func newScheduler(d *model.Deployment, logPersister logpersister.Persister, logger *zap.Logger) *scheduler {
+func newScheduler(d *model.Deployment, lp logpersister.Persister, mdp metadataPersister, logger *zap.Logger) *scheduler {
 	logger = logger.Named("scheduler").With(
 		zap.String("deployment-id", d.Id),
 		zap.String("application-id", d.ApplicationId),
@@ -53,10 +54,11 @@ func newScheduler(d *model.Deployment, logPersister logpersister.Persister, logg
 		zap.String("application-kind", d.Kind.String()),
 	)
 	return &scheduler{
-		deployment:       d,
-		executorRegistry: executor.DefaultRegistry(),
-		logPersister:     logPersister,
-		logger:           logger,
+		deployment:        d,
+		executorRegistry:  executor.DefaultRegistry(),
+		logPersister:      lp,
+		metadataPersister: mdp,
+		logger:            logger,
 	}
 }
 
@@ -97,7 +99,12 @@ func (s *scheduler) run(ctx context.Context) error {
 	var (
 		stageName = model.Stage("")
 		input     = executor.Input{
-			LogPersister: s.logPersister.StageLogPersister("", ""),
+			Deployment:        s.deployment,
+			AppConfig:         s.appConfig,
+			WorkingDir:        s.workingDir,
+			LogPersister:      s.logPersister.StageLogPersister("", ""),
+			MetadataPersister: s.metadataPersister.StageMetadataPersister("", ""),
+			Logger:            s.logger,
 		}
 	)
 	ex, err := s.executorRegistry.Executor(stageName, input)

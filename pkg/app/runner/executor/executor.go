@@ -44,5 +44,5 @@ type LogPersister interface {
 }
 
 type MetadataPersister interface {
-	Save(metadata []byte) error
+	Save(ctx context.Context, metadata []byte) error
 }

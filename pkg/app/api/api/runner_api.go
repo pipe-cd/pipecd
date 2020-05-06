@@ -73,9 +73,15 @@ func (a *RunnerAPI) ListNotCompletedDeployments(ctx context.Context, req *runner
 	return nil, status.Error(codes.Unimplemented, "")
 }
 
-// ReportDeploymentStageStatusChanged used by runner to update the status
+// SaveStageMetadata used by runner to persist the metadata
 // of a specific stage of a deployment.
-func (a *RunnerAPI) ReportDeploymentStageStatusChanged(ctx context.Context, req *runnerservice.ReportDeploymentStageStatusChangedRequest) (*runnerservice.ReportDeploymentStageStatusChangedResponse, error) {
+func (a *RunnerAPI) SaveStageMetadata(ctx context.Context, req *runnerservice.SaveStageMetadataRequest) (*runnerservice.SaveStageMetadataResponse, error) {
+	return nil, status.Error(codes.Unimplemented, "")
+}
+
+// ReportStageStatusChanged used by runner to update the status
+// of a specific stage of a deployment.
+func (a *RunnerAPI) ReportStageStatusChanged(ctx context.Context, req *runnerservice.ReportStageStatusChangedRequest) (*runnerservice.ReportStageStatusChangedResponse, error) {
 	return nil, status.Error(codes.Unimplemented, "")
 }
 

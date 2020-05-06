@@ -121,10 +121,17 @@ func (c *fakeClient) ListNotCompletedDeployments(ctx context.Context, in *runner
 	}, nil
 }
 
-// ReportDeploymentStageStatusChanged used by runner to update the status
+// SaveStageMetadata used by runner to persist the metadata
 // of a specific stage of a deployment.
-func (c *fakeClient) ReportDeploymentStageStatusChanged(ctx context.Context, in *runnerservice.ReportDeploymentStageStatusChangedRequest, opts ...grpc.CallOption) (*runnerservice.ReportDeploymentStageStatusChangedResponse, error) {
-	c.logger.Info("received ReportDeploymentStageStatusChanged rpc", zap.Any("request", in))
+func (c *fakeClient) SaveStageMetadata(ctx context.Context, in *runnerservice.SaveStageMetadataRequest, opts ...grpc.CallOption) (*runnerservice.SaveStageMetadataResponse, error) {
+	c.logger.Info("received SaveStageMetadata rpc", zap.Any("request", in))
+	return nil, nil
+}
+
+// ReportStageStatusChanged used by runner to update the status
+// of a specific stage of a deployment.
+func (c *fakeClient) ReportStageStatusChanged(ctx context.Context, in *runnerservice.ReportStageStatusChangedRequest, opts ...grpc.CallOption) (*runnerservice.ReportStageStatusChangedResponse, error) {
+	c.logger.Info("received ReportStageStatusChanged rpc", zap.Any("request", in))
 	return nil, nil
 }
 

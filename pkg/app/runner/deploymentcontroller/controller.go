@@ -39,7 +39,8 @@ const (
 
 type apiClient interface {
 	ListNotCompletedDeployments(ctx context.Context, in *runnerservice.ListNotCompletedDeploymentsRequest, opts ...grpc.CallOption) (*runnerservice.ListNotCompletedDeploymentsResponse, error)
-	ReportDeploymentStageStatusChanged(ctx context.Context, in *runnerservice.ReportDeploymentStageStatusChangedRequest, opts ...grpc.CallOption) (*runnerservice.ReportDeploymentStageStatusChangedResponse, error)
+	SaveStageMetadata(ctx context.Context, in *runnerservice.SaveStageMetadataRequest, opts ...grpc.CallOption) (*runnerservice.SaveStageMetadataResponse, error)
+	ReportStageStatusChanged(ctx context.Context, in *runnerservice.ReportStageStatusChangedRequest, opts ...grpc.CallOption) (*runnerservice.ReportStageStatusChangedResponse, error)
 	ReportStageLog(ctx context.Context, in *runnerservice.ReportStageLogRequest, opts ...grpc.CallOption) (*runnerservice.ReportStageLogResponse, error)
 	ReportDeploymentCompleted(ctx context.Context, in *runnerservice.ReportDeploymentCompletedRequest, opts ...grpc.CallOption) (*runnerservice.ReportDeploymentCompletedResponse, error)
 	GetCommands(ctx context.Context, in *runnerservice.GetCommandsRequest, opts ...grpc.CallOption) (*runnerservice.GetCommandsResponse, error)
@@ -47,23 +48,25 @@ type apiClient interface {
 }
 
 type DeploymentController struct {
-	apiClient    apiClient
-	config       *config.RunnerSpec
-	schedulers   map[string]*scheduler
-	logPersister logpersister.Persister
-	mu           sync.Mutex
-	gracePeriod  time.Duration
-	logger       *zap.Logger
+	apiClient         apiClient
+	config            *config.RunnerSpec
+	schedulers        map[string]*scheduler
+	logPersister      logpersister.Persister
+	metadataPersister metadataPersister
+	mu                sync.Mutex
+	gracePeriod       time.Duration
+	logger            *zap.Logger
 }
 
 // NewController creates a new instance for DeploymentController.
 func NewController(apiClient apiClient, cfg *config.RunnerSpec, gracePeriod time.Duration, logger *zap.Logger) *DeploymentController {
 	return &DeploymentController{
-		apiClient:    apiClient,
-		config:       cfg,
-		logPersister: logpersister.NewPersister(apiClient, logger),
-		gracePeriod:  gracePeriod,
-		logger:       logger.Named("deployment-controller"),
+		apiClient:         apiClient,
+		config:            cfg,
+		logPersister:      logpersister.NewPersister(apiClient, logger),
+		metadataPersister: metadataPersister{apiClient: apiClient},
+		gracePeriod:       gracePeriod,
+		logger:            logger.Named("deployment-controller"),
 	}
 }
 
@@ -103,7 +106,7 @@ func (c *DeploymentController) syncScheduler(ctx context.Context) error {
 		if _, ok := c.schedulers[d.Id]; ok {
 			continue
 		}
-		e := newScheduler(d, c.logPersister, c.logger)
+		e := newScheduler(d, c.logPersister, c.metadataPersister, c.logger)
 		c.schedulers[e.Id()] = e
 		go e.Run(ctx)
 	}
