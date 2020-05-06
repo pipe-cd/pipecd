@@ -11,6 +11,7 @@ go_library(
     deps = [
         "//pkg/app/api/service/runnerservice:go_default_library",
         "//pkg/app/runner/executor:go_default_library",
+        "//pkg/app/runner/logpersister:go_default_library",
         "//pkg/config:go_default_library",
         "//pkg/model:go_default_library",
         "@org_golang_google_grpc//:go_default_library",

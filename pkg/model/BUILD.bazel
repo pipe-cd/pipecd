@@ -9,6 +9,7 @@ proto_library(
         "command.proto",
         "deployment.proto",
         "environment.proto",
+        "logblock.proto",
         "project.proto",
         "runner.proto",
         "runner_stats.proto",

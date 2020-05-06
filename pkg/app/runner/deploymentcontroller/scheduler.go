@@ -20,6 +20,7 @@ import (
 	"go.uber.org/zap"
 
 	"github.com/kapetaniosci/pipe/pkg/app/runner/executor"
+	"github.com/kapetaniosci/pipe/pkg/app/runner/logpersister"
 	"github.com/kapetaniosci/pipe/pkg/config"
 	"github.com/kapetaniosci/pipe/pkg/model"
 )
@@ -39,10 +40,11 @@ type scheduler struct {
 	appConfig        *config.Config
 	workingDir       string
 	executorRegistry executorRegistry
+	logPersister     logpersister.Persister
 	logger           *zap.Logger
 }
 
-func newScheduler(d *model.Deployment, logger *zap.Logger) *scheduler {
+func newScheduler(d *model.Deployment, logPersister logpersister.Persister, logger *zap.Logger) *scheduler {
 	logger = logger.Named("scheduler").With(
 		zap.String("deployment-id", d.Id),
 		zap.String("application-id", d.ApplicationId),
@@ -53,6 +55,7 @@ func newScheduler(d *model.Deployment, logger *zap.Logger) *scheduler {
 	return &scheduler{
 		deployment:       d,
 		executorRegistry: executor.DefaultRegistry(),
+		logPersister:     logPersister,
 		logger:           logger,
 	}
 }
@@ -93,7 +96,9 @@ func (s *scheduler) run(ctx context.Context) error {
 	// Determine the next stage that should be executed.
 	var (
 		stageName = model.Stage("")
-		input     = executor.Input{}
+		input     = executor.Input{
+			LogPersister: s.logPersister.StageLogPersister("", ""),
+		}
 	)
 	ex, err := s.executorRegistry.Executor(stageName, input)
 	if err != nil {
@@ -103,5 +108,9 @@ func (s *scheduler) run(ctx context.Context) error {
 	if err != nil {
 		return err
 	}
+	return nil
+}
+
+func (s *scheduler) determineNextStages() []string {
 	return nil
 }

@@ -28,6 +28,7 @@ import (
 	"google.golang.org/grpc"
 
 	"github.com/kapetaniosci/pipe/pkg/app/api/service/runnerservice"
+	"github.com/kapetaniosci/pipe/pkg/app/runner/logpersister"
 	"github.com/kapetaniosci/pipe/pkg/config"
 )
 
@@ -46,40 +47,46 @@ type apiClient interface {
 }
 
 type DeploymentController struct {
-	apiClient   apiClient
-	config      *config.RunnerSpec
-	schedulers  map[string]*scheduler
-	mu          sync.Mutex
-	gracePeriod time.Duration
-	logger      *zap.Logger
+	apiClient    apiClient
+	config       *config.RunnerSpec
+	schedulers   map[string]*scheduler
+	logPersister logpersister.Persister
+	mu           sync.Mutex
+	gracePeriod  time.Duration
+	logger       *zap.Logger
 }
 
 // NewController creates a new instance for DeploymentController.
 func NewController(apiClient apiClient, cfg *config.RunnerSpec, gracePeriod time.Duration, logger *zap.Logger) *DeploymentController {
 	return &DeploymentController{
-		apiClient:   apiClient,
-		config:      cfg,
-		gracePeriod: gracePeriod,
-		logger:      logger.Named("deployment-controller"),
+		apiClient:    apiClient,
+		config:       cfg,
+		logPersister: logpersister.NewPersister(apiClient, logger),
+		gracePeriod:  gracePeriod,
+		logger:       logger.Named("deployment-controller"),
 	}
 }
 
 // Run starts running DeploymentController until the specified context
 // has done. This also waits for its cleaning up before returning.
 func (c *DeploymentController) Run(ctx context.Context) error {
+	c.logger.Info("start running deployment controller")
 	ticker := time.NewTicker(30 * time.Second)
 	defer ticker.Stop()
 
-	go func() {
-		for {
-			select {
-			case <-ctx.Done():
-				return
-			case <-ticker.C:
-				c.syncScheduler(ctx)
-			}
+	go c.logPersister.Run(ctx)
+
+	for {
+		select {
+		case <-ctx.Done():
+			break
+		case <-ticker.C:
+			c.syncScheduler(ctx)
 		}
-	}()
+	}
+
+	// TODO: Wait for graceful shutdowns of all components.
+	c.logger.Info("deployment controller has been stopped")
 	return nil
 }
 
@@ -96,7 +103,7 @@ func (c *DeploymentController) syncScheduler(ctx context.Context) error {
 		if _, ok := c.schedulers[d.Id]; ok {
 			continue
 		}
-		e := newScheduler(d, c.logger)
+		e := newScheduler(d, c.logPersister, c.logger)
 		c.schedulers[e.Id()] = e
 		go e.Run(ctx)
 	}
