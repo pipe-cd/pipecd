@@ -1,0 +1,26 @@
+linters:
+  disable-all: true
+  enable:
+    - dogsled
+    - godot
+    - gofmt
+    - goimports
+    - gomodguard
+    - goprintffuncname
+    - ineffassign
+    - misspell
+    - nakedret
+    - nestif
+    - prealloc
+      #- lll
+      #- gomnd
+      #- godox
+      #- scopelint
+      #- whitespace
+      #- wsl
+      #- dupl
+      #- funlen
+      #- gocognit
+      #- gocyclo
+
+  fast: false
