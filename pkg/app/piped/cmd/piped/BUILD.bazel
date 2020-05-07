@@ -9,6 +9,7 @@ go_library(
         "//pkg/admin:go_default_library",
         "//pkg/app/api/service/pipedservice:go_default_library",
         "//pkg/app/api/service/pipedservice/pipedclientfake:go_default_library",
+        "//pkg/app/piped/applicationstore:go_default_library",
         "//pkg/app/piped/appstatereporter:go_default_library",
         "//pkg/app/piped/appstatestore:go_default_library",
         "//pkg/app/piped/commandstore:go_default_library",

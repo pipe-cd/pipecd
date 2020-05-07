@@ -44,6 +44,11 @@ type apiClient interface {
 	CreateDeployment(ctx context.Context, in *pipedservice.CreateDeploymentRequest, opts ...grpc.CallOption) (*pipedservice.CreateDeploymentResponse, error)
 }
 
+type applicationStore interface {
+	ListApplications() []*model.Application
+	GetApplication(id string) (*model.Application, bool)
+}
+
 type commandStore interface {
 	ListApplicationCommands() []*model.Command
 	ReportCommandHandled(ctx context.Context, c *model.Command, status model.CommandStatus, metadata map[string]string) error
@@ -51,6 +56,7 @@ type commandStore interface {
 
 type DeploymentTrigger struct {
 	apiClient        apiClient
+	applicationStore applicationStore
 	commandStore     commandStore
 	repoStore        repoStore
 	config           *config.PipedSpec
@@ -64,13 +70,14 @@ type DeploymentTrigger struct {
 // What does this need to do its task?
 // - A way to get commit/source-code of a specific repository
 // - A way to get the current state of application
-func NewTrigger(apiClient apiClient, cmdStore commandStore, cfg *config.PipedSpec, gracePeriod time.Duration, logger *zap.Logger) *DeploymentTrigger {
+func NewTrigger(apiClient apiClient, appStore applicationStore, cmdStore commandStore, cfg *config.PipedSpec, gracePeriod time.Duration, logger *zap.Logger) *DeploymentTrigger {
 	return &DeploymentTrigger{
-		apiClient:    apiClient,
-		commandStore: cmdStore,
-		config:       cfg,
-		gracePeriod:  gracePeriod,
-		logger:       logger.Named("deployment-trigger"),
+		apiClient:        apiClient,
+		applicationStore: appStore,
+		commandStore:     cmdStore,
+		config:           cfg,
+		gracePeriod:      gracePeriod,
+		logger:           logger.Named("deployment-trigger"),
 	}
 }
 

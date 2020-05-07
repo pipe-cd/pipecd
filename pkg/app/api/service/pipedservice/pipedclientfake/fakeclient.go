@@ -125,27 +125,27 @@ func (c *fakeClient) ListNotCompletedDeployments(ctx context.Context, in *pipeds
 // of a specific stage of a deployment.
 func (c *fakeClient) SaveStageMetadata(ctx context.Context, in *pipedservice.SaveStageMetadataRequest, opts ...grpc.CallOption) (*pipedservice.SaveStageMetadataResponse, error) {
 	c.logger.Info("received SaveStageMetadata rpc", zap.Any("request", in))
-	return nil, nil
+	return &pipedservice.SaveStageMetadataResponse{}, nil
 }
 
 // ReportStageStatusChanged used by piped to update the status
 // of a specific stage of a deployment.
 func (c *fakeClient) ReportStageStatusChanged(ctx context.Context, in *pipedservice.ReportStageStatusChangedRequest, opts ...grpc.CallOption) (*pipedservice.ReportStageStatusChangedResponse, error) {
 	c.logger.Info("received ReportStageStatusChanged rpc", zap.Any("request", in))
-	return nil, nil
+	return &pipedservice.ReportStageStatusChangedResponse{}, nil
 }
 
 // ReportStageLog is sent by piped to save the log of a pipeline stage.
 func (c *fakeClient) ReportStageLog(ctx context.Context, in *pipedservice.ReportStageLogRequest, opts ...grpc.CallOption) (*pipedservice.ReportStageLogResponse, error) {
 	c.logger.Info("received ReportStageLog rpc", zap.Any("request", in))
-	return nil, nil
+	return &pipedservice.ReportStageLogResponse{}, nil
 }
 
 // ReportDeploymentCompleted used by piped to send the final state
 // of the pipeline that has just been completed.
 func (c *fakeClient) ReportDeploymentCompleted(ctx context.Context, in *pipedservice.ReportDeploymentCompletedRequest, opts ...grpc.CallOption) (*pipedservice.ReportDeploymentCompletedResponse, error) {
 	c.logger.Info("received ReportDeploymentCompleted rpc", zap.Any("request", in))
-	return nil, nil
+	return &pipedservice.ReportDeploymentCompletedResponse{}, nil
 }
 
 // ListUnhandledCommands is periodically called by piped to obtain the commands
@@ -158,7 +158,7 @@ func (c *fakeClient) ReportDeploymentCompleted(ctx context.Context, in *pipedser
 // In the future, we may need a solution to remove all old-handled commands from datastore for space.
 func (c *fakeClient) ListUnhandledCommands(ctx context.Context, in *pipedservice.ListUnhandledCommandsRequest, opts ...grpc.CallOption) (*pipedservice.ListUnhandledCommandsResponse, error) {
 	c.logger.Info("received ListUnhandledCommands rpc", zap.Any("request", in))
-	return nil, nil
+	return &pipedservice.ListUnhandledCommandsResponse{}, nil
 }
 
 // ReportCommandHandled is called by piped to mark a specific command as handled.
@@ -166,7 +166,7 @@ func (c *fakeClient) ListUnhandledCommands(ctx context.Context, in *pipedservice
 // The handle result should be updated to both datastore and cache (for reading from web).
 func (c *fakeClient) ReportCommandHandled(ctx context.Context, in *pipedservice.ReportCommandHandledRequest, opts ...grpc.CallOption) (*pipedservice.ReportCommandHandledResponse, error) {
 	c.logger.Info("received ReportCommandHandled rpc", zap.Any("request", in))
-	return nil, nil
+	return &pipedservice.ReportCommandHandledResponse{}, nil
 }
 
 // ReportApplicationState is periodically sent by piped to refresh the current state of application.
@@ -174,7 +174,7 @@ func (c *fakeClient) ReportCommandHandled(ctx context.Context, in *pipedservice.
 // The tree data will be written into filestore and the cache inmmediately.
 func (c *fakeClient) ReportApplicationState(ctx context.Context, in *pipedservice.ReportApplicationStateRequest, opts ...grpc.CallOption) (*pipedservice.ReportApplicationStateResponse, error) {
 	c.logger.Info("received ReportApplicationState rpc", zap.Any("request", in))
-	return nil, nil
+	return &pipedservice.ReportApplicationStateResponse{}, nil
 }
 
 // ReportAppStateEvents is sent by piped to submit one or multiple events
@@ -191,7 +191,7 @@ func (c *fakeClient) ReportApplicationState(ctx context.Context, in *pipedservic
 // By that way we can control the traffic to the datastore in a better way.
 func (c *fakeClient) ReportAppStateEvents(ctx context.Context, in *pipedservice.ReportAppStateEventsRequest, opts ...grpc.CallOption) (*pipedservice.ReportAppStateEventsResponse, error) {
 	c.logger.Info("received ReportAppStateEvents rpc", zap.Any("request", in))
-	return nil, nil
+	return &pipedservice.ReportAppStateEventsResponse{}, nil
 }
 
 var _ pipedservice.PipedServiceClient = (*fakeClient)(nil)
