@@ -64,7 +64,7 @@ service PipedService {
     // of the pipeline that has just been completed.
     rpc ReportDeploymentCompleted(ReportDeploymentCompletedRequest) returns (ReportDeploymentCompletedResponse) {}
 
-    // GetCommands is periodically called by piped to obtain the commands
+    // ListUnhandledCommands is periodically called by piped to obtain the commands
     // that should be handled.
     // Whenever an user makes an interaction from WebUI (cancel/approve/retry/sync)
     // a new command with a unique identifier will be generated an saved into the datastore.
@@ -72,7 +72,7 @@ service PipedService {
     // then report back the result to server.
     // On other side, the web will periodically check the command status and feedback the result to user.
     // In the future, we may need a solution to remove all old-handled commands from datastore for space.
-    rpc GetCommands(GetCommandsRequest) returns (GetCommandsResponse) {}
+    rpc ListUnhandledCommands(ListUnhandledCommandsRequest) returns (ListUnhandledCommandsResponse) {}
 
     // ReportCommandHandled is called by piped to mark a specific command as handled.
     // The request payload will contain the handle status as well as any additional result data.
@@ -168,17 +168,18 @@ message ReportDeploymentCompletedRequest {
 message ReportDeploymentCompletedResponse {
 }
 
-message GetCommandsRequest {
+message ListUnhandledCommandsRequest {
 }
 
-message GetCommandsResponse {
+message ListUnhandledCommandsResponse {
     repeated pipe.model.Command commands = 1;
 }
 
 message ReportCommandHandledRequest {
     string command_id = 1 [(validate.rules).string.min_len = 1];
-    pipe.model.CommandState.Status status = 2 [(validate.rules).enum.defined_only = true];
-    map<string,string> result = 3;
+    pipe.model.CommandStatus status = 2 [(validate.rules).enum.defined_only = true];
+    map<string,string> metadata = 3;
+    int64 handled_at = 4 [(validate.rules).int64.gt = 0];
 }
 
 message ReportCommandHandledResponse {

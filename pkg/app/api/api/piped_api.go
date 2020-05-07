@@ -96,7 +96,7 @@ func (a *PipedAPI) ReportDeploymentCompleted(ctx context.Context, req *pipedserv
 	return nil, status.Error(codes.Unimplemented, "")
 }
 
-// GetCommands is periodically called by piped to obtain the commands
+// ListUnhandledCommands is periodically called by piped to obtain the commands
 // that should be handled.
 // Whenever an user makes an interaction from WebUI (cancel/approve/retry/sync)
 // a new command with a unique identifier will be generated an saved into the datastore.
@@ -104,7 +104,7 @@ func (a *PipedAPI) ReportDeploymentCompleted(ctx context.Context, req *pipedserv
 // then report back the result to server.
 // On other side, the web will periodically check the command status and feedback the result to user.
 // In the future, we may need a solution to remove all old-handled commands from datastore for space.
-func (a *PipedAPI) GetCommands(ctx context.Context, req *pipedservice.GetCommandsRequest) (*pipedservice.GetCommandsResponse, error) {
+func (a *PipedAPI) ListUnhandledCommands(ctx context.Context, req *pipedservice.ListUnhandledCommandsRequest) (*pipedservice.ListUnhandledCommandsResponse, error) {
 	return nil, status.Error(codes.Unimplemented, "")
 }
 

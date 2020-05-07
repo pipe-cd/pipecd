@@ -43,12 +43,16 @@ type apiClient interface {
 	ReportStageLog(ctx context.Context, in *pipedservice.ReportStageLogRequest, opts ...grpc.CallOption) (*pipedservice.ReportStageLogResponse, error)
 	ReportStageStatusChanged(ctx context.Context, in *pipedservice.ReportStageStatusChangedRequest, opts ...grpc.CallOption) (*pipedservice.ReportStageStatusChangedResponse, error)
 	ReportDeploymentCompleted(ctx context.Context, in *pipedservice.ReportDeploymentCompletedRequest, opts ...grpc.CallOption) (*pipedservice.ReportDeploymentCompletedResponse, error)
-	GetCommands(ctx context.Context, in *pipedservice.GetCommandsRequest, opts ...grpc.CallOption) (*pipedservice.GetCommandsResponse, error)
-	ReportCommandHandled(ctx context.Context, in *pipedservice.ReportCommandHandledRequest, opts ...grpc.CallOption) (*pipedservice.ReportCommandHandledResponse, error)
+}
+
+type commandStore interface {
+	ListDeploymentCommands(deploymentID string) []*model.Command
+	ReportCommandHandled(ctx context.Context, c *model.Command, status model.CommandStatus, metadata map[string]string) error
 }
 
 type DeploymentController struct {
 	apiClient         apiClient
+	commandStore      commandStore
 	pipedConfig       *config.PipedSpec
 	logPersister      logpersister.Persister
 	metadataPersister metadataPersister
@@ -64,7 +68,7 @@ type DeploymentController struct {
 }
 
 // NewController creates a new instance for DeploymentController.
-func NewController(apiClient apiClient, cfg *config.PipedSpec, gracePeriod time.Duration, logger *zap.Logger) *DeploymentController {
+func NewController(apiClient apiClient, cmdStore commandStore, cfg *config.PipedSpec, gracePeriod time.Duration, logger *zap.Logger) *DeploymentController {
 	var (
 		lp  = logpersister.NewPersister(apiClient, logger)
 		mdp = metadataPersister{apiClient: apiClient}
@@ -72,6 +76,7 @@ func NewController(apiClient apiClient, cfg *config.PipedSpec, gracePeriod time.
 	)
 	return &DeploymentController{
 		apiClient:         apiClient,
+		commandStore:      cmdStore,
 		pipedConfig:       cfg,
 		logPersister:      lp,
 		metadataPersister: mdp,

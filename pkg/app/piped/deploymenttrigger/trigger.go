@@ -44,10 +44,16 @@ type apiClient interface {
 	CreateDeployment(ctx context.Context, in *pipedservice.CreateDeploymentRequest, opts ...grpc.CallOption) (*pipedservice.CreateDeploymentResponse, error)
 }
 
+type commandStore interface {
+	ListApplicationCommands() []*model.Command
+	ReportCommandHandled(ctx context.Context, c *model.Command, status model.CommandStatus, metadata map[string]string) error
+}
+
 type DeploymentTrigger struct {
-	config           *config.PipedSpec
 	apiClient        apiClient
+	commandStore     commandStore
 	repoStore        repoStore
+	config           *config.PipedSpec
 	triggeredCommits map[string]string
 	mu               sync.Mutex
 	gracePeriod      time.Duration
@@ -57,13 +63,14 @@ type DeploymentTrigger struct {
 // NewTrigger creates a new instance for DeploymentTrigger.
 // What does this need to do its task?
 // - A way to get commit/source-code of a specific repository
-// - A way to get the current state of applicaion
-func NewTrigger(apiClient apiClient, cfg *config.PipedSpec, gracePeriod time.Duration, logger *zap.Logger) *DeploymentTrigger {
+// - A way to get the current state of application
+func NewTrigger(apiClient apiClient, cmdStore commandStore, cfg *config.PipedSpec, gracePeriod time.Duration, logger *zap.Logger) *DeploymentTrigger {
 	return &DeploymentTrigger{
-		config:      cfg,
-		apiClient:   apiClient,
-		gracePeriod: gracePeriod,
-		logger:      logger.Named("deployment-trigger"),
+		apiClient:    apiClient,
+		commandStore: cmdStore,
+		config:       cfg,
+		gracePeriod:  gracePeriod,
+		logger:       logger.Named("deployment-trigger"),
 	}
 }
 

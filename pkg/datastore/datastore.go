@@ -57,9 +57,9 @@ type DeploymentStore interface {
 	ListDeployments(ctx context.Context, opts ListOptions) ([]model.Deployment, error)
 }
 
-type CommandStateStore interface {
-	AddCommandState(ctx context.Context, proj *model.CommandState) error
-	ListCommandStates(ctx context.Context, opts ListOptions) ([]model.CommandState, error)
+type CommandStore interface {
+	AddCommand(ctx context.Context, proj *model.Command) error
+	ListCommands(ctx context.Context, opts ListOptions) ([]model.Command, error)
 }
 
 type PipedStatsStore interface {

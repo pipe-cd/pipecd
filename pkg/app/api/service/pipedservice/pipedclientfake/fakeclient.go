@@ -38,7 +38,7 @@ type fakeClient struct {
 func NewClient(logger *zap.Logger) *fakeClient {
 	return &fakeClient{
 		applications: map[string]*model.Application{
-			"fake-app-1": &model.Application{
+			"fake-app-1": {
 				Id:        "fake-app-1",
 				Name:      "fake-app-1",
 				Env:       "fake-env",
@@ -148,7 +148,7 @@ func (c *fakeClient) ReportDeploymentCompleted(ctx context.Context, in *pipedser
 	return nil, nil
 }
 
-// GetCommands is periodically called by piped to obtain the commands
+// ListUnhandledCommands is periodically called by piped to obtain the commands
 // that should be handled.
 // Whenever an user makes an interaction from WebUI (cancel/approve/retry/sync)
 // a new command with a unique identifier will be generated an saved into the datastore.
@@ -156,8 +156,8 @@ func (c *fakeClient) ReportDeploymentCompleted(ctx context.Context, in *pipedser
 // then report back the result to server.
 // On other side, the web will periodically check the command status and feedback the result to user.
 // In the future, we may need a solution to remove all old-handled commands from datastore for space.
-func (c *fakeClient) GetCommands(ctx context.Context, in *pipedservice.GetCommandsRequest, opts ...grpc.CallOption) (*pipedservice.GetCommandsResponse, error) {
-	c.logger.Info("received GetCommands rpc", zap.Any("request", in))
+func (c *fakeClient) ListUnhandledCommands(ctx context.Context, in *pipedservice.ListUnhandledCommandsRequest, opts ...grpc.CallOption) (*pipedservice.ListUnhandledCommandsResponse, error) {
+	c.logger.Info("received ListUnhandledCommands rpc", zap.Any("request", in))
 	return nil, nil
 }
 

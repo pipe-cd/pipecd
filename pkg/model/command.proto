@@ -19,62 +19,59 @@ option go_package = "github.com/kapetaniosci/pipe/pkg/model";
 
 import "validate/validate.proto";
 
-message CommandState {
-    enum Type {
-        DEPLOYMENT = 0;
-        APPLICATION = 1;
-        REPO_HOOK = 2;
-    }
-    enum Status {
-        NOT_HANDLED_YET = 0;
-        SUCCEEDED = 1;
-        FAILED = 2;
-    }
+enum CommandType {
+    COMMAND_APPLICATION = 0;
+    COMMAND_DEPLOYMENT = 1;
+    COMMAND_REPO_HOOK = 2;
+}
 
-    // The generated unique identifier.
-    // This will be same value with the ID of command.
-    string id = 1 [(validate.rules).string.min_len = 1];
-    string piped_id = 2 [(validate.rules).string.min_len = 1];
-    string application_id = 3;
-    string deployment_id = 4;
-
-    Type type = 5;
-    bytes command = 6;
-    Status status = 7;
-    map<string,string> result = 8;
-    
-    int64 created_at = 14 [(validate.rules).int64.gt = 0];
-    int64 updated_at = 15 [(validate.rules).int64.gt = 0];
+enum CommandStatus {
+    COMMAND_NOT_HANDLED_YET = 0;
+    COMMAND_SUCCEEDED = 1;
+    COMMAND_FAILED = 2;
+    COMMAND_TIMEOUT = 3;
 }
 
 message Command {
-    string command_id = 1 [(validate.rules).string.min_len = 1];
-    int64 timestamp = 2 [(validate.rules).int64.gt = 0];
+    // The generated unique identifier.
+    string id = 1 [(validate.rules).string.min_len = 1];
+    string piped_id = 2;
     string application_id = 3;
     string deployment_id = 4;
+    CommandType type = 5 [(validate.rules).enum.defined_only = true];
 
-    // Deployment Command.
-    message CancelDeployment {
-        string deployment_id = 1 [(validate.rules).string.min_len = 1];
-        bool keep_current_state = 2;
-    }
-    message ApproveStage {
-        string deployment_id = 1 [(validate.rules).string.min_len = 1];
-        string stage_id = 2 [(validate.rules).string.min_len = 1];
-    }
-    message RetryStage {
-        string deployment_id = 1 [(validate.rules).string.min_len = 1];
-        string stage_id = 2 [(validate.rules).string.min_len = 1];
-    }
+    CommandStatus status = 10;
+    map<string,string> metadata = 11;
+    int64 handled_at = 12 [(validate.rules).int64.gt = 0];
+
+    int64 created_at = 14 [(validate.rules).int64.gt = 0];
+    int64 updated_at = 15 [(validate.rules).int64.gt = 0];
 
     // Application Command.
     message SyncApplication {
         string application_id = 1 [(validate.rules).string.min_len = 1];
     }
+
     message UpdateApplicationConfig {
         string application_id = 1 [(validate.rules).string.min_len = 1];
         string config_path = 2 [(validate.rules).string.min_len = 1];
         string config = 3 [(validate.rules).string.min_len = 1];
+    }
+
+    // Deployment Command.
+    message CancelDeployment {
+        string deployment_id = 1 [(validate.rules).string.min_len = 1];
+        bool without_rollback = 2;
+    }
+
+    message ApproveStage {
+        string deployment_id = 1 [(validate.rules).string.min_len = 1];
+        string stage_id = 2 [(validate.rules).string.min_len = 1];
+    }
+
+    message RetryStage {
+        string deployment_id = 1 [(validate.rules).string.min_len = 1];
+        string stage_id = 2 [(validate.rules).string.min_len = 1];
     }
 
     // Repo Hook Event Command.

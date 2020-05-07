@@ -11,6 +11,7 @@ go_library(
         "//pkg/app/api/service/pipedservice/pipedclientfake:go_default_library",
         "//pkg/app/piped/appstatereporter:go_default_library",
         "//pkg/app/piped/appstatestore:go_default_library",
+        "//pkg/app/piped/commandstore:go_default_library",
         "//pkg/app/piped/deploymentcontroller:go_default_library",
         "//pkg/app/piped/deploymenttrigger:go_default_library",
         "//pkg/cli:go_default_library",
