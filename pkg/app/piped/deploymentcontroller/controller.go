@@ -173,6 +173,7 @@ func (c *DeploymentController) startNewScheduler(ctx context.Context, d *model.D
 		d,
 		c.pipedConfig,
 		workingDir,
+		c.commandStore,
 		c.logPersister,
 		c.metadataPersister,
 		c.logger,

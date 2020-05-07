@@ -16,6 +16,8 @@ package waitapproval
 
 import (
 	"context"
+	"fmt"
+	"time"
 
 	"github.com/kapetaniosci/pipe/pkg/app/piped/executor"
 	"github.com/kapetaniosci/pipe/pkg/model"
@@ -38,5 +40,46 @@ func init() {
 }
 
 func (e *Executor) Execute(ctx context.Context) (model.StageStatus, error) {
-	return model.StageStatus_STAGE_SUCCESS, nil
+	ticker := time.NewTicker(5 * time.Second)
+	defer ticker.Stop()
+
+	e.LogPersister.Append("Waiting for an approval...")
+	for {
+		select {
+		case <-ticker.C:
+			if ok := e.checkApproval(ctx); !ok {
+				continue
+			}
+			e.LogPersister.Append("Got an approval from abc")
+			return model.StageStatus_STAGE_SUCCESS, nil
+
+		case <-ctx.Done():
+			return model.StageStatus_STAGE_CANCELLED, fmt.Errorf("context cancelled")
+		}
+	}
+}
+
+func (e *Executor) checkApproval(ctx context.Context) bool {
+	var (
+		command  *model.Command
+		commands = e.CommandStore.ListDeploymentCommands(e.Deployment.Id)
+	)
+
+	for _, cmd := range commands {
+		c := cmd.GetApproveStage()
+		if c == nil {
+			continue
+		}
+		if c.StageId != "e.Stage.Id" {
+			continue
+		}
+		command = cmd
+		break
+	}
+	if command == nil {
+		return false
+	}
+
+	e.CommandStore.ReportCommandHandled(ctx, command, model.CommandStatus_COMMAND_SUCCEEDED, nil)
+	return true
 }

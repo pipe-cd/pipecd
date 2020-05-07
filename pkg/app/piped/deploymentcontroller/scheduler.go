@@ -39,6 +39,7 @@ type scheduler struct {
 	pipedConfig       *config.PipedSpec
 	workingDir        string
 	executorRegistry  executorRegistry
+	commandStore      commandStore
 	logPersister      logpersister.Persister
 	metadataPersister metadataPersister
 	logger            *zap.Logger
@@ -47,7 +48,7 @@ type scheduler struct {
 	appConfig *config.Config
 }
 
-func newScheduler(d *model.Deployment, cfg *config.PipedSpec, workingDir string, lp logpersister.Persister, mdp metadataPersister, logger *zap.Logger) *scheduler {
+func newScheduler(d *model.Deployment, cfg *config.PipedSpec, workingDir string, cmdStore commandStore, lp logpersister.Persister, mdp metadataPersister, logger *zap.Logger) *scheduler {
 	logger = logger.Named("scheduler").With(
 		zap.String("deployment-id", d.Id),
 		zap.String("application-id", d.ApplicationId),
@@ -61,6 +62,7 @@ func newScheduler(d *model.Deployment, cfg *config.PipedSpec, workingDir string,
 		pipedConfig:       cfg,
 		workingDir:        workingDir,
 		executorRegistry:  executor.DefaultRegistry(),
+		commandStore:      cmdStore,
 		logPersister:      lp,
 		metadataPersister: mdp,
 		logger:            logger,
@@ -109,6 +111,7 @@ func (s *scheduler) run(ctx context.Context) error {
 			Deployment:        s.deployment,
 			AppConfig:         s.appConfig,
 			WorkingDir:        s.workingDir,
+			CommandStore:      s.commandStore,
 			LogPersister:      s.logPersister.StageLogPersister("", ""),
 			MetadataPersister: s.metadataPersister.StageMetadataPersister("", ""),
 			Logger:            s.logger,

@@ -35,6 +35,7 @@ type Input struct {
 	PipedConfig       *config.PipedSpec
 	WorkingDir        string
 	Deployment        *model.Deployment
+	CommandStore      CommandStore
 	LogPersister      LogPersister
 	MetadataPersister MetadataPersister
 	Logger            *zap.Logger
@@ -46,4 +47,9 @@ type LogPersister interface {
 
 type MetadataPersister interface {
 	Save(ctx context.Context, metadata []byte) error
+}
+
+type CommandStore interface {
+	ListDeploymentCommands(deploymentID string) []*model.Command
+	ReportCommandHandled(ctx context.Context, c *model.Command, status model.CommandStatus, metadata map[string]string) error
 }
