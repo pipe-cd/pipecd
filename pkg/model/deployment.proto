@@ -53,7 +53,7 @@ message Deployment {
     DeploymentTrigger trigger = 7 [(validate.rules).message.required = true];
     ApplicationGitPath git_path = 8 [(validate.rules).message.required = true];
     DeploymentStatus status = 9 [(validate.rules).enum.defined_only = true];
-    map<string, PipelineStage> stages = 10;
+    repeated PipelineStage stages = 10;
 
     int64 completed_at = 13 [(validate.rules).int64.gte = 0];
     int64 created_at = 14 [(validate.rules).int64.gt = 0];
@@ -71,11 +71,12 @@ message DeploymentTrigger {
 message PipelineStage {
     string id = 1 [(validate.rules).string.min_len = 1];
     string name = 2 [(validate.rules).string.min_len = 1];
-    repeated string requires = 3;
-    StageStatus status = 4 [(validate.rules).enum.defined_only = true];
-    bytes metadata = 5;
-    int32 retried_count = 6;
-    int64 completed_at = 13 [(validate.rules).int64.gt = 0];
+    string desc = 3;
+    repeated string requires = 4;
+    StageStatus status = 5 [(validate.rules).enum.defined_only = true];
+    bytes metadata = 6;
+    int32 retried_count = 7;
+    int64 completed_at = 13 [(validate.rules).int64.gte = 0];
     int64 created_at = 14 [(validate.rules).int64.gt = 0];
     int64 updated_at = 15 [(validate.rules).int64.gt = 0];
 }

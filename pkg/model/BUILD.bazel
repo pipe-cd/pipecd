@@ -34,6 +34,7 @@ pgv_go_proto_library(
 go_library(
     name = "go_default_library",
     srcs = [
+        "application.go",
         "deployment.go",
         "model.go",
         "stage.go",

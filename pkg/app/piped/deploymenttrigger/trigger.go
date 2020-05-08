@@ -25,7 +25,6 @@ import (
 	"fmt"
 	"time"
 
-	"github.com/google/uuid"
 	"go.uber.org/zap"
 	"google.golang.org/grpc"
 
@@ -160,38 +159,48 @@ func (t *DeploymentTrigger) check(ctx context.Context) error {
 		}
 
 		for _, app := range apps {
-			// Get the most recently applied commit of this application.
-			// If it is not in the memory cache, we have to call the API to list the deployments
-			// and use the commit sha of the most recent one.
-			triggeredCommitHash, ok := t.triggeredCommits[app.Id]
-			if !ok {
-				t.triggeredCommits[app.Id] = "retrieved-one"
+			if err := t.checkApplication(ctx, app, gitRepo, branch, headCommit); err != nil {
+				t.logger.Error(fmt.Sprintf("failed to check application: %s", app.Id), zap.Error(err))
 			}
-
-			// Check whether the most recently applied one is the head commit or not.
-			// If not, nothing to do for this time.
-			if triggeredCommitHash == headCommit.Hash {
-				t.logger.Info(fmt.Sprintf("no update to sync for application: %s, hash: %s", app.Id, headCommit.Hash))
-				continue
-			}
-
-			// List the changed files between those two commits
-			// Determine whether this application was touch by those changed files.
-
-			// Send a request to API to create a new deployment.
-			t.logger.Info(fmt.Sprintf("application %s will be synced because of new commit", app.Id),
-				zap.String("previous-commit-hash", triggeredCommitHash),
-				zap.String("head-commit-hash", headCommit.Hash),
-			)
-			if err := t.triggerDeployment(ctx, app, branch, headCommit); err != nil {
-				continue
-			}
-			t.triggeredCommits[app.Id] = headCommit.Hash
 		}
 	}
 	return nil
 }
 
+func (t *DeploymentTrigger) checkApplication(ctx context.Context, app *model.Application, repo git.Repo, branch string, headCommit git.Commit) error {
+	// Get the most recently applied commit of this application.
+	// If it is not in the memory cache, we have to call the API to list the deployments
+	// and use the commit sha of the most recent one.
+	triggeredCommitHash, ok := t.triggeredCommits[app.Id]
+	if !ok {
+		t.triggeredCommits[app.Id] = "retrieved-one"
+	}
+
+	// Check whether the most recently applied one is the head commit or not.
+	// If not, nothing to do for this time.
+	if triggeredCommitHash == headCommit.Hash {
+		t.logger.Info(fmt.Sprintf("no update to sync for application: %s, hash: %s", app.Id, headCommit.Hash))
+		return nil
+	}
+
+	// TODO: List the changed files between those two commits
+	// Determine whether this application was touch by those changed files.
+
+	// Build deployment model and send a request to API to create a new deployment.
+	t.logger.Info(fmt.Sprintf("application %s should be synced because of new commit", app.Id),
+		zap.String("previous-commit-hash", triggeredCommitHash),
+		zap.String("head-commit-hash", headCommit.Hash),
+	)
+	if err := t.triggerDeployment(ctx, app, repo, branch, headCommit); err != nil {
+		return err
+	}
+
+	t.triggeredCommits[app.Id] = headCommit.Hash
+	return nil
+}
+
+// listApplications retrieves all applications those should be handled by this piped
+// and then groups them by repoID.
 func (t *DeploymentTrigger) listApplications(ctx context.Context) map[string][]*model.Application {
 	var (
 		apps = t.applicationStore.ListApplications()
@@ -206,42 +215,4 @@ func (t *DeploymentTrigger) listApplications(ctx context.Context) map[string][]*
 		}
 	}
 	return m
-}
-
-func (t *DeploymentTrigger) triggerDeployment(ctx context.Context, app *model.Application, branch string, commit git.Commit) error {
-	// Detect the update type (just scale or need rollout with pipeline) by checking the change
-	var (
-		now        = time.Now()
-		deployment = &model.Deployment{
-			Id:            uuid.New().String(),
-			ApplicationId: app.Id,
-			EnvId:         app.EnvId,
-			PipedId:       app.PipedId,
-			ProjectId:     app.ProjectId,
-			Kind:          app.Kind,
-			Trigger: &model.DeploymentTrigger{
-				Commit: &model.Commit{
-					Revision:  commit.Hash,
-					Message:   commit.Message,
-					Author:    commit.Author,
-					Branch:    branch,
-					CreatedAt: int64(commit.CreatedAt),
-				},
-				User:      commit.Author,
-				Timestamp: now.Unix(),
-			},
-			GitPath: app.GitPath,
-			Status:  model.DeploymentStatus_DEPLOYMENT_NOT_STARTED_YET,
-			// stages
-			CreatedAt: now.Unix(),
-			UpdatedAt: now.Unix(),
-		}
-	)
-	_, err := t.apiClient.CreateDeployment(ctx, &pipedservice.CreateDeploymentRequest{
-		Deployment: deployment,
-	})
-	if err != nil {
-		t.logger.Error("failed to create deployment", zap.Error(err))
-	}
-	return nil
 }

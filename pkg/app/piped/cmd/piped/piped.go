@@ -143,7 +143,13 @@ func (p *piped) run(ctx context.Context, t cli.Telemetry) error {
 		t.Logger.Error("failed to initialize git client", zap.Error(err))
 		return err
 	}
-	defer gitClient.Clean()
+	defer func() {
+		if err := gitClient.Clean(); err != nil {
+			t.Logger.Error("had an error while cleaning gitClient", zap.Error(err))
+		} else {
+			t.Logger.Info("successfully cleaned gitClient")
+		}
+	}()
 
 	// Start running application state store.
 	{

@@ -19,10 +19,14 @@ import (
 	"fmt"
 	"io/ioutil"
 
+	"github.com/kapetaniosci/pipe/pkg/model"
 	"sigs.k8s.io/yaml"
 )
 
-const versionV1Beta1 = "pipecd.dev/v1beta1"
+const (
+	DeploymentConfigurationFileName = ".pipe.yaml"
+	versionV1Beta1                  = "pipecd.dev/v1beta1"
+)
 
 // Kind represents the kind of configuration the data contains.
 type Kind string
@@ -172,4 +176,21 @@ func DecodeYAML(data []byte) (*Config, error) {
 		return nil, err
 	}
 	return c, nil
+}
+
+// ToApplicationKind converts configuration kind to application kind.
+func ToApplicationKind(k Kind) (model.ApplicationKind, bool) {
+	switch k {
+	case KindKubernetesApp:
+		return model.ApplicationKind_KUBERNETES, true
+	case KindTerraformApp:
+		return model.ApplicationKind_TERRAFORM, true
+	case KindCrossplaneApp:
+		return model.ApplicationKind_CROSSPLANE, true
+	case KindLambdaApp:
+		return model.ApplicationKind_LAMBDA, true
+	case KindCloudRunApp:
+		return model.ApplicationKind_CLOUDRUN, true
+	}
+	return model.ApplicationKind_KUBERNETES, false
 }

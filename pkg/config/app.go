@@ -55,9 +55,7 @@ func (s *TerraformAppSpec) Validate() error {
 // - Target PodSpec (Target can be Deployment, DaemonSet, StatefullSet)
 // - ConfigMaps, Secrets that are mounted as volumes or envs in the deployment.
 type AppPipeline struct {
-	Stages        []PipelineStage      `json:"stages"`
-	StageTrack    StageTrackOptions    `json:"stageTrack"`
-	BaselineTrack BaselineTrackOptions `json:"baselineTrack"`
+	Stages []PipelineStage `json:"stages"`
 }
 
 type StageTrackOptions struct {
@@ -73,6 +71,7 @@ type BaselineTrackOptions struct {
 // PiplineStage represents a single stage of a pipeline.
 // This is used as a generic struct for all stage type.
 type PipelineStage struct {
+	Id      string
 	Name    model.Stage
 	Desc    string
 	Timeout Duration
@@ -91,6 +90,7 @@ type PipelineStage struct {
 }
 
 type genericPipelineStage struct {
+	Id      string          `json:"id"`
 	Name    model.Stage     `json:"name"`
 	Desc    string          `json:"desc,omitempty"`
 	Timeout Duration        `json:"timeout"`
@@ -103,6 +103,7 @@ func (s *PipelineStage) UnmarshalJSON(data []byte) error {
 	if err = json.Unmarshal(data, &gs); err != nil {
 		return err
 	}
+	s.Id = gs.Id
 	s.Name = gs.Name
 	s.Desc = gs.Desc
 	s.Timeout = gs.Timeout
