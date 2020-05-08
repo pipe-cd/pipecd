@@ -26,38 +26,7 @@ import (
 	"go.uber.org/zap"
 )
 
-func TestTag(t *testing.T) {
-	faker, err := newFaker()
-	require.NoError(t, err)
-	defer faker.clean()
-
-	var (
-		org      = "test-repo-org"
-		repoName = "repo-1"
-	)
-
-	err = faker.makeRepo(org, repoName)
-	require.NoError(t, err)
-	r := &repo{
-		dir:     faker.repoDir(org, repoName),
-		gitPath: faker.gitPath,
-		logger:  zap.NewNop(),
-	}
-
-	ctx := context.Background()
-	tag, err := r.GetLatestTag(ctx)
-	assert.Equal(t, ErrNoTag, err)
-	assert.Equal(t, "", tag)
-
-	err = r.CreateTag(ctx, "v0.0.1", "version v0.0.1")
-	require.NoError(t, err)
-
-	tag, err = r.GetLatestTag(ctx)
-	require.NoError(t, err)
-	assert.Equal(t, "v0.0.1", tag)
-}
-
-func TestGetLatestCommitID(t *testing.T) {
+func TestGetCommitHashForRev(t *testing.T) {
 	faker, err := newFaker()
 	require.NoError(t, err)
 	defer faker.clean()
@@ -80,9 +49,9 @@ func TestGetLatestCommitID(t *testing.T) {
 	require.NoError(t, err)
 	assert.Equal(t, 1, len(commits))
 
-	latestCommitID, err := r.GetLatestCommitID(ctx)
+	latestCommitHash, err := r.GetCommitHashForRev(ctx, "HEAD")
 	require.NoError(t, err)
-	assert.Equal(t, commits[0].Hash, latestCommitID)
+	assert.Equal(t, commits[0].Hash, latestCommitHash)
 }
 
 func TestAddCommit(t *testing.T) {
@@ -112,47 +81,16 @@ func TestAddCommit(t *testing.T) {
 	err = ioutil.WriteFile(path, []byte("content"), os.ModePerm)
 	require.NoError(t, err)
 
-	err = r.AddCommit(ctx, "Added new file")
+	err = r.addCommit(ctx, "Added new file")
 	require.NoError(t, err)
 
-	err = r.AddCommit(ctx, "No change")
+	err = r.addCommit(ctx, "No change")
 	require.Equal(t, ErrNoChange, err)
 
 	commits, err = r.ListCommits(ctx, "")
 	require.NoError(t, err)
 	require.Equal(t, 2, len(commits))
 	assert.Equal(t, "Added new file", commits[0].Message)
-}
-
-func TestBranch(t *testing.T) {
-	faker, err := newFaker()
-	require.NoError(t, err)
-	defer faker.clean()
-
-	var (
-		org      = "test-repo-org"
-		repoName = "repo-4"
-	)
-
-	err = faker.makeRepo(org, repoName)
-	require.NoError(t, err)
-	r := &repo{
-		dir:     faker.repoDir(org, repoName),
-		gitPath: faker.gitPath,
-		logger:  zap.NewNop(),
-	}
-
-	ctx := context.Background()
-	branch, err := r.GetBranch(ctx)
-	require.NoError(t, err)
-	require.Equal(t, "master", branch)
-
-	err = r.CheckoutNewBranch(ctx, "new-branch")
-	require.NoError(t, err)
-
-	branch, err = r.GetBranch(ctx)
-	require.NoError(t, err)
-	require.Equal(t, "new-branch", branch)
 }
 
 func TestCommitChanges(t *testing.T) {

@@ -3,7 +3,7 @@ load("@io_bazel_rules_go//go:def.bzl", "go_library", "go_test")
 go_library(
     name = "go_default_library",
     srcs = [
-        "cloner.go",
+        "client.go",
         "commit.go",
         "repo.go",
     ],
@@ -16,7 +16,7 @@ go_test(
     name = "go_default_test",
     size = "small",
     srcs = [
-        "cloner_test.go",
+        "client_test.go",
         "commit_test.go",
         "repo_test.go",
     ],

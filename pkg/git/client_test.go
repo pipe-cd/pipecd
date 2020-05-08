@@ -34,10 +34,10 @@ func TestClone(t *testing.T) {
 	require.NoError(t, err)
 	defer faker.clean()
 
-	cloner, err := NewCloner(zap.NewNop())
+	c, err := NewClient("", "", zap.NewNop())
 	require.NoError(t, err)
-	require.NotNil(t, cloner)
-	defer cloner.Clean()
+	require.NotNil(t, c)
+	defer c.Clean()
 
 	err = faker.makeRepo("test-clone-org", "repo-1")
 	require.NoError(t, err)
@@ -46,7 +46,9 @@ func TestClone(t *testing.T) {
 
 	ctx := context.Background()
 
-	repo1, err := cloner.Clone(ctx, faker.dir, "test-clone-org/repo-1", "", "")
+	repo1Path, err := ioutil.TempDir("", "repo1path")
+	require.NoError(t, err)
+	repo1, err := c.Clone(ctx, faker.dir, "test-clone-org/repo-1", repo1Path)
 	require.NoError(t, err)
 	require.NotNil(t, repo1)
 	defer func() {
@@ -56,7 +58,9 @@ func TestClone(t *testing.T) {
 	require.NoError(t, err)
 	assert.Equal(t, 1, len(commits1))
 
-	repo2, err := cloner.Clone(ctx, faker.dir, "test-clone-org/repo-2", "", "")
+	repo2Path, err := ioutil.TempDir("", "repo2path")
+	require.NoError(t, err)
+	repo2, err := c.Clone(ctx, faker.dir, "test-clone-org/repo-2", repo2Path)
 	require.NoError(t, err)
 	require.NotNil(t, repo2)
 	defer func() {
@@ -66,16 +70,18 @@ func TestClone(t *testing.T) {
 	require.NoError(t, err)
 	assert.Equal(t, 1, len(commits2))
 
-	// Make sure cloner fetches the update.
+	// Make sure client fetches the update.
 	commander := gitCommander{
-		gitPath: cloner.gitPath,
+		gitPath: c.(*client).gitPath,
 		dir:     faker.dir,
 		org:     "test-clone-org",
 		repo:    "repo-1",
 	}
 	err = commander.addCommit("note.txt", "note.text context")
 	require.NoError(t, err)
-	repo12, err := cloner.Clone(ctx, faker.dir, "test-clone-org/repo-1", "", "")
+	repo12Path, err := ioutil.TempDir("", "repo12path")
+	require.NoError(t, err)
+	repo12, err := c.Clone(ctx, faker.dir, "test-clone-org/repo-1", repo12Path)
 	require.NoError(t, err)
 	require.NotNil(t, repo12)
 	defer func() {
@@ -128,7 +134,7 @@ func (f *faker) makeRepo(org, repo string) error {
 	}
 
 	err := commander.runGitCommands([][]string{
-		[]string{"init"},
+		{"init"},
 	})
 	if err != nil {
 		return err
@@ -164,10 +170,10 @@ func (g gitCommander) addCommit(filename string, content string) error {
 		return err
 	}
 	return g.runGitCommands([][]string{
-		[]string{"add", "."},
-		[]string{"config", "user.email", "test@gmail.com"},
-		[]string{"config", "user.name", "test-user"},
-		[]string{"commit", "-m", fmt.Sprintf("Added %s", filename)},
+		{"add", "."},
+		{"config", "user.email", "test@gmail.com"},
+		{"config", "user.name", "test-user"},
+		{"commit", "-m", fmt.Sprintf("Added %s", filename)},
 	})
 }
 

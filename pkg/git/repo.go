@@ -28,41 +28,48 @@ import (
 )
 
 var (
-	ErrNoTag    = errors.New("no tag")
 	ErrNoChange = errors.New("no change")
 )
 
+// Repo provides functions to get and handle git data.
 type Repo interface {
-	GetBasePath() string
+	GetPath() string
 	SetUser(ctx context.Context, username, email string) error
-	GetLatestTag(ctx context.Context) (string, error)
-	CreateTag(ctx context.Context, tag, message string) error
-	GetVersion(ctx context.Context) (string, error)
 	ListCommits(ctx context.Context, visionRange string) ([]Commit, error)
-	GetLatestCommitID(ctx context.Context) (string, error)
-	GetBranch(ctx context.Context) (string, error)
+	GetCommitHashForRev(ctx context.Context, rev string) (string, error)
 	Checkout(ctx context.Context, commitish string) error
 	CheckoutPullRequest(ctx context.Context, number int, branch string) error
-	CheckoutNewBranch(ctx context.Context, branch string) error
-	AddCommit(ctx context.Context, message string) error
-	Push(ctx context.Context, branch string) error
-	ForcePush(ctx context.Context, branch string) error
-	PullWithRebase(ctx context.Context, base string) error
-	CommitChanges(ctx context.Context, branch, message string, newBranch bool, changes map[string][]byte) error
 	Clean() error
+
+	Push(ctx context.Context, branch string) error
+	CommitChanges(ctx context.Context, branch, message string, newBranch bool, changes map[string][]byte) error
 }
 
 type repo struct {
-	dir     string
-	gitPath string
-	remote  string
-	logger  *zap.Logger
+	fullName string
+	dir      string
+	gitPath  string
+	remote   string
+	logger   *zap.Logger
 }
 
-func (r *repo) GetBasePath() string {
+// NewRepo creates a new Repo instance.
+func NewRepo(fullName, dir, gitPath, remote string, logger *zap.Logger) Repo {
+	return &repo{
+		fullName: fullName,
+		dir:      dir,
+		gitPath:  gitPath,
+		remote:   remote,
+		logger:   logger.With(zap.String("repo", fullName)),
+	}
+}
+
+// GetPath returns the path to the local git directory.
+func (r *repo) GetPath() string {
 	return r.dir
 }
 
+// SetUser configures username and email for local user of this repo.
 func (r *repo) SetUser(ctx context.Context, username, email string) error {
 	if out, err := r.runGitCommand(ctx, "config", "user.name", username); err != nil {
 		r.logger.Error("failed to config user.name",
@@ -81,48 +88,7 @@ func (r *repo) SetUser(ctx context.Context, username, email string) error {
 	return nil
 }
 
-func (r *repo) GetLatestTag(ctx context.Context) (string, error) {
-	out, err := r.runGitCommand(ctx, "describe", "--tags", "--abbrev=0")
-	if err != nil {
-		if strings.HasPrefix(string(out), "fatal: No names found, cannot describe anything.") {
-			return "", ErrNoTag
-		}
-		r.logger.Error("failed to describe --tags",
-			zap.String("out", string(out)),
-			zap.Error(err),
-		)
-		return "", err
-	}
-	if len(out) == 0 {
-		return "", ErrNoTag
-	}
-	return strings.TrimSpace(string(out)), nil
-}
-
-func (r *repo) CreateTag(ctx context.Context, tag, message string) error {
-	out, err := r.runGitCommand(ctx, "tag", "-a", tag, "-m", message)
-	if err != nil {
-		r.logger.Error("failed to create tag",
-			zap.String("out", string(out)),
-			zap.Error(err),
-		)
-		return err
-	}
-	return nil
-}
-
-func (r *repo) GetVersion(ctx context.Context) (string, error) {
-	out, err := r.runGitCommand(ctx, "describe", "--tags", "--always", "--dirty", "--abbrev=7")
-	if err != nil {
-		r.logger.Error("failed to describe --tags --always --dirty --abbrev=7",
-			zap.String("out", string(out)),
-			zap.Error(err),
-		)
-		return "", err
-	}
-	return strings.TrimSpace(string(out)), nil
-}
-
+// ListCommits returns a list of commits in a given revision range.
 func (r *repo) ListCommits(ctx context.Context, revisionRange string) ([]Commit, error) {
 	args := []string{
 		"log",
@@ -143,10 +109,12 @@ func (r *repo) ListCommits(ctx context.Context, revisionRange string) ([]Commit,
 	return parseCommits(string(out))
 }
 
-func (r *repo) GetLatestCommitID(ctx context.Context) (string, error) {
-	out, err := r.runGitCommand(ctx, "rev-parse", "HEAD")
+// GetCommitHashForRev returns the hash value of the commit for a given rev.
+func (r *repo) GetCommitHashForRev(ctx context.Context, rev string) (string, error) {
+	out, err := r.runGitCommand(ctx, "rev-parse", rev)
 	if err != nil {
-		r.logger.Error("failed to get latest commit",
+		r.logger.Error("failed to get commit hash for rev",
+			zap.String("rev", rev),
 			zap.String("out", string(out)),
 			zap.Error(err),
 		)
@@ -155,18 +123,7 @@ func (r *repo) GetLatestCommitID(ctx context.Context) (string, error) {
 	return strings.TrimSpace(string(out)), nil
 }
 
-func (r *repo) GetBranch(ctx context.Context) (string, error) {
-	out, err := r.runGitCommand(ctx, "rev-parse", "--abbrev-ref", "HEAD")
-	if err != nil {
-		r.logger.Error("failed to get current branch",
-			zap.String("out", string(out)),
-			zap.Error(err),
-		)
-		return "", err
-	}
-	return strings.TrimSpace(string(out)), nil
-}
-
+// Checkout checkouts to a given commitish.
 func (r *repo) Checkout(ctx context.Context, commitish string) error {
 	out, err := r.runGitCommand(ctx, "checkout", commitish)
 	if err != nil {
@@ -180,6 +137,7 @@ func (r *repo) Checkout(ctx context.Context, commitish string) error {
 	return nil
 }
 
+// CheckoutPullRequest checkouts to the latest commit of a given pull request.
 func (r *repo) CheckoutPullRequest(ctx context.Context, number int, branch string) error {
 	target := fmt.Sprintf("pull/%d/head:%s", number, branch)
 	out, err := r.runGitCommand(ctx, "fetch", r.remote, target)
@@ -194,7 +152,52 @@ func (r *repo) CheckoutPullRequest(ctx context.Context, number int, branch strin
 	return r.Checkout(ctx, branch)
 }
 
-func (r *repo) CheckoutNewBranch(ctx context.Context, branch string) error {
+// Push pushes local changes of a given branch to the remote.
+func (r *repo) Push(ctx context.Context, branch string) error {
+	out, err := r.runGitCommand(ctx, "push", r.remote, branch)
+	if err != nil {
+		r.logger.Error("failed to push",
+			zap.String("out", string(out)),
+			zap.String("branch", branch),
+			zap.Error(err),
+		)
+		return err
+	}
+	return nil
+}
+
+// CommitChanges commits some changes into a branch.
+func (r *repo) CommitChanges(ctx context.Context, branch, message string, newBranch bool, changes map[string][]byte) error {
+	if newBranch {
+		if err := r.checkoutNewBranch(ctx, branch); err != nil {
+			return fmt.Errorf("failed to checkout new branch, branch: %v, error: %v", branch, err)
+		}
+	} else {
+		if err := r.Checkout(ctx, branch); err != nil {
+			return fmt.Errorf("failed to checkout branch, branch: %v, error: %v", branch, err)
+		}
+	}
+	// Apply the changes.
+	for p, bytes := range changes {
+		filePath := filepath.Join(r.dir, p)
+		dirPath := filepath.Dir(filePath)
+		if _, err := os.Stat(dirPath); os.IsNotExist(err) {
+			if err := os.MkdirAll(dirPath, os.ModePerm); err != nil {
+				return fmt.Errorf("failed to create directory, dir: %s, err: %v", dirPath, err)
+			}
+		}
+		if err := ioutil.WriteFile(filePath, bytes, os.ModePerm); err != nil {
+			return fmt.Errorf("failed to write file, file: %s, error: %v", filePath, err)
+		}
+	}
+	// Commit the changes.
+	if err := r.addCommit(ctx, message); err != nil {
+		return fmt.Errorf("failed to commit, branch: %s, error: %v", branch, err)
+	}
+	return nil
+}
+
+func (r *repo) checkoutNewBranch(ctx context.Context, branch string) error {
 	out, err := r.runGitCommand(ctx, "checkout", "-b", branch)
 	if err != nil {
 		r.logger.Error("failed to checkout new branch",
@@ -207,7 +210,7 @@ func (r *repo) CheckoutNewBranch(ctx context.Context, branch string) error {
 	return nil
 }
 
-func (r repo) AddCommit(ctx context.Context, message string) error {
+func (r repo) addCommit(ctx context.Context, message string) error {
 	out, err := r.runGitCommand(ctx, "add", ".")
 	if err != nil {
 		r.logger.Error("failed to add current directory",
@@ -231,75 +234,7 @@ func (r repo) AddCommit(ctx context.Context, message string) error {
 	return nil
 }
 
-func (r *repo) Push(ctx context.Context, branch string) error {
-	out, err := r.runGitCommand(ctx, "push", r.remote, branch)
-	if err != nil {
-		r.logger.Error("failed to push",
-			zap.String("out", string(out)),
-			zap.String("branch", branch),
-			zap.Error(err),
-		)
-		return err
-	}
-	return nil
-}
-
-func (r *repo) ForcePush(ctx context.Context, branch string) error {
-	out, err := r.runGitCommand(ctx, "push", "--force", r.remote, branch)
-	if err != nil {
-		r.logger.Error("failed to force push",
-			zap.String("out", string(out)),
-			zap.String("branch", branch),
-			zap.Error(err),
-		)
-		return err
-	}
-	return nil
-}
-
-func (r *repo) PullWithRebase(ctx context.Context, base string) error {
-	out, err := r.runGitCommand(ctx, "pull", r.remote, base, "--rebase")
-	if err != nil {
-		r.logger.Error("failed to pull with rebase",
-			zap.String("out", string(out)),
-			zap.String("branch", base),
-			zap.Error(err),
-		)
-		return err
-	}
-	return nil
-}
-
-func (r *repo) CommitChanges(ctx context.Context, branch, message string, newBranch bool, changes map[string][]byte) error {
-	if newBranch {
-		if err := r.CheckoutNewBranch(ctx, branch); err != nil {
-			return fmt.Errorf("failed to checkout new branch, branch: %v, error: %v", branch, err)
-		}
-	} else {
-		if err := r.Checkout(ctx, branch); err != nil {
-			return fmt.Errorf("failed to checkout branch, branch: %v, error: %v", branch, err)
-		}
-	}
-	// Apply the changes.
-	for p, bytes := range changes {
-		filePath := filepath.Join(r.dir, p)
-		dirPath := filepath.Dir(filePath)
-		if _, err := os.Stat(dirPath); os.IsNotExist(err) {
-			if err := os.MkdirAll(dirPath, os.ModePerm); err != nil {
-				return fmt.Errorf("failed to create directory, dir: %s, err: %v", dirPath, err)
-			}
-		}
-		if err := ioutil.WriteFile(filePath, bytes, os.ModePerm); err != nil {
-			return fmt.Errorf("failed to write file, file: %s, error: %v", filePath, err)
-		}
-	}
-	// Commit the changes.
-	if err := r.AddCommit(ctx, message); err != nil {
-		return fmt.Errorf("failed to commit, branch: %s, error: %v", branch, err)
-	}
-	return nil
-}
-
+// Clean deletes all local git data.
 func (r repo) Clean() error {
 	return os.RemoveAll(r.dir)
 }
