@@ -40,6 +40,7 @@ import (
 	"github.com/kapetaniosci/pipe/pkg/app/piped/deploymenttrigger"
 	"github.com/kapetaniosci/pipe/pkg/cli"
 	"github.com/kapetaniosci/pipe/pkg/config"
+	"github.com/kapetaniosci/pipe/pkg/git"
 	"github.com/kapetaniosci/pipe/pkg/rpc/rpcauth"
 	"github.com/kapetaniosci/pipe/pkg/rpc/rpcclient"
 )
@@ -53,6 +54,9 @@ type piped struct {
 	certFile     string
 	apiAddress   string
 	adminPort    int
+
+	gitUserName string
+	gitEmail    string
 
 	kubeconfig string
 	masterURL  string
@@ -82,6 +86,9 @@ func NewCommand() *cobra.Command {
 	cmd.Flags().StringVar(&p.certFile, "cert-file", p.certFile, "The path to the TLS certificate file.")
 	cmd.Flags().StringVar(&p.apiAddress, "api-address", p.apiAddress, "The address used to connect to API server.")
 	cmd.Flags().IntVar(&p.adminPort, "admin-port", p.adminPort, "The port number used to run a HTTP server for admin tasks such as metrics, healthz.")
+
+	cmd.Flags().StringVar(&p.gitUserName, "git-username", p.gitUserName, "The username used to be configured fot git commands.")
+	cmd.Flags().StringVar(&p.gitEmail, "git-email", p.gitEmail, "The email used to be configured fot git commands.")
 
 	cmd.Flags().StringVar(&p.kubeconfig, "kube-config", p.kubeconfig, "Path to a kubeconfig. Only required if out-of-cluster.")
 	cmd.Flags().StringVar(&p.masterURL, "master", p.masterURL, "The address of the Kubernetes API server. Overrides any value in kubeconfig. Only required if out-of-cluster.")
@@ -136,6 +143,14 @@ func (p *piped) run(ctx context.Context, t cli.Telemetry) error {
 		return err
 	}
 
+	// Initialize git client.
+	gitClient, err := git.NewClient(p.gitUserName, p.gitEmail, t.Logger)
+	if err != nil {
+		t.Logger.Error("failed to initialize git client", zap.Error(err))
+		return err
+	}
+	defer gitClient.Clean()
+
 	// Start running application state store.
 	{
 		s := appstatestore.NewStore(kubeConfig, p.gracePeriod, t.Logger)
@@ -184,7 +199,7 @@ func (p *piped) run(ctx context.Context, t cli.Telemetry) error {
 
 	// Start running deployment trigger.
 	{
-		t := deploymenttrigger.NewTrigger(apiClient, applicationStore, commandStore, pipedConfig, p.gracePeriod, t.Logger)
+		t := deploymenttrigger.NewTrigger(apiClient, gitClient, applicationStore, commandStore, pipedConfig, p.gracePeriod, t.Logger)
 		group.Go(func() error {
 			return t.Run(ctx)
 		})

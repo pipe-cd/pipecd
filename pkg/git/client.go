@@ -153,8 +153,10 @@ func (c *client) Clone(ctx context.Context, base, repoFullName, destination stri
 	}
 
 	r := NewRepo(repoFullName, destination, c.gitPath, remote, c.logger)
-	if err := r.SetUser(ctx, c.username, c.email); err != nil {
-		return nil, fmt.Errorf("failed to set user: %v", err)
+	if c.username != "" || c.email != "" {
+		if err := r.SetUser(ctx, c.username, c.email); err != nil {
+			return nil, fmt.Errorf("failed to set user: %v", err)
+		}
 	}
 
 	return r, nil
