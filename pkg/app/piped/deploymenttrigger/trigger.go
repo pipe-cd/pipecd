@@ -150,7 +150,7 @@ func (t *DeploymentTrigger) check(ctx context.Context) error {
 		}
 
 		// Get the head commit of the repository.
-		headCommitHash, err := gitRepo.GetCommitHashForRev(ctx, branch)
+		headCommit, err := gitRepo.GetLatestCommit(ctx)
 		if err != nil {
 			t.logger.Error("failed to get head commit hash",
 				zap.String("repo-id", repoID),
@@ -170,8 +170,8 @@ func (t *DeploymentTrigger) check(ctx context.Context) error {
 
 			// Check whether the most recently applied one is the head commit or not.
 			// If not, nothing to do for this time.
-			if triggeredCommitHash == headCommitHash {
-				t.logger.Info(fmt.Sprintf("no update to sync for application: %s, hash: %s", app.Id, headCommitHash))
+			if triggeredCommitHash == headCommit.Hash {
+				t.logger.Info(fmt.Sprintf("no update to sync for application: %s, hash: %s", app.Id, headCommit.Hash))
 				continue
 			}
 
@@ -181,12 +181,12 @@ func (t *DeploymentTrigger) check(ctx context.Context) error {
 			// Send a request to API to create a new deployment.
 			t.logger.Info(fmt.Sprintf("application %s will be synced because of new commit", app.Id),
 				zap.String("previous-commit-hash", triggeredCommitHash),
-				zap.String("head-commit-hash", headCommitHash),
+				zap.String("head-commit-hash", headCommit.Hash),
 			)
-			if err := t.triggerDeployment(ctx, app, headCommitHash); err != nil {
+			if err := t.triggerDeployment(ctx, app, branch, headCommit); err != nil {
 				continue
 			}
-			t.triggeredCommits[app.Id] = headCommitHash
+			t.triggeredCommits[app.Id] = headCommit.Hash
 		}
 	}
 	return nil
@@ -208,7 +208,7 @@ func (t *DeploymentTrigger) listApplications(ctx context.Context) map[string][]*
 	return m
 }
 
-func (t *DeploymentTrigger) triggerDeployment(ctx context.Context, app *model.Application, commit string) error {
+func (t *DeploymentTrigger) triggerDeployment(ctx context.Context, app *model.Application, branch string, commit git.Commit) error {
 	// Detect the update type (just scale or need rollout with pipeline) by checking the change
 	var (
 		now        = time.Now()
@@ -221,13 +221,13 @@ func (t *DeploymentTrigger) triggerDeployment(ctx context.Context, app *model.Ap
 			Kind:          app.Kind,
 			Trigger: &model.DeploymentTrigger{
 				Commit: &model.Commit{
-					Revision:  commit,
-					Message:   "message",
-					Author:    "author",
-					Branch:    "branch",
-					CreatedAt: 10,
+					Revision:  commit.Hash,
+					Message:   commit.Message,
+					Author:    commit.Author,
+					Branch:    branch,
+					CreatedAt: int64(commit.CreatedAt),
 				},
-				User:      "author",
+				User:      commit.Author,
 				Timestamp: now.Unix(),
 			},
 			GitPath: app.GitPath,

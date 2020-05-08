@@ -37,6 +37,7 @@ type Repo interface {
 	GetClonedBranch() string
 
 	ListCommits(ctx context.Context, visionRange string) ([]Commit, error)
+	GetLatestCommit(ctx context.Context) (Commit, error)
 	GetCommitHashForRev(ctx context.Context, rev string) (string, error)
 	Checkout(ctx context.Context, commitish string) error
 	CheckoutPullRequest(ctx context.Context, number int, branch string) error
@@ -95,6 +96,18 @@ func (r *repo) ListCommits(ctx context.Context, revisionRange string) ([]Commit,
 		return nil, err
 	}
 	return parseCommits(string(out))
+}
+
+// GetLatestCommit returns the most recent commit of current branch.
+func (r *repo) GetLatestCommit(ctx context.Context) (Commit, error) {
+	commits, err := r.ListCommits(ctx, "-1")
+	if err != nil {
+		return Commit{}, err
+	}
+	if len(commits) != 1 {
+		return Commit{}, fmt.Errorf("commits must contain one item, got: %d", len(commits))
+	}
+	return commits[0], nil
 }
 
 // GetCommitHashForRev returns the hash value of the commit for a given rev.
