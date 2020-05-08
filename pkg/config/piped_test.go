@@ -35,6 +35,7 @@ func TestPipedConfig(t *testing.T) {
 			expectedKind:       KindPiped,
 			expectedAPIVersion: "pipecd.dev/v1beta1",
 			expectedSpec: &PipedSpec{
+				SyncInterval: Duration(time.Minute),
 				Git: PipedGit{
 					Username:        "username",
 					Email:           "username@email.com",
@@ -43,14 +44,14 @@ func TestPipedConfig(t *testing.T) {
 				},
 				Repositories: []PipedRepository{
 					{
-						Remote:       "git@github.com:org/repo1.git",
-						Branch:       "master",
-						PollInterval: Duration(time.Minute),
+						RepoID: "repo1",
+						Remote: "git@github.com:org/repo1.git",
+						Branch: "master",
 					},
 					{
-						Remote:       "git@github.com:org/repo2.git",
-						Branch:       "master",
-						PollInterval: Duration(2 * time.Minute),
+						RepoID: "repo2",
+						Remote: "git@github.com:org/repo2.git",
+						Branch: "master",
 					},
 				},
 				Destinations: []PipedDestination{

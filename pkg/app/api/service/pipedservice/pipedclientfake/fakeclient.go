@@ -46,10 +46,7 @@ func NewClient(logger *zap.Logger) *fakeClient {
 				ProjectId: "fake-project-id",
 				Kind:      model.ApplicationKind_KUBERNETES,
 				GitPath: &model.ApplicationGitPath{
-					Host:   "https://github.com",
-					Org:    "fake-org",
-					Repo:   "fake-repo",
-					Branch: "master",
+					RepoId: "fake-repo",
 					Path:   "demoapp",
 				},
 				Disabled: false,

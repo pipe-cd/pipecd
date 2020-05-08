@@ -16,7 +16,11 @@ package config
 
 // PipedSpec contains configurable data used to while running Piped.
 type PipedSpec struct {
-	Git               PipedGit           `json:"git"`
+	// How often to check whether an application should be synced.
+	SyncInterval Duration `json:"syncInterval"`
+	// Git configuration needed for git commands.
+	Git PipedGit `json:"git"`
+	// List of git repositories this piped will handle.
 	Repositories      []PipedRepository  `json:"repositories"`
 	Destinations      []PipedDestination `json:"destinations"`
 	AnalysisProviders []AnalysisProvider `json:"analysisProviders"`
@@ -25,6 +29,15 @@ type PipedSpec struct {
 // Validate validates configured data of all fields.
 func (s *PipedSpec) Validate() error {
 	return nil
+}
+
+// GetRepositoryMap returns a map of repositories where key is repo id.
+func (s *PipedSpec) GetRepositoryMap() map[string]PipedRepository {
+	m := make(map[string]PipedRepository, len(s.Repositories))
+	for _, repo := range s.Repositories {
+		m[repo.RepoID] = repo
+	}
+	return m
 }
 
 type PipedGit struct {
@@ -39,13 +52,14 @@ type PipedGit struct {
 }
 
 type PipedRepository struct {
+	// Unique identifier for this repository.
+	// This must be unique in the piped scope.
+	RepoID string `json:"repoId"`
 	// Remote address of the repository.
 	// e.g. git@github.com:org/repo1.git
 	Remote string `json:"remote"`
 	// The branch should be tracked.
 	Branch string `json:"branch"`
-	// How often to check the new commit merged into the branch.
-	PollInterval Duration `json:"pollInterval"`
 }
 
 type DestinationType string

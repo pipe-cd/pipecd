@@ -22,7 +22,7 @@ import "validate/validate.proto";
 enum CommandType {
     COMMAND_APPLICATION = 0;
     COMMAND_DEPLOYMENT = 1;
-    COMMAND_REPO_HOOK = 2;
+    COMMAND_GIT_REPO_HOOK = 2;
 }
 
 enum CommandStatus {
@@ -35,7 +35,7 @@ enum CommandStatus {
 message Command {
     // The generated unique identifier.
     string id = 1 [(validate.rules).string.min_len = 1];
-    string piped_id = 2;
+    string piped_id = 2 [(validate.rules).string.min_len = 1];
     string application_id = 3;
     string deployment_id = 4;
     CommandType type = 5 [(validate.rules).enum.defined_only = true];

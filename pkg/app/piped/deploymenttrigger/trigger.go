@@ -34,11 +34,6 @@ import (
 	"github.com/kapetaniosci/pipe/pkg/model"
 )
 
-type repoStore interface {
-	GetHeadCommit(ctx context.Context, org, repo string) (string, error)
-	ListChangedFiles(ctx context.Context, org, repo, from, to string) error
-}
-
 type apiClient interface {
 	ListApplications(ctx context.Context, in *pipedservice.ListApplicationsRequest, opts ...grpc.CallOption) (*pipedservice.ListApplicationsResponse, error)
 	CreateDeployment(ctx context.Context, in *pipedservice.CreateDeploymentRequest, opts ...grpc.CallOption) (*pipedservice.CreateDeploymentResponse, error)
@@ -63,7 +58,6 @@ type DeploymentTrigger struct {
 	gitClient        gitClient
 	applicationStore applicationStore
 	commandStore     commandStore
-	repoStore        repoStore
 	config           *config.PipedSpec
 	triggeredCommits map[string]string
 	mu               sync.Mutex
@@ -90,7 +84,7 @@ func NewTrigger(apiClient apiClient, gitClient gitClient, appStore applicationSt
 // Run starts running DeploymentTrigger until the specified context
 // has done. This also waits for its cleaning up before returning.
 func (t *DeploymentTrigger) Run(ctx context.Context) error {
-	ticker := time.NewTicker(10 * time.Second)
+	ticker := time.NewTicker(time.Duration(t.config.SyncInterval))
 	defer ticker.Stop()
 
 	go func() {
@@ -115,12 +109,28 @@ func (t *DeploymentTrigger) check(ctx context.Context) error {
 		return err
 	}
 
-	for repo, apps := range applications {
+	repos := t.config.GetRepositoryMap()
+	if len(repos) == 0 {
+		t.logger.Info("no repositories were configured for this piped")
+		return nil
+	}
+
+	for repoID, apps := range applications {
+		repo, ok := repos[repoID]
+		if !ok {
+			t.logger.Warn("detected some applications are binding with an non existent repository",
+				zap.String("repo-id", repoID),
+				zap.String("application-id", apps[0].Id),
+			)
+			continue
+		}
+
 		// Get the head commit of the repository.
-		headCommitSHA, err := t.repoStore.GetHeadCommit(ctx, repo.Org, repo.Repo)
+		headCommitSHA, err := t.gitClient.GetLatestRemoteHashForBranch(ctx, repo.Remote, repo.Branch)
 		if err != nil {
 			continue
 		}
+
 		for _, app := range apps {
 			// Get the most recently applied commit of this application.
 			// If it is not in the memory cache, we have to call the API to list the deployments
@@ -149,14 +159,7 @@ func (t *DeploymentTrigger) check(ctx context.Context) error {
 	return nil
 }
 
-type repo struct {
-	Host   string
-	Org    string
-	Repo   string
-	Branch string
-}
-
-func (t *DeploymentTrigger) listApplications(ctx context.Context) (map[repo][]*model.Application, error) {
+func (t *DeploymentTrigger) listApplications(ctx context.Context) (map[string][]*model.Application, error) {
 	return nil, nil
 }
 
