@@ -38,16 +38,16 @@ type fakeClient struct {
 func NewClient(logger *zap.Logger) *fakeClient {
 	return &fakeClient{
 		applications: map[string]*model.Application{
-			"fake-app-1": {
-				Id:        "fake-app-1",
-				Name:      "fake-app-1",
-				Env:       "fake-env",
-				PipedId:   "fake-piped-id",
-				ProjectId: "fake-project-id",
+			"pipe-debug-k8s-app": {
+				Id:        "debug-project/dev/pipe-debug-k8s-app",
+				Name:      "pipe-debug-k8s-app",
+				Env:       "dev",
+				PipedId:   "debug-pipe-id",
+				ProjectId: "debug-project",
 				Kind:      model.ApplicationKind_KUBERNETES,
 				GitPath: &model.ApplicationGitPath{
-					RepoId: "fake-repo",
-					Path:   "demoapp",
+					RepoId: "pipe-debug",
+					Path:   "k8s/plain-yaml-app",
 				},
 				Disabled: false,
 			},

@@ -22,6 +22,7 @@ package deploymenttrigger
 
 import (
 	"context"
+	"fmt"
 	"sync"
 	"time"
 
@@ -35,7 +36,6 @@ import (
 )
 
 type apiClient interface {
-	ListApplications(ctx context.Context, in *pipedservice.ListApplicationsRequest, opts ...grpc.CallOption) (*pipedservice.ListApplicationsResponse, error)
 	CreateDeployment(ctx context.Context, in *pipedservice.CreateDeploymentRequest, opts ...grpc.CallOption) (*pipedservice.CreateDeploymentResponse, error)
 }
 
@@ -84,32 +84,31 @@ func NewTrigger(apiClient apiClient, gitClient gitClient, appStore applicationSt
 // Run starts running DeploymentTrigger until the specified context
 // has done. This also waits for its cleaning up before returning.
 func (t *DeploymentTrigger) Run(ctx context.Context) error {
+	t.logger.Info("start running deployment trigger")
 	ticker := time.NewTicker(time.Duration(t.config.SyncInterval))
 	defer ticker.Stop()
 
-	go func() {
-		for {
-			select {
-			case <-ctx.Done():
-				return
-			case <-ticker.C:
-				t.check(ctx)
-			}
+L:
+	for {
+		select {
+		case <-ctx.Done():
+			break L
+		case <-ticker.C:
+			t.check(ctx)
 		}
-	}()
+	}
 
+	t.logger.Info("deployment trigger has been stopped")
 	return nil
 }
 
 func (t *DeploymentTrigger) check(ctx context.Context) error {
 	// List all applications that should be handled by this piped
 	// and then group them by repository.
-	applications, err := t.listApplications(ctx)
-	if err != nil {
-		return err
-	}
-
-	repos := t.config.GetRepositoryMap()
+	var (
+		applications = t.listApplications(ctx)
+		repos        = t.config.GetRepositoryMap()
+	)
 	if len(repos) == 0 {
 		t.logger.Info("no repositories were configured for this piped")
 		return nil
@@ -126,8 +125,13 @@ func (t *DeploymentTrigger) check(ctx context.Context) error {
 		}
 
 		// Get the head commit of the repository.
-		headCommitSHA, err := t.gitClient.GetLatestRemoteHashForBranch(ctx, repo.Remote, repo.Branch)
+		headCommitHash, err := t.gitClient.GetLatestRemoteHashForBranch(ctx, repo.Remote, repo.Branch)
 		if err != nil {
+			t.logger.Error("failed to get head commit hash",
+				zap.String("repo-id", repo.RepoID),
+				zap.String("repo-remote", repo.Remote),
+				zap.Error(err),
+			)
 			continue
 		}
 
@@ -135,14 +139,14 @@ func (t *DeploymentTrigger) check(ctx context.Context) error {
 			// Get the most recently applied commit of this application.
 			// If it is not in the memory cache, we have to call the API to list the deployments
 			// and use the commit sha of the most recent one.
-			triggeredCommitSHA, ok := t.triggeredCommits[app.Id]
+			triggeredCommitHash, ok := t.triggeredCommits[app.Id]
 			if !ok {
 				t.triggeredCommits[app.Id] = "retrieved-one"
 			}
 
 			// Check whether the most recently applied one is the head commit or not.
 			// If not, nothing to do for this time.
-			if triggeredCommitSHA == headCommitSHA {
+			if triggeredCommitHash == headCommitHash {
 				continue
 			}
 
@@ -150,17 +154,33 @@ func (t *DeploymentTrigger) check(ctx context.Context) error {
 			// Determine whether this application was touch by those changed files.
 
 			// Send a request to API to create a new deployment.
-			if err := t.triggerDeployment(ctx, app, headCommitSHA); err != nil {
+			t.logger.Info(fmt.Sprintf("application %s will be synced because of new commit", app.Id),
+				zap.String("previous-commit-hash", triggeredCommitHash),
+				zap.String("head-commit-hash", headCommitHash),
+			)
+			if err := t.triggerDeployment(ctx, app, headCommitHash); err != nil {
 				continue
 			}
-			t.triggeredCommits[app.Id] = headCommitSHA
+			t.triggeredCommits[app.Id] = headCommitHash
 		}
 	}
 	return nil
 }
 
-func (t *DeploymentTrigger) listApplications(ctx context.Context) (map[string][]*model.Application, error) {
-	return nil, nil
+func (t *DeploymentTrigger) listApplications(ctx context.Context) map[string][]*model.Application {
+	var (
+		apps = t.applicationStore.ListApplications()
+		m    = make(map[string][]*model.Application)
+	)
+	for _, app := range apps {
+		repoId := app.GitPath.RepoId
+		if _, ok := m[repoId]; !ok {
+			m[repoId] = []*model.Application{app}
+		} else {
+			m[repoId] = append(m[repoId], app)
+		}
+	}
+	return m
 }
 
 func (t *DeploymentTrigger) triggerDeployment(ctx context.Context, app *model.Application, commit string) error {
