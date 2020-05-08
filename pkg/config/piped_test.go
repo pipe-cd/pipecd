@@ -36,17 +36,19 @@ func TestPipedConfig(t *testing.T) {
 			expectedAPIVersion: "pipecd.dev/v1beta1",
 			expectedSpec: &PipedSpec{
 				Git: PipedGit{
+					Username:        "username",
+					Email:           "username@email.com",
 					SSHKeyFile:      "/etc/pipecd-piped/ssh.key",
 					AccessTokenFile: "/etc/pipecd-piped/github.token",
 				},
 				Repositories: []PipedRepository{
 					{
-						Repo:         "git@github.com:org/repo1",
+						Remote:       "git@github.com:org/repo1.git",
 						Branch:       "master",
 						PollInterval: Duration(time.Minute),
 					},
 					{
-						Repo:         "git@github.com:org/repo2",
+						Remote:       "git@github.com:org/repo2.git",
 						Branch:       "master",
 						PollInterval: Duration(2 * time.Minute),
 					},

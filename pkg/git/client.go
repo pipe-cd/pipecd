@@ -31,7 +31,7 @@ import (
 // Client is a git client for cloning/fetching git repo.
 // It keeps a local cache for faster future cloning.
 type Client interface {
-	Clone(ctx context.Context, base, repoFullName, destination string) (Repo, error)
+	Clone(ctx context.Context, remote, destination string) (Repo, error)
 	GetLatestRemoteHashForBranch(ctx context.Context, remote, branch string) (string, error)
 	Clean() error
 }
@@ -88,19 +88,19 @@ func (c *client) GetLatestRemoteHashForBranch(ctx context.Context, remote, branc
 }
 
 // Clone clones a specific GitHub repository.
-func (c *client) Clone(ctx context.Context, base, repoFullName, destination string) (Repo, error) {
+func (c *client) Clone(ctx context.Context, remote, destination string) (Repo, error) {
 	var (
-		remote        = fmt.Sprintf("%s/%s", base, repoFullName)
-		repoCachePath = filepath.Join(c.cacheDir, repoFullName) + ".git"
+		key           = keyFromRemote(remote)
+		repoCachePath = filepath.Join(c.cacheDir, key)
 		logger        = c.logger.With(
-			zap.String("base", base),
-			zap.String("repo", repoFullName),
+			zap.String("key", key),
+			zap.String("remote", remote),
 			zap.String("repo-cache-path", repoCachePath),
 		)
 	)
 
-	c.lockRepo(repoFullName)
-	defer c.unlockRepo(repoFullName)
+	c.lockRepo(key)
+	defer c.unlockRepo(key)
 
 	_, err := os.Stat(repoCachePath)
 	if err != nil && !os.IsNotExist(err) {
@@ -109,7 +109,7 @@ func (c *client) Clone(ctx context.Context, base, repoFullName, destination stri
 
 	if os.IsNotExist(err) {
 		// Cache miss, clone for the first time.
-		logger.Info(fmt.Sprintf("cloning %s for the first time", repoFullName))
+		logger.Info(fmt.Sprintf("cloning %s for the first time", key))
 		if err := os.MkdirAll(filepath.Dir(repoCachePath), os.ModePerm); err != nil && !os.IsExist(err) {
 			return nil, err
 		}
@@ -125,7 +125,7 @@ func (c *client) Clone(ctx context.Context, base, repoFullName, destination stri
 		}
 	} else {
 		// Cache hit. Do a git fetch to keep updated.
-		c.logger.Info(fmt.Sprintf("fetching %s to update the cache", repoFullName))
+		c.logger.Info(fmt.Sprintf("fetching %s to update the cache", key))
 		out, err := retryCommand(3, time.Second, c.logger, func() ([]byte, error) {
 			return c.runGitCommand(ctx, repoCachePath, "fetch")
 		})
@@ -152,7 +152,7 @@ func (c *client) Clone(ctx context.Context, base, repoFullName, destination stri
 		return nil, fmt.Errorf("failed to clone from local: %v", err)
 	}
 
-	r := NewRepo(repoFullName, destination, c.gitPath, remote, c.logger)
+	r := NewRepo(destination, c.gitPath, remote, c.logger)
 	if c.username != "" || c.email != "" {
 		if err := r.SetUser(ctx, c.username, c.email); err != nil {
 			return nil, fmt.Errorf("failed to set user: %v", err)
@@ -167,20 +167,20 @@ func (c *client) Clean() error {
 	return os.RemoveAll(c.cacheDir)
 }
 
-func (c *client) lockRepo(repoFullName string) {
+func (c *client) lockRepo(key string) {
 	c.mu.Lock()
-	if _, ok := c.repoLocks[repoFullName]; !ok {
-		c.repoLocks[repoFullName] = &sync.Mutex{}
+	if _, ok := c.repoLocks[key]; !ok {
+		c.repoLocks[key] = &sync.Mutex{}
 	}
-	mu := c.repoLocks[repoFullName]
+	mu := c.repoLocks[key]
 	c.mu.Unlock()
 
 	mu.Lock()
 }
 
-func (c *client) unlockRepo(repoFullName string) {
+func (c *client) unlockRepo(key string) {
 	c.mu.Lock()
-	c.repoLocks[repoFullName].Unlock()
+	c.repoLocks[key].Unlock()
 	c.mu.Unlock()
 }
 
@@ -201,4 +201,16 @@ func retryCommand(retries int, interval time.Duration, logger *zap.Logger, comma
 		time.Sleep(interval)
 	}
 	return
+}
+
+var (
+	remoteReplacer = strings.NewReplacer(
+		"/", ".",
+		"@", ".",
+		":", ".",
+	)
+)
+
+func keyFromRemote(remote string) string {
+	return remoteReplacer.Replace(remote)
 }

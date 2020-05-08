@@ -28,6 +28,8 @@ func (s *PipedSpec) Validate() error {
 }
 
 type PipedGit struct {
+	Username string `json:"username"`
+	Email    string `json:"email"`
 	// The path to the private ssh key file.
 	// This will be used to clone the source code of the git repositories.
 	SSHKeyFile string `json:"sshKeyFile"`
@@ -37,7 +39,10 @@ type PipedGit struct {
 }
 
 type PipedRepository struct {
-	Repo   string `json:"repo"`
+	// Remote address of the repository.
+	// e.g. git@github.com:org/repo1.git
+	Remote string `json:"remote"`
+	// The branch should be tracked.
 	Branch string `json:"branch"`
 	// How often to check the new commit merged into the branch.
 	PollInterval Duration `json:"pollInterval"`

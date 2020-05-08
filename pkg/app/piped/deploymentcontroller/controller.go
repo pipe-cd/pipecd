@@ -34,6 +34,7 @@ import (
 	"github.com/kapetaniosci/pipe/pkg/app/api/service/pipedservice"
 	"github.com/kapetaniosci/pipe/pkg/app/piped/logpersister"
 	"github.com/kapetaniosci/pipe/pkg/config"
+	"github.com/kapetaniosci/pipe/pkg/git"
 	"github.com/kapetaniosci/pipe/pkg/model"
 )
 
@@ -45,6 +46,10 @@ type apiClient interface {
 	ReportDeploymentCompleted(ctx context.Context, in *pipedservice.ReportDeploymentCompletedRequest, opts ...grpc.CallOption) (*pipedservice.ReportDeploymentCompletedResponse, error)
 }
 
+type gitClient interface {
+	Clone(ctx context.Context, remote, destination string) (git.Repo, error)
+}
+
 type commandStore interface {
 	ListDeploymentCommands(deploymentID string) []*model.Command
 	ReportCommandHandled(ctx context.Context, c *model.Command, status model.CommandStatus, metadata map[string]string) error
@@ -52,6 +57,7 @@ type commandStore interface {
 
 type DeploymentController struct {
 	apiClient         apiClient
+	gitClient         gitClient
 	commandStore      commandStore
 	pipedConfig       *config.PipedSpec
 	logPersister      logpersister.Persister
@@ -68,7 +74,7 @@ type DeploymentController struct {
 }
 
 // NewController creates a new instance for DeploymentController.
-func NewController(apiClient apiClient, cmdStore commandStore, cfg *config.PipedSpec, gracePeriod time.Duration, logger *zap.Logger) *DeploymentController {
+func NewController(apiClient apiClient, gitClient gitClient, cmdStore commandStore, cfg *config.PipedSpec, gracePeriod time.Duration, logger *zap.Logger) *DeploymentController {
 	var (
 		lp  = logpersister.NewPersister(apiClient, logger)
 		mdp = metadataPersister{apiClient: apiClient}
@@ -76,6 +82,7 @@ func NewController(apiClient apiClient, cmdStore commandStore, cfg *config.Piped
 	)
 	return &DeploymentController{
 		apiClient:         apiClient,
+		gitClient:         gitClient,
 		commandStore:      cmdStore,
 		pipedConfig:       cfg,
 		logPersister:      lp,

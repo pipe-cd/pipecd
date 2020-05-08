@@ -55,9 +55,6 @@ type piped struct {
 	apiAddress   string
 	adminPort    int
 
-	gitUserName string
-	gitEmail    string
-
 	kubeconfig string
 	masterURL  string
 	namespace  string
@@ -87,9 +84,6 @@ func NewCommand() *cobra.Command {
 	cmd.Flags().StringVar(&p.apiAddress, "api-address", p.apiAddress, "The address used to connect to API server.")
 	cmd.Flags().IntVar(&p.adminPort, "admin-port", p.adminPort, "The port number used to run a HTTP server for admin tasks such as metrics, healthz.")
 
-	cmd.Flags().StringVar(&p.gitUserName, "git-username", p.gitUserName, "The username used to be configured fot git commands.")
-	cmd.Flags().StringVar(&p.gitEmail, "git-email", p.gitEmail, "The email used to be configured fot git commands.")
-
 	cmd.Flags().StringVar(&p.kubeconfig, "kube-config", p.kubeconfig, "Path to a kubeconfig. Only required if out-of-cluster.")
 	cmd.Flags().StringVar(&p.masterURL, "master", p.masterURL, "The address of the Kubernetes API server. Overrides any value in kubeconfig. Only required if out-of-cluster.")
 	cmd.Flags().StringVar(&p.namespace, "namespace", p.namespace, "The namespace where this piped is running.")
@@ -109,7 +103,7 @@ func (p *piped) run(ctx context.Context, t cli.Telemetry) error {
 	group, ctx := errgroup.WithContext(ctx)
 
 	// Load piped configuration from specified file.
-	pipedConfig, err := p.loadConfig()
+	cfg, err := p.loadConfig()
 	if err != nil {
 		t.Logger.Error("failed to load piped configuration", zap.Error(err))
 		return err
@@ -144,7 +138,7 @@ func (p *piped) run(ctx context.Context, t cli.Telemetry) error {
 	}
 
 	// Initialize git client.
-	gitClient, err := git.NewClient(p.gitUserName, p.gitEmail, t.Logger)
+	gitClient, err := git.NewClient(cfg.Git.Username, cfg.Git.Email, t.Logger)
 	if err != nil {
 		t.Logger.Error("failed to initialize git client", zap.Error(err))
 		return err
@@ -191,7 +185,7 @@ func (p *piped) run(ctx context.Context, t cli.Telemetry) error {
 
 	// Start running deployment controller.
 	{
-		c := deploymentcontroller.NewController(apiClient, commandStore, pipedConfig, p.gracePeriod, t.Logger)
+		c := deploymentcontroller.NewController(apiClient, gitClient, commandStore, cfg, p.gracePeriod, t.Logger)
 		group.Go(func() error {
 			return c.Run(ctx)
 		})
@@ -199,7 +193,7 @@ func (p *piped) run(ctx context.Context, t cli.Telemetry) error {
 
 	// Start running deployment trigger.
 	{
-		t := deploymenttrigger.NewTrigger(apiClient, gitClient, applicationStore, commandStore, pipedConfig, p.gracePeriod, t.Logger)
+		t := deploymenttrigger.NewTrigger(apiClient, gitClient, applicationStore, commandStore, cfg, p.gracePeriod, t.Logger)
 		group.Go(func() error {
 			return t.Run(ctx)
 		})

@@ -46,21 +46,19 @@ type Repo interface {
 }
 
 type repo struct {
-	fullName string
-	dir      string
-	gitPath  string
-	remote   string
-	logger   *zap.Logger
+	dir     string
+	gitPath string
+	remote  string
+	logger  *zap.Logger
 }
 
 // NewRepo creates a new Repo instance.
-func NewRepo(fullName, dir, gitPath, remote string, logger *zap.Logger) Repo {
+func NewRepo(dir, gitPath, remote string, logger *zap.Logger) Repo {
 	return &repo{
-		fullName: fullName,
-		dir:      dir,
-		gitPath:  gitPath,
-		remote:   remote,
-		logger:   logger.With(zap.String("repo", fullName)),
+		dir:     dir,
+		gitPath: gitPath,
+		remote:  remote,
+		logger:  logger.With(zap.String("repo", remote)),
 	}
 }
 

@@ -2,13 +2,15 @@ apiVersion: pipecd.dev/v1beta1
 kind: Piped
 spec:
   git:
+    username: username
+    email: username@email.com
     sshKeyFile: /etc/pipecd-piped/ssh.key
     accessTokenFile: /etc/pipecd-piped/github.token
   repositories:
-    - repo: git@github.com:org/repo1
+    - remote: git@github.com:org/repo1.git
       branch: master
       pollInterval: 1m
-    - repo: git@github.com:org/repo2
+    - remote: git@github.com:org/repo2.git
       branch: master
       pollInterval: 2m    
   destinations:
