@@ -47,7 +47,7 @@ type apiClient interface {
 }
 
 type gitClient interface {
-	Clone(ctx context.Context, remote, destination string) (git.Repo, error)
+	Clone(ctx context.Context, repoID, remote, branch, destination string) (git.Repo, error)
 }
 
 type commandStore interface {

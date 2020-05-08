@@ -48,7 +48,7 @@ func TestClone(t *testing.T) {
 
 	repo1Path, err := ioutil.TempDir("", "repo1path")
 	require.NoError(t, err)
-	repo1, err := c.Clone(ctx, filepath.Join(faker.dir, "test-clone-org/repo-1"), repo1Path)
+	repo1, err := c.Clone(ctx, "repo-1", filepath.Join(faker.dir, "test-clone-org/repo-1"), "", repo1Path)
 	require.NoError(t, err)
 	require.NotNil(t, repo1)
 	defer func() {
@@ -60,7 +60,7 @@ func TestClone(t *testing.T) {
 
 	repo2Path, err := ioutil.TempDir("", "repo2path")
 	require.NoError(t, err)
-	repo2, err := c.Clone(ctx, filepath.Join(faker.dir, "test-clone-org/repo-2"), repo2Path)
+	repo2, err := c.Clone(ctx, "repo-2", filepath.Join(faker.dir, "test-clone-org/repo-2"), "", repo2Path)
 	require.NoError(t, err)
 	require.NotNil(t, repo2)
 	defer func() {
@@ -81,7 +81,7 @@ func TestClone(t *testing.T) {
 	require.NoError(t, err)
 	repo12Path, err := ioutil.TempDir("", "repo12path")
 	require.NoError(t, err)
-	repo12, err := c.Clone(ctx, filepath.Join(faker.dir, "test-clone-org/repo-1"), repo12Path)
+	repo12, err := c.Clone(ctx, "repo-1", filepath.Join(faker.dir, "test-clone-org/repo-1"), "master", repo12Path)
 	require.NoError(t, err)
 	require.NotNil(t, repo12)
 	defer func() {
@@ -216,25 +216,5 @@ func TestRetryCommand(t *testing.T) {
 		})
 		assert.Equal(t, commandOut, out)
 		assert.Equal(t, tc.expectedError, err)
-	}
-}
-
-func TestKeyFromRemote(t *testing.T) {
-	testcases := []struct {
-		remote   string
-		expected string
-	}{
-		{
-			remote:   "git@github.com:org/repo1.git",
-			expected: "git.github.com.org.repo1.git",
-		},
-		{
-			remote:   "https://github.com/org/repo1.git",
-			expected: "https...github.com.org.repo1.git",
-		},
-	}
-	for _, tc := range testcases {
-		got := keyFromRemote(tc.remote)
-		assert.Equal(t, tc.expected, got)
 	}
 }

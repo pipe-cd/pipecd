@@ -32,6 +32,7 @@ import (
 
 	"github.com/kapetaniosci/pipe/pkg/app/api/service/pipedservice"
 	"github.com/kapetaniosci/pipe/pkg/config"
+	"github.com/kapetaniosci/pipe/pkg/git"
 	"github.com/kapetaniosci/pipe/pkg/model"
 )
 
@@ -40,6 +41,7 @@ type apiClient interface {
 }
 
 type gitClient interface {
+	Clone(ctx context.Context, repoID, remote, branch, destination string) (git.Repo, error)
 	GetLatestRemoteHashForBranch(ctx context.Context, remote, branch string) (string, error)
 }
 
@@ -85,6 +87,9 @@ func NewTrigger(apiClient apiClient, gitClient gitClient, appStore applicationSt
 // has done. This also waits for its cleaning up before returning.
 func (t *DeploymentTrigger) Run(ctx context.Context) error {
 	t.logger.Info("start running deployment trigger")
+
+	// Pre-clone to cache the registered git repositories.
+
 	ticker := time.NewTicker(time.Duration(t.config.SyncInterval))
 	defer ticker.Stop()
 
@@ -124,7 +129,8 @@ func (t *DeploymentTrigger) check(ctx context.Context) error {
 			continue
 		}
 
-		// Get the head commit of the repository.
+		// Fetch to update the repository and then
+		// get the head commit of the repository.
 		headCommitHash, err := t.gitClient.GetLatestRemoteHashForBranch(ctx, repo.Remote, repo.Branch)
 		if err != nil {
 			t.logger.Error("failed to get head commit hash",

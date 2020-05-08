@@ -31,8 +31,11 @@ import (
 // Client is a git client for cloning/fetching git repo.
 // It keeps a local cache for faster future cloning.
 type Client interface {
-	Clone(ctx context.Context, remote, destination string) (Repo, error)
+	// Clone clones a specific git repository to the given destination.
+	Clone(ctx context.Context, repoID, remote, branch, destination string) (Repo, error)
+	// GetLatestRemoteHashForBranch returns the hash of the latest commit of a remote branch.
 	GetLatestRemoteHashForBranch(ctx context.Context, remote, branch string) (string, error)
+	// Clean removes all cache data.
 	Clean() error
 }
 
@@ -69,6 +72,7 @@ func NewClient(username, email string, logger *zap.Logger) (Client, error) {
 	}, nil
 }
 
+// GetLatestRemoteHashForBranch returns the hash of the latest commit of a remote branch.
 func (c *client) GetLatestRemoteHashForBranch(ctx context.Context, remote, branch string) (string, error) {
 	ref := "refs/heads/" + branch
 	out, err := retryCommand(3, time.Second, c.logger, func() ([]byte, error) {
@@ -87,20 +91,19 @@ func (c *client) GetLatestRemoteHashForBranch(ctx context.Context, remote, branc
 	return parts[0], nil
 }
 
-// Clone clones a specific GitHub repository.
-func (c *client) Clone(ctx context.Context, remote, destination string) (Repo, error) {
+// Clone clones a specific git repository to the given destination.
+func (c *client) Clone(ctx context.Context, repoID, remote, branch, destination string) (Repo, error) {
 	var (
-		key           = keyFromRemote(remote)
-		repoCachePath = filepath.Join(c.cacheDir, key)
+		repoCachePath = filepath.Join(c.cacheDir, repoID)
 		logger        = c.logger.With(
-			zap.String("key", key),
+			zap.String("repo-id", repoID),
 			zap.String("remote", remote),
 			zap.String("repo-cache-path", repoCachePath),
 		)
 	)
 
-	c.lockRepo(key)
-	defer c.unlockRepo(key)
+	c.lockRepo(repoID)
+	defer c.unlockRepo(repoID)
 
 	_, err := os.Stat(repoCachePath)
 	if err != nil && !os.IsNotExist(err) {
@@ -109,7 +112,7 @@ func (c *client) Clone(ctx context.Context, remote, destination string) (Repo, e
 
 	if os.IsNotExist(err) {
 		// Cache miss, clone for the first time.
-		logger.Info(fmt.Sprintf("cloning %s for the first time", key))
+		logger.Info(fmt.Sprintf("cloning %s for the first time", repoID))
 		if err := os.MkdirAll(filepath.Dir(repoCachePath), os.ModePerm); err != nil && !os.IsExist(err) {
 			return nil, err
 		}
@@ -125,7 +128,7 @@ func (c *client) Clone(ctx context.Context, remote, destination string) (Repo, e
 		}
 	} else {
 		// Cache hit. Do a git fetch to keep updated.
-		c.logger.Info(fmt.Sprintf("fetching %s to update the cache", key))
+		c.logger.Info(fmt.Sprintf("fetching %s to update the cache", repoID))
 		out, err := retryCommand(3, time.Second, c.logger, func() ([]byte, error) {
 			return c.runGitCommand(ctx, repoCachePath, "fetch")
 		})
@@ -143,9 +146,15 @@ func (c *client) Clone(ctx context.Context, remote, destination string) (Repo, e
 		return nil, err
 	}
 
-	if out, err := c.runGitCommand(ctx, "", "clone", repoCachePath, destination); err != nil {
+	args := []string{"clone"}
+	if branch != "" {
+		args = append(args, "-b", branch)
+	}
+	args = append(args, repoCachePath, destination)
+	if out, err := c.runGitCommand(ctx, "", args...); err != nil {
 		logger.Error("failed to clone from local",
 			zap.String("out", string(out)),
+			zap.String("branch", branch),
 			zap.String("repo-path", destination),
 			zap.Error(err),
 		)
@@ -167,20 +176,20 @@ func (c *client) Clean() error {
 	return os.RemoveAll(c.cacheDir)
 }
 
-func (c *client) lockRepo(key string) {
+func (c *client) lockRepo(repoID string) {
 	c.mu.Lock()
-	if _, ok := c.repoLocks[key]; !ok {
-		c.repoLocks[key] = &sync.Mutex{}
+	if _, ok := c.repoLocks[repoID]; !ok {
+		c.repoLocks[repoID] = &sync.Mutex{}
 	}
-	mu := c.repoLocks[key]
+	mu := c.repoLocks[repoID]
 	c.mu.Unlock()
 
 	mu.Lock()
 }
 
-func (c *client) unlockRepo(key string) {
+func (c *client) unlockRepo(repoID string) {
 	c.mu.Lock()
-	c.repoLocks[key].Unlock()
+	c.repoLocks[repoID].Unlock()
 	c.mu.Unlock()
 }
 
@@ -201,16 +210,4 @@ func retryCommand(retries int, interval time.Duration, logger *zap.Logger, comma
 		time.Sleep(interval)
 	}
 	return
-}
-
-var (
-	remoteReplacer = strings.NewReplacer(
-		"/", ".",
-		"@", ".",
-		":", ".",
-	)
-)
-
-func keyFromRemote(remote string) string {
-	return remoteReplacer.Replace(remote)
 }
