@@ -34,31 +34,35 @@ var (
 // Repo provides functions to get and handle git data.
 type Repo interface {
 	GetPath() string
-	SetUser(ctx context.Context, username, email string) error
+	GetClonedBranch() string
+
 	ListCommits(ctx context.Context, visionRange string) ([]Commit, error)
 	GetCommitHashForRev(ctx context.Context, rev string) (string, error)
 	Checkout(ctx context.Context, commitish string) error
 	CheckoutPullRequest(ctx context.Context, number int, branch string) error
 	Clean() error
 
+	Pull(ctx context.Context, branch string) error
 	Push(ctx context.Context, branch string) error
 	CommitChanges(ctx context.Context, branch, message string, newBranch bool, changes map[string][]byte) error
 }
 
 type repo struct {
-	dir     string
-	gitPath string
-	remote  string
-	logger  *zap.Logger
+	dir          string
+	gitPath      string
+	remote       string
+	clonedBranch string
+	logger       *zap.Logger
 }
 
 // NewRepo creates a new Repo instance.
-func NewRepo(dir, gitPath, remote string, logger *zap.Logger) Repo {
+func NewRepo(dir, gitPath, remote, clonedBranch string, logger *zap.Logger) *repo {
 	return &repo{
-		dir:     dir,
-		gitPath: gitPath,
-		remote:  remote,
-		logger:  logger.With(zap.String("repo", remote)),
+		dir:          dir,
+		gitPath:      gitPath,
+		remote:       remote,
+		clonedBranch: clonedBranch,
+		logger:       logger.With(zap.String("repo", remote)),
 	}
 }
 
@@ -67,23 +71,9 @@ func (r *repo) GetPath() string {
 	return r.dir
 }
 
-// SetUser configures username and email for local user of this repo.
-func (r *repo) SetUser(ctx context.Context, username, email string) error {
-	if out, err := r.runGitCommand(ctx, "config", "user.name", username); err != nil {
-		r.logger.Error("failed to config user.name",
-			zap.String("out", string(out)),
-			zap.Error(err),
-		)
-		return err
-	}
-	if out, err := r.runGitCommand(ctx, "config", "user.email", email); err != nil {
-		r.logger.Error("failed to config user.email",
-			zap.String("out", string(out)),
-			zap.Error(err),
-		)
-		return err
-	}
-	return nil
+// GetClonedBranch returns the name of cloned branch.
+func (r *repo) GetClonedBranch() string {
+	return r.clonedBranch
 }
 
 // ListCommits returns a list of commits in a given revision range.
@@ -150,6 +140,20 @@ func (r *repo) CheckoutPullRequest(ctx context.Context, number int, branch strin
 	return r.Checkout(ctx, branch)
 }
 
+// Pull fetches from and integrate with a local branch.
+func (r *repo) Pull(ctx context.Context, branch string) error {
+	out, err := r.runGitCommand(ctx, "pull", r.remote, branch)
+	if err != nil {
+		r.logger.Error("failed to pull",
+			zap.String("out", string(out)),
+			zap.String("branch", branch),
+			zap.Error(err),
+		)
+		return err
+	}
+	return nil
+}
+
 // Push pushes local changes of a given branch to the remote.
 func (r *repo) Push(ctx context.Context, branch string) error {
 	out, err := r.runGitCommand(ctx, "push", r.remote, branch)
@@ -195,6 +199,11 @@ func (r *repo) CommitChanges(ctx context.Context, branch, message string, newBra
 	return nil
 }
 
+// Clean deletes all local git data.
+func (r repo) Clean() error {
+	return os.RemoveAll(r.dir)
+}
+
 func (r *repo) checkoutNewBranch(ctx context.Context, branch string) error {
 	out, err := r.runGitCommand(ctx, "checkout", "-b", branch)
 	if err != nil {
@@ -232,9 +241,35 @@ func (r repo) addCommit(ctx context.Context, message string) error {
 	return nil
 }
 
-// Clean deletes all local git data.
-func (r repo) Clean() error {
-	return os.RemoveAll(r.dir)
+// setUser configures username and email for local user of this repo.
+func (r *repo) setUser(ctx context.Context, username, email string) error {
+	if out, err := r.runGitCommand(ctx, "config", "user.name", username); err != nil {
+		r.logger.Error("failed to config user.name",
+			zap.String("out", string(out)),
+			zap.Error(err),
+		)
+		return err
+	}
+	if out, err := r.runGitCommand(ctx, "config", "user.email", email); err != nil {
+		r.logger.Error("failed to config user.email",
+			zap.String("out", string(out)),
+			zap.Error(err),
+		)
+		return err
+	}
+	return nil
+}
+
+func (r *repo) setRemote(ctx context.Context, remote string) error {
+	out, err := r.runGitCommand(ctx, "remote", "set-url", "origin", remote)
+	if err != nil {
+		r.logger.Error("failed to set remote",
+			zap.String("out", string(out)),
+			zap.Error(err),
+		)
+		return err
+	}
+	return nil
 }
 
 func (r *repo) runGitCommand(ctx context.Context, args ...string) ([]byte, error) {

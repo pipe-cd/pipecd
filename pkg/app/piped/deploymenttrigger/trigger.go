@@ -23,7 +23,6 @@ package deploymenttrigger
 import (
 	"context"
 	"fmt"
-	"sync"
 	"time"
 
 	"github.com/google/uuid"
@@ -42,7 +41,6 @@ type apiClient interface {
 
 type gitClient interface {
 	Clone(ctx context.Context, repoID, remote, branch, destination string) (git.Repo, error)
-	GetLatestRemoteHashForBranch(ctx context.Context, remote, branch string) (string, error)
 }
 
 type applicationStore interface {
@@ -62,7 +60,7 @@ type DeploymentTrigger struct {
 	commandStore     commandStore
 	config           *config.PipedSpec
 	triggeredCommits map[string]string
-	mu               sync.Mutex
+	gitRepos         map[string]git.Repo
 	gracePeriod      time.Duration
 	logger           *zap.Logger
 }
@@ -78,6 +76,8 @@ func NewTrigger(apiClient apiClient, gitClient gitClient, appStore applicationSt
 		applicationStore: appStore,
 		commandStore:     cmdStore,
 		config:           cfg,
+		triggeredCommits: make(map[string]string),
+		gitRepos:         make(map[string]git.Repo, len(cfg.Repositories)),
 		gracePeriod:      gracePeriod,
 		logger:           logger.Named("deployment-trigger"),
 	}
@@ -89,6 +89,18 @@ func (t *DeploymentTrigger) Run(ctx context.Context) error {
 	t.logger.Info("start running deployment trigger")
 
 	// Pre-clone to cache the registered git repositories.
+	t.gitRepos = make(map[string]git.Repo, len(t.config.Repositories))
+	for _, r := range t.config.Repositories {
+		repo, err := t.gitClient.Clone(ctx, r.RepoID, r.Remote, r.Branch, "")
+		if err != nil {
+			t.logger.Error("failed to clone repository",
+				zap.String("repo-id", r.RepoID),
+				zap.Error(err),
+			)
+			return err
+		}
+		t.gitRepos[r.RepoID] = repo
+	}
 
 	ticker := time.NewTicker(time.Duration(t.config.SyncInterval))
 	defer ticker.Stop()
@@ -108,19 +120,17 @@ L:
 }
 
 func (t *DeploymentTrigger) check(ctx context.Context) error {
-	// List all applications that should be handled by this piped
-	// and then group them by repository.
-	var (
-		applications = t.listApplications(ctx)
-		repos        = t.config.GetRepositoryMap()
-	)
-	if len(repos) == 0 {
+	if len(t.gitRepos) == 0 {
 		t.logger.Info("no repositories were configured for this piped")
 		return nil
 	}
 
+	// List all applications that should be handled by this piped
+	// and then group them by repository.
+	var applications = t.listApplications(ctx)
+
 	for repoID, apps := range applications {
-		repo, ok := repos[repoID]
+		gitRepo, ok := t.gitRepos[repoID]
 		if !ok {
 			t.logger.Warn("detected some applications are binding with an non existent repository",
 				zap.String("repo-id", repoID),
@@ -128,14 +138,22 @@ func (t *DeploymentTrigger) check(ctx context.Context) error {
 			)
 			continue
 		}
+		branch := gitRepo.GetClonedBranch()
 
 		// Fetch to update the repository and then
-		// get the head commit of the repository.
-		headCommitHash, err := t.gitClient.GetLatestRemoteHashForBranch(ctx, repo.Remote, repo.Branch)
+		if err := gitRepo.Pull(ctx, branch); err != nil {
+			t.logger.Error("failed to update repository branch",
+				zap.String("repo-id", repoID),
+				zap.Error(err),
+			)
+			continue
+		}
+
+		// Get the head commit of the repository.
+		headCommitHash, err := gitRepo.GetCommitHashForRev(ctx, branch)
 		if err != nil {
 			t.logger.Error("failed to get head commit hash",
-				zap.String("repo-id", repo.RepoID),
-				zap.String("repo-remote", repo.Remote),
+				zap.String("repo-id", repoID),
 				zap.Error(err),
 			)
 			continue
@@ -153,6 +171,7 @@ func (t *DeploymentTrigger) check(ctx context.Context) error {
 			// Check whether the most recently applied one is the head commit or not.
 			// If not, nothing to do for this time.
 			if triggeredCommitHash == headCommitHash {
+				t.logger.Info(fmt.Sprintf("no update to sync for application: %s, hash: %s", app.Id, headCommitHash))
 				continue
 			}
 
@@ -191,10 +210,33 @@ func (t *DeploymentTrigger) listApplications(ctx context.Context) map[string][]*
 
 func (t *DeploymentTrigger) triggerDeployment(ctx context.Context, app *model.Application, commit string) error {
 	// Detect the update type (just scale or need rollout with pipeline) by checking the change
-	deployment := &model.Deployment{
-		Id:            uuid.New().String(),
-		ApplicationId: "fake-application-id",
-	}
+	var (
+		now        = time.Now()
+		deployment = &model.Deployment{
+			Id:            uuid.New().String(),
+			ApplicationId: app.Id,
+			EnvId:         app.EnvId,
+			PipedId:       app.PipedId,
+			ProjectId:     app.ProjectId,
+			Kind:          app.Kind,
+			Trigger: &model.DeploymentTrigger{
+				Commit: &model.Commit{
+					Revision:  commit,
+					Message:   "message",
+					Author:    "author",
+					Branch:    "branch",
+					CreatedAt: 10,
+				},
+				User:      "author",
+				Timestamp: now.Unix(),
+			},
+			GitPath: app.GitPath,
+			Status:  model.DeploymentStatus_DEPLOYMENT_NOT_STARTED_YET,
+			// stages
+			CreatedAt: now.Unix(),
+			UpdatedAt: now.Unix(),
+		}
+	)
 	_, err := t.apiClient.CreateDeployment(ctx, &pipedservice.CreateDeploymentRequest{
 		Deployment: deployment,
 	})

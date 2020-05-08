@@ -41,12 +41,25 @@ func NewClient(logger *zap.Logger) *fakeClient {
 			"pipe-debug-k8s-app": {
 				Id:        "debug-project/dev/pipe-debug-k8s-app",
 				Name:      "pipe-debug-k8s-app",
-				Env:       "dev",
+				EnvId:     "dev",
 				PipedId:   "debug-pipe-id",
 				ProjectId: "debug-project",
 				Kind:      model.ApplicationKind_KUBERNETES,
 				GitPath: &model.ApplicationGitPath{
 					RepoId: "pipe-debug",
+					Path:   "k8s/plain-yaml-app",
+				},
+				Disabled: false,
+			},
+			"pipe-debug-2-k8s-app": {
+				Id:        "debug-project/dev/pipe-debug-2-k8s-app",
+				Name:      "pipe-debug-2-k8s-app",
+				EnvId:     "dev",
+				PipedId:   "debug-pipe-id",
+				ProjectId: "debug-project",
+				Kind:      model.ApplicationKind_KUBERNETES,
+				GitPath: &model.ApplicationGitPath{
+					RepoId: "pipe-debug-2",
 					Path:   "k8s/plain-yaml-app",
 				},
 				Disabled: false,

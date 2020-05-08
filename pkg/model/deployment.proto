@@ -42,14 +42,6 @@ enum StageStatus {
 // - User clicked on Sync button at application web page.
 // - Promoted from another enviroment.
 message Deployment {
-    message Trigger {
-        Commit commit = 1 [(validate.rules).message.required = true];
-        // Who triggered this deployment.
-        // This may be different to the commit.author when the deployment is trigger from webUI.
-        string user = 2 [(validate.rules).string.min_len = 1];
-        int64 timestamp = 3 [(validate.rules).int64.gt = 0];
-    }
-
     // The generated unique identifier.
     string id = 1 [(validate.rules).string.min_len = 1];
     string application_id = 2 [(validate.rules).string.min_len = 1];
@@ -58,14 +50,22 @@ message Deployment {
     string project_id = 5 [(validate.rules).string.min_len = 1];
     ApplicationKind kind = 6 [(validate.rules).enum.defined_only = true];
 
-    Trigger trigger = 7 [(validate.rules).message.required = true];
+    DeploymentTrigger trigger = 7 [(validate.rules).message.required = true];
     ApplicationGitPath git_path = 8 [(validate.rules).message.required = true];
     DeploymentStatus status = 9 [(validate.rules).enum.defined_only = true];
     map<string, PipelineStage> stages = 10;
 
-    int64 completed_at = 13 [(validate.rules).int64.gt = 0];
+    int64 completed_at = 13 [(validate.rules).int64.gte = 0];
     int64 created_at = 14 [(validate.rules).int64.gt = 0];
     int64 updated_at = 15 [(validate.rules).int64.gt = 0];
+}
+
+message DeploymentTrigger {
+    Commit commit = 1 [(validate.rules).message.required = true];
+    // Who triggered this deployment.
+    // This may be different to the commit.author when the deployment is trigger from webUI.
+    string user = 2 [(validate.rules).string.min_len = 1];
+    int64 timestamp = 3 [(validate.rules).int64.gt = 0];
 }
 
 message PipelineStage {

@@ -141,9 +141,16 @@ func (c *client) Clone(ctx context.Context, repoID, remote, branch, destination 
 		}
 	}
 
-	err = os.MkdirAll(destination, os.ModePerm)
-	if err != nil {
-		return nil, err
+	if destination != "" {
+		err = os.MkdirAll(destination, os.ModePerm)
+		if err != nil {
+			return nil, err
+		}
+	} else {
+		destination, err = ioutil.TempDir("", "git")
+		if err != nil {
+			return nil, err
+		}
 	}
 
 	args := []string{"clone"}
@@ -161,11 +168,18 @@ func (c *client) Clone(ctx context.Context, repoID, remote, branch, destination 
 		return nil, fmt.Errorf("failed to clone from local: %v", err)
 	}
 
-	r := NewRepo(destination, c.gitPath, remote, c.logger)
+	r := NewRepo(destination, c.gitPath, remote, branch, c.logger)
 	if c.username != "" || c.email != "" {
-		if err := r.SetUser(ctx, c.username, c.email); err != nil {
+		if err := r.setUser(ctx, c.username, c.email); err != nil {
 			return nil, fmt.Errorf("failed to set user: %v", err)
 		}
+	}
+
+	// Because we did a local cloning so the remote url of origin
+	// is the path to the cache directory.
+	// We do this change to correct it.
+	if err := r.setRemote(ctx, remote); err != nil {
+		return nil, fmt.Errorf("failed to set remote: %v", err)
 	}
 
 	return r, nil
