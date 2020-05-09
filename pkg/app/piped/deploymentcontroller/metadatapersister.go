@@ -40,7 +40,7 @@ type stageMetadataPersister struct {
 
 func (p stageMetadataPersister) Save(ctx context.Context, metadata []byte) error {
 	_, err := p.apiClient.SaveStageMetadata(ctx, &pipedservice.SaveStageMetadataRequest{
-		Id:           p.stageID,
+		StageId:      p.stageID,
 		DeploymentId: p.deploymentID,
 		Metadata:     metadata,
 	})

@@ -30,7 +30,7 @@ import (
 type fakeClient struct {
 	applications map[string]*model.Application
 	deployments  map[string]*model.Deployment
-	mu           sync.Mutex
+	mu           sync.RWMutex
 	logger       *zap.Logger
 }
 
@@ -80,8 +80,8 @@ func (c *fakeClient) Close() error {
 // The received stats will be written to the cache immediately.
 // The cache data may be lost anytime so we need a singleton Persister
 // to persist those data into datastore every n minutes.
-func (c *fakeClient) Ping(ctx context.Context, in *pipedservice.PingRequest, opts ...grpc.CallOption) (*pipedservice.PingResponse, error) {
-	c.logger.Info("received Ping rpc", zap.Any("request", in))
+func (c *fakeClient) Ping(ctx context.Context, req *pipedservice.PingRequest, opts ...grpc.CallOption) (*pipedservice.PingResponse, error) {
+	c.logger.Info("received Ping rpc", zap.Any("request", req))
 	return &pipedservice.PingResponse{}, nil
 }
 
@@ -89,8 +89,8 @@ func (c *fakeClient) Ping(ctx context.Context, in *pipedservice.PingRequest, opt
 // that should be managed by the requested piped.
 // Disabled applications should not be included in the response.
 // Piped uses this RPC to fetch and sync the application configuration into its local database.
-func (c *fakeClient) ListApplications(ctx context.Context, in *pipedservice.ListApplicationsRequest, opts ...grpc.CallOption) (*pipedservice.ListApplicationsResponse, error) {
-	c.logger.Info("received ListApplications rpc", zap.Any("request", in))
+func (c *fakeClient) ListApplications(ctx context.Context, req *pipedservice.ListApplicationsRequest, opts ...grpc.CallOption) (*pipedservice.ListApplicationsResponse, error) {
+	c.logger.Info("received ListApplications rpc", zap.Any("request", req))
 	apps := make([]*model.Application, 0, len(c.applications))
 	for _, app := range c.applications {
 		apps = append(apps, app)
@@ -103,22 +103,26 @@ func (c *fakeClient) ListApplications(ctx context.Context, in *pipedservice.List
 // CreateDeployment creates/triggers a new deployment for an application
 // that is managed by this piped.
 // This will be used by DeploymentTrigger component.
-func (c *fakeClient) CreateDeployment(ctx context.Context, in *pipedservice.CreateDeploymentRequest, opts ...grpc.CallOption) (*pipedservice.CreateDeploymentResponse, error) {
-	c.logger.Info("received CreateDeployment rpc", zap.Any("request", in))
+func (c *fakeClient) CreateDeployment(ctx context.Context, req *pipedservice.CreateDeploymentRequest, opts ...grpc.CallOption) (*pipedservice.CreateDeploymentResponse, error) {
+	c.logger.Info("received CreateDeployment rpc", zap.Any("request", req))
 	c.mu.Lock()
 	defer c.mu.Unlock()
-	if _, ok := c.deployments[in.Deployment.Id]; ok {
+
+	if _, ok := c.deployments[req.Deployment.Id]; ok {
 		return nil, status.Error(codes.AlreadyExists, "")
 	}
-	c.deployments[in.Deployment.Id] = in.Deployment
+	c.deployments[req.Deployment.Id] = req.Deployment
 	return &pipedservice.CreateDeploymentResponse{}, nil
 }
 
 // ListNotCompletedDeployments returns a list of not completed deployments
 // which are managed by this piped.
 // DeploymentController component uses this RPC to spawns/syncs its local deployment executors.
-func (c *fakeClient) ListNotCompletedDeployments(ctx context.Context, in *pipedservice.ListNotCompletedDeploymentsRequest, opts ...grpc.CallOption) (*pipedservice.ListNotCompletedDeploymentsResponse, error) {
-	c.logger.Info("received ListNotCompletedDeployments rpc", zap.Any("request", in))
+func (c *fakeClient) ListNotCompletedDeployments(ctx context.Context, req *pipedservice.ListNotCompletedDeploymentsRequest, opts ...grpc.CallOption) (*pipedservice.ListNotCompletedDeploymentsResponse, error) {
+	c.logger.Info("received ListNotCompletedDeployments rpc", zap.Any("request", req))
+	c.mu.RLock()
+	defer c.mu.RUnlock()
+
 	deployments := make([]*model.Deployment, 0, len(c.deployments))
 	for _, deployment := range c.deployments {
 		if !deployment.IsCompleted() {
@@ -133,28 +137,71 @@ func (c *fakeClient) ListNotCompletedDeployments(ctx context.Context, in *pipeds
 
 // SaveStageMetadata used by piped to persist the metadata
 // of a specific stage of a deployment.
-func (c *fakeClient) SaveStageMetadata(ctx context.Context, in *pipedservice.SaveStageMetadataRequest, opts ...grpc.CallOption) (*pipedservice.SaveStageMetadataResponse, error) {
-	c.logger.Info("received SaveStageMetadata rpc", zap.Any("request", in))
-	return &pipedservice.SaveStageMetadataResponse{}, nil
+func (c *fakeClient) SaveStageMetadata(ctx context.Context, req *pipedservice.SaveStageMetadataRequest, opts ...grpc.CallOption) (*pipedservice.SaveStageMetadataResponse, error) {
+	c.logger.Info("received SaveStageMetadata rpc", zap.Any("request", req))
+	c.mu.Lock()
+	defer c.mu.Unlock()
+
+	d, ok := c.deployments[req.DeploymentId]
+	if !ok {
+		return nil, status.Error(codes.NotFound, "deployment was not found")
+	}
+
+	for _, s := range d.Stages {
+		if s.Id != req.StageId {
+			continue
+		}
+		s.Metadata = req.Metadata
+		return &pipedservice.SaveStageMetadataResponse{}, nil
+	}
+	return nil, status.Error(codes.NotFound, "stage was not found")
 }
 
 // ReportStageStatusChanged used by piped to update the status
 // of a specific stage of a deployment.
-func (c *fakeClient) ReportStageStatusChanged(ctx context.Context, in *pipedservice.ReportStageStatusChangedRequest, opts ...grpc.CallOption) (*pipedservice.ReportStageStatusChangedResponse, error) {
-	c.logger.Info("received ReportStageStatusChanged rpc", zap.Any("request", in))
-	return &pipedservice.ReportStageStatusChangedResponse{}, nil
+func (c *fakeClient) ReportStageStatusChanged(ctx context.Context, req *pipedservice.ReportStageStatusChangedRequest, opts ...grpc.CallOption) (*pipedservice.ReportStageStatusChangedResponse, error) {
+	c.logger.Info("received ReportStageStatusChanged rpc", zap.Any("request", req))
+	c.mu.Lock()
+	defer c.mu.Unlock()
+
+	d, ok := c.deployments[req.DeploymentId]
+	if !ok {
+		return nil, status.Error(codes.NotFound, "deployment was not found")
+	}
+
+	for _, s := range d.Stages {
+		if s.Id != req.StageId {
+			continue
+		}
+		s.Status = req.Status
+		s.RetriedCount = req.RetriedCount
+		s.CompletedAt = req.CompletedAt
+		return &pipedservice.ReportStageStatusChangedResponse{}, nil
+	}
+	return nil, status.Error(codes.NotFound, "stage was not found")
 }
 
 // ReportStageLog is sent by piped to save the log of a pipeline stage.
-func (c *fakeClient) ReportStageLog(ctx context.Context, in *pipedservice.ReportStageLogRequest, opts ...grpc.CallOption) (*pipedservice.ReportStageLogResponse, error) {
-	c.logger.Info("received ReportStageLog rpc", zap.Any("request", in))
+func (c *fakeClient) ReportStageLog(ctx context.Context, req *pipedservice.ReportStageLogRequest, opts ...grpc.CallOption) (*pipedservice.ReportStageLogResponse, error) {
+	c.logger.Info("received ReportStageLog rpc", zap.Any("request", req))
 	return &pipedservice.ReportStageLogResponse{}, nil
 }
 
 // ReportDeploymentCompleted used by piped to send the final state
 // of the pipeline that has just been completed.
-func (c *fakeClient) ReportDeploymentCompleted(ctx context.Context, in *pipedservice.ReportDeploymentCompletedRequest, opts ...grpc.CallOption) (*pipedservice.ReportDeploymentCompletedResponse, error) {
-	c.logger.Info("received ReportDeploymentCompleted rpc", zap.Any("request", in))
+func (c *fakeClient) ReportDeploymentCompleted(ctx context.Context, req *pipedservice.ReportDeploymentCompletedRequest, opts ...grpc.CallOption) (*pipedservice.ReportDeploymentCompletedResponse, error) {
+	c.logger.Info("received ReportDeploymentCompleted rpc", zap.Any("request", req))
+	c.mu.Lock()
+	defer c.mu.Unlock()
+
+	d, ok := c.deployments[req.DeploymentId]
+	if !ok {
+		return nil, status.Error(codes.NotFound, "deployment was not found")
+	}
+
+	d.Status = req.Status
+	d.CompletedAt = req.CompletedAt
+
 	return &pipedservice.ReportDeploymentCompletedResponse{}, nil
 }
 
@@ -166,24 +213,24 @@ func (c *fakeClient) ReportDeploymentCompleted(ctx context.Context, in *pipedser
 // then report back the result to server.
 // On other side, the web will periodically check the command status and feedback the result to user.
 // In the future, we may need a solution to remove all old-handled commands from datastore for space.
-func (c *fakeClient) ListUnhandledCommands(ctx context.Context, in *pipedservice.ListUnhandledCommandsRequest, opts ...grpc.CallOption) (*pipedservice.ListUnhandledCommandsResponse, error) {
-	c.logger.Info("received ListUnhandledCommands rpc", zap.Any("request", in))
+func (c *fakeClient) ListUnhandledCommands(ctx context.Context, req *pipedservice.ListUnhandledCommandsRequest, opts ...grpc.CallOption) (*pipedservice.ListUnhandledCommandsResponse, error) {
+	c.logger.Info("received ListUnhandledCommands rpc", zap.Any("request", req))
 	return &pipedservice.ListUnhandledCommandsResponse{}, nil
 }
 
 // ReportCommandHandled is called by piped to mark a specific command as handled.
 // The request payload will contain the handle status as well as any additional result data.
 // The handle result should be updated to both datastore and cache (for reading from web).
-func (c *fakeClient) ReportCommandHandled(ctx context.Context, in *pipedservice.ReportCommandHandledRequest, opts ...grpc.CallOption) (*pipedservice.ReportCommandHandledResponse, error) {
-	c.logger.Info("received ReportCommandHandled rpc", zap.Any("request", in))
+func (c *fakeClient) ReportCommandHandled(ctx context.Context, req *pipedservice.ReportCommandHandledRequest, opts ...grpc.CallOption) (*pipedservice.ReportCommandHandledResponse, error) {
+	c.logger.Info("received ReportCommandHandled rpc", zap.Any("request", req))
 	return &pipedservice.ReportCommandHandledResponse{}, nil
 }
 
 // ReportApplicationState is periodically sent by piped to refresh the current state of application.
 // This may contain a full tree of application resources for Kubernetes application.
 // The tree data will be written into filestore and the cache inmmediately.
-func (c *fakeClient) ReportApplicationState(ctx context.Context, in *pipedservice.ReportApplicationStateRequest, opts ...grpc.CallOption) (*pipedservice.ReportApplicationStateResponse, error) {
-	c.logger.Info("received ReportApplicationState rpc", zap.Any("request", in))
+func (c *fakeClient) ReportApplicationState(ctx context.Context, req *pipedservice.ReportApplicationStateRequest, opts ...grpc.CallOption) (*pipedservice.ReportApplicationStateResponse, error) {
+	c.logger.Info("received ReportApplicationState rpc", zap.Any("request", req))
 	return &pipedservice.ReportApplicationStateResponse{}, nil
 }
 
@@ -199,8 +246,8 @@ func (c *fakeClient) ReportApplicationState(ctx context.Context, in *pipedservic
 // After receiving the events, all of them will be publish into a queue immediately,
 // and then another Handler service will pick them inorder to apply to build new state.
 // By that way we can control the traffic to the datastore in a better way.
-func (c *fakeClient) ReportAppStateEvents(ctx context.Context, in *pipedservice.ReportAppStateEventsRequest, opts ...grpc.CallOption) (*pipedservice.ReportAppStateEventsResponse, error) {
-	c.logger.Info("received ReportAppStateEvents rpc", zap.Any("request", in))
+func (c *fakeClient) ReportAppStateEvents(ctx context.Context, req *pipedservice.ReportAppStateEventsRequest, opts ...grpc.CallOption) (*pipedservice.ReportAppStateEventsResponse, error) {
+	c.logger.Info("received ReportAppStateEvents rpc", zap.Any("request", req))
 	return &pipedservice.ReportAppStateEventsResponse{}, nil
 }
 
