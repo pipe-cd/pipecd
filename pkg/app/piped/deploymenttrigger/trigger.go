@@ -15,7 +15,7 @@
 // Package deploymenttrigger provides a piped component
 // that detects a list of application should be synced
 // and then trigger their deployments by calling to API to create a new Deployment model.
-// Until V1, we detect based on the new merged commit and its changes.
+// Until v1, we detect based on the new merged commit and its changes.
 // But in the next versions, we also want to enable the ability to detect
 // based on the diff between the repo state (desired state) and cluster state (actual state).
 package deploymenttrigger
@@ -23,6 +23,7 @@ package deploymenttrigger
 import (
 	"context"
 	"fmt"
+	"strings"
 	"time"
 
 	"go.uber.org/zap"
@@ -65,9 +66,6 @@ type DeploymentTrigger struct {
 }
 
 // NewTrigger creates a new instance for DeploymentTrigger.
-// What does this need to do its task?
-// - A way to get commit/source-code of a specific repository
-// - A way to get the current state of application
 func NewTrigger(apiClient apiClient, gitClient gitClient, appStore applicationStore, cmdStore commandStore, cfg *config.PipedSpec, gracePeriod time.Duration, logger *zap.Logger) *DeploymentTrigger {
 	return &DeploymentTrigger{
 		apiClient:        apiClient,
@@ -128,12 +126,13 @@ func (t *DeploymentTrigger) check(ctx context.Context) error {
 	// and then group them by repository.
 	var applications = t.listApplications(ctx)
 
+	// TODO: We may want to apply worker model here to run them concurrently.
 	for repoID, apps := range applications {
 		gitRepo, ok := t.gitRepos[repoID]
 		if !ok {
 			t.logger.Warn("detected some applications are binding with an non existent repository",
 				zap.String("repo-id", repoID),
-				zap.String("application-id", apps[0].Id),
+				zap.String("first-application-id", apps[0].Id),
 			)
 			continue
 		}
@@ -169,7 +168,7 @@ func (t *DeploymentTrigger) check(ctx context.Context) error {
 
 func (t *DeploymentTrigger) checkApplication(ctx context.Context, app *model.Application, repo git.Repo, branch string, headCommit git.Commit) error {
 	// Get the most recently applied commit of this application.
-	// If it is not in the memory cache, we have to call the API to list the deployments
+	// TODO: If it is not in the memory cache, we have to call the API to list the deployments
 	// and use the commit sha of the most recent one.
 	triggeredCommitHash, ok := t.triggeredCommits[app.Id]
 	if !ok {
@@ -183,20 +182,41 @@ func (t *DeploymentTrigger) checkApplication(ctx context.Context, app *model.App
 		return nil
 	}
 
-	// TODO: List the changed files between those two commits
-	// Determine whether this application was touch by those changed files.
-
-	// Build deployment model and send a request to API to create a new deployment.
-	t.logger.Info(fmt.Sprintf("application %s should be synced because of new commit", app.Id),
-		zap.String("previous-commit-hash", triggeredCommitHash),
-		zap.String("head-commit-hash", headCommit.Hash),
-	)
-	if err := t.triggerDeployment(ctx, app, repo, branch, headCommit); err != nil {
-		return err
+	trigger := func() error {
+		// Build deployment model and send a request to API to create a new deployment.
+		t.logger.Info(fmt.Sprintf("application %s should be synced because of the new commit", app.Id),
+			zap.String("previous-commit-hash", triggeredCommitHash),
+			zap.String("head-commit-hash", headCommit.Hash),
+		)
+		if err := t.triggerDeployment(ctx, app, repo, branch, headCommit); err != nil {
+			return err
+		}
+		t.triggeredCommits[app.Id] = headCommit.Hash
+		return nil
 	}
 
-	t.triggeredCommits[app.Id] = headCommit.Hash
-	return nil
+	// There is no previous deployment so we don't need to check anymore.
+	// Just do it.
+	if triggeredCommitHash == "" {
+		return trigger()
+	}
+
+	// List the changed files between those two commits and
+	// determine whether this application was touch by those changed files.
+	changedFiles, err := repo.ChangedFiles(ctx, triggeredCommitHash, headCommit.Hash)
+	if err != nil {
+		return err
+	}
+	if touched := isTouchedByChangedFiles(app.GitPath.Path, nil, changedFiles); !touched {
+		t.logger.Info(fmt.Sprintf("application %s was not touched by the new commit", app.Id),
+			zap.String("previous-commit-hash", triggeredCommitHash),
+			zap.String("head-commit-hash", headCommit.Hash),
+		)
+		t.triggeredCommits[app.Id] = headCommit.Hash
+		return nil
+	}
+
+	return trigger()
 }
 
 // listApplications retrieves all applications those should be handled by this piped
@@ -215,4 +235,26 @@ func (t *DeploymentTrigger) listApplications(ctx context.Context) map[string][]*
 		}
 	}
 	return m
+}
+
+func isTouchedByChangedFiles(appDir string, dependencyDirs []string, changedFiles []string) bool {
+	// If any files inside the application directory was changed
+	// this application is considered as touched.
+	for _, cf := range changedFiles {
+		if ok := strings.HasPrefix(cf, appDir); ok {
+			return true
+		}
+	}
+
+	// If any files inside the app's dependencies was changed
+	// this application is consided as touched too.
+	for _, depDir := range dependencyDirs {
+		for _, cf := range changedFiles {
+			if ok := strings.HasPrefix(cf, depDir); ok {
+				return true
+			}
+		}
+	}
+
+	return false
 }

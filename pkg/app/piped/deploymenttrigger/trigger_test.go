@@ -13,3 +13,60 @@
 // limitations under the License.
 
 package deploymenttrigger
+
+import (
+	"testing"
+
+	"github.com/stretchr/testify/assert"
+)
+
+func TestIsTouchedByChangedFiles(t *testing.T) {
+	testcases := []struct {
+		name           string
+		appDir         string
+		dependencyDirs []string
+		changedFiles   []string
+		expected       bool
+	}{
+		{
+			name:           "not touched",
+			appDir:         "app/demo",
+			dependencyDirs: nil,
+			changedFiles: []string{
+				"app/hello.txt",
+				"app/foo/deployment.yaml",
+			},
+			expected: false,
+		},
+		{
+			name:           "touched in app dir",
+			appDir:         "app/demo",
+			dependencyDirs: nil,
+			changedFiles: []string{
+				"app/hello.txt",
+				"app/demo/deployment.yaml",
+			},
+			expected: true,
+		},
+		{
+			name:   "touched in dependency dir",
+			appDir: "app/demo",
+			dependencyDirs: []string{
+				"charts/demo",
+				"charts/bar",
+			},
+			changedFiles: []string{
+				"app/hello.txt",
+				"charts/bar/deployment.yaml",
+			},
+			expected: true,
+		},
+	}
+
+	for _, tc := range testcases {
+		t.Run(tc.name, func(t *testing.T) {
+			got := isTouchedByChangedFiles(tc.appDir, tc.dependencyDirs, tc.changedFiles)
+			assert.Equal(t, tc.expected, got)
+		})
+	}
+}
