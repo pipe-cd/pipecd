@@ -117,11 +117,19 @@ func buildDeploment(app *model.Application, cfg *config.Config, branch string, c
 	return deployment, nil
 }
 
+var kubernetesDefaultPipeline = &config.AppPipeline{
+	Stages: []config.PipelineStage{
+		{
+			Name: model.StageK8sPrimaryUpdate,
+			Desc: "Update primary to new version",
+		},
+	},
+}
+
 func buildKubernetesPipelineStages(cfg *config.Config, now time.Time) ([]*model.PipelineStage, error) {
 	p := cfg.KubernetesAppSpec.Pipeline
 	if p == nil {
-		// Return default pipeline.
-		return nil, nil
+		p = kubernetesDefaultPipeline
 	}
 	stages := make([]*model.PipelineStage, 0, len(p.Stages))
 	for i, s := range p.Stages {
@@ -142,11 +150,27 @@ func buildKubernetesPipelineStages(cfg *config.Config, now time.Time) ([]*model.
 	return stages, nil
 }
 
+var terraformDefaultPipeline = &config.AppPipeline{
+	Stages: []config.PipelineStage{
+		{
+			Name: model.StageTerraformPlan,
+			Desc: "Terraform Plan",
+		},
+		{
+			Name: model.StageWaitApproval,
+			Desc: "Wait for an approval",
+		},
+		{
+			Name: model.StageTerraformApply,
+			Desc: "Terraform Apply",
+		},
+	},
+}
+
 func buildTerraformPipelineStages(cfg *config.Config, now time.Time) ([]*model.PipelineStage, error) {
 	p := cfg.TerraformAppSpec.Pipeline
 	if p == nil {
-		// Return default pipeline.
-		return nil, nil
+		p = terraformDefaultPipeline
 	}
 	stages := make([]*model.PipelineStage, 0, len(p.Stages))
 	for i, s := range p.Stages {
