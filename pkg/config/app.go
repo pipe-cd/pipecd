@@ -134,7 +134,7 @@ func (s *PipelineStage) UnmarshalJSON(data []byte) error {
 		if len(gs.With) > 0 {
 			err = json.Unmarshal(gs.With, s.K8sStageOutStageOptions)
 		}
-	case model.StageK8sStageIn:
+	case model.StageK8sStageClean:
 		s.K8sStageInStageOptions = &K8sStageInStageOptions{}
 		if len(gs.With) > 0 {
 			err = json.Unmarshal(gs.With, s.K8sStageInStageOptions)
@@ -144,7 +144,7 @@ func (s *PipelineStage) UnmarshalJSON(data []byte) error {
 		if len(gs.With) > 0 {
 			err = json.Unmarshal(gs.With, s.K8sBaselineOutStageOptions)
 		}
-	case model.StageK8sBaselineIn:
+	case model.StageK8sBaselineClean:
 		s.K8sBaselineInStageOptions = &K8sBaselineInStageOptions{}
 		if len(gs.With) > 0 {
 			err = json.Unmarshal(gs.With, s.K8sBaselineInStageOptions)
@@ -197,7 +197,7 @@ type K8sStageOutStageOptions struct {
 	WithService bool
 }
 
-// K8sStageInStageOptions contains all configurable values for a K8S_STAGE_IN stage.
+// K8sStageInStageOptions contains all configurable values for a K8S_STAGE_CLEAN stage.
 type K8sStageInStageOptions struct {
 }
 
@@ -213,7 +213,7 @@ type K8sBaselineOutStageOptions struct {
 	WithService bool
 }
 
-// K8sBaselineInStageOptions contains all configurable values for a K8S_BASELINE_IN stage.
+// K8sBaselineInStageOptions contains all configurable values for a K8S_BASELINE_CLEAN stage.
 type K8sBaselineInStageOptions struct {
 }
 

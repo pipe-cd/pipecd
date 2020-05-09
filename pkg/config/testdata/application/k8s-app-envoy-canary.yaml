@@ -14,4 +14,4 @@ spec:
       - name: K8S_TRAFFIC_ROUTE
         with:
           primary: 100
-      - name: K8S_STAGE_IN
+      - name: K8S_STAGE_CLEAN

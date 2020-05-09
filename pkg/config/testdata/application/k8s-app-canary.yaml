@@ -9,7 +9,7 @@ spec:
         with:
           weight: 10
       - name: K8S_PRIMARY_UPDATE
-      - name: K8S_STAGE_IN
+      - name: K8S_STAGE_CLEAN
 
 ---
 # Simple canary deployment that requires an approval
@@ -28,7 +28,7 @@ spec:
             - user-foo
             - user-bar
       - name: K8S_PRIMARY_UPDATE
-      - name: K8S_STAGE_IN
+      - name: K8S_STAGE_CLEAN
 
 ---
 # Canary deployment that has an analysis stage to verify canary.
@@ -60,7 +60,7 @@ spec:
               expected: 200
               interval: 1m
       - name: K8S_PRIMARY_UPDATE
-      - name: K8S_STAGE_IN
+      - name: K8S_STAGE_CLEAN
 
 ---
 # Canary deployment that has an analysis stage to verify canary.
@@ -85,7 +85,7 @@ spec:
           https:
             - useTemplate: http_canary_check
       - name: K8S_PRIMARY_UPDATE
-      - name: K8S_STAGE_IN
+      - name: K8S_STAGE_CLEAN
 
 ---
 # Canary deployment that has an analysis stage to verify canary.
@@ -110,8 +110,8 @@ spec:
           duration: 10m
           compareWithBaseline: true
       - name: K8S_PRIMARY_UPDATE
-      - name: K8S_BASELINE_IN
-      - name: K8S_STAGE_IN
+      - name: K8S_BASELINE_CLEAN
+      - name: K8S_STAGE_CLEAN
 
 # Stage represents a temporary desired state for the applicaiton.
 # Users can declarative a list of stages to archive the final desired state.

@@ -13,7 +13,7 @@ spec:
       - name: K8S_TRAFFIC_ROUTE
         with:
           target: primary
-      - name: K8S_STAGE_IN
+      - name: K8S_STAGE_CLEAN
 
 ---
 # Pipeline for a Kubernetes application.
@@ -37,7 +37,7 @@ spec:
       - name: K8S_TRAFFIC_ROUTE
         with:
           target: primary
-      - name: K8S_STAGE_IN
+      - name: K8S_STAGE_CLEAN
 
 ---
 # Pipeline for a Kubernetes application.
@@ -62,4 +62,4 @@ spec:
       - name: K8S_TRAFFIC_ROUTE
         with:
           target: primary
-      - name: K8S_STAGE_IN
+      - name: K8S_STAGE_CLEAN

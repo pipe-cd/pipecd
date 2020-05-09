@@ -34,15 +34,15 @@ const (
 	// StageK8sStageRollout represents the state where
 	// the STAGE workloads has been rolled out with the new version/configuration.
 	StageK8sStageRollout Stage = "K8S_STAGE_ROLLOUT"
-	// StageK8sStageIn represents the state where
+	// StageK8sStageClean represents the state where
 	// the STAGE workloads has been cleaned.
-	StageK8sStageIn Stage = "K8S_STAGE_IN"
+	StageK8sStageClean Stage = "K8S_STAGE_CLEAN"
 	// StageK8sBaselineRollout represents the state where
 	// the BASELINE workloads has been rolled out with the new version/configuration.
 	StageK8sBaselineRollout Stage = "K8S_BASELINE_ROLLOUT"
-	// StageK8sBaselineIn represents the state where
+	// StageK8sBaselineClean represents the state where
 	// the BASELINE workloads has been cleaned.
-	StageK8sBaselineIn Stage = "K8S_BASELINE_IN"
+	StageK8sBaselineClean Stage = "K8S_BASELINE_CLEAN"
 	// StageK8sTrafficRoute represents the state where the traffic to application
 	// should be routed as the specified percentage to PRIMARY, STAGE, BASELINE.
 	StageK8sTrafficRoute Stage = "K8S_TRAFFIC_ROUTE"
