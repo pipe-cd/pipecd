@@ -5,10 +5,10 @@ kind: KubernetesApp
 spec:
   pipeline:
     stages:
-      - name: K8S_STAGE_OUT
+      - name: K8S_STAGE_ROLLOUT
         with:
           weight: 10
-      - name: K8S_PRIMARY_OUT
+      - name: K8S_PRIMARY_UPDATE
       - name: K8S_STAGE_IN
 
 ---
@@ -19,7 +19,7 @@ kind: KubernetesApp
 spec:
   pipeline:
     stages:
-      - name: K8S_STAGE_OUT
+      - name: K8S_STAGE_ROLLOUT
         with:
           weight: 10
       - name: WAIT_APPROVAL
@@ -27,7 +27,7 @@ spec:
           approvers:
             - user-foo
             - user-bar
-      - name: K8S_PRIMARY_OUT
+      - name: K8S_PRIMARY_UPDATE
       - name: K8S_STAGE_IN
 
 ---
@@ -38,7 +38,7 @@ kind: KubernetesApp
 spec:
   pipeline:
     stages:
-      - name: K8S_STAGE_OUT
+      - name: K8S_STAGE_ROLLOUT
         with:
           weight: 10
       - name: ANALYSIS
@@ -59,7 +59,7 @@ spec:
               method: GET
               expected: 200
               interval: 1m
-      - name: K8S_PRIMARY_OUT
+      - name: K8S_PRIMARY_UPDATE
       - name: K8S_STAGE_IN
 
 ---
@@ -70,7 +70,7 @@ kind: KubernetesApp
 spec:
   pipeline:
     stages:
-      - name: K8S_STAGE_OUT
+      - name: K8S_STAGE_ROLLOUT
         with:
           weight: 10
       - name: ANALYSIS
@@ -84,7 +84,7 @@ spec:
             - useTemplate: stackdriver_log_error
           https:
             - useTemplate: http_canary_check
-      - name: K8S_PRIMARY_OUT
+      - name: K8S_PRIMARY_UPDATE
       - name: K8S_STAGE_IN
 
 ---
@@ -99,17 +99,17 @@ kind: KubernetesApp
 spec:
   pipeline:
     stages:
-      - name: K8S_BASELINE_OUT
+      - name: K8S_BASELINE_ROLLOUT
         with:
           weight: 10
-      - name: K8S_STAGE_OUT
+      - name: K8S_STAGE_ROLLOUT
         with:
           weight: 10
       - name: ANALYSIS
         with:
           duration: 10m
           compareWithBaseline: true
-      - name: K8S_PRIMARY_OUT
+      - name: K8S_PRIMARY_UPDATE
       - name: K8S_BASELINE_IN
       - name: K8S_STAGE_IN
 
@@ -119,7 +119,7 @@ spec:
 # We want to collect metrics against a “new” copy of our old container so
 # we don’t muddy the waters testing against a pod that might have been running for a long time.
 # https://www.spinnaker.io/guides/user/canary/best-practices/#compare-canary-against-baseline-not-against-production
-# K8S_BASELINE_OUT
+# K8S_BASELINE_ROLLOUT
 
 # Requirements:
 # Multiple canary stages

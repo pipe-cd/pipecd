@@ -27,24 +27,26 @@ const (
 	// StageAnalysis represents the waiting state for analysing
 	// the application status based on metrics, log, http request...
 	StageAnalysis Stage = "ANALYSIS"
-	// StageK8sPrimaryOut represents the state where the PRIMARY
-	// has been updated to the new version/configuration.
-	StageK8sPrimaryOut Stage = "K8S_PRIMARY_OUT"
-	// StageK8sStageOut represents the state where the STAGE workloads
-	// has been rolled out with the new version/configuration.
-	StageK8sStageOut Stage = "K8S_STAGE_OUT"
-	// StageK8sStageIn represents the state where the STAGE workloads
-	// has been cleaned.
+
+	// StageK8sPrimaryUpdate represents the state where
+	// the PRIMARY has been updated to the new version/configuration.
+	StageK8sPrimaryUpdate Stage = "K8S_PRIMARY_UPDATE"
+	// StageK8sStageRollout represents the state where
+	// the STAGE workloads has been rolled out with the new version/configuration.
+	StageK8sStageRollout Stage = "K8S_STAGE_ROLLOUT"
+	// StageK8sStageIn represents the state where
+	// the STAGE workloads has been cleaned.
 	StageK8sStageIn Stage = "K8S_STAGE_IN"
-	// StageK8sBaselineOut represents the state where the BASELINE workloads
-	// has been rolled out with the new version/configuration.
-	StageK8sBaselineOut Stage = "K8S_BASELINE_OUT"
-	// StageK8sBaselineIn represents the state where the BASELINE workloads
-	// has been cleaned.
+	// StageK8sBaselineRollout represents the state where
+	// the BASELINE workloads has been rolled out with the new version/configuration.
+	StageK8sBaselineRollout Stage = "K8S_BASELINE_ROLLOUT"
+	// StageK8sBaselineIn represents the state where
+	// the BASELINE workloads has been cleaned.
 	StageK8sBaselineIn Stage = "K8S_BASELINE_IN"
 	// StageK8sTrafficRoute represents the state where the traffic to application
 	// should be routed as the specified percentage to PRIMARY, STAGE, BASELINE.
 	StageK8sTrafficRoute Stage = "K8S_TRAFFIC_ROUTE"
+
 	// StageTerraformPlan shows terraform plan result.
 	StageTerraformPlan Stage = "TERRAFORM_PLAN"
 	// StageTerraformApply represents the state where

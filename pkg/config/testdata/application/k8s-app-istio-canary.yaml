@@ -3,14 +3,14 @@ kind: KubernetesApp
 spec:
   pipeline:
     stages:
-      - name: K8S_STAGE_OUT
+      - name: K8S_STAGE_ROLLOUT
         with:
           weight: 10
       - name: K8S_TRAFFIC_ROUTE
         with:
           stage: 10
           primary: 90
-      - name: K8S_PRIMARY_OUT
+      - name: K8S_PRIMARY_UPDATE
       - name: K8S_TRAFFIC_ROUTE
         with:
           primary: 100

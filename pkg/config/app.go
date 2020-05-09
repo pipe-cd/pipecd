@@ -124,12 +124,12 @@ func (s *PipelineStage) UnmarshalJSON(data []byte) error {
 		if len(gs.With) > 0 {
 			err = json.Unmarshal(gs.With, s.AnalysisStageOptions)
 		}
-	case model.StageK8sPrimaryOut:
+	case model.StageK8sPrimaryUpdate:
 		s.K8sPrimaryOutStageOptions = &K8sPrimaryOutStageOptions{}
 		if len(gs.With) > 0 {
 			err = json.Unmarshal(gs.With, s.K8sPrimaryOutStageOptions)
 		}
-	case model.StageK8sStageOut:
+	case model.StageK8sStageRollout:
 		s.K8sStageOutStageOptions = &K8sStageOutStageOptions{}
 		if len(gs.With) > 0 {
 			err = json.Unmarshal(gs.With, s.K8sStageOutStageOptions)
@@ -139,7 +139,7 @@ func (s *PipelineStage) UnmarshalJSON(data []byte) error {
 		if len(gs.With) > 0 {
 			err = json.Unmarshal(gs.With, s.K8sStageInStageOptions)
 		}
-	case model.StageK8sBaselineOut:
+	case model.StageK8sBaselineRollout:
 		s.K8sBaselineOutStageOptions = &K8sBaselineOutStageOptions{}
 		if len(gs.With) > 0 {
 			err = json.Unmarshal(gs.With, s.K8sBaselineOutStageOptions)
@@ -180,12 +180,12 @@ type WaitApprovalStageOptions struct {
 	Approvers []string `json:"approvers"`
 }
 
-// WaitStageOptions contains all configurable values for a K8S_PRIMARY_OUT stage.
+// WaitStageOptions contains all configurable values for a K8S_PRIMARY_UPDATE stage.
 type K8sPrimaryOutStageOptions struct {
 	Manifests []string `json:"manifests"`
 }
 
-// K8sStageOutStageOptions contains all configurable values for a K8S_STAGE_OUT stage.
+// K8sStageOutStageOptions contains all configurable values for a K8S_STAGE_ROLLOUT stage.
 type K8sStageOutStageOptions struct {
 	// Percentage of pods for STAGE workloads.
 	// Default is 1 pod.
@@ -201,7 +201,7 @@ type K8sStageOutStageOptions struct {
 type K8sStageInStageOptions struct {
 }
 
-// K8sBaselineOutStageOptions contains all configurable values for a K8S_BASELINE_OUT stage.
+// K8sBaselineOutStageOptions contains all configurable values for a K8S_BASELINE_ROLLOUT stage.
 type K8sBaselineOutStageOptions struct {
 	// Percentage of pods for BASELINE workloads.
 	// Default is 1 pod.

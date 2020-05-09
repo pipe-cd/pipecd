@@ -40,12 +40,12 @@ func init() {
 		r = executor.DefaultRegistry()
 	)
 
-	r.Register(model.StageK8sPrimaryOut, f)
-	r.Register(model.StageK8sStageOut, f)
+	r.Register(model.StageK8sPrimaryUpdate, f)
+	r.Register(model.StageK8sStageRollout, f)
 	r.Register(model.StageK8sStageIn, f)
-	r.Register(model.StageK8sBaselineOut, f)
+	r.Register(model.StageK8sBaselineRollout, f)
 	r.Register(model.StageK8sBaselineIn, f)
-	r.Register(model.StageK8sPrimaryOut, f)
+	r.Register(model.StageK8sPrimaryUpdate, f)
 	r.Register(model.StageK8sTrafficRoute, f)
 }
 
