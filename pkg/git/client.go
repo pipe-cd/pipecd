@@ -33,8 +33,6 @@ import (
 type Client interface {
 	// Clone clones a specific git repository to the given destination.
 	Clone(ctx context.Context, repoID, remote, branch, destination string) (Repo, error)
-	// GetLatestRemoteHashForBranch returns the hash of the latest commit of a remote branch.
-	GetLatestRemoteHashForBranch(ctx context.Context, remote, branch string) (string, error)
 	// Clean removes all cache data.
 	Clean() error
 }

@@ -15,7 +15,8 @@
 // Package deploymentcontroller provides a piped component
 // that managing all of the not completed deployments.
 // This manages a pool of DeploymentSchedulers.
-// Whenever a new uncompleted Deployment is detected, this creates a new DeploymentScheduler
+// Whenever a new uncompleted Deployment is detected,
+// this creates a new DeploymentScheduler
 // for that Deployment to handle the deployment pipeline.
 package deploymentcontroller
 
