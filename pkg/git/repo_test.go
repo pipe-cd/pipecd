@@ -19,6 +19,7 @@ import (
 	"io/ioutil"
 	"os"
 	"path/filepath"
+	"sort"
 	"testing"
 
 	"github.com/stretchr/testify/assert"
@@ -33,7 +34,8 @@ func TestGetCommitHashForRev(t *testing.T) {
 
 	var (
 		org      = "test-repo-org"
-		repoName = "repo-2"
+		repoName = "repo-get-commit-hash-for-rev"
+		ctx      = context.Background()
 	)
 
 	err = faker.makeRepo(org, repoName)
@@ -44,7 +46,6 @@ func TestGetCommitHashForRev(t *testing.T) {
 		logger:  zap.NewNop(),
 	}
 
-	ctx := context.Background()
 	commits, err := r.ListCommits(ctx, "")
 	require.NoError(t, err)
 	assert.Equal(t, 1, len(commits))
@@ -54,14 +55,15 @@ func TestGetCommitHashForRev(t *testing.T) {
 	assert.Equal(t, commits[0].Hash, latestCommitHash)
 }
 
-func TestAddCommit(t *testing.T) {
+func TestChangedFiles(t *testing.T) {
 	faker, err := newFaker()
 	require.NoError(t, err)
 	defer faker.clean()
 
 	var (
 		org      = "test-repo-org"
-		repoName = "repo-3"
+		repoName = "repo-changed-files"
+		ctx      = context.Background()
 	)
 
 	err = faker.makeRepo(org, repoName)
@@ -72,7 +74,58 @@ func TestAddCommit(t *testing.T) {
 		logger:  zap.NewNop(),
 	}
 
-	ctx := context.Background()
+	previousCommitHash, err := r.GetCommitHashForRev(ctx, "HEAD")
+	require.NoError(t, err)
+	require.NotEqual(t, "", previousCommitHash)
+
+	err = os.MkdirAll(filepath.Join(r.dir, "new-dir"), os.ModePerm)
+	require.NoError(t, err)
+	path := filepath.Join(r.dir, "new-dir", "new-file.txt")
+	err = ioutil.WriteFile(path, []byte("content"), os.ModePerm)
+	require.NoError(t, err)
+
+	readmeFilePath := filepath.Join(r.dir, "README.md")
+	err = ioutil.WriteFile(readmeFilePath, []byte("new content"), os.ModePerm)
+	require.NoError(t, err)
+
+	err = r.addCommit(ctx, "Added new file")
+	require.NoError(t, err)
+
+	headCommitHash, err := r.GetCommitHashForRev(ctx, "HEAD")
+	require.NoError(t, err)
+	require.NotEqual(t, "", headCommitHash)
+
+	changedFiles, err := r.ChangedFiles(ctx, previousCommitHash, headCommitHash)
+	sort.Strings(changedFiles)
+	expectedChangedFiles := []string{
+		"new-dir/new-file.txt",
+		"README.md",
+	}
+	sort.Strings(expectedChangedFiles)
+
+	require.NoError(t, err)
+	assert.Equal(t, expectedChangedFiles, changedFiles)
+}
+
+func TestAddCommit(t *testing.T) {
+	faker, err := newFaker()
+	require.NoError(t, err)
+	defer faker.clean()
+
+	var (
+		org      = "test-repo-org"
+		repoName = "repo-add-commit"
+		ctx      = context.Background()
+	)
+
+	err = faker.makeRepo(org, repoName)
+	require.NoError(t, err)
+	r := &repo{
+		dir:     faker.repoDir(org, repoName),
+		gitPath: faker.gitPath,
+		logger:  zap.NewNop(),
+	}
+
 	commits, err := r.ListCommits(ctx, "")
 	require.NoError(t, err)
 	require.Equal(t, 1, len(commits))
@@ -101,7 +154,9 @@ func TestCommitChanges(t *testing.T) {
 	var (
 		org      = "test-repo-org"
 		repoName = "repo-commit-changes"
+		ctx      = context.Background()
 	)
+
 	err = faker.makeRepo(org, repoName)
 	require.NoError(t, err)
 	r := &repo{
@@ -110,7 +165,6 @@ func TestCommitChanges(t *testing.T) {
 		logger:  zap.NewNop(),
 	}
 
-	ctx := context.Background()
 	commits, err := r.ListCommits(ctx, "")
 	require.NoError(t, err)
 	require.Equal(t, 1, len(commits))

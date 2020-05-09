@@ -39,6 +39,7 @@ type Repo interface {
 	ListCommits(ctx context.Context, visionRange string) ([]Commit, error)
 	GetLatestCommit(ctx context.Context) (Commit, error)
 	GetCommitHashForRev(ctx context.Context, rev string) (string, error)
+	ChangedFiles(ctx context.Context, from, to string) ([]string, error)
 	Checkout(ctx context.Context, commitish string) error
 	CheckoutPullRequest(ctx context.Context, number int, branch string) error
 	Clean() error
@@ -122,6 +123,33 @@ func (r *repo) GetCommitHashForRev(ctx context.Context, rev string) (string, err
 		return "", err
 	}
 	return strings.TrimSpace(string(out)), nil
+}
+
+// ChangedFiles returns a list of files those were touched between two commits.
+func (r *repo) ChangedFiles(ctx context.Context, from, to string) ([]string, error) {
+	out, err := r.runGitCommand(ctx, "diff", "--name-only", from, to)
+	if err != nil {
+		r.logger.Error("failed to get changed files",
+			zap.String("from", from),
+			zap.String("to", to),
+			zap.String("out", string(out)),
+			zap.Error(err),
+		)
+		return nil, err
+	}
+
+	var (
+		lines = strings.Split(string(out), "\n")
+		files = make([]string, 0, len(lines))
+	)
+	// The result may include some empty lines
+	// so we need to remove all of them.
+	for _, f := range lines {
+		if f != "" {
+			files = append(files, f)
+		}
+	}
+	return files, nil
 }
 
 // Checkout checkouts to a given commitish.
