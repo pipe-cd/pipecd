@@ -68,7 +68,7 @@ type DeploymentController struct {
 	wg         sync.WaitGroup
 	mu         sync.Mutex
 
-	workspaceDir string
+	workingDir   string
 	syncInternal time.Duration
 	gracePeriod  time.Duration
 	logger       *zap.Logger
@@ -95,18 +95,18 @@ func NewController(apiClient apiClient, gitClient gitClient, cmdStore commandSto
 	}
 }
 
-// Run starts running DeploymentController until the specified context
-// has done. This also waits for its cleaning up before returning.
+// Run starts running DeploymentController until the specified context has done.
+// This also waits for its cleaning up before returning.
 func (c *DeploymentController) Run(ctx context.Context) error {
 	c.logger.Info("start running deployment controller")
 
-	dir, err := ioutil.TempDir("", "workspace")
+	dir, err := ioutil.TempDir("", "working")
 	if err != nil {
-		c.logger.Error("failed to create workspace directory", zap.Error(err))
+		c.logger.Error("failed to create working directory", zap.Error(err))
 		return err
 	}
-	c.workspaceDir = dir
-	c.logger.Info(fmt.Sprintf("workspace directory was configured to %s", c.workspaceDir))
+	c.workingDir = dir
+	c.logger.Info(fmt.Sprintf("working directory was configured to %s", c.workingDir))
 
 	ticker := time.NewTicker(c.syncInternal)
 	defer ticker.Stop()
@@ -138,13 +138,16 @@ L:
 }
 
 // syncScheduler adds new scheduler for newly added deployments
-// as well as removes the removeable deployments.
+// as well as removes the removable deployments.
 func (c *DeploymentController) syncScheduler(ctx context.Context) error {
 	resp, err := c.apiClient.ListNotCompletedDeployments(ctx, &pipedservice.ListNotCompletedDeploymentsRequest{})
 	if err != nil {
-		c.logger.Warn("failed to list not completed deployments", zap.Error(err))
+		c.logger.Warn("failed to list uncompleted deployments", zap.Error(err))
 		return err
 	}
+	c.logger.Info(fmt.Sprintf("there are %d uncompleted deployments for this piped", len(resp.Deployments)),
+		zap.Int("scheduler-count", len(c.schedulers)),
+	)
 
 	// Add missing schedulers.
 	for _, d := range resp.Deployments {
@@ -159,17 +162,28 @@ func (c *DeploymentController) syncScheduler(ctx context.Context) error {
 	// Remove done schedulers.
 	for id, e := range c.schedulers {
 		if e.IsDone() {
+			c.logger.Info("deleted finished scheduler",
+				zap.String("deployment-id", id),
+				zap.String("application-id", e.deployment.ApplicationId),
+			)
 			delete(c.schedulers, id)
 		}
 	}
+
 	return nil
 }
 
 func (c *DeploymentController) startNewScheduler(ctx context.Context, d *model.Deployment) error {
+	logger := c.logger.With(
+		zap.String("deployment-id", d.Id),
+		zap.String("application-id", d.ApplicationId),
+	)
+	logger.Info("starting a new scheduler")
+
 	// Ensure the existence of the working directory for the deployment.
-	workingDir := filepath.Join(c.workspaceDir, d.Id)
+	workingDir := filepath.Join(c.workingDir, d.Id)
 	if err := os.MkdirAll(workingDir, os.ModePerm); err != nil {
-		c.logger.Error("failed to create working directory",
+		logger.Error("failed to create working directory for deployment",
 			zap.String("working-dir", workingDir),
 			zap.Error(err),
 		)
@@ -190,11 +204,12 @@ func (c *DeploymentController) startNewScheduler(ctx context.Context, d *model.D
 
 	// Start running executor.
 	cleanup := func() {
+		logger.Info("cleaning up working directory for deployment")
 		err := os.RemoveAll(workingDir)
 		if err == nil {
 			return
 		}
-		c.logger.Warn("failed to clean working directory",
+		logger.Warn("failed to clean working directory",
 			zap.String("working-dir", workingDir),
 			zap.Error(err),
 		)
