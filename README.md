@@ -27,14 +27,13 @@ Powerful, Easy to Use, Easy to Operate
 - Analysis by metrics, log, smoke test
 - Automatic rollback
 - Configuration drift detection
-- Realtime application state
 - Insight shows delivery perfomance
 
 **Easy to Use**
 - Operations by Pull Request: scale, rolling update, rollback by PR
-- Intuitive UI
+- Realtime visualization of application state
 - Deployment pipeline to see what is happenning
-- ...
+- Intuitive UI
 
 **Easy to Operate**
 - Just 2 components: piped and control-plane
