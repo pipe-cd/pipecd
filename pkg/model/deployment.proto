@@ -21,11 +21,12 @@ import "validate/validate.proto";
 import "pkg/model/application.proto";
 
 enum DeploymentStatus {
-    DEPLOYMENT_NOT_STARTED_YET = 0;
-    DEPLOYMENT_RUNNING = 1;
-    DEPLOYMENT_SUCCESS = 2;
-    DEPLOYMENT_FAILURE = 3;
-    DEPLOYMENT_CANCELLED = 4;
+    DEPLOYMENT_TRIGGERED = 0;
+    DEPLOYMENT_PENDING = 1;
+    DEPLOYMENT_RUNNING = 2;
+    DEPLOYMENT_SUCCESS = 3;
+    DEPLOYMENT_FAILURE = 4;
+    DEPLOYMENT_CANCELLED = 5;
 }
 
 enum StageStatus {
@@ -53,7 +54,9 @@ message Deployment {
     DeploymentTrigger trigger = 7 [(validate.rules).message.required = true];
     ApplicationGitPath git_path = 8 [(validate.rules).message.required = true];
     DeploymentStatus status = 9 [(validate.rules).enum.defined_only = true];
-    repeated PipelineStage stages = 10;
+    // The human-readable description why the deployment is at current status.
+    string status_description = 10;
+    repeated PipelineStage stages = 11;
 
     int64 completed_at = 13 [(validate.rules).int64.gte = 0];
     int64 created_at = 14 [(validate.rules).int64.gt = 0];

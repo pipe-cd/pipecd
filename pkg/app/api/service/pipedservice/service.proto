@@ -60,9 +60,9 @@ service PipedService {
     // ReportStageLog is sent by piped to save the log of a pipeline stage.
     rpc ReportStageLog(ReportStageLogRequest) returns (ReportStageLogResponse) {}
 
-    // ReportDeploymentCompleted used by piped to send the final state
-    // of the pipeline that has just been completed.
-    rpc ReportDeploymentCompleted(ReportDeploymentCompletedRequest) returns (ReportDeploymentCompletedResponse) {}
+    // ReportDeploymentStatusChanged used by piped to update the status
+    // of a specific deployment.
+    rpc ReportDeploymentStatusChanged(ReportDeploymentStatusChangedRequest) returns (ReportDeploymentStatusChangedResponse) {}
 
     // ListUnhandledCommands is periodically called by piped to obtain the commands
     // that should be handled.
@@ -141,7 +141,9 @@ message ReportStageStatusChangedRequest {
     string deployment_id = 1 [(validate.rules).string.min_len = 1];
     string stage_id = 2 [(validate.rules).string.min_len = 1];
     pipe.model.StageStatus status = 3 [(validate.rules).enum.defined_only = true];
-    int32 retried_count = 4;
+    // The human-readable description why the stage is at current status.
+    string status_description = 4;
+    int32 retried_count = 5;
     int64 completed_at = 13 [(validate.rules).int64.gt = 0];
 }
 
@@ -159,13 +161,15 @@ message ReportStageLogRequest {
 message ReportStageLogResponse {
 }
 
-message ReportDeploymentCompletedRequest {
+message ReportDeploymentStatusChangedRequest {
     string deployment_id = 1 [(validate.rules).string.min_len = 1];
     pipe.model.DeploymentStatus status = 2 [(validate.rules).enum.defined_only = true];
+    // The human-readable description why the deployment is at current status.
+    string status_description = 3;
     int64 completed_at = 13 [(validate.rules).int64.gt = 0];
 }
 
-message ReportDeploymentCompletedResponse {
+message ReportDeploymentStatusChangedResponse {
 }
 
 message ListUnhandledCommandsRequest {

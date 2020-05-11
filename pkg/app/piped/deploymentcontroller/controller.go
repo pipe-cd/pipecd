@@ -44,7 +44,7 @@ type apiClient interface {
 	SaveStageMetadata(ctx context.Context, in *pipedservice.SaveStageMetadataRequest, opts ...grpc.CallOption) (*pipedservice.SaveStageMetadataResponse, error)
 	ReportStageLog(ctx context.Context, in *pipedservice.ReportStageLogRequest, opts ...grpc.CallOption) (*pipedservice.ReportStageLogResponse, error)
 	ReportStageStatusChanged(ctx context.Context, in *pipedservice.ReportStageStatusChangedRequest, opts ...grpc.CallOption) (*pipedservice.ReportStageStatusChangedResponse, error)
-	ReportDeploymentCompleted(ctx context.Context, in *pipedservice.ReportDeploymentCompletedRequest, opts ...grpc.CallOption) (*pipedservice.ReportDeploymentCompletedResponse, error)
+	ReportDeploymentStatusChanged(ctx context.Context, in *pipedservice.ReportDeploymentStatusChangedRequest, opts ...grpc.CallOption) (*pipedservice.ReportDeploymentStatusChangedResponse, error)
 }
 
 type gitClient interface {
@@ -75,7 +75,15 @@ type DeploymentController struct {
 }
 
 // NewController creates a new instance for DeploymentController.
-func NewController(apiClient apiClient, gitClient gitClient, cmdStore commandStore, cfg *config.PipedSpec, gracePeriod time.Duration, logger *zap.Logger) *DeploymentController {
+func NewController(
+	apiClient apiClient,
+	gitClient gitClient,
+	cmdStore commandStore,
+	pipedConfig *config.PipedSpec,
+	gracePeriod time.Duration,
+	logger *zap.Logger,
+) *DeploymentController {
+
 	var (
 		lp  = logpersister.NewPersister(apiClient, logger)
 		mdp = metadataPersister{apiClient: apiClient}
@@ -85,7 +93,7 @@ func NewController(apiClient apiClient, gitClient gitClient, cmdStore commandSto
 		apiClient:         apiClient,
 		gitClient:         gitClient,
 		commandStore:      cmdStore,
-		pipedConfig:       cfg,
+		pipedConfig:       pipedConfig,
 		logPersister:      lp,
 		metadataPersister: mdp,
 		schedulers:        make(map[string]*scheduler),
@@ -194,12 +202,13 @@ func (c *DeploymentController) startNewScheduler(ctx context.Context, d *model.D
 	// Create a new scheduler and append to the list for tracking.
 	e := newScheduler(
 		d,
-		c.pipedConfig,
 		workingDir,
+		c.apiClient,
 		c.gitClient,
 		c.commandStore,
 		c.logPersister,
 		c.metadataPersister,
+		c.pipedConfig,
 		c.logger,
 	)
 	c.schedulers[e.Id()] = e

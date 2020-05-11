@@ -14,16 +14,38 @@
 
 package model
 
+// IsCompleted checks whether the deployment is at a completion state.
 func (d *Deployment) IsCompleted() bool {
 	if d.Status.String() == "" {
 		return false
 	}
 
 	switch d.Status {
-	case DeploymentStatus_DEPLOYMENT_NOT_STARTED_YET:
-		return false
-	case DeploymentStatus_DEPLOYMENT_RUNNING:
-		return false
+	case DeploymentStatus_DEPLOYMENT_SUCCESS:
+		return true
+	case DeploymentStatus_DEPLOYMENT_FAILURE:
+		return true
+	case DeploymentStatus_DEPLOYMENT_CANCELLED:
+		return true
 	}
-	return true
+	return false
+}
+
+// CanUpdateStatus checks whether the deployment can transit to the given status.
+func (d *Deployment) CanUpdateStatus(status DeploymentStatus) bool {
+	switch status {
+	case DeploymentStatus_DEPLOYMENT_TRIGGERED:
+		return d.Status <= DeploymentStatus_DEPLOYMENT_TRIGGERED
+	case DeploymentStatus_DEPLOYMENT_PENDING:
+		return d.Status <= DeploymentStatus_DEPLOYMENT_PENDING
+	case DeploymentStatus_DEPLOYMENT_RUNNING:
+		return d.Status <= DeploymentStatus_DEPLOYMENT_RUNNING
+	case DeploymentStatus_DEPLOYMENT_SUCCESS:
+		return d.Status <= DeploymentStatus_DEPLOYMENT_RUNNING
+	case DeploymentStatus_DEPLOYMENT_FAILURE:
+		return d.Status <= DeploymentStatus_DEPLOYMENT_RUNNING
+	case DeploymentStatus_DEPLOYMENT_CANCELLED:
+		return d.Status <= DeploymentStatus_DEPLOYMENT_RUNNING
+	}
+	return false
 }

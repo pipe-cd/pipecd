@@ -16,6 +16,7 @@ package pipedclientfake
 
 import (
 	"context"
+	"fmt"
 	"sync"
 
 	"go.uber.org/zap"
@@ -187,10 +188,10 @@ func (c *fakeClient) ReportStageLog(ctx context.Context, req *pipedservice.Repor
 	return &pipedservice.ReportStageLogResponse{}, nil
 }
 
-// ReportDeploymentCompleted used by piped to send the final state
-// of the pipeline that has just been completed.
-func (c *fakeClient) ReportDeploymentCompleted(ctx context.Context, req *pipedservice.ReportDeploymentCompletedRequest, opts ...grpc.CallOption) (*pipedservice.ReportDeploymentCompletedResponse, error) {
-	c.logger.Info("received ReportDeploymentCompleted rpc", zap.Any("request", req))
+// ReportDeploymentStatusChanged used by piped to update the status
+// of a specific deployment.
+func (c *fakeClient) ReportDeploymentStatusChanged(ctx context.Context, req *pipedservice.ReportDeploymentStatusChangedRequest, opts ...grpc.CallOption) (*pipedservice.ReportDeploymentStatusChangedResponse, error) {
+	c.logger.Info("received ReportDeploymentStatusChanged rpc", zap.Any("request", req))
 	c.mu.Lock()
 	defer c.mu.Unlock()
 
@@ -199,10 +200,16 @@ func (c *fakeClient) ReportDeploymentCompleted(ctx context.Context, req *pipedse
 		return nil, status.Error(codes.NotFound, "deployment was not found")
 	}
 
+	if req.Status < d.Status {
+		return nil, status.Error(codes.FailedPrecondition,
+			fmt.Sprintf("not good status, cur = %s, req = %s", d.Status.String(), req.Status.String()),
+		)
+	}
 	d.Status = req.Status
+	d.StatusDescription = req.StatusDescription
 	d.CompletedAt = req.CompletedAt
 
-	return &pipedservice.ReportDeploymentCompletedResponse{}, nil
+	return &pipedservice.ReportDeploymentStatusChangedResponse{}, nil
 }
 
 // ListUnhandledCommands is periodically called by piped to obtain the commands

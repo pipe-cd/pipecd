@@ -90,9 +90,9 @@ func (a *PipedAPI) ReportStageLog(ctx context.Context, req *pipedservice.ReportS
 	return nil, status.Error(codes.Unimplemented, "")
 }
 
-// ReportDeploymentCompleted used by piped to send the final state
-// of the pipeline that has just been completed.
-func (a *PipedAPI) ReportDeploymentCompleted(ctx context.Context, req *pipedservice.ReportDeploymentCompletedRequest) (*pipedservice.ReportDeploymentCompletedResponse, error) {
+// ReportDeploymentStatusChanged used by piped to update the status
+// of a specific deployment.
+func (a *PipedAPI) ReportDeploymentStatusChanged(ctx context.Context, req *pipedservice.ReportDeploymentStatusChangedRequest) (*pipedservice.ReportDeploymentStatusChangedResponse, error) {
 	return nil, status.Error(codes.Unimplemented, "")
 }
 

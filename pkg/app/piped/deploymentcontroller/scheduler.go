@@ -18,10 +18,12 @@ import (
 	"context"
 	"fmt"
 	"path/filepath"
+	"time"
 
 	"go.uber.org/atomic"
 	"go.uber.org/zap"
 
+	"github.com/kapetaniosci/pipe/pkg/app/api/service/pipedservice"
 	"github.com/kapetaniosci/pipe/pkg/app/piped/executor"
 	"github.com/kapetaniosci/pipe/pkg/app/piped/logpersister"
 	"github.com/kapetaniosci/pipe/pkg/config"
@@ -44,22 +46,35 @@ type executorRegistry interface {
 // scheduler is a dedicated object for a specific deployment of a single application.
 type scheduler struct {
 	deployment        *model.Deployment
-	pipedConfig       *config.PipedSpec
 	workingDir        string
 	executorRegistry  executorRegistry
+	apiClient         apiClient
 	gitClient         gitClient
 	commandStore      commandStore
 	logPersister      logpersister.Persister
 	metadataPersister metadataPersister
+	pipedConfig       *config.PipedSpec
 	logger            *zap.Logger
 
 	// Deployment configuration for this application.
 	appConfig *config.Config
 	completed atomic.Bool
 	done      atomic.Bool
+	nowFunc   func() time.Time
 }
 
-func newScheduler(d *model.Deployment, cfg *config.PipedSpec, workingDir string, gitClient gitClient, cmdStore commandStore, lp logpersister.Persister, mdp metadataPersister, logger *zap.Logger) *scheduler {
+func newScheduler(
+	d *model.Deployment,
+	workingDir string,
+	apiClient apiClient,
+	gitClient gitClient,
+	cmdStore commandStore,
+	lp logpersister.Persister,
+	mdp metadataPersister,
+	pipedConfig *config.PipedSpec,
+	logger *zap.Logger,
+) *scheduler {
+
 	logger = logger.Named("scheduler").With(
 		zap.String("deployment-id", d.Id),
 		zap.String("application-id", d.ApplicationId),
@@ -70,41 +85,46 @@ func newScheduler(d *model.Deployment, cfg *config.PipedSpec, workingDir string,
 	)
 	return &scheduler{
 		deployment:        d,
-		pipedConfig:       cfg,
+		pipedConfig:       pipedConfig,
 		workingDir:        workingDir,
 		executorRegistry:  executor.DefaultRegistry(),
+		apiClient:         apiClient,
 		gitClient:         gitClient,
 		commandStore:      cmdStore,
 		logPersister:      lp,
 		metadataPersister: mdp,
 		logger:            logger,
+		nowFunc:           time.Now,
 	}
 }
 
+// Id returns the id of scheduler.
+// This is the same value with deployment ID.
 func (s *scheduler) Id() string {
 	return s.deployment.Id
 }
 
+// IsCompleted tells whether the deployment is completed or not.
 func (s *scheduler) IsCompleted() bool {
 	return s.completed.Load()
 }
 
+// IsDone tells whether this scheduler is done it tasks or not.
+// Returning true means this scheduler can be removable.
 func (s *scheduler) IsDone() bool {
 	return s.done.Load()
 }
 
+// Run starts running the scheduler.
 func (s *scheduler) Run(ctx context.Context) (executeErr error) {
 	s.logger.Info("start running a scheduler")
 
 	defer func() {
-		if executeErr == nil {
-			s.logger.Info("a scheduler has been completed successfully")
-			return
-		}
 		executeErr = s.end(ctx, executeErr)
 		if executeErr != nil {
 			s.logger.Error("a scheduler has been failed at end phase", zap.Error(executeErr))
 		}
+		s.logger.Info("a scheduler has been completed successfully")
 	}()
 
 	executeErr = s.start(ctx)
@@ -126,6 +146,15 @@ func (s *scheduler) Run(ctx context.Context) (executeErr error) {
 func (s *scheduler) start(ctx context.Context) error {
 	lp := s.logPersister.StageLogPersister(s.deployment.Id, model.StageStart.String())
 	defer lp.Complete(ctx)
+
+	// Update deployment status to RUNNING if needed.
+	if s.deployment.CanUpdateStatus(model.DeploymentStatus_DEPLOYMENT_RUNNING) {
+		err := s.reportDeploymentStatus(ctx, model.DeploymentStatus_DEPLOYMENT_RUNNING, "piped started handling this deployment")
+		if err != nil {
+			lp.AppendError(err.Error())
+			return err
+		}
+	}
 
 	// Clone repository and checkout to the target revision.
 	var (
@@ -190,11 +219,58 @@ func (s *scheduler) run(ctx context.Context) error {
 	return nil
 }
 
-func (s *scheduler) end(ctx context.Context, runErr error) error {
+func (s *scheduler) end(ctx context.Context, executeErr error) error {
 	// We check the runErr to decide adding a ROLLBACK stage or not.
-	return nil
+	var (
+		status     = model.DeploymentStatus_DEPLOYMENT_SUCCESS
+		statusDesc string
+	)
+	if executeErr != nil {
+		status = model.DeploymentStatus_DEPLOYMENT_FAILURE
+	}
+	return s.reportDeploymentStatus(ctx, status, statusDesc)
 }
 
 func (s *scheduler) determineNextStages() []string {
 	return nil
+}
+
+func (s *scheduler) reportStageStatus(ctx context.Context, stageID string, status model.StageStatus) error {
+	var (
+		now = s.nowFunc()
+		req = &pipedservice.ReportStageStatusChangedRequest{
+			DeploymentId: s.deployment.Id,
+			StageId:      stageID,
+			Status:       status,
+			CompletedAt:  now.Unix(),
+		}
+	)
+	// TODO: Do this with exponential backoff.
+	_, err := s.apiClient.ReportStageStatusChanged(ctx, req)
+	if err != nil {
+		err = fmt.Errorf("failed to report stage status to control-plane: %v", err)
+	}
+
+	// Update local deployment stage status?
+	return err
+}
+
+func (s *scheduler) reportDeploymentStatus(ctx context.Context, status model.DeploymentStatus, desc string) error {
+	var (
+		now = s.nowFunc()
+		req = &pipedservice.ReportDeploymentStatusChangedRequest{
+			DeploymentId:      s.deployment.Id,
+			Status:            status,
+			StatusDescription: desc,
+			CompletedAt:       now.Unix(),
+		}
+	)
+	// TODO: Do this with exponential backoff.
+	_, err := s.apiClient.ReportDeploymentStatusChanged(ctx, req)
+	if err != nil {
+		err = fmt.Errorf("failed to report deployment status to control-plane: %v", err)
+	}
+
+	// Update local deployment status?
+	return err
 }
