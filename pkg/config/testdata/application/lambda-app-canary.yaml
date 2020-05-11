@@ -10,7 +10,7 @@ spec:
     ref: v1.0.0
   pipeline:
     stages:
-      - name: LAMBDA_NEW_VERSION_OUT
+      - name: LAMBDA_NEW_VERSION_ROLLOUT
       - name: LAMBDA_TRAFFIC_ROUTE
         with:
           newVersion: 10
@@ -19,4 +19,4 @@ spec:
         with:
           newVersion: 50
           oldVersion: 50
-      - name: LAMBDA_OLD_VERSION_OUT
+      - name: LAMBDA_OLD_VERSION_CLEAN

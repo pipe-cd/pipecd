@@ -8,7 +8,7 @@ spec:
     platform: managed
   pipeline:
     stages:
-      - name: CLOUDRUN_NEW_VERSION_OUT
+      - name: CLOUDRUN_NEW_VERSION_ROLLOUT
       - name: CLOUDRUN_TRAFFIC_ROUTE
         with:
           newVersion: 100
