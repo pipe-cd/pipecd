@@ -1,0 +1,14 @@
+apiVersion: pipecd.dev/v1beta1
+kind: Piped
+spec:
+  syncInterval: 1m
+  git:
+    sshKeyFile: /etc/pipecd-runner/ssh.key
+    accessTokenFile: /etc/pipecd-runner/git.token
+  repositories:
+    - repoId: pipe-debug
+      remote: git@github.com:kapetaniosci/pipe-debug.git
+      branch: master
+    - repoId: pipe-debug-2
+      remote: git@github.com:kapetaniosci/pipe-debug-2.git
+      branch: dev

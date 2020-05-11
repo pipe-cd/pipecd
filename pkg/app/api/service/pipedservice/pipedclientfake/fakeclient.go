@@ -39,11 +39,11 @@ func NewClient(logger *zap.Logger) *fakeClient {
 	return &fakeClient{
 		applications: map[string]*model.Application{
 			"pipe-debug-k8s-app": {
-				Id:        "debug-project/dev/pipe-debug-k8s-app",
+				Id:        "local-dev-project/dev/pipe-debug-k8s-app",
 				Name:      "pipe-debug-k8s-app",
 				EnvId:     "dev",
-				PipedId:   "debug-pipe-id",
-				ProjectId: "debug-project",
+				PipedId:   "local-dev-piped",
+				ProjectId: "local-dev-project",
 				Kind:      model.ApplicationKind_KUBERNETES,
 				GitPath: &model.ApplicationGitPath{
 					RepoId: "pipe-debug",
@@ -52,11 +52,11 @@ func NewClient(logger *zap.Logger) *fakeClient {
 				Disabled: false,
 			},
 			"pipe-debug-2-k8s-app": {
-				Id:        "debug-project/dev/pipe-debug-2-k8s-app",
+				Id:        "local-dev-project/dev/pipe-debug-2-k8s-app",
 				Name:      "pipe-debug-2-k8s-app",
 				EnvId:     "dev",
-				PipedId:   "debug-pipe-id",
-				ProjectId: "debug-project",
+				PipedId:   "local-dev-piped",
+				ProjectId: "local-dev-project",
 				Kind:      model.ApplicationKind_KUBERNETES,
 				GitPath: &model.ApplicationGitPath{
 					RepoId: "pipe-debug-2",
