@@ -178,7 +178,7 @@ func (c *DeploymentController) startNewScheduler(ctx context.Context, d *model.D
 		zap.String("deployment-id", d.Id),
 		zap.String("application-id", d.ApplicationId),
 	)
-	logger.Info("starting a new scheduler")
+	logger.Info("will add a new scheduler")
 
 	// Ensure the existence of the working directory for the deployment.
 	workingDir := filepath.Join(c.workingDir, d.Id)
@@ -189,22 +189,25 @@ func (c *DeploymentController) startNewScheduler(ctx context.Context, d *model.D
 		)
 		return err
 	}
+	logger.Info("created working directory for deployment", zap.String("working-dir", workingDir))
 
 	// Create a new scheduler and append to the list for tracking.
 	e := newScheduler(
 		d,
 		c.pipedConfig,
 		workingDir,
+		c.gitClient,
 		c.commandStore,
 		c.logPersister,
 		c.metadataPersister,
 		c.logger,
 	)
 	c.schedulers[e.Id()] = e
+	logger.Info("added a new scheduler", zap.Int("scheduler-count", len(c.schedulers)))
 
 	// Start running executor.
 	cleanup := func() {
-		logger.Info("cleaning up working directory for deployment")
+		logger.Info("cleaning up working directory for deployment", zap.String("working-dir", workingDir))
 		err := os.RemoveAll(workingDir)
 		if err == nil {
 			return

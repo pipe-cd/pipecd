@@ -42,7 +42,10 @@ type Input struct {
 }
 
 type LogPersister interface {
-	Append(log string)
+	Append(log string, s model.LogSeverity)
+	AppendInfo(log string)
+	AppendSuccess(log string)
+	AppendError(log string)
 }
 
 type MetadataPersister interface {

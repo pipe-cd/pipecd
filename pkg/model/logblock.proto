@@ -19,11 +19,19 @@ option go_package = "github.com/kapetaniosci/pipe/pkg/model";
 
 import "validate/validate.proto";
 
+enum LogSeverity {
+    INFO = 0;
+    SUCCESS = 1;
+    ERROR = 2;
+}
+
 message LogBlock {
     // The index of log block.
     int64 index = 1;
     // The log content.
     string log = 2 [(validate.rules).string.min_len = 1];
+    // Severity level for this block.
+    LogSeverity severity = 3 [(validate.rules).enum.defined_only = true];
     // Unix time when the log block was created.
     int64 created_at = 14 [(validate.rules).int64.gt = 0];
 }

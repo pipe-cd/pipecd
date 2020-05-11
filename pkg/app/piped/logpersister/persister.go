@@ -36,7 +36,10 @@ type Persister interface {
 }
 
 type StageLogPersister interface {
-	Append(log string)
+	Append(log string, s model.LogSeverity)
+	AppendInfo(log string)
+	AppendSuccess(log string)
+	AppendError(log string)
 	Complete(ctx context.Context) error
 }
 
@@ -82,6 +85,7 @@ L:
 		}
 	}
 
+	p.logger.Info("flush all logs before stopping")
 	ctx, cancel := context.WithTimeout(context.Background(), p.gracePeriod)
 	defer cancel()
 	p.flush(ctx)
@@ -116,6 +120,7 @@ func (p *persister) flushStage(ctx context.Context, sp *stageLogPersister) bool 
 		sp.mu.Unlock()
 		return deletable
 	}
+	sp.mu.Unlock()
 
 	sp.mu.Lock()
 	var (
@@ -160,9 +165,14 @@ func (p *persister) StageLogPersister(deploymentID, stageID string) StageLogPers
 			DeploymentID: deploymentID,
 			StageID:      stageID,
 		}
+		logger = p.logger.With(
+			zap.String("deployment-id", deploymentID),
+			zap.String("stage-id", stageID),
+		)
 		sp = &stageLogPersister{
 			key:       k,
 			persister: p,
+			logger:    logger,
 		}
 	)
 	p.stagePersisters.Store(k, sp)
@@ -179,10 +189,18 @@ type stageLogPersister struct {
 	retries     int
 	mu          sync.Mutex
 	persister   *persister
+	logger      *zap.Logger
 }
 
 // Append appends a new log block.
-func (sp *stageLogPersister) Append(log string) {
+func (sp *stageLogPersister) Append(log string, s model.LogSeverity) {
+	switch s {
+	case model.LogSeverity_ERROR:
+		sp.logger.Error(log)
+	default:
+		sp.logger.Info(log)
+	}
+
 	now := time.Now()
 	sp.mu.Lock()
 	defer sp.mu.Unlock()
@@ -190,9 +208,25 @@ func (sp *stageLogPersister) Append(log string) {
 	sp.blocks = append(sp.blocks, &model.LogBlock{
 		Index:     int64(sp.index),
 		Log:       log,
+		Severity:  s,
 		CreatedAt: now.Unix(),
 	})
 	sp.index++
+}
+
+// AppendInfo appends a new INFO log block.
+func (sp *stageLogPersister) AppendInfo(log string) {
+	sp.Append(log, model.LogSeverity_INFO)
+}
+
+// AppendSuccess appends a new SUCCESS log block.
+func (sp *stageLogPersister) AppendSuccess(log string) {
+	sp.Append(log, model.LogSeverity_SUCCESS)
+}
+
+// AppendError appends a new ERROR log block.
+func (sp *stageLogPersister) AppendError(log string) {
+	sp.Append(log, model.LogSeverity_ERROR)
 }
 
 // Complete marks the completion of logging for this stage.

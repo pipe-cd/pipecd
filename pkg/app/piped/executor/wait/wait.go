@@ -46,13 +46,13 @@ func (e *Executor) Execute(ctx context.Context) (model.StageStatus, error) {
 	timer := time.NewTimer(duration)
 	defer timer.Stop()
 
-	e.LogPersister.Append(fmt.Sprintf("Waiting for %v...", duration))
+	e.LogPersister.AppendInfo(fmt.Sprintf("Waiting for %v...", duration))
 	select {
 	case <-timer.C:
 	case <-ctx.Done():
 		return model.StageStatus_STAGE_CANCELLED, fmt.Errorf("context cancelled")
 	}
-	e.LogPersister.Append(fmt.Sprintf("Waited for %v", duration))
+	e.LogPersister.AppendInfo(fmt.Sprintf("Waited for %v", duration))
 
 	return model.StageStatus_STAGE_SUCCESS, nil
 }

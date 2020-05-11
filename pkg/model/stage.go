@@ -52,6 +52,21 @@ const (
 	// StageTerraformApply represents the state where
 	// the new configuration has been applied.
 	StageTerraformApply Stage = "TERRAFORM_APPLY"
+
+	// StageStart represents a starting stage for each pipeline.
+	// This stage is AUTOMATICALLY GENERATED and can not be used
+	// to specify in configuration file.
+	StageStart Stage = "START"
+	// StageEnd represents an ending stage for each pipeline.
+	// This stage is AUTOMATICALLY GENERATED and can not be used
+	// to specify in configuration file.
+	StageEnd Stage = "END"
+	// StageRollBack represents a state where
+	// the all temporarily created stages will be reverted to
+	// bring back the pre-deploy stage.
+	// This stage is AUTOMATICALLY GENERATED and can not be used
+	// to specify in configuration file.
+	StageRollBack Stage = "ROLLBACK"
 )
 
 func (s Stage) String() string {

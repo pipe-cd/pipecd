@@ -43,14 +43,14 @@ func (e *Executor) Execute(ctx context.Context) (model.StageStatus, error) {
 	ticker := time.NewTicker(5 * time.Second)
 	defer ticker.Stop()
 
-	e.LogPersister.Append("Waiting for an approval...")
+	e.LogPersister.AppendInfo("Waiting for an approval...")
 	for {
 		select {
 		case <-ticker.C:
 			if ok := e.checkApproval(ctx); !ok {
 				continue
 			}
-			e.LogPersister.Append("Got an approval from abc")
+			e.LogPersister.AppendInfo("Got an approval from abc")
 			return model.StageStatus_STAGE_SUCCESS, nil
 
 		case <-ctx.Done():

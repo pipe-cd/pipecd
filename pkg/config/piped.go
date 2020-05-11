@@ -40,6 +40,16 @@ func (s *PipedSpec) GetRepositoryMap() map[string]PipedRepository {
 	return m
 }
 
+// GetRepository finds a repository with the given ID from the configured list.
+func (s *PipedSpec) GetRepository(id string) (PipedRepository, bool) {
+	for _, repo := range s.Repositories {
+		if repo.RepoID == id {
+			return repo, true
+		}
+	}
+	return PipedRepository{}, false
+}
+
 type PipedGit struct {
 	Username string `json:"username"`
 	Email    string `json:"email"`

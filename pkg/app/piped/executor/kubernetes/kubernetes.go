@@ -50,6 +50,7 @@ func init() {
 }
 
 func (e *Executor) Execute(ctx context.Context) (model.StageStatus, error) {
+	e.Logger.Info("start executing kubernetes stage")
 	return model.StageStatus_STAGE_SUCCESS, nil
 }
 

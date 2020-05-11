@@ -16,13 +16,21 @@ package deploymentcontroller
 
 import (
 	"context"
+	"fmt"
+	"path/filepath"
 
+	"go.uber.org/atomic"
 	"go.uber.org/zap"
 
 	"github.com/kapetaniosci/pipe/pkg/app/piped/executor"
 	"github.com/kapetaniosci/pipe/pkg/app/piped/logpersister"
 	"github.com/kapetaniosci/pipe/pkg/config"
 	"github.com/kapetaniosci/pipe/pkg/model"
+)
+
+var (
+	workspaceGitRepoDirName = "repo"
+	workspaceStagesDirName  = "stages"
 )
 
 type repoStore interface {
@@ -39,6 +47,7 @@ type scheduler struct {
 	pipedConfig       *config.PipedSpec
 	workingDir        string
 	executorRegistry  executorRegistry
+	gitClient         gitClient
 	commandStore      commandStore
 	logPersister      logpersister.Persister
 	metadataPersister metadataPersister
@@ -46,9 +55,11 @@ type scheduler struct {
 
 	// Deployment configuration for this application.
 	appConfig *config.Config
+	completed atomic.Bool
+	done      atomic.Bool
 }
 
-func newScheduler(d *model.Deployment, cfg *config.PipedSpec, workingDir string, cmdStore commandStore, lp logpersister.Persister, mdp metadataPersister, logger *zap.Logger) *scheduler {
+func newScheduler(d *model.Deployment, cfg *config.PipedSpec, workingDir string, gitClient gitClient, cmdStore commandStore, lp logpersister.Persister, mdp metadataPersister, logger *zap.Logger) *scheduler {
 	logger = logger.Named("scheduler").With(
 		zap.String("deployment-id", d.Id),
 		zap.String("application-id", d.ApplicationId),
@@ -62,6 +73,7 @@ func newScheduler(d *model.Deployment, cfg *config.PipedSpec, workingDir string,
 		pipedConfig:       cfg,
 		workingDir:        workingDir,
 		executorRegistry:  executor.DefaultRegistry(),
+		gitClient:         gitClient,
 		commandStore:      cmdStore,
 		logPersister:      lp,
 		metadataPersister: mdp,
@@ -74,31 +86,81 @@ func (s *scheduler) Id() string {
 }
 
 func (s *scheduler) IsCompleted() bool {
-	return false
+	return s.completed.Load()
 }
 
 func (s *scheduler) IsDone() bool {
-	return false
+	return s.done.Load()
 }
 
-func (s *scheduler) Run(ctx context.Context) error {
-	// Prepare a working space for this deployment.
-	// Load deployment configuration data.
-	// Restore previous executed state.
-	// Start executing the next stages.
-	s.logger.Info("start running scheduler")
+func (s *scheduler) Run(ctx context.Context) (executeErr error) {
+	s.logger.Info("start running a scheduler")
+
+	defer func() {
+		if executeErr == nil {
+			s.logger.Info("a scheduler has been completed successfully")
+			return
+		}
+		executeErr = s.end(ctx, executeErr)
+		if executeErr != nil {
+			s.logger.Error("a scheduler has been failed at end phase", zap.Error(executeErr))
+		}
+	}()
+
+	executeErr = s.start(ctx)
+	if executeErr != nil {
+		s.logger.Error("a scheduler has been failed at start phase", zap.Error(executeErr))
+		return executeErr
+	}
+
+	executeErr = s.run(ctx)
+	if executeErr != nil {
+		s.logger.Error("a scheduler has been failed at run phase", zap.Error(executeErr))
+		return executeErr
+	}
 
 	return nil
 }
 
-// prepare does all needed things before start executing the deployment.
-// Includes:
-// - Clone a readonly repository at the required revision
-// - Restore previous executed state from deployment data.
-func (s *scheduler) prepare(ctx context.Context) error {
+// start does all needed things before start executing the deployment.
+func (s *scheduler) start(ctx context.Context) error {
+	lp := s.logPersister.StageLogPersister(s.deployment.Id, model.StageStart.String())
+	defer lp.Complete(ctx)
+
+	// Clone repository and checkout to the target revision.
+	var (
+		appID       = s.deployment.ApplicationId
+		repoID      = s.deployment.GitPath.RepoId
+		repoDirPath = filepath.Join(s.workingDir, workspaceGitRepoDirName)
+		revision    = s.deployment.Trigger.Commit.Revision
+		repoCfg, ok = s.pipedConfig.GetRepository(repoID)
+	)
+	if !ok {
+		err := fmt.Errorf("no registered repository id %s for application %s", repoID, appID)
+		lp.AppendError(err.Error())
+		return err
+	}
+
+	gitRepo, err := s.gitClient.Clone(ctx, repoCfg.RepoID, repoCfg.Remote, repoCfg.Branch, repoDirPath)
+	if err != nil {
+		err = fmt.Errorf("failed to clone repository %s for application %s", repoID, appID)
+		lp.AppendError(err.Error())
+		return err
+	}
+
+	if err = gitRepo.Checkout(ctx, revision); err != nil {
+		err = fmt.Errorf("failed to clone repository %s for application %s", repoID, appID)
+		lp.AppendError(err.Error())
+		return err
+	}
+	lp.AppendSuccess(fmt.Sprintf("successfully cloned repository %s", repoID))
+
+	// Restore previous executed state from deployment data.
+
 	return nil
 }
 
+// run starts running from previous state.
 func (s *scheduler) run(ctx context.Context) error {
 	// Loop until one of the following conditions occurs:
 	// - context has done
@@ -125,6 +187,11 @@ func (s *scheduler) run(ctx context.Context) error {
 	if err != nil {
 		return err
 	}
+	return nil
+}
+
+func (s *scheduler) end(ctx context.Context, runErr error) error {
+	// We check the runErr to decide adding a ROLLBACK stage or not.
 	return nil
 }
 

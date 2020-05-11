@@ -17,6 +17,7 @@ go_library(
         "//pkg/git:go_default_library",
         "//pkg/model:go_default_library",
         "@org_golang_google_grpc//:go_default_library",
+        "@org_uber_go_atomic//:go_default_library",
         "@org_uber_go_zap//:go_default_library",
     ],
 )
