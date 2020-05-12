@@ -58,7 +58,6 @@ type scheduler struct {
 
 	// Deployment configuration for this application.
 	appConfig *config.Config
-	completed atomic.Bool
 	done      atomic.Bool
 	nowFunc   func() time.Time
 }
@@ -102,11 +101,6 @@ func newScheduler(
 // This is the same value with deployment ID.
 func (s *scheduler) Id() string {
 	return s.deployment.Id
-}
-
-// IsCompleted tells whether the deployment is completed or not.
-func (s *scheduler) IsCompleted() bool {
-	return s.completed.Load()
 }
 
 // IsDone tells whether this scheduler is done it tasks or not.
