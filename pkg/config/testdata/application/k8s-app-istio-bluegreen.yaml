@@ -4,6 +4,8 @@ spec:
   pipeline:
     stages:
       - name: K8S_STAGE_ROLLOUT
+        with:
+          replicas: 100%
       - name: K8S_TRAFFIC_ROUTE
         with:
           target: stage

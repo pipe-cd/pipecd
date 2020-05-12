@@ -7,7 +7,7 @@ spec:
     stages:
       - name: K8S_STAGE_ROLLOUT
         with:
-          weight: 10
+          replicas: 10%
       - name: K8S_PRIMARY_UPDATE
       - name: K8S_STAGE_CLEAN
 
@@ -21,7 +21,7 @@ spec:
     stages:
       - name: K8S_STAGE_ROLLOUT
         with:
-          weight: 10
+          replicas: 2
       - name: WAIT_APPROVAL
         with:
           approvers:
@@ -40,7 +40,7 @@ spec:
     stages:
       - name: K8S_STAGE_ROLLOUT
         with:
-          weight: 10
+          replicas: 10%
       - name: ANALYSIS
         with:
           duration: 10m
@@ -72,7 +72,7 @@ spec:
     stages:
       - name: K8S_STAGE_ROLLOUT
         with:
-          weight: 10
+          replicas: 10%
       - name: ANALYSIS
         with:
           duration: 10m
@@ -101,10 +101,10 @@ spec:
     stages:
       - name: K8S_BASELINE_ROLLOUT
         with:
-          weight: 10
+          replicas: 10%
       - name: K8S_STAGE_ROLLOUT
         with:
-          weight: 10
+          replicas: 10%
       - name: ANALYSIS
         with:
           duration: 10m

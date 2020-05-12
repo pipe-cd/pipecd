@@ -76,17 +76,17 @@ type PipelineStage struct {
 	Desc    string
 	Timeout Duration
 
-	WaitStageOptions            *WaitStageOptions
-	WaitApprovalStageOptions    *WaitApprovalStageOptions
-	AnalysisStageOptions        *AnalysisStageOptions
-	K8sPrimaryOutStageOptions   *K8sPrimaryOutStageOptions
-	K8sStageOutStageOptions     *K8sStageOutStageOptions
-	K8sStageInStageOptions      *K8sStageInStageOptions
-	K8sBaselineOutStageOptions  *K8sBaselineOutStageOptions
-	K8sBaselineInStageOptions   *K8sBaselineInStageOptions
-	K8sTrafficRouteStageOptions *K8sTrafficRouteStageOptions
-	TerraformPlanStageOptions   *TerraformPlanStageOptions
-	TerraformApplyStageOptions  *TerraformApplyStageOptions
+	WaitStageOptions               *WaitStageOptions
+	WaitApprovalStageOptions       *WaitApprovalStageOptions
+	AnalysisStageOptions           *AnalysisStageOptions
+	K8sPrimaryUpdateStageOptions   *K8sPrimaryUpdateStageOptions
+	K8sStageRolloutStageOptions    *K8sStageRolloutStageOptions
+	K8sStageCleanStageOptions      *K8sStageCleanStageOptions
+	K8sBaselineRolloutStageOptions *K8sBaselineRolloutStageOptions
+	K8sBaselineCleanStageOptions   *K8sBaselineCleanStageOptions
+	K8sTrafficRouteStageOptions    *K8sTrafficRouteStageOptions
+	TerraformPlanStageOptions      *TerraformPlanStageOptions
+	TerraformApplyStageOptions     *TerraformApplyStageOptions
 }
 
 type genericPipelineStage struct {
@@ -125,29 +125,29 @@ func (s *PipelineStage) UnmarshalJSON(data []byte) error {
 			err = json.Unmarshal(gs.With, s.AnalysisStageOptions)
 		}
 	case model.StageK8sPrimaryUpdate:
-		s.K8sPrimaryOutStageOptions = &K8sPrimaryOutStageOptions{}
+		s.K8sPrimaryUpdateStageOptions = &K8sPrimaryUpdateStageOptions{}
 		if len(gs.With) > 0 {
-			err = json.Unmarshal(gs.With, s.K8sPrimaryOutStageOptions)
+			err = json.Unmarshal(gs.With, s.K8sPrimaryUpdateStageOptions)
 		}
 	case model.StageK8sStageRollout:
-		s.K8sStageOutStageOptions = &K8sStageOutStageOptions{}
+		s.K8sStageRolloutStageOptions = &K8sStageRolloutStageOptions{}
 		if len(gs.With) > 0 {
-			err = json.Unmarshal(gs.With, s.K8sStageOutStageOptions)
+			err = json.Unmarshal(gs.With, s.K8sStageRolloutStageOptions)
 		}
 	case model.StageK8sStageClean:
-		s.K8sStageInStageOptions = &K8sStageInStageOptions{}
+		s.K8sStageCleanStageOptions = &K8sStageCleanStageOptions{}
 		if len(gs.With) > 0 {
-			err = json.Unmarshal(gs.With, s.K8sStageInStageOptions)
+			err = json.Unmarshal(gs.With, s.K8sStageCleanStageOptions)
 		}
 	case model.StageK8sBaselineRollout:
-		s.K8sBaselineOutStageOptions = &K8sBaselineOutStageOptions{}
+		s.K8sBaselineRolloutStageOptions = &K8sBaselineRolloutStageOptions{}
 		if len(gs.With) > 0 {
-			err = json.Unmarshal(gs.With, s.K8sBaselineOutStageOptions)
+			err = json.Unmarshal(gs.With, s.K8sBaselineRolloutStageOptions)
 		}
 	case model.StageK8sBaselineClean:
-		s.K8sBaselineInStageOptions = &K8sBaselineInStageOptions{}
+		s.K8sBaselineCleanStageOptions = &K8sBaselineCleanStageOptions{}
 		if len(gs.With) > 0 {
-			err = json.Unmarshal(gs.With, s.K8sBaselineInStageOptions)
+			err = json.Unmarshal(gs.With, s.K8sBaselineCleanStageOptions)
 		}
 	case model.StageK8sTrafficRoute:
 		s.K8sTrafficRouteStageOptions = &K8sTrafficRouteStageOptions{}
@@ -181,15 +181,17 @@ type WaitApprovalStageOptions struct {
 }
 
 // WaitStageOptions contains all configurable values for a K8S_PRIMARY_UPDATE stage.
-type K8sPrimaryOutStageOptions struct {
+type K8sPrimaryUpdateStageOptions struct {
 	Manifests []string `json:"manifests"`
 }
 
-// K8sStageOutStageOptions contains all configurable values for a K8S_STAGE_ROLLOUT stage.
-type K8sStageOutStageOptions struct {
-	// Percentage of pods for STAGE workloads.
+// K8sStageRolloutStageOptions contains all configurable values for a K8S_STAGE_ROLLOUT stage.
+type K8sStageRolloutStageOptions struct {
+	// How many pods for STAGE workloads.
+	// An integer value can be specified to indicate an absolute value of pod number.
+	// Or a string suffixed by "%" to indicate an percantage value compared to the pod number of PRIMARY.
 	// Default is 1 pod.
-	Weight int `json:"weight"`
+	Replicas Replicas `json:"replicas"`
 	// Suffix that should be used when naming the STAGE resources.
 	// Default is "stage".
 	Suffix string
@@ -197,32 +199,30 @@ type K8sStageOutStageOptions struct {
 	WithService bool
 }
 
-// K8sStageInStageOptions contains all configurable values for a K8S_STAGE_CLEAN stage.
-type K8sStageInStageOptions struct {
+// K8sStageCleanStageOptions contains all configurable values for a K8S_STAGE_CLEAN stage.
+type K8sStageCleanStageOptions struct {
 }
 
-// K8sBaselineOutStageOptions contains all configurable values for a K8S_BASELINE_ROLLOUT stage.
-type K8sBaselineOutStageOptions struct {
-	// Percentage of pods for BASELINE workloads.
+// K8sBaselineRolloutStageOptions contains all configurable values for a K8S_BASELINE_ROLLOUT stage.
+type K8sBaselineRolloutStageOptions struct {
+	// How many pods for BASELINE workloads.
+	// An integer value can be specified to indicate an absolute value of pod number.
+	// Or a string suffixed by "%" to indicate an percantage value compared to the pod number of PRIMARY.
 	// Default is 1 pod.
-	Weight int `json:"weight"`
-	// Suffix that should be used when naming the STAGE resources.
+	Replicas Replicas `json:"replicas"`
+	// Suffix that should be used when naming the BASELINE resources.
 	// Default is "baseline".
 	Suffix string
 	// If true the service resource for the BASELINE will be created.
 	WithService bool
 }
 
-// K8sBaselineInStageOptions contains all configurable values for a K8S_BASELINE_CLEAN stage.
-type K8sBaselineInStageOptions struct {
+// K8sBaselineCleanStageOptions contains all configurable values for a K8S_BASELINE_CLEAN stage.
+type K8sBaselineCleanStageOptions struct {
 }
 
 // K8sTrafficRouteStageOptions contains all configurable values for a K8S_TRAFFIC_ROUTE stage.
 type K8sTrafficRouteStageOptions struct {
-	// Target can be "primary", "stage", "baseline".
-	// If this field was configured, all of the traffic to the applicaiton
-	// should be routing to the target.
-	Target string `json:"target,omitempty"`
 	// The percentage of traffic should be routed to PRIMARY.
 	Primary int `json:"primary"`
 	// The percentage of traffic should be routed to STAGE.

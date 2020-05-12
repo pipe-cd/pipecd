@@ -1,3 +1,6 @@
+# Pipeline for a Kubernetes application.
+# This makes a progressive delivery with BlueGreen strategy.
+# This also has a ANALYSIS stage for running smoke test againts the stage.
 apiVersion: pipecd.dev/v1beta1
 kind: KubernetesApp
 spec:
@@ -6,6 +9,12 @@ spec:
       - name: K8S_STAGE_ROLLOUT
         with:
           replicas: 100%
+      - name: ANALYSIS
+        with:
+          duration: 10m
+          threshold: 2
+          https:
+            - useTemplate: http_stage_check
       - name: K8S_TRAFFIC_ROUTE
         with:
           target: stage

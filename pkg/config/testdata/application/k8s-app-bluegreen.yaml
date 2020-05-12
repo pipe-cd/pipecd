@@ -6,60 +6,13 @@ spec:
   pipeline:
     stages:
       - name: K8S_STAGE_ROLLOUT
+        with:
+          replicas: 100%
       - name: K8S_TRAFFIC_ROUTE
         with:
-          target: stage
+          stage: 100
       - name: K8S_PRIMARY_UPDATE
       - name: K8S_TRAFFIC_ROUTE
         with:
-          target: primary
-      - name: K8S_STAGE_CLEAN
-
----
-# Pipeline for a Kubernetes application.
-# This makes a progressive delivery with BlueGreen strategy.
-# This also requires an approval before switch traffic to the stage.
-apiVersion: pipecd.dev/v1beta1
-kind: KubernetesApp
-spec:
-  pipeline:
-    stages:
-      - name: K8S_STAGE_ROLLOUT
-      - name: WAIT_APPROVAL
-        with:
-          approvers:
-            - user-foo
-            - user-bar
-      - name: K8S_TRAFFIC_ROUTE
-        with:
-          target: stage
-      - name: K8S_PRIMARY_UPDATE
-      - name: K8S_TRAFFIC_ROUTE
-        with:
-          target: primary
-      - name: K8S_STAGE_CLEAN
-
----
-# Pipeline for a Kubernetes application.
-# This makes a progressive delivery with BlueGreen strategy.
-# This also has a ANALYSIS stage for running smoke test againts the stage.
-apiVersion: pipecd.dev/v1beta1
-kind: KubernetesApp
-spec:
-  pipeline:
-    stages:
-      - name: K8S_STAGE_ROLLOUT
-      - name: ANALYSIS
-        with:
-          duration: 10m
-          threshold: 2
-          https:
-            - useTemplate: http_stage_check
-      - name: K8S_TRAFFIC_ROUTE
-        with:
-          target: stage
-      - name: K8S_PRIMARY_UPDATE
-      - name: K8S_TRAFFIC_ROUTE
-        with:
-          target: primary
+          primary: 100
       - name: K8S_STAGE_CLEAN

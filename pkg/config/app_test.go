@@ -18,9 +18,10 @@ import (
 	"fmt"
 	"testing"
 
-	"github.com/kapetaniosci/pipe/pkg/model"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
+
+	"github.com/kapetaniosci/pipe/pkg/model"
 )
 
 func TestAppConfig(t *testing.T) {
@@ -60,17 +61,17 @@ func TestAppConfig(t *testing.T) {
 				},
 				Pipeline: &AppPipeline{
 					Stages: []PipelineStage{
-						PipelineStage{
+						{
 							Name:                      model.StageTerraformPlan,
 							TerraformPlanStageOptions: &TerraformPlanStageOptions{},
 						},
-						PipelineStage{
+						{
 							Name: model.StageWaitApproval,
 							WaitApprovalStageOptions: &WaitApprovalStageOptions{
 								Approvers: []string{"foo", "bar"},
 							},
 						},
-						PipelineStage{
+						{
 							Name:                       model.StageTerraformApply,
 							TerraformApplyStageOptions: &TerraformApplyStageOptions{},
 						},
@@ -80,20 +81,47 @@ func TestAppConfig(t *testing.T) {
 			},
 			expectedError: nil,
 		},
-		// {
-		// 	fileName:           "testdata/application/k8s-app-helm.yaml",
-		// 	expectedKind:       KindK8sHelmApp,
-		// 	expectedAPIVersion: "pipecd.dev/v1beta1",
-		// 	expectedSpec: &K8sHelmAppSpec{
-		// 		Input: &K8sHelmAppInput{
-		// 			Chart:       "git@github.com:org/config-repo.git:charts/demoapp?ref=v1.0.0",
-		// 			ValueFiles:  []string{"values.yaml"},
-		// 			HelmVersion: "3.1.1",
-		// 		},
-		// 		Pipeline: nil,
-		// 	},
-		// 	expectedError: nil,
-		// },
+		{
+			fileName:           "testdata/application/k8s-app-bluegreen.yaml",
+			expectedKind:       KindKubernetesApp,
+			expectedAPIVersion: "pipecd.dev/v1beta1",
+			expectedSpec: &KubernetesAppSpec{
+				Pipeline: &AppPipeline{
+					Stages: []PipelineStage{
+						{
+							Name: model.StageK8sStageRollout,
+							K8sStageRolloutStageOptions: &K8sStageRolloutStageOptions{
+								Replicas: Replicas{
+									Number:       100,
+									IsPercentage: true,
+								},
+							},
+						},
+						{
+							Name: model.StageK8sTrafficRoute,
+							K8sTrafficRouteStageOptions: &K8sTrafficRouteStageOptions{
+								Stage: 100,
+							},
+						},
+						{
+							Name:                         model.StageK8sPrimaryUpdate,
+							K8sPrimaryUpdateStageOptions: &K8sPrimaryUpdateStageOptions{},
+						},
+						{
+							Name: model.StageK8sTrafficRoute,
+							K8sTrafficRouteStageOptions: &K8sTrafficRouteStageOptions{
+								Primary: 100,
+							},
+						},
+						{
+							Name:                      model.StageK8sStageClean,
+							K8sStageCleanStageOptions: &K8sStageCleanStageOptions{},
+						},
+					},
+				},
+			},
+			expectedError: nil,
+		},
 		// {
 		// 	fileName:           "testdata/application/k8s-app-canary.yaml",
 		// 	expectedKind:       KindKubernetesApp,
