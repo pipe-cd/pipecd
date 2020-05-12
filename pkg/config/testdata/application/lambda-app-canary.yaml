@@ -10,13 +10,21 @@ spec:
     ref: v1.0.0
   pipeline:
     stages:
+      # Deploy workloads of the new version.
+      # But this is still receiving no traffic.
       - name: LAMBDA_NEW_VERSION_ROLLOUT
+      # Change the traffic routing state where
+      # the new version will receive the specified percentage of traffic.
+      # This is known as multi-phase canary strategy.
       - name: LAMBDA_TRAFFIC_ROUTE
         with:
           newVersion: 10
-          oldVersion: 90
+      # Optional: We can also add an ANALYSIS stage to verify the new version.
+      # If this stage finds any not good metrics of the new version,
+      # a rollback process to the previous version will be executed.
+      - name: ANALYSIS
+      # Change the traffic routing state where
+      # thre new version will receive 100% of the traffic.
       - name: LAMBDA_TRAFFIC_ROUTE
         with:
-          newVersion: 50
-          oldVersion: 50
-      - name: LAMBDA_OLD_VERSION_CLEAN
+          newVersion: 100

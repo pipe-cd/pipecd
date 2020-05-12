@@ -53,6 +53,20 @@ const (
 	// the new configuration has been applied.
 	StageTerraformApply Stage = "TERRAFORM_APPLY"
 
+	// StageCloudRunNewVersionRollout represents the state where
+	// the workloads of the new version has been rolled out.
+	StageCloudRunNewVersionRollout Stage = "CLOUDRUN_NEW_VERSION_ROLLOUT"
+	// StageCloudRunTrafficRoute represents the state where the traffic to application
+	// should be routed as the specified percentage to previous version and new version.
+	StageCloudRunTrafficRoute Stage = "CLOUDRUN_TRAFFIC_ROUTE"
+
+	// StageLambdaNewVersionRollout represents the state where
+	// the workloads of the new version has been rolled out.
+	StageLambdaNewVersionRollout Stage = "LAMBDA_NEW_VERSION_ROLLOUT"
+	// StageLambdaTrafficRoute represents the state where the traffic to application
+	// should be routed as the specified percentage to previous version and new version.
+	StageLambdaTrafficRoute Stage = "LAMBDA_TRAFFIC_ROUTE"
+
 	// StageStart represents a starting stage for each pipeline.
 	// This stage is AUTOMATICALLY GENERATED and can not be used
 	// to specify in configuration file.
