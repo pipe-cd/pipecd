@@ -56,7 +56,11 @@ type commandStore interface {
 	ReportCommandHandled(ctx context.Context, c *model.Command, status model.CommandStatus, metadata map[string]string) error
 }
 
-type DeploymentController struct {
+type DeploymentController interface {
+	Run(ctx context.Context) error
+}
+
+type controller struct {
 	apiClient         apiClient
 	gitClient         gitClient
 	commandStore      commandStore
@@ -66,7 +70,6 @@ type DeploymentController struct {
 
 	schedulers map[string]*scheduler
 	wg         sync.WaitGroup
-	mu         sync.Mutex
 
 	workspaceDir string
 	syncInternal time.Duration
@@ -82,14 +85,14 @@ func NewController(
 	pipedConfig *config.PipedSpec,
 	gracePeriod time.Duration,
 	logger *zap.Logger,
-) *DeploymentController {
+) DeploymentController {
 
 	var (
 		lp  = logpersister.NewPersister(apiClient, logger)
 		mdp = metadataPersister{apiClient: apiClient}
 		lg  = logger.Named("deployment-controller")
 	)
-	return &DeploymentController{
+	return &controller{
 		apiClient:         apiClient,
 		gitClient:         gitClient,
 		commandStore:      cmdStore,
@@ -105,9 +108,11 @@ func NewController(
 
 // Run starts running DeploymentController until the specified context has done.
 // This also waits for its cleaning up before returning.
-func (c *DeploymentController) Run(ctx context.Context) error {
+func (c *controller) Run(ctx context.Context) error {
 	c.logger.Info("start running deployment controller")
 
+	// Make sure the existence of the workspace directory.
+	// Each scheduler/deployment will have an working directory inside this workspace.
 	dir, err := ioutil.TempDir("", "workspace")
 	if err != nil {
 		c.logger.Error("failed to create workspace directory", zap.Error(err))
@@ -116,15 +121,22 @@ func (c *DeploymentController) Run(ctx context.Context) error {
 	c.workspaceDir = dir
 	c.logger.Info(fmt.Sprintf("workspace directory was configured to %s", c.workspaceDir))
 
+	// Start running log persister to buffer and flush the log blocks.
+	// We do not use the passed ctx directly because we want log persister
+	// component to be stopped at the last order to avoid lossing log from other components.
+	var (
+		lpStoppedCh     = make(chan error, 1)
+		lpCtx, lpCancel = context.WithCancel(context.Background())
+	)
+	go func() {
+		lpStoppedCh <- c.logPersister.Run(lpCtx)
+		close(lpStoppedCh)
+	}()
+
 	ticker := time.NewTicker(c.syncInternal)
 	defer ticker.Stop()
 
-	doneCh := make(chan error, 1)
-	go func() {
-		doneCh <- c.logPersister.Run(ctx)
-		close(doneCh)
-	}()
-
+	c.logger.Info("start syncing schedulers")
 L:
 	for {
 		select {
@@ -134,12 +146,14 @@ L:
 			c.syncScheduler(ctx)
 		}
 	}
-
-	// Waiting for stopping of log persister.
-	err = <-doneCh
+	c.logger.Info("stop syncing schedulers")
 
 	c.logger.Info("waiting for stopping all executors")
 	c.wg.Wait()
+
+	// Stop log persiter and wait for its stopping.
+	lpCancel()
+	err = <-lpStoppedCh
 
 	c.logger.Info("deployment controller has been stopped")
 	return err
@@ -147,7 +161,7 @@ L:
 
 // syncScheduler adds new scheduler for newly added deployments
 // as well as removes the removable deployments.
-func (c *DeploymentController) syncScheduler(ctx context.Context) error {
+func (c *controller) syncScheduler(ctx context.Context) error {
 	resp, err := c.apiClient.ListNotCompletedDeployments(ctx, &pipedservice.ListNotCompletedDeploymentsRequest{})
 	if err != nil {
 		c.logger.Warn("failed to list uncompleted deployments", zap.Error(err))
@@ -181,7 +195,11 @@ func (c *DeploymentController) syncScheduler(ctx context.Context) error {
 	return nil
 }
 
-func (c *DeploymentController) startNewScheduler(ctx context.Context, d *model.Deployment) error {
+// startNewScheduler creates and starts running a new scheduler
+// for a specific uncompleted deployment.
+// This adds the newly created one to the scheduler list
+// for tracking its lifetime periodically later.
+func (c *controller) startNewScheduler(ctx context.Context, d *model.Deployment) error {
 	logger := c.logger.With(
 		zap.String("deployment-id", d.Id),
 		zap.String("application-id", d.ApplicationId),
