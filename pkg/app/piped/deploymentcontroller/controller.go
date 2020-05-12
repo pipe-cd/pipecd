@@ -68,7 +68,7 @@ type DeploymentController struct {
 	wg         sync.WaitGroup
 	mu         sync.Mutex
 
-	workingDir   string
+	workspaceDir string
 	syncInternal time.Duration
 	gracePeriod  time.Duration
 	logger       *zap.Logger
@@ -108,13 +108,13 @@ func NewController(
 func (c *DeploymentController) Run(ctx context.Context) error {
 	c.logger.Info("start running deployment controller")
 
-	dir, err := ioutil.TempDir("", "working")
+	dir, err := ioutil.TempDir("", "workspace")
 	if err != nil {
-		c.logger.Error("failed to create working directory", zap.Error(err))
+		c.logger.Error("failed to create workspace directory", zap.Error(err))
 		return err
 	}
-	c.workingDir = dir
-	c.logger.Info(fmt.Sprintf("working directory was configured to %s", c.workingDir))
+	c.workspaceDir = dir
+	c.logger.Info(fmt.Sprintf("workspace directory was configured to %s", c.workspaceDir))
 
 	ticker := time.NewTicker(c.syncInternal)
 	defer ticker.Stop()
@@ -189,7 +189,7 @@ func (c *DeploymentController) startNewScheduler(ctx context.Context, d *model.D
 	logger.Info("will add a new scheduler")
 
 	// Ensure the existence of the working directory for the deployment.
-	workingDir := filepath.Join(c.workingDir, d.Id)
+	workingDir := filepath.Join(c.workspaceDir, d.Id)
 	if err := os.MkdirAll(workingDir, os.ModePerm); err != nil {
 		logger.Error("failed to create working directory for deployment",
 			zap.String("working-dir", workingDir),
