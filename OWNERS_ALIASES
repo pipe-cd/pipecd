@@ -4,6 +4,7 @@ sig-dev:
     - gkuga
     - nakabonne
     - cakecatz
+    - stormcat24
 
 sig-build:
   users:
@@ -13,3 +14,4 @@ sig-release:
   users:
     - nghialv
     - gkuga
+    - stormcat24
