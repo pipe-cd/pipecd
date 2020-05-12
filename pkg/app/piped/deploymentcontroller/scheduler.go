@@ -118,6 +118,9 @@ func (s *scheduler) IsDone() bool {
 // Run starts running the scheduler.
 func (s *scheduler) Run(ctx context.Context) (executeErr error) {
 	s.logger.Info("start running a scheduler")
+	defer func() {
+		s.done.Store(true)
+	}()
 
 	defer func() {
 		executeErr = s.end(ctx, executeErr)

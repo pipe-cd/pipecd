@@ -214,7 +214,6 @@ func (c *DeploymentController) startNewScheduler(ctx context.Context, d *model.D
 	c.schedulers[e.Id()] = e
 	logger.Info("added a new scheduler", zap.Int("scheduler-count", len(c.schedulers)))
 
-	// Start running executor.
 	cleanup := func() {
 		logger.Info("cleaning up working directory for deployment", zap.String("working-dir", workingDir))
 		err := os.RemoveAll(workingDir)
@@ -226,6 +225,8 @@ func (c *DeploymentController) startNewScheduler(ctx context.Context, d *model.D
 			zap.Error(err),
 		)
 	}
+
+	// Start running executor.
 	go func() {
 		c.wg.Add(1)
 		defer c.wg.Done()
