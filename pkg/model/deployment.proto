@@ -58,9 +58,9 @@ message Deployment {
     string status_description = 10;
     repeated PipelineStage stages = 11;
 
-    int64 completed_at = 13 [(validate.rules).int64.gte = 0];
-    int64 created_at = 14 [(validate.rules).int64.gt = 0];
-    int64 updated_at = 15 [(validate.rules).int64.gt = 0];
+    int64 completed_at = 100 [(validate.rules).int64.gte = 0];
+    int64 created_at = 101 [(validate.rules).int64.gt = 0];
+    int64 updated_at = 102 [(validate.rules).int64.gt = 0];
 }
 
 message DeploymentTrigger {
@@ -75,10 +75,12 @@ message PipelineStage {
     string id = 1 [(validate.rules).string.min_len = 1];
     string name = 2 [(validate.rules).string.min_len = 1];
     string desc = 3;
-    repeated string requires = 4;
-    StageStatus status = 5 [(validate.rules).enum.defined_only = true];
-    bytes metadata = 6;
-    int32 retried_count = 7;
+    // Stage index from the stage list in configuration.
+    int32 index = 4;
+    repeated string requires = 5;
+    StageStatus status = 6 [(validate.rules).enum.defined_only = true];
+    bytes metadata = 7;
+    int32 retried_count = 8;
     int64 completed_at = 13 [(validate.rules).int64.gte = 0];
     int64 created_at = 14 [(validate.rules).int64.gt = 0];
     int64 updated_at = 15 [(validate.rules).int64.gt = 0];

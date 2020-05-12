@@ -29,6 +29,33 @@ import (
 	"github.com/kapetaniosci/pipe/pkg/model"
 )
 
+var (
+	kubernetesDefaultPipeline = &config.AppPipeline{
+		Stages: []config.PipelineStage{
+			{
+				Name: model.StageK8sPrimaryUpdate,
+				Desc: "Update primary to new version",
+			},
+		},
+	}
+	terraformDefaultPipeline = &config.AppPipeline{
+		Stages: []config.PipelineStage{
+			{
+				Name: model.StageTerraformPlan,
+				Desc: "Terraform Plan",
+			},
+			{
+				Name: model.StageWaitApproval,
+				Desc: "Wait for an approval",
+			},
+			{
+				Name: model.StageTerraformApply,
+				Desc: "Terraform Apply",
+			},
+		},
+	}
+)
+
 func (t *DeploymentTrigger) triggerDeployment(ctx context.Context, app *model.Application, repo git.Repo, branch string, commit git.Commit) error {
 	// Load deployment configuration at the commit.
 	cfg, err := t.loadDeploymentConfiguration(ctx, repo.GetPath(), app)
@@ -117,13 +144,26 @@ func buildDeploment(app *model.Application, cfg *config.Config, branch string, c
 	return deployment, nil
 }
 
-var kubernetesDefaultPipeline = &config.AppPipeline{
-	Stages: []config.PipelineStage{
-		{
-			Name: model.StageK8sPrimaryUpdate,
-			Desc: "Update primary to new version",
-		},
-	},
+func newStartPipelineStage(now time.Time) *model.PipelineStage {
+	return &model.PipelineStage{
+		Id:        model.StageStart.String(),
+		Name:      model.StageStart.String(),
+		Desc:      "Start",
+		Status:    model.StageStatus_STAGE_NOT_STARTED_YET,
+		CreatedAt: now.Unix(),
+		UpdatedAt: now.Unix(),
+	}
+}
+
+func newEndPipelineStage(now time.Time) *model.PipelineStage {
+	return &model.PipelineStage{
+		Id:        model.StageEnd.String(),
+		Name:      model.StageEnd.String(),
+		Desc:      "End",
+		Status:    model.StageStatus_STAGE_NOT_STARTED_YET,
+		CreatedAt: now.Unix(),
+		UpdatedAt: now.Unix(),
+	}
 }
 
 func buildKubernetesPipelineStages(cfg *config.Config, now time.Time) ([]*model.PipelineStage, error) {
@@ -131,7 +171,11 @@ func buildKubernetesPipelineStages(cfg *config.Config, now time.Time) ([]*model.
 	if p == nil {
 		p = kubernetesDefaultPipeline
 	}
-	stages := make([]*model.PipelineStage, 0, len(p.Stages))
+	stages := make([]*model.PipelineStage, 0, len(p.Stages)+2)
+	// Append start stage.
+	stages = append(stages, newStartPipelineStage(now))
+
+	// Append all configured stages.
 	for i, s := range p.Stages {
 		id := s.Id
 		if id == "" {
@@ -141,30 +185,18 @@ func buildKubernetesPipelineStages(cfg *config.Config, now time.Time) ([]*model.
 			Id:        id,
 			Name:      s.Name.String(),
 			Desc:      s.Desc,
+			Index:     int32(i),
 			Status:    model.StageStatus_STAGE_NOT_STARTED_YET,
 			CreatedAt: now.Unix(),
 			UpdatedAt: now.Unix(),
 		}
 		stages = append(stages, stage)
 	}
-	return stages, nil
-}
 
-var terraformDefaultPipeline = &config.AppPipeline{
-	Stages: []config.PipelineStage{
-		{
-			Name: model.StageTerraformPlan,
-			Desc: "Terraform Plan",
-		},
-		{
-			Name: model.StageWaitApproval,
-			Desc: "Wait for an approval",
-		},
-		{
-			Name: model.StageTerraformApply,
-			Desc: "Terraform Apply",
-		},
-	},
+	// Append end stage.
+	stages = append(stages, newEndPipelineStage(now))
+
+	return stages, nil
 }
 
 func buildTerraformPipelineStages(cfg *config.Config, now time.Time) ([]*model.PipelineStage, error) {
@@ -172,7 +204,12 @@ func buildTerraformPipelineStages(cfg *config.Config, now time.Time) ([]*model.P
 	if p == nil {
 		p = terraformDefaultPipeline
 	}
-	stages := make([]*model.PipelineStage, 0, len(p.Stages))
+	stages := make([]*model.PipelineStage, 0, len(p.Stages)+2)
+
+	// Append start stage.
+	stages = append(stages, newStartPipelineStage(now))
+
+	// Append all configured stages.
 	for i, s := range p.Stages {
 		id := s.Id
 		if id == "" {
@@ -182,11 +219,16 @@ func buildTerraformPipelineStages(cfg *config.Config, now time.Time) ([]*model.P
 			Id:        id,
 			Name:      s.Name.String(),
 			Desc:      s.Desc,
+			Index:     int32(i),
 			Status:    model.StageStatus_STAGE_NOT_STARTED_YET,
 			CreatedAt: now.Unix(),
 			UpdatedAt: now.Unix(),
 		}
 		stages = append(stages, stage)
 	}
+
+	// Append end stage.
+	stages = append(stages, newEndPipelineStage(now))
+
 	return stages, nil
 }

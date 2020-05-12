@@ -209,13 +209,13 @@ func (c *controller) startNewScheduler(ctx context.Context, d *model.Deployment)
 	// Ensure the existence of the working directory for the deployment.
 	workingDir := filepath.Join(c.workspaceDir, d.Id)
 	if err := os.MkdirAll(workingDir, os.ModePerm); err != nil {
-		logger.Error("failed to create working directory for deployment",
+		logger.Error("failed to create working directory for scheduler",
 			zap.String("working-dir", workingDir),
 			zap.Error(err),
 		)
 		return err
 	}
-	logger.Info("created working directory for deployment", zap.String("working-dir", workingDir))
+	logger.Info("created working directory for scheduler", zap.String("working-dir", workingDir))
 
 	// Create a new scheduler and append to the list for tracking.
 	e := newScheduler(
@@ -233,7 +233,7 @@ func (c *controller) startNewScheduler(ctx context.Context, d *model.Deployment)
 	logger.Info("added a new scheduler", zap.Int("scheduler-count", len(c.schedulers)))
 
 	cleanup := func() {
-		logger.Info("cleaning up working directory for deployment", zap.String("working-dir", workingDir))
+		logger.Info("cleaning up working directory for scheduler", zap.String("working-dir", workingDir))
 		err := os.RemoveAll(workingDir)
 		if err == nil {
 			return
