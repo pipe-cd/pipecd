@@ -1,6 +1,74 @@
+load("@npm//webpack-cli:index.bzl", webpack = "webpack_cli")
+load("@npm//typescript:index.bzl", "tsc")
 load("@npm_bazel_labs//:index.bzl", "ts_proto_library")
 
 ts_proto_library(
-    name = "api_client",
+    name = "api_proto",
     proto = "//pkg/app/api/service/webservice:webservice_proto",
+)
+
+genrule(
+    name = "build_api",
+    srcs = [":api_proto"],
+    outs = ["api_client"],
+    cmd = """
+    mkdir $(OUTS)
+    for f in $(SRCS)
+    do
+        sed -ie "s|.*validate_pb.*||g" $$f
+        cp $$f $(OUTS)/
+    done
+    """,
+    output_to_bindir = 1,
+    visibility = ["//visibility:public"],
+)
+
+tsc(
+    name = "compile",
+    args = [
+        "--project",
+        "$(location :tsconfig.json)",
+        "--outDir",
+        "$(@D)",
+    ],
+    data = glob(
+        [
+            "src/**/*",
+        ],
+        exclude = [
+            "**/__mocks__/**",
+            "**/__fixtures__/**",
+            "src/**/*.test.*",
+            "src/**/*.stories.*",
+        ],
+    ) + [
+        ":build_api",
+        ":tsconfig.json",
+        "@npm//:node_modules",
+    ],
+    output_dir = True,
+)
+
+webpack(
+    name = "public_files",
+    args = [
+        "--config",
+        "$(execpath webpack.config.js)",
+        "--html-template",
+        "$(execpath base.html)",
+        "$(location compile)/index.js",
+        "--test-path",
+        "$(BINDIR)",
+        "--output-path",
+        "$(@D)",
+    ],
+    data = [
+        "api_client",
+        "base.html",
+        "compile",
+        "webpack.config.js",
+        "@npm//:node_modules",
+    ],
+    output_dir = True,
+    visibility = ["//visibility:public"],
 )

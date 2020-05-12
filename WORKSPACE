@@ -165,6 +165,10 @@ load("@npm_bazel_labs//:package.bzl", "npm_bazel_labs_dependencies")
 
 npm_bazel_labs_dependencies()
 
+load("@npm_bazel_typescript//:index.bzl", "ts_setup_workspace")
+
+ts_setup_workspace()
+
 # gazelle:repository_macro repositories.bzl%go_repositories
 
 ### Load dependencies.

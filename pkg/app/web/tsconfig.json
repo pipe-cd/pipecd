@@ -1,0 +1,31 @@
+{
+  "compilerOptions": {
+    "paths": {
+      "pipe/*": ["../../../bazel-bin/*"]
+    },
+    "allowUnreachableCode": false,
+    "baseUrl": ".",
+    "module": "CommonJS",
+    "moduleResolution": "node",
+    "noImplicitReturns": true,
+    "noFallthroughCasesInSwitch": true,
+    "noUnusedLocals": true,
+    "preserveConstEnums": true,
+    "pretty": true,
+    "removeComments": false,
+    "resolveJsonModule": false,
+    "sourceMap": false,
+    "strict": true,
+    "target": "ESNext",
+    "jsx": "react",
+    "allowJs": true,
+    "types": ["node"],
+    "esModuleInterop": true,
+    "rootDirs": ["."]
+  },
+  "include": ["./src/**/*.*"],
+  "exclude": ["node_modules"],
+  "awesomeTypescriptLoaderOptions": {
+    "ignoreDiagnostics": [7005]
+  }
+}
