@@ -54,9 +54,9 @@ type scheduler struct {
 	logger            *zap.Logger
 
 	// Deployment configuration for this application.
-	appConfig *config.Config
-	done      atomic.Bool
-	nowFunc   func() time.Time
+	deploymentConfig *config.Config
+	done             atomic.Bool
+	nowFunc          func() time.Time
 }
 
 func newScheduler(
@@ -134,7 +134,8 @@ func (s *scheduler) Run(ctx context.Context) error {
 		input := executor.Input{
 			Stage:             ps,
 			Deployment:        s.deployment,
-			AppConfig:         s.appConfig,
+			DeploymentConfig:  s.deploymentConfig,
+			PipedConfig:       s.pipedConfig,
 			WorkingDir:        s.workingDir,
 			CommandStore:      s.commandStore,
 			LogPersister:      s.logPersister.StageLogPersister(s.deployment.Id, ps.Id),
@@ -161,6 +162,8 @@ func (s *scheduler) executeStartStage(ctx context.Context) error {
 	lp := s.logPersister.StageLogPersister(s.deployment.Id, model.StageStart.String())
 	defer lp.Complete(ctx)
 
+	lp.AppendInfo("new scheduler has been created for this deployment")
+
 	// Update deployment status to RUNNING if needed.
 	if s.deployment.CanUpdateStatus(model.DeploymentStatus_DEPLOYMENT_RUNNING) {
 		err := s.reportDeploymentStatus(ctx, model.DeploymentStatus_DEPLOYMENT_RUNNING, "piped started handling this deployment")
@@ -186,18 +189,26 @@ func (s *scheduler) executeStartStage(ctx context.Context) error {
 
 	gitRepo, err := s.gitClient.Clone(ctx, repoCfg.RepoID, repoCfg.Remote, repoCfg.Branch, repoDirPath)
 	if err != nil {
-		err = fmt.Errorf("failed to clone repository %s for application %s", repoID, appID)
+		err = fmt.Errorf("failed to clone repository %s for application %s (%v)", repoID, appID, err)
 		lp.AppendError(err.Error())
 		return err
 	}
 
 	if err = gitRepo.Checkout(ctx, revision); err != nil {
-		err = fmt.Errorf("failed to clone repository %s for application %s", repoID, appID)
+		err = fmt.Errorf("failed to clone repository %s for application %s (%v)", repoID, appID, err)
 		lp.AppendError(err.Error())
 		return err
 	}
-
 	lp.AppendSuccess(fmt.Sprintf("successfully cloned repository %s", repoID))
+
+	// Load deployment configuration for this application.
+	cfg, err := s.loadDeploymentConfiguration(ctx, gitRepo.GetPath(), s.deployment)
+	if err != nil {
+		err = fmt.Errorf("failed to load deployment configuration (%v)", err)
+	}
+	s.deploymentConfig = cfg
+	lp.AppendSuccess("successfully loaded deployment configuration")
+
 	return nil
 }
 
@@ -251,4 +262,16 @@ func (s *scheduler) reportDeploymentStatus(ctx context.Context, status model.Dep
 
 	// Update local deployment status?
 	return err
+}
+
+func (s *scheduler) loadDeploymentConfiguration(ctx context.Context, repoPath string, d *model.Deployment) (*config.Config, error) {
+	path := filepath.Join(repoPath, d.GetDeploymentConfigFilePath(config.DeploymentConfigurationFileName))
+	cfg, err := config.LoadFromYAML(path)
+	if err != nil {
+		return nil, err
+	}
+	if appKind, ok := config.ToApplicationKind(cfg.Kind); !ok || appKind != d.Kind {
+		return nil, fmt.Errorf("application in deployment configuration file is not match, got: %s, expected: %s", appKind, d.Kind)
+	}
+	return cfg, nil
 }

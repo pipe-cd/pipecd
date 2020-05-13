@@ -14,6 +14,8 @@
 
 package model
 
+import "path/filepath"
+
 // IsCompleted checks whether the deployment is at a completion state.
 func (d *Deployment) IsCompleted() bool {
 	if d.Status.String() == "" {
@@ -48,4 +50,12 @@ func (d *Deployment) CanUpdateStatus(status DeploymentStatus) bool {
 		return d.Status <= DeploymentStatus_DEPLOYMENT_RUNNING
 	}
 	return false
+}
+
+// GetDeploymentConfigFilePath returns the path to deployment configuration directory.
+func (d *Deployment) GetDeploymentConfigFilePath(filename string) string {
+	if path := d.GitPath.ConfigPath; path != "" {
+		return path
+	}
+	return filepath.Join(d.GitPath.Path, filename)
 }

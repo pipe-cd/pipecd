@@ -32,7 +32,7 @@ type Factory func(in Input) Executor
 type Input struct {
 	Stage             *model.PipelineStage
 	Deployment        *model.Deployment
-	AppConfig         *config.Config
+	DeploymentConfig  *config.Config
 	PipedConfig       *config.PipedSpec
 	WorkingDir        string
 	CommandStore      CommandStore
