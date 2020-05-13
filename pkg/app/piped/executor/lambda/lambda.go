@@ -25,15 +25,16 @@ type Executor struct {
 	executor.Input
 }
 
-func init() {
-	var (
-		_ = func(in executor.Input) executor.Executor {
-			return &Executor{
-				Input: in,
-			}
+type registerer interface {
+	Register(stage model.Stage, f executor.Factory) error
+}
+
+func Register(r registerer) {
+	_ = func(in executor.Input) executor.Executor {
+		return &Executor{
+			Input: in,
 		}
-		_ = executor.DefaultRegistry()
-	)
+	}
 }
 
 func (e *Executor) Execute(ctx context.Context) (model.StageStatus, error) {

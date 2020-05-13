@@ -12,6 +12,7 @@ go_library(
     deps = [
         "//pkg/app/api/service/pipedservice:go_default_library",
         "//pkg/app/piped/executor:go_default_library",
+        "//pkg/app/piped/executor/registry:go_default_library",
         "//pkg/app/piped/logpersister:go_default_library",
         "//pkg/config:go_default_library",
         "//pkg/git:go_default_library",

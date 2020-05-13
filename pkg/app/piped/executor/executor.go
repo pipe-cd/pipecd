@@ -30,11 +30,11 @@ type Executor interface {
 type Factory func(in Input) Executor
 
 type Input struct {
-	Stage             *config.PipelineStage
+	Stage             *model.PipelineStage
+	Deployment        *model.Deployment
 	AppConfig         *config.Config
 	PipedConfig       *config.PipedSpec
 	WorkingDir        string
-	Deployment        *model.Deployment
 	CommandStore      CommandStore
 	LogPersister      LogPersister
 	MetadataPersister MetadataPersister

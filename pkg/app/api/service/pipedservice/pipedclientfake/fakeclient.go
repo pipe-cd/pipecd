@@ -63,7 +63,7 @@ func NewClient(logger *zap.Logger) *fakeClient {
 					RepoId: "pipe-debug-2",
 					Path:   "k8s/plain-yaml-app",
 				},
-				Disabled: false,
+				Disabled: true,
 			},
 		},
 		deployments: map[string]*model.Deployment{},
@@ -94,6 +94,9 @@ func (c *fakeClient) ListApplications(ctx context.Context, req *pipedservice.Lis
 	c.logger.Info("received ListApplications rpc", zap.Any("request", req))
 	apps := make([]*model.Application, 0, len(c.applications))
 	for _, app := range c.applications {
+		if app.Disabled {
+			continue
+		}
 		apps = append(apps, app)
 	}
 	return &pipedservice.ListApplicationsResponse{

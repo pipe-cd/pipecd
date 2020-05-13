@@ -25,6 +25,7 @@ import (
 
 	"github.com/kapetaniosci/pipe/pkg/app/api/service/pipedservice"
 	"github.com/kapetaniosci/pipe/pkg/app/piped/executor"
+	"github.com/kapetaniosci/pipe/pkg/app/piped/executor/registry"
 	"github.com/kapetaniosci/pipe/pkg/app/piped/logpersister"
 	"github.com/kapetaniosci/pipe/pkg/config"
 	"github.com/kapetaniosci/pipe/pkg/model"
@@ -39,15 +40,11 @@ type repoStore interface {
 	CloneReadOnlyRepo(repo, branch, revision string) (string, error)
 }
 
-type executorRegistry interface {
-	Executor(stage model.Stage, in executor.Input) (executor.Executor, error)
-}
-
 // scheduler is a dedicated object for a specific deployment of a single application.
 type scheduler struct {
 	deployment        *model.Deployment
 	workingDir        string
-	executorRegistry  executorRegistry
+	executorRegistry  registry.Registry
 	apiClient         apiClient
 	gitClient         gitClient
 	commandStore      commandStore
@@ -86,7 +83,7 @@ func newScheduler(
 		deployment:        d,
 		pipedConfig:       pipedConfig,
 		workingDir:        workingDir,
-		executorRegistry:  executor.DefaultRegistry(),
+		executorRegistry:  registry.DefaultRegistry(),
 		apiClient:         apiClient,
 		gitClient:         gitClient,
 		commandStore:      cmdStore,
@@ -110,37 +107,57 @@ func (s *scheduler) IsDone() bool {
 }
 
 // Run starts running the scheduler.
-func (s *scheduler) Run(ctx context.Context) (executeErr error) {
+// It determines what stage should be executed next by which executor.
+// The returning error does not mean that the pipeline was failed,
+// but it means that the scheduler could not finish its job normally.
+func (s *scheduler) Run(ctx context.Context) error {
 	s.logger.Info("start running a scheduler")
 	defer func() {
 		s.done.Store(true)
 	}()
 
-	defer func() {
-		executeErr = s.end(ctx, executeErr)
-		if executeErr != nil {
-			s.logger.Error("a scheduler has been failed at end phase", zap.Error(executeErr))
+	for _, ps := range s.deployment.Stages {
+		if ps.Id == model.StageStart.String() {
+			if err := s.executeStartStage(ctx); err != nil {
+				return err
+			}
+			continue
 		}
-		s.logger.Info("a scheduler has been completed successfully")
-	}()
+		if ps.Id == model.StageEnd.String() {
+			if err := s.executeEndStage(ctx, nil); err != nil {
+				return err
+			}
+			continue
+		}
 
-	executeErr = s.start(ctx)
-	if executeErr != nil {
-		s.logger.Error("a scheduler has been failed at start phase", zap.Error(executeErr))
-		return executeErr
-	}
-
-	executeErr = s.run(ctx)
-	if executeErr != nil {
-		s.logger.Error("a scheduler has been failed at run phase", zap.Error(executeErr))
-		return executeErr
+		// Handle user specified stages.
+		input := executor.Input{
+			Stage:             ps,
+			Deployment:        s.deployment,
+			AppConfig:         s.appConfig,
+			WorkingDir:        s.workingDir,
+			CommandStore:      s.commandStore,
+			LogPersister:      s.logPersister.StageLogPersister(s.deployment.Id, ps.Id),
+			MetadataPersister: s.metadataPersister.StageMetadataPersister(s.deployment.Id, ps.Id),
+			Logger:            s.logger,
+		}
+		ex, err := s.executorRegistry.Executor(model.Stage(ps.Name), input)
+		if err != nil {
+			s.logger.Error("no executor", zap.Error(err))
+			return err
+		}
+		_, err = ex.Execute(ctx)
+		if err != nil {
+			s.logger.Error("failed to execute", zap.Error(err))
+			return err
+		}
 	}
 
 	return nil
 }
 
-// start does all needed things before start executing the deployment.
-func (s *scheduler) start(ctx context.Context) error {
+// executeStartStage does all needed things before start executing the deployment.
+func (s *scheduler) executeStartStage(ctx context.Context) error {
 	lp := s.logPersister.StageLogPersister(s.deployment.Id, model.StageStart.String())
 	defer lp.Complete(ctx)
 
@@ -186,37 +203,7 @@ func (s *scheduler) start(ctx context.Context) error {
 	return nil
 }
 
-// run starts running from previous state.
-func (s *scheduler) run(ctx context.Context) error {
-	// Loop until one of the following conditions occurs:
-	// - context has done
-	// - no stage to execute
-	// - executing stage has completed with an error
-	// Determine the next stage that should be executed.
-	var (
-		stageName = model.Stage("")
-		input     = executor.Input{
-			Deployment:        s.deployment,
-			AppConfig:         s.appConfig,
-			WorkingDir:        s.workingDir,
-			CommandStore:      s.commandStore,
-			LogPersister:      s.logPersister.StageLogPersister("", ""),
-			MetadataPersister: s.metadataPersister.StageMetadataPersister("", ""),
-			Logger:            s.logger,
-		}
-	)
-	ex, err := s.executorRegistry.Executor(stageName, input)
-	if err != nil {
-		return nil
-	}
-	_, err = ex.Execute(ctx)
-	if err != nil {
-		return err
-	}
-	return nil
-}
-
-func (s *scheduler) end(ctx context.Context, executeErr error) error {
+func (s *scheduler) executeEndStage(ctx context.Context, executeErr error) error {
 	// We check the runErr to decide adding a ROLLBACK stage or not.
 	var (
 		status     = model.DeploymentStatus_DEPLOYMENT_SUCCESS
@@ -226,10 +213,6 @@ func (s *scheduler) end(ctx context.Context, executeErr error) error {
 		status = model.DeploymentStatus_DEPLOYMENT_FAILURE
 	}
 	return s.reportDeploymentStatus(ctx, status, statusDesc)
-}
-
-func (s *scheduler) determineNextStages() []string {
-	return nil
 }
 
 func (s *scheduler) reportStageStatus(ctx context.Context, stageID string, status model.StageStatus) error {

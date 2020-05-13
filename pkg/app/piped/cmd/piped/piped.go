@@ -43,6 +43,9 @@ import (
 	"github.com/kapetaniosci/pipe/pkg/git"
 	"github.com/kapetaniosci/pipe/pkg/rpc/rpcauth"
 	"github.com/kapetaniosci/pipe/pkg/rpc/rpcclient"
+
+	// Import to preload all built-in executors to the default registry.
+	_ "github.com/kapetaniosci/pipe/pkg/app/piped/executor/registry"
 )
 
 type piped struct {

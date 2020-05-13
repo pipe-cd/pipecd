@@ -30,22 +30,21 @@ type Executor struct {
 	executor.Input
 }
 
-func init() {
-	var (
-		f = func(in executor.Input) executor.Executor {
-			return &Executor{
-				Input: in,
-			}
-		}
-		r = executor.DefaultRegistry()
-	)
+type registerer interface {
+	Register(stage model.Stage, f executor.Factory) error
+}
 
+func Register(r registerer) {
+	f := func(in executor.Input) executor.Executor {
+		return &Executor{
+			Input: in,
+		}
+	}
 	r.Register(model.StageK8sPrimaryUpdate, f)
 	r.Register(model.StageK8sStageRollout, f)
 	r.Register(model.StageK8sStageClean, f)
 	r.Register(model.StageK8sBaselineRollout, f)
 	r.Register(model.StageK8sBaselineClean, f)
-	r.Register(model.StageK8sPrimaryUpdate, f)
 	r.Register(model.StageK8sTrafficRoute, f)
 }
 
