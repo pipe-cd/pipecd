@@ -196,10 +196,8 @@ func (s *scheduler) executeStartStage(ctx context.Context) error {
 		lp.AppendError(err.Error())
 		return err
 	}
+
 	lp.AppendSuccess(fmt.Sprintf("successfully cloned repository %s", repoID))
-
-	// Restore previous executed state from deployment data.
-
 	return nil
 }
 

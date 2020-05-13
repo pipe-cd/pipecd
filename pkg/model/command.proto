@@ -69,10 +69,10 @@ message Command {
         string stage_id = 2 [(validate.rules).string.min_len = 1];
     }
 
-    message RetryStage {
-        string deployment_id = 1 [(validate.rules).string.min_len = 1];
-        string stage_id = 2 [(validate.rules).string.min_len = 1];
-    }
+    // message RetryStage {
+    //     string deployment_id = 1 [(validate.rules).string.min_len = 1];
+    //     string stage_id = 2 [(validate.rules).string.min_len = 1];
+    // }
 
     // Repo Hook Event Command.
     message HandlePullRequestEvent {
@@ -83,7 +83,7 @@ message Command {
     oneof inner {
         CancelDeployment cancel_deployment = 100;
         ApproveStage approve_stage = 101;
-        RetryStage retry_stage = 102;
+        // RetryStage retry_stage = 102;
 
         SyncApplication sync_application = 200;
         UpdateApplicationConfig update_application_config = 201;
