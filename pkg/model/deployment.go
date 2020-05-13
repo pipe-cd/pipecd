@@ -83,3 +83,12 @@ func CanUpdateStageStatus(cur, next StageStatus) bool {
 	}
 	return false
 }
+
+// StageStatusMap returns the map from id to status of all stages.
+func (d *Deployment) StageStatusMap() map[string]StageStatus {
+	statuses := make(map[string]StageStatus, len(d.Stages))
+	for _, s := range d.Stages {
+		statuses[s.Id] = s.Status
+	}
+	return statuses
+}

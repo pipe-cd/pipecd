@@ -212,6 +212,14 @@ func (c *fakeClient) ReportDeploymentStatusChanged(ctx context.Context, req *pip
 	d.StatusDescription = req.StatusDescription
 	d.CompletedAt = req.CompletedAt
 
+	if model.IsCompletedDeployment(req.Status) {
+		for _, stage := range d.Stages {
+			if status, ok := req.StageStatuses[stage.Id]; ok {
+				stage.Status = status
+			}
+		}
+	}
+
 	return &pipedservice.ReportDeploymentStatusChangedResponse{}, nil
 }
 

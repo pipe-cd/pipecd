@@ -60,6 +60,7 @@ type scheduler struct {
 	deploymentConfig *config.Config
 	prepareOnce      sync.Once
 	done             atomic.Bool
+	reported         atomic.Bool
 	nowFunc          func() time.Time
 }
 
@@ -110,6 +111,12 @@ func (s *scheduler) IsDone() bool {
 	return s.done.Load()
 }
 
+// IsReported tells whether this scheduler has already reported its state
+// to the control-plane.
+func (s *scheduler) IsReported() bool {
+	return s.reported.Load()
+}
+
 // Run starts running the scheduler.
 // It determines what stage should be executed next by which executor.
 // The returning error does not mean that the pipeline was failed,
@@ -120,49 +127,64 @@ func (s *scheduler) Run(ctx context.Context) error {
 		s.done.Store(true)
 	}()
 
+	// If this deployment is already completed. Do nothing.
+	if model.IsCompletedDeployment(s.deployment.Status) {
+		s.logger.Info("this deployment is already completed")
+		return nil
+	}
+
 	// Update deployment status to RUNNING if needed.
 	if model.CanUpdateDeploymentStatus(s.deployment.Status, model.DeploymentStatus_DEPLOYMENT_RUNNING) {
-		err := s.reportDeploymentStatus(ctx, model.DeploymentStatus_DEPLOYMENT_RUNNING, "piped started handling this deployment")
+		err := s.reportDeploymentStatus(ctx, model.DeploymentStatus_DEPLOYMENT_RUNNING, "The piped started handling this deployment")
 		if err != nil {
 			return err
 		}
 	}
 
+	// Iterate all the stages and execute the uncompleted ones.
 	for _, ps := range s.deployment.Stages {
 		// This stage is already handed by a previous scheduler.
 		if model.IsCompletedStage(ps.Status) {
 			continue
 		}
 
-		if err := s.executeStage(ctx, ps); err != nil {
-			var (
-				status     = model.DeploymentStatus_DEPLOYMENT_FAILURE
-				statusDesc = fmt.Sprintf("Failed while executing stage %s", ps.Id)
-			)
-			s.reportDeploymentStatus(ctx, status, statusDesc)
-			return err
+		status := s.executeStage(ctx, ps)
+		if status == model.StageStatus_STAGE_SUCCESS {
+			continue
 		}
+		if status == model.StageStatus_STAGE_FAILURE {
+			s.reportDeploymentStatus(ctx, model.DeploymentStatus_DEPLOYMENT_FAILURE, fmt.Sprintf("Failed while executing stage %s", ps.Id))
+			return nil
+		}
+		if status == model.StageStatus_STAGE_CANCELLED {
+			s.reportDeploymentStatus(ctx, model.DeploymentStatus_DEPLOYMENT_CANCELLED, fmt.Sprintf("Deployment was cancelled while executing stage %s", ps.Id))
+			return nil
+		}
+		return nil
 	}
 
 	s.reportDeploymentStatus(ctx, model.DeploymentStatus_DEPLOYMENT_SUCCESS, "")
 	return nil
 }
 
-func (s *scheduler) executeStage(ctx context.Context, ps *model.PipelineStage) error {
+// executeStage finds the executor for the given stage and execute.
+func (s *scheduler) executeStage(ctx context.Context, ps *model.PipelineStage) (status model.StageStatus) {
 	lp := s.logPersister.StageLogPersister(s.deployment.Id, ps.Id)
 	defer lp.Complete(ctx)
 
 	// Update stage status to RUNNING if needed.
 	if model.CanUpdateStageStatus(ps.Status, model.StageStatus_STAGE_RUNNING) {
-		err := s.reportStageStatus(ctx, ps.Id, model.StageStatus_STAGE_RUNNING)
-		if err != nil {
-			return err
+		if err := s.reportStageStatus(ctx, ps.Id, model.StageStatus_STAGE_RUNNING); err != nil {
+			status = model.StageStatus_STAGE_FAILURE
+			return
 		}
+		status = model.StageStatus_STAGE_RUNNING
 	}
 
 	// Ensure that all needed things has been prepared before executing any stage.
 	if err := s.ensurePreparing(ctx, lp); err != nil {
-		return err
+		status = model.StageStatus_STAGE_FAILURE
+		return
 	}
 
 	input := executor.Input{
@@ -183,12 +205,17 @@ func (s *scheduler) executeStage(ctx context.Context, ps *model.PipelineStage) e
 		err := fmt.Errorf("no registered executor for stage %s", ps.Name)
 		lp.AppendError(err.Error())
 		s.reportStageStatus(ctx, ps.Id, model.StageStatus_STAGE_FAILURE)
-		return err
+		status = model.StageStatus_STAGE_FAILURE
+		return
 	}
 
 	// Start running executor.
-	status := ex.Execute(ctx)
-	return s.reportStageStatus(ctx, ps.Id, status)
+	status = ex.Execute(ctx)
+	if err := s.reportStageStatus(ctx, ps.Id, status); err != nil {
+		return
+	}
+
+	return status
 }
 
 // ensurePreparing ensures that all needed things should be prepared before executing any stages.
@@ -255,6 +282,16 @@ func (s *scheduler) reportStageStatus(ctx context.Context, stageID string, statu
 		}
 		retry = newAPIRetry(10)
 	)
+
+	// Update stage status at local.
+	for _, stage := range s.deployment.Stages {
+		if stage.Id == stageID {
+			stage.Status = status
+			break
+		}
+	}
+
+	// Update stage status on the remote.
 	for retry.WaitNext(ctx) {
 		_, err = s.apiClient.ReportStageStatusChanged(ctx, req)
 		if err == nil {
@@ -263,7 +300,6 @@ func (s *scheduler) reportStageStatus(ctx context.Context, stageID string, statu
 		err = fmt.Errorf("failed to report stage status to control-plane: %v", err)
 	}
 
-	// Update local deployment stage status?
 	return err
 }
 
@@ -275,10 +311,17 @@ func (s *scheduler) reportDeploymentStatus(ctx context.Context, status model.Dep
 			DeploymentId:      s.deployment.Id,
 			Status:            status,
 			StatusDescription: desc,
+			StageStatuses:     s.deployment.StageStatusMap(),
 			CompletedAt:       now.Unix(),
 		}
 		retry = newAPIRetry(10)
 	)
+
+	// Update deployment status at local.
+	s.deployment.Status = status
+	s.deployment.StatusDescription = desc
+
+	// Update deployment status on remote.
 	for retry.WaitNext(ctx) {
 		_, err = s.apiClient.ReportDeploymentStatusChanged(ctx, req)
 		if err == nil {
@@ -287,7 +330,9 @@ func (s *scheduler) reportDeploymentStatus(ctx context.Context, status model.Dep
 		err = fmt.Errorf("failed to report deployment status to control-plane: %v", err)
 	}
 
-	// Update local deployment status?
+	if err == nil && model.IsCompletedDeployment(status) {
+		s.reported.Store(true)
+	}
 	return err
 }
 

@@ -163,9 +163,13 @@ message ReportStageLogResponse {
 
 message ReportDeploymentStatusChangedRequest {
     string deployment_id = 1 [(validate.rules).string.min_len = 1];
+    // The status of deployment.
     pipe.model.DeploymentStatus status = 2 [(validate.rules).enum.defined_only = true];
     // The human-readable description why the deployment is at current status.
     string status_description = 3;
+    // The completed statuses of all stages.
+    map<string,model.StageStatus> stage_statuses = 4;
+    // The completion time of deployment.
     int64 completed_at = 13 [(validate.rules).int64.gt = 0];
 }
 

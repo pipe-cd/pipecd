@@ -67,8 +67,9 @@ type controller struct {
 	logPersister      logpersister.Persister
 	metadataPersister metadataPersister
 
-	schedulers map[string]*scheduler
-	wg         sync.WaitGroup
+	schedulers            map[string]*scheduler
+	unreportedDeployments map[string]*model.Deployment
+	wg                    sync.WaitGroup
 
 	workspaceDir string
 	syncInternal time.Duration
@@ -92,16 +93,17 @@ func NewController(
 		lg  = logger.Named("deployment-controller")
 	)
 	return &controller{
-		apiClient:         apiClient,
-		gitClient:         gitClient,
-		commandStore:      cmdStore,
-		pipedConfig:       pipedConfig,
-		logPersister:      lp,
-		metadataPersister: mdp,
-		schedulers:        make(map[string]*scheduler),
-		syncInternal:      30 * time.Second,
-		gracePeriod:       gracePeriod,
-		logger:            lg,
+		apiClient:             apiClient,
+		gitClient:             gitClient,
+		commandStore:          cmdStore,
+		pipedConfig:           pipedConfig,
+		logPersister:          lp,
+		metadataPersister:     mdp,
+		schedulers:            make(map[string]*scheduler),
+		unreportedDeployments: make(map[string]*model.Deployment),
+		syncInternal:          30 * time.Second,
+		gracePeriod:           gracePeriod,
+		logger:                lg,
 	}
 }
 
@@ -182,13 +184,16 @@ func (c *controller) syncScheduler(ctx context.Context) error {
 
 	// Remove done schedulers.
 	for id, e := range c.schedulers {
-		if e.IsDone() {
-			c.logger.Info("deleted finished scheduler",
-				zap.String("deployment-id", id),
-				zap.String("application-id", e.deployment.ApplicationId),
-			)
-			delete(c.schedulers, id)
+		if !e.IsDone() {
+			continue
 		}
+		c.unreportedDeployments[id] = e.deployment
+
+		c.logger.Info("deleted done scheduler",
+			zap.String("deployment-id", id),
+			zap.String("application-id", e.deployment.ApplicationId),
+		)
+		delete(c.schedulers, id)
 	}
 
 	return nil
