@@ -67,14 +67,10 @@ const (
 	// should be routed as the specified percentage to previous version and new version.
 	StageLambdaTrafficRoute Stage = "LAMBDA_TRAFFIC_ROUTE"
 
-	// StageStart represents a starting stage for each pipeline.
+	// StageStart represents a preparing stage for each pipeline.
 	// This stage is AUTOMATICALLY GENERATED and can not be used
 	// to specify in configuration file.
-	StageStart Stage = "START"
-	// StageEnd represents an ending stage for each pipeline.
-	// This stage is AUTOMATICALLY GENERATED and can not be used
-	// to specify in configuration file.
-	StageEnd Stage = "END"
+	StagePrepare Stage = "PREPARE"
 	// StageRollBack represents a state where
 	// the all temporarily created stages will be reverted to
 	// bring back the pre-deploy stage.

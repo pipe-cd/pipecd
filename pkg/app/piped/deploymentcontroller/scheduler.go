@@ -116,7 +116,7 @@ func (s *scheduler) Run(ctx context.Context) error {
 		s.done.Store(true)
 	}()
 
-	if err := s.executeStartStage(ctx); err != nil {
+	if err := s.executePrepareStage(ctx); err != nil {
 		var (
 			status     = model.DeploymentStatus_DEPLOYMENT_FAILURE
 			statusDesc = "Failed while preparing for deployment"
@@ -126,7 +126,7 @@ func (s *scheduler) Run(ctx context.Context) error {
 	}
 
 	for _, ps := range s.deployment.Stages {
-		if ps.Id == model.StageStart.String() || ps.Id == model.StageEnd.String() {
+		if ps.Id == model.StagePrepare.String() {
 			continue
 		}
 
@@ -180,9 +180,9 @@ func (s *scheduler) executeStage(ctx context.Context, ps *model.PipelineStage) e
 	return s.reportStageStatus(ctx, ps.Id, status)
 }
 
-// executeStartStage does all needed things before start executing the deployment.
-func (s *scheduler) executeStartStage(ctx context.Context) error {
-	lp := s.logPersister.StageLogPersister(s.deployment.Id, model.StageStart.String())
+// executePrepareStage does all needed things before start executing the deployment.
+func (s *scheduler) executePrepareStage(ctx context.Context) error {
+	lp := s.logPersister.StageLogPersister(s.deployment.Id, model.StagePrepare.String())
 	defer lp.Complete(ctx)
 
 	lp.AppendInfo("new scheduler has been created for this deployment")
