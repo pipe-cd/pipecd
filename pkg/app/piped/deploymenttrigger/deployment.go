@@ -88,7 +88,7 @@ func (t *DeploymentTrigger) triggerDeployment(ctx context.Context, app *model.Ap
 }
 
 func (t *DeploymentTrigger) loadDeploymentConfiguration(ctx context.Context, repoPath string, app *model.Application) (*config.Config, error) {
-	path := filepath.Join(repoPath, app.GetDeploymentConfigFilePath(config.DeploymentConfigurationFileName))
+	path := filepath.Join(repoPath, app.GitPath.GetDeploymentConfigFilePath(config.DeploymentConfigurationFileName))
 	cfg, err := config.LoadFromYAML(path)
 	if err != nil {
 		return nil, err

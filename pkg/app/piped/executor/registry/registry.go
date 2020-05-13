@@ -30,7 +30,7 @@ import (
 )
 
 type Registry interface {
-	Executor(stage model.Stage, in executor.Input) (executor.Executor, error)
+	Executor(stage model.Stage, in executor.Input) (executor.Executor, bool)
 }
 
 type registry struct {
@@ -49,14 +49,14 @@ func (r *registry) Register(stage model.Stage, f executor.Factory) error {
 	return nil
 }
 
-func (r *registry) Executor(stage model.Stage, in executor.Input) (executor.Executor, error) {
+func (r *registry) Executor(stage model.Stage, in executor.Input) (executor.Executor, bool) {
 	r.mu.RLock()
 	defer r.mu.RUnlock()
 	f, ok := r.factories[stage]
 	if !ok {
-		return nil, fmt.Errorf("no registered executor for stage %s", stage)
+		return nil, false
 	}
-	return f(in), nil
+	return f(in), true
 }
 
 var defaultRegistry = &registry{

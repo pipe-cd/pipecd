@@ -129,7 +129,7 @@ func (c *fakeClient) ListNotCompletedDeployments(ctx context.Context, req *piped
 
 	deployments := make([]*model.Deployment, 0, len(c.deployments))
 	for _, deployment := range c.deployments {
-		if deployment.IsCompleted() {
+		if model.IsCompletedDeployment(deployment.Status) {
 			continue
 		}
 		deployments = append(deployments, deployment)

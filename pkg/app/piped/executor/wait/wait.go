@@ -42,18 +42,21 @@ func Register(r registerer) {
 	r.Register(model.StageWait, f)
 }
 
-func (e *Executor) Execute(ctx context.Context) (model.StageStatus, error) {
-	duration := defaultDuration
-	timer := time.NewTimer(duration)
+func (e *Executor) Execute(ctx context.Context) model.StageStatus {
+	var (
+		originalStatus = e.Stage.Status
+		duration       = defaultDuration
+		timer          = time.NewTimer(duration)
+	)
 	defer timer.Stop()
 
 	e.LogPersister.AppendInfo(fmt.Sprintf("Waiting for %v...", duration))
 	select {
 	case <-timer.C:
 	case <-ctx.Done():
-		return model.StageStatus_STAGE_CANCELLED, fmt.Errorf("context cancelled")
+		return originalStatus
 	}
 	e.LogPersister.AppendInfo(fmt.Sprintf("Waited for %v", duration))
 
-	return model.StageStatus_STAGE_SUCCESS, nil
+	return model.StageStatus_STAGE_SUCCESS
 }

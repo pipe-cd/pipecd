@@ -14,48 +14,72 @@
 
 package model
 
-import "path/filepath"
-
-// IsCompleted checks whether the deployment is at a completion state.
-func (d *Deployment) IsCompleted() bool {
-	if d.Status.String() == "" {
+// IsCompletedDeployment checks whether the deployment is at a completion state.
+func IsCompletedDeployment(status DeploymentStatus) bool {
+	if status.String() == "" {
 		return false
 	}
 
-	switch d.Status {
-	case DeploymentStatus_DEPLOYMENT_SUCCESS:
-		return true
-	case DeploymentStatus_DEPLOYMENT_FAILURE:
-		return true
-	case DeploymentStatus_DEPLOYMENT_CANCELLED:
-		return true
-	}
-	return false
-}
-
-// CanUpdateStatus checks whether the deployment can transit to the given status.
-func (d *Deployment) CanUpdateStatus(status DeploymentStatus) bool {
 	switch status {
-	case DeploymentStatus_DEPLOYMENT_TRIGGERED:
-		return d.Status <= DeploymentStatus_DEPLOYMENT_TRIGGERED
-	case DeploymentStatus_DEPLOYMENT_PENDING:
-		return d.Status <= DeploymentStatus_DEPLOYMENT_PENDING
-	case DeploymentStatus_DEPLOYMENT_RUNNING:
-		return d.Status <= DeploymentStatus_DEPLOYMENT_RUNNING
 	case DeploymentStatus_DEPLOYMENT_SUCCESS:
-		return d.Status <= DeploymentStatus_DEPLOYMENT_RUNNING
+		return true
 	case DeploymentStatus_DEPLOYMENT_FAILURE:
-		return d.Status <= DeploymentStatus_DEPLOYMENT_RUNNING
+		return true
 	case DeploymentStatus_DEPLOYMENT_CANCELLED:
-		return d.Status <= DeploymentStatus_DEPLOYMENT_RUNNING
+		return true
 	}
 	return false
 }
 
-// GetDeploymentConfigFilePath returns the path to deployment configuration directory.
-func (d *Deployment) GetDeploymentConfigFilePath(filename string) string {
-	if path := d.GitPath.ConfigPath; path != "" {
-		return path
+// IsCompletedStage checks whether the stage is at a completion state.
+func IsCompletedStage(status StageStatus) bool {
+	if status.String() == "" {
+		return false
 	}
-	return filepath.Join(d.GitPath.Path, filename)
+
+	switch status {
+	case StageStatus_STAGE_SUCCESS:
+		return true
+	case StageStatus_STAGE_FAILURE:
+		return true
+	case StageStatus_STAGE_CANCELLED:
+		return true
+	}
+	return false
+}
+
+// CanUpdateDeploymentStatus checks whether the deployment can transit to the given status.
+func CanUpdateDeploymentStatus(cur, next DeploymentStatus) bool {
+	switch next {
+	case DeploymentStatus_DEPLOYMENT_TRIGGERED:
+		return cur <= DeploymentStatus_DEPLOYMENT_TRIGGERED
+	case DeploymentStatus_DEPLOYMENT_PENDING:
+		return cur <= DeploymentStatus_DEPLOYMENT_PENDING
+	case DeploymentStatus_DEPLOYMENT_RUNNING:
+		return cur <= DeploymentStatus_DEPLOYMENT_RUNNING
+	case DeploymentStatus_DEPLOYMENT_SUCCESS:
+		return cur <= DeploymentStatus_DEPLOYMENT_RUNNING
+	case DeploymentStatus_DEPLOYMENT_FAILURE:
+		return cur <= DeploymentStatus_DEPLOYMENT_RUNNING
+	case DeploymentStatus_DEPLOYMENT_CANCELLED:
+		return cur <= DeploymentStatus_DEPLOYMENT_RUNNING
+	}
+	return false
+}
+
+// CanUpdateStageStatus checks whether the stage can transit to the given status.
+func CanUpdateStageStatus(cur, next StageStatus) bool {
+	switch next {
+	case StageStatus_STAGE_NOT_STARTED_YET:
+		return cur <= StageStatus_STAGE_NOT_STARTED_YET
+	case StageStatus_STAGE_RUNNING:
+		return cur <= StageStatus_STAGE_RUNNING
+	case StageStatus_STAGE_SUCCESS:
+		return cur <= StageStatus_STAGE_RUNNING
+	case StageStatus_STAGE_FAILURE:
+		return cur <= StageStatus_STAGE_RUNNING
+	case StageStatus_STAGE_CANCELLED:
+		return cur <= StageStatus_STAGE_RUNNING
+	}
+	return false
 }

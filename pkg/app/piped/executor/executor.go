@@ -24,7 +24,9 @@ import (
 )
 
 type Executor interface {
-	Execute(ctx context.Context) (model.StageStatus, error)
+	// Execute starts running executor until completion
+	// or the context has been cancelled.
+	Execute(ctx context.Context) model.StageStatus
 }
 
 type Factory func(in Input) Executor

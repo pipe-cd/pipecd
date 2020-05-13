@@ -16,7 +16,6 @@ package waitapproval
 
 import (
 	"context"
-	"fmt"
 	"time"
 
 	"github.com/kapetaniosci/pipe/pkg/app/piped/executor"
@@ -40,8 +39,11 @@ func Register(r registerer) {
 	r.Register(model.StageWaitApproval, f)
 }
 
-func (e *Executor) Execute(ctx context.Context) (model.StageStatus, error) {
-	ticker := time.NewTicker(5 * time.Second)
+func (e *Executor) Execute(ctx context.Context) model.StageStatus {
+	var (
+		originalStatus = e.Stage.Status
+		ticker         = time.NewTicker(5 * time.Second)
+	)
 	defer ticker.Stop()
 
 	e.LogPersister.AppendInfo("Waiting for an approval...")
@@ -52,10 +54,10 @@ func (e *Executor) Execute(ctx context.Context) (model.StageStatus, error) {
 				continue
 			}
 			e.LogPersister.AppendInfo("Got an approval from abc")
-			return model.StageStatus_STAGE_SUCCESS, nil
+			return model.StageStatus_STAGE_SUCCESS
 
 		case <-ctx.Done():
-			return model.StageStatus_STAGE_CANCELLED, fmt.Errorf("context cancelled")
+			return originalStatus
 		}
 	}
 }

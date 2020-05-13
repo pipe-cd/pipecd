@@ -37,6 +37,6 @@ func Register(r registerer) {
 	}
 }
 
-func (e *Executor) Execute(ctx context.Context) (model.StageStatus, error) {
-	return model.StageStatus_STAGE_SUCCESS, nil
+func (e *Executor) Execute(ctx context.Context) model.StageStatus {
+	return model.StageStatus_STAGE_SUCCESS
 }

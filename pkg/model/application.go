@@ -17,9 +17,9 @@ package model
 import "path/filepath"
 
 // GetDeploymentConfigFilePath returns the path to deployment configuration directory.
-func (a *Application) GetDeploymentConfigFilePath(filename string) string {
-	if path := a.GitPath.ConfigPath; path != "" {
+func (p ApplicationGitPath) GetDeploymentConfigFilePath(filename string) string {
+	if path := p.ConfigPath; path != "" {
 		return path
 	}
-	return filepath.Join(a.GitPath.Path, filename)
+	return filepath.Join(p.Path, filename)
 }

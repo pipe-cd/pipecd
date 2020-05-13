@@ -116,45 +116,68 @@ func (s *scheduler) Run(ctx context.Context) error {
 		s.done.Store(true)
 	}()
 
+	if err := s.executeStartStage(ctx); err != nil {
+		var (
+			status     = model.DeploymentStatus_DEPLOYMENT_FAILURE
+			statusDesc = "Failed while preparing for deployment"
+		)
+		s.reportDeploymentStatus(ctx, status, statusDesc)
+		return err
+	}
+
 	for _, ps := range s.deployment.Stages {
-		if ps.Id == model.StageStart.String() {
-			if err := s.executeStartStage(ctx); err != nil {
-				return err
-			}
+		if ps.Id == model.StageStart.String() || ps.Id == model.StageEnd.String() {
 			continue
 		}
-		if ps.Id == model.StageEnd.String() {
-			if err := s.executeEndStage(ctx, nil); err != nil {
-				return err
-			}
+
+		// This stage is already handed at by a previous scheduler.
+		if model.IsCompletedStage(ps.Status) {
 			continue
 		}
 
 		// Handle user specified stages.
-		input := executor.Input{
-			Stage:             ps,
-			Deployment:        s.deployment,
-			DeploymentConfig:  s.deploymentConfig,
-			PipedConfig:       s.pipedConfig,
-			WorkingDir:        s.workingDir,
-			CommandStore:      s.commandStore,
-			LogPersister:      s.logPersister.StageLogPersister(s.deployment.Id, ps.Id),
-			MetadataPersister: s.metadataPersister.StageMetadataPersister(s.deployment.Id, ps.Id),
-			Logger:            s.logger,
-		}
-		ex, err := s.executorRegistry.Executor(model.Stage(ps.Name), input)
-		if err != nil {
-			s.logger.Error("no executor", zap.Error(err))
-			return err
-		}
-		_, err = ex.Execute(ctx)
-		if err != nil {
-			s.logger.Error("failed to execute", zap.Error(err))
+		if err := s.executeStage(ctx, ps); err != nil {
+			var (
+				status     = model.DeploymentStatus_DEPLOYMENT_FAILURE
+				statusDesc = fmt.Sprintf("Failed while executing stage %s", ps.Id)
+			)
+			s.reportDeploymentStatus(ctx, status, statusDesc)
 			return err
 		}
 	}
 
+	s.reportDeploymentStatus(ctx, model.DeploymentStatus_DEPLOYMENT_SUCCESS, "")
 	return nil
+}
+
+func (s *scheduler) executeStage(ctx context.Context, ps *model.PipelineStage) error {
+	lp := s.logPersister.StageLogPersister(s.deployment.Id, ps.Id)
+	defer lp.Complete(ctx)
+
+	input := executor.Input{
+		Stage:             ps,
+		Deployment:        s.deployment,
+		DeploymentConfig:  s.deploymentConfig,
+		PipedConfig:       s.pipedConfig,
+		WorkingDir:        s.workingDir,
+		CommandStore:      s.commandStore,
+		LogPersister:      lp,
+		MetadataPersister: s.metadataPersister.StageMetadataPersister(s.deployment.Id, ps.Id),
+		Logger:            s.logger,
+	}
+
+	// Find the executor for this stage.
+	ex, ok := s.executorRegistry.Executor(model.Stage(ps.Name), input)
+	if !ok {
+		err := fmt.Errorf("no registered executor for stage %s", ps.Name)
+		lp.AppendError(err.Error())
+		return err
+	}
+
+	// Start running executor.
+	status := ex.Execute(ctx)
+
+	return s.reportStageStatus(ctx, ps.Id, status)
 }
 
 // executeStartStage does all needed things before start executing the deployment.
@@ -165,7 +188,7 @@ func (s *scheduler) executeStartStage(ctx context.Context) error {
 	lp.AppendInfo("new scheduler has been created for this deployment")
 
 	// Update deployment status to RUNNING if needed.
-	if s.deployment.CanUpdateStatus(model.DeploymentStatus_DEPLOYMENT_RUNNING) {
+	if model.CanUpdateDeploymentStatus(s.deployment.Status, model.DeploymentStatus_DEPLOYMENT_RUNNING) {
 		err := s.reportDeploymentStatus(ctx, model.DeploymentStatus_DEPLOYMENT_RUNNING, "piped started handling this deployment")
 		if err != nil {
 			lp.AppendError(err.Error())
@@ -212,18 +235,6 @@ func (s *scheduler) executeStartStage(ctx context.Context) error {
 	return nil
 }
 
-func (s *scheduler) executeEndStage(ctx context.Context, executeErr error) error {
-	// We check the runErr to decide adding a ROLLBACK stage or not.
-	var (
-		status     = model.DeploymentStatus_DEPLOYMENT_SUCCESS
-		statusDesc string
-	)
-	if executeErr != nil {
-		status = model.DeploymentStatus_DEPLOYMENT_FAILURE
-	}
-	return s.reportDeploymentStatus(ctx, status, statusDesc)
-}
-
 func (s *scheduler) reportStageStatus(ctx context.Context, stageID string, status model.StageStatus) error {
 	var (
 		now = s.nowFunc()
@@ -265,7 +276,7 @@ func (s *scheduler) reportDeploymentStatus(ctx context.Context, status model.Dep
 }
 
 func (s *scheduler) loadDeploymentConfiguration(ctx context.Context, repoPath string, d *model.Deployment) (*config.Config, error) {
-	path := filepath.Join(repoPath, d.GetDeploymentConfigFilePath(config.DeploymentConfigurationFileName))
+	path := filepath.Join(repoPath, d.GitPath.GetDeploymentConfigFilePath(config.DeploymentConfigurationFileName))
 	cfg, err := config.LoadFromYAML(path)
 	if err != nil {
 		return nil, err

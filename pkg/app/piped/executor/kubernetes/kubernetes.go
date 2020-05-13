@@ -48,9 +48,9 @@ func Register(r registerer) {
 	r.Register(model.StageK8sTrafficRoute, f)
 }
 
-func (e *Executor) Execute(ctx context.Context) (model.StageStatus, error) {
+func (e *Executor) Execute(ctx context.Context) model.StageStatus {
 	e.Logger.Info("start executing kubernetes stage")
-	return model.StageStatus_STAGE_SUCCESS, nil
+	return model.StageStatus_STAGE_SUCCESS
 }
 
 func (e *Executor) ensureStageRollOut() error {
