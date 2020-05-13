@@ -25,7 +25,6 @@ import (
 	"fmt"
 	"io/ioutil"
 	"os"
-	"path/filepath"
 	"sync"
 	"time"
 
@@ -207,12 +206,9 @@ func (c *controller) startNewScheduler(ctx context.Context, d *model.Deployment)
 	logger.Info("will add a new scheduler")
 
 	// Ensure the existence of the working directory for the deployment.
-	workingDir := filepath.Join(c.workspaceDir, d.Id)
-	if err := os.MkdirAll(workingDir, os.ModePerm); err != nil {
-		logger.Error("failed to create working directory for scheduler",
-			zap.String("working-dir", workingDir),
-			zap.Error(err),
-		)
+	workingDir, err := ioutil.TempDir(c.workspaceDir, d.Id+"-*")
+	if err != nil {
+		logger.Error("failed to create working directory for scheduler", zap.Error(err))
 		return err
 	}
 	logger.Info("created working directory for scheduler", zap.String("working-dir", workingDir))
