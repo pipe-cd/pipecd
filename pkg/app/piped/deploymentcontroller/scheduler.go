@@ -18,6 +18,7 @@ import (
 	"context"
 	"fmt"
 	"path/filepath"
+	"sync"
 	"time"
 
 	"go.uber.org/atomic"
@@ -28,6 +29,7 @@ import (
 	"github.com/kapetaniosci/pipe/pkg/app/piped/executor/registry"
 	"github.com/kapetaniosci/pipe/pkg/app/piped/logpersister"
 	"github.com/kapetaniosci/pipe/pkg/config"
+	"github.com/kapetaniosci/pipe/pkg/git"
 	"github.com/kapetaniosci/pipe/pkg/model"
 )
 
@@ -55,6 +57,7 @@ type scheduler struct {
 
 	// Deployment configuration for this application.
 	deploymentConfig *config.Config
+	prepareOnce      sync.Once
 	done             atomic.Bool
 	nowFunc          func() time.Time
 }
@@ -116,26 +119,20 @@ func (s *scheduler) Run(ctx context.Context) error {
 		s.done.Store(true)
 	}()
 
-	if err := s.executePrepareStage(ctx); err != nil {
-		var (
-			status     = model.DeploymentStatus_DEPLOYMENT_FAILURE
-			statusDesc = "Failed while preparing for deployment"
-		)
-		s.reportDeploymentStatus(ctx, status, statusDesc)
-		return err
+	// Update deployment status to RUNNING if needed.
+	if model.CanUpdateDeploymentStatus(s.deployment.Status, model.DeploymentStatus_DEPLOYMENT_RUNNING) {
+		err := s.reportDeploymentStatus(ctx, model.DeploymentStatus_DEPLOYMENT_RUNNING, "piped started handling this deployment")
+		if err != nil {
+			return err
+		}
 	}
 
 	for _, ps := range s.deployment.Stages {
-		if ps.Id == model.StagePrepare.String() {
-			continue
-		}
-
-		// This stage is already handed at by a previous scheduler.
+		// This stage is already handed by a previous scheduler.
 		if model.IsCompletedStage(ps.Status) {
 			continue
 		}
 
-		// Handle user specified stages.
 		if err := s.executeStage(ctx, ps); err != nil {
 			var (
 				status     = model.DeploymentStatus_DEPLOYMENT_FAILURE
@@ -154,6 +151,19 @@ func (s *scheduler) executeStage(ctx context.Context, ps *model.PipelineStage) e
 	lp := s.logPersister.StageLogPersister(s.deployment.Id, ps.Id)
 	defer lp.Complete(ctx)
 
+	// Update stage status to RUNNING if needed.
+	if model.CanUpdateStageStatus(ps.Status, model.StageStatus_STAGE_RUNNING) {
+		err := s.reportStageStatus(ctx, ps.Id, model.StageStatus_STAGE_RUNNING)
+		if err != nil {
+			return err
+		}
+	}
+
+	// Ensure that all needed things has been prepared before executing any stage.
+	if err := s.ensurePreparing(ctx, lp); err != nil {
+		return err
+	}
+
 	input := executor.Input{
 		Stage:             ps,
 		Deployment:        s.deployment,
@@ -171,68 +181,65 @@ func (s *scheduler) executeStage(ctx context.Context, ps *model.PipelineStage) e
 	if !ok {
 		err := fmt.Errorf("no registered executor for stage %s", ps.Name)
 		lp.AppendError(err.Error())
+		s.reportStageStatus(ctx, ps.Id, model.StageStatus_STAGE_FAILURE)
 		return err
 	}
 
 	// Start running executor.
 	status := ex.Execute(ctx)
-
 	return s.reportStageStatus(ctx, ps.Id, status)
 }
 
-// executePrepareStage does all needed things before start executing the deployment.
-func (s *scheduler) executePrepareStage(ctx context.Context) error {
-	lp := s.logPersister.StageLogPersister(s.deployment.Id, model.StagePrepare.String())
-	defer lp.Complete(ctx)
+// ensurePreparing ensures that all needed things should be prepared before executing any stages.
+// The log of this preparing process will be written to the first executing stage
+// when a new scheduler has been created.
+func (s *scheduler) ensurePreparing(ctx context.Context, lp logpersister.StageLogPersister) error {
+	var err error
+	s.prepareOnce.Do(func() {
+		lp.AppendInfo("START PREPARING")
+		lp.AppendInfo("new scheduler has been created for this deployment so we need some preparation")
 
-	lp.AppendInfo("new scheduler has been created for this deployment")
-
-	// Update deployment status to RUNNING if needed.
-	if model.CanUpdateDeploymentStatus(s.deployment.Status, model.DeploymentStatus_DEPLOYMENT_RUNNING) {
-		err := s.reportDeploymentStatus(ctx, model.DeploymentStatus_DEPLOYMENT_RUNNING, "piped started handling this deployment")
-		if err != nil {
+		// Clone repository and checkout to the target revision.
+		var (
+			appID       = s.deployment.ApplicationId
+			repoID      = s.deployment.GitPath.RepoId
+			repoDirPath = filepath.Join(s.workingDir, workspaceGitRepoDirName)
+			revision    = s.deployment.Trigger.Commit.Revision
+			repoCfg, ok = s.pipedConfig.GetRepository(repoID)
+		)
+		if !ok {
+			err = fmt.Errorf("no registered repository id %s for application %s", repoID, appID)
 			lp.AppendError(err.Error())
-			return err
+			return
 		}
-	}
 
-	// Clone repository and checkout to the target revision.
-	var (
-		appID       = s.deployment.ApplicationId
-		repoID      = s.deployment.GitPath.RepoId
-		repoDirPath = filepath.Join(s.workingDir, workspaceGitRepoDirName)
-		revision    = s.deployment.Trigger.Commit.Revision
-		repoCfg, ok = s.pipedConfig.GetRepository(repoID)
-	)
-	if !ok {
-		err := fmt.Errorf("no registered repository id %s for application %s", repoID, appID)
-		lp.AppendError(err.Error())
-		return err
-	}
+		var gitRepo git.Repo
+		gitRepo, err = s.gitClient.Clone(ctx, repoCfg.RepoID, repoCfg.Remote, repoCfg.Branch, repoDirPath)
+		if err != nil {
+			err = fmt.Errorf("failed to clone repository %s for application %s (%v)", repoID, appID, err)
+			lp.AppendError(err.Error())
+			return
+		}
 
-	gitRepo, err := s.gitClient.Clone(ctx, repoCfg.RepoID, repoCfg.Remote, repoCfg.Branch, repoDirPath)
-	if err != nil {
-		err = fmt.Errorf("failed to clone repository %s for application %s (%v)", repoID, appID, err)
-		lp.AppendError(err.Error())
-		return err
-	}
+		err = gitRepo.Checkout(ctx, revision)
+		if err != nil {
+			err = fmt.Errorf("failed to clone repository %s for application %s (%v)", repoID, appID, err)
+			lp.AppendError(err.Error())
+			return
+		}
+		lp.AppendSuccess(fmt.Sprintf("successfully cloned repository %s", repoID))
 
-	if err = gitRepo.Checkout(ctx, revision); err != nil {
-		err = fmt.Errorf("failed to clone repository %s for application %s (%v)", repoID, appID, err)
-		lp.AppendError(err.Error())
-		return err
-	}
-	lp.AppendSuccess(fmt.Sprintf("successfully cloned repository %s", repoID))
-
-	// Load deployment configuration for this application.
-	cfg, err := s.loadDeploymentConfiguration(ctx, gitRepo.GetPath(), s.deployment)
-	if err != nil {
-		err = fmt.Errorf("failed to load deployment configuration (%v)", err)
-	}
-	s.deploymentConfig = cfg
-	lp.AppendSuccess("successfully loaded deployment configuration")
-
-	return nil
+		// Load deployment configuration for this application.
+		var cfg *config.Config
+		cfg, err = s.loadDeploymentConfiguration(ctx, gitRepo.GetPath(), s.deployment)
+		if err != nil {
+			err = fmt.Errorf("failed to load deployment configuration (%v)", err)
+		}
+		s.deploymentConfig = cfg
+		lp.AppendSuccess("successfully loaded deployment configuration")
+		lp.AppendInfo("PREPARING COMPLETED")
+	})
+	return err
 }
 
 func (s *scheduler) reportStageStatus(ctx context.Context, stageID string, status model.StageStatus) error {

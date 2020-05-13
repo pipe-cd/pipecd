@@ -144,25 +144,12 @@ func buildDeploment(app *model.Application, cfg *config.Config, branch string, c
 	return deployment, nil
 }
 
-func newPreparePipelineStage(now time.Time) *model.PipelineStage {
-	return &model.PipelineStage{
-		Id:        model.StagePrepare.String(),
-		Name:      model.StagePrepare.String(),
-		Desc:      "Prepare",
-		Status:    model.StageStatus_STAGE_NOT_STARTED_YET,
-		CreatedAt: now.Unix(),
-		UpdatedAt: now.Unix(),
-	}
-}
-
 func buildKubernetesPipelineStages(cfg *config.Config, now time.Time) ([]*model.PipelineStage, error) {
 	p := cfg.KubernetesAppSpec.Pipeline
 	if p == nil {
 		p = kubernetesDefaultPipeline
 	}
-	stages := make([]*model.PipelineStage, 0, len(p.Stages)+1)
-	// Append prepare stage.
-	stages = append(stages, newPreparePipelineStage(now))
+	stages := make([]*model.PipelineStage, 0, len(p.Stages))
 
 	// Append all configured stages.
 	for i, s := range p.Stages {
@@ -190,9 +177,7 @@ func buildTerraformPipelineStages(cfg *config.Config, now time.Time) ([]*model.P
 	if p == nil {
 		p = terraformDefaultPipeline
 	}
-	stages := make([]*model.PipelineStage, 0, len(p.Stages)+1)
-	// Append prepare stage.
-	stages = append(stages, newPreparePipelineStage(now))
+	stages := make([]*model.PipelineStage, 0, len(p.Stages))
 
 	// Append all configured stages.
 	for i, s := range p.Stages {
