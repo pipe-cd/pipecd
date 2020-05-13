@@ -28,6 +28,7 @@ import (
 	"github.com/kapetaniosci/pipe/pkg/app/piped/executor"
 	"github.com/kapetaniosci/pipe/pkg/app/piped/executor/registry"
 	"github.com/kapetaniosci/pipe/pkg/app/piped/logpersister"
+	"github.com/kapetaniosci/pipe/pkg/backoff"
 	"github.com/kapetaniosci/pipe/pkg/config"
 	"github.com/kapetaniosci/pipe/pkg/git"
 	"github.com/kapetaniosci/pipe/pkg/model"
@@ -244,6 +245,7 @@ func (s *scheduler) ensurePreparing(ctx context.Context, lp logpersister.StageLo
 
 func (s *scheduler) reportStageStatus(ctx context.Context, stageID string, status model.StageStatus) error {
 	var (
+		err error
 		now = s.nowFunc()
 		req = &pipedservice.ReportStageStatusChangedRequest{
 			DeploymentId: s.deployment.Id,
@@ -251,10 +253,13 @@ func (s *scheduler) reportStageStatus(ctx context.Context, stageID string, statu
 			Status:       status,
 			CompletedAt:  now.Unix(),
 		}
+		retry = newAPIRetry(10)
 	)
-	// TODO: Do this with exponential backoff.
-	_, err := s.apiClient.ReportStageStatusChanged(ctx, req)
-	if err != nil {
+	for retry.WaitNext(ctx) {
+		_, err = s.apiClient.ReportStageStatusChanged(ctx, req)
+		if err == nil {
+			break
+		}
 		err = fmt.Errorf("failed to report stage status to control-plane: %v", err)
 	}
 
@@ -264,6 +269,7 @@ func (s *scheduler) reportStageStatus(ctx context.Context, stageID string, statu
 
 func (s *scheduler) reportDeploymentStatus(ctx context.Context, status model.DeploymentStatus, desc string) error {
 	var (
+		err error
 		now = s.nowFunc()
 		req = &pipedservice.ReportDeploymentStatusChangedRequest{
 			DeploymentId:      s.deployment.Id,
@@ -271,10 +277,13 @@ func (s *scheduler) reportDeploymentStatus(ctx context.Context, status model.Dep
 			StatusDescription: desc,
 			CompletedAt:       now.Unix(),
 		}
+		retry = newAPIRetry(10)
 	)
-	// TODO: Do this with exponential backoff.
-	_, err := s.apiClient.ReportDeploymentStatusChanged(ctx, req)
-	if err != nil {
+	for retry.WaitNext(ctx) {
+		_, err = s.apiClient.ReportDeploymentStatusChanged(ctx, req)
+		if err == nil {
+			break
+		}
 		err = fmt.Errorf("failed to report deployment status to control-plane: %v", err)
 	}
 
@@ -292,4 +301,10 @@ func (s *scheduler) loadDeploymentConfiguration(ctx context.Context, repoPath st
 		return nil, fmt.Errorf("application in deployment configuration file is not match, got: %s, expected: %s", appKind, d.Kind)
 	}
 	return cfg, nil
+}
+
+// 0s 997.867435ms 2.015381172s 3.485134345s 4.389600179s 18.118099328s 48.73058264s
+func newAPIRetry(maxRetries int) backoff.Retry {
+	bo := backoff.NewExponential(2*time.Second, time.Minute)
+	return backoff.NewRetry(maxRetries, bo)
 }
