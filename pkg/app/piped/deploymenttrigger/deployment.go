@@ -30,7 +30,7 @@ import (
 )
 
 var (
-	kubernetesDefaultPipeline = &config.AppPipeline{
+	kubernetesDefaultPipeline = &config.DeploymentPipeline{
 		Stages: []config.PipelineStage{
 			{
 				Name: model.StageK8sPrimaryUpdate,
@@ -38,7 +38,7 @@ var (
 			},
 		},
 	}
-	terraformDefaultPipeline = &config.AppPipeline{
+	terraformDefaultPipeline = &config.DeploymentPipeline{
 		Stages: []config.PipelineStage{
 			{
 				Name: model.StageTerraformPlan,
@@ -145,7 +145,7 @@ func buildDeploment(app *model.Application, cfg *config.Config, branch string, c
 }
 
 func buildKubernetesPipelineStages(cfg *config.Config, now time.Time) ([]*model.PipelineStage, error) {
-	p := cfg.KubernetesAppSpec.Pipeline
+	p := cfg.KubernetesDeploymentSpec.Pipeline
 	if p == nil {
 		p = kubernetesDefaultPipeline
 	}
@@ -173,7 +173,7 @@ func buildKubernetesPipelineStages(cfg *config.Config, now time.Time) ([]*model.
 }
 
 func buildTerraformPipelineStages(cfg *config.Config, now time.Time) ([]*model.PipelineStage, error) {
-	p := cfg.TerraformAppSpec.Pipeline
+	p := cfg.TerraformDeploymentSpec.Pipeline
 	if p == nil {
 		p = terraformDefaultPipeline
 	}

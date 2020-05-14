@@ -21,40 +21,40 @@ import (
 	"github.com/kapetaniosci/pipe/pkg/model"
 )
 
-// KubernetesAppSpec represents configuration for a Kubernetes application.
-type KubernetesAppSpec struct {
+// KubernetesDeploymentSpec represents a deployment configuration for Kubernetes application.
+type KubernetesDeploymentSpec struct {
 	// Selector is a list of labels used to query all resources of this application.
 	Selector    map[string]string   `json:"selector"`
 	Input       *KubernetesAppInput `json:"input"`
-	Pipeline    *AppPipeline        `json:"pipeline"`
+	Pipeline    *DeploymentPipeline `json:"pipeline"`
 	Destination string              `json:"destination"`
 }
 
 // Validate returns an error if any wrong configuration value was found.
-func (s *KubernetesAppSpec) Validate() error {
+func (s *KubernetesDeploymentSpec) Validate() error {
 	return nil
 }
 
-// TerraformAppSpec represents configuration for a Terraform application.
-type TerraformAppSpec struct {
-	Input       *TerraformAppInput `json:"input"`
-	Pipeline    *AppPipeline       `json:"pipeline"`
-	Destination string             `json:"destination"`
+// TerraformDeploymentSpec represents a deployment configuration for Terraform application.
+type TerraformDeploymentSpec struct {
+	Input       *TerraformAppInput  `json:"input"`
+	Pipeline    *DeploymentPipeline `json:"pipeline"`
+	Destination string              `json:"destination"`
 }
 
 // Validate returns an error if any wrong configuration value was found.
-func (s *TerraformAppSpec) Validate() error {
+func (s *TerraformDeploymentSpec) Validate() error {
 	if s.Destination == "" {
 		return fmt.Errorf("spec.destination for terraform application is required")
 	}
 	return nil
 }
 
-// AppPipeline represents the way to deploy the application.
+// DeploymentPipeline represents the way to deploy the application.
 // The pipeline is triggered by changes in any of the following objects:
 // - Target PodSpec (Target can be Deployment, DaemonSet, StatefullSet)
 // - ConfigMaps, Secrets that are mounted as volumes or envs in the deployment.
-type AppPipeline struct {
+type DeploymentPipeline struct {
 	Stages []PipelineStage `json:"stages"`
 }
 

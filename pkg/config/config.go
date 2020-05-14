@@ -19,8 +19,9 @@ import (
 	"fmt"
 	"io/ioutil"
 
-	"github.com/kapetaniosci/pipe/pkg/model"
 	"sigs.k8s.io/yaml"
+
+	"github.com/kapetaniosci/pipe/pkg/model"
 )
 
 const (
@@ -70,9 +71,9 @@ type Config struct {
 	APIVersion string
 	spec       interface{}
 
-	// Application specs.
-	KubernetesAppSpec *KubernetesAppSpec
-	TerraformAppSpec  *TerraformAppSpec
+	// Deployment specs.
+	KubernetesDeploymentSpec *KubernetesDeploymentSpec
+	TerraformDeploymentSpec  *TerraformDeploymentSpec
 
 	PipedSpec            *PipedSpec
 	ControlPlaneSpec     *ControlPlaneSpec
@@ -92,11 +93,11 @@ func (c *Config) init(kind Kind, apiVersion string) error {
 
 	switch kind {
 	case KindKubernetesApp:
-		c.KubernetesAppSpec = &KubernetesAppSpec{}
-		c.spec = c.KubernetesAppSpec
+		c.KubernetesDeploymentSpec = &KubernetesDeploymentSpec{}
+		c.spec = c.KubernetesDeploymentSpec
 	case KindTerraformApp:
-		c.TerraformAppSpec = &TerraformAppSpec{}
-		c.spec = c.TerraformAppSpec
+		c.TerraformDeploymentSpec = &TerraformDeploymentSpec{}
+		c.spec = c.TerraformDeploymentSpec
 	case KindPiped:
 		c.PipedSpec = &PipedSpec{}
 		c.spec = c.PipedSpec

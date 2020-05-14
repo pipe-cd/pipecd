@@ -4,9 +4,9 @@ go_library(
     name = "go_default_library",
     srcs = [
         "analysis_template.go",
-        "app.go",
         "config.go",
         "control_plane.go",
+        "deployment.go",
         "duration.go",
         "notification.go",
         "piped.go",
@@ -25,8 +25,8 @@ go_test(
     size = "small",
     srcs = [
         "analysis_template_test.go",
-        "app_test.go",
         "control_plane_test.go",
+        "deployment_test.go",
         "notification_test.go",
         "piped_test.go",
         "replicas_test.go",

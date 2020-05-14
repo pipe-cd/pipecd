@@ -40,7 +40,7 @@ func TestAppConfig(t *testing.T) {
 			fileName:           "testdata/application/terraform-app.yaml",
 			expectedKind:       KindTerraformApp,
 			expectedAPIVersion: "pipecd.dev/v1beta1",
-			expectedSpec: &TerraformAppSpec{
+			expectedSpec: &TerraformDeploymentSpec{
 				Input: &TerraformAppInput{
 					Workspace:        "dev",
 					TerraformVersion: "0.12.23",
@@ -54,12 +54,12 @@ func TestAppConfig(t *testing.T) {
 			fileName:           "testdata/application/terraform-app-with-approval.yaml",
 			expectedKind:       KindTerraformApp,
 			expectedAPIVersion: "pipecd.dev/v1beta1",
-			expectedSpec: &TerraformAppSpec{
+			expectedSpec: &TerraformDeploymentSpec{
 				Input: &TerraformAppInput{
 					Workspace:        "dev",
 					TerraformVersion: "0.12.23",
 				},
-				Pipeline: &AppPipeline{
+				Pipeline: &DeploymentPipeline{
 					Stages: []PipelineStage{
 						{
 							Name:                      model.StageTerraformPlan,
@@ -85,8 +85,8 @@ func TestAppConfig(t *testing.T) {
 			fileName:           "testdata/application/k8s-app-bluegreen.yaml",
 			expectedKind:       KindKubernetesApp,
 			expectedAPIVersion: "pipecd.dev/v1beta1",
-			expectedSpec: &KubernetesAppSpec{
-				Pipeline: &AppPipeline{
+			expectedSpec: &KubernetesDeploymentSpec{
+				Pipeline: &DeploymentPipeline{
 					Stages: []PipelineStage{
 						{
 							Name: model.StageK8sStageRollout,
@@ -127,7 +127,7 @@ func TestAppConfig(t *testing.T) {
 		// 	expectedKind:       KindKubernetesApp,
 		// 	expectedAPIVersion: "pipecd.dev/v1beta1",
 		// 	expectedSpec: &K8sAppSpec{
-		// 		Pipeline: &AppPipeline{
+		// 		Pipeline: &DeploymentPipeline{
 		// 			Stages: []PipelineStage{
 		// 				PipelineStage{
 		// 					Name: StageK8sCanaryOut,
