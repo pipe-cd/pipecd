@@ -41,7 +41,7 @@ func TestAppConfig(t *testing.T) {
 			expectedKind:       KindTerraformApp,
 			expectedAPIVersion: "pipecd.dev/v1beta1",
 			expectedSpec: &TerraformDeploymentSpec{
-				Input: &TerraformAppInput{
+				Input: &TerraformDeploymentInput{
 					Workspace:        "dev",
 					TerraformVersion: "0.12.23",
 				},
@@ -55,7 +55,7 @@ func TestAppConfig(t *testing.T) {
 			expectedKind:       KindTerraformApp,
 			expectedAPIVersion: "pipecd.dev/v1beta1",
 			expectedSpec: &TerraformDeploymentSpec{
-				Input: &TerraformAppInput{
+				Input: &TerraformDeploymentInput{
 					Workspace:        "dev",
 					TerraformVersion: "0.12.23",
 				},

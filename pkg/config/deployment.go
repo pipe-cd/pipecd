@@ -24,10 +24,10 @@ import (
 // KubernetesDeploymentSpec represents a deployment configuration for Kubernetes application.
 type KubernetesDeploymentSpec struct {
 	// Selector is a list of labels used to query all resources of this application.
-	Selector    map[string]string   `json:"selector"`
-	Input       *KubernetesAppInput `json:"input"`
-	Pipeline    *DeploymentPipeline `json:"pipeline"`
-	Destination string              `json:"destination"`
+	Selector    map[string]string          `json:"selector"`
+	Input       *KubernetesDeploymentInput `json:"input"`
+	Pipeline    *DeploymentPipeline        `json:"pipeline"`
+	Destination string                     `json:"destination"`
 }
 
 // Validate returns an error if any wrong configuration value was found.
@@ -37,9 +37,9 @@ func (s *KubernetesDeploymentSpec) Validate() error {
 
 // TerraformDeploymentSpec represents a deployment configuration for Terraform application.
 type TerraformDeploymentSpec struct {
-	Input       *TerraformAppInput  `json:"input"`
-	Pipeline    *DeploymentPipeline `json:"pipeline"`
-	Destination string              `json:"destination"`
+	Input       *TerraformDeploymentInput `json:"input"`
+	Pipeline    *DeploymentPipeline       `json:"pipeline"`
+	Destination string                    `json:"destination"`
 }
 
 // Validate returns an error if any wrong configuration value was found.
@@ -282,7 +282,7 @@ type AnalysisHTTP struct {
 	UseTemplate      string
 }
 
-type KubernetesAppInput struct {
+type KubernetesDeploymentInput struct {
 	Manifests      []string        `json:"manifests"`
 	KubectlVersion string          `json:"kubectlVersion"`
 	HelmChart      *InputHelmChart `json:"helmChart"`
@@ -291,7 +291,7 @@ type KubernetesAppInput struct {
 	Dependencies   []string        `json:"dependencies,omitempty"`
 }
 
-type TerraformAppInput struct {
+type TerraformDeploymentInput struct {
 	Workspace        string   `json:"workspace,omitempty"`
 	TerraformVersion string   `json:"terraformVersion,omitempty"`
 	Dependencies     []string `json:"dependencies,omitempty"`
