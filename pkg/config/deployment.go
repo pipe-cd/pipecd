@@ -278,6 +278,7 @@ type AnalysisMetrics struct {
 type AnalysisLog struct {
 	Query       string
 	Threshold   int
+	Interval    Duration
 	Provider    string
 	UseTemplate string
 }
