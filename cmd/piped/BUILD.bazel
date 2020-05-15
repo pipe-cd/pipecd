@@ -22,6 +22,6 @@ app_image(
     name = "piped",
     base = "@piped-base//image",
     binary = ":piped",
-    repository = "pipe-piped",
+    repository = "pipecd-piped",
     visibility = ["//visibility:public"],
 )

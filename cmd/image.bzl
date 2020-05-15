@@ -2,6 +2,7 @@ def all_images():
     cmds = {
         "api": "pipecd-api",
         "piped": "pipecd-piped",
+        "helloworld": "pipecd-helloworld",
     }
     images = {}
 
