@@ -1,19 +1,23 @@
-# Simple canary pipeline for a Kubernetes application.
-# This makes a progressive delivery with canary strategy.
+# Progressive delivery with canary strategy.
 apiVersion: pipecd.dev/v1beta1
 kind: KubernetesApp
 spec:
   pipeline:
     stages:
+      # Deploy the workloads of STAGE variant. In this case, the number of
+      # workload replicas of STAGE variant is 10% of the replicas number of PRIMARY variant.
       - name: K8S_STAGE_ROLLOUT
         with:
           replicas: 10%
+      # Update the workload of PRIMARY variant to the new version.
       - name: K8S_PRIMARY_UPDATE
+      # Destroy all workloads of STAGE variant.
       - name: K8S_STAGE_CLEAN
 
 ---
-# Simple canary deployment that requires an approval
-# before rolling out the primary.
+# Progressive delivery with canary strategy.
+# This also adds an Approval stage to wait until got
+# an approval from one of the specified approvers.
 apiVersion: pipecd.dev/v1beta1
 kind: KubernetesApp
 spec:
@@ -31,7 +35,8 @@ spec:
       - name: K8S_STAGE_CLEAN
 
 ---
-# Canary deployment that has an analysis stage to verify canary.
+# Progressive delivery with canary strategy.
+# This has an Analysis stage for verifying the deployment process.
 # The analysis is just based on the metrics, log, http response from canary version.
 apiVersion: pipecd.dev/v1beta1
 kind: KubernetesApp
@@ -63,8 +68,33 @@ spec:
       - name: K8S_STAGE_CLEAN
 
 ---
-# Canary deployment that has an analysis stage to verify canary.
-# The analysis is using metrics templates.
+# Progressive delivery with canary strategy.
+# The canary process has multiple phases: from 10% then analysis
+# then up to 20% then analysis then 100%.
+apiVersion: pipecd.dev/v1beta1
+kind: KubernetesApp
+spec:
+  pipeline:
+    stages:
+      - name: K8S_STAGE_ROLLOUT
+        with:
+          replicas: 10%
+      - name: ANALYSIS
+        with:
+          duration: 10m
+      - name: K8S_STAGE_ROLLOUT
+        with:
+          replicas: 20%
+      - name: ANALYSIS
+        with:
+          duration: 10m
+      - name: K8S_PRIMARY_UPDATE
+      - name: K8S_STAGE_CLEAN
+
+---
+# Progressive delivery with canary strategy.
+# This has an Analysis stage for verifying the deployment process.
+# The analysis stage is configured to use metrics templates at .pipe directory.
 apiVersion: pipecd.dev/v1beta1
 kind: KubernetesApp
 spec:

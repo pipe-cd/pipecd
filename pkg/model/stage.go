@@ -29,23 +29,23 @@ const (
 	StageAnalysis Stage = "ANALYSIS"
 
 	// StageK8sPrimaryUpdate represents the state where
-	// the PRIMARY has been updated to the new version/configuration.
+	// the PRIMARY variant has been updated to the new version/configuration.
 	StageK8sPrimaryUpdate Stage = "K8S_PRIMARY_UPDATE"
 	// StageK8sStageRollout represents the state where
-	// the STAGE workloads has been rolled out with the new version/configuration.
+	// the STAGE variant workloads has been rolled out with the new version/configuration.
 	StageK8sStageRollout Stage = "K8S_STAGE_ROLLOUT"
 	// StageK8sStageClean represents the state where
-	// the STAGE workloads has been cleaned.
+	// the STAGE variant workloads has been cleaned.
 	StageK8sStageClean Stage = "K8S_STAGE_CLEAN"
 	// StageK8sBaselineRollout represents the state where
-	// the BASELINE workloads has been rolled out with the new version/configuration.
+	// the BASELINE variant workloads has been rolled out with the new version/configuration.
 	StageK8sBaselineRollout Stage = "K8S_BASELINE_ROLLOUT"
 	// StageK8sBaselineClean represents the state where
-	// the BASELINE workloads has been cleaned.
+	// the BASELINE variant workloads has been cleaned.
 	StageK8sBaselineClean Stage = "K8S_BASELINE_CLEAN"
-	// StageK8sTrafficRoute represents the state where the traffic to application
-	// should be routed as the specified percentage to PRIMARY, STAGE, BASELINE.
-	StageK8sTrafficRoute Stage = "K8S_TRAFFIC_ROUTE"
+	// StageK8sTrafficSplit represents the state where the traffic to application
+	// should be splitted as the specified percentage to PRIMARY, STAGE, BASELINE variants.
+	StageK8sTrafficSplit Stage = "K8S_TRAFFIC_SPLIT"
 
 	// StageTerraformPlan shows terraform plan result.
 	StageTerraformPlan Stage = "TERRAFORM_PLAN"
@@ -56,16 +56,16 @@ const (
 	// StageCloudRunNewVersionRollout represents the state where
 	// the workloads of the new version has been rolled out.
 	StageCloudRunNewVersionRollout Stage = "CLOUDRUN_NEW_VERSION_ROLLOUT"
-	// StageCloudRunTrafficRoute represents the state where the traffic to application
-	// should be routed as the specified percentage to previous version and new version.
-	StageCloudRunTrafficRoute Stage = "CLOUDRUN_TRAFFIC_ROUTE"
+	// StageCloudRunTrafficSplit represents the state where the traffic to application
+	// should be splitted as the specified percentage to previous version and new version.
+	StageCloudRunTrafficSplit Stage = "CLOUDRUN_TRAFFIC_SPLIT"
 
 	// StageLambdaNewVersionRollout represents the state where
 	// the workloads of the new version has been rolled out.
 	StageLambdaNewVersionRollout Stage = "LAMBDA_NEW_VERSION_ROLLOUT"
-	// StageLambdaTrafficRoute represents the state where the traffic to application
-	// should be routed as the specified percentage to previous version and new version.
-	StageLambdaTrafficRoute Stage = "LAMBDA_TRAFFIC_ROUTE"
+	// StageLambdaTrafficSplit represents the state where the traffic to application
+	// should be splitted as the specified percentage to previous version and new version.
+	StageLambdaTrafficSplit Stage = "LAMBDA_TRAFFIC_SPLIT"
 
 	// StageRollBack represents a state where
 	// the all temporarily created stages will be reverted to

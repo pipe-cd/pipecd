@@ -18,4 +18,5 @@ import (
 	_ "github.com/golang/mock/gomock"
 
 	_ "github.com/kapetaniosci/pipe/pkg/datastore"
+	_ "github.com/kapetaniosci/pipe/pkg/model"
 )

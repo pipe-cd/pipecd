@@ -1,3 +1,34 @@
+# Progressive delivery with canary strategy.
+apiVersion: pipecd.dev/v1beta1
+kind: KubernetesApp
+spec:
+  pipeline:
+    stages:
+      # Deploy the workloads of STAGE variant. In this case, the number of
+      # workload replicas of STAGE variant is 10% of the replicas number of PRIMARY variant.
+      - name: K8S_STAGE_ROLLOUT
+        with:
+          replicas: 10%
+      # The percentage of traffic each variant should receive.
+      # In this case, STAGE variant will receive 10% of traffic,
+      # while PRIMARY will receive 90% of traffic.
+      - name: K8S_TRAFFIC_SPLIT
+        with:
+          stage: 10
+      # Update the workload of PRIMARY variant to the new version.
+      - name: K8S_PRIMARY_UPDATE
+      # The percentage of traffic each variant should receive.
+      # In this case, PRIMARY variant will receive all of the traffic.
+      - name: K8S_TRAFFIC_SPLIT
+        with:
+          primary: 100
+      # Destroy all workloads of STAGE variant.
+      - name: K8S_STAGE_CLEAN
+
+---
+# Progressive delivery with canary strategy.
+# The canary process has multiple phases: from 10% then analysis
+# then up to 20% then analysis then 100%.
 apiVersion: pipecd.dev/v1beta1
 kind: KubernetesApp
 spec:
@@ -5,13 +36,21 @@ spec:
     stages:
       - name: K8S_STAGE_ROLLOUT
         with:
-          weight: 10
-      - name: K8S_TRAFFIC_ROUTE
+          replicas: 20%
+      - name: K8S_TRAFFIC_SPLIT
         with:
           stage: 10
-          primary: 90
+      - name: ANALYSIS
+        with:
+          duration: 10m
+      - name: K8S_TRAFFIC_SPLIT
+        with:
+          stage: 20
+      - name: ANALYSIS
+        with:
+          duration: 10m
       - name: K8S_PRIMARY_UPDATE
-      - name: K8S_TRAFFIC_ROUTE
+      - name: K8S_TRAFFIC_SPLIT
         with:
           primary: 100
       - name: K8S_STAGE_CLEAN

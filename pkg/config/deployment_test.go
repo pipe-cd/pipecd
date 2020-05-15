@@ -98,8 +98,8 @@ func TestAppConfig(t *testing.T) {
 							},
 						},
 						{
-							Name: model.StageK8sTrafficRoute,
-							K8sTrafficRouteStageOptions: &K8sTrafficRouteStageOptions{
+							Name: model.StageK8sTrafficSplit,
+							K8sTrafficSplitStageOptions: &K8sTrafficSplitStageOptions{
 								Stage: 100,
 							},
 						},
@@ -108,8 +108,8 @@ func TestAppConfig(t *testing.T) {
 							K8sPrimaryUpdateStageOptions: &K8sPrimaryUpdateStageOptions{},
 						},
 						{
-							Name: model.StageK8sTrafficRoute,
-							K8sTrafficRouteStageOptions: &K8sTrafficRouteStageOptions{
+							Name: model.StageK8sTrafficSplit,
+							K8sTrafficSplitStageOptions: &K8sTrafficSplitStageOptions{
 								Primary: 100,
 							},
 						},
@@ -118,6 +118,9 @@ func TestAppConfig(t *testing.T) {
 							K8sStageCleanStageOptions: &K8sStageCleanStageOptions{},
 						},
 					},
+				},
+				TrafficSplit: TrafficSplit{
+					Method: TrafficSplitMethodPod,
 				},
 			},
 			expectedError: nil,

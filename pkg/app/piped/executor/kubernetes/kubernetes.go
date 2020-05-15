@@ -22,7 +22,7 @@ import (
 )
 
 const (
-	subsetLabel    = "pipecd.dev/subset"
+	variantLabel   = "pipecd.dev/variant"
 	managedByLabel = "pipecd.dev/managed-by"
 )
 
@@ -45,7 +45,7 @@ func Register(r registerer) {
 	r.Register(model.StageK8sStageClean, f)
 	r.Register(model.StageK8sBaselineRollout, f)
 	r.Register(model.StageK8sBaselineClean, f)
-	r.Register(model.StageK8sTrafficRoute, f)
+	r.Register(model.StageK8sTrafficSplit, f)
 }
 
 func (e *Executor) Execute(ctx context.Context) model.StageStatus {
@@ -73,6 +73,6 @@ func (e *Executor) ensureBaselineRemove() error {
 	return nil
 }
 
-func (e *Executor) ensureTrafficRoute() error {
+func (e *Executor) ensureTrafficSplit() error {
 	return nil
 }

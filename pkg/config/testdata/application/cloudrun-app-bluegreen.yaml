@@ -14,7 +14,7 @@ spec:
       # Change the traffic routing state where
       # the new version will receive 100% of the traffic as soon as possible.
       # This is known as blue-green strategy.
-      - name: CLOUDRUN_TRAFFIC_ROUTE
+      - name: CLOUDRUN_TRAFFIC_SPLIT
         with:
           newVersion: 100
       # Optional: We can also add an ANALYSIS stage to verify the new version.

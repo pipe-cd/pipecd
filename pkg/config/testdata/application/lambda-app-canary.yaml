@@ -16,7 +16,7 @@ spec:
       # Change the traffic routing state where
       # the new version will receive the specified percentage of traffic.
       # This is known as multi-phase canary strategy.
-      - name: LAMBDA_TRAFFIC_ROUTE
+      - name: LAMBDA_TRAFFIC_SPLIT
         with:
           newVersion: 10
       # Optional: We can also add an ANALYSIS stage to verify the new version.
@@ -25,6 +25,6 @@ spec:
       - name: ANALYSIS
       # Change the traffic routing state where
       # thre new version will receive 100% of the traffic.
-      - name: LAMBDA_TRAFFIC_ROUTE
+      - name: LAMBDA_TRAFFIC_SPLIT
         with:
           newVersion: 100

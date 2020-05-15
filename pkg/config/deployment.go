@@ -24,10 +24,13 @@ import (
 // KubernetesDeploymentSpec represents a deployment configuration for Kubernetes application.
 type KubernetesDeploymentSpec struct {
 	// Selector is a list of labels used to query all resources of this application.
-	Selector    map[string]string          `json:"selector"`
-	Input       *KubernetesDeploymentInput `json:"input"`
-	Pipeline    *DeploymentPipeline        `json:"pipeline"`
-	Destination string                     `json:"destination"`
+	Selector        map[string]string          `json:"selector"`
+	Input           *KubernetesDeploymentInput `json:"input"`
+	Pipeline        *DeploymentPipeline        `json:"pipeline"`
+	StageVariant    *StageVariant              `json:"stageVariant"`
+	BaselineVariant *BaselineVariant           `json:"baselineVariant"`
+	TrafficSplit    TrafficSplit               `json:"trafficSplit"`
+	Destination     string                     `json:"destination"`
 }
 
 // Validate returns an error if any wrong configuration value was found.
@@ -58,14 +61,31 @@ type DeploymentPipeline struct {
 	Stages []PipelineStage `json:"stages"`
 }
 
-type StageTrackOptions struct {
-	Target  *K8sDeployTarget
-	Service *K8sService
+type StageVariant struct {
+	Workload *K8sWorkload `json:"workoad"`
+	Service  *K8sService  `json:"service"`
+	// Suffix that should be used when naming the STAGE variant's resources.
+	// Default is "stage".
+	Suffix string `json:"suffix"`
 }
 
-type BaselineTrackOptions struct {
-	Target  *K8sDeployTarget
-	Service *K8sService
+type BaselineVariant struct {
+	Workload *K8sWorkload `json:"workoad"`
+	Service  *K8sService  `json:"service"`
+	// Suffix that should be used when naming the BASELINE variant's resources.
+	// Default is "baseline".
+	Suffix string `json:"suffix"`
+}
+
+type TrafficSplitMethod string
+
+const (
+	TrafficSplitMethodPod   TrafficSplitMethod = "pod"
+	TrafficSplitMethodIstio TrafficSplitMethod = "istio"
+)
+
+type TrafficSplit struct {
+	Method TrafficSplitMethod `json:"method"`
 }
 
 // PiplineStage represents a single stage of a pipeline.
@@ -84,7 +104,7 @@ type PipelineStage struct {
 	K8sStageCleanStageOptions      *K8sStageCleanStageOptions
 	K8sBaselineRolloutStageOptions *K8sBaselineRolloutStageOptions
 	K8sBaselineCleanStageOptions   *K8sBaselineCleanStageOptions
-	K8sTrafficRouteStageOptions    *K8sTrafficRouteStageOptions
+	K8sTrafficSplitStageOptions    *K8sTrafficSplitStageOptions
 	TerraformPlanStageOptions      *TerraformPlanStageOptions
 	TerraformApplyStageOptions     *TerraformApplyStageOptions
 }
@@ -149,10 +169,10 @@ func (s *PipelineStage) UnmarshalJSON(data []byte) error {
 		if len(gs.With) > 0 {
 			err = json.Unmarshal(gs.With, s.K8sBaselineCleanStageOptions)
 		}
-	case model.StageK8sTrafficRoute:
-		s.K8sTrafficRouteStageOptions = &K8sTrafficRouteStageOptions{}
+	case model.StageK8sTrafficSplit:
+		s.K8sTrafficSplitStageOptions = &K8sTrafficSplitStageOptions{}
 		if len(gs.With) > 0 {
-			err = json.Unmarshal(gs.With, s.K8sTrafficRouteStageOptions)
+			err = json.Unmarshal(gs.With, s.K8sTrafficSplitStageOptions)
 		}
 	case model.StageTerraformPlan:
 		s.TerraformPlanStageOptions = &TerraformPlanStageOptions{}
@@ -192,11 +212,6 @@ type K8sStageRolloutStageOptions struct {
 	// Or a string suffixed by "%" to indicate an percantage value compared to the pod number of PRIMARY.
 	// Default is 1 pod.
 	Replicas Replicas `json:"replicas"`
-	// Suffix that should be used when naming the STAGE resources.
-	// Default is "stage".
-	Suffix string
-	// If true the service resource for the STAGE will be created.
-	WithService bool
 }
 
 // K8sStageCleanStageOptions contains all configurable values for a K8S_STAGE_CLEAN stage.
@@ -210,24 +225,21 @@ type K8sBaselineRolloutStageOptions struct {
 	// Or a string suffixed by "%" to indicate an percantage value compared to the pod number of PRIMARY.
 	// Default is 1 pod.
 	Replicas Replicas `json:"replicas"`
-	// Suffix that should be used when naming the BASELINE resources.
-	// Default is "baseline".
-	Suffix string
-	// If true the service resource for the BASELINE will be created.
-	WithService bool
 }
 
 // K8sBaselineCleanStageOptions contains all configurable values for a K8S_BASELINE_CLEAN stage.
 type K8sBaselineCleanStageOptions struct {
 }
 
-// K8sTrafficRouteStageOptions contains all configurable values for a K8S_TRAFFIC_ROUTE stage.
-type K8sTrafficRouteStageOptions struct {
-	// The percentage of traffic should be routed to PRIMARY.
+// K8sTrafficSplitStageOptions contains all configurable values for a K8S_TRAFFIC_SPLIT stage.
+type K8sTrafficSplitStageOptions struct {
+	// Which variant should receive all traffic.
+	All string `json:"all"`
+	// The percentage of traffic should be routed to PRIMARY variant.
 	Primary int `json:"primary"`
-	// The percentage of traffic should be routed to STAGE.
+	// The percentage of traffic should be routed to STAGE variant.
 	Stage int `json:"stage"`
-	// The percentage of traffic should be routed to BASELINE.
+	// The percentage of traffic should be routed to BASELINE variant.
 	Baseline int `json:"baseline"`
 }
 
@@ -306,7 +318,7 @@ type InputHelmChart struct {
 	Version    string `json:"version"`
 }
 
-type K8sDeployTarget struct {
+type K8sWorkload struct {
 	Kind string `json:"kind"`
 	Name string `json:"name"`
 }

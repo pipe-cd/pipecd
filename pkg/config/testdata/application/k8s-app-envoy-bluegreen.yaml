@@ -6,11 +6,11 @@ spec:
       - name: K8S_STAGE_ROLLOUT
         with:
           replicas: 100%
-      - name: K8S_TRAFFIC_ROUTE
+      - name: K8S_TRAFFIC_SPLIT
         with:
-          target: stage
+          all: stage
       - name: K8S_PRIMARY_UPDATE
-      - name: K8S_TRAFFIC_ROUTE
+      - name: K8S_TRAFFIC_SPLIT
         with:
-          target: primary
+          all: primary
       - name: K8S_STAGE_CLEAN

@@ -8,11 +8,13 @@ spec:
       - name: K8S_STAGE_ROLLOUT
         with:
           replicas: 100%
-      - name: K8S_TRAFFIC_ROUTE
+      - name: K8S_TRAFFIC_SPLIT
         with:
           stage: 100
       - name: K8S_PRIMARY_UPDATE
-      - name: K8S_TRAFFIC_ROUTE
+      - name: K8S_TRAFFIC_SPLIT
         with:
           primary: 100
       - name: K8S_STAGE_CLEAN
+  trafficSplit:
+    method: pod

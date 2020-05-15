@@ -15,11 +15,13 @@ spec:
           threshold: 2
           https:
             - useTemplate: http_stage_check
-      - name: K8S_TRAFFIC_ROUTE
+      - name: K8S_TRAFFIC_SPLIT
         with:
-          target: stage
+          all: stage
       - name: K8S_PRIMARY_UPDATE
-      - name: K8S_TRAFFIC_ROUTE
+      - name: K8S_TRAFFIC_SPLIT
         with:
-          target: primary
+          all: primary
       - name: K8S_STAGE_CLEAN
+  trafficSplit:
+    method: pod
