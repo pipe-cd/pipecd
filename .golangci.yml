@@ -2,7 +2,6 @@ linters:
   disable-all: true
   enable:
     - dogsled
-    - godot
     - gofmt
     - goimports
     - gomodguard
