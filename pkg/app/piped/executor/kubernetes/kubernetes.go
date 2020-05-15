@@ -66,7 +66,7 @@ func Register(r registerer) {
 
 func (e *Executor) Execute(ctx context.Context) model.StageStatus {
 	var (
-		appDirPath       = filepath.Join(e.WorkingDir, e.Deployment.GitPath.Path)
+		appDirPath       = filepath.Join(e.RepoDir, e.Deployment.GitPath.Path)
 		templatingMethod = determineTemplatingMethod(e.DeploymentConfig, appDirPath)
 	)
 	e.Logger.Info("start executing kubernetes stage",
@@ -121,7 +121,6 @@ func determineTemplatingMethod(deploymentConfig *config.Config, appDirPath strin
 			return TemplatingMethodHelm
 		}
 	}
-
 	if _, err := os.Stat(filepath.Join(appDirPath, kustomizationFileName)); err == nil {
 		return TemplatingMethodKustomize
 	}

@@ -296,12 +296,13 @@ type AnalysisHTTP struct {
 }
 
 type KubernetesDeploymentInput struct {
-	Manifests      []string        `json:"manifests"`
-	KubectlVersion string          `json:"kubectlVersion"`
-	HelmChart      *InputHelmChart `json:"helmChart"`
-	HelmValueFiles []string        `json:"helmValueFiles"`
-	HelmVersion    string          `json:"helmVersion"`
-	Dependencies   []string        `json:"dependencies,omitempty"`
+	Manifests        []string        `json:"manifests"`
+	KubectlVersion   string          `json:"kubectlVersion"`
+	KustomizeVersion string          `json:"kustomizeVersion"`
+	HelmChart        *InputHelmChart `json:"helmChart"`
+	HelmValueFiles   []string        `json:"helmValueFiles"`
+	HelmVersion      string          `json:"helmVersion"`
+	Dependencies     []string        `json:"dependencies,omitempty"`
 }
 
 type TerraformDeploymentInput struct {

@@ -193,6 +193,8 @@ func (s *scheduler) executeStage(ctx context.Context, ps *model.PipelineStage) (
 		DeploymentConfig:  s.deploymentConfig,
 		PipedConfig:       s.pipedConfig,
 		WorkingDir:        s.workingDir,
+		RepoDir:           filepath.Join(s.workingDir, workspaceGitRepoDirName),
+		StageWorkingDir:   filepath.Join(s.workingDir, workspaceStagesDirName, ps.Id),
 		CommandStore:      s.commandStore,
 		LogPersister:      lp,
 		MetadataPersister: s.metadataPersister.StageMetadataPersister(s.deployment.Id, ps.Id),

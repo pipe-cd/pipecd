@@ -53,6 +53,8 @@ type Input struct {
 	DeploymentConfig  *config.Config
 	PipedConfig       *config.PipedSpec
 	WorkingDir        string
+	RepoDir           string
+	StageWorkingDir   string
 	CommandStore      CommandStore
 	LogPersister      LogPersister
 	MetadataPersister MetadataPersister
