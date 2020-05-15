@@ -12,6 +12,4 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-// Package installer installs and manages the needed tools
-// such as kubectl, helm... for executing tasks in pipeline.
-package installer
+package toolregistry

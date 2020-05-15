@@ -22,6 +22,7 @@ import (
 	"go.uber.org/zap"
 
 	"github.com/kapetaniosci/pipe/pkg/app/piped/executor"
+	"github.com/kapetaniosci/pipe/pkg/app/piped/toolregistry"
 	"github.com/kapetaniosci/pipe/pkg/config"
 	"github.com/kapetaniosci/pipe/pkg/model"
 )
@@ -73,6 +74,8 @@ func (e *Executor) Execute(ctx context.Context) model.StageStatus {
 		zap.String("app-dir-path", appDirPath),
 		zap.String("templating-method", string(templatingMethod)),
 	)
+
+	_, _, _ = toolregistry.DefaultRegistry().Kubectl(ctx, "1.8.0")
 
 	return model.StageStatus_STAGE_SUCCESS
 }

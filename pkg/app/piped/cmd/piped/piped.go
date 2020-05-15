@@ -38,6 +38,7 @@ import (
 	"github.com/kapetaniosci/pipe/pkg/app/piped/commandstore"
 	"github.com/kapetaniosci/pipe/pkg/app/piped/deploymentcontroller"
 	"github.com/kapetaniosci/pipe/pkg/app/piped/deploymenttrigger"
+	"github.com/kapetaniosci/pipe/pkg/app/piped/toolregistry"
 	"github.com/kapetaniosci/pipe/pkg/cli"
 	"github.com/kapetaniosci/pipe/pkg/config"
 	"github.com/kapetaniosci/pipe/pkg/git"
@@ -62,6 +63,7 @@ type piped struct {
 	masterURL  string
 	namespace  string
 
+	binDir           string
 	useFakeAPIClient bool
 	gracePeriod      time.Duration
 }
@@ -70,6 +72,7 @@ func NewCommand() *cobra.Command {
 	p := &piped{
 		apiAddress:  "pipecd-api:9091",
 		adminPort:   9085,
+		binDir:      "/usr/local/piped",
 		gracePeriod: 30 * time.Second,
 	}
 	cmd := &cobra.Command{
@@ -91,6 +94,7 @@ func NewCommand() *cobra.Command {
 	cmd.Flags().StringVar(&p.masterURL, "master", p.masterURL, "The address of the Kubernetes API server. Overrides any value in kubeconfig. Only required if out-of-cluster.")
 	cmd.Flags().StringVar(&p.namespace, "namespace", p.namespace, "The namespace where this piped is running.")
 
+	cmd.Flags().StringVar(&p.binDir, "bin-dir", p.binDir, "The path to directory where to install needed tools such as kubectl, helm, kustomize.")
 	cmd.Flags().BoolVar(&p.useFakeAPIClient, "use-fake-api-client", p.useFakeAPIClient, "Whether the fake api client should be used instead of the real one or not.")
 	cmd.Flags().DurationVar(&p.gracePeriod, "grace-period", p.gracePeriod, "How long to wait for graceful shutdown.")
 
@@ -109,6 +113,12 @@ func (p *piped) run(ctx context.Context, t cli.Telemetry) error {
 	cfg, err := p.loadConfig()
 	if err != nil {
 		t.Logger.Error("failed to load piped configuration", zap.Error(err))
+		return err
+	}
+
+	// Initialize default tool registry.
+	if err := toolregistry.InitDefaultRegistry(p.binDir, t.Logger); err != nil {
+		t.Logger.Error("failed to initialize default tool registry", zap.Error(err))
 		return err
 	}
 

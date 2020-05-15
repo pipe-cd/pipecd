@@ -1,0 +1,21 @@
+load("@io_bazel_rules_go//go:def.bzl", "go_library", "go_test")
+
+go_library(
+    name = "go_default_library",
+    srcs = [
+        "install.go",
+        "registry.go",
+        "tool_darwin.go",
+        "tool_linux.go",
+    ],
+    importpath = "github.com/kapetaniosci/pipe/pkg/app/piped/toolregistry",
+    visibility = ["//visibility:public"],
+    deps = ["@org_uber_go_zap//:go_default_library"],
+)
+
+go_test(
+    name = "go_default_test",
+    size = "small",
+    srcs = ["registry_test.go"],
+    embed = [":go_default_library"],
+)

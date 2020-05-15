@@ -20,5 +20,6 @@ bazelisk run --run_under="cd $PWD && " //cmd/piped:piped -- piped \
 --piped-id=local-dev-piped \
 --piped-key-file=.dev/piped.key \
 --kube-config=$HOME/.kube/config \
+--bin-dir=/tmp/piped-bin \
 --config-file=pkg/config/testdata/piped/dev-config.yaml
 ```
