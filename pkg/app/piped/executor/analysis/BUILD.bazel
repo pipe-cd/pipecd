@@ -7,6 +7,11 @@ go_library(
     visibility = ["//visibility:public"],
     deps = [
         "//pkg/app/piped/executor:go_default_library",
+        "//pkg/app/piped/executor/analysis/metricsprovider:go_default_library",
+        "//pkg/app/piped/executor/analysis/metricsprovider/datadog:go_default_library",
+        "//pkg/app/piped/executor/analysis/metricsprovider/prometheus:go_default_library",
+        "//pkg/config:go_default_library",
         "//pkg/model:go_default_library",
+        "@org_uber_go_zap//:go_default_library",
     ],
 )
