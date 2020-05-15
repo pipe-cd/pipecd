@@ -37,37 +37,54 @@ type fakeClient struct {
 
 // NewClient returns a new fakeClient.
 func NewClient(logger *zap.Logger) *fakeClient {
+	var (
+		projectID   = "local-project"
+		envID       = "dev"
+		pipedID     = "local-piped"
+		apps        = make(map[string]*model.Application, 0)
+		k8sAppNames = map[string]bool{
+			"analysis-by-http":       false,
+			"analysis-by-log":        false,
+			"analysis-by-metrics":    false,
+			"analysis-with-baseline": false,
+			"bluegreen":              false,
+			"canary":                 false,
+			"helm-local-chart":       false,
+			"helm-remote-chart":      false,
+			"helm-remote-git-chart":  false,
+			"kustomize-local-base":   false,
+			"kustomize-remote-base":  false,
+			"mesh-envoy-bluegreen":   false,
+			"mesh-envoy-canary":      false,
+			"mesh-istio-bluegreen":   false,
+			"mesh-istio-canary":      false,
+			"multi-steps-canary":     false,
+			"simple":                 true,
+			" wait-approval":         false,
+		}
+	)
+
+	// Register applications for pipe-debug repository.
+	for name, enable := range k8sAppNames {
+		apps[name] = &model.Application{
+			Id:        projectID + "/" + envID + "/" + name,
+			Name:      name,
+			EnvId:     envID,
+			PipedId:   pipedID,
+			ProjectId: projectID,
+			Kind:      model.ApplicationKind_KUBERNETES,
+			GitPath: &model.ApplicationGitPath{
+				RepoId: "pipe-debug",
+				Path:   "k8s/" + name,
+			},
+			Disabled: !enable,
+		}
+	}
+
 	return &fakeClient{
-		applications: map[string]*model.Application{
-			"pipe-debug-k8s-app": {
-				Id:        "local-dev-project/dev/pipe-debug-k8s-app",
-				Name:      "pipe-debug-k8s-app",
-				EnvId:     "dev",
-				PipedId:   "local-dev-piped",
-				ProjectId: "local-dev-project",
-				Kind:      model.ApplicationKind_KUBERNETES,
-				GitPath: &model.ApplicationGitPath{
-					RepoId: "pipe-debug",
-					Path:   "k8s/plain-yaml-app",
-				},
-				Disabled: false,
-			},
-			"pipe-debug-2-k8s-app": {
-				Id:        "local-dev-project/dev/pipe-debug-2-k8s-app",
-				Name:      "pipe-debug-2-k8s-app",
-				EnvId:     "dev",
-				PipedId:   "local-dev-piped",
-				ProjectId: "local-dev-project",
-				Kind:      model.ApplicationKind_KUBERNETES,
-				GitPath: &model.ApplicationGitPath{
-					RepoId: "pipe-debug-2",
-					Path:   "k8s/plain-yaml-app",
-				},
-				Disabled: true,
-			},
-		},
-		deployments: map[string]*model.Deployment{},
-		logger:      logger.Named("fake-piped-client"),
+		applications: apps,
+		deployments:  map[string]*model.Deployment{},
+		logger:       logger.Named("fake-piped-client"),
 	}
 }
 
