@@ -16,9 +16,51 @@ package datastore
 
 import (
 	"context"
-
-	"github.com/kapetaniosci/pipe/pkg/model"
+	"errors"
 )
+
+type OrderDirection int
+
+const (
+	// Asc sorts results from smallest to largest.
+	Asc OrderDirection = iota + 1
+	// Desc sorts results from largest to smallest.
+	Desc
+)
+
+var (
+	ErrNotFound      = errors.New("not found")
+	ErrAlreadyExists = errors.New("already exists")
+	ErrInvalidCursor = errors.New("invalid cursor")
+	ErrIteratorDone  = errors.New("iterator is done")
+	ErrInternal      = errors.New("internal")
+	ErrUnimplemented = errors.New("unimplemented")
+)
+
+type Factory func() interface{}
+type Updater func(interface{}) error
+
+type DataStore interface {
+	// Find finds the documents matched given criteria.
+	Find(ctx context.Context, kind string, opts ListOptions) (Iterator, error)
+	// Get gets one document specified with ID, and unmarshal it to typed struct.
+	// If the document can not be found in datastore, ErrNotFound will be returned.
+	Get(ctx context.Context, kind, id string, entity interface{}) error
+	// Create saves a new entity to the datastore.
+	// If an entity with the same ID is already existing, ErrAlreadyExists will be returned.
+	Create(ctx context.Context, kind, id string, entity interface{}) error
+	// Put saves the entity into the datastore with a given id and kind.
+	// Put does not check the existence of the entity with same ID.
+	Put(ctx context.Context, kind, id string, entity interface{}) error
+	// Update updates an existing entity in the datastore.
+	// If updating entity was not found in the datastore, ErrNotFound will be returned.
+	Update(ctx context.Context, kind, id string, factory Factory, updater Updater) error
+}
+
+type Iterator interface {
+	Next(dst interface{}) error
+	Cursor() (string, error)
+}
 
 type ListFilter struct {
 	Field    string
@@ -26,43 +68,19 @@ type ListFilter struct {
 	Value    interface{}
 }
 
+type Order struct {
+	Field     string
+	Direction OrderDirection
+}
+
 type ListOptions struct {
 	Page     int
 	PageSize int
 	Filters  []ListFilter
+	Orders   []Order
+	Cursor   string
 }
 
-type ProjectStore interface {
-	AddProject(ctx context.Context, proj *model.Project) error
-	ListProjects(ctx context.Context, opts ListOptions) ([]model.Project, error)
-}
-
-type EnvironmentStore interface {
-	AddEnvironment(ctx context.Context, proj *model.Environment) error
-	ListEnvironments(ctx context.Context, opts ListOptions) ([]model.Environment, error)
-}
-
-type PipedStore interface {
-	AddPiped(ctx context.Context, proj *model.Piped) error
-	ListPipeds(ctx context.Context, opts ListOptions) ([]model.Piped, error)
-}
-
-type ApplicationStore interface {
-	AddApplication(ctx context.Context, app *model.Application) error
-	DisableApplication(ctx context.Context, id string) error
-	ListApplications(ctx context.Context, opts ListOptions) ([]model.Application, error)
-}
-
-type DeploymentStore interface {
-	ListDeployments(ctx context.Context, opts ListOptions) ([]model.Deployment, error)
-}
-
-type CommandStore interface {
-	AddCommand(ctx context.Context, proj *model.Command) error
-	ListCommands(ctx context.Context, opts ListOptions) ([]model.Command, error)
-}
-
-type PipedStatsStore interface {
-	AddPipedStats(ctx context.Context, proj *model.PipedStats) error
-	ListPipedStatss(ctx context.Context, opts ListOptions) ([]model.PipedStats, error)
+type backend struct {
+	ds DataStore
 }

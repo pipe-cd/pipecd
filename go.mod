@@ -4,6 +4,7 @@ go 1.14
 
 require (
 	cloud.google.com/go v0.56.0
+	cloud.google.com/go/firestore v1.2.0
 	cloud.google.com/go/storage v1.6.0
 	contrib.go.opencensus.io/exporter/prometheus v0.1.0
 	contrib.go.opencensus.io/exporter/stackdriver v0.12.4

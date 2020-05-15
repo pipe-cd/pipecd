@@ -2,7 +2,16 @@ load("@io_bazel_rules_go//go:def.bzl", "go_library")
 
 go_library(
     name = "go_default_library",
-    srcs = ["datastore.go"],
+    srcs = [
+        "application.go",
+        "commandstore.go",
+        "datastore.go",
+        "deploymentstore.go",
+        "environmentstore.go",
+        "pipedstatsstore.go",
+        "pipedstore.go",
+        "projectstore.go",
+    ],
     importpath = "github.com/kapetaniosci/pipe/pkg/datastore",
     visibility = ["//visibility:public"],
     deps = ["//pkg/model:go_default_library"],
