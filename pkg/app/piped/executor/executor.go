@@ -31,18 +31,6 @@ type Executor interface {
 
 type Factory func(in Input) Executor
 
-type Input struct {
-	Stage             *model.PipelineStage
-	Deployment        *model.Deployment
-	DeploymentConfig  *config.Config
-	PipedConfig       *config.PipedSpec
-	WorkingDir        string
-	CommandStore      CommandStore
-	LogPersister      LogPersister
-	MetadataPersister MetadataPersister
-	Logger            *zap.Logger
-}
-
 type LogPersister interface {
 	Append(log string, s model.LogSeverity)
 	AppendInfo(log string)
@@ -57,4 +45,16 @@ type MetadataPersister interface {
 type CommandStore interface {
 	ListDeploymentCommands(deploymentID string) []*model.Command
 	ReportCommandHandled(ctx context.Context, c *model.Command, status model.CommandStatus, metadata map[string]string) error
+}
+
+type Input struct {
+	Stage             *model.PipelineStage
+	Deployment        *model.Deployment
+	DeploymentConfig  *config.Config
+	PipedConfig       *config.PipedSpec
+	WorkingDir        string
+	CommandStore      CommandStore
+	LogPersister      LogPersister
+	MetadataPersister MetadataPersister
+	Logger            *zap.Logger
 }

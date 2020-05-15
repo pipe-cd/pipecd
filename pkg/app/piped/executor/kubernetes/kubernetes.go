@@ -16,14 +16,30 @@ package kubernetes
 
 import (
 	"context"
+	"os"
+	"path/filepath"
+
+	"go.uber.org/zap"
 
 	"github.com/kapetaniosci/pipe/pkg/app/piped/executor"
+	"github.com/kapetaniosci/pipe/pkg/config"
 	"github.com/kapetaniosci/pipe/pkg/model"
 )
 
 const (
-	variantLabel   = "pipecd.dev/variant"
-	managedByLabel = "pipecd.dev/managed-by"
+	variantLabel    = "pipecd.dev/variant"
+	managedByLabel  = "pipecd.dev/managed-by"
+	commitHashLabel = "pipecd.dev/commit-hash"
+
+	kustomizationFileName = "kustomization.yaml"
+)
+
+type TemplatingMethod string
+
+const (
+	TemplatingMethodHelm      TemplatingMethod = "helm"
+	TemplatingMethodKustomize TemplatingMethod = "kustomize"
+	TemplatingMethodNone      TemplatingMethod = "none"
 )
 
 type Executor struct {
@@ -49,15 +65,23 @@ func Register(r registerer) {
 }
 
 func (e *Executor) Execute(ctx context.Context) model.StageStatus {
-	e.Logger.Info("start executing kubernetes stage")
+	var (
+		appDirPath       = filepath.Join(e.WorkingDir, e.Deployment.GitPath.Path)
+		templatingMethod = determineTemplatingMethod(e.DeploymentConfig, appDirPath)
+	)
+	e.Logger.Info("start executing kubernetes stage",
+		zap.String("app-dir-path", appDirPath),
+		zap.String("templating-method", string(templatingMethod)),
+	)
+
 	return model.StageStatus_STAGE_SUCCESS
 }
 
-func (e *Executor) ensureStageRollOut() error {
+func (e *Executor) ensureStageRollout() error {
 	return nil
 }
 
-func (e *Executor) ensureStageRemove() error {
+func (e *Executor) ensureStageClean() error {
 	return nil
 }
 
@@ -69,10 +93,37 @@ func (e *Executor) ensureBaselineRollout() error {
 	return nil
 }
 
-func (e *Executor) ensureBaselineRemove() error {
+func (e *Executor) ensureBaselineClean() error {
 	return nil
 }
 
 func (e *Executor) ensureTrafficSplit() error {
 	return nil
+}
+
+func (e *Executor) generateStageManifests() error {
+	return nil
+}
+
+func (e *Executor) generateBaselineManifests() error {
+	return nil
+}
+
+func determineTemplatingMethod(deploymentConfig *config.Config, appDirPath string) TemplatingMethod {
+	if input := deploymentConfig.KubernetesDeploymentSpec.Input; input != nil {
+		if input.HelmChart != nil {
+			return TemplatingMethodHelm
+		}
+		if len(input.HelmValueFiles) > 0 {
+			return TemplatingMethodHelm
+		}
+		if input.HelmVersion != "" {
+			return TemplatingMethodHelm
+		}
+	}
+
+	if _, err := os.Stat(filepath.Join(appDirPath, kustomizationFileName)); err == nil {
+		return TemplatingMethodKustomize
+	}
+	return TemplatingMethodNone
 }

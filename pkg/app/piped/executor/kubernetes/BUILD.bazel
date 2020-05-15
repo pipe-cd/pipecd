@@ -2,11 +2,19 @@ load("@io_bazel_rules_go//go:def.bzl", "go_library")
 
 go_library(
     name = "go_default_library",
-    srcs = ["kubernetes.go"],
+    srcs = [
+        "helmctl.go",
+        "kubectl.go",
+        "kubernetes.go",
+        "kustomizectl.go",
+    ],
     importpath = "github.com/kapetaniosci/pipe/pkg/app/piped/executor/kubernetes",
     visibility = ["//visibility:public"],
     deps = [
         "//pkg/app/piped/executor:go_default_library",
+        "//pkg/config:go_default_library",
         "//pkg/model:go_default_library",
+        "@io_k8s_client_go//rest:go_default_library",
+        "@org_uber_go_zap//:go_default_library",
     ],
 )
