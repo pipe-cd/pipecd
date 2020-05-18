@@ -24,13 +24,13 @@ import (
 // KubernetesDeploymentSpec represents a deployment configuration for Kubernetes application.
 type KubernetesDeploymentSpec struct {
 	// Selector is a list of labels used to query all resources of this application.
-	Selector        map[string]string          `json:"selector"`
-	Input           *KubernetesDeploymentInput `json:"input"`
-	Pipeline        *DeploymentPipeline        `json:"pipeline"`
-	StageVariant    *StageVariant              `json:"stageVariant"`
-	BaselineVariant *BaselineVariant           `json:"baselineVariant"`
-	TrafficSplit    TrafficSplit               `json:"trafficSplit"`
-	Destination     string                     `json:"destination"`
+	Selector        map[string]string         `json:"selector"`
+	Input           KubernetesDeploymentInput `json:"input"`
+	Pipeline        *DeploymentPipeline       `json:"pipeline"`
+	StageVariant    *StageVariant             `json:"stageVariant"`
+	BaselineVariant *BaselineVariant          `json:"baselineVariant"`
+	TrafficSplit    TrafficSplit              `json:"trafficSplit"`
+	Destination     string                    `json:"destination"`
 }
 
 // Validate returns an error if any wrong configuration value was found.
@@ -40,9 +40,9 @@ func (s *KubernetesDeploymentSpec) Validate() error {
 
 // TerraformDeploymentSpec represents a deployment configuration for Terraform application.
 type TerraformDeploymentSpec struct {
-	Input       *TerraformDeploymentInput `json:"input"`
-	Pipeline    *DeploymentPipeline       `json:"pipeline"`
-	Destination string                    `json:"destination"`
+	Input       TerraformDeploymentInput `json:"input"`
+	Pipeline    *DeploymentPipeline      `json:"pipeline"`
+	Destination string                   `json:"destination"`
 }
 
 // Validate returns an error if any wrong configuration value was found.

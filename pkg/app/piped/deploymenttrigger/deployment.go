@@ -126,7 +126,7 @@ func buildDeploment(app *model.Application, cfg *config.Config, branch string, c
 		Kind:          app.Kind,
 		Trigger: &model.DeploymentTrigger{
 			Commit: &model.Commit{
-				Revision:  commit.Hash,
+				Hash:      commit.Hash,
 				Message:   commit.Message,
 				Author:    commit.Author,
 				Branch:    branch,

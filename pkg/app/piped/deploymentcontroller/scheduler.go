@@ -234,7 +234,7 @@ func (s *scheduler) ensurePreparing(ctx context.Context, lp logpersister.StageLo
 			appID       = s.deployment.ApplicationId
 			repoID      = s.deployment.GitPath.RepoId
 			repoDirPath = filepath.Join(s.workingDir, workspaceGitRepoDirName)
-			revision    = s.deployment.Trigger.Commit.Revision
+			revision    = s.deployment.Trigger.Commit.Hash
 			repoCfg, ok = s.pipedConfig.GetRepository(repoID)
 		)
 		if !ok {

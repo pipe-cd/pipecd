@@ -15,6 +15,11 @@
 package kubernetes
 
 import (
+	"bytes"
+	"context"
+	"fmt"
+	"os/exec"
+
 	"k8s.io/client-go/rest"
 )
 
@@ -23,14 +28,24 @@ type Kubectl struct {
 	config   *rest.Config
 }
 
-func (c *Kubectl) apply() error {
+func (c *Kubectl) Apply(ctx context.Context, manifests []Manifest) error {
+	for i := range manifests {
+		data, err := manifests[i].YamlBytes()
+		if err != nil {
+			return err
+		}
+		cmd := exec.CommandContext(ctx, "kubectl", "apply", "-f", "-")
+		r := bytes.NewReader(data)
+		cmd.Stdin = r
+
+		out, err := cmd.CombinedOutput()
+		if err != nil {
+			return fmt.Errorf("failed to apply: %s (%v)", string(out), err)
+		}
+	}
 	return nil
 }
 
-func (c *Kubectl) applyFromFiles() error {
-	return nil
-}
-
-func (c *Kubectl) delete() error {
+func (c *Kubectl) Delete() error {
 	return nil
 }

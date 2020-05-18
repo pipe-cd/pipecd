@@ -29,9 +29,12 @@ import (
 )
 
 const (
-	variantLabel    = "pipecd.dev/variant"
-	managedByLabel  = "pipecd.dev/managed-by"
-	commitHashLabel = "pipecd.dev/commit-hash"
+	variantLabel        = "pipecd.dev/variant"              // Variant name: stage, baseline
+	managedByLabel      = "pipecd.dev/managed-by"           // Always be pipecd
+	commitHashLabel     = "pipecd.dev/commit-hash"          // Hash value of the deployed commit.
+	resourceKeyLabel    = "pipecd.dev/resource-key"         // E.g. apps/v1/Deployment/namespace/demo-app
+	originalAPIKeyLabel = "pipecd.dev/original-api-version" // E.g. apps/v1
+	managedByValue      = "piped"
 
 	kustomizationFileName = "kustomization.yaml"
 )
@@ -49,6 +52,7 @@ type Executor struct {
 
 	appDirPath       string
 	templatingMethod TemplatingMethod
+	config           *config.KubernetesDeploymentSpec
 }
 
 type registerer interface {
@@ -70,6 +74,12 @@ func Register(r registerer) {
 }
 
 func (e *Executor) Execute(ctx context.Context) model.StageStatus {
+	e.config = e.DeploymentConfig.KubernetesDeploymentSpec
+	if e.config == nil {
+		e.LogPersister.AppendError(fmt.Sprintf("Malformed deployment configuration: missing KubernetesDeploymentSpec"))
+		return model.StageStatus_STAGE_FAILURE
+	}
+
 	e.appDirPath = filepath.Join(e.RepoDir, e.Deployment.GitPath.Path)
 	e.templatingMethod = determineTemplatingMethod(e.DeploymentConfig, e.appDirPath)
 
@@ -94,14 +104,45 @@ func (e *Executor) Execute(ctx context.Context) model.StageStatus {
 		return e.ensureTrafficSplit(ctx)
 	}
 
-	e.Logger.Error("unsupported stage for kubernetes application",
-		zap.String("stage-name", e.Stage.Name),
-	)
+	e.LogPersister.AppendError(fmt.Sprintf("Unsupported stage %s for kubernetes application", e.Stage.Name))
 	return model.StageStatus_STAGE_FAILURE
 }
 
 func (e *Executor) ensurePrimaryUpdate(ctx context.Context) model.StageStatus {
-	_, _ = e.findKubectl(ctx, "1.8.0")
+	kubectl, err := e.findKubectl(ctx, e.config.Input.KubectlVersion)
+	if err != nil {
+		e.LogPersister.AppendError(fmt.Sprintf("Unabled to find kubectl (%v)", err))
+		return model.StageStatus_STAGE_FAILURE
+	}
+
+	manifests, err := e.loadManifests(ctx)
+	if err != nil {
+		e.LogPersister.AppendError(fmt.Sprintf("Unabled to load kubernetes manifests (%v)", err))
+		return model.StageStatus_STAGE_FAILURE
+	}
+
+	if len(manifests) == 0 {
+		e.LogPersister.AppendError("No kubernetes manifests to handle")
+		return model.StageStatus_STAGE_FAILURE
+	}
+
+	for _, m := range manifests {
+		m.AddAnnotations(map[string]string{
+			variantLabel:        "primary",
+			managedByLabel:      managedByValue,
+			originalAPIKeyLabel: m.APIVersion,
+			resourceKeyLabel:    m.ResourceKey(),
+			commitHashLabel:     e.Deployment.Trigger.Commit.Hash,
+		})
+	}
+
+	e.LogPersister.AppendInfo(fmt.Sprintf("Updating %d primary resources", len(manifests)))
+	if err = kubectl.Apply(ctx, manifests); err != nil {
+		e.LogPersister.AppendError(fmt.Sprintf("Unabled to update primary variant (%v)", err))
+		return model.StageStatus_STAGE_FAILURE
+	}
+
+	e.LogPersister.AppendSuccess(fmt.Sprintf("Successfully updated %d primary resources", len(manifests)))
 	return model.StageStatus_STAGE_SUCCESS
 }
 
@@ -180,16 +221,15 @@ func (e *Executor) findHelm(ctx context.Context, version string) (*Helmctl, erro
 }
 
 func determineTemplatingMethod(deploymentConfig *config.Config, appDirPath string) TemplatingMethod {
-	if input := deploymentConfig.KubernetesDeploymentSpec.Input; input != nil {
-		if input.HelmChart != nil {
-			return TemplatingMethodHelm
-		}
-		if len(input.HelmValueFiles) > 0 {
-			return TemplatingMethodHelm
-		}
-		if input.HelmVersion != "" {
-			return TemplatingMethodHelm
-		}
+	input := deploymentConfig.KubernetesDeploymentSpec.Input
+	if input.HelmChart != nil {
+		return TemplatingMethodHelm
+	}
+	if len(input.HelmValueFiles) > 0 {
+		return TemplatingMethodHelm
+	}
+	if input.HelmVersion != "" {
+		return TemplatingMethodHelm
 	}
 	if _, err := os.Stat(filepath.Join(appDirPath, kustomizationFileName)); err == nil {
 		return TemplatingMethodKustomize

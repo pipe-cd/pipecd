@@ -91,7 +91,7 @@ message PipelineStage {
 }
 
 message Commit {
-    string revision = 1 [(validate.rules).string.min_len = 1];
+    string hash = 1 [(validate.rules).string.min_len = 1];
     string message = 2 [(validate.rules).string.min_len = 1];
     string author = 3 [(validate.rules).string.min_len = 1];
     string branch = 4 [(validate.rules).string.min_len = 1];

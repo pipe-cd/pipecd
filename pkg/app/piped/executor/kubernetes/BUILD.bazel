@@ -7,6 +7,7 @@ go_library(
         "kubectl.go",
         "kubernetes.go",
         "kustomizectl.go",
+        "manifest.go",
     ],
     importpath = "github.com/kapetaniosci/pipe/pkg/app/piped/executor/kubernetes",
     visibility = ["//visibility:public"],
@@ -15,7 +16,9 @@ go_library(
         "//pkg/app/piped/toolregistry:go_default_library",
         "//pkg/config:go_default_library",
         "//pkg/model:go_default_library",
+        "@io_k8s_apimachinery//pkg/apis/meta/v1/unstructured:go_default_library",
         "@io_k8s_client_go//rest:go_default_library",
+        "@io_k8s_sigs_yaml//:go_default_library",
         "@org_uber_go_zap//:go_default_library",
     ],
 )
