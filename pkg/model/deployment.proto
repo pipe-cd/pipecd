@@ -53,10 +53,14 @@ message Deployment {
 
     DeploymentTrigger trigger = 7 [(validate.rules).message.required = true];
     ApplicationGitPath git_path = 8 [(validate.rules).message.required = true];
-    DeploymentStatus status = 9 [(validate.rules).enum.defined_only = true];
+    // Simple description about what this deployment does.
+    // e.g. Scale from 10 to 100 replicas.
+    // e.g. Update image from v1.5.0 to v1.6.0.
+    string description = 9;
+    DeploymentStatus status = 10 [(validate.rules).enum.defined_only = true];
     // The human-readable description why the deployment is at current status.
-    string status_description = 10;
-    repeated PipelineStage stages = 11;
+    string status_description = 11;
+    repeated PipelineStage stages = 12;
 
     int64 completed_at = 100 [(validate.rules).int64.gte = 0];
     int64 created_at = 101 [(validate.rules).int64.gt = 0];
