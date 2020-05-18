@@ -16,6 +16,7 @@ package kubernetes
 
 import (
 	"context"
+	"fmt"
 	"os"
 	"path/filepath"
 
@@ -45,6 +46,9 @@ const (
 
 type Executor struct {
 	executor.Input
+
+	appDirPath       string
+	templatingMethod TemplatingMethod
 }
 
 type registerer interface {
@@ -66,50 +70,113 @@ func Register(r registerer) {
 }
 
 func (e *Executor) Execute(ctx context.Context) model.StageStatus {
-	var (
-		appDirPath       = filepath.Join(e.RepoDir, e.Deployment.GitPath.Path)
-		templatingMethod = determineTemplatingMethod(e.DeploymentConfig, appDirPath)
-	)
+	e.appDirPath = filepath.Join(e.RepoDir, e.Deployment.GitPath.Path)
+	e.templatingMethod = determineTemplatingMethod(e.DeploymentConfig, e.appDirPath)
+
 	e.Logger.Info("start executing kubernetes stage",
-		zap.String("app-dir-path", appDirPath),
-		zap.String("templating-method", string(templatingMethod)),
+		zap.String("stage-name", e.Stage.Name),
+		zap.String("app-dir-path", e.appDirPath),
+		zap.String("templating-method", string(e.templatingMethod)),
 	)
 
-	_, _, _ = toolregistry.DefaultRegistry().Kubectl(ctx, "1.8.0")
+	switch model.Stage(e.Stage.Name) {
+	case model.StageK8sPrimaryUpdate:
+		return e.ensurePrimaryUpdate(ctx)
+	case model.StageK8sStageRollout:
+		return e.ensureStageRollout(ctx)
+	case model.StageK8sStageClean:
+		return e.ensureStageClean(ctx)
+	case model.StageK8sBaselineRollout:
+		return e.ensureBaselineRollout(ctx)
+	case model.StageK8sBaselineClean:
+		return e.ensureBaselineClean(ctx)
+	case model.StageK8sTrafficSplit:
+		return e.ensureTrafficSplit(ctx)
+	}
 
+	e.Logger.Error("unsupported stage for kubernetes application",
+		zap.String("stage-name", e.Stage.Name),
+	)
+	return model.StageStatus_STAGE_FAILURE
+}
+
+func (e *Executor) ensurePrimaryUpdate(ctx context.Context) model.StageStatus {
+	_, _ = e.findKubectl(ctx, "1.8.0")
 	return model.StageStatus_STAGE_SUCCESS
 }
 
-func (e *Executor) ensureStageRollout() error {
-	return nil
+func (e *Executor) ensureStageRollout(ctx context.Context) model.StageStatus {
+	return model.StageStatus_STAGE_SUCCESS
 }
 
-func (e *Executor) ensureStageClean() error {
-	return nil
+func (e *Executor) ensureStageClean(ctx context.Context) model.StageStatus {
+	return model.StageStatus_STAGE_SUCCESS
 }
 
-func (e *Executor) ensurePrimaryUpdate() error {
-	return nil
+func (e *Executor) ensureBaselineRollout(ctx context.Context) model.StageStatus {
+	return model.StageStatus_STAGE_SUCCESS
 }
 
-func (e *Executor) ensureBaselineRollout() error {
-	return nil
+func (e *Executor) ensureBaselineClean(ctx context.Context) model.StageStatus {
+	return model.StageStatus_STAGE_SUCCESS
 }
 
-func (e *Executor) ensureBaselineClean() error {
-	return nil
+func (e *Executor) ensureTrafficSplit(ctx context.Context) model.StageStatus {
+	return model.StageStatus_STAGE_SUCCESS
 }
 
-func (e *Executor) ensureTrafficSplit() error {
-	return nil
+func (e *Executor) ensureRollback(ctx context.Context) model.StageStatus {
+	return model.StageStatus_STAGE_SUCCESS
 }
 
-func (e *Executor) generateStageManifests() error {
-	return nil
+func (e *Executor) generateStageManifests(ctx context.Context) model.StageStatus {
+	return model.StageStatus_STAGE_SUCCESS
 }
 
-func (e *Executor) generateBaselineManifests() error {
-	return nil
+func (e *Executor) generateBaselineManifests(ctx context.Context) model.StageStatus {
+	return model.StageStatus_STAGE_SUCCESS
+}
+
+func (e *Executor) findKubectl(ctx context.Context, version string) (*Kubectl, error) {
+	path, installed, err := toolregistry.DefaultRegistry().Kubectl(ctx, version)
+	if err != nil {
+		e.LogPersister.AppendError(fmt.Sprintf("Failed while installing kubectl %s (%v)", version, err))
+		return nil, err
+	}
+	if installed {
+		e.LogPersister.AppendInfo(fmt.Sprintf("Kubectl %s has just been installed because of no pre-installed binary for that version", version))
+	}
+	return &Kubectl{
+		execPath: path,
+	}, nil
+}
+
+func (e *Executor) findKustomize(ctx context.Context, version string) (*Kustomizectl, error) {
+	path, installed, err := toolregistry.DefaultRegistry().Kustomize(ctx, version)
+	if err != nil {
+		e.LogPersister.AppendError(fmt.Sprintf("Failed while installing kustomize %s (%v)", version, err))
+		return nil, err
+	}
+	if installed {
+		e.LogPersister.AppendInfo(fmt.Sprintf("Kustomize %s has just been installed because of no pre-installed binary for that version", version))
+	}
+	return &Kustomizectl{
+		execPath: path,
+	}, nil
+}
+
+func (e *Executor) findHelm(ctx context.Context, version string) (*Helmctl, error) {
+	path, installed, err := toolregistry.DefaultRegistry().Helm(ctx, version)
+	if err != nil {
+		e.LogPersister.AppendError(fmt.Sprintf("Failed while installing helm %s (%v)", version, err))
+		return nil, err
+	}
+	if installed {
+		e.LogPersister.AppendInfo(fmt.Sprintf("Helm %s has just been installed because of no pre-installed binary for that version", version))
+	}
+	return &Helmctl{
+		execPath: path,
+	}, nil
 }
 
 func determineTemplatingMethod(deploymentConfig *config.Config, appDirPath string) TemplatingMethod {

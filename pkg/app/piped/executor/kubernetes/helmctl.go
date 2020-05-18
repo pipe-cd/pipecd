@@ -15,7 +15,7 @@
 package kubernetes
 
 type Helmctl struct {
-	exePath string
+	execPath string
 }
 
 func (c *Helmctl) template() error {

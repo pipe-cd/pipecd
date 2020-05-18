@@ -15,7 +15,7 @@
 package kubernetes
 
 type Kustomizectl struct {
-	exePath string
+	execPath string
 }
 
 func (c *Kustomizectl) template() error {

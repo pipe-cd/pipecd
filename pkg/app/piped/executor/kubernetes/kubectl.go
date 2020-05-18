@@ -19,8 +19,8 @@ import (
 )
 
 type Kubectl struct {
-	exePath string
-	config  *rest.Config
+	execPath string
+	config   *rest.Config
 }
 
 func (c *Kubectl) apply() error {
