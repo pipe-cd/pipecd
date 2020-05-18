@@ -33,13 +33,23 @@ type Manifest struct {
 	Kind       string
 	Namespace  string
 	Name       string
+	u          *unstructured.Unstructured
+}
 
-	originalData []byte
-	unstructured *unstructured.Unstructured
+func (m Manifest) Duplicate(name string) Manifest {
+	u := m.u.DeepCopy()
+	u.SetName(name)
+	return Manifest{
+		APIVersion: m.APIVersion,
+		Kind:       m.Kind,
+		Namespace:  m.Namespace,
+		Name:       name,
+		u:          u,
+	}
 }
 
 func (m Manifest) YamlBytes() ([]byte, error) {
-	return yaml.Marshal(m.unstructured)
+	return yaml.Marshal(m.u)
 }
 
 func (m Manifest) AddAnnotations(annotations map[string]string) {
@@ -47,7 +57,7 @@ func (m Manifest) AddAnnotations(annotations map[string]string) {
 		return
 	}
 
-	annos := m.unstructured.GetAnnotations()
+	annos := m.u.GetAnnotations()
 	if annos != nil {
 		for k, v := range annotations {
 			annos[k] = v
@@ -55,7 +65,46 @@ func (m Manifest) AddAnnotations(annotations map[string]string) {
 	} else {
 		annos = annotations
 	}
-	m.unstructured.SetAnnotations(annos)
+	m.u.SetAnnotations(annos)
+}
+
+func (m Manifest) SetReplicas(replicas int) {
+	unstructured.SetNestedField(m.u.Object, replicas, "spec", "replicas")
+}
+
+func (m Manifest) AddVariantLabel(variant string) error {
+	var (
+		matchLabelsFields = []string{"spec", "selector", "matchLabels"}
+		labelsFields      = []string{"spec", "template", "metadata", "labels"}
+	)
+
+	// Add variant label into selector.matchLabels.
+	matchLabels, _, err := unstructured.NestedStringMap(m.u.Object, matchLabelsFields...)
+	if err != nil {
+		return err
+	}
+	if matchLabels == nil {
+		matchLabels = make(map[string]string, 1)
+	}
+	matchLabels[PredefinedLabelVariant] = variant
+	if err := unstructured.SetNestedStringMap(m.u.Object, matchLabels, matchLabelsFields...); err != nil {
+		return err
+	}
+
+	// Add variant label into template label.
+	labels, _, err := unstructured.NestedStringMap(m.u.Object, labelsFields...)
+	if err != nil {
+		return err
+	}
+	if labels == nil {
+		labels = make(map[string]string, 1)
+	}
+	labels[PredefinedLabelVariant] = variant
+	if err := unstructured.SetNestedStringMap(m.u.Object, labels, labelsFields...); err != nil {
+		return err
+	}
+
+	return nil
 }
 
 func (m Manifest) ResourceKey() string {
@@ -140,12 +189,11 @@ func loadManifestsFromYAMLFile(path string) ([]Manifest, error) {
 			return nil, err
 		}
 		manifests = append(manifests, Manifest{
-			APIVersion:   obj.GetAPIVersion(),
-			Kind:         obj.GetKind(),
-			Namespace:    obj.GetNamespace(),
-			Name:         obj.GetName(),
-			originalData: []byte(part),
-			unstructured: &obj,
+			APIVersion: obj.GetAPIVersion(),
+			Kind:       obj.GetKind(),
+			Namespace:  obj.GetNamespace(),
+			Name:       obj.GetName(),
+			u:          &obj,
 		})
 	}
 	return manifests, nil

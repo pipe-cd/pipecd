@@ -29,33 +29,6 @@ import (
 	"github.com/kapetaniosci/pipe/pkg/model"
 )
 
-var (
-	kubernetesDefaultPipeline = &config.DeploymentPipeline{
-		Stages: []config.PipelineStage{
-			{
-				Name: model.StageK8sPrimaryUpdate,
-				Desc: "Update primary to new version",
-			},
-		},
-	}
-	terraformDefaultPipeline = &config.DeploymentPipeline{
-		Stages: []config.PipelineStage{
-			{
-				Name: model.StageTerraformPlan,
-				Desc: "Terraform Plan",
-			},
-			{
-				Name: model.StageWaitApproval,
-				Desc: "Wait for an approval",
-			},
-			{
-				Name: model.StageTerraformApply,
-				Desc: "Terraform Apply",
-			},
-		},
-	}
-)
-
 func (t *DeploymentTrigger) triggerDeployment(ctx context.Context, app *model.Application, repo git.Repo, branch string, commit git.Commit) error {
 	// Load deployment configuration at the commit.
 	cfg, err := t.loadDeploymentConfiguration(ctx, repo.GetPath(), app)
@@ -145,11 +118,10 @@ func buildDeploment(app *model.Application, cfg *config.Config, branch string, c
 }
 
 func buildKubernetesPipelineStages(cfg *config.Config, now time.Time) ([]*model.PipelineStage, error) {
-	p := cfg.KubernetesDeploymentSpec.Pipeline
-	if p == nil {
-		p = kubernetesDefaultPipeline
-	}
-	stages := make([]*model.PipelineStage, 0, len(p.Stages))
+	var (
+		p      = cfg.KubernetesDeploymentSpec.GetPipeline()
+		stages = make([]*model.PipelineStage, 0, len(p.Stages))
+	)
 
 	// Append all configured stages.
 	for i, s := range p.Stages {
@@ -173,11 +145,10 @@ func buildKubernetesPipelineStages(cfg *config.Config, now time.Time) ([]*model.
 }
 
 func buildTerraformPipelineStages(cfg *config.Config, now time.Time) ([]*model.PipelineStage, error) {
-	p := cfg.TerraformDeploymentSpec.Pipeline
-	if p == nil {
-		p = terraformDefaultPipeline
-	}
-	stages := make([]*model.PipelineStage, 0, len(p.Stages))
+	var (
+		p      = cfg.TerraformDeploymentSpec.GetPipeline()
+		stages = make([]*model.PipelineStage, 0, len(p.Stages))
+	)
 
 	// Append all configured stages.
 	for i, s := range p.Stages {

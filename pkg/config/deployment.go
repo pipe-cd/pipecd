@@ -21,6 +21,33 @@ import (
 	"github.com/kapetaniosci/pipe/pkg/model"
 )
 
+var (
+	KubernetesDefaultPipeline = &DeploymentPipeline{
+		Stages: []PipelineStage{
+			{
+				Name: model.StageK8sPrimaryUpdate,
+				Desc: "Update primary to new version",
+			},
+		},
+	}
+	TerraformDefaultPipeline = &DeploymentPipeline{
+		Stages: []PipelineStage{
+			{
+				Name: model.StageTerraformPlan,
+				Desc: "Terraform Plan",
+			},
+			{
+				Name: model.StageWaitApproval,
+				Desc: "Wait for an approval",
+			},
+			{
+				Name: model.StageTerraformApply,
+				Desc: "Terraform Apply",
+			},
+		},
+	}
+)
+
 // KubernetesDeploymentSpec represents a deployment configuration for Kubernetes application.
 type KubernetesDeploymentSpec struct {
 	// Selector is a list of labels used to query all resources of this application.
@@ -33,6 +60,21 @@ type KubernetesDeploymentSpec struct {
 	Destination     string                    `json:"destination"`
 }
 
+func (s *KubernetesDeploymentSpec) GetPipeline() *DeploymentPipeline {
+	if s.Pipeline != nil {
+		return s.Pipeline
+	}
+	return KubernetesDefaultPipeline
+}
+
+func (s *KubernetesDeploymentSpec) GetStage(index int) (PipelineStage, bool) {
+	p := s.GetPipeline()
+	if index >= len(p.Stages) {
+		return PipelineStage{}, false
+	}
+	return p.Stages[index], true
+}
+
 // Validate returns an error if any wrong configuration value was found.
 func (s *KubernetesDeploymentSpec) Validate() error {
 	return nil
@@ -43,6 +85,21 @@ type TerraformDeploymentSpec struct {
 	Input       TerraformDeploymentInput `json:"input"`
 	Pipeline    *DeploymentPipeline      `json:"pipeline"`
 	Destination string                   `json:"destination"`
+}
+
+func (s *TerraformDeploymentSpec) GetPipeline() *DeploymentPipeline {
+	if s.Pipeline != nil {
+		return s.Pipeline
+	}
+	return TerraformDefaultPipeline
+}
+
+func (s *TerraformDeploymentSpec) GetStage(index int) (PipelineStage, bool) {
+	p := s.GetPipeline()
+	if index >= len(p.Stages) {
+		return PipelineStage{}, false
+	}
+	return p.Stages[index], true
 }
 
 // Validate returns an error if any wrong configuration value was found.
@@ -62,16 +119,16 @@ type DeploymentPipeline struct {
 }
 
 type StageVariant struct {
-	Workload *K8sWorkload `json:"workoad"`
-	Service  *K8sService  `json:"service"`
+	Workload K8sWorkload `json:"workload"`
+	Service  K8sService  `json:"service"`
 	// Suffix that should be used when naming the STAGE variant's resources.
 	// Default is "stage".
 	Suffix string `json:"suffix"`
 }
 
 type BaselineVariant struct {
-	Workload *K8sWorkload `json:"workoad"`
-	Service  *K8sService  `json:"service"`
+	Workload K8sWorkload `json:"workload"`
+	Service  K8sService  `json:"service"`
 	// Suffix that should be used when naming the BASELINE variant's resources.
 	// Default is "baseline".
 	Suffix string `json:"suffix"`
