@@ -7,6 +7,6 @@ var (
 )
 
 type Provider interface {
-	// RunQuery executes the query and converts the first result to float64
+	Type() string
 	RunQuery(query string) (float64, error)
 }

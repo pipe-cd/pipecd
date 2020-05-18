@@ -18,6 +18,7 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
+	"io/ioutil"
 	"time"
 
 	"go.uber.org/zap"
@@ -67,38 +68,25 @@ func (e *Executor) Execute(ctx context.Context) model.StageStatus {
 	defer cancel()
 
 	resultCh := make(chan providerResult)
-	// TODO: Use provider's identifier defined in piped-config instead of AnalysisMetrics.Provider.
-	//   Be sure to replace all `conf.Provider` with that.
-	//   https://github.com/kapetaniosci/pipe/blob/master/pkg/config/testdata/piped/piped-config.yaml#L33
+	// Run metrics queries
 	for _, m := range options.Metrics {
-		var provider metricsprovider.Provider
-		var err error
-		switch m.Provider {
-		case "prometheus":
-			provider, err = prometheus.NewProvider()
-			if err != nil {
-				return model.StageStatus_STAGE_FAILURE
-			}
-		case "datadog":
-			provider, err = datadog.NewProvider()
-			if err != nil {
-				return model.StageStatus_STAGE_FAILURE
-			}
-		default:
-			e.Logger.Error("unknown provider given")
+		provider, err := e.newMetricsProvider(&m)
+		if err != nil {
+			e.LogPersister.AppendError(err.Error())
 			continue
 		}
 		go e.runMetricsQuery(ctx, &m, provider, resultCh)
 	}
 	// TODO: Support metrics provider for log and http.
+	// Run log queries
 	/*	for _, _ = range options.Logs {
 
 		}
+		// Run http queries
 		for _, _ = range options.Https {
 
 		}
 	*/
-
 	var failureCount int
 LOOP:
 	for {
@@ -120,7 +108,52 @@ LOOP:
 	return model.StageStatus_STAGE_SUCCESS
 }
 
+// newMetricsProvider generates an appropriate metrics provider according to analysis metrics config.
+func (e *Executor) newMetricsProvider(metrics *config.AnalysisMetrics) (metricsprovider.Provider, error) {
+	// TODO: Address the case when using template
+	providerCfg, ok := e.PipedConfig.GetProvider(metrics.Provider)
+	if !ok {
+		return nil, fmt.Errorf("unknown provider name %s", metrics.Provider)
+	}
+
+	var provider metricsprovider.Provider
+	switch {
+	case providerCfg.Prometheus != nil:
+		cfg := providerCfg.Prometheus
+		username, err := ioutil.ReadFile(cfg.UsernameFile)
+		if err != nil {
+			return nil, err
+		}
+		password, err := ioutil.ReadFile(cfg.PasswordFile)
+		if err != nil {
+			return nil, err
+		}
+		provider, err = prometheus.NewProvider(cfg.Address, string(username), string(password))
+		if err != nil {
+			return nil, err
+		}
+	case providerCfg.Datadog != nil:
+		cfg := providerCfg.Datadog
+		apiKey, err := ioutil.ReadFile(cfg.APIKeyFile)
+		if err != nil {
+			return nil, err
+		}
+		applicationKey, err := ioutil.ReadFile(cfg.ApplicationKeyFile)
+		if err != nil {
+			return nil, err
+		}
+		provider, err = datadog.NewProvider(cfg.Address, string(apiKey), string(applicationKey))
+		if err != nil {
+			return nil, err
+		}
+	default:
+		return nil, fmt.Errorf("provider config not found")
+	}
+	return provider, nil
+}
+
 func (e *Executor) runMetricsQuery(ctx context.Context, cfg *config.AnalysisMetrics, provider metricsprovider.Provider, resultCh chan<- providerResult) {
+	// TODO: Address the case when using template
 	ticker := time.NewTicker(time.Duration(cfg.Interval))
 	defer ticker.Stop()
 	for {
@@ -135,7 +168,7 @@ func (e *Executor) runMetricsQuery(ctx context.Context, cfg *config.AnalysisMetr
 			success := e.evaluate(cfg.Expected, res)
 			resultCh <- providerResult{
 				success:  success,
-				provider: cfg.Provider,
+				provider: provider.Type(),
 			}
 
 		case <-ctx.Done():

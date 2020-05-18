@@ -19,10 +19,12 @@ import (
 	"time"
 )
 
+const ProviderType = "Prometheus"
+
 // Provider is a client for prometheus.
 type Provider struct {
 	timeout  time.Duration
-	url      url.URL
+	address  *url.URL
 	username string
 	password string
 }
@@ -39,8 +41,20 @@ type response struct {
 	}
 }
 
-func NewProvider() (*Provider, error) {
-	return &Provider{}, nil
+func NewProvider(address, username, password string) (*Provider, error) {
+	u, err := url.Parse(address)
+	if err != nil {
+		return nil, err
+	}
+	return &Provider{
+		address:  u,
+		username: username,
+		password: password,
+	}, nil
+}
+
+func (p *Provider) Type() string {
+	return ProviderType
 }
 
 // RunQuery executes the promQL query and returns the the first result as float64.

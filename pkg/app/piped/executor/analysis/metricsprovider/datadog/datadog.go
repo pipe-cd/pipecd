@@ -16,6 +16,8 @@ package datadog
 
 import "time"
 
+const ProviderType = "Datadog"
+
 // Provider is a client for datadog.
 type Provider struct {
 	metricsQueryEndpoint     string
@@ -27,8 +29,12 @@ type Provider struct {
 	fromDelta      int64
 }
 
-func NewProvider() (*Provider, error) {
-	return &Provider{}, nil
+func NewProvider(address, apiKey, applicationKey string) (*Provider, error) {
+	return &Provider{
+		metricsQueryEndpoint: address,
+		apiKey:               apiKey,
+		applicationKey:       applicationKey,
+	}, nil
 }
 
 // response represents a response from datadog server.
@@ -36,6 +42,10 @@ type response struct {
 	Series []struct {
 		Pointlist [][]float64 `json:"pointlist"`
 	}
+}
+
+func (p *Provider) Type() string {
+	return ProviderType
 }
 
 // RunQuery executes the datadog query against datadog endpoint

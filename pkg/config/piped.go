@@ -50,6 +50,16 @@ func (s *PipedSpec) GetRepository(id string) (PipedRepository, bool) {
 	return PipedRepository{}, false
 }
 
+// GetProvider finds and returns an Analysis Provider config whose name is the given string.
+func (s *PipedSpec) GetProvider(name string) (AnalysisProvider, bool) {
+	for _, p := range s.AnalysisProviders {
+		if p.Name == name {
+			return p, true
+		}
+	}
+	return AnalysisProvider{}, false
+}
+
 type PipedGit struct {
 	Username string `json:"username"`
 	Email    string `json:"email"`
@@ -106,5 +116,23 @@ type PipedTerraformAWS struct {
 }
 
 type AnalysisProvider struct {
-	Name string `json:"name"`
+	Name       string                      `json:"name"`
+	Prometheus *AnalysisProviderPrometheus `json:"prometheus"`
+	Datadog    *AnalysisProviderDatadog    `json:"datadog"`
+}
+
+type AnalysisProviderPrometheus struct {
+	Address string `json:"address"`
+	// The path to the username file.
+	UsernameFile string `json:"usernameFile"`
+	// The path to the password file.
+	PasswordFile string `json:"passwordFile"`
+}
+
+type AnalysisProviderDatadog struct {
+	Address string `json:"address"`
+	// The path to the api key file.
+	APIKeyFile string `json:"apiKeyFile"`
+	// The path to the application key file.
+	ApplicationKeyFile string `json:"applicationKeyFile"`
 }
