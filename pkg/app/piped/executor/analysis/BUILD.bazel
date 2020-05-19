@@ -7,6 +7,8 @@ go_library(
     visibility = ["//visibility:public"],
     deps = [
         "//pkg/app/piped/executor:go_default_library",
+        "//pkg/app/piped/executor/analysis/log:go_default_library",
+        "//pkg/app/piped/executor/analysis/log/stackdriver:go_default_library",
         "//pkg/app/piped/executor/analysis/metric:go_default_library",
         "//pkg/app/piped/executor/analysis/metric/datadog:go_default_library",
         "//pkg/app/piped/executor/analysis/metric/prometheus:go_default_library",

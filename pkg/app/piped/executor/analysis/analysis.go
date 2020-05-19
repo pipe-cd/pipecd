@@ -24,6 +24,8 @@ import (
 	"go.uber.org/zap"
 
 	"github.com/kapetaniosci/pipe/pkg/app/piped/executor"
+	"github.com/kapetaniosci/pipe/pkg/app/piped/executor/analysis/log"
+	"github.com/kapetaniosci/pipe/pkg/app/piped/executor/analysis/log/stackdriver"
 	"github.com/kapetaniosci/pipe/pkg/app/piped/executor/analysis/metric"
 	"github.com/kapetaniosci/pipe/pkg/app/piped/executor/analysis/metric/datadog"
 	"github.com/kapetaniosci/pipe/pkg/app/piped/executor/analysis/metric/prometheus"
@@ -75,18 +77,27 @@ func (e *Executor) Execute(ctx context.Context) model.StageStatus {
 			e.LogPersister.AppendError(err.Error())
 			continue
 		}
-		go e.runMetricsQuery(ctx, &m, provider, resultCh)
+		go e.runQuery(ctx, time.Duration(m.Interval), provider.Type(), func() (bool, error) {
+			return provider.RunQuery(m.Query, m.Expected)
+		}, resultCh)
 	}
-	// TODO: Support metrics provider for log and http.
 	// Run log queries
-	/*	for _, _ = range options.Logs {
-
+	for _, l := range options.Logs {
+		provider, err := e.newLogProvider(&l)
+		if err != nil {
+			e.LogPersister.AppendError(err.Error())
+			continue
 		}
-		// Run http queries
-		for _, _ = range options.Https {
+		go e.runQuery(ctx, time.Duration(l.Interval), provider.Type(), func() (bool, error) {
+			return provider.RunQuery(l.Query, l.Threshold)
+		}, resultCh)
+	}
+	// TODO: Make HTTP analysis part of metrics provider.
+	for range options.Https {
 
-		}
-	*/
+	}
+
+	// Start watching the result of queries.
 	var failureCount int
 LOOP:
 	for {
@@ -152,14 +163,41 @@ func (e *Executor) newMetricsProvider(metrics *config.AnalysisMetrics) (metric.P
 	return provider, nil
 }
 
-func (e *Executor) runMetricsQuery(ctx context.Context, cfg *config.AnalysisMetrics, provider metric.Provider, resultCh chan<- providerResult) {
+// newLogProvider generates an appropriate log provider according to log metrics config.
+func (e *Executor) newLogProvider(analysisLog *config.AnalysisLog) (log.Provider, error) {
 	// TODO: Address the case when using template
-	ticker := time.NewTicker(time.Duration(cfg.Interval))
+	providerCfg, ok := e.PipedConfig.GetProvider(analysisLog.Provider)
+	if !ok {
+		return nil, fmt.Errorf("unknown provider name %s", analysisLog.Provider)
+	}
+
+	var provider log.Provider
+	switch {
+	case providerCfg.Stackdriver != nil:
+		cfg := providerCfg.Stackdriver
+		sa, err := ioutil.ReadFile(cfg.ServiceAccountFile)
+		if err != nil {
+			return nil, err
+		}
+		provider, err = stackdriver.NewProvider(sa)
+		if err != nil {
+			return nil, err
+		}
+
+	default:
+		return nil, fmt.Errorf("provider config not found")
+	}
+	return provider, nil
+}
+
+func (e *Executor) runQuery(ctx context.Context, interval time.Duration, providerType string, run func() (bool, error), resultCh chan<- providerResult) {
+	// TODO: Address the case when using template
+	ticker := time.NewTicker(interval)
 	defer ticker.Stop()
 	for {
 		select {
 		case <-ticker.C:
-			success, err := provider.RunQuery(cfg.Query, cfg.Expected)
+			success, err := run()
 			if err != nil {
 				e.Logger.Error("failed to run query", zap.Error(err))
 				// TODO: Decide how to handle query failures.
@@ -167,7 +205,7 @@ func (e *Executor) runMetricsQuery(ctx context.Context, cfg *config.AnalysisMetr
 			}
 			resultCh <- providerResult{
 				success:  success,
-				provider: provider.Type(),
+				provider: providerType,
 			}
 
 		case <-ctx.Done():

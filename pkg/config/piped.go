@@ -116,9 +116,10 @@ type PipedTerraformAWS struct {
 }
 
 type AnalysisProvider struct {
-	Name       string                      `json:"name"`
-	Prometheus *AnalysisProviderPrometheus `json:"prometheus"`
-	Datadog    *AnalysisProviderDatadog    `json:"datadog"`
+	Name        string                       `json:"name"`
+	Prometheus  *AnalysisProviderPrometheus  `json:"prometheus"`
+	Datadog     *AnalysisProviderDatadog     `json:"datadog"`
+	Stackdriver *AnalysisProviderStackdriver `json:"stackdriver"`
 }
 
 type AnalysisProviderPrometheus struct {
@@ -135,4 +136,9 @@ type AnalysisProviderDatadog struct {
 	APIKeyFile string `json:"apiKeyFile"`
 	// The path to the application key file.
 	ApplicationKeyFile string `json:"applicationKeyFile"`
+}
+
+type AnalysisProviderStackdriver struct {
+	// The path to the service account file.
+	ServiceAccountFile string `json:"serviceAccountFile"`
 }
