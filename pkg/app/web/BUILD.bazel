@@ -66,6 +66,7 @@ webpack(
         "api_client",
         "base.html",
         "compile",
+        "webpack.common.js",
         "webpack.config.js",
         "@npm//:node_modules",
     ],
