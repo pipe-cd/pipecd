@@ -24,9 +24,9 @@ import (
 	"go.uber.org/zap"
 
 	"github.com/kapetaniosci/pipe/pkg/app/piped/executor"
-	"github.com/kapetaniosci/pipe/pkg/app/piped/executor/analysis/metricsprovider"
-	"github.com/kapetaniosci/pipe/pkg/app/piped/executor/analysis/metricsprovider/datadog"
-	"github.com/kapetaniosci/pipe/pkg/app/piped/executor/analysis/metricsprovider/prometheus"
+	"github.com/kapetaniosci/pipe/pkg/app/piped/executor/analysis/metric"
+	"github.com/kapetaniosci/pipe/pkg/app/piped/executor/analysis/metric/datadog"
+	"github.com/kapetaniosci/pipe/pkg/app/piped/executor/analysis/metric/prometheus"
 	"github.com/kapetaniosci/pipe/pkg/config"
 	"github.com/kapetaniosci/pipe/pkg/model"
 )
@@ -109,14 +109,14 @@ LOOP:
 }
 
 // newMetricsProvider generates an appropriate metrics provider according to analysis metrics config.
-func (e *Executor) newMetricsProvider(metrics *config.AnalysisMetrics) (metricsprovider.Provider, error) {
+func (e *Executor) newMetricsProvider(metrics *config.AnalysisMetrics) (metric.Provider, error) {
 	// TODO: Address the case when using template
 	providerCfg, ok := e.PipedConfig.GetProvider(metrics.Provider)
 	if !ok {
 		return nil, fmt.Errorf("unknown provider name %s", metrics.Provider)
 	}
 
-	var provider metricsprovider.Provider
+	var provider metric.Provider
 	switch {
 	case providerCfg.Prometheus != nil:
 		cfg := providerCfg.Prometheus
@@ -152,20 +152,19 @@ func (e *Executor) newMetricsProvider(metrics *config.AnalysisMetrics) (metricsp
 	return provider, nil
 }
 
-func (e *Executor) runMetricsQuery(ctx context.Context, cfg *config.AnalysisMetrics, provider metricsprovider.Provider, resultCh chan<- providerResult) {
+func (e *Executor) runMetricsQuery(ctx context.Context, cfg *config.AnalysisMetrics, provider metric.Provider, resultCh chan<- providerResult) {
 	// TODO: Address the case when using template
 	ticker := time.NewTicker(time.Duration(cfg.Interval))
 	defer ticker.Stop()
 	for {
 		select {
 		case <-ticker.C:
-			res, err := provider.RunQuery(cfg.Query)
+			success, err := provider.RunQuery(cfg.Query, cfg.Expected)
 			if err != nil {
 				e.Logger.Error("failed to run query", zap.Error(err))
 				// TODO: Decide how to handle query failures.
 				continue
 			}
-			success := e.evaluate(cfg.Expected, res)
 			resultCh <- providerResult{
 				success:  success,
 				provider: provider.Type(),
@@ -204,11 +203,6 @@ func (e *Executor) getStageOptions() (*config.AnalysisStageOptions, error) {
 	}
 
 	return stageConfig.AnalysisStageOptions, nil
-}
-
-// TODO: Implement to evaluate metrics provider result
-func (e *Executor) evaluate(expected string, result float64) bool {
-	return true
 }
 
 // saveQueryCount stores query count into metadata persister in json format.

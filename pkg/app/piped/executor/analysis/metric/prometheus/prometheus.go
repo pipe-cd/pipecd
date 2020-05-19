@@ -57,7 +57,6 @@ func (p *Provider) Type() string {
 	return ProviderType
 }
 
-// RunQuery executes the promQL query and returns the the first result as float64.
-func (p *Provider) RunQuery(query string) (float64, error) {
-	return 0, nil
+func (p *Provider) RunQuery(query, expected string) (bool, error) {
+	return false, nil
 }

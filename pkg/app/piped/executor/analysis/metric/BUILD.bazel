@@ -2,7 +2,7 @@ load("@io_bazel_rules_go//go:def.bzl", "go_library")
 
 go_library(
     name = "go_default_library",
-    srcs = ["prometheus.go"],
-    importpath = "github.com/kapetaniosci/pipe/pkg/app/piped/executor/analysis/metricsprovider/prometheus",
+    srcs = ["provider.go"],
+    importpath = "github.com/kapetaniosci/pipe/pkg/app/piped/executor/analysis/metric",
     visibility = ["//visibility:public"],
 )
