@@ -2,7 +2,7 @@ load("@io_bazel_rules_go//go:def.bzl", "go_library", "go_test")
 
 go_library(
     name = "go_default_library",
-    srcs = ["applicationstore.go"],
+    srcs = ["store.go"],
     importpath = "github.com/kapetaniosci/pipe/pkg/app/piped/applicationstore",
     visibility = ["//visibility:public"],
     deps = [
@@ -16,6 +16,6 @@ go_library(
 go_test(
     name = "go_default_test",
     size = "small",
-    srcs = ["applicationstore_test.go"],
+    srcs = ["store_test.go"],
     embed = [":go_default_library"],
 )
