@@ -51,10 +51,10 @@ func IsCompletedStage(status StageStatus) bool {
 // CanUpdateDeploymentStatus checks whether the deployment can transit to the given status.
 func CanUpdateDeploymentStatus(cur, next DeploymentStatus) bool {
 	switch next {
-	case DeploymentStatus_DEPLOYMENT_TRIGGERED:
-		return cur <= DeploymentStatus_DEPLOYMENT_TRIGGERED
 	case DeploymentStatus_DEPLOYMENT_PENDING:
 		return cur <= DeploymentStatus_DEPLOYMENT_PENDING
+	case DeploymentStatus_DEPLOYMENT_PLANNED:
+		return cur <= DeploymentStatus_DEPLOYMENT_PLANNED
 	case DeploymentStatus_DEPLOYMENT_RUNNING:
 		return cur <= DeploymentStatus_DEPLOYMENT_RUNNING
 	case DeploymentStatus_DEPLOYMENT_SUCCESS:

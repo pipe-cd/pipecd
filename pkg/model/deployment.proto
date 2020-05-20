@@ -20,15 +20,25 @@ option go_package = "github.com/kapetaniosci/pipe/pkg/model";
 import "validate/validate.proto";
 import "pkg/model/application.proto";
 
+// DeploymentStatus represents the current status of a deployment.
 enum DeploymentStatus {
-    DEPLOYMENT_TRIGGERED = 0;
-    DEPLOYMENT_PENDING = 1;
+    // DEPLOYMENT_PENDING means the deployment has just been triggered but still in the queue.
+    // The stages for generated at this time are just temporary and not fixed.
+    DEPLOYMENT_PENDING = 0;
+    // DEPLOYMENT_PLANNED means the deployment has just been decided the running pipeline.
+    // At this time, the stages are fixed and not changed later.
+    DEPLOYMENT_PLANNED = 1;
+    // DEPLOYMENT_RUNNING means the controller is controlling this deployment.
     DEPLOYMENT_RUNNING = 2;
+    // DEPLOYMENT_SUCCESS means the deployment was completed successfully.
     DEPLOYMENT_SUCCESS = 3;
+    // DEPLOYMENT_FAILURE means the deployment was completed with a failure.
     DEPLOYMENT_FAILURE = 4;
+    // DEPLOYMENT_CANCELLED means the deployment was cancelled by someone.
     DEPLOYMENT_CANCELLED = 5;
 }
 
+// StageStatus represents the current status of a stage of a deployment.
 enum StageStatus {
     STAGE_NOT_STARTED_YET = 0;
     STAGE_RUNNING = 1;

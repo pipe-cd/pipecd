@@ -109,7 +109,7 @@ func buildDeploment(app *model.Application, cfg *config.Config, branch string, c
 			Timestamp: now.Unix(),
 		},
 		GitPath:   app.GitPath,
-		Status:    model.DeploymentStatus_DEPLOYMENT_TRIGGERED,
+		Status:    model.DeploymentStatus_DEPLOYMENT_PENDING,
 		Stages:    stages,
 		CreatedAt: now.Unix(),
 		UpdatedAt: now.Unix(),
