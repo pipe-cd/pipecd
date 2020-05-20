@@ -19,6 +19,7 @@ import (
 	"fmt"
 	"os"
 	"path/filepath"
+	"strings"
 
 	"go.uber.org/zap"
 
@@ -41,6 +42,9 @@ const (
 	stageVariant          = "stage"
 	baselineVariant       = "baseline"
 	kustomizationFileName = "kustomization.yaml"
+
+	metadataKeyAddedStageResources    = "k8s-stage-resources"
+	metadataKeyAddedBaselineResources = "k8s-baseline-resources"
 )
 
 type TemplatingMethod string
@@ -88,7 +92,7 @@ func (e *Executor) Execute(ctx context.Context) model.StageStatus {
 		return model.StageStatus_STAGE_FAILURE
 	}
 
-	stageConfig, ok := e.config.GetStage(int(e.Stage.Index))
+	stageConfig, ok := e.config.GetStage(e.Stage.Index)
 	if !ok {
 		e.LogPersister.AppendError(fmt.Sprintf("Unabled to find the stage configuration"))
 		return model.StageStatus_STAGE_FAILURE
@@ -191,6 +195,17 @@ func (e *Executor) ensureStageRollout(ctx context.Context) model.StageStatus {
 		return model.StageStatus_STAGE_FAILURE
 	}
 
+	// Store will adding resource keys into metadata for cleaning later.
+	addedResources := make([]string, 0, len(stageManifests))
+	for _, m := range stageManifests {
+		addedResources = append(addedResources, m.ResourceKey())
+	}
+	metadata := strings.Join(addedResources, ",")
+	err = e.MetadataStore.Set(ctx, metadataKeyAddedStageResources, metadata)
+	if err != nil {
+		e.LogPersister.AppendError(fmt.Sprintf("Unabled to save deployment metadata (%v)", err))
+	}
+
 	e.LogPersister.AppendInfo("Rolling out STAGE variant")
 	if err = kubectl.Apply(ctx, stageManifests); err != nil {
 		e.LogPersister.AppendError(fmt.Sprintf("Unabled to rollout STAGE variant (%v)", err))
@@ -202,6 +217,50 @@ func (e *Executor) ensureStageRollout(ctx context.Context) model.StageStatus {
 }
 
 func (e *Executor) ensureStageClean(ctx context.Context) model.StageStatus {
+	kubectl, err := e.findKubectl(ctx, e.config.Input.KubectlVersion)
+	if err != nil {
+		e.LogPersister.AppendError(fmt.Sprintf("Unabled to find kubectl (%v)", err))
+		return model.StageStatus_STAGE_FAILURE
+	}
+
+	value, ok := e.MetadataStore.Get(metadataKeyAddedStageResources)
+	if !ok {
+		// We have to re-render manifests to check stage resources.
+		value = ""
+	}
+	var (
+		resources    = strings.Split(value, ",")
+		workloadKeys = make([]ResourceKey, 0)
+		serviceKeys  = make([]ResourceKey, 0)
+	)
+	for _, r := range resources {
+		key, _ := DecodeResourceKey(r)
+		switch key.Kind {
+		case "Deployment", "ReplicaSet", "DaemonSet", "Pod":
+			workloadKeys = append(workloadKeys, key)
+		default:
+			serviceKeys = append(serviceKeys, key)
+		}
+	}
+
+	// We delete the service first to close all incoming connections.
+	for _, k := range serviceKeys {
+		if err := kubectl.Delete(ctx, k); err != nil {
+			e.LogPersister.AppendError(fmt.Sprintf("Unabled to delete resource %s (%v)", k, err))
+			continue
+		}
+		e.LogPersister.AppendInfo(fmt.Sprintf("Deleted resource %s", k))
+	}
+
+	// Next, delete all workloads.
+	for _, k := range workloadKeys {
+		if err := kubectl.Delete(ctx, k); err != nil {
+			e.LogPersister.AppendError(fmt.Sprintf("Unabled to delete workload resource %s (%v)", k, err))
+			continue
+		}
+		e.LogPersister.AppendInfo(fmt.Sprintf("Deleted workload resource %s", k))
+	}
+
 	return model.StageStatus_STAGE_SUCCESS
 }
 
@@ -252,15 +311,12 @@ func (e *Executor) generateStageManifests(ctx context.Context, manifests []Manif
 		if workloadName != "" && m.Name != workloadName {
 			return nil
 		}
-		var (
-			name     = m.Name + "-" + suffix
-			manifest = m.Duplicate(name)
-		)
+		m = m.Duplicate(m.Name + "-" + suffix)
 		if err := m.AddVariantLabel(stageVariant); err != nil {
 			return err
 		}
 		m.SetReplicas(workloadReplicas)
-		stageManifests = append(stageManifests, manifest)
+		stageManifests = append(stageManifests, m)
 		foundWorkload = true
 		return nil
 	}
@@ -275,7 +331,7 @@ func (e *Executor) generateStageManifests(ctx context.Context, manifests []Manif
 		return nil, fmt.Errorf("unabled to detect workload manifest for STAGE variant")
 	}
 
-	for _, m := range manifests {
+	for _, m := range stageManifests {
 		m.Name = m.Name + "-" + suffix
 		m.AddAnnotations(map[string]string{
 			PredefinedLabelManagedBy:      managedByPiped,

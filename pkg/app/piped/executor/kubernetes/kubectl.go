@@ -46,6 +46,15 @@ func (c *Kubectl) Apply(ctx context.Context, manifests []Manifest) error {
 	return nil
 }
 
-func (c *Kubectl) Delete() error {
+func (c *Kubectl) Delete(ctx context.Context, r ResourceKey) error {
+	args := []string{"delete", r.Kind, r.Name}
+	if r.Namespace != "" {
+		args = append(args, "-n", r.Namespace)
+	}
+	cmd := exec.CommandContext(ctx, "kubectl", args...)
+	out, err := cmd.CombinedOutput()
+	if err != nil {
+		return fmt.Errorf("failed to delete: %s (%v)", string(out), err)
+	}
 	return nil
 }

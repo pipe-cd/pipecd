@@ -195,3 +195,13 @@ func ToApplicationKind(k Kind) (model.ApplicationKind, bool) {
 	}
 	return model.ApplicationKind_KUBERNETES, false
 }
+
+func (c *Config) GetPipelineable() (Pipelineable, bool) {
+	switch c.Kind {
+	case KindKubernetesApp:
+		return c.KubernetesDeploymentSpec, true
+	case KindTerraformApp:
+		return c.TerraformDeploymentSpec, true
+	}
+	return nil, false
+}

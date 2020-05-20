@@ -48,7 +48,7 @@ func NewClient(logger *zap.Logger) *fakeClient {
 			"analysis-by-metrics":    false,
 			"analysis-with-baseline": false,
 			"bluegreen":              false,
-			"canary":                 false,
+			"canary":                 true,
 			"helm-local-chart":       false,
 			"helm-remote-chart":      false,
 			"helm-remote-git-chart":  false,
@@ -59,8 +59,8 @@ func NewClient(logger *zap.Logger) *fakeClient {
 			"mesh-istio-bluegreen":   false,
 			"mesh-istio-canary":      false,
 			"multi-steps-canary":     false,
-			"simple":                 true,
-			" wait-approval":         false,
+			"simple":                 false,
+			"wait-approval":          false,
 		}
 	)
 

@@ -48,6 +48,11 @@ var (
 	}
 )
 
+type Pipelineable interface {
+	GetPipeline() *DeploymentPipeline
+	GetStage(index int32) (PipelineStage, bool)
+}
+
 // KubernetesDeploymentSpec represents a deployment configuration for Kubernetes application.
 type KubernetesDeploymentSpec struct {
 	// Selector is a list of labels used to query all resources of this application.
@@ -67,9 +72,9 @@ func (s *KubernetesDeploymentSpec) GetPipeline() *DeploymentPipeline {
 	return KubernetesDefaultPipeline
 }
 
-func (s *KubernetesDeploymentSpec) GetStage(index int) (PipelineStage, bool) {
+func (s *KubernetesDeploymentSpec) GetStage(index int32) (PipelineStage, bool) {
 	p := s.GetPipeline()
-	if index >= len(p.Stages) {
+	if int(index) >= len(p.Stages) {
 		return PipelineStage{}, false
 	}
 	return p.Stages[index], true
@@ -94,9 +99,9 @@ func (s *TerraformDeploymentSpec) GetPipeline() *DeploymentPipeline {
 	return TerraformDefaultPipeline
 }
 
-func (s *TerraformDeploymentSpec) GetStage(index int) (PipelineStage, bool) {
+func (s *TerraformDeploymentSpec) GetStage(index int32) (PipelineStage, bool) {
 	p := s.GetPipeline()
-	if index >= len(p.Stages) {
+	if int(index) >= len(p.Stages) {
 		return PipelineStage{}, false
 	}
 	return p.Stages[index], true

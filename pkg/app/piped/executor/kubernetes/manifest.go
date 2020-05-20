@@ -69,7 +69,7 @@ func (m Manifest) AddAnnotations(annotations map[string]string) {
 }
 
 func (m Manifest) SetReplicas(replicas int) {
-	unstructured.SetNestedField(m.u.Object, replicas, "spec", "replicas")
+	unstructured.SetNestedField(m.u.Object, int64(replicas), "spec", "replicas")
 }
 
 func (m Manifest) AddVariantLabel(variant string) error {
@@ -108,7 +108,31 @@ func (m Manifest) AddVariantLabel(variant string) error {
 }
 
 func (m Manifest) ResourceKey() string {
-	return fmt.Sprintf("%s/%s/%s/%s", m.APIVersion, m.Kind, m.Namespace, m.Name)
+	return fmt.Sprintf("%s:%s:%s:%s", m.APIVersion, m.Kind, m.Namespace, m.Name)
+}
+
+type ResourceKey struct {
+	APIVersion string
+	Kind       string
+	Namespace  string
+	Name       string
+}
+
+func (k ResourceKey) String() string {
+	return fmt.Sprintf("%s:%s:%s:%s", k.APIVersion, k.Kind, k.Namespace, k.Name)
+}
+
+func DecodeResourceKey(key string) (ResourceKey, error) {
+	parts := strings.Split(key, ":")
+	if len(parts) != 4 {
+		return ResourceKey{}, fmt.Errorf("malformed key")
+	}
+	return ResourceKey{
+		APIVersion: parts[0],
+		Kind:       parts[1],
+		Namespace:  parts[2],
+		Name:       parts[3],
+	}, nil
 }
 
 func (e *Executor) loadManifests(ctx context.Context) ([]Manifest, error) {
@@ -127,7 +151,6 @@ func loadPlainYAMLMannifests(ctx context.Context, dir string, names []string) ([
 	// If no name was specified we have to walk the app directory to collect the manifest list.
 	if len(names) == 0 {
 		err := filepath.Walk(dir, func(path string, f os.FileInfo, err error) error {
-			fmt.Printf("looking file %s at %s\n", f.Name(), path)
 			if err != nil {
 				return err
 			}
@@ -144,7 +167,6 @@ func loadPlainYAMLMannifests(ctx context.Context, dir string, names []string) ([
 			if f.Name() == config.DeploymentConfigurationFileName {
 				return nil
 			}
-			fmt.Printf("found a manifest file %s at %s\n", f.Name(), path)
 			names = append(names, f.Name())
 			return nil
 		})

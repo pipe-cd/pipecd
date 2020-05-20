@@ -28,7 +28,7 @@ type resourceKey struct {
 }
 
 func (k resourceKey) String() string {
-	return fmt.Sprintf("%s/%s/%s/%s", k.APIVersion, k.Kind, k.Namespace, k.Name)
+	return fmt.Sprintf("%s:%s:%s:%s", k.APIVersion, k.Kind, k.Namespace, k.Name)
 }
 
 func (k resourceKey) IsZero() bool {
