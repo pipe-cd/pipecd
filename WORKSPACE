@@ -116,10 +116,10 @@ load(
 
 container_pull(
     name = "piped-base",
-    digest = "sha256:62d9b1a12c8e83a62fc140c9a4ebbde78d03f0164e6979b734962dcc6cb9dc31",
+    digest = "sha256:561e2e38fb33f2b7800759f9c3cd065ea79bc5b906c25e45d7e527b8e0320ae8",
     registry = "gcr.io",
     repository = "kapetanios/piped-base",
-    tag = "0.0.1",
+    tag = "0.0.2",
 )
 
 ### Protoc-gen-validate
