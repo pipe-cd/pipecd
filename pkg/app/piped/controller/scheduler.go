@@ -134,7 +134,7 @@ func (s *scheduler) Run(ctx context.Context) error {
 
 	// Update deployment status to RUNNING if needed.
 	if model.CanUpdateDeploymentStatus(s.deployment.Status, model.DeploymentStatus_DEPLOYMENT_RUNNING) {
-		err := s.reportDeploymentStatus(ctx, model.DeploymentStatus_DEPLOYMENT_RUNNING, "The piped started handling this deployment")
+		err := s.reportDeploymentRunning(ctx, "The piped started handling this deployment")
 		if err != nil {
 			return err
 		}
@@ -152,17 +152,17 @@ func (s *scheduler) Run(ctx context.Context) error {
 			continue
 		}
 		if status == model.StageStatus_STAGE_FAILURE {
-			s.reportDeploymentStatus(ctx, model.DeploymentStatus_DEPLOYMENT_FAILURE, fmt.Sprintf("Failed while executing stage %s", ps.Id))
+			s.reportDeploymentCompleted(ctx, model.DeploymentStatus_DEPLOYMENT_FAILURE, fmt.Sprintf("Failed while executing stage %s", ps.Id))
 			return nil
 		}
 		if status == model.StageStatus_STAGE_CANCELLED {
-			s.reportDeploymentStatus(ctx, model.DeploymentStatus_DEPLOYMENT_CANCELLED, fmt.Sprintf("Deployment was cancelled while executing stage %s", ps.Id))
+			s.reportDeploymentCompleted(ctx, model.DeploymentStatus_DEPLOYMENT_CANCELLED, fmt.Sprintf("Deployment was cancelled while executing stage %s", ps.Id))
 			return nil
 		}
 		return nil
 	}
 
-	s.reportDeploymentStatus(ctx, model.DeploymentStatus_DEPLOYMENT_SUCCESS, "")
+	s.reportDeploymentCompleted(ctx, model.DeploymentStatus_DEPLOYMENT_SUCCESS, "")
 	return nil
 }
 
@@ -304,11 +304,36 @@ func (s *scheduler) reportStageStatus(ctx context.Context, stageID string, statu
 	return err
 }
 
-func (s *scheduler) reportDeploymentStatus(ctx context.Context, status model.DeploymentStatus, desc string) error {
+func (s *scheduler) reportDeploymentRunning(ctx context.Context, desc string) error {
+	var (
+		err    error
+		retry  = newAPIRetry(10)
+		status = model.DeploymentStatus_DEPLOYMENT_RUNNING
+		req    = &pipedservice.ReportDeploymentRunningRequest{
+			DeploymentId: s.deployment.Id,
+		}
+	)
+
+	// Update deployment status at local.
+	s.deployment.Status = status
+	s.deployment.StatusDescription = desc
+
+	// Update deployment status on remote.
+	for retry.WaitNext(ctx) {
+		if _, err = s.apiClient.ReportDeploymentRunning(ctx, req); err == nil {
+			break
+		}
+		err = fmt.Errorf("failed to report deployment status to control-plane: %v", err)
+	}
+
+	return err
+}
+
+func (s *scheduler) reportDeploymentCompleted(ctx context.Context, status model.DeploymentStatus, desc string) error {
 	var (
 		err error
 		now = s.nowFunc()
-		req = &pipedservice.ReportDeploymentStatusChangedRequest{
+		req = &pipedservice.ReportDeploymentCompletedRequest{
 			DeploymentId:      s.deployment.Id,
 			Status:            status,
 			StatusDescription: desc,
@@ -324,8 +349,7 @@ func (s *scheduler) reportDeploymentStatus(ctx context.Context, status model.Dep
 
 	// Update deployment status on remote.
 	for retry.WaitNext(ctx) {
-		_, err = s.apiClient.ReportDeploymentStatusChanged(ctx, req)
-		if err == nil {
+		if _, err = s.apiClient.ReportDeploymentCompleted(ctx, req); err == nil {
 			break
 		}
 		err = fmt.Errorf("failed to report deployment status to control-plane: %v", err)

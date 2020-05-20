@@ -121,21 +121,6 @@ func (c *fakeClient) ListApplications(ctx context.Context, req *pipedservice.Lis
 	}, nil
 }
 
-// CreateDeployment creates/triggers a new deployment for an application
-// that is managed by this piped.
-// This will be used by DeploymentTrigger component.
-func (c *fakeClient) CreateDeployment(ctx context.Context, req *pipedservice.CreateDeploymentRequest, opts ...grpc.CallOption) (*pipedservice.CreateDeploymentResponse, error) {
-	c.logger.Info("received CreateDeployment rpc", zap.Any("request", req))
-	c.mu.Lock()
-	defer c.mu.Unlock()
-
-	if _, ok := c.deployments[req.Deployment.Id]; ok {
-		return nil, status.Error(codes.AlreadyExists, "")
-	}
-	c.deployments[req.Deployment.Id] = req.Deployment
-	return &pipedservice.CreateDeploymentResponse{}, nil
-}
-
 // ListNotCompletedDeployments returns a list of not completed deployments
 // which are managed by this piped.
 // DeploymentController component uses this RPC to spawns/syncs its local deployment executors.
@@ -154,6 +139,108 @@ func (c *fakeClient) ListNotCompletedDeployments(ctx context.Context, req *piped
 	return &pipedservice.ListNotCompletedDeploymentsResponse{
 		Deployments: deployments,
 	}, nil
+}
+
+// CreateDeployment creates/triggers a new deployment for an application
+// that is managed by this piped.
+// This will be used by DeploymentTrigger component.
+func (c *fakeClient) CreateDeployment(ctx context.Context, req *pipedservice.CreateDeploymentRequest, opts ...grpc.CallOption) (*pipedservice.CreateDeploymentResponse, error) {
+	c.logger.Info("received CreateDeployment rpc", zap.Any("request", req))
+	c.mu.Lock()
+	defer c.mu.Unlock()
+
+	if _, ok := c.deployments[req.Deployment.Id]; ok {
+		return nil, status.Error(codes.AlreadyExists, "")
+	}
+	c.deployments[req.Deployment.Id] = req.Deployment
+	return &pipedservice.CreateDeploymentResponse{}, nil
+}
+
+// ReportDeploymentPlanned used by piped to update the status
+// of a specific deployment to PLANNED.
+func (c *fakeClient) ReportDeploymentPlanned(ctx context.Context, req *pipedservice.ReportDeploymentPlannedRequest, opts ...grpc.CallOption) (*pipedservice.ReportDeploymentPlannedResponse, error) {
+	c.logger.Info("received ReportDeploymentPlanned rpc", zap.Any("request", req))
+	c.mu.Lock()
+	defer c.mu.Unlock()
+
+	d, ok := c.deployments[req.DeploymentId]
+	if !ok {
+		return nil, status.Error(codes.NotFound, "deployment was not found")
+	}
+
+	s := model.DeploymentStatus_DEPLOYMENT_PLANNED
+	if !model.CanUpdateDeploymentStatus(d.Status, s) {
+		msg := fmt.Sprintf("invalid status, cur = %s, req = %s", d.Status.String(), s.String())
+		return nil, status.Error(codes.FailedPrecondition, msg)
+	}
+
+	if req.Description != "" {
+		d.Description = req.Description
+	}
+	d.Status = s
+	d.StatusDescription = req.StatusDescription
+	if len(req.Stages) == 0 {
+		d.Stages = req.Stages
+	}
+
+	return &pipedservice.ReportDeploymentPlannedResponse{}, nil
+}
+
+// ReportDeploymentRunning used by piped to update the status
+// of a specific deployment to RUNNING.
+func (c *fakeClient) ReportDeploymentRunning(ctx context.Context, req *pipedservice.ReportDeploymentRunningRequest, opts ...grpc.CallOption) (*pipedservice.ReportDeploymentRunningResponse, error) {
+	c.logger.Info("received ReportDeploymentRunning rpc", zap.Any("request", req))
+	c.mu.Lock()
+	defer c.mu.Unlock()
+
+	d, ok := c.deployments[req.DeploymentId]
+	if !ok {
+		return nil, status.Error(codes.NotFound, "deployment was not found")
+	}
+
+	s := model.DeploymentStatus_DEPLOYMENT_RUNNING
+	if !model.CanUpdateDeploymentStatus(d.Status, s) {
+		msg := fmt.Sprintf("invalid status, cur = %s, req = %s", d.Status.String(), s.String())
+		return nil, status.Error(codes.FailedPrecondition, msg)
+	}
+
+	d.Status = s
+	d.StatusDescription = req.StatusDescription
+	return &pipedservice.ReportDeploymentRunningResponse{}, nil
+}
+
+// ReportDeploymentCompleted used by piped to update the status
+// of a specific deployment to SUCCESS | FAILURE | CANCELLED.
+func (c *fakeClient) ReportDeploymentCompleted(ctx context.Context, req *pipedservice.ReportDeploymentCompletedRequest, opts ...grpc.CallOption) (*pipedservice.ReportDeploymentCompletedResponse, error) {
+	c.logger.Info("received ReportDeploymentCompleted rpc", zap.Any("request", req))
+	c.mu.Lock()
+	defer c.mu.Unlock()
+
+	d, ok := c.deployments[req.DeploymentId]
+	if !ok {
+		return nil, status.Error(codes.NotFound, "deployment was not found")
+	}
+
+	if !model.IsCompletedDeployment(req.Status) {
+		msg := fmt.Sprintf("invalid status, expected a completed one but got  %s", req.Status.String())
+		return nil, status.Error(codes.FailedPrecondition, msg)
+	}
+
+	if !model.CanUpdateDeploymentStatus(d.Status, req.Status) {
+		msg := fmt.Sprintf("invalid status, cur = %s, req = %s", d.Status.String(), req.Status.String())
+		return nil, status.Error(codes.FailedPrecondition, msg)
+	}
+
+	d.Status = req.Status
+	d.StatusDescription = req.StatusDescription
+	d.CompletedAt = req.CompletedAt
+	for _, stage := range d.Stages {
+		if status, ok := req.StageStatuses[stage.Id]; ok {
+			stage.Status = status
+		}
+	}
+
+	return &pipedservice.ReportDeploymentCompletedResponse{}, nil
 }
 
 // SaveDeploymentMetadata used by piped to persist the metadata of a specific deployment.
@@ -193,6 +280,12 @@ func (c *fakeClient) SaveStageMetadata(ctx context.Context, req *pipedservice.Sa
 	return nil, status.Error(codes.NotFound, "stage was not found")
 }
 
+// ReportStageLog is sent by piped to save the log of a pipeline stage.
+func (c *fakeClient) ReportStageLog(ctx context.Context, req *pipedservice.ReportStageLogRequest, opts ...grpc.CallOption) (*pipedservice.ReportStageLogResponse, error) {
+	c.logger.Info("received ReportStageLog rpc", zap.Any("request", req))
+	return &pipedservice.ReportStageLogResponse{}, nil
+}
+
 // ReportStageStatusChanged used by piped to update the status
 // of a specific stage of a deployment.
 func (c *fakeClient) ReportStageStatusChanged(ctx context.Context, req *pipedservice.ReportStageStatusChangedRequest, opts ...grpc.CallOption) (*pipedservice.ReportStageStatusChangedResponse, error) {
@@ -215,44 +308,6 @@ func (c *fakeClient) ReportStageStatusChanged(ctx context.Context, req *pipedser
 		return &pipedservice.ReportStageStatusChangedResponse{}, nil
 	}
 	return nil, status.Error(codes.NotFound, "stage was not found")
-}
-
-// ReportStageLog is sent by piped to save the log of a pipeline stage.
-func (c *fakeClient) ReportStageLog(ctx context.Context, req *pipedservice.ReportStageLogRequest, opts ...grpc.CallOption) (*pipedservice.ReportStageLogResponse, error) {
-	c.logger.Info("received ReportStageLog rpc", zap.Any("request", req))
-	return &pipedservice.ReportStageLogResponse{}, nil
-}
-
-// ReportDeploymentStatusChanged used by piped to update the status
-// of a specific deployment.
-func (c *fakeClient) ReportDeploymentStatusChanged(ctx context.Context, req *pipedservice.ReportDeploymentStatusChangedRequest, opts ...grpc.CallOption) (*pipedservice.ReportDeploymentStatusChangedResponse, error) {
-	c.logger.Info("received ReportDeploymentStatusChanged rpc", zap.Any("request", req))
-	c.mu.Lock()
-	defer c.mu.Unlock()
-
-	d, ok := c.deployments[req.DeploymentId]
-	if !ok {
-		return nil, status.Error(codes.NotFound, "deployment was not found")
-	}
-
-	if req.Status < d.Status {
-		return nil, status.Error(codes.FailedPrecondition,
-			fmt.Sprintf("not good status, cur = %s, req = %s", d.Status.String(), req.Status.String()),
-		)
-	}
-	d.Status = req.Status
-	d.StatusDescription = req.StatusDescription
-	d.CompletedAt = req.CompletedAt
-
-	if model.IsCompletedDeployment(req.Status) {
-		for _, stage := range d.Stages {
-			if status, ok := req.StageStatuses[stage.Id]; ok {
-				stage.Status = status
-			}
-		}
-	}
-
-	return &pipedservice.ReportDeploymentStatusChangedResponse{}, nil
 }
 
 // ListUnhandledCommands is periodically called by piped to obtain the commands

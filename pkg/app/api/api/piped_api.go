@@ -59,6 +59,13 @@ func (a *PipedAPI) ListApplications(ctx context.Context, req *pipedservice.ListA
 	return nil, status.Error(codes.Unimplemented, "")
 }
 
+// ListNotCompletedDeployments returns a list of not completed deployments
+// which are managed by this piped.
+// DeploymentController component uses this RPC to spawns/syncs its local deployment executors.
+func (a *PipedAPI) ListNotCompletedDeployments(ctx context.Context, req *pipedservice.ListNotCompletedDeploymentsRequest) (*pipedservice.ListNotCompletedDeploymentsResponse, error) {
+	return nil, status.Error(codes.Unimplemented, "")
+}
+
 // CreateDeployment creates/triggers a new deployment for an application
 // that is managed by this piped.
 // This will be used by DeploymentTrigger component.
@@ -66,10 +73,21 @@ func (a *PipedAPI) CreateDeployment(ctx context.Context, req *pipedservice.Creat
 	return nil, status.Error(codes.Unimplemented, "")
 }
 
-// ListNotCompletedDeployments returns a list of not completed deployments
-// which are managed by this piped.
-// DeploymentController component uses this RPC to spawns/syncs its local deployment executors.
-func (a *PipedAPI) ListNotCompletedDeployments(ctx context.Context, req *pipedservice.ListNotCompletedDeploymentsRequest) (*pipedservice.ListNotCompletedDeploymentsResponse, error) {
+// ReportDeploymentPlanned used by piped to update the status
+// of a specific deployment to PLANNED.
+func (a *PipedAPI) ReportDeploymentPlanned(ctx context.Context, req *pipedservice.ReportDeploymentPlannedRequest) (*pipedservice.ReportDeploymentPlannedResponse, error) {
+	return nil, status.Error(codes.Unimplemented, "")
+}
+
+// ReportDeploymentRunning used by piped to update the status
+// of a specific deployment to RUNNING.
+func (a *PipedAPI) ReportDeploymentRunning(ctx context.Context, req *pipedservice.ReportDeploymentRunningRequest) (*pipedservice.ReportDeploymentRunningResponse, error) {
+	return nil, status.Error(codes.Unimplemented, "")
+}
+
+// ReportDeploymentCompleted used by piped to update the status
+// of a specific deployment to SUCCESS | FAILURE | CANCELLED.
+func (a *PipedAPI) ReportDeploymentCompleted(ctx context.Context, req *pipedservice.ReportDeploymentCompletedRequest) (*pipedservice.ReportDeploymentCompletedResponse, error) {
 	return nil, status.Error(codes.Unimplemented, "")
 }
 
@@ -84,20 +102,14 @@ func (a *PipedAPI) SaveStageMetadata(ctx context.Context, req *pipedservice.Save
 	return nil, status.Error(codes.Unimplemented, "")
 }
 
-// ReportStageStatusChanged used by piped to update the status
-// of a specific stage of a deployment.
-func (a *PipedAPI) ReportStageStatusChanged(ctx context.Context, req *pipedservice.ReportStageStatusChangedRequest) (*pipedservice.ReportStageStatusChangedResponse, error) {
-	return nil, status.Error(codes.Unimplemented, "")
-}
-
 // ReportStageLog is sent by piped to save the log of a pipeline stage.
 func (a *PipedAPI) ReportStageLog(ctx context.Context, req *pipedservice.ReportStageLogRequest) (*pipedservice.ReportStageLogResponse, error) {
 	return nil, status.Error(codes.Unimplemented, "")
 }
 
-// ReportDeploymentStatusChanged used by piped to update the status
-// of a specific deployment.
-func (a *PipedAPI) ReportDeploymentStatusChanged(ctx context.Context, req *pipedservice.ReportDeploymentStatusChangedRequest) (*pipedservice.ReportDeploymentStatusChangedResponse, error) {
+// ReportStageStatusChanged used by piped to update the status
+// of a specific stage of a deployment.
+func (a *PipedAPI) ReportStageStatusChanged(ctx context.Context, req *pipedservice.ReportStageStatusChangedRequest) (*pipedservice.ReportStageStatusChangedResponse, error) {
 	return nil, status.Error(codes.Unimplemented, "")
 }
 

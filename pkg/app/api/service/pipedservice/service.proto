@@ -39,15 +39,27 @@ service PipedService {
     // Piped uses this RPC to fetch and sync the application configuration into its local database.
     rpc ListApplications(ListApplicationsRequest) returns (ListApplicationsResponse) {}
 
+    // ListNotCompletedDeployments returns a list of not completed deployments
+    // which are managed by this piped.
+    // DeploymentController component uses this RPC to spawns/syncs its local deployment executors.
+    rpc ListNotCompletedDeployments(ListNotCompletedDeploymentsRequest) returns (ListNotCompletedDeploymentsResponse) {}
+
     // CreateDeployment creates/triggers a new deployment for an application
     // that is managed by this piped.
     // This will be used by DeploymentTrigger component.
     rpc CreateDeployment(CreateDeploymentRequest) returns (CreateDeploymentResponse) {}
 
-    // ListNotCompletedDeployments returns a list of not completed deployments
-    // which are managed by this piped.
-    // DeploymentController component uses this RPC to spawns/syncs its local deployment executors.
-    rpc ListNotCompletedDeployments(ListNotCompletedDeploymentsRequest) returns (ListNotCompletedDeploymentsResponse) {}
+    // ReportDeploymentPlanned used by piped to update the status
+    // of a specific deployment to PLANNED.
+    rpc ReportDeploymentPlanned(ReportDeploymentPlannedRequest) returns (ReportDeploymentPlannedResponse) {}
+
+    // ReportDeploymentRunning used by piped to update the status
+    // of a specific deployment to RUNNING.
+    rpc ReportDeploymentRunning(ReportDeploymentRunningRequest) returns (ReportDeploymentRunningResponse) {}
+
+    // ReportDeploymentCompleted used by piped to update the status
+    // of a specific deployment to SUCCESS | FAILURE | CANCELLED.
+    rpc ReportDeploymentCompleted(ReportDeploymentCompletedRequest) returns (ReportDeploymentCompletedResponse) {}
 
     // SaveDeploymentMetadata used by piped to persist the metadata of a specific deployment.
     rpc SaveDeploymentMetadata(SaveDeploymentMetadataRequest) returns (SaveDeploymentMetadataResponse) {}
@@ -56,16 +68,12 @@ service PipedService {
     // of a specific stage of a deployment.
     rpc SaveStageMetadata(SaveStageMetadataRequest) returns (SaveStageMetadataResponse) {}
 
-    // ReportStageStatusChanged used by piped to update the status
-    // of a specific stage of a deployment.
-    rpc ReportStageStatusChanged(ReportStageStatusChangedRequest) returns (ReportStageStatusChangedResponse) {}
-
     // ReportStageLog is sent by piped to save the log of a pipeline stage.
     rpc ReportStageLog(ReportStageLogRequest) returns (ReportStageLogResponse) {}
 
-    // ReportDeploymentStatusChanged used by piped to update the status
-    // of a specific deployment.
-    rpc ReportDeploymentStatusChanged(ReportDeploymentStatusChangedRequest) returns (ReportDeploymentStatusChangedResponse) {}
+    // ReportStageStatusChanged used by piped to update the status
+    // of a specific stage of a deployment.
+    rpc ReportStageStatusChanged(ReportStageStatusChangedRequest) returns (ReportStageStatusChangedResponse) {}
 
     // ListUnhandledCommands is periodically called by piped to obtain the commands
     // that should be handled.
@@ -117,6 +125,13 @@ message ListApplicationsResponse {
     repeated pipe.model.Application applications = 1;
 }
 
+message ListNotCompletedDeploymentsRequest {
+}
+
+message ListNotCompletedDeploymentsResponse {
+    repeated pipe.model.Deployment deployments = 1;
+}
+
 message CreateDeploymentRequest {
     pipe.model.Deployment deployment = 1 [(validate.rules).message.required = true];
 }
@@ -124,11 +139,43 @@ message CreateDeploymentRequest {
 message CreateDeploymentResponse {
 }
 
-message ListNotCompletedDeploymentsRequest {
+message ReportDeploymentPlannedRequest {
+    string deployment_id = 1 [(validate.rules).string.min_len = 1];
+    // Simple description about what this deployment does.
+    // Empty means nothing has changed complared to when the deployment was created.
+    string description = 2;
+    // The human-readable description why the deployment is at current status.
+    string status_description = 3;
+    // The planned stages.
+    // Empty means nothing has changed complared to when the deployment was created.
+    repeated pipe.model.PipelineStage stages = 4;
 }
 
-message ListNotCompletedDeploymentsResponse {
-    repeated pipe.model.Deployment deployments = 1;
+message ReportDeploymentPlannedResponse {
+}
+
+message ReportDeploymentRunningRequest {
+    string deployment_id = 1 [(validate.rules).string.min_len = 1];
+    // The human-readable description why the deployment is at current status.
+    string status_description = 2;
+}
+
+message ReportDeploymentRunningResponse {
+}
+
+message ReportDeploymentCompletedRequest {
+    string deployment_id = 1 [(validate.rules).string.min_len = 1];
+    // The status of deployment.
+    pipe.model.DeploymentStatus status = 2 [(validate.rules).enum.defined_only = true];
+    // The human-readable description why the deployment is at current status.
+    string status_description = 3;
+    // The completed statuses of all stages.
+    map<string,model.StageStatus> stage_statuses = 4;
+    // The completion time of deployment.
+    int64 completed_at = 13 [(validate.rules).int64.gt = 0];
+}
+
+message ReportDeploymentCompletedResponse {
 }
 
 message SaveDeploymentMetadataRequest {
@@ -148,19 +195,6 @@ message SaveStageMetadataRequest {
 message SaveStageMetadataResponse {
 }
 
-message ReportStageStatusChangedRequest {
-    string deployment_id = 1 [(validate.rules).string.min_len = 1];
-    string stage_id = 2 [(validate.rules).string.min_len = 1];
-    pipe.model.StageStatus status = 3 [(validate.rules).enum.defined_only = true];
-    // The human-readable description why the stage is at current status.
-    string status_description = 4;
-    int32 retried_count = 5;
-    int64 completed_at = 13 [(validate.rules).int64.gt = 0];
-}
-
-message ReportStageStatusChangedResponse {
-}
-
 message ReportStageLogRequest {
     string deployment_id = 1 [(validate.rules).string.min_len = 1];
     string stage_id = 2 [(validate.rules).string.min_len = 1];
@@ -172,19 +206,17 @@ message ReportStageLogRequest {
 message ReportStageLogResponse {
 }
 
-message ReportDeploymentStatusChangedRequest {
+message ReportStageStatusChangedRequest {
     string deployment_id = 1 [(validate.rules).string.min_len = 1];
-    // The status of deployment.
-    pipe.model.DeploymentStatus status = 2 [(validate.rules).enum.defined_only = true];
-    // The human-readable description why the deployment is at current status.
-    string status_description = 3;
-    // The completed statuses of all stages.
-    map<string,model.StageStatus> stage_statuses = 4;
-    // The completion time of deployment.
+    string stage_id = 2 [(validate.rules).string.min_len = 1];
+    pipe.model.StageStatus status = 3 [(validate.rules).enum.defined_only = true];
+    // The human-readable description why the stage is at current status.
+    string status_description = 4;
+    int32 retried_count = 5;
     int64 completed_at = 13 [(validate.rules).int64.gt = 0];
 }
 
-message ReportDeploymentStatusChangedResponse {
+message ReportStageStatusChangedResponse {
 }
 
 message ListUnhandledCommandsRequest {
