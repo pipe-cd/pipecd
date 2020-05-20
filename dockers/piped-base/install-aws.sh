@@ -18,19 +18,4 @@ set -o errexit
 set -o nounset
 set -o pipefail
 
-BASE_URL="https://get.helm.sh"
-
-echo "Installing various versions of helm..."
-
-for version in "2.16.7" "3.1.3" "3.2.1"
-do
-  echo "Installing helm-${version} into ${PIPED_BIN_DIR}/helm-${version}..."
-  curl -L ${BASE_URL}/helm-v${version}-linux-amd64.tar.gz | tar xvz
-  mv linux-amd64/helm ${PIPED_BIN_DIR}/helm-${version}
-  chmod +x ${PIPED_BIN_DIR}/helm-${version}
-  rm -rf linux-amd64
-  echo "Successfully installed helm-${version} into ${PIPED_BIN_DIR}/helm-${version}..."
-done
-
-cp ${PIPED_BIN_DIR}/helm-3.2.1 ${PIPED_BIN_DIR}/helm
-echo "Successfully linked helm to helm-3.2.1"
+echo "Installing various versions of awscli..."
