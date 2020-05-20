@@ -3,23 +3,18 @@ load("@io_bazel_rules_go//go:def.bzl", "go_library", "go_test")
 go_library(
     name = "go_default_library",
     srcs = [
-        "controller.go",
-        "metadatastore.go",
-        "scheduler.go",
+        "deployment.go",
+        "trigger.go",
     ],
-    importpath = "github.com/kapetaniosci/pipe/pkg/app/piped/deploymentcontroller",
+    importpath = "github.com/kapetaniosci/pipe/pkg/app/piped/trigger",
     visibility = ["//visibility:public"],
     deps = [
         "//pkg/app/api/service/pipedservice:go_default_library",
-        "//pkg/app/piped/executor:go_default_library",
-        "//pkg/app/piped/executor/registry:go_default_library",
-        "//pkg/app/piped/logpersister:go_default_library",
-        "//pkg/backoff:go_default_library",
         "//pkg/config:go_default_library",
         "//pkg/git:go_default_library",
         "//pkg/model:go_default_library",
+        "@com_github_google_uuid//:go_default_library",
         "@org_golang_google_grpc//:go_default_library",
-        "@org_uber_go_atomic//:go_default_library",
         "@org_uber_go_zap//:go_default_library",
     ],
 )
@@ -27,6 +22,7 @@ go_library(
 go_test(
     name = "go_default_test",
     size = "small",
-    srcs = ["controller_test.go"],
+    srcs = ["trigger_test.go"],
     embed = [":go_default_library"],
+    deps = ["@com_github_stretchr_testify//assert:go_default_library"],
 )

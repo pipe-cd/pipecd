@@ -12,13 +12,13 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-// Package deploymenttrigger provides a piped component
+// Package trigger provides a piped component
 // that detects a list of application should be synced
 // and then trigger their deployments by calling to API to create a new Deployment model.
 // Until v1, we detect based on the new merged commit and its changes.
 // But in the next versions, we also want to enable the ability to detect
 // based on the diff between the repo state (desired state) and cluster state (actual state).
-package deploymenttrigger
+package trigger
 
 import (
 	"context"
