@@ -40,6 +40,7 @@ import (
 
 type apiClient interface {
 	ListNotCompletedDeployments(ctx context.Context, in *pipedservice.ListNotCompletedDeploymentsRequest, opts ...grpc.CallOption) (*pipedservice.ListNotCompletedDeploymentsResponse, error)
+	SaveDeploymentMetadata(ctx context.Context, in *pipedservice.SaveDeploymentMetadataRequest, opts ...grpc.CallOption) (*pipedservice.SaveDeploymentMetadataResponse, error)
 	SaveStageMetadata(ctx context.Context, in *pipedservice.SaveStageMetadataRequest, opts ...grpc.CallOption) (*pipedservice.SaveStageMetadataResponse, error)
 	ReportStageLog(ctx context.Context, in *pipedservice.ReportStageLogRequest, opts ...grpc.CallOption) (*pipedservice.ReportStageLogResponse, error)
 	ReportStageStatusChanged(ctx context.Context, in *pipedservice.ReportStageStatusChangedRequest, opts ...grpc.CallOption) (*pipedservice.ReportStageStatusChangedResponse, error)
@@ -60,12 +61,11 @@ type DeploymentController interface {
 }
 
 type controller struct {
-	apiClient         apiClient
-	gitClient         gitClient
-	commandStore      commandStore
-	pipedConfig       *config.PipedSpec
-	logPersister      logpersister.Persister
-	metadataPersister metadataPersister
+	apiClient    apiClient
+	gitClient    gitClient
+	commandStore commandStore
+	pipedConfig  *config.PipedSpec
+	logPersister logpersister.Persister
 
 	schedulers            map[string]*scheduler
 	unreportedDeployments map[string]*model.Deployment
@@ -88,9 +88,8 @@ func NewController(
 ) DeploymentController {
 
 	var (
-		lp  = logpersister.NewPersister(apiClient, logger)
-		mdp = metadataPersister{apiClient: apiClient}
-		lg  = logger.Named("deployment-controller")
+		lp = logpersister.NewPersister(apiClient, logger)
+		lg = logger.Named("deployment-controller")
 	)
 	return &controller{
 		apiClient:             apiClient,
@@ -98,7 +97,6 @@ func NewController(
 		commandStore:          cmdStore,
 		pipedConfig:           pipedConfig,
 		logPersister:          lp,
-		metadataPersister:     mdp,
 		schedulers:            make(map[string]*scheduler),
 		unreportedDeployments: make(map[string]*model.Deployment),
 		syncInternal:          30 * time.Second,
@@ -226,7 +224,6 @@ func (c *controller) startNewScheduler(ctx context.Context, d *model.Deployment)
 		c.gitClient,
 		c.commandStore,
 		c.logPersister,
-		c.metadataPersister,
 		c.pipedConfig,
 		c.logger,
 	)

@@ -38,8 +38,12 @@ type LogPersister interface {
 	AppendError(log string)
 }
 
-type MetadataPersister interface {
-	Save(ctx context.Context, metadata []byte) error
+type MetadataStore interface {
+	Get(key string) (string, bool)
+	Set(ctx context.Context, key, value string) error
+
+	GetStageMetadata(stageID string, metadata interface{}) error
+	SetStageMetadata(ctx context.Context, stageID string, metadata interface{}) error
 }
 
 type CommandStore interface {
@@ -48,15 +52,15 @@ type CommandStore interface {
 }
 
 type Input struct {
-	Stage             *model.PipelineStage
-	Deployment        *model.Deployment
-	DeploymentConfig  *config.Config
-	PipedConfig       *config.PipedSpec
-	WorkingDir        string
-	RepoDir           string
-	StageWorkingDir   string
-	CommandStore      CommandStore
-	LogPersister      LogPersister
-	MetadataPersister MetadataPersister
-	Logger            *zap.Logger
+	Stage            *model.PipelineStage
+	Deployment       *model.Deployment
+	DeploymentConfig *config.Config
+	PipedConfig      *config.PipedSpec
+	WorkingDir       string
+	RepoDir          string
+	StageWorkingDir  string
+	CommandStore     CommandStore
+	LogPersister     LogPersister
+	MetadataStore    MetadataStore
+	Logger           *zap.Logger
 }

@@ -156,6 +156,21 @@ func (c *fakeClient) ListNotCompletedDeployments(ctx context.Context, req *piped
 	}, nil
 }
 
+// SaveDeploymentMetadata used by piped to persist the metadata of a specific deployment.
+func (c *fakeClient) SaveDeploymentMetadata(ctx context.Context, req *pipedservice.SaveDeploymentMetadataRequest, opts ...grpc.CallOption) (*pipedservice.SaveDeploymentMetadataResponse, error) {
+	c.logger.Info("received SaveDeploymentMetadata rpc", zap.Any("request", req))
+	c.mu.Lock()
+	defer c.mu.Unlock()
+
+	d, ok := c.deployments[req.DeploymentId]
+	if !ok {
+		return nil, status.Error(codes.NotFound, "deployment was not found")
+	}
+
+	d.Metadata = req.Metadata
+	return &pipedservice.SaveDeploymentMetadataResponse{}, nil
+}
+
 // SaveStageMetadata used by piped to persist the metadata
 // of a specific stage of a deployment.
 func (c *fakeClient) SaveStageMetadata(ctx context.Context, req *pipedservice.SaveStageMetadataRequest, opts ...grpc.CallOption) (*pipedservice.SaveStageMetadataResponse, error) {
@@ -172,7 +187,7 @@ func (c *fakeClient) SaveStageMetadata(ctx context.Context, req *pipedservice.Sa
 		if s.Id != req.StageId {
 			continue
 		}
-		s.Metadata = req.Metadata
+		s.JsonMetadata = req.JsonMetadata
 		return &pipedservice.SaveStageMetadataResponse{}, nil
 	}
 	return nil, status.Error(codes.NotFound, "stage was not found")

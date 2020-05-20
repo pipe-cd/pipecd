@@ -61,6 +61,7 @@ message Deployment {
     // The human-readable description why the deployment is at current status.
     string status_description = 11;
     repeated PipelineStage stages = 12;
+    map<string,string> metadata = 13;
 
     int64 completed_at = 100 [(validate.rules).int64.gte = 0];
     int64 created_at = 101 [(validate.rules).int64.gt = 0];
@@ -83,7 +84,7 @@ message PipelineStage {
     int32 index = 4;
     repeated string requires = 5;
     StageStatus status = 6 [(validate.rules).enum.defined_only = true];
-    bytes metadata = 7;
+    string json_metadata = 7;
     int32 retried_count = 8;
     int64 completed_at = 13 [(validate.rules).int64.gte = 0];
     int64 created_at = 14 [(validate.rules).int64.gt = 0];

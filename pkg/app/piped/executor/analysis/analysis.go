@@ -16,7 +16,6 @@ package analysis
 
 import (
 	"context"
-	"encoding/json"
 	"fmt"
 	"io/ioutil"
 	"time"
@@ -247,21 +246,18 @@ func (e *Executor) getStageOptions() (*config.AnalysisStageOptions, error) {
 // The analysis stage can be restarted from the beginning even if it ends unexpectedly,
 // that's why count should be stored.
 func (e *Executor) saveQueryCount(ctx context.Context, queryCount map[string]int) {
-	b, err := json.Marshal(queryCount)
-	if err != nil {
-		e.Logger.Warn("failed to convert query cont to json")
-		return
+	if err := e.MetadataStore.SetStageMetadata(ctx, e.Stage.Id, queryCount); err != nil {
+		e.Logger.Warn("failed to store query count to stage metadata")
 	}
-	e.MetadataPersister.Save(ctx, b)
 }
 
 // getQueryCount decodes metadata and populates query count to own field.
 // The returned value is the number of queries executed per provider.
 func (e *Executor) getQueryCount() map[string]int {
 	var m map[string]int
-	err := json.Unmarshal(e.Stage.Metadata, &m)
+	err := e.MetadataStore.GetStageMetadata(e.Stage.Id, &m)
 	if err != nil {
-		e.Logger.Warn("failed to decode query cont")
+		e.Logger.Warn("failed to get stage metadata")
 		return nil
 	}
 	return m

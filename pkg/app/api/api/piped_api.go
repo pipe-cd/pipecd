@@ -73,6 +73,11 @@ func (a *PipedAPI) ListNotCompletedDeployments(ctx context.Context, req *pipedse
 	return nil, status.Error(codes.Unimplemented, "")
 }
 
+// SaveDeploymentMetadata used by piped to persist the metadata of a specific deployment.
+func (a *PipedAPI) SaveDeploymentMetadata(ctx context.Context, req *pipedservice.SaveDeploymentMetadataRequest) (*pipedservice.SaveDeploymentMetadataResponse, error) {
+	return nil, status.Error(codes.Unimplemented, "")
+}
+
 // SaveStageMetadata used by piped to persist the metadata
 // of a specific stage of a deployment.
 func (a *PipedAPI) SaveStageMetadata(ctx context.Context, req *pipedservice.SaveStageMetadataRequest) (*pipedservice.SaveStageMetadataResponse, error) {

@@ -45,16 +45,16 @@ type repoStore interface {
 
 // scheduler is a dedicated object for a specific deployment of a single application.
 type scheduler struct {
-	deployment        *model.Deployment
-	workingDir        string
-	executorRegistry  registry.Registry
-	apiClient         apiClient
-	gitClient         gitClient
-	commandStore      commandStore
-	logPersister      logpersister.Persister
-	metadataPersister metadataPersister
-	pipedConfig       *config.PipedSpec
-	logger            *zap.Logger
+	deployment       *model.Deployment
+	workingDir       string
+	executorRegistry registry.Registry
+	apiClient        apiClient
+	gitClient        gitClient
+	commandStore     commandStore
+	logPersister     logpersister.Persister
+	metadataStore    *metadataStore
+	pipedConfig      *config.PipedSpec
+	logger           *zap.Logger
 
 	// Deployment configuration for this application.
 	deploymentConfig *config.Config
@@ -71,7 +71,6 @@ func newScheduler(
 	gitClient gitClient,
 	cmdStore commandStore,
 	lp logpersister.Persister,
-	mdp metadataPersister,
 	pipedConfig *config.PipedSpec,
 	logger *zap.Logger,
 ) *scheduler {
@@ -85,17 +84,17 @@ func newScheduler(
 		zap.String("working-dir", workingDir),
 	)
 	return &scheduler{
-		deployment:        d,
-		pipedConfig:       pipedConfig,
-		workingDir:        workingDir,
-		executorRegistry:  registry.DefaultRegistry(),
-		apiClient:         apiClient,
-		gitClient:         gitClient,
-		commandStore:      cmdStore,
-		logPersister:      lp,
-		metadataPersister: mdp,
-		logger:            logger,
-		nowFunc:           time.Now,
+		deployment:       d,
+		pipedConfig:      pipedConfig,
+		workingDir:       workingDir,
+		executorRegistry: registry.DefaultRegistry(),
+		apiClient:        apiClient,
+		gitClient:        gitClient,
+		commandStore:     cmdStore,
+		logPersister:     lp,
+		metadataStore:    NewMetadataStore(apiClient, d),
+		logger:           logger,
+		nowFunc:          time.Now,
 	}
 }
 
@@ -188,17 +187,17 @@ func (s *scheduler) executeStage(ctx context.Context, ps *model.PipelineStage) (
 	}
 
 	input := executor.Input{
-		Stage:             ps,
-		Deployment:        s.deployment,
-		DeploymentConfig:  s.deploymentConfig,
-		PipedConfig:       s.pipedConfig,
-		WorkingDir:        s.workingDir,
-		RepoDir:           filepath.Join(s.workingDir, workspaceGitRepoDirName),
-		StageWorkingDir:   filepath.Join(s.workingDir, workspaceStagesDirName, ps.Id),
-		CommandStore:      s.commandStore,
-		LogPersister:      lp,
-		MetadataPersister: s.metadataPersister.StageMetadataPersister(s.deployment.Id, ps.Id),
-		Logger:            s.logger,
+		Stage:            ps,
+		Deployment:       s.deployment,
+		DeploymentConfig: s.deploymentConfig,
+		PipedConfig:      s.pipedConfig,
+		WorkingDir:       s.workingDir,
+		RepoDir:          filepath.Join(s.workingDir, workspaceGitRepoDirName),
+		StageWorkingDir:  filepath.Join(s.workingDir, workspaceStagesDirName, ps.Id),
+		CommandStore:     s.commandStore,
+		LogPersister:     lp,
+		MetadataStore:    s.metadataStore,
+		Logger:           s.logger,
 	}
 
 	// Find the executor for this stage.

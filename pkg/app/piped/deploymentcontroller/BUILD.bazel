@@ -4,7 +4,7 @@ go_library(
     name = "go_default_library",
     srcs = [
         "controller.go",
-        "metadatapersister.go",
+        "metadatastore.go",
         "scheduler.go",
     ],
     importpath = "github.com/kapetaniosci/pipe/pkg/app/piped/deploymentcontroller",
