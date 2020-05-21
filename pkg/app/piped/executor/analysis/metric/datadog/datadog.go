@@ -14,7 +14,10 @@
 
 package datadog
 
-import "time"
+import (
+	"context"
+	"time"
+)
 
 const ProviderType = "Datadog"
 
@@ -48,6 +51,6 @@ func (p *Provider) Type() string {
 	return ProviderType
 }
 
-func (p *Provider) RunQuery(query, expected string) (bool, error) {
+func (p *Provider) RunQuery(ctx context.Context, query, expected string) (bool, error) {
 	return false, nil
 }

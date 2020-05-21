@@ -76,8 +76,8 @@ func (e *Executor) Execute(ctx context.Context) model.StageStatus {
 			e.LogPersister.AppendError(err.Error())
 			continue
 		}
-		go e.runQuery(ctx, time.Duration(m.Interval), provider.Type(), func() (bool, error) {
-			return provider.RunQuery(m.Query, m.Expected)
+		go e.runQuery(ctx, time.Duration(m.Interval), provider.Type(), func(ctx context.Context) (bool, error) {
+			return provider.RunQuery(ctx, m.Query, m.Expected)
 		}, resultCh)
 	}
 	// Run log queries
@@ -87,7 +87,7 @@ func (e *Executor) Execute(ctx context.Context) model.StageStatus {
 			e.LogPersister.AppendError(err.Error())
 			continue
 		}
-		go e.runQuery(ctx, time.Duration(l.Interval), provider.Type(), func() (bool, error) {
+		go e.runQuery(ctx, time.Duration(l.Interval), provider.Type(), func(ctx context.Context) (bool, error) {
 			return provider.RunQuery(l.Query, l.Threshold)
 		}, resultCh)
 	}
@@ -189,14 +189,14 @@ func (e *Executor) newLogProvider(analysisLog *config.AnalysisLog) (log.Provider
 	return provider, nil
 }
 
-func (e *Executor) runQuery(ctx context.Context, interval time.Duration, providerType string, run func() (bool, error), resultCh chan<- providerResult) {
+func (e *Executor) runQuery(ctx context.Context, interval time.Duration, providerType string, run func(context.Context) (bool, error), resultCh chan<- providerResult) {
 	// TODO: Address the case when using template
 	ticker := time.NewTicker(interval)
 	defer ticker.Stop()
 	for {
 		select {
 		case <-ticker.C:
-			success, err := run()
+			success, err := run(ctx)
 			if err != nil {
 				e.Logger.Error("failed to run query", zap.Error(err))
 				// TODO: Decide how to handle query failures.
