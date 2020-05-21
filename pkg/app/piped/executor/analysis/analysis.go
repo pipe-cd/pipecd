@@ -76,7 +76,7 @@ func (e *Executor) Execute(ctx context.Context) model.StageStatus {
 			e.LogPersister.AppendError(err.Error())
 			continue
 		}
-		go e.runQuery(ctx, time.Duration(m.Interval), provider.Type(), func(ctx context.Context) (bool, error) {
+		go e.runAnalysis(ctx, time.Duration(m.Interval), provider.Type(), func(ctx context.Context) (bool, error) {
 			return provider.RunQuery(ctx, m.Query, m.Expected)
 		}, resultCh)
 	}
@@ -87,7 +87,7 @@ func (e *Executor) Execute(ctx context.Context) model.StageStatus {
 			e.LogPersister.AppendError(err.Error())
 			continue
 		}
-		go e.runQuery(ctx, time.Duration(l.Interval), provider.Type(), func(ctx context.Context) (bool, error) {
+		go e.runAnalysis(ctx, time.Duration(l.Interval), provider.Type(), func(ctx context.Context) (bool, error) {
 			return provider.RunQuery(l.Query, l.Threshold)
 		}, resultCh)
 	}
@@ -110,7 +110,7 @@ LOOP:
 				failureCount++
 			}
 			if failureCount > options.Threshold {
-				// Stop running all queries.
+				e.Logger.Info("stop all analysis")
 				cancel()
 			}
 		}
@@ -189,7 +189,8 @@ func (e *Executor) newLogProvider(analysisLog *config.AnalysisLog) (log.Provider
 	return provider, nil
 }
 
-func (e *Executor) runQuery(ctx context.Context, interval time.Duration, providerType string, run func(context.Context) (bool, error), resultCh chan<- providerResult) {
+func (e *Executor) runAnalysis(ctx context.Context, interval time.Duration, providerType string, run func(context.Context) (bool, error), resultCh chan<- providerResult) {
+	e.Logger.Info("start the analysis", zap.String("provider", providerType))
 	// TODO: Address the case when using template
 	ticker := time.NewTicker(interval)
 	defer ticker.Stop()
@@ -247,7 +248,7 @@ func (e *Executor) getStageOptions() (*config.AnalysisStageOptions, error) {
 // that's why count should be stored.
 func (e *Executor) saveQueryCount(ctx context.Context, queryCount map[string]int) {
 	if err := e.MetadataStore.SetStageMetadata(ctx, e.Stage.Id, queryCount); err != nil {
-		e.Logger.Warn("failed to store query count to stage metadata")
+		e.Logger.Error("failed to store query count to stage metadata", zap.Error(err))
 	}
 }
 
@@ -258,7 +259,7 @@ func (e *Executor) getQueryCount() map[string]int {
 	err := e.MetadataStore.GetStageMetadata(e.Stage.Id, &m)
 	if err != nil {
 		e.Logger.Error("failed to get stage metadata", zap.Error(err))
-		return nil
+		return make(map[string]int)
 	}
 	return m
 }
