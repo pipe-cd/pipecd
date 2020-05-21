@@ -130,11 +130,11 @@ func (c *fakeClient) ListNotCompletedDeployments(ctx context.Context, req *piped
 	defer c.mu.RUnlock()
 
 	deployments := make([]*model.Deployment, 0, len(c.deployments))
-	for _, deployment := range c.deployments {
-		if model.IsCompletedDeployment(deployment.Status) {
+	for _, d := range c.deployments {
+		if model.IsCompletedDeployment(d.Status) {
 			continue
 		}
-		deployments = append(deployments, deployment)
+		deployments = append(deployments, d.Clone())
 	}
 	return &pipedservice.ListNotCompletedDeploymentsResponse{
 		Deployments: deployments,

@@ -14,6 +14,10 @@
 
 package model
 
+import (
+	"github.com/golang/protobuf/proto"
+)
+
 // IsCompletedDeployment checks whether the deployment is at a completion state.
 func IsCompletedDeployment(status DeploymentStatus) bool {
 	if status.String() == "" {
@@ -91,4 +95,10 @@ func (d *Deployment) StageStatusMap() map[string]StageStatus {
 		statuses[s.Id] = s.Status
 	}
 	return statuses
+}
+
+// Clone returns a deep copy of the deployment.
+func (d *Deployment) Clone() *Deployment {
+	msg := proto.Clone(d)
+	return msg.(*Deployment)
 }
