@@ -23,3 +23,6 @@ linters:
       #- gocyclo
 
   fast: false
+linters-settings:
+  goimports:
+    local-prefixes: github.com/kapetaniosci/pipe
