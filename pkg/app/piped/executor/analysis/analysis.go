@@ -55,6 +55,8 @@ type providerResult struct {
 	provider string
 }
 
+// Execute runs multiple analyses that execute queries against analysis providers at regular intervals.
+// An executor runs multiple analyses, an analysis runs multiple queries.
 func (e *Executor) Execute(ctx context.Context) model.StageStatus {
 	queryCount := e.getQueryCount()
 	defer e.saveQueryCount(ctx, queryCount)
@@ -69,7 +71,7 @@ func (e *Executor) Execute(ctx context.Context) model.StageStatus {
 	defer cancel()
 
 	resultCh := make(chan providerResult)
-	// Run metrics queries
+	// Run analyses with metrics providers.
 	for _, m := range options.Metrics {
 		provider, err := e.newMetricsProvider(&m)
 		if err != nil {
@@ -80,7 +82,7 @@ func (e *Executor) Execute(ctx context.Context) model.StageStatus {
 			return provider.RunQuery(ctx, m.Query, m.Expected)
 		}, resultCh)
 	}
-	// Run log queries
+	// Run analyses with logging providers.
 	for _, l := range options.Logs {
 		provider, err := e.newLogProvider(&l)
 		if err != nil {
@@ -108,6 +110,10 @@ LOOP:
 			e.saveQueryCount(ctx, queryCount)
 			if !res.success {
 				failureCount++
+				e.Logger.Info("analysis run failed",
+					zap.String("provider", res.provider),
+					zap.Int("failure count", failureCount),
+				)
 			}
 			if failureCount > options.Threshold {
 				e.Logger.Info("stop all analysis")
@@ -115,6 +121,10 @@ LOOP:
 			}
 		}
 	}
+	if failureCount > options.Threshold {
+		return model.StageStatus_STAGE_FAILURE
+	}
+
 	return model.StageStatus_STAGE_SUCCESS
 }
 
@@ -193,7 +203,8 @@ func (e *Executor) newLogProvider(analysisLog *config.AnalysisLog) (log.Provider
 	return provider, nil
 }
 
-func (e *Executor) runAnalysis(ctx context.Context, interval time.Duration, providerType string, run func(context.Context) (bool, error), resultCh chan<- providerResult) {
+// runAnalysis calls `runQuery` function at the given interval and reports the result.
+func (e *Executor) runAnalysis(ctx context.Context, interval time.Duration, providerType string, runQuery func(context.Context) (bool, error), resultCh chan<- providerResult) {
 	e.Logger.Info("start the analysis", zap.String("provider", providerType))
 	// TODO: Address the case when using template
 	ticker := time.NewTicker(interval)
@@ -201,11 +212,11 @@ func (e *Executor) runAnalysis(ctx context.Context, interval time.Duration, prov
 	for {
 		select {
 		case <-ticker.C:
-			success, err := run(ctx)
+			success, err := runQuery(ctx)
 			if err != nil {
 				e.Logger.Error("failed to run query", zap.Error(err))
 				// TODO: Decide how to handle query failures.
-				continue
+				success = false
 			}
 			resultCh <- providerResult{
 				success:  success,
