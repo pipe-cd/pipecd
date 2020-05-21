@@ -57,7 +57,8 @@ type providerResult struct {
 
 // Execute runs multiple analyses that execute queries against analysis providers at regular intervals.
 // An executor runs multiple analyses, an analysis runs multiple queries.
-func (e *Executor) Execute(ctx context.Context) model.StageStatus {
+func (e *Executor) Execute(sig executor.StopSignal) model.StageStatus {
+	ctx := sig.Context()
 	queryCount := e.getQueryCount()
 	defer e.saveQueryCount(ctx, queryCount)
 

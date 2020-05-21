@@ -40,7 +40,7 @@ type StageLogPersister interface {
 	AppendInfo(log string)
 	AppendSuccess(log string)
 	AppendError(log string)
-	Complete(ctx context.Context) error
+	Complete(timeout time.Duration) error
 }
 
 type key struct {
@@ -231,7 +231,7 @@ func (sp *stageLogPersister) AppendError(log string) {
 
 // Complete marks the completion of logging for this stage.
 // This means no more log for this stage will be added into this persister.
-func (sp *stageLogPersister) Complete(ctx context.Context) error {
+func (sp *stageLogPersister) Complete(timeout time.Duration) error {
 	sp.mu.Lock()
 	var (
 		blocks     = sp.blocks
@@ -240,6 +240,9 @@ func (sp *stageLogPersister) Complete(ctx context.Context) error {
 	sp.completed = true
 	sp.completedAt = time.Now()
 	sp.mu.Unlock()
+
+	ctx, cancel := context.WithTimeout(context.Background(), timeout)
+	defer cancel()
 
 	// Immediately send the log to the server.
 	err := sp.persister.reportStageLog(ctx, sp.key, blocks, true, blockCount)

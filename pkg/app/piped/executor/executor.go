@@ -26,8 +26,8 @@ import (
 
 type Executor interface {
 	// Execute starts running executor until completion
-	// or the context has been cancelled.
-	Execute(ctx context.Context) model.StageStatus
+	// or the StopSignal has emitted.
+	Execute(sig StopSignal) model.StageStatus
 }
 
 type Factory func(in Input) Executor
@@ -84,8 +84,9 @@ const (
 
 type StopSignal interface {
 	Context() context.Context
-	Ch() chan<- StopSignalType
+	Ch() <-chan StopSignalType
 	Signal() StopSignalType
+	Stopped() bool
 }
 
 type StopSignalHandler interface {
@@ -137,11 +138,30 @@ func (s *stopSignal) Context() context.Context {
 	return s.ctx
 }
 
-func (s *stopSignal) Ch() chan<- StopSignalType {
+func (s *stopSignal) Ch() <-chan StopSignalType {
 	return s.ch
 }
 
 func (s *stopSignal) Signal() StopSignalType {
 	value := s.signal.Load()
 	return StopSignalType(value)
+}
+
+func (s *stopSignal) Stopped() bool {
+	value := s.signal.Load()
+	return StopSignalType(value) != StopSignalNone
+}
+
+func DetermineStageStatus(sig StopSignalType, ori, got model.StageStatus) model.StageStatus {
+	switch sig {
+	case StopSignalNone:
+		return got
+	case StopSignalTerminate:
+		return ori
+	case StopSignalCancel:
+		return model.StageStatus_STAGE_CANCELLED
+	case StopSignalTimeout:
+		return model.StageStatus_STAGE_FAILURE
+	}
+	return model.StageStatus_STAGE_FAILURE
 }

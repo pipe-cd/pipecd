@@ -35,8 +35,9 @@ import (
 )
 
 var (
-	workspaceGitRepoDirName = "repo"
-	workspaceStagesDirName  = "stages"
+	workspaceGitRepoDirName  = "repo"
+	workspaceStagesDirName   = "stages"
+	defaultDeploymentTimeout = time.Hour
 )
 
 type repoStore interface {
@@ -155,50 +156,114 @@ func (s *scheduler) Run(ctx context.Context) error {
 		}
 	}
 
+	var (
+		deploymentStatus  = model.DeploymentStatus_DEPLOYMENT_SUCCESS
+		statusDescription = "Completed Successfully"
+		timer             = time.NewTimer(defaultDeploymentTimeout)
+	)
+	defer timer.Stop()
+
 	// Iterate all the stages and execute the uncompleted ones.
 	for _, ps := range s.deployment.Stages {
-		// This stage is already handed by a previous scheduler.
-		if model.IsCompletedStage(ps.Status) {
+		if ps.Status == model.StageStatus_STAGE_SUCCESS {
 			continue
 		}
 
-		status := s.executeStage(ctx, ps)
-		if status == model.StageStatus_STAGE_SUCCESS {
+		// This stage is already completed by a previous scheduler.
+		if ps.Status == model.StageStatus_STAGE_CANCELLED {
+			deploymentStatus = model.DeploymentStatus_DEPLOYMENT_CANCELLED
+			statusDescription = fmt.Sprintf("Deployment was cancelled while executing stage %s", ps.Id)
+			break
+		}
+		if ps.Status == model.StageStatus_STAGE_FAILURE {
+			deploymentStatus = model.DeploymentStatus_DEPLOYMENT_FAILURE
+			statusDescription = fmt.Sprintf("Failed while executing stage %s", ps.Id)
+			break
+		}
+
+		var (
+			result       model.StageStatus
+			sig, handler = executor.NewStopSignal()
+			doneCh       = make(chan struct{})
+		)
+		go func() {
+			result = s.executeStage(sig, ps)
+			close(doneCh)
+		}()
+
+		select {
+		case <-ctx.Done():
+			handler.Terminate()
+			<-doneCh
+
+		case <-timer.C:
+			handler.Timeout()
+			<-doneCh
+
+		// TODO: Deployment was cancelled by command.
+		// case <- s.cancelledCh:
+		// handler.Cancel()
+		// <-doneCh
+
+		case <-doneCh:
+			break
+		}
+
+		// If all operations of the stage were completed successfully
+		// go the next stage to handle.
+		if result == model.StageStatus_STAGE_SUCCESS {
 			continue
 		}
-		if status == model.StageStatus_STAGE_FAILURE {
-			s.reportDeploymentCompleted(ctx, model.DeploymentStatus_DEPLOYMENT_FAILURE, fmt.Sprintf("Failed while executing stage %s", ps.Id))
-			return nil
+
+		sigType := sig.Signal()
+
+		// The deployment was cancelled by a web user.
+		if sigType == executor.StopSignalCancel {
+			deploymentStatus = model.DeploymentStatus_DEPLOYMENT_CANCELLED
+			statusDescription = fmt.Sprintf("Deployment was cancelled while executing stage %s", ps.Id)
+			break
 		}
-		if status == model.StageStatus_STAGE_CANCELLED {
-			s.reportDeploymentCompleted(ctx, model.DeploymentStatus_DEPLOYMENT_CANCELLED, fmt.Sprintf("Deployment was cancelled while executing stage %s", ps.Id))
-			return nil
+
+		// The stage was failed but not caused by the stop signal.
+		if result == model.StageStatus_STAGE_FAILURE && sigType == executor.StopSignalNone {
+			deploymentStatus = model.DeploymentStatus_DEPLOYMENT_FAILURE
+			statusDescription = fmt.Sprintf("Failed while executing stage %s", ps.Id)
+			break
 		}
+
 		return nil
 	}
 
-	s.reportDeploymentCompleted(ctx, model.DeploymentStatus_DEPLOYMENT_SUCCESS, "")
+	if model.IsCompletedDeployment(deploymentStatus) {
+		s.reportDeploymentCompleted(ctx, deploymentStatus, statusDescription)
+	}
 	return nil
 }
 
 // executeStage finds the executor for the given stage and execute.
-func (s *scheduler) executeStage(ctx context.Context, ps *model.PipelineStage) (status model.StageStatus) {
-	lp := s.logPersister.StageLogPersister(s.deployment.Id, ps.Id)
-	defer lp.Complete(ctx)
+func (s *scheduler) executeStage(sig executor.StopSignal, ps *model.PipelineStage) model.StageStatus {
+	var (
+		ctx            = sig.Context()
+		originalStatus = ps.Status
+		lp             = s.logPersister.StageLogPersister(s.deployment.Id, ps.Id)
+	)
+	defer lp.Complete(time.Minute)
 
 	// Update stage status to RUNNING if needed.
 	if model.CanUpdateStageStatus(ps.Status, model.StageStatus_STAGE_RUNNING) {
 		if err := s.reportStageStatus(ctx, ps.Id, model.StageStatus_STAGE_RUNNING); err != nil {
-			status = model.StageStatus_STAGE_FAILURE
-			return
+			return model.StageStatus_STAGE_FAILURE
 		}
-		status = model.StageStatus_STAGE_RUNNING
+		originalStatus = model.StageStatus_STAGE_RUNNING
 	}
 
 	// Ensure that all needed things has been prepared before executing any stage.
 	if err := s.ensurePreparing(ctx, lp); err != nil {
-		status = model.StageStatus_STAGE_FAILURE
-		return
+		if !sig.Stopped() {
+			s.reportStageStatus(ctx, ps.Id, model.StageStatus_STAGE_FAILURE)
+			return model.StageStatus_STAGE_FAILURE
+		}
+		return originalStatus
 	}
 
 	input := executor.Input{
@@ -225,17 +290,21 @@ func (s *scheduler) executeStage(ctx context.Context, ps *model.PipelineStage) (
 		err := fmt.Errorf("no registered executor for stage %s", ps.Name)
 		lp.AppendError(err.Error())
 		s.reportStageStatus(ctx, ps.Id, model.StageStatus_STAGE_FAILURE)
-		status = model.StageStatus_STAGE_FAILURE
-		return
+		return model.StageStatus_STAGE_FAILURE
 	}
 
 	// Start running executor.
-	status = ex.Execute(ctx)
-	if err := s.reportStageStatus(ctx, ps.Id, status); err != nil {
-		return
+	status := ex.Execute(sig)
+
+	if status == model.StageStatus_STAGE_SUCCESS ||
+		status == model.StageStatus_STAGE_CANCELLED ||
+		(status == model.StageStatus_STAGE_FAILURE && !sig.Stopped()) {
+
+		s.reportStageStatus(ctx, ps.Id, status)
+		return status
 	}
 
-	return status
+	return originalStatus
 }
 
 // ensurePreparing ensures that all needed things should be prepared before executing any stages.

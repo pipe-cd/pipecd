@@ -79,6 +79,7 @@ var (
 		"extensions/v1beta1:Deployment:kube-system:heapster-gke":                             {},
 		"extensions/v1beta1:Deployment:kube-system:stackdriver-metadata-agent-cluster-level": {},
 
+		"v1:ConfigMap:kube-system:cluster-kubestore":         {},
 		"v1:ConfigMap:kube-system:ingress-gce-lock":          {},
 		"v1:ConfigMap:kube-system:gke-common-webhook-lock":   {},
 		"v1:ConfigMap:kube-system:cluster-autoscaler-status": {},

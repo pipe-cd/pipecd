@@ -82,7 +82,7 @@ func Register(r registerer) {
 	r.Register(model.StageK8sTrafficSplit, f)
 }
 
-func (e *Executor) Execute(ctx context.Context) model.StageStatus {
+func (e *Executor) Execute(sig executor.StopSignal) model.StageStatus {
 	e.appDirPath = filepath.Join(e.RepoDir, e.Deployment.GitPath.Path)
 	e.templatingMethod = determineTemplatingMethod(e.DeploymentConfig, e.appDirPath)
 
@@ -105,23 +105,31 @@ func (e *Executor) Execute(ctx context.Context) model.StageStatus {
 		zap.String("templating-method", string(e.templatingMethod)),
 	)
 
+	var (
+		ctx            = sig.Context()
+		originalStatus = e.Stage.Status
+		status         model.StageStatus
+	)
+
 	switch model.Stage(e.Stage.Name) {
 	case model.StageK8sPrimaryUpdate:
-		return e.ensurePrimaryUpdate(ctx)
+		status = e.ensurePrimaryUpdate(ctx)
 	case model.StageK8sStageRollout:
-		return e.ensureStageRollout(ctx)
+		status = e.ensureStageRollout(ctx)
 	case model.StageK8sStageClean:
-		return e.ensureStageClean(ctx)
+		status = e.ensureStageClean(ctx)
 	case model.StageK8sBaselineRollout:
-		return e.ensureBaselineRollout(ctx)
+		status = e.ensureBaselineRollout(ctx)
 	case model.StageK8sBaselineClean:
-		return e.ensureBaselineClean(ctx)
+		status = e.ensureBaselineClean(ctx)
 	case model.StageK8sTrafficSplit:
-		return e.ensureTrafficSplit(ctx)
+		status = e.ensureTrafficSplit(ctx)
+	default:
+		e.LogPersister.AppendError(fmt.Sprintf("Unsupported stage %s for kubernetes application", e.Stage.Name))
+		return model.StageStatus_STAGE_FAILURE
 	}
 
-	e.LogPersister.AppendError(fmt.Sprintf("Unsupported stage %s for kubernetes application", e.Stage.Name))
-	return model.StageStatus_STAGE_FAILURE
+	return executor.DetermineStageStatus(sig.Signal(), originalStatus, status)
 }
 
 func (e *Executor) ensurePrimaryUpdate(ctx context.Context) model.StageStatus {

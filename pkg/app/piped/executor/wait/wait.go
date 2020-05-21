@@ -15,7 +15,6 @@
 package wait
 
 import (
-	"context"
 	"fmt"
 	"time"
 
@@ -42,7 +41,7 @@ func Register(r registerer) {
 	r.Register(model.StageWait, f)
 }
 
-func (e *Executor) Execute(ctx context.Context) model.StageStatus {
+func (e *Executor) Execute(sig executor.StopSignal) model.StageStatus {
 	var (
 		originalStatus = e.Stage.Status
 		duration       = defaultDuration
@@ -67,10 +66,18 @@ func (e *Executor) Execute(ctx context.Context) model.StageStatus {
 	e.LogPersister.AppendInfo(fmt.Sprintf("Waiting for %v...", duration))
 	select {
 	case <-timer.C:
-	case <-ctx.Done():
-		return originalStatus
+		break
+	case s := <-sig.Ch():
+		switch s {
+		case executor.StopSignalCancel:
+			return model.StageStatus_STAGE_CANCELLED
+		case executor.StopSignalTerminate:
+			return originalStatus
+		default:
+			return model.StageStatus_STAGE_FAILURE
+		}
 	}
-	e.LogPersister.AppendInfo(fmt.Sprintf("Waited for %v", duration))
 
+	e.LogPersister.AppendInfo(fmt.Sprintf("Waited for %v", duration))
 	return model.StageStatus_STAGE_SUCCESS
 }

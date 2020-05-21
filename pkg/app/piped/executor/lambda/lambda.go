@@ -15,8 +15,6 @@
 package lambda
 
 import (
-	"context"
-
 	"github.com/kapetaniosci/pipe/pkg/app/piped/executor"
 	"github.com/kapetaniosci/pipe/pkg/model"
 )
@@ -37,6 +35,6 @@ func Register(r registerer) {
 	}
 }
 
-func (e *Executor) Execute(ctx context.Context) model.StageStatus {
+func (e *Executor) Execute(sig executor.StopSignal) model.StageStatus {
 	return model.StageStatus_STAGE_SUCCESS
 }

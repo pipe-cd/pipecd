@@ -39,9 +39,10 @@ func Register(r registerer) {
 	r.Register(model.StageWaitApproval, f)
 }
 
-func (e *Executor) Execute(ctx context.Context) model.StageStatus {
+func (e *Executor) Execute(sig executor.StopSignal) model.StageStatus {
 	var (
 		originalStatus = e.Stage.Status
+		ctx            = sig.Context()
 		ticker         = time.NewTicker(5 * time.Second)
 	)
 	defer ticker.Stop()
@@ -56,8 +57,15 @@ func (e *Executor) Execute(ctx context.Context) model.StageStatus {
 			e.LogPersister.AppendInfo("Got an approval from abc")
 			return model.StageStatus_STAGE_SUCCESS
 
-		case <-ctx.Done():
-			return originalStatus
+		case s := <-sig.Ch():
+			switch s {
+			case executor.StopSignalCancel:
+				return model.StageStatus_STAGE_CANCELLED
+			case executor.StopSignalTerminate:
+				return originalStatus
+			default:
+				return model.StageStatus_STAGE_FAILURE
+			}
 		}
 	}
 }
@@ -71,8 +79,10 @@ func (e *Executor) checkApproval(ctx context.Context) bool {
 			continue
 		}
 
-		cmd.Report(ctx, model.CommandStatus_COMMAND_SUCCEEDED, nil)
-		return true
+		if err := cmd.Report(ctx, model.CommandStatus_COMMAND_SUCCEEDED, nil); err == nil {
+			return true
+		}
+		return false
 	}
 
 	return false
