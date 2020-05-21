@@ -45,6 +45,7 @@ type repoStore interface {
 
 // scheduler is a dedicated object for a specific deployment of a single application.
 type scheduler struct {
+	// Readonly deployment model.
 	deployment       *model.Deployment
 	workingDir       string
 	executorRegistry registry.Registry
@@ -56,12 +57,17 @@ type scheduler struct {
 	pipedConfig      *config.PipedSpec
 	logger           *zap.Logger
 
-	// Deployment configuration for this application.
 	deploymentConfig *config.Config
 	prepareOnce      sync.Once
-	done             atomic.Bool
-	reported         atomic.Bool
-	nowFunc          func() time.Time
+	// Current status of each stages.
+	// We stores their current statuses into this field
+	// because the deployment model is readonly to avoid data race.
+	// We may need a mutex for this field in the future
+	// when the stages can be executed concurrently.
+	stageStatuses map[string]model.StageStatus
+	done          atomic.Bool
+	reported      atomic.Bool
+	nowFunc       func() time.Time
 }
 
 func newScheduler(
@@ -83,7 +89,8 @@ func newScheduler(
 		zap.String("application-kind", d.Kind.String()),
 		zap.String("working-dir", workingDir),
 	)
-	return &scheduler{
+
+	s := &scheduler{
 		deployment:       d,
 		pipedConfig:      pipedConfig,
 		workingDir:       workingDir,
@@ -96,6 +103,14 @@ func newScheduler(
 		logger:           logger,
 		nowFunc:          time.Now,
 	}
+
+	// Initialize the map of current status of all stages.
+	s.stageStatuses = make(map[string]model.StageStatus, len(d.Stages))
+	for _, stage := range d.Stages {
+		s.stageStatuses[stage.Id] = stage.Status
+	}
+
+	return s
 }
 
 // Id returns the id of scheduler.
@@ -285,12 +300,7 @@ func (s *scheduler) reportStageStatus(ctx context.Context, stageID string, statu
 	)
 
 	// Update stage status at local.
-	for _, stage := range s.deployment.Stages {
-		if stage.Id == stageID {
-			stage.Status = status
-			break
-		}
-	}
+	s.stageStatuses[stageID] = status
 
 	// Update stage status on the remote.
 	for retry.WaitNext(ctx) {
@@ -306,17 +316,13 @@ func (s *scheduler) reportStageStatus(ctx context.Context, stageID string, statu
 
 func (s *scheduler) reportDeploymentRunning(ctx context.Context, desc string) error {
 	var (
-		err    error
-		retry  = newAPIRetry(10)
-		status = model.DeploymentStatus_DEPLOYMENT_RUNNING
-		req    = &pipedservice.ReportDeploymentRunningRequest{
-			DeploymentId: s.deployment.Id,
+		err   error
+		retry = newAPIRetry(10)
+		req   = &pipedservice.ReportDeploymentRunningRequest{
+			DeploymentId:      s.deployment.Id,
+			StatusDescription: desc,
 		}
 	)
-
-	// Update deployment status at local.
-	s.deployment.Status = status
-	s.deployment.StatusDescription = desc
 
 	// Update deployment status on remote.
 	for retry.WaitNext(ctx) {
@@ -337,15 +343,11 @@ func (s *scheduler) reportDeploymentCompleted(ctx context.Context, status model.
 			DeploymentId:      s.deployment.Id,
 			Status:            status,
 			StatusDescription: desc,
-			StageStatuses:     s.deployment.StageStatusMap(),
+			StageStatuses:     s.stageStatuses,
 			CompletedAt:       now.Unix(),
 		}
 		retry = newAPIRetry(10)
 	)
-
-	// Update deployment status at local.
-	s.deployment.Status = status
-	s.deployment.StatusDescription = desc
 
 	// Update deployment status on remote.
 	for retry.WaitNext(ctx) {

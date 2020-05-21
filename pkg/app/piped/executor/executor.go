@@ -52,7 +52,8 @@ type CommandStore interface {
 }
 
 type Input struct {
-	Stage            *model.PipelineStage
+	Stage *model.PipelineStage
+	// Readonly deployment model.
 	Deployment       *model.Deployment
 	DeploymentConfig *config.Config
 	PipedConfig      *config.PipedSpec
