@@ -10,7 +10,10 @@
   "devDependencies": {
     "@bazel/labs": "^1.6.1",
     "@bazel/typescript": "^1.6.1",
+    "@types/react": "^16.9.35",
     "@types/react-dom": "^16.9.8",
+    "@types/react-redux": "^7.1.9",
+    "@types/google-protobuf": "^3.7.2",
     "fork-ts-checker-webpack-plugin": "^4.1.4",
     "html-webpack-plugin": "^4.3.0",
     "ts-loader": "^7.0.2",
@@ -22,11 +25,12 @@
   },
   "dependencies": {
     "@material-ui/core": "^4.9.14",
-    "@types/google-protobuf": "^3.7.2",
+    "@reduxjs/toolkit": "^1.3.6",
     "dotenv": "^8.2.0",
     "google-protobuf": "^3.12.0-rc.1",
     "grpc-web": "^1.0.7",
     "react": "^16.13.1",
-    "react-dom": "^16.13.1"
+    "react-dom": "^16.13.1",
+    "react-redux": "^7.2.0"
   }
 }
