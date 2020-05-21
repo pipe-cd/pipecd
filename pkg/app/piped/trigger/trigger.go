@@ -43,9 +43,9 @@ type gitClient interface {
 	Clone(ctx context.Context, repoID, remote, branch, destination string) (git.Repo, error)
 }
 
-type applicationStore interface {
-	ListApplications() []*model.Application
-	GetApplication(id string) (*model.Application, bool)
+type applicationLister interface {
+	List() []*model.Application
+	Get(id string) (*model.Application, bool)
 }
 
 type commandStore interface {
@@ -54,29 +54,29 @@ type commandStore interface {
 }
 
 type DeploymentTrigger struct {
-	apiClient        apiClient
-	gitClient        gitClient
-	applicationStore applicationStore
-	commandStore     commandStore
-	config           *config.PipedSpec
-	triggeredCommits map[string]string
-	gitRepos         map[string]git.Repo
-	gracePeriod      time.Duration
-	logger           *zap.Logger
+	apiClient         apiClient
+	gitClient         gitClient
+	applicationLister applicationLister
+	commandStore      commandStore
+	config            *config.PipedSpec
+	triggeredCommits  map[string]string
+	gitRepos          map[string]git.Repo
+	gracePeriod       time.Duration
+	logger            *zap.Logger
 }
 
 // NewTrigger creates a new instance for DeploymentTrigger.
-func NewTrigger(apiClient apiClient, gitClient gitClient, appStore applicationStore, cmdStore commandStore, cfg *config.PipedSpec, gracePeriod time.Duration, logger *zap.Logger) *DeploymentTrigger {
+func NewTrigger(apiClient apiClient, gitClient gitClient, appStore applicationLister, cmdStore commandStore, cfg *config.PipedSpec, gracePeriod time.Duration, logger *zap.Logger) *DeploymentTrigger {
 	return &DeploymentTrigger{
-		apiClient:        apiClient,
-		gitClient:        gitClient,
-		applicationStore: appStore,
-		commandStore:     cmdStore,
-		config:           cfg,
-		triggeredCommits: make(map[string]string),
-		gitRepos:         make(map[string]git.Repo, len(cfg.Repositories)),
-		gracePeriod:      gracePeriod,
-		logger:           logger.Named("deployment-trigger"),
+		apiClient:         apiClient,
+		gitClient:         gitClient,
+		applicationLister: appStore,
+		commandStore:      cmdStore,
+		config:            cfg,
+		triggeredCommits:  make(map[string]string),
+		gitRepos:          make(map[string]git.Repo, len(cfg.Repositories)),
+		gracePeriod:       gracePeriod,
+		logger:            logger.Named("deployment-trigger"),
 	}
 }
 
@@ -223,7 +223,7 @@ func (t *DeploymentTrigger) checkApplication(ctx context.Context, app *model.App
 // and then groups them by repoID.
 func (t *DeploymentTrigger) listApplications(ctx context.Context) map[string][]*model.Application {
 	var (
-		apps = t.applicationStore.ListApplications()
+		apps = t.applicationLister.List()
 		m    = make(map[string][]*model.Application)
 	)
 	for _, app := range apps {

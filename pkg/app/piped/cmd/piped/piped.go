@@ -37,8 +37,8 @@ import (
 	"github.com/kapetaniosci/pipe/pkg/app/piped/appstatestore"
 	"github.com/kapetaniosci/pipe/pkg/app/piped/commandstore"
 	"github.com/kapetaniosci/pipe/pkg/app/piped/controller"
-	"github.com/kapetaniosci/pipe/pkg/app/piped/trigger"
 	"github.com/kapetaniosci/pipe/pkg/app/piped/toolregistry"
+	"github.com/kapetaniosci/pipe/pkg/app/piped/trigger"
 	"github.com/kapetaniosci/pipe/pkg/cli"
 	"github.com/kapetaniosci/pipe/pkg/config"
 	"github.com/kapetaniosci/pipe/pkg/git"
@@ -185,12 +185,13 @@ func (p *piped) run(ctx context.Context, t cli.Telemetry) error {
 	}
 
 	// Start running application store.
-	var applicationStore applicationstore.Store
+	var applicationLister applicationstore.Lister
 	{
-		applicationStore = applicationstore.NewStore(apiClient, p.gracePeriod, t.Logger)
+		store := applicationstore.NewStore(apiClient, p.gracePeriod, t.Logger)
 		group.Go(func() error {
-			return applicationStore.Run(ctx)
+			return store.Run(ctx)
 		})
+		applicationLister = store.Lister()
 	}
 
 	// Start running command store.
@@ -212,7 +213,7 @@ func (p *piped) run(ctx context.Context, t cli.Telemetry) error {
 
 	// Start running deployment trigger.
 	{
-		t := trigger.NewTrigger(apiClient, gitClient, applicationStore, commandStore, cfg, p.gracePeriod, t.Logger)
+		t := trigger.NewTrigger(apiClient, gitClient, applicationLister, commandStore, cfg, p.gracePeriod, t.Logger)
 		group.Go(func() error {
 			return t.Run(ctx)
 		})

@@ -26,14 +26,25 @@ import (
 	"github.com/kapetaniosci/pipe/pkg/model"
 )
 
+// Lister helps list and get application.
+// All objects returned here must be treated as read-only.
+type Lister interface {
+	// List lists all applications that should be handled by this piped.
+	// All disabled applications will be ignored.
+	List() []*model.Application
+	// Get retrieves a specifiec deployment for the given id.
+	Get(id string) (*model.Application, bool)
+}
+
 type apiClient interface {
 	ListApplications(ctx context.Context, in *pipedservice.ListApplicationsRequest, opts ...grpc.CallOption) (*pipedservice.ListApplicationsResponse, error)
 }
 
 type Store interface {
+	// Run starts syncing the application list with the control-plane.
 	Run(ctx context.Context) error
-	ListApplications() []*model.Application
-	GetApplication(id string) (*model.Application, bool)
+	// Lister returns a lister for retrieving applications.
+	Lister() Lister
 }
 
 type store struct {
@@ -60,7 +71,7 @@ func NewStore(apiClient apiClient, gracePeriod time.Duration, logger *zap.Logger
 	}
 }
 
-// Run starts syncing.
+// Run starts syncing the application list with the control-plane.
 func (s *store) Run(ctx context.Context) error {
 	s.logger.Info("start running application store")
 
@@ -77,6 +88,11 @@ func (s *store) Run(ctx context.Context) error {
 			return nil
 		}
 	}
+}
+
+// Lister returns a lister for retrieving applications.
+func (s *store) Lister() Lister {
+	return s
 }
 
 func (s *store) sync(ctx context.Context) error {
@@ -96,7 +112,9 @@ func (s *store) sync(ctx context.Context) error {
 	return nil
 }
 
-func (s *store) ListApplications() []*model.Application {
+// List lists all applications that should be handled by this piped.
+// All disabled applications will be ignored.
+func (s *store) List() []*model.Application {
 	apps := s.applicationList.Load()
 	if apps == nil {
 		return nil
@@ -104,7 +122,8 @@ func (s *store) ListApplications() []*model.Application {
 	return apps.([]*model.Application)
 }
 
-func (s *store) GetApplication(id string) (*model.Application, bool) {
+// Get retrieves a specifiec deployment for the given id.
+func (s *store) Get(id string) (*model.Application, bool) {
 	apps := s.applicationList.Load()
 	if apps == nil {
 		return nil, false
