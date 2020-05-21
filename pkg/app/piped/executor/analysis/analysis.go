@@ -130,15 +130,19 @@ func (e *Executor) newMetricsProvider(metrics *config.AnalysisMetrics) (metric.P
 	switch {
 	case providerCfg.Prometheus != nil:
 		cfg := providerCfg.Prometheus
-		username, err := ioutil.ReadFile(cfg.UsernameFile)
-		if err != nil {
-			return nil, err
-		}
-		password, err := ioutil.ReadFile(cfg.PasswordFile)
-		if err != nil {
-			return nil, err
-		}
-		provider, err = prometheus.NewProvider(cfg.Address, string(username), string(password))
+		// TODO: Decide the way to authenticate.
+		/*		username, err := ioutil.ReadFile(cfg.UsernameFile)
+				if err != nil {
+					return nil, err
+				}
+				password, err := ioutil.ReadFile(cfg.PasswordFile)
+				if err != nil {
+					return nil, err
+				}
+				provider, err = prometheus.NewProvider(cfg.Address, string(username), string(password))
+		*/
+		var err error
+		provider, err = prometheus.NewProvider(cfg.Address, "", "")
 		if err != nil {
 			return nil, err
 		}
