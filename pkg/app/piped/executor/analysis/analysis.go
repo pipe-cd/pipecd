@@ -152,7 +152,7 @@ func (e *Executor) newMetricsProvider(metrics *config.AnalysisMetrics) (metric.P
 				provider, err = prometheus.NewProvider(cfg.Address, string(username), string(password))
 		*/
 		var err error
-		provider, err = prometheus.NewProvider(cfg.Address, "", "")
+		provider, err = prometheus.NewProvider(cfg.Address, "", "", e.LogPersister)
 		if err != nil {
 			return nil, err
 		}

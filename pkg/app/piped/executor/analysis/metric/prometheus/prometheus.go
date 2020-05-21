@@ -43,7 +43,7 @@ type Provider struct {
 	logPersister executor.LogPersister
 }
 
-func NewProvider(address, username, password string) (*Provider, error) {
+func NewProvider(address, username, password string, logPersister executor.LogPersister) (*Provider, error) {
 	// TODO: Decide the way to authenticate.
 	client, err := api.NewClient(api.Config{
 		Address: address,
@@ -53,10 +53,11 @@ func NewProvider(address, username, password string) (*Provider, error) {
 	}
 
 	return &Provider{
-		api:      v1.NewAPI(client),
-		username: username,
-		password: password,
-		timeout:  defaultTimeout,
+		api:          v1.NewAPI(client),
+		username:     username,
+		password:     password,
+		timeout:      defaultTimeout,
+		logPersister: logPersister,
 	}, nil
 }
 
