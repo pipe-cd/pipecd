@@ -55,6 +55,8 @@ type DataStore interface {
 	// Update updates an existing entity in the datastore.
 	// If updating entity was not found in the datastore, ErrNotFound will be returned.
 	Update(ctx context.Context, kind, id string, factory Factory, updater Updater) error
+	// Close closes datastore resources held by the client.
+	Close() error
 }
 
 type Iterator interface {

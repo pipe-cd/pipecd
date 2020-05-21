@@ -124,6 +124,11 @@ func (s *server) run(ctx context.Context, t cli.Telemetry) error {
 			t.Logger.Error("failed creating datastore", zap.Error(err))
 			return err
 		}
+		defer func() {
+			if err := ds.Close(); err != nil {
+				t.Logger.Error("failed closing datastore client", zap.Error(err))
+			}
+		}()
 		service := api.NewPipedAPI(ds, t.Logger)
 		opts := []rpc.Option{
 			rpc.WithPort(s.pipedAPIPort),

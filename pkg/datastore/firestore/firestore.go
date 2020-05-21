@@ -222,6 +222,10 @@ func (s *FireStore) Update(ctx context.Context, kind, id string, factory datasto
 	return nil
 }
 
+func (s *FireStore) Close() error {
+	return s.client.Close()
+}
+
 func (s *FireStore) fetchCursorDocumentSnapshot(ctx context.Context, kind string, opts datastore.ListOptions) (*firestore.DocumentSnapshot, error) {
 	if opts.Cursor == "" {
 		return nil, nil
