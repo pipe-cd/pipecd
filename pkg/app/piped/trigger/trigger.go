@@ -13,11 +13,8 @@
 // limitations under the License.
 
 // Package trigger provides a piped component
-// that detects a list of application should be synced
-// and then trigger their deployments by calling to API to create a new Deployment model.
-// Until v1, we detect based on the new merged commit and its changes.
-// But in the next versions, we also want to enable the ability to detect
-// based on the diff between the repo state (desired state) and cluster state (actual state).
+// that detects a list of application should be synced (by new commit, sync command or configuration driff)
+// and then sends request to the control-plane to create a new Deployment.
 package trigger
 
 import (
@@ -87,8 +84,8 @@ func NewTrigger(
 	}
 }
 
-// Run starts running DeploymentTrigger until the specified context
-// has done. This also waits for its cleaning up before returning.
+// Run starts running DeploymentTrigger until the specified context has done.
+// This also waits for its cleaning up before returning.
 func (t *DeploymentTrigger) Run(ctx context.Context) error {
 	t.logger.Info("start running deployment trigger")
 
