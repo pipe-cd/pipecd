@@ -20,6 +20,9 @@ import (
 	"net/http"
 	"time"
 
+	"github.com/kapetaniosci/pipe/pkg/datastore"
+	"github.com/kapetaniosci/pipe/pkg/datastore/firestore"
+
 	jwtgo "github.com/dgrijalva/jwt-go"
 	"github.com/spf13/cobra"
 	"go.uber.org/zap"
@@ -52,6 +55,11 @@ type server struct {
 	certFile            string
 	keyFile             string
 	tokenSigningKeyFile string
+
+	datastoreVariant         string
+	datastoreType            string
+	datastoreCredentialsFile string
+	gcpProjectID             string
 }
 
 func NewCommand() *cobra.Command {
@@ -79,6 +87,14 @@ func NewCommand() *cobra.Command {
 	cmd.Flags().StringVar(&s.keyFile, "key-file", s.keyFile, "The path to the TLS key file.")
 	cmd.Flags().StringVar(&s.tokenSigningKeyFile, "token-signing-key-file", s.tokenSigningKeyFile, "The path to key file used to sign ID token.")
 
+	cmd.Flags().StringVar(&s.datastoreVariant, "datastore-variant", s.datastoreVariant, "The identifier that logically separates environment of the datastore.")
+	cmd.Flags().StringVar(&s.datastoreType, "datastore-type", s.datastoreType, "The type of datastore which persist piped data.")
+	cmd.Flags().StringVar(&s.datastoreCredentialsFile, "datastore-credentials-file", s.datastoreCredentialsFile, "The path to the credentials file for accessing datastore.")
+	cmd.Flags().StringVar(&s.gcpProjectID, "gcp-project-id", s.gcpProjectID, "The identifier of the GCP project which host the control plane.")
+
+	cmd.MarkFlagRequired("datastore-variant")
+	cmd.MarkFlagRequired("datastore-type")
+
 	return cmd
 }
 
@@ -103,7 +119,12 @@ func (s *server) run(ctx context.Context, t cli.Telemetry) error {
 
 	// Start a gRPC server for handling PipedAPI requests.
 	{
-		service := api.NewPipedAPI(t.Logger)
+		ds, err := s.createDatastore(ctx, t.Logger)
+		if err != nil {
+			t.Logger.Error("failed creating datastore", zap.Error(err))
+			return err
+		}
+		service := api.NewPipedAPI(ds, t.Logger)
 		opts := []rpc.Option{
 			rpc.WithPort(s.pipedAPIPort),
 			rpc.WithGracePeriod(s.gracePeriod),
@@ -205,4 +226,26 @@ func runHttpServer(ctx context.Context, httpServer *http.Server, gracePeriod tim
 	}
 
 	return <-doneCh
+}
+
+func (s *server) createDatastore(ctx context.Context, logger *zap.Logger) (datastore.DataStore, error) {
+	switch s.datastoreType {
+	case "firestore":
+		if s.datastoreVariant == "" {
+			return nil, fmt.Errorf("datastore: datastore-variant is required for %s", s.datastoreType)
+		}
+		if s.datastoreCredentialsFile == "" {
+			return nil, fmt.Errorf("datastore: datastore-credentials-file is required for %s", s.datastoreType)
+		}
+		if s.gcpProjectID == "" {
+			return nil, fmt.Errorf("datastore: gcp-project-id is required for %s", s.datastoreType)
+		}
+		options := []firestore.Option{
+			firestore.WithCredentialsFile(s.datastoreCredentialsFile),
+			firestore.WithLogger(logger),
+		}
+		return firestore.NewFireStore(ctx, s.gcpProjectID, s.datastoreVariant, options...)
+	default:
+		return nil, fmt.Errorf("invalid datastore type: %s", s.datastoreType)
+	}
 }

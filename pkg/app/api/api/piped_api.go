@@ -23,17 +23,33 @@ import (
 	"google.golang.org/grpc/status"
 
 	"github.com/kapetaniosci/pipe/pkg/app/api/service/pipedservice"
+	"github.com/kapetaniosci/pipe/pkg/datastore"
 )
 
 // PipedAPI implements the behaviors for the gRPC definitions of PipedAPI.
 type PipedAPI struct {
+	applicationStore datastore.ApplicationStore
+	commandStore     datastore.CommandStore
+	deploymentStore  datastore.DeploymentStore
+	environmentStore datastore.EnvironmentStore
+	pipedStatsStore  datastore.PipedStatsStore
+	pipedStore       datastore.PipedStore
+	projectStore     datastore.ProjectStore
+
 	logger *zap.Logger
 }
 
 // NewPipedAPI creates a new PipedAPI instance.
-func NewPipedAPI(logger *zap.Logger) *PipedAPI {
+func NewPipedAPI(ds datastore.DataStore, logger *zap.Logger) *PipedAPI {
 	a := &PipedAPI{
-		logger: logger.Named("piped-api"),
+		applicationStore: datastore.NewApplicationStore(ds),
+		commandStore:     datastore.NewCommandStore(ds),
+		deploymentStore:  datastore.NewDeploymentStore(ds),
+		environmentStore: datastore.NewEnvironmentStore(ds),
+		pipedStatsStore:  datastore.NewPipedStatsStore(ds),
+		pipedStore:       datastore.NewPipedStore(ds),
+		projectStore:     datastore.NewProjectStore(ds),
+		logger:           logger.Named("piped-api"),
 	}
 	return a
 }
