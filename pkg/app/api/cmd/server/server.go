@@ -145,7 +145,7 @@ func (s *server) run(ctx context.Context, t cli.Telemetry) error {
 	{
 		service := api.NewWebAPI(t.Logger)
 		opts := []rpc.Option{
-			rpc.WithPort(s.pipedAPIPort),
+			rpc.WithPort(s.webAPIPort),
 			rpc.WithGracePeriod(s.gracePeriod),
 			rpc.WithLogger(t.Logger),
 			rpc.WithJWTAuthUnaryInterceptor(verifier, webservice.NewRBACAuthorizer(), t.Logger),
