@@ -327,13 +327,19 @@ type AnalysisStageOptions struct {
 }
 
 type AnalysisMetrics struct {
-	Query    string   `json:"query"`
-	Expected string   `json:"expected"`
-	Interval Duration `json:"interval"`
+	Query    string           `json:"query"`
+	Expected AnalysisExpected `json:"expected"`
+	Interval Duration         `json:"interval"`
 	// How long after which the query times out.
 	Timeout     Duration `json:"timeout"`
 	Provider    string   `json:"provider"`
 	UseTemplate string   `json:"useTemplate"`
+}
+
+// AnalysisExpected defines the range used for metrics analysis.
+type AnalysisExpected struct {
+	Min *float64 `json:"min"`
+	Max *float64 `json:"max"`
 }
 
 // Comprare the log entries between new version and old version.

@@ -3,6 +3,8 @@ package metric
 import (
 	"context"
 	"errors"
+
+	"github.com/kapetaniosci/pipe/pkg/config"
 )
 
 var (
@@ -13,5 +15,5 @@ type Provider interface {
 	Type() string
 	// RunQuery runs the given query against the metrics provider,
 	// and then checks if the results are expected or not.
-	RunQuery(ctx context.Context, query, expected string) (result bool, err error)
+	RunQuery(ctx context.Context, query string, expected config.AnalysisExpected) (result bool, err error)
 }

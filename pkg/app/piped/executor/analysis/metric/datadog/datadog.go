@@ -17,6 +17,8 @@ package datadog
 import (
 	"context"
 	"time"
+
+	"github.com/kapetaniosci/pipe/pkg/config"
 )
 
 const ProviderType = "Datadog"
@@ -51,6 +53,6 @@ func (p *Provider) Type() string {
 	return ProviderType
 }
 
-func (p *Provider) RunQuery(ctx context.Context, query, expected string) (bool, error) {
+func (p *Provider) RunQuery(ctx context.Context, query string, expected config.AnalysisExpected) (bool, error) {
 	return false, nil
 }

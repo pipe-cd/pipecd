@@ -52,7 +52,8 @@ spec:
           threshold: 2
           metrics:
             - query: grpc_error_percentage
-              expected: < 0.1
+              expected:
+                max: 0.1
               interval: 1m
               provider: prometheus-dev
           logs:

@@ -25,6 +25,7 @@ import (
 	"github.com/prometheus/common/model"
 
 	"github.com/kapetaniosci/pipe/pkg/app/piped/executor"
+	"github.com/kapetaniosci/pipe/pkg/config"
 )
 
 const (
@@ -42,19 +43,8 @@ type Provider struct {
 	logPersister executor.LogPersister
 }
 
-// response represents a response from prometheus server.
-type response struct {
-	Data struct {
-		Result []struct {
-			Metric struct {
-				Name string `json:"name"`
-			}
-			Value []interface{} `json:"value"`
-		}
-	}
-}
-
 func NewProvider(address, username, password string) (*Provider, error) {
+	// TODO: Decide the way to authenticate.
 	client, err := api.NewClient(api.Config{
 		Address: address,
 	})
@@ -74,7 +64,7 @@ func (p *Provider) Type() string {
 	return ProviderType
 }
 
-func (p *Provider) RunQuery(ctx context.Context, query, expected string) (bool, error) {
+func (p *Provider) RunQuery(ctx context.Context, query string, expected config.AnalysisExpected) (bool, error) {
 	ctx, cancel := context.WithTimeout(ctx, p.timeout)
 	defer cancel()
 
@@ -89,17 +79,20 @@ func (p *Provider) RunQuery(ctx context.Context, query, expected string) (bool, 
 	return p.evaluate(expected, response)
 }
 
-func (p *Provider) evaluate(expected string, response model.Value) (bool, error) {
+func (p *Provider) evaluate(expected config.AnalysisExpected, response model.Value) (bool, error) {
 	switch value := response.(type) {
 	case *model.Scalar:
 		result := float64(value.Value)
 		if math.IsNaN(result) {
 			return false, fmt.Errorf("the result %v is not a number", result)
 		}
-		// FIXME: evaluate
-		return false, nil
+		return inRange(expected, result)
 	case model.Vector:
-		results := make([]float64, 0, len(value))
+		lv := len(value)
+		if lv == 0 {
+			return false, fmt.Errorf("zero value returned")
+		}
+		results := make([]float64, 0, lv)
 		for _, s := range value {
 			if s == nil {
 				continue
@@ -110,9 +103,23 @@ func (p *Provider) evaluate(expected string, response model.Value) (bool, error)
 			}
 			results = append(results, result)
 		}
-		// FIXME: evaluate
-		return false, nil
+		// TODO: Consider the case of multiple results.
+		return inRange(expected, results[0])
 	default:
 		return false, fmt.Errorf("unsupported prometheus metric type")
 	}
+}
+
+// TODO: Move to common package.
+func inRange(expected config.AnalysisExpected, value float64) (bool, error) {
+	if expected.Min == nil && expected.Max == nil {
+		return false, fmt.Errorf("expected range is undefined")
+	}
+	if min := expected.Min; min != nil && *min > value {
+		return false, nil
+	}
+	if max := expected.Min; max != nil && *max > value {
+		return false, nil
+	}
+	return true, nil
 }
