@@ -257,7 +257,7 @@ func (e *Executor) getQueryCount() map[string]int {
 	var m map[string]int
 	err := e.MetadataStore.GetStageMetadata(e.Stage.Id, &m)
 	if err != nil {
-		e.Logger.Warn("failed to get stage metadata")
+		e.Logger.Error("failed to get stage metadata", zap.Error(err))
 		return nil
 	}
 	return m
