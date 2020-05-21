@@ -66,11 +66,20 @@ type DeploymentTrigger struct {
 }
 
 // NewTrigger creates a new instance for DeploymentTrigger.
-func NewTrigger(apiClient apiClient, gitClient gitClient, appStore applicationLister, cmdStore commandStore, cfg *config.PipedSpec, gracePeriod time.Duration, logger *zap.Logger) *DeploymentTrigger {
+func NewTrigger(
+	apiClient apiClient,
+	gitClient gitClient,
+	appLister applicationLister,
+	cmdStore commandStore,
+	cfg *config.PipedSpec,
+	gracePeriod time.Duration,
+	logger *zap.Logger,
+) *DeploymentTrigger {
+
 	return &DeploymentTrigger{
 		apiClient:         apiClient,
 		gitClient:         gitClient,
-		applicationLister: appStore,
+		applicationLister: appLister,
 		commandStore:      cmdStore,
 		config:            cfg,
 		triggeredCommits:  make(map[string]string),

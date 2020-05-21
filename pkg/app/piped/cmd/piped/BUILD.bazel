@@ -14,6 +14,7 @@ go_library(
         "//pkg/app/piped/appstatestore:go_default_library",
         "//pkg/app/piped/commandstore:go_default_library",
         "//pkg/app/piped/controller:go_default_library",
+        "//pkg/app/piped/deploymentstore:go_default_library",
         "//pkg/app/piped/executor/registry:go_default_library",
         "//pkg/app/piped/toolregistry:go_default_library",
         "//pkg/app/piped/trigger:go_default_library",

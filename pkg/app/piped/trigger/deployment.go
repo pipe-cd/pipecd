@@ -108,8 +108,10 @@ func buildDeploment(app *model.Application, cfg *config.Config, branch string, c
 			User:      commit.Author,
 			Timestamp: now.Unix(),
 		},
-		GitPath:   app.GitPath,
-		Status:    model.DeploymentStatus_DEPLOYMENT_PENDING,
+		GitPath: app.GitPath,
+		// TODO: Revert this to PENDING status after adding the planner component.
+		Status: model.DeploymentStatus_DEPLOYMENT_PLANNED,
+		//Status:    model.DeploymentStatus_DEPLOYMENT_PENDING,
 		Stages:    stages,
 		CreatedAt: now.Unix(),
 		UpdatedAt: now.Unix(),

@@ -13,9 +13,9 @@
 // limitations under the License.
 
 // Package controller provides a piped component
-// that managing all of the not completed deployments.
+// that managing all of the PLANNED and not completed deployments.
 // This manages a pool of DeploymentSchedulers.
-// Whenever a new uncompleted Deployment is detected,
+// Whenever a new PLANNED Deployment is detected,
 // this creates a new DeploymentScheduler
 // for that Deployment to handle the deployment pipeline.
 package controller
@@ -39,7 +39,6 @@ import (
 )
 
 type apiClient interface {
-	ListNotCompletedDeployments(ctx context.Context, req *pipedservice.ListNotCompletedDeploymentsRequest, opts ...grpc.CallOption) (*pipedservice.ListNotCompletedDeploymentsResponse, error)
 	ReportDeploymentPlanned(ctx context.Context, req *pipedservice.ReportDeploymentPlannedRequest, opts ...grpc.CallOption) (*pipedservice.ReportDeploymentPlannedResponse, error)
 	ReportDeploymentRunning(ctx context.Context, req *pipedservice.ReportDeploymentRunningRequest, opts ...grpc.CallOption) (*pipedservice.ReportDeploymentRunningResponse, error)
 	ReportDeploymentCompleted(ctx context.Context, req *pipedservice.ReportDeploymentCompletedRequest, opts ...grpc.CallOption) (*pipedservice.ReportDeploymentCompletedResponse, error)
@@ -54,6 +53,10 @@ type gitClient interface {
 	Clone(ctx context.Context, repoID, remote, branch, destination string) (git.Repo, error)
 }
 
+type deploymentLister interface {
+	ListPlanneds() []*model.Deployment
+}
+
 type commandStore interface {
 	ListDeploymentCommands(deploymentID string) []*model.Command
 	ReportCommandHandled(ctx context.Context, c *model.Command, status model.CommandStatus, metadata map[string]string) error
@@ -64,11 +67,12 @@ type DeploymentController interface {
 }
 
 type controller struct {
-	apiClient    apiClient
-	gitClient    gitClient
-	commandStore commandStore
-	pipedConfig  *config.PipedSpec
-	logPersister logpersister.Persister
+	apiClient        apiClient
+	gitClient        gitClient
+	deploymentLister deploymentLister
+	commandStore     commandStore
+	pipedConfig      *config.PipedSpec
+	logPersister     logpersister.Persister
 
 	schedulers            map[string]*scheduler
 	unreportedDeployments map[string]*model.Deployment
@@ -84,6 +88,7 @@ type controller struct {
 func NewController(
 	apiClient apiClient,
 	gitClient gitClient,
+	deploymentLister deploymentLister,
 	cmdStore commandStore,
 	pipedConfig *config.PipedSpec,
 	gracePeriod time.Duration,
@@ -97,12 +102,13 @@ func NewController(
 	return &controller{
 		apiClient:             apiClient,
 		gitClient:             gitClient,
+		deploymentLister:      deploymentLister,
 		commandStore:          cmdStore,
 		pipedConfig:           pipedConfig,
 		logPersister:          lp,
 		schedulers:            make(map[string]*scheduler),
 		unreportedDeployments: make(map[string]*model.Deployment),
-		syncInternal:          30 * time.Second,
+		syncInternal:          10 * time.Second,
 		gracePeriod:           gracePeriod,
 		logger:                lg,
 	}
@@ -164,17 +170,14 @@ L:
 // syncScheduler adds new scheduler for newly added deployments
 // as well as removes the removable deployments.
 func (c *controller) syncScheduler(ctx context.Context) error {
-	resp, err := c.apiClient.ListNotCompletedDeployments(ctx, &pipedservice.ListNotCompletedDeploymentsRequest{})
-	if err != nil {
-		c.logger.Warn("failed to list uncompleted deployments", zap.Error(err))
-		return err
-	}
-	c.logger.Info(fmt.Sprintf("there are %d uncompleted deployments for this piped", len(resp.Deployments)),
+	planneds := c.deploymentLister.ListPlanneds()
+
+	c.logger.Info(fmt.Sprintf("there are %d planned deployments for this piped", len(planneds)),
 		zap.Int("scheduler-count", len(c.schedulers)),
 	)
 
 	// Add missing schedulers.
-	for _, d := range resp.Deployments {
+	for _, d := range planneds {
 		if _, ok := c.schedulers[d.Id]; ok {
 			continue
 		}
@@ -201,7 +204,7 @@ func (c *controller) syncScheduler(ctx context.Context) error {
 }
 
 // startNewScheduler creates and starts running a new scheduler
-// for a specific uncompleted deployment.
+// for a specific PLANNED deployment.
 // This adds the newly created one to the scheduler list
 // for tracking its lifetime periodically later.
 func (c *controller) startNewScheduler(ctx context.Context, d *model.Deployment) error {
