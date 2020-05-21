@@ -33,16 +33,25 @@ type apiClient interface {
 
 type Store interface {
 	Run(ctx context.Context) error
-	ListApplicationCommands() []*model.Command
-	ListDeploymentCommands(deploymentID string) []*model.Command
-	ReportCommandHandled(ctx context.Context, c *model.Command, status model.CommandStatus, metadata map[string]string) error
+	Lister() Lister
+}
+
+// Lister helps list comands.
+// All objects returned here must be treated as read-only.
+type Lister interface {
+	ListApplicationCommands() []model.ReportableCommand
+	ListDeploymentCommands(deploymentID string) []model.ReportableCommand
+	ListStageCommands(deploymentID, stageID string) []model.ReportableCommand
 }
 
 type store struct {
-	apiClient           apiClient
-	syncInterval        time.Duration
-	applicationCommands []*model.Command
-	deploymentCommands  []*model.Command
+	apiClient    apiClient
+	syncInterval time.Duration
+	// TODO: Using atomic for storing a map of all commands
+	// instead of some separate lists + mutex as the current.
+	applicationCommands []model.ReportableCommand
+	deploymentCommands  []model.ReportableCommand
+	stageCommands       []model.ReportableCommand
 	handledCommands     map[string]time.Time
 	mu                  sync.RWMutex
 	gracePeriod         time.Duration
@@ -92,6 +101,10 @@ func (s *store) Run(ctx context.Context) error {
 	}
 }
 
+func (s *store) Lister() Lister {
+	return s
+}
+
 func (s *store) sync(ctx context.Context) error {
 	resp, err := s.apiClient.ListUnhandledCommands(ctx, &pipedservice.ListUnhandledCommandsRequest{})
 	if err != nil {
@@ -99,20 +112,26 @@ func (s *store) sync(ctx context.Context) error {
 		return err
 	}
 
-	applicationCommands := make([]*model.Command, 0, len(resp.Commands))
-	deploymentCommands := make([]*model.Command, 0, len(resp.Commands))
+	var (
+		applicationCommands = make([]model.ReportableCommand, 0)
+		deploymentCommands  = make([]model.ReportableCommand, 0)
+		stageCommands       = make([]model.ReportableCommand, 0)
+	)
 	for _, cmd := range resp.Commands {
 		switch cmd.Type {
 		case model.CommandType_COMMAND_APPLICATION:
-			applicationCommands = append(applicationCommands, cmd)
+			applicationCommands = append(applicationCommands, s.makeReportableCommand(cmd))
 		case model.CommandType_COMMAND_DEPLOYMENT:
-			deploymentCommands = append(deploymentCommands, cmd)
+			deploymentCommands = append(deploymentCommands, s.makeReportableCommand(cmd))
+		case model.CommandType_COMMAND_STAGE:
+			stageCommands = append(stageCommands, s.makeReportableCommand(cmd))
 		}
 	}
 
 	s.mu.Lock()
 	s.applicationCommands = applicationCommands
 	s.deploymentCommands = deploymentCommands
+	s.stageCommands = stageCommands
 	s.mu.Unlock()
 
 	return nil
@@ -132,11 +151,11 @@ func (s *store) cleanHandledCommands(now time.Time) {
 	s.handledCommands = handledCommands
 }
 
-func (s *store) ListApplicationCommands() []*model.Command {
+func (s *store) ListApplicationCommands() []model.ReportableCommand {
 	s.mu.RLock()
 	defer s.mu.RUnlock()
 
-	commands := make([]*model.Command, 0, len(s.applicationCommands))
+	commands := make([]model.ReportableCommand, 0, len(s.applicationCommands))
 	for _, cmd := range s.applicationCommands {
 		if _, ok := s.handledCommands[cmd.Id]; ok {
 			continue
@@ -146,11 +165,11 @@ func (s *store) ListApplicationCommands() []*model.Command {
 	return commands
 }
 
-func (s *store) ListDeploymentCommands(deploymentID string) []*model.Command {
+func (s *store) ListDeploymentCommands(deploymentID string) []model.ReportableCommand {
 	s.mu.RLock()
 	defer s.mu.RUnlock()
 
-	commands := make([]*model.Command, 0, len(s.deploymentCommands))
+	commands := make([]model.ReportableCommand, 0, len(s.deploymentCommands))
 	for _, cmd := range s.deploymentCommands {
 		if _, ok := s.handledCommands[cmd.Id]; ok {
 			continue
@@ -163,7 +182,36 @@ func (s *store) ListDeploymentCommands(deploymentID string) []*model.Command {
 	return commands
 }
 
-func (s *store) ReportCommandHandled(ctx context.Context, c *model.Command, status model.CommandStatus, metadata map[string]string) error {
+func (s *store) ListStageCommands(deploymentID, stageID string) []model.ReportableCommand {
+	s.mu.RLock()
+	defer s.mu.RUnlock()
+
+	commands := make([]model.ReportableCommand, 0, len(s.stageCommands))
+	for _, cmd := range s.stageCommands {
+		if _, ok := s.handledCommands[cmd.Id]; ok {
+			continue
+		}
+		if cmd.DeploymentId != deploymentID {
+			continue
+		}
+		if cmd.StageId != stageID {
+			continue
+		}
+		commands = append(commands, cmd)
+	}
+	return commands
+}
+
+func (s *store) makeReportableCommand(c *model.Command) model.ReportableCommand {
+	return model.ReportableCommand{
+		Command: c,
+		Report: func(ctx context.Context, status model.CommandStatus, metadata map[string]string) error {
+			return s.reportCommandHandled(ctx, c, status, metadata)
+		},
+	}
+}
+
+func (s *store) reportCommandHandled(ctx context.Context, c *model.Command, status model.CommandStatus, metadata map[string]string) error {
 	now := time.Now()
 
 	s.mu.Lock()

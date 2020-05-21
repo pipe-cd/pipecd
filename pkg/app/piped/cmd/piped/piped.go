@@ -206,17 +206,18 @@ func (p *piped) run(ctx context.Context, t cli.Telemetry) error {
 	}
 
 	// Start running command store.
-	var commandStore commandstore.Store
+	var commandLister commandstore.Lister
 	{
-		commandStore = commandstore.NewStore(apiClient, p.gracePeriod, t.Logger)
+		store := commandstore.NewStore(apiClient, p.gracePeriod, t.Logger)
 		group.Go(func() error {
-			return commandStore.Run(ctx)
+			return store.Run(ctx)
 		})
+		commandLister = store.Lister()
 	}
 
 	// Start running deployment controller.
 	{
-		c := controller.NewController(apiClient, gitClient, deploymentLister, commandStore, cfg, p.gracePeriod, t.Logger)
+		c := controller.NewController(apiClient, gitClient, deploymentLister, commandLister, cfg, p.gracePeriod, t.Logger)
 		group.Go(func() error {
 			return c.Run(ctx)
 		})
@@ -224,7 +225,7 @@ func (p *piped) run(ctx context.Context, t cli.Telemetry) error {
 
 	// Start running deployment trigger.
 	{
-		t := trigger.NewTrigger(apiClient, gitClient, applicationLister, commandStore, cfg, p.gracePeriod, t.Logger)
+		t := trigger.NewTrigger(apiClient, gitClient, applicationLister, commandLister, cfg, p.gracePeriod, t.Logger)
 		group.Go(func() error {
 			return t.Run(ctx)
 		})

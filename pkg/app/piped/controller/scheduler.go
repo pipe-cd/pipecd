@@ -51,7 +51,7 @@ type scheduler struct {
 	executorRegistry registry.Registry
 	apiClient        apiClient
 	gitClient        gitClient
-	commandStore     commandStore
+	commandLister    commandLister
 	logPersister     logpersister.Persister
 	metadataStore    *metadataStore
 	pipedConfig      *config.PipedSpec
@@ -75,7 +75,7 @@ func newScheduler(
 	workingDir string,
 	apiClient apiClient,
 	gitClient gitClient,
-	cmdStore commandStore,
+	commandLister commandLister,
 	lp logpersister.Persister,
 	pipedConfig *config.PipedSpec,
 	logger *zap.Logger,
@@ -97,7 +97,7 @@ func newScheduler(
 		executorRegistry: registry.DefaultRegistry(),
 		apiClient:        apiClient,
 		gitClient:        gitClient,
-		commandStore:     cmdStore,
+		commandLister:    commandLister,
 		logPersister:     lp,
 		metadataStore:    NewMetadataStore(apiClient, d),
 		logger:           logger,
@@ -209,10 +209,14 @@ func (s *scheduler) executeStage(ctx context.Context, ps *model.PipelineStage) (
 		WorkingDir:       s.workingDir,
 		RepoDir:          filepath.Join(s.workingDir, workspaceGitRepoDirName),
 		StageWorkingDir:  filepath.Join(s.workingDir, workspaceStagesDirName, ps.Id),
-		CommandStore:     s.commandStore,
-		LogPersister:     lp,
-		MetadataStore:    s.metadataStore,
-		Logger:           s.logger,
+		CommandLister: stageCommandLister{
+			lister:       s.commandLister,
+			deploymentID: s.deployment.Id,
+			stageID:      ps.Id,
+		},
+		LogPersister:  lp,
+		MetadataStore: s.metadataStore,
+		Logger:        s.logger,
 	}
 
 	// Find the executor for this stage.
@@ -379,4 +383,14 @@ func (s *scheduler) loadDeploymentConfiguration(ctx context.Context, repoPath st
 func newAPIRetry(maxRetries int) backoff.Retry {
 	bo := backoff.NewExponential(2*time.Second, time.Minute)
 	return backoff.NewRetry(maxRetries, bo)
+}
+
+type stageCommandLister struct {
+	lister       commandLister
+	deploymentID string
+	stageID      string
+}
+
+func (s stageCommandLister) ListCommands() []model.ReportableCommand {
+	return s.lister.ListStageCommands(s.deploymentID, s.stageID)
 }

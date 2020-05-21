@@ -46,9 +46,8 @@ type MetadataStore interface {
 	SetStageMetadata(ctx context.Context, stageID string, metadata interface{}) error
 }
 
-type CommandStore interface {
-	ListDeploymentCommands(deploymentID string) []*model.Command
-	ReportCommandHandled(ctx context.Context, c *model.Command, status model.CommandStatus, metadata map[string]string) error
+type CommandLister interface {
+	ListCommands() []model.ReportableCommand
 }
 
 type Input struct {
@@ -60,7 +59,7 @@ type Input struct {
 	WorkingDir       string
 	RepoDir          string
 	StageWorkingDir  string
-	CommandStore     CommandStore
+	CommandLister    CommandLister
 	LogPersister     LogPersister
 	MetadataStore    MetadataStore
 	Logger           *zap.Logger

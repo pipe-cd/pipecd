@@ -45,19 +45,17 @@ type gitClient interface {
 
 type applicationLister interface {
 	List() []*model.Application
-	Get(id string) (*model.Application, bool)
 }
 
-type commandStore interface {
-	ListApplicationCommands() []*model.Command
-	ReportCommandHandled(ctx context.Context, c *model.Command, status model.CommandStatus, metadata map[string]string) error
+type commandLister interface {
+	ListApplicationCommands() []model.ReportableCommand
 }
 
 type DeploymentTrigger struct {
 	apiClient         apiClient
 	gitClient         gitClient
 	applicationLister applicationLister
-	commandStore      commandStore
+	commandLister     commandLister
 	config            *config.PipedSpec
 	triggeredCommits  map[string]string
 	gitRepos          map[string]git.Repo
@@ -70,7 +68,7 @@ func NewTrigger(
 	apiClient apiClient,
 	gitClient gitClient,
 	appLister applicationLister,
-	cmdStore commandStore,
+	commandLister commandLister,
 	cfg *config.PipedSpec,
 	gracePeriod time.Duration,
 	logger *zap.Logger,
@@ -80,7 +78,7 @@ func NewTrigger(
 		apiClient:         apiClient,
 		gitClient:         gitClient,
 		applicationLister: appLister,
-		commandStore:      cmdStore,
+		commandLister:     commandLister,
 		config:            cfg,
 		triggeredCommits:  make(map[string]string),
 		gitRepos:          make(map[string]git.Repo, len(cfg.Repositories)),

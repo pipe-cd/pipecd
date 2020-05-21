@@ -63,26 +63,17 @@ func (e *Executor) Execute(ctx context.Context) model.StageStatus {
 }
 
 func (e *Executor) checkApproval(ctx context.Context) bool {
-	var (
-		command  *model.Command
-		commands = e.CommandStore.ListDeploymentCommands(e.Deployment.Id)
-	)
+	commands := e.CommandLister.ListCommands()
 
 	for _, cmd := range commands {
 		c := cmd.GetApproveStage()
 		if c == nil {
 			continue
 		}
-		if c.StageId != "e.Stage.Id" {
-			continue
-		}
-		command = cmd
-		break
-	}
-	if command == nil {
-		return false
+
+		cmd.Report(ctx, model.CommandStatus_COMMAND_SUCCEEDED, nil)
+		return true
 	}
 
-	e.CommandStore.ReportCommandHandled(ctx, command, model.CommandStatus_COMMAND_SUCCEEDED, nil)
-	return true
+	return false
 }

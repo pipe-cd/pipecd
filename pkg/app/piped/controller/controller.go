@@ -42,8 +42,8 @@ type apiClient interface {
 	ReportDeploymentPlanned(ctx context.Context, req *pipedservice.ReportDeploymentPlannedRequest, opts ...grpc.CallOption) (*pipedservice.ReportDeploymentPlannedResponse, error)
 	ReportDeploymentRunning(ctx context.Context, req *pipedservice.ReportDeploymentRunningRequest, opts ...grpc.CallOption) (*pipedservice.ReportDeploymentRunningResponse, error)
 	ReportDeploymentCompleted(ctx context.Context, req *pipedservice.ReportDeploymentCompletedRequest, opts ...grpc.CallOption) (*pipedservice.ReportDeploymentCompletedResponse, error)
-
 	SaveDeploymentMetadata(ctx context.Context, req *pipedservice.SaveDeploymentMetadataRequest, opts ...grpc.CallOption) (*pipedservice.SaveDeploymentMetadataResponse, error)
+
 	SaveStageMetadata(ctx context.Context, req *pipedservice.SaveStageMetadataRequest, opts ...grpc.CallOption) (*pipedservice.SaveStageMetadataResponse, error)
 	ReportStageLog(ctx context.Context, req *pipedservice.ReportStageLogRequest, opts ...grpc.CallOption) (*pipedservice.ReportStageLogResponse, error)
 	ReportStageStatusChanged(ctx context.Context, req *pipedservice.ReportStageStatusChangedRequest, opts ...grpc.CallOption) (*pipedservice.ReportStageStatusChangedResponse, error)
@@ -57,9 +57,9 @@ type deploymentLister interface {
 	ListPlanneds() []*model.Deployment
 }
 
-type commandStore interface {
-	ListDeploymentCommands(deploymentID string) []*model.Command
-	ReportCommandHandled(ctx context.Context, c *model.Command, status model.CommandStatus, metadata map[string]string) error
+type commandLister interface {
+	ListDeploymentCommands(deploymentID string) []model.ReportableCommand
+	ListStageCommands(deploymentID, stageID string) []model.ReportableCommand
 }
 
 type DeploymentController interface {
@@ -70,7 +70,7 @@ type controller struct {
 	apiClient        apiClient
 	gitClient        gitClient
 	deploymentLister deploymentLister
-	commandStore     commandStore
+	commandLister    commandLister
 	pipedConfig      *config.PipedSpec
 	logPersister     logpersister.Persister
 
@@ -89,7 +89,7 @@ func NewController(
 	apiClient apiClient,
 	gitClient gitClient,
 	deploymentLister deploymentLister,
-	cmdStore commandStore,
+	commandLister commandLister,
 	pipedConfig *config.PipedSpec,
 	gracePeriod time.Duration,
 	logger *zap.Logger,
@@ -103,7 +103,7 @@ func NewController(
 		apiClient:             apiClient,
 		gitClient:             gitClient,
 		deploymentLister:      deploymentLister,
-		commandStore:          cmdStore,
+		commandLister:         commandLister,
 		pipedConfig:           pipedConfig,
 		logPersister:          lp,
 		schedulers:            make(map[string]*scheduler),
@@ -228,7 +228,7 @@ func (c *controller) startNewScheduler(ctx context.Context, d *model.Deployment)
 		workingDir,
 		c.apiClient,
 		c.gitClient,
-		c.commandStore,
+		c.commandLister,
 		c.logPersister,
 		c.pipedConfig,
 		c.logger,
