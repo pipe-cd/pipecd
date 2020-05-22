@@ -6,19 +6,27 @@
   "license": "Apache-2.0",
   "scripts": {
     "dev": "webpack-dev-server --htmlTemplate ./base.html --config ./webpack.config.dev.js",
-    "gen": "scaffdog generate"
+    "gen": "scaffdog generate",
+    "storybook": "start-storybook -p 6006",
+    "build-storybook": "build-storybook"
   },
   "devDependencies": {
     "@bazel/labs": "^1.6.1",
     "@bazel/typescript": "^1.6.1",
+    "@storybook/addon-actions": "^5.3.18",
+    "@storybook/addon-docs": "^5.3.18",
+    "@storybook/addons": "^5.3.18",
+    "@storybook/react": "^5.3.18",
     "@types/google-protobuf": "^3.7.2",
     "@types/jest": "^25.2.3",
     "@types/react": "^16.9.35",
     "@types/react-dom": "^16.9.8",
     "@types/react-redux": "^7.1.9",
+    "babel-loader": "^8.1.0",
     "fork-ts-checker-webpack-plugin": "^4.1.4",
     "html-webpack-plugin": "^4.3.0",
     "jest": "^26.0.1",
+    "react-docgen-typescript-loader": "^3.7.2",
     "scaffdog": "^0.2.3",
     "ts-loader": "^7.0.2",
     "typescript": "^3.9.2",
