@@ -19,7 +19,7 @@
     "target": "ESNext",
     "jsx": "react",
     "allowJs": true,
-    "types": ["node"],
+    "types": ["node", "jest"],
     "esModuleInterop": true,
     "rootDirs": ["."]
   },
