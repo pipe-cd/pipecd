@@ -1,0 +1,72 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{ include "piped.fullname" . }}
+  labels:
+    {{- include "piped.labels" . | nindent 4 }}
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      {{- include "piped.selectorLabels" . | nindent 6 }}
+  template:
+    metadata:
+    {{- with .Values.podAnnotations }}
+      annotations:
+        {{- toYaml . | nindent 8 }}
+    {{- end }}
+      labels:
+        {{- include "piped.selectorLabels" . | nindent 8 }}
+    spec:
+      serviceAccountName: {{ include "piped.fullname" . }}
+      containers:
+        - name: piped
+          image: "gcr.io/kapetanios/pipecd-piped:{{ .Values.image.tag | default .Chart.AppVersion }}"
+          imagePullPolicy: IfNotPresent
+          args:
+          - piped
+          - --use-fake-api-client={{ .Values.args.useFakeAPI }}
+          - --project-id={{ required "projectID must be set" .Values.args.projectID }}
+          - --piped-id={{ required "pipedID must be set" .Values.args.pipedID }}
+          - --piped-key-file=/etc/piped-secret/piped.key
+          - --config-file=/etc/piped-config/piped-config.yaml
+          ports:
+            - name: admin
+              containerPort: 9085
+              protocol: TCP
+          livenessProbe:
+            httpGet:
+              path: /healthz
+              port: admin
+          readinessProbe:
+            httpGet:
+              path: /healthz
+              port: admin
+          volumeMounts:
+            - name: piped-secret
+              mountPath: /etc/piped-secret
+              readOnly: true
+            - name: piped-config
+              mountPath: /etc/piped-config
+              readOnly: true
+          resources:
+            {{- toYaml .Values.resources | nindent 12 }}
+      volumes:
+        - name: piped-secret
+          secret:
+            secretName: {{ include "piped.fullname" . }}-secret
+        - name: piped-config
+          configMap:
+            name: {{ include "piped.fullname" . }}-config
+      {{- with .Values.nodeSelector }}
+      nodeSelector:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      {{- with .Values.affinity }}
+      affinity:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      {{- with .Values.tolerations }}
+      tolerations:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}

@@ -1,0 +1,43 @@
+args:
+  useFakeAPI: true
+  projectID: your-project-id
+  pipedID: your-piped-id
+  pipedKey: your-piped-key
+
+service:
+  type: ClusterIP
+  port: 9085
+
+image: {}
+
+podAnnotations: {}
+
+nodeSelector: {}
+
+tolerations: []
+
+affinity: {}
+
+# resources:
+#   limits:
+#     cpu: 100m
+#     memory: 128Mi
+#   requests:
+#     cpu: 100m
+#     memory: 128Mi
+
+config: |
+  apiVersion: pipecd.dev/v1beta1
+  kind: Piped
+  spec:
+    syncInterval: 1m
+    git:
+      sshKeyFile: /etc/piped-secret/ssh.key
+      accessTokenFile: /etc/piped-secret/git.token
+    repositories:
+      - repoId: pipe-debug
+        remote: git@github.com:kapetaniosci/pipe-debug.git
+        branch: master
+      - repoId: pipe-debug-2
+        remote: git@github.com:kapetaniosci/pipe-debug-2.git
+        branch: dev

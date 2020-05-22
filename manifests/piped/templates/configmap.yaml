@@ -1,0 +1,9 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: {{ include "piped.fullname" . }}-config
+  labels:
+    {{- include "piped.labels" . | nindent 4 }}
+data:
+  piped-config.yaml: |-
+{{ tpl .Values.config . | indent 4 }}

@@ -1,0 +1,15 @@
+apiVersion: v1
+kind: Pod
+metadata:
+  name: "{{ include "piped.fullname" . }}-test-connection"
+  labels:
+    {{- include "piped.labels" . | nindent 4 }}
+  annotations:
+    "helm.sh/hook": test-success
+spec:
+  containers:
+    - name: wget
+      image: busybox
+      command: ['wget']
+      args: ['{{ include "piped.fullname" . }}:{{ .Values.service.port }}/healthz']
+  restartPolicy: Never
