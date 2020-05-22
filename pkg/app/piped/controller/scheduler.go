@@ -159,9 +159,37 @@ func (s *scheduler) Run(ctx context.Context) error {
 	var (
 		deploymentStatus  = model.DeploymentStatus_DEPLOYMENT_SUCCESS
 		statusDescription = "Completed Successfully"
+		cancelCommand     *model.ReportableCommand
+		cancelledCh       = make(chan struct{})
 		timer             = time.NewTimer(defaultDeploymentTimeout)
 	)
 	defer timer.Stop()
+
+	// Watch the cancel command from command lister.
+	// TODO: In the future we may want to change the design of command lister
+	// to support subscribing a specific command type.
+	go func() {
+		ticker := time.NewTicker(10 * time.Second)
+		defer ticker.Stop()
+
+		for {
+			select {
+			case <-ticker.C:
+				commands := s.commandLister.ListDeploymentCommands(s.deployment.Id)
+				for _, cmd := range commands {
+					c := cmd.GetCancelDeployment()
+					if c == nil {
+						continue
+					}
+					cancelCommand = &cmd
+					close(cancelledCh)
+					return
+				}
+			case <-ctx.Done():
+				return
+			}
+		}
+	}()
 
 	// Iterate all the stages and execute the uncompleted ones.
 	for _, ps := range s.deployment.Stages {
@@ -200,10 +228,9 @@ func (s *scheduler) Run(ctx context.Context) error {
 			handler.Timeout()
 			<-doneCh
 
-		// TODO: Deployment was cancelled by command.
-		// case <- s.cancelledCh:
-		// handler.Cancel()
-		// <-doneCh
+		case <-cancelledCh:
+			handler.Cancel()
+			<-doneCh
 
 		case <-doneCh:
 			break
@@ -237,6 +264,11 @@ func (s *scheduler) Run(ctx context.Context) error {
 	if model.IsCompletedDeployment(deploymentStatus) {
 		s.reportDeploymentCompleted(ctx, deploymentStatus, statusDescription)
 	}
+
+	if cancelCommand != nil {
+		cancelCommand.Report(ctx, model.CommandStatus_COMMAND_SUCCEEDED, nil)
+	}
+
 	return nil
 }
 
