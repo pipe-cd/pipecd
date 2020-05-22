@@ -318,7 +318,7 @@ type AnalysisStageOptions struct {
 	// How long the analysis process should be executed.
 	Duration Duration `json:"duration"`
 	// Maximum number of failed checks before the stage is considered as failure.
-	Threshold int `json:"threshold"`
+	FailureLimit int `json:"failureLimit"`
 	// Maximum number of container restarts before the stage is considered as failure.
 	RestartThreshold int               `json:"restartThreshold"`
 	Metrics          []AnalysisMetrics `json:"metrics"`

@@ -12,7 +12,7 @@ spec:
       - name: ANALYSIS
         with:
           duration: 10m
-          threshold: 2
+          failureLimit: 2
           https:
             - useTemplate: http_stage_check
       - name: K8S_TRAFFIC_SPLIT

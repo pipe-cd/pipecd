@@ -116,13 +116,13 @@ LOOP:
 					zap.Int("failure count", failureCount),
 				)
 			}
-			if failureCount > options.Threshold {
+			if failureCount > options.FailureLimit {
 				e.Logger.Info("stop all analysis")
 				cancel()
 			}
 		}
 	}
-	if failureCount > options.Threshold {
+	if failureCount > options.FailureLimit {
 		return model.StageStatus_STAGE_FAILURE
 	}
 

@@ -49,7 +49,7 @@ spec:
       - name: ANALYSIS
         with:
           duration: 10m
-          threshold: 2
+          failureLimit: 2
           metrics:
             - query: grpc_error_percentage
               expected:
@@ -107,7 +107,7 @@ spec:
       - name: ANALYSIS
         with:
           duration: 10m
-          threshold: 2
+          failureLimit: 2
           metrics:
             - useTemplate: prometheus_grpc_error_percentage
             - useTemplate: prometheus_app_http_error_percentage
