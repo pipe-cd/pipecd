@@ -247,7 +247,7 @@ func (s *scheduler) Run(ctx context.Context) error {
 		// The deployment was cancelled by a web user.
 		if sigType == executor.StopSignalCancel {
 			deploymentStatus = model.DeploymentStatus_DEPLOYMENT_CANCELLED
-			statusDescription = fmt.Sprintf("Deployment was cancelled while executing stage %s", ps.Id)
+			statusDescription = fmt.Sprintf("Deployment was cancelled by %s while executing stage %s", cancelCommand.Commander, ps.Id)
 			break
 		}
 

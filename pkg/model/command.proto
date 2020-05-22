@@ -41,6 +41,8 @@ message Command {
     string deployment_id = 4;
     string stage_id = 5;
     CommandType type = 6 [(validate.rules).enum.defined_only = true];
+    // Who triggered the command.
+    string commander = 7;
 
     CommandStatus status = 10;
     map<string,string> metadata = 11;

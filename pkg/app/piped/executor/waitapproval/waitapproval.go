@@ -16,6 +16,7 @@ package waitapproval
 
 import (
 	"context"
+	"fmt"
 	"time"
 
 	"github.com/kapetaniosci/pipe/pkg/app/piped/executor"
@@ -30,6 +31,7 @@ type registerer interface {
 	Register(stage model.Stage, f executor.Factory) error
 }
 
+// Register registers this executor factory into a given registerer.
 func Register(r registerer) {
 	f := func(in executor.Input) executor.Executor {
 		return &Executor{
@@ -39,6 +41,7 @@ func Register(r registerer) {
 	r.Register(model.StageWaitApproval, f)
 }
 
+// Execute starts waiting until an approval from one of the specified users.
 func (e *Executor) Execute(sig executor.StopSignal) model.StageStatus {
 	var (
 		originalStatus = e.Stage.Status
@@ -51,11 +54,10 @@ func (e *Executor) Execute(sig executor.StopSignal) model.StageStatus {
 	for {
 		select {
 		case <-ticker.C:
-			if ok := e.checkApproval(ctx); !ok {
-				continue
+			if commander, ok := e.checkApproval(ctx); ok {
+				e.LogPersister.AppendInfo(fmt.Sprintf("Got an approval from %s", commander))
+				return model.StageStatus_STAGE_SUCCESS
 			}
-			e.LogPersister.AppendInfo("Got an approval from abc")
-			return model.StageStatus_STAGE_SUCCESS
 
 		case s := <-sig.Ch():
 			switch s {
@@ -70,7 +72,7 @@ func (e *Executor) Execute(sig executor.StopSignal) model.StageStatus {
 	}
 }
 
-func (e *Executor) checkApproval(ctx context.Context) bool {
+func (e *Executor) checkApproval(ctx context.Context) (string, bool) {
 	commands := e.CommandLister.ListCommands()
 
 	for _, cmd := range commands {
@@ -80,10 +82,10 @@ func (e *Executor) checkApproval(ctx context.Context) bool {
 		}
 
 		if err := cmd.Report(ctx, model.CommandStatus_COMMAND_SUCCEEDED, nil); err == nil {
-			return true
+			return cmd.Commander, true
 		}
-		return false
+		return "", false
 	}
 
-	return false
+	return "", false
 }

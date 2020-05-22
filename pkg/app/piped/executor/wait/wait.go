@@ -32,6 +32,7 @@ type registerer interface {
 	Register(stage model.Stage, f executor.Factory) error
 }
 
+// Register registers this executor factory into a given registerer.
 func Register(r registerer) {
 	f := func(in executor.Input) executor.Executor {
 		return &Executor{
@@ -41,6 +42,7 @@ func Register(r registerer) {
 	r.Register(model.StageWait, f)
 }
 
+// Execute starts waiting for the specified duration.
 func (e *Executor) Execute(sig executor.StopSignal) model.StageStatus {
 	var (
 		originalStatus = e.Stage.Status
