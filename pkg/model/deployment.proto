@@ -74,8 +74,8 @@ message Deployment {
     map<string,string> metadata = 13;
 
     int64 completed_at = 100 [(validate.rules).int64.gte = 0];
-    int64 created_at = 101 [(validate.rules).int64.gt = 0];
-    int64 updated_at = 102 [(validate.rules).int64.gt = 0];
+    int64 created_at = 101 [(validate.rules).int64.gte = 0];
+    int64 updated_at = 102 [(validate.rules).int64.gte = 0];
 }
 
 message DeploymentTrigger {

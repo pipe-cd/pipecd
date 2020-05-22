@@ -29,12 +29,13 @@ const (
 )
 
 var (
-	ErrNotFound      = errors.New("not found")
-	ErrAlreadyExists = errors.New("already exists")
-	ErrInvalidCursor = errors.New("invalid cursor")
-	ErrIteratorDone  = errors.New("iterator is done")
-	ErrInternal      = errors.New("internal")
-	ErrUnimplemented = errors.New("unimplemented")
+	ErrNotFound        = errors.New("not found")
+	ErrInvalidArgument = errors.New("invalid argument")
+	ErrAlreadyExists   = errors.New("already exists")
+	ErrInvalidCursor   = errors.New("invalid cursor")
+	ErrIteratorDone    = errors.New("iterator is done")
+	ErrInternal        = errors.New("internal")
+	ErrUnimplemented   = errors.New("unimplemented")
 )
 
 type Factory func() interface{}

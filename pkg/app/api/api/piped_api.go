@@ -17,6 +17,7 @@ package api
 import (
 	"context"
 
+	"github.com/pkg/errors"
 	"go.uber.org/zap"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/codes"
@@ -86,7 +87,15 @@ func (a *PipedAPI) ListNotCompletedDeployments(ctx context.Context, req *pipedse
 // that is managed by this piped.
 // This will be used by DeploymentTrigger component.
 func (a *PipedAPI) CreateDeployment(ctx context.Context, req *pipedservice.CreateDeploymentRequest) (*pipedservice.CreateDeploymentResponse, error) {
-	return nil, status.Error(codes.Unimplemented, "")
+	err := a.deploymentStore.AddDeployment(ctx, req.Deployment)
+	if errors.Cause(err) == datastore.ErrAlreadyExists {
+		return nil, status.Error(codes.AlreadyExists, "deployment already exists")
+	}
+	if err != nil {
+		a.logger.Error("failed to create deployment", zap.Error(err))
+		return nil, err
+	}
+	return &pipedservice.CreateDeploymentResponse{}, nil
 }
 
 // ReportDeploymentPlanned used by piped to update the status
@@ -109,13 +118,40 @@ func (a *PipedAPI) ReportDeploymentCompleted(ctx context.Context, req *pipedserv
 
 // SaveDeploymentMetadata used by piped to persist the metadata of a specific deployment.
 func (a *PipedAPI) SaveDeploymentMetadata(ctx context.Context, req *pipedservice.SaveDeploymentMetadataRequest) (*pipedservice.SaveDeploymentMetadataResponse, error) {
-	return nil, status.Error(codes.Unimplemented, "")
+	err := a.deploymentStore.PutDeploymentMetadata(ctx, req.DeploymentId, req.Metadata)
+	if errors.Cause(err) == datastore.ErrNotFound {
+		return nil, status.Error(codes.InvalidArgument, "deployment is not found")
+	}
+	if err != nil {
+		a.logger.Error("failed to save deployment metadata",
+			zap.String("deployment-id", req.DeploymentId),
+			zap.Error(err),
+		)
+		return nil, err
+	}
+	return &pipedservice.SaveDeploymentMetadataResponse{}, nil
 }
 
 // SaveStageMetadata used by piped to persist the metadata
 // of a specific stage of a deployment.
 func (a *PipedAPI) SaveStageMetadata(ctx context.Context, req *pipedservice.SaveStageMetadataRequest) (*pipedservice.SaveStageMetadataResponse, error) {
-	return nil, status.Error(codes.Unimplemented, "")
+	err := a.deploymentStore.PutDeploymentStageMetadata(ctx, req.DeploymentId, req.StageId, req.JsonMetadata)
+	if err != nil {
+		switch errors.Cause(err) {
+		case datastore.ErrNotFound:
+			return nil, status.Error(codes.InvalidArgument, "deployment is not found")
+		case datastore.ErrInvalidArgument:
+			return nil, status.Error(codes.InvalidArgument, "invalid value for update")
+		default:
+			a.logger.Error("failed to save deployment stage metadata",
+				zap.String("deployment-id", req.DeploymentId),
+				zap.String("stage-id", req.StageId),
+				zap.Error(err),
+			)
+			return nil, err
+		}
+	}
+	return &pipedservice.SaveStageMetadataResponse{}, nil
 }
 
 // ReportStageLog is sent by piped to save the log of a pipeline stage.

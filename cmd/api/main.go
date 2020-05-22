@@ -17,6 +17,7 @@ package main
 import (
 	"log"
 
+	"github.com/kapetaniosci/pipe/pkg/app/api/cmd/samplecli"
 	"github.com/kapetaniosci/pipe/pkg/app/api/cmd/server"
 	"github.com/kapetaniosci/pipe/pkg/cli"
 )
@@ -28,6 +29,7 @@ func main() {
 	)
 	app.AddCommands(
 		server.NewCommand(),
+		samplecli.NewCommand(),
 	)
 	if err := app.Run(); err != nil {
 		log.Fatal(err)

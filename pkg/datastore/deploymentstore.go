@@ -18,6 +18,8 @@ import (
 	"context"
 	"time"
 
+	"github.com/pkg/errors"
+
 	"github.com/kapetaniosci/pipe/pkg/model"
 )
 
@@ -28,6 +30,9 @@ var deploymentFactory = func() interface{} {
 }
 
 type DeploymentStore interface {
+	AddDeployment(ctx context.Context, d *model.Deployment) error
+	PutDeploymentMetadata(ctx context.Context, id string, metadata map[string]string) error
+	PutDeploymentStageMetadata(ctx context.Context, deploymentID, stageID, jsonMetadata string) error
 	ListDeployments(ctx context.Context, opts ListOptions) ([]model.Deployment, error)
 }
 
@@ -43,6 +48,45 @@ func NewDeploymentStore(ds DataStore) DeploymentStore {
 		},
 		nowFunc: time.Now,
 	}
+}
+
+func (s *deploymentStore) AddDeployment(ctx context.Context, d *model.Deployment) error {
+	now := s.nowFunc().Unix()
+	if d.CreatedAt == 0 {
+		d.CreatedAt = now
+	}
+	if d.UpdatedAt == 0 {
+		d.UpdatedAt = now
+	}
+	if err := d.Validate(); err != nil {
+		return err
+	}
+	return s.ds.Create(ctx, deploymentModelKind, d.Id, d)
+}
+
+func (s *deploymentStore) PutDeploymentMetadata(ctx context.Context, id string, metadata map[string]string) error {
+	now := s.nowFunc().Unix()
+	return s.ds.Update(ctx, deploymentModelKind, id, deploymentFactory, func(e interface{}) error {
+		d := e.(*model.Deployment)
+		d.Metadata = metadata
+		d.UpdatedAt = now
+		return nil
+	})
+}
+
+func (s *deploymentStore) PutDeploymentStageMetadata(ctx context.Context, deploymentID, stageID, jsonMetadata string) error {
+	now := s.nowFunc().Unix()
+	return s.ds.Update(ctx, deploymentModelKind, deploymentID, deploymentFactory, func(e interface{}) error {
+		d := e.(*model.Deployment)
+		for _, stage := range d.Stages {
+			if stage.Id == stageID {
+				stage.JsonMetadata = jsonMetadata
+				d.UpdatedAt = now
+				return nil
+			}
+		}
+		return errors.Wrapf(ErrInvalidArgument, "stage is not found: %s", stageID)
+	})
 }
 
 func (s *deploymentStore) ListDeployments(ctx context.Context, opts ListOptions) ([]model.Deployment, error) {

@@ -12,6 +12,7 @@ go_library(
         "//pkg/app/api/service/pipedservice:go_default_library",
         "//pkg/app/api/service/webservice:go_default_library",
         "//pkg/datastore:go_default_library",
+        "@com_github_pkg_errors//:go_default_library",
         "@org_golang_google_grpc//:go_default_library",
         "@org_golang_google_grpc//codes:go_default_library",
         "@org_golang_google_grpc//status:go_default_library",
