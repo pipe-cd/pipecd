@@ -139,7 +139,6 @@ spec:
       - name: ANALYSIS
         with:
           duration: 10m
-          compareWithBaseline: true
       - name: K8S_PRIMARY_UPDATE
       - name: K8S_BASELINE_CLEAN
       - name: K8S_STAGE_CLEAN

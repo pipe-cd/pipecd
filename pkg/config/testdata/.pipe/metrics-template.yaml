@@ -3,11 +3,13 @@ spec:
   metrics:
     - name: app_grpc_error_percenage
       query: grpc_error_percentage{env={{ .App.Env}}, app={{ .App.Name }}}
-      expected: < 0.1
+      expected:
+        max: 0.1
       interval: 1m
       provider: dev-prometheus
     - name: app_http_error_percentage
       query: http_error_percentage{env={{ .App.Env}}, app={{ .App.Name }}}
-      expected: < 0.1
+      expected:
+        max: 0.1
       interval: 1m
       provider: datadog
