@@ -3,8 +3,7 @@ kind: Piped
 spec:
   syncInterval: 1m
   git:
-    sshKeyFile: /etc/pipecd-runner/ssh.key
-    accessTokenFile: /etc/pipecd-runner/git.token
+    accessTokenFile: /etc/pipecd-runner/gittoken
   repositories:
     - repoId: pipe-debug
       remote: git@github.com:kapetaniosci/pipe-debug.git

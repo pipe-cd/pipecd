@@ -117,6 +117,15 @@ func (p *piped) run(ctx context.Context, t cli.Telemetry) error {
 		return err
 	}
 
+	// Configure SSH config if needed.
+	if cfg.Git.ShouldConfigureSSHConfig() {
+		if err := git.AddSSHConfig(cfg.Git); err != nil {
+			t.Logger.Error("failed to configure ssh-config", zap.Error(err))
+			return err
+		}
+		t.Logger.Info("successfully configured ssh-config")
+	}
+
 	// Initialize default tool registry.
 	if err := toolregistry.InitDefaultRegistry(p.binDir, t.Logger); err != nil {
 		t.Logger.Error("failed to initialize default tool registry", zap.Error(err))

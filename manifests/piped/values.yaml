@@ -32,8 +32,8 @@ config: |
   spec:
     syncInterval: 1m
     git:
-      sshKeyFile: /etc/piped-secret/ssh.key
-      accessTokenFile: /etc/piped-secret/git.token
+      sshKeyFile: /etc/piped-secret/sshkey
+      accessTokenFile: /etc/piped-secret/gittoken
     repositories:
       - repoId: pipe-debug
         remote: git@github.com:kapetaniosci/pipe-debug.git

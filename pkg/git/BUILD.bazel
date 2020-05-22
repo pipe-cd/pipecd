@@ -6,10 +6,14 @@ go_library(
         "client.go",
         "commit.go",
         "repo.go",
+        "ssh_config.go",
     ],
     importpath = "github.com/kapetaniosci/pipe/pkg/git",
     visibility = ["//visibility:public"],
-    deps = ["@org_uber_go_zap//:go_default_library"],
+    deps = [
+        "//pkg/config:go_default_library",
+        "@org_uber_go_zap//:go_default_library",
+    ],
 )
 
 go_test(
@@ -19,10 +23,12 @@ go_test(
         "client_test.go",
         "commit_test.go",
         "repo_test.go",
+        "ssh_config_test.go",
     ],
     data = glob(["testdata/**"]),
     embed = [":go_default_library"],
     deps = [
+        "//pkg/config:go_default_library",
         "@com_github_stretchr_testify//assert:go_default_library",
         "@com_github_stretchr_testify//require:go_default_library",
         "@org_uber_go_zap//:go_default_library",
