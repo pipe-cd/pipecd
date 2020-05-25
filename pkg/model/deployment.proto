@@ -60,18 +60,20 @@ message Deployment {
     string piped_id = 4 [(validate.rules).string.min_len = 1];
     string project_id = 5 [(validate.rules).string.min_len = 1];
     ApplicationKind kind = 6 [(validate.rules).enum.defined_only = true];
+    ApplicationGitPath git_path = 7 [(validate.rules).message.required = true];
 
-    DeploymentTrigger trigger = 7 [(validate.rules).message.required = true];
-    ApplicationGitPath git_path = 8 [(validate.rules).message.required = true];
+    DeploymentTrigger trigger = 8 [(validate.rules).message.required = true];
+    // Hash value of the last successfully deployed commit.
+    string running_commit_hash = 9;
     // Simple description about what this deployment does.
     // e.g. Scale from 10 to 100 replicas.
     // e.g. Update image from v1.5.0 to v1.6.0.
-    string description = 9;
-    DeploymentStatus status = 10 [(validate.rules).enum.defined_only = true];
+    string description = 10;
+    DeploymentStatus status = 11 [(validate.rules).enum.defined_only = true];
     // The human-readable description why the deployment is at current status.
-    string status_description = 11;
-    repeated PipelineStage stages = 12;
-    map<string,string> metadata = 13;
+    string status_description = 12;
+    repeated PipelineStage stages = 13;
+    map<string,string> metadata = 14;
 
     int64 completed_at = 100 [(validate.rules).int64.gte = 0];
     int64 created_at = 101 [(validate.rules).int64.gte = 0];

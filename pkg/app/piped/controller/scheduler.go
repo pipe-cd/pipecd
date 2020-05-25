@@ -28,7 +28,6 @@ import (
 	"github.com/kapetaniosci/pipe/pkg/app/piped/executor"
 	"github.com/kapetaniosci/pipe/pkg/app/piped/executor/registry"
 	"github.com/kapetaniosci/pipe/pkg/app/piped/logpersister"
-	"github.com/kapetaniosci/pipe/pkg/backoff"
 	"github.com/kapetaniosci/pipe/pkg/config"
 	"github.com/kapetaniosci/pipe/pkg/git"
 	"github.com/kapetaniosci/pipe/pkg/model"
@@ -67,7 +66,7 @@ type scheduler struct {
 	// when the stages can be executed concurrently.
 	stageStatuses map[string]model.StageStatus
 	done          atomic.Bool
-	reported      atomic.Bool
+	doneTimestamp time.Time
 	nowFunc       func() time.Time
 }
 
@@ -101,8 +100,8 @@ func newScheduler(
 		commandLister:    commandLister,
 		logPersister:     lp,
 		metadataStore:    NewMetadataStore(apiClient, d),
-		logger:           logger,
 		nowFunc:          time.Now,
+		logger:           logger,
 	}
 
 	// Initialize the map of current status of all stages.
@@ -114,9 +113,9 @@ func newScheduler(
 	return s
 }
 
-// Id returns the id of scheduler.
+// ID returns the id of scheduler.
 // This is the same value with deployment ID.
-func (s *scheduler) Id() string {
+func (s *scheduler) ID() string {
 	return s.deployment.Id
 }
 
@@ -126,10 +125,9 @@ func (s *scheduler) IsDone() bool {
 	return s.done.Load()
 }
 
-// IsReported tells whether this scheduler has already reported its state
-// to the control-plane.
-func (s *scheduler) IsReported() bool {
-	return s.reported.Load()
+// DoneTimestamp returns the time when scheduler has done.
+func (s *scheduler) DoneTimestamp() time.Time {
+	return s.doneTimestamp
 }
 
 // Run starts running the scheduler.
@@ -139,6 +137,7 @@ func (s *scheduler) IsReported() bool {
 func (s *scheduler) Run(ctx context.Context) error {
 	s.logger.Info("start running a scheduler")
 	defer func() {
+		s.doneTimestamp = s.nowFunc()
 		s.done.Store(true)
 	}()
 
@@ -345,48 +344,31 @@ func (s *scheduler) executeStage(sig executor.StopSignal, ps *model.PipelineStag
 func (s *scheduler) ensurePreparing(ctx context.Context, lp logpersister.StageLogPersister) error {
 	var err error
 	s.prepareOnce.Do(func() {
-		lp.AppendInfo("START PREPARING")
+		lp.AppendInfo("Start preparing for deployment")
 		lp.AppendInfo("new scheduler has been created for this deployment so we need some preparation")
 
 		// Clone repository and checkout to the target revision.
 		var (
-			appID       = s.deployment.ApplicationId
-			repoID      = s.deployment.GitPath.RepoId
+			gitRepo     git.Repo
 			repoDirPath = filepath.Join(s.workingDir, workspaceGitRepoDirName)
-			revision    = s.deployment.Trigger.Commit.Hash
-			repoCfg, ok = s.pipedConfig.GetRepository(repoID)
 		)
-		if !ok {
-			err = fmt.Errorf("no registered repository id %s for application %s", repoID, appID)
-			lp.AppendError(err.Error())
-			return
-		}
-
-		var gitRepo git.Repo
-		gitRepo, err = s.gitClient.Clone(ctx, repoCfg.RepoID, repoCfg.Remote, repoCfg.Branch, repoDirPath)
+		gitRepo, err = prepareDeployRepository(ctx, s.deployment, s.gitClient, repoDirPath, s.pipedConfig)
 		if err != nil {
-			err = fmt.Errorf("failed to clone repository %s for application %s (%v)", repoID, appID, err)
 			lp.AppendError(err.Error())
 			return
 		}
-
-		err = gitRepo.Checkout(ctx, revision)
-		if err != nil {
-			err = fmt.Errorf("failed to clone repository %s for application %s (%v)", repoID, appID, err)
-			lp.AppendError(err.Error())
-			return
-		}
-		lp.AppendSuccess(fmt.Sprintf("successfully cloned repository %s", repoID))
+		lp.AppendSuccess(fmt.Sprintf("successfully cloned repository %s", s.deployment.GitPath.RepoId))
 
 		// Load deployment configuration for this application.
 		var cfg *config.Config
-		cfg, err = s.loadDeploymentConfiguration(ctx, gitRepo.GetPath(), s.deployment)
+		cfg, err = loadDeploymentConfiguration(gitRepo.GetPath(), s.deployment)
 		if err != nil {
 			err = fmt.Errorf("failed to load deployment configuration (%v)", err)
 		}
 		s.deploymentConfig = cfg
+
 		lp.AppendSuccess("successfully loaded deployment configuration")
-		lp.AppendInfo("PREPARING COMPLETED")
+		lp.AppendInfo("Successfully completed preparing")
 	})
 	return err
 }
@@ -432,11 +414,10 @@ func (s *scheduler) reportDeploymentRunning(ctx context.Context, desc string) er
 	// Update deployment status on remote.
 	for retry.WaitNext(ctx) {
 		if _, err = s.apiClient.ReportDeploymentRunning(ctx, req); err == nil {
-			break
+			return nil
 		}
 		err = fmt.Errorf("failed to report deployment status to control-plane: %v", err)
 	}
-
 	return err
 }
 
@@ -457,33 +438,11 @@ func (s *scheduler) reportDeploymentCompleted(ctx context.Context, status model.
 	// Update deployment status on remote.
 	for retry.WaitNext(ctx) {
 		if _, err = s.apiClient.ReportDeploymentCompleted(ctx, req); err == nil {
-			break
+			return nil
 		}
 		err = fmt.Errorf("failed to report deployment status to control-plane: %v", err)
 	}
-
-	if err == nil && model.IsCompletedDeployment(status) {
-		s.reported.Store(true)
-	}
 	return err
-}
-
-func (s *scheduler) loadDeploymentConfiguration(ctx context.Context, repoPath string, d *model.Deployment) (*config.Config, error) {
-	path := filepath.Join(repoPath, d.GitPath.GetDeploymentConfigFilePath(config.DeploymentConfigurationFileName))
-	cfg, err := config.LoadFromYAML(path)
-	if err != nil {
-		return nil, err
-	}
-	if appKind, ok := config.ToApplicationKind(cfg.Kind); !ok || appKind != d.Kind {
-		return nil, fmt.Errorf("application in deployment configuration file is not match, got: %s, expected: %s", appKind, d.Kind)
-	}
-	return cfg, nil
-}
-
-// 0s 997.867435ms 2.015381172s 3.485134345s 4.389600179s 18.118099328s 48.73058264s
-func newAPIRetry(maxRetries int) backoff.Retry {
-	bo := backoff.NewExponential(2*time.Second, time.Minute)
-	return backoff.NewRetry(maxRetries, bo)
 }
 
 type stageCommandLister struct {

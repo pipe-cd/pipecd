@@ -79,9 +79,9 @@ func (s *appStateStore) Run(ctx context.Context) error {
 
 	s.logger.Info("DEBUG\n\n")
 	apps := []string{
-		"nginx-apps-v1",
-		"nginx-apps-v1beta2",
-		"nginx-extensions-v1beta1",
+		"local-project/dev/simple",
+		"local-project/dev/canary",
+		"local-project/dev/bluegreen",
 	}
 	for _, app := range apps {
 		s.logger.Info(fmt.Sprintf("Application: %s", app))

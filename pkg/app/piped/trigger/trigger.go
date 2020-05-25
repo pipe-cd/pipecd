@@ -48,7 +48,7 @@ type commandLister interface {
 	ListApplicationCommands() []model.ReportableCommand
 }
 
-type DeploymentTrigger struct {
+type Trigger struct {
 	apiClient         apiClient
 	gitClient         gitClient
 	applicationLister applicationLister
@@ -56,11 +56,13 @@ type DeploymentTrigger struct {
 	config            *config.PipedSpec
 	triggeredCommits  map[string]string
 	gitRepos          map[string]git.Repo
-	gracePeriod       time.Duration
-	logger            *zap.Logger
+	// Map from application ID to its last successful commit hash.
+	lastTriggeredCommits map[string]string
+	gracePeriod          time.Duration
+	logger               *zap.Logger
 }
 
-// NewTrigger creates a new instance for DeploymentTrigger.
+// NewTrigger creates a new instance for Trigger.
 func NewTrigger(
 	apiClient apiClient,
 	gitClient gitClient,
@@ -69,24 +71,25 @@ func NewTrigger(
 	cfg *config.PipedSpec,
 	gracePeriod time.Duration,
 	logger *zap.Logger,
-) *DeploymentTrigger {
+) *Trigger {
 
-	return &DeploymentTrigger{
-		apiClient:         apiClient,
-		gitClient:         gitClient,
-		applicationLister: appLister,
-		commandLister:     commandLister,
-		config:            cfg,
-		triggeredCommits:  make(map[string]string),
-		gitRepos:          make(map[string]git.Repo, len(cfg.Repositories)),
-		gracePeriod:       gracePeriod,
-		logger:            logger.Named("deployment-trigger"),
+	return &Trigger{
+		apiClient:            apiClient,
+		gitClient:            gitClient,
+		applicationLister:    appLister,
+		commandLister:        commandLister,
+		config:               cfg,
+		triggeredCommits:     make(map[string]string),
+		gitRepos:             make(map[string]git.Repo, len(cfg.Repositories)),
+		lastTriggeredCommits: make(map[string]string),
+		gracePeriod:          gracePeriod,
+		logger:               logger.Named("trigger"),
 	}
 }
 
-// Run starts running DeploymentTrigger until the specified context has done.
+// Run starts running Trigger until the specified context has done.
 // This also waits for its cleaning up before returning.
-func (t *DeploymentTrigger) Run(ctx context.Context) error {
+func (t *Trigger) Run(ctx context.Context) error {
 	t.logger.Info("start running deployment trigger")
 
 	// Pre-clone to cache the registered git repositories.
@@ -120,7 +123,7 @@ L:
 	return nil
 }
 
-func (t *DeploymentTrigger) check(ctx context.Context) error {
+func (t *Trigger) check(ctx context.Context) error {
 	if len(t.gitRepos) == 0 {
 		t.logger.Info("no repositories were configured for this piped")
 		return nil
@@ -128,7 +131,7 @@ func (t *DeploymentTrigger) check(ctx context.Context) error {
 
 	// List all applications that should be handled by this piped
 	// and then group them by repository.
-	var applications = t.listApplications(ctx)
+	var applications = t.listApplications()
 
 	// TODO: We may want to apply worker model here to run them concurrently.
 	for repoID, apps := range applications {
@@ -170,7 +173,7 @@ func (t *DeploymentTrigger) check(ctx context.Context) error {
 	return nil
 }
 
-func (t *DeploymentTrigger) checkApplication(ctx context.Context, app *model.Application, repo git.Repo, branch string, headCommit git.Commit) error {
+func (t *Trigger) checkApplication(ctx context.Context, app *model.Application, repo git.Repo, branch string, headCommit git.Commit) error {
 	// Get the most recently applied commit of this application.
 	// TODO: If it is not in the memory cache, we have to call the API to list the deployments
 	// and use the commit sha of the most recent one.
@@ -225,7 +228,7 @@ func (t *DeploymentTrigger) checkApplication(ctx context.Context, app *model.App
 
 // listApplications retrieves all applications those should be handled by this piped
 // and then groups them by repoID.
-func (t *DeploymentTrigger) listApplications(ctx context.Context) map[string][]*model.Application {
+func (t *Trigger) listApplications() map[string][]*model.Application {
 	var (
 		apps = t.applicationLister.List()
 		m    = make(map[string][]*model.Application)

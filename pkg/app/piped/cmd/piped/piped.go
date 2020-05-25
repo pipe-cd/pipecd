@@ -26,9 +26,6 @@ import (
 	"golang.org/x/sync/errgroup"
 	"k8s.io/client-go/tools/clientcmd"
 
-	// The following line to load the gcp plugin (only required to authenticate against GKE clusters).
-	_ "k8s.io/client-go/plugin/pkg/client/auth/gcp"
-
 	"github.com/kapetaniosci/pipe/pkg/admin"
 	"github.com/kapetaniosci/pipe/pkg/app/api/service/pipedservice"
 	"github.com/kapetaniosci/pipe/pkg/app/api/service/pipedservice/pipedclientfake"
@@ -46,8 +43,12 @@ import (
 	"github.com/kapetaniosci/pipe/pkg/rpc/rpcauth"
 	"github.com/kapetaniosci/pipe/pkg/rpc/rpcclient"
 
+	// Import to load the needs plugins such as gcp, azure, oidc, openstack.
+	_ "k8s.io/client-go/plugin/pkg/client/auth"
 	// Import to preload all built-in executors to the default registry.
 	_ "github.com/kapetaniosci/pipe/pkg/app/piped/executor/registry"
+	// Import to preload all planners to the default registry.
+	_ "github.com/kapetaniosci/pipe/pkg/app/piped/planner/registry"
 )
 
 type piped struct {

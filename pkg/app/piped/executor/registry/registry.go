@@ -43,7 +43,7 @@ func (r *registry) Register(stage model.Stage, f executor.Factory) error {
 	defer r.mu.Unlock()
 
 	if _, ok := r.factories[stage]; ok {
-		return fmt.Errorf("executor for %s stage has already registered", stage)
+		return fmt.Errorf("executor for %s stage has already been registered", stage)
 	}
 	r.factories[stage] = f
 	return nil
@@ -52,6 +52,7 @@ func (r *registry) Register(stage model.Stage, f executor.Factory) error {
 func (r *registry) Executor(stage model.Stage, in executor.Input) (executor.Executor, bool) {
 	r.mu.RLock()
 	defer r.mu.RUnlock()
+
 	f, ok := r.factories[stage]
 	if !ok {
 		return nil, false

@@ -29,9 +29,9 @@ import (
 	"github.com/kapetaniosci/pipe/pkg/model"
 )
 
-func (t *DeploymentTrigger) triggerDeployment(ctx context.Context, app *model.Application, repo git.Repo, branch string, commit git.Commit) error {
+func (t *Trigger) triggerDeployment(ctx context.Context, app *model.Application, repo git.Repo, branch string, commit git.Commit) error {
 	// Load deployment configuration at the commit.
-	cfg, err := t.loadDeploymentConfiguration(ctx, repo.GetPath(), app)
+	cfg, err := t.loadDeploymentConfiguration(repo.GetPath(), app)
 	if err != nil {
 		t.logger.Error("failed to load application configuration",
 			zap.String("commit-hash", commit.Hash),
@@ -60,7 +60,7 @@ func (t *DeploymentTrigger) triggerDeployment(ctx context.Context, app *model.Ap
 	return nil
 }
 
-func (t *DeploymentTrigger) loadDeploymentConfiguration(ctx context.Context, repoPath string, app *model.Application) (*config.Config, error) {
+func (t *Trigger) loadDeploymentConfiguration(repoPath string, app *model.Application) (*config.Config, error) {
 	path := filepath.Join(repoPath, app.GitPath.GetDeploymentConfigFilePath(config.DeploymentConfigurationFileName))
 	cfg, err := config.LoadFromYAML(path)
 	if err != nil {
@@ -108,10 +108,8 @@ func buildDeploment(app *model.Application, cfg *config.Config, branch string, c
 			User:      commit.Author,
 			Timestamp: now.Unix(),
 		},
-		GitPath: app.GitPath,
-		// TODO: Revert this to PENDING status after adding the planner component.
-		Status: model.DeploymentStatus_DEPLOYMENT_PLANNED,
-		//Status:    model.DeploymentStatus_DEPLOYMENT_PENDING,
+		GitPath:   app.GitPath,
+		Status:    model.DeploymentStatus_DEPLOYMENT_PENDING,
 		Stages:    stages,
 		CreatedAt: now.Unix(),
 		UpdatedAt: now.Unix(),

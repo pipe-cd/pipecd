@@ -179,7 +179,7 @@ func (c *fakeClient) ReportDeploymentPlanned(ctx context.Context, req *pipedserv
 	}
 	d.Status = s
 	d.StatusDescription = req.StatusDescription
-	if len(req.Stages) == 0 {
+	if len(req.Stages) > 0 {
 		d.Stages = req.Stages
 	}
 
