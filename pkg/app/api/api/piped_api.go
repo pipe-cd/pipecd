@@ -101,19 +101,67 @@ func (a *PipedAPI) CreateDeployment(ctx context.Context, req *pipedservice.Creat
 // ReportDeploymentPlanned used by piped to update the status
 // of a specific deployment to PLANNED.
 func (a *PipedAPI) ReportDeploymentPlanned(ctx context.Context, req *pipedservice.ReportDeploymentPlannedRequest) (*pipedservice.ReportDeploymentPlannedResponse, error) {
-	return nil, status.Error(codes.Unimplemented, "")
+	updater := datastore.DeploymentToPlannedUpdater(req.Description, req.StatusDescription, req.Stages)
+	err := a.deploymentStore.PutDeployment(ctx, req.DeploymentId, updater)
+	if err != nil {
+		switch err {
+		case datastore.ErrNotFound:
+			return nil, status.Error(codes.InvalidArgument, "deployment is not found")
+		case datastore.ErrInvalidArgument:
+			return nil, status.Error(codes.InvalidArgument, "invalid value for update")
+		default:
+			a.logger.Error("failed to update deployment to be planned",
+				zap.String("deployment-id", req.DeploymentId),
+				zap.Error(err),
+			)
+			return nil, err
+		}
+	}
+	return &pipedservice.ReportDeploymentPlannedResponse{}, nil
 }
 
 // ReportDeploymentRunning used by piped to update the status
 // of a specific deployment to RUNNING.
 func (a *PipedAPI) ReportDeploymentRunning(ctx context.Context, req *pipedservice.ReportDeploymentRunningRequest) (*pipedservice.ReportDeploymentRunningResponse, error) {
-	return nil, status.Error(codes.Unimplemented, "")
+	updater := datastore.DeploymentToRunningUpdater(req.StatusDescription)
+	err := a.deploymentStore.PutDeployment(ctx, req.DeploymentId, updater)
+	if err != nil {
+		switch err {
+		case datastore.ErrNotFound:
+			return nil, status.Error(codes.InvalidArgument, "deployment is not found")
+		case datastore.ErrInvalidArgument:
+			return nil, status.Error(codes.InvalidArgument, "invalid value for update")
+		default:
+			a.logger.Error("failed to update deployment to be running",
+				zap.String("deployment-id", req.DeploymentId),
+				zap.Error(err),
+			)
+			return nil, err
+		}
+	}
+	return &pipedservice.ReportDeploymentRunningResponse{}, nil
 }
 
 // ReportDeploymentCompleted used by piped to update the status
 // of a specific deployment to SUCCESS | FAILURE | CANCELLED.
 func (a *PipedAPI) ReportDeploymentCompleted(ctx context.Context, req *pipedservice.ReportDeploymentCompletedRequest) (*pipedservice.ReportDeploymentCompletedResponse, error) {
-	return nil, status.Error(codes.Unimplemented, "")
+	updater := datastore.DeploymentToCompletedUpdater(req.Status, req.StageStatuses, req.StatusDescription, req.CompletedAt)
+	err := a.deploymentStore.PutDeployment(ctx, req.DeploymentId, updater)
+	if err != nil {
+		switch err {
+		case datastore.ErrNotFound:
+			return nil, status.Error(codes.InvalidArgument, "deployment is not found")
+		case datastore.ErrInvalidArgument:
+			return nil, status.Error(codes.InvalidArgument, "invalid value for update")
+		default:
+			a.logger.Error("failed to update deployment to be completed",
+				zap.String("deployment-id", req.DeploymentId),
+				zap.Error(err),
+			)
+			return nil, err
+		}
+	}
+	return &pipedservice.ReportDeploymentCompletedResponse{}, nil
 }
 
 // SaveDeploymentMetadata used by piped to persist the metadata of a specific deployment.
@@ -162,7 +210,24 @@ func (a *PipedAPI) ReportStageLog(ctx context.Context, req *pipedservice.ReportS
 // ReportStageStatusChanged used by piped to update the status
 // of a specific stage of a deployment.
 func (a *PipedAPI) ReportStageStatusChanged(ctx context.Context, req *pipedservice.ReportStageStatusChangedRequest) (*pipedservice.ReportStageStatusChangedResponse, error) {
-	return nil, status.Error(codes.Unimplemented, "")
+	updater := datastore.StageStatusChangedUpdater(req.StageId, req.Status, req.StatusDescription, req.RetriedCount, req.CompletedAt)
+	err := a.deploymentStore.PutDeployment(ctx, req.DeploymentId, updater)
+	if err != nil {
+		switch err {
+		case datastore.ErrNotFound:
+			return nil, status.Error(codes.InvalidArgument, "deployment is not found")
+		case datastore.ErrInvalidArgument:
+			return nil, status.Error(codes.InvalidArgument, "invalid value for update")
+		default:
+			a.logger.Error("failed to update stage status",
+				zap.String("deployment-id", req.DeploymentId),
+				zap.String("stage-id", req.StageId),
+				zap.Error(err),
+			)
+			return nil, err
+		}
+	}
+	return &pipedservice.ReportStageStatusChangedResponse{}, nil
 }
 
 // ListUnhandledCommands is periodically called by piped to obtain the commands

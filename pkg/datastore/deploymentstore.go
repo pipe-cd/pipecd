@@ -29,8 +29,65 @@ var deploymentFactory = func() interface{} {
 	return &model.Deployment{}
 }
 
+var (
+	DeploymentToPlannedUpdater = func(desc, statusDesc string, stages []*model.PipelineStage) func(*model.Deployment) error {
+		return func(d *model.Deployment) error {
+			d.Status = model.DeploymentStatus_DEPLOYMENT_PLANNED
+			d.Description = desc
+			d.StatusDescription = statusDesc
+			d.Stages = stages
+			return nil
+		}
+	}
+
+	DeploymentToRunningUpdater = func(statusDesc string) func(*model.Deployment) error {
+		return func(d *model.Deployment) error {
+			d.Status = model.DeploymentStatus_DEPLOYMENT_RUNNING
+			d.StatusDescription = statusDesc
+			return nil
+		}
+	}
+
+	DeploymentToCompletedUpdater = func(status model.DeploymentStatus, statuses map[string]model.StageStatus, statusDesc string, completedAt int64) func(*model.Deployment) error {
+		return func(d *model.Deployment) error {
+			if !model.IsCompletedDeployment(status) {
+				return errors.Wrapf(ErrInvalidArgument, "invalid completed deployment status: %s", status)
+			}
+
+			d.Status = status
+			d.StatusDescription = statusDesc
+			d.CompletedAt = completedAt
+			for i := range d.Stages {
+				stageID := d.Stages[i].Id
+				if status, ok := statuses[stageID]; ok {
+					d.Stages[i].Status = status
+				}
+			}
+			return nil
+		}
+	}
+
+	StageStatusChangedUpdater = func(stageID string, status model.StageStatus, statusDescription string,
+		retriedCount int32, completedAt int64) func(*model.Deployment) error {
+
+		return func(d *model.Deployment) error {
+			d.StatusDescription = statusDescription
+			for _, stage := range d.Stages {
+				if stage.Id == stageID {
+					stage.Status = status
+					stage.RetriedCount = retriedCount
+					stage.CompletedAt = completedAt
+					return nil
+				}
+			}
+			return errors.Wrapf(ErrInvalidArgument, "stage is not found: %s", stageID)
+		}
+	}
+)
+
 type DeploymentStore interface {
 	AddDeployment(ctx context.Context, d *model.Deployment) error
+	PutDeployment(ctx context.Context, id string, updater func(*model.Deployment) error) error
 	PutDeploymentMetadata(ctx context.Context, id string, metadata map[string]string) error
 	PutDeploymentStageMetadata(ctx context.Context, deploymentID, stageID, jsonMetadata string) error
 	ListDeployments(ctx context.Context, opts ListOptions) ([]model.Deployment, error)
@@ -62,6 +119,18 @@ func (s *deploymentStore) AddDeployment(ctx context.Context, d *model.Deployment
 		return err
 	}
 	return s.ds.Create(ctx, deploymentModelKind, d.Id, d)
+}
+
+func (s *deploymentStore) PutDeployment(ctx context.Context, id string, updater func(*model.Deployment) error) error {
+	now := s.nowFunc().Unix()
+	return s.ds.Update(ctx, deploymentModelKind, id, deploymentFactory, func(e interface{}) error {
+		d := e.(*model.Deployment)
+		if err := updater(d); err != nil {
+			return err
+		}
+		d.UpdatedAt = now
+		return d.Validate()
+	})
 }
 
 func (s *deploymentStore) PutDeploymentMetadata(ctx context.Context, id string, metadata map[string]string) error {

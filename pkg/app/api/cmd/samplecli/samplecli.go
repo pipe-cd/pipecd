@@ -70,10 +70,18 @@ func (s *samplecli) run(ctx context.Context, t cli.Telemetry) error {
 	switch s.function {
 	case "CreateDeployment":
 		return s.createDeployment(ctx, cli, data, t.Logger)
+	case "ReportDeploymentPlanned":
+		return s.reportDeploymentPlanned(ctx, cli, data, t.Logger)
+	case "ReportDeploymentRunning":
+		return s.reportDeploymentRunning(ctx, cli, data, t.Logger)
+	case "ReportDeploymentCompleted":
+		return s.reportDeploymentCompleted(ctx, cli, data, t.Logger)
 	case "SaveDeploymentMetadata":
 		return s.saveDeploymentMetadata(ctx, cli, data, t.Logger)
 	case "SaveStageMetadata":
 		return s.saveStageMetadata(ctx, cli, data, t.Logger)
+	case "ReportStageStatusChanged":
+		return s.reportStageStatusChanged(ctx, cli, data, t.Logger)
 	default:
 		return fmt.Errorf("invalid function name: %s", s.function)
 	}
@@ -111,6 +119,45 @@ func (s *samplecli) createDeployment(ctx context.Context, cli pipedservice.Clien
 	return nil
 }
 
+func (s *samplecli) reportDeploymentPlanned(ctx context.Context, cli pipedservice.Client, payload []byte, logger *zap.Logger) error {
+	req := pipedservice.ReportDeploymentPlannedRequest{}
+	if err := json.Unmarshal(payload, &req); err != nil {
+		return err
+	}
+	if _, err := cli.ReportDeploymentPlanned(ctx, &req); err != nil {
+		logger.Error("failure run ReportDeploymentPlanned", zap.Error(err))
+		return err
+	}
+	logger.Info("successfully run ReportDeploymentPlanned")
+	return nil
+}
+
+func (s *samplecli) reportDeploymentRunning(ctx context.Context, cli pipedservice.Client, payload []byte, logger *zap.Logger) error {
+	req := pipedservice.ReportDeploymentRunningRequest{}
+	if err := json.Unmarshal(payload, &req); err != nil {
+		return err
+	}
+	if _, err := cli.ReportDeploymentRunning(ctx, &req); err != nil {
+		logger.Error("failure run ReportDeploymentRunning", zap.Error(err))
+		return err
+	}
+	logger.Info("successfully run ReportDeploymentRunning")
+	return nil
+}
+
+func (s *samplecli) reportDeploymentCompleted(ctx context.Context, cli pipedservice.Client, payload []byte, logger *zap.Logger) error {
+	req := pipedservice.ReportDeploymentCompletedRequest{}
+	if err := json.Unmarshal(payload, &req); err != nil {
+		return err
+	}
+	if _, err := cli.ReportDeploymentCompleted(ctx, &req); err != nil {
+		logger.Error("failure run ReportDeploymentCompleted", zap.Error(err))
+		return err
+	}
+	logger.Info("successfully run ReportDeploymentCompleted")
+	return nil
+}
+
 func (s *samplecli) saveStageMetadata(ctx context.Context, cli pipedservice.Client, payload []byte, logger *zap.Logger) error {
 	req := pipedservice.SaveStageMetadataRequest{}
 	if err := json.Unmarshal(payload, &req); err != nil {
@@ -134,5 +181,18 @@ func (s *samplecli) saveDeploymentMetadata(ctx context.Context, cli pipedservice
 		return err
 	}
 	logger.Info("successfully run SaveDeploymentMetadata")
+	return nil
+}
+
+func (s *samplecli) reportStageStatusChanged(ctx context.Context, cli pipedservice.Client, payload []byte, logger *zap.Logger) error {
+	req := pipedservice.ReportStageStatusChangedRequest{}
+	if err := json.Unmarshal(payload, &req); err != nil {
+		return err
+	}
+	if _, err := cli.ReportStageStatusChanged(ctx, &req); err != nil {
+		logger.Error("failure run ReportStageStatusChanged", zap.Error(err))
+		return err
+	}
+	logger.Info("successfully run ReportStageStatusChanged")
 	return nil
 }
