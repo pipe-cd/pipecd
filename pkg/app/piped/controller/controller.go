@@ -188,8 +188,29 @@ L:
 
 // syncPlanner adds new planner for newly PENDING deployments.
 func (c *controller) syncPlanner(ctx context.Context) error {
+	// Remove stale planners.
+	for id, p := range c.planners {
+		if !p.IsDone() {
+			continue
+		}
+		if time.Since(p.DoneTimestamp()) < plannerStaleDuration {
+			continue
+		}
+		c.logger.Info("deleted done planner",
+			zap.String("deployment-id", p.ID()),
+			zap.String("application-id", id),
+			zap.Int("planner-count", len(c.planners)),
+		)
+		delete(c.planners, id)
+	}
+
+	// Add missing planners.
 	pendings := c.deploymentLister.ListPendings()
-	c.logger.Info(fmt.Sprintf("there are %d pending deployments for this piped", len(pendings)),
+	if len(pendings) == 0 {
+		return nil
+	}
+
+	c.logger.Info(fmt.Sprintf("there are %d pending deployments for planning", len(pendings)),
 		zap.Int("planner-count", len(c.planners)),
 	)
 
@@ -214,28 +235,12 @@ func (c *controller) syncPlanner(ctx context.Context) error {
 		pendingByApp[appID] = d
 	}
 
-	// Add missing planners.
 	for appID, d := range pendingByApp {
 		planner, err := c.startNewPlanner(ctx, d)
 		if err != nil {
 			continue
 		}
 		c.planners[appID] = planner
-	}
-
-	// Remove stale planners.
-	for id, p := range c.planners {
-		if !p.IsDone() {
-			continue
-		}
-		if time.Since(p.DoneTimestamp()) < plannerStaleDuration {
-			continue
-		}
-		c.logger.Info("deleted done planner",
-			zap.String("deployment-id", p.ID()),
-			zap.String("application-id", id),
-		)
-		delete(c.planners, id)
 	}
 
 	return nil
@@ -306,36 +311,6 @@ func (c *controller) startNewPlanner(ctx context.Context, d *model.Deployment) (
 // syncScheduler adds new scheduler for newly PLANNED deployments
 // as well as removes the schedulers for the completed deployments.
 func (c *controller) syncScheduler(ctx context.Context) error {
-	planneds := c.deploymentLister.ListPlanneds()
-
-	c.logger.Info(fmt.Sprintf("there are %d planned deployments for this piped", len(planneds)),
-		zap.Int("scheduler-count", len(c.schedulers)),
-	)
-
-	// Add missing schedulers.
-	for _, d := range planneds {
-		if s, ok := c.schedulers[d.ApplicationId]; ok {
-			if s.ID() != d.Id {
-				c.logger.Warn("detected an application that has more than one running deployments",
-					zap.String("application-id", d.ApplicationId),
-					zap.String("handling-deployment-id", s.ID()),
-					zap.String("deployment-id", d.Id),
-				)
-			}
-			continue
-		}
-		s, err := c.startNewScheduler(ctx, d)
-		if err != nil {
-			continue
-		}
-		c.schedulers[d.ApplicationId] = s
-		c.logger.Info("added a new scheduler",
-			zap.String("deployment-id", d.Id),
-			zap.String("application-id", d.ApplicationId),
-			zap.Int("scheduler-count", len(c.schedulers)),
-		)
-	}
-
 	// Update the most recent successful commit hashes.
 	for id, s := range c.schedulers {
 		if !s.IsDone() {
@@ -358,8 +333,42 @@ func (c *controller) syncScheduler(ctx context.Context) error {
 		c.logger.Info("deleted done scheduler",
 			zap.String("deployment-id", s.ID()),
 			zap.String("application-id", id),
+			zap.Int("scheduler-count", len(c.schedulers)),
 		)
 		delete(c.schedulers, id)
+	}
+
+	// Add missing schedulers.
+	planneds := c.deploymentLister.ListPlanneds()
+	if len(planneds) == 0 {
+		return nil
+	}
+
+	c.logger.Info(fmt.Sprintf("there are %d planned deployments for scheduling", len(planneds)),
+		zap.Int("scheduler-count", len(c.schedulers)),
+	)
+
+	for _, d := range planneds {
+		if s, ok := c.schedulers[d.ApplicationId]; ok {
+			if s.ID() != d.Id {
+				c.logger.Warn("detected an application that has more than one running deployments",
+					zap.String("application-id", d.ApplicationId),
+					zap.String("handling-deployment-id", s.ID()),
+					zap.String("deployment-id", d.Id),
+				)
+			}
+			continue
+		}
+		s, err := c.startNewScheduler(ctx, d)
+		if err != nil {
+			continue
+		}
+		c.schedulers[d.ApplicationId] = s
+		c.logger.Info("added a new scheduler",
+			zap.String("deployment-id", d.Id),
+			zap.String("application-id", d.ApplicationId),
+			zap.Int("scheduler-count", len(c.schedulers)),
+		)
 	}
 
 	return nil
