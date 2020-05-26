@@ -158,12 +158,12 @@ func (e *Executor) generateStageManifests(ctx context.Context, manifests []provi
 	for _, m := range stageManifests {
 		m.Name = m.Name + "-" + suffix
 		m.AddAnnotations(map[string]string{
-			provider.PredefinedLabelManagedBy:      provider.ManagedByPiped,
-			provider.PredefinedLabelApplication:    e.Deployment.ApplicationId,
-			provider.PredefinedLabelVariant:        stageVariant,
-			provider.PredefinedLabelOriginalAPIKey: m.APIVersion,
-			provider.PredefinedLabelResourceKey:    m.ResourceKey(),
-			provider.PredefinedLabelCommitHash:     e.Deployment.Trigger.Commit.Hash,
+			provider.LabelManagedBy:      provider.ManagedByPiped,
+			provider.LabelApplication:    e.Deployment.ApplicationId,
+			provider.LabelVariant:        stageVariant,
+			provider.LabelOriginalAPIVersion: m.APIVersion,
+			provider.LabelResourceKey:    m.ResourceKey(),
+			provider.LabelCommitHash:     e.Deployment.Trigger.Commit.Hash,
 		})
 	}
 	return stageManifests, nil

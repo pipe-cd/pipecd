@@ -44,12 +44,12 @@ func (e *Executor) ensurePrimaryUpdate(ctx context.Context) model.StageStatus {
 		// }
 
 		m.AddAnnotations(map[string]string{
-			provider.PredefinedLabelManagedBy:      provider.ManagedByPiped,
-			provider.PredefinedLabelApplication:    e.Deployment.ApplicationId,
-			provider.PredefinedLabelVariant:        primaryVariant,
-			provider.PredefinedLabelOriginalAPIKey: m.APIVersion,
-			provider.PredefinedLabelResourceKey:    m.ResourceKey(),
-			provider.PredefinedLabelCommitHash:     e.Deployment.Trigger.Commit.Hash,
+			provider.LabelManagedBy:      provider.ManagedByPiped,
+			provider.LabelApplication:    e.Deployment.ApplicationId,
+			provider.LabelVariant:        primaryVariant,
+			provider.LabelOriginalAPIVersion: m.APIVersion,
+			provider.LabelResourceKey:    m.ResourceKey(),
+			provider.LabelCommitHash:     e.Deployment.Trigger.Commit.Hash,
 		})
 	}
 

@@ -86,7 +86,7 @@ func (m Manifest) AddVariantLabel(variant string) error {
 	if matchLabels == nil {
 		matchLabels = make(map[string]string, 1)
 	}
-	matchLabels[PredefinedLabelVariant] = variant
+	matchLabels[LabelVariant] = variant
 	if err := unstructured.SetNestedStringMap(m.u.Object, matchLabels, matchLabelsFields...); err != nil {
 		return err
 	}
@@ -99,7 +99,7 @@ func (m Manifest) AddVariantLabel(variant string) error {
 	if labels == nil {
 		labels = make(map[string]string, 1)
 	}
-	labels[PredefinedLabelVariant] = variant
+	labels[LabelVariant] = variant
 	if err := unstructured.SetNestedStringMap(m.u.Object, labels, labelsFields...); err != nil {
 		return err
 	}
