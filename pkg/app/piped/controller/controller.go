@@ -29,8 +29,11 @@ import (
 	"sync"
 	"time"
 
+	"github.com/golang/protobuf/ptypes/wrappers"
 	"go.uber.org/zap"
 	"google.golang.org/grpc"
+	"google.golang.org/grpc/codes"
+	"google.golang.org/grpc/status"
 
 	"github.com/kapetaniosci/pipe/pkg/app/api/service/pipedservice"
 	"github.com/kapetaniosci/pipe/pkg/app/piped/logpersister"
@@ -41,6 +44,7 @@ import (
 )
 
 type apiClient interface {
+	GetMostRecentDeployment(ctx context.Context, req *pipedservice.GetMostRecentDeploymentRequest, opts ...grpc.CallOption) (*pipedservice.GetMostRecentDeploymentResponse, error)
 	ReportDeploymentPlanned(ctx context.Context, req *pipedservice.ReportDeploymentPlannedRequest, opts ...grpc.CallOption) (*pipedservice.ReportDeploymentPlannedResponse, error)
 	ReportDeploymentRunning(ctx context.Context, req *pipedservice.ReportDeploymentRunningRequest, opts ...grpc.CallOption) (*pipedservice.ReportDeploymentRunningResponse, error)
 	ReportDeploymentCompleted(ctx context.Context, req *pipedservice.ReportDeploymentCompletedRequest, opts ...grpc.CallOption) (*pipedservice.ReportDeploymentCompletedResponse, error)
@@ -88,8 +92,8 @@ type controller struct {
 	// Map from application ID to the scheduler
 	// of a running deployment of that application.
 	schedulers map[string]*scheduler
-	// Map from application ID to its last successful commit hash.
-	lastSuccessfulCommits map[string]string
+	// Map from application ID to its most recent successful commit hash.
+	mostRecentSuccessfulCommits map[string]string
 	// WaitGroup for waiting the completions of all planners, schedulers.
 	wg sync.WaitGroup
 
@@ -115,18 +119,18 @@ func NewController(
 		lg = logger.Named("controller")
 	)
 	return &controller{
-		apiClient:             apiClient,
-		gitClient:             gitClient,
-		deploymentLister:      deploymentLister,
-		commandLister:         commandLister,
-		pipedConfig:           pipedConfig,
-		logPersister:          lp,
-		planners:              make(map[string]*planner),
-		schedulers:            make(map[string]*scheduler),
-		lastSuccessfulCommits: make(map[string]string),
-		syncInternal:          10 * time.Second,
-		gracePeriod:           gracePeriod,
-		logger:                lg,
+		apiClient:                   apiClient,
+		gitClient:                   gitClient,
+		deploymentLister:            deploymentLister,
+		commandLister:               commandLister,
+		pipedConfig:                 pipedConfig,
+		logPersister:                lp,
+		planners:                    make(map[string]*planner),
+		schedulers:                  make(map[string]*scheduler),
+		mostRecentSuccessfulCommits: make(map[string]string),
+		syncInternal:                10 * time.Second,
+		gracePeriod:                 gracePeriod,
+		logger:                      lg,
 	}
 }
 
@@ -204,10 +208,7 @@ func (c *controller) syncPlanner(ctx context.Context) error {
 
 		// Choose the oldest PENDING deployment of the application to plan.
 		if pre, ok := pendingByApp[appID]; ok {
-			if d.Trigger.Commit.CreatedAt > pre.Trigger.Commit.CreatedAt {
-				continue
-			}
-			if d.Trigger.Commit.CreatedAt == pre.Trigger.Commit.CreatedAt && d.Trigger.Timestamp > pre.Trigger.Timestamp {
+			if !d.TriggerBefore(pre) {
 				continue
 			}
 		}
@@ -256,9 +257,26 @@ func (c *controller) startNewPlanner(ctx context.Context, d *model.Deployment) (
 	}
 	logger.Info("created working directory for planner", zap.String("working-dir", workingDir))
 
+	// The most recent successfull commit is saved in memory.
+	// But when the piped is restarted that data will be cleared too.
+	// So in that case, we have to use the API to check.
+	commit := c.mostRecentSuccessfulCommits[d.ApplicationId]
+	if commit == "" {
+		mostRecent, err := c.getMostRecentSuccessfulDeployment(ctx, d.ApplicationId)
+		if err == nil {
+			commit = mostRecent.CommitHash()
+			c.mostRecentSuccessfulCommits[d.ApplicationId] = commit
+		} else {
+			logger.Error("failed to get the most recent successful deployment",
+				zap.String("application", d.ApplicationId),
+				zap.Error(err),
+			)
+		}
+	}
+
 	planner := newPlanner(
 		d,
-		"",
+		commit,
 		workingDir,
 		c.apiClient,
 		c.gitClient,
@@ -281,7 +299,6 @@ func (c *controller) startNewPlanner(ctx context.Context, d *model.Deployment) (
 	go func() {
 		defer c.wg.Done()
 		defer cleanup()
-
 		planner.Run(ctx)
 	}()
 
@@ -319,6 +336,17 @@ func (c *controller) syncScheduler(ctx context.Context) error {
 			zap.String("application-id", d.ApplicationId),
 			zap.Int("scheduler-count", len(c.schedulers)),
 		)
+	}
+
+	// Update the most recent successful commit hashes.
+	for id, s := range c.schedulers {
+		if !s.IsDone() {
+			continue
+		}
+		if s.DoneDeploymentStatus() != model.DeploymentStatus_DEPLOYMENT_SUCCESS {
+			continue
+		}
+		c.mostRecentSuccessfulCommits[id] = s.CommitHash()
 	}
 
 	// Remove done schedulers.
@@ -393,6 +421,31 @@ func (c *controller) startNewScheduler(ctx context.Context, d *model.Deployment)
 	return scheduler, nil
 }
 
+func (c *controller) getMostRecentSuccessfulDeployment(ctx context.Context, applicationID string) (*model.Deployment, error) {
+	var (
+		err   error
+		resp  *pipedservice.GetMostRecentDeploymentResponse
+		retry = newAPIRetry(3)
+		req   = &pipedservice.GetMostRecentDeploymentRequest{
+			ApplicationId: applicationID,
+			Status: &wrappers.Int32Value{
+				Value: int32(model.DeploymentStatus_DEPLOYMENT_SUCCESS),
+			},
+		}
+	)
+
+	for retry.WaitNext(ctx) {
+		if resp, err = c.apiClient.GetMostRecentDeployment(ctx, req); err == nil {
+			return resp.Deployment, nil
+		}
+		err = fmt.Errorf("failed to report deployment status to control-plane: %v", err)
+		if !shouldRetryAPI(err) {
+			return nil, err
+		}
+	}
+	return nil, err
+}
+
 // prepareDeployRepository clones repository and checkouts to the target revision.
 func prepareDeployRepository(ctx context.Context, d *model.Deployment, gitClient gitClient, repoDirPath string, pipedConfig *config.PipedSpec) (git.Repo, error) {
 	var (
@@ -431,6 +484,33 @@ func loadDeploymentConfiguration(repoPath string, d *model.Deployment) (*config.
 		return nil, fmt.Errorf("application in deployment configuration file is not match, got: %s, expected: %s", appKind, d.Kind)
 	}
 	return cfg, nil
+}
+
+func shouldRetryAPI(err error) bool {
+	s := status.Convert(err)
+	if s == nil {
+		return false
+	}
+	switch s.Code() {
+	case codes.OK:
+		return false
+	case codes.InvalidArgument:
+		return false
+	case codes.NotFound:
+		return false
+	case codes.AlreadyExists:
+		return false
+	case codes.PermissionDenied:
+		return false
+	case codes.FailedPrecondition:
+		return false
+	case codes.Unimplemented:
+		return false
+	case codes.Unauthenticated:
+		return false
+	default:
+		return true
+	}
 }
 
 // 0s 997.867435ms 2.015381172s 3.485134345s 4.389600179s 18.118099328s 48.73058264s

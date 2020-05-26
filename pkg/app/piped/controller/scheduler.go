@@ -65,9 +65,12 @@ type scheduler struct {
 	// We may need a mutex for this field in the future
 	// when the stages can be executed concurrently.
 	stageStatuses map[string]model.StageStatus
-	done          atomic.Bool
-	doneTimestamp time.Time
-	nowFunc       func() time.Time
+
+	done                 atomic.Bool
+	doneTimestamp        time.Time
+	doneDeploymentStatus model.DeploymentStatus
+
+	nowFunc func() time.Time
 }
 
 func newScheduler(
@@ -91,17 +94,18 @@ func newScheduler(
 	)
 
 	s := &scheduler{
-		deployment:       d,
-		pipedConfig:      pipedConfig,
-		workingDir:       workingDir,
-		executorRegistry: registry.DefaultRegistry(),
-		apiClient:        apiClient,
-		gitClient:        gitClient,
-		commandLister:    commandLister,
-		logPersister:     lp,
-		metadataStore:    NewMetadataStore(apiClient, d),
-		nowFunc:          time.Now,
-		logger:           logger,
+		deployment:           d,
+		workingDir:           workingDir,
+		executorRegistry:     registry.DefaultRegistry(),
+		apiClient:            apiClient,
+		gitClient:            gitClient,
+		commandLister:        commandLister,
+		logPersister:         lp,
+		metadataStore:        NewMetadataStore(apiClient, d),
+		pipedConfig:          pipedConfig,
+		doneDeploymentStatus: d.Status,
+		logger:               logger,
+		nowFunc:              time.Now,
 	}
 
 	// Initialize the map of current status of all stages.
@@ -119,6 +123,11 @@ func (s *scheduler) ID() string {
 	return s.deployment.Id
 }
 
+// CommitHash returns the hash value of deploying commit.
+func (s *scheduler) CommitHash() string {
+	return s.deployment.CommitHash()
+}
+
 // IsDone tells whether this scheduler is done it tasks or not.
 // Returning true means this scheduler can be removable.
 func (s *scheduler) IsDone() bool {
@@ -126,8 +135,21 @@ func (s *scheduler) IsDone() bool {
 }
 
 // DoneTimestamp returns the time when scheduler has done.
+// This can be used only after IsDone() returns true.
 func (s *scheduler) DoneTimestamp() time.Time {
+	if !s.IsDone() {
+		return time.Now().AddDate(1, 0, 0)
+	}
 	return s.doneTimestamp
+}
+
+// DoneDeploymentStatus returns the deployment status when scheduler has done.
+// This can be used only after IsDone() returns true.
+func (s *scheduler) DoneDeploymentStatus() model.DeploymentStatus {
+	if !s.IsDone() {
+		return s.deployment.Status
+	}
+	return s.doneDeploymentStatus
 }
 
 // Run starts running the scheduler.
@@ -262,6 +284,7 @@ func (s *scheduler) Run(ctx context.Context) error {
 
 	if model.IsCompletedDeployment(deploymentStatus) {
 		s.reportDeploymentCompleted(ctx, deploymentStatus, statusDescription)
+		s.doneDeploymentStatus = deploymentStatus
 	}
 
 	if cancelCommand != nil {

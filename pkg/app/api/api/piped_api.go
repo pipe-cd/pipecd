@@ -100,6 +100,11 @@ func (a *PipedAPI) ListNotCompletedDeployments(ctx context.Context, req *pipedse
 	return nil, status.Error(codes.Unimplemented, "")
 }
 
+// GetMostRecentDeployment returns the most recent deployment of the given application.
+func (a *PipedAPI) GetMostRecentDeployment(ctx context.Context, req *pipedservice.GetMostRecentDeploymentRequest) (*pipedservice.GetMostRecentDeploymentResponse, error) {
+	return nil, status.Error(codes.Unimplemented, "")
+}
+
 // CreateDeployment creates/triggers a new deployment for an application
 // that is managed by this piped.
 // This will be used by DeploymentTrigger component.

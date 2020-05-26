@@ -18,6 +18,7 @@ package pipe.api.service.pipedservice;
 option go_package = "github.com/kapetaniosci/pipe/pkg/app/api/service/pipedservice";
 
 import "validate/validate.proto";
+import "google/protobuf/wrappers.proto";
 import "pkg/app/api/service/pipedservice/event.proto";
 import "pkg/model/command.proto";
 import "pkg/model/application.proto";
@@ -43,6 +44,9 @@ service PipedService {
     // which are managed by this piped.
     // DeploymentController component uses this RPC to spawns/syncs its local deployment executors.
     rpc ListNotCompletedDeployments(ListNotCompletedDeploymentsRequest) returns (ListNotCompletedDeploymentsResponse) {}
+
+    // GetMostRecentDeployment returns the most recent deployment of the given application.
+    rpc GetMostRecentDeployment(GetMostRecentDeploymentRequest) returns (GetMostRecentDeploymentResponse) {}
 
     // CreateDeployment creates/triggers a new deployment for an application
     // that is managed by this piped.
@@ -130,6 +134,15 @@ message ListNotCompletedDeploymentsRequest {
 
 message ListNotCompletedDeploymentsResponse {
     repeated pipe.model.Deployment deployments = 1;
+}
+
+message GetMostRecentDeploymentRequest {
+    string application_id = 1 [(validate.rules).string.min_len = 1];
+    google.protobuf.Int32Value status = 2;
+}
+
+message GetMostRecentDeploymentResponse {
+    pipe.model.Deployment deployment = 1;
 }
 
 message CreateDeploymentRequest {

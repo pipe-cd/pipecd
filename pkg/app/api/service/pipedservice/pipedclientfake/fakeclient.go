@@ -141,6 +141,41 @@ func (c *fakeClient) ListNotCompletedDeployments(ctx context.Context, req *piped
 	}, nil
 }
 
+// GetMostRecentDeployment returns the most recent deployment of the given application.
+func (c *fakeClient) GetMostRecentDeployment(ctx context.Context, req *pipedservice.GetMostRecentDeploymentRequest, opts ...grpc.CallOption) (*pipedservice.GetMostRecentDeploymentResponse, error) {
+	c.logger.Info("received GetMostRecentDeployment rpc", zap.Any("request", req))
+
+	var (
+		requiredStatus model.DeploymentStatus
+		hasStatus      bool
+		mostRecent     *model.Deployment
+	)
+	if req.Status != nil {
+		requiredStatus = model.DeploymentStatus(req.Status.Value)
+	}
+
+	c.mu.RLock()
+	defer c.mu.RUnlock()
+
+	for _, d := range c.deployments {
+		if hasStatus && d.Status != requiredStatus {
+			continue
+		}
+		if !d.TriggerBefore(mostRecent) {
+			continue
+		}
+		mostRecent = d
+	}
+
+	if mostRecent == nil {
+		return nil, status.Error(codes.NotFound, "")
+	}
+
+	return &pipedservice.GetMostRecentDeploymentResponse{
+		Deployment: mostRecent.Clone(),
+	}, nil
+}
+
 // CreateDeployment creates/triggers a new deployment for an application
 // that is managed by this piped.
 // This will be used by DeploymentTrigger component.

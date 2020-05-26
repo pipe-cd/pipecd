@@ -97,8 +97,24 @@ func (d *Deployment) StageStatusMap() map[string]StageStatus {
 	return statuses
 }
 
+// CommitHash returns the hash value of trigger commit.
+func (d *Deployment) CommitHash() string {
+	return d.Trigger.Commit.Hash
+}
+
 // Clone returns a deep copy of the deployment.
 func (d *Deployment) Clone() *Deployment {
 	msg := proto.Clone(d)
 	return msg.(*Deployment)
+}
+
+// TriggerBefore reports whether the deployment is triggered before the given one.
+func (d *Deployment) TriggerBefore(other *Deployment) bool {
+	if d.Trigger.Commit.CreatedAt > other.Trigger.Commit.CreatedAt {
+		return false
+	}
+	if d.Trigger.Commit.CreatedAt == other.Trigger.Commit.CreatedAt && d.Trigger.Timestamp > other.Trigger.Timestamp {
+		return false
+	}
+	return true
 }

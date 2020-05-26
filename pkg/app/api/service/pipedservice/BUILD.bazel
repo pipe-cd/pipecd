@@ -13,6 +13,7 @@ proto_library(
     deps = [
         "//pkg/model:model_proto",
         "@com_github_envoyproxy_protoc_gen_validate//validate:validate_proto",
+        "@com_google_protobuf//:wrappers_proto",
     ],
 )
 
