@@ -161,7 +161,7 @@ func (c *fakeClient) GetMostRecentDeployment(ctx context.Context, req *pipedserv
 		if hasStatus && d.Status != requiredStatus {
 			continue
 		}
-		if !d.TriggerBefore(mostRecent) {
+		if mostRecent != nil && !d.TriggerBefore(mostRecent) {
 			continue
 		}
 		mostRecent = d

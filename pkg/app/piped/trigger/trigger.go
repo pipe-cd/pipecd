@@ -25,14 +25,18 @@ import (
 
 	"go.uber.org/zap"
 	"google.golang.org/grpc"
+	"google.golang.org/grpc/codes"
+	"google.golang.org/grpc/status"
 
 	"github.com/kapetaniosci/pipe/pkg/app/api/service/pipedservice"
+	"github.com/kapetaniosci/pipe/pkg/backoff"
 	"github.com/kapetaniosci/pipe/pkg/config"
 	"github.com/kapetaniosci/pipe/pkg/git"
 	"github.com/kapetaniosci/pipe/pkg/model"
 )
 
 type apiClient interface {
+	GetMostRecentDeployment(ctx context.Context, req *pipedservice.GetMostRecentDeploymentRequest, opts ...grpc.CallOption) (*pipedservice.GetMostRecentDeploymentResponse, error)
 	CreateDeployment(ctx context.Context, in *pipedservice.CreateDeploymentRequest, opts ...grpc.CallOption) (*pipedservice.CreateDeploymentResponse, error)
 }
 
@@ -49,17 +53,15 @@ type commandLister interface {
 }
 
 type Trigger struct {
-	apiClient         apiClient
-	gitClient         gitClient
-	applicationLister applicationLister
-	commandLister     commandLister
-	config            *config.PipedSpec
-	triggeredCommits  map[string]string
-	gitRepos          map[string]git.Repo
-	// Map from application ID to its last successful commit hash.
-	lastTriggeredCommits map[string]string
-	gracePeriod          time.Duration
-	logger               *zap.Logger
+	apiClient                    apiClient
+	gitClient                    gitClient
+	applicationLister            applicationLister
+	commandLister                commandLister
+	config                       *config.PipedSpec
+	mostRecentlyTriggeredCommits map[string]string
+	gitRepos                     map[string]git.Repo
+	gracePeriod                  time.Duration
+	logger                       *zap.Logger
 }
 
 // NewTrigger creates a new instance for Trigger.
@@ -74,16 +76,15 @@ func NewTrigger(
 ) *Trigger {
 
 	return &Trigger{
-		apiClient:            apiClient,
-		gitClient:            gitClient,
-		applicationLister:    appLister,
-		commandLister:        commandLister,
-		config:               cfg,
-		triggeredCommits:     make(map[string]string),
-		gitRepos:             make(map[string]git.Repo, len(cfg.Repositories)),
-		lastTriggeredCommits: make(map[string]string),
-		gracePeriod:          gracePeriod,
-		logger:               logger.Named("trigger"),
+		apiClient:                    apiClient,
+		gitClient:                    gitClient,
+		applicationLister:            appLister,
+		commandLister:                commandLister,
+		config:                       cfg,
+		mostRecentlyTriggeredCommits: make(map[string]string),
+		gitRepos:                     make(map[string]git.Repo, len(cfg.Repositories)),
+		gracePeriod:                  gracePeriod,
+		logger:                       logger.Named("trigger"),
 	}
 }
 
@@ -174,17 +175,27 @@ func (t *Trigger) check(ctx context.Context) error {
 }
 
 func (t *Trigger) checkApplication(ctx context.Context, app *model.Application, repo git.Repo, branch string, headCommit git.Commit) error {
-	// Get the most recently applied commit of this application.
-	// TODO: If it is not in the memory cache, we have to call the API to list the deployments
-	// and use the commit sha of the most recent one.
-	triggeredCommitHash, ok := t.triggeredCommits[app.Id]
-	if !ok {
-		t.triggeredCommits[app.Id] = "retrieved-one"
+	// Get the most recently triggered commit of this application.
+	// Most of the cases that data can be loaded from in-memory cache but
+	// when the piped is restared that data will be cleared too.
+	// So in that case, we have to make an API call.
+	preCommitHash := t.mostRecentlyTriggeredCommits[app.Id]
+	if preCommitHash == "" {
+		mostRecent, err := t.getMostRecentDeployment(ctx, app.Id)
+		if err == nil {
+			preCommitHash = mostRecent.CommitHash()
+			t.mostRecentlyTriggeredCommits[app.Id] = preCommitHash
+		} else {
+			t.logger.Error("failed to get the most recent deployment",
+				zap.String("application", app.Id),
+				zap.Error(err),
+			)
+		}
 	}
 
 	// Check whether the most recently applied one is the head commit or not.
 	// If not, nothing to do for this time.
-	if triggeredCommitHash == headCommit.Hash {
+	if headCommit.Hash == preCommitHash {
 		t.logger.Info(fmt.Sprintf("no update to sync for application: %s, hash: %s", app.Id, headCommit.Hash))
 		return nil
 	}
@@ -192,34 +203,34 @@ func (t *Trigger) checkApplication(ctx context.Context, app *model.Application, 
 	trigger := func() error {
 		// Build deployment model and send a request to API to create a new deployment.
 		t.logger.Info(fmt.Sprintf("application %s should be synced because of the new commit", app.Id),
-			zap.String("previous-commit-hash", triggeredCommitHash),
+			zap.String("previous-commit-hash", preCommitHash),
 			zap.String("head-commit-hash", headCommit.Hash),
 		)
 		if err := t.triggerDeployment(ctx, app, repo, branch, headCommit); err != nil {
 			return err
 		}
-		t.triggeredCommits[app.Id] = headCommit.Hash
+		t.mostRecentlyTriggeredCommits[app.Id] = headCommit.Hash
 		return nil
 	}
 
 	// There is no previous deployment so we don't need to check anymore.
 	// Just do it.
-	if triggeredCommitHash == "" {
+	if preCommitHash == "" {
 		return trigger()
 	}
 
 	// List the changed files between those two commits and
 	// determine whether this application was touch by those changed files.
-	changedFiles, err := repo.ChangedFiles(ctx, triggeredCommitHash, headCommit.Hash)
+	changedFiles, err := repo.ChangedFiles(ctx, preCommitHash, headCommit.Hash)
 	if err != nil {
 		return err
 	}
 	if touched := isTouchedByChangedFiles(app.GitPath.Path, nil, changedFiles); !touched {
 		t.logger.Info(fmt.Sprintf("application %s was not touched by the new commit", app.Id),
-			zap.String("previous-commit-hash", triggeredCommitHash),
+			zap.String("previous-commit-hash", preCommitHash),
 			zap.String("head-commit-hash", headCommit.Hash),
 		)
-		t.triggeredCommits[app.Id] = headCommit.Hash
+		t.mostRecentlyTriggeredCommits[app.Id] = headCommit.Hash
 		return nil
 	}
 
@@ -244,6 +255,28 @@ func (t *Trigger) listApplications() map[string][]*model.Application {
 	return m
 }
 
+func (t *Trigger) getMostRecentDeployment(ctx context.Context, applicationID string) (*model.Deployment, error) {
+	var (
+		err   error
+		resp  *pipedservice.GetMostRecentDeploymentResponse
+		retry = newAPIRetry(3)
+		req   = &pipedservice.GetMostRecentDeploymentRequest{
+			ApplicationId: applicationID,
+		}
+	)
+
+	for retry.WaitNext(ctx) {
+		if resp, err = t.apiClient.GetMostRecentDeployment(ctx, req); err == nil {
+			return resp.Deployment, nil
+		}
+		err = fmt.Errorf("failed to report deployment status to control-plane: %v", err)
+		if !shouldRetryAPI(err) {
+			return nil, err
+		}
+	}
+	return nil, err
+}
+
 func isTouchedByChangedFiles(appDir string, dependencyDirs []string, changedFiles []string) bool {
 	// If any files inside the application directory was changed
 	// this application is considered as touched.
@@ -264,4 +297,37 @@ func isTouchedByChangedFiles(appDir string, dependencyDirs []string, changedFile
 	}
 
 	return false
+}
+
+func shouldRetryAPI(err error) bool {
+	s := status.Convert(err)
+	if s == nil {
+		return false
+	}
+	switch s.Code() {
+	case codes.OK:
+		return false
+	case codes.InvalidArgument:
+		return false
+	case codes.NotFound:
+		return false
+	case codes.AlreadyExists:
+		return false
+	case codes.PermissionDenied:
+		return false
+	case codes.FailedPrecondition:
+		return false
+	case codes.Unimplemented:
+		return false
+	case codes.Unauthenticated:
+		return false
+	default:
+		return true
+	}
+}
+
+// 0s 997.867435ms 2.015381172s 3.485134345s 4.389600179s 18.118099328s 48.73058264s
+func newAPIRetry(maxRetries int) backoff.Retry {
+	bo := backoff.NewExponential(2*time.Second, time.Minute)
+	return backoff.NewRetry(maxRetries, bo)
 }
