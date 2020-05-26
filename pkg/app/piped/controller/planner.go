@@ -146,7 +146,7 @@ func (p *planner) Run(ctx context.Context) error {
 func (p *planner) reportDeploymentPlanned(ctx context.Context, desc string) error {
 	var (
 		err   error
-		retry = newAPIRetry(10)
+		retry = pipedservice.NewRetry(10)
 		req   = &pipedservice.ReportDeploymentPlannedRequest{
 			DeploymentId:      p.deployment.Id,
 			Description:       "",
@@ -179,7 +179,7 @@ func (p *planner) reportDeploymentFailed(ctx context.Context, desc string) error
 			StageStatuses:     nil,
 			CompletedAt:       now.Unix(),
 		}
-		retry = newAPIRetry(10)
+		retry = pipedservice.NewRetry(10)
 	)
 
 	for retry.WaitNext(ctx) {

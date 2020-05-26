@@ -406,7 +406,7 @@ func (s *scheduler) reportStageStatus(ctx context.Context, stageID string, statu
 			Status:       status,
 			CompletedAt:  now.Unix(),
 		}
-		retry = newAPIRetry(10)
+		retry = pipedservice.NewRetry(10)
 	)
 
 	// Update stage status at local.
@@ -427,7 +427,7 @@ func (s *scheduler) reportStageStatus(ctx context.Context, stageID string, statu
 func (s *scheduler) reportDeploymentRunning(ctx context.Context, desc string) error {
 	var (
 		err   error
-		retry = newAPIRetry(10)
+		retry = pipedservice.NewRetry(10)
 		req   = &pipedservice.ReportDeploymentRunningRequest{
 			DeploymentId:      s.deployment.Id,
 			StatusDescription: desc,
@@ -455,7 +455,7 @@ func (s *scheduler) reportDeploymentCompleted(ctx context.Context, status model.
 			StageStatuses:     s.stageStatuses,
 			CompletedAt:       now.Unix(),
 		}
-		retry = newAPIRetry(10)
+		retry = pipedservice.NewRetry(10)
 	)
 
 	// Update deployment status on remote.

@@ -32,12 +32,9 @@ import (
 	"github.com/golang/protobuf/ptypes/wrappers"
 	"go.uber.org/zap"
 	"google.golang.org/grpc"
-	"google.golang.org/grpc/codes"
-	"google.golang.org/grpc/status"
 
 	"github.com/kapetaniosci/pipe/pkg/app/api/service/pipedservice"
 	"github.com/kapetaniosci/pipe/pkg/app/piped/logpersister"
-	"github.com/kapetaniosci/pipe/pkg/backoff"
 	"github.com/kapetaniosci/pipe/pkg/config"
 	"github.com/kapetaniosci/pipe/pkg/git"
 	"github.com/kapetaniosci/pipe/pkg/model"
@@ -425,7 +422,7 @@ func (c *controller) getMostRecentSuccessfulDeployment(ctx context.Context, appl
 	var (
 		err   error
 		resp  *pipedservice.GetMostRecentDeploymentResponse
-		retry = newAPIRetry(3)
+		retry = pipedservice.NewRetry(3)
 		req   = &pipedservice.GetMostRecentDeploymentRequest{
 			ApplicationId: applicationID,
 			Status: &wrappers.Int32Value{
@@ -439,7 +436,7 @@ func (c *controller) getMostRecentSuccessfulDeployment(ctx context.Context, appl
 			return resp.Deployment, nil
 		}
 		err = fmt.Errorf("failed to report deployment status to control-plane: %v", err)
-		if !shouldRetryAPI(err) {
+		if !pipedservice.Retriable(err) {
 			return nil, err
 		}
 	}
@@ -484,37 +481,4 @@ func loadDeploymentConfiguration(repoPath string, d *model.Deployment) (*config.
 		return nil, fmt.Errorf("application in deployment configuration file is not match, got: %s, expected: %s", appKind, d.Kind)
 	}
 	return cfg, nil
-}
-
-func shouldRetryAPI(err error) bool {
-	s := status.Convert(err)
-	if s == nil {
-		return false
-	}
-	switch s.Code() {
-	case codes.OK:
-		return false
-	case codes.InvalidArgument:
-		return false
-	case codes.NotFound:
-		return false
-	case codes.AlreadyExists:
-		return false
-	case codes.PermissionDenied:
-		return false
-	case codes.FailedPrecondition:
-		return false
-	case codes.Unimplemented:
-		return false
-	case codes.Unauthenticated:
-		return false
-	default:
-		return true
-	}
-}
-
-// 0s 997.867435ms 2.015381172s 3.485134345s 4.389600179s 18.118099328s 48.73058264s
-func newAPIRetry(maxRetries int) backoff.Retry {
-	bo := backoff.NewExponential(2*time.Second, time.Minute)
-	return backoff.NewRetry(maxRetries, bo)
 }
