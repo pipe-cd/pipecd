@@ -70,6 +70,8 @@ func (s *samplecli) run(ctx context.Context, t cli.Telemetry) error {
 	switch s.function {
 	case "CreateDeployment":
 		return s.createDeployment(ctx, cli, data, t.Logger)
+	case "ListApplications":
+		return s.listApplications(ctx, cli, data, t.Logger)
 	case "ReportDeploymentPlanned":
 		return s.reportDeploymentPlanned(ctx, cli, data, t.Logger)
 	case "ReportDeploymentRunning":
@@ -116,6 +118,23 @@ func (s *samplecli) createDeployment(ctx context.Context, cli pipedservice.Clien
 		return err
 	}
 	logger.Info("successfully run CreateDeployment")
+	return nil
+}
+
+func (s *samplecli) listApplications(ctx context.Context, cli pipedservice.Client, payload []byte, logger *zap.Logger) error {
+	req := pipedservice.ListApplicationsRequest{}
+	if err := json.Unmarshal(payload, &req); err != nil {
+		return err
+	}
+	resp, err := cli.ListApplications(ctx, &req)
+	if err != nil {
+		logger.Error("failure run ListApplications", zap.Error(err))
+		return err
+	}
+	logger.Info("successfully run ListApplications", zap.Int("count", len(resp.Applications)))
+	for _, app := range resp.Applications {
+		fmt.Printf("application: %+v\n", app)
+	}
 	return nil
 }
 

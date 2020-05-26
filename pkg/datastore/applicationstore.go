@@ -30,7 +30,7 @@ var applicationFactory = func() interface{} {
 type ApplicationStore interface {
 	AddApplication(ctx context.Context, app *model.Application) error
 	DisableApplication(ctx context.Context, id string) error
-	ListApplications(ctx context.Context, opts ListOptions) ([]model.Application, error)
+	ListApplications(ctx context.Context, opts ListOptions) ([]*model.Application, error)
 }
 
 type applicationStore struct {
@@ -70,12 +70,12 @@ func (s *applicationStore) DisableApplication(ctx context.Context, id string) er
 	})
 }
 
-func (s *applicationStore) ListApplications(ctx context.Context, opts ListOptions) ([]model.Application, error) {
+func (s *applicationStore) ListApplications(ctx context.Context, opts ListOptions) ([]*model.Application, error) {
 	it, err := s.ds.Find(ctx, applicationModelKind, opts)
 	if err != nil {
 		return nil, err
 	}
-	apps := make([]model.Application, 0)
+	apps := make([]*model.Application, 0)
 	for {
 		var app model.Application
 		err := it.Next(&app)
@@ -85,7 +85,7 @@ func (s *applicationStore) ListApplications(ctx context.Context, opts ListOption
 		if err != nil {
 			return nil, err
 		}
-		apps = append(apps, app)
+		apps = append(apps, &app)
 	}
 	return apps, nil
 }

@@ -73,7 +73,24 @@ func (a *PipedAPI) Ping(ctx context.Context, req *pipedservice.PingRequest) (*pi
 // Disabled applications should not be included in the response.
 // Piped uses this RPC to fetch and sync the application configuration into its local database.
 func (a *PipedAPI) ListApplications(ctx context.Context, req *pipedservice.ListApplicationsRequest) (*pipedservice.ListApplicationsResponse, error) {
-	return nil, status.Error(codes.Unimplemented, "")
+	opts := datastore.ListOptions{
+		Filters: []datastore.ListFilter{
+			{
+				Field:    "Disabled",
+				Operator: "==",
+				Value:    false,
+			},
+		},
+	}
+	// TOOD: Support pagination in ListApplications
+	apps, err := a.applicationStore.ListApplications(ctx, opts)
+	if err != nil {
+		a.logger.Error("failed to fetch applications", zap.Error(err))
+		return nil, err
+	}
+	return &pipedservice.ListApplicationsResponse{
+		Applications: apps,
+	}, nil
 }
 
 // ListNotCompletedDeployments returns a list of not completed deployments
