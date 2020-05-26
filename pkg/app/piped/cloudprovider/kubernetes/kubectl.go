@@ -28,6 +28,12 @@ type Kubectl struct {
 	config   *rest.Config
 }
 
+func NewKubectl(path string) *Kubectl {
+	return &Kubectl{
+		execPath: path,
+	}
+}
+
 func (c *Kubectl) Apply(ctx context.Context, manifests []Manifest) error {
 	for i := range manifests {
 		data, err := manifests[i].YamlBytes()

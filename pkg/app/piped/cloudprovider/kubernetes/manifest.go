@@ -135,19 +135,7 @@ func DecodeResourceKey(key string) (ResourceKey, error) {
 	}, nil
 }
 
-func (e *Executor) loadManifests(ctx context.Context) ([]Manifest, error) {
-	switch e.templatingMethod {
-	case TemplatingMethodHelm:
-		return nil, nil
-	case TemplatingMethodKustomize:
-		return nil, nil
-	case TemplatingMethodNone:
-		return loadPlainYAMLMannifests(ctx, e.appDirPath, e.config.Input.Manifests)
-	}
-	return nil, nil
-}
-
-func loadPlainYAMLMannifests(ctx context.Context, dir string, names []string) ([]Manifest, error) {
+func LoadPlainYAMLMannifests(ctx context.Context, dir string, names []string) ([]Manifest, error) {
 	// If no name was specified we have to walk the app directory to collect the manifest list.
 	if len(names) == 0 {
 		err := filepath.Walk(dir, func(path string, f os.FileInfo, err error) error {
@@ -178,7 +166,7 @@ func loadPlainYAMLMannifests(ctx context.Context, dir string, names []string) ([
 	manifests := make([]Manifest, 0, len(names))
 	for _, name := range names {
 		path := filepath.Join(dir, name)
-		ms, err := loadManifestsFromYAMLFile(path)
+		ms, err := LoadManifestsFromYAMLFile(path)
 		if err != nil {
 			return nil, fmt.Errorf("failed to load maninifest at %s (%v)", path, err)
 		}
@@ -188,7 +176,7 @@ func loadPlainYAMLMannifests(ctx context.Context, dir string, names []string) ([
 	return manifests, nil
 }
 
-func loadManifestsFromYAMLFile(path string) ([]Manifest, error) {
+func LoadManifestsFromYAMLFile(path string) ([]Manifest, error) {
 	data, err := ioutil.ReadFile(path)
 	if err != nil {
 		return nil, err

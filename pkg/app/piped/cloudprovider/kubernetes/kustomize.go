@@ -14,10 +14,16 @@
 
 package kubernetes
 
-type Kustomizectl struct {
+type Kustomize struct {
 	execPath string
 }
 
-func (c *Kustomizectl) template() error {
+func NewKustomize(path string) *Kustomize {
+	return &Kustomize{
+		execPath: path,
+	}
+}
+
+func (c *Kustomize) template() error {
 	return nil
 }

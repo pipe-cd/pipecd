@@ -14,10 +14,20 @@
 
 package kubernetes
 
-type Helmctl struct {
-	execPath string
+import (
+	"context"
+
+	"github.com/kapetaniosci/pipe/pkg/model"
+)
+
+func (e *Executor) ensureBaselineRollout(ctx context.Context) model.StageStatus {
+	return model.StageStatus_STAGE_SUCCESS
 }
 
-func (c *Helmctl) template() error {
-	return nil
+func (e *Executor) ensureBaselineClean(ctx context.Context) model.StageStatus {
+	return model.StageStatus_STAGE_SUCCESS
+}
+
+func (e *Executor) generateBaselineManifests(ctx context.Context) model.StageStatus {
+	return model.StageStatus_STAGE_SUCCESS
 }
