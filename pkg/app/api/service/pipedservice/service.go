@@ -25,11 +25,7 @@ import (
 
 // Retriable checks whether the caller should retry the api call for the given error.
 func Retriable(err error) bool {
-	s := status.Convert(err)
-	if s == nil {
-		return false
-	}
-	switch s.Code() {
+	switch status.Code(err) {
 	case codes.OK:
 		return false
 	case codes.InvalidArgument:

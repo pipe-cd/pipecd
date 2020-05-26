@@ -25,6 +25,8 @@ import (
 
 	"go.uber.org/zap"
 	"google.golang.org/grpc"
+	"google.golang.org/grpc/codes"
+	"google.golang.org/grpc/status"
 
 	"github.com/kapetaniosci/pipe/pkg/app/api/service/pipedservice"
 	"github.com/kapetaniosci/pipe/pkg/config"
@@ -172,6 +174,11 @@ func (t *Trigger) check(ctx context.Context) error {
 }
 
 func (t *Trigger) checkApplication(ctx context.Context, app *model.Application, repo git.Repo, branch string, headCommit git.Commit) error {
+	logger := t.logger.With(
+		zap.String("application", app.Id),
+		zap.String("head-commit", headCommit.Hash),
+	)
+
 	// Get the most recently triggered commit of this application.
 	// Most of the cases that data can be loaded from in-memory cache but
 	// when the piped is restared that data will be cleared too.
@@ -182,26 +189,24 @@ func (t *Trigger) checkApplication(ctx context.Context, app *model.Application, 
 		if err == nil {
 			preCommitHash = mostRecent.CommitHash()
 			t.mostRecentlyTriggeredCommits[app.Id] = preCommitHash
+		} else if status.Code(err) == codes.NotFound {
+			logger.Info("there is no previously triggered commit for this application")
 		} else {
-			t.logger.Error("failed to get the most recent deployment",
-				zap.String("application", app.Id),
-				zap.Error(err),
-			)
+			logger.Error("unabled to get the most recently triggered deployment", zap.Error(err))
 		}
 	}
 
 	// Check whether the most recently applied one is the head commit or not.
 	// If not, nothing to do for this time.
 	if headCommit.Hash == preCommitHash {
-		t.logger.Info(fmt.Sprintf("no update to sync for application: %s, hash: %s", app.Id, headCommit.Hash))
+		logger.Info(fmt.Sprintf("no update to sync for application: %s, hash: %s", app.Id, headCommit.Hash))
 		return nil
 	}
 
 	trigger := func() error {
 		// Build deployment model and send a request to API to create a new deployment.
-		t.logger.Info(fmt.Sprintf("application %s should be synced because of the new commit", app.Id),
-			zap.String("previous-commit-hash", preCommitHash),
-			zap.String("head-commit-hash", headCommit.Hash),
+		logger.Info(fmt.Sprintf("application %s should be synced because of the new commit", app.Id),
+			zap.String("most-recently-triggered-commit", preCommitHash),
 		)
 		if err := t.triggerDeployment(ctx, app, repo, branch, headCommit); err != nil {
 			return err
@@ -223,9 +228,8 @@ func (t *Trigger) checkApplication(ctx context.Context, app *model.Application, 
 		return err
 	}
 	if touched := isTouchedByChangedFiles(app.GitPath.Path, nil, changedFiles); !touched {
-		t.logger.Info(fmt.Sprintf("application %s was not touched by the new commit", app.Id),
-			zap.String("previous-commit-hash", preCommitHash),
-			zap.String("head-commit-hash", headCommit.Hash),
+		logger.Info(fmt.Sprintf("application %s was not touched by the new commit", app.Id),
+			zap.String("most-recently-triggered-commit", preCommitHash),
 		)
 		t.mostRecentlyTriggeredCommits[app.Id] = headCommit.Hash
 		return nil
@@ -266,7 +270,6 @@ func (t *Trigger) getMostRecentDeployment(ctx context.Context, applicationID str
 		if resp, err = t.apiClient.GetMostRecentDeployment(ctx, req); err == nil {
 			return resp.Deployment, nil
 		}
-		err = fmt.Errorf("failed to report deployment status to control-plane: %v", err)
 		if !pipedservice.Retriable(err) {
 			return nil, err
 		}

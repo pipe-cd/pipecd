@@ -1,0 +1,77 @@
+// Copyright 2020 The PipeCD Authors.
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//     http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+package kubernetes
+
+import (
+	"fmt"
+	"time"
+
+	"github.com/kapetaniosci/pipe/pkg/config"
+	"github.com/kapetaniosci/pipe/pkg/model"
+)
+
+const (
+	PredefinedStageScale    = "_Scale"
+	PredefinedStageRollback = "_Rollback"
+	PredefinedStageUpdate   = "_Update"
+)
+
+var PredefinedStages = map[string]config.PipelineStage{
+	PredefinedStageScale: config.PipelineStage{
+		Id:   PredefinedStageScale,
+		Name: model.StageK8sPrimaryUpdate,
+		Desc: "Scale primary workloads",
+	},
+	PredefinedStageRollback: config.PipelineStage{
+		Id:   PredefinedStageRollback,
+		Name: model.StageK8sPrimaryUpdate,
+		Desc: "Rollback primary to previous version",
+	},
+	PredefinedStageUpdate: config.PipelineStage{
+		Id:   PredefinedStageUpdate,
+		Name: model.StageK8sPrimaryUpdate,
+		Desc: "Update primary to new version/configuration",
+	},
+}
+
+func buildPipeline(pp *config.DeploymentPipeline, now time.Time) []*model.PipelineStage {
+	var stages []config.PipelineStage
+	if pp != nil {
+		stages = pp.Stages
+	}
+	if len(stages) == 0 {
+		stages = []config.PipelineStage{PredefinedStages[PredefinedStageUpdate]}
+	}
+
+	out := make([]*model.PipelineStage, 0, len(stages))
+	for i, s := range stages {
+		id := s.Id
+		if id == "" {
+			id = fmt.Sprintf("stage-%d", i)
+		}
+		stage := &model.PipelineStage{
+			Id:        id,
+			Name:      s.Name.String(),
+			Desc:      s.Desc,
+			Index:     int32(i),
+			Status:    model.StageStatus_STAGE_NOT_STARTED_YET,
+			CreatedAt: now.Unix(),
+			UpdatedAt: now.Unix(),
+		}
+		out = append(out, stage)
+	}
+
+	return out
+}

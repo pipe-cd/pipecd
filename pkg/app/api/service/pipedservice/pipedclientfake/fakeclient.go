@@ -151,6 +151,7 @@ func (c *fakeClient) GetMostRecentDeployment(ctx context.Context, req *pipedserv
 		mostRecent     *model.Deployment
 	)
 	if req.Status != nil {
+		hasStatus = true
 		requiredStatus = model.DeploymentStatus(req.Status.Value)
 	}
 

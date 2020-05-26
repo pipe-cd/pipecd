@@ -129,29 +129,31 @@ func (p *planner) Run(ctx context.Context) error {
 	}
 	p.deploymentConfig = cfg
 
-	out, err := planner.Plan(pln.Input{
+	in := pln.Input{
 		Deployment:               p.deployment,
 		LastSuccessfulCommitHash: p.lastSuccessfulCommitHash,
 		DeploymentConfig:         cfg,
 		RepoDir:                  gitRepo.GetPath(),
+		AppDir:                   filepath.Join(gitRepo.GetPath(), p.deployment.GitPath.Path),
 		Logger:                   p.logger,
-	})
+	}
+	out, err := planner.Plan(ctx, in)
 	if err == nil {
-		return p.reportDeploymentPlanned(ctx, out.Description)
+		return p.reportDeploymentPlanned(ctx, out)
 	}
 
-	return p.reportDeploymentFailed(ctx, out.Description)
+	return p.reportDeploymentFailed(ctx, err.Error())
 }
 
-func (p *planner) reportDeploymentPlanned(ctx context.Context, desc string) error {
+func (p *planner) reportDeploymentPlanned(ctx context.Context, out pln.Output) error {
 	var (
 		err   error
 		retry = pipedservice.NewRetry(10)
 		req   = &pipedservice.ReportDeploymentPlannedRequest{
 			DeploymentId:      p.deployment.Id,
-			Description:       "",
-			StatusDescription: desc,
-			Stages:            p.deployment.Stages,
+			Description:       out.Description,
+			StatusDescription: "Deployment pipeline has been planned",
+			Stages:            out.Stages,
 		}
 	)
 

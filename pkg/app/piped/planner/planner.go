@@ -20,6 +20,8 @@
 package planner
 
 import (
+	"context"
+
 	"go.uber.org/zap"
 
 	"github.com/kapetaniosci/pipe/pkg/config"
@@ -27,7 +29,7 @@ import (
 )
 
 type Planner interface {
-	Plan(input Input) (Output, error)
+	Plan(ctx context.Context, in Input) (Output, error)
 }
 
 type Input struct {
@@ -36,10 +38,11 @@ type Input struct {
 	LastSuccessfulCommitHash string
 	DeploymentConfig         *config.Config
 	RepoDir                  string
+	AppDir                   string
 	Logger                   *zap.Logger
 }
 
 type Output struct {
-	PipelineStages []*model.PipelineStage
-	Description    string
+	Stages      []*model.PipelineStage
+	Description string
 }

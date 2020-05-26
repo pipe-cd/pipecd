@@ -15,6 +15,8 @@
 package lambda
 
 import (
+	"context"
+
 	"github.com/kapetaniosci/pipe/pkg/app/piped/planner"
 	"github.com/kapetaniosci/pipe/pkg/model"
 )
@@ -31,6 +33,6 @@ func Register(r registerer) {
 	r.Register(model.ApplicationKind_LAMBDA, &Planner{})
 }
 
-func (p *Planner) Plan(input planner.Input) (planner.Output, error) {
-	return planner.Output{}, nil
+func (p *Planner) Plan(ctx context.Context, in planner.Input) (out planner.Output, err error) {
+	return
 }

@@ -32,6 +32,8 @@ import (
 	"github.com/golang/protobuf/ptypes/wrappers"
 	"go.uber.org/zap"
 	"google.golang.org/grpc"
+	"google.golang.org/grpc/codes"
+	"google.golang.org/grpc/status"
 
 	"github.com/kapetaniosci/pipe/pkg/app/api/service/pipedservice"
 	"github.com/kapetaniosci/pipe/pkg/app/piped/logpersister"
@@ -254,7 +256,7 @@ func (c *controller) startNewPlanner(ctx context.Context, d *model.Deployment) (
 	}
 	logger.Info("created working directory for planner", zap.String("working-dir", workingDir))
 
-	// The most recent successfull commit is saved in memory.
+	// The most recent successful commit is saved in memory.
 	// But when the piped is restarted that data will be cleared too.
 	// So in that case, we have to use the API to check.
 	commit := c.mostRecentSuccessfulCommits[d.ApplicationId]
@@ -263,11 +265,10 @@ func (c *controller) startNewPlanner(ctx context.Context, d *model.Deployment) (
 		if err == nil {
 			commit = mostRecent.CommitHash()
 			c.mostRecentSuccessfulCommits[d.ApplicationId] = commit
+		} else if status.Code(err) == codes.NotFound {
+			logger.Info("there is no previous successful commit for this application")
 		} else {
-			logger.Error("failed to get the most recent successful deployment",
-				zap.String("application", d.ApplicationId),
-				zap.Error(err),
-			)
+			logger.Error("unabled to get the most recent successful deployment", zap.Error(err))
 		}
 	}
 
@@ -435,7 +436,6 @@ func (c *controller) getMostRecentSuccessfulDeployment(ctx context.Context, appl
 		if resp, err = c.apiClient.GetMostRecentDeployment(ctx, req); err == nil {
 			return resp.Deployment, nil
 		}
-		err = fmt.Errorf("failed to report deployment status to control-plane: %v", err)
 		if !pipedservice.Retriable(err) {
 			return nil, err
 		}
