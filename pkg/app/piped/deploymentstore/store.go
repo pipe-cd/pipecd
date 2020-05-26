@@ -33,6 +33,8 @@ type Lister interface {
 	ListPendings() []*model.Deployment
 	// ListPlanneds lists all planned deployments that should be handled by this piped.
 	ListPlanneds() []*model.Deployment
+	// ListRunnings lists all running deployments that should be handled by this piped.
+	ListRunnings() []*model.Deployment
 }
 
 type apiClient interface {
@@ -50,6 +52,7 @@ type store struct {
 	apiClient          apiClient
 	pendingDeployments atomic.Value
 	plannedDeployments atomic.Value
+	runningDeployments atomic.Value
 	syncInterval       time.Duration
 	gracePeriod        time.Duration
 	logger             *zap.Logger
@@ -101,18 +104,21 @@ func (s *store) sync(ctx context.Context) error {
 		return err
 	}
 
-	var pendings, planneds []*model.Deployment
+	var pendings, planneds, runnings []*model.Deployment
 	for _, d := range resp.Deployments {
 		switch d.Status {
 		case model.DeploymentStatus_DEPLOYMENT_PENDING:
 			pendings = append(pendings, d)
 		case model.DeploymentStatus_DEPLOYMENT_PLANNED:
 			planneds = append(planneds, d)
+		case model.DeploymentStatus_DEPLOYMENT_RUNNING:
+			runnings = append(runnings, d)
 		}
 	}
 
-	s.pendingDeployments.Store(pendings)
 	s.plannedDeployments.Store(planneds)
+	s.runningDeployments.Store(runnings)
+	s.pendingDeployments.Store(pendings)
 
 	return nil
 }
@@ -129,6 +135,15 @@ func (s *store) ListPendings() []*model.Deployment {
 // ListPlanneds lists all planned deployments that should be handled by this piped.
 func (s *store) ListPlanneds() []*model.Deployment {
 	list := s.plannedDeployments.Load()
+	if list == nil {
+		return nil
+	}
+	return list.([]*model.Deployment)
+}
+
+// ListRunnings lists all running deployments that should be handled by this piped.
+func (s *store) ListRunnings() []*model.Deployment {
+	list := s.runningDeployments.Load()
 	if list == nil {
 		return nil
 	}

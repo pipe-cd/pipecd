@@ -61,6 +61,7 @@ type gitClient interface {
 type deploymentLister interface {
 	ListPendings() []*model.Deployment
 	ListPlanneds() []*model.Deployment
+	ListRunnings() []*model.Deployment
 }
 
 type commandLister interface {
@@ -73,8 +74,8 @@ type DeploymentController interface {
 }
 
 var (
-	plannerStaleDuration   = time.Minute
-	schedulerStaleDuration = time.Minute
+	plannerStaleDuration   = time.Hour
+	schedulerStaleDuration = time.Hour
 )
 
 type controller struct {
@@ -88,9 +89,17 @@ type controller struct {
 	// Map from application ID to the planner
 	// of a pending deployment of that application.
 	planners map[string]*planner
+	// Map from deployment ID to the completion time
+	// of the done planners.
+	// Because when the deployment lister returns not fresh data
+	// we use this to ignore the ones that have been handled previously.
+	donePlanners map[string]time.Time
 	// Map from application ID to the scheduler
 	// of a running deployment of that application.
 	schedulers map[string]*scheduler
+	// Map from deployment ID to the completion time
+	// of the done schedulers.
+	doneSchedulers map[string]time.Time
 	// Map from application ID to its most recent successful commit hash.
 	mostRecentSuccessfulCommits map[string]string
 	// WaitGroup for waiting the completions of all planners, schedulers.
@@ -118,18 +127,22 @@ func NewController(
 		lg = logger.Named("controller")
 	)
 	return &controller{
-		apiClient:                   apiClient,
-		gitClient:                   gitClient,
-		deploymentLister:            deploymentLister,
-		commandLister:               commandLister,
-		pipedConfig:                 pipedConfig,
-		logPersister:                lp,
+		apiClient:        apiClient,
+		gitClient:        gitClient,
+		deploymentLister: deploymentLister,
+		commandLister:    commandLister,
+		pipedConfig:      pipedConfig,
+		logPersister:     lp,
+
 		planners:                    make(map[string]*planner),
+		donePlanners:                make(map[string]time.Time),
 		schedulers:                  make(map[string]*scheduler),
+		doneSchedulers:              make(map[string]time.Time),
 		mostRecentSuccessfulCommits: make(map[string]string),
-		syncInternal:                10 * time.Second,
-		gracePeriod:                 gracePeriod,
-		logger:                      lg,
+
+		syncInternal: 10 * time.Second,
+		gracePeriod:  gracePeriod,
+		logger:       lg,
 	}
 }
 
@@ -170,8 +183,10 @@ L:
 		case <-ctx.Done():
 			break L
 		case <-ticker.C:
-			c.syncPlanner(ctx)
+			// This must be called before syncPlanner because
+			// after piped is restarted all running deployments need to be loaded firstly.
 			c.syncScheduler(ctx)
+			c.syncPlanner(ctx)
 		}
 	}
 
@@ -189,11 +204,15 @@ L:
 // syncPlanner adds new planner for newly PENDING deployments.
 func (c *controller) syncPlanner(ctx context.Context) error {
 	// Remove stale planners.
-	for id, p := range c.planners {
-		if !p.IsDone() {
+	for id, t := range c.donePlanners {
+		if time.Since(t) < plannerStaleDuration {
 			continue
 		}
-		if time.Since(p.DoneTimestamp()) < plannerStaleDuration {
+		delete(c.donePlanners, id)
+	}
+
+	for id, p := range c.planners {
+		if !p.IsDone() {
 			continue
 		}
 		c.logger.Info("deleted done planner",
@@ -201,6 +220,7 @@ func (c *controller) syncPlanner(ctx context.Context) error {
 			zap.String("application-id", id),
 			zap.Int("planner-count", len(c.planners)),
 		)
+		c.donePlanners[p.ID()] = p.DoneTimestamp()
 		delete(c.planners, id)
 	}
 
@@ -217,6 +237,10 @@ func (c *controller) syncPlanner(ctx context.Context) error {
 	pendingByApp := make(map[string]*model.Deployment, len(pendings))
 	for _, d := range pendings {
 		appID := d.ApplicationId
+		// Ignore already processed one.
+		if _, ok := c.donePlanners[d.Id]; ok {
+			continue
+		}
 		// For each application, only one deployment can be planned at the same time.
 		if _, ok := c.planners[appID]; ok {
 			continue
@@ -225,7 +249,6 @@ func (c *controller) syncPlanner(ctx context.Context) error {
 		if _, ok := c.schedulers[appID]; ok {
 			continue
 		}
-
 		// Choose the oldest PENDING deployment of the application to plan.
 		if pre, ok := pendingByApp[appID]; ok {
 			if !d.TriggerBefore(pre) {
@@ -308,7 +331,7 @@ func (c *controller) startNewPlanner(ctx context.Context, d *model.Deployment) (
 	return planner, nil
 }
 
-// syncScheduler adds new scheduler for newly PLANNED deployments
+// syncScheduler adds new scheduler for newly PLANNED/RUNNING deployments
 // as well as removes the schedulers for the completed deployments.
 func (c *controller) syncScheduler(ctx context.Context) error {
 	// Update the most recent successful commit hashes.
@@ -323,11 +346,15 @@ func (c *controller) syncScheduler(ctx context.Context) error {
 	}
 
 	// Remove done schedulers.
-	for id, s := range c.schedulers {
-		if !s.IsDone() {
+	for id, t := range c.doneSchedulers {
+		if time.Since(t) < schedulerStaleDuration {
 			continue
 		}
-		if time.Since(s.DoneTimestamp()) < schedulerStaleDuration {
+		delete(c.doneSchedulers, id)
+	}
+
+	for id, s := range c.schedulers {
+		if !s.IsDone() {
 			continue
 		}
 		c.logger.Info("deleted done scheduler",
@@ -335,20 +362,28 @@ func (c *controller) syncScheduler(ctx context.Context) error {
 			zap.String("application-id", id),
 			zap.Int("scheduler-count", len(c.schedulers)),
 		)
+		c.doneSchedulers[s.ID()] = s.DoneTimestamp()
 		delete(c.schedulers, id)
 	}
 
 	// Add missing schedulers.
 	planneds := c.deploymentLister.ListPlanneds()
-	if len(planneds) == 0 {
+	runnings := c.deploymentLister.ListRunnings()
+	runnings = append(runnings, planneds...)
+
+	if len(runnings) == 0 {
 		return nil
 	}
 
-	c.logger.Info(fmt.Sprintf("there are %d planned deployments for scheduling", len(planneds)),
+	c.logger.Info(fmt.Sprintf("there are %d planned/running deployments for scheduling", len(runnings)),
 		zap.Int("scheduler-count", len(c.schedulers)),
 	)
 
-	for _, d := range planneds {
+	for _, d := range runnings {
+		// Ignore already processed one.
+		if _, ok := c.doneSchedulers[d.Id]; ok {
+			continue
+		}
 		if s, ok := c.schedulers[d.ApplicationId]; ok {
 			if s.ID() != d.Id {
 				c.logger.Warn("detected an application that has more than one running deployments",
