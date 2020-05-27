@@ -133,7 +133,7 @@ func (t *Trigger) check(ctx context.Context) error {
 	// and then group them by repository.
 	var applications = t.listApplications()
 
-	// TODO: We may want to apply worker model here to run them concurrently.
+	// ENHANCEMENT: We may want to apply worker model here to run them concurrently.
 	for repoID, apps := range applications {
 		gitRepo, ok := t.gitRepos[repoID]
 		if !ok {

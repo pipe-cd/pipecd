@@ -20,12 +20,20 @@ import (
 )
 
 const (
-	PredefinedStageK8sScale    = "K8sScale"
-	PredefinedStageK8sRollback = "K8sRollback"
-	PredefinedStageK8sUpdate   = "K8sUpdate"
+	PredefinedWaitApproval        = "WaitApproval"
+	PredefinedStageK8sScale       = "K8sScale"
+	PredefinedStageK8sRollback    = "K8sRollback"
+	PredefinedStageK8sUpdate      = "K8sUpdate"
+	PredefinedStageTerraformPlan  = "TerraformPlan"
+	PredefinedStageTerraformApply = "TerraformApply"
 )
 
 var predefinedStages = map[string]config.PipelineStage{
+	PredefinedWaitApproval: config.PipelineStage{
+		Id:   PredefinedWaitApproval,
+		Name: model.StageWaitApproval,
+		Desc: "Wait for an approval",
+	},
 	PredefinedStageK8sScale: config.PipelineStage{
 		Id:   PredefinedStageK8sScale,
 		Name: model.StageK8sPrimaryUpdate,
@@ -40,6 +48,16 @@ var predefinedStages = map[string]config.PipelineStage{
 		Id:   PredefinedStageK8sUpdate,
 		Name: model.StageK8sPrimaryUpdate,
 		Desc: "Update primary to new version/configuration",
+	},
+	PredefinedStageTerraformPlan: config.PipelineStage{
+		Id:   PredefinedStageTerraformPlan,
+		Name: model.StageTerraformPlan,
+		Desc: "Terraform plan",
+	},
+	PredefinedStageTerraformApply: config.PipelineStage{
+		Id:   PredefinedStageTerraformApply,
+		Name: model.StageTerraformApply,
+		Desc: "Terraform apply",
 	},
 }
 

@@ -21,35 +21,7 @@ import (
 	"github.com/kapetaniosci/pipe/pkg/model"
 )
 
-var (
-	KubernetesDefaultPipeline = &DeploymentPipeline{
-		Stages: []PipelineStage{
-			{
-				Name: model.StageK8sPrimaryUpdate,
-				Desc: "Update primary to new version",
-			},
-		},
-	}
-	TerraformDefaultPipeline = &DeploymentPipeline{
-		Stages: []PipelineStage{
-			{
-				Name: model.StageTerraformPlan,
-				Desc: "Terraform Plan",
-			},
-			{
-				Name: model.StageWaitApproval,
-				Desc: "Wait for an approval",
-			},
-			{
-				Name: model.StageTerraformApply,
-				Desc: "Terraform Apply",
-			},
-		},
-	}
-)
-
 type Pipelineable interface {
-	GetPipeline() *DeploymentPipeline
 	GetStage(index int32) (PipelineStage, bool)
 }
 
@@ -65,19 +37,14 @@ type KubernetesDeploymentSpec struct {
 	Destination     string                    `json:"destination"`
 }
 
-func (s *KubernetesDeploymentSpec) GetPipeline() *DeploymentPipeline {
-	if s.Pipeline != nil {
-		return s.Pipeline
-	}
-	return KubernetesDefaultPipeline
-}
-
 func (s *KubernetesDeploymentSpec) GetStage(index int32) (PipelineStage, bool) {
-	p := s.GetPipeline()
-	if int(index) >= len(p.Stages) {
+	if s.Pipeline == nil {
 		return PipelineStage{}, false
 	}
-	return p.Stages[index], true
+	if int(index) >= len(s.Pipeline.Stages) {
+		return PipelineStage{}, false
+	}
+	return s.Pipeline.Stages[index], true
 }
 
 // Validate returns an error if any wrong configuration value was found.
@@ -92,19 +59,14 @@ type TerraformDeploymentSpec struct {
 	Destination string                   `json:"destination"`
 }
 
-func (s *TerraformDeploymentSpec) GetPipeline() *DeploymentPipeline {
-	if s.Pipeline != nil {
-		return s.Pipeline
-	}
-	return TerraformDefaultPipeline
-}
-
 func (s *TerraformDeploymentSpec) GetStage(index int32) (PipelineStage, bool) {
-	p := s.GetPipeline()
-	if int(index) >= len(p.Stages) {
+	if s.Pipeline == nil {
 		return PipelineStage{}, false
 	}
-	return p.Stages[index], true
+	if int(index) >= len(s.Pipeline.Stages) {
+		return PipelineStage{}, false
+	}
+	return s.Pipeline.Stages[index], true
 }
 
 // Validate returns an error if any wrong configuration value was found.

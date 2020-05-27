@@ -40,7 +40,6 @@ func (t *Trigger) triggerDeployment(ctx context.Context, app *model.Application,
 		return err
 	}
 
-	// TODO: Detect the update type (just scale or need rollout with pipeline) by checking the change
 	deployment, err := buildDeploment(app, cfg, branch, commit, time.Now())
 	if err != nil {
 		return err
@@ -73,23 +72,6 @@ func (t *Trigger) loadDeploymentConfiguration(repoPath string, app *model.Applic
 }
 
 func buildDeploment(app *model.Application, cfg *config.Config, branch string, commit git.Commit, now time.Time) (*model.Deployment, error) {
-	var (
-		stages []*model.PipelineStage
-		err    error
-	)
-
-	switch cfg.Kind {
-	case config.KindKubernetesApp:
-		stages, err = buildKubernetesPipelineStages(cfg, now)
-	case config.KindTerraformApp:
-		stages, err = buildTerraformPipelineStages(cfg, now)
-	default:
-		err = fmt.Errorf("unsupported application kind: %s", cfg.Kind)
-	}
-	if err != nil {
-		return nil, err
-	}
-
 	deployment := &model.Deployment{
 		Id:            uuid.New().String(),
 		ApplicationId: app.Id,
@@ -110,63 +92,9 @@ func buildDeploment(app *model.Application, cfg *config.Config, branch string, c
 		},
 		GitPath:   app.GitPath,
 		Status:    model.DeploymentStatus_DEPLOYMENT_PENDING,
-		Stages:    stages,
 		CreatedAt: now.Unix(),
 		UpdatedAt: now.Unix(),
 	}
+
 	return deployment, nil
-}
-
-func buildKubernetesPipelineStages(cfg *config.Config, now time.Time) ([]*model.PipelineStage, error) {
-	var (
-		p      = cfg.KubernetesDeploymentSpec.GetPipeline()
-		stages = make([]*model.PipelineStage, 0, len(p.Stages))
-	)
-
-	// Append all configured stages.
-	for i, s := range p.Stages {
-		id := s.Id
-		if id == "" {
-			id = fmt.Sprintf("stage-%d", i)
-		}
-		stage := &model.PipelineStage{
-			Id:        id,
-			Name:      s.Name.String(),
-			Desc:      s.Desc,
-			Index:     int32(i),
-			Status:    model.StageStatus_STAGE_NOT_STARTED_YET,
-			CreatedAt: now.Unix(),
-			UpdatedAt: now.Unix(),
-		}
-		stages = append(stages, stage)
-	}
-
-	return stages, nil
-}
-
-func buildTerraformPipelineStages(cfg *config.Config, now time.Time) ([]*model.PipelineStage, error) {
-	var (
-		p      = cfg.TerraformDeploymentSpec.GetPipeline()
-		stages = make([]*model.PipelineStage, 0, len(p.Stages))
-	)
-
-	// Append all configured stages.
-	for i, s := range p.Stages {
-		id := s.Id
-		if id == "" {
-			id = fmt.Sprintf("stage-%d", i)
-		}
-		stage := &model.PipelineStage{
-			Id:        id,
-			Name:      s.Name.String(),
-			Desc:      s.Desc,
-			Index:     int32(i),
-			Status:    model.StageStatus_STAGE_NOT_STARTED_YET,
-			CreatedAt: now.Unix(),
-			UpdatedAt: now.Unix(),
-		}
-		stages = append(stages, stage)
-	}
-
-	return stages, nil
 }
