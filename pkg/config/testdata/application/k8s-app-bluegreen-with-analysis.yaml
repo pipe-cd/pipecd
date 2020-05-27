@@ -6,7 +6,7 @@ kind: KubernetesApp
 spec:
   pipeline:
     stages:
-      - name: K8S_STAGE_ROLLOUT
+      - name: K8S_CANARY_ROLLOUT
         with:
           replicas: 100%
       - name: ANALYSIS
@@ -17,11 +17,11 @@ spec:
             - useTemplate: http_stage_check
       - name: K8S_TRAFFIC_SPLIT
         with:
-          all: stage
+          all: canary
       - name: K8S_PRIMARY_UPDATE
       - name: K8S_TRAFFIC_SPLIT
         with:
           all: primary
-      - name: K8S_STAGE_CLEAN
+      - name: K8S_CANARY_CLEAN
   trafficSplit:
     method: pod

@@ -89,8 +89,8 @@ func TestAppConfig(t *testing.T) {
 				Pipeline: &DeploymentPipeline{
 					Stages: []PipelineStage{
 						{
-							Name: model.StageK8sStageRollout,
-							K8sStageRolloutStageOptions: &K8sStageRolloutStageOptions{
+							Name: model.StageK8sCanaryRollout,
+							K8sCanaryRolloutStageOptions: &K8sCanaryRolloutStageOptions{
 								Replicas: Replicas{
 									Number:       100,
 									IsPercentage: true,
@@ -100,7 +100,7 @@ func TestAppConfig(t *testing.T) {
 						{
 							Name: model.StageK8sTrafficSplit,
 							K8sTrafficSplitStageOptions: &K8sTrafficSplitStageOptions{
-								Stage: 100,
+								Canary: 100,
 							},
 						},
 						{
@@ -114,8 +114,8 @@ func TestAppConfig(t *testing.T) {
 							},
 						},
 						{
-							Name:                      model.StageK8sStageClean,
-							K8sStageCleanStageOptions: &K8sStageCleanStageOptions{},
+							Name:                       model.StageK8sCanaryClean,
+							K8sCanaryCleanStageOptions: &K8sCanaryCleanStageOptions{},
 						},
 					},
 				},

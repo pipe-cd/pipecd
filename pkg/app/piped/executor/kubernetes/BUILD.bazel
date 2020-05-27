@@ -4,9 +4,9 @@ go_library(
     name = "go_default_library",
     srcs = [
         "baseline.go",
+        "canary.go",
         "kubernetes.go",
         "primary.go",
-        "stage.go",
     ],
     importpath = "github.com/kapetaniosci/pipe/pkg/app/piped/executor/kubernetes",
     visibility = ["//visibility:public"],

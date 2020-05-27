@@ -4,15 +4,15 @@ kind: KubernetesApp
 spec:
   pipeline:
     stages:
-      # Deploy the workloads of STAGE variant. In this case, the number of
-      # workload replicas of STAGE variant is 10% of the replicas number of PRIMARY variant.
-      - name: K8S_STAGE_ROLLOUT
+      # Deploy the workloads of CANARY variant. In this case, the number of
+      # workload replicas of CANARY variant is 10% of the replicas number of PRIMARY variant.
+      - name: K8S_CANARY_ROLLOUT
         with:
           replicas: 10%
       # Update the workload of PRIMARY variant to the new version.
       - name: K8S_PRIMARY_UPDATE
-      # Destroy all workloads of STAGE variant.
-      - name: K8S_STAGE_CLEAN
+      # Destroy all workloads of CANARY variant.
+      - name: K8S_CANARY_CLEAN
 
 ---
 # Progressive delivery with canary strategy.
@@ -23,7 +23,7 @@ kind: KubernetesApp
 spec:
   pipeline:
     stages:
-      - name: K8S_STAGE_ROLLOUT
+      - name: K8S_CANARY_ROLLOUT
         with:
           replicas: 2
       - name: WAIT_APPROVAL
@@ -32,7 +32,7 @@ spec:
             - user-foo
             - user-bar
       - name: K8S_PRIMARY_UPDATE
-      - name: K8S_STAGE_CLEAN
+      - name: K8S_CANARY_CLEAN
 
 ---
 # Progressive delivery with canary strategy.
@@ -43,7 +43,7 @@ kind: KubernetesApp
 spec:
   pipeline:
     stages:
-      - name: K8S_STAGE_ROLLOUT
+      - name: K8S_CANARY_ROLLOUT
         with:
           replicas: 10%
       - name: ANALYSIS
@@ -71,7 +71,7 @@ spec:
               failureLimit: 1
               interval: 1m
       - name: K8S_PRIMARY_UPDATE
-      - name: K8S_STAGE_CLEAN
+      - name: K8S_CANARY_CLEAN
 
 ---
 # Progressive delivery with canary strategy.
@@ -82,20 +82,20 @@ kind: KubernetesApp
 spec:
   pipeline:
     stages:
-      - name: K8S_STAGE_ROLLOUT
+      - name: K8S_CANARY_ROLLOUT
         with:
           replicas: 10%
       - name: ANALYSIS
         with:
           duration: 10m
-      - name: K8S_STAGE_ROLLOUT
+      - name: K8S_CANARY_ROLLOUT
         with:
           replicas: 20%
       - name: ANALYSIS
         with:
           duration: 10m
       - name: K8S_PRIMARY_UPDATE
-      - name: K8S_STAGE_CLEAN
+      - name: K8S_CANARY_CLEAN
 
 ---
 # Progressive delivery with canary strategy.
@@ -106,7 +106,7 @@ kind: KubernetesApp
 spec:
   pipeline:
     stages:
-      - name: K8S_STAGE_ROLLOUT
+      - name: K8S_CANARY_ROLLOUT
         with:
           replicas: 10%
       - name: ANALYSIS
@@ -122,7 +122,7 @@ spec:
           https:
             - useTemplate: http_canary_check
       - name: K8S_PRIMARY_UPDATE
-      - name: K8S_STAGE_CLEAN
+      - name: K8S_CANARY_CLEAN
 
 ---
 # Canary deployment that has an analysis stage to verify canary.
@@ -139,7 +139,7 @@ spec:
       - name: K8S_BASELINE_ROLLOUT
         with:
           replicas: 10%
-      - name: K8S_STAGE_ROLLOUT
+      - name: K8S_CANARY_ROLLOUT
         with:
           replicas: 10%
       - name: ANALYSIS
@@ -147,7 +147,7 @@ spec:
           duration: 10m
       - name: K8S_PRIMARY_UPDATE
       - name: K8S_BASELINE_CLEAN
-      - name: K8S_STAGE_CLEAN
+      - name: K8S_CANARY_CLEAN
 
 # Progressive delivery with canary strategy.
 # This has an Analysis stage for verifying the deployment process.
@@ -157,7 +157,7 @@ kind: KubernetesApp
 spec:
   pipeline:
     stages:
-      - name: K8S_STAGE_ROLLOUT
+      - name: K8S_CANARY_ROLLOUT
         with:
           replicas: 10%
       - name: ANALYSIS
@@ -189,7 +189,7 @@ spec:
                 expected: 200
                 interval: 1m
       - name: K8S_PRIMARY_UPDATE
-      - name: K8S_STAGE_CLEAN
+      - name: K8S_CANARY_CLEAN
 
 # Stage represents a temporary desired state for the applicaiton.
 # Users can declarative a list of stages to archive the final desired state.

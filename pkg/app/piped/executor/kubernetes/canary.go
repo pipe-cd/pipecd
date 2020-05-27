@@ -23,7 +23,7 @@ import (
 	"github.com/kapetaniosci/pipe/pkg/model"
 )
 
-func (e *Executor) ensureStageRollout(ctx context.Context) model.StageStatus {
+func (e *Executor) ensureCanaryRollout(ctx context.Context) model.StageStatus {
 	manifests, err := e.provider.LoadManifests(ctx)
 	if err != nil {
 		e.LogPersister.AppendError(fmt.Sprintf("Failed while loading manifests (%v)", err))
@@ -37,7 +37,7 @@ func (e *Executor) ensureStageRollout(ctx context.Context) model.StageStatus {
 
 	stageManifests, err := e.generateStageManifests(ctx, manifests)
 	if err != nil {
-		e.LogPersister.AppendError(fmt.Sprintf("Unabled to generate manifests for STAGE variant (%v)", err))
+		e.LogPersister.AppendError(fmt.Sprintf("Unabled to generate manifests for CANARY variant (%v)", err))
 		return model.StageStatus_STAGE_FAILURE
 	}
 
@@ -52,17 +52,17 @@ func (e *Executor) ensureStageRollout(ctx context.Context) model.StageStatus {
 		e.LogPersister.AppendError(fmt.Sprintf("Unabled to save deployment metadata (%v)", err))
 	}
 
-	e.LogPersister.AppendInfo("Rolling out STAGE variant")
+	e.LogPersister.AppendInfo("Rolling out CANARY variant")
 	if err = e.provider.Apply(ctx, stageManifests); err != nil {
-		e.LogPersister.AppendError(fmt.Sprintf("Unabled to rollout STAGE variant (%v)", err))
+		e.LogPersister.AppendError(fmt.Sprintf("Unabled to rollout CANARY variant (%v)", err))
 		return model.StageStatus_STAGE_FAILURE
 	}
 
-	e.LogPersister.AppendSuccess("Successfully rolled out STAGE variant")
+	e.LogPersister.AppendSuccess("Successfully rolled out CANARY variant")
 	return model.StageStatus_STAGE_SUCCESS
 }
 
-func (e *Executor) ensureStageClean(ctx context.Context) model.StageStatus {
+func (e *Executor) ensureCanaryClean(ctx context.Context) model.StageStatus {
 	value, ok := e.MetadataStore.Get(metadataKeyAddedStageResources)
 	if !ok {
 		// We have to re-render manifests to check stage resources.
@@ -116,7 +116,7 @@ func (e *Executor) generateStageManifests(ctx context.Context, manifests []provi
 	)
 
 	// Apply the specified configuration if they are present.
-	if sc := e.config.StageVariant; sc != nil {
+	if sc := e.config.CanaryVariant; sc != nil {
 		if sc.Suffix != "" {
 			suffix = sc.Suffix
 		}
@@ -136,7 +136,7 @@ func (e *Executor) generateStageManifests(ctx context.Context, manifests []provi
 			return nil
 		}
 		m = m.Duplicate(m.Name + "-" + suffix)
-		if err := m.AddVariantLabel(stageVariant); err != nil {
+		if err := m.AddVariantLabel(canaryVariant); err != nil {
 			return err
 		}
 		m.SetReplicas(workloadReplicas)
@@ -152,18 +152,18 @@ func (e *Executor) generateStageManifests(ctx context.Context, manifests []provi
 	}
 
 	if !foundWorkload {
-		return nil, fmt.Errorf("unabled to detect workload manifest for STAGE variant")
+		return nil, fmt.Errorf("unabled to detect workload manifest for CANARY variant")
 	}
 
 	for _, m := range stageManifests {
 		m.Name = m.Name + "-" + suffix
 		m.AddAnnotations(map[string]string{
-			provider.LabelManagedBy:      provider.ManagedByPiped,
-			provider.LabelApplication:    e.Deployment.ApplicationId,
-			provider.LabelVariant:        stageVariant,
+			provider.LabelManagedBy:          provider.ManagedByPiped,
+			provider.LabelApplication:        e.Deployment.ApplicationId,
+			provider.LabelVariant:            canaryVariant,
 			provider.LabelOriginalAPIVersion: m.APIVersion,
-			provider.LabelResourceKey:    m.ResourceKey(),
-			provider.LabelCommitHash:     e.Deployment.Trigger.Commit.Hash,
+			provider.LabelResourceKey:        m.ResourceKey(),
+			provider.LabelCommitHash:         e.Deployment.Trigger.Commit.Hash,
 		})
 	}
 	return stageManifests, nil

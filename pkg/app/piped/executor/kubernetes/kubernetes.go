@@ -29,10 +29,10 @@ import (
 
 const (
 	primaryVariant  = "primary"
-	stageVariant    = "stage"
+	canaryVariant   = "canary"
 	baselineVariant = "baseline"
 
-	metadataKeyAddedStageResources    = "k8s-stage-resources"
+	metadataKeyAddedStageResources    = "k8s-canary-resources"
 	metadataKeyAddedBaselineResources = "k8s-baseline-resources"
 )
 
@@ -56,8 +56,8 @@ func Register(r registerer) {
 		}
 	}
 	r.Register(model.StageK8sPrimaryUpdate, f)
-	r.Register(model.StageK8sStageRollout, f)
-	r.Register(model.StageK8sStageClean, f)
+	r.Register(model.StageK8sCanaryRollout, f)
+	r.Register(model.StageK8sCanaryClean, f)
 	r.Register(model.StageK8sBaselineRollout, f)
 	r.Register(model.StageK8sBaselineClean, f)
 	r.Register(model.StageK8sTrafficSplit, f)
@@ -101,10 +101,10 @@ func (e *Executor) Execute(sig executor.StopSignal) model.StageStatus {
 	switch model.Stage(e.Stage.Name) {
 	case model.StageK8sPrimaryUpdate:
 		status = e.ensurePrimaryUpdate(ctx)
-	case model.StageK8sStageRollout:
-		status = e.ensureStageRollout(ctx)
-	case model.StageK8sStageClean:
-		status = e.ensureStageClean(ctx)
+	case model.StageK8sCanaryRollout:
+		status = e.ensureCanaryRollout(ctx)
+	case model.StageK8sCanaryClean:
+		status = e.ensureCanaryClean(ctx)
 	case model.StageK8sBaselineRollout:
 		status = e.ensureBaselineRollout(ctx)
 	case model.StageK8sBaselineClean:

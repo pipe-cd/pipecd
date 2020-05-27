@@ -5,16 +5,16 @@ kind: KubernetesApp
 spec:
   pipeline:
     stages:
-      - name: K8S_STAGE_ROLLOUT
+      - name: K8S_CANARY_ROLLOUT
         with:
           replicas: 100%
       - name: K8S_TRAFFIC_SPLIT
         with:
-          stage: 100
+          canary: 100
       - name: K8S_PRIMARY_UPDATE
       - name: K8S_TRAFFIC_SPLIT
         with:
           primary: 100
-      - name: K8S_STAGE_CLEAN
+      - name: K8S_CANARY_CLEAN
   trafficSplit:
     method: pod

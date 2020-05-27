@@ -3,16 +3,16 @@ kind: KubernetesApp
 spec:
   pipeline:
     stages:
-      # Deploy the workloads of STAGE variant. In this case, the number of
-      # workload replicas of STAGE variant is the same with PRIMARY variant.
-      - name: K8S_STAGE_ROLLOUT
+      # Deploy the workloads of CANARY variant. In this case, the number of
+      # workload replicas of CANARY variant is the same with PRIMARY variant.
+      - name: K8S_CANARY_ROLLOUT
         with:
           replicas: 100%
       # The percentage of traffic each variant should receive.
-      # In this case, STAGE variant will receive all of the traffic.
+      # In this case, CANARY variant will receive all of the traffic.
       - name: K8S_TRAFFIC_SPLIT
         with:
-          all: stage
+          all: canary
       # Update the workload of PRIMARY variant to the new version.
       - name: K8S_PRIMARY_UPDATE
       # The percentage of traffic each variant should receive.
@@ -20,10 +20,10 @@ spec:
       - name: K8S_TRAFFIC_SPLIT
         with:
           all: primary
-      # Destroy all workloads of STAGE variant.
-      - name: K8S_STAGE_CLEAN
-  # Configuration for STAGE variant.
-  stageVariant:
+      # Destroy all workloads of CANARY variant.
+      - name: K8S_CANARY_CLEAN
+  # Configuration for CANARY variant.
+  canaryVariant:
     workload:
       kind: Deployment
       name: demoapp

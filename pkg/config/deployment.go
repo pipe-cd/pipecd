@@ -59,7 +59,7 @@ type KubernetesDeploymentSpec struct {
 	Selector        map[string]string         `json:"selector"`
 	Input           KubernetesDeploymentInput `json:"input"`
 	Pipeline        *DeploymentPipeline       `json:"pipeline"`
-	StageVariant    *StageVariant             `json:"stageVariant"`
+	CanaryVariant   *CanaryVariant            `json:"canaryVariant"`
 	BaselineVariant *BaselineVariant          `json:"baselineVariant"`
 	TrafficSplit    TrafficSplit              `json:"trafficSplit"`
 	Destination     string                    `json:"destination"`
@@ -123,11 +123,11 @@ type DeploymentPipeline struct {
 	Stages []PipelineStage `json:"stages"`
 }
 
-type StageVariant struct {
+type CanaryVariant struct {
 	Workload K8sWorkload `json:"workload"`
 	Service  K8sService  `json:"service"`
-	// Suffix that should be used when naming the STAGE variant's resources.
-	// Default is "stage".
+	// Suffix that should be used when naming the CANARY variant's resources.
+	// Default is "canary".
 	Suffix string `json:"suffix"`
 }
 
@@ -162,8 +162,8 @@ type PipelineStage struct {
 	WaitApprovalStageOptions       *WaitApprovalStageOptions
 	AnalysisStageOptions           *AnalysisStageOptions
 	K8sPrimaryUpdateStageOptions   *K8sPrimaryUpdateStageOptions
-	K8sStageRolloutStageOptions    *K8sStageRolloutStageOptions
-	K8sStageCleanStageOptions      *K8sStageCleanStageOptions
+	K8sCanaryRolloutStageOptions   *K8sCanaryRolloutStageOptions
+	K8sCanaryCleanStageOptions     *K8sCanaryCleanStageOptions
 	K8sBaselineRolloutStageOptions *K8sBaselineRolloutStageOptions
 	K8sBaselineCleanStageOptions   *K8sBaselineCleanStageOptions
 	K8sTrafficSplitStageOptions    *K8sTrafficSplitStageOptions
@@ -211,15 +211,15 @@ func (s *PipelineStage) UnmarshalJSON(data []byte) error {
 		if len(gs.With) > 0 {
 			err = json.Unmarshal(gs.With, s.K8sPrimaryUpdateStageOptions)
 		}
-	case model.StageK8sStageRollout:
-		s.K8sStageRolloutStageOptions = &K8sStageRolloutStageOptions{}
+	case model.StageK8sCanaryRollout:
+		s.K8sCanaryRolloutStageOptions = &K8sCanaryRolloutStageOptions{}
 		if len(gs.With) > 0 {
-			err = json.Unmarshal(gs.With, s.K8sStageRolloutStageOptions)
+			err = json.Unmarshal(gs.With, s.K8sCanaryRolloutStageOptions)
 		}
-	case model.StageK8sStageClean:
-		s.K8sStageCleanStageOptions = &K8sStageCleanStageOptions{}
+	case model.StageK8sCanaryClean:
+		s.K8sCanaryCleanStageOptions = &K8sCanaryCleanStageOptions{}
 		if len(gs.With) > 0 {
-			err = json.Unmarshal(gs.With, s.K8sStageCleanStageOptions)
+			err = json.Unmarshal(gs.With, s.K8sCanaryCleanStageOptions)
 		}
 	case model.StageK8sBaselineRollout:
 		s.K8sBaselineRolloutStageOptions = &K8sBaselineRolloutStageOptions{}
@@ -267,17 +267,17 @@ type K8sPrimaryUpdateStageOptions struct {
 	Manifests []string `json:"manifests"`
 }
 
-// K8sStageRolloutStageOptions contains all configurable values for a K8S_STAGE_ROLLOUT stage.
-type K8sStageRolloutStageOptions struct {
-	// How many pods for STAGE workloads.
+// K8sCanaryRolloutStageOptions contains all configurable values for a K8S_CANARY_ROLLOUT stage.
+type K8sCanaryRolloutStageOptions struct {
+	// How many pods for CANARY workloads.
 	// An integer value can be specified to indicate an absolute value of pod number.
 	// Or a string suffixed by "%" to indicate an percantage value compared to the pod number of PRIMARY.
 	// Default is 1 pod.
 	Replicas Replicas `json:"replicas"`
 }
 
-// K8sStageCleanStageOptions contains all configurable values for a K8S_STAGE_CLEAN stage.
-type K8sStageCleanStageOptions struct {
+// K8sCanaryCleanStageOptions contains all configurable values for a K8S_CANARY_CLEAN stage.
+type K8sCanaryCleanStageOptions struct {
 }
 
 // K8sBaselineRolloutStageOptions contains all configurable values for a K8S_BASELINE_ROLLOUT stage.
@@ -299,8 +299,8 @@ type K8sTrafficSplitStageOptions struct {
 	All string `json:"all"`
 	// The percentage of traffic should be routed to PRIMARY variant.
 	Primary int `json:"primary"`
-	// The percentage of traffic should be routed to STAGE variant.
-	Stage int `json:"stage"`
+	// The percentage of traffic should be routed to CANARY variant.
+	Canary int `json:"canary"`
 	// The percentage of traffic should be routed to BASELINE variant.
 	Baseline int `json:"baseline"`
 }
