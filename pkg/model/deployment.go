@@ -18,6 +18,12 @@ import (
 	"github.com/golang/protobuf/proto"
 )
 
+var notCompletedDeploymentStatuses = []DeploymentStatus{
+	DeploymentStatus_DEPLOYMENT_PENDING,
+	DeploymentStatus_DEPLOYMENT_PLANNED,
+	DeploymentStatus_DEPLOYMENT_RUNNING,
+}
+
 // IsCompletedDeployment checks whether the deployment is at a completion state.
 func IsCompletedDeployment(status DeploymentStatus) bool {
 	if status.String() == "" {
@@ -69,6 +75,11 @@ func CanUpdateDeploymentStatus(cur, next DeploymentStatus) bool {
 		return cur <= DeploymentStatus_DEPLOYMENT_RUNNING
 	}
 	return false
+}
+
+// GetNotCompletedDeploymentStatuses returns DeploymentStatus slice that is not completed.
+func GetNotCompletedDeploymentStatuses() []DeploymentStatus {
+	return notCompletedDeploymentStatuses
 }
 
 // CanUpdateStageStatus checks whether the stage can transit to the given status.

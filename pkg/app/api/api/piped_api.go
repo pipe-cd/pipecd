@@ -25,6 +25,8 @@ import (
 
 	"github.com/kapetaniosci/pipe/pkg/app/api/service/pipedservice"
 	"github.com/kapetaniosci/pipe/pkg/datastore"
+	"github.com/kapetaniosci/pipe/pkg/model"
+	"github.com/kapetaniosci/pipe/pkg/rpc/rpcauth"
 )
 
 // PipedAPI implements the behaviors for the gRPC definitions of PipedAPI.
@@ -97,7 +99,38 @@ func (a *PipedAPI) ListApplications(ctx context.Context, req *pipedservice.ListA
 // which are managed by this piped.
 // DeploymentController component uses this RPC to spawns/syncs its local deployment executors.
 func (a *PipedAPI) ListNotCompletedDeployments(ctx context.Context, req *pipedservice.ListNotCompletedDeploymentsRequest) (*pipedservice.ListNotCompletedDeploymentsResponse, error) {
-	return nil, status.Error(codes.Unimplemented, "")
+	_, pipedID, _, err := rpcauth.ExtractPipedToken(ctx)
+	if err != nil {
+		return nil, err
+	}
+
+	opts := datastore.ListOptions{
+		Filters: []datastore.ListFilter{
+			{
+				Field:    "PipedId",
+				Operator: "==",
+				Value:    pipedID,
+			},
+			// TODO: Change to simple conditional clause without using OR clause for portability
+			// Note: firestore does not support OR operator.
+			// See more: https://firebase.google.com/docs/firestore/query-data/queries?hl=en
+			{
+				Field:    "Status",
+				Operator: "in",
+				Value:    model.GetNotCompletedDeploymentStatuses(),
+			},
+		},
+	}
+
+	// TODO: Support pagination in ListNotCompletedDeployments
+	deployments, err := a.deploymentStore.ListDeployments(ctx, opts)
+	if err != nil {
+		a.logger.Error("failed to fetch deployments", zap.Error(err))
+		return nil, err
+	}
+	return &pipedservice.ListNotCompletedDeploymentsResponse{
+		Deployments: deployments,
+	}, nil
 }
 
 // GetMostRecentDeployment returns the most recent deployment of the given application.
