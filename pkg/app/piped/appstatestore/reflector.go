@@ -28,6 +28,8 @@ import (
 	"k8s.io/client-go/dynamic/dynamicinformer"
 	restclient "k8s.io/client-go/rest"
 	"k8s.io/client-go/tools/cache"
+
+	provider "github.com/kapetaniosci/pipe/pkg/app/piped/cloudprovider/kubernetes"
 )
 
 var (
@@ -165,7 +167,7 @@ func (r *reflector) start(ctx context.Context) error {
 
 func (r *reflector) onObjectAdd(obj interface{}) {
 	u := obj.(*unstructured.Unstructured)
-	key := makeResourceKey(u)
+	key := provider.MakeResourceKey(u)
 	if _, ok := ignoreResourceKeys[key.String()]; ok {
 		return
 	}
@@ -176,7 +178,7 @@ func (r *reflector) onObjectAdd(obj interface{}) {
 func (r *reflector) onObjectUpdate(oldObj, obj interface{}) {
 	u := obj.(*unstructured.Unstructured)
 	oldU := oldObj.(*unstructured.Unstructured)
-	key := makeResourceKey(u)
+	key := provider.MakeResourceKey(u)
 	if _, ok := ignoreResourceKeys[key.String()]; ok {
 		return
 	}
@@ -186,7 +188,7 @@ func (r *reflector) onObjectUpdate(oldObj, obj interface{}) {
 
 func (r *reflector) onObjectDelete(obj interface{}) {
 	u := obj.(*unstructured.Unstructured)
-	key := makeResourceKey(u)
+	key := provider.MakeResourceKey(u)
 	if _, ok := ignoreResourceKeys[key.String()]; ok {
 		return
 	}

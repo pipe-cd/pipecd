@@ -46,13 +46,13 @@ type node struct {
 	// The unique idenfitifer of the application this node belongs to.
 	appID string
 	// The resourceKey of the first added resource into this node.
-	firstResourceKey resourceKey
+	firstResourceKey provider.ResourceKey
 	// The key to the resource that matching with the originalAPIVersion.
 	// This will only be set for managing resources.
-	matchResourceKey resourceKey
+	matchResourceKey provider.ResourceKey
 	// The map of resources that have a same uid.
 	// This always has at least one resource.
-	resources map[resourceKey]*unstructured.Unstructured
+	resources map[provider.ResourceKey]*unstructured.Unstructured
 }
 
 type appResource struct {
@@ -77,7 +77,7 @@ func (s *store) initialize() {
 		}
 
 		// Add the missing resource into the dependedResources of the app.
-		key := makeResourceKey(an.resource)
+		key := provider.MakeResourceKey(an.resource)
 		s.apps[appID].addDependedResource(uid, key, an.resource)
 
 		an.appID = appID
@@ -115,7 +115,7 @@ func (s *store) onAddResource(obj *unstructured.Unstructured) {
 	var (
 		uid    = string(obj.GetUID())
 		appID  = obj.GetAnnotations()[provider.LabelApplication]
-		key    = makeResourceKey(obj)
+		key    = provider.MakeResourceKey(obj)
 		owners = obj.GetOwnerReferences()
 	)
 
@@ -169,7 +169,7 @@ func (s *store) onDeleteResource(obj *unstructured.Unstructured) {
 	var (
 		uid    = string(obj.GetUID())
 		appID  = obj.GetAnnotations()[provider.LabelApplication]
-		key    = makeResourceKey(obj)
+		key    = provider.MakeResourceKey(obj)
 		owners = obj.GetOwnerReferences()
 	)
 
@@ -221,7 +221,7 @@ func (s *store) getDependedNodesForApp(appID string) map[string]*node {
 	return app.dependedNodes
 }
 
-func (a *appLiveNodes) addManagingResource(uid string, key resourceKey, obj *unstructured.Unstructured) {
+func (a *appLiveNodes) addManagingResource(uid string, key provider.ResourceKey, obj *unstructured.Unstructured) {
 	originalAPIVersion := obj.GetAnnotations()[provider.LabelOriginalAPIVersion]
 
 	if cur, ok := a.managingNodes[uid]; ok {
@@ -237,7 +237,7 @@ func (a *appLiveNodes) addManagingResource(uid string, key resourceKey, obj *uns
 		uid:              uid,
 		appID:            a.appID,
 		firstResourceKey: key,
-		resources:        map[resourceKey]*unstructured.Unstructured{key: obj},
+		resources:        map[provider.ResourceKey]*unstructured.Unstructured{key: obj},
 	}
 	if originalAPIVersion == key.APIVersion {
 		n.matchResourceKey = key
@@ -246,7 +246,7 @@ func (a *appLiveNodes) addManagingResource(uid string, key resourceKey, obj *uns
 	a.updatedAt = time.Now()
 }
 
-func (a *appLiveNodes) deleteManagingResource(uid string, key resourceKey) {
+func (a *appLiveNodes) deleteManagingResource(uid string, key provider.ResourceKey) {
 	n, ok := a.managingNodes[uid]
 	if !ok {
 		return
@@ -258,7 +258,7 @@ func (a *appLiveNodes) deleteManagingResource(uid string, key resourceKey) {
 	a.updatedAt = time.Now()
 }
 
-func (a *appLiveNodes) addDependedResource(uid string, key resourceKey, obj *unstructured.Unstructured) {
+func (a *appLiveNodes) addDependedResource(uid string, key provider.ResourceKey, obj *unstructured.Unstructured) {
 	if cur, ok := a.dependedNodes[uid]; ok {
 		cur.resources[key] = obj
 		a.updatedAt = time.Now()
@@ -268,12 +268,12 @@ func (a *appLiveNodes) addDependedResource(uid string, key resourceKey, obj *uns
 		uid:              uid,
 		appID:            a.appID,
 		firstResourceKey: key,
-		resources:        map[resourceKey]*unstructured.Unstructured{key: obj},
+		resources:        map[provider.ResourceKey]*unstructured.Unstructured{key: obj},
 	}
 	a.updatedAt = time.Now()
 }
 
-func (a *appLiveNodes) deleteDependedResource(uid string, key resourceKey) {
+func (a *appLiveNodes) deleteDependedResource(uid string, key provider.ResourceKey) {
 	n, ok := a.dependedNodes[uid]
 	if !ok {
 		return

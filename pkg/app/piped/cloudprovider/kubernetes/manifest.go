@@ -29,22 +29,17 @@ import (
 )
 
 type Manifest struct {
-	APIVersion string
-	Kind       string
-	Namespace  string
-	Name       string
-	u          *unstructured.Unstructured
+	Key ResourceKey
+	u   *unstructured.Unstructured
 }
 
 func (m Manifest) Duplicate(name string) Manifest {
 	u := m.u.DeepCopy()
 	u.SetName(name)
+
 	return Manifest{
-		APIVersion: m.APIVersion,
-		Kind:       m.Kind,
-		Namespace:  m.Namespace,
-		Name:       name,
-		u:          u,
+		Key: m.Key,
+		u:   u,
 	}
 }
 
@@ -105,34 +100,6 @@ func (m Manifest) AddVariantLabel(variant string) error {
 	}
 
 	return nil
-}
-
-func (m Manifest) ResourceKey() string {
-	return fmt.Sprintf("%s:%s:%s:%s", m.APIVersion, m.Kind, m.Namespace, m.Name)
-}
-
-type ResourceKey struct {
-	APIVersion string
-	Kind       string
-	Namespace  string
-	Name       string
-}
-
-func (k ResourceKey) String() string {
-	return fmt.Sprintf("%s:%s:%s:%s", k.APIVersion, k.Kind, k.Namespace, k.Name)
-}
-
-func DecodeResourceKey(key string) (ResourceKey, error) {
-	parts := strings.Split(key, ":")
-	if len(parts) != 4 {
-		return ResourceKey{}, fmt.Errorf("malformed key")
-	}
-	return ResourceKey{
-		APIVersion: parts[0],
-		Kind:       parts[1],
-		Namespace:  parts[2],
-		Name:       parts[3],
-	}, nil
 }
 
 func LoadPlainYAMLMannifests(ctx context.Context, dir string, names []string) ([]Manifest, error) {
@@ -199,11 +166,13 @@ func LoadManifestsFromYAMLFile(path string) ([]Manifest, error) {
 			return nil, err
 		}
 		manifests = append(manifests, Manifest{
-			APIVersion: obj.GetAPIVersion(),
-			Kind:       obj.GetKind(),
-			Namespace:  obj.GetNamespace(),
-			Name:       obj.GetName(),
-			u:          &obj,
+			Key: ResourceKey{
+				APIVersion: obj.GetAPIVersion(),
+				Kind:       obj.GetKind(),
+				Namespace:  obj.GetNamespace(),
+				Name:       obj.GetName(),
+			},
+			u: &obj,
 		})
 	}
 	return manifests, nil

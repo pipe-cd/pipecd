@@ -5,7 +5,6 @@ go_library(
     srcs = [
         "appstatestore.go",
         "reflector.go",
-        "resource.go",
         "store.go",
     ],
     importpath = "github.com/kapetaniosci/pipe/pkg/app/piped/appstatestore",

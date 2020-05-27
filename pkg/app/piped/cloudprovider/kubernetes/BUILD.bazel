@@ -3,11 +3,13 @@ load("@io_bazel_rules_go//go:def.bzl", "go_library")
 go_library(
     name = "go_default_library",
     srcs = [
+        "diff.go",
         "helm.go",
         "kubectl.go",
         "kubernetes.go",
         "kustomize.go",
         "manifest.go",
+        "resourcekey.go",
     ],
     importpath = "github.com/kapetaniosci/pipe/pkg/app/piped/cloudprovider/kubernetes",
     visibility = ["//visibility:public"],

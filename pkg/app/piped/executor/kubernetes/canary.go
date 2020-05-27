@@ -44,7 +44,7 @@ func (e *Executor) ensureCanaryRollout(ctx context.Context) model.StageStatus {
 	// Store will adding resource keys into metadata for cleaning later.
 	addedResources := make([]string, 0, len(stageManifests))
 	for _, m := range stageManifests {
-		addedResources = append(addedResources, m.ResourceKey())
+		addedResources = append(addedResources, m.Key.String())
 	}
 	metadata := strings.Join(addedResources, ",")
 	err = e.MetadataStore.Set(ctx, metadataKeyAddedStageResources, metadata)
@@ -129,13 +129,13 @@ func (e *Executor) generateStageManifests(ctx context.Context, manifests []provi
 	}
 
 	findWorkload := func(m provider.Manifest) error {
-		if m.Kind != workloadKind {
+		if m.Key.Kind != workloadKind {
 			return nil
 		}
-		if workloadName != "" && m.Name != workloadName {
+		if workloadName != "" && m.Key.Name != workloadName {
 			return nil
 		}
-		m = m.Duplicate(m.Name + "-" + suffix)
+		m = m.Duplicate(m.Key.Name + "-" + suffix)
 		if err := m.AddVariantLabel(canaryVariant); err != nil {
 			return err
 		}
@@ -156,13 +156,13 @@ func (e *Executor) generateStageManifests(ctx context.Context, manifests []provi
 	}
 
 	for _, m := range stageManifests {
-		m.Name = m.Name + "-" + suffix
+		m.Key.Name = m.Key.Name + "-" + suffix
 		m.AddAnnotations(map[string]string{
 			provider.LabelManagedBy:          provider.ManagedByPiped,
 			provider.LabelApplication:        e.Deployment.ApplicationId,
 			provider.LabelVariant:            canaryVariant,
-			provider.LabelOriginalAPIVersion: m.APIVersion,
-			provider.LabelResourceKey:        m.ResourceKey(),
+			provider.LabelOriginalAPIVersion: m.Key.APIVersion,
+			provider.LabelResourceKey:        m.Key.String(),
 			provider.LabelCommitHash:         e.Deployment.Trigger.Commit.Hash,
 		})
 	}
