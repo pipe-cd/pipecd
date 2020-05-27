@@ -17,7 +17,6 @@ package executor
 import (
 	"context"
 
-	"go.uber.org/atomic"
 	"go.uber.org/zap"
 
 	"github.com/kapetaniosci/pipe/pkg/config"
@@ -52,7 +51,8 @@ type CommandLister interface {
 }
 
 type Input struct {
-	Stage *model.PipelineStage
+	Stage       *model.PipelineStage
+	StageConfig config.PipelineStage
 	// Readonly deployment model.
 	Deployment       *model.Deployment
 	DeploymentConfig *config.Config
@@ -64,92 +64,6 @@ type Input struct {
 	LogPersister     LogPersister
 	MetadataStore    MetadataStore
 	Logger           *zap.Logger
-}
-
-type StopSignalType string
-
-const (
-	// StopSignalTerminate means the executor should stop its execution
-	// because the program was asked to terminate.
-	StopSignalTerminate StopSignalType = "terminate"
-	// StopSignalCancel means the executor should stop its execution
-	// because the deployment was cancelled.
-	StopSignalCancel StopSignalType = "cancel"
-	// StopSignalTimeout means the executor should stop its execution
-	// because of timeout.
-	StopSignalTimeout StopSignalType = "timeout"
-	// StopSignalNone means the excutor can be continuously executed.
-	StopSignalNone StopSignalType = "none"
-)
-
-type StopSignal interface {
-	Context() context.Context
-	Ch() <-chan StopSignalType
-	Signal() StopSignalType
-	Stopped() bool
-}
-
-type StopSignalHandler interface {
-	Cancel()
-	Timeout()
-	Terminate()
-}
-
-type stopSignal struct {
-	ctx    context.Context
-	cancel func()
-	ch     chan StopSignalType
-	signal *atomic.String
-}
-
-func NewStopSignal() (StopSignal, StopSignalHandler) {
-	ctx, cancel := context.WithCancel(context.Background())
-	s := &stopSignal{
-		ctx:    ctx,
-		cancel: cancel,
-		ch:     make(chan StopSignalType, 1),
-		signal: atomic.NewString(string(StopSignalNone)),
-	}
-	return s, s
-}
-
-func (s *stopSignal) Cancel() {
-	s.signal.Store(string(StopSignalCancel))
-	s.cancel()
-	s.ch <- StopSignalCancel
-	close(s.ch)
-}
-
-func (s *stopSignal) Timeout() {
-	s.signal.Store(string(StopSignalTimeout))
-	s.cancel()
-	s.ch <- StopSignalTimeout
-	close(s.ch)
-}
-
-func (s *stopSignal) Terminate() {
-	s.signal.Store(string(StopSignalTerminate))
-	s.cancel()
-	s.ch <- StopSignalTerminate
-	close(s.ch)
-}
-
-func (s *stopSignal) Context() context.Context {
-	return s.ctx
-}
-
-func (s *stopSignal) Ch() <-chan StopSignalType {
-	return s.ch
-}
-
-func (s *stopSignal) Signal() StopSignalType {
-	value := s.signal.Load()
-	return StopSignalType(value)
-}
-
-func (s *stopSignal) Stopped() bool {
-	value := s.signal.Load()
-	return StopSignalType(value) != StopSignalNone
 }
 
 func DetermineStageStatus(sig StopSignalType, ori, got model.StageStatus) model.StageStatus {

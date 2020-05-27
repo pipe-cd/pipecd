@@ -28,6 +28,7 @@ import (
 	"github.com/kapetaniosci/pipe/pkg/app/piped/executor"
 	"github.com/kapetaniosci/pipe/pkg/app/piped/executor/registry"
 	"github.com/kapetaniosci/pipe/pkg/app/piped/logpersister"
+	pln "github.com/kapetaniosci/pipe/pkg/app/piped/planner"
 	"github.com/kapetaniosci/pipe/pkg/config"
 	"github.com/kapetaniosci/pipe/pkg/git"
 	"github.com/kapetaniosci/pipe/pkg/model"
@@ -58,6 +59,7 @@ type scheduler struct {
 	logger           *zap.Logger
 
 	deploymentConfig *config.Config
+	pipelineable     config.Pipelineable
 	prepareOnce      sync.Once
 	// Current status of each stages.
 	// We stores their current statuses into this field
@@ -320,8 +322,25 @@ func (s *scheduler) executeStage(sig executor.StopSignal, ps *model.PipelineStag
 		return originalStatus
 	}
 
+	var stageConfig *config.PipelineStage
+	if !ps.Predefined {
+		if sc, ok := s.pipelineable.GetStage(ps.Index); ok {
+			stageConfig = &sc
+		}
+	} else {
+		if sc, ok := pln.GetPredefinedStage(ps.Id); ok {
+			stageConfig = &sc
+		}
+	}
+	if stageConfig == nil {
+		lp.AppendError("Unabled to find the stage configuration")
+		s.reportStageStatus(ctx, ps.Id, model.StageStatus_STAGE_FAILURE)
+		return model.StageStatus_STAGE_FAILURE
+	}
+
 	input := executor.Input{
 		Stage:            ps,
+		StageConfig:      *stageConfig,
 		Deployment:       s.deployment,
 		DeploymentConfig: s.deploymentConfig,
 		PipedConfig:      s.pipedConfig,
@@ -387,8 +406,17 @@ func (s *scheduler) ensurePreparing(ctx context.Context, lp logpersister.StageLo
 		cfg, err = loadDeploymentConfiguration(gitRepo.GetPath(), s.deployment)
 		if err != nil {
 			err = fmt.Errorf("failed to load deployment configuration (%v)", err)
+			lp.AppendError(err.Error())
 		}
 		s.deploymentConfig = cfg
+
+		pipelineable, ok := cfg.GetPipelineable()
+		if !ok {
+			err = fmt.Errorf("unsupport non pipelineable application %s", cfg.Kind)
+			lp.AppendError(err.Error())
+			return
+		}
+		s.pipelineable = pipelineable
 
 		lp.AppendSuccess("successfully loaded deployment configuration")
 		lp.AppendInfo("Successfully completed preparing")

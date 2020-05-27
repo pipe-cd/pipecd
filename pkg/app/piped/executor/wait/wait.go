@@ -51,17 +51,9 @@ func (e *Executor) Execute(sig executor.StopSignal) model.StageStatus {
 	)
 	defer timer.Stop()
 
-	pp, ok := e.DeploymentConfig.GetPipelineable()
-	if !ok {
-		e.LogPersister.AppendError("Unabled to get pipeline configuration")
-		return model.StageStatus_STAGE_FAILURE
-	}
-
-	if cfg, ok := pp.GetStage(e.Stage.Index); ok {
-		if opts := cfg.WaitStageOptions; opts != nil {
-			if opts.Duration > 0 {
-				duration = opts.Duration.Duration()
-			}
+	if opts := e.StageConfig.WaitStageOptions; opts != nil {
+		if opts.Duration > 0 {
+			duration = opts.Duration.Duration()
 		}
 	}
 

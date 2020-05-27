@@ -18,41 +18,22 @@ import (
 	"fmt"
 	"time"
 
+	"github.com/kapetaniosci/pipe/pkg/app/piped/planner"
 	"github.com/kapetaniosci/pipe/pkg/config"
 	"github.com/kapetaniosci/pipe/pkg/model"
 )
-
-const (
-	PredefinedStageScale    = "_Scale"
-	PredefinedStageRollback = "_Rollback"
-	PredefinedStageUpdate   = "_Update"
-)
-
-var PredefinedStages = map[string]config.PipelineStage{
-	PredefinedStageScale: config.PipelineStage{
-		Id:   PredefinedStageScale,
-		Name: model.StageK8sPrimaryUpdate,
-		Desc: "Scale primary workloads",
-	},
-	PredefinedStageRollback: config.PipelineStage{
-		Id:   PredefinedStageRollback,
-		Name: model.StageK8sPrimaryUpdate,
-		Desc: "Rollback primary to previous version",
-	},
-	PredefinedStageUpdate: config.PipelineStage{
-		Id:   PredefinedStageUpdate,
-		Name: model.StageK8sPrimaryUpdate,
-		Desc: "Update primary to new version/configuration",
-	},
-}
 
 func buildPipeline(pp *config.DeploymentPipeline, now time.Time) []*model.PipelineStage {
 	var stages []config.PipelineStage
 	if pp != nil {
 		stages = pp.Stages
 	}
+
+	var predefined bool
 	if len(stages) == 0 {
-		stages = []config.PipelineStage{PredefinedStages[PredefinedStageUpdate]}
+		predefined = true
+		stage, _ := planner.GetPredefinedStage(planner.PredefinedStageK8sUpdate)
+		stages = []config.PipelineStage{stage}
 	}
 
 	out := make([]*model.PipelineStage, 0, len(stages))
@@ -62,13 +43,14 @@ func buildPipeline(pp *config.DeploymentPipeline, now time.Time) []*model.Pipeli
 			id = fmt.Sprintf("stage-%d", i)
 		}
 		stage := &model.PipelineStage{
-			Id:        id,
-			Name:      s.Name.String(),
-			Desc:      s.Desc,
-			Index:     int32(i),
-			Status:    model.StageStatus_STAGE_NOT_STARTED_YET,
-			CreatedAt: now.Unix(),
-			UpdatedAt: now.Unix(),
+			Id:         id,
+			Name:       s.Name.String(),
+			Desc:       s.Desc,
+			Index:      int32(i),
+			Predefined: predefined,
+			Status:     model.StageStatus_STAGE_NOT_STARTED_YET,
+			CreatedAt:  now.Unix(),
+			UpdatedAt:  now.Unix(),
 		}
 		out = append(out, stage)
 	}

@@ -62,9 +62,9 @@ func (e *Executor) Execute(sig executor.StopSignal) model.StageStatus {
 	queryCount := e.getQueryCount()
 	defer e.saveQueryCount(ctx, queryCount)
 
-	options, err := e.getStageOptions()
-	if err != nil {
-		e.Logger.Error("failed to get analysis options", zap.Error(err))
+	options := e.StageConfig.AnalysisStageOptions
+	if options == nil {
+		e.Logger.Error("missing analysis configuration for ANALYSIS stage")
 		return model.StageStatus_STAGE_FAILURE
 	}
 
@@ -228,35 +228,6 @@ func (e *Executor) runAnalysis(ctx context.Context, interval time.Duration, prov
 			return
 		}
 	}
-}
-
-func (e *Executor) getStageOptions() (*config.AnalysisStageOptions, error) {
-	if e.Stage == nil {
-		return nil, fmt.Errorf("stage information not found")
-	}
-	index := e.Stage.Index
-
-	// TODO: Make `config.Deployment.GetPipelines`
-	var stageConfig config.PipelineStage
-	switch e.Deployment.Kind {
-	case model.ApplicationKind_KUBERNETES:
-		stages := e.DeploymentConfig.KubernetesDeploymentSpec.Pipeline.Stages
-		if len(stages) < int(index)+1 {
-			return nil, fmt.Errorf("unexpected stage index given")
-		}
-		stageConfig = stages[index]
-	case model.ApplicationKind_TERRAFORM:
-		stages := e.DeploymentConfig.TerraformDeploymentSpec.Pipeline.Stages
-		if len(stages) < int(index)+1 {
-			return nil, fmt.Errorf("unexpected stage index given")
-		}
-		stageConfig = stages[index]
-	}
-	if stageConfig.AnalysisStageOptions == nil {
-		return nil, fmt.Errorf("no analysis options found")
-	}
-
-	return stageConfig.AnalysisStageOptions, nil
 }
 
 // saveQueryCount stores query count into metadata persister in json format.

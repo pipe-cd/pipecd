@@ -39,9 +39,8 @@ const (
 type Executor struct {
 	executor.Input
 
-	provider    provider.Provider
-	config      *config.KubernetesDeploymentSpec
-	stageConfig *config.PipelineStage
+	provider provider.Provider
+	config   *config.KubernetesDeploymentSpec
 }
 
 type registerer interface {
@@ -66,16 +65,9 @@ func Register(r registerer) {
 func (e *Executor) Execute(sig executor.StopSignal) model.StageStatus {
 	e.config = e.DeploymentConfig.KubernetesDeploymentSpec
 	if e.config == nil {
-		e.LogPersister.AppendError(fmt.Sprintf("Malformed deployment configuration: missing KubernetesDeploymentSpec"))
+		e.LogPersister.AppendError("Malformed deployment configuration: missing KubernetesDeploymentSpec")
 		return model.StageStatus_STAGE_FAILURE
 	}
-
-	stageConfig, ok := e.config.GetStage(e.Stage.Index)
-	if !ok {
-		e.LogPersister.AppendError(fmt.Sprintf("Unabled to find the stage configuration"))
-		return model.StageStatus_STAGE_FAILURE
-	}
-	e.stageConfig = &stageConfig
 
 	var (
 		ctx    = sig.Context()
