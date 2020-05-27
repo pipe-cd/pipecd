@@ -107,7 +107,7 @@ func (e *Executor) ensureCanaryClean(ctx context.Context) model.StageStatus {
 func (e *Executor) generateStageManifests(ctx context.Context, manifests []provider.Manifest) ([]provider.Manifest, error) {
 	// List of default configurations.
 	var (
-		suffix           = "stage"
+		suffix           = canaryVariant
 		workloadKind     = "Deployment"
 		workloadName     = ""
 		workloadReplicas = 1
