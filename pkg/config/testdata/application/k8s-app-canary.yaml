@@ -49,21 +49,26 @@ spec:
       - name: ANALYSIS
         with:
           duration: 10m
-          failureLimit: 2
           metrics:
             - query: grpc_error_percentage
               expected:
                 max: 0.1
               interval: 1m
+              failureLimit: 1
               provider: prometheus-dev
           logs:
-            - query: 'logName = "projects/demo/logs/error'
+            - query: |
+                resource.type="k8s_container"
+                resource.labels.cluster_name="cluster-1"
+                resource.labels.namespace_name="stg"
               interval: 1m
+              failureLimit: 3
               provider: stackdriver-dev
           https:
             - url: https://canary-endpoint.dev
               method: GET
               expected: 200
+              failureLimit: 1
               interval: 1m
       - name: K8S_PRIMARY_UPDATE
       - name: K8S_STAGE_CLEAN
@@ -107,10 +112,11 @@ spec:
       - name: ANALYSIS
         with:
           duration: 10m
-          failureLimit: 2
           metrics:
             - useTemplate: prometheus_grpc_error_percentage
+              failureLimit: 1
             - useTemplate: prometheus_app_http_error_percentage
+              failureLimit: 1
           logs:
             - useTemplate: stackdriver_log_error
           https:
@@ -141,6 +147,48 @@ spec:
           duration: 10m
       - name: K8S_PRIMARY_UPDATE
       - name: K8S_BASELINE_CLEAN
+      - name: K8S_STAGE_CLEAN
+
+# Progressive delivery with canary strategy.
+# This has an Analysis stage for verifying the deployment process.
+# This is run the analysis with dynamic data as well as one with static data.
+apiVersion: pipecd.dev/v1beta1
+kind: KubernetesApp
+spec:
+  pipeline:
+    stages:
+      - name: K8S_STAGE_ROLLOUT
+        with:
+          replicas: 10%
+      - name: ANALYSIS
+        with:
+          duration: 10m
+          metrics:
+            - useTemplate: prometheus_grpc_error_percentage
+              failureLimit: 1
+          logs:
+            - useTemplate: stackdriver_log_error
+              failureLimit: 1
+          https:
+            - useTemplate: http_canary_check
+              failureLimit: 1
+          dynamic:
+            metrics:
+              - query: grpc_error_percentage
+                provider: prometheus-dev
+                #sensitivity: SENSITIVE
+            logs:
+              - query: |
+                  resource.type="k8s_container"
+                  resource.labels.cluster_name="cluster-1"
+                  resource.labels.namespace_name="stg"
+                provider: stackdriver-dev
+            https:
+              - url: https://canary-endpoint.dev
+                method: GET
+                expected: 200
+                interval: 1m
+      - name: K8S_PRIMARY_UPDATE
       - name: K8S_STAGE_CLEAN
 
 # Stage represents a temporary desired state for the applicaiton.

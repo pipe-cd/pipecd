@@ -91,7 +91,7 @@ func (e *Executor) Execute(sig executor.StopSignal) model.StageStatus {
 			continue
 		}
 		go e.runAnalysis(ctx, time.Duration(l.Interval), provider.Type(), func(ctx context.Context) (bool, error) {
-			return provider.RunQuery(l.Query, l.Threshold)
+			return provider.RunQuery(l.Query, l.FailureLimit)
 		}, resultCh)
 	}
 	// TODO: Make HTTP analysis part of metrics provider.

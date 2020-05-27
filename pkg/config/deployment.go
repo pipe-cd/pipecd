@@ -318,18 +318,21 @@ type AnalysisStageOptions struct {
 	// How long the analysis process should be executed.
 	Duration Duration `json:"duration"`
 	// Maximum number of failed checks before the stage is considered as failure.
-	FailureLimit int `json:"failureLimit"`
-	// Maximum number of container restarts before the stage is considered as failure.
+	// TODO: Remove
+	FailureLimit     int               `json:"failureLimit"`
 	RestartThreshold int               `json:"restartThreshold"`
 	Metrics          []AnalysisMetrics `json:"metrics"`
 	Logs             []AnalysisLog     `json:"logs"`
 	Https            []AnalysisHTTP    `json:"https"`
+	Dynamic          AnalysisDynamic   `json:"dynamic"`
 }
 
 type AnalysisMetrics struct {
 	Query    string           `json:"query"`
 	Expected AnalysisExpected `json:"expected"`
 	Interval Duration         `json:"interval"`
+	// Maximum number of failed checks before the query result is considered as failure.
+	FailureLimit int `json:"failureLimit"`
 	// How long after which the query times out.
 	Timeout     Duration `json:"timeout"`
 	Provider    string   `json:"provider"`
@@ -342,13 +345,15 @@ type AnalysisExpected struct {
 	Max *float64 `json:"max"`
 }
 
-// Comprare the log entries between new version and old version.
 type AnalysisLog struct {
-	Query       string
-	Threshold   int
-	Interval    Duration
-	Provider    string
-	UseTemplate string
+	Query    string   `json:"query"`
+	Interval Duration `json:"interval"`
+	// Maximum number of failed checks before the query result is considered as failure.
+	FailureLimit int `json:"failureLimit"`
+	// How long after which the query times out.
+	Timeout     Duration `json:"timeout"`
+	Provider    string   `json:"provider"`
+	UseTemplate string   `json:"useTemplate"`
 }
 
 type AnalysisHTTP struct {
@@ -359,8 +364,39 @@ type AnalysisHTTP struct {
 	ExpectedStatus   string
 	ExpectedResponse string
 	Interval         Duration
-	Timeout          Duration
-	UseTemplate      string
+	// Maximum number of failed checks before the response is considered as failure.
+	FailureLimit int      `json:"failureLimit"`
+	Timeout      Duration `json:"timeout"`
+	UseTemplate  string   `json:"useTemplate"`
+}
+
+// AnalysisDynamic contains settings for analysis by comparing  with dynamic data.
+type AnalysisDynamic struct {
+	Metrics []AnalysisDynamicMetrics `json:"metrics"`
+	Logs    []AnalysisDynamicLog     `json:"logs"`
+	Https   []AnalysisDynamicHTTP    `json:"https"`
+}
+
+type AnalysisDynamicMetrics struct {
+	Query    string   `json:"query"`
+	Provider string   `json:"provider"`
+	Timeout  Duration `json:"timeout"`
+}
+
+type AnalysisDynamicLog struct {
+	Query    string   `json:"query"`
+	Provider string   `json:"provider"`
+	Timeout  Duration `json:"timeout"`
+}
+
+type AnalysisDynamicHTTP struct {
+	URL              string
+	Method           string
+	Headers          []string
+	ExpectedStatus   string
+	ExpectedResponse string
+	Interval         Duration
+	Timeout          Duration `json:"timeout"`
 }
 
 type KubernetesDeploymentInput struct {
