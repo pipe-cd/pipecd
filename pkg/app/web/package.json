@@ -22,6 +22,8 @@
     "@types/react": "^16.9.35",
     "@types/react-dom": "^16.9.8",
     "@types/react-redux": "^7.1.9",
+    "@types/react-router": "^5.1.7",
+    "@types/react-router-dom": "^5.1.5",
     "babel-loader": "^8.1.0",
     "fork-ts-checker-webpack-plugin": "^4.1.4",
     "html-webpack-plugin": "^4.3.0",
@@ -41,8 +43,11 @@
     "dotenv": "^8.2.0",
     "google-protobuf": "^3.12.0-rc.1",
     "grpc-web": "^1.0.7",
+    "history": "^4.10.1",
     "react": "^16.13.1",
     "react-dom": "^16.13.1",
-    "react-redux": "^7.2.0"
+    "react-redux": "^7.2.0",
+    "react-router": "^5.2.0",
+    "react-router-dom": "^5.2.0"
   }
 }
