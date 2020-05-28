@@ -2,8 +2,8 @@ load("@io_bazel_rules_go//go:def.bzl", "go_library")
 
 go_library(
     name = "go_default_library",
-    srcs = ["datadog.go"],
-    importpath = "github.com/kapetaniosci/pipe/pkg/app/piped/executor/analysis/metric/datadog",
+    srcs = ["provider.go"],
+    importpath = "github.com/kapetaniosci/pipe/pkg/app/piped/analysisprovider/metrics",
     visibility = ["//visibility:public"],
     deps = ["//pkg/config:go_default_library"],
 )

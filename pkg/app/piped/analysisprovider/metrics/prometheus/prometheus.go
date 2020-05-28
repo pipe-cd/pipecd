@@ -107,7 +107,7 @@ func (p *Provider) evaluate(expected config.AnalysisExpected, response model.Val
 		// TODO: Consider the case of multiple results.
 		return inRange(expected, results[0])
 	default:
-		return false, fmt.Errorf("unsupported prometheus metric type")
+		return false, fmt.Errorf("unsupported prometheus metrics type")
 	}
 }
 

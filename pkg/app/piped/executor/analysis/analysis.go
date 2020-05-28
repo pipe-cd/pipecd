@@ -22,12 +22,12 @@ import (
 
 	"go.uber.org/zap"
 
+	"github.com/kapetaniosci/pipe/pkg/app/piped/analysisprovider/log"
+	"github.com/kapetaniosci/pipe/pkg/app/piped/analysisprovider/log/stackdriver"
+	"github.com/kapetaniosci/pipe/pkg/app/piped/analysisprovider/metrics"
+	"github.com/kapetaniosci/pipe/pkg/app/piped/analysisprovider/metrics/datadog"
+	"github.com/kapetaniosci/pipe/pkg/app/piped/analysisprovider/metrics/prometheus"
 	"github.com/kapetaniosci/pipe/pkg/app/piped/executor"
-	"github.com/kapetaniosci/pipe/pkg/app/piped/executor/analysis/log"
-	"github.com/kapetaniosci/pipe/pkg/app/piped/executor/analysis/log/stackdriver"
-	"github.com/kapetaniosci/pipe/pkg/app/piped/executor/analysis/metric"
-	"github.com/kapetaniosci/pipe/pkg/app/piped/executor/analysis/metric/datadog"
-	"github.com/kapetaniosci/pipe/pkg/app/piped/executor/analysis/metric/prometheus"
 	"github.com/kapetaniosci/pipe/pkg/config"
 	"github.com/kapetaniosci/pipe/pkg/model"
 )
@@ -130,14 +130,14 @@ LOOP:
 }
 
 // newMetricsProvider generates an appropriate metrics provider according to analysis metrics config.
-func (e *Executor) newMetricsProvider(metrics *config.AnalysisMetrics) (metric.Provider, error) {
+func (e *Executor) newMetricsProvider(analysisMetrics *config.AnalysisMetrics) (metrics.Provider, error) {
 	// TODO: Address the case when using template
-	providerCfg, ok := e.PipedConfig.GetProvider(metrics.Provider)
+	providerCfg, ok := e.PipedConfig.GetProvider(analysisMetrics.Provider)
 	if !ok {
-		return nil, fmt.Errorf("unknown provider name %s", metrics.Provider)
+		return nil, fmt.Errorf("unknown provider name %s", analysisMetrics.Provider)
 	}
 
-	var provider metric.Provider
+	var provider metrics.Provider
 	switch {
 	case providerCfg.Prometheus != nil:
 		cfg := providerCfg.Prometheus
