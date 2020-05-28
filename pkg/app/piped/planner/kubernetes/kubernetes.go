@@ -43,7 +43,7 @@ func (p *Planner) Plan(ctx context.Context, in planner.Input) (out planner.Outpu
 		return
 	}
 
-	in.MostRecentSuccessfulCommitHash = "626ad85b9c6c02c6409b9aa79ee433fb9b5507d7"
+	//in.MostRecentSuccessfulCommitHash = "626ad85b9c6c02c6409b9aa79ee433fb9b5507d7"
 
 	// This is the first time to deploy this application
 	// or it was unabled to retrieve that value
@@ -97,15 +97,20 @@ func (p *Planner) Plan(ctx context.Context, in planner.Input) (out planner.Outpu
 func decideStrategy(olds, news []provider.Manifest) (progressive bool, desc string) {
 	oldWorkload, ok := findWorkload(olds)
 	if !ok {
-		return false, "Apply all manifests because there is no workload running"
+		desc = "Apply all manifests because there is no workload running"
+		return
 	}
 
 	newWorkload, ok := findWorkload(news)
 	if !ok {
-		return false, "Apply all manifests because there is no workload in the new manifests"
+		desc = "Apply all manifests because there is no workload in the new manifests"
+		return
 	}
 
 	diff := provider.Diff(oldWorkload, newWorkload)
+	fmt.Println(diff)
+	progressive = true
+	desc = fmt.Sprintf("Do progressive deployment because image was changed to %s", "v1.0.0")
 
 	// If the workload' pod template or config/secret was touched
 	// let's do the specified progressive pipeline.
@@ -118,21 +123,15 @@ func decideStrategy(olds, news []provider.Manifest) (progressive bool, desc stri
 	// // Otherwise, just apply the primary.
 
 	// out.Description = fmt.Sprintf("Scale workload %s from %d to %d", "deployment-name", 1, 2)
-
 	return
 }
 
 func findWorkload(manifests []provider.Manifest) (provider.Manifest, bool) {
 	for _, m := range manifests {
-		if m.Key.Kind != "Deployment" {
+		if !m.Key.IsDeployment() {
 			continue
 		}
-		switch m.Key.APIVersion {
-		case "v1", "apps/v1":
-			return m, true
-		default:
-			continue
-		}
+		return m, true
 	}
 	return provider.Manifest{}, false
 }
@@ -140,15 +139,10 @@ func findWorkload(manifests []provider.Manifest) (provider.Manifest, bool) {
 func findConfig(manifests []provider.Manifest) []provider.Manifest {
 	configs := make([]provider.Manifest, 0)
 	for _, m := range manifests {
-		if m.Key.Kind != "ConfigMap" && m.Key.Kind != "Secret" {
+		if !m.Key.IsConfigMap() && !m.Key.IsSecret() {
 			continue
 		}
-		switch m.Key.APIVersion {
-		case "v1", "apps/v1":
-			configs = append(configs, m)
-		default:
-			continue
-		}
+		configs = append(configs, m)
 	}
 	return configs
 }

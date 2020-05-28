@@ -21,6 +21,42 @@ import (
 	"k8s.io/apimachinery/pkg/apis/meta/v1/unstructured"
 )
 
+var builtInApiVersions = map[string]struct{}{
+	"admissionregistration.k8s.io/v1":      {},
+	"admissionregistration.k8s.io/v1beta1": {},
+	"apiextensions.k8s.io/v1":              {},
+	"apiextensions.k8s.io/v1beta1":         {},
+	"apiregistration.k8s.io/v1":            {},
+	"apiregistration.k8s.io/v1beta1":       {},
+	"apps/v1":                              {},
+	"authentication.k8s.io/v1":             {},
+	"authentication.k8s.io/v1beta1":        {},
+	"authorization.k8s.io/v1":              {},
+	"authorization.k8s.io/v1beta1":         {},
+	"autoscaling/v1":                       {},
+	"autoscaling/v2beta1":                  {},
+	"autoscaling/v2beta2":                  {},
+	"batch/v1":                             {},
+	"batch/v1beta1":                        {},
+	"certificates.k8s.io/v1beta1":          {},
+	"coordination.k8s.io/v1":               {},
+	"coordination.k8s.io/v1beta1":          {},
+	"extensions/v1beta1":                   {},
+	"internal.autoscaling.k8s.io/v1alpha1": {},
+	"metrics.k8s.io/v1beta1":               {},
+	"networking.k8s.io/v1":                 {},
+	"networking.k8s.io/v1beta1":            {},
+	"node.k8s.io/v1beta1":                  {},
+	"policy/v1beta1":                       {},
+	"rbac.authorization.k8s.io/v1":         {},
+	"rbac.authorization.k8s.io/v1beta1":    {},
+	"scheduling.k8s.io/v1":                 {},
+	"scheduling.k8s.io/v1beta1":            {},
+	"storage.k8s.io/v1":                    {},
+	"storage.k8s.io/v1beta1":               {},
+	"v1":                                   {},
+}
+
 type ResourceKey struct {
 	APIVersion string
 	Kind       string
@@ -37,6 +73,41 @@ func (k ResourceKey) IsZero() bool {
 		k.Kind == "" &&
 		k.Namespace == "" &&
 		k.Name == ""
+}
+
+func (k ResourceKey) IsKubernetesBuiltInResource() bool {
+	_, ok := builtInApiVersions[k.APIVersion]
+	return ok
+}
+
+func (k ResourceKey) IsDeployment() bool {
+	if k.Kind != "Deployment" {
+		return false
+	}
+	if !k.IsKubernetesBuiltInResource() {
+		return false
+	}
+	return true
+}
+
+func (k ResourceKey) IsConfigMap() bool {
+	if k.Kind != "ConfigMap" {
+		return false
+	}
+	if !k.IsKubernetesBuiltInResource() {
+		return false
+	}
+	return true
+}
+
+func (k ResourceKey) IsSecret() bool {
+	if k.Kind != "Secret" {
+		return false
+	}
+	if !k.IsKubernetesBuiltInResource() {
+		return false
+	}
+	return true
 }
 
 func MakeResourceKey(obj *unstructured.Unstructured) ResourceKey {

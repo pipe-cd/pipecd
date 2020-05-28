@@ -16,17 +16,142 @@ package kubernetes
 
 import (
 	"fmt"
+	"regexp"
+	"strconv"
 	"strings"
 
 	"github.com/google/go-cmp/cmp"
 	"github.com/google/go-cmp/cmp/cmpopts"
 )
 
+type PathStepType string
+
+const (
+	MapKeyPathStep     PathStepType = "MapKey"
+	SliceIndexPathStep PathStepType = "SliceIndex"
+)
+
+type PathStep struct {
+	Type  PathStepType
+	Key   string
+	Index int
+}
+
+type DiffPath []PathStep
+
+func (p DiffPath) String() string {
+	var ss []string
+	for _, s := range p {
+		switch s.Type {
+		case SliceIndexPathStep:
+			ss = append(ss, fmt.Sprintf("[%d]", s.Index))
+		default:
+			ss = append(ss, s.Key)
+		}
+	}
+	return strings.Join(ss, ".")
+}
+
+func parseDiffPath(s string) (DiffPath, error) {
+	parts := strings.Split(s, ".")
+	var path DiffPath
+
+	for _, p := range parts {
+		if strings.HasPrefix(p, "[") {
+			p = p[1 : len(p)-1]
+			index, err := strconv.Atoi(p)
+			if err != nil {
+				return nil, err
+			}
+			path = append(path, PathStep{
+				Type:  SliceIndexPathStep,
+				Index: index,
+			})
+			continue
+		}
+		path = append(path, PathStep{
+			Type: MapKeyPathStep,
+			Key:  p,
+		})
+	}
+
+	return path, nil
+}
+
+type DiffResult struct {
+	Path       DiffPath
+	PathString string
+	Before     string
+	After      string
+}
+
+func (d DiffResult) String() string {
+	return fmt.Sprintf("%v:\n\t-: %s\n\t+: %s\n", d.Path, d.Before, d.After)
+}
+
+type DiffResultList []DiffResult
+
+func (dl DiffResultList) Find(query string) (result DiffResult, err error, found bool) {
+	reg, err := regexp.Compile(query)
+	if err != nil {
+		return
+	}
+
+	for _, d := range dl {
+		matched := reg.MatchString(d.PathString)
+		if !matched {
+			continue
+		}
+		return d, nil, true
+	}
+	return
+}
+
+func (dl DiffResultList) FindAll(query string) (list []DiffResult) {
+	reg, err := regexp.Compile(query)
+	if err != nil {
+		return
+	}
+
+	for _, d := range dl {
+		matched := reg.MatchString(d.PathString)
+		if !matched {
+			continue
+		}
+		list = append(list, d)
+	}
+	return
+}
+
+func (dl DiffResultList) String() string {
+	ds := make([]string, 0, len(dl))
+	for _, d := range dl {
+		ds = append(ds, d.String())
+	}
+	return strings.Join(ds, "\n")
+}
+
+func DiffWorkload(first, second Manifest) string {
+	return ""
+}
+
+func Diff(first, second Manifest) DiffResultList {
+	var r diffReporter
+	cmp.Equal(first.u, second.u, cmp.Reporter(&r))
+	return r.diffs
+}
+
+func DiffWithIgnoreOrder(first, second Manifest) DiffResultList {
+	var r diffReporter
+	cmp.Equal(first.u, second.u, cmp.Reporter(&r), cmpopts.SortSlices(sortLess))
+	return r.diffs
+}
+
 // diffReporter is a custom reporter that only records differences
 // detected during comparison.
 type diffReporter struct {
 	path  cmp.Path
-	diffs []string
+	diffs DiffResultList
 }
 
 func (r *diffReporter) PushStep(ps cmp.PathStep) {
@@ -35,8 +160,16 @@ func (r *diffReporter) PushStep(ps cmp.PathStep) {
 
 func (r *diffReporter) Report(rs cmp.Result) {
 	if !rs.Equal() {
-		vx, vy := r.path.Last().Values()
-		r.diffs = append(r.diffs, fmt.Sprintf("%#v:\n\t-: %+v\n\t+: %+v\n", r.path, vx, vy))
+		var (
+			path   = convertDiffPath(r.path)
+			vx, vy = r.path.Last().Values()
+		)
+		r.diffs = append(r.diffs, DiffResult{
+			Path:       path,
+			PathString: path.String(),
+			Before:     fmt.Sprintf("%+v", vx),
+			After:      fmt.Sprintf("%+v", vy),
+		})
 	}
 }
 
@@ -45,38 +178,27 @@ func (r *diffReporter) PopStep() {
 }
 
 func (r *diffReporter) String() string {
-	return strings.Join(r.diffs, "\n")
+	return r.diffs.String()
 }
 
-type DiffResult struct {
-	Path   string
-	Before string
-	After  string
-}
+func convertDiffPath(path cmp.Path) DiffPath {
+	p := make([]PathStep, 0, len(path))
 
-type DiffResultList []DiffResult
-
-func DiffWorkload(first, second Manifest) string {
-	return ""
-}
-
-func Diff(first, second Manifest) DiffResult {
-	var r diffReporter
-
-	// trans := cmp.Transformer("Sort", func(in []string) []string {
-	// 	out := append([]string(nil), in...) // Copy input to avoid mutating it
-	// 	sort.Strings(out)
-	// 	return out
-	// })
-
-	// cmp.Equal(first.u, second.u, trans, cmp.Reporter(&r))
-
-	cmp.Equal(first.u, second.u, cmp.Reporter(&r), cmpopts.SortSlices(sortLess))
-	fmt.Println("DIFFFFFFFFFFFFFFFFFFFFFFF")
-	fmt.Println(r.String())
-	fmt.Println("===============")
-
-	return DiffResult{}
+	for _, s := range path {
+		switch s := s.(type) {
+		case cmp.SliceIndex:
+			p = append(p, PathStep{
+				Type:  SliceIndexPathStep,
+				Index: s.Key(),
+			})
+		case cmp.MapIndex:
+			p = append(p, PathStep{
+				Type: MapKeyPathStep,
+				Key:  fmt.Sprintf("%v", s.Key()),
+			})
+		}
+	}
+	return p
 }
 
 func sortLess(i, j interface{}) bool {
