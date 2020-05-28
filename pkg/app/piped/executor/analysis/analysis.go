@@ -18,9 +18,11 @@ import (
 	"context"
 	"fmt"
 	"io/ioutil"
+	"sync"
 	"time"
 
 	"go.uber.org/zap"
+	"golang.org/x/sync/errgroup"
 
 	"github.com/kapetaniosci/pipe/pkg/app/piped/analysisprovider/log"
 	"github.com/kapetaniosci/pipe/pkg/app/piped/analysisprovider/log/stackdriver"
@@ -34,6 +36,9 @@ import (
 
 type Executor struct {
 	executor.Input
+	// The number of queries executed per provider.
+	queryCount map[string]int
+	mu         sync.RWMutex
 }
 
 type registerer interface {
@@ -49,18 +54,12 @@ func Register(r registerer) {
 	r.Register(model.StageAnalysis, f)
 }
 
-// providerResult describes a providerResult of the query for provider.
-type providerResult struct {
-	success  bool
-	provider string
-}
-
 // Execute runs multiple analyses that execute queries against analysis providers at regular intervals.
 // An executor runs multiple analyses, an analysis runs multiple queries.
 func (e *Executor) Execute(sig executor.StopSignal) model.StageStatus {
 	ctx := sig.Context()
-	queryCount := e.getQueryCount()
-	defer e.saveQueryCount(ctx, queryCount)
+	e.setQueryCount()
+	defer e.saveQueryCount(ctx)
 
 	options := e.StageConfig.AnalysisStageOptions
 	if options == nil {
@@ -70,8 +69,7 @@ func (e *Executor) Execute(sig executor.StopSignal) model.StageStatus {
 
 	ctx, cancel := context.WithTimeout(ctx, time.Duration(options.Duration))
 	defer cancel()
-
-	resultCh := make(chan providerResult)
+	eg, ctx := errgroup.WithContext(ctx)
 	// Run analyses with metrics providers.
 	for _, m := range options.Metrics {
 		provider, err := e.newMetricsProvider(&m)
@@ -79,9 +77,11 @@ func (e *Executor) Execute(sig executor.StopSignal) model.StageStatus {
 			e.LogPersister.AppendError(err.Error())
 			continue
 		}
-		go e.runAnalysis(ctx, time.Duration(m.Interval), provider.Type(), func(ctx context.Context) (bool, error) {
-			return provider.RunQuery(ctx, m.Query, m.Expected)
-		}, resultCh)
+		eg.Go(func() error {
+			return e.runAnalysis(ctx, time.Duration(m.Interval), provider.Type(), func(ctx context.Context) (bool, error) {
+				return provider.RunQuery(ctx, m.Query, m.Expected)
+			}, m.FailureLimit)
+		})
 	}
 	// Run analyses with logging providers.
 	for _, l := range options.Logs {
@@ -90,39 +90,18 @@ func (e *Executor) Execute(sig executor.StopSignal) model.StageStatus {
 			e.LogPersister.AppendError(err.Error())
 			continue
 		}
-		go e.runAnalysis(ctx, time.Duration(l.Interval), provider.Type(), func(ctx context.Context) (bool, error) {
-			return provider.RunQuery(l.Query, l.FailureLimit)
-		}, resultCh)
+		eg.Go(func() error {
+			return e.runAnalysis(ctx, time.Duration(l.Interval), provider.Type(), func(ctx context.Context) (bool, error) {
+				return provider.RunQuery(l.Query, l.FailureLimit)
+			}, l.FailureLimit)
+		})
 	}
 	// TODO: Make HTTP analysis part of metrics provider.
 	for range options.Https {
 
 	}
 
-	// Start watching the result of queries.
-	var failureCount int
-LOOP:
-	for {
-		select {
-		case <-ctx.Done():
-			break LOOP
-		case res := <-resultCh:
-			queryCount[res.provider]++
-			e.saveQueryCount(ctx, queryCount)
-			if !res.success {
-				failureCount++
-				e.Logger.Info("analysis run failed",
-					zap.String("provider", res.provider),
-					zap.Int("failure count", failureCount),
-				)
-			}
-			if failureCount > options.FailureLimit {
-				e.Logger.Info("stop all analysis")
-				cancel()
-			}
-		}
-	}
-	if failureCount > options.FailureLimit {
+	if err := eg.Wait(); err != nil {
 		return model.StageStatus_STAGE_FAILURE
 	}
 
@@ -177,7 +156,7 @@ func (e *Executor) newMetricsProvider(analysisMetrics *config.AnalysisMetrics) (
 	return provider, nil
 }
 
-// newLogProvider generates an appropriate log provider according to log metrics config.
+// newLogProvider generates an appropriate log provider according to analysis log config.
 func (e *Executor) newLogProvider(analysisLog *config.AnalysisLog) (log.Provider, error) {
 	// TODO: Address the case when using template
 	providerCfg, ok := e.PipedConfig.GetProvider(analysisLog.Provider)
@@ -204,12 +183,14 @@ func (e *Executor) newLogProvider(analysisLog *config.AnalysisLog) (log.Provider
 	return provider, nil
 }
 
-// runAnalysis calls `runQuery` function at the given interval and reports the result.
-func (e *Executor) runAnalysis(ctx context.Context, interval time.Duration, providerType string, runQuery func(context.Context) (bool, error), resultCh chan<- providerResult) {
+// runAnalysis calls `runQuery` function at the given interval and reports back to failureCh
+// when the number of failures exceeds the failureLimit.
+func (e *Executor) runAnalysis(ctx context.Context, interval time.Duration, providerType string, runQuery func(context.Context) (bool, error), failureLimit int) error {
 	e.Logger.Info("start the analysis", zap.String("provider", providerType))
 	// TODO: Address the case when using template
 	ticker := time.NewTicker(interval)
 	defer ticker.Stop()
+	failureCount := 0
 	for {
 		select {
 		case <-ticker.C:
@@ -219,34 +200,47 @@ func (e *Executor) runAnalysis(ctx context.Context, interval time.Duration, prov
 				// TODO: Decide how to handle query failures.
 				success = false
 			}
-			resultCh <- providerResult{
-				success:  success,
-				provider: providerType,
+			if !success {
+				failureCount++
 			}
 
+			e.mu.Lock()
+			e.queryCount[providerType]++
+			e.mu.Unlock()
+			e.saveQueryCount(ctx)
+
+			if failureCount > failureLimit {
+				return fmt.Errorf("anslysis by %s failed", providerType)
+			}
 		case <-ctx.Done():
-			return
+			return nil
 		}
 	}
+	return nil
 }
 
-// saveQueryCount stores query count into metadata persister in json format.
-// The analysis stage can be restarted from the beginning even if it ends unexpectedly,
+// saveQueryCount stores metadata into metadata persister.
+// The analysis stage can be restarted from the middle even if it ends unexpectedly,
 // that's why count should be stored.
-func (e *Executor) saveQueryCount(ctx context.Context, queryCount map[string]int) {
-	if err := e.MetadataStore.SetStageMetadata(ctx, e.Stage.Id, queryCount); err != nil {
-		e.Logger.Error("failed to store query count to stage metadata", zap.Error(err))
+func (e *Executor) saveQueryCount(ctx context.Context) {
+	// Copy to local variable to avoid to lock in a long time.
+	e.mu.RLock()
+	qc := make(map[string]int, len(e.queryCount))
+	for k, v := range e.queryCount {
+		qc[k] = v
+	}
+	e.mu.RUnlock()
+
+	if err := e.MetadataStore.SetStageMetadata(ctx, e.Stage.Id, qc); err != nil {
+		e.Logger.Error("failed to store metadata", zap.Error(err))
 	}
 }
 
-// getQueryCount decodes metadata and populates query count to own field.
-// The returned value is the number of queries executed per provider.
-func (e *Executor) getQueryCount() map[string]int {
-	var m map[string]int
-	err := e.MetadataStore.GetStageMetadata(e.Stage.Id, &m)
+// setQueryCount decodes metadata and populates query count to own field.
+func (e *Executor) setQueryCount() {
+	err := e.MetadataStore.GetStageMetadata(e.Stage.Id, &e.queryCount)
 	if err != nil {
 		e.Logger.Error("failed to get stage metadata", zap.Error(err))
-		return make(map[string]int)
+		e.queryCount = make(map[string]int)
 	}
-	return m
 }

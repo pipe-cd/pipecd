@@ -279,9 +279,8 @@ type TerraformApplyStageOptions struct {
 type AnalysisStageOptions struct {
 	// How long the analysis process should be executed.
 	Duration Duration `json:"duration"`
-	// Maximum number of failed checks before the stage is considered as failure.
-	// TODO: Remove
-	FailureLimit     int               `json:"failureLimit"`
+	// TODO: Consider about how to handle a pod restart
+	// possible count of pod restarting
 	RestartThreshold int               `json:"restartThreshold"`
 	Metrics          []AnalysisMetrics `json:"metrics"`
 	Logs             []AnalysisLog     `json:"logs"`
