@@ -5,6 +5,7 @@ metadata:
   labels:
     app: simple
     pipecd.dev/managed-by: piped
+    change: first
 spec:
   replicas: 2
   selector:
@@ -31,6 +32,7 @@ metadata:
   labels:
     pipecd.dev/managed-by: piped
     app: simple
+    change: second
 spec:
   replicas: 2
   selector:

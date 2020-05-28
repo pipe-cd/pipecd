@@ -24,6 +24,28 @@ import (
 	"github.com/google/go-cmp/cmp/cmpopts"
 )
 
+type diffOption struct {
+	PathPrefix  string
+	IgnoreOrder bool
+}
+
+type DiffOption func(*diffOption)
+
+// WithPathPrefix configures the differ to returns only results where
+// their paths are prefixed by the given string.
+func WithPathPrefix(prefix string) DiffOption {
+	return func(o *diffOption) {
+		o.PathPrefix = prefix
+	}
+}
+
+// WithDiffIgnoreOrder configures differ to ignore the order of slice while calculating.
+func WithDiffIgnoreOrder() DiffOption {
+	return func(o *diffOption) {
+		o.IgnoreOrder = true
+	}
+}
+
 type PathStepType string
 
 const (
@@ -91,7 +113,7 @@ func (d DiffResult) String() string {
 
 type DiffResultList []DiffResult
 
-func (dl DiffResultList) Find(query string) (result DiffResult, err error, found bool) {
+func (dl DiffResultList) Find(query string) (result DiffResult, found bool, err error) {
 	reg, err := regexp.Compile(query)
 	if err != nil {
 		return
@@ -102,7 +124,7 @@ func (dl DiffResultList) Find(query string) (result DiffResult, err error, found
 		if !matched {
 			continue
 		}
-		return d, nil, true
+		return d, true, nil
 	}
 	return
 }
@@ -135,23 +157,30 @@ func DiffWorkload(first, second Manifest) string {
 	return ""
 }
 
-func Diff(first, second Manifest) DiffResultList {
-	var r diffReporter
-	cmp.Equal(first.u, second.u, cmp.Reporter(&r))
-	return r.diffs
-}
+func Diff(first, second Manifest, opts ...DiffOption) DiffResultList {
+	var options diffOption
+	for _, opt := range opts {
+		opt(&options)
+	}
 
-func DiffWithIgnoreOrder(first, second Manifest) DiffResultList {
-	var r diffReporter
-	cmp.Equal(first.u, second.u, cmp.Reporter(&r), cmpopts.SortSlices(sortLess))
-	return r.diffs
+	reporter := diffReporter{
+		pathPrefix: options.PathPrefix,
+	}
+
+	if !options.IgnoreOrder {
+		cmp.Equal(first.u, second.u, cmp.Reporter(&reporter))
+	} else {
+		cmp.Equal(first.u, second.u, cmp.Reporter(&reporter), cmpopts.SortSlices(sortLess))
+	}
+	return reporter.diffs
 }
 
 // diffReporter is a custom reporter that only records differences
 // detected during comparison.
 type diffReporter struct {
-	path  cmp.Path
-	diffs DiffResultList
+	path       cmp.Path
+	pathPrefix string
+	diffs      DiffResultList
 }
 
 func (r *diffReporter) PushStep(ps cmp.PathStep) {
@@ -161,12 +190,16 @@ func (r *diffReporter) PushStep(ps cmp.PathStep) {
 func (r *diffReporter) Report(rs cmp.Result) {
 	if !rs.Equal() {
 		var (
-			path   = convertDiffPath(r.path)
-			vx, vy = r.path.Last().Values()
+			path       = convertDiffPath(r.path)
+			pathString = path.String()
+			vx, vy     = r.path.Last().Values()
 		)
+		if !strings.HasPrefix(pathString, r.pathPrefix) {
+			return
+		}
 		r.diffs = append(r.diffs, DiffResult{
 			Path:       path,
-			PathString: path.String(),
+			PathString: pathString,
 			Before:     fmt.Sprintf("%+v", vx),
 			After:      fmt.Sprintf("%+v", vy),
 		})

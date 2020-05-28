@@ -65,7 +65,7 @@ func TestDiffResultListFind(t *testing.T) {
 				tc.list[i].Path = path
 			}
 
-			dr, err, ok := tc.list.Find(tc.query)
+			dr, ok, err := tc.list.Find(tc.query)
 
 			assert.Equal(t, tc.expectedErr, err)
 			if tc.expected == nil {
@@ -155,6 +155,7 @@ func TestDiff(t *testing.T) {
 	testcases := []struct {
 		name     string
 		yamlFile string
+		options  []DiffOption
 		result   DiffResultList
 	}{
 		{
@@ -162,8 +163,74 @@ func TestDiff(t *testing.T) {
 			yamlFile: "testdata/diff_no_diff.yaml",
 		},
 		{
-			name:     "one diff",
-			yamlFile: "testdata/diff_one_diff.yaml",
+			name:     "no diff with ignore order",
+			yamlFile: "testdata/diff_ignore_order_no_diff.yaml",
+			options: []DiffOption{
+				WithDiffIgnoreOrder(),
+			},
+		},
+		{
+			name:     "has some diffs",
+			yamlFile: "testdata/diff_multi_diffs.yaml",
+			result: []DiffResult{
+				{
+					Path: []PathStep{
+						{
+							Type: MapKeyPathStep,
+							Key:  "metadata",
+						},
+						{
+							Type: MapKeyPathStep,
+							Key:  "labels",
+						},
+						{
+							Type: MapKeyPathStep,
+							Key:  "change",
+						},
+					},
+					PathString: "metadata.labels.change",
+					Before:     "first",
+					After:      "second",
+				},
+				{
+					Path: []PathStep{
+						{
+							Type: MapKeyPathStep,
+							Key:  "spec",
+						},
+						{
+							Type: MapKeyPathStep,
+							Key:  "template",
+						},
+						{
+							Type: MapKeyPathStep,
+							Key:  "spec",
+						},
+						{
+							Type: MapKeyPathStep,
+							Key:  "containers",
+						},
+						{
+							Type:  SliceIndexPathStep,
+							Index: 0,
+						},
+						{
+							Type: MapKeyPathStep,
+							Key:  "image",
+						},
+					},
+					PathString: "spec.template.spec.containers.[0].image",
+					Before:     "gcr.io/kapetanios/pipecd-helloworld:v1.0.0",
+					After:      "gcr.io/kapetanios/pipecd-helloworld:v2.0.0",
+				},
+			},
+		},
+		{
+			name:     "one filtered by path prefix",
+			yamlFile: "testdata/diff_multi_diffs.yaml",
+			options: []DiffOption{
+				WithPathPrefix("spec.template"),
+			},
 			result: []DiffResult{
 				{
 					Path: []PathStep{
@@ -205,30 +272,8 @@ func TestDiff(t *testing.T) {
 			require.NoError(t, err)
 			require.Equal(t, 2, len(manifests))
 
-			dl := Diff(manifests[0], manifests[1])
+			dl := Diff(manifests[0], manifests[1], tc.options...)
 			assert.Equal(t, tc.result, dl)
-		})
-	}
-}
-
-func TestDiffWithIgnoreOrder(t *testing.T) {
-	testcases := []struct {
-		name     string
-		yamlFile string
-	}{
-		{
-			name:     "no diff",
-			yamlFile: "testdata/diff_ignore_order_no_diff.yaml",
-		},
-	}
-	for _, tc := range testcases {
-		t.Run(tc.name, func(t *testing.T) {
-			manifests, err := LoadManifestsFromYAMLFile(tc.yamlFile)
-			require.NoError(t, err)
-			require.Equal(t, 2, len(manifests))
-
-			dl := DiffWithIgnoreOrder(manifests[0], manifests[1])
-			assert.Equal(t, DiffResultList(nil), dl)
 		})
 	}
 }
