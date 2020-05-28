@@ -145,6 +145,15 @@ func (dl DiffResultList) FindAll(query string) (list []DiffResult) {
 	return
 }
 
+func (dl DiffResultList) FindByPrefix(prefix string) (list []DiffResult) {
+	for _, d := range dl {
+		if strings.HasPrefix(d.PathString, prefix) {
+			list = append(list, d)
+		}
+	}
+	return
+}
+
 func (dl DiffResultList) String() string {
 	ds := make([]string, 0, len(dl))
 	for _, d := range dl {

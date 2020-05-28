@@ -118,7 +118,7 @@ func TestDiffResultListFindAll(t *testing.T) {
 					After:      "bar",
 				},
 			},
-			query: `spec.template.spec.containers.\[\d+\].image`,
+			query: `^spec.template.spec.containers.\[\d+\].image$`,
 			expected: []DiffResult{
 				{
 					PathString: "spec.template.spec.containers.[0].image",

@@ -17,6 +17,7 @@ package kubernetes
 import (
 	"context"
 	"fmt"
+	"strings"
 	"time"
 
 	provider "github.com/kapetaniosci/pipe/pkg/app/piped/cloudprovider/kubernetes"
@@ -43,7 +44,11 @@ func (p *Planner) Plan(ctx context.Context, in planner.Input) (out planner.Outpu
 		return
 	}
 
+	// DEBUG
+	// Image changed
 	//in.MostRecentSuccessfulCommitHash = "626ad85b9c6c02c6409b9aa79ee433fb9b5507d7"
+	// Just a scale
+	//in.MostRecentSuccessfulCommitHash = "09add0800bffbf61bdedf8fb3ef439d7f1fad100"
 
 	// This is the first time to deploy this application
 	// or it was unabled to retrieve that value
@@ -97,32 +102,45 @@ func (p *Planner) Plan(ctx context.Context, in planner.Input) (out planner.Outpu
 func decideStrategy(olds, news []provider.Manifest) (progressive bool, desc string) {
 	oldWorkload, ok := findWorkload(olds)
 	if !ok {
-		desc = "Apply all manifests because there is no workload running"
+		desc = "Apply all manifests because it was unabled to find the currently running workloads"
 		return
 	}
 
 	newWorkload, ok := findWorkload(news)
 	if !ok {
-		desc = "Apply all manifests because there is no workload in the new manifests"
+		desc = "Apply all manifests because it was unabled to find workloads in the new manifests"
 		return
 	}
 
-	diff := provider.Diff(oldWorkload, newWorkload)
-	fmt.Println(diff)
-	progressive = true
-	desc = fmt.Sprintf("Do progressive deployment because image was changed to %s", "v1.0.0")
+	// If the workload's pod template was touched
+	// do progressive deployment with the specified pipeline.
+	var (
+		workloadDiffs = provider.Diff(oldWorkload, newWorkload, provider.WithPathPrefix("spec"))
+		templateDiffs = workloadDiffs.FindByPrefix("spec.template")
+	)
+	if len(templateDiffs) > 0 {
+		progressive = true
 
-	// If the workload' pod template or config/secret was touched
-	// let's do the specified progressive pipeline.
-	// out.Description = fmt.Sprintf("Do progressive deployment because image was changed to %s", "v1.0.0")
+		if msg, changed := checkImageChange(templateDiffs); changed {
+			desc = msg
+			return
+		}
 
-	// out.Description = fmt.Sprintf("Do progressive deployment because configmap %s was updated", "config")
+		desc = fmt.Sprintf("Progressive deployment because pod template of workload %s was changed", newWorkload.Key.Name)
+		return
+	}
 
-	// out.Description = fmt.Sprintf("Do progressive deployment because pod template for workload %s was changed", "config")
+	// If the config/secret was touched
+	// we also need to do progressive deployment to check run with the new config/secret content.
+	// desc = fmt.Sprintf("Do progressive deployment because configmap %s was updated", "config")
 
-	// // Otherwise, just apply the primary.
+	// Check if this is a scaling commit.
+	if msg, changed := checkReplicasChange(workloadDiffs); changed {
+		desc = msg
+		return
+	}
 
-	// out.Description = fmt.Sprintf("Scale workload %s from %d to %d", "deployment-name", 1, 2)
+	desc = "Apply all manifests"
 	return
 }
 
@@ -145,4 +163,48 @@ func findConfig(manifests []provider.Manifest) []provider.Manifest {
 		configs = append(configs, m)
 	}
 	return configs
+}
+
+func checkImageChange(diffList provider.DiffResultList) (string, bool) {
+	const containerImageQuery = `^spec.template.spec.containers.\[\d+\].image$`
+	imageDiffs := diffList.FindAll(containerImageQuery)
+
+	if len(imageDiffs) == 0 {
+		return "", false
+	}
+
+	images := make([]string, 0, len(imageDiffs))
+	for _, d := range imageDiffs {
+		beforeName, beforeTag := parseContainerImage(d.Before)
+		afterName, afterTag := parseContainerImage(d.After)
+
+		if beforeName == afterName {
+			images = append(images, fmt.Sprintf("image %s from %s to %s", beforeName, beforeTag, afterTag))
+		} else {
+			images = append(images, fmt.Sprintf("image %s:%s to %s:%s", beforeName, beforeTag, afterName, afterTag))
+		}
+	}
+	desc := fmt.Sprintf("Progressive deployment because of updating %s", strings.Join(images, ", "))
+	return desc, true
+}
+
+func checkReplicasChange(diffList provider.DiffResultList) (string, bool) {
+	const replicasQuery = `^spec.replicas$`
+	diff, found, _ := diffList.Find(replicasQuery)
+	if !found {
+		return "", false
+	}
+
+	desc := fmt.Sprintf("Scale workload from %s to %s", diff.Before, diff.After)
+	return desc, true
+}
+
+func parseContainerImage(image string) (name, tag string) {
+	parts := strings.Split(image, ":")
+	if len(parts) == 2 {
+		tag = parts[1]
+	}
+	paths := strings.Split(parts[0], "/")
+	name = paths[len(paths)-1]
+	return
 }
