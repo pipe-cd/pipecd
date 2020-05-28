@@ -23,7 +23,7 @@ import (
 	"github.com/kapetaniosci/pipe/pkg/model"
 )
 
-func buildPipeline(pp *config.DeploymentPipeline, now time.Time) []*model.PipelineStage {
+func buildProgressivePipeline(pp *config.DeploymentPipeline, now time.Time) []*model.PipelineStage {
 	var stages []config.PipelineStage
 	if pp != nil {
 		stages = pp.Stages
@@ -48,6 +48,32 @@ func buildPipeline(pp *config.DeploymentPipeline, now time.Time) []*model.Pipeli
 			Desc:       s.Desc,
 			Index:      int32(i),
 			Predefined: predefined,
+			Status:     model.StageStatus_STAGE_NOT_STARTED_YET,
+			CreatedAt:  now.Unix(),
+			UpdatedAt:  now.Unix(),
+		}
+		out = append(out, stage)
+	}
+
+	return out
+}
+
+func buildPipeline(now time.Time) []*model.PipelineStage {
+	stage, _ := planner.GetPredefinedStage(planner.PredefinedStageK8sUpdate)
+	stages := []config.PipelineStage{stage}
+
+	out := make([]*model.PipelineStage, 0, len(stages))
+	for i, s := range stages {
+		id := s.Id
+		if id == "" {
+			id = fmt.Sprintf("stage-%d", i)
+		}
+		stage := &model.PipelineStage{
+			Id:         id,
+			Name:       s.Name.String(),
+			Desc:       s.Desc,
+			Index:      int32(i),
+			Predefined: true,
 			Status:     model.StageStatus_STAGE_NOT_STARTED_YET,
 			CreatedAt:  now.Unix(),
 			UpdatedAt:  now.Unix(),

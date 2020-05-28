@@ -130,12 +130,13 @@ func (p *planner) Run(ctx context.Context) error {
 	p.deploymentConfig = cfg
 
 	in := pln.Input{
-		Deployment:               p.deployment,
-		LastSuccessfulCommitHash: p.lastSuccessfulCommitHash,
-		DeploymentConfig:         cfg,
-		RepoDir:                  gitRepo.GetPath(),
-		AppDir:                   filepath.Join(gitRepo.GetPath(), p.deployment.GitPath.Path),
-		Logger:                   p.logger,
+		Deployment:                     p.deployment,
+		MostRecentSuccessfulCommitHash: p.lastSuccessfulCommitHash,
+		DeploymentConfig:               cfg,
+		Repo:                           gitRepo,
+		RepoDir:                        gitRepo.GetPath(),
+		AppDir:                         filepath.Join(gitRepo.GetPath(), p.deployment.GitPath.Path),
+		Logger:                         p.logger,
 	}
 	out, err := planner.Plan(ctx, in)
 	if err == nil {

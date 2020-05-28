@@ -25,6 +25,7 @@ import (
 	"go.uber.org/zap"
 
 	"github.com/kapetaniosci/pipe/pkg/config"
+	"github.com/kapetaniosci/pipe/pkg/git"
 	"github.com/kapetaniosci/pipe/pkg/model"
 )
 
@@ -34,12 +35,13 @@ type Planner interface {
 
 type Input struct {
 	// Readonly deployment model.
-	Deployment               *model.Deployment
-	LastSuccessfulCommitHash string
-	DeploymentConfig         *config.Config
-	RepoDir                  string
-	AppDir                   string
-	Logger                   *zap.Logger
+	Deployment                     *model.Deployment
+	MostRecentSuccessfulCommitHash string
+	DeploymentConfig               *config.Config
+	Repo                           git.Repo
+	RepoDir                        string
+	AppDir                         string
+	Logger                         *zap.Logger
 }
 
 type Output struct {
