@@ -24,7 +24,6 @@ import (
 	"github.com/spf13/cobra"
 	"go.uber.org/zap"
 	"golang.org/x/sync/errgroup"
-	"k8s.io/client-go/tools/clientcmd"
 
 	"github.com/kapetaniosci/pipe/pkg/admin"
 	"github.com/kapetaniosci/pipe/pkg/app/api/service/pipedservice"
@@ -43,8 +42,6 @@ import (
 	"github.com/kapetaniosci/pipe/pkg/rpc/rpcauth"
 	"github.com/kapetaniosci/pipe/pkg/rpc/rpcclient"
 
-	// Import to load the needs plugins such as gcp, azure, oidc, openstack.
-	_ "k8s.io/client-go/plugin/pkg/client/auth"
 	// Import to preload all built-in executors to the default registry.
 	_ "github.com/kapetaniosci/pipe/pkg/app/piped/executor/registry"
 	// Import to preload all planners to the default registry.
@@ -56,14 +53,11 @@ type piped struct {
 	pipedID      string
 	pipedKeyFile string
 	configFile   string
-	tls          bool
-	certFile     string
-	apiAddress   string
-	adminPort    int
 
-	kubeconfig string
-	masterURL  string
-	namespace  string
+	tls        bool
+	certFile   string
+	apiAddress string
+	adminPort  int
 
 	binDir           string
 	useFakeAPIClient bool
@@ -87,14 +81,11 @@ func NewCommand() *cobra.Command {
 	cmd.Flags().StringVar(&p.pipedID, "piped-id", p.pipedID, "The unique identifier generated for this piped.")
 	cmd.Flags().StringVar(&p.pipedKeyFile, "piped-key-file", p.pipedKeyFile, "The path to the key generated for this piped.")
 	cmd.Flags().StringVar(&p.configFile, "config-file", p.configFile, "The path to the configuration file.")
+
 	cmd.Flags().BoolVar(&p.tls, "tls", p.tls, "Whether running the gRPC server with TLS or not.")
 	cmd.Flags().StringVar(&p.certFile, "cert-file", p.certFile, "The path to the TLS certificate file.")
 	cmd.Flags().StringVar(&p.apiAddress, "api-address", p.apiAddress, "The address used to connect to API server.")
 	cmd.Flags().IntVar(&p.adminPort, "admin-port", p.adminPort, "The port number used to run a HTTP server for admin tasks such as metrics, healthz.")
-
-	cmd.Flags().StringVar(&p.kubeconfig, "kube-config", p.kubeconfig, "Path to a kubeconfig. Only required if out-of-cluster.")
-	cmd.Flags().StringVar(&p.masterURL, "master", p.masterURL, "The address of the Kubernetes API server. Overrides any value in kubeconfig. Only required if out-of-cluster.")
-	cmd.Flags().StringVar(&p.namespace, "namespace", p.namespace, "The namespace where this piped is running.")
 
 	cmd.Flags().StringVar(&p.binDir, "bin-dir", p.binDir, "The path to directory where to install needed tools such as kubectl, helm, kustomize.")
 	cmd.Flags().BoolVar(&p.useFakeAPIClient, "use-fake-api-client", p.useFakeAPIClient, "Whether the fake api client should be used instead of the real one or not.")
@@ -154,13 +145,6 @@ func (p *piped) run(ctx context.Context, t cli.Telemetry) error {
 		})
 	}
 
-	// Build kubeconfig for initialing kubernetes clients later.
-	kubeConfig, err := clientcmd.BuildConfigFromFlags(p.masterURL, p.kubeconfig)
-	if err != nil {
-		t.Logger.Error("failed to build kube config", zap.Error(err))
-		return err
-	}
-
 	// Initialize git client.
 	gitClient, err := git.NewClient(cfg.Git.Username, cfg.Git.Email, t.Logger)
 	if err != nil {
@@ -174,26 +158,6 @@ func (p *piped) run(ctx context.Context, t cli.Telemetry) error {
 			t.Logger.Info("successfully cleaned gitClient")
 		}
 	}()
-
-	// Start running application state store.
-	{
-		s := appstatestore.NewStore(kubeConfig, p.gracePeriod, t.Logger)
-		group.Go(func() error {
-			return s.Run(ctx)
-		})
-		// TODO: Do not block other components until this component becomes ready.
-		if err := s.WaitForReady(ctx, time.Minute); err != nil {
-			return err
-		}
-	}
-
-	// Start running application state reporter.
-	{
-		r := appstatereporter.NewReporter(p.gracePeriod)
-		group.Go(func() error {
-			return r.Run(ctx)
-		})
-	}
 
 	// Start running application store.
 	var applicationLister applicationstore.Lister
@@ -223,6 +187,22 @@ func (p *piped) run(ctx context.Context, t cli.Telemetry) error {
 			return store.Run(ctx)
 		})
 		commandLister = store.Lister()
+	}
+
+	// Start running application state store.
+	{
+		s := appstatestore.NewStore(cfg, applicationLister, p.gracePeriod, t.Logger)
+		group.Go(func() error {
+			return s.Run(ctx)
+		})
+	}
+
+	// Start running application state reporter.
+	{
+		r := appstatereporter.NewReporter(p.gracePeriod)
+		group.Go(func() error {
+			return r.Run(ctx)
+		})
 	}
 
 	// Start running deployment controller.

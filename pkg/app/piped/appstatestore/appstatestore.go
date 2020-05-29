@@ -24,98 +24,143 @@ import (
 	"time"
 
 	"go.uber.org/zap"
-	restclient "k8s.io/client-go/rest"
+	"golang.org/x/sync/errgroup"
 
+	"github.com/kapetaniosci/pipe/pkg/app/piped/appstatestore/cloudrun"
+	"github.com/kapetaniosci/pipe/pkg/app/piped/appstatestore/kubernetes"
+	"github.com/kapetaniosci/pipe/pkg/app/piped/appstatestore/lambda"
+	"github.com/kapetaniosci/pipe/pkg/app/piped/appstatestore/terraform"
+	"github.com/kapetaniosci/pipe/pkg/config"
 	"github.com/kapetaniosci/pipe/pkg/model"
 )
 
+type applicationLister interface {
+	List() []*model.Application
+}
+
 type Store interface {
 	Run(ctx context.Context) error
-	WaitForReady(ctx context.Context, timeout time.Duration) error
-	GetAppLiveResources(appID string) ([]model.KubernetesResource, error)
+
+	KubernetesApplicationStateLister() KubernetesApplicationStateLister
 }
 
-// appStateStore syncs the live state of application with the cluster
-// and provides some functions for other components to query those states.
-type appStateStore struct {
-	kubeConfig    *restclient.Config
-	store         *store
-	firstSyncedCh chan error
-	gracePeriod   time.Duration
-	logger        *zap.Logger
+type KubernetesApplicationStateLister interface {
+	GetKubernetesAppLiveResources(appID, cloudProvider string) ([]model.KubernetesResource, error)
 }
 
-func NewStore(kubeConfig *restclient.Config, gracePeriod time.Duration, logger *zap.Logger) Store {
-	return &appStateStore{
-		kubeConfig: kubeConfig,
-		store: &store{
-			apps:      make(map[string]*appLiveNodes),
-			resources: make(map[string]appResource),
-		},
-		firstSyncedCh: make(chan error, 1),
-		gracePeriod:   gracePeriod,
-		logger:        logger,
-	}
+type KubernetesStore interface {
+	Run(ctx context.Context) error
+	GetKubernetesAppLiveResources(appID string) ([]model.KubernetesResource, error)
 }
 
-func (s *appStateStore) Run(ctx context.Context) error {
-	stopCh := make(chan struct{})
-	rf := reflector{
-		kubeConfig: s.kubeConfig,
-		onAdd:      s.store.onAddResource,
-		onUpdate:   s.store.onUpdateResource,
-		onDelete:   s.store.onDeleteResource,
-		stopCh:     stopCh,
-		logger:     s.logger.Named("reflector"),
-	}
-	if err := rf.start(ctx); err != nil {
-		s.firstSyncedCh <- err
-		return err
-	}
-	s.logger.Info("the reflector has done the first sync")
-	s.store.initialize()
-	s.logger.Info("the store has done the initializing")
-	close(s.firstSyncedCh)
+type TerraformStore interface {
+	Run(ctx context.Context) error
+}
 
-	s.logger.Info("DEBUG\n\n")
-	apps := []string{
-		"local-project/dev/simple",
-		"local-project/dev/canary",
-		"local-project/dev/bluegreen",
-	}
-	for _, app := range apps {
-		s.logger.Info(fmt.Sprintf("Application: %s", app))
+type CloudRunStore interface {
+	Run(ctx context.Context) error
+}
 
-		managingNodes := s.store.getManagingNodesForApp(app)
-		s.logger.Info(fmt.Sprintf("\tmanaging nodes %d", len(managingNodes)))
-		for k, n := range managingNodes {
-			s.logger.Info(fmt.Sprintf("\t\t%s: %s, %s", k, n.firstResourceKey, n.matchResourceKey))
+type LambdaStore interface {
+	Run(ctx context.Context) error
+}
+
+// store manages a list of particular stores for all cloud providers.
+type store struct {
+	// Map thats contains a list of KubernetesStore where key is the cloud provider name.
+	kubernetesStores map[string]KubernetesStore
+	// Map thats contains a list of TerraformStore where key is the cloud provider name.
+	terraformStores map[string]TerraformStore
+	// Map thats contains a list of CloudRunStore where key is the cloud provider name.
+	cloudrunStores map[string]CloudRunStore
+	// Map thats contains a list of LambdaStore where key is the cloud provider name.
+	lambdaStores map[string]LambdaStore
+
+	gracePeriod time.Duration
+	logger      *zap.Logger
+}
+
+func NewStore(cfg *config.PipedSpec, appLister applicationLister, gracePeriod time.Duration, logger *zap.Logger) Store {
+	logger = logger.Named("appstatestore")
+
+	s := &store{
+		kubernetesStores: make(map[string]KubernetesStore),
+		terraformStores:  make(map[string]TerraformStore),
+		cloudrunStores:   make(map[string]CloudRunStore),
+		lambdaStores:     make(map[string]LambdaStore),
+		gracePeriod:      gracePeriod,
+		logger:           logger,
+	}
+	for _, cp := range cfg.CloudProviders {
+		switch cp.Type {
+		case model.CloudProviderKubernetes:
+			store := kubernetes.NewStore(cp.KubernetesConfig, cp.Name, appLister, logger)
+			s.kubernetesStores[cp.Name] = store
+
+		case model.CloudProviderTerraform:
+			store := terraform.NewStore(cp.TerraformConfig, cp.Name, appLister, logger)
+			s.terraformStores[cp.Name] = store
+
+		case model.CloudProviderCloudRun:
+			store := cloudrun.NewStore(cp.CloudRunConfig, cp.Name, appLister, logger)
+			s.cloudrunStores[cp.Name] = store
+
+		case model.CloudProviderLambda:
+			store := lambda.NewStore(cp.LambdaConfig, cp.Name, appLister, logger)
+			s.lambdaStores[cp.Name] = store
 		}
-
-		dependedNodes := s.store.getDependedNodesForApp(app)
-		s.logger.Info(fmt.Sprintf("\tdepended nodes %d", len(dependedNodes)))
-		for k, n := range dependedNodes {
-			s.logger.Info(fmt.Sprintf("\t\t%s: %s, %s", k, n.firstResourceKey, n.matchResourceKey))
-		}
 	}
 
-	<-ctx.Done()
-	close(stopCh)
-	return nil
+	return s
 }
 
-func (s *appStateStore) WaitForReady(ctx context.Context, timeout time.Duration) error {
-	ctx, cancel := context.WithTimeout(ctx, timeout)
-	defer cancel()
+func (s *store) Run(ctx context.Context) error {
+	s.logger.Info("start running appsatestore")
 
-	select {
-	case <-ctx.Done():
-		return nil
-	case err := <-s.firstSyncedCh:
-		return err
+	group, ctx := errgroup.WithContext(ctx)
+
+	for i := range s.kubernetesStores {
+		group.Go(func() error {
+			return s.kubernetesStores[i].Run(ctx)
+		})
 	}
+
+	for i := range s.terraformStores {
+		group.Go(func() error {
+			return s.terraformStores[i].Run(ctx)
+		})
+	}
+
+	for i := range s.cloudrunStores {
+		group.Go(func() error {
+			return s.cloudrunStores[i].Run(ctx)
+		})
+	}
+
+	for i := range s.lambdaStores {
+		group.Go(func() error {
+			return s.lambdaStores[i].Run(ctx)
+		})
+	}
+
+	err := group.Wait()
+	if err == nil {
+		s.logger.Info("all state stores have been stopped")
+	} else {
+		s.logger.Error("all state stores have been stopped", zap.Error(err))
+	}
+	return err
 }
 
-func (s *appStateStore) GetAppLiveResources(appID string) ([]model.KubernetesResource, error) {
-	return nil, nil
+func (s *store) KubernetesApplicationStateLister() KubernetesApplicationStateLister {
+	return s
+}
+
+func (s *store) GetKubernetesAppLiveResources(appID, cloudProvider string) ([]model.KubernetesResource, error) {
+	ks, ok := s.kubernetesStores[cloudProvider]
+	if !ok {
+		return nil, fmt.Errorf("no registered cloud provider: %s", cloudProvider)
+	}
+
+	return ks.GetKubernetesAppLiveResources(appID)
 }

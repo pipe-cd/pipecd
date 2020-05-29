@@ -168,6 +168,7 @@ func (p *PipedCloudProvider) UnmarshalJSON(data []byte) error {
 
 type CloudProviderKubernetesConfig struct {
 	//AllowNamespaces []string `json:"allowNamespaces"`
+	MasterURL      string `json:"masterURL"`
 	KubeConfigPath string `json:"kubeConfigPath"`
 }
 

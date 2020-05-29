@@ -25,8 +25,6 @@ go_library(
         "//pkg/rpc/rpcauth:go_default_library",
         "//pkg/rpc/rpcclient:go_default_library",
         "@com_github_spf13_cobra//:go_default_library",
-        "@io_k8s_client_go//plugin/pkg/client/auth:go_default_library",
-        "@io_k8s_client_go//tools/clientcmd:go_default_library",
         "@org_golang_x_sync//errgroup:go_default_library",
         "@org_uber_go_zap//:go_default_library",
     ],

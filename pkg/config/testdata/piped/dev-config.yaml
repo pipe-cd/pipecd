@@ -15,4 +15,4 @@ spec:
     - name: kubernetes-default
       type: KUBERNETES
       config:
-        kubeconfigPath: $HOME/.kube/config
+        kubeconfigPath: /Users/a13705/.kube/config
