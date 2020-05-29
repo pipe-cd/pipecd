@@ -25,6 +25,7 @@ import (
 	"github.com/kapetaniosci/pipe/pkg/model"
 )
 
+// Planner plans the deployment pipeline for kubernetes application.
 type Planner struct {
 }
 
@@ -37,6 +38,7 @@ func Register(r registerer) {
 	r.Register(model.ApplicationKind_KUBERNETES, &Planner{})
 }
 
+// Plan decides which pipeline should be used for the given input.
 func (p *Planner) Plan(ctx context.Context, in planner.Input) (out planner.Output, err error) {
 	cfg := in.DeploymentConfig.KubernetesDeploymentSpec
 	if cfg == nil {
@@ -51,17 +53,21 @@ func (p *Planner) Plan(ctx context.Context, in planner.Input) (out planner.Outpu
 	//in.MostRecentSuccessfulCommitHash = "09add0800bffbf61bdedf8fb3ef439d7f1fad100"
 
 	// This is the first time to deploy this application
-	// or it was unabled to retrieve that value
+	// or it was unable to retrieve that value.
 	// We just apply all manifests.
 	if in.MostRecentSuccessfulCommitHash == "" {
 		out.Stages = buildPipeline(time.Now())
-		out.Description = fmt.Sprintf("Apply all manifests because no most recent successful commit")
+		out.Description = fmt.Sprintf("Apply all manifests because it was unable to find the most recent successful commit.")
 		return
 	}
 
 	// If the commit is a revert one. Let's apply primary to rollback.
-	// TODO: Determine if the new commit is a revert one.
-	// out.Description = fmt.Sprintf("Rollback from %s", in.MostRecentSuccessfulCommitHash)
+	// TODO: Find a better way to determine the revert commit.
+	if strings.Contains(in.Deployment.Trigger.Commit.Message, "/pipecd rollback ") {
+		out.Stages = buildPipeline(time.Now())
+		out.Description = fmt.Sprintf("Rollback from commit %s.", in.MostRecentSuccessfulCommitHash)
+		return
+	}
 
 	// Load previous deployed manifests and new manifests to compare.
 	pv := provider.NewProvider(in.RepoDir, in.AppDir, cfg.Input, in.Logger)
@@ -72,18 +78,21 @@ func (p *Planner) Plan(ctx context.Context, in planner.Input) (out planner.Outpu
 	// Load manifests of the new commit.
 	newManifests, err := pv.LoadManifests(ctx)
 	if err != nil {
+		err = fmt.Errorf("failed to load new manifests: %v", err)
 		return
 	}
 
 	// Checkout to the most recent successful commit to load its manifests.
 	err = in.Repo.Checkout(ctx, in.MostRecentSuccessfulCommitHash)
 	if err != nil {
+		err = fmt.Errorf("failed to checkout to commit %s: %v", in.MostRecentSuccessfulCommitHash, err)
 		return
 	}
 
 	// Load manifests of the previously applied commit.
 	oldManifests, err := pv.LoadManifests(ctx)
 	if err != nil {
+		err = fmt.Errorf("failed to load previously deployed manifests: %v", err)
 		return
 	}
 
@@ -102,13 +111,13 @@ func (p *Planner) Plan(ctx context.Context, in planner.Input) (out planner.Outpu
 func decideStrategy(olds, news []provider.Manifest) (progressive bool, desc string) {
 	oldWorkload, ok := findWorkload(olds)
 	if !ok {
-		desc = "Apply all manifests because it was unabled to find the currently running workloads"
+		desc = "Apply all manifests because it was unable to find the currently running workloads."
 		return
 	}
 
 	newWorkload, ok := findWorkload(news)
 	if !ok {
-		desc = "Apply all manifests because it was unabled to find workloads in the new manifests"
+		desc = "Apply all manifests because it was unable to find workloads in the new manifests."
 		return
 	}
 
@@ -126,7 +135,7 @@ func decideStrategy(olds, news []provider.Manifest) (progressive bool, desc stri
 			return
 		}
 
-		desc = fmt.Sprintf("Progressive deployment because pod template of workload %s was changed", newWorkload.Key.Name)
+		desc = fmt.Sprintf("Progressive deployment because pod template of workload %s was changed.", newWorkload.Key.Name)
 		return
 	}
 
@@ -184,7 +193,7 @@ func checkImageChange(diffList provider.DiffResultList) (string, bool) {
 			images = append(images, fmt.Sprintf("image %s:%s to %s:%s", beforeName, beforeTag, afterName, afterTag))
 		}
 	}
-	desc := fmt.Sprintf("Progressive deployment because of updating %s", strings.Join(images, ", "))
+	desc := fmt.Sprintf("Progressive deployment because of updating %s.", strings.Join(images, ", "))
 	return desc, true
 }
 
@@ -195,7 +204,7 @@ func checkReplicasChange(diffList provider.DiffResultList) (string, bool) {
 		return "", false
 	}
 
-	desc := fmt.Sprintf("Scale workload from %s to %s", diff.Before, diff.After)
+	desc := fmt.Sprintf("Scale workload from %s to %s.", diff.Before, diff.After)
 	return desc, true
 }
 
