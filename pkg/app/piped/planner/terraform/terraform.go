@@ -16,11 +16,14 @@ package terraform
 
 import (
 	"context"
+	"fmt"
+	"time"
 
 	"github.com/kapetaniosci/pipe/pkg/app/piped/planner"
 	"github.com/kapetaniosci/pipe/pkg/model"
 )
 
+// Planner plans the deployment pipeline for terraform application.
 type Planner struct {
 }
 
@@ -33,6 +36,21 @@ func Register(r registerer) {
 	r.Register(model.ApplicationKind_TERRAFORM, &Planner{})
 }
 
+// Plan decides which pipeline should be used for the given input.
 func (p *Planner) Plan(ctx context.Context, in planner.Input) (out planner.Output, err error) {
+	cfg := in.DeploymentConfig.TerraformDeploymentSpec
+	if cfg == nil {
+		err = fmt.Errorf("malfored deployment configuration: missing TerraformDeploymentSpec")
+		return
+	}
+
+	if cfg.Pipeline != nil && len(cfg.Pipeline.Stages) > 0 {
+		out.Stages = buildProgressivePipeline(cfg.Pipeline.Stages, time.Now())
+		out.Description = "Deploy terraform with the specified progressive pipeline."
+		return
+	}
+
+	out.Stages = builDefaultPipeline(time.Now())
+	out.Description = "Deploy terraform with the default pipeline."
 	return
 }

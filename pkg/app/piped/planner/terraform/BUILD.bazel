@@ -2,11 +2,15 @@ load("@io_bazel_rules_go//go:def.bzl", "go_library")
 
 go_library(
     name = "go_default_library",
-    srcs = ["terraform.go"],
+    srcs = [
+        "pipeline.go",
+        "terraform.go",
+    ],
     importpath = "github.com/kapetaniosci/pipe/pkg/app/piped/planner/terraform",
     visibility = ["//visibility:public"],
     deps = [
         "//pkg/app/piped/planner:go_default_library",
+        "//pkg/config:go_default_library",
         "//pkg/model:go_default_library",
     ],
 )
