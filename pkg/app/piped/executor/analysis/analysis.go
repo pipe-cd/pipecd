@@ -23,6 +23,7 @@ import (
 	"go.uber.org/zap"
 	"golang.org/x/sync/errgroup"
 
+	httpprovider "github.com/kapetaniosci/pipe/pkg/app/piped/analysisprovider/http"
 	"github.com/kapetaniosci/pipe/pkg/app/piped/analysisprovider/log"
 	"github.com/kapetaniosci/pipe/pkg/app/piped/analysisprovider/metrics"
 	"github.com/kapetaniosci/pipe/pkg/app/piped/executor"
@@ -75,9 +76,10 @@ func (e *Executor) Execute(sig executor.StopSignal) model.StageStatus {
 			continue
 		}
 		eg.Go(func() error {
-			return e.runAnalysis(ctx, time.Duration(m.Interval), provider.Type(), func(ctx context.Context) (bool, error) {
+			runner := func(ctx context.Context) (bool, error) {
 				return provider.RunQuery(ctx, m.Query, m.Expected)
-			}, m.FailureLimit)
+			}
+			return e.runAnalysis(ctx, time.Duration(m.Interval), provider.Type(), runner, m.FailureLimit)
 		})
 	}
 	// Run analyses with logging providers.
@@ -89,14 +91,21 @@ func (e *Executor) Execute(sig executor.StopSignal) model.StageStatus {
 			continue
 		}
 		eg.Go(func() error {
-			return e.runAnalysis(ctx, time.Duration(l.Interval), provider.Type(), func(ctx context.Context) (bool, error) {
+			runner := func(ctx context.Context) (bool, error) {
 				return provider.RunQuery(l.Query, l.FailureLimit)
-			}, l.FailureLimit)
+			}
+			return e.runAnalysis(ctx, time.Duration(l.Interval), provider.Type(), runner, l.FailureLimit)
 		})
 	}
-	// TODO: Make HTTP analysis part of metrics provider.
-	for range options.Https {
-
+	// Run analyses with http providers.
+	for _, h := range options.Https {
+		provider := httpprovider.NewProvider(time.Duration(h.Timeout))
+		eg.Go(func() error {
+			runner := func(ctx context.Context) (bool, error) {
+				return provider.Run(ctx, &h)
+			}
+			return e.runAnalysis(ctx, time.Duration(h.Interval), provider.Type(), runner, h.FailureLimit)
+		})
 	}
 
 	if err := eg.Wait(); err != nil {

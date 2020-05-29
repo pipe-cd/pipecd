@@ -21,6 +21,8 @@ import (
 	"fmt"
 	"net/http"
 	"time"
+
+	"github.com/kapetaniosci/pipe/pkg/config"
 )
 
 const (
@@ -45,18 +47,34 @@ func NewProvider(timeout time.Duration) *Provider {
 	}
 }
 
-// Run sends the given HTTP request and then evaluate whether the response is expected one.
-func (p *Provider) Run(ctx context.Context, req *http.Request, expectedCode int, expectedResponse string) (bool, error) {
-	req = req.WithContext(ctx)
+// Run sends an HTTP request and then evaluate whether the response is expected one.
+func (p *Provider) Run(ctx context.Context, cfg *config.AnalysisHTTP) (bool, error) {
+	req, err := p.makeRequest(ctx, cfg)
+	if err != nil {
+		return false, err
+	}
+
 	res, err := p.client.Do(req)
 	if err != nil {
 		return false, err
 	}
 	defer res.Body.Close()
 
-	if res.StatusCode != expectedCode {
-		return false, fmt.Errorf("unexpected status code %d", expectedCode)
+	if res.StatusCode != cfg.ExpectedCode {
+		return false, fmt.Errorf("unexpected status code %d", res.StatusCode)
 	}
 	// TODO: Decide how to check if the body is expected one.
 	return true, nil
+}
+
+func (p *Provider) makeRequest(ctx context.Context, cfg *config.AnalysisHTTP) (*http.Request, error) {
+	req, err := http.NewRequestWithContext(ctx, cfg.Method, cfg.URL, nil)
+	if err != nil {
+		return nil, err
+	}
+	req.Header = make(http.Header, len(cfg.Headers))
+	for _, h := range cfg.Headers {
+		req.Header.Set(h.Key, h.Value)
+	}
+	return req, nil
 }
