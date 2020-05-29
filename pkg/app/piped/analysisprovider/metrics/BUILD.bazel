@@ -2,11 +2,17 @@ load("@io_bazel_rules_go//go:def.bzl", "go_library")
 
 go_library(
     name = "go_default_library",
-    srcs = ["provider.go"],
+    srcs = [
+        "factory.go",
+        "provider.go",
+    ],
     importpath = "github.com/kapetaniosci/pipe/pkg/app/piped/analysisprovider/metrics",
     visibility = ["//visibility:public"],
     deps = [
         "//pkg/app/piped/analysisprovider:go_default_library",
+        "//pkg/app/piped/analysisprovider/metrics/datadog:go_default_library",
+        "//pkg/app/piped/analysisprovider/metrics/prometheus:go_default_library",
         "//pkg/config:go_default_library",
+        "@org_uber_go_zap//:go_default_library",
     ],
 )

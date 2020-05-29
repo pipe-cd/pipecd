@@ -17,7 +17,6 @@ package analysis
 import (
 	"context"
 	"fmt"
-	"io/ioutil"
 	"sync"
 	"time"
 
@@ -25,12 +24,8 @@ import (
 	"golang.org/x/sync/errgroup"
 
 	"github.com/kapetaniosci/pipe/pkg/app/piped/analysisprovider/log"
-	"github.com/kapetaniosci/pipe/pkg/app/piped/analysisprovider/log/stackdriver"
 	"github.com/kapetaniosci/pipe/pkg/app/piped/analysisprovider/metrics"
-	"github.com/kapetaniosci/pipe/pkg/app/piped/analysisprovider/metrics/datadog"
-	"github.com/kapetaniosci/pipe/pkg/app/piped/analysisprovider/metrics/prometheus"
 	"github.com/kapetaniosci/pipe/pkg/app/piped/executor"
-	"github.com/kapetaniosci/pipe/pkg/config"
 	"github.com/kapetaniosci/pipe/pkg/model"
 )
 
@@ -69,10 +64,12 @@ func (e *Executor) Execute(sig executor.StopSignal) model.StageStatus {
 
 	ctx, cancel := context.WithTimeout(ctx, time.Duration(options.Duration))
 	defer cancel()
+
 	eg, ctx := errgroup.WithContext(ctx)
 	// Run analyses with metrics providers.
+	mf := metrics.NewFactory(e.Logger)
 	for _, m := range options.Metrics {
-		provider, err := e.newMetricsProvider(&m)
+		provider, err := e.newMetricsProvider(m.Provider, mf)
 		if err != nil {
 			e.LogPersister.AppendError(err.Error())
 			continue
@@ -84,8 +81,9 @@ func (e *Executor) Execute(sig executor.StopSignal) model.StageStatus {
 		})
 	}
 	// Run analyses with logging providers.
+	lf := log.NewFactory(e.Logger)
 	for _, l := range options.Logs {
-		provider, err := e.newLogProvider(&l)
+		provider, err := e.newLogProvider(l.Provider, lf)
 		if err != nil {
 			e.LogPersister.AppendError(err.Error())
 			continue
@@ -106,81 +104,6 @@ func (e *Executor) Execute(sig executor.StopSignal) model.StageStatus {
 	}
 
 	return model.StageStatus_STAGE_SUCCESS
-}
-
-// newMetricsProvider generates an appropriate metrics provider according to analysis metrics config.
-func (e *Executor) newMetricsProvider(analysisMetrics *config.AnalysisMetrics) (metrics.Provider, error) {
-	// TODO: Address the case when using template
-	providerCfg, ok := e.PipedConfig.GetProvider(analysisMetrics.Provider)
-	if !ok {
-		return nil, fmt.Errorf("unknown provider name %s", analysisMetrics.Provider)
-	}
-
-	var provider metrics.Provider
-	switch {
-	case providerCfg.Prometheus != nil:
-		cfg := providerCfg.Prometheus
-		// TODO: Decide the way to authenticate.
-		/*		username, err := ioutil.ReadFile(cfg.UsernameFile)
-				if err != nil {
-					return nil, err
-				}
-				password, err := ioutil.ReadFile(cfg.PasswordFile)
-				if err != nil {
-					return nil, err
-				}
-				provider, err = prometheus.NewProvider(cfg.Address, string(username), string(password))
-		*/
-		var err error
-		provider, err = prometheus.NewProvider(cfg.Address, "", "", e.LogPersister)
-		if err != nil {
-			return nil, err
-		}
-	case providerCfg.Datadog != nil:
-		cfg := providerCfg.Datadog
-		apiKey, err := ioutil.ReadFile(cfg.APIKeyFile)
-		if err != nil {
-			return nil, err
-		}
-		applicationKey, err := ioutil.ReadFile(cfg.ApplicationKeyFile)
-		if err != nil {
-			return nil, err
-		}
-		provider, err = datadog.NewProvider(cfg.Address, string(apiKey), string(applicationKey))
-		if err != nil {
-			return nil, err
-		}
-	default:
-		return nil, fmt.Errorf("provider config not found")
-	}
-	return provider, nil
-}
-
-// newLogProvider generates an appropriate log provider according to analysis log config.
-func (e *Executor) newLogProvider(analysisLog *config.AnalysisLog) (log.Provider, error) {
-	// TODO: Address the case when using template
-	providerCfg, ok := e.PipedConfig.GetProvider(analysisLog.Provider)
-	if !ok {
-		return nil, fmt.Errorf("unknown provider name %s", analysisLog.Provider)
-	}
-
-	var provider log.Provider
-	switch {
-	case providerCfg.Stackdriver != nil:
-		cfg := providerCfg.Stackdriver
-		sa, err := ioutil.ReadFile(cfg.ServiceAccountFile)
-		if err != nil {
-			return nil, err
-		}
-		provider, err = stackdriver.NewProvider(sa)
-		if err != nil {
-			return nil, err
-		}
-
-	default:
-		return nil, fmt.Errorf("provider config not found")
-	}
-	return provider, nil
 }
 
 // runAnalysis calls `runQuery` function at the given interval and reports back to failureCh
@@ -242,4 +165,30 @@ func (e *Executor) setQueryCount() {
 		e.Logger.Error("failed to get stage metadata", zap.Error(err))
 		e.queryCount = make(map[string]int)
 	}
+}
+
+func (e *Executor) newMetricsProvider(providerName string, factory *metrics.Factory) (metrics.Provider, error) {
+	// TODO: Address the case when using template
+	cfg, ok := e.PipedConfig.GetProvider(providerName)
+	if !ok {
+		return nil, fmt.Errorf("unknown provider name %s", providerName)
+	}
+	provider, err := factory.NewProvider(&cfg)
+	if err != nil {
+		return nil, err
+	}
+	return provider, nil
+}
+
+func (e *Executor) newLogProvider(providerName string, factory *log.Factory) (log.Provider, error) {
+	// TODO: Address the case when using template
+	cfg, ok := e.PipedConfig.GetProvider(providerName)
+	if !ok {
+		return nil, fmt.Errorf("unknown provider name %s", providerName)
+	}
+	provider, err := factory.NewProvider(&cfg)
+	if err != nil {
+		return nil, err
+	}
+	return provider, nil
 }

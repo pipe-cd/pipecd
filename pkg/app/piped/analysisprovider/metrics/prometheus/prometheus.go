@@ -23,8 +23,8 @@ import (
 	"github.com/prometheus/client_golang/api"
 	v1 "github.com/prometheus/client_golang/api/prometheus/v1"
 	"github.com/prometheus/common/model"
+	"go.uber.org/zap"
 
-	"github.com/kapetaniosci/pipe/pkg/app/piped/executor"
 	"github.com/kapetaniosci/pipe/pkg/config"
 )
 
@@ -39,11 +39,11 @@ type Provider struct {
 	username string
 	password string
 
-	timeout      time.Duration
-	logPersister executor.LogPersister
+	timeout time.Duration
+	logger  *zap.Logger
 }
 
-func NewProvider(address, username, password string, logPersister executor.LogPersister) (*Provider, error) {
+func NewProvider(address, username, password string, logger *zap.Logger) (*Provider, error) {
 	// TODO: Decide the way to authenticate.
 	client, err := api.NewClient(api.Config{
 		Address: address,
@@ -53,11 +53,11 @@ func NewProvider(address, username, password string, logPersister executor.LogPe
 	}
 
 	return &Provider{
-		api:          v1.NewAPI(client),
-		username:     username,
-		password:     password,
-		timeout:      defaultTimeout,
-		logPersister: logPersister,
+		api:      v1.NewAPI(client),
+		username: username,
+		password: password,
+		timeout:  defaultTimeout,
+		logger:   logger,
 	}, nil
 }
 
@@ -74,7 +74,7 @@ func (p *Provider) RunQuery(ctx context.Context, query string, expected config.A
 		return false, err
 	}
 	for _, w := range warnings {
-		p.logPersister.AppendInfo(w)
+		p.logger.Warn(w)
 	}
 	// TODO: Address the case of comparing with baseline
 	return p.evaluate(expected, response)

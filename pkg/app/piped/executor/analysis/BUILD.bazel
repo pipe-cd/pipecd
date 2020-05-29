@@ -9,8 +9,6 @@ go_library(
         "//pkg/app/piped/analysisprovider/log:go_default_library",
         "//pkg/app/piped/analysisprovider/log/stackdriver:go_default_library",
         "//pkg/app/piped/analysisprovider/metrics:go_default_library",
-        "//pkg/app/piped/analysisprovider/metrics/datadog:go_default_library",
-        "//pkg/app/piped/analysisprovider/metrics/prometheus:go_default_library",
         "//pkg/app/piped/executor:go_default_library",
         "//pkg/config:go_default_library",
         "//pkg/model:go_default_library",
