@@ -5,5 +5,8 @@ go_library(
     srcs = ["provider.go"],
     importpath = "github.com/kapetaniosci/pipe/pkg/app/piped/analysisprovider/metrics",
     visibility = ["//visibility:public"],
-    deps = ["//pkg/config:go_default_library"],
+    deps = [
+        "//pkg/app/piped/analysisprovider:go_default_library",
+        "//pkg/config:go_default_library",
+    ],
 )

@@ -318,17 +318,22 @@ type AnalysisLog struct {
 }
 
 type AnalysisHTTP struct {
-	URL    string
-	Method string
+	URL    string `json:"url"`
+	Method string `json:"method"`
 	// Custom headers to set in the request. HTTP allows repeated headers.
-	Headers          []string
-	ExpectedStatus   string
-	ExpectedResponse string
-	Interval         Duration
+	Headers          []AnalysisHeader `json:"headers"`
+	ExpectedCode     int              `json:"expectedCode"`
+	ExpectedResponse string           `json:"expectedResponse"`
+	Interval         Duration         `json:"interval"`
 	// Maximum number of failed checks before the response is considered as failure.
 	FailureLimit int      `json:"failureLimit"`
 	Timeout      Duration `json:"timeout"`
 	UseTemplate  string   `json:"useTemplate"`
+}
+
+type AnalysisHeader struct {
+	Key   string `json:"key"`
+	Value string `json:"value"`
 }
 
 // AnalysisDynamic contains settings for analysis by comparing  with dynamic data.

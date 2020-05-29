@@ -55,7 +55,7 @@ func Register(r registerer) {
 }
 
 // Execute runs multiple analyses that execute queries against analysis providers at regular intervals.
-// An executor runs multiple analyses, an analysis runs multiple queries.
+// An executor runs multiple analyses, an analysis may run a query multiple times.
 func (e *Executor) Execute(sig executor.StopSignal) model.StageStatus {
 	ctx := sig.Context()
 	e.setQueryCount()
@@ -216,7 +216,6 @@ func (e *Executor) runAnalysis(ctx context.Context, interval time.Duration, prov
 			return nil
 		}
 	}
-	return nil
 }
 
 // saveQueryCount stores metadata into metadata persister.

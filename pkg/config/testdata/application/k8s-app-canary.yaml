@@ -61,13 +61,14 @@ spec:
                 resource.type="k8s_container"
                 resource.labels.cluster_name="cluster-1"
                 resource.labels.namespace_name="stg"
+                resource.labels.pod_id="pod1"
               interval: 1m
               failureLimit: 3
               provider: stackdriver-dev
           https:
             - url: https://canary-endpoint.dev
               method: GET
-              expected: 200
+              expectedCode: 200
               failureLimit: 1
               interval: 1m
       - name: K8S_PRIMARY_UPDATE
@@ -186,7 +187,7 @@ spec:
             https:
               - url: https://canary-endpoint.dev
                 method: GET
-                expected: 200
+                expectedCode: 200
                 interval: 1m
       - name: K8S_PRIMARY_UPDATE
       - name: K8S_CANARY_CLEAN

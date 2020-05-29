@@ -12,14 +12,9 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-package log
+package analysisprovider
 
-import "github.com/kapetaniosci/pipe/pkg/app/piped/analysisprovider"
-
-// Provider represents a client for log provider which provides logs for analysis.
+// Provider represents a client for analysis provider which provides data for analysis.
 type Provider interface {
-	analysisprovider.Provider
-	// RunQuery runs the given query against the log provider,
-	// and then checks if the error is lower than the threshold.
-	RunQuery(query string, threshold int) (result bool, err error)
+	Type() string
 }
