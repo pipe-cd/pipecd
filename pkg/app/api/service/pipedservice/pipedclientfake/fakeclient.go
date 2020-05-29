@@ -103,6 +103,13 @@ func (c *fakeClient) Ping(ctx context.Context, req *pipedservice.PingRequest, op
 	return &pipedservice.PingResponse{}, nil
 }
 
+// ReportPipedMeta is sent by piped while starting up to report its metadata
+// such as configured cloud providers.
+func (c *fakeClient) ReportPipedMeta(ctx context.Context, req *pipedservice.ReportPipedMetaRequest, opts ...grpc.CallOption) (*pipedservice.ReportPipedMetaResponse, error) {
+	c.logger.Info("received ReportPipedMeta rpc", zap.Any("request", req))
+	return &pipedservice.ReportPipedMetaResponse{}, nil
+}
+
 // ListApplications returns a list of registered applications
 // that should be managed by the requested piped.
 // Disabled applications should not be included in the response.

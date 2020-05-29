@@ -25,6 +25,7 @@ import "pkg/model/application.proto";
 import "pkg/model/application_state.proto";
 import "pkg/model/deployment.proto";
 import "pkg/model/logblock.proto";
+import "pkg/model/piped.proto";
 import "pkg/model/piped_stats.proto";
 
 service PipedService {
@@ -33,6 +34,10 @@ service PipedService {
     // The cache data may be lost anytime so we need a singleton Persister
     // to persist those data into datastore every n minutes.
     rpc Ping(PingRequest) returns (PingResponse) {}
+
+    // ReportPipedMeta is sent by piped while starting up to report its metadata
+    // such as configured cloud providers.
+    rpc ReportPipedMeta(ReportPipedMetaRequest) returns (ReportPipedMetaResponse) {}
 
     // ListApplications returns a list of registered applications
     // that should be managed by the requested piped.
@@ -120,6 +125,13 @@ message PingRequest {
 
 message PingResponse {
     int64 ping_interval = 1;
+}
+
+message ReportPipedMetaRequest {
+    repeated pipe.model.Piped.CloudProvider cloud_providers = 1;
+}
+
+message ReportPipedMetaResponse {
 }
 
 message ListApplicationsRequest {

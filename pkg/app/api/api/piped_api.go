@@ -70,6 +70,12 @@ func (a *PipedAPI) Ping(ctx context.Context, req *pipedservice.PingRequest) (*pi
 	return nil, status.Error(codes.Unimplemented, "")
 }
 
+// ReportPipedMeta is sent by piped while starting up to report its metadata
+// such as configured cloud providers.
+func (a *PipedAPI) ReportPipedMeta(ctx context.Context, req *pipedservice.ReportPipedMetaRequest) (*pipedservice.ReportPipedMetaResponse, error) {
+	return nil, status.Error(codes.Unimplemented, "")
+}
+
 // ListApplications returns a list of registered applications
 // that should be managed by the requested piped.
 // Disabled applications should not be included in the response.

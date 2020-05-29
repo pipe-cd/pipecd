@@ -20,6 +20,11 @@ option go_package = "github.com/kapetaniosci/pipe/pkg/model";
 import "validate/validate.proto";
 
 message Piped {
+    message CloudProvider {
+        string name = 1 [(validate.rules).string.min_len = 1];
+        string type = 2 [(validate.rules).string.min_len = 1];
+    }
+
     // The generated unique identifier.
     string id = 1 [(validate.rules).string.min_len = 1];
     // The additional description about the piped.
@@ -29,6 +34,10 @@ message Piped {
     string key = 3 [(validate.rules).string.min_len = 1];
     // The ID of the project this enviroment belongs to.
     string project_id = 4 [(validate.rules).string.min_len = 1];
+
+    // List of configured cloud providers.
+    repeated CloudProvider cloud_providers = 7;
+
     // Whether the piped is disabled or not.
     bool disabled = 13;
     // Unix time when the piped is created.
