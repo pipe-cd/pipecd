@@ -27,6 +27,7 @@ import (
 	"github.com/kapetaniosci/pipe/pkg/app/piped/analysisprovider/log"
 	"github.com/kapetaniosci/pipe/pkg/app/piped/analysisprovider/metrics"
 	"github.com/kapetaniosci/pipe/pkg/app/piped/executor"
+	"github.com/kapetaniosci/pipe/pkg/config"
 	"github.com/kapetaniosci/pipe/pkg/model"
 )
 
@@ -63,48 +64,63 @@ func (e *Executor) Execute(sig executor.StopSignal) model.StageStatus {
 		return model.StageStatus_STAGE_FAILURE
 	}
 
-	ctx, cancel := context.WithTimeout(ctx, time.Duration(options.Duration))
+	ctx, cancel := context.WithTimeout(sig.Context(), time.Duration(options.Duration))
 	defer cancel()
 
 	eg, ctx := errgroup.WithContext(ctx)
 	// Run analyses with metrics providers.
 	mf := metrics.NewFactory(e.Logger)
 	for _, m := range options.Metrics {
-		provider, err := e.newMetricsProvider(m.Provider, mf)
+		cfg, err := e.getMetricsCfg(&m)
+		if err != nil {
+			e.LogPersister.AppendError(err.Error())
+			continue
+		}
+		provider, err := e.newMetricsProvider(cfg.Provider, mf)
 		if err != nil {
 			e.LogPersister.AppendError(err.Error())
 			continue
 		}
 		eg.Go(func() error {
 			runner := func(ctx context.Context) (bool, error) {
-				return provider.RunQuery(ctx, m.Query, m.Expected)
+				return provider.RunQuery(ctx, cfg.Query, cfg.Expected)
 			}
-			return e.runAnalysis(ctx, time.Duration(m.Interval), provider.Type(), runner, m.FailureLimit)
+			return e.runAnalysis(ctx, time.Duration(cfg.Interval), provider.Type(), runner, cfg.FailureLimit)
 		})
 	}
 	// Run analyses with logging providers.
 	lf := log.NewFactory(e.Logger)
 	for _, l := range options.Logs {
-		provider, err := e.newLogProvider(l.Provider, lf)
+		cfg, err := e.getLogCfg(&l)
+		if err != nil {
+			e.LogPersister.AppendError(err.Error())
+			continue
+		}
+		provider, err := e.newLogProvider(cfg.Provider, lf)
 		if err != nil {
 			e.LogPersister.AppendError(err.Error())
 			continue
 		}
 		eg.Go(func() error {
 			runner := func(ctx context.Context) (bool, error) {
-				return provider.RunQuery(l.Query, l.FailureLimit)
+				return provider.RunQuery(cfg.Query, cfg.FailureLimit)
 			}
-			return e.runAnalysis(ctx, time.Duration(l.Interval), provider.Type(), runner, l.FailureLimit)
+			return e.runAnalysis(ctx, time.Duration(cfg.Interval), provider.Type(), runner, cfg.FailureLimit)
 		})
 	}
 	// Run analyses with http providers.
 	for _, h := range options.Https {
-		provider := httpprovider.NewProvider(time.Duration(h.Timeout))
+		cfg, err := e.getHTTPCfg(&h)
+		if err != nil {
+			e.LogPersister.AppendError(err.Error())
+			continue
+		}
+		provider := httpprovider.NewProvider(time.Duration(cfg.Timeout))
 		eg.Go(func() error {
 			runner := func(ctx context.Context) (bool, error) {
-				return provider.Run(ctx, &h)
+				return provider.Run(ctx, cfg)
 			}
-			return e.runAnalysis(ctx, time.Duration(h.Interval), provider.Type(), runner, h.FailureLimit)
+			return e.runAnalysis(ctx, time.Duration(cfg.Interval), provider.Type(), runner, cfg.FailureLimit)
 		})
 	}
 
@@ -119,7 +135,6 @@ func (e *Executor) Execute(sig executor.StopSignal) model.StageStatus {
 // when the number of failures exceeds the failureLimit.
 func (e *Executor) runAnalysis(ctx context.Context, interval time.Duration, providerType string, runQuery func(context.Context) (bool, error), failureLimit int) error {
 	e.Logger.Info("start the analysis", zap.String("provider", providerType))
-	// TODO: Address the case when using template
 	ticker := time.NewTicker(interval)
 	defer ticker.Stop()
 	failureCount := 0
@@ -177,7 +192,6 @@ func (e *Executor) setQueryCount() {
 }
 
 func (e *Executor) newMetricsProvider(providerName string, factory *metrics.Factory) (metrics.Provider, error) {
-	// TODO: Address the case when using template
 	cfg, ok := e.PipedConfig.GetProvider(providerName)
 	if !ok {
 		return nil, fmt.Errorf("unknown provider name %s", providerName)
@@ -190,7 +204,6 @@ func (e *Executor) newMetricsProvider(providerName string, factory *metrics.Fact
 }
 
 func (e *Executor) newLogProvider(providerName string, factory *log.Factory) (log.Provider, error) {
-	// TODO: Address the case when using template
 	cfg, ok := e.PipedConfig.GetProvider(providerName)
 	if !ok {
 		return nil, fmt.Errorf("unknown provider name %s", providerName)
@@ -200,4 +213,55 @@ func (e *Executor) newLogProvider(providerName string, factory *log.Factory) (lo
 		return nil, err
 	}
 	return provider, nil
+}
+
+// getMetricsCfg renders the given template and returns the metrics config.
+// Just returns metrics config if no template specified.
+func (e *Executor) getMetricsCfg(templatableCfg *config.TemplatableAnalysisMetrics) (*config.AnalysisMetrics, error) {
+	name := templatableCfg.UseTemplate
+	if name == "" {
+		return &templatableCfg.AnalysisMetrics, nil
+	}
+	// TODO: Load template config from .piped underneath e.RepoDir
+	templateSpec := &config.AnalysisTemplateSpec{}
+	cfg, ok := templateSpec.Metrics[name]
+	if !ok {
+		return nil, fmt.Errorf("analysis template %s not found", name)
+	}
+	// TODO: Render the application specific data into a template.
+	return &cfg, nil
+}
+
+// getLogCfg renders the given template and returns the log config.
+// Just returns log config if no template specified.
+func (e *Executor) getLogCfg(templatableCfg *config.TemplatableAnalysisLog) (*config.AnalysisLog, error) {
+	name := templatableCfg.UseTemplate
+	if name == "" {
+		return &templatableCfg.AnalysisLog, nil
+	}
+	// TODO: Load template config from .piped underneath e.RepoDir
+	templateSpec := &config.AnalysisTemplateSpec{}
+	cfg, ok := templateSpec.Logs[name]
+	if !ok {
+		return nil, fmt.Errorf("analysis template %s not found", name)
+	}
+	// TODO: Render the application specific data into a template.
+	return &cfg, nil
+}
+
+// getHTTPCfg renders the given template and returns the http config.
+// Just returns http config if no template specified.
+func (e *Executor) getHTTPCfg(templatableCfg *config.TemplatableAnalysisHTTP) (*config.AnalysisHTTP, error) {
+	name := templatableCfg.UseTemplate
+	if name == "" {
+		return &templatableCfg.AnalysisHTTP, nil
+	}
+	// TODO: Load template config from .piped underneath e.RepoDir
+	templateSpec := &config.AnalysisTemplateSpec{}
+	cfg, ok := templateSpec.HTTPs[name]
+	if !ok {
+		return nil, fmt.Errorf("analysis template %s not found", name)
+	}
+	// TODO: Render the application specific data into a template.
+	return &cfg, nil
 }

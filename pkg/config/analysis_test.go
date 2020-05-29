@@ -13,13 +13,3 @@
 // limitations under the License.
 
 package config
-
-type AnalysisTemplateSpec struct {
-	Metrics map[string]AnalysisMetrics `json:"metrics"`
-	Logs    map[string]AnalysisLog     `json:"logs"`
-	HTTPs   map[string]AnalysisHTTP    `json:"https"`
-}
-
-func (s *AnalysisTemplateSpec) Validate() error {
-	return nil
-}

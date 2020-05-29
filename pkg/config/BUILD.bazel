@@ -3,6 +3,7 @@ load("@io_bazel_rules_go//go:def.bzl", "go_library", "go_test")
 go_library(
     name = "go_default_library",
     srcs = [
+        "analysis.go",
         "analysis_template.go",
         "config.go",
         "control_plane.go",
@@ -25,6 +26,7 @@ go_test(
     size = "small",
     srcs = [
         "analysis_template_test.go",
+        "analysis_test.go",
         "control_plane_test.go",
         "deployment_test.go",
         "notification_test.go",

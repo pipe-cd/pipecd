@@ -281,88 +281,29 @@ type AnalysisStageOptions struct {
 	Duration Duration `json:"duration"`
 	// TODO: Consider about how to handle a pod restart
 	// possible count of pod restarting
-	RestartThreshold int               `json:"restartThreshold"`
-	Metrics          []AnalysisMetrics `json:"metrics"`
-	Logs             []AnalysisLog     `json:"logs"`
-	Https            []AnalysisHTTP    `json:"https"`
-	Dynamic          AnalysisDynamic   `json:"dynamic"`
+	RestartThreshold int                          `json:"restartThreshold"`
+	Metrics          []TemplatableAnalysisMetrics `json:"metrics"`
+	Logs             []TemplatableAnalysisLog     `json:"logs"`
+	Https            []TemplatableAnalysisHTTP    `json:"https"`
+	Dynamic          AnalysisDynamic              `json:"dynamic"`
 }
 
-type AnalysisMetrics struct {
-	Query    string           `json:"query"`
-	Expected AnalysisExpected `json:"expected"`
-	Interval Duration         `json:"interval"`
-	// Maximum number of failed checks before the query result is considered as failure.
-	FailureLimit int `json:"failureLimit"`
-	// How long after which the query times out.
-	Timeout     Duration `json:"timeout"`
-	Provider    string   `json:"provider"`
-	UseTemplate string   `json:"useTemplate"`
+// TemplatableAnalysisMetrics wraps AnalysisMetrics to allow specify template to use.
+type TemplatableAnalysisMetrics struct {
+	AnalysisMetrics
+	UseTemplate string `json:"useTemplate"`
 }
 
-// AnalysisExpected defines the range used for metrics analysis.
-type AnalysisExpected struct {
-	Min *float64 `json:"min"`
-	Max *float64 `json:"max"`
+// TemplatableAnalysisLog wraps AnalysisLog to allow specify template to use.
+type TemplatableAnalysisLog struct {
+	AnalysisLog
+	UseTemplate string `json:"useTemplate"`
 }
 
-type AnalysisLog struct {
-	Query    string   `json:"query"`
-	Interval Duration `json:"interval"`
-	// Maximum number of failed checks before the query result is considered as failure.
-	FailureLimit int `json:"failureLimit"`
-	// How long after which the query times out.
-	Timeout     Duration `json:"timeout"`
-	Provider    string   `json:"provider"`
-	UseTemplate string   `json:"useTemplate"`
-}
-
-type AnalysisHTTP struct {
-	URL    string `json:"url"`
-	Method string `json:"method"`
-	// Custom headers to set in the request. HTTP allows repeated headers.
-	Headers          []AnalysisHeader `json:"headers"`
-	ExpectedCode     int              `json:"expectedCode"`
-	ExpectedResponse string           `json:"expectedResponse"`
-	Interval         Duration         `json:"interval"`
-	// Maximum number of failed checks before the response is considered as failure.
-	FailureLimit int      `json:"failureLimit"`
-	Timeout      Duration `json:"timeout"`
-	UseTemplate  string   `json:"useTemplate"`
-}
-
-type AnalysisHeader struct {
-	Key   string `json:"key"`
-	Value string `json:"value"`
-}
-
-// AnalysisDynamic contains settings for analysis by comparing  with dynamic data.
-type AnalysisDynamic struct {
-	Metrics []AnalysisDynamicMetrics `json:"metrics"`
-	Logs    []AnalysisDynamicLog     `json:"logs"`
-	Https   []AnalysisDynamicHTTP    `json:"https"`
-}
-
-type AnalysisDynamicMetrics struct {
-	Query    string   `json:"query"`
-	Provider string   `json:"provider"`
-	Timeout  Duration `json:"timeout"`
-}
-
-type AnalysisDynamicLog struct {
-	Query    string   `json:"query"`
-	Provider string   `json:"provider"`
-	Timeout  Duration `json:"timeout"`
-}
-
-type AnalysisDynamicHTTP struct {
-	URL              string
-	Method           string
-	Headers          []string
-	ExpectedStatus   string
-	ExpectedResponse string
-	Interval         Duration
-	Timeout          Duration `json:"timeout"`
+// TemplatableAnalysisHTTP wraps AnalysisHTTP to allow specify template to use.
+type TemplatableAnalysisHTTP struct {
+	AnalysisHTTP
+	UseTemplate string `json:"useTemplate"`
 }
 
 type KubernetesDeploymentInput struct {
