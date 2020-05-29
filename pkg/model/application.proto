@@ -43,6 +43,9 @@ message Application {
     ApplicationKind kind = 6 [(validate.rules).enum.defined_only = true];
     // The path to the git directory of this application.
     ApplicationGitPath git_path = 7 [(validate.rules).message.required = true];
+    // The name of cloud provider where to deploy this application.
+    // This must be one of the provider names registered in the piped.
+    string cloud_provider = 8 [(validate.rules).string.min_len = 1];
     // Whether the application is disabled or not.
     bool disabled = 13;
     // Unix time when the application is created.
