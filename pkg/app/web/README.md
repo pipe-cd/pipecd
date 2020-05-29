@@ -1,4 +1,4 @@
-# piped web
+# web
 
 ## Development
 
