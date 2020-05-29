@@ -32,7 +32,7 @@ import (
 type Store interface {
 	Run(ctx context.Context) error
 	WaitForReady(ctx context.Context, timeout time.Duration) error
-	GetAppLiveResources(appID string) ([]model.K8SResource, error)
+	GetAppLiveResources(appID string) ([]model.KubernetesResource, error)
 }
 
 // appStateStore syncs the live state of application with the cluster
@@ -116,6 +116,6 @@ func (s *appStateStore) WaitForReady(ctx context.Context, timeout time.Duration)
 	}
 }
 
-func (s *appStateStore) GetAppLiveResources(appID string) ([]model.K8SResource, error) {
+func (s *appStateStore) GetAppLiveResources(appID string) ([]model.KubernetesResource, error) {
 	return nil, nil
 }

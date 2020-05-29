@@ -24,26 +24,26 @@ message AppStateEvent {
     string id = 1;
     int64 timestamp = 2;
 
-    // K8SResource Events.
-    message K8SResourceAdded {
+    // KubernetesResource Events.
+    message KubernetesResourceAdded {
         string application_id = 1 [(validate.rules).string.min_len = 1];
-        pipe.model.K8SResource resource = 2 [(validate.rules).message.required = true];
+        pipe.model.KubernetesResource resource = 2 [(validate.rules).message.required = true];
     }
     
-    message K8SResourceUpdated {
+    message KubernetesResourceUpdated {
         string application_id = 1 [(validate.rules).string.min_len = 1];
-        pipe.model.K8SResource before = 2 [(validate.rules).message.required = true];
-        pipe.model.K8SResource after = 3 [(validate.rules).message.required = true];
+        pipe.model.KubernetesResource before = 2 [(validate.rules).message.required = true];
+        pipe.model.KubernetesResource after = 3 [(validate.rules).message.required = true];
     }
     
-    message K8SResourceDeleted {
+    message KubernetesResourceDeleted {
         string application_id = 1 [(validate.rules).string.min_len = 1];
-        pipe.model.K8SResource resource = 2 [(validate.rules).message.required = true];
+        pipe.model.KubernetesResource resource = 2 [(validate.rules).message.required = true];
     }
 
     oneof inner {
-        K8SResourceAdded k8s_resource_added = 100;
-        K8SResourceUpdated k8s_resource_updated = 101;
-        K8SResourceDeleted k8s_resource_deleted = 102;
+        KubernetesResourceAdded kubernetes_resource_added = 100;
+        KubernetesResourceUpdated kubernetes_resource_updated = 101;
+        KubernetesResourceDeleted kubernetes_resource_deleted = 102;
     }
 }
