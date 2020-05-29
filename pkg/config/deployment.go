@@ -34,7 +34,6 @@ type KubernetesDeploymentSpec struct {
 	CanaryVariant   *CanaryVariant            `json:"canaryVariant"`
 	BaselineVariant *BaselineVariant          `json:"baselineVariant"`
 	TrafficSplit    TrafficSplit              `json:"trafficSplit"`
-	Destination     string                    `json:"destination"`
 }
 
 func (s *KubernetesDeploymentSpec) GetStage(index int32) (PipelineStage, bool) {
@@ -54,9 +53,8 @@ func (s *KubernetesDeploymentSpec) Validate() error {
 
 // TerraformDeploymentSpec represents a deployment configuration for Terraform application.
 type TerraformDeploymentSpec struct {
-	Input       TerraformDeploymentInput `json:"input"`
-	Pipeline    *DeploymentPipeline      `json:"pipeline"`
-	Destination string                   `json:"destination"`
+	Input    TerraformDeploymentInput `json:"input"`
+	Pipeline *DeploymentPipeline      `json:"pipeline"`
 }
 
 func (s *TerraformDeploymentSpec) GetStage(index int32) (PipelineStage, bool) {
@@ -71,9 +69,6 @@ func (s *TerraformDeploymentSpec) GetStage(index int32) (PipelineStage, bool) {
 
 // Validate returns an error if any wrong configuration value was found.
 func (s *TerraformDeploymentSpec) Validate() error {
-	if s.Destination == "" {
-		return fmt.Errorf("spec.destination for terraform application is required")
-	}
 	return nil
 }
 

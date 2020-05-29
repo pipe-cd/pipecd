@@ -2,11 +2,13 @@ apiVersion: pipecd.dev/v1beta1
 kind: Piped
 spec:
   syncInterval: 1m
+
   git:
     username: username
     email: username@email.com
-    sshKeyFile: /etc/pipecd-piped/ssh.key
-    accessTokenFile: /etc/pipecd-piped/github.token
+    sshKeyFile: /etc/piped-secret/git-ssh-key
+    accessTokenFile: /etc/piped-secret/git-access-token
+
   repositories:
     - repoId: repo1
       remote: git@github.com:org/repo1.git
@@ -14,33 +16,46 @@ spec:
     - repoId: repo2
       remote: git@github.com:org/repo2.git
       branch: master
-  destinations:
-    - name: default
-      kubernetes:
-        allowNamespaces:
-          - dev
-    - name: gcp-terraform
-      terraform:
+
+  cloudProviders:
+    - name: kubernetes-default
+      type: KUBERNETES
+    - name: terraform-gcp
+      type: TERRAFORM
+      config:
         gcp:
           project: gcp-project
           region: us-central1
-          credentialsFile: /etc/pipecd-piped/terraform.serviceaccount
-    - name: aws-terraform
-      terraform:
+          credentialsFile: /etc/piped-secret/gcp-service-account.json
+    - name: terraform-aws
+      type: TERRAFORM
+      config:
         aws:
           region: us-east-1
+    - name: cloudrun
+      type: CLOUDRUN
+      config:
+        project: gcp-project
+        region: us-east-1
+        platform: managed
+        credentialsFile: /etc/piped-secret/gcp-service-account.json
+    - name: lambda
+      type: LAMBDA
+      config:
+        region: us-east-1
+
   # analysisProviders:
-  #   - name: dev-prometheus
+  #   - name: prometheus
   #     prometheus:
   #       address: https://your-prometheus.dev
   #   - name: stackdriver
   #     stackdriver:
   #       projectId: demo
-  #       serviceAccountFile: /etc/pipecd-piped/stackdriver.serviceaccount
+  #       serviceAccountFile: /etc/piped-secret/gcp-service-account.json
   #   - name: datadog
   #     datadog:
-  #       apiKeyFile: /etc/pipecd-piped/datadog.apikey
-  #       applicationKeyFile: /etc/pipecd-piped/datadog.applicationkey
+  #       apiKeyFile: /etc/piped-secret/datadog-api-key
+  #       applicationKeyFile: /etc/piped-secret/datadog-application-key
   #   - name: cloudwatch
   #     cloudwatch:
   #       region: ap-northeast-1

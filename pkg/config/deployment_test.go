@@ -15,7 +15,6 @@
 package config
 
 import (
-	"fmt"
 	"testing"
 
 	"github.com/stretchr/testify/assert"
@@ -33,10 +32,6 @@ func TestAppConfig(t *testing.T) {
 		expectedError      error
 	}{
 		{
-			fileName:      "testdata/application/terraform-app-missing-destination.yaml",
-			expectedError: fmt.Errorf("spec.destination for terraform application is required"),
-		},
-		{
 			fileName:           "testdata/application/terraform-app.yaml",
 			expectedKind:       KindTerraformApp,
 			expectedAPIVersion: "pipecd.dev/v1beta1",
@@ -45,8 +40,7 @@ func TestAppConfig(t *testing.T) {
 					Workspace:        "dev",
 					TerraformVersion: "0.12.23",
 				},
-				Pipeline:    nil,
-				Destination: "dev-terraform",
+				Pipeline: nil,
 			},
 			expectedError: nil,
 		},
@@ -77,7 +71,6 @@ func TestAppConfig(t *testing.T) {
 						},
 					},
 				},
-				Destination: "dev-terraform",
 			},
 			expectedError: nil,
 		},

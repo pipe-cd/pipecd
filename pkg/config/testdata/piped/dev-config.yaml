@@ -11,3 +11,8 @@ spec:
     - repoId: pipe-debug-2
       remote: git@github.com:kapetaniosci/pipe-debug-2.git
       branch: dev
+  cloudProviders:
+    - name: kubernetes-default
+      type: KUBERNETES
+      config:
+        kubeconfigPath: $HOME/.kube/config

@@ -20,6 +20,8 @@ import (
 
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
+
+	"github.com/kapetaniosci/pipe/pkg/model"
 )
 
 func TestPipedConfig(t *testing.T) {
@@ -39,8 +41,8 @@ func TestPipedConfig(t *testing.T) {
 				Git: PipedGit{
 					Username:        "username",
 					Email:           "username@email.com",
-					SSHKeyFile:      "/etc/pipecd-piped/ssh.key",
-					AccessTokenFile: "/etc/pipecd-piped/github.token",
+					SSHKeyFile:      "/etc/piped-secret/git-ssh-key",
+					AccessTokenFile: "/etc/piped-secret/git-access-token",
 				},
 				Repositories: []PipedRepository{
 					{
@@ -54,29 +56,47 @@ func TestPipedConfig(t *testing.T) {
 						Branch: "master",
 					},
 				},
-				Destinations: []PipedDestination{
+				CloudProviders: []PipedCloudProvider{
 					{
-						Name: "default",
-						Kubernetes: &PipedDestinationKubernetes{
-							AllowNamespaces: []string{"dev"},
-						},
+						Name:             "kubernetes-default",
+						Type:             model.CloudProviderKubernetes,
+						KubernetesConfig: &CloudProviderKubernetesConfig{},
 					},
 					{
-						Name: "gcp-terraform",
-						Terraform: &PipedDestinationTerraform{
-							GCP: &PipedTerraformGCP{
+						Name: "terraform-gcp",
+						Type: model.CloudProviderTerraform,
+						TerraformConfig: &CloudProviderTerraformConfig{
+							GCP: &CloudProviderTerraformGCP{
 								Project:         "gcp-project",
 								Region:          "us-central1",
-								CredentialsFile: "/etc/pipecd-piped/terraform.serviceaccount",
+								CredentialsFile: "/etc/piped-secret/gcp-service-account.json",
 							},
 						},
 					},
 					{
-						Name: "aws-terraform",
-						Terraform: &PipedDestinationTerraform{
-							AWS: &PipedTerraformAWS{
+						Name: "terraform-aws",
+						Type: model.CloudProviderTerraform,
+						TerraformConfig: &CloudProviderTerraformConfig{
+							AWS: &CloudProviderTerraformAWS{
 								Region: "us-east-1",
 							},
+						},
+					},
+					{
+						Name: "cloudrun",
+						Type: model.CloudProviderCloudRun,
+						CloudRunConfig: &CloudProviderCloudRunConfig{
+							Project:         "gcp-project",
+							Region:          "us-east-1",
+							Platform:        "managed",
+							CredentialsFile: "/etc/piped-secret/gcp-service-account.json",
+						},
+					},
+					{
+						Name: "lambda",
+						Type: model.CloudProviderLambda,
+						LambdaConfig: &CloudProviderLambdaConfig{
+							Region: "us-east-1",
 						},
 					},
 				},

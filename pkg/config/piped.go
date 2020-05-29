@@ -14,6 +14,13 @@
 
 package config
 
+import (
+	"encoding/json"
+	"fmt"
+
+	"github.com/kapetaniosci/pipe/pkg/model"
+)
+
 // PipedSpec contains configurable data used to while running Piped.
 type PipedSpec struct {
 	// How often to check whether an application should be synced.
@@ -21,9 +28,9 @@ type PipedSpec struct {
 	// Git configuration needed for git commands.
 	Git PipedGit `json:"git"`
 	// List of git repositories this piped will handle.
-	Repositories      []PipedRepository  `json:"repositories"`
-	Destinations      []PipedDestination `json:"destinations"`
-	AnalysisProviders []AnalysisProvider `json:"analysisProviders"`
+	Repositories      []PipedRepository    `json:"repositories"`
+	CloudProviders    []PipedCloudProvider `json:"cloudProviders"`
+	AnalysisProviders []AnalysisProvider   `json:"analysisProviders"`
 }
 
 // Validate validates configured data of all fields.
@@ -107,36 +114,86 @@ type PipedRepository struct {
 	Branch string `json:"branch"`
 }
 
-type DestinationType string
+type PipedCloudProvider struct {
+	Name string
+	Type model.CloudProviderType
 
-const (
-	KubernetesDestination DestinationType = "Kubernetes"
-	TerraformDestination  DestinationType = "Terraform"
-)
-
-type PipedDestination struct {
-	Name       string                      `json:"name"`
-	Type       DestinationType             `json:"-"`
-	Kubernetes *PipedDestinationKubernetes `json:"kubernetes"`
-	Terraform  *PipedDestinationTerraform  `json:"terraform"`
+	KubernetesConfig *CloudProviderKubernetesConfig
+	TerraformConfig  *CloudProviderTerraformConfig
+	CloudRunConfig   *CloudProviderCloudRunConfig
+	LambdaConfig     *CloudProviderLambdaConfig
 }
 
-type PipedDestinationKubernetes struct {
-	AllowNamespaces []string `json:"allowNamespaces"`
+type genericPipedCloudProvider struct {
+	Name   string                  `json:"name"`
+	Type   model.CloudProviderType `json:"type"`
+	Config json.RawMessage         `json:"config"`
 }
 
-type PipedDestinationTerraform struct {
-	GCP *PipedTerraformGCP `json:"gcp"`
-	AWS *PipedTerraformAWS `json:"aws"`
+func (p *PipedCloudProvider) UnmarshalJSON(data []byte) error {
+	var err error
+	gp := genericPipedCloudProvider{}
+	if err = json.Unmarshal(data, &gp); err != nil {
+		return err
+	}
+	p.Name = gp.Name
+	p.Type = gp.Type
+
+	switch p.Type {
+	case model.CloudProviderKubernetes:
+		p.KubernetesConfig = &CloudProviderKubernetesConfig{}
+		if len(gp.Config) > 0 {
+			err = json.Unmarshal(gp.Config, p.KubernetesConfig)
+		}
+	case model.CloudProviderTerraform:
+		p.TerraformConfig = &CloudProviderTerraformConfig{}
+		if len(gp.Config) > 0 {
+			err = json.Unmarshal(gp.Config, p.TerraformConfig)
+		}
+	case model.CloudProviderCloudRun:
+		p.CloudRunConfig = &CloudProviderCloudRunConfig{}
+		if len(gp.Config) > 0 {
+			err = json.Unmarshal(gp.Config, p.CloudRunConfig)
+		}
+	case model.CloudProviderLambda:
+		p.LambdaConfig = &CloudProviderLambdaConfig{}
+		if len(gp.Config) > 0 {
+			err = json.Unmarshal(gp.Config, p.LambdaConfig)
+		}
+	default:
+		err = fmt.Errorf("unsupported cloud provider type: %s", p.Name)
+	}
+	return err
 }
 
-type PipedTerraformGCP struct {
+type CloudProviderKubernetesConfig struct {
+	//AllowNamespaces []string `json:"allowNamespaces"`
+	KubeConfigPath string `json:"kubeConfigPath"`
+}
+
+type CloudProviderTerraformConfig struct {
+	GCP *CloudProviderTerraformGCP `json:"gcp"`
+	AWS *CloudProviderTerraformAWS `json:"aws"`
+}
+
+type CloudProviderTerraformGCP struct {
 	Project         string `json:"project"`
 	Region          string `json:"region"`
 	CredentialsFile string `json:"credentialsFile"`
 }
 
-type PipedTerraformAWS struct {
+type CloudProviderTerraformAWS struct {
+	Region string `json:"region"`
+}
+
+type CloudProviderCloudRunConfig struct {
+	Project         string `json:"project"`
+	Region          string `json:"region"`
+	Platform        string `json:"platform"`
+	CredentialsFile string `json:"credentialsFile"`
+}
+
+type CloudProviderLambdaConfig struct {
 	Region string `json:"region"`
 }
 

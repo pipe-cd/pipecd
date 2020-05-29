@@ -13,7 +13,6 @@ spec:
             - foo
             - bar
       - name: TERRAFORM_APPLY
-  destination: dev-terraform
 
 #---
 # apiVersion: pipecd.dev/v1beta1
@@ -36,4 +35,3 @@ spec:
 #       - name: TERRAFORM_APPLY
 #         with:
 #           workspace: prod
-#   destination: gcp-terraform

@@ -1,6 +1,0 @@
-apiVersion: pipecd.dev/v1beta1
-kind: TerraformApp
-spec:
-  input:
-    workspace: dev
-    terraformVersion: 0.12.23

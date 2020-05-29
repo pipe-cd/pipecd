@@ -3,5 +3,4 @@ kind: CloudRunApp
 spec:
   input:
     image: gcr.io/demo-project/demoapp:v1.0.0
-    region: asia-east-1
-    platform: managed
+

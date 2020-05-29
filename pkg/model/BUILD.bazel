@@ -35,6 +35,7 @@ go_library(
     name = "go_default_library",
     srcs = [
         "application.go",
+        "cloudprovider.go",
         "command.go",
         "deployment.go",
         "model.go",

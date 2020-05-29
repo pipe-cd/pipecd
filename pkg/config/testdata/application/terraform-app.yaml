@@ -4,4 +4,3 @@ spec:
   input:
     workspace: dev
     terraformVersion: 0.12.23
-  destination: dev-terraform
