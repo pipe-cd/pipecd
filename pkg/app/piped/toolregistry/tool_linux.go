@@ -19,6 +19,9 @@ cd {{ .WorkingDir }}
 curl -LO https://storage.googleapis.com/kubernetes-release/release/v{{ .Version }}/bin/linux/amd64/kubectl
 mv kubectl {{ .BinDir }}/kubectl-{{ .Version }}
 chmod +x {{ .BinDir }}/kubectl-{{ .Version }}
+{{ if .AsDefault }}
+cp -f {{ .BinDir }}/kubectl-{{ .Version }} {{ .BinDir }}/kubectl
+{{ end }}
 `
 
 var kustomizeInstallScript = `
@@ -26,6 +29,9 @@ cd {{ .WorkingDir }}
 curl -L https://github.com/kubernetes-sigs/kustomize/releases/download/kustomize/v{{ .Version }}/kustomize_v{{ .Version }}_linux_amd64.tar.gz | tar xvz
 mv kustomize {{ .BinDir }}/kustomize-{{ .Version }}
 chmod +x {{ .BinDir }}/kustomize-{{ .Version }}
+{{ if .AsDefault }}
+cp -f {{ .BinDir }}/kustomize-{{ .Version }} {{ .BinDir }}/kustomize
+{{ end }}
 `
 
 var helmInstallScript = `
@@ -33,4 +39,7 @@ cd {{ .WorkingDir }}
 curl -L https://get.helm.sh/helm-v{{ .Version }}-linux-amd64.tar.gz | tar xvz
 mv linux-amd64/helm {{ .BinDir }}/helm-{{ .Version }}
 chmod +x {{ .BinDir }}/helm-{{ .Version }}
+{{ if .AsDefault }}
+cp -f {{ .BinDir }}/helm-{{ .Version }} {{ .BinDir }}/helm
+{{ end }}
 `

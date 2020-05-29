@@ -26,6 +26,12 @@ import (
 	"go.uber.org/zap"
 )
 
+const (
+	defaultKubectlVersion   = "1.18.2"
+	defaultKustomizeVersion = "3.5.5"
+	defaultHelmVersion      = "3.2.1"
+)
+
 var (
 	kubectlInstallScriptTmpl   = template.Must(template.New("kubectl").Parse(kubectlInstallScript))
 	kustomizeInstallScriptTmpl = template.Must(template.New("kustomize").Parse(kustomizeInstallScript))
@@ -39,12 +45,18 @@ func (r *registry) installKubectl(ctx context.Context, version string) error {
 	}
 	defer os.RemoveAll(workingDir)
 
+	asDefault := version == ""
+	if asDefault {
+		version = defaultKubectlVersion
+	}
+
 	var (
 		buf  bytes.Buffer
-		data = map[string]string{
+		data = map[string]interface{}{
 			"WorkingDir": workingDir,
 			"Version":    version,
 			"BinDir":     r.binDir,
+			"AsDefault":  asDefault,
 		}
 	)
 	if err := kubectlInstallScriptTmpl.Execute(&buf, data); err != nil {
@@ -80,12 +92,18 @@ func (r *registry) installKustomize(ctx context.Context, version string) error {
 	}
 	defer os.RemoveAll(workingDir)
 
+	asDefault := version == ""
+	if asDefault {
+		version = defaultKustomizeVersion
+	}
+
 	var (
 		buf  bytes.Buffer
-		data = map[string]string{
+		data = map[string]interface{}{
 			"WorkingDir": workingDir,
 			"Version":    version,
 			"BinDir":     r.binDir,
+			"AsDefault":  asDefault,
 		}
 	)
 	if err := kustomizeInstallScriptTmpl.Execute(&buf, data); err != nil {
@@ -121,12 +139,18 @@ func (r *registry) installHelm(ctx context.Context, version string) error {
 	}
 	defer os.RemoveAll(workingDir)
 
+	asDefault := version == ""
+	if asDefault {
+		version = defaultHelmVersion
+	}
+
 	var (
 		buf  bytes.Buffer
-		data = map[string]string{
+		data = map[string]interface{}{
 			"WorkingDir": workingDir,
 			"Version":    version,
 			"BinDir":     r.binDir,
+			"AsDefault":  asDefault,
 		}
 	)
 	if err := helmInstallScriptTmpl.Execute(&buf, data); err != nil {
