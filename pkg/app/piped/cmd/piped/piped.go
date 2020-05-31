@@ -59,9 +59,10 @@ type piped struct {
 	apiAddress string
 	adminPort  int
 
-	binDir           string
-	useFakeAPIClient bool
-	gracePeriod      time.Duration
+	binDir                               string
+	enableDefaultKubernetesCloudProvider bool
+	useFakeAPIClient                     bool
+	gracePeriod                          time.Duration
 }
 
 func NewCommand() *cobra.Command {
@@ -89,6 +90,7 @@ func NewCommand() *cobra.Command {
 
 	cmd.Flags().StringVar(&p.binDir, "bin-dir", p.binDir, "The path to directory where to install needed tools such as kubectl, helm, kustomize.")
 	cmd.Flags().BoolVar(&p.useFakeAPIClient, "use-fake-api-client", p.useFakeAPIClient, "Whether the fake api client should be used instead of the real one or not.")
+	cmd.Flags().BoolVar(&p.enableDefaultKubernetesCloudProvider, "enable-default-kubernetes-cloud-provider", p.enableDefaultKubernetesCloudProvider, "Whether the default kubernetes provider is enabled or not.")
 	cmd.Flags().DurationVar(&p.gracePeriod, "grace-period", p.gracePeriod, "How long to wait for graceful shutdown.")
 
 	cmd.MarkFlagRequired("project-id")
@@ -278,6 +280,9 @@ func (p *piped) loadConfig() (*config.PipedSpec, error) {
 	}
 	if cfg.Kind != config.KindPiped {
 		return nil, fmt.Errorf("wrong configuration kind for piped: %v", cfg.Kind)
+	}
+	if p.enableDefaultKubernetesCloudProvider {
+		cfg.PipedSpec.EnableDefaultKubernetesCloudProvider()
 	}
 	return cfg.PipedSpec, nil
 }

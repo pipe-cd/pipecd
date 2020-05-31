@@ -21,6 +21,12 @@ import (
 	"github.com/kapetaniosci/pipe/pkg/model"
 )
 
+var DefaultKubernetesCloudProvider = PipedCloudProvider{
+	Name:             "kubernetes-default",
+	Type:             model.CloudProviderKubernetes,
+	KubernetesConfig: &CloudProviderKubernetesConfig{},
+}
+
 // PipedSpec contains configurable data used to while running Piped.
 type PipedSpec struct {
 	// How often to check whether an application should be synced.
@@ -36,6 +42,16 @@ type PipedSpec struct {
 // Validate validates configured data of all fields.
 func (s *PipedSpec) Validate() error {
 	return nil
+}
+
+// EnableDefaultKubernetesCloudProvider adds the default kubernetes cloud provider if it was not specified.
+func (s *PipedSpec) EnableDefaultKubernetesCloudProvider() {
+	for _, cp := range s.CloudProviders {
+		if cp.Name == DefaultKubernetesCloudProvider.Name {
+			return
+		}
+	}
+	s.CloudProviders = append(s.CloudProviders, DefaultKubernetesCloudProvider)
 }
 
 // GetRepositoryMap returns a map of repositories where key is repo id.
@@ -123,7 +139,6 @@ type PipedCloudProvider struct {
 	CloudRunConfig   *CloudProviderCloudRunConfig
 	LambdaConfig     *CloudProviderLambdaConfig
 }
-
 type genericPipedCloudProvider struct {
 	Name   string                  `json:"name"`
 	Type   model.CloudProviderType `json:"type"`

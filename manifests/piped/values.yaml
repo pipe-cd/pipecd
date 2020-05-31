@@ -1,5 +1,6 @@
 args:
   useFakeAPI: true
+  enableDefaultKubernetesCloudProvider: true
   projectID: your-project-id
   pipedID: your-piped-id
   pipedKey: your-piped-key
