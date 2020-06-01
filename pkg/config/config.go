@@ -26,6 +26,7 @@ import (
 
 const (
 	DeploymentConfigurationFileName = ".pipe.yaml"
+	SharedConfigurationDirName      = ".pipe"
 	versionV1Beta1                  = "pipecd.dev/v1beta1"
 )
 
