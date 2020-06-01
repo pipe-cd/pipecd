@@ -44,7 +44,6 @@ service WebService {
     rpc GetDeploymentStageLog(GetDeploymentStageLogRequest) returns (GetDeploymentStageLogResponse) {}
     rpc CancelDeployment(CancelDeploymentRequest) returns (CancelDeploymentResponse) {}
     rpc ApproveDeploymentStage(ApproveDeploymentStageRequest) returns (ApproveDeploymentStageResponse) {}
-    rpc RetryDeploymentStage(RetryDeploymentStageRequest) returns (RetryDeploymentStageResponse) {}
 
     // ApplicationLiveState
     rpc GetApplicationLiveState(GetApplicationLiveStateRequest) returns (GetApplicationLiveStateResponse) {}
@@ -149,12 +148,6 @@ message ApproveDeploymentStageRequest {
 }
 
 message ApproveDeploymentStageResponse {
-}
-
-message RetryDeploymentStageRequest {
-}
-
-message RetryDeploymentStageResponse {
 }
 
 message GetApplicationLiveStateRequest {

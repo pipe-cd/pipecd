@@ -297,10 +297,6 @@ func (a *WebAPI) ApproveDeploymentStage(ctx context.Context, req *webservice.App
 	return nil, status.Error(codes.Unimplemented, "")
 }
 
-func (a *WebAPI) RetryDeploymentStage(ctx context.Context, req *webservice.RetryDeploymentStageRequest) (*webservice.RetryDeploymentStageResponse, error) {
-	return nil, status.Error(codes.Unimplemented, "")
-}
-
 func (a *WebAPI) GetApplicationLiveState(ctx context.Context, req *webservice.GetApplicationLiveStateRequest) (*webservice.GetApplicationLiveStateResponse, error) {
 	return nil, status.Error(codes.Unimplemented, "")
 }
