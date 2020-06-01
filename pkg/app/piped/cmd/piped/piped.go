@@ -39,6 +39,7 @@ import (
 	"github.com/kapetaniosci/pipe/pkg/cli"
 	"github.com/kapetaniosci/pipe/pkg/config"
 	"github.com/kapetaniosci/pipe/pkg/git"
+	"github.com/kapetaniosci/pipe/pkg/model"
 	"github.com/kapetaniosci/pipe/pkg/rpc/rpcauth"
 	"github.com/kapetaniosci/pipe/pkg/rpc/rpcclient"
 
@@ -130,6 +131,12 @@ func (p *piped) run(ctx context.Context, t cli.Telemetry) error {
 	apiClient, err := p.createAPIClient(ctx, t.Logger)
 	if err != nil {
 		t.Logger.Error("failed to create gRPC client to control plane", zap.Error(err))
+		return err
+	}
+
+	// Send the newest piped meta to the control-plane.
+	if err := p.sendPipedMeta(ctx, apiClient, cfg, t.Logger); err != nil {
+		t.Logger.Error("failed to report piped meta to control-plane", zap.Error(err))
 		return err
 	}
 
@@ -285,4 +292,30 @@ func (p *piped) loadConfig() (*config.PipedSpec, error) {
 		cfg.PipedSpec.EnableDefaultKubernetesCloudProvider()
 	}
 	return cfg.PipedSpec, nil
+}
+
+func (p *piped) sendPipedMeta(ctx context.Context, client pipedservice.Client, cfg *config.PipedSpec, logger *zap.Logger) error {
+	var (
+		req = &pipedservice.ReportPipedMetaRequest{
+			CloudProviders: make([]*model.Piped_CloudProvider, 0, len(cfg.CloudProviders)),
+		}
+		retry = pipedservice.NewRetry(10)
+		err   error
+	)
+
+	for _, cp := range cfg.CloudProviders {
+		req.CloudProviders = append(req.CloudProviders, &model.Piped_CloudProvider{
+			Name: cp.Name,
+			Type: cp.Type.String(),
+		})
+	}
+
+	for retry.WaitNext(ctx) {
+		if _, err = client.ReportPipedMeta(ctx, req); err == nil {
+			return nil
+		}
+		logger.Warn("failed to report piped meta to control-plane, wait to the next retry", zap.Int("calls", retry.Calls()))
+	}
+
+	return err
 }

@@ -22,6 +22,7 @@ go_library(
         "//pkg/cli:go_default_library",
         "//pkg/config:go_default_library",
         "//pkg/git:go_default_library",
+        "//pkg/model:go_default_library",
         "//pkg/rpc/rpcauth:go_default_library",
         "//pkg/rpc/rpcclient:go_default_library",
         "@com_github_spf13_cobra//:go_default_library",
