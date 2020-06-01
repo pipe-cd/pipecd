@@ -12,25 +12,7 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-// Package appstatereporter provides a piped component
-// that ...
-package appstatereporter
-
-import (
-	"context"
-	"time"
-)
-
-type AppStateReporter struct {
-	gracePeriod time.Duration
-}
-
-func NewReporter(gracePeriod time.Duration) *AppStateReporter {
-	return &AppStateReporter{
-		gracePeriod: gracePeriod,
-	}
-}
-
-func (t *AppStateReporter) Run(ctx context.Context) error {
-	return nil
-}
+// Package driffdetector provides a piped component
+// that continuously checks configuration driff between the current live state
+// and the state defined at the latest commit of all applications.
+package livestatestore

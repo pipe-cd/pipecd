@@ -12,11 +12,11 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-// Package appstatestore provides a piped component
+// Package livestatestore provides a piped component
 // that watches the live state of applications in the cluster
 // to construct it cache data that will be used to provide
 // data to another components quickly.
-package appstatestore
+package livestatestore
 
 import (
 	"context"
@@ -26,10 +26,10 @@ import (
 	"go.uber.org/zap"
 	"golang.org/x/sync/errgroup"
 
-	"github.com/kapetaniosci/pipe/pkg/app/piped/appstatestore/cloudrun"
-	"github.com/kapetaniosci/pipe/pkg/app/piped/appstatestore/kubernetes"
-	"github.com/kapetaniosci/pipe/pkg/app/piped/appstatestore/lambda"
-	"github.com/kapetaniosci/pipe/pkg/app/piped/appstatestore/terraform"
+	"github.com/kapetaniosci/pipe/pkg/app/piped/livestatestore/cloudrun"
+	"github.com/kapetaniosci/pipe/pkg/app/piped/livestatestore/kubernetes"
+	"github.com/kapetaniosci/pipe/pkg/app/piped/livestatestore/lambda"
+	"github.com/kapetaniosci/pipe/pkg/app/piped/livestatestore/terraform"
 	"github.com/kapetaniosci/pipe/pkg/config"
 	"github.com/kapetaniosci/pipe/pkg/model"
 )
@@ -81,7 +81,7 @@ type store struct {
 }
 
 func NewStore(cfg *config.PipedSpec, appLister applicationLister, gracePeriod time.Duration, logger *zap.Logger) Store {
-	logger = logger.Named("appstatestore")
+	logger = logger.Named("livestatestore")
 
 	s := &store{
 		kubernetesStores: make(map[string]KubernetesStore),

@@ -31,9 +31,9 @@ import (
 	"github.com/kapetaniosci/pipe/pkg/app/piped/apistore/applicationstore"
 	"github.com/kapetaniosci/pipe/pkg/app/piped/apistore/commandstore"
 	"github.com/kapetaniosci/pipe/pkg/app/piped/apistore/deploymentstore"
-	"github.com/kapetaniosci/pipe/pkg/app/piped/appstatereporter"
-	"github.com/kapetaniosci/pipe/pkg/app/piped/appstatestore"
 	"github.com/kapetaniosci/pipe/pkg/app/piped/controller"
+	"github.com/kapetaniosci/pipe/pkg/app/piped/livestatereporter"
+	"github.com/kapetaniosci/pipe/pkg/app/piped/livestatestore"
 	"github.com/kapetaniosci/pipe/pkg/app/piped/toolregistry"
 	"github.com/kapetaniosci/pipe/pkg/app/piped/trigger"
 	"github.com/kapetaniosci/pipe/pkg/cli"
@@ -198,17 +198,17 @@ func (p *piped) run(ctx context.Context, t cli.Telemetry) error {
 		commandLister = store.Lister()
 	}
 
-	// Start running application state store.
+	// Start running application live state store.
 	{
-		s := appstatestore.NewStore(cfg, applicationLister, p.gracePeriod, t.Logger)
+		s := livestatestore.NewStore(cfg, applicationLister, p.gracePeriod, t.Logger)
 		group.Go(func() error {
 			return s.Run(ctx)
 		})
 	}
 
-	// Start running application state reporter.
+	// Start running application live state reporter.
 	{
-		r := appstatereporter.NewReporter(p.gracePeriod)
+		r := livestatereporter.NewReporter(p.gracePeriod)
 		group.Go(func() error {
 			return r.Run(ctx)
 		})
