@@ -16,3 +16,8 @@ spec:
       type: KUBERNETES
       config:
         kubeconfigPath: /Users/a13705/.kube/config
+  analysisProviders:
+    - name: prometheus-dev
+      type: PROMETHEUS
+      config:
+        address: # Paste your Prometheus' address
