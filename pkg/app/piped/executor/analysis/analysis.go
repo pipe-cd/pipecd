@@ -17,6 +17,8 @@ package analysis
 import (
 	"context"
 	"fmt"
+	"io/ioutil"
+	"path/filepath"
 	"sync"
 	"time"
 
@@ -67,11 +69,21 @@ func (e *Executor) Execute(sig executor.StopSignal) model.StageStatus {
 	ctx, cancel := context.WithTimeout(sig.Context(), time.Duration(options.Duration))
 	defer cancel()
 
+	templateSpec, ok, err := e.loadTemplate()
+	if err != nil {
+		e.LogPersister.AppendError(err.Error())
+		return model.StageStatus_STAGE_FAILURE
+	}
+	if !ok {
+		e.Logger.Info("config file for AnalysisTemplate not found")
+		templateSpec = &config.AnalysisTemplateSpec{}
+	}
+
 	eg, ctx := errgroup.WithContext(ctx)
 	// Run analyses with metrics providers.
 	mf := metrics.NewFactory(e.Logger)
 	for _, m := range options.Metrics {
-		cfg, err := e.getMetricsCfg(&m)
+		cfg, err := e.getMetricsConfig(&m, templateSpec)
 		if err != nil {
 			e.LogPersister.AppendError(err.Error())
 			continue
@@ -91,7 +103,7 @@ func (e *Executor) Execute(sig executor.StopSignal) model.StageStatus {
 	// Run analyses with logging providers.
 	lf := log.NewFactory(e.Logger)
 	for _, l := range options.Logs {
-		cfg, err := e.getLogCfg(&l)
+		cfg, err := e.getLogConfig(&l, templateSpec)
 		if err != nil {
 			e.LogPersister.AppendError(err.Error())
 			continue
@@ -110,7 +122,7 @@ func (e *Executor) Execute(sig executor.StopSignal) model.StageStatus {
 	}
 	// Run analyses with http providers.
 	for _, h := range options.Https {
-		cfg, err := e.getHTTPCfg(&h)
+		cfg, err := e.getHTTPConfig(&h, templateSpec)
 		if err != nil {
 			e.LogPersister.AppendError(err.Error())
 			continue
@@ -215,52 +227,70 @@ func (e *Executor) newLogProvider(providerName string, factory *log.Factory) (lo
 	return provider, nil
 }
 
-// getMetricsCfg renders the given template and returns the metrics config.
+// loadTemplate finds the config file for the analysis template
+// in the repository directory and parse it.
+func (e *Executor) loadTemplate() (*config.AnalysisTemplateSpec, bool, error) {
+	dir := filepath.Join(e.RepoDir, ".piped")
+	files, err := ioutil.ReadDir(dir)
+	if err != nil {
+		return nil, false, fmt.Errorf("failed to read %s: %w", dir, err)
+	}
+
+	for _, f := range files {
+		if f.IsDir() {
+			continue
+		}
+		cfg, err := config.LoadFromYAML(f.Name())
+		if err != nil {
+			return nil, false, fmt.Errorf("failed to load config file %s at %s: %w", f.Name(), ".piped", err)
+		}
+		if cfg.Kind == config.KindAnalysisTemplate {
+			return cfg.AnalysisTemplateSpec, true, nil
+		}
+	}
+	return nil, false, nil
+}
+
+// getMetricsConfig renders the given template and returns the metrics config.
 // Just returns metrics config if no template specified.
-func (e *Executor) getMetricsCfg(templatableCfg *config.TemplatableAnalysisMetrics) (*config.AnalysisMetrics, error) {
+func (e *Executor) getMetricsConfig(templatableCfg *config.TemplatableAnalysisMetrics, templateSpec *config.AnalysisTemplateSpec) (*config.AnalysisMetrics, error) {
 	name := templatableCfg.UseTemplate
 	if name == "" {
 		return &templatableCfg.AnalysisMetrics, nil
 	}
-	// TODO: Load template config from .piped underneath e.RepoDir
-	templateSpec := &config.AnalysisTemplateSpec{}
 	cfg, ok := templateSpec.Metrics[name]
 	if !ok {
-		return nil, fmt.Errorf("analysis template %s not found", name)
+		return nil, fmt.Errorf("analysis template %s not found despite useTemplate specified", name)
 	}
 	// TODO: Render the application specific data into a template.
 	return &cfg, nil
 }
 
-// getLogCfg renders the given template and returns the log config.
+// getLogConfig renders the given template and returns the log config.
 // Just returns log config if no template specified.
-func (e *Executor) getLogCfg(templatableCfg *config.TemplatableAnalysisLog) (*config.AnalysisLog, error) {
+func (e *Executor) getLogConfig(templatableCfg *config.TemplatableAnalysisLog, templateSpec *config.AnalysisTemplateSpec) (*config.AnalysisLog, error) {
 	name := templatableCfg.UseTemplate
 	if name == "" {
 		return &templatableCfg.AnalysisLog, nil
 	}
-	// TODO: Load template config from .piped underneath e.RepoDir
-	templateSpec := &config.AnalysisTemplateSpec{}
 	cfg, ok := templateSpec.Logs[name]
 	if !ok {
-		return nil, fmt.Errorf("analysis template %s not found", name)
+		return nil, fmt.Errorf("analysis template %s not found despite useTemplate specified", name)
 	}
 	// TODO: Render the application specific data into a template.
 	return &cfg, nil
 }
 
-// getHTTPCfg renders the given template and returns the http config.
+// getHTTPConfig renders the given template and returns the http config.
 // Just returns http config if no template specified.
-func (e *Executor) getHTTPCfg(templatableCfg *config.TemplatableAnalysisHTTP) (*config.AnalysisHTTP, error) {
+func (e *Executor) getHTTPConfig(templatableCfg *config.TemplatableAnalysisHTTP, templateSpec *config.AnalysisTemplateSpec) (*config.AnalysisHTTP, error) {
 	name := templatableCfg.UseTemplate
 	if name == "" {
 		return &templatableCfg.AnalysisHTTP, nil
 	}
-	// TODO: Load template config from .piped underneath e.RepoDir
-	templateSpec := &config.AnalysisTemplateSpec{}
 	cfg, ok := templateSpec.HTTPs[name]
 	if !ok {
-		return nil, fmt.Errorf("analysis template %s not found", name)
+		return nil, fmt.Errorf("analysis template %s not found despite useTemplate specified", name)
 	}
 	// TODO: Render the application specific data into a template.
 	return &cfg, nil
