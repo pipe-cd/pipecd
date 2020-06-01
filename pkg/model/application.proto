@@ -56,6 +56,7 @@ message Application {
     string cloud_provider = 8 [(validate.rules).string.min_len = 1];
 
     // Current sync status of application.
+    // This part is updated by driff detector component of piped.
     ApplicationSyncStatus sync_status = 20 [(validate.rules).enum.defined_only = true];
     string sync_description = 21;
 

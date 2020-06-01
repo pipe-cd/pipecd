@@ -101,6 +101,17 @@ func (a *PipedAPI) ListApplications(ctx context.Context, req *pipedservice.ListA
 	}, nil
 }
 
+// UpdateApplicationSyncStatus is used to update the sync status of an application.
+func (a *PipedAPI) UpdateApplicationSyncStatus(ctx context.Context, req *pipedservice.UpdateApplicationSyncStatusRequest) (*pipedservice.UpdateApplicationSyncStatusResponse, error) {
+	return nil, status.Error(codes.Unimplemented, "")
+}
+
+// UpdateApplicationVersion is used to update the basic information about
+// the most recent successful deployment of a specific applicaiton.
+func (a *PipedAPI) UpdateApplicationVersion(ctx context.Context, req *pipedservice.UpdateApplicationVersionRequest) (*pipedservice.UpdateApplicationVersionResponse, error) {
+	return nil, status.Error(codes.Unimplemented, "")
+}
+
 // ListNotCompletedDeployments returns a list of not completed deployments
 // which are managed by this piped.
 // DeploymentController component uses this RPC to spawns/syncs its local deployment executors.
@@ -317,7 +328,7 @@ func (a *PipedAPI) ReportApplicationLiveState(ctx context.Context, req *pipedser
 	return nil, status.Error(codes.Unimplemented, "")
 }
 
-// ReportAppStateEvents is sent by piped to submit one or multiple events
+// ReportApplicationLiveStateEvents is sent by piped to submit one or multiple events
 // about the changes of application state.
 // Control plane uses the received events to update the state of application-resource-tree.
 // We want to start by a simple solution at this initial stage of development,
@@ -329,6 +340,6 @@ func (a *PipedAPI) ReportApplicationLiveState(ctx context.Context, req *pipedser
 // After receiving the events, all of them will be publish into a queue immediately,
 // and then another Handler service will pick them inorder to apply to build new state.
 // By that way we can control the traffic to the datastore in a better way.
-func (a *PipedAPI) ReportAppStateEvents(ctx context.Context, req *pipedservice.ReportAppStateEventsRequest) (*pipedservice.ReportAppStateEventsResponse, error) {
+func (a *PipedAPI) ReportApplicationLiveStateEvents(ctx context.Context, req *pipedservice.ReportApplicationLiveStateEventsRequest) (*pipedservice.ReportApplicationLiveStateEventsResponse, error) {
 	return nil, status.Error(codes.Unimplemented, "")
 }

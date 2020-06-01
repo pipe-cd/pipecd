@@ -20,25 +20,22 @@ option go_package = "github.com/kapetaniosci/pipe/pkg/app/api/service/pipedservi
 import "validate/validate.proto";
 import "pkg/model/application_live_state.proto";
 
-message AppStateEvent {
+message ApplicationLiveStateEvent {
     string id = 1;
     int64 timestamp = 2;
+    string application_id = 3 [(validate.rules).string.min_len = 1];
 
-    // KubernetesResource Events.
     message KubernetesResourceAdded {
-        string application_id = 1 [(validate.rules).string.min_len = 1];
-        pipe.model.KubernetesResource resource = 2 [(validate.rules).message.required = true];
+        pipe.model.KubernetesResource resource = 1 [(validate.rules).message.required = true];
     }
     
     message KubernetesResourceUpdated {
-        string application_id = 1 [(validate.rules).string.min_len = 1];
-        pipe.model.KubernetesResource before = 2 [(validate.rules).message.required = true];
-        pipe.model.KubernetesResource after = 3 [(validate.rules).message.required = true];
+        pipe.model.KubernetesResource before = 1 [(validate.rules).message.required = true];
+        pipe.model.KubernetesResource after = 2 [(validate.rules).message.required = true];
     }
     
     message KubernetesResourceDeleted {
-        string application_id = 1 [(validate.rules).string.min_len = 1];
-        pipe.model.KubernetesResource resource = 2 [(validate.rules).message.required = true];
+        pipe.model.KubernetesResource resource = 1 [(validate.rules).message.required = true];
     }
 
     oneof inner {

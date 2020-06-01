@@ -45,6 +45,13 @@ service PipedService {
     // Piped uses this RPC to fetch and sync the application configuration into its local database.
     rpc ListApplications(ListApplicationsRequest) returns (ListApplicationsResponse) {}
 
+    // UpdateApplicationSyncStatus is used to update the sync status of an application.
+    rpc UpdateApplicationSyncStatus(UpdateApplicationSyncStatusRequest) returns (UpdateApplicationSyncStatusResponse) {}
+
+    // UpdateApplicationVersion is used to update the basic information about
+    // the most recent successful deployment of a specific applicaiton.
+    rpc UpdateApplicationVersion(UpdateApplicationVersionRequest) returns (UpdateApplicationVersionResponse) {}
+
     // ListNotCompletedDeployments returns a list of not completed deployments
     // which are managed by this piped.
     // DeploymentController component uses this RPC to spawns/syncs its local deployment executors.
@@ -100,23 +107,23 @@ service PipedService {
     rpc ReportCommandHandled(ReportCommandHandledRequest) returns (ReportCommandHandledResponse) {}
 
     // ReportApplicationLiveState is periodically sent by piped to refresh the live state of application.
-    // This may contain a full tree of application resources for Kubernetes application.
-    // The tree data will be written into filestore and the cache inmmediately.
+    // For kubernetes application, this contains a full tree of its kubernetes resources.
+    // The tree data should be written into filestore immediately and then the state in cache should be cleaned.
     rpc ReportApplicationLiveState(ReportApplicationLiveStateRequest) returns (ReportApplicationLiveStateResponse) {}
 
-    // ReportAppStateEvents is sent by piped to submit one or multiple events
-    // about the changes of application state.
+    // ReportApplicationLiveStateEvents is sent by piped to submit one or multiple events
+    // about the changes of application live state.
     // Control plane uses the received events to update the state of application-resource-tree.
     // We want to start by a simple solution at this initial stage of development,
     // so the API server just handles as below:
-    // - loads the releated application-resource-tree from filestore
+    // - loads the releated application-resource-tree from the cache
     // - checks and builds new state for the application-resource-tree
-    // - updates new state into fielstore and cache (cache data is for reading while handling web requests)
+    // - updates new state into cache (cache data is for reading while handling web requests)
     // In the future, we may want to redesign the behavior of this RPC by using pubsub/queue pattern.
-    // After receiving the events, all of them will be publish into a queue immediately,
+    // After receiving the events, all of them will be published into a queue immediately,
     // and then another Handler service will pick them inorder to apply to build new state.
     // By that way we can control the traffic to the datastore in a better way.
-    rpc ReportAppStateEvents(ReportAppStateEventsRequest) returns (ReportAppStateEventsResponse) {}
+    rpc ReportApplicationLiveStateEvents(ReportApplicationLiveStateEventsRequest) returns (ReportApplicationLiveStateEventsResponse) {}
 }
 
 message PingRequest {
@@ -139,6 +146,25 @@ message ListApplicationsRequest {
 
 message ListApplicationsResponse {
     repeated pipe.model.Application applications = 1;
+}
+
+message UpdateApplicationSyncStatusRequest {
+    string application_id = 1 [(validate.rules).string.min_len = 1];
+    pipe.model.ApplicationSyncStatus sync_status = 2 [(validate.rules).enum.defined_only = true];
+    string sync_description = 3;
+}
+
+message UpdateApplicationSyncStatusResponse {
+}
+
+message UpdateApplicationVersionRequest {
+    string deployment_id = 1 [(validate.rules).string.min_len = 1];
+    string commit_hash = 2 [(validate.rules).string.min_len = 1];
+    string version = 3;
+    int64 deployed_at = 4 [(validate.rules).int64.gt = 0];
+}
+
+message UpdateApplicationVersionResponse {
 }
 
 message ListNotCompletedDeploymentsRequest {
@@ -269,10 +295,11 @@ message ReportApplicationLiveStateResponse {
     int64 latest_timestamp = 1 [(validate.rules).int64.gt = 0];
 }
 
-message ReportAppStateEventsRequest {
-    repeated AppStateEvent events = 1;
+message ReportApplicationLiveStateEventsRequest {
+    repeated ApplicationLiveStateEvent events = 1;
 }
 
-message ReportAppStateEventsResponse {
+message ReportApplicationLiveStateEventsResponse {
     repeated string failed_ids = 1;
+    repeated string need_full_state_apps = 2;
 }
