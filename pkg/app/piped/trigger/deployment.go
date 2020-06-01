@@ -90,10 +90,11 @@ func buildDeploment(app *model.Application, cfg *config.Config, branch string, c
 			User:      commit.Author,
 			Timestamp: now.Unix(),
 		},
-		GitPath:   app.GitPath,
-		Status:    model.DeploymentStatus_DEPLOYMENT_PENDING,
-		CreatedAt: now.Unix(),
-		UpdatedAt: now.Unix(),
+		GitPath:       app.GitPath,
+		CloudProvider: app.CloudProvider,
+		Status:        model.DeploymentStatus_DEPLOYMENT_PENDING,
+		CreatedAt:     now.Unix(),
+		UpdatedAt:     now.Unix(),
 	}
 
 	return deployment, nil

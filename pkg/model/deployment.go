@@ -128,4 +128,21 @@ func (d *Deployment) TriggerBefore(other *Deployment) bool {
 		return false
 	}
 	return true
+
+}
+
+// CloudProviderType determines the cloud provider type from application kind.
+func (d *Deployment) CloudProviderType() CloudProviderType {
+	switch d.Kind {
+	case ApplicationKind_KUBERNETES:
+		return CloudProviderKubernetes
+	case ApplicationKind_TERRAFORM:
+		return CloudProviderTerraform
+	case ApplicationKind_CLOUDRUN:
+		return CloudProviderCloudRun
+	case ApplicationKind_LAMBDA:
+		return CloudProviderLambda
+	default:
+		return CloudProviderType(d.Kind.String())
+	}
 }

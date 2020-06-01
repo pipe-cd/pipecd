@@ -54,6 +54,20 @@ func (s *PipedSpec) EnableDefaultKubernetesCloudProvider() {
 	s.CloudProviders = append(s.CloudProviders, DefaultKubernetesCloudProvider)
 }
 
+// HasCloudProvider checks whether the given provider is configured or not.
+func (s *PipedSpec) HasCloudProvider(name string, t model.CloudProviderType) bool {
+	for _, cp := range s.CloudProviders {
+		if cp.Name != name {
+			continue
+		}
+		if cp.Type != t {
+			continue
+		}
+		return true
+	}
+	return false
+}
+
 // GetRepositoryMap returns a map of repositories where key is repo id.
 func (s *PipedSpec) GetRepositoryMap() map[string]PipedRepository {
 	m := make(map[string]PipedRepository, len(s.Repositories))
