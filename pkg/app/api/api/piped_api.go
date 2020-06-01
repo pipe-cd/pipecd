@@ -310,10 +310,10 @@ func (a *PipedAPI) ReportCommandHandled(ctx context.Context, req *pipedservice.R
 	return nil, status.Error(codes.Unimplemented, "")
 }
 
-// ReportApplicationState is periodically sent by piped to refresh the current state of application.
+// ReportApplicationLiveState is periodically sent by piped to refresh the current state of application.
 // This may contain a full tree of application resources for Kubernetes application.
 // The tree data will be written into filestore and the cache inmmediately.
-func (a *PipedAPI) ReportApplicationState(ctx context.Context, req *pipedservice.ReportApplicationStateRequest) (*pipedservice.ReportApplicationStateResponse, error) {
+func (a *PipedAPI) ReportApplicationLiveState(ctx context.Context, req *pipedservice.ReportApplicationLiveStateRequest) (*pipedservice.ReportApplicationLiveStateResponse, error) {
 	return nil, status.Error(codes.Unimplemented, "")
 }
 

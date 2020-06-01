@@ -46,8 +46,8 @@ service WebService {
     rpc ApproveDeploymentStage(ApproveDeploymentStageRequest) returns (ApproveDeploymentStageResponse) {}
     rpc RetryDeploymentStage(RetryDeploymentStageRequest) returns (RetryDeploymentStageResponse) {}
 
-    // ApplicationState
-    rpc GetApplicationState(GetApplicationStateRequest) returns (GetApplicationStateResponse) {}
+    // ApplicationLiveState
+    rpc GetApplicationLiveState(GetApplicationLiveStateRequest) returns (GetApplicationLiveStateResponse) {}
     
     // Account
     rpc GetProject(GetProjectRequest) returns (GetProjectResponse) {}
@@ -157,10 +157,10 @@ message RetryDeploymentStageRequest {
 message RetryDeploymentStageResponse {
 }
 
-message GetApplicationStateRequest {
+message GetApplicationLiveStateRequest {
 }
 
-message GetApplicationStateResponse {
+message GetApplicationLiveStateResponse {
 }
 
 message GetProjectRequest {

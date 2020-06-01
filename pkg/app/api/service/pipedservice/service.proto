@@ -22,7 +22,7 @@ import "google/protobuf/wrappers.proto";
 import "pkg/app/api/service/pipedservice/event.proto";
 import "pkg/model/command.proto";
 import "pkg/model/application.proto";
-import "pkg/model/application_state.proto";
+import "pkg/model/application_live_state.proto";
 import "pkg/model/deployment.proto";
 import "pkg/model/logblock.proto";
 import "pkg/model/piped.proto";
@@ -99,10 +99,10 @@ service PipedService {
     // The handle result should be updated to both datastore and cache (for reading from web).
     rpc ReportCommandHandled(ReportCommandHandledRequest) returns (ReportCommandHandledResponse) {}
 
-    // ReportApplicationState is periodically sent by piped to refresh the current state of application.
+    // ReportApplicationLiveState is periodically sent by piped to refresh the live state of application.
     // This may contain a full tree of application resources for Kubernetes application.
     // The tree data will be written into filestore and the cache inmmediately.
-    rpc ReportApplicationState(ReportApplicationStateRequest) returns (ReportApplicationStateResponse) {}
+    rpc ReportApplicationLiveState(ReportApplicationLiveStateRequest) returns (ReportApplicationLiveStateResponse) {}
 
     // ReportAppStateEvents is sent by piped to submit one or multiple events
     // about the changes of application state.
@@ -261,11 +261,11 @@ message ReportCommandHandledRequest {
 message ReportCommandHandledResponse {
 }
 
-message ReportApplicationStateRequest {
-    pipe.model.ApplicationState state = 1 [(validate.rules).message.required = true];
+message ReportApplicationLiveStateRequest {
+    pipe.model.ApplicationLiveState state = 1 [(validate.rules).message.required = true];
 }
 
-message ReportApplicationStateResponse {
+message ReportApplicationLiveStateResponse {
     int64 latest_timestamp = 1 [(validate.rules).int64.gt = 0];
 }
 

@@ -374,12 +374,12 @@ func (c *fakeClient) ReportCommandHandled(ctx context.Context, req *pipedservice
 	return &pipedservice.ReportCommandHandledResponse{}, nil
 }
 
-// ReportApplicationState is periodically sent by piped to refresh the current state of application.
+// ReportApplicationLiveState is periodically sent by piped to refresh the current state of application.
 // This may contain a full tree of application resources for Kubernetes application.
 // The tree data will be written into filestore and the cache inmmediately.
-func (c *fakeClient) ReportApplicationState(ctx context.Context, req *pipedservice.ReportApplicationStateRequest, opts ...grpc.CallOption) (*pipedservice.ReportApplicationStateResponse, error) {
-	c.logger.Info("fake client received ReportApplicationState rpc", zap.Any("request", req))
-	return &pipedservice.ReportApplicationStateResponse{}, nil
+func (c *fakeClient) ReportApplicationLiveState(ctx context.Context, req *pipedservice.ReportApplicationLiveStateRequest, opts ...grpc.CallOption) (*pipedservice.ReportApplicationLiveStateResponse, error) {
+	c.logger.Info("fake client received ReportApplicationLiveState rpc", zap.Any("request", req))
+	return &pipedservice.ReportApplicationLiveStateResponse{}, nil
 }
 
 // ReportAppStateEvents is sent by piped to submit one or multiple events

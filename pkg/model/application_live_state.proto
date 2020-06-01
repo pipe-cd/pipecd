@@ -20,44 +20,34 @@ option go_package = "github.com/kapetaniosci/pipe/pkg/model";
 import "validate/validate.proto";
 import "pkg/model/application.proto";
 
-// ApplicationSyncStatus represents the current state of syncing the application.
-enum ApplicationSyncStatus {
-    UNKNOWN = 0;
-    SYNCED = 1;
-    DEPLOYING = 2;
-    OUT_OF_SYNC = 3;
-}
-
-// ApplicationState contains the full state information of the application.
-message ApplicationState {
+// ApplicationLiveState represents the full live state information of an application.
+message ApplicationLiveState {
     string application_id = 1 [(validate.rules).string.min_len = 1];
     string env_id = 2 [(validate.rules).string.min_len = 1];
     string piped_id = 3 [(validate.rules).string.min_len = 1];
     string project_id = 4 [(validate.rules).string.min_len = 1];
     ApplicationKind kind = 5 [(validate.rules).enum.defined_only = true];
 
-    ApplicationSyncStatus sync_status = 6 [(validate.rules).enum.defined_only = true];
-    string state_description = 7;
-    KubernetesApplicationState kubernetes_application_state = 8;
-    TerraformApplicationState terraform_application_state = 9;
-    CloudRunApplicationState cloudrun_application_state = 10;
-    LambdaApplicationState lambda_application_state = 11;
+    KubernetesApplicationLiveState kubernetes_state = 6;
+    TerraformApplicationLiveState terraform_state = 7;
+    CloudRunApplicationLiveState cloudrun_state = 8;
+    LambdaApplicationLiveState lambda_state = 9;
 
     int64 created_at = 14 [(validate.rules).int64.gt = 0];
     int64 updated_at = 15 [(validate.rules).int64.gt = 0];
 }
 
-message KubernetesApplicationState {
+message KubernetesApplicationLiveState {
     repeated KubernetesResource resources = 1;
 }
 
-message TerraformApplicationState {
+message TerraformApplicationLiveState {
 }
 
-message CloudRunApplicationState {
+message CloudRunApplicationLiveState {
 }
 
-message LambdaApplicationState {
+message LambdaApplicationLiveState {
 }
 
 // KubernetesResource represents the state of a single kubernetes resource object.

@@ -18,7 +18,7 @@ package pipe.api.service.pipedservice;
 option go_package = "github.com/kapetaniosci/pipe/pkg/app/api/service/pipedservice";
 
 import "validate/validate.proto";
-import "pkg/model/application_state.proto";
+import "pkg/model/application_live_state.proto";
 
 message AppStateEvent {
     string id = 1;

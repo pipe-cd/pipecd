@@ -41,10 +41,10 @@ type applicationLister interface {
 type Store interface {
 	Run(ctx context.Context) error
 
-	KubernetesApplicationStateLister() KubernetesApplicationStateLister
+	KubernetesApplicationLiveStateLister() KubernetesApplicationLiveStateLister
 }
 
-type KubernetesApplicationStateLister interface {
+type KubernetesApplicationLiveStateLister interface {
 	GetKubernetesAppLiveResources(appID, cloudProvider string) ([]model.KubernetesResource, error)
 }
 
@@ -152,7 +152,7 @@ func (s *store) Run(ctx context.Context) error {
 	return err
 }
 
-func (s *store) KubernetesApplicationStateLister() KubernetesApplicationStateLister {
+func (s *store) KubernetesApplicationLiveStateLister() KubernetesApplicationLiveStateLister {
 	return s
 }
 

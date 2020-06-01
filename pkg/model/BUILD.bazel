@@ -5,7 +5,7 @@ proto_library(
     name = "model_proto",
     srcs = [
         "application.proto",
-        "application_state.proto",
+        "application_live_state.proto",
         "command.proto",
         "deployment.proto",
         "environment.proto",
