@@ -44,18 +44,18 @@ spec:
       config:
         region: us-east-1
 
-  # analysisProviders:
-  #   - name: prometheus
-  #     prometheus:
-  #       address: https://your-prometheus.dev
-  #   - name: stackdriver
-  #     stackdriver:
-  #       projectId: demo
-  #       serviceAccountFile: /etc/piped-secret/gcp-service-account.json
-  #   - name: datadog
-  #     datadog:
-  #       apiKeyFile: /etc/piped-secret/datadog-api-key
-  #       applicationKeyFile: /etc/piped-secret/datadog-application-key
-  #   - name: cloudwatch
-  #     cloudwatch:
-  #       region: ap-northeast-1
+  analysisProviders:
+    - name: prometheus-dev
+      type: PROMETHEUS
+      config:
+        address: https://your-prometheus.dev
+    - name: datadog-dev
+      type: DATADOG
+      config:
+        address: https://your-datadog.dev
+        apiKeyFile: /etc/piped-secret/datadog-api-key
+        applicationKeyFile: /etc/piped-secret/datadog-application-key
+    - name: stackdriver-dev
+      type: STACKDRIVER
+      config:
+        serviceAccountFile: /etc/piped-secret/gcp-service-account.json

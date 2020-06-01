@@ -22,6 +22,7 @@ import (
 
 	"github.com/kapetaniosci/pipe/pkg/app/piped/analysisprovider/log/stackdriver"
 	"github.com/kapetaniosci/pipe/pkg/config"
+	"github.com/kapetaniosci/pipe/pkg/model"
 )
 
 type Factory struct {
@@ -33,10 +34,10 @@ func NewFactory(logger *zap.Logger) *Factory {
 }
 
 // NewProvider generates an appropriate provider according to analysis provider config.
-func (f *Factory) NewProvider(providerCfg *config.AnalysisProvider) (provider Provider, err error) {
-	switch {
-	case providerCfg.Stackdriver != nil:
-		cfg := providerCfg.Stackdriver
+func (f *Factory) NewProvider(providerCfg *config.PipedAnalysisProvider) (provider Provider, err error) {
+	switch providerCfg.Type {
+	case model.AnalysisProviderStackdriver:
+		cfg := providerCfg.StackdriverConfig
 		sa, err := ioutil.ReadFile(cfg.ServiceAccountFile)
 		if err != nil {
 			return nil, err

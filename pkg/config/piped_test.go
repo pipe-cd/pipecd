@@ -100,6 +100,31 @@ func TestPipedConfig(t *testing.T) {
 						},
 					},
 				},
+				AnalysisProviders: []PipedAnalysisProvider{
+					{
+						Name: "prometheus-dev",
+						Type: model.AnalysisProviderPrometheus,
+						PrometheusConfig: &AnalysisProviderPrometheusConfig{
+							Address: "https://your-prometheus.dev",
+						},
+					},
+					{
+						Name: "datadog-dev",
+						Type: model.AnalysisProviderDatadog,
+						DatadogConfig: &AnalysisProviderDatadogConfig{
+							Address:            "https://your-datadog.dev",
+							APIKeyFile:         "/etc/piped-secret/datadog-api-key",
+							ApplicationKeyFile: "/etc/piped-secret/datadog-application-key",
+						},
+					},
+					{
+						Name: "stackdriver-dev",
+						Type: model.AnalysisProviderStackdriver,
+						StackdriverConfig: &AnalysisProviderStackdriverConfig{
+							ServiceAccountFile: "/etc/piped-secret/gcp-service-account.json",
+						},
+					},
+				},
 			},
 			expectedError: nil,
 		},

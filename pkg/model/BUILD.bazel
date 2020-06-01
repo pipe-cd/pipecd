@@ -34,6 +34,7 @@ pgv_go_proto_library(
 go_library(
     name = "go_default_library",
     srcs = [
+        "analysisprovider.go",
         "application.go",
         "cloudprovider.go",
         "command.go",

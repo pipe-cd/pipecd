@@ -34,9 +34,9 @@ type PipedSpec struct {
 	// Git configuration needed for git commands.
 	Git PipedGit `json:"git"`
 	// List of git repositories this piped will handle.
-	Repositories      []PipedRepository    `json:"repositories"`
-	CloudProviders    []PipedCloudProvider `json:"cloudProviders"`
-	AnalysisProviders []AnalysisProvider   `json:"analysisProviders"`
+	Repositories      []PipedRepository       `json:"repositories"`
+	CloudProviders    []PipedCloudProvider    `json:"cloudProviders"`
+	AnalysisProviders []PipedAnalysisProvider `json:"analysisProviders"`
 }
 
 // Validate validates configured data of all fields.
@@ -87,14 +87,14 @@ func (s *PipedSpec) GetRepository(id string) (PipedRepository, bool) {
 	return PipedRepository{}, false
 }
 
-// GetProvider finds and returns an Analysis Provider config whose name is the given string.
-func (s *PipedSpec) GetProvider(name string) (AnalysisProvider, bool) {
+// GetAnalysisProvider finds and returns an Analysis Provider config whose name is the given string.
+func (s *PipedSpec) GetAnalysisProvider(name string) (PipedAnalysisProvider, bool) {
 	for _, p := range s.AnalysisProviders {
 		if p.Name == name {
 			return p, true
 		}
 	}
-	return AnalysisProvider{}, false
+	return PipedAnalysisProvider{}, false
 }
 
 type PipedGit struct {
@@ -227,14 +227,53 @@ type CloudProviderLambdaConfig struct {
 	Region string `json:"region"`
 }
 
-type AnalysisProvider struct {
-	Name        string                       `json:"name"`
-	Prometheus  *AnalysisProviderPrometheus  `json:"prometheus"`
-	Datadog     *AnalysisProviderDatadog     `json:"datadog"`
-	Stackdriver *AnalysisProviderStackdriver `json:"stackdriver"`
+type PipedAnalysisProvider struct {
+	Name string                     `json:"name"`
+	Type model.AnalysisProviderType `json:"type"`
+
+	PrometheusConfig  *AnalysisProviderPrometheusConfig  `json:"prometheus"`
+	DatadogConfig     *AnalysisProviderDatadogConfig     `json:"datadog"`
+	StackdriverConfig *AnalysisProviderStackdriverConfig `json:"stackdriver"`
 }
 
-type AnalysisProviderPrometheus struct {
+type genericPipedAnalysisProvider struct {
+	Name   string                     `json:"name"`
+	Type   model.AnalysisProviderType `json:"type"`
+	Config json.RawMessage            `json:"config"`
+}
+
+func (p *PipedAnalysisProvider) UnmarshalJSON(data []byte) error {
+	var err error
+	gp := genericPipedAnalysisProvider{}
+	if err = json.Unmarshal(data, &gp); err != nil {
+		return err
+	}
+	p.Name = gp.Name
+	p.Type = gp.Type
+
+	switch p.Type {
+	case model.AnalysisProviderPrometheus:
+		p.PrometheusConfig = &AnalysisProviderPrometheusConfig{}
+		if len(gp.Config) > 0 {
+			err = json.Unmarshal(gp.Config, p.PrometheusConfig)
+		}
+	case model.AnalysisProviderDatadog:
+		p.DatadogConfig = &AnalysisProviderDatadogConfig{}
+		if len(gp.Config) > 0 {
+			err = json.Unmarshal(gp.Config, p.DatadogConfig)
+		}
+	case model.AnalysisProviderStackdriver:
+		p.StackdriverConfig = &AnalysisProviderStackdriverConfig{}
+		if len(gp.Config) > 0 {
+			err = json.Unmarshal(gp.Config, p.StackdriverConfig)
+		}
+	default:
+		err = fmt.Errorf("unsupported analysis provider type: %s", p.Name)
+	}
+	return err
+}
+
+type AnalysisProviderPrometheusConfig struct {
 	Address string `json:"address"`
 	// The path to the username file.
 	UsernameFile string `json:"usernameFile"`
@@ -242,7 +281,7 @@ type AnalysisProviderPrometheus struct {
 	PasswordFile string `json:"passwordFile"`
 }
 
-type AnalysisProviderDatadog struct {
+type AnalysisProviderDatadogConfig struct {
 	Address string `json:"address"`
 	// The path to the api key file.
 	APIKeyFile string `json:"apiKeyFile"`
@@ -250,7 +289,7 @@ type AnalysisProviderDatadog struct {
 	ApplicationKeyFile string `json:"applicationKeyFile"`
 }
 
-type AnalysisProviderStackdriver struct {
+type AnalysisProviderStackdriverConfig struct {
 	// The path to the service account file.
 	ServiceAccountFile string `json:"serviceAccountFile"`
 }

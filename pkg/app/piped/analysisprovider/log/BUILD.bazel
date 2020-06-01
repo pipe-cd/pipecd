@@ -12,6 +12,7 @@ go_library(
         "//pkg/app/piped/analysisprovider:go_default_library",
         "//pkg/app/piped/analysisprovider/log/stackdriver:go_default_library",
         "//pkg/config:go_default_library",
+        "//pkg/model:go_default_library",
         "@org_uber_go_zap//:go_default_library",
     ],
 )

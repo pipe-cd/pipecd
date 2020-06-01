@@ -23,6 +23,7 @@ import (
 	"github.com/kapetaniosci/pipe/pkg/app/piped/analysisprovider/metrics/datadog"
 	"github.com/kapetaniosci/pipe/pkg/app/piped/analysisprovider/metrics/prometheus"
 	"github.com/kapetaniosci/pipe/pkg/config"
+	"github.com/kapetaniosci/pipe/pkg/model"
 )
 
 type Factory struct {
@@ -34,10 +35,10 @@ func NewFactory(logger *zap.Logger) *Factory {
 }
 
 // NewProvider generates an appropriate provider according to analysis provider config.
-func (f *Factory) NewProvider(providerCfg *config.AnalysisProvider) (provider Provider, err error) {
-	switch {
-	case providerCfg.Prometheus != nil:
-		cfg := providerCfg.Prometheus
+func (f *Factory) NewProvider(providerCfg *config.PipedAnalysisProvider) (provider Provider, err error) {
+	switch providerCfg.Type {
+	case model.AnalysisProviderPrometheus:
+		cfg := providerCfg.PrometheusConfig
 		// TODO: Decide the way to authenticate.
 		/*		username, err := ioutil.ReadFile(cfg.UsernameFile)
 				if err != nil {
@@ -53,8 +54,8 @@ func (f *Factory) NewProvider(providerCfg *config.AnalysisProvider) (provider Pr
 		if err != nil {
 			return
 		}
-	case providerCfg.Datadog != nil:
-		cfg := providerCfg.Datadog
+	case model.AnalysisProviderDatadog:
+		cfg := providerCfg.DatadogConfig
 		apiKey, err := ioutil.ReadFile(cfg.APIKeyFile)
 		if err != nil {
 			return nil, err

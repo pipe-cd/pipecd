@@ -204,7 +204,7 @@ func (e *Executor) setQueryCount() {
 }
 
 func (e *Executor) newMetricsProvider(providerName string, factory *metrics.Factory) (metrics.Provider, error) {
-	cfg, ok := e.PipedConfig.GetProvider(providerName)
+	cfg, ok := e.PipedConfig.GetAnalysisProvider(providerName)
 	if !ok {
 		return nil, fmt.Errorf("unknown provider name %s", providerName)
 	}
@@ -216,7 +216,7 @@ func (e *Executor) newMetricsProvider(providerName string, factory *metrics.Fact
 }
 
 func (e *Executor) newLogProvider(providerName string, factory *log.Factory) (log.Provider, error) {
-	cfg, ok := e.PipedConfig.GetProvider(providerName)
+	cfg, ok := e.PipedConfig.GetAnalysisProvider(providerName)
 	if !ok {
 		return nil, fmt.Errorf("unknown provider name %s", providerName)
 	}
