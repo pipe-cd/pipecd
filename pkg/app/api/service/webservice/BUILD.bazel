@@ -10,6 +10,7 @@ proto_library(
     visibility = ["//visibility:public"],
     # keep
     deps = [
+        "//pkg/model:model_proto",
         "@com_github_envoyproxy_protoc_gen_validate//validate:validate_proto",
     ],
 )
@@ -20,6 +21,9 @@ pgv_go_proto_library(
     importpath = "github.com/kapetaniosci/pipe/pkg/app/api/service/webservice",
     proto = ":webservice_proto",
     visibility = ["//visibility:public"],
+    deps = [
+        "//pkg/model:go_default_library",
+    ],
 )
 
 go_library(

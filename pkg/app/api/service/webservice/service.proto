@@ -18,6 +18,8 @@ package pipe.api.service.webservice;
 option go_package = "github.com/kapetaniosci/pipe/pkg/app/api/service/webservice";
 
 import "validate/validate.proto";
+import "pkg/model/deployment.proto";
+import "pkg/model/logblock.proto";
 
 service WebService {
     // Environment
@@ -38,7 +40,8 @@ service WebService {
 
     // Deployment
     rpc ListDeployments(ListDeploymentsRequest) returns (ListDeploymentsResponse) {}
-    rpc GetDeployment(GetDeploymentRequest) returns (GetDeploymentResponse) {}
+    rpc GetDeploymentDetail(GetDeploymentDetailRequest) returns (GetDeploymentDetailResponse) {}
+    rpc GetDeploymentStageLog(GetDeploymentStageLogRequest) returns (GetDeploymentStageLogResponse) {}
     rpc CancelDeployment(CancelDeploymentRequest) returns (CancelDeploymentResponse) {}
     rpc ApproveDeploymentStage(ApproveDeploymentStageRequest) returns (ApproveDeploymentStageResponse) {}
     rpc RetryDeploymentStage(RetryDeploymentStageRequest) returns (RetryDeploymentStageResponse) {}
@@ -117,10 +120,23 @@ message ListDeploymentsRequest {
 message ListDeploymentsResponse {
 }
 
-message GetDeploymentRequest {
+message GetDeploymentDetailRequest {
+    string deployment_id = 1 [(validate.rules).string.min_len = 1];
 }
 
-message GetDeploymentResponse {
+message GetDeploymentDetailResponse {
+    pipe.model.Deployment deployment = 1;
+}
+
+message GetDeploymentStageLogRequest {
+    string deployment_id = 1 [(validate.rules).string.min_len = 1];
+    string stage_id = 2 [(validate.rules).string.min_len = 1];
+    int64 offset_timestamp = 3;
+}
+
+message GetDeploymentStageLogResponse {
+    repeated pipe.model.LogBlock blocks = 1;
+    bool completed = 2;
 }
 
 message CancelDeploymentRequest {
