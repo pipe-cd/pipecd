@@ -96,23 +96,35 @@ func (s *server) run(ctx context.Context, t cli.Telemetry) error {
 			http.ServeFile(w, r, filepath.Join(s.staticDir, "/index.html"))
 		})
 
+		stop := func() {
+			ctx, cancel := context.WithTimeout(context.Background(), s.gracePeriod)
+			defer cancel()
+
+			t.Logger.Info("stopping http server")
+			if err := server.Shutdown(ctx); err != nil {
+				t.Logger.Error("failed to shutdown http server", zap.Error(err))
+				return
+			}
+			t.Logger.Info("http server is stopped")
+		}
+
 		group.Go(func() error {
-			defer func() {
-				ctx, cancel := context.WithTimeout(context.Background(), s.gracePeriod)
+			doneCh := make(chan error, 1)
+			ctx, cancel := context.WithCancel(ctx)
+
+			go func() {
 				defer cancel()
-				t.Logger.Info("stopping http server")
-				if err := server.Shutdown(ctx); err != nil {
-					t.Logger.Error("failed to shutdown http server", zap.Error(err))
+				if err := server.ListenAndServe(); err != nil && err != http.ErrServerClosed {
+					t.Logger.Error("failed to listen and serve http server", zap.Error(err))
+					doneCh <- err
 					return
 				}
-				t.Logger.Info("http server is stopped")
+				doneCh <- nil
 			}()
 
-			if err := server.ListenAndServe(); err != nil && err != http.ErrServerClosed {
-				t.Logger.Error("failed to listen and serve http server", zap.Error(err))
-				return err
-			}
-			return nil
+			<-ctx.Done()
+			stop()
+			return <-doneCh
 		})
 	}
 
