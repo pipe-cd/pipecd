@@ -14,12 +14,16 @@
 
 package log
 
-import "github.com/kapetaniosci/pipe/pkg/app/piped/analysisprovider"
+import (
+	"context"
+
+	"github.com/kapetaniosci/pipe/pkg/app/piped/analysisprovider"
+)
 
 // Provider represents a client for log provider which provides logs for analysis.
 type Provider interface {
 	analysisprovider.Provider
 	// RunQuery runs the given query against the log provider,
-	// and then checks if the error is lower than the threshold.
-	RunQuery(query string, threshold int) (result bool, err error)
+	// and then checks if there is at least one error log..
+	RunQuery(ctx context.Context, query string) (result bool, err error)
 }

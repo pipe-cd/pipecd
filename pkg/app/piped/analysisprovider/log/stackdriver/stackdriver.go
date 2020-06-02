@@ -14,7 +14,10 @@
 
 package stackdriver
 
-import "time"
+import (
+	"context"
+	"time"
+)
 
 const ProviderType = "StackdriverLogging"
 
@@ -35,6 +38,6 @@ func (p *Provider) Type() string {
 	return ProviderType
 }
 
-func (p *Provider) RunQuery(query string, threshold int) (bool, error) {
+func (p *Provider) RunQuery(ctx context.Context, query string) (bool, error) {
 	return false, nil
 }

@@ -133,7 +133,7 @@ func (e *Executor) Execute(sig executor.StopSignal) model.StageStatus {
 		}
 		eg.Go(func() error {
 			runner := func(ctx context.Context) (bool, error) {
-				return provider.RunQuery(cfg.Query, cfg.FailureLimit)
+				return provider.RunQuery(ctx, cfg.Query)
 			}
 			return e.runAnalysis(ctx, time.Duration(cfg.Interval), provider.Type(), runner, cfg.FailureLimit)
 		})
