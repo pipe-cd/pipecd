@@ -21,6 +21,8 @@ import "validate/validate.proto";
 import "pkg/model/deployment.proto";
 import "pkg/model/logblock.proto";
 
+// WebService contains all RPC definitions for web client.
+// All of these RPCs are only called by web client and authenticated by using ID_TOKEN.
 service WebService {
     // Environment
     rpc AddEnvironment(AddEnvironmentRequest) returns (AddEnvironmentResponse) {}

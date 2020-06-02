@@ -35,8 +35,12 @@ message Piped {
     // The ID of the project this enviroment belongs to.
     string project_id = 4 [(validate.rules).string.min_len = 1];
 
+    // Currently running version.
+    string version = 7;
+    // Unix time when the piped is started up.
+    int64 started_at = 8;
     // List of configured cloud providers.
-    repeated CloudProvider cloud_providers = 7;
+    repeated CloudProvider cloud_providers = 9;
 
     // Whether the piped is disabled or not.
     bool disabled = 13;

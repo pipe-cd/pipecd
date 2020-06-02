@@ -42,6 +42,7 @@ import (
 	"github.com/kapetaniosci/pipe/pkg/model"
 	"github.com/kapetaniosci/pipe/pkg/rpc/rpcauth"
 	"github.com/kapetaniosci/pipe/pkg/rpc/rpcclient"
+	"github.com/kapetaniosci/pipe/pkg/version"
 
 	// Import to preload all built-in executors to the default registry.
 	_ "github.com/kapetaniosci/pipe/pkg/app/piped/executor/registry"
@@ -297,6 +298,7 @@ func (p *piped) loadConfig() (*config.PipedSpec, error) {
 func (p *piped) sendPipedMeta(ctx context.Context, client pipedservice.Client, cfg *config.PipedSpec, logger *zap.Logger) error {
 	var (
 		req = &pipedservice.ReportPipedMetaRequest{
+			Version:        version.Get().Version,
 			CloudProviders: make([]*model.Piped_CloudProvider, 0, len(cfg.CloudProviders)),
 		}
 		retry = pipedservice.NewRetry(10)

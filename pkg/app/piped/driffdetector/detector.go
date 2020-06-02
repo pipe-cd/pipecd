@@ -15,4 +15,4 @@
 // Package driffdetector provides a piped component
 // that continuously checks configuration driff between the current live state
 // and the state defined at the latest commit of all applications.
-package livestatestore
+package driffdetector
