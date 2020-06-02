@@ -60,15 +60,13 @@ message KubernetesResource {
     repeated string parrent_ids = 3;
     // The unique name for the type of resource.
     string name = 4 [(validate.rules).string.min_len = 1];
-    // The group of this resource.
-    string group = 5 [(validate.rules).string.min_len = 1];
-    // The version of this resource.
-    string version = 6 [(validate.rules).string.min_len = 1];
+    // The api version of this resource represented by "group/version".
+    string api_version = 5 [(validate.rules).string.min_len = 1];
     // The kind of this resource.
-    string kind = 7 [(validate.rules).string.min_len = 1];
+    string kind = 6 [(validate.rules).string.min_len = 1];
     // The namespace this resource belongs to.
     // This can be empty for non-namespaced resources.
-    string namespace = 8;
+    string namespace = 7;
     // The timestamp when this resource was created.
     int64 created_at = 14 [(validate.rules).int64.gt = 0];
     // The timestamp of the last time when this resource was updated.
