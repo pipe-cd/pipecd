@@ -54,8 +54,7 @@ func Register(r registerer) {
 	r.Register(model.StageAnalysis, f)
 }
 
-// templateArgs allows deployment-specific data to be embedded
-// in the analysis template.
+// templateArgs allows deployment-specific data to be embedded in the analysis template.
 type templateArgs struct {
 	App struct {
 		Name string
@@ -173,8 +172,8 @@ func (e *Executor) runAnalysis(ctx context.Context, interval time.Duration, prov
 		case <-ticker.C:
 			success, err := runQuery(ctx)
 			if err != nil {
-				e.Logger.Error("failed to run query", zap.Error(err))
-				// TODO: Decide how to handle query failures.
+				// The failure of the query itself is treated as a failure.
+				e.LogPersister.AppendError(fmt.Sprintf("Failed to run query: %s", err.Error()))
 				success = false
 			}
 			if !success {
