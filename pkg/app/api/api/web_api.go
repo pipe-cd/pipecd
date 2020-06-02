@@ -298,7 +298,112 @@ func (a *WebAPI) ApproveStage(ctx context.Context, req *webservice.ApproveStageR
 }
 
 func (a *WebAPI) GetApplicationLiveState(ctx context.Context, req *webservice.GetApplicationLiveStateRequest) (*webservice.GetApplicationLiveStateResponse, error) {
-	return nil, status.Error(codes.Unimplemented, "")
+	// Creating fake response
+	now := time.Now()
+	resp := &model.ApplicationLiveState{
+		ApplicationId: "debug-project/development/debug-app",
+		EnvId:         "development",
+		PipedId:       "debug-piped",
+		ProjectId:     "debug-project",
+		Kind:          model.ApplicationKind_KUBERNETES,
+		KubernetesState: &model.KubernetesApplicationLiveState{
+			Resources: []*model.KubernetesResource{
+				{
+					Id:         "f2c832a3-1f5b-4982-8f6e-72345ecb3c82",
+					Name:       "demo-application",
+					ApiVersion: "networking.k8s.io/v1beta1",
+					Kind:       "Ingress",
+					Namespace:  "default",
+					CreatedAt:  now.Unix(),
+					UpdatedAt:  now.Unix(),
+				},
+				{
+					Id:         "8423fb53-5170-4864-a7d2-b84f8d36cb02",
+					Name:       "demo-application",
+					ApiVersion: "v1",
+					Kind:       "Service",
+					Namespace:  "default",
+					CreatedAt:  now.Unix(),
+					UpdatedAt:  now.Unix(),
+				},
+				{
+					Id:         "660ecdfd-307b-4e47-becd-1fde4e0c1e7a",
+					Name:       "demo-application",
+					ApiVersion: "apps/v1",
+					Kind:       "Deployment",
+					Namespace:  "default",
+					CreatedAt:  now.Unix(),
+					UpdatedAt:  now.Unix(),
+				},
+				{
+					Id: "8621f186-6641-4f7a-9be4-5983eb647f8d",
+					OwnerIds: []string{
+						"660ecdfd-307b-4e47-becd-1fde4e0c1e7a",
+					},
+					ParrentIds: []string{
+						"660ecdfd-307b-4e47-becd-1fde4e0c1e7a",
+					},
+					Name:       "demo-application-9504e8601a",
+					ApiVersion: "apps/v1",
+					Kind:       "ReplicaSet",
+					Namespace:  "default",
+					CreatedAt:  now.Unix(),
+					UpdatedAt:  now.Unix(),
+				},
+				{
+					Id: "ae5d0031-1f63-4396-b929-fa9987d1e6de",
+					OwnerIds: []string{
+						"660ecdfd-307b-4e47-becd-1fde4e0c1e7a",
+					},
+					ParrentIds: []string{
+						"8621f186-6641-4f7a-9be4-5983eb647f8d",
+					},
+					Name:       "demo-application-9504e8601a-7vrdw",
+					ApiVersion: "v1",
+					Kind:       "Pod",
+					Namespace:  "default",
+					CreatedAt:  now.Unix(),
+					UpdatedAt:  now.Unix(),
+				},
+				{
+					Id: "f55c7891-ba25-44bb-bca4-ffbc16b0089f",
+					OwnerIds: []string{
+						"660ecdfd-307b-4e47-becd-1fde4e0c1e7a",
+					},
+					ParrentIds: []string{
+						"8621f186-6641-4f7a-9be4-5983eb647f8d",
+					},
+					Name:       "demo-application-9504e8601a-vlgd5",
+					ApiVersion: "v1",
+					Kind:       "Pod",
+					Namespace:  "default",
+					CreatedAt:  now.Unix(),
+					UpdatedAt:  now.Unix(),
+				},
+				{
+					Id: "c2a81415-5bbf-44e8-9101-98bbd636bbeb",
+					OwnerIds: []string{
+						"660ecdfd-307b-4e47-becd-1fde4e0c1e7a",
+					},
+					ParrentIds: []string{
+						"8621f186-6641-4f7a-9be4-5983eb647f8d",
+					},
+					Name:       "demo-application-9504e8601a-tmwp5",
+					ApiVersion: "v1",
+					Kind:       "Pod",
+					Namespace:  "default",
+					CreatedAt:  now.Unix(),
+					UpdatedAt:  now.Unix(),
+				},
+			},
+		},
+		CreatedAt: now.Unix(),
+		UpdatedAt: now.Unix(),
+	}
+
+	return &webservice.GetApplicationLiveStateResponse{
+		State: resp,
+	}, nil
 }
 
 func (a *WebAPI) GetProject(ctx context.Context, req *webservice.GetProjectRequest) (*webservice.GetProjectResponse, error) {
