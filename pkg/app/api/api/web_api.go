@@ -89,7 +89,7 @@ func (a *WebAPI) ListDeployments(ctx context.Context, req *webservice.ListDeploy
 	return nil, status.Error(codes.Unimplemented, "")
 }
 
-func (a *WebAPI) GetDeploymentDetail(ctx context.Context, req *webservice.GetDeploymentDetailRequest) (*webservice.GetDeploymentDetailResponse, error) {
+func (a *WebAPI) GetDeployment(ctx context.Context, req *webservice.GetDeploymentRequest) (*webservice.GetDeploymentResponse, error) {
 	// Creating fake response
 	now := time.Now()
 	resp := &model.Deployment{
@@ -225,12 +225,12 @@ func (a *WebAPI) GetDeploymentDetail(ctx context.Context, req *webservice.GetDep
 		UpdatedAt: now.Unix(),
 	}
 
-	return &webservice.GetDeploymentDetailResponse{
+	return &webservice.GetDeploymentResponse{
 		Deployment: resp,
 	}, nil
 }
 
-func (a *WebAPI) GetDeploymentStageLog(ctx context.Context, req *webservice.GetDeploymentStageLogRequest) (*webservice.GetDeploymentStageLogResponse, error) {
+func (a *WebAPI) GetStageLog(ctx context.Context, req *webservice.GetStageLogRequest) (*webservice.GetStageLogResponse, error) {
 	// Creating fake response
 	startTime := time.Now().Add(-10 * time.Minute)
 	resp := []*model.LogBlock{
@@ -284,7 +284,7 @@ func (a *WebAPI) GetDeploymentStageLog(ctx context.Context, req *webservice.GetD
 		},
 	}
 
-	return &webservice.GetDeploymentStageLogResponse{
+	return &webservice.GetStageLogResponse{
 		Blocks: resp,
 	}, nil
 }
@@ -293,7 +293,7 @@ func (a *WebAPI) CancelDeployment(ctx context.Context, req *webservice.CancelDep
 	return nil, status.Error(codes.Unimplemented, "")
 }
 
-func (a *WebAPI) ApproveDeploymentStage(ctx context.Context, req *webservice.ApproveDeploymentStageRequest) (*webservice.ApproveDeploymentStageResponse, error) {
+func (a *WebAPI) ApproveStage(ctx context.Context, req *webservice.ApproveStageRequest) (*webservice.ApproveStageResponse, error) {
 	return nil, status.Error(codes.Unimplemented, "")
 }
 

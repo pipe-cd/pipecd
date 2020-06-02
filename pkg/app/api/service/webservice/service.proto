@@ -42,10 +42,10 @@ service WebService {
 
     // Deployment
     rpc ListDeployments(ListDeploymentsRequest) returns (ListDeploymentsResponse) {}
-    rpc GetDeploymentDetail(GetDeploymentDetailRequest) returns (GetDeploymentDetailResponse) {}
-    rpc GetDeploymentStageLog(GetDeploymentStageLogRequest) returns (GetDeploymentStageLogResponse) {}
+    rpc GetDeployment(GetDeploymentRequest) returns (GetDeploymentResponse) {}
+    rpc GetStageLog(GetStageLogRequest) returns (GetStageLogResponse) {}
     rpc CancelDeployment(CancelDeploymentRequest) returns (CancelDeploymentResponse) {}
-    rpc ApproveDeploymentStage(ApproveDeploymentStageRequest) returns (ApproveDeploymentStageResponse) {}
+    rpc ApproveStage(ApproveStageRequest) returns (ApproveStageResponse) {}
 
     // ApplicationLiveState
     rpc GetApplicationLiveState(GetApplicationLiveStateRequest) returns (GetApplicationLiveStateResponse) {}
@@ -121,21 +121,21 @@ message ListDeploymentsRequest {
 message ListDeploymentsResponse {
 }
 
-message GetDeploymentDetailRequest {
+message GetDeploymentRequest {
     string deployment_id = 1 [(validate.rules).string.min_len = 1];
 }
 
-message GetDeploymentDetailResponse {
+message GetDeploymentResponse {
     pipe.model.Deployment deployment = 1;
 }
 
-message GetDeploymentStageLogRequest {
+message GetStageLogRequest {
     string deployment_id = 1 [(validate.rules).string.min_len = 1];
     string stage_id = 2 [(validate.rules).string.min_len = 1];
     int64 offset_timestamp = 3;
 }
 
-message GetDeploymentStageLogResponse {
+message GetStageLogResponse {
     repeated pipe.model.LogBlock blocks = 1;
     bool completed = 2;
 }
@@ -146,10 +146,10 @@ message CancelDeploymentRequest {
 message CancelDeploymentResponse {
 }
 
-message ApproveDeploymentStageRequest {
+message ApproveStageRequest {
 }
 
-message ApproveDeploymentStageResponse {
+message ApproveStageResponse {
 }
 
 message GetApplicationLiveStateRequest {
