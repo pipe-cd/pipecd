@@ -7,6 +7,11 @@ ts_proto_library(
     proto = "//pkg/app/api/service/webservice:webservice_proto",
 )
 
+ts_proto_library(
+    name = "model_proto_ts",
+    proto = "//pkg/model:model_proto",
+)
+
 genrule(
     name = "build_api",
     srcs = [":api_proto"],
@@ -16,6 +21,26 @@ genrule(
     for f in $(SRCS)
     do
         sed -ie "s|.*validate_pb.*||g" $$f
+        sed -ie "s|'.*pkg|'pipe/pkg|g" $$f
+        sed -ie "s|pipe/pkg/model|pipe/pkg/app/web/model|g" $$f
+        cp $$f $(OUTS)/
+    done
+    """,
+    output_to_bindir = 1,
+    visibility = ["//visibility:public"],
+)
+
+genrule(
+    name = "build_model",
+    srcs = [":model_proto_ts"],
+    outs = ["model"],
+    cmd = """
+    mkdir $(OUTS)
+    for f in $(SRCS)
+    do
+        sed -ie "s|.*validate_pb.*||g" $$f
+        sed -ie "s|'.*pkg|'pipe/pkg|g" $$f
+        sed -ie "s|pipe/pkg/model|pipe/pkg/app/web/model|g" $$f
         cp $$f $(OUTS)/
     done
     """,
@@ -43,6 +68,7 @@ tsc(
         ],
     ) + [
         ":build_api",
+        ":build_model",
         ":tsconfig.json",
         "@npm//:node_modules",
     ],
@@ -57,7 +83,7 @@ webpack(
         "--html-template",
         "$(execpath base.html)",
         "$(location compile)/index.js",
-        "--test-path",
+        "--bazel-bin-path",
         "$(BINDIR)",
         "--output-path",
         "$(@D)",
@@ -66,6 +92,7 @@ webpack(
         "api_client",
         "base.html",
         "compile",
+        "model",
         "webpack.common.js",
         "webpack.config.js",
         "@npm//:node_modules",
