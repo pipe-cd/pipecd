@@ -1,7 +1,0 @@
-commonLabels:
-  app.kubernetes.io/name: pipecd-piped
-  app.kubernetes.io/component: piped
-  app.kubernetes.io/org: pipecd
-
-resources:
-- deployment.yaml
