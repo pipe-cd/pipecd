@@ -103,15 +103,3 @@ spec:
   # See more: https://kapetanios.dev/docs/plugins/golinter
   goLinter:
     enabled: true
-
-  # A plugin that automatically does visual regression testing
-  # as well as spins up Preview Environment for the storybook in your pull requests.
-  # See more: https://kapetanios.dev/docs/plugins/storybook
-  storybook:
-    enabled: true
-    path: pkg/app/web
-    whenChanged:
-      - pkg/app/web/**
-    packageManager: YARN
-    machine:
-      resource: medium
