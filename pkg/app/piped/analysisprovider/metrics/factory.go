@@ -38,38 +38,34 @@ func NewFactory(logger *zap.Logger) *Factory {
 func (f *Factory) NewProvider(providerCfg *config.PipedAnalysisProvider) (provider Provider, err error) {
 	switch providerCfg.Type {
 	case model.AnalysisProviderPrometheus:
-		cfg := providerCfg.PrometheusConfig
-		// TODO: Decide the way to authenticate.
-		/*		username, err := ioutil.ReadFile(cfg.UsernameFile)
-				if err != nil {
-					return nil, err
-				}
-				password, err := ioutil.ReadFile(cfg.PasswordFile)
-				if err != nil {
-					return nil, err
-				}
-				provider, err = prometheus.NewProvider(cfg.Address, string(username), string(password))
-		*/
-		provider, err = prometheus.NewProvider(cfg.Address, "", "", f.logger)
+		provider, err = prometheus.NewProvider(providerCfg.PrometheusConfig.Address, f.logger)
 		if err != nil {
 			return
 		}
 	case model.AnalysisProviderDatadog:
+		var apiKey, applicationKey string
 		cfg := providerCfg.DatadogConfig
-		apiKey, err := ioutil.ReadFile(cfg.APIKeyFile)
-		if err != nil {
-			return nil, err
+		if cfg.APIKeyFile != "" {
+			a, err := ioutil.ReadFile(cfg.APIKeyFile)
+			if err != nil {
+				return nil, err
+			}
+			apiKey = string(a)
 		}
-		applicationKey, err := ioutil.ReadFile(cfg.ApplicationKeyFile)
-		if err != nil {
-			return nil, err
+		if cfg.ApplicationKeyFile != "" {
+			a, err := ioutil.ReadFile(cfg.ApplicationKeyFile)
+			if err != nil {
+				return nil, err
+			}
+			applicationKey = string(a)
 		}
-		provider, err = datadog.NewProvider(cfg.Address, string(apiKey), string(applicationKey))
+		provider, err = datadog.NewProvider(cfg.Address, apiKey, applicationKey)
 		if err != nil {
-			return nil, err
+			return
 		}
 	default:
-		return nil, fmt.Errorf("any of providers config not found")
+		err = fmt.Errorf("any of providers config not found")
+		return
 	}
-	return provider, nil
+	return
 }

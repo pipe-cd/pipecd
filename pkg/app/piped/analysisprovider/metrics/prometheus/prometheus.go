@@ -35,16 +35,15 @@ const (
 
 // Provider is a client for prometheus.
 type Provider struct {
-	api      v1.API
-	username string
-	password string
+	api v1.API
+	//username string
+	//password string
 
 	timeout time.Duration
 	logger  *zap.Logger
 }
 
-func NewProvider(address, username, password string, logger *zap.Logger) (*Provider, error) {
-	// TODO: Decide the way to authenticate.
+func NewProvider(address string, logger *zap.Logger) (*Provider, error) {
 	client, err := api.NewClient(api.Config{
 		Address: address,
 	})
@@ -53,11 +52,9 @@ func NewProvider(address, username, password string, logger *zap.Logger) (*Provi
 	}
 
 	return &Provider{
-		api:      v1.NewAPI(client),
-		username: username,
-		password: password,
-		timeout:  defaultTimeout,
-		logger:   logger,
+		api:     v1.NewAPI(client),
+		timeout: defaultTimeout,
+		logger:  logger,
 	}, nil
 }
 
@@ -69,6 +66,7 @@ func (p *Provider) RunQuery(ctx context.Context, query string, expected config.A
 	ctx, cancel := context.WithTimeout(ctx, p.timeout)
 	defer cancel()
 
+	// TODO: Use HTTP Basic Authentication with the username and password when needed.
 	response, warnings, err := p.api.Query(ctx, query, time.Now())
 	if err != nil {
 		return false, err
@@ -76,7 +74,6 @@ func (p *Provider) RunQuery(ctx context.Context, query string, expected config.A
 	for _, w := range warnings {
 		p.logger.Warn(w)
 	}
-	// TODO: Address the case of comparing with baseline
 	return p.evaluate(expected, response)
 }
 
