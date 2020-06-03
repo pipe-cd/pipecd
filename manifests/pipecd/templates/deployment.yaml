@@ -47,9 +47,6 @@ spec:
           - name: envoy-config
             mountPath: /etc/envoy
             readOnly: true
-          - name: certs
-            mountPath: /etc/ssl/envoy
-            readOnly: true
 {{- if .Values.gateway.resources }}
           resources:
             {{- toYaml .Values.gateway.resources | nindent 12 }}
@@ -83,6 +80,8 @@ spec:
         - name: api
           image: "gcr.io/kapetanios/pipecd-api:{{ .Values.api.imageTag | default .Chart.AppVersion }}"
           imagePullPolicy: IfNotPresent
+          args:
+          - server
           ports:
             - name: piped-api
               containerPort: 9080
@@ -133,6 +132,8 @@ spec:
         - name: web
           image: "gcr.io/kapetanios/pipecd-web:{{ .Values.web.imageTag | default .Chart.AppVersion }}"
           imagePullPolicy: IfNotPresent
+          args:
+          - server
           ports:
             - name: web
               containerPort: 9082
