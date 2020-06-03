@@ -109,7 +109,7 @@ spec:
   # See more: https://kapetanios.dev/docs/plugins/storybook
   storybook:
     enabled: true
-    path: /pkg/app/web
+    path: pkg/app/web
     whenChanged:
       - pkg/app/web/**
     packageManager: YARN
