@@ -115,6 +115,7 @@ func (r *registry) Kubectl(ctx context.Context, version string) (string, bool, e
 		return path, false, nil
 	}
 
+	// TODO: Use singleflight to avoid concurrent installing.
 	if err := r.installKubectl(ctx, version); err != nil {
 		return "", true, err
 	}

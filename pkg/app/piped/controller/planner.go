@@ -26,6 +26,7 @@ import (
 	"github.com/kapetaniosci/pipe/pkg/app/api/service/pipedservice"
 	pln "github.com/kapetaniosci/pipe/pkg/app/piped/planner"
 	"github.com/kapetaniosci/pipe/pkg/app/piped/planner/registry"
+	"github.com/kapetaniosci/pipe/pkg/cache"
 	"github.com/kapetaniosci/pipe/pkg/config"
 	"github.com/kapetaniosci/pipe/pkg/model"
 )
@@ -45,6 +46,7 @@ type planner struct {
 	gitClient                gitClient
 	plannerRegistry          registry.Registry
 	pipedConfig              *config.PipedSpec
+	appManifestsCache        cache.Cache
 	logger                   *zap.Logger
 
 	deploymentConfig *config.Config
@@ -60,6 +62,7 @@ func newPlanner(
 	apiClient apiClient,
 	gitClient gitClient,
 	pipedConfig *config.PipedSpec,
+	appManifestsCache cache.Cache,
 	logger *zap.Logger,
 ) *planner {
 
@@ -80,6 +83,7 @@ func newPlanner(
 		gitClient:                gitClient,
 		pipedConfig:              pipedConfig,
 		plannerRegistry:          registry.DefaultRegistry(),
+		appManifestsCache:        appManifestsCache,
 		nowFunc:                  time.Now,
 		logger:                   logger,
 	}
@@ -136,6 +140,7 @@ func (p *planner) Run(ctx context.Context) error {
 		Repo:                           gitRepo,
 		RepoDir:                        gitRepo.GetPath(),
 		AppDir:                         filepath.Join(gitRepo.GetPath(), p.deployment.GitPath.Path),
+		AppManifestsCache:              p.appManifestsCache,
 		Logger:                         p.logger,
 	}
 	out, err := planner.Plan(ctx, in)

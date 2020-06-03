@@ -70,13 +70,16 @@ func (p *Planner) Plan(ctx context.Context, in planner.Input) (out planner.Outpu
 	}
 
 	// Load previous deployed manifests and new manifests to compare.
-	pv := provider.NewProvider(in.RepoDir, in.AppDir, cfg.Input, in.Logger)
+	pv := provider.NewProvider(in.Deployment.ApplicationId, in.AppDir, in.RepoDir, cfg.Input,
+		provider.WithCache(in.AppManifestsCache),
+		provider.WithLogger(in.Logger),
+	)
 	if err = pv.Init(ctx); err != nil {
 		return
 	}
 
 	// Load manifests of the new commit.
-	newManifests, err := pv.LoadManifests(ctx)
+	newManifests, err := pv.LoadManifests(ctx, in.Deployment.Trigger.Commit.Hash)
 	if err != nil {
 		err = fmt.Errorf("failed to load new manifests: %v", err)
 		return
@@ -90,7 +93,7 @@ func (p *Planner) Plan(ctx context.Context, in planner.Input) (out planner.Outpu
 	}
 
 	// Load manifests of the previously applied commit.
-	oldManifests, err := pv.LoadManifests(ctx)
+	oldManifests, err := pv.LoadManifests(ctx, in.MostRecentSuccessfulCommitHash)
 	if err != nil {
 		err = fmt.Errorf("failed to load previously deployed manifests: %v", err)
 		return

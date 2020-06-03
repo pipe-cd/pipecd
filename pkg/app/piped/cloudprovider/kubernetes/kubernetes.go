@@ -16,6 +16,7 @@ package kubernetes
 
 import (
 	"context"
+	"errors"
 	"fmt"
 	"os"
 	"path/filepath"
@@ -23,6 +24,7 @@ import (
 	"go.uber.org/zap"
 
 	"github.com/kapetaniosci/pipe/pkg/app/piped/toolregistry"
+	"github.com/kapetaniosci/pipe/pkg/cache"
 	"github.com/kapetaniosci/pipe/pkg/config"
 )
 
@@ -47,17 +49,44 @@ const (
 )
 
 type Provider interface {
+	ManifestLoader
+	Applier
+
 	Init(ctx context.Context) error
-	LoadManifests(ctx context.Context) ([]Manifest, error)
+}
+
+type ManifestLoader interface {
+	LoadManifests(ctx context.Context, commitHash string) ([]Manifest, error)
+}
+
+type Applier interface {
 	Apply(ctx context.Context, manifests []Manifest) error
 	Delete(ctx context.Context, key ResourceKey) error
 }
 
+// Option defines a function to set configurable field of Provider.
+type Option func(p *provider)
+
+func WithLogger(logger *zap.Logger) Option {
+	return func(p *provider) {
+		p.logger = logger.Named("kubernetes-provider")
+	}
+}
+
+func WithCache(c cache.Cache) Option {
+	return func(p *provider) {
+		p.appManifestsCache = &appManifestsCache{cache: c}
+	}
+}
+
 type provider struct {
-	repoDir string
+	appID   string
 	appDir  string
+	repoDir string
 	input   config.KubernetesDeploymentInput
-	logger  *zap.Logger
+
+	appManifestsCache *appManifestsCache
+	logger            *zap.Logger
 
 	kubectl          *Kubectl
 	kustomize        *Kustomize
@@ -65,13 +94,18 @@ type provider struct {
 	templatingMethod TemplatingMethod
 }
 
-func NewProvider(repoDir, appDir string, input config.KubernetesDeploymentInput, logger *zap.Logger) Provider {
+func NewProvider(appID, appDir, repoDir string, input config.KubernetesDeploymentInput, opts ...Option) Provider {
 	p := &provider{
-		repoDir: repoDir,
+		appID:   appID,
 		appDir:  appDir,
+		repoDir: repoDir,
 		input:   input,
-		logger:  logger,
+		logger:  zap.NewNop(),
 	}
+	for _, opt := range opts {
+		opt(p)
+	}
+
 	return p
 }
 
@@ -94,7 +128,42 @@ func (p *provider) Init(ctx context.Context) (err error) {
 	return
 }
 
-func (p *provider) LoadManifests(ctx context.Context) (manifests []Manifest, err error) {
+func (p *provider) LoadManifests(ctx context.Context, commitHash string) (manifests []Manifest, err error) {
+	if p.appManifestsCache != nil {
+		manifests, err = p.appManifestsCache.Get(p.appID, commitHash)
+		if err == nil {
+			return
+		}
+		if errors.Is(err, cache.ErrNotFound) {
+			p.logger.Info("app manifests was not found in cache",
+				zap.String("app-id", p.appID),
+				zap.String("commit-hash", commitHash),
+			)
+		} else {
+			p.logger.Error("failed to get app manifests from cache",
+				zap.String("app-id", p.appID),
+				zap.String("commit-hash", commitHash),
+				zap.Error(err),
+			)
+		}
+	}
+
+	defer func() {
+		if p.appManifestsCache == nil {
+			return
+		}
+		if err != nil || len(manifests) == 0 {
+			return
+		}
+		if err := p.appManifestsCache.Put(p.appID, commitHash, manifests); err != nil {
+			p.logger.Error("failed to put app manifests to cache",
+				zap.String("app-id", p.appID),
+				zap.String("commit-hash", commitHash),
+				zap.Error(err),
+			)
+		}
+	}()
+
 	switch p.templatingMethod {
 	case TemplatingMethodHelm:
 		return nil, nil

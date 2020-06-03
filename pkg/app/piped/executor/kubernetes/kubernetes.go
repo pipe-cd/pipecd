@@ -74,7 +74,10 @@ func (e *Executor) Execute(sig executor.StopSignal) model.StageStatus {
 		appDir = filepath.Join(e.RepoDir, e.Deployment.GitPath.Path)
 	)
 
-	e.provider = provider.NewProvider(e.RepoDir, appDir, e.config.Input, e.Logger)
+	e.provider = provider.NewProvider(e.Deployment.ApplicationId, appDir, e.RepoDir, e.config.Input,
+		provider.WithCache(e.AppManifestsCache),
+		provider.WithLogger(e.Logger),
+	)
 	if err := e.provider.Init(ctx); err != nil {
 		e.LogPersister.AppendError(fmt.Sprintf("Failed while initializing kubernetes provider (%v)", err))
 		return model.StageStatus_STAGE_FAILURE

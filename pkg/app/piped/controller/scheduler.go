@@ -29,6 +29,7 @@ import (
 	"github.com/kapetaniosci/pipe/pkg/app/piped/executor/registry"
 	"github.com/kapetaniosci/pipe/pkg/app/piped/logpersister"
 	pln "github.com/kapetaniosci/pipe/pkg/app/piped/planner"
+	"github.com/kapetaniosci/pipe/pkg/cache"
 	"github.com/kapetaniosci/pipe/pkg/config"
 	"github.com/kapetaniosci/pipe/pkg/git"
 	"github.com/kapetaniosci/pipe/pkg/model"
@@ -57,6 +58,7 @@ type scheduler struct {
 	logPersister      logpersister.Persister
 	metadataStore     *metadataStore
 	pipedConfig       *config.PipedSpec
+	appManifestsCache cache.Cache
 	logger            *zap.Logger
 
 	deploymentConfig *config.Config
@@ -85,6 +87,7 @@ func newScheduler(
 	applicationLister applicationLister,
 	lp logpersister.Persister,
 	pipedConfig *config.PipedSpec,
+	appManifestsCache cache.Cache,
 	logger *zap.Logger,
 ) *scheduler {
 
@@ -108,6 +111,7 @@ func newScheduler(
 		logPersister:         lp,
 		metadataStore:        NewMetadataStore(apiClient, d),
 		pipedConfig:          pipedConfig,
+		appManifestsCache:    appManifestsCache,
 		doneDeploymentStatus: d.Status,
 		logger:               logger,
 		nowFunc:              time.Now,
@@ -370,9 +374,10 @@ func (s *scheduler) executeStage(sig executor.StopSignal, ps *model.PipelineStag
 			deploymentID: s.deployment.Id,
 			stageID:      ps.Id,
 		},
-		LogPersister:  lp,
-		MetadataStore: s.metadataStore,
-		Logger:        s.logger,
+		LogPersister:      lp,
+		MetadataStore:     s.metadataStore,
+		AppManifestsCache: s.appManifestsCache,
+		Logger:            s.logger,
 	}
 
 	// Find the executor for this stage.

@@ -24,6 +24,7 @@ import (
 
 	"go.uber.org/zap"
 
+	"github.com/kapetaniosci/pipe/pkg/cache"
 	"github.com/kapetaniosci/pipe/pkg/config"
 	"github.com/kapetaniosci/pipe/pkg/git"
 	"github.com/kapetaniosci/pipe/pkg/model"
@@ -41,6 +42,7 @@ type Input struct {
 	Repo                           git.Repo
 	RepoDir                        string
 	AppDir                         string
+	AppManifestsCache              cache.Cache
 	Logger                         *zap.Logger
 }
 

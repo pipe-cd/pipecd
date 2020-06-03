@@ -37,6 +37,7 @@ import (
 
 	"github.com/kapetaniosci/pipe/pkg/app/api/service/pipedservice"
 	"github.com/kapetaniosci/pipe/pkg/app/piped/logpersister"
+	"github.com/kapetaniosci/pipe/pkg/cache"
 	"github.com/kapetaniosci/pipe/pkg/config"
 	"github.com/kapetaniosci/pipe/pkg/git"
 	"github.com/kapetaniosci/pipe/pkg/model"
@@ -89,6 +90,7 @@ type controller struct {
 	commandLister     commandLister
 	applicationLister applicationLister
 	pipedConfig       *config.PipedSpec
+	appManifestsCache cache.Cache
 	logPersister      logpersister.Persister
 
 	// Map from application ID to the planner
@@ -124,6 +126,7 @@ func NewController(
 	commandLister commandLister,
 	applicationLister applicationLister,
 	pipedConfig *config.PipedSpec,
+	appManifestsCache cache.Cache,
 	gracePeriod time.Duration,
 	logger *zap.Logger,
 ) DeploymentController {
@@ -138,6 +141,7 @@ func NewController(
 		deploymentLister:  deploymentLister,
 		commandLister:     commandLister,
 		applicationLister: applicationLister,
+		appManifestsCache: appManifestsCache,
 		pipedConfig:       pipedConfig,
 		logPersister:      lp,
 
@@ -314,6 +318,7 @@ func (c *controller) startNewPlanner(ctx context.Context, d *model.Deployment) (
 		c.apiClient,
 		c.gitClient,
 		c.pipedConfig,
+		c.appManifestsCache,
 		c.logger,
 	)
 
@@ -445,6 +450,7 @@ func (c *controller) startNewScheduler(ctx context.Context, d *model.Deployment)
 		c.applicationLister,
 		c.logPersister,
 		c.pipedConfig,
+		c.appManifestsCache,
 		c.logger,
 	)
 

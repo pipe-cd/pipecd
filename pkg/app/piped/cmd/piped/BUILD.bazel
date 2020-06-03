@@ -19,6 +19,7 @@ go_library(
         "//pkg/app/piped/planner/registry:go_default_library",
         "//pkg/app/piped/toolregistry:go_default_library",
         "//pkg/app/piped/trigger:go_default_library",
+        "//pkg/cache/memorycache:go_default_library",
         "//pkg/cli:go_default_library",
         "//pkg/config:go_default_library",
         "//pkg/git:go_default_library",

@@ -19,6 +19,7 @@ import (
 
 	"go.uber.org/zap"
 
+	"github.com/kapetaniosci/pipe/pkg/cache"
 	"github.com/kapetaniosci/pipe/pkg/config"
 	"github.com/kapetaniosci/pipe/pkg/model"
 )
@@ -54,17 +55,18 @@ type Input struct {
 	Stage       *model.PipelineStage
 	StageConfig config.PipelineStage
 	// Readonly deployment model.
-	Deployment       *model.Deployment
-	DeploymentConfig *config.Config
-	PipedConfig      *config.PipedSpec
-	Application      *model.Application
-	WorkingDir       string
-	RepoDir          string
-	StageWorkingDir  string
-	CommandLister    CommandLister
-	LogPersister     LogPersister
-	MetadataStore    MetadataStore
-	Logger           *zap.Logger
+	Deployment        *model.Deployment
+	DeploymentConfig  *config.Config
+	PipedConfig       *config.PipedSpec
+	Application       *model.Application
+	WorkingDir        string
+	RepoDir           string
+	StageWorkingDir   string
+	CommandLister     CommandLister
+	LogPersister      LogPersister
+	MetadataStore     MetadataStore
+	AppManifestsCache cache.Cache
+	Logger            *zap.Logger
 }
 
 func DetermineStageStatus(sig StopSignalType, ori, got model.StageStatus) model.StageStatus {

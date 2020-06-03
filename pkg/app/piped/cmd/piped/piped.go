@@ -36,6 +36,7 @@ import (
 	"github.com/kapetaniosci/pipe/pkg/app/piped/livestatestore"
 	"github.com/kapetaniosci/pipe/pkg/app/piped/toolregistry"
 	"github.com/kapetaniosci/pipe/pkg/app/piped/trigger"
+	"github.com/kapetaniosci/pipe/pkg/cache/memorycache"
 	"github.com/kapetaniosci/pipe/pkg/cli"
 	"github.com/kapetaniosci/pipe/pkg/config"
 	"github.com/kapetaniosci/pipe/pkg/git"
@@ -199,6 +200,9 @@ func (p *piped) run(ctx context.Context, t cli.Telemetry) error {
 		commandLister = store.Lister()
 	}
 
+	// Create memory caches.
+	appManifestsCache := memorycache.NewTTLCache(ctx, time.Hour, time.Minute)
+
 	// Start running application live state store.
 	{
 		s := livestatestore.NewStore(cfg, applicationLister, p.gracePeriod, t.Logger)
@@ -217,7 +221,18 @@ func (p *piped) run(ctx context.Context, t cli.Telemetry) error {
 
 	// Start running deployment controller.
 	{
-		c := controller.NewController(apiClient, gitClient, deploymentLister, commandLister, applicationLister, cfg, p.gracePeriod, t.Logger)
+		c := controller.NewController(
+			apiClient,
+			gitClient,
+			deploymentLister,
+			commandLister,
+			applicationLister,
+			cfg,
+			appManifestsCache,
+			p.gracePeriod,
+			t.Logger,
+		)
+
 		group.Go(func() error {
 			return c.Run(ctx)
 		})

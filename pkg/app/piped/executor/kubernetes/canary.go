@@ -24,7 +24,7 @@ import (
 )
 
 func (e *Executor) ensureCanaryRollout(ctx context.Context) model.StageStatus {
-	manifests, err := e.provider.LoadManifests(ctx)
+	manifests, err := e.provider.LoadManifests(ctx, e.Deployment.Trigger.Commit.Hash)
 	if err != nil {
 		e.LogPersister.AppendError(fmt.Sprintf("Failed while loading manifests (%v)", err))
 		return model.StageStatus_STAGE_FAILURE
