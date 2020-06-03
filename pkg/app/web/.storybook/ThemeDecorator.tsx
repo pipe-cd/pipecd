@@ -6,8 +6,8 @@ import { makeStyles, ThemeProvider } from "@material-ui/core";
 // NOTE: To prevent difference of screenshot that is caused by mouse hover.
 const useStyles = makeStyles({
   wrapper: {
-    padding: 1,
-  },
+    padding: 10
+  }
 });
 
 export const ThemeDecorator = (fn: () => JSX.Element) => {

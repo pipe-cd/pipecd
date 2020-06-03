@@ -3,8 +3,21 @@ import blue from "@material-ui/core/colors/blue";
 import cyan from "@material-ui/core/colors/cyan";
 
 export const theme = createMuiTheme({
+  props: {
+    MuiTypography: {
+      variantMapping: {
+        subtitle2: "span"
+      }
+    }
+  },
   palette: {
     primary: blue,
-    secondary: cyan,
+    secondary: cyan
   },
+  typography: {
+    subtitle2: {
+      fontSize: "0.625rem",
+      fontWeight: 600
+    }
+  }
 });
