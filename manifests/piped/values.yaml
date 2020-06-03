@@ -1,9 +1,10 @@
 args:
-  useFakeAPI: true
-  enableDefaultKubernetesCloudProvider: true
   projectID: your-project-id
   pipedID: your-piped-id
   pipedKey: your-piped-key
+  controlPlaneAddress: "pipecd:443"
+  useFakeAPI: true
+  enableDefaultKubernetesCloudProvider: true
 
 service:
   type: ClusterIP
@@ -18,14 +19,6 @@ nodeSelector: {}
 tolerations: []
 
 affinity: {}
-
-# resources:
-#   limits:
-#     cpu: 100m
-#     memory: 128Mi
-#   requests:
-#     cpu: 100m
-#     memory: 128Mi
 
 config: |
   apiVersion: pipecd.dev/v1beta1

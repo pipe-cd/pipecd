@@ -56,10 +56,10 @@ type piped struct {
 	pipedKeyFile string
 	configFile   string
 
-	tls        bool
-	certFile   string
-	apiAddress string
-	adminPort  int
+	tls                 bool
+	certFile            string
+	controlPlaneAddress string
+	adminPort           int
 
 	binDir                               string
 	enableDefaultKubernetesCloudProvider bool
@@ -69,10 +69,10 @@ type piped struct {
 
 func NewCommand() *cobra.Command {
 	p := &piped{
-		apiAddress:  "pipecd-api:9091",
-		adminPort:   9085,
-		binDir:      "/usr/local/piped",
-		gracePeriod: 30 * time.Second,
+		controlPlaneAddress: "pipecd:443",
+		adminPort:           9085,
+		binDir:              "/usr/local/piped",
+		gracePeriod:         30 * time.Second,
 	}
 	cmd := &cobra.Command{
 		Use:   "piped",
@@ -87,7 +87,7 @@ func NewCommand() *cobra.Command {
 
 	cmd.Flags().BoolVar(&p.tls, "tls", p.tls, "Whether running the gRPC server with TLS or not.")
 	cmd.Flags().StringVar(&p.certFile, "cert-file", p.certFile, "The path to the TLS certificate file.")
-	cmd.Flags().StringVar(&p.apiAddress, "api-address", p.apiAddress, "The address used to connect to API server.")
+	cmd.Flags().StringVar(&p.controlPlaneAddress, "control-plane-address", p.controlPlaneAddress, "The address used to connect to control plane.")
 	cmd.Flags().IntVar(&p.adminPort, "admin-port", p.adminPort, "The port number used to run a HTTP server for admin tasks such as metrics, healthz.")
 
 	cmd.Flags().StringVar(&p.binDir, "bin-dir", p.binDir, "The path to directory where to install needed tools such as kubectl, helm, kustomize.")
@@ -272,7 +272,7 @@ func (p *piped) createAPIClient(ctx context.Context, logger *zap.Logger) (pipeds
 		options = append(options, rpcclient.WithInsecure())
 	}
 
-	client, err := pipedservice.NewClient(ctx, p.apiAddress, options...)
+	client, err := pipedservice.NewClient(ctx, p.controlPlaneAddress, options...)
 	if err != nil {
 		logger.Error("failed to create api client", zap.Error(err))
 		return nil, err

@@ -25,12 +25,13 @@ spec:
           imagePullPolicy: IfNotPresent
           args:
           - piped
-          - --use-fake-api-client={{ .Values.args.useFakeAPI }}
-          - --enable-default-kubernetes-cloud-provider={{ .Values.args.enableDefaultKubernetesCloudProvider }}
           - --project-id={{ required "projectID must be set" .Values.args.projectID }}
           - --piped-id={{ required "pipedID must be set" .Values.args.pipedID }}
           - --piped-key-file=/etc/piped-secret/piped.key
           - --config-file=/etc/piped-config/piped-config.yaml
+          - --control-plane-address={{ .Values.args.controlPlaneAddress }}
+          - --use-fake-api-client={{ .Values.args.useFakeAPI }}
+          - --enable-default-kubernetes-cloud-provider={{ .Values.args.enableDefaultKubernetesCloudProvider }}
           ports:
             - name: admin
               containerPort: 9085
