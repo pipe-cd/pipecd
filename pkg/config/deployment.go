@@ -268,6 +268,8 @@ type TerraformPlanStageOptions struct {
 
 // TerraformApplyStageOptions contains all configurable values for a K8S_TERRAFORM_APPLY stage.
 type TerraformApplyStageOptions struct {
+	// How many times to retry applying terraform changes.
+	Retries int `json:"retries"`
 }
 
 // AnalysisStageOptions contains all configurable values for a K8S_ANALYSIS stage.
