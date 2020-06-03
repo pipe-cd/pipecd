@@ -310,13 +310,17 @@ type KubernetesDeploymentInput struct {
 	HelmChart        *InputHelmChart `json:"helmChart"`
 	HelmValueFiles   []string        `json:"helmValueFiles"`
 	HelmVersion      string          `json:"helmVersion"`
-	Dependencies     []string        `json:"dependencies,omitempty"`
+	// Automatically reverts all changes from all stages when one of them failed.
+	AutoRollback bool     `json:"autoRollback"`
+	Dependencies []string `json:"dependencies,omitempty"`
 }
 
 type TerraformDeploymentInput struct {
-	Workspace        string   `json:"workspace,omitempty"`
-	TerraformVersion string   `json:"terraformVersion,omitempty"`
-	Dependencies     []string `json:"dependencies,omitempty"`
+	Workspace        string `json:"workspace,omitempty"`
+	TerraformVersion string `json:"terraformVersion,omitempty"`
+	// Automatically reverts all changes from all stages when one of them failed.
+	AutoRollback bool     `json:"autoRollback"`
+	Dependencies []string `json:"dependencies,omitempty"`
 }
 
 type InputHelmChart struct {
