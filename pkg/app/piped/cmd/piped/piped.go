@@ -217,7 +217,7 @@ func (p *piped) run(ctx context.Context, t cli.Telemetry) error {
 
 	// Start running deployment controller.
 	{
-		c := controller.NewController(apiClient, gitClient, deploymentLister, commandLister, cfg, p.gracePeriod, t.Logger)
+		c := controller.NewController(apiClient, gitClient, deploymentLister, commandLister, applicationLister, cfg, p.gracePeriod, t.Logger)
 		group.Go(func() error {
 			return c.Run(ctx)
 		})

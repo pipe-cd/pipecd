@@ -57,6 +57,7 @@ type Input struct {
 	Deployment       *model.Deployment
 	DeploymentConfig *config.Config
 	PipedConfig      *config.PipedSpec
+	Application      *model.Application
 	WorkingDir       string
 	RepoDir          string
 	StageWorkingDir  string

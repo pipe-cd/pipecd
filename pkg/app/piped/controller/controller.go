@@ -69,6 +69,10 @@ type commandLister interface {
 	ListStageCommands(deploymentID, stageID string) []model.ReportableCommand
 }
 
+type applicationLister interface {
+	Get(id string) (*model.Application, bool)
+}
+
 type DeploymentController interface {
 	Run(ctx context.Context) error
 }
@@ -79,12 +83,13 @@ var (
 )
 
 type controller struct {
-	apiClient        apiClient
-	gitClient        gitClient
-	deploymentLister deploymentLister
-	commandLister    commandLister
-	pipedConfig      *config.PipedSpec
-	logPersister     logpersister.Persister
+	apiClient         apiClient
+	gitClient         gitClient
+	deploymentLister  deploymentLister
+	commandLister     commandLister
+	applicationLister applicationLister
+	pipedConfig       *config.PipedSpec
+	logPersister      logpersister.Persister
 
 	// Map from application ID to the planner
 	// of a pending deployment of that application.
@@ -117,6 +122,7 @@ func NewController(
 	gitClient gitClient,
 	deploymentLister deploymentLister,
 	commandLister commandLister,
+	applicationLister applicationLister,
 	pipedConfig *config.PipedSpec,
 	gracePeriod time.Duration,
 	logger *zap.Logger,
@@ -127,12 +133,13 @@ func NewController(
 		lg = logger.Named("controller")
 	)
 	return &controller{
-		apiClient:        apiClient,
-		gitClient:        gitClient,
-		deploymentLister: deploymentLister,
-		commandLister:    commandLister,
-		pipedConfig:      pipedConfig,
-		logPersister:     lp,
+		apiClient:         apiClient,
+		gitClient:         gitClient,
+		deploymentLister:  deploymentLister,
+		commandLister:     commandLister,
+		applicationLister: applicationLister,
+		pipedConfig:       pipedConfig,
+		logPersister:      lp,
 
 		planners:                    make(map[string]*planner),
 		donePlanners:                make(map[string]time.Time),
@@ -435,6 +442,7 @@ func (c *controller) startNewScheduler(ctx context.Context, d *model.Deployment)
 		c.apiClient,
 		c.gitClient,
 		c.commandLister,
+		c.applicationLister,
 		c.logPersister,
 		c.pipedConfig,
 		c.logger,

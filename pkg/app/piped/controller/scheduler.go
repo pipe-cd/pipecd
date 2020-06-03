@@ -47,16 +47,17 @@ type repoStore interface {
 // scheduler is a dedicated object for a specific deployment of a single application.
 type scheduler struct {
 	// Readonly deployment model.
-	deployment       *model.Deployment
-	workingDir       string
-	executorRegistry registry.Registry
-	apiClient        apiClient
-	gitClient        gitClient
-	commandLister    commandLister
-	logPersister     logpersister.Persister
-	metadataStore    *metadataStore
-	pipedConfig      *config.PipedSpec
-	logger           *zap.Logger
+	deployment        *model.Deployment
+	workingDir        string
+	executorRegistry  registry.Registry
+	apiClient         apiClient
+	gitClient         gitClient
+	commandLister     commandLister
+	applicationLister applicationLister
+	logPersister      logpersister.Persister
+	metadataStore     *metadataStore
+	pipedConfig       *config.PipedSpec
+	logger            *zap.Logger
 
 	deploymentConfig *config.Config
 	pipelineable     config.Pipelineable
@@ -81,6 +82,7 @@ func newScheduler(
 	apiClient apiClient,
 	gitClient gitClient,
 	commandLister commandLister,
+	applicationLister applicationLister,
 	lp logpersister.Persister,
 	pipedConfig *config.PipedSpec,
 	logger *zap.Logger,
@@ -102,6 +104,7 @@ func newScheduler(
 		apiClient:            apiClient,
 		gitClient:            gitClient,
 		commandLister:        commandLister,
+		applicationLister:    applicationLister,
 		logPersister:         lp,
 		metadataStore:        NewMetadataStore(apiClient, d),
 		pipedConfig:          pipedConfig,
@@ -345,12 +348,20 @@ func (s *scheduler) executeStage(sig executor.StopSignal, ps *model.PipelineStag
 		return model.StageStatus_STAGE_FAILURE
 	}
 
+	app, ok := s.applicationLister.Get(s.deployment.ApplicationId)
+	if !ok {
+		lp.AppendError(fmt.Sprintf("Application %s for this deployment was not found (Maybe it was disabled).", s.deployment.ApplicationId))
+		s.reportStageStatus(ctx, ps.Id, model.StageStatus_STAGE_FAILURE)
+		return model.StageStatus_STAGE_FAILURE
+	}
+
 	input := executor.Input{
 		Stage:            ps,
 		StageConfig:      *stageConfig,
 		Deployment:       s.deployment,
 		DeploymentConfig: s.deploymentConfig,
 		PipedConfig:      s.pipedConfig,
+		Application:      app,
 		WorkingDir:       s.workingDir,
 		RepoDir:          filepath.Join(s.workingDir, workspaceGitRepoDirName),
 		StageWorkingDir:  filepath.Join(s.workingDir, workspaceStagesDirName, ps.Id),
