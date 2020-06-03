@@ -113,3 +113,5 @@ spec:
     whenChanged:
       - pkg/app/web/**
     packageManager: YARN
+    machine:
+      resource: medium
