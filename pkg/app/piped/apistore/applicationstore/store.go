@@ -122,9 +122,9 @@ func (s *store) List() []*model.Application {
 	return apps.([]*model.Application)
 }
 
-// Get retrieves a specifiec deployment for the given id.
+// Get retrieves a specific deployment for the given id.
 func (s *store) Get(id string) (*model.Application, bool) {
-	apps := s.applicationList.Load()
+	apps := s.applicationMap.Load()
 	if apps == nil {
 		return nil, false
 	}
