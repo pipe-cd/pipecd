@@ -16,9 +16,8 @@ package datastore
 
 import (
 	"context"
+	"fmt"
 	"time"
-
-	"github.com/pkg/errors"
 
 	"github.com/kapetaniosci/pipe/pkg/model"
 )
@@ -51,7 +50,7 @@ var (
 	DeploymentToCompletedUpdater = func(status model.DeploymentStatus, statuses map[string]model.StageStatus, statusDesc string, completedAt int64) func(*model.Deployment) error {
 		return func(d *model.Deployment) error {
 			if !model.IsCompletedDeployment(status) {
-				return errors.Wrapf(ErrInvalidArgument, "invalid completed deployment status: %s", status)
+				return fmt.Errorf("deployment status %s is not completed value: %w", status, ErrInvalidArgument)
 			}
 
 			d.Status = status
@@ -80,7 +79,7 @@ var (
 					return nil
 				}
 			}
-			return errors.Wrapf(ErrInvalidArgument, "stage is not found: %s", stageID)
+			return fmt.Errorf("stage id %s not found: %w", stageID, ErrInvalidArgument)
 		}
 	}
 )
@@ -155,7 +154,7 @@ func (s *deploymentStore) PutDeploymentStageMetadata(ctx context.Context, deploy
 				return nil
 			}
 		}
-		return errors.Wrapf(ErrInvalidArgument, "stage is not found: %s", stageID)
+		return fmt.Errorf("stage %s is not found: %w", stageID, ErrInvalidArgument)
 	})
 }
 

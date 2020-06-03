@@ -15,10 +15,10 @@
 package datastore
 
 import (
+	"errors"
 	"testing"
 	"time"
 
-	"github.com/pkg/errors"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 
@@ -174,7 +174,7 @@ func TestDeploymentToCompletedUpdater(t *testing.T) {
 					assert.NoError(t, err)
 					return
 				}
-				assert.EqualError(t, errors.Cause(err), tc.expectedErr.Error())
+				assert.Error(t, errors.Unwrap(err), tc.expectedErr)
 				return
 			}
 			assert.Equal(t, tc.expectedDeployment, tc.deployment)
@@ -266,7 +266,7 @@ func TestStageStatusChangedUpdater(t *testing.T) {
 					assert.NoError(t, err)
 					return
 				}
-				assert.EqualError(t, errors.Cause(err), tc.expectedErr.Error())
+				assert.Error(t, errors.Unwrap(err), tc.expectedErr)
 				return
 			}
 			assert.Equal(t, tc.expectedDeployment, tc.deployment)

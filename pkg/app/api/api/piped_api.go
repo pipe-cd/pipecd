@@ -16,8 +16,8 @@ package api
 
 import (
 	"context"
+	"errors"
 
-	"github.com/pkg/errors"
 	"go.uber.org/zap"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/codes"
@@ -160,7 +160,7 @@ func (a *PipedAPI) GetMostRecentDeployment(ctx context.Context, req *pipedservic
 // This will be used by DeploymentTrigger component.
 func (a *PipedAPI) CreateDeployment(ctx context.Context, req *pipedservice.CreateDeploymentRequest) (*pipedservice.CreateDeploymentResponse, error) {
 	err := a.deploymentStore.AddDeployment(ctx, req.Deployment)
-	if errors.Cause(err) == datastore.ErrAlreadyExists {
+	if errors.Is(err, datastore.ErrAlreadyExists) {
 		return nil, status.Error(codes.AlreadyExists, "deployment already exists")
 	}
 	if err != nil {
@@ -239,7 +239,7 @@ func (a *PipedAPI) ReportDeploymentCompleted(ctx context.Context, req *pipedserv
 // SaveDeploymentMetadata used by piped to persist the metadata of a specific deployment.
 func (a *PipedAPI) SaveDeploymentMetadata(ctx context.Context, req *pipedservice.SaveDeploymentMetadataRequest) (*pipedservice.SaveDeploymentMetadataResponse, error) {
 	err := a.deploymentStore.PutDeploymentMetadata(ctx, req.DeploymentId, req.Metadata)
-	if errors.Cause(err) == datastore.ErrNotFound {
+	if errors.Is(err, datastore.ErrNotFound) {
 		return nil, status.Error(codes.InvalidArgument, "deployment is not found")
 	}
 	if err != nil {
@@ -257,7 +257,7 @@ func (a *PipedAPI) SaveDeploymentMetadata(ctx context.Context, req *pipedservice
 func (a *PipedAPI) SaveStageMetadata(ctx context.Context, req *pipedservice.SaveStageMetadataRequest) (*pipedservice.SaveStageMetadataResponse, error) {
 	err := a.deploymentStore.PutDeploymentStageMetadata(ctx, req.DeploymentId, req.StageId, req.JsonMetadata)
 	if err != nil {
-		switch errors.Cause(err) {
+		switch errors.Unwrap(err) {
 		case datastore.ErrNotFound:
 			return nil, status.Error(codes.InvalidArgument, "deployment is not found")
 		case datastore.ErrInvalidArgument:
