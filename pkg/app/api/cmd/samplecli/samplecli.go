@@ -25,29 +25,32 @@ import (
 	"go.uber.org/zap"
 
 	"github.com/kapetaniosci/pipe/pkg/app/api/service/pipedservice"
+	"github.com/kapetaniosci/pipe/pkg/app/api/service/webservice"
 	"github.com/kapetaniosci/pipe/pkg/cli"
 	"github.com/kapetaniosci/pipe/pkg/rpc/rpcclient"
 )
 
 type samplecli struct {
-	address string
-	name    string
-
-	function       string
-	requestPayload string
+	pipedAPIAddress string
+	webAPIAddress   string
+	name            string
+	function        string
+	requestPayload  string
 }
 
 func NewCommand() *cobra.Command {
 	s := &samplecli{
-		address: "localhost:9080",
-		name:    "samplecli",
+		pipedAPIAddress: "localhost:9080",
+		webAPIAddress:   "localhost:9081",
+		name:            "samplecli",
 	}
 	cmd := &cobra.Command{
 		Use:   "samplecli",
 		Short: "Start running sample client to api service",
 		RunE:  cli.WithContext(s.run),
 	}
-	cmd.Flags().StringVar(&s.address, "address", s.address, "The address to HelloWorld service.")
+	cmd.Flags().StringVar(&s.pipedAPIAddress, "piped-api-address", s.pipedAPIAddress, "The address to piped service.")
+	cmd.Flags().StringVar(&s.webAPIAddress, "web-api-address", s.webAPIAddress, "The address to web service.")
 	cmd.Flags().StringVar(&s.name, "name", s.name, "The name to be sent.")
 	cmd.Flags().StringVar(&s.function, "function", s.function, "The function name.")
 	cmd.Flags().StringVar(&s.requestPayload, "request-payload", s.requestPayload, "The json file that binds to request proto message.")
@@ -55,12 +58,19 @@ func NewCommand() *cobra.Command {
 }
 
 func (s *samplecli) run(ctx context.Context, t cli.Telemetry) error {
-	cli, err := s.createPipedServiceClient(ctx, t.Logger)
+	webCli, err := s.createWebServiceClient(ctx, t.Logger)
 	if err != nil {
-		t.Logger.Error("failed to create client", zap.Error(err))
+		t.Logger.Error("failed to create web service client", zap.Error(err))
 		return err
 	}
-	defer cli.Close()
+	defer webCli.Close()
+
+	pipedCli, err := s.createPipedServiceClient(ctx, t.Logger)
+	if err != nil {
+		t.Logger.Error("failed to create piped service client", zap.Error(err))
+		return err
+	}
+	defer pipedCli.Close()
 
 	data, err := ioutil.ReadFile(s.requestPayload)
 	if err != nil {
@@ -68,29 +78,50 @@ func (s *samplecli) run(ctx context.Context, t cli.Telemetry) error {
 	}
 
 	switch s.function {
+	// PipedService
 	case "CreateDeployment":
-		return s.createDeployment(ctx, cli, data, t.Logger)
+		return s.createDeployment(ctx, pipedCli, data, t.Logger)
 	case "ListApplications":
-		return s.listApplications(ctx, cli, data, t.Logger)
+		return s.listApplications(ctx, pipedCli, data, t.Logger)
 	case "ListNotCompletedDeployments":
-		return s.listNotCompletedDeployments(ctx, cli, data, t.Logger)
+		return s.listNotCompletedDeployments(ctx, pipedCli, data, t.Logger)
 	case "ReportDeploymentPlanned":
-		return s.reportDeploymentPlanned(ctx, cli, data, t.Logger)
+		return s.reportDeploymentPlanned(ctx, pipedCli, data, t.Logger)
 	case "ReportDeploymentRunning":
-		return s.reportDeploymentRunning(ctx, cli, data, t.Logger)
+		return s.reportDeploymentRunning(ctx, pipedCli, data, t.Logger)
 	case "ReportDeploymentCompleted":
-		return s.reportDeploymentCompleted(ctx, cli, data, t.Logger)
+		return s.reportDeploymentCompleted(ctx, pipedCli, data, t.Logger)
 	case "SaveDeploymentMetadata":
-		return s.saveDeploymentMetadata(ctx, cli, data, t.Logger)
+		return s.saveDeploymentMetadata(ctx, pipedCli, data, t.Logger)
 	case "SaveStageMetadata":
-		return s.saveStageMetadata(ctx, cli, data, t.Logger)
+		return s.saveStageMetadata(ctx, pipedCli, data, t.Logger)
 	case "ReportStageStatusChanged":
-		return s.reportStageStatusChanged(ctx, cli, data, t.Logger)
+		return s.reportStageStatusChanged(ctx, pipedCli, data, t.Logger)
+	// WebService
+	case "GetDeployment":
+		return s.getDeployment(ctx, webCli, data, t.Logger)
 	default:
 		return fmt.Errorf("invalid function name: %s", s.function)
 	}
 
 	return nil
+}
+
+func (s *samplecli) createWebServiceClient(ctx context.Context, logger *zap.Logger) (webservice.Client, error) {
+	ctx, cancel := context.WithTimeout(ctx, 5*time.Second)
+	defer cancel()
+
+	options := []rpcclient.DialOption{
+		rpcclient.WithBlock(),
+		rpcclient.WithStatsHandler(),
+		rpcclient.WithInsecure(),
+	}
+	client, err := webservice.NewClient(ctx, s.webAPIAddress, options...)
+	if err != nil {
+		logger.Error("failed to create WebService client", zap.Error(err))
+		return nil, err
+	}
+	return client, nil
 }
 
 func (s *samplecli) createPipedServiceClient(ctx context.Context, logger *zap.Logger) (pipedservice.Client, error) {
@@ -102,12 +133,27 @@ func (s *samplecli) createPipedServiceClient(ctx context.Context, logger *zap.Lo
 		rpcclient.WithStatsHandler(),
 		rpcclient.WithInsecure(),
 	}
-	client, err := pipedservice.NewClient(ctx, s.address, options...)
+	client, err := pipedservice.NewClient(ctx, s.pipedAPIAddress, options...)
 	if err != nil {
 		logger.Error("failed to create PipedService client", zap.Error(err))
 		return nil, err
 	}
 	return client, nil
+}
+
+func (s *samplecli) getDeployment(ctx context.Context, cli webservice.Client, payload []byte, logger *zap.Logger) error {
+	req := webservice.GetDeploymentRequest{}
+	if err := json.Unmarshal(payload, &req); err != nil {
+		return err
+	}
+	resp, err := cli.GetDeployment(ctx, &req)
+	if err != nil {
+		logger.Error("failure run GetDeployment", zap.Error(err))
+		return err
+	}
+	logger.Info("successfully run GetDeployment")
+	fmt.Printf("deployment: %+v\n", resp)
+	return nil
 }
 
 func (s *samplecli) createDeployment(ctx context.Context, cli pipedservice.Client, payload []byte, logger *zap.Logger) error {

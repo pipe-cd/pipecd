@@ -16,6 +16,7 @@ package api
 
 import (
 	"context"
+	"errors"
 	"time"
 
 	"go.uber.org/zap"
@@ -24,18 +25,24 @@ import (
 	"google.golang.org/grpc/status"
 
 	"github.com/kapetaniosci/pipe/pkg/app/api/service/webservice"
+	"github.com/kapetaniosci/pipe/pkg/datastore"
 	"github.com/kapetaniosci/pipe/pkg/model"
 )
 
 // PipedAPI implements the behaviors for the gRPC definitions of WebAPI.
 type WebAPI struct {
+	deploymentStore datastore.DeploymentStore
+	useFakeResponse bool
+
 	logger *zap.Logger
 }
 
 // NewWebAPI creates a new WebAPI instance.
-func NewWebAPI(logger *zap.Logger) *WebAPI {
+func NewWebAPI(ds datastore.DataStore, useFakeResponse bool, logger *zap.Logger) *WebAPI {
 	a := &WebAPI{
-		logger: logger.Named("web-api"),
+		deploymentStore: datastore.NewDeploymentStore(ds),
+		useFakeResponse: useFakeResponse,
+		logger:          logger.Named("web-api"),
 	}
 	return a
 }
@@ -90,141 +97,155 @@ func (a *WebAPI) ListDeployments(ctx context.Context, req *webservice.ListDeploy
 }
 
 func (a *WebAPI) GetDeployment(ctx context.Context, req *webservice.GetDeploymentRequest) (*webservice.GetDeploymentResponse, error) {
-	// Creating fake response
-	now := time.Now()
-	resp := &model.Deployment{
-		Id:            "debug-deployment-id",
-		ApplicationId: "debug-project/development/debug-app",
-		EnvId:         "development",
-		PipedId:       "debug-piped",
-		ProjectId:     "debug-project",
-		Kind:          model.ApplicationKind_KUBERNETES,
-		GitPath: &model.ApplicationGitPath{
-			RepoId: "pipe-debug",
-			Path:   "k8s",
-		},
-		Trigger: &model.DeploymentTrigger{
-			Commit: &model.Commit{
-				Hash:      "3808585b46f1e90196d7ffe8dd04c807a251febc",
-				Message:   "Add web page routing (#133)",
-				Author:    "cakecatz",
-				Branch:    "master",
-				CreatedAt: now.Add(-30 * time.Minute).Unix(),
+	if a.useFakeResponse {
+		// Creating fake response
+		now := time.Now()
+		resp := &model.Deployment{
+			Id:            "debug-deployment-id",
+			ApplicationId: "debug-project/development/debug-app",
+			EnvId:         "development",
+			PipedId:       "debug-piped",
+			ProjectId:     "debug-project",
+			Kind:          model.ApplicationKind_KUBERNETES,
+			GitPath: &model.ApplicationGitPath{
+				RepoId: "pipe-debug",
+				Path:   "k8s",
 			},
-			User:      "cakecatz",
-			Timestamp: now.Add(-30 * time.Minute).Unix(),
-		},
-		RunningCommitHash: "3808585b46f1e90196d7ffe8dd04c807a251febc",
-		Description:       "This deployment is debug",
-		Status:            model.DeploymentStatus_DEPLOYMENT_RUNNING,
-		Stages: []*model.PipelineStage{
-			{
-				Id:           "fake-stage-id-0-0",
-				Name:         model.StageK8sCanaryRollout.String(),
-				Index:        0,
-				Predefined:   true,
-				Status:       model.StageStatus_STAGE_SUCCESS,
-				RetriedCount: 0,
-				CompletedAt:  now.Unix(),
-				CreatedAt:    now.Unix(),
-				UpdatedAt:    now.Unix(),
-			},
-			{
-				Id:         "fake-stage-id-1-0",
-				Name:       model.StageK8sCanaryRollout.String(),
-				Index:      0,
-				Predefined: true,
-				Requires: []string{
-					"fake-stage-id-0-0",
+			Trigger: &model.DeploymentTrigger{
+				Commit: &model.Commit{
+					Hash:      "3808585b46f1e90196d7ffe8dd04c807a251febc",
+					Message:   "Add web page routing (#133)",
+					Author:    "cakecatz",
+					Branch:    "master",
+					CreatedAt: now.Add(-30 * time.Minute).Unix(),
 				},
-				Status:       model.StageStatus_STAGE_RUNNING,
-				RetriedCount: 0,
-				CompletedAt:  0,
-				CreatedAt:    now.Unix(),
-				UpdatedAt:    now.Unix(),
+				User:      "cakecatz",
+				Timestamp: now.Add(-30 * time.Minute).Unix(),
 			},
-			{
-				Id:         "fake-stage-id-1-1",
-				Name:       model.StageK8sPrimaryUpdate.String(),
-				Index:      1,
-				Predefined: true,
-				Requires: []string{
-					"fake-stage-id-0-0",
+			RunningCommitHash: "3808585b46f1e90196d7ffe8dd04c807a251febc",
+			Description:       "This deployment is debug",
+			Status:            model.DeploymentStatus_DEPLOYMENT_RUNNING,
+			Stages: []*model.PipelineStage{
+				{
+					Id:           "fake-stage-id-0-0",
+					Name:         model.StageK8sCanaryRollout.String(),
+					Index:        0,
+					Predefined:   true,
+					Status:       model.StageStatus_STAGE_SUCCESS,
+					RetriedCount: 0,
+					CompletedAt:  now.Unix(),
+					CreatedAt:    now.Unix(),
+					UpdatedAt:    now.Unix(),
 				},
-				Status:       model.StageStatus_STAGE_SUCCESS,
-				RetriedCount: 0,
-				CompletedAt:  now.Unix(),
-				CreatedAt:    now.Unix(),
-				UpdatedAt:    now.Unix(),
-			},
-			{
-				Id:         "fake-stage-id-1-2",
-				Name:       model.StageK8sCanaryRollout.String(),
-				Index:      2,
-				Predefined: true,
-				Requires: []string{
-					"fake-stage-id-0-0",
+				{
+					Id:         "fake-stage-id-1-0",
+					Name:       model.StageK8sCanaryRollout.String(),
+					Index:      0,
+					Predefined: true,
+					Requires: []string{
+						"fake-stage-id-0-0",
+					},
+					Status:       model.StageStatus_STAGE_RUNNING,
+					RetriedCount: 0,
+					CompletedAt:  0,
+					CreatedAt:    now.Unix(),
+					UpdatedAt:    now.Unix(),
 				},
-				Status:       model.StageStatus_STAGE_FAILURE,
-				RetriedCount: 0,
-				CompletedAt:  now.Unix(),
-				CreatedAt:    now.Unix(),
-				UpdatedAt:    now.Unix(),
-			},
-			{
-				Id:         "fake-stage-id-2-0",
-				Name:       model.StageK8sCanaryClean.String(),
-				Desc:       "waiting approval",
-				Index:      0,
-				Predefined: true,
-				Requires: []string{
-					"fake-stage-id-1-0",
-					"fake-stage-id-1-1",
-					"fake-stage-id-1-2",
+				{
+					Id:         "fake-stage-id-1-1",
+					Name:       model.StageK8sPrimaryUpdate.String(),
+					Index:      1,
+					Predefined: true,
+					Requires: []string{
+						"fake-stage-id-0-0",
+					},
+					Status:       model.StageStatus_STAGE_SUCCESS,
+					RetriedCount: 0,
+					CompletedAt:  now.Unix(),
+					CreatedAt:    now.Unix(),
+					UpdatedAt:    now.Unix(),
 				},
-				Status:       model.StageStatus_STAGE_NOT_STARTED_YET,
-				RetriedCount: 0,
-				CompletedAt:  0,
-				CreatedAt:    now.Unix(),
-				UpdatedAt:    now.Unix(),
-			},
-			{
-				Id:         "fake-stage-id-2-1",
-				Name:       model.StageK8sCanaryClean.String(),
-				Desc:       "approved by cakecatz",
-				Index:      1,
-				Predefined: true,
-				Requires: []string{
-					"fake-stage-id-1-0",
-					"fake-stage-id-1-1",
-					"fake-stage-id-1-2",
+				{
+					Id:         "fake-stage-id-1-2",
+					Name:       model.StageK8sCanaryRollout.String(),
+					Index:      2,
+					Predefined: true,
+					Requires: []string{
+						"fake-stage-id-0-0",
+					},
+					Status:       model.StageStatus_STAGE_FAILURE,
+					RetriedCount: 0,
+					CompletedAt:  now.Unix(),
+					CreatedAt:    now.Unix(),
+					UpdatedAt:    now.Unix(),
 				},
-				Status:       model.StageStatus_STAGE_NOT_STARTED_YET,
-				RetriedCount: 0,
-				CompletedAt:  0,
-				CreatedAt:    now.Unix(),
-				UpdatedAt:    now.Unix(),
-			},
-			{
-				Id:         "fake-stage-id-3-0",
-				Name:       model.StageK8sCanaryRollout.String(),
-				Index:      0,
-				Predefined: true,
-				Requires: []string{
-					"fake-stage-id-2-0",
-					"fake-stage-id-2-1",
+				{
+					Id:         "fake-stage-id-2-0",
+					Name:       model.StageK8sCanaryClean.String(),
+					Desc:       "waiting approval",
+					Index:      0,
+					Predefined: true,
+					Requires: []string{
+						"fake-stage-id-1-0",
+						"fake-stage-id-1-1",
+						"fake-stage-id-1-2",
+					},
+					Status:       model.StageStatus_STAGE_NOT_STARTED_YET,
+					RetriedCount: 0,
+					CompletedAt:  0,
+					CreatedAt:    now.Unix(),
+					UpdatedAt:    now.Unix(),
 				},
-				Status:       model.StageStatus_STAGE_NOT_STARTED_YET,
-				RetriedCount: 0,
-				CompletedAt:  0,
-				CreatedAt:    now.Unix(),
-				UpdatedAt:    now.Unix(),
+				{
+					Id:         "fake-stage-id-2-1",
+					Name:       model.StageK8sCanaryClean.String(),
+					Desc:       "approved by cakecatz",
+					Index:      1,
+					Predefined: true,
+					Requires: []string{
+						"fake-stage-id-1-0",
+						"fake-stage-id-1-1",
+						"fake-stage-id-1-2",
+					},
+					Status:       model.StageStatus_STAGE_NOT_STARTED_YET,
+					RetriedCount: 0,
+					CompletedAt:  0,
+					CreatedAt:    now.Unix(),
+					UpdatedAt:    now.Unix(),
+				},
+				{
+					Id:         "fake-stage-id-3-0",
+					Name:       model.StageK8sCanaryRollout.String(),
+					Index:      0,
+					Predefined: true,
+					Requires: []string{
+						"fake-stage-id-2-0",
+						"fake-stage-id-2-1",
+					},
+					Status:       model.StageStatus_STAGE_NOT_STARTED_YET,
+					RetriedCount: 0,
+					CompletedAt:  0,
+					CreatedAt:    now.Unix(),
+					UpdatedAt:    now.Unix(),
+				},
 			},
-		},
-		CreatedAt: now.Unix(),
-		UpdatedAt: now.Unix(),
+			CreatedAt: now.Unix(),
+			UpdatedAt: now.Unix(),
+		}
+
+		return &webservice.GetDeploymentResponse{
+			Deployment: resp,
+		}, nil
 	}
 
+	resp, err := a.deploymentStore.GetDeployment(ctx, req.DeploymentId)
+	if errors.Is(err, datastore.ErrNotFound) {
+		return nil, status.Error(codes.NotFound, "deployment is not found")
+	}
+	if err != nil {
+		a.logger.Error("failed to get deployment", zap.Error(err))
+		return nil, err
+	}
 	return &webservice.GetDeploymentResponse{
 		Deployment: resp,
 	}, nil

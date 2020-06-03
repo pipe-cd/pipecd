@@ -91,6 +91,7 @@ type DeploymentStore interface {
 	PutDeploymentMetadata(ctx context.Context, id string, metadata map[string]string) error
 	PutDeploymentStageMetadata(ctx context.Context, deploymentID, stageID, jsonMetadata string) error
 	ListDeployments(ctx context.Context, opts ListOptions) ([]*model.Deployment, error)
+	GetDeployment(ctx context.Context, id string) (*model.Deployment, error)
 }
 
 type deploymentStore struct {
@@ -176,4 +177,12 @@ func (s *deploymentStore) ListDeployments(ctx context.Context, opts ListOptions)
 		ds = append(ds, &d)
 	}
 	return ds, nil
+}
+
+func (s *deploymentStore) GetDeployment(ctx context.Context, id string) (*model.Deployment, error) {
+	var entity model.Deployment
+	if err := s.ds.Get(ctx, deploymentModelKind, id, &entity); err != nil {
+		return nil, err
+	}
+	return &entity, nil
 }

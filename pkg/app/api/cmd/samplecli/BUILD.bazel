@@ -7,6 +7,7 @@ go_library(
     visibility = ["//visibility:public"],
     deps = [
         "//pkg/app/api/service/pipedservice:go_default_library",
+        "//pkg/app/api/service/webservice:go_default_library",
         "//pkg/cli:go_default_library",
         "//pkg/rpc/rpcclient:go_default_library",
         "@com_github_spf13_cobra//:go_default_library",

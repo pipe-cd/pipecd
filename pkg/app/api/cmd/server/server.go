@@ -20,9 +20,6 @@ import (
 	"net/http"
 	"time"
 
-	"github.com/kapetaniosci/pipe/pkg/datastore"
-	"github.com/kapetaniosci/pipe/pkg/datastore/firestore"
-
 	jwtgo "github.com/dgrijalva/jwt-go"
 	"github.com/spf13/cobra"
 	"go.uber.org/zap"
@@ -32,6 +29,8 @@ import (
 	"github.com/kapetaniosci/pipe/pkg/app/api/api"
 	"github.com/kapetaniosci/pipe/pkg/app/api/service/webservice"
 	"github.com/kapetaniosci/pipe/pkg/cli"
+	"github.com/kapetaniosci/pipe/pkg/datastore"
+	"github.com/kapetaniosci/pipe/pkg/datastore/firestore"
 	"github.com/kapetaniosci/pipe/pkg/jwt"
 	"github.com/kapetaniosci/pipe/pkg/rpc"
 )
@@ -60,6 +59,8 @@ type server struct {
 	datastoreType            string
 	datastoreCredentialsFile string
 	gcpProjectID             string
+
+	useFakeResponse bool
 }
 
 func NewCommand() *cobra.Command {
@@ -92,6 +93,9 @@ func NewCommand() *cobra.Command {
 	cmd.Flags().StringVar(&s.datastoreCredentialsFile, "datastore-credentials-file", s.datastoreCredentialsFile, "The path to the credentials file for accessing datastore.")
 	cmd.Flags().StringVar(&s.gcpProjectID, "gcp-project-id", s.gcpProjectID, "The identifier of the GCP project which host the control plane.")
 
+	// For debugging early in development
+	cmd.Flags().BoolVar(&s.useFakeResponse, "use-fake-response", s.useFakeResponse, "Whether the server responds fake response or not.")
+
 	cmd.MarkFlagRequired("datastore-variant")
 	cmd.MarkFlagRequired("datastore-type")
 
@@ -117,18 +121,19 @@ func (s *server) run(ctx context.Context, t cli.Telemetry) error {
 		webAPIServer   *rpc.Server
 	)
 
+	ds, err := s.createDatastore(ctx, t.Logger)
+	if err != nil {
+		t.Logger.Error("failed creating datastore", zap.Error(err))
+		return err
+	}
+	defer func() {
+		if err := ds.Close(); err != nil {
+			t.Logger.Error("failed closing datastore client", zap.Error(err))
+		}
+	}()
+
 	// Start a gRPC server for handling PipedAPI requests.
 	{
-		ds, err := s.createDatastore(ctx, t.Logger)
-		if err != nil {
-			t.Logger.Error("failed creating datastore", zap.Error(err))
-			return err
-		}
-		defer func() {
-			if err := ds.Close(); err != nil {
-				t.Logger.Error("failed closing datastore client", zap.Error(err))
-			}
-		}()
 		service := api.NewPipedAPI(ds, t.Logger)
 		opts := []rpc.Option{
 			rpc.WithPort(s.pipedAPIPort),
@@ -148,7 +153,7 @@ func (s *server) run(ctx context.Context, t cli.Telemetry) error {
 
 	// Start a gRPC server for handling WebAPI requests.
 	{
-		service := api.NewWebAPI(t.Logger)
+		service := api.NewWebAPI(ds, s.useFakeResponse, t.Logger)
 		opts := []rpc.Option{
 			rpc.WithPort(s.webAPIPort),
 			rpc.WithGracePeriod(s.gracePeriod),
