@@ -84,9 +84,7 @@ func (e *Executor) Execute(sig executor.StopSignal) model.StageStatus {
 		return model.StageStatus_STAGE_FAILURE
 	}
 	if ok {
-		// FIXME: Populate args available from e.Deployment
-		args := templateArgs{}
-		templateCfg, err = e.render(*templateCfg, args)
+		templateCfg, err = e.render(*templateCfg)
 		if err != nil {
 			e.LogPersister.AppendError(err.Error())
 			return model.StageStatus_STAGE_FAILURE
@@ -287,7 +285,17 @@ func (e *Executor) getHTTPConfig(templatableCfg *config.TemplatableAnalysisHTTP,
 }
 
 // render returns a new AnalysisTemplateSpec, where deployment-specific arguments entered.
-func (e *Executor) render(templateCfg config.AnalysisTemplateSpec, args templateArgs) (*config.AnalysisTemplateSpec, error) {
+func (e *Executor) render(templateCfg config.AnalysisTemplateSpec) (*config.AnalysisTemplateSpec, error) {
+	args := templateArgs{
+		App: struct {
+			Name string
+			Env  string
+		}{
+			Name: e.Application.Name,
+			// TODO: Populate Environment.
+		},
+	}
+
 	cfg, err := json.Marshal(templateCfg)
 	if err != nil {
 		return nil, fmt.Errorf("failed to marshal json: %w", err)
