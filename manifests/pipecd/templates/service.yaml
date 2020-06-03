@@ -1,0 +1,106 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: {{ include "pipecd.fullname" . }}
+  labels:
+    {{- include "pipecd.labels" . | nindent 4 }}
+    app.kubernetes.io/component: ingress
+  {{- with .Values.service.annotations }}
+  annotations:
+    {{- toYaml . | nindent 4 }}
+  {{- end }}
+spec:
+  type: NodePort
+  ports:
+    - name: service
+      port: {{ .Values.service.port }}
+      targetPort: ingress
+  selector:
+    {{- include "pipecd.selectorLabels" . | nindent 4 }}
+    app.kubernetes.io/component: api
+
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: {{ include "pipecd.fullname" . }}-gateway
+  labels:
+    {{- include "pipecd.labels" . | nindent 4 }}
+    app.kubernetes.io/component: gateway
+spec:
+  type: ClusterIP
+  ports:
+    - name: envoy-admin
+      port: 9095
+      targetPort: envoy-admin
+  selector:
+    {{- include "pipecd.selectorLabels" . | nindent 4 }}
+    app.kubernetes.io/component: gateway
+
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: {{ include "pipecd.fullname" . }}-api
+  labels:
+    {{- include "pipecd.labels" . | nindent 4 }}
+    app.kubernetes.io/component: api
+spec:
+  type: ClusterIP
+  clusterIP: None
+  ports:
+    - name: piped-api
+      port: 9080
+      targetPort: piped-api
+    - name: web-api
+      port: 9081
+      targetPort: web-api
+    - name: http
+      port: 9082
+      targetPort: http
+    - name: admin
+      port: 9085
+      targetPort: admin
+  selector:
+    {{- include "pipecd.selectorLabels" . | nindent 4 }}
+    app.kubernetes.io/component: api
+
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: {{ include "pipecd.fullname" . }}-web
+  labels:
+    {{- include "pipecd.labels" . | nindent 4 }}
+    app.kubernetes.io/component: web
+spec:
+  type: ClusterIP
+  clusterIP: None
+  ports:
+    - name: service
+      port: 9090
+      targetPort: web
+    - name: admin
+      port: 9085
+      targetPort: admin
+  selector:
+    {{- include "pipecd.selectorLabels" . | nindent 4 }}
+    app.kubernetes.io/component: web
+
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: {{ include "pipecd.fullname" . }}-cache
+  labels:
+    {{- include "pipecd.labels" . | nindent 4 }}
+    app.kubernetes.io/component: cache
+spec:
+  type: ClusterIP
+  ports:
+    - name: service
+      port: 9090
+      targetPort: redis
+  selector:
+    {{- include "pipecd.selectorLabels" . | nindent 4 }}
+    app.kubernetes.io/component: cache

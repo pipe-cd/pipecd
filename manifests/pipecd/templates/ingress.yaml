@@ -1,0 +1,20 @@
+{{- if .Values.ingress.enabled -}}
+apiVersion: extensions/v1beta1
+kind: Ingress
+metadata:
+  name: {{ include "pipecd.fullname" . }}
+  labels:
+    {{- include "pipecd.labels" . | nindent 4 }}
+  {{- with .Values.ingress.annotations }}
+  annotations:
+    {{- toYaml . | nindent 4 }}
+  {{- end }}
+spec:
+  rules:
+  - http:
+      paths:
+      - path: /*
+        backend:
+          serviceName: {{ include "pipecd.fullname" . }}
+          servicePort: {{ .Values.service.port }}
+{{- end }}

@@ -1,0 +1,192 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{ include "pipecd.fullname" . }}-gateway
+  labels:
+    {{- include "pipecd.labels" . | nindent 4 }}
+    app.kubernetes.io/component: gateway
+spec:
+  replicas: {{ .Values.gateway.replicaCount }}
+  selector:
+    matchLabels:
+      {{- include "pipecd.selectorLabels" . | nindent 6 }}
+      app.kubernetes.io/component: gateway
+  template:
+    metadata:
+      labels:
+        {{- include "pipecd.selectorLabels" . | nindent 8 }}
+        app.kubernetes.io/component: gateway
+    spec:
+      containers:
+        - name: envoy
+          image: envoyproxy/envoy-alpine:{{ .Values.gateway.imageTag }}
+          imagePullPolicy: IfNotPresent
+          command:
+          - envoy
+          args:
+            - -c
+            - /etc/envoy/envoy-config.yaml
+          ports:
+          - name: ingress
+            containerPort: 9090
+            protocol: TCP
+          - name: envoy-admin
+            containerPort: 9095
+            protocol: TCP
+          livenessProbe:
+            initialDelaySeconds: 15
+            httpGet:
+              path: /server_info
+              port: envoy-admin
+          readinessProbe:
+            initialDelaySeconds: 15
+            httpGet:
+              path: /server_info
+              port: envoy-admin
+          volumeMounts:
+          - name: envoy-config
+            mountPath: /etc/envoy
+            readOnly: true
+          - name: certs
+            mountPath: /etc/ssl/envoy
+            readOnly: true
+{{- if .Values.gateway.resources }}
+          resources:
+            {{- toYaml .Values.gateway.resources | nindent 12 }}
+{{- end }}
+      volumes:
+        - name: envoy-config
+          configMap:
+            name: {{ include "pipecd.fullname" . }}-gateway-envoy-config
+
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{ include "pipecd.fullname" . }}-api
+  labels:
+    {{- include "pipecd.labels" . | nindent 4 }}
+    app.kubernetes.io/component: api
+spec:
+  replicas: {{ .Values.api.replicaCount }}
+  selector:
+    matchLabels:
+      {{- include "pipecd.selectorLabels" . | nindent 6 }}
+      app.kubernetes.io/component: api
+  template:
+    metadata:
+      labels:
+        {{- include "pipecd.selectorLabels" . | nindent 8 }}
+        app.kubernetes.io/component: api
+    spec:
+      containers:
+        - name: api
+          image: "gcr.io/kapetanios/pipecd-api:{{ .Values.api.imageTag | default .Chart.AppVersion }}"
+          imagePullPolicy: IfNotPresent
+          ports:
+            - name: piped-api
+              containerPort: 9080
+              protocol: TCP
+            - name: web-api
+              containerPort: 9081
+              protocol: TCP
+            - name: http
+              containerPort: 9082
+              protocol: TCP
+            - name: admin
+              containerPort: 9085
+              protocol: TCP
+          livenessProbe:
+            httpGet:
+              path: /healthz
+              port: admin
+          readinessProbe:
+            httpGet:
+              path: /healthz
+              port: admin
+{{- if .Values.api.resources }}
+          resources:
+            {{- toYaml .Values.api.resources | nindent 12 }}
+{{- end }}
+
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{ include "pipecd.fullname" . }}-web
+  labels:
+    {{- include "pipecd.labels" . | nindent 4 }}
+    app.kubernetes.io/component: web
+spec:
+  replicas: {{ .Values.web.replicaCount }}
+  selector:
+    matchLabels:
+      {{- include "pipecd.selectorLabels" . | nindent 6 }}
+      app.kubernetes.io/component: web
+  template:
+    metadata:
+      labels:
+        {{- include "pipecd.selectorLabels" . | nindent 8 }}
+        app.kubernetes.io/component: web
+    spec:
+      containers:
+        - name: web
+          image: "gcr.io/kapetanios/pipecd-web:{{ .Values.web.imageTag | default .Chart.AppVersion }}"
+          imagePullPolicy: IfNotPresent
+          ports:
+            - name: web
+              containerPort: 9082
+              protocol: TCP
+            - name: admin
+              containerPort: 9085
+              protocol: TCP
+          livenessProbe:
+            httpGet:
+              path: /healthz
+              port: admin
+          readinessProbe:
+            httpGet:
+              path: /healthz
+              port: admin
+{{- if .Values.web.resources }}
+          resources:
+            {{- toYaml .Values.web.resources | nindent 12 }}
+{{- end }}
+
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{ include "pipecd.fullname" . }}-cache
+  labels:
+    {{- include "pipecd.labels" . | nindent 4 }}
+    app.kubernetes.io/component: cache
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      {{- include "pipecd.selectorLabels" . | nindent 6 }}
+      app.kubernetes.io/component: cache
+  template:
+    metadata:
+      labels:
+        {{- include "pipecd.selectorLabels" . | nindent 8 }}
+        app.kubernetes.io/component: cache
+    spec:
+      containers:
+        - name: cache
+          image: redis:{{ .Values.cache.imageTag }}
+          imagePullPolicy: IfNotPresent
+  {{- if .Values.cache.password }}
+          args:
+            - --requirepass
+            - {{ .Values.cache.password | quote }}
+  {{- end }}       
+          ports:
+            - name: redis
+              containerPort: 6379
+              protocol: TCP
+{{- if .Values.cache.resources }}
+          resources:
+            {{- toYaml .Values.cache.resources | nindent 12 }}
+{{- end }}

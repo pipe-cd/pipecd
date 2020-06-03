@@ -47,7 +47,7 @@ type httpHandler interface {
 type server struct {
 	pipedAPIPort int
 	webAPIPort   int
-	webhookPort  int
+	httpPort     int
 	adminPort    int
 	gracePeriod  time.Duration
 
@@ -66,7 +66,7 @@ func NewCommand() *cobra.Command {
 	s := &server{
 		pipedAPIPort: 9080,
 		webAPIPort:   9081,
-		webhookPort:  9082,
+		httpPort:     9082,
 		adminPort:    9085,
 		gracePeriod:  15 * time.Second,
 	}
@@ -78,7 +78,7 @@ func NewCommand() *cobra.Command {
 
 	cmd.Flags().IntVar(&s.pipedAPIPort, "piped-api-port", s.pipedAPIPort, "The port number used to run a grpc server that serving serves incoming piped requests.")
 	cmd.Flags().IntVar(&s.webAPIPort, "web-api-port", s.webAPIPort, "The port number used to run a grpc server that serves incoming web requests.")
-	cmd.Flags().IntVar(&s.webhookPort, "webhook-port", s.webhookPort, "The port number used to run a http server that serves incoming webhook events.")
+	cmd.Flags().IntVar(&s.httpPort, "http-port", s.httpPort, "The port number used to run a http server that serves incoming http requests such as auth callbacks or webhook events.")
 	cmd.Flags().IntVar(&s.adminPort, "admin-port", s.adminPort, "The port number used to run a HTTP server for admin tasks such as metrics, healthz.")
 	cmd.Flags().DurationVar(&s.gracePeriod, "grace-period", s.gracePeriod, "How long to wait for graceful shutdown.")
 
@@ -165,11 +165,11 @@ func (s *server) run(ctx context.Context, t cli.Telemetry) error {
 		})
 	}
 
-	// Start an http server for handling incoming webhook events.
+	// Start an http server for handling incoming http requests such as auth callbacks or webhook events.
 	{
 		mux := http.NewServeMux()
 		httpServer := &http.Server{
-			Addr:    fmt.Sprintf(":%d", s.webhookPort),
+			Addr:    fmt.Sprintf(":%d", s.httpPort),
 			Handler: mux,
 		}
 		handlers := []httpHandler{

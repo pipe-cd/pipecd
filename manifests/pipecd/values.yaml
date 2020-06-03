@@ -1,0 +1,38 @@
+# PipeCD service and ingress.
+service:
+  port: 443
+  annotations:
+    cloud.google.com/app-protocols: '{"service":"HTTP2"}'
+
+ingress:
+  enabled: false
+  annotations: {}
+    # kubernetes.io/ingress.allow-http: "false"
+    # kubernetes.io/ingress.global-static-ip-name: pipecd
+    # networking.gke.io/managed-certificates: pipecd
+
+cors:
+  enabled: false
+  allowOrigins:
+    - "http://localhost:9090"
+
+# PipeCD workloads.
+gateway:
+  replicasCount: 3
+  imageTag: v1.10.0
+  resources: {}
+
+api:
+  replicaCount: 3
+  imageTag: ""
+  resources: {}
+
+web:
+  replicasCount: 3
+  imageTag: ""
+  resources: {}
+
+cache:
+  imageTag: "5.0.5-alpine3.9"
+  password: ""
+  resources: {}
