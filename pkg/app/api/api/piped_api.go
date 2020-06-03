@@ -255,7 +255,7 @@ func (a *PipedAPI) SaveDeploymentMetadata(ctx context.Context, req *pipedservice
 // SaveStageMetadata used by piped to persist the metadata
 // of a specific stage of a deployment.
 func (a *PipedAPI) SaveStageMetadata(ctx context.Context, req *pipedservice.SaveStageMetadataRequest) (*pipedservice.SaveStageMetadataResponse, error) {
-	err := a.deploymentStore.PutDeploymentStageMetadata(ctx, req.DeploymentId, req.StageId, req.JsonMetadata)
+	err := a.deploymentStore.PutDeploymentStageMetadata(ctx, req.DeploymentId, req.StageId, req.Metadata)
 	if err != nil {
 		switch errors.Unwrap(err) {
 		case datastore.ErrNotFound:

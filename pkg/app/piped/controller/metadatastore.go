@@ -16,7 +16,6 @@ package controller
 
 import (
 	"context"
-	"encoding/json"
 	"sync"
 
 	"github.com/kapetaniosci/pipe/pkg/app/api/service/pipedservice"
@@ -26,8 +25,8 @@ import (
 type metadataStore struct {
 	apiClient     apiClient
 	deployment    *model.Deployment
-	metadata      sync.Map // map[key-string]value-string
-	stageMetadata sync.Map // map[stage-id-string]json-string
+	metadata      sync.Map // map[key-string]string
+	stageMetadata sync.Map // map[stage-id-string]map[string]string
 }
 
 func NewMetadataStore(apiClient apiClient, d *model.Deployment) *metadataStore {
@@ -43,7 +42,7 @@ func NewMetadataStore(apiClient apiClient, d *model.Deployment) *metadataStore {
 	}
 	// Store metadata of all stages.
 	for _, stage := range d.Stages {
-		s.stageMetadata.Store(stage.Id, stage.JsonMetadata)
+		s.stageMetadata.Store(stage.Id, stage.Metadata)
 	}
 	return s
 }
@@ -70,30 +69,25 @@ func (s *metadataStore) Set(ctx context.Context, key, value string) error {
 
 func (s *metadataStore) Get(key string) (string, bool) {
 	if value, ok := s.metadata.Load(key); ok {
-		return value.(string), ok
+		return value.(string), true
 	}
 	return "", false
 }
 
-func (s *metadataStore) SetStageMetadata(ctx context.Context, stageID string, metadata interface{}) error {
-	data, err := json.Marshal(metadata)
-	if err != nil {
-		return err
-	}
-	s.stageMetadata.Store(stageID, string(data))
+func (s *metadataStore) SetStageMetadata(ctx context.Context, stageID string, metadata map[string]string) error {
+	s.stageMetadata.Store(stageID, metadata)
 
-	_, err = s.apiClient.SaveStageMetadata(ctx, &pipedservice.SaveStageMetadataRequest{
+	_, err := s.apiClient.SaveStageMetadata(ctx, &pipedservice.SaveStageMetadataRequest{
 		DeploymentId: s.deployment.Id,
 		StageId:      stageID,
-		JsonMetadata: string(data),
+		Metadata:     metadata,
 	})
 	return err
 }
 
-func (s *metadataStore) GetStageMetadata(stageID string, metadata interface{}) error {
-	var data string
-	if v, ok := s.stageMetadata.Load(stageID); ok {
-		data = v.(string)
+func (s *metadataStore) GetStageMetadata(stageID string) (map[string]string, bool) {
+	if metadata, ok := s.stageMetadata.Load(stageID); ok {
+		return metadata.(map[string]string), true
 	}
-	return json.Unmarshal([]byte(data), metadata)
+	return nil, false
 }

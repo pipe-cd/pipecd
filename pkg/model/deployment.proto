@@ -101,7 +101,7 @@ message PipelineStage {
     bool predefined = 5;
     repeated string requires = 6;
     StageStatus status = 7 [(validate.rules).enum.defined_only = true];
-    string json_metadata = 8;
+    map<string,string> metadata = 8;
     int32 retried_count = 9;
     int64 completed_at = 13 [(validate.rules).int64.gte = 0];
     int64 created_at = 14 [(validate.rules).int64.gt = 0];

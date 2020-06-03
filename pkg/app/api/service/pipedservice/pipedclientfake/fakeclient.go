@@ -330,7 +330,7 @@ func (c *fakeClient) SaveStageMetadata(ctx context.Context, req *pipedservice.Sa
 		if s.Id != req.StageId {
 			continue
 		}
-		s.JsonMetadata = req.JsonMetadata
+		s.Metadata = req.Metadata
 		return &pipedservice.SaveStageMetadataResponse{}, nil
 	}
 	return nil, status.Error(codes.NotFound, "stage was not found")

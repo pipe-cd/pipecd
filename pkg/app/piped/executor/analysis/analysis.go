@@ -199,6 +199,8 @@ func (e *Executor) runAnalysis(ctx context.Context, interval time.Duration, prov
 	}
 }
 
+const queryCountKey = "qc"
+
 // saveQueryCount stores metadata into metadata persister.
 // The analysis stage can be restarted from the middle even if it ends unexpectedly,
 // that's why count should be stored.
@@ -211,15 +213,33 @@ func (e *Executor) saveQueryCount(ctx context.Context) {
 	}
 	e.mu.RUnlock()
 
-	if err := e.MetadataStore.SetStageMetadata(ctx, e.Stage.Id, qc); err != nil {
+	data, err := json.Marshal(qc)
+	if err != nil {
+		e.Logger.Error("failed to marshal query count before storing as stage metadata", zap.Error(err))
+		return
+	}
+	metadata := map[string]string{
+		queryCountKey: string(data),
+	}
+
+	if err := e.MetadataStore.SetStageMetadata(ctx, e.Stage.Id, metadata); err != nil {
 		e.Logger.Error("failed to store metadata", zap.Error(err))
 	}
 }
 
 // setQueryCount decodes metadata and populates query count to own field.
 func (e *Executor) setQueryCount() {
-	err := e.MetadataStore.GetStageMetadata(e.Stage.Id, &e.queryCount)
-	if err != nil {
+	metadata, ok := e.MetadataStore.GetStageMetadata(e.Stage.Id)
+	if !ok {
+		e.queryCount = make(map[string]int)
+		return
+	}
+	qc, ok := metadata[queryCountKey]
+	if !ok {
+		e.queryCount = make(map[string]int)
+		return
+	}
+	if err := json.Unmarshal([]byte(qc), &e.queryCount); err != nil {
 		e.Logger.Error("failed to get stage metadata", zap.Error(err))
 		e.queryCount = make(map[string]int)
 	}

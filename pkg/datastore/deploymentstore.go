@@ -88,7 +88,7 @@ type DeploymentStore interface {
 	AddDeployment(ctx context.Context, d *model.Deployment) error
 	PutDeployment(ctx context.Context, id string, updater func(*model.Deployment) error) error
 	PutDeploymentMetadata(ctx context.Context, id string, metadata map[string]string) error
-	PutDeploymentStageMetadata(ctx context.Context, deploymentID, stageID, jsonMetadata string) error
+	PutDeploymentStageMetadata(ctx context.Context, deploymentID, stageID string, metadata map[string]string) error
 	ListDeployments(ctx context.Context, opts ListOptions) ([]*model.Deployment, error)
 	GetDeployment(ctx context.Context, id string) (*model.Deployment, error)
 }
@@ -143,13 +143,13 @@ func (s *deploymentStore) PutDeploymentMetadata(ctx context.Context, id string, 
 	})
 }
 
-func (s *deploymentStore) PutDeploymentStageMetadata(ctx context.Context, deploymentID, stageID, jsonMetadata string) error {
+func (s *deploymentStore) PutDeploymentStageMetadata(ctx context.Context, deploymentID, stageID string, metadata map[string]string) error {
 	now := s.nowFunc().Unix()
 	return s.ds.Update(ctx, deploymentModelKind, deploymentID, deploymentFactory, func(e interface{}) error {
 		d := e.(*model.Deployment)
 		for _, stage := range d.Stages {
 			if stage.Id == stageID {
-				stage.JsonMetadata = jsonMetadata
+				stage.Metadata = metadata
 				d.UpdatedAt = now
 				return nil
 			}

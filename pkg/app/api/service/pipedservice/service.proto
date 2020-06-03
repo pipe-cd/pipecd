@@ -241,7 +241,7 @@ message SaveDeploymentMetadataResponse {
 message SaveStageMetadataRequest {
     string deployment_id = 1 [(validate.rules).string.min_len = 1];
     string stage_id = 2 [(validate.rules).string.min_len = 1];
-    string json_metadata = 3;
+    map<string,string> metadata = 3;
 }
 
 message SaveStageMetadataResponse {

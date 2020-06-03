@@ -43,8 +43,8 @@ type MetadataStore interface {
 	Get(key string) (string, bool)
 	Set(ctx context.Context, key, value string) error
 
-	GetStageMetadata(stageID string, metadata interface{}) error
-	SetStageMetadata(ctx context.Context, stageID string, metadata interface{}) error
+	GetStageMetadata(stageID string) (map[string]string, bool)
+	SetStageMetadata(ctx context.Context, stageID string, metadata map[string]string) error
 }
 
 type CommandLister interface {
