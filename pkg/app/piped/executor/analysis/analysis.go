@@ -152,9 +152,11 @@ func (e *Executor) Execute(sig executor.StopSignal) model.StageStatus {
 	}
 
 	if err := eg.Wait(); err != nil {
+		e.LogPersister.AppendError(fmt.Sprintf("An analysis failed: %s", err.Error()))
 		return model.StageStatus_STAGE_FAILURE
 	}
 
+	e.LogPersister.AppendSuccess("All analyses were successful.")
 	return model.StageStatus_STAGE_SUCCESS
 }
 
@@ -175,16 +177,21 @@ func (e *Executor) runAnalysis(ctx context.Context, interval time.Duration, prov
 				success = false
 			}
 			if !success {
+				e.LogPersister.AppendSuccess(fmt.Sprintf("The result of the query for %s is a success.", providerType))
+			} else {
 				failureCount++
+				e.LogPersister.AppendError(fmt.Sprintf("The result of the query for %s is a failure. This analysis will fail if it fails %d more times.", providerType, failureLimit+1-failureCount))
 			}
 
 			e.mu.Lock()
+			// TODO: Store query count per analysis instead of provider.
+			//   It cannot handle correctly the case that there are multiple analysis by the same provider.
 			e.queryCount[providerType]++
 			e.mu.Unlock()
 			e.saveQueryCount(ctx)
 
 			if failureCount > failureLimit {
-				return fmt.Errorf("anslysis by %s failed", providerType)
+				return fmt.Errorf("anslysis by %s failed because the failure number exceeded the failure limit %d", providerType, failureLimit)
 			}
 		case <-ctx.Done():
 			return nil

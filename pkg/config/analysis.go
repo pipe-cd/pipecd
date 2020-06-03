@@ -20,6 +20,7 @@ type AnalysisMetrics struct {
 	Expected AnalysisExpected `json:"expected"`
 	Interval Duration         `json:"interval"`
 	// Maximum number of failed checks before the query result is considered as failure.
+	// For instance, If 1 is set, the analysis will be considered a failure after 2 failures.
 	FailureLimit int `json:"failureLimit"`
 	// How long after which the query times out.
 	Timeout  Duration `json:"timeout"`
