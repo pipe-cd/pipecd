@@ -170,13 +170,14 @@ func (e *Executor) runAnalysis(ctx context.Context, interval time.Duration, prov
 	for {
 		select {
 		case <-ticker.C:
+			e.LogPersister.AppendInfo(fmt.Sprintf("Start running query against %s", providerType))
 			success, err := runQuery(ctx)
 			if err != nil {
 				// The failure of the query itself is treated as a failure.
 				e.LogPersister.AppendError(fmt.Sprintf("Failed to run query: %s", err.Error()))
 				success = false
 			}
-			if !success {
+			if success {
 				e.LogPersister.AppendSuccess(fmt.Sprintf("The result of the query for %s is a success.", providerType))
 			} else {
 				failureCount++

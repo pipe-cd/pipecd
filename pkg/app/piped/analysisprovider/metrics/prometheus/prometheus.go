@@ -54,7 +54,7 @@ func NewProvider(address string, logger *zap.Logger) (*Provider, error) {
 	return &Provider{
 		api:     v1.NewAPI(client),
 		timeout: defaultTimeout,
-		logger:  logger,
+		logger:  logger.With(zap.String("analysis-provider", ProviderType)),
 	}, nil
 }
 
@@ -72,7 +72,7 @@ func (p *Provider) RunQuery(ctx context.Context, query string, expected config.A
 		return false, err
 	}
 	for _, w := range warnings {
-		p.logger.Warn(w)
+		p.logger.Warn("non critical error occurred", zap.String("warning", w))
 	}
 	return p.evaluate(expected, response)
 }
@@ -84,7 +84,7 @@ func (p *Provider) evaluate(expected config.AnalysisExpected, response model.Val
 		if math.IsNaN(result) {
 			return false, fmt.Errorf("the result %v is not a number", result)
 		}
-		return inRange(expected, result)
+		return p.inRange(expected, result)
 	case model.Vector:
 		lv := len(value)
 		if lv == 0 {
@@ -101,22 +101,24 @@ func (p *Provider) evaluate(expected config.AnalysisExpected, response model.Val
 			}
 			results = append(results, result)
 		}
+		p.logger.Info("vector results found", zap.Float64s("results", results))
 		// TODO: Consider the case of multiple results.
-		return inRange(expected, results[0])
+		return p.inRange(expected, results[0])
 	default:
 		return false, fmt.Errorf("unsupported prometheus metrics type")
 	}
 }
 
-// TODO: Move to common package.
-func inRange(expected config.AnalysisExpected, value float64) (bool, error) {
+func (p *Provider) inRange(expected config.AnalysisExpected, value float64) (bool, error) {
 	if expected.Min == nil && expected.Max == nil {
 		return false, fmt.Errorf("expected range is undefined")
 	}
 	if min := expected.Min; min != nil && *min > value {
+		p.logger.Info("failure because the query response was below expected minimum", zap.Float64("response", value), zap.Float64("expected-min", *min))
 		return false, nil
 	}
-	if max := expected.Min; max != nil && *max > value {
+	if max := expected.Max; max != nil && *max < value {
+		p.logger.Info("failure because the query response exceeded expected maximum", zap.Float64("response", value), zap.Float64("expected-max", *max))
 		return false, nil
 	}
 	return true, nil
