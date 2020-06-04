@@ -31,11 +31,13 @@ import (
 
 type Registry interface {
 	Executor(stage model.Stage, in executor.Input) (executor.Executor, bool)
+	RollbackExecutor(kind model.ApplicationKind, in executor.Input) (executor.Executor, bool)
 }
 
 type registry struct {
-	factories map[model.Stage]executor.Factory
-	mu        sync.RWMutex
+	factories         map[model.Stage]executor.Factory
+	rollbackFactories map[model.ApplicationKind]executor.Factory
+	mu                sync.RWMutex
 }
 
 func (r *registry) Register(stage model.Stage, f executor.Factory) error {
@@ -46,6 +48,17 @@ func (r *registry) Register(stage model.Stage, f executor.Factory) error {
 		return fmt.Errorf("executor for %s stage has already been registered", stage)
 	}
 	r.factories[stage] = f
+	return nil
+}
+
+func (r *registry) RegisterRollback(kind model.ApplicationKind, f executor.Factory) error {
+	r.mu.Lock()
+	defer r.mu.Unlock()
+
+	if _, ok := r.rollbackFactories[kind]; ok {
+		return fmt.Errorf("rollback executor for %s application kind has already been registered", kind.String())
+	}
+	r.rollbackFactories[kind] = f
 	return nil
 }
 
@@ -60,8 +73,20 @@ func (r *registry) Executor(stage model.Stage, in executor.Input) (executor.Exec
 	return f(in), true
 }
 
+func (r *registry) RollbackExecutor(kind model.ApplicationKind, in executor.Input) (executor.Executor, bool) {
+	r.mu.RLock()
+	defer r.mu.RUnlock()
+
+	f, ok := r.rollbackFactories[kind]
+	if !ok {
+		return nil, false
+	}
+	return f(in), true
+}
+
 var defaultRegistry = &registry{
-	factories: make(map[model.Stage]executor.Factory),
+	factories:         make(map[model.Stage]executor.Factory),
+	rollbackFactories: make(map[model.ApplicationKind]executor.Factory),
 }
 
 func DefaultRegistry() Registry {

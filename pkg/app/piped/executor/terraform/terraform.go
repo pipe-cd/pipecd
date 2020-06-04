@@ -25,6 +25,7 @@ type Executor struct {
 
 type registerer interface {
 	Register(stage model.Stage, f executor.Factory) error
+	RegisterRollback(kind model.ApplicationKind, f executor.Factory) error
 }
 
 func Register(r registerer) {
@@ -35,6 +36,8 @@ func Register(r registerer) {
 	}
 	r.Register(model.StageTerraformPlan, f)
 	r.Register(model.StageTerraformApply, f)
+
+	r.RegisterRollback(model.ApplicationKind_TERRAFORM, f)
 }
 
 func (e *Executor) Execute(sig executor.StopSignal) model.StageStatus {

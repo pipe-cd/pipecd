@@ -26,6 +26,7 @@ const (
 	PredefinedStageK8sUpdate      = "K8sUpdate"
 	PredefinedStageTerraformPlan  = "TerraformPlan"
 	PredefinedStageTerraformApply = "TerraformApply"
+	PredefinedStageRollback       = "Rollback"
 )
 
 var predefinedStages = map[string]config.PipelineStage{
@@ -58,6 +59,11 @@ var predefinedStages = map[string]config.PipelineStage{
 		Id:   PredefinedStageTerraformApply,
 		Name: model.StageTerraformApply,
 		Desc: "Terraform apply",
+	},
+	PredefinedStageRollback: config.PipelineStage{
+		Id:   PredefinedStageRollback,
+		Name: model.StageRollback,
+		Desc: "Rollback this deployment",
 	},
 }
 

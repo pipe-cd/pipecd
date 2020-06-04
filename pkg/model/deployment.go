@@ -22,6 +22,7 @@ var notCompletedDeploymentStatuses = []DeploymentStatus{
 	DeploymentStatus_DEPLOYMENT_PENDING,
 	DeploymentStatus_DEPLOYMENT_PLANNED,
 	DeploymentStatus_DEPLOYMENT_RUNNING,
+	DeploymentStatus_DEPLOYMENT_ROLLING_BACK,
 }
 
 // IsCompletedDeployment checks whether the deployment is at a completion state.
@@ -67,12 +68,14 @@ func CanUpdateDeploymentStatus(cur, next DeploymentStatus) bool {
 		return cur <= DeploymentStatus_DEPLOYMENT_PLANNED
 	case DeploymentStatus_DEPLOYMENT_RUNNING:
 		return cur <= DeploymentStatus_DEPLOYMENT_RUNNING
+	case DeploymentStatus_DEPLOYMENT_ROLLING_BACK:
+		return cur <= DeploymentStatus_DEPLOYMENT_ROLLING_BACK
 	case DeploymentStatus_DEPLOYMENT_SUCCESS:
-		return cur <= DeploymentStatus_DEPLOYMENT_RUNNING
+		return cur <= DeploymentStatus_DEPLOYMENT_ROLLING_BACK
 	case DeploymentStatus_DEPLOYMENT_FAILURE:
-		return cur <= DeploymentStatus_DEPLOYMENT_RUNNING
+		return cur <= DeploymentStatus_DEPLOYMENT_ROLLING_BACK
 	case DeploymentStatus_DEPLOYMENT_CANCELLED:
-		return cur <= DeploymentStatus_DEPLOYMENT_RUNNING
+		return cur <= DeploymentStatus_DEPLOYMENT_ROLLING_BACK
 	}
 	return false
 }

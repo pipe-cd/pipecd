@@ -56,7 +56,7 @@ func (p *Planner) Plan(ctx context.Context, in planner.Input) (out planner.Outpu
 	// or it was unable to retrieve that value.
 	// We just apply all manifests.
 	if in.MostRecentSuccessfulCommitHash == "" {
-		out.Stages = buildPipeline(time.Now())
+		out.Stages = buildPipeline(cfg.Input.AutoRollback, time.Now())
 		out.Description = fmt.Sprintf("Apply all manifests because it was unable to find the most recent successful commit.")
 		return
 	}
@@ -64,7 +64,7 @@ func (p *Planner) Plan(ctx context.Context, in planner.Input) (out planner.Outpu
 	// If the commit is a revert one. Let's apply primary to rollback.
 	// TODO: Find a better way to determine the revert commit.
 	if strings.Contains(in.Deployment.Trigger.Commit.Message, "/pipecd rollback ") {
-		out.Stages = buildPipeline(time.Now())
+		out.Stages = buildPipeline(cfg.Input.AutoRollback, time.Now())
 		out.Description = fmt.Sprintf("Rollback from commit %s.", in.MostRecentSuccessfulCommitHash)
 		return
 	}
@@ -103,11 +103,11 @@ func (p *Planner) Plan(ctx context.Context, in planner.Input) (out planner.Outpu
 	out.Description = desc
 
 	if progressive {
-		out.Stages = buildProgressivePipeline(cfg.Pipeline, time.Now())
+		out.Stages = buildProgressivePipeline(cfg.Pipeline, cfg.Input.AutoRollback, time.Now())
 		return
 	}
 
-	out.Stages = buildPipeline(time.Now())
+	out.Stages = buildPipeline(cfg.Input.AutoRollback, time.Now())
 	return
 }
 

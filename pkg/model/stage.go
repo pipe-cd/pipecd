@@ -67,12 +67,12 @@ const (
 	// should be splitted as the specified percentage to previous version and new version.
 	StageLambdaTrafficSplit Stage = "LAMBDA_TRAFFIC_SPLIT"
 
-	// StageRollBack represents a state where
+	// StageRollback represents a state where
 	// the all temporarily created stages will be reverted to
 	// bring back the pre-deploy stage.
 	// This stage is AUTOMATICALLY GENERATED and can not be used
 	// to specify in configuration file.
-	StageRollBack Stage = "ROLLBACK"
+	StageRollback Stage = "ROLLBACK"
 )
 
 func (s Stage) String() string {

@@ -47,6 +47,8 @@ export const StatusIcon: FC<Props> = ({ status }) => {
       return <IndeterminateCheckBox className={classes[status]} />;
     case DeploymentStatus.DEPLOYMENT_RUNNING:
       return <Cached className={classes[status]} />;
+    case DeploymentStatus.DEPLOYMENT_ROLLING_BACK:
+      return <Cached className={classes[status]} />;
     case DeploymentStatus.DEPLOYMENT_PENDING:
       return <Stop className={classes[status]} />;
   }

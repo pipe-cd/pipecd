@@ -23,7 +23,7 @@ import (
 	"github.com/kapetaniosci/pipe/pkg/model"
 )
 
-func buildPipeline(now time.Time) []*model.PipelineStage {
+func buildPipeline(autoRollback bool, now time.Time) []*model.PipelineStage {
 	var (
 		preStageID = ""
 		stage, _   = planner.GetPredefinedStage(planner.PredefinedStageK8sUpdate)
@@ -54,10 +54,24 @@ func buildPipeline(now time.Time) []*model.PipelineStage {
 		out = append(out, stage)
 	}
 
+	if autoRollback {
+		s, _ := planner.GetPredefinedStage(planner.PredefinedStageRollback)
+		out = append(out, &model.PipelineStage{
+			Id:         s.Id,
+			Name:       s.Name.String(),
+			Desc:       s.Desc,
+			Predefined: true,
+			Visible:    false,
+			Status:     model.StageStatus_STAGE_NOT_STARTED_YET,
+			CreatedAt:  now.Unix(),
+			UpdatedAt:  now.Unix(),
+		})
+	}
+
 	return out
 }
 
-func buildProgressivePipeline(pp *config.DeploymentPipeline, now time.Time) []*model.PipelineStage {
+func buildProgressivePipeline(pp *config.DeploymentPipeline, autoRollback bool, now time.Time) []*model.PipelineStage {
 	var stages []config.PipelineStage
 	if pp != nil {
 		stages = pp.Stages
@@ -96,6 +110,20 @@ func buildProgressivePipeline(pp *config.DeploymentPipeline, now time.Time) []*m
 		}
 		preStageID = id
 		out = append(out, stage)
+	}
+
+	if autoRollback {
+		s, _ := planner.GetPredefinedStage(planner.PredefinedStageRollback)
+		out = append(out, &model.PipelineStage{
+			Id:         s.Id,
+			Name:       s.Name.String(),
+			Desc:       s.Desc,
+			Predefined: true,
+			Visible:    false,
+			Status:     model.StageStatus_STAGE_NOT_STARTED_YET,
+			CreatedAt:  now.Unix(),
+			UpdatedAt:  now.Unix(),
+		})
 	}
 
 	return out

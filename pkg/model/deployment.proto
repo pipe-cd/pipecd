@@ -30,12 +30,14 @@ enum DeploymentStatus {
     DEPLOYMENT_PLANNED = 1;
     // DEPLOYMENT_RUNNING means the controller is controlling this deployment.
     DEPLOYMENT_RUNNING = 2;
+    // DEPLOYMENT_ROLLING_BACK means the controller is rolling back this deployment.
+    DEPLOYMENT_ROLLING_BACK = 3;
     // DEPLOYMENT_SUCCESS means the deployment was completed successfully.
-    DEPLOYMENT_SUCCESS = 3;
+    DEPLOYMENT_SUCCESS = 4;
     // DEPLOYMENT_FAILURE means the deployment was completed with a failure.
-    DEPLOYMENT_FAILURE = 4;
+    DEPLOYMENT_FAILURE = 5;
     // DEPLOYMENT_CANCELLED means the deployment was cancelled by someone.
-    DEPLOYMENT_CANCELLED = 5;
+    DEPLOYMENT_CANCELLED = 6;
 }
 
 // StageStatus represents the current status of a stage of a deployment.

@@ -45,6 +45,7 @@ type Executor struct {
 
 type registerer interface {
 	Register(stage model.Stage, f executor.Factory) error
+	RegisterRollback(kind model.ApplicationKind, f executor.Factory) error
 }
 
 // Register registers this executor factory into a given registerer.
@@ -60,6 +61,8 @@ func Register(r registerer) {
 	r.Register(model.StageK8sBaselineRollout, f)
 	r.Register(model.StageK8sBaselineClean, f)
 	r.Register(model.StageK8sTrafficSplit, f)
+
+	r.RegisterRollback(model.ApplicationKind_KUBERNETES, f)
 }
 
 func (e *Executor) Execute(sig executor.StopSignal) model.StageStatus {
@@ -106,6 +109,8 @@ func (e *Executor) Execute(sig executor.StopSignal) model.StageStatus {
 		status = e.ensureBaselineClean(ctx)
 	case model.StageK8sTrafficSplit:
 		status = e.ensureTrafficSplit(ctx)
+	case model.StageRollback:
+		status = e.ensureRollback(ctx)
 	default:
 		e.LogPersister.AppendError(fmt.Sprintf("Unsupported stage %s for kubernetes application", e.Stage.Name))
 		return model.StageStatus_STAGE_FAILURE

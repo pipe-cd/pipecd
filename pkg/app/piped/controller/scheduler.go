@@ -226,6 +226,9 @@ func (s *scheduler) Run(ctx context.Context) error {
 		if ps.Status == model.StageStatus_STAGE_SUCCESS {
 			continue
 		}
+		if !ps.Visible {
+			continue
+		}
 
 		// This stage is already completed by a previous scheduler.
 		if ps.Status == model.StageStatus_STAGE_CANCELLED {
