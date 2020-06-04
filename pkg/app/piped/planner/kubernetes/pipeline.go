@@ -24,10 +24,13 @@ import (
 )
 
 func buildPipeline(now time.Time) []*model.PipelineStage {
-	stage, _ := planner.GetPredefinedStage(planner.PredefinedStageK8sUpdate)
-	stages := []config.PipelineStage{stage}
+	var (
+		preStageID = ""
+		stage, _   = planner.GetPredefinedStage(planner.PredefinedStageK8sUpdate)
+		stages     = []config.PipelineStage{stage}
+		out        = make([]*model.PipelineStage, 0, len(stages))
+	)
 
-	out := make([]*model.PipelineStage, 0, len(stages))
 	for i, s := range stages {
 		id := s.Id
 		if id == "" {
@@ -39,10 +42,15 @@ func buildPipeline(now time.Time) []*model.PipelineStage {
 			Desc:       s.Desc,
 			Index:      int32(i),
 			Predefined: true,
+			Visible:    true,
 			Status:     model.StageStatus_STAGE_NOT_STARTED_YET,
 			CreatedAt:  now.Unix(),
 			UpdatedAt:  now.Unix(),
 		}
+		if preStageID != "" {
+			stage.Requires = []string{preStageID}
+		}
+		preStageID = id
 		out = append(out, stage)
 	}
 
@@ -62,7 +70,11 @@ func buildProgressivePipeline(pp *config.DeploymentPipeline, now time.Time) []*m
 		stages = []config.PipelineStage{stage}
 	}
 
-	out := make([]*model.PipelineStage, 0, len(stages))
+	var (
+		preStageID = ""
+		out        = make([]*model.PipelineStage, 0, len(stages))
+	)
+
 	for i, s := range stages {
 		id := s.Id
 		if id == "" {
@@ -74,10 +86,15 @@ func buildProgressivePipeline(pp *config.DeploymentPipeline, now time.Time) []*m
 			Desc:       s.Desc,
 			Index:      int32(i),
 			Predefined: predefined,
+			Visible:    true,
 			Status:     model.StageStatus_STAGE_NOT_STARTED_YET,
 			CreatedAt:  now.Unix(),
 			UpdatedAt:  now.Unix(),
 		}
+		if preStageID != "" {
+			stage.Requires = []string{preStageID}
+		}
+		preStageID = id
 		out = append(out, stage)
 	}
 
