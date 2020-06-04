@@ -149,3 +149,13 @@ func (d *Deployment) CloudProviderType() CloudProviderType {
 		return CloudProviderType(d.Kind.String())
 	}
 }
+
+// FindRollbackStage finds the rollback stage in stage list.
+func (d *Deployment) FindRollbackStage() (*PipelineStage, bool) {
+	for i := len(d.Stages) - 1; i >= 0; i-- {
+		if d.Stages[i].Name == StageRollback.String() {
+			return d.Stages[i], true
+		}
+	}
+	return nil, false
+}

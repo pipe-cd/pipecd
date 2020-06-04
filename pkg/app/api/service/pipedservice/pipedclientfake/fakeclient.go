@@ -242,10 +242,10 @@ func (c *fakeClient) ReportDeploymentPlanned(ctx context.Context, req *pipedserv
 	return &pipedservice.ReportDeploymentPlannedResponse{}, nil
 }
 
-// ReportDeploymentRunning used by piped to update the status
-// of a specific deployment to RUNNING.
-func (c *fakeClient) ReportDeploymentRunning(ctx context.Context, req *pipedservice.ReportDeploymentRunningRequest, opts ...grpc.CallOption) (*pipedservice.ReportDeploymentRunningResponse, error) {
-	c.logger.Info("fake client received ReportDeploymentRunning rpc", zap.Any("request", req))
+// ReportDeploymentStatusChanged is used to update the status
+// of a specific deployment to RUNNING or ROLLING_BACK.
+func (c *fakeClient) ReportDeploymentStatusChanged(ctx context.Context, req *pipedservice.ReportDeploymentStatusChangedRequest, opts ...grpc.CallOption) (*pipedservice.ReportDeploymentStatusChangedResponse, error) {
+	c.logger.Info("fake client received ReportDeploymentStatusChanged rpc", zap.Any("request", req))
 	c.mu.Lock()
 	defer c.mu.Unlock()
 
@@ -254,15 +254,14 @@ func (c *fakeClient) ReportDeploymentRunning(ctx context.Context, req *pipedserv
 		return nil, status.Error(codes.NotFound, "deployment was not found")
 	}
 
-	s := model.DeploymentStatus_DEPLOYMENT_RUNNING
-	if !model.CanUpdateDeploymentStatus(d.Status, s) {
-		msg := fmt.Sprintf("invalid status, cur = %s, req = %s", d.Status.String(), s.String())
+	if !model.CanUpdateDeploymentStatus(d.Status, req.Status) {
+		msg := fmt.Sprintf("invalid status, cur = %s, req = %s", d.Status.String(), req.Status.String())
 		return nil, status.Error(codes.FailedPrecondition, msg)
 	}
 
-	d.Status = s
+	d.Status = req.Status
 	d.StatusDescription = req.StatusDescription
-	return &pipedservice.ReportDeploymentRunningResponse{}, nil
+	return &pipedservice.ReportDeploymentStatusChangedResponse{}, nil
 }
 
 // ReportDeploymentCompleted used by piped to update the status
@@ -360,6 +359,7 @@ func (c *fakeClient) ReportStageStatusChanged(ctx context.Context, req *pipedser
 		}
 		s.Status = req.Status
 		s.RetriedCount = req.RetriedCount
+		s.Visible = req.Visible
 		s.CompletedAt = req.CompletedAt
 		return &pipedservice.ReportStageStatusChangedResponse{}, nil
 	}

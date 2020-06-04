@@ -87,8 +87,8 @@ func (s *samplecli) run(ctx context.Context, t cli.Telemetry) error {
 		return s.listNotCompletedDeployments(ctx, pipedCli, data, t.Logger)
 	case "ReportDeploymentPlanned":
 		return s.reportDeploymentPlanned(ctx, pipedCli, data, t.Logger)
-	case "ReportDeploymentRunning":
-		return s.reportDeploymentRunning(ctx, pipedCli, data, t.Logger)
+	case "ReportDeploymentStatusChanged":
+		return s.reportDeploymentStatusChanged(ctx, pipedCli, data, t.Logger)
 	case "ReportDeploymentCompleted":
 		return s.reportDeploymentCompleted(ctx, pipedCli, data, t.Logger)
 	case "SaveDeploymentMetadata":
@@ -216,16 +216,16 @@ func (s *samplecli) reportDeploymentPlanned(ctx context.Context, cli pipedservic
 	return nil
 }
 
-func (s *samplecli) reportDeploymentRunning(ctx context.Context, cli pipedservice.Client, payload []byte, logger *zap.Logger) error {
-	req := pipedservice.ReportDeploymentRunningRequest{}
+func (s *samplecli) reportDeploymentStatusChanged(ctx context.Context, cli pipedservice.Client, payload []byte, logger *zap.Logger) error {
+	req := pipedservice.ReportDeploymentStatusChangedRequest{}
 	if err := json.Unmarshal(payload, &req); err != nil {
 		return err
 	}
-	if _, err := cli.ReportDeploymentRunning(ctx, &req); err != nil {
-		logger.Error("failure run ReportDeploymentRunning", zap.Error(err))
+	if _, err := cli.ReportDeploymentStatusChanged(ctx, &req); err != nil {
+		logger.Error("failure run ReportDeploymentStatusChanged", zap.Error(err))
 		return err
 	}
-	logger.Info("successfully run ReportDeploymentRunning")
+	logger.Info("successfully run ReportDeploymentStatusChanged")
 	return nil
 }
 

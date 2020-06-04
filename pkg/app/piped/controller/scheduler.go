@@ -180,7 +180,7 @@ func (s *scheduler) Run(ctx context.Context) error {
 
 	// Update deployment status to RUNNING if needed.
 	if model.CanUpdateDeploymentStatus(s.deployment.Status, model.DeploymentStatus_DEPLOYMENT_RUNNING) {
-		err := s.reportDeploymentRunning(ctx, "The piped started handling this deployment")
+		err := s.reportDeploymentStatusChanged(ctx, model.DeploymentStatus_DEPLOYMENT_RUNNING, "The piped started handling this deployment")
 		if err != nil {
 			return err
 		}
@@ -226,7 +226,7 @@ func (s *scheduler) Run(ctx context.Context) error {
 		if ps.Status == model.StageStatus_STAGE_SUCCESS {
 			continue
 		}
-		if !ps.Visible {
+		if !ps.Visible || ps.Name == model.StageRollback.String() {
 			continue
 		}
 
@@ -292,6 +292,38 @@ func (s *scheduler) Run(ctx context.Context) error {
 		}
 
 		return nil
+	}
+
+	// When the deployment has completed but not successful,
+	// we start rollback stage if the auto-rollback option is true.
+	if deploymentStatus == model.DeploymentStatus_DEPLOYMENT_CANCELLED ||
+		deploymentStatus == model.DeploymentStatus_DEPLOYMENT_FAILURE {
+		if stage, ok := s.deployment.FindRollbackStage(); ok {
+			// Update to change deployment status to ROLLING_BACK.
+			if err := s.reportDeploymentStatusChanged(ctx, model.DeploymentStatus_DEPLOYMENT_ROLLING_BACK, statusDescription); err != nil {
+				return err
+			}
+
+			// Start running rollback stage.
+			var (
+				sig, handler = executor.NewStopSignal()
+				doneCh       = make(chan struct{})
+			)
+			go func() {
+				s.executeStage(sig, stage)
+				close(doneCh)
+			}()
+
+			select {
+			case <-ctx.Done():
+				handler.Terminate()
+				<-doneCh
+				return nil
+
+			case <-doneCh:
+				break
+			}
+		}
 	}
 
 	if model.IsCompletedDeployment(deploymentStatus) {
@@ -458,6 +490,7 @@ func (s *scheduler) reportStageStatus(ctx context.Context, stageID string, statu
 			DeploymentId: s.deployment.Id,
 			StageId:      stageID,
 			Status:       status,
+			Visible:      true,
 			CompletedAt:  now.Unix(),
 		}
 		retry = pipedservice.NewRetry(10)
@@ -478,19 +511,20 @@ func (s *scheduler) reportStageStatus(ctx context.Context, stageID string, statu
 	return err
 }
 
-func (s *scheduler) reportDeploymentRunning(ctx context.Context, desc string) error {
+func (s *scheduler) reportDeploymentStatusChanged(ctx context.Context, status model.DeploymentStatus, desc string) error {
 	var (
 		err   error
 		retry = pipedservice.NewRetry(10)
-		req   = &pipedservice.ReportDeploymentRunningRequest{
+		req   = &pipedservice.ReportDeploymentStatusChangedRequest{
 			DeploymentId:      s.deployment.Id,
+			Status:            status,
 			StatusDescription: desc,
 		}
 	)
 
 	// Update deployment status on remote.
 	for retry.WaitNext(ctx) {
-		if _, err = s.apiClient.ReportDeploymentRunning(ctx, req); err == nil {
+		if _, err = s.apiClient.ReportDeploymentStatusChanged(ctx, req); err == nil {
 			return nil
 		}
 		err = fmt.Errorf("failed to report deployment status to control-plane: %v", err)

@@ -39,9 +39,9 @@ var (
 		}
 	}
 
-	DeploymentToRunningUpdater = func(statusDesc string) func(*model.Deployment) error {
+	DeploymentStatusUpdater = func(status model.DeploymentStatus, statusDesc string) func(*model.Deployment) error {
 		return func(d *model.Deployment) error {
-			d.Status = model.DeploymentStatus_DEPLOYMENT_RUNNING
+			d.Status = status
 			d.StatusDescription = statusDesc
 			return nil
 		}

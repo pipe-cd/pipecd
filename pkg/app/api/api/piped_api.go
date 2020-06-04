@@ -192,10 +192,10 @@ func (a *PipedAPI) ReportDeploymentPlanned(ctx context.Context, req *pipedservic
 	return &pipedservice.ReportDeploymentPlannedResponse{}, nil
 }
 
-// ReportDeploymentRunning used by piped to update the status
-// of a specific deployment to RUNNING.
-func (a *PipedAPI) ReportDeploymentRunning(ctx context.Context, req *pipedservice.ReportDeploymentRunningRequest) (*pipedservice.ReportDeploymentRunningResponse, error) {
-	updater := datastore.DeploymentToRunningUpdater(req.StatusDescription)
+// ReportDeploymentStatusChanged is used to update the status
+// of a specific deployment to RUNNING or ROLLING_BACK.
+func (a *PipedAPI) ReportDeploymentStatusChanged(ctx context.Context, req *pipedservice.ReportDeploymentStatusChangedRequest) (*pipedservice.ReportDeploymentStatusChangedResponse, error) {
+	updater := datastore.DeploymentStatusUpdater(req.Status, req.StatusDescription)
 	err := a.deploymentStore.PutDeployment(ctx, req.DeploymentId, updater)
 	if err != nil {
 		switch err {
@@ -211,7 +211,7 @@ func (a *PipedAPI) ReportDeploymentRunning(ctx context.Context, req *pipedservic
 			return nil, err
 		}
 	}
-	return &pipedservice.ReportDeploymentRunningResponse{}, nil
+	return &pipedservice.ReportDeploymentStatusChangedResponse{}, nil
 }
 
 // ReportDeploymentCompleted used by piped to update the status

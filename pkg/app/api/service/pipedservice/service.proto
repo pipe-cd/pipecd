@@ -69,9 +69,9 @@ service PipedService {
     // of a specific deployment to PLANNED.
     rpc ReportDeploymentPlanned(ReportDeploymentPlannedRequest) returns (ReportDeploymentPlannedResponse) {}
 
-    // ReportDeploymentRunning is used to update the status
-    // of a specific deployment to RUNNING.
-    rpc ReportDeploymentRunning(ReportDeploymentRunningRequest) returns (ReportDeploymentRunningResponse) {}
+    // ReportDeploymentStatusChanged is used to update the status
+    // of a specific deployment to RUNNING or ROLLING_BACK.
+    rpc ReportDeploymentStatusChanged(ReportDeploymentStatusChangedRequest) returns (ReportDeploymentStatusChangedResponse) {}
 
     // ReportDeploymentCompleted is used to update the status
     // of a specific deployment to SUCCESS | FAILURE | CANCELLED.
@@ -206,13 +206,15 @@ message ReportDeploymentPlannedRequest {
 message ReportDeploymentPlannedResponse {
 }
 
-message ReportDeploymentRunningRequest {
+message ReportDeploymentStatusChangedRequest {
     string deployment_id = 1 [(validate.rules).string.min_len = 1];
+    // We only accept RUNNING or ROLLING_BACK.
+    pipe.model.DeploymentStatus status = 2 [(validate.rules).enum = {in: [2,3]}];
     // The human-readable description why the deployment is at current status.
-    string status_description = 2;
+    string status_description = 3;
 }
 
-message ReportDeploymentRunningResponse {
+message ReportDeploymentStatusChangedResponse {
 }
 
 message ReportDeploymentCompletedRequest {
@@ -264,7 +266,8 @@ message ReportStageStatusChangedRequest {
     pipe.model.StageStatus status = 3 [(validate.rules).enum.defined_only = true];
     // The human-readable description why the stage is at current status.
     string status_description = 4;
-    int32 retried_count = 5;
+    bool visible = 5;
+    int32 retried_count = 6;
     int64 completed_at = 13 [(validate.rules).int64.gt = 0];
 }
 

@@ -63,19 +63,21 @@ func TestDeploymentToPlannedUpdater(t *testing.T) {
 	assert.Equal(t, expectedStages, d.Stages)
 }
 
-func TestDeploymentToRunningUpdater(t *testing.T) {
-	expectedStatusDesc := "update-status-desc"
+func TestDeploymentStatusUpdater(t *testing.T) {
+	var (
+		expectedStatus     = model.DeploymentStatus_DEPLOYMENT_RUNNING
+		expectedStatusDesc = "update-status-desc"
+		d                  = model.Deployment{
+			Id:                "deployment-id",
+			StatusDescription: "status-description",
+			Status:            model.DeploymentStatus_DEPLOYMENT_PENDING,
+		}
+	)
 
-	d := model.Deployment{
-		Id:                "deployment-id",
-		StatusDescription: "status-description",
-		Status:            model.DeploymentStatus_DEPLOYMENT_PENDING,
-	}
-
-	updater := DeploymentToRunningUpdater(expectedStatusDesc)
+	updater := DeploymentStatusUpdater(expectedStatus, expectedStatusDesc)
 	err := updater(&d)
 	require.NoError(t, err)
-	assert.Equal(t, model.DeploymentStatus_DEPLOYMENT_RUNNING, d.Status)
+	assert.Equal(t, expectedStatus, d.Status)
 	assert.Equal(t, expectedStatusDesc, d.StatusDescription)
 }
 

@@ -124,5 +124,13 @@ func (e *Executor) ensureTrafficSplit(ctx context.Context) model.StageStatus {
 }
 
 func (e *Executor) ensureRollback(ctx context.Context) model.StageStatus {
+	// 1. Revert workloads of PRIMARY variant.
+
+	// 2. Ensure that all traffics are routed to the PRIMARY variant.
+
+	// 3. Delete workloads of CANARY variant.
+
+	// 4. Delete worloads of BASELINE variant.
+
 	return model.StageStatus_STAGE_SUCCESS
 }
