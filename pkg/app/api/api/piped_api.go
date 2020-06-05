@@ -277,8 +277,13 @@ func (a *PipedAPI) SaveStageMetadata(ctx context.Context, req *pipedservice.Save
 	return &pipedservice.SaveStageMetadataResponse{}, nil
 }
 
-// ReportStageLog is sent by piped to save the log of a pipeline stage.
-func (a *PipedAPI) ReportStageLog(ctx context.Context, req *pipedservice.ReportStageLogRequest) (*pipedservice.ReportStageLogResponse, error) {
+// ReportStageLogs is sent by piped to save the log of a pipeline stage.
+func (a *PipedAPI) ReportStageLogs(ctx context.Context, req *pipedservice.ReportStageLogsRequest) (*pipedservice.ReportStageLogsResponse, error) {
+	return nil, status.Error(codes.Unimplemented, "")
+}
+
+// ReportStageLogsFromLastCheckpoint is used to save the full logs from the most recently saved point.
+func (a *PipedAPI) ReportStageLogsFromLastCheckpoint(ctx context.Context, req *pipedservice.ReportStageLogsFromLastCheckpointRequest) (*pipedservice.ReportStageLogsFromLastCheckpointResponse, error) {
 	return nil, status.Error(codes.Unimplemented, "")
 }
 

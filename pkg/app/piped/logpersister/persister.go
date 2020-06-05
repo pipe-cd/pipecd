@@ -27,7 +27,7 @@ import (
 )
 
 type apiClient interface {
-	ReportStageLog(ctx context.Context, in *pipedservice.ReportStageLogRequest, opts ...grpc.CallOption) (*pipedservice.ReportStageLogResponse, error)
+	ReportStageLogs(ctx context.Context, in *pipedservice.ReportStageLogsRequest, opts ...grpc.CallOption) (*pipedservice.ReportStageLogsResponse, error)
 }
 
 type Persister interface {
@@ -147,14 +147,14 @@ func (p *persister) flushStage(ctx context.Context, sp *stageLogPersister) bool 
 }
 
 func (p *persister) reportStageLog(ctx context.Context, k key, blocks []*model.LogBlock, completed bool, blockCount int) error {
-	req := &pipedservice.ReportStageLogRequest{
-		DeploymentId:    k.DeploymentID,
-		StageId:         k.StageID,
-		Blocks:          blocks,
-		TotalBlockCount: int64(blockCount),
-		Completed:       completed,
+	req := &pipedservice.ReportStageLogsRequest{
+		DeploymentId: k.DeploymentID,
+		StageId:      k.StageID,
+		Blocks:       blocks,
+		//TotalBlockCount: int64(blockCount),
+		//Completed:       completed,
 	}
-	_, err := p.apiClient.ReportStageLog(ctx, req)
+	_, err := p.apiClient.ReportStageLogs(ctx, req)
 	return err
 }
 

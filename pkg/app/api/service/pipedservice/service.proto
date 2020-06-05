@@ -84,8 +84,11 @@ service PipedService {
     // of a specific stage of a deployment.
     rpc SaveStageMetadata(SaveStageMetadataRequest) returns (SaveStageMetadataResponse) {}
 
-    // ReportStageLog is used to save the log of a pipeline stage.
-    rpc ReportStageLog(ReportStageLogRequest) returns (ReportStageLogResponse) {}
+    // ReportStageLogs is used to save the log of a pipeline stage.
+    rpc ReportStageLogs(ReportStageLogsRequest) returns (ReportStageLogsResponse) {}
+
+    // ReportStageLogsFromLastCheckpoint is used to save the full logs from the most recently saved point.
+    rpc ReportStageLogsFromLastCheckpoint(ReportStageLogsFromLastCheckpointRequest) returns (ReportStageLogsFromLastCheckpointResponse) {}
 
     // ReportStageStatusChanged is used to update the status
     // of a specific stage of a deployment.
@@ -249,15 +252,24 @@ message SaveStageMetadataRequest {
 message SaveStageMetadataResponse {
 }
 
-message ReportStageLogRequest {
+message ReportStageLogsRequest {
     string deployment_id = 1 [(validate.rules).string.min_len = 1];
     string stage_id = 2 [(validate.rules).string.min_len = 1];
     repeated pipe.model.LogBlock blocks = 3;
-    bool completed = 4;
-    int64 total_block_count = 5;
 }
 
-message ReportStageLogResponse {
+message ReportStageLogsResponse {
+}
+
+message ReportStageLogsFromLastCheckpointRequest {
+}
+
+message ReportStageLogsFromLastCheckpointResponse {
+    string deployment_id = 1 [(validate.rules).string.min_len = 1];
+    string stage_id = 2 [(validate.rules).string.min_len = 1];
+    int64 last_checkpoint = 3;
+    repeated pipe.model.LogBlock blocks = 4;
+    bool completed = 5;
 }
 
 message ReportStageStatusChangedRequest {

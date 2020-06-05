@@ -335,10 +335,16 @@ func (c *fakeClient) SaveStageMetadata(ctx context.Context, req *pipedservice.Sa
 	return nil, status.Error(codes.NotFound, "stage was not found")
 }
 
-// ReportStageLog is sent by piped to save the log of a pipeline stage.
-func (c *fakeClient) ReportStageLog(ctx context.Context, req *pipedservice.ReportStageLogRequest, opts ...grpc.CallOption) (*pipedservice.ReportStageLogResponse, error) {
-	c.logger.Info("fake client received ReportStageLog rpc", zap.Any("request", req))
-	return &pipedservice.ReportStageLogResponse{}, nil
+// ReportStageLogs is sent by piped to save the log of a pipeline stage.
+func (c *fakeClient) ReportStageLogs(ctx context.Context, req *pipedservice.ReportStageLogsRequest, opts ...grpc.CallOption) (*pipedservice.ReportStageLogsResponse, error) {
+	c.logger.Info("fake client received ReportStageLogs rpc", zap.Any("request", req))
+	return &pipedservice.ReportStageLogsResponse{}, nil
+}
+
+// ReportStageLogsFromLastCheckpoint is used to save the full logs from the most recently saved point.
+func (c *fakeClient) ReportStageLogsFromLastCheckpoint(ctx context.Context, req *pipedservice.ReportStageLogsFromLastCheckpointRequest, opts ...grpc.CallOption) (*pipedservice.ReportStageLogsFromLastCheckpointResponse, error) {
+	c.logger.Info("fake client received ReportStageLogsFromLastCheckpoint rpc", zap.Any("request", req))
+	return &pipedservice.ReportStageLogsFromLastCheckpointResponse{}, nil
 }
 
 // ReportStageStatusChanged used by piped to update the status
