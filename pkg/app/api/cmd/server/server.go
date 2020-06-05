@@ -28,10 +28,15 @@ import (
 	"github.com/kapetaniosci/pipe/pkg/admin"
 	"github.com/kapetaniosci/pipe/pkg/app/api/api"
 	"github.com/kapetaniosci/pipe/pkg/app/api/service/webservice"
+	"github.com/kapetaniosci/pipe/pkg/app/api/stagelogstore"
+	"github.com/kapetaniosci/pipe/pkg/cache/rediscache"
 	"github.com/kapetaniosci/pipe/pkg/cli"
 	"github.com/kapetaniosci/pipe/pkg/datastore"
 	"github.com/kapetaniosci/pipe/pkg/datastore/firestore"
+	"github.com/kapetaniosci/pipe/pkg/filestore"
+	"github.com/kapetaniosci/pipe/pkg/filestore/gcs"
 	"github.com/kapetaniosci/pipe/pkg/jwt"
+	"github.com/kapetaniosci/pipe/pkg/redis"
 	"github.com/kapetaniosci/pipe/pkg/rpc"
 )
 
@@ -60,16 +65,21 @@ type server struct {
 	datastoreCredentialsFile string
 	gcpProjectID             string
 
+	stageLogBucketName            string
+	stageLogBucketCredentialsFile string
+	redisCacheAddress             string
+
 	useFakeResponse bool
 }
 
 func NewCommand() *cobra.Command {
 	s := &server{
-		pipedAPIPort: 9080,
-		webAPIPort:   9081,
-		httpPort:     9082,
-		adminPort:    9085,
-		gracePeriod:  15 * time.Second,
+		pipedAPIPort:      9080,
+		webAPIPort:        9081,
+		httpPort:          9082,
+		adminPort:         9085,
+		gracePeriod:       15 * time.Second,
+		redisCacheAddress: "cache:9090",
 	}
 	cmd := &cobra.Command{
 		Use:   "server",
@@ -88,16 +98,21 @@ func NewCommand() *cobra.Command {
 	cmd.Flags().StringVar(&s.keyFile, "key-file", s.keyFile, "The path to the TLS key file.")
 	cmd.Flags().StringVar(&s.tokenSigningKeyFile, "token-signing-key-file", s.tokenSigningKeyFile, "The path to key file used to sign ID token.")
 
+	// TODO: Move flags to pkg/config/controle_plane.go
 	cmd.Flags().StringVar(&s.datastoreVariant, "datastore-variant", s.datastoreVariant, "The identifier that logically separates environment of the datastore.")
 	cmd.Flags().StringVar(&s.datastoreType, "datastore-type", s.datastoreType, "The type of datastore which persist piped data.")
 	cmd.Flags().StringVar(&s.datastoreCredentialsFile, "datastore-credentials-file", s.datastoreCredentialsFile, "The path to the credentials file for accessing datastore.")
 	cmd.Flags().StringVar(&s.gcpProjectID, "gcp-project-id", s.gcpProjectID, "The identifier of the GCP project which host the control plane.")
+	cmd.Flags().StringVar(&s.stageLogBucketName, "stage-log-bucket-name", s.stageLogBucketName, "The bucket name to store stage logs.")
+	cmd.Flags().StringVar(&s.stageLogBucketCredentialsFile, "stage-log-bucket-credentials-file", s.stageLogBucketCredentialsFile, "The path to the credentials file for accessing filestore.")
+	cmd.Flags().StringVar(&s.redisCacheAddress, "redis-cache-address", s.redisCacheAddress, "The redis cache service address.")
 
 	// For debugging early in development
 	cmd.Flags().BoolVar(&s.useFakeResponse, "use-fake-response", s.useFakeResponse, "Whether the server responds fake response or not.")
 
 	cmd.MarkFlagRequired("datastore-variant")
 	cmd.MarkFlagRequired("datastore-type")
+	cmd.MarkFlagRequired("stage-log-bucket-name")
 
 	return cmd
 }
@@ -132,9 +147,29 @@ func (s *server) run(ctx context.Context, t cli.Telemetry) error {
 		}
 	}()
 
+	fs, err := s.createFilestore(ctx, s.stageLogBucketName, t.Logger)
+	if err != nil {
+		t.Logger.Error("failed creating firestore", zap.Error(err))
+		return err
+	}
+	defer func() {
+		if err := fs.Close(); err != nil {
+			t.Logger.Error("failed closing firestore client", zap.Error(err))
+		}
+	}()
+
+	rd := redis.NewRedis(s.redisCacheAddress, "")
+	defer func() {
+		if err := rd.Close(); err != nil {
+			t.Logger.Error("failed closing redis client", zap.Error(err))
+		}
+	}()
+	cache := rediscache.NewCache(rd)
+	sls := stagelogstore.NewStore(fs, cache, t.Logger)
+
 	// Start a gRPC server for handling PipedAPI requests.
 	{
-		service := api.NewPipedAPI(ds, t.Logger)
+		service := api.NewPipedAPI(ds, sls, t.Logger)
 		opts := []rpc.Option{
 			rpc.WithPort(s.pipedAPIPort),
 			rpc.WithGracePeriod(s.gracePeriod),
@@ -153,7 +188,7 @@ func (s *server) run(ctx context.Context, t cli.Telemetry) error {
 
 	// Start a gRPC server for handling WebAPI requests.
 	{
-		service := api.NewWebAPI(ds, s.useFakeResponse, t.Logger)
+		service := api.NewWebAPI(ds, sls, s.useFakeResponse, t.Logger)
 		opts := []rpc.Option{
 			rpc.WithPort(s.webAPIPort),
 			rpc.WithGracePeriod(s.gracePeriod),
@@ -258,4 +293,22 @@ func (s *server) createDatastore(ctx context.Context, logger *zap.Logger) (datas
 	default:
 		return nil, fmt.Errorf("invalid datastore type: %s", s.datastoreType)
 	}
+}
+
+func (s *server) createFilestore(ctx context.Context, bucketName string, logger *zap.Logger) (filestore.Store, error) {
+	ctx, cancel := context.WithTimeout(ctx, 5*time.Second)
+	defer cancel()
+
+	options := []gcs.Option{
+		gcs.WithLogger(logger),
+	}
+	if s.stageLogBucketCredentialsFile != "" {
+		options = append(options, gcs.WithCredentialsFile(s.stageLogBucketCredentialsFile))
+	}
+
+	client, err := gcs.NewStore(ctx, bucketName)
+	if err != nil {
+		return nil, err
+	}
+	return client, nil
 }

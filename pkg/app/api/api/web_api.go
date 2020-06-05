@@ -25,6 +25,7 @@ import (
 	"google.golang.org/grpc/status"
 
 	"github.com/kapetaniosci/pipe/pkg/app/api/service/webservice"
+	"github.com/kapetaniosci/pipe/pkg/app/api/stagelogstore"
 	"github.com/kapetaniosci/pipe/pkg/datastore"
 	"github.com/kapetaniosci/pipe/pkg/model"
 )
@@ -32,15 +33,17 @@ import (
 // PipedAPI implements the behaviors for the gRPC definitions of WebAPI.
 type WebAPI struct {
 	deploymentStore datastore.DeploymentStore
+	stageLogStore   stagelogstore.Store
 	useFakeResponse bool
 
 	logger *zap.Logger
 }
 
 // NewWebAPI creates a new WebAPI instance.
-func NewWebAPI(ds datastore.DataStore, useFakeResponse bool, logger *zap.Logger) *WebAPI {
+func NewWebAPI(ds datastore.DataStore, sls stagelogstore.Store, useFakeResponse bool, logger *zap.Logger) *WebAPI {
 	a := &WebAPI{
 		deploymentStore: datastore.NewDeploymentStore(ds),
+		stageLogStore:   sls,
 		useFakeResponse: useFakeResponse,
 		logger:          logger.Named("web-api"),
 	}
@@ -252,61 +255,77 @@ func (a *WebAPI) GetDeployment(ctx context.Context, req *webservice.GetDeploymen
 }
 
 func (a *WebAPI) GetStageLog(ctx context.Context, req *webservice.GetStageLogRequest) (*webservice.GetStageLogResponse, error) {
-	// Creating fake response
-	startTime := time.Now().Add(-10 * time.Minute)
-	resp := []*model.LogBlock{
-		{
-			Index:     1,
-			Log:       "+ make build",
-			Severity:  model.LogSeverity_INFO,
-			CreatedAt: startTime.Unix(),
-		},
-		{
-			Index:     2,
-			Log:       "bazelisk  --output_base=/workspace/bazel_out build  --config=ci -- //...",
-			Severity:  model.LogSeverity_INFO,
-			CreatedAt: startTime.Add(5 * time.Second).Unix(),
-		},
-		{
-			Index:     3,
-			Log:       "2020/06/01 08:52:07 Downloading https://releases.bazel.build/3.1.0/release/bazel-3.1.0-linux-x86_64...",
-			Severity:  model.LogSeverity_INFO,
-			CreatedAt: startTime.Add(10 * time.Second).Unix(),
-		},
-		{
-			Index:     4,
-			Log:       "Extracting Bazel installation...",
-			Severity:  model.LogSeverity_INFO,
-			CreatedAt: startTime.Add(15 * time.Second).Unix(),
-		},
-		{
-			Index:     5,
-			Log:       "Starting local Bazel server and connecting to it...",
-			Severity:  model.LogSeverity_INFO,
-			CreatedAt: startTime.Add(20 * time.Second).Unix(),
-		},
-		{
-			Index:     6,
-			Log:       "(08:52:14) Loading: 0 packages loaded",
-			Severity:  model.LogSeverity_SUCCESS,
-			CreatedAt: startTime.Add(30 * time.Second).Unix(),
-		},
-		{
-			Index:     7,
-			Log:       "(08:53:21) Analyzing: 157 targets (88 packages loaded, 0 targets configured)",
-			Severity:  model.LogSeverity_SUCCESS,
-			CreatedAt: startTime.Add(35 * time.Second).Unix(),
-		},
-		{
-			Index:     8,
-			Log:       "Error: Error building: logged 2 error(s)",
-			Severity:  model.LogSeverity_ERROR,
-			CreatedAt: startTime.Add(45 * time.Second).Unix(),
-		},
+	if a.useFakeResponse {
+		// Creating fake response
+		startTime := time.Now().Add(-10 * time.Minute)
+		resp := []*model.LogBlock{
+			{
+				Index:     1,
+				Log:       "+ make build",
+				Severity:  model.LogSeverity_INFO,
+				CreatedAt: startTime.Unix(),
+			},
+			{
+				Index:     2,
+				Log:       "bazelisk  --output_base=/workspace/bazel_out build  --config=ci -- //...",
+				Severity:  model.LogSeverity_INFO,
+				CreatedAt: startTime.Add(5 * time.Second).Unix(),
+			},
+			{
+				Index:     3,
+				Log:       "2020/06/01 08:52:07 Downloading https://releases.bazel.build/3.1.0/release/bazel-3.1.0-linux-x86_64...",
+				Severity:  model.LogSeverity_INFO,
+				CreatedAt: startTime.Add(10 * time.Second).Unix(),
+			},
+			{
+				Index:     4,
+				Log:       "Extracting Bazel installation...",
+				Severity:  model.LogSeverity_INFO,
+				CreatedAt: startTime.Add(15 * time.Second).Unix(),
+			},
+			{
+				Index:     5,
+				Log:       "Starting local Bazel server and connecting to it...",
+				Severity:  model.LogSeverity_INFO,
+				CreatedAt: startTime.Add(20 * time.Second).Unix(),
+			},
+			{
+				Index:     6,
+				Log:       "(08:52:14) Loading: 0 packages loaded",
+				Severity:  model.LogSeverity_SUCCESS,
+				CreatedAt: startTime.Add(30 * time.Second).Unix(),
+			},
+			{
+				Index:     7,
+				Log:       "(08:53:21) Analyzing: 157 targets (88 packages loaded, 0 targets configured)",
+				Severity:  model.LogSeverity_SUCCESS,
+				CreatedAt: startTime.Add(35 * time.Second).Unix(),
+			},
+			{
+				Index:     8,
+				Log:       "Error: Error building: logged 2 error(s)",
+				Severity:  model.LogSeverity_ERROR,
+				CreatedAt: startTime.Add(45 * time.Second).Unix(),
+			},
+		}
+
+		return &webservice.GetStageLogResponse{
+			Blocks: resp,
+		}, nil
+	}
+
+	blocks, completed, err := a.stageLogStore.FetchLogs(ctx, req.DeploymentId, req.StageId, req.RetriedCount, req.OffsetTimestamp)
+	if errors.Is(err, stagelogstore.ErrNotFound) {
+		return nil, status.Error(codes.NotFound, "stage log not found")
+	}
+	if err != nil {
+		a.logger.Error("failed to get stage log", zap.Error(err))
+		return nil, err
 	}
 
 	return &webservice.GetStageLogResponse{
-		Blocks: resp,
+		Blocks:    blocks,
+		Completed: completed,
 	}, nil
 }
 

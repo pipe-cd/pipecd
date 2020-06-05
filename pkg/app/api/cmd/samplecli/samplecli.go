@@ -100,6 +100,8 @@ func (s *samplecli) run(ctx context.Context, t cli.Telemetry) error {
 	// WebService
 	case "GetDeployment":
 		return s.getDeployment(ctx, webCli, data, t.Logger)
+	case "GetStageLog":
+		return s.getStageLog(ctx, webCli, data, t.Logger)
 	default:
 		return fmt.Errorf("invalid function name: %s", s.function)
 	}
@@ -152,6 +154,21 @@ func (s *samplecli) getDeployment(ctx context.Context, cli webservice.Client, pa
 		return err
 	}
 	logger.Info("successfully run GetDeployment")
+	fmt.Printf("deployment: %+v\n", resp)
+	return nil
+}
+
+func (s *samplecli) getStageLog(ctx context.Context, cli webservice.Client, payload []byte, logger *zap.Logger) error {
+	req := webservice.GetStageLogRequest{}
+	if err := json.Unmarshal(payload, &req); err != nil {
+		return err
+	}
+	resp, err := cli.GetStageLog(ctx, &req)
+	if err != nil {
+		logger.Error("failure run GetStageLog", zap.Error(err))
+		return err
+	}
+	logger.Info("successfully run GetStageLog")
 	fmt.Printf("deployment: %+v\n", resp)
 	return nil
 }

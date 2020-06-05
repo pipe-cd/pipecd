@@ -18,7 +18,7 @@ import (
 	"time"
 
 	redigo "github.com/gomodule/redigo/redis"
-	
+
 	"github.com/kapetaniosci/pipe/pkg/cache"
 	"github.com/kapetaniosci/pipe/pkg/redis"
 )

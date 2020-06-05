@@ -24,6 +24,7 @@ import (
 	"google.golang.org/grpc/status"
 
 	"github.com/kapetaniosci/pipe/pkg/app/api/service/pipedservice"
+	"github.com/kapetaniosci/pipe/pkg/app/api/stagelogstore"
 	"github.com/kapetaniosci/pipe/pkg/datastore"
 	"github.com/kapetaniosci/pipe/pkg/model"
 	"github.com/kapetaniosci/pipe/pkg/rpc/rpcauth"
@@ -38,12 +39,13 @@ type PipedAPI struct {
 	pipedStatsStore  datastore.PipedStatsStore
 	pipedStore       datastore.PipedStore
 	projectStore     datastore.ProjectStore
+	stageLogStore    stagelogstore.Store
 
 	logger *zap.Logger
 }
 
 // NewPipedAPI creates a new PipedAPI instance.
-func NewPipedAPI(ds datastore.DataStore, logger *zap.Logger) *PipedAPI {
+func NewPipedAPI(ds datastore.DataStore, sls stagelogstore.Store, logger *zap.Logger) *PipedAPI {
 	a := &PipedAPI{
 		applicationStore: datastore.NewApplicationStore(ds),
 		commandStore:     datastore.NewCommandStore(ds),
@@ -52,6 +54,7 @@ func NewPipedAPI(ds datastore.DataStore, logger *zap.Logger) *PipedAPI {
 		pipedStatsStore:  datastore.NewPipedStatsStore(ds),
 		pipedStore:       datastore.NewPipedStore(ds),
 		projectStore:     datastore.NewProjectStore(ds),
+		stageLogStore:    sls,
 		logger:           logger.Named("piped-api"),
 	}
 	return a
