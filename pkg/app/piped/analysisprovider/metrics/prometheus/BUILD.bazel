@@ -1,8 +1,11 @@
-load("@io_bazel_rules_go//go:def.bzl", "go_library")
+load("@io_bazel_rules_go//go:def.bzl", "go_library", "go_test")
 
 go_library(
     name = "go_default_library",
-    srcs = ["prometheus.go"],
+    srcs = [
+        "fake_api.go",
+        "prometheus.go",
+    ],
     importpath = "github.com/kapetaniosci/pipe/pkg/app/piped/analysisprovider/metrics/prometheus",
     visibility = ["//visibility:public"],
     deps = [
@@ -10,6 +13,19 @@ go_library(
         "@com_github_prometheus_client_golang//api:go_default_library",
         "@com_github_prometheus_client_golang//api/prometheus/v1:go_default_library",
         "@com_github_prometheus_common//model:go_default_library",
+        "@org_uber_go_zap//:go_default_library",
+    ],
+)
+
+go_test(
+    name = "go_default_test",
+    size = "small",
+    srcs = ["prometheus_test.go"],
+    embed = [":go_default_library"],
+    deps = [
+        "//pkg/config:go_default_library",
+        "@com_github_prometheus_common//model:go_default_library",
+        "@com_github_stretchr_testify//assert:go_default_library",
         "@org_uber_go_zap//:go_default_library",
     ],
 )
