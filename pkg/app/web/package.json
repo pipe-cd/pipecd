@@ -28,6 +28,7 @@
     "fork-ts-checker-webpack-plugin": "^4.1.4",
     "html-webpack-plugin": "^4.3.0",
     "jest": "^26.0.1",
+    "prettier": "^2.0.5",
     "react-docgen-typescript-loader": "^3.7.2",
     "scaffdog": "^0.2.3",
     "ts-loader": "^7.0.2",
