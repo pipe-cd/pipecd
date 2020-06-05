@@ -134,7 +134,7 @@ message GetStageLogRequest {
     string deployment_id = 1 [(validate.rules).string.min_len = 1];
     string stage_id = 2 [(validate.rules).string.min_len = 1];
     int32 retried_count = 3;
-    int64 offset_timestamp = 4;
+    int64 offset_index = 4;
 }
 
 message GetStageLogResponse {

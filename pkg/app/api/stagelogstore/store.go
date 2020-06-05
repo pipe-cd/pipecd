@@ -35,8 +35,8 @@ type logFragment struct {
 }
 
 type Store interface {
-	// FetchLogs get the specified stage logs which filtered by timestamp.
-	FetchLogs(ctx context.Context, deploymentID, stageID string, retriedCount int32, offsetTimestamp int64) ([]*model.LogBlock, bool, error)
+	// FetchLogs get the specified stage logs which filtered by index.
+	FetchLogs(ctx context.Context, deploymentID, stageID string, retriedCount int32, offsetIndex int64) ([]*model.LogBlock, bool, error)
 }
 
 type store struct {
@@ -57,14 +57,14 @@ func NewStore(fs filestore.Store, c cache.Cache, logger *zap.Logger) Store {
 	}
 }
 
-func (s *store) FetchLogs(ctx context.Context, deploymentID, stageID string, retriedCount int32, offsetTimestamp int64) ([]*model.LogBlock, bool, error) {
+func (s *store) FetchLogs(ctx context.Context, deploymentID, stageID string, retriedCount int32, offsetIndex int64) ([]*model.LogBlock, bool, error) {
 	cf, err := s.cache.Get(deploymentID, stageID, retriedCount)
 	if err != nil && !errors.Is(err, cache.ErrNotFound) {
 		s.logger.Error("failed to get stage log from cache", zap.Error(err))
 	}
 
 	if cf != nil && len(cf.Blocks) > 0 {
-		blocks, completed := filterLogBlocks(cf, offsetTimestamp)
+		blocks, completed := filterLogBlocks(cf, offsetIndex)
 		return blocks, completed, nil
 	}
 
@@ -81,14 +81,14 @@ func (s *store) FetchLogs(ctx context.Context, deploymentID, stageID string, ret
 		s.logger.Error("failed to put stage log to filestore", zap.Error(err))
 		return nil, false, err
 	}
-	blocks, completed := filterLogBlocks(ff, offsetTimestamp)
+	blocks, completed := filterLogBlocks(ff, offsetIndex)
 	return blocks, completed, nil
 }
 
-func filterLogBlocks(lf *logFragment, offsetTimestamp int64) ([]*model.LogBlock, bool) {
+func filterLogBlocks(lf *logFragment, offsetIndex int64) ([]*model.LogBlock, bool) {
 	blocks := make([]*model.LogBlock, 0)
 	for i := range lf.Blocks {
-		if lf.Blocks[i].CreatedAt >= offsetTimestamp {
+		if lf.Blocks[i].Index >= offsetIndex {
 			blocks = append(blocks, lf.Blocks[i])
 		}
 	}

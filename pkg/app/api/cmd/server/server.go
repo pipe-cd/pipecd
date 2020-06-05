@@ -164,7 +164,8 @@ func (s *server) run(ctx context.Context, t cli.Telemetry) error {
 			t.Logger.Error("failed closing redis client", zap.Error(err))
 		}
 	}()
-	cache := rediscache.NewCache(rd)
+	// TODO: Move TTL setting to config
+	cache := rediscache.NewTTLCache(rd, 5*time.Minute)
 	sls := stagelogstore.NewStore(fs, cache, t.Logger)
 
 	// Start a gRPC server for handling PipedAPI requests.

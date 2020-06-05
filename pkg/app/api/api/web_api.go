@@ -314,7 +314,7 @@ func (a *WebAPI) GetStageLog(ctx context.Context, req *webservice.GetStageLogReq
 		}, nil
 	}
 
-	blocks, completed, err := a.stageLogStore.FetchLogs(ctx, req.DeploymentId, req.StageId, req.RetriedCount, req.OffsetTimestamp)
+	blocks, completed, err := a.stageLogStore.FetchLogs(ctx, req.DeploymentId, req.StageId, req.RetriedCount, req.OffsetIndex)
 	if errors.Is(err, stagelogstore.ErrNotFound) {
 		return nil, status.Error(codes.NotFound, "stage log not found")
 	}
