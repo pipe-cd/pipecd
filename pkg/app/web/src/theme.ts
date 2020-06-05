@@ -16,7 +16,6 @@ export const theme = createMuiTheme({
   },
   typography: {
     subtitle2: {
-      fontSize: "0.625rem",
       fontWeight: 600
     }
   }

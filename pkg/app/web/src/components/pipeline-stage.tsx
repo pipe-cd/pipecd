@@ -5,8 +5,7 @@ import { StageStatusIcon } from "./stage-status-icon";
 
 const useStyles = makeStyles(theme => ({
   container: {
-    display: "inline-flex",
-    fontFamily: "Monospace"
+    display: "inline-flex"
   },
   name: {
     marginLeft: theme.spacing(1)
@@ -24,8 +23,8 @@ export const PipelineStage: FC<Props> = ({ name, status }) => {
     <Paper square className={classes.container}>
       <Box alignItems="center" display="flex" justifyContent="center" p={2}>
         <StageStatusIcon status={status} />
-        <Typography className={classes.name} variant="subtitle2">
-          {name}
+        <Typography variant="subtitle2" className={classes.name}>
+          <Box fontFamily="Roboto Mono">{name}</Box>
         </Typography>
       </Box>
     </Paper>

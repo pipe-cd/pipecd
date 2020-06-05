@@ -1,3 +1,4 @@
+// TODO: move constants directory
 export const APP_NAME = "PipeCD";
 
 export const PAGE_PATH_TOP = "/";

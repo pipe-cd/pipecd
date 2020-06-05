@@ -16,6 +16,9 @@ const useStyles = makeStyles(theme => ({
   [DeploymentStatus.DEPLOYMENT_RUNNING]: {
     color: theme.palette.info.main
   },
+  [DeploymentStatus.DEPLOYMENT_ROLLING_BACK]: {
+    color: theme.palette.info.main
+  },
   [DeploymentStatus.DEPLOYMENT_FAILURE]: {
     color: theme.palette.error.main
   },
