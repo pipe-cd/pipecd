@@ -7,6 +7,7 @@
   "scripts": {
     "dev": "webpack-dev-server --htmlTemplate ./base.html --config ./webpack.config.dev.js",
     "gen": "scaffdog generate",
+    "test": "TZ=Asia/Tokyo jest --config jest.config.js",
     "storybook": "start-storybook -p 6006",
     "build-storybook": "build-storybook"
   },
@@ -31,6 +32,7 @@
     "prettier": "^2.0.5",
     "react-docgen-typescript-loader": "^3.7.2",
     "scaffdog": "^0.2.3",
+    "ts-jest": "^26.1.0",
     "ts-loader": "^7.0.2",
     "typescript": "^3.9.2",
     "webpack": "^4.43.0",

@@ -6,6 +6,6 @@ describe("deploymentsSlice reducer", () => {
       deploymentsSlice.reducer(undefined, {
         type: "TEST_ACTION",
       })
-    ).toMatchInlineSnapshot();
+    ).toMatchInlineSnapshot(`Object {}`);
   });
 });

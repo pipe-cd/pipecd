@@ -16,14 +16,14 @@
     "resolveJsonModule": false,
     "sourceMap": false,
     "strict": true,
-    "target": "ESNext",
+    "target": "ES2019",
     "jsx": "react",
     "allowJs": true,
     "types": ["node", "jest"],
     "esModuleInterop": true,
     "rootDirs": ["."]
   },
-  "include": ["./src/**/*.*"],
+  "include": ["./src/**/*.*", "./jest.after-env.ts"],
   "exclude": ["node_modules"],
   "awesomeTypescriptLoaderOptions": {
     "ignoreDiagnostics": [7005]
