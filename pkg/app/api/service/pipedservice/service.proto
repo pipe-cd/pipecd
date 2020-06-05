@@ -262,14 +262,13 @@ message ReportStageLogsResponse {
 }
 
 message ReportStageLogsFromLastCheckpointRequest {
+    string deployment_id = 1 [(validate.rules).string.min_len = 1];
+    string stage_id = 2 [(validate.rules).string.min_len = 1];
+    repeated pipe.model.LogBlock blocks = 3;
+    bool completed = 4;
 }
 
 message ReportStageLogsFromLastCheckpointResponse {
-    string deployment_id = 1 [(validate.rules).string.min_len = 1];
-    string stage_id = 2 [(validate.rules).string.min_len = 1];
-    int64 last_checkpoint = 3;
-    repeated pipe.model.LogBlock blocks = 4;
-    bool completed = 5;
 }
 
 message ReportStageStatusChangedRequest {
