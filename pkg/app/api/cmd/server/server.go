@@ -16,6 +16,7 @@ package server
 
 import (
 	"context"
+	"errors"
 	"fmt"
 	"net/http"
 	"time"
@@ -27,15 +28,14 @@ import (
 
 	"github.com/kapetaniosci/pipe/pkg/admin"
 	"github.com/kapetaniosci/pipe/pkg/app/api/api"
-	"github.com/kapetaniosci/pipe/pkg/app/api/service/webservice"
 	"github.com/kapetaniosci/pipe/pkg/app/api/stagelogstore"
 	"github.com/kapetaniosci/pipe/pkg/cache/rediscache"
 	"github.com/kapetaniosci/pipe/pkg/cli"
+	"github.com/kapetaniosci/pipe/pkg/config"
 	"github.com/kapetaniosci/pipe/pkg/datastore"
 	"github.com/kapetaniosci/pipe/pkg/datastore/firestore"
 	"github.com/kapetaniosci/pipe/pkg/filestore"
 	"github.com/kapetaniosci/pipe/pkg/filestore/gcs"
-	"github.com/kapetaniosci/pipe/pkg/jwt"
 	"github.com/kapetaniosci/pipe/pkg/redis"
 	"github.com/kapetaniosci/pipe/pkg/rpc"
 )
@@ -60,26 +60,18 @@ type server struct {
 	keyFile             string
 	tokenSigningKeyFile string
 
-	datastoreVariant         string
-	datastoreType            string
-	datastoreCredentialsFile string
-	gcpProjectID             string
-
-	stageLogBucketName            string
-	stageLogBucketCredentialsFile string
-	redisCacheAddress             string
+	configFile string
 
 	useFakeResponse bool
 }
 
 func NewCommand() *cobra.Command {
 	s := &server{
-		pipedAPIPort:      9080,
-		webAPIPort:        9081,
-		httpPort:          9082,
-		adminPort:         9085,
-		gracePeriod:       15 * time.Second,
-		redisCacheAddress: "cache:9090",
+		pipedAPIPort: 9080,
+		webAPIPort:   9081,
+		httpPort:     9082,
+		adminPort:    9085,
+		gracePeriod:  15 * time.Second,
 	}
 	cmd := &cobra.Command{
 		Use:   "server",
@@ -97,22 +89,10 @@ func NewCommand() *cobra.Command {
 	cmd.Flags().StringVar(&s.certFile, "cert-file", s.certFile, "The path to the TLS certificate file.")
 	cmd.Flags().StringVar(&s.keyFile, "key-file", s.keyFile, "The path to the TLS key file.")
 	cmd.Flags().StringVar(&s.tokenSigningKeyFile, "token-signing-key-file", s.tokenSigningKeyFile, "The path to key file used to sign ID token.")
-
-	// TODO: Move flags to pkg/config/controle_plane.go
-	cmd.Flags().StringVar(&s.datastoreVariant, "datastore-variant", s.datastoreVariant, "The identifier that logically separates environment of the datastore.")
-	cmd.Flags().StringVar(&s.datastoreType, "datastore-type", s.datastoreType, "The type of datastore which persist piped data.")
-	cmd.Flags().StringVar(&s.datastoreCredentialsFile, "datastore-credentials-file", s.datastoreCredentialsFile, "The path to the credentials file for accessing datastore.")
-	cmd.Flags().StringVar(&s.gcpProjectID, "gcp-project-id", s.gcpProjectID, "The identifier of the GCP project which host the control plane.")
-	cmd.Flags().StringVar(&s.stageLogBucketName, "stage-log-bucket-name", s.stageLogBucketName, "The bucket name to store stage logs.")
-	cmd.Flags().StringVar(&s.stageLogBucketCredentialsFile, "stage-log-bucket-credentials-file", s.stageLogBucketCredentialsFile, "The path to the credentials file for accessing filestore.")
-	cmd.Flags().StringVar(&s.redisCacheAddress, "redis-cache-address", s.redisCacheAddress, "The redis cache service address.")
+	cmd.Flags().StringVar(&s.configFile, "config-file", s.configFile, "The path to the configuration file.")
 
 	// For debugging early in development
 	cmd.Flags().BoolVar(&s.useFakeResponse, "use-fake-response", s.useFakeResponse, "Whether the server responds fake response or not.")
-
-	cmd.MarkFlagRequired("datastore-variant")
-	cmd.MarkFlagRequired("datastore-type")
-	cmd.MarkFlagRequired("stage-log-bucket-name")
 
 	return cmd
 }
@@ -120,23 +100,32 @@ func NewCommand() *cobra.Command {
 func (s *server) run(ctx context.Context, t cli.Telemetry) error {
 	group, ctx := errgroup.WithContext(ctx)
 
+	// Load control plane configuration from the specified file.
+	cfg, err := s.loadConfig()
+	if err != nil {
+		t.Logger.Error("failed to load control-plane configuration", zap.Error(err))
+		return err
+	}
+
 	// signer, err := jwt.NewSigner(defaultSigningMethod, s.tokenSigningKeyFile)
 	// if err != nil {
 	// 	t.Logger.Error("failed to create a new signer", zap.Error(err))
 	// 	return err
 	// }
-	verifier, err := jwt.NewVerifier(defaultSigningMethod, s.tokenSigningKeyFile)
-	if err != nil {
-		t.Logger.Error("failed to create a new verifier", zap.Error(err))
-		return err
-	}
+
+	// Left comment out until authentication is ready
+	//verifier, err := jwt.NewVerifier(defaultSigningMethod, s.tokenSigningKeyFile)
+	//if err != nil {
+	//	t.Logger.Error("failed to create a new verifier", zap.Error(err))
+	//	return err
+	//}
 
 	var (
 		pipedAPIServer *rpc.Server
 		webAPIServer   *rpc.Server
 	)
 
-	ds, err := s.createDatastore(ctx, t.Logger)
+	ds, err := s.createDatastore(ctx, cfg, t.Logger)
 	if err != nil {
 		t.Logger.Error("failed creating datastore", zap.Error(err))
 		return err
@@ -147,7 +136,7 @@ func (s *server) run(ctx context.Context, t cli.Telemetry) error {
 		}
 	}()
 
-	fs, err := s.createFilestore(ctx, s.stageLogBucketName, t.Logger)
+	fs, err := s.createFilestore(ctx, cfg, t.Logger)
 	if err != nil {
 		t.Logger.Error("failed creating firestore", zap.Error(err))
 		return err
@@ -158,14 +147,13 @@ func (s *server) run(ctx context.Context, t cli.Telemetry) error {
 		}
 	}()
 
-	rd := redis.NewRedis(s.redisCacheAddress, "")
+	rd := redis.NewRedis(cfg.Cache.RedisAddress, "")
 	defer func() {
 		if err := rd.Close(); err != nil {
 			t.Logger.Error("failed closing redis client", zap.Error(err))
 		}
 	}()
-	// TODO: Move TTL setting to config
-	cache := rediscache.NewTTLCache(rd, 5*time.Minute)
+	cache := rediscache.NewTTLCache(rd, cfg.Cache.TTL.Duration())
 	sls := stagelogstore.NewStore(fs, cache, t.Logger)
 
 	// Start a gRPC server for handling PipedAPI requests.
@@ -194,7 +182,8 @@ func (s *server) run(ctx context.Context, t cli.Telemetry) error {
 			rpc.WithPort(s.webAPIPort),
 			rpc.WithGracePeriod(s.gracePeriod),
 			rpc.WithLogger(t.Logger),
-			rpc.WithJWTAuthUnaryInterceptor(verifier, webservice.NewRBACAuthorizer(), t.Logger),
+			// Left comment out until authentication is ready
+			// rpc.WithJWTAuthUnaryInterceptor(verifier, webservice.NewRBACAuthorizer(), t.Logger),
 			rpc.WithRequestValidationUnaryInterceptor(),
 		}
 		if s.tls {
@@ -274,42 +263,62 @@ func runHttpServer(ctx context.Context, httpServer *http.Server, gracePeriod tim
 	return <-doneCh
 }
 
-func (s *server) createDatastore(ctx context.Context, logger *zap.Logger) (datastore.DataStore, error) {
-	switch s.datastoreType {
-	case "firestore":
-		if s.datastoreVariant == "" {
-			return nil, fmt.Errorf("datastore: datastore-variant is required for %s", s.datastoreType)
-		}
-		if s.datastoreCredentialsFile == "" {
-			return nil, fmt.Errorf("datastore: datastore-credentials-file is required for %s", s.datastoreType)
-		}
-		if s.gcpProjectID == "" {
-			return nil, fmt.Errorf("datastore: gcp-project-id is required for %s", s.datastoreType)
-		}
-		options := []firestore.Option{
-			firestore.WithCredentialsFile(s.datastoreCredentialsFile),
-			firestore.WithLogger(logger),
-		}
-		return firestore.NewFireStore(ctx, s.gcpProjectID, s.datastoreVariant, options...)
-	default:
-		return nil, fmt.Errorf("invalid datastore type: %s", s.datastoreType)
-	}
-}
-
-func (s *server) createFilestore(ctx context.Context, bucketName string, logger *zap.Logger) (filestore.Store, error) {
-	ctx, cancel := context.WithTimeout(ctx, 5*time.Second)
-	defer cancel()
-
-	options := []gcs.Option{
-		gcs.WithLogger(logger),
-	}
-	if s.stageLogBucketCredentialsFile != "" {
-		options = append(options, gcs.WithCredentialsFile(s.stageLogBucketCredentialsFile))
-	}
-
-	client, err := gcs.NewStore(ctx, bucketName)
+func (s *server) loadConfig() (*config.ControlPlaneSpec, error) {
+	cfg, err := config.LoadFromYAML(s.configFile)
 	if err != nil {
 		return nil, err
 	}
-	return client, nil
+	if cfg.Kind != config.KindControlPlane {
+		return nil, fmt.Errorf("wrong configuration kind for control-plane: %v", cfg.Kind)
+	}
+	return cfg.ControlPlaneSpec, nil
+}
+
+func (s *server) createDatastore(ctx context.Context, cfg *config.ControlPlaneSpec, logger *zap.Logger) (datastore.DataStore, error) {
+	if cfg.Datastore.FirestoreConfig != nil {
+		fsConfig := cfg.Datastore.FirestoreConfig
+		options := []firestore.Option{
+			firestore.WithCredentialsFile(fsConfig.CredentialsFile),
+			firestore.WithLogger(logger),
+		}
+		return firestore.NewFireStore(ctx, fsConfig.Project, fsConfig.Namespace, options...)
+	}
+
+	if cfg.Datastore.DynamoDBConfig != nil {
+		return nil, errors.New("dynamodb is unimplemented now")
+	}
+
+	if cfg.Datastore.MongoDBConfig != nil {
+		return nil, errors.New("mongodb is unimplemented now")
+	}
+
+	//return nil, errors.New("datastore configuration is invalid")
+	return nil, nil
+}
+
+func (s *server) createFilestore(ctx context.Context, cfg *config.ControlPlaneSpec, logger *zap.Logger) (filestore.Store, error) {
+	ctx, cancel := context.WithTimeout(ctx, 5*time.Second)
+	defer cancel()
+
+	if cfg.Filestore.GCSConfig != nil {
+		gcsConfig := cfg.Filestore.GCSConfig
+		options := []gcs.Option{
+			gcs.WithLogger(logger),
+		}
+		if gcsConfig.CredentialsFile != "" {
+			options = append(options, gcs.WithCredentialsFile(gcsConfig.CredentialsFile))
+		}
+		client, err := gcs.NewStore(ctx, gcsConfig.Bucket, options...)
+		if err != nil {
+			return nil, err
+		}
+		return client, nil
+	}
+
+	if cfg.Filestore.S3Config != nil {
+		return nil, errors.New("s3 is unimplemented now")
+	}
+
+	//return nil, errors.New("filestore configuration is invalid")
+	return nil, nil
 }

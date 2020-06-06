@@ -6,3 +6,17 @@ spec:
       adminTeam: admin
       editorTeam: editor
       viewerTeam: viewer
+  datastore:
+    type: FIRESTORE
+    config:
+      namespace: namespace
+      project: project
+      credentialsFile: "datastore-credentials-file.json"
+  filestore:
+    type: GCS
+    config:
+      bucket: bucket
+      credentialsFile: "filestore-credentials-file.json"
+  cache:
+    redisAddress: "localhost:6379"
+    ttl: 5m

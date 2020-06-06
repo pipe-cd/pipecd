@@ -13,3 +13,69 @@
 // limitations under the License.
 
 package config
+
+import (
+	"testing"
+	"time"
+
+	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/require"
+
+	"github.com/kapetaniosci/pipe/pkg/model"
+)
+
+func TestControlPlaneConfig(t *testing.T) {
+	testcases := []struct {
+		fileName           string
+		expectedKind       Kind
+		expectedAPIVersion string
+		expectedSpec       interface{}
+		expectedError      error
+	}{
+		{
+			fileName:           "testdata/control-plane/control-plane-config.yaml",
+			expectedKind:       KindControlPlane,
+			expectedAPIVersion: "pipecd.dev/v1beta1",
+			expectedSpec: &ControlPlaneSpec{
+				Projects: []ControlPlaneProject{
+					{
+						Name:       "abc",
+						AdminTeam:  "admin",
+						EditorTeam: "editor",
+						ViewerTeam: "viewer",
+					},
+				},
+				Datastore: ControlPlaneDataStore{
+					Type: model.DataStoreFirestore,
+					FirestoreConfig: &DataStoreFireStoreConfig{
+						Namespace:       "namespace",
+						Project:         "project",
+						CredentialsFile: "datastore-credentials-file.json",
+					},
+				},
+				Filestore: ControlPlaneFileStore{
+					Type: model.FileStoreGCS,
+					GCSConfig: &FileStoreGCSConfig{
+						Bucket:          "bucket",
+						CredentialsFile: "filestore-credentials-file.json",
+					},
+				},
+				Cache: ControlPlaneCache{
+					RedisAddress: "localhost:6379",
+					TTL:          Duration(5 * time.Minute),
+				},
+			},
+		},
+	}
+	for _, tc := range testcases {
+		t.Run(tc.fileName, func(t *testing.T) {
+			cfg, err := LoadFromYAML(tc.fileName)
+			require.Equal(t, tc.expectedError, err)
+			if err == nil {
+				assert.Equal(t, tc.expectedKind, cfg.Kind)
+				assert.Equal(t, tc.expectedAPIVersion, cfg.APIVersion)
+				assert.Equal(t, tc.expectedSpec, cfg.spec)
+			}
+		})
+	}
+}
