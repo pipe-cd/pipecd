@@ -47,7 +47,7 @@ type node struct {
 	resources map[provider.ResourceKey]*unstructured.Unstructured
 }
 
-func (a *appNodes) addManagingResource(uid string, key provider.ResourceKey, obj *unstructured.Unstructured, now time.Time) (model.KubernetesResourceEvent, bool) {
+func (a *appNodes) addManagingResource(uid string, key provider.ResourceKey, obj *unstructured.Unstructured, now time.Time) (model.KubernetesResourceStateEvent, bool) {
 	var n node
 	originalAPIVersion := obj.GetAnnotations()[provider.LabelOriginalAPIVersion]
 
@@ -72,16 +72,16 @@ func (a *appNodes) addManagingResource(uid string, key provider.ResourceKey, obj
 	a.managingNodes[uid] = n
 	a.updatedAt = now
 
-	return model.KubernetesResourceEvent{}, false
+	return model.KubernetesResourceStateEvent{}, false
 }
 
-func (a *appNodes) deleteManagingResource(uid string, key provider.ResourceKey, now time.Time) (model.KubernetesResourceEvent, bool) {
+func (a *appNodes) deleteManagingResource(uid string, key provider.ResourceKey, now time.Time) (model.KubernetesResourceStateEvent, bool) {
 	a.mu.Lock()
 	defer a.mu.Unlock()
 
 	n, ok := a.managingNodes[uid]
 	if !ok {
-		return model.KubernetesResourceEvent{}, false
+		return model.KubernetesResourceStateEvent{}, false
 	}
 
 	delete(n.resources, key)
@@ -90,10 +90,10 @@ func (a *appNodes) deleteManagingResource(uid string, key provider.ResourceKey, 
 	}
 
 	a.updatedAt = now
-	return model.KubernetesResourceEvent{}, false
+	return model.KubernetesResourceStateEvent{}, false
 }
 
-func (a *appNodes) addDependedResource(uid string, key provider.ResourceKey, obj *unstructured.Unstructured, now time.Time) (model.KubernetesResourceEvent, bool) {
+func (a *appNodes) addDependedResource(uid string, key provider.ResourceKey, obj *unstructured.Unstructured, now time.Time) (model.KubernetesResourceStateEvent, bool) {
 	var n node
 
 	a.mu.Lock()
@@ -114,16 +114,16 @@ func (a *appNodes) addDependedResource(uid string, key provider.ResourceKey, obj
 	a.dependedNodes[uid] = n
 	a.updatedAt = now
 
-	return model.KubernetesResourceEvent{}, false
+	return model.KubernetesResourceStateEvent{}, false
 }
 
-func (a *appNodes) deleteDependedResource(uid string, key provider.ResourceKey, now time.Time) (model.KubernetesResourceEvent, bool) {
+func (a *appNodes) deleteDependedResource(uid string, key provider.ResourceKey, now time.Time) (model.KubernetesResourceStateEvent, bool) {
 	a.mu.Lock()
 	defer a.mu.Unlock()
 
 	n, ok := a.dependedNodes[uid]
 	if !ok {
-		return model.KubernetesResourceEvent{}, false
+		return model.KubernetesResourceStateEvent{}, false
 	}
 
 	delete(n.resources, key)
@@ -132,7 +132,7 @@ func (a *appNodes) deleteDependedResource(uid string, key provider.ResourceKey, 
 	}
 
 	a.updatedAt = now
-	return model.KubernetesResourceEvent{}, false
+	return model.KubernetesResourceStateEvent{}, false
 }
 
 func (a *appNodes) getManagingNodes() map[string]node {
@@ -156,12 +156,12 @@ func (a *appNodes) getNodes() map[string]node {
 	return nodes
 }
 
-func nodeToResource(n node) *model.KubernetesResource {
+func nodeToResource(n node) *model.KubernetesResourceState {
 	key := n.firstResourceKey
 	if !n.matchResourceKey.IsZero() {
 		key = n.matchResourceKey
 	}
-	return &model.KubernetesResource{
+	return &model.KubernetesResourceState{
 		Id:         n.uid,
 		Name:       key.Name,
 		ApiVersion: key.APIVersion,

@@ -94,7 +94,7 @@ func TestFileStoreGet(t *testing.T) {
 				ProjectId:     "project-id",
 				Kind:          model.ApplicationKind_KUBERNETES,
 				Kubernetes: &model.KubernetesApplicationLiveState{
-					Resources: []*model.KubernetesResource{
+					Resources: []*model.KubernetesResourceState{
 						{
 							Id:         "id-1",
 							Name:       "test-name",

@@ -43,7 +43,7 @@ type Getter interface {
 }
 
 type AppState struct {
-	Resources []*model.KubernetesResource
+	Resources []*model.KubernetesResourceState
 	Version   model.ApplicationLiveStateVersion
 }
 
@@ -52,7 +52,7 @@ type EventIterator struct {
 	store *store
 }
 
-func (it EventIterator) Next(maxNum int) []model.KubernetesResourceEvent {
+func (it EventIterator) Next(maxNum int) []model.KubernetesResourceStateEvent {
 	return it.store.nextEvents(it.id, maxNum)
 }
 

@@ -33,7 +33,7 @@ type store struct {
 	resources map[string]appResource
 	mu        sync.RWMutex
 
-	events         []model.KubernetesResourceEvent
+	events         []model.KubernetesResourceStateEvent
 	iterators      map[int]int
 	nextIteratorID int
 	eventMu        sync.Mutex
@@ -226,7 +226,7 @@ func (s *store) findAppIDByOwners(owners []metav1.OwnerReference) string {
 	return ""
 }
 
-func (s *store) nextEvents(iteratorID, maxNum int) []model.KubernetesResourceEvent {
+func (s *store) nextEvents(iteratorID, maxNum int) []model.KubernetesResourceStateEvent {
 	return nil
 }
 
@@ -241,7 +241,7 @@ func (s *store) newEventIterator() EventIterator {
 
 func (s *store) getAppLiveState(appID string) AppState {
 	nodes := s.getAppNodes(appID)
-	resources := make([]*model.KubernetesResource, 0, len(nodes))
+	resources := make([]*model.KubernetesResourceState, 0, len(nodes))
 	for _, n := range nodes {
 		resources = append(resources, nodeToResource(n))
 	}

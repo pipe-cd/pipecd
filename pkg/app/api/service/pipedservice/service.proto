@@ -309,7 +309,7 @@ message ReportApplicationLiveStateResponse {
 }
 
 message ReportApplicationLiveStateEventsRequest {
-    repeated pipe.model.KubernetesResourceEvent kubernetes_events = 1;
+    repeated pipe.model.KubernetesResourceStateEvent kubernetes_events = 1;
 }
 
 message ReportApplicationLiveStateEventsResponse {

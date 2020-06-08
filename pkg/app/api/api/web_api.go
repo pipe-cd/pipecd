@@ -351,7 +351,7 @@ func (a *WebAPI) GetApplicationLiveState(ctx context.Context, req *webservice.Ge
 			ProjectId:     "debug-project",
 			Kind:          model.ApplicationKind_KUBERNETES,
 			Kubernetes: &model.KubernetesApplicationLiveState{
-				Resources: []*model.KubernetesResource{
+				Resources: []*model.KubernetesResourceState{
 					{
 						Id:         "f2c832a3-1f5b-4982-8f6e-72345ecb3c82",
 						Name:       "demo-application",

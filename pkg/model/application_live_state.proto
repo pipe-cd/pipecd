@@ -45,7 +45,7 @@ message ApplicationLiveStateVersion {
 }
 
 message KubernetesApplicationLiveState {
-    repeated KubernetesResource resources = 1;
+    repeated KubernetesResourceState resources = 1;
 }
 
 message TerraformApplicationLiveState {
@@ -57,8 +57,8 @@ message CloudRunApplicationLiveState {
 message LambdaApplicationLiveState {
 }
 
-// KubernetesResource represents the state of a single kubernetes resource object.
-message KubernetesResource {
+// KubernetesResourceState represents the state of a single kubernetes resource object.
+message KubernetesResourceState {
     enum HealthStatus {
         UNKNOWN = 0;
         PROCESSING = 1;
@@ -90,7 +90,7 @@ message KubernetesResource {
     int64 updated_at = 15 [(validate.rules).int64.gt = 0];
 }
 
-message KubernetesResourceEvent {
+message KubernetesResourceStateEvent {
     enum Type {
         ADDED = 0;
         UPDATED = 1;
@@ -100,11 +100,10 @@ message KubernetesResourceEvent {
     // The uniquely generated identifier for this event. 
     string id = 1 [(validate.rules).string.min_len = 1];
     string application_id = 2 [(validate.rules).string.min_len = 1];
-    ApplicationKind application_kind = 3 [(validate.rules).enum.defined_only = true];
 
-    Type type = 4 [(validate.rules).enum.defined_only = true];
-    KubernetesResource resource = 5 [(validate.rules).message.required = true];
-    ApplicationLiveStateVersion snapshot_version = 6 [(validate.rules).message.required = true];
+    Type type = 3 [(validate.rules).enum.defined_only = true];
+    KubernetesResourceState state = 4 [(validate.rules).message.required = true];
+    ApplicationLiveStateVersion snapshot_version = 5 [(validate.rules).message.required = true];
 
     int64 created_at = 15 [(validate.rules).int64.gt = 0];
 }
