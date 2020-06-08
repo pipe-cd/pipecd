@@ -80,6 +80,9 @@ func (s *store) Run(ctx context.Context) error {
 	syncTicker := time.NewTicker(s.syncInterval)
 	defer syncTicker.Stop()
 
+	// Do first sync without waiting the first ticker.
+	s.sync(ctx)
+
 	for {
 		select {
 		case <-syncTicker.C:

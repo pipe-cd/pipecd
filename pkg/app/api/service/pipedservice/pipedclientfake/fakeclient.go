@@ -67,12 +67,13 @@ func NewClient(logger *zap.Logger) *fakeClient {
 	// Register applications for pipe-debug repository.
 	for name, enable := range k8sAppNames {
 		apps[name] = &model.Application{
-			Id:        projectID + "/" + envID + "/" + name,
-			Name:      name,
-			EnvId:     envID,
-			PipedId:   pipedID,
-			ProjectId: projectID,
-			Kind:      model.ApplicationKind_KUBERNETES,
+			Id:            projectID + "/" + envID + "/" + name,
+			Name:          name,
+			EnvId:         envID,
+			PipedId:       pipedID,
+			ProjectId:     projectID,
+			Kind:          model.ApplicationKind_KUBERNETES,
+			CloudProvider: "kubernetes-default",
 			GitPath: &model.ApplicationGitPath{
 				RepoId: "pipe-debug",
 				Path:   "k8s/" + name,
