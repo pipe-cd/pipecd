@@ -55,11 +55,14 @@ func Register(r registerer) {
 }
 
 // templateArgs allows deployment-specific data to be embedded in the analysis template.
+// NOTE: Changing its fields will force users to change the template definition.
 type templateArgs struct {
 	App struct {
 		Name string
 		Env  string
 	}
+	// User-defined custom args.
+	Args map[string]string
 }
 
 // Execute runs multiple analyses that execute queries against analysis providers at regular intervals.
@@ -83,13 +86,7 @@ func (e *Executor) Execute(sig executor.StopSignal) model.StageStatus {
 		e.LogPersister.AppendError(err.Error())
 		return model.StageStatus_STAGE_FAILURE
 	}
-	if ok {
-		templateCfg, err = e.render(*templateCfg)
-		if err != nil {
-			e.LogPersister.AppendError(err.Error())
-			return model.StageStatus_STAGE_FAILURE
-		}
-	} else {
+	if !ok {
 		e.Logger.Info("config file for AnalysisTemplate not found")
 		templateCfg = &config.AnalysisTemplateSpec{}
 	}
@@ -98,6 +95,11 @@ func (e *Executor) Execute(sig executor.StopSignal) model.StageStatus {
 	// Run analyses with metrics providers.
 	mf := metrics.NewFactory(e.Logger)
 	for _, m := range options.Metrics {
+		templateCfg, err = e.render(*templateCfg, m.Template.Args)
+		if err != nil {
+			e.LogPersister.AppendError(err.Error())
+			return model.StageStatus_STAGE_FAILURE
+		}
 		cfg, err := e.getMetricsConfig(&m, templateCfg)
 		if err != nil {
 			e.LogPersister.AppendError(err.Error())
@@ -118,6 +120,11 @@ func (e *Executor) Execute(sig executor.StopSignal) model.StageStatus {
 	// Run analyses with logging providers.
 	lf := log.NewFactory(e.Logger)
 	for _, l := range options.Logs {
+		templateCfg, err = e.render(*templateCfg, l.Template.Args)
+		if err != nil {
+			e.LogPersister.AppendError(err.Error())
+			return model.StageStatus_STAGE_FAILURE
+		}
 		cfg, err := e.getLogConfig(&l, templateCfg)
 		if err != nil {
 			e.LogPersister.AppendError(err.Error())
@@ -137,6 +144,11 @@ func (e *Executor) Execute(sig executor.StopSignal) model.StageStatus {
 	}
 	// Run analyses with http providers.
 	for _, h := range options.Https {
+		templateCfg, err = e.render(*templateCfg, h.Template.Args)
+		if err != nil {
+			e.LogPersister.AppendError(err.Error())
+			return model.StageStatus_STAGE_FAILURE
+		}
 		cfg, err := e.getHTTPConfig(&h, templateCfg)
 		if err != nil {
 			e.LogPersister.AppendError(err.Error())
@@ -273,7 +285,7 @@ func (e *Executor) newLogProvider(providerName string, factory *log.Factory) (lo
 // getMetricsConfig renders the given template and returns the metrics config.
 // Just returns metrics config if no template specified.
 func (e *Executor) getMetricsConfig(templatableCfg *config.TemplatableAnalysisMetrics, templateSpec *config.AnalysisTemplateSpec) (*config.AnalysisMetrics, error) {
-	name := templatableCfg.UseTemplate
+	name := templatableCfg.Template.Name
 	if name == "" {
 		return &templatableCfg.AnalysisMetrics, nil
 	}
@@ -287,7 +299,7 @@ func (e *Executor) getMetricsConfig(templatableCfg *config.TemplatableAnalysisMe
 // getLogConfig renders the given template and returns the log config.
 // Just returns log config if no template specified.
 func (e *Executor) getLogConfig(templatableCfg *config.TemplatableAnalysisLog, templateSpec *config.AnalysisTemplateSpec) (*config.AnalysisLog, error) {
-	name := templatableCfg.UseTemplate
+	name := templatableCfg.Template.Name
 	if name == "" {
 		return &templatableCfg.AnalysisLog, nil
 	}
@@ -301,7 +313,7 @@ func (e *Executor) getLogConfig(templatableCfg *config.TemplatableAnalysisLog, t
 // getHTTPConfig renders the given template and returns the http config.
 // Just returns http config if no template specified.
 func (e *Executor) getHTTPConfig(templatableCfg *config.TemplatableAnalysisHTTP, templateSpec *config.AnalysisTemplateSpec) (*config.AnalysisHTTP, error) {
-	name := templatableCfg.UseTemplate
+	name := templatableCfg.Template.Name
 	if name == "" {
 		return &templatableCfg.AnalysisHTTP, nil
 	}
@@ -312,9 +324,10 @@ func (e *Executor) getHTTPConfig(templatableCfg *config.TemplatableAnalysisHTTP,
 	return &cfg, nil
 }
 
-// render returns a new AnalysisTemplateSpec, where deployment-specific arguments entered.
-func (e *Executor) render(templateCfg config.AnalysisTemplateSpec) (*config.AnalysisTemplateSpec, error) {
+// render returns a new AnalysisTemplateSpec, where deployment-specific arguments populated.
+func (e *Executor) render(templateCfg config.AnalysisTemplateSpec, customArgs map[string]string) (*config.AnalysisTemplateSpec, error) {
 	args := templateArgs{
+		Args: customArgs,
 		App: struct {
 			Name string
 			Env  string

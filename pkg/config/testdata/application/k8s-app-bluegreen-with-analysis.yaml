@@ -14,7 +14,8 @@ spec:
           duration: 10m
           failureLimit: 2
           https:
-            - useTemplate: http_stage_check
+            - template:
+                name: http_stage_check
       - name: K8S_TRAFFIC_SPLIT
         with:
           all: canary

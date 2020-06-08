@@ -285,22 +285,27 @@ type AnalysisStageOptions struct {
 	Dynamic          AnalysisDynamic              `json:"dynamic"`
 }
 
+type AnalysisTemplateRef struct {
+	Name string            `json:"name"`
+	Args map[string]string `json:"args"`
+}
+
 // TemplatableAnalysisMetrics wraps AnalysisMetrics to allow specify template to use.
 type TemplatableAnalysisMetrics struct {
 	AnalysisMetrics
-	UseTemplate string `json:"useTemplate"`
+	Template AnalysisTemplateRef `json:"template"`
 }
 
 // TemplatableAnalysisLog wraps AnalysisLog to allow specify template to use.
 type TemplatableAnalysisLog struct {
 	AnalysisLog
-	UseTemplate string `json:"useTemplate"`
+	Template AnalysisTemplateRef `json:"template"`
 }
 
 // TemplatableAnalysisHTTP wraps AnalysisHTTP to allow specify template to use.
 type TemplatableAnalysisHTTP struct {
 	AnalysisHTTP
-	UseTemplate string `json:"useTemplate"`
+	Template AnalysisTemplateRef `json:"template"`
 }
 
 type KubernetesDeploymentInput struct {
