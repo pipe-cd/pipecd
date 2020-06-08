@@ -21,6 +21,7 @@ import (
 
 	"go.uber.org/zap"
 
+	"github.com/kapetaniosci/pipe/pkg/app/api/service/pipedservice"
 	"github.com/kapetaniosci/pipe/pkg/app/piped/livestatestore/kubernetes"
 	"github.com/kapetaniosci/pipe/pkg/config"
 	"github.com/kapetaniosci/pipe/pkg/model"
@@ -83,8 +84,36 @@ L:
 }
 
 func (r *kubernetesReporter) flushSnapshots(ctx context.Context) error {
+	// TODO: In the future, maybe we should apply worker model for this or
+	// send multiple application states in one request.
 	apps := r.appLister.ListByCloudProvider(r.provider.Name)
-	fmt.Println(len(apps))
+	for _, app := range apps {
+		var (
+			state    = r.stateGetter.GetKubernetesAppLiveState(app.Id)
+			snapshot = &model.ApplicationLiveStateSnapshot{
+				ApplicationId: app.Id,
+				EnvId:         app.EnvId,
+				PipedId:       app.PipedId,
+				ProjectId:     app.ProjectId,
+				Kind:          app.Kind,
+				Kubernetes: &model.KubernetesApplicationLiveState{
+					Resources: state.Resources,
+				},
+				Version: &state.Version,
+			}
+			req = &pipedservice.ReportApplicationLiveStateRequest{
+				Snapshot: snapshot,
+			}
+		)
+		if _, err := r.apiClient.ReportApplicationLiveState(ctx, req); err != nil {
+			r.logger.Error("failed to report application live state",
+				zap.String("applicaiton-id", app.Id),
+				zap.Error(err),
+			)
+			continue
+		}
+		r.logger.Info(fmt.Sprintf("successfully reported application live state for application: %s", app.Id))
+	}
 	return nil
 }
 

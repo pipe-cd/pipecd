@@ -238,3 +238,16 @@ func (s *store) newEventIterator() EventIterator {
 
 	return EventIterator{id: id}
 }
+
+func (s *store) getAppLiveState(appID string) AppState {
+	nodes := s.getAppNodes(appID)
+	resources := make([]*model.KubernetesResource, 0, len(nodes))
+	for _, n := range nodes {
+		resources = append(resources, nodeToResource(n))
+	}
+
+	state := AppState{
+		Resources: resources,
+	}
+	return state
+}

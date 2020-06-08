@@ -156,12 +156,12 @@ func (a *appNodes) getNodes() map[string]node {
 	return nodes
 }
 
-func nodeToResource(n node) model.KubernetesResource {
+func nodeToResource(n node) *model.KubernetesResource {
 	key := n.firstResourceKey
 	if !n.matchResourceKey.IsZero() {
 		key = n.matchResourceKey
 	}
-	return model.KubernetesResource{
+	return &model.KubernetesResource{
 		Id:         n.uid,
 		Name:       key.Name,
 		ApiVersion: key.APIVersion,

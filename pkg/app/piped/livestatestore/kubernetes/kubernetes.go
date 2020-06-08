@@ -38,8 +38,13 @@ type Store struct {
 }
 
 type Getter interface {
-	GetKubernetesAppLiveResources(appID string) []model.KubernetesResource
+	GetKubernetesAppLiveState(appID string) AppState
 	NewEventIterator() EventIterator
+}
+
+type AppState struct {
+	Resources []*model.KubernetesResource
+	Version   model.ApplicationLiveStateVersion
 }
 
 type EventIterator struct {
@@ -115,13 +120,8 @@ func (s *Store) WaitForReady(ctx context.Context, timeout time.Duration) error {
 	}
 }
 
-func (s *Store) GetKubernetesAppLiveResources(appID string) []model.KubernetesResource {
-	nodes := s.store.getAppNodes(appID)
-	resources := make([]model.KubernetesResource, 0, len(nodes))
-	for _, n := range nodes {
-		resources = append(resources, nodeToResource(n))
-	}
-	return resources
+func (s *Store) GetKubernetesAppLiveState(appID string) AppState {
+	return s.store.getAppLiveState(appID)
 }
 
 func (s *Store) NewEventIterator() EventIterator {
