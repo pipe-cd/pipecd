@@ -340,13 +340,13 @@ func (a *WebAPI) ApproveStage(ctx context.Context, req *webservice.ApproveStageR
 func (a *WebAPI) GetApplicationLiveState(ctx context.Context, req *webservice.GetApplicationLiveStateRequest) (*webservice.GetApplicationLiveStateResponse, error) {
 	// Creating fake response
 	now := time.Now()
-	resp := &model.ApplicationLiveState{
+	snapshot := &model.ApplicationLiveStateSnapshot{
 		ApplicationId: "debug-project/development/debug-app",
 		EnvId:         "development",
 		PipedId:       "debug-piped",
 		ProjectId:     "debug-project",
 		Kind:          model.ApplicationKind_KUBERNETES,
-		KubernetesState: &model.KubernetesApplicationLiveState{
+		Kubernetes: &model.KubernetesApplicationLiveState{
 			Resources: []*model.KubernetesResource{
 				{
 					Id:         "f2c832a3-1f5b-4982-8f6e-72345ecb3c82",
@@ -437,12 +437,10 @@ func (a *WebAPI) GetApplicationLiveState(ctx context.Context, req *webservice.Ge
 				},
 			},
 		},
-		CreatedAt: now.Unix(),
-		UpdatedAt: now.Unix(),
 	}
 
 	return &webservice.GetApplicationLiveStateResponse{
-		State: resp,
+		Snapshot: snapshot,
 	}, nil
 }
 

@@ -203,17 +203,19 @@ func (p *piped) run(ctx context.Context, t cli.Telemetry) error {
 	// Create memory caches.
 	appManifestsCache := memorycache.NewTTLCache(ctx, time.Hour, time.Minute)
 
+	var liveStateGetter livestatestore.Getter
 	// Start running application live state store.
 	{
 		s := livestatestore.NewStore(cfg, applicationLister, p.gracePeriod, t.Logger)
 		group.Go(func() error {
 			return s.Run(ctx)
 		})
+		liveStateGetter = s.Getter()
 	}
 
 	// Start running application live state reporter.
 	{
-		r := livestatereporter.NewReporter(p.gracePeriod)
+		r := livestatereporter.NewReporter(applicationLister, liveStateGetter, apiClient, cfg, t.Logger)
 		group.Go(func() error {
 			return r.Run(ctx)
 		})

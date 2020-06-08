@@ -32,6 +32,8 @@ type Lister interface {
 	// List lists all applications that should be handled by this piped.
 	// All disabled applications will be ignored.
 	List() []*model.Application
+	// ListByCloudProvider lists all applications for a given cloud provider name.
+	ListByCloudProvider(name string) []*model.Application
 	// Get retrieves a specifiec deployment for the given id.
 	Get(id string) (*model.Application, bool)
 }
@@ -120,6 +122,25 @@ func (s *store) List() []*model.Application {
 		return nil
 	}
 	return apps.([]*model.Application)
+}
+
+// ListByCloudProvider lists all applications for a given cloud provider name.
+func (s *store) ListByCloudProvider(name string) []*model.Application {
+	list := s.applicationList.Load()
+	if list == nil {
+		return nil
+	}
+
+	var (
+		apps = list.([]*model.Application)
+		out  = make([]*model.Application, 0, len(apps))
+	)
+	for _, app := range apps {
+		if app.CloudProvider == name {
+			out = append(out, app)
+		}
+	}
+	return out
 }
 
 // Get retrieves a specific deployment for the given id.

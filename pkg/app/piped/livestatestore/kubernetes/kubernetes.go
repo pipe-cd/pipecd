@@ -16,7 +16,6 @@ package kubernetes
 
 import (
 	"context"
-	"fmt"
 	"time"
 
 	"go.uber.org/zap"
@@ -30,10 +29,6 @@ import (
 	"github.com/kapetaniosci/pipe/pkg/model"
 )
 
-type applicationLister interface {
-	List() []*model.Application
-}
-
 type Store struct {
 	config        *config.CloudProviderKubernetesConfig
 	kubeConfig    *restclient.Config
@@ -42,15 +37,30 @@ type Store struct {
 	logger        *zap.Logger
 }
 
-func NewStore(cfg *config.CloudProviderKubernetesConfig, cloudProvider string, appLister applicationLister, logger *zap.Logger) *Store {
+type Getter interface {
+	GetKubernetesAppLiveResources(appID string) []model.KubernetesResource
+	NewEventIterator() EventIterator
+}
+
+type EventIterator struct {
+	id    int
+	store *store
+}
+
+func (it EventIterator) Next(maxNum int) []model.KubernetesResourceEvent {
+	return it.store.nextEvents(it.id, maxNum)
+}
+
+func NewStore(cfg *config.CloudProviderKubernetesConfig, cloudProvider string, logger *zap.Logger) *Store {
 	logger = logger.Named("kubernetes").
 		With(zap.String("cloud-provider", cloudProvider))
 
 	return &Store{
 		config: cfg,
 		store: &store{
-			apps:      make(map[string]*appLiveNodes),
+			apps:      make(map[string]*appNodes),
 			resources: make(map[string]appResource),
+			iterators: make(map[int]int, 1),
 		},
 		firstSyncedCh: make(chan error, 1),
 		logger:        logger,
@@ -86,28 +96,6 @@ func (s *Store) Run(ctx context.Context) error {
 	s.logger.Info("the store has done the initializing")
 	close(s.firstSyncedCh)
 
-	s.logger.Info("DEBUG\n\n")
-	apps := []string{
-		"local-project/dev/simple",
-		"local-project/dev/canary",
-		"local-project/dev/bluegreen",
-	}
-	for _, app := range apps {
-		s.logger.Info(fmt.Sprintf("Application: %s", app))
-
-		managingNodes := s.store.getManagingNodesForApp(app)
-		s.logger.Info(fmt.Sprintf("\tmanaging nodes %d", len(managingNodes)))
-		for k, n := range managingNodes {
-			s.logger.Info(fmt.Sprintf("\t\t%s: %s, %s", k, n.firstResourceKey, n.matchResourceKey))
-		}
-
-		dependedNodes := s.store.getDependedNodesForApp(app)
-		s.logger.Info(fmt.Sprintf("\tdepended nodes %d", len(dependedNodes)))
-		for k, n := range dependedNodes {
-			s.logger.Info(fmt.Sprintf("\t\t%s: %s, %s", k, n.firstResourceKey, n.matchResourceKey))
-		}
-	}
-
 	<-ctx.Done()
 	close(stopCh)
 
@@ -127,6 +115,15 @@ func (s *Store) WaitForReady(ctx context.Context, timeout time.Duration) error {
 	}
 }
 
-func (s *Store) GetKubernetesAppLiveResources(appID string) ([]model.KubernetesResource, error) {
-	return nil, nil
+func (s *Store) GetKubernetesAppLiveResources(appID string) []model.KubernetesResource {
+	nodes := s.store.getAppNodes(appID)
+	resources := make([]model.KubernetesResource, 0, len(nodes))
+	for _, n := range nodes {
+		resources = append(resources, nodeToResource(n))
+	}
+	return resources
+}
+
+func (s *Store) NewEventIterator() EventIterator {
+	return s.store.newEventIterator()
 }

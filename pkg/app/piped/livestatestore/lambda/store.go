@@ -31,6 +31,9 @@ type Store struct {
 	logger *zap.Logger
 }
 
+type Getter interface {
+}
+
 func NewStore(cfg *config.CloudProviderLambdaConfig, cloudProvider string, appLister applicationLister, logger *zap.Logger) *Store {
 	logger = logger.Named("lambda").
 		With(zap.String("cloud-provider", cloudProvider))

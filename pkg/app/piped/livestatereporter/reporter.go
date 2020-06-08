@@ -13,24 +13,90 @@
 // limitations under the License.
 
 // Package livestatereporter provides a piped component
-// that ...
+// that reports the changes as well as full snapshot about live state of registered applications.
 package livestatereporter
 
 import (
 	"context"
+	"fmt"
 	"time"
+
+	"go.uber.org/zap"
+	"golang.org/x/sync/errgroup"
+	"google.golang.org/grpc"
+
+	"github.com/kapetaniosci/pipe/pkg/app/api/service/pipedservice"
+	"github.com/kapetaniosci/pipe/pkg/app/piped/livestatestore"
+	"github.com/kapetaniosci/pipe/pkg/config"
+	"github.com/kapetaniosci/pipe/pkg/model"
 )
 
-type AppStateReporter struct {
-	gracePeriod time.Duration
+type applicationLister interface {
+	ListByCloudProvider(name string) []*model.Application
 }
 
-func NewReporter(gracePeriod time.Duration) *AppStateReporter {
-	return &AppStateReporter{
-		gracePeriod: gracePeriod,
+type apiClient interface {
+	ReportApplicationLiveState(ctx context.Context, req *pipedservice.ReportApplicationLiveStateRequest, opts ...grpc.CallOption) (*pipedservice.ReportApplicationLiveStateResponse, error)
+	ReportApplicationLiveStateEvents(ctx context.Context, req *pipedservice.ReportApplicationLiveStateEventsRequest, opts ...grpc.CallOption) (*pipedservice.ReportApplicationLiveStateEventsResponse, error)
+}
+
+type Reporter interface {
+	Run(ctx context.Context) error
+}
+
+type reporter struct {
+	reporters []providerReporter
+	logger    *zap.Logger
+}
+
+type providerReporter interface {
+	Run(ctx context.Context) error
+	ProviderName() string
+}
+
+func NewReporter(appLister applicationLister, stateGetter livestatestore.Getter, apiClient apiClient, cfg *config.PipedSpec, logger *zap.Logger) *reporter {
+	r := &reporter{
+		reporters: make([]providerReporter, 0, len(cfg.CloudProviders)),
+		logger:    logger.Named("live-state-reporter"),
 	}
+
+	for _, cp := range cfg.CloudProviders {
+		switch cp.Type {
+		case model.CloudProviderKubernetes:
+			sg, ok := stateGetter.KubernetesGetter(cp.Name)
+			if !ok {
+				r.logger.Error(fmt.Sprintf("unabled to find live state getter for cloud provider: %s", cp.Name))
+				continue
+			}
+			r.reporters = append(r.reporters, newKubernetesReporter(cp, appLister, sg, apiClient, logger))
+
+		default:
+		}
+	}
+
+	return r
 }
 
-func (t *AppStateReporter) Run(ctx context.Context) error {
+func (r *reporter) Run(ctx context.Context) error {
+	group, ctx := errgroup.WithContext(ctx)
+
+	for i, reporter := range r.reporters {
+		// Avoid starting all reporters at the same time to reduce the API call burst.
+		time.Sleep(time.Duration(i) * 10 * time.Second)
+		r.logger.Info(fmt.Sprintf("starting app live state reporter for cloud provider: %s", reporter.ProviderName()))
+
+		group.Go(func() error {
+			return reporter.Run(ctx)
+		})
+	}
+
+	r.logger.Info(fmt.Sprintf("all live state reporters of %d providers have been started", len(r.reporters)))
+
+	if err := group.Wait(); err != nil {
+		r.logger.Error("failed while running", zap.Error(err))
+		return err
+	}
+
+	r.logger.Info(fmt.Sprintf("all live state reporters of %d providers have been stopped", len(r.reporters)))
 	return nil
 }

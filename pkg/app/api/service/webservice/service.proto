@@ -159,7 +159,7 @@ message GetApplicationLiveStateRequest {
 }
 
 message GetApplicationLiveStateResponse {
-    pipe.model.ApplicationLiveState state= 1;
+    pipe.model.ApplicationLiveStateSnapshot snapshot= 1;
 }
 
 message GetProjectRequest {

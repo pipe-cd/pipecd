@@ -4,10 +4,7 @@ load("//bazel:pgv_go_proto.bzl", "pgv_go_proto_library")
 
 proto_library(
     name = "pipedservice_proto",
-    srcs = [
-        "event.proto",
-        "service.proto",
-    ],
+    srcs = ["service.proto"],
     visibility = ["//visibility:public"],
     # keep
     deps = [

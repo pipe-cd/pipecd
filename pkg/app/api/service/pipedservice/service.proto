@@ -19,7 +19,6 @@ option go_package = "github.com/kapetaniosci/pipe/pkg/app/api/service/pipedservi
 
 import "validate/validate.proto";
 import "google/protobuf/wrappers.proto";
-import "pkg/app/api/service/pipedservice/event.proto";
 import "pkg/model/command.proto";
 import "pkg/model/application.proto";
 import "pkg/model/application_live_state.proto";
@@ -109,9 +108,9 @@ service PipedService {
     // The handle result should be updated to both datastore and cache (for reading from web).
     rpc ReportCommandHandled(ReportCommandHandledRequest) returns (ReportCommandHandledResponse) {}
 
-    // ReportApplicationLiveState is periodically sent to refresh the live state of application.
+    // ReportApplicationLiveState is periodically sent to correct full state of an application.
     // For kubernetes application, this contains a full tree of its kubernetes resources.
-    // The tree data should be written into filestore immediately and then the state in cache should be cleaned.
+    // The tree data should be written into filestore immediately and then the state in cache should be refreshsed too.
     rpc ReportApplicationLiveState(ReportApplicationLiveStateRequest) returns (ReportApplicationLiveStateResponse) {}
 
     // ReportApplicationLiveStateEvents is sent to submit one or multiple events
@@ -303,18 +302,16 @@ message ReportCommandHandledResponse {
 }
 
 message ReportApplicationLiveStateRequest {
-    pipe.model.ApplicationLiveState state = 1 [(validate.rules).message.required = true];
+    pipe.model.ApplicationLiveStateSnapshot snapshot = 1 [(validate.rules).message.required = true];
 }
 
 message ReportApplicationLiveStateResponse {
-    int64 latest_timestamp = 1 [(validate.rules).int64.gt = 0];
 }
 
 message ReportApplicationLiveStateEventsRequest {
-    repeated ApplicationLiveStateEvent events = 1;
+    repeated pipe.model.KubernetesResourceEvent kubernetes_events = 1;
 }
 
 message ReportApplicationLiveStateEventsResponse {
     repeated string failed_ids = 1;
-    repeated string need_full_state_apps = 2;
 }

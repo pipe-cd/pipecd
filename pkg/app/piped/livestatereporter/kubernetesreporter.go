@@ -1,0 +1,97 @@
+// Copyright 2020 The PipeCD Authors.
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//     http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+package livestatereporter
+
+import (
+	"context"
+	"fmt"
+	"time"
+
+	"go.uber.org/zap"
+
+	"github.com/kapetaniosci/pipe/pkg/app/piped/livestatestore/kubernetes"
+	"github.com/kapetaniosci/pipe/pkg/config"
+	"github.com/kapetaniosci/pipe/pkg/model"
+)
+
+type kubernetesReporter struct {
+	provider              config.PipedCloudProvider
+	appLister             applicationLister
+	stateGetter           kubernetes.Getter
+	eventIterator         kubernetes.EventIterator
+	apiClient             apiClient
+	flushInterval         time.Duration
+	snapshotFlushInterval time.Duration
+	logger                *zap.Logger
+
+	snapshotVersions map[string]model.ApplicationLiveStateVersion
+}
+
+func newKubernetesReporter(cp config.PipedCloudProvider, appLister applicationLister, stateGetter kubernetes.Getter, apiClient apiClient, logger *zap.Logger) *kubernetesReporter {
+	logger = logger.Named("kubernetes-reporter").With(
+		zap.String("cloud-provider", cp.Name),
+	)
+	return &kubernetesReporter{
+		provider:              cp,
+		appLister:             appLister,
+		stateGetter:           stateGetter,
+		eventIterator:         stateGetter.NewEventIterator(),
+		apiClient:             apiClient,
+		flushInterval:         5 * time.Second,
+		snapshotFlushInterval: 10 * time.Minute,
+		logger:                logger,
+	}
+}
+
+func (r *kubernetesReporter) Run(ctx context.Context) error {
+	r.logger.Info("start running app live state reporter")
+
+	snapshotTicker := time.NewTicker(r.snapshotFlushInterval)
+	defer snapshotTicker.Stop()
+
+	ticker := time.NewTicker(r.flushInterval)
+	defer ticker.Stop()
+
+L:
+	for {
+		select {
+		case <-snapshotTicker.C:
+			r.flushSnapshots(ctx)
+
+		case <-ticker.C:
+			r.flushEvents(ctx)
+
+		case <-ctx.Done():
+			break L
+		}
+	}
+
+	r.logger.Info("app live state reporter has been stopped")
+	return nil
+}
+
+func (r *kubernetesReporter) flushSnapshots(ctx context.Context) error {
+	apps := r.appLister.ListByCloudProvider(r.provider.Name)
+	fmt.Println(len(apps))
+	return nil
+}
+
+func (r *kubernetesReporter) flushEvents(ctx context.Context) error {
+	return nil
+}
+
+func (r *kubernetesReporter) ProviderName() string {
+	return r.provider.Name
+}

@@ -20,7 +20,6 @@ package livestatestore
 
 import (
 	"context"
-	"fmt"
 	"time"
 
 	"go.uber.org/zap"
@@ -38,43 +37,45 @@ type applicationLister interface {
 	List() []*model.Application
 }
 
+type Getter interface {
+	CloudRunGetter(cloudProvider string) (cloudrun.Getter, bool)
+	KubernetesGetter(cloudProvider string) (kubernetes.Getter, bool)
+	LambdaGetter(cloudProvider string) (lambda.Getter, bool)
+	TerraformGetter(cloudProvider string) (terraform.Getter, bool)
+}
+
 type Store interface {
 	Run(ctx context.Context) error
-
-	KubernetesApplicationLiveStateLister() KubernetesApplicationLiveStateLister
+	Getter() Getter
 }
 
-type KubernetesApplicationLiveStateLister interface {
-	GetKubernetesAppLiveResources(appID, cloudProvider string) ([]model.KubernetesResource, error)
-}
-
-type KubernetesStore interface {
+type kubernetesStore interface {
 	Run(ctx context.Context) error
-	GetKubernetesAppLiveResources(appID string) ([]model.KubernetesResource, error)
+	kubernetes.Getter
 }
 
-type TerraformStore interface {
+type terraformStore interface {
 	Run(ctx context.Context) error
 }
 
-type CloudRunStore interface {
+type cloudRunStore interface {
 	Run(ctx context.Context) error
 }
 
-type LambdaStore interface {
+type lambdaStore interface {
 	Run(ctx context.Context) error
 }
 
 // store manages a list of particular stores for all cloud providers.
 type store struct {
-	// Map thats contains a list of KubernetesStore where key is the cloud provider name.
-	kubernetesStores map[string]KubernetesStore
-	// Map thats contains a list of TerraformStore where key is the cloud provider name.
-	terraformStores map[string]TerraformStore
-	// Map thats contains a list of CloudRunStore where key is the cloud provider name.
-	cloudrunStores map[string]CloudRunStore
-	// Map thats contains a list of LambdaStore where key is the cloud provider name.
-	lambdaStores map[string]LambdaStore
+	// Map thats contains a list of kubernetesStore where key is the cloud provider name.
+	kubernetesStores map[string]kubernetesStore
+	// Map thats contains a list of terraformStore where key is the cloud provider name.
+	terraformStores map[string]terraformStore
+	// Map thats contains a list of cloudRunStore where key is the cloud provider name.
+	cloudrunStores map[string]cloudRunStore
+	// Map thats contains a list of lambdaStore where key is the cloud provider name.
+	lambdaStores map[string]lambdaStore
 
 	gracePeriod time.Duration
 	logger      *zap.Logger
@@ -84,17 +85,17 @@ func NewStore(cfg *config.PipedSpec, appLister applicationLister, gracePeriod ti
 	logger = logger.Named("livestatestore")
 
 	s := &store{
-		kubernetesStores: make(map[string]KubernetesStore),
-		terraformStores:  make(map[string]TerraformStore),
-		cloudrunStores:   make(map[string]CloudRunStore),
-		lambdaStores:     make(map[string]LambdaStore),
+		kubernetesStores: make(map[string]kubernetesStore),
+		terraformStores:  make(map[string]terraformStore),
+		cloudrunStores:   make(map[string]cloudRunStore),
+		lambdaStores:     make(map[string]lambdaStore),
 		gracePeriod:      gracePeriod,
 		logger:           logger,
 	}
 	for _, cp := range cfg.CloudProviders {
 		switch cp.Type {
 		case model.CloudProviderKubernetes:
-			store := kubernetes.NewStore(cp.KubernetesConfig, cp.Name, appLister, logger)
+			store := kubernetes.NewStore(cp.KubernetesConfig, cp.Name, logger)
 			s.kubernetesStores[cp.Name] = store
 
 		case model.CloudProviderTerraform:
@@ -152,15 +153,26 @@ func (s *store) Run(ctx context.Context) error {
 	return err
 }
 
-func (s *store) KubernetesApplicationLiveStateLister() KubernetesApplicationLiveStateLister {
+func (s *store) Getter() Getter {
 	return s
 }
 
-func (s *store) GetKubernetesAppLiveResources(appID, cloudProvider string) ([]model.KubernetesResource, error) {
-	ks, ok := s.kubernetesStores[cloudProvider]
-	if !ok {
-		return nil, fmt.Errorf("no registered cloud provider: %s", cloudProvider)
-	}
+func (s *store) CloudRunGetter(cloudProvider string) (cloudrun.Getter, bool) {
+	ks, ok := s.cloudrunStores[cloudProvider]
+	return ks, ok
+}
 
-	return ks.GetKubernetesAppLiveResources(appID)
+func (s *store) KubernetesGetter(cloudProvider string) (kubernetes.Getter, bool) {
+	ks, ok := s.kubernetesStores[cloudProvider]
+	return ks, ok
+}
+
+func (s *store) LambdaGetter(cloudProvider string) (lambda.Getter, bool) {
+	ks, ok := s.lambdaStores[cloudProvider]
+	return ks, ok
+}
+
+func (s *store) TerraformGetter(cloudProvider string) (terraform.Getter, bool) {
+	ks, ok := s.terraformStores[cloudProvider]
+	return ks, ok
 }
