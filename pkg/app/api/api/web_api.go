@@ -24,6 +24,7 @@ import (
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
 
+	"github.com/kapetaniosci/pipe/pkg/app/api/applicationlivestatestore"
 	"github.com/kapetaniosci/pipe/pkg/app/api/service/webservice"
 	"github.com/kapetaniosci/pipe/pkg/app/api/stagelogstore"
 	"github.com/kapetaniosci/pipe/pkg/datastore"
@@ -32,20 +33,22 @@ import (
 
 // PipedAPI implements the behaviors for the gRPC definitions of WebAPI.
 type WebAPI struct {
-	deploymentStore datastore.DeploymentStore
-	stageLogStore   stagelogstore.Store
-	useFakeResponse bool
+	deploymentStore           datastore.DeploymentStore
+	stageLogStore             stagelogstore.Store
+	applicationLiveStateStore applicationlivestatestore.Store
+	useFakeResponse           bool
 
 	logger *zap.Logger
 }
 
 // NewWebAPI creates a new WebAPI instance.
-func NewWebAPI(ds datastore.DataStore, sls stagelogstore.Store, useFakeResponse bool, logger *zap.Logger) *WebAPI {
+func NewWebAPI(ds datastore.DataStore, sls stagelogstore.Store, alss applicationlivestatestore.Store, useFakeResponse bool, logger *zap.Logger) *WebAPI {
 	a := &WebAPI{
-		deploymentStore: datastore.NewDeploymentStore(ds),
-		stageLogStore:   sls,
-		useFakeResponse: useFakeResponse,
-		logger:          logger.Named("web-api"),
+		deploymentStore:           datastore.NewDeploymentStore(ds),
+		stageLogStore:             sls,
+		applicationLiveStateStore: alss,
+		useFakeResponse:           useFakeResponse,
+		logger:                    logger.Named("web-api"),
 	}
 	return a
 }
@@ -338,107 +341,121 @@ func (a *WebAPI) ApproveStage(ctx context.Context, req *webservice.ApproveStageR
 }
 
 func (a *WebAPI) GetApplicationLiveState(ctx context.Context, req *webservice.GetApplicationLiveStateRequest) (*webservice.GetApplicationLiveStateResponse, error) {
-	// Creating fake response
-	now := time.Now()
-	snapshot := &model.ApplicationLiveStateSnapshot{
-		ApplicationId: "debug-project/development/debug-app",
-		EnvId:         "development",
-		PipedId:       "debug-piped",
-		ProjectId:     "debug-project",
-		Kind:          model.ApplicationKind_KUBERNETES,
-		Kubernetes: &model.KubernetesApplicationLiveState{
-			Resources: []*model.KubernetesResource{
-				{
-					Id:         "f2c832a3-1f5b-4982-8f6e-72345ecb3c82",
-					Name:       "demo-application",
-					ApiVersion: "networking.k8s.io/v1beta1",
-					Kind:       "Ingress",
-					Namespace:  "default",
-					CreatedAt:  now.Unix(),
-					UpdatedAt:  now.Unix(),
-				},
-				{
-					Id:         "8423fb53-5170-4864-a7d2-b84f8d36cb02",
-					Name:       "demo-application",
-					ApiVersion: "v1",
-					Kind:       "Service",
-					Namespace:  "default",
-					CreatedAt:  now.Unix(),
-					UpdatedAt:  now.Unix(),
-				},
-				{
-					Id:         "660ecdfd-307b-4e47-becd-1fde4e0c1e7a",
-					Name:       "demo-application",
-					ApiVersion: "apps/v1",
-					Kind:       "Deployment",
-					Namespace:  "default",
-					CreatedAt:  now.Unix(),
-					UpdatedAt:  now.Unix(),
-				},
-				{
-					Id: "8621f186-6641-4f7a-9be4-5983eb647f8d",
-					OwnerIds: []string{
-						"660ecdfd-307b-4e47-becd-1fde4e0c1e7a",
+	if a.useFakeResponse {
+		// Creating fake response
+		now := time.Now()
+		snapshot := &model.ApplicationLiveStateSnapshot{
+			ApplicationId: "debug-project/development/debug-app",
+			EnvId:         "development",
+			PipedId:       "debug-piped",
+			ProjectId:     "debug-project",
+			Kind:          model.ApplicationKind_KUBERNETES,
+			Kubernetes: &model.KubernetesApplicationLiveState{
+				Resources: []*model.KubernetesResource{
+					{
+						Id:         "f2c832a3-1f5b-4982-8f6e-72345ecb3c82",
+						Name:       "demo-application",
+						ApiVersion: "networking.k8s.io/v1beta1",
+						Kind:       "Ingress",
+						Namespace:  "default",
+						CreatedAt:  now.Unix(),
+						UpdatedAt:  now.Unix(),
 					},
-					ParrentIds: []string{
-						"660ecdfd-307b-4e47-becd-1fde4e0c1e7a",
+					{
+						Id:         "8423fb53-5170-4864-a7d2-b84f8d36cb02",
+						Name:       "demo-application",
+						ApiVersion: "v1",
+						Kind:       "Service",
+						Namespace:  "default",
+						CreatedAt:  now.Unix(),
+						UpdatedAt:  now.Unix(),
 					},
-					Name:       "demo-application-9504e8601a",
-					ApiVersion: "apps/v1",
-					Kind:       "ReplicaSet",
-					Namespace:  "default",
-					CreatedAt:  now.Unix(),
-					UpdatedAt:  now.Unix(),
-				},
-				{
-					Id: "ae5d0031-1f63-4396-b929-fa9987d1e6de",
-					OwnerIds: []string{
-						"660ecdfd-307b-4e47-becd-1fde4e0c1e7a",
+					{
+						Id:         "660ecdfd-307b-4e47-becd-1fde4e0c1e7a",
+						Name:       "demo-application",
+						ApiVersion: "apps/v1",
+						Kind:       "Deployment",
+						Namespace:  "default",
+						CreatedAt:  now.Unix(),
+						UpdatedAt:  now.Unix(),
 					},
-					ParrentIds: []string{
-						"8621f186-6641-4f7a-9be4-5983eb647f8d",
+					{
+						Id: "8621f186-6641-4f7a-9be4-5983eb647f8d",
+						OwnerIds: []string{
+							"660ecdfd-307b-4e47-becd-1fde4e0c1e7a",
+						},
+						ParrentIds: []string{
+							"660ecdfd-307b-4e47-becd-1fde4e0c1e7a",
+						},
+						Name:       "demo-application-9504e8601a",
+						ApiVersion: "apps/v1",
+						Kind:       "ReplicaSet",
+						Namespace:  "default",
+						CreatedAt:  now.Unix(),
+						UpdatedAt:  now.Unix(),
 					},
-					Name:       "demo-application-9504e8601a-7vrdw",
-					ApiVersion: "v1",
-					Kind:       "Pod",
-					Namespace:  "default",
-					CreatedAt:  now.Unix(),
-					UpdatedAt:  now.Unix(),
-				},
-				{
-					Id: "f55c7891-ba25-44bb-bca4-ffbc16b0089f",
-					OwnerIds: []string{
-						"660ecdfd-307b-4e47-becd-1fde4e0c1e7a",
+					{
+						Id: "ae5d0031-1f63-4396-b929-fa9987d1e6de",
+						OwnerIds: []string{
+							"660ecdfd-307b-4e47-becd-1fde4e0c1e7a",
+						},
+						ParrentIds: []string{
+							"8621f186-6641-4f7a-9be4-5983eb647f8d",
+						},
+						Name:       "demo-application-9504e8601a-7vrdw",
+						ApiVersion: "v1",
+						Kind:       "Pod",
+						Namespace:  "default",
+						CreatedAt:  now.Unix(),
+						UpdatedAt:  now.Unix(),
 					},
-					ParrentIds: []string{
-						"8621f186-6641-4f7a-9be4-5983eb647f8d",
+					{
+						Id: "f55c7891-ba25-44bb-bca4-ffbc16b0089f",
+						OwnerIds: []string{
+							"660ecdfd-307b-4e47-becd-1fde4e0c1e7a",
+						},
+						ParrentIds: []string{
+							"8621f186-6641-4f7a-9be4-5983eb647f8d",
+						},
+						Name:       "demo-application-9504e8601a-vlgd5",
+						ApiVersion: "v1",
+						Kind:       "Pod",
+						Namespace:  "default",
+						CreatedAt:  now.Unix(),
+						UpdatedAt:  now.Unix(),
 					},
-					Name:       "demo-application-9504e8601a-vlgd5",
-					ApiVersion: "v1",
-					Kind:       "Pod",
-					Namespace:  "default",
-					CreatedAt:  now.Unix(),
-					UpdatedAt:  now.Unix(),
-				},
-				{
-					Id: "c2a81415-5bbf-44e8-9101-98bbd636bbeb",
-					OwnerIds: []string{
-						"660ecdfd-307b-4e47-becd-1fde4e0c1e7a",
+					{
+						Id: "c2a81415-5bbf-44e8-9101-98bbd636bbeb",
+						OwnerIds: []string{
+							"660ecdfd-307b-4e47-becd-1fde4e0c1e7a",
+						},
+						ParrentIds: []string{
+							"8621f186-6641-4f7a-9be4-5983eb647f8d",
+						},
+						Name:       "demo-application-9504e8601a-tmwp5",
+						ApiVersion: "v1",
+						Kind:       "Pod",
+						Namespace:  "default",
+						CreatedAt:  now.Unix(),
+						UpdatedAt:  now.Unix(),
 					},
-					ParrentIds: []string{
-						"8621f186-6641-4f7a-9be4-5983eb647f8d",
-					},
-					Name:       "demo-application-9504e8601a-tmwp5",
-					ApiVersion: "v1",
-					Kind:       "Pod",
-					Namespace:  "default",
-					CreatedAt:  now.Unix(),
-					UpdatedAt:  now.Unix(),
 				},
 			},
-		},
+			Version: &model.ApplicationLiveStateVersion{
+				Index:     1,
+				Timestamp: now.Unix(),
+			},
+		}
+		return &webservice.GetApplicationLiveStateResponse{
+			Snapshot: snapshot,
+		}, nil
 	}
 
+	snapshot, err := a.applicationLiveStateStore.GetStateSnapshot(ctx, req.ApplicationId)
+	if err != nil {
+		a.logger.Error("failed to get application live state", zap.Error(err))
+		return nil, err
+	}
 	return &webservice.GetApplicationLiveStateResponse{
 		Snapshot: snapshot,
 	}, nil

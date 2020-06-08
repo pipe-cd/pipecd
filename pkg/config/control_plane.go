@@ -161,7 +161,7 @@ func (f *ControlPlaneFileStore) UnmarshalJSON(data []byte) error {
 }
 
 type FileStoreGCSConfig struct {
-	// The bucket name to store stage logs.
+	// The bucket name to store artifacts and logs in the pipe.
 	Bucket string `json:"bucket"`
 	// The path to the credentials file for accessing GCS.
 	CredentialsFile string `json:"credentialsFile"`

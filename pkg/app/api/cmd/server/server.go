@@ -28,6 +28,7 @@ import (
 
 	"github.com/kapetaniosci/pipe/pkg/admin"
 	"github.com/kapetaniosci/pipe/pkg/app/api/api"
+	"github.com/kapetaniosci/pipe/pkg/app/api/applicationlivestatestore"
 	"github.com/kapetaniosci/pipe/pkg/app/api/stagelogstore"
 	"github.com/kapetaniosci/pipe/pkg/cache/rediscache"
 	"github.com/kapetaniosci/pipe/pkg/cli"
@@ -155,6 +156,7 @@ func (s *server) run(ctx context.Context, t cli.Telemetry) error {
 	}()
 	cache := rediscache.NewTTLCache(rd, cfg.Cache.TTL.Duration())
 	sls := stagelogstore.NewStore(fs, cache, t.Logger)
+	alss := applicationlivestatestore.NewStore(fs, cache, t.Logger)
 
 	// Start a gRPC server for handling PipedAPI requests.
 	{
@@ -177,7 +179,7 @@ func (s *server) run(ctx context.Context, t cli.Telemetry) error {
 
 	// Start a gRPC server for handling WebAPI requests.
 	{
-		service := api.NewWebAPI(ds, sls, s.useFakeResponse, t.Logger)
+		service := api.NewWebAPI(ds, sls, alss, s.useFakeResponse, t.Logger)
 		opts := []rpc.Option{
 			rpc.WithPort(s.webAPIPort),
 			rpc.WithGracePeriod(s.gracePeriod),
