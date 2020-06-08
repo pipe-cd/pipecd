@@ -27,6 +27,10 @@ import (
 	"github.com/kapetaniosci/pipe/pkg/model"
 )
 
+const (
+	maxNumEventsPerRequest = 1000
+)
+
 type kubernetesReporter struct {
 	provider              config.PipedCloudProvider
 	appLister             applicationLister
@@ -53,6 +57,7 @@ func newKubernetesReporter(cp config.PipedCloudProvider, appLister applicationLi
 		flushInterval:         5 * time.Second,
 		snapshotFlushInterval: 10 * time.Minute,
 		logger:                logger,
+		snapshotVersions:      make(map[string]model.ApplicationLiveStateVersion),
 	}
 }
 
@@ -112,12 +117,41 @@ func (r *kubernetesReporter) flushSnapshots(ctx context.Context) error {
 			)
 			continue
 		}
+		r.snapshotVersions[app.Id] = state.Version
 		r.logger.Info(fmt.Sprintf("successfully reported application live state for application: %s", app.Id))
 	}
 	return nil
 }
 
 func (r *kubernetesReporter) flushEvents(ctx context.Context) error {
+	events := r.eventIterator.Next(maxNumEventsPerRequest)
+	if len(events) == 0 {
+		return nil
+	}
+
+	filteredEvents := make([]*model.KubernetesResourceEvent, 0, len(events))
+	for _, event := range events {
+		snapshotVersion, ok := r.snapshotVersions[event.ApplicationId]
+		if ok && event.SnapshotVersion.IsBefore(snapshotVersion) {
+			continue
+		}
+		filteredEvents = append(filteredEvents, &event)
+	}
+	if len(filteredEvents) == 0 {
+		return nil
+	}
+
+	req := &pipedservice.ReportApplicationLiveStateEventsRequest{
+		KubernetesEvents: filteredEvents,
+	}
+	if _, err := r.apiClient.ReportApplicationLiveStateEvents(ctx, req); err != nil {
+		r.logger.Error("failed to report application live state events",
+			zap.Error(err),
+		)
+		return err
+	}
+
+	r.logger.Info(fmt.Sprintf("successfully reported %d events about application live state", len(filteredEvents)))
 	return nil
 }
 

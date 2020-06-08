@@ -36,6 +36,7 @@ go_library(
     srcs = [
         "analysisprovider.go",
         "application.go",
+        "application_live_state.go",
         "cloudprovider.go",
         "command.go",
         "datastore.go",
