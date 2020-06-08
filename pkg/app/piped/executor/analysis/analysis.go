@@ -36,7 +36,9 @@ import (
 
 type Executor struct {
 	executor.Input
-	// The number of queries executed per provider.
+	// The number of queries executed per analysis.
+	// TODO: Store elapsed time instead of query count.
+	//   That's easier to restart.
 	queryCount map[string]int
 	mu         sync.RWMutex
 }
@@ -94,7 +96,7 @@ func (e *Executor) Execute(sig executor.StopSignal) model.StageStatus {
 	eg, ctx := errgroup.WithContext(ctx)
 	// Run analyses with metrics providers.
 	mf := metrics.NewFactory(e.Logger)
-	for _, m := range options.Metrics {
+	for i, m := range options.Metrics {
 		templateCfg, err = e.render(*templateCfg, m.Template.Args)
 		if err != nil {
 			e.LogPersister.AppendError(err.Error())
@@ -110,16 +112,17 @@ func (e *Executor) Execute(sig executor.StopSignal) model.StageStatus {
 			e.LogPersister.AppendError(err.Error())
 			continue
 		}
+		id := fmt.Sprintf("metrics-%d", i)
 		eg.Go(func() error {
 			runner := func(ctx context.Context) (bool, error) {
 				return provider.RunQuery(ctx, cfg.Query, cfg.Expected)
 			}
-			return e.runAnalysis(ctx, time.Duration(cfg.Interval), provider.Type(), runner, cfg.FailureLimit)
+			return e.runAnalysis(ctx, id, provider.Type(), time.Duration(cfg.Interval), runner, cfg.FailureLimit)
 		})
 	}
 	// Run analyses with logging providers.
 	lf := log.NewFactory(e.Logger)
-	for _, l := range options.Logs {
+	for i, l := range options.Logs {
 		templateCfg, err = e.render(*templateCfg, l.Template.Args)
 		if err != nil {
 			e.LogPersister.AppendError(err.Error())
@@ -135,15 +138,16 @@ func (e *Executor) Execute(sig executor.StopSignal) model.StageStatus {
 			e.LogPersister.AppendError(err.Error())
 			continue
 		}
+		id := fmt.Sprintf("log-%d", i)
 		eg.Go(func() error {
 			runner := func(ctx context.Context) (bool, error) {
 				return provider.RunQuery(ctx, cfg.Query)
 			}
-			return e.runAnalysis(ctx, time.Duration(cfg.Interval), provider.Type(), runner, cfg.FailureLimit)
+			return e.runAnalysis(ctx, id, provider.Type(), time.Duration(cfg.Interval), runner, cfg.FailureLimit)
 		})
 	}
 	// Run analyses with http providers.
-	for _, h := range options.Https {
+	for i, h := range options.Https {
 		templateCfg, err = e.render(*templateCfg, h.Template.Args)
 		if err != nil {
 			e.LogPersister.AppendError(err.Error())
@@ -155,16 +159,17 @@ func (e *Executor) Execute(sig executor.StopSignal) model.StageStatus {
 			continue
 		}
 		provider := httpprovider.NewProvider(time.Duration(cfg.Timeout))
+		id := fmt.Sprintf("http-%d", i)
 		eg.Go(func() error {
 			runner := func(ctx context.Context) (bool, error) {
 				return provider.Run(ctx, cfg)
 			}
-			return e.runAnalysis(ctx, time.Duration(cfg.Interval), provider.Type(), runner, cfg.FailureLimit)
+			return e.runAnalysis(ctx, id, provider.Type(), time.Duration(cfg.Interval), runner, cfg.FailureLimit)
 		})
 	}
 
 	if err := eg.Wait(); err != nil {
-		e.LogPersister.AppendError(fmt.Sprintf("An analysis failed: %s", err.Error()))
+		e.LogPersister.AppendError(fmt.Sprintf("Analysis failed: %s", err.Error()))
 		return model.StageStatus_STAGE_FAILURE
 	}
 
@@ -174,8 +179,8 @@ func (e *Executor) Execute(sig executor.StopSignal) model.StageStatus {
 
 // runAnalysis calls `runQuery` function at the given interval and reports back to failureCh
 // when the number of failures exceeds the failureLimit.
-func (e *Executor) runAnalysis(ctx context.Context, interval time.Duration, providerType string, runQuery func(context.Context) (bool, error), failureLimit int) error {
-	e.Logger.Info("start the analysis", zap.String("provider", providerType))
+func (e *Executor) runAnalysis(ctx context.Context, id, providerType string, interval time.Duration, runQuery func(context.Context) (bool, error), failureLimit int) error {
+	e.Logger.Info("start the analysis", zap.String("analysis-id", id), zap.String("provider", providerType))
 	ticker := time.NewTicker(interval)
 	defer ticker.Stop()
 	failureCount := 0
@@ -190,21 +195,19 @@ func (e *Executor) runAnalysis(ctx context.Context, interval time.Duration, prov
 				success = false
 			}
 			if success {
-				e.LogPersister.AppendSuccess(fmt.Sprintf("The result of the query for %s is a success.", providerType))
+				e.LogPersister.AppendSuccess(fmt.Sprintf("The result of the query for %s by analysis '%s' is a success.", providerType, id))
 			} else {
 				failureCount++
-				e.LogPersister.AppendError(fmt.Sprintf("The result of the query for %s is a failure. This analysis will fail if it fails %d more times.", providerType, failureLimit+1-failureCount))
+				e.LogPersister.AppendError(fmt.Sprintf("The result of the query for %s by analysis '%s' is a failure. This analysis will fail if it fails %d more times.", providerType, id, failureLimit+1-failureCount))
 			}
 
 			e.mu.Lock()
-			// TODO: Store query count per analysis instead of provider.
-			//   It cannot handle correctly the case that there are multiple analysis by the same provider.
-			e.queryCount[providerType]++
+			e.queryCount[id]++
 			e.mu.Unlock()
 			e.saveQueryCount(ctx)
 
 			if failureCount > failureLimit {
-				return fmt.Errorf("anslysis by %s failed because the failure number exceeded the failure limit %d", providerType, failureLimit)
+				return fmt.Errorf("anslysis '%s' by %s failed because the failure number exceeded the failure limit %d", id, providerType, failureLimit)
 			}
 		case <-ctx.Done():
 			return nil
