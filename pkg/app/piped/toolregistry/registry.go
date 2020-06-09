@@ -24,6 +24,7 @@ import (
 	"sync"
 
 	"go.uber.org/zap"
+	"golang.org/x/sync/singleflight"
 )
 
 // Registry provides functions to get path to the needed tools.
@@ -55,9 +56,10 @@ func InitDefaultRegistry(binDir string, logger *zap.Logger) error {
 	logger.Info("successfully loaded the pre-installed tools", zap.Any("tools", tools))
 
 	defaultRegistry = &registry{
-		binDir:   binDir,
-		versions: tools,
-		logger:   logger,
+		binDir:       binDir,
+		versions:     tools,
+		installGroup: &singleflight.Group{},
+		logger:       logger,
 	}
 
 	return nil
@@ -95,10 +97,11 @@ const (
 )
 
 type registry struct {
-	binDir   string
-	versions map[string]struct{}
-	mu       sync.RWMutex
-	logger   *zap.Logger
+	binDir       string
+	versions     map[string]struct{}
+	mu           sync.RWMutex
+	installGroup *singleflight.Group
+	logger       *zap.Logger
 }
 
 func (r *registry) Kubectl(ctx context.Context, version string) (string, bool, error) {
@@ -115,8 +118,10 @@ func (r *registry) Kubectl(ctx context.Context, version string) (string, bool, e
 		return path, false, nil
 	}
 
-	// TODO: Use singleflight to avoid concurrent installing.
-	if err := r.installKubectl(ctx, version); err != nil {
+	_, err, _ := r.installGroup.Do(name, func() (interface{}, error) {
+		return nil, r.installKubectl(ctx, version)
+	})
+	if err != nil {
 		return "", true, err
 	}
 
@@ -141,7 +146,10 @@ func (r *registry) Kustomize(ctx context.Context, version string) (string, bool,
 		return path, false, nil
 	}
 
-	if err := r.installKustomize(ctx, version); err != nil {
+	_, err, _ := r.installGroup.Do(name, func() (interface{}, error) {
+		return nil, r.installKustomize(ctx, version)
+	})
+	if err != nil {
 		return "", true, err
 	}
 
@@ -166,7 +174,10 @@ func (r *registry) Helm(ctx context.Context, version string) (string, bool, erro
 		return path, false, nil
 	}
 
-	if err := r.installHelm(ctx, version); err != nil {
+	_, err, _ := r.installGroup.Do(name, func() (interface{}, error) {
+		return nil, r.installHelm(ctx, version)
+	})
+	if err != nil {
 		return "", true, err
 	}
 
