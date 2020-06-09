@@ -19,7 +19,6 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
-	"sync"
 	"text/template"
 	"time"
 
@@ -36,11 +35,9 @@ import (
 
 type Executor struct {
 	executor.Input
-	// The number of queries executed per analysis.
-	// TODO: Store elapsed time instead of query count.
-	//   That's easier to restart.
-	queryCount map[string]int
-	mu         sync.RWMutex
+
+	startTime             time.Time
+	previouslyElapsedTime time.Duration
 }
 
 type registerer interface {
@@ -70,18 +67,13 @@ type templateArgs struct {
 // Execute runs multiple analyses that execute queries against analysis providers at regular intervals.
 // An executor runs multiple analyses, an analysis may run a query multiple times.
 func (e *Executor) Execute(sig executor.StopSignal) model.StageStatus {
+	e.startTime = time.Now()
 	ctx := sig.Context()
-	e.setQueryCount()
-	defer e.saveQueryCount(ctx)
-
 	options := e.StageConfig.AnalysisStageOptions
 	if options == nil {
 		e.Logger.Error("missing analysis configuration for ANALYSIS stage")
 		return model.StageStatus_STAGE_FAILURE
 	}
-
-	ctx, cancel := context.WithTimeout(sig.Context(), time.Duration(options.Duration))
-	defer cancel()
 
 	templateCfg, ok, err := config.LoadAnalysisTemplate(e.RepoDir)
 	if err != nil {
@@ -93,10 +85,23 @@ func (e *Executor) Execute(sig executor.StopSignal) model.StageStatus {
 		templateCfg = &config.AnalysisTemplateSpec{}
 	}
 
+	timeout := time.Duration(options.Duration)
+	e.previouslyElapsedTime = e.retrievePreviouslyElapsedTime()
+	if e.previouslyElapsedTime > 0 {
+		// Restart from the middle.
+		timeout -= e.previouslyElapsedTime
+	}
+	defer e.saveElapsedTime(ctx)
+
+	ctx, cancel := context.WithTimeout(sig.Context(), timeout)
+	defer cancel()
+
 	eg, ctx := errgroup.WithContext(ctx)
+
 	// Run analyses with metrics providers.
 	mf := metrics.NewFactory(e.Logger)
 	for i, m := range options.Metrics {
+		// TODO: Encapsulate implementation of analysis as an Analyzer
 		templateCfg, err = e.render(*templateCfg, m.Template.Args)
 		if err != nil {
 			e.LogPersister.AppendError(err.Error())
@@ -201,11 +206,6 @@ func (e *Executor) runAnalysis(ctx context.Context, id, providerType string, int
 				e.LogPersister.AppendError(fmt.Sprintf("The result of the query for %s by analysis '%s' is a failure. This analysis will fail if it fails %d more times.", providerType, id, failureLimit+1-failureCount))
 			}
 
-			e.mu.Lock()
-			e.queryCount[id]++
-			e.mu.Unlock()
-			e.saveQueryCount(ctx)
-
 			if failureCount > failureLimit {
 				return fmt.Errorf("anslysis '%s' by %s failed because the failure number exceeded the failure limit %d", id, providerType, failureLimit)
 			}
@@ -215,50 +215,37 @@ func (e *Executor) runAnalysis(ctx context.Context, id, providerType string, int
 	}
 }
 
-const queryCountKey = "qc"
+const elapsedTimeKey = "elapsedTime"
 
-// saveQueryCount stores metadata into metadata persister.
+// saveElapsedTime stores the elapsed time of analysis stage into metadata persister.
 // The analysis stage can be restarted from the middle even if it ends unexpectedly,
 // that's why count should be stored.
-func (e *Executor) saveQueryCount(ctx context.Context) {
-	// Copy to local variable to avoid to lock in a long time.
-	e.mu.RLock()
-	qc := make(map[string]int, len(e.queryCount))
-	for k, v := range e.queryCount {
-		qc[k] = v
-	}
-	e.mu.RUnlock()
-
-	data, err := json.Marshal(qc)
-	if err != nil {
-		e.Logger.Error("failed to marshal query count before storing as stage metadata", zap.Error(err))
-		return
-	}
+func (e *Executor) saveElapsedTime(ctx context.Context) {
+	elapsedTime := time.Since(e.startTime) + e.previouslyElapsedTime
 	metadata := map[string]string{
-		queryCountKey: string(data),
+		elapsedTimeKey: elapsedTime.String(),
 	}
-
 	if err := e.MetadataStore.SetStageMetadata(ctx, e.Stage.Id, metadata); err != nil {
 		e.Logger.Error("failed to store metadata", zap.Error(err))
 	}
 }
 
-// setQueryCount decodes metadata and populates query count to own field.
-func (e *Executor) setQueryCount() {
+// retrievePreviouslyElapsedTime sets the elapsed time of analysis stage by decoding metadata.
+func (e *Executor) retrievePreviouslyElapsedTime() time.Duration {
 	metadata, ok := e.MetadataStore.GetStageMetadata(e.Stage.Id)
 	if !ok {
-		e.queryCount = make(map[string]int)
-		return
+		return 0
 	}
-	qc, ok := metadata[queryCountKey]
+	s, ok := metadata[elapsedTimeKey]
 	if !ok {
-		e.queryCount = make(map[string]int)
-		return
+		return 0
 	}
-	if err := json.Unmarshal([]byte(qc), &e.queryCount); err != nil {
-		e.Logger.Error("failed to get stage metadata", zap.Error(err))
-		e.queryCount = make(map[string]int)
+	et, err := time.ParseDuration(s)
+	if err != nil {
+		e.Logger.Error("unexpected elapsed time is stored", zap.String("stored-value", s), zap.Error(err))
+		return 0
 	}
+	return et
 }
 
 func (e *Executor) newMetricsProvider(providerName string, factory *metrics.Factory) (metrics.Provider, error) {
