@@ -25,6 +25,12 @@ import (
 	"github.com/kapetaniosci/pipe/pkg/model"
 )
 
+const (
+	eventCacheSize        = 900
+	eventCacheMaxSize     = 1000
+	eventCacheCleanOffset = 50
+)
+
 type store struct {
 	apps map[string]*appNodes
 	// The map with the key is "resource's uid" and the value is "appResource".
@@ -101,14 +107,18 @@ func (s *store) onAddResource(obj *unstructured.Unstructured) {
 				appID:         appID,
 				managingNodes: make(map[string]node),
 				dependedNodes: make(map[string]node),
-				updatedAt:     now,
+				version: model.ApplicationLiveStateVersion{
+					Timestamp: now.Unix(),
+				},
 			}
 			s.apps[appID] = app
 		}
 		s.mu.Unlock()
 
 		// Append the resource to the application's managingNodes.
-		app.addManagingResource(uid, key, obj, now)
+		if event, ok := app.addManagingResource(uid, key, obj, now); ok {
+			s.addEvent(event)
+		}
 
 		// And update the resources.
 		s.mu.Lock()
@@ -128,7 +138,9 @@ func (s *store) onAddResource(obj *unstructured.Unstructured) {
 		app, ok := s.apps[appID]
 		s.mu.RUnlock()
 		if ok {
-			app.addDependedResource(uid, key, obj, now)
+			if event, ok := app.addDependedResource(uid, key, obj, now); ok {
+				s.addEvent(event)
+			}
 		}
 	}
 
@@ -162,7 +174,9 @@ func (s *store) onDeleteResource(obj *unstructured.Unstructured) {
 		app, ok := s.apps[appID]
 		s.mu.RUnlock()
 		if ok {
-			app.deleteManagingResource(uid, key, now)
+			if event, ok := app.deleteManagingResource(uid, key, now); ok {
+				s.addEvent(event)
+			}
 		}
 		return
 	}
@@ -177,7 +191,9 @@ func (s *store) onDeleteResource(obj *unstructured.Unstructured) {
 	app, ok := s.apps[appID]
 	s.mu.RUnlock()
 	if ok {
-		app.deleteDependedResource(uid, key, now)
+		if event, ok := app.deleteDependedResource(uid, key, now); ok {
+			s.addEvent(event)
+		}
 	}
 
 	s.mu.Lock()
@@ -226,8 +242,79 @@ func (s *store) findAppIDByOwners(owners []metav1.OwnerReference) string {
 	return ""
 }
 
+func (s *store) getAppLiveState(appID string) AppState {
+	nodes := s.getAppNodes(appID)
+	resources := make([]*model.KubernetesResourceState, 0, len(nodes))
+	for _, n := range nodes {
+		resources = append(resources, &n.state)
+	}
+	state := AppState{
+		Resources: resources,
+	}
+	return state
+}
+
+func (s *store) addEvent(event model.KubernetesResourceStateEvent) {
+	s.eventMu.Lock()
+	defer s.eventMu.Unlock()
+
+	s.events = append(s.events, event)
+	if len(s.events) < eventCacheMaxSize {
+		return
+	}
+
+	num := len(s.events) - eventCacheSize
+	s.removeOldEvents(num)
+}
+
 func (s *store) nextEvents(iteratorID, maxNum int) []model.KubernetesResourceStateEvent {
-	return nil
+	s.eventMu.Lock()
+	defer s.eventMu.Unlock()
+
+	var (
+		from   = s.iterators[iteratorID]
+		to     = len(s.events)
+		length = to - from
+	)
+	if length <= 0 {
+		return nil
+	}
+	if length > maxNum {
+		to = from + maxNum - 1
+	}
+
+	events := s.events[from:to]
+	s.iterators[iteratorID] = to
+
+	s.cleanStaleEvents()
+	return events
+}
+
+func (s *store) cleanStaleEvents() {
+	var min int
+	for _, v := range s.iterators {
+		if v < min {
+			min = v
+		}
+	}
+	if min < eventCacheCleanOffset {
+		return
+	}
+	s.removeOldEvents(min)
+}
+
+func (s *store) removeOldEvents(num int) {
+	if len(s.events) < num {
+		return
+	}
+	s.events = s.events[num-1:]
+	for k := range s.iterators {
+		newIndex := s.iterators[k] - num
+		if newIndex < 0 {
+			newIndex = 0
+		}
+		s.iterators[k] = newIndex
+	}
 }
 
 func (s *store) newEventIterator() EventIterator {
@@ -236,18 +323,8 @@ func (s *store) newEventIterator() EventIterator {
 	s.nextIteratorID++
 	s.eventMu.Unlock()
 
-	return EventIterator{id: id}
-}
-
-func (s *store) getAppLiveState(appID string) AppState {
-	nodes := s.getAppNodes(appID)
-	resources := make([]*model.KubernetesResourceState, 0, len(nodes))
-	for _, n := range nodes {
-		resources = append(resources, nodeToResource(n))
+	return EventIterator{
+		id:    id,
+		store: s,
 	}
-
-	state := AppState{
-		Resources: resources,
-	}
-	return state
 }

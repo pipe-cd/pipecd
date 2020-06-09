@@ -14,6 +14,7 @@ go_library(
         "//pkg/app/piped/cloudprovider/kubernetes:go_default_library",
         "//pkg/config:go_default_library",
         "//pkg/model:go_default_library",
+        "@com_github_google_uuid//:go_default_library",
         "@io_k8s_apimachinery//pkg/apis/meta/v1:go_default_library",
         "@io_k8s_apimachinery//pkg/apis/meta/v1/unstructured:go_default_library",
         "@io_k8s_apimachinery//pkg/runtime/schema:go_default_library",

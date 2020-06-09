@@ -23,3 +23,38 @@ func (v ApplicationLiveStateVersion) IsBefore(a ApplicationLiveStateVersion) boo
 	}
 	return v.Index < a.Index
 }
+
+func (s KubernetesResourceState) HasDiff(a KubernetesResourceState) bool {
+	if s.ApiVersion != a.ApiVersion {
+		return true
+	}
+	if s.Namespace != a.Namespace {
+		return true
+	}
+	if s.HealthStatus != a.HealthStatus {
+		return true
+	}
+	if s.HealthDescription != a.HealthDescription {
+		return true
+	}
+	if len(s.OwnerIds) != len(a.OwnerIds) {
+		return true
+	}
+	if len(s.ParentIds) != len(a.ParentIds) {
+		return true
+	}
+
+	for i := range s.OwnerIds {
+		if s.OwnerIds[i] != a.OwnerIds[i] {
+			return false
+		}
+	}
+
+	for i := range s.ParentIds {
+		if s.ParentIds[i] != a.ParentIds[i] {
+			return false
+		}
+	}
+
+	return false
+}

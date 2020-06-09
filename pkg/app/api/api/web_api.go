@@ -384,7 +384,7 @@ func (a *WebAPI) GetApplicationLiveState(ctx context.Context, req *webservice.Ge
 						OwnerIds: []string{
 							"660ecdfd-307b-4e47-becd-1fde4e0c1e7a",
 						},
-						ParrentIds: []string{
+						ParentIds: []string{
 							"660ecdfd-307b-4e47-becd-1fde4e0c1e7a",
 						},
 						Name:       "demo-application-9504e8601a",
@@ -399,7 +399,7 @@ func (a *WebAPI) GetApplicationLiveState(ctx context.Context, req *webservice.Ge
 						OwnerIds: []string{
 							"660ecdfd-307b-4e47-becd-1fde4e0c1e7a",
 						},
-						ParrentIds: []string{
+						ParentIds: []string{
 							"8621f186-6641-4f7a-9be4-5983eb647f8d",
 						},
 						Name:       "demo-application-9504e8601a-7vrdw",
@@ -414,7 +414,7 @@ func (a *WebAPI) GetApplicationLiveState(ctx context.Context, req *webservice.Ge
 						OwnerIds: []string{
 							"660ecdfd-307b-4e47-becd-1fde4e0c1e7a",
 						},
-						ParrentIds: []string{
+						ParentIds: []string{
 							"8621f186-6641-4f7a-9be4-5983eb647f8d",
 						},
 						Name:       "demo-application-9504e8601a-vlgd5",
@@ -429,7 +429,7 @@ func (a *WebAPI) GetApplicationLiveState(ctx context.Context, req *webservice.Ge
 						OwnerIds: []string{
 							"660ecdfd-307b-4e47-becd-1fde4e0c1e7a",
 						},
-						ParrentIds: []string{
+						ParentIds: []string{
 							"8621f186-6641-4f7a-9be4-5983eb647f8d",
 						},
 						Name:       "demo-application-9504e8601a-tmwp5",
