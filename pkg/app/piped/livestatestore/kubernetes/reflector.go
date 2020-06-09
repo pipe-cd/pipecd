@@ -33,13 +33,17 @@ import (
 )
 
 var (
-	// At this version, we only care about Ingress, Service, Deployment and Pod,
-	// but in the next version we will expand to watch all resource kinds.
+	// This is the default whitelist of resources that should be watched.
+	// User can add/remove other resources to be watched in piped config at cloud provider part.
 	groupWhitelist = map[string]struct{}{
-		"":                  {},
-		"apps":              {},
-		"extensions":        {},
-		"networking.k8s.io": {},
+		"":                          {},
+		"apps":                      {},
+		"extensions":                {},
+		"storage.k8s.io":            {},
+		"autoscaling/v1":            {},
+		"networking.k8s.io":         {},
+		"apiextensions.k8s.io":      {},
+		"rbac.authorization.k8s.io": {},
 	}
 	versionWhitelist = map[string]struct{}{
 		"v1":      {},
@@ -47,15 +51,27 @@ var (
 		"v1beta2": {},
 	}
 	kindWhitelist = map[string]struct{}{
-		"Ingress":     {},
-		"Service":     {},
-		"Deployment":  {},
-		"DaemonSet":   {},
-		"StatefulSet": {},
-		"ReplicaSet":  {},
-		"Pod":         {},
-		"ConfigMap":   {},
-		"Secret":      {},
+		"Service":                  {},
+		"Endpoints":                {},
+		"Deployment":               {},
+		"DaemonSet":                {},
+		"StatefulSet":              {},
+		"ReplicationController":    {},
+		"ReplicaSet":               {},
+		"Pod":                      {},
+		"ConfigMap":                {},
+		"Secret":                   {},
+		"Ingress":                  {},
+		"NetworkPolicy":            {},
+		"StorageClass":             {},
+		"PersistentVolume":         {},
+		"PersistentVolumeClaim":    {},
+		"HorizontalPodAutoscaler":  {},
+		"Role":                     {},
+		"RoleBinding":              {},
+		"ClusterRole":              {},
+		"ClusterRoleBinding":       {},
+		"CustomResourceDefinition": {},
 	}
 	ignoreResourceKeys = map[string]struct{}{
 		"v1:Service:default:kubernetes":               {},
@@ -81,10 +97,19 @@ var (
 		"extensions/v1beta1:Deployment:kube-system:heapster-gke":                             {},
 		"extensions/v1beta1:Deployment:kube-system:stackdriver-metadata-agent-cluster-level": {},
 
+		"v1:Endpoints:kube-system:kube-controller-manager":        {},
+		"v1:Endpoints:kube-system:kube-scheduler":                 {},
+		"v1:Endpoints:kube-system:vpa-recommender":                {},
+		"v1:Endpoints:kube-system:gcp-controller-manager":         {},
+		"v1:Endpoints:kube-system:managed-certificate-controller": {},
+
 		"v1:ConfigMap:kube-system:cluster-kubestore":         {},
 		"v1:ConfigMap:kube-system:ingress-gce-lock":          {},
 		"v1:ConfigMap:kube-system:gke-common-webhook-lock":   {},
 		"v1:ConfigMap:kube-system:cluster-autoscaler-status": {},
+
+		"rbac.authorization.k8s.io/v1:ClusterRole::system:managed-certificate-controller":        {},
+		"rbac.authorization.k8s.io/v1:ClusterRoleBinding::system:managed-certificate-controller": {},
 	}
 )
 
@@ -130,6 +155,9 @@ func (r *reflector) start(ctx context.Context) error {
 			if _, ok := versionWhitelist[gv.Version]; !ok {
 				continue
 			}
+			if !isSupportedList(r) || !isSupportedWatch(r) {
+				continue
+			}
 			target := gv.WithResource(r.Name)
 			targetResources = append(targetResources, target)
 		}
@@ -144,6 +172,8 @@ func (r *reflector) start(ctx context.Context) error {
 	}
 	factory := dynamicinformer.NewFilteredDynamicSharedInformerFactory(dynamicClient, 30*time.Minute, metav1.NamespaceAll, nil)
 	stopCh := make(chan struct{})
+
+	r.logger.Info(fmt.Sprintf("start running %d resource informers", len(targetResources)))
 
 	for _, tr := range targetResources {
 		di := factory.ForResource(tr).Informer()
@@ -194,4 +224,22 @@ func (r *reflector) onObjectDelete(obj interface{}) {
 	}
 	r.logger.Info("received delete event", zap.Stringer("key", key))
 	r.onDelete(u)
+}
+
+func isSupportedWatch(r metav1.APIResource) bool {
+	for _, v := range r.Verbs {
+		if v == "watch" {
+			return true
+		}
+	}
+	return false
+}
+
+func isSupportedList(r metav1.APIResource) bool {
+	for _, v := range r.Verbs {
+		if v == "list" {
+			return true
+		}
+	}
+	return false
 }
