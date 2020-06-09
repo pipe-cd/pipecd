@@ -196,9 +196,18 @@ func (p *PipedCloudProvider) UnmarshalJSON(data []byte) error {
 }
 
 type CloudProviderKubernetesConfig struct {
-	//AllowNamespaces []string `json:"allowNamespaces"`
-	MasterURL      string `json:"masterURL"`
-	KubeConfigPath string `json:"kubeConfigPath"`
+	WatchingResources       []KubernetesResourceMatcher `json:"watchingResources"`
+	IgnoreWatchingResources []KubernetesResourceMatcher `json:"ignoreWatchingResources"`
+	MasterURL               string                      `json:"masterURL"`
+	KubeConfigPath          string                      `json:"kubeConfigPath"`
+}
+
+type KubernetesResourceMatcher struct {
+	// APIVersion of kubernetes resource.
+	APIVersion string `json:"apiVersion"`
+	// Kind name of kubernetes resource.
+	// Empty means all kinds are matching.
+	Kind string `json:"kind"`
 }
 
 type CloudProviderTerraformConfig struct {

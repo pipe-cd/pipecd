@@ -20,6 +20,14 @@ spec:
   cloudProviders:
     - name: kubernetes-default
       type: KUBERNETES
+      watchingResources:
+        - apiVersion: kapetanios.dev/v1beta1
+        - apiVersion: networking.gke.io/v1beta1
+          kind: ManagedCertificate
+      ignoreWatchingResources:
+        - apiVersion: v1
+          kind: Endpoints
+
     - name: terraform-gcp
       type: TERRAFORM
       config:
@@ -27,11 +35,13 @@ spec:
           project: gcp-project
           region: us-central1
           credentialsFile: /etc/piped-secret/gcp-service-account.json
+
     - name: terraform-aws
       type: TERRAFORM
       config:
         aws:
           region: us-east-1
+
     - name: cloudrun
       type: CLOUDRUN
       config:
@@ -39,6 +49,7 @@ spec:
         region: us-east-1
         platform: managed
         credentialsFile: /etc/piped-secret/gcp-service-account.json
+
     - name: lambda
       type: LAMBDA
       config:
