@@ -8,6 +8,9 @@ import { store } from "./store";
 import { Pages as App } from "./pages/index";
 import { Router } from "react-router-dom";
 import { history } from "./history";
+import { setupDayjs } from "./utils/setup-dayjs";
+
+setupDayjs();
 
 render(
   <Provider store={store}>

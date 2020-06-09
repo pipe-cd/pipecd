@@ -4,6 +4,7 @@ import { LabeledText } from "./labeled-text";
 import { ApplicationSyncStatus } from "pipe/pkg/app/web/model/application_pb";
 import { SyncStatusIcon } from "./sync-status-icon";
 import { APPLICATION_SYNC_STATUS_TEXT } from "../constants/application-sync-status-text";
+import dayjs from "dayjs";
 
 const useStyles = makeStyles((theme) => ({
   container: {
@@ -72,7 +73,7 @@ export const ApplicationDetail: FC<Props> = ({
             </Typography>
           </Box>
           <Typography className={classes.env} variant="body1">
-            {deployedAt}
+            {dayjs(deployedAt).fromNow()}
           </Typography>
         </Box>
         <Box flex={1}>
