@@ -32,6 +32,7 @@ import (
 	"github.com/kapetaniosci/pipe/pkg/app/piped/apistore/commandstore"
 	"github.com/kapetaniosci/pipe/pkg/app/piped/apistore/deploymentstore"
 	"github.com/kapetaniosci/pipe/pkg/app/piped/controller"
+	"github.com/kapetaniosci/pipe/pkg/app/piped/driffdetector"
 	"github.com/kapetaniosci/pipe/pkg/app/piped/livestatereporter"
 	"github.com/kapetaniosci/pipe/pkg/app/piped/livestatestore"
 	"github.com/kapetaniosci/pipe/pkg/app/piped/toolregistry"
@@ -218,6 +219,14 @@ func (p *piped) run(ctx context.Context, t cli.Telemetry) error {
 		r := livestatereporter.NewReporter(applicationLister, liveStateGetter, apiClient, cfg, t.Logger)
 		group.Go(func() error {
 			return r.Run(ctx)
+		})
+	}
+
+	// Start running application application driff detector.
+	{
+		d := driffdetector.NewDetector(applicationLister, liveStateGetter, apiClient, cfg, t.Logger)
+		group.Go(func() error {
+			return d.Run(ctx)
 		})
 	}
 

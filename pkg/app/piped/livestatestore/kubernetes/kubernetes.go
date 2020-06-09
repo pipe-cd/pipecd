@@ -42,7 +42,9 @@ type Store struct {
 type Getter interface {
 	GetKubernetesAppLiveState(appID string) AppState
 	NewEventIterator() EventIterator
+
 	WatchingResourceKinds() []provider.APIVersionKind
+	GetAppLiveManifests(appID string) []provider.Manifest
 }
 
 type AppState struct {
@@ -135,4 +137,8 @@ func (s *Store) NewEventIterator() EventIterator {
 
 func (s *Store) WatchingResourceKinds() []provider.APIVersionKind {
 	return s.watchingResourceKinds
+}
+
+func (s *Store) GetAppLiveManifests(appID string) []provider.Manifest {
+	return s.store.GetAppLiveManifests(appID)
 }

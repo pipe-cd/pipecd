@@ -33,6 +33,13 @@ type Manifest struct {
 	u   *unstructured.Unstructured
 }
 
+func MakeManifest(key ResourceKey, u *unstructured.Unstructured) Manifest {
+	return Manifest{
+		Key: key,
+		u:   u,
+	}
+}
+
 func (m Manifest) Duplicate(name string) Manifest {
 	u := m.u.DeepCopy()
 	u.SetName(name)

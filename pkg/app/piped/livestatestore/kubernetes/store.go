@@ -254,6 +254,22 @@ func (s *store) getAppLiveState(appID string) AppState {
 	return state
 }
 
+func (s *store) GetAppLiveManifests(appID string) []provider.Manifest {
+	s.mu.RLock()
+	app, ok := s.apps[appID]
+	s.mu.RUnlock()
+
+	if !ok {
+		return nil
+	}
+	nodes := app.getManagingNodes()
+	manifests := make([]provider.Manifest, 0, len(nodes))
+	for i := range nodes {
+		manifests = append(manifests, nodes[i].Manifest())
+	}
+	return manifests
+}
+
 func (s *store) addEvent(event model.KubernetesResourceStateEvent) {
 	s.eventMu.Lock()
 	defer s.eventMu.Unlock()

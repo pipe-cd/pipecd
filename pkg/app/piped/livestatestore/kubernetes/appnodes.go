@@ -42,6 +42,10 @@ type node struct {
 	state        model.KubernetesResourceState
 }
 
+func (n node) Manifest() provider.Manifest {
+	return provider.MakeManifest(n.key, n.unstructured)
+}
+
 func (a *appNodes) addManagingResource(uid string, key provider.ResourceKey, obj *unstructured.Unstructured, now time.Time) (model.KubernetesResourceStateEvent, bool) {
 	// Some resources in Kubernetes (e.g. Deployment) are producing multiple keys
 	// for the same uid. So we use the configured original API version to ignore them.
