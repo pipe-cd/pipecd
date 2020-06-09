@@ -5,17 +5,17 @@ import { StatusIcon } from "./deployment-status-icon";
 import { DEPLOYMENT_STATE_TEXT } from "../constants/deployment-status-text";
 import { LabeledText } from "./labeled-text";
 
-const useStyles = makeStyles(theme => ({
+const useStyles = makeStyles((theme) => ({
   container: {
-    padding: theme.spacing(2)
+    padding: theme.spacing(2),
   },
   textMargin: {
-    marginLeft: theme.spacing(1)
+    marginLeft: theme.spacing(1),
   },
   env: {
     color: theme.palette.text.secondary,
-    marginLeft: theme.spacing(1)
-  }
+    marginLeft: theme.spacing(1),
+  },
 }));
 
 interface Props {
@@ -33,7 +33,7 @@ export const DeploymentDetail: FC<Props> = ({
   env,
   status,
   description,
-  commit
+  commit,
 }) => {
   const classes = useStyles();
   return (
