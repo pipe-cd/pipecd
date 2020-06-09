@@ -1,6 +1,6 @@
 workspace(
     name = "pipe",
-    managed_directories = {"@npm": ["node_modules"]},
+    managed_directories = {"@npm": ["pkg/app/web/node_modules"]},
 )
 
 load(
