@@ -1,6 +1,7 @@
 load("@npm//webpack-cli:index.bzl", webpack = "webpack_cli")
 load("@npm//typescript:index.bzl", "tsc")
 load("@npm_bazel_labs//:index.bzl", "ts_proto_library")
+load(":jest.bzl", "jest_test")
 
 ts_proto_library(
     name = "api_proto",
@@ -99,4 +100,20 @@ webpack(
     ],
     output_dir = True,
     visibility = ["//visibility:public"],
+)
+
+jest_test(
+    name = "test",
+    srcs = glob([
+        "src/**/*.ts",
+        "src/**/*.snap",
+    ]),
+    jest_config = ":jest.config.js",
+    deps = [
+        ":file-transformer.js",
+        ":jest.after-env.ts",
+        ":jest.setup.js",
+        ":tsconfig.json",
+        "@npm//:node_modules",
+    ],
 )
