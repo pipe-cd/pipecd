@@ -187,15 +187,3 @@ func (a *appNodes) updateVersion(now time.Time) {
 	a.version.Timestamp = now.Unix()
 	a.version.Index = 0
 }
-
-func makeKubernetesResourceState(uid string, key provider.ResourceKey, obj *unstructured.Unstructured, now time.Time) model.KubernetesResourceState {
-	// TODO: Fill all state fields.
-	return model.KubernetesResourceState{
-		Id:         uid,
-		Name:       key.Name,
-		ApiVersion: key.APIVersion,
-		Kind:       key.Kind,
-		CreatedAt:  now.Unix(),
-		UpdatedAt:  now.Unix(),
-	}
-}
