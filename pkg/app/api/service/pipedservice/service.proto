@@ -44,8 +44,8 @@ service PipedService {
     // Piped uses this RPC to fetch and sync the application configuration into its local database.
     rpc ListApplications(ListApplicationsRequest) returns (ListApplicationsResponse) {}
 
-    // UpdateApplicationSyncStatus is used to update the sync status of an application.
-    rpc UpdateApplicationSyncStatus(UpdateApplicationSyncStatusRequest) returns (UpdateApplicationSyncStatusResponse) {}
+    // ReportApplicationSyncState is used to update the sync status of an application.
+    rpc ReportApplicationSyncState(ReportApplicationSyncStateRequest) returns (ReportApplicationSyncStateResponse) {}
 
     // UpdateApplicationVersion is used to update the basic information about
     // the most recent successful deployment of a specific applicaiton.
@@ -151,13 +151,12 @@ message ListApplicationsResponse {
     repeated pipe.model.Application applications = 1;
 }
 
-message UpdateApplicationSyncStatusRequest {
+message ReportApplicationSyncStateRequest {
     string application_id = 1 [(validate.rules).string.min_len = 1];
-    pipe.model.ApplicationSyncStatus sync_status = 2 [(validate.rules).enum.defined_only = true];
-    string sync_description = 3;
+    pipe.model.ApplicationSyncState state = 2 [(validate.rules).message.required = true];
 }
 
-message UpdateApplicationSyncStatusResponse {
+message ReportApplicationSyncStateResponse {
 }
 
 message UpdateApplicationVersionRequest {

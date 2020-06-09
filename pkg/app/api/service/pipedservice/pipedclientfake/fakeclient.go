@@ -129,10 +129,10 @@ func (c *fakeClient) ListApplications(ctx context.Context, req *pipedservice.Lis
 	}, nil
 }
 
-// UpdateApplicationSyncStatus is used to update the sync status of an application.
-func (c *fakeClient) UpdateApplicationSyncStatus(ctx context.Context, req *pipedservice.UpdateApplicationSyncStatusRequest, opts ...grpc.CallOption) (*pipedservice.UpdateApplicationSyncStatusResponse, error) {
-	c.logger.Info("fake client received UpdateApplicationSyncStatus rpc", zap.Any("request", req))
-	return &pipedservice.UpdateApplicationSyncStatusResponse{}, nil
+// ReportApplicationSyncState is used to update the sync status of an application.
+func (c *fakeClient) ReportApplicationSyncState(ctx context.Context, req *pipedservice.ReportApplicationSyncStateRequest, opts ...grpc.CallOption) (*pipedservice.ReportApplicationSyncStateResponse, error) {
+	c.logger.Info("fake client received ReportApplicationSyncState rpc", zap.Any("request", req))
+	return &pipedservice.ReportApplicationSyncStateResponse{}, nil
 }
 
 // UpdateApplicationVersion is used to update the basic information about

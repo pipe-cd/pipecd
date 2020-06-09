@@ -16,3 +16,20 @@
 // that continuously checks configuration driff between the current live state
 // and the state defined at the latest commit of all applications.
 package driffdetector
+
+import (
+	"context"
+
+	"google.golang.org/grpc"
+
+	"github.com/kapetaniosci/pipe/pkg/app/api/service/pipedservice"
+	"github.com/kapetaniosci/pipe/pkg/model"
+)
+
+type applicationLister interface {
+	List() []*model.Application
+}
+
+type apiClient interface {
+	ReportApplicationSyncState(ctx context.Context, req *pipedservice.ReportApplicationSyncStateRequest, opts ...grpc.CallOption) (*pipedservice.ReportApplicationSyncStateResponse, error)
+}

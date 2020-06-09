@@ -104,8 +104,8 @@ func (a *PipedAPI) ListApplications(ctx context.Context, req *pipedservice.ListA
 	}, nil
 }
 
-// UpdateApplicationSyncStatus is used to update the sync status of an application.
-func (a *PipedAPI) UpdateApplicationSyncStatus(ctx context.Context, req *pipedservice.UpdateApplicationSyncStatusRequest) (*pipedservice.UpdateApplicationSyncStatusResponse, error) {
+// ReportApplicationSyncState is used to update the sync status of an application.
+func (a *PipedAPI) ReportApplicationSyncState(ctx context.Context, req *pipedservice.ReportApplicationSyncStateRequest) (*pipedservice.ReportApplicationSyncStateResponse, error) {
 	return nil, status.Error(codes.Unimplemented, "")
 }
 
