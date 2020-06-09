@@ -2,7 +2,10 @@ load("@io_bazel_rules_go//go:def.bzl", "go_library")
 
 go_library(
     name = "go_default_library",
-    srcs = ["analysis.go"],
+    srcs = [
+        "analysis.go",
+        "analyzer.go",
+    ],
     importpath = "github.com/kapetaniosci/pipe/pkg/app/piped/executor/analysis",
     visibility = ["//visibility:public"],
     deps = [
