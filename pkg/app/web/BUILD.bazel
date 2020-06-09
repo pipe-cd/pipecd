@@ -104,6 +104,7 @@ webpack(
 
 jest_test(
     name = "test",
+    size = "small",
     srcs = glob([
         "src/**/*.ts",
         "src/**/*.snap",
