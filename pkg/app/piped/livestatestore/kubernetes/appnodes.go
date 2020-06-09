@@ -55,7 +55,7 @@ func (a *appNodes) addManagingResource(uid string, key provider.ResourceKey, obj
 		appID:        a.appID,
 		key:          key,
 		unstructured: obj,
-		state:        makeKubernetesResourceState(uid, key, obj, now),
+		state:        provider.MakeKubernetesResourceState(uid, key, obj, now),
 	}
 
 	a.mu.Lock()
@@ -109,7 +109,7 @@ func (a *appNodes) addDependedResource(uid string, key provider.ResourceKey, obj
 		appID:        a.appID,
 		key:          key,
 		unstructured: obj,
-		state:        makeKubernetesResourceState(uid, key, obj, now),
+		state:        provider.MakeKubernetesResourceState(uid, key, obj, now),
 	}
 
 	a.mu.Lock()

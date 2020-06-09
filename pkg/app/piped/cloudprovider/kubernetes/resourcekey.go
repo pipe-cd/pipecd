@@ -57,6 +57,16 @@ var builtInApiVersions = map[string]struct{}{
 	"v1":                                   {},
 }
 
+const (
+	KindDeployment  = "Deployment"
+	KindStatefulSet = "StatefulSet"
+	KindDaemonSet   = "DaemonSet"
+	KindReplicaSet  = "ReplicaSet"
+	KindPod         = "Pod"
+	KindConfigMap   = "ConfigMap"
+	KindSecret      = "Secret"
+)
+
 type ResourceKey struct {
 	APIVersion string
 	Kind       string
@@ -75,36 +85,31 @@ func (k ResourceKey) IsZero() bool {
 		k.Name == ""
 }
 
-func (k ResourceKey) IsKubernetesBuiltInResource() bool {
-	_, ok := builtInApiVersions[k.APIVersion]
-	return ok
-}
-
 func (k ResourceKey) IsDeployment() bool {
-	if k.Kind != "Deployment" {
+	if k.Kind != KindDeployment {
 		return false
 	}
-	if !k.IsKubernetesBuiltInResource() {
+	if !IsKubernetesBuiltInResource(k.APIVersion) {
 		return false
 	}
 	return true
 }
 
 func (k ResourceKey) IsConfigMap() bool {
-	if k.Kind != "ConfigMap" {
+	if k.Kind != KindConfigMap {
 		return false
 	}
-	if !k.IsKubernetesBuiltInResource() {
+	if !IsKubernetesBuiltInResource(k.APIVersion) {
 		return false
 	}
 	return true
 }
 
 func (k ResourceKey) IsSecret() bool {
-	if k.Kind != "Secret" {
+	if k.Kind != KindSecret {
 		return false
 	}
-	if !k.IsKubernetesBuiltInResource() {
+	if !IsKubernetesBuiltInResource(k.APIVersion) {
 		return false
 	}
 	return true
@@ -130,4 +135,9 @@ func DecodeResourceKey(key string) (ResourceKey, error) {
 		Namespace:  parts[2],
 		Name:       parts[3],
 	}, nil
+}
+
+func IsKubernetesBuiltInResource(apiVersion string) bool {
+	_, ok := builtInApiVersions[apiVersion]
+	return ok
 }

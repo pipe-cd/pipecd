@@ -6,7 +6,6 @@ go_library(
         "appnodes.go",
         "kubernetes.go",
         "reflector.go",
-        "state.go",
         "store.go",
     ],
     importpath = "github.com/kapetaniosci/pipe/pkg/app/piped/livestatestore/kubernetes",
