@@ -122,8 +122,9 @@ type reflector struct {
 	onUpdate func(oldObj, obj *unstructured.Unstructured)
 	onDelete func(obj *unstructured.Unstructured)
 
-	stopCh chan struct{}
-	logger *zap.Logger
+	watchingResourceKinds []provider.APIVersionKind
+	stopCh                chan struct{}
+	logger                *zap.Logger
 }
 
 func (r *reflector) start(ctx context.Context) error {
@@ -143,11 +144,11 @@ func (r *reflector) start(ctx context.Context) error {
 	// Filter above APIResources.
 	targetResources := make([]schema.GroupVersionResource, 0)
 	for _, gr := range groupResources {
-		for _, r := range gr.APIResources {
-			if _, ok := kindWhitelist[r.Kind]; !ok {
+		for _, resource := range gr.APIResources {
+			if _, ok := kindWhitelist[resource.Kind]; !ok {
 				continue
 			}
-			gvk := schema.FromAPIVersionAndKind(gr.GroupVersion, r.Kind)
+			gvk := schema.FromAPIVersionAndKind(gr.GroupVersion, resource.Kind)
 			gv := gvk.GroupVersion()
 			if _, ok := groupWhitelist[gv.Group]; !ok {
 				continue
@@ -155,10 +156,14 @@ func (r *reflector) start(ctx context.Context) error {
 			if _, ok := versionWhitelist[gv.Version]; !ok {
 				continue
 			}
-			if !isSupportedList(r) || !isSupportedWatch(r) {
+			if !isSupportedList(resource) || !isSupportedWatch(resource) {
 				continue
 			}
-			target := gv.WithResource(r.Name)
+			r.watchingResourceKinds = append(r.watchingResourceKinds, provider.APIVersionKind{
+				APIVersion: gv.String(),
+				Kind:       gvk.Kind,
+			})
+			target := gv.WithResource(resource.Name)
 			targetResources = append(targetResources, target)
 		}
 	}

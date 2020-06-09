@@ -25,21 +25,24 @@ import (
 	// Import to load the needs plugins such as gcp, azure, oidc, openstack.
 	_ "k8s.io/client-go/plugin/pkg/client/auth"
 
+	provider "github.com/kapetaniosci/pipe/pkg/app/piped/cloudprovider/kubernetes"
 	"github.com/kapetaniosci/pipe/pkg/config"
 	"github.com/kapetaniosci/pipe/pkg/model"
 )
 
 type Store struct {
-	config        *config.CloudProviderKubernetesConfig
-	kubeConfig    *restclient.Config
-	store         *store
-	firstSyncedCh chan error
-	logger        *zap.Logger
+	config                *config.CloudProviderKubernetesConfig
+	kubeConfig            *restclient.Config
+	store                 *store
+	watchingResourceKinds []provider.APIVersionKind
+	firstSyncedCh         chan error
+	logger                *zap.Logger
 }
 
 type Getter interface {
 	GetKubernetesAppLiveState(appID string) AppState
 	NewEventIterator() EventIterator
+	WatchingResourceKinds() []provider.APIVersionKind
 }
 
 type AppState struct {
@@ -96,7 +99,9 @@ func (s *Store) Run(ctx context.Context) error {
 		s.firstSyncedCh <- err
 		return err
 	}
+	s.watchingResourceKinds = rf.watchingResourceKinds
 	s.logger.Info("the reflector has done the first sync")
+
 	s.store.initialize()
 	s.logger.Info("the store has done the initializing")
 	close(s.firstSyncedCh)
@@ -126,4 +131,8 @@ func (s *Store) GetKubernetesAppLiveState(appID string) AppState {
 
 func (s *Store) NewEventIterator() EventIterator {
 	return s.store.newEventIterator()
+}
+
+func (s *Store) WatchingResourceKinds() []provider.APIVersionKind {
+	return s.watchingResourceKinds
 }

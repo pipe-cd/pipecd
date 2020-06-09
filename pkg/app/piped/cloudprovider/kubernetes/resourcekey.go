@@ -67,6 +67,11 @@ const (
 	KindSecret      = "Secret"
 )
 
+type APIVersionKind struct {
+	APIVersion string
+	Kind       string
+}
+
 type ResourceKey struct {
 	APIVersion string
 	Kind       string
