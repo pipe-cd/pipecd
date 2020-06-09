@@ -63,7 +63,8 @@ type server struct {
 
 	configFile string
 
-	useFakeResponse bool
+	useFakeResponse      bool
+	enableGRPCReflection bool
 }
 
 func NewCommand() *cobra.Command {
@@ -94,6 +95,7 @@ func NewCommand() *cobra.Command {
 
 	// For debugging early in development
 	cmd.Flags().BoolVar(&s.useFakeResponse, "use-fake-response", s.useFakeResponse, "Whether the server responds fake response or not.")
+	cmd.Flags().BoolVar(&s.enableGRPCReflection, "enable-grpc-reflection", s.enableGRPCReflection, "Whether to enable the reflection service or not.")
 
 	return cmd
 }
@@ -171,6 +173,9 @@ func (s *server) run(ctx context.Context, t cli.Telemetry) error {
 		if s.tls {
 			opts = append(opts, rpc.WithTLS(s.certFile, s.keyFile))
 		}
+		if s.enableGRPCReflection {
+			opts = append(opts, rpc.WithGRPCReflection())
+		}
 		pipedAPIServer = rpc.NewServer(service, opts...)
 		group.Go(func() error {
 			return pipedAPIServer.Run(ctx)
@@ -190,6 +195,9 @@ func (s *server) run(ctx context.Context, t cli.Telemetry) error {
 		}
 		if s.tls {
 			opts = append(opts, rpc.WithTLS(s.certFile, s.keyFile))
+		}
+		if s.enableGRPCReflection {
+			opts = append(opts, rpc.WithGRPCReflection())
 		}
 		webAPIServer = rpc.NewServer(service, opts...)
 		group.Go(func() error {

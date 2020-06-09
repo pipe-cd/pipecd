@@ -24,6 +24,7 @@ import (
 	"go.uber.org/zap"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/credentials"
+	"google.golang.org/grpc/reflection"
 
 	"github.com/kapetaniosci/pipe/pkg/jwt"
 	"github.com/kapetaniosci/pipe/pkg/rpc/rpcauth"
@@ -36,14 +37,15 @@ type Service interface {
 
 // Server used to register gRPC services then start and serve incoming requests.
 type Server struct {
-	port        int
-	tls         bool
-	certFile    string
-	keyFile     string
-	services    []Service
-	grpcServer  *grpc.Server
-	gracePeriod time.Duration
-	logger      *zap.Logger
+	port                 int
+	tls                  bool
+	certFile             string
+	keyFile              string
+	services             []Service
+	grpcServer           *grpc.Server
+	gracePeriod          time.Duration
+	enabelGRPCReflection bool
+	logger               *zap.Logger
 
 	pipedKeyAuthUnaryInterceptor      grpc.UnaryServerInterceptor
 	pipedKeyAuthStreamInterceptor     grpc.StreamServerInterceptor
@@ -116,6 +118,13 @@ func WithGracePeriod(d time.Duration) Option {
 func WithLogger(logger *zap.Logger) Option {
 	return func(s *Server) {
 		s.logger = logger.Named("rpc-server")
+	}
+}
+
+// WithGRPCReflection enables gRPC reflection service for debugging.
+func WithGRPCReflection() Option {
+	return func(s *Server) {
+		s.enabelGRPCReflection = true
 	}
 }
 
@@ -192,6 +201,10 @@ func (s *Server) init() error {
 	for _, service := range s.services {
 		service.Register(s.grpcServer)
 	}
+	if s.enabelGRPCReflection {
+		reflection.Register(s.grpcServer)
+	}
+
 	return nil
 }
 

@@ -51,5 +51,6 @@ You can run mock control plane in local machine as follows:
 ``` console
 bazelisk run //cmd/api:api -- server \
   --config-file=/your-path-to-path/control-plane-mock.yaml \
-  --use-fake-response=true
+  --use-fake-response=true \
+  --enable-grpc-reflection=true
 ```
