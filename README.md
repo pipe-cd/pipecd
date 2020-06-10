@@ -1,45 +1,39 @@
-# pipe
+# PipeCD
 
-End-to-End Continuous Delivery for Declarative Kubernetes Application and Infrastructure
+Continuous Delivery for Declarative Kubernetes Application and Infrastructure
 
-**DRAFT**
+## Proposal
 
-Powerful, Easy to Use, Easy to Operate
+https://docs.google.com/document/d/1Z3NqnsxgraD9f55F0TK6e4oLV4296Hd7xUb5GxwdaJQ
+
+## Status
+
+This project is under **PROTOTYPE** development phase.
+
+## Overview
+
+This project aims to explore and develop a unified delivery infrastructure for CA projects.
 
 **Powerful**
-- Unifed deployment tool: kubernetes (plain-yaml, helm, kustomize), terraform, lambda, cloudrun...
-- Deployment strategies: canary, bluegreen, rolling update
-- Analysis by metrics, log, smoke test
-- Automatic rollback
-- Configuration drift detection
-- Insight shows delivery perfomance
+- Unifed Deployment System: kubernetes (plain-yaml, helm, kustomize), terraform, lambda, cloudrun...
+- Progressive Deployment Strategies: canary, bluegreen, rolling update
+- Automated Analysis by Metrics, Log, Smoke Test
+- Automated Rollback
+- Automated Configuration Drift Detection
+- Insights shows Delivery Perfomance
 
 **Easy to Use**
-- Operations by pull request: scale, rolling update, rollback by PR
-- Realtime visualization of application state
-- Deployment pipeline to see what is happenning
+- Operations by Pull Request: scale, rollout, rollback by PR
+- Realtime Visualization of application state
+- Deployment Pipeline to see what is happenning
 - Intuitive UI
 
 **Easy to Operate**
-- Just 2 components: piped and control-plane
+- Just 2 components: `piped` and `control-plane`
 - Piped can be run on kubernetes, vm or even local machine
 - Easy to operate multi-tenancy, multi-cluster
-- Security
+- Security: your credentials are not exposed outside of your cluster
 
-**NOTE**
+## License
 
-- Configuration Definition
-    - Application, Piped, Control Plane, Notification, Metrics Template
-        - https://github.com/kapetaniosci/pipe/blob/master/pkg/config
-    - Example
-        - https://github.com/kapetaniosci/pipe/tree/master/pkg/config/testdata
-
-- Model Definition
-    - https://github.com/kapetaniosci/pipe/tree/master/pkg/model
-
-- Piped Component
-    - https://github.com/kapetaniosci/pipe/tree/master/pkg/app/piped
-
-- Control Plane Component
-    - https://github.com/kapetaniosci/pipe/tree/master/pkg/app/api
-    - https://github.com/kapetaniosci/pipe/tree/master/pkg/app/web
+Apache License 2.0, see [LICENSE](https://github.com/kapetaniosci/pipe/blob/master/README.md).
