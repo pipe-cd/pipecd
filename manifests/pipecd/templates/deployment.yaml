@@ -86,9 +86,9 @@ spec:
           imagePullPolicy: IfNotPresent
           args:
           - server
-          - config-file=/etc/pipecd-config/{{ .Values.config.fileName }}
-          - use-fake-response={{ .Values.api.args.useFakeResponse }}
-          - enable-grpc-reflection={{ .Values.api.args.enableGRPCReflection }}
+          - --config-file=/etc/pipecd-config/{{ .Values.config.fileName }}
+          - --use-fake-response={{ .Values.api.args.useFakeResponse }}
+          - --enable-grpc-reflection={{ .Values.api.args.enableGRPCReflection }}
           ports:
             - name: piped-api
               containerPort: 9080
