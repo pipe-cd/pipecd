@@ -73,7 +73,7 @@ func NewCommand() *cobra.Command {
 		webAPIPort:   9081,
 		httpPort:     9082,
 		adminPort:    9085,
-		gracePeriod:  15 * time.Second,
+		gracePeriod:  30 * time.Second,
 	}
 	cmd := &cobra.Command{
 		Use:   "server",
@@ -106,7 +106,10 @@ func (s *server) run(ctx context.Context, t cli.Telemetry) error {
 	// Load control plane configuration from the specified file.
 	cfg, err := s.loadConfig()
 	if err != nil {
-		t.Logger.Error("failed to load control-plane configuration", zap.Error(err))
+		t.Logger.Error("failed to load control-plane configuration",
+			zap.String("config-file", s.configFile),
+			zap.Error(err),
+		)
 		return err
 	}
 

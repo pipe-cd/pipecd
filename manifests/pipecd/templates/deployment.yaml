@@ -82,6 +82,9 @@ spec:
           imagePullPolicy: IfNotPresent
           args:
           - server
+          - config-file=/etc/pipecd-config/{{ .Values.config.fileName }}
+          - use-fake-response={{ .Values.api.args.useFakeResponse }}
+          - enable-grpc-reflection={{ .Values.api.args.enableGRPCReflection }}
           ports:
             - name: piped-api
               containerPort: 9080
@@ -103,6 +106,30 @@ spec:
             httpGet:
               path: /healthz
               port: admin
+          volumeMounts:
+{{- if .Values.secret.name }}
+            - name: pipecd-secret
+              mountPath: /etc/pipecd-secret
+              readOnly: true
+{{- end }}
+            - name: pipecd-config
+              mountPath: /etc/pipecd-config
+              readOnly: true
+          resources:
+            {{- toYaml .Values.resources | nindent 12 }}
+      volumes:
+{{- if .Values.secret.name }}
+        - name: pipecd-secret
+          secret:
+            secretName: {{ .Values.secret.name }}
+{{- end }}
+        - name: pipecd-config
+          configMap:
+{{- if .Values.config.create }}
+            name: {{ include "pipecd.fullname" . }}
+{{- else }}
+            name: {{ .Values.config.name }}
+{{- end }}
 {{- if .Values.api.resources }}
           resources:
             {{- toYaml .Values.api.resources | nindent 12 }}

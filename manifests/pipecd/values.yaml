@@ -25,6 +25,9 @@ gateway:
 api:
   replicaCount: 3
   imageTag: ""
+  args:
+    useFakeResponse: true
+    enableGRPCReflection: true
   resources: {}
 
 web:
@@ -36,3 +39,37 @@ cache:
   imageTag: "5.0.5-alpine3.9"
   password: ""
   resources: {}
+
+config:
+  create: true
+  name: 
+
+config:
+  # Specifies whether a ConfigMap for control plane configuration should be created
+  create: true
+  # The name of the ConfigMap to use when create is false.
+  name: ""
+  # The name of the configuration file.
+  fileName: control-plane-config.yaml
+  # Configuration data for control plane when create is false.
+  data: |
+    apiVersion: "pipecd.dev/v1beta1"
+    kind: ControlPlane
+    spec:
+      datastore:
+        type: FIRESTORE
+        config:
+          namespace: debug
+          project: pipecd
+          credentialsFile: /etc/pipecd-secret/service-account.json
+      filestore:
+        type: GCS
+        config:
+          bucket: pipecd-debug 
+          credentialsFile: /etc/pipecd-secret/service-account.json
+      cache:
+        ttl: 5m
+
+secret:
+  # The name of the Secret should be mounted to container.
+  name: ""
