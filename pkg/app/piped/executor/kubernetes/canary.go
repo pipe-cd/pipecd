@@ -24,7 +24,7 @@ import (
 )
 
 func (e *Executor) ensureCanaryRollout(ctx context.Context) model.StageStatus {
-	manifests, err := e.provider.LoadManifests(ctx, e.Deployment.Trigger.Commit.Hash)
+	manifests, err := e.loadManifests(ctx)
 	if err != nil {
 		e.LogPersister.AppendError(fmt.Sprintf("Failed while loading manifests (%v)", err))
 		return model.StageStatus_STAGE_FAILURE
@@ -53,7 +53,7 @@ func (e *Executor) ensureCanaryRollout(ctx context.Context) model.StageStatus {
 	}
 
 	e.LogPersister.AppendInfo("Rolling out CANARY variant")
-	if err = e.provider.Apply(ctx, stageManifests); err != nil {
+	if err = e.provider.ApplyManifests(ctx, stageManifests); err != nil {
 		e.LogPersister.AppendError(fmt.Sprintf("Unabled to rollout CANARY variant (%v)", err))
 		return model.StageStatus_STAGE_FAILURE
 	}

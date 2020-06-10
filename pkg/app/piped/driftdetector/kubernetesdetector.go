@@ -22,20 +22,22 @@ import (
 	"go.uber.org/zap"
 
 	"github.com/kapetaniosci/pipe/pkg/app/piped/livestatestore/kubernetes"
+	"github.com/kapetaniosci/pipe/pkg/cache"
 	"github.com/kapetaniosci/pipe/pkg/config"
 	"github.com/kapetaniosci/pipe/pkg/git"
 	"github.com/kapetaniosci/pipe/pkg/model"
 )
 
 type kubernetesDetector struct {
-	provider    config.PipedCloudProvider
-	appLister   applicationLister
-	gitClient   gitClient
-	stateGetter kubernetes.Getter
-	apiClient   apiClient
-	interval    time.Duration
-	config      *config.PipedSpec
-	logger      *zap.Logger
+	provider          config.PipedCloudProvider
+	appLister         applicationLister
+	gitClient         gitClient
+	stateGetter       kubernetes.Getter
+	apiClient         apiClient
+	appManifestsCache cache.Cache
+	interval          time.Duration
+	config            *config.PipedSpec
+	logger            *zap.Logger
 
 	gitRepos map[string]git.Repo
 }
@@ -46,6 +48,7 @@ func newKubernetesDetector(
 	gitClient gitClient,
 	stateGetter kubernetes.Getter,
 	apiClient apiClient,
+	appManifestsCache cache.Cache,
 	cfg *config.PipedSpec,
 	logger *zap.Logger,
 ) *kubernetesDetector {
@@ -54,15 +57,16 @@ func newKubernetesDetector(
 		zap.String("cloud-provider", cp.Name),
 	)
 	return &kubernetesDetector{
-		provider:    cp,
-		appLister:   appLister,
-		gitClient:   gitClient,
-		stateGetter: stateGetter,
-		apiClient:   apiClient,
-		interval:    time.Minute,
-		config:      cfg,
-		gitRepos:    make(map[string]git.Repo),
-		logger:      logger,
+		provider:          cp,
+		appLister:         appLister,
+		gitClient:         gitClient,
+		stateGetter:       stateGetter,
+		apiClient:         apiClient,
+		appManifestsCache: appManifestsCache,
+		interval:          time.Minute,
+		config:            cfg,
+		gitRepos:          make(map[string]git.Repo),
+		logger:            logger,
 	}
 }
 

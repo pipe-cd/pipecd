@@ -15,27 +15,52 @@
 package kubernetes
 
 import (
+	"errors"
 	"fmt"
+
+	"go.uber.org/zap"
 
 	"github.com/kapetaniosci/pipe/pkg/cache"
 )
 
-type appManifestsCache struct {
-	cache cache.Cache
+type AppManifestsCache struct {
+	AppID  string
+	Cache  cache.Cache
+	Logger *zap.Logger
 }
 
-func (c *appManifestsCache) Get(appID, commit string) ([]Manifest, error) {
-	key := appManifestsCacheKey(appID, commit)
-	item, err := c.cache.Get(key)
-	if err != nil {
-		return nil, err
+func (c AppManifestsCache) Get(commit string) ([]Manifest, bool) {
+	key := appManifestsCacheKey(c.AppID, commit)
+	item, err := c.Cache.Get(key)
+	if err == nil {
+		return item.([]Manifest), true
 	}
-	return item.([]Manifest), nil
+
+	if errors.Is(err, cache.ErrNotFound) {
+		c.Logger.Info("app manifests were not found in cache",
+			zap.String("app-id", c.AppID),
+			zap.String("commit-hash", commit),
+		)
+		return nil, false
+	}
+
+	c.Logger.Error("failed while retrieving app manifests from cache",
+		zap.String("app-id", c.AppID),
+		zap.String("commit-hash", commit),
+		zap.Error(err),
+	)
+	return nil, false
 }
 
-func (c *appManifestsCache) Put(appID, commit string, manifests []Manifest) error {
-	key := appManifestsCacheKey(appID, commit)
-	return c.cache.Put(key, manifests)
+func (c AppManifestsCache) Put(commit string, manifests []Manifest) {
+	key := appManifestsCacheKey(c.AppID, commit)
+	if err := c.Cache.Put(key, manifests); err != nil {
+		c.Logger.Error("failed while putting app manifests from cache",
+			zap.String("app-id", c.AppID),
+			zap.String("commit-hash", commit),
+			zap.Error(err),
+		)
+	}
 }
 
 func appManifestsCacheKey(appID, commit string) string {

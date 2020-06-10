@@ -12,6 +12,7 @@ go_library(
         "//pkg/app/api/service/pipedservice:go_default_library",
         "//pkg/app/piped/livestatestore:go_default_library",
         "//pkg/app/piped/livestatestore/kubernetes:go_default_library",
+        "//pkg/cache:go_default_library",
         "//pkg/config:go_default_library",
         "//pkg/git:go_default_library",
         "//pkg/model:go_default_library",

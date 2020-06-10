@@ -76,15 +76,7 @@ func (e *Executor) Execute(sig executor.StopSignal) model.StageStatus {
 		ctx    = sig.Context()
 		appDir = filepath.Join(e.RepoDir, e.Deployment.GitPath.Path)
 	)
-
-	e.provider = provider.NewProvider(e.Deployment.ApplicationId, appDir, e.RepoDir, e.config.Input,
-		provider.WithCache(e.AppManifestsCache),
-		provider.WithLogger(e.Logger),
-	)
-	if err := e.provider.Init(ctx); err != nil {
-		e.LogPersister.AppendError(fmt.Sprintf("Failed while initializing kubernetes provider (%v)", err))
-		return model.StageStatus_STAGE_FAILURE
-	}
+	e.provider = provider.NewProvider(appDir, e.RepoDir, e.config.Input, e.Logger)
 
 	e.Logger.Info("start executing kubernetes stage",
 		zap.String("stage-name", e.Stage.Name),
@@ -117,6 +109,27 @@ func (e *Executor) Execute(sig executor.StopSignal) model.StageStatus {
 	}
 
 	return executor.DetermineStageStatus(sig.Signal(), originalStatus, status)
+}
+
+func (e *Executor) loadManifests(ctx context.Context) ([]provider.Manifest, error) {
+	cache := provider.AppManifestsCache{
+		AppID:  e.Deployment.ApplicationId,
+		Cache:  e.AppManifestsCache,
+		Logger: e.Logger,
+	}
+	manifests, ok := cache.Get(e.Deployment.Trigger.Commit.Hash)
+	if ok {
+		return manifests, nil
+	}
+
+	// When the manifests were not in the cache we have to load them.
+	manifests, err := e.provider.LoadManifests(ctx)
+	if err != nil {
+		return nil, err
+	}
+	cache.Put(e.Deployment.Trigger.Commit.Hash, manifests)
+
+	return manifests, nil
 }
 
 func (e *Executor) ensureTrafficSplit(ctx context.Context) model.StageStatus {

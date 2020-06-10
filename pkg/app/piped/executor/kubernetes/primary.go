@@ -23,7 +23,7 @@ import (
 )
 
 func (e *Executor) ensurePrimaryUpdate(ctx context.Context) model.StageStatus {
-	manifests, err := e.provider.LoadManifests(ctx, e.Deployment.Trigger.Commit.Hash)
+	manifests, err := e.loadManifests(ctx)
 	if err != nil {
 		e.LogPersister.AppendError(fmt.Sprintf("Failed while loading manifests (%v)", err))
 		return model.StageStatus_STAGE_FAILURE
@@ -54,7 +54,7 @@ func (e *Executor) ensurePrimaryUpdate(ctx context.Context) model.StageStatus {
 	}
 
 	e.LogPersister.AppendInfo(fmt.Sprintf("Updating %d primary resources", len(manifests)))
-	if err = e.provider.Apply(ctx, manifests); err != nil {
+	if err = e.provider.ApplyManifests(ctx, manifests); err != nil {
 		e.LogPersister.AppendError(fmt.Sprintf("Unabled to update primary variant (%v)", err))
 		return model.StageStatus_STAGE_FAILURE
 	}

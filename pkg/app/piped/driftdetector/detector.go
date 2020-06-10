@@ -28,6 +28,7 @@ import (
 
 	"github.com/kapetaniosci/pipe/pkg/app/api/service/pipedservice"
 	"github.com/kapetaniosci/pipe/pkg/app/piped/livestatestore"
+	"github.com/kapetaniosci/pipe/pkg/cache"
 	"github.com/kapetaniosci/pipe/pkg/config"
 	"github.com/kapetaniosci/pipe/pkg/git"
 	"github.com/kapetaniosci/pipe/pkg/model"
@@ -64,6 +65,7 @@ func NewDetector(
 	gitClient gitClient,
 	stateGetter livestatestore.Getter,
 	apiClient apiClient,
+	appManifestsCache cache.Cache,
 	cfg *config.PipedSpec,
 	logger *zap.Logger,
 ) *detector {
@@ -81,7 +83,7 @@ func NewDetector(
 				r.logger.Error(fmt.Sprintf("unabled to find live state getter for cloud provider: %s", cp.Name))
 				continue
 			}
-			r.detectors = append(r.detectors, newKubernetesDetector(cp, appLister, gitClient, sg, apiClient, cfg, logger))
+			r.detectors = append(r.detectors, newKubernetesDetector(cp, appLister, gitClient, sg, apiClient, appManifestsCache, cfg, logger))
 
 		default:
 		}
