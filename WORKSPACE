@@ -122,6 +122,14 @@ container_pull(
     tag = "0.0.2",
 )
 
+container_pull(
+    name = "debug-base",
+    digest = "sha256:7bc48b9cef27dffaa66617a39f649b6f4b3359e40fc2cac6a51b4879439aa638",
+    registry = "gcr.io",
+    repository = "kapetanios/debug-base",
+    tag = "0.0.1",
+)
+
 ### Protoc-gen-validate
 git_repository(
     name = "com_github_envoyproxy_protoc_gen_validate",

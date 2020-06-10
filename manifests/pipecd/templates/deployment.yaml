@@ -78,7 +78,11 @@ spec:
     spec:
       containers:
         - name: api
+{{- if .Values.api.useDebugImage }}
+          image: "gcr.io/kapetanios/pipecd-api-debug:{{ .Values.api.imageTag | default .Chart.AppVersion }}"
+{{- else }}
           image: "gcr.io/kapetanios/pipecd-api:{{ .Values.api.imageTag | default .Chart.AppVersion }}"
+{{- end }}
           imagePullPolicy: IfNotPresent
           args:
           - server

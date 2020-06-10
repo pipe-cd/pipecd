@@ -25,6 +25,7 @@ gateway:
 api:
   replicaCount: 3
   imageTag: ""
+  useDebugImage: true
   args:
     useFakeResponse: true
     enableGRPCReflection: true
