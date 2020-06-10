@@ -6,7 +6,7 @@ go_library(
         "detector.go",
         "kubernetesdetector.go",
     ],
-    importpath = "github.com/kapetaniosci/pipe/pkg/app/piped/driffdetector",
+    importpath = "github.com/kapetaniosci/pipe/pkg/app/piped/driftdetector",
     visibility = ["//visibility:public"],
     deps = [
         "//pkg/app/api/service/pipedservice:go_default_library",

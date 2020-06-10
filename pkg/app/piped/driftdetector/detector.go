@@ -12,10 +12,10 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-// Package driffdetector provides a piped component
-// that continuously checks configuration driff between the current live state
+// Package driftdetector provides a piped component
+// that continuously checks configuration drift between the current live state
 // and the state defined at the latest commit of all applications.
-package driffdetector
+package driftdetector
 
 import (
 	"context"
@@ -70,7 +70,7 @@ func NewDetector(
 
 	r := &detector{
 		detectors: make([]providerDetector, 0, len(cfg.CloudProviders)),
-		logger:    logger.Named("driff-detector"),
+		logger:    logger.Named("drift-detector"),
 	}
 
 	for _, cp := range cfg.CloudProviders {
@@ -96,20 +96,20 @@ func (r *detector) Run(ctx context.Context) error {
 	for i, detector := range r.detectors {
 		// Avoid starting all detectors at the same time to reduce the API call burst.
 		time.Sleep(time.Duration(i) * 10 * time.Second)
-		r.logger.Info(fmt.Sprintf("starting driff detector for cloud provider: %s", detector.ProviderName()))
+		r.logger.Info(fmt.Sprintf("starting drift detector for cloud provider: %s", detector.ProviderName()))
 
 		group.Go(func() error {
 			return detector.Run(ctx)
 		})
 	}
 
-	r.logger.Info(fmt.Sprintf("all driff detectors of %d providers have been started", len(r.detectors)))
+	r.logger.Info(fmt.Sprintf("all drift detectors of %d providers have been started", len(r.detectors)))
 
 	if err := group.Wait(); err != nil {
 		r.logger.Error("failed while running", zap.Error(err))
 		return err
 	}
 
-	r.logger.Info(fmt.Sprintf("all driff detectors of %d providers have been stopped", len(r.detectors)))
+	r.logger.Info(fmt.Sprintf("all drift detectors of %d providers have been stopped", len(r.detectors)))
 	return nil
 }

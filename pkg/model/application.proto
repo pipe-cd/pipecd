@@ -72,7 +72,7 @@ enum ApplicationSyncStatus {
 
 message ApplicationSyncState {
     // Current sync status of application.
-    // This part is updated by driff detector component of piped.
+    // This part is updated by drift detector component of piped.
     ApplicationSyncStatus status = 1 [(validate.rules).enum.defined_only = true];
     string description = 2;
 }

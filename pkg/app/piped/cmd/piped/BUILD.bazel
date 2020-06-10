@@ -13,7 +13,7 @@ go_library(
         "//pkg/app/piped/apistore/commandstore:go_default_library",
         "//pkg/app/piped/apistore/deploymentstore:go_default_library",
         "//pkg/app/piped/controller:go_default_library",
-        "//pkg/app/piped/driffdetector:go_default_library",
+        "//pkg/app/piped/driftdetector:go_default_library",
         "//pkg/app/piped/executor/registry:go_default_library",
         "//pkg/app/piped/livestatereporter:go_default_library",
         "//pkg/app/piped/livestatestore:go_default_library",

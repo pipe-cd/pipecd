@@ -12,7 +12,7 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-package driffdetector
+package driftdetector
 
 import (
 	"context"
@@ -67,7 +67,7 @@ func newKubernetesDetector(
 }
 
 func (d *kubernetesDetector) Run(ctx context.Context) error {
-	d.logger.Info("start running driff detector for kubernetes applications")
+	d.logger.Info("start running drift detector for kubernetes applications")
 
 	ticker := time.NewTicker(d.interval)
 	defer ticker.Stop()
@@ -84,7 +84,7 @@ L:
 		}
 	}
 
-	d.logger.Info("driff detector for kubernetes applications has been stopped")
+	d.logger.Info("drift detector for kubernetes applications has been stopped")
 	return nil
 }
 

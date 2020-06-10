@@ -13,7 +13,7 @@
 // limitations under the License.
 
 // Package trigger provides a piped component
-// that detects a list of application should be synced (by new commit, sync command or configuration driff)
+// that detects a list of application should be synced (by new commit, sync command or configuration drift)
 // and then sends request to the control-plane to create a new Deployment.
 package trigger
 
