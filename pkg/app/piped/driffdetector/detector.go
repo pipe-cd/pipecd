@@ -29,11 +29,16 @@ import (
 	"github.com/kapetaniosci/pipe/pkg/app/api/service/pipedservice"
 	"github.com/kapetaniosci/pipe/pkg/app/piped/livestatestore"
 	"github.com/kapetaniosci/pipe/pkg/config"
+	"github.com/kapetaniosci/pipe/pkg/git"
 	"github.com/kapetaniosci/pipe/pkg/model"
 )
 
 type applicationLister interface {
 	ListByCloudProvider(name string) []*model.Application
+}
+
+type gitClient interface {
+	Clone(ctx context.Context, repoID, remote, branch, destination string) (git.Repo, error)
 }
 
 type apiClient interface {
@@ -54,7 +59,15 @@ type providerDetector interface {
 	ProviderName() string
 }
 
-func NewDetector(appLister applicationLister, stateGetter livestatestore.Getter, apiClient apiClient, cfg *config.PipedSpec, logger *zap.Logger) *detector {
+func NewDetector(
+	appLister applicationLister,
+	gitClient gitClient,
+	stateGetter livestatestore.Getter,
+	apiClient apiClient,
+	cfg *config.PipedSpec,
+	logger *zap.Logger,
+) *detector {
+
 	r := &detector{
 		detectors: make([]providerDetector, 0, len(cfg.CloudProviders)),
 		logger:    logger.Named("driff-detector"),
@@ -68,7 +81,7 @@ func NewDetector(appLister applicationLister, stateGetter livestatestore.Getter,
 				r.logger.Error(fmt.Sprintf("unabled to find live state getter for cloud provider: %s", cp.Name))
 				continue
 			}
-			r.detectors = append(r.detectors, newKubernetesDetector(cp, appLister, sg, apiClient, logger))
+			r.detectors = append(r.detectors, newKubernetesDetector(cp, appLister, gitClient, sg, apiClient, cfg, logger))
 
 		default:
 		}

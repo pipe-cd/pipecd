@@ -224,7 +224,7 @@ func (p *piped) run(ctx context.Context, t cli.Telemetry) error {
 
 	// Start running application application driff detector.
 	{
-		d := driffdetector.NewDetector(applicationLister, liveStateGetter, apiClient, cfg, t.Logger)
+		d := driffdetector.NewDetector(applicationLister, gitClient, liveStateGetter, apiClient, cfg, t.Logger)
 		group.Go(func() error {
 			return d.Run(ctx)
 		})
