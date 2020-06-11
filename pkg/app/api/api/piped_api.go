@@ -279,12 +279,28 @@ func (a *PipedAPI) SaveStageMetadata(ctx context.Context, req *pipedservice.Save
 
 // ReportStageLogs is sent by piped to save the log of a pipeline stage.
 func (a *PipedAPI) ReportStageLogs(ctx context.Context, req *pipedservice.ReportStageLogsRequest) (*pipedservice.ReportStageLogsResponse, error) {
-	return nil, status.Error(codes.Unimplemented, "")
+	err := a.stageLogStore.AppendLogs(ctx, req.DeploymentId, req.StageId, req.RetriedCount, req.Blocks)
+	if errors.Is(err, stagelogstore.ErrAlreadyCompleted) {
+		return nil, status.Error(codes.FailedPrecondition, "could not append the logs because the stage was already completed")
+	}
+	if err != nil {
+		a.logger.Error("failed to append logs", zap.Error(err))
+		return nil, status.Error(codes.Internal, "failed to append logs")
+	}
+	return &pipedservice.ReportStageLogsResponse{}, nil
 }
 
 // ReportStageLogsFromLastCheckpoint is used to save the full logs from the most recently saved point.
 func (a *PipedAPI) ReportStageLogsFromLastCheckpoint(ctx context.Context, req *pipedservice.ReportStageLogsFromLastCheckpointRequest) (*pipedservice.ReportStageLogsFromLastCheckpointResponse, error) {
-	return nil, status.Error(codes.Unimplemented, "")
+	err := a.stageLogStore.AppendLogsFromLastCheckpoint(ctx, req.DeploymentId, req.StageId, req.RetriedCount, req.Blocks, req.Completed)
+	if errors.Is(err, stagelogstore.ErrAlreadyCompleted) {
+		return nil, status.Error(codes.FailedPrecondition, "could not append the logs because the stage was already completed")
+	}
+	if err != nil {
+		a.logger.Error("failed to append logs", zap.Error(err))
+		return nil, status.Error(codes.Internal, "failed to append logs")
+	}
+	return &pipedservice.ReportStageLogsFromLastCheckpointResponse{}, nil
 }
 
 // ReportStageStatusChanged used by piped to update the status

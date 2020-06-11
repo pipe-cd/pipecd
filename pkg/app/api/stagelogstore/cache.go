@@ -25,15 +25,14 @@ type stageLogCache struct {
 	cache cache.Cache
 }
 
-func (c *stageLogCache) Get(deploymentID, stageID string, retriedCount int32) (*logFragment, error) {
+func (c *stageLogCache) Get(deploymentID, stageID string, retriedCount int32) (logFragment, error) {
 	key := cacheKey(deploymentID, stageID, retriedCount)
+	var lf logFragment
 	item, err := c.cache.Get(key)
-	if err == nil {
-		var lf logFragment
-		err := json.Unmarshal(item.([]byte), &lf)
-		return &lf, err
+	if err != nil {
+		return lf, err
 	}
-	return nil, err
+	return lf, json.Unmarshal(item.([]byte), &lf)
 }
 
 func (c *stageLogCache) Put(deploymentID, stageID string, retriedCount int32, lf *logFragment) error {

@@ -39,7 +39,7 @@ func TestCacheGet(t *testing.T) {
 		returnData string
 		returnErr  error
 
-		expected    *logFragment
+		expected    logFragment
 		expectedErr error
 	}{
 		{
@@ -47,7 +47,7 @@ func TestCacheGet(t *testing.T) {
 			returnData: "",
 			returnErr:  cache.ErrNotFound,
 
-			expected:    nil,
+			expected:    logFragment{},
 			expectedErr: cache.ErrNotFound,
 		},
 		{
@@ -72,7 +72,7 @@ func TestCacheGet(t *testing.T) {
 }`,
 			returnErr: nil,
 
-			expected: &logFragment{
+			expected: logFragment{
 				Blocks: []*model.LogBlock{
 					{
 						Index:     1,

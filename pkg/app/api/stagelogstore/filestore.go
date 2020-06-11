@@ -19,7 +19,6 @@ import (
 	"bytes"
 	"context"
 	"encoding/json"
-	"errors"
 	"fmt"
 
 	"github.com/kapetaniosci/pipe/pkg/filestore"
@@ -34,11 +33,12 @@ type stageLogFileStore struct {
 	filestore filestore.Store
 }
 
-func (f *stageLogFileStore) Get(ctx context.Context, deploymentID, stageID string, retriedCount int32) (*logFragment, error) {
+func (f *stageLogFileStore) Get(ctx context.Context, deploymentID, stageID string, retriedCount int32) (logFragment, error) {
 	path := stageLogPath(deploymentID, stageID, retriedCount)
+	lf := logFragment{}
 	reader, err := f.filestore.NewReader(ctx, path)
 	if err != nil && filestore.ErrNotFound != nil {
-		return nil, err
+		return lf, err
 	}
 	blocks := make([]*model.LogBlock, 0)
 	scanner := bufio.NewScanner(reader)
@@ -55,19 +55,33 @@ func (f *stageLogFileStore) Get(ctx context.Context, deploymentID, stageID strin
 		}
 		var lb model.LogBlock
 		if err := json.Unmarshal(data, &lb); err != nil {
-			return nil, err
+			return lf, err
 		}
 		blocks = append(blocks, &lb)
 	}
 
-	return &logFragment{
-		Blocks:    blocks,
-		Completed: completed,
-	}, nil
+	lf.Blocks = blocks
+	lf.Completed = completed
+	return lf, nil
 }
 
 func (f *stageLogFileStore) Put(ctx context.Context, deploymentID, stageID string, retriedCount int32, lf *logFragment) error {
-	return errors.New("unimplemented")
+	path := stageLogPath(deploymentID, stageID, retriedCount)
+	var buf bytes.Buffer
+	for _, lb := range lf.Blocks {
+		// TODO: Reduce the number of marshaling log blocks for improving performance
+		raw, err := json.Marshal(lb)
+		if err != nil {
+			return err
+		}
+		buf.Write(raw)
+		buf.WriteString("\n")
+	}
+
+	if lf.Completed {
+		buf.Write(eol)
+	}
+	return f.filestore.PutObject(ctx, path, buf.Bytes())
 }
 
 func stageLogPath(deploymentID, stageID string, retriedCount int32) string {

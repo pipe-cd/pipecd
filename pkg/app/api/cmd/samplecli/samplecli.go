@@ -97,6 +97,10 @@ func (s *samplecli) run(ctx context.Context, t cli.Telemetry) error {
 		return s.saveStageMetadata(ctx, pipedCli, data, t.Logger)
 	case "ReportStageStatusChanged":
 		return s.reportStageStatusChanged(ctx, pipedCli, data, t.Logger)
+	case "ReportStageLogs":
+		return s.reportStageLogs(ctx, pipedCli, data, t.Logger)
+	case "ReportStageLogsFromLastCheckpoint":
+		return s.reportStageLogsFromLastCheckpoint(ctx, pipedCli, data, t.Logger)
 	// WebService
 	case "GetDeployment":
 		return s.getDeployment(ctx, webCli, data, t.Logger)
@@ -152,7 +156,7 @@ func (s *samplecli) getDeployment(ctx context.Context, cli webservice.Client, pa
 	}
 	resp, err := cli.GetDeployment(ctx, &req)
 	if err != nil {
-		logger.Error("failure run GetDeployment", zap.Error(err))
+		logger.Error("failed to run GetDeployment", zap.Error(err))
 		return err
 	}
 	logger.Info("successfully run GetDeployment")
@@ -167,7 +171,7 @@ func (s *samplecli) getStageLog(ctx context.Context, cli webservice.Client, payl
 	}
 	resp, err := cli.GetStageLog(ctx, &req)
 	if err != nil {
-		logger.Error("failure run GetStageLog", zap.Error(err))
+		logger.Error("failed to run GetStageLog", zap.Error(err))
 		return err
 	}
 	logger.Info("successfully run GetStageLog")
@@ -182,7 +186,7 @@ func (s *samplecli) getApplicationLiveState(ctx context.Context, cli webservice.
 	}
 	resp, err := cli.GetApplicationLiveState(ctx, &req)
 	if err != nil {
-		logger.Error("failure run GetApplicationLiveState", zap.Error(err))
+		logger.Error("failed to run GetApplicationLiveState", zap.Error(err))
 		return err
 	}
 	logger.Info("successfully run GetApplicationLiveState")
@@ -196,7 +200,7 @@ func (s *samplecli) createDeployment(ctx context.Context, cli pipedservice.Clien
 		return err
 	}
 	if _, err := cli.CreateDeployment(ctx, &req); err != nil {
-		logger.Error("failure run CreateDeployment", zap.Error(err))
+		logger.Error("failed to run CreateDeployment", zap.Error(err))
 		return err
 	}
 	logger.Info("successfully run CreateDeployment")
@@ -210,7 +214,7 @@ func (s *samplecli) listApplications(ctx context.Context, cli pipedservice.Clien
 	}
 	resp, err := cli.ListApplications(ctx, &req)
 	if err != nil {
-		logger.Error("failure run ListApplications", zap.Error(err))
+		logger.Error("failed to run ListApplications", zap.Error(err))
 		return err
 	}
 	logger.Info("successfully run ListApplications", zap.Int("count", len(resp.Applications)))
@@ -227,7 +231,7 @@ func (s *samplecli) listNotCompletedDeployments(ctx context.Context, cli pipedse
 	}
 	resp, err := cli.ListNotCompletedDeployments(ctx, &req)
 	if err != nil {
-		logger.Error("failure run ListNotCompletedDeployments", zap.Error(err))
+		logger.Error("failed to run ListNotCompletedDeployments", zap.Error(err))
 		return err
 	}
 	logger.Info("successfully run ListNotCompletedDeployments", zap.Int("count", len(resp.Deployments)))
@@ -243,7 +247,7 @@ func (s *samplecli) reportDeploymentPlanned(ctx context.Context, cli pipedservic
 		return err
 	}
 	if _, err := cli.ReportDeploymentPlanned(ctx, &req); err != nil {
-		logger.Error("failure run ReportDeploymentPlanned", zap.Error(err))
+		logger.Error("failed to run ReportDeploymentPlanned", zap.Error(err))
 		return err
 	}
 	logger.Info("successfully run ReportDeploymentPlanned")
@@ -256,7 +260,7 @@ func (s *samplecli) reportDeploymentStatusChanged(ctx context.Context, cli piped
 		return err
 	}
 	if _, err := cli.ReportDeploymentStatusChanged(ctx, &req); err != nil {
-		logger.Error("failure run ReportDeploymentStatusChanged", zap.Error(err))
+		logger.Error("failed to run ReportDeploymentStatusChanged", zap.Error(err))
 		return err
 	}
 	logger.Info("successfully run ReportDeploymentStatusChanged")
@@ -269,7 +273,7 @@ func (s *samplecli) reportDeploymentCompleted(ctx context.Context, cli pipedserv
 		return err
 	}
 	if _, err := cli.ReportDeploymentCompleted(ctx, &req); err != nil {
-		logger.Error("failure run ReportDeploymentCompleted", zap.Error(err))
+		logger.Error("failed to run ReportDeploymentCompleted", zap.Error(err))
 		return err
 	}
 	logger.Info("successfully run ReportDeploymentCompleted")
@@ -282,7 +286,7 @@ func (s *samplecli) saveStageMetadata(ctx context.Context, cli pipedservice.Clie
 		return err
 	}
 	if _, err := cli.SaveStageMetadata(ctx, &req); err != nil {
-		logger.Error("failure run SaveStageMetadata", zap.Error(err))
+		logger.Error("failed to run SaveStageMetadata", zap.Error(err))
 		return err
 	}
 	logger.Info("successfully run SaveStageMetadata")
@@ -295,7 +299,7 @@ func (s *samplecli) saveDeploymentMetadata(ctx context.Context, cli pipedservice
 		return err
 	}
 	if _, err := cli.SaveDeploymentMetadata(ctx, &req); err != nil {
-		logger.Error("failure run SaveDeploymentMetadata", zap.Error(err))
+		logger.Error("failed to run SaveDeploymentMetadata", zap.Error(err))
 		return err
 	}
 	logger.Info("successfully run SaveDeploymentMetadata")
@@ -308,9 +312,35 @@ func (s *samplecli) reportStageStatusChanged(ctx context.Context, cli pipedservi
 		return err
 	}
 	if _, err := cli.ReportStageStatusChanged(ctx, &req); err != nil {
-		logger.Error("failure run ReportStageStatusChanged", zap.Error(err))
+		logger.Error("failed to run ReportStageStatusChanged", zap.Error(err))
 		return err
 	}
 	logger.Info("successfully run ReportStageStatusChanged")
+	return nil
+}
+
+func (s *samplecli) reportStageLogs(ctx context.Context, cli pipedservice.Client, payload []byte, logger *zap.Logger) error {
+	req := pipedservice.ReportStageLogsRequest{}
+	if err := json.Unmarshal(payload, &req); err != nil {
+		return err
+	}
+	if _, err := cli.ReportStageLogs(ctx, &req); err != nil {
+		logger.Error("failed to run ReportStageLogs", zap.Error(err))
+		return err
+	}
+	logger.Info("successfully run ReportStageLogs")
+	return nil
+}
+
+func (s *samplecli) reportStageLogsFromLastCheckpoint(ctx context.Context, cli pipedservice.Client, payload []byte, logger *zap.Logger) error {
+	req := pipedservice.ReportStageLogsFromLastCheckpointRequest{}
+	if err := json.Unmarshal(payload, &req); err != nil {
+		return err
+	}
+	if _, err := cli.ReportStageLogsFromLastCheckpoint(ctx, &req); err != nil {
+		logger.Error("failed to run ReportStageLogsFromLastCheckpoint", zap.Error(err))
+		return err
+	}
+	logger.Info("successfully run ReportStageLogsFromLastCheckpoint")
 	return nil
 }

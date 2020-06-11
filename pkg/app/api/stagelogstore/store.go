@@ -26,7 +26,8 @@ import (
 )
 
 var (
-	ErrNotFound = errors.New("stage log not found")
+	ErrNotFound         = errors.New("stage log was not found")
+	ErrAlreadyCompleted = errors.New("stage log was already completed")
 )
 
 type logFragment struct {
@@ -37,6 +38,11 @@ type logFragment struct {
 type Store interface {
 	// FetchLogs get the specified stage logs which filtered by index.
 	FetchLogs(ctx context.Context, deploymentID, stageID string, retriedCount int32, offsetIndex int64) ([]*model.LogBlock, bool, error)
+	// AppendLogs appends the stage logs. The stage logs are deduplicated with index value.
+	AppendLogs(ctx context.Context, deploymentID, stageID string, retriedCount int32, newBlocks []*model.LogBlock) error
+	// AppendLogsFromLastCheckpoint appends the stage logs. The stage logs are deduplicated with index value.
+	// If completed is true, flush all the logs to that point and cannot append it after this.
+	AppendLogsFromLastCheckpoint(ctx context.Context, deploymentID, stageID string, retriedCount int32, newBlocks []*model.LogBlock, completed bool) error
 }
 
 type store struct {
@@ -63,8 +69,8 @@ func (s *store) FetchLogs(ctx context.Context, deploymentID, stageID string, ret
 		s.logger.Error("failed to get stage log from cache", zap.Error(err))
 	}
 
-	if cf != nil && len(cf.Blocks) > 0 {
-		blocks, completed := filterLogBlocks(cf, offsetIndex)
+	if len(cf.Blocks) > 0 {
+		blocks, completed := filterLogBlocks(&cf, offsetIndex)
 		return blocks, completed, nil
 	}
 
@@ -77,12 +83,72 @@ func (s *store) FetchLogs(ctx context.Context, deploymentID, stageID string, ret
 		return nil, false, err
 	}
 
-	if err := s.cache.Put(deploymentID, stageID, retriedCount, ff); err != nil {
-		s.logger.Error("failed to put stage log to filestore", zap.Error(err))
+	if err := s.cache.Put(deploymentID, stageID, retriedCount, &ff); err != nil {
+		s.logger.Error("failed to put stage log to cache", zap.Error(err))
 		return nil, false, err
 	}
-	blocks, completed := filterLogBlocks(ff, offsetIndex)
+
+	blocks, completed := filterLogBlocks(&ff, offsetIndex)
 	return blocks, completed, nil
+}
+
+func (s *store) AppendLogs(ctx context.Context, deploymentID, stageID string, retriedCount int32, newBlocks []*model.LogBlock) error {
+	prev, err := s.cache.Get(deploymentID, stageID, retriedCount)
+	if err != nil && err != cache.ErrNotFound {
+		s.logger.Error("failed to get stage log from cache", zap.Error(err))
+	}
+	if prev.Completed {
+		return ErrAlreadyCompleted
+	}
+
+	lf := logFragment{
+		Blocks:    mergeBlocks(prev.Blocks, newBlocks),
+		Completed: false,
+	}
+	if err := s.cache.Put(deploymentID, stageID, retriedCount, &lf); err != nil {
+		s.logger.Error("failed to put stage log to cache", zap.Error(err))
+	}
+	return nil
+}
+
+func (s *store) AppendLogsFromLastCheckpoint(ctx context.Context, deploymentID, stageID string, retriedCount int32, newBlocks []*model.LogBlock, completed bool) error {
+	prev, err := s.backend.Get(ctx, deploymentID, stageID, retriedCount)
+	if err != nil && err != filestore.ErrNotFound {
+		return err
+	}
+	if prev.Completed {
+		return ErrAlreadyCompleted
+	}
+
+	lf := logFragment{
+		Blocks:    mergeBlocks(prev.Blocks, newBlocks),
+		Completed: completed,
+	}
+	if err := s.backend.Put(ctx, deploymentID, stageID, retriedCount, &lf); err != nil {
+		s.logger.Error("failed to put stage log to filestore", zap.Error(err))
+		return err
+	}
+
+	// AppendLogs should update to the cache after updating to the filestore. This order is safe.
+	if err := s.cache.Put(deploymentID, stageID, retriedCount, &lf); err != nil {
+		s.logger.Error("failed to put stage log to cache", zap.Error(err))
+	}
+	return nil
+}
+
+func mergeBlocks(prevs, news []*model.LogBlock) []*model.LogBlock {
+	m := make(map[int64]*model.LogBlock, len(prevs))
+	for _, lb := range prevs {
+		m[lb.Index] = lb
+	}
+
+	merged := prevs
+	for _, lb := range news {
+		if _, ok := m[lb.Index]; !ok {
+			merged = append(merged, lb)
+		}
+	}
+	return merged
 }
 
 func filterLogBlocks(lf *logFragment, offsetIndex int64) ([]*model.LogBlock, bool) {
