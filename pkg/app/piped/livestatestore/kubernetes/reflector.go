@@ -102,6 +102,7 @@ var (
 		"v1:Endpoints:kube-system:vpa-recommender":                {},
 		"v1:Endpoints:kube-system:gcp-controller-manager":         {},
 		"v1:Endpoints:kube-system:managed-certificate-controller": {},
+		"v1:Endpoints:kube-system:cluster-autoscaler":             {},
 
 		"v1:ConfigMap:kube-system:cluster-kubestore":         {},
 		"v1:ConfigMap:kube-system:ingress-gce-lock":          {},

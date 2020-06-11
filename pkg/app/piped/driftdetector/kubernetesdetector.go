@@ -17,10 +17,12 @@ package driftdetector
 import (
 	"context"
 	"fmt"
+	"path/filepath"
 	"time"
 
 	"go.uber.org/zap"
 
+	provider "github.com/kapetaniosci/pipe/pkg/app/piped/cloudprovider/kubernetes"
 	"github.com/kapetaniosci/pipe/pkg/app/piped/livestatestore/kubernetes"
 	"github.com/kapetaniosci/pipe/pkg/cache"
 	"github.com/kapetaniosci/pipe/pkg/config"
@@ -149,9 +151,38 @@ func (d *kubernetesDetector) check(ctx context.Context) error {
 }
 
 func (d *kubernetesDetector) checkApplication(ctx context.Context, app *model.Application, repo git.Repo, headCommit git.Commit) error {
+	var (
+		manifestCache = provider.AppManifestsCache{
+			AppID:  app.Id,
+			Cache:  d.appManifestsCache,
+			Logger: d.logger,
+		}
+		repoDir = repo.GetPath()
+		appDir  = filepath.Join(repoDir, app.GitPath.Path)
+	)
+
+	headManifests, ok := manifestCache.Get(headCommit.Hash)
+	if !ok {
+		// When the manifests were not in the cache we have to load them.
+		cfg, err := d.loadDeploymentConfiguration(repoDir, app)
+		if err != nil {
+			err = fmt.Errorf("failed to load deployment configuration: %w", err)
+			return err
+		}
+		loader := provider.NewManifestLoader(appDir, repoDir, cfg.KubernetesDeploymentSpec.Input, d.logger)
+		headManifests, err = loader.LoadManifests(ctx)
+		if err != nil {
+			err = fmt.Errorf("failed to load new manifests: %w", err)
+			return err
+		}
+		manifestCache.Put(headCommit.Hash, headManifests)
+	}
+	d.logger.Info(fmt.Sprintf("application %s has %d manifests at commit %s", app.Id, len(headManifests), headCommit.Hash))
+
 	liveManifests := d.stateGetter.GetAppLiveManifests(app.Id)
 	d.logger.Info(fmt.Sprintf("application %s has %d live manifests", app.Id, len(liveManifests)))
-	d.logger.Info(fmt.Sprintf("the latest commit is %s", headCommit.Hash))
+
+	//watchingResourceKinds := d.stateGetter.GetWatchingResourceKinds()
 	return nil
 }
 
@@ -171,6 +202,18 @@ func (d *kubernetesDetector) listApplications() map[string][]*model.Application 
 		}
 	}
 	return m
+}
+
+func (d *kubernetesDetector) loadDeploymentConfiguration(repoPath string, app *model.Application) (*config.Config, error) {
+	path := filepath.Join(repoPath, app.GitPath.GetDeploymentConfigFilePath(config.DeploymentConfigurationFileName))
+	cfg, err := config.LoadFromYAML(path)
+	if err != nil {
+		return nil, err
+	}
+	if appKind, ok := config.ToApplicationKind(cfg.Kind); !ok || appKind != app.Kind {
+		return nil, fmt.Errorf("application in deployment configuration file is not match, got: %s, expected: %s", appKind, app.Kind)
+	}
+	return cfg, nil
 }
 
 func (d *kubernetesDetector) ProviderName() string {

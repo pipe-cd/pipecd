@@ -69,11 +69,13 @@ enum ApplicationSyncStatus {
     OUT_OF_SYNC = 3;
 }
 
+// Current sync state of a specific application.
+// This part is determined by drift detector component of piped.
 message ApplicationSyncState {
-    // Current sync status of application.
-    // This part is updated by drift detector component of piped.
     ApplicationSyncStatus status = 1 [(validate.rules).enum.defined_only = true];
-    string description = 2;
+    string short_reason = 2;
+    string reason = 3;
+    int64 timestamp = 4 [(validate.rules).int64.gt = 0];
 }
 
 message ApplicationCompletedDeployment {

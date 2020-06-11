@@ -43,7 +43,7 @@ type Getter interface {
 	GetKubernetesAppLiveState(appID string) AppState
 	NewEventIterator() EventIterator
 
-	WatchingResourceKinds() []provider.APIVersionKind
+	GetWatchingResourceKinds() []provider.APIVersionKind
 	GetAppLiveManifests(appID string) []provider.Manifest
 }
 
@@ -135,7 +135,7 @@ func (s *Store) NewEventIterator() EventIterator {
 	return s.store.newEventIterator()
 }
 
-func (s *Store) WatchingResourceKinds() []provider.APIVersionKind {
+func (s *Store) GetWatchingResourceKinds() []provider.APIVersionKind {
 	return s.watchingResourceKinds
 }
 
