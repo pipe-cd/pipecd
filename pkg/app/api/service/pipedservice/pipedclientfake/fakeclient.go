@@ -66,7 +66,7 @@ func NewClient(logger *zap.Logger) *fakeClient {
 
 	// Register applications for pipe-debug repository.
 	for name, enable := range k8sAppNames {
-		apps[name] = &model.Application{
+		app := &model.Application{
 			Id:            projectID + "/" + envID + "/" + name,
 			Name:          name,
 			EnvId:         envID,
@@ -80,6 +80,7 @@ func NewClient(logger *zap.Logger) *fakeClient {
 			},
 			Disabled: !enable,
 		}
+		apps[app.Id] = app
 	}
 
 	return &fakeClient{

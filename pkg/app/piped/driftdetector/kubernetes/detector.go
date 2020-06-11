@@ -12,7 +12,7 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-package driftdetector
+package kubernetes
 
 import (
 	"context"
@@ -22,7 +22,6 @@ import (
 
 	"go.uber.org/zap"
 
-	"github.com/kapetaniosci/pipe/pkg/app/api/service/pipedservice"
 	provider "github.com/kapetaniosci/pipe/pkg/app/piped/cloudprovider/kubernetes"
 	"github.com/kapetaniosci/pipe/pkg/app/piped/livestatestore/kubernetes"
 	"github.com/kapetaniosci/pipe/pkg/cache"
@@ -31,13 +30,29 @@ import (
 	"github.com/kapetaniosci/pipe/pkg/model"
 )
 
-type kubernetesDetector struct {
+type applicationLister interface {
+	ListByCloudProvider(name string) []*model.Application
+}
+
+type deploymentLister interface {
+	ListAppHeadDeployments() map[string]*model.Deployment
+}
+
+type gitClient interface {
+	Clone(ctx context.Context, repoID, remote, branch, destination string) (git.Repo, error)
+}
+
+type reporter interface {
+	ReportApplicationSyncState(ctx context.Context, appID string, state model.ApplicationSyncState) error
+}
+
+type detector struct {
 	provider          config.PipedCloudProvider
 	appLister         applicationLister
 	deploymentLister  deploymentLister
 	gitClient         gitClient
 	stateGetter       kubernetes.Getter
-	apiClient         apiClient
+	reporter          reporter
 	appManifestsCache cache.Cache
 	interval          time.Duration
 	config            *config.PipedSpec
@@ -47,28 +62,28 @@ type kubernetesDetector struct {
 	syncStates map[string]model.ApplicationSyncState
 }
 
-func newKubernetesDetector(
+func NewDetector(
 	cp config.PipedCloudProvider,
 	appLister applicationLister,
 	deploymentLister deploymentLister,
 	gitClient gitClient,
 	stateGetter kubernetes.Getter,
-	apiClient apiClient,
+	reporter reporter,
 	appManifestsCache cache.Cache,
 	cfg *config.PipedSpec,
 	logger *zap.Logger,
-) *kubernetesDetector {
+) *detector {
 
 	logger = logger.Named("kubernetes-detector").With(
 		zap.String("cloud-provider", cp.Name),
 	)
-	return &kubernetesDetector{
+	return &detector{
 		provider:          cp,
 		appLister:         appLister,
 		deploymentLister:  deploymentLister,
 		gitClient:         gitClient,
 		stateGetter:       stateGetter,
-		apiClient:         apiClient,
+		reporter:          reporter,
 		appManifestsCache: appManifestsCache,
 		interval:          time.Minute,
 		config:            cfg,
@@ -78,7 +93,7 @@ func newKubernetesDetector(
 	}
 }
 
-func (d *kubernetesDetector) Run(ctx context.Context) error {
+func (d *detector) Run(ctx context.Context) error {
 	d.logger.Info("start running drift detector for kubernetes applications")
 
 	ticker := time.NewTicker(d.interval)
@@ -100,7 +115,7 @@ L:
 	return nil
 }
 
-func (d *kubernetesDetector) check(ctx context.Context) error {
+func (d *detector) check(ctx context.Context) error {
 	var (
 		err             error
 		applications    = d.listApplications()
@@ -119,7 +134,7 @@ func (d *kubernetesDetector) check(ctx context.Context) error {
 				continue
 			}
 			state := makeDeployingState(app, headDeployment)
-			d.reportState(ctx, app.Id, state)
+			d.reporter.ReportApplicationSyncState(ctx, app.Id, state)
 		}
 
 		if len(notDeployingApps) == 0 {
@@ -177,7 +192,7 @@ func (d *kubernetesDetector) check(ctx context.Context) error {
 	return nil
 }
 
-func (d *kubernetesDetector) checkApplication(ctx context.Context, app *model.Application, repo git.Repo, headCommit git.Commit) error {
+func (d *detector) checkApplication(ctx context.Context, app *model.Application, repo git.Repo, headCommit git.Commit) error {
 	var (
 		manifestCache = provider.AppManifestsCache{
 			AppID:  app.Id,
@@ -213,32 +228,9 @@ func (d *kubernetesDetector) checkApplication(ctx context.Context, app *model.Ap
 	return nil
 }
 
-func (d *kubernetesDetector) reportState(ctx context.Context, appID string, state model.ApplicationSyncState) error {
-	curState, ok := d.syncStates[appID]
-	if ok && !curState.HasChanged(state) {
-		return nil
-	}
-
-	_, err := d.apiClient.ReportApplicationSyncState(ctx, &pipedservice.ReportApplicationSyncStateRequest{
-		ApplicationId: appID,
-		State:         &state,
-	})
-	if err != nil {
-		d.logger.Error("failed to report application sync state",
-			zap.String("application-id", appID),
-			zap.Any("state", state),
-			zap.Error(err),
-		)
-		return err
-	}
-
-	d.syncStates[appID] = state
-	return nil
-}
-
 // listApplications retrieves all applications those should be handled by this director
 // and then groups them by repoID.
-func (d *kubernetesDetector) listApplications() map[string][]*model.Application {
+func (d *detector) listApplications() map[string][]*model.Application {
 	var (
 		apps = d.appLister.ListByCloudProvider(d.provider.Name)
 		m    = make(map[string][]*model.Application)
@@ -254,7 +246,7 @@ func (d *kubernetesDetector) listApplications() map[string][]*model.Application 
 	return m
 }
 
-func (d *kubernetesDetector) loadDeploymentConfiguration(repoPath string, app *model.Application) (*config.Config, error) {
+func (d *detector) loadDeploymentConfiguration(repoPath string, app *model.Application) (*config.Config, error) {
 	path := filepath.Join(repoPath, app.GitPath.GetDeploymentConfigFilePath(config.DeploymentConfigurationFileName))
 	cfg, err := config.LoadFromYAML(path)
 	if err != nil {
@@ -266,7 +258,7 @@ func (d *kubernetesDetector) loadDeploymentConfiguration(repoPath string, app *m
 	return cfg, nil
 }
 
-func (d *kubernetesDetector) ProviderName() string {
+func (d *detector) ProviderName() string {
 	return d.provider.Name
 }
 

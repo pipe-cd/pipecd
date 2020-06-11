@@ -20,6 +20,7 @@ package driftdetector
 import (
 	"context"
 	"fmt"
+	"sync"
 	"time"
 
 	"go.uber.org/zap"
@@ -27,6 +28,7 @@ import (
 	"google.golang.org/grpc"
 
 	"github.com/kapetaniosci/pipe/pkg/app/api/service/pipedservice"
+	"github.com/kapetaniosci/pipe/pkg/app/piped/driftdetector/kubernetes"
 	"github.com/kapetaniosci/pipe/pkg/app/piped/livestatestore"
 	"github.com/kapetaniosci/pipe/pkg/cache"
 	"github.com/kapetaniosci/pipe/pkg/config"
@@ -55,8 +57,11 @@ type Detector interface {
 }
 
 type detector struct {
-	detectors []providerDetector
-	logger    *zap.Logger
+	apiClient  apiClient
+	detectors  []providerDetector
+	syncStates map[string]model.ApplicationSyncState
+	mu         sync.RWMutex
+	logger     *zap.Logger
 }
 
 type providerDetector interface {
@@ -75,9 +80,11 @@ func NewDetector(
 	logger *zap.Logger,
 ) *detector {
 
-	r := &detector{
-		detectors: make([]providerDetector, 0, len(cfg.CloudProviders)),
-		logger:    logger.Named("drift-detector"),
+	d := &detector{
+		apiClient:  apiClient,
+		detectors:  make([]providerDetector, 0, len(cfg.CloudProviders)),
+		syncStates: make(map[string]model.ApplicationSyncState),
+		logger:     logger.Named("drift-detector"),
 	}
 
 	for _, cp := range cfg.CloudProviders {
@@ -85,16 +92,16 @@ func NewDetector(
 		case model.CloudProviderKubernetes:
 			sg, ok := stateGetter.KubernetesGetter(cp.Name)
 			if !ok {
-				r.logger.Error(fmt.Sprintf("unabled to find live state getter for cloud provider: %s", cp.Name))
+				d.logger.Error(fmt.Sprintf("unabled to find live state getter for cloud provider: %s", cp.Name))
 				continue
 			}
-			r.detectors = append(r.detectors, newKubernetesDetector(
+			d.detectors = append(d.detectors, kubernetes.NewDetector(
 				cp,
 				appLister,
 				deploymentLister,
 				gitClient,
 				sg,
-				apiClient,
+				d,
 				appManifestsCache,
 				cfg,
 				logger,
@@ -104,29 +111,58 @@ func NewDetector(
 		}
 	}
 
-	return r
+	return d
 }
 
-func (r *detector) Run(ctx context.Context) error {
+func (d *detector) Run(ctx context.Context) error {
 	group, ctx := errgroup.WithContext(ctx)
 
-	for i, detector := range r.detectors {
+	for i, detector := range d.detectors {
 		// Avoid starting all detectors at the same time to reduce the API call burst.
 		time.Sleep(time.Duration(i) * 10 * time.Second)
-		r.logger.Info(fmt.Sprintf("starting drift detector for cloud provider: %s", detector.ProviderName()))
+		d.logger.Info(fmt.Sprintf("starting drift detector for cloud provider: %s", detector.ProviderName()))
 
 		group.Go(func() error {
 			return detector.Run(ctx)
 		})
 	}
 
-	r.logger.Info(fmt.Sprintf("all drift detectors of %d providers have been started", len(r.detectors)))
+	d.logger.Info(fmt.Sprintf("all drift detectors of %d providers have been started", len(d.detectors)))
 
 	if err := group.Wait(); err != nil {
-		r.logger.Error("failed while running", zap.Error(err))
+		d.logger.Error("failed while running", zap.Error(err))
 		return err
 	}
 
-	r.logger.Info(fmt.Sprintf("all drift detectors of %d providers have been stopped", len(r.detectors)))
+	d.logger.Info(fmt.Sprintf("all drift detectors of %d providers have been stopped", len(d.detectors)))
+	return nil
+}
+
+func (d *detector) ReportApplicationSyncState(ctx context.Context, appID string, state model.ApplicationSyncState) error {
+	d.mu.RLock()
+	curState, ok := d.syncStates[appID]
+	d.mu.RUnlock()
+
+	if ok && !curState.HasChanged(state) {
+		return nil
+	}
+
+	_, err := d.apiClient.ReportApplicationSyncState(ctx, &pipedservice.ReportApplicationSyncStateRequest{
+		ApplicationId: appID,
+		State:         &state,
+	})
+	if err != nil {
+		d.logger.Error("failed to report application sync state",
+			zap.String("application-id", appID),
+			zap.Any("state", state),
+			zap.Error(err),
+		)
+		return err
+	}
+
+	d.mu.Lock()
+	d.syncStates[appID] = state
+	d.mu.Unlock()
+
 	return nil
 }
