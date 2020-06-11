@@ -12,7 +12,7 @@ ingress:
     # networking.gke.io/managed-certificates: pipecd
 
 cors:
-  enabled: false
+  enabled: true
   allowOrigins:
     - "http://localhost:9090"
 

@@ -17,7 +17,7 @@ spec:
       targetPort: ingress
   selector:
     {{- include "pipecd.selectorLabels" . | nindent 4 }}
-    app.kubernetes.io/component: api
+    app.kubernetes.io/component: gateway
 
 ---
 apiVersion: v1
