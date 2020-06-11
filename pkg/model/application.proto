@@ -75,14 +75,16 @@ message ApplicationSyncState {
     ApplicationSyncStatus status = 1 [(validate.rules).enum.defined_only = true];
     string short_reason = 2;
     string reason = 3;
-    int64 timestamp = 4 [(validate.rules).int64.gt = 0];
+    string head_deployment_id = 4;
+    int64 timestamp = 5 [(validate.rules).int64.gt = 0];
 }
 
 message ApplicationCompletedDeployment {
     string deployment_id = 1 [(validate.rules).string.min_len = 1];
     string commit_hash = 2 [(validate.rules).string.min_len = 1];
     string version = 3 [(validate.rules).string.min_len = 1];
-    int64 deployed_at = 4 [(validate.rules).int64.gt = 0];
+    int64 started_at = 4 [(validate.rules).int64.gt = 0];
+    int64 completed_at = 5 [(validate.rules).int64.gt = 0];
 }
 
 message ApplicationGitPath {

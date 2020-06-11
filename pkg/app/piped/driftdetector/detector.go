@@ -38,6 +38,10 @@ type applicationLister interface {
 	ListByCloudProvider(name string) []*model.Application
 }
 
+type deploymentLister interface {
+	ListAppHeadDeployments() map[string]*model.Deployment
+}
+
 type gitClient interface {
 	Clone(ctx context.Context, repoID, remote, branch, destination string) (git.Repo, error)
 }
@@ -62,6 +66,7 @@ type providerDetector interface {
 
 func NewDetector(
 	appLister applicationLister,
+	deploymentLister deploymentLister,
 	gitClient gitClient,
 	stateGetter livestatestore.Getter,
 	apiClient apiClient,
@@ -83,7 +88,17 @@ func NewDetector(
 				r.logger.Error(fmt.Sprintf("unabled to find live state getter for cloud provider: %s", cp.Name))
 				continue
 			}
-			r.detectors = append(r.detectors, newKubernetesDetector(cp, appLister, gitClient, sg, apiClient, appManifestsCache, cfg, logger))
+			r.detectors = append(r.detectors, newKubernetesDetector(
+				cp,
+				appLister,
+				deploymentLister,
+				gitClient,
+				sg,
+				apiClient,
+				appManifestsCache,
+				cfg,
+				logger,
+			))
 
 		default:
 		}

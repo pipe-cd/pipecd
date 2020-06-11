@@ -22,6 +22,7 @@ import (
 
 	"go.uber.org/zap"
 
+	"github.com/kapetaniosci/pipe/pkg/app/api/service/pipedservice"
 	provider "github.com/kapetaniosci/pipe/pkg/app/piped/cloudprovider/kubernetes"
 	"github.com/kapetaniosci/pipe/pkg/app/piped/livestatestore/kubernetes"
 	"github.com/kapetaniosci/pipe/pkg/cache"
@@ -33,6 +34,7 @@ import (
 type kubernetesDetector struct {
 	provider          config.PipedCloudProvider
 	appLister         applicationLister
+	deploymentLister  deploymentLister
 	gitClient         gitClient
 	stateGetter       kubernetes.Getter
 	apiClient         apiClient
@@ -41,12 +43,14 @@ type kubernetesDetector struct {
 	config            *config.PipedSpec
 	logger            *zap.Logger
 
-	gitRepos map[string]git.Repo
+	gitRepos   map[string]git.Repo
+	syncStates map[string]model.ApplicationSyncState
 }
 
 func newKubernetesDetector(
 	cp config.PipedCloudProvider,
 	appLister applicationLister,
+	deploymentLister deploymentLister,
 	gitClient gitClient,
 	stateGetter kubernetes.Getter,
 	apiClient apiClient,
@@ -61,6 +65,7 @@ func newKubernetesDetector(
 	return &kubernetesDetector{
 		provider:          cp,
 		appLister:         appLister,
+		deploymentLister:  deploymentLister,
 		gitClient:         gitClient,
 		stateGetter:       stateGetter,
 		apiClient:         apiClient,
@@ -68,6 +73,7 @@ func newKubernetesDetector(
 		interval:          time.Minute,
 		config:            cfg,
 		gitRepos:          make(map[string]git.Repo),
+		syncStates:        make(map[string]model.ApplicationSyncState),
 		logger:            logger,
 	}
 }
@@ -96,11 +102,32 @@ L:
 
 func (d *kubernetesDetector) check(ctx context.Context) error {
 	var (
-		err          error
-		applications = d.listApplications()
+		err             error
+		applications    = d.listApplications()
+		headDeployments = d.deploymentLister.ListAppHeadDeployments()
 	)
 
 	for repoID, apps := range applications {
+		var notDeployingApps []*model.Application
+
+		// Firstly, handle all deploying applications
+		// and remove them from the list.
+		for _, app := range apps {
+			headDeployment, ok := headDeployments[app.Id]
+			if !ok {
+				notDeployingApps = append(notDeployingApps, app)
+				continue
+			}
+			state := makeDeployingState(app, headDeployment)
+			d.reportState(ctx, app.Id, state)
+		}
+
+		if len(notDeployingApps) == 0 {
+			continue
+		}
+
+		// Next, we have to clone the lastest commit of repository
+		// to compare the states.
 		gitRepo, ok := d.gitRepos[repoID]
 		if !ok {
 			// Clone repository for the first time.
@@ -140,7 +167,7 @@ func (d *kubernetesDetector) check(ctx context.Context) error {
 			continue
 		}
 
-		for _, app := range apps {
+		for _, app := range notDeployingApps {
 			if err := d.checkApplication(ctx, app, gitRepo, headCommit); err != nil {
 				d.logger.Error(fmt.Sprintf("failed to check application: %s", app.Id), zap.Error(err))
 			}
@@ -186,6 +213,29 @@ func (d *kubernetesDetector) checkApplication(ctx context.Context, app *model.Ap
 	return nil
 }
 
+func (d *kubernetesDetector) reportState(ctx context.Context, appID string, state model.ApplicationSyncState) error {
+	curState, ok := d.syncStates[appID]
+	if ok && !curState.HasChanged(state) {
+		return nil
+	}
+
+	_, err := d.apiClient.ReportApplicationSyncState(ctx, &pipedservice.ReportApplicationSyncStateRequest{
+		ApplicationId: appID,
+		State:         &state,
+	})
+	if err != nil {
+		d.logger.Error("failed to report application sync state",
+			zap.String("application-id", appID),
+			zap.Any("state", state),
+			zap.Error(err),
+		)
+		return err
+	}
+
+	d.syncStates[appID] = state
+	return nil
+}
+
 // listApplications retrieves all applications those should be handled by this director
 // and then groups them by repoID.
 func (d *kubernetesDetector) listApplications() map[string][]*model.Application {
@@ -218,4 +268,18 @@ func (d *kubernetesDetector) loadDeploymentConfiguration(repoPath string, app *m
 
 func (d *kubernetesDetector) ProviderName() string {
 	return d.provider.Name
+}
+
+func makeDeployingState(app *model.Application, deployment *model.Deployment) model.ApplicationSyncState {
+	reason := deployment.Description
+	if reason == "" {
+		reason = "A deployment is running."
+	}
+	return model.ApplicationSyncState{
+		Status:           model.ApplicationSyncStatus_DEPLOYING,
+		ShortReason:      reason,
+		Reason:           reason,
+		HeadDeploymentId: deployment.Id,
+		Timestamp:        time.Now().Unix(),
+	}
 }

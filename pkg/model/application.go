@@ -23,3 +23,18 @@ func (p ApplicationGitPath) GetDeploymentConfigFilePath(filename string) string 
 	}
 	return filepath.Join(p.Path, filename)
 }
+
+// HasChanged checks whether the content of sync state has been changed.
+// This ignores the timestamp value.
+func (s ApplicationSyncState) HasChanged(next ApplicationSyncState) bool {
+	if s.Status != next.Status {
+		return true
+	}
+	if s.ShortReason != next.ShortReason {
+		return true
+	}
+	if s.Reason != next.Reason {
+		return true
+	}
+	return false
+}

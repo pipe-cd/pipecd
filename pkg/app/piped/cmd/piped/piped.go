@@ -224,7 +224,7 @@ func (p *piped) run(ctx context.Context, t cli.Telemetry) error {
 
 	// Start running application application drift detector.
 	{
-		d := driftdetector.NewDetector(applicationLister, gitClient, liveStateGetter, apiClient, appManifestsCache, cfg, t.Logger)
+		d := driftdetector.NewDetector(applicationLister, deploymentLister, gitClient, liveStateGetter, apiClient, appManifestsCache, cfg, t.Logger)
 		group.Go(func() error {
 			return d.Run(ctx)
 		})
