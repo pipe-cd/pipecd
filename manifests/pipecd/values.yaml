@@ -23,7 +23,7 @@ gateway:
   resources: {}
 
 api:
-  replicaCount: 3
+  replicasCount: 3
   imageTag: ""
   useDebugImage: true
   args:
@@ -60,17 +60,18 @@ config:
       datastore:
         type: FIRESTORE
         config:
-          namespace: debug
+          namespace: dev
           project: pipecd
           credentialsFile: /etc/pipecd-secret/service-account.json
       filestore:
         type: GCS
         config:
-          bucket: pipecd-debug 
+          bucket: pipecd-dev-main
           credentialsFile: /etc/pipecd-secret/service-account.json
       cache:
         ttl: 5m
 
 secret:
   # The name of the Secret should be mounted to container.
-  name: ""
+  name: "pipecd-secrets"
+

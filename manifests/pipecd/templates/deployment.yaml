@@ -6,7 +6,7 @@ metadata:
     {{- include "pipecd.labels" . | nindent 4 }}
     app.kubernetes.io/component: gateway
 spec:
-  replicas: {{ .Values.gateway.replicaCount }}
+  replicas: {{ .Values.gateway.replicasCount }}
   selector:
     matchLabels:
       {{- include "pipecd.selectorLabels" . | nindent 6 }}
@@ -65,7 +65,7 @@ metadata:
     {{- include "pipecd.labels" . | nindent 4 }}
     app.kubernetes.io/component: api
 spec:
-  replicas: {{ .Values.api.replicaCount }}
+  replicas: {{ .Values.api.replicasCount }}
   selector:
     matchLabels:
       {{- include "pipecd.selectorLabels" . | nindent 6 }}
@@ -148,7 +148,7 @@ metadata:
     {{- include "pipecd.labels" . | nindent 4 }}
     app.kubernetes.io/component: web
 spec:
-  replicas: {{ .Values.web.replicaCount }}
+  replicas: {{ .Values.web.replicasCount }}
   selector:
     matchLabels:
       {{- include "pipecd.selectorLabels" . | nindent 6 }}
