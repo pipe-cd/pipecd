@@ -17,7 +17,9 @@ export const DeploymentDetailPage: FC = memo(() => {
   );
 
   useEffect(() => {
-    dispatch(fetchDeploymentById(deploymentId));
+    if (deploymentId) {
+      dispatch(fetchDeploymentById(deploymentId));
+    }
   }, [deploymentId]);
 
   if (!deployment) {

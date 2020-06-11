@@ -6,6 +6,11 @@ describe("applicationsSlice reducer", () => {
       applicationsSlice.reducer(undefined, {
         type: "TEST_ACTION",
       })
-    ).toMatchInlineSnapshot(`Object {}`);
+    ).toMatchInlineSnapshot(`
+      Object {
+        "entities": Object {},
+        "ids": Array [],
+      }
+    `);
   });
 });

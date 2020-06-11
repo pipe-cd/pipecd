@@ -3,6 +3,7 @@ import { Route, Switch } from "react-router-dom";
 import { Header } from "../components/header";
 import { PAGE_PATH_DEPLOYMENTS, PAGE_PATH_APPLICATIONS } from "../constants";
 import { DeploymentDetailPage } from "./deployments/detail";
+import { ApplicationDetailPage } from "./applications/detail";
 
 export const Pages: FC = memo(() => {
   return (
@@ -11,8 +12,8 @@ export const Pages: FC = memo(() => {
       <Switch>
         <Route
           exact
-          path={PAGE_PATH_APPLICATIONS}
-          component={() => <div>applications</div>}
+          path={`${PAGE_PATH_APPLICATIONS}/:applicationId`}
+          component={ApplicationDetailPage}
         />
         <Route
           exact
