@@ -111,6 +111,8 @@ jest_test(
     ]),
     jest_config = ":jest.config.js",
     deps = [
+        ":build_api",
+        ":build_model",
         ":file-transformer.js",
         ":jest.after-env.ts",
         ":jest.setup.js",

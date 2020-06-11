@@ -1,7 +1,10 @@
 import { AnyAction, combineReducers } from "redux";
 import { ThunkAction, ThunkDispatch } from "redux-thunk";
+import { deploymentsSlice } from "./deployments";
 
-export const reducers = combineReducers({});
+export const reducers = combineReducers({
+  deployments: deploymentsSlice.reducer,
+});
 
 export type AppState = ReturnType<typeof reducers>;
 export type AppThunk = ThunkAction<

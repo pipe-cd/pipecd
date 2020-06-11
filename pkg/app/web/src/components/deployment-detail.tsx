@@ -24,7 +24,7 @@ interface Props {
   status: DeploymentStatus;
   pipedId: string;
   description: string;
-  commit: Commit.AsObject;
+  commit: Commit.AsObject | undefined;
 }
 
 export const DeploymentDetail: FC<Props> = ({
@@ -55,24 +55,27 @@ export const DeploymentDetail: FC<Props> = ({
           <LabeledText label="piped" text={pipedId} />
           <LabeledText label="Description" text={description} />
         </Box>
-        <Box flex={2}>
-          <Box display="flex">
-            <Typography variant="subtitle2" color="textSecondary">
-              COMMIT
-            </Typography>
+        {commit && (
+          <Box flex={2}>
             <Box display="flex">
-              <Typography variant="body2" className={classes.textMargin}>
-                {commit.message}
+              <Typography variant="subtitle2" color="textSecondary">
+                COMMIT
               </Typography>
-              <span className={classes.textMargin}>
-                (<Link variant="body2">{`${commit.hash}`}</Link>)
-              </span>
+              <Box display="flex">
+                <Typography variant="body2" className={classes.textMargin}>
+                  {commit.message}
+                </Typography>
+                <span className={classes.textMargin}>
+                  (<Link variant="body2">{`${commit.hash}`}</Link>)
+                </span>
+              </Box>
             </Box>
+            {/* TODO: Display createAt time as text */}
+
+            <LabeledText label="CREATED AT" text={`${commit.createdAt}`} />
+            <LabeledText label="TRIGGERED BY" text={commit.author} />
           </Box>
-          {/* TODO: Display createAt time as text */}
-          <LabeledText label="CREATED AT" text={`${commit.createdAt}`} />
-          <LabeledText label="TRIGGERED BY" text={commit.author} />
-        </Box>
+        )}
       </Box>
     </Paper>
   );

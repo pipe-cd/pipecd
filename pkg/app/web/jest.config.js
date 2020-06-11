@@ -5,6 +5,9 @@ module.exports = {
     "\\.(jpg|jpeg|png|gif|eot|otf|webp|svg|ttf|woff|woff2|mp4|webm|wav|mp3|m4a|aac|oga|ico)$":
       "<rootDir>/file-transformer.js",
   },
+  // moduleNameMapper: {
+  //   "^pipe/(.*)$": "<rootDir>/../../../bazel-bin/$1",
+  // },
   moduleDirectories: ["node_modules", "__fixtures__"],
   coveragePathIgnorePatterns: [
     "/node_modules/",
