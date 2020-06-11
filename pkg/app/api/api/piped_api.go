@@ -109,9 +109,9 @@ func (a *PipedAPI) ReportApplicationSyncState(ctx context.Context, req *pipedser
 	return nil, status.Error(codes.Unimplemented, "")
 }
 
-// UpdateApplicationVersion is used to update the basic information about
+// ReportMostRecentSuccessfulDeployment is used to update the basic information about
 // the most recent successful deployment of a specific applicaiton.
-func (a *PipedAPI) UpdateApplicationVersion(ctx context.Context, req *pipedservice.UpdateApplicationVersionRequest) (*pipedservice.UpdateApplicationVersionResponse, error) {
+func (a *PipedAPI) ReportMostRecentSuccessfulDeployment(ctx context.Context, req *pipedservice.ReportMostRecentSuccessfulDeploymentRequest) (*pipedservice.ReportMostRecentSuccessfulDeploymentResponse, error) {
 	return nil, status.Error(codes.Unimplemented, "")
 }
 

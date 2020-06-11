@@ -49,17 +49,16 @@ message Application {
 
     // Most recent successful deployment information.
     // This also shows information about current running workloads.
-    string cur_deployment_id = 20;
-    string cur_commit_hash = 21;
-    string cur_version = 22;
-    int64 cur_deployed_at = 23;
+    ApplicationCompletedDeployment most_recent_successful_deployment = 11;
+    // Current sync state.
+    ApplicationSyncState sync_state = 12;
 
     // Whether the application is disabled or not.
-    bool disabled = 100;
+    bool disabled = 13;
     // Unix time when the application is created.
-    int64 created_at = 101 [(validate.rules).int64.gt = 0];
+    int64 created_at = 14 [(validate.rules).int64.gt = 0];
     // Unix time of the last time when the application is updated.
-    int64 updated_at = 102 [(validate.rules).int64.gt = 0];
+    int64 updated_at = 15 [(validate.rules).int64.gt = 0];
 }
 
 // ApplicationSyncStatus represents the current state of syncing the application.
@@ -75,6 +74,13 @@ message ApplicationSyncState {
     // This part is updated by drift detector component of piped.
     ApplicationSyncStatus status = 1 [(validate.rules).enum.defined_only = true];
     string description = 2;
+}
+
+message ApplicationCompletedDeployment {
+    string deployment_id = 1 [(validate.rules).string.min_len = 1];
+    string commit_hash = 2 [(validate.rules).string.min_len = 1];
+    string version = 3 [(validate.rules).string.min_len = 1];
+    int64 deployed_at = 4 [(validate.rules).int64.gt = 0];
 }
 
 message ApplicationGitPath {

@@ -47,9 +47,9 @@ service PipedService {
     // ReportApplicationSyncState is used to update the sync status of an application.
     rpc ReportApplicationSyncState(ReportApplicationSyncStateRequest) returns (ReportApplicationSyncStateResponse) {}
 
-    // UpdateApplicationVersion is used to update the basic information about
+    // ReportMostRecentSuccessfulDeployment is used to update the basic information about
     // the most recent successful deployment of a specific applicaiton.
-    rpc UpdateApplicationVersion(UpdateApplicationVersionRequest) returns (UpdateApplicationVersionResponse) {}
+    rpc ReportMostRecentSuccessfulDeployment(ReportMostRecentSuccessfulDeploymentRequest) returns (ReportMostRecentSuccessfulDeploymentResponse) {}
 
     // ListNotCompletedDeployments returns a list of not completed deployments
     // which are managed by this piped.
@@ -159,14 +159,12 @@ message ReportApplicationSyncStateRequest {
 message ReportApplicationSyncStateResponse {
 }
 
-message UpdateApplicationVersionRequest {
-    string deployment_id = 1 [(validate.rules).string.min_len = 1];
-    string commit_hash = 2 [(validate.rules).string.min_len = 1];
-    string version = 3;
-    int64 deployed_at = 4 [(validate.rules).int64.gt = 0];
+message ReportMostRecentSuccessfulDeploymentRequest {
+    string application_id = 1 [(validate.rules).string.min_len = 1];
+    pipe.model.ApplicationCompletedDeployment deployment = 2 [(validate.rules).message.required = true];
 }
 
-message UpdateApplicationVersionResponse {
+message ReportMostRecentSuccessfulDeploymentResponse {
 }
 
 message ListNotCompletedDeploymentsRequest {

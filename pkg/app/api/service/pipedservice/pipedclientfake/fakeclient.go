@@ -132,14 +132,33 @@ func (c *fakeClient) ListApplications(ctx context.Context, req *pipedservice.Lis
 // ReportApplicationSyncState is used to update the sync status of an application.
 func (c *fakeClient) ReportApplicationSyncState(ctx context.Context, req *pipedservice.ReportApplicationSyncStateRequest, opts ...grpc.CallOption) (*pipedservice.ReportApplicationSyncStateResponse, error) {
 	c.logger.Info("fake client received ReportApplicationSyncState rpc", zap.Any("request", req))
+	c.mu.RLock()
+	defer c.mu.RUnlock()
+
+	app, ok := c.applications[req.ApplicationId]
+	if !ok {
+		return nil, status.Error(codes.NotFound, "application was not found")
+	}
+	app.SyncState = req.State
+
 	return &pipedservice.ReportApplicationSyncStateResponse{}, nil
 }
 
-// UpdateApplicationVersion is used to update the basic information about
+// ReportMostRecentSuccessfulDeployment is used to update the basic information about
 // the most recent successful deployment of a specific applicaiton.
-func (c *fakeClient) UpdateApplicationVersion(ctx context.Context, req *pipedservice.UpdateApplicationVersionRequest, opts ...grpc.CallOption) (*pipedservice.UpdateApplicationVersionResponse, error) {
-	c.logger.Info("fake client received UpdateApplicationVersion rpc", zap.Any("request", req))
-	return &pipedservice.UpdateApplicationVersionResponse{}, nil
+func (c *fakeClient) ReportMostRecentSuccessfulDeployment(ctx context.Context, req *pipedservice.ReportMostRecentSuccessfulDeploymentRequest, opts ...grpc.CallOption) (*pipedservice.ReportMostRecentSuccessfulDeploymentResponse, error) {
+	c.logger.Info("fake client received ReportMostRecentSuccessfulDeployment rpc", zap.Any("request", req))
+
+	c.mu.RLock()
+	defer c.mu.RUnlock()
+
+	app, ok := c.applications[req.ApplicationId]
+	if !ok {
+		return nil, status.Error(codes.NotFound, "application was not found")
+	}
+	app.MostRecentSuccessfulDeployment = req.Deployment
+
+	return &pipedservice.ReportMostRecentSuccessfulDeploymentResponse{}, nil
 }
 
 // ListNotCompletedDeployments returns a list of not completed deployments
