@@ -405,7 +405,7 @@ func (a *WebAPI) GetDeployment(ctx context.Context, req *webservice.GetDeploymen
 	}
 	if err != nil {
 		a.logger.Error("failed to get deployment", zap.Error(err))
-		return nil, err
+		return nil, status.Error(codes.Internal, "failed to get deployment")
 	}
 	return &webservice.GetDeploymentResponse{
 		Deployment: resp,
@@ -477,8 +477,8 @@ func (a *WebAPI) GetStageLog(ctx context.Context, req *webservice.GetStageLogReq
 		return nil, status.Error(codes.NotFound, "stage log not found")
 	}
 	if err != nil {
-		a.logger.Error("failed to get stage log", zap.Error(err))
-		return nil, err
+		a.logger.Error("failed to get stage logs", zap.Error(err))
+		return nil, status.Error(codes.Internal, "failed to get stage logs")
 	}
 
 	return &webservice.GetStageLogResponse{
@@ -609,7 +609,7 @@ func (a *WebAPI) GetApplicationLiveState(ctx context.Context, req *webservice.Ge
 	snapshot, err := a.applicationLiveStateStore.GetStateSnapshot(ctx, req.ApplicationId)
 	if err != nil {
 		a.logger.Error("failed to get application live state", zap.Error(err))
-		return nil, err
+		return nil, status.Error(codes.Internal, "failed to get application live state")
 	}
 	return &webservice.GetApplicationLiveStateResponse{
 		Snapshot: snapshot,

@@ -97,7 +97,7 @@ func (a *PipedAPI) ListApplications(ctx context.Context, req *pipedservice.ListA
 	apps, err := a.applicationStore.ListApplications(ctx, opts)
 	if err != nil {
 		a.logger.Error("failed to fetch applications", zap.Error(err))
-		return nil, err
+		return nil, status.Error(codes.Internal, "failed to fetch applications")
 	}
 	return &pipedservice.ListApplicationsResponse{
 		Applications: apps,
@@ -146,7 +146,7 @@ func (a *PipedAPI) ListNotCompletedDeployments(ctx context.Context, req *pipedse
 	deployments, err := a.deploymentStore.ListDeployments(ctx, opts)
 	if err != nil {
 		a.logger.Error("failed to fetch deployments", zap.Error(err))
-		return nil, err
+		return nil, status.Error(codes.Internal, "failed to fetch deployments")
 	}
 	return &pipedservice.ListNotCompletedDeploymentsResponse{
 		Deployments: deployments,
@@ -168,7 +168,7 @@ func (a *PipedAPI) CreateDeployment(ctx context.Context, req *pipedservice.Creat
 	}
 	if err != nil {
 		a.logger.Error("failed to create deployment", zap.Error(err))
-		return nil, err
+		return nil, status.Error(codes.Internal, "failed to create deployment")
 	}
 	return &pipedservice.CreateDeploymentResponse{}, nil
 }
@@ -189,7 +189,7 @@ func (a *PipedAPI) ReportDeploymentPlanned(ctx context.Context, req *pipedservic
 				zap.String("deployment-id", req.DeploymentId),
 				zap.Error(err),
 			)
-			return nil, err
+			return nil, status.Error(codes.Internal, "failed to update deployment to be planned")
 		}
 	}
 	return &pipedservice.ReportDeploymentPlannedResponse{}, nil
@@ -207,11 +207,11 @@ func (a *PipedAPI) ReportDeploymentStatusChanged(ctx context.Context, req *piped
 		case datastore.ErrInvalidArgument:
 			return nil, status.Error(codes.InvalidArgument, "invalid value for update")
 		default:
-			a.logger.Error("failed to update deployment to be running",
+			a.logger.Error("failed to update deployment status",
 				zap.String("deployment-id", req.DeploymentId),
 				zap.Error(err),
 			)
-			return nil, err
+			return nil, status.Error(codes.Internal, "failed to update deployment status")
 		}
 	}
 	return &pipedservice.ReportDeploymentStatusChangedResponse{}, nil
@@ -233,7 +233,7 @@ func (a *PipedAPI) ReportDeploymentCompleted(ctx context.Context, req *pipedserv
 				zap.String("deployment-id", req.DeploymentId),
 				zap.Error(err),
 			)
-			return nil, err
+			return nil, status.Error(codes.Internal, "failed to update deployment to be completed")
 		}
 	}
 	return &pipedservice.ReportDeploymentCompletedResponse{}, nil
@@ -250,7 +250,7 @@ func (a *PipedAPI) SaveDeploymentMetadata(ctx context.Context, req *pipedservice
 			zap.String("deployment-id", req.DeploymentId),
 			zap.Error(err),
 		)
-		return nil, err
+		return nil, status.Error(codes.Internal, "failed to save deployment metadata")
 	}
 	return &pipedservice.SaveDeploymentMetadataResponse{}, nil
 }
@@ -271,7 +271,7 @@ func (a *PipedAPI) SaveStageMetadata(ctx context.Context, req *pipedservice.Save
 				zap.String("stage-id", req.StageId),
 				zap.Error(err),
 			)
-			return nil, err
+			return nil, status.Error(codes.Internal, "failed to save deployment stage metadata")
 		}
 	}
 	return &pipedservice.SaveStageMetadataResponse{}, nil
@@ -320,7 +320,7 @@ func (a *PipedAPI) ReportStageStatusChanged(ctx context.Context, req *pipedservi
 				zap.String("stage-id", req.StageId),
 				zap.Error(err),
 			)
-			return nil, err
+			return nil, status.Error(codes.Internal, "failed to update stage status")
 		}
 	}
 	return &pipedservice.ReportStageStatusChangedResponse{}, nil
