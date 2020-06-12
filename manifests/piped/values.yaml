@@ -30,8 +30,8 @@ config: |
       accessTokenFile: /etc/piped-secret/gittoken
     repositories:
       - repoId: pipe-debug
-        remote: git@github.com:kapetaniosci/pipe-debug.git
+        remote: git@github.com:pipe-cd/examples.git
         branch: master
-      - repoId: pipe-debug-2
-        remote: git@github.com:kapetaniosci/pipe-debug-2.git
+      - repoId: pipe-debug-not-master
+        remote: git@github.com:pipe-cd/examples.git
         branch: dev

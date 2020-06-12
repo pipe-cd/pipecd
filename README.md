@@ -17,7 +17,7 @@ This project aims to explore and develop a unified delivery infrastructure for C
 **Powerful**
 - Unifed Deployment System: kubernetes (plain-yaml, helm, kustomize), terraform, lambda, cloudrun...
 - Progressive Deployment Strategies: canary, bluegreen, rolling update
-- Automated Analysis by Metrics, Log, Smoke Test
+- Automated Analysis by metrics, log, mmoke test...
 - Automated Rollback
 - Automated Configuration Drift Detection
 - Insights shows Delivery Perfomance
