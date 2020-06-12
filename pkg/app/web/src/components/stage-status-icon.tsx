@@ -5,26 +5,35 @@ import {
   Error,
   Cached,
   Stop,
-  IndeterminateCheckBox
+  IndeterminateCheckBox,
 } from "@material-ui/icons";
 import { StageStatus } from "pipe/pkg/app/web/model/deployment_pb";
 
-const useStyles = makeStyles(theme => ({
+const useStyles = makeStyles((theme) => ({
   [StageStatus.STAGE_SUCCESS]: {
-    color: theme.palette.success.main
+    color: theme.palette.success.main,
   },
   [StageStatus.STAGE_RUNNING]: {
-    color: theme.palette.info.main
+    color: theme.palette.info.main,
+    animation: `$running 3s linear infinite`,
   },
   [StageStatus.STAGE_FAILURE]: {
-    color: theme.palette.error.main
+    color: theme.palette.error.main,
   },
   [StageStatus.STAGE_CANCELLED]: {
-    color: theme.palette.error.main
+    color: theme.palette.error.main,
   },
   [StageStatus.STAGE_NOT_STARTED_YET]: {
-    color: theme.palette.grey[500]
-  }
+    color: theme.palette.grey[500],
+  },
+  "@keyframes running": {
+    "0%": {
+      transform: "rotate(0deg)",
+    },
+    "100%": {
+      transform: "rotate(360deg)",
+    },
+  },
 }));
 
 interface Props {

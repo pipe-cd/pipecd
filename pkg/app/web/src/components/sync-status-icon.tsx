@@ -12,9 +12,18 @@ const useStyles = makeStyles((theme) => ({
   },
   [ApplicationSyncStatus.DEPLOYING]: {
     color: theme.palette.info.main,
+    animation: `$running 3s linear infinite`,
   },
   [ApplicationSyncStatus.OUT_OF_SYNC]: {
     color: theme.palette.error.main,
+  },
+  "@keyframes running": {
+    "0%": {
+      transform: "rotate(0deg)",
+    },
+    "100%": {
+      transform: "rotate(360deg)",
+    },
   },
 }));
 
