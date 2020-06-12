@@ -17,7 +17,7 @@ package config
 import (
 	"encoding/json"
 
-	"github.com/kapetaniosci/pipe/pkg/model"
+	"github.com/pipe-cd/pipe/pkg/model"
 )
 
 type ControlPlaneSpec struct {

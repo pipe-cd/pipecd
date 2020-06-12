@@ -17,5 +17,5 @@ package gittest
 import (
 	_ "github.com/golang/mock/gomock"
 
-	_ "github.com/kapetaniosci/pipe/pkg/git"
+	_ "github.com/pipe-cd/pipe/pkg/git"
 )

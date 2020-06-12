@@ -19,7 +19,7 @@ import (
 
 	"github.com/stretchr/testify/assert"
 
-	"github.com/kapetaniosci/pipe/pkg/model"
+	"github.com/pipe-cd/pipe/pkg/model"
 )
 
 func TestMergeBlocks(t *testing.T) {

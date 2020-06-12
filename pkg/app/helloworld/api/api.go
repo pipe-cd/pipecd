@@ -23,7 +23,7 @@ import (
 	"go.uber.org/zap"
 	"google.golang.org/grpc"
 
-	"github.com/kapetaniosci/pipe/pkg/app/helloworld/service"
+	"github.com/pipe-cd/pipe/pkg/app/helloworld/service"
 )
 
 type api struct {

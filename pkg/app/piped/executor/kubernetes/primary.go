@@ -18,8 +18,8 @@ import (
 	"context"
 	"fmt"
 
-	provider "github.com/kapetaniosci/pipe/pkg/app/piped/cloudprovider/kubernetes"
-	"github.com/kapetaniosci/pipe/pkg/model"
+	provider "github.com/pipe-cd/pipe/pkg/app/piped/cloudprovider/kubernetes"
+	"github.com/pipe-cd/pipe/pkg/model"
 )
 
 func (e *Executor) ensurePrimaryUpdate(ctx context.Context) model.StageStatus {

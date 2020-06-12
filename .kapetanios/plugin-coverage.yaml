@@ -14,4 +14,4 @@ spec:
     #   build: web-test
     #   step: test
     #   artifact: lcov.info
-    #   trimSourceFilePrefix: /workspace/src/github.com/kapetaniosci/pipe/
+    #   trimSourceFilePrefix: /workspace/src/github.com/pipe-cd/pipe/

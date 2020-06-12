@@ -20,7 +20,7 @@ import (
 
 	"go.uber.org/zap"
 
-	"github.com/kapetaniosci/pipe/pkg/cache"
+	"github.com/pipe-cd/pipe/pkg/cache"
 )
 
 type AppManifestsCache struct {

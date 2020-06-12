@@ -25,11 +25,11 @@ import (
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
 
-	"github.com/kapetaniosci/pipe/pkg/app/api/applicationlivestatestore"
-	"github.com/kapetaniosci/pipe/pkg/app/api/service/webservice"
-	"github.com/kapetaniosci/pipe/pkg/app/api/stagelogstore"
-	"github.com/kapetaniosci/pipe/pkg/datastore"
-	"github.com/kapetaniosci/pipe/pkg/model"
+	"github.com/pipe-cd/pipe/pkg/app/api/applicationlivestatestore"
+	"github.com/pipe-cd/pipe/pkg/app/api/service/webservice"
+	"github.com/pipe-cd/pipe/pkg/app/api/stagelogstore"
+	"github.com/pipe-cd/pipe/pkg/datastore"
+	"github.com/pipe-cd/pipe/pkg/model"
 )
 
 // PipedAPI implements the behaviors for the gRPC definitions of WebAPI.

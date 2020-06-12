@@ -15,7 +15,7 @@
 syntax = "proto3";
 
 package pipe.api.service.webservice;
-option go_package = "github.com/kapetaniosci/pipe/pkg/app/api/service/webservice";
+option go_package = "github.com/pipe-cd/pipe/pkg/app/api/service/webservice";
 
 import "validate/validate.proto";
 import "pkg/model/application_live_state.proto";

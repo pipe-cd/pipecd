@@ -17,7 +17,7 @@ package log
 import (
 	"context"
 
-	"github.com/kapetaniosci/pipe/pkg/app/piped/analysisprovider"
+	"github.com/pipe-cd/pipe/pkg/app/piped/analysisprovider"
 )
 
 // Provider represents a client for log provider which provides logs for analysis.

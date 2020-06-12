@@ -18,15 +18,15 @@ import (
 	"fmt"
 	"sync"
 
-	"github.com/kapetaniosci/pipe/pkg/app/piped/executor"
-	"github.com/kapetaniosci/pipe/pkg/app/piped/executor/analysis"
-	"github.com/kapetaniosci/pipe/pkg/app/piped/executor/cloudrun"
-	"github.com/kapetaniosci/pipe/pkg/app/piped/executor/kubernetes"
-	"github.com/kapetaniosci/pipe/pkg/app/piped/executor/lambda"
-	"github.com/kapetaniosci/pipe/pkg/app/piped/executor/terraform"
-	"github.com/kapetaniosci/pipe/pkg/app/piped/executor/wait"
-	"github.com/kapetaniosci/pipe/pkg/app/piped/executor/waitapproval"
-	"github.com/kapetaniosci/pipe/pkg/model"
+	"github.com/pipe-cd/pipe/pkg/app/piped/executor"
+	"github.com/pipe-cd/pipe/pkg/app/piped/executor/analysis"
+	"github.com/pipe-cd/pipe/pkg/app/piped/executor/cloudrun"
+	"github.com/pipe-cd/pipe/pkg/app/piped/executor/kubernetes"
+	"github.com/pipe-cd/pipe/pkg/app/piped/executor/lambda"
+	"github.com/pipe-cd/pipe/pkg/app/piped/executor/terraform"
+	"github.com/pipe-cd/pipe/pkg/app/piped/executor/wait"
+	"github.com/pipe-cd/pipe/pkg/app/piped/executor/waitapproval"
+	"github.com/pipe-cd/pipe/pkg/model"
 )
 
 type Registry interface {

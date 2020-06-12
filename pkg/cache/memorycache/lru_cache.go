@@ -17,7 +17,7 @@ package memorycache
 import (
 	"github.com/hashicorp/golang-lru"
 
-	"github.com/kapetaniosci/pipe/pkg/cache"
+	"github.com/pipe-cd/pipe/pkg/cache"
 )
 
 type LRUCache struct {

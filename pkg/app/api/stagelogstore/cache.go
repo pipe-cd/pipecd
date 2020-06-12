@@ -18,7 +18,7 @@ import (
 	"encoding/json"
 	"fmt"
 
-	"github.com/kapetaniosci/pipe/pkg/cache"
+	"github.com/pipe-cd/pipe/pkg/cache"
 )
 
 type stageLogCache struct {

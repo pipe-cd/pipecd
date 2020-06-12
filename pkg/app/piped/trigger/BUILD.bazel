@@ -6,7 +6,7 @@ go_library(
         "deployment.go",
         "trigger.go",
     ],
-    importpath = "github.com/kapetaniosci/pipe/pkg/app/piped/trigger",
+    importpath = "github.com/pipe-cd/pipe/pkg/app/piped/trigger",
     visibility = ["//visibility:public"],
     deps = [
         "//pkg/app/api/service/pipedservice:go_default_library",

@@ -20,8 +20,8 @@ import (
 	"github.com/spf13/cobra"
 	"github.com/spf13/pflag"
 
-	"github.com/kapetaniosci/pipe/pkg/log"
-	"github.com/kapetaniosci/pipe/pkg/version"
+	"github.com/pipe-cd/pipe/pkg/log"
+	"github.com/pipe-cd/pipe/pkg/version"
 )
 
 type App struct {

@@ -20,9 +20,9 @@ import (
 
 	"go.uber.org/zap"
 
-	"github.com/kapetaniosci/pipe/pkg/app/piped/analysisprovider/log/stackdriver"
-	"github.com/kapetaniosci/pipe/pkg/config"
-	"github.com/kapetaniosci/pipe/pkg/model"
+	"github.com/pipe-cd/pipe/pkg/app/piped/analysisprovider/log/stackdriver"
+	"github.com/pipe-cd/pipe/pkg/config"
+	"github.com/pipe-cd/pipe/pkg/model"
 )
 
 type Factory struct {

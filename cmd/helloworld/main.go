@@ -17,8 +17,8 @@ package main
 import (
 	"log"
 
-	"github.com/kapetaniosci/pipe/pkg/app/helloworld/cmd/server"
-	"github.com/kapetaniosci/pipe/pkg/cli"
+	"github.com/pipe-cd/pipe/pkg/app/helloworld/cmd/server"
+	"github.com/pipe-cd/pipe/pkg/cli"
 )
 
 func main() {

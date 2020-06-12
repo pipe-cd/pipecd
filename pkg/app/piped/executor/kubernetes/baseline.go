@@ -17,7 +17,7 @@ package kubernetes
 import (
 	"context"
 
-	"github.com/kapetaniosci/pipe/pkg/model"
+	"github.com/pipe-cd/pipe/pkg/model"
 )
 
 func (e *Executor) ensureBaselineRollout(ctx context.Context) model.StageStatus {

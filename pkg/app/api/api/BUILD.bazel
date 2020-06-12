@@ -6,7 +6,7 @@ go_library(
         "piped_api.go",
         "web_api.go",
     ],
-    importpath = "github.com/kapetaniosci/pipe/pkg/app/api/api",
+    importpath = "github.com/pipe-cd/pipe/pkg/app/api/api",
     visibility = ["//visibility:public"],
     deps = [
         "//pkg/app/api/applicationlivestatestore:go_default_library",

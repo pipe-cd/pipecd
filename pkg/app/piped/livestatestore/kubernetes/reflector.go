@@ -29,7 +29,7 @@ import (
 	restclient "k8s.io/client-go/rest"
 	"k8s.io/client-go/tools/cache"
 
-	provider "github.com/kapetaniosci/pipe/pkg/app/piped/cloudprovider/kubernetes"
+	provider "github.com/pipe-cd/pipe/pkg/app/piped/cloudprovider/kubernetes"
 )
 
 var (

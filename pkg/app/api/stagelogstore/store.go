@@ -20,9 +20,9 @@ import (
 
 	"go.uber.org/zap"
 
-	"github.com/kapetaniosci/pipe/pkg/cache"
-	"github.com/kapetaniosci/pipe/pkg/filestore"
-	"github.com/kapetaniosci/pipe/pkg/model"
+	"github.com/pipe-cd/pipe/pkg/cache"
+	"github.com/pipe-cd/pipe/pkg/filestore"
+	"github.com/pipe-cd/pipe/pkg/model"
 )
 
 var (

@@ -20,8 +20,8 @@ import (
 	"errors"
 	"fmt"
 
-	"github.com/kapetaniosci/pipe/pkg/filestore"
-	"github.com/kapetaniosci/pipe/pkg/model"
+	"github.com/pipe-cd/pipe/pkg/filestore"
+	"github.com/pipe-cd/pipe/pkg/model"
 )
 
 type applicationLiveStateFileStore struct {

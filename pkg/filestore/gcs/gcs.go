@@ -24,7 +24,7 @@ import (
 	"google.golang.org/api/iterator"
 	"google.golang.org/api/option"
 
-	"github.com/kapetaniosci/pipe/pkg/filestore"
+	"github.com/pipe-cd/pipe/pkg/filestore"
 )
 
 type Store struct {

@@ -23,8 +23,8 @@ import (
 	"github.com/golang/mock/gomock"
 	"github.com/stretchr/testify/assert"
 
-	"github.com/kapetaniosci/pipe/pkg/filestore"
-	"github.com/kapetaniosci/pipe/pkg/filestore/filestoretest"
+	"github.com/pipe-cd/pipe/pkg/filestore"
+	"github.com/pipe-cd/pipe/pkg/filestore/filestoretest"
 )
 
 func TestFileStoreGet(t *testing.T) {

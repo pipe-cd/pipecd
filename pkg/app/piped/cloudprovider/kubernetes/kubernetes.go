@@ -23,8 +23,8 @@ import (
 
 	"go.uber.org/zap"
 
-	"github.com/kapetaniosci/pipe/pkg/app/piped/toolregistry"
-	"github.com/kapetaniosci/pipe/pkg/config"
+	"github.com/pipe-cd/pipe/pkg/app/piped/toolregistry"
+	"github.com/pipe-cd/pipe/pkg/config"
 )
 
 const (

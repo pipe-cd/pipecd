@@ -4,7 +4,7 @@ def all_images():
         "api-debug": "pipecd-api-debug",
         "piped": "pipecd-piped",
         "web": "pipecd-web",
-        "helloworld": "pipecd-helloworld",
+        "helloworld": "helloworld",
     }
     images = {}
 

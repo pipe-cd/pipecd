@@ -19,8 +19,8 @@ import (
 
 	"go.uber.org/zap"
 
-	"github.com/kapetaniosci/pipe/pkg/config"
-	"github.com/kapetaniosci/pipe/pkg/model"
+	"github.com/pipe-cd/pipe/pkg/config"
+	"github.com/pipe-cd/pipe/pkg/model"
 )
 
 type applicationLister interface {

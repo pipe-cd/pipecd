@@ -19,7 +19,7 @@ import (
 
 	"github.com/stretchr/testify/assert"
 
-	"github.com/kapetaniosci/pipe/pkg/config"
+	"github.com/pipe-cd/pipe/pkg/config"
 )
 
 func TestGenerateSSHConfig(t *testing.T) {

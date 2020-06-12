@@ -18,7 +18,7 @@ import (
 	"context"
 	"time"
 
-	"github.com/kapetaniosci/pipe/pkg/config"
+	"github.com/pipe-cd/pipe/pkg/config"
 )
 
 const ProviderType = "Datadog"

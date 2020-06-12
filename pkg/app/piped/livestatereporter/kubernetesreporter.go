@@ -21,10 +21,10 @@ import (
 
 	"go.uber.org/zap"
 
-	"github.com/kapetaniosci/pipe/pkg/app/api/service/pipedservice"
-	"github.com/kapetaniosci/pipe/pkg/app/piped/livestatestore/kubernetes"
-	"github.com/kapetaniosci/pipe/pkg/config"
-	"github.com/kapetaniosci/pipe/pkg/model"
+	"github.com/pipe-cd/pipe/pkg/app/api/service/pipedservice"
+	"github.com/pipe-cd/pipe/pkg/app/piped/livestatestore/kubernetes"
+	"github.com/pipe-cd/pipe/pkg/config"
+	"github.com/pipe-cd/pipe/pkg/model"
 )
 
 const (

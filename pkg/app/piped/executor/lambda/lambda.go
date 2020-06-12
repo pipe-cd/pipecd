@@ -15,8 +15,8 @@
 package lambda
 
 import (
-	"github.com/kapetaniosci/pipe/pkg/app/piped/executor"
-	"github.com/kapetaniosci/pipe/pkg/model"
+	"github.com/pipe-cd/pipe/pkg/app/piped/executor"
+	"github.com/pipe-cd/pipe/pkg/model"
 )
 
 type Executor struct {

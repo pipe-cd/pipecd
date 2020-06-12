@@ -4,7 +4,7 @@ load("//bazel:image.bzl", "app_image")
 go_library(
     name = "go_default_library",
     srcs = ["main.go"],
-    importpath = "github.com/kapetaniosci/pipe/cmd/helloworld",
+    importpath = "github.com/pipe-cd/pipe/cmd/helloworld",
     visibility = ["//visibility:private"],
     deps = [
         "//pkg/app/helloworld/cmd/server:go_default_library",
@@ -21,6 +21,6 @@ go_binary(
 app_image(
     name = "helloworld",
     binary = ":helloworld",
-    repository = "pipecd-helloworld",
+    repository = "helloworld",
     visibility = ["//visibility:public"],
 )

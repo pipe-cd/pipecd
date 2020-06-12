@@ -23,10 +23,10 @@ import (
 	"go.uber.org/zap"
 	"golang.org/x/sync/errgroup"
 
-	"github.com/kapetaniosci/pipe/pkg/admin"
-	"github.com/kapetaniosci/pipe/pkg/app/helloworld/api"
-	"github.com/kapetaniosci/pipe/pkg/cli"
-	"github.com/kapetaniosci/pipe/pkg/rpc"
+	"github.com/pipe-cd/pipe/pkg/admin"
+	"github.com/pipe-cd/pipe/pkg/app/helloworld/api"
+	"github.com/pipe-cd/pipe/pkg/cli"
+	"github.com/pipe-cd/pipe/pkg/rpc"
 )
 
 type server struct {

@@ -24,8 +24,8 @@ import (
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
 
-	"github.com/kapetaniosci/pipe/pkg/app/api/service/pipedservice"
-	"github.com/kapetaniosci/pipe/pkg/model"
+	"github.com/pipe-cd/pipe/pkg/app/api/service/pipedservice"
+	"github.com/pipe-cd/pipe/pkg/model"
 )
 
 type fakeClient struct {

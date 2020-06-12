@@ -49,4 +49,4 @@ spec:
         - root-path=bazel-testlogs
         - profile-matcher="**/coverage.dat"
         - source-exclude-matcher="**/*.mock.go,**/*.pb.go,**/*.validate.go,**/*.embed.go,**/*.deepcopy.go"
-        - base-import-path=github.com/kapetaniosci/pipe
+        - base-import-path=github.com/pipe-cd/pipe

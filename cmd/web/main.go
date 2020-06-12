@@ -27,8 +27,8 @@ import (
 	"go.uber.org/zap"
 	"golang.org/x/sync/errgroup"
 
-	"github.com/kapetaniosci/pipe/pkg/admin"
-	"github.com/kapetaniosci/pipe/pkg/cli"
+	"github.com/pipe-cd/pipe/pkg/admin"
+	"github.com/pipe-cd/pipe/pkg/cli"
 )
 
 func main() {

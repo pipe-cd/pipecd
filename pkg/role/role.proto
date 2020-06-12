@@ -15,7 +15,7 @@
 syntax = "proto3";
 
 package pipe.role;
-option go_package = "github.com/kapetaniosci/pipe/pkg/role";
+option go_package = "github.com/pipe-cd/pipe/pkg/role";
 
 import "google/protobuf/descriptor.proto";
 

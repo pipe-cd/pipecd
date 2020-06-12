@@ -1,4 +1,4 @@
-module github.com/kapetaniosci/pipe
+module github.com/pipe-cd/pipe
 
 go 1.14
 

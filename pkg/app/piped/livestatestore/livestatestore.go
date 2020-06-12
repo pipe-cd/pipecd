@@ -25,12 +25,12 @@ import (
 	"go.uber.org/zap"
 	"golang.org/x/sync/errgroup"
 
-	"github.com/kapetaniosci/pipe/pkg/app/piped/livestatestore/cloudrun"
-	"github.com/kapetaniosci/pipe/pkg/app/piped/livestatestore/kubernetes"
-	"github.com/kapetaniosci/pipe/pkg/app/piped/livestatestore/lambda"
-	"github.com/kapetaniosci/pipe/pkg/app/piped/livestatestore/terraform"
-	"github.com/kapetaniosci/pipe/pkg/config"
-	"github.com/kapetaniosci/pipe/pkg/model"
+	"github.com/pipe-cd/pipe/pkg/app/piped/livestatestore/cloudrun"
+	"github.com/pipe-cd/pipe/pkg/app/piped/livestatestore/kubernetes"
+	"github.com/pipe-cd/pipe/pkg/app/piped/livestatestore/lambda"
+	"github.com/pipe-cd/pipe/pkg/app/piped/livestatestore/terraform"
+	"github.com/pipe-cd/pipe/pkg/config"
+	"github.com/pipe-cd/pipe/pkg/model"
 )
 
 type applicationLister interface {

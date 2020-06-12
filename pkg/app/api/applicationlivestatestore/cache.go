@@ -18,8 +18,8 @@ import (
 	"encoding/json"
 	"fmt"
 
-	"github.com/kapetaniosci/pipe/pkg/cache"
-	"github.com/kapetaniosci/pipe/pkg/model"
+	"github.com/pipe-cd/pipe/pkg/cache"
+	"github.com/pipe-cd/pipe/pkg/model"
 )
 
 type applicationLiveStateCache struct {

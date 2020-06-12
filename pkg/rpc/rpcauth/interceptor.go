@@ -23,8 +23,8 @@ import (
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
 
-	"github.com/kapetaniosci/pipe/pkg/jwt"
-	"github.com/kapetaniosci/pipe/pkg/role"
+	"github.com/pipe-cd/pipe/pkg/jwt"
+	"github.com/pipe-cd/pipe/pkg/role"
 )
 
 var (

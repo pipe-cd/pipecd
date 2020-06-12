@@ -18,7 +18,7 @@ import (
 	"context"
 	"time"
 
-	"github.com/kapetaniosci/pipe/pkg/model"
+	"github.com/pipe-cd/pipe/pkg/model"
 )
 
 const environmentModelKind = "Environment"

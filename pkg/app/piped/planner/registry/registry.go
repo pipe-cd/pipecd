@@ -18,12 +18,12 @@ import (
 	"fmt"
 	"sync"
 
-	"github.com/kapetaniosci/pipe/pkg/app/piped/planner"
-	"github.com/kapetaniosci/pipe/pkg/app/piped/planner/cloudrun"
-	"github.com/kapetaniosci/pipe/pkg/app/piped/planner/kubernetes"
-	"github.com/kapetaniosci/pipe/pkg/app/piped/planner/lambda"
-	"github.com/kapetaniosci/pipe/pkg/app/piped/planner/terraform"
-	"github.com/kapetaniosci/pipe/pkg/model"
+	"github.com/pipe-cd/pipe/pkg/app/piped/planner"
+	"github.com/pipe-cd/pipe/pkg/app/piped/planner/cloudrun"
+	"github.com/pipe-cd/pipe/pkg/app/piped/planner/kubernetes"
+	"github.com/pipe-cd/pipe/pkg/app/piped/planner/lambda"
+	"github.com/pipe-cd/pipe/pkg/app/piped/planner/terraform"
+	"github.com/pipe-cd/pipe/pkg/model"
 )
 
 type Registry interface {

@@ -25,12 +25,12 @@ import (
 	"go.uber.org/zap"
 	"golang.org/x/sync/errgroup"
 
-	httpprovider "github.com/kapetaniosci/pipe/pkg/app/piped/analysisprovider/http"
-	"github.com/kapetaniosci/pipe/pkg/app/piped/analysisprovider/log"
-	"github.com/kapetaniosci/pipe/pkg/app/piped/analysisprovider/metrics"
-	"github.com/kapetaniosci/pipe/pkg/app/piped/executor"
-	"github.com/kapetaniosci/pipe/pkg/config"
-	"github.com/kapetaniosci/pipe/pkg/model"
+	httpprovider "github.com/pipe-cd/pipe/pkg/app/piped/analysisprovider/http"
+	"github.com/pipe-cd/pipe/pkg/app/piped/analysisprovider/log"
+	"github.com/pipe-cd/pipe/pkg/app/piped/analysisprovider/metrics"
+	"github.com/pipe-cd/pipe/pkg/app/piped/executor"
+	"github.com/pipe-cd/pipe/pkg/config"
+	"github.com/pipe-cd/pipe/pkg/model"
 )
 
 type Executor struct {

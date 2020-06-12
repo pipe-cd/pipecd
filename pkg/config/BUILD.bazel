@@ -13,7 +13,7 @@ go_library(
         "piped.go",
         "replicas.go",
     ],
-    importpath = "github.com/kapetaniosci/pipe/pkg/config",
+    importpath = "github.com/pipe-cd/pipe/pkg/config",
     visibility = ["//visibility:public"],
     deps = [
         "//pkg/model:go_default_library",

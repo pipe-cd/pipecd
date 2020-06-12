@@ -21,7 +21,7 @@ import (
 	"path/filepath"
 	"text/template"
 
-	"github.com/kapetaniosci/pipe/pkg/config"
+	"github.com/pipe-cd/pipe/pkg/config"
 )
 
 const sshConfigTemplate = `

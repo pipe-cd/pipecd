@@ -18,8 +18,8 @@ import (
 	"context"
 	"sync"
 
-	"github.com/kapetaniosci/pipe/pkg/app/api/service/pipedservice"
-	"github.com/kapetaniosci/pipe/pkg/model"
+	"github.com/pipe-cd/pipe/pkg/app/api/service/pipedservice"
+	"github.com/pipe-cd/pipe/pkg/model"
 )
 
 type metadataStore struct {

@@ -13,7 +13,7 @@ go_library(
         "resourcekey.go",
         "state.go",
     ],
-    importpath = "github.com/kapetaniosci/pipe/pkg/app/piped/cloudprovider/kubernetes",
+    importpath = "github.com/pipe-cd/pipe/pkg/app/piped/cloudprovider/kubernetes",
     visibility = ["//visibility:public"],
     deps = [
         "//pkg/app/piped/toolregistry:go_default_library",

@@ -19,8 +19,8 @@ import (
 	"fmt"
 	"time"
 
-	"github.com/kapetaniosci/pipe/pkg/app/piped/planner"
-	"github.com/kapetaniosci/pipe/pkg/model"
+	"github.com/pipe-cd/pipe/pkg/app/piped/planner"
+	"github.com/pipe-cd/pipe/pkg/model"
 )
 
 // Planner plans the deployment pipeline for terraform application.

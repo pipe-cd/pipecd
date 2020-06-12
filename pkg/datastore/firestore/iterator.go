@@ -18,7 +18,7 @@ import (
 	"cloud.google.com/go/firestore"
 	"google.golang.org/api/iterator"
 
-	"github.com/kapetaniosci/pipe/pkg/datastore"
+	"github.com/pipe-cd/pipe/pkg/datastore"
 )
 
 type Iterator struct {

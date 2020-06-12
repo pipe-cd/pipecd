@@ -20,9 +20,9 @@ import (
 	"strings"
 	"time"
 
-	provider "github.com/kapetaniosci/pipe/pkg/app/piped/cloudprovider/kubernetes"
-	"github.com/kapetaniosci/pipe/pkg/app/piped/planner"
-	"github.com/kapetaniosci/pipe/pkg/model"
+	provider "github.com/pipe-cd/pipe/pkg/app/piped/cloudprovider/kubernetes"
+	"github.com/pipe-cd/pipe/pkg/app/piped/planner"
+	"github.com/pipe-cd/pipe/pkg/model"
 )
 
 // Planner plans the deployment pipeline for kubernetes application.

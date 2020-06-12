@@ -24,15 +24,15 @@ import (
 	"go.uber.org/atomic"
 	"go.uber.org/zap"
 
-	"github.com/kapetaniosci/pipe/pkg/app/api/service/pipedservice"
-	"github.com/kapetaniosci/pipe/pkg/app/piped/executor"
-	"github.com/kapetaniosci/pipe/pkg/app/piped/executor/registry"
-	"github.com/kapetaniosci/pipe/pkg/app/piped/logpersister"
-	pln "github.com/kapetaniosci/pipe/pkg/app/piped/planner"
-	"github.com/kapetaniosci/pipe/pkg/cache"
-	"github.com/kapetaniosci/pipe/pkg/config"
-	"github.com/kapetaniosci/pipe/pkg/git"
-	"github.com/kapetaniosci/pipe/pkg/model"
+	"github.com/pipe-cd/pipe/pkg/app/api/service/pipedservice"
+	"github.com/pipe-cd/pipe/pkg/app/piped/executor"
+	"github.com/pipe-cd/pipe/pkg/app/piped/executor/registry"
+	"github.com/pipe-cd/pipe/pkg/app/piped/logpersister"
+	pln "github.com/pipe-cd/pipe/pkg/app/piped/planner"
+	"github.com/pipe-cd/pipe/pkg/cache"
+	"github.com/pipe-cd/pipe/pkg/config"
+	"github.com/pipe-cd/pipe/pkg/git"
+	"github.com/pipe-cd/pipe/pkg/model"
 )
 
 var (

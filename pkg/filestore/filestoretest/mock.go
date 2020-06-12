@@ -17,5 +17,5 @@ package filestoretest
 import (
 	_ "github.com/golang/mock/gomock"
 
-	_ "github.com/kapetaniosci/pipe/pkg/filestore"
+	_ "github.com/pipe-cd/pipe/pkg/filestore"
 )

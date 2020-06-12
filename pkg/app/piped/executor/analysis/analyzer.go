@@ -7,7 +7,7 @@ import (
 
 	"go.uber.org/zap"
 
-	"github.com/kapetaniosci/pipe/pkg/app/piped/executor"
+	"github.com/pipe-cd/pipe/pkg/app/piped/executor"
 )
 
 // analyzer contains a query for an analysis provider.

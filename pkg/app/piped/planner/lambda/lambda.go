@@ -17,8 +17,8 @@ package lambda
 import (
 	"context"
 
-	"github.com/kapetaniosci/pipe/pkg/app/piped/planner"
-	"github.com/kapetaniosci/pipe/pkg/model"
+	"github.com/pipe-cd/pipe/pkg/app/piped/planner"
+	"github.com/pipe-cd/pipe/pkg/model"
 )
 
 type Planner struct {

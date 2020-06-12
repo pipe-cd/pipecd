@@ -22,7 +22,7 @@ import (
 
 	"google.golang.org/grpc/credentials"
 
-	"github.com/kapetaniosci/pipe/pkg/rpc/rpcauth"
+	"github.com/pipe-cd/pipe/pkg/rpc/rpcauth"
 )
 
 type perRPCCredentials struct {

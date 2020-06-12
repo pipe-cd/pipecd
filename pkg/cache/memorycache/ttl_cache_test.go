@@ -22,7 +22,7 @@ import (
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 
-	"github.com/kapetaniosci/pipe/pkg/cache"
+	"github.com/pipe-cd/pipe/pkg/cache"
 )
 
 func TestTTLCache(t *testing.T) {

@@ -25,4 +25,4 @@ linters:
   fast: false
 linters-settings:
   goimports:
-    local-prefixes: github.com/kapetaniosci/pipe
+    local-prefixes: github.com/pipe-cd/pipe

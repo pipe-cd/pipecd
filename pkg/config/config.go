@@ -21,7 +21,7 @@ import (
 
 	"sigs.k8s.io/yaml"
 
-	"github.com/kapetaniosci/pipe/pkg/model"
+	"github.com/pipe-cd/pipe/pkg/model"
 )
 
 const (

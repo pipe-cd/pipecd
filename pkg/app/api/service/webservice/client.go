@@ -19,7 +19,7 @@ import (
 
 	"google.golang.org/grpc"
 
-	"github.com/kapetaniosci/pipe/pkg/rpc/rpcclient"
+	"github.com/pipe-cd/pipe/pkg/rpc/rpcclient"
 )
 
 type Client interface {

@@ -20,10 +20,10 @@ import (
 
 	"go.uber.org/zap"
 
-	"github.com/kapetaniosci/pipe/pkg/app/piped/analysisprovider/metrics/datadog"
-	"github.com/kapetaniosci/pipe/pkg/app/piped/analysisprovider/metrics/prometheus"
-	"github.com/kapetaniosci/pipe/pkg/config"
-	"github.com/kapetaniosci/pipe/pkg/model"
+	"github.com/pipe-cd/pipe/pkg/app/piped/analysisprovider/metrics/datadog"
+	"github.com/pipe-cd/pipe/pkg/app/piped/analysisprovider/metrics/prometheus"
+	"github.com/pipe-cd/pipe/pkg/config"
+	"github.com/pipe-cd/pipe/pkg/model"
 )
 
 type Factory struct {

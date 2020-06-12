@@ -21,7 +21,7 @@ import (
 
 	jwtgo "github.com/dgrijalva/jwt-go"
 
-	"github.com/kapetaniosci/pipe/pkg/role"
+	"github.com/pipe-cd/pipe/pkg/role"
 )
 
 const (

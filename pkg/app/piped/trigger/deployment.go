@@ -23,10 +23,10 @@ import (
 	"github.com/google/uuid"
 	"go.uber.org/zap"
 
-	"github.com/kapetaniosci/pipe/pkg/app/api/service/pipedservice"
-	"github.com/kapetaniosci/pipe/pkg/config"
-	"github.com/kapetaniosci/pipe/pkg/git"
-	"github.com/kapetaniosci/pipe/pkg/model"
+	"github.com/pipe-cd/pipe/pkg/app/api/service/pipedservice"
+	"github.com/pipe-cd/pipe/pkg/config"
+	"github.com/pipe-cd/pipe/pkg/git"
+	"github.com/pipe-cd/pipe/pkg/model"
 )
 
 func (t *Trigger) triggerDeployment(ctx context.Context, app *model.Application, repo git.Repo, branch string, commit git.Commit) error {

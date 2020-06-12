@@ -17,9 +17,9 @@ package main
 import (
 	"log"
 
-	"github.com/kapetaniosci/pipe/pkg/app/api/cmd/samplecli"
-	"github.com/kapetaniosci/pipe/pkg/app/api/cmd/server"
-	"github.com/kapetaniosci/pipe/pkg/cli"
+	"github.com/pipe-cd/pipe/pkg/app/api/cmd/samplecli"
+	"github.com/pipe-cd/pipe/pkg/app/api/cmd/server"
+	"github.com/pipe-cd/pipe/pkg/cli"
 )
 
 func main() {

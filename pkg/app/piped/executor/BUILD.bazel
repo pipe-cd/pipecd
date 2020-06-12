@@ -6,7 +6,7 @@ go_library(
         "executor.go",
         "stopsignal.go",
     ],
-    importpath = "github.com/kapetaniosci/pipe/pkg/app/piped/executor",
+    importpath = "github.com/pipe-cd/pipe/pkg/app/piped/executor",
     visibility = ["//visibility:public"],
     deps = [
         "//pkg/cache:go_default_library",

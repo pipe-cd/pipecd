@@ -18,8 +18,8 @@ import (
 	"context"
 	"errors"
 
-	"github.com/kapetaniosci/pipe/pkg/app/piped/analysisprovider"
-	"github.com/kapetaniosci/pipe/pkg/config"
+	"github.com/pipe-cd/pipe/pkg/app/piped/analysisprovider"
+	"github.com/pipe-cd/pipe/pkg/config"
 )
 
 var (

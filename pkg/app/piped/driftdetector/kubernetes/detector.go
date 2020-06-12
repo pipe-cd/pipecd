@@ -24,12 +24,12 @@ import (
 
 	"go.uber.org/zap"
 
-	provider "github.com/kapetaniosci/pipe/pkg/app/piped/cloudprovider/kubernetes"
-	"github.com/kapetaniosci/pipe/pkg/app/piped/livestatestore/kubernetes"
-	"github.com/kapetaniosci/pipe/pkg/cache"
-	"github.com/kapetaniosci/pipe/pkg/config"
-	"github.com/kapetaniosci/pipe/pkg/git"
-	"github.com/kapetaniosci/pipe/pkg/model"
+	provider "github.com/pipe-cd/pipe/pkg/app/piped/cloudprovider/kubernetes"
+	"github.com/pipe-cd/pipe/pkg/app/piped/livestatestore/kubernetes"
+	"github.com/pipe-cd/pipe/pkg/cache"
+	"github.com/pipe-cd/pipe/pkg/config"
+	"github.com/pipe-cd/pipe/pkg/git"
+	"github.com/pipe-cd/pipe/pkg/model"
 )
 
 type applicationLister interface {

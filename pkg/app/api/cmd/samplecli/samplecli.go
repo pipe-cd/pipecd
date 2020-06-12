@@ -24,10 +24,10 @@ import (
 	"github.com/spf13/cobra"
 	"go.uber.org/zap"
 
-	"github.com/kapetaniosci/pipe/pkg/app/api/service/pipedservice"
-	"github.com/kapetaniosci/pipe/pkg/app/api/service/webservice"
-	"github.com/kapetaniosci/pipe/pkg/cli"
-	"github.com/kapetaniosci/pipe/pkg/rpc/rpcclient"
+	"github.com/pipe-cd/pipe/pkg/app/api/service/pipedservice"
+	"github.com/pipe-cd/pipe/pkg/app/api/service/webservice"
+	"github.com/pipe-cd/pipe/pkg/cli"
+	"github.com/pipe-cd/pipe/pkg/rpc/rpcclient"
 )
 
 type samplecli struct {

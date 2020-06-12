@@ -34,8 +34,8 @@ func TestDiffResultListFind(t *testing.T) {
 			list: DiffResultList{
 				{
 					PathString: "spec.template.spec.containers.[0].image",
-					Before:     "gcr.io/kapetanios/pipecd-helloworld:v1.0.0",
-					After:      "gcr.io/kapetanios/pipecd-helloworld:v2.0.0",
+					Before:     "gcr.io/pipecd/helloworld:v1.0.0",
+					After:      "gcr.io/pipecd/helloworld:v2.0.0",
 				},
 			},
 			query: `spec.template2.spec.containers.\[\d+\].image`,
@@ -45,15 +45,15 @@ func TestDiffResultListFind(t *testing.T) {
 			list: DiffResultList{
 				{
 					PathString: "spec.template.spec.containers.[0].image",
-					Before:     "gcr.io/kapetanios/pipecd-helloworld:v1.0.0",
-					After:      "gcr.io/kapetanios/pipecd-helloworld:v2.0.0",
+					Before:     "gcr.io/pipecd/helloworld:v1.0.0",
+					After:      "gcr.io/pipecd/helloworld:v2.0.0",
 				},
 			},
 			query: `spec.template.spec.containers.\[\d+\].image`,
 			expected: &DiffResult{
 				PathString: "spec.template.spec.containers.[0].image",
-				Before:     "gcr.io/kapetanios/pipecd-helloworld:v1.0.0",
-				After:      "gcr.io/kapetanios/pipecd-helloworld:v2.0.0",
+				Before:     "gcr.io/pipecd/helloworld:v1.0.0",
+				After:      "gcr.io/pipecd/helloworld:v2.0.0",
 			},
 		},
 	}
@@ -93,8 +93,8 @@ func TestDiffResultListFindAll(t *testing.T) {
 			list: DiffResultList{
 				{
 					PathString: "spec.template.spec.containers.[0].image",
-					Before:     "gcr.io/kapetanios/pipecd-helloworld:v1.0.0",
-					After:      "gcr.io/kapetanios/pipecd-helloworld:v2.0.0",
+					Before:     "gcr.io/pipecd/helloworld:v1.0.0",
+					After:      "gcr.io/pipecd/helloworld:v2.0.0",
 				},
 			},
 			query: `spec.template2.spec.containers.\[\d+\].image`,
@@ -104,8 +104,8 @@ func TestDiffResultListFindAll(t *testing.T) {
 			list: DiffResultList{
 				{
 					PathString: "spec.template.spec.containers.[0].image",
-					Before:     "gcr.io/kapetanios/pipecd-helloworld:v1.0.0",
-					After:      "gcr.io/kapetanios/pipecd-helloworld:v2.0.0",
+					Before:     "gcr.io/pipecd/helloworld:v1.0.0",
+					After:      "gcr.io/pipecd/helloworld:v2.0.0",
 				},
 				{
 					PathString: "spec.template.spec.containers.[1].image",
@@ -122,8 +122,8 @@ func TestDiffResultListFindAll(t *testing.T) {
 			expected: []DiffResult{
 				{
 					PathString: "spec.template.spec.containers.[0].image",
-					Before:     "gcr.io/kapetanios/pipecd-helloworld:v1.0.0",
-					After:      "gcr.io/kapetanios/pipecd-helloworld:v2.0.0",
+					Before:     "gcr.io/pipecd/helloworld:v1.0.0",
+					After:      "gcr.io/pipecd/helloworld:v2.0.0",
 				},
 				{
 					PathString: "spec.template.spec.containers.[1].image",
@@ -220,8 +220,8 @@ func TestDiff(t *testing.T) {
 						},
 					},
 					PathString: "spec.template.spec.containers.[0].image",
-					Before:     "gcr.io/kapetanios/pipecd-helloworld:v1.0.0",
-					After:      "gcr.io/kapetanios/pipecd-helloworld:v2.0.0",
+					Before:     "gcr.io/pipecd/helloworld:v1.0.0",
+					After:      "gcr.io/pipecd/helloworld:v2.0.0",
 				},
 			},
 		},
@@ -260,8 +260,8 @@ func TestDiff(t *testing.T) {
 						},
 					},
 					PathString: "spec.template.spec.containers.[0].image",
-					Before:     "gcr.io/kapetanios/pipecd-helloworld:v1.0.0",
-					After:      "gcr.io/kapetanios/pipecd-helloworld:v2.0.0",
+					Before:     "gcr.io/pipecd/helloworld:v1.0.0",
+					After:      "gcr.io/pipecd/helloworld:v2.0.0",
 				},
 			},
 		},
