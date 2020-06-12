@@ -4,6 +4,7 @@ import { Header } from "../components/header";
 import { PAGE_PATH_DEPLOYMENTS, PAGE_PATH_APPLICATIONS } from "../constants";
 import { DeploymentDetailPage } from "./deployments/detail";
 import { ApplicationDetailPage } from "./applications/detail";
+import { DeploymentIndexPage } from "./deployments";
 
 export const Pages: FC = memo(() => {
   return (
@@ -14,6 +15,11 @@ export const Pages: FC = memo(() => {
           exact
           path={`${PAGE_PATH_APPLICATIONS}/:applicationId`}
           component={ApplicationDetailPage}
+        />
+        <Route
+          exact
+          path={`${PAGE_PATH_DEPLOYMENTS}`}
+          component={DeploymentIndexPage}
         />
         <Route
           exact
