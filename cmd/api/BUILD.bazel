@@ -22,6 +22,6 @@ go_binary(
 app_image(
     name = "api",
     binary = ":api",
-    repository = "pipecd-api",
+    repository = "api",
     visibility = ["//visibility:public"],
 )

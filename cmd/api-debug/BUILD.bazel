@@ -4,6 +4,6 @@ app_image(
     name = "api-debug",
     base = "@debug-base//image",
     binary = "//cmd/api:api",
-    repository = "pipecd-api-debug",
+    repository = "api-debug",
     visibility = ["//visibility:public"],
 )

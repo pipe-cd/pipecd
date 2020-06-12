@@ -28,6 +28,6 @@ go_binary(
 app_image(
     name = "web",
     binary = ":web",
-    repository = "pipecd-web",
+    repository = "web",
     visibility = ["//visibility:public"],
 )

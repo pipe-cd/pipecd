@@ -1,2 +1,2 @@
 version: 0.0.2
-registry: gcr.io/kapetanios/piped-base
+registry: gcr.io/pipecd/piped-base
