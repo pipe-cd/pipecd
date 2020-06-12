@@ -6,26 +6,29 @@ import {
   Button,
   makeStyles,
   Avatar,
-  Link
+  Link,
 } from "@material-ui/core";
 import {
   APP_NAME,
   PAGE_PATH_APPLICATIONS,
-  PAGE_PATH_DEPLOYMENTS
+  PAGE_PATH_DEPLOYMENTS,
+  PAGE_PATH_INSIGHTS,
+  PAGE_PATH_SETTINGS,
 } from "../constants";
+import { Link as RouterLink } from "react-router-dom";
 
-const useStyles = makeStyles(theme => ({
+const useStyles = makeStyles((theme) => ({
   title: {
-    flexGrow: 1
+    flexGrow: 1,
   },
   appIcon: {
     marginRight: theme.spacing(2),
     width: theme.spacing(4),
-    height: theme.spacing(4)
+    height: theme.spacing(4),
   },
   link: {
-    marginRight: theme.spacing(2)
-  }
+    marginRight: theme.spacing(2),
+  },
 }));
 
 export const Header: React.FC = () => {
@@ -38,23 +41,35 @@ export const Header: React.FC = () => {
           {APP_NAME}
         </Typography>
         <Link
+          component={RouterLink}
           className={classes.link}
           color="inherit"
-          href={PAGE_PATH_APPLICATIONS}
+          to={PAGE_PATH_APPLICATIONS}
         >
           Applications
         </Link>
         <Link
+          component={RouterLink}
           className={classes.link}
           color="inherit"
-          href={PAGE_PATH_DEPLOYMENTS}
+          to={PAGE_PATH_DEPLOYMENTS}
         >
           Deployments
         </Link>
-        <Link className={classes.link} color="inherit">
+        <Link
+          component={RouterLink}
+          className={classes.link}
+          color="inherit"
+          to={PAGE_PATH_INSIGHTS}
+        >
           Insights
         </Link>
-        <Link className={classes.link} color="inherit">
+        <Link
+          component={RouterLink}
+          className={classes.link}
+          color="inherit"
+          to={PAGE_PATH_SETTINGS}
+        >
           Settings
         </Link>
         <Button color="inherit">Login</Button>
