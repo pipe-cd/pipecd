@@ -65,6 +65,8 @@ const (
 	KindPod         = "Pod"
 	KindConfigMap   = "ConfigMap"
 	KindSecret      = "Secret"
+
+	DefaultNamespace = "default"
 )
 
 type APIVersionKind struct {
@@ -120,13 +122,34 @@ func (k ResourceKey) IsSecret() bool {
 	return true
 }
 
+// IsLess reports whether the key should sort before the given key.
+func (k ResourceKey) IsLess(a ResourceKey) bool {
+	if k.APIVersion < a.APIVersion {
+		return true
+	}
+	if k.Kind < a.Kind {
+		return true
+	}
+	if k.Namespace < a.Namespace {
+		return true
+	}
+	if k.Name < a.Name {
+		return true
+	}
+	return false
+}
+
 func MakeResourceKey(obj *unstructured.Unstructured) ResourceKey {
-	return ResourceKey{
+	k := ResourceKey{
 		APIVersion: obj.GetAPIVersion(),
 		Kind:       obj.GetKind(),
 		Namespace:  obj.GetNamespace(),
 		Name:       obj.GetName(),
 	}
+	if k.Namespace == "" {
+		k.Namespace = DefaultNamespace
+	}
+	return k
 }
 
 func DecodeResourceKey(key string) (ResourceKey, error) {

@@ -173,13 +173,8 @@ func LoadManifestsFromYAMLFile(path string) ([]Manifest, error) {
 			return nil, err
 		}
 		manifests = append(manifests, Manifest{
-			Key: ResourceKey{
-				APIVersion: obj.GetAPIVersion(),
-				Kind:       obj.GetKind(),
-				Namespace:  obj.GetNamespace(),
-				Name:       obj.GetName(),
-			},
-			u: &obj,
+			Key: MakeResourceKey(&obj),
+			u:   &obj,
 		})
 	}
 	return manifests, nil

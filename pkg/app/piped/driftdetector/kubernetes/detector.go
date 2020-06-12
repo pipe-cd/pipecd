@@ -18,6 +18,8 @@ import (
 	"context"
 	"fmt"
 	"path/filepath"
+	"sort"
+	"strings"
 	"time"
 
 	"go.uber.org/zap"
@@ -133,7 +135,7 @@ func (d *detector) check(ctx context.Context) error {
 				notDeployingApps = append(notDeployingApps, app)
 				continue
 			}
-			state := makeDeployingState(app, headDeployment)
+			state := makeDeployingState(headDeployment)
 			d.reporter.ReportApplicationSyncState(ctx, app.Id, state)
 		}
 
@@ -193,6 +195,75 @@ func (d *detector) check(ctx context.Context) error {
 }
 
 func (d *detector) checkApplication(ctx context.Context, app *model.Application, repo git.Repo, headCommit git.Commit) error {
+	watchingResourceKinds := d.stateGetter.GetWatchingResourceKinds()
+	headManifests, err := d.loadHeadManifests(ctx, app, repo, headCommit, watchingResourceKinds)
+	if err != nil {
+		return err
+	}
+	sort.Slice(headManifests, func(i, j int) bool {
+		return headManifests[i].Key.IsLess(headManifests[j].Key)
+	})
+	d.logger.Info(fmt.Sprintf("application %s has %d manifests at commit %s", app.Id, len(headManifests), headCommit.Hash))
+
+	liveManifests := d.stateGetter.GetAppLiveManifests(app.Id)
+	sort.Slice(liveManifests, func(i, j int) bool {
+		return liveManifests[i].Key.IsLess(liveManifests[j].Key)
+	})
+	d.logger.Info(fmt.Sprintf("application %s has %d live manifests", app.Id, len(liveManifests)))
+
+	var missings, redundancies []provider.Manifest
+	var h, l int
+	for {
+		if h >= len(headManifests) || l >= len(liveManifests) {
+			break
+		}
+		if headManifests[h].Key == liveManifests[l].Key {
+			h++
+			l++
+			continue
+		}
+		// Has in head but not in live so this should be a missing one.
+		if headManifests[h].Key.IsLess(liveManifests[l].Key) {
+			missings = append(missings, headManifests[h])
+			h++
+			continue
+		}
+		// Has in live but not in head so this should be a redundant one.
+		redundancies = append(redundancies, liveManifests[l])
+		l++
+	}
+	if len(headManifests) > h {
+		missings = append(missings, headManifests[h:]...)
+	}
+	if len(liveManifests) > h {
+		redundancies = append(redundancies, liveManifests[l:]...)
+	}
+	if len(missings)+len(redundancies) > 0 {
+		state := makeOutOfSyncStateBecauseMissingOrRedundant(missings, redundancies)
+		return d.reporter.ReportApplicationSyncState(ctx, app.Id, state)
+	}
+
+	// All manifest keys are matched. Now we will go to check the diff of each manifest pair.
+	// TODO: Ignores all generated fields while calculating the diff.
+	diffs := make(map[int]provider.DiffResultList)
+	for i := 0; i < len(headManifests); i++ {
+		result := provider.Diff(headManifests[i], liveManifests[i])
+		if len(result) > 0 {
+			diffs[i] = result
+		}
+	}
+
+	// No diffs means this application is in SYNCED state.
+	if len(diffs) == 0 {
+		state := makeSyncedState()
+		return d.reporter.ReportApplicationSyncState(ctx, app.Id, state)
+	}
+
+	state := makeOutOfSyncState(headManifests, liveManifests, diffs)
+	return d.reporter.ReportApplicationSyncState(ctx, app.Id, state)
+}
+
+func (d *detector) loadHeadManifests(ctx context.Context, app *model.Application, repo git.Repo, headCommit git.Commit, watchingResourceKinds []provider.APIVersionKind) ([]provider.Manifest, error) {
 	var (
 		manifestCache = provider.AppManifestsCache{
 			AppID:  app.Id,
@@ -203,29 +274,40 @@ func (d *detector) checkApplication(ctx context.Context, app *model.Application,
 		appDir  = filepath.Join(repoDir, app.GitPath.Path)
 	)
 
-	headManifests, ok := manifestCache.Get(headCommit.Hash)
+	manifests, ok := manifestCache.Get(headCommit.Hash)
 	if !ok {
 		// When the manifests were not in the cache we have to load them.
 		cfg, err := d.loadDeploymentConfiguration(repoDir, app)
 		if err != nil {
 			err = fmt.Errorf("failed to load deployment configuration: %w", err)
-			return err
+			return nil, err
 		}
 		loader := provider.NewManifestLoader(appDir, repoDir, cfg.KubernetesDeploymentSpec.Input, d.logger)
-		headManifests, err = loader.LoadManifests(ctx)
+		manifests, err = loader.LoadManifests(ctx)
 		if err != nil {
 			err = fmt.Errorf("failed to load new manifests: %w", err)
-			return err
+			return nil, err
 		}
-		manifestCache.Put(headCommit.Hash, headManifests)
+		manifestCache.Put(headCommit.Hash, manifests)
 	}
-	d.logger.Info(fmt.Sprintf("application %s has %d manifests at commit %s", app.Id, len(headManifests), headCommit.Hash))
 
-	liveManifests := d.stateGetter.GetAppLiveManifests(app.Id)
-	d.logger.Info(fmt.Sprintf("application %s has %d live manifests", app.Id, len(liveManifests)))
+	watchingMap := make(map[provider.APIVersionKind]struct{}, len(watchingResourceKinds))
+	for _, k := range watchingResourceKinds {
+		watchingMap[k] = struct{}{}
+	}
 
-	//watchingResourceKinds := d.stateGetter.GetWatchingResourceKinds()
-	return nil
+	filtered := make([]provider.Manifest, 0, len(manifests))
+	for _, m := range manifests {
+		_, ok := watchingMap[provider.APIVersionKind{
+			APIVersion: m.Key.APIVersion,
+			Kind:       m.Key.Kind,
+		}]
+		if ok {
+			filtered = append(filtered, m)
+		}
+	}
+
+	return filtered, nil
 }
 
 // listApplications retrieves all applications those should be handled by this director
@@ -262,7 +344,7 @@ func (d *detector) ProviderName() string {
 	return d.provider.Name
 }
 
-func makeDeployingState(app *model.Application, deployment *model.Deployment) model.ApplicationSyncState {
+func makeDeployingState(deployment *model.Deployment) model.ApplicationSyncState {
 	reason := deployment.Description
 	if reason == "" {
 		reason = "A deployment is running."
@@ -273,5 +355,54 @@ func makeDeployingState(app *model.Application, deployment *model.Deployment) mo
 		Reason:           reason,
 		HeadDeploymentId: deployment.Id,
 		Timestamp:        time.Now().Unix(),
+	}
+}
+
+func makeSyncedState() model.ApplicationSyncState {
+	return model.ApplicationSyncState{
+		Status:      model.ApplicationSyncStatus_SYNCED,
+		ShortReason: "",
+		Reason:      "",
+		Timestamp:   time.Now().Unix(),
+	}
+}
+
+func makeOutOfSyncStateBecauseMissingOrRedundant(missings, redundancies []provider.Manifest) model.ApplicationSyncState {
+	shortReason := fmt.Sprintf("There are %d missing manifests and %d redundant manifests.", len(missings), len(redundancies))
+	var reasonBuilder strings.Builder
+	if len(missings) > 0 {
+		reasonBuilder.WriteString(fmt.Sprintf("There are %d missing manifests", len(missings)))
+		for _, m := range missings {
+			reasonBuilder.WriteString(fmt.Sprintf("- %s", m.Key.String()))
+		}
+	}
+	if len(redundancies) > 0 {
+		reasonBuilder.WriteString(fmt.Sprintf("There are %d redundant manifests", len(redundancies)))
+		for _, m := range redundancies {
+			reasonBuilder.WriteString(fmt.Sprintf("- %s", m.Key.String()))
+		}
+	}
+	return model.ApplicationSyncState{
+		Status:      model.ApplicationSyncStatus_OUT_OF_SYNC,
+		ShortReason: shortReason,
+		Reason:      reasonBuilder.String(),
+		Timestamp:   time.Now().Unix(),
+	}
+}
+
+func makeOutOfSyncState(headManifests, liveManifests []provider.Manifest, diffs map[int]provider.DiffResultList) model.ApplicationSyncState {
+	shortReason := fmt.Sprintf("There are %d manifests are not synced.", len(diffs))
+	var reasonBuilder strings.Builder
+	reasonBuilder.WriteString(shortReason)
+	// TODO: Limit the size of reason.
+	for i, list := range diffs {
+		reasonBuilder.WriteString(headManifests[i].Key.String())
+		reasonBuilder.WriteString(list.String())
+	}
+	return model.ApplicationSyncState{
+		Status:      model.ApplicationSyncStatus_OUT_OF_SYNC,
+		ShortReason: shortReason,
+		Reason:      reasonBuilder.String(),
+		Timestamp:   time.Now().Unix(),
 	}
 }
