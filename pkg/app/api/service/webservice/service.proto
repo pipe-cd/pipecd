@@ -120,6 +120,7 @@ message ListDeploymentsRequest {
 }
 
 message ListDeploymentsResponse {
+    repeated pipe.model.Deployment deployments = 1;
 }
 
 message GetDeploymentRequest {
