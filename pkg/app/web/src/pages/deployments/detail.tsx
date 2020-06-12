@@ -8,6 +8,7 @@ import {
 } from "../../modules/deployments";
 import { DeploymentDetail } from "../../components/deployment-detail";
 import { AppState } from "../../modules";
+import { Pipeline } from "../../components/pipeline";
 
 export const DeploymentDetailPage: FC = memo(() => {
   const dispatch = useDispatch();
@@ -36,6 +37,7 @@ export const DeploymentDetailPage: FC = memo(() => {
         status={deployment.status}
         commit={deployment.trigger.commit}
       />
+      <Pipeline deploymentId={deploymentId} />
     </div>
   );
 });

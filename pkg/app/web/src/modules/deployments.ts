@@ -3,10 +3,14 @@ import {
   createEntityAdapter,
   createAsyncThunk,
 } from "@reduxjs/toolkit";
-import { Deployment as DeploymentModel } from "pipe/pkg/app/web/model/deployment_pb";
+import {
+  Deployment as DeploymentModel,
+  PipelineStage,
+} from "pipe/pkg/app/web/model/deployment_pb";
 import { getDeployment } from "../api/deployments";
 
 export type Deployment = Required<DeploymentModel.AsObject>;
+export type Stage = Required<PipelineStage.AsObject>;
 
 export const deploymentsAdapter = createEntityAdapter<Deployment>({});
 

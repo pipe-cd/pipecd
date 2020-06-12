@@ -7,7 +7,7 @@ import { LabeledText } from "./labeled-text";
 
 const useStyles = makeStyles((theme) => ({
   container: {
-    padding: theme.spacing(2),
+    padding: theme.spacing(3),
   },
   textMargin: {
     marginLeft: theme.spacing(1),

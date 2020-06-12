@@ -1,9 +1,36 @@
-import React, { FC } from "react";
+import React, { FC, memo } from "react";
 import { makeStyles, Box } from "@material-ui/core";
-import { PipelineStage as PipelineStageModel } from "pipe/pkg/app/web/model/deployment_pb";
 import { PipelineStage } from "./pipeline-stage";
+import { useSelector } from "react-redux";
+import { AppState } from "../modules";
+import { selectById, Deployment, Stage } from "../modules/deployments";
 
-const useStyles = makeStyles(theme => ({
+const useConvertedStages = (deploymentId: string) => {
+  const stages: Stage[][] = [];
+  const deployment = useSelector<AppState, Deployment | undefined>((state) =>
+    selectById(state.deployments, deploymentId)
+  );
+
+  if (!deployment) {
+    return stages;
+  }
+
+  stages[0] = deployment.stagesList.filter(
+    (stage) => stage.requiresList.length === 0
+  );
+
+  let index = 0;
+  while (stages[index].length > 0) {
+    const previousIds = stages[index].map((stage) => stage.id);
+    index++;
+    stages[index] = deployment.stagesList.filter((stage) =>
+      stage.requiresList.some((id) => previousIds.includes(id))
+    );
+  }
+  return stages;
+};
+
+const useStyles = makeStyles((theme) => ({
   requireLine: {
     position: "relative",
     "&::before": {
@@ -13,8 +40,8 @@ const useStyles = makeStyles(theme => ({
       left: -theme.spacing(2),
       borderTop: `2px solid ${theme.palette.divider}`,
       width: theme.spacing(4),
-      height: 1
-    }
+      height: 1,
+    },
   },
   requireCurvedLine: {
     position: "relative",
@@ -26,25 +53,32 @@ const useStyles = makeStyles(theme => ({
       borderLeft: `2px solid ${theme.palette.divider}`,
       borderBottom: `2px solid ${theme.palette.divider}`,
       width: theme.spacing(2),
-      height: 56 + theme.spacing(4)
-    }
-  }
+      height: 56 + theme.spacing(4),
+    },
+  },
 }));
 
 interface Props {
-  stages: PipelineStageModel.AsObject[][];
+  deploymentId: string;
 }
 
-export const Pipeline: FC<Props> = ({ stages }) => {
+export const Pipeline: FC<Props> = memo(function Pipeline({ deploymentId }) {
   const classes = useStyles();
+  const stages = useConvertedStages(deploymentId);
+
   return (
     <Box display="flex">
       {stages.map((stageColumn, columnIndex) => (
-        <Box display="flex" flexDirection="column">
+        <Box
+          display="flex"
+          flexDirection="column"
+          key={`pipeline-${columnIndex}`}
+        >
           {stageColumn.map((stage, stageIndex) => (
             <Box
               display="flex"
               p={2}
+              key={stage.id}
               className={
                 columnIndex > 0
                   ? stageIndex > 0
@@ -60,4 +94,4 @@ export const Pipeline: FC<Props> = ({ stages }) => {
       ))}
     </Box>
   );
-};
+});

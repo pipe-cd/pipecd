@@ -6,17 +6,17 @@ export const theme = createMuiTheme({
   props: {
     MuiTypography: {
       variantMapping: {
-        subtitle2: "span"
-      }
-    }
+        subtitle2: "span",
+      },
+    },
   },
   palette: {
     primary: blue,
-    secondary: cyan
+    secondary: cyan,
   },
   typography: {
     subtitle2: {
-      fontWeight: 600
-    }
-  }
+      fontWeight: 600,
+    },
+  },
 });
