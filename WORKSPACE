@@ -116,17 +116,17 @@ load(
 
 container_pull(
     name = "piped-base",
-    digest = "sha256:561e2e38fb33f2b7800759f9c3cd065ea79bc5b906c25e45d7e527b8e0320ae8",
+    digest = "sha256:f4b0d8184b441a33eba241238676350568520be992c124ba063ebcfc8977c406",
     registry = "gcr.io",
-    repository = "kapetanios/piped-base",
+    repository = "pipecd/piped-base",
     tag = "0.0.2",
 )
 
 container_pull(
     name = "debug-base",
-    digest = "sha256:7bc48b9cef27dffaa66617a39f649b6f4b3359e40fc2cac6a51b4879439aa638",
+    digest = "sha256:b0ec52fbde95be09074badc8298b6e94d61a9066e9637d75610267f1646fb0a1",
     registry = "gcr.io",
-    repository = "kapetanios/debug-base",
+    repository = "pipecd/debug-base",
     tag = "0.0.1",
 )
 

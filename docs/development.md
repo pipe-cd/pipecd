@@ -20,7 +20,10 @@ go get github.com/bazelbuild/bazelisk
 or directly install its [binary](https://github.com/bazelbuild/bazelisk/releases) from the release page.
 
 ## Repositories
-- [pipe](https://github.com/kapetanios/pipe): contains all code and documentations.
+- [pipe](https://github.com/pipe-cd/pipe): contains all source code
+- [manifests](https://github.com/pipe-cd/manifests): contains all released manifests
+- [site](https://github.com/pipe-cd/site):  contains all documentations and site
+- [examples](https://github.com/pipe-cd/examples): contains some examples to demonstrate how to use PipeCD
 
 ## Build and test with Bazel
 
@@ -34,3 +37,4 @@ or directly install its [binary](https://github.com/bazelbuild/bazelisk/releases
 - `make expose-generated-go`: exposes generated Go files to editors and IDEs.
 
 **NOTE**: The first time of running a bazel command will take some minutes because bazel needs to download all required dependencies. From the second time it will be very fast.
+
