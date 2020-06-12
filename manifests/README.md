@@ -1,32 +1,7 @@
-# How to install
+**NOTE**
 
-## Control Plane
+This directory does not contain the installable manifests for both `piped` and `control-plane`.
+This just contains the manifest templates.
 
-- Using helm 3
-
-``` consolse
-helm install pipecd ./pipecd
-```
-
-- Using kubectl
-
-``` consolse
-TODO
-```
-
-## Piped
-
-- Using helm 3
-
-``` console
-helm install piped-name ./piped \
-    --set args.projectID=your-project-id \
-    --set args.pipedID=your-piped-id \
-    --set args.pipedKey=your-piped-key
-```
-
-- Using kubectl
-
-``` consolse
-TODO
-```
+The installable manifests are automatically generated and updated on [manifests](https://github.com/pipe-cd/manifests) repository.
+Please checkout that repository for more details.

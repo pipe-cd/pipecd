@@ -1,0 +1,26 @@
+version: v1
+kind: Plugin
+spec:
+  # A plugin provides command to render template and
+  # make pull request to add those generated output.
+  # See more: https://kapetanios.dev/docs/plugins/template
+  template:
+    enabled: true
+    rules:
+    - name: manifests
+      destination: manifests
+      trigger:
+        postsubmits:
+          - push-images
+        disableCommand: false # In case template plugin fails.
+      transforms:
+      - inputs:
+          - manifests
+        ignores:
+          - manifests/README.md
+          - manifests/RELEASE
+      - inputs:
+          - manifests/RELEASE
+        pathReplacers:
+        - regex: '(.*)'
+          replacement: release/RELEASE
