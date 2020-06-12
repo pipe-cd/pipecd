@@ -5,12 +5,12 @@ spec:
   git:
     accessTokenFile: /etc/pipecd-runner/gittoken
   repositories:
-    - repoId: pipe-debug
-      remote: git@github.com:pipe-cd/examples.git
+    - repoId: debug
+      remote: git@github.com:pipe-cd/debug.git
       branch: master
-    - repoId: pipe-debug-not-master
-      remote: git@github.com:pipe-cd/examples.git
-      branch: dev
+    - repoId: debug-not-master
+      remote: git@github.com:pipe-cd/debug.git
+      branch: not-master
   cloudProviders:
     - name: kubernetes-default
       type: KUBERNETES

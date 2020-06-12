@@ -115,7 +115,7 @@ func (a *WebAPI) ListDeployments(ctx context.Context, req *webservice.ListDeploy
 				PipedId:       "debug-piped",
 				ProjectId:     "debug-project",
 				GitPath: &model.ApplicationGitPath{
-					RepoId: "pipe-debug",
+					RepoId: "debug",
 					Path:   "k8s",
 				},
 				Trigger: &model.DeploymentTrigger{
@@ -269,7 +269,7 @@ func (a *WebAPI) GetDeployment(ctx context.Context, req *webservice.GetDeploymen
 			ProjectId:     "debug-project",
 			Kind:          model.ApplicationKind_KUBERNETES,
 			GitPath: &model.ApplicationGitPath{
-				RepoId: "pipe-debug",
+				RepoId: "debug",
 				Path:   "k8s",
 			},
 			Trigger: &model.DeploymentTrigger{
