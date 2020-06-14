@@ -19,6 +19,8 @@ spec:
         ignores:
           - manifests/README.md
           - manifests/RELEASE
+        ignoreRenderings:
+          - "!manifests/*/Chart.yaml"
       - inputs:
           - manifests/RELEASE
         pathReplacers:
