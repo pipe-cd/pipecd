@@ -26,3 +26,5 @@ spec:
         pathReplacers:
         - regex: '(.*)'
           replacement: release/RELEASE
+      - inputs:
+          - quickstart
