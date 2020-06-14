@@ -1,0 +1,12 @@
+apiVersion: pipecd.dev/v1beta1
+kind: Piped
+spec:
+  syncInterval: 1m
+  repositories:
+    - repoId: examples
+      remote: git@github.com:pipe-cd/examples.git
+      branch: master
+  cloudProviders:
+    - name: kubernetes-default
+      type: KUBERNETES
+ 

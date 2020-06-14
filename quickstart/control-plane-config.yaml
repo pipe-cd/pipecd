@@ -1,0 +1,12 @@
+apiVersion: "pipecd.dev/v1beta1"
+kind: ControlPlane
+spec:
+  datastore:
+    type: MONGODB
+  filestore:
+    type: MINIO
+  project:
+    - name: default
+      staticAdmin:
+        username: hello-pipecd
+        password: hello-pipecd
