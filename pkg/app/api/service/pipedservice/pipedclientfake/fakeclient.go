@@ -76,7 +76,7 @@ func NewClient(logger *zap.Logger) *fakeClient {
 			CloudProvider: "kubernetes-default",
 			GitPath: &model.ApplicationGitPath{
 				RepoId: "debug",
-				Path:   "k8s/" + name,
+				Path:   "kubernetes/" + name,
 			},
 			Disabled: !enable,
 		}
