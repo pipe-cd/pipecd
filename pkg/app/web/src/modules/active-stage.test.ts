@@ -6,6 +6,6 @@ describe("activeStageSlice reducer", () => {
       activeStageSlice.reducer(undefined, {
         type: "TEST_ACTION",
       })
-    ).toMatchInlineSnapshot();
+    ).toMatchInlineSnapshot(`null`);
   });
 });
