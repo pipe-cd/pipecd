@@ -87,11 +87,12 @@ bazelisk build -- //...
 for label in $(bazelisk query 'kind(go_proto_library, //...)'); do
 	package="${label%%:*}"
 	package="${package##//}"
+	packageName="${package##*/}"
 	target="${label##*:}"
 	[[ -d "${package}" ]] || continue
 
 	# Compute the path where Bazel puts the files.
-	out_path="bazel-bin/${package}/${OS}_${ARCH}_stripped/${target}%/github.com/${ORGANIZATION}/${REPOSITORY}/${package}"
+	out_path="bazel-bin/${package}/${packageName}_go_proto_/github.com/${ORGANIZATION}/${REPOSITORY}/${package}"
 
 	old_links=$(eval echo ${package}/*{.pb.go,.pb.validate.go})
 	generated_files=$(eval echo ${out_path}/*{.pb.go,.pb.validate.go})
