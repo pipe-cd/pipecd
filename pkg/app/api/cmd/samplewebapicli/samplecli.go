@@ -64,6 +64,8 @@ func (s *samplecli) run(ctx context.Context, t cli.Telemetry) error {
 	defer cli.Close()
 
 	switch s.function {
+	case "ListEnvironments":
+		return s.listEnvironments(ctx, cli, data, t.Logger)
 	case "AddApplication":
 		return s.addApplication(ctx, cli, data, t.Logger)
 	case "ListApplications":
@@ -95,6 +97,23 @@ func (s *samplecli) createServiceClient(ctx context.Context, logger *zap.Logger)
 		return nil, err
 	}
 	return client, nil
+}
+
+func (s *samplecli) listEnvironments(ctx context.Context, cli webservice.Client, payload []byte, logger *zap.Logger) error {
+	req := webservice.ListEnvironmentsRequest{}
+	if err := json.Unmarshal(payload, &req); err != nil {
+		return err
+	}
+	resp, err := cli.ListEnvironments(ctx, &req)
+	if err != nil {
+		logger.Error("failed to run ListEnvironments", zap.Error(err))
+		return err
+	}
+	logger.Info("successfully run ListEnvironments")
+	for _, app := range resp.Environments {
+		fmt.Printf("environment: %+v\n", app)
+	}
+	return nil
 }
 
 func (s *samplecli) addApplication(ctx context.Context, cli webservice.Client, payload []byte, logger *zap.Logger) error {

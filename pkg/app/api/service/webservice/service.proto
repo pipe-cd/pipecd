@@ -20,6 +20,7 @@ option go_package = "github.com/pipe-cd/pipe/pkg/app/api/service/webservice";
 import "validate/validate.proto";
 import "pkg/model/application.proto";
 import "pkg/model/application_live_state.proto";
+import "pkg/model/environment.proto";
 import "pkg/model/deployment.proto";
 import "pkg/model/logblock.proto";
 
@@ -70,6 +71,7 @@ message ListEnvironmentsRequest {
 }
 
 message ListEnvironmentsResponse {
+    repeated pipe.model.Environment environments = 1;
 }
 
 message RegisterPipedRequest {

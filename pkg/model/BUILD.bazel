@@ -41,6 +41,7 @@ go_library(
         "command.go",
         "datastore.go",
         "deployment.go",
+        "environment.go",
         "filestore.go",
         "model.go",
         "stage.go",
