@@ -78,7 +78,7 @@ spec:
   clusterIP: None
   ports:
     - name: service
-      port: 9090
+      port: 9082
       targetPort: web
     - name: admin
       port: 9085
@@ -99,7 +99,7 @@ spec:
   type: ClusterIP
   ports:
     - name: service
-      port: 9090
+      port: 6379
       targetPort: redis
   selector:
     {{- include "pipecd.selectorLabels" . | nindent 4 }}

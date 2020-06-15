@@ -18,12 +18,12 @@ cors:
 
 # PipeCD workloads.
 gateway:
-  replicasCount: 3
+  replicasCount: 1
   imageTag: v1.10.0
   resources: {}
 
 api:
-  replicasCount: 3
+  replicasCount: 1
   imageTag: ""
   useDebugImage: true
   args:
@@ -32,7 +32,7 @@ api:
   resources: {}
 
 web:
-  replicasCount: 3
+  replicasCount: 1
   imageTag: ""
   resources: {}
 

@@ -137,4 +137,4 @@ data:
                 address:
                   socket_address:
                     address: {{ include "pipecd.fullname" . }}-web
-                    port_value: 9090
+                    port_value: 9082
