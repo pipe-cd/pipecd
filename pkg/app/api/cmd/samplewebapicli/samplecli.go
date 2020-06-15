@@ -64,6 +64,8 @@ func (s *samplecli) run(ctx context.Context, t cli.Telemetry) error {
 	defer cli.Close()
 
 	switch s.function {
+	case "AddApplication":
+		return s.addApplication(ctx, cli, data, t.Logger)
 	case "ListApplications":
 		return s.listApplications(ctx, cli, data, t.Logger)
 	case "ListDeployments":
@@ -93,6 +95,19 @@ func (s *samplecli) createServiceClient(ctx context.Context, logger *zap.Logger)
 		return nil, err
 	}
 	return client, nil
+}
+
+func (s *samplecli) addApplication(ctx context.Context, cli webservice.Client, payload []byte, logger *zap.Logger) error {
+	req := webservice.AddApplicationRequest{}
+	if err := json.Unmarshal(payload, &req); err != nil {
+		return err
+	}
+	if _, err := cli.AddApplication(ctx, &req); err != nil {
+		logger.Error("failed to run AddApplication", zap.Error(err))
+		return err
+	}
+	logger.Info("successfully run AddApplication")
+	return nil
 }
 
 func (s *samplecli) listApplications(ctx context.Context, cli webservice.Client, payload []byte, logger *zap.Logger) error {

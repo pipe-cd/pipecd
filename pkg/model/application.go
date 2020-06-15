@@ -14,7 +14,10 @@
 
 package model
 
-import "path/filepath"
+import (
+	"fmt"
+	"path/filepath"
+)
 
 // GetDeploymentConfigFilePath returns the path to deployment configuration directory.
 func (p ApplicationGitPath) GetDeploymentConfigFilePath(filename string) string {
@@ -37,4 +40,9 @@ func (s ApplicationSyncState) HasChanged(next ApplicationSyncState) bool {
 		return true
 	}
 	return false
+}
+
+// MakeApplicationID makes application_id using project_id and env_id and name.
+func MakeApplicationID(projectID, envID, name string) string {
+	return fmt.Sprintf("%s:%s:%s", projectID, envID, name)
 }
