@@ -114,7 +114,6 @@ message DisableApplicationResponse {
 }
 
 message ListApplicationsRequest {
-    string project_id = 1 [(validate.rules).string.min_len = 1];
 }
 
 message ListApplicationsResponse {

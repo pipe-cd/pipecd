@@ -138,12 +138,16 @@ func (a *WebAPI) DisableApplication(ctx context.Context, req *webservice.Disable
 }
 
 func (a *WebAPI) ListApplications(ctx context.Context, req *webservice.ListApplicationsRequest) (*webservice.ListApplicationsResponse, error) {
+	claims, err := rpcauth.ExtractClaims(ctx)
+	if err != nil {
+		return nil, err
+	}
 	opts := datastore.ListOptions{
 		Filters: []datastore.ListFilter{
 			{
 				Field:    "ProjectId",
 				Operator: "==",
-				Value:    req.ProjectId,
+				Value:    claims.Role.ProjectId,
 			},
 		},
 	}
