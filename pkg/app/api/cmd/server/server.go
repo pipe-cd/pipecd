@@ -29,6 +29,7 @@ import (
 	"github.com/pipe-cd/pipe/pkg/admin"
 	"github.com/pipe-cd/pipe/pkg/app/api/api"
 	"github.com/pipe-cd/pipe/pkg/app/api/applicationlivestatestore"
+	"github.com/pipe-cd/pipe/pkg/app/api/pipedtokenverifier"
 	"github.com/pipe-cd/pipe/pkg/app/api/stagelogstore"
 	"github.com/pipe-cd/pipe/pkg/cache/rediscache"
 	"github.com/pipe-cd/pipe/pkg/cli"
@@ -165,20 +166,24 @@ func (s *server) run(ctx context.Context, t cli.Telemetry) error {
 
 	// Start a gRPC server for handling PipedAPI requests.
 	{
-		service := api.NewPipedAPI(ds, sls, t.Logger)
-		opts := []rpc.Option{
-			rpc.WithPort(s.pipedAPIPort),
-			rpc.WithGracePeriod(s.gracePeriod),
-			rpc.WithLogger(t.Logger),
-			// rpc.WithPipedTokenAuthUnaryInterceptor(verifier, t.Logger),
-			rpc.WithRequestValidationUnaryInterceptor(),
-		}
+		var (
+			verifier = pipedtokenverifier.NewVerifier(ctx, cfg, ds)
+			service  = api.NewPipedAPI(ds, sls, t.Logger)
+			opts     = []rpc.Option{
+				rpc.WithPort(s.pipedAPIPort),
+				rpc.WithGracePeriod(s.gracePeriod),
+				rpc.WithLogger(t.Logger),
+				rpc.WithPipedTokenAuthUnaryInterceptor(verifier, t.Logger),
+				rpc.WithRequestValidationUnaryInterceptor(),
+			}
+		)
 		if s.tls {
 			opts = append(opts, rpc.WithTLS(s.certFile, s.keyFile))
 		}
 		if s.enableGRPCReflection {
 			opts = append(opts, rpc.WithGRPCReflection())
 		}
+
 		pipedAPIServer = rpc.NewServer(service, opts...)
 		group.Go(func() error {
 			return pipedAPIServer.Run(ctx)

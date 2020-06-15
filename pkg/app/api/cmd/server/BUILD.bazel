@@ -9,6 +9,7 @@ go_library(
         "//pkg/admin:go_default_library",
         "//pkg/app/api/api:go_default_library",
         "//pkg/app/api/applicationlivestatestore:go_default_library",
+        "//pkg/app/api/pipedtokenverifier:go_default_library",
         "//pkg/app/api/stagelogstore:go_default_library",
         "//pkg/cache/rediscache:go_default_library",
         "//pkg/cli:go_default_library",
