@@ -34,6 +34,7 @@ import (
 // PipedAPI implements the behaviors for the gRPC definitions of WebAPI.
 type WebAPI struct {
 	applicationStore          datastore.ApplicationStore
+	environmentStore          datastore.EnvironmentStore
 	deploymentStore           datastore.DeploymentStore
 	stageLogStore             stagelogstore.Store
 	applicationLiveStateStore applicationlivestatestore.Store
@@ -45,6 +46,7 @@ type WebAPI struct {
 func NewWebAPI(ds datastore.DataStore, sls stagelogstore.Store, alss applicationlivestatestore.Store, logger *zap.Logger) *WebAPI {
 	a := &WebAPI{
 		applicationStore:          datastore.NewApplicationStore(ds),
+		environmentStore:          datastore.NewEnvironmentStore(ds),
 		deploymentStore:           datastore.NewDeploymentStore(ds),
 		stageLogStore:             sls,
 		applicationLiveStateStore: alss,
@@ -67,7 +69,28 @@ func (a *WebAPI) UpdateEnvironmentDesc(ctx context.Context, req *webservice.Upda
 }
 
 func (a *WebAPI) ListEnvironments(ctx context.Context, req *webservice.ListEnvironmentsRequest) (*webservice.ListEnvironmentsResponse, error) {
-	return nil, status.Error(codes.Unimplemented, "")
+	claims, err := rpcauth.ExtractClaims(ctx)
+	if err != nil {
+		return nil, err
+	}
+	opts := datastore.ListOptions{
+		Filters: []datastore.ListFilter{
+			{
+				Field:    "ProjectId",
+				Operator: "==",
+				Value:    claims.Role.ProjectId,
+			},
+		},
+	}
+	envs, err := a.environmentStore.ListEnvironments(ctx, opts)
+	if err != nil {
+		a.logger.Error("failed to get environments", zap.Error(err))
+		return nil, status.Error(codes.Internal, "failed to get environments")
+	}
+
+	return &webservice.ListEnvironmentsResponse{
+		Environments: envs,
+	}, nil
 }
 
 func (a *WebAPI) RegisterPiped(ctx context.Context, req *webservice.RegisterPipedRequest) (*webservice.RegisterPipedResponse, error) {

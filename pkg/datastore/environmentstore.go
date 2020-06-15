@@ -29,7 +29,7 @@ var environmentFactory = func() interface{} {
 
 type EnvironmentStore interface {
 	AddEnvironment(ctx context.Context, env *model.Environment) error
-	ListEnvironments(ctx context.Context, opts ListOptions) ([]model.Environment, error)
+	ListEnvironments(ctx context.Context, opts ListOptions) ([]*model.Environment, error)
 }
 
 type environmentStore struct {
@@ -60,12 +60,12 @@ func (s *environmentStore) AddEnvironment(ctx context.Context, env *model.Enviro
 	return s.ds.Create(ctx, environmentModelKind, env.Id, env)
 }
 
-func (s *environmentStore) ListEnvironments(ctx context.Context, opts ListOptions) ([]model.Environment, error) {
+func (s *environmentStore) ListEnvironments(ctx context.Context, opts ListOptions) ([]*model.Environment, error) {
 	it, err := s.ds.Find(ctx, environmentModelKind, opts)
 	if err != nil {
 		return nil, err
 	}
-	envs := make([]model.Environment, 0)
+	envs := make([]*model.Environment, 0)
 	for {
 		var env model.Environment
 		err := it.Next(&env)
@@ -75,7 +75,7 @@ func (s *environmentStore) ListEnvironments(ctx context.Context, opts ListOption
 		if err != nil {
 			return nil, err
 		}
-		envs = append(envs, env)
+		envs = append(envs, &env)
 	}
 	return envs, nil
 }

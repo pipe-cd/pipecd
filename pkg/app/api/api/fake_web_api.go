@@ -27,6 +27,10 @@ import (
 	"github.com/pipe-cd/pipe/pkg/model"
 )
 
+const (
+	fakeProjectID = "debug-project"
+)
+
 // FakeWebAPI implements the fake behaviors for the gRPC definitions of WebAPI.
 type FakeWebAPI struct {
 }
@@ -50,7 +54,37 @@ func (a *FakeWebAPI) UpdateEnvironmentDesc(ctx context.Context, req *webservice.
 }
 
 func (a *FakeWebAPI) ListEnvironments(ctx context.Context, req *webservice.ListEnvironmentsRequest) (*webservice.ListEnvironmentsResponse, error) {
-	return nil, status.Error(codes.Unimplemented, "")
+	now := time.Now()
+	envs := []*model.Environment{
+		{
+			Id:        model.MakeEnvID(fakeProjectID, "development"),
+			Name:      "development",
+			Desc:      "For development",
+			ProjectId: fakeProjectID,
+			CreatedAt: now.Unix(),
+			UpdatedAt: now.Unix(),
+		},
+		{
+			Id:        model.MakeEnvID(fakeProjectID, "staging"),
+			Name:      "staging",
+			Desc:      "For staging",
+			ProjectId: fakeProjectID,
+			CreatedAt: now.Unix(),
+			UpdatedAt: now.Unix(),
+		},
+		{
+			Id:        model.MakeEnvID(fakeProjectID, "production"),
+			Name:      "production",
+			Desc:      "For production",
+			ProjectId: fakeProjectID,
+			CreatedAt: now.Unix(),
+			UpdatedAt: now.Unix(),
+		},
+	}
+
+	return &webservice.ListEnvironmentsResponse{
+		Environments: envs,
+	}, nil
 }
 
 func (a *FakeWebAPI) RegisterPiped(ctx context.Context, req *webservice.RegisterPipedRequest) (*webservice.RegisterPipedResponse, error) {
@@ -77,11 +111,11 @@ func (a *FakeWebAPI) ListApplications(ctx context.Context, req *webservice.ListA
 	now := time.Now()
 	fakeApplications := []*model.Application{
 		{
-			Id:        "debug-project/development/debug-app",
+			Id:        model.MakeApplicationID(fakeProjectID, "development", "debug-app"),
 			Name:      "debug-app",
-			EnvId:     "development",
+			EnvId:     model.MakeEnvID(fakeProjectID, "development"),
 			PipedId:   "debug-piped",
-			ProjectId: "debug-project",
+			ProjectId: fakeProjectID,
 			Kind:      model.ApplicationKind_KUBERNETES,
 			GitPath: &model.ApplicationGitPath{
 				RepoId: "debug",
@@ -125,10 +159,10 @@ func (a *FakeWebAPI) ListDeployments(ctx context.Context, req *webservice.ListDe
 		deploymentTime := deploymentTime.Add(time.Duration(-5*i) * time.Hour)
 		fakeDeployments[i] = &model.Deployment{
 			Id:            fmt.Sprintf("debug-deployment-id-%02d", i),
-			ApplicationId: "debug-project/development/debug-app",
-			EnvId:         "development",
+			ApplicationId: model.MakeApplicationID(fakeProjectID, "development", "debug-app"),
+			EnvId:         model.MakeEnvID(fakeProjectID, "development"),
 			PipedId:       "debug-piped",
-			ProjectId:     "debug-project",
+			ProjectId:     fakeProjectID,
 			GitPath: &model.ApplicationGitPath{
 				RepoId: "debug",
 				Path:   "k8s",
@@ -264,10 +298,10 @@ func (a *FakeWebAPI) GetDeployment(ctx context.Context, req *webservice.GetDeplo
 	now := time.Now()
 	resp := &model.Deployment{
 		Id:            "debug-deployment-id-01",
-		ApplicationId: "debug-project/development/debug-app",
-		EnvId:         "development",
+		ApplicationId: model.MakeApplicationID(fakeProjectID, "development", "debug-app"),
+		EnvId:         model.MakeEnvID(fakeProjectID, "development"),
 		PipedId:       "debug-piped",
-		ProjectId:     "debug-project",
+		ProjectId:     fakeProjectID,
 		Kind:          model.ApplicationKind_KUBERNETES,
 		GitPath: &model.ApplicationGitPath{
 			RepoId: "debug",
@@ -469,10 +503,10 @@ func (a *FakeWebAPI) ApproveStage(ctx context.Context, req *webservice.ApproveSt
 func (a *FakeWebAPI) GetApplicationLiveState(ctx context.Context, req *webservice.GetApplicationLiveStateRequest) (*webservice.GetApplicationLiveStateResponse, error) {
 	now := time.Now()
 	snapshot := &model.ApplicationLiveStateSnapshot{
-		ApplicationId: "debug-project/development/debug-app",
-		EnvId:         "development",
+		ApplicationId: model.MakeApplicationID(fakeProjectID, "development", "debug-app"),
+		EnvId:         model.MakeEnvID(fakeProjectID, "development"),
 		PipedId:       "debug-piped",
-		ProjectId:     "debug-project",
+		ProjectId:     fakeProjectID,
 		Kind:          model.ApplicationKind_KUBERNETES,
 		Kubernetes: &model.KubernetesApplicationLiveState{
 			Resources: []*model.KubernetesResourceState{
