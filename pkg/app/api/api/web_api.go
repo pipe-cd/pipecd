@@ -97,7 +97,7 @@ func (a *WebAPI) AddApplication(ctx context.Context, req *webservice.AddApplicat
 	}
 
 	app := model.Application{
-		Id:            fmt.Sprintf("%s-%s-%s", claims.Role.ProjectId, req.EnvId, req.Name),
+		Id:            model.MakeApplicationID(claims.Role.ProjectId, req.EnvId, req.Name),
 		Name:          req.Name,
 		EnvId:         req.EnvId,
 		PipedId:       req.PipedId,
