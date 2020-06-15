@@ -1,9 +1,11 @@
-import React, { FC, memo } from "react";
+import React, { FC, memo, useCallback, useState } from "react";
 import { makeStyles, Box } from "@material-ui/core";
 import { PipelineStage } from "./pipeline-stage";
-import { useSelector } from "react-redux";
+import { useSelector, useDispatch } from "react-redux";
 import { AppState } from "../modules";
 import { selectById, Deployment, Stage } from "../modules/deployments";
+import { fetchStageLog } from "../modules/stage-logs";
+import { updateActiveStage } from "../modules/active-stage";
 
 const useConvertedStages = (deploymentId: string) => {
   const stages: Stage[][] = [];
@@ -64,7 +66,25 @@ interface Props {
 
 export const Pipeline: FC<Props> = memo(function Pipeline({ deploymentId }) {
   const classes = useStyles();
+  const dispatch = useDispatch();
   const stages = useConvertedStages(deploymentId);
+  const [activeStage, setActiveStage] = useState<string | null>(null);
+
+  const handleOnClickStage = useCallback(
+    (stageId: string) => {
+      dispatch(
+        fetchStageLog({
+          deploymentId,
+          stageId,
+          offsetIndex: 0,
+          retriedCount: 0,
+        })
+      );
+      dispatch(updateActiveStage(`${deploymentId}/${stageId}`));
+      setActiveStage(stageId);
+    },
+    [dispatch, setActiveStage, deploymentId]
+  );
 
   return (
     <Box display="flex">
@@ -87,7 +107,13 @@ export const Pipeline: FC<Props> = memo(function Pipeline({ deploymentId }) {
                   : undefined
               }
             >
-              <PipelineStage name={stage.name} status={stage.status} />
+              <PipelineStage
+                id={stage.id}
+                name={stage.name}
+                status={stage.status}
+                onClick={handleOnClickStage}
+                active={activeStage === stage.id}
+              />
             </Box>
           ))}
         </Box>

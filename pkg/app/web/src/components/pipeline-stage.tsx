@@ -3,24 +3,46 @@ import { makeStyles, Paper, Typography, Box } from "@material-ui/core";
 import { StageStatus } from "pipe/pkg/app/web/model/deployment_pb";
 import { StageStatusIcon } from "./stage-status-icon";
 
-const useStyles = makeStyles(theme => ({
-  container: {
-    display: "inline-flex"
-  },
+const useStyles = makeStyles((theme) => ({
+  container: (props: { active: boolean }) => ({
+    display: "inline-flex",
+    cursor: "pointer",
+    "&:hover": {
+      backgroundColor: theme.palette.action.hover,
+    },
+    backgroundColor: props.active
+      ? // NOTE: 12%
+        theme.palette.primary.main + "1e"
+      : undefined,
+  }),
   name: {
-    marginLeft: theme.spacing(1)
-  }
+    marginLeft: theme.spacing(1),
+  },
 }));
 
 interface Props {
+  id: string;
   name: string;
   status: StageStatus;
+  active: boolean;
+  onClick: (stageId: string) => void;
 }
 
-export const PipelineStage: FC<Props> = ({ name, status }) => {
-  const classes = useStyles();
+export const PipelineStage: FC<Props> = ({
+  id,
+  name,
+  status,
+  onClick,
+  active,
+}) => {
+  const classes = useStyles({ active });
+
+  function handleOnClick() {
+    onClick(id);
+  }
+
   return (
-    <Paper square className={classes.container}>
+    <Paper square className={classes.container} onClick={handleOnClick}>
       <Box alignItems="center" display="flex" justifyContent="center" p={2}>
         <StageStatusIcon status={status} />
         <Typography variant="subtitle2" className={classes.name}>
