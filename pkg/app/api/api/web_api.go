@@ -34,6 +34,7 @@ import (
 
 // PipedAPI implements the behaviors for the gRPC definitions of WebAPI.
 type WebAPI struct {
+	applicationStore          datastore.ApplicationStore
 	deploymentStore           datastore.DeploymentStore
 	stageLogStore             stagelogstore.Store
 	applicationLiveStateStore applicationlivestatestore.Store
@@ -45,6 +46,7 @@ type WebAPI struct {
 // NewWebAPI creates a new WebAPI instance.
 func NewWebAPI(ds datastore.DataStore, sls stagelogstore.Store, alss applicationlivestatestore.Store, useFakeResponse bool, logger *zap.Logger) *WebAPI {
 	a := &WebAPI{
+		applicationStore:          datastore.NewApplicationStore(ds),
 		deploymentStore:           datastore.NewDeploymentStore(ds),
 		stageLogStore:             sls,
 		applicationLiveStateStore: alss,
@@ -92,7 +94,63 @@ func (a *WebAPI) DisableApplication(ctx context.Context, req *webservice.Disable
 }
 
 func (a *WebAPI) ListApplications(ctx context.Context, req *webservice.ListApplicationsRequest) (*webservice.ListApplicationsResponse, error) {
-	return nil, status.Error(codes.Unimplemented, "")
+	if a.useFakeResponse {
+		now := time.Now()
+		fakeApplications := []*model.Application{
+			{
+				Id:        "debug-project/development/debug-app",
+				Name:      "debug-app",
+				EnvId:     "development",
+				PipedId:   "debug-piped",
+				ProjectId: "debug-project",
+				Kind:      model.ApplicationKind_KUBERNETES,
+				GitPath: &model.ApplicationGitPath{
+					RepoId: "debug",
+					Path:   "k8s",
+				},
+				CloudProvider: "kubernetes-default",
+				MostRecentSuccessfulDeployment: &model.ApplicationCompletedDeployment{
+					DeploymentId: "debug-deployment-id-01",
+					CommitHash:   "3808585b46f1e90196d7ffe8dd04c807a251febc",
+					Version:      "v0.1.0",
+					StartedAt:    now.Add(-3 * 24 * time.Hour).Unix(),
+					CompletedAt:  now.Add(-3 * 24 * time.Hour).Unix(),
+				},
+				SyncState: &model.ApplicationSyncState{
+					Status:           model.ApplicationSyncStatus_SYNCED,
+					ShortReason:      "Short resson",
+					Reason:           "Reason",
+					HeadDeploymentId: "debug-deployment-id-01",
+					Timestamp:        now.Unix(),
+				},
+				Disabled:  false,
+				CreatedAt: now.Unix(),
+				UpdatedAt: now.Unix(),
+			},
+		}
+		return &webservice.ListApplicationsResponse{
+			Applications: fakeApplications,
+		}, nil
+	}
+
+	opts := datastore.ListOptions{
+		Filters: []datastore.ListFilter{
+			{
+				Field:    "ProjectId",
+				Operator: "==",
+				Value:    req.ProjectId,
+			},
+		},
+	}
+	apps, err := a.applicationStore.ListApplications(ctx, opts)
+	if err != nil {
+		a.logger.Error("failed to get applications", zap.Error(err))
+		return nil, status.Error(codes.Internal, "failed to get applications")
+	}
+
+	return &webservice.ListApplicationsResponse{
+		Applications: apps,
+	}, nil
 }
 
 func (a *WebAPI) SyncApplication(ctx context.Context, req *webservice.SyncApplicationRequest) (*webservice.SyncApplicationResponse, error) {
