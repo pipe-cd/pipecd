@@ -187,7 +187,12 @@ func (s *server) run(ctx context.Context, t cli.Telemetry) error {
 
 	// Start a gRPC server for handling WebAPI requests.
 	{
-		service := api.NewWebAPI(ds, sls, alss, s.useFakeResponse, t.Logger)
+		var service rpc.Service
+		if s.useFakeResponse {
+			service = api.NewFakeWebAPI()
+		} else {
+			service = api.NewWebAPI(ds, sls, alss, t.Logger)
+		}
 		opts := []rpc.Option{
 			rpc.WithPort(s.webAPIPort),
 			rpc.WithGracePeriod(s.gracePeriod),
