@@ -1,42 +1,173 @@
 import React from "react";
+import { createDecoratorRedux } from "../../.storybook/redux-decorator";
 import { Pipeline } from "./pipeline";
-import {
-  StageStatus,
-  PipelineStage,
-} from "pipe/pkg/app/web/model/deployment_pb";
+
+const DEPLOYMENT_ID = "debug-deployment-id-01";
+const fakeDeployment = {
+  id: DEPLOYMENT_ID,
+  applicationId: "debug-project/development/debug-app",
+  envId: "development",
+  pipedId: "debug-piped",
+  projectId: "debug-project",
+  kind: 0,
+  gitPath: {
+    repoId: "pipe-debug",
+    path: "k8s",
+    configPath: "",
+  },
+  cloudProvider: "",
+  trigger: {
+    commit: {
+      hash: "3808585b46f1e90196d7ffe8dd04c807a251febc",
+      message: "Add web page routing (#133)",
+      author: "cakecatz",
+      branch: "master",
+      pullRequest: 0,
+      createdAt: 1592201366,
+    },
+    user: "cakecatz",
+    timestamp: 1592201366,
+  },
+  runningCommitHash: "3808585b46f1e90196d7ffe8dd04c807a251febc",
+  description: "This deployment is debug",
+  status: 2,
+  statusDescription: "",
+  stagesList: [
+    {
+      id: "fake-stage-id-0-0",
+      name: "K8S_CANARY_ROLLOUT",
+      desc: "",
+      index: 0,
+      predefined: true,
+      requiresList: [],
+      visible: false,
+      status: 2,
+      metadataMap: [],
+      retriedCount: 0,
+      completedAt: 1592203166,
+      createdAt: 1592203166,
+      updatedAt: 1592203166,
+    },
+    {
+      id: "fake-stage-id-1-0",
+      name: "K8S_CANARY_ROLLOUT",
+      desc: "",
+      index: 0,
+      predefined: true,
+      requiresList: ["fake-stage-id-0-0"],
+      visible: false,
+      status: 1,
+      metadataMap: [],
+      retriedCount: 0,
+      completedAt: 0,
+      createdAt: 1592203166,
+      updatedAt: 1592203166,
+    },
+    {
+      id: "fake-stage-id-1-1",
+      name: "K8S_PRIMARY_UPDATE",
+      desc: "",
+      index: 1,
+      predefined: true,
+      requiresList: ["fake-stage-id-0-0"],
+      visible: false,
+      status: 2,
+      metadataMap: [],
+      retriedCount: 0,
+      completedAt: 1592203166,
+      createdAt: 1592203166,
+      updatedAt: 1592203166,
+    },
+    {
+      id: "fake-stage-id-1-2",
+      name: "K8S_CANARY_ROLLOUT",
+      desc: "",
+      index: 2,
+      predefined: true,
+      requiresList: ["fake-stage-id-0-0"],
+      visible: false,
+      status: 3,
+      metadataMap: [],
+      retriedCount: 0,
+      completedAt: 1592203166,
+      createdAt: 1592203166,
+      updatedAt: 1592203166,
+    },
+    {
+      id: "fake-stage-id-2-0",
+      name: "K8S_CANARY_CLEAN",
+      desc: "waiting approval",
+      index: 0,
+      predefined: true,
+      requiresList: [
+        "fake-stage-id-1-0",
+        "fake-stage-id-1-1",
+        "fake-stage-id-1-2",
+      ],
+      visible: false,
+      status: 0,
+      metadataMap: [],
+      retriedCount: 0,
+      completedAt: 0,
+      createdAt: 1592203166,
+      updatedAt: 1592203166,
+    },
+    {
+      id: "fake-stage-id-2-1",
+      name: "K8S_CANARY_CLEAN",
+      desc: "approved by cakecatz",
+      index: 1,
+      predefined: true,
+      requiresList: [
+        "fake-stage-id-1-0",
+        "fake-stage-id-1-1",
+        "fake-stage-id-1-2",
+      ],
+      visible: false,
+      status: 0,
+      metadataMap: [],
+      retriedCount: 0,
+      completedAt: 0,
+      createdAt: 1592203166,
+      updatedAt: 1592203166,
+    },
+    {
+      id: "fake-stage-id-3-0",
+      name: "K8S_CANARY_ROLLOUT",
+      desc: "",
+      index: 0,
+      predefined: true,
+      requiresList: ["fake-stage-id-2-0", "fake-stage-id-2-1"],
+      visible: false,
+      status: 0,
+      metadataMap: [],
+      retriedCount: 0,
+      completedAt: 0,
+      createdAt: 1592203166,
+      updatedAt: 1592203166,
+    },
+  ],
+  metadataMap: [],
+  completedAt: 0,
+  createdAt: 1592203166,
+  updatedAt: 1592203166,
+};
 
 export default {
   title: "Pipeline",
   component: Pipeline,
+  decorators: [
+    createDecoratorRedux({
+      deployments: {
+        ids: [DEPLOYMENT_ID],
+        entities: {
+          [DEPLOYMENT_ID]: fakeDeployment,
+        },
+      },
+    }),
+  ],
 };
 
-const makeStage = (
-  id: string,
-  name: string,
-  requires?: string[]
-): PipelineStage.AsObject => ({
-  id,
-  name,
-  desc: "blah",
-  index: 0,
-  predefined: false,
-  requiresList: requires || [],
-  status: StageStatus.STAGE_NOT_STARTED_YET,
-  metadataMap: [],
-  visible: true,
-  retriedCount: 1,
-  completedAt: 0,
-  createdAt: 0,
-  updatedAt: 0,
-});
-
-const stages = [
-  [makeStage("1", "K8S_PRIMARY_UPDATE")],
-  [
-    makeStage("2", "K8S_CANARY_ROLLOUT", ["1"]),
-    makeStage("3", "K8S_CANARY_CLEAN", ["1"]),
-  ],
-  [makeStage("4", "K8S_CANARY_CLEAN", ["2"])],
-];
-
-export const overview: React.FC = () => <Pipeline stages={stages} />;
+export const overview: React.FC = () => (
+  <Pipeline deploymentId={DEPLOYMENT_ID} />
+);
