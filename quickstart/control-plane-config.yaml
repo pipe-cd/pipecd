@@ -6,7 +6,7 @@ spec:
   filestore:
     type: MINIO
   project:
-    - name: default
+    - name: example
       staticAdmin:
         username: hello-pipecd
-        password: hello-pipecd
+        passwordHash: "$2a$10$ye96mUqUqTnjUqgwQJbJzel/LJibRhUnmzyypACkvrTSnQpVFZ7qK" # bcrypt value of "hello-pipecd"

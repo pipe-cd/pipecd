@@ -26,7 +26,9 @@ type ControlPlaneSpec struct {
 	// The configuration of filestore for control plane.
 	Filestore ControlPlaneFileStore `json:"filestore"`
 	// The configuration of cache for control plane.
-	Cache    ControlPlaneCache     `json:"cache"`
+	Cache ControlPlaneCache `json:"cache"`
+	// List of debugging/quickstart projects defined in Control Plane configuration.
+	// Please do not use this to configure the projects running the production mode.
 	Projects []ControlPlaneProject `json:"projects"`
 }
 
@@ -35,10 +37,32 @@ func (s *ControlPlaneSpec) Validate() error {
 }
 
 type ControlPlaneProject struct {
-	Name       string
-	AdminTeam  string
-	EditorTeam string
-	ViewerTeam string
+	ID          string            `json:"id"`
+	Desc        string            `json:"desc"`
+	StaticAdmin ProjectStaticUser `json:"staticAdmin"`
+}
+
+type ProjectStaticUser struct {
+	Username     string `json:"username"`
+	PasswordHash string `json:"passwordHash"`
+}
+
+// GetProject finds and returns a specific project in the configured list.
+func (s *ControlPlaneSpec) GetProject(id string) (*model.Project, bool) {
+	for _, p := range s.Projects {
+		if p.ID != id {
+			continue
+		}
+		return &model.Project{
+			Id:   p.ID,
+			Desc: p.Desc,
+			StaticAdmin: &model.ProjectStaticUser{
+				Username:     p.StaticAdmin.Username,
+				PasswordHash: p.StaticAdmin.PasswordHash,
+			},
+		}, true
+	}
+	return nil, false
 }
 
 type ControlPlaneDataStore struct {

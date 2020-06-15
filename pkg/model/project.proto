@@ -27,19 +27,52 @@ message Project {
     string id = 1 [(validate.rules).string.min_len = 1];
     // The additional description about the project.
     string desc = 2;
-    // The git hosting service. e.g. github.com.
-    string git_host = 3 [(validate.rules).string.min_len = 1];
-    // The git organization this project belongs to.
-    string git_org = 4 [(validate.rules).string.min_len = 1];
-    // A group of users who have admin rights on the project.
-    // This can be GitHub team or Google group.
-    string admin_team = 5 [(validate.rules).string.min_len = 1];
-    // A group of users who have editor rights on the project.
-    string editor_team = 6 [(validate.rules).string.min_len = 1];
-    // A group of users who have viewer rights on the project.
-    string viewer_team = 7 [(validate.rules).string.min_len = 1];
+
+    // Static admin user can be logged in by username and password.
+    // When a project is initialized (by using CLI or internal admin web), its static admin user will be created too.
+    // After that the project admin should enable the SSO and disable or change the password of the static admin.
+    ProjectStaticUser static_admin = 3 [(validate.rules).message.required = true];
+    // Whether the static admin is disabled or not.
+    bool static_admin_disabled = 4;
+    // Single sign-on configuration for this project.
+    ProjectSingleSignOn sso = 5;
+
     // Unix time when the project is created.
     int64 created_at = 14 [(validate.rules).int64.gt = 0];
     // Unix time of the last time when the project is updated.
     int64 updated_at = 15 [(validate.rules).int64.gt = 0];
+}
+
+// ProjectStaticUser represents a local user who can logged in to the project by username and password.
+message ProjectStaticUser {
+    // The name of user.
+    string username = 1 [(validate.rules).string.min_len = 1];
+    // The hash value of the password.
+    string password_hash = 2 [(validate.rules).string.min_len = 6];
+}
+
+enum ProjectSingleSignOnProvider {
+    GITHUB = 0;
+    GOOGLE = 1;
+}
+
+message ProjectSingleSignOn {
+    ProjectSingleSignOnProvider provider = 1 [(validate.rules).enum.defined_only = true];
+    string admin_team = 2 [(validate.rules).string.min_len = 1];
+    string editor_team = 3 [(validate.rules).string.min_len = 1];
+    string viewer_team = 4 [(validate.rules).string.min_len = 1];
+
+    message GitHub {
+        string client_id = 1 [(validate.rules).string.min_len = 1];
+        string client_secret = 2 [(validate.rules).string.min_len = 1];
+        string base_url = 3;
+    }
+
+    message Google {
+        string client_id = 1 [(validate.rules).string.min_len = 1];
+        string client_secret = 2 [(validate.rules).string.min_len = 1];
+    }
+
+    GitHub github = 10;
+    Google google = 11;
 }
