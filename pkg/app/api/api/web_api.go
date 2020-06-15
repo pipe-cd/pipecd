@@ -30,6 +30,7 @@ import (
 	"github.com/pipe-cd/pipe/pkg/app/api/stagelogstore"
 	"github.com/pipe-cd/pipe/pkg/datastore"
 	"github.com/pipe-cd/pipe/pkg/model"
+	"github.com/pipe-cd/pipe/pkg/rpc/rpcauth"
 )
 
 // PipedAPI implements the behaviors for the gRPC definitions of WebAPI.
@@ -86,7 +87,35 @@ func (a *WebAPI) ListPipeds(ctx context.Context, req *webservice.ListPipedsReque
 }
 
 func (a *WebAPI) AddApplication(ctx context.Context, req *webservice.AddApplicationRequest) (*webservice.AddApplicationResponse, error) {
-	return nil, status.Error(codes.Unimplemented, "")
+	if a.useFakeResponse {
+		return &webservice.AddApplicationResponse{}, nil
+	}
+
+	claims, err := rpcauth.ExtractClaims(ctx)
+	if err != nil {
+		return nil, err
+	}
+
+	app := model.Application{
+		Id:            fmt.Sprintf("%s-%s-%s", claims.Role.ProjectId, req.EnvId, req.Name),
+		Name:          req.Name,
+		EnvId:         req.EnvId,
+		PipedId:       req.PipedId,
+		ProjectId:     claims.Role.ProjectId,
+		GitPath:       req.GitPath,
+		Kind:          req.Kind,
+		CloudProvider: req.CloudProvider,
+	}
+	err = a.applicationStore.AddApplication(ctx, &app)
+	if errors.Is(err, datastore.ErrAlreadyExists) {
+		return nil, status.Error(codes.AlreadyExists, "application already exists")
+	}
+	if err != nil {
+		a.logger.Error("failed to create application", zap.Error(err))
+		return nil, status.Error(codes.Internal, "failed to create application")
+	}
+
+	return &webservice.AddApplicationResponse{}, nil
 }
 
 func (a *WebAPI) DisableApplication(ctx context.Context, req *webservice.DisableApplicationRequest) (*webservice.DisableApplicationResponse, error) {
