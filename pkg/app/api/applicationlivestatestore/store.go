@@ -127,7 +127,7 @@ func (s *store) PatchKubernetesApplicationLiveState(ctx context.Context, events 
 }
 
 func mergeKubernetesResourceStatesOnAddOrUpdated(prevs []*model.KubernetesResourceState, event *model.KubernetesResourceStateEvent) []*model.KubernetesResourceState {
-	news := make([]*model.KubernetesResourceState, 0)
+	news := make([]*model.KubernetesResourceState, 0, len(prevs)+1)
 	if existsResourceState(prevs, event.State) {
 		for _, state := range prevs {
 			if state.Id == event.State.Id {
