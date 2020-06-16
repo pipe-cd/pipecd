@@ -31,6 +31,8 @@ type ApplicationStore interface {
 	AddApplication(ctx context.Context, app *model.Application) error
 	DisableApplication(ctx context.Context, id string) error
 	ListApplications(ctx context.Context, opts ListOptions) ([]*model.Application, error)
+	PutApplication(ctx context.Context, id string, updater func(*model.Application) error) error
+	PutApplicationSyncState(ctx context.Context, id string, syncState *model.ApplicationSyncState) error
 }
 
 type applicationStore struct {
@@ -88,4 +90,23 @@ func (s *applicationStore) ListApplications(ctx context.Context, opts ListOption
 		apps = append(apps, &app)
 	}
 	return apps, nil
+}
+
+func (s *applicationStore) PutApplication(ctx context.Context, id string, updater func(*model.Application) error) error {
+	now := s.nowFunc().Unix()
+	return s.ds.Update(ctx, applicationModelKind, id, applicationFactory, func(e interface{}) error {
+		a := e.(*model.Application)
+		if err := updater(a); err != nil {
+			return err
+		}
+		a.UpdatedAt = now
+		return a.Validate()
+	})
+}
+
+func (s *applicationStore) PutApplicationSyncState(ctx context.Context, id string, syncState *model.ApplicationSyncState) error {
+	return s.PutApplication(ctx, id, func(a *model.Application) error {
+		a.SyncState = syncState
+		return nil
+	})
 }

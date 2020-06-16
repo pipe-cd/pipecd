@@ -106,7 +106,22 @@ func (a *PipedAPI) ListApplications(ctx context.Context, req *pipedservice.ListA
 
 // ReportApplicationSyncState is used to update the sync status of an application.
 func (a *PipedAPI) ReportApplicationSyncState(ctx context.Context, req *pipedservice.ReportApplicationSyncStateRequest) (*pipedservice.ReportApplicationSyncStateResponse, error) {
-	return nil, status.Error(codes.Unimplemented, "")
+	err := a.applicationStore.PutApplicationSyncState(ctx, req.ApplicationId, req.State)
+	if err != nil {
+		switch err {
+		case datastore.ErrNotFound:
+			return nil, status.Error(codes.InvalidArgument, "application is not found")
+		case datastore.ErrInvalidArgument:
+			return nil, status.Error(codes.InvalidArgument, "invalid value for update")
+		default:
+			a.logger.Error("failed to update application sync state",
+				zap.String("application-id", req.ApplicationId),
+				zap.Error(err),
+			)
+			return nil, status.Error(codes.Internal, "failed to update the application sync state")
+		}
+	}
+	return &pipedservice.ReportApplicationSyncStateResponse{}, nil
 }
 
 // ReportMostRecentSuccessfulDeployment is used to update the basic information about

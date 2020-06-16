@@ -70,6 +70,8 @@ func (s *samplecli) run(ctx context.Context, t cli.Telemetry) error {
 		return s.createDeployment(ctx, cli, data, t.Logger)
 	case "ListApplications":
 		return s.listApplications(ctx, cli, data, t.Logger)
+	case "ReportApplicationSyncState":
+		return s.reportApplicationSyncState(ctx, cli, data, t.Logger)
 	case "ListNotCompletedDeployments":
 		return s.listNotCompletedDeployments(ctx, cli, data, t.Logger)
 	case "ReportDeploymentPlanned":
@@ -139,6 +141,19 @@ func (s *samplecli) listApplications(ctx context.Context, cli pipedservice.Clien
 	for _, app := range resp.Applications {
 		fmt.Printf("application: %+v\n", app)
 	}
+	return nil
+}
+
+func (s *samplecli) reportApplicationSyncState(ctx context.Context, cli pipedservice.Client, payload []byte, logger *zap.Logger) error {
+	req := pipedservice.ReportApplicationSyncStateRequest{}
+	if err := json.Unmarshal(payload, &req); err != nil {
+		return err
+	}
+	if _, err := cli.ReportApplicationSyncState(ctx, &req); err != nil {
+		logger.Error("failed to run ReportApplicationSyncState", zap.Error(err))
+		return err
+	}
+	logger.Info("successfully run ReportApplicationSyncState")
 	return nil
 }
 
