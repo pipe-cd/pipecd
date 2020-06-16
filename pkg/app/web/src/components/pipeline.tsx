@@ -68,7 +68,9 @@ export const Pipeline: FC<Props> = memo(function Pipeline({ deploymentId }) {
   const classes = useStyles();
   const dispatch = useDispatch();
   const stages = useConvertedStages(deploymentId);
-  const [activeStage, setActiveStage] = useState<string | null>(null);
+  const activeStage = useSelector<AppState, string | null>(
+    (state) => state.activeStage
+  );
 
   const handleOnClickStage = useCallback(
     (stageId: string) => {
@@ -81,9 +83,8 @@ export const Pipeline: FC<Props> = memo(function Pipeline({ deploymentId }) {
         })
       );
       dispatch(updateActiveStage(`${deploymentId}/${stageId}`));
-      setActiveStage(stageId);
     },
-    [dispatch, setActiveStage, deploymentId]
+    [dispatch, deploymentId]
   );
 
   return (
@@ -112,7 +113,7 @@ export const Pipeline: FC<Props> = memo(function Pipeline({ deploymentId }) {
                 name={stage.name}
                 status={stage.status}
                 onClick={handleOnClickStage}
-                active={activeStage === stage.id}
+                active={activeStage === `${deploymentId}/${stage.id}`}
               />
             </Box>
           ))}
