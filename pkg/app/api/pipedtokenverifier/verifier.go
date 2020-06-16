@@ -84,8 +84,8 @@ func checkPiped(piped *model.Piped, projectID, pipedID, pipedKey string) error {
 	if piped.Disabled {
 		return fmt.Errorf("piped %s was already disabled", pipedID)
 	}
-	if piped.Key != pipedKey {
-		return fmt.Errorf("the key of piped %s is not matched", pipedID)
+	if err := piped.CompareKey(pipedKey); err != nil {
+		return fmt.Errorf("the key of piped %s is not matched, %v", pipedID, err)
 	}
 	return nil
 }

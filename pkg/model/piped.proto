@@ -29,9 +29,9 @@ message Piped {
     string id = 1 [(validate.rules).string.min_len = 1];
     // The additional description about the piped.
     string desc = 2;
-    // The secret key generated for the piped.
+    // The hash value of the secret key generated for the piped.
     // This is used to authenticate while communicating with the control plane.
-    string key = 3 [(validate.rules).string.min_len = 1];
+    string key_hash = 3 [(validate.rules).string.min_len = 1];
     // The ID of the project this enviroment belongs to.
     string project_id = 4 [(validate.rules).string.min_len = 1];
 
