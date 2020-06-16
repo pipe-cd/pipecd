@@ -19,8 +19,6 @@ import (
 	"fmt"
 	"time"
 
-	"golang.org/x/crypto/bcrypt"
-
 	"github.com/pipe-cd/pipe/pkg/cache"
 	"github.com/pipe-cd/pipe/pkg/cache/memorycache"
 	"github.com/pipe-cd/pipe/pkg/config"
@@ -86,7 +84,7 @@ func checkPiped(piped *model.Piped, projectID, pipedID, pipedKey string) error {
 	if piped.Disabled {
 		return fmt.Errorf("piped %s was already disabled", pipedID)
 	}
-	if err := bcrypt.CompareHashAndPassword([]byte(piped.KeyHash), []byte(pipedKey)); err != nil {
+	if err := piped.CompareKey(pipedKey); err != nil {
 		return fmt.Errorf("the key of piped %s is not matched, %v", pipedID, err)
 	}
 	return nil

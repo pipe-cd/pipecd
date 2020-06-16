@@ -25,4 +25,13 @@ func TestGeneratePipedKey(t *testing.T) {
 	assert.NoError(t, err)
 	assert.True(t, len(key) > 0)
 	assert.True(t, len(hash) > 0)
+
+	p := &Piped{
+		KeyHash: hash,
+	}
+	err = p.CompareKey(key)
+	assert.NoError(t, err)
+
+	err = p.CompareKey("invalid")
+	assert.Error(t, err)
 }

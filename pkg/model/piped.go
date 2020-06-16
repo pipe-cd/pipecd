@@ -32,3 +32,8 @@ func GeneratePipedKey() (key, hash string, err error) {
 	hash = string(encoded)
 	return
 }
+
+// CompareKey compares plaintext key with its hashed value storing in piped.
+func (p *Piped) CompareKey(key string) error {
+	return bcrypt.CompareHashAndPassword([]byte(p.KeyHash), []byte(key))
+}
