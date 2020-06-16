@@ -103,12 +103,13 @@ func (s *store) PatchKubernetesApplicationLiveState(ctx context.Context, events 
 			snapshot = ss
 			snapshots[ev.ApplicationId] = ss
 		}
-
-		switch ev.Type {
-		case model.KubernetesResourceStateEvent_ADD_OR_UPDATED:
-			snapshot.Kubernetes.Resources = mergeKubernetesResourceStatesOnAddOrUpdated(snapshot.Kubernetes.Resources, ev)
-		case model.KubernetesResourceStateEvent_DELETED:
-			snapshot.Kubernetes.Resources = mergeKubernetesResourceStatesOnDeleted(snapshot.Kubernetes.Resources, ev)
+		if ev.SnapshotVersion.Index >= snapshot.Version.Index {
+			switch ev.Type {
+			case model.KubernetesResourceStateEvent_ADD_OR_UPDATED:
+				snapshot.Kubernetes.Resources = mergeKubernetesResourceStatesOnAddOrUpdated(snapshot.Kubernetes.Resources, ev)
+			case model.KubernetesResourceStateEvent_DELETED:
+				snapshot.Kubernetes.Resources = mergeKubernetesResourceStatesOnDeleted(snapshot.Kubernetes.Resources, ev)
+			}
 		}
 	}
 
