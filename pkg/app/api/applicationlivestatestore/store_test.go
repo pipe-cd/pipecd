@@ -22,7 +22,7 @@ import (
 	"github.com/pipe-cd/pipe/pkg/model"
 )
 
-func TestmergeKubernetesResourceStatesOnAddOrUpdated(t *testing.T) {
+func TestMergeKubernetesResourceStatesOnAddOrUpdated(t *testing.T) {
 	testcases := []struct {
 		name       string
 		prevStates []*model.KubernetesResourceState
