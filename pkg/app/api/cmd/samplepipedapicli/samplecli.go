@@ -88,6 +88,10 @@ func (s *samplecli) run(ctx context.Context, t cli.Telemetry) error {
 		return s.reportStageLogs(ctx, cli, data, t.Logger)
 	case "ReportStageLogsFromLastCheckpoint":
 		return s.reportStageLogsFromLastCheckpoint(ctx, cli, data, t.Logger)
+	case "ReportApplicationLiveState":
+		return s.reportApplicationLiveState(ctx, cli, data, t.Logger)
+	case "ReportApplicationLiveStateEvents":
+		return s.reportApplicationLiveStateEvents(ctx, cli, data, t.Logger)
 	default:
 		return fmt.Errorf("invalid function name: %s", s.function)
 	}
@@ -260,5 +264,31 @@ func (s *samplecli) reportStageLogsFromLastCheckpoint(ctx context.Context, cli p
 		return err
 	}
 	logger.Info("successfully run ReportStageLogsFromLastCheckpoint")
+	return nil
+}
+
+func (s *samplecli) reportApplicationLiveState(ctx context.Context, cli pipedservice.Client, payload []byte, logger *zap.Logger) error {
+	req := pipedservice.ReportApplicationLiveStateRequest{}
+	if err := json.Unmarshal(payload, &req); err != nil {
+		return err
+	}
+	if _, err := cli.ReportApplicationLiveState(ctx, &req); err != nil {
+		logger.Error("failed to run ReportApplicationLiveState", zap.Error(err))
+		return err
+	}
+	logger.Info("successfully run ReportApplicationLiveState")
+	return nil
+}
+
+func (s *samplecli) reportApplicationLiveStateEvents(ctx context.Context, cli pipedservice.Client, payload []byte, logger *zap.Logger) error {
+	req := pipedservice.ReportApplicationLiveStateEventsRequest{}
+	if err := json.Unmarshal(payload, &req); err != nil {
+		return err
+	}
+	if _, err := cli.ReportApplicationLiveStateEvents(ctx, &req); err != nil {
+		logger.Error("failed to run ReportApplicationLiveStateEvents", zap.Error(err))
+		return err
+	}
+	logger.Info("successfully run ReportApplicationLiveStateEvents")
 	return nil
 }

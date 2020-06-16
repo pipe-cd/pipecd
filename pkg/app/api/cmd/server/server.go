@@ -168,7 +168,7 @@ func (s *server) run(ctx context.Context, t cli.Telemetry) error {
 	{
 		var (
 			verifier = pipedtokenverifier.NewVerifier(ctx, cfg, ds)
-			service  = api.NewPipedAPI(ds, sls, t.Logger)
+			service  = api.NewPipedAPI(ds, sls, alss, t.Logger)
 			opts     = []rpc.Option{
 				rpc.WithPort(s.pipedAPIPort),
 				rpc.WithGracePeriod(s.gracePeriod),
