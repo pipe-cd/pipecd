@@ -130,7 +130,22 @@ func (a *PipedAPI) ReportApplicationSyncState(ctx context.Context, req *pipedser
 // ReportMostRecentSuccessfulDeployment is used to update the basic information about
 // the most recent successful deployment of a specific applicaiton.
 func (a *PipedAPI) ReportMostRecentSuccessfulDeployment(ctx context.Context, req *pipedservice.ReportMostRecentSuccessfulDeploymentRequest) (*pipedservice.ReportMostRecentSuccessfulDeploymentResponse, error) {
-	return nil, status.Error(codes.Unimplemented, "")
+	err := a.applicationStore.PutApplicationCompletedDeployment(ctx, req.ApplicationId, req.Deployment)
+	if err != nil {
+		switch err {
+		case datastore.ErrNotFound:
+			return nil, status.Error(codes.InvalidArgument, "application is not found")
+		case datastore.ErrInvalidArgument:
+			return nil, status.Error(codes.InvalidArgument, "invalid value for update")
+		default:
+			a.logger.Error("failed to update application completed deployment",
+				zap.String("application-id", req.ApplicationId),
+				zap.Error(err),
+			)
+			return nil, status.Error(codes.Internal, "failed to update the application completed deployment")
+		}
+	}
+	return &pipedservice.ReportMostRecentSuccessfulDeploymentResponse{}, nil
 }
 
 // ListNotCompletedDeployments returns a list of not completed deployments
