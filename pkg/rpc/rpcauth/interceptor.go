@@ -39,7 +39,7 @@ type RBACAuthorizer interface {
 
 // PipedTokenVerifier defines a function to check piped token.
 type PipedTokenVerifier interface {
-	Verify(projectID, pipedID, pipedKey string) error
+	Verify(ctx context.Context, projectID, pipedID, pipedKey string) error
 }
 
 type (
@@ -75,6 +75,10 @@ func PipedTokenUnaryServerInterceptor(verifier PipedTokenVerifier, logger *zap.L
 			logger.Warn(fmt.Sprintf("malformed credentials: %s, err: %v", creds.Data, err))
 			return nil, errUnauthenticated
 		}
+		if err := verifier.Verify(ctx, projectID, pipedID, pipedKey); err != nil {
+			logger.Warn("unabled to verify piped token", zap.Error(err))
+			return nil, errUnauthenticated
+		}
 		ctx = context.WithValue(ctx, pipedTokenKey, pipedTokenContextValue{
 			ProjectID: projectID,
 			PipedID:   pipedID,
@@ -102,6 +106,10 @@ func PipedTokenStreamServerInterceptor(verifier PipedTokenVerifier, logger *zap.
 		projectID, pipedID, pipedKey, err := parsePipedToken(creds.Data)
 		if err != nil {
 			logger.Warn(fmt.Sprintf("malformed credentials: %s, err: %v", creds.Data, err))
+			return errUnauthenticated
+		}
+		if err := verifier.Verify(ctx, projectID, pipedID, pipedKey); err != nil {
+			logger.Warn("unabled to verify piped token", zap.Error(err))
 			return errUnauthenticated
 		}
 		ctx = context.WithValue(ctx, pipedTokenKey, pipedTokenContextValue{

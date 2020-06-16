@@ -29,6 +29,7 @@ var projectFactory = func() interface{} {
 
 type ProjectStore interface {
 	AddProject(ctx context.Context, proj *model.Project) error
+	GetProject(ctx context.Context, id string) (*model.Project, error)
 	ListProjects(ctx context.Context, opts ListOptions) ([]model.Project, error)
 }
 
@@ -58,6 +59,14 @@ func (s *projectStore) AddProject(ctx context.Context, proj *model.Project) erro
 		return err
 	}
 	return s.ds.Create(ctx, projectModelKind, proj.Id, proj)
+}
+
+func (s *projectStore) GetProject(ctx context.Context, id string) (*model.Project, error) {
+	var entity model.Project
+	if err := s.ds.Get(ctx, projectModelKind, id, &entity); err != nil {
+		return nil, err
+	}
+	return &entity, nil
 }
 
 func (s *projectStore) ListProjects(ctx context.Context, opts ListOptions) ([]model.Project, error) {

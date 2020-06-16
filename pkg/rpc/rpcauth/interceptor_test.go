@@ -39,7 +39,7 @@ type testPipedTokenVerifier struct {
 	pipedKey string
 }
 
-func (v testPipedTokenVerifier) Verify(projectID, pipedID, pipedKey string) error {
+func (v testPipedTokenVerifier) Verify(ctx context.Context, projectID, pipedID, pipedKey string) error {
 	if pipedKey != v.pipedKey {
 		return fmt.Errorf("invalid piped key, want: %s, got: %s", v.pipedKey, pipedKey)
 	}

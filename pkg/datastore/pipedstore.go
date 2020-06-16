@@ -29,6 +29,7 @@ var pipedFactory = func() interface{} {
 
 type PipedStore interface {
 	AddPiped(ctx context.Context, piped *model.Piped) error
+	GetPiped(ctx context.Context, id string) (*model.Piped, error)
 	ListPipeds(ctx context.Context, opts ListOptions) ([]model.Piped, error)
 }
 
@@ -58,6 +59,14 @@ func (s *pipedStore) AddPiped(ctx context.Context, piped *model.Piped) error {
 		return err
 	}
 	return s.ds.Create(ctx, pipedModelKind, piped.Id, piped)
+}
+
+func (s *pipedStore) GetPiped(ctx context.Context, id string) (*model.Piped, error) {
+	var entity model.Piped
+	if err := s.ds.Get(ctx, pipedModelKind, id, &entity); err != nil {
+		return nil, err
+	}
+	return &entity, nil
 }
 
 func (s *pipedStore) ListPipeds(ctx context.Context, opts ListOptions) ([]model.Piped, error) {
