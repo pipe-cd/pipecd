@@ -66,6 +66,8 @@ func (s *samplecli) run(ctx context.Context, t cli.Telemetry) error {
 	switch s.function {
 	case "ListEnvironments":
 		return s.listEnvironments(ctx, cli, data, t.Logger)
+	case "RegisterPiped":
+		return s.registerPiped(ctx, cli, data, t.Logger)
 	case "AddApplication":
 		return s.addApplication(ctx, cli, data, t.Logger)
 	case "ListApplications":
@@ -113,6 +115,21 @@ func (s *samplecli) listEnvironments(ctx context.Context, cli webservice.Client,
 	for _, app := range resp.Environments {
 		fmt.Printf("environment: %+v\n", app)
 	}
+	return nil
+}
+
+func (s *samplecli) registerPiped(ctx context.Context, cli webservice.Client, payload []byte, logger *zap.Logger) error {
+	req := webservice.RegisterPipedRequest{}
+	if err := json.Unmarshal(payload, &req); err != nil {
+		return err
+	}
+	resp, err := cli.RegisterPiped(ctx, &req)
+	if err != nil {
+		logger.Error("failed to run RegisterPiped", zap.Error(err))
+		return err
+	}
+	logger.Info("successfully run RegisterPiped")
+	fmt.Printf("key: %+v\n", resp.GeneratedKey)
 	return nil
 }
 

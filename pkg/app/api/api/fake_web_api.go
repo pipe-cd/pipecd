@@ -88,7 +88,9 @@ func (a *FakeWebAPI) ListEnvironments(ctx context.Context, req *webservice.ListE
 }
 
 func (a *FakeWebAPI) RegisterPiped(ctx context.Context, req *webservice.RegisterPipedRequest) (*webservice.RegisterPipedResponse, error) {
-	return nil, status.Error(codes.Unimplemented, "")
+	return &webservice.RegisterPipedResponse{
+		GeneratedKey: "9bf9752a-54a2-451a-a541-444add56f96b",
+	}, nil
 }
 
 func (a *FakeWebAPI) DisablePiped(ctx context.Context, req *webservice.DisablePipedRequest) (*webservice.DisablePipedResponse, error) {

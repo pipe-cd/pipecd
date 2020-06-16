@@ -36,6 +36,7 @@ type WebAPI struct {
 	applicationStore          datastore.ApplicationStore
 	environmentStore          datastore.EnvironmentStore
 	deploymentStore           datastore.DeploymentStore
+	pipedStore                datastore.PipedStore
 	stageLogStore             stagelogstore.Store
 	applicationLiveStateStore applicationlivestatestore.Store
 
@@ -48,6 +49,7 @@ func NewWebAPI(ds datastore.DataStore, sls stagelogstore.Store, alss application
 		applicationStore:          datastore.NewApplicationStore(ds),
 		environmentStore:          datastore.NewEnvironmentStore(ds),
 		deploymentStore:           datastore.NewDeploymentStore(ds),
+		pipedStore:                datastore.NewPipedStore(ds),
 		stageLogStore:             sls,
 		applicationLiveStateStore: alss,
 		logger:                    logger.Named("web-api"),
@@ -94,7 +96,33 @@ func (a *WebAPI) ListEnvironments(ctx context.Context, req *webservice.ListEnvir
 }
 
 func (a *WebAPI) RegisterPiped(ctx context.Context, req *webservice.RegisterPipedRequest) (*webservice.RegisterPipedResponse, error) {
-	return nil, status.Error(codes.Unimplemented, "")
+	claims, err := rpcauth.ExtractClaims(ctx)
+	if err != nil {
+		return nil, err
+	}
+
+	key, keyHash, err := model.GeneratePipedKey()
+	if err != nil {
+		a.logger.Error("failed to generate piped key", zap.Error(err))
+		return nil, status.Error(codes.Internal, "failed to generate the piped key")
+	}
+	piped := model.Piped{
+		Id:        req.Id,
+		Desc:      req.Desc,
+		KeyHash:   keyHash,
+		ProjectId: claims.Role.ProjectId,
+	}
+	err = a.pipedStore.AddPiped(ctx, &piped)
+	if errors.Is(err, datastore.ErrAlreadyExists) {
+		return nil, status.Error(codes.AlreadyExists, "piped already exists")
+	}
+	if err != nil {
+		a.logger.Error("failed to register piped", zap.Error(err))
+		return nil, status.Error(codes.Internal, "failed to register piped")
+	}
+	return &webservice.RegisterPipedResponse{
+		GeneratedKey: key,
+	}, nil
 }
 
 func (a *WebAPI) DisablePiped(ctx context.Context, req *webservice.DisablePipedRequest) (*webservice.DisablePipedResponse, error) {
