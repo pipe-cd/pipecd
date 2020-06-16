@@ -59,7 +59,7 @@ data:
 {{- end }}
                   routes:
                     - match:
-                        path: /pipe.api.service.webservice.PipedService/
+                        path: /pipe.api.service.pipedservice.PipedService/
                         grpc:
                       route:
                         cluster: api-piped-api
