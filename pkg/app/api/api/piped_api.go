@@ -23,6 +23,7 @@ import (
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
 
+	"github.com/pipe-cd/pipe/pkg/app/api/applicationlivestatestore"
 	"github.com/pipe-cd/pipe/pkg/app/api/service/pipedservice"
 	"github.com/pipe-cd/pipe/pkg/app/api/stagelogstore"
 	"github.com/pipe-cd/pipe/pkg/datastore"
@@ -32,30 +33,32 @@ import (
 
 // PipedAPI implements the behaviors for the gRPC definitions of PipedAPI.
 type PipedAPI struct {
-	applicationStore datastore.ApplicationStore
-	commandStore     datastore.CommandStore
-	deploymentStore  datastore.DeploymentStore
-	environmentStore datastore.EnvironmentStore
-	pipedStatsStore  datastore.PipedStatsStore
-	pipedStore       datastore.PipedStore
-	projectStore     datastore.ProjectStore
-	stageLogStore    stagelogstore.Store
+	applicationStore          datastore.ApplicationStore
+	commandStore              datastore.CommandStore
+	deploymentStore           datastore.DeploymentStore
+	environmentStore          datastore.EnvironmentStore
+	pipedStatsStore           datastore.PipedStatsStore
+	pipedStore                datastore.PipedStore
+	projectStore              datastore.ProjectStore
+	stageLogStore             stagelogstore.Store
+	applicationLiveStateStore applicationlivestatestore.Store
 
 	logger *zap.Logger
 }
 
 // NewPipedAPI creates a new PipedAPI instance.
-func NewPipedAPI(ds datastore.DataStore, sls stagelogstore.Store, logger *zap.Logger) *PipedAPI {
+func NewPipedAPI(ds datastore.DataStore, sls stagelogstore.Store, alss applicationlivestatestore.Store, logger *zap.Logger) *PipedAPI {
 	a := &PipedAPI{
-		applicationStore: datastore.NewApplicationStore(ds),
-		commandStore:     datastore.NewCommandStore(ds),
-		deploymentStore:  datastore.NewDeploymentStore(ds),
-		environmentStore: datastore.NewEnvironmentStore(ds),
-		pipedStatsStore:  datastore.NewPipedStatsStore(ds),
-		pipedStore:       datastore.NewPipedStore(ds),
-		projectStore:     datastore.NewProjectStore(ds),
-		stageLogStore:    sls,
-		logger:           logger.Named("piped-api"),
+		applicationStore:          datastore.NewApplicationStore(ds),
+		commandStore:              datastore.NewCommandStore(ds),
+		deploymentStore:           datastore.NewDeploymentStore(ds),
+		environmentStore:          datastore.NewEnvironmentStore(ds),
+		pipedStatsStore:           datastore.NewPipedStatsStore(ds),
+		pipedStore:                datastore.NewPipedStore(ds),
+		projectStore:              datastore.NewProjectStore(ds),
+		stageLogStore:             sls,
+		applicationLiveStateStore: alss,
+		logger:                    logger.Named("piped-api"),
 	}
 	return a
 }
@@ -349,7 +352,10 @@ func (a *PipedAPI) ReportCommandHandled(ctx context.Context, req *pipedservice.R
 // For kubernetes application, this contains a full tree of its kubernetes resources.
 // The tree data should be written into filestore immediately and then the state in cache should be refreshsed too.
 func (a *PipedAPI) ReportApplicationLiveState(ctx context.Context, req *pipedservice.ReportApplicationLiveStateRequest) (*pipedservice.ReportApplicationLiveStateResponse, error) {
-	return nil, status.Error(codes.Unimplemented, "")
+	if err := a.applicationLiveStateStore.PutStateSnapshot(ctx, req.Snapshot); err != nil {
+		return nil, status.Error(codes.Internal, "failed to report application live state")
+	}
+	return &pipedservice.ReportApplicationLiveStateResponse{}, nil
 }
 
 // ReportApplicationLiveStateEvents is sent by piped to submit one or multiple events
@@ -365,5 +371,9 @@ func (a *PipedAPI) ReportApplicationLiveState(ctx context.Context, req *pipedser
 // and then another Handler service will pick them inorder to apply to build new state.
 // By that way we can control the traffic to the datastore in a better way.
 func (a *PipedAPI) ReportApplicationLiveStateEvents(ctx context.Context, req *pipedservice.ReportApplicationLiveStateEventsRequest) (*pipedservice.ReportApplicationLiveStateEventsResponse, error) {
-	return nil, status.Error(codes.Unimplemented, "")
+	a.applicationLiveStateStore.PatchKubernetesApplicationLiveState(ctx, req.KubernetesEvents)
+	// TODO: Patch Terraform application live state
+	// TODO: Patch Cloud Run application live state
+	// TODO: Patch Lambda application live state
+	return &pipedservice.ReportApplicationLiveStateEventsResponse{}, nil
 }

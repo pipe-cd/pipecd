@@ -17,7 +17,6 @@ package applicationlivestatestore
 import (
 	"context"
 	"encoding/json"
-	"errors"
 	"fmt"
 
 	"github.com/pipe-cd/pipe/pkg/filestore"
@@ -43,7 +42,12 @@ func (f *applicationLiveStateFileStore) Get(ctx context.Context, applicationID s
 }
 
 func (f *applicationLiveStateFileStore) Put(ctx context.Context, applicationID string, alss *model.ApplicationLiveStateSnapshot) error {
-	return errors.New("unimplemented")
+	path := applicationLiveStatePath(applicationID)
+	data, err := json.Marshal(alss)
+	if err != nil {
+		return err
+	}
+	return f.backend.PutObject(ctx, path, data)
 }
 
 func applicationLiveStatePath(applicationID string) string {

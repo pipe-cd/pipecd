@@ -28,6 +28,10 @@ import (
 type Store interface {
 	// GetStateSnapshot get the specified application live state snapshot.
 	GetStateSnapshot(ctx context.Context, applicationID string) (*model.ApplicationLiveStateSnapshot, error)
+	// PutStateSnapshot updates completely the specified application live state snapshot with input.
+	PutStateSnapshot(ctx context.Context, snapshot *model.ApplicationLiveStateSnapshot) error
+	// PatchKubernetesApplicationLiveState updates the kubernetes resource state in the application live state snapshot.
+	PatchKubernetesApplicationLiveState(ctx context.Context, events []*model.KubernetesResourceStateEvent)
 }
 
 type store struct {
@@ -67,4 +71,93 @@ func (s *store) GetStateSnapshot(ctx context.Context, applicationID string) (*mo
 		s.logger.Error("failed to put application live state to cache", zap.Error(err))
 	}
 	return fileResp, nil
+}
+
+func (s *store) PutStateSnapshot(ctx context.Context, snapshot *model.ApplicationLiveStateSnapshot) error {
+	if err := s.backend.Put(ctx, snapshot.ApplicationId, snapshot); err != nil {
+		s.logger.Error("failed to put application live state snapshot to filestore", zap.Error(err))
+		return err
+	}
+
+	if err := s.cache.Put(snapshot.ApplicationId, snapshot); err != nil {
+		s.logger.Error("failed to put application live state snapshot to cache", zap.Error(err))
+	}
+	return nil
+}
+
+func (s *store) PatchKubernetesApplicationLiveState(ctx context.Context, events []*model.KubernetesResourceStateEvent) {
+	snapshots := make(map[string]*model.ApplicationLiveStateSnapshot)
+	for _, ev := range events {
+		snapshot, ok := snapshots[ev.ApplicationId]
+		if !ok {
+			ss, err := s.GetStateSnapshot(ctx, ev.ApplicationId)
+			if err != nil {
+				s.logger.Error("failed to get application live state snapshot",
+					zap.String("event-id", ev.Id),
+					zap.String("application-id", ev.ApplicationId),
+					zap.Error(err),
+				)
+			}
+			if ss == nil {
+				s.logger.Warn("application live state snapshot was not found",
+					zap.String("event-id", ev.Id),
+					zap.String("application-id", ev.ApplicationId),
+				)
+				continue
+			}
+			snapshot = ss
+			snapshots[ev.ApplicationId] = ss
+		}
+
+		if ev.Type == model.KubernetesResourceStateEvent_ADD_OR_UPDATED {
+			snapshot.Kubernetes.Resources = mergeKubernetesResourceStatesOnAddOrUpdated(snapshot.Kubernetes.Resources, ev)
+		} else if ev.Type == model.KubernetesResourceStateEvent_DELETED {
+			snapshot.Kubernetes.Resources = mergeKubernetesResourceStatesOnDeleted(snapshot.Kubernetes.Resources, ev)
+		}
+	}
+
+	for applicationID, snapshot := range snapshots {
+		if err := s.cache.Put(applicationID, snapshot); err != nil {
+			s.logger.Error("failed to put application live state snapshot to cache",
+				zap.String("application-id", applicationID),
+				zap.Error(err),
+			)
+		}
+	}
+}
+
+func mergeKubernetesResourceStatesOnAddOrUpdated(prevs []*model.KubernetesResourceState, event *model.KubernetesResourceStateEvent) []*model.KubernetesResourceState {
+	news := make([]*model.KubernetesResourceState, 0)
+	if existsResourceState(prevs, event.State) {
+		for _, state := range prevs {
+			if state.Id == event.State.Id {
+				news = append(news, event.State)
+			} else {
+				news = append(news, state)
+			}
+		}
+	} else {
+		news = append(news, prevs...)
+		news = append(news, event.State)
+	}
+	return news
+}
+
+func existsResourceState(states []*model.KubernetesResourceState, input *model.KubernetesResourceState) bool {
+	for _, state := range states {
+		if state.Id == input.Id {
+			return true
+		}
+	}
+	return false
+}
+
+func mergeKubernetesResourceStatesOnDeleted(prevs []*model.KubernetesResourceState, event *model.KubernetesResourceStateEvent) []*model.KubernetesResourceState {
+	news := make([]*model.KubernetesResourceState, 0)
+	for _, state := range prevs {
+		if state.Id != event.State.Id {
+			news = append(news, state)
+		}
+	}
+	return news
 }
