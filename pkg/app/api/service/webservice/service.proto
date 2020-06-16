@@ -75,9 +75,12 @@ message ListEnvironmentsResponse {
 }
 
 message RegisterPipedRequest {
+    string id = 1 [(validate.rules).string.min_len = 1];
+    string desc = 2;
 }
 
 message RegisterPipedResponse {
+    string generated_key = 1;
 }
 
 message DisablePipedRequest {
