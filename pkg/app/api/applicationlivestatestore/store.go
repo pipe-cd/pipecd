@@ -90,14 +90,9 @@ func (s *store) PatchKubernetesApplicationLiveState(ctx context.Context, events 
 	for _, ev := range events {
 		snapshot, ok := snapshots[ev.ApplicationId]
 		if !ok {
-			ss, err := s.GetStateSnapshot(ctx, ev.ApplicationId)
-			if err != nil {
-				s.logger.Error("failed to get application live state snapshot",
-					zap.String("event-id", ev.Id),
-					zap.String("application-id", ev.ApplicationId),
-					zap.Error(err),
-				)
-			}
+			// Ignore error because logging is already doing in GetStateSnapshot.
+			ss, _ := s.GetStateSnapshot(ctx, ev.ApplicationId)
+
 			if ss == nil {
 				s.logger.Warn("application live state snapshot was not found",
 					zap.String("event-id", ev.Id),
@@ -109,9 +104,10 @@ func (s *store) PatchKubernetesApplicationLiveState(ctx context.Context, events 
 			snapshots[ev.ApplicationId] = ss
 		}
 
-		if ev.Type == model.KubernetesResourceStateEvent_ADD_OR_UPDATED {
+		switch ev.Type {
+		case model.KubernetesResourceStateEvent_ADD_OR_UPDATED:
 			snapshot.Kubernetes.Resources = mergeKubernetesResourceStatesOnAddOrUpdated(snapshot.Kubernetes.Resources, ev)
-		} else if ev.Type == model.KubernetesResourceStateEvent_DELETED {
+		case model.KubernetesResourceStateEvent_DELETED:
 			snapshot.Kubernetes.Resources = mergeKubernetesResourceStatesOnDeleted(snapshot.Kubernetes.Resources, ev)
 		}
 	}
@@ -153,10 +149,10 @@ func existsResourceState(states []*model.KubernetesResourceState, input *model.K
 }
 
 func mergeKubernetesResourceStatesOnDeleted(prevs []*model.KubernetesResourceState, event *model.KubernetesResourceStateEvent) []*model.KubernetesResourceState {
-	news := make([]*model.KubernetesResourceState, 0)
+	remains := make([]*model.KubernetesResourceState, len(prevs))
 	for _, state := range prevs {
 		if state.Id != event.State.Id {
-			news = append(news, state)
+			remains = append(remains, state)
 		}
 	}
 	return news
