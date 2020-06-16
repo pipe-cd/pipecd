@@ -9,6 +9,8 @@ import {
 import { DeploymentDetail } from "../../components/deployment-detail";
 import { AppState } from "../../modules";
 import { Pipeline } from "../../components/pipeline";
+import { LogViewer } from "../../components/log-viewer";
+import { Box } from "@material-ui/core";
 
 export const DeploymentDetailPage: FC = memo(() => {
   const dispatch = useDispatch();
@@ -28,16 +30,21 @@ export const DeploymentDetailPage: FC = memo(() => {
   }
 
   return (
-    <div>
-      <DeploymentDetail
-        name={deployment.id}
-        env={deployment.envId}
-        pipedId={deployment.pipedId}
-        description={deployment.description}
-        status={deployment.status}
-        commit={deployment.trigger.commit}
-      />
-      <Pipeline deploymentId={deploymentId} />
-    </div>
+    <Box display="flex" flexDirection="column" alignItems="stretch" flex={1}>
+      <Box flex={1}>
+        <DeploymentDetail
+          name={deployment.id}
+          env={deployment.envId}
+          pipedId={deployment.pipedId}
+          description={deployment.description}
+          status={deployment.status}
+          commit={deployment.trigger.commit}
+        />
+        <Pipeline deploymentId={deploymentId} />
+      </Box>
+      <Box flex="initial">
+        <LogViewer />
+      </Box>
+    </Box>
   );
 });

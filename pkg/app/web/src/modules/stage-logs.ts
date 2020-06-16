@@ -5,6 +5,8 @@ import { getStageLog } from "../api/stage-log";
 type LogBlock = LogBlockModel.AsObject;
 
 export type StageLog = {
+  deploymentId: string;
+  stageId: string;
   logBlocks: LogBlock[];
   completed: boolean;
 };
@@ -32,6 +34,8 @@ export const fetchStageLog = createAsyncThunk<
     });
 
     return {
+      stageId,
+      deploymentId,
       logBlocks: response.blocksList,
       completed: response.completed,
     };
@@ -46,6 +50,8 @@ export const stageLogsSlice = createSlice({
     builder
       .addCase(fetchStageLog.pending, (state, action) => {
         state[`${action.meta.arg.deploymentId}/${action.meta.arg.stageId}`] = {
+          stageId: action.meta.arg.stageId,
+          deploymentId: action.meta.arg.deploymentId,
           logBlocks: [],
           completed: false,
         };
@@ -68,5 +74,5 @@ export const selectStageLogById = (
     offsetIndex: string;
   }
 ) => {
-  return state[`${deploymentId}-${offsetIndex}`];
+  return state[`${deploymentId}/${offsetIndex}`];
 };

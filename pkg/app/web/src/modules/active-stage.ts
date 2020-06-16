@@ -17,4 +17,4 @@ export const activeStageSlice = createSlice({
   },
 });
 
-export const { updateActiveStage } = activeStageSlice.actions;
+export const { updateActiveStage, clearActiveStage } = activeStageSlice.actions;

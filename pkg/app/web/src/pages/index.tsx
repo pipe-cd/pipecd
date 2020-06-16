@@ -8,7 +8,7 @@ import { DeploymentIndexPage } from "./deployments";
 
 export const Pages: FC = memo(() => {
   return (
-    <div>
+    <>
       <Header />
       <Switch>
         <Route
@@ -27,6 +27,6 @@ export const Pages: FC = memo(() => {
           component={DeploymentDetailPage}
         />
       </Switch>
-    </div>
+    </>
   );
 });
