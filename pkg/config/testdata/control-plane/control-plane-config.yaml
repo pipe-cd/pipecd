@@ -2,10 +2,10 @@ apiVersion: pipecd.dev/v1beta1
 kind: ControlPlane
 spec:
   projects:
-    - name: abc
-      adminTeam: admin
-      editorTeam: editor
-      viewerTeam: viewer
+    - id: abc
+      staticAdmin:
+        username: test-user
+        passwordHash: test-password
   datastore:
     type: FIRESTORE
     config:
