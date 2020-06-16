@@ -1,4 +1,4 @@
-import React, { FC, memo, useCallback, useState } from "react";
+import React, { FC, memo, useCallback } from "react";
 import { makeStyles, Box } from "@material-ui/core";
 import { PipelineStage } from "./pipeline-stage";
 import { useSelector, useDispatch } from "react-redux";
