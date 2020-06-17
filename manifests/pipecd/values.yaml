@@ -60,7 +60,8 @@ config:
       datastore:
         type: FIRESTORE
         config:
-          namespace: dev
+          namespace: pipecd
+          environment: dev
           project: pipecd
           credentialsFile: /etc/pipecd-secret/service-account.json
       filestore:
