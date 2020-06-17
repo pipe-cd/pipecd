@@ -23,14 +23,24 @@ import (
 
 const pipedModelKind = "Piped"
 
-var pipedFactory = func() interface{} {
-	return &model.Piped{}
-}
+var (
+	pipedFactory = func() interface{} {
+		return &model.Piped{}
+	}
+	PipedMetadataUpdater = func(cloudProviders []*model.Piped_CloudProvider, version string) func(piped *model.Piped) error {
+		return func(piped *model.Piped) error {
+			piped.CloudProviders = cloudProviders
+			piped.Version = version
+			return nil
+		}
+	}
+)
 
 type PipedStore interface {
 	AddPiped(ctx context.Context, piped *model.Piped) error
 	GetPiped(ctx context.Context, id string) (*model.Piped, error)
 	ListPipeds(ctx context.Context, opts ListOptions) ([]model.Piped, error)
+	PutPiped(ctx context.Context, id string, updater func(piped *model.Piped) error) error
 }
 
 type pipedStore struct {
@@ -87,4 +97,16 @@ func (s *pipedStore) ListPipeds(ctx context.Context, opts ListOptions) ([]model.
 		ps = append(ps, p)
 	}
 	return ps, nil
+}
+
+func (s *pipedStore) PutPiped(ctx context.Context, id string, updater func(piped *model.Piped) error) error {
+	now := s.nowFunc().Unix()
+	return s.ds.Update(ctx, pipedModelKind, id, pipedFactory, func(e interface{}) error {
+		p := e.(*model.Piped)
+		if err := updater(p); err != nil {
+			return err
+		}
+		p.UpdatedAt = now
+		return p.Validate()
+	})
 }
