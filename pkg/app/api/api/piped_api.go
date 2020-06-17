@@ -79,7 +79,19 @@ func (a *PipedAPI) Ping(ctx context.Context, req *pipedservice.PingRequest) (*pi
 // ReportPipedMeta is sent by piped while starting up to report its metadata
 // such as configured cloud providers.
 func (a *PipedAPI) ReportPipedMeta(ctx context.Context, req *pipedservice.ReportPipedMetaRequest) (*pipedservice.ReportPipedMetaResponse, error) {
-	return nil, status.Error(codes.Unimplemented, "")
+	_, pipedID, _, err := rpcauth.ExtractPipedToken(ctx)
+	if err != nil {
+		return nil, err
+	}
+
+	a.logger.Info("a piped has just started",
+		zap.String("piped-id", pipedID),
+		zap.String("version", req.Version),
+		zap.Any("cloud-providers", req.CloudProviders),
+	)
+	return &pipedservice.ReportPipedMetaResponse{}, nil
+	// TODO: Implement ReportPipedMeta rpc.
+	// return nil, status.Error(codes.Unimplemented, "")
 }
 
 // ListApplications returns a list of registered applications
