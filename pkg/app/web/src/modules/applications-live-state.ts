@@ -3,11 +3,18 @@ import {
   createEntityAdapter,
   createSlice,
 } from "@reduxjs/toolkit";
-import { ApplicationLiveStateSnapshot } from "pipe/pkg/app/web/model/application_live_state_pb";
+import {
+  ApplicationLiveStateSnapshot,
+  KubernetesResourceState as KubernetesResourceStateModel,
+} from "pipe/pkg/app/web/model/application_live_state_pb";
 import { getApplicationLiveState } from "../api/applications";
 
 export type ApplicationLiveState = Required<
   ApplicationLiveStateSnapshot.AsObject
+>;
+
+export type KubernetesResourceState = Required<
+  KubernetesResourceStateModel.AsObject
 >;
 
 export const applicationLiveStateAdapter = createEntityAdapter<

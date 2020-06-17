@@ -14,5 +14,6 @@ export const overview: React.FC = () => (
     status={StageStatus.STAGE_SUCCESS}
     name="K8S_CANARY_ROLLOUT"
     onClick={action("onClick")}
+    active={false}
   />
 );
