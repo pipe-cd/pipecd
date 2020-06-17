@@ -49,7 +49,8 @@ func TestControlPlaneConfig(t *testing.T) {
 				Datastore: ControlPlaneDataStore{
 					Type: model.DataStoreFirestore,
 					FirestoreConfig: &DataStoreFireStoreConfig{
-						Namespace:       "namespace",
+						Namespace:       "pipecd-test",
+						Environment:     "unit-test",
 						Project:         "project",
 						CredentialsFile: "datastore-credentials-file.json",
 					},
