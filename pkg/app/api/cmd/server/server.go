@@ -304,7 +304,7 @@ func (s *server) createDatastore(ctx context.Context, cfg *config.ControlPlaneSp
 			firestore.WithCredentialsFile(fsConfig.CredentialsFile),
 			firestore.WithLogger(logger),
 		}
-		return firestore.NewFireStore(ctx, fsConfig.Project, fsConfig.Namespace, options...)
+		return firestore.NewFireStore(ctx, fsConfig.Project, fsConfig.Namespace, fsConfig.Environment, options...)
 	}
 
 	if cfg.Datastore.DynamoDBConfig != nil {

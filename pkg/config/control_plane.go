@@ -121,8 +121,10 @@ type ControlPlaneCache struct {
 }
 
 type DataStoreFireStoreConfig struct {
-	// The identifier that logically separates environment of the datastore.
+	// The identifier that logically separates the root path of the datastore.
 	Namespace string `json:"namespace"`
+	// The identifier that logically separates directly under the namespace of the datastore.
+	Environment string `json:"environment"`
 	// The identifier of the GCP project which host the firestore.
 	Project string `json:"project"`
 	// The path to the credentials file for accessing firestore.

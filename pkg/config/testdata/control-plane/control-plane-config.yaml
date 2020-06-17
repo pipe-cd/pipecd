@@ -9,7 +9,8 @@ spec:
   datastore:
     type: FIRESTORE
     config:
-      namespace: namespace
+      namespace: pipecd-test
+      environment: unit-test
       project: project
       credentialsFile: "datastore-credentials-file.json"
   filestore:

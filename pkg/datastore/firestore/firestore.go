@@ -28,22 +28,27 @@ import (
 )
 
 const (
-	collectionRoot = "Variant"
+	defaultNamespace = "pipecd"
 )
 
 type FireStore struct {
-	client  *firestore.Client
-	variant string
+	client      *firestore.Client
+	namespace   string
+	environment string
 
 	useCredentialsFile bool
 	credentialsFile    string
 	logger             *zap.Logger
 }
 
-func NewFireStore(ctx context.Context, projectID, variant string, opts ...Option) (*FireStore, error) {
+func NewFireStore(ctx context.Context, projectID, namespace, environment string, opts ...Option) (*FireStore, error) {
 	s := &FireStore{
-		variant: variant,
-		logger:  zap.NewNop(),
+		namespace:   namespace,
+		environment: environment,
+		logger:      zap.NewNop(),
+	}
+	if s.namespace == "" {
+		s.namespace = defaultNamespace
 	}
 	for _, opt := range opts {
 		opt(s)
@@ -88,7 +93,7 @@ func (s *FireStore) Find(ctx context.Context, kind string, opts datastore.ListOp
 		return nil, err
 	}
 
-	q := s.client.Collection(collectionRoot).Doc(s.variant).Collection(kind).Query
+	q := s.client.Collection(s.namespace).Doc(s.environment).Collection(kind).Query
 	for _, f := range opts.Filters {
 		q = q.Where(f.Field, f.Operator, f.Value)
 	}
@@ -112,7 +117,7 @@ func (s *FireStore) Find(ctx context.Context, kind string, opts datastore.ListOp
 }
 
 func (s *FireStore) Get(ctx context.Context, kind, id string, v interface{}) error {
-	ds, err := s.client.Collection(collectionRoot).Doc(s.variant).Collection(kind).Doc(id).Get(ctx)
+	ds, err := s.client.Collection(s.namespace).Doc(s.environment).Collection(kind).Doc(id).Get(ctx)
 	if err != nil {
 		if s, ok := status.FromError(err); ok && s.Code() == codes.NotFound {
 			return datastore.ErrNotFound
@@ -137,7 +142,7 @@ func (s *FireStore) Get(ctx context.Context, kind, id string, v interface{}) err
 }
 
 func (s *FireStore) Create(ctx context.Context, kind, id string, entity interface{}) error {
-	ref := s.client.Collection(collectionRoot).Doc(s.variant).Collection(kind).Doc(id)
+	ref := s.client.Collection(s.namespace).Doc(s.environment).Collection(kind).Doc(id)
 	err := s.client.RunTransaction(ctx, func(ctx context.Context, tx *firestore.Transaction) error {
 		_, err := tx.Get(ref)
 		if err == nil {
@@ -165,7 +170,7 @@ func (s *FireStore) Create(ctx context.Context, kind, id string, entity interfac
 }
 
 func (s *FireStore) Put(ctx context.Context, kind, id string, entity interface{}) error {
-	col := s.client.Collection(collectionRoot).Doc(s.variant).Collection(kind)
+	col := s.client.Collection(s.namespace).Doc(s.environment).Collection(kind)
 	if _, err := col.Doc(id).Set(ctx, entity); err != nil {
 		s.logger.Info("failed to put entity",
 			zap.String("id", id),
@@ -178,7 +183,7 @@ func (s *FireStore) Put(ctx context.Context, kind, id string, entity interface{}
 }
 
 func (s *FireStore) Update(ctx context.Context, kind, id string, factory datastore.Factory, updater datastore.Updater) error {
-	ref := s.client.Collection(collectionRoot).Doc(s.variant).Collection(kind).Doc(id)
+	ref := s.client.Collection(s.namespace).Doc(s.environment).Collection(kind).Doc(id)
 	err := s.client.RunTransaction(ctx, func(ctx context.Context, tx *firestore.Transaction) error {
 		entity := factory()
 		ds, err := tx.Get(ref)
@@ -230,7 +235,7 @@ func (s *FireStore) fetchCursorDocumentSnapshot(ctx context.Context, kind string
 	if opts.Cursor == "" {
 		return nil, nil
 	}
-	return s.client.Collection(collectionRoot).Doc(s.variant).Collection(kind).Doc(opts.Cursor).Get(ctx)
+	return s.client.Collection(s.namespace).Doc(s.environment).Collection(kind).Doc(opts.Cursor).Get(ctx)
 }
 
 func convertToDirection(od datastore.OrderDirection) firestore.Direction {
