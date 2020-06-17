@@ -1,14 +1,14 @@
-import React, { memo, FC, useEffect } from "react";
-import { useParams } from "react-router";
+import React, { FC, memo, useEffect } from "react";
 import { useDispatch, useSelector } from "react-redux";
-import {
-  fetchApplicationById,
-  selectById,
-  ApplicationLiveState,
-} from "../../modules/applications-live-state";
+import { useParams } from "react-router";
 import { ApplicationDetail } from "../../components/application-detail";
 import { AppState } from "../../modules";
-import { ApplicationSyncStatus } from "pipe/pkg/app/web/model/application_pb";
+import {
+  ApplicationLiveState,
+  fetchApplicationById,
+  selectById,
+} from "../../modules/applications-live-state";
+import { fetchApplications } from "../../modules/applications";
 
 export const ApplicationDetailPage: FC = memo(() => {
   const dispatch = useDispatch();
@@ -22,6 +22,9 @@ export const ApplicationDetailPage: FC = memo(() => {
     if (applicationId) {
       dispatch(fetchApplicationById(applicationId));
     }
+
+    // TODO: Fetch only current active application data
+    dispatch(fetchApplications());
   }, [applicationId]);
 
   if (!application) {
@@ -30,16 +33,7 @@ export const ApplicationDetailPage: FC = memo(() => {
 
   return (
     <div>
-      <ApplicationDetail
-        name={application.applicationId}
-        env={application.envId}
-        version={`${application.version.index}`}
-        piped={application.pipedId}
-        deployedAt={application.version.timestamp}
-        deploymentId="aaa"
-        status={ApplicationSyncStatus.DEPLOYING}
-        description="hello"
-      />
+      <ApplicationDetail applicationId={applicationId} />
     </div>
   );
 });

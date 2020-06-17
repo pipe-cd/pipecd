@@ -24,7 +24,7 @@ export const ApplicationIndexPage: FC = memo(() => {
     <div>
       <ul>
         {applications.map((application) => (
-          <li>
+          <li key={application.id}>
             <Link
               component={RouterLink}
               to={`${PAGE_PATH_APPLICATIONS}/${application.id}`}

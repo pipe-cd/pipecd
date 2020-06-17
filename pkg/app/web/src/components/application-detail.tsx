@@ -1,10 +1,21 @@
-import React, { FC } from "react";
-import { makeStyles, Paper, Typography, Box } from "@material-ui/core";
-import { LabeledText } from "./labeled-text";
-import { ApplicationSyncStatus } from "pipe/pkg/app/web/model/application_pb";
-import { SyncStatusIcon } from "./sync-status-icon";
-import { APPLICATION_SYNC_STATUS_TEXT } from "../constants/application-sync-status-text";
+import { Box, makeStyles, Paper, Typography, Link } from "@material-ui/core";
 import dayjs from "dayjs";
+import React, { FC, memo } from "react";
+import { useSelector } from "react-redux";
+import { APPLICATION_SYNC_STATUS_TEXT } from "../constants/application-sync-status-text";
+import { AppState } from "../modules";
+import {
+  Application,
+  selectById as selectApplicationById,
+} from "../modules/applications";
+import {
+  ApplicationLiveState,
+  selectById as selectLiveStateById,
+} from "../modules/applications-live-state";
+import { LabeledText } from "./labeled-text";
+import { SyncStatusIcon } from "./sync-status-icon";
+import { Link as RouterLink } from "react-router-dom";
+import { PAGE_PATH_DEPLOYMENTS } from "../constants";
 
 const useStyles = makeStyles((theme) => ({
   container: {
@@ -27,61 +38,66 @@ const useStyles = makeStyles((theme) => ({
 }));
 
 interface Props {
-  name: string;
-  env: string;
-  piped: string;
-  status: ApplicationSyncStatus;
-  deployedAt: number;
-  version: string;
-  deploymentId: string;
-  description: string;
+  applicationId: string;
 }
 
-export const ApplicationDetail: FC<Props> = ({
-  name,
-  env,
-  piped,
-  status,
-  deployedAt,
-  description,
-  deploymentId,
-  version,
-}) => {
+export const ApplicationDetail: FC<Props> = memo(({ applicationId }) => {
   const classes = useStyles();
+  const app = useSelector<AppState, Application | undefined>((state) =>
+    selectApplicationById(state.applications, applicationId)
+  );
+  const liveState = useSelector<AppState, ApplicationLiveState | undefined>(
+    (state) => selectLiveStateById(state.applicationLiveState, applicationId)
+  );
+
+  if (!liveState || !app) {
+    return null;
+  }
+
   return (
     <Paper square elevation={1} className={classes.container}>
       <Box display="flex">
         <Box flex={1}>
           <Box display="flex" alignItems="center">
             <Typography variant="h6" className={classes.textMargin}>
-              {name}
+              {app.name}
             </Typography>
             <Typography variant="subtitle2" className={classes.env}>
-              {env}
+              {liveState.envId}
             </Typography>
           </Box>
           <Box display="flex">
-            <SyncStatusIcon status={status} />
+            <SyncStatusIcon status={app.syncState.status} />
             <Typography variant="subtitle1" className={classes.syncStatusText}>
-              {APPLICATION_SYNC_STATUS_TEXT[status]}
+              {APPLICATION_SYNC_STATUS_TEXT[app.syncState.status]}
             </Typography>
 
-            <SyncStatusIcon status={status} />
+            <SyncStatusIcon status={app.syncState.status} />
             <Typography variant="subtitle1" className={classes.statusText}>
               {/** TODO: Show health status */}
               Healthy
             </Typography>
           </Box>
           <Typography className={classes.env} variant="body1">
-            {dayjs(deployedAt).fromNow()}
+            {dayjs(liveState.version.timestamp).fromNow()}
           </Typography>
         </Box>
         <Box flex={1}>
-          <LabeledText label="Latest Deployment" text={deploymentId} />
-          <LabeledText label="Version" text={version} />
-          <LabeledText label="Description" text={description} />
+          <LabeledText
+            label="Latest Deployment"
+            value={
+              <Link
+                component={RouterLink}
+                to={`${PAGE_PATH_DEPLOYMENTS}/${app.mostRecentSuccessfulDeployment.deploymentId}`}
+              >
+                {app.mostRecentSuccessfulDeployment.deploymentId}
+              </Link>
+            }
+          />
+          <LabeledText label="Version" value={`${liveState.version.index}`} />
+          <LabeledText label="Description" value="description" />
         </Box>
       </Box>
     </Paper>
   );
-};
+});

@@ -1,7 +1,11 @@
 import React, { FC, memo } from "react";
 import { Route, Switch } from "react-router-dom";
 import { Header } from "../components/header";
-import { PAGE_PATH_DEPLOYMENTS, PAGE_PATH_APPLICATIONS } from "../constants";
+import {
+  PAGE_PATH_DEPLOYMENTS,
+  PAGE_PATH_APPLICATIONS,
+  PAGE_PATH_TOP,
+} from "../constants";
 import { ApplicationIndexPage } from "./applications/index";
 import { ApplicationDetailPage } from "./applications/detail";
 import { DeploymentIndexPage } from "./deployments/index";
@@ -12,9 +16,10 @@ export const Pages: FC = memo(() => {
     <>
       <Header />
       <Switch>
+        <Route exact path={PAGE_PATH_TOP} component={ApplicationIndexPage} />
         <Route
           exact
-          path={`${PAGE_PATH_APPLICATIONS}`}
+          path={PAGE_PATH_APPLICATIONS}
           component={ApplicationIndexPage}
         />
         <Route
@@ -24,7 +29,7 @@ export const Pages: FC = memo(() => {
         />
         <Route
           exact
-          path={`${PAGE_PATH_DEPLOYMENTS}`}
+          path={PAGE_PATH_DEPLOYMENTS}
           component={DeploymentIndexPage}
         />
         <Route
