@@ -84,14 +84,21 @@ func (a *PipedAPI) ReportPipedMeta(ctx context.Context, req *pipedservice.Report
 		return nil, err
 	}
 
-	a.logger.Info("a piped has just started",
-		zap.String("piped-id", pipedID),
-		zap.String("version", req.Version),
-		zap.Any("cloud-providers", req.CloudProviders),
-	)
+	if err = a.pipedStore.UpdatePiped(ctx, pipedID, datastore.PipedMetadataUpdater(req.CloudProviders, req.Version)); err != nil {
+		switch err {
+		case datastore.ErrNotFound:
+			return nil, status.Error(codes.InvalidArgument, "piped is not found")
+		case datastore.ErrInvalidArgument:
+			return nil, status.Error(codes.InvalidArgument, "invalid value for update")
+		default:
+			a.logger.Error("failed to update the piped metadata",
+				zap.String("piped-id", pipedID),
+				zap.Error(err),
+			)
+			return nil, status.Error(codes.Internal, "failed to update the piped metadata")
+		}
+	}
 	return &pipedservice.ReportPipedMetaResponse{}, nil
-	// TODO: Implement ReportPipedMeta rpc.
-	// return nil, status.Error(codes.Unimplemented, "")
 }
 
 // ListApplications returns a list of registered applications

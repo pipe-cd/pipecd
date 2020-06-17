@@ -85,6 +85,8 @@ func (s *samplecli) run(ctx context.Context, t cli.Telemetry) error {
 	// PipedService
 	case "CreateDeployment":
 		return s.createDeployment(ctx, cli, data, t.Logger)
+	case "ReportPipedMeta":
+		return s.reportPipedMeta(ctx, cli, data, t.Logger)
 	case "ListApplications":
 		return s.listApplications(ctx, cli, data, t.Logger)
 	case "ReportApplicationSyncState":
@@ -157,6 +159,19 @@ func (s *samplecli) createDeployment(ctx context.Context, cli pipedservice.Clien
 		return err
 	}
 	logger.Info("successfully run CreateDeployment")
+	return nil
+}
+
+func (s *samplecli) reportPipedMeta(ctx context.Context, cli pipedservice.Client, payload []byte, logger *zap.Logger) error {
+	req := pipedservice.ReportPipedMetaRequest{}
+	if err := json.Unmarshal(payload, &req); err != nil {
+		return err
+	}
+	if _, err := cli.ReportPipedMeta(ctx, &req); err != nil {
+		logger.Error("failed to run ReportPipedMeta", zap.Error(err))
+		return err
+	}
+	logger.Info("successfully run ReportPipedMeta")
 	return nil
 }
 
