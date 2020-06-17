@@ -26,6 +26,7 @@ import (
 
 	"github.com/pipe-cd/pipe/pkg/app/api/service/pipedservice"
 	"github.com/pipe-cd/pipe/pkg/cli"
+	"github.com/pipe-cd/pipe/pkg/rpc/rpcauth"
 	"github.com/pipe-cd/pipe/pkg/rpc/rpcclient"
 )
 
@@ -34,6 +35,11 @@ type samplecli struct {
 	name           string
 	function       string
 	requestPayload string
+	tls            bool
+	certFile       string
+	projectID      string
+	pipedID        string
+	pipedKey       string
 }
 
 func NewCommand() *cobra.Command {
@@ -48,6 +54,17 @@ func NewCommand() *cobra.Command {
 	cmd.Flags().StringVar(&s.apiAddress, "api-address", s.apiAddress, "The address to piped api service.")
 	cmd.Flags().StringVar(&s.function, "function", s.function, "The function name.")
 	cmd.Flags().StringVar(&s.requestPayload, "request-payload", s.requestPayload, "The json file that binds to request proto message.")
+	cmd.Flags().BoolVar(&s.tls, "tls", s.tls, "Whether running the gRPC server with TLS or not.")
+	cmd.Flags().StringVar(&s.certFile, "cert-file", s.certFile, "The path to the TLS certificate file.")
+	cmd.Flags().StringVar(&s.projectID, "project-id", s.projectID, "The project ID.")
+	cmd.Flags().StringVar(&s.pipedID, "piped-id", s.pipedID, "The piped ID for using API.")
+	cmd.Flags().StringVar(&s.pipedKey, "piped-key", s.pipedKey, "The piped key for using API.")
+
+	cmd.MarkFlagRequired("function")
+	cmd.MarkFlagRequired("request-payload")
+	cmd.MarkFlagRequired("project-id")
+	cmd.MarkFlagRequired("piped-id")
+	cmd.MarkFlagRequired("piped-key")
 	return cmd
 }
 
@@ -107,10 +124,20 @@ func (s *samplecli) createServiceClient(ctx context.Context, logger *zap.Logger)
 	ctx, cancel := context.WithTimeout(ctx, 5*time.Second)
 	defer cancel()
 
-	options := []rpcclient.DialOption{
-		rpcclient.WithBlock(),
-		rpcclient.WithStatsHandler(),
-		rpcclient.WithInsecure(),
+	var (
+		token   = rpcauth.MakePipedToken(s.projectID, s.pipedID, string(s.pipedKey))
+		creds   = rpcclient.NewPerRPCCredentials(token, rpcauth.PipedTokenCredentials, s.tls)
+		options = []rpcclient.DialOption{
+			rpcclient.WithBlock(),
+			rpcclient.WithStatsHandler(),
+			rpcclient.WithPerRPCCredentials(creds),
+		}
+	)
+
+	if s.tls {
+		options = append(options, rpcclient.WithTLS(s.certFile))
+	} else {
+		options = append(options, rpcclient.WithInsecure())
 	}
 	client, err := pipedservice.NewClient(ctx, s.apiAddress, options...)
 	if err != nil {
