@@ -99,8 +99,22 @@ func (a *PipedAPI) ReportPipedMeta(ctx context.Context, req *pipedservice.Report
 // Disabled applications should not be included in the response.
 // Piped uses this RPC to fetch and sync the application configuration into its local database.
 func (a *PipedAPI) ListApplications(ctx context.Context, req *pipedservice.ListApplicationsRequest) (*pipedservice.ListApplicationsResponse, error) {
+	projectID, pipedID, _, err := rpcauth.ExtractPipedToken(ctx)
+	if err != nil {
+		return nil, err
+	}
 	opts := datastore.ListOptions{
 		Filters: []datastore.ListFilter{
+			{
+				Field:    "ProjectId",
+				Operator: "==",
+				Value:    projectID,
+			},
+			{
+				Field:    "PipedId",
+				Operator: "==",
+				Value:    pipedID,
+			},
 			{
 				Field:    "Disabled",
 				Operator: "==",

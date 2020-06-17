@@ -197,7 +197,7 @@ func (t *Trigger) checkApplication(ctx context.Context, app *model.Application, 
 	}
 
 	// Check whether the most recently applied one is the head commit or not.
-	// If not, nothing to do for this time.
+	// If so, nothing to do for this time.
 	if headCommit.Hash == preCommitHash {
 		logger.Info(fmt.Sprintf("no update to sync for application: %s, hash: %s", app.Id, headCommit.Hash))
 		return nil
