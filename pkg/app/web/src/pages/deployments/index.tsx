@@ -37,8 +37,6 @@ export const DeploymentIndexPage: FC = memo(() => {
     dispatch(fetchDeployments());
   }, []);
 
-  console.log(groupedDeployments);
-
   return (
     <div>
       <ol>
