@@ -1,7 +1,9 @@
-import { Box, makeStyles, Paper, Typography, Link } from "@material-ui/core";
+import { Box, Link, makeStyles, Paper, Typography } from "@material-ui/core";
 import dayjs from "dayjs";
 import React, { FC, memo } from "react";
 import { useSelector } from "react-redux";
+import { Link as RouterLink } from "react-router-dom";
+import { PAGE_PATH_DEPLOYMENTS } from "../constants";
 import { APPLICATION_SYNC_STATUS_TEXT } from "../constants/application-sync-status-text";
 import { AppState } from "../modules";
 import {
@@ -14,8 +16,6 @@ import {
 } from "../modules/applications-live-state";
 import { LabeledText } from "./labeled-text";
 import { SyncStatusIcon } from "./sync-status-icon";
-import { Link as RouterLink } from "react-router-dom";
-import { PAGE_PATH_DEPLOYMENTS } from "../constants";
 
 const useStyles = makeStyles((theme) => ({
   container: {

@@ -9,6 +9,7 @@ import {
   selectById,
 } from "../../modules/applications-live-state";
 import { fetchApplications } from "../../modules/applications";
+import { ApplicationStateView } from "../../components/application-state-view";
 
 export const ApplicationDetailPage: FC = memo(() => {
   const dispatch = useDispatch();
@@ -34,6 +35,7 @@ export const ApplicationDetailPage: FC = memo(() => {
   return (
     <div>
       <ApplicationDetail applicationId={applicationId} />
+      <ApplicationStateView applicationId={applicationId} />
     </div>
   );
 });

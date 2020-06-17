@@ -14,7 +14,7 @@ interface Props {
   kind: string;
 }
 
-export const ApplicationResource: FC<Props> = ({ name, kind }) => {
+export const KubernetesResource: FC<Props> = ({ name, kind }) => {
   const classes = useStyles();
   return (
     <Paper square className={classes.container}>
