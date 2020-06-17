@@ -52,8 +52,8 @@ export const DeploymentDetail: FC<Props> = ({
               {env}
             </Typography>
           </Box>
-          <LabeledText label="piped" text={pipedId} />
-          <LabeledText label="Description" text={description} />
+          <LabeledText label="piped" value={pipedId} />
+          <LabeledText label="Description" value={description} />
         </Box>
         {commit && (
           <Box flex={2}>
@@ -72,8 +72,8 @@ export const DeploymentDetail: FC<Props> = ({
             </Box>
             {/* TODO: Display createAt time as text */}
 
-            <LabeledText label="CREATED AT" text={`${commit.createdAt}`} />
-            <LabeledText label="TRIGGERED BY" text={commit.author} />
+            <LabeledText label="CREATED AT" value={`${commit.createdAt}`} />
+            <LabeledText label="TRIGGERED BY" value={commit.author} />
           </Box>
         )}
       </Box>

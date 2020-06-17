@@ -12,7 +12,7 @@ export const applicationsAdapter = createEntityAdapter<Application>({
   selectId: (app) => app.id,
 });
 
-export const { selectAll } = applicationsAdapter.getSelectors();
+export const { selectAll, selectById } = applicationsAdapter.getSelectors();
 
 export const fetchApplications = createAsyncThunk<Application[], void>(
   "applications/fetchList",

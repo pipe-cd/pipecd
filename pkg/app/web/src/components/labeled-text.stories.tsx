@@ -3,9 +3,9 @@ import { LabeledText } from "./labeled-text";
 
 export default {
   title: "LabeledText",
-  component: LabeledText
+  component: LabeledText,
 };
 
 export const overview: React.FC = () => (
-  <LabeledText label="piped" text="hello-world" />
+  <LabeledText label="piped" value="hello-world" />
 );
