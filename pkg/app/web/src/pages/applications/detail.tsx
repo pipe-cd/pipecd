@@ -5,7 +5,7 @@ import {
   fetchApplicationById,
   selectById,
   ApplicationLiveState,
-} from "../../modules/applications";
+} from "../../modules/applications-live-state";
 import { ApplicationDetail } from "../../components/application-detail";
 import { AppState } from "../../modules";
 import { ApplicationSyncStatus } from "pipe/pkg/app/web/model/application_pb";
@@ -15,7 +15,7 @@ export const ApplicationDetailPage: FC = memo(() => {
   const params = useParams<{ applicationId: string }>();
   const applicationId = decodeURIComponent(params.applicationId);
   const application = useSelector<AppState, ApplicationLiveState | undefined>(
-    (state) => selectById(state.applications, applicationId)
+    (state) => selectById(state.applicationLiveState, applicationId)
   );
 
   useEffect(() => {

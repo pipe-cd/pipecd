@@ -1,12 +1,14 @@
 import { AnyAction, combineReducers } from "redux";
 import { ThunkAction, ThunkDispatch } from "redux-thunk";
 import { deploymentsSlice } from "./deployments";
-import { applicationsSlice } from "./applications";
+import { applicationLiveStateSlice } from "./applications-live-state";
 import { stageLogsSlice } from "./stage-logs";
 import { activeStageSlice } from "./active-stage";
+import { applicationsSlice } from "./applications";
 
 export const reducers = combineReducers({
   deployments: deploymentsSlice.reducer,
+  applicationLiveState: applicationLiveStateSlice.reducer,
   applications: applicationsSlice.reducer,
   stageLogs: stageLogsSlice.reducer,
   activeStage: activeStageSlice.reducer,
