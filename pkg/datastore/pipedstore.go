@@ -40,7 +40,7 @@ type PipedStore interface {
 	AddPiped(ctx context.Context, piped *model.Piped) error
 	GetPiped(ctx context.Context, id string) (*model.Piped, error)
 	ListPipeds(ctx context.Context, opts ListOptions) ([]model.Piped, error)
-	PutPiped(ctx context.Context, id string, updater func(piped *model.Piped) error) error
+	UpdatePiped(ctx context.Context, id string, updater func(piped *model.Piped) error) error
 }
 
 type pipedStore struct {
@@ -99,7 +99,7 @@ func (s *pipedStore) ListPipeds(ctx context.Context, opts ListOptions) ([]model.
 	return ps, nil
 }
 
-func (s *pipedStore) PutPiped(ctx context.Context, id string, updater func(piped *model.Piped) error) error {
+func (s *pipedStore) UpdatePiped(ctx context.Context, id string, updater func(piped *model.Piped) error) error {
 	now := s.nowFunc().Unix()
 	return s.ds.Update(ctx, pipedModelKind, id, pipedFactory, func(e interface{}) error {
 		p := e.(*model.Piped)
