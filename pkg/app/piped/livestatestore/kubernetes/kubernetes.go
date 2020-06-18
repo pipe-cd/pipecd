@@ -95,6 +95,7 @@ func (s *Store) Run(ctx context.Context) error {
 
 	stopCh := make(chan struct{})
 	rf := reflector{
+		config:      s.config,
 		kubeConfig:  s.kubeConfig,
 		pipedConfig: s.pipedConfig,
 		onAdd:       s.store.onAddResource,

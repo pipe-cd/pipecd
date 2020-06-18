@@ -61,9 +61,27 @@ func TestPipedConfig(t *testing.T) {
 				},
 				CloudProviders: []PipedCloudProvider{
 					{
-						Name:             "kubernetes-default",
-						Type:             model.CloudProviderKubernetes,
-						KubernetesConfig: &CloudProviderKubernetesConfig{},
+						Name: "kubernetes-default",
+						Type: model.CloudProviderKubernetes,
+						KubernetesConfig: &CloudProviderKubernetesConfig{
+							AppStateInformer: KubernetesAppStateInformer{
+								IncludeResources: []KubernetesResourceMatcher{
+									{
+										APIVersion: "pipecd.dev/v1beta1",
+									},
+									{
+										APIVersion: "networking.gke.io/v1beta1",
+										Kind:       "ManagedCertificate",
+									},
+								},
+								ExcludeResources: []KubernetesResourceMatcher{
+									{
+										APIVersion: "v1",
+										Kind:       "Endpoints",
+									},
+								},
+							},
+						},
 					},
 					{
 						Name: "terraform-gcp",

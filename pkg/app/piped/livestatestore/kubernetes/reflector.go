@@ -41,7 +41,7 @@ var (
 		"apps":                      {},
 		"extensions":                {},
 		"storage.k8s.io":            {},
-		"autoscaling/v1":            {},
+		"autoscaling":               {},
 		"networking.k8s.io":         {},
 		"apiextensions.k8s.io":      {},
 		"rbac.authorization.k8s.io": {},
@@ -118,6 +118,7 @@ var (
 // reflector watches the live state of applicaiton with the cluster
 // and triggers the specified callbacks.
 type reflector struct {
+	config      *config.CloudProviderKubernetesConfig
 	kubeConfig  *restclient.Config
 	pipedConfig *config.PipedSpec
 
@@ -131,6 +132,8 @@ type reflector struct {
 }
 
 func (r *reflector) start(ctx context.Context) error {
+	matcher := newResourceMatcher(r.config)
+
 	// Use discovery to discover APIs supported by the Kubernetes API server.
 	// This should be run periodically with a low rate because the APIs are not added frequently.
 	// https://godoc.org/k8s.io/client-go/discovery
@@ -145,32 +148,38 @@ func (r *reflector) start(ctx context.Context) error {
 	r.logger.Info(fmt.Sprintf("successfully prefered resources that contains for %d groups", len(groupResources)))
 
 	// Filter above APIResources.
-	targetResources := make([]schema.GroupVersionResource, 0)
+	var (
+		targetResources           = make([]schema.GroupVersionResource, 0)
+		namespacedTargetResources = make([]schema.GroupVersionResource, 0)
+	)
 	for _, gr := range groupResources {
 		for _, resource := range gr.APIResources {
-			if _, ok := kindWhitelist[resource.Kind]; !ok {
-				continue
-			}
 			gvk := schema.FromAPIVersionAndKind(gr.GroupVersion, resource.Kind)
-			gv := gvk.GroupVersion()
-			if _, ok := groupWhitelist[gv.Group]; !ok {
+			if !matcher.Match(gvk) {
 				continue
 			}
-			if _, ok := versionWhitelist[gv.Version]; !ok {
-				continue
-			}
+
 			if !isSupportedList(resource) || !isSupportedWatch(resource) {
 				continue
 			}
+
+			gv := gvk.GroupVersion()
 			r.watchingResourceKinds = append(r.watchingResourceKinds, provider.APIVersionKind{
 				APIVersion: gv.String(),
 				Kind:       gvk.Kind,
 			})
 			target := gv.WithResource(resource.Name)
-			targetResources = append(targetResources, target)
+			if resource.Namespaced {
+				namespacedTargetResources = append(namespacedTargetResources, target)
+			} else {
+				targetResources = append(targetResources, target)
+			}
 		}
 	}
-	r.logger.Info("filtered target resources", zap.Any("targetResources", targetResources))
+	r.logger.Info("filtered target resources",
+		zap.Any("targetResources", targetResources),
+		zap.Any("namespacedTargetResources", namespacedTargetResources),
+	)
 
 	// Use dynamic to perform generic operations on arbitrary Kubernets API objects.
 	// https://godoc.org/k8s.io/client-go/dynamic
@@ -178,24 +187,50 @@ func (r *reflector) start(ctx context.Context) error {
 	if err != nil {
 		return fmt.Errorf("failed to create dynamic client: %v", err)
 	}
-	factory := dynamicinformer.NewFilteredDynamicSharedInformerFactory(dynamicClient, 30*time.Minute, metav1.NamespaceAll, nil)
+
+	namespace := r.config.AppStateInformer.Namespace
+	if namespace == "" {
+		namespace = metav1.NamespaceAll
+	}
 	stopCh := make(chan struct{})
 
-	r.logger.Info(fmt.Sprintf("start running %d resource informers", len(targetResources)))
+	{
+		r.logger.Info(fmt.Sprintf("start running %d namespaced-resource informers", len(namespacedTargetResources)))
+		factory := dynamicinformer.NewFilteredDynamicSharedInformerFactory(dynamicClient, 30*time.Minute, namespace, nil)
+		for _, tr := range namespacedTargetResources {
+			di := factory.ForResource(tr).Informer()
+			di.AddEventHandler(cache.ResourceEventHandlerFuncs{
+				AddFunc:    r.onObjectAdd,
+				UpdateFunc: r.onObjectUpdate,
+				DeleteFunc: r.onObjectDelete,
+			})
+			go di.Run(r.stopCh)
+			if cache.WaitForCacheSync(stopCh, di.HasSynced) {
+				r.logger.Info(fmt.Sprintf("informer cache for %v has been synced", tr))
+			} else {
+				// TODO: Handle the case informer cache has not been synced correctly.
+				r.logger.Info(fmt.Sprintf("informer cache for %v has not been synced correctly", tr))
+			}
+		}
+	}
 
-	for _, tr := range targetResources {
-		di := factory.ForResource(tr).Informer()
-		di.AddEventHandler(cache.ResourceEventHandlerFuncs{
-			AddFunc:    r.onObjectAdd,
-			UpdateFunc: r.onObjectUpdate,
-			DeleteFunc: r.onObjectDelete,
-		})
-		go di.Run(r.stopCh)
-		if cache.WaitForCacheSync(stopCh, di.HasSynced) {
-			r.logger.Info(fmt.Sprintf("informer cache for %v has been synced", tr))
-		} else {
-			// TODO: Handle the case informer cache has not been synced correctly.
-			r.logger.Info(fmt.Sprintf("informer cache for %v has not been synced correctly", tr))
+	{
+		r.logger.Info(fmt.Sprintf("start running %d non-namespaced-resource informers", len(targetResources)))
+		factory := dynamicinformer.NewFilteredDynamicSharedInformerFactory(dynamicClient, 30*time.Minute, metav1.NamespaceAll, nil)
+		for _, tr := range targetResources {
+			di := factory.ForResource(tr).Informer()
+			di.AddEventHandler(cache.ResourceEventHandlerFuncs{
+				AddFunc:    r.onObjectAdd,
+				UpdateFunc: r.onObjectUpdate,
+				DeleteFunc: r.onObjectDelete,
+			})
+			go di.Run(r.stopCh)
+			if cache.WaitForCacheSync(stopCh, di.HasSynced) {
+				r.logger.Info(fmt.Sprintf("informer cache for %v has been synced", tr))
+			} else {
+				// TODO: Handle the case informer cache has not been synced correctly.
+				r.logger.Info(fmt.Sprintf("informer cache for %v has not been synced correctly", tr))
+			}
 		}
 	}
 
@@ -277,4 +312,69 @@ func isSupportedList(r metav1.APIResource) bool {
 		}
 	}
 	return false
+}
+
+type resourceMatcher struct {
+	includes map[string]struct{}
+	excludes map[string]struct{}
+}
+
+func newResourceMatcher(cfg *config.CloudProviderKubernetesConfig) *resourceMatcher {
+	r := &resourceMatcher{
+		includes: make(map[string]struct{}, len(cfg.AppStateInformer.IncludeResources)),
+		excludes: make(map[string]struct{}, len(cfg.AppStateInformer.ExcludeResources)),
+	}
+
+	for _, m := range cfg.AppStateInformer.IncludeResources {
+		if m.Kind == "" {
+			r.includes[m.APIVersion] = struct{}{}
+		} else {
+			r.includes[m.APIVersion+":"+m.Kind] = struct{}{}
+		}
+	}
+	for _, m := range cfg.AppStateInformer.ExcludeResources {
+		if m.Kind == "" {
+			r.excludes[m.APIVersion] = struct{}{}
+		} else {
+			r.excludes[m.APIVersion+":"+m.Kind] = struct{}{}
+		}
+	}
+	return r
+}
+
+func (m *resourceMatcher) Match(gvk schema.GroupVersionKind) bool {
+	var (
+		gv         = gvk.GroupVersion()
+		apiVersion = gv.String()
+		key        = apiVersion + ":" + gvk.Kind
+	)
+
+	// Any resource matches the specified ExcludeResources will be ignored.
+	if _, ok := m.excludes[apiVersion]; ok {
+		return false
+	}
+	if _, ok := m.excludes[key]; ok {
+		return false
+	}
+
+	// Any resources matches the specified IncludeResources will be included.
+	if _, ok := m.includes[apiVersion]; ok {
+		return true
+	}
+	if _, ok := m.includes[key]; ok {
+		return true
+	}
+
+	// Check the predefined list.
+	if _, ok := kindWhitelist[gvk.Kind]; !ok {
+		return false
+	}
+	if _, ok := groupWhitelist[gv.Group]; !ok {
+		return false
+	}
+	if _, ok := versionWhitelist[gv.Version]; !ok {
+		return false
+	}
+
+	return true
 }

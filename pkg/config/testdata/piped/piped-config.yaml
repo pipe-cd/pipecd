@@ -23,13 +23,15 @@ spec:
   cloudProviders:
     - name: kubernetes-default
       type: KUBERNETES
-      watchingResources:
-        - apiVersion: pipecd.dev/v1beta1
-        - apiVersion: networking.gke.io/v1beta1
-          kind: ManagedCertificate
-      ignoreWatchingResources:
-        - apiVersion: v1
-          kind: Endpoints
+      config:
+        appStateInformer:
+          includeResources:
+            - apiVersion: pipecd.dev/v1beta1
+            - apiVersion: networking.gke.io/v1beta1
+              kind: ManagedCertificate
+          excludeResources:
+            - apiVersion: v1
+              kind: Endpoints
 
     - name: terraform-gcp
       type: TERRAFORM
