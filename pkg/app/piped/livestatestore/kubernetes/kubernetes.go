@@ -41,11 +41,13 @@ type Store struct {
 }
 
 type Getter interface {
-	GetKubernetesAppLiveState(appID string) AppState
+	GetKubernetesAppLiveState(appID string) (AppState, bool)
 	NewEventIterator() EventIterator
 
 	GetWatchingResourceKinds() []provider.APIVersionKind
 	GetAppLiveManifests(appID string) []provider.Manifest
+
+	WaitForReady(ctx context.Context, timeout time.Duration) error
 }
 
 type AppState struct {
@@ -130,7 +132,7 @@ func (s *Store) WaitForReady(ctx context.Context, timeout time.Duration) error {
 	}
 }
 
-func (s *Store) GetKubernetesAppLiveState(appID string) AppState {
+func (s *Store) GetKubernetesAppLiveState(appID string) (AppState, bool) {
 	return s.store.getAppLiveState(appID)
 }
 
