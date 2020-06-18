@@ -212,10 +212,19 @@ func (p *PipedCloudProvider) UnmarshalJSON(data []byte) error {
 }
 
 type CloudProviderKubernetesConfig struct {
-	WatchingResources       []KubernetesResourceMatcher `json:"watchingResources"`
-	IgnoreWatchingResources []KubernetesResourceMatcher `json:"ignoreWatchingResources"`
-	MasterURL               string                      `json:"masterURL"`
-	KubeConfigPath          string                      `json:"kubeConfigPath"`
+	AppStateInformer KubernetesAppStateInformer `json:"appStateInformer"`
+	MasterURL        string                     `json:"masterURL"`
+	KubeConfigPath   string                     `json:"kubeConfigPath"`
+}
+
+type KubernetesAppStateInformer struct {
+	// Only watches the specified namespace.
+	// Empty means watching all namespaces.
+	Namespace string `json:"namespace"`
+	// List of resources that should be added to the watching targets.
+	IncludeResources []KubernetesResourceMatcher `json:"includeResources"`
+	// List of resources that should be ignored from the watching targets.
+	ExcludeResources []KubernetesResourceMatcher `json:"excludeResources"`
 }
 
 type KubernetesResourceMatcher struct {
