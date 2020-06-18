@@ -248,7 +248,7 @@ func (a *PipedAPI) GetMostRecentDeployment(ctx context.Context, req *pipedservic
 				Direction: datastore.Desc,
 			},
 		},
-		Page:     0, // Note: This parameter requires in other datastores, but in Firestore it is enought setting only PageSize.
+		Page:     0, // Note: This parameter requires in other datastores, but in Firestore it is enough setting only PageSize.
 		PageSize: 1,
 	}
 
