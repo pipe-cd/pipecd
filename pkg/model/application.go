@@ -15,7 +15,6 @@
 package model
 
 import (
-	"fmt"
 	"path/filepath"
 )
 
@@ -40,9 +39,4 @@ func (s ApplicationSyncState) HasChanged(next ApplicationSyncState) bool {
 		return true
 	}
 	return false
-}
-
-// MakeApplicationID makes application_id using project_id and env_id and name.
-func MakeApplicationID(projectID, envID, name string) string {
-	return fmt.Sprintf("%s:%s:%s", projectID, envID, name)
 }
