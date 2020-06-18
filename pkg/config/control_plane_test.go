@@ -63,8 +63,7 @@ func TestControlPlaneConfig(t *testing.T) {
 					},
 				},
 				Cache: ControlPlaneCache{
-					RedisAddress: "localhost:6379",
-					TTL:          Duration(5 * time.Minute),
+					TTL: Duration(5 * time.Minute),
 				},
 			},
 		},

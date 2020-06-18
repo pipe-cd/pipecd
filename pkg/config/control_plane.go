@@ -115,9 +115,7 @@ func (d *ControlPlaneDataStore) UnmarshalJSON(data []byte) error {
 }
 
 type ControlPlaneCache struct {
-	// The redis cache service address.
-	RedisAddress string   `json:"redisAddress"`
-	TTL          Duration `json:"ttl"`
+	TTL Duration `json:"ttl"`
 }
 
 type DataStoreFireStoreConfig struct {
