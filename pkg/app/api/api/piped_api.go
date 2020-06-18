@@ -401,7 +401,8 @@ func (a *PipedAPI) ReportStageStatusChanged(ctx context.Context, req *pipedservi
 // On other side, the web will periodically check the command status and feedback the result to user.
 // In the future, we may need a solution to remove all old-handled commands from datastore for space.
 func (a *PipedAPI) ListUnhandledCommands(ctx context.Context, req *pipedservice.ListUnhandledCommandsRequest) (*pipedservice.ListUnhandledCommandsResponse, error) {
-	return nil, status.Error(codes.Unimplemented, "")
+	return &pipedservice.ListUnhandledCommandsResponse{}, nil
+	// nil, status.Error(codes.Unimplemented, "")
 }
 
 // ReportCommandHandled is called by piped to mark a specific command as handled.
