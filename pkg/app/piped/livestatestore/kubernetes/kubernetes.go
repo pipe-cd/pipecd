@@ -72,9 +72,10 @@ func NewStore(cfg *config.CloudProviderKubernetesConfig, pipedConfig *config.Pip
 		config:      cfg,
 		pipedConfig: pipedConfig,
 		store: &store{
-			apps:      make(map[string]*appNodes),
-			resources: make(map[string]appResource),
-			iterators: make(map[int]int, 1),
+			pipedConfig: pipedConfig,
+			apps:        make(map[string]*appNodes),
+			resources:   make(map[string]appResource),
+			iterators:   make(map[int]int, 1),
 		},
 		firstSyncedCh: make(chan error, 1),
 		logger:        logger,
@@ -94,13 +95,13 @@ func (s *Store) Run(ctx context.Context) error {
 
 	stopCh := make(chan struct{})
 	rf := reflector{
-		kubeConfig: s.kubeConfig,
-		pipedID:    s.pipedConfig.PipedID,
-		onAdd:      s.store.onAddResource,
-		onUpdate:   s.store.onUpdateResource,
-		onDelete:   s.store.onDeleteResource,
-		stopCh:     stopCh,
-		logger:     s.logger.Named("reflector"),
+		kubeConfig:  s.kubeConfig,
+		pipedConfig: s.pipedConfig,
+		onAdd:       s.store.onAddResource,
+		onUpdate:    s.store.onUpdateResource,
+		onDelete:    s.store.onDeleteResource,
+		stopCh:      stopCh,
+		logger:      s.logger.Named("reflector"),
 	}
 	if err := rf.start(ctx); err != nil {
 		s.firstSyncedCh <- err
