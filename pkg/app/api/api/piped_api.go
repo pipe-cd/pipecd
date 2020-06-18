@@ -221,7 +221,46 @@ func (a *PipedAPI) ListNotCompletedDeployments(ctx context.Context, req *pipedse
 
 // GetMostRecentDeployment returns the most recent deployment of the given application.
 func (a *PipedAPI) GetMostRecentDeployment(ctx context.Context, req *pipedservice.GetMostRecentDeploymentRequest) (*pipedservice.GetMostRecentDeploymentResponse, error) {
-	return nil, status.Error(codes.Unimplemented, "")
+	// Note: We need to manage two composite indexes:
+	// 1. ApplicationId:ASC, CreatedAt: DESC
+	// 2. ApplicationId:ASC, Status:ASC, CreatedAt: DESC
+	filters := []datastore.ListFilter{
+		{
+			Field:    "ApplicationId",
+			Operator: "==",
+			Value:    req.ApplicationId,
+		},
+	}
+	if req.Status != nil {
+		filters = append(filters, datastore.ListFilter{
+			Field:    "Status",
+			Operator: "==",
+			Value:    req.Status.Value,
+		})
+	}
+	// Sort to get the most recent data
+	opts := datastore.ListOptions{
+		Filters: filters,
+		Orders: []datastore.Order{
+			{
+				Field:     "CreatedAt",
+				Direction: datastore.Desc,
+			},
+		},
+	}
+
+	deployments, err := a.deploymentStore.ListDeployments(ctx, opts)
+	if err != nil {
+		a.logger.Error("failed to fetch deployments", zap.Error(err))
+		return nil, status.Error(codes.Internal, "failed to fetch deployments")
+	}
+	if len(deployments) == 0 {
+		return nil, status.Error(codes.NotFound, "deployment is not found")
+	}
+
+	return &pipedservice.GetMostRecentDeploymentResponse{
+		Deployment: deployments[0],
+	}, nil
 }
 
 // CreateDeployment creates/triggers a new deployment for an application
