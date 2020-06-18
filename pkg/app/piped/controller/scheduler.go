@@ -445,7 +445,6 @@ func (s *scheduler) ensurePreparing(ctx context.Context, lp logpersister.StageLo
 	var err error
 	s.prepareOnce.Do(func() {
 		lp.AppendInfo("Start preparing for deployment")
-		lp.AppendInfo("New scheduler has been created for this deployment so we need some preparation")
 
 		// Clone repository and checkout to the target revision.
 		var (

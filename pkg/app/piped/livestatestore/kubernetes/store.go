@@ -22,6 +22,7 @@ import (
 	"k8s.io/apimachinery/pkg/apis/meta/v1/unstructured"
 
 	provider "github.com/pipe-cd/pipe/pkg/app/piped/cloudprovider/kubernetes"
+	"github.com/pipe-cd/pipe/pkg/config"
 	"github.com/pipe-cd/pipe/pkg/model"
 )
 
@@ -32,7 +33,8 @@ const (
 )
 
 type store struct {
-	apps map[string]*appNodes
+	pipedConfig *config.PipedSpec
+	apps        map[string]*appNodes
 	// The map with the key is "resource's uid" and the value is "appResource".
 	// Because the depended resource does not include the appID in its annotations
 	// so this is used to determine the application of a depended resource.
@@ -128,9 +130,11 @@ func (s *store) onAddResource(obj *unstructured.Unstructured) {
 	}
 
 	// Try to determine the application ID by traveling its owners.
-	s.mu.RLock()
-	appID = s.findAppIDByOwners(owners)
-	s.mu.RUnlock()
+	if appID == "" {
+		s.mu.RLock()
+		appID = s.findAppIDByOwners(owners)
+		s.mu.RUnlock()
+	}
 
 	// Append the resource to the application's dependedNodes.
 	if appID != "" {
@@ -182,9 +186,11 @@ func (s *store) onDeleteResource(obj *unstructured.Unstructured) {
 	}
 
 	// Try to determine the application ID by traveling its owners.
-	s.mu.RLock()
-	appID = s.findAppIDByOwners(owners)
-	s.mu.RUnlock()
+	if appID == "" {
+		s.mu.RLock()
+		appID = s.findAppIDByOwners(owners)
+		s.mu.RUnlock()
+	}
 
 	// Delete the resource to the application's dependedNodes.
 	s.mu.RLock()

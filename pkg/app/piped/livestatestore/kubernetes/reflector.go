@@ -30,6 +30,7 @@ import (
 	"k8s.io/client-go/tools/cache"
 
 	provider "github.com/pipe-cd/pipe/pkg/app/piped/cloudprovider/kubernetes"
+	"github.com/pipe-cd/pipe/pkg/config"
 )
 
 var (
@@ -117,8 +118,8 @@ var (
 // reflector watches the live state of applicaiton with the cluster
 // and triggers the specified callbacks.
 type reflector struct {
-	kubeConfig *restclient.Config
-	pipedID    string
+	kubeConfig  *restclient.Config
+	pipedConfig *config.PipedSpec
 
 	onAdd    func(obj *unstructured.Unstructured)
 	onUpdate func(oldObj, obj *unstructured.Unstructured)
@@ -213,7 +214,7 @@ func (r *reflector) onObjectAdd(obj interface{}) {
 
 	// Ignore all objects that are not handled by this piped.
 	pipedID := u.GetAnnotations()[provider.LabelPiped]
-	if pipedID != r.pipedID {
+	if pipedID != "" && pipedID != r.pipedConfig.PipedID {
 		return
 	}
 
@@ -233,7 +234,7 @@ func (r *reflector) onObjectUpdate(oldObj, obj interface{}) {
 
 	// Ignore all objects that are not handled by this piped.
 	pipedID := u.GetAnnotations()[provider.LabelPiped]
-	if pipedID != r.pipedID {
+	if pipedID != "" && pipedID != r.pipedConfig.PipedID {
 		return
 	}
 
@@ -252,7 +253,7 @@ func (r *reflector) onObjectDelete(obj interface{}) {
 
 	// Ignore all objects that are not handled by this piped.
 	pipedID := u.GetAnnotations()[provider.LabelPiped]
-	if pipedID != r.pipedID {
+	if pipedID != "" && pipedID != r.pipedConfig.PipedID {
 		return
 	}
 

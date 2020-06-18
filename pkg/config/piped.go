@@ -168,6 +168,7 @@ type PipedCloudProvider struct {
 	CloudRunConfig   *CloudProviderCloudRunConfig
 	LambdaConfig     *CloudProviderLambdaConfig
 }
+
 type genericPipedCloudProvider struct {
 	Name   string                  `json:"name"`
 	Type   model.CloudProviderType `json:"type"`
