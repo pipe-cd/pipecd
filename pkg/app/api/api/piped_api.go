@@ -221,6 +221,7 @@ func (a *PipedAPI) ListNotCompletedDeployments(ctx context.Context, req *pipedse
 
 // GetMostRecentDeployment returns the most recent deployment of the given application.
 func (a *PipedAPI) GetMostRecentDeployment(ctx context.Context, req *pipedservice.GetMostRecentDeploymentRequest) (*pipedservice.GetMostRecentDeploymentResponse, error) {
+	// TODO: Consider the method without composite indexes
 	// Note: We need to manage two composite indexes:
 	// 1. ApplicationId:ASC, CreatedAt: DESC
 	// 2. ApplicationId:ASC, Status:ASC, CreatedAt: DESC
