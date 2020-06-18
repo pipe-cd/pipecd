@@ -194,8 +194,7 @@ func (r *reflector) start(ctx context.Context) error {
 	}
 	stopCh := make(chan struct{})
 
-	{
-		r.logger.Info(fmt.Sprintf("start running %d namespaced-resource informers", len(namespacedTargetResources)))
+	startInformer := func(namespace string, resources []schema.GroupVersionResource) {
 		factory := dynamicinformer.NewFilteredDynamicSharedInformerFactory(dynamicClient, 30*time.Minute, namespace, nil)
 		for _, tr := range namespacedTargetResources {
 			di := factory.ForResource(tr).Informer()
@@ -214,25 +213,11 @@ func (r *reflector) start(ctx context.Context) error {
 		}
 	}
 
-	{
-		r.logger.Info(fmt.Sprintf("start running %d non-namespaced-resource informers", len(targetResources)))
-		factory := dynamicinformer.NewFilteredDynamicSharedInformerFactory(dynamicClient, 30*time.Minute, metav1.NamespaceAll, nil)
-		for _, tr := range targetResources {
-			di := factory.ForResource(tr).Informer()
-			di.AddEventHandler(cache.ResourceEventHandlerFuncs{
-				AddFunc:    r.onObjectAdd,
-				UpdateFunc: r.onObjectUpdate,
-				DeleteFunc: r.onObjectDelete,
-			})
-			go di.Run(r.stopCh)
-			if cache.WaitForCacheSync(stopCh, di.HasSynced) {
-				r.logger.Info(fmt.Sprintf("informer cache for %v has been synced", tr))
-			} else {
-				// TODO: Handle the case informer cache has not been synced correctly.
-				r.logger.Info(fmt.Sprintf("informer cache for %v has not been synced correctly", tr))
-			}
-		}
-	}
+	r.logger.Info(fmt.Sprintf("start running %d namespaced-resource informers", len(namespacedTargetResources)))
+	startInformer(namespace, namespacedTargetResources)
+
+	r.logger.Info(fmt.Sprintf("start running %d non-namespaced-resource informers", len(targetResources)))
+	startInformer(metav1.NamespaceAll, targetResources)
 
 	r.logger.Info("all informer caches have been synced")
 	return nil
