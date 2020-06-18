@@ -6,6 +6,7 @@ const useStyles = makeStyles((theme) => ({
     display: "inline-flex",
     flexDirection: "column",
     padding: theme.spacing(2),
+    width: 300,
   },
 }));
 
