@@ -445,7 +445,7 @@ func (s *scheduler) ensurePreparing(ctx context.Context, lp logpersister.StageLo
 	var err error
 	s.prepareOnce.Do(func() {
 		lp.AppendInfo("Start preparing for deployment")
-		lp.AppendInfo("new scheduler has been created for this deployment so we need some preparation")
+		lp.AppendInfo("New scheduler has been created for this deployment so we need some preparation")
 
 		// Clone repository and checkout to the target revision.
 		var (
@@ -457,7 +457,7 @@ func (s *scheduler) ensurePreparing(ctx context.Context, lp logpersister.StageLo
 			lp.AppendError(err.Error())
 			return
 		}
-		lp.AppendSuccess(fmt.Sprintf("successfully cloned repository %s", s.deployment.GitPath.RepoId))
+		lp.AppendSuccess(fmt.Sprintf("Successfully cloned repository %s", s.deployment.GitPath.RepoId))
 
 		// Load deployment configuration for this application.
 		var cfg *config.Config
@@ -476,7 +476,7 @@ func (s *scheduler) ensurePreparing(ctx context.Context, lp logpersister.StageLo
 		}
 		s.pipelineable = pipelineable
 
-		lp.AppendSuccess("successfully loaded deployment configuration")
+		lp.AppendSuccess("Successfully loaded deployment configuration")
 		lp.AppendInfo("Successfully completed preparing")
 	})
 	return err
