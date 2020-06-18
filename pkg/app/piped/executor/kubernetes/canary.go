@@ -159,6 +159,7 @@ func (e *Executor) generateStageManifests(ctx context.Context, manifests []provi
 		m.Key.Name = m.Key.Name + "-" + suffix
 		m.AddAnnotations(map[string]string{
 			provider.LabelManagedBy:          provider.ManagedByPiped,
+			provider.LabelPiped:              e.PipedConfig.PipedID,
 			provider.LabelApplication:        e.Deployment.ApplicationId,
 			provider.LabelVariant:            canaryVariant,
 			provider.LabelOriginalAPIVersion: m.Key.APIVersion,

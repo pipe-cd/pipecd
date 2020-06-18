@@ -45,6 +45,7 @@ func (e *Executor) ensurePrimaryUpdate(ctx context.Context) model.StageStatus {
 
 		m.AddAnnotations(map[string]string{
 			provider.LabelManagedBy:          provider.ManagedByPiped,
+			provider.LabelPiped:              e.PipedConfig.PipedID,
 			provider.LabelApplication:        e.Deployment.ApplicationId,
 			provider.LabelVariant:            primaryVariant,
 			provider.LabelOriginalAPIVersion: m.Key.APIVersion,

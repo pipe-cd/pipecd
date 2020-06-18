@@ -1,7 +1,4 @@
 args:
-  projectID: your-project-id
-  pipedID: your-piped-id
-  pipedKey: your-piped-key
   controlPlaneAddress: "pipecd:443"
   useFakeAPI: true
   enableDefaultKubernetesCloudProvider: true
@@ -24,6 +21,9 @@ config: |
   apiVersion: pipecd.dev/v1beta1
   kind: Piped
   spec:
+    projectID: your-project-id
+    pipedID: your-piped-id
+    pipedKeyFile: /etc/piped-secret/piped.key
     syncInterval: 1m
     git:
       sshKeyFile: /etc/piped-secret/sshkey

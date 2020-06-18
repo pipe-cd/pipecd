@@ -1,6 +1,9 @@
 apiVersion: pipecd.dev/v1beta1
 kind: Piped
 spec:
+  projectID: test-project
+  pipedID: test-piped
+  pipedKeyFile: etc/piped/key
   syncInterval: 1m
 
   git:

@@ -37,6 +37,9 @@ func TestPipedConfig(t *testing.T) {
 			expectedKind:       KindPiped,
 			expectedAPIVersion: "pipecd.dev/v1beta1",
 			expectedSpec: &PipedSpec{
+				ProjectID:    "test-project",
+				PipedID:      "test-piped",
+				PipedKeyFile: "etc/piped/key",
 				SyncInterval: Duration(time.Minute),
 				Git: PipedGit{
 					Username:        "username",

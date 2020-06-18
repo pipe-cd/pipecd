@@ -32,6 +32,7 @@ import (
 
 type Store struct {
 	config                *config.CloudProviderKubernetesConfig
+	pipedConfig           *config.PipedSpec
 	kubeConfig            *restclient.Config
 	store                 *store
 	watchingResourceKinds []provider.APIVersionKind
@@ -61,12 +62,13 @@ func (it EventIterator) Next(maxNum int) []model.KubernetesResourceStateEvent {
 	return it.store.nextEvents(it.id, maxNum)
 }
 
-func NewStore(cfg *config.CloudProviderKubernetesConfig, cloudProvider string, logger *zap.Logger) *Store {
+func NewStore(cfg *config.CloudProviderKubernetesConfig, pipedConfig *config.PipedSpec, cloudProvider string, logger *zap.Logger) *Store {
 	logger = logger.Named("kubernetes").
 		With(zap.String("cloud-provider", cloudProvider))
 
 	return &Store{
-		config: cfg,
+		config:      cfg,
+		pipedConfig: pipedConfig,
 		store: &store{
 			apps:      make(map[string]*appNodes),
 			resources: make(map[string]appResource),
@@ -91,6 +93,7 @@ func (s *Store) Run(ctx context.Context) error {
 	stopCh := make(chan struct{})
 	rf := reflector{
 		kubeConfig: s.kubeConfig,
+		pipedID:    s.pipedConfig.PipedID,
 		onAdd:      s.store.onAddResource,
 		onUpdate:   s.store.onUpdateResource,
 		onDelete:   s.store.onDeleteResource,

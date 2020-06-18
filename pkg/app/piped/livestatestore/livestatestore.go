@@ -95,7 +95,7 @@ func NewStore(cfg *config.PipedSpec, appLister applicationLister, gracePeriod ti
 	for _, cp := range cfg.CloudProviders {
 		switch cp.Type {
 		case model.CloudProviderKubernetes:
-			store := kubernetes.NewStore(cp.KubernetesConfig, cp.Name, logger)
+			store := kubernetes.NewStore(cp.KubernetesConfig, cfg, cp.Name, logger)
 			s.kubernetesStores[cp.Name] = store
 
 		case model.CloudProviderTerraform:
