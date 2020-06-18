@@ -53,16 +53,11 @@ import (
 )
 
 type piped struct {
-	projectID    string
-	pipedID      string
-	pipedKeyFile string
-	configFile   string
-
-	tls                 bool
-	certFile            string
-	controlPlaneAddress string
-	adminPort           int
-
+	configFile                           string
+	tls                                  bool
+	certFile                             string
+	controlPlaneAddress                  string
+	adminPort                            int
 	binDir                               string
 	enableDefaultKubernetesCloudProvider bool
 	useFakeAPIClient                     bool
@@ -82,9 +77,6 @@ func NewCommand() *cobra.Command {
 		RunE:  cli.WithContext(p.run),
 	}
 
-	cmd.Flags().StringVar(&p.projectID, "project-id", p.projectID, "The identifier of the project which this piped belongs to.")
-	cmd.Flags().StringVar(&p.pipedID, "piped-id", p.pipedID, "The unique identifier generated for this piped.")
-	cmd.Flags().StringVar(&p.pipedKeyFile, "piped-key-file", p.pipedKeyFile, "The path to the key generated for this piped.")
 	cmd.Flags().StringVar(&p.configFile, "config-file", p.configFile, "The path to the configuration file.")
 
 	cmd.Flags().BoolVar(&p.tls, "tls", p.tls, "Whether running the gRPC server with TLS or not.")
@@ -97,9 +89,6 @@ func NewCommand() *cobra.Command {
 	cmd.Flags().BoolVar(&p.enableDefaultKubernetesCloudProvider, "enable-default-kubernetes-cloud-provider", p.enableDefaultKubernetesCloudProvider, "Whether the default kubernetes provider is enabled or not.")
 	cmd.Flags().DurationVar(&p.gracePeriod, "grace-period", p.gracePeriod, "How long to wait for graceful shutdown.")
 
-	cmd.MarkFlagRequired("project-id")
-	cmd.MarkFlagRequired("piped-id")
-	cmd.MarkFlagRequired("piped-key-file")
 	cmd.MarkFlagRequired("config-file")
 
 	return cmd
@@ -131,7 +120,7 @@ func (p *piped) run(ctx context.Context, t cli.Telemetry) error {
 	}
 
 	// Make gRPC client and connect to the API.
-	apiClient, err := p.createAPIClient(ctx, t.Logger)
+	apiClient, err := p.createAPIClient(ctx, cfg.ProjectID, cfg.PipedID, cfg.PipedKeyFile, t.Logger)
 	if err != nil {
 		t.Logger.Error("failed to create gRPC client to control plane", zap.Error(err))
 		return err
@@ -269,21 +258,21 @@ func (p *piped) run(ctx context.Context, t cli.Telemetry) error {
 }
 
 // createAPIClient makes a gRPC client to connect to the API.
-func (p *piped) createAPIClient(ctx context.Context, logger *zap.Logger) (pipedservice.Client, error) {
+func (p *piped) createAPIClient(ctx context.Context, projectID, pipedID, pipedKeyFile string, logger *zap.Logger) (pipedservice.Client, error) {
 	if p.useFakeAPIClient {
 		return pipedclientfake.NewClient(logger), nil
 	}
 	ctx, cancel := context.WithTimeout(ctx, 15*time.Second)
 	defer cancel()
 
-	pipedKey, err := ioutil.ReadFile(p.pipedKeyFile)
+	pipedKey, err := ioutil.ReadFile(pipedKeyFile)
 	if err != nil {
 		logger.Error("failed to read piped key file", zap.Error(err))
 		return nil, err
 	}
 
 	var (
-		token   = rpcauth.MakePipedToken(p.projectID, p.pipedID, string(pipedKey))
+		token   = rpcauth.MakePipedToken(projectID, pipedID, string(pipedKey))
 		tls     = p.certFile != ""
 		creds   = rpcclient.NewPerRPCCredentials(token, rpcauth.PipedTokenCredentials, tls)
 		options = []rpcclient.DialOption{

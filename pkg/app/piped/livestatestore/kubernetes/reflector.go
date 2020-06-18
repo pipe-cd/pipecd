@@ -118,6 +118,7 @@ var (
 // and triggers the specified callbacks.
 type reflector struct {
 	kubeConfig *restclient.Config
+	pipedID    string
 
 	onAdd    func(obj *unstructured.Unstructured)
 	onUpdate func(oldObj, obj *unstructured.Unstructured)
@@ -204,9 +205,18 @@ func (r *reflector) start(ctx context.Context) error {
 func (r *reflector) onObjectAdd(obj interface{}) {
 	u := obj.(*unstructured.Unstructured)
 	key := provider.MakeResourceKey(u)
+
+	// Ignore all predefined ones.
 	if _, ok := ignoreResourceKeys[key.String()]; ok {
 		return
 	}
+
+	// Ignore all objects that are not handled by this piped.
+	pipedID := u.GetAnnotations()[provider.LabelPiped]
+	if pipedID != r.pipedID {
+		return
+	}
+
 	r.logger.Info("received add event", zap.Stringer("key", key))
 	r.onAdd(u)
 }
@@ -214,10 +224,19 @@ func (r *reflector) onObjectAdd(obj interface{}) {
 func (r *reflector) onObjectUpdate(oldObj, obj interface{}) {
 	u := obj.(*unstructured.Unstructured)
 	oldU := oldObj.(*unstructured.Unstructured)
+
+	// Ignore all predefined ones.
 	key := provider.MakeResourceKey(u)
 	if _, ok := ignoreResourceKeys[key.String()]; ok {
 		return
 	}
+
+	// Ignore all objects that are not handled by this piped.
+	pipedID := u.GetAnnotations()[provider.LabelPiped]
+	if pipedID != r.pipedID {
+		return
+	}
+
 	r.logger.Info("received update event", zap.Stringer("key", key))
 	r.onUpdate(oldU, u)
 }
@@ -225,9 +244,18 @@ func (r *reflector) onObjectUpdate(oldObj, obj interface{}) {
 func (r *reflector) onObjectDelete(obj interface{}) {
 	u := obj.(*unstructured.Unstructured)
 	key := provider.MakeResourceKey(u)
+
+	// Ignore all predefined ones.
 	if _, ok := ignoreResourceKeys[key.String()]; ok {
 		return
 	}
+
+	// Ignore all objects that are not handled by this piped.
+	pipedID := u.GetAnnotations()[provider.LabelPiped]
+	if pipedID != r.pipedID {
+		return
+	}
+
 	r.logger.Info("received delete event", zap.Stringer("key", key))
 	r.onDelete(u)
 }

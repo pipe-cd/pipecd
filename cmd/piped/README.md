@@ -17,9 +17,6 @@
 bazelisk run --run_under="cd $PWD && " //cmd/piped:piped -- piped \
 --log-encoding=humanize \
 --use-fake-api-client=true \
---project-id=local-dev-project \
---piped-id=local-dev-piped \
---piped-key-file=.dev/piped-key \
 --config-file=.dev/piped-config.yaml \
 --bin-dir=/tmp/piped-bin
 ```

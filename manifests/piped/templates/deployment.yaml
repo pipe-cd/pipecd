@@ -25,9 +25,6 @@ spec:
           imagePullPolicy: IfNotPresent
           args:
           - piped
-          - --project-id={{ required "projectID must be set" .Values.args.projectID }}
-          - --piped-id={{ required "pipedID must be set" .Values.args.pipedID }}
-          - --piped-key-file=/etc/piped-secret/piped.key
           - --config-file=/etc/piped-config/piped-config.yaml
           - --control-plane-address={{ .Values.args.controlPlaneAddress }}
           - --use-fake-api-client={{ .Values.args.useFakeAPI }}

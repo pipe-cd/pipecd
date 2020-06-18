@@ -29,6 +29,7 @@ import (
 
 const (
 	LabelManagedBy          = "pipecd.dev/managed-by"           // Always be piped.
+	LabelPiped              = "pipecd.dev/piped"                // The id of piped handling this application.
 	LabelApplication        = "pipecd.dev/application"          // The application this resource belongs to.
 	LabelVariant            = "pipecd.dev/variant"              // Variant name: primary, stage, baseline
 	LabelCommitHash         = "pipecd.dev/commit-hash"          // Hash value of the deployed commit.

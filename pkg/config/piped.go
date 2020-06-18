@@ -29,6 +29,12 @@ var DefaultKubernetesCloudProvider = PipedCloudProvider{
 
 // PipedSpec contains configurable data used to while running Piped.
 type PipedSpec struct {
+	// The identifier of the project which this piped belongs to.
+	ProjectID string
+	// The unique identifier generated for this piped.
+	PipedID string
+	// The path to the key generated for this piped.
+	PipedKeyFile string
 	// How often to check whether an application should be synced.
 	SyncInterval Duration `json:"syncInterval"`
 	// Git configuration needed for git commands.
@@ -41,6 +47,15 @@ type PipedSpec struct {
 
 // Validate validates configured data of all fields.
 func (s *PipedSpec) Validate() error {
+	if s.ProjectID == "" {
+		return fmt.Errorf("projectID must be set")
+	}
+	if s.PipedID == "" {
+		return fmt.Errorf("pipedID must be set")
+	}
+	if s.PipedKeyFile == "" {
+		return fmt.Errorf("pipedKeyFile must be set")
+	}
 	return nil
 }
 
