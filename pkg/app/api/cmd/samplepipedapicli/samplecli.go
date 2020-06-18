@@ -95,6 +95,8 @@ func (s *samplecli) run(ctx context.Context, t cli.Telemetry) error {
 		return s.reportMostRecentSuccessfulDeployment(ctx, cli, data, t.Logger)
 	case "ListNotCompletedDeployments":
 		return s.listNotCompletedDeployments(ctx, cli, data, t.Logger)
+	case "GetMostRecentDeployment":
+		return s.getMostRecentDeployment(ctx, cli, data, t.Logger)
 	case "ReportDeploymentPlanned":
 		return s.reportDeploymentPlanned(ctx, cli, data, t.Logger)
 	case "ReportDeploymentStatusChanged":
@@ -232,6 +234,21 @@ func (s *samplecli) listNotCompletedDeployments(ctx context.Context, cli pipedse
 	for _, app := range resp.Deployments {
 		fmt.Printf("application: %+v\n", app)
 	}
+	return nil
+}
+
+func (s *samplecli) getMostRecentDeployment(ctx context.Context, cli pipedservice.Client, payload []byte, logger *zap.Logger) error {
+	req := pipedservice.GetMostRecentDeploymentRequest{}
+	if err := json.Unmarshal(payload, &req); err != nil {
+		return err
+	}
+	resp, err := cli.GetMostRecentDeployment(ctx, &req)
+	if err != nil {
+		logger.Error("failed to run GetMostRecentDeployment", zap.Error(err))
+		return err
+	}
+	logger.Info("successfully run GetMostRecentDeployment")
+	fmt.Printf("deployment: %+v\n", resp.Deployment)
 	return nil
 }
 
