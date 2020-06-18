@@ -64,6 +64,15 @@ func newKubernetesReporter(cp config.PipedCloudProvider, appLister applicationLi
 func (r *kubernetesReporter) Run(ctx context.Context) error {
 	r.logger.Info("start running app live state reporter")
 
+	r.logger.Info("waiting for livestatestore to be ready")
+	if err := r.stateGetter.WaitForReady(ctx, 10*time.Minute); err != nil {
+		r.logger.Error("livestatestore was unable to be ready in time", zap.Error(err))
+		return err
+	}
+
+	// Do the first snapshot flushing after the statestore becomes ready.
+	r.flushSnapshots(ctx)
+
 	snapshotTicker := time.NewTicker(r.snapshotFlushInterval)
 	defer snapshotTicker.Stop()
 
@@ -93,8 +102,13 @@ func (r *kubernetesReporter) flushSnapshots(ctx context.Context) error {
 	// send multiple application states in one request.
 	apps := r.appLister.ListByCloudProvider(r.provider.Name)
 	for _, app := range apps {
+		state, ok := r.stateGetter.GetKubernetesAppLiveState(app.Id)
+		if !ok {
+			r.logger.Info(fmt.Sprintf("no app state of kubernetes application %s to report", app.Id))
+			continue
+		}
+
 		var (
-			state    = r.stateGetter.GetKubernetesAppLiveState(app.Id)
 			snapshot = &model.ApplicationLiveStateSnapshot{
 				ApplicationId: app.Id,
 				EnvId:         app.EnvId,
@@ -110,6 +124,7 @@ func (r *kubernetesReporter) flushSnapshots(ctx context.Context) error {
 				Snapshot: snapshot,
 			}
 		)
+
 		if _, err := r.apiClient.ReportApplicationLiveState(ctx, req); err != nil {
 			r.logger.Error("failed to report application live state",
 				zap.String("applicaiton-id", app.Id),

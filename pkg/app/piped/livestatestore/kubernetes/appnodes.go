@@ -168,18 +168,21 @@ func (a *appNodes) getManagingNodes() map[string]node {
 	return a.managingNodes
 }
 
-func (a *appNodes) getNodes() map[string]node {
+func (a *appNodes) getNodes() (map[string]node, model.ApplicationLiveStateVersion) {
 	a.mu.RLock()
 	defer a.mu.RUnlock()
 
-	nodes := make(map[string]node, len(a.managingNodes)+len(a.dependedNodes))
+	var (
+		version = a.version
+		nodes   = make(map[string]node, len(a.managingNodes)+len(a.dependedNodes))
+	)
 	for k, n := range a.dependedNodes {
 		nodes[k] = n
 	}
 	for k, n := range a.managingNodes {
 		nodes[k] = n
 	}
-	return nodes
+	return nodes, version
 }
 
 func (a *appNodes) updateVersion(now time.Time) {

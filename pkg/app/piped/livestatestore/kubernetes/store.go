@@ -212,17 +212,6 @@ func (s *store) getAppManagingNodes(appID string) map[string]node {
 	return app.getManagingNodes()
 }
 
-func (s *store) getAppNodes(appID string) map[string]node {
-	s.mu.RLock()
-	app, ok := s.apps[appID]
-	s.mu.RUnlock()
-
-	if !ok {
-		return nil
-	}
-	return app.getNodes()
-}
-
 func (s *store) findAppIDByOwners(owners []metav1.OwnerReference) string {
 	for _, ref := range owners {
 		owner, ok := s.resources[string(ref.UID)]
@@ -242,16 +231,26 @@ func (s *store) findAppIDByOwners(owners []metav1.OwnerReference) string {
 	return ""
 }
 
-func (s *store) getAppLiveState(appID string) AppState {
-	nodes := s.getAppNodes(appID)
-	resources := make([]*model.KubernetesResourceState, 0, len(nodes))
+func (s *store) getAppLiveState(appID string) (AppState, bool) {
+	s.mu.RLock()
+	app, ok := s.apps[appID]
+	s.mu.RUnlock()
+
+	if !ok {
+		return AppState{}, false
+	}
+
+	var (
+		nodes, version = app.getNodes()
+		resources      = make([]*model.KubernetesResourceState, 0, len(nodes))
+	)
 	for _, n := range nodes {
 		resources = append(resources, &n.state)
 	}
-	state := AppState{
+	return AppState{
 		Resources: resources,
-	}
-	return state
+		Version:   version,
+	}, true
 }
 
 func (s *store) GetAppLiveManifests(appID string) []provider.Manifest {
