@@ -42,10 +42,6 @@ cache:
   resources: {}
 
 config:
-  create: true
-  name: 
-
-config:
   # Specifies whether a ConfigMap for control plane configuration should be created
   create: true
   # The name of the ConfigMap to use when create is false.
