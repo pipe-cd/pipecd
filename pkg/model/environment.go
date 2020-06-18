@@ -13,12 +13,3 @@
 // limitations under the License.
 
 package model
-
-import (
-	"fmt"
-)
-
-// MakeEnvID makes env_id using project_id and name.
-func MakeEnvID(projectID, name string) string {
-	return fmt.Sprintf("%s:%s", projectID, name)
-}

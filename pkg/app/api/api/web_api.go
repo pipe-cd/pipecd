@@ -18,6 +18,7 @@ import (
 	"context"
 	"errors"
 
+	"github.com/google/uuid"
 	"go.uber.org/zap"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/codes"
@@ -140,7 +141,7 @@ func (a *WebAPI) AddApplication(ctx context.Context, req *webservice.AddApplicat
 	}
 
 	app := model.Application{
-		Id:            model.MakeApplicationID(claims.Role.ProjectId, req.EnvId, req.Name),
+		Id:            uuid.New().String(),
 		Name:          req.Name,
 		EnvId:         req.EnvId,
 		PipedId:       req.PipedId,
