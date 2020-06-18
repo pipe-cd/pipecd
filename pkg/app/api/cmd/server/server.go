@@ -55,6 +55,7 @@ type server struct {
 	webAPIPort   int
 	httpPort     int
 	adminPort    int
+	cacheAddress string
 	gracePeriod  time.Duration
 
 	tls                 bool
@@ -74,6 +75,7 @@ func NewCommand() *cobra.Command {
 		webAPIPort:   9081,
 		httpPort:     9082,
 		adminPort:    9085,
+		cacheAddress: "cache:6379",
 		gracePeriod:  30 * time.Second,
 	}
 	cmd := &cobra.Command{
@@ -86,6 +88,7 @@ func NewCommand() *cobra.Command {
 	cmd.Flags().IntVar(&s.webAPIPort, "web-api-port", s.webAPIPort, "The port number used to run a grpc server that serves incoming web requests.")
 	cmd.Flags().IntVar(&s.httpPort, "http-port", s.httpPort, "The port number used to run a http server that serves incoming http requests such as auth callbacks or webhook events.")
 	cmd.Flags().IntVar(&s.adminPort, "admin-port", s.adminPort, "The port number used to run a HTTP server for admin tasks such as metrics, healthz.")
+	cmd.Flags().StringVar(&s.cacheAddress, "cache-address", s.cacheAddress, "The address to cache service.")
 	cmd.Flags().DurationVar(&s.gracePeriod, "grace-period", s.gracePeriod, "How long to wait for graceful shutdown.")
 
 	cmd.Flags().BoolVar(&s.tls, "tls", s.tls, "Whether running the gRPC server with TLS or not.")
@@ -154,7 +157,7 @@ func (s *server) run(ctx context.Context, t cli.Telemetry) error {
 		}
 	}()
 
-	rd := redis.NewRedis(cfg.Cache.RedisAddress, "")
+	rd := redis.NewRedis(s.cacheAddress, "")
 	defer func() {
 		if err := rd.Close(); err != nil {
 			t.Logger.Error("failed closing redis client", zap.Error(err))

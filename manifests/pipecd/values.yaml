@@ -27,7 +27,8 @@ api:
   imageTag: ""
   useDebugImage: true
   args:
-    useFakeResponse: true
+    cacheAddress: ""
+    useFakeResponse: false
     enableGRPCReflection: true
   resources: {}
 

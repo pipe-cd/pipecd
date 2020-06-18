@@ -86,6 +86,7 @@ spec:
           imagePullPolicy: IfNotPresent
           args:
           - server
+          - --cache-address={{ .Values.api.args.cacheAddress | default (printf "%s-cache:6379" (include "pipecd.fullname" .)) }}
           - --config-file=/etc/pipecd-config/{{ .Values.config.fileName }}
           - --use-fake-response={{ .Values.api.args.useFakeResponse }}
           - --enable-grpc-reflection={{ .Values.api.args.enableGRPCReflection }}
