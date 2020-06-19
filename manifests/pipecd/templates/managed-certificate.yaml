@@ -1,0 +1,11 @@
+{{- if .Values.ingress.enabled -}}
+apiVersion: networking.gke.io/v1beta2
+kind: ManagedCertificate
+metadata:
+  name: {{ include "pipecd.fullname" . }}
+spec:
+  domains:
+  {{- range .Values.ingress.domains }}
+  - {{ . }}
+  {{- end }}
+{{- end }}

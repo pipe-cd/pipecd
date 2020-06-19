@@ -1,0 +1,11 @@
+{{- if .Values.backendConfig.enabled -}}
+apiVersion: cloud.google.com/v1beta1
+kind: BackendConfig
+metadata:
+  name: internal-service
+spec:
+  iap:
+    enabled: true
+    oauthclientCredentials:
+      secretName: pipecd-iap
+{{- end }}

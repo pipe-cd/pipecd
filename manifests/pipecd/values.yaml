@@ -1,8 +1,14 @@
 # PipeCD service and ingress.
 service:
   port: 443
+  internalPort: 8443
   annotations:
-    cloud.google.com/app-protocols: '{"service":"HTTP2"}'
+    cloud.google.com/app-protocols: '{"service":"HTTP2", "internal-service":"HTTP2"}'
+
+backendConfig:
+  enabled: false
+  annotation:
+    beta.cloud.google.com/backend-config: '{"ports": {"internal-service":"internal-service"}}'
 
 ingress:
   enabled: false
@@ -10,6 +16,9 @@ ingress:
     # kubernetes.io/ingress.allow-http: "false"
     # kubernetes.io/ingress.global-static-ip-name: pipecd
     # networking.gke.io/managed-certificates: pipecd
+  domains: []
+    # - api.pipecd.dev
+    # - dev.pipecd.dev
 
 cors:
   enabled: true

@@ -13,8 +13,24 @@ spec:
   rules:
   - http:
       paths:
-      - path: /*
+      - path: /hook
         backend:
           serviceName: {{ include "pipecd.fullname" . }}
           servicePort: {{ .Values.service.port }}
+      - path: /pipe.api.service.pipedservice.PipeService/*
+        backend:
+          serviceName: {{ include "pipecd.fullname" . }}
+          servicePort: {{ .Values.service.port }}
+      - path: /pipe.api.service.webservice.WebService/*
+        backend:
+          serviceName: {{ include "pipecd.fullname" . }}
+          servicePort: {{ .Values.service.internalPort }}
+      - path: /auth/*
+        backend:
+          serviceName: {{ include "pipecd.fullname" . }}
+          servicePort: {{ .Values.service.internalPort }}
+      - path: /*
+        backend:
+          serviceName: {{ include "pipecd.fullname" . }}
+          servicePort: {{ .Values.service.internalPort }}
 {{- end }}
