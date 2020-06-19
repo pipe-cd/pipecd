@@ -10,6 +10,9 @@ import {
 } from "../../modules/applications-live-state";
 import { fetchApplications } from "../../modules/applications";
 import { ApplicationStateView } from "../../components/application-state-view";
+import { useInterval } from "../../utils/use-interval";
+
+const FETCH_INTERVAL = 4000;
 
 export const ApplicationDetailPage: FC = memo(() => {
   const dispatch = useDispatch();
@@ -27,6 +30,14 @@ export const ApplicationDetailPage: FC = memo(() => {
     // TODO: Fetch only current active application data
     dispatch(fetchApplications());
   }, [applicationId]);
+
+  useInterval(
+    () => {
+      dispatch(fetchApplicationById(applicationId));
+      dispatch(fetchApplications());
+    },
+    applicationId ? FETCH_INTERVAL : null
+  );
 
   if (!application) {
     return <div>loading</div>;

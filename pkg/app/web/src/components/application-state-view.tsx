@@ -1,6 +1,6 @@
+import { ApplicationKind } from "pipe/pkg/app/web/model/application_pb";
 import React, { FC, memo } from "react";
 import { useSelector } from "react-redux";
-import { ApplicationKind } from "pipe/pkg/app/web/model/application_pb";
 import { AppState } from "../modules";
 import {
   ApplicationLiveState,
