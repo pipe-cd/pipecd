@@ -34,6 +34,10 @@ import (
 	"github.com/pipe-cd/pipe/pkg/model"
 )
 
+var (
+	commandCheckInterval = 10 * time.Second
+)
+
 type apiClient interface {
 	GetMostRecentDeployment(ctx context.Context, req *pipedservice.GetMostRecentDeploymentRequest, opts ...grpc.CallOption) (*pipedservice.GetMostRecentDeploymentResponse, error)
 	CreateDeployment(ctx context.Context, in *pipedservice.CreateDeploymentRequest, opts ...grpc.CallOption) (*pipedservice.CreateDeploymentResponse, error)
@@ -44,6 +48,7 @@ type gitClient interface {
 }
 
 type applicationLister interface {
+	Get(id string) (*model.Application, bool)
 	List() []*model.Application
 }
 
@@ -106,16 +111,24 @@ func (t *Trigger) Run(ctx context.Context) error {
 		t.gitRepos[r.RepoID] = repo
 	}
 
-	ticker := time.NewTicker(time.Duration(t.config.SyncInterval))
-	defer ticker.Stop()
+	commitTicker := time.NewTicker(time.Duration(t.config.SyncInterval))
+	defer commitTicker.Stop()
+
+	commandTicker := time.NewTicker(commandCheckInterval)
+	defer commandTicker.Stop()
 
 L:
 	for {
 		select {
+
+		case <-commandTicker.C:
+			t.checkCommand(ctx)
+
+		case <-commitTicker.C:
+			t.checkCommit(ctx)
+
 		case <-ctx.Done():
 			break L
-		case <-ticker.C:
-			t.check(ctx)
 		}
 	}
 
@@ -123,7 +136,54 @@ L:
 	return nil
 }
 
-func (t *Trigger) check(ctx context.Context) error {
+func (t *Trigger) checkCommand(ctx context.Context) error {
+	commands := t.commandLister.ListApplicationCommands()
+	for _, cmd := range commands {
+		syncCmd := cmd.GetSyncApplication()
+		if syncCmd == nil {
+			continue
+		}
+		app, ok := t.applicationLister.Get(syncCmd.ApplicationId)
+		if !ok {
+			t.logger.Warn("detected an AppSync command for an unregistered application",
+				zap.String("command", cmd.Id),
+				zap.String("application-id", syncCmd.ApplicationId),
+				zap.String("commander", cmd.Commander),
+			)
+			continue
+		}
+		if err := t.syncApplication(ctx, app, cmd.Commander); err != nil {
+			t.logger.Error("failed to sync application",
+				zap.String("application-id", app.Id),
+				zap.Error(err),
+			)
+			cmd.Report(ctx, model.CommandStatus_COMMAND_FAILED, nil)
+			continue
+		}
+		cmd.Report(ctx, model.CommandStatus_COMMAND_SUCCEEDED, nil)
+	}
+	return nil
+}
+
+func (t *Trigger) syncApplication(ctx context.Context, app *model.Application, commander string) error {
+	_, branch, headCommit, err := t.updateRepoToLatest(ctx, app.GitPath.RepoId)
+	if err != nil {
+		return err
+	}
+
+	// Build deployment model and send a request to API to create a new deployment.
+	t.logger.Info(fmt.Sprintf("application %s will be synced because of a sync command", app.Id),
+		zap.String("head-commit", headCommit.Hash),
+	)
+	if err := t.triggerDeployment(ctx, app, branch, headCommit, commander); err != nil {
+		return err
+	}
+	t.mostRecentlyTriggeredCommits[app.Id] = headCommit.Hash
+
+	return nil
+}
+
+func (t *Trigger) checkCommit(ctx context.Context) error {
 	if len(t.gitRepos) == 0 {
 		t.logger.Info("no repositories were configured for this piped")
 		return nil
@@ -135,35 +195,10 @@ func (t *Trigger) check(ctx context.Context) error {
 
 	// ENHANCEMENT: We may want to apply worker model here to run them concurrently.
 	for repoID, apps := range applications {
-		gitRepo, ok := t.gitRepos[repoID]
-		if !ok {
-			t.logger.Warn("detected some applications are binding with an non existent repository",
-				zap.String("repo-id", repoID),
-				zap.String("first-application-id", apps[0].Id),
-			)
-			continue
-		}
-		branch := gitRepo.GetClonedBranch()
-
-		// Fetch to update the repository and then
-		if err := gitRepo.Pull(ctx, branch); err != nil {
-			t.logger.Error("failed to update repository branch",
-				zap.String("repo-id", repoID),
-				zap.Error(err),
-			)
-			continue
-		}
-
-		// Get the head commit of the repository.
-		headCommit, err := gitRepo.GetLatestCommit(ctx)
+		gitRepo, branch, headCommit, err := t.updateRepoToLatest(ctx, repoID)
 		if err != nil {
-			t.logger.Error("failed to get head commit hash",
-				zap.String("repo-id", repoID),
-				zap.Error(err),
-			)
 			continue
 		}
-
 		for _, app := range apps {
 			if err := t.checkApplication(ctx, app, gitRepo, branch, headCommit); err != nil {
 				t.logger.Error(fmt.Sprintf("failed to check application: %s", app.Id), zap.Error(err))
@@ -208,7 +243,7 @@ func (t *Trigger) checkApplication(ctx context.Context, app *model.Application, 
 		logger.Info(fmt.Sprintf("application %s should be synced because of the new commit", app.Id),
 			zap.String("most-recently-triggered-commit", preCommitHash),
 		)
-		if err := t.triggerDeployment(ctx, app, repo, branch, headCommit); err != nil {
+		if err := t.triggerDeployment(ctx, app, branch, headCommit, ""); err != nil {
 			return err
 		}
 		t.mostRecentlyTriggeredCommits[app.Id] = headCommit.Hash
@@ -236,6 +271,40 @@ func (t *Trigger) checkApplication(ctx context.Context, app *model.Application, 
 	}
 
 	return trigger()
+}
+
+func (t *Trigger) updateRepoToLatest(ctx context.Context, repoID string) (repo git.Repo, branch string, headCommit git.Commit, err error) {
+	var ok bool
+
+	// Find the application repo from pre-loaded ones.
+	repo, ok = t.gitRepos[repoID]
+	if !ok {
+		t.logger.Warn("detected some applications binding with a non existent repository", zap.String("repo-id", repoID))
+		err = fmt.Errorf("missing repository")
+		return
+	}
+	branch = repo.GetClonedBranch()
+
+	// Fetch to update the repository and then
+	if err = repo.Pull(ctx, branch); err != nil {
+		t.logger.Error("failed to update repository branch",
+			zap.String("repo-id", repoID),
+			zap.Error(err),
+		)
+		return
+	}
+
+	// Get the head commit of the repository.
+	headCommit, err = repo.GetLatestCommit(ctx)
+	if err != nil {
+		t.logger.Error("failed to get head commit hash",
+			zap.String("repo-id", repoID),
+			zap.Error(err),
+		)
+		return
+	}
+
+	return
 }
 
 // listApplications retrieves all applications those should be handled by this piped

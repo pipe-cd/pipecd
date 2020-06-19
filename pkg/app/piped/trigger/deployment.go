@@ -29,18 +29,8 @@ import (
 	"github.com/pipe-cd/pipe/pkg/model"
 )
 
-func (t *Trigger) triggerDeployment(ctx context.Context, app *model.Application, repo git.Repo, branch string, commit git.Commit) error {
-	// Load deployment configuration at the commit.
-	cfg, err := t.loadDeploymentConfiguration(repo.GetPath(), app)
-	if err != nil {
-		t.logger.Error("failed to load application configuration",
-			zap.String("commit-hash", commit.Hash),
-			zap.Error(err),
-		)
-		return err
-	}
-
-	deployment, err := buildDeploment(app, cfg, branch, commit, time.Now())
+func (t *Trigger) triggerDeployment(ctx context.Context, app *model.Application, branch string, commit git.Commit, commander string) error {
+	deployment, err := buildDeploment(app, branch, commit, commander, time.Now())
 	if err != nil {
 		return err
 	}
@@ -71,7 +61,7 @@ func (t *Trigger) loadDeploymentConfiguration(repoPath string, app *model.Applic
 	return cfg, nil
 }
 
-func buildDeploment(app *model.Application, cfg *config.Config, branch string, commit git.Commit, now time.Time) (*model.Deployment, error) {
+func buildDeploment(app *model.Application, branch string, commit git.Commit, commander string, now time.Time) (*model.Deployment, error) {
 	deployment := &model.Deployment{
 		Id:            uuid.New().String(),
 		ApplicationId: app.Id,
@@ -87,7 +77,7 @@ func buildDeploment(app *model.Application, cfg *config.Config, branch string, c
 				Branch:    branch,
 				CreatedAt: int64(commit.CreatedAt),
 			},
-			User:      commit.Author,
+			Commander: commander,
 			Timestamp: now.Unix(),
 		},
 		GitPath:       app.GitPath,
