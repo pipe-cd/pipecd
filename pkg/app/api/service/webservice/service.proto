@@ -96,7 +96,7 @@ message ListPipedsResponse {
 }
 
 message AddEnvironmentRequest {
-    string name = 1;
+    string name = 1 [(validate.rules).string.min_len = 1];
     string desc = 2;
 }
 
