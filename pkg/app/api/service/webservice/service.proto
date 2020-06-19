@@ -96,6 +96,8 @@ message ListPipedsResponse {
 }
 
 message AddEnvironmentRequest {
+    string name = 1;
+    string desc = 2;
 }
 
 message AddApplicationRequest {
