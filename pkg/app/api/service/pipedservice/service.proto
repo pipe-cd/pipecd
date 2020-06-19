@@ -18,7 +18,6 @@ package pipe.api.service.pipedservice;
 option go_package = "github.com/pipe-cd/pipe/pkg/app/api/service/pipedservice";
 
 import "validate/validate.proto";
-import "google/protobuf/wrappers.proto";
 import "pkg/model/command.proto";
 import "pkg/model/application.proto";
 import "pkg/model/application_live_state.proto";
