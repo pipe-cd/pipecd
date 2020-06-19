@@ -67,6 +67,7 @@ func (t *Trigger) reportMostRecentlyTriggeredDeployment(ctx context.Context, d *
 		err error
 		req = &pipedservice.ReportApplicationMostRecentDeploymentRequest{
 			ApplicationId: d.ApplicationId,
+			Status:        model.DeploymentStatus_DEPLOYMENT_PENDING,
 			Deployment: &model.ApplicationDeploymentReference{
 				DeploymentId: d.Id,
 				Trigger:      d.Trigger,

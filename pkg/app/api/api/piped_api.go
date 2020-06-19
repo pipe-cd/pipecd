@@ -161,7 +161,7 @@ func (a *PipedAPI) ReportApplicationSyncState(ctx context.Context, req *pipedser
 }
 
 // ReportApplicationMostRecentDeployment is used to update the basic information about
-// the most recent deployment of a specific applicaiton.
+// the most recent deployment of a specific application.
 func (a *PipedAPI) ReportApplicationMostRecentDeployment(ctx context.Context, req *pipedservice.ReportApplicationMostRecentDeploymentRequest) (*pipedservice.ReportApplicationMostRecentDeploymentResponse, error) {
 	err := a.applicationStore.PutApplicationMostRecentDeployment(ctx, req.ApplicationId, req.Status, req.Deployment)
 	if err != nil {

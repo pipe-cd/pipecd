@@ -41,7 +41,7 @@ const (
 	// KindTerraformApp represents deployment configuration for a Terraform application.
 	// This application contains a single workspace of a terraform root module.
 	KindTerraformApp Kind = "TerraformApp"
-	// KindCrossplaneApp represents deployment configuration for a Crossplane applicaiton.
+	// KindCrossplaneApp represents deployment configuration for a Crossplane application.
 	KindCrossplaneApp Kind = "CrossplaneApp"
 	// KindLambdaApp represents deployment configuration for an AWS Lambda application.
 	KindLambdaApp Kind = "LambdaApp"

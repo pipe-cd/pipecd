@@ -127,7 +127,7 @@ func (r *kubernetesReporter) flushSnapshots(ctx context.Context) error {
 
 		if _, err := r.apiClient.ReportApplicationLiveState(ctx, req); err != nil {
 			r.logger.Error("failed to report application live state",
-				zap.String("applicaiton-id", app.Id),
+				zap.String("application-id", app.Id),
 				zap.Error(err),
 			)
 			continue

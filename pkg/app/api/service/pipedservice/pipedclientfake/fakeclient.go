@@ -146,7 +146,7 @@ func (c *fakeClient) ReportApplicationSyncState(ctx context.Context, req *pipeds
 }
 
 // ReportApplicationMostRecentDeployment is used to update the basic information about
-// the most recent deployment of a specific applicaiton.
+// the most recent deployment of a specific application.
 func (c *fakeClient) ReportApplicationMostRecentDeployment(ctx context.Context, req *pipedservice.ReportApplicationMostRecentDeploymentRequest, opts ...grpc.CallOption) (*pipedservice.ReportApplicationMostRecentDeploymentResponse, error) {
 	c.logger.Info("fake client received ReportApplicationMostRecentDeployment rpc", zap.Any("request", req))
 
@@ -157,7 +157,14 @@ func (c *fakeClient) ReportApplicationMostRecentDeployment(ctx context.Context, 
 	if !ok {
 		return nil, status.Error(codes.NotFound, "application was not found")
 	}
-	app.MostRecentlySuccessfulDeployment = req.Deployment
+
+	switch req.Status {
+	case model.DeploymentStatus_DEPLOYMENT_SUCCESS:
+		app.MostRecentlySuccessfulDeployment = req.Deployment
+
+	case model.DeploymentStatus_DEPLOYMENT_PLANNED:
+		app.MostRecentlyTriggeredDeployment = req.Deployment
+	}
 
 	return &pipedservice.ReportApplicationMostRecentDeploymentResponse{}, nil
 }

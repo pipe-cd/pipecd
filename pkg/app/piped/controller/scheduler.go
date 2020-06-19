@@ -552,6 +552,7 @@ func (s *scheduler) reportMostRecentlySuccessfulDeployment(ctx context.Context) 
 		err error
 		req = &pipedservice.ReportApplicationMostRecentDeploymentRequest{
 			ApplicationId: s.deployment.ApplicationId,
+			Status:        model.DeploymentStatus_DEPLOYMENT_SUCCESS,
 			Deployment: &model.ApplicationDeploymentReference{
 				DeploymentId: s.deployment.Id,
 				Trigger:      s.deployment.Trigger,
