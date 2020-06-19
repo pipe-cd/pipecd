@@ -74,6 +74,8 @@ func (s *samplecli) run(ctx context.Context, t cli.Telemetry) error {
 		return s.addApplication(ctx, cli, data, t.Logger)
 	case "ListApplications":
 		return s.listApplications(ctx, cli, data, t.Logger)
+	case "GetApplication":
+		return s.getApplication(ctx, cli, data, t.Logger)
 	case "ListDeployments":
 		return s.listDeployments(ctx, cli, data, t.Logger)
 	case "GetDeployment":
@@ -175,6 +177,21 @@ func (s *samplecli) listApplications(ctx context.Context, cli webservice.Client,
 	for _, app := range resp.Applications {
 		fmt.Printf("application: %+v\n", app)
 	}
+	return nil
+}
+
+func (s *samplecli) getApplication(ctx context.Context, cli webservice.Client, payload []byte, logger *zap.Logger) error {
+	req := webservice.GetApplicationRequest{}
+	if err := json.Unmarshal(payload, &req); err != nil {
+		return err
+	}
+	resp, err := cli.GetApplication(ctx, &req)
+	if err != nil {
+		logger.Error("failed to run GetApplication", zap.Error(err))
+		return err
+	}
+	logger.Info("successfully run GetApplication")
+	fmt.Printf("application: %+v\n", resp.Application)
 	return nil
 }
 

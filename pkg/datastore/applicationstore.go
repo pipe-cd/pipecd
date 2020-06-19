@@ -30,6 +30,7 @@ var applicationFactory = func() interface{} {
 type ApplicationStore interface {
 	AddApplication(ctx context.Context, app *model.Application) error
 	DisableApplication(ctx context.Context, id string) error
+	GetApplication(ctx context.Context, id string) (*model.Application, error)
 	ListApplications(ctx context.Context, opts ListOptions) ([]*model.Application, error)
 	PutApplication(ctx context.Context, id string, updater func(*model.Application) error) error
 	PutApplicationSyncState(ctx context.Context, id string, syncState *model.ApplicationSyncState) error
@@ -71,6 +72,14 @@ func (s *applicationStore) DisableApplication(ctx context.Context, id string) er
 		app.UpdatedAt = time.Now().Unix()
 		return nil
 	})
+}
+
+func (s *applicationStore) GetApplication(ctx context.Context, id string) (*model.Application, error) {
+	var entity model.Application
+	if err := s.ds.Get(ctx, applicationModelKind, id, &entity); err != nil {
+		return nil, err
+	}
+	return &entity, nil
 }
 
 func (s *applicationStore) ListApplications(ctx context.Context, opts ListOptions) ([]*model.Application, error) {
