@@ -74,7 +74,7 @@ func (a *WebAPI) AddEnvironment(ctx context.Context, req *webservice.AddEnvironm
 		Desc:      req.Desc,
 		ProjectId: claims.Role.ProjectId,
 	}
-	err := a.environmentStore.AddEnvironment(ctx, &env)
+	err = a.environmentStore.AddEnvironment(ctx, &env)
 	if errors.Is(err, datastore.ErrAlreadyExists) {
 		return nil, status.Error(codes.AlreadyExists, "environment already exists")
 	}
