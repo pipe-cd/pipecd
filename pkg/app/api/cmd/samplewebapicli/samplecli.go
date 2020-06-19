@@ -144,7 +144,8 @@ func (s *samplecli) registerPiped(ctx context.Context, cli webservice.Client, pa
 		return err
 	}
 	logger.Info("successfully run RegisterPiped")
-	fmt.Printf("key: %+v\n", resp.GeneratedKey)
+	fmt.Printf("Id: %+v\n", resp.Id)
+	fmt.Printf("key: %+v\n", resp.Key)
 	return nil
 }
 
