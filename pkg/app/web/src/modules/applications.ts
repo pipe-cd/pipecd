@@ -4,7 +4,7 @@ import {
   createAsyncThunk,
 } from "@reduxjs/toolkit";
 import { Application as ApplicationModel } from "pipe/pkg/app/web/model/application_pb";
-import { getApplications } from "../api/applications";
+import { getApplications, getApplication } from "../api/applications";
 
 export type Application = Required<ApplicationModel.AsObject>;
 
@@ -22,6 +22,14 @@ export const fetchApplications = createAsyncThunk<Application[], void>(
   }
 );
 
+export const fetchApplication = createAsyncThunk<
+  Application | undefined,
+  string
+>("applications/fetchById", async (applicationId) => {
+  const { application } = await getApplication({ applicationId });
+  return application as Application;
+});
+
 export const applicationsSlice = createSlice({
   name: "applications",
   initialState: applicationsAdapter.getInitialState(),
@@ -29,6 +37,11 @@ export const applicationsSlice = createSlice({
   extraReducers: (builder) => {
     builder.addCase(fetchApplications.fulfilled, (state, action) => {
       applicationsAdapter.addMany(state, action.payload);
+    });
+    builder.addCase(fetchApplication.fulfilled, (state, action) => {
+      if (action.payload) {
+        applicationsAdapter.addOne(state, action.payload);
+      }
     });
   },
 });
