@@ -1,11 +1,14 @@
-import { makeStyles, Box } from "@material-ui/core";
+import { makeStyles, Box, Icon } from "@material-ui/core";
 import React, { FC } from "react";
 import { parseLog } from "../utils/parse-log";
 import {
   TERM_COLORS,
   DEFAULT_BACKGROUND_COLOR,
   SELECTED_BACKGROUND_COLOR,
+  TERMINAL_LINE_NUMBER_COLOR,
 } from "../constants/term-colors";
+import { LogSeverity } from "../modules/stage-logs";
+import { Error } from "@material-ui/icons";
 
 const useStyles = makeStyles((theme) => ({
   container: {
@@ -15,27 +18,36 @@ const useStyles = makeStyles((theme) => ({
     "&:hover": {
       backgroundColor: SELECTED_BACKGROUND_COLOR,
     },
+    position: "relative",
   },
   lineNumber: {
-    color: theme.palette.primary.main,
+    color: TERMINAL_LINE_NUMBER_COLOR,
     width: "5rem",
     textAlign: "center",
     flexShrink: 0,
     userSelect: "none",
     cursor: "pointer",
   },
+  icon: {
+    position: "absolute",
+    marginLeft: theme.spacing(1),
+  },
 }));
 
 interface Props {
   lineNumber: number;
   body: string;
+  severity: LogSeverity;
 }
 
-export const LogLine: FC<Props> = ({ body, lineNumber }) => {
+export const LogLine: FC<Props> = ({ body, lineNumber, severity }) => {
   const classes = useStyles();
 
   return (
     <div className={classes.container}>
+      {severity === LogSeverity.ERROR && (
+        <Error color="error" fontSize="small" className={classes.icon} />
+      )}
       <span className={classes.lineNumber}>{lineNumber}</span>
       <Box pr={2} flex={1} style={{ wordBreak: "break-word" }}>
         {parseLog(body).map((cell) => (

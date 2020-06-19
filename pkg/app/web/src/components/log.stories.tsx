@@ -1,5 +1,6 @@
 import React from "react";
 import { Log } from "./log";
+import { LogSeverity } from "../modules/stage-logs";
 
 export default {
   title: "Log",
@@ -18,14 +19,38 @@ export const overview: React.FC = () => (
         "Hello, World!Hello, World!Hello, World!Hello, World!Hello, World!" +
         "Hello, World!Hello, World!Hello, World!Hello, World!Hello, World!Hello, World!Hello, World!",
       "Hello, World",
-    ]}
+    ].map((v, i) => ({
+      log: v,
+      index: i,
+      severity: LogSeverity.INFO,
+      createdAt: 0,
+    }))}
+    loading={false}
+  />
+);
+
+export const severity: React.FC = () => (
+  <Log
+    logs={["Hello, World", "Hello, World", "Hello, World"].map((v, i) => ({
+      log: v,
+      index: i,
+      severity: i,
+      createdAt: 0,
+    }))}
     loading={false}
   />
 );
 
 export const loading: React.FC = () => (
   <Log
-    logs={["Hello, World", "Hello, World", "Hello, World", "Hello, World"]}
+    logs={["Hello, World", "Hello, World", "Hello, World", "Hello, World"].map(
+      (v, i) => ({
+        log: v,
+        index: i,
+        severity: LogSeverity.INFO,
+        createdAt: 0,
+      })
+    )}
     loading
   />
 );
@@ -42,14 +67,18 @@ export const wordWrap: React.FC = () => (
         "Hello, World!Hello, World!Hello, World!Hello, World!Hello, World!" +
         "Hello, World!Hello, World!Hello, World!Hello, World!Hello, World!Hello, World!Hello, World!",
       "Hello, World",
-    ]}
+    ].map((v, i) => ({
+      log: v,
+      index: i,
+      severity: LogSeverity.INFO,
+      createdAt: 0,
+    }))}
     loading={false}
   />
 );
 
 export const ansiCodes: React.FC = () => (
   <Log
-    wordWrap={false}
     logs={[
       "\u001b[30m A \u001b[31m B \u001b[32m C \u001b[33m D \u001b[0m",
       "\u001b[34m E \u001b[35m F \u001b[36m G \u001b[37m H \u001b[0m",
@@ -59,7 +88,12 @@ export const ansiCodes: React.FC = () => (
       "\u001b[1m\u001b[4m\u001b[7m BOLD Underline Reversed \u001b[0m",
       "\u001b[1m\u001b[31m Red Bold \u001b[0m",
       "\u001b[4m\u001b[44m Blue Background Underline \u001b[0m",
-    ]}
+    ].map((v, i) => ({
+      log: v,
+      index: i,
+      severity: LogSeverity.INFO,
+      createdAt: 0,
+    }))}
     loading={false}
   />
 );
@@ -86,7 +120,12 @@ export const allColors: React.FC = () => (
       " 1;36m \u001b[1;36m  gYw   \u001b[1;36m\u001b[40m  gYw  \u001b[0m \u001b[1;36m\u001b[41m  gYw  \u001b[0m \u001b[1;36m\u001b[42m  gYw  \u001b[0m \u001b[1;36m\u001b[43m  gYw  \u001b[0m \u001b[1;36m\u001b[44m  gYw  \u001b[0m \u001b[1;36m\u001b[45m  gYw  \u001b[0m \u001b[1;36m\u001b[46m  gYw  \u001b[0m \u001b[1;36m\u001b[47m  gYw  \u001b[0m",
       "   37m \u001b[37m  gYw   \u001b[37m\u001b[40m  gYw  \u001b[0m \u001b[37m\u001b[41m  gYw  \u001b[0m \u001b[37m\u001b[42m  gYw  \u001b[0m \u001b[37m\u001b[43m  gYw  \u001b[0m \u001b[37m\u001b[44m  gYw  \u001b[0m \u001b[37m\u001b[45m  gYw  \u001b[0m \u001b[37m\u001b[46m  gYw  \u001b[0m \u001b[37m\u001b[47m  gYw  \u001b[0m",
       " 1;37m \u001b[1;37m  gYw   \u001b[1;37m\u001b[40m  gYw  \u001b[0m \u001b[1;37m\u001b[41m  gYw  \u001b[0m \u001b[1;37m\u001b[42m  gYw  \u001b[0m \u001b[1;37m\u001b[43m  gYw  \u001b[0m \u001b[1;37m\u001b[44m  gYw  \u001b[0m \u001b[1;37m\u001b[45m  gYw  \u001b[0m \u001b[1;37m\u001b[46m  gYw  \u001b[0m \u001b[1;37m\u001b[47m  gYw  \u001b[0m",
-    ]}
+    ].map((v, i) => ({
+      log: v,
+      index: i,
+      severity: LogSeverity.INFO,
+      createdAt: 0,
+    }))}
     loading={false}
   />
 );

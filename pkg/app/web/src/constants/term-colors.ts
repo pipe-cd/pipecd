@@ -17,5 +17,6 @@ export const TERM_COLORS = [
   "#FFFFFF",
 ];
 
+export const TERMINAL_LINE_NUMBER_COLOR = "#80D8FF";
 export const DEFAULT_BACKGROUND_COLOR = "#263238";
 export const SELECTED_BACKGROUND_COLOR = "#607D8B";

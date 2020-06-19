@@ -2,7 +2,9 @@ import { createSlice, createAsyncThunk } from "@reduxjs/toolkit";
 import { LogBlock as LogBlockModel } from "pipe/pkg/app/web/model/logblock_pb";
 import { getStageLog } from "../api/stage-log";
 
-type LogBlock = LogBlockModel.AsObject;
+export { LogSeverity } from "pipe/pkg/app/web/model/logblock_pb";
+
+export type LogBlock = LogBlockModel.AsObject;
 
 export type StageLog = {
   deploymentId: string;
