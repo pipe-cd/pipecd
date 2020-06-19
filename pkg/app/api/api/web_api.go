@@ -125,8 +125,9 @@ func (a *WebAPI) RegisterPiped(ctx context.Context, req *webservice.RegisterPipe
 		a.logger.Error("failed to generate piped key", zap.Error(err))
 		return nil, status.Error(codes.Internal, "failed to generate the piped key")
 	}
+	id := uuid.New().String()
 	piped := model.Piped{
-		Id:        req.Id,
+		Id:        id,
 		Desc:      req.Desc,
 		KeyHash:   keyHash,
 		ProjectId: claims.Role.ProjectId,
@@ -140,7 +141,8 @@ func (a *WebAPI) RegisterPiped(ctx context.Context, req *webservice.RegisterPipe
 		return nil, status.Error(codes.Internal, "failed to register piped")
 	}
 	return &webservice.RegisterPipedResponse{
-		GeneratedKey: key,
+		Id:  id,
+		Key: key,
 	}, nil
 }
 
