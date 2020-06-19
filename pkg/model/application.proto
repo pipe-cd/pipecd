@@ -83,7 +83,7 @@ message ApplicationCompletedDeployment {
     string commit_hash = 2 [(validate.rules).string.min_len = 1];
     string version = 3 [(validate.rules).string.min_len = 1];
     int64 started_at = 4 [(validate.rules).int64.gt = 0];
-    int64 completed_at = 5 [(validate.rules).int64.gt = 0];
+    int64 completed_at = 5 [(validate.rules).int64.gte = 0];
 }
 
 message ApplicationGitPath {

@@ -538,7 +538,36 @@ func (s *scheduler) reportDeploymentCompleted(ctx context.Context, status model.
 		if _, err = s.apiClient.ReportDeploymentCompleted(ctx, req); err == nil {
 			return nil
 		}
-		err = fmt.Errorf("failed to report deployment status to control-plane: %v", err)
+		err = fmt.Errorf("failed to report deployment status to control-plane: %w", err)
+	}
+
+	if err == nil {
+		return s.reportMostRecentSuccessfulDeployment(ctx)
+	}
+	return err
+}
+
+func (s *scheduler) reportMostRecentSuccessfulDeployment(ctx context.Context) error {
+	var (
+		err error
+		req = &pipedservice.ReportMostRecentSuccessfulDeploymentRequest{
+			ApplicationId: s.deployment.ApplicationId,
+			Deployment: &model.ApplicationCompletedDeployment{
+				DeploymentId: s.deployment.Id,
+				CommitHash:   s.deployment.Trigger.Commit.Hash,
+				Version:      "todo",
+				StartedAt:    s.deployment.CreatedAt,
+				CompletedAt:  s.deployment.CompletedAt,
+			},
+		}
+		retry = pipedservice.NewRetry(10)
+	)
+
+	for retry.WaitNext(ctx) {
+		if _, err = s.apiClient.ReportMostRecentSuccessfulDeployment(ctx, req); err == nil {
+			return nil
+		}
+		err = fmt.Errorf("failed to report most recent successful deployment: %w", err)
 	}
 	return err
 }
