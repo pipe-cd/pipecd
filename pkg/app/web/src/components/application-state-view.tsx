@@ -1,4 +1,4 @@
-import { ApplicationKind } from "pipe/pkg/app/web/model/application_pb";
+import { ApplicationKind } from "pipe/pkg/app/web/model/common_pb";
 import React, { FC, memo } from "react";
 import { useSelector } from "react-redux";
 import { AppState } from "../modules";

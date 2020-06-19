@@ -49,7 +49,7 @@ type apiClient interface {
 	ReportDeploymentStatusChanged(ctx context.Context, req *pipedservice.ReportDeploymentStatusChangedRequest, opts ...grpc.CallOption) (*pipedservice.ReportDeploymentStatusChangedResponse, error)
 	ReportDeploymentCompleted(ctx context.Context, req *pipedservice.ReportDeploymentCompletedRequest, opts ...grpc.CallOption) (*pipedservice.ReportDeploymentCompletedResponse, error)
 	SaveDeploymentMetadata(ctx context.Context, req *pipedservice.SaveDeploymentMetadataRequest, opts ...grpc.CallOption) (*pipedservice.SaveDeploymentMetadataResponse, error)
-	ReportMostRecentSuccessfulDeployment(ctx context.Context, req *pipedservice.ReportMostRecentSuccessfulDeploymentRequest, opts ...grpc.CallOption) (*pipedservice.ReportMostRecentSuccessfulDeploymentResponse, error)
+	ReportApplicationMostRecentDeployment(ctx context.Context, req *pipedservice.ReportApplicationMostRecentDeploymentRequest, opts ...grpc.CallOption) (*pipedservice.ReportApplicationMostRecentDeploymentResponse, error)
 
 	ReportStageStatusChanged(ctx context.Context, req *pipedservice.ReportStageStatusChangedRequest, opts ...grpc.CallOption) (*pipedservice.ReportStageStatusChangedResponse, error)
 	SaveStageMetadata(ctx context.Context, req *pipedservice.SaveStageMetadataRequest, opts ...grpc.CallOption) (*pipedservice.SaveStageMetadataResponse, error)
@@ -320,7 +320,7 @@ func (c *controller) startNewPlanner(ctx context.Context, d *model.Deployment) (
 	// So in that case, we have to use the API to check.
 	commit := c.mostRecentSuccessfulCommits[d.ApplicationId]
 	if commit == "" {
-		mostRecent, err := c.getMostRecentSuccessfulDeployment(ctx, d.ApplicationId)
+		mostRecent, err := c.getMostRecentlySuccessfulDeployment(ctx, d.ApplicationId)
 		if err == nil {
 			commit = mostRecent.CommitHash()
 			c.mostRecentSuccessfulCommits[d.ApplicationId] = commit
@@ -497,7 +497,7 @@ func (c *controller) startNewScheduler(ctx context.Context, d *model.Deployment)
 	return scheduler, nil
 }
 
-func (c *controller) getMostRecentSuccessfulDeployment(ctx context.Context, applicationID string) (*model.Deployment, error) {
+func (c *controller) getMostRecentlySuccessfulDeployment(ctx context.Context, applicationID string) (*model.Deployment, error) {
 	var (
 		err   error
 		resp  *pipedservice.GetMostRecentDeploymentResponse

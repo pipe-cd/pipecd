@@ -542,20 +542,21 @@ func (s *scheduler) reportDeploymentCompleted(ctx context.Context, status model.
 	}
 
 	if err == nil {
-		return s.reportMostRecentSuccessfulDeployment(ctx)
+		s.reportMostRecentlySuccessfulDeployment(ctx)
 	}
 	return err
 }
 
-func (s *scheduler) reportMostRecentSuccessfulDeployment(ctx context.Context) error {
+func (s *scheduler) reportMostRecentlySuccessfulDeployment(ctx context.Context) error {
 	var (
 		err error
-		req = &pipedservice.ReportMostRecentSuccessfulDeploymentRequest{
+		req = &pipedservice.ReportApplicationMostRecentDeploymentRequest{
 			ApplicationId: s.deployment.ApplicationId,
-			Deployment: &model.ApplicationCompletedDeployment{
+			Deployment: &model.ApplicationDeploymentReference{
 				DeploymentId: s.deployment.Id,
-				CommitHash:   s.deployment.Trigger.Commit.Hash,
-				Version:      "todo",
+				Trigger:      s.deployment.Trigger,
+				Description:  s.deployment.Description,
+				Version:      "",
 				StartedAt:    s.deployment.CreatedAt,
 				CompletedAt:  s.deployment.CompletedAt,
 			},
@@ -564,7 +565,7 @@ func (s *scheduler) reportMostRecentSuccessfulDeployment(ctx context.Context) er
 	)
 
 	for retry.WaitNext(ctx) {
-		if _, err = s.apiClient.ReportMostRecentSuccessfulDeployment(ctx, req); err == nil {
+		if _, err = s.apiClient.ReportApplicationMostRecentDeployment(ctx, req); err == nil {
 			return nil
 		}
 		err = fmt.Errorf("failed to report most recent successful deployment: %w", err)

@@ -18,7 +18,7 @@ package pipe.model;
 option go_package = "github.com/pipe-cd/pipe/pkg/model";
 
 import "validate/validate.proto";
-import "pkg/model/application.proto";
+import "pkg/model/common.proto";
 
 // DeploymentStatus represents the current status of a deployment.
 enum DeploymentStatus {

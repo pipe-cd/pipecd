@@ -46,6 +46,7 @@ func (t *Trigger) triggerDeployment(ctx context.Context, app *model.Application,
 		return err
 	}
 
+	t.reportMostRecentlyTriggeredDeployment(ctx, deployment)
 	return nil
 }
 
@@ -59,6 +60,32 @@ func (t *Trigger) loadDeploymentConfiguration(repoPath string, app *model.Applic
 		return nil, fmt.Errorf("application in deployment configuration file is not match, got: %s, expected: %s", appKind, app.Kind)
 	}
 	return cfg, nil
+}
+
+func (t *Trigger) reportMostRecentlyTriggeredDeployment(ctx context.Context, d *model.Deployment) error {
+	var (
+		err error
+		req = &pipedservice.ReportApplicationMostRecentDeploymentRequest{
+			ApplicationId: d.ApplicationId,
+			Deployment: &model.ApplicationDeploymentReference{
+				DeploymentId: d.Id,
+				Trigger:      d.Trigger,
+				Description:  d.Description,
+				Version:      "",
+				StartedAt:    d.CreatedAt,
+				CompletedAt:  d.CompletedAt,
+			},
+		}
+		retry = pipedservice.NewRetry(10)
+	)
+
+	for retry.WaitNext(ctx) {
+		if _, err = t.apiClient.ReportApplicationMostRecentDeployment(ctx, req); err == nil {
+			return nil
+		}
+		err = fmt.Errorf("failed to report most recent successful deployment: %w", err)
+	}
+	return err
 }
 
 func buildDeploment(app *model.Application, branch string, commit git.Commit, commander string, now time.Time) (*model.Deployment, error) {

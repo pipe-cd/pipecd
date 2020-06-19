@@ -145,10 +145,10 @@ func (c *fakeClient) ReportApplicationSyncState(ctx context.Context, req *pipeds
 	return &pipedservice.ReportApplicationSyncStateResponse{}, nil
 }
 
-// ReportMostRecentSuccessfulDeployment is used to update the basic information about
-// the most recent successful deployment of a specific applicaiton.
-func (c *fakeClient) ReportMostRecentSuccessfulDeployment(ctx context.Context, req *pipedservice.ReportMostRecentSuccessfulDeploymentRequest, opts ...grpc.CallOption) (*pipedservice.ReportMostRecentSuccessfulDeploymentResponse, error) {
-	c.logger.Info("fake client received ReportMostRecentSuccessfulDeployment rpc", zap.Any("request", req))
+// ReportApplicationMostRecentDeployment is used to update the basic information about
+// the most recent deployment of a specific applicaiton.
+func (c *fakeClient) ReportApplicationMostRecentDeployment(ctx context.Context, req *pipedservice.ReportApplicationMostRecentDeploymentRequest, opts ...grpc.CallOption) (*pipedservice.ReportApplicationMostRecentDeploymentResponse, error) {
+	c.logger.Info("fake client received ReportApplicationMostRecentDeployment rpc", zap.Any("request", req))
 
 	c.mu.RLock()
 	defer c.mu.RUnlock()
@@ -157,9 +157,9 @@ func (c *fakeClient) ReportMostRecentSuccessfulDeployment(ctx context.Context, r
 	if !ok {
 		return nil, status.Error(codes.NotFound, "application was not found")
 	}
-	app.MostRecentSuccessfulDeployment = req.Deployment
+	app.MostRecentlySuccessfulDeployment = req.Deployment
 
-	return &pipedservice.ReportMostRecentSuccessfulDeploymentResponse{}, nil
+	return &pipedservice.ReportApplicationMostRecentDeploymentResponse{}, nil
 }
 
 // ListNotCompletedDeployments returns a list of not completed deployments
