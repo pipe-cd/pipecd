@@ -199,7 +199,7 @@ L:
 			// after piped is restarted all running deployments need to be loaded firstly.
 			c.syncScheduler(ctx)
 			c.syncPlanner(ctx)
-			c.checkCommands(ctx)
+			c.checkCommands()
 		}
 	}
 
@@ -216,7 +216,7 @@ L:
 
 // checkCommands lists all unhandled commands for running deployments
 // and forwards them to their planners and schedulers.
-func (c *controller) checkCommands(ctx context.Context) {
+func (c *controller) checkCommands() {
 	commands := c.commandLister.ListDeploymentCommands()
 	for _, cmd := range commands {
 		if cmd.GetCancelDeployment() == nil {
