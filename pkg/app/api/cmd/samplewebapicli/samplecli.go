@@ -64,6 +64,8 @@ func (s *samplecli) run(ctx context.Context, t cli.Telemetry) error {
 	defer cli.Close()
 
 	switch s.function {
+	case "AddEnvironment":
+		return s.addEnvironment(ctx, cli, data, t.Logger)
 	case "ListEnvironments":
 		return s.listEnvironments(ctx, cli, data, t.Logger)
 	case "RegisterPiped":
@@ -99,6 +101,19 @@ func (s *samplecli) createServiceClient(ctx context.Context, logger *zap.Logger)
 		return nil, err
 	}
 	return client, nil
+}
+
+func (s *samplecli) addEnvironment(ctx context.Context, cli webservice.Client, payload []byte, logger *zap.Logger) error {
+	req := webservice.AddEnvironmentRequest{}
+	if err := json.Unmarshal(payload, &req); err != nil {
+		return err
+	}
+	if _, err := cli.AddEnvironment(ctx, &req); err != nil {
+		logger.Error("failed to run AddEnvironment", zap.Error(err))
+		return err
+	}
+	logger.Info("successfully run AddEnvironment")
+	return nil
 }
 
 func (s *samplecli) listEnvironments(ctx context.Context, cli webservice.Client, payload []byte, logger *zap.Logger) error {
