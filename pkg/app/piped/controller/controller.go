@@ -67,7 +67,7 @@ type deploymentLister interface {
 }
 
 type commandLister interface {
-	ListDeploymentCommands(deploymentID string) []model.ReportableCommand
+	ListDeploymentCommands() []model.ReportableCommand
 	ListStageCommands(deploymentID, stageID string) []model.ReportableCommand
 }
 
@@ -199,6 +199,7 @@ L:
 			// after piped is restarted all running deployments need to be loaded firstly.
 			c.syncScheduler(ctx)
 			c.syncPlanner(ctx)
+			c.checkCommands()
 		}
 	}
 
@@ -211,6 +212,23 @@ L:
 
 	c.logger.Info("controller has been stopped")
 	return err
+}
+
+// checkCommands lists all unhandled commands for running deployments
+// and forwards them to their planners and schedulers.
+func (c *controller) checkCommands() {
+	commands := c.commandLister.ListDeploymentCommands()
+	for _, cmd := range commands {
+		if cmd.GetCancelDeployment() == nil {
+			continue
+		}
+		if planner, ok := c.planners[cmd.ApplicationId]; ok && planner.ID() == cmd.DeploymentId {
+			planner.Cancel(cmd)
+		}
+		if scheduler, ok := c.schedulers[cmd.ApplicationId]; ok && scheduler.ID() == cmd.DeploymentId {
+			scheduler.Cancel(cmd)
+		}
+	}
 }
 
 // syncPlanner adds new planner for newly PENDING deployments.
