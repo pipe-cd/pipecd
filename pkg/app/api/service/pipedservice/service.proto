@@ -139,6 +139,7 @@ message PingResponse {
 message ReportPipedMetaRequest {
     string version = 1;
     repeated pipe.model.Piped.CloudProvider cloud_providers = 2;
+    repeated string repository_ids = 3;
 }
 
 message ReportPipedMetaResponse {
