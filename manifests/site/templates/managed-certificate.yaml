@@ -2,7 +2,7 @@
 apiVersion: networking.gke.io/v1beta2
 kind: ManagedCertificate
 metadata:
-  name: {{ include "site.fullname" . }}
+  name: site
 spec:
   domains:
   {{- range .Values.ingress.domains }}

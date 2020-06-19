@@ -10,6 +10,9 @@ backendConfig:
   annotation:
     beta.cloud.google.com/backend-config: '{"ports": {"internal-service":"internal-service"}}'
 
+managedCertificate:
+  enabled: false
+
 ingress:
   enabled: false
   annotations: {}
