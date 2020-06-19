@@ -18,14 +18,8 @@ package pipe.model;
 option go_package = "github.com/pipe-cd/pipe/pkg/model";
 
 import "validate/validate.proto";
-
-enum ApplicationKind {
-    KUBERNETES = 0;
-    TERRAFORM = 1;
-    CROSSPLANE = 2;
-    LAMBDA = 3;
-    CLOUDRUN = 4;
-}
+import "pkg/model/common.proto";
+import "pkg/model/deployment.proto";
 
 message Application {
     // The generated unique identifier.
@@ -46,18 +40,21 @@ message Application {
     // This must be one of the provider names registered in the piped.
     string cloud_provider = 8 [(validate.rules).string.min_len = 1];
 
-    // Most recent successful deployment information.
+    // Basic information about the most recently successful deployment.
     // This also shows information about current running workloads.
-    ApplicationCompletedDeployment most_recent_successful_deployment = 11;
+    ApplicationDeploymentReference most_recently_successful_deployment = 11;
+    // Basic information about the most recently trigered deployment.
+    ApplicationDeploymentReference most_recently_triggered_deployment = 12;
+
     // Current sync state.
-    ApplicationSyncState sync_state = 12;
+    ApplicationSyncState sync_state = 13;
 
     // Whether the application is disabled or not.
-    bool disabled = 13;
+    bool disabled = 100;
     // Unix time when the application is created.
-    int64 created_at = 14 [(validate.rules).int64.gt = 0];
+    int64 created_at = 101 [(validate.rules).int64.gt = 0];
     // Unix time of the last time when the application is updated.
-    int64 updated_at = 15 [(validate.rules).int64.gt = 0];
+    int64 updated_at = 102 [(validate.rules).int64.gt = 0];
 }
 
 // ApplicationSyncStatus represents the current state of syncing the application.
@@ -78,17 +75,12 @@ message ApplicationSyncState {
     int64 timestamp = 5 [(validate.rules).int64.gt = 0];
 }
 
-message ApplicationCompletedDeployment {
+message ApplicationDeploymentReference {
     string deployment_id = 1 [(validate.rules).string.min_len = 1];
-    string commit_hash = 2 [(validate.rules).string.min_len = 1];
-    string version = 3 [(validate.rules).string.min_len = 1];
-    int64 started_at = 4 [(validate.rules).int64.gt = 0];
-    int64 completed_at = 5 [(validate.rules).int64.gte = 0];
-}
+    DeploymentTrigger trigger = 2 [(validate.rules).message.required = true];
+    string description = 3;
+    string version = 4;
 
-message ApplicationGitPath {
-    // The unique identifier of a repository that was configured at piped.
-    string repo_id = 1 [(validate.rules).string.min_len = 1];
-    string path = 2 [(validate.rules).string.min_len = 1];
-    string config_path = 3;
+    int64 started_at = 14 [(validate.rules).int64.gt = 0];
+    int64 completed_at = 15 [(validate.rules).int64.gt = 0];
 }

@@ -115,7 +115,7 @@ var (
 	}
 )
 
-// reflector watches the live state of applicaiton with the cluster
+// reflector watches the live state of application with the cluster
 // and triggers the specified callbacks.
 type reflector struct {
 	config      *config.CloudProviderKubernetesConfig

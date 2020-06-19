@@ -18,7 +18,7 @@ package pipe.model;
 option go_package = "github.com/pipe-cd/pipe/pkg/model";
 
 import "validate/validate.proto";
-import "pkg/model/application.proto";
+import "pkg/model/common.proto";
 
 // ApplicationLiveStateSnapshot represents the full live state information of an application
 // at a specific timestamp.

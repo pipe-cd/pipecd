@@ -34,7 +34,7 @@ type ApplicationStore interface {
 	ListApplications(ctx context.Context, opts ListOptions) ([]*model.Application, error)
 	PutApplication(ctx context.Context, id string, updater func(*model.Application) error) error
 	PutApplicationSyncState(ctx context.Context, id string, syncState *model.ApplicationSyncState) error
-	PutApplicationCompletedDeployment(ctx context.Context, id string, deployment *model.ApplicationCompletedDeployment) error
+	PutApplicationMostRecentDeployment(ctx context.Context, id string, status model.DeploymentStatus, deployment *model.ApplicationDeploymentReference) error
 }
 
 type applicationStore struct {
@@ -121,9 +121,14 @@ func (s *applicationStore) PutApplicationSyncState(ctx context.Context, id strin
 	})
 }
 
-func (s *applicationStore) PutApplicationCompletedDeployment(ctx context.Context, id string, deployment *model.ApplicationCompletedDeployment) error {
+func (s *applicationStore) PutApplicationMostRecentDeployment(ctx context.Context, id string, status model.DeploymentStatus, deployment *model.ApplicationDeploymentReference) error {
 	return s.PutApplication(ctx, id, func(a *model.Application) error {
-		a.MostRecentSuccessfulDeployment = deployment
+		switch status {
+		case model.DeploymentStatus_DEPLOYMENT_SUCCESS:
+			a.MostRecentlySuccessfulDeployment = deployment
+		case model.DeploymentStatus_DEPLOYMENT_PENDING:
+			a.MostRecentlyTriggeredDeployment = deployment
+		}
 		return nil
 	})
 }

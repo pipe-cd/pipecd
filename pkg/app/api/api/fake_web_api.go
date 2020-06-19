@@ -125,12 +125,21 @@ func (a *FakeWebAPI) ListApplications(ctx context.Context, req *webservice.ListA
 				Path:   "k8s",
 			},
 			CloudProvider: "kubernetes-default",
-			MostRecentSuccessfulDeployment: &model.ApplicationCompletedDeployment{
+			MostRecentlySuccessfulDeployment: &model.ApplicationDeploymentReference{
 				DeploymentId: "debug-deployment-id-01",
-				CommitHash:   "3808585b46f1e90196d7ffe8dd04c807a251febc",
-				Version:      "v0.1.0",
-				StartedAt:    now.Add(-3 * 24 * time.Hour).Unix(),
-				CompletedAt:  now.Add(-3 * 24 * time.Hour).Unix(),
+				Trigger: &model.DeploymentTrigger{
+					Commit: &model.Commit{
+						Hash:      "3808585b46f1e90196d7ffe8dd04c807a251febc",
+						Message:   "Add web page routing (#133)",
+						Author:    "cakecatz",
+						Branch:    "master",
+						CreatedAt: now.Unix(),
+					},
+					Commander: "",
+					Timestamp: now.Unix(),
+				}, Version: "v0.1.0",
+				StartedAt:   now.Add(-3 * 24 * time.Hour).Unix(),
+				CompletedAt: now.Add(-3 * 24 * time.Hour).Unix(),
 			},
 			SyncState: &model.ApplicationSyncState{
 				Status:           model.ApplicationSyncStatus_SYNCED,
@@ -167,12 +176,22 @@ func (a *FakeWebAPI) GetApplication(ctx context.Context, req *webservice.GetAppl
 			Path:   "k8s",
 		},
 		CloudProvider: "kubernetes-default",
-		MostRecentSuccessfulDeployment: &model.ApplicationCompletedDeployment{
+		MostRecentlySuccessfulDeployment: &model.ApplicationDeploymentReference{
 			DeploymentId: "debug-deployment-id-01",
-			CommitHash:   "3808585b46f1e90196d7ffe8dd04c807a251febc",
-			Version:      "v0.1.0",
-			StartedAt:    now.Add(-3 * 24 * time.Hour).Unix(),
-			CompletedAt:  now.Add(-3 * 24 * time.Hour).Unix(),
+			Trigger: &model.DeploymentTrigger{
+				Commit: &model.Commit{
+					Hash:      "3808585b46f1e90196d7ffe8dd04c807a251febc",
+					Message:   "Add web page routing (#133)",
+					Author:    "cakecatz",
+					Branch:    "master",
+					CreatedAt: now.Unix(),
+				},
+				Commander: "",
+				Timestamp: now.Unix(),
+			},
+			Version:     "v0.1.0",
+			StartedAt:   now.Add(-3 * 24 * time.Hour).Unix(),
+			CompletedAt: now.Add(-3 * 24 * time.Hour).Unix(),
 		},
 		SyncState: &model.ApplicationSyncState{
 			Status:           model.ApplicationSyncStatus_SYNCED,

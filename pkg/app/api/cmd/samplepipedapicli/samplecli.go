@@ -91,8 +91,8 @@ func (s *samplecli) run(ctx context.Context, t cli.Telemetry) error {
 		return s.listApplications(ctx, cli, data, t.Logger)
 	case "ReportApplicationSyncState":
 		return s.reportApplicationSyncState(ctx, cli, data, t.Logger)
-	case "ReportMostRecentSuccessfulDeployment":
-		return s.reportMostRecentSuccessfulDeployment(ctx, cli, data, t.Logger)
+	case "ReportApplicationMostRecentDeployment":
+		return s.reportMostRecentlySuccessfulDeployment(ctx, cli, data, t.Logger)
 	case "ListNotCompletedDeployments":
 		return s.listNotCompletedDeployments(ctx, cli, data, t.Logger)
 	case "GetMostRecentDeployment":
@@ -207,16 +207,16 @@ func (s *samplecli) reportApplicationSyncState(ctx context.Context, cli pipedser
 	return nil
 }
 
-func (s *samplecli) reportMostRecentSuccessfulDeployment(ctx context.Context, cli pipedservice.Client, payload []byte, logger *zap.Logger) error {
-	req := pipedservice.ReportMostRecentSuccessfulDeploymentRequest{}
+func (s *samplecli) reportMostRecentlySuccessfulDeployment(ctx context.Context, cli pipedservice.Client, payload []byte, logger *zap.Logger) error {
+	req := pipedservice.ReportApplicationMostRecentDeploymentRequest{}
 	if err := json.Unmarshal(payload, &req); err != nil {
 		return err
 	}
-	if _, err := cli.ReportMostRecentSuccessfulDeployment(ctx, &req); err != nil {
-		logger.Error("failed to run ReportMostRecentSuccessfulDeployment", zap.Error(err))
+	if _, err := cli.ReportApplicationMostRecentDeployment(ctx, &req); err != nil {
+		logger.Error("failed to run ReportApplicationMostRecentDeployment", zap.Error(err))
 		return err
 	}
-	logger.Info("successfully run ReportMostRecentSuccessfulDeployment")
+	logger.Info("successfully run ReportApplicationMostRecentDeployment")
 	return nil
 }
 

@@ -160,10 +160,10 @@ func (a *PipedAPI) ReportApplicationSyncState(ctx context.Context, req *pipedser
 	return &pipedservice.ReportApplicationSyncStateResponse{}, nil
 }
 
-// ReportMostRecentSuccessfulDeployment is used to update the basic information about
-// the most recent successful deployment of a specific applicaiton.
-func (a *PipedAPI) ReportMostRecentSuccessfulDeployment(ctx context.Context, req *pipedservice.ReportMostRecentSuccessfulDeploymentRequest) (*pipedservice.ReportMostRecentSuccessfulDeploymentResponse, error) {
-	err := a.applicationStore.PutApplicationCompletedDeployment(ctx, req.ApplicationId, req.Deployment)
+// ReportApplicationMostRecentDeployment is used to update the basic information about
+// the most recent deployment of a specific application.
+func (a *PipedAPI) ReportApplicationMostRecentDeployment(ctx context.Context, req *pipedservice.ReportApplicationMostRecentDeploymentRequest) (*pipedservice.ReportApplicationMostRecentDeploymentResponse, error) {
+	err := a.applicationStore.PutApplicationMostRecentDeployment(ctx, req.ApplicationId, req.Status, req.Deployment)
 	if err != nil {
 		switch err {
 		case datastore.ErrNotFound:
@@ -178,7 +178,7 @@ func (a *PipedAPI) ReportMostRecentSuccessfulDeployment(ctx context.Context, req
 			return nil, status.Error(codes.Internal, "failed to update the application completed deployment")
 		}
 	}
-	return &pipedservice.ReportMostRecentSuccessfulDeploymentResponse{}, nil
+	return &pipedservice.ReportApplicationMostRecentDeploymentResponse{}, nil
 }
 
 // ListNotCompletedDeployments returns a list of not completed deployments
