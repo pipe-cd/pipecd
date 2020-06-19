@@ -2,6 +2,8 @@ import { apiClient, apiRequest } from "./client";
 import {
   GetApplicationLiveStateRequest,
   GetApplicationLiveStateResponse,
+  GetApplicationRequest,
+  GetApplicationResponse,
   ListApplicationsRequest,
   ListApplicationsResponse,
 } from "pipe/pkg/app/web/api_client/service_pb";
@@ -21,4 +23,14 @@ export const getApplications = (): Promise<
 > => {
   const req = new ListApplicationsRequest();
   return apiRequest(req, apiClient.listApplications);
+};
+
+export const getApplication = ({
+  applicationId,
+}: GetApplicationRequest.AsObject): Promise<
+  GetApplicationResponse.AsObject
+> => {
+  const req = new GetApplicationRequest();
+  req.setApplicationId(applicationId);
+  return apiRequest(req, apiClient.getApplication);
 };

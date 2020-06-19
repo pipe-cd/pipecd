@@ -2,14 +2,14 @@ import React, { FC, memo, useEffect } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import { useParams } from "react-router";
 import { ApplicationDetail } from "../../components/application-detail";
+import { ApplicationStateView } from "../../components/application-state-view";
 import { AppState } from "../../modules";
+import { fetchApplication } from "../../modules/applications";
 import {
   ApplicationLiveState,
   fetchApplicationById,
   selectById,
 } from "../../modules/applications-live-state";
-import { fetchApplications } from "../../modules/applications";
-import { ApplicationStateView } from "../../components/application-state-view";
 import { useInterval } from "../../utils/use-interval";
 
 const FETCH_INTERVAL = 4000;
@@ -25,16 +25,14 @@ export const ApplicationDetailPage: FC = memo(() => {
   useEffect(() => {
     if (applicationId) {
       dispatch(fetchApplicationById(applicationId));
+      dispatch(fetchApplication(applicationId));
     }
-
-    // TODO: Fetch only current active application data
-    dispatch(fetchApplications());
   }, [applicationId]);
 
   useInterval(
     () => {
       dispatch(fetchApplicationById(applicationId));
-      dispatch(fetchApplications());
+      dispatch(fetchApplication(applicationId));
     },
     applicationId ? FETCH_INTERVAL : null
   );
