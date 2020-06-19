@@ -5,15 +5,21 @@ metadata:
   labels:
     {{- include "pipecd.labels" . | nindent 4 }}
     app.kubernetes.io/component: ingress
-  {{- with .Values.service.annotations }}
   annotations:
+  {{- with .Values.service.annotations }}
     {{- toYaml . | nindent 4 }}
+  {{- end }}
+  {{- if .Values.backendConfig.enabled -}}
+  {{- nindent 4 (toYaml .Values.backendConfig.annotation) }}
   {{- end }}
 spec:
   type: NodePort
   ports:
     - name: service
       port: {{ .Values.service.port }}
+      targetPort: ingress
+    - name: internal-service
+      port: {{ .Values.service.internalPort }}
       targetPort: ingress
   selector:
     {{- include "pipecd.selectorLabels" . | nindent 4 }}

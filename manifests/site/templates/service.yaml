@@ -4,8 +4,16 @@ metadata:
   name: {{ include "site.fullname" . }}
   labels:
     {{- include "site.labels" . | nindent 4 }}
+  {{- if .Values.backendConfig.enabled }}
+  annotations:
+  {{- nindent 4 (toYaml .Values.backendConfig.annotation) }}
+  {{- end }}
 spec:
-  type: {{ .Values.service.type }}
+  {{- if .Values.ingress.enabled }}
+  type: NodePort
+  {{- else }}
+  type: ClusterIP
+  {{- end }}
   ports:
     - port: {{ .Values.service.port }}
       targetPort: http
