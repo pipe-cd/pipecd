@@ -87,9 +87,8 @@ message Deployment {
 
 message DeploymentTrigger {
     Commit commit = 1 [(validate.rules).message.required = true];
-    // Who triggered this deployment.
-    // This may be different to the commit.author when the deployment is trigger from webUI.
-    string user = 2 [(validate.rules).string.min_len = 1];
+    // Who triggered this deployment via web page.
+    string commander= 2;
     int64 timestamp = 3 [(validate.rules).int64.gt = 0];
 }
 
