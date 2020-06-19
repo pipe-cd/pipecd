@@ -10,7 +10,10 @@ service:
 backendConfig:
   enabled: false
   annotation:
-    beta.cloud.google.com/backend-config: '{"ports": {"http":"internal-site"}}'
+    beta.cloud.google.com/backend-config: '{"ports": {"http":"site"}}'
+
+managedCertificate:
+  enabled: false
 
 ingress:
   enabled: false
