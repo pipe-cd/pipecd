@@ -84,7 +84,7 @@ func (a *PipedAPI) ReportPipedMeta(ctx context.Context, req *pipedservice.Report
 		return nil, err
 	}
 
-	if err = a.pipedStore.UpdatePiped(ctx, pipedID, datastore.PipedMetadataUpdater(req.CloudProviders, req.Version)); err != nil {
+	if err = a.pipedStore.UpdatePiped(ctx, pipedID, datastore.PipedMetadataUpdater(req.CloudProviders, req.RepositoryIds, req.Version)); err != nil {
 		switch err {
 		case datastore.ErrNotFound:
 			return nil, status.Error(codes.InvalidArgument, "piped is not found")

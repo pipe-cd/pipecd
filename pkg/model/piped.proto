@@ -41,6 +41,8 @@ message Piped {
     int64 started_at = 8;
     // List of configured cloud providers.
     repeated CloudProvider cloud_providers = 9;
+    // List of configured repository IDs.
+    repeated string repository_ids = 10;
 
     // Whether the piped is disabled or not.
     bool disabled = 13;
