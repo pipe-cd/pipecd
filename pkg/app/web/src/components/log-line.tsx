@@ -1,14 +1,14 @@
-import { makeStyles, Box, Icon } from "@material-ui/core";
+import { Box, makeStyles } from "@material-ui/core";
+import { Error } from "@material-ui/icons";
 import React, { FC } from "react";
-import { parseLog } from "../utils/parse-log";
 import {
-  TERM_COLORS,
   DEFAULT_BACKGROUND_COLOR,
   SELECTED_BACKGROUND_COLOR,
   TERMINAL_LINE_NUMBER_COLOR,
+  TERM_COLORS,
 } from "../constants/term-colors";
 import { LogSeverity } from "../modules/stage-logs";
-import { Error } from "@material-ui/icons";
+import { parseLog } from "../utils/parse-log";
 
 const useStyles = makeStyles((theme) => ({
   container: {
