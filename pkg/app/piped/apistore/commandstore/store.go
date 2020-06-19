@@ -40,7 +40,7 @@ type Store interface {
 // All objects returned here must be treated as read-only.
 type Lister interface {
 	ListApplicationCommands() []model.ReportableCommand
-	ListDeploymentCommands(deploymentID string) []model.ReportableCommand
+	ListDeploymentCommands() []model.ReportableCommand
 	ListStageCommands(deploymentID, stageID string) []model.ReportableCommand
 }
 
@@ -165,16 +165,13 @@ func (s *store) ListApplicationCommands() []model.ReportableCommand {
 	return commands
 }
 
-func (s *store) ListDeploymentCommands(deploymentID string) []model.ReportableCommand {
+func (s *store) ListDeploymentCommands() []model.ReportableCommand {
 	s.mu.RLock()
 	defer s.mu.RUnlock()
 
 	commands := make([]model.ReportableCommand, 0, len(s.deploymentCommands))
 	for _, cmd := range s.deploymentCommands {
 		if _, ok := s.handledCommands[cmd.Id]; ok {
-			continue
-		}
-		if cmd.DeploymentId != deploymentID {
 			continue
 		}
 		commands = append(commands, cmd)

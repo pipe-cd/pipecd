@@ -74,6 +74,8 @@ type scheduler struct {
 	done                 atomic.Bool
 	doneTimestamp        time.Time
 	doneDeploymentStatus model.DeploymentStatus
+	cancelled            bool
+	cancelledCh          chan *model.ReportableCommand
 
 	nowFunc func() time.Time
 }
@@ -113,6 +115,7 @@ func newScheduler(
 		pipedConfig:          pipedConfig,
 		appManifestsCache:    appManifestsCache,
 		doneDeploymentStatus: d.Status,
+		cancelledCh:          make(chan *model.ReportableCommand, 1),
 		logger:               logger,
 		nowFunc:              time.Now,
 	}
@@ -161,6 +164,15 @@ func (s *scheduler) DoneDeploymentStatus() model.DeploymentStatus {
 	return s.doneDeploymentStatus
 }
 
+func (s *scheduler) Cancel(cmd model.ReportableCommand) {
+	if s.cancelled {
+		return
+	}
+	s.cancelled = true
+	s.cancelledCh <- &cmd
+	close(s.cancelledCh)
+}
+
 // Run starts running the scheduler.
 // It determines what stage should be executed next by which executor.
 // The returning error does not mean that the pipeline was failed,
@@ -189,37 +201,10 @@ func (s *scheduler) Run(ctx context.Context) error {
 	var (
 		deploymentStatus  = model.DeploymentStatus_DEPLOYMENT_SUCCESS
 		statusDescription = "Completed Successfully"
-		cancelCommand     *model.ReportableCommand
-		cancelledCh       = make(chan struct{})
 		timer             = time.NewTimer(defaultDeploymentTimeout)
+		cancelCommand     *model.ReportableCommand
 	)
 	defer timer.Stop()
-
-	// Watch the cancel command from command lister.
-	// TODO: In the future we may want to change the design of command lister
-	// to support subscribing a specific command type.
-	go func() {
-		ticker := time.NewTicker(10 * time.Second)
-		defer ticker.Stop()
-
-		for {
-			select {
-			case <-ticker.C:
-				commands := s.commandLister.ListDeploymentCommands(s.deployment.Id)
-				for _, cmd := range commands {
-					c := cmd.GetCancelDeployment()
-					if c == nil {
-						continue
-					}
-					cancelCommand = &cmd
-					close(cancelledCh)
-					return
-				}
-			case <-ctx.Done():
-				return
-			}
-		}
-	}()
 
 	// Iterate all the stages and execute the uncompleted ones.
 	for _, ps := range s.deployment.Stages {
@@ -261,9 +246,12 @@ func (s *scheduler) Run(ctx context.Context) error {
 			handler.Timeout()
 			<-doneCh
 
-		case <-cancelledCh:
-			handler.Cancel()
-			<-doneCh
+		case cmd := <-s.cancelledCh:
+			if cmd != nil {
+				cancelCommand = cmd
+				handler.Cancel()
+				<-doneCh
+			}
 
 		case <-doneCh:
 			break

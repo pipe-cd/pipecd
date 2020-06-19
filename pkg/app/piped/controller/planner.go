@@ -52,7 +52,10 @@ type planner struct {
 	deploymentConfig *config.Config
 	done             atomic.Bool
 	doneTimestamp    time.Time
-	nowFunc          func() time.Time
+	cancelled        bool
+	cancelledCh      chan *model.ReportableCommand
+
+	nowFunc func() time.Time
 }
 
 func newPlanner(
@@ -107,6 +110,15 @@ func (p *planner) DoneTimestamp() time.Time {
 	return p.doneTimestamp
 }
 
+func (p *planner) Cancel(cmd model.ReportableCommand) {
+	if p.cancelled {
+		return
+	}
+	p.cancelled = true
+	p.cancelledCh <- &cmd
+	close(p.cancelledCh)
+}
+
 func (p *planner) Run(ctx context.Context) error {
 	p.logger.Info("start running a planner")
 	defer func() {
@@ -144,11 +156,29 @@ func (p *planner) Run(ctx context.Context) error {
 		Logger:                         p.logger,
 	}
 	out, err := planner.Plan(ctx, in)
+
+	// If the deployment was already cancelled, we ignore the plan result.
+	select {
+	case cmd := <-p.cancelledCh:
+		if cmd != nil {
+			return p.reportDeploymentCancelled(ctx, cmd)
+		}
+	default:
+	}
+
 	if err == nil {
 		return p.reportDeploymentPlanned(ctx, out)
 	}
+	return p.reportDeploymentCompleted(ctx, model.DeploymentStatus_DEPLOYMENT_FAILURE, err.Error())
+}
 
-	return p.reportDeploymentFailed(ctx, err.Error())
+func (p *planner) reportDeploymentCancelled(ctx context.Context, cmd *model.ReportableCommand) error {
+	var (
+		status = model.DeploymentStatus_DEPLOYMENT_CANCELLED
+		desc   = fmt.Sprintf("Deployment was cancelled by %s while planning", cmd.Commander)
+	)
+	p.reportDeploymentCompleted(ctx, status, desc)
+	return cmd.Report(ctx, model.CommandStatus_COMMAND_SUCCEEDED, nil)
 }
 
 func (p *planner) reportDeploymentPlanned(ctx context.Context, out pln.Output) error {
@@ -176,13 +206,13 @@ func (p *planner) reportDeploymentPlanned(ctx context.Context, out pln.Output) e
 	return err
 }
 
-func (p *planner) reportDeploymentFailed(ctx context.Context, desc string) error {
+func (p *planner) reportDeploymentCompleted(ctx context.Context, status model.DeploymentStatus, desc string) error {
 	var (
 		err error
 		now = p.nowFunc()
 		req = &pipedservice.ReportDeploymentCompletedRequest{
 			DeploymentId:      p.deployment.Id,
-			Status:            model.DeploymentStatus_DEPLOYMENT_FAILURE,
+			Status:            status,
 			StatusDescription: desc,
 			StageStatuses:     nil,
 			CompletedAt:       now.Unix(),
