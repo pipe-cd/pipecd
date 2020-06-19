@@ -162,11 +162,34 @@ func (c *fakeClient) ReportApplicationMostRecentDeployment(ctx context.Context, 
 	case model.DeploymentStatus_DEPLOYMENT_SUCCESS:
 		app.MostRecentlySuccessfulDeployment = req.Deployment
 
-	case model.DeploymentStatus_DEPLOYMENT_PLANNED:
+	case model.DeploymentStatus_DEPLOYMENT_PENDING:
 		app.MostRecentlyTriggeredDeployment = req.Deployment
 	}
 
 	return &pipedservice.ReportApplicationMostRecentDeploymentResponse{}, nil
+}
+
+// GetApplicationMostRecentDeployment returns the most recent deployment of the given application.
+func (c *fakeClient) GetApplicationMostRecentDeployment(ctx context.Context, req *pipedservice.GetApplicationMostRecentDeploymentRequest, opts ...grpc.CallOption) (*pipedservice.GetApplicationMostRecentDeploymentResponse, error) {
+	c.logger.Info("fake client received GetApplicationMostRecentDeployment rpc", zap.Any("request", req))
+
+	c.mu.RLock()
+	defer c.mu.RUnlock()
+
+	app, ok := c.applications[req.ApplicationId]
+	if !ok {
+		return nil, status.Error(codes.NotFound, "application was not found")
+	}
+
+	if req.Status == model.DeploymentStatus_DEPLOYMENT_SUCCESS && app.MostRecentlySuccessfulDeployment != nil {
+		return &pipedservice.GetApplicationMostRecentDeploymentResponse{Deployment: app.MostRecentlySuccessfulDeployment}, nil
+	}
+
+	if req.Status == model.DeploymentStatus_DEPLOYMENT_PENDING && app.MostRecentlyTriggeredDeployment != nil {
+		return &pipedservice.GetApplicationMostRecentDeploymentResponse{Deployment: app.MostRecentlyTriggeredDeployment}, nil
+	}
+
+	return nil, status.Error(codes.NotFound, "")
 }
 
 // ListNotCompletedDeployments returns a list of not completed deployments
@@ -186,42 +209,6 @@ func (c *fakeClient) ListNotCompletedDeployments(ctx context.Context, req *piped
 	}
 	return &pipedservice.ListNotCompletedDeploymentsResponse{
 		Deployments: deployments,
-	}, nil
-}
-
-// GetMostRecentDeployment returns the most recent deployment of the given application.
-func (c *fakeClient) GetMostRecentDeployment(ctx context.Context, req *pipedservice.GetMostRecentDeploymentRequest, opts ...grpc.CallOption) (*pipedservice.GetMostRecentDeploymentResponse, error) {
-	c.logger.Info("fake client received GetMostRecentDeployment rpc", zap.Any("request", req))
-
-	var (
-		requiredStatus model.DeploymentStatus
-		hasStatus      bool
-		mostRecent     *model.Deployment
-	)
-	if req.Status != nil {
-		hasStatus = true
-		requiredStatus = model.DeploymentStatus(req.Status.Value)
-	}
-
-	c.mu.RLock()
-	defer c.mu.RUnlock()
-
-	for _, d := range c.deployments {
-		if hasStatus && d.Status != requiredStatus {
-			continue
-		}
-		if mostRecent != nil && !d.TriggerBefore(mostRecent) {
-			continue
-		}
-		mostRecent = d
-	}
-
-	if mostRecent == nil {
-		return nil, status.Error(codes.NotFound, "")
-	}
-
-	return &pipedservice.GetMostRecentDeploymentResponse{
-		Deployment: mostRecent.Clone(),
 	}, nil
 }
 

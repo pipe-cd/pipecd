@@ -181,6 +181,28 @@ func (a *PipedAPI) ReportApplicationMostRecentDeployment(ctx context.Context, re
 	return &pipedservice.ReportApplicationMostRecentDeploymentResponse{}, nil
 }
 
+// GetApplicationMostRecentDeployment returns the most recent deployment of the given application.
+func (a *PipedAPI) GetApplicationMostRecentDeployment(ctx context.Context, req *pipedservice.GetApplicationMostRecentDeploymentRequest) (*pipedservice.GetApplicationMostRecentDeploymentResponse, error) {
+	app, err := a.applicationStore.GetApplication(ctx, req.ApplicationId)
+	if errors.Is(err, datastore.ErrNotFound) {
+		return nil, status.Error(codes.NotFound, "application is not found")
+	}
+	if err != nil {
+		a.logger.Error("failed to get application", zap.Error(err))
+		return nil, status.Error(codes.Internal, "failed to get application")
+	}
+
+	if req.Status == model.DeploymentStatus_DEPLOYMENT_SUCCESS && app.MostRecentlySuccessfulDeployment != nil {
+		return &pipedservice.GetApplicationMostRecentDeploymentResponse{Deployment: app.MostRecentlySuccessfulDeployment}, nil
+	}
+
+	if req.Status == model.DeploymentStatus_DEPLOYMENT_PENDING && app.MostRecentlyTriggeredDeployment != nil {
+		return &pipedservice.GetApplicationMostRecentDeploymentResponse{Deployment: app.MostRecentlyTriggeredDeployment}, nil
+	}
+
+	return nil, status.Error(codes.NotFound, "deployment is not found")
+}
+
 // ListNotCompletedDeployments returns a list of not completed deployments
 // which are managed by this piped.
 // DeploymentController component uses this RPC to spawns/syncs its local deployment executors.
@@ -216,53 +238,6 @@ func (a *PipedAPI) ListNotCompletedDeployments(ctx context.Context, req *pipedse
 	}
 	return &pipedservice.ListNotCompletedDeploymentsResponse{
 		Deployments: deployments,
-	}, nil
-}
-
-// GetMostRecentDeployment returns the most recent deployment of the given application.
-func (a *PipedAPI) GetMostRecentDeployment(ctx context.Context, req *pipedservice.GetMostRecentDeploymentRequest) (*pipedservice.GetMostRecentDeploymentResponse, error) {
-	// TODO: Does not use composite indexes, and register new collection for most recent deployment
-	// Note: We need to manage two composite indexes:
-	// 1. ApplicationId:ASC, CreatedAt: DESC
-	// 2. ApplicationId:ASC, Status:ASC, CreatedAt: DESC
-	filters := []datastore.ListFilter{
-		{
-			Field:    "ApplicationId",
-			Operator: "==",
-			Value:    req.ApplicationId,
-		},
-	}
-	if req.Status != nil {
-		filters = append(filters, datastore.ListFilter{
-			Field:    "Status",
-			Operator: "==",
-			Value:    req.Status.Value,
-		})
-	}
-	// Sort to get the most recent data
-	opts := datastore.ListOptions{
-		Filters: filters,
-		Orders: []datastore.Order{
-			{
-				Field:     "CreatedAt",
-				Direction: datastore.Desc,
-			},
-		},
-		Page:     0, // Note: This parameter requires in other datastores, but in Firestore it is enough setting only PageSize.
-		PageSize: 1,
-	}
-
-	deployments, err := a.deploymentStore.ListDeployments(ctx, opts)
-	if err != nil {
-		a.logger.Error("failed to fetch deployments", zap.Error(err))
-		return nil, status.Error(codes.Internal, "failed to fetch deployments")
-	}
-	if len(deployments) == 0 {
-		return nil, status.Error(codes.NotFound, "deployment is not found")
-	}
-
-	return &pipedservice.GetMostRecentDeploymentResponse{
-		Deployment: deployments[0],
 	}, nil
 }
 
