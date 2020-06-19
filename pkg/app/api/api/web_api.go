@@ -215,6 +215,20 @@ func (a *WebAPI) SyncApplication(ctx context.Context, req *webservice.SyncApplic
 	return nil, status.Error(codes.Unimplemented, "")
 }
 
+func (a *WebAPI) GetApplication(ctx context.Context, req *webservice.GetApplicationRequest) (*webservice.GetApplicationResponse, error) {
+	app, err := a.applicationStore.GetApplication(ctx, req.ApplicationId)
+	if errors.Is(err, datastore.ErrNotFound) {
+		return nil, status.Error(codes.NotFound, "application is not found")
+	}
+	if err != nil {
+		a.logger.Error("failed to get deployment", zap.Error(err))
+		return nil, status.Error(codes.Internal, "failed to get application")
+	}
+	return &webservice.GetApplicationResponse{
+		Application: app,
+	}, nil
+}
+
 func (a *WebAPI) ListDeployments(ctx context.Context, req *webservice.ListDeploymentsRequest) (*webservice.ListDeploymentsResponse, error) {
 	// TODO: Support pagination and filtering with the search condition in ListDeployments
 	opts := datastore.ListOptions{}

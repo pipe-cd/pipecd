@@ -42,6 +42,7 @@ service WebService {
     rpc DisableApplication(DisableApplicationRequest) returns (DisableApplicationResponse) {}
     rpc ListApplications(ListApplicationsRequest) returns (ListApplicationsResponse) {}
     rpc SyncApplication(SyncApplicationRequest) returns (SyncApplicationResponse) {}
+    rpc GetApplication(GetApplicationRequest) returns (GetApplicationResponse) {}
 
     // Deployment
     rpc ListDeployments(ListDeploymentsRequest) returns (ListDeploymentsResponse) {}
@@ -129,6 +130,14 @@ message SyncApplicationRequest {
 }
 
 message SyncApplicationResponse {
+}
+
+message GetApplicationRequest {
+    string application_id = 1 [(validate.rules).string.min_len = 1];
+}
+
+message GetApplicationResponse {
+    pipe.model.Application application = 1;
 }
 
 message ListDeploymentsRequest {

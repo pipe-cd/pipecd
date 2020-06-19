@@ -153,6 +153,43 @@ func (a *FakeWebAPI) SyncApplication(ctx context.Context, req *webservice.SyncAp
 	return nil, status.Error(codes.Unimplemented, "")
 }
 
+func (a *FakeWebAPI) GetApplication(ctx context.Context, req *webservice.GetApplicationRequest) (*webservice.GetApplicationResponse, error) {
+	now := time.Now()
+	application := model.Application{
+		Id:        fmt.Sprintf("%s:%s:%s", fakeProjectID, "development", "debug-app"),
+		Name:      "debug-app",
+		EnvId:     fmt.Sprintf("%s:%s", fakeProjectID, "development"),
+		PipedId:   "debug-piped",
+		ProjectId: fakeProjectID,
+		Kind:      model.ApplicationKind_KUBERNETES,
+		GitPath: &model.ApplicationGitPath{
+			RepoId: "debug",
+			Path:   "k8s",
+		},
+		CloudProvider: "kubernetes-default",
+		MostRecentSuccessfulDeployment: &model.ApplicationCompletedDeployment{
+			DeploymentId: "debug-deployment-id-01",
+			CommitHash:   "3808585b46f1e90196d7ffe8dd04c807a251febc",
+			Version:      "v0.1.0",
+			StartedAt:    now.Add(-3 * 24 * time.Hour).Unix(),
+			CompletedAt:  now.Add(-3 * 24 * time.Hour).Unix(),
+		},
+		SyncState: &model.ApplicationSyncState{
+			Status:           model.ApplicationSyncStatus_SYNCED,
+			ShortReason:      "Short resson",
+			Reason:           "Reason",
+			HeadDeploymentId: "debug-deployment-id-01",
+			Timestamp:        now.Unix(),
+		},
+		Disabled:  false,
+		CreatedAt: now.Unix(),
+		UpdatedAt: now.Unix(),
+	}
+	return &webservice.GetApplicationResponse{
+		Application: &application,
+	}, nil
+}
+
 func (a *FakeWebAPI) ListDeployments(ctx context.Context, req *webservice.ListDeploymentsRequest) (*webservice.ListDeploymentsResponse, error) {
 	now := time.Now()
 	deploymentTime := now
