@@ -73,7 +73,7 @@ export const LogViewer: FC<Props> = ({}) => {
       <Log
         height={400}
         loading={stageLog.completed === false}
-        logs={stageLog.logBlocks.map((block) => block.log)}
+        logs={stageLog.logBlocks}
       />
     </div>
   );
