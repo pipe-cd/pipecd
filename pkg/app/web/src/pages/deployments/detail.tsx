@@ -11,6 +11,9 @@ import { AppState } from "../../modules";
 import { Pipeline } from "../../components/pipeline";
 import { LogViewer } from "../../components/log-viewer";
 import { Box } from "@material-ui/core";
+import { useInterval } from "../../utils/use-interval";
+
+const FETCH_INTERVAL = 4000;
 
 export const DeploymentDetailPage: FC = memo(() => {
   const dispatch = useDispatch();
@@ -24,6 +27,13 @@ export const DeploymentDetailPage: FC = memo(() => {
       dispatch(fetchDeploymentById(deploymentId));
     }
   }, [deploymentId]);
+
+  useInterval(
+    () => {
+      dispatch(fetchDeploymentById(deploymentId));
+    },
+    deploymentId ? FETCH_INTERVAL : null
+  );
 
   if (!deployment) {
     return <div>loading</div>;

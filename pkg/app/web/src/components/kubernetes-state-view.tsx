@@ -3,6 +3,7 @@ import React, { FC } from "react";
 import { KubernetesResourceState } from "../modules/applications-live-state";
 import { KubernetesResource } from "./kubernetes-resource";
 import dagre from "dagre";
+import { theme } from "../theme";
 
 interface Line {
   baseX: number;
@@ -27,6 +28,7 @@ interface Props {
 
 const NODE_HEIGHT = 72;
 const NODE_WIDTH = 300;
+const STROKE_WIDTH = 2;
 
 export const KubernetesStateView: FC<Props> = ({ resources }) => {
   const classes = useStyles();
@@ -101,14 +103,14 @@ export const KubernetesStateView: FC<Props> = ({ resources }) => {
               points={edge.points.reduce((prev, current) => {
                 return (
                   prev +
-                  `${Math.round(current.x - baseX + 1)},${Math.round(
-                    current.y - baseY + 1
+                  `${Math.round(current.x - baseX + STROKE_WIDTH)},${Math.round(
+                    current.y - baseY + STROKE_WIDTH
                   )} `
                 );
               }, "")}
-              strokeWidth={2}
-              stroke="black"
-              fill="white"
+              strokeWidth={STROKE_WIDTH}
+              stroke={theme.palette.divider}
+              fill="transparent"
             />
           </svg>
         );
