@@ -18,6 +18,9 @@ import {
 import { Link as RouterLink } from "react-router-dom";
 
 const useStyles = makeStyles((theme) => ({
+  appBar: {
+    zIndex: theme.zIndex.drawer + 1,
+  },
   title: {
     flexGrow: 1,
   },
@@ -34,7 +37,7 @@ const useStyles = makeStyles((theme) => ({
 export const Header: React.FC = () => {
   const classes = useStyles();
   return (
-    <AppBar position="static">
+    <AppBar position="static" className={classes.appBar}>
       <Toolbar variant="dense">
         <Avatar className={classes.appIcon}>P</Avatar>
         <Typography variant="h6" className={classes.title}>

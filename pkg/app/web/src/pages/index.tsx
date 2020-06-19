@@ -5,11 +5,13 @@ import {
   PAGE_PATH_DEPLOYMENTS,
   PAGE_PATH_APPLICATIONS,
   PAGE_PATH_TOP,
+  PAGE_PATH_SETTINGS,
 } from "../constants";
 import { ApplicationIndexPage } from "./applications/index";
 import { ApplicationDetailPage } from "./applications/detail";
 import { DeploymentIndexPage } from "./deployments/index";
 import { DeploymentDetailPage } from "./deployments/detail";
+import { SettingsIndexPage } from "./settings";
 
 export const Pages: FC = memo(() => {
   return (
@@ -37,6 +39,7 @@ export const Pages: FC = memo(() => {
           path={`${PAGE_PATH_DEPLOYMENTS}/:deploymentId`}
           component={DeploymentDetailPage}
         />
+        <Route path={PAGE_PATH_SETTINGS} component={SettingsIndexPage} />
       </Switch>
     </>
   );
