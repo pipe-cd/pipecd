@@ -30,6 +30,7 @@ import (
 	"github.com/pipe-cd/pipe/pkg/app/api/api"
 	"github.com/pipe-cd/pipe/pkg/app/api/applicationlivestatestore"
 	"github.com/pipe-cd/pipe/pkg/app/api/pipedtokenverifier"
+	"github.com/pipe-cd/pipe/pkg/app/api/service/webservice"
 	"github.com/pipe-cd/pipe/pkg/app/api/stagelogstore"
 	"github.com/pipe-cd/pipe/pkg/cache/rediscache"
 	"github.com/pipe-cd/pipe/pkg/cli"
@@ -38,6 +39,7 @@ import (
 	"github.com/pipe-cd/pipe/pkg/datastore/firestore"
 	"github.com/pipe-cd/pipe/pkg/filestore"
 	"github.com/pipe-cd/pipe/pkg/filestore/gcs"
+	"github.com/pipe-cd/pipe/pkg/jwt"
 	"github.com/pipe-cd/pipe/pkg/redis"
 	"github.com/pipe-cd/pipe/pkg/rpc"
 )
@@ -58,12 +60,12 @@ type server struct {
 	cacheAddress string
 	gracePeriod  time.Duration
 
-	tls                 bool
-	certFile            string
-	keyFile             string
-	tokenSigningKeyFile string
+	tls      bool
+	certFile string
+	keyFile  string
 
-	configFile string
+	tokenSigningKeyFile string
+	configFile          string
 
 	useFakeResponse      bool
 	enableGRPCReflection bool
@@ -94,6 +96,7 @@ func NewCommand() *cobra.Command {
 	cmd.Flags().BoolVar(&s.tls, "tls", s.tls, "Whether running the gRPC server with TLS or not.")
 	cmd.Flags().StringVar(&s.certFile, "cert-file", s.certFile, "The path to the TLS certificate file.")
 	cmd.Flags().StringVar(&s.keyFile, "key-file", s.keyFile, "The path to the TLS key file.")
+
 	cmd.Flags().StringVar(&s.tokenSigningKeyFile, "token-signing-key-file", s.tokenSigningKeyFile, "The path to key file used to sign ID token.")
 	cmd.Flags().StringVar(&s.configFile, "config-file", s.configFile, "The path to the configuration file.")
 
@@ -123,12 +126,12 @@ func (s *server) run(ctx context.Context, t cli.Telemetry) error {
 	// 	return err
 	// }
 
-	// Left comment out until authentication is ready
-	//verifier, err := jwt.NewVerifier(defaultSigningMethod, s.tokenSigningKeyFile)
-	//if err != nil {
-	//	t.Logger.Error("failed to create a new verifier", zap.Error(err))
-	//	return err
-	//}
+	var verifier jwt.Verifier
+	// verifier, err := jwt.NewVerifier(defaultSigningMethod, s.tokenSigningKeyFile)
+	// if err != nil {
+	// 	t.Logger.Error("failed to create a new JWT verifier", zap.Error(err))
+	// 	return err
+	// }
 
 	var (
 		pipedAPIServer *rpc.Server
@@ -205,8 +208,7 @@ func (s *server) run(ctx context.Context, t cli.Telemetry) error {
 			rpc.WithPort(s.webAPIPort),
 			rpc.WithGracePeriod(s.gracePeriod),
 			rpc.WithLogger(t.Logger),
-			// Left comment out until authentication is ready
-			// rpc.WithJWTAuthUnaryInterceptor(verifier, webservice.NewRBACAuthorizer(), t.Logger),
+			rpc.WithJWTAuthUnaryInterceptor(verifier, webservice.NewRBACAuthorizer(), t.Logger),
 			rpc.WithRequestValidationUnaryInterceptor(),
 		}
 		if s.tls {
