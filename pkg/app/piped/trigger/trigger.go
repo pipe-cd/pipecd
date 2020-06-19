@@ -145,7 +145,7 @@ func (t *Trigger) checkCommand(ctx context.Context) error {
 		}
 		app, ok := t.applicationLister.Get(syncCmd.ApplicationId)
 		if !ok {
-			t.logger.Warn("detected a AppSync command of an unregistered application",
+			t.logger.Warn("detected an AppSync command for an unregistered application",
 				zap.String("command", cmd.Id),
 				zap.String("application-id", syncCmd.ApplicationId),
 				zap.String("commander", cmd.Commander),
@@ -158,9 +158,9 @@ func (t *Trigger) checkCommand(ctx context.Context) error {
 				zap.Error(err),
 			)
 			cmd.Report(ctx, model.CommandStatus_COMMAND_FAILED, nil)
-		} else {
-			cmd.Report(ctx, model.CommandStatus_COMMAND_SUCCEEDED, nil)
+			continue
 		}
+		cmd.Report(ctx, model.CommandStatus_COMMAND_SUCCEEDED, nil)
 	}
 	return nil
 }
