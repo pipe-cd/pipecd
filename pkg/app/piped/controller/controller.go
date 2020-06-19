@@ -29,7 +29,6 @@ import (
 	"sync"
 	"time"
 
-	"github.com/golang/protobuf/ptypes/wrappers"
 	"go.uber.org/zap"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/codes"
@@ -44,7 +43,7 @@ import (
 )
 
 type apiClient interface {
-	GetMostRecentDeployment(ctx context.Context, req *pipedservice.GetMostRecentDeploymentRequest, opts ...grpc.CallOption) (*pipedservice.GetMostRecentDeploymentResponse, error)
+	GetApplicationMostRecentDeployment(ctx context.Context, req *pipedservice.GetApplicationMostRecentDeploymentRequest, opts ...grpc.CallOption) (*pipedservice.GetApplicationMostRecentDeploymentResponse, error)
 	ReportDeploymentPlanned(ctx context.Context, req *pipedservice.ReportDeploymentPlannedRequest, opts ...grpc.CallOption) (*pipedservice.ReportDeploymentPlannedResponse, error)
 	ReportDeploymentStatusChanged(ctx context.Context, req *pipedservice.ReportDeploymentStatusChangedRequest, opts ...grpc.CallOption) (*pipedservice.ReportDeploymentStatusChangedResponse, error)
 	ReportDeploymentCompleted(ctx context.Context, req *pipedservice.ReportDeploymentCompletedRequest, opts ...grpc.CallOption) (*pipedservice.ReportDeploymentCompletedResponse, error)
@@ -322,7 +321,7 @@ func (c *controller) startNewPlanner(ctx context.Context, d *model.Deployment) (
 	if commit == "" {
 		mostRecent, err := c.getMostRecentlySuccessfulDeployment(ctx, d.ApplicationId)
 		if err == nil {
-			commit = mostRecent.CommitHash()
+			commit = mostRecent.Trigger.Commit.Hash
 			c.mostRecentSuccessfulCommits[d.ApplicationId] = commit
 		} else if status.Code(err) == codes.NotFound {
 			logger.Info("there is no previous successful commit for this application")
@@ -497,21 +496,19 @@ func (c *controller) startNewScheduler(ctx context.Context, d *model.Deployment)
 	return scheduler, nil
 }
 
-func (c *controller) getMostRecentlySuccessfulDeployment(ctx context.Context, applicationID string) (*model.Deployment, error) {
+func (c *controller) getMostRecentlySuccessfulDeployment(ctx context.Context, applicationID string) (*model.ApplicationDeploymentReference, error) {
 	var (
 		err   error
-		resp  *pipedservice.GetMostRecentDeploymentResponse
+		resp  *pipedservice.GetApplicationMostRecentDeploymentResponse
 		retry = pipedservice.NewRetry(3)
-		req   = &pipedservice.GetMostRecentDeploymentRequest{
+		req   = &pipedservice.GetApplicationMostRecentDeploymentRequest{
 			ApplicationId: applicationID,
-			Status: &wrappers.Int32Value{
-				Value: int32(model.DeploymentStatus_DEPLOYMENT_SUCCESS),
-			},
+			Status:        model.DeploymentStatus_DEPLOYMENT_SUCCESS,
 		}
 	)
 
 	for retry.WaitNext(ctx) {
-		if resp, err = c.apiClient.GetMostRecentDeployment(ctx, req); err == nil {
+		if resp, err = c.apiClient.GetApplicationMostRecentDeployment(ctx, req); err == nil {
 			return resp.Deployment, nil
 		}
 		if !pipedservice.Retriable(err) {

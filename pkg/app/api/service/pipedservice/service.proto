@@ -51,13 +51,13 @@ service PipedService {
     // the most recent deployment of a specific application.
     rpc ReportApplicationMostRecentDeployment(ReportApplicationMostRecentDeploymentRequest) returns (ReportApplicationMostRecentDeploymentResponse) {}
 
+    // GetApplicationMostRecentDeployment returns the most recent deployment of the given application.
+    rpc GetApplicationMostRecentDeployment(GetApplicationMostRecentDeploymentRequest) returns (GetApplicationMostRecentDeploymentResponse) {}
+
     // ListNotCompletedDeployments returns a list of not completed deployments
     // which are managed by this piped.
     // DeploymentController component uses this RPC to spawns/syncs its local deployment executors.
     rpc ListNotCompletedDeployments(ListNotCompletedDeploymentsRequest) returns (ListNotCompletedDeploymentsResponse) {}
-
-    // GetMostRecentDeployment returns the most recent deployment of the given application.
-    rpc GetMostRecentDeployment(GetMostRecentDeploymentRequest) returns (GetMostRecentDeploymentResponse) {}
 
     // CreateDeployment creates/triggers a new deployment for an application
     // that is managed by this piped.
@@ -169,20 +169,20 @@ message ReportApplicationMostRecentDeploymentRequest {
 message ReportApplicationMostRecentDeploymentResponse {
 }
 
+message GetApplicationMostRecentDeploymentRequest {
+    string application_id = 1 [(validate.rules).string.min_len = 1];
+    pipe.model.DeploymentStatus status = 2 [(validate.rules).enum.defined_only = true];
+}
+
+message GetApplicationMostRecentDeploymentResponse {
+    pipe.model.ApplicationDeploymentReference deployment = 1 [(validate.rules).message.required = true];
+}
+
 message ListNotCompletedDeploymentsRequest {
 }
 
 message ListNotCompletedDeploymentsResponse {
     repeated pipe.model.Deployment deployments = 1;
-}
-
-message GetMostRecentDeploymentRequest {
-    string application_id = 1 [(validate.rules).string.min_len = 1];
-    google.protobuf.Int32Value status = 2;
-}
-
-message GetMostRecentDeploymentResponse {
-    pipe.model.Deployment deployment = 1;
 }
 
 message CreateDeploymentRequest {

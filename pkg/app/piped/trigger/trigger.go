@@ -39,7 +39,7 @@ var (
 )
 
 type apiClient interface {
-	GetMostRecentDeployment(ctx context.Context, req *pipedservice.GetMostRecentDeploymentRequest, opts ...grpc.CallOption) (*pipedservice.GetMostRecentDeploymentResponse, error)
+	GetApplicationMostRecentDeployment(ctx context.Context, req *pipedservice.GetApplicationMostRecentDeploymentRequest, opts ...grpc.CallOption) (*pipedservice.GetApplicationMostRecentDeploymentResponse, error)
 	CreateDeployment(ctx context.Context, in *pipedservice.CreateDeploymentRequest, opts ...grpc.CallOption) (*pipedservice.CreateDeploymentResponse, error)
 	ReportApplicationMostRecentDeployment(ctx context.Context, req *pipedservice.ReportApplicationMostRecentDeploymentRequest, opts ...grpc.CallOption) (*pipedservice.ReportApplicationMostRecentDeploymentResponse, error)
 }
@@ -221,9 +221,9 @@ func (t *Trigger) checkApplication(ctx context.Context, app *model.Application, 
 	// So in that case, we have to make an API call.
 	preCommitHash := t.mostRecentlyTriggeredCommits[app.Id]
 	if preCommitHash == "" {
-		mostRecent, err := t.getMostRecentDeployment(ctx, app.Id)
+		mostRecent, err := t.getMostRecentlyTriggeredDeployment(ctx, app.Id)
 		if err == nil {
-			preCommitHash = mostRecent.CommitHash()
+			preCommitHash = mostRecent.Trigger.Commit.Hash
 			t.mostRecentlyTriggeredCommits[app.Id] = preCommitHash
 		} else if status.Code(err) == codes.NotFound {
 			logger.Info("there is no previously triggered commit for this application")
@@ -326,18 +326,19 @@ func (t *Trigger) listApplications() map[string][]*model.Application {
 	return m
 }
 
-func (t *Trigger) getMostRecentDeployment(ctx context.Context, applicationID string) (*model.Deployment, error) {
+func (t *Trigger) getMostRecentlyTriggeredDeployment(ctx context.Context, applicationID string) (*model.ApplicationDeploymentReference, error) {
 	var (
 		err   error
-		resp  *pipedservice.GetMostRecentDeploymentResponse
+		resp  *pipedservice.GetApplicationMostRecentDeploymentResponse
 		retry = pipedservice.NewRetry(3)
-		req   = &pipedservice.GetMostRecentDeploymentRequest{
+		req   = &pipedservice.GetApplicationMostRecentDeploymentRequest{
 			ApplicationId: applicationID,
+			Status:        model.DeploymentStatus_DEPLOYMENT_PENDING,
 		}
 	)
 
 	for retry.WaitNext(ctx) {
-		if resp, err = t.apiClient.GetMostRecentDeployment(ctx, req); err == nil {
+		if resp, err = t.apiClient.GetApplicationMostRecentDeployment(ctx, req); err == nil {
 			return resp.Deployment, nil
 		}
 		if !pipedservice.Retriable(err) {
