@@ -44,8 +44,11 @@ func (m Manifest) Duplicate(name string) Manifest {
 	u := m.u.DeepCopy()
 	u.SetName(name)
 
+	key := m.Key
+	key.Name = name
+
 	return Manifest{
-		Key: m.Key,
+		Key: key,
 		u:   u,
 	}
 }

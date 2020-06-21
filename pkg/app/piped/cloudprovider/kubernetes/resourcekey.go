@@ -102,6 +102,35 @@ func (k ResourceKey) IsDeployment() bool {
 	return true
 }
 
+func (k ResourceKey) IsReplicaSet() bool {
+	if k.Kind != KindReplicaSet {
+		return false
+	}
+	if !IsKubernetesBuiltInResource(k.APIVersion) {
+		return false
+	}
+	return true
+}
+
+func (k ResourceKey) IsWorkload() bool {
+	if !IsKubernetesBuiltInResource(k.APIVersion) {
+		return false
+	}
+
+	switch k.Kind {
+	case KindDeployment:
+		return true
+	case KindReplicaSet:
+		return true
+	case KindDaemonSet:
+		return true
+	case KindPod:
+		return true
+	}
+
+	return false
+}
+
 func (k ResourceKey) IsConfigMap() bool {
 	if k.Kind != KindConfigMap {
 		return false

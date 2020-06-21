@@ -16,11 +16,17 @@ package kubernetes
 
 import (
 	"context"
+	"errors"
 	"fmt"
 	"strings"
 
 	provider "github.com/pipe-cd/pipe/pkg/app/piped/cloudprovider/kubernetes"
 	"github.com/pipe-cd/pipe/pkg/model"
+)
+
+const (
+	canaryVariant                   = "canary"
+	addedCanaryResourcesMetadataKey = "canary-resources"
 )
 
 func (e *Executor) ensureCanaryRollout(ctx context.Context) model.StageStatus {
@@ -31,29 +37,31 @@ func (e *Executor) ensureCanaryRollout(ctx context.Context) model.StageStatus {
 	}
 
 	if len(manifests) == 0 {
-		e.LogPersister.AppendError("No kubernetes manifests to handle")
+		e.LogPersister.AppendError("This application has no Kubernetes manifests to handle")
 		return model.StageStatus_STAGE_FAILURE
 	}
 
-	stageManifests, err := e.generateStageManifests(ctx, manifests)
+	canaryManifests, err := e.generateCanaryManifests(ctx, manifests)
 	if err != nil {
 		e.LogPersister.AppendError(fmt.Sprintf("Unabled to generate manifests for CANARY variant (%v)", err))
 		return model.StageStatus_STAGE_FAILURE
 	}
 
-	// Store will adding resource keys into metadata for cleaning later.
-	addedResources := make([]string, 0, len(stageManifests))
-	for _, m := range stageManifests {
+	// Store added resource keys into metadata for cleaning later.
+	addedResources := make([]string, 0, len(canaryManifests))
+	for _, m := range canaryManifests {
 		addedResources = append(addedResources, m.Key.String())
 	}
 	metadata := strings.Join(addedResources, ",")
-	err = e.MetadataStore.Set(ctx, metadataKeyAddedStageResources, metadata)
+	err = e.MetadataStore.Set(ctx, addedCanaryResourcesMetadataKey, metadata)
 	if err != nil {
 		e.LogPersister.AppendError(fmt.Sprintf("Unabled to save deployment metadata (%v)", err))
+		return model.StageStatus_STAGE_FAILURE
 	}
 
-	e.LogPersister.AppendInfo("Rolling out CANARY variant")
-	if err = e.provider.ApplyManifests(ctx, stageManifests); err != nil {
+	// Start rolling out the resources for CANARY variant.
+	e.LogPersister.AppendInfo("Start rolling out CANARY variant...")
+	if err = e.provider.ApplyManifests(ctx, canaryManifests); err != nil {
 		e.LogPersister.AppendError(fmt.Sprintf("Unabled to rollout CANARY variant (%v)", err))
 		return model.StageStatus_STAGE_FAILURE
 	}
@@ -63,56 +71,72 @@ func (e *Executor) ensureCanaryRollout(ctx context.Context) model.StageStatus {
 }
 
 func (e *Executor) ensureCanaryClean(ctx context.Context) model.StageStatus {
-	value, ok := e.MetadataStore.Get(metadataKeyAddedStageResources)
+	value, ok := e.MetadataStore.Get(addedCanaryResourcesMetadataKey)
 	if !ok {
-		// We have to re-render manifests to check stage resources.
-		value = ""
+		e.LogPersister.AppendError("Unabled to determine the applied CANARY resources")
+		return model.StageStatus_STAGE_FAILURE
 	}
+
 	var (
 		resources    = strings.Split(value, ",")
 		workloadKeys = make([]provider.ResourceKey, 0)
 		serviceKeys  = make([]provider.ResourceKey, 0)
 	)
 	for _, r := range resources {
-		key, _ := provider.DecodeResourceKey(r)
-		switch key.Kind {
-		case "Deployment", "ReplicaSet", "DaemonSet", "Pod":
+		key, err := provider.DecodeResourceKey(r)
+		if err != nil {
+			e.LogPersister.AppendError(fmt.Sprintf("Had an error while decoding CANARY resource key: %s, %v", r, err))
+			continue
+		}
+		if key.IsWorkload() {
 			workloadKeys = append(workloadKeys, key)
-		default:
+		} else {
 			serviceKeys = append(serviceKeys, key)
 		}
 	}
 
 	// We delete the service first to close all incoming connections.
 	for _, k := range serviceKeys {
-		if err := e.provider.Delete(ctx, k); err != nil {
-			e.LogPersister.AppendError(fmt.Sprintf("Unabled to delete resource %s (%v)", k, err))
+		err := e.provider.Delete(ctx, k)
+		if err == nil {
+			e.LogPersister.AppendInfo(fmt.Sprintf("Deleted resource %s", k))
 			continue
 		}
-		e.LogPersister.AppendInfo(fmt.Sprintf("Deleted resource %s", k))
+		if errors.Is(err, provider.ErrNotFound) {
+			e.LogPersister.AppendInfo(fmt.Sprintf("No resource %s to delete", k))
+			continue
+		}
+		e.LogPersister.AppendError(fmt.Sprintf("Unabled to delete resource %s (%v)", k, err))
+		//return model.StageStatus_STAGE_FAILURE
 	}
 
 	// Next, delete all workloads.
 	for _, k := range workloadKeys {
-		if err := e.provider.Delete(ctx, k); err != nil {
-			e.LogPersister.AppendError(fmt.Sprintf("Unabled to delete workload resource %s (%v)", k, err))
+		err := e.provider.Delete(ctx, k)
+		if err == nil {
+			e.LogPersister.AppendInfo(fmt.Sprintf("Deleted workload resource %s", k))
 			continue
 		}
-		e.LogPersister.AppendInfo(fmt.Sprintf("Deleted workload resource %s", k))
+		if errors.Is(err, provider.ErrNotFound) {
+			e.LogPersister.AppendInfo(fmt.Sprintf("No worload resource %s to delete", k))
+			continue
+		}
+		e.LogPersister.AppendError(fmt.Sprintf("Unabled to delete workload resource %s (%v)", k, err))
+		//return model.StageStatus_STAGE_FAILURE
 	}
 
 	return model.StageStatus_STAGE_SUCCESS
 }
 
-func (e *Executor) generateStageManifests(ctx context.Context, manifests []provider.Manifest) ([]provider.Manifest, error) {
+func (e *Executor) generateCanaryManifests(ctx context.Context, manifests []provider.Manifest) ([]provider.Manifest, error) {
 	// List of default configurations.
 	var (
 		suffix           = canaryVariant
-		workloadKind     = "Deployment"
+		workloadKind     = provider.KindDeployment
 		workloadName     = ""
 		workloadReplicas = 1
 		foundWorkload    = false
-		stageManifests   []provider.Manifest
+		canaryManifests  []provider.Manifest
 	)
 
 	// Apply the specified configuration if they are present.
@@ -140,7 +164,7 @@ func (e *Executor) generateStageManifests(ctx context.Context, manifests []provi
 			return err
 		}
 		m.SetReplicas(workloadReplicas)
-		stageManifests = append(stageManifests, m)
+		canaryManifests = append(canaryManifests, m)
 		foundWorkload = true
 		return nil
 	}
@@ -149,13 +173,20 @@ func (e *Executor) generateStageManifests(ctx context.Context, manifests []provi
 		if err := findWorkload(m); err != nil {
 			return nil, err
 		}
+		if foundWorkload {
+			break
+		}
 	}
 
 	if !foundWorkload {
 		return nil, fmt.Errorf("unabled to detect workload manifest for CANARY variant")
 	}
 
-	for _, m := range stageManifests {
+	// TODO: Generate ConfigMap and Secret manifests and update Workload to use the copy.
+	// TODO: Generate Service manifest for kubernetes CANARY variant.
+
+	// Add labels to the generated canary manifests.
+	for _, m := range canaryManifests {
 		m.Key.Name = m.Key.Name + "-" + suffix
 		m.AddAnnotations(map[string]string{
 			provider.LabelManagedBy:          provider.ManagedByPiped,
@@ -167,5 +198,5 @@ func (e *Executor) generateStageManifests(ctx context.Context, manifests []provi
 			provider.LabelCommitHash:         e.Deployment.Trigger.Commit.Hash,
 		})
 	}
-	return stageManifests, nil
+	return canaryManifests, nil
 }

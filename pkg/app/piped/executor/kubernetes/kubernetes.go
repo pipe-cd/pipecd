@@ -27,15 +27,6 @@ import (
 	"github.com/pipe-cd/pipe/pkg/model"
 )
 
-const (
-	primaryVariant  = "primary"
-	canaryVariant   = "canary"
-	baselineVariant = "baseline"
-
-	metadataKeyAddedStageResources    = "k8s-canary-resources"
-	metadataKeyAddedBaselineResources = "k8s-baseline-resources"
-)
-
 type Executor struct {
 	executor.Input
 
