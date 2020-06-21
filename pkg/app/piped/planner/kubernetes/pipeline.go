@@ -44,6 +44,7 @@ func buildPipeline(autoRollback bool, now time.Time) []*model.PipelineStage {
 			Predefined: true,
 			Visible:    true,
 			Status:     model.StageStatus_STAGE_NOT_STARTED_YET,
+			Metadata:   planner.MakeInitialStageMetadata(s),
 			CreatedAt:  now.Unix(),
 			UpdatedAt:  now.Unix(),
 		}

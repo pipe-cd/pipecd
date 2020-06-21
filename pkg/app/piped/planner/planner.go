@@ -21,6 +21,7 @@ package planner
 
 import (
 	"context"
+	"strings"
 
 	"go.uber.org/zap"
 
@@ -49,4 +50,16 @@ type Input struct {
 type Output struct {
 	Stages      []*model.PipelineStage
 	Description string
+}
+
+// MakeInitialStageMetadata makes the initial metadata for the given state configuration.
+func MakeInitialStageMetadata(cfg config.PipelineStage) map[string]string {
+	switch cfg.Name {
+	case model.StageWaitApproval:
+		return map[string]string{
+			"Approvers": strings.Join(cfg.WaitApprovalStageOptions.Approvers, ","),
+		}
+	default:
+		return nil
+	}
 }
