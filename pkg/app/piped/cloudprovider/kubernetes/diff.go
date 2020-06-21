@@ -25,15 +25,16 @@ import (
 )
 
 type diffOption struct {
-	PathPrefix  string
-	IgnoreOrder bool
+	PathPrefix          string
+	IgnoreOrder         bool
+	IgnoreMissingFields bool
 }
 
 type DiffOption func(*diffOption)
 
-// WithPathPrefix configures the differ to returns only results where
+// WithDiffPathPrefix configures differ to returns only results where
 // their paths are prefixed by the given string.
-func WithPathPrefix(prefix string) DiffOption {
+func WithDiffPathPrefix(prefix string) DiffOption {
 	return func(o *diffOption) {
 		o.PathPrefix = prefix
 	}
@@ -43,6 +44,14 @@ func WithPathPrefix(prefix string) DiffOption {
 func WithDiffIgnoreOrder() DiffOption {
 	return func(o *diffOption) {
 		o.IgnoreOrder = true
+	}
+}
+
+// WithDiffIgnoreMissingFields configures differ to ignore all fields
+// that appear in the second manifest but not in the first.
+func WithDiffIgnoreMissingFields() DiffOption {
+	return func(o *diffOption) {
+		o.IgnoreMissingFields = true
 	}
 }
 
@@ -173,7 +182,8 @@ func Diff(first, second Manifest, opts ...DiffOption) DiffResultList {
 	}
 
 	reporter := diffReporter{
-		pathPrefix: options.PathPrefix,
+		pathPrefix:          options.PathPrefix,
+		ignoreMissingFields: options.IgnoreMissingFields,
 	}
 
 	if !options.IgnoreOrder {
@@ -187,9 +197,10 @@ func Diff(first, second Manifest, opts ...DiffOption) DiffResultList {
 // diffReporter is a custom reporter that only records differences
 // detected during comparison.
 type diffReporter struct {
-	path       cmp.Path
-	pathPrefix string
-	diffs      DiffResultList
+	path                cmp.Path
+	pathPrefix          string
+	ignoreMissingFields bool
+	diffs               DiffResultList
 }
 
 func (r *diffReporter) PushStep(ps cmp.PathStep) {
@@ -204,6 +215,9 @@ func (r *diffReporter) Report(rs cmp.Result) {
 			vx, vy     = r.path.Last().Values()
 		)
 		if !strings.HasPrefix(pathString, r.pathPrefix) {
+			return
+		}
+		if r.ignoreMissingFields && !vx.IsValid() {
 			return
 		}
 		r.diffs = append(r.diffs, DiffResult{

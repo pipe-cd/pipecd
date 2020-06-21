@@ -244,10 +244,9 @@ func (d *detector) checkApplication(ctx context.Context, app *model.Application,
 	}
 
 	// All manifest keys are matched. Now we will go to check the diff of each manifest pair.
-	// TODO: Ignores all generated fields while calculating the diff.
 	diffs := make(map[int]provider.DiffResultList)
 	for i := 0; i < len(headManifests); i++ {
-		result := provider.Diff(headManifests[i], liveManifests[i])
+		result := provider.Diff(headManifests[i], liveManifests[i], provider.WithDiffIgnoreMissingFields())
 		if len(result) > 0 {
 			diffs[i] = result
 		}

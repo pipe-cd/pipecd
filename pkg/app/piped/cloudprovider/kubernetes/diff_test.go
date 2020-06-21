@@ -164,9 +164,16 @@ func TestDiff(t *testing.T) {
 		},
 		{
 			name:     "no diff with ignore order",
-			yamlFile: "testdata/diff_ignore_order_no_diff.yaml",
+			yamlFile: "testdata/diff_ignore_order.yaml",
 			options: []DiffOption{
 				WithDiffIgnoreOrder(),
+			},
+		},
+		{
+			name:     "no diff with ignore missing fields",
+			yamlFile: "testdata/diff_ignore_missing_fields.yaml",
+			options: []DiffOption{
+				WithDiffIgnoreMissingFields(),
 			},
 		},
 		{
@@ -229,7 +236,7 @@ func TestDiff(t *testing.T) {
 			name:     "one filtered by path prefix",
 			yamlFile: "testdata/diff_multi_diffs.yaml",
 			options: []DiffOption{
-				WithPathPrefix("spec.template"),
+				WithDiffPathPrefix("spec.template"),
 			},
 			result: []DiffResult{
 				{
