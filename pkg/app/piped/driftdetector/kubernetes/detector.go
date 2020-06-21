@@ -413,14 +413,26 @@ func makeOutOfSyncStateBecauseMissingOrRedundant(missings, redundancies []provid
 }
 
 func makeOutOfSyncState(headManifests, liveManifests []provider.Manifest, diffs map[int]provider.DiffResultList) model.ApplicationSyncState {
+	const maxPrintDiffs = 3
+
 	shortReason := fmt.Sprintf("There are %d manifests are not synced.", len(diffs))
 	var reasonBuilder strings.Builder
 	reasonBuilder.WriteString(shortReason)
-	// TODO: Limit the size of reason.
+
+	var prints = 0
 	for i, list := range diffs {
 		reasonBuilder.WriteString(headManifests[i].Key.String())
 		reasonBuilder.WriteString(list.String())
+		prints++
+		if prints >= maxPrintDiffs {
+			break
+		}
 	}
+
+	if prints < len(diffs) {
+		reasonBuilder.WriteString(fmt.Sprintf("... (diffs from %d other manifests are omitted", len(diffs)-prints))
+	}
+
 	return model.ApplicationSyncState{
 		Status:      model.ApplicationSyncStatus_OUT_OF_SYNC,
 		ShortReason: shortReason,
