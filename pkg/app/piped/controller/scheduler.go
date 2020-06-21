@@ -542,7 +542,9 @@ func (s *scheduler) reportDeploymentCompleted(ctx context.Context, status model.
 	}
 
 	if err == nil {
-		s.reportMostRecentlySuccessfulDeployment(ctx)
+		if err := s.reportMostRecentlySuccessfulDeployment(ctx); err != nil {
+			s.logger.Error("failed to report most recently successful deployment", zap.Error(err))
+		}
 	}
 	return err
 }
