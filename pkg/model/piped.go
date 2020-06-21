@@ -15,8 +15,15 @@
 package model
 
 import (
-	"github.com/google/uuid"
+	"math/rand"
+	"time"
+	"unsafe"
+
 	"golang.org/x/crypto/bcrypt"
+)
+
+const (
+	pipedKeyLength = 50
 )
 
 // GeneratePipedKey generates a new key for piped.
@@ -24,7 +31,7 @@ import (
 // a hash value of the key for storing in datastore.
 func GeneratePipedKey() (key, hash string, err error) {
 	var encoded []byte
-	key = uuid.New().String()
+	key = generateRandomString(pipedKeyLength)
 	encoded, err = bcrypt.GenerateFromPassword([]byte(key), bcrypt.DefaultCost)
 	if err != nil {
 		return
@@ -36,4 +43,35 @@ func GeneratePipedKey() (key, hash string, err error) {
 // CompareKey compares plaintext key with its hashed value storing in piped.
 func (p *Piped) CompareKey(key string) error {
 	return bcrypt.CompareHashAndPassword([]byte(p.KeyHash), []byte(key))
+}
+
+var randomSrc = rand.NewSource(time.Now().UnixNano())
+
+const (
+	letterIdxBits = 6                    // 6 bits to represent a letter index
+	letterIdxMask = 1<<letterIdxBits - 1 // All 1-bits, as many as letterIdxBits
+	letterIdxMax  = 63 / letterIdxBits   // Number of letter indices fitting in 63 bits
+	letterBytes   = "abcdefghijklmnopqrstuvwxyz0123456789"
+)
+
+// generateRandomString makes a random string with the given length.
+// This implementation was referenced from the link below.
+// https://stackoverflow.com/questions/22892120/how-to-generate-a-random-string-of-a-fixed-length-in-go
+func generateRandomString(n int) string {
+	b := make([]byte, n)
+
+	// A src.Int63() generates 63 random bits, enough for letterIdxMax characters.
+	for i, cache, remain := n-1, randomSrc.Int63(), letterIdxMax; i >= 0; {
+		if remain == 0 {
+			cache, remain = randomSrc.Int63(), letterIdxMax
+		}
+		if idx := int(cache & letterIdxMask); idx < len(letterBytes) {
+			b[i] = letterBytes[idx]
+			i--
+		}
+		cache >>= letterIdxBits
+		remain--
+	}
+
+	return *(*string)(unsafe.Pointer(&b))
 }

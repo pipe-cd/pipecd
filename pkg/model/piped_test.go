@@ -15,6 +15,7 @@
 package model
 
 import (
+	"fmt"
 	"testing"
 
 	"github.com/stretchr/testify/assert"
@@ -34,4 +35,26 @@ func TestGeneratePipedKey(t *testing.T) {
 
 	err = p.CompareKey("invalid")
 	assert.Error(t, err)
+}
+
+func TestGenerateRandomString(t *testing.T) {
+	validator := func(s string) error {
+		for _, c := range s {
+			if (c >= 'a' && c <= 'z') || (c >= '0' && c <= '9') {
+				continue
+			}
+			return fmt.Errorf("invalid character: %s", c)
+		}
+		return nil
+	}
+
+	s1 := generateRandomString(10)
+	assert.Equal(t, 10, len(s1))
+	assert.NoError(t, validator(s1))
+
+	s2 := generateRandomString(10)
+	assert.Equal(t, 10, len(s2))
+	assert.NoError(t, validator(s2))
+
+	assert.NotEqual(t, s1, s2)
 }
