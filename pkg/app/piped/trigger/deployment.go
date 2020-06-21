@@ -46,7 +46,10 @@ func (t *Trigger) triggerDeployment(ctx context.Context, app *model.Application,
 		return err
 	}
 
-	t.reportMostRecentlyTriggeredDeployment(ctx, deployment)
+	if err := t.reportMostRecentlyTriggeredDeployment(ctx, deployment); err != nil {
+		t.logger.Error("failed to report most recently triggered deployment", zap.Error(err))
+	}
+
 	return nil
 }
 
