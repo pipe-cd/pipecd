@@ -16,6 +16,7 @@ package kubernetes
 
 import (
 	"context"
+	"errors"
 	"fmt"
 	"os"
 	"path/filepath"
@@ -25,6 +26,10 @@ import (
 
 	"github.com/pipe-cd/pipe/pkg/app/piped/toolregistry"
 	"github.com/pipe-cd/pipe/pkg/config"
+)
+
+var (
+	ErrNotFound = errors.New("not found")
 )
 
 const (
@@ -97,21 +102,22 @@ func NewManifestLoader(appDir, repoDir string, input config.KubernetesDeployment
 func (p *provider) init(ctx context.Context) {
 	p.templatingMethod = determineTemplatingMethod(p.input, p.appDir)
 
+	// We need kubectl for all templating methods.
+	p.kubectl, p.initErr = p.findKubectl(ctx, p.input.KubectlVersion)
+	if p.initErr != nil {
+		return
+	}
+
 	switch p.templatingMethod {
 	case TemplatingMethodHelm:
 		p.helm, p.initErr = p.findHelm(ctx, p.input.HelmVersion)
 
 	case TemplatingMethodKustomize:
 		p.kustomize, p.initErr = p.findKustomize(ctx, p.input.KustomizeVersion)
-
-	case TemplatingMethodNone:
-		p.kubectl, p.initErr = p.findKubectl(ctx, p.input.KubectlVersion)
-
-	default:
-		p.initErr = fmt.Errorf("unsupport templating method %v", p.templatingMethod)
 	}
 }
 
+// LoadManifests renders and loads all manifests for application.
 func (p *provider) LoadManifests(ctx context.Context) (manifests []Manifest, err error) {
 	p.initOnce.Do(func() { p.init(ctx) })
 	if p.initErr != nil {
@@ -134,10 +140,12 @@ func (p *provider) LoadManifests(ctx context.Context) (manifests []Manifest, err
 	return
 }
 
+// Apply does applying application manifests by using the tool specified in Input.
 func (p *provider) Apply(ctx context.Context) error {
 	return nil
 }
 
+// ApplyManifests does applying the given manifests.
 func (p *provider) ApplyManifests(ctx context.Context, manifests []Manifest) (err error) {
 	p.initOnce.Do(func() { p.init(ctx) })
 	if p.initErr != nil {
@@ -160,26 +168,14 @@ func (p *provider) ApplyManifests(ctx context.Context, manifests []Manifest) (er
 	return
 }
 
+// Delete deletes the given resource from Kubernetes cluster.
 func (p *provider) Delete(ctx context.Context, k ResourceKey) (err error) {
 	p.initOnce.Do(func() { p.init(ctx) })
 	if p.initErr != nil {
 		return p.initErr
 	}
 
-	switch p.templatingMethod {
-	case TemplatingMethodHelm:
-		return nil
-
-	case TemplatingMethodKustomize:
-		return nil
-
-	case TemplatingMethodNone:
-		err = p.kubectl.Delete(ctx, k)
-
-	default:
-		err = fmt.Errorf("unsupport templating method %v", p.templatingMethod)
-	}
-	return
+	return p.kubectl.Delete(ctx, k)
 }
 
 func (p *provider) findKubectl(ctx context.Context, version string) (*Kubectl, error) {

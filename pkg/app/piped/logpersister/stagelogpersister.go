@@ -155,7 +155,7 @@ func (sp *stageLogPersister) flushNewLogs(ctx context.Context) error {
 	}
 
 	// Update sentIndex.
-	sp.sentIndex = sp.sentIndex + numBlocks
+	sp.sentIndex += numBlocks
 	return nil
 }
 
@@ -186,6 +186,6 @@ func (sp *stageLogPersister) flushFromLastCheckpoint(ctx context.Context) (err e
 	sp.blocks = sp.blocks[numBlocks:]
 	sp.mu.Unlock()
 
-	sp.sentIndex -= numBlocks
+	sp.sentIndex = 0
 	return nil
 }

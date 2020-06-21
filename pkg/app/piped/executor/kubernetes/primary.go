@@ -22,6 +22,10 @@ import (
 	"github.com/pipe-cd/pipe/pkg/model"
 )
 
+const (
+	primaryVariant = "primary"
+)
+
 func (e *Executor) ensurePrimaryUpdate(ctx context.Context) model.StageStatus {
 	manifests, err := e.loadManifests(ctx)
 	if err != nil {

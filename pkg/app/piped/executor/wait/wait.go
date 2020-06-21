@@ -43,6 +43,7 @@ func Register(r registerer) {
 }
 
 // Execute starts waiting for the specified duration.
+// TODO: Persist and load the start time to deal with restart case.
 func (e *Executor) Execute(sig executor.StopSignal) model.StageStatus {
 	var (
 		originalStatus = e.Stage.Status

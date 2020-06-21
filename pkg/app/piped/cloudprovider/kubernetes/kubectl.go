@@ -19,6 +19,7 @@ import (
 	"context"
 	"fmt"
 	"os/exec"
+	"strings"
 
 	"k8s.io/client-go/rest"
 )
@@ -59,8 +60,12 @@ func (c *Kubectl) Delete(ctx context.Context, r ResourceKey) error {
 	}
 	cmd := exec.CommandContext(ctx, "kubectl", args...)
 	out, err := cmd.CombinedOutput()
+
+	if strings.Contains(string(out), "(NotFound)") {
+		return fmt.Errorf("failed to delete: %s, (%w), %v", string(out), ErrNotFound, err)
+	}
 	if err != nil {
-		return fmt.Errorf("failed to delete: %s (%v)", string(out), err)
+		return fmt.Errorf("failed to delete: %s, %v", string(out), err)
 	}
 	return nil
 }

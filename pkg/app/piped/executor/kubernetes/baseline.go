@@ -20,6 +20,11 @@ import (
 	"github.com/pipe-cd/pipe/pkg/model"
 )
 
+const (
+	baselineVariant                   = "baseline"
+	addedBaselineResourcesMetadataKey = "baseline-resources"
+)
+
 func (e *Executor) ensureBaselineRollout(ctx context.Context) model.StageStatus {
 	return model.StageStatus_STAGE_SUCCESS
 }
