@@ -4,6 +4,7 @@ go_library(
     name = "go_default_library",
     srcs = [
         "chain_interceptor.go",
+        "log_interceptor.go",
         "request_validation_interceptor.go",
         "server.go",
     ],
