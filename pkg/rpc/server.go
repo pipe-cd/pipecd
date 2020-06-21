@@ -51,6 +51,7 @@ type Server struct {
 	pipedKeyAuthStreamInterceptor     grpc.StreamServerInterceptor
 	jwtAuthUnaryInterceptor           grpc.UnaryServerInterceptor
 	requestValidationUnaryInterceptor grpc.UnaryServerInterceptor
+	logUnaryInterceptor               grpc.UnaryServerInterceptor
 }
 
 // Option defines a function to set configurable field of Server.
@@ -88,6 +89,13 @@ func WithJWTAuthUnaryInterceptor(verifier jwt.Verifier, authorizer rpcauth.RBACA
 func WithRequestValidationUnaryInterceptor() Option {
 	return func(s *Server) {
 		s.requestValidationUnaryInterceptor = RequestValidationUnaryServerInterceptor()
+	}
+}
+
+// WithLogUnaryInterceptor sets an interceptor for logging handled request.
+func WithLogUnaryInterceptor(logger *zap.Logger) Option {
+	return func(s *Server) {
+		s.logUnaryInterceptor = LogUnaryServerInterceptor(logger.Named("rpc-server"))
 	}
 }
 
@@ -179,6 +187,9 @@ func (s *Server) init() error {
 	}
 	// Builds a chain of enabled interceptors.
 	var unaryInterceptors []grpc.UnaryServerInterceptor
+	if s.logUnaryInterceptor != nil {
+		unaryInterceptors = append(unaryInterceptors, s.logUnaryInterceptor)
+	}
 	if s.pipedKeyAuthUnaryInterceptor != nil {
 		unaryInterceptors = append(unaryInterceptors, s.pipedKeyAuthUnaryInterceptor)
 	}

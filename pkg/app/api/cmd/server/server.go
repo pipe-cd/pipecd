@@ -179,6 +179,7 @@ func (s *server) run(ctx context.Context, t cli.Telemetry) error {
 				rpc.WithPort(s.pipedAPIPort),
 				rpc.WithGracePeriod(s.gracePeriod),
 				rpc.WithLogger(t.Logger),
+				rpc.WithLogUnaryInterceptor(t.Logger),
 				rpc.WithPipedTokenAuthUnaryInterceptor(verifier, t.Logger),
 				rpc.WithRequestValidationUnaryInterceptor(),
 			}
