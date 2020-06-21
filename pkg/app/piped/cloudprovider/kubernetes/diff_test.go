@@ -177,6 +177,30 @@ func TestDiff(t *testing.T) {
 			},
 		},
 		{
+			name:     "diff with redacted result",
+			yamlFile: "testdata/diff_redact.yaml",
+			options: []DiffOption{
+				WithDiffRedactPathPrefix("data", "secret-data-in-configuration", "secret-data-in-cluster"),
+			},
+			result: []DiffResult{
+				{
+					Path: []PathStep{
+						{
+							Type: MapKeyPathStep,
+							Key:  "data",
+						},
+						{
+							Type: MapKeyPathStep,
+							Key:  "service-account.json",
+						},
+					},
+					PathString: "data.service-account.json",
+					Before:     "secret-data-in-configuration",
+					After:      "secret-data-in-cluster",
+				},
+			},
+		},
+		{
 			name:     "has some diffs",
 			yamlFile: "testdata/diff_multi_diffs.yaml",
 			result: []DiffResult{

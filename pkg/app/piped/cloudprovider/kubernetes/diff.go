@@ -25,9 +25,12 @@ import (
 )
 
 type diffOption struct {
-	PathPrefix          string
-	IgnoreOrder         bool
-	IgnoreMissingFields bool
+	PathPrefix              string
+	IgnoreOrder             bool
+	IgnoreMissingFields     bool
+	RedactPathPrefix        string
+	RedactFirstReplacement  string
+	RedactSecondReplacement string
 }
 
 type DiffOption func(*diffOption)
@@ -52,6 +55,15 @@ func WithDiffIgnoreOrder() DiffOption {
 func WithDiffIgnoreMissingFields() DiffOption {
 	return func(o *diffOption) {
 		o.IgnoreMissingFields = true
+	}
+}
+
+// WithDiffRedactPathPrefix redacts all the diff values of the given path prefix.
+func WithDiffRedactPathPrefix(prefix, firstReplacement, secondReplacement string) DiffOption {
+	return func(o *diffOption) {
+		o.RedactPathPrefix = prefix
+		o.RedactFirstReplacement = firstReplacement
+		o.RedactSecondReplacement = secondReplacement
 	}
 }
 
@@ -182,8 +194,7 @@ func Diff(first, second Manifest, opts ...DiffOption) DiffResultList {
 	}
 
 	reporter := diffReporter{
-		pathPrefix:          options.PathPrefix,
-		ignoreMissingFields: options.IgnoreMissingFields,
+		options: options,
 	}
 
 	if !options.IgnoreOrder {
@@ -197,10 +208,9 @@ func Diff(first, second Manifest, opts ...DiffOption) DiffResultList {
 // diffReporter is a custom reporter that only records differences
 // detected during comparison.
 type diffReporter struct {
-	path                cmp.Path
-	pathPrefix          string
-	ignoreMissingFields bool
-	diffs               DiffResultList
+	path    cmp.Path
+	options diffOption
+	diffs   DiffResultList
 }
 
 func (r *diffReporter) PushStep(ps cmp.PathStep) {
@@ -214,17 +224,26 @@ func (r *diffReporter) Report(rs cmp.Result) {
 			pathString = path.String()
 			vx, vy     = r.path.Last().Values()
 		)
-		if !strings.HasPrefix(pathString, r.pathPrefix) {
+		if !strings.HasPrefix(pathString, r.options.PathPrefix) {
 			return
 		}
-		if r.ignoreMissingFields && !vx.IsValid() {
+		if r.options.IgnoreMissingFields && !vx.IsValid() {
 			return
 		}
+		var before, after string
+		if r.options.RedactPathPrefix != "" && strings.HasPrefix(pathString, r.options.RedactPathPrefix) {
+			before = r.options.RedactFirstReplacement
+			after = r.options.RedactSecondReplacement
+		} else {
+			before = fmt.Sprintf("%+v", vx)
+			after = fmt.Sprintf("%+v", vy)
+		}
+
 		r.diffs = append(r.diffs, DiffResult{
 			Path:       path,
 			PathString: pathString,
-			Before:     fmt.Sprintf("%+v", vx),
-			After:      fmt.Sprintf("%+v", vy),
+			Before:     before,
+			After:      after,
 		})
 	}
 }
