@@ -536,16 +536,14 @@ func (s *scheduler) reportDeploymentCompleted(ctx context.Context, status model.
 	// Update deployment status on remote.
 	for retry.WaitNext(ctx) {
 		if _, err = s.apiClient.ReportDeploymentCompleted(ctx, req); err == nil {
+			if err := s.reportMostRecentlySuccessfulDeployment(ctx); err != nil {
+				s.logger.Error("failed to report most recently successful deployment", zap.Error(err))
+			}
 			return nil
 		}
 		err = fmt.Errorf("failed to report deployment status to control-plane: %w", err)
 	}
 
-	if err == nil {
-		if err := s.reportMostRecentlySuccessfulDeployment(ctx); err != nil {
-			s.logger.Error("failed to report most recently successful deployment", zap.Error(err))
-		}
-	}
 	return err
 }
 
