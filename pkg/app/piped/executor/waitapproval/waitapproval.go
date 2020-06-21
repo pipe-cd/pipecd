@@ -23,6 +23,10 @@ import (
 	"github.com/pipe-cd/pipe/pkg/model"
 )
 
+const (
+	approvedByKey = "ApprovedBy"
+)
+
 type Executor struct {
 	executor.Input
 }
@@ -73,19 +77,32 @@ func (e *Executor) Execute(sig executor.StopSignal) model.StageStatus {
 }
 
 func (e *Executor) checkApproval(ctx context.Context) (string, bool) {
+	var approveCmd *model.ReportableCommand
 	commands := e.CommandLister.ListCommands()
 
 	for _, cmd := range commands {
-		c := cmd.GetApproveStage()
-		if c == nil {
-			continue
+		if cmd.GetApproveStage() != nil {
+			approveCmd = &cmd
+			break
 		}
-
-		if err := cmd.Report(ctx, model.CommandStatus_COMMAND_SUCCEEDED, nil); err == nil {
-			return cmd.Commander, true
-		}
+	}
+	if approveCmd == nil {
 		return "", false
 	}
 
-	return "", false
+	metadata := map[string]string{
+		approvedByKey: approveCmd.Commander,
+	}
+	if ori, ok := e.MetadataStore.GetStageMetadata(e.Stage.Id); ok {
+		for k, v := range ori {
+			metadata[k] = v
+		}
+	}
+	if err := e.MetadataStore.SetStageMetadata(ctx, e.Stage.Id, metadata); err != nil {
+		e.LogPersister.AppendError(fmt.Sprintf("Unabled to save approver information to deployment, %v", err))
+		return "", false
+	}
+
+	approveCmd.Report(ctx, model.CommandStatus_COMMAND_SUCCEEDED, nil)
+	return approveCmd.Commander, true
 }
