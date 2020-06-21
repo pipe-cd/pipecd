@@ -1,0 +1,101 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: canary
+  labels:
+    app: canary
+spec:
+  replicas: 2
+  selector:
+    matchLabels:
+      app: canary
+  template:
+    metadata:
+      labels:
+        app: canary
+    spec:
+      containers:
+      - name: helloworld
+        image: gcr.io/kapetanios/pipecd-helloworld:v0.0.2-159-g2fde42c
+        args:
+          - server
+        ports:
+        - containerPort: 9085
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  annotations:
+    deployment.kubernetes.io/revision: "1"
+    kubectl.kubernetes.io/last-applied-configuration: |
+      {"apiVersion":"apps/v1","kind":"Deployment","metadata":{"annotations":{"pipecd.dev/application":"7230d36c-dceb-4037-b3c8-94abc57b2eda","pipecd.dev/commit-hash":"ef981187e5817c589617a114d5d5ae36adfbb373","pipecd.dev/managed-by":"piped","pipecd.dev/original-api-version":"apps/v1","pipecd.dev/piped":"70feaff4-a6b7-4d03-b5a9-26b2cbabf77b","pipecd.dev/resource-key":"apps/v1:Deployment:default:canary","pipecd.dev/variant":"primary"},"labels":{"app":"canary"},"name":"canary","namespace":"default"},"spec":{"replicas":2,"selector":{"matchLabels":{"app":"canary"}},"template":{"metadata":{"labels":{"app":"canary"}},"spec":{"containers":[{"args":["server"],"image":"gcr.io/kapetanios/pipecd-helloworld:v0.0.2-159-g2fde42c","name":"helloworld","ports":[{"containerPort":9085}]}]}}}}
+    pipecd.dev/application: 7230d36c-dceb-4037-b3c8-94abc57b2eda
+    pipecd.dev/commit-hash: ef981187e5817c589617a114d5d5ae36adfbb373
+    pipecd.dev/managed-by: piped
+    pipecd.dev/original-api-version: apps/v1
+    pipecd.dev/piped: 70feaff4-a6b7-4d03-b5a9-26b2cbabf77b
+    pipecd.dev/resource-key: apps/v1:Deployment:default:canary
+    pipecd.dev/variant: primary
+  creationTimestamp: "2020-06-18T14:23:30Z"
+  generation: 2
+  labels:
+    app: canary
+  name: canary
+  namespace: default
+  resourceVersion: "3713438"
+  selfLink: /apis/apps/v1/namespaces/default/deployments/canary
+  uid: 00e655f8-0c27-477e-9178-97dab0d91316
+spec:
+  progressDeadlineSeconds: 600
+  replicas: 2
+  revisionHistoryLimit: 10
+  selector:
+    matchLabels:
+      app: canary
+  strategy:
+    rollingUpdate:
+      maxSurge: 25%
+      maxUnavailable: 25%
+    type: RollingUpdate
+  template:
+    metadata:
+      creationTimestamp: null
+      labels:
+        app: canary
+    spec:
+      containers:
+      - args:
+        - server
+        image: gcr.io/kapetanios/pipecd-helloworld:v0.0.2-159-g2fde42c
+        imagePullPolicy: IfNotPresent
+        name: helloworld
+        ports:
+        - containerPort: 9085
+          protocol: TCP
+        resources: {}
+        terminationMessagePath: /dev/termination-log
+        terminationMessagePolicy: File
+      dnsPolicy: ClusterFirst
+      restartPolicy: Always
+      schedulerName: default-scheduler
+      securityContext: {}
+      terminationGracePeriodSeconds: 30
+status:
+  availableReplicas: 2
+  conditions:
+  - lastTransitionTime: "2020-06-18T14:23:31Z"
+    lastUpdateTime: "2020-06-18T14:23:31Z"
+    message: Deployment has minimum availability.
+    reason: MinimumReplicasAvailable
+    status: "True"
+    type: Available
+  - lastTransitionTime: "2020-06-18T14:23:30Z"
+    lastUpdateTime: "2020-06-18T14:23:31Z"
+    message: ReplicaSet "canary-78d4c97d9c" has successfully progressed.
+    reason: NewReplicaSetAvailable
+    status: "True"
+    type: Progressing
+  observedGeneration: 2
+  readyReplicas: 2
+  replicas: 2
+  updatedReplicas: 2

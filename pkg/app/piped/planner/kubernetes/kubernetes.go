@@ -136,7 +136,7 @@ func decideStrategy(olds, news []provider.Manifest) (progressive bool, desc stri
 	// If the workload's pod template was touched
 	// do progressive deployment with the specified pipeline.
 	var (
-		workloadDiffs = provider.Diff(oldWorkload, newWorkload, provider.WithPathPrefix("spec"))
+		workloadDiffs = provider.Diff(oldWorkload, newWorkload, provider.WithDiffPathPrefix("spec"))
 		templateDiffs = workloadDiffs.FindByPrefix("spec.template")
 	)
 	if len(templateDiffs) > 0 {
