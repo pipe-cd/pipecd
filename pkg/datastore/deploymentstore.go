@@ -86,7 +86,7 @@ var (
 
 type DeploymentStore interface {
 	AddDeployment(ctx context.Context, d *model.Deployment) error
-	PutDeployment(ctx context.Context, id string, updater func(*model.Deployment) error) error
+	UpdateDeployment(ctx context.Context, id string, updater func(*model.Deployment) error) error
 	PutDeploymentMetadata(ctx context.Context, id string, metadata map[string]string) error
 	PutDeploymentStageMetadata(ctx context.Context, deploymentID, stageID string, metadata map[string]string) error
 	ListDeployments(ctx context.Context, opts ListOptions) ([]*model.Deployment, error)
@@ -121,7 +121,7 @@ func (s *deploymentStore) AddDeployment(ctx context.Context, d *model.Deployment
 	return s.ds.Create(ctx, deploymentModelKind, d.Id, d)
 }
 
-func (s *deploymentStore) PutDeployment(ctx context.Context, id string, updater func(*model.Deployment) error) error {
+func (s *deploymentStore) UpdateDeployment(ctx context.Context, id string, updater func(*model.Deployment) error) error {
 	now := s.nowFunc().Unix()
 	return s.ds.Update(ctx, deploymentModelKind, id, deploymentFactory, func(e interface{}) error {
 		d := e.(*model.Deployment)
