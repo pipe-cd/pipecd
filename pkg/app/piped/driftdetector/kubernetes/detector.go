@@ -244,9 +244,32 @@ func (d *detector) checkApplication(ctx context.Context, app *model.Application,
 	}
 
 	// All manifest keys are matched. Now we will go to check the diff of each manifest pair.
-	diffs := make(map[int]provider.DiffResultList)
+	var (
+		diffs       = make(map[int]provider.DiffResultList)
+		diffOptions = []provider.DiffOption{
+			provider.WithDiffIgnoreMissingFields(),
+		}
+		secretDiffOptions = []provider.DiffOption{
+			provider.WithDiffIgnoreMissingFields(),
+			provider.WithDiffRedactPathPrefix("data", "secret-data-in-configuration", "secret-data-in-cluster"),
+		}
+		configMapDiffOptions = []provider.DiffOption{
+			provider.WithDiffIgnoreMissingFields(),
+			provider.WithDiffRedactPathPrefix("data", "configmap-data-in-configuration", "configmap-data-in-cluster"),
+		}
+	)
+
 	for i := 0; i < len(headManifests); i++ {
-		result := provider.Diff(headManifests[i], liveManifests[i], provider.WithDiffIgnoreMissingFields())
+		var options []provider.DiffOption
+		if headManifests[i].Key.IsSecret() {
+			options = secretDiffOptions
+		} else if headManifests[i].Key.IsConfigMap() {
+			options = configMapDiffOptions
+		} else {
+			options = diffOptions
+		}
+
+		result := provider.Diff(headManifests[i], liveManifests[i], options...)
 		if len(result) > 0 {
 			diffs[i] = result
 		}
