@@ -82,5 +82,5 @@ message ApplicationDeploymentReference {
     string version = 4;
 
     int64 started_at = 14 [(validate.rules).int64.gt = 0];
-    int64 completed_at = 15 [(validate.rules).int64.gt = 0];
+    int64 completed_at = 15 [(validate.rules).int64.gte = 0];
 }
