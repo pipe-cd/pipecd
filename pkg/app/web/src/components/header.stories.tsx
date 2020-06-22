@@ -3,7 +3,7 @@ import { Header } from "./header";
 
 export default {
   title: "header",
-  component: Header
+  component: Header,
 };
 
 export const overview: React.FC = () => <Header />;
