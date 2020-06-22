@@ -5,9 +5,12 @@ metadata:
   name: {{ include "pipecd.fullname" . }}
   labels:
     {{- include "pipecd.labels" . | nindent 4 }}
-  {{- with .Values.ingress.annotations }}
   annotations:
+  {{- with .Values.ingress.annotations }}
     {{- toYaml . | nindent 4 }}
+  {{- end }}
+  {{- if .Values.managedCertificate.enabled }}
+    networking.gke.io/managed-certificates: {{ include "pipecd.fullname" . }}
   {{- end }}
 spec:
   rules:

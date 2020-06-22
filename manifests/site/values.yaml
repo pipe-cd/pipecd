@@ -9,8 +9,6 @@ service:
 
 backendConfig:
   enabled: false
-  annotation:
-    beta.cloud.google.com/backend-config: '{"ports": {"http":"site"}}'
 
 managedCertificate:
   enabled: false
@@ -19,7 +17,6 @@ ingress:
   enabled: false
   annotations: {}
     # kubernetes.io/ingress.global-static-ip-name: site
-    # networking.gke.io/managed-certificates: site
   domains: []
     # - pipecd.dev
 
