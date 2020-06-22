@@ -96,10 +96,8 @@ func (c *fakeClient) Close() error {
 	return nil
 }
 
-// Ping is periodically sent by piped to report its status/stats to API.
-// The received stats will be written to the cache immediately.
-// The cache data may be lost anytime so we need a singleton Persister
-// to persist those data into datastore every n minutes.
+// Ping is periodically sent to report its realtime status/stats to control-plane.
+// The received stats will be pushed to the metrics collector.
 func (c *fakeClient) Ping(ctx context.Context, req *pipedservice.PingRequest, opts ...grpc.CallOption) (*pipedservice.PingResponse, error) {
 	c.logger.Info("fake client received Ping rpc", zap.Any("request", req))
 	return &pipedservice.PingResponse{}, nil

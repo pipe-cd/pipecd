@@ -30,7 +30,7 @@ import "pkg/model/piped_stats.proto";
 // All of these RPCs are only called by piped and authenticated by using PIPED_TOKEN.
 service PipedService {
     // Ping is periodically sent to report its realtime status/stats to control-plane.
-    // The received stats will be written to the cache immediately.
+    // The received stats will be pushed to the metrics collector.
     rpc Ping(PingRequest) returns (PingResponse) {}
 
     // ReportPipedMeta is sent while starting up to report its metadata
