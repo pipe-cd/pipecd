@@ -23,15 +23,15 @@ func MakePiped(input *model.Piped) *Piped {
 		return nil
 	}
 	return &Piped{
-		Id: input.Id,
-		Desc: input.Desc,
-		ProjectId: input.ProjectId,
-		Version: input.Version,
-		StartedAt: input.StartedAt,
+		Id:             input.Id,
+		Desc:           input.Desc,
+		ProjectId:      input.ProjectId,
+		Version:        input.Version,
+		StartedAt:      input.StartedAt,
 		CloudProviders: input.CloudProviders,
-		RepositoryIds: input.RepositoryIds,
-		Disabled: input.Disabled,
-		CreatedAt: input.CreatedAt,
-		UpdatedAt: input.UpdatedAt,
+		RepositoryIds:  input.RepositoryIds,
+		Disabled:       input.Disabled,
+		CreatedAt:      input.CreatedAt,
+		UpdatedAt:      input.UpdatedAt,
 	}
 }
