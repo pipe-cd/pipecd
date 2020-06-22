@@ -70,8 +70,6 @@ export const DeploymentDetail: FC<Props> = ({
                 </span>
               </Box>
             </Box>
-            {/* TODO: Display createAt time as text */}
-
             <LabeledText label="CREATED AT" value={`${commit.createdAt}`} />
             <LabeledText label="TRIGGERED BY" value={commit.author} />
           </Box>
