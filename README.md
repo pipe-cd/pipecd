@@ -29,8 +29,8 @@ This project aims to explore and develop a unified delivery infrastructure for C
 - Intuitive UI
 
 **Easy to Operate**
-- Just 2 components: `piped` and `control-plane`
-- Piped can be run on kubernetes, vm or even local machine
+- Two seperate components: single binary `piped` and `control-plane`
+- `piped` can be run on kubernetes, vm or even local machine
 - Easy to operate multi-tenancy, multi-cluster
 - Security: your credentials are not exposed outside of your cluster
 
