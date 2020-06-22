@@ -9,7 +9,8 @@
     "gen": "scaffdog generate",
     "test": "TZ=Asia/Tokyo jest --config jest.config.local.js",
     "storybook": "start-storybook -p 6006",
-    "build-storybook": "build-storybook"
+    "build-storybook": "build-storybook",
+    "typecheck": "tsc --noEmit --skipLibCheck"
   },
   "devDependencies": {
     "@bazel/labs": "^1.6.1",

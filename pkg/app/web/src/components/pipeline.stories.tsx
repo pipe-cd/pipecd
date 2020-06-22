@@ -1,9 +1,10 @@
 import React from "react";
 import { createDecoratorRedux } from "../../.storybook/redux-decorator";
 import { Pipeline } from "./pipeline";
+import { Deployment } from "../modules/deployments";
 
 const DEPLOYMENT_ID = "debug-deployment-id-01";
-const fakeDeployment = {
+const fakeDeployment: Deployment = {
   id: DEPLOYMENT_ID,
   applicationId: "debug-project/development/debug-app",
   envId: "development",
@@ -25,7 +26,7 @@ const fakeDeployment = {
       pullRequest: 0,
       createdAt: 1592201366,
     },
-    user: "cakecatz",
+    commander: "cakecatz",
     timestamp: 1592201366,
   },
   runningCommitHash: "3808585b46f1e90196d7ffe8dd04c807a251febc",
