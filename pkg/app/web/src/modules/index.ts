@@ -6,6 +6,7 @@ import { stageLogsSlice } from "./stage-logs";
 import { activeStageSlice } from "./active-stage";
 import { applicationsSlice } from "./applications";
 import { pipedsSlice } from "./pipeds";
+import { environmentsSlice } from "./environments";
 
 export const reducers = combineReducers({
   deployments: deploymentsSlice.reducer,
@@ -14,6 +15,7 @@ export const reducers = combineReducers({
   stageLogs: stageLogsSlice.reducer,
   activeStage: activeStageSlice.reducer,
   pipeds: pipedsSlice.reducer,
+  environments: environmentsSlice.reducer,
 });
 
 export type AppState = ReturnType<typeof reducers>;

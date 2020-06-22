@@ -1,4 +1,4 @@
-import React, { FC, memo } from "react";
+import React, { FC, memo, useEffect } from "react";
 import { Route, Switch } from "react-router-dom";
 import { Header } from "../components/header";
 import {
@@ -12,8 +12,15 @@ import { ApplicationDetailPage } from "./applications/detail";
 import { DeploymentIndexPage } from "./deployments/index";
 import { DeploymentDetailPage } from "./deployments/detail";
 import { SettingsIndexPage } from "./settings";
+import { useDispatch } from "react-redux";
+import { fetchEnvironments } from "../modules/environments";
 
 export const Pages: FC = memo(() => {
+  const dispatch = useDispatch();
+  useEffect(() => {
+    dispatch(fetchEnvironments());
+  }, []);
+
   return (
     <>
       <Header />
