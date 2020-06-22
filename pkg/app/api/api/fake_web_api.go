@@ -99,7 +99,64 @@ func (a *FakeWebAPI) DisablePiped(ctx context.Context, req *webservice.DisablePi
 }
 
 func (a *FakeWebAPI) ListPipeds(ctx context.Context, req *webservice.ListPipedsRequest) (*webservice.ListPipedsResponse, error) {
-	return nil, status.Error(codes.Unimplemented, "")
+	now := time.Now()
+	pipeds := []*webservice.Piped{
+		{
+			Id:        "492220b1-c080-4781-9e55-7e278760e0ef",
+			Desc:      "piped for debug 1",
+			Disabled:  false,
+			CreatedAt: now.Unix(),
+			UpdatedAt: now.Unix(),
+		},
+		{
+			Id:        "bdd71c9e-5406-46fb-a0e4-b2124ea1c1ea",
+			Desc:      "piped for debug 2",
+			Disabled:  false,
+			CreatedAt: now.Unix(),
+			UpdatedAt: now.Unix(),
+		},
+		{
+			Id:        "42e9fa90-22c1-4436-b10c-094044329c27",
+			Disabled:  false,
+			CreatedAt: now.Unix(),
+			UpdatedAt: now.Unix(),
+		},
+	}
+	if req.WithStatus {
+		pipeds[0].Status = webservice.PipedConnectionStatus_PIPED_CONNECTION_ONLINE
+		pipeds[1].Status = webservice.PipedConnectionStatus_PIPED_CONNECTION_ONLINE
+		pipeds[2].Status = webservice.PipedConnectionStatus_PIPED_CONNECTION_OFFLINE
+	}
+
+	return &webservice.ListPipedsResponse{
+		Pipeds: pipeds,
+	}, nil
+}
+
+func (a *FakeWebAPI) GetPiped(ctx context.Context, req *webservice.GetPipedRequest) (*webservice.GetPipedResponse, error) {
+	now := time.Now()
+	return &webservice.GetPipedResponse{
+		Piped: &webservice.Piped{
+			Id:        "492220b1-c080-4781-9e55-7e278760e0ef",
+			Desc:      "piped for debug 1",
+			ProjectId: fakeProjectID,
+			Version:   "debug-version",
+			StartedAt: now.Add(-30 * time.Minute).Unix(),
+			CloudProviders: []*model.Piped_CloudProvider{
+				{
+					Name: "kubernetes-default",
+					Type: model.CloudProviderKubernetes.String(),
+				},
+			},
+			RepositoryIds: []string{
+				"piped-repo-1",
+				"piped-repo-2",
+			},
+			Disabled:  false,
+			CreatedAt: now.Unix(),
+			UpdatedAt: now.Unix(),
+		},
+	}, nil
 }
 
 func (a *FakeWebAPI) AddApplication(ctx context.Context, req *webservice.AddApplicationRequest) (*webservice.AddApplicationResponse, error) {

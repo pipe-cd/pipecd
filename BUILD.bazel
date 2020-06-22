@@ -38,6 +38,7 @@ buildifier(
 # gazelle:exclude pkg/model/application.pb.validate.go
 # gazelle:exclude pkg/model/application_live_state.pb.validate.go
 # gazelle:exclude pkg/model/command.pb.validate.go
+# gazelle:exclude pkg/model/common.pb.validate.go
 # gazelle:exclude pkg/model/deployment.pb.validate.go
 # gazelle:exclude pkg/model/environment.pb.validate.go
 # gazelle:exclude pkg/model/logblock.pb.validate.go

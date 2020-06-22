@@ -40,7 +40,7 @@ var (
 type PipedStore interface {
 	AddPiped(ctx context.Context, piped *model.Piped) error
 	GetPiped(ctx context.Context, id string) (*model.Piped, error)
-	ListPipeds(ctx context.Context, opts ListOptions) ([]model.Piped, error)
+	ListPipeds(ctx context.Context, opts ListOptions) ([]*model.Piped, error)
 	UpdatePiped(ctx context.Context, id string, updater func(piped *model.Piped) error) error
 }
 
@@ -80,12 +80,12 @@ func (s *pipedStore) GetPiped(ctx context.Context, id string) (*model.Piped, err
 	return &entity, nil
 }
 
-func (s *pipedStore) ListPipeds(ctx context.Context, opts ListOptions) ([]model.Piped, error) {
+func (s *pipedStore) ListPipeds(ctx context.Context, opts ListOptions) ([]*model.Piped, error) {
 	it, err := s.ds.Find(ctx, pipedModelKind, opts)
 	if err != nil {
 		return nil, err
 	}
-	ps := make([]model.Piped, 0)
+	ps := make([]*model.Piped, 0)
 	for {
 		var p model.Piped
 		err := it.Next(&p)
@@ -95,7 +95,7 @@ func (s *pipedStore) ListPipeds(ctx context.Context, opts ListOptions) ([]model.
 		if err != nil {
 			return nil, err
 		}
-		ps = append(ps, p)
+		ps = append(ps, &p)
 	}
 	return ps, nil
 }
