@@ -35,6 +35,7 @@ import (
 	"github.com/pipe-cd/pipe/pkg/app/piped/driftdetector"
 	"github.com/pipe-cd/pipe/pkg/app/piped/livestatereporter"
 	"github.com/pipe-cd/pipe/pkg/app/piped/livestatestore"
+	"github.com/pipe-cd/pipe/pkg/app/piped/statsreporter"
 	"github.com/pipe-cd/pipe/pkg/app/piped/toolregistry"
 	"github.com/pipe-cd/pipe/pkg/app/piped/trigger"
 	"github.com/pipe-cd/pipe/pkg/cache/memorycache"
@@ -143,6 +144,15 @@ func (p *piped) run(ctx context.Context, t cli.Telemetry) error {
 		})
 		group.Go(func() error {
 			return admin.Run(ctx)
+		})
+	}
+
+	// Start running stats reporter.
+	{
+		url := fmt.Sprintf("http://localhost:%d/metrics", p.adminPort)
+		r := statsreporter.NewReporter(url, apiClient, t.Logger)
+		group.Go(func() error {
+			return r.Run(ctx)
 		})
 	}
 

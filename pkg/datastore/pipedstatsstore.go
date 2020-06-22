@@ -48,11 +48,8 @@ func NewPipedStatsStore(ds DataStore) PipedStatsStore {
 
 func (s *pipedStatsStore) AddPipedStats(ctx context.Context, ps *model.PipedStats) error {
 	now := s.nowFunc().Unix()
-	if ps.CreatedAt == 0 {
-		ps.CreatedAt = now
-	}
-	if ps.UpdatedAt == 0 {
-		ps.UpdatedAt = now
+	if ps.Timestamp == 0 {
+		ps.Timestamp = now
 	}
 	if err := ps.Validate(); err != nil {
 		return err

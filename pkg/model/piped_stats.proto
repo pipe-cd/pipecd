@@ -20,12 +20,18 @@ option go_package = "github.com/pipe-cd/pipe/pkg/model";
 import "validate/validate.proto";
 
 message PipedStats {
-    string piped_id = 1 [(validate.rules).string.min_len = 1];
-    string project_id = 2 [(validate.rules).string.min_len = 1];
-    string version = 3 [(validate.rules).string.min_len = 1];
-    int64 local_time = 4 [(validate.rules).int64.gt = 0];
-    int64 running_deployments = 5;
-    int64 k8s_api_rps = 6;
-    int64 created_at = 14 [(validate.rules).int64.gt = 0];
-    int64 updated_at = 15 [(validate.rules).int64.gt = 0];
+    message PrometheusMetrics {
+        enum Type {
+            GAUGE = 0;
+            COUNT = 1;
+        }
+
+        string name = 1 [(validate.rules).string.min_len = 1];
+        Type type = 2 [(validate.rules).enum.defined_only = true];
+        double value = 3;
+    }
+
+    string version = 1 [(validate.rules).string.min_len = 1];
+    int64 timestamp = 2 [(validate.rules).int64.gt = 0];
+    repeated PrometheusMetrics prometheus_stats = 3;
 }
