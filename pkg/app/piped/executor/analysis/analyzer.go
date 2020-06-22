@@ -65,7 +65,7 @@ func (a *analyzer) run(ctx context.Context) error {
 			}
 
 			if failureCount > a.failureLimit {
-				return fmt.Errorf("anslysis '%s' by %s failed because the failure number exceeded the failure limit %d", a.id, a.providerType, a.failureLimit)
+				return fmt.Errorf("anslysis '%s' by %s failed because the failure number exceeded %d, the failure limit", a.id, a.providerType, a.failureLimit)
 			}
 		case <-ctx.Done():
 			return nil
