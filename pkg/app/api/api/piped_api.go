@@ -259,7 +259,7 @@ func (a *PipedAPI) CreateDeployment(ctx context.Context, req *pipedservice.Creat
 // ReportDeploymentPlanned used by piped to update the status
 // of a specific deployment to PLANNED.
 func (a *PipedAPI) ReportDeploymentPlanned(ctx context.Context, req *pipedservice.ReportDeploymentPlannedRequest) (*pipedservice.ReportDeploymentPlannedResponse, error) {
-	updater := datastore.DeploymentToPlannedUpdater(req.Description, req.StatusDescription, req.Stages)
+	updater := datastore.DeploymentToPlannedUpdater(req.Description, req.StatusDescription, req.RunningCommitHash, req.Stages)
 	err := a.deploymentStore.UpdateDeployment(ctx, req.DeploymentId, updater)
 	if err != nil {
 		switch err {

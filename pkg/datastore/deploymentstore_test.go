@@ -26,40 +26,46 @@ import (
 )
 
 func TestDeploymentToPlannedUpdater(t *testing.T) {
-	expectedDesc := "updated-description"
-	expectedStatusDesc := "update-status-desc"
-	expectedStages := []*model.PipelineStage{
-		{
-			Id:    "stage-id1",
-			Name:  "stage1",
-			Desc:  "desc1",
-			Index: 1,
-			Requires: []string{
-				"requires1",
+	var (
+		expectedDesc              = "updated-description"
+		expectedStatusDesc        = "update-status-desc"
+		expectedRunningCommitHash = "update-running-commit-hash"
+		expectedStages            = []*model.PipelineStage{
+			{
+				Id:    "stage-id1",
+				Name:  "stage1",
+				Desc:  "desc1",
+				Index: 1,
+				Requires: []string{
+					"requires1",
+				},
+				Status:   model.StageStatus_STAGE_SUCCESS,
+				Metadata: map[string]string{"meta": "value"},
 			},
-			Status:   model.StageStatus_STAGE_SUCCESS,
-			Metadata: map[string]string{"meta": "value"},
-		},
-	}
+		}
 
-	d := model.Deployment{
-		Id:                "deployment-id",
-		Description:       "description",
-		StatusDescription: "status-description",
-		Status:            model.DeploymentStatus_DEPLOYMENT_PENDING,
-		Stages:            []*model.PipelineStage{},
-	}
+		d = model.Deployment{
+			Id:                "deployment-id",
+			Description:       "description",
+			StatusDescription: "status-description",
+			Status:            model.DeploymentStatus_DEPLOYMENT_PENDING,
+			Stages:            []*model.PipelineStage{},
+		}
 
-	updater := DeploymentToPlannedUpdater(
-		expectedDesc,
-		expectedStatusDesc,
-		expectedStages,
+		updater = DeploymentToPlannedUpdater(
+			expectedDesc,
+			expectedStatusDesc,
+			expectedRunningCommitHash,
+			expectedStages,
+		)
 	)
+
 	err := updater(&d)
 	require.NoError(t, err)
 	assert.Equal(t, model.DeploymentStatus_DEPLOYMENT_PLANNED, d.Status)
 	assert.Equal(t, expectedDesc, d.Description)
 	assert.Equal(t, expectedStatusDesc, d.StatusDescription)
+	assert.Equal(t, expectedRunningCommitHash, d.RunningCommitHash)
 	assert.Equal(t, expectedStages, d.Stages)
 }
 

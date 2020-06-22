@@ -167,7 +167,7 @@ func (p *planner) Run(ctx context.Context) error {
 	}
 
 	if err == nil {
-		return p.reportDeploymentPlanned(ctx, out)
+		return p.reportDeploymentPlanned(ctx, p.lastSuccessfulCommitHash, out)
 	}
 	return p.reportDeploymentCompleted(ctx, model.DeploymentStatus_DEPLOYMENT_FAILURE, err.Error())
 }
@@ -181,7 +181,7 @@ func (p *planner) reportDeploymentCancelled(ctx context.Context, cmd *model.Repo
 	return cmd.Report(ctx, model.CommandStatus_COMMAND_SUCCEEDED, nil)
 }
 
-func (p *planner) reportDeploymentPlanned(ctx context.Context, out pln.Output) error {
+func (p *planner) reportDeploymentPlanned(ctx context.Context, runningCommitHash string, out pln.Output) error {
 	var (
 		err   error
 		retry = pipedservice.NewRetry(10)
@@ -189,6 +189,7 @@ func (p *planner) reportDeploymentPlanned(ctx context.Context, out pln.Output) e
 			DeploymentId:      p.deployment.Id,
 			Description:       out.Description,
 			StatusDescription: "Deployment pipeline has been planned",
+			RunningCommitHash: runningCommitHash,
 			Stages:            out.Stages,
 		}
 	)
