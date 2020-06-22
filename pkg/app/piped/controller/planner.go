@@ -190,6 +190,7 @@ func (p *planner) reportDeploymentPlanned(ctx context.Context, runningCommitHash
 			Description:       out.Description,
 			StatusDescription: "Deployment pipeline has been planned",
 			RunningCommitHash: runningCommitHash,
+			Version:           out.Version,
 			Stages:            out.Stages,
 		}
 	)

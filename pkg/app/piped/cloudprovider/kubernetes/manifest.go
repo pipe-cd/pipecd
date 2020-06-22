@@ -57,6 +57,10 @@ func (m Manifest) YamlBytes() ([]byte, error) {
 	return yaml.Marshal(m.u)
 }
 
+func (m Manifest) MarshalJSON() ([]byte, error) {
+	return m.u.MarshalJSON()
+}
+
 func (m Manifest) AddAnnotations(annotations map[string]string) {
 	if len(annotations) == 0 {
 		return

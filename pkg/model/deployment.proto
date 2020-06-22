@@ -67,18 +67,20 @@ message Deployment {
     // This must be one of the provider names registered in the piped.
     string cloud_provider = 8 [(validate.rules).string.min_len = 1];
 
-    DeploymentTrigger trigger = 9 [(validate.rules).message.required = true];
+    DeploymentTrigger trigger = 20 [(validate.rules).message.required = true];
     // Hash value of the most recently successfully deployed commit.
-    string running_commit_hash = 10;
+    string running_commit_hash = 21;
     // Simple description about what this deployment does.
     // e.g. Scale from 10 to 100 replicas.
     // e.g. Update image from v1.5.0 to v1.6.0.
-    string description = 11;
-    DeploymentStatus status = 12 [(validate.rules).enum.defined_only = true];
+    string description = 22;
+    string version = 23;
+
+    DeploymentStatus status = 30 [(validate.rules).enum.defined_only = true];
     // The human-readable description why the deployment is at current status.
-    string status_description = 13;
-    repeated PipelineStage stages = 14;
-    map<string,string> metadata = 15;
+    string status_description = 31;
+    repeated PipelineStage stages = 32;
+    map<string,string> metadata = 33;
 
     int64 completed_at = 100 [(validate.rules).int64.gte = 0];
     int64 created_at = 101 [(validate.rules).int64.gte = 0];

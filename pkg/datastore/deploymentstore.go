@@ -29,12 +29,13 @@ var deploymentFactory = func() interface{} {
 }
 
 var (
-	DeploymentToPlannedUpdater = func(desc, statusDesc, runningCommitHash string, stages []*model.PipelineStage) func(*model.Deployment) error {
+	DeploymentToPlannedUpdater = func(desc, statusDesc, runningCommitHash, version string, stages []*model.PipelineStage) func(*model.Deployment) error {
 		return func(d *model.Deployment) error {
 			d.Status = model.DeploymentStatus_DEPLOYMENT_PLANNED
 			d.Description = desc
 			d.StatusDescription = statusDesc
 			d.RunningCommitHash = runningCommitHash
+			d.Version = version
 			d.Stages = stages
 			return nil
 		}
