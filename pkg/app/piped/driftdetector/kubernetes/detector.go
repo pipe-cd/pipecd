@@ -201,13 +201,13 @@ func (d *detector) checkApplication(ctx context.Context, app *model.Application,
 		return err
 	}
 	sort.Slice(headManifests, func(i, j int) bool {
-		return headManifests[i].Key.IsLess(headManifests[j].Key)
+		return headManifests[i].Key.IsLessWithIgnoringNamespace(headManifests[j].Key)
 	})
 	d.logger.Info(fmt.Sprintf("application %s has %d manifests at commit %s", app.Id, len(headManifests), headCommit.Hash))
 
 	liveManifests := d.stateGetter.GetAppLiveManifests(app.Id)
 	sort.Slice(liveManifests, func(i, j int) bool {
-		return liveManifests[i].Key.IsLess(liveManifests[j].Key)
+		return liveManifests[i].Key.IsLessWithIgnoringNamespace(liveManifests[j].Key)
 	})
 	d.logger.Info(fmt.Sprintf("application %s has %d live manifests", app.Id, len(liveManifests)))
 
@@ -217,13 +217,13 @@ func (d *detector) checkApplication(ctx context.Context, app *model.Application,
 		if h >= len(headManifests) || l >= len(liveManifests) {
 			break
 		}
-		if headManifests[h].Key == liveManifests[l].Key {
+		if headManifests[h].Key.IsEqualWithIgnoringNamespace(liveManifests[l].Key) {
 			h++
 			l++
 			continue
 		}
 		// Has in head but not in live so this should be a missing one.
-		if headManifests[h].Key.IsLess(liveManifests[l].Key) {
+		if headManifests[h].Key.IsLessWithIgnoringNamespace(liveManifests[l].Key) {
 			missings = append(missings, headManifests[h])
 			h++
 			continue
@@ -393,13 +393,13 @@ func makeOutOfSyncStateBecauseMissingOrRedundant(missings, redundancies []provid
 	shortReason := fmt.Sprintf("There are %d missing manifests and %d redundant manifests.", len(missings), len(redundancies))
 	var reasonBuilder strings.Builder
 	if len(missings) > 0 {
-		reasonBuilder.WriteString(fmt.Sprintf("There are %d missing manifests", len(missings)))
+		reasonBuilder.WriteString(fmt.Sprintf("The following %d manifests are defined in Git, but NOT appearing in the cluster", len(missings)))
 		for _, m := range missings {
 			reasonBuilder.WriteString(fmt.Sprintf("- %s", m.Key.String()))
 		}
 	}
 	if len(redundancies) > 0 {
-		reasonBuilder.WriteString(fmt.Sprintf("There are %d redundant manifests", len(redundancies)))
+		reasonBuilder.WriteString(fmt.Sprintf("The following %d manifests are NOT defined in Git, but appearing in the cluster", len(redundancies)))
 		for _, m := range redundancies {
 			reasonBuilder.WriteString(fmt.Sprintf("- %s", m.Key.String()))
 		}
