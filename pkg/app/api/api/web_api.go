@@ -177,13 +177,7 @@ func (a *WebAPI) ListPipeds(ctx context.Context, req *webservice.ListPipedsReque
 	// Returning a response that does not contain sensitive data like KeyHash is more safer.
 	webPipeds := make([]*webservice.Piped, len(pipeds))
 	for i := range pipeds {
-		webPipeds[i] = &webservice.Piped{
-			Id:        pipeds[i].Id,
-			Desc:      pipeds[i].Desc,
-			Disabled:  pipeds[i].Disabled,
-			CreatedAt: pipeds[i].CreatedAt,
-			UpdatedAt: pipeds[i].UpdatedAt,
-		}
+		webPipeds[i] = webservice.MakePiped(pipeds[i])
 		if req.WithStatus {
 			// TODO: While reducing the number of query and get ping connection status from piped_stats
 			webPipeds[i].Status = webservice.PipedConnectionStatus_PIPED_CONNECTION_ONLINE
