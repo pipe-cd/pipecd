@@ -3,9 +3,7 @@ import { LogViewer } from "./log-viewer";
 
 export default {
   title: "LogViewer",
-  component: LogViewer
+  component: LogViewer,
 };
 
-export const overview: React.FC = () => (
-  <LogViewer />
-);
+export const overview: React.FC = () => <LogViewer />;

@@ -4,7 +4,7 @@ import { DeploymentStatus } from "pipe/pkg/app/web/model/deployment_pb";
 
 export default {
   title: "StatusIcon",
-  component: DeploymentStatusIcon
+  component: DeploymentStatusIcon,
 };
 
 export const overview: React.FC = () => (

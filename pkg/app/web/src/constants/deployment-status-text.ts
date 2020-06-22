@@ -7,5 +7,5 @@ export const DEPLOYMENT_STATE_TEXT: Record<DeploymentStatus, string> = {
   [DeploymentStatus.DEPLOYMENT_ROLLING_BACK]: "Rolling Back",
   [DeploymentStatus.DEPLOYMENT_SUCCESS]: "Success",
   [DeploymentStatus.DEPLOYMENT_FAILURE]: "Failure",
-  [DeploymentStatus.DEPLOYMENT_CANCELLED]: "Canceled"
+  [DeploymentStatus.DEPLOYMENT_CANCELLED]: "Canceled",
 };
