@@ -148,7 +148,9 @@ func (p *persister) flush(ctx context.Context) {
 func (p *persister) flushAll(ctx context.Context) {
 	p.stagePersisters.Range(func(_, v interface{}) bool {
 		sp := v.(*stageLogPersister)
-		go sp.flushFromLastCheckpoint(ctx)
+		if !sp.isStale(p.stalePeriod) {
+			go sp.flushFromLastCheckpoint(ctx)
+		}
 		return false
 	})
 }
