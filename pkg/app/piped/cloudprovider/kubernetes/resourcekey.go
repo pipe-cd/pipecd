@@ -172,6 +172,36 @@ func (k ResourceKey) IsLess(a ResourceKey) bool {
 	return false
 }
 
+// IsLessWithIgnoringNamespace reports whether the key should sort before the given key,
+// but this ignores the comparation of the namesapce.
+func (k ResourceKey) IsLessWithIgnoringNamespace(a ResourceKey) bool {
+	if k.APIVersion < a.APIVersion {
+		return true
+	}
+	if k.Kind < a.Kind {
+		return true
+	}
+	if k.Name < a.Name {
+		return true
+	}
+	return false
+}
+
+// IsEqualWithIgnoringNamespace checks whether the key is equal to the given key,
+// but this ignores the comparation of the namesapce.
+func (k ResourceKey) IsEqualWithIgnoringNamespace(a ResourceKey) bool {
+	if k.APIVersion != a.APIVersion {
+		return false
+	}
+	if k.Kind != a.Kind {
+		return false
+	}
+	if k.Name != a.Name {
+		return false
+	}
+	return true
+}
+
 func MakeResourceKey(obj *unstructured.Unstructured) ResourceKey {
 	k := ResourceKey{
 		APIVersion: obj.GetAPIVersion(),
