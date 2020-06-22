@@ -17,6 +17,7 @@ package config
 import (
 	"encoding/json"
 	"fmt"
+	"math"
 	"strconv"
 	"strings"
 )
@@ -32,6 +33,17 @@ func (r Replicas) String() string {
 		return s + "%"
 	}
 	return s
+}
+
+func (r Replicas) Calculate(total, defaultValue int) int {
+	if r.Number == 0 {
+		return defaultValue
+	}
+	if !r.IsPercentage {
+		return r.Number
+	}
+	num := float64(r.Number*total) / 100.0
+	return int(math.Ceil(num))
 }
 
 func (r Replicas) MarshalJSON() ([]byte, error) {

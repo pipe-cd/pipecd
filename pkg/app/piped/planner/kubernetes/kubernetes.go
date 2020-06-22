@@ -24,6 +24,7 @@ import (
 	"go.uber.org/zap"
 
 	provider "github.com/pipe-cd/pipe/pkg/app/piped/cloudprovider/kubernetes"
+	"github.com/pipe-cd/pipe/pkg/app/piped/cloudprovider/kubernetes/resource"
 	"github.com/pipe-cd/pipe/pkg/app/piped/planner"
 	"github.com/pipe-cd/pipe/pkg/model"
 )
@@ -234,27 +235,6 @@ func parseContainerImage(image string) (name, tag string) {
 	return
 }
 
-type deployment struct {
-	Spec deploymentSpec `json:"spec"`
-}
-
-type deploymentSpec struct {
-	Template podTemplate `json:"template"`
-}
-
-type podTemplate struct {
-	Spec podSpec `json:"spec"`
-}
-
-type podSpec struct {
-	Containers []container `json:"containers"`
-}
-
-type container struct {
-	Name  string `json:"name"`
-	Image string `json:"image"`
-}
-
 // TODO: Add ability to configure how to determine application version.
 func determineVersion(manifests []provider.Manifest) (string, error) {
 	for _, m := range manifests {
@@ -265,7 +245,7 @@ func determineVersion(manifests []provider.Manifest) (string, error) {
 		if err != nil {
 			return "", err
 		}
-		var d deployment
+		var d resource.Deployment
 		if err := json.Unmarshal(data, &d); err != nil {
 			return "", err
 		}

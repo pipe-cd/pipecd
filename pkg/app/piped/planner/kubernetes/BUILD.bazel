@@ -10,6 +10,7 @@ go_library(
     visibility = ["//visibility:public"],
     deps = [
         "//pkg/app/piped/cloudprovider/kubernetes:go_default_library",
+        "//pkg/app/piped/cloudprovider/kubernetes/resource:go_default_library",
         "//pkg/app/piped/planner:go_default_library",
         "//pkg/config:go_default_library",
         "//pkg/model:go_default_library",

@@ -62,3 +62,7 @@ func (e *Executor) ensurePrimaryUpdate(ctx context.Context) model.StageStatus {
 	e.LogPersister.AppendSuccess(fmt.Sprintf("Successfully applied %d primary resources", len(manifests)))
 	return model.StageStatus_STAGE_SUCCESS
 }
+
+func (e *Executor) rollbackPrimary(ctx context.Context) model.StageStatus {
+	return model.StageStatus_STAGE_SUCCESS
+}

@@ -82,18 +82,25 @@ func (e *Executor) Execute(sig executor.StopSignal) model.StageStatus {
 	switch model.Stage(e.Stage.Name) {
 	case model.StageK8sPrimaryUpdate:
 		status = e.ensurePrimaryUpdate(ctx)
+
 	case model.StageK8sCanaryRollout:
 		status = e.ensureCanaryRollout(ctx)
+
 	case model.StageK8sCanaryClean:
 		status = e.ensureCanaryClean(ctx)
+
 	case model.StageK8sBaselineRollout:
 		status = e.ensureBaselineRollout(ctx)
+
 	case model.StageK8sBaselineClean:
 		status = e.ensureBaselineClean(ctx)
+
 	case model.StageK8sTrafficSplit:
 		status = e.ensureTrafficSplit(ctx)
+
 	case model.StageRollback:
 		status = e.ensureRollback(ctx)
+
 	default:
 		e.LogPersister.AppendError(fmt.Sprintf("Unsupported stage %s for kubernetes application", e.Stage.Name))
 		return model.StageStatus_STAGE_FAILURE
@@ -153,18 +160,26 @@ func (e *Executor) loadRunningManifests(ctx context.Context) (manifests []provid
 	return manifests, nil
 }
 
-func (e *Executor) ensureTrafficSplit(ctx context.Context) model.StageStatus {
-	return model.StageStatus_STAGE_SUCCESS
-}
-
 func (e *Executor) ensureRollback(ctx context.Context) model.StageStatus {
 	// 1. Revert workloads of PRIMARY variant.
+	if state := e.rollbackPrimary(ctx); state != model.StageStatus_STAGE_SUCCESS {
+		return state
+	}
 
 	// 2. Ensure that all traffics are routed to the PRIMARY variant.
+	if state := e.rollbackTraffic(ctx); state != model.StageStatus_STAGE_SUCCESS {
+		return state
+	}
 
 	// 3. Delete workloads of CANARY variant.
+	if state := e.ensureCanaryClean(ctx); state != model.StageStatus_STAGE_SUCCESS {
+		return state
+	}
 
 	// 4. Delete worloads of BASELINE variant.
+	if state := e.ensureBaselineClean(ctx); state != model.StageStatus_STAGE_SUCCESS {
+		return state
+	}
 
 	return model.StageStatus_STAGE_SUCCESS
 }
