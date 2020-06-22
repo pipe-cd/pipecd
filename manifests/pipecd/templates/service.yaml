@@ -9,8 +9,8 @@ metadata:
   {{- with .Values.service.annotations }}
     {{- toYaml . | nindent 4 }}
   {{- end }}
-  {{- if .Values.backendConfig.enabled -}}
-  {{- nindent 4 (toYaml .Values.backendConfig.annotation) }}
+  {{- if .Values.backendConfig.enabled }}
+    beta.cloud.google.com/backend-config: '{"ports": {"internal-service": {{ include "pipecd.fullname" . }} }}'
   {{- end }}
 spec:
   type: NodePort

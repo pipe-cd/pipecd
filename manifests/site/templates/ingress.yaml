@@ -11,9 +11,12 @@ metadata:
   name: {{ $fullName }}
   labels:
     {{- include "site.labels" . | nindent 4 }}
-  {{- with .Values.ingress.annotations }}
   annotations:
+  {{- with .Values.ingress.annotations }}
     {{- toYaml . | nindent 4 }}
+  {{- end }}
+  {{- if .Values.managedCertificate.enabled }}
+    networking.gke.io/managed-certificates: {{ include "site.fullname" . }}
   {{- end }}
 spec:
   backend:

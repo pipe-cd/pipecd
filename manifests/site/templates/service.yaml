@@ -4,9 +4,9 @@ metadata:
   name: {{ include "site.fullname" . }}
   labels:
     {{- include "site.labels" . | nindent 4 }}
-  {{- if .Values.backendConfig.enabled }}
   annotations:
-  {{- nindent 4 (toYaml .Values.backendConfig.annotation) }}
+  {{- if .Values.backendConfig.enabled }}
+    beta.cloud.google.com/backend-config: '{"ports": {"http": {{ include "site.fullname" . }} }}'
   {{- end }}
 spec:
   {{- if .Values.ingress.enabled }}

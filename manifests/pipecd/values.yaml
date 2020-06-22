@@ -6,16 +6,16 @@ service:
     cloud.google.com/app-protocols: '{"service":"HTTP2", "internal-service":"HTTP2"}'
 
 backendConfig:
+  enabled: true
+
+managedCertificate:
   enabled: false
-  annotation:
-    beta.cloud.google.com/backend-config: '{"ports": {"internal-service":"internal-service"}}'
 
 ingress:
   enabled: false
   annotations: {}
     # kubernetes.io/ingress.allow-http: "false"
     # kubernetes.io/ingress.global-static-ip-name: pipecd
-    # networking.gke.io/managed-certificates: pipecd
   domains: []
     # - api.pipecd.dev
     # - dev.pipecd.dev
