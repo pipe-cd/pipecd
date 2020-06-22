@@ -70,6 +70,10 @@ func (s *samplecli) run(ctx context.Context, t cli.Telemetry) error {
 		return s.listEnvironments(ctx, cli, data, t.Logger)
 	case "RegisterPiped":
 		return s.registerPiped(ctx, cli, data, t.Logger)
+	case "ListPipeds":
+		return s.listPipeds(ctx, cli, data, t.Logger)
+	case "GetPiped":
+		return s.getPiped(ctx, cli, data, t.Logger)
 	case "AddApplication":
 		return s.addApplication(ctx, cli, data, t.Logger)
 	case "ListApplications":
@@ -148,6 +152,36 @@ func (s *samplecli) registerPiped(ctx context.Context, cli webservice.Client, pa
 	logger.Info("successfully run RegisterPiped")
 	fmt.Printf("Id: %+v\n", resp.Id)
 	fmt.Printf("key: %+v\n", resp.Key)
+	return nil
+}
+
+func (s *samplecli) listPipeds(ctx context.Context, cli webservice.Client, payload []byte, logger *zap.Logger) error {
+	req := webservice.ListPipedsRequest{}
+	if err := json.Unmarshal(payload, &req); err != nil {
+		return err
+	}
+	resp, err := cli.ListPipeds(ctx, &req)
+	if err != nil {
+		logger.Error("failed to run ListPipeds", zap.Error(err))
+		return err
+	}
+	logger.Info("successfully run ListPipeds")
+	fmt.Printf("Pipeds: %+v\n", resp.Pipeds)
+	return nil
+}
+
+func (s *samplecli) getPiped(ctx context.Context, cli webservice.Client, payload []byte, logger *zap.Logger) error {
+	req := webservice.GetPipedRequest{}
+	if err := json.Unmarshal(payload, &req); err != nil {
+		return err
+	}
+	resp, err := cli.GetPiped(ctx, &req)
+	if err != nil {
+		logger.Error("failed to run GetPiped", zap.Error(err))
+		return err
+	}
+	logger.Info("successfully run GetPiped")
+	fmt.Printf("Piped: %+v\n", resp.Piped)
 	return nil
 }
 

@@ -30,15 +30,21 @@ go_library(
     name = "go_default_library",
     srcs = [
         "client.go",
+        "model.go",
         "service.pb.auth.go",
     ],
     embed = [":webservice_go_proto"],
     importpath = "github.com/pipe-cd/pipe/pkg/app/api/service/webservice",
     visibility = ["//visibility:public"],
     deps = [
+        "//pkg/model:go_default_library",
         "//pkg/role:go_default_library",
         "//pkg/rpc/rpcauth:go_default_library",
         "//pkg/rpc/rpcclient:go_default_library",
+        "@com_github_envoyproxy_protoc_gen_validate//validate:go_default_library",
+        "@com_github_golang_protobuf//proto:go_default_library",
         "@org_golang_google_grpc//:go_default_library",
+        "@org_golang_google_protobuf//reflect/protoreflect:go_default_library",
+        "@org_golang_google_protobuf//runtime/protoimpl:go_default_library",
     ],
 )

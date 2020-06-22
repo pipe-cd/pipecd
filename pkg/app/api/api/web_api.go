@@ -151,7 +151,61 @@ func (a *WebAPI) DisablePiped(ctx context.Context, req *webservice.DisablePipedR
 }
 
 func (a *WebAPI) ListPipeds(ctx context.Context, req *webservice.ListPipedsRequest) (*webservice.ListPipedsResponse, error) {
-	return nil, status.Error(codes.Unimplemented, "")
+	claims, err := rpcauth.ExtractClaims(ctx)
+	if err != nil {
+		return nil, err
+	}
+	opts := datastore.ListOptions{
+		Filters: []datastore.ListFilter{
+			{
+				Field:    "ProjectId",
+				Operator: "==",
+				Value:    claims.Role.ProjectId,
+			},
+			{
+				Field:    "Disabled",
+				Operator: "==",
+				Value:    false,
+			},
+		},
+	}
+	pipeds, err := a.pipedStore.ListPipeds(ctx, opts)
+	if err != nil {
+		a.logger.Error("failed to get pipeds", zap.Error(err))
+		return nil, status.Error(codes.Internal, "failed to get pipeds")
+	}
+	// Returning a response that does not contain sensitive data like KeyHash is more safer.
+	webPipeds := make([]*webservice.OmittedPiped, len(pipeds))
+	for i := range pipeds {
+		webPipeds[i] = &webservice.OmittedPiped{
+			Id:        pipeds[i].Id,
+			Desc:      pipeds[i].Desc,
+			Disabled:  pipeds[i].Disabled,
+			CreatedAt: pipeds[i].CreatedAt,
+			UpdatedAt: pipeds[i].UpdatedAt,
+		}
+		if req.WithStatus {
+			// TODO: While reducing the number of query and get ping connection status from piped_stats
+			webPipeds[i].Status = webservice.PipedConnectionStatus_PIPED_CONNECTION_ONLINE
+		}
+	}
+	return &webservice.ListPipedsResponse{
+		Pipeds: webPipeds,
+	}, nil
+}
+
+func (a *WebAPI) GetPiped(ctx context.Context, req *webservice.GetPipedRequest) (*webservice.GetPipedResponse, error) {
+	piped, err := a.pipedStore.GetPiped(ctx, req.PipedId)
+	if errors.Is(err, datastore.ErrNotFound) {
+		return nil, status.Error(codes.NotFound, "piped is not found")
+	}
+	if err != nil {
+		a.logger.Error("failed to get piped", zap.Error(err))
+		return nil, status.Error(codes.Internal, "failed to get piped")
+	}
+	return &webservice.GetPipedResponse{
+		Piped: webservice.MakePiped(piped),
+	}, nil
 }
 
 func (a *WebAPI) AddApplication(ctx context.Context, req *webservice.AddApplicationRequest) (*webservice.AddApplicationResponse, error) {
