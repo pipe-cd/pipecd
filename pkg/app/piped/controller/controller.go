@@ -108,8 +108,8 @@ type controller struct {
 	// Map from deployment ID to the completion time
 	// of the done schedulers.
 	doneSchedulers map[string]time.Time
-	// Map from application ID to its most recent successful commit hash.
-	mostRecentSuccessfulCommits map[string]string
+	// Map from application ID to its most recently successful commit hash.
+	mostRecentlySuccessfulCommits map[string]string
 	// WaitGroup for waiting the completions of all planners, schedulers.
 	wg sync.WaitGroup
 
@@ -146,11 +146,11 @@ func NewController(
 		pipedConfig:       pipedConfig,
 		logPersister:      lp,
 
-		planners:                    make(map[string]*planner),
-		donePlanners:                make(map[string]time.Time),
-		schedulers:                  make(map[string]*scheduler),
-		doneSchedulers:              make(map[string]time.Time),
-		mostRecentSuccessfulCommits: make(map[string]string),
+		planners:                      make(map[string]*planner),
+		donePlanners:                  make(map[string]time.Time),
+		schedulers:                    make(map[string]*scheduler),
+		doneSchedulers:                make(map[string]time.Time),
+		mostRecentlySuccessfulCommits: make(map[string]string),
 
 		syncInternal: 10 * time.Second,
 		gracePeriod:  gracePeriod,
@@ -317,12 +317,12 @@ func (c *controller) startNewPlanner(ctx context.Context, d *model.Deployment) (
 	// The most recent successful commit is saved in memory.
 	// But when the piped is restarted that data will be cleared too.
 	// So in that case, we have to use the API to check.
-	commit := c.mostRecentSuccessfulCommits[d.ApplicationId]
+	commit := c.mostRecentlySuccessfulCommits[d.ApplicationId]
 	if commit == "" {
 		mostRecent, err := c.getMostRecentlySuccessfulDeployment(ctx, d.ApplicationId)
 		if err == nil {
 			commit = mostRecent.Trigger.Commit.Hash
-			c.mostRecentSuccessfulCommits[d.ApplicationId] = commit
+			c.mostRecentlySuccessfulCommits[d.ApplicationId] = commit
 		} else if status.Code(err) == codes.NotFound {
 			logger.Info("there is no previous successful commit for this application")
 		} else {
@@ -373,7 +373,7 @@ func (c *controller) syncScheduler(ctx context.Context) error {
 		if s.DoneDeploymentStatus() != model.DeploymentStatus_DEPLOYMENT_SUCCESS {
 			continue
 		}
-		c.mostRecentSuccessfulCommits[id] = s.CommitHash()
+		c.mostRecentlySuccessfulCommits[id] = s.CommitHash()
 	}
 
 	// Remove done schedulers.

@@ -21,6 +21,7 @@ import (
 	"strings"
 
 	provider "github.com/pipe-cd/pipe/pkg/app/piped/cloudprovider/kubernetes"
+	"github.com/pipe-cd/pipe/pkg/config"
 	"github.com/pipe-cd/pipe/pkg/model"
 )
 
@@ -30,6 +31,12 @@ const (
 )
 
 func (e *Executor) ensureCanaryRollout(ctx context.Context) model.StageStatus {
+	canaryOptions := e.StageConfig.K8sCanaryRolloutStageOptions
+	if canaryOptions == nil {
+		e.LogPersister.AppendError(fmt.Sprintf("Malformed configuration for stage %s", e.Stage.Name))
+		return model.StageStatus_STAGE_FAILURE
+	}
+
 	manifests, err := e.loadManifests(ctx)
 	if err != nil {
 		e.LogPersister.AppendError(fmt.Sprintf("Failed while loading manifests (%v)", err))
@@ -41,7 +48,7 @@ func (e *Executor) ensureCanaryRollout(ctx context.Context) model.StageStatus {
 		return model.StageStatus_STAGE_FAILURE
 	}
 
-	canaryManifests, err := e.generateCanaryManifests(ctx, manifests)
+	canaryManifests, err := e.generateCanaryManifests(ctx, manifests, *canaryOptions)
 	if err != nil {
 		e.LogPersister.AppendError(fmt.Sprintf("Unabled to generate manifests for CANARY variant (%v)", err))
 		return model.StageStatus_STAGE_FAILURE
@@ -131,7 +138,7 @@ func (e *Executor) ensureCanaryClean(ctx context.Context) model.StageStatus {
 	return model.StageStatus_STAGE_SUCCESS
 }
 
-func (e *Executor) generateCanaryManifests(ctx context.Context, manifests []provider.Manifest) ([]provider.Manifest, error) {
+func (e *Executor) generateCanaryManifests(ctx context.Context, manifests []provider.Manifest, opts config.K8sCanaryRolloutStageOptions) ([]provider.Manifest, error) {
 	// List of default configurations.
 	var (
 		suffix           = canaryVariant
