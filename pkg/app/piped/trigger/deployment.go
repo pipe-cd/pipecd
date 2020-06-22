@@ -75,7 +75,7 @@ func (t *Trigger) reportMostRecentlyTriggeredDeployment(ctx context.Context, d *
 				DeploymentId: d.Id,
 				Trigger:      d.Trigger,
 				Description:  d.Description,
-				Version:      "",
+				Version:      d.Version,
 				StartedAt:    d.CreatedAt,
 				CompletedAt:  d.CompletedAt,
 			},

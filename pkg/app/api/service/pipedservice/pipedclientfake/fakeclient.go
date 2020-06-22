@@ -250,6 +250,8 @@ func (c *fakeClient) ReportDeploymentPlanned(ctx context.Context, req *pipedserv
 	}
 	d.Status = s
 	d.StatusDescription = req.StatusDescription
+	d.RunningCommitHash = req.RunningCommitHash
+	d.Version = req.Version
 	if len(req.Stages) > 0 {
 		d.Stages = req.Stages
 	}

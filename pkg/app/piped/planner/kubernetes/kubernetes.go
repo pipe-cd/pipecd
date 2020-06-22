@@ -16,9 +16,12 @@ package kubernetes
 
 import (
 	"context"
+	"encoding/json"
 	"fmt"
 	"strings"
 	"time"
+
+	"go.uber.org/zap"
 
 	provider "github.com/pipe-cd/pipe/pkg/app/piped/cloudprovider/kubernetes"
 	"github.com/pipe-cd/pipe/pkg/app/piped/planner"
@@ -46,29 +49,6 @@ func (p *Planner) Plan(ctx context.Context, in planner.Input) (out planner.Outpu
 		return
 	}
 
-	// DEBUG
-	// Image changed
-	//in.MostRecentSuccessfulCommitHash = "626ad85b9c6c02c6409b9aa79ee433fb9b5507d7"
-	// Just a scale
-	//in.MostRecentSuccessfulCommitHash = "09add0800bffbf61bdedf8fb3ef439d7f1fad100"
-
-	// This is the first time to deploy this application
-	// or it was unable to retrieve that value.
-	// We just apply all manifests.
-	if in.MostRecentSuccessfulCommitHash == "" {
-		out.Stages = buildPipeline(cfg.Input.AutoRollback, time.Now())
-		out.Description = fmt.Sprintf("Apply all manifests because it was unable to find the most recent successful commit.")
-		return
-	}
-
-	// If the commit is a revert one. Let's apply primary to rollback.
-	// TODO: Find a better way to determine the revert commit.
-	if strings.Contains(in.Deployment.Trigger.Commit.Message, "/pipecd rollback ") {
-		out.Stages = buildPipeline(cfg.Input.AutoRollback, time.Now())
-		out.Description = fmt.Sprintf("Rollback from commit %s.", in.MostRecentSuccessfulCommitHash)
-		return
-	}
-
 	manifestCache := provider.AppManifestsCache{
 		AppID:  in.Deployment.ApplicationId,
 		Cache:  in.AppManifestsCache,
@@ -86,6 +66,30 @@ func (p *Planner) Plan(ctx context.Context, in planner.Input) (out planner.Outpu
 			return
 		}
 		manifestCache.Put(in.Deployment.Trigger.Commit.Hash, newManifests)
+	}
+
+	// Determine application version from the manifests.
+	if version, e := determineVersion(newManifests); e != nil {
+		in.Logger.Error("unable to determine version", zap.Error(e))
+	} else {
+		out.Version = version
+	}
+
+	// This is the first time to deploy this application
+	// or it was unable to retrieve that value.
+	// We just apply all manifests.
+	if in.MostRecentSuccessfulCommitHash == "" {
+		out.Stages = buildPipeline(cfg.Input.AutoRollback, time.Now())
+		out.Description = fmt.Sprintf("Apply all manifests because it was unable to find the most recent successful commit.")
+		return
+	}
+
+	// If the commit is a revert one. Let's apply primary to rollback.
+	// TODO: Find a better way to determine the revert commit.
+	if strings.Contains(in.Deployment.Trigger.Commit.Message, "/pipecd rollback ") {
+		out.Stages = buildPipeline(cfg.Input.AutoRollback, time.Now())
+		out.Description = fmt.Sprintf("Rollback from commit %s.", in.MostRecentSuccessfulCommitHash)
+		return
 	}
 
 	// Checkout to the most recent successful commit to load its manifests.
@@ -228,4 +232,50 @@ func parseContainerImage(image string) (name, tag string) {
 	paths := strings.Split(parts[0], "/")
 	name = paths[len(paths)-1]
 	return
+}
+
+type deployment struct {
+	Spec deploymentSpec `json:"spec"`
+}
+
+type deploymentSpec struct {
+	Template podTemplate `json:"template"`
+}
+
+type podTemplate struct {
+	Spec podSpec `json:"spec"`
+}
+
+type podSpec struct {
+	Containers []container `json:"containers"`
+}
+
+type container struct {
+	Name  string `json:"name"`
+	Image string `json:"image"`
+}
+
+// TODO: Add ability to configure how to determine application version.
+func determineVersion(manifests []provider.Manifest) (string, error) {
+	for _, m := range manifests {
+		if !m.Key.IsDeployment() {
+			continue
+		}
+		data, err := m.MarshalJSON()
+		if err != nil {
+			return "", err
+		}
+		var d deployment
+		if err := json.Unmarshal(data, &d); err != nil {
+			return "", err
+		}
+
+		containers := d.Spec.Template.Spec.Containers
+		if len(containers) == 0 {
+			return "", nil
+		}
+		_, tag := parseContainerImage(containers[0].Image)
+		return tag, nil
+	}
+	return "", nil
 }

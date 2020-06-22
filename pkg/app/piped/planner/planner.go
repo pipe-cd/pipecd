@@ -48,6 +48,7 @@ type Input struct {
 }
 
 type Output struct {
+	Version     string
 	Stages      []*model.PipelineStage
 	Description string
 }
