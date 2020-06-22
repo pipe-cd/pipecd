@@ -16,6 +16,7 @@ const fakeDeployment: Deployment = {
     path: "k8s",
     configPath: "",
   },
+  version: "0.0.1",
   cloudProvider: "",
   trigger: {
     commit: {

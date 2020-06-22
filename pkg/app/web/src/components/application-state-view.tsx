@@ -6,7 +6,7 @@ import {
   selectById,
 } from "../modules/applications-live-state";
 import { KubernetesStateView } from "./kubernetes-state-view";
-import { ApplicationKind } from "pipe/pkg/app/web/model/application_pb";
+import { ApplicationKind } from "pipe/pkg/app/web/model/common_pb";
 
 interface Props {
   applicationId: string;
