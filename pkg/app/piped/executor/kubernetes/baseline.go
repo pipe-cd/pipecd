@@ -41,7 +41,7 @@ func (e *Executor) ensureBaselineRollout(ctx context.Context) model.StageStatus 
 		return model.StageStatus_STAGE_FAILURE
 	}
 
-	baselineManifests, err := e.generateBaselineManifests(ctx, manifests)
+	baselineManifests, err := e.generateBaselineManifests(manifests)
 	if err != nil {
 		e.LogPersister.AppendError(fmt.Sprintf("Unable to generate manifests for BASELINE variant (%v)", err))
 		return model.StageStatus_STAGE_FAILURE
@@ -131,7 +131,7 @@ func (e *Executor) ensureBaselineClean(ctx context.Context) model.StageStatus {
 	return model.StageStatus_STAGE_SUCCESS
 }
 
-func (e *Executor) generateBaselineManifests(ctx context.Context, manifests []provider.Manifest) ([]provider.Manifest, error) {
+func (e *Executor) generateBaselineManifests(manifests []provider.Manifest) ([]provider.Manifest, error) {
 	// List of default configurations.
 	var (
 		suffix            = baselineVariant
