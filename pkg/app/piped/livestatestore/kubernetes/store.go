@@ -250,9 +250,13 @@ func (s *store) getAppLiveState(appID string) (AppState, bool) {
 		nodes, version = app.getNodes()
 		resources      = make([]*model.KubernetesResourceState, 0, len(nodes))
 	)
-	for _, n := range nodes {
-		resources = append(resources, &n.state)
+	for i := range nodes {
+		state := nodes[i].state
+		state.ParentIds = state.OwnerIds
+		// TODO: Think about adding more parents by using label selectors.
+		resources = append(resources, &state)
 	}
+
 	return AppState{
 		Resources: resources,
 		Version:   version,
