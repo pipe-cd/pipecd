@@ -66,8 +66,8 @@ type ManifestLoader interface {
 type Applier interface {
 	// Apply does applying application manifests by using the tool specified in Input.
 	Apply(ctx context.Context) error
-	// ApplyManifests does applying the given manifests.
-	ApplyManifests(ctx context.Context, manifests []Manifest) error
+	// ApplyManifest does applying the given manifest.
+	ApplyManifest(ctx context.Context, manifest Manifest) error
 	// Delete deletes the given resource from Kubernetes cluster.
 	Delete(ctx context.Context, key ResourceKey) error
 }
@@ -145,27 +145,14 @@ func (p *provider) Apply(ctx context.Context) error {
 	return nil
 }
 
-// ApplyManifests does applying the given manifests.
-func (p *provider) ApplyManifests(ctx context.Context, manifests []Manifest) (err error) {
+// ApplyManifest does applying the given manifest.
+func (p *provider) ApplyManifest(ctx context.Context, manifest Manifest) error {
 	p.initOnce.Do(func() { p.init(ctx) })
 	if p.initErr != nil {
 		return p.initErr
 	}
 
-	switch p.templatingMethod {
-	case TemplatingMethodHelm:
-		return nil
-
-	case TemplatingMethodKustomize:
-		return nil
-
-	case TemplatingMethodNone:
-		err = p.kubectl.Apply(ctx, manifests)
-
-	default:
-		err = fmt.Errorf("unsupport templating method %v", p.templatingMethod)
-	}
-	return
+	return p.kubectl.Apply(ctx, manifest)
 }
 
 // Delete deletes the given resource from Kubernetes cluster.

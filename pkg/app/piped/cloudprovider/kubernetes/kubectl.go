@@ -35,20 +35,18 @@ func NewKubectl(path string) *Kubectl {
 	}
 }
 
-func (c *Kubectl) Apply(ctx context.Context, manifests []Manifest) error {
-	for i := range manifests {
-		data, err := manifests[i].YamlBytes()
-		if err != nil {
-			return err
-		}
-		cmd := exec.CommandContext(ctx, "kubectl", "apply", "-f", "-")
-		r := bytes.NewReader(data)
-		cmd.Stdin = r
+func (c *Kubectl) Apply(ctx context.Context, manifest Manifest) error {
+	data, err := manifest.YamlBytes()
+	if err != nil {
+		return err
+	}
+	cmd := exec.CommandContext(ctx, "kubectl", "apply", "-f", "-")
+	r := bytes.NewReader(data)
+	cmd.Stdin = r
 
-		out, err := cmd.CombinedOutput()
-		if err != nil {
-			return fmt.Errorf("failed to apply: %s (%v)", string(out), err)
-		}
+	out, err := cmd.CombinedOutput()
+	if err != nil {
+		return fmt.Errorf("failed to apply: %s (%v)", string(out), err)
 	}
 	return nil
 }

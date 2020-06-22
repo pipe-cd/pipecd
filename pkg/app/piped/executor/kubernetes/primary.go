@@ -34,19 +34,11 @@ func (e *Executor) ensurePrimaryUpdate(ctx context.Context) model.StageStatus {
 	}
 
 	if len(manifests) == 0 {
-		e.LogPersister.AppendError("No kubernetes manifests to handle")
+		e.LogPersister.AppendError("There are no kubernetes manifests to handle")
 		return model.StageStatus_STAGE_FAILURE
 	}
 
 	for _, m := range manifests {
-		// Add variant label to PRIMARY workload.
-		// if m.Kind == "Deployment" {
-		// 	if err := m.AddVariantLabel(primaryVariant); err != nil {
-		// 		e.LogPersister.AppendError(fmt.Sprintf("Unabled to configure variant label for %s deployment (%v)", m.Name, err))
-		// 		return model.StageStatus_STAGE_FAILURE
-		// 	}
-		// }
-
 		m.AddAnnotations(map[string]string{
 			provider.LabelManagedBy:          provider.ManagedByPiped,
 			provider.LabelPiped:              e.PipedConfig.PipedID,
@@ -58,12 +50,15 @@ func (e *Executor) ensurePrimaryUpdate(ctx context.Context) model.StageStatus {
 		})
 	}
 
-	e.LogPersister.AppendInfo(fmt.Sprintf("Updating %d primary resources", len(manifests)))
-	if err = e.provider.ApplyManifests(ctx, manifests); err != nil {
-		e.LogPersister.AppendError(fmt.Sprintf("Unabled to update primary variant (%v)", err))
-		return model.StageStatus_STAGE_FAILURE
+	e.LogPersister.AppendInfo(fmt.Sprintf("Applying %d primary resources", len(manifests)))
+	for _, m := range manifests {
+		if err = e.provider.ApplyManifest(ctx, m); err != nil {
+			e.LogPersister.AppendError(fmt.Sprintf("Failed to apply manfiest: %s (%v)", m.Key.ReadableString(), err))
+			return model.StageStatus_STAGE_FAILURE
+		}
+		e.LogPersister.AppendSuccess(fmt.Sprintf("- applied manfiest: %s", m.Key.ReadableString()))
 	}
 
-	e.LogPersister.AppendSuccess(fmt.Sprintf("Successfully updated %d primary resources", len(manifests)))
+	e.LogPersister.AppendSuccess(fmt.Sprintf("Successfully applied %d primary resources", len(manifests)))
 	return model.StageStatus_STAGE_SUCCESS
 }

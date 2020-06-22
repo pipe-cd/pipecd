@@ -61,9 +61,12 @@ func (e *Executor) ensureCanaryRollout(ctx context.Context) model.StageStatus {
 
 	// Start rolling out the resources for CANARY variant.
 	e.LogPersister.AppendInfo("Start rolling out CANARY variant...")
-	if err = e.provider.ApplyManifests(ctx, canaryManifests); err != nil {
-		e.LogPersister.AppendError(fmt.Sprintf("Unabled to rollout CANARY variant (%v)", err))
-		return model.StageStatus_STAGE_FAILURE
+	for _, m := range canaryManifests {
+		if err = e.provider.ApplyManifest(ctx, m); err != nil {
+			e.LogPersister.AppendError(fmt.Sprintf("Failed to apply manfiest: %s (%v)", m.Key.ReadableString(), err))
+			return model.StageStatus_STAGE_FAILURE
+		}
+		e.LogPersister.AppendSuccess(fmt.Sprintf("- applied manfiest: %s", m.Key.ReadableString()))
 	}
 
 	e.LogPersister.AppendSuccess("Successfully rolled out CANARY variant")
