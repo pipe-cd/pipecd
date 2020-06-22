@@ -55,12 +55,16 @@ type Input struct {
 	Stage       *model.PipelineStage
 	StageConfig config.PipelineStage
 	// Readonly deployment model.
-	Deployment        *model.Deployment
-	DeploymentConfig  *config.Config
-	PipedConfig       *config.PipedSpec
-	Application       *model.Application
-	WorkingDir        string
-	RepoDir           string
+	Deployment       *model.Deployment
+	DeploymentConfig *config.Config
+	PipedConfig      *config.PipedSpec
+	Application      *model.Application
+	WorkingDir       string
+	// The path to the directory containing repository's source code at target commit.
+	RepoDir string
+	// The path to the directory containing repository's source code at running commit.
+	// This directory is valid only when the Deployment.RunningCommitHash is not empty.
+	RunningRepoDir    string
 	StageWorkingDir   string
 	CommandLister     CommandLister
 	LogPersister      LogPersister

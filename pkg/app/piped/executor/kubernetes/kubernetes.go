@@ -123,6 +123,36 @@ func (e *Executor) loadManifests(ctx context.Context) ([]provider.Manifest, erro
 	return manifests, nil
 }
 
+func (e *Executor) loadRunningManifests(ctx context.Context) (manifests []provider.Manifest, err error) {
+	runningCommit := e.Deployment.RunningCommitHash
+	if runningCommit == "" {
+		return nil, fmt.Errorf("Unable to determine running commit")
+	}
+
+	cache := provider.AppManifestsCache{
+		AppID:  e.Deployment.ApplicationId,
+		Cache:  e.AppManifestsCache,
+		Logger: e.Logger,
+	}
+	manifests, ok := cache.Get(runningCommit)
+	if ok {
+		return manifests, nil
+	}
+
+	// When the manifests were not in the cache we have to load them.
+	var (
+		appDir = filepath.Join(e.RepoDir, e.Deployment.GitPath.Path)
+		p      = provider.NewProvider(appDir, e.RunningRepoDir, e.config.Input, e.Logger)
+	)
+	manifests, err = p.LoadManifests(ctx)
+	if err != nil {
+		return nil, err
+	}
+	cache.Put(runningCommit, manifests)
+
+	return manifests, nil
+}
+
 func (e *Executor) ensureTrafficSplit(ctx context.Context) model.StageStatus {
 	return model.StageStatus_STAGE_SUCCESS
 }

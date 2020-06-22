@@ -198,9 +198,11 @@ message ReportDeploymentPlannedRequest {
     string description = 2;
     // The human-readable description why the deployment is at current status.
     string status_description = 3;
+    // Hash value of the most recently successfully deployed commit.
+    string running_commit_hash = 4;
     // The planned stages.
     // Empty means nothing has changed complared to when the deployment was created.
-    repeated pipe.model.PipelineStage stages = 4;
+    repeated pipe.model.PipelineStage stages = 5;
 }
 
 message ReportDeploymentPlannedResponse {

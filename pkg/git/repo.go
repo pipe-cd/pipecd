@@ -35,6 +35,7 @@ var (
 type Repo interface {
 	GetPath() string
 	GetClonedBranch() string
+	Copy(dest string) (Repo, error)
 
 	ListCommits(ctx context.Context, visionRange string) ([]Commit, error)
 	GetLatestCommit(ctx context.Context) (Commit, error)
@@ -76,6 +77,22 @@ func (r *repo) GetPath() string {
 // GetClonedBranch returns the name of cloned branch.
 func (r *repo) GetClonedBranch() string {
 	return r.clonedBranch
+}
+
+// Copy does copying the repository to the given destination.
+func (r *repo) Copy(dest string) (Repo, error) {
+	cmd := exec.Command("cp", "-rf", r.dir, dest)
+	out, err := cmd.CombinedOutput()
+	if err != nil {
+		return nil, fmt.Errorf("failed to copy: %s (%v)", string(out), err)
+	}
+	return &repo{
+		dir:          dest,
+		gitPath:      r.gitPath,
+		remote:       r.remote,
+		clonedBranch: r.clonedBranch,
+		logger:       r.logger,
+	}, nil
 }
 
 // ListCommits returns a list of commits in a given revision range.

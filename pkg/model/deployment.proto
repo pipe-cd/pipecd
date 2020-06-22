@@ -68,7 +68,7 @@ message Deployment {
     string cloud_provider = 8 [(validate.rules).string.min_len = 1];
 
     DeploymentTrigger trigger = 9 [(validate.rules).message.required = true];
-    // Hash value of the last successfully deployed commit.
+    // Hash value of the most recently successfully deployed commit.
     string running_commit_hash = 10;
     // Simple description about what this deployment does.
     // e.g. Scale from 10 to 100 replicas.

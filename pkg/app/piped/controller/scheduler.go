@@ -36,9 +36,10 @@ import (
 )
 
 var (
-	workspaceGitRepoDirName  = "repo"
-	workspaceStagesDirName   = "stages"
-	defaultDeploymentTimeout = time.Hour
+	workspaceGitRepoDirName        = "repo"
+	workspaceGitRunningRepoDirName = "running-repo"
+	workspaceStagesDirName         = "stages"
+	defaultDeploymentTimeout       = time.Hour
 )
 
 type repoStore interface {
@@ -391,6 +392,7 @@ func (s *scheduler) executeStage(sig executor.StopSignal, ps *model.PipelineStag
 		Application:      app,
 		WorkingDir:       s.workingDir,
 		RepoDir:          filepath.Join(s.workingDir, workspaceGitRepoDirName),
+		RunningRepoDir:   filepath.Join(s.workingDir, workspaceGitRunningRepoDirName),
 		StageWorkingDir:  filepath.Join(s.workingDir, workspaceStagesDirName, ps.Id),
 		CommandLister: stageCommandLister{
 			lister:       s.commandLister,
@@ -445,6 +447,23 @@ func (s *scheduler) ensurePreparing(ctx context.Context, lp logpersister.StageLo
 			return
 		}
 		lp.AppendSuccess(fmt.Sprintf("Successfully cloned repository %s", s.deployment.GitPath.RepoId))
+
+		// Copy and checkout the running revision.
+		if s.deployment.RunningCommitHash != "" {
+			var (
+				runningGitRepo  git.Repo
+				runningRepoPath = filepath.Join(s.workingDir, workspaceGitRunningRepoDirName)
+			)
+			runningGitRepo, err = gitRepo.Copy(runningRepoPath)
+			if err != nil {
+				lp.AppendError(err.Error())
+				return
+			}
+			if err = runningGitRepo.Checkout(ctx, s.deployment.RunningCommitHash); err != nil {
+				lp.AppendError(err.Error())
+				return
+			}
+		}
 
 		// Load deployment configuration for this application.
 		var cfg *config.Config
