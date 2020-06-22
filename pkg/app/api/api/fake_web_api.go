@@ -100,7 +100,7 @@ func (a *FakeWebAPI) DisablePiped(ctx context.Context, req *webservice.DisablePi
 
 func (a *FakeWebAPI) ListPipeds(ctx context.Context, req *webservice.ListPipedsRequest) (*webservice.ListPipedsResponse, error) {
 	now := time.Now()
-	pipeds := []*webservice.OmittedPiped{
+	pipeds := []*webservice.Piped{
 		{
 			Id:        "492220b1-c080-4781-9e55-7e278760e0ef",
 			Desc:      "piped for debug 1",

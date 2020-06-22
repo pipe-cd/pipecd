@@ -175,9 +175,9 @@ func (a *WebAPI) ListPipeds(ctx context.Context, req *webservice.ListPipedsReque
 		return nil, status.Error(codes.Internal, "failed to get pipeds")
 	}
 	// Returning a response that does not contain sensitive data like KeyHash is more safer.
-	webPipeds := make([]*webservice.OmittedPiped, len(pipeds))
+	webPipeds := make([]*webservice.Piped, len(pipeds))
 	for i := range pipeds {
-		webPipeds[i] = &webservice.OmittedPiped{
+		webPipeds[i] = &webservice.Piped{
 			Id:        pipeds[i].Id,
 			Desc:      pipeds[i].Desc,
 			Disabled:  pipeds[i].Disabled,
