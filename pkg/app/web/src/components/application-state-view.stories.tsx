@@ -3,9 +3,9 @@ import { ApplicationStateView } from "./application-state-view";
 
 export default {
   title: "ApplicationStateView",
-  component: ApplicationStateView
+  component: ApplicationStateView,
 };
 
 export const overview: React.FC = () => (
-  <ApplicationStateView />
+  <ApplicationStateView applicationId="application-1" />
 );

@@ -88,7 +88,7 @@ export const ApplicationDetail: FC<Props> = memo(({ applicationId }) => {
             value={
               <Link
                 component={RouterLink}
-                to={`${PAGE_PATH_DEPLOYMENTS}/${app.mostRecentlySuccessfulDeployment.deploymentId}`}
+                to={`${PAGE_PATH_DEPLOYMENTS}/${app.mostRecentlySuccessfulDeployment}`}
               >
                 {app.mostRecentlySuccessfulDeployment.deploymentId}
               </Link>

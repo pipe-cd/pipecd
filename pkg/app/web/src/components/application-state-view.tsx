@@ -1,4 +1,3 @@
-import { ApplicationKind } from "pipe/pkg/app/web/model/common_pb";
 import React, { FC, memo } from "react";
 import { useSelector } from "react-redux";
 import { AppState } from "../modules";
@@ -7,6 +6,7 @@ import {
   selectById,
 } from "../modules/applications-live-state";
 import { KubernetesStateView } from "./kubernetes-state-view";
+import { ApplicationKind } from "pipe/pkg/app/web/model/common_pb";
 
 interface Props {
   applicationId: string;
