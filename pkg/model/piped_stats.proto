@@ -23,7 +23,8 @@ message PipedStats {
     message PrometheusMetrics {
         enum Type {
             GAUGE = 0;
-            COUNT = 1;
+            COUNTER = 1;
+            UNKNOWN = 2;
         }
 
         string name = 1 [(validate.rules).string.min_len = 1];

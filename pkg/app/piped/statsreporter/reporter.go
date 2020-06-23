@@ -17,10 +17,14 @@
 package statsreporter
 
 import (
+	"bufio"
+	"bytes"
 	"context"
 	"fmt"
-	"io/ioutil"
+	"io"
 	"net/http"
+	"strconv"
+	"strings"
 	"time"
 
 	"go.uber.org/zap"
@@ -28,6 +32,7 @@ import (
 
 	"github.com/pipe-cd/pipe/pkg/app/api/service/pipedservice"
 	"github.com/pipe-cd/pipe/pkg/model"
+	"github.com/pipe-cd/pipe/pkg/version"
 )
 
 type apiClient interface {
@@ -41,6 +46,7 @@ type Reporter interface {
 type reporter struct {
 	metricsURL string
 	httpClient *http.Client
+	apiClient  apiClient
 	interval   time.Duration
 	logger     *zap.Logger
 }
@@ -49,6 +55,7 @@ func NewReporter(metricsURL string, apiClient apiClient, logger *zap.Logger) *re
 	return &reporter{
 		metricsURL: metricsURL,
 		httpClient: &http.Client{Timeout: 10 * time.Second},
+		apiClient:  apiClient,
 		interval:   time.Minute,
 		logger:     logger.Named("stats-reporter"),
 	}
@@ -60,34 +67,28 @@ func (r *reporter) Run(ctx context.Context) error {
 	ticker := time.NewTicker(r.interval)
 	defer ticker.Stop()
 
-	{
-		stats, err := r.collect(ctx)
-		if err != nil {
-			r.logger.Error("failed while collecting stats", zap.Error(err))
-		}
-		if r.report(ctx, stats); err != nil {
-			r.logger.Error("failed while reporting stats", zap.Error(err))
-		}
-		r.logger.Info("successfully collected and reported stats", zap.Int("num", len(stats)))
-	}
-
 L:
 	for {
 		select {
 		case <-ctx.Done():
 			break L
 
-		case <-ticker.C:
-			stats, err := r.collect(ctx)
+		case now := <-ticker.C:
+			stats, err := r.collect()
 			if err != nil {
-				r.logger.Error("failed while collecting stats", zap.Error(err))
 				continue
 			}
-			if r.report(ctx, stats); err != nil {
-				r.logger.Error("failed while reporting stats", zap.Error(err))
+			if len(stats) == 0 {
+				r.logger.Info("there are no stats to report")
 				continue
 			}
-			r.logger.Info("successfully collected and reported stats", zap.Int("num", len(stats)))
+			if r.report(ctx, stats, now); err != nil {
+				continue
+			}
+			r.logger.Info("successfully collected and reported stats",
+				zap.Int("num", len(stats)),
+				zap.Duration("duration", time.Since(now)),
+			)
 		}
 	}
 
@@ -95,22 +96,101 @@ L:
 	return nil
 }
 
-func (r *reporter) collect(ctx context.Context) ([]*model.PipedStats_PrometheusMetrics, error) {
+func (r *reporter) collect() ([]*model.PipedStats_PrometheusMetrics, error) {
 	resp, err := r.httpClient.Get(r.metricsURL)
 	if err != nil {
+		r.logger.Error("failed to collect prometheus metrics", zap.Error(err))
 		return nil, err
 	}
 	defer resp.Body.Close()
 
-	metrics, err := ioutil.ReadAll(resp.Body)
+	stats, err := parsePrometheusMetrics(resp.Body)
 	if err != nil {
+		r.logger.Error("failed to parse prometheus metrics", zap.Error(err))
 		return nil, err
 	}
-	r.logger.Info(fmt.Sprintf("collected %d bytes of metrics", len(metrics)))
 
-	return nil, nil
+	return stats, nil
 }
 
-func (r *reporter) report(ctx context.Context, stats []*model.PipedStats_PrometheusMetrics) error {
+func (r *reporter) report(ctx context.Context, stats []*model.PipedStats_PrometheusMetrics, now time.Time) error {
+	req := &pipedservice.PingRequest{
+		PipedStats: &model.PipedStats{
+			Version:         version.Get().Version,
+			Timestamp:       now.Unix(),
+			PrometheusStats: stats,
+		},
+	}
+	if _, err := r.apiClient.Ping(ctx, req); err != nil {
+		r.logger.Error("failed to report stats", zap.Error(err))
+		return err
+	}
 	return nil
+}
+
+var (
+	helpPrefix = []byte("# HELP")
+	typePrefix = "# TYPE"
+)
+
+// TODO: Add a metrics whitelist and fiter out not needed ones.
+func parsePrometheusMetrics(reader io.Reader) ([]*model.PipedStats_PrometheusMetrics, error) {
+	var (
+		curType = model.PipedStats_PrometheusMetrics_UNKNOWN
+		metrics []*model.PipedStats_PrometheusMetrics
+	)
+	scanner := bufio.NewScanner(reader)
+
+	for scanner.Scan() {
+		lb := scanner.Bytes()
+		if len(lb) == 0 {
+			continue
+		}
+
+		// Ignore all HELP line.
+		if bytes.HasPrefix(lb, helpPrefix) {
+			continue
+		}
+
+		// Extract current type from TYPE line.
+		line := string(lb)
+		if strings.HasPrefix(line, typePrefix) {
+			parts := strings.Split(line, " ")
+			if len(parts) < 3 {
+				return nil, fmt.Errorf("malformed TYPE line %s", line)
+			}
+			switch parts[len(parts)-1] {
+			case "gauge":
+				curType = model.PipedStats_PrometheusMetrics_GAUGE
+			case "counter":
+				curType = model.PipedStats_PrometheusMetrics_COUNTER
+			default:
+				curType = model.PipedStats_PrometheusMetrics_UNKNOWN
+			}
+			continue
+		}
+
+		if curType == model.PipedStats_PrometheusMetrics_UNKNOWN {
+			continue
+		}
+
+		// Extract metrics data.
+		lastSpaceIndex := strings.LastIndexByte(line, ' ')
+		if lastSpaceIndex < 0 {
+			continue
+		}
+		value, err := strconv.ParseFloat(line[lastSpaceIndex+1:], 64)
+		if err != nil {
+			return nil, err
+		}
+		metrics = append(metrics, &model.PipedStats_PrometheusMetrics{
+			Type:  curType,
+			Name:  line[:lastSpaceIndex],
+			Value: value,
+		})
+	}
+	if err := scanner.Err(); err != nil {
+		return nil, err
+	}
+	return metrics, nil
 }
