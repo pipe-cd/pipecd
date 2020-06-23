@@ -29,5 +29,6 @@ func TestParsePrometheusMetrics(t *testing.T) {
 
 	metrics, err := parsePrometheusMetrics(f)
 	require.NoError(t, err)
-	assert.Equal(t, 27, len(metrics))
+
+	assert.Equal(t, 30, len(metrics))
 }
