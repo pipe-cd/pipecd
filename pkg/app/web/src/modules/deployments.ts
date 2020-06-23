@@ -1,13 +1,14 @@
 import {
-  createSlice,
-  createEntityAdapter,
   createAsyncThunk,
+  createEntityAdapter,
+  createSlice,
 } from "@reduxjs/toolkit";
 import {
   Deployment as DeploymentModel,
   PipelineStage,
 } from "pipe/pkg/app/web/model/deployment_pb";
 import { getDeployment, getDeployments } from "../api/deployments";
+export { DeploymentStatus } from "pipe/pkg/app/web/model/deployment_pb";
 
 export type Deployment = Required<DeploymentModel.AsObject>;
 export type Stage = Required<PipelineStage.AsObject>;

@@ -14,7 +14,7 @@ import { useInterval } from "../../utils/use-interval";
 
 const FETCH_INTERVAL = 4000;
 
-export const ApplicationDetailPage: FC = memo(() => {
+export const ApplicationDetailPage: FC = memo(function ApplicationDetailPage() {
   const dispatch = useDispatch();
   const params = useParams<{ applicationId: string }>();
   const applicationId = decodeURIComponent(params.applicationId);
@@ -27,7 +27,7 @@ export const ApplicationDetailPage: FC = memo(() => {
       dispatch(fetchApplicationById(applicationId));
       dispatch(fetchApplication(applicationId));
     }
-  }, [applicationId]);
+  }, [dispatch, applicationId]);
 
   useInterval(
     () => {

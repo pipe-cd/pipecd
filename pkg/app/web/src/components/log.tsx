@@ -21,12 +21,17 @@ interface Props {
   height?: number;
 }
 
-export const Log: FC<Props> = memo(({ logs, loading, height }) => {
+export const Log: FC<Props> = memo(function Log({ logs, loading, height }) {
   const classes = useStyles({ height });
   return (
     <div className={classes.container}>
       {logs.map((log, i) => (
-        <LogLine severity={log.severity} body={log.log} lineNumber={i + 1} />
+        <LogLine
+          key={`log-${log.index}`}
+          severity={log.severity}
+          body={log.log}
+          lineNumber={i + 1}
+        />
       ))}
       {loading && (
         <Box display="flex" justifyContent="center" p={1}>

@@ -1,60 +1,87 @@
-import React, { memo, FC, useEffect } from "react";
-import { useParams } from "react-router";
+import { makeStyles } from "@material-ui/core";
+import React, { FC, memo, useEffect } from "react";
 import { useDispatch, useSelector } from "react-redux";
-import {
-  fetchDeploymentById,
-  Deployment,
-  selectById,
-} from "../../modules/deployments";
+import { useParams } from "react-router";
 import { DeploymentDetail } from "../../components/deployment-detail";
-import { AppState } from "../../modules";
-import { Pipeline } from "../../components/pipeline";
 import { LogViewer } from "../../components/log-viewer";
-import { Box } from "@material-ui/core";
+import { Pipeline } from "../../components/pipeline";
+import { AppState } from "../../modules";
+import {
+  Deployment,
+  DeploymentStatus,
+  fetchDeploymentById,
+  selectById as selectDeploymentById,
+} from "../../modules/deployments";
 import { useInterval } from "../../utils/use-interval";
 
 const FETCH_INTERVAL = 4000;
 
-export const DeploymentDetailPage: FC = memo(() => {
+const useStyles = makeStyles({
+  root: {
+    display: "flex",
+    flexDirection: "column",
+    alignItems: "stretch",
+    flex: 1,
+  },
+  main: {
+    flex: 1,
+  },
+  bottomContent: {
+    flex: "initial",
+  },
+  loading: {
+    flex: 1,
+    display: "flex",
+    alignItems: "center",
+    justifyContent: "center",
+  },
+});
+
+function isRunningDeployment(status: DeploymentStatus | undefined): boolean {
+  if (status === undefined) {
+    return false;
+  }
+
+  return [
+    DeploymentStatus.DEPLOYMENT_PENDING,
+    DeploymentStatus.DEPLOYMENT_PLANNED,
+    DeploymentStatus.DEPLOYMENT_ROLLING_BACK,
+    DeploymentStatus.DEPLOYMENT_RUNNING,
+  ].includes(status);
+}
+
+export const DeploymentDetailPage: FC = memo(function DeploymentDetailPage() {
+  const classes = useStyles();
   const dispatch = useDispatch();
   const { deploymentId } = useParams<{ deploymentId: string }>();
   const deployment = useSelector<AppState, Deployment | undefined>((state) =>
-    selectById(state.deployments, deploymentId)
+    selectDeploymentById(state.deployments, deploymentId)
   );
 
   useEffect(() => {
     if (deploymentId) {
       dispatch(fetchDeploymentById(deploymentId));
     }
-  }, [deploymentId]);
+  }, [dispatch, deploymentId]);
 
   useInterval(
     () => {
       dispatch(fetchDeploymentById(deploymentId));
     },
-    deploymentId ? FETCH_INTERVAL : null
+    deploymentId && isRunningDeployment(deployment?.status)
+      ? FETCH_INTERVAL
+      : null
   );
 
-  if (!deployment) {
-    return <div>loading</div>;
-  }
-
   return (
-    <Box display="flex" flexDirection="column" alignItems="stretch" flex={1}>
-      <Box flex={1}>
-        <DeploymentDetail
-          name={deployment.id}
-          env={deployment.envId}
-          pipedId={deployment.pipedId}
-          description={deployment.description}
-          status={deployment.status}
-          commit={deployment.trigger.commit}
-        />
+    <div className={classes.root}>
+      <div className={classes.main}>
+        <DeploymentDetail deploymentId={deploymentId} />
         <Pipeline deploymentId={deploymentId} />
-      </Box>
-      <Box flex="initial">
+      </div>
+      <div className={classes.bottomContent}>
         <LogViewer />
-      </Box>
-    </Box>
+      </div>
+    </div>
   );
 });

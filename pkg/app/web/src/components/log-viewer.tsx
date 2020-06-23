@@ -5,20 +5,20 @@ import {
   IconButton,
   Typography,
 } from "@material-ui/core";
-import React, { FC } from "react";
+import React, { FC, memo } from "react";
 import { useSelector, useDispatch } from "react-redux";
 import { AppState } from "../modules";
 import { StageLog } from "../modules/stage-logs";
 import { Log } from "./log";
 import { Close } from "@material-ui/icons";
-import { clearActiveStage } from "../modules/active-stage";
+import { clearActiveStage, ActiveStage } from "../modules/active-stage";
 
-function useActiveStageLog() {
-  return useSelector<AppState, StageLog | null>((state) => {
+function useActiveStageLog(): [ActiveStage, StageLog | null] {
+  return useSelector<AppState, [ActiveStage, StageLog | null]>((state) => {
     if (!state.activeStage) {
-      return null;
+      return [null, null];
     }
-    return state.stageLogs[state.activeStage];
+    return [state.activeStage, state.stageLogs[state.activeStage.id]];
   });
 }
 
@@ -34,23 +34,21 @@ const useStyles = makeStyles({
     justifyContent: "flex-end",
     display: "flex",
   },
-  stageId: {
+  stageName: {
     fontFamily: "Roboto Mono",
   },
 });
 
-interface Props {}
-
-export const LogViewer: FC<Props> = ({}) => {
+export const LogViewer: FC = memo(function LogViewer() {
   const classes = useStyles();
-  const stageLog = useActiveStageLog();
+  const [activeStage, stageLog] = useActiveStageLog();
   const dispatch = useDispatch();
 
-  const handleOnClickClose = () => {
+  const handleOnClickClose = (): void => {
     dispatch(clearActiveStage());
   };
 
-  if (!stageLog) {
+  if (!stageLog || !activeStage) {
     return null;
   }
 
@@ -59,9 +57,8 @@ export const LogViewer: FC<Props> = ({}) => {
       <Divider />
       <Toolbar variant="dense">
         <div className={classes.toolbarLeft}>
-          <Typography variant="subtitle2">
-            {/** TODO: Show stage name instead of stage id */}
-            <div className={classes.stageId}>{stageLog.stageId}</div>
+          <Typography variant="subtitle2" className={classes.stageName}>
+            {activeStage.name}
           </Typography>
         </div>
         <div className={classes.toolbarRight}>
@@ -77,4 +74,4 @@ export const LogViewer: FC<Props> = ({}) => {
       />
     </div>
   );
-};
+});
