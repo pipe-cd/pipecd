@@ -128,10 +128,9 @@ func (r *reporter) report(ctx context.Context, stats []*model.PipedStats_Prometh
 	return nil
 }
 
-var (
-	helpPrefix = []byte("# HELP")
-	typePrefix = "# TYPE"
-)
+var helpPrefix = []byte("# HELP")
+
+const typePrefix = "# TYPE"
 
 // TODO: Add a metrics whitelist and fiter out not needed ones.
 func parsePrometheusMetrics(reader io.Reader) ([]*model.PipedStats_PrometheusMetrics, error) {
