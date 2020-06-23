@@ -16,12 +16,12 @@ import { useDispatch } from "react-redux";
 import { fetchEnvironments } from "../modules/environments";
 import { fetchPipeds } from "../modules/pipeds";
 
-export const Pages: FC = memo(() => {
+export const Pages: FC = memo(function Pages() {
   const dispatch = useDispatch();
   useEffect(() => {
     dispatch(fetchEnvironments());
-    dispatch(fetchPipeds());
-  }, []);
+    dispatch(fetchPipeds(false));
+  }, [dispatch]);
 
   return (
     <>

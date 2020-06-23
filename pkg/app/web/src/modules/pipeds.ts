@@ -3,7 +3,7 @@ import {
   createAsyncThunk,
   createEntityAdapter,
 } from "@reduxjs/toolkit";
-import { Piped as PipedModel } from "pipe/pkg/app/web/model/piped_pb";
+import { Piped as PipedModel } from "pipe/pkg/app/web/api_client/service_pb";
 import { registerPiped, getPipeds } from "../api/piped";
 
 export type Piped = Required<PipedModel.AsObject>;
@@ -15,11 +15,11 @@ export interface RegisteredPiped {
 
 const pipedsAdapter = createEntityAdapter<Piped>({});
 
-export const fetchPipeds = createAsyncThunk<Piped[]>(
+export const fetchPipeds = createAsyncThunk<Piped[], boolean>(
   "pipeds/fetchList",
-  async () => {
-    const res = await getPipeds({});
-    return res;
+  async (withStatus: boolean) => {
+    const { pipedsList } = await getPipeds({ withStatus });
+    return pipedsList;
   }
 );
 
