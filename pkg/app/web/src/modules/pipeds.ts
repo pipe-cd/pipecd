@@ -15,7 +15,11 @@ export interface RegisteredPiped {
 
 const pipedsAdapter = createEntityAdapter<Piped>({});
 
-export const { selectById, selectIds } = pipedsAdapter.getSelectors();
+export const {
+  selectById,
+  selectIds,
+  selectAll,
+} = pipedsAdapter.getSelectors();
 
 export const fetchPipeds = createAsyncThunk<Piped[], boolean>(
   "pipeds/fetchList",

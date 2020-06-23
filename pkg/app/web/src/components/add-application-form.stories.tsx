@@ -14,5 +14,6 @@ export const overview: React.FC = () => (
     projectName="pipe-cd"
     onSubmit={action("onSubmit")}
     onClose={action("onClose")}
+    isAdding={false}
   />
 );
