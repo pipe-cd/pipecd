@@ -8,6 +8,8 @@ describe("pipedsSlice reducer", () => {
       })
     ).toMatchInlineSnapshot(`
       Object {
+        "entities": Object {},
+        "ids": Array [],
         "registeredPiped": null,
       }
     `);
