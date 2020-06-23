@@ -8,6 +8,7 @@ describe("applicationsSlice reducer", () => {
       })
     ).toMatchInlineSnapshot(`
       Object {
+        "adding": false,
         "entities": Object {},
         "ids": Array [],
       }
