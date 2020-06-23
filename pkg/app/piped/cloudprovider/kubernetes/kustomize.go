@@ -15,11 +15,13 @@
 package kubernetes
 
 type Kustomize struct {
+	version  string
 	execPath string
 }
 
-func NewKustomize(path string) *Kustomize {
+func NewKustomize(version, path string) *Kustomize {
 	return &Kustomize{
+		version:  version,
 		execPath: path,
 	}
 }
