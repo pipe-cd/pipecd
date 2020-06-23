@@ -15,11 +15,13 @@
 package kubernetes
 
 type Helm struct {
+	version  string
 	execPath string
 }
 
-func NewHelm(path string) *Helm {
+func NewHelm(version, path string) *Helm {
 	return &Helm{
+		version:  version,
 		execPath: path,
 	}
 }

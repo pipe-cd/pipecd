@@ -25,17 +25,23 @@ import (
 )
 
 type Kubectl struct {
+	version  string
 	execPath string
 	config   *rest.Config
 }
 
-func NewKubectl(path string) *Kubectl {
+func NewKubectl(version, path string) *Kubectl {
 	return &Kubectl{
+		version:  version,
 		execPath: path,
 	}
 }
 
-func (c *Kubectl) Apply(ctx context.Context, manifest Manifest) error {
+func (c *Kubectl) Apply(ctx context.Context, manifest Manifest) (err error) {
+	defer func() {
+		metricsKubectlCalled(c.version, "apply", err == nil)
+	}()
+
 	data, err := manifest.YamlBytes()
 	if err != nil {
 		return err
@@ -51,7 +57,11 @@ func (c *Kubectl) Apply(ctx context.Context, manifest Manifest) error {
 	return nil
 }
 
-func (c *Kubectl) Delete(ctx context.Context, r ResourceKey) error {
+func (c *Kubectl) Delete(ctx context.Context, r ResourceKey) (err error) {
+	defer func() {
+		metricsKubectlCalled(c.version, "delete", err == nil)
+	}()
+
 	args := []string{"delete", r.Kind, r.Name}
 	if r.Namespace != "" {
 		args = append(args, "-n", r.Namespace)

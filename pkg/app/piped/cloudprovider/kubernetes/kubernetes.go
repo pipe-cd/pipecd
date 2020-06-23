@@ -86,6 +86,10 @@ type provider struct {
 	initErr          error
 }
 
+func init() {
+	registerMetrics()
+}
+
 func NewProvider(appDir, repoDir string, input config.KubernetesDeploymentInput, logger *zap.Logger) Provider {
 	return &provider{
 		appDir:  appDir,
@@ -173,7 +177,7 @@ func (p *provider) findKubectl(ctx context.Context, version string) (*Kubectl, e
 	if installed {
 		p.logger.Info(fmt.Sprintf("kubectl %s has just been installed because of no pre-installed binary for that version", version))
 	}
-	return NewKubectl(path), nil
+	return NewKubectl(version, path), nil
 }
 
 func (p *provider) findKustomize(ctx context.Context, version string) (*Kustomize, error) {
@@ -184,7 +188,7 @@ func (p *provider) findKustomize(ctx context.Context, version string) (*Kustomiz
 	if installed {
 		p.logger.Info(fmt.Sprintf("kustomize %s has just been installed because of no pre-installed binary for that version", version))
 	}
-	return NewKustomize(path), nil
+	return NewKustomize(version, path), nil
 }
 
 func (p *provider) findHelm(ctx context.Context, version string) (*Helm, error) {
@@ -195,7 +199,7 @@ func (p *provider) findHelm(ctx context.Context, version string) (*Helm, error) 
 	if installed {
 		p.logger.Info(fmt.Sprintf("helm %s has just been installed because of no pre-installed binary for that version", version))
 	}
-	return NewHelm(path), nil
+	return NewHelm(version, path), nil
 }
 
 func determineTemplatingMethod(input config.KubernetesDeploymentInput, appDirPath string) TemplatingMethod {
