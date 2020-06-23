@@ -60,17 +60,12 @@ func (a *App) Run() error {
 }
 
 type TelemetryFlags struct {
-	LogLevel                   string
-	LogEncoding                string
-	Profile                    bool
-	ProfileDebugLogging        bool
-	ProfilerCredentialsFile    string
-	Metrics                    bool
-	MetricsExporter            string
-	Tracing                    bool
-	TracingExporter            string
-	StackdriverProjectID       string
-	StackdriverCredentialsFile string
+	LogLevel                string
+	LogEncoding             string
+	Profile                 bool
+	ProfileDebugLogging     bool
+	ProfilerCredentialsFile string
+	Metrics                 bool
 }
 
 var defaultTelemetryFlags = TelemetryFlags{
@@ -115,40 +110,11 @@ func (a *App) setGlobalFlags() {
 		a.telemetryFlags.Metrics,
 		"Whether metrics is enabled or not.",
 	)
-	a.rootCmd.PersistentFlags().StringVar(
-		&a.telemetryFlags.MetricsExporter,
-		"metrics-exporter",
-		a.telemetryFlags.MetricsExporter,
-		"The metrics exporter type [prometheus].",
-	)
-	a.rootCmd.PersistentFlags().BoolVar(
-		&a.telemetryFlags.Tracing,
-		"tracing",
-		a.telemetryFlags.Tracing,
-		"Whether tracing is enabled or not.",
-	)
-	a.rootCmd.PersistentFlags().StringVar(
-		&a.telemetryFlags.TracingExporter,
-		"tracing-exporter",
-		a.telemetryFlags.TracingExporter,
-		"The tracing exporter type [stackdriver].",
-	)
-	a.rootCmd.PersistentFlags().StringVar(
-		&a.telemetryFlags.StackdriverProjectID,
-		"stackdriver-project-id",
-		a.telemetryFlags.StackdriverProjectID,
-		"The ID of GCP project that hosts stackdriver service.",
-	)
-	a.rootCmd.PersistentFlags().StringVar(
-		&a.telemetryFlags.StackdriverCredentialsFile,
-		"stackdriver-credentials-file",
-		a.telemetryFlags.StackdriverCredentialsFile,
-		"The path to the credentials file using while sending tracing spans to Stackdriver.",
-	)
 }
 
 func parseTelemetryFlags(fs *pflag.FlagSet) (TelemetryFlags, error) {
 	flags := defaultTelemetryFlags
+
 	// Extract log-level.
 	if fs.Lookup("log-level") != nil {
 		s, err := fs.GetString("log-level")
@@ -201,51 +167,6 @@ func parseTelemetryFlags(fs *pflag.FlagSet) (TelemetryFlags, error) {
 			return flags, err
 		}
 		flags.Metrics = b
-	}
-
-	// Extract metrics-exporter.
-	if fs.Lookup("metrics-exporter") != nil {
-		s, err := fs.GetString("metrics-exporter")
-		if err != nil {
-			return flags, err
-		}
-		flags.MetricsExporter = s
-	}
-
-	// Extract tracing.
-	if fs.Lookup("tracing") != nil {
-		b, err := fs.GetBool("tracing")
-		if err != nil {
-			return flags, err
-		}
-		flags.Tracing = b
-	}
-
-	// Extract tracing-exporter.
-	if fs.Lookup("tracing-exporter") != nil {
-		s, err := fs.GetString("tracing-exporter")
-		if err != nil {
-			return flags, err
-		}
-		flags.TracingExporter = s
-	}
-
-	// Extract stackdriver-project-id.
-	if fs.Lookup("stackdriver-project-id") != nil {
-		s, err := fs.GetString("stackdriver-project-id")
-		if err != nil {
-			return flags, err
-		}
-		flags.StackdriverProjectID = s
-	}
-
-	// Extract stackdriver-credentials-file.
-	if fs.Lookup("stackdriver-credentials-file") != nil {
-		s, err := fs.GetString("stackdriver-credentials-file")
-		if err != nil {
-			return flags, err
-		}
-		flags.StackdriverCredentialsFile = s
 	}
 
 	return flags, nil

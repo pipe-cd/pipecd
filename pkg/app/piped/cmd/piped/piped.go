@@ -136,16 +136,12 @@ func (p *piped) run(ctx context.Context, t cli.Telemetry) error {
 	// Start running admin server.
 	{
 		admin := admin.NewAdmin(p.adminPort, p.gracePeriod, t.Logger)
-		if exporter, ok := t.PrometheusMetricsExporter(); ok {
-			admin.Handle("/metrics", exporter)
-		} else {
-			admin.HandleFunc("/metrics", func(w http.ResponseWriter, r *http.Request) {
-				w.Write([]byte(""))
-			})
-		}
+
 		admin.HandleFunc("/healthz", func(w http.ResponseWriter, r *http.Request) {
 			w.Write([]byte("ok"))
 		})
+		admin.Handle("/metrics", t.PrometheusMetricsHandler())
+
 		group.Go(func() error {
 			return admin.Run(ctx)
 		})
@@ -291,7 +287,6 @@ func (p *piped) createAPIClient(ctx context.Context, projectID, pipedID, pipedKe
 		creds   = rpcclient.NewPerRPCCredentials(token, rpcauth.PipedTokenCredentials, tls)
 		options = []rpcclient.DialOption{
 			rpcclient.WithBlock(),
-			rpcclient.WithStatsHandler(),
 			rpcclient.WithPerRPCCredentials(creds),
 		}
 	)

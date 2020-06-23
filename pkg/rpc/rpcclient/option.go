@@ -17,7 +17,6 @@ package rpcclient
 import (
 	"context"
 
-	"go.opencensus.io/plugin/ocgrpc"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/credentials"
 )
@@ -53,12 +52,6 @@ func WithTransportCredentials(creds credentials.TransportCredentials) DialOption
 func WithInsecure() DialOption {
 	return func(o *option) {
 		o.options = append(o.options, grpc.WithInsecure())
-	}
-}
-
-func WithStatsHandler() DialOption {
-	return func(o *option) {
-		o.options = append(o.options, grpc.WithStatsHandler(&ocgrpc.ClientHandler{}))
 	}
 }
 

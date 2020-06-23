@@ -6,8 +6,6 @@ require (
 	cloud.google.com/go v0.56.0
 	cloud.google.com/go/firestore v1.2.0
 	cloud.google.com/go/storage v1.6.0
-	contrib.go.opencensus.io/exporter/prometheus v0.1.0
-	contrib.go.opencensus.io/exporter/stackdriver v0.12.4
 	github.com/NYTimes/gziphandler v0.0.0-20170623195520-56545f4a5d46
 	github.com/dgrijalva/jwt-go v3.2.0+incompatible
 	github.com/envoyproxy/protoc-gen-validate v0.1.0
@@ -22,7 +20,6 @@ require (
 	github.com/spf13/cobra v0.0.5
 	github.com/spf13/pflag v1.0.5
 	github.com/stretchr/testify v1.4.0
-	go.opencensus.io v0.22.3
 	go.uber.org/atomic v1.4.0
 	go.uber.org/multierr v1.2.0 // indirect
 	go.uber.org/zap v1.10.1-0.20190709142728-9a9fa7d4b5f0

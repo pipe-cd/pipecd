@@ -98,7 +98,6 @@ func (s *samplecli) createServiceClient(ctx context.Context, logger *zap.Logger)
 
 	options := []rpcclient.DialOption{
 		rpcclient.WithBlock(),
-		rpcclient.WithStatsHandler(),
 		rpcclient.WithInsecure(),
 	}
 	client, err := webservice.NewClient(ctx, s.apiAddress, options...)

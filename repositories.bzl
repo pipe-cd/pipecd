@@ -380,12 +380,6 @@ def go_repositories():
         version = "v0.0.0-20200324210504-a9aa75ae1b89",
     )
     go_repository(
-        name = "io_opencensus_go",
-        importpath = "go.opencensus.io",
-        sum = "h1:8sGtKOrtQqkN1bp2AtX+misvLIlOmsEsNd+9NIcPEm8=",
-        version = "v0.22.3",
-    )
-    go_repository(
         name = "org_golang_google_api",
         importpath = "google.golang.org/api",
         sum = "h1:jz2KixHX7EcCPiQrySzPdnYT7DbINAypCqKZ1Z7GM40=",
@@ -680,14 +674,6 @@ def go_repositories():
         version = "v1.0.1",
     )
     go_repository(
-        name = "com_github_census_instrumentation_opencensus_proto",
-        # https://github.com/bazelbuild/bazel-gazelle/issues/498
-        build_extra_args = ["-exclude=src"],
-        importpath = "github.com/census-instrumentation/opencensus-proto",
-        sum = "h1:glEXhBS5PSLLv4IXzLA5yPRVX4bilULVyxxbrfOtDAk=",
-        version = "v0.2.1",
-    )
-    go_repository(
         name = "com_github_jmespath_go_jmespath",
         importpath = "github.com/jmespath/go-jmespath",
         sum = "h1:pmfjZENx5imkbgOkpRUYLnmbU7UEFbjtDA2hxJ1ichM=",
@@ -722,18 +708,6 @@ def go_repositories():
         importpath = "github.com/prometheus/procfs",
         sum = "h1:DhHlBtkHWPYi8O2y31JkK0TF+DGM+51OopZjH/Ia5qI=",
         version = "v0.0.11",
-    )
-    go_repository(
-        name = "io_opencensus_go_contrib_exporter_prometheus",
-        importpath = "contrib.go.opencensus.io/exporter/prometheus",
-        sum = "h1:SByaIoWwNgMdPSgl5sMqM2KDE5H/ukPWBRo314xiDvg=",
-        version = "v0.1.0",
-    )
-    go_repository(
-        name = "io_opencensus_go_contrib_exporter_stackdriver",
-        importpath = "contrib.go.opencensus.io/exporter/stackdriver",
-        sum = "h1:e1itpYdd++w6+DPhvyKqT7uazcc4NwyToI8UJ0tMGCs=",
-        version = "v0.12.4",
     )
     go_repository(
         name = "com_github_juju_errors",
@@ -1562,4 +1536,16 @@ def go_repositories():
         importpath = "google.golang.org/protobuf",
         sum = "h1:qdOKuR/EIArgaWNjetjgTzgVTAZ+S/WXVrq9HW9zimw=",
         version = "v1.21.0",
+    )
+    go_repository(
+        name = "com_github_census_instrumentation_opencensus_proto",
+        importpath = "github.com/census-instrumentation/opencensus-proto",
+        sum = "h1:glEXhBS5PSLLv4IXzLA5yPRVX4bilULVyxxbrfOtDAk=",
+        version = "v0.2.1",
+    )
+    go_repository(
+        name = "io_opencensus_go",
+        importpath = "go.opencensus.io",
+        sum = "h1:8sGtKOrtQqkN1bp2AtX+misvLIlOmsEsNd+9NIcPEm8=",
+        version = "v0.22.3",
     )

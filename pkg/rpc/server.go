@@ -20,7 +20,6 @@ import (
 	"net"
 	"time"
 
-	"go.opencensus.io/plugin/ocgrpc"
 	"go.uber.org/zap"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/credentials"
@@ -171,9 +170,8 @@ func (s *Server) Run(ctx context.Context) error {
 }
 
 func (s *Server) init() error {
-	opts := []grpc.ServerOption{
-		grpc.StatsHandler(&ocgrpc.ServerHandler{}),
-	}
+	var opts []grpc.ServerOption
+
 	// If tls option is enabled we load and use certificate and
 	// key files from specified paths.
 	if s.tls {
