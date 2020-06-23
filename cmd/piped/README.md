@@ -11,7 +11,7 @@
 
 2. Ensure that your kube-context is connecting to right cluster
 
-2. Run on of the following commands to start running piped
+2. Run one of the following commands to start running piped
 
 ``` console
 bazelisk run --run_under="cd $PWD && " //cmd/piped:piped -- piped \
