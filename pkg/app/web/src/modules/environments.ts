@@ -10,6 +10,8 @@ export type Environment = EnvironmentModel.AsObject;
 
 export const environmentsAdapter = createEntityAdapter<Environment>({});
 
+export const { selectAll } = environmentsAdapter.getSelectors();
+
 export const fetchEnvironments = createAsyncThunk<Environment[], void>(
   "environments/fetchList",
   async () => {
