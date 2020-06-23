@@ -133,7 +133,6 @@ func (s *samplecli) createServiceClient(ctx context.Context, logger *zap.Logger)
 		creds   = rpcclient.NewPerRPCCredentials(token, rpcauth.PipedTokenCredentials, s.tls)
 		options = []rpcclient.DialOption{
 			rpcclient.WithBlock(),
-			rpcclient.WithStatsHandler(),
 			rpcclient.WithPerRPCCredentials(creds),
 		}
 	)

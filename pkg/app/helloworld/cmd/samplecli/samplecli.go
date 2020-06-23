@@ -73,7 +73,6 @@ func (s *samplecli) createHelloWorldClient(ctx context.Context, logger *zap.Logg
 
 	options := []rpcclient.DialOption{
 		rpcclient.WithBlock(),
-		rpcclient.WithStatsHandler(),
 		rpcclient.WithInsecure(),
 	}
 	client, err := helloworldservice.NewClient(ctx, s.address, options...)

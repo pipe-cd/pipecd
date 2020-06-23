@@ -18,13 +18,26 @@ import (
 	"context"
 	"fmt"
 
-	"go.opencensus.io/stats"
-	"go.opencensus.io/tag"
+	"github.com/prometheus/client_golang/prometheus"
 	"go.uber.org/zap"
 	"google.golang.org/grpc"
 
 	"github.com/pipe-cd/pipe/pkg/app/helloworld/service"
 )
+
+var (
+	helloCalls = prometheus.NewCounterVec(
+		prometheus.CounterOpts{
+			Name: "hello_calls_total",
+			Help: "Number of hello calls.",
+		},
+		[]string{"gender"},
+	)
+)
+
+func init() {
+	prometheus.MustRegister(helloCalls)
+}
 
 type api struct {
 	logger *zap.Logger
@@ -46,7 +59,6 @@ func NewHelloWorldAPI(opts ...Option) *api {
 	for _, opt := range opts {
 		opt(a)
 	}
-	regsiterMetrics(a.logger)
 	return a
 }
 
@@ -59,11 +71,8 @@ func (a *api) Hello(ctx context.Context, in *service.HelloRequest) (*service.Hel
 	if in.Gender == service.HelloRequest_GENDER_FEMALE {
 		m = "mrs"
 	}
-	ctx, err := tag.New(ctx, tag.Insert(keyGender, m))
-	if err != nil {
-		a.logger.Error("failed to add metrics tag to context", zap.Error(err))
-	}
-	stats.Record(ctx, mCalls.M(1))
+
+	helloCalls.With(prometheus.Labels{"gender": m}).Inc()
 
 	return &service.HelloResponse{
 		Message: fmt.Sprintf("Hello, %s %s", m, in.Name),

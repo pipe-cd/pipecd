@@ -25,7 +25,6 @@ bazelisk run --run_under="cd $PWD && " //cmd/piped:piped -- piped \
 bazelisk run --run_under="cd $PWD && " //cmd/piped:piped -- piped \
 --log-encoding=humanize \
 --metrics \
---metrics-exporter=prometheus \
 --use-fake-api-client=false \
 --control-plane-address=localhost:8080 \
 --bin-dir=/tmp/piped-bin \

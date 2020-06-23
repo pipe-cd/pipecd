@@ -131,12 +131,12 @@ func (s *server) run(ctx context.Context, t cli.Telemetry) error {
 	// Start running admin server.
 	{
 		admin := admin.NewAdmin(s.adminPort, s.gracePeriod, t.Logger)
-		if exporter, ok := t.PrometheusMetricsExporter(); ok {
-			admin.Handle("/metrics", exporter)
-		}
+
 		admin.HandleFunc("/healthz", func(w http.ResponseWriter, r *http.Request) {
 			w.Write([]byte("ok"))
 		})
+		admin.Handle("/metrics", t.PrometheusMetricsHandler())
+
 		group.Go(func() error {
 			return admin.Run(ctx)
 		})

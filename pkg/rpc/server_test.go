@@ -71,7 +71,6 @@ func TestRPCRequestOK(t *testing.T) {
 			ctx,
 			"localhost:9090",
 			rpcclient.WithBlock(),
-			rpcclient.WithStatsHandler(),
 			rpcclient.WithTLS("testdata/tls.crt"),
 			rpcclient.WithPerRPCCredentials(creds),
 		)
@@ -105,7 +104,6 @@ func TestRPCRequestWithoutCredentials(t *testing.T) {
 			ctx,
 			"localhost:9090",
 			rpcclient.WithBlock(),
-			rpcclient.WithStatsHandler(),
 			rpcclient.WithTLS("testdata/tls.crt"),
 		)
 		if err == nil {

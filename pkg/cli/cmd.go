@@ -17,18 +17,15 @@ package cli
 import (
 	"context"
 	"fmt"
+	"net/http"
 	"os"
 	"os/signal"
 	"strings"
 	"syscall"
 
 	"cloud.google.com/go/profiler"
-	"contrib.go.opencensus.io/exporter/prometheus"
-	"contrib.go.opencensus.io/exporter/stackdriver"
-	prom "github.com/prometheus/client_golang/prometheus"
+	"github.com/prometheus/client_golang/prometheus/promhttp"
 	"github.com/spf13/cobra"
-	"go.opencensus.io/stats/view"
-	"go.opencensus.io/trace"
 	"go.uber.org/zap"
 	"google.golang.org/api/option"
 
@@ -36,31 +33,23 @@ import (
 	"github.com/pipe-cd/pipe/pkg/version"
 )
 
-const (
-	metricsNamespace    = "pipe"
-	PrometheusExporter  = "prometheus"
-	StackdriverExporter = "stackdriver"
-)
-
 type Telemetry struct {
-	Logger          *zap.Logger
-	MetricsExporter view.Exporter
-	TracingExporter trace.Exporter
-	Flags           TelemetryFlags
+	Logger *zap.Logger
+	Flags  TelemetryFlags
 }
 
-type Piped func(ctx context.Context, telemetry Telemetry) error
+type Runner func(ctx context.Context, telemetry Telemetry) error
 
-func WithContext(piped Piped) func(cmd *cobra.Command, args []string) error {
+func WithContext(runner Runner) func(cmd *cobra.Command, args []string) error {
 	return func(cmd *cobra.Command, args []string) error {
 		ch := make(chan os.Signal, 1)
 		signal.Notify(ch, syscall.SIGINT, syscall.SIGTERM)
 		defer signal.Stop(ch)
-		return runWithContext(cmd, ch, piped)
+		return runWithContext(cmd, ch, runner)
 	}
 }
 
-func runWithContext(cmd *cobra.Command, signalCh <-chan os.Signal, piped Piped) error {
+func runWithContext(cmd *cobra.Command, signalCh <-chan os.Signal, runner Runner) error {
 	flags, err := parseTelemetryFlags(cmd.Flags())
 	if err != nil {
 		return err
@@ -78,38 +67,18 @@ func runWithContext(cmd *cobra.Command, signalCh <-chan os.Signal, piped Piped) 
 	}
 	defer logger.Sync()
 	telemetry.Logger = logger
-	// Start profiler.
+
+	// Start running profiler.
 	if flags.Profile {
 		if err := startProfiler(service, version, flags.ProfilerCredentialsFile, flags.ProfileDebugLogging, logger); err != nil {
 			logger.Error("failed to run profiler", zap.Error(err))
 			return err
 		}
 	}
-	// Initialize metrics exporter.
-	if flags.Metrics {
-		exporter, err := newMetricsExporter(flags.MetricsExporter)
-		if err != nil {
-			logger.Error("failed to create metrics exporter", zap.Error(err))
-			return err
-		}
-		telemetry.MetricsExporter = exporter
-		// Ensure that we register it as a stats exporter.
-		view.RegisterExporter(exporter)
-	}
-	// Initialize tracing exporter.
-	if flags.Tracing {
-		exporter, err := newTracingExporter(flags)
-		if err != nil {
-			logger.Error("failed to create tracing exporter", zap.Error(err))
-			return err
-		}
-		telemetry.TracingExporter = exporter
-		// Ensure that we register it as a trace exporter.
-		trace.RegisterExporter(exporter)
-	}
 
 	ctx, cancel := context.WithCancel(context.Background())
 	defer cancel()
+
 	go func() {
 		select {
 		case s := <-signalCh:
@@ -118,8 +87,9 @@ func runWithContext(cmd *cobra.Command, signalCh <-chan os.Signal, piped Piped) 
 		case <-ctx.Done():
 		}
 	}()
+
 	logger.Info(fmt.Sprintf("start running %s %s", service, version))
-	return piped(ctx, telemetry)
+	return runner(ctx, telemetry)
 }
 
 func newLogger(service, version, level, encoding string) (*zap.Logger, error) {
@@ -138,51 +108,24 @@ func startProfiler(service, version, credentialsFile string, debugLogging bool, 
 	if credentialsFile != "" {
 		options = append(options, option.WithCredentialsFile(credentialsFile))
 	}
-	logger.Info("start running profiler", zap.String("service", service))
 	config := profiler.Config{
 		Service:        service,
 		ServiceVersion: version,
 		DebugLogging:   debugLogging,
 	}
+
+	logger.Info("start running profiler", zap.String("service", service))
 	return profiler.Start(config, options...)
 }
 
-func newMetricsExporter(exporter string) (view.Exporter, error) {
-	if exporter != PrometheusExporter {
-		return nil, fmt.Errorf("unsupported metrics exporter: %s", exporter)
+func (t Telemetry) PrometheusMetricsHandler() http.Handler {
+	if t.Flags.Metrics {
+		return promhttp.Handler()
 	}
-	r := prom.NewRegistry()
-	r.MustRegister(
-		prom.NewGoCollector(),
-		prom.NewProcessCollector(prom.ProcessCollectorOpts{}),
-	)
-	return prometheus.NewExporter(prometheus.Options{
-		Namespace: metricsNamespace,
-		Registry:  r,
-	})
-}
-
-func newTracingExporter(f TelemetryFlags) (trace.Exporter, error) {
-	if f.TracingExporter != StackdriverExporter {
-		return nil, fmt.Errorf("unsupported tracing exporter: %s", f.TracingExporter)
+	var emtpy http.HandlerFunc = func(w http.ResponseWriter, r *http.Request) {
+		w.Write([]byte(""))
 	}
-	if f.StackdriverProjectID == "" {
-		return nil, fmt.Errorf("missing stackdriver-project-id")
-	}
-	var options []option.ClientOption
-	if f.StackdriverCredentialsFile != "" {
-		options = append(options, option.WithCredentialsFile(f.StackdriverCredentialsFile))
-	}
-	return stackdriver.NewExporter(stackdriver.Options{
-		ProjectID:          f.StackdriverProjectID,
-		MetricPrefix:       metricsNamespace,
-		TraceClientOptions: options,
-	})
-}
-
-func (t Telemetry) PrometheusMetricsExporter() (*prometheus.Exporter, bool) {
-	exporter, ok := t.MetricsExporter.(*prometheus.Exporter)
-	return exporter, ok
+	return emtpy
 }
 
 func extractServiceName(cmd *cobra.Command) string {
