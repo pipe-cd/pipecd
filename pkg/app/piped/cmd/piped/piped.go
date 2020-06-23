@@ -138,6 +138,10 @@ func (p *piped) run(ctx context.Context, t cli.Telemetry) error {
 		admin := admin.NewAdmin(p.adminPort, p.gracePeriod, t.Logger)
 		if exporter, ok := t.PrometheusMetricsExporter(); ok {
 			admin.Handle("/metrics", exporter)
+		} else {
+			admin.HandleFunc("/metrics", func(w http.ResponseWriter, r *http.Request) {
+				w.Write([]byte(""))
+			})
 		}
 		admin.HandleFunc("/healthz", func(w http.ResponseWriter, r *http.Request) {
 			w.Write([]byte("ok"))
