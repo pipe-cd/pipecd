@@ -50,8 +50,9 @@ export const LogLine: FC<Props> = ({ body, lineNumber, severity }) => {
       )}
       <span className={classes.lineNumber}>{lineNumber}</span>
       <Box pr={2} flex={1} style={{ wordBreak: "break-word" }}>
-        {parseLog(body).map((cell) => (
+        {parseLog(body).map((cell, i) => (
           <span
+            key={`log-cell-${i}`}
             style={{
               color: TERM_COLORS[cell.fg],
               backgroundColor: cell.bg !== 0 ? TERM_COLORS[cell.bg] : undefined,

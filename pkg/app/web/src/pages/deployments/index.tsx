@@ -7,7 +7,7 @@ import {
 } from "../../modules/deployments";
 import { AppState } from "../../modules";
 import dayjs from "dayjs";
-import { Link, makeStyles, Typography } from "@material-ui/core";
+import { makeStyles, Typography, ListItem, List } from "@material-ui/core";
 import { Link as RouterLink } from "react-router-dom";
 import { PAGE_PATH_DEPLOYMENTS } from "../../constants";
 import { DeploymentItem } from "../../components/deployment-item";
@@ -24,17 +24,21 @@ const useStyles = makeStyles((theme) => ({
     listStyle: "none",
     padding: 0,
   },
+  deploymentItem: {
+    padding: 0,
+    background: theme.palette.background.paper,
+  },
   date: {
     marginTop: theme.spacing(2),
     marginBottom: theme.spacing(2),
   },
 }));
 
-const sortComp = (a: string | number, b: string | number) => {
+const sortComp = (a: string | number, b: string | number): number => {
   return dayjs(b).valueOf() - dayjs(a).valueOf();
 };
 
-const useGroupedDeployments = () => {
+const useGroupedDeployments = (): Record<string, Deployment[]> => {
   const deployments = useSelector<AppState, Deployment[]>((state) =>
     selectAll(state.deployments)
   );
@@ -52,7 +56,7 @@ const useGroupedDeployments = () => {
   return result;
 };
 
-export const DeploymentIndexPage: FC = memo(() => {
+export const DeploymentIndexPage: FC = memo(function DeploymentIndexPage() {
   const classes = useStyles();
   const dispatch = useDispatch();
   const groupedDeployments = useGroupedDeployments();
@@ -60,7 +64,7 @@ export const DeploymentIndexPage: FC = memo(() => {
   useEffect(() => {
     dispatch(fetchDeployments());
     dispatch(fetchApplications());
-  }, []);
+  }, [dispatch]);
 
   return (
     <div>
@@ -72,20 +76,23 @@ export const DeploymentIndexPage: FC = memo(() => {
               <Typography variant="subtitle1" className={classes.date}>
                 {date}
               </Typography>
-              <ol className={classes.deployments}>
+              <List>
                 {groupedDeployments[date]
                   .sort((a, b) => sortComp(a.createdAt, b.createdAt))
                   .map((deployment) => (
-                    <li key={deployment.id}>
-                      <Link
-                        component={RouterLink}
-                        to={`${PAGE_PATH_DEPLOYMENTS}/${deployment.id}`}
-                      >
-                        <DeploymentItem id={deployment.id} />
-                      </Link>
-                    </li>
+                    <ListItem
+                      button
+                      dense
+                      divider
+                      key={`deployment-item-${deployment.id}`}
+                      component={RouterLink}
+                      to={`${PAGE_PATH_DEPLOYMENTS}/${deployment.id}`}
+                      className={classes.deploymentItem}
+                    >
+                      <DeploymentItem id={deployment.id} />
+                    </ListItem>
                   ))}
-              </ol>
+              </List>
             </li>
           ))}
       </ol>

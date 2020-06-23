@@ -1,4 +1,4 @@
-import React, { FC } from "react";
+import React, { FC, memo } from "react";
 import { makeStyles, Paper, Typography, Box } from "@material-ui/core";
 import { StageStatus } from "pipe/pkg/app/web/model/deployment_pb";
 import { StageStatusIcon } from "./stage-status-icon";
@@ -25,20 +25,20 @@ interface Props {
   name: string;
   status: StageStatus;
   active: boolean;
-  onClick: (stageId: string) => void;
+  onClick: (stageId: string, stageName: string) => void;
 }
 
-export const PipelineStage: FC<Props> = ({
+export const PipelineStage: FC<Props> = memo(function PipelineStage({
   id,
   name,
   status,
   onClick,
   active,
-}) => {
+}) {
   const classes = useStyles({ active });
 
-  function handleOnClick() {
-    onClick(id);
+  function handleOnClick(): void {
+    onClick(id, name);
   }
 
   return (
@@ -51,4 +51,4 @@ export const PipelineStage: FC<Props> = ({
       </Box>
     </Paper>
   );
-};
+});

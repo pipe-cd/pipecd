@@ -5,9 +5,9 @@ import { useSelector, useDispatch } from "react-redux";
 import { AppState } from "../modules";
 import { selectById, Deployment, Stage } from "../modules/deployments";
 import { fetchStageLog } from "../modules/stage-logs";
-import { updateActiveStage } from "../modules/active-stage";
+import { updateActiveStage, ActiveStage } from "../modules/active-stage";
 
-const useConvertedStages = (deploymentId: string) => {
+const useConvertedStages = (deploymentId: string): Stage[][] => {
   const stages: Stage[][] = [];
   const deployment = useSelector<AppState, Deployment | undefined>((state) =>
     selectById(state.deployments, deploymentId)
@@ -68,12 +68,12 @@ export const Pipeline: FC<Props> = memo(function Pipeline({ deploymentId }) {
   const classes = useStyles();
   const dispatch = useDispatch();
   const stages = useConvertedStages(deploymentId);
-  const activeStage = useSelector<AppState, string | null>(
+  const activeStage = useSelector<AppState, ActiveStage>(
     (state) => state.activeStage
   );
 
   const handleOnClickStage = useCallback(
-    (stageId: string) => {
+    (stageId: string, stageName: string) => {
       dispatch(
         fetchStageLog({
           deploymentId,
@@ -82,7 +82,9 @@ export const Pipeline: FC<Props> = memo(function Pipeline({ deploymentId }) {
           retriedCount: 0,
         })
       );
-      dispatch(updateActiveStage(`${deploymentId}/${stageId}`));
+      dispatch(
+        updateActiveStage({ id: `${deploymentId}/${stageId}`, name: stageName })
+      );
     },
     [dispatch, deploymentId]
   );
@@ -113,7 +115,7 @@ export const Pipeline: FC<Props> = memo(function Pipeline({ deploymentId }) {
                 name={stage.name}
                 status={stage.status}
                 onClick={handleOnClickStage}
-                active={activeStage === `${deploymentId}/${stage.id}`}
+                active={activeStage?.id === `${deploymentId}/${stage.id}`}
               />
             </Box>
           ))}

@@ -41,7 +41,9 @@ interface Props {
   applicationId: string;
 }
 
-export const ApplicationDetail: FC<Props> = memo(({ applicationId }) => {
+export const ApplicationDetail: FC<Props> = memo(function ApplicationDetail({
+  applicationId,
+}) {
   const classes = useStyles();
   const app = useSelector<AppState, Application | undefined>((state) =>
     selectApplicationById(state.applications, applicationId)
@@ -79,7 +81,7 @@ export const ApplicationDetail: FC<Props> = memo(({ applicationId }) => {
             </Typography>
           </Box>
           <Typography className={classes.env} variant="body1">
-            {dayjs(liveState.version.timestamp).fromNow()}
+            {dayjs(liveState.version.timestamp * 1000).fromNow()}
           </Typography>
         </Box>
         <Box flex={1}>
@@ -88,7 +90,7 @@ export const ApplicationDetail: FC<Props> = memo(({ applicationId }) => {
             value={
               <Link
                 component={RouterLink}
-                to={`${PAGE_PATH_DEPLOYMENTS}/${app.mostRecentlySuccessfulDeployment}`}
+                to={`${PAGE_PATH_DEPLOYMENTS}/${app.mostRecentlySuccessfulDeployment.deploymentId}`}
               >
                 {app.mostRecentlySuccessfulDeployment.deploymentId}
               </Link>

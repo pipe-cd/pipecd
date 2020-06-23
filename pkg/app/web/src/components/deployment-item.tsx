@@ -1,5 +1,5 @@
 import React, { FC } from "react";
-import { makeStyles, Paper, Typography } from "@material-ui/core";
+import { makeStyles, Typography } from "@material-ui/core";
 import { useSelector } from "react-redux";
 import { AppState } from "../modules";
 import {
@@ -15,6 +15,7 @@ import dayjs from "dayjs";
 
 const useStyles = makeStyles((theme) => ({
   root: {
+    flex: 1,
     padding: theme.spacing(2),
     display: "flex",
     alignItems: "center",
@@ -60,7 +61,7 @@ export const DeploymentItem: FC<Props> = ({ id }) => {
   }
 
   return (
-    <Paper square className={classes.root}>
+    <div className={classes.root}>
       <div className={classes.main}>
         <div className={classes.head}>
           <Typography variant="h6" className={classes.appName}>
@@ -73,6 +74,6 @@ export const DeploymentItem: FC<Props> = ({ id }) => {
         </Typography>
       </div>
       <div>{dayjs(deployment.createdAt * 1000).fromNow()}</div>
-    </Paper>
+    </div>
   );
 };
