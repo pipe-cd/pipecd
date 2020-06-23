@@ -7,13 +7,13 @@ import {
   Toolbar,
 } from "@material-ui/core";
 import React, { FC, memo } from "react";
-import { Link as RouterLink, Route, Switch } from "react-router-dom";
-import { PAGE_PATH_SETTINGS_PIPED } from "../../constants";
+import { NavLink, Redirect, Route, Switch } from "react-router-dom";
+import { PAGE_PATH_SETTINGS, PAGE_PATH_SETTINGS_PIPED } from "../../constants";
 import { SettingsPipedPage } from "./piped";
 
 const drawerWidth = 240;
 
-const useStyles = makeStyles(() => ({
+const useStyles = makeStyles((theme) => ({
   root: {
     flex: 1,
     display: "flex",
@@ -31,11 +31,14 @@ const useStyles = makeStyles(() => ({
   content: {
     flexGrow: 1,
   },
+  activeNav: {
+    backgroundColor: theme.palette.action.selected,
+  },
 }));
 
 const MENU_ITEMS = [["Piped", PAGE_PATH_SETTINGS_PIPED]];
 
-export const SettingsIndexPage: FC = memo(() => {
+export const SettingsIndexPage: FC = memo(function SettingsIndexPage() {
   const classes = useStyles();
   return (
     <div className={classes.root}>
@@ -51,8 +54,9 @@ export const SettingsIndexPage: FC = memo(() => {
               <ListItem
                 key={`menu-item-${text}`}
                 button
-                component={RouterLink}
+                component={NavLink}
                 to={link}
+                activeClassName={classes.activeNav}
               >
                 <ListItemText primary={text} />
               </ListItem>
@@ -62,6 +66,11 @@ export const SettingsIndexPage: FC = memo(() => {
       </Drawer>
       <main className={classes.content}>
         <Switch>
+          <Route
+            exact
+            path={PAGE_PATH_SETTINGS}
+            component={() => <Redirect to={PAGE_PATH_SETTINGS_PIPED} />}
+          />
           <Route
             exact
             path={PAGE_PATH_SETTINGS_PIPED}
