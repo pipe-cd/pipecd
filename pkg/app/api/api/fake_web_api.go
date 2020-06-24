@@ -216,7 +216,7 @@ func (a *FakeWebAPI) ListApplications(ctx context.Context, req *webservice.ListA
 }
 
 func (a *FakeWebAPI) SyncApplication(ctx context.Context, req *webservice.SyncApplicationRequest) (*webservice.SyncApplicationResponse, error) {
-	return nil, status.Error(codes.Unimplemented, "")
+	return &webservice.SyncApplicationResponse{}, nil
 }
 
 func (a *FakeWebAPI) GetApplication(ctx context.Context, req *webservice.GetApplicationRequest) (*webservice.GetApplicationResponse, error) {
@@ -609,11 +609,11 @@ func (a *FakeWebAPI) GetStageLog(ctx context.Context, req *webservice.GetStageLo
 }
 
 func (a *FakeWebAPI) CancelDeployment(ctx context.Context, req *webservice.CancelDeploymentRequest) (*webservice.CancelDeploymentResponse, error) {
-	return nil, status.Error(codes.Unimplemented, "")
+	return &webservice.CancelDeploymentResponse{}, nil
 }
 
 func (a *FakeWebAPI) ApproveStage(ctx context.Context, req *webservice.ApproveStageRequest) (*webservice.ApproveStageResponse, error) {
-	return nil, status.Error(codes.Unimplemented, "")
+	return &webservice.ApproveStageResponse{}, nil
 }
 
 func (a *FakeWebAPI) GetApplicationLiveState(ctx context.Context, req *webservice.GetApplicationLiveStateRequest) (*webservice.GetApplicationLiveStateResponse, error) {
