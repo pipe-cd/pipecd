@@ -13,6 +13,9 @@ metadata:
     networking.gke.io/managed-certificates: {{ include "pipecd.fullname" . }}
   {{- end }}
 spec:
+  backend:
+    serviceName: {{ include "pipecd.fullname" . }}
+    servicePort: {{ .Values.service.internalPort }}
   rules:
   - http:
       paths:
@@ -24,7 +27,4 @@ spec:
         backend:
           serviceName: {{ include "pipecd.fullname" . }}
           servicePort: {{ .Values.service.port }}
-      - backend:
-          serviceName: {{ include "pipecd.fullname" . }}
-          servicePort: {{ .Values.service.internalPort }}
 {{- end }}
