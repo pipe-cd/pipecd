@@ -1,7 +1,5 @@
 reviewers:
   - sig-dev
-requiredReviewers:
-  - nghialv
 approvers:
   - sig-dev
 
