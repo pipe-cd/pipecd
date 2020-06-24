@@ -19,13 +19,6 @@ option go_package = "github.com/pipe-cd/pipe/pkg/model";
 
 import "validate/validate.proto";
 
-enum CommandType {
-    COMMAND_APPLICATION = 0;
-    COMMAND_DEPLOYMENT = 1;
-    COMMAND_STAGE = 2;
-    COMMAND_GIT_REPO_HOOK = 3;
-}
-
 enum CommandStatus {
     COMMAND_NOT_HANDLED_YET = 0;
     COMMAND_SUCCEEDED = 1;
@@ -34,24 +27,13 @@ enum CommandStatus {
 }
 
 message Command {
-    // The generated unique identifier.
-    string id = 1 [(validate.rules).string.min_len = 1];
-    string piped_id = 2 [(validate.rules).string.min_len = 1];
-    string application_id = 3;
-    string deployment_id = 4;
-    string stage_id = 5;
-    CommandType type = 6 [(validate.rules).enum.defined_only = true];
-    // Who triggered the command.
-    string commander = 7;
+    enum Type {
+        SYNC_APPLICATION = 0;
+        UPDATE_APPLICATION_CONFIG = 1;
+        CANCEL_DEPLOYMENT = 2;
+        APPROVE_STAGE = 3;
+    }
 
-    CommandStatus status = 10;
-    map<string,string> metadata = 11;
-    int64 handled_at = 12 [(validate.rules).int64.gt = 0];
-
-    int64 created_at = 14 [(validate.rules).int64.gt = 0];
-    int64 updated_at = 15 [(validate.rules).int64.gt = 0];
-
-    // Application Command.
     message SyncApplication {
         string application_id = 1 [(validate.rules).string.min_len = 1];
     }
@@ -62,32 +44,34 @@ message Command {
         string config = 3 [(validate.rules).string.min_len = 1];
     }
 
-    // Deployment Command.
     message CancelDeployment {
         string deployment_id = 1 [(validate.rules).string.min_len = 1];
         bool without_rollback = 2;
     }
 
-    // Stage Command.
     message ApproveStage {
         string deployment_id = 1 [(validate.rules).string.min_len = 1];
         string stage_id = 2 [(validate.rules).string.min_len = 1];
     }
 
-    // Repo Hook Event Command.
-    message HandlePullRequestEvent {
-        string repo = 1 [(validate.rules).string.min_len = 1];
-        string action = 2 [(validate.rules).string.min_len = 1];
-    }
+    // The generated unique identifier.
+    string id = 1 [(validate.rules).string.min_len = 1];
+    string piped_id = 2 [(validate.rules).string.min_len = 1];
+    string application_id = 3;
+    string deployment_id = 4;
+    string stage_id = 5;
+    string commander = 6;
 
-    oneof inner {
-        SyncApplication sync_application = 100;
-        UpdateApplicationConfig update_application_config = 101;
+    CommandStatus status = 20;
+    map<string,string> metadata = 21;
+    int64 handled_at = 22 [(validate.rules).int64.gt = 0];
 
-        CancelDeployment cancel_deployment = 200;
+    Type type = 30 [(validate.rules).enum.defined_only = true];
+    SyncApplication sync_application = 31;
+    UpdateApplicationConfig update_application_config = 32;
+    CancelDeployment cancel_deployment = 33;
+    ApproveStage approve_stage = 34;
 
-        ApproveStage approve_stage = 300;
-
-        HandlePullRequestEvent handle_pull_request_event = 400;
-    }
+    int64 created_at = 100 [(validate.rules).int64.gt = 0];
+    int64 updated_at = 101 [(validate.rules).int64.gt = 0];
 }
