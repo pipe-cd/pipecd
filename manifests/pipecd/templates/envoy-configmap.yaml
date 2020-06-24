@@ -80,15 +80,15 @@ data:
                         prefix: /
                       route:
                         cluster: web
-{{- if .Values.ingress.enabled -}}
-            tls_context:
-              common_tls_context:
-                tls_certificates:
-                - certificate_chain:
-                    filename: "/etc/ssl/envoy/tls.crt"
-                  private_key:
-                    filename: "/etc/ssl/envoy/tls.key"
-                alpn_protocols: h2
+{{- if .Values.ingress.enabled }}
+          tls_context:
+            common_tls_context:
+              tls_certificates:
+              - certificate_chain:
+                  filename: "/etc/ssl/envoy/tls.crt"
+                private_key:
+                  filename: "/etc/ssl/envoy/tls.key"
+              alpn_protocols: h2
 {{- end }}
       clusters:
       - name: api-piped-api

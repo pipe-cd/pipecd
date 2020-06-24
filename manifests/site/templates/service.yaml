@@ -6,7 +6,7 @@ metadata:
     {{- include "site.labels" . | nindent 4 }}
   annotations:
   {{- if .Values.backendConfig.enabled }}
-    beta.cloud.google.com/backend-config: '{"ports": {"http": {{ include "site.fullname" . }} }}'
+    beta.cloud.google.com/backend-config: '{"ports": {"http": "{{ include "site.fullname" . }}" }}'
   {{- end }}
 spec:
   {{- if .Values.ingress.enabled }}
