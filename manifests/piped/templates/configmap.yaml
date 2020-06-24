@@ -1,9 +1,11 @@
+{{- if .Values.config.create -}}
 apiVersion: v1
 kind: ConfigMap
 metadata:
-  name: {{ include "piped.fullname" . }}-config
+  name: {{ include "piped.configMapName" . }}
   labels:
     {{- include "piped.labels" . | nindent 4 }}
 data:
-  piped-config.yaml: |-
-{{ tpl .Values.config . | indent 4 }}
+  {{ .Values.config.fileName }}: |-
+{{ tpl .Values.config.data . | indent 4 }}
+{{- end }}

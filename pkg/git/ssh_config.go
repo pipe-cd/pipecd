@@ -75,7 +75,7 @@ func generateSSHConfig(cfg config.PipedGit) (string, error) {
 		buffer bytes.Buffer
 		data   = sshConfig{
 			Host:         "github.com",
-			IdentityFile: "/etc/piped-secret/sshkey",
+			IdentityFile: cfg.SSHKeyFile,
 		}
 	)
 
@@ -86,9 +86,6 @@ func generateSSHConfig(cfg config.PipedGit) (string, error) {
 		data.HostName = cfg.HostName
 	} else {
 		data.HostName = data.Host
-	}
-	if cfg.SSHKeyFile != "" {
-		data.IdentityFile = cfg.SSHKeyFile
 	}
 
 	if err := sshConfigTmpl.Execute(&buffer, data); err != nil {
