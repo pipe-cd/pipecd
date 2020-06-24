@@ -16,6 +16,7 @@ package piped
 
 import (
 	"context"
+	"crypto/tls"
 	"fmt"
 	"io/ioutil"
 	"net/http"
@@ -24,6 +25,7 @@ import (
 	"github.com/spf13/cobra"
 	"go.uber.org/zap"
 	"golang.org/x/sync/errgroup"
+	"google.golang.org/grpc/credentials"
 
 	"github.com/pipe-cd/pipe/pkg/admin"
 	"github.com/pipe-cd/pipe/pkg/app/api/service/pipedservice"
@@ -283,15 +285,20 @@ func (p *piped) createAPIClient(ctx context.Context, projectID, pipedID, pipedKe
 
 	var (
 		token   = rpcauth.MakePipedToken(projectID, pipedID, string(pipedKey))
-		tls     = p.certFile != ""
-		creds   = rpcclient.NewPerRPCCredentials(token, rpcauth.PipedTokenCredentials, tls)
+		creds   = rpcclient.NewPerRPCCredentials(token, rpcauth.PipedTokenCredentials, p.tls)
 		options = []rpcclient.DialOption{
 			rpcclient.WithBlock(),
 			rpcclient.WithPerRPCCredentials(creds),
 		}
 	)
-	if tls {
-		options = append(options, rpcclient.WithTLS(p.certFile))
+
+	if p.tls {
+		if p.certFile != "" {
+			options = append(options, rpcclient.WithTLS(p.certFile))
+		} else {
+			config := &tls.Config{}
+			options = append(options, rpcclient.WithTransportCredentials(credentials.NewTLS(config)))
+		}
 	} else {
 		options = append(options, rpcclient.WithInsecure())
 	}
