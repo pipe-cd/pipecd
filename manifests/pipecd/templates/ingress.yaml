@@ -20,20 +20,11 @@ spec:
         backend:
           serviceName: {{ include "pipecd.fullname" . }}
           servicePort: {{ .Values.service.port }}
-      - path: /pipe.api.service.pipedservice.PipeService/*
+      - path: /pipe.api.service.pipedservice.PipedService/*
         backend:
           serviceName: {{ include "pipecd.fullname" . }}
           servicePort: {{ .Values.service.port }}
-      - path: /pipe.api.service.webservice.WebService/*
-        backend:
-          serviceName: {{ include "pipecd.fullname" . }}
-          servicePort: {{ .Values.service.internalPort }}
-      - path: /auth/*
-        backend:
-          serviceName: {{ include "pipecd.fullname" . }}
-          servicePort: {{ .Values.service.internalPort }}
-      - path: /*
-        backend:
+      - backend:
           serviceName: {{ include "pipecd.fullname" . }}
           servicePort: {{ .Values.service.internalPort }}
 {{- end }}
