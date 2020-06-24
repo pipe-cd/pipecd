@@ -12,6 +12,9 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+# Apache-2.0 License
+# https://github.com/envoyproxy/protoc-gen-validate
+
 load("@io_bazel_rules_go//proto:def.bzl", "go_proto_library")
 load("@io_bazel_rules_go//proto:compiler.bzl", "go_proto_compiler")
 
