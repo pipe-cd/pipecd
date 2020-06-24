@@ -57,7 +57,7 @@ import (
 
 type piped struct {
 	configFile                           string
-	tls                                  bool
+	insecure                             bool
 	certFile                             string
 	controlPlaneAddress                  string
 	adminPort                            int
@@ -82,7 +82,7 @@ func NewCommand() *cobra.Command {
 
 	cmd.Flags().StringVar(&p.configFile, "config-file", p.configFile, "The path to the configuration file.")
 
-	cmd.Flags().BoolVar(&p.tls, "tls", p.tls, "Whether running the gRPC server with TLS or not.")
+	cmd.Flags().BoolVar(&p.insecure, "insecure", p.insecure, "Whether disabling transport security while connecting to control-plane.")
 	cmd.Flags().StringVar(&p.certFile, "cert-file", p.certFile, "The path to the TLS certificate file.")
 	cmd.Flags().StringVar(&p.controlPlaneAddress, "control-plane-address", p.controlPlaneAddress, "The address used to connect to control plane.")
 	cmd.Flags().IntVar(&p.adminPort, "admin-port", p.adminPort, "The port number used to run a HTTP server for admin tasks such as metrics, healthz.")
@@ -285,14 +285,14 @@ func (p *piped) createAPIClient(ctx context.Context, projectID, pipedID, pipedKe
 
 	var (
 		token   = rpcauth.MakePipedToken(projectID, pipedID, string(pipedKey))
-		creds   = rpcclient.NewPerRPCCredentials(token, rpcauth.PipedTokenCredentials, p.tls)
+		creds   = rpcclient.NewPerRPCCredentials(token, rpcauth.PipedTokenCredentials, !p.insecure)
 		options = []rpcclient.DialOption{
 			rpcclient.WithBlock(),
 			rpcclient.WithPerRPCCredentials(creds),
 		}
 	)
 
-	if p.tls {
+	if !p.insecure {
 		if p.certFile != "" {
 			options = append(options, rpcclient.WithTLS(p.certFile))
 		} else {
