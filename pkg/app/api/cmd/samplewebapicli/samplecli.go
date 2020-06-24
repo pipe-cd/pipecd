@@ -80,12 +80,18 @@ func (s *samplecli) run(ctx context.Context, t cli.Telemetry) error {
 		return s.listApplications(ctx, cli, data, t.Logger)
 	case "GetApplication":
 		return s.getApplication(ctx, cli, data, t.Logger)
+	case "SyncApplication":
+		return s.syncApplication(ctx, cli, data, t.Logger)
 	case "ListDeployments":
 		return s.listDeployments(ctx, cli, data, t.Logger)
 	case "GetDeployment":
 		return s.getDeployment(ctx, cli, data, t.Logger)
 	case "GetStageLog":
 		return s.getStageLog(ctx, cli, data, t.Logger)
+	case "CancelDeployment":
+		return s.cancelDeployment(ctx, cli, data, t.Logger)
+	case "ApproveStage":
+		return s.approveStage(ctx, cli, data, t.Logger)
 	case "GetApplicationLiveState":
 		return s.getApplicationLiveState(ctx, cli, data, t.Logger)
 	}
@@ -229,6 +235,19 @@ func (s *samplecli) getApplication(ctx context.Context, cli webservice.Client, p
 	return nil
 }
 
+func (s *samplecli) syncApplication(ctx context.Context, cli webservice.Client, payload []byte, logger *zap.Logger) error {
+	req := webservice.SyncApplicationRequest{}
+	if err := json.Unmarshal(payload, &req); err != nil {
+		return err
+	}
+	if _, err := cli.SyncApplication(ctx, &req); err != nil {
+		logger.Error("failed to run SyncApplication", zap.Error(err))
+		return err
+	}
+	logger.Info("successfully run SyncApplication")
+	return nil
+}
+
 func (s *samplecli) listDeployments(ctx context.Context, cli webservice.Client, payload []byte, logger *zap.Logger) error {
 	req := webservice.ListDeploymentsRequest{}
 	if err := json.Unmarshal(payload, &req); err != nil {
@@ -273,6 +292,32 @@ func (s *samplecli) getStageLog(ctx context.Context, cli webservice.Client, payl
 	}
 	logger.Info("successfully run GetStageLog")
 	fmt.Printf("deployment: %+v\n", resp)
+	return nil
+}
+
+func (s *samplecli) cancelDeployment(ctx context.Context, cli webservice.Client, payload []byte, logger *zap.Logger) error {
+	req := webservice.CancelDeploymentRequest{}
+	if err := json.Unmarshal(payload, &req); err != nil {
+		return err
+	}
+	if _, err := cli.CancelDeployment(ctx, &req); err != nil {
+		logger.Error("failed to run CancelDeployment", zap.Error(err))
+		return err
+	}
+	logger.Info("successfully run CancelDeployment")
+	return nil
+}
+
+func (s *samplecli) approveStage(ctx context.Context, cli webservice.Client, payload []byte, logger *zap.Logger) error {
+	req := webservice.ApproveStageRequest{}
+	if err := json.Unmarshal(payload, &req); err != nil {
+		return err
+	}
+	if _, err := cli.ApproveStage(ctx, &req); err != nil {
+		logger.Error("failed to run ApproveStage", zap.Error(err))
+		return err
+	}
+	logger.Info("successfully run ApproveStage")
 	return nil
 }
 

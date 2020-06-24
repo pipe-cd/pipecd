@@ -38,6 +38,7 @@ type WebAPI struct {
 	environmentStore          datastore.EnvironmentStore
 	deploymentStore           datastore.DeploymentStore
 	pipedStore                datastore.PipedStore
+	commandStore              datastore.CommandStore
 	stageLogStore             stagelogstore.Store
 	applicationLiveStateStore applicationlivestatestore.Store
 
@@ -51,6 +52,7 @@ func NewWebAPI(ds datastore.DataStore, sls stagelogstore.Store, alss application
 		environmentStore:          datastore.NewEnvironmentStore(ds),
 		deploymentStore:           datastore.NewDeploymentStore(ds),
 		pipedStore:                datastore.NewPipedStore(ds),
+		commandStore:              datastore.NewCommandStore(ds),
 		stageLogStore:             sls,
 		applicationLiveStateStore: alss,
 		logger:                    logger.Named("web-api"),
@@ -260,21 +262,55 @@ func (a *WebAPI) ListApplications(ctx context.Context, req *webservice.ListAppli
 }
 
 func (a *WebAPI) SyncApplication(ctx context.Context, req *webservice.SyncApplicationRequest) (*webservice.SyncApplicationResponse, error) {
-	return nil, status.Error(codes.Unimplemented, "")
+	app, err := a.getApplication(ctx, req.ApplicationId)
+	if err != nil {
+		return nil, err
+	}
+
+	cmd := model.Command{
+		Id:            uuid.New().String(),
+		PipedId:       app.PipedId,
+		ApplicationId: app.Id,
+		Type:          model.Command_SYNC_APPLICATION,
+		Commander:     "anonymous", // TODO: Getting value from login user.
+		SyncApplication: &model.Command_SyncApplication{
+			ApplicationId: req.ApplicationId,
+		},
+	}
+	if err := a.addCommand(ctx, &cmd); err != nil {
+		return nil, err
+	}
+	return &webservice.SyncApplicationResponse{}, nil
+}
+
+func (a *WebAPI) addCommand(ctx context.Context, cmd *model.Command) error {
+	if err := a.commandStore.AddCommand(ctx, cmd); err != nil {
+		a.logger.Error("failed to create command", zap.Error(err))
+		return status.Error(codes.Internal, "failed to create command")
+	}
+	return nil
 }
 
 func (a *WebAPI) GetApplication(ctx context.Context, req *webservice.GetApplicationRequest) (*webservice.GetApplicationResponse, error) {
-	app, err := a.applicationStore.GetApplication(ctx, req.ApplicationId)
-	if errors.Is(err, datastore.ErrNotFound) {
-		return nil, status.Error(codes.NotFound, "application is not found")
-	}
+	app, err := a.getApplication(ctx, req.ApplicationId)
 	if err != nil {
-		a.logger.Error("failed to get deployment", zap.Error(err))
-		return nil, status.Error(codes.Internal, "failed to get application")
+		return nil, err
 	}
 	return &webservice.GetApplicationResponse{
 		Application: app,
 	}, nil
+}
+
+func (a *WebAPI) getApplication(ctx context.Context, id string) (*model.Application, error) {
+	app, err := a.applicationStore.GetApplication(ctx, id)
+	if errors.Is(err, datastore.ErrNotFound) {
+		return nil, status.Error(codes.NotFound, "application is not found")
+	}
+	if err != nil {
+		a.logger.Error("failed to get application", zap.Error(err))
+		return nil, status.Error(codes.Internal, "failed to get application")
+	}
+	return app, nil
 }
 
 func (a *WebAPI) ListDeployments(ctx context.Context, req *webservice.ListDeploymentsRequest) (*webservice.ListDeploymentsResponse, error) {
@@ -291,7 +327,17 @@ func (a *WebAPI) ListDeployments(ctx context.Context, req *webservice.ListDeploy
 }
 
 func (a *WebAPI) GetDeployment(ctx context.Context, req *webservice.GetDeploymentRequest) (*webservice.GetDeploymentResponse, error) {
-	resp, err := a.deploymentStore.GetDeployment(ctx, req.DeploymentId)
+	deployment, err := a.getDeployment(ctx, req.DeploymentId)
+	if err != nil {
+		return nil, err
+	}
+	return &webservice.GetDeploymentResponse{
+		Deployment: deployment,
+	}, nil
+}
+
+func (a *WebAPI) getDeployment(ctx context.Context, id string) (*model.Deployment, error) {
+	deployment, err := a.deploymentStore.GetDeployment(ctx, id)
 	if errors.Is(err, datastore.ErrNotFound) {
 		return nil, status.Error(codes.NotFound, "deployment is not found")
 	}
@@ -299,9 +345,7 @@ func (a *WebAPI) GetDeployment(ctx context.Context, req *webservice.GetDeploymen
 		a.logger.Error("failed to get deployment", zap.Error(err))
 		return nil, status.Error(codes.Internal, "failed to get deployment")
 	}
-	return &webservice.GetDeploymentResponse{
-		Deployment: resp,
-	}, nil
+	return deployment, nil
 }
 
 func (a *WebAPI) GetStageLog(ctx context.Context, req *webservice.GetStageLogRequest) (*webservice.GetStageLogResponse, error) {
@@ -321,11 +365,62 @@ func (a *WebAPI) GetStageLog(ctx context.Context, req *webservice.GetStageLogReq
 }
 
 func (a *WebAPI) CancelDeployment(ctx context.Context, req *webservice.CancelDeploymentRequest) (*webservice.CancelDeploymentResponse, error) {
-	return nil, status.Error(codes.Unimplemented, "")
+	deployment, err := a.getDeployment(ctx, req.DeploymentId)
+	if err != nil {
+		return nil, err
+	}
+	if model.IsCompletedDeployment(deployment.Status) {
+		return nil, status.Errorf(codes.FailedPrecondition, "could not cancel the deployment because it was already completed")
+	}
+
+	cmd := model.Command{
+		Id:            uuid.New().String(),
+		PipedId:       deployment.PipedId,
+		ApplicationId: deployment.ApplicationId,
+		DeploymentId:  req.DeploymentId,
+		Type:          model.Command_CANCEL_DEPLOYMENT,
+		Commander:     "anonymous",
+		CancelDeployment: &model.Command_CancelDeployment{
+			DeploymentId:    req.DeploymentId,
+			WithoutRollback: req.WithoutRollback,
+		},
+	}
+	if err := a.addCommand(ctx, &cmd); err != nil {
+		return nil, err
+	}
+	return &webservice.CancelDeploymentResponse{}, nil
 }
 
 func (a *WebAPI) ApproveStage(ctx context.Context, req *webservice.ApproveStageRequest) (*webservice.ApproveStageResponse, error) {
-	return nil, status.Error(codes.Unimplemented, "")
+	deployment, err := a.getDeployment(ctx, req.DeploymentId)
+	if err != nil {
+		return nil, err
+	}
+	stage, ok := deployment.StageStatusMap()[req.StageId]
+	if !ok {
+		return nil, status.Error(codes.FailedPrecondition, "stage was not found in the deployment")
+	}
+	if model.IsCompletedStage(stage) {
+		return nil, status.Errorf(codes.FailedPrecondition, "could not approve the stage because it was already completed")
+	}
+
+	cmd := model.Command{
+		Id:            uuid.New().String(),
+		PipedId:       deployment.PipedId,
+		ApplicationId: deployment.ApplicationId,
+		DeploymentId:  req.DeploymentId,
+		StageId:       req.StageId,
+		Type:          model.Command_APPROVE_STAGE,
+		Commander:     "anonymous",
+		ApproveStage: &model.Command_ApproveStage{
+			DeploymentId: req.DeploymentId,
+			StageId:      req.StageId,
+		},
+	}
+	if err := a.addCommand(ctx, &cmd); err != nil {
+		return nil, err
+	}
+	return &webservice.ApproveStageResponse{}, nil
 }
 
 func (a *WebAPI) GetApplicationLiveState(ctx context.Context, req *webservice.GetApplicationLiveStateRequest) (*webservice.GetApplicationLiveStateResponse, error) {
