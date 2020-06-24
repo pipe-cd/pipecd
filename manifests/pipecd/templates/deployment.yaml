@@ -47,6 +47,11 @@ spec:
           - name: envoy-config
             mountPath: /etc/envoy
             readOnly: true
+{{- if .Values.ingress.enabled }}
+          - name: certs
+            mountPath: /etc/ssl/envoy
+            readOnly: true
+{{- end }}
 {{- if .Values.gateway.resources }}
           resources:
             {{- toYaml .Values.gateway.resources | nindent 12 }}
@@ -55,7 +60,11 @@ spec:
         - name: envoy-config
           configMap:
             name: {{ include "pipecd.fullname" . }}-gateway-envoy-config
-
+{{- if .Values.ingress.enabled }}
+        - name: certs
+          secret:
+            secretName: internal-tls
+{{- end }}
 ---
 apiVersion: apps/v1
 kind: Deployment
@@ -214,7 +223,7 @@ spec:
           args:
             - --requirepass
             - {{ .Values.cache.password | quote }}
-  {{- end }}       
+  {{- end }}
           ports:
             - name: redis
               containerPort: 6379

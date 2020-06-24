@@ -10,7 +10,7 @@ metadata:
     {{- toYaml . | nindent 4 }}
   {{- end }}
   {{- if .Values.backendConfig.enabled }}
-    beta.cloud.google.com/backend-config: '{"ports": {"internal-service": {{ include "pipecd.fullname" . }} }}'
+    beta.cloud.google.com/backend-config: '{"ports": {"internal-service": "{{ include "pipecd.fullname" . }}" }}'
   {{- end }}
 spec:
   type: NodePort
