@@ -17,16 +17,13 @@
 package statsreporter
 
 import (
-	"bufio"
-	"bytes"
 	"context"
-	"fmt"
 	"io"
 	"net/http"
-	"strconv"
-	"strings"
 	"time"
 
+	dto "github.com/prometheus/client_model/go"
+	"github.com/prometheus/common/expfmt"
 	"go.uber.org/zap"
 	"google.golang.org/grpc"
 
@@ -74,19 +71,19 @@ L:
 			break L
 
 		case now := <-ticker.C:
-			stats, err := r.collect()
+			metrics, err := r.collect()
 			if err != nil {
 				continue
 			}
-			if len(stats) == 0 {
-				r.logger.Info("there are no stats to report")
+			if len(metrics) == 0 {
+				r.logger.Info("there are no metrics to report")
 				continue
 			}
-			if r.report(ctx, stats, now); err != nil {
+			if r.report(ctx, metrics, now); err != nil {
 				continue
 			}
-			r.logger.Info("successfully collected and reported stats",
-				zap.Int("num", len(stats)),
+			r.logger.Info("successfully collected and reported metrics",
+				zap.Int("num", len(metrics)),
 				zap.Duration("duration", time.Since(now)),
 			)
 		}
@@ -96,7 +93,7 @@ L:
 	return nil
 }
 
-func (r *reporter) collect() ([]*model.PipedStats_PrometheusMetrics, error) {
+func (r *reporter) collect() ([]*model.PrometheusMetrics, error) {
 	resp, err := r.httpClient.Get(r.metricsURL)
 	if err != nil {
 		r.logger.Error("failed to collect prometheus metrics", zap.Error(err))
@@ -104,21 +101,21 @@ func (r *reporter) collect() ([]*model.PipedStats_PrometheusMetrics, error) {
 	}
 	defer resp.Body.Close()
 
-	stats, err := parsePrometheusMetrics(resp.Body)
+	metrics, err := parsePrometheusMetrics(resp.Body)
 	if err != nil {
 		r.logger.Error("failed to parse prometheus metrics", zap.Error(err))
 		return nil, err
 	}
 
-	return stats, nil
+	return metrics, nil
 }
 
-func (r *reporter) report(ctx context.Context, stats []*model.PipedStats_PrometheusMetrics, now time.Time) error {
+func (r *reporter) report(ctx context.Context, metrics []*model.PrometheusMetrics, now time.Time) error {
 	req := &pipedservice.PingRequest{
 		PipedStats: &model.PipedStats{
-			Version:         version.Get().Version,
-			Timestamp:       now.Unix(),
-			PrometheusStats: stats,
+			Version:           version.Get().Version,
+			Timestamp:         now.Unix(),
+			PrometheusMetrics: metrics,
 		},
 	}
 	if _, err := r.apiClient.Ping(ctx, req); err != nil {
@@ -128,68 +125,60 @@ func (r *reporter) report(ctx context.Context, stats []*model.PipedStats_Prometh
 	return nil
 }
 
-var helpPrefix = []byte("# HELP")
-
-const typePrefix = "# TYPE"
+var parser expfmt.TextParser
 
 // TODO: Add a metrics whitelist and fiter out not needed ones.
-func parsePrometheusMetrics(reader io.Reader) ([]*model.PipedStats_PrometheusMetrics, error) {
-	var (
-		curType = model.PipedStats_PrometheusMetrics_UNKNOWN
-		metrics []*model.PipedStats_PrometheusMetrics
-	)
-	scanner := bufio.NewScanner(reader)
-
-	for scanner.Scan() {
-		lb := scanner.Bytes()
-		if len(lb) == 0 {
-			continue
-		}
-
-		// Ignore all HELP line.
-		if bytes.HasPrefix(lb, helpPrefix) {
-			continue
-		}
-
-		// Extract current type from TYPE line.
-		line := string(lb)
-		if strings.HasPrefix(line, typePrefix) {
-			parts := strings.Split(line, " ")
-			if len(parts) < 3 {
-				return nil, fmt.Errorf("malformed TYPE line %s", line)
-			}
-			switch parts[len(parts)-1] {
-			case "gauge":
-				curType = model.PipedStats_PrometheusMetrics_GAUGE
-			case "counter":
-				curType = model.PipedStats_PrometheusMetrics_COUNTER
-			default:
-				curType = model.PipedStats_PrometheusMetrics_UNKNOWN
-			}
-			continue
-		}
-
-		if curType == model.PipedStats_PrometheusMetrics_UNKNOWN {
-			continue
-		}
-
-		// Extract metrics data.
-		lastSpaceIndex := strings.LastIndexByte(line, ' ')
-		if lastSpaceIndex < 0 {
-			continue
-		}
-		value, err := strconv.ParseFloat(line[lastSpaceIndex+1:], 64)
-		if err != nil {
-			return nil, err
-		}
-		metrics = append(metrics, &model.PipedStats_PrometheusMetrics{
-			Type:  curType,
-			Name:  line[:lastSpaceIndex],
-			Value: value,
-		})
-	}
-	if err := scanner.Err(); err != nil {
+func parsePrometheusMetrics(reader io.Reader) ([]*model.PrometheusMetrics, error) {
+	metricFamily, err := parser.TextToMetricFamilies(reader)
+	if err != nil {
 		return nil, err
 	}
+
+	metrics := make([]*model.PrometheusMetrics, 0, len(metricFamily))
+
+L:
+	for _, mf := range metricFamily {
+		var metricType model.PrometheusMetrics_Type
+
+		switch mf.GetType() {
+		case dto.MetricType_COUNTER:
+			metricType = model.PrometheusMetrics_COUNTER
+		case dto.MetricType_GAUGE:
+			metricType = model.PrometheusMetrics_GAUGE
+		default:
+			continue L
+		}
+
+		metric := &model.PrometheusMetrics{
+			Name: *mf.Name,
+			Type: metricType,
+		}
+
+		for _, m := range mf.Metric {
+			sample := &model.PrometheusMetrics_Sample{
+				Labels: make([]*model.PrometheusMetrics_LabelPair, 0, len(m.Label)),
+			}
+			metric.Samples = append(metric.Samples, sample)
+
+			for _, l := range m.Label {
+				sample.Labels = append(sample.Labels, &model.PrometheusMetrics_LabelPair{
+					Name:  l.GetName(),
+					Value: l.GetValue(),
+				})
+			}
+
+			switch metric.Type {
+			case model.PrometheusMetrics_COUNTER:
+				sample.Value = m.Counter.GetValue()
+			case model.PrometheusMetrics_GAUGE:
+				sample.Value = m.Gauge.GetValue()
+			}
+		}
+
+		if len(metric.Samples) > 0 {
+			metrics = append(metrics, metric)
+		}
+	}
+
 	return metrics, nil
 }
