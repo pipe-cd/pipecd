@@ -58,6 +58,18 @@ func TestPipedConfig(t *testing.T) {
 						Branch: "master",
 					},
 				},
+				ChartRepositories: []HelmChartRepository{
+					{
+						Name:    "fantastic-charts",
+						Address: "https://fantastic-charts.storage.googleapis.com",
+					},
+					{
+						Name:     "private-charts",
+						Address:  "https://private-charts.com",
+						Username: "basic-username",
+						Password: "basic-password",
+					},
+				},
 				CloudProviders: []PipedCloudProvider{
 					{
 						Name: "kubernetes-default",

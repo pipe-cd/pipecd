@@ -19,6 +19,14 @@ spec:
       remote: git@github.com:org/repo2.git
       branch: master
 
+  chartRepositories:
+    - name: fantastic-charts
+      address: https://fantastic-charts.storage.googleapis.com
+    - name: private-charts
+      address: https://private-charts.com
+      username: basic-username
+      password: basic-password
+
   cloudProviders:
     - name: kubernetes-default
       type: KUBERNETES
