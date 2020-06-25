@@ -267,6 +267,14 @@ func (a *WebAPI) SyncApplication(ctx context.Context, req *webservice.SyncApplic
 		return nil, err
 	}
 
+	claims, err := rpcauth.ExtractClaims(ctx)
+	if err != nil {
+		return nil, err
+	}
+	if app.ProjectId != claims.Role.ProjectId {
+		return nil, status.Error(codes.PermissionDenied, "The current project does not have requested application")
+	}
+
 	cmd := model.Command{
 		Id:            uuid.New().String(),
 		PipedId:       app.PipedId,
