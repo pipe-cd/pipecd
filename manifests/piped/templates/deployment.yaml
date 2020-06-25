@@ -50,6 +50,7 @@ spec:
         - name: piped-secret
           secret:
             secretName: {{ include "piped.configMapName" . }}
+            defaultMode: 0400
         - name: piped-config
           configMap:
             name: {{ include "piped.configMapName" . }}
