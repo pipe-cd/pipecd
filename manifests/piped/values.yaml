@@ -42,14 +42,12 @@ secret:
     # The name of the piped key file.
     fileName: piped-key
     # Configuration data when create is true.
-    data: |
-      piped-key-used-to-connect-to-the-control-plane
+    data: ""
   sshKey:
     # The name of the ssh key file.
     fileName: ssh-key
     # Configuration data when create is true.
-    data: |
-      private-ssh-key-used-to-clone-repositories
+    data: ""
 
 nodeSelector: {}
 
