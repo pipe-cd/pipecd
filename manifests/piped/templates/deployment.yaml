@@ -40,7 +40,7 @@ spec:
               port: admin
           volumeMounts:
             - name: piped-secret
-              mountPath: /etc/piped-secret
+              mountPath: {{ .Values.secret.mountPath }}
               readOnly: true
             - name: piped-config
               mountPath: /etc/piped-config
