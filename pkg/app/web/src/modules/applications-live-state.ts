@@ -17,6 +17,9 @@ export type KubernetesResourceState = Required<
   KubernetesResourceStateModel.AsObject
 >;
 
+export const HealthStatus = KubernetesResourceStateModel.HealthStatus;
+export type HealthStatus = KubernetesResourceStateModel.HealthStatus;
+
 export const applicationLiveStateAdapter = createEntityAdapter<
   ApplicationLiveState
 >({

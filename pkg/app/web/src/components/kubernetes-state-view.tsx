@@ -1,6 +1,9 @@
 import { makeStyles, Box } from "@material-ui/core";
 import React, { FC } from "react";
-import { KubernetesResourceState } from "../modules/applications-live-state";
+import {
+  KubernetesResourceState,
+  HealthStatus,
+} from "../modules/applications-live-state";
 import { KubernetesResource } from "./kubernetes-resource";
 import dagre from "dagre";
 import { theme } from "../theme";
@@ -34,13 +37,18 @@ const SVG_RENDER_PADDING = STROKE_WIDTH * 2;
 export const KubernetesStateView: FC<Props> = ({ resources }) => {
   const classes = useStyles();
 
-  const graph = new dagre.graphlib.Graph<{ name: string; kind: string }>();
+  const graph = new dagre.graphlib.Graph<{
+    name: string;
+    kind: string;
+    health: HealthStatus;
+  }>();
   graph.setGraph({ rankdir: "LR", align: "UL" });
   graph.setDefaultEdgeLabel(() => ({}));
   resources.forEach((resource) => {
     graph.setNode(resource.id, {
       name: resource.name,
       kind: resource.kind,
+      health: resource.healthStatus,
       height: NODE_HEIGHT,
       width: NODE_WIDTH,
     });
@@ -83,7 +91,11 @@ export const KubernetesStateView: FC<Props> = ({ resources }) => {
     <div className={classes.container}>
       {nodes.map((node) => (
         <Box key={node.name} position="absolute" top={node.y} left={node.x}>
-          <KubernetesResource name={node.name} kind={node.kind} />
+          <KubernetesResource
+            name={node.name}
+            kind={node.kind}
+            health={node.health}
+          />
         </Box>
       ))}
       {graph.edges().map((v, i) => {
