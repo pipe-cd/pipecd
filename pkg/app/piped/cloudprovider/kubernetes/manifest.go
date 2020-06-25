@@ -162,10 +162,13 @@ func LoadManifestsFromYAMLFile(path string) ([]Manifest, error) {
 	if err != nil {
 		return nil, err
 	}
+	return ParseManifests(string(data))
+}
 
+func ParseManifests(data string) ([]Manifest, error) {
 	const seperator = "\n---"
 	var (
-		parts     = strings.Split(string(data), seperator)
+		parts     = strings.Split(data, seperator)
 		manifests = make([]Manifest, 0, len(parts))
 	)
 
