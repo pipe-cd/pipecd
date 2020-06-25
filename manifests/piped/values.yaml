@@ -38,6 +38,8 @@ secret:
   create: true
   # The name of the Secret to use when create is false.
   name: ""
+  # Where the secret files will be mounted to.
+  mountPath: /etc/piped-secret
   pipedKey:
     # The name of the piped key file.
     fileName: piped-key

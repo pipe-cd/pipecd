@@ -42,6 +42,11 @@ type sshConfig struct {
 }
 
 func AddSSHConfig(cfg config.PipedGit) error {
+	// Check the existence of the specified private SSH key file.
+	if _, err := os.Stat(cfg.SSHKeyFile); os.IsNotExist(err) {
+		return fmt.Errorf("the specified private SSH key at %s was not found", cfg.SSHKeyFile)
+	}
+
 	configData, err := generateSSHConfig(cfg)
 	if err != nil {
 		return err

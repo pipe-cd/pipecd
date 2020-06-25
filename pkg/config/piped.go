@@ -17,6 +17,7 @@ package config
 import (
 	"encoding/json"
 	"fmt"
+	"time"
 
 	"github.com/pipe-cd/pipe/pkg/model"
 )
@@ -36,6 +37,7 @@ type PipedSpec struct {
 	// The path to the key generated for this piped.
 	PipedKeyFile string
 	// How often to check whether an application should be synced.
+	// Default is 1m.
 	SyncInterval Duration `json:"syncInterval"`
 	// Git configuration needed for git commands.
 	Git PipedGit `json:"git"`
@@ -57,6 +59,10 @@ func (s *PipedSpec) Validate() error {
 	}
 	if s.PipedKeyFile == "" {
 		return fmt.Errorf("pipedKeyFile must be set")
+	}
+
+	if s.SyncInterval < 0 {
+		s.SyncInterval = Duration(time.Minute)
 	}
 	return nil
 }
