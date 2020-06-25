@@ -46,7 +46,7 @@ func Add(ctx context.Context, repos []config.HelmChartRepository, reg registry, 
 		cmd := exec.CommandContext(ctx, helm, args...)
 		out, err := cmd.CombinedOutput()
 		if err != nil {
-			return fmt.Errorf("failed to add chart repository %s: %s (%v)", repo.Name, string(out), err)
+			return fmt.Errorf("failed to add chart repository %s: %s (%w)", repo.Name, string(out), err)
 		}
 		logger.Info(fmt.Sprintf("successfully added chart repository %s", repo.Name))
 	}
