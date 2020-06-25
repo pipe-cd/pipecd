@@ -304,7 +304,7 @@ func (d *detector) loadHeadManifests(ctx context.Context, app *model.Application
 			err = fmt.Errorf("failed to load deployment configuration: %w", err)
 			return nil, err
 		}
-		loader := provider.NewManifestLoader(appDir, repoDir, cfg.KubernetesDeploymentSpec.Input, d.logger)
+		loader := provider.NewManifestLoader(app.Name, appDir, repoDir, cfg.KubernetesDeploymentSpec.Input, d.logger)
 		manifests, err = loader.LoadManifests(ctx)
 		if err != nil {
 			err = fmt.Errorf("failed to load new manifests: %w", err)

@@ -14,6 +14,16 @@
 
 package kubernetes
 
+import (
+	"bytes"
+	"context"
+	"fmt"
+	"os/exec"
+	"path/filepath"
+
+	"github.com/pipe-cd/pipe/pkg/config"
+)
+
 type Helm struct {
 	version  string
 	execPath string
@@ -26,6 +36,32 @@ func NewHelm(version, path string) *Helm {
 	}
 }
 
-func (c *Helm) template() error {
-	return nil
+func (c *Helm) Template(ctx context.Context, appName, appDir string, chart *config.InputHelmChart, opts *config.InputHelmOptions) (string, error) {
+	releaseName := appName
+	if opts != nil && opts.ReleaseName != "" {
+		releaseName = opts.ReleaseName
+	}
+
+	// TODO: Support remote git chart and remote helm chart.
+	args := []string{
+		"template",
+		"--no-hooks",
+		releaseName,
+		filepath.Join(appDir, chart.Path),
+	}
+	cmd := exec.CommandContext(ctx, c.execPath, args...)
+	var stdout bytes.Buffer
+	var stderr bytes.Buffer
+	cmd.Stdout = &stdout
+	cmd.Stderr = &stderr
+
+	if err := cmd.Start(); err != nil {
+		return "", err
+	}
+
+	if err := cmd.Wait(); err != nil {
+		return stdout.String(), fmt.Errorf("%w: %s", err, stderr.String())
+	}
+
+	return stdout.String(), nil
 }

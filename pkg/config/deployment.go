@@ -309,12 +309,16 @@ type TemplatableAnalysisHTTP struct {
 }
 
 type KubernetesDeploymentInput struct {
-	Manifests        []string        `json:"manifests"`
-	KubectlVersion   string          `json:"kubectlVersion"`
-	KustomizeVersion string          `json:"kustomizeVersion"`
-	HelmChart        *InputHelmChart `json:"helmChart"`
-	HelmValueFiles   []string        `json:"helmValueFiles"`
-	HelmVersion      string          `json:"helmVersion"`
+	Manifests      []string `json:"manifests"`
+	KubectlVersion string   `json:"kubectlVersion"`
+
+	KustomizeVersion string `json:"kustomizeVersion"`
+
+	HelmChart   *InputHelmChart   `json:"helmChart"`
+	HelmOptions *InputHelmOptions `json:"helmOptions"`
+	HelmVersion string            `json:"helmVersion"`
+
+	Namespace string `json:"namespace"`
 	// Automatically reverts all changes from all stages when one of them failed.
 	AutoRollback bool     `json:"autoRollback"`
 	Dependencies []string `json:"dependencies,omitempty"`
@@ -335,6 +339,14 @@ type InputHelmChart struct {
 	Repository string `json:"repository"`
 	Name       string `json:"name"`
 	Version    string `json:"version"`
+}
+
+type InputHelmOptions struct {
+	// By default the release name is equal to the application name.
+	ReleaseName string `json:"relaseName"`
+	// List of value files should be loaded.
+	ValueFiles []string `json:"valueFiles"`
+	SetFiles   map[string]string
 }
 
 type K8sWorkload struct {

@@ -67,7 +67,7 @@ func (e *Executor) Execute(sig executor.StopSignal) model.StageStatus {
 		ctx    = sig.Context()
 		appDir = filepath.Join(e.RepoDir, e.Deployment.GitPath.Path)
 	)
-	e.provider = provider.NewProvider(appDir, e.RepoDir, e.config.Input, e.Logger)
+	e.provider = provider.NewProvider(e.Deployment.ApplicationName, appDir, e.RepoDir, e.config.Input, e.Logger)
 
 	e.Logger.Info("start executing kubernetes stage",
 		zap.String("stage-name", e.Stage.Name),
@@ -149,7 +149,7 @@ func (e *Executor) loadRunningManifests(ctx context.Context) (manifests []provid
 	// When the manifests were not in the cache we have to load them.
 	var (
 		appDir = filepath.Join(e.RepoDir, e.Deployment.GitPath.Path)
-		p      = provider.NewProvider(appDir, e.RunningRepoDir, e.config.Input, e.Logger)
+		p      = provider.NewProvider(e.Deployment.ApplicationName, appDir, e.RunningRepoDir, e.config.Input, e.Logger)
 	)
 	manifests, err = p.LoadManifests(ctx)
 	if err != nil {

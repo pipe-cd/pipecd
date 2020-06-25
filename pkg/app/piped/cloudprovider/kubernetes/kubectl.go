@@ -46,7 +46,7 @@ func (c *Kubectl) Apply(ctx context.Context, manifest Manifest) (err error) {
 	if err != nil {
 		return err
 	}
-	cmd := exec.CommandContext(ctx, "kubectl", "apply", "-f", "-")
+	cmd := exec.CommandContext(ctx, c.execPath, "apply", "-f", "-")
 	r := bytes.NewReader(data)
 	cmd.Stdin = r
 
@@ -66,7 +66,7 @@ func (c *Kubectl) Delete(ctx context.Context, r ResourceKey) (err error) {
 	if r.Namespace != "" {
 		args = append(args, "-n", r.Namespace)
 	}
-	cmd := exec.CommandContext(ctx, "kubectl", args...)
+	cmd := exec.CommandContext(ctx, c.execPath, args...)
 	out, err := cmd.CombinedOutput()
 
 	if strings.Contains(string(out), "(NotFound)") {

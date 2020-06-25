@@ -94,12 +94,13 @@ func (t *Trigger) reportMostRecentlyTriggeredDeployment(ctx context.Context, d *
 
 func buildDeploment(app *model.Application, branch string, commit git.Commit, commander string, now time.Time) (*model.Deployment, error) {
 	deployment := &model.Deployment{
-		Id:            uuid.New().String(),
-		ApplicationId: app.Id,
-		EnvId:         app.EnvId,
-		PipedId:       app.PipedId,
-		ProjectId:     app.ProjectId,
-		Kind:          app.Kind,
+		Id:              uuid.New().String(),
+		ApplicationId:   app.Id,
+		ApplicationName: app.Name,
+		EnvId:           app.EnvId,
+		PipedId:         app.PipedId,
+		ProjectId:       app.ProjectId,
+		Kind:            app.Kind,
 		Trigger: &model.DeploymentTrigger{
 			Commit: &model.Commit{
 				Hash:      commit.Hash,

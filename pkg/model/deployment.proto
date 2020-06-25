@@ -58,14 +58,15 @@ message Deployment {
     // The generated unique identifier.
     string id = 1 [(validate.rules).string.min_len = 1];
     string application_id = 2 [(validate.rules).string.min_len = 1];
-    string env_id = 3 [(validate.rules).string.min_len = 1];
-    string piped_id = 4 [(validate.rules).string.min_len = 1];
-    string project_id = 5 [(validate.rules).string.min_len = 1];
-    ApplicationKind kind = 6 [(validate.rules).enum.defined_only = true];
-    ApplicationGitPath git_path = 7 [(validate.rules).message.required = true];
+    string application_name = 3 [(validate.rules).string.min_len = 1];
+    string env_id = 4 [(validate.rules).string.min_len = 1];
+    string piped_id = 5 [(validate.rules).string.min_len = 1];
+    string project_id = 6 [(validate.rules).string.min_len = 1];
+    ApplicationKind kind = 7 [(validate.rules).enum.defined_only = true];
+    ApplicationGitPath git_path = 8 [(validate.rules).message.required = true];
     // The name of cloud provider where to deploy this application.
     // This must be one of the provider names registered in the piped.
-    string cloud_provider = 8 [(validate.rules).string.min_len = 1];
+    string cloud_provider = 9 [(validate.rules).string.min_len = 1];
 
     DeploymentTrigger trigger = 20 [(validate.rules).message.required = true];
     // Hash value of the most recently successfully deployed commit.

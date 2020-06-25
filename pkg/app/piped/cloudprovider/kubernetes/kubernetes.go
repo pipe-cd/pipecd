@@ -73,6 +73,7 @@ type Applier interface {
 }
 
 type provider struct {
+	appName string
 	appDir  string
 	repoDir string
 	input   config.KubernetesDeploymentInput
@@ -90,8 +91,9 @@ func init() {
 	registerMetrics()
 }
 
-func NewProvider(appDir, repoDir string, input config.KubernetesDeploymentInput, logger *zap.Logger) Provider {
+func NewProvider(appName, appDir, repoDir string, input config.KubernetesDeploymentInput, logger *zap.Logger) Provider {
 	return &provider{
+		appName: appName,
 		appDir:  appDir,
 		repoDir: repoDir,
 		input:   input,
@@ -99,8 +101,8 @@ func NewProvider(appDir, repoDir string, input config.KubernetesDeploymentInput,
 	}
 }
 
-func NewManifestLoader(appDir, repoDir string, input config.KubernetesDeploymentInput, logger *zap.Logger) ManifestLoader {
-	return NewProvider(appDir, repoDir, input, logger)
+func NewManifestLoader(appName, appDir, repoDir string, input config.KubernetesDeploymentInput, logger *zap.Logger) ManifestLoader {
+	return NewProvider(appName, appDir, repoDir, input, logger)
 }
 
 func (p *provider) init(ctx context.Context) {
@@ -130,7 +132,14 @@ func (p *provider) LoadManifests(ctx context.Context) (manifests []Manifest, err
 
 	switch p.templatingMethod {
 	case TemplatingMethodHelm:
-		return nil, nil
+		var data string
+		data, err = p.helm.Template(ctx, p.appName, p.appDir, p.input.HelmChart, p.input.HelmOptions)
+		if err != nil {
+			err = fmt.Errorf("unabled to run helm template: %w", err)
+			return
+		}
+		manifests, err = ParseManifests(data)
+		return
 
 	case TemplatingMethodKustomize:
 		return nil, nil
@@ -204,12 +213,6 @@ func (p *provider) findHelm(ctx context.Context, version string) (*Helm, error) 
 
 func determineTemplatingMethod(input config.KubernetesDeploymentInput, appDirPath string) TemplatingMethod {
 	if input.HelmChart != nil {
-		return TemplatingMethodHelm
-	}
-	if len(input.HelmValueFiles) > 0 {
-		return TemplatingMethodHelm
-	}
-	if input.HelmVersion != "" {
 		return TemplatingMethodHelm
 	}
 	if _, err := os.Stat(filepath.Join(appDirPath, kustomizationFileName)); err == nil {
