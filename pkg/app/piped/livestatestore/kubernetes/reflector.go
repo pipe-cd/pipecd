@@ -238,7 +238,7 @@ func (r *reflector) onObjectAdd(obj interface{}) {
 		return
 	}
 
-	r.logger.Info("received add event", zap.Stringer("key", key))
+	r.logger.Info(fmt.Sprintf("received add event for %s", key.String()))
 	r.onAdd(u)
 }
 
@@ -258,7 +258,7 @@ func (r *reflector) onObjectUpdate(oldObj, obj interface{}) {
 		return
 	}
 
-	r.logger.Info("received update event", zap.Stringer("key", key))
+	r.logger.Info(fmt.Sprintf("received update event for %s", key.String()))
 	r.onUpdate(oldU, u)
 }
 
@@ -277,7 +277,7 @@ func (r *reflector) onObjectDelete(obj interface{}) {
 		return
 	}
 
-	r.logger.Info("received delete event", zap.Stringer("key", key))
+	r.logger.Info(fmt.Sprintf("received delete event for %s", key.String()))
 	r.onDelete(u)
 }
 
