@@ -18,20 +18,21 @@ config:
   # The name of the configuration file.
   fileName: piped-config.yaml
   # Configuration data when create is true.
-  data: |
-    apiVersion: pipecd.dev/v1beta1
-    kind: Piped
-    spec:
-      projectID: your-project-id
-      pipedID: your-piped-id
-      pipedKeyFile: /etc/piped-secret/piped-key
-      git:
-        sshKeyFile: /etc/piped-secret/ssh-key
-      repositories:
-        - repoId: examples
-          remote: git@github.com:pipe-cd/examples.git
-          branch: master
-      syncInterval: 1m
+  data: ""
+  # data: |
+  #   apiVersion: pipecd.dev/v1beta1
+  #   kind: Piped
+  #   spec:
+  #     projectID: your-project-id
+  #     pipedID: your-piped-id
+  #     pipedKeyFile: /etc/piped-secret/piped-key
+  #     git:
+  #       sshKeyFile: /etc/piped-secret/ssh-key
+  #     repositories:
+  #       - repoId: examples
+  #         remote: git@github.com:pipe-cd/examples.git
+  #         branch: master
+  #     syncInterval: 1m
 
 secret:
   # Specifies whether a Secret for storing sensitive data should be created.
