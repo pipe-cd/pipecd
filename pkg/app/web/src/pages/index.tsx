@@ -15,6 +15,7 @@ import { SettingsIndexPage } from "./settings";
 import { useDispatch } from "react-redux";
 import { fetchEnvironments } from "../modules/environments";
 import { fetchPipeds } from "../modules/pipeds";
+import { Toasts } from "../components/toasts";
 
 export const Pages: FC = memo(function Pages() {
   const dispatch = useDispatch();
@@ -50,6 +51,7 @@ export const Pages: FC = memo(function Pages() {
         />
         <Route path={PAGE_PATH_SETTINGS} component={SettingsIndexPage} />
       </Switch>
+      <Toasts />
     </>
   );
 });

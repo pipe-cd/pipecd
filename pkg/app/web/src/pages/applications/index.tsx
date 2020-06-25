@@ -6,7 +6,7 @@ import { AddApplicationForm } from "../../components/add-application-form";
 import { ApplicationList } from "../../components/application-list";
 import { AppState } from "../../modules";
 import { addApplication, fetchApplications } from "../../modules/applications";
-import { AppDispatch } from "../../modules/index";
+import { AppDispatch } from "../../store";
 
 export const ApplicationIndexPage: FC = memo(function ApplicationIndexPage() {
   const dispatch = useDispatch<AppDispatch>();
