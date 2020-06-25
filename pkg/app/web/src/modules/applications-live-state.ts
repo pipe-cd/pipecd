@@ -28,12 +28,18 @@ export const applicationLiveStateAdapter = createEntityAdapter<
 
 export const { selectById } = applicationLiveStateAdapter.getSelectors();
 
-export const fetchApplicationById = createAsyncThunk<
+export const fetchApplicationStateById = createAsyncThunk<
   ApplicationLiveState,
   string
->("applicationLiveState/fetchById", async (applicationId) => {
-  const { snapshot } = await getApplicationLiveState({ applicationId });
-  return snapshot as ApplicationLiveState;
+>("applicationLiveState/fetchById", async (applicationId, thunkApi) => {
+  try {
+    const { snapshot } = await getApplicationLiveState({
+      applicationId,
+    });
+    return snapshot as ApplicationLiveState;
+  } catch (error) {
+    return thunkApi.rejectWithValue(error);
+  }
 });
 
 export const applicationLiveStateSlice = createSlice({
@@ -41,13 +47,10 @@ export const applicationLiveStateSlice = createSlice({
   initialState: applicationLiveStateAdapter.getInitialState({}),
   reducers: {},
   extraReducers: (builder) => {
-    builder
-      .addCase(fetchApplicationById.pending, (state, action) => {})
-      .addCase(fetchApplicationById.fulfilled, (state, action) => {
-        if (action.payload) {
-          applicationLiveStateAdapter.addOne(state, action.payload);
-        }
-      })
-      .addCase(fetchApplicationById.rejected, (state, action) => {});
+    builder.addCase(fetchApplicationStateById.fulfilled, (state, action) => {
+      if (action.payload) {
+        applicationLiveStateAdapter.addOne(state, action.payload);
+      }
+    });
   },
 });

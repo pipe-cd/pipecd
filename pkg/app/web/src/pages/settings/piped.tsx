@@ -29,7 +29,8 @@ import {
   selectAll,
   fetchPipeds,
 } from "../../modules/pipeds";
-import { AppState, AppDispatch } from "../../modules";
+import { AppState } from "../../modules";
+import { AppDispatch } from "../../store";
 
 const useStyles = makeStyles((theme) => ({
   item: {

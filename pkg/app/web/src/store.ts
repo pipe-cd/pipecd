@@ -9,3 +9,5 @@ export const store = configureStore({
     // @see https://redux-toolkit.js.org/usage/usage-with-typescript#correct-typings-for-the-dispatch-type
   ] as const,
 });
+
+export type AppDispatch = typeof store.dispatch;

@@ -1,12 +1,13 @@
 import { AnyAction, combineReducers } from "redux";
-import { ThunkAction, ThunkDispatch } from "redux-thunk";
-import { deploymentsSlice } from "./deployments";
-import { applicationLiveStateSlice } from "./applications-live-state";
-import { stageLogsSlice } from "./stage-logs";
+import { ThunkAction } from "redux-thunk";
 import { activeStageSlice } from "./active-stage";
 import { applicationsSlice } from "./applications";
-import { pipedsSlice } from "./pipeds";
+import { applicationLiveStateSlice } from "./applications-live-state";
+import { deploymentsSlice } from "./deployments";
 import { environmentsSlice } from "./environments";
+import { pipedsSlice } from "./pipeds";
+import { stageLogsSlice } from "./stage-logs";
+import { toastsSlice } from "./toasts";
 
 export const reducers = combineReducers({
   deployments: deploymentsSlice.reducer,
@@ -16,6 +17,7 @@ export const reducers = combineReducers({
   activeStage: activeStageSlice.reducer,
   pipeds: pipedsSlice.reducer,
   environments: environmentsSlice.reducer,
+  toasts: toastsSlice.reducer,
 });
 
 export type AppState = ReturnType<typeof reducers>;
@@ -25,4 +27,3 @@ export type AppThunk = ThunkAction<
   unknown,
   AnyAction
 >;
-export type AppDispatch = ThunkDispatch<AppState, null, AnyAction>;
