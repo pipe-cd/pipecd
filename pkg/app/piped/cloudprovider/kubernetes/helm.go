@@ -19,7 +19,6 @@ import (
 	"context"
 	"fmt"
 	"os/exec"
-	"path/filepath"
 
 	"github.com/pipe-cd/pipe/pkg/config"
 )
@@ -47,11 +46,20 @@ func (c *Helm) Template(ctx context.Context, appName, appDir string, chart *conf
 		"template",
 		"--no-hooks",
 		releaseName,
-		filepath.Join(appDir, chart.Path),
+		chart.Path,
 	}
+	if opts != nil {
+		for _, v := range opts.ValueFiles {
+			args = append(args, "-f", v)
+		}
+		for k, v := range opts.SetFiles {
+			args = append(args, "--set-file", fmt.Sprintf("%s=%s", k, v))
+		}
+	}
+
+	var stdout, stderr bytes.Buffer
 	cmd := exec.CommandContext(ctx, c.execPath, args...)
-	var stdout bytes.Buffer
-	var stderr bytes.Buffer
+	cmd.Dir = appDir
 	cmd.Stdout = &stdout
 	cmd.Stderr = &stderr
 
