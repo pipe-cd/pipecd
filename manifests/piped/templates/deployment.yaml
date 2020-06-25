@@ -22,6 +22,7 @@ spec:
           args:
           - piped
           - --config-file=/etc/piped-config/{{ .Values.config.fileName }}
+          - --metrics={{ .Values.args.metrics }}
           - --control-plane-address={{ .Values.args.address }}
           - --use-fake-api-client={{ .Values.args.useFakeAPI }}
           - --enable-default-kubernetes-cloud-provider={{ .Values.args.enableDefaultKubernetesCloudProvider }}
