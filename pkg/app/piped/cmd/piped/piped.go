@@ -33,6 +33,7 @@ import (
 	"github.com/pipe-cd/pipe/pkg/app/piped/apistore/applicationstore"
 	"github.com/pipe-cd/pipe/pkg/app/piped/apistore/commandstore"
 	"github.com/pipe-cd/pipe/pkg/app/piped/apistore/deploymentstore"
+	"github.com/pipe-cd/pipe/pkg/app/piped/chartrepo"
 	"github.com/pipe-cd/pipe/pkg/app/piped/controller"
 	"github.com/pipe-cd/pipe/pkg/app/piped/driftdetector"
 	"github.com/pipe-cd/pipe/pkg/app/piped/livestatereporter"
@@ -120,6 +121,14 @@ func (p *piped) run(ctx context.Context, t cli.Telemetry) error {
 	if err := toolregistry.InitDefaultRegistry(p.binDir, t.Logger); err != nil {
 		t.Logger.Error("failed to initialize default tool registry", zap.Error(err))
 		return err
+	}
+
+	// Add configured Helm chart repositories.
+	if len(cfg.ChartRepositories) > 0 {
+		if err := chartrepo.Add(ctx, cfg.ChartRepositories, toolregistry.DefaultRegistry(), t.Logger); err != nil {
+			t.Logger.Error("failed to add configured chart repositories", zap.Error(err))
+			return err
+		}
 	}
 
 	// Make gRPC client and connect to the API.

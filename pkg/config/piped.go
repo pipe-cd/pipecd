@@ -40,7 +40,9 @@ type PipedSpec struct {
 	// Git configuration needed for git commands.
 	Git PipedGit `json:"git"`
 	// List of git repositories this piped will handle.
-	Repositories      []PipedRepository       `json:"repositories"`
+	Repositories []PipedRepository `json:"repositories"`
+	// List of helm chart repositories that should be added while starting up.
+	ChartRepositories []HelmChartRepository   `json:"chartRepositories"`
 	CloudProviders    []PipedCloudProvider    `json:"cloudProviders"`
 	AnalysisProviders []PipedAnalysisProvider `json:"analysisProviders"`
 }
@@ -147,6 +149,13 @@ type PipedRepository struct {
 	Remote string `json:"remote"`
 	// The branch should be tracked.
 	Branch string `json:"branch"`
+}
+
+type HelmChartRepository struct {
+	Name     string `json:"name"`
+	Address  string `json:"address"`
+	Username string `json:"username"`
+	Password string `json:"password"`
 }
 
 type PipedCloudProvider struct {
