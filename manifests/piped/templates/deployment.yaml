@@ -17,7 +17,7 @@ spec:
       serviceAccountName: {{ include "piped.fullname" . }}
       containers:
         - name: piped
-          image: "gcr.io/pipecd/piped:{{ .Values.image.tag | default .Chart.AppVersion }}"
+          image: "gcr.io/pipecd/piped:{{ .Chart.AppVersion }}"
           imagePullPolicy: IfNotPresent
           args:
           - piped
