@@ -11,10 +11,6 @@ spec:
       {{- include "piped.selectorLabels" . | nindent 6 }}
   template:
     metadata:
-    {{- with .Values.podAnnotations }}
-      annotations:
-        {{- toYaml . | nindent 8 }}
-    {{- end }}
       labels:
         {{- include "piped.selectorLabels" . | nindent 8 }}
     spec:
@@ -25,8 +21,8 @@ spec:
           imagePullPolicy: IfNotPresent
           args:
           - piped
-          - --config-file=/etc/piped-config/piped-config.yaml
-          - --control-plane-address={{ .Values.args.controlPlaneAddress }}
+          - --config-file=/etc/piped-config/{{ .Values.config.fileName }}
+          - --control-plane-address={{ .Values.args.address }}
           - --use-fake-api-client={{ .Values.args.useFakeAPI }}
           - --enable-default-kubernetes-cloud-provider={{ .Values.args.enableDefaultKubernetesCloudProvider }}
           ports:
@@ -53,10 +49,10 @@ spec:
       volumes:
         - name: piped-secret
           secret:
-            secretName: {{ include "piped.fullname" . }}-secret
+            secretName: {{ include "piped.configMapName" . }}
         - name: piped-config
           configMap:
-            name: {{ include "piped.fullname" . }}-config
+            name: {{ include "piped.configMapName" . }}
       {{- with .Values.nodeSelector }}
       nodeSelector:
         {{- toYaml . | nindent 8 }}

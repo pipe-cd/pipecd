@@ -9,8 +9,7 @@ spec:
   git:
     username: username
     email: username@email.com
-    sshKeyFile: /etc/piped-secret/git-ssh-key
-    accessTokenFile: /etc/piped-secret/git-access-token
+    sshKeyFile: /etc/piped-secret/ssh-key
 
   repositories:
     - repoId: repo1

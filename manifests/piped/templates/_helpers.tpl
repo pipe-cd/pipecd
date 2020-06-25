@@ -50,3 +50,25 @@ Selector labels
 app.kubernetes.io/name: {{ include "piped.name" . }}
 app.kubernetes.io/instance: {{ .Release.Name }}
 {{- end }}
+
+{{/*
+Name of ConfigMap containing piped configuration
+*/}}
+{{- define "piped.configMapName" -}}
+{{- if .Values.config.create }}
+{{- include "piped.fullname" . }}
+{{- else }}
+{{- .Values.config.name }}
+{{- end }}
+{{- end }}
+
+{{/*
+Name of Secret containing sensitive data
+*/}}
+{{- define "piped.secretName" -}}
+{{- if .Values.secret.create }}
+{{- include "piped.fullname" . }}
+{{- else }}
+{{- .Values.secret.name }}
+{{- end }}
+{{- end }}

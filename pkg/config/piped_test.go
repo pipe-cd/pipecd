@@ -42,10 +42,9 @@ func TestPipedConfig(t *testing.T) {
 				PipedKeyFile: "etc/piped/key",
 				SyncInterval: Duration(time.Minute),
 				Git: PipedGit{
-					Username:        "username",
-					Email:           "username@email.com",
-					SSHKeyFile:      "/etc/piped-secret/git-ssh-key",
-					AccessTokenFile: "/etc/piped-secret/git-access-token",
+					Username:   "username",
+					Email:      "username@email.com",
+					SSHKeyFile: "/etc/piped-secret/ssh-key",
 				},
 				Repositories: []PipedRepository{
 					{

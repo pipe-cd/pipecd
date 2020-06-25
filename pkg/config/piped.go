@@ -120,28 +120,18 @@ type PipedGit struct {
 	SSHConfigFilePath string `json:"sshConfigFilePath"`
 	// The host name.
 	// e.g. github.com, gitlab.com
+	// Default is "github.com".
 	Host string `json:"host"`
 	// The hostname or IP address of the remote git server.
 	// e.g. github.com, gitlab.com
+	// Default is the same value with Host.
 	HostName string `json:"hostName"`
 	// The path to the private ssh key file.
 	// This will be used to clone the source code of the git repositories.
 	SSHKeyFile string `json:"sshKeyFile"`
-	// The path to the GitHub/GitLab access token file.
-	// This will be used to authenticate while creating pull request...
-	AccessTokenFile string `json:"accessTokenFile"`
 }
 
 func (g PipedGit) ShouldConfigureSSHConfig() bool {
-	if g.SSHConfigFilePath != "" {
-		return true
-	}
-	if g.Host != "" {
-		return true
-	}
-	if g.HostName != "" {
-		return true
-	}
 	if g.SSHKeyFile != "" {
 		return true
 	}

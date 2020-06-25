@@ -1,37 +1,57 @@
 args:
-  controlPlaneAddress: "pipecd:443"
-  useFakeAPI: true
+  address: "pipecd:443"
+  useFakeAPI: false
   enableDefaultKubernetesCloudProvider: true
 
 service:
   type: ClusterIP
   port: 9085
 
-image: {}
+image:
+  tag: ""
 
-podAnnotations: {}
+config:
+  # Specifies whether a ConfigMap for piped configuration should be created.
+  create: true
+  # The name of the ConfigMap to use when create is false.
+  name: ""
+  # The name of the configuration file.
+  fileName: piped-config.yaml
+  # Configuration data when create is true.
+  data: ""
+  # data: |
+  #   apiVersion: pipecd.dev/v1beta1
+  #   kind: Piped
+  #   spec:
+  #     projectID: your-project-id
+  #     pipedID: your-piped-id
+  #     pipedKeyFile: /etc/piped-secret/piped-key
+  #     git:
+  #       sshKeyFile: /etc/piped-secret/ssh-key
+  #     repositories:
+  #       - repoId: examples
+  #         remote: git@github.com:pipe-cd/examples.git
+  #         branch: master
+  #     syncInterval: 1m
+
+secret:
+  # Specifies whether a Secret for storing sensitive data should be created.
+  create: true
+  # The name of the Secret to use when create is false.
+  name: ""
+  pipedKey:
+    # The name of the piped key file.
+    fileName: piped-key
+    # Configuration data when create is true.
+    data: ""
+  sshKey:
+    # The name of the ssh key file.
+    fileName: ssh-key
+    # Configuration data when create is true.
+    data: ""
 
 nodeSelector: {}
 
 tolerations: []
 
 affinity: {}
-
-config: |
-  apiVersion: pipecd.dev/v1beta1
-  kind: Piped
-  spec:
-    projectID: your-project-id
-    pipedID: your-piped-id
-    pipedKeyFile: /etc/piped-secret/piped.key
-    syncInterval: 1m
-    git:
-      sshKeyFile: /etc/piped-secret/sshkey
-      accessTokenFile: /etc/piped-secret/gittoken
-    repositories:
-      - repoId: debug
-        remote: git@github.com:pipe-cd/debug.git
-        branch: master
-      - repoId: debug-not-master
-        remote: git@github.com:pipe-cd/debug.git
-        branch: not-master

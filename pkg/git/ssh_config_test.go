@@ -31,12 +31,14 @@ func TestGenerateSSHConfig(t *testing.T) {
 	}{
 		{
 			name: "default",
-			cfg:  config.PipedGit{},
+			cfg: config.PipedGit{
+				SSHKeyFile: "/etc/piped-secret/ssh-key",
+			},
 			expected: `
 Host github.com
     Hostname github.com
     User git
-    IdentityFile /etc/piped-secret/sshkey
+    IdentityFile /etc/piped-secret/ssh-key
     UserKnownHostsFile /dev/null
     StrictHostKeyChecking no
 `,
@@ -45,13 +47,14 @@ Host github.com
 		{
 			name: "host is configured",
 			cfg: config.PipedGit{
-				Host: "gitlab.com",
+				Host:       "gitlab.com",
+				SSHKeyFile: "/etc/piped-secret/ssh-key",
 			},
 			expected: `
 Host gitlab.com
     Hostname gitlab.com
     User git
-    IdentityFile /etc/piped-secret/sshkey
+    IdentityFile /etc/piped-secret/ssh-key
     UserKnownHostsFile /dev/null
     StrictHostKeyChecking no
 `,
@@ -60,14 +63,15 @@ Host gitlab.com
 		{
 			name: "host and hostname are configured",
 			cfg: config.PipedGit{
-				Host:     "gitlab.com",
-				HostName: "gitlab.com",
+				Host:       "gitlab.com",
+				HostName:   "gitlab.com",
+				SSHKeyFile: "/etc/piped-secret/ssh-key",
 			},
 			expected: `
 Host gitlab.com
     Hostname gitlab.com
     User git
-    IdentityFile /etc/piped-secret/sshkey
+    IdentityFile /etc/piped-secret/ssh-key
     UserKnownHostsFile /dev/null
     StrictHostKeyChecking no
 `,
