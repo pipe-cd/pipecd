@@ -1,6 +1,6 @@
 FROM alpine:3.10
 
-ARG VERSION=0.59.1
+ARG VERSION=0.73.0
 ARG PACKAGE=hugo_extended_${VERSION}_Linux-64bit.tar.gz
 ARG URL=https://github.com/gohugoio/hugo/releases/download/v${VERSION}/${PACKAGE}
 
