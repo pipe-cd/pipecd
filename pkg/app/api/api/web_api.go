@@ -272,7 +272,7 @@ func (a *WebAPI) SyncApplication(ctx context.Context, req *webservice.SyncApplic
 		return nil, err
 	}
 	if app.ProjectId != claims.Role.ProjectId {
-		return nil, status.Error(codes.PermissionDenied, "application cannot be synced")
+		return nil, status.Error(codes.PermissionDenied, "The current project does not have requested application")
 	}
 
 	cmd := model.Command{
