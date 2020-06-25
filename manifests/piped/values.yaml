@@ -5,11 +5,9 @@ args:
   enableDefaultKubernetesCloudProvider: true
 
 service:
+  enabled: true
   type: ClusterIP
   port: 9085
-
-image:
-  tag: ""
 
 config:
   # Specifies whether a ConfigMap for piped configuration should be created.
