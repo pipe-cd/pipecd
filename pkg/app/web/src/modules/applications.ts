@@ -6,6 +6,7 @@ import {
 import { Application as ApplicationModel } from "pipe/pkg/app/web/model/application_pb";
 import * as applicationsApi from "../api/applications";
 import { ApplicationKind } from "pipe/pkg/app/web/model/common_pb";
+export { ApplicationSyncStatus } from "pipe/pkg/app/web/model/application_pb";
 
 export type Application = Required<ApplicationModel.AsObject>;
 
