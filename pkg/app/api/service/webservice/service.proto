@@ -178,6 +178,7 @@ message SyncApplicationRequest {
 }
 
 message SyncApplicationResponse {
+    string command_id = 1;
 }
 
 message GetApplicationRequest {
@@ -221,6 +222,7 @@ message CancelDeploymentRequest {
 }
 
 message CancelDeploymentResponse {
+    string command_id = 1;
 }
 
 message ApproveStageRequest {
@@ -229,6 +231,7 @@ message ApproveStageRequest {
 }
 
 message ApproveStageResponse {
+    string command_id = 1;
 }
 
 message GetApplicationLiveStateRequest {

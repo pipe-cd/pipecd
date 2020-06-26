@@ -19,6 +19,7 @@ import (
 	"fmt"
 	"time"
 
+	"github.com/google/uuid"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
@@ -216,7 +217,9 @@ func (a *FakeWebAPI) ListApplications(ctx context.Context, req *webservice.ListA
 }
 
 func (a *FakeWebAPI) SyncApplication(ctx context.Context, req *webservice.SyncApplicationRequest) (*webservice.SyncApplicationResponse, error) {
-	return &webservice.SyncApplicationResponse{}, nil
+	return &webservice.SyncApplicationResponse{
+		CommandId: uuid.New().String(),
+	}, nil
 }
 
 func (a *FakeWebAPI) GetApplication(ctx context.Context, req *webservice.GetApplicationRequest) (*webservice.GetApplicationResponse, error) {
@@ -609,11 +612,15 @@ func (a *FakeWebAPI) GetStageLog(ctx context.Context, req *webservice.GetStageLo
 }
 
 func (a *FakeWebAPI) CancelDeployment(ctx context.Context, req *webservice.CancelDeploymentRequest) (*webservice.CancelDeploymentResponse, error) {
-	return &webservice.CancelDeploymentResponse{}, nil
+	return &webservice.CancelDeploymentResponse{
+		CommandId: uuid.New().String(),
+	}, nil
 }
 
 func (a *FakeWebAPI) ApproveStage(ctx context.Context, req *webservice.ApproveStageRequest) (*webservice.ApproveStageResponse, error) {
-	return &webservice.ApproveStageResponse{}, nil
+	return &webservice.ApproveStageResponse{
+		CommandId: uuid.New().String(),
+	}, nil
 }
 
 func (a *FakeWebAPI) GetApplicationLiveState(ctx context.Context, req *webservice.GetApplicationLiveStateRequest) (*webservice.GetApplicationLiveStateResponse, error) {
