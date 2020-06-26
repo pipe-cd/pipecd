@@ -117,7 +117,24 @@ func determineDaemonSetHealth(obj *unstructured.Unstructured) (status model.Kube
 }
 
 func determineReplicaSetHealth(obj *unstructured.Unstructured) (status model.KubernetesResourceState_HealthStatus, desc string) {
-	desc = "Not implemented yet"
+	r := &appsv1.ReplicaSet{}
+	err := scheme.Scheme.Convert(obj, r, nil)
+	if err != nil {
+		desc = fmt.Sprintf("Failed while convert %T to %T: %v", obj, r, err)
+		return
+	}
+
+	status = model.KubernetesResourceState_OTHER
+	if r.Spec.Replicas == nil {
+		desc = "The number of desired replicas is unspecified"
+		return
+	}
+	if *r.Spec.Replicas != r.Status.ReadyReplicas {
+		desc = fmt.Sprintf("The number of ready replicas (%d) is different from the desired number (%d)", r.Status.ReadyReplicas, *r.Spec.Replicas)
+		return
+	}
+
+	status = model.KubernetesResourceState_HEALTHY
 	return
 }
 
