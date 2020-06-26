@@ -10,12 +10,10 @@ const mockStore = configureMockStore([]);
 const store = configureStore({ reducer: reducers });
 const baseState = store.getState();
 
+export const createStore = (initialState: DeepPartial<AppState>) => {
+  return mockStore(Object.assign({}, baseState, initialState));
+};
+
 export const createDecoratorRedux = (initialState: DeepPartial<AppState>) => (
   storyFn: any
-) => {
-  return (
-    <Provider store={mockStore(Object.assign({}, baseState, initialState))}>
-      {storyFn()}
-    </Provider>
-  );
-};
+) => <Provider store={createStore(initialState)}>{storyFn()}</Provider>;

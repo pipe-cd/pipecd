@@ -5,9 +5,10 @@ import {
   Paper,
   Typography,
   CircularProgress,
+  Button,
 } from "@material-ui/core";
 import dayjs from "dayjs";
-import React, { FC, memo } from "react";
+import React, { FC, memo, useState } from "react";
 import { useSelector } from "react-redux";
 import { Link as RouterLink } from "react-router-dom";
 import { PAGE_PATH_DEPLOYMENTS } from "../constants";
@@ -64,7 +65,17 @@ const useStyles = makeStyles((theme) => ({
     marginRight: theme.spacing(1),
   },
   syncReason: {
-    color: theme.palette.text.hint,
+    color: theme.palette.text.secondary,
+  },
+  learnMore: {
+    color: theme.palette.primary.light,
+    marginLeft: theme.spacing(1),
+  },
+  reasonDetail: {
+    padding: theme.spacing(2),
+    fontFamily: "Roboto Mono",
+    marginTop: theme.spacing(1),
+    wordBreak: "break-all",
   },
 }));
 
@@ -76,6 +87,7 @@ export const ApplicationDetail: FC<Props> = memo(function ApplicationDetail({
   applicationId,
 }) {
   const classes = useStyles();
+  const [showReason, setShowReason] = useState(false);
   const app = useSelector<AppState, Application | undefined>((state) =>
     selectApplicationById(state.applications, applicationId)
   );
@@ -113,16 +125,40 @@ export const ApplicationDetail: FC<Props> = memo(function ApplicationDetail({
                 {APPLICATION_SYNC_STATUS_TEXT[app.syncState.status]}
               </Typography>
               {app.syncState.status !== ApplicationSyncStatus.SYNCED && (
-                <Typography
-                  variant="body2"
-                  className={classes.syncReason}
-                >{`${app.syncState.shortReason}`}</Typography>
+                <>
+                  <Typography variant="body2" className={classes.syncReason}>
+                    {app.syncState.shortReason}
+                  </Typography>
+                  {app.syncState.shortReason && (
+                    <Button
+                      variant="text"
+                      size="small"
+                      className={classes.learnMore}
+                      onClick={() => setShowReason(!showReason)}
+                    >
+                      {showReason ? "HIDE DETAIL" : "SHOW DETAIL"}
+                    </Button>
+                  )}
+                </>
               )}
             </div>
           </div>
+
           <Typography className={classes.env} variant="body1">
             {dayjs(liveState.version.timestamp * 1000).fromNow()}
           </Typography>
+
+          {showReason && (
+            <Paper
+              elevation={0}
+              variant="outlined"
+              className={classes.reasonDetail}
+            >
+              {app.syncState.reason.split("\n").map((line, i) => (
+                <div key={i}>{line}</div>
+              ))}
+            </Paper>
+          )}
         </Box>
         <Box flex={1}>
           <LabeledText
