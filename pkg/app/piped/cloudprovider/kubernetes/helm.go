@@ -18,35 +18,40 @@ import (
 	"bytes"
 	"context"
 	"fmt"
+	"io/ioutil"
+	"os"
 	"os/exec"
+	"path/filepath"
 
 	"github.com/pipe-cd/pipe/pkg/config"
+	"go.uber.org/zap"
 )
 
 type Helm struct {
 	version  string
 	execPath string
+	logger   *zap.Logger
 }
 
-func NewHelm(version, path string) *Helm {
+func NewHelm(version, path string, logger *zap.Logger) *Helm {
 	return &Helm{
 		version:  version,
 		execPath: path,
+		logger:   logger,
 	}
 }
 
-func (c *Helm) Template(ctx context.Context, appName, appDir string, chart *config.InputHelmChart, opts *config.InputHelmOptions) (string, error) {
+func (c *Helm) TemplateLocalChart(ctx context.Context, appName, appDir, chartPath string, opts *config.InputHelmOptions) (string, error) {
 	releaseName := appName
 	if opts != nil && opts.ReleaseName != "" {
 		releaseName = opts.ReleaseName
 	}
 
-	// TODO: Support remote git chart and remote helm chart.
 	args := []string{
 		"template",
 		"--no-hooks",
 		releaseName,
-		chart.Path,
+		chartPath,
 	}
 	if opts != nil {
 		for _, v := range opts.ValueFiles {
@@ -63,6 +68,9 @@ func (c *Helm) Template(ctx context.Context, appName, appDir string, chart *conf
 	cmd.Stdout = &stdout
 	cmd.Stderr = &stderr
 
+	c.logger.Info(fmt.Sprintf("start templating a local chart (or cloned remote git chart) for application %s", appName),
+		zap.Any("args", args),
+	)
 	if err := cmd.Start(); err != nil {
 		return "", err
 	}
@@ -72,4 +80,44 @@ func (c *Helm) Template(ctx context.Context, appName, appDir string, chart *conf
 	}
 
 	return stdout.String(), nil
+}
+
+type helmRemoteGitChart struct {
+	GitRemote string
+	Ref       string
+	Path      string
+}
+
+func (c *Helm) TemplateRemoteGitChart(ctx context.Context, appName, appDir string, chart helmRemoteGitChart, gitClient gitClient, opts *config.InputHelmOptions) (string, error) {
+	// Firstly, we need to download the remote repositoy.
+	repoDir, err := ioutil.TempDir("", "helm-remote-chart")
+	if err != nil {
+		return "", fmt.Errorf("unabled to created temporary directory for storing remote helm chart: %w", err)
+	}
+	defer os.RemoveAll(repoDir)
+
+	repo, err := gitClient.Clone(ctx, chart.GitRemote, chart.GitRemote, "", repoDir)
+	if err != nil {
+		return "", fmt.Errorf("unabled to clone git repository containing remote helm chart: %w", err)
+	}
+
+	if chart.Ref != "" {
+		if err := repo.Checkout(ctx, chart.Ref); err != nil {
+			return "", fmt.Errorf("unabled to checkout to specified ref %s: %w", chart.Ref, err)
+		}
+	}
+	chartPath := filepath.Join(repoDir, chart.Path)
+
+	// After that handle it as a local chart.
+	return c.TemplateLocalChart(ctx, appName, appDir, chartPath, opts)
+}
+
+type helmRemoteChart struct {
+	Repository string
+	Name       string
+	Version    string
+}
+
+func (c *Helm) TemplateRemoteChart(ctx context.Context, appName, appDir string, chart helmRemoteChart, opts *config.InputHelmOptions) (string, error) {
+	return "", nil
 }

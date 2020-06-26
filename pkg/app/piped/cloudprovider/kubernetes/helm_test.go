@@ -26,7 +26,6 @@ import (
 	"go.uber.org/zap"
 
 	"github.com/pipe-cd/pipe/pkg/app/piped/toolregistry"
-	"github.com/pipe-cd/pipe/pkg/config"
 )
 
 func TestMain(m *testing.M) {
@@ -38,22 +37,20 @@ func TestMain(m *testing.M) {
 	os.Exit(m.Run())
 }
 
-func TestTemplate(t *testing.T) {
+func TestTemplateLocalChart(t *testing.T) {
 	var (
-		ctx     = context.Background()
-		appName = "testapp"
-		appDir  = "testdata"
-		chart   = &config.InputHelmChart{
-			Path: "testchart",
-		}
+		ctx       = context.Background()
+		appName   = "testapp"
+		appDir    = "testdata"
+		chartPath = "testchart"
 	)
 
 	// TODO: Preinstall a helm version inside CI runner to avoid installing.
 	helmPath, _, err := toolregistry.DefaultRegistry().Helm(ctx, "")
 	require.NoError(t, err)
 
-	helm := NewHelm("", helmPath)
-	out, err := helm.Template(ctx, appName, appDir, chart, nil)
+	helm := NewHelm("", helmPath, zap.NewNop())
+	out, err := helm.TemplateLocalChart(ctx, appName, appDir, chartPath, nil)
 	require.NoError(t, err)
 
 	out = strings.TrimPrefix(out, "---")
