@@ -16,15 +16,8 @@ export const ApplicationDetailPage: FC = memo(function ApplicationDetailPage() {
   const params = useParams<{ applicationId: string }>();
   const applicationId = decodeURIComponent(params.applicationId);
 
-  useEffect(() => {
+  const fetchData = (): void => {
     if (applicationId) {
-      dispatch(fetchApplicationStateById(applicationId));
-      dispatch(fetchApplication(applicationId));
-    }
-  }, [dispatch, applicationId]);
-
-  useInterval(
-    () => {
       dispatch(fetchApplicationStateById(applicationId)).then((result) => {
         if (fetchApplicationStateById.rejected.match(result)) {
           dispatch(
@@ -36,9 +29,11 @@ export const ApplicationDetailPage: FC = memo(function ApplicationDetailPage() {
         }
       });
       dispatch(fetchApplication(applicationId));
-    },
-    applicationId ? FETCH_INTERVAL : null
-  );
+    }
+  };
+
+  useEffect(fetchData, [applicationId, dispatch]);
+  useInterval(fetchData, applicationId ? FETCH_INTERVAL : null);
 
   return (
     <>

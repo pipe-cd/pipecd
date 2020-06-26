@@ -58,16 +58,15 @@ export const DeploymentDetailPage: FC = memo(function DeploymentDetailPage() {
     selectDeploymentById(state.deployments, deploymentId)
   );
 
-  useEffect(() => {
+  const fetchData = (): void => {
     if (deploymentId) {
       dispatch(fetchDeploymentById(deploymentId));
     }
-  }, [dispatch, deploymentId]);
+  };
 
+  useEffect(fetchData, [dispatch, deploymentId]);
   useInterval(
-    () => {
-      dispatch(fetchDeploymentById(deploymentId));
-    },
+    fetchData,
     deploymentId && isRunningDeployment(deployment?.status)
       ? FETCH_INTERVAL
       : null
