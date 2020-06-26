@@ -70,6 +70,8 @@ func (s *samplecli) run(ctx context.Context, t cli.Telemetry) error {
 		return s.listEnvironments(ctx, cli, data, t.Logger)
 	case "RegisterPiped":
 		return s.registerPiped(ctx, cli, data, t.Logger)
+	case "DisablePiped":
+		return s.disablePiped(ctx, cli, data, t.Logger)
 	case "ListPipeds":
 		return s.listPipeds(ctx, cli, data, t.Logger)
 	case "GetPiped":
@@ -157,6 +159,19 @@ func (s *samplecli) registerPiped(ctx context.Context, cli webservice.Client, pa
 	logger.Info("successfully run RegisterPiped")
 	fmt.Printf("Id: %+v\n", resp.Id)
 	fmt.Printf("key: %+v\n", resp.Key)
+	return nil
+}
+
+func (s *samplecli) disablePiped(ctx context.Context, cli webservice.Client, payload []byte, logger *zap.Logger) error {
+	req := webservice.DisablePipedRequest{}
+	if err := json.Unmarshal(payload, &req); err != nil {
+		return err
+	}
+	if _, err := cli.DisablePiped(ctx, &req); err != nil {
+		logger.Error("failed to run DisablePiped", zap.Error(err))
+		return err
+	}
+	logger.Info("successfully run DisablePiped")
 	return nil
 }
 

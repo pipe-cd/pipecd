@@ -42,6 +42,7 @@ type PipedStore interface {
 	GetPiped(ctx context.Context, id string) (*model.Piped, error)
 	ListPipeds(ctx context.Context, opts ListOptions) ([]*model.Piped, error)
 	UpdatePiped(ctx context.Context, id string, updater func(piped *model.Piped) error) error
+	DisablePiped(ctx context.Context, id string) error
 }
 
 type pipedStore struct {
@@ -109,5 +110,12 @@ func (s *pipedStore) UpdatePiped(ctx context.Context, id string, updater func(pi
 		}
 		p.UpdatedAt = now
 		return p.Validate()
+	})
+}
+
+func (s *pipedStore) DisablePiped(ctx context.Context, id string) error {
+	return s.UpdatePiped(ctx, id, func(piped *model.Piped) error {
+		piped.Disabled = true
+		return nil
 	})
 }

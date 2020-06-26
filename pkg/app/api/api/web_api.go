@@ -149,7 +149,35 @@ func (a *WebAPI) RegisterPiped(ctx context.Context, req *webservice.RegisterPipe
 }
 
 func (a *WebAPI) DisablePiped(ctx context.Context, req *webservice.DisablePipedRequest) (*webservice.DisablePipedResponse, error) {
-	return nil, status.Error(codes.Unimplemented, "")
+	claims, err := rpcauth.ExtractClaims(ctx)
+	if err != nil {
+		return nil, err
+	}
+
+	piped, err := a.getPiped(ctx, req.PipedId)
+	if err != nil {
+		return nil, err
+	}
+
+	if claims.Role.ProjectId != piped.ProjectId {
+		return nil, status.Error(codes.PermissionDenied, "The current project does not have requested piped")
+	}
+
+	if err := a.pipedStore.DisablePiped(ctx, req.PipedId); err != nil {
+		switch err {
+		case datastore.ErrNotFound:
+			return nil, status.Error(codes.InvalidArgument, "piped is not found")
+		case datastore.ErrInvalidArgument:
+			return nil, status.Error(codes.InvalidArgument, "invalid value for update")
+		default:
+			a.logger.Error("failed to update the piped",
+				zap.String("piped-id", req.PipedId),
+				zap.Error(err),
+			)
+			return nil, status.Error(codes.Internal, "failed to update the piped ")
+		}
+	}
+	return &webservice.DisablePipedResponse{}, nil
 }
 
 func (a *WebAPI) ListPipeds(ctx context.Context, req *webservice.ListPipedsRequest) (*webservice.ListPipedsResponse, error) {
@@ -191,7 +219,17 @@ func (a *WebAPI) ListPipeds(ctx context.Context, req *webservice.ListPipedsReque
 }
 
 func (a *WebAPI) GetPiped(ctx context.Context, req *webservice.GetPipedRequest) (*webservice.GetPipedResponse, error) {
-	piped, err := a.pipedStore.GetPiped(ctx, req.PipedId)
+	piped, err := a.getPiped(ctx, req.PipedId)
+	if err != nil {
+		return nil, err
+	}
+	return &webservice.GetPipedResponse{
+		Piped: webservice.MakePiped(piped),
+	}, nil
+}
+
+func (a *WebAPI) getPiped(ctx context.Context, pipedID string) (*model.Piped, error) {
+	piped, err := a.pipedStore.GetPiped(ctx, pipedID)
 	if errors.Is(err, datastore.ErrNotFound) {
 		return nil, status.Error(codes.NotFound, "piped is not found")
 	}
@@ -199,9 +237,7 @@ func (a *WebAPI) GetPiped(ctx context.Context, req *webservice.GetPipedRequest) 
 		a.logger.Error("failed to get piped", zap.Error(err))
 		return nil, status.Error(codes.Internal, "failed to get piped")
 	}
-	return &webservice.GetPipedResponse{
-		Piped: webservice.MakePiped(piped),
-	}, nil
+	return piped, nil
 }
 
 func (a *WebAPI) AddApplication(ctx context.Context, req *webservice.AddApplicationRequest) (*webservice.AddApplicationResponse, error) {
