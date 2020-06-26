@@ -391,23 +391,23 @@ func makeSyncedState() model.ApplicationSyncState {
 
 func makeOutOfSyncStateBecauseMissingOrRedundant(missings, redundancies []provider.Manifest) model.ApplicationSyncState {
 	shortReason := fmt.Sprintf("There are %d missing manifests and %d redundant manifests.", len(missings), len(redundancies))
-	var reasonBuilder strings.Builder
+	var b strings.Builder
 	if len(missings) > 0 {
-		reasonBuilder.WriteString(fmt.Sprintf("The following %d manifests are defined in Git, but NOT appearing in the cluster", len(missings)))
+		b.WriteString(fmt.Sprintf("The following %d manifests are defined in Git, but NOT appearing in the cluster:\n", len(missings)))
 		for _, m := range missings {
-			reasonBuilder.WriteString(fmt.Sprintf("- %s", m.Key.String()))
+			b.WriteString(fmt.Sprintf("- %s", m.Key.ReadableString()))
 		}
 	}
 	if len(redundancies) > 0 {
-		reasonBuilder.WriteString(fmt.Sprintf("The following %d manifests are NOT defined in Git, but appearing in the cluster", len(redundancies)))
+		b.WriteString(fmt.Sprintf("The following %d manifests are NOT defined in Git, but appearing in the cluster:\n", len(redundancies)))
 		for _, m := range redundancies {
-			reasonBuilder.WriteString(fmt.Sprintf("- %s", m.Key.String()))
+			b.WriteString(fmt.Sprintf("- %s", m.Key.ReadableString()))
 		}
 	}
 	return model.ApplicationSyncState{
 		Status:      model.ApplicationSyncStatus_OUT_OF_SYNC,
 		ShortReason: shortReason,
-		Reason:      reasonBuilder.String(),
+		Reason:      b.String(),
 		Timestamp:   time.Now().Unix(),
 	}
 }
@@ -416,13 +416,14 @@ func makeOutOfSyncState(headManifests, liveManifests []provider.Manifest, diffs 
 	const maxPrintDiffs = 3
 
 	shortReason := fmt.Sprintf("There are %d manifests are not synced.", len(diffs))
-	var reasonBuilder strings.Builder
-	reasonBuilder.WriteString(shortReason)
+	var b strings.Builder
+	b.WriteString(fmt.Sprintf("There are %d manifests are not synced:\n", len(diffs)))
 
 	var prints = 0
 	for i, list := range diffs {
-		reasonBuilder.WriteString(headManifests[i].Key.String())
-		reasonBuilder.WriteString(list.String())
+		b.WriteString(fmt.Sprintf("%d. %s\n", i+1, headManifests[i].Key.ReadableString()))
+		b.WriteString(list.String())
+		b.WriteString("\n")
 		prints++
 		if prints >= maxPrintDiffs {
 			break
@@ -430,13 +431,13 @@ func makeOutOfSyncState(headManifests, liveManifests []provider.Manifest, diffs 
 	}
 
 	if prints < len(diffs) {
-		reasonBuilder.WriteString(fmt.Sprintf("... (diffs from %d other manifests are omitted", len(diffs)-prints))
+		b.WriteString(fmt.Sprintf("... (diffs from %d other manifests are omitted\n", len(diffs)-prints))
 	}
 
 	return model.ApplicationSyncState{
 		Status:      model.ApplicationSyncStatus_OUT_OF_SYNC,
 		ShortReason: shortReason,
-		Reason:      reasonBuilder.String(),
+		Reason:      b.String(),
 		Timestamp:   time.Now().Unix(),
 	}
 }
