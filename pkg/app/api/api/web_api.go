@@ -275,8 +275,9 @@ func (a *WebAPI) SyncApplication(ctx context.Context, req *webservice.SyncApplic
 		return nil, status.Error(codes.PermissionDenied, "The current project does not have requested application")
 	}
 
+	commandID := uuid.New().String()
 	cmd := model.Command{
-		Id:            uuid.New().String(),
+		Id:            commandID,
 		PipedId:       app.PipedId,
 		ApplicationId: app.Id,
 		Type:          model.Command_SYNC_APPLICATION,
@@ -288,7 +289,9 @@ func (a *WebAPI) SyncApplication(ctx context.Context, req *webservice.SyncApplic
 	if err := a.addCommand(ctx, &cmd); err != nil {
 		return nil, err
 	}
-	return &webservice.SyncApplicationResponse{}, nil
+	return &webservice.SyncApplicationResponse{
+		CommandId: commandID,
+	}, nil
 }
 
 func (a *WebAPI) addCommand(ctx context.Context, cmd *model.Command) error {
@@ -381,8 +384,9 @@ func (a *WebAPI) CancelDeployment(ctx context.Context, req *webservice.CancelDep
 		return nil, status.Errorf(codes.FailedPrecondition, "could not cancel the deployment because it was already completed")
 	}
 
+	commandID := uuid.New().String()
 	cmd := model.Command{
-		Id:            uuid.New().String(),
+		Id:            commandID,
 		PipedId:       deployment.PipedId,
 		ApplicationId: deployment.ApplicationId,
 		DeploymentId:  req.DeploymentId,
@@ -396,7 +400,9 @@ func (a *WebAPI) CancelDeployment(ctx context.Context, req *webservice.CancelDep
 	if err := a.addCommand(ctx, &cmd); err != nil {
 		return nil, err
 	}
-	return &webservice.CancelDeploymentResponse{}, nil
+	return &webservice.CancelDeploymentResponse{
+		CommandId: commandID,
+	}, nil
 }
 
 func (a *WebAPI) ApproveStage(ctx context.Context, req *webservice.ApproveStageRequest) (*webservice.ApproveStageResponse, error) {
@@ -412,8 +418,9 @@ func (a *WebAPI) ApproveStage(ctx context.Context, req *webservice.ApproveStageR
 		return nil, status.Errorf(codes.FailedPrecondition, "could not approve the stage because it was already completed")
 	}
 
+	commandID := uuid.New().String()
 	cmd := model.Command{
-		Id:            uuid.New().String(),
+		Id:            commandID,
 		PipedId:       deployment.PipedId,
 		ApplicationId: deployment.ApplicationId,
 		DeploymentId:  req.DeploymentId,
@@ -428,7 +435,9 @@ func (a *WebAPI) ApproveStage(ctx context.Context, req *webservice.ApproveStageR
 	if err := a.addCommand(ctx, &cmd); err != nil {
 		return nil, err
 	}
-	return &webservice.ApproveStageResponse{}, nil
+	return &webservice.ApproveStageResponse{
+		CommandId: commandID,
+	}, nil
 }
 
 func (a *WebAPI) GetApplicationLiveState(ctx context.Context, req *webservice.GetApplicationLiveStateRequest) (*webservice.GetApplicationLiveStateResponse, error) {

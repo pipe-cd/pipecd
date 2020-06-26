@@ -240,11 +240,13 @@ func (s *samplecli) syncApplication(ctx context.Context, cli webservice.Client, 
 	if err := json.Unmarshal(payload, &req); err != nil {
 		return err
 	}
-	if _, err := cli.SyncApplication(ctx, &req); err != nil {
+	resp, err := cli.SyncApplication(ctx, &req)
+	if err != nil {
 		logger.Error("failed to run SyncApplication", zap.Error(err))
 		return err
 	}
 	logger.Info("successfully run SyncApplication")
+	fmt.Printf("commandID: %+v\n", resp.CommandId)
 	return nil
 }
 
@@ -300,11 +302,13 @@ func (s *samplecli) cancelDeployment(ctx context.Context, cli webservice.Client,
 	if err := json.Unmarshal(payload, &req); err != nil {
 		return err
 	}
-	if _, err := cli.CancelDeployment(ctx, &req); err != nil {
+	resp, err := cli.CancelDeployment(ctx, &req)
+	if err != nil {
 		logger.Error("failed to run CancelDeployment", zap.Error(err))
 		return err
 	}
 	logger.Info("successfully run CancelDeployment")
+	fmt.Printf("commandID: %+v\n", resp.CommandId)
 	return nil
 }
 
@@ -313,11 +317,13 @@ func (s *samplecli) approveStage(ctx context.Context, cli webservice.Client, pay
 	if err := json.Unmarshal(payload, &req); err != nil {
 		return err
 	}
-	if _, err := cli.ApproveStage(ctx, &req); err != nil {
+	resp, err := cli.ApproveStage(ctx, &req)
+	if err != nil {
 		logger.Error("failed to run ApproveStage", zap.Error(err))
 		return err
 	}
 	logger.Info("successfully run ApproveStage")
+	fmt.Printf("commandID: %+v\n", resp.CommandId)
 	return nil
 }
 
