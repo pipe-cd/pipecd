@@ -22,6 +22,7 @@ interface Line {
 const useStyles = makeStyles(() => ({
   container: {
     position: "relative",
+    overflow: "auto",
   },
 }));
 
@@ -87,6 +88,8 @@ export const KubernetesStateView: FC<Props> = ({ resources }) => {
     }
   });
 
+  const graphInstance = graph.graph();
+
   return (
     <div className={classes.container}>
       {nodes.map((node) => (
@@ -144,6 +147,14 @@ export const KubernetesStateView: FC<Props> = ({ resources }) => {
           </svg>
         );
       })}
+      {graphInstance && (
+        <div
+          style={{
+            width: (graphInstance.width ?? 0) + NODE_WIDTH,
+            height: (graphInstance.height ?? 0) + NODE_HEIGHT,
+          }}
+        />
+      )}
     </div>
   );
 };
