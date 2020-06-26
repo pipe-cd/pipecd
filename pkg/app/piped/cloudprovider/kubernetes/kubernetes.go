@@ -165,7 +165,7 @@ func (p *provider) ApplyManifest(ctx context.Context, manifest Manifest) error {
 		return p.initErr
 	}
 
-	return p.kubectl.Apply(ctx, manifest)
+	return p.kubectl.Apply(ctx, p.input.Namespace, manifest)
 }
 
 // Delete deletes the given resource from Kubernetes cluster.

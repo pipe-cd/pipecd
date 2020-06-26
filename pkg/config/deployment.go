@@ -318,6 +318,7 @@ type KubernetesDeploymentInput struct {
 	HelmOptions *InputHelmOptions `json:"helmOptions"`
 	HelmVersion string            `json:"helmVersion"`
 
+	// The namespace where manifests will be applied.
 	Namespace string `json:"namespace"`
 	// Automatically reverts all changes from all stages when one of them failed.
 	AutoRollback bool     `json:"autoRollback"`

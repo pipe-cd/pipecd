@@ -37,7 +37,7 @@ func NewKubectl(version, path string) *Kubectl {
 	}
 }
 
-func (c *Kubectl) Apply(ctx context.Context, manifest Manifest) (err error) {
+func (c *Kubectl) Apply(ctx context.Context, namespace string, manifest Manifest) (err error) {
 	defer func() {
 		metricsKubectlCalled(c.version, "apply", err == nil)
 	}()
@@ -46,7 +46,14 @@ func (c *Kubectl) Apply(ctx context.Context, manifest Manifest) (err error) {
 	if err != nil {
 		return err
 	}
-	cmd := exec.CommandContext(ctx, c.execPath, "apply", "-f", "-")
+
+	args := make([]string, 0, 5)
+	if namespace != "" {
+		args = append(args, "-n", namespace)
+	}
+	args = append(args, "apply", "-f", "-")
+
+	cmd := exec.CommandContext(ctx, c.execPath, args...)
 	r := bytes.NewReader(data)
 	cmd.Stdin = r
 
@@ -62,10 +69,12 @@ func (c *Kubectl) Delete(ctx context.Context, r ResourceKey) (err error) {
 		metricsKubectlCalled(c.version, "delete", err == nil)
 	}()
 
-	args := []string{"delete", r.Kind, r.Name}
+	args := make([]string, 0, 5)
 	if r.Namespace != "" {
 		args = append(args, "-n", r.Namespace)
 	}
+	args = append(args, "delete", r.Kind, r.Name)
+
 	cmd := exec.CommandContext(ctx, c.execPath, args...)
 	out, err := cmd.CombinedOutput()
 
