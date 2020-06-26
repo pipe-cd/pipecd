@@ -36,6 +36,7 @@ var (
 	ErrIteratorDone    = errors.New("iterator is done")
 	ErrInternal        = errors.New("internal")
 	ErrUnimplemented   = errors.New("unimplemented")
+	ErrForbiddenUpdate = errors.New("forbidden update")
 )
 
 type Factory func() interface{}

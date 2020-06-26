@@ -149,7 +149,28 @@ func (a *WebAPI) RegisterPiped(ctx context.Context, req *webservice.RegisterPipe
 }
 
 func (a *WebAPI) DisablePiped(ctx context.Context, req *webservice.DisablePipedRequest) (*webservice.DisablePipedResponse, error) {
-	return nil, status.Error(codes.Unimplemented, "")
+	claims, err := rpcauth.ExtractClaims(ctx)
+	if err != nil {
+		return nil, err
+	}
+
+	if err := a.pipedStore.DisablePiped(ctx, req.PipedId, claims.Role.ProjectId); err != nil {
+		switch err {
+		case datastore.ErrNotFound:
+			return nil, status.Error(codes.InvalidArgument, "piped is not found")
+		case datastore.ErrInvalidArgument:
+			return nil, status.Error(codes.InvalidArgument, "invalid value for update")
+		case datastore.ErrForbiddenUpdate:
+			return nil, status.Error(codes.PermissionDenied, "The current project does not have requested piped")
+		default:
+			a.logger.Error("failed to update the piped",
+				zap.String("piped-id", req.PipedId),
+				zap.Error(err),
+			)
+			return nil, status.Error(codes.Internal, "failed to update the piped ")
+		}
+	}
+	return &webservice.DisablePipedResponse{}, nil
 }
 
 func (a *WebAPI) ListPipeds(ctx context.Context, req *webservice.ListPipedsRequest) (*webservice.ListPipedsResponse, error) {

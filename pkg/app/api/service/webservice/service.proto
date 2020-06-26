@@ -121,6 +121,7 @@ message RegisterPipedResponse {
 }
 
 message DisablePipedRequest {
+    string piped_id = 1 [(validate.rules).string.min_len = 1];
 }
 
 message DisablePipedResponse {
