@@ -138,6 +138,7 @@ func (e *Executor) ensureCanaryClean(ctx context.Context) model.StageStatus {
 	return model.StageStatus_STAGE_SUCCESS
 }
 
+// TODO: Add namespace for generated resources.
 func (e *Executor) generateCanaryManifests(ctx context.Context, manifests []provider.Manifest, opts config.K8sCanaryRolloutStageOptions) ([]provider.Manifest, error) {
 	// List of default configurations.
 	var (
