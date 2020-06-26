@@ -68,6 +68,7 @@ var (
 		"PersistentVolume":         {},
 		"PersistentVolumeClaim":    {},
 		"HorizontalPodAutoscaler":  {},
+		"ServiceAccount":           {},
 		"Role":                     {},
 		"RoleBinding":              {},
 		"ClusterRole":              {},
