@@ -26,6 +26,7 @@ import (
 
 	"github.com/pipe-cd/pipe/pkg/app/piped/toolregistry"
 	"github.com/pipe-cd/pipe/pkg/config"
+	"github.com/pipe-cd/pipe/pkg/git"
 )
 
 var (
@@ -72,6 +73,16 @@ type Applier interface {
 	Delete(ctx context.Context, key ResourceKey) error
 }
 
+type gitClient interface {
+	Clone(ctx context.Context, repoID, remote, branch, destination string) (git.Repo, error)
+}
+
+var (
+	// shared gitClient used inside this package for downloading dependencies.
+	sharedGitClient         gitClient
+	initSharedGitClientOnce sync.Once
+)
+
 type provider struct {
 	appName string
 	appDir  string
@@ -91,6 +102,14 @@ func init() {
 	registerMetrics()
 }
 
+func initSharedGitClient(logger *zap.Logger) error {
+	var err error
+	initSharedGitClientOnce.Do(func() {
+		sharedGitClient, err = git.NewClient("", "", logger)
+	})
+	return err
+}
+
 func NewProvider(appName, appDir, repoDir string, input config.KubernetesDeploymentInput, logger *zap.Logger) Provider {
 	return &provider{
 		appName: appName,
@@ -106,6 +125,11 @@ func NewManifestLoader(appName, appDir, repoDir string, input config.KubernetesD
 }
 
 func (p *provider) init(ctx context.Context) {
+	if err := initSharedGitClient(p.logger); err != nil {
+		p.initErr = err
+		return
+	}
+
 	p.templatingMethod = determineTemplatingMethod(p.input, p.appDir)
 
 	// We need kubectl for all templating methods.
@@ -133,11 +157,32 @@ func (p *provider) LoadManifests(ctx context.Context) (manifests []Manifest, err
 	switch p.templatingMethod {
 	case TemplatingMethodHelm:
 		var data string
-		data, err = p.helm.Template(ctx, p.appName, p.appDir, p.input.HelmChart, p.input.HelmOptions)
+		switch {
+		case p.input.HelmChart.GitRemote != "":
+			chart := helmRemoteGitChart{
+				GitRemote: p.input.HelmChart.GitRemote,
+				Ref:       p.input.HelmChart.Ref,
+				Path:      p.input.HelmChart.Path,
+			}
+			data, err = p.helm.TemplateRemoteGitChart(ctx, p.appName, p.appDir, chart, sharedGitClient, p.input.HelmOptions)
+
+		case p.input.HelmChart.Repository != "":
+			chart := helmRemoteChart{
+				Repository: p.input.HelmChart.Repository,
+				Name:       p.input.HelmChart.Name,
+				Version:    p.input.HelmChart.Version,
+			}
+			data, err = p.helm.TemplateRemoteChart(ctx, p.appName, p.appDir, chart, p.input.HelmOptions)
+
+		default:
+			data, err = p.helm.TemplateLocalChart(ctx, p.appName, p.appDir, p.input.HelmChart.Path, p.input.HelmOptions)
+		}
+
 		if err != nil {
 			err = fmt.Errorf("unabled to run helm template: %w", err)
 			return
 		}
+
 		manifests, err = ParseManifests(data)
 		return
 
@@ -208,7 +253,7 @@ func (p *provider) findHelm(ctx context.Context, version string) (*Helm, error) 
 	if installed {
 		p.logger.Info(fmt.Sprintf("helm %s has just been installed because of no pre-installed binary for that version", version))
 	}
-	return NewHelm(version, path), nil
+	return NewHelm(version, path, p.logger), nil
 }
 
 func determineTemplatingMethod(input config.KubernetesDeploymentInput, appDirPath string) TemplatingMethod {

@@ -334,9 +334,14 @@ type TerraformDeploymentInput struct {
 }
 
 type InputHelmChart struct {
-	Git        string `json:"git"`
-	Path       string `json:"path"`
-	Ref        string `json:"ref"`
+	// Empty means current repository.
+	GitRemote string `json:"gitRemote"`
+	// The commit SHA or tag for remote git.
+	Ref string `json:"ref"`
+	// Relative path from the repository root directory to the chart directory.
+	Path string `json:"path"`
+
+	// The name of an added Helm chart repository.
 	Repository string `json:"repository"`
 	Name       string `json:"name"`
 	Version    string `json:"version"`
@@ -344,7 +349,7 @@ type InputHelmChart struct {
 
 type InputHelmOptions struct {
 	// By default the release name is equal to the application name.
-	ReleaseName string `json:"relaseName"`
+	ReleaseName string `json:"releaseName"`
 	// List of value files should be loaded.
 	ValueFiles []string `json:"valueFiles"`
 	SetFiles   map[string]string
