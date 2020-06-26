@@ -65,6 +65,8 @@ const (
 	KindPod         = "Pod"
 	KindConfigMap   = "ConfigMap"
 	KindSecret      = "Secret"
+	KindService     = "Service"
+	KindIngress     = "Ingress"
 
 	DefaultNamespace = "default"
 )

@@ -75,6 +75,10 @@ func determineResourceHealth(key ResourceKey, obj *unstructured.Unstructured) (s
 		return determineReplicaSetHealth(obj)
 	case KindPod:
 		return determinePodHealth(obj)
+	case KindService:
+		return determineServiceHealth(obj)
+	case KindIngress:
+		return determineIngressHealth(obj)
 	}
 
 	return
