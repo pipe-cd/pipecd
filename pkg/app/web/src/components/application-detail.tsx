@@ -138,11 +138,11 @@ export const ApplicationDetail: FC<Props> = memo(function ApplicationDetail({
           />
           <LabeledText
             label="Version"
-            value={app.mostRecentlyTriggeredDeployment.version}
+            value={app.mostRecentlySuccessfulDeployment.version}
           />
           <LabeledText
             label="Description"
-            value={app.mostRecentlyTriggeredDeployment.description}
+            value={app.mostRecentlySuccessfulDeployment.description}
           />
         </Box>
       </Box>

@@ -14,6 +14,8 @@ import { Dictionary } from "@reduxjs/toolkit";
 import dayjs from "dayjs";
 import React, { FC, memo } from "react";
 import { useSelector } from "react-redux";
+import { Link as RouterLink } from "react-router-dom";
+import { PAGE_PATH_APPLICATIONS } from "../constants";
 import { APPLICATION_SYNC_STATUS_TEXT } from "../constants/application-sync-status-text";
 import { AppState } from "../modules";
 import { Application, selectAll } from "../modules/applications";
@@ -22,8 +24,6 @@ import {
   selectEntities as selectEnvs,
 } from "../modules/environments";
 import { SyncStatusIcon } from "./sync-status-icon";
-import { Link as RouterLink } from "react-router-dom";
-import { PAGE_PATH_APPLICATIONS } from "../constants";
 
 const useStyles = makeStyles((theme) => ({
   root: {
@@ -75,7 +75,7 @@ export const ApplicationList: FC = memo(function ApplicationList() {
           </TableHead>
           <TableBody>
             {applications.map((app) => {
-              const recentlyDeployment = app.mostRecentlyTriggeredDeployment;
+              const recentlyDeployment = app.mostRecentlySuccessfulDeployment;
               return (
                 <TableRow key={`app-${app.id}`}>
                   <TableCell className={classes.statusCell}>
