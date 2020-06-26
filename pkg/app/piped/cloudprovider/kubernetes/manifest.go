@@ -77,6 +77,10 @@ func (m Manifest) AddAnnotations(annotations map[string]string) {
 	m.u.SetAnnotations(annos)
 }
 
+func (m Manifest) SetNamespace(namespace string) {
+	m.u.SetNamespace(namespace)
+}
+
 func (m Manifest) SetReplicas(replicas int) {
 	unstructured.SetNestedField(m.u.Object, int64(replicas), "spec", "replicas")
 }

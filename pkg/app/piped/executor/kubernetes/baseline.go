@@ -41,7 +41,7 @@ func (e *Executor) ensureBaselineRollout(ctx context.Context) model.StageStatus 
 		return model.StageStatus_STAGE_FAILURE
 	}
 
-	baselineManifests, err := e.generateBaselineManifests(manifests)
+	baselineManifests, err := e.generateBaselineManifests(e.config.Input.Namespace, manifests)
 	if err != nil {
 		e.LogPersister.AppendError(fmt.Sprintf("Unable to generate manifests for BASELINE variant (%v)", err))
 		return model.StageStatus_STAGE_FAILURE
@@ -131,7 +131,7 @@ func (e *Executor) ensureBaselineClean(ctx context.Context) model.StageStatus {
 	return model.StageStatus_STAGE_SUCCESS
 }
 
-func (e *Executor) generateBaselineManifests(manifests []provider.Manifest) ([]provider.Manifest, error) {
+func (e *Executor) generateBaselineManifests(namespace string, manifests []provider.Manifest) ([]provider.Manifest, error) {
 	// List of default configurations.
 	var (
 		suffix            = baselineVariant
@@ -191,6 +191,10 @@ func (e *Executor) generateBaselineManifests(manifests []provider.Manifest) ([]p
 	// Add labels to the generated baseline manifests.
 	for _, m := range baselineManifests {
 		m.Key.Name = m.Key.Name + "-" + suffix
+		if namespace != "" {
+			m.SetNamespace(namespace)
+			m.Key.Namespace = namespace
+		}
 		m.AddAnnotations(map[string]string{
 			provider.LabelManagedBy:          provider.ManagedByPiped,
 			provider.LabelPiped:              e.PipedConfig.PipedID,

@@ -48,7 +48,7 @@ func (e *Executor) ensureCanaryRollout(ctx context.Context) model.StageStatus {
 		return model.StageStatus_STAGE_FAILURE
 	}
 
-	canaryManifests, err := e.generateCanaryManifests(ctx, manifests, *canaryOptions)
+	canaryManifests, err := e.generateCanaryManifests(e.config.Input.Namespace, manifests, *canaryOptions)
 	if err != nil {
 		e.LogPersister.AppendError(fmt.Sprintf("Unabled to generate manifests for CANARY variant (%v)", err))
 		return model.StageStatus_STAGE_FAILURE
@@ -138,8 +138,7 @@ func (e *Executor) ensureCanaryClean(ctx context.Context) model.StageStatus {
 	return model.StageStatus_STAGE_SUCCESS
 }
 
-// TODO: Add namespace for generated resources.
-func (e *Executor) generateCanaryManifests(ctx context.Context, manifests []provider.Manifest, opts config.K8sCanaryRolloutStageOptions) ([]provider.Manifest, error) {
+func (e *Executor) generateCanaryManifests(namespace string, manifests []provider.Manifest, opts config.K8sCanaryRolloutStageOptions) ([]provider.Manifest, error) {
 	// List of default configurations.
 	var (
 		suffix           = canaryVariant
@@ -199,6 +198,10 @@ func (e *Executor) generateCanaryManifests(ctx context.Context, manifests []prov
 	// Add labels to the generated canary manifests.
 	for _, m := range canaryManifests {
 		m.Key.Name = m.Key.Name + "-" + suffix
+		if namespace != "" {
+			m.SetNamespace(namespace)
+			m.Key.Namespace = namespace
+		}
 		m.AddAnnotations(map[string]string{
 			provider.LabelManagedBy:          provider.ManagedByPiped,
 			provider.LabelPiped:              e.PipedConfig.PipedID,
