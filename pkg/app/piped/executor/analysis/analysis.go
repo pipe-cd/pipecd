@@ -100,8 +100,8 @@ func (e *Executor) Execute(sig executor.StopSignal) model.StageStatus {
 
 	// Run analyses with metrics providers.
 	mf := metrics.NewFactory(e.Logger)
-	for i, m := range options.Metrics {
-		analyzer, err := e.newAnalyzerForMetrics(i, &m, templateCfg, mf)
+	for i := range options.Metrics {
+		analyzer, err := e.newAnalyzerForMetrics(i, &options.Metrics[i], templateCfg, mf)
 		if err != nil {
 			e.LogPersister.AppendError(err.Error())
 			continue
@@ -112,8 +112,8 @@ func (e *Executor) Execute(sig executor.StopSignal) model.StageStatus {
 	}
 	// Run analyses with logging providers.
 	lf := log.NewFactory(e.Logger)
-	for i, l := range options.Logs {
-		analyzer, err := e.newAnalyzerForLog(i, &l, templateCfg, lf)
+	for i := range options.Logs {
+		analyzer, err := e.newAnalyzerForLog(i, &options.Logs[i], templateCfg, lf)
 		if err != nil {
 			e.LogPersister.AppendError(err.Error())
 			continue
@@ -123,8 +123,8 @@ func (e *Executor) Execute(sig executor.StopSignal) model.StageStatus {
 		})
 	}
 	// Run analyses with http providers.
-	for i, h := range options.Https {
-		analyzer, err := e.newAnalyzerForHTTP(i, &h, templateCfg)
+	for i := range options.Https {
+		analyzer, err := e.newAnalyzerForHTTP(i, &options.Https[i], templateCfg)
 		if err != nil {
 			e.LogPersister.AppendError(err.Error())
 			continue

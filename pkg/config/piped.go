@@ -140,10 +140,7 @@ type PipedGit struct {
 }
 
 func (g PipedGit) ShouldConfigureSSHConfig() bool {
-	if g.SSHKeyFile != "" {
-		return true
-	}
-	return false
+	return g.SSHKeyFile != ""
 }
 
 type PipedRepository struct {
