@@ -97,7 +97,7 @@ func (p DiffPath) String() string {
 
 func parseDiffPath(s string) (DiffPath, error) {
 	parts := strings.Split(s, ".")
-	var path DiffPath
+	path := make(DiffPath, 0, len(parts))
 
 	for _, p := range parts {
 		if strings.HasPrefix(p, "[") {

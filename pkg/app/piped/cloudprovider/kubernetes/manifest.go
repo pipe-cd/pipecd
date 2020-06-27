@@ -170,9 +170,9 @@ func LoadManifestsFromYAMLFile(path string) ([]Manifest, error) {
 }
 
 func ParseManifests(data string) ([]Manifest, error) {
-	const seperator = "\n---"
+	const separator = "\n---"
 	var (
-		parts     = strings.Split(data, seperator)
+		parts     = strings.Split(data, separator)
 		manifests = make([]Manifest, 0, len(parts))
 	)
 

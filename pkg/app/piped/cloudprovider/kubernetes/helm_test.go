@@ -54,6 +54,6 @@ func TestTemplateLocalChart(t *testing.T) {
 	require.NoError(t, err)
 
 	out = strings.TrimPrefix(out, "---")
-	manfiests := strings.Split(out, "---")
-	assert.Equal(t, 3, len(manfiests))
+	manifests := strings.Split(out, "---")
+	assert.Equal(t, 3, len(manifests))
 }

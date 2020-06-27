@@ -15,7 +15,7 @@
 package memorycache
 
 import (
-	"github.com/hashicorp/golang-lru"
+	lru "github.com/hashicorp/golang-lru"
 
 	"github.com/pipe-cd/pipe/pkg/cache"
 )
@@ -51,4 +51,3 @@ func (c *LRUCache) Delete(key interface{}) error {
 	c.cache.Remove(key)
 	return nil
 }
-
