@@ -194,6 +194,7 @@ L:
 		select {
 		case <-ctx.Done():
 			break L
+
 		case <-ticker.C:
 			// This must be called before syncPlanner because
 			// after piped is restarted all running deployments need to be loaded firstly.

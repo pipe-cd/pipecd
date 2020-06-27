@@ -125,9 +125,16 @@ func (p *piped) run(ctx context.Context, t cli.Telemetry) error {
 
 	// Add configured Helm chart repositories.
 	if len(cfg.ChartRepositories) > 0 {
-		if err := chartrepo.Add(ctx, cfg.ChartRepositories, toolregistry.DefaultRegistry(), t.Logger); err != nil {
+		reg := toolregistry.DefaultRegistry()
+		if err := chartrepo.Add(ctx, cfg.ChartRepositories, reg, t.Logger); err != nil {
 			t.Logger.Error("failed to add configured chart repositories", zap.Error(err))
 			return err
+		}
+		if len(cfg.ChartRepositories) > 0 {
+			if err := chartrepo.Update(ctx, reg, t.Logger); err != nil {
+				t.Logger.Error("failed to update Helm chart repositories", zap.Error(err))
+				return err
+			}
 		}
 	}
 
