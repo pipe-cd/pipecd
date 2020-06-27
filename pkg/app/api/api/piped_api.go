@@ -128,7 +128,7 @@ func (a *PipedAPI) ListApplications(ctx context.Context, req *pipedservice.ListA
 			},
 		},
 	}
-	// TOOD: Support pagination in ListApplications
+	// TODO: Support pagination in ListApplications
 	apps, err := a.applicationStore.ListApplications(ctx, opts)
 	if err != nil {
 		a.logger.Error("failed to fetch applications", zap.Error(err))

@@ -81,7 +81,7 @@ func (p *Planner) Plan(ctx context.Context, in planner.Input) (out planner.Outpu
 	// We just apply all manifests.
 	if in.MostRecentSuccessfulCommitHash == "" {
 		out.Stages = buildPipeline(cfg.Input.AutoRollback, time.Now())
-		out.Description = fmt.Sprintf("Apply all manifests because it was unable to find the most recent successful commit.")
+		out.Description = "Apply all manifests because it was unable to find the most recent successful commit."
 		return
 	}
 

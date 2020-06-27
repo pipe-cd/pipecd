@@ -102,7 +102,7 @@ func determineDeploymentHealth(obj *unstructured.Unstructured) (status model.Kub
 		return
 	}
 	if d.Status.AvailableReplicas < d.Status.Replicas {
-		desc = fmt.Sprintf("Waiting for remaining %d/%d replicas to be avaiable", d.Status.Replicas-d.Status.AvailableReplicas, d.Status.Replicas)
+		desc = fmt.Sprintf("Waiting for remaining %d/%d replicas to be available", d.Status.Replicas-d.Status.AvailableReplicas, d.Status.Replicas)
 		return
 	}
 

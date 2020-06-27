@@ -146,7 +146,7 @@ func (r *reflector) start(ctx context.Context) error {
 	if err != nil {
 		return fmt.Errorf("failed to fetch preferred resources: %v", err)
 	}
-	r.logger.Info(fmt.Sprintf("successfully prefered resources that contains for %d groups", len(groupResources)))
+	r.logger.Info(fmt.Sprintf("successfully preferred resources that contains for %d groups", len(groupResources)))
 
 	// Filter above APIResources.
 	var (

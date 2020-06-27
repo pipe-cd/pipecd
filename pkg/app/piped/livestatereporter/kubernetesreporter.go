@@ -145,12 +145,12 @@ func (r *kubernetesReporter) flushEvents(ctx context.Context) error {
 	}
 
 	filteredEvents := make([]*model.KubernetesResourceStateEvent, 0, len(events))
-	for _, event := range events {
+	for i, event := range events {
 		snapshotVersion, ok := r.snapshotVersions[event.ApplicationId]
 		if ok && event.SnapshotVersion.IsBefore(snapshotVersion) {
 			continue
 		}
-		filteredEvents = append(filteredEvents, &event)
+		filteredEvents = append(filteredEvents, &events[i])
 	}
 	if len(filteredEvents) == 0 {
 		return nil

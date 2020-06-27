@@ -122,10 +122,10 @@ func (t Telemetry) PrometheusMetricsHandler() http.Handler {
 	if t.Flags.Metrics {
 		return promhttp.Handler()
 	}
-	var emtpy http.HandlerFunc = func(w http.ResponseWriter, r *http.Request) {
+	var empty http.HandlerFunc = func(w http.ResponseWriter, r *http.Request) {
 		w.Write([]byte(""))
 	}
-	return emtpy
+	return empty
 }
 
 func extractServiceName(cmd *cobra.Command) string {

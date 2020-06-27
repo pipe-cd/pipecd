@@ -228,7 +228,7 @@ type K8sPrimaryUpdateStageOptions struct {
 type K8sCanaryRolloutStageOptions struct {
 	// How many pods for CANARY workloads.
 	// An integer value can be specified to indicate an absolute value of pod number.
-	// Or a string suffixed by "%" to indicate an percantage value compared to the pod number of PRIMARY.
+	// Or a string suffixed by "%" to indicate an percentage value compared to the pod number of PRIMARY.
 	// Default is 1 pod.
 	Replicas Replicas `json:"replicas"`
 }
@@ -241,7 +241,7 @@ type K8sCanaryCleanStageOptions struct {
 type K8sBaselineRolloutStageOptions struct {
 	// How many pods for BASELINE workloads.
 	// An integer value can be specified to indicate an absolute value of pod number.
-	// Or a string suffixed by "%" to indicate an percantage value compared to the pod number of PRIMARY.
+	// Or a string suffixed by "%" to indicate an percentage value compared to the pod number of PRIMARY.
 	// Default is 1 pod.
 	Replicas Replicas `json:"replicas"`
 }

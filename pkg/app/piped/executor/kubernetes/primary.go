@@ -53,10 +53,10 @@ func (e *Executor) ensurePrimaryUpdate(ctx context.Context) model.StageStatus {
 	e.LogPersister.AppendInfo(fmt.Sprintf("Applying %d primary resources", len(manifests)))
 	for _, m := range manifests {
 		if err = e.provider.ApplyManifest(ctx, m); err != nil {
-			e.LogPersister.AppendError(fmt.Sprintf("Failed to apply manfiest: %s (%v)", m.Key.ReadableString(), err))
+			e.LogPersister.AppendError(fmt.Sprintf("Failed to apply manifest: %s (%v)", m.Key.ReadableString(), err))
 			return model.StageStatus_STAGE_FAILURE
 		}
-		e.LogPersister.AppendSuccess(fmt.Sprintf("- applied manfiest: %s", m.Key.ReadableString()))
+		e.LogPersister.AppendSuccess(fmt.Sprintf("- applied manifest: %s", m.Key.ReadableString()))
 	}
 
 	e.LogPersister.AppendSuccess(fmt.Sprintf("Successfully applied %d primary resources", len(manifests)))

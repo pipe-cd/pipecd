@@ -23,8 +23,9 @@ import (
 	"os/exec"
 	"path/filepath"
 
-	"github.com/pipe-cd/pipe/pkg/config"
 	"go.uber.org/zap"
+
+	"github.com/pipe-cd/pipe/pkg/config"
 )
 
 type Helm struct {

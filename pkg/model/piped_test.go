@@ -43,7 +43,7 @@ func TestGenerateRandomString(t *testing.T) {
 			if (c >= 'a' && c <= 'z') || (c >= '0' && c <= '9') {
 				continue
 			}
-			return fmt.Errorf("invalid character: %s", c)
+			return fmt.Errorf("invalid character: %#U", c)
 		}
 		return nil
 	}

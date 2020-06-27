@@ -19,6 +19,8 @@ import (
 	"fmt"
 	"time"
 
+	"go.uber.org/zap"
+
 	"github.com/pipe-cd/pipe/pkg/app/piped/executor"
 	"github.com/pipe-cd/pipe/pkg/model"
 )
@@ -80,9 +82,9 @@ func (e *Executor) checkApproval(ctx context.Context) (string, bool) {
 	var approveCmd *model.ReportableCommand
 	commands := e.CommandLister.ListCommands()
 
-	for _, cmd := range commands {
+	for i, cmd := range commands {
 		if cmd.GetApproveStage() != nil {
-			approveCmd = &cmd
+			approveCmd = &commands[i]
 			break
 		}
 	}
@@ -103,6 +105,8 @@ func (e *Executor) checkApproval(ctx context.Context) (string, bool) {
 		return "", false
 	}
 
-	approveCmd.Report(ctx, model.CommandStatus_COMMAND_SUCCEEDED, nil)
+	if err := approveCmd.Report(ctx, model.CommandStatus_COMMAND_SUCCEEDED, nil); err != nil {
+		e.Logger.Error("failed to report handled command", zap.Error(err))
+	}
 	return approveCmd.Commander, true
 }
