@@ -179,15 +179,19 @@ func (p *provider) LoadManifests(ctx context.Context) (manifests []Manifest, err
 		}
 
 		if err != nil {
-			err = fmt.Errorf("unabled to run helm template: %w", err)
+			err = fmt.Errorf("unable to run helm template: %w", err)
 			return
 		}
-
 		manifests, err = ParseManifests(data)
-		return
 
 	case TemplatingMethodKustomize:
-		return nil, nil
+		var data string
+		data, err = p.kustomize.Template(ctx, p.appName, p.appDir)
+		if err != nil {
+			err = fmt.Errorf("unable to run kustomize template: %w", err)
+			return
+		}
+		manifests, err = ParseManifests(data)
 
 	case TemplatingMethodNone:
 		manifests, err = LoadPlainYAMLMannifests(ctx, p.appDir, p.input.Manifests)
@@ -195,6 +199,7 @@ func (p *provider) LoadManifests(ctx context.Context) (manifests []Manifest, err
 	default:
 		err = fmt.Errorf("unsupport templating method %v", p.templatingMethod)
 	}
+
 	return
 }
 
@@ -242,7 +247,7 @@ func (p *provider) findKustomize(ctx context.Context, version string) (*Kustomiz
 	if installed {
 		p.logger.Info(fmt.Sprintf("kustomize %s has just been installed because of no pre-installed binary for that version", version))
 	}
-	return NewKustomize(version, path), nil
+	return NewKustomize(version, path, p.logger), nil
 }
 
 func (p *provider) findHelm(ctx context.Context, version string) (*Helm, error) {

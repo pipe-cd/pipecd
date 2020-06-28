@@ -75,14 +75,10 @@ func (c *Helm) TemplateLocalChart(ctx context.Context, appName, appDir, chartPat
 	c.logger.Info(fmt.Sprintf("start templating a local chart (or cloned remote git chart) for application %s", appName),
 		zap.Any("args", args),
 	)
-	if err := cmd.Start(); err != nil {
-		return "", err
-	}
 
-	if err := cmd.Wait(); err != nil {
+	if err := cmd.Run(); err != nil {
 		return stdout.String(), fmt.Errorf("%w: %s", err, stderr.String())
 	}
-
 	return stdout.String(), nil
 }
 
@@ -155,10 +151,7 @@ func (c *Helm) TemplateRemoteChart(ctx context.Context, appName, appDir string, 
 		cmd.Stdout = &stdout
 		cmd.Stderr = &stderr
 
-		if err := cmd.Start(); err != nil {
-			return "", err
-		}
-		if err := cmd.Wait(); err != nil {
+		if err := cmd.Run(); err != nil {
 			return stdout.String(), fmt.Errorf("%w: %s", err, stderr.String())
 		}
 		return stdout.String(), nil
