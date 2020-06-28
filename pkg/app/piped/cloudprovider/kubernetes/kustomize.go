@@ -14,18 +14,47 @@
 
 package kubernetes
 
+import (
+	"bytes"
+	"context"
+	"fmt"
+	"os/exec"
+
+	"go.uber.org/zap"
+)
+
 type Kustomize struct {
 	version  string
 	execPath string
+	logger   *zap.Logger
 }
 
-func NewKustomize(version, path string) *Kustomize {
+func NewKustomize(version, path string, logger *zap.Logger) *Kustomize {
 	return &Kustomize{
 		version:  version,
 		execPath: path,
+		logger:   logger,
 	}
 }
 
-func (c *Kustomize) template() error {
-	return nil
+func (c *Kustomize) Template(ctx context.Context, appName, appDir string) (string, error) {
+	args := []string{
+		"build",
+		".",
+	}
+
+	var stdout, stderr bytes.Buffer
+	cmd := exec.CommandContext(ctx, c.execPath, args...)
+	cmd.Dir = appDir
+	cmd.Stdout = &stdout
+	cmd.Stderr = &stderr
+
+	c.logger.Info(fmt.Sprintf("start templating a Kustomize application %s", appName),
+		zap.Any("args", args),
+	)
+
+	if err := cmd.Run(); err != nil {
+		return stdout.String(), fmt.Errorf("%w: %s", err, stderr.String())
+	}
+	return stdout.String(), nil
 }
