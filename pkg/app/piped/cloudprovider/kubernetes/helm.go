@@ -22,9 +22,12 @@ import (
 	"os"
 	"os/exec"
 	"path/filepath"
+	"strings"
 
 	"go.uber.org/zap"
 
+	"github.com/pipe-cd/pipe/pkg/app/piped/chartrepo"
+	"github.com/pipe-cd/pipe/pkg/app/piped/toolregistry"
 	"github.com/pipe-cd/pipe/pkg/config"
 )
 
@@ -120,5 +123,60 @@ type helmRemoteChart struct {
 }
 
 func (c *Helm) TemplateRemoteChart(ctx context.Context, appName, appDir string, chart helmRemoteChart, opts *config.InputHelmOptions) (string, error) {
-	return "", nil
+	releaseName := appName
+	if opts != nil && opts.ReleaseName != "" {
+		releaseName = opts.ReleaseName
+	}
+
+	args := []string{
+		"template",
+		"--no-hooks",
+		releaseName,
+		fmt.Sprintf("%s/%s", chart.Repository, chart.Name),
+		fmt.Sprintf("--version=%s", chart.Version),
+	}
+	if opts != nil {
+		for _, v := range opts.ValueFiles {
+			args = append(args, "-f", v)
+		}
+		for k, v := range opts.SetFiles {
+			args = append(args, "--set-file", fmt.Sprintf("%s=%s", k, v))
+		}
+	}
+
+	c.logger.Info(fmt.Sprintf("start templating a chart from Helm repository for application %s", appName),
+		zap.Any("args", args),
+	)
+
+	executor := func() (string, error) {
+		var stdout, stderr bytes.Buffer
+		cmd := exec.CommandContext(ctx, c.execPath, args...)
+		cmd.Dir = appDir
+		cmd.Stdout = &stdout
+		cmd.Stderr = &stderr
+
+		if err := cmd.Start(); err != nil {
+			return "", err
+		}
+		if err := cmd.Wait(); err != nil {
+			return stdout.String(), fmt.Errorf("%w: %s", err, stderr.String())
+		}
+		return stdout.String(), nil
+	}
+
+	out, err := executor()
+	if err == nil {
+		return out, nil
+	}
+
+	if !strings.Contains(err.Error(), "helm repo update") {
+		return "", err
+	}
+
+	// If the error is a "Not Found", we update the repositories and try again.
+	if e := chartrepo.Update(ctx, toolregistry.DefaultRegistry(), c.logger); e != nil {
+		c.logger.Error("failed to update Helm chart repositories", zap.Error(e))
+		return "", err
+	}
+	return executor()
 }

@@ -104,7 +104,6 @@ func (d *detector) Run(ctx context.Context) error {
 L:
 	for {
 		select {
-
 		case <-ticker.C:
 			d.check(ctx)
 
