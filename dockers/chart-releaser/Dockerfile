@@ -7,3 +7,4 @@ RUN cd /pipecd && \
 FROM alpine:3.10
 RUN apk --no-cache add ca-certificates
 COPY --from=builder /pipecd/chart-releaser ./
+RUN chmod +x ./chart-releaser
