@@ -111,7 +111,24 @@ func determineDeploymentHealth(obj *unstructured.Unstructured) (status model.Kub
 }
 
 func determineStatefulSetHealth(obj *unstructured.Unstructured) (status model.KubernetesResourceState_HealthStatus, desc string) {
-	desc = "Not implemented yet"
+	s := &appsv1.StatefulSet{}
+	err := scheme.Scheme.Convert(obj, s, nil)
+	if err != nil {
+		desc = fmt.Sprintf("Failed while convert %T to %T: %v", obj, s, err)
+		return
+	}
+
+	status = model.KubernetesResourceState_OTHER
+	if s.Spec.Replicas == nil {
+		desc = "The number of desired replicas is unspecified"
+		return
+	}
+	if *s.Spec.Replicas != s.Status.ReadyReplicas {
+		desc = fmt.Sprintf("The number of ready replicas (%d) is different from the desired number (%d)", s.Status.ReadyReplicas, *s.Spec.Replicas)
+		return
+	}
+
+	status = model.KubernetesResourceState_HEALTHY
 	return
 }
 
