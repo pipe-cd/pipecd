@@ -21,6 +21,7 @@ import "validate/validate.proto";
 import "pkg/model/common.proto";
 import "pkg/model/application.proto";
 import "pkg/model/application_live_state.proto";
+import "pkg/model/command.proto";
 import "pkg/model/environment.proto";
 import "pkg/model/deployment.proto";
 import "pkg/model/logblock.proto";
@@ -93,6 +94,9 @@ service WebService {
     // Account
     rpc GetProject(GetProjectRequest) returns (GetProjectResponse) {}
     rpc GetMe(GetMeRequest) returns (GetMeResponse) {}
+
+    // Command
+    rpc GetCommand(GetCommandRequest) returns (GetCommandResponse) {}
 }
 
 message AddEnvironmentResponse {
@@ -253,4 +257,12 @@ message GetMeRequest {
 }
 
 message GetMeResponse {
+}
+
+message GetCommandRequest {
+    string command_id = 1 [(validate.rules).string.min_len = 1];
+}
+
+message GetCommandResponse {
+    pipe.model.Command command = 1;
 }

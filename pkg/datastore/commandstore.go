@@ -27,9 +27,22 @@ var commandFactory = func() interface{} {
 	return &model.Command{}
 }
 
+var (
+	CommandHandledUpdater = func(status model.CommandStatus, metadata map[string]string, handledAt int64) func(*model.Command) error {
+		return func(cmd *model.Command) error {
+			cmd.Status = status
+			cmd.Metadata = metadata
+			cmd.HandledAt = handledAt
+			return nil
+		}
+	}
+)
+
 type CommandStore interface {
 	AddCommand(ctx context.Context, cmd *model.Command) error
-	ListCommands(ctx context.Context, opts ListOptions) ([]model.Command, error)
+	UpdateCommand(ctx context.Context, id string, updater func(piped *model.Command) error) error
+	ListCommands(ctx context.Context, opts ListOptions) ([]*model.Command, error)
+	GetCommand(ctx context.Context, id string) (*model.Command, error)
 }
 
 type commandStore struct {
@@ -60,12 +73,24 @@ func (s *commandStore) AddCommand(ctx context.Context, cmd *model.Command) error
 	return s.ds.Create(ctx, commandModelKind, cmd.Id, cmd)
 }
 
-func (s *commandStore) ListCommands(ctx context.Context, opts ListOptions) ([]model.Command, error) {
+func (s *commandStore) UpdateCommand(ctx context.Context, id string, updater func(piped *model.Command) error) error {
+	now := s.nowFunc().Unix()
+	return s.ds.Update(ctx, commandModelKind, id, commandFactory, func(e interface{}) error {
+		p := e.(*model.Command)
+		if err := updater(p); err != nil {
+			return err
+		}
+		p.UpdatedAt = now
+		return p.Validate()
+	})
+}
+
+func (s *commandStore) ListCommands(ctx context.Context, opts ListOptions) ([]*model.Command, error) {
 	it, err := s.ds.Find(ctx, commandModelKind, opts)
 	if err != nil {
 		return nil, err
 	}
-	cmds := make([]model.Command, 0)
+	cmds := make([]*model.Command, 0)
 	for {
 		var cmd model.Command
 		err := it.Next(&cmd)
@@ -75,7 +100,15 @@ func (s *commandStore) ListCommands(ctx context.Context, opts ListOptions) ([]mo
 		if err != nil {
 			return nil, err
 		}
-		cmds = append(cmds, cmd)
+		cmds = append(cmds, &cmd)
 	}
 	return cmds, nil
+}
+
+func (s *commandStore) GetCommand(ctx context.Context, id string) (*model.Command, error) {
+	var entity model.Command
+	if err := s.ds.Get(ctx, commandModelKind, id, &entity); err != nil {
+		return nil, err
+	}
+	return &entity, nil
 }

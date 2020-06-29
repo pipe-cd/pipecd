@@ -24,6 +24,7 @@ import (
 	"google.golang.org/grpc/status"
 
 	"github.com/pipe-cd/pipe/pkg/app/api/applicationlivestatestore"
+	"github.com/pipe-cd/pipe/pkg/app/api/commandstore"
 	"github.com/pipe-cd/pipe/pkg/app/api/service/pipedservice"
 	"github.com/pipe-cd/pipe/pkg/app/api/stagelogstore"
 	"github.com/pipe-cd/pipe/pkg/datastore"
@@ -34,7 +35,6 @@ import (
 // PipedAPI implements the behaviors for the gRPC definitions of PipedAPI.
 type PipedAPI struct {
 	applicationStore          datastore.ApplicationStore
-	commandStore              datastore.CommandStore
 	deploymentStore           datastore.DeploymentStore
 	environmentStore          datastore.EnvironmentStore
 	pipedStatsStore           datastore.PipedStatsStore
@@ -42,15 +42,15 @@ type PipedAPI struct {
 	projectStore              datastore.ProjectStore
 	stageLogStore             stagelogstore.Store
 	applicationLiveStateStore applicationlivestatestore.Store
+	commandStore              commandstore.Store
 
 	logger *zap.Logger
 }
 
 // NewPipedAPI creates a new PipedAPI instance.
-func NewPipedAPI(ds datastore.DataStore, sls stagelogstore.Store, alss applicationlivestatestore.Store, logger *zap.Logger) *PipedAPI {
+func NewPipedAPI(ds datastore.DataStore, sls stagelogstore.Store, alss applicationlivestatestore.Store, cs commandstore.Store, logger *zap.Logger) *PipedAPI {
 	a := &PipedAPI{
 		applicationStore:          datastore.NewApplicationStore(ds),
-		commandStore:              datastore.NewCommandStore(ds),
 		deploymentStore:           datastore.NewDeploymentStore(ds),
 		environmentStore:          datastore.NewEnvironmentStore(ds),
 		pipedStatsStore:           datastore.NewPipedStatsStore(ds),
@@ -58,6 +58,7 @@ func NewPipedAPI(ds datastore.DataStore, sls stagelogstore.Store, alss applicati
 		projectStore:              datastore.NewProjectStore(ds),
 		stageLogStore:             sls,
 		applicationLiveStateStore: alss,
+		commandStore:              cs,
 		logger:                    logger.Named("piped-api"),
 	}
 	return a
@@ -417,15 +418,61 @@ func (a *PipedAPI) ReportStageStatusChanged(ctx context.Context, req *pipedservi
 // On other side, the web will periodically check the command status and feedback the result to user.
 // In the future, we may need a solution to remove all old-handled commands from datastore for space.
 func (a *PipedAPI) ListUnhandledCommands(ctx context.Context, req *pipedservice.ListUnhandledCommandsRequest) (*pipedservice.ListUnhandledCommandsResponse, error) {
-	return &pipedservice.ListUnhandledCommandsResponse{}, nil
-	// nil, status.Error(codes.Unimplemented, "")
+	_, pipedID, _, err := rpcauth.ExtractPipedToken(ctx)
+	if err != nil {
+		return nil, err
+	}
+
+	cmds, err := a.commandStore.ListUnhandledCommands(ctx, pipedID)
+	if err != nil {
+		a.logger.Error("failed to fetch unhandled commands", zap.Error(err))
+		return nil, status.Error(codes.Internal, "failed to unhandled commands")
+	}
+	return &pipedservice.ListUnhandledCommandsResponse{
+		Commands: cmds,
+	}, nil
 }
 
 // ReportCommandHandled is called by piped to mark a specific command as handled.
 // The request payload will contain the handle status as well as any additional result data.
 // The handle result should be updated to both datastore and cache (for reading from web).
 func (a *PipedAPI) ReportCommandHandled(ctx context.Context, req *pipedservice.ReportCommandHandledRequest) (*pipedservice.ReportCommandHandledResponse, error) {
-	return nil, status.Error(codes.Unimplemented, "")
+	_, pipedID, _, err := rpcauth.ExtractPipedToken(ctx)
+	if err != nil {
+		return nil, err
+	}
+
+	cmd, err := a.getCommand(ctx, req.CommandId)
+	if err != nil {
+		return nil, err
+	}
+	if pipedID != cmd.PipedId {
+		return nil, status.Error(codes.PermissionDenied, "The current piped does not have requested command")
+	}
+
+	err = a.commandStore.UpdateCommandHandled(ctx, req.CommandId, req.Status, req.Metadata, req.HandledAt)
+	if err != nil {
+		switch err {
+		case datastore.ErrNotFound:
+			return nil, status.Error(codes.NotFound, "command is not found")
+		case datastore.ErrInvalidArgument:
+			return nil, status.Error(codes.InvalidArgument, "invalid value for update")
+		default:
+			return nil, status.Error(codes.Internal, "failed to update command")
+		}
+	}
+	return &pipedservice.ReportCommandHandledResponse{}, nil
+}
+
+func (a *PipedAPI) getCommand(ctx context.Context, pipedID string) (*model.Command, error) {
+	cmd, err := a.commandStore.GetCommand(ctx, pipedID)
+	if errors.Is(err, datastore.ErrNotFound) {
+		return nil, status.Error(codes.NotFound, "command is not found")
+	}
+	if err != nil {
+		return nil, status.Error(codes.Internal, "failed to get command")
+	}
+	return cmd, nil
 }
 
 // ReportApplicationLiveState is periodically sent to correct full state of an application.

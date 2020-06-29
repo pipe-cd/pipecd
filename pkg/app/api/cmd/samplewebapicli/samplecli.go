@@ -96,6 +96,8 @@ func (s *samplecli) run(ctx context.Context, t cli.Telemetry) error {
 		return s.approveStage(ctx, cli, data, t.Logger)
 	case "GetApplicationLiveState":
 		return s.getApplicationLiveState(ctx, cli, data, t.Logger)
+	case "GetCommand":
+		return s.getCommand(ctx, cli, data, t.Logger)
 	}
 	return nil
 }
@@ -354,5 +356,20 @@ func (s *samplecli) getApplicationLiveState(ctx context.Context, cli webservice.
 	}
 	logger.Info("successfully run GetApplicationLiveState")
 	fmt.Printf("state: %+v\n", resp)
+	return nil
+}
+
+func (s *samplecli) getCommand(ctx context.Context, cli webservice.Client, payload []byte, logger *zap.Logger) error {
+	req := webservice.GetCommandRequest{}
+	if err := json.Unmarshal(payload, &req); err != nil {
+		return err
+	}
+	resp, err := cli.GetCommand(ctx, &req)
+	if err != nil {
+		logger.Error("failed to run GetCommand", zap.Error(err))
+		return err
+	}
+	logger.Info("successfully run GetCommand")
+	fmt.Printf("command: %+v\n", resp.Command)
 	return nil
 }
