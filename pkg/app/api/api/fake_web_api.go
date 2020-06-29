@@ -739,3 +739,24 @@ func (a *FakeWebAPI) GetProject(ctx context.Context, req *webservice.GetProjectR
 func (a *FakeWebAPI) GetMe(ctx context.Context, req *webservice.GetMeRequest) (*webservice.GetMeResponse, error) {
 	return nil, status.Error(codes.Unimplemented, "")
 }
+
+func (a *FakeWebAPI) GetCommand(ctx context.Context, req *webservice.GetCommandRequest) (*webservice.GetCommandResponse, error) {
+	now := time.Now()
+	cmd := model.Command{
+		Id:            uuid.New().String(),
+		PipedId:       "debug-piped",
+		ApplicationId: "debug-application-id",
+		DeploymentId:  "debug-deployment-id",
+		Commander:     "anonymous",
+		Status:        model.CommandStatus_COMMAND_NOT_HANDLED_YET,
+		Type:          model.Command_CANCEL_DEPLOYMENT,
+		CancelDeployment: &model.Command_CancelDeployment{
+			DeploymentId: "debug-deployment-id-01",
+		},
+		CreatedAt: now.Unix(),
+		UpdatedAt: now.Unix(),
+	}
+	return &webservice.GetCommandResponse{
+		Command: &cmd,
+	}, nil
+}

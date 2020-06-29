@@ -29,6 +29,7 @@ import (
 	"github.com/pipe-cd/pipe/pkg/admin"
 	"github.com/pipe-cd/pipe/pkg/app/api/api"
 	"github.com/pipe-cd/pipe/pkg/app/api/applicationlivestatestore"
+	"github.com/pipe-cd/pipe/pkg/app/api/commandstore"
 	"github.com/pipe-cd/pipe/pkg/app/api/pipedtokenverifier"
 	"github.com/pipe-cd/pipe/pkg/app/api/service/webservice"
 	"github.com/pipe-cd/pipe/pkg/app/api/stagelogstore"
@@ -169,12 +170,13 @@ func (s *server) run(ctx context.Context, t cli.Telemetry) error {
 	cache := rediscache.NewTTLCache(rd, cfg.Cache.TTL.Duration())
 	sls := stagelogstore.NewStore(fs, cache, t.Logger)
 	alss := applicationlivestatestore.NewStore(fs, cache, t.Logger)
+	cmds := commandstore.NewStore(ds, cache, t.Logger)
 
 	// Start a gRPC server for handling PipedAPI requests.
 	{
 		var (
 			verifier = pipedtokenverifier.NewVerifier(ctx, cfg, ds)
-			service  = api.NewPipedAPI(ds, sls, alss, t.Logger)
+			service  = api.NewPipedAPI(ds, sls, alss, cmds, t.Logger)
 			opts     = []rpc.Option{
 				rpc.WithPort(s.pipedAPIPort),
 				rpc.WithGracePeriod(s.gracePeriod),
@@ -203,7 +205,7 @@ func (s *server) run(ctx context.Context, t cli.Telemetry) error {
 		if s.useFakeResponse {
 			service = api.NewFakeWebAPI()
 		} else {
-			service = api.NewWebAPI(ds, sls, alss, t.Logger)
+			service = api.NewWebAPI(ds, sls, alss, cmds, t.Logger)
 		}
 		opts := []rpc.Option{
 			rpc.WithPort(s.webAPIPort),

@@ -113,6 +113,10 @@ func (s *samplecli) run(ctx context.Context, t cli.Telemetry) error {
 		return s.reportStageLogs(ctx, cli, data, t.Logger)
 	case "ReportStageLogsFromLastCheckpoint":
 		return s.reportStageLogsFromLastCheckpoint(ctx, cli, data, t.Logger)
+	case "ListUnhandledCommands":
+		return s.listUnhandledCommands(ctx, cli, data, t.Logger)
+	case "ReportCommandHandled":
+		return s.reportCommandHandled(ctx, cli, data, t.Logger)
 	case "ReportApplicationLiveState":
 		return s.reportApplicationLiveState(ctx, cli, data, t.Logger)
 	case "ReportApplicationLiveStateEvents":
@@ -355,6 +359,23 @@ func (s *samplecli) reportStageLogsFromLastCheckpoint(ctx context.Context, cli p
 	return nil
 }
 
+func (s *samplecli) listUnhandledCommands(ctx context.Context, cli pipedservice.Client, payload []byte, logger *zap.Logger) error {
+	req := pipedservice.ListUnhandledCommandsRequest{}
+	if err := json.Unmarshal(payload, &req); err != nil {
+		return err
+	}
+	resp, err := cli.ListUnhandledCommands(ctx, &req)
+	if err != nil {
+		logger.Error("failed to run ListUnhandledCommands", zap.Error(err))
+		return err
+	}
+	logger.Info("successfully run ListUnhandledCommands")
+	for _, cmd := range resp.Commands {
+		fmt.Printf("command: %+v\n", cmd)
+	}
+	return nil
+}
+
 func (s *samplecli) reportApplicationLiveState(ctx context.Context, cli pipedservice.Client, payload []byte, logger *zap.Logger) error {
 	req := pipedservice.ReportApplicationLiveStateRequest{}
 	if err := json.Unmarshal(payload, &req); err != nil {
@@ -365,6 +386,19 @@ func (s *samplecli) reportApplicationLiveState(ctx context.Context, cli pipedser
 		return err
 	}
 	logger.Info("successfully run ReportApplicationLiveState")
+	return nil
+}
+
+func (s *samplecli) reportCommandHandled(ctx context.Context, cli pipedservice.Client, payload []byte, logger *zap.Logger) error {
+	req := pipedservice.ReportCommandHandledRequest{}
+	if err := json.Unmarshal(payload, &req); err != nil {
+		return err
+	}
+	if _, err := cli.ReportCommandHandled(ctx, &req); err != nil {
+		logger.Error("failed to run ReportCommandHandled", zap.Error(err))
+		return err
+	}
+	logger.Info("successfully run ReportCommandHandled")
 	return nil
 }
 

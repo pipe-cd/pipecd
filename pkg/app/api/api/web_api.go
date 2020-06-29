@@ -25,6 +25,7 @@ import (
 	"google.golang.org/grpc/status"
 
 	"github.com/pipe-cd/pipe/pkg/app/api/applicationlivestatestore"
+	"github.com/pipe-cd/pipe/pkg/app/api/commandstore"
 	"github.com/pipe-cd/pipe/pkg/app/api/service/webservice"
 	"github.com/pipe-cd/pipe/pkg/app/api/stagelogstore"
 	"github.com/pipe-cd/pipe/pkg/datastore"
@@ -38,23 +39,23 @@ type WebAPI struct {
 	environmentStore          datastore.EnvironmentStore
 	deploymentStore           datastore.DeploymentStore
 	pipedStore                datastore.PipedStore
-	commandStore              datastore.CommandStore
 	stageLogStore             stagelogstore.Store
 	applicationLiveStateStore applicationlivestatestore.Store
+	commandStore              commandstore.Store
 
 	logger *zap.Logger
 }
 
 // NewWebAPI creates a new WebAPI instance.
-func NewWebAPI(ds datastore.DataStore, sls stagelogstore.Store, alss applicationlivestatestore.Store, logger *zap.Logger) *WebAPI {
+func NewWebAPI(ds datastore.DataStore, sls stagelogstore.Store, alss applicationlivestatestore.Store, cmds commandstore.Store, logger *zap.Logger) *WebAPI {
 	a := &WebAPI{
 		applicationStore:          datastore.NewApplicationStore(ds),
 		environmentStore:          datastore.NewEnvironmentStore(ds),
 		deploymentStore:           datastore.NewDeploymentStore(ds),
 		pipedStore:                datastore.NewPipedStore(ds),
-		commandStore:              datastore.NewCommandStore(ds),
 		stageLogStore:             sls,
 		applicationLiveStateStore: alss,
+		commandStore:              cmds,
 		logger:                    logger.Named("web-api"),
 	}
 	return a
@@ -493,4 +494,17 @@ func (a *WebAPI) GetProject(ctx context.Context, req *webservice.GetProjectReque
 
 func (a *WebAPI) GetMe(ctx context.Context, req *webservice.GetMeRequest) (*webservice.GetMeResponse, error) {
 	return nil, status.Error(codes.Unimplemented, "")
+}
+
+func (a *WebAPI) GetCommand(ctx context.Context, req *webservice.GetCommandRequest) (*webservice.GetCommandResponse, error) {
+	cmd, err := a.commandStore.GetCommand(ctx, req.CommandId)
+	if errors.Is(err, datastore.ErrNotFound) {
+		return nil, status.Error(codes.NotFound, "command is not found")
+	}
+	if err != nil {
+		return nil, status.Error(codes.Internal, "failed to get command")
+	}
+	return &webservice.GetCommandResponse{
+		Command: cmd,
+	}, nil
 }
