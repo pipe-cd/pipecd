@@ -21,6 +21,7 @@ import (
 
 	appsv1 "k8s.io/api/apps/v1"
 	corev1 "k8s.io/api/core/v1"
+	extv1beta1 "k8s.io/api/extensions/v1beta1"
 	"k8s.io/apimachinery/pkg/apis/meta/v1/unstructured"
 	"k8s.io/client-go/kubernetes/scheme"
 
@@ -194,11 +195,37 @@ func determinePodHealth(obj *unstructured.Unstructured) (status model.Kubernetes
 }
 
 func determineIngressHealth(obj *unstructured.Unstructured) (status model.KubernetesResourceState_HealthStatus, desc string) {
-	desc = "Not implemented yet"
+	i := &extv1beta1.Ingress{}
+	err := scheme.Scheme.Convert(obj, i, nil)
+	if err != nil {
+		desc = fmt.Sprintf("Failed while convert %T to %T: %v", obj, i, err)
+		return
+	}
+
+	status = model.KubernetesResourceState_OTHER
+	if len(i.Status.LoadBalancer.Ingress) <= 0 {
+		desc = "Ingress points for the load-balancer are progressing"
+		return
+	}
+	status = model.KubernetesResourceState_HEALTHY
 	return
 }
 
 func determineServiceHealth(obj *unstructured.Unstructured) (status model.KubernetesResourceState_HealthStatus, desc string) {
-	desc = "Not implemented yet"
+	s := &corev1.Service{}
+	err := scheme.Scheme.Convert(obj, s, nil)
+	if err != nil {
+		desc = fmt.Sprintf("Failed while convert %T to %T: %v", obj, s, err)
+		return
+	}
+
+	status = model.KubernetesResourceState_HEALTHY
+	if s.Spec.Type != corev1.ServiceTypeLoadBalancer {
+		return
+	}
+	if len(s.Status.LoadBalancer.Ingress) <= 0 {
+		status = model.KubernetesResourceState_OTHER
+		desc = "Ingress points for the load-balancer are progressing"
+	}
 	return
 }
