@@ -31,12 +31,14 @@ import "pkg/model/piped.proto";
 message Piped {
     // The generated unique identifier.
     string id = 1 [(validate.rules).string.min_len = 1];
+    // The name of the piped.
+    string name = 2 [(validate.rules).string.min_len = 1];
     // The additional description about the piped.
-    string desc = 2;
+    string desc = 3;
     // The ID of the project this environment belongs to.
-    string project_id = 3 [(validate.rules).string.min_len = 1];
+    string project_id = 4 [(validate.rules).string.min_len = 1];
     // The latest connection status to piped.
-    PipedConnectionStatus status = 4 [(validate.rules).enum.defined_only = true];
+    PipedConnectionStatus status = 5 [(validate.rules).enum.defined_only = true];
 
     // Currently running version.
     string version = 7;
@@ -116,7 +118,8 @@ message ListEnvironmentsResponse {
 }
 
 message RegisterPipedRequest {
-    string desc = 1;
+    string name = 1;
+    string desc = 2;
 }
 
 message RegisterPipedResponse {

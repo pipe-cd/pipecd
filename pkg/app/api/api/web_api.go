@@ -131,6 +131,7 @@ func (a *WebAPI) RegisterPiped(ctx context.Context, req *webservice.RegisterPipe
 	id := uuid.New().String()
 	piped := model.Piped{
 		Id:        id,
+		Name:      req.Name,
 		Desc:      req.Desc,
 		KeyHash:   keyHash,
 		ProjectId: claims.Role.ProjectId,
