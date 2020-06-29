@@ -458,6 +458,10 @@ func (a *PipedAPI) ReportCommandHandled(ctx context.Context, req *pipedservice.R
 		case datastore.ErrInvalidArgument:
 			return nil, status.Error(codes.InvalidArgument, "invalid value for update")
 		default:
+			a.logger.Error("failed to update command",
+				zap.String("command-id", req.CommandId),
+				zap.Error(err),
+			)
 			return nil, status.Error(codes.Internal, "failed to update command")
 		}
 	}
