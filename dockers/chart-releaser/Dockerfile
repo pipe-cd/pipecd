@@ -1,5 +1,6 @@
 FROM golang:1.13.4-alpine3.10 AS builder
-COPY main.go go.mod go.sum .
+COPY main.go .
+RUN go mod init
 RUN go build -o /chart-releaser main.go
 
 FROM alpine:3.10
