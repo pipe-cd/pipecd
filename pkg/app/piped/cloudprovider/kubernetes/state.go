@@ -21,7 +21,7 @@ import (
 
 	appsv1 "k8s.io/api/apps/v1"
 	corev1 "k8s.io/api/core/v1"
-	extv1beta1 "k8s.io/api/extensions/v1beta1"
+	networkingv1 "k8s.io/api/networking/v1beta1"
 	"k8s.io/apimachinery/pkg/apis/meta/v1/unstructured"
 	"k8s.io/client-go/kubernetes/scheme"
 
@@ -195,7 +195,7 @@ func determinePodHealth(obj *unstructured.Unstructured) (status model.Kubernetes
 }
 
 func determineIngressHealth(obj *unstructured.Unstructured) (status model.KubernetesResourceState_HealthStatus, desc string) {
-	i := &extv1beta1.Ingress{}
+	i := &networkingv1.Ingress{}
 	err := scheme.Scheme.Convert(obj, i, nil)
 	if err != nil {
 		desc = fmt.Sprintf("Failed while convert %T to %T: %v", obj, i, err)
