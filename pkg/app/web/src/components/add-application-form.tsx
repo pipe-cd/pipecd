@@ -244,7 +244,7 @@ export const AddApplicationForm: FC<Props> = ({
                 value: repo,
               })) || emptyItems
             }
-            disabled={isAdding}
+            disabled={selectedPiped === undefined || isAdding}
           />
 
           <div className={classes.inputGroupSpace} />
@@ -301,7 +301,7 @@ export const AddApplicationForm: FC<Props> = ({
               value: provider.name,
             })) || emptyItems
           }
-          disabled={isAdding}
+          disabled={selectedPiped === undefined || isAdding}
         />
 
         <Button
