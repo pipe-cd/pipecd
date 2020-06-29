@@ -116,7 +116,24 @@ func determineStatefulSetHealth(obj *unstructured.Unstructured) (status model.Ku
 }
 
 func determineDaemonSetHealth(obj *unstructured.Unstructured) (status model.KubernetesResourceState_HealthStatus, desc string) {
-	desc = "Not implemented yet"
+	d := &appsv1.DaemonSet{}
+	err := scheme.Scheme.Convert(obj, d, nil)
+	if err != nil {
+		desc = fmt.Sprintf("Failed while convert %T to %T: %v", obj, d, err)
+		return
+	}
+
+	status = model.KubernetesResourceState_OTHER
+	if d.Status.NumberMisscheduled > 0 {
+		desc = fmt.Sprintf("%d nodes that are running the daemon pod, but are not supposed to run the daemon pod", d.Status.NumberMisscheduled)
+		return
+	}
+	if d.Status.NumberUnavailable > 0 {
+		desc = fmt.Sprintf("%d nodes that should be running the daemon pod and have none of the daemon pod running and available", d.Status.NumberUnavailable)
+		return
+	}
+
+	status = model.KubernetesResourceState_HEALTHY
 	return
 }
 
