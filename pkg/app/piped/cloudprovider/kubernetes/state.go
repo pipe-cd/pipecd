@@ -164,11 +164,29 @@ func determineReplicaSetHealth(obj *unstructured.Unstructured) (status model.Kub
 	}
 
 	status = model.KubernetesResourceState_OTHER
-	if r.Spec.Replicas == nil {
-		desc = "The number of desired replicas is unspecified"
+	if r.Generation > r.Status.ObservedGeneration {
+		desc = "Waiting for rollout to finish because observed replica set generation less then desired generation"
 		return
 	}
-	if *r.Spec.Replicas != r.Status.ReadyReplicas {
+
+	var cond *appsv1.ReplicaSetCondition
+	for i := range r.Status.Conditions {
+		c := r.Status.Conditions[i]
+		if c.Type == appsv1.ReplicaSetReplicaFailure {
+			cond = &c
+			break
+		}
+	}
+	if cond != nil && cond.Status == corev1.ConditionTrue {
+		desc = cond.Message
+		return
+	} else if r.Spec.Replicas == nil {
+		desc = "The number of desired replicas is unspecified"
+		return
+	} else if r.Status.AvailableReplicas < *r.Spec.Replicas {
+		desc = fmt.Sprintf("Waiting for rollout to finish because only %d/%d replicas are available", r.Status.AvailableReplicas, *r.Spec.Replicas)
+		return
+	} else if *r.Spec.Replicas != r.Status.ReadyReplicas {
 		desc = fmt.Sprintf("The number of ready replicas (%d) is different from the desired number (%d)", r.Status.ReadyReplicas, *r.Spec.Replicas)
 		return
 	}
