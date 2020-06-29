@@ -24,6 +24,7 @@ func MakePiped(input *model.Piped) *Piped {
 	}
 	return &Piped{
 		Id:             input.Id,
+		Name:           input.Name,
 		Desc:           input.Desc,
 		ProjectId:      input.ProjectId,
 		Version:        input.Version,

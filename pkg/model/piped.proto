@@ -27,13 +27,15 @@ message Piped {
 
     // The generated unique identifier.
     string id = 1 [(validate.rules).string.min_len = 1];
+    // The name of the piped.
+    string name = 2 [(validate.rules).string.min_len = 1];
     // The additional description about the piped.
-    string desc = 2;
+    string desc = 3;
     // The hash value of the secret key generated for the piped.
     // This is used to authenticate while communicating with the control plane.
-    string key_hash = 3 [(validate.rules).string.min_len = 1];
+    string key_hash = 4 [(validate.rules).string.min_len = 1];
     // The ID of the project this enviroment belongs to.
-    string project_id = 4 [(validate.rules).string.min_len = 1];
+    string project_id = 5 [(validate.rules).string.min_len = 1];
 
     // Currently running version.
     string version = 7;

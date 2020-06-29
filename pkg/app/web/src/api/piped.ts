@@ -15,9 +15,11 @@ export const getPipeds = ({
 };
 
 export const registerPiped = ({
+  name,
   desc,
 }: RegisterPipedRequest.AsObject): Promise<RegisterPipedResponse.AsObject> => {
   const req = new RegisterPipedRequest();
+  req.setName(name);
   req.setDesc(desc);
   return apiRequest(req, apiClient.registerPiped);
 };

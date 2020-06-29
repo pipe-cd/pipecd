@@ -32,7 +32,7 @@ export const fetchPipeds = createAsyncThunk<Piped[], boolean>(
 export const addPiped = createAsyncThunk<RegisteredPiped, string>(
   "pipeds/add",
   async (desc) => {
-    const res = await registerPiped({ desc });
+    const res = await registerPiped({ desc, name: '' });
     return res;
   }
 );
