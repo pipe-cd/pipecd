@@ -18,11 +18,11 @@ import (
 	"context"
 	"errors"
 
-	"github.com/pipe-cd/pipe/pkg/model"
 	"go.uber.org/zap"
 
 	"github.com/pipe-cd/pipe/pkg/cache"
 	"github.com/pipe-cd/pipe/pkg/datastore"
+	"github.com/pipe-cd/pipe/pkg/model"
 )
 
 type Store interface {
