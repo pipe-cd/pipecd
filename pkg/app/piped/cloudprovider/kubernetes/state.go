@@ -118,14 +118,36 @@ func determineStatefulSetHealth(obj *unstructured.Unstructured) (status model.Ku
 		desc = fmt.Sprintf("Failed while convert %T to %T: %v", obj, s, err)
 		return
 	}
-
 	status = model.KubernetesResourceState_OTHER
+	if s.Status.ObservedGeneration == 0 || s.Generation > s.Status.ObservedGeneration {
+		desc = "Waiting for statefulset spec update to be observed"
+		return
+	}
+
 	if s.Spec.Replicas == nil {
 		desc = "The number of desired replicas is unspecified"
 		return
 	}
 	if *s.Spec.Replicas != s.Status.ReadyReplicas {
 		desc = fmt.Sprintf("The number of ready replicas (%d) is different from the desired number (%d)", s.Status.ReadyReplicas, *s.Spec.Replicas)
+		return
+	}
+
+	// Check if the partitioned roll out is in progress.
+	if s.Spec.UpdateStrategy.Type == appsv1.RollingUpdateStatefulSetStrategyType && s.Spec.UpdateStrategy.RollingUpdate != nil {
+		if s.Spec.Replicas != nil && s.Spec.UpdateStrategy.RollingUpdate.Partition != nil {
+			if s.Status.UpdatedReplicas < (*s.Spec.Replicas - *s.Spec.UpdateStrategy.RollingUpdate.Partition) {
+				desc = fmt.Sprintf("Waiting for partitioned roll out to finish because %d out of %d new pods have been updated",
+					s.Status.UpdatedReplicas, (*s.Spec.Replicas - *s.Spec.UpdateStrategy.RollingUpdate.Partition))
+				return
+			}
+		}
+		status = model.KubernetesResourceState_HEALTHY
+		return
+	}
+
+	if s.Status.UpdateRevision != s.Status.CurrentRevision {
+		desc = fmt.Sprintf("Waiting for statefulset rolling update to complete %d pods at revision %s", s.Status.UpdatedReplicas, s.Status.UpdateRevision)
 		return
 	}
 
@@ -164,7 +186,7 @@ func determineReplicaSetHealth(obj *unstructured.Unstructured) (status model.Kub
 	}
 
 	status = model.KubernetesResourceState_OTHER
-	if r.Generation > r.Status.ObservedGeneration {
+	if r.Status.ObservedGeneration == 0 || r.Generation > r.Status.ObservedGeneration {
 		desc = "Waiting for rollout to finish because observed replica set generation less then desired generation"
 		return
 	}
@@ -222,7 +244,7 @@ func determineIngressHealth(obj *unstructured.Unstructured) (status model.Kubern
 
 	status = model.KubernetesResourceState_OTHER
 	if len(i.Status.LoadBalancer.Ingress) <= 0 {
-		desc = "Ingress points for the load-balancer are progressing"
+		desc = "Ingress points for the load-balancer are in progress"
 		return
 	}
 	status = model.KubernetesResourceState_HEALTHY
@@ -243,7 +265,8 @@ func determineServiceHealth(obj *unstructured.Unstructured) (status model.Kubern
 	}
 	if len(s.Status.LoadBalancer.Ingress) <= 0 {
 		status = model.KubernetesResourceState_OTHER
-		desc = "Ingress points for the load-balancer are progressing"
+		desc = "Ingress points for the load-balancer are in progress"
+		return
 	}
 	return
 }
