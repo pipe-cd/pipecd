@@ -118,6 +118,9 @@ func determineStatefulSetHealth(obj *unstructured.Unstructured) (status model.Ku
 		desc = fmt.Sprintf("Failed while convert %T to %T: %v", obj, s, err)
 		return
 	}
+
+	// Referred to:
+	//   https://github.com/kubernetes/kubernetes/blob/7942dca975b7be9386540df3c17e309c3cb2de60/staging/src/k8s.io/kubectl/pkg/polymorphichelpers/rollout_status.go#L130-L149
 	status = model.KubernetesResourceState_OTHER
 	if s.Status.ObservedGeneration == 0 || s.Generation > s.Status.ObservedGeneration {
 		desc = "Waiting for statefulset spec update to be observed"
@@ -163,7 +166,22 @@ func determineDaemonSetHealth(obj *unstructured.Unstructured) (status model.Kube
 		return
 	}
 
+	// Referred to:
+	//   https://github.com/kubernetes/kubernetes/blob/7942dca975b7be9386540df3c17e309c3cb2de60/staging/src/k8s.io/kubectl/pkg/polymorphichelpers/rollout_status.go#L107-L115
 	status = model.KubernetesResourceState_OTHER
+	if d.Status.ObservedGeneration == 0 || d.Generation > d.Status.ObservedGeneration {
+		desc = "Waiting for rollout to finish because observed daemon set generation less then desired generation"
+		return
+	}
+	if d.Status.UpdatedNumberScheduled < d.Status.DesiredNumberScheduled {
+		desc = fmt.Sprintf("Waiting for daemon set %q rollout to finish because %d out of %d new pods have been updated", d.Name, d.Status.UpdatedNumberScheduled, d.Status.DesiredNumberScheduled)
+		return
+	}
+	if d.Status.NumberAvailable < d.Status.DesiredNumberScheduled {
+		desc = fmt.Sprintf("Waiting for daemon set %q rollout to finish because %d of %d updated pods are available", d.Name, d.Status.NumberAvailable, d.Status.DesiredNumberScheduled)
+		return
+	}
+
 	if d.Status.NumberMisscheduled > 0 {
 		desc = fmt.Sprintf("%d nodes that are running the daemon pod, but are not supposed to run the daemon pod", d.Status.NumberMisscheduled)
 		return
