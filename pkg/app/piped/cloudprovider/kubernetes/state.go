@@ -125,11 +125,11 @@ func determineDaemonSetHealth(obj *unstructured.Unstructured) (status model.Kube
 
 	status = model.KubernetesResourceState_OTHER
 	if d.Status.NumberMisscheduled > 0 {
-		desc = fmt.Sprintf("%d daemon pods are running on a node which is not supposed to run on", d.Status.NumberMisscheduled)
+		desc = fmt.Sprintf("%d nodes that are running the daemon pod, but are not supposed to run the daemon pod", d.Status.NumberMisscheduled)
 		return
 	}
 	if d.Status.NumberUnavailable > 0 {
-		desc = fmt.Sprintf("%d nodes that should be running pods aren't running the daemon", d.Status.NumberUnavailable)
+		desc = fmt.Sprintf("%d nodes that should be running the daemon pod and have none of the daemon pod running and available", d.Status.NumberUnavailable)
 		return
 	}
 
