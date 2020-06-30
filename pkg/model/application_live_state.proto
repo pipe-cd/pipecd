@@ -35,10 +35,10 @@ message ApplicationLiveStateSnapshot {
     ApplicationKind kind = 5 [(validate.rules).enum.defined_only = true];
     Status health_status = 6;
 
-    KubernetesApplicationLiveState kubernetes = 7;
-    TerraformApplicationLiveState terraform = 8;
-    CloudRunApplicationLiveState cloudrun = 9;
-    LambdaApplicationLiveState lambda = 10;
+    KubernetesApplicationLiveState kubernetes = 10;
+    TerraformApplicationLiveState terraform = 11;
+    CloudRunApplicationLiveState cloudrun = 12;
+    LambdaApplicationLiveState lambda = 13;
 
     ApplicationLiveStateVersion version = 15 [(validate.rules).message.required = true];
 }

@@ -59,6 +59,7 @@ func (s KubernetesResourceState) HasDiff(a KubernetesResourceState) bool {
 	return false
 }
 
+// DetermineAppHealthStatus updates its own health status, which is determined based on its resources status.
 func (s *ApplicationLiveStateSnapshot) DetermineAppHealthStatus() {
 	switch s.Kind {
 	case ApplicationKind_KUBERNETES:
@@ -77,6 +78,5 @@ func (s *ApplicationLiveStateSnapshot) DetermineAppHealthStatus() {
 	default:
 		// TODO: Determine health state of other than k8s app
 		return
-
 	}
 }
