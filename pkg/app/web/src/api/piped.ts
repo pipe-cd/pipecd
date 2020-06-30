@@ -4,6 +4,8 @@ import {
   RegisterPipedResponse,
   ListPipedsRequest,
   ListPipedsResponse,
+  DisablePipedRequest,
+  DisablePipedResponse,
 } from "pipe/pkg/app/web/api_client/service_pb";
 
 export const getPipeds = ({
@@ -22,4 +24,12 @@ export const registerPiped = ({
   req.setName(name);
   req.setDesc(desc);
   return apiRequest(req, apiClient.registerPiped);
+};
+
+export const disablePiped = ({
+  pipedId,
+}: DisablePipedRequest.AsObject): Promise<DisablePipedResponse.AsObject> => {
+  const req = new DisablePipedRequest();
+  req.setPipedId(pipedId);
+  return apiRequest(req, apiClient.disablePiped);
 };
