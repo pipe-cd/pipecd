@@ -10,6 +10,7 @@ go_library(
         "//pkg/app/helloworld/api:go_default_library",
         "//pkg/cli:go_default_library",
         "//pkg/rpc:go_default_library",
+        "//pkg/version:go_default_library",
         "@com_github_spf13_cobra//:go_default_library",
         "@org_golang_x_sync//errgroup:go_default_library",
         "@org_uber_go_zap//:go_default_library",
