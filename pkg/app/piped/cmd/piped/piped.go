@@ -153,8 +153,14 @@ func (p *piped) run(ctx context.Context, t cli.Telemetry) error {
 
 	// Start running admin server.
 	{
-		admin := admin.NewAdmin(p.adminPort, p.gracePeriod, t.Logger)
+		var (
+			ver   = []byte(version.Get().Version)
+			admin = admin.NewAdmin(p.adminPort, p.gracePeriod, t.Logger)
+		)
 
+		admin.HandleFunc("/version", func(w http.ResponseWriter, r *http.Request) {
+			w.Write(ver)
+		})
 		admin.HandleFunc("/healthz", func(w http.ResponseWriter, r *http.Request) {
 			w.Write([]byte("ok"))
 		})

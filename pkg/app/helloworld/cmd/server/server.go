@@ -27,6 +27,7 @@ import (
 	"github.com/pipe-cd/pipe/pkg/app/helloworld/api"
 	"github.com/pipe-cd/pipe/pkg/cli"
 	"github.com/pipe-cd/pipe/pkg/rpc"
+	"github.com/pipe-cd/pipe/pkg/version"
 )
 
 type server struct {
@@ -72,8 +73,14 @@ func (s *server) run(ctx context.Context, t cli.Telemetry) error {
 
 	// Start running admin server.
 	{
-		admin := admin.NewAdmin(s.adminPort, s.gracePeriod, t.Logger)
+		var (
+			ver   = []byte(version.Get().Version)
+			admin = admin.NewAdmin(s.adminPort, s.gracePeriod, t.Logger)
+		)
 
+		admin.HandleFunc("/version", func(w http.ResponseWriter, r *http.Request) {
+			w.Write(ver)
+		})
 		admin.HandleFunc("/healthz", func(w http.ResponseWriter, r *http.Request) {
 			w.Write([]byte("ok"))
 		})
