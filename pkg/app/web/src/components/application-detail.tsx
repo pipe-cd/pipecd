@@ -9,7 +9,7 @@ import {
 } from "@material-ui/core";
 import dayjs from "dayjs";
 import React, { FC, memo, useState } from "react";
-import { useSelector } from "react-redux";
+import { useSelector, useDispatch } from "react-redux";
 import { Link as RouterLink } from "react-router-dom";
 import { PAGE_PATH_DEPLOYMENTS } from "../constants";
 import { APPLICATION_SYNC_STATUS_TEXT } from "../constants/application-sync-status-text";
@@ -18,6 +18,7 @@ import {
   Application,
   selectById as selectApplicationById,
   ApplicationSyncStatus,
+  syncApplication,
 } from "../modules/applications";
 import {
   ApplicationLiveState,
@@ -29,6 +30,7 @@ import {
   selectById as selectEnvById,
   Environment,
 } from "../modules/environments";
+import SyncIcon from "@material-ui/icons/Cached";
 
 const useStyles = makeStyles((theme) => ({
   nameAndEnv: {
@@ -77,17 +79,40 @@ const useStyles = makeStyles((theme) => ({
     marginTop: theme.spacing(1),
     wordBreak: "break-all",
   },
+  actionButtons: {
+    paddingLeft: theme.spacing(2),
+    paddingRight: theme.spacing(2),
+  },
+  buttonProgress: {
+    color: theme.palette.primary.main,
+    position: "absolute",
+    top: "50%",
+    left: "50%",
+    marginTop: -12,
+    marginLeft: -12,
+  },
 }));
 
 interface Props {
   applicationId: string;
 }
 
+const useIsSyncingApplication = (applicationId: string | null): boolean => {
+  return useSelector<AppState, boolean>((state) => {
+    if (!applicationId) {
+      return false;
+    }
+
+    return state.applications.syncing[applicationId];
+  });
+};
+
 export const ApplicationDetail: FC<Props> = memo(function ApplicationDetail({
   applicationId,
 }) {
   const classes = useStyles();
   const [showReason, setShowReason] = useState(false);
+  const dispatch = useDispatch();
   const app = useSelector<AppState, Application | undefined>((state) =>
     selectApplicationById(state.applications, applicationId)
   );
@@ -97,6 +122,13 @@ export const ApplicationDetail: FC<Props> = memo(function ApplicationDetail({
   const env = useSelector<AppState, Environment | undefined>((state) =>
     app ? selectEnvById(state.environments, app.envId) : undefined
   );
+  const isSyncing = useIsSyncingApplication(app ? app.id : null);
+
+  const handleSync = (): void => {
+    if (app) {
+      dispatch(syncApplication({ applicationId: app.id }));
+    }
+  };
 
   if (!liveState || !app || !env) {
     return (
@@ -181,6 +213,20 @@ export const ApplicationDetail: FC<Props> = memo(function ApplicationDetail({
             value={app.mostRecentlySuccessfulDeployment.description}
           />
         </Box>
+        <div className={classes.actionButtons}>
+          <Button
+            variant="outlined"
+            color="primary"
+            onClick={handleSync}
+            disabled={isSyncing}
+            startIcon={<SyncIcon />}
+          >
+            SYNC
+            {isSyncing && (
+              <CircularProgress size={24} className={classes.buttonProgress} />
+            )}
+          </Button>
+        </div>
       </Box>
     </Paper>
   );

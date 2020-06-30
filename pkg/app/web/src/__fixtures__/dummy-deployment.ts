@@ -5,6 +5,7 @@ export const dummyDeployment: Deployment = {
   id: "deployment-1",
   pipedId: "piped-1",
   projectId: "project-1",
+  applicationName: "app",
   runningCommitHash: "123456abcdefg",
   stagesList: [],
   status: DeploymentStatus.DEPLOYMENT_SUCCESS,

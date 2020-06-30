@@ -8,6 +8,7 @@ import { environmentsSlice } from "./environments";
 import { pipedsSlice } from "./pipeds";
 import { stageLogsSlice } from "./stage-logs";
 import { toastsSlice } from "./toasts";
+import { commandsSlice } from "./commands";
 
 export const reducers = combineReducers({
   deployments: deploymentsSlice.reducer,
@@ -17,6 +18,7 @@ export const reducers = combineReducers({
   activeStage: activeStageSlice.reducer,
   pipeds: pipedsSlice.reducer,
   environments: environmentsSlice.reducer,
+  commands: commandsSlice.reducer,
   toasts: toastsSlice.reducer,
 });
 

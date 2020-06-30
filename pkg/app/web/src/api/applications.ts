@@ -8,6 +8,8 @@ import {
   ListApplicationsResponse,
   AddApplicationRequest,
   AddApplicationResponse,
+  SyncApplicationRequest,
+  SyncApplicationResponse,
 } from "pipe/pkg/app/web/api_client/service_pb";
 import { ApplicationGitPath } from "pipe/pkg/app/web/model/common_pb";
 
@@ -62,4 +64,14 @@ export const addApplication = async ({
   }
   req.setGitPath(appGitPath);
   return apiRequest(req, apiClient.addApplication);
+};
+
+export const syncApplication = async ({
+  applicationId,
+}: SyncApplicationRequest.AsObject): Promise<
+  SyncApplicationResponse.AsObject
+> => {
+  const req = new SyncApplicationRequest();
+  req.setApplicationId(applicationId);
+  return apiRequest(req, apiClient.syncApplication);
 };

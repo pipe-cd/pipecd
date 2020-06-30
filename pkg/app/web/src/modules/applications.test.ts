@@ -11,6 +11,7 @@ describe("applicationsSlice reducer", () => {
         "adding": false,
         "entities": Object {},
         "ids": Array [],
+        "syncing": Object {},
       }
     `);
   });
