@@ -28,6 +28,7 @@ import {
   Piped,
   selectAll,
   fetchPipeds,
+  disablePiped,
 } from "../../modules/pipeds";
 import { AppState } from "../../modules";
 import { AppDispatch } from "../../store";
@@ -38,23 +39,14 @@ const useStyles = makeStyles((theme) => ({
   },
 }));
 
-const PIPED_OPTIONS = ["Disable", "Revoke Token"];
 const ITEM_HEIGHT = 48;
 
 export const SettingsPipedPage: FC = memo(function SettingsPipedPage() {
   const classes = useStyles();
   const [isOpenForm, setIsOpenForm] = useState(false);
+  const [actionTargetId, setActionTargetId] = useState<string | null>(null);
   const [anchorEl, setAnchorEl] = useState<HTMLButtonElement | null>(null);
   const isOpenMenu = Boolean(anchorEl);
-  const handleMenuClick = (
-    event: React.MouseEvent<HTMLButtonElement>
-  ): void => {
-    setAnchorEl(event.currentTarget);
-  };
-
-  const handleMenuClose = (): void => {
-    setAnchorEl(null);
-  };
   const dispatch = useDispatch<AppDispatch>();
   const pipeds = useSelector<AppState, Piped[]>((state) =>
     selectAll(state.pipeds)
@@ -62,6 +54,29 @@ export const SettingsPipedPage: FC = memo(function SettingsPipedPage() {
   const registeredPiped = useSelector<AppState, RegisteredPiped | null>(
     (state) => state.pipeds.registeredPiped
   );
+
+  const handleMenuOpen = (
+    event: React.MouseEvent<HTMLButtonElement>,
+    pipedId: string
+  ): void => {
+    setActionTargetId(pipedId);
+    setAnchorEl(event.currentTarget);
+  };
+
+  const handleMenuClose = (): void => {
+    setAnchorEl(null);
+    setActionTargetId(null);
+  };
+
+  const handleDisableClick = (): void => {
+    if (actionTargetId) {
+      dispatch(disablePiped({ pipedId: actionTargetId })).then(() => {
+        dispatch(fetchPipeds(true));
+      });
+    }
+    setAnchorEl(null);
+    setActionTargetId(null);
+  };
 
   const handleSubmit = (description: string): void => {
     dispatch(addPiped(description)).then(() => {
@@ -75,7 +90,7 @@ export const SettingsPipedPage: FC = memo(function SettingsPipedPage() {
 
   const handleClosePipedInfo = (): void => {
     dispatch(clearRegisteredPipedInfo());
-    dispatch(fetchPipeds(false));
+    dispatch(fetchPipeds(true));
   };
 
   return (
@@ -104,7 +119,7 @@ export const SettingsPipedPage: FC = memo(function SettingsPipedPage() {
               <IconButton
                 edge="end"
                 aria-label="open menu"
-                onClick={handleMenuClick}
+                onClick={(e) => handleMenuOpen(e, pipe.id)}
               >
                 <MoreVertIcon />
               </IconButton>
@@ -126,15 +141,7 @@ export const SettingsPipedPage: FC = memo(function SettingsPipedPage() {
           },
         }}
       >
-        {PIPED_OPTIONS.map((option) => (
-          <MenuItem
-            key={option}
-            selected={option === "Pyxis"}
-            onClick={handleClose}
-          >
-            {option}
-          </MenuItem>
-        ))}
+        <MenuItem onClick={handleDisableClick}>Disable Piped</MenuItem>
       </Menu>
 
       <Drawer anchor="right" open={isOpenForm} onClose={handleClose}>

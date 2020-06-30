@@ -4,7 +4,7 @@ import {
   createEntityAdapter,
 } from "@reduxjs/toolkit";
 import { Piped as PipedModel } from "pipe/pkg/app/web/api_client/service_pb";
-import { registerPiped, getPipeds } from "../api/piped";
+import * as pipedsApi from "../api/piped";
 
 export type Piped = Required<PipedModel.AsObject>;
 
@@ -24,7 +24,8 @@ export const {
 export const fetchPipeds = createAsyncThunk<Piped[], boolean>(
   "pipeds/fetchList",
   async (withStatus: boolean) => {
-    const { pipedsList } = await getPipeds({ withStatus });
+    const { pipedsList } = await pipedsApi.getPipeds({ withStatus });
+
     return pipedsList;
   }
 );
@@ -32,8 +33,15 @@ export const fetchPipeds = createAsyncThunk<Piped[], boolean>(
 export const addPiped = createAsyncThunk<RegisteredPiped, string>(
   "pipeds/add",
   async (desc) => {
-    const res = await registerPiped({ desc, name: '' });
+    const res = await pipedsApi.registerPiped({ desc, name: "" });
     return res;
+  }
+);
+
+export const disablePiped = createAsyncThunk<void, { pipedId: string }>(
+  "pipeds/disable",
+  async ({ pipedId }) => {
+    await pipedsApi.disablePiped({ pipedId });
   }
 );
 
@@ -55,6 +63,7 @@ export const pipedsSlice = createSlice({
         state.registeredPiped = action.payload;
       })
       .addCase(fetchPipeds.fulfilled, (state, action) => {
+        pipedsAdapter.removeAll(state);
         pipedsAdapter.addMany(state, action.payload);
       });
   },
