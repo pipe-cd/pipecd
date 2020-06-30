@@ -6,6 +6,7 @@ import {
 import { Application as ApplicationModel } from "pipe/pkg/app/web/model/application_pb";
 import * as applicationsApi from "../api/applications";
 import { ApplicationKind as ApplicationKindModel } from "pipe/pkg/app/web/model/common_pb";
+import { fetchCommand, CommandStatus, CommandModel } from "./commands";
 export { ApplicationSyncStatus } from "pipe/pkg/app/web/model/application_pb";
 
 export type Application = Required<ApplicationModel.AsObject>;
@@ -34,6 +35,17 @@ export const fetchApplication = createAsyncThunk<
     applicationId,
   });
   return application as Application;
+});
+
+export const syncApplication = createAsyncThunk<
+  void,
+  { applicationId: string }
+>("applications/sync", async ({ applicationId }, thunkAPI) => {
+  const { commandId } = await applicationsApi.syncApplication({
+    applicationId,
+  });
+
+  await thunkAPI.dispatch(fetchCommand(commandId));
 });
 
 export const addApplication = createAsyncThunk<
@@ -65,8 +77,12 @@ export const addApplication = createAsyncThunk<
 
 export const applicationsSlice = createSlice({
   name: "applications",
-  initialState: applicationsAdapter.getInitialState({
+  initialState: applicationsAdapter.getInitialState<{
+    adding: boolean;
+    syncing: Record<string, boolean>;
+  }>({
     adding: false,
+    syncing: {},
   }),
   reducers: {},
   extraReducers: (builder) => {
@@ -89,6 +105,18 @@ export const applicationsSlice = createSlice({
         // TODO: Show alert when failed to add an application
         console.error(action);
         state.adding = false;
+      })
+      .addCase(syncApplication.pending, (state, action) => {
+        state.syncing[action.meta.arg.applicationId] = true;
+      })
+      .addCase(fetchCommand.fulfilled, (state, action) => {
+        if (
+          action.payload.type === CommandModel.Type.SYNC_APPLICATION &&
+          action.payload.status !== CommandStatus.COMMAND_NOT_HANDLED_YET
+        ) {
+          // If command type is sync application and that process is finished, change syncing status to false
+          state.syncing[action.payload.applicationId] = false;
+        }
       });
   },
 });

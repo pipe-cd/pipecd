@@ -1,21 +1,48 @@
 import React, { FC, memo, useEffect } from "react";
+import { useDispatch, useSelector } from "react-redux";
 import { Route, Switch } from "react-router-dom";
 import { Header } from "../components/header";
+import { Toasts } from "../components/toasts";
 import {
-  PAGE_PATH_DEPLOYMENTS,
   PAGE_PATH_APPLICATIONS,
-  PAGE_PATH_TOP,
+  PAGE_PATH_DEPLOYMENTS,
   PAGE_PATH_SETTINGS,
+  PAGE_PATH_TOP,
 } from "../constants";
-import { ApplicationIndexPage } from "./applications/index";
-import { ApplicationDetailPage } from "./applications/detail";
-import { DeploymentIndexPage } from "./deployments/index";
-import { DeploymentDetailPage } from "./deployments/detail";
-import { SettingsIndexPage } from "./settings";
-import { useDispatch } from "react-redux";
+import { AppState } from "../modules";
+import {
+  fetchCommand,
+  selectIds as selectCommandIds,
+} from "../modules/commands";
 import { fetchEnvironments } from "../modules/environments";
 import { fetchPipeds } from "../modules/pipeds";
-import { Toasts } from "../components/toasts";
+import { useInterval } from "../utils/use-interval";
+import { ApplicationDetailPage } from "./applications/detail";
+import { ApplicationIndexPage } from "./applications/index";
+import { DeploymentDetailPage } from "./deployments/detail";
+import { DeploymentIndexPage } from "./deployments/index";
+import { SettingsIndexPage } from "./settings";
+import { EntityId } from "@reduxjs/toolkit";
+
+// Fetch commands detail periodically
+const FETCH_COMMANDS_INTERVAL = 3000;
+const useCommandsStatusChecking = (): void => {
+  const dispatch = useDispatch();
+  const commandIds = useSelector<AppState, EntityId[]>((state) =>
+    selectCommandIds(state.commands)
+  );
+
+  const fetchCommands = (): void => {
+    commandIds.map((id) => {
+      dispatch(fetchCommand(`${id}`));
+    });
+  };
+
+  useInterval(
+    fetchCommands,
+    commandIds.length > 0 ? FETCH_COMMANDS_INTERVAL : null
+  );
+};
 
 export const Pages: FC = memo(function Pages() {
   const dispatch = useDispatch();
@@ -23,6 +50,7 @@ export const Pages: FC = memo(function Pages() {
     dispatch(fetchEnvironments());
     dispatch(fetchPipeds(false));
   }, [dispatch]);
+  useCommandsStatusChecking();
 
   return (
     <>
