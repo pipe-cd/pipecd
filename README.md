@@ -14,6 +14,8 @@ This project is under **PROTOTYPE** development phase.
 
 This project aims to explore and develop a unified delivery infrastructure for CA projects.
 
+![](https://github.com/pipe-cd/pipe/blob/master/docs/architecture-overview.png)
+
 **Powerful**
 - Unifed Deployment System: kubernetes (plain-yaml, helm, kustomize), terraform, lambda, cloudrun...
 - Progressive Deployment Strategies: canary, bluegreen, rolling update
