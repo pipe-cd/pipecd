@@ -23,16 +23,22 @@ import "pkg/model/common.proto";
 // ApplicationLiveStateSnapshot represents the full live state information of an application
 // at a specific timestamp.
 message ApplicationLiveStateSnapshot {
+    enum Status {
+        UNKNOWN = 0;
+        HEALTHY = 1;
+        OTHER = 2;
+    }
     string application_id = 1 [(validate.rules).string.min_len = 1];
     string env_id = 2 [(validate.rules).string.min_len = 1];
     string piped_id = 3 [(validate.rules).string.min_len = 1];
     string project_id = 4 [(validate.rules).string.min_len = 1];
     ApplicationKind kind = 5 [(validate.rules).enum.defined_only = true];
+    Status health_status = 6;
 
-    KubernetesApplicationLiveState kubernetes = 6;
-    TerraformApplicationLiveState terraform = 7;
-    CloudRunApplicationLiveState cloudrun = 8;
-    LambdaApplicationLiveState lambda = 9;
+    KubernetesApplicationLiveState kubernetes = 7;
+    TerraformApplicationLiveState terraform = 8;
+    CloudRunApplicationLiveState cloudrun = 9;
+    LambdaApplicationLiveState lambda = 10;
 
     ApplicationLiveStateVersion version = 15 [(validate.rules).message.required = true];
 }

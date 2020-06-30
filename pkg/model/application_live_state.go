@@ -58,3 +58,25 @@ func (s KubernetesResourceState) HasDiff(a KubernetesResourceState) bool {
 
 	return false
 }
+
+func (s *ApplicationLiveStateSnapshot) DetermineAppHealthStatus() {
+	switch s.Kind {
+	case ApplicationKind_KUBERNETES:
+		k := s.Kubernetes
+		if k != nil {
+			return
+		}
+		status := ApplicationLiveStateSnapshot_HEALTHY
+		for _, r := range k.Resources {
+			if r.HealthStatus != KubernetesResourceState_HEALTHY {
+				status = ApplicationLiveStateSnapshot_UNKNOWN
+				break
+			}
+		}
+		s.HealthStatus = status
+	default:
+		// TODO: Determine health state of other than k8s app
+		return
+
+	}
+}
