@@ -108,22 +108,21 @@ func (r *kubernetesReporter) flushSnapshots(ctx context.Context) error {
 			continue
 		}
 
-		var (
-			snapshot = &model.ApplicationLiveStateSnapshot{
-				ApplicationId: app.Id,
-				EnvId:         app.EnvId,
-				PipedId:       app.PipedId,
-				ProjectId:     app.ProjectId,
-				Kind:          app.Kind,
-				Kubernetes: &model.KubernetesApplicationLiveState{
-					Resources: state.Resources,
-				},
-				Version: &state.Version,
-			}
-			req = &pipedservice.ReportApplicationLiveStateRequest{
-				Snapshot: snapshot,
-			}
-		)
+		snapshot := &model.ApplicationLiveStateSnapshot{
+			ApplicationId: app.Id,
+			EnvId:         app.EnvId,
+			PipedId:       app.PipedId,
+			ProjectId:     app.ProjectId,
+			Kind:          app.Kind,
+			Kubernetes: &model.KubernetesApplicationLiveState{
+				Resources: state.Resources,
+			},
+			Version: &state.Version,
+		}
+		snapshot.DetermineAppHealthStatus()
+		req := &pipedservice.ReportApplicationLiveStateRequest{
+			Snapshot: snapshot,
+		}
 
 		if _, err := r.apiClient.ReportApplicationLiveState(ctx, req); err != nil {
 			r.logger.Error("failed to report application live state",

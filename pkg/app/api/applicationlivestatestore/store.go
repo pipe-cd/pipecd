@@ -99,6 +99,7 @@ func (s *store) PatchKubernetesApplicationLiveState(ctx context.Context, events 
 				)
 				continue
 			}
+			ss.DetermineAppHealthStatus()
 			snapshot = ss
 			snapshots[ev.ApplicationId] = ss
 		}
