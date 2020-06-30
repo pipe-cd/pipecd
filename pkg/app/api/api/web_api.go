@@ -271,7 +271,33 @@ func (a *WebAPI) AddApplication(ctx context.Context, req *webservice.AddApplicat
 }
 
 func (a *WebAPI) DisableApplication(ctx context.Context, req *webservice.DisableApplicationRequest) (*webservice.DisableApplicationResponse, error) {
-	return nil, status.Error(codes.Unimplemented, "")
+	claims, err := rpcauth.ExtractClaims(ctx)
+	if err != nil {
+		return nil, err
+	}
+	app, err := a.getApplication(ctx, req.ApplicationId)
+	if err != nil {
+		return nil, err
+	}
+	if app.ProjectId != claims.Role.ProjectId {
+		return nil, status.Error(codes.PermissionDenied, "The current project does not have requested application")
+	}
+
+	if err := a.applicationStore.DisableApplication(ctx, req.ApplicationId); err != nil {
+		switch err {
+		case datastore.ErrNotFound:
+			return nil, status.Error(codes.InvalidArgument, "application is not found")
+		case datastore.ErrInvalidArgument:
+			return nil, status.Error(codes.InvalidArgument, "invalid value for update")
+		default:
+			a.logger.Error("failed to update the application",
+				zap.String("application-id", req.ApplicationId),
+				zap.Error(err),
+			)
+			return nil, status.Error(codes.Internal, "failed to update the piped ")
+		}
+	}
+	return &webservice.DisableApplicationResponse{}, nil
 }
 
 func (a *WebAPI) ListApplications(ctx context.Context, req *webservice.ListApplicationsRequest) (*webservice.ListApplicationsResponse, error) {
@@ -285,6 +311,11 @@ func (a *WebAPI) ListApplications(ctx context.Context, req *webservice.ListAppli
 				Field:    "ProjectId",
 				Operator: "==",
 				Value:    claims.Role.ProjectId,
+			},
+			{
+				Field:    "Disabled",
+				Operator: "==",
+				Value:    false,
 			},
 		},
 	}

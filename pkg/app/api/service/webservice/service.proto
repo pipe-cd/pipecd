@@ -169,6 +169,7 @@ message AddApplicationResponse {
 }
 
 message DisableApplicationRequest {
+    string application_id = 1 [(validate.rules).string.min_len = 1];
 }
 
 message DisableApplicationResponse {

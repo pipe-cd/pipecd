@@ -165,7 +165,7 @@ func (a *FakeWebAPI) AddApplication(ctx context.Context, req *webservice.AddAppl
 }
 
 func (a *FakeWebAPI) DisableApplication(ctx context.Context, req *webservice.DisableApplicationRequest) (*webservice.DisableApplicationResponse, error) {
-	return nil, status.Error(codes.Unimplemented, "")
+	return &webservice.DisableApplicationResponse{}, nil
 }
 
 func (a *FakeWebAPI) ListApplications(ctx context.Context, req *webservice.ListApplicationsRequest) (*webservice.ListApplicationsResponse, error) {

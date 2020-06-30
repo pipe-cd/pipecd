@@ -78,6 +78,8 @@ func (s *samplecli) run(ctx context.Context, t cli.Telemetry) error {
 		return s.getPiped(ctx, cli, data, t.Logger)
 	case "AddApplication":
 		return s.addApplication(ctx, cli, data, t.Logger)
+	case "DisableApplication":
+		return s.disableApplication(ctx, cli, data, t.Logger)
 	case "ListApplications":
 		return s.listApplications(ctx, cli, data, t.Logger)
 	case "GetApplication":
@@ -217,6 +219,19 @@ func (s *samplecli) addApplication(ctx context.Context, cli webservice.Client, p
 		return err
 	}
 	logger.Info("successfully run AddApplication")
+	return nil
+}
+
+func (s *samplecli) disableApplication(ctx context.Context, cli webservice.Client, payload []byte, logger *zap.Logger) error {
+	req := webservice.DisableApplicationRequest{}
+	if err := json.Unmarshal(payload, &req); err != nil {
+		return err
+	}
+	if _, err := cli.DisableApplication(ctx, &req); err != nil {
+		logger.Error("failed to run DisableApplication", zap.Error(err))
+		return err
+	}
+	logger.Info("successfully run DisableApplication")
 	return nil
 }
 
