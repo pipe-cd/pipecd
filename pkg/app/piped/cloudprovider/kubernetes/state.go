@@ -103,7 +103,7 @@ func determineDeploymentHealth(obj *unstructured.Unstructured) (status model.Kub
 	// Referred to:
 	//   https://github.com/kubernetes/kubernetes/blob/7942dca975b7be9386540df3c17e309c3cb2de60/staging/src/k8s.io/kubectl/pkg/polymorphichelpers/rollout_status.go#L75
 	if d.Generation > d.Status.ObservedGeneration {
-		desc = "Waiting for rollout to finish because observed deployment generation less then desired generation"
+		desc = "Waiting for rollout to finish because observed deployment generation less than desired generation"
 		return
 	}
 	// TimedOutReason is added in a deployment when its newest replica set fails to show any progress
@@ -201,7 +201,7 @@ func determineDaemonSetHealth(obj *unstructured.Unstructured) (status model.Kube
 	//   https://github.com/kubernetes/kubernetes/blob/7942dca975b7be9386540df3c17e309c3cb2de60/staging/src/k8s.io/kubectl/pkg/polymorphichelpers/rollout_status.go#L107-L115
 	status = model.KubernetesResourceState_OTHER
 	if d.Status.ObservedGeneration == 0 || d.Generation > d.Status.ObservedGeneration {
-		desc = "Waiting for rollout to finish because observed daemon set generation less then desired generation"
+		desc = "Waiting for rollout to finish because observed daemon set generation less than desired generation"
 		return
 	}
 	if d.Status.UpdatedNumberScheduled < d.Status.DesiredNumberScheduled {
@@ -236,7 +236,7 @@ func determineReplicaSetHealth(obj *unstructured.Unstructured) (status model.Kub
 
 	status = model.KubernetesResourceState_OTHER
 	if r.Status.ObservedGeneration == 0 || r.Generation > r.Status.ObservedGeneration {
-		desc = "Waiting for rollout to finish because observed replica set generation less then desired generation"
+		desc = "Waiting for rollout to finish because observed replica set generation less than desired generation"
 		return
 	}
 
