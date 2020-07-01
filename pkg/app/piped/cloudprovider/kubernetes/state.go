@@ -17,6 +17,7 @@ package kubernetes
 import (
 	"fmt"
 	"sort"
+	"strings"
 	"time"
 
 	appsv1 "k8s.io/api/apps/v1"
@@ -98,8 +99,38 @@ func determineDeploymentHealth(obj *unstructured.Unstructured) (status model.Kub
 		desc = "Deployment is paused"
 		return
 	}
+
+	// Referred to:
+	//   https://github.com/kubernetes/kubernetes/blob/7942dca975b7be9386540df3c17e309c3cb2de60/staging/src/k8s.io/kubectl/pkg/polymorphichelpers/rollout_status.go#L75
+	if d.Generation > d.Status.ObservedGeneration {
+		desc = "Waiting for rollout to finish because observed deployment generation less then desired generation"
+		return
+	}
+	// TimedOutReason is added in a deployment when its newest replica set fails to show any progress
+	// within the given deadline (progressDeadlineSeconds).
+	const TimedOutReason = "ProgressDeadlineExceeded"
+	var cond *appsv1.DeploymentCondition
+	for i := range d.Status.Conditions {
+		c := d.Status.Conditions[i]
+		if c.Type == appsv1.DeploymentProgressing {
+			cond = &c
+			break
+		}
+	}
+	if cond != nil && cond.Reason == TimedOutReason {
+		desc = fmt.Sprintf("Deployment %q exceeded its progress deadline", obj.GetName())
+	}
+
+	if d.Spec.Replicas == nil {
+		desc = "The number of desired replicas is unspecified"
+		return
+	}
+	if d.Status.UpdatedReplicas < *d.Spec.Replicas {
+		desc = fmt.Sprintf("Waiting for remaining %d/%d replicas to be updated", d.Status.UpdatedReplicas, *d.Spec.Replicas)
+		return
+	}
 	if d.Status.UpdatedReplicas < d.Status.Replicas {
-		desc = fmt.Sprintf("Waiting for remaining %d/%d replicas to be updated", d.Status.Replicas-d.Status.UpdatedReplicas, d.Status.Replicas)
+		desc = fmt.Sprintf("%d old replicas are pending termination", d.Status.Replicas-d.Status.UpdatedReplicas)
 		return
 	}
 	if d.Status.AvailableReplicas < d.Status.Replicas {
@@ -243,12 +274,35 @@ func determinePodHealth(obj *unstructured.Unstructured) (status model.Kubernetes
 		return
 	}
 
-	if p.Status.Phase == corev1.PodRunning {
-		status = model.KubernetesResourceState_HEALTHY
-	} else {
-		status = model.KubernetesResourceState_OTHER
+	// Determine based on its container statuses.
+	if p.Spec.RestartPolicy == corev1.RestartPolicyAlways {
+		var messages []string
+		for _, s := range p.Status.ContainerStatuses {
+			waiting := s.State.Waiting
+			if waiting == nil {
+				continue
+			}
+			if strings.HasPrefix(waiting.Reason, "Err") || strings.HasSuffix(waiting.Reason, "Error") || strings.HasSuffix(waiting.Reason, "BackOff") {
+				status = model.KubernetesResourceState_OTHER
+				messages = append(messages, waiting.Message)
+			}
+		}
+
+		if status == model.KubernetesResourceState_OTHER {
+			desc = strings.Join(messages, ", ")
+			return
+		}
 	}
-	desc = p.Status.Message
+
+	// Determine based on its phase.
+	switch p.Status.Phase {
+	case corev1.PodRunning, corev1.PodSucceeded:
+		status = model.KubernetesResourceState_HEALTHY
+		desc = p.Status.Message
+	default:
+		status = model.KubernetesResourceState_OTHER
+		desc = p.Status.Message
+	}
 	return
 }
 
