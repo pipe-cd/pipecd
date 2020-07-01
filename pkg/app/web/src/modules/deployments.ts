@@ -6,12 +6,27 @@ import {
 import {
   Deployment as DeploymentModel,
   PipelineStage,
+  DeploymentStatus,
 } from "pipe/pkg/app/web/model/deployment_pb";
-import { getDeployment, getDeployments } from "../api/deployments";
-export { DeploymentStatus } from "pipe/pkg/app/web/model/deployment_pb";
+import * as deploymentsApi from "../api/deployments";
+import { fetchCommand, CommandModel, CommandStatus } from "./commands";
 
 export type Deployment = Required<DeploymentModel.AsObject>;
 export type Stage = Required<PipelineStage.AsObject>;
+
+export const isDeploymentRunning = (status: DeploymentStatus): boolean => {
+  switch (status) {
+    case DeploymentStatus.DEPLOYMENT_PENDING:
+    case DeploymentStatus.DEPLOYMENT_PLANNED:
+    case DeploymentStatus.DEPLOYMENT_ROLLING_BACK:
+    case DeploymentStatus.DEPLOYMENT_RUNNING:
+      return true;
+    case DeploymentStatus.DEPLOYMENT_CANCELLED:
+    case DeploymentStatus.DEPLOYMENT_FAILURE:
+    case DeploymentStatus.DEPLOYMENT_SUCCESS:
+      return false;
+  }
+};
 
 export const deploymentsAdapter = createEntityAdapter<Deployment>({});
 
@@ -20,7 +35,7 @@ export const { selectById, selectAll } = deploymentsAdapter.getSelectors();
 export const fetchDeploymentById = createAsyncThunk<Deployment, string>(
   "deployments/fetchById",
   async (deploymentId) => {
-    const { deployment } = await getDeployment({ deploymentId });
+    const { deployment } = await deploymentsApi.getDeployment({ deploymentId });
     return deployment as Deployment;
   }
 );
@@ -28,15 +43,34 @@ export const fetchDeploymentById = createAsyncThunk<Deployment, string>(
 export const fetchDeployments = createAsyncThunk<Deployment[]>(
   "deployments/fetchList",
   async () => {
-    const { deploymentsList } = await getDeployments({});
+    const { deploymentsList } = await deploymentsApi.getDeployments();
     return (deploymentsList as Deployment[]) || [];
   }
 );
 
+export const cancelDeployment = createAsyncThunk<
+  void,
+  {
+    deploymentId: string;
+    withoutRollback: boolean;
+  }
+>("deployments/cancel", async ({ deploymentId, withoutRollback }, thunkAPI) => {
+  const { commandId } = await deploymentsApi.cancelDeployment({
+    deploymentId,
+    withoutRollback,
+  });
+
+  await thunkAPI.dispatch(fetchCommand(commandId));
+});
+
 export const deploymentsSlice = createSlice({
   name: "deployments",
-  initialState: deploymentsAdapter.getInitialState({
-    loading: {} as Record<string, boolean>,
+  initialState: deploymentsAdapter.getInitialState<{
+    loading: Record<string, boolean>;
+    canceling: Record<string, boolean>;
+  }>({
+    loading: {},
+    canceling: {},
   }),
   reducers: {},
   extraReducers: (builder) => {
@@ -57,6 +91,19 @@ export const deploymentsSlice = createSlice({
         if (action.payload.length > 0) {
           deploymentsAdapter.upsertMany(state, action.payload);
         }
+      })
+      .addCase(cancelDeployment.pending, (state, action) => {
+        state.canceling[action.meta.arg.deploymentId] = true;
+      })
+      .addCase(fetchCommand.fulfilled, (state, action) => {
+        if (
+          action.payload.type === CommandModel.Type.CANCEL_DEPLOYMENT &&
+          action.payload.status !== CommandStatus.COMMAND_NOT_HANDLED_YET
+        ) {
+          state.canceling[action.payload.deploymentId] = false;
+        }
       });
   },
 });
+
+export { DeploymentStatus } from "pipe/pkg/app/web/model/deployment_pb";

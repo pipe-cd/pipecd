@@ -4,6 +4,8 @@ import {
   GetDeploymentResponse,
   ListDeploymentsRequest,
   ListDeploymentsResponse,
+  CancelDeploymentRequest,
+  CancelDeploymentResponse,
 } from "pipe/pkg/app/web/api_client/service_pb";
 
 export const getDeployment = ({
@@ -14,9 +16,19 @@ export const getDeployment = ({
   return apiRequest(req, apiClient.getDeployment);
 };
 
-export const getDeployments = ({}: ListDeploymentsRequest.AsObject): Promise<
-  ListDeploymentsResponse.AsObject
-> => {
+export const getDeployments = (): Promise<ListDeploymentsResponse.AsObject> => {
   const req = new ListDeploymentsRequest();
   return apiRequest(req, apiClient.listDeployments);
+};
+
+export const cancelDeployment = ({
+  deploymentId,
+  withoutRollback,
+}: CancelDeploymentRequest.AsObject): Promise<
+  CancelDeploymentResponse.AsObject
+> => {
+  const req = new CancelDeploymentRequest();
+  req.setDeploymentId(deploymentId);
+  req.setWithoutRollback(withoutRollback);
+  return apiRequest(req, apiClient.cancelDeployment);
 };

@@ -8,6 +8,7 @@ describe("deploymentsSlice reducer", () => {
       })
     ).toMatchInlineSnapshot(`
       Object {
+        "canceling": Object {},
         "entities": Object {},
         "ids": Array [],
         "loading": Object {},
