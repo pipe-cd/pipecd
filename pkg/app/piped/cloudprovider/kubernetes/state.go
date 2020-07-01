@@ -108,7 +108,7 @@ func determineDeploymentHealth(obj *unstructured.Unstructured) (status model.Kub
 	}
 	// TimedOutReason is added in a deployment when its newest replica set fails to show any progress
 	// within the given deadline (progressDeadlineSeconds).
-	const TimedOutReason = "ProgressDeadlineExceeded"
+	const timedOutReason = "ProgressDeadlineExceeded"
 	var cond *appsv1.DeploymentCondition
 	for i := range d.Status.Conditions {
 		c := d.Status.Conditions[i]
@@ -117,7 +117,7 @@ func determineDeploymentHealth(obj *unstructured.Unstructured) (status model.Kub
 			break
 		}
 	}
-	if cond != nil && cond.Reason == TimedOutReason {
+	if cond != nil && cond.Reason == timedOutReason {
 		desc = fmt.Sprintf("Deployment %q exceeded its progress deadline", obj.GetName())
 	}
 
