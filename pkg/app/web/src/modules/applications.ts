@@ -88,11 +88,11 @@ export const applicationsSlice = createSlice({
   extraReducers: (builder) => {
     builder
       .addCase(fetchApplications.fulfilled, (state, action) => {
-        applicationsAdapter.addMany(state, action.payload);
+        applicationsAdapter.upsertMany(state, action.payload);
       })
       .addCase(fetchApplication.fulfilled, (state, action) => {
         if (action.payload) {
-          applicationsAdapter.addOne(state, action.payload);
+          applicationsAdapter.upsertOne(state, action.payload);
         }
       })
       .addCase(addApplication.pending, (state) => {

@@ -49,7 +49,7 @@ export const applicationLiveStateSlice = createSlice({
   extraReducers: (builder) => {
     builder.addCase(fetchApplicationStateById.fulfilled, (state, action) => {
       if (action.payload) {
-        applicationLiveStateAdapter.addOne(state, action.payload);
+        applicationLiveStateAdapter.upsertOne(state, action.payload);
       }
     });
   },

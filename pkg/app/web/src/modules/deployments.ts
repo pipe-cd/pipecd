@@ -47,18 +47,16 @@ export const deploymentsSlice = createSlice({
       .addCase(fetchDeploymentById.fulfilled, (state, action) => {
         state.loading[action.meta.arg] = false;
         if (action.payload) {
-          deploymentsAdapter.addOne(state, action.payload);
+          deploymentsAdapter.upsertOne(state, action.payload);
         }
       })
       .addCase(fetchDeploymentById.rejected, (state, action) => {
         state.loading[action.meta.arg] = false;
       })
-      .addCase(fetchDeployments.pending, (state, action) => {})
       .addCase(fetchDeployments.fulfilled, (state, action) => {
         if (action.payload.length > 0) {
-          deploymentsAdapter.addMany(state, action.payload);
+          deploymentsAdapter.upsertMany(state, action.payload);
         }
-      })
-      .addCase(fetchDeployments.rejected, (state, action) => {});
+      });
   },
 });
