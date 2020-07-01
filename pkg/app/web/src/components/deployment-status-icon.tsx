@@ -1,13 +1,12 @@
-import React, { FC } from "react";
 import { makeStyles } from "@material-ui/core";
 import {
+  Cached,
   CheckCircle,
   Error,
-  Cached,
-  Stop,
   IndeterminateCheckBox,
 } from "@material-ui/icons";
 import { DeploymentStatus } from "pipe/pkg/app/web/model/deployment_pb";
+import React, { FC } from "react";
 
 const useStyles = makeStyles((theme) => ({
   [DeploymentStatus.DEPLOYMENT_SUCCESS]: {
@@ -27,7 +26,7 @@ const useStyles = makeStyles((theme) => ({
     color: theme.palette.error.main,
   },
   [DeploymentStatus.DEPLOYMENT_PENDING]: {
-    color: theme.palette.warning.main,
+    color: theme.palette.grey[500],
   },
   [DeploymentStatus.DEPLOYMENT_PLANNED]: {
     color: theme.palette.grey[500],
@@ -55,13 +54,12 @@ export const StatusIcon: FC<Props> = ({ status }) => {
     case DeploymentStatus.DEPLOYMENT_FAILURE:
     case DeploymentStatus.DEPLOYMENT_CANCELLED:
       return <Error className={classes[status]} />;
-    case DeploymentStatus.DEPLOYMENT_PLANNED:
-      return <IndeterminateCheckBox className={classes[status]} />;
     case DeploymentStatus.DEPLOYMENT_RUNNING:
       return <Cached className={classes[status]} />;
     case DeploymentStatus.DEPLOYMENT_ROLLING_BACK:
       return <Cached className={classes[status]} />;
     case DeploymentStatus.DEPLOYMENT_PENDING:
-      return <Stop className={classes[status]} />;
+    case DeploymentStatus.DEPLOYMENT_PLANNED:
+      return <IndeterminateCheckBox className={classes[status]} />;
   }
 };

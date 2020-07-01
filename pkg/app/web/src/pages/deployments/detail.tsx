@@ -8,8 +8,8 @@ import { Pipeline } from "../../components/pipeline";
 import { AppState } from "../../modules";
 import {
   Deployment,
-  DeploymentStatus,
   fetchDeploymentById,
+  isDeploymentRunning,
   selectById as selectDeploymentById,
 } from "../../modules/deployments";
 import { useInterval } from "../../utils/use-interval";
@@ -37,19 +37,6 @@ const useStyles = makeStyles({
   },
 });
 
-function isRunningDeployment(status: DeploymentStatus | undefined): boolean {
-  if (status === undefined) {
-    return false;
-  }
-
-  return [
-    DeploymentStatus.DEPLOYMENT_PENDING,
-    DeploymentStatus.DEPLOYMENT_PLANNED,
-    DeploymentStatus.DEPLOYMENT_ROLLING_BACK,
-    DeploymentStatus.DEPLOYMENT_RUNNING,
-  ].includes(status);
-}
-
 export const DeploymentDetailPage: FC = memo(function DeploymentDetailPage() {
   const classes = useStyles();
   const dispatch = useDispatch();
@@ -67,7 +54,9 @@ export const DeploymentDetailPage: FC = memo(function DeploymentDetailPage() {
   useEffect(fetchData, [dispatch, deploymentId]);
   useInterval(
     fetchData,
-    deploymentId && isRunningDeployment(deployment?.status)
+    deploymentId &&
+      deployment?.status !== undefined &&
+      isDeploymentRunning(deployment.status)
       ? FETCH_INTERVAL
       : null
   );
