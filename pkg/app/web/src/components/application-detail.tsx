@@ -130,7 +130,7 @@ export const ApplicationDetail: FC<Props> = memo(function ApplicationDetail({
     }
   };
 
-  if (!liveState || !app || !env) {
+  if (!app || !env) {
     return (
       <div className={classes.loading}>
         <CircularProgress />
@@ -176,9 +176,11 @@ export const ApplicationDetail: FC<Props> = memo(function ApplicationDetail({
             </div>
           </div>
 
-          <Typography className={classes.env} variant="body1">
-            {dayjs(liveState.version.timestamp * 1000).fromNow()}
-          </Typography>
+          {liveState && (
+            <Typography className={classes.env} variant="body1">
+              {dayjs(liveState.version.timestamp * 1000).fromNow()}
+            </Typography>
+          )}
 
           {showReason && (
             <Paper

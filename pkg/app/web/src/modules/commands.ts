@@ -36,7 +36,7 @@ export const commandsSlice = createSlice({
       if (action.payload.status !== CommandStatus.COMMAND_NOT_HANDLED_YET) {
         commandsAdapter.removeOne(state, action.payload.id);
       } else {
-        commandsAdapter.addOne(state, action.payload);
+        commandsAdapter.upsertOne(state, action.payload);
       }
     });
   },
