@@ -64,7 +64,7 @@ func (s *ApplicationLiveStateSnapshot) DetermineAppHealthStatus() {
 	switch s.Kind {
 	case ApplicationKind_KUBERNETES:
 		k := s.Kubernetes
-		if k != nil {
+		if k == nil {
 			return
 		}
 		status := ApplicationLiveStateSnapshot_HEALTHY
