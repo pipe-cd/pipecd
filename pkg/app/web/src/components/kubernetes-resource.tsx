@@ -1,7 +1,7 @@
 import React, { FC } from "react";
 import { makeStyles, Paper, Typography } from "@material-ui/core";
 import { HealthStatus } from "../modules/applications-live-state";
-import { HealthStatusIcon } from "./health-status-icon";
+import { KubernetesResourceHealthStatusIcon } from "./health-status-icon";
 
 const useStyles = makeStyles((theme) => ({
   container: {
@@ -30,7 +30,7 @@ export const KubernetesResource: FC<Props> = ({ name, kind, health }) => {
     <Paper square className={classes.container}>
       <Typography variant="caption">{kind}</Typography>
       <div className={classes.nameLine}>
-        <HealthStatusIcon health={health} />
+        <KubernetesResourceHealthStatusIcon health={health} />
         <Typography variant="subtitle2" className={classes.name}>
           {name}
         </Typography>

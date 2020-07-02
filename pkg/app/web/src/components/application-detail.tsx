@@ -31,6 +31,8 @@ import {
   Environment,
 } from "../modules/environments";
 import SyncIcon from "@material-ui/icons/Cached";
+import { ApplicationHealthStatusIcon } from "./health-status-icon";
+import { APPLICATION_HEALTH_STATUS_TEXT } from "../constants/health-status-text";
 
 const useStyles = makeStyles((theme) => ({
   nameAndEnv: {
@@ -46,14 +48,11 @@ const useStyles = makeStyles((theme) => ({
     justifyContent: "center",
     alignItems: "center",
   },
-  textMargin: {
-    marginLeft: theme.spacing(1),
-  },
+
   env: {
     color: theme.palette.text.secondary,
     marginLeft: theme.spacing(1),
   },
-
   statusLine: {
     display: "flex",
     alignItems: "center",
@@ -79,6 +78,10 @@ const useStyles = makeStyles((theme) => ({
     marginTop: theme.spacing(1),
     wordBreak: "break-all",
   },
+  reasonLine: {
+    display: "flex",
+    alignItems: "center",
+  },
   actionButtons: {
     paddingLeft: theme.spacing(2),
     paddingRight: theme.spacing(2),
@@ -90,6 +93,10 @@ const useStyles = makeStyles((theme) => ({
     left: "50%",
     marginTop: -12,
     marginLeft: -12,
+  },
+  age: {
+    color: theme.palette.text.secondary,
+    marginLeft: theme.spacing(1),
   },
 }));
 
@@ -143,43 +150,52 @@ export const ApplicationDetail: FC<Props> = memo(function ApplicationDetail({
       <Box display="flex">
         <Box flex={1}>
           <div className={classes.nameAndEnv}>
-            <Typography variant="h5" className={classes.textMargin}>
-              {app.name}
-            </Typography>
+            <Typography variant="h5">{app.name}</Typography>
             <Typography variant="subtitle2" className={classes.env}>
               {env.name}
             </Typography>
+
+            {liveState && (
+              <Typography className={classes.age} variant="body1">
+                {dayjs(liveState.version.timestamp * 1000).fromNow()}
+              </Typography>
+            )}
           </div>
+
           <div className={classes.statusLine}>
             <SyncStatusIcon status={app.syncState.status} />
             <div className={classes.statusText}>
               <Typography variant="h6" className={classes.syncStatusText}>
                 {APPLICATION_SYNC_STATUS_TEXT[app.syncState.status]}
               </Typography>
-              {app.syncState.status !== ApplicationSyncStatus.SYNCED && (
-                <>
-                  <Typography variant="body2" className={classes.syncReason}>
-                    {app.syncState.shortReason}
-                  </Typography>
-                  {app.syncState.shortReason && (
-                    <Button
-                      variant="text"
-                      size="small"
-                      className={classes.learnMore}
-                      onClick={() => setShowReason(!showReason)}
-                    >
-                      {showReason ? "HIDE DETAIL" : "SHOW DETAIL"}
-                    </Button>
-                  )}
-                </>
-              )}
             </div>
+
+            {liveState && (
+              <>
+                <ApplicationHealthStatusIcon health={liveState.healthStatus} />
+                <Typography variant="h6" className={classes.syncStatusText}>
+                  {APPLICATION_HEALTH_STATUS_TEXT[liveState.healthStatus]}
+                </Typography>
+              </>
+            )}
           </div>
 
-          {liveState && (
-            <Typography className={classes.env} variant="body1">
-              {dayjs(liveState.version.timestamp * 1000).fromNow()}
-            </Typography>
+          {app.syncState.status !== ApplicationSyncStatus.SYNCED && (
+            <div className={classes.reasonLine}>
+              <Typography variant="body2" className={classes.syncReason}>
+                {app.syncState.shortReason}
+              </Typography>
+              {app.syncState.shortReason && (
+                <Button
+                  variant="text"
+                  size="small"
+                  className={classes.learnMore}
+                  onClick={() => setShowReason(!showReason)}
+                >
+                  {showReason ? "HIDE DETAIL" : "SHOW DETAIL"}
+                </Button>
+              )}
+            </div>
           )}
 
           {showReason && (
