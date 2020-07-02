@@ -3,8 +3,12 @@ sig-dev:
     - nghialv
     - gkuga
     - nakabonne
-    - cakecatz
     - stormcat24
+
+sig-web:
+  users:
+    - cakecatz
+    - asukaleido
 
 sig-build:
   users:
