@@ -106,6 +106,7 @@ func (s *store) PatchKubernetesApplicationLiveState(ctx context.Context, events 
 		if ev.SnapshotVersion.IsBefore(*snapshot.Version) {
 			continue
 		}
+		// TODO: Remove this check as soon as we find out why it is sometimes nil
 		if snapshot.Kubernetes == nil {
 			s.logger.Warn("KubernetesApplicationLiveState is nil", zap.String("application-id", ev.ApplicationId))
 			continue
