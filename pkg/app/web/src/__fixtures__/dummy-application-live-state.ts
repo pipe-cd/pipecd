@@ -1,10 +1,14 @@
 import { ApplicationKind } from "pipe/pkg/app/web/model/common_pb";
-import { ApplicationLiveState } from "../modules/applications-live-state";
+import {
+  ApplicationLiveState,
+  ApplicationLiveStateSnapshotModel,
+} from "../modules/applications-live-state";
 import { dummyApplication } from "./dummy-application";
 import { dummyEnv } from "./dummy-environment";
 
 export const dummyApplicationLiveState: ApplicationLiveState = {
   applicationId: dummyApplication.id,
+  healthStatus: ApplicationLiveStateSnapshotModel.Status.HEALTHY,
   envId: dummyEnv.id,
   kind: ApplicationKind.KUBERNETES,
   pipedId: "piped-1",

@@ -1,4 +1,3 @@
-import { action } from "@storybook/addon-actions";
 import React from "react";
 import { Provider } from "react-redux";
 import { ApplicationSyncStatus } from "../../../../../bazel-bin/pkg/app/web/model/application_pb";
