@@ -1,4 +1,4 @@
-load("@io_bazel_rules_go//go:def.bzl", "go_library")
+load("@io_bazel_rules_go//go:def.bzl", "go_library", "go_test")
 
 go_library(
     name = "go_default_library",
@@ -7,6 +7,7 @@ go_library(
         "canary.go",
         "kubernetes.go",
         "primary.go",
+        "rollback.go",
         "traffic.go",
     ],
     importpath = "github.com/pipe-cd/pipe/pkg/app/piped/executor/kubernetes",
@@ -16,6 +17,22 @@ go_library(
         "//pkg/app/piped/executor:go_default_library",
         "//pkg/config:go_default_library",
         "//pkg/model:go_default_library",
+        "@io_k8s_api//apps/v1:go_default_library",
+        "@io_k8s_api//core/v1:go_default_library",
+        "@io_k8s_apimachinery//pkg/apis/meta/v1:go_default_library",
         "@org_uber_go_zap//:go_default_library",
+    ],
+)
+
+go_test(
+    name = "go_default_test",
+    size = "small",
+    srcs = ["kubernetes_test.go"],
+    data = glob(["testdata/**"]),
+    embed = [":go_default_library"],
+    deps = [
+        "//pkg/app/piped/cloudprovider/kubernetes:go_default_library",
+        "@com_github_stretchr_testify//assert:go_default_library",
+        "@com_github_stretchr_testify//require:go_default_library",
     ],
 )

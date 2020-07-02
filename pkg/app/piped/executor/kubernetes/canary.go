@@ -141,12 +141,10 @@ func (e *Executor) ensureCanaryClean(ctx context.Context) model.StageStatus {
 func (e *Executor) generateCanaryManifests(namespace string, manifests []provider.Manifest, opts config.K8sCanaryRolloutStageOptions) ([]provider.Manifest, error) {
 	// List of default configurations.
 	var (
-		suffix           = canaryVariant
-		workloadKind     = provider.KindDeployment
-		workloadName     = ""
-		workloadReplicas = 1
-		foundWorkload    = false
-		canaryManifests  []provider.Manifest
+		suffix          = canaryVariant
+		workloadCfg     *config.K8sWorkload
+		serviceCfg      *config.K8sService
+		canaryManifests []provider.Manifest
 	)
 
 	// Apply the specified configuration if they are present.
@@ -154,50 +152,54 @@ func (e *Executor) generateCanaryManifests(namespace string, manifests []provide
 		if sc.Suffix != "" {
 			suffix = sc.Suffix
 		}
-		if sc.Workload.Kind != "" {
-			workloadKind = sc.Workload.Kind
-		}
-		if sc.Workload.Name != "" {
-			workloadName = sc.Workload.Name
-		}
+		workloadCfg = sc.Workload
+		serviceCfg = sc.Service
 	}
 
-	findWorkload := func(m provider.Manifest) error {
-		if m.Key.Kind != workloadKind {
-			return nil
-		}
-		if workloadName != "" && m.Key.Name != workloadName {
-			return nil
-		}
+	workloads := findWorkloadManifests(workloadCfg, manifests)
+	if len(workloads) == 0 {
+		return nil, fmt.Errorf("unable to find any workload manifests for CANARY variant")
+	}
+
+	// Find service manifests and duplicate them for CANARY variant.
+	services := findServiceManifests(serviceCfg, manifests)
+	generatedServices, err := generateServiceManifests(services, canaryVariant, suffix)
+	if err != nil {
+		return nil, err
+	}
+	canaryManifests = append(canaryManifests, generatedServices...)
+
+	// Find config map manifests and duplicate them for CANARY variant.
+	configmaps := findConfigMapManifests(manifests)
+	for _, m := range configmaps {
 		m = m.Duplicate(m.Key.Name + "-" + suffix)
-		if err := m.AddVariantLabel(canaryVariant); err != nil {
-			return err
-		}
-		m.SetReplicas(workloadReplicas)
 		canaryManifests = append(canaryManifests, m)
-		foundWorkload = true
-		return nil
 	}
 
-	for _, m := range manifests {
-		if err := findWorkload(m); err != nil {
-			return nil, err
+	// Find secret manifests and duplicate them for CANARY variant.
+	secrets := findSecretManifests(manifests)
+	for _, m := range secrets {
+		m = m.Duplicate(m.Key.Name + "-" + suffix)
+		canaryManifests = append(canaryManifests, m)
+	}
+
+	// Generate new workload manifests for VANARY variant.
+	// The generated ones will mount to the new ConfigMaps and Secrets.
+	replicasCalculator := func(cur *int32) int32 {
+		if cur == nil {
+			return 1
 		}
-		if foundWorkload {
-			break
-		}
+		num := opts.Replicas.Calculate(int(*cur), 1)
+		return int32(num)
 	}
-
-	if !foundWorkload {
-		return nil, fmt.Errorf("unabled to detect workload manifest for CANARY variant")
+	generatedWorkloads, err := generateWorkloadManifests(workloads, configmaps, secrets, canaryVariant, suffix, replicasCalculator)
+	if err != nil {
+		return nil, err
 	}
-
-	// TODO: Generate ConfigMap and Secret manifests and update Workload to use the copy.
-	// TODO: Generate Service manifest for kubernetes CANARY variant.
+	canaryManifests = append(canaryManifests, generatedWorkloads...)
 
 	// Add labels to the generated canary manifests.
 	for _, m := range canaryManifests {
-		m.Key.Name = m.Key.Name + "-" + suffix
 		if namespace != "" {
 			m.SetNamespace(namespace)
 			m.Key.Namespace = namespace
@@ -206,7 +208,7 @@ func (e *Executor) generateCanaryManifests(namespace string, manifests []provide
 			provider.LabelManagedBy:          provider.ManagedByPiped,
 			provider.LabelPiped:              e.PipedConfig.PipedID,
 			provider.LabelApplication:        e.Deployment.ApplicationId,
-			provider.LabelVariant:            canaryVariant,
+			variantLabel:                     canaryVariant,
 			provider.LabelOriginalAPIVersion: m.Key.APIVersion,
 			provider.LabelResourceKey:        m.Key.String(),
 			provider.LabelCommitHash:         e.Deployment.Trigger.Commit.Hash,

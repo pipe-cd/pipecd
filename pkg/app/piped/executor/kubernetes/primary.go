@@ -43,7 +43,7 @@ func (e *Executor) ensurePrimaryUpdate(ctx context.Context) model.StageStatus {
 			provider.LabelManagedBy:          provider.ManagedByPiped,
 			provider.LabelPiped:              e.PipedConfig.PipedID,
 			provider.LabelApplication:        e.Deployment.ApplicationId,
-			provider.LabelVariant:            primaryVariant,
+			variantLabel:                     primaryVariant,
 			provider.LabelOriginalAPIVersion: m.Key.APIVersion,
 			provider.LabelResourceKey:        m.Key.String(),
 			provider.LabelCommitHash:         e.Deployment.Trigger.Commit.Hash,

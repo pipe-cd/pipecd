@@ -16,6 +16,7 @@ package kubernetes
 
 import (
 	"context"
+	"encoding/json"
 	"fmt"
 	"io/ioutil"
 	"os"
@@ -81,43 +82,29 @@ func (m Manifest) SetNamespace(namespace string) {
 	m.u.SetNamespace(namespace)
 }
 
-func (m Manifest) SetReplicas(replicas int) {
-	unstructured.SetNestedField(m.u.Object, int64(replicas), "spec", "replicas")
+func (m Manifest) ConvertToStructuredObject(o interface{}) error {
+	data, err := m.MarshalJSON()
+	if err != nil {
+		return err
+	}
+	return json.Unmarshal(data, o)
 }
 
-func (m Manifest) AddVariantLabel(variant string) error {
-	var (
-		matchLabelsFields = []string{"spec", "selector", "matchLabels"}
-		labelsFields      = []string{"spec", "template", "metadata", "labels"}
-	)
-
-	// Add variant label into selector.matchLabels.
-	matchLabels, _, err := unstructured.NestedStringMap(m.u.Object, matchLabelsFields...)
+func ParseFromStructuredObject(s interface{}) (Manifest, error) {
+	data, err := json.Marshal(s)
 	if err != nil {
-		return err
-	}
-	if matchLabels == nil {
-		matchLabels = make(map[string]string, 1)
-	}
-	matchLabels[LabelVariant] = variant
-	if err := unstructured.SetNestedStringMap(m.u.Object, matchLabels, matchLabelsFields...); err != nil {
-		return err
+		return Manifest{}, err
 	}
 
-	// Add variant label into template label.
-	labels, _, err := unstructured.NestedStringMap(m.u.Object, labelsFields...)
-	if err != nil {
-		return err
-	}
-	if labels == nil {
-		labels = make(map[string]string, 1)
-	}
-	labels[LabelVariant] = variant
-	if err := unstructured.SetNestedStringMap(m.u.Object, labels, labelsFields...); err != nil {
-		return err
+	obj := &unstructured.Unstructured{}
+	if err := obj.UnmarshalJSON(data); err != nil {
+		return Manifest{}, err
 	}
 
-	return nil
+	return Manifest{
+		Key: MakeResourceKey(obj),
+		u:   obj,
+	}, nil
 }
 
 func LoadPlainYAMLMannifests(ctx context.Context, dir string, names []string) ([]Manifest, error) {

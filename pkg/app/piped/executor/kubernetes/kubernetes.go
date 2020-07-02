@@ -20,11 +20,18 @@ import (
 	"path/filepath"
 
 	"go.uber.org/zap"
+	appsv1 "k8s.io/api/apps/v1"
+	corev1 "k8s.io/api/core/v1"
+	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 
 	provider "github.com/pipe-cd/pipe/pkg/app/piped/cloudprovider/kubernetes"
 	"github.com/pipe-cd/pipe/pkg/app/piped/executor"
 	"github.com/pipe-cd/pipe/pkg/config"
 	"github.com/pipe-cd/pipe/pkg/model"
+)
+
+const (
+	variantLabel = "pipecd.dev/variant" // Variant name: primary, stage, baseline
 )
 
 type Executor struct {
@@ -160,26 +167,162 @@ func (e *Executor) loadRunningManifests(ctx context.Context) (manifests []provid
 	return manifests, nil
 }
 
-func (e *Executor) ensureRollback(ctx context.Context) model.StageStatus {
-	// 1. Revert workloads of PRIMARY variant.
-	if state := e.rollbackPrimary(ctx); state != model.StageStatus_STAGE_SUCCESS {
-		return state
+func findWorkloadManifests(cfg *config.K8sWorkload, manifests []provider.Manifest) []provider.Manifest {
+	var (
+		out  []provider.Manifest
+		kind = provider.KindDeployment
+		name string
+	)
+	if cfg != nil && cfg.Kind != "" {
+		kind = cfg.Kind
+	}
+	if cfg != nil && cfg.Name != "" {
+		name = cfg.Name
+	}
+	for _, m := range manifests {
+		if !m.Key.IsWorkload() {
+			continue
+		}
+		if m.Key.Kind != kind {
+			continue
+		}
+		if name != "" && m.Key.Name != name {
+			continue
+		}
+		out = append(out, m)
+	}
+	return out
+}
+
+func findServiceManifests(cfg *config.K8sService, manifests []provider.Manifest) []provider.Manifest {
+	var (
+		out  []provider.Manifest
+		name string
+	)
+	if cfg != nil && cfg.Name != "" {
+		name = cfg.Name
+	}
+	for _, m := range manifests {
+		if !m.Key.IsService() {
+			continue
+		}
+		if name != "" && m.Key.Name != name {
+			continue
+		}
+		out = append(out, m)
+	}
+	return out
+}
+
+func findConfigMapManifests(manifests []provider.Manifest) []provider.Manifest {
+	var out []provider.Manifest
+	for _, m := range manifests {
+		if !m.Key.IsConfigMap() {
+			continue
+		}
+		out = append(out, m)
+	}
+	return out
+}
+
+func findSecretManifests(manifests []provider.Manifest) []provider.Manifest {
+	var out []provider.Manifest
+	for _, m := range manifests {
+		if !m.Key.IsSecret() {
+			continue
+		}
+		out = append(out, m)
+	}
+	return out
+}
+
+func generateServiceManifests(services []provider.Manifest, variant, suffix string) ([]provider.Manifest, error) {
+	manifests := make([]provider.Manifest, 0, len(services))
+	updateService := func(s *corev1.Service) {
+		s.Name = s.Name + "-" + suffix
+		s.Spec.Type = corev1.ServiceTypeClusterIP
+		if s.Spec.Selector == nil {
+			s.Spec.Selector = map[string]string{}
+		}
+		s.Spec.Selector[variantLabel] = variant
 	}
 
-	// 2. Ensure that all traffics are routed to the PRIMARY variant.
-	if state := e.rollbackTraffic(ctx); state != model.StageStatus_STAGE_SUCCESS {
-		return state
+	for _, m := range services {
+		s := &corev1.Service{}
+		if err := m.ConvertToStructuredObject(s); err != nil {
+			return nil, err
+		}
+		updateService(s)
+		manifest, err := provider.ParseFromStructuredObject(s)
+		if err != nil {
+			return nil, fmt.Errorf("failed to parse Service object to Manifest: %w", err)
+		}
+		manifests = append(manifests, manifest)
+	}
+	return manifests, nil
+}
+
+func generateWorkloadManifests(workloads, configmaps, secrets []provider.Manifest, variant, suffix string, replicasCalculator func(*int32) int32) ([]provider.Manifest, error) {
+	manifests := make([]provider.Manifest, 0, len(workloads))
+
+	cmNames := make(map[string]struct{}, len(configmaps))
+	for i := range configmaps {
+		cmNames[configmaps[i].Key.Name] = struct{}{}
 	}
 
-	// 3. Delete workloads of CANARY variant.
-	if state := e.ensureCanaryClean(ctx); state != model.StageStatus_STAGE_SUCCESS {
-		return state
+	secretNames := make(map[string]struct{}, len(secrets))
+	for i := range secrets {
+		secretNames[secrets[i].Key.Name] = struct{}{}
 	}
 
-	// 4. Delete worloads of BASELINE variant.
-	if state := e.ensureBaselineClean(ctx); state != model.StageStatus_STAGE_SUCCESS {
-		return state
+	updatePod := func(pod *corev1.PodTemplateSpec) {
+		// Add variant labels.
+		if pod.Labels == nil {
+			pod.Labels = map[string]string{}
+		}
+		pod.Labels[variantLabel] = variant
+
+		// Update volumes to use canary's ConfigMaps and Secrets.
+		for i := range pod.Spec.Volumes {
+			if cm := pod.Spec.Volumes[i].ConfigMap; cm != nil {
+				if _, ok := cmNames[cm.Name]; ok {
+					cm.Name = cm.Name + "-" + suffix
+				}
+			}
+			if s := pod.Spec.Volumes[i].Secret; s != nil {
+				if _, ok := secretNames[s.SecretName]; ok {
+					s.SecretName = s.SecretName + "-" + suffix
+				}
+			}
+		}
 	}
 
-	return model.StageStatus_STAGE_SUCCESS
+	updateDeployment := func(d *appsv1.Deployment) {
+		d.Name = d.Name + "-" + suffix
+		replicas := replicasCalculator(d.Spec.Replicas)
+		d.Spec.Replicas = &replicas
+		d.Spec.Selector = metav1.AddLabelToSelector(d.Spec.Selector, variantLabel, variant)
+		updatePod(&d.Spec.Template)
+	}
+
+	for _, m := range workloads {
+		switch m.Key.Kind {
+		case provider.KindDeployment:
+			d := &appsv1.Deployment{}
+			if err := m.ConvertToStructuredObject(d); err != nil {
+				return nil, err
+			}
+			updateDeployment(d)
+			manifest, err := provider.ParseFromStructuredObject(d)
+			if err != nil {
+				return nil, err
+			}
+			manifests = append(manifests, manifest)
+
+		default:
+			return nil, fmt.Errorf("unsupported workload kind %s", m.Key.Kind)
+		}
+	}
+
+	return manifests, nil
 }

@@ -137,6 +137,16 @@ func (k ResourceKey) IsWorkload() bool {
 	return false
 }
 
+func (k ResourceKey) IsService() bool {
+	if k.Kind != KindService {
+		return false
+	}
+	if !IsKubernetesBuiltInResource(k.APIVersion) {
+		return false
+	}
+	return true
+}
+
 func (k ResourceKey) IsConfigMap() bool {
 	if k.Kind != KindConfigMap {
 		return false
