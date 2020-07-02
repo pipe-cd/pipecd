@@ -21,6 +21,7 @@ import (
 	"strings"
 
 	provider "github.com/pipe-cd/pipe/pkg/app/piped/cloudprovider/kubernetes"
+	"github.com/pipe-cd/pipe/pkg/config"
 	"github.com/pipe-cd/pipe/pkg/model"
 )
 
@@ -30,6 +31,12 @@ const (
 )
 
 func (e *Executor) ensureBaselineRollout(ctx context.Context) model.StageStatus {
+	baselineOptions := e.StageConfig.K8sBaselineRolloutStageOptions
+	if baselineOptions == nil {
+		e.LogPersister.AppendError(fmt.Sprintf("Malformed configuration for stage %s", e.Stage.Name))
+		return model.StageStatus_STAGE_FAILURE
+	}
+
 	manifests, err := e.loadRunningManifests(ctx)
 	if err != nil {
 		e.LogPersister.AppendError(fmt.Sprintf("Failed while loading running manifests (%v)", err))
@@ -41,7 +48,7 @@ func (e *Executor) ensureBaselineRollout(ctx context.Context) model.StageStatus 
 		return model.StageStatus_STAGE_FAILURE
 	}
 
-	baselineManifests, err := e.generateBaselineManifests(e.config.Input.Namespace, manifests)
+	baselineManifests, err := e.generateBaselineManifests(e.config.Input.Namespace, manifests, *baselineOptions)
 	if err != nil {
 		e.LogPersister.AppendError(fmt.Sprintf("Unable to generate manifests for BASELINE variant (%v)", err))
 		return model.StageStatus_STAGE_FAILURE
@@ -131,14 +138,12 @@ func (e *Executor) ensureBaselineClean(ctx context.Context) model.StageStatus {
 	return model.StageStatus_STAGE_SUCCESS
 }
 
-func (e *Executor) generateBaselineManifests(namespace string, manifests []provider.Manifest) ([]provider.Manifest, error) {
+func (e *Executor) generateBaselineManifests(namespace string, manifests []provider.Manifest, opts config.K8sBaselineRolloutStageOptions) ([]provider.Manifest, error) {
 	// List of default configurations.
 	var (
 		suffix            = baselineVariant
-		workloadKind      = provider.KindDeployment
-		workloadName      = ""
-		workloadReplicas  = 1
-		foundWorkload     = false
+		workloadCfg       *config.K8sWorkload
+		serviceCfg        *config.K8sService
 		baselineManifests []provider.Manifest
 	)
 
@@ -147,50 +152,40 @@ func (e *Executor) generateBaselineManifests(namespace string, manifests []provi
 		if sc.Suffix != "" {
 			suffix = sc.Suffix
 		}
-		if sc.Workload.Kind != "" {
-			workloadKind = sc.Workload.Kind
-		}
-		if sc.Workload.Name != "" {
-			workloadName = sc.Workload.Name
-		}
+		workloadCfg = sc.Workload
+		serviceCfg = sc.Service
 	}
 
-	findWorkload := func(m provider.Manifest) error {
-		if m.Key.Kind != workloadKind {
-			return nil
-		}
-		if workloadName != "" && m.Key.Name != workloadName {
-			return nil
-		}
-		m = m.Duplicate(m.Key.Name + "-" + suffix)
-		if err := m.AddVariantLabel(baselineVariant); err != nil {
-			return err
-		}
-		// TODO: Load baseline replicas number from configuration.
-		m.SetReplicas(workloadReplicas)
-		baselineManifests = append(baselineManifests, m)
-		foundWorkload = true
-		return nil
+	workloads := findWorkloadManifests(workloadCfg, manifests)
+	if len(workloads) == 0 {
+		return nil, fmt.Errorf("unable to find any workload manifests for BASELINE variant")
 	}
 
-	for _, m := range manifests {
-		if err := findWorkload(m); err != nil {
-			return nil, err
-		}
-		if foundWorkload {
-			break
-		}
+	// Find service manifests and duplicate them for BASELINE variant.
+	services := findServiceManifests(serviceCfg, manifests)
+	generatedServices, err := generateServiceManifests(services, baselineVariant, suffix)
+	if err != nil {
+		return nil, err
 	}
+	baselineManifests = append(baselineManifests, generatedServices...)
 
-	if !foundWorkload {
-		return nil, fmt.Errorf("unable to detect workload manifest for BASELINE variant")
+	// Generate new workload manifests for VANARY variant.
+	// The generated ones will mount to the new ConfigMaps and Secrets.
+	replicasCalculator := func(cur *int32) int32 {
+		if cur == nil {
+			return 1
+		}
+		num := opts.Replicas.Calculate(int(*cur), 1)
+		return int32(num)
 	}
-
-	// TODO: Generate Service manifest for kubernetes BASELINE variant.
+	generatedWorkloads, err := generateWorkloadManifests(workloads, nil, nil, baselineVariant, suffix, replicasCalculator)
+	if err != nil {
+		return nil, err
+	}
+	baselineManifests = append(baselineManifests, generatedWorkloads...)
 
 	// Add labels to the generated baseline manifests.
 	for _, m := range baselineManifests {
-		m.Key.Name = m.Key.Name + "-" + suffix
 		if namespace != "" {
 			m.SetNamespace(namespace)
 			m.Key.Namespace = namespace
@@ -199,7 +194,7 @@ func (e *Executor) generateBaselineManifests(namespace string, manifests []provi
 			provider.LabelManagedBy:          provider.ManagedByPiped,
 			provider.LabelPiped:              e.PipedConfig.PipedID,
 			provider.LabelApplication:        e.Deployment.ApplicationId,
-			provider.LabelVariant:            baselineVariant,
+			variantLabel:                     baselineVariant,
 			provider.LabelOriginalAPIVersion: m.Key.APIVersion,
 			provider.LabelResourceKey:        m.Key.String(),
 			provider.LabelCommitHash:         e.Deployment.Trigger.Commit.Hash,
