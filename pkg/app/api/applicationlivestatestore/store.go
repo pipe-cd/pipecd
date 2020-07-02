@@ -106,6 +106,9 @@ func (s *store) PatchKubernetesApplicationLiveState(ctx context.Context, events 
 		if ev.SnapshotVersion.IsBefore(*snapshot.Version) {
 			continue
 		}
+		if snapshot.Kubernetes == nil {
+			continue
+		}
 		switch ev.Type {
 		case model.KubernetesResourceStateEvent_ADD_OR_UPDATED:
 			snapshot.Kubernetes.Resources = mergeKubernetesResourceStatesOnAddOrUpdated(snapshot.Kubernetes.Resources, ev)
