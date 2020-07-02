@@ -39,7 +39,7 @@ export const SyncStateReason: FC<Props> = ({ summary, detail }) => {
             className={classes.showButton}
             onClick={() => setShowReason(!showReason)}
           >
-            {showReason ? "HIDE DETAIL" : "SHOW DETAIL"}
+            {showReason ? "HIDE DETAILS" : "SHOW DETAILS"}
           </Button>
         )}
       </div>
