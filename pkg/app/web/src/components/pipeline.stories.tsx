@@ -7,6 +7,7 @@ const DEPLOYMENT_ID = "debug-deployment-id-01";
 const fakeDeployment: Deployment = {
   id: DEPLOYMENT_ID,
   applicationId: "debug-project/development/debug-app",
+  applicationName: "demo-app",
   envId: "development",
   pipedId: "debug-piped",
   projectId: "debug-project",

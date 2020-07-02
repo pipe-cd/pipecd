@@ -4,13 +4,13 @@ import {
   createSlice,
 } from "@reduxjs/toolkit";
 import {
-  ApplicationLiveStateSnapshot,
+  ApplicationLiveStateSnapshot as ApplicationLiveStateSnapshotModel,
   KubernetesResourceState as KubernetesResourceStateModel,
 } from "pipe/pkg/app/web/model/application_live_state_pb";
 import { getApplicationLiveState } from "../api/applications";
 
 export type ApplicationLiveState = Required<
-  ApplicationLiveStateSnapshot.AsObject
+  ApplicationLiveStateSnapshotModel.AsObject
 >;
 
 export type KubernetesResourceState = Required<
@@ -54,3 +54,5 @@ export const applicationLiveStateSlice = createSlice({
     });
   },
 });
+
+export { ApplicationLiveStateSnapshot as ApplicationLiveStateSnapshotModel } from "pipe/pkg/app/web/model/application_live_state_pb";

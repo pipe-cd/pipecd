@@ -15,6 +15,7 @@
     "removeComments": false,
     "resolveJsonModule": false,
     "sourceMap": false,
+    "skipLibCheck": true,
     "strict": true,
     "target": "ES2019",
     "jsx": "react",
