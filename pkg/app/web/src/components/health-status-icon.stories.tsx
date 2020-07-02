@@ -1,12 +1,12 @@
 import React from "react";
-import { HealthStatusIcon } from "./health-status-icon";
+import { KubernetesResourceHealthStatusIcon } from "./health-status-icon";
 import { HealthStatus } from "../modules/applications-live-state";
 
 export default {
   title: "HealthStatusIcon",
-  component: HealthStatusIcon,
+  component: KubernetesResourceHealthStatusIcon,
 };
 
 export const overview: React.FC = () => (
-  <HealthStatusIcon health={HealthStatus.HEALTHY} />
+  <KubernetesResourceHealthStatusIcon health={HealthStatus.HEALTHY} />
 );
