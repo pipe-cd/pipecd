@@ -1,2 +1,8 @@
+reviewers:
+  - sig-web
+approvers:
+  - sig-web
+  - sig-dev
+
 labels:
   - area/web
