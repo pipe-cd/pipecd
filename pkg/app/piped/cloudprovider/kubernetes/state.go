@@ -43,8 +43,10 @@ func MakeKubernetesResourceState(uid string, key ResourceKey, obj *unstructured.
 	sort.Strings(ownerIDs)
 
 	state := model.KubernetesResourceState{
-		Id:         uid,
-		OwnerIds:   ownerIDs,
+		Id:       uid,
+		OwnerIds: ownerIDs,
+		// TODO: Think about adding more parents by using label selectors
+		ParentIds:  ownerIDs,
 		Name:       key.Name,
 		ApiVersion: key.APIVersion,
 		Kind:       key.Kind,
