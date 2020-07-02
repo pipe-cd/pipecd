@@ -80,10 +80,10 @@ type DeploymentPipeline struct {
 	Stages []PipelineStage `json:"stages"`
 }
 
-// TODO: Make CanaryVariant and BaselineVariant become more configurable such as about service type, annotations, port...
 type CanaryVariant struct {
 	Workload *K8sWorkload `json:"workload"`
-	Service  *K8sService  `json:"service"`
+	// TODO: Make CanaryVariant and BaselineVariant become more configurable such as about service type, annotations, port...
+	Service *K8sService `json:"service"`
 	// Suffix that should be used when naming the CANARY variant's resources.
 	// Default is "canary".
 	Suffix string `json:"suffix"`
