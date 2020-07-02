@@ -252,8 +252,6 @@ func (s *store) getAppLiveState(appID string) (AppState, bool) {
 	)
 	for i := range nodes {
 		state := nodes[i].state
-		state.ParentIds = state.OwnerIds
-		// TODO: Think about adding more parents by using label selectors.
 		resources = append(resources, &state)
 	}
 
