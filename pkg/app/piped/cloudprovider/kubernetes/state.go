@@ -45,6 +45,7 @@ func MakeKubernetesResourceState(uid string, key ResourceKey, obj *unstructured.
 	state := model.KubernetesResourceState{
 		Id:         uid,
 		OwnerIds:   ownerIDs,
+		ParentIds:  ownerIDs,
 		Name:       key.Name,
 		ApiVersion: key.APIVersion,
 		Kind:       key.Kind,
