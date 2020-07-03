@@ -128,32 +128,33 @@ func (p *Planner) Plan(ctx context.Context, in planner.Input) (out planner.Outpu
 // First up, checks to see if the workload's `spec.template` has been changed,
 // and then checks if the configmap/secret's data.
 func decideStrategy(olds, news []provider.Manifest) (progressive bool, desc string) {
-	desc = "Apply all manifests"
+	oldWorkload, ok := findWorkload(olds)
+	if !ok {
+		desc = "Apply all manifests because it was unable to find the currently running workloads."
+		return
+	}
+	newWorkload, ok := findWorkload(news)
+	if !ok {
+		desc = "Apply all manifests because it was unable to find workloads in the new manifests."
+		return
+	}
 
-	oldWorkload, foundOld := findWorkload(olds)
-	newWorkload, foundNew := findWorkload(news)
-	if foundOld && foundNew {
-		// If the workload's pod template was touched
-		// do progressive deployment with the specified pipeline.
-		var (
-			workloadDiffs = provider.Diff(oldWorkload, newWorkload, provider.WithDiffPathPrefix("spec"))
-			templateDiffs = workloadDiffs.FindByPrefix("spec.template")
-		)
-		if len(templateDiffs) > 0 {
-			progressive = true
+	// If the workload's pod template was touched
+	// do progressive deployment with the specified pipeline.
+	var (
+		workloadDiffs = provider.Diff(oldWorkload, newWorkload, provider.WithDiffPathPrefix("spec"))
+		templateDiffs = workloadDiffs.FindByPrefix("spec.template")
+	)
+	if len(templateDiffs) > 0 {
+		progressive = true
 
-			if msg, changed := checkImageChange(templateDiffs); changed {
-				desc = msg
-				return
-			}
-
-			desc = fmt.Sprintf("Progressive deployment because pod template of workload %s was changed.", newWorkload.Key.Name)
+		if msg, changed := checkImageChange(templateDiffs); changed {
+			desc = msg
 			return
 		}
-		// Check if this is a scaling commit.
-		if msg, changed := checkReplicasChange(workloadDiffs); changed {
-			desc = msg
-		}
+
+		desc = fmt.Sprintf("Progressive deployment because pod template of workload %s was changed.", newWorkload.Key.Name)
+		return
 	}
 
 	// If the config/secret was touched,
@@ -176,6 +177,13 @@ func decideStrategy(olds, news []provider.Manifest) (progressive bool, desc stri
 		}
 	}
 
+	// Check if this is a scaling commit.
+	if msg, changed := checkReplicasChange(workloadDiffs); changed {
+		desc = msg
+		return
+	}
+
+	desc = "Apply all manifests"
 	return
 }
 
