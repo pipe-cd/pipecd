@@ -18,15 +18,17 @@ const useConvertedStages = (deploymentId: string): Stage[][] => {
   }
 
   stages[0] = deployment.stagesList.filter(
-    (stage) => stage.requiresList.length === 0
+    (stage) => stage.requiresList.length === 0 && stage.visible
   );
 
   let index = 0;
   while (stages[index].length > 0) {
     const previousIds = stages[index].map((stage) => stage.id);
     index++;
-    stages[index] = deployment.stagesList.filter((stage) =>
-      stage.requiresList.some((id) => previousIds.includes(id))
+    stages[index] = deployment.stagesList.filter(
+      (stage) =>
+        stage.requiresList.some((id) => previousIds.includes(id)) &&
+        stage.visible
     );
   }
   return stages;
