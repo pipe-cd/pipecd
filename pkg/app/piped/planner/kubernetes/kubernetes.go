@@ -161,18 +161,23 @@ func decideStrategy(olds, news []provider.Manifest) (progressive bool, desc stri
 	// we also need to do progressive deployment to check run with the new config/secret content.
 	oldConfigs := findConfigs(olds)
 	newConfigs := findConfigs(news)
-	if len(oldConfigs) == 0 || len(newConfigs) == 0 {
-		return
-	}
-	for k, oc := range oldConfigs {
-		nc, ok := newConfigs[k]
-		if !ok {
-			continue
+	if len(oldConfigs) > 0 && len(newConfigs) > 0 {
+		for k, oc := range oldConfigs {
+			nc, ok := newConfigs[k]
+			if !ok {
+				desc = fmt.Sprintf("Progressive deployment because %s was deleted", k)
+				return
+			}
+			diffs := provider.Diff(oc, nc, provider.WithDiffPathPrefix("data"))
+			if len(diffs) > 0 {
+				progressive = true
+				desc = fmt.Sprintf("Progressive deployment because %s was updated", k)
+				return
+			}
+			delete(newConfigs, k)
 		}
-		diffs := provider.Diff(oc, nc, provider.WithDiffPathPrefix("data"))
-		if len(diffs) > 0 {
-			progressive = true
-			desc = fmt.Sprintf("Progressive deployment because %s was updated", k)
+		for k := range newConfigs {
+			desc = fmt.Sprintf("Progressive deployment because %s was added", k)
 			return
 		}
 	}
