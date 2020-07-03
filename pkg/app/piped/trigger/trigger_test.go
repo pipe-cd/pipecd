@@ -39,12 +39,10 @@ func TestIsTouchedByChangedFiles(t *testing.T) {
 			expected: false,
 		},
 		{
-			name:           "not touched with suffix",
-			appDir:         "app/demo/",
-			dependencyDirs: nil,
+			name:   "not touched in dir whose name does not match exactly",
+			appDir: "app/demo",
 			changedFiles: []string{
-				"app/hello.txt",
-				"app/foo/deployment.yaml",
+				"app/demo-2",
 			},
 			expected: false,
 		},
