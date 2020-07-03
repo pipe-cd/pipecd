@@ -165,19 +165,19 @@ func decideStrategy(olds, news []provider.Manifest) (progressive bool, desc stri
 		for k, oc := range oldConfigs {
 			nc, ok := newConfigs[k]
 			if !ok {
-				desc = fmt.Sprintf("Progressive deployment because %s was deleted", k)
+				desc = fmt.Sprintf("Progressive deployment because %s %s was deleted", oc.Key.Kind, oc.Key.Name)
 				return
 			}
 			diffs := provider.Diff(oc, nc, provider.WithDiffPathPrefix("data"))
 			if len(diffs) > 0 {
 				progressive = true
-				desc = fmt.Sprintf("Progressive deployment because %s was updated", k)
+				desc = fmt.Sprintf("Progressive deployment because %s %s was updated", oc.Key.Kind, oc.Key.Name)
 				return
 			}
 			delete(newConfigs, k)
 		}
-		for k := range newConfigs {
-			desc = fmt.Sprintf("Progressive deployment because %s was added", k)
+		for _, nc := range newConfigs {
+			desc = fmt.Sprintf("Progressive deployment because %s %s was added", nc.Key.Kind, nc.Key.Name)
 			return
 		}
 	}
@@ -203,14 +203,14 @@ func findWorkload(manifests []provider.Manifest) (provider.Manifest, bool) {
 	return provider.Manifest{}, false
 }
 
-func findConfigs(manifests []provider.Manifest) map[string]provider.Manifest {
-	configs := make(map[string]provider.Manifest, 0)
+func findConfigs(manifests []provider.Manifest) map[provider.ResourceKey]provider.Manifest {
+	configs := make(map[provider.ResourceKey]provider.Manifest, 0)
 	for _, m := range manifests {
 		if m.Key.IsConfigMap() {
-			configs["configmap-"+m.Key.Name] = m
+			configs[m.Key] = m
 		}
 		if m.Key.IsSecret() {
-			configs["secret-"+m.Key.Name] = m
+			configs[m.Key] = m
 		}
 	}
 	return configs
