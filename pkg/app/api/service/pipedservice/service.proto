@@ -280,8 +280,9 @@ message ReportStageStatusChangedRequest {
     pipe.model.StageStatus status = 3 [(validate.rules).enum.defined_only = true];
     // The human-readable description why the stage is at current status.
     string status_description = 4;
-    bool visible = 5;
-    int32 retried_count = 6;
+    repeated string requires = 5;
+    bool visible = 6;
+    int32 retried_count = 7;
     int64 completed_at = 13 [(validate.rules).int64.gt = 0];
 }
 

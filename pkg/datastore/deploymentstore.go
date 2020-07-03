@@ -68,14 +68,15 @@ var (
 		}
 	}
 
-	StageStatusChangedUpdater = func(stageID string, status model.StageStatus, statusDescription string,
-		retriedCount int32, completedAt int64) func(*model.Deployment) error {
-
+	StageStatusChangedUpdater = func(stageID string, status model.StageStatus, statusDescription string, requires []string, retriedCount int32, completedAt int64) func(*model.Deployment) error {
 		return func(d *model.Deployment) error {
-			d.StatusDescription = statusDescription
 			for _, stage := range d.Stages {
 				if stage.Id == stageID {
 					stage.Status = status
+					stage.StatusDescription = statusDescription
+					if len(requires) > 0 {
+						stage.Requires = requires
+					}
 					stage.RetriedCount = retriedCount
 					stage.CompletedAt = completedAt
 					return nil

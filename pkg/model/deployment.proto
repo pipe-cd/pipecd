@@ -107,8 +107,10 @@ message PipelineStage {
     // Whether this stage should be rendered or not.
     bool visible = 7;
     StageStatus status = 8 [(validate.rules).enum.defined_only = true];
-    map<string,string> metadata = 9;
-    int32 retried_count = 10;
+    // The human-readable description why the stage is at current status.
+    string status_description = 9;
+    map<string,string> metadata = 10;
+    int32 retried_count = 11;
     int64 completed_at = 13 [(validate.rules).int64.gte = 0];
     int64 created_at = 14 [(validate.rules).int64.gt = 0];
     int64 updated_at = 15 [(validate.rules).int64.gt = 0];
