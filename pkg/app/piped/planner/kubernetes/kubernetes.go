@@ -176,8 +176,8 @@ func decideStrategy(olds, news []provider.Manifest) (progressive bool, desc stri
 			}
 			delete(newConfigs, k)
 		}
-		for _, nc := range newConfigs {
-			desc = fmt.Sprintf("Progressive deployment because %s %s was added", nc.Key.Kind, nc.Key.Name)
+		if len(newConfigs) > 0 {
+			desc = fmt.Sprintf("Progressive deployment because new %d configmap/secret added", len(newConfigs))
 			return
 		}
 	}
