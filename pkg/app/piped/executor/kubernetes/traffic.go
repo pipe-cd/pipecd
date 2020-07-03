@@ -24,6 +24,6 @@ func (e *Executor) ensureTrafficSplit(ctx context.Context) model.StageStatus {
 	return model.StageStatus_STAGE_SUCCESS
 }
 
-func (e *Executor) rollbackTraffic(ctx context.Context) model.StageStatus {
-	return model.StageStatus_STAGE_SUCCESS
+func (e *Executor) rollbackTraffic(ctx context.Context) error {
+	return nil
 }

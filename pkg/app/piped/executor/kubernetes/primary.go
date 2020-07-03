@@ -63,6 +63,40 @@ func (e *Executor) ensurePrimaryUpdate(ctx context.Context) model.StageStatus {
 	return model.StageStatus_STAGE_SUCCESS
 }
 
-func (e *Executor) rollbackPrimary(ctx context.Context) model.StageStatus {
-	return model.StageStatus_STAGE_SUCCESS
+func (e *Executor) rollbackPrimary(ctx context.Context) error {
+	manifests, err := e.loadRunningManifests(ctx)
+	if err != nil {
+		e.LogPersister.AppendError(fmt.Sprintf("Failed while loading running manifests (%w)", err))
+		return err
+	}
+
+	if len(manifests) == 0 {
+		e.LogPersister.AppendError("This application has no running Kubernetes manifests to handle")
+		return err
+	}
+
+	for _, m := range manifests {
+		m.AddAnnotations(map[string]string{
+			provider.LabelManagedBy:          provider.ManagedByPiped,
+			provider.LabelPiped:              e.PipedConfig.PipedID,
+			provider.LabelApplication:        e.Deployment.ApplicationId,
+			variantLabel:                     primaryVariant,
+			provider.LabelOriginalAPIVersion: m.Key.APIVersion,
+			provider.LabelResourceKey:        m.Key.String(),
+			provider.LabelCommitHash:         e.Deployment.RunningCommitHash,
+		})
+	}
+
+	// Start rolling out the resources for PRIMARY variant.
+	e.LogPersister.AppendInfo("Start rolling back PRIMARY variant...")
+	for _, m := range manifests {
+		if err = e.provider.ApplyManifest(ctx, m); err != nil {
+			e.LogPersister.AppendError(fmt.Sprintf("Failed to apply manifest: %s (%v)", m.Key.ReadableString(), err))
+			return err
+		}
+		e.LogPersister.AppendSuccess(fmt.Sprintf("- applied manifest: %s", m.Key.ReadableString()))
+	}
+
+	e.LogPersister.AppendSuccess("Successfully rolled back PRIMARY variant")
+	return nil
 }

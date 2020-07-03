@@ -204,11 +204,14 @@ func (s *scheduler) Run(ctx context.Context) error {
 		statusDescription = "Completed Successfully"
 		timer             = time.NewTimer(defaultDeploymentTimeout)
 		cancelCommand     *model.ReportableCommand
+		lastStage         *model.PipelineStage
 	)
 	defer timer.Stop()
 
 	// Iterate all the stages and execute the uncompleted ones.
-	for _, ps := range s.deployment.Stages {
+	for i, ps := range s.deployment.Stages {
+		lastStage = s.deployment.Stages[i]
+
 		if ps.Status == model.StageStatus_STAGE_SUCCESS {
 			continue
 		}
@@ -234,7 +237,9 @@ func (s *scheduler) Run(ctx context.Context) error {
 			doneCh       = make(chan struct{})
 		)
 		go func() {
-			result = s.executeStage(sig, ps)
+			result = s.executeStage(sig, *ps, func(in executor.Input) (executor.Executor, bool) {
+				return s.executorRegistry.Executor(model.Stage(ps.Name), in)
+			})
 			close(doneCh)
 		}()
 
@@ -299,7 +304,11 @@ func (s *scheduler) Run(ctx context.Context) error {
 				doneCh       = make(chan struct{})
 			)
 			go func() {
-				s.executeStage(sig, stage)
+				rbs := *stage
+				rbs.Requires = []string{lastStage.Id}
+				s.executeStage(sig, rbs, func(in executor.Input) (executor.Executor, bool) {
+					return s.executorRegistry.RollbackExecutor(s.deployment.Kind, in)
+				})
 				close(doneCh)
 			}()
 
@@ -316,7 +325,10 @@ func (s *scheduler) Run(ctx context.Context) error {
 	}
 
 	if model.IsCompletedDeployment(deploymentStatus) {
-		s.reportDeploymentCompleted(ctx, deploymentStatus, statusDescription)
+		err := s.reportDeploymentCompleted(ctx, deploymentStatus, statusDescription)
+		if err == nil && deploymentStatus == model.DeploymentStatus_DEPLOYMENT_SUCCESS {
+			s.reportMostRecentlySuccessfulDeployment(ctx)
+		}
 		s.doneDeploymentStatus = deploymentStatus
 	}
 
@@ -328,7 +340,7 @@ func (s *scheduler) Run(ctx context.Context) error {
 }
 
 // executeStage finds the executor for the given stage and execute.
-func (s *scheduler) executeStage(sig executor.StopSignal, ps *model.PipelineStage) model.StageStatus {
+func (s *scheduler) executeStage(sig executor.StopSignal, ps model.PipelineStage, executorFactory func(executor.Input) (executor.Executor, bool)) model.StageStatus {
 	var (
 		ctx            = sig.Context()
 		originalStatus = ps.Status
@@ -338,7 +350,7 @@ func (s *scheduler) executeStage(sig executor.StopSignal, ps *model.PipelineStag
 
 	// Update stage status to RUNNING if needed.
 	if model.CanUpdateStageStatus(ps.Status, model.StageStatus_STAGE_RUNNING) {
-		if err := s.reportStageStatus(ctx, ps.Id, model.StageStatus_STAGE_RUNNING); err != nil {
+		if err := s.reportStageStatus(ctx, ps.Id, model.StageStatus_STAGE_RUNNING, ps.Requires); err != nil {
 			return model.StageStatus_STAGE_FAILURE
 		}
 		originalStatus = model.StageStatus_STAGE_RUNNING
@@ -347,14 +359,14 @@ func (s *scheduler) executeStage(sig executor.StopSignal, ps *model.PipelineStag
 	// Check the existence of the specified cloud provider.
 	if !s.pipedConfig.HasCloudProvider(s.deployment.CloudProvider, s.deployment.CloudProviderType()) {
 		lp.AppendError(fmt.Sprintf("This piped is not having the specified cloud provider in this deployment: %v", s.deployment.CloudProvider))
-		s.reportStageStatus(ctx, ps.Id, model.StageStatus_STAGE_FAILURE)
+		s.reportStageStatus(ctx, ps.Id, model.StageStatus_STAGE_FAILURE, ps.Requires)
 		return model.StageStatus_STAGE_FAILURE
 	}
 
 	// Ensure that all needed things has been prepared before executing any stage.
 	if err := s.ensurePreparing(ctx, lp); err != nil {
 		if !sig.Stopped() {
-			s.reportStageStatus(ctx, ps.Id, model.StageStatus_STAGE_FAILURE)
+			s.reportStageStatus(ctx, ps.Id, model.StageStatus_STAGE_FAILURE, ps.Requires)
 			return model.StageStatus_STAGE_FAILURE
 		}
 		return originalStatus
@@ -372,19 +384,19 @@ func (s *scheduler) executeStage(sig executor.StopSignal, ps *model.PipelineStag
 	}
 	if stageConfig == nil {
 		lp.AppendError("Unabled to find the stage configuration")
-		s.reportStageStatus(ctx, ps.Id, model.StageStatus_STAGE_FAILURE)
+		s.reportStageStatus(ctx, ps.Id, model.StageStatus_STAGE_FAILURE, ps.Requires)
 		return model.StageStatus_STAGE_FAILURE
 	}
 
 	app, ok := s.applicationLister.Get(s.deployment.ApplicationId)
 	if !ok {
 		lp.AppendError(fmt.Sprintf("Application %s for this deployment was not found (Maybe it was disabled).", s.deployment.ApplicationId))
-		s.reportStageStatus(ctx, ps.Id, model.StageStatus_STAGE_FAILURE)
+		s.reportStageStatus(ctx, ps.Id, model.StageStatus_STAGE_FAILURE, ps.Requires)
 		return model.StageStatus_STAGE_FAILURE
 	}
 
 	input := executor.Input{
-		Stage:            ps,
+		Stage:            &ps,
 		StageConfig:      *stageConfig,
 		Deployment:       s.deployment,
 		DeploymentConfig: s.deploymentConfig,
@@ -406,11 +418,11 @@ func (s *scheduler) executeStage(sig executor.StopSignal, ps *model.PipelineStag
 	}
 
 	// Find the executor for this stage.
-	ex, ok := s.executorRegistry.Executor(model.Stage(ps.Name), input)
+	ex, ok := executorFactory(input)
 	if !ok {
 		err := fmt.Errorf("no registered executor for stage %s", ps.Name)
 		lp.AppendError(err.Error())
-		s.reportStageStatus(ctx, ps.Id, model.StageStatus_STAGE_FAILURE)
+		s.reportStageStatus(ctx, ps.Id, model.StageStatus_STAGE_FAILURE, ps.Requires)
 		return model.StageStatus_STAGE_FAILURE
 	}
 
@@ -421,7 +433,7 @@ func (s *scheduler) executeStage(sig executor.StopSignal, ps *model.PipelineStag
 		status == model.StageStatus_STAGE_CANCELLED ||
 		(status == model.StageStatus_STAGE_FAILURE && !sig.Stopped()) {
 
-		s.reportStageStatus(ctx, ps.Id, status)
+		s.reportStageStatus(ctx, ps.Id, status, ps.Requires)
 		return status
 	}
 
@@ -488,7 +500,7 @@ func (s *scheduler) ensurePreparing(ctx context.Context, lp logpersister.StageLo
 	return err
 }
 
-func (s *scheduler) reportStageStatus(ctx context.Context, stageID string, status model.StageStatus) error {
+func (s *scheduler) reportStageStatus(ctx context.Context, stageID string, status model.StageStatus, requires []string) error {
 	var (
 		err error
 		now = s.nowFunc()
@@ -496,6 +508,7 @@ func (s *scheduler) reportStageStatus(ctx context.Context, stageID string, statu
 			DeploymentId: s.deployment.Id,
 			StageId:      stageID,
 			Status:       status,
+			Requires:     requires,
 			Visible:      true,
 			CompletedAt:  now.Unix(),
 		}
@@ -555,9 +568,6 @@ func (s *scheduler) reportDeploymentCompleted(ctx context.Context, status model.
 	// Update deployment status on remote.
 	for retry.WaitNext(ctx) {
 		if _, err = s.apiClient.ReportDeploymentCompleted(ctx, req); err == nil {
-			if err := s.reportMostRecentlySuccessfulDeployment(ctx); err != nil {
-				s.logger.Error("failed to report most recently successful deployment", zap.Error(err))
-			}
 			return nil
 		}
 		err = fmt.Errorf("failed to report deployment status to control-plane: %w", err)
