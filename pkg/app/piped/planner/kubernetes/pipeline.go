@@ -73,24 +73,12 @@ func buildPipeline(autoRollback bool, now time.Time) []*model.PipelineStage {
 }
 
 func buildProgressivePipeline(pp *config.DeploymentPipeline, autoRollback bool, now time.Time) []*model.PipelineStage {
-	var stages []config.PipelineStage
-	if pp != nil {
-		stages = pp.Stages
-	}
-
-	var predefined bool
-	if len(stages) == 0 {
-		predefined = true
-		stage, _ := planner.GetPredefinedStage(planner.PredefinedStageK8sUpdate)
-		stages = []config.PipelineStage{stage}
-	}
-
 	var (
 		preStageID = ""
-		out        = make([]*model.PipelineStage, 0, len(stages))
+		out        = make([]*model.PipelineStage, 0, len(pp.Stages))
 	)
 
-	for i, s := range stages {
+	for i, s := range pp.Stages {
 		id := s.Id
 		if id == "" {
 			id = fmt.Sprintf("stage-%d", i)
@@ -100,7 +88,7 @@ func buildProgressivePipeline(pp *config.DeploymentPipeline, autoRollback bool, 
 			Name:       s.Name.String(),
 			Desc:       s.Desc,
 			Index:      int32(i),
-			Predefined: predefined,
+			Predefined: false,
 			Visible:    true,
 			Status:     model.StageStatus_STAGE_NOT_STARTED_YET,
 			CreatedAt:  now.Unix(),
