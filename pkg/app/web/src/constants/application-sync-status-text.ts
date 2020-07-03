@@ -7,5 +7,5 @@ export const APPLICATION_SYNC_STATUS_TEXT: Record<
   [ApplicationSyncStatus.UNKNOWN]: "Unknown",
   [ApplicationSyncStatus.SYNCED]: "Synced",
   [ApplicationSyncStatus.DEPLOYING]: "Deploying",
-  [ApplicationSyncStatus.OUT_OF_SYNC]: "Out of sync",
+  [ApplicationSyncStatus.OUT_OF_SYNC]: "Out of Sync",
 };
