@@ -50,6 +50,12 @@ func (p *Planner) Plan(ctx context.Context, in planner.Input) (out planner.Outpu
 		return
 	}
 
+	if cfg.Pipeline == nil || len(cfg.Pipeline.Stages) == 0 {
+		out.Stages = buildPipeline(cfg.Input.AutoRollback, time.Now())
+		out.Description = "Apply all manifests because the progressive pipeline was not configured."
+		return
+	}
+
 	manifestCache := provider.AppManifestsCache{
 		AppID:  in.Deployment.ApplicationId,
 		Cache:  in.AppManifestsCache,
