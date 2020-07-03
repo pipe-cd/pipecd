@@ -39,6 +39,16 @@ func TestIsTouchedByChangedFiles(t *testing.T) {
 			expected: false,
 		},
 		{
+			name:           "not touched with suffix",
+			appDir:         "app/demo/",
+			dependencyDirs: nil,
+			changedFiles: []string{
+				"app/hello.txt",
+				"app/foo/deployment.yaml",
+			},
+			expected: false,
+		},
+		{
 			name:           "touched in app dir",
 			appDir:         "app/demo",
 			dependencyDirs: nil,
