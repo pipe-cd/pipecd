@@ -21,17 +21,18 @@ const useStyles = makeStyles((theme) => ({
 
 interface Props {
   projectName: string;
-  onSubmit: (description: string) => void;
+  onSubmit: (props: { name: string; desc: string }) => void;
   onClose: () => void;
 }
 
 export const AddPipedForm: FC<Props> = ({ projectName, onSubmit, onClose }) => {
   const classes = useStyles();
-  const [description, setDescription] = useState<string>("");
+  const [name, setName] = useState<string>("");
+  const [desc, setDesc] = useState<string>("");
 
-  function handleSave() {
-    onSubmit(description);
-  }
+  const handleSave = (): void => {
+    onSubmit({ name, desc });
+  };
 
   return (
     <div className={classes.root}>
@@ -42,18 +43,27 @@ export const AddPipedForm: FC<Props> = ({ projectName, onSubmit, onClose }) => {
       <Divider />
       <form className={classes.form}>
         <TextField
-          label="description"
+          label="Name"
           variant="outlined"
           margin="dense"
-          onChange={(e) => setDescription(e.currentTarget.value)}
-          value={description}
+          onChange={(e) => setName(e.currentTarget.value)}
+          value={name}
           fullWidth
+        />
+        <TextField
+          label="Description"
+          variant="outlined"
+          margin="dense"
+          onChange={(e) => setDesc(e.currentTarget.value)}
+          value={desc}
+          fullWidth
+          required
         />
         <Button
           color="primary"
           type="button"
           onClick={handleSave}
-          disabled={description === ""}
+          disabled={desc === ""}
         >
           SAVE
         </Button>

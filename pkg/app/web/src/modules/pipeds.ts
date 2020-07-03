@@ -30,13 +30,13 @@ export const fetchPipeds = createAsyncThunk<Piped[], boolean>(
   }
 );
 
-export const addPiped = createAsyncThunk<RegisteredPiped, string>(
-  "pipeds/add",
-  async (desc) => {
-    const res = await pipedsApi.registerPiped({ desc, name: "" });
-    return res;
-  }
-);
+export const addPiped = createAsyncThunk<
+  RegisteredPiped,
+  { name: string; desc: string }
+>("pipeds/add", async (props) => {
+  const res = await pipedsApi.registerPiped(props);
+  return res;
+});
 
 export const disablePiped = createAsyncThunk<void, { pipedId: string }>(
   "pipeds/disable",

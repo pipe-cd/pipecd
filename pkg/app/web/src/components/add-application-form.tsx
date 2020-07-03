@@ -19,7 +19,7 @@ import {
 import {
   Piped,
   selectById as selectPipedById,
-  selectIds as selectPipedIds,
+  selectAll as selectPipeds,
 } from "../modules/pipeds";
 
 const useStyles = makeStyles((theme) => ({
@@ -148,8 +148,8 @@ export const AddApplicationForm: FC<Props> = ({
     selectEnvironments(state.environments)
   );
 
-  const pipedIds = useSelector<AppState, (string | number)[]>((state) =>
-    selectPipedIds(state.pipeds)
+  const pipeds = useSelector<AppState, Piped[]>((state) =>
+    selectPipeds(state.pipeds)
   );
   const selectedPiped = useSelector<AppState, Piped | undefined>((state) =>
     selectPipedById(state.pipeds, formState.pipedId)
@@ -226,7 +226,10 @@ export const AddApplicationForm: FC<Props> = ({
             name="Piped"
             value={formState.pipedId}
             onChange={(value) => dispatch({ type: "update-piped", value })}
-            items={pipedIds.map((id) => ({ name: `${id}`, value: `${id}` }))}
+            items={pipeds.map((piped) => ({
+              name: `${piped.name} (${piped.id})`,
+              value: piped.id,
+            }))}
             disabled={isAdding}
           />
         </div>

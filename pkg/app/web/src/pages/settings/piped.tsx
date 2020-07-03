@@ -78,8 +78,8 @@ export const SettingsPipedPage: FC = memo(function SettingsPipedPage() {
     setActionTargetId(null);
   };
 
-  const handleSubmit = (description: string): void => {
-    dispatch(addPiped(description)).then(() => {
+  const handleSubmit = (props: { name: string; desc: string }): void => {
+    dispatch(addPiped(props)).then(() => {
       setIsOpenForm(false);
     });
   };
@@ -114,7 +114,10 @@ export const SettingsPipedPage: FC = memo(function SettingsPipedPage() {
             dense
             className={classes.item}
           >
-            <ListItemText primary={pipe.id} secondary={pipe.desc} />
+            <ListItemText
+              primary={pipe.id}
+              secondary={`${pipe.name}: ${pipe.desc}`}
+            />
             <ListItemSecondaryAction>
               <IconButton
                 edge="end"
