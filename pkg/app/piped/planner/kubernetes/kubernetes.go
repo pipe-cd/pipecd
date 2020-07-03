@@ -125,51 +125,61 @@ func (p *Planner) Plan(ctx context.Context, in planner.Input) (out planner.Outpu
 	return
 }
 
+// First up, checks to see if the workload's `spec.template` has been changed,
+// and then checks if the configmap/secret's data.
 func decideStrategy(olds, news []provider.Manifest) (progressive bool, desc string) {
-	oldWorkload, ok := findWorkload(olds)
-	if !ok {
-		desc = "Apply all manifests because it was unable to find the currently running workloads."
-		return
-	}
+	desc = "Apply all manifests"
 
-	newWorkload, ok := findWorkload(news)
-	if !ok {
-		desc = "Apply all manifests because it was unable to find workloads in the new manifests."
-		return
-	}
+	oldWorkload, foundOld := findWorkload(olds)
+	newWorkload, foundNew := findWorkload(news)
+	if foundOld && foundNew {
+		// If the workload's pod template was touched
+		// do progressive deployment with the specified pipeline.
+		var (
+			workloadDiffs = provider.Diff(oldWorkload, newWorkload, provider.WithDiffPathPrefix("spec"))
+			templateDiffs = workloadDiffs.FindByPrefix("spec.template")
+		)
+		if len(templateDiffs) > 0 {
+			progressive = true
 
-	// If the workload's pod template was touched
-	// do progressive deployment with the specified pipeline.
-	var (
-		workloadDiffs = provider.Diff(oldWorkload, newWorkload, provider.WithDiffPathPrefix("spec"))
-		templateDiffs = workloadDiffs.FindByPrefix("spec.template")
-	)
-	if len(templateDiffs) > 0 {
-		progressive = true
+			if msg, changed := checkImageChange(templateDiffs); changed {
+				desc = msg
+				return
+			}
 
-		if msg, changed := checkImageChange(templateDiffs); changed {
-			desc = msg
+			desc = fmt.Sprintf("Progressive deployment because pod template of workload %s was changed.", newWorkload.Key.Name)
 			return
 		}
-
-		desc = fmt.Sprintf("Progressive deployment because pod template of workload %s was changed.", newWorkload.Key.Name)
-		return
+		// Check if this is a scaling commit.
+		if msg, changed := checkReplicasChange(workloadDiffs); changed {
+			desc = msg
+		}
 	}
 
-	// If the config/secret was touched
+	// If the config/secret was touched,
 	// we also need to do progressive deployment to check run with the new config/secret content.
-	// desc = fmt.Sprintf("Do progressive deployment because configmap %s was updated", "config")
-
-	// Check if this is a scaling commit.
-	if msg, changed := checkReplicasChange(workloadDiffs); changed {
-		desc = msg
+	oldConfigs := findConfigs(olds)
+	newConfigs := findConfigs(news)
+	if len(oldConfigs) == 0 || len(newConfigs) == 0 {
 		return
 	}
+	for k, oc := range oldConfigs {
+		nc, ok := newConfigs[k]
+		if !ok {
+			continue
+		}
+		diffs := provider.Diff(oc, nc, provider.WithDiffPathPrefix("data"))
+		if len(diffs) > 0 {
+			progressive = true
+			desc = fmt.Sprintf("Progressive deployment because %s was updated", k)
+			return
+		}
+	}
 
-	desc = "Apply all manifests"
 	return
 }
 
+// The assumption that an application has only one workload.
 func findWorkload(manifests []provider.Manifest) (provider.Manifest, bool) {
 	for _, m := range manifests {
 		if !m.Key.IsDeployment() {
@@ -180,13 +190,15 @@ func findWorkload(manifests []provider.Manifest) (provider.Manifest, bool) {
 	return provider.Manifest{}, false
 }
 
-func findConfig(manifests []provider.Manifest) []provider.Manifest {
-	configs := make([]provider.Manifest, 0)
+func findConfigs(manifests []provider.Manifest) map[string]provider.Manifest {
+	configs := make(map[string]provider.Manifest, 0)
 	for _, m := range manifests {
-		if !m.Key.IsConfigMap() && !m.Key.IsSecret() {
-			continue
+		if m.Key.IsConfigMap() {
+			configs["configmap-"+m.Key.Name] = m
 		}
-		configs = append(configs, m)
+		if m.Key.IsSecret() {
+			configs["secret-"+m.Key.Name] = m
+		}
 	}
 	return configs
 }
