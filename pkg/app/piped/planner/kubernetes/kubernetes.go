@@ -125,13 +125,14 @@ func (p *Planner) Plan(ctx context.Context, in planner.Input) (out planner.Outpu
 	return
 }
 
+// First up, checks to see if the workload's `spec.template` has been changed,
+// and then checks if the configmap/secret's data.
 func decideStrategy(olds, news []provider.Manifest) (progressive bool, desc string) {
 	oldWorkload, ok := findWorkload(olds)
 	if !ok {
 		desc = "Apply all manifests because it was unable to find the currently running workloads."
 		return
 	}
-
 	newWorkload, ok := findWorkload(news)
 	if !ok {
 		desc = "Apply all manifests because it was unable to find workloads in the new manifests."
@@ -156,9 +157,30 @@ func decideStrategy(olds, news []provider.Manifest) (progressive bool, desc stri
 		return
 	}
 
-	// If the config/secret was touched
+	// If the config/secret was touched,
 	// we also need to do progressive deployment to check run with the new config/secret content.
-	// desc = fmt.Sprintf("Do progressive deployment because configmap %s was updated", "config")
+	oldConfigs := findConfigs(olds)
+	newConfigs := findConfigs(news)
+	if len(oldConfigs) > 0 && len(newConfigs) > 0 {
+		for k, oc := range oldConfigs {
+			nc, ok := newConfigs[k]
+			if !ok {
+				desc = fmt.Sprintf("Progressive deployment because %s %s was deleted", oc.Key.Kind, oc.Key.Name)
+				return
+			}
+			diffs := provider.Diff(oc, nc, provider.WithDiffPathPrefix("data"))
+			if len(diffs) > 0 {
+				progressive = true
+				desc = fmt.Sprintf("Progressive deployment because %s %s was updated", oc.Key.Kind, oc.Key.Name)
+				return
+			}
+			delete(newConfigs, k)
+		}
+		if len(newConfigs) > 0 {
+			desc = fmt.Sprintf("Progressive deployment because new %d configmap/secret added", len(newConfigs))
+			return
+		}
+	}
 
 	// Check if this is a scaling commit.
 	if msg, changed := checkReplicasChange(workloadDiffs); changed {
@@ -170,6 +192,7 @@ func decideStrategy(olds, news []provider.Manifest) (progressive bool, desc stri
 	return
 }
 
+// The assumption that an application has only one workload.
 func findWorkload(manifests []provider.Manifest) (provider.Manifest, bool) {
 	for _, m := range manifests {
 		if !m.Key.IsDeployment() {
@@ -180,13 +203,15 @@ func findWorkload(manifests []provider.Manifest) (provider.Manifest, bool) {
 	return provider.Manifest{}, false
 }
 
-func findConfig(manifests []provider.Manifest) []provider.Manifest {
-	configs := make([]provider.Manifest, 0)
+func findConfigs(manifests []provider.Manifest) map[provider.ResourceKey]provider.Manifest {
+	configs := make(map[provider.ResourceKey]provider.Manifest, 0)
 	for _, m := range manifests {
-		if !m.Key.IsConfigMap() && !m.Key.IsSecret() {
-			continue
+		if m.Key.IsConfigMap() {
+			configs[m.Key] = m
 		}
-		configs = append(configs, m)
+		if m.Key.IsSecret() {
+			configs[m.Key] = m
+		}
 	}
 	return configs
 }
