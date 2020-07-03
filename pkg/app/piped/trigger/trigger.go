@@ -349,6 +349,9 @@ func (t *Trigger) getMostRecentlyTriggeredDeployment(ctx context.Context, applic
 }
 
 func isTouchedByChangedFiles(appDir string, dependencyDirs []string, changedFiles []string) bool {
+	if !strings.HasSuffix(appDir, "/") {
+		appDir += "/"
+	}
 	// If any files inside the application directory was changed
 	// this application is considered as touched.
 	for _, cf := range changedFiles {

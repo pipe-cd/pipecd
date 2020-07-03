@@ -39,6 +39,14 @@ func TestIsTouchedByChangedFiles(t *testing.T) {
 			expected: false,
 		},
 		{
+			name:   "not touched in dir whose name does not match exactly",
+			appDir: "app/demo",
+			changedFiles: []string{
+				"app/demo-2",
+			},
+			expected: false,
+		},
+		{
 			name:           "touched in app dir",
 			appDir:         "app/demo",
 			dependencyDirs: nil,
