@@ -93,7 +93,13 @@ export const KubernetesStateView: FC<Props> = ({ resources }) => {
   return (
     <div className={classes.container}>
       {nodes.map((node) => (
-        <Box key={node.name} position="absolute" top={node.y} left={node.x}>
+        <Box
+          key={`${node.kind}-${node.name}`}
+          position="absolute"
+          top={node.y}
+          left={node.x}
+          zIndex={1}
+        >
           <KubernetesResource
             name={node.name}
             kind={node.kind}
@@ -126,7 +132,6 @@ export const KubernetesStateView: FC<Props> = ({ resources }) => {
               position: "absolute",
               top: baseY + NODE_HEIGHT / 2,
               left: baseX + NODE_WIDTH / 2,
-              zIndex: -1,
             }}
             width={svgWidth}
             height={svgHeight}
