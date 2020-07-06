@@ -37,6 +37,7 @@ const useStyles = makeStyles((theme) => ({
   main: {
     padding: theme.spacing(2),
     display: "flex",
+    zIndex: theme.zIndex.appBar,
   },
   nameAndEnv: {
     display: "flex",
