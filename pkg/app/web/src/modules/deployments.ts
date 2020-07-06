@@ -48,6 +48,14 @@ export const fetchDeployments = createAsyncThunk<Deployment[]>(
   }
 );
 
+export const approveStage = createAsyncThunk<
+  void,
+  { deploymentId: string; stageId: string }
+>("deployments/approve", async (props, thunkAPI) => {
+  const { commandId } = await deploymentsApi.approveStage(props);
+  await thunkAPI.dispatch(fetchCommand(commandId));
+});
+
 export const cancelDeployment = createAsyncThunk<
   void,
   {

@@ -18,6 +18,16 @@ export const theme = createMuiTheme({
         },
       },
     },
+    MuiDialog: {
+      paper: {
+        borderRadius: 16,
+      },
+    },
+    MuiDialogActions: {
+      spacing: {
+        padding: 16,
+      },
+    },
   },
   props: {
     MuiTypography: {

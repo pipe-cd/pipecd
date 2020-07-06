@@ -6,6 +6,8 @@ import {
   ListDeploymentsResponse,
   CancelDeploymentRequest,
   CancelDeploymentResponse,
+  ApproveStageRequest,
+  ApproveStageResponse,
 } from "pipe/pkg/app/web/api_client/service_pb";
 
 export const getDeployment = ({
@@ -31,4 +33,14 @@ export const cancelDeployment = ({
   req.setDeploymentId(deploymentId);
   req.setWithoutRollback(withoutRollback);
   return apiRequest(req, apiClient.cancelDeployment);
+};
+
+export const approveStage = ({
+  deploymentId,
+  stageId,
+}: ApproveStageRequest.AsObject): Promise<ApproveStageResponse.AsObject> => {
+  const req = new ApproveStageRequest();
+  req.setDeploymentId(deploymentId);
+  req.setStageId(stageId);
+  return apiRequest(req, apiClient.approveStage);
 };

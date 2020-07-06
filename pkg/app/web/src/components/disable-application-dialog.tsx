@@ -7,6 +7,7 @@ import {
   DialogActions,
   Button,
   Typography,
+  DialogContentText,
 } from "@material-ui/core";
 import { useSelector, useDispatch } from "react-redux";
 import {
@@ -19,12 +20,9 @@ import Alert from "@material-ui/lab/Alert";
 import { AppDispatch } from "../store";
 
 const useStyles = makeStyles((theme) => ({
-  disableButton: {
-    color: theme.palette.error.contrastText,
-    backgroundColor: theme.palette.error.main,
-    "&:hover": {
-      backgroundColor: theme.palette.error.dark,
-    },
+  disableTargetName: {
+    color: theme.palette.text.primary,
+    fontWeight: theme.typography.fontWeightMedium,
   },
   description: {
     marginBottom: theme.spacing(2),
@@ -68,14 +66,16 @@ export const DisableApplicationDialog: FC<Props> = memo(
           <Alert severity="warning" className={classes.description}>
             Are you sure you want to disable the application?
           </Alert>
-          <div>
+          <DialogContentText>
             <Typography variant="caption">NAME</Typography>
-            <Typography variant="body1">{application.name}</Typography>
-          </div>
+            <Typography variant="body1" className={classes.disableTargetName}>
+              {application.name}
+            </Typography>
+          </DialogContentText>
         </DialogContent>
         <DialogActions>
           <Button onClick={onCancel}>Cancel</Button>
-          <Button className={classes.disableButton} onClick={handleDisable}>
+          <Button color="primary" onClick={handleDisable}>
             Disable
           </Button>
         </DialogActions>

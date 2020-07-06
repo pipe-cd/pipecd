@@ -83,6 +83,6 @@ export const selectStageLogById = (
     deploymentId: string;
     offsetIndex: string;
   }
-): StageLog => {
+): StageLog | undefined => {
   return state[`${deploymentId}/${offsetIndex}`];
 };
