@@ -83,9 +83,9 @@ func determineResourceHealth(key ResourceKey, obj *unstructured.Unstructured) (s
 		return determineServiceHealth(obj)
 	case KindIngress:
 		return determineIngressHealth(obj)
+	default:
+		return model.KubernetesResourceState_HEALTHY, "Unimplemented or unknown resource"
 	}
-
-	return
 }
 
 func determineDeploymentHealth(obj *unstructured.Unstructured) (status model.KubernetesResourceState_HealthStatus, desc string) {
