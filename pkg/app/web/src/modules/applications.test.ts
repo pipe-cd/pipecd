@@ -9,6 +9,7 @@ describe("applicationsSlice reducer", () => {
     ).toMatchInlineSnapshot(`
       Object {
         "adding": false,
+        "disabling": Object {},
         "entities": Object {},
         "ids": Array [],
         "syncing": Object {},

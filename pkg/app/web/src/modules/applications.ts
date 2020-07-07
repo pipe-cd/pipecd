@@ -75,14 +75,23 @@ export const addApplication = createAsyncThunk<
   });
 });
 
+export const disableApplication = createAsyncThunk<
+  void,
+  { applicationId: string }
+>("applications/disable", async (props) => {
+  await applicationsApi.disableApplication(props);
+});
+
 export const applicationsSlice = createSlice({
   name: "applications",
   initialState: applicationsAdapter.getInitialState<{
     adding: boolean;
     syncing: Record<string, boolean>;
+    disabling: Record<string, boolean>;
   }>({
     adding: false,
     syncing: {},
+    disabling: {},
   }),
   reducers: {},
   extraReducers: (builder) => {
@@ -117,6 +126,16 @@ export const applicationsSlice = createSlice({
           // If command type is sync application and that process is finished, change syncing status to false
           state.syncing[action.payload.applicationId] = false;
         }
+      })
+      .addCase(disableApplication.pending, (state, action) => {
+        state.disabling[action.meta.arg.applicationId] = true;
+      })
+      .addCase(disableApplication.fulfilled, (state, action) => {
+        state.disabling[action.meta.arg.applicationId] = false;
+        applicationsAdapter.removeOne(state, action.meta.arg.applicationId);
+      })
+      .addCase(disableApplication.rejected, (state, action) => {
+        state.disabling[action.meta.arg.applicationId] = false;
       });
   },
 });

@@ -10,6 +10,8 @@ import {
   AddApplicationResponse,
   SyncApplicationRequest,
   SyncApplicationResponse,
+  DisableApplicationRequest,
+  DisableApplicationResponse,
 } from "pipe/pkg/app/web/api_client/service_pb";
 import { ApplicationGitPath } from "pipe/pkg/app/web/model/common_pb";
 
@@ -74,4 +76,14 @@ export const syncApplication = async ({
   const req = new SyncApplicationRequest();
   req.setApplicationId(applicationId);
   return apiRequest(req, apiClient.syncApplication);
+};
+
+export const disableApplication = async ({
+  applicationId,
+}: DisableApplicationRequest.AsObject): Promise<
+  DisableApplicationResponse.AsObject
+> => {
+  const req = new DisableApplicationRequest();
+  req.setApplicationId(applicationId);
+  return apiRequest(req, apiClient.disableApplication);
 };
