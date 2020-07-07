@@ -183,7 +183,7 @@ func (e *Executor) generateCanaryManifests(namespace string, manifests []provide
 		canaryManifests = append(canaryManifests, m)
 	}
 
-	// Generate new workload manifests for VANARY variant.
+	// Generate new workload manifests for CANARY variant.
 	// The generated ones will mount to the new ConfigMaps and Secrets.
 	replicasCalculator := func(cur *int32) int32 {
 		if cur == nil {

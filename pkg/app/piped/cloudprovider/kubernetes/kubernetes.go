@@ -193,7 +193,7 @@ func (p *provider) LoadManifests(ctx context.Context) (manifests []Manifest, err
 		manifests, err = ParseManifests(data)
 
 	case TemplatingMethodNone:
-		manifests, err = LoadPlainYAMLMannifests(ctx, p.appDir, p.input.Manifests)
+		manifests, err = LoadPlainYAMLManifests(ctx, p.appDir, p.input.Manifests)
 
 	default:
 		err = fmt.Errorf("unsupport templating method %v", p.templatingMethod)

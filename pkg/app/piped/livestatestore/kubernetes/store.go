@@ -88,10 +88,9 @@ func (s *store) initialize() {
 	s.events = nil
 }
 
-func (s *store) onAddResource(obj *unstructured.Unstructured) {
+func (s *store) addResource(obj *unstructured.Unstructured, appID string) {
 	var (
 		uid    = string(obj.GetUID())
-		appID  = obj.GetAnnotations()[provider.LabelApplication]
 		key    = provider.MakeResourceKey(obj)
 		owners = obj.GetOwnerReferences()
 		now    = time.Now()
@@ -152,10 +151,27 @@ func (s *store) onAddResource(obj *unstructured.Unstructured) {
 	s.mu.Lock()
 	s.resources[uid] = appResource{appID: appID, owners: owners, resource: obj}
 	s.mu.Unlock()
+
+}
+
+func (s *store) onAddResource(obj *unstructured.Unstructured) {
+	appID := obj.GetAnnotations()[provider.LabelApplication]
+	s.addResource(obj, appID)
 }
 
 func (s *store) onUpdateResource(oldObj, obj *unstructured.Unstructured) {
-	s.onAddResource(obj)
+	uid := string(obj.GetUID())
+	appID := obj.GetAnnotations()[provider.LabelApplication]
+	// Depended nodes may not contain the app id in its annotations.
+	// In that case, preventing them from overwriting with an empty id
+	if appID == "" {
+		s.mu.RLock()
+		if r, ok := s.resources[uid]; ok {
+			appID = r.appID
+		}
+		s.mu.RUnlock()
+	}
+	s.addResource(obj, appID)
 }
 
 func (s *store) onDeleteResource(obj *unstructured.Unstructured) {
@@ -185,6 +201,15 @@ func (s *store) onDeleteResource(obj *unstructured.Unstructured) {
 		return
 	}
 
+	// Handle depended nodes from here.
+
+	if appID == "" {
+		s.mu.RLock()
+		if r, ok := s.resources[uid]; ok {
+			appID = r.appID
+		}
+		s.mu.RUnlock()
+	}
 	// Try to determine the application ID by traveling its owners.
 	if appID == "" {
 		s.mu.RLock()
