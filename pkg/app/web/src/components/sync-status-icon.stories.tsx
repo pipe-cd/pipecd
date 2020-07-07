@@ -3,7 +3,7 @@ import { SyncStatusIcon } from "./sync-status-icon";
 import { ApplicationSyncStatus } from "pipe/pkg/app/web/model/application_pb";
 
 export default {
-  title: "SyncStatusIcon",
+  title: "APPLICATION|SyncStatusIcon",
   component: SyncStatusIcon,
 };
 

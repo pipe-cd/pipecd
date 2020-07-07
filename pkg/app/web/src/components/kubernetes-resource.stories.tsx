@@ -3,7 +3,7 @@ import { KubernetesResource } from "./kubernetes-resource";
 import { HealthStatus } from "../modules/applications-live-state";
 
 export default {
-  title: "KubernetesResource",
+  title: "APPLICATION|KubernetesResource",
   component: KubernetesResource,
 };
 

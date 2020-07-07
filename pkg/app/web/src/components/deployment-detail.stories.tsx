@@ -5,11 +5,12 @@ import { DeploymentDetail } from "./deployment-detail";
 import { dummyEnv } from "../__fixtures__/dummy-environment";
 
 export default {
-  title: "DeploymentDetail",
+  title: "DEPLOYMENT|DeploymentDetail",
   component: DeploymentDetail,
   decorators: [
     createDecoratorRedux({
       deployments: {
+        canceling: {},
         entities: {
           "deployment-1": dummyDeployment,
         },

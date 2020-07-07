@@ -1,7 +1,25 @@
 import React from "react";
 import { createDecoratorRedux } from "../../.storybook/redux-decorator";
 import { Pipeline } from "./pipeline";
-import { Deployment } from "../modules/deployments";
+import { Deployment, Stage } from "../modules/deployments";
+
+const stage = (props?: Partial<Stage>): Stage => ({
+  id: "fake-stage-id-0-0",
+  name: "K8S_CANARY_ROLLOUT",
+  desc: "",
+  index: 0,
+  predefined: true,
+  requiresList: [],
+  visible: false,
+  status: 2,
+  statusDescription: "",
+  metadataMap: [],
+  retriedCount: 0,
+  completedAt: 1592203166,
+  createdAt: 1592203166,
+  updatedAt: 1592203166,
+  ...props,
+});
 
 const DEPLOYMENT_ID = "debug-deployment-id-01";
 const fakeDeployment: Deployment = {
@@ -36,119 +54,58 @@ const fakeDeployment: Deployment = {
   status: 2,
   statusDescription: "",
   stagesList: [
-    {
-      id: "fake-stage-id-0-0",
-      name: "K8S_CANARY_ROLLOUT",
-      desc: "",
-      index: 0,
-      predefined: true,
-      requiresList: [],
-      visible: false,
-      status: 2,
-      metadataMap: [],
-      retriedCount: 0,
-      completedAt: 1592203166,
-      createdAt: 1592203166,
-      updatedAt: 1592203166,
-    },
-    {
+    stage({ id: "fake-stage-id-0-0" }),
+    stage({
+      index: 1,
       id: "fake-stage-id-1-0",
-      name: "K8S_CANARY_ROLLOUT",
-      desc: "",
-      index: 0,
-      predefined: true,
       requiresList: ["fake-stage-id-0-0"],
-      visible: false,
       status: 1,
-      metadataMap: [],
-      retriedCount: 0,
-      completedAt: 0,
-      createdAt: 1592203166,
-      updatedAt: 1592203166,
-    },
-    {
+    }),
+    stage({
       id: "fake-stage-id-1-1",
       name: "K8S_PRIMARY_UPDATE",
-      desc: "",
-      index: 1,
-      predefined: true,
+      index: 2,
       requiresList: ["fake-stage-id-0-0"],
-      visible: false,
       status: 2,
-      metadataMap: [],
-      retriedCount: 0,
-      completedAt: 1592203166,
-      createdAt: 1592203166,
-      updatedAt: 1592203166,
-    },
-    {
+    }),
+    stage({
       id: "fake-stage-id-1-2",
       name: "K8S_CANARY_ROLLOUT",
-      desc: "",
       index: 2,
-      predefined: true,
       requiresList: ["fake-stage-id-0-0"],
-      visible: false,
       status: 3,
-      metadataMap: [],
-      retriedCount: 0,
-      completedAt: 1592203166,
-      createdAt: 1592203166,
-      updatedAt: 1592203166,
-    },
-    {
+    }),
+    stage({
       id: "fake-stage-id-2-0",
       name: "K8S_CANARY_CLEAN",
       desc: "waiting approval",
       index: 0,
-      predefined: true,
       requiresList: [
         "fake-stage-id-1-0",
         "fake-stage-id-1-1",
         "fake-stage-id-1-2",
       ],
-      visible: false,
       status: 0,
-      metadataMap: [],
-      retriedCount: 0,
-      completedAt: 0,
-      createdAt: 1592203166,
-      updatedAt: 1592203166,
-    },
-    {
+    }),
+    stage({
       id: "fake-stage-id-2-1",
       name: "K8S_CANARY_CLEAN",
       desc: "approved by cakecatz",
       index: 1,
-      predefined: true,
       requiresList: [
         "fake-stage-id-1-0",
         "fake-stage-id-1-1",
         "fake-stage-id-1-2",
       ],
-      visible: false,
       status: 0,
-      metadataMap: [],
-      retriedCount: 0,
-      completedAt: 0,
-      createdAt: 1592203166,
-      updatedAt: 1592203166,
-    },
-    {
+    }),
+    stage({
       id: "fake-stage-id-3-0",
       name: "K8S_CANARY_ROLLOUT",
-      desc: "",
       index: 0,
-      predefined: true,
       requiresList: ["fake-stage-id-2-0", "fake-stage-id-2-1"],
-      visible: false,
       status: 0,
-      metadataMap: [],
-      retriedCount: 0,
-      completedAt: 0,
-      createdAt: 1592203166,
-      updatedAt: 1592203166,
-    },
+    }),
   ],
   metadataMap: [],
   completedAt: 0,
@@ -157,7 +114,7 @@ const fakeDeployment: Deployment = {
 };
 
 export default {
-  title: "Pipeline",
+  title: "DEPLOYMENT|Pipeline",
   component: Pipeline,
   decorators: [
     createDecoratorRedux({

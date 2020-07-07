@@ -4,7 +4,7 @@ import { StageStatus } from "pipe/pkg/app/web/model/deployment_pb";
 import { action } from "@storybook/addon-actions";
 
 export default {
-  title: "PipelineStage",
+  title: "DEPLOYMENT|PipelineStage",
   component: PipelineStage,
 };
 
