@@ -394,13 +394,13 @@ func makeOutOfSyncStateBecauseMissingOrRedundant(missings, redundancies []provid
 	if len(missings) > 0 {
 		b.WriteString(fmt.Sprintf("The following %d manifests are defined in Git, but NOT appearing in the cluster:\n", len(missings)))
 		for _, m := range missings {
-			b.WriteString(fmt.Sprintf("- %s", m.Key.ReadableString()))
+			b.WriteString(fmt.Sprintf("- %s\n", m.Key.ReadableString()))
 		}
 	}
 	if len(redundancies) > 0 {
 		b.WriteString(fmt.Sprintf("The following %d manifests are NOT defined in Git, but appearing in the cluster:\n", len(redundancies)))
 		for _, m := range redundancies {
-			b.WriteString(fmt.Sprintf("- %s", m.Key.ReadableString()))
+			b.WriteString(fmt.Sprintf("- %s\n", m.Key.ReadableString()))
 		}
 	}
 	return model.ApplicationSyncState{
