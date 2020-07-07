@@ -17,6 +17,9 @@ export type StageLog = {
 type StageLogs = Record<string, StageLog>;
 const initialState: StageLogs = {};
 
+const createId = (props: { deploymentId: string; stageId: string }): string =>
+  `${props.deploymentId}/${props.stageId}`;
+
 export const fetchStageLog = createAsyncThunk<
   StageLog,
   {
@@ -51,7 +54,8 @@ export const stageLogsSlice = createSlice({
   extraReducers: (builder) => {
     builder
       .addCase(fetchStageLog.pending, (state, action) => {
-        state[`${action.meta.arg.deploymentId}/${action.meta.arg.stageId}`] = {
+        const id = `${action.meta.arg.deploymentId}/${action.meta.arg.stageId}`;
+        state[id] = {
           stageId: action.meta.arg.stageId,
           deploymentId: action.meta.arg.deploymentId,
           logBlocks: [],
@@ -59,10 +63,14 @@ export const stageLogsSlice = createSlice({
         };
       })
       .addCase(fetchStageLog.fulfilled, (state, action) => {
-        state[`${action.meta.arg.deploymentId}/${action.meta.arg.stageId}`] =
-          action.payload;
+        const id = createId(action.meta.arg);
+        state[id] = action.payload;
+        state[id].completed = true;
       })
-      .addCase(fetchStageLog.rejected, (state, action) => {});
+      .addCase(fetchStageLog.rejected, (state, action) => {
+        const id = createId(action.meta.arg);
+        state[id].completed = true;
+      });
   },
 });
 
@@ -75,6 +83,6 @@ export const selectStageLogById = (
     deploymentId: string;
     offsetIndex: string;
   }
-) => {
+): StageLog => {
   return state[`${deploymentId}/${offsetIndex}`];
 };

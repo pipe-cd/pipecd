@@ -13,6 +13,7 @@ import {
   selectById as selectDeploymentById,
 } from "../../modules/deployments";
 import { useInterval } from "../../utils/use-interval";
+import { clearActiveStage } from "../../modules/active-stage";
 
 const FETCH_INTERVAL = 4000;
 
@@ -59,6 +60,14 @@ export const DeploymentDetailPage: FC = memo(function DeploymentDetailPage() {
       isDeploymentRunning(deployment.status)
       ? FETCH_INTERVAL
       : null
+  );
+
+  // NOTE: Clear active stage when leave detail page
+  useEffect(
+    () => () => {
+      dispatch(clearActiveStage());
+    },
+    [dispatch]
   );
 
   return (
