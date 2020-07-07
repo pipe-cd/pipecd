@@ -2,7 +2,7 @@ import React from "react";
 import { Header } from "./header";
 
 export default {
-  title: "header",
+  title: "COMMON|Header",
   component: Header,
 };
 

@@ -6,13 +6,17 @@ import { dummyApplication } from "../__fixtures__/dummy-application";
 import { dummyApplicationLiveState } from "../__fixtures__/dummy-application-live-state";
 import { dummyEnv } from "../__fixtures__/dummy-environment";
 import { ApplicationDetail } from "./application-detail";
+import { AppState } from "../modules";
 
-const dummyStore = {
+const dummyStore: Partial<AppState> = {
   applications: {
     entities: {
       [dummyApplication.id]: dummyApplication,
     },
     ids: [dummyApplication.id],
+    syncing: {},
+    disabling: {},
+    adding: false,
   },
   environments: {
     entities: {
@@ -29,7 +33,7 @@ const dummyStore = {
 };
 
 export default {
-  title: "ApplicationDetail",
+  title: "APPLICATION|ApplicationDetail",
   component: ApplicationDetail,
 };
 
@@ -44,6 +48,9 @@ export const error: React.FC = () => (
     store={createStore({
       ...dummyStore,
       applications: {
+        adding: false,
+        disabling: {},
+        syncing: {},
         entities: {
           [dummyApplication.id]: {
             ...dummyApplication,

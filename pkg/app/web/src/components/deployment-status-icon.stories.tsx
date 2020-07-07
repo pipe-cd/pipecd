@@ -3,7 +3,7 @@ import { StatusIcon as DeploymentStatusIcon } from "./deployment-status-icon";
 import { DeploymentStatus } from "pipe/pkg/app/web/model/deployment_pb";
 
 export default {
-  title: "StatusIcon",
+  title: "DEPLOYMENT|StatusIcon",
   component: DeploymentStatusIcon,
 };
 

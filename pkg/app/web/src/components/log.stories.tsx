@@ -3,7 +3,7 @@ import { Log } from "./log";
 import { LogSeverity } from "../modules/stage-logs";
 
 export default {
-  title: "Log",
+  title: "DEPLOYMENT|Log",
   component: Log,
 };
 
