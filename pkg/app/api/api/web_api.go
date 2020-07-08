@@ -194,12 +194,17 @@ func (a *WebAPI) ListPipeds(ctx context.Context, req *webservice.ListPipedsReque
 				Operator: "==",
 				Value:    claims.Role.ProjectId,
 			},
-			{
+		},
+	}
+
+	if req.Options != nil {
+		if !req.Options.IncludeDisabled {
+			opts.Filters = append(opts.Filters, datastore.ListFilter{
 				Field:    "Disabled",
 				Operator: "==",
 				Value:    false,
-			},
-		},
+			})
+		}
 	}
 	pipeds, err := a.pipedStore.ListPipeds(ctx, opts)
 	if err != nil {
