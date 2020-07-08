@@ -202,6 +202,7 @@ func TestStageStatusChangedUpdater(t *testing.T) {
 		status       model.StageStatus
 		statusDesc   string
 		requires     []string
+		visible      bool
 		retriedCount int32
 		completedAt  int64
 
@@ -246,6 +247,7 @@ func TestStageStatusChangedUpdater(t *testing.T) {
 			status:       model.StageStatus_STAGE_SUCCESS,
 			statusDesc:   "updated-status-desc",
 			requires:     []string{"stage-1"},
+			visible:      true,
 			retriedCount: 2,
 			completedAt:  now.Unix(),
 
@@ -262,6 +264,7 @@ func TestStageStatusChangedUpdater(t *testing.T) {
 						Status:            model.StageStatus_STAGE_SUCCESS,
 						StatusDescription: "updated-status-desc",
 						Requires:          []string{"stage-1"},
+						Visible:           true,
 						Metadata:          map[string]string{"meta": "value"},
 						RetriedCount:      2,
 						CompletedAt:       now.Unix(),
@@ -274,7 +277,7 @@ func TestStageStatusChangedUpdater(t *testing.T) {
 
 	for _, tc := range testcases {
 		t.Run(tc.name, func(t *testing.T) {
-			updater := StageStatusChangedUpdater(tc.stageID, tc.status, tc.statusDesc, tc.requires, tc.retriedCount, tc.completedAt)
+			updater := StageStatusChangedUpdater(tc.stageID, tc.status, tc.statusDesc, tc.requires, tc.visible, tc.retriedCount, tc.completedAt)
 			err := updater(&tc.deployment)
 			if err != nil {
 				if tc.expectedErr == nil {

@@ -389,7 +389,7 @@ func (a *PipedAPI) ReportStageLogsFromLastCheckpoint(ctx context.Context, req *p
 // ReportStageStatusChanged used by piped to update the status
 // of a specific stage of a deployment.
 func (a *PipedAPI) ReportStageStatusChanged(ctx context.Context, req *pipedservice.ReportStageStatusChangedRequest) (*pipedservice.ReportStageStatusChangedResponse, error) {
-	updater := datastore.StageStatusChangedUpdater(req.StageId, req.Status, req.StatusDescription, req.Requires, req.RetriedCount, req.CompletedAt)
+	updater := datastore.StageStatusChangedUpdater(req.StageId, req.Status, req.StatusDescription, req.Requires, req.Visible, req.RetriedCount, req.CompletedAt)
 	err := a.deploymentStore.UpdateDeployment(ctx, req.DeploymentId, updater)
 	if err != nil {
 		switch err {
