@@ -68,17 +68,18 @@ var (
 		}
 	}
 
-	StageStatusChangedUpdater = func(stageID string, status model.StageStatus, statusDescription string, requires []string, retriedCount int32, completedAt int64) func(*model.Deployment) error {
+	StageStatusChangedUpdater = func(stageID string, status model.StageStatus, statusDescription string, requires []string, visible bool, retriedCount int32, completedAt int64) func(*model.Deployment) error {
 		return func(d *model.Deployment) error {
-			for _, stage := range d.Stages {
-				if stage.Id == stageID {
-					stage.Status = status
-					stage.StatusDescription = statusDescription
+			for _, s := range d.Stages {
+				if s.Id == stageID {
+					s.Status = status
+					s.StatusDescription = statusDescription
 					if len(requires) > 0 {
-						stage.Requires = requires
+						s.Requires = requires
 					}
-					stage.RetriedCount = retriedCount
-					stage.CompletedAt = completedAt
+					s.Visible = visible
+					s.RetriedCount = retriedCount
+					s.CompletedAt = completedAt
 					return nil
 				}
 			}
