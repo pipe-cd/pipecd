@@ -69,8 +69,8 @@ func (s *ApplicationLiveStateSnapshot) DetermineAppHealthStatus() {
 		}
 		status := ApplicationLiveStateSnapshot_HEALTHY
 		for _, r := range k.Resources {
-			if r.HealthStatus != KubernetesResourceState_HEALTHY {
-				status = ApplicationLiveStateSnapshot_UNKNOWN
+			if r.HealthStatus == KubernetesResourceState_OTHER {
+				status = ApplicationLiveStateSnapshot_OTHER
 				break
 			}
 		}
