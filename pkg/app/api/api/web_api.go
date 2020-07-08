@@ -305,21 +305,50 @@ func (a *WebAPI) ListApplications(ctx context.Context, req *webservice.ListAppli
 	if err != nil {
 		return nil, err
 	}
-	opts := datastore.ListOptions{
-		Filters: []datastore.ListFilter{
-			{
-				Field:    "ProjectId",
-				Operator: "==",
-				Value:    claims.Role.ProjectId,
-			},
-			{
+	filters := []datastore.ListFilter{
+		{
+			Field:    "ProjectId",
+			Operator: "==",
+			Value:    claims.Role.ProjectId,
+		},
+	}
+	if o := req.Options; o != nil {
+		if !o.IncludeDisabled {
+			filters = append(filters, datastore.ListFilter{
 				Field:    "Disabled",
 				Operator: "==",
 				Value:    false,
-			},
-		},
+			})
+		}
+		// TODO: Support multiple filtering of Kinds, SyncStatuses and EnvIds
+		//   Because some datastores do not support IN query filter,
+		//   currently only the first value is used.
+		if len(o.Kinds) > 0 {
+			filters = append(filters, datastore.ListFilter{
+				Field:    "Kind",
+				Operator: "==",
+				Value:    o.Kinds[0],
+			})
+		}
+		if len(o.SyncStatuses) > 0 {
+			filters = append(filters, datastore.ListFilter{
+				Field:    "SyncState.Status",
+				Operator: "==",
+				Value:    o.SyncStatuses[0],
+			})
+		}
+		if len(o.EnvIds) > 0 {
+			filters = append(filters, datastore.ListFilter{
+				Field:    "EnvId",
+				Operator: "==",
+				Value:    o.EnvIds[0],
+			})
+		}
 	}
-	apps, err := a.applicationStore.ListApplications(ctx, opts)
+
+	apps, err := a.applicationStore.ListApplications(ctx, datastore.ListOptions{
+		Filters: filters,
+	})
 	if err != nil {
 		a.logger.Error("failed to get applications", zap.Error(err))
 		return nil, status.Error(codes.Internal, "failed to get applications")
