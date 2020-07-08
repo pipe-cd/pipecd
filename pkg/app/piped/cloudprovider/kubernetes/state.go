@@ -107,7 +107,7 @@ func determineDeploymentHealth(obj *unstructured.Unstructured) (status model.Kub
 	err := scheme.Scheme.Convert(obj, d, nil)
 	if err != nil {
 		status = model.KubernetesResourceState_OTHER
-		desc = fmt.Sprintf("Unexpected error while calculating: failed while convert %T to %T: %v", obj, d, err)
+		desc = fmt.Sprintf("Unexpected error while calculating: unable to convert %T to %T: %v", obj, d, err)
 		return
 	}
 
@@ -164,7 +164,7 @@ func determineStatefulSetHealth(obj *unstructured.Unstructured) (status model.Ku
 	err := scheme.Scheme.Convert(obj, s, nil)
 	if err != nil {
 		status = model.KubernetesResourceState_OTHER
-		desc = fmt.Sprintf("Unexpected error while calculating: failed while convert %T to %T: %v", obj, s, err)
+		desc = fmt.Sprintf("Unexpected error while calculating: unable to convert %T to %T: %v", obj, s, err)
 		return
 	}
 
@@ -212,7 +212,7 @@ func determineDaemonSetHealth(obj *unstructured.Unstructured) (status model.Kube
 	err := scheme.Scheme.Convert(obj, d, nil)
 	if err != nil {
 		status = model.KubernetesResourceState_OTHER
-		desc = fmt.Sprintf("Unexpected error while calculating: failed while convert %T to %T: %v", obj, d, err)
+		desc = fmt.Sprintf("Unexpected error while calculating: unable to convert %T to %T: %v", obj, d, err)
 		return
 	}
 
@@ -250,7 +250,7 @@ func determineReplicaSetHealth(obj *unstructured.Unstructured) (status model.Kub
 	err := scheme.Scheme.Convert(obj, r, nil)
 	if err != nil {
 		status = model.KubernetesResourceState_OTHER
-		desc = fmt.Sprintf("Unexpected error while calculating: failed while convert %T to %T: %v", obj, r, err)
+		desc = fmt.Sprintf("Unexpected error while calculating: unable to convert %T to %T: %v", obj, r, err)
 		return
 	}
 
@@ -291,7 +291,7 @@ func determineJobHealth(obj *unstructured.Unstructured) (status model.Kubernetes
 	err := scheme.Scheme.Convert(obj, job, nil)
 	if err != nil {
 		status = model.KubernetesResourceState_OTHER
-		desc = fmt.Sprintf("Unexpected error while calculating: failed while convert %T to %T: %v", obj, job, err)
+		desc = fmt.Sprintf("Unexpected error while calculating: unable to convert %T to %T: %v", obj, job, err)
 		return
 	}
 
@@ -331,7 +331,7 @@ func determinePodHealth(obj *unstructured.Unstructured) (status model.Kubernetes
 	err := scheme.Scheme.Convert(obj, p, nil)
 	if err != nil {
 		status = model.KubernetesResourceState_OTHER
-		desc = fmt.Sprintf("Unexpected error while calculating: failed while convert %T to %T: %v", obj, p, err)
+		desc = fmt.Sprintf("Unexpected error while calculating: unable to convert %T to %T: %v", obj, p, err)
 		return
 	}
 
@@ -372,7 +372,7 @@ func determineIngressHealth(obj *unstructured.Unstructured) (status model.Kubern
 	err := scheme.Scheme.Convert(obj, i, nil)
 	if err != nil {
 		status = model.KubernetesResourceState_OTHER
-		desc = fmt.Sprintf("Unexpected error while calculating: failed while convert %T to %T: %v", obj, i, err)
+		desc = fmt.Sprintf("Unexpected error while calculating: unable to convert %T to %T: %v", obj, i, err)
 		return
 	}
 
@@ -390,7 +390,7 @@ func determineServiceHealth(obj *unstructured.Unstructured) (status model.Kubern
 	err := scheme.Scheme.Convert(obj, s, nil)
 	if err != nil {
 		status = model.KubernetesResourceState_OTHER
-		desc = fmt.Sprintf("Unexpected error while calculating: failed while convert %T to %T: %v", obj, s, err)
+		desc = fmt.Sprintf("Unexpected error while calculating: unable to convert %T to %T: %v", obj, s, err)
 		return
 	}
 
@@ -411,7 +411,7 @@ func determineConfigMapHealth(obj *unstructured.Unstructured) (status model.Kube
 	err := scheme.Scheme.Convert(obj, c, nil)
 	if err != nil {
 		status = model.KubernetesResourceState_OTHER
-		desc = fmt.Sprintf("Unexpected error while calculating: failed while convert %T to %T: %v", obj, c, err)
+		desc = fmt.Sprintf("Unexpected error while calculating: unable to convert %T to %T: %v", obj, c, err)
 		return
 	}
 
@@ -425,7 +425,7 @@ func determineSecretHealth(obj *unstructured.Unstructured) (status model.Kuberne
 	err := scheme.Scheme.Convert(obj, s, nil)
 	if err != nil {
 		status = model.KubernetesResourceState_OTHER
-		desc = fmt.Sprintf("Unexpected error while calculating: failed while convert %T to %T: %v", obj, s, err)
+		desc = fmt.Sprintf("Unexpected error while calculating: unable to convert %T to %T: %v", obj, s, err)
 		return
 	}
 
@@ -439,7 +439,7 @@ func determinePVCHealth(obj *unstructured.Unstructured) (status model.Kubernetes
 	err := scheme.Scheme.Convert(obj, pvc, nil)
 	if err != nil {
 		status = model.KubernetesResourceState_OTHER
-		desc = fmt.Sprintf("Unexpected error while calculating: failed while convert %T to %T: %v", obj, pvc, err)
+		desc = fmt.Sprintf("Unexpected error while calculating: unable to convert %T to %T: %v", obj, pvc, err)
 		return
 	}
 	switch pvc.Status.Phase {
@@ -463,7 +463,7 @@ func determineServiceAccountHealth(obj *unstructured.Unstructured) (status model
 	err := scheme.Scheme.Convert(obj, s, nil)
 	if err != nil {
 		status = model.KubernetesResourceState_OTHER
-		desc = fmt.Sprintf("Unexpected error while calculating: failed while convert %T to %T: %v", obj, s, err)
+		desc = fmt.Sprintf("Unexpected error while calculating: unable to convert %T to %T: %v", obj, s, err)
 		return
 	}
 
