@@ -176,6 +176,13 @@ message DisableApplicationResponse {
 }
 
 message ListApplicationsRequest {
+    message Options {
+        bool include_disabled = 1;
+        repeated model.ApplicationKind kinds = 2;
+        repeated model.ApplicationSyncStatus sync_statuses = 3;
+        repeated string env_ids = 4;
+    }
+    Options options = 1;
 }
 
 message ListApplicationsResponse {
