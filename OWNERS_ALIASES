@@ -4,6 +4,7 @@ sig-dev:
     - gkuga
     - nakabonne
     - stormcat24
+    - cakecatz
 
 sig-web:
   users:
