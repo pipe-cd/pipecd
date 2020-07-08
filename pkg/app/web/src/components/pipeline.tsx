@@ -1,11 +1,29 @@
-import React, { FC, memo, useCallback } from "react";
-import { makeStyles, Box } from "@material-ui/core";
+import React, { FC, memo, useCallback, useState } from "react";
+import {
+  makeStyles,
+  Dialog,
+  DialogTitle,
+  DialogContent,
+  DialogActions,
+  DialogContentText,
+  Button,
+} from "@material-ui/core";
 import { PipelineStage } from "./pipeline-stage";
 import { useSelector, useDispatch } from "react-redux";
 import { AppState } from "../modules";
-import { selectById, Deployment, Stage } from "../modules/deployments";
+import {
+  selectById,
+  Deployment,
+  Stage,
+  approveStage,
+} from "../modules/deployments";
 import { fetchStageLog } from "../modules/stage-logs";
 import { updateActiveStage, ActiveStage } from "../modules/active-stage";
+import { ApprovalStage } from "./approval-stage";
+import clsx from "clsx";
+import { StageStatus } from "pipe/pkg/app/web/model/deployment_pb";
+
+const WAIT_APPROVAL_NAME = "WAIT_APPROVAL";
 
 const useConvertedStages = (deploymentId: string): Stage[][] => {
   const stages: Stage[][] = [];
@@ -35,6 +53,17 @@ const useConvertedStages = (deploymentId: string): Stage[][] => {
 };
 
 const useStyles = makeStyles((theme) => ({
+  root: {
+    display: "flex",
+  },
+  pipelineColumn: {
+    display: "flex",
+    flexDirection: "column",
+  },
+  stage: {
+    display: "flex",
+    padding: theme.spacing(2),
+  },
   requireLine: {
     position: "relative",
     "&::before": {
@@ -60,6 +89,9 @@ const useStyles = makeStyles((theme) => ({
       height: 56 + theme.spacing(4),
     },
   },
+  approveDialog: {
+    display: "flex",
+  },
 }));
 
 interface Props {
@@ -69,6 +101,8 @@ interface Props {
 export const Pipeline: FC<Props> = memo(function Pipeline({ deploymentId }) {
   const classes = useStyles();
   const dispatch = useDispatch();
+  const [approveTargetId, setApproveTargetId] = useState<string | null>(null);
+  const isOpenApproveDialog = Boolean(approveTargetId);
   const stages = useConvertedStages(deploymentId);
   const activeStage = useSelector<AppState, ActiveStage>(
     (state) => state.activeStage
@@ -91,38 +125,70 @@ export const Pipeline: FC<Props> = memo(function Pipeline({ deploymentId }) {
     [dispatch, deploymentId]
   );
 
+  const handleApprove = (): void => {
+    if (approveTargetId) {
+      dispatch(approveStage({ deploymentId, stageId: approveTargetId }));
+      setApproveTargetId(null);
+    }
+  };
+
   return (
-    <Box display="flex">
+    <div className={classes.root}>
       {stages.map((stageColumn, columnIndex) => (
-        <Box
-          display="flex"
-          flexDirection="column"
-          key={`pipeline-${columnIndex}`}
-        >
+        <div className={classes.pipelineColumn} key={`pipeline-${columnIndex}`}>
           {stageColumn.map((stage, stageIndex) => (
-            <Box
-              display="flex"
-              p={2}
+            <div
               key={stage.id}
-              className={
+              className={clsx(
+                classes.stage,
                 columnIndex > 0
                   ? stageIndex > 0
                     ? classes.requireCurvedLine
                     : classes.requireLine
                   : undefined
-              }
+              )}
             >
-              <PipelineStage
-                id={stage.id}
-                name={stage.name}
-                status={stage.status}
-                onClick={handleOnClickStage}
-                active={activeStage?.id === `${deploymentId}/${stage.id}`}
-              />
-            </Box>
+              {stage.name === WAIT_APPROVAL_NAME &&
+              stage.status === StageStatus.STAGE_RUNNING ? (
+                <ApprovalStage
+                  id={stage.id}
+                  name={stage.name}
+                  onClick={() => {
+                    setApproveTargetId(stage.id);
+                  }}
+                  active={activeStage?.id === `${deploymentId}/${stage.id}`}
+                />
+              ) : (
+                <PipelineStage
+                  id={stage.id}
+                  name={stage.name}
+                  status={stage.status}
+                  onClick={handleOnClickStage}
+                  active={activeStage?.id === `${deploymentId}/${stage.id}`}
+                />
+              )}
+            </div>
           ))}
-        </Box>
+        </div>
       ))}
-    </Box>
+
+      <Dialog
+        open={isOpenApproveDialog}
+        onClose={() => setApproveTargetId(null)}
+      >
+        <DialogTitle>Approve stage</DialogTitle>
+        <DialogContent>
+          <DialogContentText>
+            {`To continue deploying, click "APPROVE".`}
+          </DialogContentText>
+        </DialogContent>
+        <DialogActions>
+          <Button onClick={() => setApproveTargetId(null)}>CANCEL</Button>
+          <Button color="primary" onClick={handleApprove}>
+            APPROVE
+          </Button>
+        </DialogActions>
+      </Dialog>
+    </div>
   );
 });

@@ -8,16 +8,33 @@ import {
   CommandStatus,
 } from "pipe/pkg/app/web/model/command_pb";
 import { getCommand } from "../api/commands";
+import { addToast } from "./toasts";
 
 export type Command = CommandModel.AsObject;
+
+export const COMMAND_TYPE_TEXT: Record<CommandModel.Type, string> = {
+  [CommandModel.Type.APPROVE_STAGE]: "Approve Stage",
+  [CommandModel.Type.CANCEL_DEPLOYMENT]: "Cancel Deployment",
+  [CommandModel.Type.SYNC_APPLICATION]: "Sync Application",
+  [CommandModel.Type.UPDATE_APPLICATION_CONFIG]: "Update Application Config",
+};
 
 const commandsAdapter = createEntityAdapter<Command>();
 export const fetchCommand = createAsyncThunk(
   "commands/fetch",
-  async (commandId: string) => {
+  async (commandId: string, thunkAPI) => {
     const { command } = await getCommand({ commandId });
     if (command === undefined) {
       throw Error("command not found");
+    }
+
+    if (command.status === CommandStatus.COMMAND_SUCCEEDED) {
+      thunkAPI.dispatch(
+        addToast({
+          message: `Succeed "${COMMAND_TYPE_TEXT[command.type]}"`,
+          severity: "success",
+        })
+      );
     }
 
     return command;
