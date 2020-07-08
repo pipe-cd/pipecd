@@ -87,8 +87,19 @@ func (e *Executor) ensureBaselineClean(ctx context.Context) model.StageStatus {
 		return model.StageStatus_STAGE_FAILURE
 	}
 
+	resources := strings.Split(value, ",")
+	if err := e.removeBaselineResources(ctx, resources); err != nil {
+		return model.StageStatus_STAGE_FAILURE
+	}
+	return model.StageStatus_STAGE_SUCCESS
+}
+
+func (e *Executor) removeBaselineResources(ctx context.Context, resources []string) error {
+	if len(resources) == 0 {
+		return nil
+	}
+
 	var (
-		resources    = strings.Split(value, ",")
 		workloadKeys = make([]provider.ResourceKey, 0)
 		serviceKeys  = make([]provider.ResourceKey, 0)
 	)
@@ -135,7 +146,7 @@ func (e *Executor) ensureBaselineClean(ctx context.Context) model.StageStatus {
 		//return model.StageStatus_STAGE_FAILURE
 	}
 
-	return model.StageStatus_STAGE_SUCCESS
+	return nil
 }
 
 func (e *Executor) generateBaselineManifests(namespace string, manifests []provider.Manifest, opts config.K8sBaselineRolloutStageOptions) ([]provider.Manifest, error) {
@@ -190,15 +201,7 @@ func (e *Executor) generateBaselineManifests(namespace string, manifests []provi
 			m.SetNamespace(namespace)
 			m.Key.Namespace = namespace
 		}
-		m.AddAnnotations(map[string]string{
-			provider.LabelManagedBy:          provider.ManagedByPiped,
-			provider.LabelPiped:              e.PipedConfig.PipedID,
-			provider.LabelApplication:        e.Deployment.ApplicationId,
-			variantLabel:                     baselineVariant,
-			provider.LabelOriginalAPIVersion: m.Key.APIVersion,
-			provider.LabelResourceKey:        m.Key.String(),
-			provider.LabelCommitHash:         e.Deployment.Trigger.Commit.Hash,
-		})
+		m.AddAnnotations(e.builtinAnnotations(m, baselineVariant, e.Deployment.RunningCommitHash))
 	}
 	return baselineManifests, nil
 }

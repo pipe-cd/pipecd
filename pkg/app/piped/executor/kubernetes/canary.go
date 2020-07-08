@@ -50,7 +50,7 @@ func (e *Executor) ensureCanaryRollout(ctx context.Context) model.StageStatus {
 
 	canaryManifests, err := e.generateCanaryManifests(e.config.Input.Namespace, manifests, *canaryOptions)
 	if err != nil {
-		e.LogPersister.AppendError(fmt.Sprintf("Unabled to generate manifests for CANARY variant (%v)", err))
+		e.LogPersister.AppendError(fmt.Sprintf("Unable to generate manifests for CANARY variant (%v)", err))
 		return model.StageStatus_STAGE_FAILURE
 	}
 
@@ -62,7 +62,7 @@ func (e *Executor) ensureCanaryRollout(ctx context.Context) model.StageStatus {
 	metadata := strings.Join(addedResources, ",")
 	err = e.MetadataStore.Set(ctx, addedCanaryResourcesMetadataKey, metadata)
 	if err != nil {
-		e.LogPersister.AppendError(fmt.Sprintf("Unabled to save deployment metadata (%v)", err))
+		e.LogPersister.AppendError(fmt.Sprintf("Unable to save deployment metadata (%v)", err))
 		return model.StageStatus_STAGE_FAILURE
 	}
 
@@ -83,12 +83,23 @@ func (e *Executor) ensureCanaryRollout(ctx context.Context) model.StageStatus {
 func (e *Executor) ensureCanaryClean(ctx context.Context) model.StageStatus {
 	value, ok := e.MetadataStore.Get(addedCanaryResourcesMetadataKey)
 	if !ok {
-		e.LogPersister.AppendError("Unabled to determine the applied CANARY resources")
+		e.LogPersister.AppendError("Unable to determine the applied CANARY resources")
 		return model.StageStatus_STAGE_FAILURE
 	}
 
+	resources := strings.Split(value, ",")
+	if err := e.removeCanaryResources(ctx, resources); err != nil {
+		return model.StageStatus_STAGE_FAILURE
+	}
+	return model.StageStatus_STAGE_SUCCESS
+}
+
+func (e *Executor) removeCanaryResources(ctx context.Context, resources []string) error {
+	if len(resources) == 0 {
+		return nil
+	}
+
 	var (
-		resources    = strings.Split(value, ",")
 		workloadKeys = make([]provider.ResourceKey, 0)
 		serviceKeys  = make([]provider.ResourceKey, 0)
 	)
@@ -116,7 +127,7 @@ func (e *Executor) ensureCanaryClean(ctx context.Context) model.StageStatus {
 			e.LogPersister.AppendInfo(fmt.Sprintf("No resource %s to delete", k))
 			continue
 		}
-		e.LogPersister.AppendError(fmt.Sprintf("Unabled to delete resource %s (%v)", k, err))
+		e.LogPersister.AppendError(fmt.Sprintf("Unable to delete resource %s (%v)", k, err))
 		//return model.StageStatus_STAGE_FAILURE
 	}
 
@@ -131,11 +142,11 @@ func (e *Executor) ensureCanaryClean(ctx context.Context) model.StageStatus {
 			e.LogPersister.AppendInfo(fmt.Sprintf("No worload resource %s to delete", k))
 			continue
 		}
-		e.LogPersister.AppendError(fmt.Sprintf("Unabled to delete workload resource %s (%v)", k, err))
+		e.LogPersister.AppendError(fmt.Sprintf("Unable to delete workload resource %s (%v)", k, err))
 		//return model.StageStatus_STAGE_FAILURE
 	}
 
-	return model.StageStatus_STAGE_SUCCESS
+	return nil
 }
 
 func (e *Executor) generateCanaryManifests(namespace string, manifests []provider.Manifest, opts config.K8sCanaryRolloutStageOptions) ([]provider.Manifest, error) {
@@ -204,15 +215,7 @@ func (e *Executor) generateCanaryManifests(namespace string, manifests []provide
 			m.SetNamespace(namespace)
 			m.Key.Namespace = namespace
 		}
-		m.AddAnnotations(map[string]string{
-			provider.LabelManagedBy:          provider.ManagedByPiped,
-			provider.LabelPiped:              e.PipedConfig.PipedID,
-			provider.LabelApplication:        e.Deployment.ApplicationId,
-			variantLabel:                     canaryVariant,
-			provider.LabelOriginalAPIVersion: m.Key.APIVersion,
-			provider.LabelResourceKey:        m.Key.String(),
-			provider.LabelCommitHash:         e.Deployment.Trigger.Commit.Hash,
-		})
+		m.AddAnnotations(e.builtinAnnotations(m, canaryVariant, e.Deployment.Trigger.Commit.Hash))
 	}
 	return canaryManifests, nil
 }

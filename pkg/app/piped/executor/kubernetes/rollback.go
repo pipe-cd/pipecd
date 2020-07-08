@@ -16,30 +16,47 @@ package kubernetes
 
 import (
 	"context"
+	"fmt"
+	"strings"
 
 	"github.com/pipe-cd/pipe/pkg/model"
 )
 
 func (e *Executor) ensureRollback(ctx context.Context) model.StageStatus {
-	// 1. Revert workloads of PRIMARY variant.
-	if state := e.rollbackPrimary(ctx); state != model.StageStatus_STAGE_SUCCESS {
-		return state
+	// 1. Revert PRIMARY resources.
+	e.LogPersister.AppendError(fmt.Sprintf("Start checking to ensure that PRIMARY resources match to commit %s", e.Deployment.RunningCommitHash))
+	if err := e.rollbackPrimary(ctx); err != nil {
+		return model.StageStatus_STAGE_FAILURE
 	}
 
 	// 2. Ensure that all traffics are routed to the PRIMARY variant.
-	if state := e.rollbackTraffic(ctx); state != model.StageStatus_STAGE_SUCCESS {
-		return state
+	e.LogPersister.AppendError("Start checking to ensure that all traffics being routed to the PRIMARY variant")
+	if err := e.rollbackTraffic(ctx); err != nil {
+		return model.StageStatus_STAGE_FAILURE
 	}
 
-	// 3. Delete workloads of CANARY variant.
-	if state := e.ensureCanaryClean(ctx); state != model.StageStatus_STAGE_SUCCESS {
-		return state
+	var errs []error
+
+	// 3. Delete all resources of CANARY variant.
+	e.LogPersister.AppendError("Start checking to ensure that the CANARY variant should be removed")
+	if value, ok := e.MetadataStore.Get(addedCanaryResourcesMetadataKey); ok {
+		resources := strings.Split(value, ",")
+		if err := e.removeCanaryResources(ctx, resources); err != nil {
+			errs = append(errs, err)
+		}
 	}
 
-	// 4. Delete worloads of BASELINE variant.
-	if state := e.ensureBaselineClean(ctx); state != model.StageStatus_STAGE_SUCCESS {
-		return state
+	// 4. Delete all resources of BASELINE variant.
+	e.LogPersister.AppendError("Start checking to ensure that the BASELINE variant should be removed")
+	if value, ok := e.MetadataStore.Get(addedBaselineResourcesMetadataKey); ok {
+		resources := strings.Split(value, ",")
+		if err := e.removeBaselineResources(ctx, resources); err != nil {
+			errs = append(errs, err)
+		}
 	}
 
+	if len(errs) > 0 {
+		return model.StageStatus_STAGE_FAILURE
+	}
 	return model.StageStatus_STAGE_SUCCESS
 }
