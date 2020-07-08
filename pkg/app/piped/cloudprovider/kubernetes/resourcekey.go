@@ -58,15 +58,18 @@ var builtInApiVersions = map[string]struct{}{
 }
 
 const (
-	KindDeployment  = "Deployment"
-	KindStatefulSet = "StatefulSet"
-	KindDaemonSet   = "DaemonSet"
-	KindReplicaSet  = "ReplicaSet"
-	KindPod         = "Pod"
-	KindConfigMap   = "ConfigMap"
-	KindSecret      = "Secret"
-	KindService     = "Service"
-	KindIngress     = "Ingress"
+	KindDeployment            = "Deployment"
+	KindStatefulSet           = "StatefulSet"
+	KindDaemonSet             = "DaemonSet"
+	KindReplicaSet            = "ReplicaSet"
+	KindPod                   = "Pod"
+	KindJob                   = "Job"
+	KindConfigMap             = "ConfigMap"
+	KindSecret                = "Secret"
+	KindPersistentVolumeClaim = "PersistentVolumeClaim"
+	KindService               = "Service"
+	KindIngress               = "Ingress"
+	KindServiceAccount        = "ServiceAccount"
 
 	DefaultNamespace = "default"
 )

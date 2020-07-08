@@ -21,6 +21,7 @@ import (
 	"time"
 
 	appsv1 "k8s.io/api/apps/v1"
+	batchv1 "k8s.io/api/batch/v1"
 	corev1 "k8s.io/api/core/v1"
 	networkingv1beta1 "k8s.io/api/networking/v1beta1"
 	"k8s.io/apimachinery/pkg/apis/meta/v1/unstructured"
@@ -77,12 +78,25 @@ func determineResourceHealth(key ResourceKey, obj *unstructured.Unstructured) (s
 		return determineDaemonSetHealth(obj)
 	case KindReplicaSet:
 		return determineReplicaSetHealth(obj)
+	case KindJob:
+		return determineJobHealth(obj)
 	case KindPod:
 		return determinePodHealth(obj)
 	case KindService:
 		return determineServiceHealth(obj)
 	case KindIngress:
 		return determineIngressHealth(obj)
+	case KindConfigMap:
+		return determineConfigMapHealth(obj)
+	case KindPersistentVolumeClaim:
+		return determinePVCHealth(obj)
+	case KindSecret:
+		return determineSecretHealth(obj)
+	case KindServiceAccount:
+		return determineServiceAccountHealth(obj)
+	default:
+		desc = "Unimplemented or unknown resource"
+		return
 	}
 
 	return
@@ -268,6 +282,45 @@ func determineReplicaSetHealth(obj *unstructured.Unstructured) (status model.Kub
 	return
 }
 
+func determineJobHealth(obj *unstructured.Unstructured) (status model.KubernetesResourceState_HealthStatus, desc string) {
+	job := &batchv1.Job{}
+	err := scheme.Scheme.Convert(obj, job, nil)
+	if err != nil {
+		desc = fmt.Sprintf("Failed while convert %T to %T: %v", obj, job, err)
+		return
+	}
+
+	var (
+		failed    bool
+		completed bool
+		message   string
+	)
+	for _, condition := range job.Status.Conditions {
+		switch condition.Type {
+		case batchv1.JobFailed:
+			failed = true
+			completed = true
+			message = condition.Message
+		case batchv1.JobComplete:
+			completed = true
+			message = condition.Message
+		}
+	}
+
+	if !completed {
+		status = model.KubernetesResourceState_HEALTHY
+		desc = "Job is in progress"
+	} else if failed {
+		status = model.KubernetesResourceState_OTHER
+		desc = message
+	} else {
+		status = model.KubernetesResourceState_HEALTHY
+		desc = message
+	}
+
+	return
+}
+
 func determinePodHealth(obj *unstructured.Unstructured) (status model.KubernetesResourceState_HealthStatus, desc string) {
 	p := &corev1.Pod{}
 	err := scheme.Scheme.Convert(obj, p, nil)
@@ -342,5 +395,67 @@ func determineServiceHealth(obj *unstructured.Unstructured) (status model.Kubern
 		desc = "Ingress points for the load-balancer are in progress"
 		return
 	}
+	return
+}
+
+func determineConfigMapHealth(obj *unstructured.Unstructured) (status model.KubernetesResourceState_HealthStatus, desc string) {
+	c := &corev1.ConfigMap{}
+	err := scheme.Scheme.Convert(obj, c, nil)
+	if err != nil {
+		desc = fmt.Sprintf("Failed while convert %T to %T: %v", obj, c, err)
+		return
+	}
+
+	desc = fmt.Sprintf("%q created", obj.GetName())
+	status = model.KubernetesResourceState_HEALTHY
+	return
+}
+
+func determineSecretHealth(obj *unstructured.Unstructured) (status model.KubernetesResourceState_HealthStatus, desc string) {
+	s := &corev1.Secret{}
+	err := scheme.Scheme.Convert(obj, s, nil)
+	if err != nil {
+		desc = fmt.Sprintf("Failed while convert %T to %T: %v", obj, s, err)
+		return
+	}
+
+	desc = fmt.Sprintf("%q created", obj.GetName())
+	status = model.KubernetesResourceState_HEALTHY
+	return
+}
+
+func determinePVCHealth(obj *unstructured.Unstructured) (status model.KubernetesResourceState_HealthStatus, desc string) {
+	pvc := &corev1.PersistentVolumeClaim{}
+	err := scheme.Scheme.Convert(obj, pvc, nil)
+	if err != nil {
+		desc = fmt.Sprintf("Failed while convert %T to %T: %v", obj, pvc, err)
+		return
+	}
+	switch pvc.Status.Phase {
+	case corev1.ClaimLost:
+		status = model.KubernetesResourceState_OTHER
+		desc = "Lost its underlying PersistentVolume"
+	case corev1.ClaimPending:
+		status = model.KubernetesResourceState_OTHER
+		desc = "Being not yet bound"
+	case corev1.ClaimBound:
+		status = model.KubernetesResourceState_HEALTHY
+	default:
+		status = model.KubernetesResourceState_OTHER
+		desc = "The current phase of PersistentVolumeClaim is unexpected"
+	}
+	return
+}
+
+func determineServiceAccountHealth(obj *unstructured.Unstructured) (status model.KubernetesResourceState_HealthStatus, desc string) {
+	s := &corev1.ServiceAccount{}
+	err := scheme.Scheme.Convert(obj, s, nil)
+	if err != nil {
+		desc = fmt.Sprintf("Failed while convert %T to %T: %v", obj, s, err)
+		return
+	}
+
+	desc = fmt.Sprintf("%q created", obj.GetName())
+	status = model.KubernetesResourceState_HEALTHY
 	return
 }
