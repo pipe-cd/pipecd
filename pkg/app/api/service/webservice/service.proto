@@ -135,8 +135,12 @@ message DisablePipedResponse {
 }
 
 message ListPipedsRequest {
+    message Options {
+        bool include_disabled = 1;
+    }
     // Whether to include the status value in the response message.
     bool with_status = 1;
+    Options options = 2;
 }
 
 message ListPipedsResponse {
