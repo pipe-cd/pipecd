@@ -167,6 +167,18 @@ func (e *Executor) loadRunningManifests(ctx context.Context) (manifests []provid
 	return manifests, nil
 }
 
+func (e *Executor) builtinAnnotations(m provider.Manifest, variant, hash string) map[string]string {
+	return map[string]string{
+		provider.LabelManagedBy:          provider.ManagedByPiped,
+		provider.LabelPiped:              e.PipedConfig.PipedID,
+		provider.LabelApplication:        e.Deployment.ApplicationId,
+		variantLabel:                     variant,
+		provider.LabelOriginalAPIVersion: m.Key.APIVersion,
+		provider.LabelResourceKey:        m.Key.String(),
+		provider.LabelCommitHash:         hash,
+	}
+}
+
 func findWorkloadManifests(cfg *config.K8sWorkload, manifests []provider.Manifest) []provider.Manifest {
 	var (
 		out  []provider.Manifest

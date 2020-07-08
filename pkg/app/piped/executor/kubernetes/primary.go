@@ -18,7 +18,6 @@ import (
 	"context"
 	"fmt"
 
-	provider "github.com/pipe-cd/pipe/pkg/app/piped/cloudprovider/kubernetes"
 	"github.com/pipe-cd/pipe/pkg/model"
 )
 
@@ -39,15 +38,7 @@ func (e *Executor) ensurePrimaryUpdate(ctx context.Context) model.StageStatus {
 	}
 
 	for _, m := range manifests {
-		m.AddAnnotations(map[string]string{
-			provider.LabelManagedBy:          provider.ManagedByPiped,
-			provider.LabelPiped:              e.PipedConfig.PipedID,
-			provider.LabelApplication:        e.Deployment.ApplicationId,
-			variantLabel:                     primaryVariant,
-			provider.LabelOriginalAPIVersion: m.Key.APIVersion,
-			provider.LabelResourceKey:        m.Key.String(),
-			provider.LabelCommitHash:         e.Deployment.Trigger.Commit.Hash,
-		})
+		m.AddAnnotations(e.builtinAnnotations(m, primaryVariant, e.Deployment.Trigger.Commit.Hash))
 	}
 
 	e.LogPersister.AppendInfo(fmt.Sprintf("Applying %d primary resources", len(manifests)))
@@ -66,7 +57,7 @@ func (e *Executor) ensurePrimaryUpdate(ctx context.Context) model.StageStatus {
 func (e *Executor) rollbackPrimary(ctx context.Context) error {
 	manifests, err := e.loadRunningManifests(ctx)
 	if err != nil {
-		e.LogPersister.AppendError(fmt.Sprintf("Failed while loading running manifests (%w)", err))
+		e.LogPersister.AppendError(fmt.Sprintf("Failed while loading running manifests (%v)", err))
 		return err
 	}
 
@@ -76,15 +67,7 @@ func (e *Executor) rollbackPrimary(ctx context.Context) error {
 	}
 
 	for _, m := range manifests {
-		m.AddAnnotations(map[string]string{
-			provider.LabelManagedBy:          provider.ManagedByPiped,
-			provider.LabelPiped:              e.PipedConfig.PipedID,
-			provider.LabelApplication:        e.Deployment.ApplicationId,
-			variantLabel:                     primaryVariant,
-			provider.LabelOriginalAPIVersion: m.Key.APIVersion,
-			provider.LabelResourceKey:        m.Key.String(),
-			provider.LabelCommitHash:         e.Deployment.RunningCommitHash,
-		})
+		m.AddAnnotations(e.builtinAnnotations(m, primaryVariant, e.Deployment.RunningCommitHash))
 	}
 
 	// Start rolling out the resources for PRIMARY variant.

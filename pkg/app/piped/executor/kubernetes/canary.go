@@ -215,15 +215,7 @@ func (e *Executor) generateCanaryManifests(namespace string, manifests []provide
 			m.SetNamespace(namespace)
 			m.Key.Namespace = namespace
 		}
-		m.AddAnnotations(map[string]string{
-			provider.LabelManagedBy:          provider.ManagedByPiped,
-			provider.LabelPiped:              e.PipedConfig.PipedID,
-			provider.LabelApplication:        e.Deployment.ApplicationId,
-			variantLabel:                     canaryVariant,
-			provider.LabelOriginalAPIVersion: m.Key.APIVersion,
-			provider.LabelResourceKey:        m.Key.String(),
-			provider.LabelCommitHash:         e.Deployment.Trigger.Commit.Hash,
-		})
+		m.AddAnnotations(e.builtinAnnotations(m, canaryVariant, e.Deployment.Trigger.Commit.Hash))
 	}
 	return canaryManifests, nil
 }

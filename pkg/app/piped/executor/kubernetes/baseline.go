@@ -201,15 +201,7 @@ func (e *Executor) generateBaselineManifests(namespace string, manifests []provi
 			m.SetNamespace(namespace)
 			m.Key.Namespace = namespace
 		}
-		m.AddAnnotations(map[string]string{
-			provider.LabelManagedBy:          provider.ManagedByPiped,
-			provider.LabelPiped:              e.PipedConfig.PipedID,
-			provider.LabelApplication:        e.Deployment.ApplicationId,
-			variantLabel:                     baselineVariant,
-			provider.LabelOriginalAPIVersion: m.Key.APIVersion,
-			provider.LabelResourceKey:        m.Key.String(),
-			provider.LabelCommitHash:         e.Deployment.Trigger.Commit.Hash,
-		})
+		m.AddAnnotations(e.builtinAnnotations(m, baselineVariant, e.Deployment.RunningCommitHash))
 	}
 	return baselineManifests, nil
 }
