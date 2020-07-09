@@ -1,27 +1,50 @@
-import { Button, Divider, Drawer, Toolbar } from "@material-ui/core";
+import {
+  Button,
+  Divider,
+  Drawer,
+  makeStyles,
+  Toolbar,
+} from "@material-ui/core";
 import { Add } from "@material-ui/icons";
-import React, { FC, memo, useEffect, useState } from "react";
+import CloseIcon from "@material-ui/icons/Close";
+import FilterIcon from "@material-ui/icons/FilterList";
+import React, { FC, memo, useCallback, useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import { AddApplicationForm } from "../../components/add-application-form";
+import { ApplicationFilter } from "../../components/application-filter";
 import { ApplicationList } from "../../components/application-list";
 import { AppState } from "../../modules";
 import { addApplication, fetchApplications } from "../../modules/applications";
 import { AppDispatch } from "../../store";
 
+const useStyles = makeStyles((theme) => ({
+  main: {
+    display: "flex",
+  },
+  toolbarSpacer: {
+    flexGrow: 1,
+  },
+}));
+
 export const ApplicationIndexPage: FC = memo(function ApplicationIndexPage() {
+  const classes = useStyles();
   const dispatch = useDispatch<AppDispatch>();
   const [isOpenForm, setIsOpenForm] = useState(false);
+  const [isOpenFilter, setIsOpenFilter] = useState(false);
   const isAdding = useSelector<AppState, boolean>(
     (state) => state.applications.adding
   );
 
-  useEffect(() => {
-    dispatch(fetchApplications());
-  }, [dispatch]);
-
   const handleClose = (): void => {
     setIsOpenForm(false);
   };
+
+  const handleOnChangeForm = useCallback(
+    (formState) => {
+      dispatch(fetchApplications(formState));
+    },
+    [dispatch]
+  );
 
   return (
     <div>
@@ -33,10 +56,22 @@ export const ApplicationIndexPage: FC = memo(function ApplicationIndexPage() {
         >
           ADD
         </Button>
+        <div className={classes.toolbarSpacer} />
+        <Button
+          color="primary"
+          startIcon={isOpenFilter ? <CloseIcon /> : <FilterIcon />}
+          onClick={() => setIsOpenFilter(!isOpenFilter)}
+        >
+          {isOpenFilter ? "HIDE FILTER" : "FILTER"}
+        </Button>
       </Toolbar>
+
       <Divider />
 
-      <ApplicationList />
+      <div className={classes.main}>
+        <ApplicationList />
+        <ApplicationFilter open={isOpenFilter} onChange={handleOnChangeForm} />
+      </div>
 
       <Drawer
         anchor="right"

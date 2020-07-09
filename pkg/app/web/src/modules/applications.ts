@@ -3,15 +3,17 @@ import {
   createEntityAdapter,
   createAsyncThunk,
 } from "@reduxjs/toolkit";
-import { Application as ApplicationModel } from "pipe/pkg/app/web/model/application_pb";
+import {
+  Application as ApplicationModel,
+  ApplicationSyncStatus,
+} from "pipe/pkg/app/web/model/application_pb";
 import * as applicationsApi from "../api/applications";
-import { ApplicationKind as ApplicationKindModel } from "pipe/pkg/app/web/model/common_pb";
+import { ApplicationKind } from "pipe/pkg/app/web/model/common_pb";
 import { fetchCommand, CommandStatus, CommandModel } from "./commands";
-export { ApplicationSyncStatus } from "pipe/pkg/app/web/model/application_pb";
 
 export type Application = Required<ApplicationModel.AsObject>;
-export const ApplicationKind = ApplicationKindModel;
-export type ApplicationKind = ApplicationKindModel;
+export type ApplicationSyncStatusKey = keyof typeof ApplicationSyncStatus;
+export type ApplicationKindKey = keyof typeof ApplicationKind;
 
 export const applicationsAdapter = createEntityAdapter<Application>({
   selectId: (app) => app.id,
@@ -19,13 +21,21 @@ export const applicationsAdapter = createEntityAdapter<Application>({
 
 export const { selectAll, selectById } = applicationsAdapter.getSelectors();
 
-export const fetchApplications = createAsyncThunk<Application[], void>(
-  "applications/fetchList",
-  async () => {
-    const { applicationsList } = await applicationsApi.getApplications();
-    return applicationsList as Application[];
-  }
-);
+export const fetchApplications = createAsyncThunk<
+  Application[],
+  | {
+      enabled?: { value: boolean };
+      kindsList: ApplicationKind[];
+      envIdsList: string[];
+      syncStatusesList: ApplicationSyncStatus[];
+    }
+  | undefined
+>("applications/fetchList", async (options) => {
+  const { applicationsList } = await applicationsApi.getApplications({
+    options,
+  });
+  return applicationsList as Application[];
+});
 
 export const fetchApplication = createAsyncThunk<
   Application | undefined,
@@ -97,6 +107,7 @@ export const applicationsSlice = createSlice({
   extraReducers: (builder) => {
     builder
       .addCase(fetchApplications.fulfilled, (state, action) => {
+        applicationsAdapter.removeAll(state);
         applicationsAdapter.upsertMany(state, action.payload);
       })
       .addCase(fetchApplication.fulfilled, (state, action) => {
@@ -139,3 +150,6 @@ export const applicationsSlice = createSlice({
       });
   },
 });
+
+export { ApplicationSyncStatus } from "pipe/pkg/app/web/model/application_pb";
+export { ApplicationKind } from "pipe/pkg/app/web/model/common_pb";

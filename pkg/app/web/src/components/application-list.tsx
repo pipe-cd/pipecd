@@ -37,6 +37,7 @@ import { SyncStatusIcon } from "./sync-status-icon";
 const useStyles = makeStyles((theme) => ({
   root: {
     padding: theme.spacing(2),
+    flex: 1,
   },
   statusCell: {
     display: "flex",

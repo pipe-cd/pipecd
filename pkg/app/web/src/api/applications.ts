@@ -14,6 +14,7 @@ import {
   DisableApplicationResponse,
 } from "pipe/pkg/app/web/api_client/service_pb";
 import { ApplicationGitPath } from "pipe/pkg/app/web/model/common_pb";
+import * as google_protobuf_wrappers_pb from "google-protobuf/google/protobuf/wrappers_pb";
 
 export const getApplicationLiveState = ({
   applicationId,
@@ -25,10 +26,24 @@ export const getApplicationLiveState = ({
   return apiRequest(req, apiClient.getApplicationLiveState);
 };
 
-export const getApplications = (): Promise<
+export const getApplications = ({
+  options,
+}: ListApplicationsRequest.AsObject): Promise<
   ListApplicationsResponse.AsObject
 > => {
   const req = new ListApplicationsRequest();
+  if (options) {
+    const o = new ListApplicationsRequest.Options();
+    o.setEnvIdsList(options.envIdsList);
+    o.setKindsList(options.kindsList);
+    o.setSyncStatusesList(options.syncStatusesList);
+    if (options.enabled !== undefined) {
+      const enabled = new google_protobuf_wrappers_pb.BoolValue();
+      enabled.setValue((options.enabled.value as unknown) as boolean);
+      o.setEnabled(enabled);
+    }
+    req.setOptions(o);
+  }
   return apiRequest(req, apiClient.listApplications);
 };
 
