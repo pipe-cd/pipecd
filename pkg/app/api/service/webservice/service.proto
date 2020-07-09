@@ -182,7 +182,7 @@ message DisableApplicationResponse {
 
 message ListApplicationsRequest {
     message Options {
-        bool include_disabled = 1;
+        google.protobuf.BoolValue enabled = 1;
         repeated model.ApplicationKind kinds = 2;
         repeated model.ApplicationSyncStatus sync_statuses = 3;
         repeated string env_ids = 4;
