@@ -197,7 +197,7 @@ func (r *reflector) start(ctx context.Context) error {
 
 	startInformer := func(namespace string, resources []schema.GroupVersionResource) {
 		factory := dynamicinformer.NewFilteredDynamicSharedInformerFactory(dynamicClient, 30*time.Minute, namespace, nil)
-		for _, tr := range namespacedTargetResources {
+		for _, tr := range resources {
 			di := factory.ForResource(tr).Informer()
 			di.AddEventHandler(cache.ResourceEventHandlerFuncs{
 				AddFunc:    r.onObjectAdd,
