@@ -318,11 +318,11 @@ func (a *WebAPI) ListApplications(ctx context.Context, req *webservice.ListAppli
 		},
 	}
 	if o := req.Options; o != nil {
-		if !o.IncludeDisabled {
+		if o.Enabled != nil {
 			filters = append(filters, datastore.ListFilter{
 				Field:    "Disabled",
 				Operator: "==",
-				Value:    false,
+				Value:    !o.Enabled.GetValue(),
 			})
 		}
 		// TODO: Support multiple filtering of Kinds, SyncStatuses and EnvIds
