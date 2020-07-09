@@ -248,10 +248,10 @@ func findSecretManifests(manifests []provider.Manifest) []provider.Manifest {
 	return out
 }
 
-func generateServiceManifests(services []provider.Manifest, variant, suffix string) ([]provider.Manifest, error) {
+func generateServiceManifests(services []provider.Manifest, variant, nameSuffix string) ([]provider.Manifest, error) {
 	manifests := make([]provider.Manifest, 0, len(services))
 	updateService := func(s *corev1.Service) {
-		s.Name = s.Name + "-" + suffix
+		s.Name = makeSuffixedName(s.Name, nameSuffix)
 		s.Spec.Type = corev1.ServiceTypeClusterIP
 		if s.Spec.Selector == nil {
 			s.Spec.Selector = map[string]string{}
@@ -274,7 +274,7 @@ func generateServiceManifests(services []provider.Manifest, variant, suffix stri
 	return manifests, nil
 }
 
-func generateWorkloadManifests(workloads, configmaps, secrets []provider.Manifest, variant, suffix string, replicasCalculator func(*int32) int32) ([]provider.Manifest, error) {
+func generateWorkloadManifests(workloads, configmaps, secrets []provider.Manifest, variant, nameSuffix string, replicasCalculator func(*int32) int32) ([]provider.Manifest, error) {
 	manifests := make([]provider.Manifest, 0, len(workloads))
 
 	cmNames := make(map[string]struct{}, len(configmaps))
@@ -298,21 +298,23 @@ func generateWorkloadManifests(workloads, configmaps, secrets []provider.Manifes
 		for i := range pod.Spec.Volumes {
 			if cm := pod.Spec.Volumes[i].ConfigMap; cm != nil {
 				if _, ok := cmNames[cm.Name]; ok {
-					cm.Name = cm.Name + "-" + suffix
+					cm.Name = makeSuffixedName(cm.Name, nameSuffix)
 				}
 			}
 			if s := pod.Spec.Volumes[i].Secret; s != nil {
 				if _, ok := secretNames[s.SecretName]; ok {
-					s.SecretName = s.SecretName + "-" + suffix
+					s.SecretName = makeSuffixedName(s.SecretName, nameSuffix)
 				}
 			}
 		}
 	}
 
 	updateDeployment := func(d *appsv1.Deployment) {
-		d.Name = d.Name + "-" + suffix
-		replicas := replicasCalculator(d.Spec.Replicas)
-		d.Spec.Replicas = &replicas
+		d.Name = makeSuffixedName(d.Name, nameSuffix)
+		if replicasCalculator != nil {
+			replicas := replicasCalculator(d.Spec.Replicas)
+			d.Spec.Replicas = &replicas
+		}
 		d.Spec.Selector = metav1.AddLabelToSelector(d.Spec.Selector, variantLabel, variant)
 		updatePod(&d.Spec.Template)
 	}
@@ -337,4 +339,11 @@ func generateWorkloadManifests(workloads, configmaps, secrets []provider.Manifes
 	}
 
 	return manifests, nil
+}
+
+func makeSuffixedName(name, suffix string) string {
+	if suffix != "" {
+		return name + "-" + suffix
+	}
+	return name
 }
