@@ -18,6 +18,7 @@ import (
 	"context"
 	"fmt"
 
+	provider "github.com/pipe-cd/pipe/pkg/app/piped/cloudprovider/kubernetes"
 	"github.com/pipe-cd/pipe/pkg/model"
 )
 
@@ -37,12 +38,14 @@ func (e *Executor) ensurePrimaryUpdate(ctx context.Context) model.StageStatus {
 		return model.StageStatus_STAGE_FAILURE
 	}
 
-	for _, m := range manifests {
-		m.AddAnnotations(e.builtinAnnotations(m, primaryVariant, e.Deployment.Trigger.Commit.Hash))
+	primaryManifests, err := e.generatePrimaryManifests(e.config.Input.Namespace, e.Deployment.Trigger.Commit.Hash, manifests)
+	if err != nil {
+		e.LogPersister.AppendError(fmt.Sprintf("Unable to generate manifests for PRIMARY variant (%v)", err))
+		return model.StageStatus_STAGE_FAILURE
 	}
 
-	e.LogPersister.AppendInfo(fmt.Sprintf("Applying %d primary resources", len(manifests)))
-	for _, m := range manifests {
+	e.LogPersister.AppendInfo(fmt.Sprintf("Applying %d primary resources", len(primaryManifests)))
+	for _, m := range primaryManifests {
 		if err = e.provider.ApplyManifest(ctx, m); err != nil {
 			e.LogPersister.AppendError(fmt.Sprintf("Failed to apply manifest: %s (%v)", m.Key.ReadableString(), err))
 			return model.StageStatus_STAGE_FAILURE
@@ -50,7 +53,7 @@ func (e *Executor) ensurePrimaryUpdate(ctx context.Context) model.StageStatus {
 		e.LogPersister.AppendSuccess(fmt.Sprintf("- applied manifest: %s", m.Key.ReadableString()))
 	}
 
-	e.LogPersister.AppendSuccess(fmt.Sprintf("Successfully applied %d primary resources", len(manifests)))
+	e.LogPersister.AppendSuccess(fmt.Sprintf("Successfully applied %d primary resources", len(primaryManifests)))
 	return model.StageStatus_STAGE_SUCCESS
 }
 
@@ -66,13 +69,15 @@ func (e *Executor) rollbackPrimary(ctx context.Context) error {
 		return err
 	}
 
-	for _, m := range manifests {
-		m.AddAnnotations(e.builtinAnnotations(m, primaryVariant, e.Deployment.RunningCommitHash))
+	primaryManifests, err := e.generatePrimaryManifests(e.config.Input.Namespace, e.Deployment.RunningCommitHash, manifests)
+	if err != nil {
+		e.LogPersister.AppendError(fmt.Sprintf("Unable to generate manifests for PRIMARY variant (%v)", err))
+		return err
 	}
 
 	// Start rolling out the resources for PRIMARY variant.
 	e.LogPersister.AppendInfo("Start rolling back PRIMARY variant...")
-	for _, m := range manifests {
+	for _, m := range primaryManifests {
 		if err = e.provider.ApplyManifest(ctx, m); err != nil {
 			e.LogPersister.AppendError(fmt.Sprintf("Failed to apply manifest: %s (%v)", m.Key.ReadableString(), err))
 			return err
@@ -82,4 +87,33 @@ func (e *Executor) rollbackPrimary(ctx context.Context) error {
 
 	e.LogPersister.AppendSuccess("Successfully rolled back PRIMARY variant")
 	return nil
+}
+
+func (e *Executor) generatePrimaryManifests(namespace, commitHash string, manifests []provider.Manifest) ([]provider.Manifest, error) {
+	var primaryManifests, workloads []provider.Manifest
+
+	for _, m := range manifests {
+		if m.Key.IsWorkload() {
+			workloads = append(workloads, m)
+		} else {
+			primaryManifests = append(primaryManifests, m)
+		}
+	}
+	if len(workloads) > 0 {
+		generatedWorkloads, err := generateWorkloadManifests(workloads, nil, nil, primaryVariant, "", nil)
+		if err != nil {
+			return nil, err
+		}
+		primaryManifests = append(primaryManifests, generatedWorkloads...)
+	}
+
+	// Add labels to the generated canary manifests.
+	for _, m := range primaryManifests {
+		if namespace != "" {
+			m.SetNamespace(namespace)
+			m.Key.Namespace = namespace
+		}
+		m.AddAnnotations(e.builtinAnnotations(m, primaryVariant, commitHash))
+	}
+	return primaryManifests, nil
 }
