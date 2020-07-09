@@ -26,6 +26,7 @@ import "pkg/model/environment.proto";
 import "pkg/model/deployment.proto";
 import "pkg/model/logblock.proto";
 import "pkg/model/piped.proto";
+import "google/protobuf/wrappers.proto";
 
 // Note: Does copy Piped message from pkg/model/piped.proto and exclude sensitive data because Piped message for web should not contain it.
 message Piped {
@@ -136,7 +137,7 @@ message DisablePipedResponse {
 
 message ListPipedsRequest {
     message Options {
-        bool include_disabled = 1;
+        google.protobuf.BoolValue enabled = 1;
     }
     // Whether to include the status value in the response message.
     bool with_status = 1;
