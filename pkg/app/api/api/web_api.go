@@ -198,11 +198,11 @@ func (a *WebAPI) ListPipeds(ctx context.Context, req *webservice.ListPipedsReque
 	}
 
 	if req.Options != nil {
-		if !req.Options.IncludeDisabled {
+		if req.Options.Enabled != nil {
 			opts.Filters = append(opts.Filters, datastore.ListFilter{
 				Field:    "Disabled",
 				Operator: "==",
-				Value:    false,
+				Value:    !req.Options.Enabled.GetValue(),
 			})
 		}
 	}
