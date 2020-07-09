@@ -90,7 +90,10 @@ func (e *Executor) rollbackPrimary(ctx context.Context) error {
 }
 
 func (e *Executor) generatePrimaryManifests(namespace, commitHash string, manifests []provider.Manifest) ([]provider.Manifest, error) {
-	var primaryManifests, workloads []provider.Manifest
+	var (
+		primaryManifests = make([]provider.Manifest, 0, len(manifests))
+		workloads        []provider.Manifest
+	)
 
 	for _, m := range manifests {
 		if m.Key.IsWorkload() {
