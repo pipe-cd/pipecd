@@ -1,27 +1,14 @@
 linters:
   disable-all: true
   enable:
-    - dogsled
-    - gofmt
-    - goimports
-    - gomodguard
-    - goprintffuncname
-    - ineffassign
-    - misspell
-    - nakedret
-    - nestif
     - prealloc
-      #- lll
-      #- gomnd
-      #- godox
-      #- scopelint
-      #- whitespace
-      #- wsl
-      #- dupl
-      #- funlen
-      #- gocognit
-      #- gocyclo
-
+    - ineffassign
+    - gosimple
+    - staticcheck
+    - gosec
+    - gocritic
+    - unparam
+    - deadcode
   fast: false
 linters-settings:
   goimports:
