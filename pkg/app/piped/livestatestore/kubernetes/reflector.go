@@ -136,7 +136,7 @@ type reflector struct {
 }
 
 func (r *reflector) start(ctx context.Context) error {
-	matcher := newResourceMatcher(r.config)
+	matcher := newResourceMatcher(r.config.AppStateInformer)
 
 	// Use discovery to discover APIs supported by the Kubernetes API server.
 	// This should be run periodically with a low rate because the APIs are not added frequently.
@@ -160,10 +160,12 @@ func (r *reflector) start(ctx context.Context) error {
 		for _, resource := range gr.APIResources {
 			gvk := schema.FromAPIVersionAndKind(gr.GroupVersion, resource.Kind)
 			if !matcher.Match(gvk) {
+				r.logger.Info(fmt.Sprintf("skip watching %v because of not matching the configured list", gvk))
 				continue
 			}
 
 			if !isSupportedList(resource) || !isSupportedWatch(resource) {
+				r.logger.Info(fmt.Sprintf("skip watching %v because of not supporting watch or list verb", gvk))
 				continue
 			}
 
@@ -308,20 +310,20 @@ type resourceMatcher struct {
 	excludes map[string]struct{}
 }
 
-func newResourceMatcher(cfg *config.CloudProviderKubernetesConfig) *resourceMatcher {
+func newResourceMatcher(cfg config.KubernetesAppStateInformer) *resourceMatcher {
 	r := &resourceMatcher{
-		includes: make(map[string]struct{}, len(cfg.AppStateInformer.IncludeResources)),
-		excludes: make(map[string]struct{}, len(cfg.AppStateInformer.ExcludeResources)),
+		includes: make(map[string]struct{}, len(cfg.IncludeResources)),
+		excludes: make(map[string]struct{}, len(cfg.ExcludeResources)),
 	}
 
-	for _, m := range cfg.AppStateInformer.IncludeResources {
+	for _, m := range cfg.IncludeResources {
 		if m.Kind == "" {
 			r.includes[m.APIVersion] = struct{}{}
 		} else {
 			r.includes[m.APIVersion+":"+m.Kind] = struct{}{}
 		}
 	}
-	for _, m := range cfg.AppStateInformer.ExcludeResources {
+	for _, m := range cfg.ExcludeResources {
 		if m.Kind == "" {
 			r.excludes[m.APIVersion] = struct{}{}
 		} else {
