@@ -49,35 +49,42 @@ const useStyles = makeStyles((theme) => ({
 
 const ALL_VALUE = "ALL";
 
-type Ability = typeof ALL_VALUE | "enabled" | "disabled";
+type ActiveStatus = typeof ALL_VALUE | "enabled" | "disabled";
 
 interface FormState {
-  status: ApplicationSyncStatus | typeof ALL_VALUE;
-  kind: ApplicationKind | typeof ALL_VALUE;
-  ability: Ability;
+  syncStatus: ApplicationSyncStatus | typeof ALL_VALUE;
+  applicationKind: ApplicationKind | typeof ALL_VALUE;
+  activeStatus: ActiveStatus;
   env: string;
 }
 
 const initialState: FormState = {
-  ability: ALL_VALUE,
-  status: ALL_VALUE,
+  activeStatus: "enabled",
+  syncStatus: ALL_VALUE,
   env: ALL_VALUE,
-  kind: ALL_VALUE,
+  applicationKind: ALL_VALUE,
 };
+
 type Actions =
-  | { type: "update-status"; value: ApplicationSyncStatus | typeof ALL_VALUE }
-  | { type: "update-kind"; value: ApplicationKind | typeof ALL_VALUE }
+  | {
+      type: "update-sync-status";
+      value: ApplicationSyncStatus | typeof ALL_VALUE;
+    }
+  | {
+      type: "update-application-kind";
+      value: ApplicationKind | typeof ALL_VALUE;
+    }
   | { type: "update-env"; value: string }
-  | { type: "update-ability"; value: Ability }
+  | { type: "update-active-status"; value: ActiveStatus }
   | { type: "clear-form" };
 const reducer = (state: FormState, action: Actions): FormState => {
   switch (action.type) {
-    case "update-ability":
-      return { ...state, ability: action.value };
-    case "update-status":
-      return { ...state, status: action.value };
-    case "update-kind":
-      return { ...state, kind: action.value };
+    case "update-active-status":
+      return { ...state, activeStatus: action.value };
+    case "update-sync-status":
+      return { ...state, syncStatus: action.value };
+    case "update-application-kind":
+      return { ...state, applicationKind: action.value };
     case "update-env":
       return { ...state, env: action.value };
     case "clear-form":
@@ -86,7 +93,9 @@ const reducer = (state: FormState, action: Actions): FormState => {
 };
 
 interface Options {
-  enabled?: { value: boolean };
+  enabled?: {
+    value: boolean;
+  };
   kindsList: ApplicationKind[];
   envIdsList: string[];
   syncStatusesList: ApplicationSyncStatus[];
@@ -114,19 +123,19 @@ export const ApplicationFilter: FC<Props> = memo(function ApplicationFilter({
       envIdsList: [],
       syncStatusesList: [],
     };
-    if (state.ability !== ALL_VALUE) {
+    if (state.activeStatus !== ALL_VALUE) {
       options.enabled = {
-        value: state.ability === "enabled",
+        value: state.activeStatus === "enabled",
       };
     }
-    if (state.kind !== ALL_VALUE) {
-      options.kindsList = [state.kind];
+    if (state.applicationKind !== ALL_VALUE) {
+      options.kindsList = [state.applicationKind];
     }
     if (state.env !== ALL_VALUE) {
       options.envIdsList = [state.env];
     }
-    if (state.status !== ALL_VALUE) {
-      options.syncStatusesList = [state.status];
+    if (state.syncStatus !== ALL_VALUE) {
+      options.syncStatusesList = [state.syncStatus];
     }
     onChange(options);
   }, [state, onChange]);
@@ -150,17 +159,17 @@ export const ApplicationFilter: FC<Props> = memo(function ApplicationFilter({
       </div>
 
       <FormControl className={classes.formItem} variant="outlined">
-        <InputLabel id="filter-ability">Ability</InputLabel>
+        <InputLabel id="filter-active-status">Active Status</InputLabel>
         <Select
-          labelId="filter-ability"
-          id="filter-ability"
-          value={state.ability}
-          label="Ability"
+          labelId="filter-active-status"
+          id="filter-active-status"
+          value={state.activeStatus}
+          label="Active Status"
           className={classes.select}
           onChange={(e) => {
             dispatch({
-              type: "update-ability",
-              value: e.target.value as Ability,
+              type: "update-active-status",
+              value: e.target.value as ActiveStatus,
             });
           }}
         >
@@ -173,16 +182,16 @@ export const ApplicationFilter: FC<Props> = memo(function ApplicationFilter({
       </FormControl>
 
       <FormControl className={classes.formItem} variant="outlined">
-        <InputLabel id="filter-status">Status</InputLabel>
+        <InputLabel id="filter-sync-status">Sync Status</InputLabel>
         <Select
-          labelId="filter-status"
-          id="filter-status"
-          value={state.status}
-          label="Status"
+          labelId="filter-sync-status"
+          id="filter-sync-status"
+          value={state.syncStatus}
+          label="Sync Status"
           className={classes.select}
           onChange={(e) => {
             dispatch({
-              type: "update-status",
+              type: "update-sync-status",
               value:
                 e.target.value === ""
                   ? ALL_VALUE
@@ -197,7 +206,7 @@ export const ApplicationFilter: FC<Props> = memo(function ApplicationFilter({
           {Object.keys(ApplicationSyncStatus).map((key) => (
             <MenuItem
               value={ApplicationSyncStatus[key as ApplicationSyncStatusKey]}
-              key={`status-${key}`}
+              key={`sync-status-${key}`}
             >
               {
                 APPLICATION_SYNC_STATUS_TEXT[
@@ -224,7 +233,7 @@ export const ApplicationFilter: FC<Props> = memo(function ApplicationFilter({
             });
           }}
         >
-          <MenuItem value={ALL_VALUE} key="env-all">
+          <MenuItem value={ALL_VALUE}>
             <em>All</em>
           </MenuItem>
           {envs.map((e) => (
@@ -236,16 +245,16 @@ export const ApplicationFilter: FC<Props> = memo(function ApplicationFilter({
       </FormControl>
 
       <FormControl className={classes.formItem} variant="outlined">
-        <InputLabel id="filter-kind">Kind</InputLabel>
+        <InputLabel id="filter-application-kind">Application Kind</InputLabel>
         <Select
-          labelId="filter-kind"
-          id="filter-kind"
-          value={state.kind}
+          labelId="filter-application-kind"
+          id="filter-application-kind"
+          value={state.applicationKind}
           label="Environment"
           className={classes.select}
           onChange={(e) => {
             dispatch({
-              type: "update-kind",
+              type: "update-application-kind",
               value:
                 e.target.value === ""
                   ? ALL_VALUE
@@ -253,7 +262,7 @@ export const ApplicationFilter: FC<Props> = memo(function ApplicationFilter({
             });
           }}
         >
-          <MenuItem value={ALL_VALUE} key="kind-all">
+          <MenuItem value={ALL_VALUE}>
             <em>All</em>
           </MenuItem>
 

@@ -18,8 +18,12 @@ import { addApplication, fetchApplications } from "../../modules/applications";
 import { AppDispatch } from "../../store";
 
 const useStyles = makeStyles((theme) => ({
+  root: {
+    height: "100%",
+  },
   main: {
     display: "flex",
+    height: "100%",
   },
   toolbarSpacer: {
     flexGrow: 1,
@@ -47,7 +51,7 @@ export const ApplicationIndexPage: FC = memo(function ApplicationIndexPage() {
   );
 
   return (
-    <div>
+    <div className={classes.root}>
       <Toolbar variant="dense">
         <Button
           color="primary"
