@@ -78,16 +78,20 @@ func determineResourceHealth(key ResourceKey, obj *unstructured.Unstructured) (s
 		return determineDaemonSetHealth(obj)
 	case KindReplicaSet:
 		return determineReplicaSetHealth(obj)
-	case KindJob:
-		return determineJobHealth(obj)
 	case KindPod:
 		return determinePodHealth(obj)
+	case KindJob:
+		return determineJobHealth(obj)
+	case KindCronJob:
+		return determineCronJobHealth(obj)
 	case KindService:
 		return determineServiceHealth(obj)
 	case KindIngress:
 		return determineIngressHealth(obj)
 	case KindConfigMap:
 		return determineConfigMapHealth(obj)
+	case KindPersistentVolume:
+		return determinePersistentVolumeHealth(obj)
 	case KindPersistentVolumeClaim:
 		return determinePVCHealth(obj)
 	case KindSecret:
@@ -286,6 +290,12 @@ func determineReplicaSetHealth(obj *unstructured.Unstructured) (status model.Kub
 	return
 }
 
+// TODO: Check health state of CronJob resource
+func determineCronJobHealth(obj *unstructured.Unstructured) (status model.KubernetesResourceState_HealthStatus, desc string) {
+	desc = "Unimplemented yet"
+	return
+}
+
 func determineJobHealth(obj *unstructured.Unstructured) (status model.KubernetesResourceState_HealthStatus, desc string) {
 	job := &batchv1.Job{}
 	err := scheme.Scheme.Convert(obj, job, nil)
@@ -431,6 +441,12 @@ func determineSecretHealth(obj *unstructured.Unstructured) (status model.Kuberne
 
 	desc = fmt.Sprintf("%q created", obj.GetName())
 	status = model.KubernetesResourceState_HEALTHY
+	return
+}
+
+// TODO: Check health state of PersistentVolume resource
+func determinePersistentVolumeHealth(obj *unstructured.Unstructured) (status model.KubernetesResourceState_HealthStatus, desc string) {
+	desc = "Unimplemented yet"
 	return
 }
 
