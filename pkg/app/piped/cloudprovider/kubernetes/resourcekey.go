@@ -194,12 +194,20 @@ func (k ResourceKey) IsLess(a ResourceKey) bool {
 func (k ResourceKey) IsLessWithIgnoringNamespace(a ResourceKey) bool {
 	if k.APIVersion < a.APIVersion {
 		return true
+	} else if k.APIVersion > a.APIVersion {
+		return false
 	}
+
 	if k.Kind < a.Kind {
 		return true
+	} else if k.Kind > a.Kind {
+		return false
 	}
+
 	if k.Name < a.Name {
 		return true
+	} else if k.Name > a.Name {
+		return false
 	}
 	return false
 }
