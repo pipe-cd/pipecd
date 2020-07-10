@@ -20,7 +20,7 @@ import (
 	"github.com/pipe-cd/pipe/pkg/model"
 )
 
-func (e *Executor) ensureTrafficSplit(ctx context.Context) model.StageStatus {
+func (e *Executor) ensureTrafficRouting(ctx context.Context) model.StageStatus {
 	return model.StageStatus_STAGE_SUCCESS
 }
 

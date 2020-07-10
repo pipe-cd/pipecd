@@ -150,35 +150,50 @@ func (e *Executor) removeCanaryResources(ctx context.Context, resources []string
 }
 
 func (e *Executor) generateCanaryManifests(namespace string, manifests []provider.Manifest, opts config.K8sCanaryRolloutStageOptions) ([]provider.Manifest, error) {
-	// List of default configurations.
 	var (
-		suffix          = canaryVariant
-		workloadCfg     *config.K8sWorkload
-		serviceCfg      *config.K8sService
-		canaryManifests []provider.Manifest
+		workloadKind, workloadName string
+		serviceName                string
+		generateService            bool
+		canaryManifests            []provider.Manifest
+		suffix                     = canaryVariant
 	)
 
 	// Apply the specified configuration if they are present.
 	if sc := e.config.CanaryVariant; sc != nil {
+		var ok bool
 		if sc.Suffix != "" {
 			suffix = sc.Suffix
 		}
-		workloadCfg = sc.Workload
-		serviceCfg = sc.Service
+		generateService = sc.Service.Create
+
+		workloadKind, workloadName, ok = config.ParseVariantResourceReference(sc.Workload.Reference)
+		if !ok {
+			return nil, fmt.Errorf("malformed workload reference: %s", sc.Workload.Reference)
+		}
+		if workloadKind == "" {
+			workloadKind = provider.KindDeployment
+		}
+
+		_, serviceName, ok = config.ParseVariantResourceReference(sc.Service.Reference)
+		if !ok {
+			return nil, fmt.Errorf("malformed service reference: %s", sc.Workload.Reference)
+		}
 	}
 
-	workloads := findWorkloadManifests(workloadCfg, manifests)
+	workloads := findManifests(workloadKind, workloadName, manifests)
 	if len(workloads) == 0 {
 		return nil, fmt.Errorf("unable to find any workload manifests for CANARY variant")
 	}
 
 	// Find service manifests and duplicate them for CANARY variant.
-	services := findServiceManifests(serviceCfg, manifests)
-	generatedServices, err := generateServiceManifests(services, canaryVariant, suffix)
-	if err != nil {
-		return nil, err
+	if generateService {
+		services := findManifests(provider.KindService, serviceName, manifests)
+		generatedServices, err := generateServiceManifests(services, canaryVariant, suffix)
+		if err != nil {
+			return nil, err
+		}
+		canaryManifests = append(canaryManifests, generatedServices...)
 	}
-	canaryManifests = append(canaryManifests, generatedServices...)
 
 	// Find config map manifests and duplicate them for CANARY variant.
 	configmaps := findConfigMapManifests(manifests)

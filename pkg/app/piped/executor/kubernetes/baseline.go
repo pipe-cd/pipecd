@@ -150,35 +150,50 @@ func (e *Executor) removeBaselineResources(ctx context.Context, resources []stri
 }
 
 func (e *Executor) generateBaselineManifests(namespace string, manifests []provider.Manifest, opts config.K8sBaselineRolloutStageOptions) ([]provider.Manifest, error) {
-	// List of default configurations.
 	var (
-		suffix            = baselineVariant
-		workloadCfg       *config.K8sWorkload
-		serviceCfg        *config.K8sService
-		baselineManifests []provider.Manifest
+		workloadKind, workloadName string
+		serviceName                string
+		generateService            bool
+		baselineManifests          []provider.Manifest
+		suffix                     = baselineVariant
 	)
 
 	// Apply the specified configuration if they are present.
 	if sc := e.config.BaselineVariant; sc != nil {
+		var ok bool
 		if sc.Suffix != "" {
 			suffix = sc.Suffix
 		}
-		workloadCfg = sc.Workload
-		serviceCfg = sc.Service
+		generateService = sc.Service.Create
+
+		workloadKind, workloadName, ok = config.ParseVariantResourceReference(sc.Workload.Reference)
+		if !ok {
+			return nil, fmt.Errorf("malformed workload reference: %s", sc.Workload.Reference)
+		}
+		if workloadKind == "" {
+			workloadKind = provider.KindDeployment
+		}
+
+		_, serviceName, ok = config.ParseVariantResourceReference(sc.Service.Reference)
+		if !ok {
+			return nil, fmt.Errorf("malformed service reference: %s", sc.Workload.Reference)
+		}
 	}
 
-	workloads := findWorkloadManifests(workloadCfg, manifests)
+	workloads := findManifests(workloadKind, workloadName, manifests)
 	if len(workloads) == 0 {
 		return nil, fmt.Errorf("unable to find any workload manifests for BASELINE variant")
 	}
 
 	// Find service manifests and duplicate them for BASELINE variant.
-	services := findServiceManifests(serviceCfg, manifests)
-	generatedServices, err := generateServiceManifests(services, baselineVariant, suffix)
-	if err != nil {
-		return nil, err
+	if generateService {
+		services := findManifests(provider.KindService, serviceName, manifests)
+		generatedServices, err := generateServiceManifests(services, baselineVariant, suffix)
+		if err != nil {
+			return nil, err
+		}
+		baselineManifests = append(baselineManifests, generatedServices...)
 	}
-	baselineManifests = append(baselineManifests, generatedServices...)
 
 	// Generate new workload manifests for VANARY variant.
 	// The generated ones will mount to the new ConfigMaps and Secrets.

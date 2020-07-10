@@ -43,9 +43,9 @@ const (
 	// StageK8sBaselineClean represents the state where
 	// the BASELINE variant workloads has been cleaned.
 	StageK8sBaselineClean Stage = "K8S_BASELINE_CLEAN"
-	// StageK8sTrafficSplit represents the state where the traffic to application
+	// StageK8sTrafficRouting represents the state where the traffic to application
 	// should be splitted as the specified percentage to PRIMARY, CANARY, BASELINE variants.
-	StageK8sTrafficSplit Stage = "K8S_TRAFFIC_SPLIT"
+	StageK8sTrafficRouting Stage = "K8S_TRAFFIC_ROUTING"
 
 	// StageTerraformPlan shows terraform plan result.
 	StageTerraformPlan Stage = "TERRAFORM_PLAN"
@@ -56,16 +56,16 @@ const (
 	// StageCloudRunNewVersionRollout represents the state where
 	// the workloads of the new version has been rolled out.
 	StageCloudRunNewVersionRollout Stage = "CLOUDRUN_NEW_VERSION_ROLLOUT"
-	// StageCloudRunTrafficSplit represents the state where the traffic to application
+	// StageCloudRunTrafficRouting represents the state where the traffic to application
 	// should be splitted as the specified percentage to previous version and new version.
-	StageCloudRunTrafficSplit Stage = "CLOUDRUN_TRAFFIC_SPLIT"
+	StageCloudRunTrafficRouting Stage = "CLOUDRUN_TRAFFIC_ROUTING"
 
 	// StageLambdaNewVersionRollout represents the state where
 	// the workloads of the new version has been rolled out.
 	StageLambdaNewVersionRollout Stage = "LAMBDA_NEW_VERSION_ROLLOUT"
-	// StageLambdaTrafficSplit represents the state where the traffic to application
+	// StageLambdaTrafficRouting represents the state where the traffic to application
 	// should be splitted as the specified percentage to previous version and new version.
-	StageLambdaTrafficSplit Stage = "LAMBDA_TRAFFIC_SPLIT"
+	StageLambdaTrafficRouting Stage = "LAMBDA_TRAFFIC_ROUTING"
 
 	// StageRollback represents a state where
 	// the all temporarily created stages will be reverted to
