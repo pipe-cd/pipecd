@@ -199,6 +199,7 @@ func (d *detector) checkApplication(ctx context.Context, app *model.Application,
 	if err != nil {
 		return err
 	}
+	headManifests = filterIgnoringManifests(headManifests)
 	sort.Slice(headManifests, func(i, j int) bool {
 		return headManifests[i].Key.IsLessWithIgnoringNamespace(headManifests[j].Key)
 	})
@@ -208,6 +209,7 @@ func (d *detector) checkApplication(ctx context.Context, app *model.Application,
 	sort.Slice(liveManifests, func(i, j int) bool {
 		return liveManifests[i].Key.IsLessWithIgnoringNamespace(liveManifests[j].Key)
 	})
+	liveManifests = filterIgnoringManifests(liveManifests)
 	d.logger.Info(fmt.Sprintf("application %s has %d live manifests", app.Id, len(liveManifests)))
 
 	var missings, redundancies []provider.Manifest
@@ -439,4 +441,16 @@ func makeOutOfSyncState(headManifests, liveManifests []provider.Manifest, diffs 
 		Reason:      b.String(),
 		Timestamp:   time.Now().Unix(),
 	}
+}
+
+func filterIgnoringManifests(manifests []provider.Manifest) []provider.Manifest {
+	out := make([]provider.Manifest, 0, len(manifests))
+	for _, m := range manifests {
+		annotations := m.GetAnnotations()
+		if annotations[provider.LabelIgnoreDriftDirection] == provider.IgnoreDriftDetectionTrue {
+			continue
+		}
+		out = append(out, m)
+	}
+	return out
 }

@@ -78,6 +78,10 @@ func (m Manifest) AddAnnotations(annotations map[string]string) {
 	m.u.SetAnnotations(annos)
 }
 
+func (m Manifest) GetAnnotations() map[string]string {
+	return m.u.GetAnnotations()
+}
+
 func (m Manifest) SetNamespace(namespace string) {
 	m.u.SetNamespace(namespace)
 }
