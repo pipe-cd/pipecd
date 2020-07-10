@@ -17,6 +17,7 @@ package config
 import (
 	"encoding/json"
 	"fmt"
+	"strings"
 
 	"github.com/pipe-cd/pipe/pkg/model"
 )
@@ -27,13 +28,13 @@ type Pipelineable interface {
 
 // KubernetesDeploymentSpec represents a deployment configuration for Kubernetes application.
 type KubernetesDeploymentSpec struct {
-	// Selector is a list of labels used to query all resources of this application.
-	Selector        map[string]string         `json:"selector"`
-	Input           KubernetesDeploymentInput `json:"input"`
-	Pipeline        *DeploymentPipeline       `json:"pipeline"`
-	CanaryVariant   *CanaryVariant            `json:"canaryVariant"`
-	BaselineVariant *BaselineVariant          `json:"baselineVariant"`
-	TrafficSplit    TrafficSplit              `json:"trafficSplit"`
+	Input    KubernetesDeploymentInput `json:"input"`
+	Pipeline *DeploymentPipeline       `json:"pipeline"`
+
+	PrimaryVariant  *PrimaryVariant  `json:"primaryVariant"`
+	CanaryVariant   *CanaryVariant   `json:"canaryVariant"`
+	BaselineVariant *BaselineVariant `json:"baselineVariant"`
+	TrafficRouting  *TrafficRouting  `json:"trafficRouting"`
 }
 
 func (s *KubernetesDeploymentSpec) GetStage(index int32) (PipelineStage, bool) {
@@ -80,32 +81,79 @@ type DeploymentPipeline struct {
 	Stages []PipelineStage `json:"stages"`
 }
 
+type PrimaryVariant struct {
+	// Suffix that should be used when naming the PRIMARY variant's resources.
+	// Default is "primary".
+	Suffix  string            `json:"suffix"`
+	Service K8sVariantService `json:"service"`
+}
+
 type CanaryVariant struct {
-	Workload *K8sWorkload `json:"workload"`
-	// TODO: Make CanaryVariant and BaselineVariant become more configurable such as about service type, annotations, port...
-	Service *K8sService `json:"service"`
 	// Suffix that should be used when naming the CANARY variant's resources.
 	// Default is "canary".
-	Suffix string `json:"suffix"`
+	Suffix   string             `json:"suffix"`
+	Service  K8sVariantService  `json:"service"`
+	Workload K8sVariantWorkload `json:"workload"`
 }
 
 type BaselineVariant struct {
-	Workload *K8sWorkload `json:"workload"`
-	Service  *K8sService  `json:"service"`
 	// Suffix that should be used when naming the BASELINE variant's resources.
 	// Default is "baseline".
-	Suffix string `json:"suffix"`
+	Suffix   string             `json:"suffix"`
+	Service  K8sVariantService  `json:"service"`
+	Workload K8sVariantWorkload `json:"workload"`
 }
 
-type TrafficSplitMethod string
+type K8sVariantService struct {
+	Create    bool   `json:"create"`
+	Reference string `json:"reference"`
+}
+
+type K8sVariantWorkload struct {
+	Reference string `json:"reference"`
+}
+
+type TrafficRoutingMethod string
 
 const (
-	TrafficSplitMethodPod   TrafficSplitMethod = "pod"
-	TrafficSplitMethodIstio TrafficSplitMethod = "istio"
+	TrafficRoutingMethodPod   TrafficRoutingMethod = "pod"
+	TrafficRoutingMethodIstio TrafficRoutingMethod = "istio"
 )
 
-type TrafficSplit struct {
-	Method TrafficSplitMethod `json:"method"`
+type TrafficRouting struct {
+	Method TrafficRoutingMethod `json:"method"`
+	Istio  *IstioTrafficRouting `json:"istio"`
+}
+
+type IstioTrafficRouting struct {
+	EditableRoutes  []string                  `json:"editableRoutes"`
+	VirtualService  K8sVariantVirtualService  `json:"virtualService"`
+	DestinationRule K8sVariantDestinationRule `json:"destinationRule"`
+}
+
+type K8sVariantVirtualService struct {
+	Reference string `json:"reference"`
+}
+
+type K8sVariantDestinationRule struct {
+	Reference string `json:"reference"`
+}
+
+// ParseVariantResourceReference parses the given reference name
+// and returns the resource Kind, Name.
+// If the reference is malformed, empty kind, empty name and false will be returned.
+// Reference format:
+// - kind/name
+// - name
+func ParseVariantResourceReference(ref string) (kind, name string, ok bool) {
+	parts := strings.Split(ref, "/")
+	if len(parts) == 1 {
+		return "", parts[0], true
+	}
+	if len(parts) == 2 {
+		return parts[0], parts[1], true
+	}
+	return "", "", false
 }
 
 // PiplineStage represents a single stage of a pipeline.
@@ -124,7 +172,7 @@ type PipelineStage struct {
 	K8sCanaryCleanStageOptions     *K8sCanaryCleanStageOptions
 	K8sBaselineRolloutStageOptions *K8sBaselineRolloutStageOptions
 	K8sBaselineCleanStageOptions   *K8sBaselineCleanStageOptions
-	K8sTrafficSplitStageOptions    *K8sTrafficSplitStageOptions
+	K8sTrafficRoutingStageOptions  *K8sTrafficRoutingStageOptions
 	TerraformPlanStageOptions      *TerraformPlanStageOptions
 	TerraformApplyStageOptions     *TerraformApplyStageOptions
 }
@@ -189,10 +237,10 @@ func (s *PipelineStage) UnmarshalJSON(data []byte) error {
 		if len(gs.With) > 0 {
 			err = json.Unmarshal(gs.With, s.K8sBaselineCleanStageOptions)
 		}
-	case model.StageK8sTrafficSplit:
-		s.K8sTrafficSplitStageOptions = &K8sTrafficSplitStageOptions{}
+	case model.StageK8sTrafficRouting:
+		s.K8sTrafficRoutingStageOptions = &K8sTrafficRoutingStageOptions{}
 		if len(gs.With) > 0 {
-			err = json.Unmarshal(gs.With, s.K8sTrafficSplitStageOptions)
+			err = json.Unmarshal(gs.With, s.K8sTrafficRoutingStageOptions)
 		}
 	case model.StageTerraformPlan:
 		s.TerraformPlanStageOptions = &TerraformPlanStageOptions{}
@@ -251,8 +299,8 @@ type K8sBaselineRolloutStageOptions struct {
 type K8sBaselineCleanStageOptions struct {
 }
 
-// K8sTrafficSplitStageOptions contains all configurable values for a K8S_TRAFFIC_SPLIT stage.
-type K8sTrafficSplitStageOptions struct {
+// K8sTrafficRoutingStageOptions contains all configurable values for a K8S_TRAFFIC_ROUTING stage.
+type K8sTrafficRoutingStageOptions struct {
 	// Which variant should receive all traffic.
 	All string `json:"all"`
 	// The percentage of traffic should be routed to PRIMARY variant.
@@ -354,13 +402,4 @@ type InputHelmOptions struct {
 	// List of value files should be loaded.
 	ValueFiles []string `json:"valueFiles"`
 	SetFiles   map[string]string
-}
-
-type K8sWorkload struct {
-	Kind string `json:"kind"`
-	Name string `json:"name"`
-}
-
-type K8sService struct {
-	Name string `json:"name"`
 }

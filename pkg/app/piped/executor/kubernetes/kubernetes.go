@@ -58,7 +58,7 @@ func Register(r registerer) {
 	r.Register(model.StageK8sCanaryClean, f)
 	r.Register(model.StageK8sBaselineRollout, f)
 	r.Register(model.StageK8sBaselineClean, f)
-	r.Register(model.StageK8sTrafficSplit, f)
+	r.Register(model.StageK8sTrafficRouting, f)
 
 	r.RegisterRollback(model.ApplicationKind_KUBERNETES, f)
 }
@@ -102,8 +102,8 @@ func (e *Executor) Execute(sig executor.StopSignal) model.StageStatus {
 	case model.StageK8sBaselineClean:
 		status = e.ensureBaselineClean(ctx)
 
-	case model.StageK8sTrafficSplit:
-		status = e.ensureTrafficSplit(ctx)
+	case model.StageK8sTrafficRouting:
+		status = e.ensureTrafficRouting(ctx)
 
 	case model.StageRollback:
 		status = e.ensureRollback(ctx)
@@ -179,43 +179,10 @@ func (e *Executor) builtinAnnotations(m provider.Manifest, variant, hash string)
 	}
 }
 
-func findWorkloadManifests(cfg *config.K8sWorkload, manifests []provider.Manifest) []provider.Manifest {
-	var (
-		out  []provider.Manifest
-		kind = provider.KindDeployment
-		name string
-	)
-	if cfg != nil && cfg.Kind != "" {
-		kind = cfg.Kind
-	}
-	if cfg != nil && cfg.Name != "" {
-		name = cfg.Name
-	}
+func findManifests(kind, name string, manifests []provider.Manifest) []provider.Manifest {
+	var out []provider.Manifest
 	for _, m := range manifests {
-		if !m.Key.IsWorkload() {
-			continue
-		}
 		if m.Key.Kind != kind {
-			continue
-		}
-		if name != "" && m.Key.Name != name {
-			continue
-		}
-		out = append(out, m)
-	}
-	return out
-}
-
-func findServiceManifests(cfg *config.K8sService, manifests []provider.Manifest) []provider.Manifest {
-	var (
-		out  []provider.Manifest
-		name string
-	)
-	if cfg != nil && cfg.Name != "" {
-		name = cfg.Name
-	}
-	for _, m := range manifests {
-		if !m.Key.IsService() {
 			continue
 		}
 		if name != "" && m.Key.Name != name {

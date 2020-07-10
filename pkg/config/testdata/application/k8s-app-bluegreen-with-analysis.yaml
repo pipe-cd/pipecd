@@ -16,13 +16,13 @@ spec:
           https:
             - template:
                 name: http_stage_check
-      - name: K8S_TRAFFIC_SPLIT
+      - name: K8S_TRAFFIC_ROUTING
         with:
           all: canary
       - name: K8S_PRIMARY_UPDATE
-      - name: K8S_TRAFFIC_SPLIT
+      - name: K8S_TRAFFIC_ROUTING
         with:
           all: primary
       - name: K8S_CANARY_CLEAN
-  trafficSplit:
+  trafficRouting:
     method: pod

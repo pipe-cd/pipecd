@@ -8,13 +8,13 @@ spec:
       - name: K8S_CANARY_ROLLOUT
         with:
           replicas: 100%
-      - name: K8S_TRAFFIC_SPLIT
+      - name: K8S_TRAFFIC_ROUTING
         with:
           canary: 100
       - name: K8S_PRIMARY_UPDATE
-      - name: K8S_TRAFFIC_SPLIT
+      - name: K8S_TRAFFIC_ROUTING
         with:
           primary: 100
       - name: K8S_CANARY_CLEAN
-  trafficSplit:
+  trafficRouting:
     method: pod
