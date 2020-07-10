@@ -49,6 +49,7 @@ export const AddPipedForm: FC<Props> = ({ projectName, onSubmit, onClose }) => {
           onChange={(e) => setName(e.currentTarget.value)}
           value={name}
           fullWidth
+          required
         />
         <TextField
           label="Description"
@@ -63,7 +64,7 @@ export const AddPipedForm: FC<Props> = ({ projectName, onSubmit, onClose }) => {
           color="primary"
           type="button"
           onClick={handleSave}
-          disabled={desc === ""}
+          disabled={name === "" || desc === ""}
         >
           SAVE
         </Button>
