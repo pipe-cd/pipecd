@@ -10,9 +10,11 @@ import {
 } from "pipe/pkg/app/web/model/deployment_pb";
 import * as deploymentsApi from "../api/deployments";
 import { fetchCommand, CommandModel, CommandStatus } from "./commands";
+import { ApplicationKind } from "./applications";
 
 export type Deployment = Required<DeploymentModel.AsObject>;
 export type Stage = Required<PipelineStage.AsObject>;
+export type DeploymentStatusKey = keyof typeof DeploymentStatus;
 
 export const isDeploymentRunning = (status: DeploymentStatus): boolean => {
   switch (status) {
@@ -40,13 +42,18 @@ export const fetchDeploymentById = createAsyncThunk<Deployment, string>(
   }
 );
 
-export const fetchDeployments = createAsyncThunk<Deployment[]>(
-  "deployments/fetchList",
-  async () => {
-    const { deploymentsList } = await deploymentsApi.getDeployments();
-    return (deploymentsList as Deployment[]) || [];
+export const fetchDeployments = createAsyncThunk<
+  Deployment[],
+  {
+    statusesList: DeploymentStatus[];
+    kindsList: ApplicationKind[];
+    applicationIdsList: string[];
+    envIdsList: string[];
   }
-);
+>("deployments/fetchList", async (options) => {
+  const { deploymentsList } = await deploymentsApi.getDeployments({ options });
+  return (deploymentsList as Deployment[]) || [];
+});
 
 export const approveStage = createAsyncThunk<
   void,
@@ -76,9 +83,11 @@ export const deploymentsSlice = createSlice({
   initialState: deploymentsAdapter.getInitialState<{
     loading: Record<string, boolean>;
     canceling: Record<string, boolean>;
+    loadingList: boolean;
   }>({
     loading: {},
     canceling: {},
+    loadingList: false,
   }),
   reducers: {},
   extraReducers: (builder) => {
@@ -95,10 +104,18 @@ export const deploymentsSlice = createSlice({
       .addCase(fetchDeploymentById.rejected, (state, action) => {
         state.loading[action.meta.arg] = false;
       })
+      .addCase(fetchDeployments.pending, (state) => {
+        state.loadingList = true;
+      })
       .addCase(fetchDeployments.fulfilled, (state, action) => {
+        deploymentsAdapter.removeAll(state);
         if (action.payload.length > 0) {
           deploymentsAdapter.upsertMany(state, action.payload);
         }
+        state.loadingList = false;
+      })
+      .addCase(fetchDeployments.rejected, (state) => {
+        state.loadingList = false;
       })
       .addCase(cancelDeployment.pending, (state, action) => {
         state.canceling[action.meta.arg.deploymentId] = true;

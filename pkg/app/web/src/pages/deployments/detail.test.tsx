@@ -8,6 +8,7 @@ import { reducers } from "../../modules";
 import { dummyDeployment } from "../../__fixtures__/dummy-deployment";
 import { dummyEnv } from "../../__fixtures__/dummy-environment";
 import { DeploymentDetailPage } from "./detail";
+import { dummyPiped } from "../../__fixtures__/dummy-piped";
 
 jest.mock("../../api/deployments");
 
@@ -25,6 +26,10 @@ describe("DeploymentDetailPage", () => {
         environments: {
           entities: { [dummyEnv.id]: dummyEnv },
           ids: [dummyEnv.id],
+        },
+        pipeds: {
+          entities: { [dummyPiped.id]: dummyPiped },
+          ids: [dummyPiped.id],
         },
       },
     });

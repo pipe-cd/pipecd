@@ -18,8 +18,20 @@ export const getDeployment = ({
   return apiRequest(req, apiClient.getDeployment);
 };
 
-export const getDeployments = (): Promise<ListDeploymentsResponse.AsObject> => {
+export const getDeployments = ({
+  options,
+}: ListDeploymentsRequest.AsObject): Promise<
+  ListDeploymentsResponse.AsObject
+> => {
   const req = new ListDeploymentsRequest();
+  if (options) {
+    const opts = new ListDeploymentsRequest.Options();
+    opts.setEnvIdsList(options.envIdsList);
+    opts.setApplicationIdsList(options.applicationIdsList);
+    opts.setKindsList(options.kindsList);
+    opts.setStatusesList(options.statusesList);
+    req.setOptions(opts);
+  }
   return apiRequest(req, apiClient.listDeployments);
 };
 
