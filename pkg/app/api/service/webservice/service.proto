@@ -211,6 +211,13 @@ message GetApplicationResponse {
 }
 
 message ListDeploymentsRequest {
+    message Options {
+        repeated model.DeploymentStatus statuses = 1;
+        repeated model.ApplicationKind kinds = 2;
+        repeated string application_ids = 3;
+        repeated string env_ids = 4;
+    }
+    Options options = 1;
 }
 
 message ListDeploymentsResponse {
