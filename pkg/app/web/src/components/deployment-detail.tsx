@@ -24,6 +24,9 @@ import { AppState } from "../modules";
 import { StatusIcon } from "./deployment-status-icon";
 import { LabeledText } from "./labeled-text";
 import CancelIcon from "@material-ui/icons/Cancel";
+import { Link as RouterLink } from "react-router-dom";
+import { PAGE_PATH_APPLICATIONS } from "../constants";
+import { Piped, selectById } from "../modules/pipeds";
 
 const useStyles = makeStyles((theme) => ({
   root: {
@@ -84,6 +87,11 @@ export const DeploymentDetail: FC<Props> = memo(function DeploymentDetail({
   const env = useSelector<AppState, Environment | undefined>((state) =>
     selectEnvById(state.environments, deployment?.envId || "")
   );
+  const piped = useSelector<AppState, Piped | undefined>((state) => {
+    return deployment
+      ? selectById(state.pipeds, deployment.pipedId)
+      : undefined;
+  });
   const isCanceling = useSelector<AppState, boolean>((state) => {
     if (deployment?.id) {
       return state.deployments.canceling[deployment.id];
@@ -95,7 +103,7 @@ export const DeploymentDetail: FC<Props> = memo(function DeploymentDetail({
     dispatch(cancelDeployment({ deploymentId, withoutRollback: false }));
   };
 
-  if (!deployment || !env) {
+  if (!deployment || !env || !piped) {
     return (
       <div className={classes.loading}>
         <CircularProgress />
@@ -123,14 +131,26 @@ export const DeploymentDetail: FC<Props> = memo(function DeploymentDetail({
             {dayjs(deployment.createdAt * 1000).fromNow()}
           </Typography>
 
-          <LabeledText label="Piped ID" value={deployment.pipedId} />
+          <LabeledText label="Piped" value={piped.name} />
           <LabeledText label="Description" value={deployment.description} />
         </div>
         <div className={classes.content}>
+          <LabeledText
+            label="Application"
+            value={
+              <Link
+                variant="body2"
+                component={RouterLink}
+                to={`${PAGE_PATH_APPLICATIONS}/${deployment.applicationId}`}
+              >
+                {deployment.applicationName}
+              </Link>
+            }
+          />
           {deployment.trigger.commit && (
             <div className={classes.commitInfo}>
               <Typography variant="subtitle2" color="textSecondary">
-                COMMIT:
+                Commit:
               </Typography>
               <Typography variant="body2" className={classes.textMargin}>
                 {deployment.trigger.commit.message}
@@ -143,8 +163,12 @@ export const DeploymentDetail: FC<Props> = memo(function DeploymentDetail({
             </div>
           )}
           <LabeledText
-            label="TRIGGERED BY"
-            value={deployment.trigger.commander}
+            label="Triggered by"
+            value={
+              deployment.trigger.commander ||
+              deployment.trigger.commit?.author ||
+              ""
+            }
           />
         </div>
         {isDeploymentRunning(deployment.status) && (
