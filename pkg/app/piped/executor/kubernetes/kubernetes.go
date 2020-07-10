@@ -219,11 +219,18 @@ func generateServiceManifests(services []provider.Manifest, variant, nameSuffix 
 	manifests := make([]provider.Manifest, 0, len(services))
 	updateService := func(s *corev1.Service) {
 		s.Name = makeSuffixedName(s.Name, nameSuffix)
+		// Currently, we suppose that all generated services should be ClusterIP.
 		s.Spec.Type = corev1.ServiceTypeClusterIP
+		// Append the variant label to the selector
+		// to ensure that the generated service is using only workloads of this variant.
 		if s.Spec.Selector == nil {
 			s.Spec.Selector = map[string]string{}
 		}
 		s.Spec.Selector[variantLabel] = variant
+		// Empty all unneeded fields.
+		s.Spec.ExternalIPs = nil
+		s.Spec.LoadBalancerIP = ""
+		s.Spec.LoadBalancerSourceRanges = nil
 	}
 
 	for _, m := range services {
