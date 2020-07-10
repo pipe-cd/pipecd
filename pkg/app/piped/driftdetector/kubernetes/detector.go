@@ -199,13 +199,13 @@ func (d *detector) checkApplication(ctx context.Context, app *model.Application,
 	if err != nil {
 		return err
 	}
-	sort.Slice(headManifests, func(i, j int) bool {
+	sort.SliceStable(headManifests, func(i, j int) bool {
 		return headManifests[i].Key.IsLessWithIgnoringNamespace(headManifests[j].Key)
 	})
 	d.logger.Info(fmt.Sprintf("application %s has %d manifests at commit %s", app.Id, len(headManifests), headCommit.Hash))
 
 	liveManifests := d.stateGetter.GetAppLiveManifests(app.Id)
-	sort.Slice(liveManifests, func(i, j int) bool {
+	sort.SliceStable(liveManifests, func(i, j int) bool {
 		return liveManifests[i].Key.IsLessWithIgnoringNamespace(liveManifests[j].Key)
 	})
 	d.logger.Info(fmt.Sprintf("application %s has %d live manifests", app.Id, len(liveManifests)))
