@@ -7,6 +7,7 @@ import {
 } from "@material-ui/icons";
 import { DeploymentStatus } from "pipe/pkg/app/web/model/deployment_pb";
 import React, { FC } from "react";
+import clsx from "clsx";
 
 const useStyles = makeStyles((theme) => ({
   [DeploymentStatus.DEPLOYMENT_SUCCESS]: {
@@ -43,23 +44,26 @@ const useStyles = makeStyles((theme) => ({
 
 interface Props {
   status: DeploymentStatus;
+  className?: string;
 }
 
-export const StatusIcon: FC<Props> = ({ status }) => {
+export const StatusIcon: FC<Props> = ({ status, className }) => {
   const classes = useStyles();
 
   switch (status) {
     case DeploymentStatus.DEPLOYMENT_SUCCESS:
-      return <CheckCircle className={classes[status]} />;
+      return <CheckCircle className={clsx(classes[status], className)} />;
     case DeploymentStatus.DEPLOYMENT_FAILURE:
     case DeploymentStatus.DEPLOYMENT_CANCELLED:
-      return <Error className={classes[status]} />;
+      return <Error className={clsx(classes[status], className)} />;
     case DeploymentStatus.DEPLOYMENT_RUNNING:
-      return <Cached className={classes[status]} />;
+      return <Cached className={clsx(classes[status], className)} />;
     case DeploymentStatus.DEPLOYMENT_ROLLING_BACK:
-      return <Cached className={classes[status]} />;
+      return <Cached className={clsx(classes[status], className)} />;
     case DeploymentStatus.DEPLOYMENT_PENDING:
     case DeploymentStatus.DEPLOYMENT_PLANNED:
-      return <IndeterminateCheckBox className={classes[status]} />;
+      return (
+        <IndeterminateCheckBox className={clsx(classes[status], className)} />
+      );
   }
 };

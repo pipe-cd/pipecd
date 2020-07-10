@@ -1,5 +1,5 @@
-import React, { FC } from "react";
-import { makeStyles, Typography } from "@material-ui/core";
+import React, { FC, memo } from "react";
+import { makeStyles, Typography, ListItem } from "@material-ui/core";
 import { useSelector } from "react-redux";
 import { AppState } from "../modules";
 import {
@@ -12,6 +12,9 @@ import {
   selectById as selectApplicationById,
 } from "../modules/applications";
 import dayjs from "dayjs";
+import { selectById, Environment } from "../modules/environments";
+import { Link as RouterLink } from "react-router-dom";
+import { PAGE_PATH_DEPLOYMENTS } from "../constants";
 
 const useStyles = makeStyles((theme) => ({
   root: {
@@ -19,9 +22,14 @@ const useStyles = makeStyles((theme) => ({
     padding: theme.spacing(2),
     display: "flex",
     alignItems: "center",
+    height: 72,
+    backgroundColor: theme.palette.background.paper,
   },
-  appName: {
-    marginRight: theme.spacing(2),
+  env: {
+    marginLeft: theme.spacing(1),
+  },
+  statusIcon: {
+    marginLeft: theme.spacing(1),
   },
   head: {
     display: "flex",
@@ -39,41 +47,51 @@ interface Props {
   id: string;
 }
 
-export const DeploymentItem: FC<Props> = ({ id }) => {
+export const DeploymentItem: FC<Props> = memo(function DeploymentItem({ id }) {
   const classes = useStyles();
   const deployment = useSelector<AppState, Deployment | undefined>((state) =>
     selectDeploymentById(state.deployments, id)
   );
   const application = useSelector<AppState, Application | undefined>(
     (state) => {
-      if (!deployment) {
-        return undefined;
-      }
-      return selectApplicationById(
-        state.applications,
-        deployment.applicationId
-      );
+      return deployment
+        ? selectApplicationById(state.applications, deployment.applicationId)
+        : undefined;
     }
   );
+  const env = useSelector<AppState, Environment | undefined>((state) => {
+    return deployment
+      ? selectById(state.environments, deployment.envId)
+      : undefined;
+  });
 
-  if (!deployment || !application) {
+  if (!deployment || !application || !env) {
     return null;
   }
 
   return (
-    <div className={classes.root}>
+    <ListItem
+      className={classes.root}
+      button
+      dense
+      divider
+      component={RouterLink}
+      to={`${PAGE_PATH_DEPLOYMENTS}/${deployment.id}`}
+    >
       <div className={classes.main}>
         <div className={classes.head}>
-          <Typography variant="h6" className={classes.appName}>
-            {application.name}
-          </Typography>
-          <StatusIcon status={deployment.status} />
+          <Typography variant="h6">{application.name}</Typography>
+          <Typography className={classes.env}>{env.name}</Typography>
+          <StatusIcon
+            status={deployment.status}
+            className={classes.statusIcon}
+          />
         </div>
         <Typography variant="body1" className={classes.description}>
           {deployment.description}
         </Typography>
       </div>
       <div>{dayjs(deployment.createdAt * 1000).fromNow()}</div>
-    </div>
+    </ListItem>
   );
-};
+});
