@@ -27,11 +27,12 @@ require (
 	golang.org/x/crypto v0.0.0-20200220183623-bac4c82f6975
 	golang.org/x/sync v0.0.0-20200317015054-43a5402ce75a
 	google.golang.org/api v0.20.0
-	google.golang.org/grpc v1.28.0
+	google.golang.org/grpc v1.28.1
 	google.golang.org/protobuf v1.21.0
+	istio.io/api v0.0.0-20200710191538-00b73d23c685
 	k8s.io/api v0.0.0-20200410021914-5778e4f3d00d
 	//k8s.io/api v0.0.0-20200410021914-5778e4f3d00d
-	k8s.io/apimachinery v0.0.0-20200410021338-ff54c5b023af
+	k8s.io/apimachinery v0.18.1
 	k8s.io/client-go v0.0.0-20200410022504-7b0589a2468d
 	sigs.k8s.io/yaml v1.2.0
 )

@@ -400,8 +400,8 @@ def go_repositories():
     go_repository(
         name = "org_golang_google_grpc",
         importpath = "google.golang.org/grpc",
-        sum = "h1:bO/TA4OxCOummhSf10siHuG7vJOiwh7SpRpFZDkOgl4=",
-        version = "v1.28.0",
+        sum = "h1:C1QC6KzgSiLyBabDi87BbjaGreoRgGUF5nOyvfrAZ1k=",
+        version = "v1.28.1",
     )
     go_repository(
         name = "org_golang_x_crypto",
@@ -1548,4 +1548,18 @@ def go_repositories():
         importpath = "go.opencensus.io",
         sum = "h1:8sGtKOrtQqkN1bp2AtX+misvLIlOmsEsNd+9NIcPEm8=",
         version = "v0.22.3",
+    )
+    go_repository(
+        name = "io_istio_api",
+        build_file_generation = "on",
+        build_file_proto_mode = "disable_global",
+        importpath = "istio.io/api",
+        sum = "h1:Gt4RfKp7ZSfDlbvhzJIArtdlJ+XTztt/cNXQe3bsm1E=",
+        version = "v0.0.0-20200710191538-00b73d23c685",
+    )
+    go_repository(
+        name = "io_istio_gogo_genproto",
+        importpath = "istio.io/gogo-genproto",
+        sum = "h1:w7zILua2dnYo9CxImhpNW4NE/8ZxEoc/wfBfHrhUhrE=",
+        version = "v0.0.0-20190930162913-45029607206a",
     )
