@@ -176,7 +176,7 @@ func (e *Executor) generateBaselineManifests(namespace string, manifests []provi
 
 		_, serviceName, ok = config.ParseVariantResourceReference(sc.Service.Reference)
 		if !ok {
-			return nil, fmt.Errorf("malformed service reference: %s", sc.Workload.Reference)
+			return nil, fmt.Errorf("malformed service reference: %s", sc.Service.Reference)
 		}
 	}
 

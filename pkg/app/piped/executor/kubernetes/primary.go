@@ -19,6 +19,7 @@ import (
 	"fmt"
 
 	provider "github.com/pipe-cd/pipe/pkg/app/piped/cloudprovider/kubernetes"
+	"github.com/pipe-cd/pipe/pkg/config"
 	"github.com/pipe-cd/pipe/pkg/model"
 )
 
@@ -91,26 +92,41 @@ func (e *Executor) rollbackPrimary(ctx context.Context) error {
 
 func (e *Executor) generatePrimaryManifests(namespace, commitHash string, manifests []provider.Manifest) ([]provider.Manifest, error) {
 	var (
-		primaryManifests = make([]provider.Manifest, 0, len(manifests))
-		workloads        []provider.Manifest
+		serviceName      string
+		generateService  bool
+		primaryManifests = make([]provider.Manifest, 0, len(manifests)+1)
+		suffix           = primaryVariant
 	)
 
-	for _, m := range manifests {
-		if m.Key.IsWorkload() {
-			workloads = append(workloads, m)
-		} else {
-			primaryManifests = append(primaryManifests, m)
+	// Apply the specified configuration if they are present.
+	if sc := e.config.PrimaryVariant; sc != nil {
+		var ok bool
+		if sc.Suffix != "" {
+			suffix = sc.Suffix
+		}
+		generateService = sc.Service.Create
+
+		_, serviceName, ok = config.ParseVariantResourceReference(sc.Service.Reference)
+		if !ok {
+			return nil, fmt.Errorf("malformed service reference: %s", sc.Service.Reference)
 		}
 	}
-	if len(workloads) > 0 {
-		generatedWorkloads, err := generateWorkloadManifests(workloads, nil, nil, primaryVariant, "", nil)
+
+	for _, m := range manifests {
+		primaryManifests = append(primaryManifests, m)
+	}
+
+	// Find service manifests and duplicate them for PRIMARY variant.
+	if generateService {
+		services := findManifests(provider.KindService, serviceName, manifests)
+		generatedServices, err := generateServiceManifests(services, primaryVariant, suffix)
 		if err != nil {
 			return nil, err
 		}
-		primaryManifests = append(primaryManifests, generatedWorkloads...)
+		primaryManifests = append(primaryManifests, generatedServices...)
 	}
 
-	// Add labels to the generated canary manifests.
+	// Add labels to the generated primary manifests.
 	for _, m := range primaryManifests {
 		if namespace != "" {
 			m.SetNamespace(namespace)
