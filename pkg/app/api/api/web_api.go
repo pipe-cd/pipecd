@@ -428,9 +428,55 @@ func (a *WebAPI) getApplication(ctx context.Context, id string) (*model.Applicat
 }
 
 func (a *WebAPI) ListDeployments(ctx context.Context, req *webservice.ListDeploymentsRequest) (*webservice.ListDeploymentsResponse, error) {
-	// TODO: Support pagination and filtering with the search condition in ListDeployments
-	opts := datastore.ListOptions{}
-	deployments, err := a.deploymentStore.ListDeployments(ctx, opts)
+	claims, err := rpcauth.ExtractClaims(ctx)
+	if err != nil {
+		return nil, err
+	}
+	// TODO: Support pagination for Deployment list
+	filters := []datastore.ListFilter{
+		{
+			Field:    "ProjectId",
+			Operator: "==",
+			Value:    claims.Role.ProjectId,
+		},
+	}
+	if o := req.Options; o != nil {
+		// TODO: Support IN Query filter for Deployments fields
+		//   Because some datastores do not support IN query filter,
+		//   currently only the first value is used.
+		if len(o.Statuses) > 0 {
+			filters = append(filters, datastore.ListFilter{
+				Field:    "Status",
+				Operator: "==",
+				Value:    o.Statuses[0],
+			})
+		}
+		if len(o.Kinds) > 0 {
+			filters = append(filters, datastore.ListFilter{
+				Field:    "Kind",
+				Operator: "==",
+				Value:    o.Kinds[0],
+			})
+		}
+		if len(o.ApplicationIds) > 0 {
+			filters = append(filters, datastore.ListFilter{
+				Field:    "ApplicationId",
+				Operator: "==",
+				Value:    o.ApplicationIds[0],
+			})
+		}
+		if len(o.EnvIds) > 0 {
+			filters = append(filters, datastore.ListFilter{
+				Field:    "EnvId",
+				Operator: "==",
+				Value:    o.EnvIds[0],
+			})
+		}
+	}
+
+	deployments, err := a.deploymentStore.ListDeployments(ctx, datastore.ListOptions{
+		Filters: filters,
+	})
 	if err != nil {
 		a.logger.Error("failed to get deployments", zap.Error(err))
 		return nil, status.Error(codes.Internal, "failed to get deployments")
