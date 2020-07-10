@@ -1,17 +1,15 @@
-import React, { memo, FC, useEffect } from "react";
+import { List, makeStyles, Typography } from "@material-ui/core";
+import dayjs from "dayjs";
+import React, { FC, memo, useEffect } from "react";
 import { useDispatch, useSelector } from "react-redux";
+import { DeploymentItem } from "../../components/deployment-item";
+import { AppState } from "../../modules";
+import { fetchApplications } from "../../modules/applications";
 import {
   Deployment,
-  selectAll,
   fetchDeployments,
+  selectAll,
 } from "../../modules/deployments";
-import { AppState } from "../../modules";
-import dayjs from "dayjs";
-import { makeStyles, Typography, ListItem, List } from "@material-ui/core";
-import { Link as RouterLink } from "react-router-dom";
-import { PAGE_PATH_DEPLOYMENTS } from "../../constants";
-import { DeploymentItem } from "../../components/deployment-item";
-import { fetchApplications } from "../../modules/applications";
 
 const useStyles = makeStyles((theme) => ({
   deploymentLists: {
@@ -24,10 +22,7 @@ const useStyles = makeStyles((theme) => ({
     listStyle: "none",
     padding: 0,
   },
-  deploymentItem: {
-    padding: 0,
-    background: theme.palette.background.paper,
-  },
+
   date: {
     marginTop: theme.spacing(2),
     marginBottom: theme.spacing(2),
@@ -80,17 +75,10 @@ export const DeploymentIndexPage: FC = memo(function DeploymentIndexPage() {
                 {groupedDeployments[date]
                   .sort((a, b) => sortComp(a.createdAt, b.createdAt))
                   .map((deployment) => (
-                    <ListItem
-                      button
-                      dense
-                      divider
+                    <DeploymentItem
+                      id={deployment.id}
                       key={`deployment-item-${deployment.id}`}
-                      component={RouterLink}
-                      to={`${PAGE_PATH_DEPLOYMENTS}/${deployment.id}`}
-                      className={classes.deploymentItem}
-                    >
-                      <DeploymentItem id={deployment.id} />
-                    </ListItem>
+                    />
                   ))}
               </List>
             </li>
