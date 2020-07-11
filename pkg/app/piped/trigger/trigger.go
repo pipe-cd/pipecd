@@ -222,12 +222,13 @@ func (t *Trigger) checkApplication(ctx context.Context, app *model.Application, 
 	preCommitHash := t.mostRecentlyTriggeredCommits[app.Id]
 	if preCommitHash == "" {
 		mostRecent, err := t.getMostRecentlyTriggeredDeployment(ctx, app.Id)
-		if err == nil {
+		switch {
+		case err == nil:
 			preCommitHash = mostRecent.Trigger.Commit.Hash
 			t.mostRecentlyTriggeredCommits[app.Id] = preCommitHash
-		} else if status.Code(err) == codes.NotFound {
+		case status.Code(err) == codes.NotFound:
 			logger.Info("there is no previously triggered commit for this application")
-		} else {
+		default:
 			logger.Error("unabled to get the most recently triggered deployment", zap.Error(err))
 		}
 	}

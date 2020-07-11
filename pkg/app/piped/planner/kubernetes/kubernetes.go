@@ -210,7 +210,7 @@ func findWorkload(manifests []provider.Manifest) (provider.Manifest, bool) {
 }
 
 func findConfigs(manifests []provider.Manifest) map[provider.ResourceKey]provider.Manifest {
-	configs := make(map[provider.ResourceKey]provider.Manifest, 0)
+	configs := make(map[provider.ResourceKey]provider.Manifest)
 	for _, m := range manifests {
 		if m.Key.IsConfigMap() {
 			configs[m.Key] = m

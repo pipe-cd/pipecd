@@ -277,19 +277,19 @@ func convertDiffPath(path cmp.Path) DiffPath {
 }
 
 func sortLess(i, j interface{}) bool {
-	switch i.(type) {
+	switch t := i.(type) {
 	case string:
-		return i.(string) < j.(string)
+		return t < j.(string)
 	case int:
-		return i.(int) < j.(int)
+		return t < j.(int)
 	case int32:
-		return i.(int32) < j.(int32)
+		return t < j.(int32)
 	case int64:
-		return i.(int64) < j.(int64)
+		return t < j.(int64)
 	case float32:
-		return i.(float32) < j.(float32)
+		return t < j.(float32)
 	case float64:
-		return i.(float64) < j.(float64)
+		return t < j.(float64)
 	}
 	return false
 }

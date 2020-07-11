@@ -45,7 +45,7 @@ func (b *exponential) Next() time.Duration {
 		return 0
 	}
 	d := math.Min(float64(b.max), float64(b.base)*math.Pow(2, float64(b.calls-1)))
-	d = d * b.rand.Float64()
+	d *= b.rand.Float64()
 	return time.Duration(d)
 }
 

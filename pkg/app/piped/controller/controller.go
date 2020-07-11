@@ -321,12 +321,13 @@ func (c *controller) startNewPlanner(ctx context.Context, d *model.Deployment) (
 	commit := c.mostRecentlySuccessfulCommits[d.ApplicationId]
 	if commit == "" {
 		mostRecent, err := c.getMostRecentlySuccessfulDeployment(ctx, d.ApplicationId)
-		if err == nil {
+		switch {
+		case err == nil:
 			commit = mostRecent.Trigger.Commit.Hash
 			c.mostRecentlySuccessfulCommits[d.ApplicationId] = commit
-		} else if status.Code(err) == codes.NotFound {
+		case status.Code(err) == codes.NotFound:
 			logger.Info("there is no previous successful commit for this application")
-		} else {
+		default:
 			logger.Error("unabled to get the most recent successful deployment", zap.Error(err))
 		}
 	}

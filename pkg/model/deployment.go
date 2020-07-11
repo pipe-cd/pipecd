@@ -15,7 +15,7 @@
 package model
 
 import (
-	"github.com/golang/protobuf/proto"
+	"google.golang.org/protobuf/proto"
 )
 
 var notCompletedDeploymentStatuses = []DeploymentStatus{
