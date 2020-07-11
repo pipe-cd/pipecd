@@ -60,9 +60,7 @@ func WithRegexpProvider(p RegexpProvider) Option {
 // be used later to match against patterns against paths.
 func NewPatternMatcher(patterns []string, opts ...Option) (*PatternMatcher, error) {
 	pm := &PatternMatcher{
-		regexpProvider: func(expr string) (*regexp.Regexp, error) {
-			return regexp.Compile(expr)
-		},
+		regexpProvider: regexp.Compile,
 	}
 	for _, opt := range opts {
 		opt(pm)

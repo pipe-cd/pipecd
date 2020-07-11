@@ -272,16 +272,17 @@ func determineReplicaSetHealth(obj *unstructured.Unstructured) (status model.Kub
 			break
 		}
 	}
-	if cond != nil && cond.Status == corev1.ConditionTrue {
+	switch {
+	case cond != nil && cond.Status == corev1.ConditionTrue:
 		desc = cond.Message
 		return
-	} else if r.Spec.Replicas == nil {
+	case r.Spec.Replicas == nil:
 		desc = "The number of desired replicas is unspecified"
 		return
-	} else if r.Status.AvailableReplicas < *r.Spec.Replicas {
+	case r.Status.AvailableReplicas < *r.Spec.Replicas:
 		desc = fmt.Sprintf("Waiting for rollout to finish because only %d/%d replicas are available", r.Status.AvailableReplicas, *r.Spec.Replicas)
 		return
-	} else if *r.Spec.Replicas != r.Status.ReadyReplicas {
+	case *r.Spec.Replicas != r.Status.ReadyReplicas:
 		desc = fmt.Sprintf("The number of ready replicas (%d) is different from the desired number (%d)", r.Status.ReadyReplicas, *r.Spec.Replicas)
 		return
 	}
@@ -322,13 +323,14 @@ func determineJobHealth(obj *unstructured.Unstructured) (status model.Kubernetes
 		}
 	}
 
-	if !completed {
+	switch {
+	case !completed:
 		status = model.KubernetesResourceState_HEALTHY
 		desc = "Job is in progress"
-	} else if failed {
+	case failed:
 		status = model.KubernetesResourceState_OTHER
 		desc = message
-	} else {
+	default:
 		status = model.KubernetesResourceState_HEALTHY
 		desc = message
 	}
@@ -387,7 +389,7 @@ func determineIngressHealth(obj *unstructured.Unstructured) (status model.Kubern
 	}
 
 	status = model.KubernetesResourceState_OTHER
-	if len(i.Status.LoadBalancer.Ingress) <= 0 {
+	if len(i.Status.LoadBalancer.Ingress) == 0 {
 		desc = "Ingress points for the load-balancer are in progress"
 		return
 	}
@@ -408,7 +410,7 @@ func determineServiceHealth(obj *unstructured.Unstructured) (status model.Kubern
 	if s.Spec.Type != corev1.ServiceTypeLoadBalancer {
 		return
 	}
-	if len(s.Status.LoadBalancer.Ingress) <= 0 {
+	if len(s.Status.LoadBalancer.Ingress) == 0 {
 		status = model.KubernetesResourceState_OTHER
 		desc = "Ingress points for the load-balancer are in progress"
 		return

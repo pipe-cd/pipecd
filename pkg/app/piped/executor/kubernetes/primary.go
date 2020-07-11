@@ -112,9 +112,7 @@ func (e *Executor) generatePrimaryManifests(namespace, commitHash string, manife
 		}
 	}
 
-	for _, m := range manifests {
-		primaryManifests = append(primaryManifests, m)
-	}
+	primaryManifests = append(primaryManifests, manifests...)
 
 	// Find service manifests and duplicate them for PRIMARY variant.
 	if generateService {
