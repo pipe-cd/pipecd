@@ -170,14 +170,14 @@ func (e *Executor) generateBaselineManifests(namespace string, manifests []provi
 		if !ok {
 			return nil, fmt.Errorf("malformed workload reference: %s", sc.Workload.Reference)
 		}
-		if workloadKind == "" {
-			workloadKind = provider.KindDeployment
-		}
 
 		_, serviceName, ok = config.ParseVariantResourceReference(sc.Service.Reference)
 		if !ok {
 			return nil, fmt.Errorf("malformed service reference: %s", sc.Service.Reference)
 		}
+	}
+	if workloadKind == "" {
+		workloadKind = provider.KindDeployment
 	}
 
 	workloads := findManifests(workloadKind, workloadName, manifests)

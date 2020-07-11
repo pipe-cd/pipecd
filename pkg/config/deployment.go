@@ -122,20 +122,21 @@ const (
 
 type TrafficRouting struct {
 	Method TrafficRoutingMethod `json:"method"`
+	Pod    *PodTrafficRouting   `json:"pod"`
 	Istio  *IstioTrafficRouting `json:"istio"`
 }
 
+type PodTrafficRouting struct {
+}
+
 type IstioTrafficRouting struct {
-	EditableRoutes  []string                  `json:"editableRoutes"`
-	VirtualService  K8sVariantVirtualService  `json:"virtualService"`
-	DestinationRule K8sVariantDestinationRule `json:"destinationRule"`
+	EditableRoutes []string `json:"editableRoutes"`
+	// TODO: Add a validate to ensure this was configured or using the default value by service name.
+	Host           string                   `json:"host"`
+	VirtualService K8sVariantVirtualService `json:"virtualService"`
 }
 
 type K8sVariantVirtualService struct {
-	Reference string `json:"reference"`
-}
-
-type K8sVariantDestinationRule struct {
 	Reference string `json:"reference"`
 }
 
@@ -309,6 +310,18 @@ type K8sTrafficRoutingStageOptions struct {
 	Canary int `json:"canary"`
 	// The percentage of traffic should be routed to BASELINE variant.
 	Baseline int `json:"baseline"`
+}
+
+func (opts K8sTrafficRoutingStageOptions) Percentages() (primary, canary, baseline int) {
+	switch opts.All {
+	case "primary":
+		return 100, 0, 0
+	case "canary":
+		return 0, 100, 0
+	case "baseline":
+		return 0, 0, 100
+	}
+	return opts.Primary, opts.Canary, opts.Baseline
 }
 
 // TerraformPlanStageOptions contains all configurable values for a K8S_TERRAFORM_PLAN stage.

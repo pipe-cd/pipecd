@@ -86,6 +86,31 @@ func (m Manifest) SetNamespace(namespace string) {
 	m.u.SetNamespace(namespace)
 }
 
+func (m Manifest) GetSpec() (interface{}, error) {
+	spec, ok, err := unstructured.NestedFieldNoCopy(m.u.Object, "spec")
+	if err != nil {
+		return nil, err
+	}
+	if !ok {
+		return nil, fmt.Errorf("spec was not found")
+	}
+	return spec, nil
+}
+
+func (m Manifest) SetStructuredSpec(spec interface{}) error {
+	data, err := yaml.Marshal(spec)
+	if err != nil {
+		return err
+	}
+
+	unstructuredSpec := make(map[string]interface{})
+	if err := yaml.Unmarshal(data, &unstructuredSpec); err != nil {
+		return err
+	}
+
+	return unstructured.SetNestedField(m.u.Object, unstructuredSpec, "spec")
+}
+
 func (m Manifest) ConvertToStructuredObject(o interface{}) error {
 	data, err := m.MarshalJSON()
 	if err != nil {
