@@ -91,26 +91,22 @@ type PrimaryVariant struct {
 type CanaryVariant struct {
 	// Suffix that should be used when naming the CANARY variant's resources.
 	// Default is "canary".
-	Suffix   string             `json:"suffix"`
-	Service  K8sVariantService  `json:"service"`
-	Workload K8sVariantWorkload `json:"workload"`
+	Suffix   string               `json:"suffix"`
+	Service  K8sVariantService    `json:"service"`
+	Workload K8sResourceReference `json:"workload"`
 }
 
 type BaselineVariant struct {
 	// Suffix that should be used when naming the BASELINE variant's resources.
 	// Default is "baseline".
-	Suffix   string             `json:"suffix"`
-	Service  K8sVariantService  `json:"service"`
-	Workload K8sVariantWorkload `json:"workload"`
+	Suffix   string               `json:"suffix"`
+	Service  K8sVariantService    `json:"service"`
+	Workload K8sResourceReference `json:"workload"`
 }
 
 type K8sVariantService struct {
-	Create    bool   `json:"create"`
-	Reference string `json:"reference"`
-}
-
-type K8sVariantWorkload struct {
-	Reference string `json:"reference"`
+	K8sResourceReference
+	Create bool `json:"create"`
 }
 
 type TrafficRoutingMethod string
@@ -127,16 +123,17 @@ type TrafficRouting struct {
 }
 
 type PodTrafficRouting struct {
+	Service K8sResourceReference `json:"service"`
 }
 
 type IstioTrafficRouting struct {
 	EditableRoutes []string `json:"editableRoutes"`
 	// TODO: Add a validate to ensure this was configured or using the default value by service name.
-	Host           string                   `json:"host"`
-	VirtualService K8sVariantVirtualService `json:"virtualService"`
+	Host           string               `json:"host"`
+	VirtualService K8sResourceReference `json:"virtualService"`
 }
 
-type K8sVariantVirtualService struct {
+type K8sResourceReference struct {
 	Reference string `json:"reference"`
 }
 
