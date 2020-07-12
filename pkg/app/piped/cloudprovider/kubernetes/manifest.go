@@ -86,6 +86,24 @@ func (m Manifest) SetNamespace(namespace string) {
 	m.u.SetNamespace(namespace)
 }
 
+// AddStringMapValues adds or overrides the given key-values into the string map
+// that can be found at the specified fields.
+func (m Manifest) AddStringMapValues(values map[string]string, fields ...string) error {
+	curMap, _, err := unstructured.NestedStringMap(m.u.Object, fields...)
+	if err != nil {
+		return err
+	}
+
+	if curMap == nil {
+		curMap = values
+	} else {
+		for k, v := range values {
+			curMap[k] = v
+		}
+	}
+	return unstructured.SetNestedStringMap(m.u.Object, curMap, fields...)
+}
+
 func (m Manifest) GetSpec() (interface{}, error) {
 	spec, ok, err := unstructured.NestedFieldNoCopy(m.u.Object, "spec")
 	if err != nil {
