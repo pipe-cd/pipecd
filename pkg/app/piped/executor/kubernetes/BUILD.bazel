@@ -8,6 +8,7 @@ go_library(
         "kubernetes.go",
         "primary.go",
         "rollback.go",
+        "sync.go",
         "traffic.go",
     ],
     importpath = "github.com/pipe-cd/pipe/pkg/app/piped/executor/kubernetes",

@@ -21,49 +21,37 @@ import (
 
 const (
 	PredefinedWaitApproval        = "WaitApproval"
-	PredefinedStageK8sScale       = "K8sScale"
-	PredefinedStageK8sRollback    = "K8sRollback"
-	PredefinedStageK8sUpdate      = "K8sUpdate"
+	PredefinedStageK8sSync        = "K8sSync"
 	PredefinedStageTerraformPlan  = "TerraformPlan"
 	PredefinedStageTerraformApply = "TerraformApply"
 	PredefinedStageRollback       = "Rollback"
 )
 
 var predefinedStages = map[string]config.PipelineStage{
-	PredefinedWaitApproval: config.PipelineStage{
+	PredefinedWaitApproval: {
 		Id:   PredefinedWaitApproval,
 		Name: model.StageWaitApproval,
 		Desc: "Wait for an approval",
 	},
-	PredefinedStageK8sScale: config.PipelineStage{
-		Id:   PredefinedStageK8sScale,
+	PredefinedStageK8sSync: {
+		Id:   PredefinedStageK8sSync,
 		Name: model.StageK8sPrimaryUpdate,
-		Desc: "Scale primary workloads",
+		Desc: "Sync resources with Git state",
 	},
-	PredefinedStageK8sRollback: config.PipelineStage{
-		Id:   PredefinedStageK8sRollback,
-		Name: model.StageK8sPrimaryUpdate,
-		Desc: "Rollback primary to previous version",
-	},
-	PredefinedStageK8sUpdate: config.PipelineStage{
-		Id:   PredefinedStageK8sUpdate,
-		Name: model.StageK8sPrimaryUpdate,
-		Desc: "Update primary to new version/configuration",
-	},
-	PredefinedStageTerraformPlan: config.PipelineStage{
+	PredefinedStageTerraformPlan: {
 		Id:   PredefinedStageTerraformPlan,
 		Name: model.StageTerraformPlan,
 		Desc: "Terraform plan",
 	},
-	PredefinedStageTerraformApply: config.PipelineStage{
+	PredefinedStageTerraformApply: {
 		Id:   PredefinedStageTerraformApply,
 		Name: model.StageTerraformApply,
 		Desc: "Terraform apply",
 	},
-	PredefinedStageRollback: config.PipelineStage{
+	PredefinedStageRollback: {
 		Id:   PredefinedStageRollback,
 		Name: model.StageRollback,
-		Desc: "Rollback this deployment",
+		Desc: "Rollback the deployment",
 	},
 }
 
