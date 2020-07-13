@@ -210,7 +210,7 @@ func (s *PipelineStage) UnmarshalJSON(data []byte) error {
 		if len(gs.With) > 0 {
 			err = json.Unmarshal(gs.With, s.AnalysisStageOptions)
 		}
-	case model.StageK8sPrimaryUpdate:
+	case model.StageK8sPrimaryRollout:
 		s.K8sPrimaryUpdateStageOptions = &K8sPrimaryUpdateStageOptions{}
 		if len(gs.With) > 0 {
 			err = json.Unmarshal(gs.With, s.K8sPrimaryUpdateStageOptions)
@@ -266,7 +266,7 @@ type WaitApprovalStageOptions struct {
 	Approvers []string `json:"approvers"`
 }
 
-// WaitStageOptions contains all configurable values for a K8S_PRIMARY_UPDATE stage.
+// WaitStageOptions contains all configurable values for a K8S_PRIMARY_ROLLOUT stage.
 type K8sPrimaryUpdateStageOptions struct {
 	Manifests []string `json:"manifests"`
 }

@@ -10,7 +10,7 @@ spec:
         with:
           replicas: 10%
       # Update the workload of PRIMARY variant to the new version.
-      - name: K8S_PRIMARY_UPDATE
+      - name: K8S_PRIMARY_ROLLOUT
       # Destroy all workloads of CANARY variant.
       - name: K8S_CANARY_CLEAN
 
@@ -31,7 +31,7 @@ spec:
           approvers:
             - user-foo
             - user-bar
-      - name: K8S_PRIMARY_UPDATE
+      - name: K8S_PRIMARY_ROLLOUT
       - name: K8S_CANARY_CLEAN
 
 ---
@@ -71,7 +71,7 @@ spec:
               expectedCode: 200
               failureLimit: 1
               interval: 1m
-      - name: K8S_PRIMARY_UPDATE
+      - name: K8S_PRIMARY_ROLLOUT
       - name: K8S_CANARY_CLEAN
 
 ---
@@ -95,7 +95,7 @@ spec:
       - name: ANALYSIS
         with:
           duration: 10m
-      - name: K8S_PRIMARY_UPDATE
+      - name: K8S_PRIMARY_ROLLOUT
       - name: K8S_CANARY_CLEAN
 
 ---
@@ -124,7 +124,7 @@ spec:
           https:
             - template:
                 name: http_canary_check
-      - name: K8S_PRIMARY_UPDATE
+      - name: K8S_PRIMARY_ROLLOUT
       - name: K8S_CANARY_CLEAN
 
 ---
@@ -147,7 +147,7 @@ spec:
                 name: grpc_error_rate_percentage
                 args:
                   namespace: default
-      - name: K8S_PRIMARY_UPDATE
+      - name: K8S_PRIMARY_ROLLOUT
       - name: K8S_CANARY_CLEAN
 
 ---
@@ -171,7 +171,7 @@ spec:
       - name: ANALYSIS
         with:
           duration: 10m
-      - name: K8S_PRIMARY_UPDATE
+      - name: K8S_PRIMARY_ROLLOUT
       - name: K8S_BASELINE_CLEAN
       - name: K8S_CANARY_CLEAN
 
@@ -214,7 +214,7 @@ spec:
                 method: GET
                 expectedCode: 200
                 interval: 1m
-      - name: K8S_PRIMARY_UPDATE
+      - name: K8S_PRIMARY_ROLLOUT
       - name: K8S_CANARY_CLEAN
 
 # Stage represents a temporary desired state for the application.

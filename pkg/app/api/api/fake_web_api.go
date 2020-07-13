@@ -328,7 +328,7 @@ func (a *FakeWebAPI) ListDeployments(ctx context.Context, req *webservice.ListDe
 				},
 				{
 					Id:         "fake-stage-id-1-1",
-					Name:       model.StageK8sPrimaryUpdate.String(),
+					Name:       model.StageK8sPrimaryRollout.String(),
 					Index:      1,
 					Predefined: true,
 					Requires: []string{
@@ -468,7 +468,7 @@ func (a *FakeWebAPI) GetDeployment(ctx context.Context, req *webservice.GetDeplo
 			},
 			{
 				Id:         "fake-stage-id-1-1",
-				Name:       model.StageK8sPrimaryUpdate.String(),
+				Name:       model.StageK8sPrimaryRollout.String(),
 				Index:      1,
 				Predefined: true,
 				Requires: []string{
