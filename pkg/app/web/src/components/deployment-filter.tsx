@@ -160,70 +160,6 @@ export const DeploymentFilter: FC<Props> = memo(function DeploymentFilter({
       </div>
 
       <FormControl className={classes.formItem} variant="outlined">
-        <InputLabel id="filter-deployment-status">Deployment Status</InputLabel>
-        <Select
-          labelId="filter-deployment-status"
-          id="filter-deployment-status"
-          value={state.deploymentStatus}
-          label="Deployment Status"
-          className={classes.select}
-          onChange={(e) => {
-            dispatch({
-              type: "update-deployment-status",
-              value:
-                e.target.value === ALL_VALUE
-                  ? ALL_VALUE
-                  : (e.target.value as DeploymentStatus),
-            });
-          }}
-        >
-          <MenuItem value={ALL_VALUE}>
-            <em>All</em>
-          </MenuItem>
-
-          {Object.keys(DeploymentStatus).map((key) => (
-            <MenuItem
-              key={`deployment-status-${key}`}
-              value={DeploymentStatus[key as DeploymentStatusKey]}
-            >
-              {
-                DEPLOYMENT_STATE_TEXT[
-                  DeploymentStatus[key as DeploymentStatusKey]
-                ]
-              }
-            </MenuItem>
-          ))}
-        </Select>
-      </FormControl>
-
-      <FormControl className={classes.formItem} variant="outlined">
-        <InputLabel id="filter-application">Application</InputLabel>
-        <Select
-          labelId="filter-application"
-          id="filter-application"
-          value={state.application}
-          label="Application"
-          className={classes.select}
-          onChange={(e) => {
-            dispatch({
-              type: "update-application",
-              value: e.target.value as string,
-            });
-          }}
-        >
-          <MenuItem value={ALL_VALUE}>
-            <em>All</em>
-          </MenuItem>
-
-          {applications.map((app) => (
-            <MenuItem key={`application-${app.id}`} value={app.id}>
-              {app.name}
-            </MenuItem>
-          ))}
-        </Select>
-      </FormControl>
-
-      <FormControl className={classes.formItem} variant="outlined">
         <InputLabel id="filter-env">Environment</InputLabel>
         <Select
           labelId="filter-env"
@@ -279,6 +215,70 @@ export const DeploymentFilter: FC<Props> = memo(function DeploymentFilter({
               {
                 APPLICATION_KIND_TEXT[
                   ApplicationKind[key as ApplicationKindKey]
+                ]
+              }
+            </MenuItem>
+          ))}
+        </Select>
+      </FormControl>
+
+      <FormControl className={classes.formItem} variant="outlined">
+        <InputLabel id="filter-application">Application</InputLabel>
+        <Select
+          labelId="filter-application"
+          id="filter-application"
+          value={state.application}
+          label="Application"
+          className={classes.select}
+          onChange={(e) => {
+            dispatch({
+              type: "update-application",
+              value: e.target.value as string,
+            });
+          }}
+        >
+          <MenuItem value={ALL_VALUE}>
+            <em>All</em>
+          </MenuItem>
+
+          {applications.map((app) => (
+            <MenuItem key={`application-${app.id}`} value={app.id}>
+              {app.name}
+            </MenuItem>
+          ))}
+        </Select>
+      </FormControl>
+
+      <FormControl className={classes.formItem} variant="outlined">
+        <InputLabel id="filter-deployment-status">Deployment Status</InputLabel>
+        <Select
+          labelId="filter-deployment-status"
+          id="filter-deployment-status"
+          value={state.deploymentStatus}
+          label="Deployment Status"
+          className={classes.select}
+          onChange={(e) => {
+            dispatch({
+              type: "update-deployment-status",
+              value:
+                e.target.value === ALL_VALUE
+                  ? ALL_VALUE
+                  : (e.target.value as DeploymentStatus),
+            });
+          }}
+        >
+          <MenuItem value={ALL_VALUE}>
+            <em>All</em>
+          </MenuItem>
+
+          {Object.keys(DeploymentStatus).map((key) => (
+            <MenuItem
+              key={`deployment-status-${key}`}
+              value={DeploymentStatus[key as DeploymentStatusKey]}
+            >
+              {
+                DEPLOYMENT_STATE_TEXT[
+                  DeploymentStatus[key as DeploymentStatusKey]
                 ]
               }
             </MenuItem>
