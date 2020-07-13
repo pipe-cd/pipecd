@@ -28,27 +28,27 @@ const (
 )
 
 var predefinedStages = map[string]config.PipelineStage{
-	PredefinedWaitApproval: config.PipelineStage{
+	PredefinedWaitApproval: {
 		Id:   PredefinedWaitApproval,
 		Name: model.StageWaitApproval,
 		Desc: "Wait for an approval",
 	},
-	PredefinedStageK8sSync: config.PipelineStage{
+	PredefinedStageK8sSync: {
 		Id:   PredefinedStageK8sSync,
 		Name: model.StageK8sPrimaryUpdate,
 		Desc: "Sync resources with Git state",
 	},
-	PredefinedStageTerraformPlan: config.PipelineStage{
+	PredefinedStageTerraformPlan: {
 		Id:   PredefinedStageTerraformPlan,
 		Name: model.StageTerraformPlan,
 		Desc: "Terraform plan",
 	},
-	PredefinedStageTerraformApply: config.PipelineStage{
+	PredefinedStageTerraformApply: {
 		Id:   PredefinedStageTerraformApply,
 		Name: model.StageTerraformApply,
 		Desc: "Terraform apply",
 	},
-	PredefinedStageRollback: config.PipelineStage{
+	PredefinedStageRollback: {
 		Id:   PredefinedStageRollback,
 		Name: model.StageRollback,
 		Desc: "Rollback the deployment",
