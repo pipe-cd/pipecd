@@ -79,6 +79,7 @@ func TestAppConfig(t *testing.T) {
 			expectedKind:       KindKubernetesApp,
 			expectedAPIVersion: "pipecd.dev/v1beta1",
 			expectedSpec: &KubernetesDeploymentSpec{
+				Input: KubernetesDeploymentInput{AutoRollback: true},
 				Pipeline: &DeploymentPipeline{
 					Stages: []PipelineStage{
 						{
