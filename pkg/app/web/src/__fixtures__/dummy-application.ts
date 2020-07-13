@@ -9,7 +9,7 @@ export const dummyApplication: Application = {
   createdAt: 0,
   disabled: false,
   envId: dummyEnv.id,
-  gitPath: { configPath: "", path: "", repoId: "repo-1" },
+  gitPath: { configPath: "", path: "dir/dir1", repoId: "repo-1" },
   kind: ApplicationKind.KUBERNETES,
   name: "DemoApp",
   pipedId: dummyPiped.id,
