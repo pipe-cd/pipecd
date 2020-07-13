@@ -159,25 +159,65 @@ export const ApplicationFilter: FC<Props> = memo(function ApplicationFilter({
       </div>
 
       <FormControl className={classes.formItem} variant="outlined">
-        <InputLabel id="filter-active-status">Active Status</InputLabel>
+        <InputLabel id="filter-env">Environment</InputLabel>
         <Select
-          labelId="filter-active-status"
-          id="filter-active-status"
-          value={state.activeStatus}
-          label="Active Status"
+          labelId="filter-env"
+          id="filter-env"
+          value={state.env}
+          label="Environment"
           className={classes.select}
           onChange={(e) => {
             dispatch({
-              type: "update-active-status",
-              value: e.target.value as ActiveStatus,
+              type: "update-env",
+              value: e.target.value as string,
             });
           }}
         >
           <MenuItem value={ALL_VALUE}>
             <em>All</em>
           </MenuItem>
-          <MenuItem value="enabled">Enabled</MenuItem>
-          <MenuItem value="disabled">Disabled</MenuItem>
+          {envs.map((e) => (
+            <MenuItem value={e.id} key={`env-${e.id}`}>
+              {e.name}
+            </MenuItem>
+          ))}
+        </Select>
+      </FormControl>
+
+      <FormControl className={classes.formItem} variant="outlined">
+        <InputLabel id="filter-application-kind">Application Kind</InputLabel>
+        <Select
+          labelId="filter-application-kind"
+          id="filter-application-kind"
+          value={state.applicationKind}
+          label="Application Kind"
+          className={classes.select}
+          onChange={(e) => {
+            dispatch({
+              type: "update-application-kind",
+              value:
+                e.target.value === ""
+                  ? ALL_VALUE
+                  : (e.target.value as ApplicationKind),
+            });
+          }}
+        >
+          <MenuItem value={ALL_VALUE}>
+            <em>All</em>
+          </MenuItem>
+
+          {Object.keys(ApplicationKind).map((key) => (
+            <MenuItem
+              value={ApplicationKind[key as ApplicationKindKey]}
+              key={`status-${key}`}
+            >
+              {
+                APPLICATION_KIND_TEXT[
+                  ApplicationKind[key as ApplicationKindKey]
+                ]
+              }
+            </MenuItem>
+          ))}
         </Select>
       </FormControl>
 
@@ -219,65 +259,25 @@ export const ApplicationFilter: FC<Props> = memo(function ApplicationFilter({
       </FormControl>
 
       <FormControl className={classes.formItem} variant="outlined">
-        <InputLabel id="filter-env">Environment</InputLabel>
+        <InputLabel id="filter-active-status">Active Status</InputLabel>
         <Select
-          labelId="filter-env"
-          id="filter-env"
-          value={state.env}
-          label="Environment"
+          labelId="filter-active-status"
+          id="filter-active-status"
+          value={state.activeStatus}
+          label="Active Status"
           className={classes.select}
           onChange={(e) => {
             dispatch({
-              type: "update-env",
-              value: e.target.value as string,
+              type: "update-active-status",
+              value: e.target.value as ActiveStatus,
             });
           }}
         >
           <MenuItem value={ALL_VALUE}>
             <em>All</em>
           </MenuItem>
-          {envs.map((e) => (
-            <MenuItem value={e.id} key={`env-${e.id}`}>
-              {e.name}
-            </MenuItem>
-          ))}
-        </Select>
-      </FormControl>
-
-      <FormControl className={classes.formItem} variant="outlined">
-        <InputLabel id="filter-application-kind">Application Kind</InputLabel>
-        <Select
-          labelId="filter-application-kind"
-          id="filter-application-kind"
-          value={state.applicationKind}
-          label="Environment"
-          className={classes.select}
-          onChange={(e) => {
-            dispatch({
-              type: "update-application-kind",
-              value:
-                e.target.value === ""
-                  ? ALL_VALUE
-                  : (e.target.value as ApplicationKind),
-            });
-          }}
-        >
-          <MenuItem value={ALL_VALUE}>
-            <em>All</em>
-          </MenuItem>
-
-          {Object.keys(ApplicationKind).map((key) => (
-            <MenuItem
-              value={ApplicationKind[key as ApplicationKindKey]}
-              key={`status-${key}`}
-            >
-              {
-                APPLICATION_KIND_TEXT[
-                  ApplicationKind[key as ApplicationKindKey]
-                ]
-              }
-            </MenuItem>
-          ))}
+          <MenuItem value="enabled">Enabled</MenuItem>
+          <MenuItem value="disabled">Disabled</MenuItem>
         </Select>
       </FormControl>
     </Paper>
