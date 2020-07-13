@@ -7,7 +7,6 @@ go_library(
         "canary.go",
         "kubernetes.go",
         "primary.go",
-        "rollback.go",
         "sync.go",
         "traffic.go",
     ],

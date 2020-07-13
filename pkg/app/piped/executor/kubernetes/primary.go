@@ -28,24 +28,28 @@ const (
 )
 
 func (e *Executor) ensurePrimaryRollout(ctx context.Context) model.StageStatus {
+	commitHash := e.Deployment.Trigger.Commit.Hash
+
+	// Load the manifests at the triggered commit.
+	e.LogPersister.AppendInfo(fmt.Sprintf("Loading manifests at commit %s for handling", commitHash))
 	manifests, err := e.loadManifests(ctx)
 	if err != nil {
 		e.LogPersister.AppendError(fmt.Sprintf("Failed while loading manifests (%v)", err))
 		return model.StageStatus_STAGE_FAILURE
 	}
+	e.LogPersister.AppendSuccess(fmt.Sprintf("Successfully loaded %d manifests", len(manifests)))
 
-	if len(manifests) == 0 {
-		e.LogPersister.AppendError("There are no kubernetes manifests to handle")
-		return model.StageStatus_STAGE_FAILURE
-	}
-
-	primaryManifests, err := e.generatePrimaryManifests(e.config.Input.Namespace, e.Deployment.Trigger.Commit.Hash, manifests)
+	// Generate the manifests for applying.
+	e.LogPersister.AppendInfo("Start generating manifests for PRIMARY variant")
+	primaryManifests, err := e.generatePrimaryManifests(e.config.Input.Namespace, commitHash, manifests)
 	if err != nil {
 		e.LogPersister.AppendError(fmt.Sprintf("Unable to generate manifests for PRIMARY variant (%v)", err))
 		return model.StageStatus_STAGE_FAILURE
 	}
+	e.LogPersister.AppendSuccess(fmt.Sprintf("Successfully generated %d manifests for PRIMARY variant", len(primaryManifests)))
 
-	e.LogPersister.AppendInfo(fmt.Sprintf("Applying %d primary resources", len(primaryManifests)))
+	// Start applying all manifests to add or update running resources.
+	e.LogPersister.AppendInfo(fmt.Sprintf("Start applying %d primary resources", len(primaryManifests)))
 	for _, m := range primaryManifests {
 		if err = e.provider.ApplyManifest(ctx, m); err != nil {
 			e.LogPersister.AppendError(fmt.Sprintf("Failed to apply manifest: %s (%v)", m.Key.ReadableString(), err))
@@ -53,41 +57,15 @@ func (e *Executor) ensurePrimaryRollout(ctx context.Context) model.StageStatus {
 		}
 		e.LogPersister.AppendSuccess(fmt.Sprintf("- applied manifest: %s", m.Key.ReadableString()))
 	}
-
 	e.LogPersister.AppendSuccess(fmt.Sprintf("Successfully applied %d primary resources", len(primaryManifests)))
+
+	// TODO: Wait for all applied manifests to be ready.
+	e.LogPersister.AppendInfo("Waiting for the applied manifests to be ready")
+
+	// TODO: Find and remove the running resources that are not defined in Git.
+	e.LogPersister.AppendInfo("Start finding and removing all running PRIMARY resources but not in Git")
+
 	return model.StageStatus_STAGE_SUCCESS
-}
-
-func (e *Executor) rollbackPrimary(ctx context.Context) error {
-	manifests, err := e.loadRunningManifests(ctx)
-	if err != nil {
-		e.LogPersister.AppendError(fmt.Sprintf("Failed while loading running manifests (%v)", err))
-		return err
-	}
-
-	if len(manifests) == 0 {
-		e.LogPersister.AppendError("This application has no running Kubernetes manifests to handle")
-		return err
-	}
-
-	primaryManifests, err := e.generatePrimaryManifests(e.config.Input.Namespace, e.Deployment.RunningCommitHash, manifests)
-	if err != nil {
-		e.LogPersister.AppendError(fmt.Sprintf("Unable to generate manifests for PRIMARY variant (%v)", err))
-		return err
-	}
-
-	// Start rolling out the resources for PRIMARY variant.
-	e.LogPersister.AppendInfo("Start rolling back PRIMARY variant...")
-	for _, m := range primaryManifests {
-		if err = e.provider.ApplyManifest(ctx, m); err != nil {
-			e.LogPersister.AppendError(fmt.Sprintf("Failed to apply manifest: %s (%v)", m.Key.ReadableString(), err))
-			return err
-		}
-		e.LogPersister.AppendSuccess(fmt.Sprintf("- applied manifest: %s", m.Key.ReadableString()))
-	}
-
-	e.LogPersister.AppendSuccess("Successfully rolled back PRIMARY variant")
-	return nil
 }
 
 func (e *Executor) generatePrimaryManifests(namespace, commitHash string, manifests []provider.Manifest) ([]provider.Manifest, error) {
@@ -112,17 +90,34 @@ func (e *Executor) generatePrimaryManifests(namespace, commitHash string, manife
 		}
 	}
 
-	primaryManifests = append(primaryManifests, manifests...)
+	for _, m := range manifests {
+		// Because the loaded maninests are read-only
+		// so we duplicate them to avoid updating the shared manifests data in cache.
+		primaryManifests = append(primaryManifests, m.Duplicate(m.Key.Name))
+	}
 
 	// Find service manifests and duplicate them for PRIMARY variant.
 	if generateService {
 		services := findManifests(provider.KindService, serviceName, manifests)
-		generatedServices, err := generateServiceManifests(services, primaryVariant, suffix)
+		if len(services) == 0 {
+			return nil, fmt.Errorf("unable to find any service for name=%q", serviceName)
+		}
+
+		// Because the loaded maninests are read-only
+		// so we duplicate them to avoid updating the shared manifests data in cache.
+		duplicates := make([]provider.Manifest, 0, len(services))
+		for _, m := range services {
+			duplicates = append(duplicates, m.Duplicate(m.Key.Name))
+		}
+
+		generatedServices, err := generateServiceManifests(duplicates, primaryVariant, suffix)
 		if err != nil {
 			return nil, err
 		}
 		primaryManifests = append(primaryManifests, generatedServices...)
 	}
+
+	// TODO: Find out traffic-routing manfiests and keep them as the previously configured routing.
 
 	// Add labels to the generated primary manifests.
 	for _, m := range primaryManifests {

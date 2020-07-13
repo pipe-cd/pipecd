@@ -261,6 +261,7 @@ func (p *piped) run(ctx context.Context, t cli.Telemetry) error {
 			deploymentLister,
 			commandLister,
 			applicationLister,
+			livestatestore.LiveResourceLister{Getter: liveStateGetter},
 			cfg,
 			appManifestsCache,
 			p.gracePeriod,

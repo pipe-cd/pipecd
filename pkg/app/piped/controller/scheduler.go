@@ -49,18 +49,19 @@ type repoStore interface {
 // scheduler is a dedicated object for a specific deployment of a single application.
 type scheduler struct {
 	// Readonly deployment model.
-	deployment        *model.Deployment
-	workingDir        string
-	executorRegistry  registry.Registry
-	apiClient         apiClient
-	gitClient         gitClient
-	commandLister     commandLister
-	applicationLister applicationLister
-	logPersister      logpersister.Persister
-	metadataStore     *metadataStore
-	pipedConfig       *config.PipedSpec
-	appManifestsCache cache.Cache
-	logger            *zap.Logger
+	deployment         *model.Deployment
+	workingDir         string
+	executorRegistry   registry.Registry
+	apiClient          apiClient
+	gitClient          gitClient
+	commandLister      commandLister
+	applicationLister  applicationLister
+	liveResourceLister liveResourceLister
+	logPersister       logpersister.Persister
+	metadataStore      *metadataStore
+	pipedConfig        *config.PipedSpec
+	appManifestsCache  cache.Cache
+	logger             *zap.Logger
 
 	deploymentConfig *config.Config
 	pipelineable     config.Pipelineable
@@ -88,6 +89,7 @@ func newScheduler(
 	gitClient gitClient,
 	commandLister commandLister,
 	applicationLister applicationLister,
+	liveResourceLister liveResourceLister,
 	lp logpersister.Persister,
 	pipedConfig *config.PipedSpec,
 	appManifestsCache cache.Cache,
@@ -111,6 +113,7 @@ func newScheduler(
 		gitClient:            gitClient,
 		commandLister:        commandLister,
 		applicationLister:    applicationLister,
+		liveResourceLister:   liveResourceLister,
 		logPersister:         lp,
 		metadataStore:        NewMetadataStore(apiClient, d),
 		pipedConfig:          pipedConfig,
@@ -414,7 +417,12 @@ func (s *scheduler) executeStage(sig executor.StopSignal, ps model.PipelineStage
 		LogPersister:      lp,
 		MetadataStore:     s.metadataStore,
 		AppManifestsCache: s.appManifestsCache,
-		Logger:            s.logger,
+		AppLiveResourceLister: appLiveResourceLister{
+			lister:        s.liveResourceLister,
+			cloudProvider: app.CloudProvider,
+			appID:         app.Id,
+		},
+		Logger: s.logger,
 	}
 
 	// Find the executor for this stage.

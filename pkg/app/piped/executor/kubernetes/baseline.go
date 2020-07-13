@@ -188,7 +188,18 @@ func (e *Executor) generateBaselineManifests(namespace string, manifests []provi
 	// Find service manifests and duplicate them for BASELINE variant.
 	if generateService {
 		services := findManifests(provider.KindService, serviceName, manifests)
-		generatedServices, err := generateServiceManifests(services, baselineVariant, suffix)
+		if len(services) == 0 {
+			return nil, fmt.Errorf("unable to find any service for name=%q", serviceName)
+		}
+
+		// Because the loaded maninests are read-only
+		// so we duplicate them to avoid updating the shared manifests data in cache.
+		duplicates := make([]provider.Manifest, 0, len(services))
+		for _, m := range services {
+			duplicates = append(duplicates, m.Duplicate(m.Key.Name))
+		}
+
+		generatedServices, err := generateServiceManifests(duplicates, baselineVariant, suffix)
 		if err != nil {
 			return nil, err
 		}

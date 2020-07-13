@@ -18,37 +18,57 @@ import (
 	"context"
 	"fmt"
 
+	provider "github.com/pipe-cd/pipe/pkg/app/piped/cloudprovider/kubernetes"
 	"github.com/pipe-cd/pipe/pkg/model"
 )
 
-// NOTE: Just copying from ensurePrimaryRollout. I will update the implementation in another PR.
-func (e *Executor) ensureSync(ctx context.Context) model.StageStatus {
-	manifests, err := e.loadManifests(ctx)
+func (e *Executor) ensureSync(ctx context.Context, commitHash string, manifestsLoader func(ctx context.Context) ([]provider.Manifest, error)) model.StageStatus {
+	// Load the manifests at the specified commit.
+	e.LogPersister.AppendInfo(fmt.Sprintf("Loading manifests at commit %s for handling", commitHash))
+	manifests, err := manifestsLoader(ctx)
 	if err != nil {
-		e.LogPersister.AppendError(fmt.Sprintf("Failed while loading manifests (%v)", err))
+		e.LogPersister.AppendError(fmt.Sprintf("Failed while loading running manifests (%v)", err))
 		return model.StageStatus_STAGE_FAILURE
 	}
+	e.LogPersister.AppendSuccess(fmt.Sprintf("Successfully loaded %d manifests", len(manifests)))
 
-	if len(manifests) == 0 {
-		e.LogPersister.AppendError("There are no kubernetes manifests to handle")
-		return model.StageStatus_STAGE_FAILURE
-	}
+	// Generate the manifests for applying.
+	applyManifests := e.generateSyncManifests(e.config.Input.Namespace, commitHash, manifests)
 
-	primaryManifests, err := e.generatePrimaryManifests(e.config.Input.Namespace, e.Deployment.Trigger.Commit.Hash, manifests)
-	if err != nil {
-		e.LogPersister.AppendError(fmt.Sprintf("Unable to generate manifests for PRIMARY variant (%v)", err))
-		return model.StageStatus_STAGE_FAILURE
-	}
-
-	e.LogPersister.AppendInfo(fmt.Sprintf("Applying %d primary resources", len(primaryManifests)))
-	for _, m := range primaryManifests {
-		if err = e.provider.ApplyManifest(ctx, m); err != nil {
+	// Start applying all manifests to add or update running resources.
+	e.LogPersister.AppendInfo(fmt.Sprintf("Start applying %d manifests", len(applyManifests)))
+	for _, m := range applyManifests {
+		if err := e.provider.ApplyManifest(ctx, m); err != nil {
 			e.LogPersister.AppendError(fmt.Sprintf("Failed to apply manifest: %s (%v)", m.Key.ReadableString(), err))
 			return model.StageStatus_STAGE_FAILURE
 		}
 		e.LogPersister.AppendSuccess(fmt.Sprintf("- applied manifest: %s", m.Key.ReadableString()))
 	}
+	e.LogPersister.AppendSuccess(fmt.Sprintf("Successfully applied %d manifests", len(applyManifests)))
 
-	e.LogPersister.AppendSuccess(fmt.Sprintf("Successfully applied %d primary resources", len(primaryManifests)))
+	// TODO: Wait for all applied manifests to be ready.
+	e.LogPersister.AppendInfo("Waiting for the applied manifests to be ready")
+
+	// TODO: Find and remove the running resources that are not defined in Git.
+	e.LogPersister.AppendInfo("Start finding and removing all running resources but not in Git")
+
 	return model.StageStatus_STAGE_SUCCESS
+}
+
+func (e *Executor) generateSyncManifests(namespace, commitHash string, manifests []provider.Manifest) []provider.Manifest {
+	out := make([]provider.Manifest, 0, len(manifests))
+
+	for _, manifest := range manifests {
+		// Because the loaded maninests are read-only
+		// so we duplicate them to avoid updating the shared manifests data in cache.
+		m := manifest.Duplicate(manifest.Key.Name)
+		if namespace != "" {
+			m.SetNamespace(namespace)
+			m.Key.Namespace = namespace
+		}
+		// Add predefined annotation to the manifest.
+		m.AddAnnotations(e.builtinAnnotations(m, primaryVariant, commitHash))
+		out = append(out, manifest)
+	}
+	return out
 }

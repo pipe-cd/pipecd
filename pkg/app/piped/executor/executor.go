@@ -51,6 +51,10 @@ type CommandLister interface {
 	ListCommands() []model.ReportableCommand
 }
 
+type AppLiveResourceLister interface {
+	ListKubernetesResources() ([]*model.KubernetesResourceState, bool)
+}
+
 type Input struct {
 	Stage       *model.PipelineStage
 	StageConfig config.PipelineStage
@@ -64,13 +68,14 @@ type Input struct {
 	RepoDir string
 	// The path to the directory containing repository's source code at running commit.
 	// This directory is valid only when the Deployment.RunningCommitHash is not empty.
-	RunningRepoDir    string
-	StageWorkingDir   string
-	CommandLister     CommandLister
-	LogPersister      LogPersister
-	MetadataStore     MetadataStore
-	AppManifestsCache cache.Cache
-	Logger            *zap.Logger
+	RunningRepoDir        string
+	StageWorkingDir       string
+	CommandLister         CommandLister
+	LogPersister          LogPersister
+	MetadataStore         MetadataStore
+	AppManifestsCache     cache.Cache
+	AppLiveResourceLister AppLiveResourceLister
+	Logger                *zap.Logger
 }
 
 func DetermineStageStatus(sig StopSignalType, ori, got model.StageStatus) model.StageStatus {

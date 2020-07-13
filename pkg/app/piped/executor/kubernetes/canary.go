@@ -37,6 +37,7 @@ func (e *Executor) ensureCanaryRollout(ctx context.Context) model.StageStatus {
 		return model.StageStatus_STAGE_FAILURE
 	}
 
+	// Load the manifests at the triggered commit.
 	manifests, err := e.loadManifests(ctx)
 	if err != nil {
 		e.LogPersister.AppendError(fmt.Sprintf("Failed while loading manifests (%v)", err))
@@ -188,7 +189,18 @@ func (e *Executor) generateCanaryManifests(namespace string, manifests []provide
 	// Find service manifests and duplicate them for CANARY variant.
 	if generateService {
 		services := findManifests(provider.KindService, serviceName, manifests)
-		generatedServices, err := generateServiceManifests(services, canaryVariant, suffix)
+		if len(services) == 0 {
+			return nil, fmt.Errorf("unable to find any service for name=%q", serviceName)
+		}
+
+		// Because the loaded maninests are read-only
+		// so we duplicate them to avoid updating the shared manifests data in cache.
+		duplicates := make([]provider.Manifest, 0, len(services))
+		for _, m := range services {
+			duplicates = append(duplicates, m.Duplicate(m.Key.Name))
+		}
+
+		generatedServices, err := generateServiceManifests(duplicates, canaryVariant, suffix)
 		if err != nil {
 			return nil, err
 		}
