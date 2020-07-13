@@ -87,6 +87,9 @@ func (e *Executor) Execute(sig executor.StopSignal) model.StageStatus {
 	)
 
 	switch model.Stage(e.Stage.Name) {
+	case model.StageK8sSync:
+		status = e.ensureSync(ctx)
+
 	case model.StageK8sPrimaryUpdate:
 		status = e.ensurePrimaryUpdate(ctx)
 

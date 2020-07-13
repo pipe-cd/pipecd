@@ -28,6 +28,9 @@ const (
 	// the application status based on metrics, log, http request...
 	StageAnalysis Stage = "ANALYSIS"
 
+	// StageK8sSync represents the state where
+	// all resources should be synced with the Git state.
+	StageK8sSync Stage = "K8S_PRIMARY_SYNC"
 	// StageK8sPrimaryUpdate represents the state where
 	// the PRIMARY variant has been updated to the new version/configuration.
 	StageK8sPrimaryUpdate Stage = "K8S_PRIMARY_UPDATE"

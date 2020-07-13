@@ -26,7 +26,7 @@ import (
 func buildPipeline(autoRollback bool, now time.Time) []*model.PipelineStage {
 	var (
 		preStageID = ""
-		stage, _   = planner.GetPredefinedStage(planner.PredefinedStageK8sUpdate)
+		stage, _   = planner.GetPredefinedStage(planner.PredefinedStageK8sSync)
 		stages     = []config.PipelineStage{stage}
 		out        = make([]*model.PipelineStage, 0, len(stages))
 	)
