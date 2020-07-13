@@ -24,13 +24,13 @@ import (
 
 func (e *Executor) ensureRollback(ctx context.Context) model.StageStatus {
 	// 1. Revert PRIMARY resources.
-	e.LogPersister.AppendError(fmt.Sprintf("Start checking to ensure that PRIMARY resources match to commit %s", e.Deployment.RunningCommitHash))
+	e.LogPersister.AppendInfo(fmt.Sprintf("Start checking to ensure that PRIMARY resources match to commit %s", e.Deployment.RunningCommitHash))
 	if err := e.rollbackPrimary(ctx); err != nil {
 		return model.StageStatus_STAGE_FAILURE
 	}
 
 	// 2. Ensure that all traffics are routed to the PRIMARY variant.
-	e.LogPersister.AppendError("Start checking to ensure that all traffics being routed to the PRIMARY variant")
+	e.LogPersister.AppendInfo("Start checking to ensure that all traffics being routed to the PRIMARY variant")
 	if err := e.rollbackTraffic(ctx); err != nil {
 		return model.StageStatus_STAGE_FAILURE
 	}
@@ -38,7 +38,7 @@ func (e *Executor) ensureRollback(ctx context.Context) model.StageStatus {
 	var errs []error
 
 	// 3. Delete all resources of CANARY variant.
-	e.LogPersister.AppendError("Start checking to ensure that the CANARY variant should be removed")
+	e.LogPersister.AppendInfo("Start checking to ensure that the CANARY variant should be removed")
 	if value, ok := e.MetadataStore.Get(addedCanaryResourcesMetadataKey); ok {
 		resources := strings.Split(value, ",")
 		if err := e.removeCanaryResources(ctx, resources); err != nil {
@@ -47,7 +47,7 @@ func (e *Executor) ensureRollback(ctx context.Context) model.StageStatus {
 	}
 
 	// 4. Delete all resources of BASELINE variant.
-	e.LogPersister.AppendError("Start checking to ensure that the BASELINE variant should be removed")
+	e.LogPersister.AppendInfo("Start checking to ensure that the BASELINE variant should be removed")
 	if value, ok := e.MetadataStore.Get(addedBaselineResourcesMetadataKey); ok {
 		resources := strings.Split(value, ",")
 		if err := e.removeBaselineResources(ctx, resources); err != nil {
