@@ -99,7 +99,7 @@ func TestAppConfig(t *testing.T) {
 						},
 						{
 							Name:                         model.StageK8sPrimaryRollout,
-							K8sPrimaryUpdateStageOptions: &K8sPrimaryUpdateStageOptions{},
+							K8sPrimaryRolloutStageOptions: &K8sPrimaryRolloutStageOptions{},
 						},
 						{
 							Name: model.StageK8sTrafficRouting,
