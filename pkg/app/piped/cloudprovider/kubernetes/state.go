@@ -419,29 +419,13 @@ func determineServiceHealth(obj *unstructured.Unstructured) (status model.Kubern
 }
 
 func determineConfigMapHealth(obj *unstructured.Unstructured) (status model.KubernetesResourceState_HealthStatus, desc string) {
-	c := &corev1.ConfigMap{}
-	err := scheme.Scheme.Convert(obj, c, nil)
-	if err != nil {
-		status = model.KubernetesResourceState_OTHER
-		desc = fmt.Sprintf("Unexpected error while calculating: unable to convert %T to %T: %v", obj, c, err)
-		return
-	}
-
-	desc = fmt.Sprintf("%q created", obj.GetName())
+	desc = fmt.Sprintf("%q was applied successfully", obj.GetName())
 	status = model.KubernetesResourceState_HEALTHY
 	return
 }
 
 func determineSecretHealth(obj *unstructured.Unstructured) (status model.KubernetesResourceState_HealthStatus, desc string) {
-	s := &corev1.Secret{}
-	err := scheme.Scheme.Convert(obj, s, nil)
-	if err != nil {
-		status = model.KubernetesResourceState_OTHER
-		desc = fmt.Sprintf("Unexpected error while calculating: unable to convert %T to %T: %v", obj, s, err)
-		return
-	}
-
-	desc = fmt.Sprintf("%q created", obj.GetName())
+	desc = fmt.Sprintf("%q was applied successfully", obj.GetName())
 	status = model.KubernetesResourceState_HEALTHY
 	return
 }
@@ -477,15 +461,7 @@ func determinePVCHealth(obj *unstructured.Unstructured) (status model.Kubernetes
 }
 
 func determineServiceAccountHealth(obj *unstructured.Unstructured) (status model.KubernetesResourceState_HealthStatus, desc string) {
-	s := &corev1.ServiceAccount{}
-	err := scheme.Scheme.Convert(obj, s, nil)
-	if err != nil {
-		status = model.KubernetesResourceState_OTHER
-		desc = fmt.Sprintf("Unexpected error while calculating: unable to convert %T to %T: %v", obj, s, err)
-		return
-	}
-
-	desc = fmt.Sprintf("%q created", obj.GetName())
+	desc = fmt.Sprintf("%q was applied successfully", obj.GetName())
 	status = model.KubernetesResourceState_HEALTHY
 	return
 }
