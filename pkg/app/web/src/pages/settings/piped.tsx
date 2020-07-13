@@ -144,7 +144,7 @@ export const SettingsPipedPage: FC = memo(function SettingsPipedPage() {
           },
         }}
       >
-        <MenuItem onClick={handleDisableClick}>Disable Piped</MenuItem>
+        <MenuItem onClick={handleDisableClick}>Disable</MenuItem>
       </Menu>
 
       <Drawer anchor="right" open={isOpenForm} onClose={handleClose}>
