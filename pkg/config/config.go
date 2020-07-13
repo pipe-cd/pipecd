@@ -94,7 +94,9 @@ func (c *Config) init(kind Kind, apiVersion string) error {
 
 	switch kind {
 	case KindKubernetesApp:
-		c.KubernetesDeploymentSpec = &KubernetesDeploymentSpec{}
+		c.KubernetesDeploymentSpec = &KubernetesDeploymentSpec{
+			Input: KubernetesDeploymentInput{AutoRollback: true},
+		}
 		c.spec = c.KubernetesDeploymentSpec
 	case KindTerraformApp:
 		c.TerraformDeploymentSpec = &TerraformDeploymentSpec{}
