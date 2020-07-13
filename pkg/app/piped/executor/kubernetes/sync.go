@@ -21,7 +21,7 @@ import (
 	"github.com/pipe-cd/pipe/pkg/model"
 )
 
-// NOTE: Just copying from ensurePrimaryUpdate. I will update the implementation in another PR.
+// NOTE: Just copying from ensurePrimaryRollout. I will update the implementation in another PR.
 func (e *Executor) ensureSync(ctx context.Context) model.StageStatus {
 	manifests, err := e.loadManifests(ctx)
 	if err != nil {

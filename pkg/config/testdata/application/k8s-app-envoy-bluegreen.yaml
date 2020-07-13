@@ -9,7 +9,7 @@ spec:
       - name: K8S_TRAFFIC_ROUTING
         with:
           all: canary
-      - name: K8S_PRIMARY_UPDATE
+      - name: K8S_PRIMARY_ROLLOUT
       - name: K8S_TRAFFIC_ROUTING
         with:
           all: primary

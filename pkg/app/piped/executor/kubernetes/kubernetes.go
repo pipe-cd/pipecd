@@ -53,7 +53,7 @@ func Register(r registerer) {
 			Input: in,
 		}
 	}
-	r.Register(model.StageK8sPrimaryUpdate, f)
+	r.Register(model.StageK8sPrimaryRollout, f)
 	r.Register(model.StageK8sCanaryRollout, f)
 	r.Register(model.StageK8sCanaryClean, f)
 	r.Register(model.StageK8sBaselineRollout, f)
@@ -90,8 +90,8 @@ func (e *Executor) Execute(sig executor.StopSignal) model.StageStatus {
 	case model.StageK8sSync:
 		status = e.ensureSync(ctx)
 
-	case model.StageK8sPrimaryUpdate:
-		status = e.ensurePrimaryUpdate(ctx)
+	case model.StageK8sPrimaryRollout:
+		status = e.ensurePrimaryRollout(ctx)
 
 	case model.StageK8sCanaryRollout:
 		status = e.ensureCanaryRollout(ctx)

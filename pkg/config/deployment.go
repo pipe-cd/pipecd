@@ -165,7 +165,7 @@ type PipelineStage struct {
 	WaitStageOptions               *WaitStageOptions
 	WaitApprovalStageOptions       *WaitApprovalStageOptions
 	AnalysisStageOptions           *AnalysisStageOptions
-	K8sPrimaryUpdateStageOptions   *K8sPrimaryUpdateStageOptions
+	K8sPrimaryRolloutStageOptions  *K8sPrimaryRolloutStageOptions
 	K8sCanaryRolloutStageOptions   *K8sCanaryRolloutStageOptions
 	K8sCanaryCleanStageOptions     *K8sCanaryCleanStageOptions
 	K8sBaselineRolloutStageOptions *K8sBaselineRolloutStageOptions
@@ -210,10 +210,10 @@ func (s *PipelineStage) UnmarshalJSON(data []byte) error {
 		if len(gs.With) > 0 {
 			err = json.Unmarshal(gs.With, s.AnalysisStageOptions)
 		}
-	case model.StageK8sPrimaryUpdate:
-		s.K8sPrimaryUpdateStageOptions = &K8sPrimaryUpdateStageOptions{}
+	case model.StageK8sPrimaryRollout:
+		s.K8sPrimaryRolloutStageOptions = &K8sPrimaryRolloutStageOptions{}
 		if len(gs.With) > 0 {
-			err = json.Unmarshal(gs.With, s.K8sPrimaryUpdateStageOptions)
+			err = json.Unmarshal(gs.With, s.K8sPrimaryRolloutStageOptions)
 		}
 	case model.StageK8sCanaryRollout:
 		s.K8sCanaryRolloutStageOptions = &K8sCanaryRolloutStageOptions{}
@@ -266,8 +266,8 @@ type WaitApprovalStageOptions struct {
 	Approvers []string `json:"approvers"`
 }
 
-// WaitStageOptions contains all configurable values for a K8S_PRIMARY_UPDATE stage.
-type K8sPrimaryUpdateStageOptions struct {
+// K8sPrimaryRolloutStageOptions contains all configurable values for a K8S_PRIMARY_ROLLOUT stage.
+type K8sPrimaryRolloutStageOptions struct {
 	Manifests []string `json:"manifests"`
 }
 

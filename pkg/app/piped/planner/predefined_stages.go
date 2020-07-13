@@ -35,7 +35,7 @@ var predefinedStages = map[string]config.PipelineStage{
 	},
 	PredefinedStageK8sSync: {
 		Id:   PredefinedStageK8sSync,
-		Name: model.StageK8sPrimaryUpdate,
+		Name: model.StageK8sPrimaryRollout,
 		Desc: "Sync resources with Git state",
 	},
 	PredefinedStageTerraformPlan: {

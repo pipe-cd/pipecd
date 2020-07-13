@@ -27,7 +27,7 @@ const (
 	primaryVariant = "primary"
 )
 
-func (e *Executor) ensurePrimaryUpdate(ctx context.Context) model.StageStatus {
+func (e *Executor) ensurePrimaryRollout(ctx context.Context) model.StageStatus {
 	manifests, err := e.loadManifests(ctx)
 	if err != nil {
 		e.LogPersister.AppendError(fmt.Sprintf("Failed while loading manifests (%v)", err))

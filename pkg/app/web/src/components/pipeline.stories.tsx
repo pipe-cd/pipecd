@@ -63,7 +63,7 @@ const fakeDeployment: Deployment = {
     }),
     stage({
       id: "fake-stage-id-1-1",
-      name: "K8S_PRIMARY_UPDATE",
+      name: "K8S_PRIMARY_ROLLOUT",
       index: 2,
       requiresList: ["fake-stage-id-0-0"],
       status: 2,
