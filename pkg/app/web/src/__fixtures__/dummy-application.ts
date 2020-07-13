@@ -1,6 +1,7 @@
 import { ApplicationKind } from "pipe/pkg/app/web/model/common_pb";
 import { Application, ApplicationSyncStatus } from "../modules/applications";
 import { dummyEnv } from "./dummy-environment";
+import { dummyPiped } from "./dummy-piped";
 
 export const dummyApplication: Application = {
   id: "application-1",
@@ -11,7 +12,7 @@ export const dummyApplication: Application = {
   gitPath: { configPath: "", path: "", repoId: "repo-1" },
   kind: ApplicationKind.KUBERNETES,
   name: "DemoApp",
-  pipedId: "piped-1",
+  pipedId: dummyPiped.id,
   projectId: "project-1",
   mostRecentlySuccessfulDeployment: {
     deploymentId: "deployment-1",

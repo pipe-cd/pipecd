@@ -70,3 +70,4 @@ export const pipedsSlice = createSlice({
 });
 
 export const { clearRegisteredPipedInfo } = pipedsSlice.actions;
+export { PipedConnectionStatus } from "pipe/pkg/app/web/api_client/service_pb";

@@ -2,10 +2,11 @@ import { Deployment, DeploymentStatus } from "../modules/deployments";
 import { ApplicationKind } from "pipe/pkg/app/web/model/common_pb";
 import { dummyApplication } from "./dummy-application";
 import { dummyEnv } from "./dummy-environment";
+import { dummyPiped } from "./dummy-piped";
 
 export const dummyDeployment: Deployment = {
   id: "deployment-1",
-  pipedId: "piped-1",
+  pipedId: dummyPiped.id,
   projectId: "project-1",
   applicationName: dummyApplication.name,
   applicationId: dummyApplication.id,

@@ -12,6 +12,7 @@ describe("deploymentsSlice reducer", () => {
         "entities": Object {},
         "ids": Array [],
         "loading": Object {},
+        "loadingList": false,
       }
     `);
   });
