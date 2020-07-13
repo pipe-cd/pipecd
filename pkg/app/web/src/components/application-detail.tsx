@@ -24,6 +24,7 @@ import {
   ApplicationLiveState,
   selectById as selectLiveStateById,
 } from "../modules/applications-live-state";
+import { selectById as selectPipeById, Piped } from "../modules/pipeds";
 import {
   Environment,
   selectById as selectEnvById,
@@ -34,17 +35,24 @@ import { SyncStateReason } from "./sync-state-reason";
 import { SyncStatusIcon } from "./sync-status-icon";
 
 const useStyles = makeStyles((theme) => ({
-  main: {
+  root: {
     padding: theme.spacing(2),
     display: "flex",
     zIndex: theme.zIndex.appBar,
+    position: "relative",
+    flexDirection: "column",
   },
   nameAndEnv: {
     display: "flex",
     alignItems: "baseline",
   },
+  mainContent: { flex: 1 },
   content: {
     flex: 1,
+  },
+  detail: {
+    display: "flex",
+    marginTop: theme.spacing(1),
   },
   loading: {
     flex: 1,
@@ -69,8 +77,9 @@ const useStyles = makeStyles((theme) => ({
     marginRight: theme.spacing(1),
   },
   actionButtons: {
-    paddingLeft: theme.spacing(2),
-    paddingRight: theme.spacing(2),
+    position: "absolute",
+    right: theme.spacing(2),
+    top: theme.spacing(2),
   },
   buttonProgress: {
     color: theme.palette.primary.main,
@@ -115,6 +124,9 @@ export const ApplicationDetail: FC<Props> = memo(function ApplicationDetail({
     app ? selectEnvById(state.environments, app.envId) : undefined
   );
   const isSyncing = useIsSyncingApplication(app ? app.id : null);
+  const pipe = useSelector<AppState, Piped | undefined>((state) =>
+    app ? selectPipeById(state.pipeds, app.pipedId) : undefined
+  );
 
   const handleSync = (): void => {
     if (app) {
@@ -122,7 +134,7 @@ export const ApplicationDetail: FC<Props> = memo(function ApplicationDetail({
     }
   };
 
-  if (!app || !env) {
+  if (!app || !env || !pipe) {
     return (
       <div className={classes.loading}>
         <CircularProgress />
@@ -131,8 +143,8 @@ export const ApplicationDetail: FC<Props> = memo(function ApplicationDetail({
   }
 
   return (
-    <Paper square elevation={1} className={classes.main}>
-      <div className={classes.content}>
+    <Paper square elevation={1} className={classes.root}>
+      <div className={classes.mainContent}>
         <div className={classes.nameAndEnv}>
           <Typography variant="h5">{app.name}</Typography>
           <Typography variant="subtitle2" className={classes.env}>
@@ -175,29 +187,44 @@ export const ApplicationDetail: FC<Props> = memo(function ApplicationDetail({
           </>
         )}
       </div>
-      {app.mostRecentlySuccessfulDeployment && (
+
+      <div className={classes.detail}>
         <div className={classes.content}>
+          <LabeledText label="piped" value={`${pipe.name}`} />
+
+          <LabeledText label="Cloud Provider" value={`${app.cloudProvider}`} />
+
           <LabeledText
-            label="Latest Deployment"
-            value={
-              <Link
-                component={RouterLink}
-                to={`${PAGE_PATH_DEPLOYMENTS}/${app.mostRecentlySuccessfulDeployment.deploymentId}`}
-              >
-                {app.mostRecentlySuccessfulDeployment.deploymentId}
-              </Link>
-            }
-          />
-          <LabeledText
-            label="Version"
-            value={app.mostRecentlySuccessfulDeployment.version}
-          />
-          <LabeledText
-            label="Description"
-            value={app.mostRecentlySuccessfulDeployment.description}
+            label="Git Path"
+            value={`${app.gitPath.repoId} - ${app.gitPath.path}${app.gitPath.configPath}`}
           />
         </div>
-      )}
+
+        {app.mostRecentlySuccessfulDeployment && (
+          <div className={classes.content}>
+            <LabeledText
+              label="Latest Deployment"
+              value={
+                <Link
+                  component={RouterLink}
+                  to={`${PAGE_PATH_DEPLOYMENTS}/${app.mostRecentlySuccessfulDeployment.deploymentId}`}
+                >
+                  {app.mostRecentlySuccessfulDeployment.deploymentId}
+                </Link>
+              }
+            />
+            <LabeledText
+              label="Version"
+              value={app.mostRecentlySuccessfulDeployment.version}
+            />
+            <LabeledText
+              label="Description"
+              value={app.mostRecentlySuccessfulDeployment.description}
+            />
+          </div>
+        )}
+      </div>
+
       <div className={classes.actionButtons}>
         <Button
           variant="outlined"
