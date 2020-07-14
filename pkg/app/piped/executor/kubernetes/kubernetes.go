@@ -53,6 +53,8 @@ func Register(r registerer) {
 			Input: in,
 		}
 	}
+
+	r.Register(model.StageK8sSync, f)
 	r.Register(model.StageK8sPrimaryRollout, f)
 	r.Register(model.StageK8sCanaryRollout, f)
 	r.Register(model.StageK8sCanaryClean, f)
