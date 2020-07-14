@@ -17,7 +17,6 @@ package kubernetes
 import (
 	"context"
 	"encoding/json"
-	"fmt"
 	"strings"
 
 	istiov1alpha3 "istio.io/api/networking/v1alpha3"
@@ -31,13 +30,13 @@ import (
 func (e *Executor) ensureTrafficRouting(ctx context.Context) model.StageStatus {
 	options := e.StageConfig.K8sTrafficRoutingStageOptions
 	if options == nil {
-		e.LogPersister.AppendError(fmt.Sprintf("Malformed configuration for stage %s", e.Stage.Name))
+		e.LogPersister.AppendErrorf("Malformed configuration for stage %s", e.Stage.Name)
 		return model.StageStatus_STAGE_FAILURE
 	}
 
 	manifests, err := e.loadManifests(ctx)
 	if err != nil {
-		e.LogPersister.AppendError(fmt.Sprintf("Failed while loading manifests (%v)", err))
+		e.LogPersister.AppendErrorf("Failed while loading manifests (%v)", err)
 		return model.StageStatus_STAGE_FAILURE
 	}
 	if len(manifests) == 0 {
@@ -75,10 +74,10 @@ func (e *Executor) ensurePodTrafficRouting(ctx context.Context, primaryPercent, 
 	case canaryPercent == 100:
 		variant = canaryVariant
 	default:
-		e.LogPersister.AppendError(fmt.Sprintf("Traffic routing by pod requires either PRIMARY or CANARY must be 100 (primary=%d, canary=%d)", primaryPercent, canaryPercent))
+		e.LogPersister.AppendErrorf("Traffic routing by pod requires either PRIMARY or CANARY must be 100 (primary=%d, canary=%d)", primaryPercent, canaryPercent)
 		return model.StageStatus_STAGE_FAILURE
 	}
-	e.LogPersister.AppendInfo(fmt.Sprintf("All traffic will be routed to %s by updating service selector", strings.ToUpper(variant)))
+	e.LogPersister.AppendInfof("All traffic will be routed to %s by updating service selector", strings.ToUpper(variant))
 
 	// Find out the service which be updated the selector.
 	var serviceName string
@@ -86,36 +85,36 @@ func (e *Executor) ensurePodTrafficRouting(ctx context.Context, primaryPercent, 
 		var ok bool
 		_, serviceName, ok = config.ParseVariantResourceReference(cfg.Service.Reference)
 		if !ok {
-			e.LogPersister.AppendError(fmt.Sprintf("Malformed service reference in TrafficRouting configuration: %s", cfg.Service.Reference))
+			e.LogPersister.AppendErrorf("Malformed service reference in TrafficRouting configuration: %s", cfg.Service.Reference)
 			return model.StageStatus_STAGE_FAILURE
 		}
 	}
 
 	services := findManifests(provider.KindService, serviceName, manifests)
 	if len(services) == 0 {
-		e.LogPersister.AppendError(fmt.Sprintf("Unable to find any service for name=%q to update traffic routing", serviceName))
+		e.LogPersister.AppendErrorf("Unable to find any service for name=%q to update traffic routing", serviceName)
 		return model.StageStatus_STAGE_FAILURE
 	}
 	service := services[0]
 	if len(services) > 1 {
-		e.LogPersister.AppendInfo(fmt.Sprintf("Detected %d services but only the first one (%s) will be selected to change selector", len(services), service.Key.ReadableString()))
+		e.LogPersister.AppendInfof("Detected %d services but only the first one (%s) will be selected to change selector", len(services), service.Key.ReadableString())
 	}
 
 	// Duplicate and update the selector for service manifest.
 	service = service.Duplicate(service.Key.Name)
 	if err := service.AddStringMapValues(map[string]string{variantLabel: variant}, "spec", "selector"); err != nil {
-		e.LogPersister.AppendError(fmt.Sprintf("Unable to update selector for service %s because of: %v", service.Key.Name, err))
+		e.LogPersister.AppendErrorf("Unable to update selector for service %s because of: %v", service.Key.Name, err)
 		return model.StageStatus_STAGE_FAILURE
 	}
 
 	e.LogPersister.AppendInfo("Start updating traffic routing...")
 	if err := e.provider.ApplyManifest(ctx, service); err != nil {
-		e.LogPersister.AppendError(fmt.Sprintf("Failed to apply manifest: %s (%v)", service.Key.ReadableString(), err))
+		e.LogPersister.AppendErrorf("Failed to apply manifest: %s (%v)", service.Key.ReadableString(), err)
 		return model.StageStatus_STAGE_FAILURE
 	}
-	e.LogPersister.AppendSuccess(fmt.Sprintf("Successfully applied manifest: %s", service.Key.ReadableString()))
+	e.LogPersister.AppendSuccessf("Successfully applied manifest: %s", service.Key.ReadableString())
 
-	e.LogPersister.AppendSuccess(fmt.Sprintf("Successfully routed all traffic to %s variant", strings.ToUpper(variant)))
+	e.LogPersister.AppendSuccessf("Successfully routed all traffic to %s variant", strings.ToUpper(variant))
 	return model.StageStatus_STAGE_SUCCESS
 }
 
@@ -137,22 +136,22 @@ func (e *Executor) ensureIstioTrafficRouting(ctx context.Context, canaryPercent,
 		err = generateVirtualServiceManifest(manifest, cfg.Host, cfg.EditableRoutes, int32(canaryPercent), int32(baselinePercent))
 	}
 	if err != nil {
-		e.LogPersister.AppendError(fmt.Sprintf("Unable to generate VirtualService manifest: %v", err))
+		e.LogPersister.AppendErrorf("Unable to generate VirtualService manifest: %v", err)
 		return model.StageStatus_STAGE_FAILURE
 	}
 
 	e.LogPersister.AppendInfo("Start updating traffic routing...")
 	if err = e.provider.ApplyManifest(ctx, manifest); err != nil {
-		e.LogPersister.AppendError(fmt.Sprintf("Failed to apply manifest: %s (%v)", manifest.Key.ReadableString(), err))
+		e.LogPersister.AppendErrorf("Failed to apply manifest: %s (%v)", manifest.Key.ReadableString(), err)
 		return model.StageStatus_STAGE_FAILURE
 	}
-	e.LogPersister.AppendSuccess(fmt.Sprintf("Successfully applied manifest: %s", manifest.Key.ReadableString()))
+	e.LogPersister.AppendSuccessf("Successfully applied manifest: %s", manifest.Key.ReadableString())
 
-	e.LogPersister.AppendSuccess(fmt.Sprintf("Successfully updated traffic routing (primary=%d, canary=%d, baseline=%d)",
+	e.LogPersister.AppendSuccessf("Successfully updated traffic routing (primary=%d, canary=%d, baseline=%d)",
 		100-canaryPercent-baselinePercent,
 		canaryPercent,
 		baselinePercent,
-	))
+	)
 	return model.StageStatus_STAGE_SUCCESS
 }
 

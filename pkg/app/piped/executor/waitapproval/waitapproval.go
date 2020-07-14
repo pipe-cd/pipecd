@@ -16,7 +16,6 @@ package waitapproval
 
 import (
 	"context"
-	"fmt"
 	"time"
 
 	"go.uber.org/zap"
@@ -61,7 +60,7 @@ func (e *Executor) Execute(sig executor.StopSignal) model.StageStatus {
 		select {
 		case <-ticker.C:
 			if commander, ok := e.checkApproval(ctx); ok {
-				e.LogPersister.AppendInfo(fmt.Sprintf("Got an approval from %s", commander))
+				e.LogPersister.AppendInfof("Got an approval from %s", commander)
 				return model.StageStatus_STAGE_SUCCESS
 			}
 
@@ -101,7 +100,7 @@ func (e *Executor) checkApproval(ctx context.Context) (string, bool) {
 		}
 	}
 	if err := e.MetadataStore.SetStageMetadata(ctx, e.Stage.Id, metadata); err != nil {
-		e.LogPersister.AppendError(fmt.Sprintf("Unabled to save approver information to deployment, %v", err))
+		e.LogPersister.AppendErrorf("Unabled to save approver information to deployment, %v", err)
 		return "", false
 	}
 

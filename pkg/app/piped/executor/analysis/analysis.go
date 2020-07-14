@@ -135,7 +135,7 @@ func (e *Executor) Execute(sig executor.StopSignal) model.StageStatus {
 	}
 
 	if err := eg.Wait(); err != nil {
-		e.LogPersister.AppendError(fmt.Sprintf("Analysis failed: %s", err.Error()))
+		e.LogPersister.AppendErrorf("Analysis failed: %s", err.Error())
 		return model.StageStatus_STAGE_FAILURE
 	}
 

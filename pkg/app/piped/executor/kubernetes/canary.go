@@ -33,14 +33,14 @@ const (
 func (e *Executor) ensureCanaryRollout(ctx context.Context) model.StageStatus {
 	canaryOptions := e.StageConfig.K8sCanaryRolloutStageOptions
 	if canaryOptions == nil {
-		e.LogPersister.AppendError(fmt.Sprintf("Malformed configuration for stage %s", e.Stage.Name))
+		e.LogPersister.AppendErrorf("Malformed configuration for stage %s", e.Stage.Name)
 		return model.StageStatus_STAGE_FAILURE
 	}
 
 	// Load the manifests at the triggered commit.
 	manifests, err := e.loadManifests(ctx)
 	if err != nil {
-		e.LogPersister.AppendError(fmt.Sprintf("Failed while loading manifests (%v)", err))
+		e.LogPersister.AppendErrorf("Failed while loading manifests (%v)", err)
 		return model.StageStatus_STAGE_FAILURE
 	}
 
@@ -51,7 +51,7 @@ func (e *Executor) ensureCanaryRollout(ctx context.Context) model.StageStatus {
 
 	canaryManifests, err := e.generateCanaryManifests(e.config.Input.Namespace, manifests, *canaryOptions)
 	if err != nil {
-		e.LogPersister.AppendError(fmt.Sprintf("Unable to generate manifests for CANARY variant (%v)", err))
+		e.LogPersister.AppendErrorf("Unable to generate manifests for CANARY variant (%v)", err)
 		return model.StageStatus_STAGE_FAILURE
 	}
 
@@ -63,7 +63,7 @@ func (e *Executor) ensureCanaryRollout(ctx context.Context) model.StageStatus {
 	metadata := strings.Join(addedResources, ",")
 	err = e.MetadataStore.Set(ctx, addedCanaryResourcesMetadataKey, metadata)
 	if err != nil {
-		e.LogPersister.AppendError(fmt.Sprintf("Unable to save deployment metadata (%v)", err))
+		e.LogPersister.AppendErrorf("Unable to save deployment metadata (%v)", err)
 		return model.StageStatus_STAGE_FAILURE
 	}
 
@@ -71,10 +71,10 @@ func (e *Executor) ensureCanaryRollout(ctx context.Context) model.StageStatus {
 	e.LogPersister.AppendInfo("Start rolling out CANARY variant...")
 	for _, m := range canaryManifests {
 		if err = e.provider.ApplyManifest(ctx, m); err != nil {
-			e.LogPersister.AppendError(fmt.Sprintf("Failed to apply manifest: %s (%v)", m.Key.ReadableString(), err))
+			e.LogPersister.AppendErrorf("Failed to apply manifest: %s (%v)", m.Key.ReadableString(), err)
 			return model.StageStatus_STAGE_FAILURE
 		}
-		e.LogPersister.AppendSuccess(fmt.Sprintf("- applied manifest: %s", m.Key.ReadableString()))
+		e.LogPersister.AppendSuccessf("- applied manifest: %s", m.Key.ReadableString())
 	}
 
 	e.LogPersister.AppendSuccess("Successfully rolled out CANARY variant")
@@ -107,7 +107,7 @@ func (e *Executor) removeCanaryResources(ctx context.Context, resources []string
 	for _, r := range resources {
 		key, err := provider.DecodeResourceKey(r)
 		if err != nil {
-			e.LogPersister.AppendError(fmt.Sprintf("Had an error while decoding CANARY resource key: %s, %v", r, err))
+			e.LogPersister.AppendErrorf("Had an error while decoding CANARY resource key: %s, %v", r, err)
 			continue
 		}
 		if key.IsWorkload() {
@@ -121,14 +121,14 @@ func (e *Executor) removeCanaryResources(ctx context.Context, resources []string
 	for _, k := range serviceKeys {
 		err := e.provider.Delete(ctx, k)
 		if err == nil {
-			e.LogPersister.AppendInfo(fmt.Sprintf("Deleted resource %s", k))
+			e.LogPersister.AppendInfof("Deleted resource %s", k)
 			continue
 		}
 		if errors.Is(err, provider.ErrNotFound) {
-			e.LogPersister.AppendInfo(fmt.Sprintf("No resource %s to delete", k))
+			e.LogPersister.AppendInfof("No resource %s to delete", k)
 			continue
 		}
-		e.LogPersister.AppendError(fmt.Sprintf("Unable to delete resource %s (%v)", k, err))
+		e.LogPersister.AppendErrorf("Unable to delete resource %s (%v)", k, err)
 		//return model.StageStatus_STAGE_FAILURE
 	}
 
@@ -136,14 +136,14 @@ func (e *Executor) removeCanaryResources(ctx context.Context, resources []string
 	for _, k := range workloadKeys {
 		err := e.provider.Delete(ctx, k)
 		if err == nil {
-			e.LogPersister.AppendInfo(fmt.Sprintf("Deleted workload resource %s", k))
+			e.LogPersister.AppendInfof("Deleted workload resource %s", k)
 			continue
 		}
 		if errors.Is(err, provider.ErrNotFound) {
-			e.LogPersister.AppendInfo(fmt.Sprintf("No worload resource %s to delete", k))
+			e.LogPersister.AppendInfof("No worload resource %s to delete", k)
 			continue
 		}
-		e.LogPersister.AppendError(fmt.Sprintf("Unable to delete workload resource %s (%v)", k, err))
+		e.LogPersister.AppendErrorf("Unable to delete workload resource %s (%v)", k, err)
 		//return model.StageStatus_STAGE_FAILURE
 	}
 

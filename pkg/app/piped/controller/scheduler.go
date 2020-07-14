@@ -361,7 +361,7 @@ func (s *scheduler) executeStage(sig executor.StopSignal, ps model.PipelineStage
 
 	// Check the existence of the specified cloud provider.
 	if !s.pipedConfig.HasCloudProvider(s.deployment.CloudProvider, s.deployment.CloudProviderType()) {
-		lp.AppendError(fmt.Sprintf("This piped is not having the specified cloud provider in this deployment: %v", s.deployment.CloudProvider))
+		lp.AppendErrorf("This piped is not having the specified cloud provider in this deployment: %v", s.deployment.CloudProvider)
 		s.reportStageStatus(ctx, ps.Id, model.StageStatus_STAGE_FAILURE, ps.Requires)
 		return model.StageStatus_STAGE_FAILURE
 	}
@@ -393,7 +393,7 @@ func (s *scheduler) executeStage(sig executor.StopSignal, ps model.PipelineStage
 
 	app, ok := s.applicationLister.Get(s.deployment.ApplicationId)
 	if !ok {
-		lp.AppendError(fmt.Sprintf("Application %s for this deployment was not found (Maybe it was disabled).", s.deployment.ApplicationId))
+		lp.AppendErrorf("Application %s for this deployment was not found (Maybe it was disabled).", s.deployment.ApplicationId)
 		s.reportStageStatus(ctx, ps.Id, model.StageStatus_STAGE_FAILURE, ps.Requires)
 		return model.StageStatus_STAGE_FAILURE
 	}
@@ -466,7 +466,7 @@ func (s *scheduler) ensurePreparing(ctx context.Context, lp logpersister.StageLo
 			lp.AppendError(err.Error())
 			return
 		}
-		lp.AppendSuccess(fmt.Sprintf("Successfully cloned repository %s", s.deployment.GitPath.RepoId))
+		lp.AppendSuccessf("Successfully cloned repository %s", s.deployment.GitPath.RepoId)
 
 		// Copy and checkout the running revision.
 		if s.deployment.RunningCommitHash != "" {
