@@ -76,9 +76,9 @@ func (s *TerraformDeploymentSpec) Validate() error {
 
 // DeploymentCommitMatcher provides a way to decide how to deploy.
 type DeploymentCommitMatcher struct {
-	// It makes sure to perform syncing if it matches this regular expression.
+	// It makes sure to perform syncing if the commit message matches this regular expression.
 	Sync string `json:"sync"`
-	// It makes sure to perform pipeline if it matches this regular expression.
+	// It makes sure to perform pipeline if the commit message matches this regular expression.
 	Pipeline string `json:"pipeline"`
 }
 
