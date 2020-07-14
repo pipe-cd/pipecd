@@ -30,6 +30,7 @@ type Pipelineable interface {
 type KubernetesDeploymentSpec struct {
 	Input         KubernetesDeploymentInput `json:"input"`
 	CommitMatcher *DeploymentCommitMatcher  `json:"commitMatcher"`
+	Sync          K8sSyncStageOptions       `json:"sync"`
 	Pipeline      *DeploymentPipeline       `json:"pipeline"`
 
 	PrimaryVariant  *PrimaryVariant  `json:"primaryVariant"`
@@ -273,6 +274,12 @@ type WaitStageOptions struct {
 // WaitStageOptions contains all configurable values for a WAIT_APPROVAL stage.
 type WaitApprovalStageOptions struct {
 	Approvers []string `json:"approvers"`
+}
+
+// K8sSyncStageOptions contains all configurable values for a K8S_SYNC stage.
+type K8sSyncStageOptions struct {
+	// Whether the resources that are no longer defined in Git will be removed.
+	Prune bool `json:"prune"`
 }
 
 // K8sPrimaryRolloutStageOptions contains all configurable values for a K8S_PRIMARY_ROLLOUT stage.

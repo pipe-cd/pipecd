@@ -46,6 +46,11 @@ func (e *Executor) ensureSync(ctx context.Context, commitHash string, manifestsL
 	}
 	e.LogPersister.AppendSuccessf("Successfully applied %d manifests", len(applyManifests))
 
+	if !e.config.Sync.Prune {
+		e.LogPersister.AppendInfo("Resource GC was skipped because sync.prune was not configured")
+		return model.StageStatus_STAGE_SUCCESS
+	}
+
 	// Wait for all applied manifests to be stable.
 	// In theory, we don't need to wait for them to be stable before going to the next step
 	// but waiting for a while reduces the number of Kubernetes changes in a short time.
