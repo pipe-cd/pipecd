@@ -28,8 +28,9 @@ type Pipelineable interface {
 
 // KubernetesDeploymentSpec represents a deployment configuration for Kubernetes application.
 type KubernetesDeploymentSpec struct {
-	Input    KubernetesDeploymentInput `json:"input"`
-	Pipeline *DeploymentPipeline       `json:"pipeline"`
+	Input         KubernetesDeploymentInput `json:"input"`
+	CommitMatcher *DeploymentCommitMatcher  `json:"commitMatcher"`
+	Pipeline      *DeploymentPipeline       `json:"pipeline"`
 
 	PrimaryVariant  *PrimaryVariant  `json:"primaryVariant"`
 	CanaryVariant   *CanaryVariant   `json:"canaryVariant"`
@@ -71,6 +72,14 @@ func (s *TerraformDeploymentSpec) GetStage(index int32) (PipelineStage, bool) {
 // Validate returns an error if any wrong configuration value was found.
 func (s *TerraformDeploymentSpec) Validate() error {
 	return nil
+}
+
+// DeploymentCommitMatcher provides a way to decide how to deploy.
+type DeploymentCommitMatcher struct {
+	// It makes sure to perform syncing if the commit message matches this regular expression.
+	Sync string `json:"sync"`
+	// It makes sure to perform pipeline if the commit message matches this regular expression.
+	Pipeline string `json:"pipeline"`
 }
 
 // DeploymentPipeline represents the way to deploy the application.
