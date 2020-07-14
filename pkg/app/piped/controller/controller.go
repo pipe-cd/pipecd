@@ -75,6 +75,10 @@ type applicationLister interface {
 	Get(id string) (*model.Application, bool)
 }
 
+type liveResourceLister interface {
+	ListKubernetesAppLiveResources(cloudProvider, appID string) ([]*model.KubernetesResourceState, bool)
+}
+
 type DeploymentController interface {
 	Run(ctx context.Context) error
 }
@@ -85,14 +89,15 @@ var (
 )
 
 type controller struct {
-	apiClient         apiClient
-	gitClient         gitClient
-	deploymentLister  deploymentLister
-	commandLister     commandLister
-	applicationLister applicationLister
-	pipedConfig       *config.PipedSpec
-	appManifestsCache cache.Cache
-	logPersister      logpersister.Persister
+	apiClient          apiClient
+	gitClient          gitClient
+	deploymentLister   deploymentLister
+	commandLister      commandLister
+	applicationLister  applicationLister
+	liveResourceLister liveResourceLister
+	pipedConfig        *config.PipedSpec
+	appManifestsCache  cache.Cache
+	logPersister       logpersister.Persister
 
 	// Map from application ID to the planner
 	// of a pending deployment of that application.
@@ -126,6 +131,7 @@ func NewController(
 	deploymentLister deploymentLister,
 	commandLister commandLister,
 	applicationLister applicationLister,
+	liveResourceLister liveResourceLister,
 	pipedConfig *config.PipedSpec,
 	appManifestsCache cache.Cache,
 	gracePeriod time.Duration,
@@ -137,14 +143,15 @@ func NewController(
 		lg = logger.Named("controller")
 	)
 	return &controller{
-		apiClient:         apiClient,
-		gitClient:         gitClient,
-		deploymentLister:  deploymentLister,
-		commandLister:     commandLister,
-		applicationLister: applicationLister,
-		appManifestsCache: appManifestsCache,
-		pipedConfig:       pipedConfig,
-		logPersister:      lp,
+		apiClient:          apiClient,
+		gitClient:          gitClient,
+		deploymentLister:   deploymentLister,
+		commandLister:      commandLister,
+		applicationLister:  applicationLister,
+		liveResourceLister: liveResourceLister,
+		appManifestsCache:  appManifestsCache,
+		pipedConfig:        pipedConfig,
+		logPersister:       lp,
 
 		planners:                      make(map[string]*planner),
 		donePlanners:                  make(map[string]time.Time),
@@ -469,6 +476,7 @@ func (c *controller) startNewScheduler(ctx context.Context, d *model.Deployment)
 		c.gitClient,
 		c.commandLister,
 		c.applicationLister,
+		c.liveResourceLister,
 		c.logPersister,
 		c.pipedConfig,
 		c.appManifestsCache,
@@ -558,4 +566,14 @@ func loadDeploymentConfiguration(repoPath string, d *model.Deployment) (*config.
 		return nil, fmt.Errorf("application in deployment configuration file is not match, got: %s, expected: %s", appKind, d.Kind)
 	}
 	return cfg, nil
+}
+
+type appLiveResourceLister struct {
+	lister        liveResourceLister
+	cloudProvider string
+	appID         string
+}
+
+func (l appLiveResourceLister) ListKubernetesResources() ([]*model.KubernetesResourceState, bool) {
+	return l.lister.ListKubernetesAppLiveResources(l.cloudProvider, l.appID)
 }

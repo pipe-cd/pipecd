@@ -176,3 +176,19 @@ func (s *store) TerraformGetter(cloudProvider string) (terraform.Getter, bool) {
 	ks, ok := s.terraformStores[cloudProvider]
 	return ks, ok
 }
+
+type LiveResourceLister struct {
+	Getter
+}
+
+func (g LiveResourceLister) ListKubernetesAppLiveResources(cloudProvider, appID string) ([]*model.KubernetesResourceState, bool) {
+	kg, ok := g.KubernetesGetter(cloudProvider)
+	if !ok {
+		return nil, false
+	}
+	ls, ok := kg.GetKubernetesAppLiveState(appID)
+	if !ok {
+		return nil, false
+	}
+	return ls.Resources, true
+}

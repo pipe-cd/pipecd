@@ -88,7 +88,7 @@ func (e *Executor) Execute(sig executor.StopSignal) model.StageStatus {
 
 	switch model.Stage(e.Stage.Name) {
 	case model.StageK8sSync:
-		status = e.ensureSync(ctx)
+		status = e.ensureSync(ctx, e.Deployment.Trigger.Commit.Hash, e.loadManifests)
 
 	case model.StageK8sPrimaryRollout:
 		status = e.ensurePrimaryRollout(ctx)
@@ -109,7 +109,7 @@ func (e *Executor) Execute(sig executor.StopSignal) model.StageStatus {
 		status = e.ensureTrafficRouting(ctx)
 
 	case model.StageRollback:
-		status = e.ensureRollback(ctx)
+		status = e.ensureSync(ctx, e.Deployment.RunningCommitHash, e.loadRunningManifests)
 
 	default:
 		e.LogPersister.AppendError(fmt.Sprintf("Unsupported stage %s for kubernetes application", e.Stage.Name))
