@@ -1,32 +1,32 @@
 import {
+  CircularProgress,
   Link,
   makeStyles,
   Paper,
   Typography,
-  CircularProgress,
-  Button,
 } from "@material-ui/core";
+import CancelIcon from "@material-ui/icons/Cancel";
 import dayjs from "dayjs";
 import React, { FC, memo } from "react";
-import { useSelector, useDispatch } from "react-redux";
+import { useDispatch, useSelector } from "react-redux";
+import { Link as RouterLink } from "react-router-dom";
+import { PAGE_PATH_APPLICATIONS } from "../constants";
+import { DEPLOYMENT_STATE_TEXT } from "../constants/deployment-status-text";
+import { AppState } from "../modules";
 import {
-  selectById as selectDeploymentById,
-  Deployment,
   cancelDeployment,
+  Deployment,
   isDeploymentRunning,
+  selectById as selectDeploymentById,
 } from "../modules/deployments";
 import {
   Environment,
   selectById as selectEnvById,
 } from "../modules/environments";
-import { DEPLOYMENT_STATE_TEXT } from "../constants/deployment-status-text";
-import { AppState } from "../modules";
+import { Piped, selectById } from "../modules/pipeds";
 import { StatusIcon } from "./deployment-status-icon";
 import { LabeledText } from "./labeled-text";
-import CancelIcon from "@material-ui/icons/Cancel";
-import { Link as RouterLink } from "react-router-dom";
-import { PAGE_PATH_APPLICATIONS } from "../constants";
-import { Piped, selectById } from "../modules/pipeds";
+import { SplitButton } from "./split-button";
 
 const useStyles = makeStyles((theme) => ({
   root: {
@@ -75,6 +75,8 @@ interface Props {
   deploymentId: string;
 }
 
+const CANCEL_OPTIONS = ["Cancel", "Cancel without Rollback"];
+
 export const DeploymentDetail: FC<Props> = memo(function DeploymentDetail({
   deploymentId,
 }) {
@@ -98,10 +100,6 @@ export const DeploymentDetail: FC<Props> = memo(function DeploymentDetail({
     }
     return false;
   });
-
-  const handleCancel = (): void => {
-    dispatch(cancelDeployment({ deploymentId, withoutRollback: false }));
-  };
 
   if (!deployment || !env || !piped) {
     return (
@@ -172,23 +170,17 @@ export const DeploymentDetail: FC<Props> = memo(function DeploymentDetail({
           />
         </div>
         {isDeploymentRunning(deployment.status) && (
-          <div className={classes.buttonArea}>
-            <Button
-              color="inherit"
-              variant="outlined"
-              startIcon={<CancelIcon />}
-              onClick={handleCancel}
-              disabled={isCanceling}
-            >
-              CANCEL
-              {isCanceling && (
-                <CircularProgress
-                  size={24}
-                  className={classes.buttonProgress}
-                />
-              )}
-            </Button>
-          </div>
+          <SplitButton
+            className={classes.buttonArea}
+            options={CANCEL_OPTIONS}
+            onClick={(index) => {
+              dispatch(
+                cancelDeployment({ deploymentId, withoutRollback: index === 1 })
+              );
+            }}
+            startIcon={<CancelIcon />}
+            loading={isCanceling}
+          />
         )}
       </div>
     </Paper>
