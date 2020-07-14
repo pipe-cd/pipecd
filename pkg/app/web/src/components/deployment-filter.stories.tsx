@@ -19,8 +19,9 @@ export default {
       applications: {
         entities: {
           [dummyApplication.id]: dummyApplication,
+          ["test"]: { ...dummyApplication, id: "test", name: "test-app" },
         },
-        ids: [dummyApplication.id],
+        ids: [dummyApplication.id, "test"],
       },
     }),
   ],

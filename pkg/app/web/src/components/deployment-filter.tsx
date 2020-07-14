@@ -8,7 +8,9 @@ import {
   InputLabel,
   Select,
   MenuItem,
+  TextField,
 } from "@material-ui/core";
+import Autocomplete from "@material-ui/lab/Autocomplete";
 import {
   ApplicationKind,
   ApplicationKindKey,
@@ -51,14 +53,14 @@ const ALL_VALUE = "ALL";
 interface FormState {
   deploymentStatus: DeploymentStatus | typeof ALL_VALUE;
   applicationKind: ApplicationKind | typeof ALL_VALUE;
-  application: string;
+  application: Application | null;
   env: string;
 }
 
 const initialState: FormState = {
   deploymentStatus: ALL_VALUE,
   applicationKind: ALL_VALUE,
-  application: ALL_VALUE,
+  application: null,
   env: ALL_VALUE,
 };
 
@@ -71,7 +73,7 @@ type Actions =
       type: "update-application-kind";
       value: ApplicationKind | typeof ALL_VALUE;
     }
-  | { type: "update-application"; value: string }
+  | { type: "update-application"; value: Application | null }
   | { type: "update-env"; value: string }
   | {
       type: "clear-form";
@@ -135,8 +137,8 @@ export const DeploymentFilter: FC<Props> = memo(function DeploymentFilter({
     if (state.env !== ALL_VALUE) {
       options.envIdsList = [state.env];
     }
-    if (state.application !== ALL_VALUE) {
-      options.applicationIdsList = [state.application];
+    if (state.application) {
+      options.applicationIdsList = [state.application.id];
     }
     onChange(options);
   }, [state, onChange]);
@@ -222,32 +224,32 @@ export const DeploymentFilter: FC<Props> = memo(function DeploymentFilter({
         </Select>
       </FormControl>
 
-      <FormControl className={classes.formItem} variant="outlined">
-        <InputLabel id="filter-application">Application</InputLabel>
-        <Select
-          labelId="filter-application"
-          id="filter-application"
+      <div className={classes.formItem}>
+        <Autocomplete
+          id="application-select"
+          options={applications}
+          getOptionLabel={(option) => option.name}
+          renderOption={(option) => <span>{option.name}</span>}
           value={state.application}
-          label="Application"
-          className={classes.select}
-          onChange={(e) => {
+          onChange={(_, value) => {
             dispatch({
               type: "update-application",
-              value: e.target.value as string,
+              value: value ? value : null,
             });
           }}
-        >
-          <MenuItem value={ALL_VALUE}>
-            <em>All</em>
-          </MenuItem>
-
-          {applications.map((app) => (
-            <MenuItem key={`application-${app.id}`} value={app.id}>
-              {app.name}
-            </MenuItem>
-          ))}
-        </Select>
-      </FormControl>
+          renderInput={(params) => (
+            <TextField
+              {...params}
+              label="Application"
+              variant="outlined"
+              inputProps={{
+                ...params.inputProps,
+                autoComplete: "new-password", // disable autocomplete and autofill
+              }}
+            />
+          )}
+        />
+      </div>
 
       <FormControl className={classes.formItem} variant="outlined">
         <InputLabel id="filter-deployment-status">Deployment Status</InputLabel>
