@@ -16,6 +16,7 @@ package kubernetes
 
 import (
 	"context"
+	"time"
 
 	provider "github.com/pipe-cd/pipe/pkg/app/piped/cloudprovider/kubernetes"
 	"github.com/pipe-cd/pipe/pkg/model"
@@ -45,11 +46,61 @@ func (e *Executor) ensureSync(ctx context.Context, commitHash string, manifestsL
 	}
 	e.LogPersister.AppendSuccessf("Successfully applied %d manifests", len(applyManifests))
 
-	// TODO: Wait for all applied manifests to be ready.
-	e.LogPersister.AppendInfo("Waiting for the applied manifests to be ready")
+	// Wait for all applied manifests to be stable.
+	// In theory, we don't need to wait for them to be stable before going to the next step
+	// but waiting for a while reduces the number of Kubernetes changes in a short time.
+	e.LogPersister.AppendInfo("Waiting for the applied manifests to be stable")
+	select {
+	case <-time.After(15 * time.Second):
+		break
+	case <-ctx.Done():
+		break
+	}
 
-	// TODO: Find and remove the running resources that are not defined in Git.
+	// Find the running resources that are not defined in Git for removing.
 	e.LogPersister.AppendInfo("Start finding and removing all running resources but not in Git")
+	liveResources, ok := e.AppLiveResourceLister.ListKubernetesResources()
+	if !ok {
+		e.LogPersister.AppendInfo("There is no data about live resource so no resource will be removed")
+		return model.StageStatus_STAGE_SUCCESS
+	}
+
+	var (
+		applyKeys  = make(map[provider.ResourceKey]struct{}, len(applyManifests))
+		removeKeys = make([]provider.ResourceKey, 0)
+	)
+	for _, m := range applyManifests {
+		key := m.Key
+		key.Namespace = ""
+		applyKeys[key] = struct{}{}
+	}
+	for _, r := range liveResources {
+		key := provider.ResourceKey{
+			Name:       r.Name,
+			APIVersion: r.ApiVersion,
+			Kind:       r.Kind,
+		}
+		if _, ok := applyKeys[key]; ok {
+			continue
+		}
+		key.Namespace = r.Namespace
+		removeKeys = append(removeKeys, key)
+	}
+	if len(removeKeys) == 0 {
+		e.LogPersister.AppendInfo("There are no live resources should be removed")
+		return model.StageStatus_STAGE_SUCCESS
+	}
+
+	// Start deleting all running resources that are not defined in Git.
+	e.LogPersister.AppendInfof("Start deleting %d resources", len(removeKeys))
+	for _, k := range removeKeys {
+		if err := e.provider.Delete(ctx, k); err != nil {
+			e.LogPersister.AppendErrorf("Failed to delete resource: %s (%v)", k.ReadableString(), err)
+			return model.StageStatus_STAGE_FAILURE
+		}
+		e.LogPersister.AppendSuccessf("- deleted resource: %s", k.ReadableString())
+	}
+	e.LogPersister.AppendSuccessf("Successfully deleted %d resources", len(removeKeys))
 
 	return model.StageStatus_STAGE_SUCCESS
 }

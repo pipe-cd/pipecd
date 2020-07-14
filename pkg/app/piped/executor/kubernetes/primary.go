@@ -17,6 +17,7 @@ package kubernetes
 import (
 	"context"
 	"fmt"
+	"time"
 
 	provider "github.com/pipe-cd/pipe/pkg/app/piped/cloudprovider/kubernetes"
 	"github.com/pipe-cd/pipe/pkg/config"
@@ -59,8 +60,16 @@ func (e *Executor) ensurePrimaryRollout(ctx context.Context) model.StageStatus {
 	}
 	e.LogPersister.AppendSuccessf("Successfully applied %d primary resources", len(primaryManifests))
 
-	// TODO: Wait for all applied manifests to be ready.
-	e.LogPersister.AppendInfo("Waiting for the applied manifests to be ready")
+	// Wait for all applied manifests to be stable.
+	// In theory, we don't need to wait for them to be stable before going to the next step
+	// but waiting for a while reduces the number of Kubernetes changes in a short time.
+	e.LogPersister.AppendInfo("Waiting for the applied manifests to be stable")
+	select {
+	case <-time.After(15 * time.Second):
+		break
+	case <-ctx.Done():
+		break
+	}
 
 	// TODO: Find and remove the running resources that are not defined in Git.
 	e.LogPersister.AppendInfo("Start finding and removing all running PRIMARY resources but not in Git")
