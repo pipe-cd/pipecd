@@ -16,7 +16,6 @@ package kubernetes
 
 import (
 	"context"
-	"fmt"
 
 	provider "github.com/pipe-cd/pipe/pkg/app/piped/cloudprovider/kubernetes"
 	"github.com/pipe-cd/pipe/pkg/model"
@@ -24,27 +23,27 @@ import (
 
 func (e *Executor) ensureSync(ctx context.Context, commitHash string, manifestsLoader func(ctx context.Context) ([]provider.Manifest, error)) model.StageStatus {
 	// Load the manifests at the specified commit.
-	e.LogPersister.AppendInfo(fmt.Sprintf("Loading manifests at commit %s for handling", commitHash))
+	e.LogPersister.AppendInfof("Loading manifests at commit %s for handling", commitHash)
 	manifests, err := manifestsLoader(ctx)
 	if err != nil {
-		e.LogPersister.AppendError(fmt.Sprintf("Failed while loading running manifests (%v)", err))
+		e.LogPersister.AppendErrorf("Failed while loading running manifests (%v)", err)
 		return model.StageStatus_STAGE_FAILURE
 	}
-	e.LogPersister.AppendSuccess(fmt.Sprintf("Successfully loaded %d manifests", len(manifests)))
+	e.LogPersister.AppendSuccessf("Successfully loaded %d manifests", len(manifests))
 
 	// Generate the manifests for applying.
 	applyManifests := e.generateSyncManifests(e.config.Input.Namespace, commitHash, manifests)
 
 	// Start applying all manifests to add or update running resources.
-	e.LogPersister.AppendInfo(fmt.Sprintf("Start applying %d manifests", len(applyManifests)))
+	e.LogPersister.AppendInfof("Start applying %d manifests", len(applyManifests))
 	for _, m := range applyManifests {
 		if err := e.provider.ApplyManifest(ctx, m); err != nil {
-			e.LogPersister.AppendError(fmt.Sprintf("Failed to apply manifest: %s (%v)", m.Key.ReadableString(), err))
+			e.LogPersister.AppendErrorf("Failed to apply manifest: %s (%v)", m.Key.ReadableString(), err)
 			return model.StageStatus_STAGE_FAILURE
 		}
-		e.LogPersister.AppendSuccess(fmt.Sprintf("- applied manifest: %s", m.Key.ReadableString()))
+		e.LogPersister.AppendSuccessf("- applied manifest: %s", m.Key.ReadableString())
 	}
-	e.LogPersister.AppendSuccess(fmt.Sprintf("Successfully applied %d manifests", len(applyManifests)))
+	e.LogPersister.AppendSuccessf("Successfully applied %d manifests", len(applyManifests))
 
 	// TODO: Wait for all applied manifests to be ready.
 	e.LogPersister.AppendInfo("Waiting for the applied manifests to be ready")

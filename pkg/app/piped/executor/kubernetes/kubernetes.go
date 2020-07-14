@@ -112,7 +112,7 @@ func (e *Executor) Execute(sig executor.StopSignal) model.StageStatus {
 		status = e.ensureSync(ctx, e.Deployment.RunningCommitHash, e.loadRunningManifests)
 
 	default:
-		e.LogPersister.AppendError(fmt.Sprintf("Unsupported stage %s for kubernetes application", e.Stage.Name))
+		e.LogPersister.AppendErrorf("Unsupported stage %s for kubernetes application", e.Stage.Name)
 		return model.StageStatus_STAGE_FAILURE
 	}
 

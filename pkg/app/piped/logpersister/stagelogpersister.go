@@ -75,14 +75,29 @@ func (sp *stageLogPersister) AppendInfo(log string) {
 	sp.Append(log, model.LogSeverity_INFO)
 }
 
+// AppendInfof formats and appends a new INFO log block.
+func (sp *stageLogPersister) AppendInfof(format string, a ...interface{}) {
+	sp.Append(fmt.Sprintf(format, a...), model.LogSeverity_INFO)
+}
+
 // AppendSuccess appends a new SUCCESS log block.
 func (sp *stageLogPersister) AppendSuccess(log string) {
 	sp.Append(log, model.LogSeverity_SUCCESS)
 }
 
+// AppendSuccessf formats and appends a new SUCCESS log block.
+func (sp *stageLogPersister) AppendSuccessf(format string, a ...interface{}) {
+	sp.Append(fmt.Sprintf(format, a...), model.LogSeverity_SUCCESS)
+}
+
 // AppendError appends a new ERROR log block.
 func (sp *stageLogPersister) AppendError(log string) {
 	sp.Append(log, model.LogSeverity_ERROR)
+}
+
+// AppendErrorf formats and appends a new ERROR log block.
+func (sp *stageLogPersister) AppendErrorf(format string, a ...interface{}) {
+	sp.Append(fmt.Sprintf(format, a...), model.LogSeverity_ERROR)
 }
 
 // Complete marks the completion of logging for this stage.

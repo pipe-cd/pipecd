@@ -31,33 +31,33 @@ func (e *Executor) ensurePrimaryRollout(ctx context.Context) model.StageStatus {
 	commitHash := e.Deployment.Trigger.Commit.Hash
 
 	// Load the manifests at the triggered commit.
-	e.LogPersister.AppendInfo(fmt.Sprintf("Loading manifests at commit %s for handling", commitHash))
+	e.LogPersister.AppendInfof("Loading manifests at commit %s for handling", commitHash)
 	manifests, err := e.loadManifests(ctx)
 	if err != nil {
-		e.LogPersister.AppendError(fmt.Sprintf("Failed while loading manifests (%v)", err))
+		e.LogPersister.AppendErrorf("Failed while loading manifests (%v)", err)
 		return model.StageStatus_STAGE_FAILURE
 	}
-	e.LogPersister.AppendSuccess(fmt.Sprintf("Successfully loaded %d manifests", len(manifests)))
+	e.LogPersister.AppendSuccessf("Successfully loaded %d manifests", len(manifests))
 
 	// Generate the manifests for applying.
 	e.LogPersister.AppendInfo("Start generating manifests for PRIMARY variant")
 	primaryManifests, err := e.generatePrimaryManifests(e.config.Input.Namespace, commitHash, manifests)
 	if err != nil {
-		e.LogPersister.AppendError(fmt.Sprintf("Unable to generate manifests for PRIMARY variant (%v)", err))
+		e.LogPersister.AppendErrorf("Unable to generate manifests for PRIMARY variant (%v)", err)
 		return model.StageStatus_STAGE_FAILURE
 	}
-	e.LogPersister.AppendSuccess(fmt.Sprintf("Successfully generated %d manifests for PRIMARY variant", len(primaryManifests)))
+	e.LogPersister.AppendSuccessf("Successfully generated %d manifests for PRIMARY variant", len(primaryManifests))
 
 	// Start applying all manifests to add or update running resources.
-	e.LogPersister.AppendInfo(fmt.Sprintf("Start applying %d primary resources", len(primaryManifests)))
+	e.LogPersister.AppendInfof("Start applying %d primary resources", len(primaryManifests))
 	for _, m := range primaryManifests {
 		if err = e.provider.ApplyManifest(ctx, m); err != nil {
-			e.LogPersister.AppendError(fmt.Sprintf("Failed to apply manifest: %s (%v)", m.Key.ReadableString(), err))
+			e.LogPersister.AppendErrorf("Failed to apply manifest: %s (%v)", m.Key.ReadableString(), err)
 			return model.StageStatus_STAGE_FAILURE
 		}
-		e.LogPersister.AppendSuccess(fmt.Sprintf("- applied manifest: %s", m.Key.ReadableString()))
+		e.LogPersister.AppendSuccessf("- applied manifest: %s", m.Key.ReadableString())
 	}
-	e.LogPersister.AppendSuccess(fmt.Sprintf("Successfully applied %d primary resources", len(primaryManifests)))
+	e.LogPersister.AppendSuccessf("Successfully applied %d primary resources", len(primaryManifests))
 
 	// TODO: Wait for all applied manifests to be ready.
 	e.LogPersister.AppendInfo("Waiting for the applied manifests to be ready")

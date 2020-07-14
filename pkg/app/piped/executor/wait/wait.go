@@ -16,7 +16,6 @@ package wait
 
 import (
 	"context"
-	"fmt"
 	"strconv"
 	"time"
 
@@ -83,13 +82,13 @@ func (e *Executor) Execute(sig executor.StopSignal) model.StageStatus {
 	ticker := time.NewTicker(logInterval)
 	defer ticker.Stop()
 
-	e.LogPersister.AppendInfo(fmt.Sprintf("Waiting for %v...", duration))
+	e.LogPersister.AppendInfof("Waiting for %v...", duration)
 	select {
 	case <-timer.C:
 		break
 
 	case <-ticker.C:
-		e.LogPersister.AppendInfo(fmt.Sprintf("%v elapsed...", time.Since(startTime)))
+		e.LogPersister.AppendInfof("%v elapsed...", time.Since(startTime))
 
 	case s := <-sig.Ch():
 		switch s {
@@ -102,7 +101,7 @@ func (e *Executor) Execute(sig executor.StopSignal) model.StageStatus {
 		}
 	}
 
-	e.LogPersister.AppendInfo(fmt.Sprintf("Waited for %v", totalDuration))
+	e.LogPersister.AppendInfof("Waited for %v", totalDuration)
 	return model.StageStatus_STAGE_SUCCESS
 }
 

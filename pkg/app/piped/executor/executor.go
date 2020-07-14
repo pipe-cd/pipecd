@@ -35,8 +35,11 @@ type Factory func(in Input) Executor
 type LogPersister interface {
 	Append(log string, s model.LogSeverity)
 	AppendInfo(log string)
+	AppendInfof(format string, a ...interface{})
 	AppendSuccess(log string)
+	AppendSuccessf(format string, a ...interface{})
 	AppendError(log string)
+	AppendErrorf(format string, a ...interface{})
 }
 
 type MetadataStore interface {
