@@ -68,6 +68,7 @@ func (e *Executor) ensurePrimaryRollout(ctx context.Context) model.StageStatus {
 	e.LogPersister.AppendSuccessf("Successfully applied %d primary resources", len(applyManifests))
 
 	if !options.Prune {
+		e.LogPersister.AppendInfo("Resource GC was skipped because sync.prune was not configured")
 		return model.StageStatus_STAGE_SUCCESS
 	}
 
