@@ -58,7 +58,7 @@ func (e *Executor) ensureSync(ctx context.Context, commitHash string, manifestsL
 	}
 
 	// Find the running resources that are not defined in Git for removing.
-	e.LogPersister.AppendInfo("Start finding and removing all running resources but not in Git")
+	e.LogPersister.AppendInfo("Start finding all running resources but no longer defined in Git")
 	liveResources, ok := e.AppLiveResourceLister.ListKubernetesResources()
 	if !ok {
 		e.LogPersister.AppendInfo("There is no data about live resource so no resource will be removed")
