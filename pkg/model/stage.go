@@ -30,7 +30,7 @@ const (
 
 	// StageK8sSync represents the state where
 	// all resources should be synced with the Git state.
-	StageK8sSync Stage = "K8S_PRIMARY_SYNC"
+	StageK8sSync Stage = "K8S_SYNC"
 	// StageK8sPrimaryRollout represents the state where
 	// the PRIMARY variant resources has been updated to the new version/configuration.
 	StageK8sPrimaryRollout Stage = "K8S_PRIMARY_ROLLOUT"
