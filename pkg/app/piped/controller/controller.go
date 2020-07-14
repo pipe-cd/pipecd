@@ -35,6 +35,7 @@ import (
 	"google.golang.org/grpc/status"
 
 	"github.com/pipe-cd/pipe/pkg/app/api/service/pipedservice"
+	provider "github.com/pipe-cd/pipe/pkg/app/piped/cloudprovider/kubernetes"
 	"github.com/pipe-cd/pipe/pkg/app/piped/logpersister"
 	"github.com/pipe-cd/pipe/pkg/cache"
 	"github.com/pipe-cd/pipe/pkg/config"
@@ -76,7 +77,7 @@ type applicationLister interface {
 }
 
 type liveResourceLister interface {
-	ListKubernetesAppLiveResources(cloudProvider, appID string) ([]*model.KubernetesResourceState, bool)
+	ListKubernetesAppLiveResources(cloudProvider, appID string) ([]provider.Manifest, bool)
 }
 
 type DeploymentController interface {
@@ -574,6 +575,6 @@ type appLiveResourceLister struct {
 	appID         string
 }
 
-func (l appLiveResourceLister) ListKubernetesResources() ([]*model.KubernetesResourceState, bool) {
+func (l appLiveResourceLister) ListKubernetesResources() ([]provider.Manifest, bool) {
 	return l.lister.ListKubernetesAppLiveResources(l.cloudProvider, l.appID)
 }

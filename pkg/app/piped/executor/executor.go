@@ -19,6 +19,7 @@ import (
 
 	"go.uber.org/zap"
 
+	provider "github.com/pipe-cd/pipe/pkg/app/piped/cloudprovider/kubernetes"
 	"github.com/pipe-cd/pipe/pkg/cache"
 	"github.com/pipe-cd/pipe/pkg/config"
 	"github.com/pipe-cd/pipe/pkg/model"
@@ -55,7 +56,7 @@ type CommandLister interface {
 }
 
 type AppLiveResourceLister interface {
-	ListKubernetesResources() ([]*model.KubernetesResourceState, bool)
+	ListKubernetesResources() ([]provider.Manifest, bool)
 }
 
 type Input struct {
