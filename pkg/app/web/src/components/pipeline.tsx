@@ -22,6 +22,7 @@ import { updateActiveStage, ActiveStage } from "../modules/active-stage";
 import { ApprovalStage } from "./approval-stage";
 import clsx from "clsx";
 import { StageStatus } from "pipe/pkg/app/web/model/deployment_pb";
+import { METADATA_APPROVED_BY } from "../constants/metadata-keys";
 
 const WAIT_APPROVAL_NAME = "WAIT_APPROVAL";
 
@@ -51,6 +52,9 @@ const useConvertedStages = (deploymentId: string): Stage[][] => {
   }
   return stages;
 };
+
+const STAGE_HEIGHT = 56;
+const APPROVED_STAGE_HEIGHT = 66;
 
 const useStyles = makeStyles((theme) => ({
   root: {
@@ -86,7 +90,12 @@ const useStyles = makeStyles((theme) => ({
       borderLeft: `2px solid ${theme.palette.divider}`,
       borderBottom: `2px solid ${theme.palette.divider}`,
       width: theme.spacing(2),
-      height: 56 + theme.spacing(4),
+      height: STAGE_HEIGHT + theme.spacing(4),
+    },
+  },
+  extendRequireLine: {
+    "&::before": {
+      height: APPROVED_STAGE_HEIGHT + theme.spacing(4),
     },
   },
   approveDialog: {
@@ -97,6 +106,18 @@ const useStyles = makeStyles((theme) => ({
 interface Props {
   deploymentId: string;
 }
+
+const findApprover = (
+  metadata: Array<[string, string]>
+): string | undefined => {
+  const res = metadata.find(([key]) => key === METADATA_APPROVED_BY);
+
+  if (res) {
+    return res[1];
+  }
+
+  return undefined;
+};
 
 export const Pipeline: FC<Props> = memo(function Pipeline({ deploymentId }) {
   const classes = useStyles();
@@ -134,43 +155,58 @@ export const Pipeline: FC<Props> = memo(function Pipeline({ deploymentId }) {
 
   return (
     <div className={classes.root}>
-      {stages.map((stageColumn, columnIndex) => (
-        <div className={classes.pipelineColumn} key={`pipeline-${columnIndex}`}>
-          {stageColumn.map((stage, stageIndex) => (
-            <div
-              key={stage.id}
-              className={clsx(
-                classes.stage,
-                columnIndex > 0
-                  ? stageIndex > 0
-                    ? classes.requireCurvedLine
-                    : classes.requireLine
-                  : undefined
-              )}
-            >
-              {stage.name === WAIT_APPROVAL_NAME &&
-              stage.status === StageStatus.STAGE_RUNNING ? (
-                <ApprovalStage
-                  id={stage.id}
-                  name={stage.name}
-                  onClick={() => {
-                    setApproveTargetId(stage.id);
-                  }}
-                  active={activeStage?.id === `${deploymentId}/${stage.id}`}
-                />
-              ) : (
-                <PipelineStage
-                  id={stage.id}
-                  name={stage.name}
-                  status={stage.status}
-                  onClick={handleOnClickStage}
-                  active={activeStage?.id === `${deploymentId}/${stage.id}`}
-                />
-              )}
-            </div>
-          ))}
-        </div>
-      ))}
+      {stages.map((stageColumn, columnIndex) => {
+        let isPrevStageApproval = false;
+        return (
+          <div
+            className={classes.pipelineColumn}
+            key={`pipeline-${columnIndex}`}
+          >
+            {stageColumn.map((stage, stageIndex) => {
+              const approver = findApprover(stage.metadataMap);
+              const stageComp = (
+                <div
+                  key={stage.id}
+                  className={clsx(
+                    classes.stage,
+                    columnIndex > 0
+                      ? stageIndex > 0
+                        ? clsx(classes.requireCurvedLine, {
+                            [classes.extendRequireLine]:
+                              Boolean(approver) || isPrevStageApproval,
+                          })
+                        : classes.requireLine
+                      : undefined
+                  )}
+                >
+                  {stage.name === WAIT_APPROVAL_NAME &&
+                  stage.status === StageStatus.STAGE_RUNNING ? (
+                    <ApprovalStage
+                      id={stage.id}
+                      name={stage.name}
+                      onClick={() => {
+                        setApproveTargetId(stage.id);
+                      }}
+                      active={activeStage?.id === `${deploymentId}/${stage.id}`}
+                    />
+                  ) : (
+                    <PipelineStage
+                      id={stage.id}
+                      name={stage.name}
+                      status={stage.status}
+                      onClick={handleOnClickStage}
+                      active={activeStage?.id === `${deploymentId}/${stage.id}`}
+                      approver={findApprover(stage.metadataMap)}
+                    />
+                  )}
+                </div>
+              );
+              isPrevStageApproval = Boolean(approver);
+              return stageComp;
+            })}
+          </div>
+        );
+      })}
 
       <Dialog
         open={isOpenApproveDialog}
