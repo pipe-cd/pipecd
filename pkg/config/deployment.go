@@ -269,6 +269,8 @@ type WaitApprovalStageOptions struct {
 // K8sPrimaryRolloutStageOptions contains all configurable values for a K8S_PRIMARY_ROLLOUT stage.
 type K8sPrimaryRolloutStageOptions struct {
 	Manifests []string `json:"manifests"`
+	// Whether the resources that are no longer defined in Git will be removed.
+	Prune bool `json:"prune"`
 }
 
 // K8sCanaryRolloutStageOptions contains all configurable values for a K8S_CANARY_ROLLOUT stage.
