@@ -3,6 +3,7 @@ import { createDecoratorRedux } from "../../.storybook/redux-decorator";
 import { Pipeline } from "./pipeline";
 import { Deployment, Stage } from "../modules/deployments";
 import { dummyStage } from "../__fixtures__/dummy-stage";
+import { METADATA_APPROVED_BY } from "../constants/metadata-keys";
 
 const stage = (props?: Partial<Stage>): Stage => ({
   ...dummyStage,
@@ -51,10 +52,11 @@ const fakeDeployment: Deployment = {
     }),
     stage({
       id: "fake-stage-id-1-1",
-      name: "K8S_PRIMARY_ROLLOUT",
+      name: "WAIT_APPROVAL",
       index: 2,
       requiresList: ["fake-stage-id-0-0"],
       status: 2,
+      metadataMap: [[METADATA_APPROVED_BY, "User"]],
     }),
     stage({
       id: "fake-stage-id-1-2",
@@ -62,6 +64,13 @@ const fakeDeployment: Deployment = {
       index: 2,
       requiresList: ["fake-stage-id-0-0"],
       status: 3,
+    }),
+    stage({
+      id: "fake-stage-id-1-3",
+      name: "WAIT_APPROVAL",
+      index: 2,
+      requiresList: ["fake-stage-id-0-0"],
+      status: 1,
     }),
     stage({
       id: "fake-stage-id-2-0",
@@ -102,7 +111,7 @@ const fakeDeployment: Deployment = {
 };
 
 export default {
-  title: "DEPLOYMENT|Pipeline",
+  title: "DEPLOYMENT|Pipeline/Pipeline",
   component: Pipeline,
   decorators: [
     createDecoratorRedux({

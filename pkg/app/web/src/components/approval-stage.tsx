@@ -1,11 +1,13 @@
-import React, { FC, memo } from "react";
-import { makeStyles, Paper, Typography, Box } from "@material-ui/core";
+import { makeStyles, Paper, Typography } from "@material-ui/core";
 import WaitIcon from "@material-ui/icons/PauseCircleOutline";
+import React, { FC, memo } from "react";
 
 const useStyles = makeStyles((theme) => ({
   root: (props: { active: boolean }) => ({
+    flex: 1,
     display: "inline-flex",
     cursor: "pointer",
+    padding: theme.spacing(2),
     "&:hover": {
       backgroundColor: theme.palette.action.hover,
     },
@@ -19,6 +21,14 @@ const useStyles = makeStyles((theme) => ({
   },
   name: {
     marginLeft: theme.spacing(1),
+  },
+  stageName: {
+    fontFamily: "Roboto Mono",
+  },
+  main: {
+    display: "flex",
+    justifyContent: "flex-start",
+    alignItems: "center",
   },
 }));
 
@@ -43,12 +53,12 @@ export const ApprovalStage: FC<Props> = memo(function ApprovalStage({
 
   return (
     <Paper square className={classes.root} onClick={handleOnClick}>
-      <Box alignItems="center" display="flex" justifyContent="center" p={2}>
+      <div className={classes.main}>
         <WaitIcon className={classes.icon} />
         <Typography variant="subtitle2" className={classes.name}>
-          <Box fontFamily="Roboto Mono">{name}</Box>
+          <div className={classes.stageName}>{name}</div>
         </Typography>
-      </Box>
+      </div>
     </Paper>
   );
 });
