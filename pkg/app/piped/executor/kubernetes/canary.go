@@ -49,7 +49,7 @@ func (e *Executor) ensureCanaryRollout(ctx context.Context) model.StageStatus {
 		return model.StageStatus_STAGE_FAILURE
 	}
 
-	canaryManifests, err := e.generateCanaryManifests(e.config.Input.Namespace, manifests, *canaryOptions)
+	canaryManifests, err := e.generateCanaryManifests(manifests, *canaryOptions)
 	if err != nil {
 		e.LogPersister.AppendErrorf("Unable to generate manifests for CANARY variant (%v)", err)
 		return model.StageStatus_STAGE_FAILURE
@@ -150,7 +150,7 @@ func (e *Executor) removeCanaryResources(ctx context.Context, resources []string
 	return nil
 }
 
-func (e *Executor) generateCanaryManifests(namespace string, manifests []provider.Manifest, opts config.K8sCanaryRolloutStageOptions) ([]provider.Manifest, error) {
+func (e *Executor) generateCanaryManifests(manifests []provider.Manifest, opts config.K8sCanaryRolloutStageOptions) ([]provider.Manifest, error) {
 	var (
 		workloadKind, workloadName string
 		serviceName                string
@@ -236,12 +236,8 @@ func (e *Executor) generateCanaryManifests(namespace string, manifests []provide
 	}
 	canaryManifests = append(canaryManifests, generatedWorkloads...)
 
-	// Add labels to the generated canary manifests.
+	// Add predefined annotations to the generated manifests.
 	for _, m := range canaryManifests {
-		if namespace != "" {
-			m.SetNamespace(namespace)
-			m.Key.Namespace = namespace
-		}
 		m.AddAnnotations(e.builtinAnnotations(m, canaryVariant, e.Deployment.Trigger.Commit.Hash))
 	}
 	return canaryManifests, nil

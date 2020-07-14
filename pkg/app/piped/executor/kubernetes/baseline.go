@@ -48,7 +48,7 @@ func (e *Executor) ensureBaselineRollout(ctx context.Context) model.StageStatus 
 		return model.StageStatus_STAGE_FAILURE
 	}
 
-	baselineManifests, err := e.generateBaselineManifests(e.config.Input.Namespace, manifests, *baselineOptions)
+	baselineManifests, err := e.generateBaselineManifests(manifests, *baselineOptions)
 	if err != nil {
 		e.LogPersister.AppendErrorf("Unable to generate manifests for BASELINE variant (%v)", err)
 		return model.StageStatus_STAGE_FAILURE
@@ -149,7 +149,7 @@ func (e *Executor) removeBaselineResources(ctx context.Context, resources []stri
 	return nil
 }
 
-func (e *Executor) generateBaselineManifests(namespace string, manifests []provider.Manifest, opts config.K8sBaselineRolloutStageOptions) ([]provider.Manifest, error) {
+func (e *Executor) generateBaselineManifests(manifests []provider.Manifest, opts config.K8sBaselineRolloutStageOptions) ([]provider.Manifest, error) {
 	var (
 		workloadKind, workloadName string
 		serviceName                string
@@ -221,12 +221,8 @@ func (e *Executor) generateBaselineManifests(namespace string, manifests []provi
 	}
 	baselineManifests = append(baselineManifests, generatedWorkloads...)
 
-	// Add labels to the generated baseline manifests.
+	// Add predefined annotations to the generated manifests.
 	for _, m := range baselineManifests {
-		if namespace != "" {
-			m.SetNamespace(namespace)
-			m.Key.Namespace = namespace
-		}
 		m.AddAnnotations(e.builtinAnnotations(m, baselineVariant, e.Deployment.RunningCommitHash))
 	}
 	return baselineManifests, nil

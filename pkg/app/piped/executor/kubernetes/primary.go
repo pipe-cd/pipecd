@@ -41,7 +41,7 @@ func (e *Executor) ensurePrimaryRollout(ctx context.Context) model.StageStatus {
 
 	// Generate the manifests for applying.
 	e.LogPersister.AppendInfo("Start generating manifests for PRIMARY variant")
-	primaryManifests, err := e.generatePrimaryManifests(e.config.Input.Namespace, commitHash, manifests)
+	primaryManifests, err := e.generatePrimaryManifests(commitHash, manifests)
 	if err != nil {
 		e.LogPersister.AppendErrorf("Unable to generate manifests for PRIMARY variant (%v)", err)
 		return model.StageStatus_STAGE_FAILURE
@@ -68,7 +68,7 @@ func (e *Executor) ensurePrimaryRollout(ctx context.Context) model.StageStatus {
 	return model.StageStatus_STAGE_SUCCESS
 }
 
-func (e *Executor) generatePrimaryManifests(namespace, commitHash string, manifests []provider.Manifest) ([]provider.Manifest, error) {
+func (e *Executor) generatePrimaryManifests(commitHash string, manifests []provider.Manifest) ([]provider.Manifest, error) {
 	var (
 		serviceName      string
 		generateService  bool
@@ -119,12 +119,8 @@ func (e *Executor) generatePrimaryManifests(namespace, commitHash string, manife
 
 	// TODO: Find out traffic-routing manfiests and keep them as the previously configured routing.
 
-	// Add labels to the generated primary manifests.
+	// Add predefined annotations to the generated manifests.
 	for _, m := range primaryManifests {
-		if namespace != "" {
-			m.SetNamespace(namespace)
-			m.Key.Namespace = namespace
-		}
 		m.AddAnnotations(e.builtinAnnotations(m, primaryVariant, commitHash))
 	}
 	return primaryManifests, nil

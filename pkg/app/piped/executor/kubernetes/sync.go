@@ -32,7 +32,7 @@ func (e *Executor) ensureSync(ctx context.Context, commitHash string, manifestsL
 	e.LogPersister.AppendSuccessf("Successfully loaded %d manifests", len(manifests))
 
 	// Generate the manifests for applying.
-	applyManifests := e.generateSyncManifests(e.config.Input.Namespace, commitHash, manifests)
+	applyManifests := e.generateSyncManifests(commitHash, manifests)
 
 	// Start applying all manifests to add or update running resources.
 	e.LogPersister.AppendInfof("Start applying %d manifests", len(applyManifests))
@@ -54,17 +54,13 @@ func (e *Executor) ensureSync(ctx context.Context, commitHash string, manifestsL
 	return model.StageStatus_STAGE_SUCCESS
 }
 
-func (e *Executor) generateSyncManifests(namespace, commitHash string, manifests []provider.Manifest) []provider.Manifest {
+func (e *Executor) generateSyncManifests(commitHash string, manifests []provider.Manifest) []provider.Manifest {
 	out := make([]provider.Manifest, 0, len(manifests))
 
 	for _, manifest := range manifests {
 		// Because the loaded maninests are read-only
 		// so we duplicate them to avoid updating the shared manifests data in cache.
 		m := manifest.Duplicate(manifest.Key.Name)
-		if namespace != "" {
-			m.SetNamespace(namespace)
-			m.Key.Namespace = namespace
-		}
 		// Add predefined annotation to the manifest.
 		m.AddAnnotations(e.builtinAnnotations(m, primaryVariant, commitHash))
 		out = append(out, manifest)
