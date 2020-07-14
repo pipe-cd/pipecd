@@ -6,6 +6,7 @@ go_library(
     importpath = "github.com/pipe-cd/pipe/pkg/app/piped/livestatestore",
     visibility = ["//visibility:public"],
     deps = [
+        "//pkg/app/piped/cloudprovider/kubernetes:go_default_library",
         "//pkg/app/piped/livestatestore/cloudrun:go_default_library",
         "//pkg/app/piped/livestatestore/kubernetes:go_default_library",
         "//pkg/app/piped/livestatestore/lambda:go_default_library",

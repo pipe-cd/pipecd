@@ -25,6 +25,7 @@ import (
 	"go.uber.org/zap"
 	"golang.org/x/sync/errgroup"
 
+	provider "github.com/pipe-cd/pipe/pkg/app/piped/cloudprovider/kubernetes"
 	"github.com/pipe-cd/pipe/pkg/app/piped/livestatestore/cloudrun"
 	"github.com/pipe-cd/pipe/pkg/app/piped/livestatestore/kubernetes"
 	"github.com/pipe-cd/pipe/pkg/app/piped/livestatestore/lambda"
@@ -181,14 +182,10 @@ type LiveResourceLister struct {
 	Getter
 }
 
-func (g LiveResourceLister) ListKubernetesAppLiveResources(cloudProvider, appID string) ([]*model.KubernetesResourceState, bool) {
+func (g LiveResourceLister) ListKubernetesAppLiveResources(cloudProvider, appID string) ([]provider.Manifest, bool) {
 	kg, ok := g.KubernetesGetter(cloudProvider)
 	if !ok {
 		return nil, false
 	}
-	ls, ok := kg.GetKubernetesAppLiveState(appID)
-	if !ok {
-		return nil, false
-	}
-	return ls.Resources, true
+	return kg.GetAppLiveManifests(appID), true
 }

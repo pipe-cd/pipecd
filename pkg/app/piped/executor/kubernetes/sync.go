@@ -74,16 +74,13 @@ func (e *Executor) ensureSync(ctx context.Context, commitHash string, manifestsL
 		key.Namespace = ""
 		applyKeys[key] = struct{}{}
 	}
-	for _, r := range liveResources {
-		key := provider.ResourceKey{
-			Name:       r.Name,
-			APIVersion: r.ApiVersion,
-			Kind:       r.Kind,
-		}
+	for _, m := range liveResources {
+		key := m.Key
+		key.Namespace = ""
 		if _, ok := applyKeys[key]; ok {
 			continue
 		}
-		key.Namespace = r.Namespace
+		key.Namespace = m.Key.Namespace
 		removeKeys = append(removeKeys, key)
 	}
 	if len(removeKeys) == 0 {
