@@ -82,10 +82,6 @@ func (m Manifest) GetAnnotations() map[string]string {
 	return m.u.GetAnnotations()
 }
 
-func (m Manifest) SetNamespace(namespace string) {
-	m.u.SetNamespace(namespace)
-}
-
 // AddStringMapValues adds or overrides the given key-values into the string map
 // that can be found at the specified fields.
 func (m Manifest) AddStringMapValues(values map[string]string, fields ...string) error {
