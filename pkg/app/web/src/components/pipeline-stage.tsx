@@ -4,7 +4,8 @@ import { StageStatus } from "pipe/pkg/app/web/model/deployment_pb";
 import { StageStatusIcon } from "./stage-status-icon";
 
 const useStyles = makeStyles((theme) => ({
-  container: (props: { active: boolean }) => ({
+  root: (props: { active: boolean }) => ({
+    flex: 1,
     display: "inline-flex",
     cursor: "pointer",
     "&:hover": {
@@ -42,7 +43,7 @@ export const PipelineStage: FC<Props> = memo(function PipelineStage({
   }
 
   return (
-    <Paper square className={classes.container} onClick={handleOnClick}>
+    <Paper square className={classes.root} onClick={handleOnClick}>
       <Box alignItems="center" display="flex" justifyContent="center" p={2}>
         <StageStatusIcon status={status} />
         <Typography variant="subtitle2" className={classes.name}>

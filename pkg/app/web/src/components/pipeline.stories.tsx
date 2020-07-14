@@ -2,22 +2,10 @@ import React from "react";
 import { createDecoratorRedux } from "../../.storybook/redux-decorator";
 import { Pipeline } from "./pipeline";
 import { Deployment, Stage } from "../modules/deployments";
+import { dummyStage } from "../__fixtures__/dummy-stage";
 
 const stage = (props?: Partial<Stage>): Stage => ({
-  id: "fake-stage-id-0-0",
-  name: "K8S_CANARY_ROLLOUT",
-  desc: "",
-  index: 0,
-  predefined: true,
-  requiresList: [],
-  visible: false,
-  status: 2,
-  statusDescription: "",
-  metadataMap: [],
-  retriedCount: 0,
-  completedAt: 1592203166,
-  createdAt: 1592203166,
-  updatedAt: 1592203166,
+  ...dummyStage,
   ...props,
 });
 
