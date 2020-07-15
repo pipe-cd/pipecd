@@ -105,7 +105,7 @@ func (p *Planner) Plan(ctx context.Context, in planner.Input) (out planner.Outpu
 		}
 		if syncRegex.MatchString(in.Deployment.Trigger.Commit.Message) {
 			out.Stages = buildPipeline(cfg.Input.AutoRollback, time.Now())
-			out.Description = "Apply all manifests because this commit is intended to be synchronous."
+			out.Description = fmt.Sprintf("Apply all manifests because the commit message was matching %q.", s)
 			return out, err
 		}
 	}
