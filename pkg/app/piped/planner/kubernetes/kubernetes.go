@@ -83,29 +83,29 @@ func (p *Planner) Plan(ctx context.Context, in planner.Input) (out planner.Outpu
 	}
 
 	// This deployment is triggered by a commit with the intent to perform pipeline.
-	if c := cfg.CommitMatcher; c != nil && c.Pipeline != "" {
-		pipelineRegex, err := in.RegexPool.Get(c.Pipeline)
+	if p := cfg.CommitMatcher.Pipeline; p != "" {
+		pipelineRegex, err := in.RegexPool.Get(p)
 		if err != nil {
-			err = fmt.Errorf("failed to compile commitMatcher.pipeline(%s): %w", c.Pipeline, err)
+			err = fmt.Errorf("failed to compile commitMatcher.pipeline(%s): %w", p, err)
 			return out, err
 		}
 		if pipelineRegex.MatchString(in.Deployment.Trigger.Commit.Message) {
 			out.Stages = buildProgressivePipeline(cfg.Pipeline, cfg.Input.AutoRollback, time.Now())
-			out.Description = fmt.Sprintf("Progressive deployment because the commit message was matching %q", c.Pipeline)
+			out.Description = fmt.Sprintf("Progressive deployment because the commit message was matching %q", p)
 			return out, err
 		}
 	}
 
 	// This deployment is triggered by a commit with the intent to synchronize.
-	if c := cfg.CommitMatcher; c != nil && c.Sync != "" {
-		syncRegex, err := in.RegexPool.Get(c.Sync)
+	if s := cfg.CommitMatcher.Sync; s != "" {
+		syncRegex, err := in.RegexPool.Get(s)
 		if err != nil {
-			err = fmt.Errorf("failed to compile commitMatcher.sync(%s): %w", c.Sync, err)
+			err = fmt.Errorf("failed to compile commitMatcher.sync(%s): %w", s, err)
 			return out, err
 		}
 		if syncRegex.MatchString(in.Deployment.Trigger.Commit.Message) {
 			out.Stages = buildPipeline(cfg.Input.AutoRollback, time.Now())
-			out.Description = fmt.Sprintf("Apply all manifests because the commit message was matching %q", c.Sync)
+			out.Description = "Apply all manifests because this commit is intended to be synchronous."
 			return out, err
 		}
 	}
