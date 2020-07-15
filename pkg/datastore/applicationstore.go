@@ -29,6 +29,7 @@ var applicationFactory = func() interface{} {
 
 type ApplicationStore interface {
 	AddApplication(ctx context.Context, app *model.Application) error
+	EnableApplication(ctx context.Context, id string) error
 	DisableApplication(ctx context.Context, id string) error
 	GetApplication(ctx context.Context, id string) (*model.Application, error)
 	ListApplications(ctx context.Context, opts ListOptions) ([]*model.Application, error)
@@ -63,6 +64,15 @@ func (s *applicationStore) AddApplication(ctx context.Context, app *model.Applic
 		return err
 	}
 	return s.ds.Create(ctx, applicationModelKind, app.Id, app)
+}
+
+func (s *applicationStore) EnableApplication(ctx context.Context, id string) error {
+	return s.ds.Update(ctx, applicationModelKind, id, applicationFactory, func(e interface{}) error {
+		app := e.(*model.Application)
+		app.Disabled = false
+		app.UpdatedAt = time.Now().Unix()
+		return nil
+	})
 }
 
 func (s *applicationStore) DisableApplication(ctx context.Context, id string) error {

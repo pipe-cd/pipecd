@@ -275,34 +275,55 @@ func (a *WebAPI) AddApplication(ctx context.Context, req *webservice.AddApplicat
 	return &webservice.AddApplicationResponse{}, nil
 }
 
-func (a *WebAPI) DisableApplication(ctx context.Context, req *webservice.DisableApplicationRequest) (*webservice.DisableApplicationResponse, error) {
-	claims, err := rpcauth.ExtractClaims(ctx)
-	if err != nil {
+func (a *WebAPI) EnableApplication(ctx context.Context, req *webservice.EnableApplicationRequest) (*webservice.EnableApplicationResponse, error) {
+	if err := a.updateApplicationEnable(ctx, req.ApplicationId, true); err != nil {
 		return nil, err
 	}
-	app, err := a.getApplication(ctx, req.ApplicationId)
-	if err != nil {
-		return nil, err
-	}
-	if app.ProjectId != claims.Role.ProjectId {
-		return nil, status.Error(codes.PermissionDenied, "The current project does not have requested application")
-	}
+	return &webservice.EnableApplicationResponse{}, nil
+}
 
-	if err := a.applicationStore.DisableApplication(ctx, req.ApplicationId); err != nil {
-		switch err {
-		case datastore.ErrNotFound:
-			return nil, status.Error(codes.InvalidArgument, "application is not found")
-		case datastore.ErrInvalidArgument:
-			return nil, status.Error(codes.InvalidArgument, "invalid value for update")
-		default:
-			a.logger.Error("failed to update the application",
-				zap.String("application-id", req.ApplicationId),
-				zap.Error(err),
-			)
-			return nil, status.Error(codes.Internal, "failed to update the piped ")
-		}
+func (a *WebAPI) DisableApplication(ctx context.Context, req *webservice.DisableApplicationRequest) (*webservice.DisableApplicationResponse, error) {
+	if err := a.updateApplicationEnable(ctx, req.ApplicationId, false); err != nil {
+		return nil, err
 	}
 	return &webservice.DisableApplicationResponse{}, nil
+}
+
+func (a *WebAPI) updateApplicationEnable(ctx context.Context, appID string, enable bool) error {
+	claims, err := rpcauth.ExtractClaims(ctx)
+	if err != nil {
+		return err
+	}
+	app, err := a.getApplication(ctx, appID)
+	if err != nil {
+		return err
+	}
+	if app.ProjectId != claims.Role.ProjectId {
+		return status.Error(codes.PermissionDenied, "The current project does not have requested application")
+	}
+
+	var updater func(context.Context, string) error
+	if enable {
+		updater = a.applicationStore.EnableApplication
+	} else {
+		updater = a.applicationStore.DisableApplication
+	}
+
+	if err := updater(ctx, appID); err != nil {
+		switch err {
+		case datastore.ErrNotFound:
+			return status.Error(codes.InvalidArgument, "application is not found")
+		case datastore.ErrInvalidArgument:
+			return status.Error(codes.InvalidArgument, "invalid value for update")
+		default:
+			a.logger.Error("failed to update the application",
+				zap.String("application-id", appID),
+				zap.Error(err),
+			)
+			return status.Error(codes.Internal, "failed to update the piped ")
+		}
+	}
+	return nil
 }
 
 func (a *WebAPI) ListApplications(ctx context.Context, req *webservice.ListApplicationsRequest) (*webservice.ListApplicationsResponse, error) {
