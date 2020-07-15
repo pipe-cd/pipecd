@@ -91,7 +91,7 @@ func (p *Planner) Plan(ctx context.Context, in planner.Input) (out planner.Outpu
 		}
 		if pipelineRegex.MatchString(in.Deployment.Trigger.Commit.Message) {
 			out.Stages = buildProgressivePipeline(cfg.Pipeline, cfg.Input.AutoRollback, time.Now())
-			out.Description = "Progressive deployment because this commit is intended to perform pipeline."
+			out.Description = fmt.Sprintf("Progressive deployment because the commit message was matching %q", p)
 			return out, err
 		}
 	}
