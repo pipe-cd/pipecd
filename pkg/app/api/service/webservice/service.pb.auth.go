@@ -26,20 +26,16 @@ func NewRBACAuthorizer() rpcauth.RBACAuthorizer {
 	return &authorizer{}
 }
 
-func isOwner(r role.Role) bool {
-	return r.Owner
-}
-
 func isAdmin(r role.Role) bool {
-	return r.ProjectRole == role.Role_ADMIN
+	return r.ProjectRole[role.Role_ProjectRole_value["ADMIN"]]
 }
 
 func isEditor(r role.Role) bool {
-	return r.ProjectRole == role.Role_EDITOR
+	return r.ProjectRole[role.Role_ProjectRole_value["EDITOR"]]
 }
 
 func isViewer(r role.Role) bool {
-	return r.ProjectRole == role.Role_VIEWER
+	return r.ProjectRole[role.Role_ProjectRole_value["VIEWER"]]
 }
 
 // Authorize checks whether a role is enough for given gRPC method or not.
