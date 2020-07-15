@@ -79,6 +79,7 @@ service WebService {
 
     // Application
     rpc AddApplication(AddApplicationRequest) returns (AddApplicationResponse) {}
+    rpc EnableApplication(EnableApplicationRequest) returns (EnableApplicationResponse) {}
     rpc DisableApplication(DisableApplicationRequest) returns (DisableApplicationResponse) {}
     rpc ListApplications(ListApplicationsRequest) returns (ListApplicationsResponse) {}
     rpc SyncApplication(SyncApplicationRequest) returns (SyncApplicationResponse) {}
@@ -171,6 +172,13 @@ message AddApplicationRequest {
 }
 
 message AddApplicationResponse {
+}
+
+message EnableApplicationRequest {
+    string application_id = 1 [(validate.rules).string.min_len = 1];
+}
+
+message EnableApplicationResponse {
 }
 
 message DisableApplicationRequest {

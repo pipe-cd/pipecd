@@ -164,6 +164,10 @@ func (a *FakeWebAPI) AddApplication(ctx context.Context, req *webservice.AddAppl
 	return &webservice.AddApplicationResponse{}, nil
 }
 
+func (a *FakeWebAPI) EnableApplication(ctx context.Context, req *webservice.EnableApplicationRequest) (*webservice.EnableApplicationResponse, error) {
+	return &webservice.EnableApplicationResponse{}, nil
+}
+
 func (a *FakeWebAPI) DisableApplication(ctx context.Context, req *webservice.DisableApplicationRequest) (*webservice.DisableApplicationResponse, error) {
 	return &webservice.DisableApplicationResponse{}, nil
 }
