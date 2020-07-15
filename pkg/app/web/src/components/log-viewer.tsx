@@ -8,17 +8,36 @@ import {
 import React, { FC, memo } from "react";
 import { useSelector, useDispatch } from "react-redux";
 import { AppState } from "../modules";
-import { StageLog } from "../modules/stage-logs";
+import { StageLog, selectStageLogById } from "../modules/stage-logs";
 import { Log } from "./log";
 import { Close } from "@material-ui/icons";
-import { clearActiveStage, ActiveStage } from "../modules/active-stage";
+import { clearActiveStage } from "../modules/active-stage";
+import { selectById, Stage, isStageRunning } from "../modules/deployments";
 
-function useActiveStageLog(): [ActiveStage, StageLog | null] {
-  return useSelector<AppState, [ActiveStage, StageLog | null]>((state) => {
+function useActiveStageLog(): [Stage | null, StageLog | null] {
+  return useSelector<AppState, [Stage | null, StageLog | null]>((state) => {
     if (!state.activeStage) {
       return [null, null];
     }
-    return [state.activeStage, state.stageLogs[state.activeStage.id]];
+
+    const deployment = selectById(
+      state.deployments,
+      state.activeStage.deploymentId
+    );
+
+    if (!deployment) {
+      return [null, null];
+    }
+
+    const stage = deployment.stagesList.find(
+      (s) => s.id === state.activeStage?.stageId
+    );
+
+    if (!stage) {
+      return [null, null];
+    }
+
+    return [stage, selectStageLogById(state.stageLogs, state.activeStage)];
   });
 }
 
@@ -69,7 +88,7 @@ export const LogViewer: FC = memo(function LogViewer() {
       </Toolbar>
       <Log
         height={400}
-        loading={stageLog.completed === false}
+        loading={isStageRunning(activeStage.status)}
         logs={stageLog.logBlocks}
       />
     </div>

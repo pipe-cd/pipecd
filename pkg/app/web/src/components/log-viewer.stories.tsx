@@ -9,7 +9,8 @@ export default {
   decorators: [
     createDecoratorRedux({
       activeStage: {
-        id: "active-log-1",
+        deploymentId: "deployment-1",
+        stageId: "active-log-1",
         name: "active-log",
       },
       stageLogs: {

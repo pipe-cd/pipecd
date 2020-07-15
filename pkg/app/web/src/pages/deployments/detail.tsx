@@ -55,9 +55,7 @@ export const DeploymentDetailPage: FC = memo(function DeploymentDetailPage() {
   useEffect(fetchData, [dispatch, deploymentId]);
   useInterval(
     fetchData,
-    deploymentId &&
-      deployment?.status !== undefined &&
-      isDeploymentRunning(deployment.status)
+    deploymentId && isDeploymentRunning(deployment?.status)
       ? FETCH_INTERVAL
       : null
   );
