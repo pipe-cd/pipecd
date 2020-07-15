@@ -29,7 +29,7 @@ type Pipelineable interface {
 // KubernetesDeploymentSpec represents a deployment configuration for Kubernetes application.
 type KubernetesDeploymentSpec struct {
 	Input         KubernetesDeploymentInput `json:"input"`
-	CommitMatcher *DeploymentCommitMatcher  `json:"commitMatcher"`
+	CommitMatcher DeploymentCommitMatcher   `json:"commitMatcher"`
 	Sync          K8sSyncStageOptions       `json:"sync"`
 	Pipeline      *DeploymentPipeline       `json:"pipeline"`
 
