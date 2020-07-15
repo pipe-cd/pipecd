@@ -117,6 +117,7 @@ func (s *pipedStore) UpdatePiped(ctx context.Context, id string, updater func(pi
 func (s *pipedStore) EnablePiped(ctx context.Context, id string) error {
 	return s.UpdatePiped(ctx, id, func(piped *model.Piped) error {
 		piped.Disabled = false
+		app.UpdatedAt = time.Now().Unix()
 		return nil
 	})
 }
@@ -124,6 +125,7 @@ func (s *pipedStore) EnablePiped(ctx context.Context, id string) error {
 func (s *pipedStore) DisablePiped(ctx context.Context, id string) error {
 	return s.UpdatePiped(ctx, id, func(piped *model.Piped) error {
 		piped.Disabled = true
+		app.UpdatedAt = time.Now().Unix()
 		return nil
 	})
 }
