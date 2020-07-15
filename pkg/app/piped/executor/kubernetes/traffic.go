@@ -108,10 +108,6 @@ func (e *Executor) ensureTrafficRouting(ctx context.Context) model.StageStatus {
 	return model.StageStatus_STAGE_SUCCESS
 }
 
-func (e *Executor) rollbackTraffic(ctx context.Context) error {
-	return nil
-}
-
 func (e *Executor) findTrafficRoutingManifests(manifests []provider.Manifest, cfg *config.TrafficRouting) ([]provider.Manifest, error) {
 	if cfg != nil && cfg.Method == config.TrafficRoutingMethodIstio {
 		istioConfig := cfg.Istio

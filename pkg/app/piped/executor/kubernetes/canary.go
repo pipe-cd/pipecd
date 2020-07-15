@@ -54,7 +54,7 @@ func (e *Executor) ensureCanaryRollout(ctx context.Context) model.StageStatus {
 		return model.StageStatus_STAGE_FAILURE
 	}
 
-	// Find and generate workload & service manfiests for CANARY variant.
+	// Find and generate workload & service manifests for CANARY variant.
 	canaryManifests, err := e.generateCanaryManifests(manifests, *options)
 	if err != nil {
 		e.LogPersister.AppendErrorf("Unable to generate manifests for CANARY variant (%v)", err)

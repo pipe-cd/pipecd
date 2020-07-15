@@ -77,7 +77,7 @@ func (e *Executor) ensurePrimaryRollout(ctx context.Context) model.StageStatus {
 
 	// Generate the manifests for applying.
 	e.LogPersister.AppendInfo("Start generating manifests for PRIMARY variant")
-	applyManifests, err := e.generatePrimaryManifests(primaryManifests, commitHash)
+	applyManifests, err := e.generatePrimaryManifests(primaryManifests)
 	if err != nil {
 		e.LogPersister.AppendErrorf("Unable to generate manifests for PRIMARY variant (%v)", err)
 		return model.StageStatus_STAGE_FAILURE
@@ -155,7 +155,7 @@ func findRemoveManifests(prevs []provider.Manifest, curs []provider.Manifest, na
 	return removeKeys
 }
 
-func (e *Executor) generatePrimaryManifests(manifests []provider.Manifest, commitHash string) ([]provider.Manifest, error) {
+func (e *Executor) generatePrimaryManifests(manifests []provider.Manifest) ([]provider.Manifest, error) {
 	var (
 		serviceName     string
 		generateService bool
