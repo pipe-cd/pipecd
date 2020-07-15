@@ -29,6 +29,7 @@ import (
 	"github.com/pipe-cd/pipe/pkg/config"
 	"github.com/pipe-cd/pipe/pkg/git"
 	"github.com/pipe-cd/pipe/pkg/model"
+	"github.com/pipe-cd/pipe/pkg/regexpool"
 )
 
 type Planner interface {
@@ -44,6 +45,7 @@ type Input struct {
 	RepoDir                        string
 	AppDir                         string
 	AppManifestsCache              cache.Cache
+	RegexPool                      *regexpool.Pool
 	Logger                         *zap.Logger
 }
 

@@ -20,6 +20,8 @@ import (
 	"path/filepath"
 	"time"
 
+	"github.com/pipe-cd/pipe/pkg/regexpool"
+
 	"go.uber.org/atomic"
 	"go.uber.org/zap"
 
@@ -153,6 +155,7 @@ func (p *planner) Run(ctx context.Context) error {
 		RepoDir:                        gitRepo.GetPath(),
 		AppDir:                         filepath.Join(gitRepo.GetPath(), p.deployment.GitPath.Path),
 		AppManifestsCache:              p.appManifestsCache,
+		RegexPool:                      regexpool.DefaultPool(),
 		Logger:                         p.logger,
 	}
 	out, err := planner.Plan(ctx, in)
