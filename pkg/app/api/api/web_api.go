@@ -276,20 +276,20 @@ func (a *WebAPI) AddApplication(ctx context.Context, req *webservice.AddApplicat
 }
 
 func (a *WebAPI) EnableApplication(ctx context.Context, req *webservice.EnableApplicationRequest) (*webservice.EnableApplicationResponse, error) {
-	if err := a.toggleApplication(ctx, req.ApplicationId, true); err != nil {
+	if err := a.updateApplicationEnable(ctx, req.ApplicationId, true); err != nil {
 		return nil, err
 	}
 	return &webservice.EnableApplicationResponse{}, nil
 }
 
 func (a *WebAPI) DisableApplication(ctx context.Context, req *webservice.DisableApplicationRequest) (*webservice.DisableApplicationResponse, error) {
-	if err := a.toggleApplication(ctx, req.ApplicationId, false); err != nil {
+	if err := a.updateApplicationEnable(ctx, req.ApplicationId, false); err != nil {
 		return nil, err
 	}
 	return &webservice.DisableApplicationResponse{}, nil
 }
 
-func (a *WebAPI) toggleApplication(ctx context.Context, appID string, enable bool) error {
+func (a *WebAPI) updateApplicationEnable(ctx context.Context, appID string, enable bool) error {
 	claims, err := rpcauth.ExtractClaims(ctx)
 	if err != nil {
 		return err
