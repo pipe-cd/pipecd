@@ -150,36 +150,57 @@ func (a *WebAPI) RegisterPiped(ctx context.Context, req *webservice.RegisterPipe
 	}, nil
 }
 
-func (a *WebAPI) DisablePiped(ctx context.Context, req *webservice.DisablePipedRequest) (*webservice.DisablePipedResponse, error) {
-	claims, err := rpcauth.ExtractClaims(ctx)
-	if err != nil {
+func (a *WebAPI) EnablePiped(ctx context.Context, req *webservice.EnablePipedRequest) (*webservice.EnablePipedResponse, error) {
+	if err := a.updatePipedEnable(ctx, req.PipedId, true); err != nil {
 		return nil, err
 	}
+	return &webservice.EnablePipedResponse{}, nil
+}
 
-	piped, err := a.getPiped(ctx, req.PipedId)
-	if err != nil {
+func (a *WebAPI) DisablePiped(ctx context.Context, req *webservice.DisablePipedRequest) (*webservice.DisablePipedResponse, error) {
+	if err := a.updatePipedEnable(ctx, req.PipedId, false); err != nil {
 		return nil, err
+	}
+	return &webservice.DisablePipedResponse{}, nil
+}
+
+func (a *WebAPI) updatePipedEnable(ctx context.Context, pipedID string, enable bool) error {
+	claims, err := rpcauth.ExtractClaims(ctx)
+	if err != nil {
+		return err
+	}
+
+	piped, err := a.getPiped(ctx, pipedID)
+	if err != nil {
+		return err
 	}
 
 	if claims.Role.ProjectId != piped.ProjectId {
-		return nil, status.Error(codes.PermissionDenied, "The current project does not have requested piped")
+		return status.Error(codes.PermissionDenied, "The current project does not have requested piped")
 	}
 
-	if err := a.pipedStore.DisablePiped(ctx, req.PipedId); err != nil {
+	var updater func(context.Context, string) error
+	if enable {
+		updater = a.pipedStore.EnablePiped
+	} else {
+		updater = a.pipedStore.DisablePiped
+	}
+
+	if err := updater(ctx, pipedID); err != nil {
 		switch err {
 		case datastore.ErrNotFound:
-			return nil, status.Error(codes.InvalidArgument, "piped is not found")
+			return status.Error(codes.InvalidArgument, "piped is not found")
 		case datastore.ErrInvalidArgument:
-			return nil, status.Error(codes.InvalidArgument, "invalid value for update")
+			return status.Error(codes.InvalidArgument, "invalid value for update")
 		default:
 			a.logger.Error("failed to update the piped",
-				zap.String("piped-id", req.PipedId),
+				zap.String("piped-id", pipedID),
 				zap.Error(err),
 			)
-			return nil, status.Error(codes.Internal, "failed to update the piped ")
+			return status.Error(codes.Internal, "failed to update the piped ")
 		}
 	}
-	return &webservice.DisablePipedResponse{}, nil
+	return nil
 }
 
 func (a *WebAPI) ListPipeds(ctx context.Context, req *webservice.ListPipedsRequest) (*webservice.ListPipedsResponse, error) {

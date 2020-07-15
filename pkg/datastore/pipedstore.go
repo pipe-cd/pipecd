@@ -42,6 +42,7 @@ type PipedStore interface {
 	GetPiped(ctx context.Context, id string) (*model.Piped, error)
 	ListPipeds(ctx context.Context, opts ListOptions) ([]*model.Piped, error)
 	UpdatePiped(ctx context.Context, id string, updater func(piped *model.Piped) error) error
+	EnablePiped(ctx context.Context, id string) error
 	DisablePiped(ctx context.Context, id string) error
 }
 
@@ -113,9 +114,18 @@ func (s *pipedStore) UpdatePiped(ctx context.Context, id string, updater func(pi
 	})
 }
 
+func (s *pipedStore) EnablePiped(ctx context.Context, id string) error {
+	return s.UpdatePiped(ctx, id, func(piped *model.Piped) error {
+		piped.Disabled = false
+		piped.UpdatedAt = time.Now().Unix()
+		return nil
+	})
+}
+
 func (s *pipedStore) DisablePiped(ctx context.Context, id string) error {
 	return s.UpdatePiped(ctx, id, func(piped *model.Piped) error {
 		piped.Disabled = true
+		piped.UpdatedAt = time.Now().Unix()
 		return nil
 	})
 }
