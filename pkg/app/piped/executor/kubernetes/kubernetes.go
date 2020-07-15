@@ -172,16 +172,44 @@ func (e *Executor) loadRunningManifests(ctx context.Context) (manifests []provid
 	return manifests, nil
 }
 
-func (e *Executor) builtinAnnotations(m provider.Manifest, variant, hash string) map[string]string {
-	return map[string]string{
-		provider.LabelManagedBy:          provider.ManagedByPiped,
-		provider.LabelPiped:              e.PipedConfig.PipedID,
-		provider.LabelApplication:        e.Deployment.ApplicationId,
-		variantLabel:                     variant,
-		provider.LabelOriginalAPIVersion: m.Key.APIVersion,
-		provider.LabelResourceKey:        m.Key.String(),
-		provider.LabelCommitHash:         hash,
+func (e *Executor) addBuiltinAnnontations(manifests []provider.Manifest, variant, hash string) {
+	for i := range manifests {
+		manifests[i].AddAnnotations(map[string]string{
+			provider.LabelManagedBy:          provider.ManagedByPiped,
+			provider.LabelPiped:              e.PipedConfig.PipedID,
+			provider.LabelApplication:        e.Deployment.ApplicationId,
+			variantLabel:                     variant,
+			provider.LabelOriginalAPIVersion: manifests[i].Key.APIVersion,
+			provider.LabelResourceKey:        manifests[i].Key.String(),
+			provider.LabelCommitHash:         hash,
+		})
 	}
+}
+
+func (e *Executor) applyManifests(ctx context.Context, manifests []provider.Manifest) error {
+	e.LogPersister.AppendInfof("Start applying %d manifests", len(manifests))
+	for _, m := range manifests {
+		if err := e.provider.ApplyManifest(ctx, m); err != nil {
+			e.LogPersister.AppendErrorf("Failed to apply manifest: %s (%v)", m.Key.ReadableString(), err)
+			return err
+		}
+		e.LogPersister.AppendSuccessf("- applied manifest: %s", m.Key.ReadableString())
+	}
+	e.LogPersister.AppendSuccessf("Successfully applied %d manifests", len(manifests))
+	return nil
+}
+
+func (e *Executor) deleteResources(ctx context.Context, resources []provider.ResourceKey) error {
+	e.LogPersister.AppendInfof("Start deleting %d resources", len(resources))
+	for _, k := range resources {
+		if err := e.provider.Delete(ctx, k); err != nil {
+			e.LogPersister.AppendErrorf("Failed to delete resource: %s (%v)", k.ReadableString(), err)
+			return err
+		}
+		e.LogPersister.AppendSuccessf("- deleted resource: %s", k.ReadableString())
+	}
+	e.LogPersister.AppendSuccessf("Successfully deleted %d resources", len(resources))
+	return nil
 }
 
 func findManifests(kind, name string, manifests []provider.Manifest) []provider.Manifest {
@@ -220,7 +248,20 @@ func findSecretManifests(manifests []provider.Manifest) []provider.Manifest {
 	return out
 }
 
-func generateServiceManifests(services []provider.Manifest, variant, nameSuffix string) ([]provider.Manifest, error) {
+func duplicateManifests(manifests []provider.Manifest, nameSuffix string) []provider.Manifest {
+	out := make([]provider.Manifest, 0, len(manifests))
+	for _, m := range manifests {
+		out = append(out, duplicateManifest(m, nameSuffix))
+	}
+	return out
+}
+
+func duplicateManifest(m provider.Manifest, nameSuffix string) provider.Manifest {
+	name := makeSuffixedName(m.Key.Name, nameSuffix)
+	return m.Duplicate(name)
+}
+
+func generateVariantServiceManifests(services []provider.Manifest, variant, nameSuffix string) ([]provider.Manifest, error) {
 	manifests := make([]provider.Manifest, 0, len(services))
 	updateService := func(s *corev1.Service) {
 		s.Name = makeSuffixedName(s.Name, nameSuffix)
@@ -253,7 +294,7 @@ func generateServiceManifests(services []provider.Manifest, variant, nameSuffix 
 	return manifests, nil
 }
 
-func generateWorkloadManifests(workloads, configmaps, secrets []provider.Manifest, variant, nameSuffix string, replicasCalculator func(*int32) int32) ([]provider.Manifest, error) {
+func generateVariantWorkloadManifests(workloads, configmaps, secrets []provider.Manifest, variant, nameSuffix string, replicasCalculator func(*int32) int32) ([]provider.Manifest, error) {
 	manifests := make([]provider.Manifest, 0, len(workloads))
 
 	cmNames := make(map[string]struct{}, len(configmaps))

@@ -17,6 +17,7 @@ package kubernetes
 import (
 	"context"
 	"encoding/json"
+	"fmt"
 	"strings"
 
 	istiov1alpha3 "istio.io/api/networking/v1alpha3"
@@ -28,44 +29,124 @@ import (
 )
 
 func (e *Executor) ensureTrafficRouting(ctx context.Context) model.StageStatus {
-	options := e.StageConfig.K8sTrafficRoutingStageOptions
+	var (
+		commitHash = e.Deployment.Trigger.Commit.Hash
+		options    = e.StageConfig.K8sTrafficRoutingStageOptions
+	)
 	if options == nil {
 		e.LogPersister.AppendErrorf("Malformed configuration for stage %s", e.Stage.Name)
 		return model.StageStatus_STAGE_FAILURE
 	}
 
+	// Load the manifests at the triggered commit.
+	e.LogPersister.AppendInfof("Loading manifests at commit %s for handling", commitHash)
 	manifests, err := e.loadManifests(ctx)
 	if err != nil {
 		e.LogPersister.AppendErrorf("Failed while loading manifests (%v)", err)
 		return model.StageStatus_STAGE_FAILURE
 	}
+	e.LogPersister.AppendSuccessf("Successfully loaded %d manifests", len(manifests))
+
 	if len(manifests) == 0 {
 		e.LogPersister.AppendError("There are no kubernetes manifests to handle")
 		return model.StageStatus_STAGE_FAILURE
 	}
 
-	var (
-		cfg                                            = e.config.TrafficRouting
-		primaryPercent, canaryPercent, baselinePercent = options.Percentages()
-	)
-	if cfg == nil {
-		return e.ensurePodTrafficRouting(ctx, primaryPercent, canaryPercent, manifests, nil)
+	// Decide traffic routing percentage for all variants.
+	primaryPercent, canaryPercent, baselinePercent := options.Percentages()
+
+	// Find traffic routing manifests.
+	trafficRoutingManifests, err := e.findTrafficRoutingManifests(manifests, e.config.TrafficRouting)
+	if err != nil {
+		e.LogPersister.AppendErrorf("Failed while finding traffic routing manifest: (%v)", err)
+		return model.StageStatus_STAGE_FAILURE
 	}
 
-	switch cfg.Method {
-	case config.TrafficRoutingMethodIstio:
-		return e.ensureIstioTrafficRouting(ctx, canaryPercent, baselinePercent, manifests, cfg.Istio)
-
+	switch len(trafficRoutingManifests) {
+	case 1:
+		break
+	case 0:
+		e.LogPersister.AppendErrorf("Unable to find any traffic routing manifests")
+		return model.StageStatus_STAGE_FAILURE
 	default:
-		return e.ensurePodTrafficRouting(ctx, primaryPercent, canaryPercent, manifests, cfg.Pod)
+		e.LogPersister.AppendInfof(
+			"Detected %d traffic routing manifests but only the first one (%s) will be used",
+			len(trafficRoutingManifests),
+			trafficRoutingManifests[0].Key.ReadableString(),
+		)
 	}
+
+	// Because the loaded maninests are read-only
+	// so we duplicate them to avoid updating the shared manifests data in cache.
+	trafficRoutingManifest := duplicateManifest(trafficRoutingManifests[0], "")
+
+	trafficRoutingManifest, err = e.generateTrafficRoutingManifest(
+		trafficRoutingManifest,
+		primaryPercent,
+		canaryPercent,
+		baselinePercent,
+		e.config.TrafficRouting,
+	)
+	if err != nil {
+		e.LogPersister.AppendErrorf("Unable generate traffic routing manifest: (%v)", err)
+		return model.StageStatus_STAGE_FAILURE
+	}
+
+	// Add builtin annotations for tracking application live state.
+	e.addBuiltinAnnontations([]provider.Manifest{trafficRoutingManifest}, primaryVariant, commitHash)
+
+	e.LogPersister.AppendInfof("Start updating traffic routing to be percentages: primary=%d, canary=%d, baseline=%d",
+		primaryPercent,
+		canaryPercent,
+		baselinePercent,
+	)
+	if err := e.applyManifests(ctx, []provider.Manifest{trafficRoutingManifest}); err != nil {
+		return model.StageStatus_STAGE_FAILURE
+	}
+
+	e.LogPersister.AppendSuccess("Successfully updated traffic routing")
+	return model.StageStatus_STAGE_SUCCESS
 }
 
-func (e *Executor) rollbackTraffic(ctx context.Context) error {
-	return nil
+func (e *Executor) findTrafficRoutingManifests(manifests []provider.Manifest, cfg *config.TrafficRouting) ([]provider.Manifest, error) {
+	if cfg != nil && cfg.Method == config.TrafficRoutingMethodIstio {
+		istioConfig := cfg.Istio
+		if istioConfig == nil {
+			istioConfig = &config.IstioTrafficRouting{}
+		}
+		return findIstioVirtualServiceManifests(manifests, istioConfig.VirtualService)
+	}
+
+	var podConfig config.PodTrafficRouting
+	if cfg != nil && cfg.Pod != nil {
+		podConfig = *cfg.Pod
+	}
+
+	// Find out the service which be updated the selector.
+	_, serviceName, ok := config.ParseVariantResourceReference(podConfig.Service.Reference)
+	if !ok {
+		return nil, fmt.Errorf("malformed Service reference %q", podConfig.Service.Reference)
+	}
+
+	return findManifests(provider.KindService, serviceName, manifests), nil
 }
 
-func (e *Executor) ensurePodTrafficRouting(ctx context.Context, primaryPercent, canaryPercent int, manifests []provider.Manifest, cfg *config.PodTrafficRouting) model.StageStatus {
+func (e *Executor) generateTrafficRoutingManifest(manifest provider.Manifest, primaryPercent, canaryPercent, baselinePercent int, cfg *config.TrafficRouting) (provider.Manifest, error) {
+	if cfg != nil && cfg.Method == config.TrafficRoutingMethodIstio {
+		istioConfig := cfg.Istio
+		if istioConfig == nil {
+			istioConfig = &config.IstioTrafficRouting{}
+		}
+
+		var err error
+		if strings.HasPrefix(manifest.Key.APIVersion, "v1alpha3") {
+			err = generateVirtualServiceManifestV1Alpha3(manifest, istioConfig.Host, istioConfig.EditableRoutes, int32(canaryPercent), int32(baselinePercent))
+		} else {
+			err = generateVirtualServiceManifest(manifest, istioConfig.Host, istioConfig.EditableRoutes, int32(canaryPercent), int32(baselinePercent))
+		}
+		return manifest, err
+	}
+
 	// Determine which variant will receive 100% percent of traffic.
 	var variant string
 	switch {
@@ -74,97 +155,27 @@ func (e *Executor) ensurePodTrafficRouting(ctx context.Context, primaryPercent, 
 	case canaryPercent == 100:
 		variant = canaryVariant
 	default:
-		e.LogPersister.AppendErrorf("Traffic routing by pod requires either PRIMARY or CANARY must be 100 (primary=%d, canary=%d)", primaryPercent, canaryPercent)
-		return model.StageStatus_STAGE_FAILURE
-	}
-	e.LogPersister.AppendInfof("All traffic will be routed to %s by updating service selector", strings.ToUpper(variant))
-
-	// Find out the service which be updated the selector.
-	var serviceName string
-	if cfg != nil {
-		var ok bool
-		_, serviceName, ok = config.ParseVariantResourceReference(cfg.Service.Reference)
-		if !ok {
-			e.LogPersister.AppendErrorf("Malformed service reference in TrafficRouting configuration: %s", cfg.Service.Reference)
-			return model.StageStatus_STAGE_FAILURE
-		}
+		return manifest, fmt.Errorf("traffic routing by pod requires either PRIMARY or CANARY must be 100 (primary=%d, canary=%d)", primaryPercent, canaryPercent)
 	}
 
-	services := findManifests(provider.KindService, serviceName, manifests)
-	if len(services) == 0 {
-		e.LogPersister.AppendErrorf("Unable to find any service for name=%q to update traffic routing", serviceName)
-		return model.StageStatus_STAGE_FAILURE
-	}
-	service := services[0]
-	if len(services) > 1 {
-		e.LogPersister.AppendInfof("Detected %d services but only the first one (%s) will be selected to change selector", len(services), service.Key.ReadableString())
+	if err := manifest.AddStringMapValues(map[string]string{variantLabel: variant}, "spec", "selector"); err != nil {
+		return manifest, fmt.Errorf("unable to update selector for service %q because of: %v", manifest.Key.Name, err)
 	}
 
-	// Duplicate and update the selector for service manifest.
-	service = service.Duplicate(service.Key.Name)
-	if err := service.AddStringMapValues(map[string]string{variantLabel: variant}, "spec", "selector"); err != nil {
-		e.LogPersister.AppendErrorf("Unable to update selector for service %s because of: %v", service.Key.Name, err)
-		return model.StageStatus_STAGE_FAILURE
-	}
-
-	e.LogPersister.AppendInfo("Start updating traffic routing...")
-	if err := e.provider.ApplyManifest(ctx, service); err != nil {
-		e.LogPersister.AppendErrorf("Failed to apply manifest: %s (%v)", service.Key.ReadableString(), err)
-		return model.StageStatus_STAGE_FAILURE
-	}
-	e.LogPersister.AppendSuccessf("Successfully applied manifest: %s", service.Key.ReadableString())
-
-	e.LogPersister.AppendSuccessf("Successfully routed all traffic to %s variant", strings.ToUpper(variant))
-	return model.StageStatus_STAGE_SUCCESS
+	return manifest, nil
 }
 
-func (e *Executor) ensureIstioTrafficRouting(ctx context.Context, canaryPercent, baselinePercent int, manifests []provider.Manifest, cfg *config.IstioTrafficRouting) model.StageStatus {
-	if cfg == nil {
-		cfg = &config.IstioTrafficRouting{}
-	}
-
-	manifest, ok := findIstioVirtualServiceManifest(manifests, cfg.VirtualService)
-	if !ok {
-		e.LogPersister.AppendError("There is no VirtualService manifests to handle")
-		return model.StageStatus_STAGE_FAILURE
-	}
-
-	var err error
-	if strings.HasPrefix(manifest.Key.APIVersion, "v1alpha3") {
-		err = generateVirtualServiceManifestV1Alpha3(manifest, cfg.Host, cfg.EditableRoutes, int32(canaryPercent), int32(baselinePercent))
-	} else {
-		err = generateVirtualServiceManifest(manifest, cfg.Host, cfg.EditableRoutes, int32(canaryPercent), int32(baselinePercent))
-	}
-	if err != nil {
-		e.LogPersister.AppendErrorf("Unable to generate VirtualService manifest: %v", err)
-		return model.StageStatus_STAGE_FAILURE
-	}
-
-	e.LogPersister.AppendInfo("Start updating traffic routing...")
-	if err = e.provider.ApplyManifest(ctx, manifest); err != nil {
-		e.LogPersister.AppendErrorf("Failed to apply manifest: %s (%v)", manifest.Key.ReadableString(), err)
-		return model.StageStatus_STAGE_FAILURE
-	}
-	e.LogPersister.AppendSuccessf("Successfully applied manifest: %s", manifest.Key.ReadableString())
-
-	e.LogPersister.AppendSuccessf("Successfully updated traffic routing (primary=%d, canary=%d, baseline=%d)",
-		100-canaryPercent-baselinePercent,
-		canaryPercent,
-		baselinePercent,
-	)
-	return model.StageStatus_STAGE_SUCCESS
-}
-
-func findIstioVirtualServiceManifest(manifests []provider.Manifest, cfg config.K8sResourceReference) (provider.Manifest, bool) {
+func findIstioVirtualServiceManifests(manifests []provider.Manifest, cfg config.K8sResourceReference) ([]provider.Manifest, error) {
 	const (
 		istioNetworkingAPIVersionPrefix = "networking.istio.io/"
 		istioVirtualServiceKind         = "VirtualService"
 	)
 	_, name, ok := config.ParseVariantResourceReference(cfg.Reference)
 	if !ok {
-		return provider.Manifest{}, false
+		return nil, fmt.Errorf("malformed VirtualService reference: %s", cfg.Reference)
 	}
 
+	var out []provider.Manifest
 	for _, m := range manifests {
 		if !strings.HasPrefix(m.Key.APIVersion, istioNetworkingAPIVersionPrefix) {
 			continue
@@ -175,10 +186,10 @@ func findIstioVirtualServiceManifest(manifests []provider.Manifest, cfg config.K
 		if name != "" && m.Key.Name != name {
 			continue
 		}
-		return m, true
+		out = append(out, m)
 	}
 
-	return provider.Manifest{}, false
+	return out, nil
 }
 
 func generateVirtualServiceManifest(m provider.Manifest, host string, editableRoutes []string, canaryPercent, baselinePercent int32) error {
