@@ -83,27 +83,31 @@ func (p *Planner) Plan(ctx context.Context, in planner.Input) (out planner.Outpu
 	}
 
 	// This deployment is triggered by a commit with the intent to perform pipeline.
-	pipelineRegex, err := in.RegexPool.Get(cfg.CommitMatcher.Pipeline)
-	if err != nil {
-		err = fmt.Errorf("failed to compile commitMatcher.pipeline(%s): %w", cfg.CommitMatcher.Pipeline, err)
-		return
-	}
-	if pipelineRegex.MatchString(in.Deployment.Trigger.Commit.Message) {
-		out.Stages = buildProgressivePipeline(cfg.Pipeline, cfg.Input.AutoRollback, time.Now())
-		out.Description = "Progressive deployment because this commit is intended to perform pipeline."
-		return
+	if p := cfg.CommitMatcher.Pipeline; p != "" {
+		pipelineRegex, err := in.RegexPool.Get(p)
+		if err != nil {
+			err = fmt.Errorf("failed to compile commitMatcher.pipeline(%s): %w", p, err)
+			return
+		}
+		if pipelineRegex.MatchString(in.Deployment.Trigger.Commit.Message) {
+			out.Stages = buildProgressivePipeline(cfg.Pipeline, cfg.Input.AutoRollback, time.Now())
+			out.Description = "Progressive deployment because this commit is intended to perform pipeline."
+			return
+		}
 	}
 
 	// This deployment is triggered by a commit with the intent to synchronize.
-	syncRegex, err := in.RegexPool.Get(cfg.CommitMatcher.Sync)
-	if err != nil {
-		err = fmt.Errorf("failed to compile commitMatcher.sync(%s): %w", cfg.CommitMatcher.Sync, err)
-		return
-	}
-	if syncRegex.MatchString(in.Deployment.Trigger.Commit.Message) {
-		out.Stages = buildPipeline(cfg.Input.AutoRollback, time.Now())
-		out.Description = "Apply all manifests because this commit is intended to be synchronous."
-		return
+	if s := cfg.CommitMatcher.Sync; s != "" {
+		syncRegex, err := in.RegexPool.Get(s)
+		if err != nil {
+			err = fmt.Errorf("failed to compile commitMatcher.sync(%s): %w", s, err)
+			return
+		}
+		if syncRegex.MatchString(in.Deployment.Trigger.Commit.Message) {
+			out.Stages = buildPipeline(cfg.Input.AutoRollback, time.Now())
+			out.Description = "Apply all manifests because this commit is intended to be synchronous."
+			return
+		}
 	}
 
 	// This is the first time to deploy this application
