@@ -87,12 +87,12 @@ func (p *Planner) Plan(ctx context.Context, in planner.Input) (out planner.Outpu
 		pipelineRegex, err := in.RegexPool.Get(p)
 		if err != nil {
 			err = fmt.Errorf("failed to compile commitMatcher.pipeline(%s): %w", p, err)
-			return
+			return out, err
 		}
 		if pipelineRegex.MatchString(in.Deployment.Trigger.Commit.Message) {
 			out.Stages = buildProgressivePipeline(cfg.Pipeline, cfg.Input.AutoRollback, time.Now())
 			out.Description = "Progressive deployment because this commit is intended to perform pipeline."
-			return
+			return out, err
 		}
 	}
 
@@ -101,12 +101,12 @@ func (p *Planner) Plan(ctx context.Context, in planner.Input) (out planner.Outpu
 		syncRegex, err := in.RegexPool.Get(s)
 		if err != nil {
 			err = fmt.Errorf("failed to compile commitMatcher.sync(%s): %w", s, err)
-			return
+			return out, err
 		}
 		if syncRegex.MatchString(in.Deployment.Trigger.Commit.Message) {
 			out.Stages = buildPipeline(cfg.Input.AutoRollback, time.Now())
 			out.Description = "Apply all manifests because this commit is intended to be synchronous."
-			return
+			return out, err
 		}
 	}
 
