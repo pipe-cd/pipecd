@@ -15,3 +15,6 @@
 // Package notifier provides a piped component
 // that sends notifications to the configured targets.
 package notifier
+
+type Notifier interface {
+}

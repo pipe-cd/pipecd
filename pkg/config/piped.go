@@ -47,6 +47,7 @@ type PipedSpec struct {
 	ChartRepositories []HelmChartRepository   `json:"chartRepositories"`
 	CloudProviders    []PipedCloudProvider    `json:"cloudProviders"`
 	AnalysisProviders []PipedAnalysisProvider `json:"analysisProviders"`
+	Notifications     Notifications           `json:"notifications"`
 }
 
 // Validate validates configured data of all fields.
@@ -328,4 +329,34 @@ type AnalysisProviderDatadogConfig struct {
 type AnalysisProviderStackdriverConfig struct {
 	// The path to the service account file.
 	ServiceAccountFile string `json:"serviceAccountFile"`
+}
+
+type Notifications struct {
+	Routes    []NotificationRoute    `json:"routes"`
+	Receivers []NotificationReceiver `json:"receivers"`
+}
+
+type NotificationRoute struct {
+	Name         string   `json:"name"`
+	Events       []string `json:"events"`
+	IgnoreEvents []string `json:"ignoreEvents"`
+	Apps         []string `json:"apps"`
+	IgnoreApps   []string `json:"ignoreApps"`
+	Envs         []string `json:"envs"`
+	IgnoreEnvs   []string `json:"ignoreEnvs"`
+	Receiver     string   `json:"receiver"`
+}
+
+type NotificationReceiver struct {
+	Name    string                       `json:"name"`
+	Slack   *NotificationReceiverSlack   `json:"slack"`
+	Webhook *NotificationReceiverWebhook `json:"webhook"`
+}
+
+type NotificationReceiverSlack struct {
+	HookURL string `json:"hookURL"`
+}
+
+type NotificationReceiverWebhook struct {
+	URL string `json:"url"`
 }
