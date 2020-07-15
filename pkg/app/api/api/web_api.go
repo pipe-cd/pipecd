@@ -302,14 +302,14 @@ func (a *WebAPI) toggleApplication(ctx context.Context, appID string, enable boo
 		return status.Error(codes.PermissionDenied, "The current project does not have requested application")
 	}
 
-	var toggleApplication func(context.Context, string) error
+	var updater func(context.Context, string) error
 	if enable {
-		toggleApplication = a.applicationStore.EnableApplication
+		updater = a.applicationStore.EnableApplication
 	} else {
-		toggleApplication = a.applicationStore.DisableApplication
+		updater = a.applicationStore.DisableApplication
 	}
 
-	if err := toggleApplication(ctx, appID); err != nil {
+	if err := updater(ctx, appID); err != nil {
 		switch err {
 		case datastore.ErrNotFound:
 			return status.Error(codes.InvalidArgument, "application is not found")
