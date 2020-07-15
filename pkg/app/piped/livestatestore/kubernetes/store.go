@@ -71,7 +71,9 @@ func (s *store) initialize() {
 
 		// Add the missing resource into the dependedResources of the app.
 		key := provider.MakeResourceKey(an.resource)
-		s.apps[appID].addDependedResource(uid, key, an.resource, now)
+		if a, ok := s.apps[appID]; ok {
+			a.addDependedResource(uid, key, an.resource, now)
+		}
 
 		an.appID = appID
 		s.resources[uid] = an
