@@ -23,6 +23,7 @@ genrule(
     do
         sed -ie "s|.*validate_pb.*||g" $$f
         sed -ie "s|'.*pkg|'pipe/pkg|g" $$f
+        sed -ie "s|.*github_com_gogo_protobuf_gogoproto_gogo_pb.*||g" $$f
         sed -ie "s|pipe/pkg/model|pipe/pkg/app/web/model|g" $$f
         cp $$f $(OUTS)/
     done
@@ -41,6 +42,7 @@ genrule(
     do
         sed -ie "s|.*validate_pb.*||g" $$f
         sed -ie "s|'.*pkg|'pipe/pkg|g" $$f
+        sed -ie "s|.*github_com_gogo_protobuf_gogoproto_gogo_pb.*||g" $$f
         sed -ie "s|pipe/pkg/model|pipe/pkg/app/web/model|g" $$f
         cp $$f $(OUTS)/
     done
