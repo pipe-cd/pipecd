@@ -69,7 +69,7 @@ func (p *Planner) Plan(ctx context.Context, in planner.Input) (out planner.Outpu
 		loader := provider.NewManifestLoader(in.Deployment.ApplicationName, in.AppDir, in.RepoDir, cfg.Input, in.Logger)
 		newManifests, err = loader.LoadManifests(ctx)
 		if err != nil {
-			err = fmt.Errorf("failed to load new manifests: %v", err)
+			err = fmt.Errorf("failed to load new manifests: %w", err)
 			return
 		}
 		manifestCache.Put(in.Deployment.Trigger.Commit.Hash, newManifests)
@@ -82,6 +82,30 @@ func (p *Planner) Plan(ctx context.Context, in planner.Input) (out planner.Outpu
 		out.Version = version
 	}
 
+	// This deployment is triggered by a commit with the intent to perform pipeline.
+	pipelineRegex, err := in.RegexPool.Get(cfg.CommitMatcher.Pipeline)
+	if err != nil {
+		err = fmt.Errorf("failed to compile commitMatcher.pipeline(%s): %w", cfg.CommitMatcher.Pipeline, err)
+		return
+	}
+	if pipelineRegex.MatchString(in.Deployment.Trigger.Commit.Message) {
+		out.Stages = buildProgressivePipeline(cfg.Pipeline, cfg.Input.AutoRollback, time.Now())
+		out.Description = "Progressive deployment because this commit is intended to perform pipeline."
+		return
+	}
+
+	// This deployment is triggered by a commit with the intent to synchronize.
+	syncRegex, err := in.RegexPool.Get(cfg.CommitMatcher.Sync)
+	if err != nil {
+		err = fmt.Errorf("failed to compile commitMatcher.sync(%s): %w", cfg.CommitMatcher.Sync, err)
+		return
+	}
+	if syncRegex.MatchString(in.Deployment.Trigger.Commit.Message) {
+		out.Stages = buildPipeline(cfg.Input.AutoRollback, time.Now())
+		out.Description = "Apply all manifests because this commit is intended to be synchronous."
+		return
+	}
+
 	// This is the first time to deploy this application
 	// or it was unable to retrieve that value.
 	// We just apply all manifests.
@@ -91,18 +115,10 @@ func (p *Planner) Plan(ctx context.Context, in planner.Input) (out planner.Outpu
 		return
 	}
 
-	// If the commit is a revert one. Let's apply primary to rollback.
-	// TODO: Find a better way to determine the revert commit.
-	if strings.Contains(in.Deployment.Trigger.Commit.Message, "/pipecd rollback ") {
-		out.Stages = buildPipeline(cfg.Input.AutoRollback, time.Now())
-		out.Description = fmt.Sprintf("Rollback from commit %s.", in.MostRecentSuccessfulCommitHash)
-		return
-	}
-
 	// Checkout to the most recent successful commit to load its manifests.
 	err = in.Repo.Checkout(ctx, in.MostRecentSuccessfulCommitHash)
 	if err != nil {
-		err = fmt.Errorf("failed to checkout to commit %s: %v", in.MostRecentSuccessfulCommitHash, err)
+		err = fmt.Errorf("failed to checkout to commit %s: %w", in.MostRecentSuccessfulCommitHash, err)
 		return
 	}
 
@@ -113,7 +129,7 @@ func (p *Planner) Plan(ctx context.Context, in planner.Input) (out planner.Outpu
 		loader := provider.NewManifestLoader(in.Deployment.ApplicationName, in.AppDir, in.RepoDir, cfg.Input, in.Logger)
 		oldManifests, err = loader.LoadManifests(ctx)
 		if err != nil {
-			err = fmt.Errorf("failed to load previously deployed manifests: %v", err)
+			err = fmt.Errorf("failed to load previously deployed manifests: %w", err)
 			return
 		}
 		manifestCache.Put(in.MostRecentSuccessfulCommitHash, oldManifests)
