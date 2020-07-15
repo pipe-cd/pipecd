@@ -39,7 +39,7 @@ func TestGenerateServiceManifests(t *testing.T) {
 			require.NoError(t, err)
 			require.Equal(t, 2, len(manifests))
 
-			generatedManifests, err := generateServiceManifests(manifests[:1], "canary-variant", "canary")
+			generatedManifests, err := generateVariantServiceManifests(manifests[:1], "canary-variant", "canary")
 			require.NoError(t, err)
 			require.Equal(t, 1, len(generatedManifests))
 
@@ -82,7 +82,7 @@ func TestGenerateWorkloadManifests(t *testing.T) {
 				require.NoError(t, err)
 			}
 
-			generatedManifests, err := generateWorkloadManifests(manifests[:1], configmaps, secrets, "canary-variant", "canary", func(r *int32) int32 {
+			generatedManifests, err := generateVariantWorkloadManifests(manifests[:1], configmaps, secrets, "canary-variant", "canary", func(r *int32) int32 {
 				return *r - 1
 			})
 			require.NoError(t, err)

@@ -31,29 +31,38 @@ const (
 )
 
 func (e *Executor) ensureCanaryRollout(ctx context.Context) model.StageStatus {
-	canaryOptions := e.StageConfig.K8sCanaryRolloutStageOptions
-	if canaryOptions == nil {
+	var (
+		commitHash = e.Deployment.Trigger.Commit.Hash
+		options    = e.StageConfig.K8sCanaryRolloutStageOptions
+	)
+	if options == nil {
 		e.LogPersister.AppendErrorf("Malformed configuration for stage %s", e.Stage.Name)
 		return model.StageStatus_STAGE_FAILURE
 	}
 
 	// Load the manifests at the triggered commit.
+	e.LogPersister.AppendInfof("Loading manifests at commit %s for handling", commitHash)
 	manifests, err := e.loadManifests(ctx)
 	if err != nil {
 		e.LogPersister.AppendErrorf("Failed while loading manifests (%v)", err)
 		return model.StageStatus_STAGE_FAILURE
 	}
+	e.LogPersister.AppendSuccessf("Successfully loaded %d manifests", len(manifests))
 
 	if len(manifests) == 0 {
 		e.LogPersister.AppendError("This application has no Kubernetes manifests to handle")
 		return model.StageStatus_STAGE_FAILURE
 	}
 
-	canaryManifests, err := e.generateCanaryManifests(manifests, *canaryOptions)
+	// Find and generate workload & service manfiests for CANARY variant.
+	canaryManifests, err := e.generateCanaryManifests(manifests, *options)
 	if err != nil {
 		e.LogPersister.AppendErrorf("Unable to generate manifests for CANARY variant (%v)", err)
 		return model.StageStatus_STAGE_FAILURE
 	}
+
+	// Add builtin annotations for tracking application live state.
+	e.addBuiltinAnnontations(canaryManifests, canaryVariant, commitHash)
 
 	// Store added resource keys into metadata for cleaning later.
 	addedResources := make([]string, 0, len(canaryManifests))
@@ -69,12 +78,8 @@ func (e *Executor) ensureCanaryRollout(ctx context.Context) model.StageStatus {
 
 	// Start rolling out the resources for CANARY variant.
 	e.LogPersister.AppendInfo("Start rolling out CANARY variant...")
-	for _, m := range canaryManifests {
-		if err = e.provider.ApplyManifest(ctx, m); err != nil {
-			e.LogPersister.AppendErrorf("Failed to apply manifest: %s (%v)", m.Key.ReadableString(), err)
-			return model.StageStatus_STAGE_FAILURE
-		}
-		e.LogPersister.AppendSuccessf("- applied manifest: %s", m.Key.ReadableString())
+	if err := e.applyManifests(ctx, canaryManifests); err != nil {
+		return model.StageStatus_STAGE_FAILURE
 	}
 
 	e.LogPersister.AppendSuccess("Successfully rolled out CANARY variant")
@@ -192,15 +197,11 @@ func (e *Executor) generateCanaryManifests(manifests []provider.Manifest, opts c
 		if len(services) == 0 {
 			return nil, fmt.Errorf("unable to find any service for name=%q", serviceName)
 		}
-
 		// Because the loaded maninests are read-only
 		// so we duplicate them to avoid updating the shared manifests data in cache.
-		duplicates := make([]provider.Manifest, 0, len(services))
-		for _, m := range services {
-			duplicates = append(duplicates, m.Duplicate(m.Key.Name))
-		}
+		services = duplicateManifests(services, "")
 
-		generatedServices, err := generateServiceManifests(duplicates, canaryVariant, suffix)
+		generatedServices, err := generateVariantServiceManifests(services, canaryVariant, suffix)
 		if err != nil {
 			return nil, err
 		}
@@ -208,18 +209,14 @@ func (e *Executor) generateCanaryManifests(manifests []provider.Manifest, opts c
 	}
 
 	// Find config map manifests and duplicate them for CANARY variant.
-	configmaps := findConfigMapManifests(manifests)
-	for _, m := range configmaps {
-		m = m.Duplicate(m.Key.Name + "-" + suffix)
-		canaryManifests = append(canaryManifests, m)
-	}
+	configMaps := findConfigMapManifests(manifests)
+	configMaps = duplicateManifests(configMaps, suffix)
+	canaryManifests = append(canaryManifests, configMaps...)
 
 	// Find secret manifests and duplicate them for CANARY variant.
 	secrets := findSecretManifests(manifests)
-	for _, m := range secrets {
-		m = m.Duplicate(m.Key.Name + "-" + suffix)
-		canaryManifests = append(canaryManifests, m)
-	}
+	secrets = duplicateManifests(secrets, suffix)
+	canaryManifests = append(canaryManifests, secrets...)
 
 	// Generate new workload manifests for CANARY variant.
 	// The generated ones will mount to the new ConfigMaps and Secrets.
@@ -230,15 +227,14 @@ func (e *Executor) generateCanaryManifests(manifests []provider.Manifest, opts c
 		num := opts.Replicas.Calculate(int(*cur), 1)
 		return int32(num)
 	}
-	generatedWorkloads, err := generateWorkloadManifests(workloads, configmaps, secrets, canaryVariant, suffix, replicasCalculator)
+	// We don't need to duplicate the workload manifests
+	// because generateVariantWorkloadManifests function is already making a duplicate while decoding.
+	// workloads = duplicateManifests(workloads, suffix)
+	generatedWorkloads, err := generateVariantWorkloadManifests(workloads, configMaps, secrets, canaryVariant, suffix, replicasCalculator)
 	if err != nil {
 		return nil, err
 	}
 	canaryManifests = append(canaryManifests, generatedWorkloads...)
 
-	// Add predefined annotations to the generated manifests.
-	for _, m := range canaryManifests {
-		m.AddAnnotations(e.builtinAnnotations(m, canaryVariant, e.Deployment.Trigger.Commit.Hash))
-	}
 	return canaryManifests, nil
 }

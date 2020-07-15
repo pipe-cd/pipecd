@@ -31,28 +31,37 @@ const (
 )
 
 func (e *Executor) ensureBaselineRollout(ctx context.Context) model.StageStatus {
-	baselineOptions := e.StageConfig.K8sBaselineRolloutStageOptions
-	if baselineOptions == nil {
+	var (
+		commitHash = e.Deployment.RunningCommitHash
+		options    = e.StageConfig.K8sBaselineRolloutStageOptions
+	)
+	if options == nil {
 		e.LogPersister.AppendErrorf("Malformed configuration for stage %s", e.Stage.Name)
 		return model.StageStatus_STAGE_FAILURE
 	}
 
+	// Load running manifests at the most successful deployed commit.
+	e.LogPersister.AppendInfof("Loading running manifests at commit %s for handling", commitHash)
 	manifests, err := e.loadRunningManifests(ctx)
 	if err != nil {
 		e.LogPersister.AppendErrorf("Failed while loading running manifests (%v)", err)
 		return model.StageStatus_STAGE_FAILURE
 	}
+	e.LogPersister.AppendSuccessf("Successfully loaded %d manifests", len(manifests))
 
 	if len(manifests) == 0 {
 		e.LogPersister.AppendError("This application has no running Kubernetes manifests to handle")
 		return model.StageStatus_STAGE_FAILURE
 	}
 
-	baselineManifests, err := e.generateBaselineManifests(manifests, *baselineOptions)
+	baselineManifests, err := e.generateBaselineManifests(manifests, *options)
 	if err != nil {
 		e.LogPersister.AppendErrorf("Unable to generate manifests for BASELINE variant (%v)", err)
 		return model.StageStatus_STAGE_FAILURE
 	}
+
+	// Add builtin annotations for tracking application live state.
+	e.addBuiltinAnnontations(baselineManifests, baselineVariant, commitHash)
 
 	// Store added resource keys into metadata for cleaning later.
 	addedResources := make([]string, 0, len(baselineManifests))
@@ -68,12 +77,8 @@ func (e *Executor) ensureBaselineRollout(ctx context.Context) model.StageStatus 
 
 	// Start rolling out the resources for BASELINE variant.
 	e.LogPersister.AppendInfo("Start rolling out BASELINE variant...")
-	for _, m := range baselineManifests {
-		if err = e.provider.ApplyManifest(ctx, m); err != nil {
-			e.LogPersister.AppendErrorf("Failed to apply manifest: %s (%v)", m.Key.ReadableString(), err)
-			return model.StageStatus_STAGE_FAILURE
-		}
-		e.LogPersister.AppendSuccessf("- applied manifest: %s", m.Key.ReadableString())
+	if err := e.applyManifests(ctx, baselineManifests); err != nil {
+		return model.StageStatus_STAGE_FAILURE
 	}
 
 	e.LogPersister.AppendSuccess("Successfully rolled out BASELINE variant")
@@ -191,15 +196,11 @@ func (e *Executor) generateBaselineManifests(manifests []provider.Manifest, opts
 		if len(services) == 0 {
 			return nil, fmt.Errorf("unable to find any service for name=%q", serviceName)
 		}
-
 		// Because the loaded maninests are read-only
 		// so we duplicate them to avoid updating the shared manifests data in cache.
-		duplicates := make([]provider.Manifest, 0, len(services))
-		for _, m := range services {
-			duplicates = append(duplicates, m.Duplicate(m.Key.Name))
-		}
+		services = duplicateManifests(services, "")
 
-		generatedServices, err := generateServiceManifests(duplicates, baselineVariant, suffix)
+		generatedServices, err := generateVariantServiceManifests(services, baselineVariant, suffix)
 		if err != nil {
 			return nil, err
 		}
@@ -215,15 +216,11 @@ func (e *Executor) generateBaselineManifests(manifests []provider.Manifest, opts
 		num := opts.Replicas.Calculate(int(*cur), 1)
 		return int32(num)
 	}
-	generatedWorkloads, err := generateWorkloadManifests(workloads, nil, nil, baselineVariant, suffix, replicasCalculator)
+	generatedWorkloads, err := generateVariantWorkloadManifests(workloads, nil, nil, baselineVariant, suffix, replicasCalculator)
 	if err != nil {
 		return nil, err
 	}
 	baselineManifests = append(baselineManifests, generatedWorkloads...)
 
-	// Add predefined annotations to the generated manifests.
-	for _, m := range baselineManifests {
-		m.AddAnnotations(e.builtinAnnotations(m, baselineVariant, e.Deployment.RunningCommitHash))
-	}
 	return baselineManifests, nil
 }
