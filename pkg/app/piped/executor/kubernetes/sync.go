@@ -111,12 +111,12 @@ func (e *Executor) generateSyncManifests(commitHash string, manifests []provider
 	out := make([]provider.Manifest, 0, len(manifests))
 
 	for _, manifest := range manifests {
-		// Because the loaded maninests are read-only
+		// Because the loaded manifests are read-only
 		// so we duplicate them to avoid updating the shared manifests data in cache.
 		m := manifest.Duplicate(manifest.Key.Name)
 		// Add predefined annotation to the manifest.
 		m.AddAnnotations(e.builtinAnnotations(m, primaryVariant, commitHash))
-		out = append(out, manifest)
+		out = append(out, m)
 	}
 	return out
 }
