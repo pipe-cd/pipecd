@@ -73,6 +73,7 @@ service WebService {
 
     // Piped
     rpc RegisterPiped(RegisterPipedRequest) returns (RegisterPipedResponse) {}
+    rpc EnablePiped(EnablePipedRequest) returns (EnablePipedResponse) {}
     rpc DisablePiped(DisablePipedRequest) returns (DisablePipedResponse) {}
     rpc ListPipeds(ListPipedsRequest) returns (ListPipedsResponse) {}
     rpc GetPiped(GetPipedRequest) returns (GetPipedResponse) {}
@@ -127,6 +128,13 @@ message RegisterPipedRequest {
 message RegisterPipedResponse {
     string id = 1;
     string key = 2;
+}
+
+message EnablePipedRequest {
+    string piped_id = 1 [(validate.rules).string.min_len = 1];
+}
+
+message EnablePipedResponse {
 }
 
 message DisablePipedRequest {

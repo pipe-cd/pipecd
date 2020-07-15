@@ -95,6 +95,10 @@ func (a *FakeWebAPI) RegisterPiped(ctx context.Context, req *webservice.Register
 	}, nil
 }
 
+func (a *FakeWebAPI) EnablePiped(ctx context.Context, req *webservice.EnablePipedRequest) (*webservice.EnablePipedResponse, error) {
+	return nil, status.Error(codes.Unimplemented, "")
+}
+
 func (a *FakeWebAPI) DisablePiped(ctx context.Context, req *webservice.DisablePipedRequest) (*webservice.DisablePipedResponse, error) {
 	return nil, status.Error(codes.Unimplemented, "")
 }
