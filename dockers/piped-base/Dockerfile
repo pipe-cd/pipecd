@@ -24,5 +24,4 @@ RUN \
     /installer/install-kustomize.sh && \
     # Delete installer directory.
     rm -rf /installer && \
-    apk del curl && \
     rm -f /var/cache/apk/*
