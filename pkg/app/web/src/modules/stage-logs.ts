@@ -17,8 +17,10 @@ export type StageLog = {
 type StageLogs = Record<string, StageLog>;
 const initialState: StageLogs = {};
 
-const createId = (props: { deploymentId: string; stageId: string }): string =>
-  `${props.deploymentId}/${props.stageId}`;
+const createActiveStageKey = (props: {
+  deploymentId: string;
+  stageId: string;
+}): string => `${props.deploymentId}${props.stageId}`;
 
 export const fetchStageLog = createAsyncThunk<
   StageLog,
@@ -54,21 +56,25 @@ export const stageLogsSlice = createSlice({
   extraReducers: (builder) => {
     builder
       .addCase(fetchStageLog.pending, (state, action) => {
-        const id = `${action.meta.arg.deploymentId}/${action.meta.arg.stageId}`;
-        state[id] = {
-          stageId: action.meta.arg.stageId,
-          deploymentId: action.meta.arg.deploymentId,
-          logBlocks: [],
-          completed: false,
-        };
+        const id = createActiveStageKey(action.meta.arg);
+        if (state[id]) {
+          state[id].completed = false;
+        } else {
+          state[id] = {
+            stageId: action.meta.arg.stageId,
+            deploymentId: action.meta.arg.deploymentId,
+            logBlocks: [],
+            completed: false,
+          };
+        }
       })
       .addCase(fetchStageLog.fulfilled, (state, action) => {
-        const id = createId(action.meta.arg);
+        const id = createActiveStageKey(action.meta.arg);
         state[id] = action.payload;
         state[id].completed = true;
       })
       .addCase(fetchStageLog.rejected, (state, action) => {
-        const id = createId(action.meta.arg);
+        const id = createActiveStageKey(action.meta.arg);
         state[id].completed = true;
       });
   },
@@ -76,13 +82,10 @@ export const stageLogsSlice = createSlice({
 
 export const selectStageLogById = (
   state: StageLogs,
-  {
-    deploymentId,
-    offsetIndex,
-  }: {
+  props: {
     deploymentId: string;
-    offsetIndex: string;
+    stageId: string;
   }
-): StageLog | undefined => {
-  return state[`${deploymentId}/${offsetIndex}`];
+): StageLog | null => {
+  return state[createActiveStageKey(props)];
 };

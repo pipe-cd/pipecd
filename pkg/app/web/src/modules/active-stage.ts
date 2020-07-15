@@ -1,7 +1,8 @@
 import { createSlice, PayloadAction } from "@reduxjs/toolkit";
 
 export type ActiveStage = {
-  id: string;
+  stageId: string;
+  deploymentId: string;
   name: string;
 } | null;
 

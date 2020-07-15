@@ -139,9 +139,7 @@ export const Pipeline: FC<Props> = memo(function Pipeline({ deploymentId }) {
           retriedCount: 0,
         })
       );
-      dispatch(
-        updateActiveStage({ id: `${deploymentId}/${stageId}`, name: stageName })
-      );
+      dispatch(updateActiveStage({ deploymentId, stageId, name: stageName }));
     },
     [dispatch, deploymentId]
   );
@@ -164,6 +162,10 @@ export const Pipeline: FC<Props> = memo(function Pipeline({ deploymentId }) {
           >
             {stageColumn.map((stage, stageIndex) => {
               const approver = findApprover(stage.metadataMap);
+              const isActive = activeStage
+                ? activeStage.deploymentId === deploymentId &&
+                  activeStage.stageId === stage.id
+                : false;
               const stageComp = (
                 <div
                   key={stage.id}
@@ -187,7 +189,7 @@ export const Pipeline: FC<Props> = memo(function Pipeline({ deploymentId }) {
                       onClick={() => {
                         setApproveTargetId(stage.id);
                       }}
-                      active={activeStage?.id === `${deploymentId}/${stage.id}`}
+                      active={isActive}
                     />
                   ) : (
                     <PipelineStage
@@ -195,7 +197,7 @@ export const Pipeline: FC<Props> = memo(function Pipeline({ deploymentId }) {
                       name={stage.name}
                       status={stage.status}
                       onClick={handleOnClickStage}
-                      active={activeStage?.id === `${deploymentId}/${stage.id}`}
+                      active={isActive}
                       approver={findApprover(stage.metadataMap)}
                     />
                   )}

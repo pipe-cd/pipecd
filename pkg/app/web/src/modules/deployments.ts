@@ -7,6 +7,7 @@ import {
   Deployment as DeploymentModel,
   PipelineStage,
   DeploymentStatus,
+  StageStatus,
 } from "pipe/pkg/app/web/model/deployment_pb";
 import * as deploymentsApi from "../api/deployments";
 import { fetchCommand, CommandModel, CommandStatus } from "./commands";
@@ -16,7 +17,13 @@ export type Deployment = Required<DeploymentModel.AsObject>;
 export type Stage = Required<PipelineStage.AsObject>;
 export type DeploymentStatusKey = keyof typeof DeploymentStatus;
 
-export const isDeploymentRunning = (status: DeploymentStatus): boolean => {
+export const isDeploymentRunning = (
+  status: DeploymentStatus | undefined
+): boolean => {
+  if (status === undefined) {
+    return false;
+  }
+
   switch (status) {
     case DeploymentStatus.DEPLOYMENT_PENDING:
     case DeploymentStatus.DEPLOYMENT_PLANNED:
@@ -26,6 +33,18 @@ export const isDeploymentRunning = (status: DeploymentStatus): boolean => {
     case DeploymentStatus.DEPLOYMENT_CANCELLED:
     case DeploymentStatus.DEPLOYMENT_FAILURE:
     case DeploymentStatus.DEPLOYMENT_SUCCESS:
+      return false;
+  }
+};
+
+export const isStageRunning = (status: StageStatus): boolean => {
+  switch (status) {
+    case StageStatus.STAGE_NOT_STARTED_YET:
+    case StageStatus.STAGE_RUNNING:
+      return true;
+    case StageStatus.STAGE_SUCCESS:
+    case StageStatus.STAGE_FAILURE:
+    case StageStatus.STAGE_CANCELLED:
       return false;
   }
 };

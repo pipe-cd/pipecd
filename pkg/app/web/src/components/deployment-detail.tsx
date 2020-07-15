@@ -27,6 +27,9 @@ import { Piped, selectById } from "../modules/pipeds";
 import { StatusIcon } from "./deployment-status-icon";
 import { LabeledText } from "./labeled-text";
 import { SplitButton } from "./split-button";
+import { ActiveStage } from "../modules/active-stage";
+import { useInterval } from "../utils/use-interval";
+import { fetchStageLog } from "../modules/stage-logs";
 
 const useStyles = makeStyles((theme) => ({
   root: {
@@ -76,6 +79,7 @@ interface Props {
 }
 
 const CANCEL_OPTIONS = ["Cancel", "Cancel without Rollback"];
+const LOG_FETCH_INTERVAL = 2000;
 
 export const DeploymentDetail: FC<Props> = memo(function DeploymentDetail({
   deploymentId,
@@ -100,6 +104,27 @@ export const DeploymentDetail: FC<Props> = memo(function DeploymentDetail({
     }
     return false;
   });
+  const activeStage = useSelector<AppState, ActiveStage | null>(
+    (state) => state.activeStage
+  );
+
+  useInterval(
+    () => {
+      if (activeStage) {
+        dispatch(
+          fetchStageLog({
+            deploymentId: activeStage.deploymentId,
+            stageId: activeStage.stageId,
+            offsetIndex: 0,
+            retriedCount: 0,
+          })
+        );
+      }
+    },
+    activeStage && isDeploymentRunning(deployment?.status)
+      ? LOG_FETCH_INTERVAL
+      : null
+  );
 
   if (!deployment || !env || !piped) {
     return (
