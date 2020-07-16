@@ -16,6 +16,10 @@ import {
   IconButton,
   Menu,
   MenuItem,
+  Typography,
+  Accordion,
+  AccordionSummary,
+  AccordionDetails,
 } from "@material-ui/core";
 import { Add as AddIcon, MoreVert as MoreVertIcon } from "@material-ui/icons";
 import React, { FC, memo, useState } from "react";
@@ -29,53 +33,99 @@ import {
   selectAll,
   fetchPipeds,
   disablePiped,
+  enablePiped,
 } from "../../modules/pipeds";
 import { AppState } from "../../modules";
 import { AppDispatch } from "../../store";
+import ExpandMoreIcon from "@material-ui/icons/ExpandMore";
+import clsx from "clsx";
 
 const useStyles = makeStyles((theme) => ({
+  main: {
+    height: "100%",
+    overflow: "auto",
+  },
   item: {
     backgroundColor: theme.palette.background.paper,
+  },
+  disabledPipedsAccordion: {
+    padding: 0,
+  },
+  disabledItemsSummary: {
+    borderBottom: "1px solid rgba(0, 0, 0, .125)",
+  },
+  pipedsList: {
+    flex: 1,
+  },
+  disabledItemsSecondaryHeader: {
+    color: theme.palette.text.secondary,
+    marginLeft: theme.spacing(3),
+  },
+  disabledItem: {
+    opacity: 0.6,
   },
 }));
 
 const ITEM_HEIGHT = 48;
 
-export const SettingsPipedPage: FC = memo(function SettingsPipedPage() {
-  const classes = useStyles();
-  const [isOpenForm, setIsOpenForm] = useState(false);
-  const [actionTargetId, setActionTargetId] = useState<string | null>(null);
-  const [anchorEl, setAnchorEl] = useState<HTMLButtonElement | null>(null);
-  const isOpenMenu = Boolean(anchorEl);
-  const dispatch = useDispatch<AppDispatch>();
+const usePipeds = (): [Piped[], Piped[]] => {
   const pipeds = useSelector<AppState, Piped[]>((state) =>
     selectAll(state.pipeds)
   );
+
+  const disabled: Piped[] = [];
+  const enabled: Piped[] = [];
+
+  pipeds.forEach((piped) => {
+    if (piped.disabled) {
+      disabled.push(piped);
+    } else {
+      enabled.push(piped);
+    }
+  });
+
+  return [enabled, disabled];
+};
+
+export const SettingsPipedPage: FC = memo(function SettingsPipedPage() {
+  const classes = useStyles();
+  const [isOpenForm, setIsOpenForm] = useState(false);
+  const [actionTarget, setActionTarget] = useState<Piped | null>(null);
+  const [anchorEl, setAnchorEl] = useState<HTMLButtonElement | null>(null);
+  const isOpenMenu = Boolean(anchorEl);
+  const dispatch = useDispatch<AppDispatch>();
+  const [enabledPipeds, disabledPipeds] = usePipeds();
+
   const registeredPiped = useSelector<AppState, RegisteredPiped | null>(
     (state) => state.pipeds.registeredPiped
   );
 
   const handleMenuOpen = (
     event: React.MouseEvent<HTMLButtonElement>,
-    pipedId: string
+    piped: Piped
   ): void => {
-    setActionTargetId(pipedId);
+    setActionTarget(piped);
     setAnchorEl(event.currentTarget);
   };
 
-  const handleMenuClose = (): void => {
+  const closeMenu = (): void => {
     setAnchorEl(null);
-    setActionTargetId(null);
+    setTimeout(() => {
+      setActionTarget(null);
+    }, 200);
   };
 
   const handleDisableClick = (): void => {
-    if (actionTargetId) {
-      dispatch(disablePiped({ pipedId: actionTargetId })).then(() => {
-        dispatch(fetchPipeds(true));
-      });
+    closeMenu();
+    if (!actionTarget) {
+      return;
     }
-    setAnchorEl(null);
-    setActionTargetId(null);
+
+    const act = actionTarget.disabled ? enablePiped : disablePiped;
+
+    dispatch(act({ pipedId: actionTarget.id })).then(() => {
+      dispatch(fetchPipeds(true));
+    });
   };
 
   const handleSubmit = (props: { name: string; desc: string }): void => {
@@ -94,7 +144,7 @@ export const SettingsPipedPage: FC = memo(function SettingsPipedPage() {
   };
 
   return (
-    <div>
+    <>
       <Toolbar variant="dense">
         <Button
           color="primary"
@@ -106,37 +156,77 @@ export const SettingsPipedPage: FC = memo(function SettingsPipedPage() {
       </Toolbar>
       <Divider />
 
-      <List disablePadding>
-        {pipeds.map((pipe) => (
-          <ListItem
-            key={`pipe-${pipe.id}`}
-            divider
-            dense
-            className={classes.item}
+      <div className={classes.main}>
+        <List disablePadding className={classes.pipedsList}>
+          {enabledPipeds.map((piped) => (
+            <ListItem
+              key={`pipe-${piped.id}`}
+              divider
+              dense
+              className={classes.item}
+            >
+              <ListItemText
+                primary={piped.id}
+                secondary={`${piped.name}: ${piped.desc}`}
+              />
+              <ListItemSecondaryAction>
+                <IconButton
+                  edge="end"
+                  aria-label="open menu"
+                  onClick={(e) => handleMenuOpen(e, piped)}
+                >
+                  <MoreVertIcon />
+                </IconButton>
+              </ListItemSecondaryAction>
+            </ListItem>
+          ))}
+        </List>
+
+        <Accordion>
+          <AccordionSummary
+            expandIcon={<ExpandMoreIcon />}
+            className={classes.disabledItemsSummary}
           >
-            <ListItemText
-              primary={pipe.id}
-              secondary={`${pipe.name}: ${pipe.desc}`}
-            />
-            <ListItemSecondaryAction>
-              <IconButton
-                edge="end"
-                aria-label="open menu"
-                onClick={(e) => handleMenuOpen(e, pipe.id)}
-              >
-                <MoreVertIcon />
-              </IconButton>
-            </ListItemSecondaryAction>
-          </ListItem>
-        ))}
-      </List>
+            <Typography>Disabled pipeds</Typography>
+            <Typography
+              className={classes.disabledItemsSecondaryHeader}
+            >{`Items: ${disabledPipeds.length}`}</Typography>
+          </AccordionSummary>
+          <AccordionDetails className={classes.disabledPipedsAccordion}>
+            <List disablePadding className={classes.pipedsList}>
+              {disabledPipeds.map((piped) => (
+                <ListItem
+                  key={`pipe-${piped.id}`}
+                  divider
+                  dense
+                  className={clsx(classes.item, classes.disabledItem)}
+                >
+                  <ListItemText
+                    primary={piped.id}
+                    secondary={`${piped.name}: ${piped.desc}`}
+                  />
+                  <ListItemSecondaryAction>
+                    <IconButton
+                      edge="end"
+                      aria-label="open menu"
+                      onClick={(e) => handleMenuOpen(e, piped)}
+                    >
+                      <MoreVertIcon />
+                    </IconButton>
+                  </ListItemSecondaryAction>
+                </ListItem>
+              ))}
+            </List>
+          </AccordionDetails>
+        </Accordion>
+      </div>
 
       <Menu
-        id="long-menu"
+        id="piped-menu"
         anchorEl={anchorEl}
         keepMounted
         open={isOpenMenu}
-        onClose={handleMenuClose}
+        onClose={() => closeMenu()}
         PaperProps={{
           style: {
             maxHeight: ITEM_HEIGHT * 4.5,
@@ -144,7 +234,11 @@ export const SettingsPipedPage: FC = memo(function SettingsPipedPage() {
           },
         }}
       >
-        <MenuItem onClick={handleDisableClick}>Disable</MenuItem>
+        {actionTarget && actionTarget.disabled ? (
+          <MenuItem onClick={handleDisableClick}>Enable</MenuItem>
+        ) : (
+          <MenuItem onClick={handleDisableClick}>Disable</MenuItem>
+        )}
       </Menu>
 
       <Drawer anchor="right" open={isOpenForm} onClose={handleClose}>
@@ -179,6 +273,6 @@ export const SettingsPipedPage: FC = memo(function SettingsPipedPage() {
           </Box>
         </DialogContent>
       </Dialog>
-    </div>
+    </>
   );
 });

@@ -45,6 +45,13 @@ export const disablePiped = createAsyncThunk<void, { pipedId: string }>(
   }
 );
 
+export const enablePiped = createAsyncThunk<void, { pipedId: string }>(
+  "pipeds/enable",
+  async ({ pipedId }) => {
+    await pipedsApi.enablePiped({ pipedId });
+  }
+);
+
 export const pipedsSlice = createSlice({
   name: "pipeds",
   initialState: pipedsAdapter.getInitialState<{

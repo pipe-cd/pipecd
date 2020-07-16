@@ -20,6 +20,7 @@ export const theme = createMuiTheme({
           height: "100%",
           display: "flex",
           flexDirection: "column",
+          overflow: "hidden",
         },
       },
     },
