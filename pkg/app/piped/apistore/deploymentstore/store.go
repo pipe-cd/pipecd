@@ -64,7 +64,7 @@ type store struct {
 }
 
 var (
-	defaultSyncInterval = 30 * time.Second
+	defaultSyncInterval = 10 * time.Second
 )
 
 // NewStore creates a new deployment store instance.
