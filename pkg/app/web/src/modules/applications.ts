@@ -10,6 +10,7 @@ import {
 import * as applicationsApi from "../api/applications";
 import { ApplicationKind } from "pipe/pkg/app/web/model/common_pb";
 import { fetchCommand, CommandStatus, CommandModel } from "./commands";
+import { AppState } from ".";
 
 export type Application = Required<ApplicationModel.AsObject>;
 export type ApplicationSyncStatusKey = keyof typeof ApplicationSyncStatus;
@@ -23,16 +24,12 @@ export const { selectAll, selectById } = applicationsAdapter.getSelectors();
 
 export const fetchApplications = createAsyncThunk<
   Application[],
-  | {
-      enabled?: { value: boolean };
-      kindsList: ApplicationKind[];
-      envIdsList: string[];
-      syncStatusesList: ApplicationSyncStatus[];
-    }
-  | undefined
->("applications/fetchList", async (options) => {
+  void,
+  { state: AppState }
+>("applications/fetchList", async (_, thunkAPI) => {
+  const { applicationFilterOptions } = thunkAPI.getState();
   const { applicationsList } = await applicationsApi.getApplications({
-    options,
+    options: applicationFilterOptions,
   });
   return applicationsList as Application[];
 });
@@ -90,6 +87,13 @@ export const disableApplication = createAsyncThunk<
   { applicationId: string }
 >("applications/disable", async (props) => {
   await applicationsApi.disableApplication(props);
+});
+
+export const enableApplication = createAsyncThunk<
+  void,
+  { applicationId: string }
+>("applications/enable", async (props) => {
+  await applicationsApi.enableApplication(props);
 });
 
 export const applicationsSlice = createSlice({

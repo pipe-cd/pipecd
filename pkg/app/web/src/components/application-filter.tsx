@@ -8,11 +8,16 @@ import {
   Select,
   Typography,
 } from "@material-ui/core";
-import React, { FC, useReducer, memo, useEffect } from "react";
-import { useSelector } from "react-redux";
+import React, { FC, memo } from "react";
+import { useDispatch, useSelector } from "react-redux";
 import { APPLICATION_KIND_TEXT } from "../constants/application-kind";
 import { APPLICATION_SYNC_STATUS_TEXT } from "../constants/application-sync-status-text";
 import { AppState } from "../modules";
+import {
+  ApplicationFilterOptions,
+  clearApplicationFilter,
+  updateApplicationFilter,
+} from "../modules/application-filter-options";
 import {
   ApplicationKind,
   ApplicationKindKey,
@@ -47,98 +52,34 @@ const useStyles = makeStyles((theme) => ({
   },
 }));
 
-const ALL_VALUE = "ALL";
-
-type ActiveStatus = typeof ALL_VALUE | "enabled" | "disabled";
-
-interface FormState {
-  syncStatus: ApplicationSyncStatus | typeof ALL_VALUE;
-  applicationKind: ApplicationKind | typeof ALL_VALUE;
-  activeStatus: ActiveStatus;
-  env: string;
-}
-
-const initialState: FormState = {
-  activeStatus: "enabled",
-  syncStatus: ALL_VALUE,
-  env: ALL_VALUE,
-  applicationKind: ALL_VALUE,
-};
-
-type Actions =
-  | {
-      type: "update-sync-status";
-      value: ApplicationSyncStatus | typeof ALL_VALUE;
-    }
-  | {
-      type: "update-application-kind";
-      value: ApplicationKind | typeof ALL_VALUE;
-    }
-  | { type: "update-env"; value: string }
-  | { type: "update-active-status"; value: ActiveStatus }
-  | { type: "clear-form" };
-const reducer = (state: FormState, action: Actions): FormState => {
-  switch (action.type) {
-    case "update-active-status":
-      return { ...state, activeStatus: action.value };
-    case "update-sync-status":
-      return { ...state, syncStatus: action.value };
-    case "update-application-kind":
-      return { ...state, applicationKind: action.value };
-    case "update-env":
-      return { ...state, env: action.value };
-    case "clear-form":
-      return initialState;
-  }
-};
-
-interface Options {
-  enabled?: {
-    value: boolean;
-  };
-  kindsList: ApplicationKind[];
-  envIdsList: string[];
-  syncStatusesList: ApplicationSyncStatus[];
-}
-
 interface Props {
   open: boolean;
-  onChange: (props: Options) => void;
+  onChange: () => void;
 }
+
+const ALL_VALUE = "ALL";
+const getActiveStatusText = (v: boolean): string =>
+  v ? "enabled" : "disabled";
 
 export const ApplicationFilter: FC<Props> = memo(function ApplicationFilter({
   open,
   onChange,
 }) {
   const classes = useStyles();
+  const dispatch = useDispatch();
   const envs = useSelector<AppState, Environment[]>((state) =>
     selectAll(state.environments)
   );
+  const options = useSelector<AppState, ApplicationFilterOptions>(
+    (state) => state.applicationFilterOptions
+  );
 
-  const [state, dispatch] = useReducer(reducer, initialState);
-
-  useEffect(() => {
-    const options: Options = {
-      kindsList: [],
-      envIdsList: [],
-      syncStatusesList: [],
-    };
-    if (state.activeStatus !== ALL_VALUE) {
-      options.enabled = {
-        value: state.activeStatus === "enabled",
-      };
-    }
-    if (state.applicationKind !== ALL_VALUE) {
-      options.kindsList = [state.applicationKind];
-    }
-    if (state.env !== ALL_VALUE) {
-      options.envIdsList = [state.env];
-    }
-    if (state.syncStatus !== ALL_VALUE) {
-      options.syncStatusesList = [state.syncStatus];
-    }
-    onChange(options);
-  }, [state, onChange]);
+  const handleUpdateFilterValue = (
+    options: Partial<ApplicationFilterOptions>
+  ): void => {
+    dispatch(updateApplicationFilter(options));
+    onChange();
+  };
 
   if (open === false) {
     return null;
@@ -151,7 +92,8 @@ export const ApplicationFilter: FC<Props> = memo(function ApplicationFilter({
         <Button
           color="primary"
           onClick={() => {
-            dispatch({ type: "clear-form" });
+            dispatch(clearApplicationFilter());
+            onChange();
           }}
         >
           Clear
@@ -163,13 +105,13 @@ export const ApplicationFilter: FC<Props> = memo(function ApplicationFilter({
         <Select
           labelId="filter-env"
           id="filter-env"
-          value={state.env}
+          value={options.envIdsList[0] || ALL_VALUE}
           label="Environment"
           className={classes.select}
           onChange={(e) => {
-            dispatch({
-              type: "update-env",
-              value: e.target.value as string,
+            handleUpdateFilterValue({
+              envIdsList:
+                e.target.value === ALL_VALUE ? [] : [e.target.value as string],
             });
           }}
         >
@@ -189,16 +131,15 @@ export const ApplicationFilter: FC<Props> = memo(function ApplicationFilter({
         <Select
           labelId="filter-application-kind"
           id="filter-application-kind"
-          value={state.applicationKind}
+          value={options.kindsList[0] || ALL_VALUE}
           label="Application Kind"
           className={classes.select}
           onChange={(e) => {
-            dispatch({
-              type: "update-application-kind",
-              value:
-                e.target.value === ""
-                  ? ALL_VALUE
-                  : (e.target.value as ApplicationKind),
+            handleUpdateFilterValue({
+              kindsList:
+                e.target.value === ALL_VALUE
+                  ? []
+                  : [e.target.value as ApplicationKind],
             });
           }}
         >
@@ -226,16 +167,15 @@ export const ApplicationFilter: FC<Props> = memo(function ApplicationFilter({
         <Select
           labelId="filter-sync-status"
           id="filter-sync-status"
-          value={state.syncStatus}
+          value={options.syncStatusesList[0] || ALL_VALUE}
           label="Sync Status"
           className={classes.select}
           onChange={(e) => {
-            dispatch({
-              type: "update-sync-status",
-              value:
-                e.target.value === ""
-                  ? ALL_VALUE
-                  : (e.target.value as ApplicationSyncStatus),
+            handleUpdateFilterValue({
+              syncStatusesList:
+                e.target.value === ALL_VALUE
+                  ? []
+                  : [e.target.value as ApplicationSyncStatus],
             });
           }}
         >
@@ -263,13 +203,19 @@ export const ApplicationFilter: FC<Props> = memo(function ApplicationFilter({
         <Select
           labelId="filter-active-status"
           id="filter-active-status"
-          value={state.activeStatus}
+          value={
+            options.enabled === undefined
+              ? ALL_VALUE
+              : getActiveStatusText(options.enabled.value)
+          }
           label="Active Status"
           className={classes.select}
           onChange={(e) => {
-            dispatch({
-              type: "update-active-status",
-              value: e.target.value as ActiveStatus,
+            handleUpdateFilterValue({
+              enabled:
+                e.target.value === ALL_VALUE
+                  ? undefined
+                  : { value: e.target.value === "enabled" },
             });
           }}
         >

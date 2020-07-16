@@ -12,6 +12,8 @@ import {
   SyncApplicationResponse,
   DisableApplicationRequest,
   DisableApplicationResponse,
+  EnableApplicationRequest,
+  EnableApplicationResponse,
 } from "pipe/pkg/app/web/api_client/service_pb";
 import { ApplicationGitPath } from "pipe/pkg/app/web/model/common_pb";
 import * as google_protobuf_wrappers_pb from "google-protobuf/google/protobuf/wrappers_pb";
@@ -101,4 +103,14 @@ export const disableApplication = async ({
   const req = new DisableApplicationRequest();
   req.setApplicationId(applicationId);
   return apiRequest(req, apiClient.disableApplication);
+};
+
+export const enableApplication = async ({
+  applicationId,
+}: EnableApplicationRequest.AsObject): Promise<
+  EnableApplicationResponse.AsObject
+> => {
+  const req = new EnableApplicationRequest();
+  req.setApplicationId(applicationId);
+  return apiRequest(req, apiClient.enableApplication);
 };

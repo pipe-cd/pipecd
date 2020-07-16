@@ -7,7 +7,6 @@ import {
   DialogActions,
   Button,
   Typography,
-  DialogContentText,
 } from "@material-ui/core";
 import { useSelector, useDispatch } from "react-redux";
 import {
@@ -30,13 +29,19 @@ const useStyles = makeStyles((theme) => ({
 }));
 
 interface Props {
+  open: boolean;
   applicationId: string | null;
   onCancel: () => void;
   onDisable: () => void;
 }
 
 export const DisableApplicationDialog: FC<Props> = memo(
-  function DisableApplicationDialog({ applicationId, onDisable, onCancel }) {
+  function DisableApplicationDialog({
+    applicationId,
+    open,
+    onDisable,
+    onCancel,
+  }) {
     const classes = useStyles();
     const dispatch = useDispatch<AppDispatch>();
 
@@ -60,18 +65,16 @@ export const DisableApplicationDialog: FC<Props> = memo(
     }
 
     return (
-      <Dialog open={Boolean(application)}>
+      <Dialog open={Boolean(application) && open}>
         <DialogTitle>Disable application</DialogTitle>
         <DialogContent>
           <Alert severity="warning" className={classes.description}>
             Are you sure you want to disable the application?
           </Alert>
-          <DialogContentText>
-            <Typography variant="caption">NAME</Typography>
-            <Typography variant="body1" className={classes.disableTargetName}>
-              {application.name}
-            </Typography>
-          </DialogContentText>
+          <Typography variant="caption">NAME</Typography>
+          <Typography variant="body1" className={classes.disableTargetName}>
+            {application.name}
+          </Typography>
         </DialogContent>
         <DialogActions>
           <Button onClick={onCancel}>Cancel</Button>

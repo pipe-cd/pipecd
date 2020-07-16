@@ -8,7 +8,7 @@ import {
 import { Add } from "@material-ui/icons";
 import CloseIcon from "@material-ui/icons/Close";
 import FilterIcon from "@material-ui/icons/FilterList";
-import React, { FC, memo, useCallback, useState } from "react";
+import React, { FC, memo, useEffect, useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import { AddApplicationForm } from "../../components/add-application-form";
 import { ApplicationFilter } from "../../components/application-filter";
@@ -17,10 +17,11 @@ import { AppState } from "../../modules";
 import { addApplication, fetchApplications } from "../../modules/applications";
 import { AppDispatch } from "../../store";
 
-const useStyles = makeStyles((theme) => ({
+const useStyles = makeStyles(() => ({
   main: {
     display: "flex",
     overflow: "hidden",
+    flex: 1,
   },
   toolbarSpacer: {
     flexGrow: 1,
@@ -40,12 +41,13 @@ export const ApplicationIndexPage: FC = memo(function ApplicationIndexPage() {
     setIsOpenForm(false);
   };
 
-  const handleOnChangeForm = useCallback(
-    (formState) => {
-      dispatch(fetchApplications(formState));
-    },
-    [dispatch]
-  );
+  const handleChangeFilterOptions = (): void => {
+    dispatch(fetchApplications());
+  };
+
+  useEffect(() => {
+    dispatch(fetchApplications());
+  }, [dispatch]);
 
   return (
     <>
@@ -71,7 +73,10 @@ export const ApplicationIndexPage: FC = memo(function ApplicationIndexPage() {
 
       <div className={classes.main}>
         <ApplicationList />
-        <ApplicationFilter open={isOpenFilter} onChange={handleOnChangeForm} />
+        <ApplicationFilter
+          open={isOpenFilter}
+          onChange={handleChangeFilterOptions}
+        />
       </div>
 
       <Drawer

@@ -17,20 +17,22 @@ import MenuIcon from "@material-ui/icons/MoreVert";
 import { Dictionary } from "@reduxjs/toolkit";
 import dayjs from "dayjs";
 import React, { FC, memo, useState } from "react";
-import { useSelector, useDispatch } from "react-redux";
+import { useDispatch, useSelector } from "react-redux";
 import { Link as RouterLink } from "react-router-dom";
 import { PAGE_PATH_APPLICATIONS } from "../constants";
 import { APPLICATION_SYNC_STATUS_TEXT } from "../constants/application-sync-status-text";
 import { AppState } from "../modules";
 import {
   Application,
-  selectAll,
+  enableApplication,
   fetchApplications,
+  selectAll,
 } from "../modules/applications";
 import {
   Environment,
   selectEntities as selectEnvs,
 } from "../modules/environments";
+import { AppDispatch } from "../store";
 import { DisableApplicationDialog } from "./disable-application-dialog";
 import { SyncStatusIcon } from "./sync-status-icon";
 
@@ -62,29 +64,46 @@ const EmptyDeploymentData: FC = () => (
 
 export const ApplicationList: FC = memo(function ApplicationList() {
   const classes = useStyles();
-  const dispatch = useDispatch();
+  const dispatch = useDispatch<AppDispatch>();
   const [anchorEl, setAnchorEl] = useState<HTMLButtonElement | null>(null);
   const isOpenMenu = Boolean(anchorEl);
-  const [disableTarget, setDisableTarget] = useState<null | string>(null);
+  const [actionTarget, setActionTarget] = useState<Application | null>(null);
+  const [openDisableDialog, setOpenDisableDialog] = useState(false);
+
   const applications = useSelector<AppState, Application[]>((state) =>
     selectAll(state.applications)
   );
   const envs = useSelector<AppState, Dictionary<Environment>>((state) =>
     selectEnvs(state.environments)
   );
+
+  const closeMenu = (): void => {
+    setAnchorEl(null);
+    setTimeout(() => {
+      setActionTarget(null);
+    }, 200);
+  };
+
+  // Menu item event handler
   const handleOnClickDisable = (): void => {
-    if (anchorEl?.dataset.id) {
-      setDisableTarget(anchorEl.dataset.id);
+    setAnchorEl(null);
+    setOpenDisableDialog(true);
+  };
+
+  const handleOnClickEnable = (): void => {
+    if (actionTarget) {
+      dispatch(enableApplication({ applicationId: actionTarget.id })).then(
+        () => {
+          dispatch(fetchApplications());
+        }
+      );
     }
-    setAnchorEl(null);
+    closeMenu();
   };
-  const handleOnCancelDisable = (): void => {
-    setDisableTarget(null);
-    dispatch(fetchApplications());
-  };
-  const handleOnDisable = (): void => {
-    setAnchorEl(null);
-    setDisableTarget(null);
+
+  const handleCloseDialog = (): void => {
+    closeMenu();
+    setOpenDisableDialog(false);
     dispatch(fetchApplications());
   };
 
@@ -152,7 +171,10 @@ export const ApplicationList: FC = memo(function ApplicationList() {
                   <TableCell align="right">
                     <IconButton
                       data-id={app.id}
-                      onClick={(e) => setAnchorEl(e.currentTarget)}
+                      onClick={(e) => {
+                        setAnchorEl(e.currentTarget);
+                        setActionTarget(app);
+                      }}
                     >
                       <MenuIcon />
                     </IconButton>
@@ -169,22 +191,25 @@ export const ApplicationList: FC = memo(function ApplicationList() {
         anchorEl={anchorEl}
         keepMounted
         open={isOpenMenu}
-        onClose={() => {
-          setAnchorEl(null);
-        }}
+        onClose={closeMenu}
         PaperProps={{
           style: {
             width: "20ch",
           },
         }}
       >
-        <MenuItem onClick={handleOnClickDisable}>Disable</MenuItem>
+        {actionTarget && actionTarget.disabled ? (
+          <MenuItem onClick={handleOnClickEnable}>Enable</MenuItem>
+        ) : (
+          <MenuItem onClick={handleOnClickDisable}>Disable</MenuItem>
+        )}
       </Menu>
 
       <DisableApplicationDialog
-        applicationId={disableTarget}
-        onDisable={handleOnDisable}
-        onCancel={handleOnCancelDisable}
+        open={openDisableDialog}
+        applicationId={actionTarget && actionTarget.id}
+        onDisable={handleCloseDialog}
+        onCancel={handleCloseDialog}
       />
     </div>
   );

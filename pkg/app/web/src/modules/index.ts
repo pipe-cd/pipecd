@@ -9,11 +9,13 @@ import { pipedsSlice } from "./pipeds";
 import { stageLogsSlice } from "./stage-logs";
 import { toastsSlice } from "./toasts";
 import { commandsSlice } from "./commands";
+import { applicationFilterOptionsSlice } from "./application-filter-options";
 
 export const reducers = combineReducers({
   deployments: deploymentsSlice.reducer,
   applicationLiveState: applicationLiveStateSlice.reducer,
   applications: applicationsSlice.reducer,
+  applicationFilterOptions: applicationFilterOptionsSlice.reducer,
   stageLogs: stageLogsSlice.reducer,
   activeStage: activeStageSlice.reducer,
   pipeds: pipedsSlice.reducer,
