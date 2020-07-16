@@ -95,6 +95,12 @@ func (a *FakeWebAPI) RegisterPiped(ctx context.Context, req *webservice.Register
 	}, nil
 }
 
+func (a *FakeWebAPI) RecreatePipedKey(ctx context.Context, req *webservice.RecreatePipedKeyRequest) (*webservice.RecreatePipedKeyResponse, error) {
+	return &webservice.RecreatePipedKeyResponse{
+		Key: "9bf9752a-54a2-451a-a541-444add56f96b",
+	}, nil
+}
+
 func (a *FakeWebAPI) EnablePiped(ctx context.Context, req *webservice.EnablePipedRequest) (*webservice.EnablePipedResponse, error) {
 	return nil, status.Error(codes.Unimplemented, "")
 }

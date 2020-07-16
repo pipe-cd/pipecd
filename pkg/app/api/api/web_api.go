@@ -150,21 +150,40 @@ func (a *WebAPI) RegisterPiped(ctx context.Context, req *webservice.RegisterPipe
 	}, nil
 }
 
+func (a *WebAPI) RecreatePipedKey(ctx context.Context, req *webservice.RecreatePipedKeyRequest) (*webservice.RecreatePipedKeyResponse, error) {
+	key, keyHash, err := model.GeneratePipedKey()
+	if err != nil {
+		a.logger.Error("failed to generate piped key", zap.Error(err))
+		return nil, status.Error(codes.Internal, "failed to generate the piped key")
+	}
+
+	updater := func(ctx context.Context, pipedID string) error {
+		return a.pipedStore.UpdateKeyHash(ctx, pipedID, keyHash)
+	}
+	if err := a.updatePiped(ctx, req.Id, updater); err != nil {
+		return nil, err
+	}
+
+	return &webservice.RecreatePipedKeyResponse{
+		Key: key,
+	}, nil
+}
+
 func (a *WebAPI) EnablePiped(ctx context.Context, req *webservice.EnablePipedRequest) (*webservice.EnablePipedResponse, error) {
-	if err := a.updatePipedEnable(ctx, req.PipedId, true); err != nil {
+	if err := a.updatePiped(ctx, req.PipedId, a.pipedStore.EnablePiped); err != nil {
 		return nil, err
 	}
 	return &webservice.EnablePipedResponse{}, nil
 }
 
 func (a *WebAPI) DisablePiped(ctx context.Context, req *webservice.DisablePipedRequest) (*webservice.DisablePipedResponse, error) {
-	if err := a.updatePipedEnable(ctx, req.PipedId, false); err != nil {
+	if err := a.updatePiped(ctx, req.PipedId, a.pipedStore.DisablePiped); err != nil {
 		return nil, err
 	}
 	return &webservice.DisablePipedResponse{}, nil
 }
 
-func (a *WebAPI) updatePipedEnable(ctx context.Context, pipedID string, enable bool) error {
+func (a *WebAPI) updatePiped(ctx context.Context, pipedID string, updater func(context.Context, string) error) error {
 	claims, err := rpcauth.ExtractClaims(ctx)
 	if err != nil {
 		return err
@@ -177,13 +196,6 @@ func (a *WebAPI) updatePipedEnable(ctx context.Context, pipedID string, enable b
 
 	if claims.Role.ProjectId != piped.ProjectId {
 		return status.Error(codes.PermissionDenied, "The current project does not have requested piped")
-	}
-
-	var updater func(context.Context, string) error
-	if enable {
-		updater = a.pipedStore.EnablePiped
-	} else {
-		updater = a.pipedStore.DisablePiped
 	}
 
 	if err := updater(ctx, pipedID); err != nil {
