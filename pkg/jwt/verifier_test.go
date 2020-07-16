@@ -39,7 +39,6 @@ func TestVerify(t *testing.T) {
 		{
 			name: "ok",
 			claims: NewClaims("user-1", "avatar-url", time.Hour, role.Role{
-				Owner:       true,
 				ProjectId:   "project-1",
 				ProjectRole: role.Role_ADMIN,
 			}),
@@ -152,7 +151,6 @@ func TestVerify(t *testing.T) {
 	testFunc(hsS, hsV)
 
 	c := NewClaims("user", "avatar-url", time.Hour, role.Role{
-		Owner:       true,
 		ProjectId:   "project",
 		ProjectRole: role.Role_ADMIN,
 	})

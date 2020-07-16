@@ -26,10 +26,6 @@ func NewRBACAuthorizer() rpcauth.RBACAuthorizer {
 	return &authorizer{}
 }
 
-func isOwner(r role.Role) bool {
-	return r.Owner
-}
-
 func isAdmin(r role.Role) bool {
 	return r.ProjectRole == role.Role_ADMIN
 }
