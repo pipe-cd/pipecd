@@ -545,6 +545,7 @@ func (a *WebAPI) GetDeployment(ctx context.Context, req *webservice.GetDeploymen
 	if err != nil {
 		return nil, err
 	}
+	deployment.Trigger.Commit.Hash = deployment.ShortCommitHash()
 	return &webservice.GetDeploymentResponse{
 		Deployment: deployment,
 	}, nil

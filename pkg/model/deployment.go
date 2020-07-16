@@ -113,7 +113,19 @@ func (d *Deployment) StageStatusMap() map[string]StageStatus {
 
 // CommitHash returns the hash value of trigger commit.
 func (d *Deployment) CommitHash() string {
-	return d.Trigger.Commit.Hash
+	if c := d.Trigger.Commit; c != nil {
+		return c.Hash
+	}
+	return ""
+}
+
+// ShortCommitHash returns the first seven characters of the hash.
+func (d *Deployment) ShortCommitHash() string {
+	h := d.CommitHash()
+	if len(h) < 8 {
+		return h
+	}
+	return h[:8]
 }
 
 // Clone returns a deep copy of the deployment.
