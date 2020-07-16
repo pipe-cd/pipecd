@@ -63,9 +63,9 @@ spec:
 
   # A plugin to validate PR's commit messages against the specified format.
   # See more: https://kapetanios.dev/docs/plugins/commitmessage
-  commitMessage:
-    enabled: true
-    formatRegex: '^[A-Z\[]'
+  # commitMessage:
+  #   enabled: true
+  #   formatRegex: '^[A-Z\[]'
 
   # A plugin provides command to generate the changelog from latest release.
   # See more: https://kapetanios.dev/docs/plugins/changelog
