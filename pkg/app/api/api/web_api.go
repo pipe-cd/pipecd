@@ -17,7 +17,6 @@ package api
 import (
 	"context"
 	"errors"
-	"time"
 
 	"github.com/google/uuid"
 	"go.uber.org/zap"
@@ -159,11 +158,7 @@ func (a *WebAPI) RecreatePipedKey(ctx context.Context, req *webservice.RecreateP
 	}
 
 	updater := func(ctx context.Context, pipedID string) error {
-		return a.pipedStore.UpdatePiped(ctx, pipedID, func(piped *model.Piped) error {
-			piped.KeyHash = keyHash
-			piped.UpdatedAt = time.Now().Unix()
-			return nil
-		})
+		return a.pipedStore.UpdateKeyHash(ctx, pipedID, keyHash)
 	}
 	if err := a.updatePiped(ctx, req.Id, updater); err != nil {
 		return nil, err
