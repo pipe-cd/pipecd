@@ -1,0 +1,18 @@
+load("@io_bazel_rules_go//go:def.bzl", "go_library")
+
+go_library(
+    name = "go_default_library",
+    srcs = [
+        "handler.go",
+        "login_handler.go",
+    ],
+    importpath = "github.com/pipe-cd/pipe/pkg/app/api/authhandler",
+    visibility = ["//visibility:public"],
+    deps = [
+        "//pkg/datastore:go_default_library",
+        "//pkg/jwt:go_default_library",
+        "//pkg/model:go_default_library",
+        "//pkg/role:go_default_library",
+        "@org_uber_go_zap//:go_default_library",
+    ],
+)
