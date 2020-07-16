@@ -8,6 +8,8 @@ import {
   DisablePipedResponse,
   EnablePipedRequest,
   EnablePipedResponse,
+  RecreatePipedKeyRequest,
+  RecreatePipedKeyResponse,
 } from "pipe/pkg/app/web/api_client/service_pb";
 
 export const getPipeds = ({
@@ -42,4 +44,14 @@ export const enablePiped = ({
   const req = new EnablePipedRequest();
   req.setPipedId(pipedId);
   return apiRequest(req, apiClient.enablePiped);
+};
+
+export const recreatePipedKey = ({
+  id,
+}: RecreatePipedKeyRequest.AsObject): Promise<
+  RecreatePipedKeyResponse.AsObject
+> => {
+  const req = new RecreatePipedKeyRequest();
+  req.setId(id);
+  return apiRequest(req, apiClient.recreatePipedKey);
 };

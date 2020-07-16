@@ -34,6 +34,7 @@ import {
   fetchPipeds,
   disablePiped,
   enablePiped,
+  recreatePipedKey,
 } from "../../modules/pipeds";
 import { AppState } from "../../modules";
 import { AppDispatch } from "../../store";
@@ -143,6 +144,13 @@ export const SettingsPipedPage: FC = memo(function SettingsPipedPage() {
     dispatch(fetchPipeds(true));
   };
 
+  const handleRecreate = (): void => {
+    if (actionTarget) {
+      dispatch(recreatePipedKey({ pipedId: actionTarget.id }));
+    }
+    closeMenu();
+  };
+
   return (
     <>
       <Toolbar variant="dense">
@@ -237,7 +245,14 @@ export const SettingsPipedPage: FC = memo(function SettingsPipedPage() {
         {actionTarget && actionTarget.disabled ? (
           <MenuItem onClick={handleDisableClick}>Enable</MenuItem>
         ) : (
-          <MenuItem onClick={handleDisableClick}>Disable</MenuItem>
+          [
+            <MenuItem key="piped-menu-disable" onClick={handleDisableClick}>
+              Disable
+            </MenuItem>,
+            <MenuItem key="piped-menu-recreate" onClick={handleRecreate}>
+              Recreate Key
+            </MenuItem>,
+          ]
         )}
       </Menu>
 
@@ -249,20 +264,20 @@ export const SettingsPipedPage: FC = memo(function SettingsPipedPage() {
         />
       </Drawer>
 
-      <Dialog open={registeredPiped !== null}>
+      <Dialog open={Boolean(registeredPiped)}>
         <DialogTitle>Piped registered</DialogTitle>
         <DialogContent>
           <TextField
             label="id"
             variant="outlined"
-            value={registeredPiped?.id}
+            value={registeredPiped?.id || ""}
             fullWidth
             margin="dense"
           />
           <TextField
             label="secret key"
             variant="outlined"
-            value={registeredPiped?.key}
+            value={registeredPiped?.key || ""}
             fullWidth
             margin="dense"
           />
