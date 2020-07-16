@@ -27,7 +27,7 @@ import (
 func TestSign(t *testing.T) {
 	claims := NewClaims("user-1", "avatar-url", time.Hour, role.Role{
 		ProjectId:   "project-1",
-		ProjectRole: map[int32]bool{role.Role_ProjectRole_value["ADMIN"]: true},
+		ProjectRole: role.Role_ADMIN,
 	})
 
 	s, err := NewSigner(jwtgo.SigningMethodRS256, "testdata/private.key")

@@ -40,7 +40,7 @@ func TestVerify(t *testing.T) {
 			name: "ok",
 			claims: NewClaims("user-1", "avatar-url", time.Hour, role.Role{
 				ProjectId:   "project-1",
-				ProjectRole: map[int32]bool{role.Role_ProjectRole_value["ADMIN"]: true},
+				ProjectRole: role.Role_ADMIN,
 			}),
 			fail: false,
 		},
@@ -152,7 +152,7 @@ func TestVerify(t *testing.T) {
 
 	c := NewClaims("user", "avatar-url", time.Hour, role.Role{
 		ProjectId:   "project",
-		ProjectRole: map[int32]bool{role.Role_ProjectRole_value["ADMIN"]: true},
+		ProjectRole: role.Role_ADMIN,
 	})
 
 	token, err := rsS.Sign(c)

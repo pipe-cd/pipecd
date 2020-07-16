@@ -159,7 +159,7 @@ func JWTUnaryServerInterceptor(verifier jwt.Verifier, authorizer RBACAuthorizer,
 			30*24*time.Hour,
 			role.Role{
 				ProjectId:   "pipecd",
-				ProjectRole: map[int32]bool{role.Role_ProjectRole_value["ADMIN"]: true},
+				ProjectRole: role.Role_ADMIN,
 			},
 		)
 		ctx = context.WithValue(ctx, claimsKey, *claims)
