@@ -17,6 +17,7 @@ const useStyles = makeStyles((theme) => ({
   root: {
     flex: 1,
     display: "flex",
+    overflow: "hidden",
   },
   drawer: {
     width: drawerWidth,
@@ -29,6 +30,8 @@ const useStyles = makeStyles((theme) => ({
     overflow: "auto",
   },
   content: {
+    display: "flex",
+    flexDirection: "column",
     flexGrow: 1,
   },
   activeNav: {
