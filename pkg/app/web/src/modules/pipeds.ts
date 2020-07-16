@@ -52,6 +52,14 @@ export const enablePiped = createAsyncThunk<void, { pipedId: string }>(
   }
 );
 
+export const recreatePipedKey = createAsyncThunk<string, { pipedId: string }>(
+  "pipeds/recreateKey",
+  async ({ pipedId }) => {
+    const { key } = await pipedsApi.recreatePipedKey({ id: pipedId });
+    return key;
+  }
+);
+
 export const pipedsSlice = createSlice({
   name: "pipeds",
   initialState: pipedsAdapter.getInitialState<{
@@ -72,6 +80,12 @@ export const pipedsSlice = createSlice({
       .addCase(fetchPipeds.fulfilled, (state, action) => {
         pipedsAdapter.removeAll(state);
         pipedsAdapter.addMany(state, action.payload);
+      })
+      .addCase(recreatePipedKey.fulfilled, (state, action) => {
+        state.registeredPiped = {
+          id: action.meta.arg.pipedId,
+          key: action.payload,
+        };
       });
   },
 });
