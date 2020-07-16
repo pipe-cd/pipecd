@@ -12,7 +12,6 @@ labels: kind/bug
 **How to reproduce it**:
 
 **Environment**:
-- Kubernetes version (use `kubectl version`):
-- Cloud provider or hardware configuration:
-- OS (e.g. from /etc/os-release):
+- `piped` version:
+- `control-plane` version:
 - Others:
