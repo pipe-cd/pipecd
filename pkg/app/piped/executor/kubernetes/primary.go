@@ -180,8 +180,6 @@ func (e *Executor) generatePrimaryManifests(manifests []provider.Manifest) ([]pr
 	// we duplicate them to avoid updating the shared manifests data in cache.
 	manifests = duplicateManifests(manifests, "")
 
-	primaryManifests := make([]provider.Manifest, 0, len(manifests)+1)
-
 	// Find service manifests and duplicate them for PRIMARY variant.
 	if generateService {
 		services := findManifests(provider.KindService, serviceName, manifests)
@@ -194,8 +192,8 @@ func (e *Executor) generatePrimaryManifests(manifests []provider.Manifest) ([]pr
 		if err != nil {
 			return nil, err
 		}
-		primaryManifests = append(primaryManifests, generatedServices...)
+		manifests = append(manifests, generatedServices...)
 	}
 
-	return primaryManifests, nil
+	return manifests, nil
 }
