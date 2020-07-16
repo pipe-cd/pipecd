@@ -218,7 +218,7 @@ func retryCommand(retries int, interval time.Duration, logger *zap.Logger, comma
 		if err == nil {
 			return
 		}
-		logger.Warn(fmt.Sprintf("command was failed %d times, sleep %d seconds before retrying command", i+1, interval))
+		logger.Warn(fmt.Sprintf("command was failed %d times, sleep %s before retrying command", i+1, interval.String()))
 		time.Sleep(interval)
 	}
 	return
