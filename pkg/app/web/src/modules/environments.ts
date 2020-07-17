@@ -4,7 +4,7 @@ import {
   createAsyncThunk,
 } from "@reduxjs/toolkit";
 import { Environment as EnvironmentModel } from "pipe/pkg/app/web/model/environment_pb";
-import { getEnvironments } from "../api/environments";
+import * as envsApi from "../api/environments";
 
 export type Environment = EnvironmentModel.AsObject;
 
@@ -19,10 +19,17 @@ export const {
 export const fetchEnvironments = createAsyncThunk<Environment[], void>(
   "environments/fetchList",
   async () => {
-    const { environmentsList } = await getEnvironments({});
+    const { environmentsList } = await envsApi.getEnvironments();
     return environmentsList;
   }
 );
+
+export const addEnvironment = createAsyncThunk<
+  void,
+  { name: string; desc: string }
+>("environments/fetchList", async (props) => {
+  await envsApi.AddEnvironment(props);
+});
 
 export const environmentsSlice = createSlice({
   name: "environments",
