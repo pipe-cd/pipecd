@@ -37,6 +37,10 @@ const (
 	// logoutPath is the path for logging out from current session.
 	logoutPath = "/auth/logout"
 
+	projectFormKey  = "project"
+	usernameFormKey = "username"
+	passwordFormKey = "password"
+
 	stateCookieKey = "state"
 	errorCookieKey = "error"
 
@@ -60,7 +64,7 @@ type Handler struct {
 // NewHandler returns a handler that will used for authentication.
 func NewHandler(
 	signer jwt.Signer,
-	projectGetter datastore.ProjectStore,
+	projectGetter projectGetter,
 	logger *zap.Logger,
 ) *Handler {
 	return &Handler{
@@ -87,21 +91,20 @@ func (h *Handler) handleLogout(w http.ResponseWriter, r *http.Request) {
 	http.Redirect(w, r, "/", http.StatusFound)
 }
 
-func (h *Handler) getProject(r *http.Request) (*model.Project, string, error) {
+func (h *Handler) getProject(r *http.Request) (*model.Project, error) {
 	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
 	defer cancel()
 
-	projectID := r.FormValue("projectID")
+	projectID := r.FormValue(projectFormKey)
 	if projectID == "" {
-		msg := "project id must be specified"
-		return nil, msg, fmt.Errorf(msg)
+		return nil, fmt.Errorf("project id must be specified")
 	}
 
 	proj, err := h.projectGetter.GetProject(ctx, projectID)
 	if err != nil {
-		return nil, fmt.Sprintf("unabled to get project: %q", projectID), err
+		return nil, err
 	}
-	return proj, "", nil
+	return proj, nil
 }
 
 func makeTokenCookie(value string) *http.Cookie {
@@ -164,8 +167,8 @@ func makeErrorCookie(value string) *http.Cookie {
 	}
 }
 
-func serverError(w http.ResponseWriter, r *http.Request, url, msg string, logger *zap.Logger, err error) {
-	logger.Error(fmt.Sprintf("auth-handler: %s", msg), zap.Error(err))
-	http.SetCookie(w, makeErrorCookie(msg))
-	http.Redirect(w, r, url, http.StatusSeeOther)
+func handleError(w http.ResponseWriter, r *http.Request, redirectURL, responseMessage string, logger *zap.Logger, err error) {
+	logger.Error(fmt.Sprintf("auth-handler: %s", responseMessage), zap.Error(err))
+	http.SetCookie(w, makeErrorCookie(responseMessage))
+	http.Redirect(w, r, redirectURL, http.StatusSeeOther)
 }

@@ -36,9 +36,9 @@ func (h *Handler) handleLogin(w http.ResponseWriter, r *http.Request) {
 func (h *Handler) handleStaticLogin(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Content-Type", "text/html")
 
-	proj, msg, err := h.getProject(r)
+	proj, err := h.getProject(r)
 	if err != nil {
-		serverError(w, r, "/", msg, h.logger, err)
+		handleError(w, r, rootPath, "wrong project", h.logger, err)
 		return
 	}
 	if proj.StaticAdminDisabled {
@@ -47,7 +47,7 @@ func (h *Handler) handleStaticLogin(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	if err := proj.StaticAdmin.Auth(r.FormValue("username"), r.FormValue("password")); err != nil {
+	if err := proj.StaticAdmin.Auth(r.FormValue(usernameFormKey), r.FormValue(passwordFormKey)); err != nil {
 		serverError(w, r, "/", "login failed", h.logger, err)
 		return
 	}
@@ -62,12 +62,12 @@ func (h *Handler) handleStaticLogin(w http.ResponseWriter, r *http.Request) {
 	)
 	signedToken, err := h.signer.Sign(claims)
 	if err != nil {
-		serverError(w, r, "/", "failed to generate a session login token", h.logger, err)
+		serverError(w, r, "/", "internal error", h.logger, err)
 		return
 	}
 	http.SetCookie(w, makeTokenCookie(signedToken))
 
-	h.logger.Info("user logged in",
+	h.logger.Info("a new user has been logged in",
 		zap.String("user", proj.StaticAdmin.Username),
 		zap.String("project-id", proj.Id),
 		zap.String("project-role", role.Role_ADMIN.String()),
