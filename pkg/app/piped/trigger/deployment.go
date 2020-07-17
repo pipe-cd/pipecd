@@ -112,11 +112,12 @@ func buildDeploment(app *model.Application, branch string, commit git.Commit, co
 			Commander: commander,
 			Timestamp: now.Unix(),
 		},
-		GitPath:       app.GitPath,
-		CloudProvider: app.CloudProvider,
-		Status:        model.DeploymentStatus_DEPLOYMENT_PENDING,
-		CreatedAt:     now.Unix(),
-		UpdatedAt:     now.Unix(),
+		GitPath:           app.GitPath,
+		CloudProvider:     app.CloudProvider,
+		Status:            model.DeploymentStatus_DEPLOYMENT_PENDING,
+		StatusDescription: "Waiting to be planned",
+		CreatedAt:         now.Unix(),
+		UpdatedAt:         now.Unix(),
 	}
 
 	return deployment, nil

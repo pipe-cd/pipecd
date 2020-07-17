@@ -130,20 +130,24 @@ func (p *planner) Run(ctx context.Context) error {
 
 	planner, ok := p.plannerRegistry.Planner(p.deployment.Kind)
 	if !ok {
-		return fmt.Errorf("no registered planner for application %v", p.deployment.Kind)
+		err := fmt.Errorf("no registered planner for application %v", p.deployment.Kind)
+		p.reportDeploymentCompleted(ctx, model.DeploymentStatus_DEPLOYMENT_FAILURE, err.Error())
+		return err
 	}
 
 	// Clone repository and checkout to the target revision.
 	repoDirPath := filepath.Join(p.workingDir, workspaceGitRepoDirName)
 	gitRepo, err := prepareDeployRepository(ctx, p.deployment, p.gitClient, repoDirPath, p.pipedConfig)
 	if err != nil {
+		p.reportDeploymentCompleted(ctx, model.DeploymentStatus_DEPLOYMENT_FAILURE, err.Error())
 		return err
 	}
 
 	// Load deployment configuration for this application.
 	cfg, err := loadDeploymentConfiguration(gitRepo.GetPath(), p.deployment)
 	if err != nil {
-		return fmt.Errorf("failed to load deployment configuration (%v)", err)
+		p.reportDeploymentCompleted(ctx, model.DeploymentStatus_DEPLOYMENT_FAILURE, err.Error())
+		return err
 	}
 	p.deploymentConfig = cfg
 
