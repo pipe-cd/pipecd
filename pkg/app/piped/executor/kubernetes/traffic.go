@@ -18,14 +18,22 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
+	"strconv"
 	"strings"
 
+	"go.uber.org/zap"
 	istiov1alpha3 "istio.io/api/networking/v1alpha3"
 	istiov1beta1 "istio.io/api/networking/v1beta1"
 
 	provider "github.com/pipe-cd/pipe/pkg/app/piped/cloudprovider/kubernetes"
 	"github.com/pipe-cd/pipe/pkg/config"
 	"github.com/pipe-cd/pipe/pkg/model"
+)
+
+const (
+	primaryMetadataKey  = "primary-percentage"
+	canaryMetadataKey   = "canary-percentage"
+	baselineMetadataKey = "baseline-percentage"
 )
 
 func (e *Executor) ensureTrafficRouting(ctx context.Context) model.StageStatus {
@@ -54,6 +62,7 @@ func (e *Executor) ensureTrafficRouting(ctx context.Context) model.StageStatus {
 
 	// Decide traffic routing percentage for all variants.
 	primaryPercent, canaryPercent, baselinePercent := options.Percentages()
+	e.saveTrafficRoutingMetadata(ctx, primaryPercent, canaryPercent, baselinePercent)
 
 	// Find traffic routing manifests.
 	trafficRoutingManifests, err := e.findTrafficRoutingManifests(manifests, e.config.TrafficRouting)
@@ -163,6 +172,17 @@ func (e *Executor) generateTrafficRoutingManifest(manifest provider.Manifest, pr
 	}
 
 	return manifest, nil
+}
+
+func (e *Executor) saveTrafficRoutingMetadata(ctx context.Context, primary, canary, baseline int) {
+	metadata := map[string]string{
+		primaryMetadataKey:  strconv.FormatInt(int64(primary), 10),
+		canaryMetadataKey:   strconv.FormatInt(int64(canary), 10),
+		baselineMetadataKey: strconv.FormatInt(int64(baseline), 10),
+	}
+	if err := e.MetadataStore.SetStageMetadata(ctx, e.Stage.Id, metadata); err != nil {
+		e.Logger.Error("failed to save traffic routing percentages to metadata", zap.Error(err))
+	}
 }
 
 func findIstioVirtualServiceManifests(manifests []provider.Manifest, cfg config.K8sResourceReference) ([]provider.Manifest, error) {
