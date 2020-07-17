@@ -48,7 +48,7 @@ interface Props {
   createdAt: number;
 }
 
-const TIMESTAMP_FORMAT = "YYYY-MM-DD HH:mm:ss";
+const TIMESTAMP_FORMAT = "YYYY-MM-DD HH:mm:ss Z";
 
 export const LogLine: FC<Props> = ({
   body,
