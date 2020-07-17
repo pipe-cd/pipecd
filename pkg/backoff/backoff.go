@@ -49,20 +49,28 @@ func (r *retry) WaitNext(ctx context.Context) bool {
 	defer func() {
 		r.calls++
 	}()
+
 	if r.calls >= r.max {
 		return false
 	}
+
 	d := r.backoff.Next()
 	if d == 0 {
-		return true
+		select {
+		case <-ctx.Done():
+			return false
+		default:
+			return true
+		}
 	}
+
 	t := time.NewTimer(d)
 	select {
 	case <-ctx.Done():
 		return false
 	case <-t.C:
+		return true
 	}
-	return true
 }
 
 func (r *retry) Calls() int {

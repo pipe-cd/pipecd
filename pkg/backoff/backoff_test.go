@@ -35,3 +35,14 @@ func TestWaitNext(t *testing.T) {
 	ok = r.WaitNext(ctx)
 	assert.Equal(t, false, ok)
 }
+
+func TestWaitNextCancel(t *testing.T) {
+	var (
+		bo          = NewConstant(time.Minute)
+		r           = NewRetry(10, bo)
+		ctx, cancel = context.WithCancel(context.TODO())
+	)
+	cancel()
+	ok := r.WaitNext(ctx)
+	assert.Equal(t, false, ok)
+}

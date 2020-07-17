@@ -366,7 +366,9 @@ func (c *controller) startNewPlanner(ctx context.Context, d *model.Deployment) (
 	go func() {
 		defer c.wg.Done()
 		defer cleanup()
-		planner.Run(ctx)
+		if err := planner.Run(ctx); err != nil {
+			logger.Error("failed to run planner", zap.Error(err))
+		}
 	}()
 
 	return planner, nil
@@ -501,7 +503,9 @@ func (c *controller) startNewScheduler(ctx context.Context, d *model.Deployment)
 	go func() {
 		defer c.wg.Done()
 		defer cleanup()
-		scheduler.Run(ctx)
+		if err := scheduler.Run(ctx); err != nil {
+			logger.Error("failed to run scheduler", zap.Error(err))
+		}
 	}()
 
 	return scheduler, nil
@@ -558,13 +562,17 @@ func prepareDeployRepository(ctx context.Context, d *model.Deployment, gitClient
 }
 
 func loadDeploymentConfiguration(repoPath string, d *model.Deployment) (*config.Config, error) {
-	path := filepath.Join(repoPath, d.GitPath.GetDeploymentConfigFilePath(config.DeploymentConfigurationFileName))
+	var (
+		relativePath = d.GitPath.GetDeploymentConfigFilePath(config.DeploymentConfigurationFileName)
+		path         = filepath.Join(repoPath, relativePath)
+	)
 	cfg, err := config.LoadFromYAML(path)
 	if err != nil {
-		return nil, err
+		return nil, fmt.Errorf("unable to load deployment configuration file at %s (%w)", relativePath, err)
 	}
+
 	if appKind, ok := config.ToApplicationKind(cfg.Kind); !ok || appKind != d.Kind {
-		return nil, fmt.Errorf("application in deployment configuration file is not match, got: %s, expected: %s", appKind, d.Kind)
+		return nil, fmt.Errorf("applicationKind specified in deployment configuration file is not match, got: %s, expected: %s", appKind, d.Kind)
 	}
 	return cfg, nil
 }
