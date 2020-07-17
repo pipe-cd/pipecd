@@ -8,8 +8,13 @@ import {
 } from "@material-ui/core";
 import React, { FC, memo } from "react";
 import { NavLink, Redirect, Route, Switch } from "react-router-dom";
-import { PAGE_PATH_SETTINGS, PAGE_PATH_SETTINGS_PIPED } from "../../constants";
+import {
+  PAGE_PATH_SETTINGS,
+  PAGE_PATH_SETTINGS_PIPED,
+  PAGE_PATH_SETTINGS_ENV,
+} from "../../constants";
 import { SettingsPipedPage } from "./piped";
+import { SettingsEnvironmentPage } from "./environment";
 
 const drawerWidth = 240;
 
@@ -39,7 +44,10 @@ const useStyles = makeStyles((theme) => ({
   },
 }));
 
-const MENU_ITEMS = [["Piped", PAGE_PATH_SETTINGS_PIPED]];
+const MENU_ITEMS = [
+  ["Piped", PAGE_PATH_SETTINGS_PIPED],
+  ["Environment", PAGE_PATH_SETTINGS_ENV],
+];
 
 export const SettingsIndexPage: FC = memo(function SettingsIndexPage() {
   const classes = useStyles();
@@ -78,6 +86,11 @@ export const SettingsIndexPage: FC = memo(function SettingsIndexPage() {
             exact
             path={PAGE_PATH_SETTINGS_PIPED}
             component={SettingsPipedPage}
+          />
+          <Route
+            exact
+            path={PAGE_PATH_SETTINGS_ENV}
+            component={SettingsEnvironmentPage}
           />
         </Switch>
       </main>
