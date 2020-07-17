@@ -55,10 +55,6 @@ const (
 	KindPiped Kind = "Piped"
 	// KindControlPlane represents configuration for control plane's services.
 	KindControlPlane Kind = "ControlPlane"
-	// KindNotification represents shared notification configuration for a repository.
-	// This configuration file should be placed in .pipe directory
-	// at the root of the repository.
-	KindNotification Kind = "Notification"
 	// KindAnalysisTemplate represents shared analysis template for a repository.
 	// This configuration file should be placed in .pipe directory
 	// at the root of the repository.
@@ -78,7 +74,6 @@ type Config struct {
 
 	PipedSpec            *PipedSpec
 	ControlPlaneSpec     *ControlPlaneSpec
-	NotificationSpec     *NotificationSpec
 	AnalysisTemplateSpec *AnalysisTemplateSpec
 }
 
@@ -107,9 +102,6 @@ func (c *Config) init(kind Kind, apiVersion string) error {
 	case KindControlPlane:
 		c.ControlPlaneSpec = &ControlPlaneSpec{}
 		c.spec = c.ControlPlaneSpec
-	case KindNotification:
-		c.NotificationSpec = &NotificationSpec{}
-		c.spec = c.NotificationSpec
 	case KindAnalysisTemplate:
 		c.AnalysisTemplateSpec = &AnalysisTemplateSpec{}
 		c.spec = c.AnalysisTemplateSpec

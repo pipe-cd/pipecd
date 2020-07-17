@@ -157,6 +157,45 @@ func TestPipedConfig(t *testing.T) {
 						},
 					},
 				},
+				Notifications: Notifications{
+					Routes: []NotificationRoute{
+						{
+							Name:     "dev-slack",
+							Envs:     []string{"dev"},
+							Receiver: "dev-slack-channel",
+						},
+						{
+							Name:     "prod-slack",
+							Envs:     []string{"dev"},
+							Events:   []string{"DEPLOYMENT_STARTED", "DEPLOYMENT_COMPLETED"},
+							Receiver: "prod-slack-channel",
+						},
+						{
+							Name:     "all-events-to-ci",
+							Receiver: "ci-webhook",
+						},
+					},
+					Receivers: []NotificationReceiver{
+						{
+							Name: "dev-slack-channel",
+							Slack: &NotificationReceiverSlack{
+								HookURL: "https://slack.com/dev",
+							},
+						},
+						{
+							Name: "prod-slack-channel",
+							Slack: &NotificationReceiverSlack{
+								HookURL: "https://slack.com/prod",
+							},
+						},
+						{
+							Name: "ci-webhook",
+							Webhook: &NotificationReceiverWebhook{
+								URL: "https://pipecd.dev/dev-hook",
+							},
+						},
+					},
+				},
 			},
 			expectedError: nil,
 		},
