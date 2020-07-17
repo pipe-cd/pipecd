@@ -15,15 +15,12 @@
 package authhandler
 
 import (
-	"context"
 	"fmt"
 	"net/http"
-	"time"
 
 	"go.uber.org/zap"
 
 	"github.com/pipe-cd/pipe/pkg/jwt"
-	"github.com/pipe-cd/pipe/pkg/model"
 	"github.com/pipe-cd/pipe/pkg/role"
 )
 
@@ -31,32 +28,28 @@ import (
 func (h *Handler) handleLogin(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Content-Type", "text/html")
 
-	projectID := r.FormValue("projectID")
-	if projectID == "" {
-		msg := "project id must be specified"
+	msg := "not implemented"
+	serverError(w, r, "/", msg, h.logger, fmt.Errorf(msg))
+}
+
+// handleStaticLogin is called when user request to login PipeCD as a static user.
+func (h *Handler) handleStaticLogin(w http.ResponseWriter, r *http.Request) {
+	w.Header().Set("Content-Type", "text/html")
+
+	proj, msg, err := h.getProject(r)
+	if err != nil {
+		serverError(w, r, "/", msg, h.logger, err)
+		return
+	}
+	if proj.StaticAdminDisabled {
+		msg := "static login is disabled"
 		serverError(w, r, "/", msg, h.logger, fmt.Errorf(msg))
 		return
 	}
 
-	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
-	defer cancel()
-
-	proj, err := h.projectStore.GetProject(ctx, projectID)
-	if err != nil {
-		serverError(w, r, "/", fmt.Sprintf("unabled to get project: %s", projectID), h.logger, err)
-		return
-	}
-
-	if !proj.StaticAdminDisabled && r.URL.Path == passwordLoginPath {
-		h.handleStaticAdminLogin(proj, w, r)
-	}
-
-	serverError(w, r, "/", fmt.Sprintf("login failed"), h.logger, fmt.Errorf("login failed"))
-}
-
-func (h *Handler) handleStaticAdminLogin(proj *model.Project, w http.ResponseWriter, r *http.Request) {
 	if err := proj.StaticAdmin.Auth(r.FormValue("username"), r.FormValue("password")); err != nil {
-		serverError(w, r, "/", fmt.Sprintf("login failed"), h.logger, err)
+		serverError(w, r, "/", "login failed", h.logger, err)
+		return
 	}
 	claims := jwt.NewClaims(
 		proj.StaticAdmin.Username,
@@ -69,7 +62,7 @@ func (h *Handler) handleStaticAdminLogin(proj *model.Project, w http.ResponseWri
 	)
 	signedToken, err := h.signer.Sign(claims)
 	if err != nil {
-		serverError(w, r, "/", err.Error(), h.logger, err)
+		serverError(w, r, "/", "failed to generate a session login token", h.logger, err)
 		return
 	}
 	http.SetCookie(w, makeTokenCookie(signedToken))

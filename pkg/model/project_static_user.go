@@ -23,11 +23,17 @@ import (
 
 // Auth confirms username and password.
 func (p *ProjectStaticUser) Auth(username, password string) error {
-	if username == "" || subtle.ConstantTimeCompare([]byte(p.Username), []byte(username)) != 1 {
-		return fmt.Errorf("wrong input data")
+	if username == "" {
+		return fmt.Errorf("username is empty")
 	}
-	if password == "" || bcrypt.CompareHashAndPassword([]byte(p.PasswordHash), []byte(password)) != nil {
-		return fmt.Errorf("wrong input data")
+	if subtle.ConstantTimeCompare([]byte(p.Username), []byte(username)) != 1 {
+		return fmt.Errorf("wrong username %q", username)
+	}
+	if password == "" {
+		return fmt.Errorf("password is empty")
+	}
+	if err := bcrypt.CompareHashAndPassword([]byte(p.PasswordHash), []byte(password)); err != nil {
+		return fmt.Errorf("wrong password for username %q: %v", username, err)
 	}
 	return nil
 }

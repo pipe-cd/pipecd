@@ -15,6 +15,7 @@
 package authhandler
 
 import (
+	"context"
 	"fmt"
 	"net/http"
 	"time"
@@ -23,20 +24,19 @@ import (
 
 	"github.com/pipe-cd/pipe/pkg/datastore"
 	"github.com/pipe-cd/pipe/pkg/jwt"
+	"github.com/pipe-cd/pipe/pkg/model"
 )
 
 const (
 	// loginPath is the path to login to pipecd projects.
 	loginPath = "/auth/login"
-	// passwordLoginPath is the path to login to pipecd projects with password.
-	passwordLoginPath = loginPath + "/password"
+	// staticLoginPath is the path to login to pipecd projects with password.
+	staticLoginPath = loginPath + "/static"
 	// callbackPath is the path configured in the GitHub oauth application settings.
 	callbackPath = "/auth/callback"
 	// logoutPath is the path for logging out from current session.
 	logoutPath = "/auth/logout"
-)
 
-const (
 	stateCookieKey = "state"
 	errorCookieKey = "error"
 
@@ -46,29 +46,34 @@ const (
 	defaultTokenCookieMaxAge = 7 * 24 * 60 * 60
 )
 
+type projectGetter interface {
+	GetProject(ctx context.Context, id string) (*model.Project, error)
+}
+
 // Handler handles all imcoming requests about authentication.
 type Handler struct {
-	signer       jwt.Signer
-	projectStore datastore.ProjectStore
-	logger       *zap.Logger
+	signer        jwt.Signer
+	projectGetter projectGetter
+	logger        *zap.Logger
 }
 
 // NewHandler returns a handler that will used for authentication.
 func NewHandler(
 	signer jwt.Signer,
-	projectStore datastore.ProjectStore,
+	projectGetter datastore.ProjectStore,
 	logger *zap.Logger,
 ) *Handler {
 	return &Handler{
-		signer:       signer,
-		projectStore: projectStore,
-		logger:       logger,
+		signer:        signer,
+		projectGetter: projectGetter,
+		logger:        logger,
 	}
 }
 
 // Register registers all handler into the specified registry.
 func (h *Handler) Register(reg func(string, func(http.ResponseWriter, *http.Request))) {
 	reg(loginPath, h.handleLogin)
+	reg(staticLoginPath, h.handleStaticLogin)
 	reg(logoutPath, h.handleLogout)
 }
 
@@ -80,6 +85,23 @@ func (h *Handler) handleLogout(w http.ResponseWriter, r *http.Request) {
 	http.SetCookie(w, makeExpiredStateCookie())
 
 	http.Redirect(w, r, "/", http.StatusFound)
+}
+
+func (h *Handler) getProject(r *http.Request) (*model.Project, string, error) {
+	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
+	defer cancel()
+
+	projectID := r.FormValue("projectID")
+	if projectID == "" {
+		msg := "project id must be specified"
+		return nil, msg, fmt.Errorf(msg)
+	}
+
+	proj, err := h.projectGetter.GetProject(ctx, projectID)
+	if err != nil {
+		return nil, fmt.Sprintf("unabled to get project: %q", projectID), err
+	}
+	return proj, "", nil
 }
 
 func makeTokenCookie(value string) *http.Cookie {
