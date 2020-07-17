@@ -491,6 +491,7 @@ func (s *scheduler) ensurePreparing(ctx context.Context, lp logpersister.StageLo
 		if err != nil {
 			err = fmt.Errorf("Failed to load deployment configuration (%v)", err)
 			lp.AppendError(err.Error())
+			return
 		}
 		s.deploymentConfig = cfg
 
