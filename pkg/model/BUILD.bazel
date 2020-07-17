@@ -46,6 +46,7 @@ go_library(
         "environment.go",
         "filestore.go",
         "piped.go",
+        "project_static_user.go",
         "stage.go",
     ],
     embed = [":model_go_proto"],
