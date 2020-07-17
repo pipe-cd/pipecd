@@ -5,10 +5,12 @@ import {
   DEFAULT_BACKGROUND_COLOR,
   SELECTED_BACKGROUND_COLOR,
   TERMINAL_LINE_NUMBER_COLOR,
+  DEFAULT_TEXT_COLOR,
   TERM_COLORS,
 } from "../constants/term-colors";
 import { LogSeverity } from "../modules/stage-logs";
 import { parseLog } from "../utils/parse-log";
+import dayjs from "dayjs";
 
 const useStyles = makeStyles((theme) => ({
   container: {
@@ -32,15 +34,28 @@ const useStyles = makeStyles((theme) => ({
     position: "absolute",
     marginLeft: theme.spacing(1),
   },
+  timestamp: {
+    color: DEFAULT_TEXT_COLOR,
+    paddingRight: theme.spacing(1),
+    opacity: 0.8,
+  },
 }));
 
 interface Props {
   lineNumber: number;
   body: string;
   severity: LogSeverity;
+  createdAt: number;
 }
 
-export const LogLine: FC<Props> = ({ body, lineNumber, severity }) => {
+const TIMESTAMP_FORMAT = "YYYY-MM-DD HH:mm:ss";
+
+export const LogLine: FC<Props> = ({
+  body,
+  lineNumber,
+  severity,
+  createdAt,
+}) => {
   const classes = useStyles();
 
   return (
@@ -49,6 +64,9 @@ export const LogLine: FC<Props> = ({ body, lineNumber, severity }) => {
         <Error color="error" fontSize="small" className={classes.icon} />
       )}
       <span className={classes.lineNumber}>{lineNumber}</span>
+      <span className={classes.timestamp}>{`[${dayjs(createdAt * 1000).format(
+        TIMESTAMP_FORMAT
+      )}]`}</span>
       <Box pr={2} flex={1} style={{ wordBreak: "break-word" }}>
         {parseLog(body).map((cell, i) => (
           <span

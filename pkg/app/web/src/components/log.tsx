@@ -31,6 +31,7 @@ export const Log: FC<Props> = memo(function Log({ logs, loading, height }) {
           severity={log.severity}
           body={log.log}
           lineNumber={i + 1}
+          createdAt={log.createdAt}
         />
       ))}
       {loading && (
