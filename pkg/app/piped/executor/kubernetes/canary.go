@@ -16,7 +16,6 @@ package kubernetes
 
 import (
 	"context"
-	"errors"
 	"fmt"
 	"strings"
 
@@ -123,33 +122,15 @@ func (e *Executor) removeCanaryResources(ctx context.Context, resources []string
 	}
 
 	// We delete the service first to close all incoming connections.
-	for _, k := range serviceKeys {
-		err := e.provider.Delete(ctx, k)
-		if err == nil {
-			e.LogPersister.AppendInfof("Deleted resource %s", k)
-			continue
-		}
-		if errors.Is(err, provider.ErrNotFound) {
-			e.LogPersister.AppendInfof("No resource %s to delete", k)
-			continue
-		}
-		e.LogPersister.AppendErrorf("Unable to delete resource %s (%v)", k, err)
-		//return model.StageStatus_STAGE_FAILURE
+	e.LogPersister.AppendInfo("Starting finding and deleting service resources of CANARY variant")
+	if err := e.deleteResources(ctx, serviceKeys); err != nil {
+		return err
 	}
 
 	// Next, delete all workloads.
-	for _, k := range workloadKeys {
-		err := e.provider.Delete(ctx, k)
-		if err == nil {
-			e.LogPersister.AppendInfof("Deleted workload resource %s", k)
-			continue
-		}
-		if errors.Is(err, provider.ErrNotFound) {
-			e.LogPersister.AppendInfof("No worload resource %s to delete", k)
-			continue
-		}
-		e.LogPersister.AppendErrorf("Unable to delete workload resource %s (%v)", k, err)
-		//return model.StageStatus_STAGE_FAILURE
+	e.LogPersister.AppendInfo("Starting finding and deleting workload resources of CANARY variant")
+	if err := e.deleteResources(ctx, workloadKeys); err != nil {
+		return err
 	}
 
 	return nil

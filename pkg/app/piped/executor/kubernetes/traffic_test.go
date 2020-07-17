@@ -48,7 +48,7 @@ func TestGenerateVirtualServiceManifest(t *testing.T) {
 			require.NoError(t, err)
 			require.Equal(t, 1, len(manifests))
 
-			err = generateVirtualServiceManifest(manifests[0], "helloworld", tc.editableRoutes, 30, 20)
+			generatedManifest, err := generateVirtualServiceManifest(manifests[0], "helloworld", tc.editableRoutes, 30, 20)
 			assert.NoError(t, err)
 
 			expectedManifests, err := provider.LoadManifestsFromYAMLFile(tc.expectedFile)
@@ -57,7 +57,7 @@ func TestGenerateVirtualServiceManifest(t *testing.T) {
 
 			expected, err := expectedManifests[0].YamlBytes()
 			require.NoError(t, err)
-			got, err := manifests[0].YamlBytes()
+			got, err := generatedManifest.YamlBytes()
 			require.NoError(t, err)
 
 			assert.EqualValues(t, expected, got)

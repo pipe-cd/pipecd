@@ -16,6 +16,7 @@ package kubernetes
 
 import (
 	"context"
+	"errors"
 	"fmt"
 	"path/filepath"
 
@@ -200,14 +201,34 @@ func (e *Executor) applyManifests(ctx context.Context, manifests []provider.Mani
 }
 
 func (e *Executor) deleteResources(ctx context.Context, resources []provider.ResourceKey) error {
-	e.LogPersister.AppendInfof("Start deleting %d resources", len(resources))
-	for _, k := range resources {
-		if err := e.provider.Delete(ctx, k); err != nil {
-			e.LogPersister.AppendErrorf("Failed to delete resource: %s (%v)", k.ReadableString(), err)
-			return err
-		}
-		e.LogPersister.AppendSuccessf("- deleted resource: %s", k.ReadableString())
+	if len(resources) == 0 {
+		e.LogPersister.AppendInfo("No resources to delete")
+		return nil
 	}
+
+	e.LogPersister.AppendInfof("Start deleting %d resources", len(resources))
+	var deletedCount int
+
+	for _, k := range resources {
+		err := e.provider.Delete(ctx, k)
+		if err == nil {
+			e.LogPersister.AppendSuccessf("- deleted resource: %s", k.ReadableString())
+			deletedCount++
+			continue
+		}
+		if errors.Is(err, provider.ErrNotFound) {
+			e.LogPersister.AppendInfof("- no resource %s to delete", k.ReadableString())
+			deletedCount++
+			continue
+		}
+		e.LogPersister.AppendErrorf("- unable to delete resource: %s (%v)", k.ReadableString(), err)
+	}
+
+	if deletedCount > 0 {
+		e.LogPersister.AppendInfof("Deleted %d/%d resources", deletedCount, len(resources))
+		return fmt.Errorf("unable to delete %d resources", len(resources)-deletedCount)
+	}
+
 	e.LogPersister.AppendSuccessf("Successfully deleted %d resources", len(resources))
 	return nil
 }

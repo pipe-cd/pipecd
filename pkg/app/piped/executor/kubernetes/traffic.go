@@ -85,12 +85,8 @@ func (e *Executor) ensureTrafficRouting(ctx context.Context) model.StageStatus {
 		)
 	}
 
-	// Because the loaded maninests are read-only
-	// so we duplicate them to avoid updating the shared manifests data in cache.
-	trafficRoutingManifest := duplicateManifest(trafficRoutingManifests[0], "")
-
-	trafficRoutingManifest, err = e.generateTrafficRoutingManifest(
-		trafficRoutingManifest,
+	trafficRoutingManifest, err := e.generateTrafficRoutingManifest(
+		trafficRoutingManifests[0],
 		primaryPercent,
 		canaryPercent,
 		baselinePercent,
@@ -147,14 +143,15 @@ func (e *Executor) generateTrafficRoutingManifest(manifest provider.Manifest, pr
 			istioConfig = &config.IstioTrafficRouting{}
 		}
 
-		var err error
 		if strings.HasPrefix(manifest.Key.APIVersion, "v1alpha3") {
-			err = generateVirtualServiceManifestV1Alpha3(manifest, istioConfig.Host, istioConfig.EditableRoutes, int32(canaryPercent), int32(baselinePercent))
-		} else {
-			err = generateVirtualServiceManifest(manifest, istioConfig.Host, istioConfig.EditableRoutes, int32(canaryPercent), int32(baselinePercent))
+			return generateVirtualServiceManifestV1Alpha3(manifest, istioConfig.Host, istioConfig.EditableRoutes, int32(canaryPercent), int32(baselinePercent))
 		}
-		return manifest, err
+		return generateVirtualServiceManifest(manifest, istioConfig.Host, istioConfig.EditableRoutes, int32(canaryPercent), int32(baselinePercent))
 	}
+
+	// Because the loaded maninests are read-only
+	// so we duplicate them to avoid updating the shared manifests data in cache.
+	manifest = duplicateManifest(manifest, "")
 
 	// Determine which variant will receive 100% percent of traffic.
 	var variant string
@@ -212,19 +209,23 @@ func findIstioVirtualServiceManifests(manifests []provider.Manifest, cfg config.
 	return out, nil
 }
 
-func generateVirtualServiceManifest(m provider.Manifest, host string, editableRoutes []string, canaryPercent, baselinePercent int32) error {
+func generateVirtualServiceManifest(m provider.Manifest, host string, editableRoutes []string, canaryPercent, baselinePercent int32) (provider.Manifest, error) {
+	// Because the loaded maninests are read-only
+	// so we duplicate them to avoid updating the shared manifests data in cache.
+	m = duplicateManifest(m, "")
+
 	spec, err := m.GetSpec()
 	if err != nil {
-		return err
+		return m, err
 	}
 
 	vs := istiov1beta1.VirtualService{}
 	data, err := json.Marshal(spec)
 	if err != nil {
-		return err
+		return m, err
 	}
 	if err := json.Unmarshal(data, &vs); err != nil {
-		return err
+		return m, err
 	}
 
 	editableMap := make(map[string]struct{}, len(editableRoutes))
@@ -284,22 +285,30 @@ func generateVirtualServiceManifest(m provider.Manifest, host string, editableRo
 		http.Route = routes
 	}
 
-	return m.SetStructuredSpec(vs)
+	if err := m.SetStructuredSpec(vs); err != nil {
+		return m, err
+	}
+
+	return m, nil
 }
 
-func generateVirtualServiceManifestV1Alpha3(m provider.Manifest, host string, editableRoutes []string, canaryPercent, baselinePercent int32) error {
+func generateVirtualServiceManifestV1Alpha3(m provider.Manifest, host string, editableRoutes []string, canaryPercent, baselinePercent int32) (provider.Manifest, error) {
+	// Because the loaded maninests are read-only
+	// so we duplicate them to avoid updating the shared manifests data in cache.
+	m = duplicateManifest(m, "")
+
 	spec, err := m.GetSpec()
 	if err != nil {
-		return err
+		return m, err
 	}
 
 	vs := istiov1alpha3.VirtualService{}
 	data, err := json.Marshal(spec)
 	if err != nil {
-		return err
+		return m, err
 	}
 	if err := json.Unmarshal(data, &vs); err != nil {
-		return err
+		return m, err
 	}
 
 	editableMap := make(map[string]struct{}, len(editableRoutes))
@@ -359,5 +368,9 @@ func generateVirtualServiceManifestV1Alpha3(m provider.Manifest, host string, ed
 		http.Route = routes
 	}
 
-	return m.SetStructuredSpec(vs)
+	if err := m.SetStructuredSpec(vs); err != nil {
+		return m, err
+	}
+
+	return m, nil
 }
