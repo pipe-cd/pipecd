@@ -29,7 +29,7 @@ func (h *Handler) handleLogin(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Content-Type", "text/html")
 
 	msg := "not implemented"
-	serverError(w, r, "/", msg, h.logger, fmt.Errorf(msg))
+	handleError(w, r, rootPath, msg, h.logger, fmt.Errorf(msg))
 }
 
 // handleStaticLogin is called when user request to login PipeCD as a static user.
@@ -43,12 +43,12 @@ func (h *Handler) handleStaticLogin(w http.ResponseWriter, r *http.Request) {
 	}
 	if proj.StaticAdminDisabled {
 		msg := "static login is disabled"
-		serverError(w, r, "/", msg, h.logger, fmt.Errorf(msg))
+		handleError(w, r, rootPath, msg, h.logger, fmt.Errorf(msg))
 		return
 	}
 
 	if err := proj.StaticAdmin.Auth(r.FormValue(usernameFormKey), r.FormValue(passwordFormKey)); err != nil {
-		serverError(w, r, "/", "login failed", h.logger, err)
+		handleError(w, r, rootPath, "login failed", h.logger, err)
 		return
 	}
 	claims := jwt.NewClaims(
@@ -62,7 +62,7 @@ func (h *Handler) handleStaticLogin(w http.ResponseWriter, r *http.Request) {
 	)
 	signedToken, err := h.signer.Sign(claims)
 	if err != nil {
-		serverError(w, r, "/", "internal error", h.logger, err)
+		handleError(w, r, rootPath, "internal error", h.logger, err)
 		return
 	}
 	http.SetCookie(w, makeTokenCookie(signedToken))
@@ -72,5 +72,5 @@ func (h *Handler) handleStaticLogin(w http.ResponseWriter, r *http.Request) {
 		zap.String("project-id", proj.Id),
 		zap.String("project-role", role.Role_ADMIN.String()),
 	)
-	http.Redirect(w, r, "/", http.StatusFound)
+	http.Redirect(w, r, rootPath, http.StatusFound)
 }

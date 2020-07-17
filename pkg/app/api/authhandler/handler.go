@@ -22,7 +22,6 @@ import (
 
 	"go.uber.org/zap"
 
-	"github.com/pipe-cd/pipe/pkg/datastore"
 	"github.com/pipe-cd/pipe/pkg/jwt"
 	"github.com/pipe-cd/pipe/pkg/model"
 )
@@ -36,6 +35,8 @@ const (
 	callbackPath = "/auth/callback"
 	// logoutPath is the path for logging out from current session.
 	logoutPath = "/auth/logout"
+
+	rootPath = "/"
 
 	projectFormKey  = "project"
 	usernameFormKey = "username"
@@ -88,7 +89,7 @@ func (h *Handler) handleLogout(w http.ResponseWriter, r *http.Request) {
 	http.SetCookie(w, makeExpiredTokenCookie())
 	http.SetCookie(w, makeExpiredStateCookie())
 
-	http.Redirect(w, r, "/", http.StatusFound)
+	http.Redirect(w, r, rootPath, http.StatusFound)
 }
 
 func (h *Handler) getProject(r *http.Request) (*model.Project, error) {
@@ -112,7 +113,7 @@ func makeTokenCookie(value string) *http.Cookie {
 		Name:     jwt.SignedTokenKey,
 		Value:    value,
 		MaxAge:   defaultTokenCookieMaxAge,
-		Path:     "/",
+		Path:     rootPath,
 		Secure:   true,
 		HttpOnly: true,
 		SameSite: http.SameSiteLaxMode,
@@ -124,7 +125,7 @@ func makeExpiredTokenCookie() *http.Cookie {
 		Name:     jwt.SignedTokenKey,
 		Value:    "",
 		MaxAge:   -1,
-		Path:     "/",
+		Path:     rootPath,
 		Secure:   true,
 		HttpOnly: true,
 		SameSite: http.SameSiteLaxMode,
@@ -136,7 +137,7 @@ func makeStateCookie(value string) *http.Cookie {
 		Name:     stateCookieKey,
 		Value:    value,
 		MaxAge:   defaultStateCookieMaxAge,
-		Path:     "/",
+		Path:     rootPath,
 		Secure:   true,
 		HttpOnly: true,
 		SameSite: http.SameSiteLaxMode,
@@ -148,7 +149,7 @@ func makeExpiredStateCookie() *http.Cookie {
 		Name:     stateCookieKey,
 		Value:    "",
 		MaxAge:   -1,
-		Path:     "/",
+		Path:     rootPath,
 		Secure:   true,
 		HttpOnly: true,
 		SameSite: http.SameSiteLaxMode,
@@ -160,7 +161,7 @@ func makeErrorCookie(value string) *http.Cookie {
 		Name:     errorCookieKey,
 		Value:    value,
 		MaxAge:   defaultErrorCookieMaxAge,
-		Path:     "/",
+		Path:     rootPath,
 		Secure:   true,
 		HttpOnly: true,
 		SameSite: http.SameSiteLaxMode,
