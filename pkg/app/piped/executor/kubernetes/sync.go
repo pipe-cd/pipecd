@@ -22,12 +22,14 @@ import (
 	"github.com/pipe-cd/pipe/pkg/model"
 )
 
-func (e *Executor) ensureSync(ctx context.Context, commitHash string, manifestsLoader func(ctx context.Context) ([]provider.Manifest, error)) model.StageStatus {
+func (e *Executor) ensureSync(ctx context.Context) model.StageStatus {
+	commitHash := e.Deployment.Trigger.Commit.Hash
+
 	// Load the manifests at the specified commit.
 	e.LogPersister.AppendInfof("Loading manifests at commit %s for handling", commitHash)
-	manifests, err := manifestsLoader(ctx)
+	manifests, err := e.loadManifests(ctx)
 	if err != nil {
-		e.LogPersister.AppendErrorf("Failed while loading running manifests (%v)", err)
+		e.LogPersister.AppendErrorf("Failed while loading manifests (%v)", err)
 		return model.StageStatus_STAGE_FAILURE
 	}
 	e.LogPersister.AppendSuccessf("Successfully loaded %d manifests", len(manifests))
