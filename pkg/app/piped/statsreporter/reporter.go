@@ -79,7 +79,7 @@ L:
 				r.logger.Info("there are no metrics to report")
 				continue
 			}
-			if r.report(ctx, metrics, now); err != nil {
+			if err := r.report(ctx, metrics, now); err != nil {
 				continue
 			}
 			r.logger.Info("successfully collected and reported metrics",

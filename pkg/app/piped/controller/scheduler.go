@@ -336,7 +336,7 @@ func (s *scheduler) Run(ctx context.Context) error {
 	}
 
 	if cancelCommand != nil {
-		cancelCommand.Report(ctx, model.CommandStatus_COMMAND_SUCCEEDED, nil)
+		return cancelCommand.Report(ctx, model.CommandStatus_COMMAND_SUCCEEDED, nil)
 	}
 
 	return nil
@@ -362,14 +362,18 @@ func (s *scheduler) executeStage(sig executor.StopSignal, ps model.PipelineStage
 	// Check the existence of the specified cloud provider.
 	if !s.pipedConfig.HasCloudProvider(s.deployment.CloudProvider, s.deployment.CloudProviderType()) {
 		lp.AppendErrorf("This piped is not having the specified cloud provider in this deployment: %v", s.deployment.CloudProvider)
-		s.reportStageStatus(ctx, ps.Id, model.StageStatus_STAGE_FAILURE, ps.Requires)
+		if err := s.reportStageStatus(ctx, ps.Id, model.StageStatus_STAGE_FAILURE, ps.Requires); err != nil {
+			s.logger.Error("failed to report stage status", zap.Error(err))
+		}
 		return model.StageStatus_STAGE_FAILURE
 	}
 
 	// Ensure that all needed things has been prepared before executing any stage.
 	if err := s.ensurePreparing(ctx, lp); err != nil {
 		if !sig.Stopped() {
-			s.reportStageStatus(ctx, ps.Id, model.StageStatus_STAGE_FAILURE, ps.Requires)
+			if err := s.reportStageStatus(ctx, ps.Id, model.StageStatus_STAGE_FAILURE, ps.Requires); err != nil {
+				s.logger.Error("failed to report stage status", zap.Error(err))
+			}
 			return model.StageStatus_STAGE_FAILURE
 		}
 		return originalStatus
@@ -387,7 +391,9 @@ func (s *scheduler) executeStage(sig executor.StopSignal, ps model.PipelineStage
 	}
 	if stageConfig == nil {
 		lp.AppendError("Unabled to find the stage configuration")
-		s.reportStageStatus(ctx, ps.Id, model.StageStatus_STAGE_FAILURE, ps.Requires)
+		if err := s.reportStageStatus(ctx, ps.Id, model.StageStatus_STAGE_FAILURE, ps.Requires); err != nil {
+			s.logger.Error("failed to report stage status", zap.Error(err))
+		}
 		return model.StageStatus_STAGE_FAILURE
 	}
 

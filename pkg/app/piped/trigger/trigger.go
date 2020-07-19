@@ -158,10 +158,18 @@ func (t *Trigger) checkCommand(ctx context.Context) error {
 				zap.String("application-id", app.Id),
 				zap.Error(err),
 			)
-			cmd.Report(ctx, model.CommandStatus_COMMAND_FAILED, nil)
+			if err := cmd.Report(ctx, model.CommandStatus_COMMAND_FAILED, nil); err != nil {
+				t.logger.Error("failed to report command status",
+					zap.Error(err),
+				)
+			}
 			continue
 		}
-		cmd.Report(ctx, model.CommandStatus_COMMAND_SUCCEEDED, nil)
+		if err := cmd.Report(ctx, model.CommandStatus_COMMAND_SUCCEEDED, nil); err != nil {
+			t.logger.Error("failed to report command status",
+				zap.Error(err),
+			)
+		}
 	}
 	return nil
 }
