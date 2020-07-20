@@ -19,8 +19,11 @@ import { fetchApplications } from "../../modules/applications";
 import {
   Deployment,
   fetchDeployments,
-  selectAll,
+  selectIds as selectDeploymentIds,
+  selectById as selectDeploymentById,
+  loadMoreDeployments,
 } from "../../modules/deployments";
+import { useInView } from "react-intersection-observer";
 
 const useStyles = makeStyles((theme) => ({
   root: {
@@ -69,11 +72,21 @@ const sortComp = (a: string | number, b: string | number): number => {
   return dayjs(b).valueOf() - dayjs(a).valueOf();
 };
 
+function filterUndefined<TValue>(value: TValue | undefined): value is TValue {
+  return value !== undefined;
+}
+
 const useGroupedDeployments = (): [boolean, Record<string, Deployment[]>] => {
   const [isLoading, deployments] = useSelector<
     AppState,
     [boolean, Deployment[]]
-  >((state) => [state.deployments.loadingList, selectAll(state.deployments)]);
+  >((state) => [
+    state.deployments.loadingList,
+    selectDeploymentIds(state.deployments)
+      .slice(0, state.deployments.displayLength)
+      .map((id) => selectDeploymentById(state.deployments, id))
+      .filter(filterUndefined),
+  ]);
 
   const result: Record<string, Deployment[]> = {};
 
@@ -93,10 +106,17 @@ export const DeploymentIndexPage: FC = memo(function DeploymentIndexPage() {
   const dispatch = useDispatch();
   const [isLoading, groupedDeployments] = useGroupedDeployments();
   const [isOpenFilter, setIsOpenFilter] = useState(false);
+  const [ref, inView] = useInView();
 
   useEffect(() => {
     dispatch(fetchApplications());
   }, [dispatch]);
+
+  useEffect(() => {
+    if (inView) {
+      dispatch(loadMoreDeployments());
+    }
+  }, [dispatch, inView]);
 
   const handleChangeFilter = useCallback(
     (options) => {
@@ -146,6 +166,7 @@ export const DeploymentIndexPage: FC = memo(function DeploymentIndexPage() {
                         key={`deployment-item-${deployment.id}`}
                       />
                     ))}
+                  <div ref={ref} />
                 </List>
               </li>
             ))

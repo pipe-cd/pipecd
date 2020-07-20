@@ -9,6 +9,7 @@ describe("deploymentsSlice reducer", () => {
     ).toMatchInlineSnapshot(`
       Object {
         "canceling": Object {},
+        "displayLength": 30,
         "entities": Object {},
         "ids": Array [],
         "loading": Object {},
