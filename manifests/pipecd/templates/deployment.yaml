@@ -99,7 +99,7 @@ spec:
           - --config-file=/etc/pipecd-config/{{ .Values.config.fileName }}
           - --use-fake-response={{ .Values.api.args.useFakeResponse }}
           - --enable-grpc-reflection={{ .Values.api.args.enableGRPCReflection }}
-          - --token-signing-key-file=/etc/signing-key/signing-key
+          - --token-signing-key-file=/etc/signing-key/{{ .Values.secret.signingKey.fileName }}
           ports:
             - name: piped-api
               containerPort: 9080
@@ -150,7 +150,7 @@ spec:
 {{- end }}
         - name: signing-key
           secret:
-            secretName: token-signing-key
+            secretName: {{ .Values.secret.signingKey.name }}
 {{- if .Values.api.resources }}
           resources:
             {{- toYaml .Values.api.resources | nindent 12 }}

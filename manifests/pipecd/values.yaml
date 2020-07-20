@@ -81,4 +81,8 @@ config:
 secret:
   # The name of the Secret should be mounted to container.
   name: "pipecd-secrets"
-
+  signingKey:
+    # The name of the signing key secret.
+    name: "token-signing-key"
+    # The name of the signing key file.
+    fileName: "signing-key"
