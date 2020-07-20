@@ -33,7 +33,8 @@ import { fetchStageLog } from "../modules/stage-logs";
 
 const useStyles = makeStyles((theme) => ({
   root: {
-    padding: theme.spacing(3),
+    padding: theme.spacing(2),
+    position: "relative",
   },
   textMargin: {
     marginLeft: theme.spacing(1),
@@ -54,6 +55,14 @@ const useStyles = makeStyles((theme) => ({
   },
   contents: {
     display: "flex",
+    flexDirection: "column",
+  },
+  detail: {
+    display: "flex",
+  },
+  age: {
+    color: theme.palette.text.secondary,
+    marginLeft: theme.spacing(1),
   },
   content: {
     flex: 1,
@@ -61,8 +70,11 @@ const useStyles = makeStyles((theme) => ({
   commitInfo: {
     display: "flex",
   },
-  buttonArea: {
+  actionButtons: {
     color: theme.palette.error.main,
+    position: "absolute",
+    top: theme.spacing(2),
+    right: theme.spacing(2),
   },
   buttonProgress: {
     color: theme.palette.primary.main,
@@ -71,6 +83,10 @@ const useStyles = makeStyles((theme) => ({
     left: "50%",
     marginTop: -12,
     marginLeft: -12,
+  },
+  statusReason: {
+    paddingTop: theme.spacing(1),
+    paddingBottom: theme.spacing(1),
   },
 }));
 
@@ -149,64 +165,77 @@ export const DeploymentDetail: FC<Props> = memo(function DeploymentDetail({
             <Typography variant="subtitle1" className={classes.env}>
               {env.name}
             </Typography>
+            <Typography variant="body1" className={classes.age}>
+              {dayjs(deployment.createdAt * 1000).fromNow()}
+            </Typography>
           </div>
-          <Typography variant="subtitle1">
-            {dayjs(deployment.createdAt * 1000).fromNow()}
+          <Typography
+            variant="body2"
+            color="textSecondary"
+            className={classes.statusReason}
+          >
+            {deployment.statusReason}
           </Typography>
-
-          <LabeledText label="Piped" value={piped.name} />
-          <LabeledText label="Description" value={deployment.summary} />
         </div>
-        <div className={classes.content}>
-          <LabeledText
-            label="Application"
-            value={
-              <Link
-                variant="body2"
-                component={RouterLink}
-                to={`${PAGE_PATH_APPLICATIONS}/${deployment.applicationId}`}
-              >
-                {deployment.applicationName}
-              </Link>
-            }
-          />
-          {deployment.trigger.commit && (
-            <div className={classes.commitInfo}>
-              <Typography variant="subtitle2" color="textSecondary">
-                Commit:
-              </Typography>
-              <Typography variant="body2" className={classes.textMargin}>
-                {deployment.trigger.commit.message}
-              </Typography>
-              <span className={classes.textMargin}>
-                (
-                <Link variant="body2">{`${deployment.trigger.commit.hash}`}</Link>
-                )
-              </span>
-            </div>
+        <div className={classes.detail}>
+          <div className={classes.content}>
+            <LabeledText
+              label="Application"
+              value={
+                <Link
+                  variant="body2"
+                  component={RouterLink}
+                  to={`${PAGE_PATH_APPLICATIONS}/${deployment.applicationId}`}
+                >
+                  {deployment.applicationName}
+                </Link>
+              }
+            />
+            <LabeledText label="Piped" value={piped.name} />
+            <LabeledText label="Summary" value={deployment.summary} />
+          </div>
+          <div className={classes.content}>
+            {deployment.trigger.commit && (
+              <div className={classes.commitInfo}>
+                <Typography variant="subtitle2" color="textSecondary">
+                  Commit:
+                </Typography>
+                <Typography variant="body2" className={classes.textMargin}>
+                  {deployment.trigger.commit.message}
+                </Typography>
+                <span className={classes.textMargin}>
+                  (
+                  <Link variant="body2">{`${deployment.trigger.commit.hash}`}</Link>
+                  )
+                </span>
+              </div>
+            )}
+            <LabeledText
+              label="Triggered by"
+              value={
+                deployment.trigger.commander ||
+                deployment.trigger.commit?.author ||
+                ""
+              }
+            />
+          </div>
+          {isDeploymentRunning(deployment.status) && (
+            <SplitButton
+              className={classes.actionButtons}
+              options={CANCEL_OPTIONS}
+              onClick={(index) => {
+                dispatch(
+                  cancelDeployment({
+                    deploymentId,
+                    withoutRollback: index === 1,
+                  })
+                );
+              }}
+              startIcon={<CancelIcon />}
+              loading={isCanceling}
+            />
           )}
-          <LabeledText
-            label="Triggered by"
-            value={
-              deployment.trigger.commander ||
-              deployment.trigger.commit?.author ||
-              ""
-            }
-          />
         </div>
-        {isDeploymentRunning(deployment.status) && (
-          <SplitButton
-            className={classes.buttonArea}
-            options={CANCEL_OPTIONS}
-            onClick={(index) => {
-              dispatch(
-                cancelDeployment({ deploymentId, withoutRollback: index === 1 })
-              );
-            }}
-            startIcon={<CancelIcon />}
-            loading={isCanceling}
-          />
-        )}
       </div>
     </Paper>
   );
