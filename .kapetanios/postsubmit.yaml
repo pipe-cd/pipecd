@@ -35,7 +35,7 @@ spec:
     - description: Build piped
       runner: gcr.io/pipecd/runner:1.0.0
       commands:
-        - bazelisk --output_base=/workspace/bazel_out build --config=ci --config=linux //:copy_piped
+        - bazelisk --output_base=/workspace/bazel_out build --config=ci --config=linux --config=stamping //:copy_piped
       secrets:
       - name: bazel_cache_service_account
         type: PROJECT
@@ -54,7 +54,7 @@ spec:
     - description: Build piped
       runner: gcr.io/pipecd/runner:1.0.0
       commands:
-        - bazelisk --output_base=/workspace/bazel_out build --config=ci --config=darwin //:copy_piped
+        - bazelisk --output_base=/workspace/bazel_out build --config=ci --config=darwin --config=stamping //:copy_piped
       secrets:
       - name: bazel_cache_service_account
         type: PROJECT

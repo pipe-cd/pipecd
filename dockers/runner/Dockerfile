@@ -22,6 +22,4 @@ RUN \
     apt-get -y install git && \
     # Install bazelisk
     curl -sSL -o /usr/bin/bazelisk https://github.com/bazelbuild/bazelisk/releases/download/v${BAZELISK_VERSION}/bazelisk-linux-amd64 && \
-    chmod +x /usr/bin/bazelisk && \
-    # Install hub
-    curl -fsSL https://github.com/github/hub/raw/master/script/get | bash -s 2.14.2
+    chmod +x /usr/bin/bazelisk
