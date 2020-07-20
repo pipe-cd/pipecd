@@ -99,7 +99,7 @@ spec:
           - --config-file=/etc/pipecd-config/{{ .Values.config.fileName }}
           - --use-fake-response={{ .Values.api.args.useFakeResponse }}
           - --enable-grpc-reflection={{ .Values.api.args.enableGRPCReflection }}
-          - --token-signing-key-file=/etc/signing-key/{{ .Values.secret.signingKey.fileName }}
+          - --token-signing-key-file={{ .Values.secret.mountPath }}/{{ .Values.secret.signingKey.fileName }}
           ports:
             - name: piped-api
               containerPort: 9080
@@ -122,25 +122,18 @@ spec:
               path: /healthz
               port: admin
           volumeMounts:
-{{- if .Values.secret.name }}
             - name: pipecd-secret
-              mountPath: /etc/pipecd-secret
+              mountPath: {{ .Values.secret.mountPath }}
               readOnly: true
-{{- end }}
             - name: pipecd-config
               mountPath: /etc/pipecd-config
-              readOnly: true
-            - name: signing-key
-              mountPath: /etc/signing-key
               readOnly: true
           resources:
             {{- toYaml .Values.resources | nindent 12 }}
       volumes:
-{{- if .Values.secret.name }}
         - name: pipecd-secret
           secret:
             secretName: {{ .Values.secret.name }}
-{{- end }}
         - name: pipecd-config
           configMap:
 {{- if .Values.config.create }}
@@ -148,9 +141,6 @@ spec:
 {{- else }}
             name: {{ .Values.config.name }}
 {{- end }}
-        - name: signing-key
-          secret:
-            secretName: {{ .Values.secret.signingKey.name }}
 {{- if .Values.api.resources }}
           resources:
             {{- toYaml .Values.api.resources | nindent 12 }}
