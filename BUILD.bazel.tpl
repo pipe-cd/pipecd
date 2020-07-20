@@ -32,3 +32,11 @@ buildifier(
         "./vendor/*",
     ],
 )
+
+genrule(
+    name = "copy_piped",
+    srcs = ["//cmd/piped:piped"],
+    outs = ["piped"],
+    cmd = "cp $< $@",
+)
+

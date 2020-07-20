@@ -10,9 +10,17 @@ ifdef IS_CI
 	BAZEL_COMMAND_FLAGS += --config=ci
 endif
 
+ifdef BUILD_PLATFORM
+	BAZEL_COMMAND_FLAGS += --config=${BUILD_PLATFORM}
+endif
+
 .PHONY: build
 build:
 	bazelisk ${BAZEL_FLAGS} build ${BAZEL_COMMAND_FLAGS} -- //...
+
+.PHONY: build-piped
+build-piped:
+	bazelisk ${BAZEL_FLAGS} build ${BAZEL_COMMAND_FLAGS} -- //:copy_piped
 
 .PHONY: test
 test:

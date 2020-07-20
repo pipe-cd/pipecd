@@ -13,6 +13,7 @@ spec:
         - make build
       envs:
         - IS_CI=true
+        - BUILD_PLATFORM=linux
       secrets:
       - name: bazel_cache_service_account
         type: PROJECT
@@ -28,6 +29,7 @@ spec:
         - make test
       envs:
         - IS_CI=true
+        - BUILD_PLATFORM=linux
       secrets:
       - name: bazel_cache_service_account
         type: PROJECT
@@ -38,6 +40,7 @@ spec:
         - make coverage
       envs:
         - IS_CI=true
+        - BUILD_PLATFORM=linux
       secrets:
       - name: bazel_cache_service_account
         type: PROJECT
