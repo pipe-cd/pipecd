@@ -29,11 +29,11 @@ var deploymentFactory = func() interface{} {
 }
 
 var (
-	DeploymentToPlannedUpdater = func(desc, statusDesc, runningCommitHash, version string, stages []*model.PipelineStage) func(*model.Deployment) error {
+	DeploymentToPlannedUpdater = func(summary, statusReason, runningCommitHash, version string, stages []*model.PipelineStage) func(*model.Deployment) error {
 		return func(d *model.Deployment) error {
 			d.Status = model.DeploymentStatus_DEPLOYMENT_PLANNED
-			d.Description = desc
-			d.StatusDescription = statusDesc
+			d.Summary = summary
+			d.StatusReason = statusReason
 			d.RunningCommitHash = runningCommitHash
 			d.Version = version
 			d.Stages = stages
@@ -41,22 +41,22 @@ var (
 		}
 	}
 
-	DeploymentStatusUpdater = func(status model.DeploymentStatus, statusDesc string) func(*model.Deployment) error {
+	DeploymentStatusUpdater = func(status model.DeploymentStatus, statusReason string) func(*model.Deployment) error {
 		return func(d *model.Deployment) error {
 			d.Status = status
-			d.StatusDescription = statusDesc
+			d.StatusReason = statusReason
 			return nil
 		}
 	}
 
-	DeploymentToCompletedUpdater = func(status model.DeploymentStatus, statuses map[string]model.StageStatus, statusDesc string, completedAt int64) func(*model.Deployment) error {
+	DeploymentToCompletedUpdater = func(status model.DeploymentStatus, statuses map[string]model.StageStatus, statusReason string, completedAt int64) func(*model.Deployment) error {
 		return func(d *model.Deployment) error {
 			if !model.IsCompletedDeployment(status) {
 				return fmt.Errorf("deployment status %s is not completed value: %w", status, ErrInvalidArgument)
 			}
 
 			d.Status = status
-			d.StatusDescription = statusDesc
+			d.StatusReason = statusReason
 			d.CompletedAt = completedAt
 			for i := range d.Stages {
 				stageID := d.Stages[i].Id
@@ -68,12 +68,12 @@ var (
 		}
 	}
 
-	StageStatusChangedUpdater = func(stageID string, status model.StageStatus, statusDescription string, requires []string, visible bool, retriedCount int32, completedAt int64) func(*model.Deployment) error {
+	StageStatusChangedUpdater = func(stageID string, status model.StageStatus, statusReason string, requires []string, visible bool, retriedCount int32, completedAt int64) func(*model.Deployment) error {
 		return func(d *model.Deployment) error {
 			for _, s := range d.Stages {
 				if s.Id == stageID {
 					s.Status = status
-					s.StatusDescription = statusDescription
+					s.StatusReason = statusReason
 					if len(requires) > 0 {
 						s.Requires = requires
 					}

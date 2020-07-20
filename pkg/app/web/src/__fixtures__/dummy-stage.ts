@@ -9,7 +9,7 @@ export const dummyStage: Stage = {
   requiresList: [],
   visible: true,
   status: 2,
-  statusDescription: "",
+  statusReason: "",
   metadataMap: [],
   retriedCount: 0,
   completedAt: 1592203166,

@@ -78,7 +78,7 @@ message ApplicationSyncState {
 message ApplicationDeploymentReference {
     string deployment_id = 1 [(validate.rules).string.min_len = 1];
     DeploymentTrigger trigger = 2 [(validate.rules).message.required = true];
-    string description = 3;
+    string summary = 3;
     string version = 4;
 
     int64 started_at = 14 [(validate.rules).int64.gt = 0];

@@ -27,7 +27,7 @@ import (
 
 func TestDeploymentToPlannedUpdater(t *testing.T) {
 	var (
-		expectedDesc              = "updated-description"
+		expectedDesc              = "updated-summary"
 		expectedStatusDesc        = "update-status-desc"
 		expectedRunningCommitHash = "update-running-commit-hash"
 		expectedVersion           = "update-version"
@@ -46,11 +46,11 @@ func TestDeploymentToPlannedUpdater(t *testing.T) {
 		}
 
 		d = model.Deployment{
-			Id:                "deployment-id",
-			Description:       "description",
-			StatusDescription: "status-description",
-			Status:            model.DeploymentStatus_DEPLOYMENT_PENDING,
-			Stages:            []*model.PipelineStage{},
+			Id:           "deployment-id",
+			Summary:      "summary",
+			StatusReason: "status-reason",
+			Status:       model.DeploymentStatus_DEPLOYMENT_PENDING,
+			Stages:       []*model.PipelineStage{},
 		}
 
 		updater = DeploymentToPlannedUpdater(
@@ -65,8 +65,8 @@ func TestDeploymentToPlannedUpdater(t *testing.T) {
 	err := updater(&d)
 	require.NoError(t, err)
 	assert.Equal(t, model.DeploymentStatus_DEPLOYMENT_PLANNED, d.Status)
-	assert.Equal(t, expectedDesc, d.Description)
-	assert.Equal(t, expectedStatusDesc, d.StatusDescription)
+	assert.Equal(t, expectedDesc, d.Summary)
+	assert.Equal(t, expectedStatusDesc, d.StatusReason)
 	assert.Equal(t, expectedRunningCommitHash, d.RunningCommitHash)
 	assert.Equal(t, expectedVersion, d.Version)
 	assert.Equal(t, expectedStages, d.Stages)
@@ -77,9 +77,9 @@ func TestDeploymentStatusUpdater(t *testing.T) {
 		expectedStatus     = model.DeploymentStatus_DEPLOYMENT_RUNNING
 		expectedStatusDesc = "update-status-desc"
 		d                  = model.Deployment{
-			Id:                "deployment-id",
-			StatusDescription: "status-description",
-			Status:            model.DeploymentStatus_DEPLOYMENT_PENDING,
+			Id:           "deployment-id",
+			StatusReason: "status-reason",
+			Status:       model.DeploymentStatus_DEPLOYMENT_PENDING,
 		}
 	)
 
@@ -87,7 +87,7 @@ func TestDeploymentStatusUpdater(t *testing.T) {
 	err := updater(&d)
 	require.NoError(t, err)
 	assert.Equal(t, expectedStatus, d.Status)
-	assert.Equal(t, expectedStatusDesc, d.StatusDescription)
+	assert.Equal(t, expectedStatusDesc, d.StatusReason)
 }
 
 func TestDeploymentToCompletedUpdater(t *testing.T) {
@@ -106,9 +106,9 @@ func TestDeploymentToCompletedUpdater(t *testing.T) {
 		{
 			name: "invalid complete status",
 			deployment: model.Deployment{
-				Id:                "deployment-id",
-				StatusDescription: "status-description",
-				Status:            model.DeploymentStatus_DEPLOYMENT_PENDING,
+				Id:           "deployment-id",
+				StatusReason: "status-reason",
+				Status:       model.DeploymentStatus_DEPLOYMENT_PENDING,
 			},
 			status:      model.DeploymentStatus_DEPLOYMENT_RUNNING,
 			statusDesc:  "updated-status-desc",
@@ -119,9 +119,9 @@ func TestDeploymentToCompletedUpdater(t *testing.T) {
 		{
 			name: "valid complete status and updated fields",
 			deployment: model.Deployment{
-				Id:                "deployment-id",
-				StatusDescription: "status-desc",
-				Status:            model.DeploymentStatus_DEPLOYMENT_PENDING,
+				Id:           "deployment-id",
+				StatusReason: "status-desc",
+				Status:       model.DeploymentStatus_DEPLOYMENT_PENDING,
 				Stages: []*model.PipelineStage{
 					{
 						Id:       "stage-id1",
@@ -149,9 +149,9 @@ func TestDeploymentToCompletedUpdater(t *testing.T) {
 			completedAt: now.Unix(),
 
 			expectedDeployment: model.Deployment{
-				Id:                "deployment-id",
-				StatusDescription: "updated-status-desc",
-				Status:            model.DeploymentStatus_DEPLOYMENT_SUCCESS,
+				Id:           "deployment-id",
+				StatusReason: "updated-status-desc",
+				Status:       model.DeploymentStatus_DEPLOYMENT_SUCCESS,
 				Stages: []*model.PipelineStage{
 					{
 						Id:       "stage-id1",
@@ -212,9 +212,9 @@ func TestStageStatusChangedUpdater(t *testing.T) {
 		{
 			name: "stageID not found",
 			deployment: model.Deployment{
-				Id:                "deployment-id",
-				StatusDescription: "status-description",
-				Status:            model.DeploymentStatus_DEPLOYMENT_PENDING,
+				Id:           "deployment-id",
+				StatusReason: "status-reason",
+				Status:       model.DeploymentStatus_DEPLOYMENT_PENDING,
 				Stages: []*model.PipelineStage{
 					{
 						Id: "stage-id1",
@@ -228,9 +228,9 @@ func TestStageStatusChangedUpdater(t *testing.T) {
 		{
 			name: "update target stage status",
 			deployment: model.Deployment{
-				Id:                "deployment-id",
-				StatusDescription: "status-desc",
-				Status:            model.DeploymentStatus_DEPLOYMENT_RUNNING,
+				Id:           "deployment-id",
+				StatusReason: "status-desc",
+				Status:       model.DeploymentStatus_DEPLOYMENT_RUNNING,
 				Stages: []*model.PipelineStage{
 					{
 						Id:           "stage-id1",
@@ -252,22 +252,22 @@ func TestStageStatusChangedUpdater(t *testing.T) {
 			completedAt:  now.Unix(),
 
 			expectedDeployment: model.Deployment{
-				Id:                "deployment-id",
-				StatusDescription: "status-desc",
-				Status:            model.DeploymentStatus_DEPLOYMENT_RUNNING,
+				Id:           "deployment-id",
+				StatusReason: "status-desc",
+				Status:       model.DeploymentStatus_DEPLOYMENT_RUNNING,
 				Stages: []*model.PipelineStage{
 					{
-						Id:                "stage-id1",
-						Name:              "stage1",
-						Desc:              "desc1",
-						Index:             1,
-						Status:            model.StageStatus_STAGE_SUCCESS,
-						StatusDescription: "updated-status-desc",
-						Requires:          []string{"stage-1"},
-						Visible:           true,
-						Metadata:          map[string]string{"meta": "value"},
-						RetriedCount:      2,
-						CompletedAt:       now.Unix(),
+						Id:           "stage-id1",
+						Name:         "stage1",
+						Desc:         "desc1",
+						Index:        1,
+						Status:       model.StageStatus_STAGE_SUCCESS,
+						StatusReason: "updated-status-desc",
+						Requires:     []string{"stage-1"},
+						Visible:      true,
+						Metadata:     map[string]string{"meta": "value"},
+						RetriedCount: 2,
+						CompletedAt:  now.Unix(),
 					},
 				},
 			},

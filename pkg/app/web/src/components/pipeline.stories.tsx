@@ -41,7 +41,7 @@ const fakeDeployment: Deployment = {
   runningCommitHash: "3808585b46f1e90196d7ffe8dd04c807a251febc",
   description: "This deployment is debug",
   status: 2,
-  statusDescription: "",
+  statusReason: "",
   stagesList: [
     stage({ id: "fake-stage-id-0-0" }),
     stage({

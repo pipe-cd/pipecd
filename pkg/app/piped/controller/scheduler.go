@@ -203,11 +203,11 @@ func (s *scheduler) Run(ctx context.Context) error {
 	}
 
 	var (
-		deploymentStatus  = model.DeploymentStatus_DEPLOYMENT_SUCCESS
-		statusDescription = "Completed Successfully"
-		timer             = time.NewTimer(defaultDeploymentTimeout)
-		cancelCommand     *model.ReportableCommand
-		lastStage         *model.PipelineStage
+		deploymentStatus = model.DeploymentStatus_DEPLOYMENT_SUCCESS
+		statusReason     = "Completed Successfully"
+		timer            = time.NewTimer(defaultDeploymentTimeout)
+		cancelCommand    *model.ReportableCommand
+		lastStage        *model.PipelineStage
 	)
 	defer timer.Stop()
 
@@ -225,12 +225,12 @@ func (s *scheduler) Run(ctx context.Context) error {
 		// This stage is already completed by a previous scheduler.
 		if ps.Status == model.StageStatus_STAGE_CANCELLED {
 			deploymentStatus = model.DeploymentStatus_DEPLOYMENT_CANCELLED
-			statusDescription = fmt.Sprintf("Deployment was cancelled while executing stage %s", ps.Id)
+			statusReason = fmt.Sprintf("Deployment was cancelled while executing stage %s", ps.Id)
 			break
 		}
 		if ps.Status == model.StageStatus_STAGE_FAILURE {
 			deploymentStatus = model.DeploymentStatus_DEPLOYMENT_FAILURE
-			statusDescription = fmt.Sprintf("Failed while executing stage %s", ps.Id)
+			statusReason = fmt.Sprintf("Failed while executing stage %s", ps.Id)
 			break
 		}
 
@@ -277,14 +277,14 @@ func (s *scheduler) Run(ctx context.Context) error {
 		// The deployment was cancelled by a web user.
 		if sigType == executor.StopSignalCancel {
 			deploymentStatus = model.DeploymentStatus_DEPLOYMENT_CANCELLED
-			statusDescription = fmt.Sprintf("Deployment was cancelled by %s while executing stage %s", cancelCommand.Commander, ps.Id)
+			statusReason = fmt.Sprintf("Deployment was cancelled by %s while executing stage %s", cancelCommand.Commander, ps.Id)
 			break
 		}
 
 		// The stage was failed but not caused by the stop signal.
 		if result == model.StageStatus_STAGE_FAILURE && sigType == executor.StopSignalNone {
 			deploymentStatus = model.DeploymentStatus_DEPLOYMENT_FAILURE
-			statusDescription = fmt.Sprintf("Failed while executing stage %s", ps.Id)
+			statusReason = fmt.Sprintf("Failed while executing stage %s", ps.Id)
 			break
 		}
 
@@ -297,7 +297,7 @@ func (s *scheduler) Run(ctx context.Context) error {
 		deploymentStatus == model.DeploymentStatus_DEPLOYMENT_FAILURE {
 		if stage, ok := s.deployment.FindRollbackStage(); ok {
 			// Update to change deployment status to ROLLING_BACK.
-			if err := s.reportDeploymentStatusChanged(ctx, model.DeploymentStatus_DEPLOYMENT_ROLLING_BACK, statusDescription); err != nil {
+			if err := s.reportDeploymentStatusChanged(ctx, model.DeploymentStatus_DEPLOYMENT_ROLLING_BACK, statusReason); err != nil {
 				return err
 			}
 
@@ -328,7 +328,7 @@ func (s *scheduler) Run(ctx context.Context) error {
 	}
 
 	if model.IsCompletedDeployment(deploymentStatus) {
-		err := s.reportDeploymentCompleted(ctx, deploymentStatus, statusDescription)
+		err := s.reportDeploymentCompleted(ctx, deploymentStatus, statusReason)
 		if err == nil && deploymentStatus == model.DeploymentStatus_DEPLOYMENT_SUCCESS {
 			s.reportMostRecentlySuccessfulDeployment(ctx)
 		}
@@ -552,9 +552,9 @@ func (s *scheduler) reportDeploymentStatusChanged(ctx context.Context, status mo
 		err   error
 		retry = pipedservice.NewRetry(10)
 		req   = &pipedservice.ReportDeploymentStatusChangedRequest{
-			DeploymentId:      s.deployment.Id,
-			Status:            status,
-			StatusDescription: desc,
+			DeploymentId: s.deployment.Id,
+			Status:       status,
+			StatusReason: desc,
 		}
 	)
 
@@ -573,11 +573,11 @@ func (s *scheduler) reportDeploymentCompleted(ctx context.Context, status model.
 		err error
 		now = s.nowFunc()
 		req = &pipedservice.ReportDeploymentCompletedRequest{
-			DeploymentId:      s.deployment.Id,
-			Status:            status,
-			StatusDescription: desc,
-			StageStatuses:     s.stageStatuses,
-			CompletedAt:       now.Unix(),
+			DeploymentId:  s.deployment.Id,
+			Status:        status,
+			StatusReason:  desc,
+			StageStatuses: s.stageStatuses,
+			CompletedAt:   now.Unix(),
 		}
 		retry = pipedservice.NewRetry(10)
 	)
@@ -602,7 +602,7 @@ func (s *scheduler) reportMostRecentlySuccessfulDeployment(ctx context.Context) 
 			Deployment: &model.ApplicationDeploymentReference{
 				DeploymentId: s.deployment.Id,
 				Trigger:      s.deployment.Trigger,
-				Description:  s.deployment.Description,
+				Summary:      s.deployment.Summary,
 				Version:      s.deployment.Version,
 				StartedAt:    s.deployment.CreatedAt,
 				CompletedAt:  s.deployment.CompletedAt,

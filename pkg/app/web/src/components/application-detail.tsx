@@ -219,7 +219,7 @@ export const ApplicationDetail: FC<Props> = memo(function ApplicationDetail({
             />
             <LabeledText
               label="Description"
-              value={app.mostRecentlySuccessfulDeployment.description}
+              value={app.mostRecentlySuccessfulDeployment.summary}
             />
           </div>
         )}

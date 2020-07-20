@@ -13,7 +13,7 @@ export const dummyDeployment: Deployment = {
   runningCommitHash: "123456abcdefg",
   stagesList: [],
   status: DeploymentStatus.DEPLOYMENT_SUCCESS,
-  statusDescription: "good",
+  statusReason: "good",
   trigger: {
     commander: "user",
     timestamp: 1,

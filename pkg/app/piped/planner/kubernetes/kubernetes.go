@@ -52,7 +52,7 @@ func (p *Planner) Plan(ctx context.Context, in planner.Input) (out planner.Outpu
 
 	if cfg.Pipeline == nil || len(cfg.Pipeline.Stages) == 0 {
 		out.Stages = buildPipeline(cfg.Input.AutoRollback, time.Now())
-		out.Description = "Apply all manifests because the progressive pipeline was not configured."
+		out.Summary = "Apply all manifests because the progressive pipeline was not configured."
 		return
 	}
 
@@ -91,7 +91,7 @@ func (p *Planner) Plan(ctx context.Context, in planner.Input) (out planner.Outpu
 		}
 		if pipelineRegex.MatchString(in.Deployment.Trigger.Commit.Message) {
 			out.Stages = buildProgressivePipeline(cfg.Pipeline, cfg.Input.AutoRollback, time.Now())
-			out.Description = fmt.Sprintf("Progressive deployment because the commit message was matching %q", p)
+			out.Summary = fmt.Sprintf("Progressive deployment because the commit message was matching %q", p)
 			return out, err
 		}
 	}
@@ -105,7 +105,7 @@ func (p *Planner) Plan(ctx context.Context, in planner.Input) (out planner.Outpu
 		}
 		if syncRegex.MatchString(in.Deployment.Trigger.Commit.Message) {
 			out.Stages = buildPipeline(cfg.Input.AutoRollback, time.Now())
-			out.Description = fmt.Sprintf("Apply all manifests because the commit message was matching %q.", s)
+			out.Summary = fmt.Sprintf("Apply all manifests because the commit message was matching %q.", s)
 			return out, err
 		}
 	}
@@ -115,7 +115,7 @@ func (p *Planner) Plan(ctx context.Context, in planner.Input) (out planner.Outpu
 	// We just apply all manifests.
 	if in.MostRecentSuccessfulCommitHash == "" {
 		out.Stages = buildPipeline(cfg.Input.AutoRollback, time.Now())
-		out.Description = "Apply all manifests because it was unable to find the most recent successful commit."
+		out.Summary = "Apply all manifests because it was unable to find the most recent successful commit."
 		return
 	}
 
@@ -140,7 +140,7 @@ func (p *Planner) Plan(ctx context.Context, in planner.Input) (out planner.Outpu
 	}
 
 	progressive, desc := decideStrategy(oldManifests, newManifests)
-	out.Description = desc
+	out.Summary = desc
 
 	if progressive {
 		out.Stages = buildProgressivePipeline(cfg.Pipeline, cfg.Input.AutoRollback, time.Now())
