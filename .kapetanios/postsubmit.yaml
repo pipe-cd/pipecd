@@ -25,10 +25,6 @@ spec:
     timeout: 30m
     machine:
       resource: medium
-    dockerAuth:
-      secret:
-        name: container_registry_service_account
-        type: PROJECT
     skipBranches:
       - "*"
     steps:
@@ -51,10 +47,6 @@ spec:
     timeout: 30m
     machine:
       resource: medium
-    dockerAuth:
-      secret:
-        name: container_registry_service_account
-        type: PROJECT
     skipBranches:
       - "*"
     steps:
