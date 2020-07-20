@@ -29,6 +29,10 @@ import (
 	"github.com/pipe-cd/pipe/pkg/model"
 )
 
+const (
+	versionUnknown = "unknown"
+)
+
 // Planner plans the deployment pipeline for kubernetes application.
 type Planner struct {
 }
@@ -47,12 +51,6 @@ func (p *Planner) Plan(ctx context.Context, in planner.Input) (out planner.Outpu
 	cfg := in.DeploymentConfig.KubernetesDeploymentSpec
 	if cfg == nil {
 		err = fmt.Errorf("missing KubernetesDeploymentSpec in deployment configuration")
-		return
-	}
-
-	if cfg.Pipeline == nil || len(cfg.Pipeline.Stages) == 0 {
-		out.Stages = buildPipeline(cfg.Input.AutoRollback, time.Now())
-		out.Summary = "Sync by applying all manifests because no progressive pipeline was configured"
 		return
 	}
 
@@ -78,8 +76,17 @@ func (p *Planner) Plan(ctx context.Context, in planner.Input) (out planner.Outpu
 	// Determine application version from the manifests.
 	if version, e := determineVersion(newManifests); e != nil {
 		in.Logger.Error("unable to determine version", zap.Error(e))
+		out.Version = versionUnknown
 	} else {
 		out.Version = version
+	}
+
+	// If the progressive pipeline was not configured
+	// we have only one choise to do is applying all manifestt.
+	if cfg.Pipeline == nil || len(cfg.Pipeline.Stages) == 0 {
+		out.Stages = buildPipeline(cfg.Input.AutoRollback, time.Now())
+		out.Summary = "Sync by applying all manifests because no progressive pipeline was configured"
+		return
 	}
 
 	// This deployment is triggered by a commit with the intent to perform pipeline.
@@ -303,10 +310,10 @@ func determineVersion(manifests []provider.Manifest) (string, error) {
 
 		containers := d.Spec.Template.Spec.Containers
 		if len(containers) == 0 {
-			return "", nil
+			return versionUnknown, nil
 		}
 		_, tag := parseContainerImage(containers[0].Image)
 		return tag, nil
 	}
-	return "", nil
+	return versionUnknown, nil
 }
