@@ -548,13 +548,13 @@ func prepareDeployRepository(ctx context.Context, d *model.Deployment, gitClient
 
 	gitRepo, err := gitClient.Clone(ctx, repoCfg.RepoID, repoCfg.Remote, repoCfg.Branch, repoDirPath)
 	if err != nil {
-		err = fmt.Errorf("failed to clone repository %s for application %s (%v)", repoID, appID, err)
+		err = fmt.Errorf("unable to clone repository %s for application %s (%v)", repoID, appID, err)
 		return nil, err
 	}
 
 	err = gitRepo.Checkout(ctx, revision)
 	if err != nil {
-		err = fmt.Errorf("failed to clone repository %s for application %s (%v)", repoID, appID, err)
+		err = fmt.Errorf("unable to clone repository %s for application %s (%v)", repoID, appID, err)
 		return nil, err
 	}
 

@@ -131,7 +131,8 @@ func (p *planner) Run(ctx context.Context) error {
 	planner, ok := p.plannerRegistry.Planner(p.deployment.Kind)
 	if !ok {
 		err := fmt.Errorf("no registered planner for application %v", p.deployment.Kind)
-		p.reportDeploymentCompleted(ctx, model.DeploymentStatus_DEPLOYMENT_FAILURE, err.Error())
+		reason := fmt.Sprintf("Failed because %v", err)
+		p.reportDeploymentCompleted(ctx, model.DeploymentStatus_DEPLOYMENT_FAILURE, reason)
 		return err
 	}
 
@@ -139,14 +140,16 @@ func (p *planner) Run(ctx context.Context) error {
 	repoDirPath := filepath.Join(p.workingDir, workspaceGitRepoDirName)
 	gitRepo, err := prepareDeployRepository(ctx, p.deployment, p.gitClient, repoDirPath, p.pipedConfig)
 	if err != nil {
-		p.reportDeploymentCompleted(ctx, model.DeploymentStatus_DEPLOYMENT_FAILURE, err.Error())
+		reason := fmt.Sprintf("Failed because %v", err)
+		p.reportDeploymentCompleted(ctx, model.DeploymentStatus_DEPLOYMENT_FAILURE, reason)
 		return err
 	}
 
 	// Load deployment configuration for this application.
 	cfg, err := loadDeploymentConfiguration(gitRepo.GetPath(), p.deployment)
 	if err != nil {
-		p.reportDeploymentCompleted(ctx, model.DeploymentStatus_DEPLOYMENT_FAILURE, err.Error())
+		reason := fmt.Sprintf("Failed because %v", err)
+		p.reportDeploymentCompleted(ctx, model.DeploymentStatus_DEPLOYMENT_FAILURE, reason)
 		return err
 	}
 	p.deploymentConfig = cfg
@@ -195,7 +198,7 @@ func (p *planner) reportDeploymentPlanned(ctx context.Context, runningCommitHash
 		req   = &pipedservice.ReportDeploymentPlannedRequest{
 			DeploymentId:      p.deployment.Id,
 			Summary:           out.Summary,
-			StatusReason:      "Deployment pipeline has been planned",
+			StatusReason:      "The deployment has been planned",
 			RunningCommitHash: runningCommitHash,
 			Version:           out.Version,
 			Stages:            out.Stages,
@@ -215,14 +218,14 @@ func (p *planner) reportDeploymentPlanned(ctx context.Context, runningCommitHash
 	return err
 }
 
-func (p *planner) reportDeploymentCompleted(ctx context.Context, status model.DeploymentStatus, desc string) error {
+func (p *planner) reportDeploymentCompleted(ctx context.Context, status model.DeploymentStatus, reason string) error {
 	var (
 		err error
 		now = p.nowFunc()
 		req = &pipedservice.ReportDeploymentCompletedRequest{
 			DeploymentId:  p.deployment.Id,
 			Status:        status,
-			StatusReason:  desc,
+			StatusReason:  reason,
 			StageStatuses: nil,
 			CompletedAt:   now.Unix(),
 		}

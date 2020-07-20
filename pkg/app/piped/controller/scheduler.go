@@ -204,7 +204,7 @@ func (s *scheduler) Run(ctx context.Context) error {
 
 	var (
 		deploymentStatus = model.DeploymentStatus_DEPLOYMENT_SUCCESS
-		statusReason     = "Completed Successfully"
+		statusReason     = "The deployment was completed successfully"
 		timer            = time.NewTimer(defaultDeploymentTimeout)
 		cancelCommand    *model.ReportableCommand
 		lastStage        *model.PipelineStage
@@ -392,7 +392,7 @@ func (s *scheduler) executeStage(sig executor.StopSignal, ps model.PipelineStage
 		}
 	}
 	if stageConfig == nil {
-		lp.AppendError("Unabled to find the stage configuration")
+		lp.AppendError("Unable to find the stage configuration")
 		if err := s.reportStageStatus(ctx, ps.Id, model.StageStatus_STAGE_FAILURE, ps.Requires); err != nil {
 			s.logger.Error("failed to report stage status", zap.Error(err))
 		}
