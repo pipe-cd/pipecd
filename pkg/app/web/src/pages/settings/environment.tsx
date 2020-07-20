@@ -39,6 +39,9 @@ export const SettingsEnvironmentPage: FC = memo(
     const classes = useStyles();
     const dispatch = useDispatch<AppDispatch>();
     const [isOpenForm, setIsOpenForm] = useState(false);
+    const projectName = useSelector<AppState, string>(
+      (state) => state.project.name
+    );
     const envs = useSelector<AppState, Environment[]>((state) =>
       selectEnvsAll(state.environments)
     );
@@ -87,8 +90,7 @@ export const SettingsEnvironmentPage: FC = memo(
 
         <Drawer anchor="right" open={isOpenForm} onClose={handleClose}>
           <AddEnvForm
-            // TODO: Use correct project name
-            projectName="piped"
+            projectName={projectName}
             onClose={handleClose}
             onSubmit={handleSubmit}
           />
