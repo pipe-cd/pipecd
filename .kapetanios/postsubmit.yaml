@@ -14,12 +14,9 @@ spec:
       - master
     steps:
     - description: Push service images
-      runner: gcr.io/kapetanios/kapetanios-runner:0.2.0
+      runner: gcr.io/pipecd/runner:1.0.0
       commands:
-        - make push-images
-      envs:
-        - IS_CI=true
-        - BUILD_PLATFORM=linux
+        - bazelisk --output_base=/workspace/bazel_out run --config=ci --config=linux --config=stamping //cmd:push_images
       secrets:
       - name: bazel_cache_service_account
         type: PROJECT
@@ -36,16 +33,12 @@ spec:
       - "*"
     steps:
     - description: Build piped
-      runner: gcr.io/kapetanios/kapetanios-runner:0.2.0
+      runner: gcr.io/pipecd/runner:1.0.0
       commands:
-        - make build-piped
-      envs:
-        - IS_CI=true
-        - BUILD_PLATFORM=linux
+        - bazelisk --output_base=/workspace/bazel_out build --config=ci --config=linux //:copy_piped
       secrets:
       - name: bazel_cache_service_account
         type: PROJECT
-
 
   - name: publish-piped-darwin
     timeout: 30m
@@ -59,12 +52,9 @@ spec:
       - "*"
     steps:
     - description: Build piped
-      runner: gcr.io/kapetanios/kapetanios-runner:0.2.0
+      runner: gcr.io/pipecd/runner:1.0.0
       commands:
-        - make build-piped
-      envs:
-        - IS_CI=true
-        - BUILD_PLATFORM=darwin
+        - bazelisk --output_base=/workspace/bazel_out build --config=ci --config=darwin //:copy_piped
       secrets:
       - name: bazel_cache_service_account
         type: PROJECT
