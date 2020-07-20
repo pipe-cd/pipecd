@@ -29,6 +29,7 @@ import (
 	"github.com/pipe-cd/pipe/pkg/admin"
 	"github.com/pipe-cd/pipe/pkg/app/api/api"
 	"github.com/pipe-cd/pipe/pkg/app/api/applicationlivestatestore"
+	"github.com/pipe-cd/pipe/pkg/app/api/authhandler"
 	"github.com/pipe-cd/pipe/pkg/app/api/commandstore"
 	"github.com/pipe-cd/pipe/pkg/app/api/pipedtokenverifier"
 	"github.com/pipe-cd/pipe/pkg/app/api/service/webservice"
@@ -121,12 +122,6 @@ func (s *server) run(ctx context.Context, t cli.Telemetry) error {
 		)
 		return err
 	}
-
-	// signer, err := jwt.NewSigner(defaultSigningMethod, s.tokenSigningKeyFile)
-	// if err != nil {
-	// 	t.Logger.Error("failed to create a new signer", zap.Error(err))
-	// 	return err
-	// }
 
 	var verifier jwt.Verifier
 	// verifier, err := jwt.NewVerifier(defaultSigningMethod, s.tokenSigningKeyFile)
@@ -229,13 +224,18 @@ func (s *server) run(ctx context.Context, t cli.Telemetry) error {
 
 	// Start an http server for handling incoming http requests such as auth callbacks or webhook events.
 	{
+		signer, err := jwt.NewSigner(defaultSigningMethod, s.tokenSigningKeyFile)
+		if err != nil {
+			t.Logger.Error("failed to create a new signer", zap.Error(err))
+			return err
+		}
 		mux := http.NewServeMux()
 		httpServer := &http.Server{
 			Addr:    fmt.Sprintf(":%d", s.httpPort),
 			Handler: mux,
 		}
 		handlers := []httpHandler{
-			//authhandler.NewHandler(signer, verifier, config, ac, t.Logger),
+			authhandler.NewHandler(signer, datastore.NewProjectStore(ds), t.Logger),
 		}
 		for _, h := range handlers {
 			h.Register(mux.HandleFunc)
