@@ -50,12 +50,6 @@ func (p *Planner) Plan(ctx context.Context, in planner.Input) (out planner.Outpu
 		return
 	}
 
-	if cfg.Pipeline == nil || len(cfg.Pipeline.Stages) == 0 {
-		out.Stages = buildPipeline(cfg.Input.AutoRollback, time.Now())
-		out.Summary = "Sync by applying all manifests because no progressive pipeline was configured"
-		return
-	}
-
 	manifestCache := provider.AppManifestsCache{
 		AppID:  in.Deployment.ApplicationId,
 		Cache:  in.AppManifestsCache,
@@ -80,6 +74,14 @@ func (p *Planner) Plan(ctx context.Context, in planner.Input) (out planner.Outpu
 		in.Logger.Error("unable to determine version", zap.Error(e))
 	} else {
 		out.Version = version
+	}
+
+	// If the progressive pipeline was not configured
+	// we have only one choise to do is applying all manifestt.
+	if cfg.Pipeline == nil || len(cfg.Pipeline.Stages) == 0 {
+		out.Stages = buildPipeline(cfg.Input.AutoRollback, time.Now())
+		out.Summary = "Sync by applying all manifests because no progressive pipeline was configured"
+		return
 	}
 
 	// This deployment is triggered by a commit with the intent to perform pipeline.
@@ -288,25 +290,26 @@ func parseContainerImage(image string) (name, tag string) {
 
 // TODO: Add ability to configure how to determine application version.
 func determineVersion(manifests []provider.Manifest) (string, error) {
+	const unknown = "unknown"
 	for _, m := range manifests {
 		if !m.Key.IsDeployment() {
 			continue
 		}
 		data, err := m.MarshalJSON()
 		if err != nil {
-			return "", err
+			return unknown, err
 		}
 		var d resource.Deployment
 		if err := json.Unmarshal(data, &d); err != nil {
-			return "", err
+			return unknown, err
 		}
 
 		containers := d.Spec.Template.Spec.Containers
 		if len(containers) == 0 {
-			return "", nil
+			return unknown, nil
 		}
 		_, tag := parseContainerImage(containers[0].Image)
 		return tag, nil
 	}
-	return "", nil
+	return unknown, nil
 }
