@@ -115,7 +115,7 @@ func buildDeploment(app *model.Application, branch string, commit git.Commit, co
 		GitPath:       app.GitPath,
 		CloudProvider: app.CloudProvider,
 		Status:        model.DeploymentStatus_DEPLOYMENT_PENDING,
-		StatusReason:  "Waiting to be planned",
+		StatusReason:  "The deployment is waiting to be planned",
 		CreatedAt:     now.Unix(),
 		UpdatedAt:     now.Unix(),
 	}

@@ -46,13 +46,13 @@ func Register(r registerer) {
 func (p *Planner) Plan(ctx context.Context, in planner.Input) (out planner.Output, err error) {
 	cfg := in.DeploymentConfig.KubernetesDeploymentSpec
 	if cfg == nil {
-		err = fmt.Errorf("malfored deployment configuration: missing KubernetesDeploymentSpec")
+		err = fmt.Errorf("missing KubernetesDeploymentSpec in deployment configuration")
 		return
 	}
 
 	if cfg.Pipeline == nil || len(cfg.Pipeline.Stages) == 0 {
 		out.Stages = buildPipeline(cfg.Input.AutoRollback, time.Now())
-		out.Summary = "Apply all manifests because the progressive pipeline was not configured."
+		out.Summary = "Sync by applying all manifests because no progressive pipeline was configured"
 		return
 	}
 
@@ -91,7 +91,7 @@ func (p *Planner) Plan(ctx context.Context, in planner.Input) (out planner.Outpu
 		}
 		if pipelineRegex.MatchString(in.Deployment.Trigger.Commit.Message) {
 			out.Stages = buildProgressivePipeline(cfg.Pipeline, cfg.Input.AutoRollback, time.Now())
-			out.Summary = fmt.Sprintf("Progressive deployment because the commit message was matching %q", p)
+			out.Summary = fmt.Sprintf("Sync progressively because the commit message was matching %q", p)
 			return out, err
 		}
 	}
@@ -105,7 +105,7 @@ func (p *Planner) Plan(ctx context.Context, in planner.Input) (out planner.Outpu
 		}
 		if syncRegex.MatchString(in.Deployment.Trigger.Commit.Message) {
 			out.Stages = buildPipeline(cfg.Input.AutoRollback, time.Now())
-			out.Summary = fmt.Sprintf("Apply all manifests because the commit message was matching %q.", s)
+			out.Summary = fmt.Sprintf("Sync by applying all manifests because the commit message was matching %q", s)
 			return out, err
 		}
 	}
@@ -115,7 +115,7 @@ func (p *Planner) Plan(ctx context.Context, in planner.Input) (out planner.Outpu
 	// We just apply all manifests.
 	if in.MostRecentSuccessfulCommitHash == "" {
 		out.Stages = buildPipeline(cfg.Input.AutoRollback, time.Now())
-		out.Summary = "Apply all manifests because it was unable to find the most recent successful commit."
+		out.Summary = "Sync by applying all manifests because it seems this is the first deployment"
 		return
 	}
 
@@ -156,12 +156,12 @@ func (p *Planner) Plan(ctx context.Context, in planner.Input) (out planner.Outpu
 func decideStrategy(olds, news []provider.Manifest) (progressive bool, desc string) {
 	oldWorkload, ok := findWorkload(olds)
 	if !ok {
-		desc = "Apply all manifests because it was unable to find the currently running workloads."
+		desc = "Sync by applying all manifests because it was unable to find the currently running workloads"
 		return
 	}
 	newWorkload, ok := findWorkload(news)
 	if !ok {
-		desc = "Apply all manifests because it was unable to find workloads in the new manifests."
+		desc = "Sync by applying all manifests because it was unable to find workloads in the new manifests"
 		return
 	}
 
@@ -179,7 +179,7 @@ func decideStrategy(olds, news []provider.Manifest) (progressive bool, desc stri
 			return
 		}
 
-		desc = fmt.Sprintf("Progressive deployment because pod template of workload %s was changed.", newWorkload.Key.Name)
+		desc = fmt.Sprintf("Sync progressively because pod template of workload %s was changed", newWorkload.Key.Name)
 		return
 	}
 
@@ -191,19 +191,19 @@ func decideStrategy(olds, news []provider.Manifest) (progressive bool, desc stri
 		for k, oc := range oldConfigs {
 			nc, ok := newConfigs[k]
 			if !ok {
-				desc = fmt.Sprintf("Progressive deployment because %s %s was deleted", oc.Key.Kind, oc.Key.Name)
+				desc = fmt.Sprintf("Sync progressively because %s %s was deleted", oc.Key.Kind, oc.Key.Name)
 				return
 			}
 			diffs := provider.Diff(oc, nc, provider.WithDiffPathPrefix("data"))
 			if len(diffs) > 0 {
 				progressive = true
-				desc = fmt.Sprintf("Progressive deployment because %s %s was updated", oc.Key.Kind, oc.Key.Name)
+				desc = fmt.Sprintf("Sync progressively because %s %s was updated", oc.Key.Kind, oc.Key.Name)
 				return
 			}
 			delete(newConfigs, k)
 		}
 		if len(newConfigs) > 0 {
-			desc = fmt.Sprintf("Progressive deployment because new %d configmap/secret added", len(newConfigs))
+			desc = fmt.Sprintf("Sync progressively because new %d configmap/secret added", len(newConfigs))
 			return
 		}
 	}
@@ -214,7 +214,7 @@ func decideStrategy(olds, news []provider.Manifest) (progressive bool, desc stri
 		return
 	}
 
-	desc = "Apply all manifests"
+	desc = "Sync by applying all manifests"
 	return
 }
 
@@ -261,7 +261,7 @@ func checkImageChange(diffList provider.DiffResultList) (string, bool) {
 			images = append(images, fmt.Sprintf("image %s:%s to %s:%s", beforeName, beforeTag, afterName, afterTag))
 		}
 	}
-	desc := fmt.Sprintf("Progressive deployment because of updating %s.", strings.Join(images, ", "))
+	desc := fmt.Sprintf("Sync progressively because of updating %s", strings.Join(images, ", "))
 	return desc, true
 }
 
