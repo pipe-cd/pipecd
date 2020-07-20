@@ -20,6 +20,8 @@ import (
 	"io/ioutil"
 	"log"
 	"os"
+	"os/exec"
+	"path/filepath"
 	"strings"
 	"time"
 
@@ -28,19 +30,31 @@ import (
 )
 
 var (
-	org        = flag.String("org", "pipe-cd", "The name of GitHub organization")
-	repo       = flag.String("repo", "pipe", "The name of GitHub repository")
-	releaseTag = flag.String("release-tag", "", "The release tag where asset should be uploaded to")
-	assetName  = flag.String("asset-name", "", "The name of the asset")
-	assetFile  = flag.String("asset-file", "", "The path to the asset file")
-	tokenFile  = flag.String("token-file", "", "The path to the token file")
+	org             = flag.String("org", "pipe-cd", "The name of GitHub organization")
+	repo            = flag.String("repo", "pipe", "The name of GitHub repository")
+	releaseTag      = flag.String("release-tag", "", "The release tag where asset should be uploaded to")
+	assetNameSuffix = flag.String("asset-name-suffix", "", "The suffix name of the asset")
+	assetFile       = flag.String("asset-file", "", "The path to the asset file")
+	tokenFile       = flag.String("token-file", "/secrets/github_token", "The path to the token file")
 
 	timeout = 15 * time.Minute
 )
 
 func main() {
 	flag.Parse()
+	ctx, cancel := context.WithTimeout(context.Background(), timeout)
+	defer cancel()
 
+	// Determine the release tag based on git tag when it was not specified.
+	if *releaseTag == "" {
+		version, err := determineVersion(ctx)
+		if err != nil {
+			log.Fatalf("failed to determine version: $%v", err)
+		}
+		*releaseTag = version
+	}
+
+	// Load GitHub token file.
 	tokenBytes, err := ioutil.ReadFile(*tokenFile)
 	if err != nil {
 		log.Fatalf("failed to read token file at %s: %v", *tokenFile, err)
@@ -48,19 +62,16 @@ func main() {
 	token := string(tokenBytes)
 	token = strings.TrimSpace(token)
 
+	// Open asset file for uploading.
 	asset, err := os.Open(*assetFile)
 	if err != nil {
 		log.Fatalf("failed to open asset file: %v", err)
 	}
 
-	ctx, cancel := context.WithTimeout(context.Background(), timeout)
-	defer cancel()
-
 	ts := oauth2.StaticTokenSource(
 		&oauth2.Token{AccessToken: token},
 	)
 	tc := oauth2.NewClient(ctx, ts)
-
 	client := github.NewClient(tc)
 
 	// Find the release.
@@ -77,14 +88,16 @@ func main() {
 		)
 	}
 
-	log.Printf("start uploading %s at %s to release %s", *assetName, *assetFile, *releaseTag)
+	// Upload asset to the release.
+	name := strings.Join([]string{filepath.Base(*assetFile), *releaseTag, *assetNameSuffix}, "_")
+	log.Printf("start uploading %s at %s to release %s", name, *assetFile, *releaseTag)
 	_, _, err = client.Repositories.UploadReleaseAsset(
 		ctx,
 		*org,
 		*repo,
 		release.GetID(),
 		&github.UploadOptions{
-			Name: *assetName,
+			Name: name,
 		},
 		asset,
 	)
@@ -92,5 +105,14 @@ func main() {
 		log.Fatalf("failed to upload asset: %s", strings.ReplaceAll(err.Error(), token, "TOKEN"))
 	}
 
-	log.Printf("successfully uploaded asset %s", *assetName)
+	log.Printf("successfully uploaded asset %s", name)
+}
+
+func determineVersion(ctx context.Context) (string, error) {
+	cmd := exec.CommandContext(ctx, "/usr/bin/git", "describe", "--tags", "--always", "--dirty", "--abbrev=7")
+	out, err := cmd.CombinedOutput()
+	if err != nil {
+		return "", err
+	}
+	return strings.TrimSpace(string(out)), nil
 }

@@ -39,6 +39,13 @@ spec:
       secrets:
       - name: bazel_cache_service_account
         type: PROJECT
+    - description: Publish piped
+      runner: gcr.io/pipecd/asset-publisher:0.0.1
+      commands:
+        - /asset-publisher --asset-name-suffix=linux_amd64 --asset-file=bazel-bin/piped
+      secrets:
+      - name: github_token
+        type: PROJECT
 
   - name: publish-piped-darwin
     timeout: 30m
@@ -58,3 +65,11 @@ spec:
       secrets:
       - name: bazel_cache_service_account
         type: PROJECT
+    - description: Publish piped
+      runner: gcr.io/pipecd/asset-publisher:0.0.1
+      commands:
+        - /asset-publisher --asset-name-suffix=darwin_amd64 --asset-file=bazel-bin/piped
+      secrets:
+      - name: github_token
+        type: PROJECT
+

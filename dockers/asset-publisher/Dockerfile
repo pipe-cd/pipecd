@@ -6,6 +6,6 @@ COPY go.sum .
 RUN go build -o asset-publisher main.go
 
 FROM alpine:3.12
-RUN apk --no-cache add ca-certificates
+RUN apk --no-cache add ca-certificates git
 COPY --from=builder /tool/asset-publisher ./
 RUN chmod +x ./asset-publisher
