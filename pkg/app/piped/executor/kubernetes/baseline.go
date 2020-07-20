@@ -93,6 +93,7 @@ func (e *Executor) ensureBaselineClean(ctx context.Context) model.StageStatus {
 
 	resources := strings.Split(value, ",")
 	if err := e.removeBaselineResources(ctx, resources); err != nil {
+		e.LogPersister.AppendErrorf("Unable to remove baseline resources: %v", err)
 		return model.StageStatus_STAGE_FAILURE
 	}
 	return model.StageStatus_STAGE_SUCCESS
