@@ -135,7 +135,9 @@ func (d *detector) check(ctx context.Context) error {
 				continue
 			}
 			state := makeDeployingState(headDeployment)
-			d.reporter.ReportApplicationSyncState(ctx, app.Id, state)
+			if err := d.reporter.ReportApplicationSyncState(ctx, app.Id, state); err != nil {
+				d.logger.Error("failed to report application sync state", zap.Error(err))
+			}
 		}
 
 		if len(notDeployingApps) == 0 {
