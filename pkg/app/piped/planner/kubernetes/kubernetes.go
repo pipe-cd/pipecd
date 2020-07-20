@@ -29,6 +29,10 @@ import (
 	"github.com/pipe-cd/pipe/pkg/model"
 )
 
+const (
+	versionUnknown = "unknown"
+)
+
 // Planner plans the deployment pipeline for kubernetes application.
 type Planner struct {
 }
@@ -72,6 +76,7 @@ func (p *Planner) Plan(ctx context.Context, in planner.Input) (out planner.Outpu
 	// Determine application version from the manifests.
 	if version, e := determineVersion(newManifests); e != nil {
 		in.Logger.Error("unable to determine version", zap.Error(e))
+		out.Version = versionUnknown
 	} else {
 		out.Version = version
 	}
@@ -290,26 +295,25 @@ func parseContainerImage(image string) (name, tag string) {
 
 // TODO: Add ability to configure how to determine application version.
 func determineVersion(manifests []provider.Manifest) (string, error) {
-	const unknown = "unknown"
 	for _, m := range manifests {
 		if !m.Key.IsDeployment() {
 			continue
 		}
 		data, err := m.MarshalJSON()
 		if err != nil {
-			return unknown, err
+			return "", err
 		}
 		var d resource.Deployment
 		if err := json.Unmarshal(data, &d); err != nil {
-			return unknown, err
+			return "", err
 		}
 
 		containers := d.Spec.Template.Spec.Containers
 		if len(containers) == 0 {
-			return unknown, nil
+			return versionUnknown, nil
 		}
 		_, tag := parseContainerImage(containers[0].Image)
 		return tag, nil
 	}
-	return unknown, nil
+	return versionUnknown, nil
 }
