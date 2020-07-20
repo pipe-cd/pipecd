@@ -19,6 +19,52 @@ spec:
         - make push-images
       envs:
         - IS_CI=true
+        - BUILD_PLATFORM=linux
+      secrets:
+      - name: bazel_cache_service_account
+        type: PROJECT
+
+  - name: publish-piped-linux
+    timeout: 30m
+    machine:
+      resource: medium
+    dockerAuth:
+      secret:
+        name: container_registry_service_account
+        type: PROJECT
+    skipBranches:
+      - "*"
+    steps:
+    - description: Build piped
+      runner: gcr.io/kapetanios/kapetanios-runner:0.2.0
+      commands:
+        - make build-piped
+      envs:
+        - IS_CI=true
+        - BUILD_PLATFORM=linux
+      secrets:
+      - name: bazel_cache_service_account
+        type: PROJECT
+
+
+  - name: publish-piped-darwin
+    timeout: 30m
+    machine:
+      resource: medium
+    dockerAuth:
+      secret:
+        name: container_registry_service_account
+        type: PROJECT
+    skipBranches:
+      - "*"
+    steps:
+    - description: Build piped
+      runner: gcr.io/kapetanios/kapetanios-runner:0.2.0
+      commands:
+        - make build-piped
+      envs:
+        - IS_CI=true
+        - BUILD_PLATFORM=darwin
       secrets:
       - name: bazel_cache_service_account
         type: PROJECT

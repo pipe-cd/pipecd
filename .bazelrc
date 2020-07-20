@@ -34,7 +34,10 @@ run --host_force_python=PY2
 
 # CI configurations
 build:ci --define DOCKER_REGISTRY=gcr.io/pipecd
-build:ci --platforms=@io_bazel_rules_go//go/toolchain:linux_amd64
-
 build:ci --remote_http_cache=https://storage.googleapis.com/pipecd-bazel-cache
 build:ci --google_credentials=/secrets/bazel_cache_service_account
+
+# Platform configurations
+build:linux --platforms=@io_bazel_rules_go//go/toolchain:linux_amd64
+build:darwin --platforms=@io_bazel_rules_go//go/toolchain:darwin_amd64
+build:windows --platforms=@io_bazel_rules_go//go/toolchain:windows_amd64

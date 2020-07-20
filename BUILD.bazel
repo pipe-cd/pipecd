@@ -32,6 +32,14 @@ buildifier(
         "./vendor/*",
     ],
 )
+
+genrule(
+    name = "copy_piped",
+    srcs = ["//cmd/piped:piped"],
+    outs = ["piped"],
+    cmd = "cp $< $@",
+)
+
 # gazelle:exclude pkg/app/helloworld/service/service.pb.validate.go
 # gazelle:exclude pkg/app/api/service/webservice/service.pb.validate.go
 # gazelle:exclude pkg/app/api/service/pipedservice/service.pb.validate.go
