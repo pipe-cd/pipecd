@@ -17,6 +17,8 @@ export type Deployment = Required<DeploymentModel.AsObject>;
 export type Stage = Required<PipelineStage.AsObject>;
 export type DeploymentStatusKey = keyof typeof DeploymentStatus;
 
+const ITEMS_PER_PAGE = 30;
+
 export const isDeploymentRunning = (
   status: DeploymentStatus | undefined
 ): boolean => {
@@ -49,9 +51,16 @@ export const isStageRunning = (status: StageStatus): boolean => {
   }
 };
 
-export const deploymentsAdapter = createEntityAdapter<Deployment>({});
+export const deploymentsAdapter = createEntityAdapter<Deployment>({
+  sortComparer: (a, b) => b.createdAt - a.createdAt,
+});
 
-export const { selectById, selectAll } = deploymentsAdapter.getSelectors();
+export const {
+  selectById,
+  selectAll,
+  selectEntities,
+  selectIds,
+} = deploymentsAdapter.getSelectors();
 
 export const fetchDeploymentById = createAsyncThunk<Deployment, string>(
   "deployments/fetchById",
@@ -103,12 +112,18 @@ export const deploymentsSlice = createSlice({
     loading: Record<string, boolean>;
     canceling: Record<string, boolean>;
     loadingList: boolean;
+    displayLength: number;
   }>({
     loading: {},
     canceling: {},
     loadingList: false,
+    displayLength: ITEMS_PER_PAGE,
   }),
-  reducers: {},
+  reducers: {
+    loadMoreDeployments(state) {
+      state.displayLength += ITEMS_PER_PAGE;
+    },
+  },
   extraReducers: (builder) => {
     builder
       .addCase(fetchDeploymentById.pending, (state, action) => {
@@ -128,6 +143,7 @@ export const deploymentsSlice = createSlice({
       })
       .addCase(fetchDeployments.fulfilled, (state, action) => {
         deploymentsAdapter.removeAll(state);
+        state.displayLength = ITEMS_PER_PAGE;
         if (action.payload.length > 0) {
           deploymentsAdapter.upsertMany(state, action.payload);
         }
@@ -151,3 +167,4 @@ export const deploymentsSlice = createSlice({
 });
 
 export { DeploymentStatus } from "pipe/pkg/app/web/model/deployment_pb";
+export const { loadMoreDeployments } = deploymentsSlice.actions;
