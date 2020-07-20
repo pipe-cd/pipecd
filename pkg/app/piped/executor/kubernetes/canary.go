@@ -94,6 +94,7 @@ func (e *Executor) ensureCanaryClean(ctx context.Context) model.StageStatus {
 
 	resources := strings.Split(value, ",")
 	if err := e.removeCanaryResources(ctx, resources); err != nil {
+		e.LogPersister.AppendErrorf("Unable to remove canary resources: %v", err)
 		return model.StageStatus_STAGE_FAILURE
 	}
 	return model.StageStatus_STAGE_SUCCESS
