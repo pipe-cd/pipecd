@@ -36,6 +36,9 @@ export const ApplicationIndexPage: FC = memo(function ApplicationIndexPage() {
   const isAdding = useSelector<AppState, boolean>(
     (state) => state.applications.adding
   );
+  const projectName = useSelector<AppState, string>(
+    (state) => state.project.name
+  );
 
   const handleClose = (): void => {
     setIsOpenForm(false);
@@ -86,7 +89,7 @@ export const ApplicationIndexPage: FC = memo(function ApplicationIndexPage() {
         ModalProps={{ disableBackdropClick: isAdding }}
       >
         <AddApplicationForm
-          projectName="pipe-cd"
+          projectName={projectName}
           onSubmit={(state) => {
             dispatch(addApplication(state)).then(() => {
               setIsOpenForm(false);

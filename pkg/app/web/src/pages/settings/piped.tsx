@@ -96,6 +96,9 @@ export const SettingsPipedPage: FC = memo(function SettingsPipedPage() {
   const isOpenMenu = Boolean(anchorEl);
   const dispatch = useDispatch<AppDispatch>();
   const [enabledPipeds, disabledPipeds] = usePipeds();
+  const projectName = useSelector<AppState, string>(
+    (state) => state.project.name
+  );
 
   const registeredPiped = useSelector<AppState, RegisteredPiped | null>(
     (state) => state.pipeds.registeredPiped
@@ -258,7 +261,7 @@ export const SettingsPipedPage: FC = memo(function SettingsPipedPage() {
 
       <Drawer anchor="right" open={isOpenForm} onClose={handleClose}>
         <AddPipedForm
-          projectName="pipe-cd"
+          projectName={projectName}
           onSubmit={handleSubmit}
           onClose={handleClose}
         />
