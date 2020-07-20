@@ -8,12 +8,9 @@ spec:
       resource: medium
     steps:
     - description: Build all services
-      runner: gcr.io/kapetanios/kapetanios-runner:0.2.0
+      runner: gcr.io/pipecd/runner:1.0.0
       commands:
-        - make build
-      envs:
-        - IS_CI=true
-        - BUILD_PLATFORM=linux
+        - bazelisk --output_base=/workspace/bazel_out build --config=ci --config=linux //...
       secrets:
       - name: bazel_cache_service_account
         type: PROJECT
@@ -24,23 +21,17 @@ spec:
       resource: large
     steps:
     - description: Run all tests
-      runner: gcr.io/kapetanios/kapetanios-runner:0.2.0
+      runner: gcr.io/pipecd/runner:1.0.0
       commands:
-        - make test
-      envs:
-        - IS_CI=true
-        - BUILD_PLATFORM=linux
+        - bazelisk --output_base=/workspace/bazel_out test --config=ci --config=linux //...
       secrets:
       - name: bazel_cache_service_account
         type: PROJECT
 
     - description: Run coverage for unit tests
-      runner: gcr.io/kapetanios/kapetanios-runner:0.2.0
+      runner: gcr.io/pipecd/runner:1.0.0
       commands:
-        - make coverage
-      envs:
-        - IS_CI=true
-        - BUILD_PLATFORM=linux
+        - bazelisk --output_base=/workspace/bazel_out coverage --config=ci --config=linux //pkg/...
       secrets:
       - name: bazel_cache_service_account
         type: PROJECT

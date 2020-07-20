@@ -18,10 +18,6 @@ endif
 build:
 	bazelisk ${BAZEL_FLAGS} build ${BAZEL_COMMAND_FLAGS} -- //...
 
-.PHONY: build-piped
-build-piped:
-	bazelisk ${BAZEL_FLAGS} build ${BAZEL_COMMAND_FLAGS} -- //:copy_piped
-
 .PHONY: test
 test:
 	bazelisk ${BAZEL_FLAGS} test ${BAZEL_COMMAND_FLAGS} -- //pkg/...
@@ -55,11 +51,6 @@ buildifier:
 .PHONY: clean
 clean:
 	bazelisk clean --expunge
-
-.PHONY: push-images
-push-images:
-	bazelisk ${BAZEL_FLAGS} run ${BAZEL_COMMAND_FLAGS} --config=stamping //cmd:push_images
-	#./hack/push-images.sh ${BAZEL_FLAGS}
 
 .PHONY: expose-generated-go
 expose-generated-go:
