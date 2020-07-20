@@ -370,13 +370,16 @@ func (d *detector) ProviderName() string {
 }
 
 func makeDeployingState(deployment *model.Deployment) model.ApplicationSyncState {
-	reason := deployment.Description
+	var (
+		shortReason = "A deployment of this application is running"
+		reason      = deployment.Summary
+	)
 	if reason == "" {
-		reason = "A deployment is running."
+		reason = shortReason
 	}
 	return model.ApplicationSyncState{
 		Status:           model.ApplicationSyncStatus_DEPLOYING,
-		ShortReason:      reason,
+		ShortReason:      shortReason,
 		Reason:           reason,
 		HeadDeploymentId: deployment.Id,
 		Timestamp:        time.Now().Unix(),

@@ -46,11 +46,11 @@ func (p *Planner) Plan(ctx context.Context, in planner.Input) (out planner.Outpu
 
 	if cfg.Pipeline != nil && len(cfg.Pipeline.Stages) > 0 {
 		out.Stages = buildProgressivePipeline(cfg.Pipeline.Stages, time.Now())
-		out.Description = "Deploy terraform with the specified progressive pipeline."
+		out.Summary = "Deploy terraform with the specified progressive pipeline."
 		return
 	}
 
 	out.Stages = builDefaultPipeline(time.Now())
-	out.Description = "Deploy terraform with the default pipeline."
+	out.Summary = "Deploy terraform with the default pipeline."
 	return
 }

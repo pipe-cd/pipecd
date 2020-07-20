@@ -74,12 +74,12 @@ message Deployment {
     // Simple description about what this deployment does.
     // e.g. Scale from 10 to 100 replicas.
     // e.g. Update image from v1.5.0 to v1.6.0.
-    string description = 22;
+    string summary = 22;
     string version = 23;
 
     DeploymentStatus status = 30 [(validate.rules).enum.defined_only = true];
     // The human-readable description why the deployment is at current status.
-    string status_description = 31;
+    string status_reason = 31;
     repeated PipelineStage stages = 32;
     map<string,string> metadata = 33;
 
@@ -108,7 +108,7 @@ message PipelineStage {
     bool visible = 7;
     StageStatus status = 8 [(validate.rules).enum.defined_only = true];
     // The human-readable description why the stage is at current status.
-    string status_description = 9;
+    string status_reason = 9;
     map<string,string> metadata = 10;
     int32 retried_count = 11;
     int64 completed_at = 13 [(validate.rules).int64.gte = 0];

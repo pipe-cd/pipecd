@@ -74,7 +74,7 @@ func (t *Trigger) reportMostRecentlyTriggeredDeployment(ctx context.Context, d *
 			Deployment: &model.ApplicationDeploymentReference{
 				DeploymentId: d.Id,
 				Trigger:      d.Trigger,
-				Description:  d.Description,
+				Summary:      d.Summary,
 				Version:      d.Version,
 				StartedAt:    d.CreatedAt,
 				CompletedAt:  d.CompletedAt,
@@ -112,12 +112,12 @@ func buildDeploment(app *model.Application, branch string, commit git.Commit, co
 			Commander: commander,
 			Timestamp: now.Unix(),
 		},
-		GitPath:           app.GitPath,
-		CloudProvider:     app.CloudProvider,
-		Status:            model.DeploymentStatus_DEPLOYMENT_PENDING,
-		StatusDescription: "Waiting to be planned",
-		CreatedAt:         now.Unix(),
-		UpdatedAt:         now.Unix(),
+		GitPath:       app.GitPath,
+		CloudProvider: app.CloudProvider,
+		Status:        model.DeploymentStatus_DEPLOYMENT_PENDING,
+		StatusReason:  "Waiting to be planned",
+		CreatedAt:     now.Unix(),
+		UpdatedAt:     now.Unix(),
 	}
 
 	return deployment, nil

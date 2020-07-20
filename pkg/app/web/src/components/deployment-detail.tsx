@@ -155,7 +155,7 @@ export const DeploymentDetail: FC<Props> = memo(function DeploymentDetail({
           </Typography>
 
           <LabeledText label="Piped" value={piped.name} />
-          <LabeledText label="Description" value={deployment.description} />
+          <LabeledText label="Description" value={deployment.summary} />
         </div>
         <div className={classes.content}>
           <LabeledText

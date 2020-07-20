@@ -194,8 +194,8 @@ func (p *planner) reportDeploymentPlanned(ctx context.Context, runningCommitHash
 		retry = pipedservice.NewRetry(10)
 		req   = &pipedservice.ReportDeploymentPlannedRequest{
 			DeploymentId:      p.deployment.Id,
-			Description:       out.Description,
-			StatusDescription: "Deployment pipeline has been planned",
+			Summary:           out.Summary,
+			StatusReason:      "Deployment pipeline has been planned",
 			RunningCommitHash: runningCommitHash,
 			Version:           out.Version,
 			Stages:            out.Stages,
@@ -220,11 +220,11 @@ func (p *planner) reportDeploymentCompleted(ctx context.Context, status model.De
 		err error
 		now = p.nowFunc()
 		req = &pipedservice.ReportDeploymentCompletedRequest{
-			DeploymentId:      p.deployment.Id,
-			Status:            status,
-			StatusDescription: desc,
-			StageStatuses:     nil,
-			CompletedAt:       now.Unix(),
+			DeploymentId:  p.deployment.Id,
+			Status:        status,
+			StatusReason:  desc,
+			StageStatuses: nil,
+			CompletedAt:   now.Unix(),
 		}
 		retry = pipedservice.NewRetry(10)
 	)

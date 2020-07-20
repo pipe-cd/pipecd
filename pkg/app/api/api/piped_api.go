@@ -259,7 +259,7 @@ func (a *PipedAPI) CreateDeployment(ctx context.Context, req *pipedservice.Creat
 // ReportDeploymentPlanned used by piped to update the status
 // of a specific deployment to PLANNED.
 func (a *PipedAPI) ReportDeploymentPlanned(ctx context.Context, req *pipedservice.ReportDeploymentPlannedRequest) (*pipedservice.ReportDeploymentPlannedResponse, error) {
-	updater := datastore.DeploymentToPlannedUpdater(req.Description, req.StatusDescription, req.RunningCommitHash, req.Version, req.Stages)
+	updater := datastore.DeploymentToPlannedUpdater(req.Summary, req.StatusReason, req.RunningCommitHash, req.Version, req.Stages)
 	err := a.deploymentStore.UpdateDeployment(ctx, req.DeploymentId, updater)
 	if err != nil {
 		switch err {
@@ -281,7 +281,7 @@ func (a *PipedAPI) ReportDeploymentPlanned(ctx context.Context, req *pipedservic
 // ReportDeploymentStatusChanged is used to update the status
 // of a specific deployment to RUNNING or ROLLING_BACK.
 func (a *PipedAPI) ReportDeploymentStatusChanged(ctx context.Context, req *pipedservice.ReportDeploymentStatusChangedRequest) (*pipedservice.ReportDeploymentStatusChangedResponse, error) {
-	updater := datastore.DeploymentStatusUpdater(req.Status, req.StatusDescription)
+	updater := datastore.DeploymentStatusUpdater(req.Status, req.StatusReason)
 	err := a.deploymentStore.UpdateDeployment(ctx, req.DeploymentId, updater)
 	if err != nil {
 		switch err {
@@ -303,7 +303,7 @@ func (a *PipedAPI) ReportDeploymentStatusChanged(ctx context.Context, req *piped
 // ReportDeploymentCompleted used by piped to update the status
 // of a specific deployment to SUCCESS | FAILURE | CANCELLED.
 func (a *PipedAPI) ReportDeploymentCompleted(ctx context.Context, req *pipedservice.ReportDeploymentCompletedRequest) (*pipedservice.ReportDeploymentCompletedResponse, error) {
-	updater := datastore.DeploymentToCompletedUpdater(req.Status, req.StageStatuses, req.StatusDescription, req.CompletedAt)
+	updater := datastore.DeploymentToCompletedUpdater(req.Status, req.StageStatuses, req.StatusReason, req.CompletedAt)
 	err := a.deploymentStore.UpdateDeployment(ctx, req.DeploymentId, updater)
 	if err != nil {
 		switch err {
@@ -389,7 +389,7 @@ func (a *PipedAPI) ReportStageLogsFromLastCheckpoint(ctx context.Context, req *p
 // ReportStageStatusChanged used by piped to update the status
 // of a specific stage of a deployment.
 func (a *PipedAPI) ReportStageStatusChanged(ctx context.Context, req *pipedservice.ReportStageStatusChangedRequest) (*pipedservice.ReportStageStatusChangedResponse, error) {
-	updater := datastore.StageStatusChangedUpdater(req.StageId, req.Status, req.StatusDescription, req.Requires, req.Visible, req.RetriedCount, req.CompletedAt)
+	updater := datastore.StageStatusChangedUpdater(req.StageId, req.Status, req.StatusReason, req.Requires, req.Visible, req.RetriedCount, req.CompletedAt)
 	err := a.deploymentStore.UpdateDeployment(ctx, req.DeploymentId, updater)
 	if err != nil {
 		switch err {

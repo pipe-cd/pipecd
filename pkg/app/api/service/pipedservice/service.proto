@@ -195,9 +195,9 @@ message ReportDeploymentPlannedRequest {
     string deployment_id = 1 [(validate.rules).string.min_len = 1];
     // Simple description about what this deployment does.
     // Empty means nothing has changed complared to when the deployment was created.
-    string description = 2;
+    string summary = 2;
     // The human-readable description why the deployment is at current status.
-    string status_description = 3;
+    string status_reason = 3;
     // Hash value of the most recently successfully deployed commit.
     string running_commit_hash = 4;
     // The application version this deployment is trying to deploy.
@@ -215,7 +215,7 @@ message ReportDeploymentStatusChangedRequest {
     // We only accept RUNNING or ROLLING_BACK.
     pipe.model.DeploymentStatus status = 2 [(validate.rules).enum = {in: [2,3]}];
     // The human-readable description why the deployment is at current status.
-    string status_description = 3;
+    string status_reason = 3;
 }
 
 message ReportDeploymentStatusChangedResponse {
@@ -226,7 +226,7 @@ message ReportDeploymentCompletedRequest {
     // The status of deployment.
     pipe.model.DeploymentStatus status = 2 [(validate.rules).enum.defined_only = true];
     // The human-readable description why the deployment is at current status.
-    string status_description = 3;
+    string status_reason = 3;
     // The completed statuses of all stages.
     map<string,model.StageStatus> stage_statuses = 4;
     // The completion time of deployment.
@@ -279,7 +279,7 @@ message ReportStageStatusChangedRequest {
     string stage_id = 2 [(validate.rules).string.min_len = 1];
     pipe.model.StageStatus status = 3 [(validate.rules).enum.defined_only = true];
     // The human-readable description why the stage is at current status.
-    string status_description = 4;
+    string status_reason = 4;
     repeated string requires = 5;
     bool visible = 6;
     int32 retried_count = 7;

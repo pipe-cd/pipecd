@@ -312,7 +312,7 @@ func (a *FakeWebAPI) ListDeployments(ctx context.Context, req *webservice.ListDe
 				Timestamp: deploymentTime.Unix(),
 			},
 			RunningCommitHash: "3808585b46f1e90196d7ffe8dd04c807a251febc",
-			Description:       fmt.Sprintf("This deployment is debug-%02d", i),
+			Summary:           fmt.Sprintf("This deployment is debug-%02d", i),
 			Status:            model.DeploymentStatus_DEPLOYMENT_SUCCESS,
 			Stages: []*model.PipelineStage{
 				{
@@ -452,7 +452,7 @@ func (a *FakeWebAPI) GetDeployment(ctx context.Context, req *webservice.GetDeplo
 			Timestamp: now.Add(-30 * time.Minute).Unix(),
 		},
 		RunningCommitHash: "3808585b46f1e90196d7ffe8dd04c807a251febc",
-		Description:       "This deployment is debug",
+		Summary:           "This deployment is debug",
 		Status:            model.DeploymentStatus_DEPLOYMENT_RUNNING,
 		Stages: []*model.PipelineStage{
 			{

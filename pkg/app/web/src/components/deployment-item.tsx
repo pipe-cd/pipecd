@@ -88,7 +88,7 @@ export const DeploymentItem: FC<Props> = memo(function DeploymentItem({ id }) {
           />
         </div>
         <Typography variant="body1" className={classes.description}>
-          {deployment.description}
+          {deployment.summary}
         </Typography>
       </div>
       <div>{dayjs(deployment.createdAt * 1000).fromNow()}</div>

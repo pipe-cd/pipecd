@@ -243,11 +243,11 @@ func (c *fakeClient) ReportDeploymentPlanned(ctx context.Context, req *pipedserv
 		return nil, status.Error(codes.FailedPrecondition, msg)
 	}
 
-	if req.Description != "" {
-		d.Description = req.Description
+	if req.Summary != "" {
+		d.Summary = req.Summary
 	}
 	d.Status = s
-	d.StatusDescription = req.StatusDescription
+	d.StatusReason = req.StatusReason
 	d.RunningCommitHash = req.RunningCommitHash
 	d.Version = req.Version
 	if len(req.Stages) > 0 {
@@ -275,7 +275,7 @@ func (c *fakeClient) ReportDeploymentStatusChanged(ctx context.Context, req *pip
 	}
 
 	d.Status = req.Status
-	d.StatusDescription = req.StatusDescription
+	d.StatusReason = req.StatusReason
 	return &pipedservice.ReportDeploymentStatusChangedResponse{}, nil
 }
 
@@ -302,7 +302,7 @@ func (c *fakeClient) ReportDeploymentCompleted(ctx context.Context, req *pipedse
 	}
 
 	d.Status = req.Status
-	d.StatusDescription = req.StatusDescription
+	d.StatusReason = req.StatusReason
 	d.CompletedAt = req.CompletedAt
 	for _, stage := range d.Stages {
 		if status, ok := req.StageStatuses[stage.Id]; ok {
