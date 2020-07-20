@@ -201,7 +201,8 @@ func (e *Executor) applyManifests(ctx context.Context, manifests []provider.Mani
 }
 
 func (e *Executor) deleteResources(ctx context.Context, resources []provider.ResourceKey) error {
-	if len(resources) == 0 {
+	resourcesLen := len(resources)
+	if resourcesLen == 0 {
 		e.LogPersister.AppendInfo("No resources to delete")
 		return nil
 	}
@@ -224,9 +225,9 @@ func (e *Executor) deleteResources(ctx context.Context, resources []provider.Res
 		e.LogPersister.AppendErrorf("- unable to delete resource: %s (%v)", k.ReadableString(), err)
 	}
 
-	if deletedCount > 0 {
-		e.LogPersister.AppendInfof("Deleted %d/%d resources", deletedCount, len(resources))
-		return fmt.Errorf("unable to delete %d resources", len(resources)-deletedCount)
+	if deletedCount < resourcesLen {
+		e.LogPersister.AppendInfof("Deleted %d/%d resources", deletedCount, resourcesLen)
+		return fmt.Errorf("unable to delete %d resources", resourcesLen-deletedCount)
 	}
 
 	e.LogPersister.AppendSuccessf("Successfully deleted %d resources", len(resources))
