@@ -9,6 +9,7 @@ proto_library(
         "command.proto",
         "common.proto",
         "deployment.proto",
+        "deployment_config_template.proto",
         "environment.proto",
         "logblock.proto",
         "piped.proto",

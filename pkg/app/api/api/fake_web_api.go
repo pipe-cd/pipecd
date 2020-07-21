@@ -774,3 +774,7 @@ func (a *FakeWebAPI) GetCommand(ctx context.Context, req *webservice.GetCommandR
 		Command: &cmd,
 	}, nil
 }
+
+func (a *FakeWebAPI) ListDeploymentConfigTemplates(ctx context.Context, req *webservice.ListDeploymentConfigTemplatesRequest) (*webservice.ListDeploymentConfigTemplatesResponse, error) {
+	return nil, status.Error(codes.Unimplemented, "")
+}

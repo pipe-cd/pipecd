@@ -24,6 +24,7 @@ import "pkg/model/application_live_state.proto";
 import "pkg/model/command.proto";
 import "pkg/model/environment.proto";
 import "pkg/model/deployment.proto";
+import "pkg/model/deployment_config_template.proto";
 import "pkg/model/logblock.proto";
 import "pkg/model/piped.proto";
 import "google/protobuf/wrappers.proto";
@@ -103,6 +104,9 @@ service WebService {
 
     // Command
     rpc GetCommand(GetCommandRequest) returns (GetCommandResponse) {}
+
+    // Deployment Config Template
+    rpc ListDeploymentConfigTemplates(ListDeploymentConfigTemplatesRequest) returns (ListDeploymentConfigTemplatesResponse) {}
 }
 
 message AddEnvironmentResponse {
@@ -313,4 +317,12 @@ message GetCommandRequest {
 
 message GetCommandResponse {
     pipe.model.Command command = 1;
+}
+
+message ListDeploymentConfigTemplatesRequest {
+    string application_kind = 1 [(validate.rules).string.min_len = 1];
+}
+
+message ListDeploymentConfigTemplatesResponse {
+    repeated pipe.model.DeploymentConfigTemplate templates = 1;
 }
