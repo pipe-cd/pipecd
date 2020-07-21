@@ -38,6 +38,7 @@ import (
 	"github.com/pipe-cd/pipe/pkg/app/piped/driftdetector"
 	"github.com/pipe-cd/pipe/pkg/app/piped/livestatereporter"
 	"github.com/pipe-cd/pipe/pkg/app/piped/livestatestore"
+	"github.com/pipe-cd/pipe/pkg/app/piped/notifier"
 	"github.com/pipe-cd/pipe/pkg/app/piped/statsreporter"
 	"github.com/pipe-cd/pipe/pkg/app/piped/toolregistry"
 	"github.com/pipe-cd/pipe/pkg/app/piped/trigger"
@@ -107,6 +108,19 @@ func (p *piped) run(ctx context.Context, t cli.Telemetry) error {
 		t.Logger.Error("failed to load piped configuration", zap.Error(err))
 		return err
 	}
+
+	// Initialize notifier.
+	notifier := notifier.NewNotifier(cfg, t.Logger)
+	group.Go(func() error {
+		return notifier.Run(ctx)
+	})
+	notifier.Notify(&model.Event{
+		Type: model.EventType_EVENT_PIPED_STARTED,
+		Metadata: &model.EventPipedStarted{
+			Id:      cfg.PipedID,
+			Version: version.Get().Version,
+		},
+	})
 
 	// Configure SSH config if needed.
 	if cfg.Git.ShouldConfigureSSHConfig() {

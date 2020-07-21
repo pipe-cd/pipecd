@@ -1,0 +1,100 @@
+// Copyright 2020 The PipeCD Authors.
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//     http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+syntax = "proto3";
+
+package pipe.model;
+option go_package = "github.com/pipe-cd/pipe/pkg/model";
+
+import "validate/validate.proto";
+import "pkg/model/application.proto";
+import "pkg/model/deployment.proto";
+
+enum EventType {
+    EVENT_DEPLOYMENT_TRIGGERED = 0;
+    EVENT_DEPLOYMENT_PLANNED = 1;
+    EVENT_DEPLOYMENT_APPROVED = 2;
+    EVENT_DEPLOYMENT_ROLLING_BACK = 3;
+    EVENT_DEPLOYMENT_SUCCEEDED = 4;
+    EVENT_DEPLOYMENT_FAILED = 5;
+    EVENT_DEPLOYMENT_CANCELLED = 6;
+
+    EVENT_APPLICATION_SYNCED = 100;
+    EVENT_APPLICATION_OUT_OF_SYNC = 101;
+
+    // Application Health Event
+    EVENT_APPLICATION_HEALTHY = 200;
+
+    EVENT_PIPED_STARTED = 300;
+    EVENT_PIPED_STOPPED = 301;
+
+}
+
+enum EventGroup {
+    EVENT_DEPLOYMENT = 0;
+    EVENT_APPLICATION_SYNC = 1;
+    EVENT_APPLICATION_HEALTH = 2;
+    EVENT_PIPED = 3;
+}
+
+message EventDeploymentTriggered {
+    Deployment deployment = 1 [(validate.rules).message.required = true];
+}
+
+message EventDeploymentPlanned {
+    Deployment deployment = 1 [(validate.rules).message.required = true];
+}
+
+message EventDeploymentApproved {
+    Deployment deployment = 1 [(validate.rules).message.required = true];
+    string approver = 2;
+}
+
+message EventDeploymentRollingBack {
+    Deployment deployment = 1 [(validate.rules).message.required = true];
+}
+
+message EventDeploymentSucceeded {
+    Deployment deployment = 1 [(validate.rules).message.required = true];
+}
+
+message EventDeploymentFailed {
+    Deployment deployment = 1 [(validate.rules).message.required = true];
+}
+
+message EventDeploymentCancelled {
+    Deployment deployment = 1 [(validate.rules).message.required = true];
+    string commander = 2;
+}
+
+message EventApplicationSynced {
+    Application application = 1 [(validate.rules).message.required = true];
+    ApplicationSyncState state = 2 [(validate.rules).message.required = true];
+}
+
+message EventApplicationOutOfSync {
+    Application application = 1 [(validate.rules).message.required = true];
+    ApplicationSyncState state = 2 [(validate.rules).message.required = true];
+}
+
+message EventPipedStarted {
+    string id = 1 [(validate.rules).string.min_len = 1];
+    string version = 2;
+}
+
+message EventPipedStopped {
+    string id = 1 [(validate.rules).string.min_len = 1];
+    string version = 2;
+    string error = 3;
+}
