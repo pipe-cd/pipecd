@@ -36,7 +36,7 @@ export const LoginPage: FC = memo(function LoginPage() {
         <TextField
           id="username"
           name="username"
-          label="User Name"
+          label="Username"
           variant="outlined"
           margin="dense"
           required
