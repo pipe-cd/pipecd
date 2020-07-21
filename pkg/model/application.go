@@ -18,10 +18,13 @@ import (
 	"path/filepath"
 )
 
-// GetDeploymentConfigFilePath returns the path to deployment configuration directory.
-func (p ApplicationGitPath) GetDeploymentConfigFilePath(filename string) string {
-	if path := p.ConfigPath; path != "" {
-		return path
+const DefaultDeploymentConfigFileName = ".pipe.yaml"
+
+// GetDeploymentConfigFilePath returns the path to deployment configuration file.
+func (p ApplicationGitPath) GetDeploymentConfigFilePath() string {
+	filename := DefaultDeploymentConfigFileName
+	if n := p.ConfigFilename; n != "" {
+		filename = n
 	}
 	return filepath.Join(p.Path, filename)
 }

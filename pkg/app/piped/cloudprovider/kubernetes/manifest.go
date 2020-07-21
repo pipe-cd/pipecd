@@ -26,7 +26,7 @@ import (
 	"k8s.io/apimachinery/pkg/apis/meta/v1/unstructured"
 	"sigs.k8s.io/yaml"
 
-	"github.com/pipe-cd/pipe/pkg/config"
+	"github.com/pipe-cd/pipe/pkg/model"
 )
 
 type Manifest struct {
@@ -167,7 +167,8 @@ func LoadPlainYAMLManifests(ctx context.Context, dir string, names []string) ([]
 			if ext != ".yaml" && ext != ".yml" {
 				return nil
 			}
-			if f.Name() == config.DeploymentConfigurationFileName {
+			// TODO: Allow to check other than default configuration name too
+			if f.Name() == model.DefaultDeploymentConfigFileName {
 				return nil
 			}
 			names = append(names, f.Name())

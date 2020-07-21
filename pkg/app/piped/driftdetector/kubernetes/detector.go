@@ -354,7 +354,7 @@ func (d *detector) listApplications() map[string][]*model.Application {
 }
 
 func (d *detector) loadDeploymentConfiguration(repoPath string, app *model.Application) (*config.Config, error) {
-	path := filepath.Join(repoPath, app.GitPath.GetDeploymentConfigFilePath(config.DeploymentConfigurationFileName))
+	path := filepath.Join(repoPath, app.GitPath.GetDeploymentConfigFilePath())
 	cfg, err := config.LoadFromYAML(path)
 	if err != nil {
 		return nil, err
