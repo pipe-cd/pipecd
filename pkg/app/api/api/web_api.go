@@ -676,67 +676,16 @@ func (a *WebAPI) GetCommand(ctx context.Context, req *webservice.GetCommandReque
 }
 
 func (a *WebAPI) ListDeploymentConfigTemplates(ctx context.Context, req *webservice.ListDeploymentConfigTemplatesRequest) (*webservice.ListDeploymentConfigTemplatesResponse, error) {
-	// TODO: Implement
 	res := &webservice.ListDeploymentConfigTemplatesResponse{Templates: []*webservice.DeploymentConfigTemplate{
 		{
 			ApplicationKind: model.ApplicationKind_KUBERNETES,
 			Name:            "Canary Deployment",
-			Content: `apiVersion: pipecd.dev/v1beta1
-kind: KubernetesApp
-spec:
-  commitMatcher:
-    sync: "^Revert"
-  pipeline:
-    stages:
-      # Deploy the workloads of CANARY variant. In this case, the number of
-      # workload replicas of CANARY variant is 10% of the replicas number of PRIMARY variant.
-      - name: K8S_CANARY_ROLLOUT
-        with:
-          replicas: 10%
-      # Wait 10 seconds before going to the next stage.
-      - name: WAIT
-        with:
-          duration: 10s
-      # Update the workload of PRIMARY variant to the new version.
-      - name: K8S_PRIMARY_ROLLOUT
-      # Destroy all workloads of CANARY variant.
-      - name: K8S_CANARY_CLEAN
-`,
+			Content:         k8sCanaryDeploymentConfigTemplate,
 		},
 		{
 			ApplicationKind: model.ApplicationKind_KUBERNETES,
 			Name:            "Blue/Green Deployment",
-			Content: `# Pipeline for a Kubernetes application.
-# This makes a progressive delivery with BlueGreen strategy.
-apiVersion: pipecd.dev/v1beta1
-kind: KubernetesApp
-spec:
-  pipeline:
-    stages:
-      # Deploy the workloads of CANARY variant. In this case, the number of
-      # workload replicas of CANARY variant is the same with PRIMARY variant.
-      - name: K8S_CANARY_ROLLOUT
-        with:
-          replicas: 100%
-      # The percentage of traffic each variant should receive.
-      # In this case, CANARY variant will receive all of the traffic.
-      - name: K8S_TRAFFIC_ROUTING
-        with:
-          all: canary
-      - name: WAIT_APPROVAL
-      # Update the workload of PRIMARY variant to the new version.
-      - name: K8S_PRIMARY_ROLLOUT
-      # The percentage of traffic each variant should receive.
-      # In this case, PRIMARY variant will receive all of the traffic.
-      - name: K8S_TRAFFIC_ROUTING
-        with:
-          primary: 100
-      # Destroy all workloads of CANARY variant.
-      - name: K8S_CANARY_CLEAN
-  # This example is not using service mesh.
-  trafficSplit:
-    method: pod
-`,
+			Content:         k8sBluebreenDeploymentConfigTemplate,
 		},
 	}}
 	return res, nil
