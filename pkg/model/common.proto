@@ -31,6 +31,6 @@ message ApplicationGitPath {
     // The unique identifier of a repository that was configured at piped.
     string repo_id = 1 [(validate.rules).string.min_len = 1];
     string path = 2 [(validate.rules).string.min_len = 1];
-    string url = 3 [(validate.rules).string.min_len = 1];
+    string url = 3;
     string config_filename = 4;
 }
