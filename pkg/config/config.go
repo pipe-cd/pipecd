@@ -25,9 +25,8 @@ import (
 )
 
 const (
-	DeploymentConfigurationFileName = ".pipe.yaml"
-	SharedConfigurationDirName      = ".pipe"
-	versionV1Beta1                  = "pipecd.dev/v1beta1"
+	SharedConfigurationDirName = ".pipe"
+	versionV1Beta1             = "pipecd.dev/v1beta1"
 )
 
 // Kind represents the kind of configuration the data contains.

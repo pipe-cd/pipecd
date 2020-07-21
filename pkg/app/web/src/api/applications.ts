@@ -81,6 +81,9 @@ export const addApplication = async ({
   if (gitPath.configPath && gitPath.configPath !== "") {
     appGitPath.setConfigPath(gitPath.configPath);
   }
+  if (gitPath.configFilename && gitPath.configFilename !== "") {
+    appGitPath.setConfigFilename(gitPath.configFilename);
+  }
   req.setGitPath(appGitPath);
   return apiRequest(req, apiClient.addApplication);
 };

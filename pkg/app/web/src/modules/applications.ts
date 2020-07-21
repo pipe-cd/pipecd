@@ -64,6 +64,7 @@ export const addApplication = createAsyncThunk<
     repoId: string;
     repoPath: string;
     configPath?: string;
+    configFilename?: string;
     kind: ApplicationKind;
     cloudProvider: string;
   }
@@ -76,6 +77,8 @@ export const addApplication = createAsyncThunk<
       repoId: props.repoId,
       path: props.repoPath,
       configPath: props.configPath || "",
+      configFilename: props.configFilename || "",
+      url: "",
     },
     cloudProvider: props.cloudProvider,
     kind: props.kind,

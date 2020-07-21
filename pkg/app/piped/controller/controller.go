@@ -563,7 +563,7 @@ func prepareDeployRepository(ctx context.Context, d *model.Deployment, gitClient
 
 func loadDeploymentConfiguration(repoPath string, d *model.Deployment) (*config.Config, error) {
 	var (
-		relativePath = d.GitPath.GetDeploymentConfigFilePath(config.DeploymentConfigurationFileName)
+		relativePath = d.GitPath.GetDeploymentConfigFilePath()
 		path         = filepath.Join(repoPath, relativePath)
 	)
 	cfg, err := config.LoadFromYAML(path)
