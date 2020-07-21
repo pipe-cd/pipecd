@@ -3,6 +3,7 @@ load("@io_bazel_rules_go//go:def.bzl", "go_library")
 go_library(
     name = "go_default_library",
     srcs = [
+        "deployment_config_templates.go",
         "fake_web_api.go",
         "piped_api.go",
         "web_api.go",

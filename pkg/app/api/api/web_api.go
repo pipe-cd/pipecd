@@ -676,15 +676,18 @@ func (a *WebAPI) GetCommand(ctx context.Context, req *webservice.GetCommandReque
 }
 
 func (a *WebAPI) ListDeploymentConfigTemplates(ctx context.Context, req *webservice.ListDeploymentConfigTemplatesRequest) (*webservice.ListDeploymentConfigTemplatesResponse, error) {
+	// TODO: Implement
 	res := &webservice.ListDeploymentConfigTemplatesResponse{Templates: []*webservice.DeploymentConfigTemplate{
 		{
 			ApplicationKind: model.ApplicationKind_KUBERNETES,
 			Name:            "Canary Deployment",
+			Labels:          []webservice.DeploymentConfigTemplateLabel{webservice.DeploymentConfigTemplateLabel_CANARY},
 			Content:         k8sCanaryDeploymentConfigTemplate,
 		},
 		{
 			ApplicationKind: model.ApplicationKind_KUBERNETES,
 			Name:            "Blue/Green Deployment",
+			Labels:          []webservice.DeploymentConfigTemplateLabel{webservice.DeploymentConfigTemplateLabel_BLUE_GREEN},
 			Content:         k8sBluebreenDeploymentConfigTemplate,
 		},
 	}}

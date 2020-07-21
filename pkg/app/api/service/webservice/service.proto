@@ -321,11 +321,18 @@ message GetCommandResponse {
 message DeploymentConfigTemplate {
     pipe.model.ApplicationKind application_kind = 1 [(validate.rules).enum.defined_only = true];
     string name = 2 [(validate.rules).string.min_len = 1];
-    string content = 3 [(validate.rules).string.min_len = 1];
+    repeated DeploymentConfigTemplateLabel labels = 3;
+    string content = 4 [(validate.rules).string.min_len = 1];
+}
+
+enum DeploymentConfigTemplateLabel {
+    CANARY = 0;
+    BLUE_GREEN = 1;
 }
 
 message ListDeploymentConfigTemplatesRequest {
     string application_kind = 1 [(validate.rules).string.min_len = 1];
+    repeated DeploymentConfigTemplateLabel labels = 2;
 }
 
 message ListDeploymentConfigTemplatesResponse {
