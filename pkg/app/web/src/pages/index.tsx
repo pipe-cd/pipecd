@@ -8,6 +8,7 @@ import {
   PAGE_PATH_DEPLOYMENTS,
   PAGE_PATH_SETTINGS,
   PAGE_PATH_TOP,
+  PAGE_PATH_LOGIN,
 } from "../constants";
 import { AppState } from "../modules";
 import {
@@ -23,6 +24,7 @@ import { DeploymentDetailPage } from "./deployments/detail";
 import { DeploymentIndexPage } from "./deployments/index";
 import { SettingsIndexPage } from "./settings";
 import { EntityId } from "@reduxjs/toolkit";
+import { LoginPage } from "./login";
 
 // Fetch commands detail periodically
 const FETCH_COMMANDS_INTERVAL = 3000;
@@ -57,6 +59,7 @@ export const Pages: FC = memo(function Pages() {
       <Header />
       <Switch>
         <Route exact path={PAGE_PATH_TOP} component={ApplicationIndexPage} />
+        <Route exact path={PAGE_PATH_LOGIN} component={LoginPage} />
         <Route
           exact
           path={PAGE_PATH_APPLICATIONS}

@@ -26,6 +26,7 @@ module.exports = (env, argv) =>
       compress: true,
       port: 9090,
       historyApiFallback: true,
+      disableHostCheck: true,
       proxy: {
         "/api": {
           changeOrigin: true,
