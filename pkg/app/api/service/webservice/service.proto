@@ -103,6 +103,9 @@ service WebService {
 
     // Command
     rpc GetCommand(GetCommandRequest) returns (GetCommandResponse) {}
+
+    // Deployment Config Template
+    rpc ListDeploymentConfigTemplates(ListDeploymentConfigTemplatesRequest) returns (ListDeploymentConfigTemplatesResponse) {}
 }
 
 message AddEnvironmentResponse {
@@ -313,4 +316,25 @@ message GetCommandRequest {
 
 message GetCommandResponse {
     pipe.model.Command command = 1;
+}
+
+message DeploymentConfigTemplate {
+    pipe.model.ApplicationKind application_kind = 1 [(validate.rules).enum.defined_only = true];
+    string name = 2 [(validate.rules).string.min_len = 1];
+    repeated DeploymentConfigTemplateLabel labels = 3;
+    string content = 4 [(validate.rules).string.min_len = 1];
+}
+
+enum DeploymentConfigTemplateLabel {
+    CANARY = 0;
+    BLUE_GREEN = 1;
+}
+
+message ListDeploymentConfigTemplatesRequest {
+    string application_kind = 1 [(validate.rules).string.min_len = 1];
+    repeated DeploymentConfigTemplateLabel labels = 2;
+}
+
+message ListDeploymentConfigTemplatesResponse {
+    repeated DeploymentConfigTemplate templates = 1;
 }
