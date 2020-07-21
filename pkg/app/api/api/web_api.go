@@ -676,7 +676,7 @@ func (a *WebAPI) GetCommand(ctx context.Context, req *webservice.GetCommandReque
 }
 
 func (a *WebAPI) ListDeploymentConfigTemplates(ctx context.Context, req *webservice.ListDeploymentConfigTemplatesRequest) (*webservice.ListDeploymentConfigTemplatesResponse, error) {
-	// TODO: Implement
+	// TODO: Make it possible to filter by kind and labels
 	res := &webservice.ListDeploymentConfigTemplatesResponse{Templates: []*webservice.DeploymentConfigTemplate{
 		{
 			ApplicationKind: model.ApplicationKind_KUBERNETES,
@@ -688,7 +688,7 @@ func (a *WebAPI) ListDeploymentConfigTemplates(ctx context.Context, req *webserv
 			ApplicationKind: model.ApplicationKind_KUBERNETES,
 			Name:            "Blue/Green Deployment",
 			Labels:          []webservice.DeploymentConfigTemplateLabel{webservice.DeploymentConfigTemplateLabel_BLUE_GREEN},
-			Content:         k8sBluebreenDeploymentConfigTemplate,
+			Content:         k8sBluegreenDeploymentConfigTemplate,
 		},
 	}}
 	return res, nil

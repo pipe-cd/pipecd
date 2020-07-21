@@ -15,7 +15,8 @@
 package api
 
 const (
-	k8sCanaryDeploymentConfigTemplate = `apiVersion: pipecd.dev/v1beta1
+	k8sCanaryDeploymentConfigTemplate = `
+apiVersion: pipecd.dev/v1beta1
 kind: KubernetesApp
 spec:
   commitMatcher:
@@ -37,7 +38,8 @@ spec:
       - name: K8S_CANARY_CLEAN
 `
 
-	k8sBluebreenDeploymentConfigTemplate = `apiVersion: pipecd.dev/v1beta1
+	k8sBluegreenDeploymentConfigTemplate = `
+apiVersion: pipecd.dev/v1beta1
 kind: KubernetesApp
 spec:
   pipeline:
