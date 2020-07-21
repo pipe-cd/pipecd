@@ -118,7 +118,7 @@ message PipelineStage {
 
 message Commit {
     string hash = 1 [(validate.rules).string.min_len = 1];
-    string url = 2 [(validate.rules).string.min_len = 1];
+    string url = 2;
     string message = 3 [(validate.rules).string.min_len = 1];
     string author = 4 [(validate.rules).string.min_len = 1];
     string branch = 5 [(validate.rules).string.min_len = 1];
