@@ -677,7 +677,7 @@ func (a *WebAPI) GetCommand(ctx context.Context, req *webservice.GetCommandReque
 
 func (a *WebAPI) ListDeploymentConfigTemplates(ctx context.Context, req *webservice.ListDeploymentConfigTemplatesRequest) (*webservice.ListDeploymentConfigTemplatesResponse, error) {
 	// TODO: Implement
-	res := &webservice.ListDeploymentConfigTemplatesResponse{Templates: []*model.DeploymentConfigTemplate{
+	res := &webservice.ListDeploymentConfigTemplatesResponse{Templates: []*webservice.DeploymentConfigTemplate{
 		{
 			ApplicationKind: model.ApplicationKind_KUBERNETES,
 			Name:            "Canary Deployment",
