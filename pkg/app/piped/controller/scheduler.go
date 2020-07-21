@@ -59,6 +59,7 @@ type scheduler struct {
 	liveResourceLister liveResourceLister
 	logPersister       logpersister.Persister
 	metadataStore      *metadataStore
+	notifier           notifier
 	pipedConfig        *config.PipedSpec
 	appManifestsCache  cache.Cache
 	logger             *zap.Logger
@@ -91,6 +92,7 @@ func newScheduler(
 	applicationLister applicationLister,
 	liveResourceLister liveResourceLister,
 	lp logpersister.Persister,
+	notifier notifier,
 	pipedConfig *config.PipedSpec,
 	appManifestsCache cache.Cache,
 	logger *zap.Logger,
@@ -116,6 +118,7 @@ func newScheduler(
 		liveResourceLister:   liveResourceLister,
 		logPersister:         lp,
 		metadataStore:        NewMetadataStore(apiClient, d),
+		notifier:             notifier,
 		pipedConfig:          pipedConfig,
 		appManifestsCache:    appManifestsCache,
 		doneDeploymentStatus: d.Status,
@@ -207,6 +210,7 @@ func (s *scheduler) Run(ctx context.Context) error {
 		statusReason     = "The deployment was completed successfully"
 		timer            = time.NewTimer(defaultDeploymentTimeout)
 		cancelCommand    *model.ReportableCommand
+		cancelCommander  string
 		lastStage        *model.PipelineStage
 	)
 	defer timer.Stop()
@@ -258,6 +262,7 @@ func (s *scheduler) Run(ctx context.Context) error {
 		case cmd := <-s.cancelledCh:
 			if cmd != nil {
 				cancelCommand = cmd
+				cancelCommander = cmd.Commander
 				handler.Cancel()
 				<-doneCh
 			}
@@ -277,7 +282,7 @@ func (s *scheduler) Run(ctx context.Context) error {
 		// The deployment was cancelled by a web user.
 		if sigType == executor.StopSignalCancel {
 			deploymentStatus = model.DeploymentStatus_DEPLOYMENT_CANCELLED
-			statusReason = fmt.Sprintf("Deployment was cancelled by %s while executing stage %s", cancelCommand.Commander, ps.Id)
+			statusReason = fmt.Sprintf("Deployment was cancelled by %s while executing stage %s", cancelCommander, ps.Id)
 			break
 		}
 
@@ -328,7 +333,7 @@ func (s *scheduler) Run(ctx context.Context) error {
 	}
 
 	if model.IsCompletedDeployment(deploymentStatus) {
-		err := s.reportDeploymentCompleted(ctx, deploymentStatus, statusReason)
+		err := s.reportDeploymentCompleted(ctx, deploymentStatus, statusReason, cancelCommander)
 		if err == nil && deploymentStatus == model.DeploymentStatus_DEPLOYMENT_SUCCESS {
 			s.reportMostRecentlySuccessfulDeployment(ctx)
 		}
@@ -568,7 +573,7 @@ func (s *scheduler) reportDeploymentStatusChanged(ctx context.Context, status mo
 	return err
 }
 
-func (s *scheduler) reportDeploymentCompleted(ctx context.Context, status model.DeploymentStatus, desc string) error {
+func (s *scheduler) reportDeploymentCompleted(ctx context.Context, status model.DeploymentStatus, desc, cancelCommander string) error {
 	var (
 		err error
 		now = s.nowFunc()
@@ -581,6 +586,36 @@ func (s *scheduler) reportDeploymentCompleted(ctx context.Context, status model.
 		}
 		retry = pipedservice.NewRetry(10)
 	)
+
+	defer func() {
+		switch status {
+		case model.DeploymentStatus_DEPLOYMENT_SUCCESS:
+			s.notifier.Notify(model.Event{
+				Type: model.EventType_EVENT_DEPLOYMENT_SUCCEEDED,
+				Metadata: &model.EventDeploymentSucceeded{
+					Deployment: s.deployment,
+				},
+			})
+
+		case model.DeploymentStatus_DEPLOYMENT_FAILURE:
+			s.notifier.Notify(model.Event{
+				Type: model.EventType_EVENT_DEPLOYMENT_FAILED,
+				Metadata: &model.EventDeploymentFailed{
+					Deployment: s.deployment,
+					Reason:     desc,
+				},
+			})
+
+		case model.DeploymentStatus_DEPLOYMENT_CANCELLED:
+			s.notifier.Notify(model.Event{
+				Type: model.EventType_EVENT_DEPLOYMENT_CANCELLED,
+				Metadata: &model.EventDeploymentCancelled{
+					Deployment: s.deployment,
+					Commander:  cancelCommander,
+				},
+			})
+		}
+	}()
 
 	// Update deployment status on remote.
 	for retry.WaitNext(ctx) {

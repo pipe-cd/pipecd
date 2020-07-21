@@ -42,10 +42,11 @@ enum EventType {
 }
 
 enum EventGroup {
-    EVENT_DEPLOYMENT = 0;
-    EVENT_APPLICATION_SYNC = 1;
-    EVENT_APPLICATION_HEALTH = 2;
-    EVENT_PIPED = 3;
+    EVENT_NONE = 0;
+    EVENT_DEPLOYMENT = 1;
+    EVENT_APPLICATION_SYNC = 2;
+    EVENT_APPLICATION_HEALTH = 3;
+    EVENT_PIPED = 4;
 }
 
 message EventDeploymentTriggered {
@@ -54,6 +55,7 @@ message EventDeploymentTriggered {
 
 message EventDeploymentPlanned {
     Deployment deployment = 1 [(validate.rules).message.required = true];
+    string summary = 2;
 }
 
 message EventDeploymentApproved {
@@ -71,6 +73,7 @@ message EventDeploymentSucceeded {
 
 message EventDeploymentFailed {
     Deployment deployment = 1 [(validate.rules).message.required = true];
+    string reason = 2;
 }
 
 message EventDeploymentCancelled {

@@ -99,7 +99,7 @@ func NewCommand() *cobra.Command {
 	return cmd
 }
 
-func (p *piped) run(ctx context.Context, t cli.Telemetry) error {
+func (p *piped) run(ctx context.Context, t cli.Telemetry) (runErr error) {
 	group, ctx := errgroup.WithContext(ctx)
 
 	// Load piped configuration from specified file.
@@ -109,18 +109,38 @@ func (p *piped) run(ctx context.Context, t cli.Telemetry) error {
 		return err
 	}
 
-	// Initialize notifier.
-	notifier := notifier.NewNotifier(cfg, t.Logger)
-	group.Go(func() error {
-		return notifier.Run(ctx)
-	})
-	notifier.Notify(&model.Event{
-		Type: model.EventType_EVENT_PIPED_STARTED,
-		Metadata: &model.EventPipedStarted{
-			Id:      cfg.PipedID,
-			Version: version.Get().Version,
-		},
-	})
+	// Initialize notifier and add piped events.
+	notifier, err := notifier.NewNotifier(cfg, t.Logger)
+	if err != nil {
+		t.Logger.Error("failed to initialize notifier", zap.Error(err))
+		return err
+	}
+	{
+		group.Go(func() error {
+			return notifier.Run(ctx)
+		})
+		notifier.Notify(model.Event{
+			Type: model.EventType_EVENT_PIPED_STARTED,
+			Metadata: &model.EventPipedStarted{
+				Id:      cfg.PipedID,
+				Version: version.Get().Version,
+			},
+		})
+		defer func() {
+			var errMsg string
+			if runErr != nil {
+				errMsg = runErr.Error()
+			}
+			notifier.Notify(model.Event{
+				Type: model.EventType_EVENT_PIPED_STOPPED,
+				Metadata: &model.EventPipedStopped{
+					Id:      cfg.PipedID,
+					Version: version.Get().Version,
+					Error:   errMsg,
+				},
+			})
+		}()
+	}
 
 	// Configure SSH config if needed.
 	if cfg.Git.ShouldConfigureSSHConfig() {
@@ -276,6 +296,7 @@ func (p *piped) run(ctx context.Context, t cli.Telemetry) error {
 			commandLister,
 			applicationLister,
 			livestatestore.LiveResourceLister{Getter: liveStateGetter},
+			notifier,
 			cfg,
 			appManifestsCache,
 			p.gracePeriod,
@@ -289,7 +310,16 @@ func (p *piped) run(ctx context.Context, t cli.Telemetry) error {
 
 	// Start running deployment trigger.
 	{
-		t := trigger.NewTrigger(apiClient, gitClient, applicationLister, commandLister, cfg, p.gracePeriod, t.Logger)
+		t := trigger.NewTrigger(
+			apiClient,
+			gitClient,
+			applicationLister,
+			commandLister,
+			notifier,
+			cfg,
+			p.gracePeriod,
+			t.Logger,
+		)
 		group.Go(func() error {
 			return t.Run(ctx)
 		})

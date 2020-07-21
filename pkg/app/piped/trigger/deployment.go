@@ -29,11 +29,23 @@ import (
 	"github.com/pipe-cd/pipe/pkg/model"
 )
 
-func (t *Trigger) triggerDeployment(ctx context.Context, app *model.Application, branch string, commit git.Commit, commander string) error {
+func (t *Trigger) triggerDeployment(ctx context.Context, app *model.Application, branch string, commit git.Commit, commander string) (runErr error) {
 	deployment, err := buildDeploment(app, branch, commit, commander, time.Now())
 	if err != nil {
 		return err
 	}
+
+	defer func() {
+		if runErr != nil {
+			return
+		}
+		t.notifier.Notify(model.Event{
+			Type: model.EventType_EVENT_DEPLOYMENT_TRIGGERED,
+			Metadata: &model.EventDeploymentTriggered{
+				Deployment: deployment,
+			},
+		})
+	}()
 
 	t.logger.Info(fmt.Sprintf("application %s will be triggered to sync", app.Id),
 		zap.String("commit-hash", commit.Hash),

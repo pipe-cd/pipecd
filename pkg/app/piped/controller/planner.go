@@ -46,6 +46,7 @@ type planner struct {
 	workingDir               string
 	apiClient                apiClient
 	gitClient                gitClient
+	notifier                 notifier
 	plannerRegistry          registry.Registry
 	pipedConfig              *config.PipedSpec
 	appManifestsCache        cache.Cache
@@ -66,6 +67,7 @@ func newPlanner(
 	workingDir string,
 	apiClient apiClient,
 	gitClient gitClient,
+	notifier notifier,
 	pipedConfig *config.PipedSpec,
 	appManifestsCache cache.Cache,
 	logger *zap.Logger,
@@ -86,6 +88,7 @@ func newPlanner(
 		workingDir:               workingDir,
 		apiClient:                apiClient,
 		gitClient:                gitClient,
+		notifier:                 notifier,
 		pipedConfig:              pipedConfig,
 		plannerRegistry:          registry.DefaultRegistry(),
 		appManifestsCache:        appManifestsCache,
@@ -132,7 +135,7 @@ func (p *planner) Run(ctx context.Context) error {
 	if !ok {
 		err := fmt.Errorf("no registered planner for application %v", p.deployment.Kind)
 		reason := fmt.Sprintf("Failed because %v", err)
-		p.reportDeploymentCompleted(ctx, model.DeploymentStatus_DEPLOYMENT_FAILURE, reason)
+		p.reportDeploymentFailed(ctx, reason)
 		return err
 	}
 
@@ -141,7 +144,7 @@ func (p *planner) Run(ctx context.Context) error {
 	gitRepo, err := prepareDeployRepository(ctx, p.deployment, p.gitClient, repoDirPath, p.pipedConfig)
 	if err != nil {
 		reason := fmt.Sprintf("Failed because %v", err)
-		p.reportDeploymentCompleted(ctx, model.DeploymentStatus_DEPLOYMENT_FAILURE, reason)
+		p.reportDeploymentFailed(ctx, reason)
 		return err
 	}
 
@@ -149,7 +152,7 @@ func (p *planner) Run(ctx context.Context) error {
 	cfg, err := loadDeploymentConfiguration(gitRepo.GetPath(), p.deployment)
 	if err != nil {
 		reason := fmt.Sprintf("Failed because %v", err)
-		p.reportDeploymentCompleted(ctx, model.DeploymentStatus_DEPLOYMENT_FAILURE, reason)
+		p.reportDeploymentFailed(ctx, reason)
 		return err
 	}
 	p.deploymentConfig = cfg
@@ -171,7 +174,9 @@ func (p *planner) Run(ctx context.Context) error {
 	select {
 	case cmd := <-p.cancelledCh:
 		if cmd != nil {
-			return p.reportDeploymentCancelled(ctx, cmd)
+			desc := fmt.Sprintf("Deployment was cancelled by %s while planning", cmd.Commander)
+			p.reportDeploymentCancelled(ctx, cmd.Commander, desc)
+			return cmd.Report(ctx, model.CommandStatus_COMMAND_SUCCEEDED, nil)
 		}
 	default:
 	}
@@ -179,16 +184,7 @@ func (p *planner) Run(ctx context.Context) error {
 	if err == nil {
 		return p.reportDeploymentPlanned(ctx, p.lastSuccessfulCommitHash, out)
 	}
-	return p.reportDeploymentCompleted(ctx, model.DeploymentStatus_DEPLOYMENT_FAILURE, err.Error())
-}
-
-func (p *planner) reportDeploymentCancelled(ctx context.Context, cmd *model.ReportableCommand) error {
-	var (
-		status = model.DeploymentStatus_DEPLOYMENT_CANCELLED
-		desc   = fmt.Sprintf("Deployment was cancelled by %s while planning", cmd.Commander)
-	)
-	p.reportDeploymentCompleted(ctx, status, desc)
-	return cmd.Report(ctx, model.CommandStatus_COMMAND_SUCCEEDED, nil)
+	return p.reportDeploymentFailed(ctx, err.Error())
 }
 
 func (p *planner) reportDeploymentPlanned(ctx context.Context, runningCommitHash string, out pln.Output) error {
@@ -205,6 +201,16 @@ func (p *planner) reportDeploymentPlanned(ctx context.Context, runningCommitHash
 		}
 	)
 
+	defer func() {
+		p.notifier.Notify(model.Event{
+			Type: model.EventType_EVENT_DEPLOYMENT_PLANNED,
+			Metadata: &model.EventDeploymentPlanned{
+				Deployment: p.deployment,
+				Summary:    out.Summary,
+			},
+		})
+	}()
+
 	for retry.WaitNext(ctx) {
 		if _, err = p.apiClient.ReportDeploymentPlanned(ctx, req); err == nil {
 			return nil
@@ -218,19 +224,29 @@ func (p *planner) reportDeploymentPlanned(ctx context.Context, runningCommitHash
 	return err
 }
 
-func (p *planner) reportDeploymentCompleted(ctx context.Context, status model.DeploymentStatus, reason string) error {
+func (p *planner) reportDeploymentFailed(ctx context.Context, reason string) error {
 	var (
 		err error
 		now = p.nowFunc()
 		req = &pipedservice.ReportDeploymentCompletedRequest{
 			DeploymentId:  p.deployment.Id,
-			Status:        status,
+			Status:        model.DeploymentStatus_DEPLOYMENT_FAILURE,
 			StatusReason:  reason,
 			StageStatuses: nil,
 			CompletedAt:   now.Unix(),
 		}
 		retry = pipedservice.NewRetry(10)
 	)
+
+	defer func() {
+		p.notifier.Notify(model.Event{
+			Type: model.EventType_EVENT_DEPLOYMENT_FAILED,
+			Metadata: &model.EventDeploymentFailed{
+				Deployment: p.deployment,
+				Reason:     reason,
+			},
+		})
+	}()
 
 	for retry.WaitNext(ctx) {
 		if _, err = p.apiClient.ReportDeploymentCompleted(ctx, req); err == nil {
@@ -241,6 +257,43 @@ func (p *planner) reportDeploymentCompleted(ctx context.Context, status model.De
 
 	if err != nil {
 		p.logger.Error("failed to mark deployment to be failed", zap.Error(err))
+	}
+	return err
+}
+
+func (p *planner) reportDeploymentCancelled(ctx context.Context, commander, reason string) error {
+	var (
+		err error
+		now = p.nowFunc()
+		req = &pipedservice.ReportDeploymentCompletedRequest{
+			DeploymentId:  p.deployment.Id,
+			Status:        model.DeploymentStatus_DEPLOYMENT_CANCELLED,
+			StatusReason:  reason,
+			StageStatuses: nil,
+			CompletedAt:   now.Unix(),
+		}
+		retry = pipedservice.NewRetry(10)
+	)
+
+	defer func() {
+		p.notifier.Notify(model.Event{
+			Type: model.EventType_EVENT_DEPLOYMENT_CANCELLED,
+			Metadata: &model.EventDeploymentCancelled{
+				Deployment: p.deployment,
+				Commander:  commander,
+			},
+		})
+	}()
+
+	for retry.WaitNext(ctx) {
+		if _, err = p.apiClient.ReportDeploymentCompleted(ctx, req); err == nil {
+			return nil
+		}
+		err = fmt.Errorf("failed to report deployment status to control-plane: %v", err)
+	}
+
+	if err != nil {
+		p.logger.Error("failed to mark deployment to be cancelled", zap.Error(err))
 	}
 	return err
 }
