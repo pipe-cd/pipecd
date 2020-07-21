@@ -3,7 +3,6 @@ import {
   AppBar,
   Toolbar,
   Typography,
-  Button,
   makeStyles,
   Avatar,
   Link,
@@ -14,6 +13,7 @@ import {
   PAGE_PATH_DEPLOYMENTS,
   PAGE_PATH_INSIGHTS,
   PAGE_PATH_SETTINGS,
+  PAGE_PATH_LOGIN,
 } from "../constants";
 import { Link as RouterLink } from "react-router-dom";
 
@@ -75,7 +75,9 @@ export const Header: React.FC = () => {
         >
           Settings
         </Link>
-        <Button color="inherit">Login</Button>
+        <Link color="inherit" component={RouterLink} to={PAGE_PATH_LOGIN}>
+          <Typography variant="body2">Login</Typography>
+        </Link>
       </Toolbar>
     </AppBar>
   );
