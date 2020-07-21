@@ -5,4 +5,9 @@ go_library(
     srcs = ["notifier.go"],
     importpath = "github.com/pipe-cd/pipe/pkg/app/piped/notifier",
     visibility = ["//visibility:public"],
+    deps = [
+        "//pkg/config:go_default_library",
+        "//pkg/model:go_default_library",
+        "@org_uber_go_zap//:go_default_library",
+    ],
 )

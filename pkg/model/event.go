@@ -12,35 +12,24 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-// Package notifier provides a piped component
-// that sends notifications to the configured targets.
-package notifier
+package model
 
-import (
-	"context"
-
-	"go.uber.org/zap"
-
-	"github.com/pipe-cd/pipe/pkg/config"
-	"github.com/pipe-cd/pipe/pkg/model"
-)
-
-type Notifier struct {
-	config *config.PipedSpec
-	logger *zap.Logger
+type Event struct {
+	Type     EventType
+	Metadata interface{}
 }
 
-func NewNotifier(cfg *config.PipedSpec, logger *zap.Logger) *Notifier {
-	return &Notifier{
-		config: cfg,
-		logger: logger.Named("notifier"),
+func (e Event) Group() (EventGroup, bool) {
+	switch {
+	case e.Type < 100:
+		return EventGroup_EVENT_DEPLOYMENT, true
+	case e.Type < 200:
+		return EventGroup_EVENT_APPLICATION_SYNC, true
+	case e.Type < 300:
+		return EventGroup_EVENT_APPLICATION_HEALTH, true
+	case e.Type < 400:
+		return EventGroup_EVENT_PIPED, true
+	default:
+		return EventGroup_EVENT_DEPLOYMENT, false
 	}
-}
-
-func (n *Notifier) Run(ctx context.Context) error {
-	return nil
-}
-
-func (n *Notifier) Notify(event *model.Event) {
-
 }

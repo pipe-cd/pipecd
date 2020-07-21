@@ -340,6 +340,8 @@ type NotificationRoute struct {
 	Name         string   `json:"name"`
 	Events       []string `json:"events"`
 	IgnoreEvents []string `json:"ignoreEvents"`
+	Groups       []string `json:"groups"`
+	IgnoreGroups []string `json:"ignoreGroups"`
 	Apps         []string `json:"apps"`
 	IgnoreApps   []string `json:"ignoreApps"`
 	Envs         []string `json:"envs"`
