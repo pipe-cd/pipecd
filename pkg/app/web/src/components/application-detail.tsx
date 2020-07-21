@@ -196,7 +196,7 @@ export const ApplicationDetail: FC<Props> = memo(function ApplicationDetail({
 
           <LabeledText
             label="Git Path"
-            value={`${app.gitPath.repoId} - ${app.gitPath.path}${app.gitPath.configPath}`}
+            value={`${app.gitPath.repoId} - ${app.gitPath.path}${app.gitPath.configFilename}`}
           />
         </div>
 

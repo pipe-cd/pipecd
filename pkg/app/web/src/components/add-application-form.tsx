@@ -84,7 +84,7 @@ type FormKey =
   | "pipedId"
   | "repoId"
   | "repoPath"
-  | "configPath"
+  | "configFilename"
   | "cloudProvider";
 type FormAction =
   | { type: "update-piped"; value: string }
@@ -105,7 +105,7 @@ function reducer(
         pipedId: action.value,
         repoId: "",
         repoPath: "",
-        configPath: "",
+        configFilename: "",
         cloudProvider: "",
       };
     case "update-form-value":
@@ -139,7 +139,7 @@ export const AddApplicationForm: FC<Props> = ({
     pipedId: "",
     repoId: "",
     repoPath: "",
-    configPath: "",
+    configFilename: "",
     kind: ApplicationKind.KUBERNETES, // default value
     cloudProvider: "",
   });
@@ -161,8 +161,8 @@ export const AddApplicationForm: FC<Props> = ({
 
   const isSomeEmptyFormValue = (): boolean => {
     return (Object.keys(formState) as FormKey[]).some((key) => {
-      // NOTE: configPath is optional
-      if (key === "configPath") {
+      // NOTE: configFilename is optional
+      if (key === "configFilename") {
         return false;
       }
       return formState[key] === "";
@@ -272,18 +272,18 @@ export const AddApplicationForm: FC<Props> = ({
         </div>
 
         <TextField
-          label="Config Path"
+          label="Config Filename"
           variant="outlined"
           margin="dense"
           disabled={selectedPiped === undefined || isAdding}
           onChange={(e) =>
             dispatch({
               type: "update-form-value",
-              key: "configPath",
+              key: "configFilename",
               value: e.target.value,
             })
           }
-          value={formState.configPath}
+          value={formState.configFilename}
           fullWidth
           className={classes.textInput}
         />
