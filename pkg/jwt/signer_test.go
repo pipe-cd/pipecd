@@ -21,13 +21,13 @@ import (
 	jwtgo "github.com/dgrijalva/jwt-go"
 	"github.com/stretchr/testify/require"
 
-	"github.com/pipe-cd/pipe/pkg/role"
+	"github.com/pipe-cd/pipe/pkg/model"
 )
 
 func TestSign(t *testing.T) {
-	claims := NewClaims("user-1", "avatar-url", time.Hour, role.Role{
+	claims := NewClaims("user-1", "avatar-url", time.Hour, model.Role{
 		ProjectId:   "project-1",
-		ProjectRole: role.Role_ADMIN,
+		ProjectRole: model.Role_ADMIN,
 	})
 
 	s, err := NewSigner(jwtgo.SigningMethodRS256, "testdata/private.key")

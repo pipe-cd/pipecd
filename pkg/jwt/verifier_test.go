@@ -24,7 +24,7 @@ import (
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 
-	"github.com/pipe-cd/pipe/pkg/role"
+	"github.com/pipe-cd/pipe/pkg/model"
 )
 
 func TestVerify(t *testing.T) {
@@ -38,9 +38,9 @@ func TestVerify(t *testing.T) {
 	}{
 		{
 			name: "ok",
-			claims: NewClaims("user-1", "avatar-url", time.Hour, role.Role{
+			claims: NewClaims("user-1", "avatar-url", time.Hour, model.Role{
 				ProjectId:   "project-1",
-				ProjectRole: role.Role_ADMIN,
+				ProjectRole: model.Role_ADMIN,
 			}),
 			fail: false,
 		},
@@ -150,9 +150,9 @@ func TestVerify(t *testing.T) {
 
 	testFunc(hsS, hsV)
 
-	c := NewClaims("user", "avatar-url", time.Hour, role.Role{
+	c := NewClaims("user", "avatar-url", time.Hour, model.Role{
 		ProjectId:   "project",
-		ProjectRole: role.Role_ADMIN,
+		ProjectRole: model.Role_ADMIN,
 	})
 
 	token, err := rsS.Sign(c)
