@@ -116,6 +116,13 @@ func (d *Deployment) CommitHash() string {
 	return d.Trigger.Commit.Hash
 }
 
+func (d *Deployment) TriggeredBy() string {
+	if d.Trigger.Commander != "" {
+		return d.Trigger.Commander
+	}
+	return d.Trigger.Commit.Author
+}
+
 // Clone returns a deep copy of the deployment.
 func (d *Deployment) Clone() *Deployment {
 	msg := proto.Clone(d)

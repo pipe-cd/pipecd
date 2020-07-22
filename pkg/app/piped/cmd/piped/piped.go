@@ -127,16 +127,11 @@ func (p *piped) run(ctx context.Context, t cli.Telemetry) (runErr error) {
 			},
 		})
 		defer func() {
-			var errMsg string
-			if runErr != nil {
-				errMsg = runErr.Error()
-			}
 			notifier.Notify(model.Event{
 				Type: model.EventType_EVENT_PIPED_STOPPED,
 				Metadata: &model.EventPipedStopped{
 					Id:      cfg.PipedID,
 					Version: version.Get().Version,
-					Error:   errMsg,
 				},
 			})
 		}()

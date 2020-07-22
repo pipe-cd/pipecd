@@ -34,35 +34,35 @@ func (e Event) Group() EventGroup {
 	}
 }
 
-func (e *EventDeploymentTriggered) AppID() string {
-	return e.Deployment.ApplicationId
+func (e *EventDeploymentTriggered) AppName() string {
+	return e.Deployment.ApplicationName
 }
 
-func (e *EventDeploymentPlanned) AppID() string {
-	return e.Deployment.ApplicationId
+func (e *EventDeploymentPlanned) AppName() string {
+	return e.Deployment.ApplicationName
 }
 
-func (e *EventDeploymentApproved) AppID() string {
-	return e.Deployment.ApplicationId
+func (e *EventDeploymentApproved) AppName() string {
+	return e.Deployment.ApplicationName
 }
 
-func (e *EventDeploymentRollingBack) AppID() string {
-	return e.Deployment.ApplicationId
+func (e *EventDeploymentRollingBack) AppName() string {
+	return e.Deployment.ApplicationName
 }
 
-func (e *EventDeploymentSucceeded) AppID() string {
-	return e.Deployment.ApplicationId
+func (e *EventDeploymentSucceeded) AppName() string {
+	return e.Deployment.ApplicationName
 }
 
-func (e *EventDeploymentFailed) AppID() string {
-	return e.Deployment.ApplicationId
+func (e *EventDeploymentFailed) AppName() string {
+	return e.Deployment.ApplicationName
 }
 
-func (e *EventApplicationSynced) AppID() string {
+func (e *EventApplicationSynced) AppName() string {
 	return e.Application.Id
 }
 
-func (e *EventApplicationOutOfSync) AppID() string {
+func (e *EventApplicationOutOfSync) AppName() string {
 	return e.Application.Id
 }
 
