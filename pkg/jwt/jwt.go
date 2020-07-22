@@ -34,7 +34,7 @@ const (
 // Claims extends the StandardClaims with the role to access PipeCD resources.
 type Claims struct {
 	jwtgo.StandardClaims
-	AvatarURL string    `json:"avatarUrl,omitempty"`
+	AvatarURL string     `json:"avatarUrl,omitempty"`
 	Role      model.Role `json:"role,omitempty"`
 }
 
