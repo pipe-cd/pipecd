@@ -659,7 +659,7 @@ func (a *WebAPI) GetProject(ctx context.Context, req *webservice.GetProjectReque
 	return nil, status.Error(codes.Unimplemented, "")
 }
 
-// GetMe gets information about the current user
+// GetMe gets information about the current user.
 func (a *WebAPI) GetMe(ctx context.Context, req *webservice.GetMeRequest) (*webservice.GetMeResponse, error) {
 	claims, err := rpcauth.ExtractClaims(ctx)
 	if err != nil {
