@@ -697,13 +697,21 @@ func (a *WebAPI) ListDeploymentConfigTemplates(ctx context.Context, req *webserv
 		return &webservice.ListDeploymentConfigTemplatesResponse{Templates: templates}, nil
 	}
 
+	filtered := filterDeploymentConfigTemplates(templates, req.Labels)
+	return &webservice.ListDeploymentConfigTemplatesResponse{Templates: filtered}, nil
+}
+
+// Returns the one from the given templates with all the specified labels.
+func filterDeploymentConfigTemplates(templates []*webservice.DeploymentConfigTemplate, labels []webservice.DeploymentConfigTemplateLabel) []*webservice.DeploymentConfigTemplate {
 	filtered := make([]*webservice.DeploymentConfigTemplate, 0, len(templates))
+L:
 	for _, template := range templates {
-		for _, l := range req.Labels {
-			if template.HasLabel(l) {
-				filtered = append(filtered, template)
+		for _, l := range labels {
+			if !template.HasLabel(l) {
+				continue L
 			}
 		}
+		filtered = append(filtered, template)
 	}
-	return &webservice.ListDeploymentConfigTemplatesResponse{Templates: filtered}, nil
+	return filtered
 }
