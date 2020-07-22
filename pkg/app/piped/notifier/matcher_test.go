@@ -33,8 +33,8 @@ func TestMatch(t *testing.T) {
 			name:   "empty config",
 			config: config.NotificationRoute{},
 			matchings: map[model.Event]bool{
-				model.Event{}: true,
-				model.Event{Type: model.EventType_EVENT_DEPLOYMENT_TRIGGERED}: true,
+				{}: true,
+				{Type: model.EventType_EVENT_DEPLOYMENT_TRIGGERED}: true,
 			},
 		},
 		{
@@ -48,10 +48,10 @@ func TestMatch(t *testing.T) {
 				},
 			},
 			matchings: map[model.Event]bool{
-				model.Event{
+				{
 					Type: model.EventType_EVENT_DEPLOYMENT_TRIGGERED,
 				}: true,
-				model.Event{
+				{
 					Type: model.EventType_EVENT_DEPLOYMENT_ROLLING_BACK,
 				}: false,
 			},
@@ -67,10 +67,10 @@ func TestMatch(t *testing.T) {
 				},
 			},
 			matchings: map[model.Event]bool{
-				model.Event{
+				{
 					Type: model.EventType_EVENT_DEPLOYMENT_TRIGGERED,
 				}: true,
-				model.Event{
+				{
 					Type: model.EventType_EVENT_APPLICATION_SYNCED,
 				}: false,
 			},
@@ -86,7 +86,7 @@ func TestMatch(t *testing.T) {
 				},
 			},
 			matchings: map[model.Event]bool{
-				model.Event{
+				{
 					Type: model.EventType_EVENT_DEPLOYMENT_TRIGGERED,
 					Metadata: &model.EventDeploymentTriggered{
 						Deployment: &model.Deployment{
@@ -94,7 +94,7 @@ func TestMatch(t *testing.T) {
 						},
 					},
 				}: true,
-				model.Event{
+				{
 					Type: model.EventType_EVENT_DEPLOYMENT_PLANNED,
 					Metadata: &model.EventDeploymentTriggered{
 						Deployment: &model.Deployment{
@@ -102,7 +102,7 @@ func TestMatch(t *testing.T) {
 						},
 					},
 				}: false,
-				model.Event{
+				{
 					Type: model.EventType_EVENT_DEPLOYMENT_SUCCEEDED,
 					Metadata: &model.EventDeploymentTriggered{
 						Deployment: &model.Deployment{
@@ -110,7 +110,7 @@ func TestMatch(t *testing.T) {
 						},
 					},
 				}: false,
-				model.Event{
+				{
 					Type:     model.EventType_EVENT_PIPED_STARTED,
 					Metadata: &model.EventPipedStarted{},
 				}: true,
@@ -127,7 +127,7 @@ func TestMatch(t *testing.T) {
 				},
 			},
 			matchings: map[model.Event]bool{
-				model.Event{
+				{
 					Type: model.EventType_EVENT_DEPLOYMENT_TRIGGERED,
 					Metadata: &model.EventDeploymentTriggered{
 						Deployment: &model.Deployment{
@@ -135,7 +135,7 @@ func TestMatch(t *testing.T) {
 						},
 					},
 				}: true,
-				model.Event{
+				{
 					Type: model.EventType_EVENT_DEPLOYMENT_PLANNED,
 					Metadata: &model.EventDeploymentTriggered{
 						Deployment: &model.Deployment{
@@ -143,7 +143,7 @@ func TestMatch(t *testing.T) {
 						},
 					},
 				}: false,
-				model.Event{
+				{
 					Type: model.EventType_EVENT_DEPLOYMENT_SUCCEEDED,
 					Metadata: &model.EventDeploymentTriggered{
 						Deployment: &model.Deployment{
@@ -151,7 +151,7 @@ func TestMatch(t *testing.T) {
 						},
 					},
 				}: false,
-				model.Event{
+				{
 					Type:     model.EventType_EVENT_PIPED_STARTED,
 					Metadata: &model.EventPipedStarted{},
 				}: true,
