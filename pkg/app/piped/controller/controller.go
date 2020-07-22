@@ -80,6 +80,10 @@ type liveResourceLister interface {
 	ListKubernetesAppLiveResources(cloudProvider, appID string) ([]provider.Manifest, bool)
 }
 
+type notifier interface {
+	Notify(event model.Event)
+}
+
 type DeploymentController interface {
 	Run(ctx context.Context) error
 }
@@ -96,6 +100,7 @@ type controller struct {
 	commandLister      commandLister
 	applicationLister  applicationLister
 	liveResourceLister liveResourceLister
+	notifier           notifier
 	pipedConfig        *config.PipedSpec
 	appManifestsCache  cache.Cache
 	logPersister       logpersister.Persister
@@ -133,6 +138,7 @@ func NewController(
 	commandLister commandLister,
 	applicationLister applicationLister,
 	liveResourceLister liveResourceLister,
+	notifier notifier,
 	pipedConfig *config.PipedSpec,
 	appManifestsCache cache.Cache,
 	gracePeriod time.Duration,
@@ -150,6 +156,7 @@ func NewController(
 		commandLister:      commandLister,
 		applicationLister:  applicationLister,
 		liveResourceLister: liveResourceLister,
+		notifier:           notifier,
 		appManifestsCache:  appManifestsCache,
 		pipedConfig:        pipedConfig,
 		logPersister:       lp,
@@ -346,6 +353,7 @@ func (c *controller) startNewPlanner(ctx context.Context, d *model.Deployment) (
 		workingDir,
 		c.apiClient,
 		c.gitClient,
+		c.notifier,
 		c.pipedConfig,
 		c.appManifestsCache,
 		c.logger,
@@ -481,6 +489,7 @@ func (c *controller) startNewScheduler(ctx context.Context, d *model.Deployment)
 		c.applicationLister,
 		c.liveResourceLister,
 		c.logPersister,
+		c.notifier,
 		c.pipedConfig,
 		c.appManifestsCache,
 		c.logger,

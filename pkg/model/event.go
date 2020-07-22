@@ -19,17 +19,81 @@ type Event struct {
 	Metadata interface{}
 }
 
-func (e Event) Group() (EventGroup, bool) {
+func (e Event) Group() EventGroup {
 	switch {
 	case e.Type < 100:
-		return EventGroup_EVENT_DEPLOYMENT, true
+		return EventGroup_EVENT_DEPLOYMENT
 	case e.Type < 200:
-		return EventGroup_EVENT_APPLICATION_SYNC, true
+		return EventGroup_EVENT_APPLICATION_SYNC
 	case e.Type < 300:
-		return EventGroup_EVENT_APPLICATION_HEALTH, true
+		return EventGroup_EVENT_APPLICATION_HEALTH
 	case e.Type < 400:
-		return EventGroup_EVENT_PIPED, true
+		return EventGroup_EVENT_PIPED
 	default:
-		return EventGroup_EVENT_DEPLOYMENT, false
+		return EventGroup_EVENT_NONE
 	}
+}
+
+func (e *EventDeploymentTriggered) AppID() string {
+	return e.Deployment.ApplicationId
+}
+
+func (e *EventDeploymentPlanned) AppID() string {
+	return e.Deployment.ApplicationId
+}
+
+func (e *EventDeploymentApproved) AppID() string {
+	return e.Deployment.ApplicationId
+}
+
+func (e *EventDeploymentRollingBack) AppID() string {
+	return e.Deployment.ApplicationId
+}
+
+func (e *EventDeploymentSucceeded) AppID() string {
+	return e.Deployment.ApplicationId
+}
+
+func (e *EventDeploymentFailed) AppID() string {
+	return e.Deployment.ApplicationId
+}
+
+func (e *EventApplicationSynced) AppID() string {
+	return e.Application.Id
+}
+
+func (e *EventApplicationOutOfSync) AppID() string {
+	return e.Application.Id
+}
+
+func (e *EventDeploymentTriggered) EnvID() string {
+	return e.Deployment.EnvId
+}
+
+func (e *EventDeploymentPlanned) EnvID() string {
+	return e.Deployment.EnvId
+}
+
+func (e *EventDeploymentApproved) EnvID() string {
+	return e.Deployment.EnvId
+}
+
+func (e *EventDeploymentRollingBack) EnvID() string {
+	return e.Deployment.EnvId
+}
+
+func (e *EventDeploymentSucceeded) EnvID() string {
+	return e.Deployment.EnvId
+}
+
+func (e *EventDeploymentFailed) EnvID() string {
+	return e.Deployment.EnvId
+}
+
+func (e *EventApplicationSynced) EnvID() string {
+	return e.Application.EnvId
+}
+
+func (e *EventApplicationOutOfSync) EnvID() string {
+	return e.Application.EnvId
 }

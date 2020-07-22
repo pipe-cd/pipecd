@@ -57,11 +57,16 @@ type commandLister interface {
 	ListApplicationCommands() []model.ReportableCommand
 }
 
+type notifier interface {
+	Notify(event model.Event)
+}
+
 type Trigger struct {
 	apiClient                    apiClient
 	gitClient                    gitClient
 	applicationLister            applicationLister
 	commandLister                commandLister
+	notifier                     notifier
 	config                       *config.PipedSpec
 	mostRecentlyTriggeredCommits map[string]string
 	gitRepos                     map[string]git.Repo
@@ -75,6 +80,7 @@ func NewTrigger(
 	gitClient gitClient,
 	appLister applicationLister,
 	commandLister commandLister,
+	notifier notifier,
 	cfg *config.PipedSpec,
 	gracePeriod time.Duration,
 	logger *zap.Logger,
@@ -85,6 +91,7 @@ func NewTrigger(
 		gitClient:                    gitClient,
 		applicationLister:            appLister,
 		commandLister:                commandLister,
+		notifier:                     notifier,
 		config:                       cfg,
 		mostRecentlyTriggeredCommits: make(map[string]string),
 		gitRepos:                     make(map[string]git.Repo, len(cfg.Repositories)),
