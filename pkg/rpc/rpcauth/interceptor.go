@@ -25,7 +25,7 @@ import (
 	"google.golang.org/grpc/status"
 
 	"github.com/pipe-cd/pipe/pkg/jwt"
-	"github.com/pipe-cd/pipe/pkg/role"
+	"github.com/pipe-cd/pipe/pkg/model"
 )
 
 var (
@@ -35,7 +35,7 @@ var (
 
 // RBACAuthorizer defines a function to check required role for a specific RPC method.
 type RBACAuthorizer interface {
-	Authorize(string, role.Role) bool
+	Authorize(string, model.Role) bool
 }
 
 // PipedTokenVerifier defines a function to check piped token.
@@ -157,9 +157,9 @@ func JWTUnaryServerInterceptor(verifier jwt.Verifier, authorizer RBACAuthorizer,
 			"test-user",
 			"",
 			30*24*time.Hour,
-			role.Role{
+			model.Role{
 				ProjectId:   "pipecd",
-				ProjectRole: role.Role_ADMIN,
+				ProjectRole: model.Role_ADMIN,
 			},
 		)
 		ctx = context.WithValue(ctx, claimsKey, *claims)

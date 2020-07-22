@@ -21,7 +21,7 @@ import (
 
 	jwtgo "github.com/dgrijalva/jwt-go"
 
-	"github.com/pipe-cd/pipe/pkg/role"
+	"github.com/pipe-cd/pipe/pkg/model"
 )
 
 const (
@@ -34,12 +34,12 @@ const (
 // Claims extends the StandardClaims with the role to access PipeCD resources.
 type Claims struct {
 	jwtgo.StandardClaims
-	AvatarURL string    `json:"avatarUrl,omitempty"`
-	Role      role.Role `json:"role,omitempty"`
+	AvatarURL string     `json:"avatarUrl,omitempty"`
+	Role      model.Role `json:"role,omitempty"`
 }
 
 // NewClaims creates a new claims for a given github user.
-func NewClaims(githubUserID, avatarURL string, ttl time.Duration, role role.Role) *Claims {
+func NewClaims(githubUserID, avatarURL string, ttl time.Duration, role model.Role) *Claims {
 	now := time.Now().UTC()
 	return &Claims{
 		StandardClaims: jwtgo.StandardClaims{

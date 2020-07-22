@@ -21,7 +21,7 @@ import (
 	"go.uber.org/zap"
 
 	"github.com/pipe-cd/pipe/pkg/jwt"
-	"github.com/pipe-cd/pipe/pkg/role"
+	"github.com/pipe-cd/pipe/pkg/model"
 )
 
 // handleLogin is called when user request to login PipeCD.
@@ -55,9 +55,9 @@ func (h *Handler) handleStaticLogin(w http.ResponseWriter, r *http.Request) {
 		proj.StaticAdmin.Username,
 		"",
 		defaultTokenTTL,
-		role.Role{
+		model.Role{
 			ProjectId:   proj.Id,
-			ProjectRole: role.Role_ADMIN,
+			ProjectRole: model.Role_ADMIN,
 		},
 	)
 	signedToken, err := h.signer.Sign(claims)
@@ -70,7 +70,7 @@ func (h *Handler) handleStaticLogin(w http.ResponseWriter, r *http.Request) {
 	h.logger.Info("a new user has been logged in",
 		zap.String("user", proj.StaticAdmin.Username),
 		zap.String("project-id", proj.Id),
-		zap.String("project-role", role.Role_ADMIN.String()),
+		zap.String("project-role", model.Role_ADMIN.String()),
 	)
 	http.Redirect(w, r, rootPath, http.StatusFound)
 }

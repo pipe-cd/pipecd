@@ -54,3 +54,4 @@ genrule(
 # gazelle:exclude pkg/model/piped.pb.validate.go
 # gazelle:exclude pkg/model/piped_stats.pb.validate.go
 # gazelle:exclude pkg/model/project.pb.validate.go
+# gazelle:exclude pkg/model/role.pb.validate.go

@@ -15,7 +15,7 @@
 package webservice
 
 import (
-	"github.com/pipe-cd/pipe/pkg/role"
+	"github.com/pipe-cd/pipe/pkg/model"
 	"github.com/pipe-cd/pipe/pkg/rpc/rpcauth"
 )
 
@@ -26,21 +26,21 @@ func NewRBACAuthorizer() rpcauth.RBACAuthorizer {
 	return &authorizer{}
 }
 
-func isAdmin(r role.Role) bool {
-	return r.ProjectRole == role.Role_ADMIN
+func isAdmin(r model.Role) bool {
+	return r.ProjectRole == model.Role_ADMIN
 }
 
-func isEditor(r role.Role) bool {
-	return r.ProjectRole == role.Role_EDITOR
+func isEditor(r model.Role) bool {
+	return r.ProjectRole == model.Role_EDITOR
 }
 
-func isViewer(r role.Role) bool {
-	return r.ProjectRole == role.Role_VIEWER
+func isViewer(r model.Role) bool {
+	return r.ProjectRole == model.Role_VIEWER
 }
 
 // Authorize checks whether a role is enough for given gRPC method or not.
 // Todo: Auto generate this file from protobuf.
-func (a *authorizer) Authorize(method string, r role.Role) bool {
+func (a *authorizer) Authorize(method string, r model.Role) bool {
 	switch method {
 	case "/pipe.api.service.WebAPI/RegisterPiped":
 		return isAdmin(r)

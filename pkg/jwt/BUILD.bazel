@@ -10,7 +10,7 @@ go_library(
     importpath = "github.com/pipe-cd/pipe/pkg/jwt",
     visibility = ["//visibility:public"],
     deps = [
-        "//pkg/role:go_default_library",
+        "//pkg/model:go_default_library",
         "@com_github_dgrijalva_jwt_go//:go_default_library",
     ],
 )
@@ -25,7 +25,7 @@ go_test(
     data = glob(["testdata/**"]),
     embed = [":go_default_library"],
     deps = [
-        "//pkg/role:go_default_library",
+        "//pkg/model:go_default_library",
         "@com_github_dgrijalva_jwt_go//:go_default_library",
         "@com_github_stretchr_testify//assert:go_default_library",
         "@com_github_stretchr_testify//require:go_default_library",
