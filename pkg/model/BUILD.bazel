@@ -15,11 +15,13 @@ proto_library(
         "piped.proto",
         "piped_stats.proto",
         "project.proto",
+        "role.proto",
     ],
     visibility = ["//visibility:public"],
     #keep
     deps = [
         "@com_github_envoyproxy_protoc_gen_validate//validate:validate_proto",
+        "@com_google_protobuf//:descriptor_proto",
     ],
 )
 
