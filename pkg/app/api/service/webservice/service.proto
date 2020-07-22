@@ -310,8 +310,7 @@ message GetMeRequest {
 message GetMeResponse {
     string subject = 1;
     string avatar_url = 2;
-    string project_id = 3;
-    string project_role = 4;
+    Role project_role = 3;
 }
 
 message GetCommandRequest {
@@ -341,4 +340,15 @@ message ListDeploymentConfigTemplatesRequest {
 
 message ListDeploymentConfigTemplatesResponse {
     repeated DeploymentConfigTemplate templates = 1;
+}
+
+message Role {
+  enum ProjectRole {
+    VIEWER = 0;
+    EDITOR = 1;
+    ADMIN = 2;
+  }
+
+  string project_id = 1;
+  ProjectRole project_role = 2;
 }

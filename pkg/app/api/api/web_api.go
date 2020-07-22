@@ -31,6 +31,7 @@ import (
 	"github.com/pipe-cd/pipe/pkg/app/api/stagelogstore"
 	"github.com/pipe-cd/pipe/pkg/datastore"
 	"github.com/pipe-cd/pipe/pkg/model"
+	"github.com/pipe-cd/pipe/pkg/role"
 	"github.com/pipe-cd/pipe/pkg/rpc/rpcauth"
 )
 
@@ -663,15 +664,37 @@ func (a *WebAPI) GetProject(ctx context.Context, req *webservice.GetProjectReque
 func (a *WebAPI) GetMe(ctx context.Context, req *webservice.GetMeRequest) (*webservice.GetMeResponse, error) {
 	claims, err := rpcauth.ExtractClaims(ctx)
 	if err != nil {
-		msg := "detected a request that passed JWT interceptor but not including claims"
-		a.logger.Error(msg, zap.Error(err))
-		return nil, status.Error(codes.Internal, msg)
+		a.logger.Error("detected a request that passed JWT interceptor but not including a claims", zap.Error(err))
+		return nil, status.Error(codes.Internal, "internal error")
 	}
+	projectRole, err := convertRole(claims.Role)
+	if err != nil {
+		a.logger.Error("failed to convert role", zap.Error(err))
+		return nil, status.Error(codes.Internal, "internal error")
+	}
+
 	return &webservice.GetMeResponse{
 		Subject:     claims.Subject,
 		AvatarUrl:   claims.AvatarURL,
-		ProjectId:   claims.Role.ProjectId,
-		ProjectRole: claims.Role.ProjectRole.String(),
+		ProjectRole: projectRole,
+	}, nil
+}
+
+func convertRole(r role.Role) (*webservice.Role, error) {
+	var projectRole webservice.Role_ProjectRole
+	switch r.ProjectRole {
+	case role.Role_ADMIN:
+		projectRole = webservice.Role_ADMIN
+	case role.Role_EDITOR:
+		projectRole = webservice.Role_EDITOR
+	case role.Role_VIEWER:
+		projectRole = webservice.Role_VIEWER
+	default:
+		return nil, fmt.Errorf("no role matched")
+	}
+	return &webservice.Role{
+		ProjectId:   r.ProjectId,
+		ProjectRole: projectRole,
 	}, nil
 }
 
