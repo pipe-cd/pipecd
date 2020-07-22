@@ -34,7 +34,7 @@ import (
 	"github.com/pipe-cd/pipe/pkg/rpc/rpcauth"
 )
 
-// PipedAPI implements the behaviors for the gRPC definitions of WebAPI.
+// WebAPI implements the behaviors for the gRPC definitions of WebAPI.
 type WebAPI struct {
 	applicationStore          datastore.ApplicationStore
 	environmentStore          datastore.EnvironmentStore
@@ -659,8 +659,20 @@ func (a *WebAPI) GetProject(ctx context.Context, req *webservice.GetProjectReque
 	return nil, status.Error(codes.Unimplemented, "")
 }
 
+// GetMe gets information about the current user
 func (a *WebAPI) GetMe(ctx context.Context, req *webservice.GetMeRequest) (*webservice.GetMeResponse, error) {
-	return nil, status.Error(codes.Unimplemented, "")
+	claims, err := rpcauth.ExtractClaims(ctx)
+	if err != nil {
+		msg := "detected a request that passed JWT interceptor but not including claims"
+		a.logger.Error(msg, zap.Error(err))
+		return nil, status.Error(codes.Internal, msg)
+	}
+	return &webservice.GetMeResponse{
+		Subject:     claims.Subject,
+		AvatarUrl:   claims.AvatarURL,
+		ProjectId:   claims.Role.ProjectId,
+		ProjectRole: claims.Role.ProjectRole.String(),
+	}, nil
 }
 
 func (a *WebAPI) GetCommand(ctx context.Context, req *webservice.GetCommandRequest) (*webservice.GetCommandResponse, error) {
