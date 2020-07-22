@@ -26,6 +26,7 @@ import "pkg/model/environment.proto";
 import "pkg/model/deployment.proto";
 import "pkg/model/logblock.proto";
 import "pkg/model/piped.proto";
+import "pkg/model/role.proto";
 import "google/protobuf/wrappers.proto";
 
 // Note: Does copy Piped message from pkg/model/piped.proto and exclude sensitive data because Piped message for web should not contain it.
@@ -308,16 +309,10 @@ message GetMeRequest {
 }
 
 message GetMeResponse {
-    enum ProjectRole {
-        VIEWER = 0;
-        EDITOR = 1;
-        ADMIN = 2;
-    }
-
     string subject = 1;
     string avatar_url = 2;
     string project_id = 3;
-    ProjectRole project_role = 4;
+    pipe.model.Role.ProjectRole project_role = 4;
 }
 
 message GetCommandRequest {

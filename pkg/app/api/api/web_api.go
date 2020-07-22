@@ -666,32 +666,13 @@ func (a *WebAPI) GetMe(ctx context.Context, req *webservice.GetMeRequest) (*webs
 		a.logger.Error("detected a request that passed JWT interceptor but not including a claims", zap.Error(err))
 		return nil, status.Error(codes.Internal, "internal error")
 	}
-	projectRole, err := convertProjectRole(claims.Role.ProjectRole)
-	if err != nil {
-		a.logger.Error("failed to convert role", zap.Error(err))
-		return nil, status.Error(codes.Internal, "internal error")
-	}
 
 	return &webservice.GetMeResponse{
 		Subject:     claims.Subject,
 		AvatarUrl:   claims.AvatarURL,
 		ProjectId:   claims.Role.ProjectId,
-		ProjectRole: projectRole,
+		ProjectRole: claims.Role.ProjectRole,
 	}, nil
-}
-
-func convertProjectRole(projectRole model.Role_ProjectRole) (role webservice.GetMeResponse_ProjectRole, err error) {
-	switch projectRole {
-	case model.Role_ADMIN:
-		role = webservice.GetMeResponse_ADMIN
-	case model.Role_EDITOR:
-		role = webservice.GetMeResponse_EDITOR
-	case model.Role_VIEWER:
-		role = webservice.GetMeResponse_VIEWER
-	default:
-		err = fmt.Errorf("no role matched")
-	}
-	return
 }
 
 func (a *WebAPI) GetCommand(ctx context.Context, req *webservice.GetCommandRequest) (*webservice.GetCommandResponse, error) {
