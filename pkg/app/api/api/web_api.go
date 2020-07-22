@@ -17,6 +17,7 @@ package api
 import (
 	"context"
 	"errors"
+	"fmt"
 
 	"github.com/google/uuid"
 	"go.uber.org/zap"
@@ -676,20 +677,33 @@ func (a *WebAPI) GetCommand(ctx context.Context, req *webservice.GetCommandReque
 }
 
 func (a *WebAPI) ListDeploymentConfigTemplates(ctx context.Context, req *webservice.ListDeploymentConfigTemplatesRequest) (*webservice.ListDeploymentConfigTemplatesResponse, error) {
-	// TODO: Make it possible to filter by kind and labels
-	res := &webservice.ListDeploymentConfigTemplatesResponse{Templates: []*webservice.DeploymentConfigTemplate{
-		{
-			ApplicationKind: model.ApplicationKind_KUBERNETES,
-			Name:            "Canary Deployment",
-			Labels:          []webservice.DeploymentConfigTemplateLabel{webservice.DeploymentConfigTemplateLabel_CANARY},
-			Content:         k8sCanaryDeploymentConfigTemplate,
-		},
-		{
-			ApplicationKind: model.ApplicationKind_KUBERNETES,
-			Name:            "Blue/Green Deployment",
-			Labels:          []webservice.DeploymentConfigTemplateLabel{webservice.DeploymentConfigTemplateLabel_BLUE_GREEN},
-			Content:         k8sBluegreenDeploymentConfigTemplate,
-		},
-	}}
-	return res, nil
+	var templates []*webservice.DeploymentConfigTemplate
+	switch req.ApplicationKind {
+	case model.ApplicationKind_KUBERNETES:
+		templates = k8sDeploymentConfigTemplates
+	case model.ApplicationKind_TERRAFORM:
+		templates = terraformDeploymentConfigTemplates
+	case model.ApplicationKind_CROSSPLANE:
+		templates = crossplaneDeploymentConfigTemplates
+	case model.ApplicationKind_LAMBDA:
+		templates = lambdaDeploymentConfigTemplates
+	case model.ApplicationKind_CLOUDRUN:
+		templates = cloudrunDeploymentConfigTemplates
+	default:
+		return nil, fmt.Errorf("Unknown application kind %v", req.ApplicationKind)
+	}
+
+	if len(req.Labels) == 0 {
+		return &webservice.ListDeploymentConfigTemplatesResponse{Templates: templates}, nil
+	}
+
+	filtered := make([]*webservice.DeploymentConfigTemplate, 0, len(templates))
+	for _, template := range templates {
+		for _, l := range req.Labels {
+			if template.HasLabel(l) {
+				filtered = append(filtered, template)
+			}
+		}
+	}
+	return &webservice.ListDeploymentConfigTemplatesResponse{Templates: filtered}, nil
 }

@@ -331,7 +331,7 @@ enum DeploymentConfigTemplateLabel {
 }
 
 message ListDeploymentConfigTemplatesRequest {
-    string application_kind = 1 [(validate.rules).string.min_len = 1];
+    pipe.model.ApplicationKind application_kind = 1 [(validate.rules).enum.defined_only = true];
     repeated DeploymentConfigTemplateLabel labels = 2;
 }
 

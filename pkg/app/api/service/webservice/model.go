@@ -36,3 +36,12 @@ func MakePiped(input *model.Piped) *Piped {
 		UpdatedAt:      input.UpdatedAt,
 	}
 }
+
+func (t *DeploymentConfigTemplate) HasLabel(label DeploymentConfigTemplateLabel) bool {
+	for _, l := range t.Labels {
+		if l == label {
+			return true
+		}
+	}
+	return false
+}
