@@ -31,21 +31,18 @@ const useStyles = makeStyles((theme) => ({
     display: "flex",
     flex: 1,
     justifyContent: "center",
+    overflow: "hidden",
   },
   stateView: {
     position: "relative",
-    overflow: "scroll",
-    height: "100%",
-  },
-  stateViewShift: {
-    paddingRight: DETAIL_WIDTH,
+    overflow: "auto",
   },
   detail: {
     width: DETAIL_WIDTH,
     padding: "16px 24px",
     height: "100%",
-    position: "absolute",
-    right: 0,
+    position: "relative",
+    overflow: "auto",
     zIndex: 2,
   },
   closeDetailButton: {
@@ -142,11 +139,7 @@ export const KubernetesStateView: FC<Props> = ({ resources }) => {
   const graphInstance = graph.graph();
 
   return (
-    <div
-      className={clsx(classes.root, {
-        [classes.stateViewShift]: selectedResource,
-      })}
-    >
+    <div className={clsx(classes.root)}>
       <div className={classes.stateView}>
         {nodes.map((node) => (
           <Box
