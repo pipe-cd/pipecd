@@ -14,6 +14,32 @@
 
 package api
 
+import (
+	"github.com/pipe-cd/pipe/pkg/app/api/service/webservice"
+	"github.com/pipe-cd/pipe/pkg/model"
+)
+
+var (
+	k8sDeploymentConfigTemplates = []*webservice.DeploymentConfigTemplate{
+		{
+			ApplicationKind: model.ApplicationKind_KUBERNETES,
+			Name:            "Canary Deployment",
+			Labels:          []webservice.DeploymentConfigTemplateLabel{webservice.DeploymentConfigTemplateLabel_CANARY},
+			Content:         k8sCanaryDeploymentConfigTemplate,
+		},
+		{
+			ApplicationKind: model.ApplicationKind_KUBERNETES,
+			Name:            "Blue/Green Deployment",
+			Labels:          []webservice.DeploymentConfigTemplateLabel{webservice.DeploymentConfigTemplateLabel_BLUE_GREEN},
+			Content:         k8sBluegreenDeploymentConfigTemplate,
+		},
+	}
+	terraformDeploymentConfigTemplates  = []*webservice.DeploymentConfigTemplate{}
+	crossplaneDeploymentConfigTemplates = []*webservice.DeploymentConfigTemplate{}
+	lambdaDeploymentConfigTemplates     = []*webservice.DeploymentConfigTemplate{}
+	cloudrunDeploymentConfigTemplates   = []*webservice.DeploymentConfigTemplate{}
+)
+
 const (
 	k8sCanaryDeploymentConfigTemplate = `
 apiVersion: pipecd.dev/v1beta1
