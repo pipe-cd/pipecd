@@ -31,7 +31,6 @@ import (
 	"github.com/pipe-cd/pipe/pkg/app/api/stagelogstore"
 	"github.com/pipe-cd/pipe/pkg/datastore"
 	"github.com/pipe-cd/pipe/pkg/model"
-	"github.com/pipe-cd/pipe/pkg/role"
 	"github.com/pipe-cd/pipe/pkg/rpc/rpcauth"
 )
 
@@ -667,7 +666,7 @@ func (a *WebAPI) GetMe(ctx context.Context, req *webservice.GetMeRequest) (*webs
 		a.logger.Error("detected a request that passed JWT interceptor but not including a claims", zap.Error(err))
 		return nil, status.Error(codes.Internal, "internal error")
 	}
-	projectRole, err := convertRole(claims.Role)
+	projectRole, err := convertProjectRole(claims.Role.ProjectRole)
 	if err != nil {
 		a.logger.Error("failed to convert role", zap.Error(err))
 		return nil, status.Error(codes.Internal, "internal error")
@@ -676,26 +675,23 @@ func (a *WebAPI) GetMe(ctx context.Context, req *webservice.GetMeRequest) (*webs
 	return &webservice.GetMeResponse{
 		Subject:     claims.Subject,
 		AvatarUrl:   claims.AvatarURL,
+		ProjectId:   claims.Role.ProjectId,
 		ProjectRole: projectRole,
 	}, nil
 }
 
-func convertRole(r role.Role) (*webservice.Role, error) {
-	var projectRole webservice.Role_ProjectRole
-	switch r.ProjectRole {
-	case role.Role_ADMIN:
-		projectRole = webservice.Role_ADMIN
-	case role.Role_EDITOR:
-		projectRole = webservice.Role_EDITOR
-	case role.Role_VIEWER:
-		projectRole = webservice.Role_VIEWER
+func convertProjectRole(projectRole model.Role_ProjectRole) (role webservice.GetMeResponse_ProjectRole, err error) {
+	switch projectRole {
+	case model.Role_ADMIN:
+		role = webservice.GetMeResponse_ADMIN
+	case model.Role_EDITOR:
+		role = webservice.GetMeResponse_EDITOR
+	case model.Role_VIEWER:
+		role = webservice.GetMeResponse_VIEWER
 	default:
-		return nil, fmt.Errorf("no role matched")
+		err = fmt.Errorf("no role matched")
 	}
-	return &webservice.Role{
-		ProjectId:   r.ProjectId,
-		ProjectRole: projectRole,
-	}, nil
+	return
 }
 
 func (a *WebAPI) GetCommand(ctx context.Context, req *webservice.GetCommandRequest) (*webservice.GetCommandResponse, error) {
