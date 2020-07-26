@@ -19,20 +19,19 @@ go get github.com/bazelbuild/bazelisk
 or directly install its [binary](https://github.com/bazelbuild/bazelisk/releases) from the release page.
 
 ## Repositories
-- [pipe](https://github.com/pipe-cd/pipe): contains all source code of PipeCD project.
+- [pipe](https://github.com/pipe-cd/pipe): contains all source code and documentation of PipeCD project.
 - [manifests](https://github.com/pipe-cd/manifests): contains all automatically generated release manifests for both `piped` and `control-plane` components.
-- [site](https://github.com/pipe-cd/site): contains documentations and assets for https://pipecd.dev site.
-- [exampls](https://github.com/pipe-cd/examples): contains various examples to demonstrate how to use PipeCD.
+- [examples](https://github.com/pipe-cd/examples): contains various examples to demonstrate how to use PipeCD.
 
 ## Build and test with Bazel
 
 - `make build`: builds all binaries in tree.
 - `make test`: runs all unit tests.
-- `make integration-test`: runs all integration tests.
 - `make dep`: updates `go.mod` and bazel `WORKSPACE`. Run this command after adding a new go dependency or update the version of a dependency.
 - `make gazelle`: generates `BUILD.bazel` files for go code. Run this command after adding a new `import` in go code.
 - `make buildifier`: formats bazel BUILD and .bzl files with a standard convention.
 - `make clean`: cleans all bazel cache.
 - `make expose-generated-go`: exposes generated Go files to editors and IDEs.
+- `make site`: runs website locally.
 
 **NOTE**: The first time of running a bazel command will take some minutes because bazel needs to download all required dependencies. From the second time it will be very fast.
