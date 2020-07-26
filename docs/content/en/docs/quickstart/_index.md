@@ -8,20 +8,24 @@ description: >
 
 This guides you to install PipeCD in your kubernetes and deploy a helloworld application to that Kubernetes cluster.
 
-## Installation
+### 1. Installing Control Plane
 
 > TBA
 
-### Install control plane
+### 2. Adding an Environment
+
+Go to the `Environment` tab at `Settings` page and click on `Add` button to add a new environment to the project.
 
 > TBA
 
-### Install piped
+### 3. Registering and installing a `piped`
 
 > TBA
 
-## Create an application
+### 4. Creating an Application
 
 > TBA
 
-## Let's deploy!
+### 5. Let's Deploy!
+
+> TBA

@@ -6,4 +6,4 @@ description: >
   This page describes how to set up a new project.
 ---
 
-> WIP
+> TBA

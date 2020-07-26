@@ -14,7 +14,8 @@ This component is designed to be stateless so it can also be run in a single VM 
 
 ### Control Plane
 
-A centralized component that manages deployment data and provides gPRC API for connecting `piped`s as well as all web-functionalities of PipeCD such as authentication, viewing deployment list/details, viewing application list/details, viewing delivery insights...
+A centralized component that manages deployment data and provides gPRC API for connecting `piped`s as well as all web-functionalities of PipeCD such as
+authentication, showing deployment list/details, application list/details, delivery insights...
 
 ### Project
 
@@ -29,19 +30,27 @@ There are three types of project roles:
 
 ### Application
 
-A collect of resources (containers, services...) and configuration that are managed together.
+A collect of resources (containers, services, infrastructure components...) and configurations that are managed together.
+PipeCD supports multiple kinds of applications such as `KUBERNETES`, `TERRAFORM`, `CLOUDRUN`, `LAMBDA`...
 
-### Pipeline
+### Environment
 
-A sequence of stages provided by PipeCD. A pipeline processes a transition from the current state (running state) to the desired state (specified state in Git) of a specific application.
+An environment is a logical group of applications of a project. A project can have multiple environments.
+Each application/piped must belong to one and only one enviroment.
+
+### Deployment
+
+Deployment is a process that does transition from the current state (running state) to the desired state (specified state in Git) of a specific application.
+When the deployment is success, it means the running state is synced with the desired state specified in the target commit.
+
+### Deployment Configuration
+
+A `.pipe.yaml` yaml file that contains configuration data to define how to deploy the application.
+Each application has one deployment configuration file in Git repository at application directory.
 
 ### Stage
 
 A temporary middle state between current state and desired state of a deployment process.
-
-### Deployment Configuration
-
-A `.pipe.yaml` yaml file that contains configuration data to define how to deploy the application. Each application has one deployment configuration file in Git repository at application directory.
 
 ### Cloud Provider
 
@@ -52,12 +61,5 @@ Currently, PipeCD is supporting these 5 cloud providers: `KUBERNETES`, `TERRAFOR
 
 ### Analysis Provider
 
-PipeCD supports multiple methods to automate the analysis process of your deployments. It can be by using metrics, logs or by checking the configured http requests.
+PipeCD supports multiple methods to automate the analysis process of the deployment. It can be done by using metrics, logs or by checking the configured http requests.
 Analysis Provider defines where to get those metrics/log data, like `Prometheus`, `Datadog`, `Stackdriver`, `CloudWatch`, and so on.
-
-### Kubernetes Application Variant
-
-Each Kubernetes application can has 3 variants: primary (aka stable), baseline, canary.
-- `primary` runs the current version of code and configuration.
-- `baseline` runs the same version of code and configuration as the primary variant. (Creating a brand new baseline workload ensures that the metrics produced are free of any effects caused by long-running processes.)
-- `canary` runs the proposed changed of code or configuration.

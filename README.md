@@ -23,6 +23,7 @@ This project aims to explore and develop a unified delivery infrastructure for C
 - Automated Rollback
 - Automated Configuration Drift Detection
 - Insights shows Delivery Perfomance
+- Support Webhook and Slack notifications
 
 **Easy to Use**
 - Operations by Pull Request: scale, rollout, rollback by PR
@@ -34,7 +35,10 @@ This project aims to explore and develop a unified delivery infrastructure for C
 - Two seperate components: single binary `piped` and `control-plane`
 - `piped` can be run in a Kubernetes cluster, a single VM or even a local machine
 - Easy to operate multi-tenancy, multi-cluster
-- Security: your credentials are not exposed outside of your cluster
+
+**Safety and Security**
+- Support single sign-on (SSO) and role-based access control (RBAC)
+- Your credentials are not exposed outside your cluster and not saved in control-plane
 
 ## License
 

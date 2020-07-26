@@ -6,11 +6,9 @@ description: >
   Overview about PipeCD.
 ---
 
-{{% pageinfo %}}
-PipeCD provides a Continuous Delivery solution for Declarative Kubernetes Application, Serverless Application and Infrastructure.
-{{% /pageinfo %}}
-
 ## What Is PipeCD?
+
+PipeCD provides a Continuous Delivery solution for Declarative Kubernetes Application, Serverless Application and Infrastructure.
 
 > TBA: Introduce your project, including what it does or lets you do, why you would use it, and its primary goal (and how it achieves it). This should be similar to your README description, though you can go into a little more detail here if you want.
 

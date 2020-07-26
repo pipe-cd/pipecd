@@ -3,7 +3,7 @@ title: "Kubernetes"
 linkTitle: "Kubernetes"
 weight: 2
 description: >
-  User guides for Kubernetes applications.
+  Speficic guides for Kubernetes applications.
 ---
 
 > TBA

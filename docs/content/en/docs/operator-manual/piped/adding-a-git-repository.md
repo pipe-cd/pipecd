@@ -6,4 +6,4 @@ description: >
   This page describes how to add a new git repository.
 ---
 
-> WIP
+> TBA
