@@ -1,9 +1,5 @@
 replicaCount: 1
 
-image:
-  # Overrides the image tag whose default is the chart appVersion.
-  tag: "0.0.1"
-
 service:
   port: 80
 

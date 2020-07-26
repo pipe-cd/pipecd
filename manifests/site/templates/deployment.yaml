@@ -16,8 +16,8 @@ spec:
     spec:
       containers:
         - name: site
-          image: "gcr.io/pipecd/site:{{ .Values.image.tag | default .Chart.AppVersion }}"
-          imagePullPolicy: Always
+          image: "gcr.io/pipecd/site:{{ .Chart.AppVersion }}"
+          imagePullPolicy: IfNotPresent
           ports:
             - name: http
               containerPort: 8080
