@@ -1,0 +1,16 @@
+# This deployment has an Approval stage to wait until got
+# an approval from one of the specified approvers.
+apiVersion: pipecd.dev/v1beta1
+kind: KubernetesApp
+spec:
+  pipeline:
+    stages:
+      - name: K8S_CANARY_ROLLOUT
+        with:
+          replicas: 10%
+      - name: WAIT_APPROVAL
+        with:
+          approvers:
+            - nghialv
+      - name: K8S_PRIMARY_ROLLOUT
+      - name: K8S_CANARY_CLEAN

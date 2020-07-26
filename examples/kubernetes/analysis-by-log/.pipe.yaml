@@ -1,0 +1,18 @@
+apiVersion: pipecd.dev/v1beta1
+kind: KubernetesApp
+spec:
+  pipeline:
+    stages:
+      - name: K8S_CANARY_ROLLOUT
+        with:
+          replicas: 10%
+      - name: ANALYSIS
+        with:
+          duration: 10m
+          threshold: 2
+          logs:
+            - query: 'logName = "projects/demo/logs/error'
+              interval: 1m
+              provider: stackdriver-dev
+      - name: K8S_PRIMARY_ROLLOUT
+      - name: K8S_CANARY_CLEAN

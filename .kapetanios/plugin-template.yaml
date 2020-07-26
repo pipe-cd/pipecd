@@ -12,7 +12,7 @@ spec:
       trigger:
         postsubmits:
           - push-images
-        disableCommand: false # In case template plugin fails.
+        disableCommand: false
       transforms:
       - inputs:
           - manifests
@@ -24,7 +24,24 @@ spec:
       - inputs:
           - manifests/RELEASE
         pathReplacers:
-        - regex: '(.*)'
-          replacement: release/RELEASE
+          - regex: '(.*)'
+            replacement: release/RELEASE
       - inputs:
           - quickstart
+
+    - name: examples
+      destination: examples
+      trigger:
+        postsubmits:
+          - push-images
+        disableCommand: false
+      transforms:
+      - inputs:
+          - examples
+        ignores:
+          - examples/README.md
+        ignoreRenderings:
+          - examples/**
+        pathReplacers:
+          - regex: 'examples/(.*)'
+            replacement: '${1}'

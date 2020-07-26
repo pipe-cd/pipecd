@@ -1,0 +1,10 @@
+# This configures a non-progressive delivery.
+# This means the new version is applied directly to PRIMARY variant.
+apiVersion: pipecd.dev/v1beta1
+kind: KubernetesApp
+spec:
+  input:
+    manifests:
+      - deployment.yaml
+      - service.yaml
+    kubectlVersion: 2.1.1

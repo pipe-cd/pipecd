@@ -1,0 +1,12 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: mesh-istio-canary
+spec:
+  selector:
+    app: mesh-istio-canary
+  ports:
+    - name: http-admin
+      protocol: TCP
+      port: 9085
+      targetPort: 9085
