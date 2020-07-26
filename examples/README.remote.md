@@ -2,7 +2,7 @@
 
 A repository contains some examples for PipeCD.
 
-## Kubernetes Applications
+### Kubernetes Applications
 
 | Name                                                                        | Description |
 |-----------------------------------------------------------------------------|-------------|
@@ -26,7 +26,7 @@ A repository contains some examples for PipeCD.
 | [analysis-by-log](https://github.com/pipe-cd/examples/tree/master/kubernetes/analysis-by-log) | TBA |
 | [analysis-with-baseline](https://github.com/pipe-cd/examples/tree/master/kubernetes/analysis-with-baseline) | TBA |
 
-## Terraform Applications
+### Terraform Applications
 
 | Name                                                                        | Description |
 |-----------------------------------------------------------------------------|-------------|
@@ -35,7 +35,7 @@ A repository contains some examples for PipeCD.
 | [remote-module](https://github.com/pipe-cd/examples/tree/master/terraform/remote-module) | TBA |
 | [wait-approval](https://github.com/pipe-cd/examples/tree/master/terraform/wait-approval) | TBA |
 
-## CloudRun Applications
+### CloudRun Applications
 
 | Name                                                                        | Description |
 |-----------------------------------------------------------------------------|-------------|
@@ -43,7 +43,7 @@ A repository contains some examples for PipeCD.
 | [canary](https://github.com/pipe-cd/examples/tree/master/cloudrun/canary) | TBA |
 | [bluegreen](https://github.com/pipe-cd/examples/tree/master/cloudrun/bluegreen) | TBA |
 
-## Lambda Applications
+### Lambda Applications
 
 | Name                                                                        | Description |
 |-----------------------------------------------------------------------------|-------------|
