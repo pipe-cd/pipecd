@@ -18,4 +18,4 @@ Currently, PipeCD is supporting `Helm` and `Kustomize` as templating method for 
 
 ### 3. Istio is supported now?
 
-Yes, you can use PipeCD for Istio applications as well as non-mesh applications.
+Yes, you can use PipeCD for both mesh (Istio) applications and non-mesh applications.

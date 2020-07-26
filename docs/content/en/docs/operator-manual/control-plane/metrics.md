@@ -6,4 +6,4 @@ description: >
   This page describes how to enable monitoring system for collecting PipeCD' metrics.
 ---
 
-> WIP
+> TBA

@@ -54,7 +54,7 @@ Note that if you decide to go with a font with different weights (in the built-i
 
 ## CSS utilities
 
-For documentation of available CSS utility classes, see the [Bootstrap Documentation](https://getbootstrap.com/). This theme adds very little on its own in this area. However, we have added some some color state CSS classes that can be useful in a dynamic context:
+For documentation of available CSS utility classes, see the [Bootstrap Documentation](https://getbootstrap.com/). This theme adds very little on its own in this area. However, we have added some color state CSS classes that can be useful in a dynamic context:
 
 * `.-bg-<color>`
 * `.-text-<color>`
@@ -80,6 +80,30 @@ When you use `.-bg-<color>`, the text colors will be adjusted to get proper cont
 ```
 
 <div class="-text-blue pt-3 display-4">Text: Blue</div>
+
+## Code highlighting
+
+With Hugo version 0.60 and higher, you can choose from a range of code block highlight and colour styles using [Chroma](https://github.com/alecthomas/chroma) that are applied to your fenced code blocks by default. If you copied a recent `config.toml` your site uses Tango (like this site), otherwise the Hugo default is Monokai. You can switch to any of the [available Chroma styles](https://xyproto.github.io/splash/docs/all.html) (including our Docsy default Tango) using your `config.toml`:
+
+```toml
+[markup]
+  [markup.goldmark]
+    [markup.goldmark.renderer]
+      unsafe = true
+  [markup.highlight]
+      # See a complete list of available styles at https://xyproto.github.io/splash/docs/all.html
+      style = "tango"
+ ```
+
+By default code highlighting styles are not applied to code blocks without a specified language, instead you get Docsy's default style of grey with black text. If you would like the code highlighting style to apply to all code blocks, even without a language, uncomment or add the following line under `[markup.highlight]` in your `config.toml`.
+
+```toml
+      # Uncomment if you want your chosen highlight style used for code blocks without a specified language
+      guessSyntax = "true"
+```
+
+You can find out more about code highlighting in Hugo with Chroma in [Syntax Highlighting](https://gohugo.io/content-management/syntax-highlighting/).
+ 
 
 ## Customizing templates
 

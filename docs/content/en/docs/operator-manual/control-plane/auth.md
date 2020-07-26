@@ -6,16 +6,13 @@ description: >
   This page describes about PipeCD Authentication and Authorization.
 ---
 
-> WIP
+### Single Sign-On (SSO)
 
-How to setup PipeCD Authentication and Authorization
-========================================================
-
-PipeCD authn and authz using GitHub Oauth. you will need to create GitHub OAuth App and get your Oauth Client ID and Client Secret.
+PipeCD authn and authz using GitHub Oauth. You will need to create GitHub OAuth App and get your Oauth Client ID and Client Secret.
 
 To create GitHub Oauth App, please see the [documentation](https://developer.github.com/apps/building-oauth-apps/creating-an-oauth-app/).
 
-After you get your Oauth Client ID and Client Secret, please edit the pipecd configuration and deploy it. A configuration will be like this:
+After getting your Oauth Client ID and Client Secret, please edit the pipecd configuration and deploy it. A configuration will be like this:
 
 ```
   github:
@@ -24,5 +21,8 @@ After you get your Oauth Client ID and Client Secret, please edit the pipecd con
     clientSecret: <client-secret>
 ```
 
-Role-Based Access Control
-========================
+> TBA
+
+### Role-Based Access Control (RBAC)
+
+> TBA
