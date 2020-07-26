@@ -43,5 +43,7 @@ spec:
         ignoreRenderings:
           - examples/**
         pathReplacers:
+          - regex: 'examples/README.remote.md'
+            replacement: README.md
           - regex: 'examples/(.*)'
             replacement: '${1}'
