@@ -1,5 +1,9 @@
-## Documentation
+# Documentation
 
-The contents of this directory have moved to [site](https://github.com/pipe-cd/site) repository.
+The source files for the documentation is placing in [content](https://github.com/pipe-cd/pipe/tree/master/docs/content) directory.
 
-Check out https://pipecd.dev/docs for full documentation.
+# Website
+
+The PipeCD documentation website is built with [hugo](https://gohugo.io/).
+
+Please checkout https://pipecd.dev/docs.

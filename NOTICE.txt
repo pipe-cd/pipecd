@@ -1,0 +1,8 @@
+pipe
+===============
+
+This product contains a modified part of docsy-example, distributed by google/docsy:
+
+  * License: https://github.com/google/docsy-example/blob/master/LICENSE (Apache License v2.0)
+  * Homepage: https://github.com/google/docsy-example
+

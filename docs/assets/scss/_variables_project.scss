@@ -1,0 +1,23 @@
+/*
+
+Add styles or override variables from the theme here.
+
+*/
+
+$primary: #1968e5;
+
+.kap-arrow-down {
+    &::before {
+        left: 50%;
+        margin-left: -30px;
+        bottom: -25px;
+        border: {
+            style: solid;
+            width: 25px 30px 0 30px;
+            color: #{$primary} transparent transparent transparent;
+        };
+        z-index: 3;
+        position: absolute;
+        content: "";
+    }
+}
