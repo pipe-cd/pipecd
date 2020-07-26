@@ -55,3 +55,7 @@ clean:
 .PHONY: expose-generated-go
 expose-generated-go:
 	./hack/expose-generated-go.sh pipe-cd pipe
+
+.PHONY: site
+site:
+	hugo server --source=docs
