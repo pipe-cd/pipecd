@@ -1,0 +1,19 @@
+apiVersion: networking.istio.io/v1alpha3
+kind: DestinationRule
+metadata:
+  name: mesh-istio-canary
+spec:
+  host: mesh-istio-canary.default.svc.cluster.local
+  subsets:
+  - name: primary
+    labels:
+      pipecd.dev/variant: primary
+  - name: canary
+    labels:
+      pipecd.dev/variant: canary
+  - name: baseline
+    labels:
+      pipecd.dev/variant: baseline
+  trafficPolicy:
+    tls:
+      mode: ISTIO_MUTUAL

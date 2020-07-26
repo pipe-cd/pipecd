@@ -1,0 +1,15 @@
+apiVersion: pipecd.dev/v1beta1
+kind: TerraformApp
+spec:
+  input:
+    workspace: dev
+    terraformVersion: 0.12.23
+  pipeline:
+    stages:
+      - name: TERRAFORM_PLAN
+      - name: WAIT_APPROVAL
+        with:
+          approvers:
+            - foo
+            - bar
+      - name: TERRAFORM_APPLY

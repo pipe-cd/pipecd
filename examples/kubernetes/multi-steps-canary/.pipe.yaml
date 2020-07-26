@@ -1,0 +1,22 @@
+# Progressive delivery with canary strategy.
+# The canary process has multiple phases: from 10% then analysis
+# then up to 20% then analysis then 100%.
+apiVersion: pipecd.dev/v1beta1
+kind: KubernetesApp
+spec:
+  pipeline:
+    stages:
+      - name: K8S_CANARY_ROLLOUT
+        with:
+          replicas: 10%
+      - name: ANALYSIS
+        with:
+          duration: 10m
+      - name: K8S_CANARY_ROLLOUT
+        with:
+          replicas: 20%
+      - name: ANALYSIS
+        with:
+          duration: 10m
+      - name: K8S_PRIMARY_ROLLOUT
+      - name: K8S_CANARY_CLEAN

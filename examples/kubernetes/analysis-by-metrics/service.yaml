@@ -1,0 +1,11 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: analysis-by-metrics
+spec:
+  selector:
+    app: analysis-by-metrics
+  ports:
+    - protocol: TCP
+      port: 9085
+      targetPort: 9085

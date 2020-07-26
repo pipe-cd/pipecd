@@ -1,0 +1,21 @@
+# Progressive delivery with canary strategy because of config change.
+apiVersion: pipecd.dev/v1beta1
+kind: KubernetesApp
+spec:
+  input:
+    autoRollback: true
+  pipeline:
+    stages:
+      # Deploy the workloads of CANARY variant. In this case, the number of
+      # workload replicas of CANARY variant is 10% of the replicas number of PRIMARY variant.
+      - name: K8S_CANARY_ROLLOUT
+        with:
+          replicas: 10%
+      # Wait 1 minutes before going to the next stage.
+      - name: WAIT
+        with:
+          duration: 1m
+      # Update the workload of PRIMARY variant to the new version.
+      - name: K8S_PRIMARY_ROLLOUT
+      # Destroy all workloads of CANARY variant.
+      - name: K8S_CANARY_CLEAN

@@ -1,0 +1,10 @@
+replicaCount: 1
+
+image:
+  repository: gcr.io/pipecd/helloworld
+  tag: v0.1.1-7-g7967947
+
+fullnameOverride: helm-local-chart
+
+service:
+  port: 9085

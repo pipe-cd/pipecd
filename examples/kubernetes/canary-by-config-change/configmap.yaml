@@ -1,0 +1,9 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: canary-by-config-change
+  labels:
+    app: canary-by-config-change
+data:
+  config.yaml: |-
+    desc: Hello PipeCD

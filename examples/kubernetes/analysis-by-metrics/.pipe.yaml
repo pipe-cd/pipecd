@@ -1,0 +1,35 @@
+apiVersion: pipecd.dev/v1beta1
+kind: KubernetesApp
+spec:
+  sync:
+    prune: true
+  pipeline:
+    stages:
+      - name: K8S_CANARY_ROLLOUT
+        with:
+          replicas: 20%
+      - name: ANALYSIS
+        with:
+          duration: 1m
+          metrics:
+            - template:
+                name: container_cpu_usage_seconds_total
+            - template:
+                name: http_request_duration_microseconds
+                args:
+                  namespace: default
+      - name: K8S_CANARY_ROLLOUT
+        with:
+          replicas: 40%
+      - name: ANALYSIS
+        with:
+          duration: 1m
+          metrics:
+            - template:
+                name: container_cpu_usage_seconds_total
+            - template:
+                name: http_request_duration_microseconds
+                args:
+                  namespace: default
+      - name: K8S_PRIMARY_ROLLOUT
+      - name: K8S_CANARY_CLEAN

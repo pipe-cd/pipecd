@@ -1,0 +1,14 @@
+apiVersion: pipecd.dev/v1beta1
+kind: KubernetesApp
+spec:
+  input:
+    # Helm chart sourced from a Helm repository.
+    helmChart:
+      repository: pipecd
+      name: helloworld
+      version: v0.1.2-14-gde8a7b4
+    helmOptions:
+      valueFiles:
+        - values.yaml
+      releaseName: helm-remote-chart
+    helmVersion: 3.1.1
