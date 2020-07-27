@@ -25,6 +25,7 @@ import { DeploymentIndexPage } from "./deployments/index";
 import { SettingsIndexPage } from "./settings";
 import { EntityId } from "@reduxjs/toolkit";
 import { LoginPage } from "./login";
+import { fetchMe } from "../modules/me";
 
 // Fetch commands detail periodically
 const FETCH_COMMANDS_INTERVAL = 3000;
@@ -49,6 +50,7 @@ const useCommandsStatusChecking = (): void => {
 export const Pages: FC = memo(function Pages() {
   const dispatch = useDispatch();
   useEffect(() => {
+    dispatch(fetchMe());
     dispatch(fetchEnvironments());
     dispatch(fetchPipeds(false));
   }, [dispatch]);

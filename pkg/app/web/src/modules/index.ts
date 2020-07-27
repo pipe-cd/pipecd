@@ -10,7 +10,7 @@ import { stageLogsSlice } from "./stage-logs";
 import { toastsSlice } from "./toasts";
 import { commandsSlice } from "./commands";
 import { applicationFilterOptionsSlice } from "./application-filter-options";
-import { projectSlice } from "./project";
+import { meSlice } from "./me";
 
 export const reducers = combineReducers({
   deployments: deploymentsSlice.reducer,
@@ -23,7 +23,7 @@ export const reducers = combineReducers({
   environments: environmentsSlice.reducer,
   commands: commandsSlice.reducer,
   toasts: toastsSlice.reducer,
-  project: projectSlice.reducer,
+  me: meSlice.reducer,
 });
 
 export type AppState = ReturnType<typeof reducers>;

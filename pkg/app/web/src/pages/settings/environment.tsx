@@ -20,6 +20,7 @@ import {
 import AddIcon from "@material-ui/icons/Add";
 import { AddEnvForm } from "../../components/add-env-form";
 import { AppDispatch } from "../../store";
+import { selectProjectName } from "../../modules/me";
 
 const useStyles = makeStyles((theme) => ({
   main: {
@@ -39,8 +40,8 @@ export const SettingsEnvironmentPage: FC = memo(
     const classes = useStyles();
     const dispatch = useDispatch<AppDispatch>();
     const [isOpenForm, setIsOpenForm] = useState(false);
-    const projectName = useSelector<AppState, string>(
-      (state) => state.project.name
+    const projectName = useSelector<AppState, string>((state) =>
+      selectProjectName(state.me)
     );
     const envs = useSelector<AppState, Environment[]>((state) =>
       selectEnvsAll(state.environments)
