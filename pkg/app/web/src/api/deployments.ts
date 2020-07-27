@@ -20,6 +20,7 @@ export const getDeployment = ({
 
 export const getDeployments = ({
   options,
+  pageSize,
 }: ListDeploymentsRequest.AsObject): Promise<
   ListDeploymentsResponse.AsObject
 > => {
@@ -31,6 +32,7 @@ export const getDeployments = ({
     opts.setKindsList(options.kindsList);
     opts.setStatusesList(options.statusesList);
     req.setOptions(opts);
+    req.setPageSize(pageSize);
   }
   return apiRequest(req, apiClient.listDeployments);
 };
