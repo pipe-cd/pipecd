@@ -90,7 +90,7 @@ func TestMatch(t *testing.T) {
 					Type: model.EventType_EVENT_DEPLOYMENT_TRIGGERED,
 					Metadata: &model.EventDeploymentTriggered{
 						Deployment: &model.Deployment{
-							ApplicationId: "canary",
+							ApplicationName: "canary",
 						},
 					},
 				}: true,
@@ -98,7 +98,7 @@ func TestMatch(t *testing.T) {
 					Type: model.EventType_EVENT_DEPLOYMENT_PLANNED,
 					Metadata: &model.EventDeploymentTriggered{
 						Deployment: &model.Deployment{
-							ApplicationId: "bluegreen",
+							ApplicationName: "bluegreen",
 						},
 					},
 				}: false,
@@ -106,7 +106,7 @@ func TestMatch(t *testing.T) {
 					Type: model.EventType_EVENT_DEPLOYMENT_SUCCEEDED,
 					Metadata: &model.EventDeploymentTriggered{
 						Deployment: &model.Deployment{
-							ApplicationId: "not-specified",
+							ApplicationName: "not-specified",
 						},
 					},
 				}: false,

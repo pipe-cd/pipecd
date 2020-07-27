@@ -99,5 +99,4 @@ message EventPipedStarted {
 message EventPipedStopped {
     string id = 1 [(validate.rules).string.min_len = 1];
     string version = 2;
-    string error = 3;
 }

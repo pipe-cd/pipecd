@@ -125,7 +125,7 @@ for label in $(bazelisk query 'kind(go_embed_data, //...)'); do
 	[[ -d "${package}" ]] || continue
 
 	# Compute the path where Bazel puts the files.
-	out_path="bazel-bin/${package}/${OS}_${ARCH}_stripped"
+	out_path="bazel-bin/${package}"
 
 	old_links=${package}/${target}.go
 	generated_files=${out_path}/${target}.go
