@@ -4,6 +4,8 @@ The source files for the documentation is placing in [content](https://github.co
 
 # Website
 
-The PipeCD documentation website is built with [hugo](https://gohugo.io/).
+The PipeCD documentation website is built with [hugo](https://gohugo.io/) and published at https://pipecd.dev
 
-Please checkout https://pipecd.dev/docs.
+### How to run website locally
+
+Run `make site` at the root directory of the repository and then access http://localhost:1313
