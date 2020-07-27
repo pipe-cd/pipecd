@@ -42,55 +42,55 @@ func isViewer(r model.Role) bool {
 // Todo: Auto generate this file from protobuf.
 func (a *authorizer) Authorize(method string, r model.Role) bool {
 	switch method {
-	case "/pipe.api.service.WebAPI/AddEnvironment":
+	case "/pipe.api.service.webservice.WebService/AddEnvironment":
 		return isAdmin(r)
-	case "/pipe.api.service.WebAPI/UpdateEnvironmentDesc":
+	case "/pipe.api.service.webservice.WebService/UpdateEnvironmentDesc":
 		return isAdmin(r)
-	case "/pipe.api.service.WebAPI/RegisterPiped":
+	case "/pipe.api.service.webservice.WebService/RegisterPiped":
 		return isAdmin(r)
-	case "/pipe.api.service.WebAPI/RecreatePipedKey":
+	case "/pipe.api.service.webservice.WebService/RecreatePipedKey":
 		return isAdmin(r)
-	case "/pipe.api.service.WebAPI/EnablePiped":
+	case "/pipe.api.service.webservice.WebService/EnablePiped":
 		return isAdmin(r)
-	case "/pipe.api.service.WebAPI/DisablePiped":
+	case "/pipe.api.service.webservice.WebService/DisablePiped":
 		return isAdmin(r)
-	case "/pipe.api.service.WebAPI/AddApplication":
+	case "/pipe.api.service.webservice.WebService/AddApplication":
 		return isAdmin(r)
-	case "/pipe.api.service.WebAPI/EnableApplication":
+	case "/pipe.api.service.webservice.WebService/EnableApplication":
 		return isAdmin(r)
-	case "/pipe.api.service.WebAPI/DisableApplication":
+	case "/pipe.api.service.webservice.WebService/DisableApplication":
 		return isAdmin(r)
-	case "/pipe.api.service.WebAPI/ListEnvironments":
+	case "/pipe.api.service.webservice.WebService/ListEnvironments":
 		return isAdmin(r) || isEditor(r)
-	case "/pipe.api.service.WebAPI/ListPipeds":
+	case "/pipe.api.service.webservice.WebService/ListPipeds":
 		return isAdmin(r) || isEditor(r)
-	case "/pipe.api.service.WebAPI/GetPiped":
+	case "/pipe.api.service.webservice.WebService/GetPiped":
 		return isAdmin(r) || isEditor(r)
-	case "/pipe.api.service.WebAPI/ListApplications":
+	case "/pipe.api.service.webservice.WebService/ListApplications":
 		return isAdmin(r) || isEditor(r)
-	case "/pipe.api.service.WebAPI/SyncApplication":
+	case "/pipe.api.service.webservice.WebService/SyncApplication":
 		return isAdmin(r) || isEditor(r)
-	case "/pipe.api.service.WebAPI/GetApplication":
+	case "/pipe.api.service.webservice.WebService/GetApplication":
 		return isAdmin(r) || isEditor(r)
-	case "/pipe.api.service.WebAPI/ListDeployments":
+	case "/pipe.api.service.webservice.WebService/ListDeployments":
 		return isAdmin(r) || isEditor(r)
-	case "/pipe.api.service.WebAPI/GetDeployment":
+	case "/pipe.api.service.webservice.WebService/GetDeployment":
 		return isAdmin(r) || isEditor(r)
-	case "/pipe.api.service.WebAPI/GetStageLog":
+	case "/pipe.api.service.webservice.WebService/GetStageLog":
 		return isAdmin(r) || isEditor(r)
-	case "/pipe.api.service.WebAPI/CancelDeployment":
+	case "/pipe.api.service.webservice.WebService/CancelDeployment":
 		return isAdmin(r) || isEditor(r)
-	case "/pipe.api.service.WebAPI/ApproveStage":
+	case "/pipe.api.service.webservice.WebService/ApproveStage":
 		return isAdmin(r) || isEditor(r)
-	case "/pipe.api.service.WebAPI/GetApplicationLiveState":
+	case "/pipe.api.service.webservice.WebService/GetApplicationLiveState":
 		return isAdmin(r) || isEditor(r)
-	case "/pipe.api.service.WebAPI/GetProject":
+	case "/pipe.api.service.webservice.WebService/GetProject":
 		return isAdmin(r) || isEditor(r)
-	case "/pipe.api.service.WebAPI/GetCommand":
+	case "/pipe.api.service.webservice.WebService/GetCommand":
 		return isAdmin(r) || isEditor(r)
-	case "/pipe.api.service.WebAPI/ListDeploymentConfigTemplates":
+	case "/pipe.api.service.webservice.WebService/ListDeploymentConfigTemplates":
 		return isAdmin(r) || isEditor(r)
-	case "/pipe.api.service.WebAPI/GetMe":
+	case "/pipe.api.service.webservice.WebService/GetMe":
 		return isAdmin(r) || isEditor(r) || isViewer(r)
 	}
 	return false
