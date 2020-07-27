@@ -79,8 +79,8 @@ spec:
       runner: gcr.io/pipecd/hugo:1.0.0
       commands:
         - cd docs
-        - npm install -D --save autoprefixer
-        - npm install -D --save postcss-cli
+        - npm install autoprefixer
+        - npm install postcss-cli
         - hugo
 
     - name: docker-build
