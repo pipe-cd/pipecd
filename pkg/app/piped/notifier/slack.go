@@ -33,10 +33,10 @@ import (
 
 const (
 	slackUsername     = "PipeCD"
-	slackInfoColor    = "#212121"
-	slackSuccessColor = "#2E7D32"
-	slackErrorColor   = "#AF3F52"
-	slackWarnColor    = "#FFB74D"
+	slackInfoColor    = "#222429"
+	slackSuccessColor = "#629650"
+	slackErrorColor   = "#9C3C31"
+	slackWarnColor    = "#C1A337"
 )
 
 type slack struct {
