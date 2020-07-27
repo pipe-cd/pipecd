@@ -42,8 +42,56 @@ func isViewer(r model.Role) bool {
 // Todo: Auto generate this file from protobuf.
 func (a *authorizer) Authorize(method string, r model.Role) bool {
 	switch method {
+	case "/pipe.api.service.WebAPI/AddEnvironment":
+		return isAdmin(r)
+	case "/pipe.api.service.WebAPI/UpdateEnvironmentDesc":
+		return isAdmin(r)
 	case "/pipe.api.service.WebAPI/RegisterPiped":
 		return isAdmin(r)
+	case "/pipe.api.service.WebAPI/RecreatePipedKey":
+		return isAdmin(r)
+	case "/pipe.api.service.WebAPI/EnablePiped":
+		return isAdmin(r)
+	case "/pipe.api.service.WebAPI/DisablePiped":
+		return isAdmin(r)
+	case "/pipe.api.service.WebAPI/AddApplication":
+		return isAdmin(r)
+	case "/pipe.api.service.WebAPI/EnableApplication":
+		return isAdmin(r)
+	case "/pipe.api.service.WebAPI/DisableApplication":
+		return isAdmin(r)
+	case "/pipe.api.service.WebAPI/ListEnvironments":
+		return isAdmin(r) || isEditor(r)
+	case "/pipe.api.service.WebAPI/ListPipeds":
+		return isAdmin(r) || isEditor(r)
+	case "/pipe.api.service.WebAPI/GetPiped":
+		return isAdmin(r) || isEditor(r)
+	case "/pipe.api.service.WebAPI/ListApplications":
+		return isAdmin(r) || isEditor(r)
+	case "/pipe.api.service.WebAPI/SyncApplication":
+		return isAdmin(r) || isEditor(r)
+	case "/pipe.api.service.WebAPI/GetApplication":
+		return isAdmin(r) || isEditor(r)
+	case "/pipe.api.service.WebAPI/ListDeployments":
+		return isAdmin(r) || isEditor(r)
+	case "/pipe.api.service.WebAPI/GetDeployment":
+		return isAdmin(r) || isEditor(r)
+	case "/pipe.api.service.WebAPI/GetStageLog":
+		return isAdmin(r) || isEditor(r)
+	case "/pipe.api.service.WebAPI/CancelDeployment":
+		return isAdmin(r) || isEditor(r)
+	case "/pipe.api.service.WebAPI/ApproveStage":
+		return isAdmin(r) || isEditor(r)
+	case "/pipe.api.service.WebAPI/GetApplicationLiveState":
+		return isAdmin(r) || isEditor(r)
+	case "/pipe.api.service.WebAPI/GetProject":
+		return isAdmin(r) || isEditor(r)
+	case "/pipe.api.service.WebAPI/GetCommand":
+		return isAdmin(r) || isEditor(r)
+	case "/pipe.api.service.WebAPI/ListDeploymentConfigTemplates":
+		return isAdmin(r) || isEditor(r)
+	case "/pipe.api.service.WebAPI/GetMe":
+		return isAdmin(r) || isEditor(r) || isViewer(r)
 	}
 	return false
 }
