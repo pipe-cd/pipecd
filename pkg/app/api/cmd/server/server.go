@@ -123,13 +123,6 @@ func (s *server) run(ctx context.Context, t cli.Telemetry) error {
 		return err
 	}
 
-	var verifier jwt.Verifier
-	// verifier, err := jwt.NewVerifier(defaultSigningMethod, s.tokenSigningKeyFile)
-	// if err != nil {
-	// 	t.Logger.Error("failed to create a new JWT verifier", zap.Error(err))
-	// 	return err
-	// }
-
 	var (
 		pipedAPIServer *rpc.Server
 		webAPIServer   *rpc.Server
@@ -197,6 +190,11 @@ func (s *server) run(ctx context.Context, t cli.Telemetry) error {
 
 	// Start a gRPC server for handling WebAPI requests.
 	{
+		verifier, err := jwt.NewVerifier(defaultSigningMethod, s.tokenSigningKeyFile)
+		if err != nil {
+			t.Logger.Error("failed to create a new JWT verifier", zap.Error(err))
+			return err
+		}
 		var service rpc.Service
 		if s.useFakeResponse {
 			service = api.NewFakeWebAPI()

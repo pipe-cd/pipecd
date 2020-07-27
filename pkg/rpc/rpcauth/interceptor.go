@@ -17,7 +17,6 @@ package rpcauth
 import (
 	"context"
 	"fmt"
-	"time"
 
 	"go.uber.org/zap"
 	"google.golang.org/grpc"
@@ -130,38 +129,27 @@ func PipedTokenStreamServerInterceptor(verifier PipedTokenVerifier, logger *zap.
 // must be verified by verifier.
 func JWTUnaryServerInterceptor(verifier jwt.Verifier, authorizer RBACAuthorizer, logger *zap.Logger) grpc.UnaryServerInterceptor {
 	return func(ctx context.Context, req interface{}, info *grpc.UnaryServerInfo, handler grpc.UnaryHandler) (interface{}, error) {
-		// TODO: Revert this commented block after implementing web auth.
-		// cookie, err := extractCookie(ctx)
-		// if err != nil {
-		// 	logger.Warn("failed to extract cookie", zap.Error(err))
-		// 	return nil, errUnauthenticated
-		// }
-		// token, ok := cookie[jwt.SignedTokenKey]
-		// if !ok {
-		// 	logger.Warn("token does not exist in cookie")
-		// 	return nil, errUnauthenticated
-		// }
-		// claims, err := verifier.Verify(token)
-		// if err != nil {
-		// 	logger.Warn("unable to verify token", zap.Error(err))
-		// 	return nil, errUnauthenticated
-		// }
-		// if !authorizer.Authorize(info.FullMethod, claims.Role) {
-		// 	logger.Warn(fmt.Sprintf("unsufficient permission for method: %s", info.FullMethod),
-		// 		zap.Any("claims", claims),
-		// 	)
-		// 	return nil, errPermissionDenied
-		// }
-
-		claims := jwt.NewClaims(
-			"test-user",
-			"",
-			30*24*time.Hour,
-			model.Role{
-				ProjectId:   "pipecd",
-				ProjectRole: model.Role_ADMIN,
-			},
-		)
+		cookie, err := extractCookie(ctx)
+		if err != nil {
+			logger.Warn("failed to extract cookie", zap.Error(err))
+			return nil, errUnauthenticated
+		}
+		token, ok := cookie[jwt.SignedTokenKey]
+		if !ok {
+			logger.Warn("token does not exist in cookie")
+			return nil, errUnauthenticated
+		}
+		claims, err := verifier.Verify(token)
+		if err != nil {
+			logger.Warn("unable to verify token", zap.Error(err))
+			return nil, errUnauthenticated
+		}
+		if !authorizer.Authorize(info.FullMethod, claims.Role) {
+			logger.Warn(fmt.Sprintf("unsufficient permission for method: %s", info.FullMethod),
+				zap.Any("claims", claims),
+			)
+			return nil, errPermissionDenied
+		}
 		ctx = context.WithValue(ctx, claimsKey, *claims)
 		return handler(ctx, req)
 	}
