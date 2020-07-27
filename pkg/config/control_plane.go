@@ -30,6 +30,8 @@ type ControlPlaneSpec struct {
 	// List of debugging/quickstart projects defined in Control Plane configuration.
 	// Please do not use this to configure the projects running the production mode.
 	Projects []ControlPlaneProject `json:"projects"`
+	// The address to the API of PipeCD control plane.
+	ApiURL string `json:"apiUrl"`
 }
 
 func (s *ControlPlaneSpec) Validate() error {

@@ -50,6 +50,8 @@ go_library(
         "event.go",
         "filestore.go",
         "piped.go",
+        "project_single_sign_on.go",
+        "project_single_sign_on_github.go",
         "project_static_user.go",
         "stage.go",
     ],
@@ -59,6 +61,8 @@ go_library(
     deps = [
         "@org_golang_google_protobuf//proto:go_default_library",
         "@org_golang_x_crypto//bcrypt:go_default_library",
+        "@org_golang_x_oauth2//:go_default_library",
+        "@org_golang_x_oauth2//github:go_default_library",
     ],
 )
 
