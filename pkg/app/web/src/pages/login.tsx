@@ -1,6 +1,8 @@
-import { makeStyles, TextField, Button } from "@material-ui/core";
+import { Button, makeStyles, TextField } from "@material-ui/core";
 import React, { FC, memo } from "react";
-import { STATIC_LOGIN_ENDPOINT } from "../constants";
+import { Redirect } from "react-router";
+import { PAGE_PATH_APPLICATIONS, STATIC_LOGIN_ENDPOINT } from "../constants";
+import { useMe } from "../modules/me";
 
 const useStyles = makeStyles((theme) => ({
   root: {
@@ -18,8 +20,11 @@ const useStyles = makeStyles((theme) => ({
 
 export const LoginPage: FC = memo(function LoginPage() {
   const classes = useStyles();
+  const me = useMe();
+
   return (
     <div className={classes.root}>
+      {me && me.isLogin && <Redirect to={PAGE_PATH_APPLICATIONS} />}
       <form
         method="POST"
         action={STATIC_LOGIN_ENDPOINT}

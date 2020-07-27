@@ -1,4 +1,4 @@
-import React from "react";
+import React, { FC, memo } from "react";
 import {
   AppBar,
   Toolbar,
@@ -16,6 +16,7 @@ import {
   PAGE_PATH_LOGIN,
 } from "../constants";
 import { Link as RouterLink } from "react-router-dom";
+import { useMe } from "../modules/me";
 
 const useStyles = makeStyles((theme) => ({
   appBar: {
@@ -32,10 +33,16 @@ const useStyles = makeStyles((theme) => ({
   link: {
     marginRight: theme.spacing(2),
   },
+  userAvatar: {
+    width: theme.spacing(4),
+    height: theme.spacing(4),
+  },
 }));
 
-export const Header: React.FC = () => {
+export const Header: FC = memo(function Header() {
   const classes = useStyles();
+  const me = useMe();
+
   return (
     <AppBar position="static" className={classes.appBar}>
       <Toolbar variant="dense">
@@ -75,10 +82,14 @@ export const Header: React.FC = () => {
         >
           Settings
         </Link>
-        <Link color="inherit" component={RouterLink} to={PAGE_PATH_LOGIN}>
-          <Typography variant="body2">Login</Typography>
-        </Link>
+        {me?.isLogin ? (
+          <Avatar className={classes.userAvatar} src={me.avatarUrl} />
+        ) : (
+          <Link color="inherit" component={RouterLink} to={PAGE_PATH_LOGIN}>
+            <Typography variant="body2">Login</Typography>
+          </Link>
+        )}
       </Toolbar>
     </AppBar>
   );
-};
+});
