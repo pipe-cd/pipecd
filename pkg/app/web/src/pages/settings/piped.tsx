@@ -40,6 +40,7 @@ import { AppState } from "../../modules";
 import { AppDispatch } from "../../store";
 import ExpandMoreIcon from "@material-ui/icons/ExpandMore";
 import clsx from "clsx";
+import { selectProjectName } from "../../modules/me";
 
 const useStyles = makeStyles((theme) => ({
   main: {
@@ -96,8 +97,8 @@ export const SettingsPipedPage: FC = memo(function SettingsPipedPage() {
   const isOpenMenu = Boolean(anchorEl);
   const dispatch = useDispatch<AppDispatch>();
   const [enabledPipeds, disabledPipeds] = usePipeds();
-  const projectName = useSelector<AppState, string>(
-    (state) => state.project.name
+  const projectName = useSelector<AppState, string>((state) =>
+    selectProjectName(state.me)
   );
 
   const registeredPiped = useSelector<AppState, RegisteredPiped | null>(

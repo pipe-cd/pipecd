@@ -16,6 +16,7 @@ import { ApplicationList } from "../../components/application-list";
 import { AppState } from "../../modules";
 import { addApplication, fetchApplications } from "../../modules/applications";
 import { AppDispatch } from "../../store";
+import { selectProjectName } from "../../modules/me";
 
 const useStyles = makeStyles(() => ({
   main: {
@@ -36,8 +37,8 @@ export const ApplicationIndexPage: FC = memo(function ApplicationIndexPage() {
   const isAdding = useSelector<AppState, boolean>(
     (state) => state.applications.adding
   );
-  const projectName = useSelector<AppState, string>(
-    (state) => state.project.name
+  const projectName = useSelector<AppState, string>((state) =>
+    selectProjectName(state.me)
   );
 
   const handleClose = (): void => {
