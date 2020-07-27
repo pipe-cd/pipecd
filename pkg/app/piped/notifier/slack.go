@@ -213,7 +213,7 @@ func truncateText(text string, max int) string {
 func makeSlackMessage(title, titleLink, text, color string, timestamp int64, fields ...slackField) slackMessage {
 	return slackMessage{
 		Username: slackUsername,
-		Attachments: []slackAttachment{slackAttachment{
+		Attachments: []slackAttachment{{
 			Title:     title,
 			TitleLink: titleLink,
 			Text:      text,
@@ -231,7 +231,7 @@ func (s *slack) sendMessage(ctx context.Context, msg slackMessage) error {
 		return err
 	}
 
-	req, err := http.NewRequest("POST", s.config.HookURL, buf)
+	req, err := http.NewRequestWithContext(ctx, "POST", s.config.HookURL, buf)
 	if err != nil {
 		return err
 	}
