@@ -123,21 +123,18 @@ func buildSlackMessage(event model.Event, webURL string) (slackMessage, bool) {
 		md := event.Metadata.(*model.EventDeploymentTriggered)
 		title = fmt.Sprintf("Triggered a new deployment for %q", md.Deployment.ApplicationName)
 		generateDeploymentEventData(md.Deployment)
-		break
 
 	case model.EventType_EVENT_DEPLOYMENT_PLANNED:
 		md := event.Metadata.(*model.EventDeploymentPlanned)
 		title = fmt.Sprintf("Deployment for %q was planned", md.Deployment.ApplicationName)
 		text = md.Summary
 		generateDeploymentEventData(md.Deployment)
-		break
 
 	case model.EventType_EVENT_DEPLOYMENT_SUCCEEDED:
 		md := event.Metadata.(*model.EventDeploymentSucceeded)
 		title = fmt.Sprintf("Deployment for %q was completed successfully", md.Deployment.ApplicationName)
 		color = slackSuccessColor
 		generateDeploymentEventData(md.Deployment)
-		break
 
 	case model.EventType_EVENT_DEPLOYMENT_FAILED:
 		md := event.Metadata.(*model.EventDeploymentFailed)
@@ -145,7 +142,6 @@ func buildSlackMessage(event model.Event, webURL string) (slackMessage, bool) {
 		text = md.Reason
 		color = slackErrorColor
 		generateDeploymentEventData(md.Deployment)
-		break
 
 	case model.EventType_EVENT_DEPLOYMENT_CANCELLED:
 		md := event.Metadata.(*model.EventDeploymentCancelled)
@@ -153,19 +149,16 @@ func buildSlackMessage(event model.Event, webURL string) (slackMessage, bool) {
 		text = fmt.Sprintf("Cancelled by %s", md.Commander)
 		color = slackWarnColor
 		generateDeploymentEventData(md.Deployment)
-		break
 
 	case model.EventType_EVENT_PIPED_STARTED:
 		md := event.Metadata.(*model.EventPipedStarted)
 		title = "A piped has been started"
 		generatePipedEventData(md.Id, md.Version)
-		break
 
 	case model.EventType_EVENT_PIPED_STOPPED:
 		md := event.Metadata.(*model.EventPipedStarted)
 		title = "A piped has been stopped"
 		generatePipedEventData(md.Id, md.Version)
-		break
 
 	default:
 		return slackMessage{}, false
