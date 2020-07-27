@@ -365,6 +365,13 @@ func (a *WebAPI) ListApplications(ctx context.Context, req *webservice.ListAppli
 	if err != nil {
 		return nil, err
 	}
+
+	orders := []datastore.Order{
+		{
+			Field:     "UpdatedAt",
+			Direction: datastore.Desc,
+		},
+	}
 	filters := []datastore.ListFilter{
 		{
 			Field:    "ProjectId",
@@ -380,9 +387,8 @@ func (a *WebAPI) ListApplications(ctx context.Context, req *webservice.ListAppli
 				Value:    !o.Enabled.GetValue(),
 			})
 		}
-		// TODO: Support multiple filtering of Kinds, SyncStatuses and EnvIds
-		//   Because some datastores do not support IN query filter,
-		//   currently only the first value is used.
+		// Allowing multiple so that it can do In Query later.
+		// Currently only the first value is used.
 		if len(o.Kinds) > 0 {
 			filters = append(filters, datastore.ListFilter{
 				Field:    "Kind",
@@ -408,6 +414,7 @@ func (a *WebAPI) ListApplications(ctx context.Context, req *webservice.ListAppli
 
 	apps, err := a.applicationStore.ListApplications(ctx, datastore.ListOptions{
 		Filters: filters,
+		Orders:  orders,
 	})
 	if err != nil {
 		a.logger.Error("failed to get applications", zap.Error(err))
@@ -488,6 +495,12 @@ func (a *WebAPI) ListDeployments(ctx context.Context, req *webservice.ListDeploy
 		return nil, err
 	}
 	// TODO: Support pagination for Deployment list
+	orders := []datastore.Order{
+		{
+			Field:     "UpdatedAt",
+			Direction: datastore.Desc,
+		},
+	}
 	filters := []datastore.ListFilter{
 		{
 			Field:    "ProjectId",
@@ -496,9 +509,8 @@ func (a *WebAPI) ListDeployments(ctx context.Context, req *webservice.ListDeploy
 		},
 	}
 	if o := req.Options; o != nil {
-		// TODO: Support IN Query filter for Deployments fields
-		//   Because some datastores do not support IN query filter,
-		//   currently only the first value is used.
+		// Allowing multiple so that it can do In Query later.
+		// Currently only the first value is used.
 		if len(o.Statuses) > 0 {
 			filters = append(filters, datastore.ListFilter{
 				Field:    "Status",
@@ -531,6 +543,7 @@ func (a *WebAPI) ListDeployments(ctx context.Context, req *webservice.ListDeploy
 
 	deployments, err := a.deploymentStore.ListDeployments(ctx, datastore.ListOptions{
 		Filters: filters,
+		Orders:  orders,
 	})
 	if err != nil {
 		a.logger.Error("failed to get deployments", zap.Error(err))
