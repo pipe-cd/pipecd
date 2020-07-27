@@ -1,6 +1,6 @@
 ---
-title: "Architectual Overview"
-linkTitle: "Architectual Overview"
+title: "Architectual overview"
+linkTitle: "Architectual overview"
 weight: 3
 description: >
   This page describes the architecture of PipeCD.
@@ -9,6 +9,9 @@ description: >
 > TBA
 
 ![](/images/architecture-overview.png)
+<p style="text-align: center;">
+Component Architecture
+</p>
 
 ### Piped
 
@@ -23,5 +26,7 @@ authentication, showing deployment list/details, application list/details, deliv
 
 Control Plane contains the following components:
 - `api`: A service to provide api for external service like web and hook requests.
-- `cache`: A redis cache service for caching internal data.
 - `web`: A service for serving static files for web.
+- `cache`: A redis cache service for caching internal data.
+- `datastore`: Data storage for storing deployment, application data. This can be a fully-managed service such as `Firestore`, `DynamoDB`... or a self-managed such as `MongoDB`.
+- `filestore`: File storage for storing logs, application states. This can a fully-managed service such as `GCS`, `S3`... or a self-managed service such as `Minio`.

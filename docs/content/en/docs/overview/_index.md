@@ -13,6 +13,14 @@ PipeCD provides a Continuous Delivery solution for Declarative Kubernetes Applic
 > TBA: Introduce your project, including what it does or lets you do, why you would use it, and its primary goal (and how it achieves it). This should be similar to your README description, though you can go into a little more detail here if you want.
 
 ![](/images/architecture-overview.png)
+<p style="text-align: center;">
+Component Architecture
+</p>
+
+![](/images/deployment-details.png)
+<p style="text-align: center;">
+Deployment Details Screen
+</p>
 
 ## Why PipeCD?
 

@@ -1,9 +1,9 @@
 ---
-title: "Configuration Drift Detection"
-linkTitle: "Configuration Drift Detection"
+title: "Configuration drift detection"
+linkTitle: "Configuration drift detection"
 weight: 13
 description: >
-  Overview about deploying Kubernetes application.
+  Automatically detecting the configuration drift.
 ---
 
 > TBA

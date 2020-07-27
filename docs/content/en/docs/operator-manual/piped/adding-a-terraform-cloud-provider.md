@@ -1,6 +1,6 @@
 ---
-title: "Adding a Terraform Cloud Provider"
-linkTitle: "Adding a Terraform Cloud Provider"
+title: "Adding a Terraform cloud provider"
+linkTitle: "Adding a Terraform cloud provider"
 weight: 4
 description: >
   This page describes how to add a Terraform cloud provider to enable Terraform applications.

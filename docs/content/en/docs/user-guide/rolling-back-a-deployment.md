@@ -1,6 +1,6 @@
 ---
-title: "Rolling Back a Deployment"
-linkTitle: "Rolling Back a Deployment"
+title: "Rolling back a deployment"
+linkTitle: "Rolling back a deployment"
 weight: 8
 description: >
   Overview about deploying Kubernetes application.

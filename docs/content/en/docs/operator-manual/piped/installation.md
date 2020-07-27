@@ -9,7 +9,7 @@ description: >
 ## Prerequisites
 
 ##### Registering piped
-- Ensure that the `piped` has been registered from PipeCD web and you have copied its ID and Key strings.
+- Ensure that the `piped` has been registered from PipeCD web UI and you have copied its ID and Key strings.
 - Please note that only project admin can register a new `piped` at Settings tab.
 
 ##### Preparing a SSH key
@@ -20,7 +20,7 @@ description: >
 
 ### Installing on a Kubernetes cluster
 
-- Adding `pipecd` Helm repository
+- Adding `pipecd` helm chart repository
 
   ```
   helm repo add pipecd https://pipecd-charts.storage.googleapis.com
