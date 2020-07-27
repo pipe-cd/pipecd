@@ -34,66 +34,34 @@ func (e Event) Group() EventGroup {
 	}
 }
 
-func (e *EventDeploymentTriggered) AppName() string {
+func (e *EventDeploymentTriggered) GetAppName() string {
 	return e.Deployment.ApplicationName
 }
 
-func (e *EventDeploymentPlanned) AppName() string {
+func (e *EventDeploymentPlanned) GetAppName() string {
 	return e.Deployment.ApplicationName
 }
 
-func (e *EventDeploymentApproved) AppName() string {
+func (e *EventDeploymentApproved) GetAppName() string {
 	return e.Deployment.ApplicationName
 }
 
-func (e *EventDeploymentRollingBack) AppName() string {
+func (e *EventDeploymentRollingBack) GetAppName() string {
 	return e.Deployment.ApplicationName
 }
 
-func (e *EventDeploymentSucceeded) AppName() string {
+func (e *EventDeploymentSucceeded) GetAppName() string {
 	return e.Deployment.ApplicationName
 }
 
-func (e *EventDeploymentFailed) AppName() string {
+func (e *EventDeploymentFailed) GetAppName() string {
 	return e.Deployment.ApplicationName
 }
 
-func (e *EventApplicationSynced) AppName() string {
+func (e *EventApplicationSynced) GetAppName() string {
 	return e.Application.Id
 }
 
-func (e *EventApplicationOutOfSync) AppName() string {
+func (e *EventApplicationOutOfSync) GetAppName() string {
 	return e.Application.Id
-}
-
-func (e *EventDeploymentTriggered) EnvID() string {
-	return e.Deployment.EnvId
-}
-
-func (e *EventDeploymentPlanned) EnvID() string {
-	return e.Deployment.EnvId
-}
-
-func (e *EventDeploymentApproved) EnvID() string {
-	return e.Deployment.EnvId
-}
-
-func (e *EventDeploymentRollingBack) EnvID() string {
-	return e.Deployment.EnvId
-}
-
-func (e *EventDeploymentSucceeded) EnvID() string {
-	return e.Deployment.EnvId
-}
-
-func (e *EventDeploymentFailed) EnvID() string {
-	return e.Deployment.EnvId
-}
-
-func (e *EventApplicationSynced) EnvID() string {
-	return e.Application.EnvId
-}
-
-func (e *EventApplicationOutOfSync) EnvID() string {
-	return e.Application.EnvId
 }

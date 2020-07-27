@@ -44,11 +44,11 @@ func newMatcher(cfg config.NotificationRoute) *matcher {
 }
 
 type appNameMetadata interface {
-	AppName() string
+	GetAppName() string
 }
 
-type envIDMetadata interface {
-	EnvID() string
+type envNameMetadata interface {
+	GetEnvName() string
 }
 
 func (m *matcher) Match(event model.Event) bool {
@@ -61,18 +61,17 @@ func (m *matcher) Match(event model.Event) bool {
 
 	var appName string
 	if md, ok := event.Metadata.(appNameMetadata); ok {
-		appName = md.AppName()
+		appName = md.GetAppName()
 	}
 	if _, ok := m.ignoreApps[appName]; ok && appName != "" {
 		return false
 	}
 
-	// TODO: Support environment name instead of environment ID.
-	var envID string
-	if md, ok := event.Metadata.(envIDMetadata); ok {
-		envID = md.EnvID()
+	var envName string
+	if md, ok := event.Metadata.(envNameMetadata); ok {
+		envName = md.GetEnvName()
 	}
-	if _, ok := m.ignoreEnvs[envID]; ok && envID != "" {
+	if _, ok := m.ignoreEnvs[envName]; ok && envName != "" {
 		return false
 	}
 
@@ -91,8 +90,8 @@ func (m *matcher) Match(event model.Event) bool {
 			return false
 		}
 	}
-	if len(m.envs) > 0 && envID != "" {
-		if _, ok := m.envs[envID]; !ok {
+	if len(m.envs) > 0 && envName != "" {
+		if _, ok := m.envs[envName]; !ok {
 			return false
 		}
 	}

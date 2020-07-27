@@ -12,6 +12,7 @@ go_library(
         "//pkg/app/piped/apistore/applicationstore:go_default_library",
         "//pkg/app/piped/apistore/commandstore:go_default_library",
         "//pkg/app/piped/apistore/deploymentstore:go_default_library",
+        "//pkg/app/piped/apistore/environmentstore:go_default_library",
         "//pkg/app/piped/chartrepo:go_default_library",
         "//pkg/app/piped/controller:go_default_library",
         "//pkg/app/piped/driftdetector:go_default_library",

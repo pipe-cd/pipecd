@@ -39,10 +39,15 @@ func (t *Trigger) triggerDeployment(ctx context.Context, app *model.Application,
 		if runErr != nil {
 			return
 		}
+		var envName string
+		if env, ok := t.environmentLister.Get(deployment.EnvId); ok {
+			envName = env.Name
+		}
 		t.notifier.Notify(model.Event{
 			Type: model.EventType_EVENT_DEPLOYMENT_TRIGGERED,
 			Metadata: &model.EventDeploymentTriggered{
 				Deployment: deployment,
+				EnvName:    envName,
 			},
 		})
 	}()

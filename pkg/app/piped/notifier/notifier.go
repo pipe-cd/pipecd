@@ -19,18 +19,23 @@ package notifier
 import (
 	"context"
 	"fmt"
+	"time"
 
+	"go.uber.org/atomic"
 	"go.uber.org/zap"
 	"golang.org/x/sync/errgroup"
 
 	"github.com/pipe-cd/pipe/pkg/config"
 	"github.com/pipe-cd/pipe/pkg/model"
+	"github.com/pipe-cd/pipe/pkg/version"
 )
 
 type Notifier struct {
-	config   *config.PipedSpec
-	handlers []handler
-	logger   *zap.Logger
+	config      *config.PipedSpec
+	handlers    []handler
+	gracePeriod time.Duration
+	closed      atomic.Bool
+	logger      *zap.Logger
 }
 
 type handler struct {
@@ -41,6 +46,7 @@ type handler struct {
 type sender interface {
 	Run(ctx context.Context) error
 	Notify(event model.Event)
+	Close(ctx context.Context)
 }
 
 func NewNotifier(cfg *config.PipedSpec, logger *zap.Logger) (*Notifier, error) {
@@ -73,12 +79,18 @@ func NewNotifier(cfg *config.PipedSpec, logger *zap.Logger) (*Notifier, error) {
 		})
 	}
 
-	return &Notifier{config: cfg, handlers: handlers, logger: logger}, nil
+	return &Notifier{
+		config:      cfg,
+		handlers:    handlers,
+		gracePeriod: 10 * time.Second,
+		logger:      logger,
+	}, nil
 }
 
 func (n *Notifier) Run(ctx context.Context) error {
 	group, ctx := errgroup.WithContext(ctx)
 
+	// Start running all senders.
 	for i := range n.handlers {
 		sender := n.handlers[i].sender
 		group.Go(func() error {
@@ -86,10 +98,38 @@ func (n *Notifier) Run(ctx context.Context) error {
 		})
 	}
 
+	// Send the PIPED_STARTED event.
+	n.Notify(model.Event{
+		Type: model.EventType_EVENT_PIPED_STARTED,
+		Metadata: &model.EventPipedStarted{
+			Id:      n.config.PipedID,
+			Version: version.Get().Version,
+		},
+	})
+
 	n.logger.Info(fmt.Sprintf("all %d notifiers have been started", len(n.handlers)))
 	if err := group.Wait(); err != nil {
 		n.logger.Error("failed while running", zap.Error(err))
 		return err
+	}
+
+	// Send the PIPED_STOPPED event.
+	n.Notify(model.Event{
+		Type: model.EventType_EVENT_PIPED_STOPPED,
+		Metadata: &model.EventPipedStopped{
+			Id:      n.config.PipedID,
+			Version: version.Get().Version,
+		},
+	})
+
+	// Mark to ignore all incoming events from this time and close all senders.
+	n.closed.Store(true)
+	ctx, cancel := context.WithTimeout(context.Background(), n.gracePeriod)
+	defer cancel()
+
+	for i := range n.handlers {
+		sender := n.handlers[i].sender
+		sender.Close(ctx)
 	}
 
 	n.logger.Info(fmt.Sprintf("all %d notifiers have been stopped", len(n.handlers)))
@@ -97,6 +137,10 @@ func (n *Notifier) Run(ctx context.Context) error {
 }
 
 func (n *Notifier) Notify(event model.Event) {
+	if n.closed.Load() {
+		n.logger.Warn("ignore an event because notifier is already closed", zap.String("type", event.Type.String()))
+		return
+	}
 	for _, h := range n.handlers {
 		if !h.matcher.Match(event) {
 			continue
