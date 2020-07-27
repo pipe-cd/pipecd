@@ -131,16 +131,18 @@ func TestMatch(t *testing.T) {
 					Type: model.EventType_EVENT_DEPLOYMENT_TRIGGERED,
 					Metadata: &model.EventDeploymentTriggered{
 						Deployment: &model.Deployment{
-							EnvId: "prod",
+							EnvId: "prod-id",
 						},
+						EnvName: "prod",
 					},
 				}: true,
 				{
 					Type: model.EventType_EVENT_DEPLOYMENT_PLANNED,
 					Metadata: &model.EventDeploymentTriggered{
 						Deployment: &model.Deployment{
-							EnvId: "dev",
+							EnvId: "dev-id",
 						},
+						EnvName: "dev",
 					},
 				}: false,
 				{
@@ -149,6 +151,7 @@ func TestMatch(t *testing.T) {
 						Deployment: &model.Deployment{
 							EnvId: "not-specified",
 						},
+						EnvName: "not-specified",
 					},
 				}: false,
 				{

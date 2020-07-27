@@ -40,13 +40,12 @@ const (
 )
 
 type slack struct {
-	name        string
-	config      config.NotificationReceiverSlack
-	webURL      string
-	httpClient  *http.Client
-	eventCh     chan model.Event
-	gracePeriod time.Duration
-	logger      *zap.Logger
+	name       string
+	config     config.NotificationReceiverSlack
+	webURL     string
+	httpClient *http.Client
+	eventCh    chan model.Event
+	logger     *zap.Logger
 }
 
 func newSlackSender(name string, cfg config.NotificationReceiverSlack, webURL string, logger *zap.Logger) *slack {
@@ -57,30 +56,19 @@ func newSlackSender(name string, cfg config.NotificationReceiverSlack, webURL st
 		httpClient: &http.Client{
 			Timeout: 5 * time.Second,
 		},
-		eventCh:     make(chan model.Event, 100),
-		gracePeriod: 10 * time.Second,
-		logger:      logger.Named("slack"),
+		eventCh: make(chan model.Event, 100),
+		logger:  logger.Named("slack"),
 	}
 }
 
 func (s *slack) Run(ctx context.Context) error {
-	send := func(ctx context.Context, event model.Event) {
-		msg, ok := buildSlackMessage(event, s.webURL)
-		if !ok {
-			s.logger.Info(fmt.Sprintf("ignore event %s", event.Type.String()))
-			return
-		}
-		if err := s.sendMessage(ctx, msg); err != nil {
-			s.logger.Error(fmt.Sprintf("unable to send notification to slack: %v", err))
-		}
-	}
-
 	for {
 		select {
-		case event := <-s.eventCh:
-			send(ctx, event)
+		case event, ok := <-s.eventCh:
+			if ok {
+				s.sendEvent(ctx, event)
+			}
 		case <-ctx.Done():
-			// TODO: Send all remaining events before exiting.
 			return nil
 		}
 	}
@@ -90,7 +78,60 @@ func (s *slack) Notify(event model.Event) {
 	s.eventCh <- event
 }
 
-func buildSlackMessage(event model.Event, webURL string) (slackMessage, bool) {
+func (s *slack) Close(ctx context.Context) {
+	close(s.eventCh)
+
+	// Send all remaining events.
+	for {
+		select {
+		case event, ok := <-s.eventCh:
+			if !ok {
+				return
+			}
+			s.sendEvent(ctx, event)
+		case <-ctx.Done():
+			return
+		}
+	}
+}
+
+func (s *slack) sendEvent(ctx context.Context, event model.Event) {
+	msg, ok := s.buildSlackMessage(event, s.webURL)
+	if !ok {
+		s.logger.Info(fmt.Sprintf("ignore event %s", event.Type.String()))
+		return
+	}
+	if err := s.sendMessage(ctx, msg); err != nil {
+		s.logger.Error(fmt.Sprintf("unable to send notification to slack: %v", err))
+	}
+}
+
+func (s *slack) sendMessage(ctx context.Context, msg slackMessage) error {
+	buf := &bytes.Buffer{}
+	if err := json.NewEncoder(buf).Encode(msg); err != nil {
+		return err
+	}
+
+	req, err := http.NewRequestWithContext(ctx, "POST", s.config.HookURL, buf)
+	if err != nil {
+		return err
+	}
+
+	resp, err := s.httpClient.Do(req)
+	if err != nil {
+		return err
+	}
+	defer resp.Body.Close()
+
+	if resp.StatusCode < 200 || resp.StatusCode >= 300 {
+		body, _ := ioutil.ReadAll(io.LimitReader(resp.Body, 1024*1024))
+		return fmt.Errorf("%s from Slack: %s", resp.Status, strings.TrimSpace(string(body)))
+	}
+
+	return nil
+}
+
+func (s *slack) buildSlackMessage(event model.Event, webURL string) (slackMessage, bool) {
 	var (
 		title, link, text string
 		color             = slackInfoColor
@@ -98,11 +139,10 @@ func buildSlackMessage(event model.Event, webURL string) (slackMessage, bool) {
 		fields            []slackField
 	)
 
-	generateDeploymentEventData := func(d *model.Deployment) {
+	generateDeploymentEventData := func(d *model.Deployment, envName string) {
 		link = webURL + "/deployments/" + d.Id
-		// TODO: Use environment name instead of id.
 		fields = []slackField{
-			{"Env", truncateText(d.EnvId, 8), true},
+			{"Env", truncateText(envName, 8), true},
 			{"Application", makeSlackLink(d.ApplicationName, webURL+"/applications/"+d.ApplicationId), true},
 			{"Kind", strings.ToLower(d.Kind.String()), true},
 			{"Deployment", makeSlackLink(truncateText(d.Id, 8), link), true},
@@ -122,33 +162,33 @@ func buildSlackMessage(event model.Event, webURL string) (slackMessage, bool) {
 	case model.EventType_EVENT_DEPLOYMENT_TRIGGERED:
 		md := event.Metadata.(*model.EventDeploymentTriggered)
 		title = fmt.Sprintf("Triggered a new deployment for %q", md.Deployment.ApplicationName)
-		generateDeploymentEventData(md.Deployment)
+		generateDeploymentEventData(md.Deployment, md.EnvName)
 
 	case model.EventType_EVENT_DEPLOYMENT_PLANNED:
 		md := event.Metadata.(*model.EventDeploymentPlanned)
 		title = fmt.Sprintf("Deployment for %q was planned", md.Deployment.ApplicationName)
 		text = md.Summary
-		generateDeploymentEventData(md.Deployment)
+		generateDeploymentEventData(md.Deployment, md.EnvName)
 
 	case model.EventType_EVENT_DEPLOYMENT_SUCCEEDED:
 		md := event.Metadata.(*model.EventDeploymentSucceeded)
 		title = fmt.Sprintf("Deployment for %q was completed successfully", md.Deployment.ApplicationName)
 		color = slackSuccessColor
-		generateDeploymentEventData(md.Deployment)
+		generateDeploymentEventData(md.Deployment, md.EnvName)
 
 	case model.EventType_EVENT_DEPLOYMENT_FAILED:
 		md := event.Metadata.(*model.EventDeploymentFailed)
 		title = fmt.Sprintf("Deployment for %q was failed", md.Deployment.ApplicationName)
 		text = md.Reason
 		color = slackErrorColor
-		generateDeploymentEventData(md.Deployment)
+		generateDeploymentEventData(md.Deployment, md.EnvName)
 
 	case model.EventType_EVENT_DEPLOYMENT_CANCELLED:
 		md := event.Metadata.(*model.EventDeploymentCancelled)
 		title = fmt.Sprintf("Deployment for %q was cancelled", md.Deployment.ApplicationName)
 		text = fmt.Sprintf("Cancelled by %s", md.Commander)
 		color = slackWarnColor
-		generateDeploymentEventData(md.Deployment)
+		generateDeploymentEventData(md.Deployment, md.EnvName)
 
 	case model.EventType_EVENT_PIPED_STARTED:
 		md := event.Metadata.(*model.EventPipedStarted)
@@ -156,10 +196,11 @@ func buildSlackMessage(event model.Event, webURL string) (slackMessage, bool) {
 		generatePipedEventData(md.Id, md.Version)
 
 	case model.EventType_EVENT_PIPED_STOPPED:
-		md := event.Metadata.(*model.EventPipedStarted)
+		md := event.Metadata.(*model.EventPipedStopped)
 		title = "A piped has been stopped"
 		generatePipedEventData(md.Id, md.Version)
 
+	// TODO: Support application type of notification event.
 	default:
 		return slackMessage{}, false
 	}
@@ -216,29 +257,4 @@ func makeSlackMessage(title, titleLink, text, color string, timestamp int64, fie
 			Timestamp: timestamp,
 		}},
 	}
-}
-
-func (s *slack) sendMessage(ctx context.Context, msg slackMessage) error {
-	buf := &bytes.Buffer{}
-	if err := json.NewEncoder(buf).Encode(msg); err != nil {
-		return err
-	}
-
-	req, err := http.NewRequestWithContext(ctx, "POST", s.config.HookURL, buf)
-	if err != nil {
-		return err
-	}
-
-	resp, err := s.httpClient.Do(req)
-	if err != nil {
-		return err
-	}
-	defer resp.Body.Close()
-
-	if resp.StatusCode < 200 || resp.StatusCode >= 300 {
-		body, _ := ioutil.ReadAll(io.LimitReader(resp.Body, 1024*1024))
-		return fmt.Errorf("%s from Slack: %s", resp.Status, strings.TrimSpace(string(body)))
-	}
-
-	return nil
 }

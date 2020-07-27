@@ -43,3 +43,6 @@ func (s *webhook) Run(ctx context.Context) error {
 
 func (s *webhook) Notify(event model.Event) {
 }
+
+func (s *webhook) Close(ctx context.Context) {
+}

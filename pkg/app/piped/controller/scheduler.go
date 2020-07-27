@@ -50,6 +50,7 @@ type repoStore interface {
 type scheduler struct {
 	// Readonly deployment model.
 	deployment         *model.Deployment
+	envName            string
 	workingDir         string
 	executorRegistry   registry.Registry
 	apiClient          apiClient
@@ -85,6 +86,7 @@ type scheduler struct {
 
 func newScheduler(
 	d *model.Deployment,
+	envName string,
 	workingDir string,
 	apiClient apiClient,
 	gitClient gitClient,
@@ -109,6 +111,7 @@ func newScheduler(
 
 	s := &scheduler{
 		deployment:           d,
+		envName:              envName,
 		workingDir:           workingDir,
 		executorRegistry:     registry.DefaultRegistry(),
 		apiClient:            apiClient,
@@ -594,6 +597,7 @@ func (s *scheduler) reportDeploymentCompleted(ctx context.Context, status model.
 				Type: model.EventType_EVENT_DEPLOYMENT_SUCCEEDED,
 				Metadata: &model.EventDeploymentSucceeded{
 					Deployment: s.deployment,
+					EnvName:    s.envName,
 				},
 			})
 
@@ -602,6 +606,7 @@ func (s *scheduler) reportDeploymentCompleted(ctx context.Context, status model.
 				Type: model.EventType_EVENT_DEPLOYMENT_FAILED,
 				Metadata: &model.EventDeploymentFailed{
 					Deployment: s.deployment,
+					EnvName:    s.envName,
 					Reason:     desc,
 				},
 			})
@@ -611,6 +616,7 @@ func (s *scheduler) reportDeploymentCompleted(ctx context.Context, status model.
 				Type: model.EventType_EVENT_DEPLOYMENT_CANCELLED,
 				Metadata: &model.EventDeploymentCancelled{
 					Deployment: s.deployment,
+					EnvName:    s.envName,
 					Commander:  cancelCommander,
 				},
 			})
