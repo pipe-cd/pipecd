@@ -30,7 +30,7 @@ type apiClient interface {
 	GetEnvironment(ctx context.Context, in *pipedservice.GetEnvironmentRequest, opts ...grpc.CallOption) (*pipedservice.GetEnvironmentResponse, error)
 }
 
-// Lister helps list and get application.
+// Lister helps list and get Environment.
 // All objects returned here must be treated as read-only.
 type Lister interface {
 	// Get retrieves a specifiec Environment for the given id.
