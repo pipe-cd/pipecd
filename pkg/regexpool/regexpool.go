@@ -66,13 +66,13 @@ func (p *Pool) Get(expr string) (*regexp.Regexp, error) {
 	if err == nil {
 		return regex.(*regexp.Regexp), nil
 	}
-	// Check if the given expression was unabled to compile before
+	// Check if the given expression was unable to compile before
 	// then return the error fast.
 	p.mu.RLock()
 	_, ok := p.fails[expr]
 	p.mu.RUnlock()
 	if ok {
-		return nil, fmt.Errorf("unabled to compile: %s", expr)
+		return nil, fmt.Errorf("unable to compile: %s", expr)
 	}
 	// Compile the expression string and cache its result.
 	reg, err := regexp.Compile(expr)
@@ -83,5 +83,5 @@ func (p *Pool) Get(expr string) (*regexp.Regexp, error) {
 	p.mu.Lock()
 	p.fails[expr] = struct{}{}
 	p.mu.Unlock()
-	return nil, fmt.Errorf("unabled to compile: %s", expr)
+	return nil, fmt.Errorf("unable to compile: %s", expr)
 }

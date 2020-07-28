@@ -92,18 +92,18 @@ func (c *Helm) TemplateRemoteGitChart(ctx context.Context, appName, appDir strin
 	// Firstly, we need to download the remote repositoy.
 	repoDir, err := ioutil.TempDir("", "helm-remote-chart")
 	if err != nil {
-		return "", fmt.Errorf("unabled to created temporary directory for storing remote helm chart: %w", err)
+		return "", fmt.Errorf("unable to created temporary directory for storing remote helm chart: %w", err)
 	}
 	defer os.RemoveAll(repoDir)
 
 	repo, err := gitClient.Clone(ctx, chart.GitRemote, chart.GitRemote, "", repoDir)
 	if err != nil {
-		return "", fmt.Errorf("unabled to clone git repository containing remote helm chart: %w", err)
+		return "", fmt.Errorf("unable to clone git repository containing remote helm chart: %w", err)
 	}
 
 	if chart.Ref != "" {
 		if err := repo.Checkout(ctx, chart.Ref); err != nil {
-			return "", fmt.Errorf("unabled to checkout to specified ref %s: %w", chart.Ref, err)
+			return "", fmt.Errorf("unable to checkout to specified ref %s: %w", chart.Ref, err)
 		}
 	}
 	chartPath := filepath.Join(repoDir, chart.Path)

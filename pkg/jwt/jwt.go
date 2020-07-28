@@ -58,7 +58,7 @@ func NewClaims(githubUserID, avatarURL string, ttl time.Duration, role model.Rol
 func readKeyFile(method jwtgo.SigningMethod, keyFile string, isSigningKey bool) (interface{}, error) {
 	data, err := ioutil.ReadFile(keyFile)
 	if err != nil {
-		return nil, fmt.Errorf("unabled to read key file: %v", err)
+		return nil, fmt.Errorf("unable to read key file: %v", err)
 	}
 	switch method.Alg() {
 	case "HS256", "HS384", "HS512":

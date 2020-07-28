@@ -247,7 +247,7 @@ func (t *Trigger) checkApplication(ctx context.Context, app *model.Application, 
 		case status.Code(err) == codes.NotFound:
 			logger.Info("there is no previously triggered commit for this application")
 		default:
-			logger.Error("unabled to get the most recently triggered deployment", zap.Error(err))
+			logger.Error("unable to get the most recently triggered deployment", zap.Error(err))
 		}
 	}
 

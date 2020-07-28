@@ -76,7 +76,7 @@ func PipedTokenUnaryServerInterceptor(verifier PipedTokenVerifier, logger *zap.L
 			return nil, errUnauthenticated
 		}
 		if err := verifier.Verify(ctx, projectID, pipedID, pipedKey); err != nil {
-			logger.Warn("unabled to verify piped token", zap.Error(err))
+			logger.Warn("unable to verify piped token", zap.Error(err))
 			return nil, errUnauthenticated
 		}
 		ctx = context.WithValue(ctx, pipedTokenKey, pipedTokenContextValue{
@@ -109,7 +109,7 @@ func PipedTokenStreamServerInterceptor(verifier PipedTokenVerifier, logger *zap.
 			return errUnauthenticated
 		}
 		if err := verifier.Verify(ctx, projectID, pipedID, pipedKey); err != nil {
-			logger.Warn("unabled to verify piped token", zap.Error(err))
+			logger.Warn("unable to verify piped token", zap.Error(err))
 			return errUnauthenticated
 		}
 		ctx = context.WithValue(ctx, pipedTokenKey, pipedTokenContextValue{

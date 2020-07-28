@@ -38,12 +38,12 @@ func main() {
 
 	license, err := ioutil.ReadFile("./hack/boilerplate.go.txt")
 	if err != nil {
-		log.Fatalf("unabled to read license file: %v", err)
+		log.Fatalf("unable to read license file: %v", err)
 	}
 
 	data, err := loadData(*in)
 	if err != nil {
-		log.Fatalf("unabled to load data from %s: %v", *in, err)
+		log.Fatalf("unable to load data from %s: %v", *in, err)
 	}
 
 	var maxNameLength = 0
@@ -65,7 +65,7 @@ func main() {
 		}).
 		Parse(fileTemplate)
 	if err != nil {
-		log.Fatalf("unabled to make template: %v", err)
+		log.Fatalf("unable to make template: %v", err)
 	}
 
 	generatedCode, err := renderTemplate(tmpl, map[string]interface{}{
@@ -74,11 +74,11 @@ func main() {
 		"NameLength": 50,
 	})
 	if err != nil {
-		log.Fatalf("unabled to render go file: %v", err)
+		log.Fatalf("unable to render go file: %v", err)
 	}
 
 	if err = ioutil.WriteFile(*out, []byte(generatedCode), os.ModePerm); err != nil {
-		log.Fatalf("unabled to write go file to %s: %v", *out, err)
+		log.Fatalf("unable to write go file to %s: %v", *out, err)
 	}
 	log.Printf("successfully generated file: %s", *out)
 }

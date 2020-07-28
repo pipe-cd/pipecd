@@ -36,6 +36,6 @@ func TestPool(t *testing.T) {
 	assert.NotNil(t, regex)
 
 	regex, err = pool.Get("(abc")
-	assert.Equal(t, fmt.Errorf("unabled to compile: (abc"), err)
+	assert.Equal(t, fmt.Errorf("unable to compile: (abc"), err)
 	assert.Nil(t, regex)
 }
