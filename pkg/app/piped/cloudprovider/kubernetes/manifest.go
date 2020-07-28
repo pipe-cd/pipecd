@@ -82,6 +82,15 @@ func (m Manifest) GetAnnotations() map[string]string {
 	return m.u.GetAnnotations()
 }
 
+func (m Manifest) GetNestedStringMap(fields ...string) (map[string]string, error) {
+	sm, _, err := unstructured.NestedStringMap(m.u.Object, fields...)
+	if err != nil {
+		return nil, err
+	}
+
+	return sm, nil
+}
+
 // AddStringMapValues adds or overrides the given key-values into the string map
 // that can be found at the specified fields.
 func (m Manifest) AddStringMapValues(values map[string]string, fields ...string) error {

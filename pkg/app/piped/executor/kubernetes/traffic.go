@@ -84,9 +84,22 @@ func (e *Executor) ensureTrafficRouting(ctx context.Context) model.StageStatus {
 			trafficRoutingManifests[0].Key.ReadableString(),
 		)
 	}
+	trafficRoutingManifest := trafficRoutingManifests[0]
 
-	trafficRoutingManifest, err := e.generateTrafficRoutingManifest(
-		trafficRoutingManifests[0],
+	// In case we are routing by Pod, the service manifest must contain variantLabel inside its selector.
+	if e.config.TrafficRouting == nil || e.config.TrafficRouting.Method == config.TrafficRoutingMethodPod || e.config.TrafficRouting.Method == "" {
+		if err := checkVariantSelectorInService(trafficRoutingManifest, primaryVariant); err != nil {
+			e.LogPersister.AppendErrorf("Traffic routing by Pod requires %q inside the selector of Service manifest but it was unable to check that field in manifest %s (%v)",
+				variantLabel+": "+primaryVariant,
+				trafficRoutingManifest.Key.ReadableString(),
+				err,
+			)
+			return model.StageStatus_STAGE_FAILURE
+		}
+	}
+
+	trafficRoutingManifest, err = e.generateTrafficRoutingManifest(
+		trafficRoutingManifest,
 		primaryPercent,
 		canaryPercent,
 		baselinePercent,
@@ -373,4 +386,21 @@ func generateVirtualServiceManifestV1Alpha3(m provider.Manifest, host string, ed
 	}
 
 	return m, nil
+}
+
+func checkVariantSelectorInService(m provider.Manifest, variant string) error {
+	selector, err := m.GetNestedStringMap("spec", "selector")
+	if err != nil {
+		return err
+	}
+
+	value, ok := selector[variantLabel]
+	if !ok {
+		return fmt.Errorf("missing %s key in the selector", variantLabel)
+	}
+
+	if value != variant {
+		return fmt.Errorf("want %s but got %s for %s key in the selector", variant, value, variantLabel)
+	}
+	return nil
 }
