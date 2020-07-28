@@ -58,6 +58,8 @@ type projectGetter interface {
 // Handler handles all imcoming requests about authentication.
 type Handler struct {
 	signer        jwt.Signer
+	apiURL        string
+	stateSeed     string
 	projectGetter projectGetter
 	logger        *zap.Logger
 }
@@ -65,11 +67,15 @@ type Handler struct {
 // NewHandler returns a handler that will used for authentication.
 func NewHandler(
 	signer jwt.Signer,
+	apiURL string,
+	stateSeed string,
 	projectGetter projectGetter,
 	logger *zap.Logger,
 ) *Handler {
 	return &Handler{
 		signer:        signer,
+		apiURL:        apiURL,
+		stateSeed:     stateSeed,
 		projectGetter: projectGetter,
 		logger:        logger,
 	}
@@ -92,10 +98,7 @@ func (h *Handler) handleLogout(w http.ResponseWriter, r *http.Request) {
 	http.Redirect(w, r, rootPath, http.StatusFound)
 }
 
-func (h *Handler) getProject(r *http.Request) (*model.Project, error) {
-	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
-	defer cancel()
-
+func (h *Handler) getProject(ctx context.Context, r *http.Request) (*model.Project, error) {
 	projectID := r.FormValue(projectFormKey)
 	if projectID == "" {
 		return nil, fmt.Errorf("project id must be specified")

@@ -74,6 +74,7 @@ type server struct {
 	enableGRPCReflection bool
 }
 
+// NewCommand creates a new cobra command for executing api server.
 func NewCommand() *cobra.Command {
 	s := &server{
 		pipedAPIPort: 9080,
@@ -233,13 +234,13 @@ func (s *server) run(ctx context.Context, t cli.Telemetry) error {
 			Handler: mux,
 		}
 		handlers := []httpHandler{
-			authhandler.NewHandler(signer, datastore.NewProjectStore(ds), t.Logger),
+			authhandler.NewHandler(signer, cfg.APIURL, cfg.StateSeed, datastore.NewProjectStore(ds), t.Logger),
 		}
 		for _, h := range handlers {
 			h.Register(mux.HandleFunc)
 		}
 		group.Go(func() error {
-			return runHttpServer(ctx, httpServer, s.gracePeriod, t.Logger)
+			return runHTTPServer(ctx, httpServer, s.gracePeriod, t.Logger)
 		})
 	}
 
@@ -274,7 +275,7 @@ func (s *server) run(ctx context.Context, t cli.Telemetry) error {
 	return nil
 }
 
-func runHttpServer(ctx context.Context, httpServer *http.Server, gracePeriod time.Duration, logger *zap.Logger) error {
+func runHTTPServer(ctx context.Context, httpServer *http.Server, gracePeriod time.Duration, logger *zap.Logger) error {
 	doneCh := make(chan error, 1)
 	ctx, cancel := context.WithCancel(ctx)
 
