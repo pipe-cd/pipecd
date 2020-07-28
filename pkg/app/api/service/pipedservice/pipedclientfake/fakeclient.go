@@ -110,6 +110,17 @@ func (c *fakeClient) ReportPipedMeta(ctx context.Context, req *pipedservice.Repo
 	return &pipedservice.ReportPipedMetaResponse{}, nil
 }
 
+// GetEnvironment finds and returns the environment for the specified ID.
+func (c *fakeClient) GetEnvironment(ctx context.Context, req *pipedservice.GetEnvironmentRequest, opts ...grpc.CallOption) (*pipedservice.GetEnvironmentResponse, error) {
+	c.logger.Info("fake client received GetEnvironment rpc", zap.Any("request", req))
+	return &pipedservice.GetEnvironmentResponse{
+		Environment: &model.Environment{
+			Id:   "dev",
+			Name: "dev",
+		},
+	}, nil
+}
+
 // ListApplications returns a list of registered applications
 // that should be managed by the requested piped.
 // Disabled applications should not be included in the response.

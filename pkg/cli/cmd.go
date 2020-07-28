@@ -58,10 +58,10 @@ func runWithContext(cmd *cobra.Command, signalCh <-chan os.Signal, runner Runner
 		Flags: flags,
 	}
 	service := extractServiceName(cmd)
-	version := version.Get().Version
+	version := version.Get()
 
 	// Initialize logger.
-	logger, err := newLogger(service, version, flags.LogLevel, flags.LogEncoding)
+	logger, err := newLogger(service, version.Version, flags.LogLevel, flags.LogEncoding)
 	if err != nil {
 		return err
 	}
@@ -70,7 +70,7 @@ func runWithContext(cmd *cobra.Command, signalCh <-chan os.Signal, runner Runner
 
 	// Start running profiler.
 	if flags.Profile {
-		if err := startProfiler(service, version, flags.ProfilerCredentialsFile, flags.ProfileDebugLogging, logger); err != nil {
+		if err := startProfiler(service, version.Version, flags.ProfilerCredentialsFile, flags.ProfileDebugLogging, logger); err != nil {
 			logger.Error("failed to run profiler", zap.Error(err))
 			return err
 		}
@@ -88,7 +88,7 @@ func runWithContext(cmd *cobra.Command, signalCh <-chan os.Signal, runner Runner
 		}
 	}()
 
-	logger.Info(fmt.Sprintf("start running %s %s", service, version))
+	logger.Info(fmt.Sprintf("start running %s %s(%s)", service, version.Version, version.BuildDate))
 	return runner(ctx, telemetry)
 }
 

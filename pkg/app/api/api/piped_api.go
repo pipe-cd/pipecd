@@ -17,6 +17,7 @@ package api
 import (
 	"context"
 	"errors"
+	"time"
 
 	"go.uber.org/zap"
 	"google.golang.org/grpc"
@@ -84,7 +85,8 @@ func (a *PipedAPI) ReportPipedMeta(ctx context.Context, req *pipedservice.Report
 		return nil, err
 	}
 
-	if err = a.pipedStore.UpdatePiped(ctx, pipedID, datastore.PipedMetadataUpdater(req.CloudProviders, req.RepositoryIds, req.Version)); err != nil {
+	now := time.Now().Unix()
+	if err = a.pipedStore.UpdatePiped(ctx, pipedID, datastore.PipedMetadataUpdater(req.CloudProviders, req.RepositoryIds, req.Version, now)); err != nil {
 		switch err {
 		case datastore.ErrNotFound:
 			return nil, status.Error(codes.InvalidArgument, "piped is not found")
@@ -99,6 +101,21 @@ func (a *PipedAPI) ReportPipedMeta(ctx context.Context, req *pipedservice.Report
 		}
 	}
 	return &pipedservice.ReportPipedMetaResponse{}, nil
+}
+
+// GetEnvironment finds and returns the environment for the specified ID.
+func (a *PipedAPI) GetEnvironment(ctx context.Context, req *pipedservice.GetEnvironmentRequest) (*pipedservice.GetEnvironmentResponse, error) {
+	env, err := a.environmentStore.GetEnvironment(ctx, req.Id)
+	if errors.Is(err, datastore.ErrNotFound) {
+		return nil, status.Error(codes.NotFound, "environment is not found")
+	}
+	if err != nil {
+		a.logger.Error("failed to get environment", zap.Error(err))
+		return nil, status.Error(codes.Internal, "failed to get environment")
+	}
+	return &pipedservice.GetEnvironmentResponse{
+		Environment: env,
+	}, nil
 }
 
 // ListApplications returns a list of registered applications

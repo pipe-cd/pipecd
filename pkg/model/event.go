@@ -34,66 +34,34 @@ func (e Event) Group() EventGroup {
 	}
 }
 
-func (e *EventDeploymentTriggered) AppID() string {
-	return e.Deployment.ApplicationId
+func (e *EventDeploymentTriggered) GetAppName() string {
+	return e.Deployment.ApplicationName
 }
 
-func (e *EventDeploymentPlanned) AppID() string {
-	return e.Deployment.ApplicationId
+func (e *EventDeploymentPlanned) GetAppName() string {
+	return e.Deployment.ApplicationName
 }
 
-func (e *EventDeploymentApproved) AppID() string {
-	return e.Deployment.ApplicationId
+func (e *EventDeploymentApproved) GetAppName() string {
+	return e.Deployment.ApplicationName
 }
 
-func (e *EventDeploymentRollingBack) AppID() string {
-	return e.Deployment.ApplicationId
+func (e *EventDeploymentRollingBack) GetAppName() string {
+	return e.Deployment.ApplicationName
 }
 
-func (e *EventDeploymentSucceeded) AppID() string {
-	return e.Deployment.ApplicationId
+func (e *EventDeploymentSucceeded) GetAppName() string {
+	return e.Deployment.ApplicationName
 }
 
-func (e *EventDeploymentFailed) AppID() string {
-	return e.Deployment.ApplicationId
+func (e *EventDeploymentFailed) GetAppName() string {
+	return e.Deployment.ApplicationName
 }
 
-func (e *EventApplicationSynced) AppID() string {
+func (e *EventApplicationSynced) GetAppName() string {
 	return e.Application.Id
 }
 
-func (e *EventApplicationOutOfSync) AppID() string {
+func (e *EventApplicationOutOfSync) GetAppName() string {
 	return e.Application.Id
-}
-
-func (e *EventDeploymentTriggered) EnvID() string {
-	return e.Deployment.EnvId
-}
-
-func (e *EventDeploymentPlanned) EnvID() string {
-	return e.Deployment.EnvId
-}
-
-func (e *EventDeploymentApproved) EnvID() string {
-	return e.Deployment.EnvId
-}
-
-func (e *EventDeploymentRollingBack) EnvID() string {
-	return e.Deployment.EnvId
-}
-
-func (e *EventDeploymentSucceeded) EnvID() string {
-	return e.Deployment.EnvId
-}
-
-func (e *EventDeploymentFailed) EnvID() string {
-	return e.Deployment.EnvId
-}
-
-func (e *EventApplicationSynced) EnvID() string {
-	return e.Application.EnvId
-}
-
-func (e *EventApplicationOutOfSync) EnvID() string {
-	return e.Application.EnvId
 }

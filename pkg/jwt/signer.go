@@ -33,7 +33,7 @@ type signer struct {
 func NewSigner(method jwtgo.SigningMethod, keyFile string) (Signer, error) {
 	key, err := readKeyFile(method, keyFile, true)
 	if err != nil {
-		return nil, fmt.Errorf("unabled to read key file: %v", err)
+		return nil, fmt.Errorf("unable to read key file: %v", err)
 	}
 	return &signer{
 		key:    key,

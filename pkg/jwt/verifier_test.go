@@ -68,7 +68,7 @@ func TestVerify(t *testing.T) {
 				},
 			},
 			fail:      true,
-			errPrefix: "unabled to parse token: token is expired",
+			errPrefix: "unable to parse token: token is expired",
 		},
 		{
 			name: "missing issueAt",

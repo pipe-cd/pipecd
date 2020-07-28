@@ -36,6 +36,7 @@ type PipedSpec struct {
 	PipedID string
 	// The path to the key generated for this piped.
 	PipedKeyFile string
+	WebURL       string `json:"webURL"`
 	// How often to check whether an application should be synced.
 	// Default is 1m.
 	SyncInterval Duration `json:"syncInterval"`

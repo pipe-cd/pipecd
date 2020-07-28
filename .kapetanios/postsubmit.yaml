@@ -94,5 +94,5 @@ spec:
       description: Push docker image
       runner: gcr.io/cloud-builders/docker
       commands:
-        - docker tag pipecd-site gcr.io/pipecd/site:$(git describe --tags --always --dirty --abbrev=7)
-        - docker push gcr.io/pipecd/site:$(git describe --tags --always --dirty --abbrev=7)
+        - docker tag pipecd-site gcr.io/pipecd/site:$(git describe --tags --always --abbrev=7)
+        - docker push gcr.io/pipecd/site:$(git describe --tags --always --abbrev=7)

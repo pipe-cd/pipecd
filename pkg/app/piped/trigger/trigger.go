@@ -57,6 +57,10 @@ type commandLister interface {
 	ListApplicationCommands() []model.ReportableCommand
 }
 
+type environmentLister interface {
+	Get(id string) (*model.Environment, bool)
+}
+
 type notifier interface {
 	Notify(event model.Event)
 }
@@ -66,6 +70,7 @@ type Trigger struct {
 	gitClient                    gitClient
 	applicationLister            applicationLister
 	commandLister                commandLister
+	environmentLister            environmentLister
 	notifier                     notifier
 	config                       *config.PipedSpec
 	mostRecentlyTriggeredCommits map[string]string
@@ -80,6 +85,7 @@ func NewTrigger(
 	gitClient gitClient,
 	appLister applicationLister,
 	commandLister commandLister,
+	environmentLister environmentLister,
 	notifier notifier,
 	cfg *config.PipedSpec,
 	gracePeriod time.Duration,
@@ -91,6 +97,7 @@ func NewTrigger(
 		gitClient:                    gitClient,
 		applicationLister:            appLister,
 		commandLister:                commandLister,
+		environmentLister:            environmentLister,
 		notifier:                     notifier,
 		config:                       cfg,
 		mostRecentlyTriggeredCommits: make(map[string]string),
@@ -240,7 +247,7 @@ func (t *Trigger) checkApplication(ctx context.Context, app *model.Application, 
 		case status.Code(err) == codes.NotFound:
 			logger.Info("there is no previously triggered commit for this application")
 		default:
-			logger.Error("unabled to get the most recently triggered deployment", zap.Error(err))
+			logger.Error("unable to get the most recently triggered deployment", zap.Error(err))
 		}
 	}
 

@@ -1,3 +1,4 @@
+import { EntityId } from "@reduxjs/toolkit";
 import React, { FC, memo, useEffect } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import { Route, Switch } from "react-router-dom";
@@ -6,9 +7,9 @@ import { Toasts } from "../components/toasts";
 import {
   PAGE_PATH_APPLICATIONS,
   PAGE_PATH_DEPLOYMENTS,
+  PAGE_PATH_LOGIN,
   PAGE_PATH_SETTINGS,
   PAGE_PATH_TOP,
-  PAGE_PATH_LOGIN,
 } from "../constants";
 import { AppState } from "../modules";
 import {
@@ -16,16 +17,15 @@ import {
   selectIds as selectCommandIds,
 } from "../modules/commands";
 import { fetchEnvironments } from "../modules/environments";
+import { useMe } from "../modules/me";
 import { fetchPipeds } from "../modules/pipeds";
 import { useInterval } from "../utils/use-interval";
 import { ApplicationDetailPage } from "./applications/detail";
 import { ApplicationIndexPage } from "./applications/index";
 import { DeploymentDetailPage } from "./deployments/detail";
 import { DeploymentIndexPage } from "./deployments/index";
-import { SettingsIndexPage } from "./settings";
-import { EntityId } from "@reduxjs/toolkit";
 import { LoginPage } from "./login";
-import { fetchMe } from "../modules/me";
+import { SettingsIndexPage } from "./settings";
 
 // Fetch commands detail periodically
 const FETCH_COMMANDS_INTERVAL = 3000;
@@ -49,12 +49,29 @@ const useCommandsStatusChecking = (): void => {
 
 export const Pages: FC = memo(function Pages() {
   const dispatch = useDispatch();
+  const me = useMe();
   useEffect(() => {
-    dispatch(fetchMe());
     dispatch(fetchEnvironments());
     dispatch(fetchPipeds(false));
   }, [dispatch]);
   useCommandsStatusChecking();
+
+  if (me === null) {
+    return (
+      <>
+        <Header />
+      </>
+    );
+  }
+
+  if (me.isLogin === false) {
+    return (
+      <>
+        <Header />
+        <LoginPage />
+      </>
+    );
+  }
 
   return (
     <>

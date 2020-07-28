@@ -55,7 +55,7 @@ func (v *Verifier) Verify(ctx context.Context, projectID, pipedID, pipedKey stri
 				return fmt.Errorf("project %s for piped %s was not found", projectID, pipedID)
 			}
 			if err := v.projectCache.Put(projectID, true); err != nil {
-				return fmt.Errorf("unabled to store in cache: %w", err)
+				return fmt.Errorf("unable to store in cache: %w", err)
 			}
 		}
 	}
@@ -72,10 +72,10 @@ func (v *Verifier) Verify(ctx context.Context, projectID, pipedID, pipedKey stri
 	// we have to find from datastore and save to the cache.
 	piped, err = v.pipedStore.GetPiped(ctx, pipedID)
 	if err != nil {
-		return fmt.Errorf("unabled to find piped %s from datastore, %w", pipedID, err)
+		return fmt.Errorf("unable to find piped %s from datastore, %w", pipedID, err)
 	}
 	if err := v.pipedCache.Put(pipedID, piped); err != nil {
-		return fmt.Errorf("unabled to store in cache: %w", err)
+		return fmt.Errorf("unable to store in cache: %w", err)
 	}
 
 	return checkPiped(piped, projectID, pipedID, pipedKey)

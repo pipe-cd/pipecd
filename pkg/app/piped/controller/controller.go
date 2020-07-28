@@ -76,6 +76,10 @@ type applicationLister interface {
 	Get(id string) (*model.Application, bool)
 }
 
+type environmentLister interface {
+	Get(id string) (*model.Environment, bool)
+}
+
 type liveResourceLister interface {
 	ListKubernetesAppLiveResources(cloudProvider, appID string) ([]provider.Manifest, bool)
 }
@@ -99,6 +103,7 @@ type controller struct {
 	deploymentLister   deploymentLister
 	commandLister      commandLister
 	applicationLister  applicationLister
+	environmentLister  environmentLister
 	liveResourceLister liveResourceLister
 	notifier           notifier
 	pipedConfig        *config.PipedSpec
@@ -137,6 +142,7 @@ func NewController(
 	deploymentLister deploymentLister,
 	commandLister commandLister,
 	applicationLister applicationLister,
+	environmentLister environmentLister,
 	liveResourceLister liveResourceLister,
 	notifier notifier,
 	pipedConfig *config.PipedSpec,
@@ -155,6 +161,7 @@ func NewController(
 		deploymentLister:   deploymentLister,
 		commandLister:      commandLister,
 		applicationLister:  applicationLister,
+		environmentLister:  environmentLister,
 		liveResourceLister: liveResourceLister,
 		notifier:           notifier,
 		appManifestsCache:  appManifestsCache,
@@ -343,12 +350,18 @@ func (c *controller) startNewPlanner(ctx context.Context, d *model.Deployment) (
 		case status.Code(err) == codes.NotFound:
 			logger.Info("there is no previous successful commit for this application")
 		default:
-			logger.Error("unabled to get the most recent successful deployment", zap.Error(err))
+			logger.Error("unable to get the most recent successful deployment", zap.Error(err))
 		}
+	}
+
+	var envName string
+	if env, ok := c.environmentLister.Get(d.EnvId); ok {
+		envName = env.Name
 	}
 
 	planner := newPlanner(
 		d,
+		envName,
 		commit,
 		workingDir,
 		c.apiClient,
@@ -479,9 +492,15 @@ func (c *controller) startNewScheduler(ctx context.Context, d *model.Deployment)
 	}
 	logger.Info("created working directory for scheduler", zap.String("working-dir", workingDir))
 
+	var envName string
+	if env, ok := c.environmentLister.Get(d.EnvId); ok {
+		envName = env.Name
+	}
+
 	// Create a new scheduler and append to the list for tracking.
 	scheduler := newScheduler(
 		d,
+		envName,
 		workingDir,
 		c.apiClient,
 		c.gitClient,

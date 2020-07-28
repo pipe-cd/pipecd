@@ -12,30 +12,4 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-package regexpool
-
-import (
-	"fmt"
-	"testing"
-
-	"github.com/stretchr/testify/assert"
-	"github.com/stretchr/testify/require"
-)
-
-func TestDefaultPool(t *testing.T) {
-	pool := DefaultPool()
-	require.NotNil(t, pool)
-}
-
-func TestPool(t *testing.T) {
-	pool, err := NewPool(2)
-	require.NoError(t, err)
-
-	regex, err := pool.Get("(gopher){2}")
-	assert.NoError(t, err)
-	assert.NotNil(t, regex)
-
-	regex, err = pool.Get("(abc")
-	assert.Equal(t, fmt.Errorf("unable to compile: (abc"), err)
-	assert.Nil(t, regex)
-}
+package environmentstore

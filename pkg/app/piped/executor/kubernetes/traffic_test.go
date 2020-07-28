@@ -15,6 +15,7 @@
 package kubernetes
 
 import (
+	"fmt"
 	"testing"
 
 	"github.com/stretchr/testify/assert"
@@ -61,6 +62,66 @@ func TestGenerateVirtualServiceManifest(t *testing.T) {
 			require.NoError(t, err)
 
 			assert.EqualValues(t, expected, got)
+		})
+	}
+}
+
+func TestCheckVariantSelectorInService(t *testing.T) {
+	testcases := []struct {
+		name     string
+		manifest string
+		expected error
+	}{
+		{
+			name: "missing variant selector",
+			manifest: `
+apiVersion: v1
+kind: Service
+metadata:
+    name: simple
+spec:
+    selector:
+        app: simple
+`,
+			expected: fmt.Errorf("missing pipecd.dev/variant key in the selector"),
+		},
+		{
+			name: "wrong variant",
+			manifest: `
+apiVersion: v1
+kind: Service
+metadata:
+    name: simple
+spec:
+    selector:
+        app: simple
+        pipecd.dev/variant: canary
+`,
+			expected: fmt.Errorf("want primary but got canary for pipecd.dev/variant key in the selector"),
+		},
+		{
+			name: "ok",
+			manifest: `
+apiVersion: v1
+kind: Service
+metadata:
+    name: simple
+spec:
+    selector:
+        app: simple
+        pipecd.dev/variant: primary
+`,
+			expected: nil,
+		},
+	}
+	for _, tc := range testcases {
+		t.Run(tc.name, func(t *testing.T) {
+			manifests, err := provider.ParseManifests(tc.manifest)
+			require.NoError(t, err)
+			require.Equal(t, 1, len(manifests))
+
+			err = checkVariantSelectorInService(manifests[0], primaryVariant)
+			assert.Equal(t, tc.expected, err)
 		})
 	}
 }

@@ -72,6 +72,7 @@ func (a *WebAPI) AddEnvironment(ctx context.Context, req *webservice.AddEnvironm
 	if err != nil {
 		return nil, err
 	}
+
 	env := model.Environment{
 		Id:        uuid.New().String(),
 		Name:      req.Name,
@@ -98,6 +99,7 @@ func (a *WebAPI) ListEnvironments(ctx context.Context, req *webservice.ListEnvir
 	if err != nil {
 		return nil, err
 	}
+
 	opts := datastore.ListOptions{
 		Filters: []datastore.ListFilter{
 			{
@@ -328,6 +330,7 @@ func (a *WebAPI) updateApplicationEnable(ctx context.Context, appID string, enab
 	if err != nil {
 		return err
 	}
+
 	app, err := a.getApplication(ctx, appID)
 	if err != nil {
 		return err
@@ -427,15 +430,16 @@ func (a *WebAPI) ListApplications(ctx context.Context, req *webservice.ListAppli
 }
 
 func (a *WebAPI) SyncApplication(ctx context.Context, req *webservice.SyncApplicationRequest) (*webservice.SyncApplicationResponse, error) {
+	claims, err := rpcauth.ExtractClaims(ctx)
+	if err != nil {
+		return nil, err
+	}
+
 	app, err := a.getApplication(ctx, req.ApplicationId)
 	if err != nil {
 		return nil, err
 	}
 
-	claims, err := rpcauth.ExtractClaims(ctx)
-	if err != nil {
-		return nil, err
-	}
 	if app.ProjectId != claims.Role.ProjectId {
 		return nil, status.Error(codes.PermissionDenied, "The current project does not have requested application")
 	}
@@ -446,7 +450,7 @@ func (a *WebAPI) SyncApplication(ctx context.Context, req *webservice.SyncApplic
 		PipedId:       app.PipedId,
 		ApplicationId: app.Id,
 		Type:          model.Command_SYNC_APPLICATION,
-		Commander:     "anonymous", // TODO: Getting value from login user.
+		Commander:     claims.Subject,
 		SyncApplication: &model.Command_SyncApplication{
 			ApplicationId: req.ApplicationId,
 		},
@@ -494,6 +498,8 @@ func (a *WebAPI) ListDeployments(ctx context.Context, req *webservice.ListDeploy
 	if err != nil {
 		return nil, err
 	}
+
+	// TODO: Support pagination for Deployment list
 	orders := []datastore.Order{
 		{
 			Field:     "UpdatedAt",
@@ -600,6 +606,11 @@ func (a *WebAPI) GetStageLog(ctx context.Context, req *webservice.GetStageLogReq
 }
 
 func (a *WebAPI) CancelDeployment(ctx context.Context, req *webservice.CancelDeploymentRequest) (*webservice.CancelDeploymentResponse, error) {
+	claims, err := rpcauth.ExtractClaims(ctx)
+	if err != nil {
+		return nil, err
+	}
+
 	deployment, err := a.getDeployment(ctx, req.DeploymentId)
 	if err != nil {
 		return nil, err
@@ -615,7 +626,7 @@ func (a *WebAPI) CancelDeployment(ctx context.Context, req *webservice.CancelDep
 		ApplicationId: deployment.ApplicationId,
 		DeploymentId:  req.DeploymentId,
 		Type:          model.Command_CANCEL_DEPLOYMENT,
-		Commander:     "anonymous",
+		Commander:     claims.Subject,
 		CancelDeployment: &model.Command_CancelDeployment{
 			DeploymentId:    req.DeploymentId,
 			WithoutRollback: req.WithoutRollback,
@@ -630,6 +641,11 @@ func (a *WebAPI) CancelDeployment(ctx context.Context, req *webservice.CancelDep
 }
 
 func (a *WebAPI) ApproveStage(ctx context.Context, req *webservice.ApproveStageRequest) (*webservice.ApproveStageResponse, error) {
+	claims, err := rpcauth.ExtractClaims(ctx)
+	if err != nil {
+		return nil, err
+	}
+
 	deployment, err := a.getDeployment(ctx, req.DeploymentId)
 	if err != nil {
 		return nil, err
@@ -650,7 +666,7 @@ func (a *WebAPI) ApproveStage(ctx context.Context, req *webservice.ApproveStageR
 		DeploymentId:  req.DeploymentId,
 		StageId:       req.StageId,
 		Type:          model.Command_APPROVE_STAGE,
-		Commander:     "anonymous",
+		Commander:     claims.Subject,
 		ApproveStage: &model.Command_ApproveStage{
 			DeploymentId: req.DeploymentId,
 			StageId:      req.StageId,
@@ -683,8 +699,7 @@ func (a *WebAPI) GetProject(ctx context.Context, req *webservice.GetProjectReque
 func (a *WebAPI) GetMe(ctx context.Context, req *webservice.GetMeRequest) (*webservice.GetMeResponse, error) {
 	claims, err := rpcauth.ExtractClaims(ctx)
 	if err != nil {
-		a.logger.Error("detected a request that passed JWT interceptor but not including a claims", zap.Error(err))
-		return nil, status.Error(codes.Internal, "internal error")
+		return nil, err
 	}
 
 	return &webservice.GetMeResponse{

@@ -51,44 +51,53 @@ enum EventGroup {
 
 message EventDeploymentTriggered {
     Deployment deployment = 1 [(validate.rules).message.required = true];
+    string env_name = 2 [(validate.rules).string.min_len = 1];
 }
 
 message EventDeploymentPlanned {
     Deployment deployment = 1 [(validate.rules).message.required = true];
-    string summary = 2;
+    string env_name = 2 [(validate.rules).string.min_len = 1];
+    string summary = 3;
 }
 
 message EventDeploymentApproved {
     Deployment deployment = 1 [(validate.rules).message.required = true];
-    string approver = 2;
+    string env_name = 2 [(validate.rules).string.min_len = 1];
+    string approver = 3;
 }
 
 message EventDeploymentRollingBack {
     Deployment deployment = 1 [(validate.rules).message.required = true];
+    string env_name = 2 [(validate.rules).string.min_len = 1];
 }
 
 message EventDeploymentSucceeded {
     Deployment deployment = 1 [(validate.rules).message.required = true];
+    string env_name = 2 [(validate.rules).string.min_len = 1];
 }
 
 message EventDeploymentFailed {
     Deployment deployment = 1 [(validate.rules).message.required = true];
-    string reason = 2;
+    string env_name = 2 [(validate.rules).string.min_len = 1];
+    string reason = 3;
 }
 
 message EventDeploymentCancelled {
     Deployment deployment = 1 [(validate.rules).message.required = true];
-    string commander = 2;
+    string env_name = 2 [(validate.rules).string.min_len = 1];
+    string commander = 3;
 }
 
 message EventApplicationSynced {
     Application application = 1 [(validate.rules).message.required = true];
-    ApplicationSyncState state = 2 [(validate.rules).message.required = true];
+    string env_name = 2 [(validate.rules).string.min_len = 1];
+    ApplicationSyncState state = 3 [(validate.rules).message.required = true];
 }
 
 message EventApplicationOutOfSync {
     Application application = 1 [(validate.rules).message.required = true];
-    ApplicationSyncState state = 2 [(validate.rules).message.required = true];
+    string env_name = 2 [(validate.rules).string.min_len = 1];
+    ApplicationSyncState state = 3 [(validate.rules).message.required = true];
 }
 
 message EventPipedStarted {
@@ -99,5 +108,4 @@ message EventPipedStarted {
 message EventPipedStopped {
     string id = 1 [(validate.rules).string.min_len = 1];
     string version = 2;
-    string error = 3;
 }

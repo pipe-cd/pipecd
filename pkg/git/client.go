@@ -52,12 +52,12 @@ type client struct {
 func NewClient(username, email string, logger *zap.Logger) (Client, error) {
 	gitPath, err := exec.LookPath("git")
 	if err != nil {
-		return nil, fmt.Errorf("unabled to find the path of git: %v", err)
+		return nil, fmt.Errorf("unable to find the path of git: %v", err)
 	}
 
 	cacheDir, err := ioutil.TempDir("", "gitcache")
 	if err != nil {
-		return nil, fmt.Errorf("unabled to create a temporary directory for git cache: %v", err)
+		return nil, fmt.Errorf("unable to create a temporary directory for git cache: %v", err)
 	}
 
 	return &client{

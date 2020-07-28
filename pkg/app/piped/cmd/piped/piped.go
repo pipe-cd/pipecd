@@ -33,6 +33,7 @@ import (
 	"github.com/pipe-cd/pipe/pkg/app/piped/apistore/applicationstore"
 	"github.com/pipe-cd/pipe/pkg/app/piped/apistore/commandstore"
 	"github.com/pipe-cd/pipe/pkg/app/piped/apistore/deploymentstore"
+	"github.com/pipe-cd/pipe/pkg/app/piped/apistore/environmentstore"
 	"github.com/pipe-cd/pipe/pkg/app/piped/chartrepo"
 	"github.com/pipe-cd/pipe/pkg/app/piped/controller"
 	"github.com/pipe-cd/pipe/pkg/app/piped/driftdetector"
@@ -115,32 +116,9 @@ func (p *piped) run(ctx context.Context, t cli.Telemetry) (runErr error) {
 		t.Logger.Error("failed to initialize notifier", zap.Error(err))
 		return err
 	}
-	{
-		group.Go(func() error {
-			return notifier.Run(ctx)
-		})
-		notifier.Notify(model.Event{
-			Type: model.EventType_EVENT_PIPED_STARTED,
-			Metadata: &model.EventPipedStarted{
-				Id:      cfg.PipedID,
-				Version: version.Get().Version,
-			},
-		})
-		defer func() {
-			var errMsg string
-			if runErr != nil {
-				errMsg = runErr.Error()
-			}
-			notifier.Notify(model.Event{
-				Type: model.EventType_EVENT_PIPED_STOPPED,
-				Metadata: &model.EventPipedStopped{
-					Id:      cfg.PipedID,
-					Version: version.Get().Version,
-					Error:   errMsg,
-				},
-			})
-		}()
-	}
+	group.Go(func() error {
+		return notifier.Run(ctx)
+	})
 
 	// Configure SSH config if needed.
 	if cfg.Git.ShouldConfigureSSHConfig() {
@@ -228,6 +206,13 @@ func (p *piped) run(ctx context.Context, t cli.Telemetry) (runErr error) {
 		}
 	}()
 
+	// Initialize environment store.
+	environmentStore := environmentstore.NewStore(
+		apiClient,
+		memorycache.NewTTLCache(ctx, 10*time.Minute, time.Minute),
+		t.Logger,
+	)
+
 	// Start running application store.
 	var applicationLister applicationstore.Lister
 	{
@@ -295,6 +280,7 @@ func (p *piped) run(ctx context.Context, t cli.Telemetry) (runErr error) {
 			deploymentLister,
 			commandLister,
 			applicationLister,
+			environmentStore,
 			livestatestore.LiveResourceLister{Getter: liveStateGetter},
 			notifier,
 			cfg,
@@ -315,6 +301,7 @@ func (p *piped) run(ctx context.Context, t cli.Telemetry) (runErr error) {
 			gitClient,
 			applicationLister,
 			commandLister,
+			environmentStore,
 			notifier,
 			cfg,
 			p.gracePeriod,

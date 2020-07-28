@@ -42,6 +42,7 @@ import (
 type planner struct {
 	// Readonly deployment model.
 	deployment               *model.Deployment
+	envName                  string
 	lastSuccessfulCommitHash string
 	workingDir               string
 	apiClient                apiClient
@@ -63,6 +64,7 @@ type planner struct {
 
 func newPlanner(
 	d *model.Deployment,
+	envName string,
 	lastSuccessfulCommitHash string,
 	workingDir string,
 	apiClient apiClient,
@@ -84,6 +86,7 @@ func newPlanner(
 
 	p := &planner{
 		deployment:               d,
+		envName:                  envName,
 		lastSuccessfulCommitHash: lastSuccessfulCommitHash,
 		workingDir:               workingDir,
 		apiClient:                apiClient,
@@ -206,6 +209,7 @@ func (p *planner) reportDeploymentPlanned(ctx context.Context, runningCommitHash
 			Type: model.EventType_EVENT_DEPLOYMENT_PLANNED,
 			Metadata: &model.EventDeploymentPlanned{
 				Deployment: p.deployment,
+				EnvName:    p.envName,
 				Summary:    out.Summary,
 			},
 		})
@@ -243,6 +247,7 @@ func (p *planner) reportDeploymentFailed(ctx context.Context, reason string) err
 			Type: model.EventType_EVENT_DEPLOYMENT_FAILED,
 			Metadata: &model.EventDeploymentFailed{
 				Deployment: p.deployment,
+				EnvName:    p.envName,
 				Reason:     reason,
 			},
 		})
@@ -280,6 +285,7 @@ func (p *planner) reportDeploymentCancelled(ctx context.Context, commander, reas
 			Type: model.EventType_EVENT_DEPLOYMENT_CANCELLED,
 			Metadata: &model.EventDeploymentCancelled{
 				Deployment: p.deployment,
+				EnvName:    p.envName,
 				Commander:  commander,
 			},
 		})
