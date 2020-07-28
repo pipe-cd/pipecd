@@ -18,6 +18,7 @@ import (
 	"crypto/subtle"
 	"fmt"
 	"net/url"
+	"strings"
 
 	"golang.org/x/crypto/bcrypt"
 	"golang.org/x/oauth2"
@@ -44,21 +45,21 @@ func (p *ProjectStaticUser) Auth(username, password string) error {
 	return nil
 }
 
-// CreateAuthURL creates a auth url.
-func (p *ProjectSingleSignOn) CreateAuthURL(project, apiURL, callbackPath, state string) (string, error) {
+// GenerateAuthCodeURL generates an auth URL for the specified configuration.
+func (p *ProjectSingleSignOn) GenerateAuthCodeURL(project, apiURL, callbackPath, state string) (string, error) {
 	switch p.Provider {
 	case ProjectSingleSignOnProvider_GITHUB:
 		if p.Github == nil {
 			return "", fmt.Errorf("missing GitHub oauth in the SSO configuration")
 		}
-		return p.Github.CreateAuthURL(project, apiURL, callbackPath, state)
+		return p.Github.GenerateAuthCodeURL(project, apiURL, callbackPath, state)
 	default:
 		return "", fmt.Errorf("not implemented")
 	}
 }
 
-// CreateAuthURL creates a auth url.
-func (p *ProjectSingleSignOn_GitHub) CreateAuthURL(project, apiURL, callbackPath, state string) (string, error) {
+// GenerateAuthCodeURL generates an auth URL for the specified configuration.
+func (p *ProjectSingleSignOn_GitHub) GenerateAuthCodeURL(project, apiURL, callbackPath, state string) (string, error) {
 	u, err := url.Parse(p.BaseUrl)
 	if err != nil {
 		return "", err
@@ -70,6 +71,7 @@ func (p *ProjectSingleSignOn_GitHub) CreateAuthURL(project, apiURL, callbackPath
 	}
 
 	cfg.Scopes = githubScopes
+	apiURL = strings.TrimSuffix(apiURL, "/")
 	cfg.RedirectURL = fmt.Sprintf("%s%s?project=%s", apiURL, callbackPath, project)
 	authURL := cfg.AuthCodeURL(state, oauth2.ApprovalForce, oauth2.AccessTypeOnline)
 

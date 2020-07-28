@@ -48,7 +48,7 @@ func (h *Handler) handleLogin(w http.ResponseWriter, r *http.Request) {
 
 	stateToken := xsrftoken.Generate(h.stateSeed, "", "")
 	state := hex.EncodeToString([]byte(stateToken))
-	authURL, err := proj.Sso.CreateAuthURL(proj.Id, h.apiURL, callbackPath, state)
+	authURL, err := proj.Sso.GenerateAuthCodeURL(proj.Id, h.apiURL, callbackPath, state)
 	if err != nil {
 		handleError(w, r, rootPath, "internal error", h.logger, err)
 		return
