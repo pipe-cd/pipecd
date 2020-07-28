@@ -6,6 +6,7 @@ import {
   makeStyles,
   Avatar,
   Link,
+  Button,
 } from "@material-ui/core";
 import {
   APP_NAME,
@@ -17,13 +18,16 @@ import {
 } from "../constants";
 import { Link as RouterLink } from "react-router-dom";
 import { useMe } from "../modules/me";
+import ArrowDownIcon from "@material-ui/icons/ArrowDropDown";
 
 const useStyles = makeStyles((theme) => ({
   appBar: {
     zIndex: theme.zIndex.drawer + 1,
   },
-  title: {
+  left: {
     flexGrow: 1,
+    display: "flex",
+    alignItems: "center",
   },
   appIcon: {
     marginRight: theme.spacing(2),
@@ -37,6 +41,10 @@ const useStyles = makeStyles((theme) => ({
     width: theme.spacing(4),
     height: theme.spacing(4),
   },
+  projectName: {
+    marginLeft: theme.spacing(1),
+    textTransform: "none",
+  },
 }));
 
 export const Header: FC = memo(function Header() {
@@ -46,10 +54,19 @@ export const Header: FC = memo(function Header() {
   return (
     <AppBar position="static" className={classes.appBar}>
       <Toolbar variant="dense">
-        <Avatar className={classes.appIcon}>P</Avatar>
-        <Typography variant="h6" className={classes.title}>
-          {APP_NAME}
-        </Typography>
+        <div className={classes.left}>
+          <Avatar className={classes.appIcon}>P</Avatar>
+          <Typography variant="h6">{APP_NAME}</Typography>
+          {me?.isLogin && (
+            <Button
+              color="inherit"
+              className={classes.projectName}
+              endIcon={<ArrowDownIcon />}
+            >
+              {me.projectId}
+            </Button>
+          )}
+        </div>
         <Link
           component={RouterLink}
           className={classes.link}
