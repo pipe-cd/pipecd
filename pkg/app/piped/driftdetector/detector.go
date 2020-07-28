@@ -92,7 +92,7 @@ func NewDetector(
 		case model.CloudProviderKubernetes:
 			sg, ok := stateGetter.KubernetesGetter(cp.Name)
 			if !ok {
-				d.logger.Error(fmt.Sprintf("unabled to find live state getter for cloud provider: %s", cp.Name))
+				d.logger.Error(fmt.Sprintf("unable to find live state getter for cloud provider: %s", cp.Name))
 				continue
 			}
 			d.detectors = append(d.detectors, kubernetes.NewDetector(

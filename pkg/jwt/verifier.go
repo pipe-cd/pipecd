@@ -33,7 +33,7 @@ type verifier struct {
 func NewVerifier(method jwtgo.SigningMethod, keyFile string) (Verifier, error) {
 	key, err := readKeyFile(method, keyFile, false)
 	if err != nil {
-		return nil, fmt.Errorf("unabled to read key file: %v", err)
+		return nil, fmt.Errorf("unable to read key file: %v", err)
 	}
 	return &verifier{
 		key:    key,
@@ -49,7 +49,7 @@ func (v *verifier) Verify(tokenString string) (*Claims, error) {
 		return v.key, nil
 	})
 	if err != nil {
-		return nil, fmt.Errorf("unabled to parse token: %v", err)
+		return nil, fmt.Errorf("unable to parse token: %v", err)
 	}
 	if !token.Valid {
 		return nil, fmt.Errorf("token is not valid")

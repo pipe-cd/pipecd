@@ -350,7 +350,7 @@ func (c *controller) startNewPlanner(ctx context.Context, d *model.Deployment) (
 		case status.Code(err) == codes.NotFound:
 			logger.Info("there is no previous successful commit for this application")
 		default:
-			logger.Error("unabled to get the most recent successful deployment", zap.Error(err))
+			logger.Error("unable to get the most recent successful deployment", zap.Error(err))
 		}
 	}
 

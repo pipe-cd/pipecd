@@ -65,7 +65,7 @@ func NewReporter(appLister applicationLister, stateGetter livestatestore.Getter,
 		case model.CloudProviderKubernetes:
 			sg, ok := stateGetter.KubernetesGetter(cp.Name)
 			if !ok {
-				r.logger.Error(fmt.Sprintf("unabled to find live state getter for cloud provider: %s", cp.Name))
+				r.logger.Error(fmt.Sprintf("unable to find live state getter for cloud provider: %s", cp.Name))
 				continue
 			}
 			r.reporters = append(r.reporters, newKubernetesReporter(cp, appLister, sg, apiClient, logger))
