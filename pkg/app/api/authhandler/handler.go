@@ -41,6 +41,8 @@ const (
 	projectFormKey  = "project"
 	usernameFormKey = "username"
 	passwordFormKey = "password"
+	authCodeFormKey = "code"
+	stateFormKey    = "state"
 
 	stateCookieKey = "state"
 	errorCookieKey = "error"
@@ -59,7 +61,7 @@ type projectGetter interface {
 type Handler struct {
 	signer        jwt.Signer
 	apiURL        string
-	stateSeed     string
+	stateKey      string
 	projectGetter projectGetter
 	logger        *zap.Logger
 }
@@ -68,14 +70,14 @@ type Handler struct {
 func NewHandler(
 	signer jwt.Signer,
 	apiURL string,
-	stateSeed string,
+	stateKey string,
 	projectGetter projectGetter,
 	logger *zap.Logger,
 ) *Handler {
 	return &Handler{
 		signer:        signer,
 		apiURL:        apiURL,
-		stateSeed:     stateSeed,
+		stateKey:      stateKey,
 		projectGetter: projectGetter,
 		logger:        logger,
 	}
@@ -85,6 +87,7 @@ func NewHandler(
 func (h *Handler) Register(reg func(string, func(http.ResponseWriter, *http.Request))) {
 	reg(loginPath, h.handleLogin)
 	reg(staticLoginPath, h.handleStaticLogin)
+	reg(callbackPath, h.handleCallback)
 	reg(logoutPath, h.handleLogout)
 }
 

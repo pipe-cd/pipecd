@@ -15,11 +15,13 @@
 package model
 
 import (
+	"context"
 	"crypto/subtle"
 	"fmt"
 	"net/url"
 	"strings"
 
+	"github.com/google/go-github/v29/github"
 	"golang.org/x/crypto/bcrypt"
 	"golang.org/x/oauth2"
 )
@@ -27,6 +29,13 @@ import (
 var (
 	githubScopes = []string{"read:org"}
 )
+
+// UserInfo is the login user information.
+type UserInfo struct {
+	AvatarURL string
+	Username  string
+	Role      Role_ProjectRole
+}
 
 // Auth confirms username and password.
 func (p *ProjectStaticUser) Auth(username, password string) error {
@@ -76,4 +85,96 @@ func (p *ProjectSingleSignOn_GitHub) GenerateAuthCodeURL(project, apiURL, callba
 	authURL := cfg.AuthCodeURL(state, oauth2.ApprovalForce, oauth2.AccessTypeOnline)
 
 	return authURL, nil
+}
+
+// GenerateUserInfo generates a login user information.
+func (p *ProjectSingleSignOn) GenerateUserInfo(ctx context.Context, code string) (*UserInfo, error) {
+	switch p.Provider {
+	case ProjectSingleSignOnProvider_GITHUB:
+		if p.Github == nil {
+			return nil, fmt.Errorf("missing GitHub oauth in the SSO configuration")
+		}
+		return p.Github.GenerateUserInfo(ctx, code)
+	default:
+		return nil, fmt.Errorf("not implemented")
+	}
+}
+
+// GenerateUserInfo generates a login user information.
+func (p *ProjectSingleSignOn_GitHub) GenerateUserInfo(ctx context.Context, code string) (*UserInfo, error) {
+	bu, err := url.Parse(p.BaseUrl)
+	if err != nil {
+		return nil, err
+	}
+	uu, err := url.Parse(p.UploadUrl)
+	if err != nil {
+		return nil, err
+	}
+
+	cfg := oauth2.Config{
+		ClientID:     p.ClientId,
+		ClientSecret: p.ClientSecret,
+		Endpoint:     oauth2.Endpoint{TokenURL: fmt.Sprintf("%s://%s%s", bu.Scheme, bu.Host, "/login/oauth/access_token")},
+	}
+	token, err := cfg.Exchange(ctx, code)
+	if err != nil {
+		return nil, err
+	}
+
+	cli := github.NewClient(cfg.Client(ctx, token))
+	if !strings.HasSuffix(bu.Path, "/") {
+		bu.Path += "/"
+	}
+	cli.BaseURL = bu
+	if !strings.HasSuffix(uu.Path, "/") {
+		bu.Path += "/"
+	}
+	cli.UploadURL = uu
+
+	user, _, err := cli.Users.Get(ctx, "")
+	if err != nil {
+		return nil, err
+	}
+	teams, _, err := cli.Teams.ListUserTeams(ctx, nil)
+	if err != nil {
+		return nil, err
+	}
+	role, err := p.decideRole(user.GetLogin(), teams)
+	if err != nil {
+		return nil, err
+	}
+
+	return &UserInfo{
+		Username:  user.GetLogin(),
+		AvatarURL: user.GetAvatarURL(),
+		Role:      *role,
+	}, nil
+}
+
+func (p *ProjectSingleSignOn_GitHub) decideRole(user string, teams []*github.Team) (*Role_ProjectRole, error) {
+	var viewer, editor bool
+	for _, team := range teams {
+		slug := team.GetSlug()
+		if p.Org != team.Organization.GetLogin() || slug == "" {
+			continue
+		}
+		switch slug {
+		case p.AdminTeam:
+			r := Role_ADMIN
+			return &r, nil
+		case p.EditorTeam:
+			editor = true
+		case p.ViewerTeam:
+			viewer = true
+		}
+	}
+	if editor {
+		r := Role_EDITOR
+		return &r, nil
+	}
+	if viewer {
+		r := Role_VIEWER
+		return &r, nil
+	}
+	return nil, fmt.Errorf("user (%s) not found in any of the %d project teams", user, len(teams))
 }

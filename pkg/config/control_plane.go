@@ -32,8 +32,8 @@ type ControlPlaneSpec struct {
 	Projects []ControlPlaneProject `json:"projects"`
 	// The address to the API of PipeCD control plane.
 	APIURL string `json:"apiUrl"`
-	// The seed to generate oauth state paramater.
-	StateSeed string `json:"stateSeed"`
+	// The key to generate oauth state paramater.
+	StateKey string `json:"stateKey"`
 }
 
 func (s *ControlPlaneSpec) Validate() error {

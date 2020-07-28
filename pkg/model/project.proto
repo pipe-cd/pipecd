@@ -58,14 +58,16 @@ enum ProjectSingleSignOnProvider {
 
 message ProjectSingleSignOn {
     ProjectSingleSignOnProvider provider = 1 [(validate.rules).enum.defined_only = true];
-    string admin_team = 2 [(validate.rules).string.min_len = 1];
-    string editor_team = 3 [(validate.rules).string.min_len = 1];
-    string viewer_team = 4 [(validate.rules).string.min_len = 1];
 
     message GitHub {
         string client_id = 1 [(validate.rules).string.min_len = 1];
         string client_secret = 2 [(validate.rules).string.min_len = 1];
-        string base_url = 3;
+        string base_url = 3 [(validate.rules).string.min_len = 1];
+        string upload_url = 4 [(validate.rules).string.min_len = 1];
+        string org = 5 [(validate.rules).string.min_len = 1];
+        string admin_team = 6 [(validate.rules).string.min_len = 1];
+        string editor_team = 7 [(validate.rules).string.min_len = 1];
+        string viewer_team = 8 [(validate.rules).string.min_len = 1];
     }
 
     message Google {
