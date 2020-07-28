@@ -31,7 +31,9 @@ type ControlPlaneSpec struct {
 	// Please do not use this to configure the projects running the production mode.
 	Projects []ControlPlaneProject `json:"projects"`
 	// The address to the API of PipeCD control plane.
-	ApiURL string `json:"apiUrl"`
+	APIURL string `json:"apiUrl"`
+	// The seed to generate oauth state paramater.
+	StateSeed string `json:"stateSeed"`
 }
 
 func (s *ControlPlaneSpec) Validate() error {

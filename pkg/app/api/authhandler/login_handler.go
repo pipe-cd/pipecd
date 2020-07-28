@@ -32,13 +32,13 @@ import (
 func (h *Handler) handleLogin(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Content-Type", "text/html")
 
-	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
-	defer cancel()
-
 	if r.Method != http.MethodPost {
 		handleError(w, r, rootPath, "method not allowed", h.logger, fmt.Errorf("method not allowed: %v", r.Method))
 		return
 	}
+
+	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
+	defer cancel()
 
 	proj, err := h.getProject(ctx, r)
 	if err != nil {
@@ -61,13 +61,13 @@ func (h *Handler) handleLogin(w http.ResponseWriter, r *http.Request) {
 func (h *Handler) handleStaticLogin(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Content-Type", "text/html")
 
-	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
-	defer cancel()
-
 	if r.Method != http.MethodPost {
 		handleError(w, r, rootPath, "method not allowed", h.logger, fmt.Errorf("method not allowed: %v", r.Method))
 		return
 	}
+
+	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
+	defer cancel()
 
 	proj, err := h.getProject(ctx, r)
 	if err != nil {

@@ -16,10 +16,8 @@ package server
 
 import (
 	"context"
-	"encoding/base64"
 	"errors"
 	"fmt"
-	"io/ioutil"
 	"net/http"
 	"time"
 
@@ -230,18 +228,13 @@ func (s *server) run(ctx context.Context, t cli.Telemetry) error {
 			t.Logger.Error("failed to create a new signer", zap.Error(err))
 			return err
 		}
-		stateSeed, err := createStateSeed(s.tokenSigningKeyFile)
-		if err != nil {
-			t.Logger.Error("failed to create a state seed", zap.Error(err))
-			return err
-		}
 		mux := http.NewServeMux()
 		httpServer := &http.Server{
 			Addr:    fmt.Sprintf(":%d", s.httpPort),
 			Handler: mux,
 		}
 		handlers := []httpHandler{
-			authhandler.NewHandler(signer, cfg.ApiURL, stateSeed, datastore.NewProjectStore(ds), t.Logger),
+			authhandler.NewHandler(signer, cfg.APIURL, cfg.StateSeed, datastore.NewProjectStore(ds), t.Logger),
 		}
 		for _, h := range handlers {
 			h.Register(mux.HandleFunc)
@@ -365,12 +358,4 @@ func (s *server) createFilestore(ctx context.Context, cfg *config.ControlPlaneSp
 
 	//return nil, errors.New("filestore configuration is invalid")
 	return nil, nil
-}
-
-func createStateSeed(keyFile string) (string, error) {
-	data, err := ioutil.ReadFile(keyFile)
-	if err != nil {
-		return "", fmt.Errorf("unabled to read key file: %v", err)
-	}
-	return base64.StdEncoding.EncodeToString([]byte(data)), nil
 }
