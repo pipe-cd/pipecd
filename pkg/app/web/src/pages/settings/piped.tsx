@@ -23,6 +23,7 @@ import {
 } from "@material-ui/core";
 import { Add as AddIcon, MoreVert as MoreVertIcon } from "@material-ui/icons";
 import React, { FC, memo, useState } from "react";
+import dayjs from "dayjs";
 import { AddPipedForm } from "../../components/add-piped-form";
 import { useDispatch, useSelector } from "react-redux";
 import {
@@ -178,9 +179,10 @@ export const SettingsPipedPage: FC = memo(function SettingsPipedPage() {
               className={classes.item}
             >
               <ListItemText
-                primary={piped.id}
-                secondary={`${piped.name}: ${piped.desc}`}
+                primary={`${piped.name}: ${piped.version}`}
+                secondary={`${piped.desc}: ${piped.id}`}
               />
+              {dayjs(piped.startedAt * 1000).fromNow()}
               <ListItemSecondaryAction>
                 <IconButton
                   edge="end"
@@ -214,9 +216,10 @@ export const SettingsPipedPage: FC = memo(function SettingsPipedPage() {
                   className={clsx(classes.item, classes.disabledItem)}
                 >
                   <ListItemText
-                    primary={piped.id}
-                    secondary={`${piped.name}: ${piped.desc}`}
+                    primary={`${piped.name}: ${piped.version}`}
+                    secondary={`${piped.desc}: ${piped.id}`}
                   />
+                  {dayjs(piped.startedAt * 1000).fromNow()}
                   <ListItemSecondaryAction>
                     <IconButton
                       edge="end"
