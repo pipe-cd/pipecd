@@ -16,35 +16,43 @@ package version
 
 import "fmt"
 
+const unspecified = "unspecified"
+
 var (
-	gitCommit     = "unspecified"
-	gitCommitFull = "unspecified"
-	buildDate     = "unspecified"
-	version       = "unspecified"
+	gitCommit = unspecified
+	buildDate = unspecified
+	version   = unspecified
 )
 
 type Info struct {
-	GitCommit     string
-	GitCommitFull string
-	BuildDate     string
-	Version       string
+	Version   string
+	GitCommit string
+	BuildDate string
 }
 
 func Get() Info {
-	return Info{
-		GitCommit:     gitCommit,
-		GitCommitFull: gitCommitFull,
-		BuildDate:     buildDate,
-		Version:       version,
+	i := Info{
+		Version:   version,
+		GitCommit: gitCommit,
+		BuildDate: buildDate,
 	}
+	if i.Version == "{version}" {
+		i.Version = unspecified
+	}
+	if i.GitCommit == "{gitCommit}" {
+		i.GitCommit = unspecified
+	}
+	if i.BuildDate == "{buildDate}" {
+		i.BuildDate = unspecified
+	}
+	return i
 }
 
 func (i Info) String() string {
 	return fmt.Sprintf(
-		"Version: %s, GitCommit: %s, GitCommitFull: %s, BuildDate: %s",
+		"Version: %s, GitCommit: %s, BuildDate: %s",
 		i.Version,
 		i.GitCommit,
-		i.GitCommitFull,
 		i.BuildDate,
 	)
 }

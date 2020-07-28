@@ -19,10 +19,9 @@ def version_x_defs():
 
     # This should match the list of vars set in hack/print-workspace-status.sh.
     stamp_vars = [
-        "gitCommit",
-        "gitCommitFull",
-        "buildDate",
         "version",
+        "gitCommit",
+        "buildDate",
     ]
 
     # Generate the cross-product.

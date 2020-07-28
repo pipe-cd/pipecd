@@ -27,8 +27,8 @@ def app_image(name, binary, repository, base = None, **kwargs):
     container_bundle(
         name = "bundle",
         images = {
+            "$(DOCKER_REGISTRY)/%s:{STABLE_VERSION}" % repository: ":image",
             "$(DOCKER_REGISTRY)/%s:{STABLE_GIT_COMMIT}" % repository: ":image",
-            "$(DOCKER_REGISTRY)/%s:{STABLE_GIT_COMMIT_FULL}" % repository: ":image",
         },
     )
 

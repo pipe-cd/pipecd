@@ -32,18 +32,15 @@ set -o errexit
 set -o nounset
 set -o pipefail
 
-GIT_COMMIT="$(git describe --tags --always --dirty --abbrev=7)"
-GIT_COMMIT_FULL="$(git rev-parse HEAD)"
-BUILD_DATE="$(date -u '+%Y%m%d')"
-VERSION="${BUILD_DATE}-${GIT_COMMIT}"
+VERSION="$(git describe --tags --always --dirty --abbrev=7)"
+GIT_COMMIT="$(git rev-parse HEAD)"
+BUILD_DATE="$(date -u '+%Y%m%d-%H%M%S')"
 
 cat <<EOF
-STABLE_GIT_COMMIT ${GIT_COMMIT}
-STABLE_GIT_COMMIT_FULL ${GIT_COMMIT_FULL}
-STABLE_BUILD_DATE ${BUILD_DATE}
 STABLE_VERSION ${VERSION}
-gitCommit ${GIT_COMMIT}
-gitCommitFull ${GIT_COMMIT_FULL}
-buildDate ${BUILD_DATE}
+STABLE_GIT_COMMIT ${GIT_COMMIT}
+STABLE_BUILD_DATE ${BUILD_DATE}
 version ${VERSION}
+gitCommit ${GIT_COMMIT}
+buildDate ${BUILD_DATE}
 EOF
