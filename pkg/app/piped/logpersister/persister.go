@@ -40,13 +40,12 @@ type Persister interface {
 }
 
 type StageLogPersister interface {
-	Append(log string, s model.LogSeverity)
-	AppendInfo(log string)
-	AppendInfof(format string, a ...interface{})
-	AppendSuccess(log string)
-	AppendSuccessf(format string, a ...interface{})
-	AppendError(log string)
-	AppendErrorf(format string, a ...interface{})
+	Info(log string)
+	Infof(format string, a ...interface{})
+	Success(log string)
+	Successf(format string, a ...interface{})
+	Error(log string)
+	Errorf(format string, a ...interface{})
 	Complete(timeout time.Duration) error
 }
 

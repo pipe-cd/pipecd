@@ -70,7 +70,7 @@ func Register(r registerer) {
 func (e *Executor) Execute(sig executor.StopSignal) model.StageStatus {
 	e.config = e.DeploymentConfig.KubernetesDeploymentSpec
 	if e.config == nil {
-		e.LogPersister.AppendError("Malformed deployment configuration: missing KubernetesDeploymentSpec")
+		e.LogPersister.Error("Malformed deployment configuration: missing KubernetesDeploymentSpec")
 		return model.StageStatus_STAGE_FAILURE
 	}
 
@@ -116,7 +116,7 @@ func (e *Executor) Execute(sig executor.StopSignal) model.StageStatus {
 		status = e.ensureRollback(ctx)
 
 	default:
-		e.LogPersister.AppendErrorf("Unsupported stage %s for kubernetes application", e.Stage.Name)
+		e.LogPersister.Errorf("Unsupported stage %s for kubernetes application", e.Stage.Name)
 		return model.StageStatus_STAGE_FAILURE
 	}
 
@@ -189,49 +189,49 @@ func (e *Executor) addBuiltinAnnontations(manifests []provider.Manifest, variant
 }
 
 func (e *Executor) applyManifests(ctx context.Context, manifests []provider.Manifest) error {
-	e.LogPersister.AppendInfof("Start applying %d manifests", len(manifests))
+	e.LogPersister.Infof("Start applying %d manifests", len(manifests))
 	for _, m := range manifests {
 		if err := e.provider.ApplyManifest(ctx, m); err != nil {
-			e.LogPersister.AppendErrorf("Failed to apply manifest: %s (%v)", m.Key.ReadableString(), err)
+			e.LogPersister.Errorf("Failed to apply manifest: %s (%v)", m.Key.ReadableString(), err)
 			return err
 		}
-		e.LogPersister.AppendSuccessf("- applied manifest: %s", m.Key.ReadableString())
+		e.LogPersister.Successf("- applied manifest: %s", m.Key.ReadableString())
 	}
-	e.LogPersister.AppendSuccessf("Successfully applied %d manifests", len(manifests))
+	e.LogPersister.Successf("Successfully applied %d manifests", len(manifests))
 	return nil
 }
 
 func (e *Executor) deleteResources(ctx context.Context, resources []provider.ResourceKey) error {
 	resourcesLen := len(resources)
 	if resourcesLen == 0 {
-		e.LogPersister.AppendInfo("No resources to delete")
+		e.LogPersister.Info("No resources to delete")
 		return nil
 	}
 
-	e.LogPersister.AppendInfof("Start deleting %d resources", len(resources))
+	e.LogPersister.Infof("Start deleting %d resources", len(resources))
 	var deletedCount int
 
 	for _, k := range resources {
 		err := e.provider.Delete(ctx, k)
 		if err == nil {
-			e.LogPersister.AppendSuccessf("- deleted resource: %s", k.ReadableString())
+			e.LogPersister.Successf("- deleted resource: %s", k.ReadableString())
 			deletedCount++
 			continue
 		}
 		if errors.Is(err, provider.ErrNotFound) {
-			e.LogPersister.AppendInfof("- no resource %s to delete", k.ReadableString())
+			e.LogPersister.Infof("- no resource %s to delete", k.ReadableString())
 			deletedCount++
 			continue
 		}
-		e.LogPersister.AppendErrorf("- unable to delete resource: %s (%v)", k.ReadableString(), err)
+		e.LogPersister.Errorf("- unable to delete resource: %s (%v)", k.ReadableString(), err)
 	}
 
 	if deletedCount < resourcesLen {
-		e.LogPersister.AppendInfof("Deleted %d/%d resources", deletedCount, resourcesLen)
+		e.LogPersister.Infof("Deleted %d/%d resources", deletedCount, resourcesLen)
 		return fmt.Errorf("unable to delete %d resources", resourcesLen-deletedCount)
 	}
 
-	e.LogPersister.AppendSuccessf("Successfully deleted %d resources", len(resources))
+	e.LogPersister.Successf("Successfully deleted %d resources", len(resources))
 	return nil
 }
 

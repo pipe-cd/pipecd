@@ -55,12 +55,12 @@ func (e *Executor) Execute(sig executor.StopSignal) model.StageStatus {
 	)
 	defer ticker.Stop()
 
-	e.LogPersister.AppendInfo("Waiting for an approval...")
+	e.LogPersister.Info("Waiting for an approval...")
 	for {
 		select {
 		case <-ticker.C:
 			if commander, ok := e.checkApproval(ctx); ok {
-				e.LogPersister.AppendInfof("Got an approval from %s", commander)
+				e.LogPersister.Infof("Got an approval from %s", commander)
 				return model.StageStatus_STAGE_SUCCESS
 			}
 
@@ -100,7 +100,7 @@ func (e *Executor) checkApproval(ctx context.Context) (string, bool) {
 		}
 	}
 	if err := e.MetadataStore.SetStageMetadata(ctx, e.Stage.Id, metadata); err != nil {
-		e.LogPersister.AppendErrorf("Unabled to save approver information to deployment, %v", err)
+		e.LogPersister.Errorf("Unabled to save approver information to deployment, %v", err)
 		return "", false
 	}
 

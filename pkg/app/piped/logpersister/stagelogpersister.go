@@ -46,8 +46,8 @@ type stageLogPersister struct {
 	logger                  *zap.Logger
 }
 
-// Append appends a new log block.
-func (sp *stageLogPersister) Append(log string, s model.LogSeverity) {
+// append appends a new log block.
+func (sp *stageLogPersister) append(log string, s model.LogSeverity) {
 	now := time.Now()
 
 	// We also send this log messages to the local logger.
@@ -70,34 +70,34 @@ func (sp *stageLogPersister) Append(log string, s model.LogSeverity) {
 	})
 }
 
-// AppendInfo appends a new INFO log block.
-func (sp *stageLogPersister) AppendInfo(log string) {
-	sp.Append(log, model.LogSeverity_INFO)
+// Info appends a new INFO log block.
+func (sp *stageLogPersister) Info(log string) {
+	sp.append(log, model.LogSeverity_INFO)
 }
 
-// AppendInfof formats and appends a new INFO log block.
-func (sp *stageLogPersister) AppendInfof(format string, a ...interface{}) {
-	sp.Append(fmt.Sprintf(format, a...), model.LogSeverity_INFO)
+// Infof formats and appends a new INFO log block.
+func (sp *stageLogPersister) Infof(format string, a ...interface{}) {
+	sp.append(fmt.Sprintf(format, a...), model.LogSeverity_INFO)
 }
 
-// AppendSuccess appends a new SUCCESS log block.
-func (sp *stageLogPersister) AppendSuccess(log string) {
-	sp.Append(log, model.LogSeverity_SUCCESS)
+// Success appends a new SUCCESS log block.
+func (sp *stageLogPersister) Success(log string) {
+	sp.append(log, model.LogSeverity_SUCCESS)
 }
 
-// AppendSuccessf formats and appends a new SUCCESS log block.
-func (sp *stageLogPersister) AppendSuccessf(format string, a ...interface{}) {
-	sp.Append(fmt.Sprintf(format, a...), model.LogSeverity_SUCCESS)
+// Successf formats and appends a new SUCCESS log block.
+func (sp *stageLogPersister) Successf(format string, a ...interface{}) {
+	sp.append(fmt.Sprintf(format, a...), model.LogSeverity_SUCCESS)
 }
 
-// AppendError appends a new ERROR log block.
-func (sp *stageLogPersister) AppendError(log string) {
-	sp.Append(log, model.LogSeverity_ERROR)
+// Error appends a new ERROR log block.
+func (sp *stageLogPersister) Error(log string) {
+	sp.append(log, model.LogSeverity_ERROR)
 }
 
-// AppendErrorf formats and appends a new ERROR log block.
-func (sp *stageLogPersister) AppendErrorf(format string, a ...interface{}) {
-	sp.Append(fmt.Sprintf(format, a...), model.LogSeverity_ERROR)
+// Errorf formats and appends a new ERROR log block.
+func (sp *stageLogPersister) Errorf(format string, a ...interface{}) {
+	sp.append(fmt.Sprintf(format, a...), model.LogSeverity_ERROR)
 }
 
 // Complete marks the completion of logging for this stage.

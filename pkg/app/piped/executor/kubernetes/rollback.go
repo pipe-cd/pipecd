@@ -28,13 +28,13 @@ func (e *Executor) ensureRollback(ctx context.Context) model.StageStatus {
 	// to revert PRIMARY resources and TRAFFIC ROUTING resources.
 
 	// Load the manifests at the specified commit.
-	e.LogPersister.AppendInfof("Loading manifests at running commit %s for handling", commitHash)
+	e.LogPersister.Infof("Loading manifests at running commit %s for handling", commitHash)
 	manifests, err := e.loadRunningManifests(ctx)
 	if err != nil {
-		e.LogPersister.AppendErrorf("Failed while loading running manifests (%v)", err)
+		e.LogPersister.Errorf("Failed while loading running manifests (%v)", err)
 		return model.StageStatus_STAGE_FAILURE
 	}
-	e.LogPersister.AppendSuccessf("Successfully loaded %d manifests", len(manifests))
+	e.LogPersister.Successf("Successfully loaded %d manifests", len(manifests))
 
 	// Because the loaded maninests are read-only
 	// we duplicate them to avoid updating the shared manifests data in cache.
@@ -46,7 +46,7 @@ func (e *Executor) ensureRollback(ctx context.Context) model.StageStatus {
 		workloads := findWorkloadManifests(manifests, e.config.Workloads)
 		for _, m := range workloads {
 			if err := ensureVariantSelectorInWorkload(m, primaryVariant); err != nil {
-				e.LogPersister.AppendErrorf("Unable to check/set %q in selector of workload %s (%v)", variantLabel+": "+primaryVariant, m.Key.ReadableString(), err)
+				e.LogPersister.Errorf("Unable to check/set %q in selector of workload %s (%v)", variantLabel+": "+primaryVariant, m.Key.ReadableString(), err)
 				return model.StageStatus_STAGE_FAILURE
 			}
 		}
@@ -63,7 +63,7 @@ func (e *Executor) ensureRollback(ctx context.Context) model.StageStatus {
 	var errs []error
 
 	// Next we delete all resources of CANARY variant.
-	e.LogPersister.AppendInfo("Start checking to ensure that the CANARY variant should be removed")
+	e.LogPersister.Info("Start checking to ensure that the CANARY variant should be removed")
 	if value, ok := e.MetadataStore.Get(addedCanaryResourcesMetadataKey); ok {
 		resources := strings.Split(value, ",")
 		if err := e.removeCanaryResources(ctx, resources); err != nil {
@@ -72,7 +72,7 @@ func (e *Executor) ensureRollback(ctx context.Context) model.StageStatus {
 	}
 
 	// Then delete all resources of BASELINE variant.
-	e.LogPersister.AppendInfo("Start checking to ensure that the BASELINE variant should be removed")
+	e.LogPersister.Info("Start checking to ensure that the BASELINE variant should be removed")
 	if value, ok := e.MetadataStore.Get(addedBaselineResourcesMetadataKey); ok {
 		resources := strings.Split(value, ",")
 		if err := e.removeBaselineResources(ctx, resources); err != nil {

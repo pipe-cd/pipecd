@@ -82,13 +82,13 @@ func (e *Executor) Execute(sig executor.StopSignal) model.StageStatus {
 	ticker := time.NewTicker(logInterval)
 	defer ticker.Stop()
 
-	e.LogPersister.AppendInfof("Waiting for %v...", duration)
+	e.LogPersister.Infof("Waiting for %v...", duration)
 	select {
 	case <-timer.C:
 		break
 
 	case <-ticker.C:
-		e.LogPersister.AppendInfof("%v elapsed...", time.Since(startTime))
+		e.LogPersister.Infof("%v elapsed...", time.Since(startTime))
 
 	case s := <-sig.Ch():
 		switch s {
@@ -101,7 +101,7 @@ func (e *Executor) Execute(sig executor.StopSignal) model.StageStatus {
 		}
 	}
 
-	e.LogPersister.AppendInfof("Waited for %v", totalDuration)
+	e.LogPersister.Infof("Waited for %v", totalDuration)
 	return model.StageStatus_STAGE_SUCCESS
 }
 

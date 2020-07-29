@@ -77,7 +77,7 @@ func (e *Executor) Execute(sig executor.StopSignal) model.StageStatus {
 
 	templateCfg, ok, err := config.LoadAnalysisTemplate(e.RepoDir)
 	if err != nil {
-		e.LogPersister.AppendError(err.Error())
+		e.LogPersister.Error(err.Error())
 		return model.StageStatus_STAGE_FAILURE
 	}
 	if !ok {
@@ -103,7 +103,7 @@ func (e *Executor) Execute(sig executor.StopSignal) model.StageStatus {
 	for i := range options.Metrics {
 		analyzer, err := e.newAnalyzerForMetrics(i, &options.Metrics[i], templateCfg, mf)
 		if err != nil {
-			e.LogPersister.AppendError(err.Error())
+			e.LogPersister.Error(err.Error())
 			continue
 		}
 		eg.Go(func() error {
@@ -115,7 +115,7 @@ func (e *Executor) Execute(sig executor.StopSignal) model.StageStatus {
 	for i := range options.Logs {
 		analyzer, err := e.newAnalyzerForLog(i, &options.Logs[i], templateCfg, lf)
 		if err != nil {
-			e.LogPersister.AppendError(err.Error())
+			e.LogPersister.Error(err.Error())
 			continue
 		}
 		eg.Go(func() error {
@@ -126,7 +126,7 @@ func (e *Executor) Execute(sig executor.StopSignal) model.StageStatus {
 	for i := range options.Https {
 		analyzer, err := e.newAnalyzerForHTTP(i, &options.Https[i], templateCfg)
 		if err != nil {
-			e.LogPersister.AppendError(err.Error())
+			e.LogPersister.Error(err.Error())
 			continue
 		}
 		eg.Go(func() error {
@@ -135,11 +135,11 @@ func (e *Executor) Execute(sig executor.StopSignal) model.StageStatus {
 	}
 
 	if err := eg.Wait(); err != nil {
-		e.LogPersister.AppendErrorf("Analysis failed: %s", err.Error())
+		e.LogPersister.Errorf("Analysis failed: %s", err.Error())
 		return model.StageStatus_STAGE_FAILURE
 	}
 
-	e.LogPersister.AppendSuccess("All analyses were successful.")
+	e.LogPersister.Success("All analyses were successful.")
 	return model.StageStatus_STAGE_SUCCESS
 }
 

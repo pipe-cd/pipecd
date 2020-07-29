@@ -34,28 +34,28 @@ func (e *Executor) ensurePrimaryRollout(ctx context.Context) model.StageStatus {
 		options    = e.StageConfig.K8sPrimaryRolloutStageOptions
 	)
 	if options == nil {
-		e.LogPersister.AppendErrorf("Malformed configuration for stage %s", e.Stage.Name)
+		e.LogPersister.Errorf("Malformed configuration for stage %s", e.Stage.Name)
 		return model.StageStatus_STAGE_FAILURE
 	}
 
 	// Load the manifests at the triggered commit.
-	e.LogPersister.AppendInfof("Loading manifests at trigered commit %s for handling", commitHash)
+	e.LogPersister.Infof("Loading manifests at trigered commit %s for handling", commitHash)
 	manifests, err := e.loadManifests(ctx)
 	if err != nil {
-		e.LogPersister.AppendErrorf("Failed while loading manifests (%v)", err)
+		e.LogPersister.Errorf("Failed while loading manifests (%v)", err)
 		return model.StageStatus_STAGE_FAILURE
 	}
-	e.LogPersister.AppendSuccessf("Successfully loaded %d manifests", len(manifests))
+	e.LogPersister.Successf("Successfully loaded %d manifests", len(manifests))
 
 	// Find traffic routing manifests and filter out it from primary manifests.
 	trafficRoutingManifests, err := findTrafficRoutingManifests(manifests, e.config.Service.Name, e.config.TrafficRouting)
 	if err != nil {
-		e.LogPersister.AppendErrorf("Failed while finding traffic routing manifest: (%v)", err)
+		e.LogPersister.Errorf("Failed while finding traffic routing manifest: (%v)", err)
 		return model.StageStatus_STAGE_FAILURE
 	}
 
 	if len(trafficRoutingManifests) > 1 {
-		e.LogPersister.AppendInfof(
+		e.LogPersister.Infof(
 			"Detected %d traffic routing manifests but only the first one (%s) will be used",
 			len(trafficRoutingManifests),
 			trafficRoutingManifests[0].Key.ReadableString(),
@@ -82,7 +82,7 @@ func (e *Executor) ensurePrimaryRollout(ctx context.Context) model.StageStatus {
 		for _, m := range workloads {
 			if err := checkVariantSelectorInWorkload(m, primaryVariant); err != nil {
 				invalid = true
-				e.LogPersister.AppendErrorf("Missing %q in selector of workload %s (%v)", variantLabel+": "+primaryVariant, m.Key.ReadableString(), err)
+				e.LogPersister.Errorf("Missing %q in selector of workload %s (%v)", variantLabel+": "+primaryVariant, m.Key.ReadableString(), err)
 			}
 		}
 		if invalid {
@@ -91,33 +91,33 @@ func (e *Executor) ensurePrimaryRollout(ctx context.Context) model.StageStatus {
 	}
 
 	// Generate the manifests for applying.
-	e.LogPersister.AppendInfo("Start generating manifests for PRIMARY variant")
+	e.LogPersister.Info("Start generating manifests for PRIMARY variant")
 	applyManifests, err := e.generatePrimaryManifests(primaryManifests, *options)
 	if err != nil {
-		e.LogPersister.AppendErrorf("Unable to generate manifests for PRIMARY variant (%v)", err)
+		e.LogPersister.Errorf("Unable to generate manifests for PRIMARY variant (%v)", err)
 		return model.StageStatus_STAGE_FAILURE
 	}
-	e.LogPersister.AppendSuccessf("Successfully generated %d manifests for PRIMARY variant", len(applyManifests))
+	e.LogPersister.Successf("Successfully generated %d manifests for PRIMARY variant", len(applyManifests))
 
 	// Add builtin annotations for tracking application live state.
 	e.addBuiltinAnnontations(applyManifests, primaryVariant, commitHash)
 
 	// Start applying all manifests to add or update running resources.
-	e.LogPersister.AppendInfo("Start rolling out PRIMARY variant...")
+	e.LogPersister.Info("Start rolling out PRIMARY variant...")
 	if err := e.applyManifests(ctx, applyManifests); err != nil {
 		return model.StageStatus_STAGE_FAILURE
 	}
-	e.LogPersister.AppendSuccess("Successfully rolled out PRIMARY variant")
+	e.LogPersister.Success("Successfully rolled out PRIMARY variant")
 
 	if !options.Prune {
-		e.LogPersister.AppendInfo("Resource GC was skipped because sync.prune was not configured")
+		e.LogPersister.Info("Resource GC was skipped because sync.prune was not configured")
 		return model.StageStatus_STAGE_SUCCESS
 	}
 
 	// Wait for all applied manifests to be stable.
 	// In theory, we don't need to wait for them to be stable before going to the next step
 	// but waiting for a while reduces the number of Kubernetes changes in a short time.
-	e.LogPersister.AppendInfo("Waiting for the applied manifests to be stable")
+	e.LogPersister.Info("Waiting for the applied manifests to be stable")
 	select {
 	case <-time.After(15 * time.Second):
 		break
@@ -126,22 +126,22 @@ func (e *Executor) ensurePrimaryRollout(ctx context.Context) model.StageStatus {
 	}
 
 	// Find the running resources that are not defined in Git.
-	e.LogPersister.AppendInfo("Start finding all running PRIMARY resources but no longer defined in Git")
+	e.LogPersister.Info("Start finding all running PRIMARY resources but no longer defined in Git")
 	runningManifests, err := e.loadRunningManifests(ctx)
 	if err != nil {
-		e.LogPersister.AppendErrorf("Failed while loading running manifests (%v)", err)
+		e.LogPersister.Errorf("Failed while loading running manifests (%v)", err)
 		return model.StageStatus_STAGE_FAILURE
 	}
 
 	removeKeys := findRemoveManifests(runningManifests, manifests, e.config.Input.Namespace)
 	if len(removeKeys) == 0 {
-		e.LogPersister.AppendInfo("There are no live resources should be removed")
+		e.LogPersister.Info("There are no live resources should be removed")
 		return model.StageStatus_STAGE_SUCCESS
 	}
-	e.LogPersister.AppendInfof("Found %d live resources that are no longer defined in Git", len(removeKeys))
+	e.LogPersister.Infof("Found %d live resources that are no longer defined in Git", len(removeKeys))
 
 	// Start deleting all running resources that are not defined in Git.
-	e.LogPersister.AppendInfof("Start deleting %d resources", len(removeKeys))
+	e.LogPersister.Infof("Start deleting %d resources", len(removeKeys))
 	if err := e.deleteResources(ctx, removeKeys); err != nil {
 		return model.StageStatus_STAGE_FAILURE
 	}
