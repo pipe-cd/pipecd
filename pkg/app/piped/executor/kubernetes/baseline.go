@@ -137,7 +137,7 @@ func (e *Executor) removeBaselineResources(ctx context.Context, resources []stri
 }
 
 func (e *Executor) generateBaselineManifests(manifests []provider.Manifest, opts config.K8sBaselineRolloutStageOptions) ([]provider.Manifest, error) {
-	var suffix = baselineVariant
+	suffix := baselineVariant
 	if opts.Suffix != "" {
 		suffix = opts.Suffix
 	}

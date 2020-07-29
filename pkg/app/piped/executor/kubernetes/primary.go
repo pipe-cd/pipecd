@@ -156,7 +156,7 @@ func findRemoveManifests(prevs []provider.Manifest, curs []provider.Manifest, na
 }
 
 func (e *Executor) generatePrimaryManifests(manifests []provider.Manifest, opts config.K8sPrimaryRolloutStageOptions) ([]provider.Manifest, error) {
-	var suffix = primaryVariant
+	suffix := primaryVariant
 	if opts.Suffix != "" {
 		suffix = opts.Suffix
 	}

@@ -138,7 +138,7 @@ func (e *Executor) removeCanaryResources(ctx context.Context, resources []string
 }
 
 func (e *Executor) generateCanaryManifests(manifests []provider.Manifest, opts config.K8sCanaryRolloutStageOptions) ([]provider.Manifest, error) {
-	var suffix = canaryVariant
+	suffix := canaryVariant
 	if opts.Suffix != "" {
 		suffix = opts.Suffix
 	}
