@@ -34,9 +34,36 @@ func (e *Executor) ensureSync(ctx context.Context) model.StageStatus {
 	}
 	e.LogPersister.AppendSuccessf("Successfully loaded %d manifests", len(manifests))
 
+	// Check the variant selector in the workloads.
+	if e.config.Pipeline != nil && !e.config.Sync.AddVariantLabelToSelector {
+		workloads := findWorkloadManifests(manifests, e.config.Workloads)
+		var invalid bool
+		for _, m := range workloads {
+			if err := checkVariantSelectorInWorkload(m, primaryVariant); err != nil {
+				invalid = true
+				e.LogPersister.AppendErrorf("Missing %q in selector of workload %s (%v)", variantLabel+": "+primaryVariant, m.Key.ReadableString(), err)
+			}
+		}
+		if invalid {
+			return model.StageStatus_STAGE_FAILURE
+		}
+	}
+
 	// Because the loaded maninests are read-only
 	// we duplicate them to avoid updating the shared manifests data in cache.
 	manifests = duplicateManifests(manifests, "")
+
+	// When addVariantLabelToSelector is true, ensure that all workloads
+	// have the variant label in their selector.
+	if e.config.Sync.AddVariantLabelToSelector {
+		workloads := findWorkloadManifests(manifests, e.config.Workloads)
+		for _, m := range workloads {
+			if err := ensureVariantSelectorInWorkload(m, primaryVariant); err != nil {
+				e.LogPersister.AppendErrorf("Unable to check/set %q in selector of workload %s (%v)", variantLabel+": "+primaryVariant, m.Key.ReadableString(), err)
+				return model.StageStatus_STAGE_FAILURE
+			}
+		}
+	}
 
 	// Add builtin annotations for tracking application live state.
 	e.addBuiltinAnnontations(manifests, primaryVariant, commitHash)

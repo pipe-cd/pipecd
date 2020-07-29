@@ -143,19 +143,7 @@ func (e *Executor) generateCanaryManifests(manifests []provider.Manifest, opts c
 		suffix = opts.Suffix
 	}
 
-	var workloads []provider.Manifest
-	if len(e.config.Workloads) == 0 {
-		workloads = findManifests(provider.KindDeployment, "", manifests)
-	} else {
-		for _, ref := range e.config.Workloads {
-			kind := provider.KindDeployment
-			if ref.Kind != "" {
-				kind = ref.Kind
-			}
-			ms := findManifests(kind, ref.Name, manifests)
-			workloads = append(workloads, ms...)
-		}
-	}
+	workloads := findWorkloadManifests(manifests, e.config.Workloads)
 	if len(workloads) == 0 {
 		return nil, fmt.Errorf("unable to find any workload manifests for CANARY variant")
 	}

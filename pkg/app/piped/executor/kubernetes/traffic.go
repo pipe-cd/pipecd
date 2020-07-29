@@ -90,7 +90,7 @@ func (e *Executor) ensureTrafficRouting(ctx context.Context) model.StageStatus {
 	// In case we are routing by PodSelector, the service manifest must contain variantLabel inside its selector.
 	if method == config.TrafficRoutingMethodPodSelector {
 		if err := checkVariantSelectorInService(trafficRoutingManifest, primaryVariant); err != nil {
-			e.LogPersister.AppendErrorf("Traffic routing by Pod requires %q inside the selector of Service manifest but it was unable to check that field in manifest %s (%v)",
+			e.LogPersister.AppendErrorf("Traffic routing by PodSelector requires %q inside the selector of Service manifest but it was unable to check that field in manifest %s (%v)",
 				variantLabel+": "+primaryVariant,
 				trafficRoutingManifest.Key.ReadableString(),
 				err,
@@ -388,11 +388,11 @@ func checkVariantSelectorInService(m provider.Manifest, variant string) error {
 
 	value, ok := selector[variantLabel]
 	if !ok {
-		return fmt.Errorf("missing %s key in the selector", variantLabel)
+		return fmt.Errorf("missing %s key in spec.selector", variantLabel)
 	}
 
 	if value != variant {
-		return fmt.Errorf("want %s but got %s for %s key in the selector", variant, value, variantLabel)
+		return fmt.Errorf("require %s but got %s for %s key in spec.selector", variant, value, variantLabel)
 	}
 	return nil
 }

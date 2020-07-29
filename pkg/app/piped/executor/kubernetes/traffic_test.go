@@ -83,7 +83,7 @@ spec:
     selector:
         app: simple
 `,
-			expected: fmt.Errorf("missing pipecd.dev/variant key in the selector"),
+			expected: fmt.Errorf("missing pipecd.dev/variant key in spec.selector"),
 		},
 		{
 			name: "wrong variant",
@@ -97,7 +97,7 @@ spec:
         app: simple
         pipecd.dev/variant: canary
 `,
-			expected: fmt.Errorf("want primary but got canary for pipecd.dev/variant key in the selector"),
+			expected: fmt.Errorf("require primary but got canary for pipecd.dev/variant key in spec.selector"),
 		},
 		{
 			name: "ok",

@@ -75,6 +75,21 @@ func (e *Executor) ensurePrimaryRollout(ctx context.Context) model.StageStatus {
 		primaryManifests = manifests
 	}
 
+	// Check the variant selector in the workloads if the addVariantLabelToSelector is false.
+	if !options.AddVariantLabelToSelector {
+		workloads := findWorkloadManifests(primaryManifests, e.config.Workloads)
+		var invalid bool
+		for _, m := range workloads {
+			if err := checkVariantSelectorInWorkload(m, primaryVariant); err != nil {
+				invalid = true
+				e.LogPersister.AppendErrorf("Missing %q in selector of workload %s (%v)", variantLabel+": "+primaryVariant, m.Key.ReadableString(), err)
+			}
+		}
+		if invalid {
+			return model.StageStatus_STAGE_FAILURE
+		}
+	}
+
 	// Generate the manifests for applying.
 	e.LogPersister.AppendInfo("Start generating manifests for PRIMARY variant")
 	applyManifests, err := e.generatePrimaryManifests(primaryManifests, *options)
@@ -164,6 +179,17 @@ func (e *Executor) generatePrimaryManifests(manifests []provider.Manifest, opts 
 	// Because the loaded maninests are read-only
 	// we duplicate them to avoid updating the shared manifests data in cache.
 	manifests = duplicateManifests(manifests, "")
+
+	// When addVariantLabelToSelector is true, ensure that all workloads
+	// have the variant label in their selector.
+	if opts.AddVariantLabelToSelector {
+		workloads := findWorkloadManifests(manifests, e.config.Workloads)
+		for _, m := range workloads {
+			if err := ensureVariantSelectorInWorkload(m, primaryVariant); err != nil {
+				return nil, fmt.Errorf("unable to check/set %q in selector of workload %s (%v)", variantLabel+": "+primaryVariant, m.Key.ReadableString(), err)
+			}
+		}
+	}
 
 	// Find service manifests and duplicate them for PRIMARY variant.
 	if opts.CreateService {

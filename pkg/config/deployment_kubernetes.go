@@ -26,7 +26,11 @@ type KubernetesDeploymentSpec struct {
 	Service K8sResourceReference `json:"service"`
 	// Which resources should be considered as the Workload of application.
 	// Empty means all Deployments.
-	// e.g. "Deployment/deployment-name", "ReplicaSet/replicaset-name"
+	// e.g.
+	// - kind: Deployment
+	//   name: deployment-name
+	// - kind: ReplicationController
+	//   name: replication-controller-name
 	Workloads []K8sResourceReference `json:"workloads"`
 	// Which method should be used for traffic routing.
 	TrafficRouting *TrafficRouting `json:"trafficRouting"`
