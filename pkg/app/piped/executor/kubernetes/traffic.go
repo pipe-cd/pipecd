@@ -45,6 +45,7 @@ func (e *Executor) ensureTrafficRouting(ctx context.Context) model.StageStatus {
 		e.LogPersister.AppendErrorf("Malformed configuration for stage %s", e.Stage.Name)
 		return model.StageStatus_STAGE_FAILURE
 	}
+	method := config.DetermineTrafficRoutingMethod(e.config.TrafficRouting)
 
 	// Load the manifests at the triggered commit.
 	e.LogPersister.AppendInfof("Loading manifests at commit %s for handling", commitHash)
@@ -65,7 +66,7 @@ func (e *Executor) ensureTrafficRouting(ctx context.Context) model.StageStatus {
 	e.saveTrafficRoutingMetadata(ctx, primaryPercent, canaryPercent, baselinePercent)
 
 	// Find traffic routing manifests.
-	trafficRoutingManifests, err := e.findTrafficRoutingManifests(manifests, e.config.TrafficRouting)
+	trafficRoutingManifests, err := findTrafficRoutingManifests(manifests, e.config.Service.Name, e.config.TrafficRouting)
 	if err != nil {
 		e.LogPersister.AppendErrorf("Failed while finding traffic routing manifest: (%v)", err)
 		return model.StageStatus_STAGE_FAILURE
@@ -86,8 +87,8 @@ func (e *Executor) ensureTrafficRouting(ctx context.Context) model.StageStatus {
 	}
 	trafficRoutingManifest := trafficRoutingManifests[0]
 
-	// In case we are routing by Pod, the service manifest must contain variantLabel inside its selector.
-	if e.config.TrafficRouting == nil || e.config.TrafficRouting.Method == config.TrafficRoutingMethodPod || e.config.TrafficRouting.Method == "" {
+	// In case we are routing by PodSelector, the service manifest must contain variantLabel inside its selector.
+	if method == config.TrafficRoutingMethodPodSelector {
 		if err := checkVariantSelectorInService(trafficRoutingManifest, primaryVariant); err != nil {
 			e.LogPersister.AppendErrorf("Traffic routing by Pod requires %q inside the selector of Service manifest but it was unable to check that field in manifest %s (%v)",
 				variantLabel+": "+primaryVariant,
@@ -126,24 +127,15 @@ func (e *Executor) ensureTrafficRouting(ctx context.Context) model.StageStatus {
 	return model.StageStatus_STAGE_SUCCESS
 }
 
-func (e *Executor) findTrafficRoutingManifests(manifests []provider.Manifest, cfg *config.TrafficRouting) ([]provider.Manifest, error) {
-	if cfg != nil && cfg.Method == config.TrafficRoutingMethodIstio {
+func findTrafficRoutingManifests(manifests []provider.Manifest, serviceName string, cfg *config.TrafficRouting) ([]provider.Manifest, error) {
+	method := config.DetermineTrafficRoutingMethod(cfg)
+
+	if method == config.TrafficRoutingMethodIstio {
 		istioConfig := cfg.Istio
 		if istioConfig == nil {
 			istioConfig = &config.IstioTrafficRouting{}
 		}
 		return findIstioVirtualServiceManifests(manifests, istioConfig.VirtualService)
-	}
-
-	var podConfig config.PodTrafficRouting
-	if cfg != nil && cfg.Pod != nil {
-		podConfig = *cfg.Pod
-	}
-
-	// Find out the service which be updated the selector.
-	_, serviceName, ok := config.ParseVariantResourceReference(podConfig.Service.Reference)
-	if !ok {
-		return nil, fmt.Errorf("malformed Service reference %q", podConfig.Service.Reference)
 	}
 
 	return findManifests(provider.KindService, serviceName, manifests), nil
@@ -195,14 +187,14 @@ func (e *Executor) saveTrafficRoutingMetadata(ctx context.Context, primary, cana
 	}
 }
 
-func findIstioVirtualServiceManifests(manifests []provider.Manifest, cfg config.K8sResourceReference) ([]provider.Manifest, error) {
+func findIstioVirtualServiceManifests(manifests []provider.Manifest, ref config.K8sResourceReference) ([]provider.Manifest, error) {
 	const (
 		istioNetworkingAPIVersionPrefix = "networking.istio.io/"
 		istioVirtualServiceKind         = "VirtualService"
 	)
-	_, name, ok := config.ParseVariantResourceReference(cfg.Reference)
-	if !ok {
-		return nil, fmt.Errorf("malformed VirtualService reference: %s", cfg.Reference)
+
+	if ref.Kind != "" && ref.Kind != istioVirtualServiceKind {
+		return nil, fmt.Errorf("support only %q kind for VirtualService reference", istioVirtualServiceKind)
 	}
 
 	var out []provider.Manifest
@@ -213,7 +205,7 @@ func findIstioVirtualServiceManifests(manifests []provider.Manifest, cfg config.
 		if m.Key.Kind != istioVirtualServiceKind {
 			continue
 		}
-		if name != "" && m.Key.Name != name {
+		if ref.Name != "" && m.Key.Name != ref.Name {
 			continue
 		}
 		out = append(out, m)

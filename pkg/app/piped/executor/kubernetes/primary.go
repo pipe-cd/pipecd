@@ -48,7 +48,7 @@ func (e *Executor) ensurePrimaryRollout(ctx context.Context) model.StageStatus {
 	e.LogPersister.AppendSuccessf("Successfully loaded %d manifests", len(manifests))
 
 	// Find traffic routing manifests and filter out it from primary manifests.
-	trafficRoutingManifests, err := e.findTrafficRoutingManifests(manifests, e.config.TrafficRouting)
+	trafficRoutingManifests, err := findTrafficRoutingManifests(manifests, e.config.Service.Name, e.config.TrafficRouting)
 	if err != nil {
 		e.LogPersister.AppendErrorf("Failed while finding traffic routing manifest: (%v)", err)
 		return model.StageStatus_STAGE_FAILURE
@@ -77,7 +77,7 @@ func (e *Executor) ensurePrimaryRollout(ctx context.Context) model.StageStatus {
 
 	// Generate the manifests for applying.
 	e.LogPersister.AppendInfo("Start generating manifests for PRIMARY variant")
-	applyManifests, err := e.generatePrimaryManifests(primaryManifests)
+	applyManifests, err := e.generatePrimaryManifests(primaryManifests, *options)
 	if err != nil {
 		e.LogPersister.AppendErrorf("Unable to generate manifests for PRIMARY variant (%v)", err)
 		return model.StageStatus_STAGE_FAILURE
@@ -155,25 +155,10 @@ func findRemoveManifests(prevs []provider.Manifest, curs []provider.Manifest, na
 	return removeKeys
 }
 
-func (e *Executor) generatePrimaryManifests(manifests []provider.Manifest) ([]provider.Manifest, error) {
-	var (
-		serviceName     string
-		generateService bool
-		suffix          = primaryVariant
-	)
-
-	// Apply the specified configuration if they are present.
-	if sc := e.config.PrimaryVariant; sc != nil {
-		var ok bool
-		if sc.Suffix != "" {
-			suffix = sc.Suffix
-		}
-		generateService = sc.Service.Create
-
-		_, serviceName, ok = config.ParseVariantResourceReference(sc.Service.Reference)
-		if !ok {
-			return nil, fmt.Errorf("malformed service reference: %s", sc.Service.Reference)
-		}
+func (e *Executor) generatePrimaryManifests(manifests []provider.Manifest, opts config.K8sPrimaryRolloutStageOptions) ([]provider.Manifest, error) {
+	suffix := primaryVariant
+	if opts.Suffix != "" {
+		suffix = opts.Suffix
 	}
 
 	// Because the loaded maninests are read-only
@@ -181,7 +166,8 @@ func (e *Executor) generatePrimaryManifests(manifests []provider.Manifest) ([]pr
 	manifests = duplicateManifests(manifests, "")
 
 	// Find service manifests and duplicate them for PRIMARY variant.
-	if generateService {
+	if opts.CreateService {
+		serviceName := e.config.Service.Name
 		services := findManifests(provider.KindService, serviceName, manifests)
 		if len(services) == 0 {
 			return nil, fmt.Errorf("unable to find any service for name=%q", serviceName)

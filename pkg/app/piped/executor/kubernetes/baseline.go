@@ -137,43 +137,33 @@ func (e *Executor) removeBaselineResources(ctx context.Context, resources []stri
 }
 
 func (e *Executor) generateBaselineManifests(manifests []provider.Manifest, opts config.K8sBaselineRolloutStageOptions) ([]provider.Manifest, error) {
-	var (
-		workloadKind, workloadName string
-		serviceName                string
-		generateService            bool
-		baselineManifests          []provider.Manifest
-		suffix                     = baselineVariant
-	)
-
-	// Apply the specified configuration if they are present.
-	if sc := e.config.BaselineVariant; sc != nil {
-		var ok bool
-		if sc.Suffix != "" {
-			suffix = sc.Suffix
-		}
-		generateService = sc.Service.Create
-
-		workloadKind, workloadName, ok = config.ParseVariantResourceReference(sc.Workload.Reference)
-		if !ok {
-			return nil, fmt.Errorf("malformed workload reference: %s", sc.Workload.Reference)
-		}
-
-		_, serviceName, ok = config.ParseVariantResourceReference(sc.Service.Reference)
-		if !ok {
-			return nil, fmt.Errorf("malformed service reference: %s", sc.Service.Reference)
-		}
-	}
-	if workloadKind == "" {
-		workloadKind = provider.KindDeployment
+	suffix := baselineVariant
+	if opts.Suffix != "" {
+		suffix = opts.Suffix
 	}
 
-	workloads := findManifests(workloadKind, workloadName, manifests)
+	var workloads []provider.Manifest
+	if len(e.config.Workloads) == 0 {
+		workloads = findManifests(provider.KindDeployment, "", manifests)
+	} else {
+		for _, ref := range e.config.Workloads {
+			kind := provider.KindDeployment
+			if ref.Kind != "" {
+				kind = ref.Kind
+			}
+			ms := findManifests(kind, ref.Name, manifests)
+			workloads = append(workloads, ms...)
+		}
+	}
 	if len(workloads) == 0 {
 		return nil, fmt.Errorf("unable to find any workload manifests for BASELINE variant")
 	}
 
+	var baselineManifests []provider.Manifest
+
 	// Find service manifests and duplicate them for BASELINE variant.
-	if generateService {
+	if opts.CreateService {
+		serviceName := e.config.Service.Name
 		services := findManifests(provider.KindService, serviceName, manifests)
 		if len(services) == 0 {
 			return nil, fmt.Errorf("unable to find any service for name=%q", serviceName)

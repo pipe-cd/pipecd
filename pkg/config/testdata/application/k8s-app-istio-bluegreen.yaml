@@ -22,22 +22,20 @@ spec:
           all: primary
       # Destroy all workloads of CANARY variant.
       - name: K8S_CANARY_CLEAN
+  # Specify application service.
+  service:
+    name: demoapp
+  # Specify application workloads.
+  workloads:
+    - name: demoapp
   # Configuration for CANARY variant.
   canaryVariant:
     suffix: canary
-    workload:
-      reference: Deployment/demoapp
-    service:
-      create: true
-      reference: demoapp
+    createService: true
   # Configuration for BASELINE variant.
   baselineVariant:
     suffix: baseline
-    workload:
-      reference: Deployment/demoapp
-    service:
-      create: true
-      reference: demoapp
+    createService: true
   # Configuration for traffic splitting.
   trafficRouting:
     method: istio # pod (change label in service to switch traffic), smi, envoy

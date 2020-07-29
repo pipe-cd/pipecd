@@ -17,7 +17,7 @@ spec:
           primary: 100
       - name: K8S_CANARY_CLEAN
   trafficRouting:
-    method: pod
+    method: podselector
 
 ---
 # Pipeline for a Kubernetes application.
@@ -43,4 +43,4 @@ spec:
           primary: 100
       - name: K8S_CANARY_CLEAN
   trafficRouting:
-    method: pod
+    method: podselector
