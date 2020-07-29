@@ -19,6 +19,7 @@ import (
 	"errors"
 	"fmt"
 	"path/filepath"
+	"strings"
 
 	"go.uber.org/zap"
 	appsv1 "k8s.io/api/apps/v1"
@@ -270,6 +271,23 @@ func findSecretManifests(manifests []provider.Manifest) []provider.Manifest {
 	return out
 }
 
+func findWorkloadManifests(manifests []provider.Manifest, refs []config.K8sResourceReference) []provider.Manifest {
+	if len(refs) == 0 {
+		return findManifests(provider.KindDeployment, "", manifests)
+	}
+
+	workloads := make([]provider.Manifest, 0)
+	for _, ref := range refs {
+		kind := provider.KindDeployment
+		if ref.Kind != "" {
+			kind = ref.Kind
+		}
+		ms := findManifests(kind, ref.Name, manifests)
+		workloads = append(workloads, ms...)
+	}
+	return workloads
+}
+
 func duplicateManifests(manifests []provider.Manifest, nameSuffix string) []provider.Manifest {
 	out := make([]provider.Manifest, 0, len(manifests))
 	for _, m := range manifests {
@@ -381,6 +399,49 @@ func generateVariantWorkloadManifests(workloads, configmaps, secrets []provider.
 	}
 
 	return manifests, nil
+}
+
+func checkVariantSelectorInWorkload(m provider.Manifest, variant string) error {
+	var (
+		matchLabelsFields = []string{"spec", "selector", "matchLabels"}
+		labelsFields      = []string{"spec", "template", "metadata", "labels"}
+	)
+
+	matchLabels, err := m.GetNestedStringMap(matchLabelsFields...)
+	if err != nil {
+		return err
+	}
+	value, ok := matchLabels[variantLabel]
+	if !ok {
+		return fmt.Errorf("missing %s key in spec.selector.matchLabels", variantLabel)
+	}
+	if value != variant {
+		return fmt.Errorf("require %s but got %s for %s key in %s", variant, value, variantLabel, strings.Join(matchLabelsFields, "."))
+	}
+
+	labels, err := m.GetNestedStringMap(labelsFields...)
+	if err != nil {
+		return err
+	}
+	value, ok = labels[variantLabel]
+	if !ok {
+		return fmt.Errorf("missing %s key in spec.template.metadata.labels", variantLabel)
+	}
+	if value != variant {
+		return fmt.Errorf("require %s but got %s for %s key in %s", variant, value, variantLabel, strings.Join(labelsFields, "."))
+	}
+
+	return nil
+}
+
+func ensureVariantSelectorInWorkload(m provider.Manifest, variant string) error {
+	variantMap := map[string]string{
+		variantLabel: variant,
+	}
+	if err := m.AddStringMapValues(variantMap, "spec", "selector", "matchLabels"); err != nil {
+		return err
+	}
+	return m.AddStringMapValues(variantMap, "spec", "template", "metadata", "labels")
 }
 
 func makeSuffixedName(name, suffix string) string {

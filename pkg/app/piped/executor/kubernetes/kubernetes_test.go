@@ -15,6 +15,7 @@
 package kubernetes
 
 import (
+	"fmt"
 	"testing"
 
 	"github.com/stretchr/testify/assert"
@@ -91,4 +92,145 @@ func TestGenerateWorkloadManifests(t *testing.T) {
 			assert.Equal(t, manifests[1], generatedManifests[0])
 		})
 	}
+}
+
+func TestCheckVariantSelectorInWorkload(t *testing.T) {
+	testcases := []struct {
+		name     string
+		manifest string
+		expected error
+	}{
+		{
+			name: "missing variant in selector",
+			manifest: `
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: simple
+spec:
+  selector:
+    matchLabels:
+      app: simple
+  template:
+    metadata:
+      labels:
+        app: simple
+`,
+			expected: fmt.Errorf("missing pipecd.dev/variant key in spec.selector.matchLabels"),
+		},
+		{
+			name: "missing variant in template labels",
+			manifest: `
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: simple
+spec:
+  selector:
+    matchLabels:
+      app: simple
+      pipecd.dev/variant: primary
+  template:
+    metadata:
+      labels:
+        app: simple
+`,
+			expected: fmt.Errorf("missing pipecd.dev/variant key in spec.template.metadata.labels"),
+		},
+		{
+			name: "wrong variant in selector",
+			manifest: `
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: simple
+spec:
+  selector:
+    matchLabels:
+      app: simple
+      pipecd.dev/variant: canary
+  template:
+    metadata:
+      labels:
+        app: simple
+`,
+			expected: fmt.Errorf("require primary but got canary for pipecd.dev/variant key in spec.selector.matchLabels"),
+		},
+		{
+			name: "wrong variant in temlate labels",
+			manifest: `
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: simple
+spec:
+  selector:
+    matchLabels:
+      app: simple
+      pipecd.dev/variant: primary
+  template:
+    metadata:
+      labels:
+        app: simple
+        pipecd.dev/variant: canary
+`,
+			expected: fmt.Errorf("require primary but got canary for pipecd.dev/variant key in spec.template.metadata.labels"),
+		},
+		{
+			name: "ok",
+			manifest: `
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: simple
+spec:
+  selector:
+    matchLabels:
+      app: simple
+      pipecd.dev/variant: primary
+  template:
+    metadata:
+      labels:
+        app: simple
+        pipecd.dev/variant: primary
+`,
+			expected: nil,
+		},
+	}
+
+	expected := `
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: simple
+spec:
+  selector:
+    matchLabels:
+      app: simple
+      pipecd.dev/variant: primary
+  template:
+    metadata:
+      labels:
+        app: simple
+        pipecd.dev/variant: primary
+`
+	generatedManifests, err := provider.ParseManifests(expected)
+	require.NoError(t, err)
+	require.Equal(t, 1, len(generatedManifests))
+
+	for _, tc := range testcases {
+		t.Run(tc.name, func(t *testing.T) {
+			manifests, err := provider.ParseManifests(tc.manifest)
+			require.NoError(t, err)
+			require.Equal(t, 1, len(manifests))
+
+			err = checkVariantSelectorInWorkload(manifests[0], primaryVariant)
+			assert.Equal(t, tc.expected, err)
+
+			err = ensureVariantSelectorInWorkload(manifests[0], primaryVariant)
+			assert.NoError(t, err)
+			assert.Equal(t, generatedManifests[0], manifests[0])
+		})
+	}
+
 }
