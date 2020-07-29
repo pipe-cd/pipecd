@@ -131,7 +131,7 @@ export const ApplicationFilter: FC<Props> = memo(function ApplicationFilter({
         <Select
           labelId="filter-application-kind"
           id="filter-application-kind"
-          value={options.kindsList[0] || ALL_VALUE}
+          value={options.kindsList[0] ?? ALL_VALUE}
           label="Application Kind"
           className={classes.select}
           onChange={(e) => {
@@ -167,7 +167,7 @@ export const ApplicationFilter: FC<Props> = memo(function ApplicationFilter({
         <Select
           labelId="filter-sync-status"
           id="filter-sync-status"
-          value={options.syncStatusesList[0] || ALL_VALUE}
+          value={options.syncStatusesList[0] ?? ALL_VALUE}
           label="Sync Status"
           className={classes.select}
           onChange={(e) => {

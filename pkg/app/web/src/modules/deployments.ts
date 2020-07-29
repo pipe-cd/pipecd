@@ -11,13 +11,14 @@ import {
 } from "pipe/pkg/app/web/model/deployment_pb";
 import * as deploymentsApi from "../api/deployments";
 import { fetchCommand, CommandModel, CommandStatus } from "./commands";
-import { ApplicationKind } from "./applications";
+import { AppState } from ".";
 
 export type Deployment = Required<DeploymentModel.AsObject>;
 export type Stage = Required<PipelineStage.AsObject>;
 export type DeploymentStatusKey = keyof typeof DeploymentStatus;
 
-const ITEMS_PER_PAGE = 30;
+const ITEMS_PER_PAGE = 50;
+const FETCH_MORE_ITEMS_PER_PAGE = 30;
 
 export const isDeploymentRunning = (
   status: DeploymentStatus | undefined
@@ -52,7 +53,7 @@ export const isStageRunning = (status: StageStatus): boolean => {
 };
 
 export const deploymentsAdapter = createEntityAdapter<Deployment>({
-  sortComparer: (a, b) => b.createdAt - a.createdAt,
+  sortComparer: (a, b) => b.updatedAt - a.updatedAt,
 });
 
 export const {
@@ -62,6 +63,29 @@ export const {
   selectIds,
 } = deploymentsAdapter.getSelectors();
 
+const initialState = deploymentsAdapter.getInitialState<{
+  loading: Record<string, boolean>;
+  canceling: Record<string, boolean>;
+  isLoadingItems: boolean;
+  isLoadingMoreItems: boolean;
+  hasMore: boolean;
+}>({
+  loading: {},
+  canceling: {},
+  isLoadingItems: false,
+  isLoadingMoreItems: false,
+  hasMore: true,
+});
+
+const selectLastItem = (state: typeof initialState): Deployment | undefined => {
+  if (state.ids.length === 0) {
+    return undefined;
+  }
+  const lastId = state.ids[state.ids.length - 1];
+
+  return state.entities[lastId];
+};
+
 export const fetchDeploymentById = createAsyncThunk<Deployment, string>(
   "deployments/fetchById",
   async (deploymentId) => {
@@ -70,17 +94,49 @@ export const fetchDeploymentById = createAsyncThunk<Deployment, string>(
   }
 );
 
+/**
+ * This action will clear old items and add items.
+ */
 export const fetchDeployments = createAsyncThunk<
   Deployment[],
-  {
-    statusesList: DeploymentStatus[];
-    kindsList: ApplicationKind[];
-    applicationIdsList: string[];
-    envIdsList: string[];
-    maxUpdatedAt: number;
-  }
->("deployments/fetchList", async (options) => {
-  const { deploymentsList } = await deploymentsApi.getDeployments({ options, pageSize: ITEMS_PER_PAGE });
+  void,
+  { state: AppState }
+>("deployments/fetchList", async (_, thunkAPI) => {
+  const { deploymentFilterOptions } = thunkAPI.getState();
+  const { deploymentsList } = await deploymentsApi.getDeployments({
+    options: {
+      applicationIdsList: deploymentFilterOptions.applicationIds,
+      envIdsList: deploymentFilterOptions.envIds,
+      kindsList: deploymentFilterOptions.kinds,
+      statusesList: deploymentFilterOptions.statuses,
+      maxUpdatedAt: 0,
+    },
+    pageSize: ITEMS_PER_PAGE,
+  });
+  return (deploymentsList as Deployment[]) || [];
+});
+
+/**
+ * This action will add items to current state.
+ */
+export const fetchMoreDeployments = createAsyncThunk<
+  Deployment[],
+  void,
+  { state: AppState }
+>("deployments/fetchMoreList", async (_, thunkAPI) => {
+  const { deployments, deploymentFilterOptions } = thunkAPI.getState();
+  const lastItem = selectLastItem(deployments);
+  const maxUpdatedAt = lastItem ? lastItem.updatedAt : 0;
+  const { deploymentsList } = await deploymentsApi.getDeployments({
+    options: {
+      applicationIdsList: deploymentFilterOptions.applicationIds,
+      envIdsList: deploymentFilterOptions.envIds,
+      kindsList: deploymentFilterOptions.kinds,
+      statusesList: deploymentFilterOptions.statuses,
+      maxUpdatedAt,
+    },
+    pageSize: FETCH_MORE_ITEMS_PER_PAGE,
+  });
   return (deploymentsList as Deployment[]) || [];
 });
 
@@ -109,22 +165,8 @@ export const cancelDeployment = createAsyncThunk<
 
 export const deploymentsSlice = createSlice({
   name: "deployments",
-  initialState: deploymentsAdapter.getInitialState<{
-    loading: Record<string, boolean>;
-    canceling: Record<string, boolean>;
-    loadingList: boolean;
-    displayLength: number;
-  }>({
-    loading: {},
-    canceling: {},
-    loadingList: false,
-    displayLength: ITEMS_PER_PAGE,
-  }),
-  reducers: {
-    loadMoreDeployments(state) {
-      state.displayLength += ITEMS_PER_PAGE;
-    },
-  },
+  initialState,
+  reducers: {},
   extraReducers: (builder) => {
     builder
       .addCase(fetchDeploymentById.pending, (state, action) => {
@@ -140,19 +182,36 @@ export const deploymentsSlice = createSlice({
         state.loading[action.meta.arg] = false;
       })
       .addCase(fetchDeployments.pending, (state) => {
-        state.loadingList = true;
+        state.isLoadingItems = true;
+        state.hasMore = true;
       })
       .addCase(fetchDeployments.fulfilled, (state, action) => {
         deploymentsAdapter.removeAll(state);
-        state.displayLength = ITEMS_PER_PAGE;
         if (action.payload.length > 0) {
           deploymentsAdapter.upsertMany(state, action.payload);
         }
-        state.loadingList = false;
+        state.isLoadingItems = false;
+        if (action.payload.length < ITEMS_PER_PAGE) {
+          state.hasMore = false;
+        }
       })
       .addCase(fetchDeployments.rejected, (state) => {
-        state.loadingList = false;
+        state.isLoadingItems = false;
       })
+      .addCase(fetchMoreDeployments.pending, (state) => {
+        state.isLoadingMoreItems = true;
+      })
+      .addCase(fetchMoreDeployments.fulfilled, (state, action) => {
+        deploymentsAdapter.upsertMany(state, action.payload);
+        state.isLoadingMoreItems = false;
+        if (action.payload.length < FETCH_MORE_ITEMS_PER_PAGE) {
+          state.hasMore = false;
+        }
+      })
+      .addCase(fetchMoreDeployments.rejected, (state) => {
+        state.isLoadingMoreItems = false;
+      })
+
       .addCase(cancelDeployment.pending, (state, action) => {
         state.canceling[action.meta.arg.deploymentId] = true;
       })
@@ -168,4 +227,3 @@ export const deploymentsSlice = createSlice({
 });
 
 export { DeploymentStatus } from "pipe/pkg/app/web/model/deployment_pb";
-export const { loadMoreDeployments } = deploymentsSlice.actions;

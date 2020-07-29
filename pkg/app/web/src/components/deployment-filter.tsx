@@ -1,28 +1,34 @@
-import React, { FC, useReducer, memo, useEffect } from "react";
 import {
-  makeStyles,
-  Paper,
   Button,
-  Typography,
   FormControl,
   InputLabel,
-  Select,
+  makeStyles,
   MenuItem,
+  Paper,
+  Select,
   TextField,
+  Typography,
 } from "@material-ui/core";
 import Autocomplete from "@material-ui/lab/Autocomplete";
+import React, { FC, memo, useCallback } from "react";
+import { useDispatch, useSelector } from "react-redux";
+import { APPLICATION_KIND_TEXT } from "../constants/application-kind";
+import { DEPLOYMENT_STATE_TEXT } from "../constants/deployment-status-text";
+import { AppState } from "../modules";
 import {
+  Application,
   ApplicationKind,
   ApplicationKindKey,
-  Application,
   selectAll as selectAllApplications,
+  selectById as selectApplicationById,
 } from "../modules/applications";
+import {
+  clearDeploymentFilter,
+  DeploymentFilterOptions,
+  updateDeploymentFilter,
+} from "../modules/deployment-filter-options";
 import { DeploymentStatus, DeploymentStatusKey } from "../modules/deployments";
-import { APPLICATION_KIND_TEXT } from "../constants/application-kind";
 import { Environment, selectAll } from "../modules/environments";
-import { AppState } from "../modules";
-import { useSelector } from "react-redux";
-import { DEPLOYMENT_STATE_TEXT } from "../constants/deployment-status-text";
 
 const FILTER_PAPER_WIDTH = 360;
 
@@ -50,60 +56,9 @@ const useStyles = makeStyles((theme) => ({
 
 const ALL_VALUE = "ALL";
 
-interface FormState {
-  deploymentStatus: DeploymentStatus | typeof ALL_VALUE;
-  applicationKind: ApplicationKind | typeof ALL_VALUE;
-  application: Application | null;
-  env: string;
-}
-
-const initialState: FormState = {
-  deploymentStatus: ALL_VALUE,
-  applicationKind: ALL_VALUE,
-  application: null,
-  env: ALL_VALUE,
-};
-
-type Actions =
-  | {
-      type: "update-deployment-status";
-      value: DeploymentStatus | typeof ALL_VALUE;
-    }
-  | {
-      type: "update-application-kind";
-      value: ApplicationKind | typeof ALL_VALUE;
-    }
-  | { type: "update-application"; value: Application | null }
-  | { type: "update-env"; value: string }
-  | {
-      type: "clear-form";
-    };
-
-const reducer = (state: FormState, action: Actions): FormState => {
-  switch (action.type) {
-    case "clear-form":
-      return initialState;
-    case "update-deployment-status":
-      return { ...state, deploymentStatus: action.value };
-    case "update-application-kind":
-      return { ...state, applicationKind: action.value };
-    case "update-application":
-      return { ...state, application: action.value };
-    case "update-env":
-      return { ...state, env: action.value };
-  }
-};
-
-interface Options {
-  statusesList: DeploymentStatus[];
-  kindsList: ApplicationKind[];
-  applicationIdsList: string[];
-  envIdsList: string[];
-}
-
 interface Props {
   open: boolean;
-  onChange: (options: Options) => void;
+  onChange: () => void;
 }
 
 export const DeploymentFilter: FC<Props> = memo(function DeploymentFilter({
@@ -112,36 +67,26 @@ export const DeploymentFilter: FC<Props> = memo(function DeploymentFilter({
 }) {
   const classes = useStyles();
 
+  const dispatch = useDispatch();
   const envs = useSelector<AppState, Environment[]>((state) =>
     selectAll(state.environments)
   );
   const applications = useSelector<AppState, Application[]>((state) =>
     selectAllApplications(state.applications)
   );
-
-  const [state, dispatch] = useReducer(reducer, initialState);
-
-  useEffect(() => {
-    const options: Options = {
-      statusesList: [],
-      kindsList: [],
-      envIdsList: [],
-      applicationIdsList: [],
-    };
-    if (state.deploymentStatus !== ALL_VALUE) {
-      options.statusesList = [state.deploymentStatus];
-    }
-    if (state.applicationKind !== ALL_VALUE) {
-      options.kindsList = [state.applicationKind];
-    }
-    if (state.env !== ALL_VALUE) {
-      options.envIdsList = [state.env];
-    }
-    if (state.application) {
-      options.applicationIdsList = [state.application.id];
-    }
-    onChange(options);
-  }, [state, onChange]);
+  const options = useSelector<AppState, DeploymentFilterOptions>(
+    (state) => state.deploymentFilterOptions
+  );
+  const selectedApp = useSelector<AppState, Application | undefined>((state) =>
+    selectApplicationById(state.applications, options.applicationIds[0])
+  );
+  const handleUpdateFilterValue = useCallback(
+    (opts: Partial<DeploymentFilterOptions>): void => {
+      dispatch(updateDeploymentFilter(opts));
+      onChange();
+    },
+    [dispatch, onChange]
+  );
 
   if (open === false) {
     return null;
@@ -154,7 +99,8 @@ export const DeploymentFilter: FC<Props> = memo(function DeploymentFilter({
         <Button
           color="primary"
           onClick={() => {
-            dispatch({ type: "clear-form" });
+            dispatch(clearDeploymentFilter());
+            onChange();
           }}
         >
           Clear
@@ -166,13 +112,13 @@ export const DeploymentFilter: FC<Props> = memo(function DeploymentFilter({
         <Select
           labelId="filter-env"
           id="filter-env"
-          value={state.env}
+          value={options.envIds[0] || ALL_VALUE}
           label="Environment"
           className={classes.select}
           onChange={(e) => {
-            dispatch({
-              type: "update-env",
-              value: e.target.value as string,
+            handleUpdateFilterValue({
+              envIds:
+                e.target.value === ALL_VALUE ? [] : [e.target.value as string],
             });
           }}
         >
@@ -192,16 +138,15 @@ export const DeploymentFilter: FC<Props> = memo(function DeploymentFilter({
         <Select
           labelId="filter-application-kind"
           id="filter-application-kind"
-          value={state.applicationKind}
+          value={options.kinds[0] ?? ALL_VALUE}
           label="Application Kind"
           className={classes.select}
           onChange={(e) => {
-            dispatch({
-              type: "update-application-kind",
-              value:
-                e.target.value === ""
-                  ? ALL_VALUE
-                  : (e.target.value as ApplicationKind),
+            handleUpdateFilterValue({
+              kinds:
+                e.target.value === ALL_VALUE
+                  ? []
+                  : [e.target.value as ApplicationKind],
             });
           }}
         >
@@ -230,11 +175,10 @@ export const DeploymentFilter: FC<Props> = memo(function DeploymentFilter({
           options={applications}
           getOptionLabel={(option) => option.name}
           renderOption={(option) => <span>{option.name}</span>}
-          value={state.application}
+          value={selectedApp || null}
           onChange={(_, value) => {
-            dispatch({
-              type: "update-application",
-              value: value ? value : null,
+            handleUpdateFilterValue({
+              applicationIds: value ? [value.id] : [],
             });
           }}
           renderInput={(params) => (
@@ -244,7 +188,6 @@ export const DeploymentFilter: FC<Props> = memo(function DeploymentFilter({
               variant="outlined"
               inputProps={{
                 ...params.inputProps,
-                autoComplete: "new-password", // disable autocomplete and autofill
               }}
             />
           )}
@@ -256,16 +199,15 @@ export const DeploymentFilter: FC<Props> = memo(function DeploymentFilter({
         <Select
           labelId="filter-deployment-status"
           id="filter-deployment-status"
-          value={state.deploymentStatus}
+          value={options.statuses[0] ?? ALL_VALUE}
           label="Deployment Status"
           className={classes.select}
           onChange={(e) => {
-            dispatch({
-              type: "update-deployment-status",
-              value:
+            handleUpdateFilterValue({
+              statuses:
                 e.target.value === ALL_VALUE
-                  ? ALL_VALUE
-                  : (e.target.value as DeploymentStatus),
+                  ? []
+                  : [e.target.value as DeploymentStatus],
             });
           }}
         >
