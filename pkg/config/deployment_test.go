@@ -98,7 +98,7 @@ func TestAppConfig(t *testing.T) {
 							},
 						},
 						{
-							Name:                         model.StageK8sPrimaryRollout,
+							Name:                          model.StageK8sPrimaryRollout,
 							K8sPrimaryRolloutStageOptions: &K8sPrimaryRolloutStageOptions{},
 						},
 						{
@@ -114,7 +114,7 @@ func TestAppConfig(t *testing.T) {
 					},
 				},
 				TrafficRouting: &TrafficRouting{
-					Method: TrafficRoutingMethodPod,
+					Method: TrafficRoutingMethodPodSelector,
 				},
 			},
 			expectedError: nil,

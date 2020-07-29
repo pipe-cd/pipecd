@@ -17,7 +17,6 @@ package config
 import (
 	"encoding/json"
 	"fmt"
-	"strings"
 
 	"github.com/pipe-cd/pipe/pkg/model"
 )
@@ -33,10 +32,15 @@ type KubernetesDeploymentSpec struct {
 	Sync          K8sSyncStageOptions       `json:"sync"`
 	Pipeline      *DeploymentPipeline       `json:"pipeline"`
 
-	PrimaryVariant  *PrimaryVariant  `json:"primaryVariant"`
-	CanaryVariant   *CanaryVariant   `json:"canaryVariant"`
-	BaselineVariant *BaselineVariant `json:"baselineVariant"`
-	TrafficRouting  *TrafficRouting  `json:"trafficRouting"`
+	// Which resource should be considered as the Service of application.
+	// Empty means the first Service resource will be used.
+	Service K8sResourceReference `json:"service"`
+	// Which resources should be considered as the Workload of application.
+	// Empty means all Deployments.
+	// e.g. "Deployment/deployment-name", "ReplicaSet/replicaset-name"
+	Workloads []K8sResourceReference `json:"workloads"`
+	// Which method should be used for traffic routing.
+	TrafficRouting *TrafficRouting `json:"trafficRouting"`
 }
 
 func (s *KubernetesDeploymentSpec) GetStage(index int32) (PipelineStage, bool) {
@@ -91,49 +95,28 @@ type DeploymentPipeline struct {
 	Stages []PipelineStage `json:"stages"`
 }
 
-type PrimaryVariant struct {
-	// Suffix that should be used when naming the PRIMARY variant's resources.
-	// Default is "primary".
-	Suffix  string            `json:"suffix"`
-	Service K8sVariantService `json:"service"`
-}
-
-type CanaryVariant struct {
-	// Suffix that should be used when naming the CANARY variant's resources.
-	// Default is "canary".
-	Suffix   string               `json:"suffix"`
-	Service  K8sVariantService    `json:"service"`
-	Workload K8sResourceReference `json:"workload"`
-}
-
-type BaselineVariant struct {
-	// Suffix that should be used when naming the BASELINE variant's resources.
-	// Default is "baseline".
-	Suffix   string               `json:"suffix"`
-	Service  K8sVariantService    `json:"service"`
-	Workload K8sResourceReference `json:"workload"`
-}
-
-type K8sVariantService struct {
-	K8sResourceReference
-	Create bool `json:"create"`
-}
-
 type TrafficRoutingMethod string
 
 const (
-	TrafficRoutingMethodPod   TrafficRoutingMethod = "pod"
-	TrafficRoutingMethodIstio TrafficRoutingMethod = "istio"
+	TrafficRoutingMethodPodSelector TrafficRoutingMethod = "podselector"
+	TrafficRoutingMethodIstio       TrafficRoutingMethod = "istio"
 )
 
 type TrafficRouting struct {
 	Method TrafficRoutingMethod `json:"method"`
-	Pod    *PodTrafficRouting   `json:"pod"`
 	Istio  *IstioTrafficRouting `json:"istio"`
 }
 
-type PodTrafficRouting struct {
-	Service K8sResourceReference `json:"service"`
+// DetermineTrafficRoutingMethod determines the routing method should be used based on the TrafficRouting config.
+// The default is PodSelector: the way by updating the selector in Service to switching all of traffic.
+func DetermineTrafficRoutingMethod(cfg *TrafficRouting) TrafficRoutingMethod {
+	if cfg == nil {
+		return TrafficRoutingMethodPodSelector
+	}
+	if cfg.Method == "" {
+		return TrafficRoutingMethodPodSelector
+	}
+	return cfg.Method
 }
 
 type IstioTrafficRouting struct {
@@ -144,24 +127,8 @@ type IstioTrafficRouting struct {
 }
 
 type K8sResourceReference struct {
-	Reference string `json:"reference"`
-}
-
-// ParseVariantResourceReference parses the given reference name
-// and returns the resource Kind, Name.
-// If the reference is malformed, empty kind, empty name and false will be returned.
-// Reference format:
-// - kind/name
-// - name
-func ParseVariantResourceReference(ref string) (kind, name string, ok bool) {
-	parts := strings.Split(ref, "/")
-	if len(parts) == 1 {
-		return "", parts[0], true
-	}
-	if len(parts) == 2 {
-		return parts[0], parts[1], true
-	}
-	return "", "", false
+	Kind string `json:"kind"`
+	Name string `json:"name"`
 }
 
 // PiplineStage represents a single stage of a pipeline.
@@ -278,13 +245,21 @@ type WaitApprovalStageOptions struct {
 
 // K8sSyncStageOptions contains all configurable values for a K8S_SYNC stage.
 type K8sSyncStageOptions struct {
+	// Whether the PRIMARY variant label should be added to manifests if they were missing.
+	AddVariantLabelToSelector bool `json:"addVariantLabelToSelector"`
 	// Whether the resources that are no longer defined in Git will be removed.
 	Prune bool `json:"prune"`
 }
 
 // K8sPrimaryRolloutStageOptions contains all configurable values for a K8S_PRIMARY_ROLLOUT stage.
 type K8sPrimaryRolloutStageOptions struct {
-	Manifests []string `json:"manifests"`
+	// Suffix that should be used when naming the PRIMARY variant's resources.
+	// Default is "primary".
+	Suffix string `json:"suffix"`
+	// Whether the PRIMARY service should be created.
+	CreateService bool `json:"createService"`
+	// Whether the PRIMARY variant label should be added to manifests if they were missing.
+	AddVariantLabelToSelector bool `json:"addVariantLabelToSelector"`
 	// Whether the resources that are no longer defined in Git will be removed.
 	Prune bool `json:"prune"`
 }
@@ -296,6 +271,11 @@ type K8sCanaryRolloutStageOptions struct {
 	// Or a string suffixed by "%" to indicate an percentage value compared to the pod number of PRIMARY.
 	// Default is 1 pod.
 	Replicas Replicas `json:"replicas"`
+	// Suffix that should be used when naming the CANARY variant's resources.
+	// Default is "canary".
+	Suffix string `json:"suffix"`
+	// Whether the CANARY service should be created.
+	CreateService bool `json:"createService"`
 }
 
 // K8sCanaryCleanStageOptions contains all configurable values for a K8S_CANARY_CLEAN stage.
@@ -309,6 +289,11 @@ type K8sBaselineRolloutStageOptions struct {
 	// Or a string suffixed by "%" to indicate an percentage value compared to the pod number of PRIMARY.
 	// Default is 1 pod.
 	Replicas Replicas `json:"replicas"`
+	// Suffix that should be used when naming the BASELINE variant's resources.
+	// Default is "baseline".
+	Suffix string `json:"suffix"`
+	// Whether the BASELINE service should be created.
+	CreateService bool `json:"createService"`
 }
 
 // K8sBaselineCleanStageOptions contains all configurable values for a K8S_BASELINE_CLEAN stage.

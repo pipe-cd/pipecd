@@ -25,6 +25,3 @@ spec:
           primary: 100
       # Destroy all workloads of CANARY variant.
       - name: K8S_CANARY_CLEAN
-  # This example is not using service mesh.
-  trafficSplit:
-    method: pod
