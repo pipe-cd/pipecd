@@ -544,11 +544,19 @@ func (a *WebAPI) ListDeployments(ctx context.Context, req *webservice.ListDeploy
 				Value:    o.EnvIds[0],
 			})
 		}
+		if o.MaxUpdatedAt != 0 {
+			filters = append(filters, datastore.ListFilter{
+				Field:    "UpdatedAt",
+				Operator: "<",
+				Value:    o.MaxUpdatedAt,
+			})
+		}
 	}
 
 	deployments, err := a.deploymentStore.ListDeployments(ctx, datastore.ListOptions{
-		Filters: filters,
-		Orders:  orders,
+		Filters:  filters,
+		Orders:   orders,
+		PageSize: int(req.PageSize),
 	})
 	if err != nil {
 		a.logger.Error("failed to get deployments", zap.Error(err))

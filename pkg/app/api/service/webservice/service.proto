@@ -245,8 +245,11 @@ message ListDeploymentsRequest {
         repeated model.ApplicationKind kinds = 2;
         repeated string application_ids = 3;
         repeated string env_ids = 4;
+        // Returns the one before the specified time.
+        int64 max_updated_at = 5;
     }
     Options options = 1;
+    int32 page_size = 2;
 }
 
 message ListDeploymentsResponse {

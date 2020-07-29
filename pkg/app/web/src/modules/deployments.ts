@@ -77,9 +77,10 @@ export const fetchDeployments = createAsyncThunk<
     kindsList: ApplicationKind[];
     applicationIdsList: string[];
     envIdsList: string[];
+    maxUpdatedAt: number;
   }
 >("deployments/fetchList", async (options) => {
-  const { deploymentsList } = await deploymentsApi.getDeployments({ options });
+  const { deploymentsList } = await deploymentsApi.getDeployments({ options, pageSize: ITEMS_PER_PAGE });
   return (deploymentsList as Deployment[]) || [];
 });
 
