@@ -499,7 +499,6 @@ func (a *WebAPI) ListDeployments(ctx context.Context, req *webservice.ListDeploy
 		return nil, err
 	}
 
-	// TODO: Support pagination for Deployment list
 	orders := []datastore.Order{
 		{
 			Field:     "UpdatedAt",
@@ -547,7 +546,7 @@ func (a *WebAPI) ListDeployments(ctx context.Context, req *webservice.ListDeploy
 		if o.MaxUpdatedAt != 0 {
 			filters = append(filters, datastore.ListFilter{
 				Field:    "UpdatedAt",
-				Operator: "<",
+				Operator: "<=",
 				Value:    o.MaxUpdatedAt,
 			})
 		}
