@@ -10,7 +10,14 @@ import {
 import CloseIcon from "@material-ui/icons/Close";
 import FilterIcon from "@material-ui/icons/FilterList";
 import dayjs from "dayjs";
-import React, { FC, memo, useCallback, useEffect, useState } from "react";
+import React, {
+  FC,
+  memo,
+  useCallback,
+  useEffect,
+  useState,
+  useRef,
+} from "react";
 import { useDispatch, useSelector } from "react-redux";
 import { DeploymentFilter } from "../../components/deployment-filter";
 import { DeploymentItem } from "../../components/deployment-item";
@@ -21,7 +28,7 @@ import {
   fetchDeployments,
   selectIds as selectDeploymentIds,
   selectById as selectDeploymentById,
-  loadMoreDeployments,
+  fetchMoreDeployments,
 } from "../../modules/deployments";
 import { useInView } from "react-intersection-observer";
 
@@ -76,17 +83,27 @@ function filterUndefined<TValue>(value: TValue | undefined): value is TValue {
   return value !== undefined;
 }
 
-const useGroupedDeployments = (): [boolean, Record<string, Deployment[]>] => {
-  const [isLoading, deployments] = useSelector<
-    AppState,
-    [boolean, Deployment[]]
-  >((state) => [
-    state.deployments.loadingList,
-    selectDeploymentIds(state.deployments)
-      .slice(0, state.deployments.displayLength)
-      .map((id) => selectDeploymentById(state.deployments, id))
-      .filter(filterUndefined),
-  ]);
+const useGroupedDeployments = (): [
+  boolean,
+  boolean,
+  boolean,
+  Record<string, Deployment[]>
+] => {
+  const [
+    isLoadingItems,
+    isLoadingMoreItems,
+    hasMore,
+    deployments,
+  ] = useSelector<AppState, [boolean, boolean, boolean, Deployment[]]>(
+    (state) => [
+      state.deployments.isLoadingItems,
+      state.deployments.isLoadingMoreItems,
+      state.deployments.hasMore,
+      selectDeploymentIds(state.deployments)
+        .map((id) => selectDeploymentById(state.deployments, id))
+        .filter(filterUndefined),
+    ]
+  );
 
   const result: Record<string, Deployment[]> = {};
 
@@ -98,32 +115,43 @@ const useGroupedDeployments = (): [boolean, Record<string, Deployment[]>] => {
     result[dateStr].push(deployment);
   });
 
-  return [isLoading, result];
+  return [isLoadingItems, isLoadingMoreItems, hasMore, result];
 };
 
 export const DeploymentIndexPage: FC = memo(function DeploymentIndexPage() {
   const classes = useStyles();
   const dispatch = useDispatch();
-  const [isLoading, groupedDeployments] = useGroupedDeployments();
+  const listRef = useRef(null);
+  const [
+    isLoading,
+    isLoadingMoreItems,
+    hasMore,
+    groupedDeployments,
+  ] = useGroupedDeployments();
   const [isOpenFilter, setIsOpenFilter] = useState(false);
-  const [ref, inView] = useInView();
+  const [ref, inView] = useInView({
+    rootMargin: "400px",
+    root: listRef.current,
+  });
 
   useEffect(() => {
     dispatch(fetchApplications());
   }, [dispatch]);
 
   useEffect(() => {
-    if (inView) {
-      dispatch(loadMoreDeployments());
+    if (
+      inView &&
+      hasMore &&
+      isLoading === false &&
+      isLoadingMoreItems === false
+    ) {
+      dispatch(fetchMoreDeployments());
     }
-  }, [dispatch, inView]);
+  }, [dispatch, inView, hasMore, isLoading, isLoadingMoreItems]);
 
-  const handleChangeFilter = useCallback(
-    (options) => {
-      dispatch(fetchDeployments(options));
-    },
-    [dispatch]
-  );
+  const handleChangeFilter = useCallback(() => {
+    dispatch(fetchDeployments());
+  }, [dispatch]);
 
   const dates = Object.keys(groupedDeployments).sort(sortComp);
 
@@ -142,7 +170,7 @@ export const DeploymentIndexPage: FC = memo(function DeploymentIndexPage() {
 
       <Divider />
       <div className={classes.main}>
-        <ol className={classes.deploymentLists}>
+        <ol className={classes.deploymentLists} ref={listRef}>
           {isLoading ? (
             <div className={classes.loadingContainer}>
               <CircularProgress />
@@ -166,10 +194,12 @@ export const DeploymentIndexPage: FC = memo(function DeploymentIndexPage() {
                         key={`deployment-item-${deployment.id}`}
                       />
                     ))}
-                  <div ref={ref} />
                 </List>
               </li>
             ))
+          )}
+          {isLoading === false && isLoadingMoreItems === false && (
+            <div ref={ref} />
           )}
         </ol>
         <DeploymentFilter open={isOpenFilter} onChange={handleChangeFilter} />

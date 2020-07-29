@@ -11,9 +11,11 @@ import { toastsSlice } from "./toasts";
 import { commandsSlice } from "./commands";
 import { applicationFilterOptionsSlice } from "./application-filter-options";
 import { meSlice } from "./me";
+import { deploymentFilterOptionsSlice } from "./deployment-filter-options";
 
 export const reducers = combineReducers({
   deployments: deploymentsSlice.reducer,
+  deploymentFilterOptions: deploymentFilterOptionsSlice.reducer,
   applicationLiveState: applicationLiveStateSlice.reducer,
   applications: applicationsSlice.reducer,
   applicationFilterOptions: applicationFilterOptionsSlice.reducer,

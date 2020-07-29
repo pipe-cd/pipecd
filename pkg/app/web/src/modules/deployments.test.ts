@@ -9,11 +9,12 @@ describe("deploymentsSlice reducer", () => {
     ).toMatchInlineSnapshot(`
       Object {
         "canceling": Object {},
-        "displayLength": 30,
         "entities": Object {},
+        "hasMore": true,
         "ids": Array [],
+        "isLoadingItems": false,
+        "isLoadingMoreItems": false,
         "loading": Object {},
-        "loadingList": false,
       }
     `);
   });
