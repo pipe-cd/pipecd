@@ -26,13 +26,13 @@ func (e *Executor) ensureSync(ctx context.Context) model.StageStatus {
 	commitHash := e.Deployment.Trigger.Commit.Hash
 
 	// Load the manifests at the specified commit.
-	e.LogPersister.AppendInfof("Loading manifests at commit %s for handling", commitHash)
+	e.LogPersister.Infof("Loading manifests at commit %s for handling", commitHash)
 	manifests, err := e.loadManifests(ctx)
 	if err != nil {
-		e.LogPersister.AppendErrorf("Failed while loading manifests (%v)", err)
+		e.LogPersister.Errorf("Failed while loading manifests (%v)", err)
 		return model.StageStatus_STAGE_FAILURE
 	}
-	e.LogPersister.AppendSuccessf("Successfully loaded %d manifests", len(manifests))
+	e.LogPersister.Successf("Successfully loaded %d manifests", len(manifests))
 
 	// Check the variant selector in the workloads.
 	if e.config.Pipeline != nil && !e.config.Sync.AddVariantLabelToSelector {
@@ -41,7 +41,7 @@ func (e *Executor) ensureSync(ctx context.Context) model.StageStatus {
 		for _, m := range workloads {
 			if err := checkVariantSelectorInWorkload(m, primaryVariant); err != nil {
 				invalid = true
-				e.LogPersister.AppendErrorf("Missing %q in selector of workload %s (%v)", variantLabel+": "+primaryVariant, m.Key.ReadableString(), err)
+				e.LogPersister.Errorf("Missing %q in selector of workload %s (%v)", variantLabel+": "+primaryVariant, m.Key.ReadableString(), err)
 			}
 		}
 		if invalid {
@@ -59,7 +59,7 @@ func (e *Executor) ensureSync(ctx context.Context) model.StageStatus {
 		workloads := findWorkloadManifests(manifests, e.config.Workloads)
 		for _, m := range workloads {
 			if err := ensureVariantSelectorInWorkload(m, primaryVariant); err != nil {
-				e.LogPersister.AppendErrorf("Unable to check/set %q in selector of workload %s (%v)", variantLabel+": "+primaryVariant, m.Key.ReadableString(), err)
+				e.LogPersister.Errorf("Unable to check/set %q in selector of workload %s (%v)", variantLabel+": "+primaryVariant, m.Key.ReadableString(), err)
 				return model.StageStatus_STAGE_FAILURE
 			}
 		}
@@ -74,14 +74,14 @@ func (e *Executor) ensureSync(ctx context.Context) model.StageStatus {
 	}
 
 	if !e.config.Sync.Prune {
-		e.LogPersister.AppendInfo("Resource GC was skipped because sync.prune was not configured")
+		e.LogPersister.Info("Resource GC was skipped because sync.prune was not configured")
 		return model.StageStatus_STAGE_SUCCESS
 	}
 
 	// Wait for all applied manifests to be stable.
 	// In theory, we don't need to wait for them to be stable before going to the next step
 	// but waiting for a while reduces the number of Kubernetes changes in a short time.
-	e.LogPersister.AppendInfo("Waiting for the applied manifests to be stable")
+	e.LogPersister.Info("Waiting for the applied manifests to be stable")
 	select {
 	case <-time.After(15 * time.Second):
 		break
@@ -90,19 +90,19 @@ func (e *Executor) ensureSync(ctx context.Context) model.StageStatus {
 	}
 
 	// Find the running resources that are not defined in Git for removing.
-	e.LogPersister.AppendInfo("Start finding all running resources but no longer defined in Git")
+	e.LogPersister.Info("Start finding all running resources but no longer defined in Git")
 	liveResources, ok := e.AppLiveResourceLister.ListKubernetesResources()
 	if !ok {
-		e.LogPersister.AppendInfo("There is no data about live resource so no resource will be removed")
+		e.LogPersister.Info("There is no data about live resource so no resource will be removed")
 		return model.StageStatus_STAGE_SUCCESS
 	}
 
 	removeKeys := findRemoveResources(manifests, liveResources)
 	if len(removeKeys) == 0 {
-		e.LogPersister.AppendInfo("There are no live resources should be removed")
+		e.LogPersister.Info("There are no live resources should be removed")
 		return model.StageStatus_STAGE_SUCCESS
 	}
-	e.LogPersister.AppendInfof("Found %d live resources that are no longer defined in Git", len(removeKeys))
+	e.LogPersister.Infof("Found %d live resources that are no longer defined in Git", len(removeKeys))
 
 	// Start deleting all running resources that are not defined in Git.
 	if err := e.deleteResources(ctx, removeKeys); err != nil {

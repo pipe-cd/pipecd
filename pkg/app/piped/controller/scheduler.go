@@ -371,7 +371,7 @@ func (s *scheduler) executeStage(sig executor.StopSignal, ps model.PipelineStage
 
 	// Check the existence of the specified cloud provider.
 	if !s.pipedConfig.HasCloudProvider(s.deployment.CloudProvider, s.deployment.CloudProviderType()) {
-		lp.AppendErrorf("This piped is not having the specified cloud provider in this deployment: %v", s.deployment.CloudProvider)
+		lp.Errorf("This piped is not having the specified cloud provider in this deployment: %v", s.deployment.CloudProvider)
 		if err := s.reportStageStatus(ctx, ps.Id, model.StageStatus_STAGE_FAILURE, ps.Requires); err != nil {
 			s.logger.Error("failed to report stage status", zap.Error(err))
 		}
@@ -400,7 +400,7 @@ func (s *scheduler) executeStage(sig executor.StopSignal, ps model.PipelineStage
 		}
 	}
 	if stageConfig == nil {
-		lp.AppendError("Unable to find the stage configuration")
+		lp.Error("Unable to find the stage configuration")
 		if err := s.reportStageStatus(ctx, ps.Id, model.StageStatus_STAGE_FAILURE, ps.Requires); err != nil {
 			s.logger.Error("failed to report stage status", zap.Error(err))
 		}
@@ -409,7 +409,7 @@ func (s *scheduler) executeStage(sig executor.StopSignal, ps model.PipelineStage
 
 	app, ok := s.applicationLister.Get(s.deployment.ApplicationId)
 	if !ok {
-		lp.AppendErrorf("Application %s for this deployment was not found (Maybe it was disabled).", s.deployment.ApplicationId)
+		lp.Errorf("Application %s for this deployment was not found (Maybe it was disabled).", s.deployment.ApplicationId)
 		s.reportStageStatus(ctx, ps.Id, model.StageStatus_STAGE_FAILURE, ps.Requires)
 		return model.StageStatus_STAGE_FAILURE
 	}
@@ -445,7 +445,7 @@ func (s *scheduler) executeStage(sig executor.StopSignal, ps model.PipelineStage
 	ex, ok := executorFactory(input)
 	if !ok {
 		err := fmt.Errorf("no registered executor for stage %s", ps.Name)
-		lp.AppendError(err.Error())
+		lp.Error(err.Error())
 		s.reportStageStatus(ctx, ps.Id, model.StageStatus_STAGE_FAILURE, ps.Requires)
 		return model.StageStatus_STAGE_FAILURE
 	}
@@ -470,7 +470,7 @@ func (s *scheduler) executeStage(sig executor.StopSignal, ps model.PipelineStage
 func (s *scheduler) ensurePreparing(ctx context.Context, lp logpersister.StageLogPersister) error {
 	var err error
 	s.prepareOnce.Do(func() {
-		lp.AppendInfo("Start preparing for deployment")
+		lp.Info("Start preparing for deployment")
 
 		// Clone repository and checkout to the target revision.
 		var (
@@ -479,10 +479,10 @@ func (s *scheduler) ensurePreparing(ctx context.Context, lp logpersister.StageLo
 		)
 		gitRepo, err = prepareDeployRepository(ctx, s.deployment, s.gitClient, repoDirPath, s.pipedConfig)
 		if err != nil {
-			lp.AppendError(err.Error())
+			lp.Error(err.Error())
 			return
 		}
-		lp.AppendSuccessf("Successfully cloned repository %s", s.deployment.GitPath.RepoId)
+		lp.Successf("Successfully cloned repository %s", s.deployment.GitPath.RepoId)
 
 		// Copy and checkout the running revision.
 		if s.deployment.RunningCommitHash != "" {
@@ -492,11 +492,11 @@ func (s *scheduler) ensurePreparing(ctx context.Context, lp logpersister.StageLo
 			)
 			runningGitRepo, err = gitRepo.Copy(runningRepoPath)
 			if err != nil {
-				lp.AppendError(err.Error())
+				lp.Error(err.Error())
 				return
 			}
 			if err = runningGitRepo.Checkout(ctx, s.deployment.RunningCommitHash); err != nil {
-				lp.AppendError(err.Error())
+				lp.Error(err.Error())
 				return
 			}
 		}
@@ -506,7 +506,7 @@ func (s *scheduler) ensurePreparing(ctx context.Context, lp logpersister.StageLo
 		cfg, err = loadDeploymentConfiguration(gitRepo.GetPath(), s.deployment)
 		if err != nil {
 			err = fmt.Errorf("Failed to load deployment configuration (%v)", err)
-			lp.AppendError(err.Error())
+			lp.Error(err.Error())
 			return
 		}
 		s.deploymentConfig = cfg
@@ -514,13 +514,13 @@ func (s *scheduler) ensurePreparing(ctx context.Context, lp logpersister.StageLo
 		pipelineable, ok := cfg.GetPipelineable()
 		if !ok {
 			err = fmt.Errorf("Unsupport non pipelineable application %s", cfg.Kind)
-			lp.AppendError(err.Error())
+			lp.Error(err.Error())
 			return
 		}
 		s.pipelineable = pipelineable
-		lp.AppendSuccess("Successfully loaded deployment configuration")
+		lp.Success("Successfully loaded deployment configuration")
 
-		lp.AppendInfo("All preparations have been completed successfully")
+		lp.Info("All preparations have been completed successfully")
 	})
 	return err
 }

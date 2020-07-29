@@ -50,21 +50,21 @@ func (a *analyzer) run(ctx context.Context) error {
 	for {
 		select {
 		case <-ticker.C:
-			a.logPersister.AppendInfof("Start running query against %s", a.providerType)
+			a.logPersister.Infof("Start running query against %s", a.providerType)
 			success, err := a.runQuery(ctx)
 			if err != nil {
 				// The failure of the query itself is treated as a failure.
-				a.logPersister.AppendErrorf("Failed to run query: %s", err.Error())
+				a.logPersister.Errorf("Failed to run query: %s", err.Error())
 				success = false
 			}
 			if success {
-				a.logPersister.AppendSuccessf("The result of the query for %s by analysis '%s' is a success.",
+				a.logPersister.Successf("The result of the query for %s by analysis '%s' is a success.",
 					a.providerType,
 					a.id,
 				)
 			} else {
 				failureCount++
-				a.logPersister.AppendErrorf("The result of the query for %s by analysis '%s' is a failure. This analysis will fail if it fails %d more times.",
+				a.logPersister.Errorf("The result of the query for %s by analysis '%s' is a failure. This analysis will fail if it fails %d more times.",
 					a.providerType,
 					a.id,
 					a.failureLimit+1-failureCount,

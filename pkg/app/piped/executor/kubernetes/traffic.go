@@ -42,22 +42,22 @@ func (e *Executor) ensureTrafficRouting(ctx context.Context) model.StageStatus {
 		options    = e.StageConfig.K8sTrafficRoutingStageOptions
 	)
 	if options == nil {
-		e.LogPersister.AppendErrorf("Malformed configuration for stage %s", e.Stage.Name)
+		e.LogPersister.Errorf("Malformed configuration for stage %s", e.Stage.Name)
 		return model.StageStatus_STAGE_FAILURE
 	}
 	method := config.DetermineTrafficRoutingMethod(e.config.TrafficRouting)
 
 	// Load the manifests at the triggered commit.
-	e.LogPersister.AppendInfof("Loading manifests at commit %s for handling", commitHash)
+	e.LogPersister.Infof("Loading manifests at commit %s for handling", commitHash)
 	manifests, err := e.loadManifests(ctx)
 	if err != nil {
-		e.LogPersister.AppendErrorf("Failed while loading manifests (%v)", err)
+		e.LogPersister.Errorf("Failed while loading manifests (%v)", err)
 		return model.StageStatus_STAGE_FAILURE
 	}
-	e.LogPersister.AppendSuccessf("Successfully loaded %d manifests", len(manifests))
+	e.LogPersister.Successf("Successfully loaded %d manifests", len(manifests))
 
 	if len(manifests) == 0 {
-		e.LogPersister.AppendError("There are no kubernetes manifests to handle")
+		e.LogPersister.Error("There are no kubernetes manifests to handle")
 		return model.StageStatus_STAGE_FAILURE
 	}
 
@@ -68,7 +68,7 @@ func (e *Executor) ensureTrafficRouting(ctx context.Context) model.StageStatus {
 	// Find traffic routing manifests.
 	trafficRoutingManifests, err := findTrafficRoutingManifests(manifests, e.config.Service.Name, e.config.TrafficRouting)
 	if err != nil {
-		e.LogPersister.AppendErrorf("Failed while finding traffic routing manifest: (%v)", err)
+		e.LogPersister.Errorf("Failed while finding traffic routing manifest: (%v)", err)
 		return model.StageStatus_STAGE_FAILURE
 	}
 
@@ -76,10 +76,10 @@ func (e *Executor) ensureTrafficRouting(ctx context.Context) model.StageStatus {
 	case 1:
 		break
 	case 0:
-		e.LogPersister.AppendErrorf("Unable to find any traffic routing manifests")
+		e.LogPersister.Errorf("Unable to find any traffic routing manifests")
 		return model.StageStatus_STAGE_FAILURE
 	default:
-		e.LogPersister.AppendInfof(
+		e.LogPersister.Infof(
 			"Detected %d traffic routing manifests but only the first one (%s) will be used",
 			len(trafficRoutingManifests),
 			trafficRoutingManifests[0].Key.ReadableString(),
@@ -90,7 +90,7 @@ func (e *Executor) ensureTrafficRouting(ctx context.Context) model.StageStatus {
 	// In case we are routing by PodSelector, the service manifest must contain variantLabel inside its selector.
 	if method == config.TrafficRoutingMethodPodSelector {
 		if err := checkVariantSelectorInService(trafficRoutingManifest, primaryVariant); err != nil {
-			e.LogPersister.AppendErrorf("Traffic routing by PodSelector requires %q inside the selector of Service manifest but it was unable to check that field in manifest %s (%v)",
+			e.LogPersister.Errorf("Traffic routing by PodSelector requires %q inside the selector of Service manifest but it was unable to check that field in manifest %s (%v)",
 				variantLabel+": "+primaryVariant,
 				trafficRoutingManifest.Key.ReadableString(),
 				err,
@@ -107,14 +107,14 @@ func (e *Executor) ensureTrafficRouting(ctx context.Context) model.StageStatus {
 		e.config.TrafficRouting,
 	)
 	if err != nil {
-		e.LogPersister.AppendErrorf("Unable generate traffic routing manifest: (%v)", err)
+		e.LogPersister.Errorf("Unable generate traffic routing manifest: (%v)", err)
 		return model.StageStatus_STAGE_FAILURE
 	}
 
 	// Add builtin annotations for tracking application live state.
 	e.addBuiltinAnnontations([]provider.Manifest{trafficRoutingManifest}, primaryVariant, commitHash)
 
-	e.LogPersister.AppendInfof("Start updating traffic routing to be percentages: primary=%d, canary=%d, baseline=%d",
+	e.LogPersister.Infof("Start updating traffic routing to be percentages: primary=%d, canary=%d, baseline=%d",
 		primaryPercent,
 		canaryPercent,
 		baselinePercent,
@@ -123,7 +123,7 @@ func (e *Executor) ensureTrafficRouting(ctx context.Context) model.StageStatus {
 		return model.StageStatus_STAGE_FAILURE
 	}
 
-	e.LogPersister.AppendSuccess("Successfully updated traffic routing")
+	e.LogPersister.Success("Successfully updated traffic routing")
 	return model.StageStatus_STAGE_SUCCESS
 }
 

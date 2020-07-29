@@ -35,28 +35,28 @@ func (e *Executor) ensureCanaryRollout(ctx context.Context) model.StageStatus {
 		options    = e.StageConfig.K8sCanaryRolloutStageOptions
 	)
 	if options == nil {
-		e.LogPersister.AppendErrorf("Malformed configuration for stage %s", e.Stage.Name)
+		e.LogPersister.Errorf("Malformed configuration for stage %s", e.Stage.Name)
 		return model.StageStatus_STAGE_FAILURE
 	}
 
 	// Load the manifests at the triggered commit.
-	e.LogPersister.AppendInfof("Loading manifests at commit %s for handling", commitHash)
+	e.LogPersister.Infof("Loading manifests at commit %s for handling", commitHash)
 	manifests, err := e.loadManifests(ctx)
 	if err != nil {
-		e.LogPersister.AppendErrorf("Failed while loading manifests (%v)", err)
+		e.LogPersister.Errorf("Failed while loading manifests (%v)", err)
 		return model.StageStatus_STAGE_FAILURE
 	}
-	e.LogPersister.AppendSuccessf("Successfully loaded %d manifests", len(manifests))
+	e.LogPersister.Successf("Successfully loaded %d manifests", len(manifests))
 
 	if len(manifests) == 0 {
-		e.LogPersister.AppendError("This application has no Kubernetes manifests to handle")
+		e.LogPersister.Error("This application has no Kubernetes manifests to handle")
 		return model.StageStatus_STAGE_FAILURE
 	}
 
 	// Find and generate workload & service manifests for CANARY variant.
 	canaryManifests, err := e.generateCanaryManifests(manifests, *options)
 	if err != nil {
-		e.LogPersister.AppendErrorf("Unable to generate manifests for CANARY variant (%v)", err)
+		e.LogPersister.Errorf("Unable to generate manifests for CANARY variant (%v)", err)
 		return model.StageStatus_STAGE_FAILURE
 	}
 
@@ -71,30 +71,30 @@ func (e *Executor) ensureCanaryRollout(ctx context.Context) model.StageStatus {
 	metadata := strings.Join(addedResources, ",")
 	err = e.MetadataStore.Set(ctx, addedCanaryResourcesMetadataKey, metadata)
 	if err != nil {
-		e.LogPersister.AppendErrorf("Unable to save deployment metadata (%v)", err)
+		e.LogPersister.Errorf("Unable to save deployment metadata (%v)", err)
 		return model.StageStatus_STAGE_FAILURE
 	}
 
 	// Start rolling out the resources for CANARY variant.
-	e.LogPersister.AppendInfo("Start rolling out CANARY variant...")
+	e.LogPersister.Info("Start rolling out CANARY variant...")
 	if err := e.applyManifests(ctx, canaryManifests); err != nil {
 		return model.StageStatus_STAGE_FAILURE
 	}
 
-	e.LogPersister.AppendSuccess("Successfully rolled out CANARY variant")
+	e.LogPersister.Success("Successfully rolled out CANARY variant")
 	return model.StageStatus_STAGE_SUCCESS
 }
 
 func (e *Executor) ensureCanaryClean(ctx context.Context) model.StageStatus {
 	value, ok := e.MetadataStore.Get(addedCanaryResourcesMetadataKey)
 	if !ok {
-		e.LogPersister.AppendError("Unable to determine the applied CANARY resources")
+		e.LogPersister.Error("Unable to determine the applied CANARY resources")
 		return model.StageStatus_STAGE_FAILURE
 	}
 
 	resources := strings.Split(value, ",")
 	if err := e.removeCanaryResources(ctx, resources); err != nil {
-		e.LogPersister.AppendErrorf("Unable to remove canary resources: %v", err)
+		e.LogPersister.Errorf("Unable to remove canary resources: %v", err)
 		return model.StageStatus_STAGE_FAILURE
 	}
 	return model.StageStatus_STAGE_SUCCESS
@@ -112,7 +112,7 @@ func (e *Executor) removeCanaryResources(ctx context.Context, resources []string
 	for _, r := range resources {
 		key, err := provider.DecodeResourceKey(r)
 		if err != nil {
-			e.LogPersister.AppendErrorf("Had an error while decoding CANARY resource key: %s, %v", r, err)
+			e.LogPersister.Errorf("Had an error while decoding CANARY resource key: %s, %v", r, err)
 			continue
 		}
 		if key.IsWorkload() {
@@ -123,13 +123,13 @@ func (e *Executor) removeCanaryResources(ctx context.Context, resources []string
 	}
 
 	// We delete the service first to close all incoming connections.
-	e.LogPersister.AppendInfo("Starting finding and deleting service resources of CANARY variant")
+	e.LogPersister.Info("Starting finding and deleting service resources of CANARY variant")
 	if err := e.deleteResources(ctx, serviceKeys); err != nil {
 		return err
 	}
 
 	// Next, delete all workloads.
-	e.LogPersister.AppendInfo("Starting finding and deleting workload resources of CANARY variant")
+	e.LogPersister.Info("Starting finding and deleting workload resources of CANARY variant")
 	if err := e.deleteResources(ctx, workloadKeys); err != nil {
 		return err
 	}

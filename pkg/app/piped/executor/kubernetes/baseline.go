@@ -35,27 +35,27 @@ func (e *Executor) ensureBaselineRollout(ctx context.Context) model.StageStatus 
 		options    = e.StageConfig.K8sBaselineRolloutStageOptions
 	)
 	if options == nil {
-		e.LogPersister.AppendErrorf("Malformed configuration for stage %s", e.Stage.Name)
+		e.LogPersister.Errorf("Malformed configuration for stage %s", e.Stage.Name)
 		return model.StageStatus_STAGE_FAILURE
 	}
 
 	// Load running manifests at the most successful deployed commit.
-	e.LogPersister.AppendInfof("Loading running manifests at commit %s for handling", commitHash)
+	e.LogPersister.Infof("Loading running manifests at commit %s for handling", commitHash)
 	manifests, err := e.loadRunningManifests(ctx)
 	if err != nil {
-		e.LogPersister.AppendErrorf("Failed while loading running manifests (%v)", err)
+		e.LogPersister.Errorf("Failed while loading running manifests (%v)", err)
 		return model.StageStatus_STAGE_FAILURE
 	}
-	e.LogPersister.AppendSuccessf("Successfully loaded %d manifests", len(manifests))
+	e.LogPersister.Successf("Successfully loaded %d manifests", len(manifests))
 
 	if len(manifests) == 0 {
-		e.LogPersister.AppendError("This application has no running Kubernetes manifests to handle")
+		e.LogPersister.Error("This application has no running Kubernetes manifests to handle")
 		return model.StageStatus_STAGE_FAILURE
 	}
 
 	baselineManifests, err := e.generateBaselineManifests(manifests, *options)
 	if err != nil {
-		e.LogPersister.AppendErrorf("Unable to generate manifests for BASELINE variant (%v)", err)
+		e.LogPersister.Errorf("Unable to generate manifests for BASELINE variant (%v)", err)
 		return model.StageStatus_STAGE_FAILURE
 	}
 
@@ -70,30 +70,30 @@ func (e *Executor) ensureBaselineRollout(ctx context.Context) model.StageStatus 
 	metadata := strings.Join(addedResources, ",")
 	err = e.MetadataStore.Set(ctx, addedBaselineResourcesMetadataKey, metadata)
 	if err != nil {
-		e.LogPersister.AppendErrorf("Unable to save deployment metadata (%v)", err)
+		e.LogPersister.Errorf("Unable to save deployment metadata (%v)", err)
 		return model.StageStatus_STAGE_FAILURE
 	}
 
 	// Start rolling out the resources for BASELINE variant.
-	e.LogPersister.AppendInfo("Start rolling out BASELINE variant...")
+	e.LogPersister.Info("Start rolling out BASELINE variant...")
 	if err := e.applyManifests(ctx, baselineManifests); err != nil {
 		return model.StageStatus_STAGE_FAILURE
 	}
 
-	e.LogPersister.AppendSuccess("Successfully rolled out BASELINE variant")
+	e.LogPersister.Success("Successfully rolled out BASELINE variant")
 	return model.StageStatus_STAGE_SUCCESS
 }
 
 func (e *Executor) ensureBaselineClean(ctx context.Context) model.StageStatus {
 	value, ok := e.MetadataStore.Get(addedBaselineResourcesMetadataKey)
 	if !ok {
-		e.LogPersister.AppendError("Unable to determine the applied BASELINE resources")
+		e.LogPersister.Error("Unable to determine the applied BASELINE resources")
 		return model.StageStatus_STAGE_FAILURE
 	}
 
 	resources := strings.Split(value, ",")
 	if err := e.removeBaselineResources(ctx, resources); err != nil {
-		e.LogPersister.AppendErrorf("Unable to remove baseline resources: %v", err)
+		e.LogPersister.Errorf("Unable to remove baseline resources: %v", err)
 		return model.StageStatus_STAGE_FAILURE
 	}
 	return model.StageStatus_STAGE_SUCCESS
@@ -111,7 +111,7 @@ func (e *Executor) removeBaselineResources(ctx context.Context, resources []stri
 	for _, r := range resources {
 		key, err := provider.DecodeResourceKey(r)
 		if err != nil {
-			e.LogPersister.AppendErrorf("Had an error while decoding BASELINE resource key: %s, %v", r, err)
+			e.LogPersister.Errorf("Had an error while decoding BASELINE resource key: %s, %v", r, err)
 			continue
 		}
 		if key.IsWorkload() {
@@ -122,13 +122,13 @@ func (e *Executor) removeBaselineResources(ctx context.Context, resources []stri
 	}
 
 	// We delete the service first to close all incoming connections.
-	e.LogPersister.AppendInfo("Starting finding and deleting service resources of BASELINE variant")
+	e.LogPersister.Info("Starting finding and deleting service resources of BASELINE variant")
 	if err := e.deleteResources(ctx, serviceKeys); err != nil {
 		return err
 	}
 
 	// Next, delete all workloads.
-	e.LogPersister.AppendInfo("Starting finding and deleting workload resources of BASELINE variant")
+	e.LogPersister.Info("Starting finding and deleting workload resources of BASELINE variant")
 	if err := e.deleteResources(ctx, workloadKeys); err != nil {
 		return err
 	}
