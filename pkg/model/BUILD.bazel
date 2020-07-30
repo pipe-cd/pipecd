@@ -16,6 +16,7 @@ proto_library(
         "piped_stats.proto",
         "project.proto",
         "role.proto",
+        "user.proto",
     ],
     visibility = ["//visibility:public"],
     #keep
@@ -52,12 +53,12 @@ go_library(
         "piped.go",
         "project.go",
         "stage.go",
+        "user.go",
     ],
     embed = [":model_go_proto"],
     importpath = "github.com/pipe-cd/pipe/pkg/model",
     visibility = ["//visibility:public"],
     deps = [
-        "@com_github_google_go_github_v29//github:go_default_library",
         "@org_golang_google_protobuf//proto:go_default_library",
         "@org_golang_x_crypto//bcrypt:go_default_library",
         "@org_golang_x_oauth2//:go_default_library",

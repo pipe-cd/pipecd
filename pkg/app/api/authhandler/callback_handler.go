@@ -27,6 +27,7 @@ import (
 
 	"github.com/pipe-cd/pipe/pkg/jwt"
 	"github.com/pipe-cd/pipe/pkg/model"
+	"github.com/pipe-cd/pipe/pkg/oauth/github"
 )
 
 func (h *Handler) handleCallback(w http.ResponseWriter, r *http.Request) {
@@ -47,19 +48,16 @@ func (h *Handler) handleCallback(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	user, err := proj.Sso.GenerateUserInfo(ctx, r.FormValue(authCodeFormKey))
+	user, err := getUser(ctx, proj.Sso, proj.Id, r.FormValue(authCodeFormKey))
 	if err != nil {
-		handleError(w, r, rootPath, "failed to generate the user information", h.logger, err)
+		handleError(w, r, rootPath, "internal error", h.logger, err)
 		return
 	}
 	claims := jwt.NewClaims(
 		user.Username,
-		user.AvatarURL,
+		user.AvatarUrl,
 		defaultTokenTTL,
-		model.Role{
-			ProjectId:   proj.Id,
-			ProjectRole: user.Role,
-		},
+		*user.Role,
 	)
 	signedToken, err := h.signer.Sign(claims)
 	if err != nil {
@@ -101,4 +99,23 @@ func checkState(r *http.Request, key string) error {
 	}
 
 	return nil
+}
+
+func getUser(ctx context.Context, sso *model.ProjectSingleSignOn, projectID, code string) (*model.User, error) {
+	if sso == nil {
+		return nil, fmt.Errorf("missing SSO configuration")
+	}
+	switch sso.Provider {
+	case model.ProjectSingleSignOnProvider_GITHUB:
+		if sso.Github == nil {
+			return nil, fmt.Errorf("missing GitHub oauth in the SSO configuration")
+		}
+		cli, err := github.NewOAuthClient(ctx, sso.Github, projectID, code)
+		if err != nil {
+			return nil, err
+		}
+		return model.NewUser(ctx, cli)
+	default:
+		return nil, fmt.Errorf("not implemented")
+	}
 }

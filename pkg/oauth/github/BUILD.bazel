@@ -1,0 +1,44 @@
+load("@io_bazel_rules_go//go:def.bzl", "go_library", "go_test")
+
+go_library(
+    name = "go_default_library",
+    #keep
+    srcs = ["github.go"],
+    importpath = "github.com/pipe-cd/pipe/pkg/oauth/github",
+    visibility = ["//visibility:public"],
+    #keep
+    deps = [
+        "//pkg/model:go_default_library",
+        "@com_github_google_go_github_v29//github:go_default_library",
+        "@org_golang_x_oauth2//:go_default_library",
+        "@org_golang_x_oauth2//github:go_default_library",
+    ],
+)
+
+go_test(
+    name = "go_default_test",
+    size = "small",
+    #keep
+    srcs = [
+        "client.mock.go",
+        "github_test.go",
+    ],
+    embed = [":go_default_library"],
+    deps = [
+        "//pkg/model:go_default_library",
+        "@com_github_golang_mock//gomock:go_default_library",
+        "@com_github_google_go_github_v29//github:go_default_library",
+        "@com_github_stretchr_testify//assert:go_default_library",
+    ],
+)
+
+load("//bazel:gomock.bzl", "gomock")
+
+gomock(
+    name = "mock_service",
+    source = "github.go",
+    out = "client.mock.go",
+    library = "//pkg/oauth/github:go_default_library",
+    interfaces = ["client"],
+    package = "github",
+)

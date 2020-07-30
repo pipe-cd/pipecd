@@ -62,8 +62,8 @@ message ProjectSingleSignOn {
     message GitHub {
         string client_id = 1 [(validate.rules).string.min_len = 1];
         string client_secret = 2 [(validate.rules).string.min_len = 1];
-        string base_url = 3 [(validate.rules).string.min_len = 1];
-        string upload_url = 4 [(validate.rules).string.min_len = 1];
+        string base_url = 3;
+        string upload_url = 4;
         string org = 5 [(validate.rules).string.min_len = 1];
         string admin_team = 6 [(validate.rules).string.min_len = 1];
         string editor_team = 7 [(validate.rules).string.min_len = 1];
