@@ -235,17 +235,20 @@ func (r *reflector) onObjectAdd(obj interface{}) {
 
 	// Ignore all predefined ones.
 	if _, ok := ignoreResourceKeys[key.String()]; ok {
+		incrementResourceEventCounter("add", false)
 		return
 	}
 
 	// Ignore all objects that are not handled by this piped.
 	pipedID := u.GetAnnotations()[provider.LabelPiped]
 	if pipedID != "" && pipedID != r.pipedConfig.PipedID {
+		incrementResourceEventCounter("add", false)
 		return
 	}
 
-	r.logger.Info(fmt.Sprintf("received add event for %s", key.String()))
+	r.logger.Debug(fmt.Sprintf("received add event for %s", key.String()))
 	r.onAdd(u)
+	incrementResourceEventCounter("add", true)
 }
 
 func (r *reflector) onObjectUpdate(oldObj, obj interface{}) {
@@ -255,17 +258,20 @@ func (r *reflector) onObjectUpdate(oldObj, obj interface{}) {
 	// Ignore all predefined ones.
 	key := provider.MakeResourceKey(u)
 	if _, ok := ignoreResourceKeys[key.String()]; ok {
+		incrementResourceEventCounter("update", false)
 		return
 	}
 
 	// Ignore all objects that are not handled by this piped.
 	pipedID := u.GetAnnotations()[provider.LabelPiped]
 	if pipedID != "" && pipedID != r.pipedConfig.PipedID {
+		incrementResourceEventCounter("update", false)
 		return
 	}
 
-	r.logger.Info(fmt.Sprintf("received update event for %s", key.String()))
+	r.logger.Debug(fmt.Sprintf("received update event for %s", key.String()))
 	r.onUpdate(oldU, u)
+	incrementResourceEventCounter("update", true)
 }
 
 func (r *reflector) onObjectDelete(obj interface{}) {
@@ -274,17 +280,20 @@ func (r *reflector) onObjectDelete(obj interface{}) {
 
 	// Ignore all predefined ones.
 	if _, ok := ignoreResourceKeys[key.String()]; ok {
+		incrementResourceEventCounter("delete", false)
 		return
 	}
 
 	// Ignore all objects that are not handled by this piped.
 	pipedID := u.GetAnnotations()[provider.LabelPiped]
 	if pipedID != "" && pipedID != r.pipedConfig.PipedID {
+		incrementResourceEventCounter("delete", false)
 		return
 	}
 
-	r.logger.Info(fmt.Sprintf("received delete event for %s", key.String()))
+	r.logger.Debug(fmt.Sprintf("received delete event for %s", key.String()))
 	r.onDelete(u)
+	incrementResourceEventCounter("delete", true)
 }
 
 func isSupportedWatch(r metav1.APIResource) bool {

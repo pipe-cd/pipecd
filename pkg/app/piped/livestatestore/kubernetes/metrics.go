@@ -15,14 +15,18 @@
 package kubernetes
 
 import (
+	"strconv"
+
 	"github.com/prometheus/client_golang/prometheus"
 	"k8s.io/client-go/tools/metrics"
 )
 
 const (
-	metricsLabelHost   = "host"
-	metricsLabelMethod = "method"
-	metricsLabelCode   = "code"
+	metricsLabelHost         = "host"
+	metricsLabelMethod       = "method"
+	metricsLabelCode         = "code"
+	metricsLabelEvent        = "event"
+	metricsLabelEventHandled = "handled"
 )
 
 var (
@@ -37,10 +41,23 @@ var (
 			metricsLabelCode,
 		},
 	)
+	metricsResourceEvents = prometheus.NewCounterVec(
+		prometheus.CounterOpts{
+			Name: "livestatestore_kubernetes_resource_events_total",
+			Help: "Number of resource events received from kubernetes server.",
+		},
+		[]string{
+			metricsLabelEvent,
+			metricsLabelEventHandled,
+		},
+	)
 )
 
 func registerMetrics() {
-	prometheus.MustRegister(metricsAPIRequests)
+	prometheus.MustRegister(
+		metricsAPIRequests,
+		metricsResourceEvents,
+	)
 
 	opts := metrics.RegisterOpts{
 		RequestResult: requestResultCollector{},
@@ -56,5 +73,12 @@ func (c requestResultCollector) Increment(code string, method string, host strin
 		metricsLabelHost:   host,
 		metricsLabelMethod: method,
 		metricsLabelCode:   code,
+	}).Inc()
+}
+
+func incrementResourceEventCounter(event string, handled bool) {
+	metricsResourceEvents.With(prometheus.Labels{
+		metricsLabelEvent:        event,
+		metricsLabelEventHandled: strconv.FormatBool(handled),
 	}).Inc()
 }
