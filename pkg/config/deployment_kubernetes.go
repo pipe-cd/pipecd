@@ -18,7 +18,7 @@ package config
 type KubernetesDeploymentSpec struct {
 	Input         KubernetesDeploymentInput `json:"input"`
 	CommitMatcher DeploymentCommitMatcher   `json:"commitMatcher"`
-	Sync          K8sSyncStageOptions       `json:"sync"`
+	QuickSync     K8sSyncStageOptions       `json:"quickSync"`
 	Pipeline      *DeploymentPipeline       `json:"pipeline"`
 
 	// Which resource should be considered as the Service of application.

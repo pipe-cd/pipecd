@@ -28,7 +28,7 @@ type Pipelineable interface {
 // DeploymentCommitMatcher provides a way to decide how to deploy.
 type DeploymentCommitMatcher struct {
 	// It makes sure to perform syncing if the commit message matches this regular expression.
-	Sync string `json:"sync"`
+	QuickSync string `json:"quickSync"`
 	// It makes sure to perform pipeline if the commit message matches this regular expression.
 	Pipeline string `json:"pipeline"`
 }

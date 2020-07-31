@@ -85,7 +85,7 @@ func (p *Planner) Plan(ctx context.Context, in planner.Input) (out planner.Outpu
 	// we have only one choise to do is applying all manifestt.
 	if cfg.Pipeline == nil || len(cfg.Pipeline.Stages) == 0 {
 		out.Stages = buildPipeline(cfg.Input.AutoRollback, time.Now())
-		out.Summary = "Sync by applying all manifests because no progressive pipeline was configured"
+		out.Summary = "Quick sync by applying all manifests because no progressive pipeline was configured"
 		return
 	}
 
@@ -104,7 +104,7 @@ func (p *Planner) Plan(ctx context.Context, in planner.Input) (out planner.Outpu
 	}
 
 	// This deployment is triggered by a commit with the intent to synchronize.
-	if s := cfg.CommitMatcher.Sync; s != "" {
+	if s := cfg.CommitMatcher.QuickSync; s != "" {
 		syncRegex, err := in.RegexPool.Get(s)
 		if err != nil {
 			err = fmt.Errorf("failed to compile commitMatcher.sync(%s): %w", s, err)
@@ -112,7 +112,7 @@ func (p *Planner) Plan(ctx context.Context, in planner.Input) (out planner.Outpu
 		}
 		if syncRegex.MatchString(in.Deployment.Trigger.Commit.Message) {
 			out.Stages = buildPipeline(cfg.Input.AutoRollback, time.Now())
-			out.Summary = fmt.Sprintf("Sync by applying all manifests because the commit message was matching %q", s)
+			out.Summary = fmt.Sprintf("Quick sync by applying all manifests because the commit message was matching %q", s)
 			return out, err
 		}
 	}
@@ -122,7 +122,7 @@ func (p *Planner) Plan(ctx context.Context, in planner.Input) (out planner.Outpu
 	// We just apply all manifests.
 	if in.MostRecentSuccessfulCommitHash == "" {
 		out.Stages = buildPipeline(cfg.Input.AutoRollback, time.Now())
-		out.Summary = "Sync by applying all manifests because it seems this is the first deployment"
+		out.Summary = "Quick sync by applying all manifests because it seems this is the first deployment"
 		return
 	}
 
@@ -163,12 +163,12 @@ func (p *Planner) Plan(ctx context.Context, in planner.Input) (out planner.Outpu
 func decideStrategy(olds, news []provider.Manifest) (progressive bool, desc string) {
 	oldWorkload, ok := findWorkload(olds)
 	if !ok {
-		desc = "Sync by applying all manifests because it was unable to find the currently running workloads"
+		desc = "Quick sync by applying all manifests because it was unable to find the currently running workloads"
 		return
 	}
 	newWorkload, ok := findWorkload(news)
 	if !ok {
-		desc = "Sync by applying all manifests because it was unable to find workloads in the new manifests"
+		desc = "Quick sync by applying all manifests because it was unable to find workloads in the new manifests"
 		return
 	}
 
@@ -221,7 +221,7 @@ func decideStrategy(olds, news []provider.Manifest) (progressive bool, desc stri
 		return
 	}
 
-	desc = "Sync by applying all manifests"
+	desc = "Quick sync by applying all manifests"
 	return
 }
 

@@ -35,7 +35,7 @@ func (e *Executor) ensureSync(ctx context.Context) model.StageStatus {
 	e.LogPersister.Successf("Successfully loaded %d manifests", len(manifests))
 
 	// Check the variant selector in the workloads.
-	if e.config.Pipeline != nil && !e.config.Sync.AddVariantLabelToSelector {
+	if e.config.Pipeline != nil && !e.config.QuickSync.AddVariantLabelToSelector {
 		workloads := findWorkloadManifests(manifests, e.config.Workloads)
 		var invalid bool
 		for _, m := range workloads {
@@ -55,7 +55,7 @@ func (e *Executor) ensureSync(ctx context.Context) model.StageStatus {
 
 	// When addVariantLabelToSelector is true, ensure that all workloads
 	// have the variant label in their selector.
-	if e.config.Sync.AddVariantLabelToSelector {
+	if e.config.QuickSync.AddVariantLabelToSelector {
 		workloads := findWorkloadManifests(manifests, e.config.Workloads)
 		for _, m := range workloads {
 			if err := ensureVariantSelectorInWorkload(m, primaryVariant); err != nil {
@@ -73,7 +73,7 @@ func (e *Executor) ensureSync(ctx context.Context) model.StageStatus {
 		return model.StageStatus_STAGE_FAILURE
 	}
 
-	if !e.config.Sync.Prune {
+	if !e.config.QuickSync.Prune {
 		e.LogPersister.Info("Resource GC was skipped because sync.prune was not configured")
 		return model.StageStatus_STAGE_SUCCESS
 	}
