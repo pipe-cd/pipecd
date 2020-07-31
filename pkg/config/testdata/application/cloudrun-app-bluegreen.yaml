@@ -8,13 +8,13 @@ spec:
     stages:
       # Deploy workloads of the new version.
       # But this is still receiving no traffic.
-      - name: CLOUDRUN_NEW_VERSION_ROLLOUT
+      - name: CLOUDRUN_CANARY_ROLLOUT
       # Change the traffic routing state where
       # the new version will receive 100% of the traffic as soon as possible.
       # This is known as blue-green strategy.
       - name: CLOUDRUN_TRAFFIC_ROUTING
         with:
-          newVersion: 100
+          canary: 100
       # Optional: We can also add an ANALYSIS stage to verify the new version.
       # If this stage finds any not good metrics of the new version,
       # a rollback process to the previous version will be executed.
