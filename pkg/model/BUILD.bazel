@@ -53,7 +53,6 @@ go_library(
         "piped.go",
         "project.go",
         "stage.go",
-        "user.go",
     ],
     embed = [":model_go_proto"],
     importpath = "github.com/pipe-cd/pipe/pkg/model",

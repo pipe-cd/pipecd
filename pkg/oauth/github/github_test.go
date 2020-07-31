@@ -15,10 +15,8 @@
 package github
 
 import (
-	"context"
 	"testing"
 
-	"github.com/golang/mock/gomock"
 	"github.com/google/go-github/v29/github"
 	"github.com/stretchr/testify/assert"
 
@@ -27,147 +25,86 @@ import (
 
 func stringPointer(s string) *string { return &s }
 
-func TestGetUser(t *testing.T) {
-	ctrl := gomock.NewController(t)
-	defer ctrl.Finish()
-
+func TestDecideRole(t *testing.T) {
 	cases := []struct {
-		name    string
-		oc      *OAuthClient
-		user    *model.User
-		wantErr bool
+		name     string
+		username string
+		teams    []*github.Team
+		role     model.Role_ProjectRole
+		wantErr  bool
 	}{
 		{
-			name: "nothing",
-			oc: &OAuthClient{
-				client: func() client {
-					c := NewMockclient(ctrl)
-					c.EXPECT().
-						getUser(gomock.Any()).
-						Return(&github.User{
-							Login: stringPointer("foo"),
-						}, nil, nil)
-					c.EXPECT().
-						getTeams(gomock.Any()).
-						Return([]*github.Team{
-							{
-								Slug: stringPointer("team1"),
-							},
-						}, nil, nil)
-					return c
-				}(),
+			name:     "nothing",
+			username: "foo",
+			teams: []*github.Team{
+				{
+					Slug: stringPointer("team1"),
+				},
 			},
 			wantErr: true,
 		},
 		{
-			name: "admin",
-			oc: &OAuthClient{
-				client: func() client {
-					c := NewMockclient(ctrl)
-					c.EXPECT().
-						getUser(gomock.Any()).
-						Return(&github.User{
-							Login: stringPointer("foo"),
-						}, nil, nil)
-					c.EXPECT().
-						getTeams(gomock.Any()).
-						Return([]*github.Team{
-							{
-								Slug: stringPointer("team-admin"),
-							},
-							{
-								Slug: stringPointer("team-editor"),
-							},
-							{
-								Slug: stringPointer("team-viewer"),
-							},
-						}, nil, nil)
-					return c
-				}(),
-			},
-			user: &model.User{
-				Username: "foo",
-				Role: &model.Role{
-					ProjectRole: model.Role_ADMIN,
+			name:     "admin",
+			username: "foo",
+			teams: []*github.Team{
+				{
+					Slug: stringPointer("team-admin"),
+				},
+				{
+					Slug: stringPointer("team-editor"),
+				},
+				{
+					Slug: stringPointer("team-viewer"),
 				},
 			},
+			role: model.Role_ADMIN,
 		},
 		{
-			name: "editor",
-			oc: &OAuthClient{
-				client: func() client {
-					c := NewMockclient(ctrl)
-					c.EXPECT().
-						getUser(gomock.Any()).
-						Return(&github.User{
-							Login: stringPointer("foo"),
-						}, nil, nil)
-					c.EXPECT().
-						getTeams(gomock.Any()).
-						Return([]*github.Team{
-							{
-								Slug: stringPointer("team1"),
-							},
-							{
-								Slug: stringPointer("team-editor"),
-							},
-							{
-								Slug: stringPointer("team-viewer"),
-							},
-						}, nil, nil)
-					return c
-				}(),
-			},
-			user: &model.User{
-				Username: "foo",
-				Role: &model.Role{
-					ProjectRole: model.Role_EDITOR,
+			name:     "editor",
+			username: "foo",
+			teams: []*github.Team{
+				{
+					Slug: stringPointer("team1"),
+				},
+				{
+					Slug: stringPointer("team-editor"),
+				},
+				{
+					Slug: stringPointer("team-viewer"),
 				},
 			},
+			role: model.Role_EDITOR,
 		},
 		{
-			name: "viewer",
-			oc: &OAuthClient{
-				client: func() client {
-					c := NewMockclient(ctrl)
-					c.EXPECT().
-						getUser(gomock.Any()).
-						Return(&github.User{
-							Login: stringPointer("foo"),
-						}, nil, nil)
-					c.EXPECT().
-						getTeams(gomock.Any()).
-						Return([]*github.Team{
-							{
-								Slug: stringPointer("team1"),
-							},
-							{
-								Slug: stringPointer("team2"),
-							},
-							{
-								Slug: stringPointer("team-viewer"),
-							},
-						}, nil, nil)
-					return c
-				}(),
-			},
-			user: &model.User{
-				Username: "foo",
-				Role: &model.Role{
-					ProjectRole: model.Role_VIEWER,
+			name:     "viewer",
+			username: "foo",
+			teams: []*github.Team{
+				{
+					Slug: stringPointer("team1"),
+				},
+				{
+					Slug: stringPointer("team2"),
+				},
+				{
+					Slug: stringPointer("team-viewer"),
 				},
 			},
+			role: model.Role_VIEWER,
 		},
 	}
 
+	oc := &OAuthClient{
+		adminTeam:  "team-admin",
+		editorTeam: "team-editor",
+		viewerTeam: "team-viewer",
+	}
 	for _, tc := range cases {
 		t.Run(tc.name, func(t *testing.T) {
-			tc.oc.adminTeam = "team-admin"
-			tc.oc.editorTeam = "team-editor"
-			tc.oc.viewerTeam = "team-viewer"
-			user, err := tc.oc.GetUser(context.Background())
+			role, err := oc.decideRole(tc.username, tc.teams)
 			assert.Equal(t, tc.wantErr, err != nil)
-			assert.Equal(t, tc.user, user)
+			if err == nil {
+				assert.Equal(t, tc.role, *role)
+			}
 		})
 	}
 }

@@ -27,32 +27,9 @@ import (
 	"github.com/pipe-cd/pipe/pkg/model"
 )
 
-type client interface {
-	getUser(ctx context.Context) (*github.User, *github.Response, error)
-	getTeams(ctx context.Context) ([]*github.Team, *github.Response, error)
-}
-
-type clientWrapper struct {
-	*github.Client
-}
-
-func wrapClient(gc *github.Client) *clientWrapper {
-	return &clientWrapper{
-		Client: gc,
-	}
-}
-
-func (cw *clientWrapper) getUser(ctx context.Context) (*github.User, *github.Response, error) {
-	return cw.Users.Get(ctx, "")
-}
-
-func (cw *clientWrapper) getTeams(ctx context.Context) ([]*github.Team, *github.Response, error) {
-	return cw.Teams.ListUserTeams(ctx, nil)
-}
-
 // OAuthClient is a oauth client for github.
 type OAuthClient struct {
-	client
+	*github.Client
 
 	projectID  string
 	org        string
@@ -111,17 +88,17 @@ func NewOAuthClient(ctx context.Context, p *model.ProjectSingleSignOn_GitHub, pr
 		cli.UploadURL = uploadURL
 	}
 
-	c.client = wrapClient(cli)
+	c.Client = cli
 	return c, nil
 }
 
 // GetUser returns a user model.
 func (c *OAuthClient) GetUser(ctx context.Context) (*model.User, error) {
-	user, _, err := c.getUser(ctx)
+	user, _, err := c.Users.Get(ctx, "")
 	if err != nil {
 		return nil, err
 	}
-	teams, _, err := c.getTeams(ctx)
+	teams, _, err := c.Teams.ListUserTeams(ctx, nil)
 	if err != nil {
 		return nil, err
 	}

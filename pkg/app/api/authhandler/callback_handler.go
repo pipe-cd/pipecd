@@ -114,7 +114,7 @@ func getUser(ctx context.Context, sso *model.ProjectSingleSignOn, projectID, cod
 		if err != nil {
 			return nil, err
 		}
-		return model.NewUser(ctx, cli)
+		return cli.GetUser(ctx)
 	default:
 		return nil, fmt.Errorf("not implemented")
 	}
