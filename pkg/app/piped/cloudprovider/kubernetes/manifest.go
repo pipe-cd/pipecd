@@ -173,7 +173,7 @@ func LoadPlainYAMLManifests(ctx context.Context, dir string, names []string) ([]
 				return filepath.SkipDir
 			}
 			ext := filepath.Ext(f.Name())
-			if ext != ".yaml" && ext != ".yml" {
+			if ext != ".yaml" && ext != ".yml" && ext != ".json" {
 				return nil
 			}
 			// TODO: Allow to check other than default configuration name too
@@ -193,7 +193,7 @@ func LoadPlainYAMLManifests(ctx context.Context, dir string, names []string) ([]
 		path := filepath.Join(dir, name)
 		ms, err := LoadManifestsFromYAMLFile(path)
 		if err != nil {
-			return nil, fmt.Errorf("failed to load maninifest at %s (%v)", path, err)
+			return nil, fmt.Errorf("failed to load maninifest at %s (%w)", path, err)
 		}
 		manifests = append(manifests, ms...)
 	}
