@@ -16,6 +16,7 @@ proto_library(
         "piped_stats.proto",
         "project.proto",
         "role.proto",
+        "user.proto",
     ],
     visibility = ["//visibility:public"],
     #keep
