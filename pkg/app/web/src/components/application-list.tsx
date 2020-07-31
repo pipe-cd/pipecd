@@ -118,7 +118,7 @@ export const ApplicationList: FC = memo(function ApplicationList() {
               <TableCell>Environment</TableCell>
               <TableCell>Version</TableCell>
               <TableCell>Commit</TableCell>
-              <TableCell>Trigger</TableCell>
+              <TableCell>Triggered By</TableCell>
               <TableCell>Last Deployment</TableCell>
               <TableCell />
             </TableRow>
@@ -159,7 +159,9 @@ export const ApplicationList: FC = memo(function ApplicationList() {
                           NOT_AVAILABLE_TEXT}
                       </TableCell>
                       <TableCell>
-                        {recentlyDeployment.trigger?.commander}
+                        {recentlyDeployment.trigger?.commander ||
+                          recentlyDeployment.trigger?.commit?.author ||
+                          NOT_AVAILABLE_TEXT}
                       </TableCell>
                       <TableCell>
                         {dayjs(recentlyDeployment.startedAt * 1000).fromNow()}
