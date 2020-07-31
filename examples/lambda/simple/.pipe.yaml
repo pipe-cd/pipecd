@@ -4,6 +4,7 @@ kind: LambdaApp
 spec:
   input:
     # Where to fetch the source code to create lambda package.
+    # If the source code is inside the same repository "git" and "ref" can be omitted.
     git: git@github.com:org/source-repo.git
     path: lambdas/demoapp
     ref: v1.0.0

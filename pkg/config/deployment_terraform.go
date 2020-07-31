@@ -16,8 +16,9 @@ package config
 
 // TerraformDeploymentSpec represents a deployment configuration for Terraform application.
 type TerraformDeploymentSpec struct {
-	Input    TerraformDeploymentInput `json:"input"`
-	Pipeline *DeploymentPipeline      `json:"pipeline"`
+	Input     TerraformDeploymentInput   `json:"input"`
+	QuickSync TerraformApplyStageOptions `json:"quickSync"`
+	Pipeline  *DeploymentPipeline        `json:"pipeline"`
 }
 
 func (s *TerraformDeploymentSpec) GetStage(index int32) (PipelineStage, bool) {
@@ -44,11 +45,17 @@ type TerraformDeploymentInput struct {
 	Dependencies []string `json:"dependencies,omitempty"`
 }
 
-// TerraformPlanStageOptions contains all configurable values for a K8S_TERRAFORM_PLAN stage.
+// TerraformSyncStageOptions contains all configurable values for a TERRAFORM_SYNC stage.
+type TerraformSyncStageOptions struct {
+	// How many times to retry applying terraform changes.
+	Retries int `json:"retries"`
+}
+
+// TerraformPlanStageOptions contains all configurable values for a TERRAFORM_PLAN stage.
 type TerraformPlanStageOptions struct {
 }
 
-// TerraformApplyStageOptions contains all configurable values for a K8S_TERRAFORM_APPLY stage.
+// TerraformApplyStageOptions contains all configurable values for a TERRAFORM_APPLY stage.
 type TerraformApplyStageOptions struct {
 	// How many times to retry applying terraform changes.
 	Retries int `json:"retries"`

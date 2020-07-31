@@ -49,17 +49,28 @@ type PipelineStage struct {
 	Desc    string
 	Timeout Duration
 
-	WaitStageOptions               *WaitStageOptions
-	WaitApprovalStageOptions       *WaitApprovalStageOptions
-	AnalysisStageOptions           *AnalysisStageOptions
+	WaitStageOptions         *WaitStageOptions
+	WaitApprovalStageOptions *WaitApprovalStageOptions
+	AnalysisStageOptions     *AnalysisStageOptions
+
 	K8sPrimaryRolloutStageOptions  *K8sPrimaryRolloutStageOptions
 	K8sCanaryRolloutStageOptions   *K8sCanaryRolloutStageOptions
 	K8sCanaryCleanStageOptions     *K8sCanaryCleanStageOptions
 	K8sBaselineRolloutStageOptions *K8sBaselineRolloutStageOptions
 	K8sBaselineCleanStageOptions   *K8sBaselineCleanStageOptions
 	K8sTrafficRoutingStageOptions  *K8sTrafficRoutingStageOptions
-	TerraformPlanStageOptions      *TerraformPlanStageOptions
-	TerraformApplyStageOptions     *TerraformApplyStageOptions
+
+	TerraformSyncStageOptions  *TerraformSyncStageOptions
+	TerraformPlanStageOptions  *TerraformPlanStageOptions
+	TerraformApplyStageOptions *TerraformApplyStageOptions
+
+	CloudRunSyncStageOptions           *CloudRunSyncStageOptions
+	CloudRunCanaryRolloutStageOptions  *CloudRunCanaryRolloutStageOptions
+	CloudRunTrafficRoutingStageOptions *CloudRunTrafficRoutingStageOptions
+
+	LambdaSyncStageOptions           *LambdaSyncStageOptions
+	LambdaCanaryRolloutStageOptions  *LambdaCanaryRolloutStageOptions
+	LambdaTrafficRoutingStageOptions *LambdaTrafficRoutingStageOptions
 }
 
 type genericPipelineStage struct {
@@ -127,6 +138,12 @@ func (s *PipelineStage) UnmarshalJSON(data []byte) error {
 		if len(gs.With) > 0 {
 			err = json.Unmarshal(gs.With, s.K8sTrafficRoutingStageOptions)
 		}
+
+	case model.StageTerraformSync:
+		s.TerraformSyncStageOptions = &TerraformSyncStageOptions{}
+		if len(gs.With) > 0 {
+			err = json.Unmarshal(gs.With, s.TerraformSyncStageOptions)
+		}
 	case model.StageTerraformPlan:
 		s.TerraformPlanStageOptions = &TerraformPlanStageOptions{}
 		if len(gs.With) > 0 {
@@ -137,6 +154,39 @@ func (s *PipelineStage) UnmarshalJSON(data []byte) error {
 		if len(gs.With) > 0 {
 			err = json.Unmarshal(gs.With, s.TerraformApplyStageOptions)
 		}
+
+	case model.StageCloudRunSync:
+		s.CloudRunSyncStageOptions = &CloudRunSyncStageOptions{}
+		if len(gs.With) > 0 {
+			err = json.Unmarshal(gs.With, s.CloudRunSyncStageOptions)
+		}
+	case model.StageCloudRunCanaryRollout:
+		s.CloudRunCanaryRolloutStageOptions = &CloudRunCanaryRolloutStageOptions{}
+		if len(gs.With) > 0 {
+			err = json.Unmarshal(gs.With, s.CloudRunCanaryRolloutStageOptions)
+		}
+	case model.StageCloudRunTrafficRouting:
+		s.CloudRunTrafficRoutingStageOptions = &CloudRunTrafficRoutingStageOptions{}
+		if len(gs.With) > 0 {
+			err = json.Unmarshal(gs.With, s.CloudRunTrafficRoutingStageOptions)
+		}
+
+	case model.StageLambdaSync:
+		s.LambdaSyncStageOptions = &LambdaSyncStageOptions{}
+		if len(gs.With) > 0 {
+			err = json.Unmarshal(gs.With, s.LambdaSyncStageOptions)
+		}
+	case model.StageLambdaCanaryRollout:
+		s.LambdaCanaryRolloutStageOptions = &LambdaCanaryRolloutStageOptions{}
+		if len(gs.With) > 0 {
+			err = json.Unmarshal(gs.With, s.LambdaCanaryRolloutStageOptions)
+		}
+	case model.StageLambdaTrafficRouting:
+		s.LambdaTrafficRoutingStageOptions = &LambdaTrafficRoutingStageOptions{}
+		if len(gs.With) > 0 {
+			err = json.Unmarshal(gs.With, s.LambdaTrafficRoutingStageOptions)
+		}
+
 	default:
 		err = fmt.Errorf("unsupported stage name: %s", s.Name)
 	}

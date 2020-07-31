@@ -50,22 +50,31 @@ const (
 	// should be splitted as the specified percentage to PRIMARY, CANARY, BASELINE variants.
 	StageK8sTrafficRouting Stage = "K8S_TRAFFIC_ROUTING"
 
+	// StageTerraformSync synced infrastructure with all the tf defined in Git.
+	// Firstly, it does plan and if there are any changes detected it applies those changes automatically.
+	StageTerraformSync Stage = "TERRAFORM_SYNC"
 	// StageTerraformPlan shows terraform plan result.
 	StageTerraformPlan Stage = "TERRAFORM_PLAN"
 	// StageTerraformApply represents the state where
 	// the new configuration has been applied.
 	StageTerraformApply Stage = "TERRAFORM_APPLY"
 
-	// StageCloudRunNewVersionRollout represents the state where
+	// StageCloudRunSync does quick sync by rolling out the new version
+	// and switch all trafic to them.
+	StageCloudRunSync Stage = "CLOUDRUN_SYNC"
+	// StageCloudRunCanaryRollout represents the state where
 	// the workloads of the new version has been rolled out.
-	StageCloudRunNewVersionRollout Stage = "CLOUDRUN_NEW_VERSION_ROLLOUT"
+	StageCloudRunCanaryRollout Stage = "CLOUDRUN_CANARY_ROLLOUT"
 	// StageCloudRunTrafficRouting represents the state where the traffic to application
 	// should be splitted as the specified percentage to previous version and new version.
 	StageCloudRunTrafficRouting Stage = "CLOUDRUN_TRAFFIC_ROUTING"
 
-	// StageLambdaNewVersionRollout represents the state where
+	// StageLambdaSync does quick sync by rolling out the new version
+	// and switch all trafic to them.
+	StageLambdaSync Stage = "LAMBDA_SYNC"
+	// StageLambdaCanaryRollout represents the state where
 	// the workloads of the new version has been rolled out.
-	StageLambdaNewVersionRollout Stage = "LAMBDA_NEW_VERSION_ROLLOUT"
+	StageLambdaCanaryRollout Stage = "LAMBDA_CANARY_ROLLOUT"
 	// StageLambdaTrafficRouting represents the state where the traffic to application
 	// should be splitted as the specified percentage to previous version and new version.
 	StageLambdaTrafficRouting Stage = "LAMBDA_TRAFFIC_ROUTING"
