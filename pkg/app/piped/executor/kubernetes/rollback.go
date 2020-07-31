@@ -42,7 +42,7 @@ func (e *Executor) ensureRollback(ctx context.Context) model.StageStatus {
 
 	// When addVariantLabelToSelector is true, ensure that all workloads
 	// have the variant label in their selector.
-	if e.config.Sync.AddVariantLabelToSelector {
+	if e.config.QuickSync.AddVariantLabelToSelector {
 		workloads := findWorkloadManifests(manifests, e.config.Workloads)
 		for _, m := range workloads {
 			if err := ensureVariantSelectorInWorkload(m, primaryVariant); err != nil {
