@@ -90,7 +90,8 @@ func (p *Planner) Plan(ctx context.Context, in planner.Input) (out planner.Outpu
 	}
 
 	// This deployment is triggered by a commit with the intent to perform pipeline.
-	if p := cfg.CommitMatcher.Pipeline; p != "" {
+	// Commit Matcher will be ignored when triggered by a command.
+	if p := cfg.CommitMatcher.Pipeline; p != "" && in.Deployment.Trigger.Commander == "" {
 		pipelineRegex, err := in.RegexPool.Get(p)
 		if err != nil {
 			err = fmt.Errorf("failed to compile commitMatcher.pipeline(%s): %w", p, err)
@@ -104,7 +105,8 @@ func (p *Planner) Plan(ctx context.Context, in planner.Input) (out planner.Outpu
 	}
 
 	// This deployment is triggered by a commit with the intent to synchronize.
-	if s := cfg.CommitMatcher.QuickSync; s != "" {
+	// Commit Matcher will be ignored when triggered by a command.
+	if s := cfg.CommitMatcher.QuickSync; s != "" && in.Deployment.Trigger.Commander == "" {
 		syncRegex, err := in.RegexPool.Get(s)
 		if err != nil {
 			err = fmt.Errorf("failed to compile commitMatcher.sync(%s): %w", s, err)
