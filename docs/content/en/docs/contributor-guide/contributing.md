@@ -3,7 +3,7 @@ title: "Contributing"
 linkTitle: "Contributing"
 weight: 1
 description: >
-  This page guides how to contribute to PipeCD.
+  This page describes how to contribute to PipeCD.
 ---
 
 PipeCD is an open source project that anyone in the community can use, improve, and enjoy. We'd love you to join us! 

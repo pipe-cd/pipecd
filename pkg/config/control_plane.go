@@ -21,19 +21,19 @@ import (
 )
 
 type ControlPlaneSpec struct {
+	// The address to the API of PipeCD control plane.
+	APIURL string `json:"apiUrl"`
+	// The key to generate oauth state paramater.
+	StateKey string `json:"stateKey"`
+	// List of debugging/quickstart projects defined in Control Plane configuration.
+	// Please do not use this to configure the projects running the production mode.
+	Projects []ControlPlaneProject `json:"projects"`
 	// The configuration of datastore for control plane.
 	Datastore ControlPlaneDataStore `json:"datastore"`
 	// The configuration of filestore for control plane.
 	Filestore ControlPlaneFileStore `json:"filestore"`
 	// The configuration of cache for control plane.
 	Cache ControlPlaneCache `json:"cache"`
-	// List of debugging/quickstart projects defined in Control Plane configuration.
-	// Please do not use this to configure the projects running the production mode.
-	Projects []ControlPlaneProject `json:"projects"`
-	// The address to the API of PipeCD control plane.
-	APIURL string `json:"apiUrl"`
-	// The key to generate oauth state paramater.
-	StateKey string `json:"stateKey"`
 }
 
 func (s *ControlPlaneSpec) Validate() error {
