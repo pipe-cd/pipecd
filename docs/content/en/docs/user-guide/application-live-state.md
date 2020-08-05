@@ -7,3 +7,8 @@ description: >
 ---
 
 > TBA
+
+![](/images/application-details.png)
+<p style="text-align: center;">
+Application Details Page
+</p>

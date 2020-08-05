@@ -16,9 +16,12 @@ package config
 
 // TerraformDeploymentSpec represents a deployment configuration for Terraform application.
 type TerraformDeploymentSpec struct {
-	Input     TerraformDeploymentInput   `json:"input"`
+	// Input for Terraform deployment such as terraform version, workspace...
+	Input TerraformDeploymentInput `json:"input"`
+	// Configuration for quick sync.
 	QuickSync TerraformApplyStageOptions `json:"quickSync"`
-	Pipeline  *DeploymentPipeline        `json:"pipeline"`
+	// Pipeline for deploying progressively.
+	Pipeline *DeploymentPipeline `json:"pipeline"`
 }
 
 func (s *TerraformDeploymentSpec) GetStage(index int32) (PipelineStage, bool) {

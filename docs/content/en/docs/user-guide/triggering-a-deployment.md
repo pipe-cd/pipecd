@@ -10,3 +10,9 @@ description: >
 
 - Automatically syncing by Git event.
 - Manually syncing from Web UI.
+
+![](/images/application-details.png)
+<p style="text-align: center;">
+Application Details Page
+</p>
+

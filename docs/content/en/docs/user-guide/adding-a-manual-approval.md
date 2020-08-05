@@ -7,3 +7,8 @@ description: >
 ---
 
 > TBA
+
+![](/images/deployment-wait-approval-stage.png)
+<p style="text-align: center;">
+Deployment with a WAIT_APPROVAL stage
+</p>

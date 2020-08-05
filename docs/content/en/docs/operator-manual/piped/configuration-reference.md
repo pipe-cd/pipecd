@@ -30,7 +30,7 @@ spec:
 | repositories | [][Repository](/docs/operator-manual/piped/configuration-reference/#repository) | List of Git repositories this piped will handle | No |
 | chartRepositories | [][ChartRepository](/docs/operator-manual/piped/configuration-reference/#chartrepository) | List of Helm chart repositories that should be added while starting up | No |
 | cloudProviders | [][CloudProvider](/docs/operator-manual/piped/configuration-reference/#cloudprovider) | List of cloud providers can be used by this piped | No |
-| analysisProviders | [][CloudProvider](/docs/operator-manual/piped/configuration-reference/#analysisprovider) | List of analysis providers can be used by this piped | No |
+| analysisProviders | [][AnalysisProvider](/docs/operator-manual/piped/configuration-reference/#analysisprovider) | List of analysis providers can be used by this piped | No |
 | notifications | [Notifications](/docs/operator-manual/piped/configuration-reference/#notifications) | Notification to Slack, Webhook... | No |
 
 ### Git
