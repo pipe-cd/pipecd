@@ -15,7 +15,6 @@
 package kubernetes
 
 import (
-	"context"
 	"encoding/json"
 	"fmt"
 	"io/ioutil"
@@ -159,7 +158,7 @@ func ParseFromStructuredObject(s interface{}) (Manifest, error) {
 	}, nil
 }
 
-func LoadPlainYAMLManifests(ctx context.Context, dir string, names []string, configFileName string) ([]Manifest, error) {
+func LoadPlainYAMLManifests(dir string, names []string, configFileName string) ([]Manifest, error) {
 	// If no name was specified we have to walk the app directory to collect the manifest list.
 	if len(names) == 0 {
 		err := filepath.Walk(dir, func(path string, f os.FileInfo, err error) error {
