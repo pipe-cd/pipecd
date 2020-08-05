@@ -26,6 +26,7 @@ import (
 	"k8s.io/apimachinery/pkg/apis/meta/v1/unstructured"
 	"sigs.k8s.io/yaml"
 
+	"github.com/pipe-cd/pipe/pkg/config"
 	"github.com/pipe-cd/pipe/pkg/model"
 )
 
@@ -176,10 +177,14 @@ func LoadPlainYAMLManifests(ctx context.Context, dir string, names []string) ([]
 			if ext != ".yaml" && ext != ".yml" && ext != ".json" {
 				return nil
 			}
-			// TODO: Allow to check other than default configuration name too
 			if f.Name() == model.DefaultDeploymentConfigFileName {
 				return nil
 			}
+			// Config file for PipeCD is ignored.
+			if _, err := config.LoadFromYAML(path); err == nil {
+				return nil
+			}
+
 			names = append(names, f.Name())
 			return nil
 		})
