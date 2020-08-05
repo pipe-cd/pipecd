@@ -85,11 +85,12 @@ var (
 )
 
 type provider struct {
-	appName string
-	appDir  string
-	repoDir string
-	input   config.KubernetesDeploymentInput
-	logger  *zap.Logger
+	appName        string
+	appDir         string
+	repoDir        string
+	configFileName string
+	input          config.KubernetesDeploymentInput
+	logger         *zap.Logger
 
 	kubectl          *Kubectl
 	kustomize        *Kustomize
@@ -111,18 +112,19 @@ func initSharedGitClient(logger *zap.Logger) error {
 	return err
 }
 
-func NewProvider(appName, appDir, repoDir string, input config.KubernetesDeploymentInput, logger *zap.Logger) Provider {
+func NewProvider(appName, appDir, repoDir, configFileName string, input config.KubernetesDeploymentInput, logger *zap.Logger) Provider {
 	return &provider{
-		appName: appName,
-		appDir:  appDir,
-		repoDir: repoDir,
-		input:   input,
-		logger:  logger.Named("kubernetes-provider"),
+		appName:        appName,
+		appDir:         appDir,
+		repoDir:        repoDir,
+		configFileName: configFileName,
+		input:          input,
+		logger:         logger.Named("kubernetes-provider"),
 	}
 }
 
-func NewManifestLoader(appName, appDir, repoDir string, input config.KubernetesDeploymentInput, logger *zap.Logger) ManifestLoader {
-	return NewProvider(appName, appDir, repoDir, input, logger)
+func NewManifestLoader(appName, appDir, repoDir, configFileName string, input config.KubernetesDeploymentInput, logger *zap.Logger) ManifestLoader {
+	return NewProvider(appName, appDir, repoDir, configFileName, input, logger)
 }
 
 func (p *provider) init(ctx context.Context) {
@@ -195,7 +197,7 @@ func (p *provider) LoadManifests(ctx context.Context) (manifests []Manifest, err
 		manifests, err = ParseManifests(data)
 
 	case TemplatingMethodNone:
-		manifests, err = LoadPlainYAMLManifests(ctx, p.appDir, p.input.Manifests)
+		manifests, err = LoadPlainYAMLManifests(ctx, p.appDir, p.input.Manifests, p.configFileName)
 
 	default:
 		err = fmt.Errorf("unsupport templating method %v", p.templatingMethod)

@@ -26,7 +26,6 @@ import (
 	"k8s.io/apimachinery/pkg/apis/meta/v1/unstructured"
 	"sigs.k8s.io/yaml"
 
-	"github.com/pipe-cd/pipe/pkg/config"
 	"github.com/pipe-cd/pipe/pkg/model"
 )
 
@@ -160,7 +159,7 @@ func ParseFromStructuredObject(s interface{}) (Manifest, error) {
 	}, nil
 }
 
-func LoadPlainYAMLManifests(ctx context.Context, dir string, names []string) ([]Manifest, error) {
+func LoadPlainYAMLManifests(ctx context.Context, dir string, names []string, configFileName string) ([]Manifest, error) {
 	// If no name was specified we have to walk the app directory to collect the manifest list.
 	if len(names) == 0 {
 		err := filepath.Walk(dir, func(path string, f os.FileInfo, err error) error {
@@ -180,11 +179,9 @@ func LoadPlainYAMLManifests(ctx context.Context, dir string, names []string) ([]
 			if f.Name() == model.DefaultDeploymentConfigFileName {
 				return nil
 			}
-			// Config file for PipeCD is ignored.
-			if _, err := config.LoadFromYAML(path); err == nil {
+			if f.Name() == configFileName {
 				return nil
 			}
-
 			names = append(names, f.Name())
 			return nil
 		})
