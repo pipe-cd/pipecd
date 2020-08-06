@@ -1,3 +1,4 @@
+# Deployment pipeline with canary strategy.
 # https://cloud.google.com/run/docs/rollouts-rollbacks-traffic-migration
 apiVersion: pipecd.dev/v1beta1
 kind: CloudRunApp

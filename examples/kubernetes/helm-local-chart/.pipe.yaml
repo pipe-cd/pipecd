@@ -1,3 +1,5 @@
+# Deploy a helm chart sourced from the same Git repository
+# without using pipeline.
 apiVersion: pipecd.dev/v1beta1
 kind: KubernetesApp
 spec:

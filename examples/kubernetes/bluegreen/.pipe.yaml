@@ -1,5 +1,4 @@
-# Pipeline for a Kubernetes application.
-# This makes a progressive delivery with BlueGreen strategy.
+# Deploy progressively with bluegreen stragegy.
 apiVersion: pipecd.dev/v1beta1
 kind: KubernetesApp
 spec:
