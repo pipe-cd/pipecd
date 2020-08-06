@@ -1,7 +1,7 @@
 ---
 title: "Canary Deployment"
 linkTitle: "Canary"
-weight: 3
+weight: 2
 description: >
   Overview about deploying Kubernetes application.
 ---

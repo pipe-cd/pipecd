@@ -6,8 +6,6 @@ description: >
   Automatically detecting the configuration drift.
 ---
 
-### What is configuration drift
-
 > TBA
 
 Configuration Drift is the phenomenon where running resources become more and more different with the defined in Git as time goes on, due to manual ad-hoc changes and updates.
