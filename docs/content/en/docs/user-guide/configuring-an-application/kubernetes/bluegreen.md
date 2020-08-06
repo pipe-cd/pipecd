@@ -1,7 +1,7 @@
 ---
 title: "BlueGreen Deployment"
 linkTitle: "BlueGreen"
-weight: 5
+weight: 4
 description: >
   Overview about deploying Kubernetes application.
 ---

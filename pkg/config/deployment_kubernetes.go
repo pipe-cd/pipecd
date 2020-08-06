@@ -16,11 +16,14 @@ package config
 
 // KubernetesDeploymentSpec represents a deployment configuration for Kubernetes application.
 type KubernetesDeploymentSpec struct {
-	Input         KubernetesDeploymentInput `json:"input"`
-	CommitMatcher DeploymentCommitMatcher   `json:"commitMatcher"`
-	QuickSync     K8sSyncStageOptions       `json:"quickSync"`
-	Pipeline      *DeploymentPipeline       `json:"pipeline"`
-
+	// Input for Kubernetes deployment such as kubectl version, helm version, manifests filter...
+	Input KubernetesDeploymentInput `json:"input"`
+	// Forcibly use QuickSync or Pipeline when commit message matched the specified format.
+	CommitMatcher DeploymentCommitMatcher `json:"commitMatcher"`
+	// Configuration for quick sync.
+	QuickSync K8sSyncStageOptions `json:"quickSync"`
+	// Pipeline for deploying progressively.
+	Pipeline *DeploymentPipeline `json:"pipeline"`
 	// Which resource should be considered as the Service of application.
 	// Empty means the first Service resource will be used.
 	Service K8sResourceReference `json:"service"`
@@ -51,21 +54,29 @@ func (s *KubernetesDeploymentSpec) Validate() error {
 	return nil
 }
 
+// KubernetesDeploymentInput represents needed input for triggering a Kubernetes deployment.
 type KubernetesDeploymentInput struct {
-	Manifests      []string `json:"manifests"`
-	KubectlVersion string   `json:"kubectlVersion"`
-
+	// List of manifest files in the application configuration directory used to deploy.
+	// Empty means all manifest files in the directory will be used.
+	Manifests []string `json:"manifests"`
+	// Version of kubectl will be used.
+	KubectlVersion string `json:"kubectlVersion"`
+	// Version of kustomize will be used.
 	KustomizeVersion string `json:"kustomizeVersion"`
 
-	HelmChart   *InputHelmChart   `json:"helmChart"`
+	// Version of helm will be used.
+	HelmVersion string `json:"helmVersion"`
+	// Where to fetch helm chart.
+	HelmChart *InputHelmChart `json:"helmChart"`
+	// COnfigurable parameters for helm commands.
 	HelmOptions *InputHelmOptions `json:"helmOptions"`
-	HelmVersion string            `json:"helmVersion"`
 
 	// The namespace where manifests will be applied.
 	Namespace string `json:"namespace"`
-	// Automatically reverts all changes from all stages when one of them failed.
+	// Automatically reverts all deployment changes on failure.
 	// Default is true.
-	AutoRollback bool     `json:"autoRollback"`
+	AutoRollback bool `json:"autoRollback"`
+	// List of directories where their changes will trigger the deployment.
 	Dependencies []string `json:"dependencies,omitempty"`
 }
 
@@ -131,7 +142,7 @@ type K8sResourceReference struct {
 type K8sSyncStageOptions struct {
 	// Whether the PRIMARY variant label should be added to manifests if they were missing.
 	AddVariantLabelToSelector bool `json:"addVariantLabelToSelector"`
-	// Whether the resources that are no longer defined in Git will be removed.
+	// Whether the resources that are no longer defined in Git should be removed or not.
 	Prune bool `json:"prune"`
 }
 
@@ -144,7 +155,7 @@ type K8sPrimaryRolloutStageOptions struct {
 	CreateService bool `json:"createService"`
 	// Whether the PRIMARY variant label should be added to manifests if they were missing.
 	AddVariantLabelToSelector bool `json:"addVariantLabelToSelector"`
-	// Whether the resources that are no longer defined in Git will be removed.
+	// Whether the resources that are no longer defined in Git should be removed or not.
 	Prune bool `json:"prune"`
 }
 

@@ -16,9 +16,12 @@ package config
 
 // CloudRunDeploymentSpec represents a deployment configuration for CloudRun application.
 type CloudRunDeploymentSpec struct {
-	Input     CloudRunDeploymentInput  `json:"input"`
+	// Input for CloudRun deployment such as docker image...
+	Input CloudRunDeploymentInput `json:"input"`
+	// Configuration for quick sync.
 	QuickSync CloudRunSyncStageOptions `json:"quickSync"`
-	Pipeline  *DeploymentPipeline      `json:"pipeline"`
+	// Pipline for deploying progressively.
+	Pipeline *DeploymentPipeline `json:"pipeline"`
 }
 
 func (s *CloudRunDeploymentSpec) GetStage(index int32) (PipelineStage, bool) {
@@ -37,7 +40,7 @@ func (s *CloudRunDeploymentSpec) Validate() error {
 }
 
 type CloudRunDeploymentInput struct {
-	image string `json:"image"`
+	Image string `json:"image"`
 	// Automatically reverts all changes from all stages when one of them failed.
 	// Default is true.
 	AutoRollback bool `json:"autoRollback"`

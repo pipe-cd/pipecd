@@ -7,3 +7,9 @@ description: >
 ---
 
 > TBA
+
+![](/images/cancel-deployment.png)
+<p style="text-align: center;">
+Cancel a deployment with rolling back
+</p>
+
