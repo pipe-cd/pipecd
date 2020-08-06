@@ -8,9 +8,10 @@ description: >
 
 ## What Is PipeCD?
 
-PipeCD provides a Continuous Delivery solution for Declarative Kubernetes Application, Serverless Application and Infrastructure.
+{{% pageinfo %}}
+PipeCD provides a Continuous Delivery solution for declarative Kubernetes, Serverless and Infrastructure applications.
+{{% /pageinfo %}}
 
-> TBA: Introduce your project, including what it does or lets you do, why you would use it, and its primary goal (and how it achieves it). This should be similar to your README description, though you can go into a little more detail here if you want.
 
 ![](/images/architecture-overview.png)
 <p style="text-align: center;">
@@ -25,7 +26,7 @@ Deployment Details Screen
 ## Why PipeCD?
 
 **Powerful**
-- Unifed Deployment System: kubernetes (plain-yaml, helm, kustomize), terraform, lambda, cloudrun...
+- Unified Deployment System: kubernetes (plain-yaml, helm, kustomize), terraform, lambda, cloudrun...
 - Progressive Deployment Strategies: canary, bluegreen, rolling update
 - Automated Analysis: by metrics, log, smoke test...
 - Automated Rollback

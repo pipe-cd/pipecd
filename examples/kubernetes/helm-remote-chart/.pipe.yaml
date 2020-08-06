@@ -1,8 +1,10 @@
+# Deploy a helm chart sourced from  a Helm Chart Repository
+# without using pipeline.
 apiVersion: pipecd.dev/v1beta1
 kind: KubernetesApp
 spec:
   input:
-    # Helm chart sourced from a Helm repository.
+    # Helm chart sourced from a Helm Chart Repository.
     helmChart:
       repository: pipecd
       name: helloworld

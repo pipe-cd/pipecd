@@ -1,4 +1,4 @@
-# Progressive delivery with canary strategy because of config change.
+# Deploy progressively with canary strategy when ConfigMap was changed.
 apiVersion: pipecd.dev/v1beta1
 kind: KubernetesApp
 spec:

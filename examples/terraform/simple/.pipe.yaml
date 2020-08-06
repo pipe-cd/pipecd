@@ -1,3 +1,4 @@
+# Automatically applies when any changes were detected.
 apiVersion: pipecd.dev/v1beta1
 kind: TerraformApp
 spec:

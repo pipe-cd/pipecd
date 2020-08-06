@@ -1,5 +1,5 @@
-# This configures a non-progressive delivery.
-# This means the new version is applied directly to PRIMARY variant.
+# Deploy plain-yaml manifests in the application configuration directory
+# without using pipeline.
 apiVersion: pipecd.dev/v1beta1
 kind: KubernetesApp
 spec:

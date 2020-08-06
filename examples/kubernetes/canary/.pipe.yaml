@@ -1,9 +1,7 @@
-# Progressive delivery with canary strategy.
+# Deploy progressively with canary stragegy.
 apiVersion: pipecd.dev/v1beta1
 kind: KubernetesApp
 spec:
-  commitMatcher:
-    sync: "^Revert"
   pipeline:
     stages:
       # Deploy the workloads of CANARY variant. In this case, the number of

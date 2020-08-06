@@ -1,3 +1,4 @@
+# Deployment pipeline with canary strategy.
 # Using version, alias, additional version to do canary, bluegreen.
 # https://docs.aws.amazon.com/lambda/latest/dg/configuration-aliases.html
 apiVersion: pipecd.dev/v1beta1

@@ -1,5 +1,5 @@
-# This configures a non-progressive delivery.
-# This means the new version is applied directly to PRIMARY variant.
+# Deploy a kustomize package that uses remote bases from other Git repositories
+# without using pipeline.
 apiVersion: pipecd.dev/v1beta1
 kind: KubernetesApp
 spec:
