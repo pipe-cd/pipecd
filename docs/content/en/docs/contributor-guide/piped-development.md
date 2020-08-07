@@ -18,10 +18,14 @@ In order to run `piped` at the local environment for debugging while development
 we prepared a fake control-plane to be used.
 
 1. Prepare a `.dev` directory at the root of repository that contains:
-- a `piped.key` file with a fake key (e.g. `"hello-pipecd"`)
-- a piped configuration file `piped-config.yaml` (e.g. [pkg/config/testdata/piped/dev-config.yaml](https://github.com/pipe-cd/pipe/blob/master/pkg/config/testdata/piped/dev-config.yaml))
+- A `piped.key` file with a fake key as the following
+  ```
+  hello-pipecd
+  ```
 
-2. Ensure that your `kube-context` is connecting to right kubernetes cluster
+- A piped configuration file `piped-config.yaml`
+
+2. Ensure that your `kube-context` is connecting to the right kubernetes cluster
 
 2. Run the following command to start running `piped`
 
@@ -33,5 +37,5 @@ bazelisk run --run_under="cd $PWD && " //cmd/piped:piped -- piped \
 --piped-id=local-dev-piped \
 --piped-key-file=.dev/piped.key \
 --bin-dir=/tmp/piped-bin \
---config-file=pkg/config/testdata/piped/dev-config.yaml
+--config-file=.dev/dev-config.yaml
 ```

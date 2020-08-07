@@ -45,7 +45,7 @@ func (e *Executor) ensureTrafficRouting(ctx context.Context) model.StageStatus {
 		e.LogPersister.Errorf("Malformed configuration for stage %s", e.Stage.Name)
 		return model.StageStatus_STAGE_FAILURE
 	}
-	method := config.DetermineTrafficRoutingMethod(e.config.TrafficRouting)
+	method := config.DetermineKubernetesTrafficRoutingMethod(e.config.TrafficRouting)
 
 	// Load the manifests at the triggered commit.
 	e.LogPersister.Infof("Loading manifests at commit %s for handling", commitHash)
@@ -88,7 +88,7 @@ func (e *Executor) ensureTrafficRouting(ctx context.Context) model.StageStatus {
 	trafficRoutingManifest := trafficRoutingManifests[0]
 
 	// In case we are routing by PodSelector, the service manifest must contain variantLabel inside its selector.
-	if method == config.TrafficRoutingMethodPodSelector {
+	if method == config.KubernetesTrafficRoutingMethodPodSelector {
 		if err := checkVariantSelectorInService(trafficRoutingManifest, primaryVariant); err != nil {
 			e.LogPersister.Errorf("Traffic routing by PodSelector requires %q inside the selector of Service manifest but it was unable to check that field in manifest %s (%v)",
 				variantLabel+": "+primaryVariant,
@@ -127,10 +127,10 @@ func (e *Executor) ensureTrafficRouting(ctx context.Context) model.StageStatus {
 	return model.StageStatus_STAGE_SUCCESS
 }
 
-func findTrafficRoutingManifests(manifests []provider.Manifest, serviceName string, cfg *config.TrafficRouting) ([]provider.Manifest, error) {
-	method := config.DetermineTrafficRoutingMethod(cfg)
+func findTrafficRoutingManifests(manifests []provider.Manifest, serviceName string, cfg *config.KubernetesTrafficRouting) ([]provider.Manifest, error) {
+	method := config.DetermineKubernetesTrafficRoutingMethod(cfg)
 
-	if method == config.TrafficRoutingMethodIstio {
+	if method == config.KubernetesTrafficRoutingMethodIstio {
 		istioConfig := cfg.Istio
 		if istioConfig == nil {
 			istioConfig = &config.IstioTrafficRouting{}
@@ -141,8 +141,8 @@ func findTrafficRoutingManifests(manifests []provider.Manifest, serviceName stri
 	return findManifests(provider.KindService, serviceName, manifests), nil
 }
 
-func (e *Executor) generateTrafficRoutingManifest(manifest provider.Manifest, primaryPercent, canaryPercent, baselinePercent int, cfg *config.TrafficRouting) (provider.Manifest, error) {
-	if cfg != nil && cfg.Method == config.TrafficRoutingMethodIstio {
+func (e *Executor) generateTrafficRoutingManifest(manifest provider.Manifest, primaryPercent, canaryPercent, baselinePercent int, cfg *config.KubernetesTrafficRouting) (provider.Manifest, error) {
+	if cfg != nil && cfg.Method == config.KubernetesTrafficRoutingMethodIstio {
 		istioConfig := cfg.Istio
 		if istioConfig == nil {
 			istioConfig = &config.IstioTrafficRouting{}

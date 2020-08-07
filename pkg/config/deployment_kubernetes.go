@@ -36,7 +36,7 @@ type KubernetesDeploymentSpec struct {
 	//   name: replication-controller-name
 	Workloads []K8sResourceReference `json:"workloads"`
 	// Which method should be used for traffic routing.
-	TrafficRouting *TrafficRouting `json:"trafficRouting"`
+	TrafficRouting *KubernetesTrafficRouting `json:"trafficRouting"`
 }
 
 func (s *KubernetesDeploymentSpec) GetStage(index int32) (PipelineStage, bool) {
@@ -81,55 +81,64 @@ type KubernetesDeploymentInput struct {
 }
 
 type InputHelmChart struct {
-	// Empty means current repository.
+	// Git remote address where the chart is placing.
+	// Empty means the same repository.
 	GitRemote string `json:"gitRemote"`
 	// The commit SHA or tag for remote git.
 	Ref string `json:"ref"`
 	// Relative path from the repository root directory to the chart directory.
 	Path string `json:"path"`
 
-	// The name of an added Helm chart repository.
+	// The name of an added Helm Chart Repository.
 	Repository string `json:"repository"`
 	Name       string `json:"name"`
 	Version    string `json:"version"`
 }
 
 type InputHelmOptions struct {
+	// The release name of helm deployment.
 	// By default the release name is equal to the application name.
 	ReleaseName string `json:"releaseName"`
 	// List of value files should be loaded.
 	ValueFiles []string `json:"valueFiles"`
-	SetFiles   map[string]string
+	// List of file path for values.
+	SetFiles map[string]string
 }
 
-type TrafficRoutingMethod string
+type KubernetesTrafficRoutingMethod string
 
 const (
-	TrafficRoutingMethodPodSelector TrafficRoutingMethod = "podselector"
-	TrafficRoutingMethodIstio       TrafficRoutingMethod = "istio"
+	KubernetesTrafficRoutingMethodPodSelector KubernetesTrafficRoutingMethod = "podselector"
+	KubernetesTrafficRoutingMethodIstio       KubernetesTrafficRoutingMethod = "istio"
+	KubernetesTrafficRoutingMethodSMI         KubernetesTrafficRoutingMethod = "smi"
 )
 
-type TrafficRouting struct {
-	Method TrafficRoutingMethod `json:"method"`
-	Istio  *IstioTrafficRouting `json:"istio"`
+type KubernetesTrafficRouting struct {
+	Method KubernetesTrafficRoutingMethod `json:"method"`
+	Istio  *IstioTrafficRouting           `json:"istio"`
 }
 
-// DetermineTrafficRoutingMethod determines the routing method should be used based on the TrafficRouting config.
+// DetermineKubernetesTrafficRoutingMethod determines the routing method should be used based on the TrafficRouting config.
 // The default is PodSelector: the way by updating the selector in Service to switching all of traffic.
-func DetermineTrafficRoutingMethod(cfg *TrafficRouting) TrafficRoutingMethod {
+func DetermineKubernetesTrafficRoutingMethod(cfg *KubernetesTrafficRouting) KubernetesTrafficRoutingMethod {
 	if cfg == nil {
-		return TrafficRoutingMethodPodSelector
+		return KubernetesTrafficRoutingMethodPodSelector
 	}
 	if cfg.Method == "" {
-		return TrafficRoutingMethodPodSelector
+		return KubernetesTrafficRoutingMethodPodSelector
 	}
 	return cfg.Method
 }
 
 type IstioTrafficRouting struct {
+	// List of routes in the VirtualService that can be changed to update traffic routing.
+	// Empty means all routes should be updated.
 	EditableRoutes []string `json:"editableRoutes"`
 	// TODO: Add a validate to ensure this was configured or using the default value by service name.
-	Host           string               `json:"host"`
+	// The service host.
+	Host string `json:"host"`
+	// The reference to VirtualService manifest.
+	// Empty means the first VirtualService resource will be used.
 	VirtualService K8sResourceReference `json:"virtualService"`
 }
 

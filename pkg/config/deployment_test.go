@@ -113,8 +113,8 @@ func TestAppConfig(t *testing.T) {
 						},
 					},
 				},
-				TrafficRouting: &TrafficRouting{
-					Method: TrafficRoutingMethodPodSelector,
+				TrafficRouting: &KubernetesTrafficRouting{
+					Method: KubernetesTrafficRoutingMethodPodSelector,
 				},
 			},
 			expectedError: nil,

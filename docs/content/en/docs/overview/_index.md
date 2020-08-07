@@ -20,7 +20,7 @@ Component Architecture
 
 ![](/images/deployment-details.png)
 <p style="text-align: center;">
-Deployment Details Screen
+Deployment Details Page
 </p>
 
 ## Why PipeCD?
