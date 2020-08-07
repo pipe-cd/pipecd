@@ -6,8 +6,6 @@ description: >
   This page describes all configurable fields in the deployment configuration and analysis template.
 ---
 
-> TBA
-
 ## Kubernetes Application
 
 ``` yaml
@@ -113,7 +111,7 @@ spec:
 | name | string | One of the provided stage names. | Yes |
 | desc | string | The description about the stage. | No |
 | timeout | duration | The maximum time the stage can be taken to run. | No |
-| with | | Specific configuration for the stage. | No |
+| with | [StageOptions](/docs/user-guide/configuration-reference/#stageoptions) | Specific configuration for the stage. This must be one of these [StageOptions](/docs/user-guide/configuration-reference/#stageoptions). | No |
 
 ## KubernetesDeploymentInput
 
@@ -133,11 +131,20 @@ spec:
 
 | Field | Type | Description | Required |
 |-|-|-|-|
+| gitRemote | string | Git remote address where the chart is placing. Empty means the same repository. | No |
+| ref | string | The commit SHA or tag value. Only valid when gitRemote is not empty. | No |
+| path | string | Relative path from the repository root to the chart directory. | No |
+| repository | string | The name of a registered Helm Chart Repository. | No |
+| name | string | The chart name. | No |
+| version | string | The chart version. | No |
 
 ## HelmOptions
 
 | Field | Type | Description | Required |
 |-|-|-|-|
+| releaseName | string | The release name of helm deployment. By default the release name is equal to the application name. | No |
+| valueFiles | []string | List of value files should be loaded. | No |
+| setFiles | []string | List of file path for values. | No |
 
 ## KubernetesQuickSync
 
@@ -163,13 +170,22 @@ spec:
 
 | Field | Type | Description | Required |
 |-|-|-|-|
-| method | string | Which traffic routing method will be used. Avaiable values are `istio`, `podselector`. Default is `podselector`. | No |
+| method | string | Which traffic routing method will be used. Avaiable values are `istio`, `smi`, `podselector`. Default is `podselector`. | No |
 | istio | [IstioTrafficRouting](/docs/user-guide/configuration-reference/#istiotrafficrouting)| Istio configuration when the method is `istio`. | No |
 
 ## IstioTrafficRouting
 
 | Field | Type | Description | Required |
 |-|-|-|-|
+| editableRoutes | []string | List of routes in the VirtualService that can be changed to update traffic routing. Empty means all routes should be updated. | No |
+| host | string | The service host. | No |
+| virtualService | [IstioVirtualService](/docs/user-guide/configuration-reference/#istiovirtualservice) | The reference to VirtualService manifest. Empty means the first VirtualService resource will be used. | No |
+
+## IstioVirtualService
+
+| Field | Type | Description | Required |
+|-|-|-|-|
+| name | string | The name of VirtualService manifest. | No |
 
 ## TerraformDeploymentInput
 
@@ -224,6 +240,7 @@ spec:
 
 | Field | Type | Description | Required |
 |-|-|-|-|
+| | | | |
 
 ### KubernetesBaselineRolloutStageOptions
 
@@ -237,6 +254,7 @@ spec:
 
 | Field | Type | Description | Required |
 |-|-|-|-|
+| | | | |
 
 ### KubernetesTrafficRoutingStageOptions
 
