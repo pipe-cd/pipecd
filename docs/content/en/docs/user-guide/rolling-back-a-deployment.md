@@ -1,15 +1,15 @@
 ---
 title: "Rolling back a deployment"
 linkTitle: "Rolling back a deployment"
-weight: 8
+weight: 7
 description: >
-  Overview about deploying Kubernetes application.
+  This page describes when a deployment is rolled back automatically and how to manually rollback a deployment.
 ---
 
 > TBA
 
-![](/images/cancel-deployment.png)
+![](/images/rolled-back-deployment.png)
 <p style="text-align: center;">
-Cancel a deployment with rolling back
+A deployment was rolled back
 </p>
 

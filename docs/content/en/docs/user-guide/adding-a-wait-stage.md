@@ -20,6 +20,7 @@ spec:
         with:
           duration: 5m
       - name: K8S_PRIMARY_ROLLOUT
+      - name: K8S_CANARY_CLEAN
 ```
 
 ![](/images/deployment-wait-stage.png)

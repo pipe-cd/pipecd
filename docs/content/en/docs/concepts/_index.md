@@ -48,6 +48,18 @@ When the deployment is success, it means the running state is synced with the de
 A `.pipe.yaml` yaml file that contains configuration data to define how to deploy the application.
 Each application has one deployment configuration file in Git repository at application directory.
 
+### Application Configuration Directory
+
+A directory in Git repository containing deployment configuration file (`.pipe.yaml`) and application manifests.
+Each application must has one application configuration directory.
+
+### Quick Sync
+
+Quick sync is a fast way to sync application to the state specified in a Git commit without any progressive strategy or manual approving. Its pipeline contains just only one `SYNC` stage. For examples:
+- quick sync a Kubernetes application is just applying all manifests
+- quick sync a Terraform application is automatically applying all detected changes
+- quick sync a CloudRun/Lambda application is rolling out the new version and routing all traffic to it
+
 ### Stage
 
 A temporary middle state between current state and desired state of a deployment process.
