@@ -26,6 +26,11 @@ message Piped {
         string type = 2 [(validate.rules).string.min_len = 1];
     }
 
+    enum ConnectionStatus {
+        ONLINE = 0;
+        OFFLINE = 1;
+    }
+
     // The generated unique identifier.
     string id = 1 [(validate.rules).string.min_len = 1];
     // The name of the piped.
@@ -46,6 +51,8 @@ message Piped {
     repeated CloudProvider cloud_providers = 9;
     // List of configured repositories.
     repeated ApplicationGitRepository repositories = 10;
+    // The latest connection status of piped.
+    ConnectionStatus status = 11 [(validate.rules).enum.defined_only = true];
 
     // Whether the piped is disabled or not.
     bool disabled = 13;

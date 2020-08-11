@@ -111,7 +111,7 @@ func (a *FakeWebAPI) DisablePiped(ctx context.Context, req *webservice.DisablePi
 
 func (a *FakeWebAPI) ListPipeds(ctx context.Context, req *webservice.ListPipedsRequest) (*webservice.ListPipedsResponse, error) {
 	now := time.Now()
-	pipeds := []*webservice.Piped{
+	pipeds := []*model.Piped{
 		{
 			Id:        "492220b1-c080-4781-9e55-7e278760e0ef",
 			Desc:      "piped for debug 1",
@@ -134,9 +134,9 @@ func (a *FakeWebAPI) ListPipeds(ctx context.Context, req *webservice.ListPipedsR
 		},
 	}
 	if req.WithStatus {
-		pipeds[0].Status = webservice.PipedConnectionStatus_PIPED_CONNECTION_ONLINE
-		pipeds[1].Status = webservice.PipedConnectionStatus_PIPED_CONNECTION_ONLINE
-		pipeds[2].Status = webservice.PipedConnectionStatus_PIPED_CONNECTION_OFFLINE
+		pipeds[0].Status = model.Piped_ONLINE
+		pipeds[1].Status = model.Piped_ONLINE
+		pipeds[2].Status = model.Piped_OFFLINE
 	}
 
 	return &webservice.ListPipedsResponse{
@@ -147,9 +147,10 @@ func (a *FakeWebAPI) ListPipeds(ctx context.Context, req *webservice.ListPipedsR
 func (a *FakeWebAPI) GetPiped(ctx context.Context, req *webservice.GetPipedRequest) (*webservice.GetPipedResponse, error) {
 	now := time.Now()
 	return &webservice.GetPipedResponse{
-		Piped: &webservice.Piped{
+		Piped: &model.Piped{
 			Id:        "492220b1-c080-4781-9e55-7e278760e0ef",
 			Desc:      "piped for debug 1",
+			KeyHash:   "redacted",
 			ProjectId: fakeProjectID,
 			Version:   "debug-version",
 			StartedAt: now.Add(-30 * time.Minute).Unix(),

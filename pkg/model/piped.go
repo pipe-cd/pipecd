@@ -23,7 +23,8 @@ import (
 )
 
 const (
-	pipedKeyLength = 50
+	pipedKeyLength  = 50
+	redactedMessage = "redacted"
 )
 
 // GeneratePipedKey generates a new key for piped.
@@ -74,4 +75,8 @@ func generateRandomString(n int) string {
 	}
 
 	return *(*string)(unsafe.Pointer(&b))
+}
+
+func (p *Piped) RedactSensitiveData() {
+	p.KeyHash = redactedMessage
 }

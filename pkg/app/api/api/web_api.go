@@ -138,6 +138,7 @@ func (a *WebAPI) RegisterPiped(ctx context.Context, req *webservice.RegisterPipe
 		Desc:      req.Desc,
 		KeyHash:   keyHash,
 		ProjectId: claims.Role.ProjectId,
+		Status:    model.Piped_OFFLINE,
 	}
 	err = a.pipedStore.AddPiped(ctx, &piped)
 	if errors.Is(err, datastore.ErrAlreadyExists) {
@@ -218,6 +219,7 @@ func (a *WebAPI) updatePiped(ctx context.Context, pipedID string, updater func(c
 	return nil
 }
 
+// TODO: Consider using piped-stats to decide piped connection status.
 func (a *WebAPI) ListPipeds(ctx context.Context, req *webservice.ListPipedsRequest) (*webservice.ListPipedsResponse, error) {
 	claims, err := rpcauth.ExtractClaims(ctx)
 	if err != nil {
@@ -242,22 +244,20 @@ func (a *WebAPI) ListPipeds(ctx context.Context, req *webservice.ListPipedsReque
 			})
 		}
 	}
+
 	pipeds, err := a.pipedStore.ListPipeds(ctx, opts)
 	if err != nil {
 		a.logger.Error("failed to get pipeds", zap.Error(err))
 		return nil, status.Error(codes.Internal, "failed to get pipeds")
 	}
-	// Returning a response that does not contain sensitive data like KeyHash is more safer.
-	webPipeds := make([]*webservice.Piped, len(pipeds))
+
+	// Redact all sensitive data inside piped message before sending to the client.
 	for i := range pipeds {
-		webPipeds[i] = webservice.MakePiped(pipeds[i])
-		if req.WithStatus {
-			// TODO: While reducing the number of query and get ping connection status from piped_stats
-			webPipeds[i].Status = webservice.PipedConnectionStatus_PIPED_CONNECTION_ONLINE
-		}
+		pipeds[i].RedactSensitiveData()
 	}
+
 	return &webservice.ListPipedsResponse{
-		Pipeds: webPipeds,
+		Pipeds: pipeds,
 	}, nil
 }
 
@@ -266,8 +266,12 @@ func (a *WebAPI) GetPiped(ctx context.Context, req *webservice.GetPipedRequest) 
 	if err != nil {
 		return nil, err
 	}
+
+	// Redact all sensitive data inside piped message before sending to the client.
+	piped.RedactSensitiveData()
+
 	return &webservice.GetPipedResponse{
-		Piped: webservice.MakePiped(piped),
+		Piped: piped,
 	}, nil
 }
 

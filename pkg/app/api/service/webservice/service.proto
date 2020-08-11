@@ -29,41 +29,6 @@ import "pkg/model/piped.proto";
 import "pkg/model/role.proto";
 import "google/protobuf/wrappers.proto";
 
-// Note: Does copy Piped message from pkg/model/piped.proto and exclude sensitive data because Piped message for web should not contain it.
-message Piped {
-    // The generated unique identifier.
-    string id = 1 [(validate.rules).string.min_len = 1];
-    // The name of the piped.
-    string name = 2 [(validate.rules).string.min_len = 1];
-    // The additional description about the piped.
-    string desc = 3;
-    // The ID of the project this environment belongs to.
-    string project_id = 4 [(validate.rules).string.min_len = 1];
-    // The latest connection status to piped.
-    PipedConnectionStatus status = 5 [(validate.rules).enum.defined_only = true];
-
-    // Currently running version.
-    string version = 7;
-    // Unix time when the piped is started up.
-    int64 started_at = 8;
-    // List of configured cloud providers.
-    repeated pipe.model.Piped.CloudProvider cloud_providers = 9;
-    // List of configured repositories.
-    repeated pipe.model.ApplicationGitRepository repositories = 10;
-
-    // Whether the piped is disabled or not.
-    bool disabled = 13;
-    // Unix time when the piped is created.
-    int64 created_at = 14 [(validate.rules).int64.gt = 0];
-    // Unix time of the last time when the piped is updated.
-    int64 updated_at = 15 [(validate.rules).int64.gt = 0];
-}
-
-enum PipedConnectionStatus {
-    PIPED_CONNECTION_ONLINE = 0;
-    PIPED_CONNECTION_OFFLINE = 1;
-}
-
 // WebService contains all RPC definitions for web client.
 // All of these RPCs are only called by web client and authenticated by using ID_TOKEN.
 service WebService {
@@ -167,7 +132,7 @@ message ListPipedsRequest {
 }
 
 message ListPipedsResponse {
-    repeated Piped pipeds = 1;
+    repeated model.Piped pipeds = 1;
 }
 
 message GetPipedRequest {
@@ -175,7 +140,7 @@ message GetPipedRequest {
 }
 
 message GetPipedResponse {
-    Piped piped = 1;
+    model.Piped piped = 1;
 }
 
 message AddEnvironmentRequest {
