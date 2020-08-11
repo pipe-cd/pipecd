@@ -40,6 +40,7 @@ type WebAPI struct {
 	environmentStore          datastore.EnvironmentStore
 	deploymentStore           datastore.DeploymentStore
 	pipedStore                datastore.PipedStore
+	projectStore              datastore.ProjectStore
 	stageLogStore             stagelogstore.Store
 	applicationLiveStateStore applicationlivestatestore.Store
 	commandStore              commandstore.Store
@@ -54,6 +55,7 @@ func NewWebAPI(ds datastore.DataStore, sls stagelogstore.Store, alss application
 		environmentStore:          datastore.NewEnvironmentStore(ds),
 		deploymentStore:           datastore.NewDeploymentStore(ds),
 		pipedStore:                datastore.NewPipedStore(ds),
+		projectStore:              datastore.NewProjectStore(ds),
 		stageLogStore:             sls,
 		applicationLiveStateStore: alss,
 		commandStore:              cmds,
@@ -690,8 +692,27 @@ func (a *WebAPI) GetApplicationLiveState(ctx context.Context, req *webservice.Ge
 	}, nil
 }
 
+// GetProject gets the specified porject without sensitive data.
 func (a *WebAPI) GetProject(ctx context.Context, req *webservice.GetProjectRequest) (*webservice.GetProjectResponse, error) {
-	return nil, status.Error(codes.Unimplemented, "")
+	project, err := a.getProject(ctx, req.ProjectId)
+	if err != nil {
+		return nil, err
+	}
+	return &webservice.GetProjectResponse{
+		Project: webservice.MakeProject(project),
+	}, nil
+}
+
+func (a *WebAPI) getProject(ctx context.Context, projectID string) (*model.Project, error) {
+	project, err := a.projectStore.GetProject(ctx, projectID)
+	if errors.Is(err, datastore.ErrNotFound) {
+		return nil, status.Error(codes.NotFound, "project is not found")
+	}
+	if err != nil {
+		a.logger.Error("failed to get project", zap.Error(err))
+		return nil, status.Error(codes.Internal, "failed to get project")
+	}
+	return project, nil
 }
 
 // GetMe gets information about the current user.
