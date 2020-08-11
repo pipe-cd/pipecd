@@ -48,8 +48,8 @@ message Piped {
     int64 started_at = 8;
     // List of configured cloud providers.
     repeated pipe.model.Piped.CloudProvider cloud_providers = 9;
-    // List of configured repository IDs.
-    repeated string repository_ids = 10;
+    // List of configured repositories.
+    repeated pipe.model.Repository repositories = 10;
 
     // Whether the piped is disabled or not.
     bool disabled = 13;

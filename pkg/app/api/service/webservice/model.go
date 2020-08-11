@@ -30,7 +30,7 @@ func MakePiped(input *model.Piped) *Piped {
 		Version:        input.Version,
 		StartedAt:      input.StartedAt,
 		CloudProviders: input.CloudProviders,
-		RepositoryIds:  input.RepositoryIds,
+		Repositories:   input.Repositories,
 		Disabled:       input.Disabled,
 		CreatedAt:      input.CreatedAt,
 		UpdatedAt:      input.UpdatedAt,

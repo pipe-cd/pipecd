@@ -482,7 +482,7 @@ func (s *scheduler) ensurePreparing(ctx context.Context, lp logpersister.StageLo
 			lp.Error(err.Error())
 			return
 		}
-		lp.Successf("Successfully cloned repository %s", s.deployment.GitPath.RepoId)
+		lp.Successf("Successfully cloned repository %s", s.deployment.GitPath.Repo.Id)
 
 		// Copy and checkout the running revision.
 		if s.deployment.RunningCommitHash != "" {

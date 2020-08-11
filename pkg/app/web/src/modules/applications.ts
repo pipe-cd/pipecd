@@ -74,11 +74,16 @@ export const addApplication = createAsyncThunk<
     envId: props.env,
     pipedId: props.pipedId,
     gitPath: {
-      repoId: props.repoId,
+      repo: {
+        id: props.repoId,
+        remote: "",
+        branch: "",
+      },
       path: props.repoPath,
       configPath: props.configPath || "",
       configFilename: props.configFilename || "",
       url: "",
+      repoUrl: "",
     },
     cloudProvider: props.cloudProvider,
     kind: props.kind,

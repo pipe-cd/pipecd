@@ -16,6 +16,7 @@ import {
   EnableApplicationResponse,
 } from "pipe/pkg/app/web/api_client/service_pb";
 import { ApplicationGitPath } from "pipe/pkg/app/web/model/common_pb";
+import { Repository } from "pipe/pkg/app/web/model/common_pb";
 import * as google_protobuf_wrappers_pb from "google-protobuf/google/protobuf/wrappers_pb";
 
 export const getApplicationLiveState = ({
@@ -76,7 +77,9 @@ export const addApplication = async ({
   req.setCloudProvider(cloudProvider);
   req.setKind(kind);
   const appGitPath = new ApplicationGitPath();
-  appGitPath.setRepoId(gitPath.repoId);
+  const repository = new Repository();
+  repository.setId(gitPath.repo !== undefined ? gitPath.repo.id : "");
+  appGitPath.setRepo(repository);
   appGitPath.setPath(gitPath.path);
   if (gitPath.configPath && gitPath.configPath !== "") {
     appGitPath.setConfigPath(gitPath.configPath);

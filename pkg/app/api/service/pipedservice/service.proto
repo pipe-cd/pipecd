@@ -19,6 +19,7 @@ option go_package = "github.com/pipe-cd/pipe/pkg/app/api/service/pipedservice";
 
 import "validate/validate.proto";
 import "pkg/model/command.proto";
+import "pkg/model/common.proto";
 import "pkg/model/application.proto";
 import "pkg/model/application_live_state.proto";
 import "pkg/model/environment.proto";
@@ -142,7 +143,7 @@ message PingResponse {
 message ReportPipedMetaRequest {
     string version = 1;
     repeated pipe.model.Piped.CloudProvider cloud_providers = 2;
-    repeated string repository_ids = 3;
+    repeated pipe.model.Repository repositories = 3;
 }
 
 message ReportPipedMetaResponse {

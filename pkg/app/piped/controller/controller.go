@@ -565,7 +565,7 @@ func (c *controller) getMostRecentlySuccessfulDeployment(ctx context.Context, ap
 func prepareDeployRepository(ctx context.Context, d *model.Deployment, gitClient gitClient, repoDirPath string, pipedConfig *config.PipedSpec) (git.Repo, error) {
 	var (
 		appID       = d.ApplicationId
-		repoID      = d.GitPath.RepoId
+		repoID      = d.GitPath.Repo.Id
 		revision    = d.Trigger.Commit.Hash
 		repoCfg, ok = pipedConfig.GetRepository(repoID)
 	)
