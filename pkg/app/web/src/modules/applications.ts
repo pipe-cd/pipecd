@@ -83,7 +83,6 @@ export const addApplication = createAsyncThunk<
       configPath: props.configPath || "",
       configFilename: props.configFilename || "",
       url: "",
-      repoUrl: "",
     },
     cloudProvider: props.cloudProvider,
     kind: props.kind,

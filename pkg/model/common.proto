@@ -34,7 +34,6 @@ message ApplicationGitPath {
     string config_path = 3 [deprecated=true];
     string config_filename = 4;
     string url = 5;
-    string repo_url = 6;
 }
 
 message Repository {
