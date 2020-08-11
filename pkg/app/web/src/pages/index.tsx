@@ -1,7 +1,7 @@
 import { EntityId } from "@reduxjs/toolkit";
 import React, { FC, memo, useEffect } from "react";
 import { useDispatch, useSelector } from "react-redux";
-import { Route, Switch } from "react-router-dom";
+import { Route, Switch, Redirect } from "react-router-dom";
 import { Header } from "../components/header";
 import { Toasts } from "../components/toasts";
 import {
@@ -77,7 +77,11 @@ export const Pages: FC = memo(function Pages() {
     <>
       <Header />
       <Switch>
-        <Route exact path={PAGE_PATH_TOP} component={ApplicationIndexPage} />
+        <Route
+          exact
+          path={PAGE_PATH_TOP}
+          component={() => <Redirect to={PAGE_PATH_APPLICATIONS} />}
+        />
         <Route exact path={PAGE_PATH_LOGIN} component={LoginPage} />
         <Route
           exact
