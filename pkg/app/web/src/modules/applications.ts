@@ -103,19 +103,28 @@ export const applicationsSlice = createSlice({
   name: "applications",
   initialState: applicationsAdapter.getInitialState<{
     adding: boolean;
+    loading: boolean;
     syncing: Record<string, boolean>;
     disabling: Record<string, boolean>;
   }>({
     adding: false,
+    loading: false,
     syncing: {},
     disabling: {},
   }),
   reducers: {},
   extraReducers: (builder) => {
     builder
+      .addCase(fetchApplications.pending, (state) => {
+        state.loading = true;
+      })
       .addCase(fetchApplications.fulfilled, (state, action) => {
         applicationsAdapter.removeAll(state);
         applicationsAdapter.upsertMany(state, action.payload);
+        state.loading = false;
+      })
+      .addCase(fetchApplications.rejected, (state) => {
+        state.loading = false;
       })
       .addCase(fetchApplication.fulfilled, (state, action) => {
         if (action.payload) {

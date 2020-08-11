@@ -9,6 +9,7 @@ import {
 } from "@material-ui/core";
 import CloseIcon from "@material-ui/icons/Close";
 import FilterIcon from "@material-ui/icons/FilterList";
+import RefreshIcon from "@material-ui/icons/Refresh";
 import dayjs from "dayjs";
 import React, {
   FC,
@@ -153,12 +154,23 @@ export const DeploymentIndexPage: FC = memo(function DeploymentIndexPage() {
     dispatch(fetchDeployments());
   }, [dispatch]);
 
+  const handleRefresh = (): void => {
+    dispatch(fetchDeployments());
+  };
+
   const dates = Object.keys(groupedDeployments).sort(sortComp);
 
   return (
     <div className={classes.root}>
       <Toolbar variant="dense">
         <div className={classes.toolbarSpacer} />
+        <Button
+          color="primary"
+          startIcon={<RefreshIcon />}
+          onClick={handleRefresh}
+        >
+          {"REFRESH"}
+        </Button>
         <Button
           color="primary"
           startIcon={isOpenFilter ? <CloseIcon /> : <FilterIcon />}

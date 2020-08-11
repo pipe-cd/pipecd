@@ -4,10 +4,12 @@ import {
   Drawer,
   makeStyles,
   Toolbar,
+  CircularProgress,
 } from "@material-ui/core";
 import { Add } from "@material-ui/icons";
 import CloseIcon from "@material-ui/icons/Close";
 import FilterIcon from "@material-ui/icons/FilterList";
+import RefreshIcon from "@material-ui/icons/Refresh";
 import React, { FC, memo, useEffect, useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import { AddApplicationForm } from "../../components/add-application-form";
@@ -18,7 +20,7 @@ import { addApplication, fetchApplications } from "../../modules/applications";
 import { AppDispatch } from "../../store";
 import { selectProjectName } from "../../modules/me";
 
-const useStyles = makeStyles(() => ({
+const useStyles = makeStyles((theme) => ({
   main: {
     display: "flex",
     overflow: "hidden",
@@ -27,6 +29,14 @@ const useStyles = makeStyles(() => ({
   toolbarSpacer: {
     flexGrow: 1,
   },
+  buttonProgress: {
+    color: theme.palette.primary.main,
+    position: "absolute",
+    top: "50%",
+    left: "50%",
+    marginTop: -12,
+    marginLeft: -12,
+  },
 }));
 
 export const ApplicationIndexPage: FC = memo(function ApplicationIndexPage() {
@@ -34,8 +44,8 @@ export const ApplicationIndexPage: FC = memo(function ApplicationIndexPage() {
   const dispatch = useDispatch<AppDispatch>();
   const [isOpenForm, setIsOpenForm] = useState(false);
   const [isOpenFilter, setIsOpenFilter] = useState(false);
-  const isAdding = useSelector<AppState, boolean>(
-    (state) => state.applications.adding
+  const [isLoading, isAdding] = useSelector<AppState, [boolean, boolean]>(
+    (state) => [state.applications.loading, state.applications.adding]
   );
   const projectName = useSelector<AppState, string>((state) =>
     selectProjectName(state.me)
@@ -46,6 +56,10 @@ export const ApplicationIndexPage: FC = memo(function ApplicationIndexPage() {
   };
 
   const handleChangeFilterOptions = (): void => {
+    dispatch(fetchApplications());
+  };
+
+  const handleRefresh = (): void => {
     dispatch(fetchApplications());
   };
 
@@ -64,6 +78,17 @@ export const ApplicationIndexPage: FC = memo(function ApplicationIndexPage() {
           ADD
         </Button>
         <div className={classes.toolbarSpacer} />
+        <Button
+          color="primary"
+          startIcon={<RefreshIcon />}
+          onClick={handleRefresh}
+          disabled={isLoading}
+        >
+          {"REFRESH"}
+          {isLoading && (
+            <CircularProgress size={24} className={classes.buttonProgress} />
+          )}
+        </Button>
         <Button
           color="primary"
           startIcon={isOpenFilter ? <CloseIcon /> : <FilterIcon />}

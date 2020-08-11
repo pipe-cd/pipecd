@@ -12,6 +12,7 @@ describe("applicationsSlice reducer", () => {
         "disabling": Object {},
         "entities": Object {},
         "ids": Array [],
+        "loading": false,
         "syncing": Object {},
       }
     `);
