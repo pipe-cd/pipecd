@@ -14,6 +14,7 @@
 
 package webservice
 
+// HasLabel checks if DeploymentConfigTemplate has the given label.
 func (t *DeploymentConfigTemplate) HasLabel(label DeploymentConfigTemplateLabel) bool {
 	for _, l := range t.Labels {
 		if l == label {

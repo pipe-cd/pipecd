@@ -28,6 +28,21 @@ var (
 	githubScopes = []string{"read:org"}
 )
 
+// RedactSensitiveData redacts sensitive data.
+func (p *Project) RedactSensitiveData() {
+	if p.StaticAdmin != nil {
+		p.StaticAdmin.RedactSensitiveData()
+	}
+	if p.Sso != nil {
+		p.Sso.RedactSensitiveData()
+	}
+}
+
+// RedactSensitiveData redacts sensitive data.
+func (p *ProjectStaticUser) RedactSensitiveData() {
+	p.PasswordHash = redactedMessage
+}
+
 // Auth confirms username and password.
 func (p *ProjectStaticUser) Auth(username, password string) error {
 	if username == "" {
@@ -45,6 +60,15 @@ func (p *ProjectStaticUser) Auth(username, password string) error {
 	return nil
 }
 
+// RedactSensitiveData redacts sensitive data.
+func (p *ProjectSingleSignOn) RedactSensitiveData() {
+	if p.Github != nil {
+		p.Github.RedactSensitiveData()
+	}
+	if p.Google != nil {
+	}
+}
+
 // GenerateAuthCodeURL generates an auth URL for the specified configuration.
 func (p *ProjectSingleSignOn) GenerateAuthCodeURL(project, apiURL, callbackPath, state string) (string, error) {
 	switch p.Provider {
@@ -56,6 +80,12 @@ func (p *ProjectSingleSignOn) GenerateAuthCodeURL(project, apiURL, callbackPath,
 	default:
 		return "", fmt.Errorf("not implemented")
 	}
+}
+
+// RedactSensitiveData redacts sensitive data.
+func (p *ProjectSingleSignOn_GitHub) RedactSensitiveData() {
+	p.ClientId = redactedMessage
+	p.ClientSecret = redactedMessage
 }
 
 // GenerateAuthCodeURL generates an auth URL for the specified configuration.
