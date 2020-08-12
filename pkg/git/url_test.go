@@ -160,13 +160,13 @@ func TestParseGitURL(t *testing.T) {
 	tests := []struct {
 		name    string
 		rawURL  string
-		wantU   *url.URL
+		wantURL *url.URL
 		wantErr bool
 	}{
 		{
 			name:   "SCP-like URL with user",
 			rawURL: "user@host.xz:path/to/repo.git/",
-			wantU: &url.URL{
+			wantURL: &url.URL{
 				Scheme: "ssh",
 				User:   url.User("user"),
 				Host:   "host.xz",
@@ -177,7 +177,7 @@ func TestParseGitURL(t *testing.T) {
 		{
 			name:   "SCP-like URL without user",
 			rawURL: "host.xz:path/to/repo.git/",
-			wantU: &url.URL{
+			wantURL: &url.URL{
 				Scheme: "ssh",
 				User:   nil,
 				Host:   "host.xz",
@@ -188,7 +188,7 @@ func TestParseGitURL(t *testing.T) {
 		{
 			name:   "SCP-like URL with prefix `/`",
 			rawURL: "host.xz:/path/to/repo.git/",
-			wantU: &url.URL{
+			wantURL: &url.URL{
 				Scheme: "ssh",
 				User:   nil,
 				Host:   "host.xz",
@@ -199,7 +199,7 @@ func TestParseGitURL(t *testing.T) {
 		{
 			name:   "ssh with user",
 			rawURL: "ssh://user@host.xz/path/to/repo.git/",
-			wantU: &url.URL{
+			wantURL: &url.URL{
 				Scheme: "ssh",
 				User:   url.User("user"),
 				Host:   "host.xz",
@@ -210,7 +210,7 @@ func TestParseGitURL(t *testing.T) {
 		{
 			name:   "ssh with user with port",
 			rawURL: "ssh://user@host.xz:1234/path/to/repo.git/",
-			wantU: &url.URL{
+			wantURL: &url.URL{
 				Scheme: "ssh",
 				User:   url.User("user"),
 				Host:   "host.xz:1234",
@@ -221,7 +221,7 @@ func TestParseGitURL(t *testing.T) {
 		{
 			name:   "git+ssh",
 			rawURL: "git+ssh://host.xz/path/to/repo.git/",
-			wantU: &url.URL{
+			wantURL: &url.URL{
 				Scheme: "git+ssh",
 				User:   nil,
 				Host:   "host.xz",
@@ -232,7 +232,7 @@ func TestParseGitURL(t *testing.T) {
 		{
 			name:   "file scheme",
 			rawURL: "file:///path/to/repo.git/",
-			wantU: &url.URL{
+			wantURL: &url.URL{
 				Scheme: "file",
 				User:   nil,
 				Host:   "",
@@ -243,7 +243,7 @@ func TestParseGitURL(t *testing.T) {
 		{
 			name:   "rsync + ssh",
 			rawURL: "rsync://host.xz/path/to/repo.git/",
-			wantU: &url.URL{
+			wantURL: &url.URL{
 				Scheme: "rsync",
 				User:   nil,
 				Host:   "host.xz",
@@ -254,7 +254,7 @@ func TestParseGitURL(t *testing.T) {
 		{
 			name:   "git scheme",
 			rawURL: "git://host.xz/path/to/repo.git/",
-			wantU: &url.URL{
+			wantURL: &url.URL{
 				Scheme: "git",
 				User:   nil,
 				Host:   "host.xz",
@@ -265,7 +265,7 @@ func TestParseGitURL(t *testing.T) {
 		{
 			name:   "http scheme",
 			rawURL: "http://host.xz/path/to/repo.git/",
-			wantU: &url.URL{
+			wantURL: &url.URL{
 				Scheme: "http",
 				User:   nil,
 				Host:   "host.xz",
@@ -276,7 +276,7 @@ func TestParseGitURL(t *testing.T) {
 		{
 			name:   "https scheme",
 			rawURL: "https://host.xz/path/to/repo.git/",
-			wantU: &url.URL{
+			wantURL: &url.URL{
 				Scheme: "https",
 				User:   nil,
 				Host:   "host.xz",
@@ -292,8 +292,8 @@ func TestParseGitURL(t *testing.T) {
 				t.Errorf("parseGitURL() error = %v, wantErr %v", err, tt.wantErr)
 				return
 			}
-			if !reflect.DeepEqual(gotU, tt.wantU) {
-				t.Errorf("parseGitURL() got = %#v, want %#v", gotU, tt.wantU)
+			if !reflect.DeepEqual(gotU, tt.wantURL) {
+				t.Errorf("parseGitURL() got = %#v, want %#v", gotU, tt.wantURL)
 			}
 		})
 	}
