@@ -12,6 +12,8 @@ import {
   TableHead,
   TableRow,
   Typography,
+  TablePagination,
+  TableFooter,
 } from "@material-ui/core";
 import MenuIcon from "@material-ui/icons/MoreVert";
 import { Dictionary } from "@reduxjs/toolkit";
@@ -62,6 +64,8 @@ const EmptyDeploymentData: FC = () => (
   </>
 );
 
+const PAGER_ROWS_PER_PAGE = [20, 50, { label: "All", value: -1 }];
+
 export const ApplicationList: FC = memo(function ApplicationList() {
   const classes = useStyles();
   const dispatch = useDispatch<AppDispatch>();
@@ -69,6 +73,8 @@ export const ApplicationList: FC = memo(function ApplicationList() {
   const isOpenMenu = Boolean(anchorEl);
   const [actionTarget, setActionTarget] = useState<Application | null>(null);
   const [openDisableDialog, setOpenDisableDialog] = useState(false);
+  const [page, setPage] = React.useState(0);
+  const [rowsPerPage, setRowsPerPage] = React.useState(20);
 
   const applications = useSelector<AppState, Application[]>((state) =>
     selectAll(state.applications)
@@ -124,7 +130,13 @@ export const ApplicationList: FC = memo(function ApplicationList() {
             </TableRow>
           </TableHead>
           <TableBody>
-            {applications.map((app) => {
+            {(rowsPerPage > 0
+              ? applications.slice(
+                  page * rowsPerPage,
+                  page * rowsPerPage + rowsPerPage
+                )
+              : applications
+            ).map((app) => {
               const recentlyDeployment = app.mostRecentlySuccessfulDeployment;
               return (
                 <TableRow key={`app-${app.id}`}>
@@ -185,6 +197,24 @@ export const ApplicationList: FC = memo(function ApplicationList() {
               );
             })}
           </TableBody>
+          <TableFooter>
+            <TableRow>
+              <TablePagination
+                rowsPerPageOptions={PAGER_ROWS_PER_PAGE}
+                count={applications.length}
+                rowsPerPage={rowsPerPage}
+                page={page}
+                colSpan={8}
+                onChangePage={(_, newPage) => {
+                  setPage(newPage);
+                }}
+                onChangeRowsPerPage={(e) => {
+                  setRowsPerPage(parseInt(e.target.value, 10));
+                  setPage(0);
+                }}
+              />
+            </TableRow>
+          </TableFooter>
         </Table>
       </TableContainer>
 
