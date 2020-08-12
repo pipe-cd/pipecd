@@ -39,8 +39,8 @@ func TestMakeCommitURL(t *testing.T) {
 			name:    "ssh to unsupported git host",
 			repoURL: "git@foo.com:org/repo.git",
 			hash:    "abc",
-			want:    "",
-			wantErr: true,
+			want:    "https://foo.com/org/repo/commit/abc",
+			wantErr: false,
 		},
 		{
 			name:    "ssh to github.com without `.git` suffix",
@@ -107,8 +107,8 @@ func TestMakeDirURL(t *testing.T) {
 			repoURL: "git@foo.com:org/repo.git",
 			dir:     "path/to",
 			branch:  "abc",
-			want:    "",
-			wantErr: true,
+			want:    "https://foo.com/org/repo/tree/abc/path/to",
+			wantErr: false,
 		},
 		{
 			name:    "ssh to github.com without `.git` suffix",
@@ -156,7 +156,7 @@ func TestMakeDirURL(t *testing.T) {
 		})
 	}
 }
-func Test_parseGitURL(t *testing.T) {
+func TestParseGitURL(t *testing.T) {
 	tests := []struct {
 		name    string
 		rawurl  string
@@ -278,28 +278,6 @@ func Test_parseGitURL(t *testing.T) {
 			rawurl: "https://host.xz/path/to/repo.git/",
 			wantU: &url.URL{
 				Scheme: "https",
-				User:   nil,
-				Host:   "host.xz",
-				Path:   "/path/to/repo.git/",
-			},
-			wantErr: false,
-		},
-		{
-			name:   "ftp scheme",
-			rawurl: "ftp://host.xz/path/to/repo.git/",
-			wantU: &url.URL{
-				Scheme: "ftp",
-				User:   nil,
-				Host:   "host.xz",
-				Path:   "/path/to/repo.git/",
-			},
-			wantErr: false,
-		},
-		{
-			name:   "ftps scheme",
-			rawurl: "ftps://host.xz/path/to/repo.git/",
-			wantU: &url.URL{
-				Scheme: "ftps",
 				User:   nil,
 				Host:   "host.xz",
 				Path:   "/path/to/repo.git/",

@@ -43,7 +43,10 @@ func MakeCommitURL(repoURL, hash string) (string, error) {
 	case "bitbucket.org":
 		subPath = "commits"
 	default:
-		return "", fmt.Errorf("unsupported git host: %q", u.Host)
+		// TODO: Allow users to specify git host
+		//   Currently, the same subPath as Github is applied for all of unsupported hosts,
+		//   to support GHE where its host could be customized
+		subPath = "commit"
 	}
 
 	return fmt.Sprintf("%s://%s/%s/%s/%s", scheme, u.Host, repoPath, subPath, hash), nil
@@ -73,7 +76,8 @@ func MakeDirURL(repoURL, dir, branch string) (string, error) {
 	case "github.com":
 		subPath = "tree"
 	default:
-		return "", fmt.Errorf("unsupported git host: %q", u.Host)
+		// TODO: Allow users to specify git host
+		subPath = "tree"
 	}
 
 	dir = strings.Trim(dir, "/")
@@ -88,8 +92,6 @@ var (
 		"git+ssh": struct{}{},
 		"http":    struct{}{},
 		"https":   struct{}{},
-		"ftp":     struct{}{},
-		"ftps":    struct{}{},
 		"rsync":   struct{}{},
 		"file":    struct{}{},
 	}

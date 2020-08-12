@@ -110,10 +110,15 @@ func (t *Trigger) reportMostRecentlyTriggeredDeployment(ctx context.Context, d *
 }
 
 func buildDeployment(app *model.Application, branch string, commit git.Commit, commander string, now time.Time) (*model.Deployment, error) {
-	commitURL, err := git.MakeCommitURL(app.GitPath.Repo.Remote, commit.Hash)
-	if err != nil {
-		return nil, err
+	commitURL := ""
+	if r := app.GitPath.Repo; r != nil {
+		var err error
+		commitURL, err = git.MakeCommitURL(r.Remote, commit.Hash)
+		if err != nil {
+			return nil, err
+		}
 	}
+
 	deployment := &model.Deployment{
 		Id:              uuid.New().String(),
 		ApplicationId:   app.Id,

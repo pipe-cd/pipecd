@@ -315,23 +315,33 @@ func (a *WebAPI) AddApplication(ctx context.Context, req *webservice.AddApplicat
 	return &webservice.AddApplicationResponse{}, nil
 }
 
-// Adds Repository info and then makes the GitPath URL.
+// makeGitPath returns an ApplicationGitPath by adding Repository info and GitPath URL to given args.
 func (a *WebAPI) makeGitPath(ctx context.Context, repoID, path, cfgFilename, pipedID string) (*model.ApplicationGitPath, error) {
-
 	piped, err := a.getPiped(ctx, pipedID)
 	if err != nil {
 		return nil, err
 	}
-	repo := &model.ApplicationGitRepository{}
+
+	var repo *model.ApplicationGitRepository
 	for _, r := range piped.Repositories {
 		if r.Id == repoID {
 			repo = r
 			break
 		}
 	}
+	if repo == nil {
+		a.logger.Error("repository not found",
+			zap.String("repo-id", repoID),
+			zap.String("piped-id", pipedID),
+			zap.Error(err),
+		)
+		return nil, status.Error(codes.Internal, "repository not found")
+	}
+
 	u, err := git.MakeDirURL(repo.Remote, path, repo.Branch)
 	if err != nil {
-		return nil, err
+		a.logger.Error("failed to make GitPath URL", zap.Error(err))
+		return nil, status.Error(codes.Internal, "failed to make GitPath URL")
 	}
 	return &model.ApplicationGitPath{
 		Repo:           repo,
