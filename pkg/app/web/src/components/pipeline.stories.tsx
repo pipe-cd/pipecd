@@ -20,7 +20,12 @@ const fakeDeployment: Deployment = {
   projectId: "debug-project",
   kind: 0,
   gitPath: {
-    repoId: "pipe-debug",
+    configPath: "",
+    repo: {
+      id: "pipe-debug",
+      branch: "master",
+      remote: "xxx",
+    },
     path: "k8s",
     configFilename: "",
     url: "",

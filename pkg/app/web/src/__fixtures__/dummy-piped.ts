@@ -1,4 +1,4 @@
-import { Piped } from "../modules/pipeds";
+import { Piped, PipedModel } from "../modules/pipeds";
 
 export const dummyPiped: Piped = {
   cloudProvidersList: [],
@@ -8,9 +8,10 @@ export const dummyPiped: Piped = {
   id: "piped-1",
   name: "demo piped",
   projectId: "project-1",
-  repositoryIdsList: [],
+  repositoriesList: [],
   startedAt: 0,
   updatedAt: 0,
   version: "v0.1",
-  status: Piped_ONLINE,
+  status: PipedModel.ConnectionStatus.ONLINE,
+  keyHash: "12345",
 };
