@@ -132,7 +132,7 @@ message ListPipedsRequest {
 }
 
 message ListPipedsResponse {
-    repeated Piped pipeds = 1;
+    repeated model.Piped pipeds = 1;
 }
 
 message GetPipedRequest {
@@ -140,7 +140,7 @@ message GetPipedRequest {
 }
 
 message GetPipedResponse {
-    Piped piped = 1;
+    model.Piped piped = 1;
 }
 
 message AddEnvironmentRequest {

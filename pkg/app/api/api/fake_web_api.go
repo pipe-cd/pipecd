@@ -111,7 +111,7 @@ func (a *FakeWebAPI) DisablePiped(ctx context.Context, req *webservice.DisablePi
 
 func (a *FakeWebAPI) ListPipeds(ctx context.Context, req *webservice.ListPipedsRequest) (*webservice.ListPipedsResponse, error) {
 	now := time.Now()
-	pipeds := []*webservice.Piped{
+	pipeds := []*model.Piped{
 		{
 			Id:        "492220b1-c080-4781-9e55-7e278760e0ef",
 			Desc:      "piped for debug 1",
@@ -134,9 +134,9 @@ func (a *FakeWebAPI) ListPipeds(ctx context.Context, req *webservice.ListPipedsR
 		},
 	}
 	if req.WithStatus {
-		pipeds[0].Status = webservice.PipedConnectionStatus_PIPED_CONNECTION_ONLINE
-		pipeds[1].Status = webservice.PipedConnectionStatus_PIPED_CONNECTION_ONLINE
-		pipeds[2].Status = webservice.PipedConnectionStatus_PIPED_CONNECTION_OFFLINE
+		pipeds[0].Status = model.Piped_ONLINE
+		pipeds[1].Status = model.Piped_ONLINE
+		pipeds[2].Status = model.Piped_OFFLINE
 	}
 
 	return &webservice.ListPipedsResponse{
@@ -147,9 +147,10 @@ func (a *FakeWebAPI) ListPipeds(ctx context.Context, req *webservice.ListPipedsR
 func (a *FakeWebAPI) GetPiped(ctx context.Context, req *webservice.GetPipedRequest) (*webservice.GetPipedResponse, error) {
 	now := time.Now()
 	return &webservice.GetPipedResponse{
-		Piped: &webservice.Piped{
+		Piped: &model.Piped{
 			Id:        "492220b1-c080-4781-9e55-7e278760e0ef",
 			Desc:      "piped for debug 1",
+			KeyHash:   "redacted",
 			ProjectId: fakeProjectID,
 			Version:   "debug-version",
 			StartedAt: now.Add(-30 * time.Minute).Unix(),
@@ -159,9 +160,17 @@ func (a *FakeWebAPI) GetPiped(ctx context.Context, req *webservice.GetPipedReque
 					Type: model.CloudProviderKubernetes.String(),
 				},
 			},
-			RepositoryIds: []string{
-				"piped-repo-1",
-				"piped-repo-2",
+			Repositories: []*model.ApplicationGitRepository{
+				{
+					Id:     "piped-repo-1",
+					Remote: "git@github.com:pipe-cd/debug.git",
+					Branch: "master",
+				},
+				{
+					Id:     "piped-repo-2",
+					Remote: "git@github.com:pipe-cd/debug2.git",
+					Branch: "master",
+				},
 			},
 			Disabled:  false,
 			CreatedAt: now.Unix(),
@@ -193,8 +202,12 @@ func (a *FakeWebAPI) ListApplications(ctx context.Context, req *webservice.ListA
 			ProjectId: fakeProjectID,
 			Kind:      model.ApplicationKind_KUBERNETES,
 			GitPath: &model.ApplicationGitPath{
-				RepoId: "debug",
-				Path:   "k8s",
+				Repo: &model.ApplicationGitRepository{
+					Id:     "debug",
+					Remote: "git@github.com:pipe-cd/debug.git",
+					Branch: "master",
+				},
+				Path: "k8s",
 			},
 			CloudProvider: "kubernetes-default",
 			MostRecentlySuccessfulDeployment: &model.ApplicationDeploymentReference{
@@ -246,8 +259,12 @@ func (a *FakeWebAPI) GetApplication(ctx context.Context, req *webservice.GetAppl
 		ProjectId: fakeProjectID,
 		Kind:      model.ApplicationKind_KUBERNETES,
 		GitPath: &model.ApplicationGitPath{
-			RepoId: "debug",
-			Path:   "k8s",
+			Repo: &model.ApplicationGitRepository{
+				Id:     "debug",
+				Remote: "git@github.com:pipe-cd/debug.git",
+				Branch: "master",
+			},
+			Path: "k8s",
 		},
 		CloudProvider: "kubernetes-default",
 		MostRecentlySuccessfulDeployment: &model.ApplicationDeploymentReference{
@@ -297,8 +314,12 @@ func (a *FakeWebAPI) ListDeployments(ctx context.Context, req *webservice.ListDe
 			PipedId:       "debug-piped",
 			ProjectId:     fakeProjectID,
 			GitPath: &model.ApplicationGitPath{
-				RepoId: "debug",
-				Path:   "k8s",
+				Repo: &model.ApplicationGitRepository{
+					Id:     "debug",
+					Remote: "git@github.com:pipe-cd/debug.git",
+					Branch: "master",
+				},
+				Path: "k8s",
 			},
 			Trigger: &model.DeploymentTrigger{
 				Commit: &model.Commit{
@@ -437,8 +458,12 @@ func (a *FakeWebAPI) GetDeployment(ctx context.Context, req *webservice.GetDeplo
 		ProjectId:     fakeProjectID,
 		Kind:          model.ApplicationKind_KUBERNETES,
 		GitPath: &model.ApplicationGitPath{
-			RepoId: "debug",
-			Path:   "k8s",
+			Repo: &model.ApplicationGitRepository{
+				Id:     "debug",
+				Remote: "git@github.com:pipe-cd/debug.git",
+				Branch: "master",
+			},
+			Path: "k8s",
 		},
 		Trigger: &model.DeploymentTrigger{
 			Commit: &model.Commit{

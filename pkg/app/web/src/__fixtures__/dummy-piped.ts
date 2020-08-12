@@ -1,4 +1,4 @@
-import { Piped, PipedConnectionStatus } from "../modules/pipeds";
+import { Piped } from "../modules/pipeds";
 
 export const dummyPiped: Piped = {
   cloudProvidersList: [],
@@ -12,5 +12,5 @@ export const dummyPiped: Piped = {
   startedAt: 0,
   updatedAt: 0,
   version: "v0.1",
-  status: PipedConnectionStatus.PIPED_CONNECTION_ONLINE,
+  status: Piped_ONLINE,
 };

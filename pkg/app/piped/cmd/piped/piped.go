@@ -381,15 +381,19 @@ func (p *piped) loadConfig() (*config.PipedSpec, error) {
 }
 
 func (p *piped) sendPipedMeta(ctx context.Context, client pipedservice.Client, cfg *config.PipedSpec, logger *zap.Logger) error {
-	repoIDs := make([]string, 0, len(cfg.Repositories))
+	repos := make([]*model.ApplicationGitRepository, 0, len(cfg.Repositories))
 	for _, r := range cfg.Repositories {
-		repoIDs = append(repoIDs, r.RepoID)
+		repos = append(repos, &model.ApplicationGitRepository{
+			Id:     r.RepoID,
+			Remote: r.Remote,
+			Branch: r.Branch,
+		})
 	}
 
 	var (
 		req = &pipedservice.ReportPipedMetaRequest{
 			Version:        version.Get().Version,
-			RepositoryIds:  repoIDs,
+			Repositories:   repos,
 			CloudProviders: make([]*model.Piped_CloudProvider, 0, len(cfg.CloudProviders)),
 		}
 		retry = pipedservice.NewRetry(10)

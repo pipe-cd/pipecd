@@ -18,11 +18,17 @@ package pipe.model;
 option go_package = "github.com/pipe-cd/pipe/pkg/model";
 
 import "validate/validate.proto";
+import "pkg/model/common.proto";
 
 message Piped {
     message CloudProvider {
         string name = 1 [(validate.rules).string.min_len = 1];
         string type = 2 [(validate.rules).string.min_len = 1];
+    }
+
+    enum ConnectionStatus {
+        ONLINE = 0;
+        OFFLINE = 1;
     }
 
     // The generated unique identifier.
@@ -43,8 +49,10 @@ message Piped {
     int64 started_at = 8;
     // List of configured cloud providers.
     repeated CloudProvider cloud_providers = 9;
-    // List of configured repository IDs.
-    repeated string repository_ids = 10;
+    // List of configured repositories.
+    repeated ApplicationGitRepository repositories = 10;
+    // The latest connection status of piped.
+    ConnectionStatus status = 11 [(validate.rules).enum.defined_only = true];
 
     // Whether the piped is disabled or not.
     bool disabled = 13;
@@ -53,3 +61,4 @@ message Piped {
     // Unix time of the last time when the piped is updated.
     int64 updated_at = 15 [(validate.rules).int64.gt = 0];
 }
+

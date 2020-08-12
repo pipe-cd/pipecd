@@ -28,10 +28,16 @@ enum ApplicationKind {
 }
 
 message ApplicationGitPath {
-    // The unique identifier of a repository that was configured at piped.
-    string repo_id = 1 [(validate.rules).string.min_len = 1];
+    // The repository that was configured at piped.
+    ApplicationGitRepository repo = 1 [(validate.rules).message.required = true];
     string path = 2 [(validate.rules).string.min_len = 1];
     string config_path = 3 [deprecated=true];
     string config_filename = 4;
     string url = 5;
+}
+
+message ApplicationGitRepository {
+    string id = 1 [(validate.rules).string.min_len = 1];
+    string remote = 2;
+    string branch = 3;
 }

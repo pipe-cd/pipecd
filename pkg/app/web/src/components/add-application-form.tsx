@@ -242,9 +242,9 @@ export const AddApplicationForm: FC<Props> = ({
               dispatch({ type: "update-form-value", key: "repoId", value })
             }
             items={
-              selectedPiped?.repositoryIdsList?.map((repo) => ({
-                name: repo,
-                value: repo,
+              selectedPiped?.repositoriesList?.map((repo) => ({
+                name: repo.id,
+                value: repo.id,
               })) || emptyItems
             }
             disabled={selectedPiped === undefined || isAdding}
