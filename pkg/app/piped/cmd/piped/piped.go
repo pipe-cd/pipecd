@@ -381,9 +381,9 @@ func (p *piped) loadConfig() (*config.PipedSpec, error) {
 }
 
 func (p *piped) sendPipedMeta(ctx context.Context, client pipedservice.Client, cfg *config.PipedSpec, logger *zap.Logger) error {
-	repos := make([]*model.Repository, 0, len(cfg.Repositories))
+	repos := make([]*model.ApplicationGitRepository, 0, len(cfg.Repositories))
 	for _, r := range cfg.Repositories {
-		repos = append(repos, &model.Repository{
+		repos = append(repos, &model.ApplicationGitRepository{
 			Id:     r.RepoID,
 			Remote: r.Remote,
 			Branch: r.Branch,

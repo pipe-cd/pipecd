@@ -27,7 +27,7 @@ var (
 	pipedFactory = func() interface{} {
 		return &model.Piped{}
 	}
-	PipedMetadataUpdater = func(cloudProviders []*model.Piped_CloudProvider, repos []*model.Repository, version string, startedAt int64) func(piped *model.Piped) error {
+	PipedMetadataUpdater = func(cloudProviders []*model.Piped_CloudProvider, repos []*model.ApplicationGitRepository, version string, startedAt int64) func(piped *model.Piped) error {
 		return func(piped *model.Piped) error {
 			piped.CloudProviders = cloudProviders
 			piped.Repositories = repos

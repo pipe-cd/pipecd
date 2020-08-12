@@ -159,7 +159,7 @@ func (a *FakeWebAPI) GetPiped(ctx context.Context, req *webservice.GetPipedReque
 					Type: model.CloudProviderKubernetes.String(),
 				},
 			},
-			Repositories: []*model.Repository{
+			Repositories: []*model.ApplicationGitRepository{
 				{
 					Id:     "piped-repo-1",
 					Remote: "git@github.com:pipe-cd/debug.git",
@@ -201,7 +201,7 @@ func (a *FakeWebAPI) ListApplications(ctx context.Context, req *webservice.ListA
 			ProjectId: fakeProjectID,
 			Kind:      model.ApplicationKind_KUBERNETES,
 			GitPath: &model.ApplicationGitPath{
-				Repo: &model.Repository{
+				Repo: &model.ApplicationGitRepository{
 					Id:     "debug",
 					Remote: "git@github.com:pipe-cd/debug.git",
 					Branch: "master",
@@ -258,7 +258,7 @@ func (a *FakeWebAPI) GetApplication(ctx context.Context, req *webservice.GetAppl
 		ProjectId: fakeProjectID,
 		Kind:      model.ApplicationKind_KUBERNETES,
 		GitPath: &model.ApplicationGitPath{
-			Repo: &model.Repository{
+			Repo: &model.ApplicationGitRepository{
 				Id:     "debug",
 				Remote: "git@github.com:pipe-cd/debug.git",
 				Branch: "master",
@@ -313,7 +313,7 @@ func (a *FakeWebAPI) ListDeployments(ctx context.Context, req *webservice.ListDe
 			PipedId:       "debug-piped",
 			ProjectId:     fakeProjectID,
 			GitPath: &model.ApplicationGitPath{
-				Repo: &model.Repository{
+				Repo: &model.ApplicationGitRepository{
 					Id:     "debug",
 					Remote: "git@github.com:pipe-cd/debug.git",
 					Branch: "master",
@@ -457,7 +457,7 @@ func (a *FakeWebAPI) GetDeployment(ctx context.Context, req *webservice.GetDeplo
 		ProjectId:     fakeProjectID,
 		Kind:          model.ApplicationKind_KUBERNETES,
 		GitPath: &model.ApplicationGitPath{
-			Repo: &model.Repository{
+			Repo: &model.ApplicationGitRepository{
 				Id:     "debug",
 				Remote: "git@github.com:pipe-cd/debug.git",
 				Branch: "master",

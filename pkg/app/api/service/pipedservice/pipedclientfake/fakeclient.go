@@ -75,7 +75,7 @@ func NewClient(logger *zap.Logger) *fakeClient {
 			Kind:          model.ApplicationKind_KUBERNETES,
 			CloudProvider: "kubernetes-default",
 			GitPath: &model.ApplicationGitPath{
-				Repo: &model.Repository{
+				Repo: &model.ApplicationGitRepository{
 					Id:     "debug",
 					Remote: "git@github.com:pipe-cd/debug.git",
 					Branch: "master",
