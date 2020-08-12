@@ -702,8 +702,12 @@ func (a *WebAPI) GetProject(ctx context.Context, req *webservice.GetProjectReque
 	if err != nil {
 		return nil, err
 	}
+
+	// Redact all sensitive data inside project message before sending to the client.
+	project.RedactSensitiveData()
+
 	return &webservice.GetProjectResponse{
-		Project: webservice.MakeProject(project),
+		Project: project,
 	}, nil
 }
 

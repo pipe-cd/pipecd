@@ -27,6 +27,7 @@ import "pkg/model/deployment.proto";
 import "pkg/model/logblock.proto";
 import "pkg/model/piped.proto";
 import "pkg/model/role.proto";
+import "pkg/model/project.proto";
 import "google/protobuf/wrappers.proto";
 
 // WebService contains all RPC definitions for web client.
@@ -272,7 +273,7 @@ message GetProjectRequest {
 }
 
 message GetProjectResponse {
-    Project project = 1;
+    model.Project project = 1;
 }
 
 message GetMeRequest {
