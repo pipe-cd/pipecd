@@ -30,6 +30,7 @@ import (
 	"github.com/pipe-cd/pipe/pkg/app/api/service/webservice"
 	"github.com/pipe-cd/pipe/pkg/app/api/stagelogstore"
 	"github.com/pipe-cd/pipe/pkg/datastore"
+	"github.com/pipe-cd/pipe/pkg/git"
 	"github.com/pipe-cd/pipe/pkg/model"
 	"github.com/pipe-cd/pipe/pkg/rpc/rpcauth"
 )
@@ -292,14 +293,17 @@ func (a *WebAPI) AddApplication(ctx context.Context, req *webservice.AddApplicat
 	if err != nil {
 		return nil, err
 	}
-
+	gitpath, err := a.makeGitPath(ctx, req.GitPath.Repo.Id, req.GitPath.Path, req.GitPath.ConfigFilename, req.PipedId)
+	if err != nil {
+		return nil, err
+	}
 	app := model.Application{
 		Id:            uuid.New().String(),
 		Name:          req.Name,
 		EnvId:         req.EnvId,
 		PipedId:       req.PipedId,
 		ProjectId:     claims.Role.ProjectId,
-		GitPath:       req.GitPath,
+		GitPath:       gitpath,
 		Kind:          req.Kind,
 		CloudProvider: req.CloudProvider,
 	}
@@ -313,6 +317,42 @@ func (a *WebAPI) AddApplication(ctx context.Context, req *webservice.AddApplicat
 	}
 
 	return &webservice.AddApplicationResponse{}, nil
+}
+
+// makeGitPath returns an ApplicationGitPath by adding Repository info and GitPath URL to given args.
+func (a *WebAPI) makeGitPath(ctx context.Context, repoID, path, cfgFilename, pipedID string) (*model.ApplicationGitPath, error) {
+	piped, err := a.getPiped(ctx, pipedID)
+	if err != nil {
+		return nil, err
+	}
+
+	var repo *model.ApplicationGitRepository
+	for _, r := range piped.Repositories {
+		if r.Id == repoID {
+			repo = r
+			break
+		}
+	}
+	if repo == nil {
+		a.logger.Error("repository not found",
+			zap.String("repo-id", repoID),
+			zap.String("piped-id", pipedID),
+			zap.Error(err),
+		)
+		return nil, status.Error(codes.Internal, "repository not found")
+	}
+
+	u, err := git.MakeDirURL(repo.Remote, path, repo.Branch)
+	if err != nil {
+		a.logger.Error("failed to make GitPath URL", zap.Error(err))
+		return nil, status.Error(codes.Internal, "failed to make GitPath URL")
+	}
+	return &model.ApplicationGitPath{
+		Repo:           repo,
+		Path:           path,
+		ConfigFilename: cfgFilename,
+		Url:            u,
+	}, nil
 }
 
 func (a *WebAPI) EnableApplication(ctx context.Context, req *webservice.EnableApplicationRequest) (*webservice.EnableApplicationResponse, error) {
