@@ -2,8 +2,9 @@ package git
 
 import (
 	"net/url"
-	"reflect"
 	"testing"
+
+	"github.com/stretchr/testify/assert"
 )
 
 func TestMakeCommitURL(t *testing.T) {
@@ -74,13 +75,8 @@ func TestMakeCommitURL(t *testing.T) {
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			got, err := MakeCommitURL(tt.repoURL, tt.hash)
-			if (err != nil) != tt.wantErr {
-				t.Errorf("MakeCommitURL() error = %v, wantErr %v", err, tt.wantErr)
-				return
-			}
-			if got != tt.want {
-				t.Errorf("MakeCommitURL() got = %v, want %v", got, tt.want)
-			}
+			assert.Equal(t, tt.wantErr, err != nil)
+			assert.Equal(t, got, tt.want)
 		})
 	}
 }
@@ -146,13 +142,8 @@ func TestMakeDirURL(t *testing.T) {
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			got, err := MakeDirURL(tt.repoURL, tt.dir, tt.branch)
-			if (err != nil) != tt.wantErr {
-				t.Errorf("MakeCommitURL() error = %v, wantErr %v", err, tt.wantErr)
-				return
-			}
-			if got != tt.want {
-				t.Errorf("MakeCommitURL() got = %v, want %v", got, tt.want)
-			}
+			assert.Equal(t, tt.wantErr, err != nil)
+			assert.Equal(t, got, tt.want)
 		})
 	}
 }
@@ -287,14 +278,9 @@ func TestParseGitURL(t *testing.T) {
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			gotU, err := parseGitURL(tt.rawURL)
-			if (err != nil) != tt.wantErr {
-				t.Errorf("parseGitURL() error = %v, wantErr %v", err, tt.wantErr)
-				return
-			}
-			if !reflect.DeepEqual(gotU, tt.wantURL) {
-				t.Errorf("parseGitURL() got = %#v, want %#v", gotU, tt.wantURL)
-			}
+			got, err := parseGitURL(tt.rawURL)
+			assert.Equal(t, tt.wantErr, err != nil)
+			assert.Equal(t, got, tt.wantURL)
 		})
 	}
 }
