@@ -159,13 +159,13 @@ func TestMakeDirURL(t *testing.T) {
 func TestParseGitURL(t *testing.T) {
 	tests := []struct {
 		name    string
-		rawurl  string
+		rawURL  string
 		wantU   *url.URL
 		wantErr bool
 	}{
 		{
 			name:   "SCP-like URL with user",
-			rawurl: "user@host.xz:path/to/repo.git/",
+			rawURL: "user@host.xz:path/to/repo.git/",
 			wantU: &url.URL{
 				Scheme: "ssh",
 				User:   url.User("user"),
@@ -176,7 +176,7 @@ func TestParseGitURL(t *testing.T) {
 		},
 		{
 			name:   "SCP-like URL without user",
-			rawurl: "host.xz:path/to/repo.git/",
+			rawURL: "host.xz:path/to/repo.git/",
 			wantU: &url.URL{
 				Scheme: "ssh",
 				User:   nil,
@@ -187,7 +187,7 @@ func TestParseGitURL(t *testing.T) {
 		},
 		{
 			name:   "SCP-like URL with prefix `/`",
-			rawurl: "host.xz:/path/to/repo.git/",
+			rawURL: "host.xz:/path/to/repo.git/",
 			wantU: &url.URL{
 				Scheme: "ssh",
 				User:   nil,
@@ -198,7 +198,7 @@ func TestParseGitURL(t *testing.T) {
 		},
 		{
 			name:   "ssh with user",
-			rawurl: "ssh://user@host.xz/path/to/repo.git/",
+			rawURL: "ssh://user@host.xz/path/to/repo.git/",
 			wantU: &url.URL{
 				Scheme: "ssh",
 				User:   url.User("user"),
@@ -209,7 +209,7 @@ func TestParseGitURL(t *testing.T) {
 		},
 		{
 			name:   "ssh with user with port",
-			rawurl: "ssh://user@host.xz:1234/path/to/repo.git/",
+			rawURL: "ssh://user@host.xz:1234/path/to/repo.git/",
 			wantU: &url.URL{
 				Scheme: "ssh",
 				User:   url.User("user"),
@@ -220,7 +220,7 @@ func TestParseGitURL(t *testing.T) {
 		},
 		{
 			name:   "git+ssh",
-			rawurl: "git+ssh://host.xz/path/to/repo.git/",
+			rawURL: "git+ssh://host.xz/path/to/repo.git/",
 			wantU: &url.URL{
 				Scheme: "git+ssh",
 				User:   nil,
@@ -231,7 +231,7 @@ func TestParseGitURL(t *testing.T) {
 		},
 		{
 			name:   "file scheme",
-			rawurl: "file:///path/to/repo.git/",
+			rawURL: "file:///path/to/repo.git/",
 			wantU: &url.URL{
 				Scheme: "file",
 				User:   nil,
@@ -242,7 +242,7 @@ func TestParseGitURL(t *testing.T) {
 		},
 		{
 			name:   "rsync + ssh",
-			rawurl: "rsync://host.xz/path/to/repo.git/",
+			rawURL: "rsync://host.xz/path/to/repo.git/",
 			wantU: &url.URL{
 				Scheme: "rsync",
 				User:   nil,
@@ -253,7 +253,7 @@ func TestParseGitURL(t *testing.T) {
 		},
 		{
 			name:   "git scheme",
-			rawurl: "git://host.xz/path/to/repo.git/",
+			rawURL: "git://host.xz/path/to/repo.git/",
 			wantU: &url.URL{
 				Scheme: "git",
 				User:   nil,
@@ -264,7 +264,7 @@ func TestParseGitURL(t *testing.T) {
 		},
 		{
 			name:   "http scheme",
-			rawurl: "http://host.xz/path/to/repo.git/",
+			rawURL: "http://host.xz/path/to/repo.git/",
 			wantU: &url.URL{
 				Scheme: "http",
 				User:   nil,
@@ -275,7 +275,7 @@ func TestParseGitURL(t *testing.T) {
 		},
 		{
 			name:   "https scheme",
-			rawurl: "https://host.xz/path/to/repo.git/",
+			rawURL: "https://host.xz/path/to/repo.git/",
 			wantU: &url.URL{
 				Scheme: "https",
 				User:   nil,
@@ -287,7 +287,7 @@ func TestParseGitURL(t *testing.T) {
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			gotU, err := parseGitURL(tt.rawurl)
+			gotU, err := parseGitURL(tt.rawURL)
 			if (err != nil) != tt.wantErr {
 				t.Errorf("parseGitURL() error = %v, wantErr %v", err, tt.wantErr)
 				return

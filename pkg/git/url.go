@@ -99,17 +99,17 @@ var (
 )
 
 // parseGitURL parses git url into a URL structure.
-func parseGitURL(rawurl string) (u *url.URL, err error) {
-	u, err = parseTransport(rawurl)
+func parseGitURL(rawURL string) (u *url.URL, err error) {
+	u, err = parseTransport(rawURL)
 	if err == nil {
 		return
 	}
-	return parseScp(rawurl)
+	return parseScp(rawURL)
 }
 
 // Return a structured URL only when scheme is a known Git transport.
-func parseTransport(rawurl string) (*url.URL, error) {
-	u, err := url.Parse(rawurl)
+func parseTransport(rawURL string) (*url.URL, error) {
+	u, err := url.Parse(rawURL)
 	if err != nil {
 		return nil, fmt.Errorf("failed to parse git url: %w", err)
 	}
@@ -119,11 +119,11 @@ func parseTransport(rawurl string) (*url.URL, error) {
 	return u, nil
 }
 
-// Return a structured URL only when the rawurl is an SCP-like URL.
-func parseScp(rawurl string) (*url.URL, error) {
-	match := scpRegex.FindAllStringSubmatch(rawurl, -1)
+// Return a structured URL only when the rawURL is an SCP-like URL.
+func parseScp(rawURL string) (*url.URL, error) {
+	match := scpRegex.FindAllStringSubmatch(rawURL, -1)
 	if len(match) == 0 {
-		return nil, fmt.Errorf("no scp URL found in %q", rawurl)
+		return nil, fmt.Errorf("no scp URL found in %q", rawURL)
 	}
 	m := match[0]
 	user := strings.TrimRight(m[1], "@")
