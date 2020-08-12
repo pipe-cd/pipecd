@@ -30,6 +30,7 @@ import (
 	"github.com/pipe-cd/pipe/pkg/app/api/service/webservice"
 	"github.com/pipe-cd/pipe/pkg/app/api/stagelogstore"
 	"github.com/pipe-cd/pipe/pkg/datastore"
+	"github.com/pipe-cd/pipe/pkg/git"
 	"github.com/pipe-cd/pipe/pkg/model"
 	"github.com/pipe-cd/pipe/pkg/rpc/rpcauth"
 )
@@ -288,14 +289,17 @@ func (a *WebAPI) AddApplication(ctx context.Context, req *webservice.AddApplicat
 	if err != nil {
 		return nil, err
 	}
-
+	gitpath, err := a.makeGitPath(ctx, req.GitPath.Repo.Id, req.GitPath.Path, req.GitPath.ConfigFilename, req.PipedId)
+	if err != nil {
+		return nil, err
+	}
 	app := model.Application{
 		Id:            uuid.New().String(),
 		Name:          req.Name,
 		EnvId:         req.EnvId,
 		PipedId:       req.PipedId,
 		ProjectId:     claims.Role.ProjectId,
-		GitPath:       req.GitPath,
+		GitPath:       gitpath,
 		Kind:          req.Kind,
 		CloudProvider: req.CloudProvider,
 	}
@@ -309,6 +313,32 @@ func (a *WebAPI) AddApplication(ctx context.Context, req *webservice.AddApplicat
 	}
 
 	return &webservice.AddApplicationResponse{}, nil
+}
+
+// Adds Repository info and then makes the GitPath URL.
+func (a *WebAPI) makeGitPath(ctx context.Context, repoID, path, cfgFilename, pipedID string) (*model.ApplicationGitPath, error) {
+
+	piped, err := a.getPiped(ctx, pipedID)
+	if err != nil {
+		return nil, err
+	}
+	repo := &model.ApplicationGitRepository{}
+	for _, r := range piped.Repositories {
+		if r.Id == repoID {
+			repo = r
+			break
+		}
+	}
+	u, err := git.MakeDirURL(repo.Remote, path, repo.Branch)
+	if err != nil {
+		return nil, err
+	}
+	return &model.ApplicationGitPath{
+		Repo:           repo,
+		Path:           path,
+		ConfigFilename: cfgFilename,
+		Url:            u,
+	}, nil
 }
 
 func (a *WebAPI) EnableApplication(ctx context.Context, req *webservice.EnableApplicationRequest) (*webservice.EnableApplicationResponse, error) {

@@ -30,7 +30,7 @@ import (
 )
 
 func (t *Trigger) triggerDeployment(ctx context.Context, app *model.Application, branch string, commit git.Commit, commander string) (runErr error) {
-	deployment, err := buildDeploment(app, branch, commit, commander, time.Now())
+	deployment, err := buildDeployment(app, branch, commit, commander, time.Now())
 	if err != nil {
 		return err
 	}
@@ -109,7 +109,11 @@ func (t *Trigger) reportMostRecentlyTriggeredDeployment(ctx context.Context, d *
 	return err
 }
 
-func buildDeploment(app *model.Application, branch string, commit git.Commit, commander string, now time.Time) (*model.Deployment, error) {
+func buildDeployment(app *model.Application, branch string, commit git.Commit, commander string, now time.Time) (*model.Deployment, error) {
+	commitURL, err := git.MakeCommitURL(app.GitPath.Repo.Remote, commit.Hash)
+	if err != nil {
+		return nil, err
+	}
 	deployment := &model.Deployment{
 		Id:              uuid.New().String(),
 		ApplicationId:   app.Id,
@@ -124,6 +128,7 @@ func buildDeploment(app *model.Application, branch string, commit git.Commit, co
 				Message:   commit.Message,
 				Author:    commit.Author,
 				Branch:    branch,
+				Url:       commitURL,
 				CreatedAt: int64(commit.CreatedAt),
 			},
 			Commander: commander,

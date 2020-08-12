@@ -1,0 +1,138 @@
+// Copyright 2020 The PipeCD Authors.
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//     http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+package git
+
+import (
+	"fmt"
+	"net/url"
+	"regexp"
+	"strings"
+)
+
+// MakeCommitURL builds a link to the HTML page of the commit, using the given repoURL and hash.
+func MakeCommitURL(repoURL, hash string) (string, error) {
+	u, err := parseGitURL(repoURL)
+	if err != nil {
+		return "", err
+	}
+
+	scheme := "https"
+	if u.Scheme != "ssh" {
+		scheme = u.Scheme
+	}
+
+	repoPath := strings.Trim(u.Path, "/")
+	repoPath = strings.TrimSuffix(repoPath, ".git")
+
+	subPath := ""
+	switch u.Host {
+	case "github.com", "gitlab.com":
+		subPath = "commit"
+	case "bitbucket.org":
+		subPath = "commits"
+	default:
+		return "", fmt.Errorf("unsupported git host: %q", u.Host)
+	}
+
+	return fmt.Sprintf("%s://%s/%s/%s/%s", scheme, u.Host, repoPath, subPath, hash), nil
+}
+
+// MakeDirURL builds a link to the HTML page of the directory.
+func MakeDirURL(repoURL, dir, branch string) (string, error) {
+	if branch == "" {
+		return "", fmt.Errorf("no branch given")
+	}
+	u, err := parseGitURL(repoURL)
+	if err != nil {
+		return "", err
+	}
+
+	scheme := "https"
+	if u.Scheme != "ssh" {
+		scheme = u.Scheme
+	}
+
+	repoPath := strings.Trim(u.Path, "/")
+	repoPath = strings.TrimSuffix(repoPath, ".git")
+
+	subPath := ""
+	switch u.Host {
+	// TODO: Support more git host
+	case "github.com":
+		subPath = "tree"
+	default:
+		return "", fmt.Errorf("unsupported git host: %q", u.Host)
+	}
+
+	dir = strings.Trim(dir, "/")
+
+	return fmt.Sprintf("%s://%s/%s/%s/%s/%s", scheme, u.Host, repoPath, subPath, branch, dir), nil
+}
+
+var (
+	knownSchemes = map[string]interface{}{
+		"ssh":     struct{}{},
+		"git":     struct{}{},
+		"git+ssh": struct{}{},
+		"http":    struct{}{},
+		"https":   struct{}{},
+		"ftp":     struct{}{},
+		"ftps":    struct{}{},
+		"rsync":   struct{}{},
+		"file":    struct{}{},
+	}
+	scpRegex = regexp.MustCompile(`^([a-zA-Z0-9_]+@)?([a-zA-Z0-9._-]+):(.*)$`)
+)
+
+// parseGitURL parses git url into a URL structure.
+func parseGitURL(rawurl string) (u *url.URL, err error) {
+	u, err = parseTransport(rawurl)
+	if err == nil {
+		return
+	}
+	return parseScp(rawurl)
+}
+
+// Return a structured URL only when scheme is a known Git transport.
+func parseTransport(rawurl string) (*url.URL, error) {
+	u, err := url.Parse(rawurl)
+	if err != nil {
+		return nil, fmt.Errorf("failed to parse git url: %w", err)
+	}
+	if _, ok := knownSchemes[u.Scheme]; !ok {
+		return nil, fmt.Errorf("unknown scheme %q", u.Scheme)
+	}
+	return u, nil
+}
+
+// Return a structured URL only when the rawurl is an SCP-like URL.
+func parseScp(rawurl string) (*url.URL, error) {
+	match := scpRegex.FindAllStringSubmatch(rawurl, -1)
+	if len(match) == 0 {
+		return nil, fmt.Errorf("no scp URL found in %q", rawurl)
+	}
+	m := match[0]
+	user := strings.TrimRight(m[1], "@")
+	var userinfo *url.Userinfo
+	if user != "" {
+		userinfo = url.User(user)
+	}
+	return &url.URL{
+		Scheme: "ssh",
+		User:   userinfo,
+		Host:   m[2],
+		Path:   m[3],
+	}, nil
+}
