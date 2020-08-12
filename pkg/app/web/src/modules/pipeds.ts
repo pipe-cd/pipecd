@@ -3,7 +3,7 @@ import {
   createAsyncThunk,
   createEntityAdapter,
 } from "@reduxjs/toolkit";
-import { Piped as PipedModel } from "pipe/pkg/app/web/api_client/service_pb";
+import { Piped as PipedModel } from "pipe/pkg/app/web/model/piped_pb";
 import * as pipedsApi from "../api/piped";
 
 export type Piped = Required<PipedModel.AsObject>;
@@ -91,4 +91,3 @@ export const pipedsSlice = createSlice({
 });
 
 export const { clearRegisteredPipedInfo } = pipedsSlice.actions;
-export { PipedConnectionStatus } from "pipe/pkg/app/web/api_client/service_pb";

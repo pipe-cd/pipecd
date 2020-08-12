@@ -14,29 +14,6 @@
 
 package webservice
 
-import (
-	"github.com/pipe-cd/pipe/pkg/model"
-)
-
-func MakePiped(input *model.Piped) *Piped {
-	if input == nil {
-		return nil
-	}
-	return &Piped{
-		Id:             input.Id,
-		Name:           input.Name,
-		Desc:           input.Desc,
-		ProjectId:      input.ProjectId,
-		Version:        input.Version,
-		StartedAt:      input.StartedAt,
-		CloudProviders: input.CloudProviders,
-		Repositories:   input.Repositories,
-		Disabled:       input.Disabled,
-		CreatedAt:      input.CreatedAt,
-		UpdatedAt:      input.UpdatedAt,
-	}
-}
-
 func (t *DeploymentConfigTemplate) HasLabel(label DeploymentConfigTemplateLabel) bool {
 	for _, l := range t.Labels {
 		if l == label {
