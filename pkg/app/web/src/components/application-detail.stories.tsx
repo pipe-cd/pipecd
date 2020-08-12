@@ -1,6 +1,6 @@
 import React from "react";
 import { Provider } from "react-redux";
-import { ApplicationSyncStatus } from "../../../../../bazel-bin/pkg/app/web/model/application_pb";
+import { ApplicationSyncStatus } from "pipe/pkg/app/web/model/application_pb";
 import { createStore } from "../../.storybook/redux-decorator";
 import { dummyApplication } from "../__fixtures__/dummy-application";
 import { dummyApplicationLiveState } from "../__fixtures__/dummy-application-live-state";
@@ -17,6 +17,7 @@ const dummyStore: Partial<AppState> = {
     syncing: {},
     disabling: {},
     adding: false,
+    loading: false,
   },
   environments: {
     entities: {

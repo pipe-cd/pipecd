@@ -34,7 +34,17 @@ export const dummyDeployment: Deployment = {
   createdAt: 1,
   summary: "description",
   envId: dummyEnv.id,
-  gitPath: { configPath: "", configFilename: "", path: "", repoId: "", url: "" },
+  gitPath: {
+    configPath: "",
+    configFilename: "",
+    path: "",
+    url: "",
+    repo: {
+      id: "repo-1",
+      branch: "master",
+      remote: "xxx",
+    },
+  },
   kind: ApplicationKind.KUBERNETES,
   metadataMap: [],
 };

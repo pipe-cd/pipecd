@@ -91,3 +91,4 @@ export const pipedsSlice = createSlice({
 });
 
 export const { clearRegisteredPipedInfo } = pipedsSlice.actions;
+export { Piped as PipedModel } from "pipe/pkg/app/web/model/piped_pb";
