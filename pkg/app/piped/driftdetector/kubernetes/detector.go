@@ -343,7 +343,7 @@ func (d *detector) listApplications() map[string][]*model.Application {
 		m    = make(map[string][]*model.Application)
 	)
 	for _, app := range apps {
-		repoID := app.GitPath.RepoId
+		repoID := app.GitPath.Repo.Id
 		if _, ok := m[repoID]; !ok {
 			m[repoID] = []*model.Application{app}
 		} else {

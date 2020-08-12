@@ -159,9 +159,17 @@ func (a *FakeWebAPI) GetPiped(ctx context.Context, req *webservice.GetPipedReque
 					Type: model.CloudProviderKubernetes.String(),
 				},
 			},
-			RepositoryIds: []string{
-				"piped-repo-1",
-				"piped-repo-2",
+			Repositories: []*model.ApplicationGitRepository{
+				{
+					Id:     "piped-repo-1",
+					Remote: "git@github.com:pipe-cd/debug.git",
+					Branch: "master",
+				},
+				{
+					Id:     "piped-repo-2",
+					Remote: "git@github.com:pipe-cd/debug2.git",
+					Branch: "master",
+				},
 			},
 			Disabled:  false,
 			CreatedAt: now.Unix(),
@@ -193,8 +201,12 @@ func (a *FakeWebAPI) ListApplications(ctx context.Context, req *webservice.ListA
 			ProjectId: fakeProjectID,
 			Kind:      model.ApplicationKind_KUBERNETES,
 			GitPath: &model.ApplicationGitPath{
-				RepoId: "debug",
-				Path:   "k8s",
+				Repo: &model.ApplicationGitRepository{
+					Id:     "debug",
+					Remote: "git@github.com:pipe-cd/debug.git",
+					Branch: "master",
+				},
+				Path: "k8s",
 			},
 			CloudProvider: "kubernetes-default",
 			MostRecentlySuccessfulDeployment: &model.ApplicationDeploymentReference{
@@ -246,8 +258,12 @@ func (a *FakeWebAPI) GetApplication(ctx context.Context, req *webservice.GetAppl
 		ProjectId: fakeProjectID,
 		Kind:      model.ApplicationKind_KUBERNETES,
 		GitPath: &model.ApplicationGitPath{
-			RepoId: "debug",
-			Path:   "k8s",
+			Repo: &model.ApplicationGitRepository{
+				Id:     "debug",
+				Remote: "git@github.com:pipe-cd/debug.git",
+				Branch: "master",
+			},
+			Path: "k8s",
 		},
 		CloudProvider: "kubernetes-default",
 		MostRecentlySuccessfulDeployment: &model.ApplicationDeploymentReference{
@@ -297,8 +313,12 @@ func (a *FakeWebAPI) ListDeployments(ctx context.Context, req *webservice.ListDe
 			PipedId:       "debug-piped",
 			ProjectId:     fakeProjectID,
 			GitPath: &model.ApplicationGitPath{
-				RepoId: "debug",
-				Path:   "k8s",
+				Repo: &model.ApplicationGitRepository{
+					Id:     "debug",
+					Remote: "git@github.com:pipe-cd/debug.git",
+					Branch: "master",
+				},
+				Path: "k8s",
 			},
 			Trigger: &model.DeploymentTrigger{
 				Commit: &model.Commit{
@@ -437,8 +457,12 @@ func (a *FakeWebAPI) GetDeployment(ctx context.Context, req *webservice.GetDeplo
 		ProjectId:     fakeProjectID,
 		Kind:          model.ApplicationKind_KUBERNETES,
 		GitPath: &model.ApplicationGitPath{
-			RepoId: "debug",
-			Path:   "k8s",
+			Repo: &model.ApplicationGitRepository{
+				Id:     "debug",
+				Remote: "git@github.com:pipe-cd/debug.git",
+				Branch: "master",
+			},
+			Path: "k8s",
 		},
 		Trigger: &model.DeploymentTrigger{
 			Commit: &model.Commit{

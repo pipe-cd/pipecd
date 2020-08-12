@@ -185,7 +185,7 @@ func (t *Trigger) checkCommand(ctx context.Context) error {
 }
 
 func (t *Trigger) syncApplication(ctx context.Context, app *model.Application, commander string) error {
-	_, branch, headCommit, err := t.updateRepoToLatest(ctx, app.GitPath.RepoId)
+	_, branch, headCommit, err := t.updateRepoToLatest(ctx, app.GitPath.Repo.Id)
 	if err != nil {
 		return err
 	}
@@ -335,7 +335,7 @@ func (t *Trigger) listApplications() map[string][]*model.Application {
 		m    = make(map[string][]*model.Application)
 	)
 	for _, app := range apps {
-		repoId := app.GitPath.RepoId
+		repoId := app.GitPath.Repo.Id
 		if _, ok := m[repoId]; !ok {
 			m[repoId] = []*model.Application{app}
 		} else {
