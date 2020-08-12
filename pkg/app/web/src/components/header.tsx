@@ -16,7 +16,7 @@ import {
   PAGE_PATH_SETTINGS,
   PAGE_PATH_LOGIN,
 } from "../constants";
-import { Link as RouterLink } from "react-router-dom";
+import { NavLink as RouterLink } from "react-router-dom";
 import { useMe } from "../modules/me";
 import ArrowDownIcon from "@material-ui/icons/ArrowDropDown";
 
@@ -34,9 +34,6 @@ const useStyles = makeStyles((theme) => ({
     width: theme.spacing(4),
     height: theme.spacing(4),
   },
-  link: {
-    marginRight: theme.spacing(2),
-  },
   userAvatar: {
     width: theme.spacing(4),
     height: theme.spacing(4),
@@ -44,6 +41,16 @@ const useStyles = makeStyles((theme) => ({
   projectName: {
     marginLeft: theme.spacing(1),
     textTransform: "none",
+  },
+  link: {
+    marginRight: theme.spacing(2),
+    display: "inline-flex",
+    height: "100%",
+    alignItems: "center",
+  },
+  activeLink: {
+    fontWeight: "bold",
+    borderBottom: `2px solid ${theme.palette.background.paper}`,
   },
 }));
 
@@ -70,6 +77,7 @@ export const Header: FC = memo(function Header() {
         <Link
           component={RouterLink}
           className={classes.link}
+          activeClassName={classes.activeLink}
           color="inherit"
           to={PAGE_PATH_APPLICATIONS}
         >
@@ -78,6 +86,7 @@ export const Header: FC = memo(function Header() {
         <Link
           component={RouterLink}
           className={classes.link}
+          activeClassName={classes.activeLink}
           color="inherit"
           to={PAGE_PATH_DEPLOYMENTS}
         >
@@ -86,6 +95,7 @@ export const Header: FC = memo(function Header() {
         <Link
           component={RouterLink}
           className={classes.link}
+          activeClassName={classes.activeLink}
           color="inherit"
           to={PAGE_PATH_INSIGHTS}
         >
@@ -94,6 +104,7 @@ export const Header: FC = memo(function Header() {
         <Link
           component={RouterLink}
           className={classes.link}
+          activeClassName={classes.activeLink}
           color="inherit"
           to={PAGE_PATH_SETTINGS}
         >
