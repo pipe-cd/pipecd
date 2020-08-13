@@ -46,7 +46,8 @@ message Command {
 
     message CancelDeployment {
         string deployment_id = 1 [(validate.rules).string.min_len = 1];
-        bool without_rollback = 2;
+        bool force_rollback = 2;
+        bool force_no_rollback = 3;
     }
 
     message ApproveStage {
