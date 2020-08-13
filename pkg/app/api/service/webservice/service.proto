@@ -245,9 +245,8 @@ message GetStageLogResponse {
 
 message CancelDeploymentRequest {
     string deployment_id = 1 [(validate.rules).string.min_len = 1];
-    //bool force_rollback = 2;
-    //bool force_no_rollback = 3;
-    bool without_rollback = 2;
+    bool force_rollback = 2;
+    bool force_no_rollback = 3;
 }
 
 message CancelDeploymentResponse {

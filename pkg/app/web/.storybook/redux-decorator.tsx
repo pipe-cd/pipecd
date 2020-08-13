@@ -3,10 +3,13 @@ import { Provider } from "react-redux";
 import configureMockStore from "redux-mock-store";
 import { AppState } from "../src/modules";
 import { reducers } from "../src/modules";
-import { configureStore } from "@reduxjs/toolkit";
-import { DeepPartial } from "@reduxjs/toolkit";
+import {
+  configureStore,
+  DeepPartial,
+  getDefaultMiddleware,
+} from "@reduxjs/toolkit";
 
-const mockStore = configureMockStore([]);
+const mockStore = configureMockStore(getDefaultMiddleware());
 const store = configureStore({ reducer: reducers });
 const baseState = store.getState();
 

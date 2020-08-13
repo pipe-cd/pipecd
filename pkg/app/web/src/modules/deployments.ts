@@ -152,16 +152,21 @@ export const cancelDeployment = createAsyncThunk<
   void,
   {
     deploymentId: string;
-    withoutRollback: boolean;
+    forceRollback: boolean;
+    forceNoRollback: boolean;
   }
->("deployments/cancel", async ({ deploymentId, withoutRollback }, thunkAPI) => {
-  const { commandId } = await deploymentsApi.cancelDeployment({
-    deploymentId,
-    withoutRollback,
-  });
+>(
+  "deployments/cancel",
+  async ({ deploymentId, forceRollback, forceNoRollback }, thunkAPI) => {
+    const { commandId } = await deploymentsApi.cancelDeployment({
+      deploymentId,
+      forceRollback,
+      forceNoRollback,
+    });
 
-  await thunkAPI.dispatch(fetchCommand(commandId));
-});
+    await thunkAPI.dispatch(fetchCommand(commandId));
+  }
+);
 
 export const deploymentsSlice = createSlice({
   name: "deployments",

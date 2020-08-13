@@ -40,13 +40,15 @@ export const getDeployments = ({
 
 export const cancelDeployment = ({
   deploymentId,
-  withoutRollback,
+  forceRollback,
+  forceNoRollback,
 }: CancelDeploymentRequest.AsObject): Promise<
   CancelDeploymentResponse.AsObject
 > => {
   const req = new CancelDeploymentRequest();
   req.setDeploymentId(deploymentId);
-  req.setWithoutRollback(withoutRollback);
+  req.setForceRollback(forceRollback);
+  req.setForceNoRollback(forceNoRollback);
   return apiRequest(req, apiClient.cancelDeployment);
 };
 

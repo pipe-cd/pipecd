@@ -94,7 +94,6 @@ export const SplitButton: FC<Props> = ({
                   {options.map((option, index) => (
                     <MenuItem
                       key={option}
-                      disabled={index === 2}
                       selected={index === selectedCancelOption}
                       onClick={() => {
                         setSelectedCancelOption(index);
