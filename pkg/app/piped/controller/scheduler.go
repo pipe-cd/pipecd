@@ -31,7 +31,6 @@ import (
 	pln "github.com/pipe-cd/pipe/pkg/app/piped/planner"
 	"github.com/pipe-cd/pipe/pkg/cache"
 	"github.com/pipe-cd/pipe/pkg/config"
-	"github.com/pipe-cd/pipe/pkg/git"
 	"github.com/pipe-cd/pipe/pkg/model"
 )
 
@@ -67,7 +66,8 @@ type scheduler struct {
 
 	deploymentConfig *config.Config
 	pipelineable     config.Pipelineable
-	prepareOnce      sync.Once
+	prepareMu        sync.Mutex
+	prepared         bool
 	// Current status of each stages.
 	// We stores their current statuses into this field
 	// because the deployment model is readonly to avoid data race.
@@ -468,61 +468,59 @@ func (s *scheduler) executeStage(sig executor.StopSignal, ps model.PipelineStage
 // The log of this preparing process will be written to the first executing stage
 // when a new scheduler has been created.
 func (s *scheduler) ensurePreparing(ctx context.Context, lp logpersister.StageLogPersister) error {
-	var err error
-	s.prepareOnce.Do(func() {
-		lp.Info("Start preparing for deployment")
+	s.prepareMu.Lock()
+	defer s.prepareMu.Unlock()
+	if s.prepared {
+		return nil
+	}
 
-		// Clone repository and checkout to the target revision.
-		var (
-			gitRepo     git.Repo
-			repoDirPath = filepath.Join(s.workingDir, workspaceGitRepoDirName)
-		)
-		gitRepo, err = prepareDeployRepository(ctx, s.deployment, s.gitClient, repoDirPath, s.pipedConfig)
+	lp.Info("Start preparing for the deployment")
+
+	// Clone repository and checkout to the target revision.
+	repoDirPath := filepath.Join(s.workingDir, workspaceGitRepoDirName)
+	gitRepo, err := prepareDeployRepository(ctx, s.deployment, s.gitClient, repoDirPath, s.pipedConfig)
+	if err != nil {
+		lp.Error(err.Error())
+		return err
+	}
+	lp.Successf("Successfully cloned repository %s", s.deployment.GitPath.Repo.Id)
+
+	// Copy and checkout the running revision.
+	if s.deployment.RunningCommitHash != "" {
+		runningRepoPath := filepath.Join(s.workingDir, workspaceGitRunningRepoDirName)
+		runningGitRepo, err := gitRepo.Copy(runningRepoPath)
 		if err != nil {
 			lp.Error(err.Error())
-			return
+			return err
 		}
-		lp.Successf("Successfully cloned repository %s", s.deployment.GitPath.Repo.Id)
-
-		// Copy and checkout the running revision.
-		if s.deployment.RunningCommitHash != "" {
-			var (
-				runningGitRepo  git.Repo
-				runningRepoPath = filepath.Join(s.workingDir, workspaceGitRunningRepoDirName)
-			)
-			runningGitRepo, err = gitRepo.Copy(runningRepoPath)
-			if err != nil {
-				lp.Error(err.Error())
-				return
-			}
-			if err = runningGitRepo.Checkout(ctx, s.deployment.RunningCommitHash); err != nil {
-				lp.Error(err.Error())
-				return
-			}
-		}
-
-		// Load deployment configuration for this application.
-		var cfg *config.Config
-		cfg, err = loadDeploymentConfiguration(gitRepo.GetPath(), s.deployment)
-		if err != nil {
-			err = fmt.Errorf("failed to load deployment configuration (%w)", err)
+		if err = runningGitRepo.Checkout(ctx, s.deployment.RunningCommitHash); err != nil {
 			lp.Error(err.Error())
-			return
+			return err
 		}
-		s.deploymentConfig = cfg
+	}
 
-		pipelineable, ok := cfg.GetPipelineable()
-		if !ok {
-			err = fmt.Errorf("Unsupport non pipelineable application %s", cfg.Kind)
-			lp.Error(err.Error())
-			return
-		}
-		s.pipelineable = pipelineable
-		lp.Success("Successfully loaded deployment configuration")
+	// Load deployment configuration for this application.
+	cfg, err := loadDeploymentConfiguration(gitRepo.GetPath(), s.deployment)
+	if err != nil {
+		err = fmt.Errorf("failed to load deployment configuration (%w)", err)
+		lp.Error(err.Error())
+		return err
+	}
+	s.deploymentConfig = cfg
 
-		lp.Info("All preparations have been completed successfully")
-	})
-	return err
+	pipelineable, ok := cfg.GetPipelineable()
+	if !ok {
+		err = fmt.Errorf("Unsupport non pipelineable application %s", cfg.Kind)
+		lp.Error(err.Error())
+		return err
+	}
+	s.pipelineable = pipelineable
+	lp.Success("Successfully loaded deployment configuration")
+
+	s.prepared = true
+	lp.Info("All preparations have been completed successfully")
+
+	return nil
 }
 
 func (s *scheduler) reportStageStatus(ctx context.Context, stageID string, status model.StageStatus, requires []string) error {
