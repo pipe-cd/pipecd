@@ -60,7 +60,7 @@ const (
 	StageTerraformApply Stage = "TERRAFORM_APPLY"
 
 	// StageCloudRunSync does quick sync by rolling out the new version
-	// and switching all trafic to it.
+	// and switching all traffic to it.
 	StageCloudRunSync Stage = "CLOUDRUN_SYNC"
 	// StageCloudRunCanaryRollout represents the state where
 	// the workloads of the new version has been rolled out.
@@ -70,7 +70,7 @@ const (
 	StageCloudRunTrafficRouting Stage = "CLOUDRUN_TRAFFIC_ROUTING"
 
 	// StageLambdaSync does quick sync by rolling out the new version
-	// and switching all trafic to it.
+	// and switching all traffic to it.
 	StageLambdaSync Stage = "LAMBDA_SYNC"
 	// StageLambdaCanaryRollout represents the state where
 	// the workloads of the new version has been rolled out.
