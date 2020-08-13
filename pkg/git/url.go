@@ -72,9 +72,10 @@ func MakeDirURL(repoURL, dir, branch string) (string, error) {
 
 	subPath := ""
 	switch u.Host {
-	// TODO: Support more git host
-	case "github.com":
+	case "github.com", "gitlab.com":
 		subPath = "tree"
+	case "bitbucket.org":
+		subPath = "src"
 	default:
 		// TODO: Allow users to specify git host
 		subPath = "tree"

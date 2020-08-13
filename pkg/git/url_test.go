@@ -99,6 +99,22 @@ func TestMakeDirURL(t *testing.T) {
 			wantErr: false,
 		},
 		{
+			name:    "ssh to gitlab.com",
+			repoURL: "git@gitlab.com:org/repo.git",
+			dir:     "path/to",
+			branch:  "abc",
+			want:    "https://gitlab.com/org/repo/tree/abc/path/to",
+			wantErr: false,
+		},
+		{
+			name:    "ssh to bitbucket.org",
+			repoURL: "git@bitbucket.org:org/repo.git",
+			dir:     "path/to",
+			branch:  "abc",
+			want:    "https://bitbucket.org/org/repo/src/abc/path/to",
+			wantErr: false,
+		},
+		{
 			name:    "ssh to unsupported git host",
 			repoURL: "git@foo.com:org/repo.git",
 			dir:     "path/to",
