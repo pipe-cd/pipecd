@@ -36,8 +36,8 @@ import (
 type Executor struct {
 	executor.Input
 
-	startTime             time.Time
-	previouslyElapsedTime time.Duration
+	startTime           time.Time
+	previousElapsedTime time.Duration
 }
 
 type registerer interface {
@@ -86,10 +86,10 @@ func (e *Executor) Execute(sig executor.StopSignal) model.StageStatus {
 	}
 
 	timeout := time.Duration(options.Duration)
-	e.previouslyElapsedTime = e.retrievePreviouslyElapsedTime()
-	if e.previouslyElapsedTime > 0 {
+	e.previousElapsedTime = e.retrievePreviousElapsedTime()
+	if e.previousElapsedTime > 0 {
 		// Restart from the middle.
-		timeout -= e.previouslyElapsedTime
+		timeout -= e.previousElapsedTime
 	}
 	defer e.saveElapsedTime(ctx)
 
@@ -107,6 +107,7 @@ func (e *Executor) Execute(sig executor.StopSignal) model.StageStatus {
 			continue
 		}
 		eg.Go(func() error {
+			e.LogPersister.Infof("[%s] Start analysis for %s", analyzer.id, analyzer.providerType)
 			return analyzer.run(ctx)
 		})
 	}
@@ -119,6 +120,7 @@ func (e *Executor) Execute(sig executor.StopSignal) model.StageStatus {
 			continue
 		}
 		eg.Go(func() error {
+			e.LogPersister.Infof("[%s] Start analysis for %s", analyzer.id, analyzer.providerType)
 			return analyzer.run(ctx)
 		})
 	}
@@ -130,6 +132,7 @@ func (e *Executor) Execute(sig executor.StopSignal) model.StageStatus {
 			continue
 		}
 		eg.Go(func() error {
+			e.LogPersister.Infof("[%s] Start analysis for %s", analyzer.id, analyzer.providerType)
 			return analyzer.run(ctx)
 		})
 	}
@@ -149,7 +152,7 @@ const elapsedTimeKey = "elapsedTime"
 // The analysis stage can be restarted from the middle even if it ends unexpectedly,
 // that's why count should be stored.
 func (e *Executor) saveElapsedTime(ctx context.Context) {
-	elapsedTime := time.Since(e.startTime) + e.previouslyElapsedTime
+	elapsedTime := time.Since(e.startTime) + e.previousElapsedTime
 	metadata := map[string]string{
 		elapsedTimeKey: elapsedTime.String(),
 	}
@@ -158,8 +161,8 @@ func (e *Executor) saveElapsedTime(ctx context.Context) {
 	}
 }
 
-// retrievePreviouslyElapsedTime sets the elapsed time of analysis stage by decoding metadata.
-func (e *Executor) retrievePreviouslyElapsedTime() time.Duration {
+// retrievePreviousElapsedTime sets the elapsed time of analysis stage by decoding metadata.
+func (e *Executor) retrievePreviousElapsedTime() time.Duration {
 	metadata, ok := e.MetadataStore.GetStageMetadata(e.Stage.Id)
 	if !ok {
 		return 0
@@ -176,7 +179,7 @@ func (e *Executor) retrievePreviouslyElapsedTime() time.Duration {
 	return et
 }
 
-func (e *Executor) newAnalyzerForMetrics(id int, templatable *config.TemplatableAnalysisMetrics, templateCfg *config.AnalysisTemplateSpec, factory *metrics.Factory) (*analyzer, error) {
+func (e *Executor) newAnalyzerForMetrics(i int, templatable *config.TemplatableAnalysisMetrics, templateCfg *config.AnalysisTemplateSpec, factory *metrics.Factory) (*analyzer, error) {
 	cfg, err := e.getMetricsConfig(templatable, templateCfg, templatable.Template.Args)
 	if err != nil {
 		return nil, err
@@ -185,12 +188,14 @@ func (e *Executor) newAnalyzerForMetrics(id int, templatable *config.Templatable
 	if err != nil {
 		return nil, err
 	}
-	return newAnalyzer(fmt.Sprintf("metrics-%d", id), provider.Type(), func(ctx context.Context) (bool, error) {
+	id := fmt.Sprintf("metrics-%d", i)
+	return newAnalyzer(id, provider.Type(), func(ctx context.Context) (bool, error) {
+		e.LogPersister.Infof("[%s] Run query against %s: %q", id, provider.Type(), cfg.Query)
 		return provider.RunQuery(ctx, cfg.Query, cfg.Expected)
 	}, time.Duration(cfg.Interval), cfg.FailureLimit, e.Logger, e.LogPersister), nil
 }
 
-func (e *Executor) newAnalyzerForLog(id int, templatable *config.TemplatableAnalysisLog, templateCfg *config.AnalysisTemplateSpec, factory *log.Factory) (*analyzer, error) {
+func (e *Executor) newAnalyzerForLog(i int, templatable *config.TemplatableAnalysisLog, templateCfg *config.AnalysisTemplateSpec, factory *log.Factory) (*analyzer, error) {
 	cfg, err := e.getLogConfig(templatable, templateCfg, templatable.Template.Args)
 	if err != nil {
 		return nil, err
@@ -199,18 +204,22 @@ func (e *Executor) newAnalyzerForLog(id int, templatable *config.TemplatableAnal
 	if err != nil {
 		return nil, err
 	}
-	return newAnalyzer(fmt.Sprintf("log-%d", id), provider.Type(), func(ctx context.Context) (bool, error) {
+	id := fmt.Sprintf("log-%d", i)
+	return newAnalyzer(id, provider.Type(), func(ctx context.Context) (bool, error) {
+		e.LogPersister.Infof("[%s] Run query against %s: %q", id, provider.Type(), cfg.Query)
 		return provider.RunQuery(ctx, cfg.Query)
 	}, time.Duration(cfg.Interval), cfg.FailureLimit, e.Logger, e.LogPersister), nil
 }
 
-func (e *Executor) newAnalyzerForHTTP(id int, templatable *config.TemplatableAnalysisHTTP, templateCfg *config.AnalysisTemplateSpec) (*analyzer, error) {
+func (e *Executor) newAnalyzerForHTTP(i int, templatable *config.TemplatableAnalysisHTTP, templateCfg *config.AnalysisTemplateSpec) (*analyzer, error) {
 	cfg, err := e.getHTTPConfig(templatable, templateCfg, templatable.Template.Args)
 	if err != nil {
 		return nil, err
 	}
 	provider := httpprovider.NewProvider(time.Duration(cfg.Timeout))
-	return newAnalyzer(fmt.Sprintf("http-%d", id), provider.Type(), func(ctx context.Context) (bool, error) {
+	id := fmt.Sprintf("http-%d", i)
+	return newAnalyzer(id, provider.Type(), func(ctx context.Context) (bool, error) {
+		e.LogPersister.Infof("[%s] Start running query against %s: %s %s", id, provider.Type(), cfg.Method, cfg.URL)
 		return provider.Run(ctx, cfg)
 	}, time.Duration(cfg.Interval), cfg.FailureLimit, e.Logger, e.LogPersister), nil
 }
