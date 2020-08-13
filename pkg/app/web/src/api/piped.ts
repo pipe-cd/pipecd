@@ -23,10 +23,12 @@ export const getPipeds = ({
 export const registerPiped = ({
   name,
   desc,
+  envIdsList,
 }: RegisterPipedRequest.AsObject): Promise<RegisterPipedResponse.AsObject> => {
   const req = new RegisterPipedRequest();
   req.setName(name);
   req.setDesc(desc);
+  req.setEnvIdsList(envIdsList);
   return apiRequest(req, apiClient.registerPiped);
 };
 
