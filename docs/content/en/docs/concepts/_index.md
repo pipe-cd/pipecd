@@ -36,17 +36,17 @@ PipeCD supports multiple kinds of applications such as `KUBERNETES`, `TERRAFORM`
 ### Environment
 
 An environment is a logical group of applications of a project. A project can have multiple environments.
-Each application/piped must belong to one and only one enviroment.
+Each application must belong to one and only one enviroment. While each piped must belong to at least one environment.
 
 ### Deployment
 
-Deployment is a process that does transition from the current state (running state) to the desired state (specified state in Git) of a specific application.
+A deployment is a process that does transition from the current state (running state) to the desired state (specified state in Git) of a specific application.
 When the deployment is success, it means the running state is synced with the desired state specified in the target commit.
 
 ### Deployment Configuration
 
 A `.pipe.yaml` yaml file that contains configuration data to define how to deploy the application.
-Each application has one deployment configuration file in Git repository at application directory.
+Each application requires one deployment configuration file at application directory in the Git repository.
 
 ### Application Configuration Directory
 
@@ -55,10 +55,14 @@ Each application must has one application configuration directory.
 
 ### Quick Sync
 
-Quick sync is a fast way to sync application to the state specified in a Git commit without any progressive strategy or manual approving. Its pipeline contains just only one `SYNC` stage. For examples:
+Quick sync is a fast way to sync application to the state specified in a Git commit without any progressive strategy or manual approving. Its pipeline contains just only one predefined `SYNC` stage. For examples:
 - quick sync a Kubernetes application is just applying all manifests
 - quick sync a Terraform application is automatically applying all detected changes
 - quick sync a CloudRun/Lambda application is rolling out the new version and routing all traffic to it
+
+### Pipeline
+
+A list of stages specified by user in the deployment configuration file that tells `piped` how the application should be deployed. When the pipeline was not specified, the application will be deployed by Quick Sync way.
 
 ### Stage
 
