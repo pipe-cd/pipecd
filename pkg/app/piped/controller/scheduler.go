@@ -502,17 +502,15 @@ func (s *scheduler) ensurePreparing(ctx context.Context, lp logpersister.StageLo
 	// Load deployment configuration for this application.
 	cfg, err := loadDeploymentConfiguration(gitRepo.GetPath(), s.deployment)
 	if err != nil {
-		err = fmt.Errorf("failed to load deployment configuration (%w)", err)
 		lp.Errorf("Failed to load deployment configuration (%v)", err)
-		return err
+		return fmt.Errorf("failed to load deployment configuration (%w)", err)
 	}
 	s.deploymentConfig = cfg
 
 	pp, ok := cfg.GetPipelineable()
 	if !ok {
-		err = fmt.Errorf("unsupport non pipelineable application %s", cfg.Kind)
 		lp.Errorf("Unsupport non pipelineable application %s", cfg.Kind)
-		return err
+		return fmt.Errorf("unsupport non pipelineable application %s", cfg.Kind)
 	}
 	s.pipelineable = pp
 	lp.Success("Successfully loaded deployment configuration")
