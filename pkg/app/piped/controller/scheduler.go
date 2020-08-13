@@ -480,7 +480,7 @@ func (s *scheduler) ensurePreparing(ctx context.Context, lp logpersister.StageLo
 	repoDirPath := filepath.Join(s.workingDir, workspaceGitRepoDirName)
 	gitRepo, err := prepareDeployRepository(ctx, s.deployment, s.gitClient, repoDirPath, s.pipedConfig)
 	if err != nil {
-		lp.Error(err.Error())
+		lp.Errorf("Unable to prepare repository (%v)", err)
 		return err
 	}
 	lp.Successf("Successfully cloned repository %s", s.deployment.GitPath.Repo.Id)
@@ -490,11 +490,11 @@ func (s *scheduler) ensurePreparing(ctx context.Context, lp logpersister.StageLo
 		runningRepoPath := filepath.Join(s.workingDir, workspaceGitRunningRepoDirName)
 		runningGitRepo, err := gitRepo.Copy(runningRepoPath)
 		if err != nil {
-			lp.Error(err.Error())
+			lp.Errorf("Unable to copy repository (%v)", err)
 			return err
 		}
 		if err = runningGitRepo.Checkout(ctx, s.deployment.RunningCommitHash); err != nil {
-			lp.Error(err.Error())
+			lp.Errorf("Unable to checkout repository (%v)", err)
 			return err
 		}
 	}
@@ -503,18 +503,18 @@ func (s *scheduler) ensurePreparing(ctx context.Context, lp logpersister.StageLo
 	cfg, err := loadDeploymentConfiguration(gitRepo.GetPath(), s.deployment)
 	if err != nil {
 		err = fmt.Errorf("failed to load deployment configuration (%w)", err)
-		lp.Error(err.Error())
+		lp.Errorf("Failed to load deployment configuration (%v)", err)
 		return err
 	}
 	s.deploymentConfig = cfg
 
-	pipelineable, ok := cfg.GetPipelineable()
+	pp, ok := cfg.GetPipelineable()
 	if !ok {
-		err = fmt.Errorf("Unsupport non pipelineable application %s", cfg.Kind)
-		lp.Error(err.Error())
+		err = fmt.Errorf("unsupport non pipelineable application %s", cfg.Kind)
+		lp.Errorf("Unsupport non pipelineable application %s", cfg.Kind)
 		return err
 	}
-	s.pipelineable = pipelineable
+	s.pipelineable = pp
 	lp.Success("Successfully loaded deployment configuration")
 
 	s.prepared = true
