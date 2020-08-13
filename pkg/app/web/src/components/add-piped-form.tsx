@@ -5,7 +5,17 @@ import {
   Typography,
   TextField,
   Button,
+  Checkbox,
 } from "@material-ui/core";
+import Autocomplete from "@material-ui/lab/Autocomplete";
+import { AppState } from "../modules";
+import {
+  Environment,
+  selectAll as selectAllEnvs,
+} from "../modules/environments";
+import { useSelector } from "react-redux";
+import CheckBoxOutlineBlankIcon from "@material-ui/icons/CheckBoxOutlineBlank";
+import CheckBoxIcon from "@material-ui/icons/CheckBox";
 
 const useStyles = makeStyles((theme) => ({
   root: {
@@ -21,17 +31,21 @@ const useStyles = makeStyles((theme) => ({
 
 interface Props {
   projectName: string;
-  onSubmit: (props: { name: string; desc: string }) => void;
+  onSubmit: (props: { name: string; desc: string; envIds: string[] }) => void;
   onClose: () => void;
 }
 
 export const AddPipedForm: FC<Props> = ({ projectName, onSubmit, onClose }) => {
   const classes = useStyles();
+  const environments = useSelector<AppState, Environment[]>((state) =>
+    selectAllEnvs(state.environments)
+  );
   const [name, setName] = useState<string>("");
   const [desc, setDesc] = useState<string>("");
+  const [envs, setEnvs] = useState<Environment[]>([]);
 
   const handleSave = (): void => {
-    onSubmit({ name, desc });
+    onSubmit({ name, desc, envIds: envs.map((env) => env.id) });
   };
 
   return (
@@ -60,11 +74,45 @@ export const AddPipedForm: FC<Props> = ({ projectName, onSubmit, onClose }) => {
           fullWidth
           required
         />
+        <Autocomplete
+          multiple
+          id="environments"
+          options={environments}
+          disableCloseOnSelect
+          value={envs}
+          onChange={(_, newValue) => {
+            setEnvs(newValue);
+          }}
+          getOptionLabel={(option) => option.name}
+          renderOption={(option, { selected }) => (
+            <React.Fragment>
+              <Checkbox
+                icon={<CheckBoxOutlineBlankIcon fontSize="small" />}
+                checkedIcon={<CheckBoxIcon fontSize="small" />}
+                style={{ marginRight: 8 }}
+                checked={selected}
+                color="primary"
+              />
+              {option.name}
+            </React.Fragment>
+          )}
+          renderInput={(params) => (
+            <TextField
+              {...params}
+              variant="outlined"
+              label="Environments"
+              margin="dense"
+              placeholder="Environments"
+              fullWidth
+              required
+            />
+          )}
+        />
         <Button
           color="primary"
           type="button"
           onClick={handleSave}
-          disabled={name === "" || desc === ""}
+          disabled={name === "" || desc === "" || envs.length === 0}
         >
           SAVE
         </Button>
