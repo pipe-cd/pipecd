@@ -775,6 +775,14 @@ func (a *FakeWebAPI) GetProject(ctx context.Context, req *webservice.GetProjectR
 	return nil, status.Error(codes.Unimplemented, "")
 }
 
+func (a *FakeWebAPI) UpdateProjectStaticUser(ctx context.Context, req *webservice.UpdateProjectStaticUserRequest) (*webservice.UpdateProjectStaticUserResponse, error) {
+	return nil, status.Error(codes.Unimplemented, "")
+}
+
+func (a *FakeWebAPI) UpdateProjectSingleSignOn(ctx context.Context, req *webservice.UpdateProjectSingleSignOnRequest) (*webservice.UpdateProjectSingleSignOnResponse, error) {
+	return nil, status.Error(codes.Unimplemented, "")
+}
+
 func (a *FakeWebAPI) GetMe(ctx context.Context, req *webservice.GetMeRequest) (*webservice.GetMeResponse, error) {
 	return nil, status.Error(codes.Unimplemented, "")
 }
