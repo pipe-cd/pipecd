@@ -94,7 +94,11 @@ interface Props {
   deploymentId: string;
 }
 
-const CANCEL_OPTIONS = ["Cancel", "Cancel without Rollback"];
+const CANCEL_OPTIONS = [
+  "Cancel",
+  "Cancel with Rollback",
+  "Cancel without Rollback",
+];
 const LOG_FETCH_INTERVAL = 2000;
 
 export const DeploymentDetail: FC<Props> = memo(function DeploymentDetail({
@@ -227,7 +231,8 @@ export const DeploymentDetail: FC<Props> = memo(function DeploymentDetail({
                 dispatch(
                   cancelDeployment({
                     deploymentId,
-                    withoutRollback: index === 1,
+                    forceRollback: index === 1,
+                    forceNoRollback: index === 2,
                   })
                 );
               }}
