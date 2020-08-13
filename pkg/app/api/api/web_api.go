@@ -675,8 +675,9 @@ func (a *WebAPI) CancelDeployment(ctx context.Context, req *webservice.CancelDep
 		Type:          model.Command_CANCEL_DEPLOYMENT,
 		Commander:     claims.Subject,
 		CancelDeployment: &model.Command_CancelDeployment{
-			DeploymentId:    req.DeploymentId,
-			WithoutRollback: req.WithoutRollback,
+			DeploymentId: req.DeploymentId,
+			//ForceRollback:   req.ForceRollback,
+			//ForceNoRollback: req.ForceNoRollback,
 		},
 	}
 	if err := a.addCommand(ctx, &cmd); err != nil {
