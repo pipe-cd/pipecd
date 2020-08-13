@@ -42,7 +42,6 @@ func newAnalyzer(id string, providerType string, runQuery func(ctx context.Conte
 // run starts an analysis which runs the query at the given interval, until the context is done.
 // It returns an error when the number of failures exceeds the the failureLimit.
 func (a *analyzer) run(ctx context.Context) error {
-	a.logger.Info("start the analysis")
 	ticker := time.NewTicker(a.interval)
 	defer ticker.Stop()
 
@@ -50,29 +49,28 @@ func (a *analyzer) run(ctx context.Context) error {
 	for {
 		select {
 		case <-ticker.C:
-			a.logPersister.Infof("Start running query against %s", a.providerType)
+			reason := ""
 			success, err := a.runQuery(ctx)
 			if err != nil {
 				// The failure of the query itself is treated as a failure.
-				a.logPersister.Errorf("Failed to run query: %s", err.Error())
+				reason = fmt.Sprintf("failed to run query: %s", err.Error())
 				success = false
 			}
 			if success {
-				a.logPersister.Successf("The result of the query for %s by analysis '%s' is a success.",
-					a.providerType,
-					a.id,
-				)
+				a.logPersister.Successf("[%s] The query result is a success.", a.id)
 			} else {
 				failureCount++
-				a.logPersister.Errorf("The result of the query for %s by analysis '%s' is a failure. This analysis will fail if it fails %d more times.",
-					a.providerType,
+				if reason == "" {
+					reason = "the response is not expected value"
+				}
+				a.logPersister.Errorf("[%s] The query result is a failure. Reason: %s",
 					a.id,
-					a.failureLimit+1-failureCount,
+					reason,
 				)
 			}
 
 			if failureCount > a.failureLimit {
-				return fmt.Errorf("anslysis '%s' by %s failed because the failure number exceeded %d, the failure limit", a.id, a.providerType, a.failureLimit)
+				return fmt.Errorf("anslysis '%s' failed because the failure number exceeded the failure limit (%d)", a.id, a.failureLimit)
 			}
 		case <-ctx.Done():
 			return nil
