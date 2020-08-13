@@ -505,7 +505,7 @@ func (s *scheduler) ensurePreparing(ctx context.Context, lp logpersister.StageLo
 		var cfg *config.Config
 		cfg, err = loadDeploymentConfiguration(gitRepo.GetPath(), s.deployment)
 		if err != nil {
-			err = fmt.Errorf("Failed to load deployment configuration (%v)", err)
+			err = fmt.Errorf("failed to load deployment configuration (%w)", err)
 			lp.Error(err.Error())
 			return
 		}

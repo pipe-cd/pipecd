@@ -147,7 +147,7 @@ func (e *Executor) loadManifests(ctx context.Context) ([]provider.Manifest, erro
 func (e *Executor) loadRunningManifests(ctx context.Context) (manifests []provider.Manifest, err error) {
 	runningCommit := e.Deployment.RunningCommitHash
 	if runningCommit == "" {
-		return nil, fmt.Errorf("Unable to determine running commit")
+		return nil, fmt.Errorf("unable to determine running commit")
 	}
 
 	cache := provider.AppManifestsCache{
