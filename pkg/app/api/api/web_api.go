@@ -141,6 +141,7 @@ func (a *WebAPI) RegisterPiped(ctx context.Context, req *webservice.RegisterPipe
 		Desc:      req.Desc,
 		KeyHash:   keyHash,
 		ProjectId: claims.Role.ProjectId,
+		EnvIds:    req.EnvIds,
 		Status:    model.Piped_OFFLINE,
 	}
 	err = a.pipedStore.AddPiped(ctx, &piped)
@@ -290,6 +291,7 @@ func (a *WebAPI) getPiped(ctx context.Context, pipedID string) (*model.Piped, er
 	return piped, nil
 }
 
+// TODO: Validate the specified piped to ensure that it belongs to the specified environment.
 func (a *WebAPI) AddApplication(ctx context.Context, req *webservice.AddApplicationRequest) (*webservice.AddApplicationResponse, error) {
 	claims, err := rpcauth.ExtractClaims(ctx)
 	if err != nil {

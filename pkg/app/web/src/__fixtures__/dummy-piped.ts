@@ -1,4 +1,5 @@
 import { Piped, PipedModel } from "../modules/pipeds";
+import { dummyEnv } from "./dummy-environment";
 
 export const dummyPiped: Piped = {
   cloudProvidersList: [],
@@ -14,4 +15,5 @@ export const dummyPiped: Piped = {
   version: "v0.1",
   status: PipedModel.ConnectionStatus.ONLINE,
   keyHash: "12345",
+  envIdsList: [dummyEnv.id],
 };

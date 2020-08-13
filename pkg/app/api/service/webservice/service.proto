@@ -94,6 +94,7 @@ message ListEnvironmentsResponse {
 message RegisterPipedRequest {
     string name = 1;
     string desc = 2;
+    repeated string env_ids = 3 [(validate.rules).repeated.min_items = 1];
 }
 
 message RegisterPipedResponse {

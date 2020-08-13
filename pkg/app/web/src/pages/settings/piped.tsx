@@ -134,7 +134,11 @@ export const SettingsPipedPage: FC = memo(function SettingsPipedPage() {
     });
   };
 
-  const handleSubmit = (props: { name: string; desc: string }): void => {
+  const handleSubmit = (props: {
+    name: string;
+    desc: string;
+    envIds: string[];
+  }): void => {
     dispatch(addPiped(props)).then(() => {
       setIsOpenForm(false);
     });
