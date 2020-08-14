@@ -280,16 +280,15 @@ message GetProjectResponse {
 }
 
 message UpdateProjectStaticAdminRequest {
-    string username = 1;
-    string password = 2;
-    bool static_admin_disabled = 3;
+    string username = 1 [(validate.rules).string.min_len = 1];
+    string password = 2 [(validate.rules).string.min_len = 1];
 }
 
 message UpdateProjectStaticAdminResponse {
 }
 
 message UpdateProjectSingleSignOnRequest {
-    model.ProjectSingleSignOn sso = 1;
+    model.ProjectSingleSignOn sso = 1 [(validate.rules).message.required = true];
 }
 
 message EnableStaticAdminRequest {
