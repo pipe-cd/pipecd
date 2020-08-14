@@ -56,8 +56,11 @@ func Register(r registerer) {
 // templateArgs allows deployment-specific data to be embedded in the analysis template.
 // NOTE: Changing its fields will force users to change the template definition.
 type templateArgs struct {
-	AppName string
-	K8s     struct {
+	App struct {
+		Name string
+		Env  string
+	}
+	K8s struct {
 		Namespace string
 	}
 	// User-defined custom args.
@@ -311,8 +314,12 @@ func (e *Executor) getHTTPConfig(templatableCfg *config.TemplatableAnalysisHTTP,
 // render returns a new AnalysisTemplateSpec, where deployment-specific arguments populated.
 func (e *Executor) render(templateCfg config.AnalysisTemplateSpec, customArgs map[string]string) (*config.AnalysisTemplateSpec, error) {
 	args := templateArgs{
-		Args:    customArgs,
-		AppName: e.Application.Name,
+		Args: customArgs,
+		App: struct {
+			Name string
+			Env  string
+			// TODO: Populate Env
+		}{Name: e.Application.Name, Env: ""},
 	}
 	if e.DeploymentConfig.Kind == config.KindKubernetesApp {
 		namespace := "default"
