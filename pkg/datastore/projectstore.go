@@ -29,6 +29,7 @@ var projectFactory = func() interface{} {
 
 type ProjectStore interface {
 	AddProject(ctx context.Context, proj *model.Project) error
+	UpdateProject(ctx context.Context, id string, updater func(project *model.Project) error) error
 	GetProject(ctx context.Context, id string) (*model.Project, error)
 	ListProjects(ctx context.Context, opts ListOptions) ([]model.Project, error)
 }
@@ -59,6 +60,18 @@ func (s *projectStore) AddProject(ctx context.Context, proj *model.Project) erro
 		return err
 	}
 	return s.ds.Create(ctx, projectModelKind, proj.Id, proj)
+}
+
+func (s *projectStore) UpdateProject(ctx context.Context, id string, updater func(project *model.Project) error) error {
+	now := s.nowFunc().Unix()
+	return s.ds.Update(ctx, projectModelKind, id, projectFactory, func(e interface{}) error {
+		p := e.(*model.Project)
+		if err := updater(p); err != nil {
+			return err
+		}
+		p.UpdatedAt = now
+		return p.Validate()
+	})
 }
 
 func (s *projectStore) GetProject(ctx context.Context, id string) (*model.Project, error) {

@@ -741,7 +741,11 @@ func (a *WebAPI) GetApplicationLiveState(ctx context.Context, req *webservice.Ge
 
 // GetProject gets the specified porject without sensitive data.
 func (a *WebAPI) GetProject(ctx context.Context, req *webservice.GetProjectRequest) (*webservice.GetProjectResponse, error) {
-	project, err := a.getProject(ctx, req.ProjectId)
+	claims, err := rpcauth.ExtractClaims(ctx)
+	if err != nil {
+		return nil, err
+	}
+	project, err := a.getProject(ctx, claims.Role.ProjectId)
 	if err != nil {
 		return nil, err
 	}
@@ -766,13 +770,32 @@ func (a *WebAPI) getProject(ctx context.Context, projectID string) (*model.Proje
 	return project, nil
 }
 
+// UpdateProjectStaticAdmin updates the static admin user settings.
+func (a *WebAPI) UpdateProjectStaticAdmin(ctx context.Context, req *webservice.UpdateProjectStaticAdminRequest) (*webservice.UpdateProjectStaticAdminResponse, error) {
+	return nil, status.Error(codes.Unimplemented, "")
+}
+
+// EnableStaticAdmin enables static admin login.
+func (a *WebAPI) EnableStaticAdmin(ctx context.Context, req *webservice.EnableStaticAdminRequest) (*webservice.EnableStaticAdminResponse, error) {
+	return nil, status.Error(codes.Unimplemented, "")
+}
+
+// DisableStaticAdmin disables static admin login.
+func (a *WebAPI) DisableStaticAdmin(ctx context.Context, req *webservice.DisableStaticAdminRequest) (*webservice.DisableStaticAdminResponse, error) {
+	return nil, status.Error(codes.Unimplemented, "")
+}
+
+// UpdateProjectSingleSignOn updates the sso settings.
+func (a *WebAPI) UpdateProjectSingleSignOn(ctx context.Context, req *webservice.UpdateProjectSingleSignOnRequest) (*webservice.UpdateProjectSingleSignOnResponse, error) {
+	return nil, status.Error(codes.Unimplemented, "")
+}
+
 // GetMe gets information about the current user.
 func (a *WebAPI) GetMe(ctx context.Context, req *webservice.GetMeRequest) (*webservice.GetMeResponse, error) {
 	claims, err := rpcauth.ExtractClaims(ctx)
 	if err != nil {
 		return nil, err
 	}
-
 	return &webservice.GetMeResponse{
 		Subject:     claims.Subject,
 		AvatarUrl:   claims.AvatarURL,

@@ -66,6 +66,10 @@ service WebService {
 
     // Account
     rpc GetProject(GetProjectRequest) returns (GetProjectResponse) {}
+    rpc UpdateProjectStaticAdmin(UpdateProjectStaticAdminRequest) returns (UpdateProjectStaticAdminResponse) {}
+    rpc EnableStaticAdmin(EnableStaticAdminRequest) returns (EnableStaticAdminResponse) {}
+    rpc DisableStaticAdmin(DisableStaticAdminRequest) returns (DisableStaticAdminResponse) {}
+    rpc UpdateProjectSingleSignOn(UpdateProjectSingleSignOnRequest) returns (UpdateProjectSingleSignOnResponse) {}
     rpc GetMe(GetMeRequest) returns (GetMeResponse) {}
 
     // Command
@@ -271,11 +275,37 @@ message GetApplicationLiveStateResponse {
 }
 
 message GetProjectRequest {
-    string project_id = 1 [(validate.rules).string.min_len = 1];
 }
 
 message GetProjectResponse {
     model.Project project = 1;
+}
+
+message UpdateProjectStaticAdminRequest {
+    string username = 1 [(validate.rules).string.min_len = 1];
+    string password = 2 [(validate.rules).string.min_len = 1];
+}
+
+message UpdateProjectStaticAdminResponse {
+}
+
+message UpdateProjectSingleSignOnRequest {
+    model.ProjectSingleSignOn sso = 1 [(validate.rules).message.required = true];
+}
+
+message EnableStaticAdminRequest {
+}
+
+message EnableStaticAdminResponse {
+}
+
+message DisableStaticAdminRequest {
+}
+
+message DisableStaticAdminResponse {
+}
+
+message UpdateProjectSingleSignOnResponse {
 }
 
 message GetMeRequest {

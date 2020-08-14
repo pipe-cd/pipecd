@@ -775,6 +775,22 @@ func (a *FakeWebAPI) GetProject(ctx context.Context, req *webservice.GetProjectR
 	return nil, status.Error(codes.Unimplemented, "")
 }
 
+func (a *FakeWebAPI) UpdateProjectStaticAdmin(ctx context.Context, req *webservice.UpdateProjectStaticAdminRequest) (*webservice.UpdateProjectStaticAdminResponse, error) {
+	return nil, status.Error(codes.Unimplemented, "")
+}
+
+func (a *FakeWebAPI) EnableStaticAdmin(ctx context.Context, req *webservice.EnableStaticAdminRequest) (*webservice.EnableStaticAdminResponse, error) {
+	return nil, status.Error(codes.Unimplemented, "")
+}
+
+func (a *FakeWebAPI) DisableStaticAdmin(ctx context.Context, req *webservice.DisableStaticAdminRequest) (*webservice.DisableStaticAdminResponse, error) {
+	return nil, status.Error(codes.Unimplemented, "")
+}
+
+func (a *FakeWebAPI) UpdateProjectSingleSignOn(ctx context.Context, req *webservice.UpdateProjectSingleSignOnRequest) (*webservice.UpdateProjectSingleSignOnResponse, error) {
+	return nil, status.Error(codes.Unimplemented, "")
+}
+
 func (a *FakeWebAPI) GetMe(ctx context.Context, req *webservice.GetMeRequest) (*webservice.GetMeResponse, error) {
 	return nil, status.Error(codes.Unimplemented, "")
 }
