@@ -201,10 +201,10 @@ export const ApplicationDetail: FC<Props> = memo(function ApplicationDetail({
           <LabeledText label="Cloud Provider" value={`${app.cloudProvider}`} />
 
           <LabeledText
-            label="Git Path"
+            label="Configuration Directory"
             value={
               <Link href={app.gitPath.url} target="_blank" rel="noreferrer">
-                {`${app.gitPath.repo !== undefined ? app.gitPath.repo.id : ""}`}
+                {app.gitPath.path}
                 <OpenInNewIcon className={classes.linkIcon} />
               </Link>
             }
