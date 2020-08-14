@@ -60,6 +60,9 @@ type templateArgs struct {
 		Name string
 		Env  string
 	}
+	K8s struct {
+		Namespace string
+	}
 	// User-defined custom args.
 	Args map[string]string
 }
@@ -315,10 +318,15 @@ func (e *Executor) render(templateCfg config.AnalysisTemplateSpec, customArgs ma
 		App: struct {
 			Name string
 			Env  string
-		}{
-			Name: e.Application.Name,
-			// TODO: Populate Environment.
-		},
+			// TODO: Populate Env
+		}{Name: e.Application.Name, Env: ""},
+	}
+	if e.DeploymentConfig.Kind == config.KindKubernetesApp {
+		namespace := "default"
+		if n := e.DeploymentConfig.KubernetesDeploymentSpec.Input.Namespace; n != "" {
+			namespace = n
+		}
+		args.K8s = struct{ Namespace string }{Namespace: namespace}
 	}
 
 	cfg, err := json.Marshal(templateCfg)
