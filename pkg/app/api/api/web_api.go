@@ -767,8 +767,18 @@ func (a *WebAPI) getProject(ctx context.Context, projectID string) (*model.Proje
 	return project, nil
 }
 
-// UpdateProjectStaticUser updates the static user settings.
-func (a *WebAPI) UpdateProjectStaticUser(ctx context.Context, req *webservice.UpdateProjectStaticUserRequest) (*webservice.UpdateProjectStaticUserResponse, error) {
+// UpdateProjectStaticAdmin updates the static admin user settings.
+func (a *WebAPI) UpdateProjectStaticAdmin(ctx context.Context, req *webservice.UpdateProjectStaticAdminRequest) (*webservice.UpdateProjectStaticAdminResponse, error) {
+	return nil, status.Error(codes.Unimplemented, "")
+}
+
+// EnableStaticAdmin enables static admin login.
+func (a *WebAPI) EnableStaticAdmin(ctx context.Context, req *webservice.EnableStaticAdminRequest) (*webservice.EnableStaticAdminResponse, error) {
+	return nil, status.Error(codes.Unimplemented, "")
+}
+
+// DisableStaticAdmin disables static admin login.
+func (a *WebAPI) DisableStaticAdmin(ctx context.Context, req *webservice.DisableStaticAdminRequest) (*webservice.DisableStaticAdminResponse, error) {
 	return nil, status.Error(codes.Unimplemented, "")
 }
 

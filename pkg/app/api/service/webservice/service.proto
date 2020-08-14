@@ -66,7 +66,9 @@ service WebService {
 
     // Account
     rpc GetProject(GetProjectRequest) returns (GetProjectResponse) {}
-    rpc UpdateProjectStaticUser(UpdateProjectStaticUserRequest) returns (UpdateProjectStaticUserResponse) {}
+    rpc UpdateProjectStaticAdmin(UpdateProjectStaticAdminRequest) returns (UpdateProjectStaticAdminResponse) {}
+    rpc EnableStaticAdmin(EnableStaticAdminRequest) returns (EnableStaticAdminResponse) {}
+    rpc DisableStaticAdmin(DisableStaticAdminRequest) returns (DisableStaticAdminResponse) {}
     rpc UpdateProjectSingleSignOn(UpdateProjectSingleSignOnRequest) returns (UpdateProjectSingleSignOnResponse) {}
     rpc GetMe(GetMeRequest) returns (GetMeResponse) {}
 
@@ -277,16 +279,29 @@ message GetProjectResponse {
     model.Project project = 1;
 }
 
-message UpdateProjectStaticUserRequest {
-    model.ProjectStaticUser static_user = 1;
-    bool static_admin_disabled = 2;
+message UpdateProjectStaticAdminRequest {
+    string username = 1;
+    string password = 2;
+    bool static_admin_disabled = 3;
 }
 
-message UpdateProjectStaticUserResponse {
+message UpdateProjectStaticAdminResponse {
 }
 
 message UpdateProjectSingleSignOnRequest {
     model.ProjectSingleSignOn sso = 1;
+}
+
+message EnableStaticAdminRequest {
+}
+
+message EnableStaticAdminResponse {
+}
+
+message DisableStaticAdminRequest {
+}
+
+message DisableStaticAdminResponse {
 }
 
 message UpdateProjectSingleSignOnResponse {
