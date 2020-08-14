@@ -5,6 +5,7 @@ import { createStore } from "../../.storybook/redux-decorator";
 import { dummyApplication } from "../__fixtures__/dummy-application";
 import { dummyApplicationLiveState } from "../__fixtures__/dummy-application-live-state";
 import { dummyEnv } from "../__fixtures__/dummy-environment";
+import { dummyPiped } from "../__fixtures__/dummy-piped";
 import { ApplicationDetail } from "./application-detail";
 import { AppState } from "../modules";
 
@@ -30,6 +31,13 @@ const dummyStore: Partial<AppState> = {
       [dummyApplicationLiveState.applicationId]: dummyApplicationLiveState,
     },
     ids: [dummyApplicationLiveState.applicationId],
+  },
+  pipeds: {
+    entities: {
+      [dummyPiped.id]: dummyPiped,
+    },
+    ids: [dummyPiped.id],
+    registeredPiped: null,
   },
 };
 
