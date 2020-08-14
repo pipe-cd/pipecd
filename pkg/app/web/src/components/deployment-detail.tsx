@@ -13,6 +13,7 @@ import { Link as RouterLink } from "react-router-dom";
 import { PAGE_PATH_APPLICATIONS } from "../constants";
 import { DEPLOYMENT_STATE_TEXT } from "../constants/deployment-status-text";
 import { AppState } from "../modules";
+import { ActiveStage } from "../modules/active-stage";
 import {
   cancelDeployment,
   Deployment,
@@ -24,12 +25,12 @@ import {
   selectById as selectEnvById,
 } from "../modules/environments";
 import { Piped, selectById } from "../modules/pipeds";
+import { fetchStageLog } from "../modules/stage-logs";
+import { useInterval } from "../utils/use-interval";
 import { StatusIcon } from "./deployment-status-icon";
+import OpenInNewIcon from "@material-ui/icons/OpenInNew";
 import { LabeledText } from "./labeled-text";
 import { SplitButton } from "./split-button";
-import { ActiveStage } from "../modules/active-stage";
-import { useInterval } from "../utils/use-interval";
-import { fetchStageLog } from "../modules/stage-logs";
 
 const useStyles = makeStyles((theme) => ({
   root: {
@@ -87,6 +88,11 @@ const useStyles = makeStyles((theme) => ({
   statusReason: {
     paddingTop: theme.spacing(1),
     paddingBottom: theme.spacing(1),
+  },
+  linkIcon: {
+    fontSize: 16,
+    verticalAlign: "text-bottom",
+    marginLeft: theme.spacing(0.5),
   },
 }));
 
@@ -209,7 +215,15 @@ export const DeploymentDetail: FC<Props> = memo(function DeploymentDetail({
                 </Typography>
                 <span className={classes.textMargin}>
                   (
-                  <Link variant="body2">{`${deployment.trigger.commit.hash}`}</Link>
+                  <Link
+                    variant="body2"
+                    href={deployment.trigger.commit.url}
+                    target="_blank"
+                    rel="noreferrer"
+                  >
+                    {`${deployment.trigger.commit.hash}`}
+                    <OpenInNewIcon className={classes.linkIcon} />
+                  </Link>
                   )
                 </span>
               </div>

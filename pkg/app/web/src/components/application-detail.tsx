@@ -7,6 +7,7 @@ import {
   Typography,
 } from "@material-ui/core";
 import SyncIcon from "@material-ui/icons/Cached";
+import OpenInNewIcon from "@material-ui/icons/OpenInNew";
 import dayjs from "dayjs";
 import React, { FC, memo } from "react";
 import { useDispatch, useSelector } from "react-redux";
@@ -24,11 +25,11 @@ import {
   ApplicationLiveState,
   selectById as selectLiveStateById,
 } from "../modules/applications-live-state";
-import { selectById as selectPipeById, Piped } from "../modules/pipeds";
 import {
   Environment,
   selectById as selectEnvById,
 } from "../modules/environments";
+import { Piped, selectById as selectPipeById } from "../modules/pipeds";
 import { ApplicationHealthStatusIcon } from "./health-status-icon";
 import { LabeledText } from "./labeled-text";
 import { SyncStateReason } from "./sync-state-reason";
@@ -92,6 +93,11 @@ const useStyles = makeStyles((theme) => ({
   age: {
     color: theme.palette.text.secondary,
     marginLeft: theme.spacing(1),
+  },
+  linkIcon: {
+    fontSize: 16,
+    verticalAlign: "text-bottom",
+    marginLeft: theme.spacing(0.5),
   },
 }));
 
@@ -196,9 +202,12 @@ export const ApplicationDetail: FC<Props> = memo(function ApplicationDetail({
 
           <LabeledText
             label="Git Path"
-            value={`${
-              app.gitPath.repo !== undefined ? app.gitPath.repo.id : ""
-            } - ${app.gitPath.path}${app.gitPath.configFilename}`}
+            value={
+              <Link href={app.gitPath.url} target="_blank" rel="noreferrer">
+                {`${app.gitPath.repo !== undefined ? app.gitPath.repo.id : ""}`}
+                <OpenInNewIcon className={classes.linkIcon} />
+              </Link>
+            }
           />
         </div>
 
@@ -218,10 +227,6 @@ export const ApplicationDetail: FC<Props> = memo(function ApplicationDetail({
             <LabeledText
               label="Version"
               value={app.mostRecentlySuccessfulDeployment.version}
-            />
-            <LabeledText
-              label="Description"
-              value={app.mostRecentlySuccessfulDeployment.summary}
             />
           </div>
         )}
