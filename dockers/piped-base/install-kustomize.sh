@@ -19,17 +19,10 @@ set -o nounset
 set -o pipefail
 
 BASE_URL="https://github.com/kubernetes-sigs/kustomize/releases/download/kustomize"
+VERSION="3.8.1"
 
-echo "Installing various versions of kustomize..."
-
-for version in "3.4.0" "3.5.4" "3.5.5"
-do
-  echo "Installing kustomize-${version} into ${PIPED_BIN_DIR}/kustomize-${version}..."
-  curl -L ${BASE_URL}/v${version}/kustomize_v${version}_linux_amd64.tar.gz | tar xvz
-  mv kustomize ${PIPED_BIN_DIR}/kustomize-${version}
-  chmod +x ${PIPED_BIN_DIR}/kustomize-${version}
-  echo "Successfully installed kustomize-${version} into ${PIPED_BIN_DIR}/kustomize-${version}..."
-done
-
-cp ${PIPED_BIN_DIR}/kustomize-3.5.5 ${PIPED_BIN_DIR}/kustomize
-echo "Successfully linked kustomize to kustomize-3.5.5"
+echo "Installing kustomize-${VERSION} into ${PIPED_BIN_DIR}/kustomize..."
+curl -L ${BASE_URL}/v${VERSION}/kustomize_v${VERSION}_linux_amd64.tar.gz | tar xvz
+mv kustomize ${PIPED_BIN_DIR}/kustomize
+chmod +x ${PIPED_BIN_DIR}/kustomize
+echo "Successfully installed kustomize-${VERSION} into ${PIPED_BIN_DIR}/kustomize..."

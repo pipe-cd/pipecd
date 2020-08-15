@@ -15,8 +15,7 @@
 # limitations under the License.
 
 declare -A pathcases
-pathcases["helm-2.16.7"]="/usr/local/piped/helm-2.16.7"
-pathcases["helm-3.1.3"]="/usr/local/piped/helm-3.1.3"
+#pathcases["helm-2.16.7"]="/usr/local/piped/helm-2.16.7"
 pathcases["helm-3.2.1"]="/usr/local/piped/helm-3.2.1"
 
 for h in "${!pathcases[@]}"
@@ -36,8 +35,7 @@ do
 done
 
 declare -A versioncases
-versioncases["helm-2.16.7"]="Client: \&version.Version{SemVer:\"v2.16.7\", GitCommit:\"5f2584fd3d35552c4af26036f0c464191287986b\", GitTreeState:\"clean\"}"
-versioncases["helm-3.1.3"]="version.BuildInfo{Version:\"v3.1.3\", GitCommit:\"0a9a9a88e8afd6e77337a3e2ad744756e191429a\", GitTreeState:\"clean\", GoVersion:\"go1.13.10\"}"
+#versioncases["helm-2.16.7"]="Client: \&version.Version{SemVer:\"v2.16.7\", GitCommit:\"5f2584fd3d35552c4af26036f0c464191287986b\", GitTreeState:\"clean\"}"
 versioncases["helm-3.2.1"]="version.BuildInfo{Version:\"v3.2.1\", GitCommit:\"fe51cd1e31e6a202cba7dead9552a6d418ded79a\", GitTreeState:\"clean\", GoVersion:\"go1.13.10\"}"
 
 for h in "${!versioncases[@]}"
