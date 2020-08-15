@@ -19,17 +19,10 @@ set -o nounset
 set -o pipefail
 
 BASE_URL="https://storage.googleapis.com/kubernetes-release/release"
+VERSION="1.8.2"
 
-echo "Installing various versions of kubectl..."
-
-for version in "1.16.9" "1.17.8" "1.18.2"
-do
-  echo "Installing kubectl-${version} into ${PIPED_BIN_DIR}/kubectl-${version}..."
-  curl -LO ${BASE_URL}/v${version}/bin/linux/amd64/kubectl
-  mv kubectl ${PIPED_BIN_DIR}/kubectl-${version}
-  chmod +x ${PIPED_BIN_DIR}/kubectl-${version}
-  echo "Successfully installed kubectl-${version} into ${PIPED_BIN_DIR}/kubectl-${version}..."
-done
-
-cp ${PIPED_BIN_DIR}/kubectl-1.18.2 ${PIPED_BIN_DIR}/kubectl
-echo "Successfully linked kubectl to kubectl-1.18.2"
+echo "Installing kubectl-${VERSION} into ${PIPED_BIN_DIR}/kubectl..."
+curl -LO ${BASE_URL}/v${VERSION}/bin/linux/amd64/kubectl
+mv kubectl ${PIPED_BIN_DIR}/kubectl
+chmod +x ${PIPED_BIN_DIR}/kubectl
+echo "Successfully installed kubectl-${VERSION} into ${PIPED_BIN_DIR}/kubectl..."
