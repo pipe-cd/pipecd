@@ -18,4 +18,10 @@ set -o errexit
 set -o nounset
 set -o pipefail
 
-echo "Installing various versions of gcloud..."
+BASE_URL="https://dl.google.com/dl/cloudsdk/channels/rapid/downloads"
+VERSION="305.0.0"
+
+echo "Installing gcloud-${VERSION}..."
+curl -L ${BASE_URL}/google-cloud-sdk-${VERSION}-linux-x86_64.tar.gz | tar xvz
+gcloud components install beta
+echo "Successfully installed gcloud-${VERSION}..."
