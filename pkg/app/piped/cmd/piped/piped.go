@@ -35,6 +35,7 @@ import (
 	"github.com/pipe-cd/pipe/pkg/app/piped/apistore/deploymentstore"
 	"github.com/pipe-cd/pipe/pkg/app/piped/apistore/environmentstore"
 	"github.com/pipe-cd/pipe/pkg/app/piped/chartrepo"
+	cloudrunprovider "github.com/pipe-cd/pipe/pkg/app/piped/cloudprovider/cloudrun"
 	"github.com/pipe-cd/pipe/pkg/app/piped/controller"
 	"github.com/pipe-cd/pipe/pkg/app/piped/driftdetector"
 	"github.com/pipe-cd/pipe/pkg/app/piped/livestatereporter"
@@ -148,6 +149,12 @@ func (p *piped) run(ctx context.Context, t cli.Telemetry) (runErr error) {
 				return err
 			}
 		}
+	}
+
+	// Active GCloud service account.
+	if err := activeGCloudServiceAccount(ctx, cfg, t.Logger); err != nil {
+		t.Logger.Error("failed to active gcloud service account", zap.Error(err))
+		return err
 	}
 
 	// Make gRPC client and connect to the API.
@@ -415,4 +422,24 @@ func (p *piped) sendPipedMeta(ctx context.Context, client pipedservice.Client, c
 	}
 
 	return err
+}
+
+func activeGCloudServiceAccount(ctx context.Context, cfg *config.PipedSpec, logger *zap.Logger) error {
+	var activated bool
+	for _, cp := range cfg.CloudProviders {
+		if cp.Type != model.CloudProviderCloudRun {
+			continue
+		}
+		if cp.CloudRunConfig.CredentialsFile == "" {
+			continue
+		}
+		if activated {
+			return fmt.Errorf("this piped version allows specifying just only one CloudRun provider")
+		}
+		cmd := cloudrunprovider.NewGCloud("")
+		if err := cmd.ActiveServiceAccount(ctx, cp.CloudRunConfig.CredentialsFile); err != nil {
+			return err
+		}
+	}
+	return nil
 }

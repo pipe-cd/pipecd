@@ -57,9 +57,6 @@ spec:
     - name: cloudrun
       type: CLOUDRUN
       config:
-        project: gcp-project
-        region: us-east-1
-        platform: managed
         credentialsFile: /etc/piped-secret/gcp-service-account.json
 
     - name: lambda

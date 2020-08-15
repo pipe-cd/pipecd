@@ -40,7 +40,13 @@ func (s *CloudRunDeploymentSpec) Validate() error {
 }
 
 type CloudRunDeploymentInput struct {
-	Image string `json:"image"`
+	// The name of service manifest file placing in application configuration directory.
+	// Default is service.yaml
+	ServiceManifestFile string `json:"serviceManifestFile"`
+	// The target platform for deploying service. This must be one of: "managed", "gke", "kubernetes".
+	Platform string `json:"platform"`
+	// The region in which the service will be deployed.
+	Region string `json:"region"`
 	// Automatically reverts all changes from all stages when one of them failed.
 	// Default is true.
 	AutoRollback bool `json:"autoRollback"`

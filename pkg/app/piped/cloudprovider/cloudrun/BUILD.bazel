@@ -2,7 +2,20 @@ load("@io_bazel_rules_go//go:def.bzl", "go_library")
 
 go_library(
     name = "go_default_library",
-    srcs = ["cloudrun.go"],
+    srcs = [
+        "cache.go",
+        "cloudrun.go",
+        "gcloud.go",
+        "servicemanifest.go",
+    ],
     importpath = "github.com/pipe-cd/pipe/pkg/app/piped/cloudprovider/cloudrun",
     visibility = ["//visibility:public"],
+    deps = [
+        "//pkg/cache:go_default_library",
+        "//pkg/config:go_default_library",
+        "@io_k8s_apimachinery//pkg/apis/meta/v1/unstructured:go_default_library",
+        "@io_k8s_apimachinery//pkg/runtime:go_default_library",
+        "@io_k8s_sigs_yaml//:go_default_library",
+        "@org_uber_go_zap//:go_default_library",
+    ],
 )

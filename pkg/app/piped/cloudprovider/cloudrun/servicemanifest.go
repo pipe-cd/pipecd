@@ -1,0 +1,126 @@
+// Copyright 2020 The PipeCD Authors.
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//     http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+package cloudrun
+
+import (
+	"fmt"
+	"io/ioutil"
+	"strings"
+
+	"k8s.io/apimachinery/pkg/apis/meta/v1/unstructured"
+	"k8s.io/apimachinery/pkg/runtime"
+	"sigs.k8s.io/yaml"
+)
+
+type ServiceManifest struct {
+	Name string
+	u    *unstructured.Unstructured
+}
+
+func (m ServiceManifest) SetRevision(name string) error {
+	return unstructured.SetNestedField(m.u.Object, name, "spec", "template", "metadata", "name")
+}
+
+type RevisionTraffic struct {
+	RevisionName string `json:"revisionName"`
+	Percent      int    `json:"percent"`
+}
+
+func (m ServiceManifest) UpdateTraffic(revisions []RevisionTraffic) error {
+	items := []interface{}{}
+	for _, r := range revisions {
+		out, err := runtime.DefaultUnstructuredConverter.ToUnstructured(&r)
+		if err != nil {
+			return fmt.Errorf("unable to set traffic for object: %v", err)
+		}
+		items = append(items, out)
+	}
+
+	return unstructured.SetNestedSlice(m.u.Object, items, "spec", "traffic")
+}
+
+func (m ServiceManifest) UpdateAllTraffic(revision string) error {
+	return m.UpdateTraffic([]RevisionTraffic{
+		RevisionTraffic{
+			RevisionName: revision,
+			Percent:      100,
+		},
+	})
+}
+
+func (m ServiceManifest) YamlBytes() ([]byte, error) {
+	return yaml.Marshal(m.u)
+}
+
+func LoadServiceManifest(path string) (ServiceManifest, error) {
+	data, err := ioutil.ReadFile(path)
+	if err != nil {
+		return ServiceManifest{}, err
+	}
+	return ParseServiceManifest(data)
+}
+
+func ParseServiceManifest(data []byte) (ServiceManifest, error) {
+	var obj unstructured.Unstructured
+	if err := yaml.Unmarshal(data, &obj); err != nil {
+		return ServiceManifest{}, err
+	}
+
+	return ServiceManifest{
+		Name: obj.GetName(),
+		u:    &obj,
+	}, nil
+}
+
+func DecideRevisionName(m ServiceManifest, commit string) (string, error) {
+	containers, ok, err := unstructured.NestedSlice(m.u.Object, "spec", "template", "spec", "containers")
+	if err != nil {
+		return "", err
+	}
+	if !ok || len(containers) == 0 {
+		return "", fmt.Errorf("spec.template.spec.containers was missing")
+	}
+
+	container, err := runtime.DefaultUnstructuredConverter.ToUnstructured(&containers[0])
+	if err != nil {
+		return "", fmt.Errorf("invalid container format")
+	}
+
+	image, ok, err := unstructured.NestedString(container, "image")
+	if err != nil {
+		return "", err
+	}
+	if !ok || image == "" {
+		return "", fmt.Errorf("image was missing")
+	}
+	_, tag := parseContainerImage(image)
+	tag = strings.ReplaceAll(tag, ".", "")
+
+	if len(commit) > 7 {
+		commit = commit[:7]
+	}
+
+	return fmt.Sprintf("%s-%s-%s", m.Name, tag, commit), nil
+}
+
+func parseContainerImage(image string) (name, tag string) {
+	parts := strings.Split(image, ":")
+	if len(parts) == 2 {
+		tag = parts[1]
+	}
+	paths := strings.Split(parts[0], "/")
+	name = paths[len(paths)-1]
+	return
+}

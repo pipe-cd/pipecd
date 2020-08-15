@@ -13,3 +13,52 @@
 // limitations under the License.
 
 package cloudrun
+
+import (
+	"context"
+	"path/filepath"
+
+	"go.uber.org/zap"
+
+	"github.com/pipe-cd/pipe/pkg/config"
+)
+
+const (
+	DefaultServiceManifestFilename = "service.yaml"
+)
+
+type Provider interface {
+	// LoadServiceManifest loads the service manifest
+	// placing at the application configuration directory.
+	LoadServiceManifest() (ServiceManifest, error)
+	// Apply applies the service to the state specified in the give manifest.
+	Apply(ctx context.Context, m ServiceManifest) error
+}
+
+type provider struct {
+	appDir string
+	input  config.CloudRunDeploymentInput
+	logger *zap.Logger
+}
+
+func NewProvider(appDir string, input config.CloudRunDeploymentInput, logger *zap.Logger) *provider {
+	return &provider{
+		appDir: appDir,
+		input:  input,
+		logger: logger.Named("cloudrun-provider"),
+	}
+}
+
+func (p *provider) LoadServiceManifest() (ServiceManifest, error) {
+	filename := DefaultServiceManifestFilename
+	if p.input.ServiceManifestFile != "" {
+		filename = p.input.ServiceManifestFile
+	}
+	path := filepath.Join(p.appDir, filename)
+	return LoadServiceManifest(path)
+}
+
+func (p *provider) Apply(ctx context.Context, sm ServiceManifest) error {
+	cmd := NewGCloud("")
+	return cmd.Apply(ctx, p.input.Platform, p.input.Region, sm)
+}
