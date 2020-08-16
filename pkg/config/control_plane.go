@@ -137,6 +137,10 @@ type DataStoreDynamoDBConfig struct {
 }
 
 type DataStoreMongoDBConfig struct {
+	// The url of MongoDB.
+	URL string `json:"url"`
+	// The identifier that logically separates the root path of the datastore.
+	Namespace string `json:"namespace"`
 }
 
 type ControlPlaneFileStore struct {
