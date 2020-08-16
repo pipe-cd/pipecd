@@ -39,6 +39,7 @@ import (
 	"github.com/pipe-cd/pipe/pkg/config"
 	"github.com/pipe-cd/pipe/pkg/datastore"
 	"github.com/pipe-cd/pipe/pkg/datastore/firestore"
+	"github.com/pipe-cd/pipe/pkg/datastore/mongodb"
 	"github.com/pipe-cd/pipe/pkg/filestore"
 	"github.com/pipe-cd/pipe/pkg/filestore/gcs"
 	"github.com/pipe-cd/pipe/pkg/jwt"
@@ -326,11 +327,14 @@ func (s *server) createDatastore(ctx context.Context, cfg *config.ControlPlaneSp
 	}
 
 	if cfg.Datastore.MongoDBConfig != nil {
-		return nil, errors.New("mongodb is unimplemented now")
+		mdConfig := cfg.Datastore.MongoDBConfig
+		options := []mongodb.Option{
+			mongodb.WithLogger(logger),
+		}
+		return mongodb.NewMongoDB(ctx, mdConfig.URL, mdConfig.Namespace, options...)
 	}
 
-	//return nil, errors.New("datastore configuration is invalid")
-	return nil, nil
+	return nil, errors.New("datastore configuration is invalid")
 }
 
 func (s *server) createFilestore(ctx context.Context, cfg *config.ControlPlaneSpec, logger *zap.Logger) (filestore.Store, error) {
