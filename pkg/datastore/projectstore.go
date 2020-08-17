@@ -104,7 +104,7 @@ func (s *projectStore) DisableStaticAdmin(ctx context.Context, id string) error 
 	})
 }
 
-// UpdateProjectSingleSignOn disables static admin login.
+// UpdateProjectSingleSignOn updates project single sign on settings.
 func (s *projectStore) UpdateProjectSingleSignOn(ctx context.Context, id string, sso *model.ProjectSingleSignOn) error {
 	return s.UpdateProject(ctx, id, func(p *model.Project) error {
 		if p.Sso != nil {
