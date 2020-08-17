@@ -15,10 +15,10 @@ load(
 ### Rules_go and gazelle
 http_archive(
     name = "io_bazel_rules_go",
-    sha256 = "e5de048e72612598c45f564202f6a3c74616be4ffd2dbd6f7bc75045f8ecbdce",
+    sha256 = "2697f6bc7c529ee5e6a2d9799870b9ec9eaeb3ee7d70ed50b87a2c2c97e13d9e",
     urls = [
-        "https://mirror.bazel.build/github.com/bazelbuild/rules_go/releases/download/v0.23.4/rules_go-v0.23.4.tar.gz",
-        "https://github.com/bazelbuild/rules_go/releases/download/v0.23.4/rules_go-v0.23.4.tar.gz",
+        "https://mirror.bazel.build/github.com/bazelbuild/rules_go/releases/download/v0.23.8/rules_go-v0.23.8.tar.gz",
+        "https://github.com/bazelbuild/rules_go/releases/download/v0.23.8/rules_go-v0.23.8.tar.gz",
     ],
 )
 
@@ -90,9 +90,9 @@ buildifier_dependencies()
 ### Docker
 http_archive(
     name = "io_bazel_rules_docker",
-    sha256 = "14ac30773fdb393ddec90e158c9ec7ebb3f8a4fd533ec2abbfd8789ad81a284b",
-    strip_prefix = "rules_docker-0.12.1",
-    urls = ["https://github.com/bazelbuild/rules_docker/releases/download/v0.12.1/rules_docker-v0.12.1.tar.gz"],
+    sha256 = "4521794f0fba2e20f3bf15846ab5e01d5332e587e9ce81629c7f96c793bb7036",
+    strip_prefix = "rules_docker-0.14.4",
+    urls = ["https://github.com/bazelbuild/rules_docker/releases/download/v0.14.4/rules_docker-v0.14.4.tar.gz"],
 )
 
 load(
@@ -108,6 +108,20 @@ load(
 )
 
 _go_image_repos()
+
+load(
+    "@io_bazel_rules_docker//repositories:deps.bzl",
+    container_deps = "deps",
+)
+
+container_deps()
+
+load(
+    "@io_bazel_rules_docker//repositories:pip_repositories.bzl",
+    "pip_deps",
+)
+
+pip_deps()
 
 load(
     "@io_bazel_rules_docker//container:container.bzl",
