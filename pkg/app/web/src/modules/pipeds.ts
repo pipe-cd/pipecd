@@ -2,6 +2,7 @@ import {
   createSlice,
   createAsyncThunk,
   createEntityAdapter,
+  EntityState,
 } from "@reduxjs/toolkit";
 import { Piped as PipedModel } from "pipe/pkg/app/web/model/piped_pb";
 import * as pipedsApi from "../api/piped";
@@ -93,6 +94,13 @@ export const pipedsSlice = createSlice({
       });
   },
 });
+
+export const selectPipedsByEnv = (
+  state: EntityState<Piped>,
+  envId: string
+): Piped[] => {
+  return selectAll(state).filter((piped) => piped.envIdsList.includes(envId));
+};
 
 export const { clearRegisteredPipedInfo } = pipedsSlice.actions;
 export { Piped as PipedModel } from "pipe/pkg/app/web/model/piped_pb";

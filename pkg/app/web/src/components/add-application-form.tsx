@@ -19,7 +19,7 @@ import {
 import {
   Piped,
   selectById as selectPipedById,
-  selectAll as selectPipeds,
+  selectPipedsByEnv,
 } from "../modules/pipeds";
 
 const useStyles = makeStyles((theme) => ({
@@ -149,8 +149,9 @@ export const AddApplicationForm: FC<Props> = ({
   );
 
   const pipeds = useSelector<AppState, Piped[]>((state) =>
-    selectPipeds(state.pipeds)
+    formState.env ? selectPipedsByEnv(state.pipeds, formState.env) : []
   );
+
   const selectedPiped = useSelector<AppState, Piped | undefined>((state) =>
     selectPipedById(state.pipeds, formState.pipedId)
   );
