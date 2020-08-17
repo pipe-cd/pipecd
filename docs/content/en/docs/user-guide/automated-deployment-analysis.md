@@ -1,12 +1,12 @@
 ---
-title: "Automated Deployment Analysis"
-linkTitle: "Automated Deployment Analysis"
+title: "Automated deployment analysis"
+linkTitle: "Automated deployment analysis"
 weight: 11
 description: >
   This page describes how to configure Automated Deployment Analysis feature.
 ---
 
-Automated Deployment Analysis (ADA) lets you automate the rollbacks by analyzing the metrics and logs.
+Automated Deployment Analysis (ADA) lets you automate the verifying of the deployment process by analyzing the metrics data, log entries as well as HTTP requests to the specified workloads.
 ADA is available as a [Stage](/docs/concepts/#stage) in your Pipeline.
 
 The ADA analyzes the new version by periodically performing queries against the [Analysis Provider](/docs/concepts/#analysis-provider) and evaluating the results.
@@ -53,7 +53,7 @@ spec:
 The full list of configurable `ANALYSIS` stage fields are [here](/docs/user-guide/configuration-reference/#analysisstageoptions).
 
 ### Analysis Template
-With Analysis Template, you can re-use the analysis configuration.
+Analysis Templating is a feature that allows you to define some shared analysis configurations to be used by multiple applications. These templates must be placed at the `.pipe` directory at the root of the Git repository. Any application in that Git repository can use to the defined template by specifying the name of the template in the deployment configuration file.
 
 ```yaml
 apiVersion: pipecd.dev/v1beta1
@@ -87,7 +87,7 @@ spec:
         ) * 100
 ```
 
-Place it under the `.pipe/` directory, as in [the example](https://github.com/pipe-cd/examples/blob/master/.pipe/analysis-template.yaml). The full list of configurable `AnalysisTemplate` fields are [here](/docs/user-guide/configuration-reference/#analysis-template-configuration).
+The full list of configurable `AnalysisTemplate` fields are [here](/docs/user-guide/configuration-reference/#analysis-template-configuration).
 
 An `ANALYSIS` stage can reference a template with `template` field:
 ```yaml

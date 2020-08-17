@@ -68,7 +68,7 @@ spec:
 ### AnalysisProviderPrometheus
 | Field | Type | Description | Required |
 |-|-|-|-|
-| address | string | The Prometheus server address | Yes |
+| address | string | The Prometheus server address. | Yes |
 | usernameFile | string | The path to the username file. | No |
 | passwordFile | string | The path to the password file. | No |
 
