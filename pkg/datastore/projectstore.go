@@ -81,10 +81,10 @@ func (s *projectStore) UpdateProject(ctx context.Context, id string, updater fun
 // UpdateProjectStaticAdmin updates the static admin user settings.
 func (s *projectStore) UpdateProjectStaticAdmin(ctx context.Context, id, username, password string) error {
 	return s.UpdateProject(ctx, id, func(p *model.Project) error {
-		if p.StaticAdmin != nil {
-			return p.StaticAdmin.Update(username, password)
+		if p.StaticAdmin == nil {
+			p.StaticAdmin = &model.ProjectStaticUser{}
 		}
-		return nil
+		return p.StaticAdmin.Update(username, password)
 	})
 }
 
@@ -107,10 +107,10 @@ func (s *projectStore) DisableStaticAdmin(ctx context.Context, id string) error 
 // UpdateProjectSingleSignOn updates project single sign on settings.
 func (s *projectStore) UpdateProjectSingleSignOn(ctx context.Context, id string, sso *model.ProjectSingleSignOn) error {
 	return s.UpdateProject(ctx, id, func(p *model.Project) error {
-		if p.Sso != nil {
-			p.Sso.Update(sso)
-			return nil
+		if p.Sso == nil {
+			p.Sso = &model.ProjectSingleSignOn{}
 		}
+		p.Sso.Update(sso)
 		return nil
 	})
 }
