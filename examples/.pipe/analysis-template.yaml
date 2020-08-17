@@ -2,32 +2,6 @@ apiVersion: pipecd.dev/v1beta1
 kind: AnalysisTemplate
 spec:
   metrics:
-    app_http_error_percentage:
-      query: http_error_percentage{env={{ .App.Env }}, app={{ .App.Name }}}
-      expected:
-        max: 0.1
-      interval: 1m
-      provider: datadog-dev
-
-    container_cpu_usage_seconds_total:
-      interval: 10s
-      provider: prometheus-dev
-      failureLimit: 2
-      expected:
-        max: 0.0001
-      query: |
-        sum(
-          max(kube_pod_labels{label_app=~"{{ .App.Name }}", label_pipecd_dev_variant=~"canary"}) by (label_app, label_pipecd_dev_variant, pod)
-          *
-          on(pod)
-          group_right(label_app, label_pipecd_dev_variant)
-          label_replace(
-            sum by(pod_name) (
-              rate(container_cpu_usage_seconds_total{namespace="default"}[5m])
-            ), "pod", "$1", "pod_name", "(.+)"
-          )
-        ) by (label_app, label_pipecd_dev_variant)
-
     grpc_error_rate_percentage:
       interval: 1m
       provider: prometheus-dev
@@ -39,7 +13,7 @@ spec:
             rate(
                 grpc_server_handled_total{
                   grpc_code!="OK",
-                  kubernetes_namespace="{{ .Args.namespace }}",
+                  kubernetes_namespace="{{ .K8s.Namespace }}",
                   kubernetes_pod_name=~"{{ .App.Name }}-[0-9a-zA-Z]+(-[0-9a-zA-Z]+)"
                 }[{{ .Args.interval }}]
             )
@@ -48,17 +22,23 @@ spec:
         sum(
             rate(
                 grpc_server_started_total{
-                  kubernetes_namespace="{{ .Args.namespace }}",
+                  kubernetes_namespace="{{ .K8s.Namespace }}",
                   kubernetes_pod_name=~"{{ .App.Name }}-[0-9a-zA-Z]+(-[0-9a-zA-Z]+)"
                 }[{{ .Args.interval }}]
             )
         ) * 100
 
-
-    http_request_duration_microseconds:
-      interval: 10s
+    container_cpu_usage_seconds_total:
+      interval: 1m
       provider: prometheus-dev
-      failureLimit: 3
+      failureLimit: 2
       expected:
-        max: 527785
-      query: http_request_duration_microseconds{namespace="{{ .Args.namespace }}"}
+        max: 0.2
+      query: |
+        sum(
+          max(kube_pod_labels{label_app=~"{{ .App.Name }}", label_pipecd_dev_variant=~"{{ .Args.variant }}"}) by (label_app, label_pipecd_dev_variant, pod_name)
+          *
+          on(pod_name)
+          group_right(label_app, label_pipecd_dev_variant)
+          rate(container_cpu_usage_seconds_total{namespace="{{ .K8s.Namespace }}"}[1m])
+        ) by (label_app, label_pipecd_dev_variant)
