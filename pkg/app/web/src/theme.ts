@@ -36,7 +36,17 @@ export const theme = createMuiTheme({
     },
   },
   palette: {
-    primary: { main: "#1a73e8" },
+    primary: { main: "#2C387E" },
+    success: {
+      main: "#539d56",
+      light: "#83cf84",
+      dark: "#216e2b",
+    },
+    error: {
+      main: "#d6442c",
+      light: "#ff7657",
+      dark: "#9d0001",
+    },
     secondary: cyan,
   },
   typography: {
