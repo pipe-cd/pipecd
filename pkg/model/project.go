@@ -85,7 +85,7 @@ func (p *ProjectSingleSignOn) RedactSensitiveData() {
 }
 
 // Update updates ProjectSingleSignOn with given data.
-func (p *ProjectSingleSignOn) Update(sso *ProjectSingleSignOn) error {
+func (p *ProjectSingleSignOn) Update(sso *ProjectSingleSignOn) {
 	p.Provider = sso.Provider
 	if sso.Github != nil {
 		if p.Github == nil {
@@ -95,7 +95,6 @@ func (p *ProjectSingleSignOn) Update(sso *ProjectSingleSignOn) error {
 	}
 	if sso.Google != nil {
 	}
-	return nil
 }
 
 // GenerateAuthCodeURL generates an auth URL for the specified configuration.

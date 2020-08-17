@@ -108,7 +108,8 @@ func (s *projectStore) DisableStaticAdmin(ctx context.Context, id string) error 
 func (s *projectStore) UpdateProjectSingleSignOn(ctx context.Context, id string, sso *model.ProjectSingleSignOn) error {
 	return s.UpdateProject(ctx, id, func(p *model.Project) error {
 		if p.Sso != nil {
-			return p.Sso.Update(sso)
+			p.Sso.Update(sso)
+			return nil
 		}
 		return nil
 	})
