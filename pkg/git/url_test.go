@@ -181,8 +181,23 @@ func TestMakeFileCreationURL(t *testing.T) {
 			dir:      "path/to",
 			branch:   "abc",
 			filename: "foo.txt",
-			want:     "https://github.com/org/repo/new/abc/path/to?filename=foo.txt",
+			want:     "https://github.com/org/repo/new/abc/path/to/dummy?filename=foo.txt",
 			wantErr:  false,
+		},
+		{
+			name:    "given value",
+			repoURL: "git@github.com:org/repo.git",
+			dir:     "path/to",
+			branch:  "abc",
+			value: `# Comment
+foo:
+  bar:
+    baz:
+      - a
+      - b
+`,
+			want:    "https://github.com/org/repo/new/abc/path/to?value=%23+Comment%0Afoo%3A%0A++bar%3A%0A++++baz%3A%0A++++++-+a%0A++++++-+b%0A",
+			wantErr: false,
 		},
 		{
 			name:     "given filename and value",
@@ -197,7 +212,7 @@ foo:
       - a
       - b
 `,
-			want:    "https://github.com/org/repo/new/abc/path/to?filename=foo.txt&value=%23+Comment%0Afoo%3A%0A++bar%3A%0A++++baz%3A%0A++++++-+a%0A++++++-+b%0A",
+			want:    "https://github.com/org/repo/new/abc/path/to/dummy?filename=foo.txt&value=%23+Comment%0Afoo%3A%0A++bar%3A%0A++++baz%3A%0A++++++-+a%0A++++++-+b%0A",
 			wantErr: false,
 		},
 		{
