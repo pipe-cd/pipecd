@@ -61,7 +61,16 @@ spec:
 
 | Field | Type | Description | Required |
 |-|-|-|-|
-| Name | string | The name of the analysis provider | Yes |
+| name | string | The unique name of the analysis provider | Yes |
+| kind | string | The provider type. Currently only PROMETHEUS is available | Yes |
+| prometheus | [AnalysisProviderPrometheus](/docs/operator-manual/piped/configuration-reference/#analysisproviderprometheus) | Configuration needed to connect to Prometheus | No |
+
+### AnalysisProviderPrometheus
+| Field | Type | Description | Required |
+|-|-|-|-|
+| address | string | The Prometheus server address | Yes |
+| usernameFile | string | The path to the username file. | No |
+| passwordFile | string | The path to the password file. | No |
 
 ### Notifications
 

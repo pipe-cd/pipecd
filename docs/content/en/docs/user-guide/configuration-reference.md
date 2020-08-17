@@ -85,10 +85,18 @@ apiVersion: pipecd.dev/v1beta1
 kind: AnalysisTemplate
 spec:
   metrics:
+    grpc_error_rate_percentage:
+      interval: 1m
+      provider: prometheus-dev
+      failureLimit: 1
+      expected:
+        max: 10
+      query: awesome_query
 ```
 
 | Field | Type | Description | Required |
 |-|-|-|-|
+| metrics | map[string][AnalysisMetrics](/docs/user-guide/configuration-reference/#analysismetrics) | Template for metrics | No |
 
 ## CommitMatcher
 
@@ -217,6 +225,42 @@ spec:
 | Field | Type | Description | Required |
 |-|-|-|-|
 
+## AnalysisMetrics
+
+| Field | Type | Description | Required |
+|-|-|-|-|
+| provider | string | The unique name of provider defined in the Piped Configuration | Yes |
+| query | string | A query peformed against the [Analysis Provider](/docs/concepts/#analysis-provider) | Yes |
+| expected | [AnalysisExpected](/docs/user-guide/configuration-reference/#analysisexpected) | The expected query result | Yes |
+| interval | duration | Run a query at specified intervals. | Yes |
+| failureLimit | int | Maximum number of failed checks before the query result is considered as failure. For instance, If 1 is set, the analysis will be considered a failure after 2 failures. | No |
+| timeout | duration | How long after which the query times out. | No |
+| template | [AnalysisTemplateRef](/docs/user-guide/configuration-reference/#analysistemplateref) | How long after which the query times out. | No |
+
+## AnalysisLog
+
+| Field | Type | Description | Required |
+|-|-|-|-|
+
+## AnalysisHttp
+
+| Field | Type | Description | Required |
+|-|-|-|-|
+
+## AnalysisExpected
+
+| Field | Type | Description | Required |
+|-|-|-|-|
+| min | float64 | Failure, if the query result is less than this value | No |
+| max | float64 | Failure, if the query result is larger than this value | No |
+
+## AnalysisTemplateRef
+
+| Field | Type | Description | Required |
+|-|-|-|-|
+| name | string | The template name to refer | Yes |
+| args | map[string]string | The arguments for custom-args | No |
+
 ## StageOptions
 
 ### KubernetesPrimaryRolloutStageOptions
@@ -294,3 +338,11 @@ spec:
 
 | Field | Type | Description | Required |
 |-|-|-|-|
+
+### AnalysisStageOptions
+
+| Field | Type | Description | Required |
+|-|-|-|-|
+| duration | duration | Maximum time to perform the analysis | Yes |
+| metrics | [][AnalysisMetrics](/docs/user-guide/configuration-reference/#analysismetrics) | Configuration for analysis by metrics | No |
+
