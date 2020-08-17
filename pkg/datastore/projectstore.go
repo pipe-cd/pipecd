@@ -30,6 +30,10 @@ var projectFactory = func() interface{} {
 type ProjectStore interface {
 	AddProject(ctx context.Context, proj *model.Project) error
 	UpdateProject(ctx context.Context, id string, updater func(project *model.Project) error) error
+	UpdateProjectStaticAdmin(ctx context.Context, id, username, password string) error
+	EnableStaticAdmin(ctx context.Context, id string) error
+	DisableStaticAdmin(ctx context.Context, id string) error
+	UpdateProjectSingleSignOn(ctx context.Context, id string, sso *model.ProjectSingleSignOn) error
 	GetProject(ctx context.Context, id string) (*model.Project, error)
 	ListProjects(ctx context.Context, opts ListOptions) ([]model.Project, error)
 }
@@ -71,6 +75,42 @@ func (s *projectStore) UpdateProject(ctx context.Context, id string, updater fun
 		}
 		p.UpdatedAt = now
 		return p.Validate()
+	})
+}
+
+// UpdateProjectStaticAdmin updates the static admin user settings.
+func (s *projectStore) UpdateProjectStaticAdmin(ctx context.Context, id, username, password string) error {
+	return s.UpdateProject(ctx, id, func(p *model.Project) error {
+		if p.StaticAdmin != nil {
+			return p.StaticAdmin.Update(username, password)
+		}
+		return nil
+	})
+}
+
+// EnableStaticAdmin enables static admin login.
+func (s *projectStore) EnableStaticAdmin(ctx context.Context, id string) error {
+	return s.UpdateProject(ctx, id, func(p *model.Project) error {
+		p.StaticAdminDisabled = false
+		return nil
+	})
+}
+
+// DisableStaticAdmin disables static admin login.
+func (s *projectStore) DisableStaticAdmin(ctx context.Context, id string) error {
+	return s.UpdateProject(ctx, id, func(p *model.Project) error {
+		p.StaticAdminDisabled = true
+		return nil
+	})
+}
+
+// UpdateProjectSingleSignOn disables static admin login.
+func (s *projectStore) UpdateProjectSingleSignOn(ctx context.Context, id string, sso *model.ProjectSingleSignOn) error {
+	return s.UpdateProject(ctx, id, func(p *model.Project) error {
+		if p.Sso != nil {
+			return p.Sso.Update(sso)
+		}
+		return nil
 	})
 }
 

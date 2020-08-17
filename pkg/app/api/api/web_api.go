@@ -772,22 +772,54 @@ func (a *WebAPI) getProject(ctx context.Context, projectID string) (*model.Proje
 
 // UpdateProjectStaticAdmin updates the static admin user settings.
 func (a *WebAPI) UpdateProjectStaticAdmin(ctx context.Context, req *webservice.UpdateProjectStaticAdminRequest) (*webservice.UpdateProjectStaticAdminResponse, error) {
-	return nil, status.Error(codes.Unimplemented, "")
+	claims, err := rpcauth.ExtractClaims(ctx)
+	if err != nil {
+		return nil, err
+	}
+	if err := a.projectStore.UpdateProjectStaticAdmin(ctx, claims.Role.ProjectId, req.Username, req.Password); err != nil {
+		a.logger.Error("failed to update static admin", zap.Error(err))
+		return nil, status.Error(codes.Internal, "failed to update static admin")
+	}
+	return &webservice.UpdateProjectStaticAdminResponse{}, nil
 }
 
 // EnableStaticAdmin enables static admin login.
 func (a *WebAPI) EnableStaticAdmin(ctx context.Context, req *webservice.EnableStaticAdminRequest) (*webservice.EnableStaticAdminResponse, error) {
-	return nil, status.Error(codes.Unimplemented, "")
+	claims, err := rpcauth.ExtractClaims(ctx)
+	if err != nil {
+		return nil, err
+	}
+	if err := a.projectStore.EnableStaticAdmin(ctx, claims.Role.ProjectId); err != nil {
+		a.logger.Error("failed to enable static admin login", zap.Error(err))
+		return nil, status.Error(codes.Internal, "failed to enable static admin login")
+	}
+	return &webservice.EnableStaticAdminResponse{}, nil
 }
 
 // DisableStaticAdmin disables static admin login.
 func (a *WebAPI) DisableStaticAdmin(ctx context.Context, req *webservice.DisableStaticAdminRequest) (*webservice.DisableStaticAdminResponse, error) {
-	return nil, status.Error(codes.Unimplemented, "")
+	claims, err := rpcauth.ExtractClaims(ctx)
+	if err != nil {
+		return nil, err
+	}
+	if err := a.projectStore.DisableStaticAdmin(ctx, claims.Role.ProjectId); err != nil {
+		a.logger.Error("failed to disenable static admin login", zap.Error(err))
+		return nil, status.Error(codes.Internal, "failed to disenable static admin login")
+	}
+	return &webservice.DisableStaticAdminResponse{}, nil
 }
 
 // UpdateProjectSingleSignOn updates the sso settings.
 func (a *WebAPI) UpdateProjectSingleSignOn(ctx context.Context, req *webservice.UpdateProjectSingleSignOnRequest) (*webservice.UpdateProjectSingleSignOnResponse, error) {
-	return nil, status.Error(codes.Unimplemented, "")
+	claims, err := rpcauth.ExtractClaims(ctx)
+	if err != nil {
+		return nil, err
+	}
+	if err := a.projectStore.UpdateProjectSingleSignOn(ctx, claims.Role.ProjectId, req.Sso); err != nil {
+		a.logger.Error("failed to update project single sign on settings", zap.Error(err))
+		return nil, status.Error(codes.Internal, "failed to update project single sign on settings")
+	}
+	return &webservice.UpdateProjectSingleSignOnResponse{}, nil
 }
 
 // GetMe gets information about the current user.

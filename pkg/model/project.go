@@ -43,6 +43,21 @@ func (p *ProjectStaticUser) RedactSensitiveData() {
 	p.PasswordHash = redactedMessage
 }
 
+// Update updates ProjectStaticUser with given data.
+func (p *ProjectStaticUser) Update(username, password string) error {
+	if username != "" {
+		p.Username = username
+	}
+	if password != "" {
+		encoded, err := bcrypt.GenerateFromPassword([]byte(password), bcrypt.DefaultCost)
+		if err != nil {
+			return err
+		}
+		p.PasswordHash = string(encoded)
+	}
+	return nil
+}
+
 // Auth confirms username and password.
 func (p *ProjectStaticUser) Auth(username, password string) error {
 	if username == "" {
@@ -69,6 +84,20 @@ func (p *ProjectSingleSignOn) RedactSensitiveData() {
 	}
 }
 
+// Update updates ProjectSingleSignOn with given data.
+func (p *ProjectSingleSignOn) Update(sso *ProjectSingleSignOn) error {
+	p.Provider = sso.Provider
+	if sso.Github != nil {
+		if p.Github == nil {
+			p.Github = &ProjectSingleSignOn_GitHub{}
+		}
+		p.Github.Update(sso.Github)
+	}
+	if sso.Google != nil {
+	}
+	return nil
+}
+
 // GenerateAuthCodeURL generates an auth URL for the specified configuration.
 func (p *ProjectSingleSignOn) GenerateAuthCodeURL(project, apiURL, callbackPath, state string) (string, error) {
 	switch p.Provider {
@@ -86,6 +115,34 @@ func (p *ProjectSingleSignOn) GenerateAuthCodeURL(project, apiURL, callbackPath,
 func (p *ProjectSingleSignOn_GitHub) RedactSensitiveData() {
 	p.ClientId = redactedMessage
 	p.ClientSecret = redactedMessage
+}
+
+// Update updates ProjectSingleSignOn with given data.
+func (p *ProjectSingleSignOn_GitHub) Update(input *ProjectSingleSignOn_GitHub) {
+	if input.ClientId != "" {
+		p.ClientId = input.ClientId
+	}
+	if input.ClientSecret != "" {
+		p.ClientSecret = input.ClientSecret
+	}
+	if input.BaseUrl != "" {
+		p.BaseUrl = input.ClientSecret
+	}
+	if input.UploadUrl != "" {
+		p.UploadUrl = input.UploadUrl
+	}
+	if input.Org != "" {
+		p.Org = input.Org
+	}
+	if input.AdminTeam != "" {
+		p.AdminTeam = input.AdminTeam
+	}
+	if input.EditorTeam != "" {
+		p.EditorTeam = input.EditorTeam
+	}
+	if input.ViewerTeam != "" {
+		p.ViewerTeam = input.ViewerTeam
+	}
 }
 
 // GenerateAuthCodeURL generates an auth URL for the specified configuration.
