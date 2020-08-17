@@ -840,7 +840,11 @@ func (a *WebAPI) ListDeploymentConfigTemplates(ctx context.Context, req *webserv
 	}
 	for _, t := range templates {
 		g := app.GetGitPath()
-		t.FileCreationLink, err = git.MakeFileCreationURL(g.GetRepo().GetRemote(), g.GetPath(), g.GetRepo().GetBranch(), ".pipe.yaml", t.Content)
+		filename := g.ConfigFilename
+		if filename == "" {
+			filename = ".pipe.yaml"
+		}
+		t.FileCreationUrl, err = git.MakeFileCreationURL(g.Repo.Remote, g.Path, g.Repo.Branch, filename, t.Content)
 		if err != nil {
 			a.logger.Error("failed to make a link to creat a file", zap.Error(err))
 			return nil, status.Error(codes.Internal, "failed to make a link to creat a file")
