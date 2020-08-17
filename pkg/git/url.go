@@ -108,6 +108,10 @@ func MakeFileCreationURL(repoURL, dir, branch, filename, value string) (string, 
 		u.Path = fmt.Sprintf("%s/%s/%s/%s", repoPath, "new", branch, dir)
 		params := &url.Values{}
 		if filename != "" {
+			// NOTE: We're getting an issue with specifying a filename: https://github.com/isaacs/github/issues/1527
+			//   In short, the last path part of the URL is ignored.
+			//   For now, appending dummy path as a workaround.
+			u.Path += "/dummy"
 			params.Add("filename", filename)
 		}
 		if value != "" {
