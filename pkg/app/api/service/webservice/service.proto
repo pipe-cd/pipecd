@@ -164,6 +164,7 @@ message AddApplicationRequest {
 }
 
 message AddApplicationResponse {
+    string application_id = 1 [(validate.rules).string.min_len = 1];
 }
 
 message EnableApplicationRequest {
@@ -331,6 +332,8 @@ message DeploymentConfigTemplate {
     string name = 2 [(validate.rules).string.min_len = 1];
     repeated DeploymentConfigTemplateLabel labels = 3;
     string content = 4 [(validate.rules).string.min_len = 1];
+    // An HTML link to create a new file under the git path, with template content as default value.
+    string file_creation_url = 5;
 }
 
 enum DeploymentConfigTemplateLabel {
@@ -339,7 +342,7 @@ enum DeploymentConfigTemplateLabel {
 }
 
 message ListDeploymentConfigTemplatesRequest {
-    pipe.model.ApplicationKind application_kind = 1 [(validate.rules).enum.defined_only = true];
+    string application_id = 1 [(validate.rules).string.min_len = 1];
     repeated DeploymentConfigTemplateLabel labels = 2;
 }
 

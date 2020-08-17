@@ -86,6 +86,42 @@ func MakeDirURL(repoURL, dir, branch string) (string, error) {
 	return fmt.Sprintf("%s://%s/%s/%s/%s/%s", scheme, u.Host, repoPath, subPath, branch, dir), nil
 }
 
+// MakeFileCreationURL builds a link to create a file under the given directory.
+func MakeFileCreationURL(repoURL, dir, branch, filename, value string) (string, error) {
+	if branch == "" {
+		return "", fmt.Errorf("no branch given")
+	}
+	u, err := parseGitURL(repoURL)
+	if err != nil {
+		return "", err
+	}
+
+	if u.Scheme == "ssh" {
+		u.Scheme = "https"
+		u.User = nil
+	}
+	repoPath := strings.TrimSuffix(strings.Trim(u.Path, "/"), ".git")
+	dir = strings.Trim(dir, "/")
+
+	switch u.Host {
+	case "github.com":
+		u.Path = fmt.Sprintf("%s/%s/%s/%s", repoPath, "new", branch, dir)
+		params := &url.Values{}
+		if filename != "" {
+			params.Add("filename", filename)
+		}
+		if value != "" {
+			params.Add("value", value)
+		}
+		u.RawQuery = params.Encode()
+	default:
+		// TODO: Allow users to specify git host
+		u.Path = fmt.Sprintf("%s/%s/%s/%s", repoPath, "new", branch, dir)
+	}
+
+	return u.String(), nil
+}
+
 var (
 	knownSchemes = map[string]interface{}{
 		"ssh":     struct{}{},
