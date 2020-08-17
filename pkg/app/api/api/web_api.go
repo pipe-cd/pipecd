@@ -818,8 +818,13 @@ func (a *WebAPI) GetCommand(ctx context.Context, req *webservice.GetCommandReque
 }
 
 func (a *WebAPI) ListDeploymentConfigTemplates(ctx context.Context, req *webservice.ListDeploymentConfigTemplatesRequest) (*webservice.ListDeploymentConfigTemplatesResponse, error) {
+	app, err := a.getApplication(ctx, req.ApplicationId)
+	if err != nil {
+		return nil, err
+	}
+
 	var templates []*webservice.DeploymentConfigTemplate
-	switch req.ApplicationKind {
+	switch app.Kind {
 	case model.ApplicationKind_KUBERNETES:
 		templates = k8sDeploymentConfigTemplates
 	case model.ApplicationKind_TERRAFORM:
@@ -831,7 +836,15 @@ func (a *WebAPI) ListDeploymentConfigTemplates(ctx context.Context, req *webserv
 	case model.ApplicationKind_CLOUDRUN:
 		templates = cloudrunDeploymentConfigTemplates
 	default:
-		return nil, status.Error(codes.InvalidArgument, fmt.Sprintf("unknown application kind %v", req.ApplicationKind))
+		return nil, status.Error(codes.InvalidArgument, fmt.Sprintf("unknown application kind %v", app.Kind))
+	}
+	for _, t := range templates {
+		g := app.GetGitPath()
+		t.FileCreationLink, err = git.MakeFileCreationURL(g.GetRepo().GetRemote(), g.GetPath(), g.GetRepo().GetBranch(), ".pipe.yaml", t.Content)
+		if err != nil {
+			a.logger.Error("failed to make a link to creat a file", zap.Error(err))
+			return nil, status.Error(codes.Internal, "failed to make a link to creat a file")
+		}
 	}
 
 	if len(req.Labels) == 0 {

@@ -163,6 +163,75 @@ func TestMakeDirURL(t *testing.T) {
 		})
 	}
 }
+
+func TestMakeFileCreationURL(t *testing.T) {
+	tests := []struct {
+		name     string
+		repoURL  string
+		dir      string
+		branch   string
+		filename string
+		value    string
+		want     string
+		wantErr  bool
+	}{
+		{
+			name:     "given filename",
+			repoURL:  "git@github.com:org/repo.git",
+			dir:      "path/to",
+			branch:   "abc",
+			filename: "foo.txt",
+			want:     "https://github.com/org/repo/new/abc/path/to?filename=foo.txt",
+			wantErr:  false,
+		},
+		{
+			name:     "given filename and value",
+			repoURL:  "git@github.com:org/repo.git",
+			dir:      "path/to",
+			branch:   "abc",
+			filename: "foo.txt",
+			value: `# Comment
+foo:
+  bar:
+    baz:
+      - a
+      - b
+`,
+			want:    "https://github.com/org/repo/new/abc/path/to?filename=foo.txt&value=%23+Comment%0Afoo%3A%0A++bar%3A%0A++++baz%3A%0A++++++-+a%0A++++++-+b%0A",
+			wantErr: false,
+		},
+		{
+			name:    "ssh to unsupported git host",
+			repoURL: "git@foo.com:org/repo.git",
+			dir:     "path/to",
+			branch:  "abc",
+			want:    "https://foo.com/org/repo/new/abc/path/to",
+			wantErr: false,
+		},
+		{
+			name:    "no branch given",
+			repoURL: "1234abcd",
+			dir:     "path/to",
+			wantErr: true,
+		},
+		{
+			name:    "unparseable url",
+			repoURL: "1234abcd",
+			dir:     "path/to",
+			branch:  "abc",
+			want:    "",
+			wantErr: true,
+		},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			got, err := MakeFileCreationURL(tt.repoURL, tt.dir, tt.branch, tt.filename, tt.value)
+			assert.Equal(t, tt.wantErr, err != nil)
+			assert.Equal(t, tt.want, got)
+		})
+	}
+}
+
 func TestParseGitURL(t *testing.T) {
 	tests := []struct {
 		name    string
