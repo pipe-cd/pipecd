@@ -61,9 +61,9 @@ spec:
 
 | Field | Type | Description | Required |
 |-|-|-|-|
-| name | string | The unique name of the analysis provider | Yes |
-| kind | string | The provider type. Currently only PROMETHEUS is available | Yes |
-| prometheus | [AnalysisProviderPrometheus](/docs/operator-manual/piped/configuration-reference/#analysisproviderprometheus) | Configuration needed to connect to Prometheus | No |
+| name | string | The unique name of the analysis provider. | Yes |
+| kind | string | The provider type. Currently only PROMETHEUS is available. | Yes |
+| prometheus | [AnalysisProviderPrometheus](/docs/operator-manual/piped/configuration-reference/#analysisproviderprometheus) | Configuration needed to connect to Prometheus. | No |
 
 ### AnalysisProviderPrometheus
 | Field | Type | Description | Required |

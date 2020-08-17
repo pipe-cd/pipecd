@@ -7,9 +7,9 @@ description: >
 ---
 
 Automated Deployment Analysis (ADA) lets you automate the verifying of the deployment process by analyzing the metrics data, log entries as well as HTTP requests to the specified workloads.
-ADA is available as a [Stage](/docs/concepts/#stage) in your Pipeline.
+ADA is available as a [Stage](/docs/concepts/#stage) in the pipeline specified in the deployment configuration file.
 
-The ADA analyzes the new version by periodically performing queries against the [Analysis Provider](/docs/concepts/#analysis-provider) and evaluating the results.
+ADA does the analysis by periodically performing queries against the [Analysis Provider](/docs/concepts/#analysis-provider) and evaluating the results.
 
 ### Getting started
 All you have to do is modify Deployment and Piped configuration.
