@@ -12,7 +12,7 @@ ADA is available as a [Stage](/docs/concepts/#stage) in the pipeline specified i
 ADA does the analysis by periodically performing queries against the [Analysis Provider](/docs/concepts/#analysis-provider) and evaluating the results.
 
 ### Prerequisites
-Before enabling ADA inside the pipeline, all required Analysis Providers must be configured in the Piped Configuration according to [this guide](/docs/operator-manual/piped/adding-an-analysis-provider/)
+Before enabling ADA inside the pipeline, all required Analysis Providers must be configured in the Piped Configuration according to [this guide](/docs/operator-manual/piped/adding-an-analysis-provider/).
 
 ### Configuration
 All you have to do is append the `ANALYSIS` stage to your deployment pipeline.
