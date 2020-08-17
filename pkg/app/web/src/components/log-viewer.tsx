@@ -42,9 +42,6 @@ function useActiveStageLog(): [Stage | null, StageLog | null] {
 }
 
 const useStyles = makeStyles({
-  container: {
-    overflow: "scroll",
-  },
   toolbarLeft: {
     flex: 1,
   },
@@ -55,6 +52,9 @@ const useStyles = makeStyles({
   },
   stageName: {
     fontFamily: "Roboto Mono",
+  },
+  logContainer: {
+    overflowY: "scroll",
   },
 });
 
@@ -72,7 +72,7 @@ export const LogViewer: FC = memo(function LogViewer() {
   }
 
   return (
-    <div className={classes.container}>
+    <div>
       <Divider />
       <Toolbar variant="dense">
         <div className={classes.toolbarLeft}>
@@ -86,11 +86,13 @@ export const LogViewer: FC = memo(function LogViewer() {
           </IconButton>
         </div>
       </Toolbar>
-      <Log
-        height={400}
-        loading={isStageRunning(activeStage.status)}
-        logs={stageLog.logBlocks}
-      />
+      <div className={classes.logContainer}>
+        <Log
+          height={400}
+          loading={isStageRunning(activeStage.status)}
+          logs={stageLog.logBlocks}
+        />
+      </div>
     </div>
   );
 });
