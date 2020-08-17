@@ -14,22 +14,11 @@ spec:
           metrics:
             - template:
                 name: container_cpu_usage_seconds_total
-            - template:
-                name: http_request_duration_microseconds
                 args:
-                  namespace: default
-      - name: K8S_CANARY_ROLLOUT
-        with:
-          replicas: 40%
-      - name: ANALYSIS
-        with:
-          duration: 1m
-          metrics:
+                  variant: canary
             - template:
                 name: container_cpu_usage_seconds_total
-            - template:
-                name: http_request_duration_microseconds
                 args:
-                  namespace: default
+                  interval: 1m
       - name: K8S_PRIMARY_ROLLOUT
       - name: K8S_CANARY_CLEAN
