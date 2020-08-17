@@ -11,23 +11,13 @@ ADA is available as a [Stage](/docs/concepts/#stage) in the pipeline specified i
 
 ADA does the analysis by periodically performing queries against the [Analysis Provider](/docs/concepts/#analysis-provider) and evaluating the results.
 
-### Getting started
-All you have to do is modify Deployment and Piped configuration.
+### Prerequisites
+Before enabling ADA inside the pipeline, all required Analysis Providers must be configured in the Piped Configuration according to [this guide](/docs/operator-manual/piped/adding-an-analysis-provider/)
 
-First up, you define the information needed to connect from your Piped to the Analysis Provider:
-```yaml
-apiVersion: pipecd.dev/v1beta1
-kind: Piped
-spec:
-  analysisProviders:
-    - name: prometheus-dev
-      type: PROMETHEUS
-      config:
-        address: https://your-prometheus.dev
-```
-The full list of configurable Analysis Providers fields are [here](/docs/operator-manual/piped/configuration-reference/#analysisprovider).
+### Configuration
+All you have to do is append the `ANALYSIS` stage to your deployment pipeline.
 
-And then append the `ANALYSIS` stage to your deployment pipeline. The canonical use case for that stage is to determine if your canary deployment should proceed:
+The canonical use case for that stage is to determine if your canary deployment should proceed:
 ```yaml
 apiVersion: pipecd.dev/v1beta1
 kind: KubernetesApp
