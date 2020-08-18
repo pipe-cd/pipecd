@@ -37,7 +37,7 @@ func (c ServiceManifestCache) Get(commit string) (ServiceManifest, bool) {
 	}
 
 	if errors.Is(err, cache.ErrNotFound) {
-		c.Logger.Info("service manfiest were not found in cache",
+		c.Logger.Info("service manifest were not found in cache",
 			zap.String("app-id", c.AppID),
 			zap.String("commit-hash", commit),
 		)

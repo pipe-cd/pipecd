@@ -40,10 +40,10 @@ type RevisionTraffic struct {
 
 func (m ServiceManifest) UpdateTraffic(revisions []RevisionTraffic) error {
 	items := []interface{}{}
-	for _, r := range revisions {
-		out, err := runtime.DefaultUnstructuredConverter.ToUnstructured(&r)
+	for i := range revisions {
+		out, err := runtime.DefaultUnstructuredConverter.ToUnstructured(&revisions[i])
 		if err != nil {
-			return fmt.Errorf("unable to set traffic for object: %v", err)
+			return fmt.Errorf("unable to set traffic for object: %w", err)
 		}
 		items = append(items, out)
 	}
