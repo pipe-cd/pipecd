@@ -1,20 +1,21 @@
+import { ListItem, makeStyles, Typography } from "@material-ui/core";
+import dayjs from "dayjs";
 import React, { FC, memo } from "react";
-import { makeStyles, Typography, ListItem } from "@material-ui/core";
 import { useSelector } from "react-redux";
+import { Link as RouterLink } from "react-router-dom";
+import { PAGE_PATH_DEPLOYMENTS } from "../constants";
+import { DEPLOYMENT_STATE_TEXT } from "../constants/deployment-status-text";
 import { AppState } from "../modules";
-import {
-  Deployment,
-  selectById as selectDeploymentById,
-} from "../modules/deployments";
-import { StatusIcon } from "./deployment-status-icon";
 import {
   Application,
   selectById as selectApplicationById,
 } from "../modules/applications";
-import dayjs from "dayjs";
-import { selectById, Environment } from "../modules/environments";
-import { Link as RouterLink } from "react-router-dom";
-import { PAGE_PATH_DEPLOYMENTS } from "../constants";
+import {
+  Deployment,
+  selectById as selectDeploymentById,
+} from "../modules/deployments";
+import { Environment, selectById } from "../modules/environments";
+import { StatusIcon } from "./deployment-status-icon";
 
 const useStyles = makeStyles((theme) => ({
   root: {
@@ -29,6 +30,13 @@ const useStyles = makeStyles((theme) => ({
     marginLeft: theme.spacing(1),
   },
   env: {
+    marginLeft: theme.spacing(1),
+    color: theme.palette.text.secondary,
+  },
+  statusText: {
+    marginLeft: theme.spacing(1),
+  },
+  commitHash: {
     marginLeft: theme.spacing(1),
   },
   head: {
@@ -81,6 +89,9 @@ export const DeploymentItem: FC<Props> = memo(function DeploymentItem({ id }) {
       <div className={classes.main}>
         <div className={classes.head}>
           <StatusIcon status={deployment.status} />
+          <Typography variant="body1" className={classes.statusText}>
+            {DEPLOYMENT_STATE_TEXT[deployment.status]}
+          </Typography>
           <Typography variant="h6" className={classes.name}>
             {application.name}
           </Typography>
