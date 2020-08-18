@@ -36,6 +36,9 @@ message Project {
     bool static_admin_disabled = 4;
     // Single sign-on configuration for this project.
     ProjectSingleSignOn sso = 5;
+    // Whether to use project auth settings or not.
+    // If false the controlplain settings will be used.
+    bool use_project_auth_settings = 6;
 
     // Unix time when the project is created.
     int64 created_at = 14 [(validate.rules).int64.gt = 0];
