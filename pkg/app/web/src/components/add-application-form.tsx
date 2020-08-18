@@ -175,7 +175,7 @@ export const AddApplicationForm: FC<Props> = ({
       <Typography
         className={classes.title}
         variant="h6"
-      >{`Add new Application to "${projectName}"`}</Typography>
+      >{`Add a new application to "${projectName}" project`}</Typography>
       <Divider />
       <form className={classes.form}>
         <TextField
