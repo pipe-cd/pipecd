@@ -73,7 +73,8 @@ func (a *WebAPI) Register(server *grpc.Server) {
 func (a *WebAPI) AddEnvironment(ctx context.Context, req *webservice.AddEnvironmentRequest) (*webservice.AddEnvironmentResponse, error) {
 	claims, err := rpcauth.ExtractClaims(ctx)
 	if err != nil {
-		return nil, err
+		a.logger.Error("failed to extract claims", zap.Error(err))
+		return nil, status.Error(codes.Internal, "internal error")
 	}
 
 	env := model.Environment{
@@ -126,7 +127,8 @@ func (a *WebAPI) ListEnvironments(ctx context.Context, req *webservice.ListEnvir
 func (a *WebAPI) RegisterPiped(ctx context.Context, req *webservice.RegisterPipedRequest) (*webservice.RegisterPipedResponse, error) {
 	claims, err := rpcauth.ExtractClaims(ctx)
 	if err != nil {
-		return nil, err
+		a.logger.Error("failed to extract claims", zap.Error(err))
+		return nil, status.Error(codes.Internal, "internal error")
 	}
 
 	key, keyHash, err := model.GeneratePipedKey()
@@ -227,7 +229,8 @@ func (a *WebAPI) updatePiped(ctx context.Context, pipedID string, updater func(c
 func (a *WebAPI) ListPipeds(ctx context.Context, req *webservice.ListPipedsRequest) (*webservice.ListPipedsResponse, error) {
 	claims, err := rpcauth.ExtractClaims(ctx)
 	if err != nil {
-		return nil, err
+		a.logger.Error("failed to extract claims", zap.Error(err))
+		return nil, status.Error(codes.Internal, "internal error")
 	}
 	opts := datastore.ListOptions{
 		Filters: []datastore.ListFilter{
@@ -295,7 +298,8 @@ func (a *WebAPI) getPiped(ctx context.Context, pipedID string) (*model.Piped, er
 func (a *WebAPI) AddApplication(ctx context.Context, req *webservice.AddApplicationRequest) (*webservice.AddApplicationResponse, error) {
 	claims, err := rpcauth.ExtractClaims(ctx)
 	if err != nil {
-		return nil, err
+		a.logger.Error("failed to extract claims", zap.Error(err))
+		return nil, status.Error(codes.Internal, "internal error")
 	}
 	gitpath, err := a.makeGitPath(ctx, req.GitPath.Repo.Id, req.GitPath.Path, req.GitPath.ConfigFilename, req.PipedId)
 	if err != nil {
@@ -414,7 +418,8 @@ func (a *WebAPI) updateApplicationEnable(ctx context.Context, appID string, enab
 func (a *WebAPI) ListApplications(ctx context.Context, req *webservice.ListApplicationsRequest) (*webservice.ListApplicationsResponse, error) {
 	claims, err := rpcauth.ExtractClaims(ctx)
 	if err != nil {
-		return nil, err
+		a.logger.Error("failed to extract claims", zap.Error(err))
+		return nil, status.Error(codes.Internal, "internal error")
 	}
 
 	orders := []datastore.Order{
@@ -480,7 +485,8 @@ func (a *WebAPI) ListApplications(ctx context.Context, req *webservice.ListAppli
 func (a *WebAPI) SyncApplication(ctx context.Context, req *webservice.SyncApplicationRequest) (*webservice.SyncApplicationResponse, error) {
 	claims, err := rpcauth.ExtractClaims(ctx)
 	if err != nil {
-		return nil, err
+		a.logger.Error("failed to extract claims", zap.Error(err))
+		return nil, status.Error(codes.Internal, "internal error")
 	}
 
 	app, err := a.getApplication(ctx, req.ApplicationId)
@@ -544,7 +550,8 @@ func (a *WebAPI) getApplication(ctx context.Context, id string) (*model.Applicat
 func (a *WebAPI) ListDeployments(ctx context.Context, req *webservice.ListDeploymentsRequest) (*webservice.ListDeploymentsResponse, error) {
 	claims, err := rpcauth.ExtractClaims(ctx)
 	if err != nil {
-		return nil, err
+		a.logger.Error("failed to extract claims", zap.Error(err))
+		return nil, status.Error(codes.Internal, "internal error")
 	}
 
 	orders := []datastore.Order{
@@ -655,7 +662,8 @@ func (a *WebAPI) GetStageLog(ctx context.Context, req *webservice.GetStageLogReq
 func (a *WebAPI) CancelDeployment(ctx context.Context, req *webservice.CancelDeploymentRequest) (*webservice.CancelDeploymentResponse, error) {
 	claims, err := rpcauth.ExtractClaims(ctx)
 	if err != nil {
-		return nil, err
+		a.logger.Error("failed to extract claims", zap.Error(err))
+		return nil, status.Error(codes.Internal, "internal error")
 	}
 
 	deployment, err := a.getDeployment(ctx, req.DeploymentId)
@@ -691,7 +699,8 @@ func (a *WebAPI) CancelDeployment(ctx context.Context, req *webservice.CancelDep
 func (a *WebAPI) ApproveStage(ctx context.Context, req *webservice.ApproveStageRequest) (*webservice.ApproveStageResponse, error) {
 	claims, err := rpcauth.ExtractClaims(ctx)
 	if err != nil {
-		return nil, err
+		a.logger.Error("failed to extract claims", zap.Error(err))
+		return nil, status.Error(codes.Internal, "internal error")
 	}
 
 	deployment, err := a.getDeployment(ctx, req.DeploymentId)
@@ -743,7 +752,8 @@ func (a *WebAPI) GetApplicationLiveState(ctx context.Context, req *webservice.Ge
 func (a *WebAPI) GetProject(ctx context.Context, req *webservice.GetProjectRequest) (*webservice.GetProjectResponse, error) {
 	claims, err := rpcauth.ExtractClaims(ctx)
 	if err != nil {
-		return nil, err
+		a.logger.Error("failed to extract claims", zap.Error(err))
+		return nil, status.Error(codes.Internal, "internal error")
 	}
 	project, err := a.getProject(ctx, claims.Role.ProjectId)
 	if err != nil {
@@ -772,29 +782,66 @@ func (a *WebAPI) getProject(ctx context.Context, projectID string) (*model.Proje
 
 // UpdateProjectStaticAdmin updates the static admin user settings.
 func (a *WebAPI) UpdateProjectStaticAdmin(ctx context.Context, req *webservice.UpdateProjectStaticAdminRequest) (*webservice.UpdateProjectStaticAdminResponse, error) {
-	return nil, status.Error(codes.Unimplemented, "")
+	claims, err := rpcauth.ExtractClaims(ctx)
+	if err != nil {
+		a.logger.Error("failed to extract claims", zap.Error(err))
+		return nil, status.Error(codes.Internal, "internal error")
+	}
+	if err := a.projectStore.UpdateProjectStaticAdmin(ctx, claims.Role.ProjectId, req.Username, req.Password); err != nil {
+		a.logger.Error("failed to update static admin", zap.Error(err))
+		return nil, status.Error(codes.Internal, "failed to update static admin")
+	}
+	return &webservice.UpdateProjectStaticAdminResponse{}, nil
 }
 
 // EnableStaticAdmin enables static admin login.
 func (a *WebAPI) EnableStaticAdmin(ctx context.Context, req *webservice.EnableStaticAdminRequest) (*webservice.EnableStaticAdminResponse, error) {
-	return nil, status.Error(codes.Unimplemented, "")
+	claims, err := rpcauth.ExtractClaims(ctx)
+	if err != nil {
+		a.logger.Error("failed to extract claims", zap.Error(err))
+		return nil, status.Error(codes.Internal, "internal error")
+	}
+	if err := a.projectStore.EnableStaticAdmin(ctx, claims.Role.ProjectId); err != nil {
+		a.logger.Error("failed to enable static admin login", zap.Error(err))
+		return nil, status.Error(codes.Internal, "failed to enable static admin login")
+	}
+	return &webservice.EnableStaticAdminResponse{}, nil
 }
 
 // DisableStaticAdmin disables static admin login.
 func (a *WebAPI) DisableStaticAdmin(ctx context.Context, req *webservice.DisableStaticAdminRequest) (*webservice.DisableStaticAdminResponse, error) {
-	return nil, status.Error(codes.Unimplemented, "")
+	claims, err := rpcauth.ExtractClaims(ctx)
+	if err != nil {
+		a.logger.Error("failed to extract claims", zap.Error(err))
+		return nil, status.Error(codes.Internal, "internal error")
+	}
+	if err := a.projectStore.DisableStaticAdmin(ctx, claims.Role.ProjectId); err != nil {
+		a.logger.Error("failed to disenable static admin login", zap.Error(err))
+		return nil, status.Error(codes.Internal, "failed to disenable static admin login")
+	}
+	return &webservice.DisableStaticAdminResponse{}, nil
 }
 
 // UpdateProjectSingleSignOn updates the sso settings.
 func (a *WebAPI) UpdateProjectSingleSignOn(ctx context.Context, req *webservice.UpdateProjectSingleSignOnRequest) (*webservice.UpdateProjectSingleSignOnResponse, error) {
-	return nil, status.Error(codes.Unimplemented, "")
+	claims, err := rpcauth.ExtractClaims(ctx)
+	if err != nil {
+		a.logger.Error("failed to extract claims", zap.Error(err))
+		return nil, status.Error(codes.Internal, "internal error")
+	}
+	if err := a.projectStore.UpdateProjectSingleSignOn(ctx, claims.Role.ProjectId, req.Sso); err != nil {
+		a.logger.Error("failed to update project single sign on settings", zap.Error(err))
+		return nil, status.Error(codes.Internal, "failed to update project single sign on settings")
+	}
+	return &webservice.UpdateProjectSingleSignOnResponse{}, nil
 }
 
 // GetMe gets information about the current user.
 func (a *WebAPI) GetMe(ctx context.Context, req *webservice.GetMeRequest) (*webservice.GetMeResponse, error) {
 	claims, err := rpcauth.ExtractClaims(ctx)
 	if err != nil {
-		return nil, err
+		a.logger.Error("failed to extract claims", zap.Error(err))
+		return nil, status.Error(codes.Internal, "internal error")
 	}
 	return &webservice.GetMeResponse{
 		Subject:     claims.Subject,
