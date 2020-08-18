@@ -25,10 +25,10 @@ const useStyles = makeStyles((theme) => ({
     height: 72,
     backgroundColor: theme.palette.background.paper,
   },
-  env: {
+  name: {
     marginLeft: theme.spacing(1),
   },
-  statusIcon: {
+  env: {
     marginLeft: theme.spacing(1),
   },
   head: {
@@ -80,12 +80,11 @@ export const DeploymentItem: FC<Props> = memo(function DeploymentItem({ id }) {
     >
       <div className={classes.main}>
         <div className={classes.head}>
-          <Typography variant="h6">{application.name}</Typography>
+          <StatusIcon status={deployment.status} />
+          <Typography variant="h6" className={classes.name}>
+            {application.name}
+          </Typography>
           <Typography className={classes.env}>{env.name}</Typography>
-          <StatusIcon
-            status={deployment.status}
-            className={classes.statusIcon}
-          />
         </div>
         <Typography variant="body1" className={classes.description}>
           {deployment.summary}
