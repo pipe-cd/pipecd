@@ -255,9 +255,6 @@ type CloudProviderTerraformAWS struct {
 }
 
 type CloudProviderCloudRunConfig struct {
-	Project         string `json:"project"`
-	Region          string `json:"region"`
-	Platform        string `json:"platform"`
 	CredentialsFile string `json:"credentialsFile"`
 }
 

@@ -118,9 +118,6 @@ func TestPipedConfig(t *testing.T) {
 						Name: "cloudrun",
 						Type: model.CloudProviderCloudRun,
 						CloudRunConfig: &CloudProviderCloudRunConfig{
-							Project:         "gcp-project",
-							Region:          "us-east-1",
-							Platform:        "managed",
 							CredentialsFile: "/etc/piped-secret/gcp-service-account.json",
 						},
 					},
