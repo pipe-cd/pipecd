@@ -23,41 +23,56 @@ import (
 	"github.com/pipe-cd/pipe/pkg/model"
 )
 
-func builDefaultPipeline(now time.Time) []*model.PipelineStage {
+func builQuickSyncPipeline(autoRollback bool, now time.Time) []*model.PipelineStage {
 	var (
-		planStage, _  = planner.GetPredefinedStage(planner.PredefinedStageTerraformPlan)
-		applyStage, _ = planner.GetPredefinedStage(planner.PredefinedStageTerraformApply)
-		stages        = []config.PipelineStage{
-			planStage,
-			applyStage,
-		}
+		s, _ = planner.GetPredefinedStage(planner.PredefinedStageTerraformSync)
+		out  = make([]*model.PipelineStage, 0, 2)
 	)
 
-	out := make([]*model.PipelineStage, 0, len(stages))
-	for i, s := range stages {
-		id := s.Id
-		if id == "" {
-			id = fmt.Sprintf("stage-%d", i)
-		}
-		stage := &model.PipelineStage{
-			Id:         id,
+	// Append SYNC stage.
+	id := s.Id
+	if id == "" {
+		id = "stage-0"
+	}
+	stage := &model.PipelineStage{
+		Id:         id,
+		Name:       s.Name.String(),
+		Desc:       s.Desc,
+		Index:      0,
+		Predefined: true,
+		Visible:    true,
+		Status:     model.StageStatus_STAGE_NOT_STARTED_YET,
+		Metadata:   planner.MakeInitialStageMetadata(s),
+		CreatedAt:  now.Unix(),
+		UpdatedAt:  now.Unix(),
+	}
+	out = append(out, stage)
+
+	// Append ROLLBACK stage if auto rollback is enabled.
+	if autoRollback {
+		s, _ := planner.GetPredefinedStage(planner.PredefinedStageRollback)
+		out = append(out, &model.PipelineStage{
+			Id:         s.Id,
 			Name:       s.Name.String(),
 			Desc:       s.Desc,
-			Index:      int32(i),
 			Predefined: true,
+			Visible:    false,
 			Status:     model.StageStatus_STAGE_NOT_STARTED_YET,
 			CreatedAt:  now.Unix(),
 			UpdatedAt:  now.Unix(),
-		}
-		out = append(out, stage)
+		})
 	}
 
 	return out
 }
 
-func buildProgressivePipeline(stages []config.PipelineStage, now time.Time) []*model.PipelineStage {
-	out := make([]*model.PipelineStage, 0, len(stages))
-	for i, s := range stages {
+func buildProgressivePipeline(pp *config.DeploymentPipeline, autoRollback bool, now time.Time) []*model.PipelineStage {
+	var (
+		preStageID = ""
+		out        = make([]*model.PipelineStage, 0, len(pp.Stages))
+	)
+
+	for i, s := range pp.Stages {
 		id := s.Id
 		if id == "" {
 			id = fmt.Sprintf("stage-%d", i)
@@ -68,11 +83,30 @@ func buildProgressivePipeline(stages []config.PipelineStage, now time.Time) []*m
 			Desc:       s.Desc,
 			Index:      int32(i),
 			Predefined: false,
+			Visible:    true,
 			Status:     model.StageStatus_STAGE_NOT_STARTED_YET,
 			CreatedAt:  now.Unix(),
 			UpdatedAt:  now.Unix(),
 		}
+		if preStageID != "" {
+			stage.Requires = []string{preStageID}
+		}
+		preStageID = id
 		out = append(out, stage)
+	}
+
+	if autoRollback {
+		s, _ := planner.GetPredefinedStage(planner.PredefinedStageRollback)
+		out = append(out, &model.PipelineStage{
+			Id:         s.Id,
+			Name:       s.Name.String(),
+			Desc:       s.Desc,
+			Predefined: true,
+			Visible:    false,
+			Status:     model.StageStatus_STAGE_NOT_STARTED_YET,
+			CreatedAt:  now.Unix(),
+			UpdatedAt:  now.Unix(),
+		})
 	}
 
 	return out

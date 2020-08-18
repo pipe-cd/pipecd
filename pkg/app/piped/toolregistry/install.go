@@ -28,14 +28,16 @@ import (
 
 const (
 	defaultKubectlVersion   = "1.18.2"
-	defaultKustomizeVersion = "3.5.5"
+	defaultKustomizeVersion = "3.8.1"
 	defaultHelmVersion      = "3.2.1"
+	defaultTerraformVersion = "0.13.0"
 )
 
 var (
 	kubectlInstallScriptTmpl   = template.Must(template.New("kubectl").Parse(kubectlInstallScript))
 	kustomizeInstallScriptTmpl = template.Must(template.New("kustomize").Parse(kustomizeInstallScript))
 	helmInstallScriptTmpl      = template.Must(template.New("helm").Parse(helmInstallScript))
+	terraformInstallScriptTmpl = template.Must(template.New("terraform").Parse(terraformInstallScript))
 )
 
 func (r *registry) installKubectl(ctx context.Context, version string) error {
@@ -176,5 +178,52 @@ func (r *registry) installHelm(ctx context.Context, version string) error {
 	}
 
 	r.logger.Info("just installed helm", zap.String("version", version))
+	return nil
+}
+
+func (r *registry) installTerraform(ctx context.Context, version string) error {
+	workingDir, err := ioutil.TempDir("", "terraform-install")
+	if err != nil {
+		return err
+	}
+	defer os.RemoveAll(workingDir)
+
+	asDefault := version == ""
+	if asDefault {
+		version = defaultTerraformVersion
+	}
+
+	var (
+		buf  bytes.Buffer
+		data = map[string]interface{}{
+			"WorkingDir": workingDir,
+			"Version":    version,
+			"BinDir":     r.binDir,
+			"AsDefault":  asDefault,
+		}
+	)
+	if err := terraformInstallScriptTmpl.Execute(&buf, data); err != nil {
+		r.logger.Error("failed to render terraform install script",
+			zap.String("version", version),
+			zap.Error(err),
+		)
+		return fmt.Errorf("failed to install terraform %s (%v)", version, err)
+	}
+
+	var (
+		script = buf.String()
+		cmd    = exec.CommandContext(ctx, "/bin/sh", "-c", script)
+	)
+	if out, err := cmd.CombinedOutput(); err != nil {
+		r.logger.Error("failed to install terraform",
+			zap.String("version", version),
+			zap.String("script", script),
+			zap.String("out", string(out)),
+			zap.Error(err),
+		)
+		return fmt.Errorf("failed to install terraform %s (%v)", version, err)
+	}
+
+	r.logger.Info("just installed terraform", zap.String("version", version))
 	return nil
 }

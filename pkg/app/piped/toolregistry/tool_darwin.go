@@ -43,3 +43,6 @@ chmod +x {{ .BinDir }}/helm-{{ .Version }}
 cp -f {{ .BinDir }}/helm-{{ .Version }} {{ .BinDir }}/helm
 {{ end }}
 `
+
+var terraformInstallScript = `
+`

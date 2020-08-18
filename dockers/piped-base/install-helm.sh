@@ -19,6 +19,8 @@ set -o nounset
 set -o pipefail
 
 BASE_URL="https://get.helm.sh"
+# Do not forget to update the version number at the following file when changing this.
+# https://github.com/pipe-cd/pipe/blob/master/pkg/app/piped/toolregistry/install.go#L32
 VERSION="3.2.1"
 
 echo "Installing helm-${VERSION} into ${PIPED_BIN_DIR}/helm..."
