@@ -52,7 +52,7 @@ https://github.com/pipe-cd/examples
 |-----------------------------------------------------------------------------|-------------|
 | [simple](https://github.com/pipe-cd/examples/tree/master/cloudrun/simple) | Quick sync by rolling out the new version and switching all traffic to it. |
 | [canary](https://github.com/pipe-cd/examples/tree/master/cloudrun/canary) | Deployment pipeline with canary strategy. |
-| [bluegreen](https://github.com/pipe-cd/examples/tree/master/cloudrun/bluegreen) | Deployment pipeline with bluegreen strategy. |
+| [analysis](https://github.com/pipe-cd/examples/tree/master/cloudrun/analysis) | Deployment pipeline that contains an analysis stage. |
 
 ### Lambda Applications
 
