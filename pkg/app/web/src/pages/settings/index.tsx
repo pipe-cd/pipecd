@@ -12,9 +12,11 @@ import {
   PAGE_PATH_SETTINGS,
   PAGE_PATH_SETTINGS_PIPED,
   PAGE_PATH_SETTINGS_ENV,
+  PAGE_PATH_SETTINGS_PROJECT,
 } from "../../constants";
 import { SettingsPipedPage } from "./piped";
 import { SettingsEnvironmentPage } from "./environment";
+import { SettingsProjectPage } from "./project";
 
 const drawerWidth = 240;
 
@@ -47,6 +49,7 @@ const useStyles = makeStyles((theme) => ({
 const MENU_ITEMS = [
   ["Piped", PAGE_PATH_SETTINGS_PIPED],
   ["Environment", PAGE_PATH_SETTINGS_ENV],
+  ["Project", PAGE_PATH_SETTINGS_PROJECT],
 ];
 
 export const SettingsIndexPage: FC = memo(function SettingsIndexPage() {
@@ -91,6 +94,11 @@ export const SettingsIndexPage: FC = memo(function SettingsIndexPage() {
             exact
             path={PAGE_PATH_SETTINGS_ENV}
             component={SettingsEnvironmentPage}
+          />
+          <Route
+            exact
+            path={PAGE_PATH_SETTINGS_PROJECT}
+            component={SettingsProjectPage}
           />
         </Switch>
       </main>

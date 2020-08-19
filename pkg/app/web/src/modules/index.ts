@@ -13,6 +13,7 @@ import { applicationFilterOptionsSlice } from "./application-filter-options";
 import { meSlice } from "./me";
 import { deploymentFilterOptionsSlice } from "./deployment-filter-options";
 import { loginSlice } from "./login";
+import { projectSlice } from "./project";
 
 export const reducers = combineReducers({
   deployments: deploymentsSlice.reducer,
@@ -28,6 +29,7 @@ export const reducers = combineReducers({
   toasts: toastsSlice.reducer,
   me: meSlice.reducer,
   login: loginSlice.reducer,
+  project: projectSlice.reducer,
 });
 
 export type AppState = ReturnType<typeof reducers>;
