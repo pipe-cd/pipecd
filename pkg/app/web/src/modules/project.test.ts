@@ -10,6 +10,7 @@ describe("projectSlice reducer", () => {
       Object {
         "desc": null,
         "id": null,
+        "isUpdatingGitHubSSO": false,
         "isUpdatingPassword": false,
         "isUpdatingUsername": false,
         "staticAdminDisabled": false,
