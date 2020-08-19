@@ -13,3 +13,25 @@
 // limitations under the License.
 
 package terraform
+
+import "context"
+
+type Terraform struct {
+	version  string
+	execPath string
+}
+
+func NewTerraform(version, path string) *Terraform {
+	return &Terraform{
+		version:  version,
+		execPath: path,
+	}
+}
+
+func (t *Terraform) Changes(ctx context.Context) ([]byte, error) {
+	return nil, nil
+}
+
+func (t *Terraform) Apply(ctx context.Context) error {
+	return nil
+}

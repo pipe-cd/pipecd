@@ -6,7 +6,10 @@ go_library(
     importpath = "github.com/pipe-cd/pipe/pkg/app/piped/executor/terraform",
     visibility = ["//visibility:public"],
     deps = [
+        "//pkg/app/piped/cloudprovider/terraform:go_default_library",
         "//pkg/app/piped/executor:go_default_library",
+        "//pkg/app/piped/toolregistry:go_default_library",
+        "//pkg/config:go_default_library",
         "//pkg/model:go_default_library",
     ],
 )
