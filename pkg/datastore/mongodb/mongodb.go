@@ -184,7 +184,6 @@ func (m *MongoDB) Update(ctx context.Context, kind, id string, factory datastore
 	if err != nil {
 		return err
 	}
-	m.logger.Info("before updating", zap.Any("application", entity))
 	if err := updater(entity); err != nil {
 		m.logger.Error("failed to run updater to update entity",
 			zap.String("id", id),
@@ -193,7 +192,6 @@ func (m *MongoDB) Update(ctx context.Context, kind, id string, factory datastore
 		)
 		return err
 	}
-	m.logger.Info("after updating", zap.Any("application", entity))
 	update := bson.D{{"$set", entity}}
 	if _, err := col.UpdateOne(ctx, makePrimaryKeyFilter(id), update); err != nil {
 		m.logger.Error("failed to update entity",
