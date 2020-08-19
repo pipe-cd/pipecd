@@ -17,7 +17,6 @@ package mongodb
 import (
 	"context"
 	"errors"
-	"strings"
 
 	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/mongo"
@@ -28,26 +27,27 @@ import (
 )
 
 type MongoDB struct {
-	ctx       context.Context
-	client    *mongo.Client
-	namespace string
-	direct    bool
+	ctx      context.Context
+	client   *mongo.Client
+	database string
 
 	logger *zap.Logger
 }
 
-func NewMongoDB(ctx context.Context, url, namespace string, opts ...Option) (*MongoDB, error) {
+func NewMongoDB(ctx context.Context, url, database string, opts ...Option) (*MongoDB, error) {
+	// TODO: Enable to specify username and password via file.
+	//   Need to check if it overrides AuthMechanism etc.
 	m := &MongoDB{
-		ctx:       ctx,
-		namespace: namespace,
-		logger:    zap.NewNop(),
+		ctx:      ctx,
+		database: database,
+		logger:   zap.NewNop(),
 	}
 	for _, opt := range opts {
 		opt(m)
 	}
 	m.logger = m.logger.Named("mongodb")
 
-	clientOpts := options.Client().SetDirect(m.direct).ApplyURI(url)
+	clientOpts := options.Client().ApplyURI(url)
 	client, err := mongo.Connect(ctx, clientOpts)
 	if err != nil {
 		return nil, err
@@ -64,14 +64,8 @@ func WithLogger(logger *zap.Logger) Option {
 	}
 }
 
-func WithDirect(direct bool) Option {
-	return func(s *MongoDB) {
-		s.direct = direct
-	}
-}
-
 func (m *MongoDB) Find(ctx context.Context, kind string, opts datastore.ListOptions) (datastore.Iterator, error) {
-	col := m.client.Database(m.namespace).Collection(kind)
+	col := m.client.Database(m.database).Collection(kind)
 	opes := make([]bson.M, len(opts.Filters))
 	for i, f := range opts.Filters {
 		ope, err := convertToMongoDBOperator(f.Operator)
@@ -79,11 +73,7 @@ func (m *MongoDB) Find(ctx context.Context, kind string, opts datastore.ListOpti
 			return nil, err
 		}
 		opes[i] = bson.M{
-			// Note: The field name of protobuf is saved in lower case by default in mongodb.
-			// e.g. Name => name, ProjectId => projectid, CreatedAt, createdat
-			// The field name in mongodb can be set by bson tag in proto file, but setting this for all fields is very tedious.
-			// For that reason, does change strings to lowercase before making a query. However, the exception is the "_id" field.
-			strings.ToLower(f.Field): bson.M{
+			f.Field: bson.M{
 				ope: f.Value,
 			},
 		}
@@ -116,7 +106,7 @@ func (m *MongoDB) Find(ctx context.Context, kind string, opts datastore.ListOpti
 }
 
 func (m *MongoDB) Get(ctx context.Context, kind, id string, v interface{}) error {
-	col := m.client.Database(m.namespace).Collection(kind)
+	col := m.client.Database(m.database).Collection(kind)
 	err := col.FindOne(ctx, makePrimaryKeyFilter(id)).Decode(v)
 	if errors.Is(err, mongo.ErrNoDocuments) {
 		return datastore.ErrNotFound
@@ -134,7 +124,13 @@ func (m *MongoDB) Get(ctx context.Context, kind, id string, v interface{}) error
 
 func (m *MongoDB) Create(ctx context.Context, kind, id string, entity interface{}) error {
 	// TODO: Support updating process with using transaction on mongoDB cluster
-	col := m.client.Database(m.namespace).Collection(kind)
+	//   err := m.client.UseSession(ctx, func(sessCtx mongo.SessionContext) error { }
+	//   See the example at: https://godoc.org/go.mongodb.org/mongo-driver/mongo#Client.UseSessionWithOptions
+	//   NOTE:
+	//   - Multi-document transactions are only available in version 4.0 or later.
+	//   - Also available for replica set deployments only.
+	//   - Available even on a standalone server but need to configure it as a replica set (with just one node)
+	col := m.client.Database(m.database).Collection(kind)
 	err := col.FindOne(ctx, makePrimaryKeyFilter(id), options.FindOne()).Err()
 	if err == nil {
 		return datastore.ErrAlreadyExists
@@ -160,7 +156,7 @@ func (m *MongoDB) Create(ctx context.Context, kind, id string, entity interface{
 }
 
 func (m *MongoDB) Put(ctx context.Context, kind, id string, entity interface{}) error {
-	col := m.client.Database(m.namespace).Collection(kind)
+	col := m.client.Database(m.database).Collection(kind)
 	err := m.client.UseSession(ctx, func(sc mongo.SessionContext) error {
 		if _, err := col.UpdateOne(sc, makePrimaryKeyFilter(id), entity); err != nil {
 			return err
@@ -179,7 +175,7 @@ func (m *MongoDB) Put(ctx context.Context, kind, id string, entity interface{}) 
 }
 
 func (m *MongoDB) Update(ctx context.Context, kind, id string, factory datastore.Factory, updater datastore.Updater) error {
-	col := m.client.Database(m.namespace).Collection(kind)
+	col := m.client.Database(m.database).Collection(kind)
 	entity := factory()
 	err := col.FindOne(ctx, makePrimaryKeyFilter(id)).Decode(entity)
 	if errors.Is(err, mongo.ErrNoDocuments) {
@@ -188,6 +184,7 @@ func (m *MongoDB) Update(ctx context.Context, kind, id string, factory datastore
 	if err != nil {
 		return err
 	}
+	m.logger.Info("before updating", zap.Any("application", entity))
 	if err := updater(entity); err != nil {
 		m.logger.Error("failed to run updater to update entity",
 			zap.String("id", id),
@@ -196,6 +193,7 @@ func (m *MongoDB) Update(ctx context.Context, kind, id string, factory datastore
 		)
 		return err
 	}
+	m.logger.Info("after updating", zap.Any("application", entity))
 	update := bson.D{{"$set", entity}}
 	if _, err := col.UpdateOne(ctx, makePrimaryKeyFilter(id), update); err != nil {
 		m.logger.Error("failed to update entity",

@@ -10,6 +10,7 @@ require (
 	github.com/aws/aws-sdk-go v1.34.5 // indirect
 	github.com/dgrijalva/jwt-go v3.2.0+incompatible
 	github.com/envoyproxy/protoc-gen-validate v0.1.0
+	github.com/fatih/structs v1.1.0
 	github.com/golang/mock v1.4.3
 	github.com/golang/protobuf v1.4.0
 	github.com/gomodule/redigo v2.0.0+incompatible
@@ -18,6 +19,7 @@ require (
 	github.com/google/uuid v1.1.1
 	github.com/hashicorp/golang-lru v0.5.1
 	github.com/klauspost/compress v1.10.11 // indirect
+	github.com/mitchellh/mapstructure v1.1.2
 	github.com/prometheus/client_golang v1.6.0
 	github.com/prometheus/client_model v0.2.0
 	github.com/prometheus/common v0.9.1

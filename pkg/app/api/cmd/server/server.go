@@ -43,6 +43,7 @@ import (
 	"github.com/pipe-cd/pipe/pkg/filestore"
 	"github.com/pipe-cd/pipe/pkg/filestore/gcs"
 	"github.com/pipe-cd/pipe/pkg/jwt"
+	"github.com/pipe-cd/pipe/pkg/model"
 	"github.com/pipe-cd/pipe/pkg/redis"
 	"github.com/pipe-cd/pipe/pkg/rpc"
 	"github.com/pipe-cd/pipe/pkg/version"
@@ -313,28 +314,25 @@ func (s *server) loadConfig() (*config.ControlPlaneSpec, error) {
 }
 
 func (s *server) createDatastore(ctx context.Context, cfg *config.ControlPlaneSpec, logger *zap.Logger) (datastore.DataStore, error) {
-	if cfg.Datastore.FirestoreConfig != nil {
+	switch cfg.Datastore.Type {
+	case model.DataStoreFirestore:
 		fsConfig := cfg.Datastore.FirestoreConfig
 		options := []firestore.Option{
 			firestore.WithCredentialsFile(fsConfig.CredentialsFile),
 			firestore.WithLogger(logger),
 		}
 		return firestore.NewFireStore(ctx, fsConfig.Project, fsConfig.Namespace, fsConfig.Environment, options...)
-	}
-
-	if cfg.Datastore.DynamoDBConfig != nil {
-		return nil, errors.New("dynamodb is unimplemented now")
-	}
-
-	if cfg.Datastore.MongoDBConfig != nil {
+	case model.DataStoreDynamoDB:
+		return nil, errors.New("dynamodb is unimplemented yet")
+	case model.DataStoreMongoDB:
 		mdConfig := cfg.Datastore.MongoDBConfig
 		options := []mongodb.Option{
 			mongodb.WithLogger(logger),
 		}
-		return mongodb.NewMongoDB(ctx, mdConfig.URL, mdConfig.Namespace, options...)
+		return mongodb.NewMongoDB(ctx, mdConfig.URL, mdConfig.Database, options...)
+	default:
+		return nil, fmt.Errorf("unknown datastore type %q", cfg.Datastore.Type)
 	}
-
-	return nil, errors.New("datastore configuration is invalid")
 }
 
 func (s *server) createFilestore(ctx context.Context, cfg *config.ControlPlaneSpec, logger *zap.Logger) (filestore.Store, error) {
