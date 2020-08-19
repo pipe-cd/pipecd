@@ -107,7 +107,7 @@ func (e *Executor) ensureRollback(ctx context.Context) model.StageStatus {
 func (e *Executor) findTerraform(ctx context.Context, version string) (*provider.Terraform, error) {
 	path, installed, err := toolregistry.DefaultRegistry().Terraform(ctx, version)
 	if err != nil {
-		return nil, fmt.Errorf("no terraform %s (%v)", version, err)
+		return nil, fmt.Errorf("no terraform %s (%w)", version, err)
 	}
 	if installed {
 		e.LogPersister.Infof("Terraform %s has just been installed because of no pre-installed binary for that version", version)

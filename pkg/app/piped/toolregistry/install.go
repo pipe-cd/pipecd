@@ -207,7 +207,7 @@ func (r *registry) installTerraform(ctx context.Context, version string) error {
 			zap.String("version", version),
 			zap.Error(err),
 		)
-		return fmt.Errorf("failed to install terraform %s (%v)", version, err)
+		return fmt.Errorf("failed to install terraform %s (%w)", version, err)
 	}
 
 	var (
@@ -221,7 +221,7 @@ func (r *registry) installTerraform(ctx context.Context, version string) error {
 			zap.String("out", string(out)),
 			zap.Error(err),
 		)
-		return fmt.Errorf("failed to install terraform %s (%v)", version, err)
+		return fmt.Errorf("failed to install terraform %s (%w)", version, err)
 	}
 
 	r.logger.Info("just installed terraform", zap.String("version", version))
