@@ -16,9 +16,13 @@ package cloudrun
 
 import (
 	"context"
+	"errors"
 	"path/filepath"
+	"sync"
 
 	"go.uber.org/zap"
+	"golang.org/x/sync/singleflight"
+	"google.golang.org/api/run/v1"
 
 	"github.com/pipe-cd/pipe/pkg/config"
 )
@@ -27,38 +31,63 @@ const (
 	DefaultServiceManifestFilename = "service.yaml"
 )
 
-type Provider interface {
-	// LoadServiceManifest loads the service manifest
-	// placing at the application configuration directory.
-	LoadServiceManifest() (ServiceManifest, error)
-	// Apply applies the service to the state specified in the give manifest.
-	Apply(ctx context.Context, m ServiceManifest) error
+var (
+	ErrServiceNotFound = errors.New("not found")
+)
+
+type Service run.Service
+
+type Client interface {
+	Apply(ctx context.Context, sm ServiceManifest) (*Service, error)
+	List(ctx context.Context) error
 }
 
-type provider struct {
-	appDir string
-	input  config.CloudRunDeploymentInput
-	logger *zap.Logger
+type Registry interface {
+	Client(ctx context.Context, name string, cfg *config.CloudProviderCloudRunConfig, logger *zap.Logger) (Client, error)
 }
 
-func NewProvider(appDir string, input config.CloudRunDeploymentInput, logger *zap.Logger) *provider {
-	return &provider{
-		appDir: appDir,
-		input:  input,
-		logger: logger.Named("cloudrun-provider"),
+func LoadServiceManifest(appDir, serviceFilename string) (ServiceManifest, error) {
+	if serviceFilename == "" {
+		serviceFilename = DefaultServiceManifestFilename
 	}
+	path := filepath.Join(appDir, serviceFilename)
+	return loadServiceManifest(path)
 }
 
-func (p *provider) LoadServiceManifest() (ServiceManifest, error) {
-	filename := DefaultServiceManifestFilename
-	if p.input.ServiceManifestFile != "" {
-		filename = p.input.ServiceManifestFile
+var defaultRegistry = &registry{
+	clients:  make(map[string]Client),
+	newGroup: &singleflight.Group{},
+}
+
+func DefaultRegistry() Registry {
+	return defaultRegistry
+}
+
+type registry struct {
+	clients  map[string]Client
+	mu       sync.RWMutex
+	newGroup *singleflight.Group
+}
+
+func (r *registry) Client(ctx context.Context, name string, cfg *config.CloudProviderCloudRunConfig, logger *zap.Logger) (Client, error) {
+	r.mu.RLock()
+	client, ok := r.clients[name]
+	r.mu.RUnlock()
+	if ok {
+		return client, nil
 	}
-	path := filepath.Join(p.appDir, filename)
-	return LoadServiceManifest(path)
-}
 
-func (p *provider) Apply(ctx context.Context, sm ServiceManifest) error {
-	cmd := NewGCloud("")
-	return cmd.Apply(ctx, p.input.Platform, p.input.Region, sm)
+	c, err, _ := r.newGroup.Do(name, func() (interface{}, error) {
+		return newClient(ctx, cfg.Project, cfg.Region, cfg.CredentialsFile, logger)
+	})
+	if err != nil {
+		return nil, err
+	}
+
+	client = c.(Client)
+	r.mu.Lock()
+	r.clients[name] = client
+	r.mu.Unlock()
+
+	return client, nil
 }

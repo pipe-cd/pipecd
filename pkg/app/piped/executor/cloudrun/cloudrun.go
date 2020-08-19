@@ -27,7 +27,9 @@ import (
 type Executor struct {
 	executor.Input
 
-	config *config.CloudRunDeploymentSpec
+	config              *config.CloudRunDeploymentSpec
+	cloudProviderName   string
+	cloudProviderConfig *config.CloudProviderCloudRunConfig
 }
 
 type registerer interface {
@@ -55,6 +57,19 @@ func (e *Executor) Execute(sig executor.StopSignal) model.StageStatus {
 		e.LogPersister.Error("Malformed deployment configuration: missing CloudRunDeploymentSpec")
 		return model.StageStatus_STAGE_FAILURE
 	}
+
+	e.cloudProviderName = e.Application.CloudProvider
+	if e.cloudProviderName == "" {
+		e.LogPersister.Error("This application configuration was missing CloudProvider name")
+		return model.StageStatus_STAGE_FAILURE
+	}
+
+	cpConfig, ok := e.PipedConfig.FindCloudProvider(e.cloudProviderName, model.CloudProviderCloudRun)
+	if !ok {
+		e.LogPersister.Errorf("The specified cloud provider %q was not found in piped configuration", e.cloudProviderName)
+		return model.StageStatus_STAGE_FAILURE
+	}
+	e.cloudProviderConfig = cpConfig.CloudRunConfig
 
 	var (
 		ctx            = sig.Context()
@@ -87,11 +102,10 @@ func (e *Executor) ensureSync(ctx context.Context) model.StageStatus {
 	var (
 		commit = e.Deployment.Trigger.Commit.Hash
 		appDir = filepath.Join(e.RepoDir, e.Deployment.GitPath.Path)
-		p      = provider.NewProvider(appDir, e.config.Input, e.Logger)
 	)
 
 	e.LogPersister.Infof("Loading service manifest at the triggered commit %s", commit)
-	sm, err := p.LoadServiceManifest()
+	sm, err := provider.LoadServiceManifest(appDir, e.config.Input.ServiceManifestFile)
 	if err != nil {
 		e.LogPersister.Errorf("Failed to load service manifest file (%v)", err)
 		return model.StageStatus_STAGE_FAILURE
@@ -117,7 +131,12 @@ func (e *Executor) ensureSync(ctx context.Context) model.StageStatus {
 	e.LogPersister.Info("Successfully generated the appropriate service manifest")
 
 	e.LogPersister.Info("Start applying the service manifest")
-	if err := p.Apply(ctx, sm); err != nil {
+	client, err := provider.DefaultRegistry().Client(ctx, e.cloudProviderName, e.cloudProviderConfig, e.Logger)
+	if err != nil {
+		e.LogPersister.Errorf("Unable to create ClourRun client for the provider (%v)", err)
+		return model.StageStatus_STAGE_FAILURE
+	}
+	if _, err := client.Apply(ctx, sm); err != nil {
 		e.LogPersister.Errorf("Failed to apply the service manifest (%v)", err)
 		return model.StageStatus_STAGE_FAILURE
 	}
