@@ -1,6 +1,7 @@
 import { createSlice, createAsyncThunk } from "@reduxjs/toolkit";
 import * as projectAPI from "../api/project";
-import { AppState } from ".";
+import { AppState } from "./";
+import { ProjectSingleSignOn } from "pipe/pkg/app/web/model/project_pb";
 
 export interface ProjectState {
   id: string | null;
@@ -9,6 +10,7 @@ export interface ProjectState {
   staticAdminDisabled: boolean;
   isUpdatingPassword: boolean;
   isUpdatingUsername: boolean;
+  isUpdatingGitHubSSO: boolean;
 }
 
 const initialState: ProjectState = {
@@ -18,6 +20,7 @@ const initialState: ProjectState = {
   staticAdminDisabled: false,
   isUpdatingPassword: false,
   isUpdatingUsername: false,
+  isUpdatingGitHubSSO: false,
 };
 
 export const fetchProject = createAsyncThunk<{
@@ -67,13 +70,20 @@ export const toggleAvailability = createAsyncThunk<
   }
 });
 
+export const updateGitHubSSO = createAsyncThunk<
+  void,
+  ProjectSingleSignOn.GitHub.AsObject
+>("project/updateGitHubSSO", async (params) => {
+  await projectAPI.updateGitHubSSO(params);
+});
+
 export const projectSlice = createSlice({
   name: "project",
   initialState,
   reducers: {},
   extraReducers: (builder) => {
     builder
-      .addCase(fetchProject.pending, () => {})
+      // .addCase(fetchProject.pending, () => {})
       .addCase(fetchProject.fulfilled, (state, action) => {
         state.id = action.payload.id;
         state.desc = action.payload.desc;
@@ -97,6 +107,17 @@ export const projectSlice = createSlice({
       })
       .addCase(updatePassword.rejected, (state) => {
         state.isUpdatingPassword = false;
+      })
+      .addCase(updateGitHubSSO.pending, (state) => {
+        state.isUpdatingGitHubSSO = true;
+      })
+      .addCase(updateGitHubSSO.fulfilled, (state) => {
+        state.isUpdatingGitHubSSO = false;
+      })
+      .addCase(updateGitHubSSO.rejected, (state) => {
+        state.isUpdatingGitHubSSO = false;
       });
   },
 });
+
+export { ProjectSingleSignOn } from "pipe/pkg/app/web/model/project_pb";
