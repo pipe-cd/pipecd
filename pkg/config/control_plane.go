@@ -28,6 +28,8 @@ type ControlPlaneSpec struct {
 	// List of debugging/quickstart projects defined in Control Plane configuration.
 	// Please do not use this to configure the projects running the production mode.
 	Projects []ControlPlaneProject `json:"projects"`
+	// SharedSSO is the shared oauth settings projects can use.
+	SharedSSO []SharedSingleSignOn `json:"sharedSso"`
 	// The configuration of datastore for control plane.
 	Datastore ControlPlaneDataStore `json:"datastore"`
 	// The configuration of filestore for control plane.
@@ -49,6 +51,36 @@ type ControlPlaneProject struct {
 type ProjectStaticUser struct {
 	Username     string `json:"username"`
 	PasswordHash string `json:"passwordHash"`
+}
+
+type SharedSingleSignOnProvider int32
+
+const (
+	SharedSingleSignOnProvider_GITHUB SharedSingleSignOnProvider = 0
+	SharedSingleSignOnProvider_GOOGLE SharedSingleSignOnProvider = 1
+)
+
+type SharedSingleSignOn struct {
+	Name     string                     `json:"name"`
+	Provider SharedSingleSignOnProvider `json:"provider"`
+	Github   *SharedSingleSignOn_GitHub `json:"github"`
+	Google   *SharedSingleSignOn_Google `json:"google"`
+}
+
+type SharedSingleSignOn_GitHub struct {
+	ClientId     string `json:"client_id"`
+	ClientSecret string `json:"client_secret"`
+	BaseUrl      string `json:"base_url"`
+	UploadUrl    string `json:"upload_url"`
+	Org          string `json:"org"`
+	AdminTeam    string `json:"admin_team"`
+	EditorTeam   string `json:"editor_team"`
+	ViewerTeam   string `json:"viewer_team"`
+}
+
+type SharedSingleSignOn_Google struct {
+	ClientId     string `json:"client_id"`
+	ClientSecret string `json:"client_secret"`
 }
 
 // GetProject finds and returns a specific project in the configured list.
