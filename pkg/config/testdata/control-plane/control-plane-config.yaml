@@ -7,8 +7,8 @@ spec:
         username: test-user
         passwordHash: test-password
   sharedSso:
-    - name: default
-      provider: github
+    default:
+      provider: GITHUB
       github:
         client_id: client-id
         client_secret: client-secret

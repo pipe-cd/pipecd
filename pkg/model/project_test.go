@@ -99,7 +99,7 @@ func TestUpdateProjectSSOConfig(t *testing.T) {
 		{
 			name: "update",
 			sso: &ProjectSSOConfig{
-				Provider: ProjectSingleSignOnProvider_GITHUB,
+				Provider: ProjectSSOConfig_GITHUB,
 				Github: &ProjectSSOConfig_GitHub{
 					ClientId:     "updated",
 					ClientSecret: "updated",
@@ -109,7 +109,7 @@ func TestUpdateProjectSSOConfig(t *testing.T) {
 				Google: nil,
 			},
 			expect: &ProjectSSOConfig{
-				Provider: ProjectSingleSignOnProvider_GITHUB,
+				Provider: ProjectSSOConfig_GITHUB,
 				Github: &ProjectSSOConfig_GitHub{
 					ClientId:     "updated",
 					ClientSecret: "updated",

@@ -113,7 +113,7 @@ func (p *ProjectSSOConfig) Update(sso *ProjectSSOConfig) {
 // GenerateAuthCodeURL generates an auth URL for the specified configuration.
 func (p *ProjectSSOConfig) GenerateAuthCodeURL(project, apiURL, callbackPath, state string) (string, error) {
 	switch p.Provider {
-	case ProjectSingleSignOnProvider_GITHUB:
+	case ProjectSSOConfig_GITHUB:
 		if p.Github == nil {
 			return "", fmt.Errorf("missing GitHub oauth in the SSO configuration")
 		}

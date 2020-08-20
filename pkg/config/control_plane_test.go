@@ -46,15 +46,16 @@ func TestControlPlaneConfig(t *testing.T) {
 						},
 					},
 				},
-				SharedSSO: []SharedSingleSignOn{
-					{
-						Name:     "default",
-						Provider: Github,
-						Github: SharedSingleSignOnGitHub{
-							ClientID:     "client-id",
-							ClientSecret: "client-secret",
-							BaseUrl:      "base-url",
-							UploadUrl:    "upload-url",
+				SharedSSO: map[string]SharedSSOConfig{
+					"default": {
+						ProjectSSOConfig: model.ProjectSSOConfig{
+							Provider: model.ProjectSSOConfig_GITHUB,
+							Github: &model.ProjectSSOConfig_GitHub{
+								ClientId:     "client-id",
+								ClientSecret: "client-secret",
+								BaseUrl:      "base-url",
+								UploadUrl:    "upload-url",
+							},
 						},
 					},
 				},

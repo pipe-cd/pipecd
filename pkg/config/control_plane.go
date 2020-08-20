@@ -30,7 +30,7 @@ type ControlPlaneSpec struct {
 	// Please do not use this to configure the projects running the production mode.
 	Projects []ControlPlaneProject `json:"projects"`
 	// SharedSSO is the shared oauth settings projects can use.
-	SharedSSO []SharedSingleSignOn `json:"sharedSso"`
+	SharedSSO map[string]SharedSSOConfig `json:"sharedSso"`
 	// The configuration of datastore for control plane.
 	Datastore ControlPlaneDataStore `json:"datastore"`
 	// The configuration of filestore for control plane.
@@ -54,45 +54,31 @@ type ProjectStaticUser struct {
 	PasswordHash string `json:"passwordHash"`
 }
 
-type SharedSingleSignOnProvider string
+type SharedSSOConfig struct {
+	model.ProjectSSOConfig
+}
 
-const (
-	Github = "github"
-	Google = "google"
-)
-
-func (p *SharedSingleSignOnProvider) UnmarshalJSON(b []byte) error {
-	var s string
-	json.Unmarshal(b, &s)
-	t := SharedSingleSignOnProvider(s)
-	switch t {
-	case Github:
-		*p = t
-		return nil
-	case Google:
-		*p = t
-		return nil
+func (s *SharedSSOConfig) UnmarshalJSON(data []byte) error {
+	m := make(map[string]interface{})
+	if err := json.Unmarshal(data, &m); err != nil {
+		return err
 	}
-	return fmt.Errorf("invalid SharedSingleSignOnProvider type: %s", s)
-}
-
-type SharedSingleSignOn struct {
-	Name     string                     `json:"name"`
-	Provider SharedSingleSignOnProvider `json:"provider"`
-	Github   SharedSingleSignOnGitHub   `json:"github"`
-	Google   SharedSingleSignOnGoogle   `json:"google"`
-}
-
-type SharedSingleSignOnGitHub struct {
-	ClientID     string `json:"client_id"`
-	ClientSecret string `json:"client_secret"`
-	BaseUrl      string `json:"base_url"`
-	UploadUrl    string `json:"upload_url"`
-}
-
-type SharedSingleSignOnGoogle struct {
-	ClientID     string `json:"client_id"`
-	ClientSecret string `json:"client_secret"`
+	provider := m["provider"].(string)
+	v, ok := model.ProjectSSOConfig_Provider_value[provider]
+	if !ok {
+		return fmt.Errorf("provider %s does not exist", provider)
+	}
+	m["provider"] = v
+	data, err := json.Marshal(m)
+	if err != nil {
+		return err
+	}
+	sso := &model.ProjectSSOConfig{}
+	if err := json.Unmarshal(data, sso); err != nil {
+		return err
+	}
+	s.ProjectSSOConfig = *sso
+	return nil
 }
 
 // GetProject finds and returns a specific project in the configured list.

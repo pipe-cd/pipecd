@@ -53,13 +53,14 @@ message ProjectStaticUser {
     string password_hash = 2 [(validate.rules).string.min_len = 6];
 }
 
-enum ProjectSingleSignOnProvider {
-    GITHUB = 0;
-    GOOGLE = 1;
-}
+
 
 message ProjectSSOConfig {
-    ProjectSingleSignOnProvider provider = 1 [(validate.rules).enum.defined_only = true];
+		enum Provider {
+				GITHUB = 0;
+				GOOGLE = 1;
+		}
+    Provider provider = 1 [(validate.rules).enum.defined_only = true];
 
     message GitHub {
         string client_id = 1 [(validate.rules).string.min_len = 1];
