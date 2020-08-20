@@ -38,7 +38,8 @@ func TestDecideRole(t *testing.T) {
 			username: "foo",
 			teams: []*github.Team{
 				{
-					Slug: stringPointer("team1"),
+					Organization: &github.Organization{Login: stringPointer("org")},
+					Slug:         stringPointer("team1"),
 				},
 			},
 			wantErr: true,
@@ -48,13 +49,16 @@ func TestDecideRole(t *testing.T) {
 			username: "foo",
 			teams: []*github.Team{
 				{
-					Slug: stringPointer("team-admin"),
+					Organization: &github.Organization{Login: stringPointer("org")},
+					Slug:         stringPointer("team-admin"),
 				},
 				{
-					Slug: stringPointer("team-editor"),
+					Organization: &github.Organization{Login: stringPointer("org")},
+					Slug:         stringPointer("team-editor"),
 				},
 				{
-					Slug: stringPointer("team-viewer"),
+					Organization: &github.Organization{Login: stringPointer("org")},
+					Slug:         stringPointer("team-viewer"),
 				},
 			},
 			role: model.Role_ADMIN,
@@ -64,13 +68,16 @@ func TestDecideRole(t *testing.T) {
 			username: "foo",
 			teams: []*github.Team{
 				{
-					Slug: stringPointer("team1"),
+					Organization: &github.Organization{Login: stringPointer("org")},
+					Slug:         stringPointer("team1"),
 				},
 				{
-					Slug: stringPointer("team-editor"),
+					Organization: &github.Organization{Login: stringPointer("org")},
+					Slug:         stringPointer("team-editor"),
 				},
 				{
-					Slug: stringPointer("team-viewer"),
+					Organization: &github.Organization{Login: stringPointer("org")},
+					Slug:         stringPointer("team-viewer"),
 				},
 			},
 			role: model.Role_EDITOR,
@@ -80,13 +87,16 @@ func TestDecideRole(t *testing.T) {
 			username: "foo",
 			teams: []*github.Team{
 				{
-					Slug: stringPointer("team1"),
+					Organization: &github.Organization{Login: stringPointer("org")},
+					Slug:         stringPointer("team1"),
 				},
 				{
-					Slug: stringPointer("team2"),
+					Organization: &github.Organization{Login: stringPointer("org")},
+					Slug:         stringPointer("team2"),
 				},
 				{
-					Slug: stringPointer("team-viewer"),
+					Organization: &github.Organization{Login: stringPointer("org")},
+					Slug:         stringPointer("team-viewer"),
 				},
 			},
 			role: model.Role_VIEWER,
@@ -94,9 +104,9 @@ func TestDecideRole(t *testing.T) {
 	}
 
 	oc := &OAuthClient{
-		adminTeam:  "team-admin",
-		editorTeam: "team-editor",
-		viewerTeam: "team-viewer",
+		adminTeam:  "org/team-admin",
+		editorTeam: "org/team-editor",
+		viewerTeam: "org/team-viewer",
 	}
 	for _, tc := range cases {
 		t.Run(tc.name, func(t *testing.T) {

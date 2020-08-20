@@ -8,11 +8,11 @@ import {
   DialogActions,
 } from "@material-ui/core";
 import React, { FC, useState } from "react";
-import { ProjectSingleSignOn } from "../modules/project";
+import { ProjectSSOConfig } from "../modules/project";
 
 interface Props {
   isSaving: boolean;
-  onSave: (params: ProjectSingleSignOn.GitHub.AsObject) => Promise<unknown>;
+  onSave: (params: ProjectSSOConfig.GitHub.AsObject) => Promise<unknown>;
 }
 
 function hasEmptyValue(obj: Record<string, string>): boolean {

@@ -48,7 +48,7 @@ func (h *Handler) handleCallback(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	user, err := getUser(ctx, proj.Sso, proj.Id, r.FormValue(authCodeFormKey))
+	user, err := getUser(ctx, proj.Sso, proj.Rbac, proj.Id, r.FormValue(authCodeFormKey))
 	if err != nil {
 		handleError(w, r, rootPath, "internal error", h.logger, err)
 		return
@@ -101,7 +101,7 @@ func checkState(r *http.Request, key string) error {
 	return nil
 }
 
-func getUser(ctx context.Context, sso *model.ProjectSingleSignOn, projectID, code string) (*model.User, error) {
+func getUser(ctx context.Context, sso *model.ProjectSSOConfig, rbac *model.ProjectRBACConfig, projectID, code string) (*model.User, error) {
 	if sso == nil {
 		return nil, fmt.Errorf("missing SSO configuration")
 	}
@@ -110,7 +110,7 @@ func getUser(ctx context.Context, sso *model.ProjectSingleSignOn, projectID, cod
 		if sso.Github == nil {
 			return nil, fmt.Errorf("missing GitHub oauth in the SSO configuration")
 		}
-		cli, err := github.NewOAuthClient(ctx, sso.Github, projectID, code)
+		cli, err := github.NewOAuthClient(ctx, sso.Github, rbac, projectID, code)
 		if err != nil {
 			return nil, err
 		}

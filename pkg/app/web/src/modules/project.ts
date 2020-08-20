@@ -1,7 +1,7 @@
 import { createSlice, createAsyncThunk } from "@reduxjs/toolkit";
 import * as projectAPI from "../api/project";
 import { AppState } from "./";
-import { ProjectSingleSignOn } from "pipe/pkg/app/web/model/project_pb";
+import { ProjectSSOConfig } from "pipe/pkg/app/web/model/project_pb";
 
 export interface ProjectState {
   id: string | null;
@@ -72,7 +72,7 @@ export const toggleAvailability = createAsyncThunk<
 
 export const updateGitHubSSO = createAsyncThunk<
   void,
-  ProjectSingleSignOn.GitHub.AsObject
+  ProjectSSOConfig.GitHub.AsObject
 >("project/updateGitHubSSO", async (params) => {
   await projectAPI.updateGitHubSSO(params);
 });
@@ -120,4 +120,4 @@ export const projectSlice = createSlice({
   },
 });
 
-export { ProjectSingleSignOn } from "pipe/pkg/app/web/model/project_pb";
+export { ProjectSSOConfig } from "pipe/pkg/app/web/model/project_pb";

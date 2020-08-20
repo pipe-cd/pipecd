@@ -35,7 +35,9 @@ message Project {
     // Whether the static admin is disabled or not.
     bool static_admin_disabled = 4;
     // Single sign-on configuration for this project.
-    ProjectSingleSignOn sso = 5;
+    ProjectSSOConfig sso = 5;
+    // RBAC Configuration for this project.
+    ProjectRBACConfig rbac = 6;
 
     // Unix time when the project is created.
     int64 created_at = 14 [(validate.rules).int64.gt = 0];
@@ -56,7 +58,7 @@ enum ProjectSingleSignOnProvider {
     GOOGLE = 1;
 }
 
-message ProjectSingleSignOn {
+message ProjectSSOConfig {
     ProjectSingleSignOnProvider provider = 1 [(validate.rules).enum.defined_only = true];
 
     message GitHub {
@@ -64,10 +66,6 @@ message ProjectSingleSignOn {
         string client_secret = 2 [(validate.rules).string.min_len = 1];
         string base_url = 3;
         string upload_url = 4;
-        string org = 5 [(validate.rules).string.min_len = 1];
-        string admin_team = 6 [(validate.rules).string.min_len = 1];
-        string editor_team = 7 [(validate.rules).string.min_len = 1];
-        string viewer_team = 8 [(validate.rules).string.min_len = 1];
     }
 
     message Google {
@@ -77,4 +75,10 @@ message ProjectSingleSignOn {
 
     GitHub github = 10;
     Google google = 11;
+}
+
+message ProjectRBACConfig {
+    string admin = 1 [(validate.rules).string.min_len = 1];
+    string editor = 2 [(validate.rules).string.min_len = 1];
+    string viewer = 3 [(validate.rules).string.min_len = 1];
 }

@@ -9,7 +9,7 @@ import {
   toggleAvailability,
   updatePassword,
   updateUsername,
-  ProjectSingleSignOn,
+  ProjectSSOConfig,
   updateGitHubSSO,
 } from "../../modules/project";
 import { AppDispatch } from "../../store";
@@ -51,7 +51,7 @@ export const SettingsProjectPage: FC = memo(function SettingsProjectPage() {
   };
 
   const handleSaveGitHubSSO = (
-    params: ProjectSingleSignOn.GitHub.AsObject
+    params: ProjectSSOConfig.GitHub.AsObject
   ): Promise<unknown> => {
     return dispatch(updateGitHubSSO(params));
   };
