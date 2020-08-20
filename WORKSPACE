@@ -130,10 +130,10 @@ load(
 
 container_pull(
     name = "piped-base",
-    digest = "sha256:0128895d397f7de50b45766168b2d6fd653aa0c15d68d1d9bc2a1b9909a2d6ea",
+    digest = "sha256:e357a240b1e8668c851a1dcb3e3244b4e037aab56029f394dda6925070d473a9",
     registry = "gcr.io",
     repository = "pipecd/piped-base",
-    tag = "0.0.3",
+    tag = "0.1.0",
 )
 
 container_pull(
