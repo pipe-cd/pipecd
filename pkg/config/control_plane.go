@@ -73,7 +73,7 @@ func (p *SharedSingleSignOnProvider) UnmarshalJSON(b []byte) error {
 		*p = t
 		return nil
 	}
-	return fmt.Errorf("Invalid SharedSingleSignOnProvider type: %s", s)
+	return fmt.Errorf("invalid SharedSingleSignOnProvider type: %s", s)
 }
 
 type SharedSingleSignOn struct {
