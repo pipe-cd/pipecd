@@ -95,22 +95,15 @@ func TestPipedConfig(t *testing.T) {
 						},
 					},
 					{
-						Name: "terraform-gcp",
+						Name: "terraform",
 						Type: model.CloudProviderTerraform,
 						TerraformConfig: &CloudProviderTerraformConfig{
-							GCP: &CloudProviderTerraformGCP{
-								Project:         "gcp-project",
-								Region:          "us-central1",
-								CredentialsFile: "/etc/piped-secret/gcp-service-account.json",
+							Vars: []string{
+								"project=gcp-project",
+								"region=us-centra1",
 							},
-						},
-					},
-					{
-						Name: "terraform-aws",
-						Type: model.CloudProviderTerraform,
-						TerraformConfig: &CloudProviderTerraformConfig{
-							AWS: &CloudProviderTerraformAWS{
-								Region: "us-east-1",
+							CredentialsFiles: []string{
+								"/path-to-credentials-file",
 							},
 						},
 					},
@@ -118,6 +111,8 @@ func TestPipedConfig(t *testing.T) {
 						Name: "cloudrun",
 						Type: model.CloudProviderCloudRun,
 						CloudRunConfig: &CloudProviderCloudRunConfig{
+							Project:         "gcp-project-id",
+							Region:          "cloud-run-region",
 							CredentialsFile: "/etc/piped-secret/gcp-service-account.json",
 						},
 					},

@@ -254,18 +254,17 @@ type KubernetesResourceMatcher struct {
 }
 
 type CloudProviderTerraformConfig struct {
-	GCP *CloudProviderTerraformGCP `json:"gcp"`
-	AWS *CloudProviderTerraformAWS `json:"aws"`
-}
-
-type CloudProviderTerraformGCP struct {
-	Project         string `json:"project"`
-	Region          string `json:"region"`
-	CredentialsFile string `json:"credentialsFile"`
-}
-
-type CloudProviderTerraformAWS struct {
-	Region string `json:"region"`
+	// The name of directory where to put the configured credentials files.
+	// Default is ".terraform-credentials"
+	CredentialsDirName string `json:"credentialsDirName"`
+	// List of credentials files that will be copied to the CredentialsDir before running terraform commands.
+	CredentialsFiles []string `json:"credentialsFiles"`
+	// List of variables that will be set directly on terraform commands with "-var" flag.
+	// The variable must be formatted by "key=value" as below:
+	// "image_id=ami-abc123"
+	// 'image_id_list=["ami-abc123","ami-def456"]'
+	// 'image_id_map={"us-east-1":"ami-abc123","us-east-2":"ami-def456"}'
+	Vars []string `json:"vars"`
 }
 
 type CloudProviderCloudRunConfig struct {

@@ -45,4 +45,11 @@ cp -f {{ .BinDir }}/helm-{{ .Version }} {{ .BinDir }}/helm
 `
 
 var terraformInstallScript = `
+cd {{ .WorkingDir }}
+curl https://releases.hashicorp.com/terraform/{{ .Version }}/terraform_{{ .Version }}_darwin_amd64.zip -o terraform_{{ .Version }}_linux_amd64.zip
+unzip terraform_{{ .Version }}_linux_amd64.zip
+mv terraform {{ .BinDir }}/terraform-{{ .Version }}
+{{ if .AsDefault }}
+cp -f {{ .BinDir }}/terraform-{{ .Version }} {{ .BinDir }}/terraform
+{{ end }}
 `
