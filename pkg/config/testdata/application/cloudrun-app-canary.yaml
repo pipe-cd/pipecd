@@ -8,7 +8,7 @@ spec:
     stages:
       # Deploy workloads of the new version.
       # But this is still receiving no traffic.
-      - name: CLOUDRUN_CANARY_ROLLOUT
+      - name: CLOUDRUN_PROMOTE
       # Change the traffic routing state where
       # the new version will receive the specified percentage of traffic.
       # This is known as multi-phase canary strategy.

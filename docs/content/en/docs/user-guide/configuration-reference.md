@@ -319,7 +319,7 @@ spec:
 | Field | Type | Description | Required |
 |-|-|-|-|
 
-### CloudRunCanaryRolloutStageOptions
+### CloudRunPromoteStageOptions
 
 | Field | Type | Description | Required |
 |-|-|-|-|

@@ -19,6 +19,9 @@ import (
 	"fmt"
 	"time"
 
+	"go.uber.org/zap"
+
+	provider "github.com/pipe-cd/pipe/pkg/app/piped/cloudprovider/cloudrun"
 	"github.com/pipe-cd/pipe/pkg/app/piped/planner"
 	"github.com/pipe-cd/pipe/pkg/model"
 )
@@ -37,7 +40,6 @@ func Register(r registerer) {
 }
 
 // Plan decides which pipeline should be used for the given input.
-// TODO: Implement the logic for CloudRun planner.
 func (p *Planner) Plan(ctx context.Context, in planner.Input) (out planner.Output, err error) {
 	cfg := in.DeploymentConfig.CloudRunDeploymentSpec
 	if cfg == nil {
@@ -45,14 +47,48 @@ func (p *Planner) Plan(ctx context.Context, in planner.Input) (out planner.Outpu
 		return
 	}
 
-	if cfg.Pipeline == nil || len(cfg.Pipeline.Stages) == 0 {
+	// Determine application version from the manifest.
+	if version, e := p.determineVersion(in.AppDir, cfg.Input.ServiceManifestFile); e == nil {
+		out.Version = version
+	} else {
+		out.Version = "unknown"
+		in.Logger.Warn("unable to determine target version", zap.Error(e))
+	}
+
+	// This is the first time to deploy this application or it was unable to retrieve that value.
+	// We just do the quick sync.
+	if in.MostRecentSuccessfulCommitHash == "" {
 		out.Stages = buildQuickSyncPipeline(cfg.Input.AutoRollback, time.Now())
-		out.Summary = "Quick sync by just deploying the new version and configuring all traffic to it because no pipeline was configured"
+		out.Summary = "Quick sync by deploying the new version and configuring all traffic to it because it seems this is the first deployment"
 		return
 	}
 
-	out.Stages = buildProgressivePipeline(cfg.Pipeline, cfg.Input.AutoRollback, time.Now())
-	out.Summary = "Sync progressively because ... (unimplemented)"
+	// When no pipeline was configured, do the quick sync.
+	if cfg.Pipeline == nil || len(cfg.Pipeline.Stages) == 0 {
+		out.Stages = buildQuickSyncPipeline(cfg.Input.AutoRollback, time.Now())
+		out.Summary = "Quick sync by deploying the new version and configuring all traffic to it because no pipeline was configured"
+		return
+	}
 
+	// Load service manifest at the last deployed commit to decide running version.
+	if err = in.Repo.Checkout(ctx, in.MostRecentSuccessfulCommitHash); err == nil {
+		if lastVersion, e := p.determineVersion(in.AppDir, cfg.Input.ServiceManifestFile); e == nil {
+			out.Stages = buildProgressivePipeline(cfg.Pipeline, cfg.Input.AutoRollback, time.Now())
+			out.Summary = fmt.Sprintf("Sync progressively because of updating image from %s to %s", lastVersion, out.Version)
+			return
+		}
+	}
+
+	out.Stages = buildProgressivePipeline(cfg.Pipeline, cfg.Input.AutoRollback, time.Now())
+	out.Summary = "Sync progressively with the specified pipeline"
 	return
+}
+
+func (p *Planner) determineVersion(appDir, serviceManifestFile string) (string, error) {
+	sm, err := provider.LoadServiceManifest(appDir, serviceManifestFile)
+	if err != nil {
+		return "", err
+	}
+
+	return provider.FindImageTag(sm)
 }
