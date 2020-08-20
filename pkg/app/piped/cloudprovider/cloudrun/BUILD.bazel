@@ -4,8 +4,8 @@ go_library(
     name = "go_default_library",
     srcs = [
         "cache.go",
+        "client.go",
         "cloudrun.go",
-        "gcloud.go",
         "servicemanifest.go",
     ],
     importpath = "github.com/pipe-cd/pipe/pkg/app/piped/cloudprovider/cloudrun",
@@ -16,6 +16,10 @@ go_library(
         "@io_k8s_apimachinery//pkg/apis/meta/v1/unstructured:go_default_library",
         "@io_k8s_apimachinery//pkg/runtime:go_default_library",
         "@io_k8s_sigs_yaml//:go_default_library",
+        "@org_golang_google_api//googleapi:go_default_library",
+        "@org_golang_google_api//option:go_default_library",
+        "@org_golang_google_api//run/v1:go_default_library",
+        "@org_golang_x_sync//singleflight:go_default_library",
         "@org_uber_go_zap//:go_default_library",
     ],
 )

@@ -53,7 +53,7 @@ func (m ServiceManifest) UpdateTraffic(revisions []RevisionTraffic) error {
 
 func (m ServiceManifest) UpdateAllTraffic(revision string) error {
 	return m.UpdateTraffic([]RevisionTraffic{
-		RevisionTraffic{
+		{
 			RevisionName: revision,
 			Percent:      100,
 		},
@@ -64,7 +64,7 @@ func (m ServiceManifest) YamlBytes() ([]byte, error) {
 	return yaml.Marshal(m.u)
 }
 
-func LoadServiceManifest(path string) (ServiceManifest, error) {
+func loadServiceManifest(path string) (ServiceManifest, error) {
 	data, err := ioutil.ReadFile(path)
 	if err != nil {
 		return ServiceManifest{}, err
