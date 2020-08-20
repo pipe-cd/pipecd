@@ -170,6 +170,18 @@ export const AddApplicationForm: FC<Props> = ({
     });
   };
 
+  const cloudProviders =
+    selectedPiped?.cloudProvidersList
+      ?.filter(
+        (provider) =>
+          provider.type ===
+          APPLICATION_KIND_TEXT[(formState.kind as unknown) as ApplicationKind]
+      )
+      .map((provider) => ({
+        name: provider.name,
+        value: provider.name,
+      })) || emptyItems;
+
   return (
     <div className={classes.root}>
       <Typography
@@ -299,13 +311,12 @@ export const AddApplicationForm: FC<Props> = ({
               value,
             })
           }
-          items={
-            selectedPiped?.cloudProvidersList?.map((provider) => ({
-              name: provider.name,
-              value: provider.name,
-            })) || emptyItems
+          items={cloudProviders}
+          disabled={
+            selectedPiped === undefined ||
+            cloudProviders.length === 0 ||
+            isAdding
           }
-          disabled={selectedPiped === undefined || isAdding}
         />
 
         <Button
