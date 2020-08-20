@@ -77,7 +77,7 @@ func (c *client) Apply(ctx context.Context, sm ServiceManifest) (*Service, error
 	updatedService, err := call.Do()
 	if err != nil {
 		if e, ok := err.(*googleapi.Error); ok && e.Code == http.StatusNotFound {
-			return nil, fmt.Errorf("service %s was not found (%w). The service must be registered from Google CloudRun page.", name, ErrServiceNotFound)
+			return nil, fmt.Errorf("service %s was not found (%w), the service must be registered from Google CloudRun page", name, ErrServiceNotFound)
 		}
 		return nil, err
 	}
