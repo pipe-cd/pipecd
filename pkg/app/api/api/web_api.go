@@ -822,18 +822,32 @@ func (a *WebAPI) DisableStaticAdmin(ctx context.Context, req *webservice.Disable
 	return &webservice.DisableStaticAdminResponse{}, nil
 }
 
-// UpdateProjectSingleSignOn updates the sso settings.
-func (a *WebAPI) UpdateProjectSingleSignOn(ctx context.Context, req *webservice.UpdateProjectSingleSignOnRequest) (*webservice.UpdateProjectSingleSignOnResponse, error) {
+// UpdateProjectSSOConfig updates the sso settings.
+func (a *WebAPI) UpdateProjectSSOConfig(ctx context.Context, req *webservice.UpdateProjectSSOConfigRequest) (*webservice.UpdateProjectSSOConfigResponse, error) {
 	claims, err := rpcauth.ExtractClaims(ctx)
 	if err != nil {
 		a.logger.Error("failed to extract claims", zap.Error(err))
 		return nil, status.Error(codes.Internal, "internal error")
 	}
-	if err := a.projectStore.UpdateProjectSingleSignOn(ctx, claims.Role.ProjectId, req.Sso); err != nil {
+	if err := a.projectStore.UpdateProjectSSOConfig(ctx, claims.Role.ProjectId, req.Sso); err != nil {
 		a.logger.Error("failed to update project single sign on settings", zap.Error(err))
 		return nil, status.Error(codes.Internal, "failed to update project single sign on settings")
 	}
-	return &webservice.UpdateProjectSingleSignOnResponse{}, nil
+	return &webservice.UpdateProjectSSOConfigResponse{}, nil
+}
+
+// UpdateProjectRBACConfig updates the sso settings.
+func (a *WebAPI) UpdateProjectRBACConfig(ctx context.Context, req *webservice.UpdateProjectRBACConfigRequest) (*webservice.UpdateProjectRBACConfigResponse, error) {
+	claims, err := rpcauth.ExtractClaims(ctx)
+	if err != nil {
+		a.logger.Error("failed to extract claims", zap.Error(err))
+		return nil, status.Error(codes.Internal, "internal error")
+	}
+	if err := a.projectStore.UpdateProjectRBACConfig(ctx, claims.Role.ProjectId, req.Rbac); err != nil {
+		a.logger.Error("failed to update project single sign on settings", zap.Error(err))
+		return nil, status.Error(codes.Internal, "failed to update project single sign on settings")
+	}
+	return &webservice.UpdateProjectRBACConfigResponse{}, nil
 }
 
 // GetMe gets information about the current user.

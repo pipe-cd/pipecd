@@ -4,14 +4,14 @@ import {
   GetProjectResponse,
   UpdateProjectStaticAdminRequest,
   UpdateProjectStaticAdminResponse,
-  UpdateProjectSingleSignOnRequest,
-  UpdateProjectSingleSignOnResponse,
+  UpdateProjectSSOConfigRequest,
+  UpdateProjectSSOConfigResponse,
   EnableStaticAdminRequest,
   EnableStaticAdminResponse,
   DisableStaticAdminRequest,
   DisableStaticAdminResponse,
 } from "pipe/pkg/app/web/api_client/service_pb";
-import { ProjectSingleSignOn } from "pipe/pkg/app/web/model/project_pb";
+import { ProjectSSOConfig } from "pipe/pkg/app/web/model/project_pb";
 
 export const getProject = (): Promise<GetProjectResponse.AsObject> => {
   const req = new GetProjectRequest();
@@ -57,24 +57,16 @@ export const updateGitHubSSO = ({
   clientSecret,
   baseUrl,
   uploadUrl,
-  org,
-  adminTeam,
-  editorTeam,
-  viewerTeam,
-}: ProjectSingleSignOn.GitHub.AsObject): Promise<
-  UpdateProjectSingleSignOnResponse.AsObject
+}: ProjectSSOConfig.GitHub.AsObject): Promise<
+  UpdateProjectSSOConfigResponse.AsObject
 > => {
-  const req = new UpdateProjectSingleSignOnRequest();
-  const params = new ProjectSingleSignOn();
-  const github = new ProjectSingleSignOn.GitHub();
+  const req = new UpdateProjectSSOConfigRequest();
+  const params = new ProjectSSOConfig();
+  const github = new ProjectSSOConfig.GitHub();
   github.setClientId(clientId);
   github.setClientSecret(clientSecret);
   github.setBaseUrl(baseUrl);
   github.setUploadUrl(uploadUrl);
-  github.setOrg(org);
-  github.setAdminTeam(adminTeam);
-  github.setEditorTeam(editorTeam);
-  github.setViewerTeam(viewerTeam);
   req.setSso(params);
-  return apiRequest(req, apiClient.updateProjectSingleSignOn);
+  return apiRequest(req, apiClient.updateProjectSSOConfig);
 };

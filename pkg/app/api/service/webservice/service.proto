@@ -69,7 +69,8 @@ service WebService {
     rpc UpdateProjectStaticAdmin(UpdateProjectStaticAdminRequest) returns (UpdateProjectStaticAdminResponse) {}
     rpc EnableStaticAdmin(EnableStaticAdminRequest) returns (EnableStaticAdminResponse) {}
     rpc DisableStaticAdmin(DisableStaticAdminRequest) returns (DisableStaticAdminResponse) {}
-    rpc UpdateProjectSingleSignOn(UpdateProjectSingleSignOnRequest) returns (UpdateProjectSingleSignOnResponse) {}
+    rpc UpdateProjectSSOConfig(UpdateProjectSSOConfigRequest) returns (UpdateProjectSSOConfigResponse) {}
+    rpc UpdateProjectRBACConfig(UpdateProjectRBACConfigRequest) returns (UpdateProjectRBACConfigResponse) {}
     rpc GetMe(GetMeRequest) returns (GetMeResponse) {}
 
     // Command
@@ -290,9 +291,20 @@ message UpdateProjectStaticAdminRequest {
 message UpdateProjectStaticAdminResponse {
 }
 
-message UpdateProjectSingleSignOnRequest {
-    model.ProjectSingleSignOn sso = 1 [(validate.rules).message.required = true];
+message UpdateProjectSSOConfigRequest {
+    model.ProjectSSOConfig sso = 1 [(validate.rules).message.required = true];
 }
+
+message UpdateProjectSSOConfigResponse {
+}
+
+message UpdateProjectRBACConfigRequest {
+    model.ProjectRBACConfig rbac = 1 [(validate.rules).message.required = true];
+}
+
+message UpdateProjectRBACConfigResponse {
+}
+
 
 message EnableStaticAdminRequest {
 }
@@ -304,9 +316,6 @@ message DisableStaticAdminRequest {
 }
 
 message DisableStaticAdminResponse {
-}
-
-message UpdateProjectSingleSignOnResponse {
 }
 
 message GetMeRequest {

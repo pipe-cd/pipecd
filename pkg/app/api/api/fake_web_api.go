@@ -787,7 +787,11 @@ func (a *FakeWebAPI) DisableStaticAdmin(ctx context.Context, req *webservice.Dis
 	return nil, status.Error(codes.Unimplemented, "")
 }
 
-func (a *FakeWebAPI) UpdateProjectSingleSignOn(ctx context.Context, req *webservice.UpdateProjectSingleSignOnRequest) (*webservice.UpdateProjectSingleSignOnResponse, error) {
+func (a *FakeWebAPI) UpdateProjectSSOConfig(ctx context.Context, req *webservice.UpdateProjectSSOConfigRequest) (*webservice.UpdateProjectSSOConfigResponse, error) {
+	return nil, status.Error(codes.Unimplemented, "")
+}
+
+func (a *FakeWebAPI) UpdateProjectRBACConfig(ctx context.Context, req *webservice.UpdateProjectRBACConfigRequest) (*webservice.UpdateProjectRBACConfigResponse, error) {
 	return nil, status.Error(codes.Unimplemented, "")
 }
 
