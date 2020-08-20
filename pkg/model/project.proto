@@ -83,7 +83,7 @@ message ProjectSingleSignOn {
 
 message SharedSingleSignOn {
     // Shared SSO configuration name to use.
-    bool name = 1;
+    string name = 1;
     // Whether to use the shared SSO configuration or customized one.
     bool use_shared_sso = 2;
 }
