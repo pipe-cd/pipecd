@@ -46,14 +46,16 @@ export const StaticAdminForm: FC<Props> = memo(function StaticAdminForm({
 }) {
   const classes = useStyles();
   const buttonClasses = useButtonStyles();
-  const [usernameState, setUsernameState] = useState(username);
+  const [usernameState, setUsernameState] = useState(username || "");
   const [password, setPassword] = useState("");
 
   return (
     <>
       <Typography variant="h5">Static Admin User</Typography>
       <div className={classes.group}>
-        <Typography variant="subtitle1">Status: Enabled</Typography>
+        <Typography variant="subtitle1">
+          Status: {staticAdminDisabled ? "Disabled" : "Enabled"}
+        </Typography>
         <Button
           color="primary"
           variant="contained"
@@ -76,7 +78,7 @@ export const StaticAdminForm: FC<Props> = memo(function StaticAdminForm({
             id="outlined-adornment-username"
             type="text"
             labelWidth={70}
-            value={usernameState || undefined}
+            value={usernameState || ""}
             onChange={(e) => setUsernameState(e.target.value)}
             endAdornment={
               <InputAdornment position="end">
@@ -110,39 +112,42 @@ export const StaticAdminForm: FC<Props> = memo(function StaticAdminForm({
           Change password
         </Typography>
 
-        <FormControl variant="outlined" margin="dense">
-          <InputLabel htmlFor="outlined-adornment-password">
-            Password
-          </InputLabel>
-          <OutlinedInput
-            id="outlined-adornment-password"
-            type="password"
-            labelWidth={70}
-            value={password}
-            onChange={(e) => setPassword(e.target.value)}
-            endAdornment={
-              <InputAdornment position="end">
-                <Button
-                  color="primary"
-                  disabled={!password || isUpdatingPassword}
-                  onClick={() => {
-                    onUpdatePassword(password).then(() => {
-                      setPassword("");
-                    });
-                  }}
-                >
-                  Update
-                  {isUpdatingPassword && (
-                    <CircularProgress
-                      size={24}
-                      className={buttonClasses.progress}
-                    />
-                  )}
-                </Button>
-              </InputAdornment>
-            }
-          />
-        </FormControl>
+        <form>
+          <FormControl variant="outlined" margin="dense">
+            <InputLabel htmlFor="outlined-adornment-password">
+              Password
+            </InputLabel>
+            <OutlinedInput
+              id="outlined-adornment-password"
+              type="password"
+              labelWidth={70}
+              value={password}
+              onChange={(e) => setPassword(e.target.value)}
+              autoComplete="new-password"
+              endAdornment={
+                <InputAdornment position="end">
+                  <Button
+                    color="primary"
+                    disabled={!password || isUpdatingPassword}
+                    onClick={() => {
+                      onUpdatePassword(password).then(() => {
+                        setPassword("");
+                      });
+                    }}
+                  >
+                    Update
+                    {isUpdatingPassword && (
+                      <CircularProgress
+                        size={24}
+                        className={buttonClasses.progress}
+                      />
+                    )}
+                  </Button>
+                </InputAdornment>
+              }
+            />
+          </FormControl>
+        </form>
       </div>
     </>
   );

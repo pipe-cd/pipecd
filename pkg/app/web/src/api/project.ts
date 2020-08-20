@@ -6,12 +6,17 @@ import {
   UpdateProjectStaticAdminResponse,
   UpdateProjectSSOConfigRequest,
   UpdateProjectSSOConfigResponse,
+  UpdateProjectRBACConfigRequest,
+  UpdateProjectRBACConfigResponse,
   EnableStaticAdminRequest,
   EnableStaticAdminResponse,
   DisableStaticAdminRequest,
   DisableStaticAdminResponse,
 } from "pipe/pkg/app/web/api_client/service_pb";
-import { ProjectSSOConfig } from "pipe/pkg/app/web/model/project_pb";
+import {
+  ProjectSSOConfig,
+  ProjectRBACConfig,
+} from "pipe/pkg/app/web/model/project_pb";
 
 export const getProject = (): Promise<GetProjectResponse.AsObject> => {
   const req = new GetProjectRequest();
@@ -50,6 +55,22 @@ export const disableStaticAdmin = (): Promise<
 > => {
   const req = new DisableStaticAdminRequest();
   return apiRequest(req, apiClient.disableStaticAdmin);
+};
+
+export const updateRBAC = ({
+  admin,
+  editor,
+  viewer,
+}: ProjectRBACConfig.AsObject): Promise<
+  UpdateProjectRBACConfigResponse.AsObject
+> => {
+  const req = new UpdateProjectRBACConfigRequest();
+  const rbac = new ProjectRBACConfig();
+  rbac.setAdmin(admin);
+  rbac.setEditor(editor);
+  rbac.setViewer(viewer);
+  req.setRbac(rbac);
+  return apiRequest(req, apiClient.updateProjectRBACConfig);
 };
 
 export const updateGitHubSSO = ({

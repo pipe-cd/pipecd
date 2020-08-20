@@ -9,11 +9,19 @@ import {
   toggleAvailability,
   updatePassword,
   updateUsername,
-  ProjectSSOConfig,
   updateGitHubSSO,
+  updateRBAC,
 } from "../../modules/project";
 import { AppDispatch } from "../../store";
-import { GithubSSOForm } from "../../components/github-sso-form";
+import {
+  GithubSSOForm,
+  GitHubSSOFormParams,
+} from "../../components/github-sso-form";
+import { addToast } from "../../modules/toasts";
+import {
+  UPDATE_STATIC_ADMIN_PASSWORD_SUCCESS,
+  UPDATE_STATIC_ADMIN_USERNAME_SUCCESS,
+} from "../../constants/toast-text";
 
 const useStyles = makeStyles((theme) => ({
   main: {
@@ -41,19 +49,50 @@ export const SettingsProjectPage: FC = memo(function SettingsProjectPage() {
   const handleUpdateUsername = (username: string): void => {
     dispatch(updateUsername({ username })).then(() => {
       dispatch(fetchProject());
+      dispatch(
+        addToast({
+          message: UPDATE_STATIC_ADMIN_USERNAME_SUCCESS,
+          severity: "success",
+        })
+      );
     });
   };
-  const handleUpdatePassword = (password: string): Promise<unknown> => {
-    return dispatch(updatePassword({ password }));
+  const handleUpdatePassword = async (password: string): Promise<unknown> => {
+    return dispatch(updatePassword({ password })).then(() => {
+      dispatch(
+        addToast({
+          message: UPDATE_STATIC_ADMIN_PASSWORD_SUCCESS,
+          severity: "success",
+        })
+      );
+    });
   };
   const handleToggleAvailability = (): void => {
-    dispatch(toggleAvailability());
+    dispatch(toggleAvailability()).then(() => {
+      dispatch(fetchProject());
+    });
   };
 
   const handleSaveGitHubSSO = (
-    params: ProjectSSOConfig.GitHub.AsObject
+    params: GitHubSSOFormParams
   ): Promise<unknown> => {
-    return dispatch(updateGitHubSSO(params));
+    return Promise.all([
+      dispatch(
+        updateGitHubSSO({
+          baseUrl: params.baseUrl,
+          clientId: params.clientId,
+          clientSecret: params.clientSecret,
+          uploadUrl: params.uploadUrl,
+        })
+      ),
+      dispatch(
+        updateRBAC({
+          admin: `${params.org}/${params.adminTeam}`,
+          editor: `${params.org}/${params.editorTeam}`,
+          viewer: `${params.org}/${params.viewerTeam}`,
+        })
+      ),
+    ]);
   };
 
   if (!project) {

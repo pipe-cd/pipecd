@@ -8,11 +8,21 @@ import {
   DialogActions,
 } from "@material-ui/core";
 import React, { FC, useState } from "react";
-import { ProjectSSOConfig } from "../modules/project";
+
+export interface GitHubSSOFormParams {
+  clientId: string;
+  clientSecret: string;
+  baseUrl: string;
+  uploadUrl: string;
+  org: string;
+  adminTeam: string;
+  editorTeam: string;
+  viewerTeam: string;
+}
 
 interface Props {
   isSaving: boolean;
-  onSave: (params: ProjectSSOConfig.GitHub.AsObject) => Promise<unknown>;
+  onSave: (params: GitHubSSOFormParams) => Promise<unknown>;
 }
 
 function hasEmptyValue(obj: Record<string, string>): boolean {
