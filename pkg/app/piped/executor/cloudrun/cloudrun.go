@@ -135,7 +135,7 @@ func (e *Executor) ensureSync(ctx context.Context) model.StageStatus {
 }
 
 func (e *Executor) ensurePromote(ctx context.Context) model.StageStatus {
-	var options = e.StageConfig.CloudRunPromoteStageOptions
+	options := e.StageConfig.CloudRunPromoteStageOptions
 	if options == nil {
 		e.LogPersister.Errorf("Malformed configuration for stage %s", e.Stage.Name)
 		return model.StageStatus_STAGE_FAILURE
