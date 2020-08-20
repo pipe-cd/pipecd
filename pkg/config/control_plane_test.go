@@ -46,6 +46,18 @@ func TestControlPlaneConfig(t *testing.T) {
 						},
 					},
 				},
+				SharedSSO: []SharedSingleSignOn{
+					{
+						Name:     "default",
+						Provider: Github,
+						Github: SharedSingleSignOnGitHub{
+							ClientID:     "client-id",
+							ClientSecret: "client-secret",
+							BaseUrl:      "base-url",
+							UploadUrl:    "upload-url",
+						},
+					},
+				},
 				Datastore: ControlPlaneDataStore{
 					Type: model.DataStoreFirestore,
 					FirestoreConfig: &DataStoreFireStoreConfig{

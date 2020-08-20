@@ -16,6 +16,7 @@ package config
 
 import (
 	"encoding/json"
+	"fmt"
 
 	"github.com/pipe-cd/pipe/pkg/model"
 )
@@ -53,33 +54,44 @@ type ProjectStaticUser struct {
 	PasswordHash string `json:"passwordHash"`
 }
 
-type SharedSingleSignOnProvider int32
+type SharedSingleSignOnProvider string
 
 const (
-	SharedSingleSignOnProvider_GITHUB SharedSingleSignOnProvider = 0
-	SharedSingleSignOnProvider_GOOGLE SharedSingleSignOnProvider = 1
+	Github = "github"
+	Google = "google"
 )
+
+func (p *SharedSingleSignOnProvider) UnmarshalJSON(b []byte) error {
+	var s string
+	json.Unmarshal(b, &s)
+	t := SharedSingleSignOnProvider(s)
+	switch t {
+	case Github:
+		*p = t
+		return nil
+	case Google:
+		*p = t
+		return nil
+	}
+	return fmt.Errorf("Invalid SharedSingleSignOnProvider type: %s", s)
+}
 
 type SharedSingleSignOn struct {
 	Name     string                     `json:"name"`
 	Provider SharedSingleSignOnProvider `json:"provider"`
-	Github   *SharedSingleSignOn_GitHub `json:"github"`
-	Google   *SharedSingleSignOn_Google `json:"google"`
+	Github   SharedSingleSignOnGitHub   `json:"github"`
+	Google   SharedSingleSignOnGoogle   `json:"google"`
 }
 
-type SharedSingleSignOn_GitHub struct {
-	ClientId     string `json:"client_id"`
+type SharedSingleSignOnGitHub struct {
+	ClientID     string `json:"client_id"`
 	ClientSecret string `json:"client_secret"`
 	BaseUrl      string `json:"base_url"`
 	UploadUrl    string `json:"upload_url"`
-	Org          string `json:"org"`
-	AdminTeam    string `json:"admin_team"`
-	EditorTeam   string `json:"editor_team"`
-	ViewerTeam   string `json:"viewer_team"`
 }
 
-type SharedSingleSignOn_Google struct {
-	ClientId     string `json:"client_id"`
+type SharedSingleSignOnGoogle struct {
+	ClientID     string `json:"client_id"`
 	ClientSecret string `json:"client_secret"`
 }
 
