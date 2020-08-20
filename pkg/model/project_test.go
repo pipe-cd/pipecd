@@ -33,8 +33,8 @@ func TestRedactSensitiveData(t *testing.T) {
 				StaticAdmin: &ProjectStaticUser{
 					PasswordHash: "raw",
 				},
-				Sso: &ProjectSingleSignOn{
-					Github: &ProjectSingleSignOn_GitHub{
+				Sso: &ProjectSSOConfig{
+					Github: &ProjectSSOConfig_GitHub{
 						ClientId:     "raw",
 						ClientSecret: "raw",
 					},
@@ -44,8 +44,8 @@ func TestRedactSensitiveData(t *testing.T) {
 				StaticAdmin: &ProjectStaticUser{
 					PasswordHash: "redacted",
 				},
-				Sso: &ProjectSingleSignOn{
-					Github: &ProjectSingleSignOn_GitHub{
+				Sso: &ProjectSSOConfig{
+					Github: &ProjectSSOConfig_GitHub{
 						ClientId:     "redacted",
 						ClientSecret: "redacted",
 					},
@@ -90,39 +90,31 @@ func TestUpdateProjectStaticUser(t *testing.T) {
 	}
 }
 
-func TestUpdateProjectSingleSignOn(t *testing.T) {
+func TestUpdateProjectSSOConfig(t *testing.T) {
 	cases := []struct {
 		name   string
-		sso    *ProjectSingleSignOn
-		expect *ProjectSingleSignOn
+		sso    *ProjectSSOConfig
+		expect *ProjectSSOConfig
 	}{
 		{
 			name: "update",
-			sso: &ProjectSingleSignOn{
+			sso: &ProjectSSOConfig{
 				Provider: ProjectSingleSignOnProvider_GITHUB,
-				Github: &ProjectSingleSignOn_GitHub{
+				Github: &ProjectSSOConfig_GitHub{
 					ClientId:     "updated",
 					ClientSecret: "updated",
 					BaseUrl:      "updated",
 					UploadUrl:    "updated",
-					Org:          "updated",
-					AdminTeam:    "updated",
-					EditorTeam:   "updated",
-					ViewerTeam:   "updated",
 				},
 				Google: nil,
 			},
-			expect: &ProjectSingleSignOn{
+			expect: &ProjectSSOConfig{
 				Provider: ProjectSingleSignOnProvider_GITHUB,
-				Github: &ProjectSingleSignOn_GitHub{
+				Github: &ProjectSSOConfig_GitHub{
 					ClientId:     "updated",
 					ClientSecret: "updated",
 					BaseUrl:      "updated",
 					UploadUrl:    "updated",
-					Org:          "updated",
-					AdminTeam:    "updated",
-					EditorTeam:   "updated",
-					ViewerTeam:   "updated",
 				},
 				Google: nil,
 			},
@@ -131,8 +123,38 @@ func TestUpdateProjectSingleSignOn(t *testing.T) {
 
 	for _, tc := range cases {
 		t.Run(tc.name, func(t *testing.T) {
-			p := &ProjectSingleSignOn{}
+			p := &ProjectSSOConfig{}
 			p.Update(tc.sso)
+			assert.Equal(t, tc.expect, p)
+		})
+	}
+}
+
+func TestUpdateProjectRBACConfig(t *testing.T) {
+	cases := []struct {
+		name   string
+		rbac   *ProjectRBACConfig
+		expect *ProjectRBACConfig
+	}{
+		{
+			name: "update",
+			rbac: &ProjectRBACConfig{
+				Admin:  "updated",
+				Editor: "updated",
+				Viewer: "updated",
+			},
+			expect: &ProjectRBACConfig{
+				Admin:  "updated",
+				Editor: "updated",
+				Viewer: "updated",
+			},
+		},
+	}
+
+	for _, tc := range cases {
+		t.Run(tc.name, func(t *testing.T) {
+			p := &ProjectRBACConfig{}
+			p.Update(tc.rbac)
 			assert.Equal(t, tc.expect, p)
 		})
 	}

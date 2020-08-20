@@ -16,7 +16,7 @@ spec:
       # Change the traffic routing state where
       # the new version will receive 100% of the traffic as soon as possible.
       # This is known as blue-green strategy.
-      - name: LAMBDA_TRAFFIC_ROUTING
+      - name: LAMBDA_PROMOTE
         with:
           canary: 100
       # Optional: We can also add an ANALYSIS stage to verify the new version.

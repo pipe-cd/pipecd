@@ -40,17 +40,19 @@ func Register(r registerer) {
 func (p *Planner) Plan(ctx context.Context, in planner.Input) (out planner.Output, err error) {
 	cfg := in.DeploymentConfig.TerraformDeploymentSpec
 	if cfg == nil {
-		err = fmt.Errorf("malfored deployment configuration: missing TerraformDeploymentSpec")
+		err = fmt.Errorf("missing TerraformDeploymentSpec in deployment configuration")
 		return
 	}
 
-	if cfg.Pipeline != nil && len(cfg.Pipeline.Stages) > 0 {
-		out.Stages = buildProgressivePipeline(cfg.Pipeline.Stages, time.Now())
-		out.Summary = "Deploy terraform with the specified progressive pipeline."
+	now := time.Now()
+
+	if cfg.Pipeline == nil || len(cfg.Pipeline.Stages) == 0 {
+		out.Stages = builQuickSyncPipeline(cfg.Input.AutoRollback, now)
+		out.Summary = "Quick sync by automatically applying any detected changes because no pipeline was configured"
 		return
 	}
 
-	out.Stages = builDefaultPipeline(time.Now())
-	out.Summary = "Deploy terraform with the default pipeline."
+	out.Stages = buildProgressivePipeline(cfg.Pipeline, cfg.Input.AutoRollback, now)
+	out.Summary = "Sync with the specified progressive pipeline"
 	return
 }

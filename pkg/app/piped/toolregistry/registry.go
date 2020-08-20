@@ -32,6 +32,7 @@ type Registry interface {
 	Kubectl(ctx context.Context, version string) (string, bool, error)
 	Kustomize(ctx context.Context, version string) (string, bool, error)
 	Helm(ctx context.Context, version string) (string, bool, error)
+	Terraform(ctx context.Context, version string) (string, bool, error)
 }
 
 var defaultRegistry *registry
@@ -94,6 +95,7 @@ const (
 	kubectlPrefix   = "kubectl"
 	kustomizePrefix = "kustomize"
 	helmPrefix      = "helm"
+	terraformPrefix = "terraform"
 )
 
 type registry struct {
@@ -176,6 +178,34 @@ func (r *registry) Helm(ctx context.Context, version string) (string, bool, erro
 
 	_, err, _ := r.installGroup.Do(name, func() (interface{}, error) {
 		return nil, r.installHelm(ctx, version)
+	})
+	if err != nil {
+		return "", true, err
+	}
+
+	r.mu.Lock()
+	r.versions[name] = struct{}{}
+	r.mu.Unlock()
+
+	return path, true, nil
+}
+
+func (r *registry) Terraform(ctx context.Context, version string) (string, bool, error) {
+	name := terraformPrefix
+	if version != "" {
+		name = fmt.Sprintf("%s-%s", terraformPrefix, version)
+	}
+	path := filepath.Join(r.binDir, name)
+
+	r.mu.RLock()
+	_, ok := r.versions[name]
+	r.mu.RUnlock()
+	if ok {
+		return path, false, nil
+	}
+
+	_, err, _ := r.installGroup.Do(name, func() (interface{}, error) {
+		return nil, r.installTerraform(ctx, version)
 	})
 	if err != nil {
 		return "", true, err

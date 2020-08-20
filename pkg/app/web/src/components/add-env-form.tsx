@@ -43,7 +43,7 @@ export const AddEnvForm: FC<Props> = memo(function AddEnvForm({
       <Typography
         className={classes.title}
         variant="h6"
-      >{`Add new environment to "${projectName}"`}</Typography>
+      >{`Add a new environment to "${projectName}" project`}</Typography>
       <Divider />
       <form className={classes.form}>
         <TextField

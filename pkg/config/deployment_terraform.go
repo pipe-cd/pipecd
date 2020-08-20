@@ -42,6 +42,10 @@ func (s *TerraformDeploymentSpec) Validate() error {
 type TerraformDeploymentInput struct {
 	Workspace        string `json:"workspace,omitempty"`
 	TerraformVersion string `json:"terraformVersion,omitempty"`
+	// List of variables that will be set directly on terraform commands with "-var" flag.
+	Vars []string `json:"vars,omitempty"`
+	// List of variable files that will be set on terraform commands with "-var-file" flag.
+	VarFiles []string `json:"varFiles,omitempty"`
 	// Automatically reverts all changes from all stages when one of them failed.
 	// Default is false.
 	AutoRollback bool     `json:"autoRollback"`

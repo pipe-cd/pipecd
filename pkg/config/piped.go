@@ -93,6 +93,20 @@ func (s *PipedSpec) HasCloudProvider(name string, t model.CloudProviderType) boo
 	return false
 }
 
+// FindCloudProvider finds and returns a Cloud Provider by name and type.
+func (s *PipedSpec) FindCloudProvider(name string, t model.CloudProviderType) (PipedCloudProvider, bool) {
+	for _, p := range s.CloudProviders {
+		if p.Name != name {
+			continue
+		}
+		if p.Type != t {
+			continue
+		}
+		return p, true
+	}
+	return PipedCloudProvider{}, false
+}
+
 // GetRepositoryMap returns a map of repositories where key is repo id.
 func (s *PipedSpec) GetRepositoryMap() map[string]PipedRepository {
 	m := make(map[string]PipedRepository, len(s.Repositories))
@@ -257,7 +271,6 @@ type CloudProviderTerraformAWS struct {
 type CloudProviderCloudRunConfig struct {
 	Project         string `json:"project"`
 	Region          string `json:"region"`
-	Platform        string `json:"platform"`
 	CredentialsFile string `json:"credentialsFile"`
 }
 

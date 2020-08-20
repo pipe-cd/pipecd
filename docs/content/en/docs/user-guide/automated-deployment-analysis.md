@@ -6,16 +6,16 @@ description: >
   This page describes how to configure Automated Deployment Analysis feature.
 ---
 
-Automated Deployment Analysis (ADA) lets you automate the verifying of the deployment process by analyzing the metrics data, log entries as well as HTTP requests to the specified workloads.
+Automated Deployment Analysis (ADA) lets you automate the verification of the deployment process by analyzing the metrics data, log entries, and the responses of the configured HTTP requests.
 ADA is available as a [Stage](/docs/concepts/#stage) in the pipeline specified in the deployment configuration file.
 
-ADA does the analysis by periodically performing queries against the [Analysis Provider](/docs/concepts/#analysis-provider) and evaluating the results.
+ADA does the analysis by periodically performing queries against the [Analysis Provider](/docs/concepts/#analysis-provider) and evaluating the results to know the impact of the deployment. Then based on these evaluating results, the deployment can be rolled back immediately to minimize any negative impacts.
 
 ### Prerequisites
 Before enabling ADA inside the pipeline, all required Analysis Providers must be configured in the Piped Configuration according to [this guide](/docs/operator-manual/piped/adding-an-analysis-provider/).
 
 ### Configuration
-All you have to do is append the `ANALYSIS` stage to your deployment pipeline.
+All you have to do is appending one or some `ANALYSIS` stages to your deployment pipeline.
 
 The canonical use case for that stage is to determine if your canary deployment should proceed:
 ```yaml

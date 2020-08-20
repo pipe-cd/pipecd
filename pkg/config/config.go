@@ -70,6 +70,8 @@ type Config struct {
 	// Deployment specs.
 	KubernetesDeploymentSpec *KubernetesDeploymentSpec
 	TerraformDeploymentSpec  *TerraformDeploymentSpec
+	CloudRunDeploymentSpec   *CloudRunDeploymentSpec
+	LambdaDeploymentSpec     *LambdaDeploymentSpec
 
 	PipedSpec            *PipedSpec
 	ControlPlaneSpec     *ControlPlaneSpec
@@ -89,21 +91,44 @@ func (c *Config) init(kind Kind, apiVersion string) error {
 	switch kind {
 	case KindKubernetesApp:
 		c.KubernetesDeploymentSpec = &KubernetesDeploymentSpec{
-			Input: KubernetesDeploymentInput{AutoRollback: true},
+			Input: KubernetesDeploymentInput{
+				AutoRollback: true,
+			},
 		}
 		c.spec = c.KubernetesDeploymentSpec
+
 	case KindTerraformApp:
 		c.TerraformDeploymentSpec = &TerraformDeploymentSpec{}
 		c.spec = c.TerraformDeploymentSpec
+
+	case KindCloudRunApp:
+		c.CloudRunDeploymentSpec = &CloudRunDeploymentSpec{
+			Input: CloudRunDeploymentInput{
+				AutoRollback: true,
+			},
+		}
+		c.spec = c.CloudRunDeploymentSpec
+
+	case KindLambdaApp:
+		c.LambdaDeploymentSpec = &LambdaDeploymentSpec{
+			Input: LambdaDeploymentInput{
+				AutoRollback: true,
+			},
+		}
+		c.spec = c.LambdaDeploymentSpec
+
 	case KindPiped:
 		c.PipedSpec = &PipedSpec{}
 		c.spec = c.PipedSpec
+
 	case KindControlPlane:
 		c.ControlPlaneSpec = &ControlPlaneSpec{}
 		c.spec = c.ControlPlaneSpec
+
 	case KindAnalysisTemplate:
 		c.AnalysisTemplateSpec = &AnalysisTemplateSpec{}
 		c.spec = c.AnalysisTemplateSpec
+
 	default:
 		return fmt.Errorf("unsupported kind: %s", c.Kind)
 	}
@@ -196,6 +221,10 @@ func (c *Config) GetPipelineable() (Pipelineable, bool) {
 		return c.KubernetesDeploymentSpec, true
 	case KindTerraformApp:
 		return c.TerraformDeploymentSpec, true
+	case KindCloudRunApp:
+		return c.CloudRunDeploymentSpec, true
+	case KindLambdaApp:
+		return c.LambdaDeploymentSpec, true
 	}
 	return nil, false
 }

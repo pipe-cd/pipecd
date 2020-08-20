@@ -64,13 +64,12 @@ type PipelineStage struct {
 	TerraformPlanStageOptions  *TerraformPlanStageOptions
 	TerraformApplyStageOptions *TerraformApplyStageOptions
 
-	CloudRunSyncStageOptions           *CloudRunSyncStageOptions
-	CloudRunCanaryRolloutStageOptions  *CloudRunCanaryRolloutStageOptions
-	CloudRunTrafficRoutingStageOptions *CloudRunTrafficRoutingStageOptions
+	CloudRunSyncStageOptions    *CloudRunSyncStageOptions
+	CloudRunPromoteStageOptions *CloudRunPromoteStageOptions
 
-	LambdaSyncStageOptions           *LambdaSyncStageOptions
-	LambdaCanaryRolloutStageOptions  *LambdaCanaryRolloutStageOptions
-	LambdaTrafficRoutingStageOptions *LambdaTrafficRoutingStageOptions
+	LambdaSyncStageOptions          *LambdaSyncStageOptions
+	LambdaCanaryRolloutStageOptions *LambdaCanaryRolloutStageOptions
+	LambdaPromoteStageOptions       *LambdaPromoteStageOptions
 }
 
 type genericPipelineStage struct {
@@ -160,15 +159,10 @@ func (s *PipelineStage) UnmarshalJSON(data []byte) error {
 		if len(gs.With) > 0 {
 			err = json.Unmarshal(gs.With, s.CloudRunSyncStageOptions)
 		}
-	case model.StageCloudRunCanaryRollout:
-		s.CloudRunCanaryRolloutStageOptions = &CloudRunCanaryRolloutStageOptions{}
+	case model.StageCloudRunPromote:
+		s.CloudRunPromoteStageOptions = &CloudRunPromoteStageOptions{}
 		if len(gs.With) > 0 {
-			err = json.Unmarshal(gs.With, s.CloudRunCanaryRolloutStageOptions)
-		}
-	case model.StageCloudRunTrafficRouting:
-		s.CloudRunTrafficRoutingStageOptions = &CloudRunTrafficRoutingStageOptions{}
-		if len(gs.With) > 0 {
-			err = json.Unmarshal(gs.With, s.CloudRunTrafficRoutingStageOptions)
+			err = json.Unmarshal(gs.With, s.CloudRunPromoteStageOptions)
 		}
 
 	case model.StageLambdaSync:
@@ -181,10 +175,10 @@ func (s *PipelineStage) UnmarshalJSON(data []byte) error {
 		if len(gs.With) > 0 {
 			err = json.Unmarshal(gs.With, s.LambdaCanaryRolloutStageOptions)
 		}
-	case model.StageLambdaTrafficRouting:
-		s.LambdaTrafficRoutingStageOptions = &LambdaTrafficRoutingStageOptions{}
+	case model.StageLambdaPromote:
+		s.LambdaPromoteStageOptions = &LambdaPromoteStageOptions{}
 		if len(gs.With) > 0 {
-			err = json.Unmarshal(gs.With, s.LambdaTrafficRoutingStageOptions)
+			err = json.Unmarshal(gs.With, s.LambdaPromoteStageOptions)
 		}
 
 	default:

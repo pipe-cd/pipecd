@@ -53,7 +53,7 @@ export const AddPipedForm: FC<Props> = ({ projectName, onSubmit, onClose }) => {
       <Typography
         className={classes.title}
         variant="h6"
-      >{`Add new piped to "${projectName}"`}</Typography>
+      >{`Add a new piped to "${projectName}" project`}</Typography>
       <Divider />
       <form className={classes.form}>
         <TextField

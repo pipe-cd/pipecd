@@ -20,33 +20,33 @@ import (
 )
 
 const (
-	PredefinedWaitApproval        = "WaitApproval"
-	PredefinedStageK8sSync        = "K8sSync"
-	PredefinedStageTerraformPlan  = "TerraformPlan"
-	PredefinedStageTerraformApply = "TerraformApply"
-	PredefinedStageRollback       = "Rollback"
+	PredefinedStageK8sSync       = "K8sSync"
+	PredefinedStageTerraformSync = "TerraformSync"
+	PredefinedStageCloudRunSync  = "CloudRunSync"
+	PredefinedStageLambdaSync    = "LambdaSync"
+	PredefinedStageRollback      = "Rollback"
 )
 
 var predefinedStages = map[string]config.PipelineStage{
-	PredefinedWaitApproval: {
-		Id:   PredefinedWaitApproval,
-		Name: model.StageWaitApproval,
-		Desc: "Wait for an approval",
-	},
 	PredefinedStageK8sSync: {
 		Id:   PredefinedStageK8sSync,
 		Name: model.StageK8sSync,
-		Desc: "Sync resources with Git state",
+		Desc: "Sync by applying all manifests",
 	},
-	PredefinedStageTerraformPlan: {
-		Id:   PredefinedStageTerraformPlan,
-		Name: model.StageTerraformPlan,
-		Desc: "Terraform plan",
+	PredefinedStageTerraformSync: {
+		Id:   PredefinedStageTerraformSync,
+		Name: model.StageTerraformSync,
+		Desc: "Sync by automatically applying any detected changes",
 	},
-	PredefinedStageTerraformApply: {
-		Id:   PredefinedStageTerraformApply,
-		Name: model.StageTerraformApply,
-		Desc: "Terraform apply",
+	PredefinedStageCloudRunSync: {
+		Id:   PredefinedStageCloudRunSync,
+		Name: model.StageCloudRunSync,
+		Desc: "Deploy the new version and configure all traffic to it",
+	},
+	PredefinedStageLambdaSync: {
+		Id:   PredefinedStageLambdaSync,
+		Name: model.StageLambdaSync,
+		Desc: "Deploy the new version and configure all traffic to it",
 	},
 	PredefinedStageRollback: {
 		Id:   PredefinedStageRollback,

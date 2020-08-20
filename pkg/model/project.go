@@ -75,8 +75,21 @@ func (p *ProjectStaticUser) Auth(username, password string) error {
 	return nil
 }
 
+// Update updates ProjectRBACConfig with given data.
+func (p *ProjectRBACConfig) Update(rbac *ProjectRBACConfig) {
+	if rbac.Admin != "" {
+		p.Admin = rbac.Admin
+	}
+	if rbac.Editor != "" {
+		p.Editor = rbac.Editor
+	}
+	if rbac.Viewer != "" {
+		p.Viewer = rbac.Viewer
+	}
+}
+
 // RedactSensitiveData redacts sensitive data.
-func (p *ProjectSingleSignOn) RedactSensitiveData() {
+func (p *ProjectSSOConfig) RedactSensitiveData() {
 	if p.Github != nil {
 		p.Github.RedactSensitiveData()
 	}
@@ -84,12 +97,12 @@ func (p *ProjectSingleSignOn) RedactSensitiveData() {
 	}
 }
 
-// Update updates ProjectSingleSignOn with given data.
-func (p *ProjectSingleSignOn) Update(sso *ProjectSingleSignOn) {
+// Update updates ProjectSSOConfig with given data.
+func (p *ProjectSSOConfig) Update(sso *ProjectSSOConfig) {
 	p.Provider = sso.Provider
 	if sso.Github != nil {
 		if p.Github == nil {
-			p.Github = &ProjectSingleSignOn_GitHub{}
+			p.Github = &ProjectSSOConfig_GitHub{}
 		}
 		p.Github.Update(sso.Github)
 	}
@@ -98,7 +111,7 @@ func (p *ProjectSingleSignOn) Update(sso *ProjectSingleSignOn) {
 }
 
 // GenerateAuthCodeURL generates an auth URL for the specified configuration.
-func (p *ProjectSingleSignOn) GenerateAuthCodeURL(project, apiURL, callbackPath, state string) (string, error) {
+func (p *ProjectSSOConfig) GenerateAuthCodeURL(project, apiURL, callbackPath, state string) (string, error) {
 	switch p.Provider {
 	case ProjectSingleSignOnProvider_GITHUB:
 		if p.Github == nil {
@@ -111,13 +124,13 @@ func (p *ProjectSingleSignOn) GenerateAuthCodeURL(project, apiURL, callbackPath,
 }
 
 // RedactSensitiveData redacts sensitive data.
-func (p *ProjectSingleSignOn_GitHub) RedactSensitiveData() {
+func (p *ProjectSSOConfig_GitHub) RedactSensitiveData() {
 	p.ClientId = redactedMessage
 	p.ClientSecret = redactedMessage
 }
 
-// Update updates ProjectSingleSignOn with given data.
-func (p *ProjectSingleSignOn_GitHub) Update(input *ProjectSingleSignOn_GitHub) {
+// Update updates ProjectSSOConfig with given data.
+func (p *ProjectSSOConfig_GitHub) Update(input *ProjectSSOConfig_GitHub) {
 	if input.ClientId != "" {
 		p.ClientId = input.ClientId
 	}
@@ -130,22 +143,10 @@ func (p *ProjectSingleSignOn_GitHub) Update(input *ProjectSingleSignOn_GitHub) {
 	if input.UploadUrl != "" {
 		p.UploadUrl = input.UploadUrl
 	}
-	if input.Org != "" {
-		p.Org = input.Org
-	}
-	if input.AdminTeam != "" {
-		p.AdminTeam = input.AdminTeam
-	}
-	if input.EditorTeam != "" {
-		p.EditorTeam = input.EditorTeam
-	}
-	if input.ViewerTeam != "" {
-		p.ViewerTeam = input.ViewerTeam
-	}
 }
 
 // GenerateAuthCodeURL generates an auth URL for the specified configuration.
-func (p *ProjectSingleSignOn_GitHub) GenerateAuthCodeURL(project, apiURL, callbackPath, state string) (string, error) {
+func (p *ProjectSSOConfig_GitHub) GenerateAuthCodeURL(project, apiURL, callbackPath, state string) (string, error) {
 	u, err := url.Parse(p.BaseUrl)
 	if err != nil {
 		return "", err

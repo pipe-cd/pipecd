@@ -122,10 +122,10 @@ export const ApplicationList: FC = memo(function ApplicationList() {
               <TableCell>Status</TableCell>
               <TableCell>Name</TableCell>
               <TableCell>Environment</TableCell>
-              <TableCell>Version</TableCell>
-              <TableCell>Commit</TableCell>
-              <TableCell>Triggered By</TableCell>
-              <TableCell>Last Deployment</TableCell>
+              <TableCell>Running Version</TableCell>
+              <TableCell>Running Commit</TableCell>
+              <TableCell>Deployed By</TableCell>
+              <TableCell>Deployed At</TableCell>
               <TableCell />
             </TableRow>
           </TableHead>

@@ -32,28 +32,26 @@ type OAuthClient struct {
 	*github.Client
 
 	projectID  string
-	org        string
 	adminTeam  string
 	editorTeam string
 	viewerTeam string
 }
 
 // NewOAuthClient creates a new oauth client for GitHub.
-func NewOAuthClient(ctx context.Context, p *model.ProjectSingleSignOn_GitHub, projectID, code string) (*OAuthClient, error) {
+func NewOAuthClient(ctx context.Context, sso *model.ProjectSSOConfig_GitHub, rbac *model.ProjectRBACConfig, projectID, code string) (*OAuthClient, error) {
 	c := &OAuthClient{
 		projectID:  projectID,
-		org:        p.Org,
-		adminTeam:  p.AdminTeam,
-		editorTeam: p.EditorTeam,
-		viewerTeam: p.ViewerTeam,
+		adminTeam:  rbac.Admin,
+		editorTeam: rbac.Editor,
+		viewerTeam: rbac.Viewer,
 	}
 	var (
 		tokenURL = oauth2github.Endpoint.TokenURL
 		baseURL  *url.URL
 		err      error
 	)
-	if p.BaseUrl != "" {
-		baseURL, err = url.Parse(p.BaseUrl)
+	if sso.BaseUrl != "" {
+		baseURL, err = url.Parse(sso.BaseUrl)
 		if err != nil {
 			return nil, err
 		}
@@ -61,8 +59,8 @@ func NewOAuthClient(ctx context.Context, p *model.ProjectSingleSignOn_GitHub, pr
 	}
 
 	cfg := oauth2.Config{
-		ClientID:     p.ClientId,
-		ClientSecret: p.ClientSecret,
+		ClientID:     sso.ClientId,
+		ClientSecret: sso.ClientSecret,
 		Endpoint:     oauth2.Endpoint{TokenURL: tokenURL},
 	}
 	token, err := cfg.Exchange(ctx, code)
@@ -71,14 +69,14 @@ func NewOAuthClient(ctx context.Context, p *model.ProjectSingleSignOn_GitHub, pr
 	}
 
 	cli := github.NewClient(cfg.Client(ctx, token))
-	if p.BaseUrl != "" {
+	if sso.BaseUrl != "" {
 		if !strings.HasSuffix(baseURL.Path, "/") {
 			baseURL.Path += "/"
 		}
 		cli.BaseURL = baseURL
 	}
-	if p.UploadUrl != "" {
-		uploadURL, err := url.Parse(p.UploadUrl)
+	if sso.UploadUrl != "" {
+		uploadURL, err := url.Parse(sso.UploadUrl)
 		if err != nil {
 			return nil, err
 		}
@@ -121,10 +119,11 @@ func (c *OAuthClient) decideRole(user string, teams []*github.Team) (*model.Role
 	var viewer, editor bool
 	for _, team := range teams {
 		slug := team.GetSlug()
-		if c.org != team.Organization.GetLogin() || slug == "" {
+		org := team.Organization.GetLogin()
+		if org == "" || slug == "" {
 			continue
 		}
-		switch slug {
+		switch fmt.Sprintf("%s/%s", org, slug) {
 		case c.adminTeam:
 			r := model.Role_ADMIN
 			return &r, nil

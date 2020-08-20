@@ -41,7 +41,7 @@ A repository contains some examples for PipeCD.
 |-----------------------------------------------------------------------------|-------------|
 | [simple](https://github.com/pipe-cd/examples/tree/master/cloudrun/simple) | Quick sync by rolling out the new version and switching all traffic to it. |
 | [canary](https://github.com/pipe-cd/examples/tree/master/cloudrun/canary) | Deployment pipeline with canary strategy. |
-| [bluegreen](https://github.com/pipe-cd/examples/tree/master/cloudrun/bluegreen) | Deployment pipeline with bluegreen strategy. |
+| [analysis](https://github.com/pipe-cd/examples/tree/master/cloudrun/analysis) | Deployment pipeline that contains an analysis stage. |
 
 ### Lambda Applications
 
@@ -49,5 +49,5 @@ A repository contains some examples for PipeCD.
 |-----------------------------------------------------------------------------|-------------|
 | [simple](https://github.com/pipe-cd/examples/tree/master/lambda/simple) | Quick sync by rolling out the new version and switching all traffic to it. |
 | [canary](https://github.com/pipe-cd/examples/tree/master/lambda/canary) | Deployment pipeline with canary strategy. |
-| [bluegreen](https://github.com/pipe-cd/examples/tree/master/lambda/bluegreen) | Deployment pipeline with bluegreen strategy. |
-
+| [analysis](https://github.com/pipe-cd/examples/tree/master/lambda/analysis) | Deployment pipeline that contains an analysis stage. |
+| [remote-git](https://github.com/pipe-cd/examples/tree/master/kubernetes/remote-git) | Deploy the lambda code sourced from another Git repository. |

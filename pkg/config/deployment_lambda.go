@@ -56,25 +56,7 @@ type LambdaSyncStageOptions struct {
 type LambdaCanaryRolloutStageOptions struct {
 }
 
-// LambdaTrafficRoutingStageOptions contains all configurable values for a CLOUDRUN_TRAFFIC_ROUTING stage.
-type LambdaTrafficRoutingStageOptions struct {
-	// Which variant should receive all traffic.
-	// This can be either "primary" or "canary".
-	All string `json:"all"`
-	// The percentage of traffic should be routed to PRIMARY variant.
-	Primary int `json:"primary"`
-	// The percentage of traffic should be routed to CANARY variant.
-	Canary int `json:"canary"`
-}
-
-func (opts LambdaTrafficRoutingStageOptions) Percentages() (primary, canary int) {
-	switch opts.All {
-	case "primary":
-		primary = 100
-		return
-	case "canary":
-		canary = 100
-		return
-	}
-	return opts.Primary, opts.Canary
+// LambdaPromoteStageOptions contains all configurable values for a CLOUDRUN_PROMOTE stage.
+type LambdaPromoteStageOptions struct {
+	Percent int `json:"percent"`
 }

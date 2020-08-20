@@ -59,6 +59,7 @@ const APPROVED_STAGE_HEIGHT = 66;
 const useStyles = makeStyles((theme) => ({
   root: {
     display: "flex",
+    justifyContent: "center",
   },
   pipelineColumn: {
     display: "flex",

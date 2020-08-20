@@ -40,7 +40,9 @@ func (s *CloudRunDeploymentSpec) Validate() error {
 }
 
 type CloudRunDeploymentInput struct {
-	Image string `json:"image"`
+	// The name of service manifest file placing in application configuration directory.
+	// Default is service.yaml
+	ServiceManifestFile string `json:"serviceManifestFile"`
 	// Automatically reverts all changes from all stages when one of them failed.
 	// Default is true.
 	AutoRollback bool `json:"autoRollback"`
@@ -50,29 +52,7 @@ type CloudRunDeploymentInput struct {
 type CloudRunSyncStageOptions struct {
 }
 
-// CloudRunCanaryRolloutStageOptions contains all configurable values for a CLOUDRUN_CANARY_ROLLOUT stage.
-type CloudRunCanaryRolloutStageOptions struct {
-}
-
-// CloudRunTrafficRoutingStageOptions contains all configurable values for a CLOUDRUN_TRAFFIC_ROUTING stage.
-type CloudRunTrafficRoutingStageOptions struct {
-	// Which variant should receive all traffic.
-	// This can be either "primary" or "canary".
-	All string `json:"all"`
-	// The percentage of traffic should be routed to PRIMARY variant.
-	Primary int `json:"primary"`
-	// The percentage of traffic should be routed to CANARY variant.
-	Canary int `json:"canary"`
-}
-
-func (opts CloudRunTrafficRoutingStageOptions) Percentages() (primary, canary int) {
-	switch opts.All {
-	case "primary":
-		primary = 100
-		return
-	case "canary":
-		canary = 100
-		return
-	}
-	return opts.Primary, opts.Canary
+// CloudRunPromoteStageOptions contains all configurable values for a CLOUDRUN_PROMOTE stage.
+type CloudRunPromoteStageOptions struct {
+	Percent int `json:"percent"`
 }

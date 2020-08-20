@@ -18,10 +18,15 @@ set -o errexit
 set -o nounset
 set -o pipefail
 
-BASE_URL="https://dl.google.com/dl/cloudsdk/channels/rapid/downloads"
-VERSION="305.0.0"
+BASE_URL="https://releases.hashicorp.com"
 
-echo "Installing gcloud-${VERSION}..."
-curl -L ${BASE_URL}/google-cloud-sdk-${VERSION}-linux-x86_64.tar.gz | tar xvz
-gcloud components install beta
-echo "Successfully installed gcloud-${VERSION}..."
+# Do not forget to update the version number at the following file when changing this.
+# https://github.com/pipe-cd/pipe/blob/master/pkg/app/piped/toolregistry/install.go#L33
+VERSION="0.13.0"
+
+echo "Installing terraform-${VERSION} into ${PIPED_BIN_DIR}/terraform..."
+curl ${BASE_URL}/terraform/${VERSION}/terraform_${VERSION}_linux_amd64.zip -o terraform_${VERSION}_linux_amd64.zip
+unzip terraform_${VERSION}_linux_amd64.zip
+mv terraform ${PIPED_BIN_DIR}/
+rm terraform_${VERSION}_linux_amd64.zip
+echo "Successfully installed terraform-${VERSION} into ${PIPED_BIN_DIR}/terraform"
