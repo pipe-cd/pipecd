@@ -52,7 +52,7 @@ type LambdaDeploymentInput struct {
 type LambdaSyncStageOptions struct {
 }
 
-// LambdaCanaryRolloutStageOptions contains all configurable values for a CLOUDRUN_CANARY_ROLLOUT stage.
+// LambdaCanaryRolloutStageOptions contains all configurable values for a CLOUDRUN_PROMOTE stage.
 type LambdaCanaryRolloutStageOptions struct {
 }
 

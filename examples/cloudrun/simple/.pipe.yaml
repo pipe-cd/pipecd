@@ -2,6 +2,3 @@
 apiVersion: pipecd.dev/v1beta1
 kind: CloudRunApp
 spec:
-  input:
-    platform: managed
-    region: asia-northeast1

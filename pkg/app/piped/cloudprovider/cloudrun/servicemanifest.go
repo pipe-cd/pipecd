@@ -84,8 +84,21 @@ func ParseServiceManifest(data []byte) (ServiceManifest, error) {
 	}, nil
 }
 
-func DecideRevisionName(m ServiceManifest, commit string) (string, error) {
-	containers, ok, err := unstructured.NestedSlice(m.u.Object, "spec", "template", "spec", "containers")
+func DecideRevisionName(sm ServiceManifest, commit string) (string, error) {
+	tag, err := FindImageTag(sm)
+	if err != nil {
+		return "", err
+	}
+	tag = strings.ReplaceAll(tag, ".", "")
+
+	if len(commit) > 7 {
+		commit = commit[:7]
+	}
+	return fmt.Sprintf("%s-%s-%s", sm.Name, tag, commit), nil
+}
+
+func FindImageTag(sm ServiceManifest) (string, error) {
+	containers, ok, err := unstructured.NestedSlice(sm.u.Object, "spec", "template", "spec", "containers")
 	if err != nil {
 		return "", err
 	}
@@ -106,13 +119,8 @@ func DecideRevisionName(m ServiceManifest, commit string) (string, error) {
 		return "", fmt.Errorf("image was missing")
 	}
 	_, tag := parseContainerImage(image)
-	tag = strings.ReplaceAll(tag, ".", "")
 
-	if len(commit) > 7 {
-		commit = commit[:7]
-	}
-
-	return fmt.Sprintf("%s-%s-%s", m.Name, tag, commit), nil
+	return tag, nil
 }
 
 func parseContainerImage(image string) (name, tag string) {

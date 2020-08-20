@@ -62,12 +62,8 @@ const (
 	// StageCloudRunSync does quick sync by rolling out the new version
 	// and switching all traffic to it.
 	StageCloudRunSync Stage = "CLOUDRUN_SYNC"
-	// StageCloudRunCanaryRollout represents the state where
-	// the workloads of the new version has been rolled out.
-	StageCloudRunCanaryRollout Stage = "CLOUDRUN_CANARY_ROLLOUT"
-	// StageCloudRunTrafficRouting represents the state where the traffic to application
-	// should be splitted as the specified percentage to previous version and new version.
-	StageCloudRunTrafficRouting Stage = "CLOUDRUN_TRAFFIC_ROUTING"
+	// StageCloudRunPromote promotes the new version to receive amount of traffic.
+	StageCloudRunPromote Stage = "CLOUDRUN_PROMOTE"
 
 	// StageLambdaSync does quick sync by rolling out the new version
 	// and switching all traffic to it.

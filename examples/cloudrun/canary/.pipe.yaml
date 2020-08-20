@@ -2,22 +2,23 @@
 apiVersion: pipecd.dev/v1beta1
 kind: CloudRunApp
 spec:
-  input:
-    platform: managed
-    region: asia-northeast1
   pipeline:
     stages:
-      # Deploy workloads of the new version.
-      # But this is still receiving no traffic.
-      - name: CLOUDRUN_CANARY_ROLLOUT
-      # Change the traffic routing state where
-      # the new version will receive the specified percentage of traffic.
-      # This is known as multi-phase canary strategy.
-      - name: CLOUDRUN_TRAFFIC_ROUTING
+      # Promote new version to receive amount of traffic.
+      - name: CLOUDRUN_PROMOTE
         with:
-          canary: 10
-      # Change the traffic routing state where
-      # the new version will receive 100% of the traffic.
-      - name: CLOUDRUN_TRAFFIC_ROUTING
+          percent: 10
+      - name: WAIT
         with:
-          canary: 100
+          duration: 30s
+      # Promote new version to receive amount of traffic.
+      - name: CLOUDRUN_PROMOTE
+        with:
+          percent: 50
+      - name: WAIT
+        with:
+          duration: 30s
+      # Promote new version to receive all traffic.
+      - name: CLOUDRUN_PROMOTE
+        with:
+          percent: 100
