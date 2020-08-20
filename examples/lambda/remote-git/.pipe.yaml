@@ -4,5 +4,7 @@ apiVersion: pipecd.dev/v1beta1
 kind: LambdaApp
 spec:
   input:
-    # Lambda code sourced from the same Git repository.
+    # Lambda code sourced from another Git repository.
+    git: git@github.com:org/source-repo.git
     path: lambdas/helloworld
+    ref: v1.0.0
