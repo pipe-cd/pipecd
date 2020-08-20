@@ -53,7 +53,7 @@ func (m ServiceManifest) UpdateTraffic(revisions []RevisionTraffic) error {
 
 func (m ServiceManifest) UpdateAllTraffic(revision string) error {
 	return m.UpdateTraffic([]RevisionTraffic{
-		RevisionTraffic{
+		{
 			RevisionName: revision,
 			Percent:      100,
 		},
