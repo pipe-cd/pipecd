@@ -324,17 +324,12 @@ spec:
 | Field | Type | Description | Required |
 |-|-|-|-|
 
-### CloudRunTrafficRoutingStageOptions
-
-| Field | Type | Description | Required |
-|-|-|-|-|
-
 ### LambdaCanaryRolloutStageOptions
 
 | Field | Type | Description | Required |
 |-|-|-|-|
 
-### LambdaTrafficRoutingStageOptions
+### LambdaPromoteStageOptions
 
 | Field | Type | Description | Required |
 |-|-|-|-|

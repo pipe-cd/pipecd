@@ -71,9 +71,8 @@ const (
 	// StageLambdaCanaryRollout represents the state where
 	// the workloads of the new version has been rolled out.
 	StageLambdaCanaryRollout Stage = "LAMBDA_CANARY_ROLLOUT"
-	// StageLambdaTrafficRouting represents the state where the traffic to application
-	// should be splitted as the specified percentage to previous version and new version.
-	StageLambdaTrafficRouting Stage = "LAMBDA_TRAFFIC_ROUTING"
+	// StageLambdaPromote prmotes the new version to receive amount of traffic.
+	StageLambdaPromote Stage = "LAMBDA_PROMOTE"
 
 	// StageRollback represents a state where
 	// the all temporarily created stages will be reverted to
