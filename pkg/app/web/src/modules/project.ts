@@ -1,7 +1,10 @@
 import { createSlice, createAsyncThunk } from "@reduxjs/toolkit";
 import * as projectAPI from "../api/project";
 import { AppState } from "./";
-import { ProjectSSOConfig } from "pipe/pkg/app/web/model/project_pb";
+import {
+  ProjectSSOConfig,
+  ProjectRBACConfig,
+} from "pipe/pkg/app/web/model/project_pb";
 
 export interface ProjectState {
   id: string | null;
@@ -77,6 +80,13 @@ export const updateGitHubSSO = createAsyncThunk<
   await projectAPI.updateGitHubSSO(params);
 });
 
+export const updateRBAC = createAsyncThunk<void, ProjectRBACConfig.AsObject>(
+  "project/updateRBAC",
+  async (params) => {
+    await projectAPI.updateRBAC(params);
+  }
+);
+
 export const projectSlice = createSlice({
   name: "project",
   initialState,
@@ -114,7 +124,8 @@ export const projectSlice = createSlice({
       .addCase(updateGitHubSSO.fulfilled, (state) => {
         state.isUpdatingGitHubSSO = false;
       })
-      .addCase(updateGitHubSSO.rejected, (state) => {
+      .addCase(updateGitHubSSO.rejected, (state, action) => {
+        console.error(action);
         state.isUpdatingGitHubSSO = false;
       });
   },
