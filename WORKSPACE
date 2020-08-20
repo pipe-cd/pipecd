@@ -31,7 +31,7 @@ load(
 go_rules_dependencies()
 
 go_register_toolchains(
-    go_version = "1.14.5",
+    go_version = "1.14.7",
 )
 
 load(
@@ -76,8 +76,8 @@ protobuf_deps()
 ### BuildTools
 http_archive(
     name = "com_github_bazelbuild_buildtools",
-    strip_prefix = "buildtools-0.29.0",
-    url = "https://github.com/bazelbuild/buildtools/archive/0.29.0.zip",
+    strip_prefix = "buildtools-3.4.0",
+    url = "https://github.com/bazelbuild/buildtools/archive/3.4.0.zip",
 )
 
 load(
