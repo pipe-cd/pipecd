@@ -6,7 +6,7 @@ spec:
       staticAdmin:
         username: test-user
         passwordHash: test-password
-  sharedSso:
+  sharedSsoConfigs:
     default:
       provider: GITHUB
       github:
