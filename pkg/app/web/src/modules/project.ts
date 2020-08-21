@@ -100,6 +100,9 @@ export const projectSlice = createSlice({
         state.username = action.payload.username;
         state.staticAdminDisabled = action.payload.staticAdminDisabled;
       })
+      .addCase(fetchProject.rejected, (_, action) => {
+        console.log(action);
+      })
       .addCase(updateUsername.pending, (state) => {
         state.isUpdatingUsername = true;
       })

@@ -8,11 +8,11 @@ import {
 import ArrowRightAltIcon from "@material-ui/icons/ArrowRightAlt";
 import React, { FC, memo, useState } from "react";
 import { useDispatch } from "react-redux";
+import { Redirect } from "react-router-dom";
 import { LoginForm } from "../components/login-form";
+import { PAGE_PATH_APPLICATIONS } from "../constants";
 import { setProjectName, useProjectName } from "../modules/login";
 import { useMe } from "../modules/me";
-import { PAGE_PATH_APPLICATIONS } from "../constants";
-import { Redirect } from "react-router-dom";
 
 const useStyles = makeStyles((theme) => ({
   root: {
@@ -79,7 +79,7 @@ export const LoginPage: FC = memo(function LoginPage() {
                 onClick={handleOnContinue}
                 disabled={name === ""}
               >
-                Continue
+                CONTINUE
               </Button>
             </div>
           </>
