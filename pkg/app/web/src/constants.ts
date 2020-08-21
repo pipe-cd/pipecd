@@ -13,3 +13,4 @@ export const PAGE_PATH_SETTINGS_PROJECT = "/settings/project";
 
 export const STATIC_LOGIN_ENDPOINT = "/auth/login/static";
 export const LOGIN_ENDPOINT = "/auth/login";
+export const LOGOUT_ENDPOINT = "/auth/logout";
