@@ -30,7 +30,7 @@ type ControlPlaneSpec struct {
 	// Please do not use this to configure the projects running the production mode.
 	Projects []ControlPlaneProject `json:"projects"`
 	// SharedSSOConigs is the shared oauth settings projects can use.
-	SharedSSOConigs map[string]SharedSSOConfig `json:"sharedSso"`
+	SharedSSOConfigs map[string]SharedSSOConfig `json:"sharedSso"`
 	// The configuration of datastore for control plane.
 	Datastore ControlPlaneDataStore `json:"datastore"`
 	// The configuration of filestore for control plane.
