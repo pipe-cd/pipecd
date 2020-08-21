@@ -38,6 +38,8 @@ message Project {
     ProjectSSOConfig sso = 5;
     // RBAC Configuration for this project.
     ProjectRBACConfig rbac = 6;
+    // Shared SSO configuration for this project.
+    string shared_sso_name = 7;
 
     // Unix time when the project is created.
     int64 created_at = 14 [(validate.rules).int64.gt = 0];
