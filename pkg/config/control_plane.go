@@ -16,6 +16,7 @@ package config
 
 import (
 	"encoding/json"
+	"fmt"
 
 	"github.com/pipe-cd/pipe/pkg/model"
 )
@@ -28,6 +29,8 @@ type ControlPlaneSpec struct {
 	// List of debugging/quickstart projects defined in Control Plane configuration.
 	// Please do not use this to configure the projects running the production mode.
 	Projects []ControlPlaneProject `json:"projects"`
+	// SharedSSOConfigs is the shared oauth settings projects can use.
+	SharedSSOConfigs map[string]SharedSSOConfig `json:"sharedSsoConfigs"`
 	// The configuration of datastore for control plane.
 	Datastore ControlPlaneDataStore `json:"datastore"`
 	// The configuration of filestore for control plane.
@@ -49,6 +52,33 @@ type ControlPlaneProject struct {
 type ProjectStaticUser struct {
 	Username     string `json:"username"`
 	PasswordHash string `json:"passwordHash"`
+}
+
+type SharedSSOConfig struct {
+	model.ProjectSSOConfig
+}
+
+func (s *SharedSSOConfig) UnmarshalJSON(data []byte) error {
+	m := make(map[string]interface{})
+	if err := json.Unmarshal(data, &m); err != nil {
+		return err
+	}
+	provider := m["provider"].(string)
+	v, ok := model.ProjectSSOConfig_Provider_value[provider]
+	if !ok {
+		return fmt.Errorf("provider %s does not exist", provider)
+	}
+	m["provider"] = v
+	data, err := json.Marshal(m)
+	if err != nil {
+		return err
+	}
+	sso := &model.ProjectSSOConfig{}
+	if err := json.Unmarshal(data, sso); err != nil {
+		return err
+	}
+	s.ProjectSSOConfig = *sso
+	return nil
 }
 
 // GetProject finds and returns a specific project in the configured list.

@@ -6,6 +6,15 @@ spec:
       staticAdmin:
         username: test-user
         passwordHash: test-password
+  sharedSsoConfigs:
+    default:
+      provider: GITHUB
+      github:
+        client_id: client-id
+        client_secret: client-secret
+        base_url: base-url
+        upload_url: upload-url
+
   datastore:
     type: FIRESTORE
     config:

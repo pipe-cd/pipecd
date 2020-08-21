@@ -38,6 +38,9 @@ message Project {
     ProjectSSOConfig sso = 5;
     // RBAC Configuration for this project.
     ProjectRBACConfig rbac = 6;
+    // Shared SSO configuration name for this project.
+    // It will be enabled when this parameter has no empty value.
+    string shared_sso_name = 7;
 
     // Unix time when the project is created.
     int64 created_at = 14 [(validate.rules).int64.gt = 0];
@@ -53,13 +56,14 @@ message ProjectStaticUser {
     string password_hash = 2 [(validate.rules).string.min_len = 6];
 }
 
-enum ProjectSingleSignOnProvider {
-    GITHUB = 0;
-    GOOGLE = 1;
-}
+
 
 message ProjectSSOConfig {
-    ProjectSingleSignOnProvider provider = 1 [(validate.rules).enum.defined_only = true];
+    enum Provider {
+        GITHUB = 0;
+        GOOGLE = 1;
+    }
+    Provider provider = 1 [(validate.rules).enum.defined_only = true];
 
     message GitHub {
         string client_id = 1 [(validate.rules).string.min_len = 1];

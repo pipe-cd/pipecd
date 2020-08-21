@@ -46,6 +46,19 @@ func TestControlPlaneConfig(t *testing.T) {
 						},
 					},
 				},
+				SharedSSOConfigs: map[string]SharedSSOConfig{
+					"default": {
+						ProjectSSOConfig: model.ProjectSSOConfig{
+							Provider: model.ProjectSSOConfig_GITHUB,
+							Github: &model.ProjectSSOConfig_GitHub{
+								ClientId:     "client-id",
+								ClientSecret: "client-secret",
+								BaseUrl:      "base-url",
+								UploadUrl:    "upload-url",
+							},
+						},
+					},
+				},
 				Datastore: ControlPlaneDataStore{
 					Type: model.DataStoreFirestore,
 					FirestoreConfig: &DataStoreFireStoreConfig{

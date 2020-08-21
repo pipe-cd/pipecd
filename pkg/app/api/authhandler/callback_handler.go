@@ -106,7 +106,7 @@ func getUser(ctx context.Context, sso *model.ProjectSSOConfig, rbac *model.Proje
 		return nil, fmt.Errorf("missing SSO configuration")
 	}
 	switch sso.Provider {
-	case model.ProjectSingleSignOnProvider_GITHUB:
+	case model.ProjectSSOConfig_GITHUB:
 		if sso.Github == nil {
 			return nil, fmt.Errorf("missing GitHub oauth in the SSO configuration")
 		}
