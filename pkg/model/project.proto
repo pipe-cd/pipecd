@@ -56,10 +56,10 @@ message ProjectStaticUser {
 
 
 message ProjectSSOConfig {
-		enum Provider {
-				GITHUB = 0;
-				GOOGLE = 1;
-		}
+    enum Provider {
+        GITHUB = 0;
+        GOOGLE = 1;
+    }
     Provider provider = 1 [(validate.rules).enum.defined_only = true];
 
     message GitHub {
