@@ -17,6 +17,7 @@ package mongodb
 import (
 	"context"
 	"errors"
+	"strings"
 
 	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/mongo"
@@ -66,21 +67,23 @@ func WithLogger(logger *zap.Logger) Option {
 
 func (m *MongoDB) Find(ctx context.Context, kind string, opts datastore.ListOptions) (datastore.Iterator, error) {
 	col := m.client.Database(m.database).Collection(kind)
-	opes := make([]bson.M, len(opts.Filters))
+	ops := make([]bson.M, len(opts.Filters))
 	for i, f := range opts.Filters {
-		ope, err := convertToMongoDBOperator(f.Operator)
+		op, err := convertToMongoDBOperator(f.Operator)
 		if err != nil {
 			return nil, err
 		}
-		opes[i] = bson.M{
-			f.Field: bson.M{
-				ope: f.Value,
+		ops[i] = bson.M{
+			// Note: The field name of protobuf is saved in lower case by default in mongodb.
+			// e.g. Name => name, ProjectId => projectid, CreatedAt => createdat
+			strings.ToLower(f.Field): bson.M{
+				op: f.Value,
 			},
 		}
 	}
 	query := bson.M{}
-	if len(opes) > 0 {
-		query["$and"] = opes
+	if len(ops) > 0 {
+		query["$and"] = ops
 	}
 
 	findOpts := options.Find()
@@ -106,8 +109,13 @@ func (m *MongoDB) Find(ctx context.Context, kind string, opts datastore.ListOpti
 }
 
 func (m *MongoDB) Get(ctx context.Context, kind, id string, v interface{}) error {
+	wrapper, err := newWrapper(v)
+	if err != nil {
+		return err
+	}
+
 	col := m.client.Database(m.database).Collection(kind)
-	err := col.FindOne(ctx, makePrimaryKeyFilter(id)).Decode(v)
+	err = col.FindOne(ctx, makePrimaryKeyFilter(id)).Decode(wrapper)
 	if errors.Is(err, mongo.ErrNoDocuments) {
 		return datastore.ErrNotFound
 	}
@@ -119,10 +127,16 @@ func (m *MongoDB) Get(ctx context.Context, kind, id string, v interface{}) error
 		)
 		return err
 	}
-	return nil
+
+	return wrapper.storeModel(v)
 }
 
 func (m *MongoDB) Create(ctx context.Context, kind, id string, entity interface{}) error {
+	wrapper, err := newWrapper(entity)
+	if err != nil {
+		return err
+	}
+
 	// TODO: Support updating process with using transaction on mongoDB cluster
 	//   err := m.client.UseSession(ctx, func(sessCtx mongo.SessionContext) error { }
 	//   See the example at: https://godoc.org/go.mongodb.org/mongo-driver/mongo#Client.UseSessionWithOptions
@@ -131,7 +145,7 @@ func (m *MongoDB) Create(ctx context.Context, kind, id string, entity interface{
 	//   - Also available for replica set deployments only.
 	//   - Available even on a standalone server but need to configure it as a replica set (with just one node)
 	col := m.client.Database(m.database).Collection(kind)
-	err := col.FindOne(ctx, makePrimaryKeyFilter(id), options.FindOne()).Err()
+	err = col.FindOne(ctx, makePrimaryKeyFilter(id), options.FindOne()).Err()
 	if err == nil {
 		return datastore.ErrAlreadyExists
 	}
@@ -144,7 +158,7 @@ func (m *MongoDB) Create(ctx context.Context, kind, id string, entity interface{
 		return err
 	}
 
-	if _, err := col.InsertOne(ctx, entity); err != nil {
+	if _, err := col.InsertOne(ctx, wrapper); err != nil {
 		m.logger.Error("failed to insert entity",
 			zap.String("id", id),
 			zap.String("kind", kind),
@@ -156,14 +170,12 @@ func (m *MongoDB) Create(ctx context.Context, kind, id string, entity interface{
 }
 
 func (m *MongoDB) Put(ctx context.Context, kind, id string, entity interface{}) error {
-	col := m.client.Database(m.database).Collection(kind)
-	err := m.client.UseSession(ctx, func(sc mongo.SessionContext) error {
-		if _, err := col.UpdateOne(sc, makePrimaryKeyFilter(id), entity); err != nil {
-			return err
-		}
-		return sc.CommitTransaction(sc)
-	})
+	wrapper, err := newWrapper(entity)
 	if err != nil {
+		return err
+	}
+	col := m.client.Database(m.database).Collection(kind)
+	if _, err := col.UpdateOne(ctx, makePrimaryKeyFilter(id), wrapper); err != nil {
 		m.logger.Error("failed to put entity",
 			zap.String("id", id),
 			zap.String("kind", kind),
@@ -192,7 +204,13 @@ func (m *MongoDB) Update(ctx context.Context, kind, id string, factory datastore
 		)
 		return err
 	}
-	update := bson.D{{"$set", entity}}
+	wrapper, err := newWrapper(entity)
+	if err != nil {
+		return err
+	}
+	// NOTE: Not allowed to give it an empty "_id".
+	wrapper.setID(id)
+	update := bson.D{{"$set", wrapper}}
 	if _, err := col.UpdateOne(ctx, makePrimaryKeyFilter(id), update); err != nil {
 		m.logger.Error("failed to update entity",
 			zap.String("id", id),

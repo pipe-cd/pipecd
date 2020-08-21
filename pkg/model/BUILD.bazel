@@ -42,7 +42,6 @@ go_library(
         "analysisprovider.go",
         "application.go",
         "application_live_state.go",
-        "bson.go",
         "cloudprovider.go",
         "command.go",
         "datastore.go",
@@ -59,12 +58,9 @@ go_library(
     importpath = "github.com/pipe-cd/pipe/pkg/model",
     visibility = ["//visibility:public"],
     deps = [
-        "@com_github_fatih_structs//:go_default_library",
-        "@com_github_mitchellh_mapstructure//:go_default_library",
         "@org_golang_google_protobuf//proto:go_default_library",
         "@org_golang_x_crypto//bcrypt:go_default_library",
         "@org_golang_x_oauth2//:go_default_library",
-        "@org_mongodb_go_mongo_driver//bson:go_default_library",
     ],
 )
 

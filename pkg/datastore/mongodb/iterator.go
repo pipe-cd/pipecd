@@ -31,7 +31,14 @@ func (it *Iterator) Next(dst interface{}) error {
 	if !it.cur.Next(it.ctx) {
 		return datastore.ErrIteratorDone
 	}
-	return it.cur.Decode(dst)
+	wrapper, err := newWrapper(dst)
+	if err != nil {
+		return err
+	}
+	if err := it.cur.Decode(wrapper); err != nil {
+		return err
+	}
+	return wrapper.storeModel(dst)
 }
 
 func (it *Iterator) Cursor() (string, error) {

@@ -18,8 +18,8 @@ import (
 	"fmt"
 )
 
-func convertToMongoDBOperator(ope string) (string, error) {
-	switch ope {
+func convertToMongoDBOperator(op string) (string, error) {
+	switch op {
 	case "==":
 		return "$eq", nil
 	case "!=":
@@ -35,6 +35,6 @@ func convertToMongoDBOperator(ope string) (string, error) {
 	case "<=":
 		return "$lte", nil
 	default:
-		return "", fmt.Errorf("unacceptable operator for mongodb: %s", ope)
+		return "", fmt.Errorf("unacceptable operator for mongodb: %s", op)
 	}
 }
