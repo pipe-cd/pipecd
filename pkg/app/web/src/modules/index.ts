@@ -14,6 +14,7 @@ import { meSlice } from "./me";
 import { deploymentFilterOptionsSlice } from "./deployment-filter-options";
 import { loginSlice } from "./login";
 import { projectSlice } from "./project";
+import { deploymentConfigsSlice } from "./deployment-configs";
 
 export const reducers = combineReducers({
   deployments: deploymentsSlice.reducer,
@@ -30,6 +31,7 @@ export const reducers = combineReducers({
   me: meSlice.reducer,
   login: loginSlice.reducer,
   project: projectSlice.reducer,
+  deploymentConfigs: deploymentConfigsSlice.reducer,
 });
 
 export type AppState = ReturnType<typeof reducers>;

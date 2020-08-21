@@ -56,7 +56,7 @@ export const syncApplication = createAsyncThunk<
 });
 
 export const addApplication = createAsyncThunk<
-  void,
+  string,
   {
     name: string;
     env: string;
@@ -69,7 +69,7 @@ export const addApplication = createAsyncThunk<
     cloudProvider: string;
   }
 >("applications/add", async (props) => {
-  await applicationsApi.addApplication({
+  const { applicationId } = await applicationsApi.addApplication({
     name: props.name,
     envId: props.env,
     pipedId: props.pipedId,
@@ -87,6 +87,8 @@ export const addApplication = createAsyncThunk<
     cloudProvider: props.cloudProvider,
     kind: props.kind,
   });
+
+  return applicationId;
 });
 
 export const disableApplication = createAsyncThunk<

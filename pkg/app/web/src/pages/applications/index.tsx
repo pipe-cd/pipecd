@@ -19,6 +19,8 @@ import { AppState } from "../../modules";
 import { addApplication, fetchApplications } from "../../modules/applications";
 import { AppDispatch } from "../../store";
 import { selectProjectName } from "../../modules/me";
+import { DeploymentConfigForm } from "../../components/deployment-config-form";
+import { clearTemplateTarget } from "../../modules/deployment-configs";
 
 const useStyles = makeStyles((theme) => ({
   main: {
@@ -51,6 +53,10 @@ export const ApplicationIndexPage: FC = memo(function ApplicationIndexPage() {
     selectProjectName(state.me)
   );
 
+  const addedApplicationId = useSelector<AppState, string | null>(
+    (state) => state.deploymentConfigs.targetApplicationId
+  );
+
   const handleClose = (): void => {
     setIsOpenForm(false);
   };
@@ -61,6 +67,10 @@ export const ApplicationIndexPage: FC = memo(function ApplicationIndexPage() {
 
   const handleRefresh = (): void => {
     dispatch(fetchApplications());
+  };
+
+  const handleCloseTemplateForm = (): void => {
+    dispatch(clearTemplateTarget());
   };
 
   useEffect(() => {
@@ -125,6 +135,20 @@ export const ApplicationIndexPage: FC = memo(function ApplicationIndexPage() {
           onClose={handleClose}
           isAdding={isAdding}
         />
+      </Drawer>
+
+      <Drawer
+        anchor="right"
+        open={!!addedApplicationId}
+        onClose={handleCloseTemplateForm}
+        ModalProps={{ disableBackdropClick: isAdding }}
+      >
+        {addedApplicationId && (
+          <DeploymentConfigForm
+            applicationId={addedApplicationId}
+            onSkip={handleCloseTemplateForm}
+          />
+        )}
       </Drawer>
     </>
   );
