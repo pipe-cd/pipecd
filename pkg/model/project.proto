@@ -38,7 +38,8 @@ message Project {
     ProjectSSOConfig sso = 5;
     // RBAC Configuration for this project.
     ProjectRBACConfig rbac = 6;
-    // Shared SSO configuration for this project.
+    // Shared SSO configuration name for this project.
+    // It will be enabled when this parameter has no empty value.
     string shared_sso_name = 7;
 
     // Unix time when the project is created.
