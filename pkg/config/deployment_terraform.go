@@ -43,6 +43,10 @@ type TerraformDeploymentInput struct {
 	Workspace        string `json:"workspace,omitempty"`
 	TerraformVersion string `json:"terraformVersion,omitempty"`
 	// List of variables that will be set directly on terraform commands with "-var" flag.
+	// The variable must be formatted by "key=value" as below:
+	// "image_id=ami-abc123"
+	// 'image_id_list=["ami-abc123","ami-def456"]'
+	// 'image_id_map={"us-east-1":"ami-abc123","us-east-2":"ami-def456"}'
 	Vars []string `json:"vars,omitempty"`
 	// List of variable files that will be set on terraform commands with "-var-file" flag.
 	VarFiles []string `json:"varFiles,omitempty"`

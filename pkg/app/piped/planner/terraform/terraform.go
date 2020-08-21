@@ -45,6 +45,7 @@ func (p *Planner) Plan(ctx context.Context, in planner.Input) (out planner.Outpu
 	}
 
 	now := time.Now()
+	out.Version = "N/A"
 
 	if cfg.Pipeline == nil || len(cfg.Pipeline.Stages) == 0 {
 		out.Stages = builQuickSyncPipeline(cfg.Input.AutoRollback, now)

@@ -40,23 +40,20 @@ spec:
             - apiVersion: v1
               kind: Endpoints
 
-    - name: terraform-gcp
+    - name: terraform
       type: TERRAFORM
       config:
-        gcp:
-          project: gcp-project
-          region: us-central1
-          credentialsFile: /etc/piped-secret/gcp-service-account.json
-
-    - name: terraform-aws
-      type: TERRAFORM
-      config:
-        aws:
-          region: us-east-1
+        vars:
+          - "project=gcp-project"
+          - "region=us-centra1"
+        credentialsFiles:
+          - /path-to-credentials-file
 
     - name: cloudrun
       type: CLOUDRUN
       config:
+        project: gcp-project-id
+        region: cloud-run-region
         credentialsFile: /etc/piped-secret/gcp-service-account.json
 
     - name: lambda

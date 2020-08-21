@@ -1,1 +1,1 @@
-example_bucket_name = "pipecd-terraform-example"
+content = "hello-simple-example"

@@ -34,6 +34,7 @@ type Executor interface {
 type Factory func(in Input) Executor
 
 type LogPersister interface {
+	Write(log []byte) (int, error)
 	Info(log string)
 	Infof(format string, a ...interface{})
 	Success(log string)

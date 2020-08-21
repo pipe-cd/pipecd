@@ -1,8 +1,14 @@
-load("@io_bazel_rules_go//go:def.bzl", "go_library")
+load("@io_bazel_rules_go//go:def.bzl", "go_library", "go_test")
 
 go_library(
     name = "go_default_library",
-    srcs = ["terraform.go"],
+    srcs = [
+        "apply.go",
+        "plan.go",
+        "rollback.go",
+        "sync.go",
+        "terraform.go",
+    ],
     importpath = "github.com/pipe-cd/pipe/pkg/app/piped/executor/terraform",
     visibility = ["//visibility:public"],
     deps = [
@@ -12,4 +18,11 @@ go_library(
         "//pkg/config:go_default_library",
         "//pkg/model:go_default_library",
     ],
+)
+
+go_test(
+    name = "go_default_test",
+    size = "small",
+    srcs = ["terraform_test.go"],
+    embed = [":go_default_library"],
 )

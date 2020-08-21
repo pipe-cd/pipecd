@@ -70,6 +70,12 @@ func (sp *stageLogPersister) append(log string, s model.LogSeverity) {
 	})
 }
 
+// Write appends a new INFO log block.
+func (sp *stageLogPersister) Write(log []byte) (int, error) {
+	sp.Info(string(log))
+	return len(log), nil
+}
+
 // Info appends a new INFO log block.
 func (sp *stageLogPersister) Info(log string) {
 	sp.append(log, model.LogSeverity_INFO)

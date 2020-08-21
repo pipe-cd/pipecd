@@ -2,3 +2,5 @@
 apiVersion: pipecd.dev/v1beta1
 kind: TerraformApp
 spec:
+  input:
+    autoRollback: true

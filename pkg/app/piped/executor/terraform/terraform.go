@@ -17,6 +17,10 @@ package terraform
 import (
 	"context"
 	"fmt"
+	"io/ioutil"
+	"os"
+	"path"
+	"path/filepath"
 
 	provider "github.com/pipe-cd/pipe/pkg/app/piped/cloudprovider/terraform"
 	"github.com/pipe-cd/pipe/pkg/app/piped/executor"
@@ -25,10 +29,17 @@ import (
 	"github.com/pipe-cd/pipe/pkg/model"
 )
 
+const (
+	DefaultCredentialsDirName = ".terraform-credentials"
+)
+
 type Executor struct {
 	executor.Input
 
-	config *config.TerraformDeploymentSpec
+	config              *config.TerraformDeploymentSpec
+	cloudProviderConfig *config.CloudProviderTerraformConfig
+	terraformPath       string
+	vars                []string
 }
 
 type registerer interface {
@@ -56,11 +67,34 @@ func (e *Executor) Execute(sig executor.StopSignal) model.StageStatus {
 		return model.StageStatus_STAGE_FAILURE
 	}
 
+	cloudProviderName := e.Application.CloudProvider
+	if cloudProviderName == "" {
+		e.LogPersister.Error("This application configuration was missing CloudProvider name")
+		return model.StageStatus_STAGE_FAILURE
+	}
+
+	cpConfig, ok := e.PipedConfig.FindCloudProvider(cloudProviderName, model.CloudProviderTerraform)
+	if !ok {
+		e.LogPersister.Errorf("The specified cloud provider %q was not found in piped configuration", cloudProviderName)
+		return model.StageStatus_STAGE_FAILURE
+	}
+	e.cloudProviderConfig = cpConfig.TerraformConfig
+
+	e.vars = make([]string, 0, len(e.cloudProviderConfig.Vars)+len(e.config.Input.Vars))
+	e.vars = append(e.vars, e.cloudProviderConfig.Vars...)
+	e.vars = append(e.vars, e.config.Input.Vars...)
+
 	var (
 		ctx            = sig.Context()
 		originalStatus = e.Stage.Status
 		status         model.StageStatus
 	)
+
+	execPath, ok := e.findTerraform(ctx, e.config.Input.TerraformVersion)
+	if !ok {
+		return model.StageStatus_STAGE_FAILURE
+	}
+	e.terraformPath = execPath
 
 	switch model.Stage(e.Stage.Name) {
 	case model.StageTerraformSync:
@@ -83,34 +117,62 @@ func (e *Executor) Execute(sig executor.StopSignal) model.StageStatus {
 	return executor.DetermineStageStatus(sig.Signal(), originalStatus, status)
 }
 
-func (e *Executor) ensureSync(ctx context.Context) model.StageStatus {
-	// terraform init -no-color '-var-file=simplegcs/terraform.tfvars' '-lock=false' simplegcs
-	// terraform workspace select -no-color default simplegcs
-	// terraform validate -no-color simplegcs
-	// terraform plan -no-color '-var-file=simplegcs/terraform.tfvars' '-lock=false' simplegcs
-	// terraform apply -no-color -auto-approve '-input=false' '-var-file=simplegcs/terraform.tfvars' simplegcs
-	return model.StageStatus_STAGE_SUCCESS
+func (e *Executor) showUsingVersion(ctx context.Context, cmd *provider.Terraform) bool {
+	version, err := cmd.Version(ctx)
+	if err != nil {
+		e.LogPersister.Errorf("Failed to check terraform version (%v)", err)
+		return false
+	}
+	e.LogPersister.Infof("Using terraform version %q to execute the terraform commands", version)
+	return true
 }
 
-func (e *Executor) ensurePlan(ctx context.Context) model.StageStatus {
-	return model.StageStatus_STAGE_SUCCESS
+func (e *Executor) selectWorkspace(ctx context.Context, cmd *provider.Terraform) bool {
+	workspace := e.config.Input.Workspace
+	if workspace == "" {
+		return true
+	}
+	if err := cmd.SelectWorkspace(ctx, workspace); err != nil {
+		e.LogPersister.Errorf("Failed to select workspace %q (%v). You might need to create the workspace before using by command %q", workspace, err, "terraform workspace new "+workspace)
+		return false
+	}
+	e.LogPersister.Infof("Selected workspace %q", workspace)
+	return true
 }
 
-func (e *Executor) ensureApply(ctx context.Context) model.StageStatus {
-	return model.StageStatus_STAGE_SUCCESS
-}
-
-func (e *Executor) ensureRollback(ctx context.Context) model.StageStatus {
-	return model.StageStatus_STAGE_SUCCESS
-}
-
-func (e *Executor) findTerraform(ctx context.Context, version string) (*provider.Terraform, error) {
+func (e *Executor) findTerraform(ctx context.Context, version string) (string, bool) {
 	path, installed, err := toolregistry.DefaultRegistry().Terraform(ctx, version)
 	if err != nil {
-		return nil, fmt.Errorf("no terraform %s (%w)", version, err)
+		e.LogPersister.Errorf("Unable to find required terraform %q (%v)", version, err)
+		return "", false
 	}
 	if installed {
-		e.LogPersister.Infof("Terraform %s has just been installed because of no pre-installed binary for that version", version)
+		e.LogPersister.Infof("Terraform %q has just been installed to %q because of no pre-installed binary for that version", version, path)
 	}
-	return provider.NewTerraform(version, path), nil
+	return path, true
+}
+
+func prepareCredentialsDirectory(appDir, credentialsDirName string, files []string) error {
+	if credentialsDirName == "" {
+		credentialsDirName = DefaultCredentialsDirName
+	}
+	dirPath := filepath.Join(appDir, credentialsDirName)
+	if err := os.MkdirAll(dirPath, os.ModePerm); err != nil {
+		return fmt.Errorf("unable to ensure the existence of credentials directory %s (%w)", dirPath, err)
+	}
+
+	for _, f := range files {
+		input, err := ioutil.ReadFile(f)
+		if err != nil {
+			return fmt.Errorf("unable to read credentials file %s (%w)", f, err)
+		}
+
+		des := filepath.Join(dirPath, path.Base(f))
+		err = ioutil.WriteFile(des, input, 0644)
+		if err != nil {
+			return fmt.Errorf("unable to write credentials file %s to %s (%w)", f, des, err)
+		}
+	}
+
+	return nil
 }

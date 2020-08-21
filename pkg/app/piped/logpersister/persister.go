@@ -40,6 +40,7 @@ type Persister interface {
 }
 
 type StageLogPersister interface {
+	Write(log []byte) (int, error)
 	Info(log string)
 	Infof(format string, a ...interface{})
 	Success(log string)

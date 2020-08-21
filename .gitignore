@@ -48,3 +48,6 @@ pkg/app/web/src/service
 
 .dev
 
+# Terraform workspace
+.terraform
+.terraform-credentials
