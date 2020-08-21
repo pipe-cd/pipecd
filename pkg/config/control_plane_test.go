@@ -46,7 +46,7 @@ func TestControlPlaneConfig(t *testing.T) {
 						},
 					},
 				},
-				SharedSSO: map[string]SharedSSOConfig{
+				SharedSSOConigs: map[string]SharedSSOConfig{
 					"default": {
 						ProjectSSOConfig: model.ProjectSSOConfig{
 							Provider: model.ProjectSSOConfig_GITHUB,
