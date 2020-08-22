@@ -1,4 +1,4 @@
-load("@io_bazel_rules_go//go:def.bzl", "go_library")
+load("@io_bazel_rules_go//go:def.bzl", "go_library", "go_test")
 
 go_library(
     name = "go_default_library",
@@ -7,6 +7,7 @@ go_library(
     visibility = ["//visibility:public"],
     deps = [
         "//pkg/app/piped/cloudprovider/kubernetes:go_default_library",
+        "//pkg/app/piped/diff:go_default_library",
         "//pkg/app/piped/livestatestore/kubernetes:go_default_library",
         "//pkg/cache:go_default_library",
         "//pkg/config:go_default_library",
@@ -14,4 +15,11 @@ go_library(
         "//pkg/model:go_default_library",
         "@org_uber_go_zap//:go_default_library",
     ],
+)
+
+go_test(
+    name = "go_default_test",
+    size = "small",
+    srcs = ["detector_test.go"],
+    embed = [":go_default_library"],
 )

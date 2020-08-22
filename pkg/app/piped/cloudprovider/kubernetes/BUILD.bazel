@@ -18,6 +18,7 @@ go_library(
     visibility = ["//visibility:public"],
     deps = [
         "//pkg/app/piped/chartrepo:go_default_library",
+        "//pkg/app/piped/diff:go_default_library",
         "//pkg/app/piped/toolregistry:go_default_library",
         "//pkg/cache:go_default_library",
         "//pkg/config:go_default_library",

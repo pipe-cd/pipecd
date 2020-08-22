@@ -25,6 +25,7 @@ import (
 	"go.uber.org/zap"
 
 	provider "github.com/pipe-cd/pipe/pkg/app/piped/cloudprovider/kubernetes"
+	"github.com/pipe-cd/pipe/pkg/app/piped/diff"
 	"github.com/pipe-cd/pipe/pkg/app/piped/livestatestore/kubernetes"
 	"github.com/pipe-cd/pipe/pkg/cache"
 	"github.com/pipe-cd/pipe/pkg/config"
@@ -247,35 +248,22 @@ func (d *detector) checkApplication(ctx context.Context, app *model.Application,
 	}
 
 	// All manifest keys are matched. Now we will go to check the diff of each manifest pair.
-	var (
-		diffs       = make(map[int]provider.DiffResultList)
-		diffOptions = []provider.DiffOption{
-			provider.WithDiffIgnoreMissingFields(),
-		}
-		secretDiffOptions = []provider.DiffOption{
-			provider.WithDiffIgnoreMissingFields(),
-			provider.WithDiffRedactPathPrefix("data", "secret-data-in-configuration", "secret-data-in-cluster"),
-		}
-		configMapDiffOptions = []provider.DiffOption{
-			provider.WithDiffIgnoreMissingFields(),
-			provider.WithDiffRedactPathPrefix("data", "configmap-data-in-configuration", "configmap-data-in-cluster"),
-		}
-	)
-
+	diffs := make(map[int]*diff.Result)
 	for i := 0; i < len(headManifests); i++ {
-		var options []provider.DiffOption
-		if headManifests[i].Key.IsSecret() {
-			options = secretDiffOptions
-		} else if headManifests[i].Key.IsConfigMap() {
-			options = configMapDiffOptions
-		} else {
-			options = diffOptions
+		// TODO: Handling the diff error.
+		result, _ := provider.DiffManifests(headManifests[i], liveManifests[i], diff.WithIgnoreAddingMapKeys())
+		if !result.HasDiff() {
+			continue
 		}
 
-		result := provider.Diff(headManifests[i], liveManifests[i], options...)
-		if len(result) > 0 {
-			diffs[i] = result
+		result.SetLeftPadding(1)
+		if headManifests[i].Key.IsSecret() {
+			result.SetRedactPath("data", "***secret-data-in-git***", "***secret-data-in-cluster***")
+		} else if headManifests[i].Key.IsConfigMap() {
+			result.SetRedactPath("data", "***configmap-data-in-git***", "***configmap-data-in-cluster***")
 		}
+
+		diffs[i] = result
 	}
 
 	// No diffs means this application is in SYNCED state.
@@ -418,7 +406,7 @@ func makeOutOfSyncStateBecauseMissingOrRedundant(missings, redundancies []provid
 	}
 }
 
-func makeOutOfSyncState(headManifests, liveManifests []provider.Manifest, diffs map[int]provider.DiffResultList) model.ApplicationSyncState {
+func makeOutOfSyncState(headManifests, liveManifests []provider.Manifest, diffs map[int]*diff.Result) model.ApplicationSyncState {
 	const maxPrintDiffs = 3
 
 	shortReason := fmt.Sprintf("There are %d manifests are not synced.", len(diffs))
@@ -426,9 +414,9 @@ func makeOutOfSyncState(headManifests, liveManifests []provider.Manifest, diffs 
 	b.WriteString(fmt.Sprintf("There are %d manifests are not synced:\n", len(diffs)))
 
 	var prints = 0
-	for i, list := range diffs {
-		b.WriteString(fmt.Sprintf("%d. %s\n", i+1, headManifests[i].Key.ReadableString()))
-		b.WriteString(list.String())
+	for i, d := range diffs {
+		b.WriteString(fmt.Sprintf("%d. %s\n\n", i+1, headManifests[i].Key.ReadableString()))
+		b.WriteString(d.DiffString())
 		b.WriteString("\n")
 		prints++
 		if prints >= maxPrintDiffs {

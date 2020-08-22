@@ -22,6 +22,8 @@ import (
 
 	"github.com/google/go-cmp/cmp"
 	"github.com/google/go-cmp/cmp/cmpopts"
+
+	"github.com/pipe-cd/pipe/pkg/app/piped/diff"
 )
 
 type diffOption struct {
@@ -203,6 +205,10 @@ func Diff(first, second Manifest, opts ...DiffOption) DiffResultList {
 		cmp.Equal(first.u, second.u, cmp.Reporter(&reporter), cmpopts.SortSlices(sortLess))
 	}
 	return reporter.diffs
+}
+
+func DiffManifests(first, second Manifest, opts ...diff.DiffOption) (*diff.Result, error) {
+	return diff.DiffUnstructureds(*first.u, *second.u, opts...)
 }
 
 // diffReporter is a custom reporter that only records differences
