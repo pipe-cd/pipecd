@@ -8,9 +8,7 @@ require (
 	cloud.google.com/go/storage v1.6.0
 	github.com/NYTimes/gziphandler v0.0.0-20170623195520-56545f4a5d46
 	github.com/dgrijalva/jwt-go v3.2.0+incompatible
-	github.com/envoyproxy/protoc-gen-validate v0.1.0
 	github.com/golang/mock v1.4.3
-	github.com/golang/protobuf v1.4.0
 	github.com/gomodule/redigo v2.0.0+incompatible
 	github.com/google/go-cmp v0.4.0
 	github.com/google/go-github/v29 v29.0.3
