@@ -31,14 +31,14 @@ func (it *Iterator) Next(dst interface{}) error {
 	if !it.cur.Next(it.ctx) {
 		return datastore.ErrIteratorDone
 	}
-	wrapper, err := newWrapper(dst)
+	wrapper, err := wrapModel(dst)
 	if err != nil {
 		return err
 	}
 	if err := it.cur.Decode(wrapper); err != nil {
 		return err
 	}
-	return wrapper.storeModel(dst)
+	return extractModel(wrapper, dst)
 }
 
 func (it *Iterator) Cursor() (string, error) {

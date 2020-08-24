@@ -20,15 +20,9 @@ import (
 	"github.com/pipe-cd/pipe/pkg/model"
 )
 
-// modelWrapper wraps a model representing a BSON document so that the model comes with "_id".
-type modelWrapper interface {
-	// setID populates the given id to its own "_id".
-	setID(id string)
-	// storeModel stores the unwrapped model in the value pointed to by v.
-	storeModel(v interface{}) error
-}
-
-func newWrapper(entity interface{}) (modelWrapper, error) {
+// wrapModel returns a wrapper corresponding to the given entity.
+// A wrapper wraps a model representing BSON a document so that the model comes with "_id".
+func wrapModel(entity interface{}) (interface{}, error) {
 	switch e := entity.(type) {
 	case *model.Application:
 		if e == nil {
@@ -79,8 +73,55 @@ func newWrapper(entity interface{}) (modelWrapper, error) {
 			Project: *e,
 		}, nil
 	default:
-		return nil, fmt.Errorf("the given entity is unknown type")
+		return nil, fmt.Errorf("%T is not supported", e)
 	}
+}
+
+// extractModel stores the unwrapped model in the value pointed to by e.
+func extractModel(wrapper interface{}, e interface{}) error {
+	msg := "entity type doesn't correspond to the wrapper type (%T)"
+
+	switch w := wrapper.(type) {
+	case *application:
+		e, ok := e.(*model.Application)
+		if !ok {
+			return fmt.Errorf(msg, w)
+		}
+		*e = w.Application
+	case *command:
+		e, ok := e.(*model.Command)
+		if !ok {
+			return fmt.Errorf(msg, w)
+		}
+		*e = w.Command
+	case *deployment:
+		e, ok := e.(*model.Deployment)
+		if !ok {
+			return fmt.Errorf(msg, w)
+		}
+		*e = w.Deployment
+	case *environment:
+		e, ok := e.(*model.Environment)
+		if !ok {
+			return fmt.Errorf(msg, w)
+		}
+		*e = w.Environment
+	case *piped:
+		e, ok := e.(*model.Piped)
+		if !ok {
+			return fmt.Errorf(msg, w)
+		}
+		*e = w.Piped
+	case *project:
+		e, ok := e.(*model.Project)
+		if !ok {
+			return fmt.Errorf(msg, w)
+		}
+		*e = w.Project
+	default:
+		return fmt.Errorf("%T is not supported", w)
+	}
+	return nil
 }
 
 type application struct {
@@ -88,33 +129,9 @@ type application struct {
 	ID                string `bson:"_id"`
 }
 
-func (a *application) setID(id string) {
-	a.ID = id
-}
-
-func (a *application) storeModel(v interface{}) error {
-	if app, ok := v.(*model.Application); ok {
-		*app = a.Application
-		return nil
-	}
-	return fmt.Errorf("the given v is not a pointer to model.Application")
-}
-
 type command struct {
 	model.Command `bson:",inline"`
 	ID            string `bson:"_id"`
-}
-
-func (c *command) setID(id string) {
-	c.ID = id
-}
-
-func (c *command) storeModel(v interface{}) error {
-	if command, ok := v.(*model.Command); ok {
-		*command = c.Command
-		return nil
-	}
-	return fmt.Errorf("the given v is not a pointer to model.Command")
 }
 
 type deployment struct {
@@ -122,33 +139,9 @@ type deployment struct {
 	ID               string `bson:"_id"`
 }
 
-func (d *deployment) setID(id string) {
-	d.ID = id
-}
-
-func (d *deployment) storeModel(v interface{}) error {
-	if deployment, ok := v.(*model.Deployment); ok {
-		*deployment = d.Deployment
-		return nil
-	}
-	return fmt.Errorf("the given v is not a pointer to model.Deployment")
-}
-
 type environment struct {
 	model.Environment `bson:",inline"`
 	ID                string `bson:"_id"`
-}
-
-func (e *environment) setID(id string) {
-	e.ID = id
-}
-
-func (e *environment) storeModel(v interface{}) error {
-	if environment, ok := v.(*model.Environment); ok {
-		*environment = e.Environment
-		return nil
-	}
-	return fmt.Errorf("the given v is not a pointer to model.Environment")
 }
 
 type piped struct {
@@ -156,31 +149,7 @@ type piped struct {
 	ID          string `bson:"_id"`
 }
 
-func (p *piped) setID(id string) {
-	p.ID = id
-}
-
-func (p *piped) storeModel(v interface{}) error {
-	if piped, ok := v.(*model.Piped); ok {
-		*piped = p.Piped
-		return nil
-	}
-	return fmt.Errorf("the given v is not a pointer to model.Piped")
-}
-
 type project struct {
 	model.Project `bson:",inline"`
 	ID            string `bson:"_id"`
-}
-
-func (p *project) setID(id string) {
-	p.ID = id
-}
-
-func (p *project) storeModel(v interface{}) error {
-	if project, ok := v.(*model.Project); ok {
-		*project = p.Project
-		return nil
-	}
-	return fmt.Errorf("the given v is not a pointer to model.Project")
 }

@@ -109,7 +109,7 @@ func (m *MongoDB) Find(ctx context.Context, kind string, opts datastore.ListOpti
 }
 
 func (m *MongoDB) Get(ctx context.Context, kind, id string, v interface{}) error {
-	wrapper, err := newWrapper(v)
+	wrapper, err := wrapModel(v)
 	if err != nil {
 		return err
 	}
@@ -128,11 +128,11 @@ func (m *MongoDB) Get(ctx context.Context, kind, id string, v interface{}) error
 		return err
 	}
 
-	return wrapper.storeModel(v)
+	return extractModel(wrapper, v)
 }
 
 func (m *MongoDB) Create(ctx context.Context, kind, id string, entity interface{}) error {
-	wrapper, err := newWrapper(entity)
+	wrapper, err := wrapModel(entity)
 	if err != nil {
 		return err
 	}
@@ -170,7 +170,7 @@ func (m *MongoDB) Create(ctx context.Context, kind, id string, entity interface{
 }
 
 func (m *MongoDB) Put(ctx context.Context, kind, id string, entity interface{}) error {
-	wrapper, err := newWrapper(entity)
+	wrapper, err := wrapModel(entity)
 	if err != nil {
 		return err
 	}
@@ -204,12 +204,10 @@ func (m *MongoDB) Update(ctx context.Context, kind, id string, factory datastore
 		)
 		return err
 	}
-	wrapper, err := newWrapper(entity)
+	wrapper, err := wrapModel(entity)
 	if err != nil {
 		return err
 	}
-	// NOTE: Not allowed to give it an empty "_id".
-	wrapper.setID(id)
 	update := bson.D{{"$set", wrapper}}
 	if _, err := col.UpdateOne(ctx, makePrimaryKeyFilter(id), update); err != nil {
 		m.logger.Error("failed to update entity",
