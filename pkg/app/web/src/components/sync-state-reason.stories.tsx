@@ -2,7 +2,7 @@ import React from "react";
 import { SyncStateReason } from "./sync-state-reason";
 
 export default {
-  title: "APPLICATION|SyncStateReason",
+  title: "APPLICATION/SyncStateReason",
   component: SyncStateReason,
 };
 

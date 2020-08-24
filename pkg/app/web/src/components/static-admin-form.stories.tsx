@@ -3,7 +3,7 @@ import { StaticAdminForm } from "./static-admin-form";
 import { action } from "@storybook/addon-actions";
 
 export default {
-  title: "StaticAdminForm",
+  title: "SETTINGS/StaticAdminForm",
   component: StaticAdminForm,
 };
 

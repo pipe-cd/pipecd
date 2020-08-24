@@ -6,7 +6,7 @@ import { dummyApplication } from "../__fixtures__/dummy-application";
 import { action } from "@storybook/addon-actions";
 
 export default {
-  title: "DeploymentFilter",
+  title: "DEPLOYMENT/DeploymentFilter",
   component: DeploymentFilter,
   decorators: [
     createDecoratorRedux({

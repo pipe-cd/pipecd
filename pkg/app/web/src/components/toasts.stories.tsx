@@ -3,7 +3,7 @@ import { Toasts } from "./toasts";
 import { createDecoratorRedux } from "../../.storybook/redux-decorator";
 
 export default {
-  title: "COMMON|Toasts",
+  title: "COMMON/Toasts",
   component: Toasts,
   decorators: [
     createDecoratorRedux({

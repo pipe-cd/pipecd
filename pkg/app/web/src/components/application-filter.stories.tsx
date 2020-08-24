@@ -4,7 +4,7 @@ import { action } from "@storybook/addon-actions";
 import { createDecoratorRedux } from "../../.storybook/redux-decorator";
 
 export default {
-  title: "ApplicationFilter",
+  title: "APPLICATION/ApplicationFilter",
   component: ApplicationFilter,
   decorators: [
     createDecoratorRedux({

@@ -3,7 +3,7 @@ import React from "react";
 import { ApprovalStage } from "./approval-stage";
 
 export default {
-  title: "DEPLOYMENT|Pipeline/ApprovalStage",
+  title: "DEPLOYMENT/Pipeline/ApprovalStage",
   component: ApprovalStage,
 };
 

@@ -4,7 +4,7 @@ import { HealthStatus } from "../modules/applications-live-state";
 import { action } from "@storybook/addon-actions";
 
 export default {
-  title: "APPLICATION|KubernetesResource",
+  title: "APPLICATION/KubernetesResource",
   component: KubernetesResource,
 };
 

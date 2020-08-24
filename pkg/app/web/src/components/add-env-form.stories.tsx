@@ -3,7 +3,7 @@ import { AddEnvForm } from "./add-env-form";
 import { action } from "@storybook/addon-actions";
 
 export default {
-  title: "SETTINGS|AddEnvForm",
+  title: "SETTINGS/AddEnvForm",
   component: AddEnvForm,
 };
 
