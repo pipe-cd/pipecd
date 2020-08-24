@@ -12,38 +12,36 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-package webservice
+package mongodb
 
 import (
 	"context"
 
-	"google.golang.org/grpc"
+	"go.mongodb.org/mongo-driver/mongo"
 
-	"github.com/pipe-cd/pipe/pkg/rpc/rpcclient"
+	"github.com/pipe-cd/pipe/pkg/datastore"
 )
 
-type Client interface {
-	WebServiceClient
-	Close() error
+type Iterator struct {
+	ctx context.Context
+	cur *mongo.Cursor
 }
 
-type client struct {
-	WebServiceClient
-	conn *grpc.ClientConn
-}
-
-func NewClient(ctx context.Context, addr string, opts ...rpcclient.DialOption) (Client, error) {
-	conn, err := rpcclient.DialContext(ctx, addr, opts...)
-	if err != nil {
-		return nil, err
+func (it *Iterator) Next(dst interface{}) error {
+	if !it.cur.Next(it.ctx) {
+		return datastore.ErrIteratorDone
 	}
-	cl := NewWebServiceClient(conn)
-	return &client{
-		WebServiceClient: cl,
-		conn:             conn,
-	}, nil
+	wrapper, err := wrapModel(dst)
+	if err != nil {
+		return err
+	}
+	if err := it.cur.Decode(wrapper); err != nil {
+		return err
+	}
+	return extractModel(wrapper, dst)
 }
 
-func (c *client) Close() error {
-	return c.conn.Close()
+func (it *Iterator) Cursor() (string, error) {
+	// Note: Perhaps, not required.
+	return "", datastore.ErrUnimplemented
 }

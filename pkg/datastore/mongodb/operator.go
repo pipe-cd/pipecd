@@ -12,38 +12,29 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-package webservice
+package mongodb
 
 import (
-	"context"
-
-	"google.golang.org/grpc"
-
-	"github.com/pipe-cd/pipe/pkg/rpc/rpcclient"
+	"fmt"
 )
 
-type Client interface {
-	WebServiceClient
-	Close() error
-}
-
-type client struct {
-	WebServiceClient
-	conn *grpc.ClientConn
-}
-
-func NewClient(ctx context.Context, addr string, opts ...rpcclient.DialOption) (Client, error) {
-	conn, err := rpcclient.DialContext(ctx, addr, opts...)
-	if err != nil {
-		return nil, err
+func convertToMongoDBOperator(op string) (string, error) {
+	switch op {
+	case "==":
+		return "$eq", nil
+	case "!=":
+		return "$ne", nil
+	case ">":
+		return "$gt", nil
+	case ">=":
+		return "$gte", nil
+	case "in":
+		return "$in", nil
+	case "<":
+		return "$lt", nil
+	case "<=":
+		return "$lte", nil
+	default:
+		return "", fmt.Errorf("unacceptable operator for mongodb: %s", op)
 	}
-	cl := NewWebServiceClient(conn)
-	return &client{
-		WebServiceClient: cl,
-		conn:             conn,
-	}, nil
-}
-
-func (c *client) Close() error {
-	return c.conn.Close()
 }

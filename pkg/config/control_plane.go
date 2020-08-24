@@ -167,6 +167,16 @@ type DataStoreDynamoDBConfig struct {
 }
 
 type DataStoreMongoDBConfig struct {
+	// The url of MongoDB. All of credentials can be specified via this field.
+	URL string `json:"url"`
+	// The name of the database.
+	Database string `json:"database"`
+	// The path to the username file.
+	// For those who don't want to include the username in the URL.
+	UsernameFile string `json:"usernameFile"`
+	// The path to the password file.
+	// For those who don't want to include the password in the URL.
+	PasswordFile string `json:"passwordFile"`
 }
 
 type ControlPlaneFileStore struct {

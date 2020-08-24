@@ -411,7 +411,7 @@ func (a *WebAPI) updateApplicationEnable(ctx context.Context, appID string, enab
 				zap.String("application-id", appID),
 				zap.Error(err),
 			)
-			return status.Error(codes.Internal, "failed to update the piped ")
+			return status.Error(codes.Internal, "failed to update the application")
 		}
 	}
 	return nil
