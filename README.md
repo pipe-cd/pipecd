@@ -1,6 +1,6 @@
 # PipeCD
 
-Continuous Delivery for Declarative Kubernetes Application and Infrastructure
+Continuous Delivery for Declarative Kubernetes, Serverless Application and Infrastructure
 
 ## Proposal
 

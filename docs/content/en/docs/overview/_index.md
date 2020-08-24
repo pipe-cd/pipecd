@@ -9,7 +9,7 @@ description: >
 ## What Is PipeCD?
 
 {{% pageinfo %}}
-PipeCD provides a Continuous Delivery solution for declarative Kubernetes, Serverless and Infrastructure applications.
+PipeCD provides a Continuous Delivery solution for declarative Kubernetes, Serverless application and Infrastructure.
 {{% /pageinfo %}}
 
 
