@@ -75,7 +75,7 @@ Please note that the phases (Incubating, Alpha, Beta, and Stable) are applied to
 | [ADA](/docs/user-guide/automated-deployment-analysis/) by Stackdriver log | Incubating |
 | [ADA](/docs/user-guide/automated-deployment-analysis/) by CloudWatch metrics | Incubating |
 | [ADA](/docs/user-guide/automated-deployment-analysis/) by CloudWatch log | Incubating |
-| [ADA](/docs/user-guide/automated-deployment-analysis/) by HTTP request (smoke test...) | Alpha |
+| [ADA](/docs/user-guide/automated-deployment-analysis/) by HTTP request (smoke test...) | Incubating |
 | [Notification](/docs/operator-manual/piped/configuring-notifications/) to Slack | Beta |
 | [Notification](/docs/operator-manual/piped/configuring-notifications/) to Webhook | Incubating |
 | [Image Watcher](/docs/user-guide/image-watcher/) | Incubating |
