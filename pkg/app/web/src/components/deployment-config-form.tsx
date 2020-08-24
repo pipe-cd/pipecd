@@ -50,8 +50,12 @@ const useStyles = makeStyles((theme) => ({
 }));
 
 const TEXT = {
-  TEMPLATE_FILENAME: ".pipe.yaml",
-  CREATE_LINK: "Create template file",
+  TITLE: "Add the deployment configuration file",
+  PLACEHOLDER:
+    "# Fill the deployment configuration here. You can also choose one of the provided templates above to edit.",
+  CONFIGURATION_FILENAME: ".pipe.yaml",
+  CREATE_LINK:
+    "Add this deployment configuration file to application configuration directory in Git",
 };
 
 interface Props {
@@ -78,18 +82,16 @@ export const DeploymentConfigForm: FC<Props> = ({ applicationId, onSkip }) => {
 
   return (
     <div className={classes.root}>
-      <Typography
-        className={classes.title}
-        variant="h6"
-      >{`Generate deployment configuration`}</Typography>
+      <Typography className={classes.title} variant="h6">
+        {TEXT.TITLE}
+      </Typography>
       <Divider />
       <div className={classes.content}>
         <TextField
           fullWidth
           required
           select
-          // disabled={disabled}
-          label="Deployment Strategy"
+          label="Template"
           variant="outlined"
           margin="dense"
           onChange={(e) =>
@@ -115,7 +117,7 @@ export const DeploymentConfigForm: FC<Props> = ({ applicationId, onSkip }) => {
         </TextField>
 
         <Typography variant="subtitle1" className={classes.filename}>
-          {TEXT.TEMPLATE_FILENAME}
+          {TEXT.CONFIGURATION_FILENAME}
         </Typography>
         <TextField
           multiline
@@ -124,9 +126,7 @@ export const DeploymentConfigForm: FC<Props> = ({ applicationId, onSkip }) => {
           margin="dense"
           rows={30}
           rowsMax={30}
-          value={
-            template ? template.content : "Select a deployment strategy first"
-          }
+          value={template ? template.content : TEXT.PLACEHOLDER}
           InputProps={{
             className: classes.templateContent,
             margin: "dense",
