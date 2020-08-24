@@ -4,7 +4,7 @@ import { createDecoratorRedux } from "../../.storybook/redux-decorator";
 import { LogSeverity } from "../modules/stage-logs";
 
 export default {
-  title: "DEPLOYMENT|LogViewer",
+  title: "DEPLOYMENT/LogViewer",
   component: LogViewer,
   decorators: [
     createDecoratorRedux({

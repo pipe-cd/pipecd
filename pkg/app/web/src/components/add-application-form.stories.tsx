@@ -4,7 +4,7 @@ import { action } from "@storybook/addon-actions";
 import { createDecoratorRedux } from "../../.storybook/redux-decorator";
 
 export default {
-  title: "APPLICATION|AddApplicationForm",
+  title: "APPLICATION/AddApplicationForm",
   component: AddApplicationForm,
   decorators: [createDecoratorRedux({})],
 };

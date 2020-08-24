@@ -3,7 +3,7 @@ import { GithubSSOForm } from "./github-sso-form";
 import { action } from "@storybook/addon-actions";
 
 export default {
-  title: "GithubSSOForm",
+  title: "SETTINGS/GithubSSOForm",
   component: GithubSSOForm,
 };
 

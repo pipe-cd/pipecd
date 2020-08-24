@@ -5,7 +5,7 @@ import { Provider } from "react-redux";
 import { Role } from "../../../../../bazel-bin/pkg/app/web/model/role_pb";
 
 export default {
-  title: "COMMON|Header",
+  title: "COMMON/Header",
   component: Header,
 };
 

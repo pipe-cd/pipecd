@@ -2,7 +2,7 @@ import React from "react";
 import { KubernetesStateView } from "./kubernetes-state-view";
 
 export default {
-  title: "APPLICATION|KubernetesStateView",
+  title: "APPLICATION/KubernetesStateView",
   component: KubernetesStateView,
 };
 

@@ -3,7 +3,7 @@ import { AddPipedForm } from "./add-piped-form";
 import { action } from "@storybook/addon-actions";
 
 export default {
-  title: "SETTINGS|AddPipedForm",
+  title: "SETTINGS/AddPipedForm",
   component: AddPipedForm,
 };
 

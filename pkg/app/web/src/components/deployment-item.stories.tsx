@@ -6,7 +6,7 @@ import { dummyApplication } from "../__fixtures__/dummy-application";
 import { dummyEnv } from "../__fixtures__/dummy-environment";
 
 export default {
-  title: "DEPLOYMENT|DeploymentItem",
+  title: "DEPLOYMENT/DeploymentItem",
   component: DeploymentItem,
   decorators: [
     createDecoratorRedux({

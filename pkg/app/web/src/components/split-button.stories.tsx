@@ -4,7 +4,7 @@ import CancelIcon from "@material-ui/icons/Cancel";
 import { action } from "@storybook/addon-actions";
 
 export default {
-  title: "COMMON|SplitButton",
+  title: "COMMON/SplitButton",
   component: SplitButton,
 };
 

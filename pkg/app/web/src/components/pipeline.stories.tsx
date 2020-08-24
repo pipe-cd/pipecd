@@ -118,7 +118,7 @@ const fakeDeployment: Deployment = {
 };
 
 export default {
-  title: "DEPLOYMENT|Pipeline/Pipeline",
+  title: "DEPLOYMENT/Pipeline/Pipeline",
   component: Pipeline,
   decorators: [
     createDecoratorRedux({

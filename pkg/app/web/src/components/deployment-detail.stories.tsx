@@ -7,7 +7,7 @@ import { dummyPiped } from "../__fixtures__/dummy-piped";
 import { DeploymentStatus } from "../modules/deployments";
 
 export default {
-  title: "DEPLOYMENT|DeploymentDetail",
+  title: "DEPLOYMENT/DeploymentDetail",
   component: DeploymentDetail,
   decorators: [
     createDecoratorRedux({

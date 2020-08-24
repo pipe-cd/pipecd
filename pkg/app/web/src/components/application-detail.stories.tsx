@@ -42,7 +42,7 @@ const dummyStore: Partial<AppState> = {
 };
 
 export default {
-  title: "APPLICATION|ApplicationDetail",
+  title: "APPLICATION/ApplicationDetail",
   component: ApplicationDetail,
 };
 

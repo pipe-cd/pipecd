@@ -4,7 +4,7 @@ import { createDecoratorRedux } from "../../.storybook/redux-decorator";
 import { dummyApplicationLiveState } from "../__fixtures__/dummy-application-live-state";
 
 export default {
-  title: "APPLICATION|ApplicationStateView",
+  title: "APPLICATION/ApplicationStateView",
   component: ApplicationStateView,
   decorators: [
     createDecoratorRedux({

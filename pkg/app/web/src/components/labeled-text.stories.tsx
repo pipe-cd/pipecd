@@ -2,7 +2,7 @@ import React from "react";
 import { LabeledText } from "./labeled-text";
 
 export default {
-  title: "COMMON|LabeledText",
+  title: "COMMON/LabeledText",
   component: LabeledText,
 };
 
