@@ -324,7 +324,9 @@ func (a *WebAPI) AddApplication(ctx context.Context, req *webservice.AddApplicat
 		return nil, status.Error(codes.Internal, "failed to create application")
 	}
 
-	return &webservice.AddApplicationResponse{}, nil
+	return &webservice.AddApplicationResponse{
+		ApplicationId: app.Id,
+	}, nil
 }
 
 // makeGitPath returns an ApplicationGitPath by adding Repository info and GitPath URL to given args.
