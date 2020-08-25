@@ -239,4 +239,11 @@ type FileStoreS3Config struct {
 }
 
 type FileStoreMinioConfig struct {
+	Endpoint string `json:"endpoint"`
+	// The bucket name to store.
+	Bucket string `json:"bucket"`
+	// The path to the access key file.
+	AccessKeyFile string `json:"accessKeyFile"`
+	// The path to the secret key file.
+	SecretKeyFile string `json:"secretKeyFile"`
 }
