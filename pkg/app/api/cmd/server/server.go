@@ -21,8 +21,6 @@ import (
 	"net/http"
 	"time"
 
-	"github.com/pipe-cd/pipe/pkg/filestore/minio"
-
 	jwtgo "github.com/dgrijalva/jwt-go"
 	"github.com/spf13/cobra"
 	"go.uber.org/zap"
@@ -44,6 +42,7 @@ import (
 	"github.com/pipe-cd/pipe/pkg/datastore/mongodb"
 	"github.com/pipe-cd/pipe/pkg/filestore"
 	"github.com/pipe-cd/pipe/pkg/filestore/gcs"
+	"github.com/pipe-cd/pipe/pkg/filestore/minio"
 	"github.com/pipe-cd/pipe/pkg/jwt"
 	"github.com/pipe-cd/pipe/pkg/model"
 	"github.com/pipe-cd/pipe/pkg/redis"

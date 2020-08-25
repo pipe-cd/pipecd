@@ -54,7 +54,10 @@ func NewStore(endpoint, bucket, accessKeyFile, secretKeyFile string, opts ...Opt
 
 	var useSSL bool
 	u, err := url.Parse(endpoint)
-	if err == nil && u.Scheme == "https" {
+	if err != nil {
+		return nil, fmt.Errorf("failed to parse the given endpoint: %w", err)
+	}
+	if u.Scheme == "https" {
 		useSSL = true
 	}
 
@@ -66,7 +69,7 @@ func NewStore(endpoint, bucket, accessKeyFile, secretKeyFile string, opts ...Opt
 	if err != nil {
 		return nil, fmt.Errorf("failed to read secret key file: %w", err)
 	}
-	client, err := minio.New(endpoint, &minio.Options{
+	client, err := minio.New(u.Host, &minio.Options{
 		Creds:  credentials.NewStaticV4(string(accessKey), string(secretKey), ""),
 		Secure: useSSL,
 	})
