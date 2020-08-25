@@ -42,6 +42,7 @@ import (
 	"github.com/pipe-cd/pipe/pkg/datastore/mongodb"
 	"github.com/pipe-cd/pipe/pkg/filestore"
 	"github.com/pipe-cd/pipe/pkg/filestore/gcs"
+	"github.com/pipe-cd/pipe/pkg/filestore/minio"
 	"github.com/pipe-cd/pipe/pkg/jwt"
 	"github.com/pipe-cd/pipe/pkg/model"
 	"github.com/pipe-cd/pipe/pkg/redis"
@@ -339,25 +340,25 @@ func (s *server) createFilestore(ctx context.Context, cfg *config.ControlPlaneSp
 	ctx, cancel := context.WithTimeout(ctx, 5*time.Second)
 	defer cancel()
 
-	if cfg.Filestore.GCSConfig != nil {
-		gcsConfig := cfg.Filestore.GCSConfig
+	switch cfg.Filestore.Type {
+	case model.FileStoreGCS:
+		gcsCfg := cfg.Filestore.GCSConfig
 		options := []gcs.Option{
 			gcs.WithLogger(logger),
 		}
-		if gcsConfig.CredentialsFile != "" {
-			options = append(options, gcs.WithCredentialsFile(gcsConfig.CredentialsFile))
+		if gcsCfg.CredentialsFile != "" {
+			options = append(options, gcs.WithCredentialsFile(gcsCfg.CredentialsFile))
 		}
-		client, err := gcs.NewStore(ctx, gcsConfig.Bucket, options...)
-		if err != nil {
-			return nil, err
+		return gcs.NewStore(ctx, gcsCfg.Bucket, options...)
+	case model.FileStoreS3:
+		return nil, errors.New("s3 is unimplemented yet")
+	case model.FileStoreMINIO:
+		minioCfg := cfg.Filestore.MinioConfig
+		options := []minio.Option{
+			minio.WithLogger(logger),
 		}
-		return client, nil
+		return minio.NewStore(minioCfg.Endpoint, minioCfg.Bucket, minioCfg.AccessKeyFile, minioCfg.SecretKeyFile, options...)
+	default:
+		return nil, fmt.Errorf("unknown filestore type %q", cfg.Filestore.Type)
 	}
-
-	if cfg.Filestore.S3Config != nil {
-		return nil, errors.New("s3 is unimplemented now")
-	}
-
-	//return nil, errors.New("filestore configuration is invalid")
-	return nil, nil
 }
