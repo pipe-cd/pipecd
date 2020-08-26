@@ -138,7 +138,7 @@ func (p *ProjectSSOConfig_GitHub) Update(input *ProjectSSOConfig_GitHub) {
 		p.ClientSecret = input.ClientSecret
 	}
 	if input.BaseUrl != "" {
-		p.BaseUrl = input.ClientSecret
+		p.BaseUrl = input.BaseUrl
 	}
 	if input.UploadUrl != "" {
 		p.UploadUrl = input.UploadUrl

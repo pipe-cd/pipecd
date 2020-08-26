@@ -101,20 +101,20 @@ func TestUpdateProjectSSOConfig(t *testing.T) {
 			sso: &ProjectSSOConfig{
 				Provider: ProjectSSOConfig_GITHUB,
 				Github: &ProjectSSOConfig_GitHub{
-					ClientId:     "updated",
-					ClientSecret: "updated",
-					BaseUrl:      "updated",
-					UploadUrl:    "updated",
+					ClientId:     "updated-client-id",
+					ClientSecret: "updated-client-secret",
+					BaseUrl:      "updated-base-url",
+					UploadUrl:    "updated-upload-url",
 				},
 				Google: nil,
 			},
 			expect: &ProjectSSOConfig{
 				Provider: ProjectSSOConfig_GITHUB,
 				Github: &ProjectSSOConfig_GitHub{
-					ClientId:     "updated",
-					ClientSecret: "updated",
-					BaseUrl:      "updated",
-					UploadUrl:    "updated",
+					ClientId:     "updated-client-id",
+					ClientSecret: "updated-client-secret",
+					BaseUrl:      "updated-base-url",
+					UploadUrl:    "updated-upload-url",
 				},
 				Google: nil,
 			},
