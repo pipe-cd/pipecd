@@ -162,7 +162,7 @@ func (p *ProjectSSOConfig_GitHub) GenerateAuthCodeURL(project, apiURL, callbackP
 		if err != nil {
 			return "", err
 		}
-		cfg.Endpoint = oauth2.Endpoint{AuthURL: fmt.Sprintf("%s://%s%s", u.Scheme, u.Host, "/login/oauth/authorize")}
+		cfg.Endpoint.AuthURL = fmt.Sprintf("%s://%s%s", u.Scheme, u.Host, "/login/oauth/authorize")
 	}
 	cfg.Scopes = githubScopes
 	apiURL = strings.TrimSuffix(apiURL, "/")
