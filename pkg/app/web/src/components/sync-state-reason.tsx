@@ -1,5 +1,6 @@
 import React, { FC, useState } from "react";
 import { makeStyles, Paper, Typography, Button } from "@material-ui/core";
+import { DiffView } from "./diff-view";
 
 const useStyles = makeStyles((theme) => ({
   summary: {
@@ -46,9 +47,7 @@ export const SyncStateReason: FC<Props> = ({ summary, detail }) => {
 
       {showReason && (
         <Paper elevation={0} variant="outlined" className={classes.detail}>
-          {detail.split("\n").map((line, i) => (
-            <div key={i}>{line}</div>
-          ))}
+          <DiffView content={detail} />
         </Paper>
       )}
     </>
