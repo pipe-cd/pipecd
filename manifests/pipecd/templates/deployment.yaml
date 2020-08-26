@@ -229,3 +229,37 @@ spec:
           resources:
             {{- toYaml .Values.cache.resources | nindent 12 }}
 {{- end }}
+
+{{- if .Values.quickstart}}
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{ include "pipecd.fullname" . }}-datastore
+  labels:
+    {{- include "pipecd.labels" . | nindent 4 }}
+    app.kubernetes.io/component: datastore
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      {{- include "pipecd.selectorLabels" . | nindent 6 }}
+      app.kubernetes.io/component: datastore
+  template:
+    metadata:
+      labels:
+        {{- include "pipecd.selectorLabels" . | nindent 8 }}
+        app.kubernetes.io/component: datastore
+    spec:
+      containers:
+        - name: datastore
+          image: mongo:4.2
+          imagePullPolicy: IfNotPresent
+          ports:
+            - name: mongo
+              containerPort: 27017
+              protocol: TCP
+
+# TODO: Append minio Deployment and Service
+# and configuration to quickstart/control-plane-config.yaml
+{{- end }}

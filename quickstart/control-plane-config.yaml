@@ -3,8 +3,16 @@ kind: ControlPlane
 spec:
   datastore:
     type: MONGODB
+    config:
+      url: mongodb://pipecd-datastore:27017/test
+      database: test
   filestore:
     type: MINIO
+    config:
+      endpoint:
+      bucket:
+      accessKeyFile:
+      secretKeyFile:
   project:
     - name: example
       staticAdmin:

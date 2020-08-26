@@ -10,7 +10,11 @@ This guides you to install PipeCD in your kubernetes and deploy a `helloworld` a
 
 ### 1. Installing control plane
 
-> TBA
+```bash
+helm install pipecd pipecd/pipecd --version=VERSION \
+  --set quickstart=true \
+  --set-file config.data=./quickstart/control-plane-config.yaml \
+```
 
 ### 2. Adding an environment
 
