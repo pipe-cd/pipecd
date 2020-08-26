@@ -122,9 +122,9 @@ func (s *Store) PutObject(ctx context.Context, path string, content []byte) erro
 }
 
 func (s *Store) ListObjects(ctx context.Context, prefix string) ([]filestore.Object, error) {
-	objectsCh := s.client.ListObjects(ctx, s.bucket, minio.ListObjectsOptions{Prefix: prefix, Recursive: true})
-	objects := make([]filestore.Object, 0, len(objectsCh))
-	for o := range objectsCh {
+	objectCh := s.client.ListObjects(ctx, s.bucket, minio.ListObjectsOptions{Prefix: prefix, Recursive: true})
+	objects := make([]filestore.Object, 0, len(objectCh))
+	for o := range objectCh {
 		if o.Err != nil {
 			return nil, fmt.Errorf("invalid object %q found: %w", o.Key, o.Err)
 		}
