@@ -18,6 +18,6 @@ export const overview: React.FC = () => (
 export const diff: React.FC = () => (
   <SyncStateReason
     summary="Summary message"
-    detail={`message\n+ added-line\n- deleted-line`}
+    detail={`message\n\n+ added-line\n- deleted-line`}
   />
 );
