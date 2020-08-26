@@ -15,158 +15,88 @@
 package diff
 
 import (
-	"io/ioutil"
-	"reflect"
 	"testing"
 
 	"github.com/stretchr/testify/assert"
-	"github.com/stretchr/testify/require"
 )
 
-func TestPrintNodeValue(t *testing.T) {
-	var (
-		mapOfPrimative = map[string]string{
-			"one": "1",
-			"two": "2",
-		}
-		mapOfMap = map[string]interface{}{
-			"one": map[string]string{
-				"one": "1-1",
-				"two": "1-2",
-			},
-			"two": map[string]string{
-				"one": "2-1",
-				"two": "2-2",
-			},
-		}
-		mapOfSlice = map[string]interface{}{
-			"one": []string{"one-1", "one-2"},
-			"two": []string{"two-1", "two-2"},
-		}
-	)
+func TestFindOne(t *testing.T) {
+	nodes := []Node{
+		{PathString: "spec.template.spec"},
+	}
 
 	testcases := []struct {
-		name     string
-		value    reflect.Value
-		expected string
+		name           string
+		nodes          Nodes
+		query          string
+		expected       *Node
+		exepectedError error
 	}{
 		{
-			name:     "invalid value",
-			expected: "",
+			name:           "nil list",
+			query:          ".+",
+			exepectedError: ErrNotFound,
 		},
 		{
-			name:     "int value",
-			value:    reflect.ValueOf(1),
-			expected: "1",
+			name:           "not found",
+			nodes:          nodes,
+			query:          `spec\.not-found\..+`,
+			exepectedError: ErrNotFound,
 		},
 		{
-			name:     "float value",
-			value:    reflect.ValueOf(1.25),
-			expected: "1.25",
-		},
-		{
-			name:     "string value",
-			value:    reflect.ValueOf("hello"),
-			expected: "hello",
-		},
-		{
-			name: "slice of primative elements",
-			value: func() reflect.Value {
-				v := []int{1, 2, 3}
-				return reflect.ValueOf(v)
-			}(),
-			expected: `- 1
-- 2
-- 3`,
-		},
-		{
-			name: "slice of interface",
-			value: func() reflect.Value {
-				v := []interface{}{
-					map[string]int{
-						"1-one": 1,
-						"2-two": 2,
-					},
-					map[string]int{
-						"3-three": 3,
-						"4-four":  4,
-					},
-				}
-				return reflect.ValueOf(v)
-			}(),
-			expected: `- 1-one: 1
-  2-two: 2
-- 3-three: 3
-  4-four: 4`,
-		},
-		{
-			name: "simple map",
-			value: reflect.ValueOf(map[string]string{
-				"one": "one-value",
-				"two": "two-value",
-			}),
-			expected: `one: one-value
-two: two-value`,
-		},
-		{
-			name: "nested map",
-			value: func() reflect.Value {
-				v := map[string]interface{}{
-					"1-number":           1,
-					"2-string":           "hello",
-					"3-map-of-primative": mapOfPrimative,
-					"4-map-of-map":       mapOfMap,
-					"5-map-of-slice":     mapOfSlice,
-					"6-slice":            []string{"a", "b"},
-					"7-string":           "hi",
-				}
-				return reflect.ValueOf(v)
-			}(),
-			expected: `1-number: 1
-2-string: hello
-3-map-of-primative:
-  one: 1
-  two: 2
-4-map-of-map:
-  one:
-    one: 1-1
-    two: 1-2
-  two:
-    one: 2-1
-    two: 2-2
-5-map-of-slice:
-  one:
-    - one-1
-    - one-2
-  two:
-    - two-1
-    - two-2
-6-slice:
-  - a
-  - b
-7-string: hi`,
+			name:     "found",
+			nodes:    nodes,
+			query:    `spec\.template\..+`,
+			expected: &nodes[0],
 		},
 	}
 
 	for _, tc := range testcases {
 		t.Run(tc.name, func(t *testing.T) {
-			got, _ := PrintNodeValue(tc.value)
-			assert.Equal(t, tc.expected, got)
+			n, err := tc.nodes.FindOne(tc.query)
+			assert.Equal(t, tc.expected, n)
+			assert.Equal(t, tc.exepectedError, err)
 		})
 	}
-
 }
 
-func TestPrintNodeValueComplex(t *testing.T) {
-	// Complex node. Note that the keys in the yaml file must be in order.
-	objs, err := loadUnstructureds("testdata/complex-node.yaml")
-	require.NoError(t, err)
-	require.Equal(t, 1, len(objs))
+func TestFind(t *testing.T) {
+	nodes := []Node{
+		{PathString: "spec.replicas"},
+		{PathString: "spec.template.spec.containers.0.image"},
+		{PathString: "spec.template.spec.containers.1.image"},
+	}
 
-	root := reflect.ValueOf(objs[0].Object)
-	got, _ := PrintNodeValue(root)
+	testcases := []struct {
+		name     string
+		nodes    Nodes
+		query    string
+		expected []Node
+	}{
+		{
+			name:     "nil list",
+			query:    ".+",
+			expected: []Node{},
+		},
+		{
+			name:     "not found",
+			nodes:    nodes,
+			query:    `spec\.not-found\..+`,
+			expected: []Node{},
+		},
+		{
+			name:     "found two nodes",
+			nodes:    nodes,
+			query:    `spec\.template\.spec\.containers\.\d+.image$`,
+			expected: []Node{nodes[1], nodes[2]},
+		},
+	}
 
-	data, err := ioutil.ReadFile("testdata/complex-node.yaml")
-	require.NoError(t, err)
-	assert.Equal(t, string(data), got)
+	for _, tc := range testcases {
+		t.Run(tc.name, func(t *testing.T) {
+			ns, err := tc.nodes.Find(tc.query)
+			assert.Equal(t, Nodes(tc.expected), ns)
+			assert.NoError(t, err)
+		})
+	}
 }

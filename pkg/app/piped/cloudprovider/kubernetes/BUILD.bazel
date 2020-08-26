@@ -4,7 +4,6 @@ go_library(
     name = "go_default_library",
     srcs = [
         "cache.go",
-        "diff.go",
         "helm.go",
         "kubectl.go",
         "kubernetes.go",
@@ -24,8 +23,6 @@ go_library(
         "//pkg/config:go_default_library",
         "//pkg/git:go_default_library",
         "//pkg/model:go_default_library",
-        "@com_github_google_go_cmp//cmp:go_default_library",
-        "@com_github_google_go_cmp//cmp/cmpopts:go_default_library",
         "@com_github_prometheus_client_golang//prometheus:go_default_library",
         "@io_k8s_api//apps/v1:go_default_library",
         "@io_k8s_api//batch/v1:go_default_library",
@@ -42,10 +39,7 @@ go_library(
 go_test(
     name = "go_default_test",
     size = "small",
-    srcs = [
-        "diff_test.go",
-        "helm_test.go",
-    ],
+    srcs = ["helm_test.go"],
     data = glob(["testdata/**"]),
     embed = [":go_default_library"],
     deps = [

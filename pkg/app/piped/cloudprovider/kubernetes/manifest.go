@@ -25,6 +25,7 @@ import (
 	"k8s.io/apimachinery/pkg/apis/meta/v1/unstructured"
 	"sigs.k8s.io/yaml"
 
+	"github.com/pipe-cd/pipe/pkg/app/piped/diff"
 	"github.com/pipe-cd/pipe/pkg/model"
 )
 
@@ -139,6 +140,10 @@ func (m Manifest) ConvertToStructuredObject(o interface{}) error {
 		return err
 	}
 	return json.Unmarshal(data, o)
+}
+
+func Diff(first, second Manifest, opts ...diff.Option) (*diff.Result, error) {
+	return diff.DiffUnstructureds(*first.u, *second.u, opts...)
 }
 
 func ParseFromStructuredObject(s interface{}) (Manifest, error) {

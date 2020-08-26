@@ -93,10 +93,10 @@ func TestDiff(t *testing.T) {
 
 			result, err := DiffUnstructureds(objs[0], objs[1], tc.options...)
 			require.NoError(t, err)
-			assert.Equal(t, tc.diffNum, result.Num())
+			assert.Equal(t, tc.diffNum, result.NumNodes())
 
-			result.SetLeftPadding(1)
-			ds := result.DiffString()
+			renderer := NewRenderer(WithLeftPadding(1))
+			ds := renderer.Render(result.Nodes())
 			assert.Equal(t, tc.diffString, ds)
 		})
 	}
