@@ -29,7 +29,7 @@ func TestDiff(t *testing.T) {
 	testcases := []struct {
 		name       string
 		yamlFile   string
-		options    []DiffOption
+		options    []Option
 		diffNum    int
 		diffString string
 	}{
@@ -41,7 +41,7 @@ func TestDiff(t *testing.T) {
 		{
 			name:     "no diff by ignoring all adding map keys",
 			yamlFile: "testdata/ignore_adding_map_keys.yaml",
-			options: []DiffOption{
+			options: []Option{
 				WithIgnoreAddingMapKeys(),
 			},
 			diffNum: 0,

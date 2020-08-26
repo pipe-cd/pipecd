@@ -26,18 +26,18 @@ type differ struct {
 	result              *Result
 }
 
-type DiffOption func(*differ)
+type Option func(*differ)
 
 // WithIgnoreAddingMapKeys configures differ to ignore all map keys
 // that were added to the second object and missing in the first one.
-func WithIgnoreAddingMapKeys() DiffOption {
+func WithIgnoreAddingMapKeys() Option {
 	return func(d *differ) {
 		d.ignoreAddingMapKeys = true
 	}
 }
 
 // DiffUnstructureds calculates the diff between two unstructured objects.
-func DiffUnstructureds(x, y unstructured.Unstructured, opts ...DiffOption) (*Result, error) {
+func DiffUnstructureds(x, y unstructured.Unstructured, opts ...Option) (*Result, error) {
 	var (
 		path = []PathStep{}
 		vx   = reflect.ValueOf(x.Object)

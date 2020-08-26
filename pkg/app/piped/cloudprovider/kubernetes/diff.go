@@ -207,7 +207,7 @@ func Diff(first, second Manifest, opts ...DiffOption) DiffResultList {
 	return reporter.diffs
 }
 
-func DiffManifests(first, second Manifest, opts ...diff.DiffOption) (*diff.Result, error) {
+func DiffManifests(first, second Manifest, opts ...diff.Option) (*diff.Result, error) {
 	return diff.DiffUnstructureds(*first.u, *second.u, opts...)
 }
 

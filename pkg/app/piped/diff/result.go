@@ -34,10 +34,10 @@ type Result struct {
 	redactReplacementX string
 	redactReplacementY string
 
-	nodes []DiffNode
+	nodes []Node
 }
 
-type DiffNode struct {
+type Node struct {
 	Path       []PathStep
 	PathString string
 	TypeX      reflect.Type
@@ -88,7 +88,7 @@ func (r *Result) HasDiff() bool {
 	return len(r.nodes) > 0
 }
 
-func (r *Result) Find(query string) (*DiffNode, error) {
+func (r *Result) Find(query string) (*Node, error) {
 	reg, err := regexp.Compile(query)
 	if err != nil {
 		return nil, err
@@ -104,13 +104,13 @@ func (r *Result) Find(query string) (*DiffNode, error) {
 	return nil, ErrNotFound
 }
 
-func (r *Result) FindAll(query string) ([]DiffNode, error) {
+func (r *Result) FindAll(query string) ([]Node, error) {
 	reg, err := regexp.Compile(query)
 	if err != nil {
 		return nil, err
 	}
 
-	list := make([]DiffNode, 0)
+	list := make([]Node, 0)
 	for i := range r.nodes {
 		matched := reg.MatchString(r.nodes[i].PathString)
 		if !matched {
@@ -121,8 +121,8 @@ func (r *Result) FindAll(query string) ([]DiffNode, error) {
 	return list, nil
 }
 
-func (r *Result) FindByPrefix(prefix string) []DiffNode {
-	list := make([]DiffNode, 0)
+func (r *Result) FindByPrefix(prefix string) []Node {
+	list := make([]Node, 0)
 	for i := range r.nodes {
 		if strings.HasPrefix(r.nodes[i].PathString, prefix) {
 			list = append(list, r.nodes[i])
@@ -287,7 +287,7 @@ func printNodeValue(v reflect.Value, prefix string) (string, bool) {
 }
 
 func (r *Result) addNode(path []PathStep, typeX, typeY reflect.Type, valueX, valueY reflect.Value) {
-	r.nodes = append(r.nodes, DiffNode{
+	r.nodes = append(r.nodes, Node{
 		Path:       path,
 		PathString: makePathString(path),
 		TypeX:      typeX,

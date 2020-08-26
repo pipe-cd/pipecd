@@ -272,7 +272,7 @@ func (d *detector) checkApplication(ctx context.Context, app *model.Application,
 		return d.reporter.ReportApplicationSyncState(ctx, app.Id, state)
 	}
 
-	state := makeOutOfSyncState(headManifests, liveManifests, diffs)
+	state := makeOutOfSyncState(headManifests, diffs)
 	return d.reporter.ReportApplicationSyncState(ctx, app.Id, state)
 }
 
@@ -406,7 +406,7 @@ func makeOutOfSyncStateBecauseMissingOrRedundant(missings, redundancies []provid
 	}
 }
 
-func makeOutOfSyncState(headManifests, liveManifests []provider.Manifest, diffs map[int]*diff.Result) model.ApplicationSyncState {
+func makeOutOfSyncState(headManifests []provider.Manifest, diffs map[int]*diff.Result) model.ApplicationSyncState {
 	const maxPrintDiffs = 3
 
 	shortReason := fmt.Sprintf("There are %d manifests are not synced.", len(diffs))
