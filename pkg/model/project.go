@@ -22,6 +22,7 @@ import (
 
 	"golang.org/x/crypto/bcrypt"
 	"golang.org/x/oauth2"
+	"golang.org/x/oauth2/github"
 )
 
 var (
@@ -117,7 +118,7 @@ func (p *ProjectSSOConfig) GenerateAuthCodeURL(project, apiURL, callbackPath, st
 		if p.Github == nil {
 			return "", fmt.Errorf("missing GitHub oauth in the SSO configuration")
 		}
-		return p.Github.GenerateAuthCodeURL(project, apiURL, callbackPath, state)
+		return p.Github.GenerateAuthCodeURL(project, apiURL, callbackPath, state, p.Provider == ProjectSSOConfig_GITHUB_ENTERPRISE)
 	default:
 		return "", fmt.Errorf("not implemented")
 	}
@@ -146,17 +147,18 @@ func (p *ProjectSSOConfig_GitHub) Update(input *ProjectSSOConfig_GitHub) {
 }
 
 // GenerateAuthCodeURL generates an auth URL for the specified configuration.
-func (p *ProjectSSOConfig_GitHub) GenerateAuthCodeURL(project, apiURL, callbackPath, state string) (string, error) {
-	u, err := url.Parse(p.BaseUrl)
-	if err != nil {
-		return "", err
-	}
-
+func (p *ProjectSSOConfig_GitHub) GenerateAuthCodeURL(project, apiURL, callbackPath, state string, enterprise bool) (string, error) {
 	cfg := oauth2.Config{
 		ClientID: p.ClientId,
-		Endpoint: oauth2.Endpoint{AuthURL: fmt.Sprintf("%s://%s%s", u.Scheme, u.Host, "/login/oauth/authorize")},
+		Endpoint: github.Endpoint,
 	}
-
+	if enterprise {
+		u, err := url.Parse(p.BaseUrl)
+		if err != nil {
+			return "", err
+		}
+		cfg.Endpoint = oauth2.Endpoint{AuthURL: fmt.Sprintf("%s://%s%s", u.Scheme, u.Host, "/login/oauth/authorize")}
+	}
 	cfg.Scopes = githubScopes
 	apiURL = strings.TrimSuffix(apiURL, "/")
 	cfg.RedirectURL = fmt.Sprintf("%s%s?project=%s", apiURL, callbackPath, project)

@@ -110,7 +110,7 @@ func getUser(ctx context.Context, sso *model.ProjectSSOConfig, rbac *model.Proje
 		if sso.Github == nil {
 			return nil, fmt.Errorf("missing GitHub oauth in the SSO configuration")
 		}
-		cli, err := github.NewOAuthClient(ctx, sso.Github, rbac, projectID, code)
+		cli, err := github.NewOAuthClient(ctx, sso.Github, rbac, projectID, code, sso.Provider == model.ProjectSSOConfig_GITHUB_ENTERPRISE)
 		if err != nil {
 			return nil, err
 		}
