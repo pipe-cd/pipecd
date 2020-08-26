@@ -14,3 +14,10 @@ export const overview: React.FC = () => (
     - apiVersion=apps/v1, kind=Deployment, namespace=default, name=wait-approval-canary- apiVersion=v1, kind=Service, namespace=default, name=wait-approval`}
   />
 );
+
+export const diff: React.FC = () => (
+  <SyncStateReason
+    summary="Summary message"
+    detail={`message\n+ added-line\n- deleted-line`}
+  />
+);
