@@ -119,7 +119,7 @@ metadata:
   name: {{ include "pipecd.fullname" . }}-mongodb
   labels:
     {{- include "pipecd.labels" . | nindent 4 }}
-    app.kubernetes.io/component: datastore
+    app.kubernetes.io/component: mongodb
 spec:
   type: ClusterIP
   ports:
@@ -128,5 +128,5 @@ spec:
       targetPort: mongo
   selector:
     {{- include "pipecd.selectorLabels" . | nindent 4 }}
-    app.kubernetes.io/component: datastore
+    app.kubernetes.io/component: mongodb
 {{- end }}
