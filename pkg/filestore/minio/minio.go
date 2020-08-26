@@ -15,11 +15,15 @@
 package minio
 
 import (
+	"bytes"
 	"context"
 	"fmt"
 	"io"
 	"io/ioutil"
+	"mime"
 	"net/url"
+	"path/filepath"
+	"strings"
 
 	"github.com/minio/minio-go/v7"
 	"github.com/minio/minio-go/v7/pkg/credentials"
@@ -70,7 +74,7 @@ func NewStore(endpoint, bucket, accessKeyFile, secretKeyFile string, opts ...Opt
 		return nil, fmt.Errorf("failed to read secret key file: %w", err)
 	}
 	client, err := minio.New(u.Host, &minio.Options{
-		Creds:  credentials.NewStaticV4(string(accessKey), string(secretKey), ""),
+		Creds:  credentials.NewStaticV4(strings.TrimRight(string(accessKey), "\n"), strings.TrimRight(string(secretKey), "\n"), ""),
 		Secure: useSSL,
 	})
 	if err != nil {
@@ -81,25 +85,59 @@ func NewStore(endpoint, bucket, accessKeyFile, secretKeyFile string, opts ...Opt
 }
 
 func (s *Store) NewReader(ctx context.Context, path string) (rc io.ReadCloser, err error) {
-	return
-}
-
-func (s *Store) NewWriter(ctx context.Context, path string) io.WriteCloser {
-	return nil
+	// No error returned even if the object does not exist.
+	return s.client.GetObject(ctx, s.bucket, path, minio.GetObjectOptions{})
 }
 
 func (s *Store) GetObject(ctx context.Context, path string) (object filestore.Object, err error) {
+	rc, err := s.NewReader(ctx, path)
+	if err != nil {
+		return
+	}
+	defer func() {
+		if err := rc.Close(); err != nil {
+			s.logger.Error("failed to close object reader")
+		}
+	}()
+
+	content, err := ioutil.ReadAll(rc)
+	if err != nil {
+		return
+	}
+	object.Path = path
+	object.Content = content
+	object.Size = int64(len(content))
 	return
 }
 
 func (s *Store) PutObject(ctx context.Context, path string, content []byte) error {
-	return nil
+	opts := minio.PutObjectOptions{}
+	if opts.ContentType = mime.TypeByExtension(filepath.Ext(path)); opts.ContentType == "" {
+		opts.ContentType = "application/octet-stream"
+	}
+	b := bytes.NewBuffer(content)
+
+	_, err := s.client.PutObject(ctx, s.bucket, path, b, int64(b.Len()), opts)
+	return err
 }
 
 func (s *Store) ListObjects(ctx context.Context, prefix string) ([]filestore.Object, error) {
-	return nil, nil
+	objectsCh := s.client.ListObjects(ctx, s.bucket, minio.ListObjectsOptions{Prefix: prefix, Recursive: true})
+	objects := make([]filestore.Object, 0, len(objectsCh))
+	for o := range objectsCh {
+		if o.Err != nil {
+			return nil, fmt.Errorf("invalid object %q found: %w", o.Key, o.Err)
+		}
+		objects = append(objects, filestore.Object{
+			Path: o.Key,
+			Size: o.Size,
+		})
+	}
+	return objects, nil
 }
 
 func (s *Store) Close() error {
+	// No need to close the connection. Minio server automatically cleans
+	// idle connections and properly gives back resources to kernel.
 	return nil
 }

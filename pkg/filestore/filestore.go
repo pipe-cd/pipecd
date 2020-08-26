@@ -56,5 +56,4 @@ type Store interface {
 	Lister
 	Closer
 	NewReader(ctx context.Context, path string) (io.ReadCloser, error)
-	NewWriter(ctx context.Context, path string) io.WriteCloser
 }

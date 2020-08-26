@@ -145,12 +145,12 @@ func (s *server) run(ctx context.Context, t cli.Telemetry) error {
 
 	fs, err := s.createFilestore(ctx, cfg, t.Logger)
 	if err != nil {
-		t.Logger.Error("failed creating firestore", zap.Error(err))
+		t.Logger.Error("failed creating filestore", zap.Error(err))
 		return err
 	}
 	defer func() {
 		if err := fs.Close(); err != nil {
-			t.Logger.Error("failed closing firestore client", zap.Error(err))
+			t.Logger.Error("failed closing filestore client", zap.Error(err))
 		}
 	}()
 
