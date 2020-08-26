@@ -4,8 +4,8 @@ spec:
   datastore:
     type: MONGODB
     config:
-      url: mongodb://pipecd-datastore:27017/test
-      database: test
+      url: mongodb://pipecd-mongodb:27017/quickstart
+      database: quickstart
   filestore:
     type: MINIO
     config:
