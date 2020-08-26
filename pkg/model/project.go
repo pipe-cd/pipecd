@@ -118,7 +118,12 @@ func (p *ProjectSSOConfig) GenerateAuthCodeURL(project, apiURL, callbackPath, st
 		if p.Github == nil {
 			return "", fmt.Errorf("missing GitHub oauth in the SSO configuration")
 		}
-		return p.Github.GenerateAuthCodeURL(project, apiURL, callbackPath, state, p.Provider == ProjectSSOConfig_GITHUB_ENTERPRISE)
+		return p.Github.GenerateAuthCodeURL(project, apiURL, callbackPath, state, false)
+	case ProjectSSOConfig_GITHUB_ENTERPRISE:
+		if p.Github == nil {
+			return "", fmt.Errorf("missing GitHub oauth in the SSO configuration")
+		}
+		return p.Github.GenerateAuthCodeURL(project, apiURL, callbackPath, state, true)
 	default:
 		return "", fmt.Errorf("not implemented")
 	}
