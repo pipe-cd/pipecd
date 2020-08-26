@@ -158,7 +158,6 @@ func (r *Result) DiffString() string {
 			b.WriteString(fmt.Sprintf("%s%*s%s: ", mark, depth*2-1, "", lastStep.String()))
 		}
 
-
 		parts := strings.Split(nodeString, "\n")
 		for i, p := range parts {
 			if lastStep.Type != SliceIndexPathStep {
