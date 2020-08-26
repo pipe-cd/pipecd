@@ -85,3 +85,5 @@ secret:
   signingKey:
     # The name of the signing key file.
     fileName: "signing-key"
+
+quickstart: false

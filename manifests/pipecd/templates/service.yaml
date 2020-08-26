@@ -110,3 +110,23 @@ spec:
   selector:
     {{- include "pipecd.selectorLabels" . | nindent 4 }}
     app.kubernetes.io/component: cache
+
+{{- if .Values.quickstart}}
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: {{ include "pipecd.fullname" . }}-mongodb
+  labels:
+    {{- include "pipecd.labels" . | nindent 4 }}
+    app.kubernetes.io/component: mongodb
+spec:
+  type: ClusterIP
+  ports:
+    - name: service
+      port: 27017
+      targetPort: mongo
+  selector:
+    {{- include "pipecd.selectorLabels" . | nindent 4 }}
+    app.kubernetes.io/component: mongodb
+{{- end }}
