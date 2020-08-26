@@ -113,7 +113,7 @@ func loadUnstructureds(path string) ([]unstructured.Unstructured, error) {
 	out := make([]unstructured.Unstructured, 0, len(parts))
 
 	for _, part := range parts {
-		//	Ignore all the cases where no content between separator.
+		// Ignore all the cases where no content between separator.
 		part = strings.TrimSpace(part)
 		if len(part) == 0 {
 			continue
