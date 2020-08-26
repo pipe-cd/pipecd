@@ -19,6 +19,7 @@ import (
 	"bytes"
 	"context"
 	"encoding/json"
+	"errors"
 	"fmt"
 
 	"github.com/pipe-cd/pipe/pkg/filestore"
@@ -37,7 +38,7 @@ func (f *stageLogFileStore) Get(ctx context.Context, deploymentID, stageID strin
 	path := stageLogPath(deploymentID, stageID, retriedCount)
 	lf := logFragment{}
 	reader, err := f.filestore.NewReader(ctx, path)
-	if err != nil && filestore.ErrNotFound != nil {
+	if err != nil && !errors.Is(err, filestore.ErrNotFound) {
 		return lf, err
 	}
 	blocks := make([]*model.LogBlock, 0)

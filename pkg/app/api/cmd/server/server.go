@@ -134,30 +134,31 @@ func (s *server) run(ctx context.Context, t cli.Telemetry) error {
 
 	ds, err := s.createDatastore(ctx, cfg, t.Logger)
 	if err != nil {
-		t.Logger.Error("failed creating datastore", zap.Error(err))
+		t.Logger.Error("failed to create datastore", zap.Error(err))
 		return err
 	}
 	defer func() {
 		if err := ds.Close(); err != nil {
-			t.Logger.Error("failed closing datastore client", zap.Error(err))
+			t.Logger.Error("failed to close datastore client", zap.Error(err))
+
 		}
 	}()
 
 	fs, err := s.createFilestore(ctx, cfg, t.Logger)
 	if err != nil {
-		t.Logger.Error("failed creating firestore", zap.Error(err))
+		t.Logger.Error("failed to create filestore", zap.Error(err))
 		return err
 	}
 	defer func() {
 		if err := fs.Close(); err != nil {
-			t.Logger.Error("failed closing firestore client", zap.Error(err))
+			t.Logger.Error("failed to close filestore client", zap.Error(err))
 		}
 	}()
 
 	rd := redis.NewRedis(s.cacheAddress, "")
 	defer func() {
 		if err := rd.Close(); err != nil {
-			t.Logger.Error("failed closing redis client", zap.Error(err))
+			t.Logger.Error("failed to close redis client", zap.Error(err))
 		}
 	}()
 	cache := rediscache.NewTTLCache(rd, cfg.Cache.TTL.Duration())

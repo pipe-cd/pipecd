@@ -85,10 +85,6 @@ func (s *Store) NewReader(ctx context.Context, path string) (rc io.ReadCloser, e
 	return
 }
 
-func (s *Store) NewWriter(ctx context.Context, path string) io.WriteCloser {
-	return s.client.Bucket(s.bucket).Object(path).NewWriter(ctx)
-}
-
 func (s *Store) GetObject(ctx context.Context, path string) (object filestore.Object, err error) {
 	object.Path = path
 	rc, err := s.NewReader(ctx, path)
@@ -110,7 +106,7 @@ func (s *Store) GetObject(ctx context.Context, path string) (object filestore.Ob
 }
 
 func (s *Store) PutObject(ctx context.Context, path string, content []byte) error {
-	wc := s.NewWriter(ctx, path)
+	wc := s.client.Bucket(s.bucket).Object(path).NewWriter(ctx)
 	if _, err := wc.Write(content); err != nil {
 		wc.Close()
 		return err
