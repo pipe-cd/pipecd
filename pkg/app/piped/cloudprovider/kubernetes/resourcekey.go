@@ -93,7 +93,7 @@ func (k ResourceKey) String() string {
 }
 
 func (k ResourceKey) ReadableString() string {
-	return fmt.Sprintf("apiVersion=%s, kind=%s, namespace=%s, name=%s", k.APIVersion, k.Kind, k.Namespace, k.Name)
+	return fmt.Sprintf("name=%q, kind=%q, namespace=%q, apiVersion=%q", k.Name, k.Kind, k.Namespace, k.APIVersion)
 }
 
 func (k ResourceKey) IsZero() bool {

@@ -1,0 +1,33 @@
+apiVersion: apps/v1
+kind: Foo
+metadata:
+  labels:
+    app: simple
+    pipecd.dev/managed-by: piped
+  name: simple
+spec:
+  replicas: 2
+  selector:
+    matchLabels:
+      app: simple
+  template:
+    metadata:
+      labels:
+        app: simple
+    spec:
+      containers:
+        - args:
+            - hi
+            - hello
+          image: gcr.io/pipecd/helloworld:v1.0.0
+          name: helloworld
+          ports:
+            - containerPort: 9085
+        - image: envoy:1.10.0
+          livenessProbe:
+            exec:
+              command:
+                - cat
+                - /tmp/healthy
+            initialDelaySeconds: 5
+          name: envoy
