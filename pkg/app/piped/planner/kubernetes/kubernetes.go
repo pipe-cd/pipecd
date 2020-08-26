@@ -25,6 +25,7 @@ import (
 
 	provider "github.com/pipe-cd/pipe/pkg/app/piped/cloudprovider/kubernetes"
 	"github.com/pipe-cd/pipe/pkg/app/piped/cloudprovider/kubernetes/resource"
+	"github.com/pipe-cd/pipe/pkg/app/piped/diff"
 	"github.com/pipe-cd/pipe/pkg/app/piped/planner"
 	"github.com/pipe-cd/pipe/pkg/model"
 )
@@ -176,10 +177,15 @@ func decideStrategy(olds, news []provider.Manifest) (progressive bool, desc stri
 
 	// If the workload's pod template was touched
 	// do progressive deployment with the specified pipeline.
-	var (
-		workloadDiffs = provider.Diff(oldWorkload, newWorkload, provider.WithDiffPathPrefix("spec"))
-		templateDiffs = workloadDiffs.FindByPrefix("spec.template")
-	)
+	diffResult, err := provider.Diff(oldWorkload, newWorkload)
+	if err != nil {
+		progressive = true
+		desc = fmt.Sprintf("Sync progressively due to an error while calculating the diff (%v)", err)
+		return
+	}
+	diffNodes := diffResult.Nodes()
+
+	templateDiffs := diffNodes.FindByPrefix("spec.template")
 	if len(templateDiffs) > 0 {
 		progressive = true
 
@@ -203,8 +209,13 @@ func decideStrategy(olds, news []provider.Manifest) (progressive bool, desc stri
 				desc = fmt.Sprintf("Sync progressively because %s %s was deleted", oc.Key.Kind, oc.Key.Name)
 				return
 			}
-			diffs := provider.Diff(oc, nc, provider.WithDiffPathPrefix("data"))
-			if len(diffs) > 0 {
+			result, err := provider.Diff(oc, nc)
+			if err != nil {
+				progressive = true
+				desc = fmt.Sprintf("Sync progressively due to an error while calculating the diff (%v)", err)
+				return
+			}
+			if result.HasDiff() {
 				progressive = true
 				desc = fmt.Sprintf("Sync progressively because %s %s was updated", oc.Key.Kind, oc.Key.Name)
 				return
@@ -218,7 +229,7 @@ func decideStrategy(olds, news []provider.Manifest) (progressive bool, desc stri
 	}
 
 	// Check if this is a scaling commit.
-	if msg, changed := checkReplicasChange(workloadDiffs); changed {
+	if msg, changed := checkReplicasChange(diffNodes); changed {
 		desc = msg
 		return
 	}
@@ -251,18 +262,17 @@ func findConfigs(manifests []provider.Manifest) map[provider.ResourceKey]provide
 	return configs
 }
 
-func checkImageChange(diffList provider.DiffResultList) (string, bool) {
-	const containerImageQuery = `^spec.template.spec.containers.\[\d+\].image$`
-	imageDiffs := diffList.FindAll(containerImageQuery)
-
-	if len(imageDiffs) == 0 {
+func checkImageChange(ns diff.Nodes) (string, bool) {
+	const containerImageQuery = `^spec\.template\.spec\.containers\.\d+.image$`
+	nodes, _ := ns.Find(containerImageQuery)
+	if len(nodes) == 0 {
 		return "", false
 	}
 
-	images := make([]string, 0, len(imageDiffs))
-	for _, d := range imageDiffs {
-		beforeName, beforeTag := parseContainerImage(d.Before)
-		afterName, afterTag := parseContainerImage(d.After)
+	images := make([]string, 0, len(ns))
+	for _, n := range ns {
+		beforeName, beforeTag := parseContainerImage(n.StringX())
+		afterName, afterTag := parseContainerImage(n.StringY())
 
 		if beforeName == afterName {
 			images = append(images, fmt.Sprintf("image %s from %s to %s", beforeName, beforeTag, afterTag))
@@ -274,14 +284,14 @@ func checkImageChange(diffList provider.DiffResultList) (string, bool) {
 	return desc, true
 }
 
-func checkReplicasChange(diffList provider.DiffResultList) (string, bool) {
-	const replicasQuery = `^spec.replicas$`
-	diff, found, _ := diffList.Find(replicasQuery)
-	if !found {
+func checkReplicasChange(ns diff.Nodes) (string, bool) {
+	const replicasQuery = `^spec\.replicas$`
+	node, err := ns.FindOne(replicasQuery)
+	if err != nil {
 		return "", false
 	}
 
-	desc := fmt.Sprintf("Scale workload from %s to %s.", diff.Before, diff.After)
+	desc := fmt.Sprintf("Scale workload from %s to %s.", node.StringX(), node.StringY())
 	return desc, true
 }
 

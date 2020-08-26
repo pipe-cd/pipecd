@@ -110,12 +110,6 @@ def go_repositories():
         version = "v1.0.0",
     )
     go_repository(
-        name = "com_github_google_go_cmp",
-        importpath = "github.com/google/go-cmp",
-        sum = "h1:xsAVV57WRhGj6kEIi8ReJzQlHHqcBYCElAvkovg3B/4=",
-        version = "v0.4.0",
-    )
-    go_repository(
         name = "com_github_google_go_querystring",
         importpath = "github.com/google/go-querystring",
         sum = "h1:Xkwi/a1rcvNg1PPYe5vI8GbeBY/jrVuDX5ASuANWTrk=",
@@ -1760,4 +1754,10 @@ def go_repositories():
         importpath = "gopkg.in/ini.v1",
         sum = "h1:9unxIsFcTt4I55uWluz+UmL95q4kdJ0buvQ1ZIqVQww=",
         version = "v1.57.0",
+    )
+    go_repository(
+        name = "com_github_google_go_cmp",
+        importpath = "github.com/google/go-cmp",
+        sum = "h1:xsAVV57WRhGj6kEIi8ReJzQlHHqcBYCElAvkovg3B/4=",
+        version = "v0.4.0",
     )

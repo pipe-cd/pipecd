@@ -250,19 +250,15 @@ func (d *detector) checkApplication(ctx context.Context, app *model.Application,
 	// All manifest keys are matched. Now we will go to check the diff of each manifest pair.
 	diffs := make(map[int]*diff.Result)
 	for i := 0; i < len(headManifests); i++ {
-		// TODO: Handling the diff error.
-		result, _ := provider.DiffManifests(headManifests[i], liveManifests[i], diff.WithIgnoreAddingMapKeys())
+		result, err := provider.Diff(headManifests[i], liveManifests[i], diff.WithIgnoreAddingMapKeys())
+		if err != nil {
+			d.logger.Error("failed to calculate the diff of manifests", zap.Error(err))
+			return err
+		}
+
 		if !result.HasDiff() {
 			continue
 		}
-
-		result.SetLeftPadding(1)
-		if headManifests[i].Key.IsSecret() {
-			result.SetRedactPath("data", "***secret-data-in-git***", "***secret-data-in-cluster***")
-		} else if headManifests[i].Key.IsConfigMap() {
-			result.SetRedactPath("data", "***configmap-data-in-git***", "***configmap-data-in-cluster***")
-		}
-
 		diffs[i] = result
 	}
 
@@ -415,9 +411,21 @@ func makeOutOfSyncState(headManifests []provider.Manifest, diffs map[int]*diff.R
 
 	var prints = 0
 	for i, d := range diffs {
+		opts := []diff.RenderOption{
+			diff.WithLeftPadding(1),
+		}
+		switch {
+		case headManifests[i].Key.IsSecret():
+			opts = append(opts, diff.WithRedactPath("data", "***secret-data-in-git***", "***secret-data-in-cluster***"))
+		case headManifests[i].Key.IsConfigMap():
+			opts = append(opts, diff.WithRedactPath("data", "***config-data-in-git***", "***config-data-in-cluster***"))
+		}
+		renderer := diff.NewRenderer(opts...)
+
 		b.WriteString(fmt.Sprintf("%d. %s\n\n", i+1, headManifests[i].Key.ReadableString()))
-		b.WriteString(d.DiffString())
+		b.WriteString(renderer.Render(d.Nodes()))
 		b.WriteString("\n")
+
 		prints++
 		if prints >= maxPrintDiffs {
 			break
