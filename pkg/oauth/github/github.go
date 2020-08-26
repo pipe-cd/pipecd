@@ -18,7 +18,6 @@ import (
 	"context"
 	"fmt"
 	"net/url"
-	"strings"
 
 	"github.com/google/go-github/v29/github"
 	"golang.org/x/oauth2"
@@ -38,54 +37,53 @@ type OAuthClient struct {
 }
 
 // NewOAuthClient creates a new oauth client for GitHub.
-func NewOAuthClient(ctx context.Context, sso *model.ProjectSSOConfig_GitHub, rbac *model.ProjectRBACConfig, projectID, code string) (*OAuthClient, error) {
+func NewOAuthClient(ctx context.Context,
+	sso *model.ProjectSSOConfig_GitHub,
+	rbac *model.ProjectRBACConfig,
+	projectID, code string,
+	enterprise bool,
+) (*OAuthClient, error) {
 	c := &OAuthClient{
 		projectID:  projectID,
 		adminTeam:  rbac.Admin,
 		editorTeam: rbac.Editor,
 		viewerTeam: rbac.Viewer,
 	}
-	var (
-		tokenURL = oauth2github.Endpoint.TokenURL
-		baseURL  *url.URL
-		err      error
-	)
-	if sso.BaseUrl != "" {
-		baseURL, err = url.Parse(sso.BaseUrl)
-		if err != nil {
-			return nil, err
-		}
-		tokenURL = fmt.Sprintf("%s://%s%s", baseURL.Scheme, baseURL.Host, "/login/oauth/access_token")
-	}
-
 	cfg := oauth2.Config{
 		ClientID:     sso.ClientId,
 		ClientSecret: sso.ClientSecret,
-		Endpoint:     oauth2.Endpoint{TokenURL: tokenURL},
+		Endpoint:     oauth2github.Endpoint,
+	}
+	if enterprise {
+		return newGHEOAuthClient(ctx, sso, code, c, cfg)
 	}
 	token, err := cfg.Exchange(ctx, code)
 	if err != nil {
 		return nil, err
 	}
+	c.Client = github.NewClient(cfg.Client(ctx, token))
+	return c, nil
+}
 
-	cli := github.NewClient(cfg.Client(ctx, token))
-	if sso.BaseUrl != "" {
-		if !strings.HasSuffix(baseURL.Path, "/") {
-			baseURL.Path += "/"
-		}
-		cli.BaseURL = baseURL
+func newGHEOAuthClient(ctx context.Context,
+	sso *model.ProjectSSOConfig_GitHub,
+	code string,
+	c *OAuthClient,
+	cfg oauth2.Config,
+) (*OAuthClient, error) {
+	baseURL, err := url.Parse(sso.BaseUrl)
+	if err != nil {
+		return nil, err
 	}
-	if sso.UploadUrl != "" {
-		uploadURL, err := url.Parse(sso.UploadUrl)
-		if err != nil {
-			return nil, err
-		}
-		if !strings.HasSuffix(uploadURL.Path, "/") {
-			uploadURL.Path += "/"
-		}
-		cli.UploadURL = uploadURL
+	cfg.Endpoint.TokenURL = fmt.Sprintf("%s://%s%s", baseURL.Scheme, baseURL.Host, "/login/oauth/access_token")
+	token, err := cfg.Exchange(ctx, code)
+	if err != nil {
+		return nil, err
 	}
-
+	cli, err := github.NewEnterpriseClient(sso.BaseUrl, sso.UploadUrl, cfg.Client(ctx, token))
+	if err != nil {
+		return nil, err
+	}
 	c.Client = cli
 	return c, nil
 }
