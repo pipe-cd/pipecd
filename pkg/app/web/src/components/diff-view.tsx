@@ -1,7 +1,7 @@
 import React, { FC } from "react";
 import { makeStyles } from "@material-ui/core";
 
-const useStyles = makeStyles(() => ({
+const useStyles = makeStyles((theme) => ({
   root: {
     fontFamily: "Roboto Mono",
     wordBreak: "break-all",
@@ -15,6 +15,9 @@ const useStyles = makeStyles(() => ({
     color: "#b31d28",
     backgroundColor: "#ffeef0",
   },
+  line: {
+    minHeight: `${theme.typography.body2.lineHeight}em`,
+  },
 }));
 
 interface Props {
@@ -26,22 +29,27 @@ export const DiffView: FC<Props> = ({ content }) => {
   return (
     <div className={classes.root}>
       {content.split("\n").map((line, i) => {
-        console.log(line, line[0]);
         switch (line[0]) {
           case "+":
             return (
-              <div key={i} className={classes.add}>
-                {line}
+              <div key={i} className={classes.line}>
+                <span key={i} className={classes.add}>
+                  {line}
+                </span>
               </div>
             );
           case "-":
             return (
-              <div key={i} className={classes.del}>
-                {line}
+              <div key={i} className={classes.line}>
+                <span className={classes.del}>{line}</span>
               </div>
             );
           default:
-            return <div key={i}>{line}</div>;
+            return (
+              <div key={i} className={classes.line}>
+                {line}
+              </div>
+            );
         }
       })}
     </div>
