@@ -22,7 +22,7 @@ import (
 
 func TestFindOne(t *testing.T) {
 	nodes := []Node{
-		Node{PathString: "spec.template.spec"},
+		{PathString: "spec.template.spec"},
 	}
 
 	testcases := []struct {
@@ -62,9 +62,9 @@ func TestFindOne(t *testing.T) {
 
 func TestFind(t *testing.T) {
 	nodes := []Node{
-		Node{PathString: "spec.replicas"},
-		Node{PathString: "spec.template.spec.containers.0.image"},
-		Node{PathString: "spec.template.spec.containers.1.image"},
+		{PathString: "spec.replicas"},
+		{PathString: "spec.template.spec.containers.0.image"},
+		{PathString: "spec.template.spec.containers.1.image"},
 	}
 
 	testcases := []struct {
