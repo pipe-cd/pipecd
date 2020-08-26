@@ -170,7 +170,7 @@ func TestRenderNodeValueComplex(t *testing.T) {
 	assert.Equal(t, string(data), got)
 }
 
-func TestRenderPrimativeValue(t *testing.T) {
+func TestRenderPrimitiveValue(t *testing.T) {
 	testcases := []struct {
 		name     string
 		value    interface{}
@@ -203,7 +203,7 @@ func TestRenderPrimativeValue(t *testing.T) {
 	for _, tc := range testcases {
 		t.Run(tc.name, func(t *testing.T) {
 			v := reflect.ValueOf(tc.value)
-			got := RenderPrimativeValue(v)
+			got := RenderPrimitiveValue(v)
 			assert.Equal(t, tc.expected, got)
 		})
 	}

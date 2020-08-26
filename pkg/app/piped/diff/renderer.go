@@ -194,7 +194,8 @@ func renderNodeValue(v reflect.Value, prefix string) (string, bool) {
 	case reflect.String:
 		return v.String(), false
 
-	case reflect.Int, reflect.Int8, reflect.Int16, reflect.Int32, reflect.Int64:
+	case reflect.Int, reflect.Int8, reflect.Int16, reflect.Int32, reflect.Int64,
+		reflect.Uint, reflect.Uint8, reflect.Uint16, reflect.Uint32, reflect.Uint64:
 		return strconv.FormatInt(v.Int(), 10), false
 
 	case reflect.Float32, reflect.Float64:
@@ -205,12 +206,13 @@ func renderNodeValue(v reflect.Value, prefix string) (string, bool) {
 	}
 }
 
-func RenderPrimativeValue(v reflect.Value) string {
+func RenderPrimitiveValue(v reflect.Value) string {
 	switch v.Kind() {
 	case reflect.String:
 		return v.String()
 
-	case reflect.Int, reflect.Int8, reflect.Int16, reflect.Int32, reflect.Int64:
+	case reflect.Int, reflect.Int8, reflect.Int16, reflect.Int32, reflect.Int64,
+		reflect.Uint, reflect.Uint8, reflect.Uint16, reflect.Uint32, reflect.Uint64:
 		return strconv.FormatInt(v.Int(), 10)
 
 	case reflect.Float32, reflect.Float64:

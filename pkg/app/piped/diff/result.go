@@ -77,11 +77,11 @@ func (s PathStep) String() string {
 }
 
 func (n Node) StringX() string {
-	return RenderPrimativeValue(n.ValueX)
+	return RenderPrimitiveValue(n.ValueX)
 }
 
 func (n Node) StringY() string {
-	return RenderPrimativeValue(n.ValueY)
+	return RenderPrimitiveValue(n.ValueY)
 }
 
 type Nodes []Node
