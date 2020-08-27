@@ -399,7 +399,7 @@ func makeOutOfSyncState(adds, deletes []provider.Manifest, changes map[provider.
 	b.WriteString(fmt.Sprintf("Diff between Result the running resources and the definitions in Git at commit %q:\n", commit))
 	b.WriteString("--- Git\n+++ Cluster\n\n")
 
-	var index = 0
+	index := 0
 	for _, delete := range deletes {
 		index++
 		b.WriteString(fmt.Sprintf("- %d. %s\n\n", index, delete.Key.ReadableString()))
