@@ -11,8 +11,8 @@ spec:
     config:
       endpoint: http://pipecd-minio:9000
       bucket: quickstart
-      accessKeyFile: /etc/pipecd-secret/minioAccessKey
-      secretKeyFile: /etc/pipecd-secret/minioSecretKey
+      accessKeyFile: /etc/pipecd-secret/minio-access-key
+      secretKeyFile: /etc/pipecd-secret/minio-secret-key
   project:
     - name: example
       staticAdmin:

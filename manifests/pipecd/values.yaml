@@ -87,7 +87,9 @@ secret:
     fileName: "signing-key"
   minioAccessKey:
     fileName: "minio-access-key"
+    data: ""
   minioSecretKey:
     fileName: "minio-secret-key"
+    data: ""
 
 quickstart: false
