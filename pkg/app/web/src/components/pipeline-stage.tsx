@@ -2,22 +2,29 @@ import { makeStyles, Paper, Typography } from "@material-ui/core";
 import { StageStatus } from "pipe/pkg/app/web/model/deployment_pb";
 import React, { FC, memo } from "react";
 import { StageStatusIcon } from "./stage-status-icon";
+import clsx from "clsx";
 
 const useStyles = makeStyles((theme) => ({
-  root: (props: { active: boolean }) => ({
+  root: {
     flex: 1,
     display: "inline-flex",
     flexDirection: "column",
     padding: theme.spacing(2),
     cursor: "pointer",
+  },
+  hover: {
     "&:hover": {
       backgroundColor: theme.palette.action.hover,
     },
-    backgroundColor: props.active
-      ? // NOTE: 12%
-        theme.palette.primary.main + "1e"
-      : undefined,
-  }),
+  },
+  active: {
+    // NOTE: 12%
+    backgroundColor: theme.palette.primary.main + "1e",
+  },
+  notStartedYet: {
+    color: theme.palette.text.disabled,
+    cursor: "unset",
+  },
   name: {
     marginLeft: theme.spacing(1),
   },
@@ -52,14 +59,26 @@ export const PipelineStage: FC<Props> = memo(function PipelineStage({
   active,
   approver,
 }) {
-  const classes = useStyles({ active });
+  const classes = useStyles();
+  const isNotStartedYet = status === StageStatus.STAGE_NOT_STARTED_YET;
 
   function handleOnClick(): void {
+    if (isNotStartedYet) {
+      return;
+    }
     onClick(id, name);
   }
 
   return (
-    <Paper square className={classes.root} onClick={handleOnClick}>
+    <Paper
+      square
+      className={clsx(classes.root, {
+        [classes.active]: active,
+        [classes.hover]: isNotStartedYet === false,
+        [classes.notStartedYet]: isNotStartedYet,
+      })}
+      onClick={handleOnClick}
+    >
       <div className={classes.main}>
         <StageStatusIcon status={status} />
         <Typography variant="subtitle2" className={classes.name}>
