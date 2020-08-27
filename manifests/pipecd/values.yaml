@@ -85,5 +85,9 @@ secret:
   signingKey:
     # The name of the signing key file.
     fileName: "signing-key"
+  minioAccessKey:
+    fileName: "minio-access-key"
+  minioSecretKey:
+    fileName: "minio-secret-key"
 
 quickstart: false
