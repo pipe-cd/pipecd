@@ -396,7 +396,7 @@ func makeOutOfSyncState(adds, deletes []provider.Manifest, changes map[provider.
 	if len(commit) >= 7 {
 		commit = commit[:7]
 	}
-	b.WriteString(fmt.Sprintf("Diff between Result the running resources and the definitions in Git at commit %q:\n", commit))
+	b.WriteString(fmt.Sprintf("Diff between the running resources and the definitions in Git at commit %q:\n", commit))
 	b.WriteString("--- Git\n+++ Cluster\n\n")
 
 	index := 0
