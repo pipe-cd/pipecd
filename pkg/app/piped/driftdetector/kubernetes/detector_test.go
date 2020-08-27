@@ -17,8 +17,9 @@ package kubernetes
 import (
 	"testing"
 
-	provider "github.com/pipe-cd/pipe/pkg/app/piped/cloudprovider/kubernetes"
 	"github.com/stretchr/testify/assert"
+
+	provider "github.com/pipe-cd/pipe/pkg/app/piped/cloudprovider/kubernetes"
 )
 
 func TestGroupManifests(t *testing.T) {
