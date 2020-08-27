@@ -287,10 +287,10 @@ spec:
         - server
         - /data
         env:
-        - name: MINIO_ACCESS_KEY
-          value: "quickstart-access-key"
-        - name: MINIO_SECRET_KEY
-          value: "quickstart-secret-key"
+        - name: MINIO_ACCESS_KEY_FILE
+          value: /etc/pipecd-secret/minioAccessKey
+        - name: MINIO_SECRET_KEY_FILE
+          value: /etc/pipecd-secret/minioSecretKey
         ports:
           - name: minio
             containerPort: 9000
