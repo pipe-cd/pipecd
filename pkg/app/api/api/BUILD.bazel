@@ -7,6 +7,7 @@ go_library(
         "fake_web_api.go",
         "piped_api.go",
         "web_api.go",
+        ":deployment_config_templates.embed", #keep
     ],
     importpath = "github.com/pipe-cd/pipe/pkg/app/api/api",
     visibility = ["//visibility:public"],
@@ -34,4 +35,16 @@ go_test(
     srcs = ["web_api_test.go"],
     embed = [":go_default_library"],
     deps = ["//pkg/app/api/service/webservice:go_default_library"],
+)
+
+load("@io_bazel_rules_go//go:def.bzl", "go_embed_data")
+
+go_embed_data(
+    name = "deployment_config_templates.embed",
+    srcs = glob(["deploymentconfigtemplates/*"]),
+    flatten = True,
+    package = "api",
+    string = True,
+    var = "DeploymentConfigTemplates",
+    visibility = ["//visibility:public"],
 )
