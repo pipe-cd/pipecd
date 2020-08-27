@@ -82,12 +82,13 @@ export const updateGitHubSSO = ({
   UpdateProjectSSOConfigResponse.AsObject
 > => {
   const req = new UpdateProjectSSOConfigRequest();
-  const params = new ProjectSSOConfig();
+  const sso = new ProjectSSOConfig();
   const github = new ProjectSSOConfig.GitHub();
   github.setClientId(clientId);
   github.setClientSecret(clientSecret);
   github.setBaseUrl(baseUrl);
   github.setUploadUrl(uploadUrl);
-  req.setSso(params);
+  sso.setGithub(github);
+  req.setSso(sso);
   return apiRequest(req, apiClient.updateProjectSSOConfig);
 };
