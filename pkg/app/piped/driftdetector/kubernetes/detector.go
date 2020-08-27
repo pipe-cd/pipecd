@@ -203,72 +203,36 @@ func (d *detector) checkApplication(ctx context.Context, app *model.Application,
 		return err
 	}
 	headManifests = filterIgnoringManifests(headManifests)
-	sort.Slice(headManifests, func(i, j int) bool {
-		return headManifests[i].Key.IsLessWithIgnoringNamespace(headManifests[j].Key)
-	})
 	d.logger.Info(fmt.Sprintf("application %s has %d manifests at commit %s", app.Id, len(headManifests), headCommit.Hash))
 
 	liveManifests := d.stateGetter.GetAppLiveManifests(app.Id)
-	sort.Slice(liveManifests, func(i, j int) bool {
-		return liveManifests[i].Key.IsLessWithIgnoringNamespace(liveManifests[j].Key)
-	})
 	liveManifests = filterIgnoringManifests(liveManifests)
 	d.logger.Info(fmt.Sprintf("application %s has %d live manifests", app.Id, len(liveManifests)))
 
-	var missings, redundancies []provider.Manifest
-	var h, l int
-	for {
-		if h >= len(headManifests) || l >= len(liveManifests) {
-			break
-		}
-		if headManifests[h].Key.IsEqualWithIgnoringNamespace(liveManifests[l].Key) {
-			h++
-			l++
-			continue
-		}
-		// Has in head but not in live so this should be a missing one.
-		if headManifests[h].Key.IsLessWithIgnoringNamespace(liveManifests[l].Key) {
-			missings = append(missings, headManifests[h])
-			h++
-			continue
-		}
-		// Has in live but not in head so this should be a redundant one.
-		redundancies = append(redundancies, liveManifests[l])
-		l++
-	}
-	if len(headManifests) > h {
-		missings = append(missings, headManifests[h:]...)
-	}
-	if len(liveManifests) > h {
-		redundancies = append(redundancies, liveManifests[l:]...)
-	}
-	if len(missings)+len(redundancies) > 0 {
-		state := makeOutOfSyncStateBecauseMissingOrRedundant(missings, redundancies)
-		return d.reporter.ReportApplicationSyncState(ctx, app.Id, state)
-	}
+	// Divide manifests into separate groups.
+	adds, deletes, headInters, liveInters := groupManifests(headManifests, liveManifests)
 
-	// All manifest keys are matched. Now we will go to check the diff of each manifest pair.
-	diffs := make(map[int]*diff.Result)
-	for i := 0; i < len(headManifests); i++ {
-		result, err := provider.Diff(headManifests[i], liveManifests[i], diff.WithIgnoreAddingMapKeys())
+	// Now we will go to check the diff intersection group.
+	changes := make(map[provider.Manifest]*diff.Result)
+	for i := 0; i < len(headInters); i++ {
+		result, err := provider.Diff(headInters[i], liveInters[i], diff.WithIgnoreAddingMapKeys())
 		if err != nil {
 			d.logger.Error("failed to calculate the diff of manifests", zap.Error(err))
 			return err
 		}
-
 		if !result.HasDiff() {
 			continue
 		}
-		diffs[i] = result
+		changes[headInters[i]] = result
 	}
 
 	// No diffs means this application is in SYNCED state.
-	if len(diffs) == 0 {
+	if len(adds) == 0 && len(deletes) == 0 && len(changes) == 0 {
 		state := makeSyncedState()
 		return d.reporter.ReportApplicationSyncState(ctx, app.Id, state)
 	}
 
-	state := makeOutOfSyncState(headManifests, diffs)
+	state := makeOutOfSyncState(adds, deletes, changes, headCommit.Hash)
 	return d.reporter.ReportApplicationSyncState(ctx, app.Id, state)
 }
 
@@ -353,6 +317,51 @@ func (d *detector) ProviderName() string {
 	return d.provider.Name
 }
 
+// groupManifests compares the given head and live manifests to divide them into three groups:
+// - adds: contains all manifests that appear in lives but not in heads
+// - deletes: contains all manifests that appear in heads but not in lives
+// - inters: pairs of manifests that appear in both heads and lives.
+func groupManifests(heads, lives []provider.Manifest) (adds, deletes, headInters, liveInters []provider.Manifest) {
+	// Sort the manifests before comparing.
+	sort.Slice(heads, func(i, j int) bool {
+		return heads[i].Key.IsLessWithIgnoringNamespace(heads[j].Key)
+	})
+	sort.Slice(lives, func(i, j int) bool {
+		return lives[i].Key.IsLessWithIgnoringNamespace(lives[j].Key)
+	})
+
+	var h, l int
+	for {
+		if h >= len(heads) || l >= len(lives) {
+			break
+		}
+		if heads[h].Key.IsEqualWithIgnoringNamespace(lives[l].Key) {
+			headInters = append(headInters, heads[h])
+			liveInters = append(liveInters, lives[l])
+			h++
+			l++
+			continue
+		}
+		// Has in head but not in live so this should be a deleted one.
+		if heads[h].Key.IsLessWithIgnoringNamespace(lives[l].Key) {
+			deletes = append(deletes, heads[h])
+			h++
+			continue
+		}
+		// Has in live but not in head so this should be an added one.
+		adds = append(adds, lives[l])
+		l++
+	}
+
+	if len(heads) > h {
+		deletes = append(deletes, heads[h:]...)
+	}
+	if len(lives) > l {
+		adds = append(adds, lives[l:]...)
+	}
+	return
+}
+
 func makeDeployingState(deployment *model.Deployment) model.ApplicationSyncState {
 	var (
 		shortReason = "A deployment of this application is running"
@@ -379,50 +388,43 @@ func makeSyncedState() model.ApplicationSyncState {
 	}
 }
 
-func makeOutOfSyncStateBecauseMissingOrRedundant(missings, redundancies []provider.Manifest) model.ApplicationSyncState {
-	shortReason := fmt.Sprintf("There are %d missing manifests and %d redundant manifests.", len(missings), len(redundancies))
-	var b strings.Builder
-	if len(missings) > 0 {
-		b.WriteString(fmt.Sprintf("The following %d manifests are defined in Git, but NOT appearing in the cluster:\n", len(missings)))
-		for _, m := range missings {
-			b.WriteString(fmt.Sprintf("- %s\n", m.Key.ReadableString()))
-		}
-	}
-	if len(redundancies) > 0 {
-		b.WriteString(fmt.Sprintf("The following %d manifests are NOT defined in Git, but appearing in the cluster:\n", len(redundancies)))
-		for _, m := range redundancies {
-			b.WriteString(fmt.Sprintf("- %s\n", m.Key.ReadableString()))
-		}
-	}
-	return model.ApplicationSyncState{
-		Status:      model.ApplicationSyncStatus_OUT_OF_SYNC,
-		ShortReason: shortReason,
-		Reason:      b.String(),
-		Timestamp:   time.Now().Unix(),
-	}
-}
+func makeOutOfSyncState(adds, deletes []provider.Manifest, changes map[provider.Manifest]*diff.Result, commit string) model.ApplicationSyncState {
+	total := len(adds) + len(deletes) + len(changes)
+	shortReason := fmt.Sprintf("There are %d manifests are not synced (%d adds, %d deletes, %d changes)", total, len(adds), len(deletes), len(changes))
 
-func makeOutOfSyncState(headManifests []provider.Manifest, diffs map[int]*diff.Result) model.ApplicationSyncState {
+	var b strings.Builder
+	if len(commit) >= 7 {
+		commit = commit[:7]
+	}
+	b.WriteString(fmt.Sprintf("Diff between Result the running resources and the definitions in Git at commit %q:\n", commit))
+	b.WriteString("--- Git\n+++ Cluster\n\n")
+
+	index := 0
+	for _, delete := range deletes {
+		index++
+		b.WriteString(fmt.Sprintf("- %d. %s\n\n", index, delete.Key.ReadableString()))
+	}
+	for _, add := range adds {
+		index++
+		b.WriteString(fmt.Sprintf("+ %d. %s\n\n", index, add.Key.ReadableString()))
+	}
+
 	const maxPrintDiffs = 3
-
-	shortReason := fmt.Sprintf("There are %d manifests are not synced.", len(diffs))
-	var b strings.Builder
-	b.WriteString(fmt.Sprintf("There are %d manifests are not synced:\n", len(diffs)))
-
 	var prints = 0
-	for i, d := range diffs {
+	for m, d := range changes {
 		opts := []diff.RenderOption{
 			diff.WithLeftPadding(1),
 		}
 		switch {
-		case headManifests[i].Key.IsSecret():
+		case m.Key.IsSecret():
 			opts = append(opts, diff.WithRedactPath("data", "***secret-data-in-git***", "***secret-data-in-cluster***"))
-		case headManifests[i].Key.IsConfigMap():
+		case m.Key.IsConfigMap():
 			opts = append(opts, diff.WithRedactPath("data", "***config-data-in-git***", "***config-data-in-cluster***"))
 		}
 		renderer := diff.NewRenderer(opts...)
 
-		b.WriteString(fmt.Sprintf("%d. %s\n\n", i+1, headManifests[i].Key.ReadableString()))
+		index++
+		b.WriteString(fmt.Sprintf("* %d. %s\n\n", index, m.Key.ReadableString()))
 		b.WriteString(renderer.Render(d.Nodes()))
 		b.WriteString("\n")
 
@@ -432,8 +434,8 @@ func makeOutOfSyncState(headManifests []provider.Manifest, diffs map[int]*diff.R
 		}
 	}
 
-	if prints < len(diffs) {
-		b.WriteString(fmt.Sprintf("... (diffs from %d other manifests are omitted\n", len(diffs)-prints))
+	if prints < len(changes) {
+		b.WriteString(fmt.Sprintf("... (diffs from %d other manifests are omitted\n", len(changes)-prints))
 	}
 
 	return model.ApplicationSyncState{
