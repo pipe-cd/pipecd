@@ -2,9 +2,10 @@ import { makeStyles, Paper, Typography } from "@material-ui/core";
 import { StageStatus } from "pipe/pkg/app/web/model/deployment_pb";
 import React, { FC, memo } from "react";
 import { StageStatusIcon } from "./stage-status-icon";
+import clsx from "clsx";
 
 const useStyles = makeStyles((theme) => ({
-  root: (props: { active: boolean }) => ({
+  root: {
     flex: 1,
     display: "inline-flex",
     flexDirection: "column",
@@ -13,11 +14,18 @@ const useStyles = makeStyles((theme) => ({
     "&:hover": {
       backgroundColor: theme.palette.action.hover,
     },
-    backgroundColor: props.active
-      ? // NOTE: 12%
-        theme.palette.primary.main + "1e"
-      : undefined,
-  }),
+  },
+  active: {
+    // NOTE: 12%
+    backgroundColor: theme.palette.primary.main + "1e",
+  },
+  notStartedYet: {
+    color: theme.palette.text.disabled,
+    cursor: "unset",
+    "&:hover": {
+      backgroundColor: theme.palette.background.paper,
+    },
+  },
   name: {
     marginLeft: theme.spacing(1),
   },
@@ -40,6 +48,7 @@ interface Props {
   name: string;
   status: StageStatus;
   active: boolean;
+  isDeploymentRunning: boolean;
   approver?: string;
   onClick: (stageId: string, stageName: string) => void;
 }
@@ -51,15 +60,29 @@ export const PipelineStage: FC<Props> = memo(function PipelineStage({
   onClick,
   active,
   approver,
+  isDeploymentRunning,
 }) {
-  const classes = useStyles({ active });
+  const classes = useStyles();
+  const disabled =
+    isDeploymentRunning === false &&
+    status === StageStatus.STAGE_NOT_STARTED_YET;
 
   function handleOnClick(): void {
+    if (disabled) {
+      return;
+    }
     onClick(id, name);
   }
 
   return (
-    <Paper square className={classes.root} onClick={handleOnClick}>
+    <Paper
+      square
+      className={clsx(classes.root, {
+        [classes.active]: active,
+        [classes.notStartedYet]: disabled,
+      })}
+      onClick={handleOnClick}
+    >
       <div className={classes.main}>
         <StageStatusIcon status={status} />
         <Typography variant="subtitle2" className={classes.name}>
