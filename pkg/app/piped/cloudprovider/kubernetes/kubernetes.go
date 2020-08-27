@@ -228,7 +228,7 @@ func (p *provider) Delete(ctx context.Context, k ResourceKey) (err error) {
 		return p.initErr
 	}
 
-	return p.kubectl.Delete(ctx, k)
+	return p.kubectl.Delete(ctx, p.input.Namespace, k)
 }
 
 func (p *provider) findKubectl(ctx context.Context, version string) (*Kubectl, error) {
