@@ -16,6 +16,7 @@ import {
   Deployment,
   Stage,
   approveStage,
+  isDeploymentRunning,
 } from "../modules/deployments";
 import { fetchStageLog } from "../modules/stage-logs";
 import { updateActiveStage, ActiveStage } from "../modules/active-stage";
@@ -26,15 +27,17 @@ import { METADATA_APPROVED_BY } from "../constants/metadata-keys";
 
 const WAIT_APPROVAL_NAME = "WAIT_APPROVAL";
 
-const useConvertedStages = (deploymentId: string): Stage[][] => {
+const useConvertedStages = (deploymentId: string): [boolean, Stage[][]] => {
   const stages: Stage[][] = [];
   const deployment = useSelector<AppState, Deployment | undefined>((state) =>
     selectById(state.deployments, deploymentId)
   );
 
   if (!deployment) {
-    return stages;
+    return [false, stages];
   }
+
+  const isRunning = isDeploymentRunning(deployment.status);
 
   stages[0] = deployment.stagesList.filter(
     (stage) => stage.requiresList.length === 0 && stage.visible
@@ -50,7 +53,7 @@ const useConvertedStages = (deploymentId: string): Stage[][] => {
         stage.visible
     );
   }
-  return stages;
+  return [isRunning, stages];
 };
 
 const STAGE_HEIGHT = 56;
@@ -125,7 +128,7 @@ export const Pipeline: FC<Props> = memo(function Pipeline({ deploymentId }) {
   const dispatch = useDispatch();
   const [approveTargetId, setApproveTargetId] = useState<string | null>(null);
   const isOpenApproveDialog = Boolean(approveTargetId);
-  const stages = useConvertedStages(deploymentId);
+  const [isRunning, stages] = useConvertedStages(deploymentId);
   const activeStage = useSelector<AppState, ActiveStage>(
     (state) => state.activeStage
   );
@@ -200,6 +203,7 @@ export const Pipeline: FC<Props> = memo(function Pipeline({ deploymentId }) {
                       onClick={handleOnClickStage}
                       active={isActive}
                       approver={findApprover(stage.metadataMap)}
+                      isDeploymentRunning={isRunning}
                     />
                   )}
                 </div>

@@ -11,8 +11,6 @@ const useStyles = makeStyles((theme) => ({
     flexDirection: "column",
     padding: theme.spacing(2),
     cursor: "pointer",
-  },
-  hover: {
     "&:hover": {
       backgroundColor: theme.palette.action.hover,
     },
@@ -24,6 +22,9 @@ const useStyles = makeStyles((theme) => ({
   notStartedYet: {
     color: theme.palette.text.disabled,
     cursor: "unset",
+    "&:hover": {
+      backgroundColor: theme.palette.background.paper,
+    },
   },
   name: {
     marginLeft: theme.spacing(1),
@@ -47,6 +48,7 @@ interface Props {
   name: string;
   status: StageStatus;
   active: boolean;
+  isDeploymentRunning: boolean;
   approver?: string;
   onClick: (stageId: string, stageName: string) => void;
 }
@@ -58,12 +60,15 @@ export const PipelineStage: FC<Props> = memo(function PipelineStage({
   onClick,
   active,
   approver,
+  isDeploymentRunning,
 }) {
   const classes = useStyles();
-  const isNotStartedYet = status === StageStatus.STAGE_NOT_STARTED_YET;
+  const disabled =
+    isDeploymentRunning === false &&
+    status === StageStatus.STAGE_NOT_STARTED_YET;
 
   function handleOnClick(): void {
-    if (isNotStartedYet) {
+    if (disabled) {
       return;
     }
     onClick(id, name);
@@ -74,8 +79,7 @@ export const PipelineStage: FC<Props> = memo(function PipelineStage({
       square
       className={clsx(classes.root, {
         [classes.active]: active,
-        [classes.hover]: isNotStartedYet === false,
-        [classes.notStartedYet]: isNotStartedYet,
+        [classes.notStartedYet]: disabled,
       })}
       onClick={handleOnClick}
     >
