@@ -13,8 +13,8 @@ spec:
       bucket:
       accessKeyFile:
       secretKeyFile:
-  project:
-    - name: example
+  projects:
+    example:
       staticAdmin:
         username: hello-pipecd
         passwordHash: "$2a$10$ye96mUqUqTnjUqgwQJbJzel/LJibRhUnmzyypACkvrTSnQpVFZ7qK" # bcrypt value of "hello-pipecd"

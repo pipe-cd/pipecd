@@ -37,9 +37,8 @@ func TestControlPlaneConfig(t *testing.T) {
 			expectedKind:       KindControlPlane,
 			expectedAPIVersion: "pipecd.dev/v1beta1",
 			expectedSpec: &ControlPlaneSpec{
-				Projects: []ControlPlaneProject{
-					{
-						ID: "abc",
+				Projects: map[string]ControlPlaneProject{
+					"abc": {
 						StaticAdmin: ProjectStaticUser{
 							Username:     "test-user",
 							PasswordHash: "test-password",

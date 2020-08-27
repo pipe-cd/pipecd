@@ -28,7 +28,7 @@ type ControlPlaneSpec struct {
 	StateKey string `json:"stateKey"`
 	// List of debugging/quickstart projects defined in Control Plane configuration.
 	// Please do not use this to configure the projects running the production mode.
-	Projects []ControlPlaneProject `json:"projects"`
+	Projects map[string]ControlPlaneProject `json:"projects"`
 	// SharedSSOConfigs is the shared oauth settings projects can use.
 	SharedSSOConfigs map[string]SharedSSOConfig `json:"sharedSsoConfigs"`
 	// The configuration of datastore for control plane.
