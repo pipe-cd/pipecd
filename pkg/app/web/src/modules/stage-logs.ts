@@ -17,7 +17,7 @@ export type StageLog = {
 type StageLogs = Record<string, StageLog>;
 const initialState: StageLogs = {};
 
-const createActiveStageKey = (props: {
+export const createActiveStageKey = (props: {
   deploymentId: string;
   stageId: string;
 }): string => `${props.deploymentId}${props.stageId}`;

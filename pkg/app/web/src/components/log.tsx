@@ -10,19 +10,21 @@ const useStyles = makeStyles((theme) => ({
     backgroundColor: DEFAULT_BACKGROUND_COLOR,
     paddingTop: theme.spacing(1),
     paddingBottom: theme.spacing(1),
-    height: (props: { height?: number }) =>
-      props.height ? props.height : undefined,
+    height: "100%",
+  },
+  space: {
+    height: theme.spacing(1),
+    backgroundColor: DEFAULT_BACKGROUND_COLOR,
   },
 }));
 
 interface Props {
   logs: LogBlock[];
   loading: boolean;
-  height?: number;
 }
 
-export const Log: FC<Props> = memo(function Log({ logs, loading, height }) {
-  const classes = useStyles({ height });
+export const Log: FC<Props> = memo(function Log({ logs, loading }) {
+  const classes = useStyles();
   return (
     <div className={classes.container}>
       {logs.map((log, i) => (
@@ -39,6 +41,7 @@ export const Log: FC<Props> = memo(function Log({ logs, loading, height }) {
           <CircularProgress />
         </Box>
       )}
+      <div className={classes.space} />
     </div>
   );
 });
