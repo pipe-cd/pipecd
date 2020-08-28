@@ -9,10 +9,10 @@ spec:
   filestore:
     type: MINIO
     config:
-      endpoint:
-      bucket:
-      accessKeyFile:
-      secretKeyFile:
+      endpoint: http://pipecd-minio:9000
+      bucket: quickstart
+      accessKeyFile: /etc/pipecd-secret/minio-access-key
+      secretKeyFile: /etc/pipecd-secret/minio-secret-key
   project:
     - name: example
       staticAdmin:

@@ -50,3 +50,25 @@ Selector labels
 app.kubernetes.io/name: {{ include "pipecd.name" . }}
 app.kubernetes.io/instance: {{ .Release.Name }}
 {{- end }}
+
+{{/*
+Name of ConfigMap containing pipecd configuration
+*/}}
+{{- define "pipecd.configMapName" -}}
+{{- if .Values.config.create }}
+{{- include "pipecd.fullname" . }}
+{{- else }}
+{{- .Values.config.name }}
+{{- end }}
+{{- end }}
+
+{{/*
+Name of Secret containing sensitive data
+*/}}
+{{- define "pipecd.secretName" -}}
+{{- if .Values.secret.create }}
+{{- include "pipecd.fullname" . }}
+{{- else }}
+{{- .Values.secret.name }}
+{{- end }}
+{{- end }}

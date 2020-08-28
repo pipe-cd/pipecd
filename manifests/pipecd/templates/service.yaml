@@ -129,4 +129,22 @@ spec:
   selector:
     {{- include "pipecd.selectorLabels" . | nindent 4 }}
     app.kubernetes.io/component: mongodb
+
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: {{ include "pipecd.fullname" . }}-minio
+  labels:
+    {{- include "pipecd.labels" . | nindent 4 }}
+    app.kubernetes.io/component: minio
+spec:
+  type: ClusterIP
+  ports:
+    - name: service
+      port: 9000
+      targetPort: minio
+  selector:
+    {{- include "pipecd.selectorLabels" . | nindent 4 }}
+    app.kubernetes.io/component: minio
 {{- end }}

@@ -51,6 +51,12 @@ cache:
   password: ""
   resources: {}
 
+mongodb:
+  imageTag: "4.2"
+
+minio:
+  imageTag: "RELEASE.2020-08-26T00-00-49Z"
+
 config:
   # Specifies whether a ConfigMap for control plane configuration should be created
   create: true
@@ -79,11 +85,20 @@ config:
         ttl: 5m
 
 secret:
+  # Specifies whether a Secret for storing sensitive data should be created.
+  create: true
   # The name of the Secret should be mounted to container.
   name: "pipecd-secrets"
   mountPath: /etc/pipecd-secret
   signingKey:
     # The name of the signing key file.
     fileName: "signing-key"
+    data: ""
+  minioAccessKey:
+    fileName: "minio-access-key"
+    data: ""
+  minioSecretKey:
+    fileName: "minio-secret-key"
+    data: ""
 
 quickstart: false

@@ -136,11 +136,7 @@ spec:
             secretName: {{ .Values.secret.name }}
         - name: pipecd-config
           configMap:
-{{- if .Values.config.create }}
-            name: {{ include "pipecd.fullname" . }}
-{{- else }}
-            name: {{ .Values.config.name }}
-{{- end }}
+            name: {{ include "pipecd.configMapName" . }}
 {{- if .Values.api.resources }}
           resources:
             {{- toYaml .Values.api.resources | nindent 12 }}
@@ -253,13 +249,52 @@ spec:
     spec:
       containers:
         - name: mongodb
-          image: mongo:4.2
+          image: mongo:{{ .Values.mongodb.imageTag }}
           imagePullPolicy: IfNotPresent
           ports:
             - name: mongo
               containerPort: 27017
               protocol: TCP
 
-# TODO: Append minio Deployment and Service
-# and configuration to quickstart/control-plane-config.yaml
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{ include "pipecd.fullname" . }}-minio
+  labels:
+    {{- include "pipecd.labels" . | nindent 4 }}
+    app.kubernetes.io/component: minio
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      {{- include "pipecd.selectorLabels" . | nindent 6 }}
+      app.kubernetes.io/component: minio
+  template:
+    metadata:
+      labels:
+        {{- include "pipecd.selectorLabels" . | nindent 8 }}
+        app.kubernetes.io/component: minio
+    spec:
+      containers:
+      - name: minio
+        image: minio/minio:{{ .Values.minio.imageTag }}
+        args:
+        - server
+        - /data
+        env:
+        - name: MINIO_ACCESS_KEY
+          valueFrom:
+            secretKeyRef:
+              name: {{ include "pipecd.secretName" . }}
+              key: {{ .Values.secret.minioAccessKey.fileName }}
+        - name: MINIO_SECRET_KEY
+          valueFrom:
+            secretKeyRef:
+              name: {{ include "pipecd.secretName" . }}
+              key: {{ .Values.secret.minioSecretKey.fileName }}
+        ports:
+          - name: minio
+            containerPort: 9000
+            protocol: TCP
 {{- end }}

@@ -14,6 +14,8 @@ This guides you to install PipeCD in your kubernetes and deploy a `helloworld` a
 helm install pipecd pipecd/pipecd --version=VERSION \
   --set quickstart=true \
   --set-file config.data=./quickstart/control-plane-config.yaml \
+  --set-file secret.minioAccessKey.data=./quickstart/credentials/minio-access-key
+  --set-file secret.minioSecretKey.data=./quickstart/credentials/minio-secret-key
 ```
 
 ### 2. Adding an environment
