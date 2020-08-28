@@ -16,6 +16,8 @@ import { selectById, Stage, isStageRunning } from "../modules/deployments";
 import Draggable from "react-draggable";
 import clsx from "clsx";
 
+const INITIAL_HEIGHT = 400;
+
 function useActiveStageLog(): [Stage | null, StageLog | null] {
   return useSelector<AppState, [Stage | null, StageLog | null]>((state) => {
     if (!state.activeStage) {
@@ -71,7 +73,8 @@ const useStyles = makeStyles((theme) => ({
   },
   handle: {
     position: "absolute",
-    bottom: "248px",
+    // view height + header
+    bottom: `${INITIAL_HEIGHT + 48}px`,
     zIndex: 10,
   },
 }));
@@ -81,7 +84,7 @@ export const LogViewer: FC = memo(function LogViewer() {
   const [activeStage, stageLog] = useActiveStageLog();
   const dispatch = useDispatch();
   const [posY, setPosY] = useState(0);
-  const [height, setHeight] = useState(200);
+  const [height, setHeight] = useState(INITIAL_HEIGHT);
 
   const handleOnClickClose = (): void => {
     dispatch(clearActiveStage());
