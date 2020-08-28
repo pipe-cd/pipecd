@@ -34,7 +34,6 @@ gateway:
 api:
   replicasCount: 1
   imageTag: ""
-  useDebugImage: true
   args:
     cacheAddress: ""
     useFakeResponse: false
