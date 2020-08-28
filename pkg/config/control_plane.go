@@ -82,20 +82,18 @@ func (s *SharedSSOConfig) UnmarshalJSON(data []byte) error {
 
 // GetProject finds and returns a specific project in the configured list.
 func (s *ControlPlaneSpec) GetProject(id string) (*model.Project, bool) {
-	for _, p := range s.Projects {
-		if p.ID != id {
-			continue
-		}
-		return &model.Project{
-			Id:   p.ID,
-			Desc: p.Desc,
-			StaticAdmin: &model.ProjectStaticUser{
-				Username:     p.StaticAdmin.Username,
-				PasswordHash: p.StaticAdmin.PasswordHash,
-			},
-		}, true
+	p, ok := s.Projects[id]
+	if !ok {
+		return nil, false
 	}
-	return nil, false
+
+	return &model.Project{
+		Desc: p.Desc,
+		StaticAdmin: &model.ProjectStaticUser{
+			Username:     p.StaticAdmin.Username,
+			PasswordHash: p.StaticAdmin.PasswordHash,
+		},
+	}, true
 }
 
 type ControlPlaneDataStore struct {
