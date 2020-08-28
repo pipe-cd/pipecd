@@ -3,6 +3,7 @@ import { ApplicationKind } from "pipe/pkg/app/web/model/common_pb";
 import { dummyApplication } from "./dummy-application";
 import { dummyEnv } from "./dummy-environment";
 import { dummyPiped } from "./dummy-piped";
+import { dummyStage } from "./dummy-stage";
 
 export const dummyDeployment: Deployment = {
   id: "deployment-1",
@@ -11,7 +12,7 @@ export const dummyDeployment: Deployment = {
   applicationName: dummyApplication.name,
   applicationId: dummyApplication.id,
   runningCommitHash: "123456abcdefg",
-  stagesList: [],
+  stagesList: [dummyStage],
   status: DeploymentStatus.DEPLOYMENT_SUCCESS,
   statusReason: "good",
   trigger: {

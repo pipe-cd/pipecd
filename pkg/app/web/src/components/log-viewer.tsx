@@ -5,7 +5,7 @@ import {
   IconButton,
   Typography,
 } from "@material-ui/core";
-import React, { FC, memo } from "react";
+import React, { FC, memo, useCallback, useState } from "react";
 import { useSelector, useDispatch } from "react-redux";
 import { AppState } from "../modules";
 import { StageLog, selectStageLogById } from "../modules/stage-logs";
@@ -13,6 +13,8 @@ import { Log } from "./log";
 import { Close } from "@material-ui/icons";
 import { clearActiveStage } from "../modules/active-stage";
 import { selectById, Stage, isStageRunning } from "../modules/deployments";
+import Draggable from "react-draggable";
+import clsx from "clsx";
 
 function useActiveStageLog(): [Stage | null, StageLog | null] {
   return useSelector<AppState, [Stage | null, StageLog | null]>((state) => {
@@ -41,7 +43,12 @@ function useActiveStageLog(): [Stage | null, StageLog | null] {
   });
 }
 
-const useStyles = makeStyles({
+const useStyles = makeStyles((theme) => ({
+  root: {
+    position: "absolute",
+    bottom: "0px",
+    width: "100%",
+  },
   toolbarLeft: {
     flex: 1,
   },
@@ -56,43 +63,75 @@ const useStyles = makeStyles({
   logContainer: {
     overflowY: "scroll",
   },
-});
+  dividerWrapper: {
+    width: "100%",
+    paddingTop: theme.spacing(0.5),
+    paddingBottom: theme.spacing(0.5),
+    cursor: "ns-resize",
+  },
+  handle: {
+    position: "absolute",
+    bottom: "248px",
+    zIndex: 10,
+  },
+}));
 
 export const LogViewer: FC = memo(function LogViewer() {
   const classes = useStyles();
   const [activeStage, stageLog] = useActiveStageLog();
   const dispatch = useDispatch();
+  const [posY, setPosY] = useState(0);
+  const [height, setHeight] = useState(200);
 
   const handleOnClickClose = (): void => {
     dispatch(clearActiveStage());
   };
+
+  const handleOnDrag = useCallback(
+    (_, data) => {
+      setPosY(data.y);
+      setHeight(height - (data.y - data.lastY));
+    },
+    [setPosY, height, setHeight]
+  );
 
   if (!stageLog || !activeStage) {
     return null;
   }
 
   return (
-    <div>
-      <Divider />
-      <Toolbar variant="dense">
-        <div className={classes.toolbarLeft}>
-          <Typography variant="subtitle2" className={classes.stageName}>
-            {activeStage.name}
-          </Typography>
+    <>
+      <Draggable
+        onDrag={handleOnDrag}
+        handle=".handle"
+        position={{ x: 0, y: posY }}
+        defaultClassName={classes.handle}
+        axis="y"
+      >
+        <div className={clsx("handle", classes.dividerWrapper)}>
+          <Divider />
         </div>
-        <div className={classes.toolbarRight}>
-          <IconButton aria-label="close log" onClick={handleOnClickClose}>
-            <Close />
-          </IconButton>
+      </Draggable>
+      <div className={classes.root}>
+        <Toolbar variant="dense">
+          <div className={classes.toolbarLeft}>
+            <Typography variant="subtitle2" className={classes.stageName}>
+              {activeStage.name}
+            </Typography>
+          </div>
+          <div className={classes.toolbarRight}>
+            <IconButton aria-label="close log" onClick={handleOnClickClose}>
+              <Close />
+            </IconButton>
+          </div>
+        </Toolbar>
+        <div className={classes.logContainer} style={{ height }}>
+          <Log
+            loading={isStageRunning(activeStage.status)}
+            logs={stageLog.logBlocks}
+          />
         </div>
-      </Toolbar>
-      <div className={classes.logContainer}>
-        <Log
-          height={400}
-          loading={isStageRunning(activeStage.status)}
-          logs={stageLog.logBlocks}
-        />
       </div>
-    </div>
+    </>
   );
 });
