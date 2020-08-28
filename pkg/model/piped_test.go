@@ -48,11 +48,11 @@ func TestGenerateRandomString(t *testing.T) {
 		return nil
 	}
 
-	s1 := generateRandomString(10)
+	s1 := GenerateRandomString(10)
 	assert.Equal(t, 10, len(s1))
 	assert.NoError(t, validator(s1))
 
-	s2 := generateRandomString(10)
+	s2 := GenerateRandomString(10)
 	assert.Equal(t, 10, len(s2))
 	assert.NoError(t, validator(s2))
 

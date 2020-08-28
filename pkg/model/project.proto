@@ -56,8 +56,6 @@ message ProjectStaticUser {
     string password_hash = 2 [(validate.rules).string.min_len = 6];
 }
 
-
-
 message ProjectSSOConfig {
     enum Provider {
         GITHUB = 0;

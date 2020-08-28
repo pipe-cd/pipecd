@@ -3,6 +3,7 @@ def all_images():
         "api": "api",
         "piped": "piped",
         "web": "web",
+        "operator": "operator",
         "helloworld": "helloworld",
     }
     images = {}
