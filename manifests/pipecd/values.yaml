@@ -51,6 +51,12 @@ cache:
   password: ""
   resources: {}
 
+mongodb:
+  imageTag: "4.2"
+
+minio:
+  imageTag: "RELEASE.2020-08-26T00-00-49Z"
+
 config:
   # Specifies whether a ConfigMap for control plane configuration should be created
   create: true
@@ -87,6 +93,7 @@ secret:
   signingKey:
     # The name of the signing key file.
     fileName: "signing-key"
+    data: ""
   minioAccessKey:
     fileName: "minio-access-key"
     data: ""

@@ -136,11 +136,7 @@ spec:
             secretName: {{ .Values.secret.name }}
         - name: pipecd-config
           configMap:
-{{- if .Values.config.create }}
-            name: {{ include "pipecd.fullname" . }}
-{{- else }}
-            name: {{ .Values.config.name }}
-{{- end }}
+            name: {{ include "pipecd.configMapName" . }}
 {{- if .Values.api.resources }}
           resources:
             {{- toYaml .Values.api.resources | nindent 12 }}
@@ -253,7 +249,7 @@ spec:
     spec:
       containers:
         - name: mongodb
-          image: mongo:4.2
+          image: mongo:{{ .Values.mongodb.imageTag }}
           imagePullPolicy: IfNotPresent
           ports:
             - name: mongo
@@ -282,7 +278,7 @@ spec:
     spec:
       containers:
       - name: minio
-        image: minio/minio:RELEASE.2020-08-26T00-00-49Z
+        image: minio/minio:{{ .Values.minio.imageTag }}
         args:
         - server
         - /data
