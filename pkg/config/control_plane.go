@@ -44,7 +44,6 @@ func (s *ControlPlaneSpec) Validate() error {
 }
 
 type ControlPlaneProject struct {
-	ID          string            `json:"id"`
 	Desc        string            `json:"desc"`
 	StaticAdmin ProjectStaticUser `json:"staticAdmin"`
 }
