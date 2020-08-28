@@ -40,7 +40,7 @@ func (h *Handler) handleLogin(w http.ResponseWriter, r *http.Request) {
 	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
 	defer cancel()
 
-	proj, err := h.getProject(ctx, r)
+	proj, err := h.getProject(ctx, r.FormValue(projectFormKey))
 	if err != nil {
 		handleError(w, r, rootPath, "wrong project", h.logger, err)
 		return
@@ -69,27 +69,37 @@ func (h *Handler) handleStaticLogin(w http.ResponseWriter, r *http.Request) {
 	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
 	defer cancel()
 
-	proj, err := h.getProject(ctx, r)
-	if err != nil {
-		handleError(w, r, rootPath, "wrong project", h.logger, err)
-		return
+	var (
+		admin     *model.ProjectStaticUser
+		projectID = r.FormValue(projectFormKey)
+	)
+	if p, ok := h.projects[projectID]; ok {
+		admin = &model.ProjectStaticUser{
+			Username:     p.StaticAdmin.Username,
+			PasswordHash: p.StaticAdmin.PasswordHash,
+		}
+	} else {
+		proj, err := h.getProject(ctx, projectID)
+		if err != nil {
+			handleError(w, r, rootPath, "wrong project", h.logger, err)
+			return
+		}
+		if proj.StaticAdminDisabled {
+			msg := "static login is disabled"
+			handleError(w, r, rootPath, msg, h.logger, fmt.Errorf(msg))
+			return
+		}
 	}
-	if proj.StaticAdminDisabled {
-		msg := "static login is disabled"
-		handleError(w, r, rootPath, msg, h.logger, fmt.Errorf(msg))
-		return
-	}
-
-	if err := proj.StaticAdmin.Auth(r.FormValue(usernameFormKey), r.FormValue(passwordFormKey)); err != nil {
+	if err := admin.Auth(r.FormValue(usernameFormKey), r.FormValue(passwordFormKey)); err != nil {
 		handleError(w, r, rootPath, "login failed", h.logger, err)
 		return
 	}
 	claims := jwt.NewClaims(
-		proj.StaticAdmin.Username,
+		admin.Username,
 		"",
 		defaultTokenTTL,
 		model.Role{
-			ProjectId:   proj.Id,
+			ProjectId:   projectID,
 			ProjectRole: model.Role_ADMIN,
 		},
 	)
@@ -101,8 +111,8 @@ func (h *Handler) handleStaticLogin(w http.ResponseWriter, r *http.Request) {
 	http.SetCookie(w, makeTokenCookie(signedToken))
 
 	h.logger.Info("a new user has been logged in",
-		zap.String("user", proj.StaticAdmin.Username),
-		zap.String("project-id", proj.Id),
+		zap.String("user", admin.Username),
+		zap.String("project-id", projectID),
 		zap.String("project-role", model.Role_ADMIN.String()),
 	)
 	http.Redirect(w, r, rootPath, http.StatusFound)

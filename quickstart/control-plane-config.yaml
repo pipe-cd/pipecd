@@ -13,8 +13,8 @@ spec:
       bucket: quickstart
       accessKeyFile: /etc/pipecd-secret/minio-access-key
       secretKeyFile: /etc/pipecd-secret/minio-secret-key
-  project:
-    - name: example
+  projects:
+    quickstart:
       staticAdmin:
         username: hello-pipecd
         passwordHash: "$2a$10$ye96mUqUqTnjUqgwQJbJzel/LJibRhUnmzyypACkvrTSnQpVFZ7qK" # bcrypt value of "hello-pipecd"

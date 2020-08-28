@@ -28,7 +28,7 @@ type ControlPlaneSpec struct {
 	StateKey string `json:"stateKey"`
 	// List of debugging/quickstart projects defined in Control Plane configuration.
 	// Please do not use this to configure the projects running the production mode.
-	Projects []ControlPlaneProject `json:"projects"`
+	Projects map[string]ControlPlaneProject `json:"projects"`
 	// SharedSSOConfigs is the shared oauth settings projects can use.
 	SharedSSOConfigs map[string]SharedSSOConfig `json:"sharedSsoConfigs"`
 	// The configuration of datastore for control plane.
@@ -44,7 +44,6 @@ func (s *ControlPlaneSpec) Validate() error {
 }
 
 type ControlPlaneProject struct {
-	ID          string            `json:"id"`
 	Desc        string            `json:"desc"`
 	StaticAdmin ProjectStaticUser `json:"staticAdmin"`
 }
@@ -83,20 +82,19 @@ func (s *SharedSSOConfig) UnmarshalJSON(data []byte) error {
 
 // GetProject finds and returns a specific project in the configured list.
 func (s *ControlPlaneSpec) GetProject(id string) (*model.Project, bool) {
-	for _, p := range s.Projects {
-		if p.ID != id {
-			continue
-		}
-		return &model.Project{
-			Id:   p.ID,
-			Desc: p.Desc,
-			StaticAdmin: &model.ProjectStaticUser{
-				Username:     p.StaticAdmin.Username,
-				PasswordHash: p.StaticAdmin.PasswordHash,
-			},
-		}, true
+	p, ok := s.Projects[id]
+	if !ok {
+		return nil, false
 	}
-	return nil, false
+
+	return &model.Project{
+		Id:   id,
+		Desc: p.Desc,
+		StaticAdmin: &model.ProjectStaticUser{
+			Username:     p.StaticAdmin.Username,
+			PasswordHash: p.StaticAdmin.PasswordHash,
+		},
+	}, true
 }
 
 type ControlPlaneDataStore struct {

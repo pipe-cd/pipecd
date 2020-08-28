@@ -22,6 +22,7 @@ import (
 
 	"go.uber.org/zap"
 
+	"github.com/pipe-cd/pipe/pkg/config"
 	"github.com/pipe-cd/pipe/pkg/jwt"
 	"github.com/pipe-cd/pipe/pkg/model"
 )
@@ -62,6 +63,7 @@ type Handler struct {
 	signer        jwt.Signer
 	apiURL        string
 	stateKey      string
+	projects      map[string]config.ControlPlaneProject
 	projectGetter projectGetter
 	logger        *zap.Logger
 }
@@ -71,6 +73,7 @@ func NewHandler(
 	signer jwt.Signer,
 	apiURL string,
 	stateKey string,
+	projects map[string]config.ControlPlaneProject,
 	projectGetter projectGetter,
 	logger *zap.Logger,
 ) *Handler {
@@ -78,6 +81,7 @@ func NewHandler(
 		signer:        signer,
 		apiURL:        apiURL,
 		stateKey:      stateKey,
+		projects:      projects,
 		projectGetter: projectGetter,
 		logger:        logger,
 	}
@@ -101,8 +105,7 @@ func (h *Handler) handleLogout(w http.ResponseWriter, r *http.Request) {
 	http.Redirect(w, r, rootPath, http.StatusFound)
 }
 
-func (h *Handler) getProject(ctx context.Context, r *http.Request) (*model.Project, error) {
-	projectID := r.FormValue(projectFormKey)
+func (h *Handler) getProject(ctx context.Context, projectID string) (*model.Project, error) {
 	if projectID == "" {
 		return nil, fmt.Errorf("project id must be specified")
 	}

@@ -42,7 +42,7 @@ func (h *Handler) handleCallback(w http.ResponseWriter, r *http.Request) {
 	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
 	defer cancel()
 
-	proj, err := h.getProject(ctx, r)
+	proj, err := h.getProject(ctx, r.FormValue(projectFormKey))
 	if err != nil {
 		handleError(w, r, rootPath, "wrong project", h.logger, err)
 		return
