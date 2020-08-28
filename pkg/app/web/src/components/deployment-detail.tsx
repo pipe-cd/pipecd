@@ -169,9 +169,6 @@ export const DeploymentDetail: FC<Props> = memo(function DeploymentDetail({
             <Typography className={classes.textMargin} variant="h6">
               {DEPLOYMENT_STATE_TEXT[deployment.status]}
             </Typography>
-            <Typography className={classes.textMargin} variant="h6">
-              {deployment.id}
-            </Typography>
             <Typography variant="subtitle1" className={classes.env}>
               {env.name}
             </Typography>
@@ -221,7 +218,7 @@ export const DeploymentDetail: FC<Props> = memo(function DeploymentDetail({
                     target="_blank"
                     rel="noreferrer"
                   >
-                    {`${deployment.trigger.commit.hash}`}
+                    {`${deployment.trigger.commit.hash.slice(0, 7)}`}
                     <OpenInNewIcon className={classes.linkIcon} />
                   </Link>
                   )
