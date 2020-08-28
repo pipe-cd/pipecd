@@ -88,9 +88,9 @@ func (s *ControlPlaneSpec) GetProject(id string) (*model.Project, bool) {
 	}
 
 	return &model.Project{
+		Id:   id,
 		Desc: p.Desc,
 		StaticAdmin: &model.ProjectStaticUser{
-			ID:           id,
 			Username:     p.StaticAdmin.Username,
 			PasswordHash: p.StaticAdmin.PasswordHash,
 		},
