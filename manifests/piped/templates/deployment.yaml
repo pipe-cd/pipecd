@@ -54,7 +54,7 @@ spec:
       volumes:
         - name: piped-secret
           secret:
-            secretName: {{ include "piped.configMapName" . }}
+            secretName: {{ include "piped.secretName" . }}
             defaultMode: 0400
         - name: piped-config
           configMap:

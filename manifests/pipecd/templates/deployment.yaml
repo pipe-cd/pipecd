@@ -287,20 +287,18 @@ spec:
         - server
         - /data
         env:
-        - name: MINIO_ACCESS_KEY_FILE
-          value: {{ .Values.secret.mountPath }}/{{ .Values.secret.minioAccessKey.fileName }}
-        - name: MINIO_SECRET_KEY_FILE
-          value: {{ .Values.secret.mountPath }}/{{ .Values.secret.minioSecretKey.fileName }}
+        - name: MINIO_ACCESS_KEY
+          valueFrom:
+            secretKeyRef:
+              name: {{ include "pipecd.secretName" . }}
+              key: {{ .Values.secret.minioAccessKey.fileName }}
+        - name: MINIO_SECRET_KEY
+          valueFrom:
+            secretKeyRef:
+              name: {{ include "pipecd.secretName" . }}
+              key: {{ .Values.secret.minioSecretKey.fileName }}
         ports:
           - name: minio
             containerPort: 9000
             protocol: TCP
-        volumeMounts:
-          - name: pipecd-secret
-            mountPath: {{ .Values.secret.mountPath }}
-            readOnly: true
-      volumes:
-        - name: pipecd-secret
-          secret:
-            secretName: {{ .Values.secret.name }}
 {{- end }}

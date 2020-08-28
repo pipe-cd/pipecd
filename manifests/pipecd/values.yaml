@@ -79,6 +79,8 @@ config:
         ttl: 5m
 
 secret:
+  # Specifies whether a Secret for storing sensitive data should be created.
+  create: true
   # The name of the Secret should be mounted to container.
   name: "pipecd-secrets"
   mountPath: /etc/pipecd-secret
