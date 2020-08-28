@@ -64,14 +64,14 @@ func (c *Kubectl) Apply(ctx context.Context, namespace string, manifest Manifest
 	return nil
 }
 
-func (c *Kubectl) Delete(ctx context.Context, r ResourceKey) (err error) {
+func (c *Kubectl) Delete(ctx context.Context, namespace string, r ResourceKey) (err error) {
 	defer func() {
 		metricsKubectlCalled(c.version, "delete", err == nil)
 	}()
 
 	args := make([]string, 0, 5)
-	if r.Namespace != "" {
-		args = append(args, "-n", r.Namespace)
+	if namespace != "" {
+		args = append(args, "-n", namespace)
 	}
 	args = append(args, "delete", r.Kind, r.Name)
 

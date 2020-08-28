@@ -35,7 +35,7 @@ buildifier(
 
 genrule(
     name = "copy_piped",
-    srcs = ["//cmd/piped"],
+    srcs = ["//cmd/piped:piped"],
     outs = ["piped"],
     cmd = "cp $< $@",
 )
@@ -56,3 +56,4 @@ genrule(
 # gazelle:exclude pkg/model/project.pb.validate.go
 # gazelle:exclude pkg/model/role.pb.validate.go
 # gazelle:exclude pkg/model/user.pb.validate.go
+# gazelle:exclude pkg/app/api/api/deployment_config_templates.embed.go

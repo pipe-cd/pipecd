@@ -23,75 +23,26 @@ var (
 	k8sDeploymentConfigTemplates = []*webservice.DeploymentConfigTemplate{
 		{
 			ApplicationKind: model.ApplicationKind_KUBERNETES,
-			Name:            "Canary Deployment",
-			Labels:          []webservice.DeploymentConfigTemplateLabel{webservice.DeploymentConfigTemplateLabel_CANARY},
-			Content:         k8sCanaryDeploymentConfigTemplate,
+			Name:            "Simple",
+			Labels:          []webservice.DeploymentConfigTemplateLabel{},
+			Content:         DeploymentConfigTemplates["KubernetesSimple"],
 		},
 		{
 			ApplicationKind: model.ApplicationKind_KUBERNETES,
-			Name:            "Blue/Green Deployment",
+			Name:            "Canary",
+			Labels:          []webservice.DeploymentConfigTemplateLabel{webservice.DeploymentConfigTemplateLabel_CANARY},
+			Content:         DeploymentConfigTemplates["KubernetesCanary"],
+		},
+		{
+			ApplicationKind: model.ApplicationKind_KUBERNETES,
+			Name:            "Blue/Green",
 			Labels:          []webservice.DeploymentConfigTemplateLabel{webservice.DeploymentConfigTemplateLabel_BLUE_GREEN},
-			Content:         k8sBluegreenDeploymentConfigTemplate,
+			Content:         DeploymentConfigTemplates["KubernetesBlueGreen"],
 		},
 	}
+
 	terraformDeploymentConfigTemplates  = []*webservice.DeploymentConfigTemplate{}
 	crossplaneDeploymentConfigTemplates = []*webservice.DeploymentConfigTemplate{}
 	lambdaDeploymentConfigTemplates     = []*webservice.DeploymentConfigTemplate{}
 	cloudrunDeploymentConfigTemplates   = []*webservice.DeploymentConfigTemplate{}
-)
-
-const (
-	k8sCanaryDeploymentConfigTemplate = `
-apiVersion: pipecd.dev/v1beta1
-kind: KubernetesApp
-spec:
-  commitMatcher:
-    sync: "^Revert"
-  pipeline:
-    stages:
-      # Deploy the workloads of CANARY variant. In this case, the number of
-      # workload replicas of CANARY variant is 10% of the replicas number of PRIMARY variant.
-      - name: K8S_CANARY_ROLLOUT
-        with:
-          replicas: 10%
-      # Wait 10 seconds before going to the next stage.
-      - name: WAIT
-        with:
-          duration: 10s
-      # Update the workload of PRIMARY variant to the new version.
-      - name: K8S_PRIMARY_ROLLOUT
-      # Destroy all workloads of CANARY variant.
-      - name: K8S_CANARY_CLEAN
-`
-
-	k8sBluegreenDeploymentConfigTemplate = `
-apiVersion: pipecd.dev/v1beta1
-kind: KubernetesApp
-spec:
-  pipeline:
-    stages:
-      # Deploy the workloads of CANARY variant. In this case, the number of
-      # workload replicas of CANARY variant is the same with PRIMARY variant.
-      - name: K8S_CANARY_ROLLOUT
-        with:
-          replicas: 100%
-      # The percentage of traffic each variant should receive.
-      # In this case, CANARY variant will receive all of the traffic.
-      - name: K8S_TRAFFIC_ROUTING
-        with:
-          all: canary
-      - name: WAIT_APPROVAL
-      # Update the workload of PRIMARY variant to the new version.
-      - name: K8S_PRIMARY_ROLLOUT
-      # The percentage of traffic each variant should receive.
-      # In this case, PRIMARY variant will receive all of the traffic.
-      - name: K8S_TRAFFIC_ROUTING
-        with:
-          primary: 100
-      # Destroy all workloads of CANARY variant.
-      - name: K8S_CANARY_CLEAN
-  # This example is not using service mesh.
-  trafficSplit:
-    method: pod
-`
 )

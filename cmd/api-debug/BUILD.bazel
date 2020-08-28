@@ -1,9 +1,0 @@
-load("//bazel:image.bzl", "app_image")
-
-app_image(
-    name = "api-debug",
-    base = "@debug-base//image",
-    binary = "//cmd/api:api",
-    repository = "api-debug",
-    visibility = ["//visibility:public"],
-)
