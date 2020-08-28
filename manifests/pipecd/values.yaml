@@ -56,6 +56,7 @@ mongodb:
 minio:
   imageTag: "RELEASE.2020-08-26T00-00-49Z"
 
+# Control Plane Configurations.
 config:
   # Specifies whether a ConfigMap for control plane configuration should be created
   create: true
@@ -68,21 +69,8 @@ config:
     apiVersion: "pipecd.dev/v1beta1"
     kind: ControlPlane
     spec:
-      datastore:
-        type: FIRESTORE
-        config:
-          namespace: pipecd
-          environment: dev
-          project: pipecd
-          credentialsFile: /etc/pipecd-secret/service-account.json
-      filestore:
-        type: GCS
-        config:
-          bucket: pipecd-dev-main
-          credentialsFile: /etc/pipecd-secret/service-account.json
-      cache:
-        ttl: 5m
 
+# Secret files that can be used in above configuration.
 secret:
   # Specifies whether a Secret for storing sensitive data should be created.
   create: true
@@ -90,8 +78,13 @@ secret:
   name: "pipecd-secrets"
   mountPath: /etc/pipecd-secret
   signingKey:
-    # The name of the signing key file.
     fileName: "signing-key"
+    data: ""
+  firestoreServiceAccount:
+    fileName: "firestore-service-account"
+    data: ""
+  gcsServiceAccount:
+    fileName: "gcs-service-account"
     data: ""
   minioAccessKey:
     fileName: "minio-access-key"
