@@ -70,36 +70,36 @@ func (a *authorizer) Authorize(method string, r model.Role) bool {
 		return isAdmin(r)
 	case "/pipe.api.service.webservice.WebService/UpdateProjectRBACConfig":
 		return isAdmin(r)
-	case "/pipe.api.service.webservice.WebService/ListEnvironments":
-		return isAdmin(r) || isEditor(r)
-	case "/pipe.api.service.webservice.WebService/ListPipeds":
-		return isAdmin(r) || isEditor(r)
-	case "/pipe.api.service.webservice.WebService/GetPiped":
-		return isAdmin(r) || isEditor(r)
-	case "/pipe.api.service.webservice.WebService/ListApplications":
-		return isAdmin(r) || isEditor(r)
 	case "/pipe.api.service.webservice.WebService/SyncApplication":
-		return isAdmin(r) || isEditor(r)
-	case "/pipe.api.service.webservice.WebService/GetApplication":
-		return isAdmin(r) || isEditor(r)
-	case "/pipe.api.service.webservice.WebService/ListDeployments":
-		return isAdmin(r) || isEditor(r)
-	case "/pipe.api.service.webservice.WebService/GetDeployment":
-		return isAdmin(r) || isEditor(r)
-	case "/pipe.api.service.webservice.WebService/GetStageLog":
 		return isAdmin(r) || isEditor(r)
 	case "/pipe.api.service.webservice.WebService/CancelDeployment":
 		return isAdmin(r) || isEditor(r)
 	case "/pipe.api.service.webservice.WebService/ApproveStage":
 		return isAdmin(r) || isEditor(r)
 	case "/pipe.api.service.webservice.WebService/GetApplicationLiveState":
-		return isAdmin(r) || isEditor(r)
+		return isAdmin(r) || isEditor(r) || isViewer(r)
 	case "/pipe.api.service.webservice.WebService/GetProject":
-		return isAdmin(r) || isEditor(r)
+		return isAdmin(r) || isEditor(r) || isViewer(r)
 	case "/pipe.api.service.webservice.WebService/GetCommand":
-		return isAdmin(r) || isEditor(r)
+		return isAdmin(r) || isEditor(r) || isViewer(r)
 	case "/pipe.api.service.webservice.WebService/ListDeploymentConfigTemplates":
-		return isAdmin(r) || isEditor(r)
+		return isAdmin(r) || isEditor(r) || isViewer(r)
+	case "/pipe.api.service.webservice.WebService/ListEnvironments":
+		return isAdmin(r) || isEditor(r) || isViewer(r)
+	case "/pipe.api.service.webservice.WebService/ListPipeds":
+		return isAdmin(r) || isEditor(r) || isViewer(r)
+	case "/pipe.api.service.webservice.WebService/GetPiped":
+		return isAdmin(r) || isEditor(r) || isViewer(r)
+	case "/pipe.api.service.webservice.WebService/ListApplications":
+		return isAdmin(r) || isEditor(r) || isViewer(r)
+	case "/pipe.api.service.webservice.WebService/GetApplication":
+		return isAdmin(r) || isEditor(r) || isViewer(r)
+	case "/pipe.api.service.webservice.WebService/ListDeployments":
+		return isAdmin(r) || isEditor(r) || isViewer(r)
+	case "/pipe.api.service.webservice.WebService/GetDeployment":
+		return isAdmin(r) || isEditor(r) || isViewer(r)
+	case "/pipe.api.service.webservice.WebService/GetStageLog":
+		return isAdmin(r) || isEditor(r) || isViewer(r)
 	case "/pipe.api.service.webservice.WebService/GetMe":
 		return isAdmin(r) || isEditor(r) || isViewer(r)
 	}
