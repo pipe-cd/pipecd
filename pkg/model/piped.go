@@ -32,7 +32,7 @@ const (
 // a hash value of the key for storing in datastore.
 func GeneratePipedKey() (key, hash string, err error) {
 	var encoded []byte
-	key = generateRandomString(pipedKeyLength)
+	key = GenerateRandomString(pipedKeyLength)
 	encoded, err = bcrypt.GenerateFromPassword([]byte(key), bcrypt.DefaultCost)
 	if err != nil {
 		return
@@ -55,10 +55,10 @@ const (
 	letterBytes   = "abcdefghijklmnopqrstuvwxyz0123456789"
 )
 
-// generateRandomString makes a random string with the given length.
+// GenerateRandomString makes a random string with the given length.
 // This implementation was referenced from the link below.
 // https://stackoverflow.com/questions/22892120/how-to-generate-a-random-string-of-a-fixed-length-in-go
-func generateRandomString(n int) string {
+func GenerateRandomString(n int) string {
 	b := make([]byte, n)
 
 	// A src.Int63() generates 63 random bits, enough for letterIdxMax characters.

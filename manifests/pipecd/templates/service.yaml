@@ -111,6 +111,28 @@ spec:
     {{- include "pipecd.selectorLabels" . | nindent 4 }}
     app.kubernetes.io/component: cache
 
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: {{ include "pipecd.fullname" . }}-operator
+  labels:
+    {{- include "pipecd.labels" . | nindent 4 }}
+    app.kubernetes.io/component: operator
+spec:
+  type: ClusterIP
+  clusterIP: None
+  ports:
+    - name: http
+      port: 9082
+      targetPort: http
+    - name: admin
+      port: 9085
+      targetPort: admin
+  selector:
+    {{- include "pipecd.selectorLabels" . | nindent 4 }}
+    app.kubernetes.io/component: operator
+
 {{- if .Values.quickstart}}
 ---
 apiVersion: v1

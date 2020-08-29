@@ -50,6 +50,10 @@ cache:
   password: ""
   resources: {}
 
+operator:
+  imageTag: ""
+  resources: {}
+
 mongodb:
   imageTag: "4.2"
 

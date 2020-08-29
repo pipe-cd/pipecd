@@ -1,0 +1,206 @@
+// Copyright 2020 The PipeCD Authors.
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//     http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+package handler
+
+import (
+	"context"
+	"fmt"
+	"html/template"
+	"net/http"
+	"strconv"
+	"time"
+
+	"go.uber.org/zap"
+
+	"github.com/pipe-cd/pipe/pkg/datastore"
+	"github.com/pipe-cd/pipe/pkg/model"
+)
+
+var (
+	topPageTmpl      = template.Must(template.New("Top").Parse(Templates["Top"]))
+	listProjectsTmpl = template.Must(template.New("ListProjects").Parse(Templates["ListProjects"]))
+	addProjectTmpl   = template.Must(template.New("AddProject").Parse(Templates["AddProject"]))
+	addedProjectTmpl = template.Must(template.New("AddedProject").Parse(Templates["AddedProject"]))
+)
+
+type projectStore interface {
+	AddProject(ctx context.Context, proj *model.Project) error
+	ListProjects(ctx context.Context, opts datastore.ListOptions) ([]model.Project, error)
+}
+
+type Handler struct {
+	port         int
+	projectStore projectStore
+	server       *http.Server
+	gracePeriod  time.Duration
+	logger       *zap.Logger
+}
+
+func NewHandler(port int, ps projectStore, gracePeriod time.Duration, logger *zap.Logger) *Handler {
+	mux := http.NewServeMux()
+	h := &Handler{
+		projectStore: ps,
+		server: &http.Server{
+			Addr:    fmt.Sprintf(":%d", port),
+			Handler: mux,
+		},
+		gracePeriod: gracePeriod,
+		logger:      logger.Named("handler"),
+	}
+
+	mux.HandleFunc("/", h.handleTop)
+	mux.HandleFunc("/projects", h.handleListProjects)
+	mux.HandleFunc("/projects/add", h.handleAddProject)
+
+	return h
+}
+
+func (h *Handler) Run(ctx context.Context) error {
+	doneCh := make(chan error, 1)
+	ctx, cancel := context.WithCancel(ctx)
+
+	go func() {
+		defer cancel()
+		doneCh <- h.run()
+	}()
+
+	<-ctx.Done()
+	h.stop()
+	return <-doneCh
+}
+
+func (h *Handler) run() error {
+	h.logger.Info(fmt.Sprintf("handler server is running on %d", h.port))
+	if err := h.server.ListenAndServe(); err != nil && err != http.ErrServerClosed {
+		h.logger.Error("failed to listen and serve handler server", zap.Error(err))
+		return err
+	}
+	return nil
+}
+
+func (h *Handler) stop() error {
+	ctx, cancel := context.WithTimeout(context.Background(), h.gracePeriod)
+	defer cancel()
+	h.logger.Info("stopping handler server")
+	if err := h.server.Shutdown(ctx); err != nil {
+		h.logger.Error("failed to shutdown handler server", zap.Error(err))
+		return err
+	}
+	return nil
+}
+
+func (h *Handler) handleTop(w http.ResponseWriter, r *http.Request) {
+	if r.Method != http.MethodGet {
+		http.Error(w, "not found", http.StatusNotFound)
+		return
+	}
+
+	if err := topPageTmpl.Execute(w, nil); err != nil {
+		h.logger.Error("failed to render Top page template", zap.Error(err))
+	}
+}
+
+func (h *Handler) handleListProjects(w http.ResponseWriter, r *http.Request) {
+	if r.Method != http.MethodGet {
+		http.Error(w, "not found", http.StatusNotFound)
+		return
+	}
+
+	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
+	defer cancel()
+
+	projects, err := h.projectStore.ListProjects(ctx, datastore.ListOptions{})
+	if err != nil {
+		h.logger.Error("failed to retrieve the list of projects", zap.Error(err))
+		http.Error(w, "Unable to retrieve projects", http.StatusInternalServerError)
+		return
+	}
+
+	data := make([]map[string]string, 0, len(projects))
+	for i := range projects {
+		data = append(data, map[string]string{
+			"ID":                  projects[i].Id,
+			"Description":         projects[i].Desc,
+			"StaticAdminDisabled": strconv.FormatBool(projects[i].StaticAdminDisabled),
+			"CreatedAt":           time.Unix(projects[i].CreatedAt, 0).String(),
+		})
+	}
+	if err := listProjectsTmpl.Execute(w, data); err != nil {
+		h.logger.Error("failed to render ListProjects page template", zap.Error(err))
+	}
+}
+
+func (h *Handler) handleAddProject(w http.ResponseWriter, r *http.Request) {
+	if r.Method != http.MethodGet && r.Method != http.MethodPost {
+		http.Error(w, "not found", http.StatusNotFound)
+		return
+	}
+	if r.Method == http.MethodGet {
+		if err := addProjectTmpl.Execute(w, nil); err != nil {
+			h.logger.Error("failed to render AddProject page template", zap.Error(err))
+		}
+		return
+	}
+
+	var (
+		id          = r.FormValue("ID")
+		description = r.FormValue("Description")
+	)
+	if id == "" {
+		http.Error(w, "invalid id", http.StatusBadRequest)
+		return
+	}
+
+	var (
+		project = &model.Project{
+			Id:   id,
+			Desc: description,
+		}
+		username = model.GenerateRandomString(10)
+		password = model.GenerateRandomString(30)
+	)
+
+	if err := project.SetStaticAdmin(username, password); err != nil {
+		h.logger.Error("failed to set static admin",
+			zap.String("id", id),
+			zap.Error(err),
+		)
+		http.Error(w, "Unable to add the project", http.StatusInternalServerError)
+		return
+	}
+
+	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
+	defer cancel()
+
+	if err := h.projectStore.AddProject(ctx, project); err != nil {
+		h.logger.Error("failed to add a new project",
+			zap.String("id", id),
+			zap.Error(err),
+		)
+		http.Error(w, "Unable to add the project", http.StatusInternalServerError)
+		return
+	}
+	h.logger.Info("successfully added a new project", zap.String("id", id))
+
+	data := map[string]string{
+		"ID":                  id,
+		"Description":         description,
+		"StaticAdminUsername": username,
+		"StaticAdminPassword": password,
+	}
+	if err := addedProjectTmpl.Execute(w, data); err != nil {
+		h.logger.Error("failed to render AddedProject page template", zap.Error(err))
+	}
+}

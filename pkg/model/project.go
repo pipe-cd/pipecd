@@ -29,6 +29,18 @@ var (
 	githubScopes = []string{"read:org"}
 )
 
+func (p *Project) SetStaticAdmin(username, password string) error {
+	encoded, err := bcrypt.GenerateFromPassword([]byte(password), bcrypt.DefaultCost)
+	if err != nil {
+		return err
+	}
+	p.StaticAdmin = &ProjectStaticUser{
+		Username:     username,
+		PasswordHash: string(encoded),
+	}
+	return nil
+}
+
 // RedactSensitiveData redacts sensitive data.
 func (p *Project) RedactSensitiveData() {
 	if p.StaticAdmin != nil {

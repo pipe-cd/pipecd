@@ -1,0 +1,11 @@
+<!DOCTYPE html>
+<html>
+<body>
+
+<h2 style="text-align: center;"><a href="/">Welcome to PipeCD Owner Page!</a></h2>
+
+<p><a href="/projects">List Projects</a></p>
+<p><a href="/projects/add">Add Project</a></p>
+
+</body>
+</html>

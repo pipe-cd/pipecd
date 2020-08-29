@@ -1,3 +1,4 @@
+# Gateway workload by using Envoy proxy.
 apiVersion: apps/v1
 kind: Deployment
 metadata:
@@ -65,7 +66,9 @@ spec:
           secret:
             secretName: internal-tls
 {{- end }}
+
 ---
+# API workload.
 apiVersion: apps/v1
 kind: Deployment
 metadata:
@@ -139,6 +142,7 @@ spec:
 {{- end }}
 
 ---
+# Web workload.
 apiVersion: apps/v1
 kind: Deployment
 metadata:
@@ -185,6 +189,7 @@ spec:
 {{- end }}
 
 ---
+# Cache workload.
 apiVersion: apps/v1
 kind: Deployment
 metadata:
@@ -220,6 +225,70 @@ spec:
 {{- if .Values.cache.resources }}
           resources:
             {{- toYaml .Values.cache.resources | nindent 12 }}
+{{- end }}
+
+---
+# Single operator pod.
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{ include "pipecd.fullname" . }}-operator
+  labels:
+    {{- include "pipecd.labels" . | nindent 4 }}
+    app.kubernetes.io/component: operator
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      {{- include "pipecd.selectorLabels" . | nindent 6 }}
+      app.kubernetes.io/component: operator
+  template:
+    metadata:
+      labels:
+        {{- include "pipecd.selectorLabels" . | nindent 8 }}
+        app.kubernetes.io/component: operator
+    spec:
+      containers:
+        - name: operator
+          image: "gcr.io/pipecd/operator:{{ .Values.operator.imageTag | default .Chart.AppVersion }}"
+          imagePullPolicy: IfNotPresent
+          args:
+          - server
+          - --config-file=/etc/pipecd-config/{{ .Values.config.fileName }}
+          ports:
+            - name: http
+              containerPort: 9082
+              protocol: TCP
+            - name: admin
+              containerPort: 9085
+              protocol: TCP
+          livenessProbe:
+            httpGet:
+              path: /healthz
+              port: admin
+          readinessProbe:
+            httpGet:
+              path: /healthz
+              port: admin
+          volumeMounts:
+            - name: pipecd-secret
+              mountPath: {{ .Values.secret.mountPath }}
+              readOnly: true
+            - name: pipecd-config
+              mountPath: /etc/pipecd-config
+              readOnly: true
+          resources:
+            {{- toYaml .Values.resources | nindent 12 }}
+      volumes:
+        - name: pipecd-secret
+          secret:
+            secretName: {{ include "pipecd.secretName" . }}
+        - name: pipecd-config
+          configMap:
+            name: {{ include "pipecd.configMapName" . }}
+{{- if .Values.operator.resources }}
+          resources:
+            {{- toYaml .Values.operator.resources | nindent 12 }}
 {{- end }}
 
 {{- if .Values.quickstart}}

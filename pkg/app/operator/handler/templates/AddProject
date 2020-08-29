@@ -1,0 +1,17 @@
+<!DOCTYPE html>
+<html>
+<body>
+
+<h2 style="text-align: center;"><a href="/">Welcome to PipeCD Owner Page!</a></h2>
+
+<h3>Add a new project</h3>
+<form method="POST">
+    <label>ID:</label><br />
+    <input type="text" name="ID"><br />
+    <label>Description:</label><br />
+    <input type="text" name="Description"><br />
+    <input type="submit">
+</form>
+
+</body>
+</html>
