@@ -89,6 +89,7 @@ func (h *Handler) handleStaticLogin(w http.ResponseWriter, r *http.Request) {
 			handleError(w, r, rootPath, msg, h.logger, fmt.Errorf(msg))
 			return
 		}
+		admin = proj.StaticAdmin
 	}
 	if err := admin.Auth(r.FormValue(usernameFormKey), r.FormValue(passwordFormKey)); err != nil {
 		handleError(w, r, rootPath, "login failed", h.logger, err)
