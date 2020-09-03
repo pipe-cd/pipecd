@@ -1,6 +1,9 @@
-apiVersion: "pipecd.dev/v1beta1"
-kind: ControlPlane
-spec:
+quickstart: true
+
+config:
+  apiVersion: "pipecd.dev/v1beta1"
+  kind: ControlPlane
+  spec:
   datastore:
     type: MONGODB
     config:
@@ -18,3 +21,11 @@ spec:
       staticAdmin:
         username: hello-pipecd
         passwordHash: "$2a$10$ye96mUqUqTnjUqgwQJbJzel/LJibRhUnmzyypACkvrTSnQpVFZ7qK" # bcrypt value of "hello-pipecd"
+
+secret:
+  signingKey:
+    data: quickstart
+  minioAccessKey:
+    data: quickstart-access-key
+  minioSecretKey:
+    data: quickstart-secret-key
