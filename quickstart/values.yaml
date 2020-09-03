@@ -1,0 +1,32 @@
+quickstart: true
+
+config:
+  data: |
+    apiVersion: "pipecd.dev/v1beta1"
+    kind: ControlPlane
+    spec:
+      datastore:
+        type: MONGODB
+        config:
+          url: mongodb://pipecd-mongodb:27017/quickstart
+          database: quickstart
+      filestore:
+        type: MINIO
+        config:
+          endpoint: http://pipecd-minio:9000
+          bucket: quickstart
+          accessKeyFile: /etc/pipecd-secret/minio-access-key
+          secretKeyFile: /etc/pipecd-secret/minio-secret-key
+      projects:
+        quickstart:
+          staticAdmin:
+            username: hello-pipecd
+            passwordHash: "$2a$10$ye96mUqUqTnjUqgwQJbJzel/LJibRhUnmzyypACkvrTSnQpVFZ7qK" # bcrypt value of "hello-pipecd"
+
+secret:
+  signingKey:
+    data: quickstart
+  minioAccessKey:
+    data: quickstart-access-key
+  minioSecretKey:
+    data: quickstart-secret-key
