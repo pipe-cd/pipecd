@@ -51,6 +51,6 @@ describe("DeploymentDetailPage", () => {
       deploymentId: dummyDeployment.id,
     });
 
-    await waitFor(() => getByText(dummyDeployment.id));
+    await waitFor(() => getByText("SUCCESS"));
   });
 });
