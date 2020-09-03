@@ -64,7 +64,7 @@ func (h *Handler) handleCallback(w http.ResponseWriter, r *http.Request) {
 		handleError(w, r, rootPath, "internal error", h.logger, err)
 		return
 	}
-	http.SetCookie(w, makeTokenCookie(signedToken))
+	http.SetCookie(w, makeTokenCookie(signedToken, true))
 	http.SetCookie(w, makeExpiredStateCookie())
 
 	h.logger.Info("user logged in",
