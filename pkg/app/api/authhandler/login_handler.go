@@ -70,14 +70,16 @@ func (h *Handler) handleStaticLogin(w http.ResponseWriter, r *http.Request) {
 	defer cancel()
 
 	var (
-		admin     *model.ProjectStaticUser
-		projectID = r.FormValue(projectFormKey)
+		admin        *model.ProjectStaticUser
+		projectID    = r.FormValue(projectFormKey)
+		secureCookie = true
 	)
 	if p, ok := h.projects[projectID]; ok {
 		admin = &model.ProjectStaticUser{
 			Username:     p.StaticAdmin.Username,
 			PasswordHash: p.StaticAdmin.PasswordHash,
 		}
+		secureCookie = false
 	} else {
 		proj, err := h.getProject(ctx, projectID)
 		if err != nil {
@@ -109,7 +111,7 @@ func (h *Handler) handleStaticLogin(w http.ResponseWriter, r *http.Request) {
 		handleError(w, r, rootPath, "internal error", h.logger, err)
 		return
 	}
-	http.SetCookie(w, makeTokenCookie(signedToken))
+	http.SetCookie(w, makeTokenCookie(signedToken, secureCookie))
 
 	h.logger.Info("a new user has been logged in",
 		zap.String("user", admin.Username),

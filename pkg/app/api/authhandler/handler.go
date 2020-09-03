@@ -117,14 +117,13 @@ func (h *Handler) getProject(ctx context.Context, projectID string) (*model.Proj
 	return proj, nil
 }
 
-func makeTokenCookie(value string) *http.Cookie {
+func makeTokenCookie(value string, secure bool) *http.Cookie {
 	return &http.Cookie{
-		Name:   jwt.SignedTokenKey,
-		Value:  value,
-		MaxAge: defaultTokenCookieMaxAge,
-		Path:   rootPath,
-		// TODO: Make cookie secure
-		//Secure:   true,
+		Name:     jwt.SignedTokenKey,
+		Value:    value,
+		MaxAge:   defaultTokenCookieMaxAge,
+		Path:     rootPath,
+		Secure:   secure,
 		HttpOnly: true,
 		SameSite: http.SameSiteLaxMode,
 	}
