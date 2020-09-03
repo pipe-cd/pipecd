@@ -9,11 +9,13 @@ describe("projectSlice reducer", () => {
     ).toMatchInlineSnapshot(`
       Object {
         "desc": null,
+        "github": null,
         "id": null,
         "isUpdatingGitHubSSO": false,
         "isUpdatingPassword": false,
         "isUpdatingUsername": false,
         "staticAdminDisabled": false,
+        "teams": null,
         "username": null,
       }
     `);

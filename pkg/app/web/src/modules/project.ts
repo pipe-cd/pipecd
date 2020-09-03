@@ -6,10 +6,15 @@ import {
   ProjectRBACConfig,
 } from "pipe/pkg/app/web/model/project_pb";
 
+export type GitHubSSO = ProjectSSOConfig.GitHub.AsObject;
+export type Teams = ProjectRBACConfig.AsObject;
+
 export interface ProjectState {
   id: string | null;
   desc: string | null;
   username: string | null;
+  teams: Teams | null;
+  github: GitHubSSO | null;
   staticAdminDisabled: boolean;
   isUpdatingPassword: boolean;
   isUpdatingUsername: boolean;
@@ -20,6 +25,8 @@ const initialState: ProjectState = {
   id: null,
   desc: null,
   username: null,
+  teams: null,
+  github: null,
   staticAdminDisabled: false,
   isUpdatingPassword: false,
   isUpdatingUsername: false,
@@ -30,12 +37,21 @@ export const fetchProject = createAsyncThunk<{
   id: string | null;
   desc: string | null;
   username: string | null;
+  teams: Teams | null;
   staticAdminDisabled: boolean;
+  github: GitHubSSO | null;
 }>("project/fetchProject", async () => {
   const { project } = await projectAPI.getProject();
 
   if (!project) {
-    return { id: null, desc: null, staticAdminDisabled: false, username: null };
+    return {
+      id: null,
+      desc: null,
+      staticAdminDisabled: false,
+      username: null,
+      teams: null,
+      github: null,
+    };
   }
 
   return {
@@ -43,6 +59,8 @@ export const fetchProject = createAsyncThunk<{
     desc: project.desc,
     staticAdminDisabled: project.staticAdminDisabled,
     username: project.staticAdmin?.username || "",
+    teams: project.rbac ?? null,
+    github: project.sso?.github ?? null,
   };
 });
 
@@ -75,17 +93,22 @@ export const toggleAvailability = createAsyncThunk<
 
 export const updateGitHubSSO = createAsyncThunk<
   void,
-  ProjectSSOConfig.GitHub.AsObject
+  Partial<GitHubSSO> & { clientId: string; clientSecret: string }
 >("project/updateGitHubSSO", async (params) => {
   await projectAPI.updateGitHubSSO(params);
 });
 
-export const updateRBAC = createAsyncThunk<void, ProjectRBACConfig.AsObject>(
-  "project/updateRBAC",
-  async (params) => {
-    await projectAPI.updateRBAC(params);
+export const updateRBAC = createAsyncThunk<
+  void,
+  Partial<Teams>,
+  { state: AppState }
+>("project/updateRBAC", async (params, thunkAPI) => {
+  const project = thunkAPI.getState().project;
+  if (project.teams === null) {
+    throw new Error();
   }
-);
+  await projectAPI.updateRBAC(Object.assign({}, project.teams, params));
+});
 
 export const projectSlice = createSlice({
   name: "project",
@@ -99,6 +122,8 @@ export const projectSlice = createSlice({
         state.desc = action.payload.desc;
         state.username = action.payload.username;
         state.staticAdminDisabled = action.payload.staticAdminDisabled;
+        state.teams = action.payload.teams;
+        state.github = action.payload.github;
       })
       .addCase(fetchProject.rejected, (_, action) => {
         console.log(action);
@@ -109,7 +134,8 @@ export const projectSlice = createSlice({
       .addCase(updateUsername.fulfilled, (state) => {
         state.isUpdatingUsername = false;
       })
-      .addCase(updateUsername.rejected, (state) => {
+      .addCase(updateUsername.rejected, (state, action) => {
+        console.error(action);
         state.isUpdatingUsername = false;
       })
       .addCase(updatePassword.pending, (state) => {
@@ -118,7 +144,8 @@ export const projectSlice = createSlice({
       .addCase(updatePassword.fulfilled, (state) => {
         state.isUpdatingPassword = false;
       })
-      .addCase(updatePassword.rejected, (state) => {
+      .addCase(updatePassword.rejected, (state, action) => {
+        console.error(action);
         state.isUpdatingPassword = false;
       })
       .addCase(updateGitHubSSO.pending, (state) => {
@@ -130,6 +157,9 @@ export const projectSlice = createSlice({
       .addCase(updateGitHubSSO.rejected, (state, action) => {
         console.error(action);
         state.isUpdatingGitHubSSO = false;
+      })
+      .addCase(updateRBAC.rejected, (state, action) => {
+        console.error(action);
       });
   },
 });

@@ -78,16 +78,20 @@ export const updateGitHubSSO = ({
   clientSecret,
   baseUrl,
   uploadUrl,
-}: ProjectSSOConfig.GitHub.AsObject): Promise<
-  UpdateProjectSSOConfigResponse.AsObject
-> => {
+}: {
+  clientId: string;
+  clientSecret: string;
+  baseUrl?: string;
+  uploadUrl?: string;
+}): Promise<UpdateProjectSSOConfigResponse.AsObject> => {
   const req = new UpdateProjectSSOConfigRequest();
   const sso = new ProjectSSOConfig();
   const github = new ProjectSSOConfig.GitHub();
   github.setClientId(clientId);
   github.setClientSecret(clientSecret);
-  github.setBaseUrl(baseUrl);
-  github.setUploadUrl(uploadUrl);
+  baseUrl && github.setBaseUrl(baseUrl);
+  uploadUrl && github.setUploadUrl(uploadUrl);
+
   sso.setGithub(github);
   req.setSso(sso);
   return apiRequest(req, apiClient.updateProjectSSOConfig);
