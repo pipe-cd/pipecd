@@ -6,10 +6,10 @@
 
 <h3>Add a new project</h3>
 <form method="POST">
-    <label>ID:</label><br />
-    <input type="text" name="ID"><br />
-    <label>Description:</label><br />
-    <input type="text" name="Description"><br />
+    <label>ID:</label><br>
+    <input type="text" name="ID"><br><br>
+    <label>Description:</label><br>
+    <input type="text" name="Description"><br><br>
     <input type="submit">
 </form>
 
