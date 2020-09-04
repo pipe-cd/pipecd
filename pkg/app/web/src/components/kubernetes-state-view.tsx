@@ -33,6 +33,12 @@ const useStyles = makeStyles((theme) => ({
     justifyContent: "center",
     overflow: "hidden",
   },
+  stateViewWrapper: {
+    flex: 1,
+    display: "flex",
+    justifyContent: "center",
+    overflow: "hidden",
+  },
   stateView: {
     position: "relative",
     overflow: "auto",
@@ -41,8 +47,8 @@ const useStyles = makeStyles((theme) => ({
     width: DETAIL_WIDTH,
     padding: "16px 24px",
     height: "100%",
-    position: "relative",
     overflow: "auto",
+    position: "relative",
     zIndex: 2,
   },
   closeDetailButton: {
@@ -140,75 +146,78 @@ export const KubernetesStateView: FC<Props> = ({ resources }) => {
 
   return (
     <div className={clsx(classes.root)}>
-      <div className={classes.stateView}>
-        {nodes.map((node) => (
-          <Box
-            key={`${node.resource.kind}-${node.resource.name}`}
-            position="absolute"
-            top={node.y}
-            left={node.x}
-            zIndex={1}
-          >
-            <KubernetesResource
-              resource={node.resource}
-              onClick={setSelectedResource}
-            />
-          </Box>
-        ))}
-        {graph.edges().map((v, i) => {
-          const edge = graph.edge(v);
-          let baseX = 10000;
-          let baseY = 10000;
-          let svgWidth = 0;
-          let svgHeight = 0;
-          edge.points.forEach((p) => {
-            baseX = Math.min(baseX, p.x);
-            baseY = Math.min(baseY, p.y);
-            svgWidth = Math.max(svgWidth, p.x);
-            svgHeight = Math.max(svgHeight, p.y);
-          });
-          baseX = Math.round(baseX);
-          baseY = Math.round(baseY);
-          // NOTE: Add padding to SVG sizes for showing edges completely.
-          // If you use the same size as the polyline points, it may hide the some strokes.
-          svgWidth = Math.ceil(svgWidth - baseX) + SVG_RENDER_PADDING;
-          svgHeight = Math.ceil(svgHeight - baseY) + SVG_RENDER_PADDING;
-          return (
-            <svg
-              key={`edge-${i}`}
-              style={{
-                position: "absolute",
-                top: baseY + NODE_HEIGHT / 2,
-                left: baseX + NODE_WIDTH / 2,
-              }}
-              width={svgWidth}
-              height={svgHeight}
+      <div className={classes.stateViewWrapper}>
+        <div className={classes.stateView}>
+          {nodes.map((node) => (
+            <Box
+              key={`${node.resource.kind}-${node.resource.name}`}
+              position="absolute"
+              top={node.y}
+              left={node.x}
+              zIndex={1}
             >
-              <polyline
-                points={edge.points.reduce((prev, current) => {
-                  return (
-                    prev +
-                    `${Math.round(current.x - baseX) + STROKE_WIDTH},${
-                      Math.round(current.y - baseY) + STROKE_WIDTH
-                    } `
-                  );
-                }, "")}
-                strokeWidth={STROKE_WIDTH}
-                stroke={theme.palette.divider}
-                fill="transparent"
+              <KubernetesResource
+                resource={node.resource}
+                onClick={setSelectedResource}
               />
-            </svg>
-          );
-        })}
-        {graphInstance && (
-          <div
-            style={{
-              width: (graphInstance.width ?? 0) + NODE_WIDTH,
-              height: (graphInstance.height ?? 0) + NODE_HEIGHT,
-            }}
-          />
-        )}
+            </Box>
+          ))}
+          {graph.edges().map((v, i) => {
+            const edge = graph.edge(v);
+            let baseX = 10000;
+            let baseY = 10000;
+            let svgWidth = 0;
+            let svgHeight = 0;
+            edge.points.forEach((p) => {
+              baseX = Math.min(baseX, p.x);
+              baseY = Math.min(baseY, p.y);
+              svgWidth = Math.max(svgWidth, p.x);
+              svgHeight = Math.max(svgHeight, p.y);
+            });
+            baseX = Math.round(baseX);
+            baseY = Math.round(baseY);
+            // NOTE: Add padding to SVG sizes for showing edges completely.
+            // If you use the same size as the polyline points, it may hide the some strokes.
+            svgWidth = Math.ceil(svgWidth - baseX) + SVG_RENDER_PADDING;
+            svgHeight = Math.ceil(svgHeight - baseY) + SVG_RENDER_PADDING;
+            return (
+              <svg
+                key={`edge-${i}`}
+                style={{
+                  position: "absolute",
+                  top: baseY + NODE_HEIGHT / 2,
+                  left: baseX + NODE_WIDTH / 2,
+                }}
+                width={svgWidth}
+                height={svgHeight}
+              >
+                <polyline
+                  points={edge.points.reduce((prev, current) => {
+                    return (
+                      prev +
+                      `${Math.round(current.x - baseX) + STROKE_WIDTH},${
+                        Math.round(current.y - baseY) + STROKE_WIDTH
+                      } `
+                    );
+                  }, "")}
+                  strokeWidth={STROKE_WIDTH}
+                  stroke={theme.palette.divider}
+                  fill="transparent"
+                />
+              </svg>
+            );
+          })}
+          {graphInstance && (
+            <div
+              style={{
+                width: (graphInstance.width ?? 0) + NODE_WIDTH,
+                height: (graphInstance.height ?? 0) + NODE_HEIGHT,
+              }}
+            />
+          )}
+        </div>
       </div>
+
       {selectedResource && (
         <Paper className={classes.detail} square>
           <IconButton
