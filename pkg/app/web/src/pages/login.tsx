@@ -48,7 +48,8 @@ export const LoginPage: FC = memo(function LoginPage() {
   const projectName = useProjectName();
   const [name, setName] = useState<string>("");
 
-  const handleOnContinue = (): void => {
+  const handleOnContinue = (e: React.FormEvent<HTMLFormElement>): void => {
+    e.preventDefault();
     dispatch(setProjectName(name));
   };
 
@@ -57,7 +58,7 @@ export const LoginPage: FC = memo(function LoginPage() {
       {me && me.isLogin && <Redirect to={PAGE_PATH_APPLICATIONS} />}
       <Card className={classes.content}>
         {projectName === null ? (
-          <>
+          <form onSubmit={handleOnContinue}>
             <Typography variant="h4">Sign in to your project</Typography>
             <div className={classes.fields}>
               <TextField
@@ -73,16 +74,16 @@ export const LoginPage: FC = memo(function LoginPage() {
             </div>
             <div className={classes.buttons}>
               <Button
+                type="submit"
                 color="primary"
                 variant="contained"
                 endIcon={<ArrowRightAltIcon />}
-                onClick={handleOnContinue}
                 disabled={name === ""}
               >
                 CONTINUE
               </Button>
             </div>
-          </>
+          </form>
         ) : (
           <LoginForm />
         )}
