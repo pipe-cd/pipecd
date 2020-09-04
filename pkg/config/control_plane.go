@@ -17,20 +17,24 @@ package config
 import (
 	"encoding/json"
 	"fmt"
+	"time"
+
+	"github.com/golang/protobuf/jsonpb"
 
 	"github.com/pipe-cd/pipe/pkg/model"
 )
 
+// ControlPlaneSpec defines all configuration for all control-plane components.
 type ControlPlaneSpec struct {
-	// The address to the API of PipeCD control plane.
-	APIURL string `json:"apiUrl"`
-	// The key to generate oauth state paramater.
+	// The address to the control plane.
+	Address string `json:"address"`
+	// A random key to generate oauth state paramater.
 	StateKey string `json:"stateKey"`
 	// List of debugging/quickstart projects defined in Control Plane configuration.
-	// Please do not use this to configure the projects running the production mode.
-	Projects map[string]ControlPlaneProject `json:"projects"`
-	// SharedSSOConfigs is the shared oauth settings projects can use.
-	SharedSSOConfigs map[string]SharedSSOConfig `json:"sharedSsoConfigs"`
+	// Please note that do not use this to configure the projects running the production.
+	Projects []ControlPlaneProject `json:"projects"`
+	// List of shared SSO configurations that can be used by any projects.
+	SharedSSOConfigs []SharedSSOConfig `json:"sharedSSOConfigs"`
 	// The configuration of datastore for control plane.
 	Datastore ControlPlaneDataStore `json:"datastore"`
 	// The configuration of filestore for control plane.
@@ -44,6 +48,7 @@ func (s *ControlPlaneSpec) Validate() error {
 }
 
 type ControlPlaneProject struct {
+	Id          string            `json:"id"`
 	Desc        string            `json:"desc"`
 	StaticAdmin ProjectStaticUser `json:"staticAdmin"`
 }
@@ -54,7 +59,8 @@ type ProjectStaticUser struct {
 }
 
 type SharedSSOConfig struct {
-	model.ProjectSSOConfig
+	model.ProjectSSOConfig `json:",inline"`
+	Name                   string `json:"name"`
 }
 
 func (s *SharedSSOConfig) UnmarshalJSON(data []byte) error {
@@ -62,39 +68,52 @@ func (s *SharedSSOConfig) UnmarshalJSON(data []byte) error {
 	if err := json.Unmarshal(data, &m); err != nil {
 		return err
 	}
+
 	provider := m["provider"].(string)
 	v, ok := model.ProjectSSOConfig_Provider_value[provider]
 	if !ok {
-		return fmt.Errorf("provider %s does not exist", provider)
+		return fmt.Errorf("unsupported provider %s", provider)
 	}
 	m["provider"] = v
+
+	name, ok := m["name"]
+	if !ok {
+		return fmt.Errorf("name field in SharedSSOConfig is required")
+	}
+	s.Name = name.(string)
+	delete(m, "name")
+
 	data, err := json.Marshal(m)
 	if err != nil {
 		return err
 	}
-	sso := &model.ProjectSSOConfig{}
-	if err := json.Unmarshal(data, sso); err != nil {
+
+	// Using jsonpb instead of the standard json to unmarshal because
+	// json is unmarshaling with the underscored tags.
+	// https://github.com/golang/protobuf/issues/183
+	if err := jsonpb.UnmarshalString(string(data), &s.ProjectSSOConfig); err != nil {
 		return err
 	}
-	s.ProjectSSOConfig = *sso
 	return nil
 }
 
-// GetProject finds and returns a specific project in the configured list.
-func (s *ControlPlaneSpec) GetProject(id string) (*model.Project, bool) {
-	p, ok := s.Projects[id]
-	if !ok {
-		return nil, false
+// FindProject finds and returns a specific project in the configured list.
+func (s *ControlPlaneSpec) FindProject(id string) (ControlPlaneProject, bool) {
+	for i := range s.Projects {
+		if s.Projects[i].Id != id {
+			continue
+		}
+		return s.Projects[i], true
 	}
+	return ControlPlaneProject{}, false
+}
 
-	return &model.Project{
-		Id:   id,
-		Desc: p.Desc,
-		StaticAdmin: &model.ProjectStaticUser{
-			Username:     p.StaticAdmin.Username,
-			PasswordHash: p.StaticAdmin.PasswordHash,
-		},
-	}, true
+func (s *ControlPlaneSpec) ProjectMap() map[string]ControlPlaneProject {
+	m := make(map[string]ControlPlaneProject, len(s.Projects))
+	for i := range s.Projects {
+		m[s.Projects[i].Id] = s.Projects[i]
+	}
+	return m
 }
 
 type ControlPlaneDataStore struct {
@@ -148,6 +167,15 @@ func (d *ControlPlaneDataStore) UnmarshalJSON(data []byte) error {
 
 type ControlPlaneCache struct {
 	TTL Duration `json:"ttl"`
+}
+
+func (c ControlPlaneCache) TTLDuration() time.Duration {
+	const defaultTTL = 5 * time.Minute
+
+	if c.TTL == 0 {
+		return defaultTTL
+	}
+	return c.TTL.Duration()
 }
 
 type DataStoreFireStoreConfig struct {

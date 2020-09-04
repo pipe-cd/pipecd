@@ -115,6 +115,7 @@ func getUser(ctx context.Context, sso *model.ProjectSSOConfig, rbac *model.Proje
 			return nil, err
 		}
 		return cli.GetUser(ctx)
+
 	case model.ProjectSSOConfig_GITHUB_ENTERPRISE:
 		if sso.Github == nil {
 			return nil, fmt.Errorf("missing GitHub oauth in the SSO configuration")
@@ -124,6 +125,7 @@ func getUser(ctx context.Context, sso *model.ProjectSSOConfig, rbac *model.Proje
 			return nil, err
 		}
 		return cli.GetUser(ctx)
+
 	default:
 		return nil, fmt.Errorf("not implemented")
 	}

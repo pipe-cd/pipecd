@@ -48,11 +48,12 @@ func (h *Handler) handleLogin(w http.ResponseWriter, r *http.Request) {
 
 	stateToken := xsrftoken.Generate(h.stateKey, "", "")
 	state := hex.EncodeToString([]byte(stateToken))
-	authURL, err := proj.Sso.GenerateAuthCodeURL(proj.Id, h.apiURL, callbackPath, state)
+	authURL, err := proj.Sso.GenerateAuthCodeURL(proj.Id, h.callbackURL, state)
 	if err != nil {
 		handleError(w, r, rootPath, "internal error", h.logger, err)
 		return
 	}
+
 	http.SetCookie(w, makeStateCookie(state))
 	http.Redirect(w, r, authURL, http.StatusFound)
 }
@@ -74,7 +75,7 @@ func (h *Handler) handleStaticLogin(w http.ResponseWriter, r *http.Request) {
 		projectID    = r.FormValue(projectFormKey)
 		secureCookie = true
 	)
-	if p, ok := h.projects[projectID]; ok {
+	if p, ok := h.projectsInConfig[projectID]; ok {
 		admin = &model.ProjectStaticUser{
 			Username:     p.StaticAdmin.Username,
 			PasswordHash: p.StaticAdmin.PasswordHash,

@@ -2,18 +2,19 @@ apiVersion: pipecd.dev/v1beta1
 kind: ControlPlane
 spec:
   projects:
-    abc:
+    - id: abc
       staticAdmin:
         username: test-user
         passwordHash: test-password
-  sharedSsoConfigs:
-    default:
+
+  sharedSSOConfigs:
+    - name: github
       provider: GITHUB
       github:
-        client_id: client-id
-        client_secret: client-secret
-        base_url: base-url
-        upload_url: upload-url
+        clientId: client-id
+        clientSecret: client-secret
+        baseUrl: base-url
+        uploadUrl: upload-url
 
   datastore:
     type: FIRESTORE
@@ -22,11 +23,12 @@ spec:
       environment: unit-test
       project: project
       credentialsFile: "datastore-credentials-file.json"
+
   filestore:
     type: GCS
     config:
       bucket: bucket
       credentialsFile: "filestore-credentials-file.json"
+
   cache:
-    redisAddress: "localhost:6379"
     ttl: 5m

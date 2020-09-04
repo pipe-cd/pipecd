@@ -18,7 +18,6 @@ import (
 	"crypto/subtle"
 	"fmt"
 	"net/url"
-	"strings"
 
 	"golang.org/x/crypto/bcrypt"
 	"golang.org/x/oauth2"
@@ -124,18 +123,20 @@ func (p *ProjectSSOConfig) Update(sso *ProjectSSOConfig) {
 }
 
 // GenerateAuthCodeURL generates an auth URL for the specified configuration.
-func (p *ProjectSSOConfig) GenerateAuthCodeURL(project, apiURL, callbackPath, state string) (string, error) {
+func (p *ProjectSSOConfig) GenerateAuthCodeURL(project, callbackURL, state string) (string, error) {
 	switch p.Provider {
 	case ProjectSSOConfig_GITHUB:
 		if p.Github == nil {
 			return "", fmt.Errorf("missing GitHub oauth in the SSO configuration")
 		}
-		return p.Github.GenerateAuthCodeURL(project, apiURL, callbackPath, state, false)
+		return p.Github.GenerateAuthCodeURL(project, callbackURL, state, false)
+
 	case ProjectSSOConfig_GITHUB_ENTERPRISE:
 		if p.Github == nil {
 			return "", fmt.Errorf("missing GitHub oauth in the SSO configuration")
 		}
-		return p.Github.GenerateAuthCodeURL(project, apiURL, callbackPath, state, true)
+		return p.Github.GenerateAuthCodeURL(project, callbackURL, state, true)
+
 	default:
 		return "", fmt.Errorf("not implemented")
 	}
@@ -164,7 +165,7 @@ func (p *ProjectSSOConfig_GitHub) Update(input *ProjectSSOConfig_GitHub) {
 }
 
 // GenerateAuthCodeURL generates an auth URL for the specified configuration.
-func (p *ProjectSSOConfig_GitHub) GenerateAuthCodeURL(project, apiURL, callbackPath, state string, enterprise bool) (string, error) {
+func (p *ProjectSSOConfig_GitHub) GenerateAuthCodeURL(project, callbackURL, state string, enterprise bool) (string, error) {
 	cfg := oauth2.Config{
 		ClientID: p.ClientId,
 		Endpoint: github.Endpoint,
@@ -177,8 +178,7 @@ func (p *ProjectSSOConfig_GitHub) GenerateAuthCodeURL(project, apiURL, callbackP
 		cfg.Endpoint.AuthURL = fmt.Sprintf("%s://%s%s", u.Scheme, u.Host, "/login/oauth/authorize")
 	}
 	cfg.Scopes = githubScopes
-	apiURL = strings.TrimSuffix(apiURL, "/")
-	cfg.RedirectURL = fmt.Sprintf("%s%s?project=%s", apiURL, callbackPath, project)
+	cfg.RedirectURL = fmt.Sprintf("%s?project=%s", callbackURL, project)
 	authURL := cfg.AuthCodeURL(state, oauth2.ApprovalForce, oauth2.AccessTypeOnline)
 
 	return authURL, nil
