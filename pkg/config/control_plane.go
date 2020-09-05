@@ -116,6 +116,14 @@ func (s *ControlPlaneSpec) ProjectMap() map[string]ControlPlaneProject {
 	return m
 }
 
+func (s *ControlPlaneSpec) SharedSSOConfigMap() map[string]*model.ProjectSSOConfig {
+	m := make(map[string]*model.ProjectSSOConfig, len(s.SharedSSOConfigs))
+	for i := range s.SharedSSOConfigs {
+		m[s.SharedSSOConfigs[i].Name] = &s.SharedSSOConfigs[i].ProjectSSOConfig
+	}
+	return m
+}
+
 type ControlPlaneDataStore struct {
 	// The datastore type.
 	Type model.DataStoreType
