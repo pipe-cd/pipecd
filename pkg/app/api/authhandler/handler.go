@@ -81,7 +81,7 @@ func NewHandler(
 ) *Handler {
 	return &Handler{
 		signer:           signer,
-		callbackURL:      strings.TrimSuffix(address, "/") + "/" + callbackPath,
+		callbackURL:      strings.TrimSuffix(address, "/") + callbackPath,
 		stateKey:         stateKey,
 		projectsInConfig: projectsInConfig,
 		sharedSSOConfigs: sharedSSOConfigs,
