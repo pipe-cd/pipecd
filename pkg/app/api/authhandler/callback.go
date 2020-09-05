@@ -33,26 +33,44 @@ import (
 func (h *Handler) handleCallback(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Content-Type", "text/html")
 
-	err := checkState(r, h.stateKey)
-	if err != nil {
-		handleError(w, r, rootPath, "unauthorized access", h.logger, err)
+	// Validate request's payload.
+	projectID := r.FormValue(projectFormKey)
+	if projectID == "" {
+		h.handleError(w, r, "Missing project id", nil)
+		return
+	}
+	authCode := r.FormValue(authCodeFormKey)
+	if authCode == "" {
+		h.handleError(w, r, "Missing auth code", nil)
+		return
+	}
+
+	if err := checkState(r, h.stateKey); err != nil {
+		h.handleError(w, r, "Unauthorized access", err)
 		return
 	}
 
 	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
 	defer cancel()
 
-	proj, err := h.getProject(ctx, r.FormValue(projectFormKey))
+	proj, err := h.projectGetter.GetProject(ctx, projectID)
 	if err != nil {
-		handleError(w, r, rootPath, "wrong project", h.logger, err)
+		h.handleError(w, r, fmt.Sprintf("Unable to find project %s", projectID), err)
 		return
 	}
 
-	user, err := getUser(ctx, proj.Sso, proj.Rbac, proj.Id, r.FormValue(authCodeFormKey))
+	sso, err := h.findSSOConfig(proj)
 	if err != nil {
-		handleError(w, r, rootPath, "internal error", h.logger, err)
+		h.handleError(w, r, fmt.Sprintf("Invalid SSO configuration: %v", err), nil)
 		return
 	}
+
+	user, err := getUser(ctx, sso, proj.Rbac, proj.Id, authCode)
+	if err != nil {
+		h.handleError(w, r, "Unable to find user", err)
+		return
+	}
+
 	claims := jwt.NewClaims(
 		user.Username,
 		user.AvatarUrl,
@@ -61,11 +79,9 @@ func (h *Handler) handleCallback(w http.ResponseWriter, r *http.Request) {
 	)
 	signedToken, err := h.signer.Sign(claims)
 	if err != nil {
-		handleError(w, r, rootPath, "internal error", h.logger, err)
+		h.handleError(w, r, "Internal error", err)
 		return
 	}
-	http.SetCookie(w, makeTokenCookie(signedToken, true))
-	http.SetCookie(w, makeExpiredStateCookie())
 
 	h.logger.Info("user logged in",
 		zap.String("user", user.Username),
@@ -73,6 +89,8 @@ func (h *Handler) handleCallback(w http.ResponseWriter, r *http.Request) {
 		zap.String("project-role", user.Role.String()),
 	)
 
+	http.SetCookie(w, makeTokenCookie(signedToken, true))
+	http.SetCookie(w, makeExpiredStateCookie())
 	http.Redirect(w, r, rootPath, http.StatusFound)
 }
 
@@ -102,9 +120,6 @@ func checkState(r *http.Request, key string) error {
 }
 
 func getUser(ctx context.Context, sso *model.ProjectSSOConfig, rbac *model.ProjectRBACConfig, projectID, code string) (*model.User, error) {
-	if sso == nil {
-		return nil, fmt.Errorf("missing SSO configuration")
-	}
 	switch sso.Provider {
 	case model.ProjectSSOConfig_GITHUB:
 		if sso.Github == nil {

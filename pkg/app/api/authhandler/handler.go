@@ -64,6 +64,7 @@ type Handler struct {
 	callbackURL      string
 	stateKey         string
 	projectsInConfig map[string]config.ControlPlaneProject
+	sharedSSOConfigs map[string]*model.ProjectSSOConfig
 	projectGetter    projectGetter
 	logger           *zap.Logger
 }
@@ -74,6 +75,7 @@ func NewHandler(
 	address string,
 	stateKey string,
 	projectsInConfig map[string]config.ControlPlaneProject,
+	sharedSSOConfigs map[string]*model.ProjectSSOConfig,
 	projectGetter projectGetter,
 	logger *zap.Logger,
 ) *Handler {
@@ -82,6 +84,7 @@ func NewHandler(
 		callbackURL:      strings.TrimSuffix(address, "/") + "/" + callbackPath,
 		stateKey:         stateKey,
 		projectsInConfig: projectsInConfig,
+		sharedSSOConfigs: sharedSSOConfigs,
 		projectGetter:    projectGetter,
 		logger:           logger,
 	}
@@ -89,8 +92,8 @@ func NewHandler(
 
 // Register registers all handler into the specified registry.
 func (h *Handler) Register(r func(string, func(http.ResponseWriter, *http.Request))) {
-	r(loginPath, h.handleLogin)
-	r(staticLoginPath, h.handleStaticLogin)
+	r(loginPath, h.handleSSOLogin)
+	r(staticLoginPath, h.handleStaticAdminLogin)
 	r(callbackPath, h.handleCallback)
 	r(logoutPath, h.handleLogout)
 }
@@ -105,16 +108,32 @@ func (h *Handler) handleLogout(w http.ResponseWriter, r *http.Request) {
 	http.Redirect(w, r, rootPath, http.StatusFound)
 }
 
-func (h *Handler) getProject(ctx context.Context, projectID string) (*model.Project, error) {
-	if projectID == "" {
-		return nil, fmt.Errorf("project id must be specified")
+func (h *Handler) findSSOConfig(p *model.Project) (*model.ProjectSSOConfig, error) {
+	if p.SharedSsoName == "" {
+		if p.Sso == nil {
+			return nil, fmt.Errorf("missing SSO configuration in project data")
+		}
+		return p.Sso, nil
 	}
 
-	proj, err := h.projectGetter.GetProject(ctx, projectID)
-	if err != nil {
-		return nil, err
+	sso, ok := h.sharedSSOConfigs[p.SharedSsoName]
+	if ok {
+		return sso, nil
 	}
-	return proj, nil
+	return nil, fmt.Errorf("not found shared sso configuration %s", p.SharedSsoName)
+}
+
+// handleError redirects to the root path and saves the error message to the cookie.
+// Web will use that cookie data to handle auth error.
+func (h *Handler) handleError(w http.ResponseWriter, r *http.Request, responseMessage string, err error) {
+	if err != nil {
+		h.logger.Error(fmt.Sprintf("auth-handler: %s", responseMessage), zap.Error(err))
+	} else {
+		h.logger.Info(fmt.Sprintf("auth-handler: %s", responseMessage))
+	}
+
+	http.SetCookie(w, makeErrorCookie(responseMessage))
+	http.Redirect(w, r, rootPath, http.StatusSeeOther)
 }
 
 func makeTokenCookie(value string, secure bool) *http.Cookie {
@@ -175,10 +194,4 @@ func makeErrorCookie(value string) *http.Cookie {
 		HttpOnly: true,
 		SameSite: http.SameSiteLaxMode,
 	}
-}
-
-func handleError(w http.ResponseWriter, r *http.Request, redirectURL, responseMessage string, logger *zap.Logger, err error) {
-	logger.Error(fmt.Sprintf("auth-handler: %s", responseMessage), zap.Error(err))
-	http.SetCookie(w, makeErrorCookie(responseMessage))
-	http.Redirect(w, r, redirectURL, http.StatusSeeOther)
 }

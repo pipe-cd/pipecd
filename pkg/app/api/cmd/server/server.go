@@ -238,7 +238,15 @@ func (s *server) run(ctx context.Context, t cli.Telemetry) error {
 			Handler: mux,
 		}
 		handlers := []httpHandler{
-			authhandler.NewHandler(signer, cfg.Address, cfg.StateKey, cfg.ProjectMap(), datastore.NewProjectStore(ds), t.Logger),
+			authhandler.NewHandler(
+				signer,
+				cfg.Address,
+				cfg.StateKey,
+				cfg.ProjectMap(),
+				cfg.SharedSSOConfigMap(),
+				datastore.NewProjectStore(ds),
+				t.Logger,
+			),
 		}
 		for _, h := range handlers {
 			h.Register(mux.HandleFunc)
