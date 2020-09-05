@@ -161,7 +161,7 @@ func (s *server) run(ctx context.Context, t cli.Telemetry) error {
 			t.Logger.Error("failed to close redis client", zap.Error(err))
 		}
 	}()
-	cache := rediscache.NewTTLCache(rd, cfg.Cache.TTL.Duration())
+	cache := rediscache.NewTTLCache(rd, cfg.Cache.TTLDuration())
 	sls := stagelogstore.NewStore(fs, cache, t.Logger)
 	alss := applicationlivestatestore.NewStore(fs, cache, t.Logger)
 	cmds := commandstore.NewStore(ds, cache, t.Logger)
@@ -238,7 +238,7 @@ func (s *server) run(ctx context.Context, t cli.Telemetry) error {
 			Handler: mux,
 		}
 		handlers := []httpHandler{
-			authhandler.NewHandler(signer, cfg.APIURL, cfg.StateKey, cfg.Projects, datastore.NewProjectStore(ds), t.Logger),
+			authhandler.NewHandler(signer, cfg.Address, cfg.StateKey, cfg.ProjectMap(), datastore.NewProjectStore(ds), t.Logger),
 		}
 		for _, h := range handlers {
 			h.Register(mux.HandleFunc)

@@ -18,6 +18,7 @@ import (
 	"context"
 	"fmt"
 	"net/http"
+	"strings"
 	"time"
 
 	"go.uber.org/zap"
@@ -28,6 +29,7 @@ import (
 )
 
 const (
+	rootPath = "/"
 	// loginPath is the path to login to pipecd projects.
 	loginPath = "/auth/login"
 	// staticLoginPath is the path to login to pipecd projects with password.
@@ -36,8 +38,6 @@ const (
 	callbackPath = "/auth/callback"
 	// logoutPath is the path for logging out from current session.
 	logoutPath = "/auth/logout"
-
-	rootPath = "/"
 
 	projectFormKey  = "project"
 	usernameFormKey = "username"
@@ -60,39 +60,39 @@ type projectGetter interface {
 
 // Handler handles all imcoming requests about authentication.
 type Handler struct {
-	signer        jwt.Signer
-	apiURL        string
-	stateKey      string
-	projects      map[string]config.ControlPlaneProject
-	projectGetter projectGetter
-	logger        *zap.Logger
+	signer           jwt.Signer
+	callbackURL      string
+	stateKey         string
+	projectsInConfig map[string]config.ControlPlaneProject
+	projectGetter    projectGetter
+	logger           *zap.Logger
 }
 
 // NewHandler returns a handler that will used for authentication.
 func NewHandler(
 	signer jwt.Signer,
-	apiURL string,
+	address string,
 	stateKey string,
-	projects map[string]config.ControlPlaneProject,
+	projectsInConfig map[string]config.ControlPlaneProject,
 	projectGetter projectGetter,
 	logger *zap.Logger,
 ) *Handler {
 	return &Handler{
-		signer:        signer,
-		apiURL:        apiURL,
-		stateKey:      stateKey,
-		projects:      projects,
-		projectGetter: projectGetter,
-		logger:        logger,
+		signer:           signer,
+		callbackURL:      strings.TrimSuffix(address, "/") + "/" + callbackPath,
+		stateKey:         stateKey,
+		projectsInConfig: projectsInConfig,
+		projectGetter:    projectGetter,
+		logger:           logger,
 	}
 }
 
 // Register registers all handler into the specified registry.
-func (h *Handler) Register(reg func(string, func(http.ResponseWriter, *http.Request))) {
-	reg(loginPath, h.handleLogin)
-	reg(staticLoginPath, h.handleStaticLogin)
-	reg(callbackPath, h.handleCallback)
-	reg(logoutPath, h.handleLogout)
+func (h *Handler) Register(r func(string, func(http.ResponseWriter, *http.Request))) {
+	r(loginPath, h.handleLogin)
+	r(staticLoginPath, h.handleStaticLogin)
+	r(callbackPath, h.handleCallback)
+	r(logoutPath, h.handleLogout)
 }
 
 // handleLogout cleans current cookies and redirects to login page.

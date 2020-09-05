@@ -46,16 +46,15 @@ func NewVerifier(ctx context.Context, cfg *config.ControlPlaneSpec, ds datastore
 
 func (v *Verifier) Verify(ctx context.Context, projectID, pipedID, pipedKey string) error {
 	// Check the project information.
-	// Firstly, we check from the list in Control Plane configuration.
-	_, ok := v.config.GetProject(projectID)
-	if !ok {
-		// Check the projects inside datastore.
+	// Firstly, we check from the list specified in the Control Plane configuration.
+	if _, ok := v.config.FindProject(projectID); !ok {
+		// If not found, we check from the list inside datastore.
 		if _, err := v.projectCache.Get(projectID); err != nil {
 			if _, err := v.projectStore.GetProject(ctx, projectID); err != nil {
 				return fmt.Errorf("project %s for piped %s was not found", projectID, pipedID)
 			}
 			if err := v.projectCache.Put(projectID, true); err != nil {
-				return fmt.Errorf("unable to store in cache: %w", err)
+				return fmt.Errorf("unable to store project in cache: %w", err)
 			}
 		}
 	}
@@ -75,7 +74,7 @@ func (v *Verifier) Verify(ctx context.Context, projectID, pipedID, pipedKey stri
 		return fmt.Errorf("unable to find piped %s from datastore, %w", pipedID, err)
 	}
 	if err := v.pipedCache.Put(pipedID, piped); err != nil {
-		return fmt.Errorf("unable to store in cache: %w", err)
+		return fmt.Errorf("unable to store piped in cache: %w", err)
 	}
 
 	return checkPiped(piped, projectID, pipedID, pipedKey)

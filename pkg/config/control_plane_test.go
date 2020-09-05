@@ -18,6 +18,7 @@ import (
 	"testing"
 	"time"
 
+	"github.com/golang/protobuf/proto"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 
@@ -29,7 +30,7 @@ func TestControlPlaneConfig(t *testing.T) {
 		fileName           string
 		expectedKind       Kind
 		expectedAPIVersion string
-		expectedSpec       interface{}
+		expectedSpec       *ControlPlaneSpec
 		expectedError      error
 	}{
 		{
@@ -37,16 +38,18 @@ func TestControlPlaneConfig(t *testing.T) {
 			expectedKind:       KindControlPlane,
 			expectedAPIVersion: "pipecd.dev/v1beta1",
 			expectedSpec: &ControlPlaneSpec{
-				Projects: map[string]ControlPlaneProject{
-					"abc": {
+				Projects: []ControlPlaneProject{
+					{
+						Id: "abc",
 						StaticAdmin: ProjectStaticUser{
 							Username:     "test-user",
 							PasswordHash: "test-password",
 						},
 					},
 				},
-				SharedSSOConfigs: map[string]SharedSSOConfig{
-					"default": {
+				SharedSSOConfigs: []SharedSSOConfig{
+					{
+						Name: "github",
 						ProjectSSOConfig: model.ProjectSSOConfig{
 							Provider: model.ProjectSSOConfig_GITHUB,
 							Github: &model.ProjectSSOConfig_GitHub{
@@ -87,7 +90,15 @@ func TestControlPlaneConfig(t *testing.T) {
 			if err == nil {
 				assert.Equal(t, tc.expectedKind, cfg.Kind)
 				assert.Equal(t, tc.expectedAPIVersion, cfg.APIVersion)
-				assert.Equal(t, tc.expectedSpec, cfg.spec)
+				require.Equal(t, 1, len(tc.expectedSpec.SharedSSOConfigs))
+				require.Equal(t, 1, len(cfg.ControlPlaneSpec.SharedSSOConfigs))
+				// Why don't we use assert.Equal to compare?
+				// https://github.com/stretchr/testify/issues/758
+				assert.True(t, proto.Equal(&tc.expectedSpec.SharedSSOConfigs[0].ProjectSSOConfig, &cfg.ControlPlaneSpec.SharedSSOConfigs[0].ProjectSSOConfig))
+
+				tc.expectedSpec.SharedSSOConfigs = nil
+				cfg.ControlPlaneSpec.SharedSSOConfigs = nil
+				assert.Equal(t, tc.expectedSpec, cfg.ControlPlaneSpec)
 			}
 		})
 	}
