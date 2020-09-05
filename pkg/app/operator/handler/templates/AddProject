@@ -1,15 +1,27 @@
 <!DOCTYPE html>
 <html>
+<head>
+<style>
+label {
+    display: block;
+    width: 6em;
+    float: left;
+}
+</style>
+</head>
 <body>
 
 <h2 style="text-align: center;"><a href="/">Welcome to PipeCD Owner Page!</a></h2>
 
 <h3>Add a new project</h3>
+
 <form method="POST">
-    <label>ID:</label><br>
+    <label>ID (Required)</label>
     <input type="text" name="ID"><br><br>
-    <label>Description:</label><br>
+    <label>Description</label>
     <input type="text" name="Description"><br><br>
+    <label>Shared SSO</label>
+    <input type="text" name="SharedSSO"><br><br>
     <input type="submit">
 </form>
 
