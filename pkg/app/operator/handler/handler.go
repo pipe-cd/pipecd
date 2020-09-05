@@ -24,6 +24,7 @@ import (
 
 	"go.uber.org/zap"
 
+	"github.com/pipe-cd/pipe/pkg/config"
 	"github.com/pipe-cd/pipe/pkg/datastore"
 	"github.com/pipe-cd/pipe/pkg/model"
 )
@@ -41,17 +42,19 @@ type projectStore interface {
 }
 
 type Handler struct {
-	port         int
-	projectStore projectStore
-	server       *http.Server
-	gracePeriod  time.Duration
-	logger       *zap.Logger
+	port             int
+	projectStore     projectStore
+	sharedSSOConfigs []config.SharedSSOConfig
+	server           *http.Server
+	gracePeriod      time.Duration
+	logger           *zap.Logger
 }
 
-func NewHandler(port int, ps projectStore, gracePeriod time.Duration, logger *zap.Logger) *Handler {
+func NewHandler(port int, ps projectStore, sharedSSOConfigs []config.SharedSSOConfig, gracePeriod time.Duration, logger *zap.Logger) *Handler {
 	mux := http.NewServeMux()
 	h := &Handler{
-		projectStore: ps,
+		projectStore:     ps,
+		sharedSSOConfigs: sharedSSOConfigs,
 		server: &http.Server{
 			Addr:    fmt.Sprintf(":%d", port),
 			Handler: mux,
@@ -134,6 +137,7 @@ func (h *Handler) handleListProjects(w http.ResponseWriter, r *http.Request) {
 			"ID":                  projects[i].Id,
 			"Description":         projects[i].Desc,
 			"StaticAdminDisabled": strconv.FormatBool(projects[i].StaticAdminDisabled),
+			"SharedSSOName":       projects[i].SharedSsoName,
 			"CreatedAt":           time.Unix(projects[i].CreatedAt, 0).String(),
 		})
 	}
@@ -155,18 +159,33 @@ func (h *Handler) handleAddProject(w http.ResponseWriter, r *http.Request) {
 	}
 
 	var (
-		id          = r.FormValue("ID")
-		description = r.FormValue("Description")
+		id            = r.FormValue("ID")
+		description   = r.FormValue("Description")
+		sharedSSOName = r.FormValue("SharedSSO")
 	)
 	if id == "" {
 		http.Error(w, "invalid id", http.StatusBadRequest)
 		return
 	}
+	if sharedSSOName != "" {
+		found := false
+		for i := range h.sharedSSOConfigs {
+			if h.sharedSSOConfigs[i].Name == sharedSSOName {
+				found = true
+				break
+			}
+		}
+		if !found {
+			http.Error(w, fmt.Sprintf("SharedSSOConfig %q was not found in Control Plane configuration", sharedSSOName), http.StatusBadRequest)
+			return
+		}
+	}
 
 	var (
 		project = &model.Project{
-			Id:   id,
-			Desc: description,
+			Id:            id,
+			Desc:          description,
+			SharedSsoName: sharedSSOName,
 		}
 		username = model.GenerateRandomString(10)
 		password = model.GenerateRandomString(30)
@@ -177,7 +196,7 @@ func (h *Handler) handleAddProject(w http.ResponseWriter, r *http.Request) {
 			zap.String("id", id),
 			zap.Error(err),
 		)
-		http.Error(w, "Unable to add the project", http.StatusInternalServerError)
+		http.Error(w, fmt.Sprintf("Unable to add the project (%v)", err), http.StatusInternalServerError)
 		return
 	}
 
@@ -189,7 +208,7 @@ func (h *Handler) handleAddProject(w http.ResponseWriter, r *http.Request) {
 			zap.String("id", id),
 			zap.Error(err),
 		)
-		http.Error(w, "Unable to add the project", http.StatusInternalServerError)
+		http.Error(w, fmt.Sprintf("Unable to add the project (%v)", err), http.StatusInternalServerError)
 		return
 	}
 	h.logger.Info("successfully added a new project", zap.String("id", id))
@@ -197,6 +216,7 @@ func (h *Handler) handleAddProject(w http.ResponseWriter, r *http.Request) {
 	data := map[string]string{
 		"ID":                  id,
 		"Description":         description,
+		"SharedSSOName":       sharedSSOName,
 		"StaticAdminUsername": username,
 		"StaticAdminPassword": password,
 	}

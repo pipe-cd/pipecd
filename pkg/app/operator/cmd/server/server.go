@@ -90,7 +90,7 @@ func (s *server) run(ctx context.Context, t cli.Telemetry) error {
 
 	// Start running HTTP server.
 	{
-		handler := handler.NewHandler(s.httpPort, datastore.NewProjectStore(ds), s.gracePeriod, t.Logger)
+		handler := handler.NewHandler(s.httpPort, datastore.NewProjectStore(ds), cfg.SharedSSOConfigs, s.gracePeriod, t.Logger)
 		group.Go(func() error {
 			return handler.Run(ctx)
 		})

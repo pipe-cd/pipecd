@@ -39,6 +39,10 @@ tr:nth-child(1) {
     <td>{{ .Description }}</td>
   </tr>
   <tr>
+    <td>Shared SSO Name</td>
+    <td>{{ .SharedSSOName }}</td>
+  </tr>
+  <tr>
     <td>Static Admin Username</td>
     <td>{{ .StaticAdminUsername }}</td>
   </tr>
