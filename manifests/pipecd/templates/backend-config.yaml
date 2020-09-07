@@ -5,7 +5,7 @@ metadata:
   name: {{ include "pipecd.fullname" . }}
 spec:
   iap:
-    enabled: true
+    enabled: {{ .Values.backendConfig.iap.enabled }}
     oauthclientCredentials:
-      secretName: pipecd-iap
+      secretName: {{ .Values.backendConfig.ipa.secretName }}
 {{- end }}
