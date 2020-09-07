@@ -1,19 +1,7 @@
-# PipeCD service and ingress.
+# Service and ingress.
 service:
   port: 443
   internalPort: 8443
-  annotations:
-    cloud.google.com/app-protocols: '{"service":"HTTP2", "internal-service":"HTTP2"}'
-
-backendConfig:
-  enabled: false
-  iap:
-    enabled: false
-    secretName: pipecd-iap
-
-managedCertificate:
-  enabled: false
-  domains: []
 
 ingress:
   enabled: false
@@ -21,12 +9,7 @@ ingress:
     # kubernetes.io/ingress.allow-http: "false"
     # kubernetes.io/ingress.global-static-ip-name: pipecd
 
-cors:
-  enabled: true
-  allowOrigins:
-    - "http://localhost:9090"
-
-# PipeCD workloads.
+# Workloads.
 gateway:
   replicasCount: 1
   imageTag: v1.10.0
@@ -34,7 +17,6 @@ gateway:
 
 api:
   replicasCount: 1
-  imageTag: ""
   args:
     cacheAddress: ""
     useFakeResponse: false
@@ -43,7 +25,6 @@ api:
 
 web:
   replicasCount: 1
-  imageTag: ""
   resources: {}
 
 cache:
@@ -52,7 +33,6 @@ cache:
   resources: {}
 
 operator:
-  imageTag: ""
   resources: {}
 
 mongodb:
@@ -103,5 +83,22 @@ secret:
   internalTLSCert:
     fileName: "internal-tls.cert"
     data: ""
+
+
+# Optional configuration for GKE.
+backendConfig:
+  enabled: false
+  iap:
+    enabled: false
+    secretName: pipecd-iap
+
+managedCertificate:
+  enabled: false
+  domains: []
+
+cors:
+  enabled: false
+  allowOrigins:
+    - "http://localhost:9090"
 
 quickstart: false

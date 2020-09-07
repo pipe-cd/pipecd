@@ -86,7 +86,7 @@ spec:
     spec:
       containers:
         - name: api
-          image: "gcr.io/pipecd/api:{{ .Values.api.imageTag | default .Chart.AppVersion }}"
+          image: "gcr.io/pipecd/api:{{ .Chart.AppVersion }}"
           imagePullPolicy: IfNotPresent
           args:
           - server
@@ -160,7 +160,7 @@ spec:
     spec:
       containers:
         - name: web
-          image: "gcr.io/pipecd/web:{{ .Values.web.imageTag | default .Chart.AppVersion }}"
+          image: "gcr.io/pipecd/web:{{ .Chart.AppVersion }}"
           imagePullPolicy: IfNotPresent
           args:
           - server
@@ -246,7 +246,7 @@ spec:
     spec:
       containers:
         - name: operator
-          image: "gcr.io/pipecd/operator:{{ .Values.operator.imageTag | default .Chart.AppVersion }}"
+          image: "gcr.io/pipecd/operator:{{ .Chart.AppVersion }}"
           imagePullPolicy: IfNotPresent
           args:
           - server
