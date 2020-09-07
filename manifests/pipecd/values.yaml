@@ -10,15 +10,13 @@ backendConfig:
 
 managedCertificate:
   enabled: false
+  domains: []
 
 ingress:
   enabled: false
   annotations: {}
     # kubernetes.io/ingress.allow-http: "false"
     # kubernetes.io/ingress.global-static-ip-name: pipecd
-  domains: []
-    # - api.pipecd.dev
-    # - dev.pipecd.dev
 
 cors:
   enabled: true
