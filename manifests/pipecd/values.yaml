@@ -6,7 +6,10 @@ service:
     cloud.google.com/app-protocols: '{"service":"HTTP2", "internal-service":"HTTP2"}'
 
 backendConfig:
-  enabled: true
+  enabled: false
+  iap:
+    enabled: false
+    secretName: pipecd-iap
 
 managedCertificate:
   enabled: false
@@ -93,6 +96,12 @@ secret:
     data: ""
   minioSecretKey:
     fileName: "minio-secret-key"
+    data: ""
+  internalTLSKey:
+    fileName: "internal-tls.key"
+    data: ""
+  internalTLSCert:
+    fileName: "internal-tls.cert"
     data: ""
 
 quickstart: false

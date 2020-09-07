@@ -48,11 +48,9 @@ spec:
           - name: envoy-config
             mountPath: /etc/envoy
             readOnly: true
-{{- if .Values.ingress.enabled }}
-          - name: certs
-            mountPath: /etc/ssl/envoy
+          - name: pipecd-secret
+            mountPath: {{ .Values.secret.mountPath }}
             readOnly: true
-{{- end }}
 {{- if .Values.gateway.resources }}
           resources:
             {{- toYaml .Values.gateway.resources | nindent 12 }}
@@ -61,11 +59,9 @@ spec:
         - name: envoy-config
           configMap:
             name: {{ include "pipecd.fullname" . }}-gateway-envoy-config
-{{- if .Values.ingress.enabled }}
-        - name: certs
+        - name: pipecd-secret
           secret:
-            secretName: internal-tls
-{{- end }}
+            secretName: {{ include "pipecd.secretName" . }}
 
 ---
 # API workload.

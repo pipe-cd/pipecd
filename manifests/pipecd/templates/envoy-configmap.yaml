@@ -85,9 +85,9 @@ data:
             common_tls_context:
               tls_certificates:
               - certificate_chain:
-                  filename: "/etc/ssl/envoy/tls.crt"
+                  filename: {{ .Values.secret.mountPath }}/{{ .Values.secret.internalTLSCert.fileName }}
                 private_key:
-                  filename: "/etc/ssl/envoy/tls.key"
+                  filename: {{ .Values.secret.mountPath }}/{{ .Values.secret.internalTLSKey.fileName }}
               alpn_protocols: h2
 {{- end }}
       clusters:
