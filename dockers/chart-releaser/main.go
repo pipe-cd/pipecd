@@ -41,6 +41,8 @@ var (
 	charts = []string{
 		"helloworld",
 		"piped",
+		"pipecd",
+		"site",
 	}
 )
 
