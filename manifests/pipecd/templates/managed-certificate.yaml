@@ -5,7 +5,7 @@ metadata:
   name: {{ include "pipecd.fullname" . }}
 spec:
   domains:
-  {{- range .Values.ingress.domains }}
+  {{- range .Values.managedCertificate.domains }}
   - {{ . }}
   {{- end }}
 {{- end }}
