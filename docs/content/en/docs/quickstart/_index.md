@@ -75,7 +75,7 @@ Open [`./quickstart/piped-config.yaml`](https://github.com/pipe-cd/pipe/blob/mas
 You can complete the installation by running the following after replacing `YOUR_PIPED_SECRET_KEY` with what you just got:
 
 ```bash
-helm install dev-piped ./manifests/piped \
+helm install piped ./manifests/piped \
   --set args.insecure=true \
   --set secret.pipedKey.data=YOUR_PIPED_SECRET_KEY \
   --set-file config.data=./quickstart/piped-config.yaml
