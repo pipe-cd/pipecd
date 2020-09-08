@@ -109,4 +109,6 @@ When you’re finished experimenting with PipeCD, you can uninstall with:
 ```bash
 helm uninstall piped
 helm uninstall pipecd
+kubectl delete deploy canary
+kubectl delete svc canary
 ```
