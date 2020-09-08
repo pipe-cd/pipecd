@@ -47,7 +47,7 @@ Enter the project name, username and password. Be sure to give the following:
 - Password: `hello-pipecd`
 
 ### 4. Adding an environment
-To add a new [Environment](http://localhost:1313/docs/concepts/#environment), go to the `Environment` tab at `Settings` page and click on the `Add` button to add a new environment to the project.
+Go to the `Environment` tab at `Settings` page and click on the `Add` button to add a new [Environment](http://localhost:1313/docs/concepts/#environment) to the project.
 
 Then you give the environment name and its description as shown below:
 
