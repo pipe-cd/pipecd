@@ -12,6 +12,7 @@ import {
   Typography,
 } from "@material-ui/core";
 import EditIcon from "@material-ui/icons/Edit";
+import clsx from "clsx";
 import React, { FC, memo, useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import { BUTTON_TEXT_CANCEL, BUTTON_TEXT_SAVE } from "../constants/button-text";
@@ -42,6 +43,9 @@ const useStyles = makeStyles((theme) => ({
   },
   values: {
     padding: theme.spacing(3),
+  },
+  disabled: {
+    opacity: 0.5,
   },
 }));
 
@@ -102,7 +106,10 @@ export const StaticAdminForm: FC = memo(function StaticAdminForm() {
       <div className={classes.title}>
         <Typography variant="h5" className={classes.titleWithIcon}>
           {SECTION_TITLE}
-          <IconButton onClick={() => setIsEdit(true)}>
+          <IconButton
+            onClick={() => setIsEdit(true)}
+            disabled={isEnabled === false}
+          >
             <EditIcon />
           </IconButton>
         </Typography>
@@ -119,7 +126,11 @@ export const StaticAdminForm: FC = memo(function StaticAdminForm() {
         {STATIC_ADMIN_DESCRIPTION}
       </Typography>
 
-      <div className={classes.values}>
+      <div
+        className={clsx(classes.values, {
+          [classes.disabled]: isEnabled === false,
+        })}
+      >
         {currentUsername === null ? (
           <CircularProgress />
         ) : (
