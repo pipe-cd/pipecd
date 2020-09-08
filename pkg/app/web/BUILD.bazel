@@ -78,6 +78,21 @@ tsc(
     output_dir = True,
 )
 
+genrule(
+    name = "copy_assets",
+    srcs = glob(["assets/**/*"]),
+    outs = ["assets"],
+    cmd = """
+    mkdir $(OUTS)
+    for f in $(SRCS)
+    do
+        cp $$f $(OUTS)/
+    done
+    """,
+    output_to_bindir = 1,
+    visibility = ["//visibility:public"],
+)
+
 webpack(
     name = "public_files",
     args = [
@@ -95,6 +110,7 @@ webpack(
         "api_client",
         "base.html",
         "compile",
+        "copy_assets",
         "model",
         "webpack.common.js",
         "webpack.config.js",
