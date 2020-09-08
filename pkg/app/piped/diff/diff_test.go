@@ -16,6 +16,7 @@ package diff
 
 import (
 	"io/ioutil"
+	"reflect"
 	"strings"
 	"testing"
 
@@ -125,4 +126,52 @@ func loadUnstructureds(path string) ([]unstructured.Unstructured, error) {
 		out = append(out, obj)
 	}
 	return out, nil
+}
+
+func TestIsEmptyInterface(t *testing.T) {
+	testcases := []struct {
+		name     string
+		v        interface{}
+		expected bool
+	}{
+		{
+			name:     "nil",
+			v:        nil,
+			expected: true,
+		},
+		{
+			name:     "nil map",
+			v:        map[string]int(nil),
+			expected: true,
+		},
+		{
+			name:     "empty map",
+			v:        map[string]int{},
+			expected: true,
+		},
+		{
+			name:     "nil slice",
+			v:        []int(nil),
+			expected: true,
+		},
+		{
+			name:     "empty slice",
+			v:        []int{},
+			expected: true,
+		},
+		{
+			name:     "number",
+			v:        1,
+			expected: false,
+		},
+	}
+	for _, tc := range testcases {
+		t.Run(tc.name, func(t *testing.T) {
+			s := []interface{}{tc.v}
+			v := reflect.ValueOf(s)
+
+			got := isEmptyInterface(v.Index(0))
+			assert.Equal(t, tc.expected, got)
+		})
+	}
 }
