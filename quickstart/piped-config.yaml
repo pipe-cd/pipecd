@@ -7,9 +7,5 @@ spec:
   syncInterval: 1m
   repositories:
     - repoId: examples
-      remote: git@github.com:YOUR_USERNAME/examples.git
+      remote: https://github.com/YOUR_USERNAME/examples.git
       branch: master
-  cloudProviders:
-    - name: kubernetes-default
-      type: KUBERNETES
-

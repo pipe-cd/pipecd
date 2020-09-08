@@ -3,6 +3,7 @@ args:
   metrics: true
   useFakeAPI: false
   enableDefaultKubernetesCloudProvider: true
+  insecure: false
 
 service:
   enabled: true
