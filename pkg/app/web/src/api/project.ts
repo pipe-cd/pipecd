@@ -1,45 +1,38 @@
-import { apiClient, apiRequest } from "./client";
 import {
-  GetProjectRequest,
-  GetProjectResponse,
-  UpdateProjectStaticAdminRequest,
-  UpdateProjectStaticAdminResponse,
-  UpdateProjectSSOConfigRequest,
-  UpdateProjectSSOConfigResponse,
-  UpdateProjectRBACConfigRequest,
-  UpdateProjectRBACConfigResponse,
-  EnableStaticAdminRequest,
-  EnableStaticAdminResponse,
   DisableStaticAdminRequest,
   DisableStaticAdminResponse,
+  EnableStaticAdminRequest,
+  EnableStaticAdminResponse,
+  GetProjectRequest,
+  GetProjectResponse,
+  UpdateProjectRBACConfigRequest,
+  UpdateProjectRBACConfigResponse,
+  UpdateProjectSSOConfigRequest,
+  UpdateProjectSSOConfigResponse,
+  UpdateProjectStaticAdminRequest,
+  UpdateProjectStaticAdminResponse,
 } from "pipe/pkg/app/web/api_client/service_pb";
 import {
-  ProjectSSOConfig,
   ProjectRBACConfig,
+  ProjectSSOConfig,
 } from "pipe/pkg/app/web/model/project_pb";
+import { apiClient, apiRequest } from "./client";
 
 export const getProject = (): Promise<GetProjectResponse.AsObject> => {
   const req = new GetProjectRequest();
   return apiRequest(req, apiClient.getProject);
 };
 
-export const updateStaticAdminPassword = ({
+export const updateStaticAdmin = ({
+  username,
   password,
 }: {
-  password: string;
+  username?: string;
+  password?: string;
 }): Promise<UpdateProjectStaticAdminResponse.AsObject> => {
   const req = new UpdateProjectStaticAdminRequest();
-  req.setPassword(password);
-  return apiRequest(req, apiClient.updateProjectStaticAdmin);
-};
-
-export const updateStaticAdminUsername = ({
-  username,
-}: {
-  username: string;
-}): Promise<UpdateProjectStaticAdminResponse.AsObject> => {
-  const req = new UpdateProjectStaticAdminRequest();
-  req.setUsername(username);
+  username && req.setUsername(username);
+  password && req.setPassword(password);
   return apiRequest(req, apiClient.updateProjectStaticAdmin);
 };
 

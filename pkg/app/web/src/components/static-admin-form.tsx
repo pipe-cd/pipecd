@@ -1,154 +1,179 @@
 import {
   Button,
   CircularProgress,
-  FormControl,
-  InputAdornment,
-  InputLabel,
+  Dialog,
+  DialogActions,
+  DialogContent,
+  DialogTitle,
+  IconButton,
   makeStyles,
-  OutlinedInput,
+  Switch,
+  TextField,
   Typography,
 } from "@material-ui/core";
+import EditIcon from "@material-ui/icons/Edit";
 import React, { FC, memo, useState } from "react";
-import { useStyles as useButtonStyles } from "../styles/button";
+import { useDispatch, useSelector } from "react-redux";
+import { BUTTON_TEXT_CANCEL, BUTTON_TEXT_SAVE } from "../constants/button-text";
+import { STATIC_ADMIN_DESCRIPTION } from "../constants/text";
+import {
+  UPDATE_STATIC_ADMIN_INFO_FAILED,
+  UPDATE_STATIC_ADMIN_INFO_SUCCESS,
+} from "../constants/toast-text";
+import { AppState } from "../modules";
+import {
+  fetchProject,
+  toggleAvailability,
+  updateStaticAdmin,
+} from "../modules/project";
+import { addToast } from "../modules/toasts";
+import { AppDispatch } from "../store";
+import { ProjectSettingLabeledText } from "./project-setting-labeled-text";
 
 const useStyles = makeStyles((theme) => ({
-  main: {
-    overflow: "auto",
+  title: {
+    display: "flex",
+    alignItems: "center",
+    justifyContent: "space-between",
+  },
+  titleWithIcon: {
+    display: "flex",
+    alignItems: "center",
+  },
+  values: {
     padding: theme.spacing(3),
-    background: theme.palette.background.paper,
-  },
-  group: {
-    padding: theme.spacing(1),
-  },
-  titleMargin: {
-    marginTop: theme.spacing(2),
   },
 }));
 
-interface Props {
-  username: string | null;
-  isUpdatingUsername: boolean;
-  isUpdatingPassword: boolean;
-  staticAdminDisabled: boolean;
-  onUpdateUsername: (username: string) => void;
-  onUpdatePassword: (password: string) => Promise<unknown>;
-  onToggleAvailability: () => void;
-}
+const SECTION_TITLE = "Static Admin";
+const DIALOG_TITLE = `Edit ${SECTION_TITLE}`;
 
-export const StaticAdminForm: FC<Props> = memo(function StaticAdminForm({
-  username,
-  isUpdatingUsername,
-  isUpdatingPassword,
-  staticAdminDisabled,
-  onUpdatePassword,
-  onUpdateUsername,
-  onToggleAvailability,
-}) {
+export const StaticAdminForm: FC = memo(function StaticAdminForm() {
   const classes = useStyles();
-  const buttonClasses = useButtonStyles();
-  const [usernameState, setUsernameState] = useState(username || "");
+  const dispatch = useDispatch<AppDispatch>();
+  const [isEnabled, currentUsername] = useSelector<
+    AppState,
+    [boolean, string | null]
+  >((state) => [
+    state.project.staticAdminDisabled === false,
+    state.project.username,
+  ]);
+  const [isEdit, setIsEdit] = useState(false);
+  const [username, setUsername] = useState("");
   const [password, setPassword] = useState("");
+
+  const handleClose = (): void => {
+    setIsEdit(false);
+  };
+
+  const handleToggleAvailability = (): void => {
+    dispatch(toggleAvailability()).then(() => {
+      dispatch(fetchProject());
+    });
+  };
+
+  const handleSave = (e: React.FormEvent<HTMLFormElement>): void => {
+    e.preventDefault();
+    dispatch(updateStaticAdmin({ username, password })).then((result) => {
+      if (updateStaticAdmin.rejected.match(result)) {
+        dispatch(
+          addToast({
+            message: UPDATE_STATIC_ADMIN_INFO_FAILED,
+            severity: "error",
+          })
+        );
+      } else {
+        dispatch(fetchProject());
+        dispatch(
+          addToast({
+            message: UPDATE_STATIC_ADMIN_INFO_SUCCESS,
+            severity: "success",
+          })
+        );
+      }
+    });
+    setIsEdit(false);
+  };
+
+  const isInvalidValues = username === "" || password === "";
 
   return (
     <>
-      <Typography variant="h5">Static Admin User</Typography>
-      <div className={classes.group}>
-        <Typography variant="subtitle1">
-          Status: {staticAdminDisabled ? "Disabled" : "Enabled"}
+      <div className={classes.title}>
+        <Typography variant="h5" className={classes.titleWithIcon}>
+          {SECTION_TITLE}
+          <IconButton onClick={() => setIsEdit(true)}>
+            <EditIcon />
+          </IconButton>
         </Typography>
-        <Button
+
+        <Switch
+          checked={isEnabled}
           color="primary"
-          variant="contained"
-          onClick={onToggleAvailability}
-        >
-          {staticAdminDisabled ? "Enable" : "Disable"}
-        </Button>
-
-        <Typography variant="h6" className={classes.titleMargin}>
-          Change username
-        </Typography>
-
-        <Typography variant="body2">Current username: {username}</Typography>
-
-        <FormControl variant="outlined" margin="dense">
-          <InputLabel htmlFor="outlined-adornment-username">
-            Username
-          </InputLabel>
-          <OutlinedInput
-            id="outlined-adornment-username"
-            type="text"
-            labelWidth={70}
-            value={usernameState || ""}
-            onChange={(e) => setUsernameState(e.target.value)}
-            endAdornment={
-              <InputAdornment position="end">
-                <Button
-                  color="primary"
-                  disabled={
-                    !usernameState ||
-                    usernameState === username ||
-                    isUpdatingUsername
-                  }
-                  onClick={() => {
-                    if (usernameState) {
-                      onUpdateUsername(usernameState);
-                    }
-                  }}
-                >
-                  Update
-                  {isUpdatingUsername && (
-                    <CircularProgress
-                      size={24}
-                      className={buttonClasses.progress}
-                    />
-                  )}
-                </Button>
-              </InputAdornment>
-            }
-          />
-        </FormControl>
-
-        <Typography variant="h6" className={classes.titleMargin}>
-          Change password
-        </Typography>
-
-        <form>
-          <FormControl variant="outlined" margin="dense">
-            <InputLabel htmlFor="outlined-adornment-password">
-              Password
-            </InputLabel>
-            <OutlinedInput
-              id="outlined-adornment-password"
-              type="password"
-              labelWidth={70}
-              value={password}
-              onChange={(e) => setPassword(e.target.value)}
-              autoComplete="new-password"
-              endAdornment={
-                <InputAdornment position="end">
-                  <Button
-                    color="primary"
-                    disabled={!password || isUpdatingPassword}
-                    onClick={() => {
-                      onUpdatePassword(password).then(() => {
-                        setPassword("");
-                      });
-                    }}
-                  >
-                    Update
-                    {isUpdatingPassword && (
-                      <CircularProgress
-                        size={24}
-                        className={buttonClasses.progress}
-                      />
-                    )}
-                  </Button>
-                </InputAdornment>
-              }
-            />
-          </FormControl>
-        </form>
+          onClick={handleToggleAvailability}
+          disabled={currentUsername === null}
+        />
       </div>
+
+      <Typography variant="body1" color="textSecondary">
+        {STATIC_ADMIN_DESCRIPTION}
+      </Typography>
+
+      <div className={classes.values}>
+        {currentUsername === null ? (
+          <CircularProgress />
+        ) : (
+          <>
+            <ProjectSettingLabeledText
+              label="Username"
+              value={currentUsername}
+            />
+            <ProjectSettingLabeledText label="Password" value="********" />
+          </>
+        )}
+      </div>
+
+      <Dialog
+        open={isEdit}
+        onEnter={() => {
+          setUsername(currentUsername || "");
+          setPassword("");
+        }}
+        onClose={handleClose}
+      >
+        <form onSubmit={handleSave}>
+          <DialogTitle>{DIALOG_TITLE}</DialogTitle>
+          <DialogContent>
+            <TextField
+              value={username}
+              variant="outlined"
+              margin="dense"
+              label="Username"
+              fullWidth
+              required
+              autoFocus
+              onChange={(e) => setUsername(e.currentTarget.value)}
+            />
+            <TextField
+              value={password}
+              autoComplete="new-password"
+              variant="outlined"
+              margin="dense"
+              label="Password"
+              type="password"
+              fullWidth
+              required
+              onChange={(e) => setPassword(e.currentTarget.value)}
+            />
+          </DialogContent>
+          <DialogActions>
+            <Button onClick={handleClose}>{BUTTON_TEXT_CANCEL}</Button>
+            <Button type="submit" color="primary" disabled={isInvalidValues}>
+              {BUTTON_TEXT_SAVE}
+            </Button>
+          </DialogActions>
+        </form>
+      </Dialog>
     </>
   );
 });

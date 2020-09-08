@@ -1,10 +1,10 @@
-import { createSlice, createAsyncThunk } from "@reduxjs/toolkit";
+import { createAsyncThunk, createSlice } from "@reduxjs/toolkit";
+import {
+  ProjectRBACConfig,
+  ProjectSSOConfig,
+} from "pipe/pkg/app/web/model/project_pb";
 import * as projectAPI from "../api/project";
 import { AppState } from "./";
-import {
-  ProjectSSOConfig,
-  ProjectRBACConfig,
-} from "pipe/pkg/app/web/model/project_pb";
 
 export type GitHubSSO = ProjectSSOConfig.GitHub.AsObject;
 export type Teams = ProjectRBACConfig.AsObject;
@@ -16,8 +16,7 @@ export interface ProjectState {
   teams: Teams | null;
   github: GitHubSSO | null;
   staticAdminDisabled: boolean;
-  isUpdatingPassword: boolean;
-  isUpdatingUsername: boolean;
+  isUpdatingStaticAdmin: boolean;
   isUpdatingGitHubSSO: boolean;
 }
 
@@ -28,8 +27,7 @@ const initialState: ProjectState = {
   teams: null,
   github: null,
   staticAdminDisabled: false,
-  isUpdatingPassword: false,
-  isUpdatingUsername: false,
+  isUpdatingStaticAdmin: false,
   isUpdatingGitHubSSO: false,
 };
 
@@ -64,18 +62,12 @@ export const fetchProject = createAsyncThunk<{
   };
 });
 
-export const updateUsername = createAsyncThunk<void, { username: string }>(
-  "project/updateUsername",
-  async ({ username }) => {
-    await projectAPI.updateStaticAdminUsername({ username });
-  }
-);
-export const updatePassword = createAsyncThunk<void, { password: string }>(
-  "project/updatePassword",
-  async ({ password }) => {
-    await projectAPI.updateStaticAdminPassword({ password });
-  }
-);
+export const updateStaticAdmin = createAsyncThunk<
+  void,
+  { username?: string; password?: string }
+>("project/updateStaticAdmin", async (params) => {
+  await projectAPI.updateStaticAdmin(params);
+});
 
 export const toggleAvailability = createAsyncThunk<
   void,
@@ -128,25 +120,15 @@ export const projectSlice = createSlice({
       .addCase(fetchProject.rejected, (_, action) => {
         console.log(action);
       })
-      .addCase(updateUsername.pending, (state) => {
-        state.isUpdatingUsername = true;
+      .addCase(updateStaticAdmin.pending, (state) => {
+        state.isUpdatingStaticAdmin = true;
       })
-      .addCase(updateUsername.fulfilled, (state) => {
-        state.isUpdatingUsername = false;
+      .addCase(updateStaticAdmin.fulfilled, (state) => {
+        state.isUpdatingStaticAdmin = false;
       })
-      .addCase(updateUsername.rejected, (state, action) => {
+      .addCase(updateStaticAdmin.rejected, (state, action) => {
         console.error(action);
-        state.isUpdatingUsername = false;
-      })
-      .addCase(updatePassword.pending, (state) => {
-        state.isUpdatingPassword = true;
-      })
-      .addCase(updatePassword.fulfilled, (state) => {
-        state.isUpdatingPassword = false;
-      })
-      .addCase(updatePassword.rejected, (state, action) => {
-        console.error(action);
-        state.isUpdatingPassword = false;
+        state.isUpdatingStaticAdmin = false;
       })
       .addCase(updateGitHubSSO.pending, (state) => {
         state.isUpdatingGitHubSSO = true;
