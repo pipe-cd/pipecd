@@ -167,6 +167,10 @@ func (d *differ) diffMap(path []PathStep, vx, vy reflect.Value) error {
 }
 
 func (d *differ) diffInterface(path []PathStep, vx, vy reflect.Value) error {
+	if isEmptyInterface(vx) && isEmptyInterface(vy) {
+		return nil
+	}
+
 	if vx.IsNil() || vy.IsNil() {
 		d.result.addNode(path, vx.Type(), vy.Type(), vx, vy)
 		return nil
@@ -199,6 +203,24 @@ func (d *differ) diffNumber(path []PathStep, vx, vy reflect.Value) error {
 
 	d.result.addNode(path, vx.Type(), vy.Type(), vx, vy)
 	return nil
+}
+
+// isEmptyInterface reports whether v is nil or zero value or its element is an empty map, an empty slice.
+func isEmptyInterface(v reflect.Value) bool {
+	if !v.IsValid() || v.IsNil() || v.IsZero() {
+		return true
+	}
+	if v.Kind() != reflect.Interface {
+		return false
+	}
+
+	e := v.Elem()
+	switch e.Kind() {
+	case reflect.Array, reflect.Slice, reflect.Map:
+		return e.Len() == 0
+	default:
+		return false
+	}
 }
 
 func floatNumber(v reflect.Value) float64 {
