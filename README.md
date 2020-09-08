@@ -1,6 +1,14 @@
-# PipeCD
+<p align="center">
+  <img src="https://github.com/pipe-cd/pipe/blob/master/docs/static/images/logo.png" width="140"/>
+</p>
 
-Continuous Delivery for Declarative Kubernetes, Serverless Application and Infrastructure
+<p align="center">
+  Continuous Delivery for Declarative Kubernetes, Serverless Application and Infrastructure
+  <br/>
+  <a href="https://pipecd.dev"><strong>Explore PipeCD docs »</strong></a>
+</p>
+
+#
 
 ## Proposal
 
