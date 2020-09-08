@@ -19,14 +19,19 @@ import {
   PAGE_PATH_SETTINGS,
   PAGE_PATH_LOGIN,
   LOGOUT_ENDPOINT,
+  PAGE_PATH_TOP,
 } from "../constants";
 import { NavLink as RouterLink } from "react-router-dom";
 import { useMe } from "../modules/me";
 import ArrowDownIcon from "@material-ui/icons/ArrowDropDown";
+import logo from "../../assets/logo.svg";
 
 const useStyles = makeStyles((theme) => ({
   appBar: {
     zIndex: theme.zIndex.drawer + 1,
+  },
+  logo: {
+    height: 56,
   },
   left: {
     flexGrow: 1,
@@ -71,8 +76,13 @@ export const Header: FC = memo(function Header() {
     <AppBar position="static" className={classes.appBar}>
       <Toolbar variant="dense">
         <div className={classes.left}>
-          <Avatar className={classes.appIcon}>P</Avatar>
-          <Typography variant="h6">{APP_NAME}</Typography>
+          <Link
+            component={RouterLink}
+            to={PAGE_PATH_TOP}
+            className={classes.logo}
+          >
+            <img className={classes.logo} src={logo} alt={APP_NAME}></img>
+          </Link>
           {me?.isLogin && (
             <Button
               color="inherit"

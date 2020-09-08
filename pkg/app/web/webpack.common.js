@@ -7,7 +7,7 @@ module.exports = (_, argv) => {
     output: {
       filename: "assets/[name].[contenthash:9].js",
       chunkFilename: "assets/[name].[contenthash:9].chunk.js",
-      publicPath: "/"
+      publicPath: "/",
     },
     optimization: {
       splitChunks: {
@@ -16,10 +16,10 @@ module.exports = (_, argv) => {
         maxAsyncRequests: 20, // for HTTP2
         cacheGroups: {
           service: {
-            test: /[\\/]service/
-          }
-        }
-      }
+            test: /[\\/]service/,
+          },
+        },
+      },
     },
     module: {
       rules: [
@@ -32,18 +32,18 @@ module.exports = (_, argv) => {
                 return "[name].[ext]";
               }
 
-              return "[name].[hash:8].[ext]";
-            }
-          }
-        }
-      ]
+              return "assets/[name].[hash:8].[ext]";
+            },
+          },
+        },
+      ],
     },
     plugins: [
       argv.htmlTemplate &&
         new HtmlWebpackPlugin({
           filename: "index.html",
-          template: argv.htmlTemplate
-        })
-    ].filter(Boolean)
+          template: argv.htmlTemplate,
+        }),
+    ].filter(Boolean),
   };
 };
