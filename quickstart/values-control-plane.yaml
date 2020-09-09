@@ -17,7 +17,7 @@ config:
           bucket: quickstart
           accessKeyFile: /etc/pipecd-secret/minio-access-key
           secretKeyFile: /etc/pipecd-secret/minio-secret-key
-          makeBucket: true
+          autoCreateBucket: true
       projects:
         - id: quickstart
           staticAdmin:
