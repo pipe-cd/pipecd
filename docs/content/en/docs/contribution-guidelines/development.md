@@ -28,10 +28,10 @@ or directly install its [binary](https://github.com/bazelbuild/bazelisk/releases
 - `make build`: builds all binaries in tree.
 - `make test`: runs all unit tests.
 - `make dep`: updates `go.mod` and bazel `WORKSPACE`. Run this command after adding a new go dependency or update the version of a dependency.
-- `make gazelle`: generates `BUILD.bazel` files for go code. Run this command after adding a new `import` in go code.
+- `make gazelle`: generates `BUILD.bazel` files for go code. Run this command after adding a new `import` in go code or adding a new go file.
 - `make buildifier`: formats bazel BUILD and .bzl files with a standard convention.
 - `make clean`: cleans all bazel cache.
 - `make expose-generated-go`: exposes generated Go files (`.pb.go`, `.mock.go`...) to editors and IDEs.
-- `make site`: runs website locally.
+- `make site`: runs PipeCD site (https://pipecd.dev) locally.
 
 **NOTE**: The first time of running a bazel command will take some minutes because bazel needs to download all required dependencies. From the second time it will be very fast.
