@@ -18,7 +18,7 @@ spec:
 
 | Field | Type | Description | Required |
 |-|-|-|-|
-| apiURL | string | The address of control-plane api | Yes |
+| address | string | The address of control-plane api | Yes |
 | stateKey | string | A randomly generated string used to sign oauth state | Yes |
 | dataStore | [DataStore](/docs/operator-manual/control-plane/configuration-reference/#datastore) | Storage for storing application, deployment data | Yes |
 | fileStore | [FileStore](/docs/operator-manual/control-plane/configuration-reference/#filestore) | File storage for storing deployment logs and application states | Yes |
