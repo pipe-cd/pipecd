@@ -47,6 +47,7 @@ func WithLogger(logger *zap.Logger) Option {
 	}
 }
 
+// NewStore generates a minio client with the given params
 func NewStore(endpoint, bucket, accessKeyFile, secretKeyFile string, opts ...Option) (*Store, error) {
 	s := &Store{
 		bucket: bucket,
@@ -81,7 +82,21 @@ func NewStore(endpoint, bucket, accessKeyFile, secretKeyFile string, opts ...Opt
 		return nil, err
 	}
 	s.client = client
+
 	return s, nil
+}
+
+// EnsureBucket makes the bucket if not exists.
+func (s *Store) EnsureBucket(ctx context.Context) error {
+	exists, err := s.client.BucketExists(ctx, s.bucket)
+	if err != nil {
+		return fmt.Errorf("failed to check if bucket exists: %w", err)
+	}
+	if exists {
+		return nil
+	}
+
+	return s.client.MakeBucket(ctx, s.bucket, minio.MakeBucketOptions{})
 }
 
 func (s *Store) NewReader(ctx context.Context, path string) (rc io.ReadCloser, err error) {

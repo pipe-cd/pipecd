@@ -280,4 +280,6 @@ type FileStoreMinioConfig struct {
 	AccessKeyFile string `json:"accessKeyFile"`
 	// The path to the secret key file.
 	SecretKeyFile string `json:"secretKeyFile"`
+	// The given bucket is made automatically if not exists.
+	AutoCreateBucket bool `json:"autoCreateBucket"`
 }
