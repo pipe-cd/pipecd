@@ -26,7 +26,7 @@ cd manifests
 ### 2. Installing control plane
 
 ```bash
-helm install pipecd ./manifests/pipecd --values ./quickstart/values-control-plane.yaml
+helm install pipecd ./manifests/pipecd --values ./quickstart/control-plane-values.yaml
 ```
 
 ### 3. Accessing the PipeCD web
@@ -68,7 +68,7 @@ Be sure to keep a copy for later use.
 
 
 
-Open [`./quickstart/values-piped.yaml`](https://github.com/pipe-cd/manifests/blob/master/quickstart/values-piped.yaml) with your editor and:
+Open [`./quickstart/piped-values.yaml`](https://github.com/pipe-cd/manifests/blob/master/quickstart/piped-values.yaml) with your editor and:
 - replace `FORKED_REPO_URL` with forked repository of [Examples](https://github.com/pipe-cd/examples), such as `https://github.com/YOUR_ORG/examples.git`
 - replace `YOUR_PIPED_ID` with the piped-id you have copied before
 
@@ -76,7 +76,7 @@ You can complete the installation by running the following after replacing `YOUR
 
 ```bash
 helm install piped ./manifests/piped \
-  --values ./quickstart/values-piped.yaml \
+  --values ./quickstart/piped-values.yaml \
   --set secret.pipedKey.data=YOUR_PIPED_SECRET_KEY
 ```
 
