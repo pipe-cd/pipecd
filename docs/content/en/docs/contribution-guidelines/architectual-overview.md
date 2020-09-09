@@ -6,8 +6,6 @@ description: >
   This page describes the architecture of PipeCD.
 ---
 
-> TBA
-
 ![](/images/architecture-overview.png)
 <p style="text-align: center;">
 Component Architecture
@@ -25,8 +23,12 @@ A centralized component that manages deployment data and provides gPRC API for c
 authentication, showing deployment list/details, application list/details, delivery insights...
 
 Control Plane contains the following components:
-- `api`: A service to provide api for external service like web and hook requests.
-- `web`: A service for serving static files for web.
-- `cache`: A redis cache service for caching internal data.
-- `datastore`: Data storage for storing deployment, application data. This can be a fully-managed service such as `Firestore`, `DynamoDB`... or a self-managed such as `MongoDB`.
-- `filestore`: File storage for storing logs, application states. This can a fully-managed service such as `GCS`, `S3`... or a self-managed service such as `Minio`.
+- `api`: a service to provide api for piped, web and hook requests.
+- `web`: a service to serve static files for web.
+- `cache`: a redis cache service for caching internal data.
+- `datastore`: data storage for storing deployment, application data
+  - this can be a fully-managed service such as `Firestore`, `DynamoDB`...
+  - or a self-managed such as `MongoDB`
+- `filestore`: file storage for storing logs, application states
+  - this can a fully-managed service such as `GCS`, `S3`...
+  - or a self-managed service such as `Minio`
