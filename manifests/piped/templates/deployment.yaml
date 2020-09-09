@@ -30,6 +30,7 @@ spec:
           - --control-plane-address={{ .Values.args.address }}
           - --use-fake-api-client={{ .Values.args.useFakeAPI }}
           - --enable-default-kubernetes-cloud-provider={{ .Values.args.enableDefaultKubernetesCloudProvider }}
+          - --insecure={{ .Values.args.insecure }}
           ports:
             - name: admin
               containerPort: 9085
