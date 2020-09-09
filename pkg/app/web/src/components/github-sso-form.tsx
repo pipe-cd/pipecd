@@ -28,12 +28,20 @@ const useStyles = makeStyles((theme) => ({
     alignItems: "center",
     justifyContent: "space-between",
   },
+  description: {
+    paddingRight: theme.spacing(6),
+  },
   titleWithIcon: {
     display: "flex",
     alignItems: "center",
   },
+  valuesWrapper: {
+    padding: theme.spacing(1),
+    display: "flex",
+    justifyContent: "space-between",
+  },
   values: {
-    padding: theme.spacing(3),
+    padding: theme.spacing(2),
   },
   indent: {
     padding: theme.spacing(1),
@@ -111,26 +119,38 @@ export const GithubSSOForm: FC = memo(function GithubSSOForm() {
       <div className={classes.title}>
         <Typography variant="h5" className={classes.titleWithIcon}>
           {SECTION_TITLE}
-          <IconButton onClick={() => setIsEdit(true)}>
-            <EditIcon />
-          </IconButton>
         </Typography>
       </div>
 
-      <Typography variant="body1" color="textSecondary">
+      <Typography
+        variant="body1"
+        color="textSecondary"
+        className={classes.description}
+      >
         {SSO_DESCRIPTION}
       </Typography>
 
-      <div className={classes.values}>
+      <div className={classes.valuesWrapper}>
         {sso ? (
           <>
-            <ProjectSettingLabeledText label="Client ID" value="********" />
-            <ProjectSettingLabeledText label="Client Secret" value="********" />
-            <ProjectSettingLabeledText label="Base URL" value={sso.baseUrl} />
-            <ProjectSettingLabeledText
-              label="Upload URL"
-              value={sso.uploadUrl}
-            />
+            <div className={classes.values}>
+              <ProjectSettingLabeledText label="Client ID" value="********" />
+              <ProjectSettingLabeledText
+                label="Client Secret"
+                value="********"
+              />
+              <ProjectSettingLabeledText label="Base URL" value={sso.baseUrl} />
+              <ProjectSettingLabeledText
+                label="Upload URL"
+                value={sso.uploadUrl}
+              />
+            </div>
+
+            <div>
+              <IconButton onClick={() => setIsEdit(true)}>
+                <EditIcon />
+              </IconButton>
+            </div>
           </>
         ) : (
           <CircularProgress />

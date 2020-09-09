@@ -37,12 +37,20 @@ const useStyles = makeStyles((theme) => ({
     alignItems: "center",
     justifyContent: "space-between",
   },
+  description: {
+    paddingRight: theme.spacing(6),
+  },
   titleWithIcon: {
     display: "flex",
     alignItems: "center",
   },
+  valuesWrapper: {
+    padding: theme.spacing(1),
+    display: "flex",
+    justifyContent: "space-between",
+  },
   values: {
-    padding: theme.spacing(3),
+    padding: theme.spacing(2),
   },
   disabled: {
     opacity: 0.5,
@@ -106,12 +114,6 @@ export const StaticAdminForm: FC = memo(function StaticAdminForm() {
       <div className={classes.title}>
         <Typography variant="h5" className={classes.titleWithIcon}>
           {SECTION_TITLE}
-          <IconButton
-            onClick={() => setIsEdit(true)}
-            disabled={isEnabled === false}
-          >
-            <EditIcon />
-          </IconButton>
         </Typography>
 
         <Switch
@@ -122,12 +124,16 @@ export const StaticAdminForm: FC = memo(function StaticAdminForm() {
         />
       </div>
 
-      <Typography variant="body1" color="textSecondary">
+      <Typography
+        variant="body1"
+        color="textSecondary"
+        className={classes.description}
+      >
         {STATIC_ADMIN_DESCRIPTION}
       </Typography>
 
       <div
-        className={clsx(classes.values, {
+        className={clsx(classes.valuesWrapper, {
           [classes.disabled]: isEnabled === false,
         })}
       >
@@ -135,11 +141,21 @@ export const StaticAdminForm: FC = memo(function StaticAdminForm() {
           <CircularProgress />
         ) : (
           <>
-            <ProjectSettingLabeledText
-              label="Username"
-              value={currentUsername}
-            />
-            <ProjectSettingLabeledText label="Password" value="********" />
+            <div className={classes.values}>
+              <ProjectSettingLabeledText
+                label="Username"
+                value={currentUsername}
+              />
+              <ProjectSettingLabeledText label="Password" value="********" />
+            </div>
+            <div>
+              <IconButton
+                onClick={() => setIsEdit(true)}
+                disabled={isEnabled === false}
+              >
+                <EditIcon />
+              </IconButton>
+            </div>
           </>
         )}
       </div>
