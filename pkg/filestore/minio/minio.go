@@ -47,8 +47,8 @@ func WithLogger(logger *zap.Logger) Option {
 	}
 }
 
-// NewStore generates a minio client with the given params. Specify makeBucket, then it makes the given bucket if not exists.
-func NewStore(ctx context.Context, endpoint, bucket, accessKeyFile, secretKeyFile string, makeBucket bool, opts ...Option) (*Store, error) {
+// NewStore generates a minio client with the given params
+func NewStore(endpoint, bucket, accessKeyFile, secretKeyFile string, opts ...Option) (*Store, error) {
 	s := &Store{
 		bucket: bucket,
 		logger: zap.NewNop(),
@@ -83,19 +83,20 @@ func NewStore(ctx context.Context, endpoint, bucket, accessKeyFile, secretKeyFil
 	}
 	s.client = client
 
-	if makeBucket {
-		exists, err := s.client.BucketExists(ctx, bucket)
-		if err != nil {
-			return nil, fmt.Errorf("failed to check if bucket exists: %w", err)
-		}
-		if !exists {
-			if err := s.client.MakeBucket(ctx, bucket, minio.MakeBucketOptions{}); err != nil {
-				return nil, fmt.Errorf("failed to make bucket: %w", err)
-			}
-		}
+	return s, nil
+}
+
+// EnsureBucket makes the bucket if not exists.
+func (s *Store) EnsureBucket(ctx context.Context) error {
+	exists, err := s.client.BucketExists(ctx, s.bucket)
+	if err != nil {
+		return fmt.Errorf("failed to check if bucket exists: %w", err)
+	}
+	if exists {
+		return nil
 	}
 
-	return s, nil
+	return s.client.MakeBucket(ctx, s.bucket, minio.MakeBucketOptions{})
 }
 
 func (s *Store) NewReader(ctx context.Context, path string) (rc io.ReadCloser, err error) {

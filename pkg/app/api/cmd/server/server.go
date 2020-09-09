@@ -366,7 +366,16 @@ func (s *server) createFilestore(ctx context.Context, cfg *config.ControlPlaneSp
 		options := []minio.Option{
 			minio.WithLogger(logger),
 		}
-		return minio.NewStore(ctx, minioCfg.Endpoint, minioCfg.Bucket, minioCfg.AccessKeyFile, minioCfg.SecretKeyFile, minioCfg.MakeBucket, options...)
+		s, err := minio.NewStore(minioCfg.Endpoint, minioCfg.Bucket, minioCfg.AccessKeyFile, minioCfg.SecretKeyFile, options...)
+		if err != nil {
+			return nil, fmt.Errorf("failed to generate minio store: %w", err)
+		}
+		if minioCfg.AutoCreateBucket {
+			if err := s.EnsureBucket(ctx); err != nil {
+				return nil, fmt.Errorf("failed to ensure bucket: %w", err)
+			}
+		}
+		return s, nil
 	default:
 		return nil, fmt.Errorf("unknown filestore type %q", cfg.Filestore.Type)
 	}
