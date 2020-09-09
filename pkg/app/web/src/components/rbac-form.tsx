@@ -1,26 +1,29 @@
+import React, { FC, useState, memo } from "react";
+import EditIcon from "@material-ui/icons/Edit";
 import {
-  Button,
-  CircularProgress,
+  IconButton,
+  makeStyles,
+  Typography,
   Dialog,
   DialogActions,
   DialogContent,
   DialogTitle,
-  IconButton,
-  makeStyles,
+  Button,
   TextField,
-  Typography,
+  CircularProgress,
 } from "@material-ui/core";
-import EditIcon from "@material-ui/icons/Edit";
-import React, { FC, memo, useState } from "react";
-import { useDispatch, useSelector } from "react-redux";
 import { BUTTON_TEXT_CANCEL, BUTTON_TEXT_SAVE } from "../constants/button-text";
-import { SSO_DESCRIPTION } from "../constants/text";
-import { UPDATE_SSO_FAILED, UPDATE_SSO_SUCCESS } from "../constants/toast-text";
+import { RBAC_DESCRIPTION } from "../constants/text";
+import { useDispatch, useSelector } from "react-redux";
 import { AppState } from "../modules";
-import { fetchProject, GitHubSSO, updateGitHubSSO } from "../modules/project";
-import { addToast } from "../modules/toasts";
-import { AppDispatch } from "../store";
+import { fetchProject, Teams, updateRBAC } from "../modules/project";
 import { ProjectSettingLabeledText } from "./project-setting-labeled-text";
+import { AppDispatch } from "../store";
+import { addToast } from "../modules/toasts";
+import {
+  UPDATE_RBAC_FAILED,
+  UPDATE_RBAC_SUCCESS,
+} from "../constants/toast-text";
 
 const useStyles = makeStyles((theme) => ({
   title: {
@@ -43,67 +46,45 @@ const useStyles = makeStyles((theme) => ({
   values: {
     padding: theme.spacing(2),
   },
-  indent: {
-    padding: theme.spacing(1),
-  },
-  name: {
-    color: theme.palette.text.secondary,
-    marginRight: theme.spacing(2),
-    minWidth: 120,
-  },
-  item: {
-    display: "flex",
-    alignItems: "center",
-  },
 }));
 
-export interface GitHubSSOFormParams {
-  clientId: string;
-  clientSecret: string;
-  baseUrl: string;
-  uploadUrl: string;
-  org: string;
-  adminTeam: string;
-  editorTeam: string;
-  viewerTeam: string;
-}
-
-const SECTION_TITLE = "Single Sign-On";
+const SECTION_TITLE = "Role-Based Access Control";
 const DIALOG_TITLE = `Edit ${SECTION_TITLE}`;
+const TEAM_LABELS = {
+  ADMIN: "Admin Team",
+  EDITOR: "Editor Team",
+  VIEWER: "Viewer Team",
+};
 
-export const GithubSSOForm: FC = memo(function GithubSSOForm() {
+export const RBACForm: FC = memo(function RBACForm() {
   const classes = useStyles();
+  const teams = useSelector<AppState, Teams | null>(
+    (state) => state.project.teams
+  );
   const dispatch = useDispatch<AppDispatch>();
   const [isEdit, setIsEdit] = useState(false);
-  const [clientId, setClientID] = useState("");
-  const [clientSecret, setClientSecret] = useState("");
-  const [baseUrl, setBaseUrl] = useState("");
-  const [uploadUrl, setUploadUrl] = useState("");
-  const sso = useSelector<AppState, GitHubSSO | null>(
-    (state) => state.project.github
-  );
+  const [admin, setAdmin] = useState("");
+  const [editor, setEditor] = useState("");
+  const [viewer, setViewer] = useState("");
 
   const handleClose = (): void => {
     setIsEdit(false);
   };
-
   const handleSave = (e: React.FormEvent<HTMLFormElement>): void => {
     e.preventDefault();
-    dispatch(
-      updateGitHubSSO({ clientId, clientSecret, baseUrl, uploadUrl })
-    ).then((result) => {
-      if (updateGitHubSSO.rejected.match(result)) {
+    dispatch(updateRBAC({ admin, editor, viewer })).then((result) => {
+      if (updateRBAC.rejected.match(result)) {
         dispatch(
           addToast({
-            message: UPDATE_SSO_FAILED,
-            severity: "error",
+            message: UPDATE_RBAC_FAILED,
+            severity: "success",
           })
         );
       } else {
         dispatch(fetchProject());
         dispatch(
           addToast({
-            message: UPDATE_SSO_SUCCESS,
+            message: UPDATE_RBAC_SUCCESS,
             severity: "success",
           })
         );
@@ -112,7 +93,11 @@ export const GithubSSOForm: FC = memo(function GithubSSOForm() {
     setIsEdit(false);
   };
 
-  const isInvalid = clientId === "" || clientSecret === "";
+  const isNotModified =
+    teams !== null &&
+    teams.admin === admin &&
+    teams.editor === editor &&
+    teams.viewer === viewer;
 
   return (
     <>
@@ -127,25 +112,26 @@ export const GithubSSOForm: FC = memo(function GithubSSOForm() {
         color="textSecondary"
         className={classes.description}
       >
-        {SSO_DESCRIPTION}
+        {RBAC_DESCRIPTION}
       </Typography>
 
       <div className={classes.valuesWrapper}>
-        {sso ? (
+        {teams ? (
           <>
             <div className={classes.values}>
-              <ProjectSettingLabeledText label="Client ID" value="********" />
               <ProjectSettingLabeledText
-                label="Client Secret"
-                value="********"
+                label={TEAM_LABELS.ADMIN}
+                value={teams.admin}
               />
-              <ProjectSettingLabeledText label="Base URL" value={sso.baseUrl} />
               <ProjectSettingLabeledText
-                label="Upload URL"
-                value={sso.uploadUrl}
+                label={TEAM_LABELS.EDITOR}
+                value={teams.editor}
+              />
+              <ProjectSettingLabeledText
+                label={TEAM_LABELS.VIEWER}
+                value={teams.viewer}
               />
             </div>
-
             <div>
               <IconButton onClick={() => setIsEdit(true)}>
                 <EditIcon />
@@ -160,8 +146,9 @@ export const GithubSSOForm: FC = memo(function GithubSSOForm() {
       <Dialog
         open={isEdit}
         onEnter={() => {
-          setBaseUrl(sso?.baseUrl ?? "");
-          setUploadUrl(sso?.uploadUrl ?? "");
+          setAdmin(teams?.admin ?? "");
+          setEditor(teams?.editor ?? "");
+          setViewer(teams?.viewer ?? "");
         }}
         onClose={handleClose}
       >
@@ -169,44 +156,34 @@ export const GithubSSOForm: FC = memo(function GithubSSOForm() {
           <DialogTitle>{DIALOG_TITLE}</DialogTitle>
           <DialogContent>
             <TextField
-              value={clientId}
+              value={admin}
               variant="outlined"
               margin="dense"
-              label="Client ID"
+              label={TEAM_LABELS.ADMIN}
               fullWidth
-              required
               autoFocus
-              onChange={(e) => setClientID(e.currentTarget.value)}
+              onChange={(e) => setAdmin(e.currentTarget.value)}
             />
             <TextField
-              value={clientSecret}
+              value={editor}
               variant="outlined"
               margin="dense"
-              label="Client Secret"
+              label={TEAM_LABELS.EDITOR}
               fullWidth
-              required
-              onChange={(e) => setClientSecret(e.currentTarget.value)}
+              onChange={(e) => setEditor(e.currentTarget.value)}
             />
             <TextField
-              value={baseUrl}
+              value={viewer}
               variant="outlined"
               margin="dense"
-              label="Base URL"
+              label={TEAM_LABELS.VIEWER}
               fullWidth
-              onChange={(e) => setBaseUrl(e.currentTarget.value)}
-            />
-            <TextField
-              value={uploadUrl}
-              variant="outlined"
-              margin="dense"
-              label="Upload URL"
-              fullWidth
-              onChange={(e) => setUploadUrl(e.currentTarget.value)}
+              onChange={(e) => setViewer(e.currentTarget.value)}
             />
           </DialogContent>
           <DialogActions>
             <Button onClick={handleClose}>{BUTTON_TEXT_CANCEL}</Button>
-            <Button type="submit" color="primary" disabled={isInvalid}>
+            <Button type="submit" color="primary" disabled={isNotModified}>
               {BUTTON_TEXT_SAVE}
             </Button>
           </DialogActions>
