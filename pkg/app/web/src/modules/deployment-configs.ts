@@ -52,9 +52,9 @@ export const deploymentConfigsSlice = createSlice({
   },
 });
 
-export const selectTemplateByAppId = (
+export const selectTemplatesByAppId = (
   state: DeploymentConfigs
-): DeploymentConfigTemplate.AsObject | null => {
+): DeploymentConfigTemplate.AsObject[] | null => {
   if (!state.targetApplicationId) {
     return null;
   }
@@ -65,7 +65,7 @@ export const selectTemplateByAppId = (
     return null;
   }
 
-  return templates[0] || null;
+  return templates;
 };
 
 export const { clearTemplateTarget } = deploymentConfigsSlice.actions;
