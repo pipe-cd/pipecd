@@ -1,5 +1,5 @@
 <p align="center">
-  <img src="https://github.com/pipe-cd/pipe/blob/master/docs/static/images/logo.png" width="140"/>
+  <img src="https://github.com/pipe-cd/pipe/blob/master/docs/static/images/logo.png" width="180"/>
 </p>
 
 <p align="center">
@@ -10,17 +10,7 @@
 
 #
 
-## Proposal
-
-https://docs.google.com/document/d/1Z3NqnsxgraD9f55F0TK6e4oLV4296Hd7xUb5GxwdaJQ
-
-## Status
-
-This project is under **PROTOTYPE** development phase.
-
 ## Overview
-
-This project aims to explore and develop a unified delivery infrastructure for CA projects.
 
 ![](https://github.com/pipe-cd/pipe/blob/master/docs/static/images/architecture-overview.png)
 
