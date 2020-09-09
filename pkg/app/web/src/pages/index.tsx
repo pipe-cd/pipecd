@@ -7,6 +7,7 @@ import { Toasts } from "../components/toasts";
 import {
   PAGE_PATH_APPLICATIONS,
   PAGE_PATH_DEPLOYMENTS,
+  PAGE_PATH_INSIGHTS,
   PAGE_PATH_LOGIN,
   PAGE_PATH_SETTINGS,
   PAGE_PATH_TOP,
@@ -24,6 +25,7 @@ import { ApplicationDetailPage } from "./applications/detail";
 import { ApplicationIndexPage } from "./applications/index";
 import { DeploymentDetailPage } from "./deployments/detail";
 import { DeploymentIndexPage } from "./deployments/index";
+import { InsightIndexPage } from "./insight";
 import { LoginPage } from "./login";
 import { SettingsIndexPage } from "./settings";
 
@@ -104,6 +106,7 @@ export const Pages: FC = memo(function Pages() {
           component={DeploymentDetailPage}
         />
         <Route path={PAGE_PATH_SETTINGS} component={SettingsIndexPage} />
+        <Route path={PAGE_PATH_INSIGHTS} component={InsightIndexPage} />
       </Switch>
       <Toasts />
     </>
