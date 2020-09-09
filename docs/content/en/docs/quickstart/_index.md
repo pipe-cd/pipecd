@@ -69,7 +69,7 @@ Be sure to keep a copy for later use.
 
 
 Open [`./quickstart/values-piped.yaml`](https://github.com/pipe-cd/manifests/blob/master/quickstart/values-piped.yaml) with your editor and:
-- replace `FORKED_REPO_URL` with forked repository of [Examples](https://github.com/pipe-cd/examples), such as `https://github.com/foo/examples.git`
+- replace `FORKED_REPO_URL` with forked repository of [Examples](https://github.com/pipe-cd/examples), such as `https://github.com/YOUR_ORG/examples.git`
 - replace `YOUR_PIPED_ID` with the piped-id you have copied before
 
 You can complete the installation by running the following after replacing `YOUR_PIPED_SECRET_KEY` with what you just got:
