@@ -39,6 +39,12 @@ var (
 			Labels:          []webservice.DeploymentConfigTemplateLabel{webservice.DeploymentConfigTemplateLabel_BLUE_GREEN},
 			Content:         DeploymentConfigTemplates["KubernetesBlueGreen"],
 		},
+		{
+			ApplicationKind: model.ApplicationKind_KUBERNETES,
+			Name:            "Kustomize",
+			Labels:          []webservice.DeploymentConfigTemplateLabel{},
+			Content:         DeploymentConfigTemplates["KubernetesKustomize"],
+		},
 	}
 
 	terraformDeploymentConfigTemplates  = []*webservice.DeploymentConfigTemplate{}
