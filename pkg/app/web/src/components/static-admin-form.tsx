@@ -30,28 +30,9 @@ import {
 import { addToast } from "../modules/toasts";
 import { AppDispatch } from "../store";
 import { ProjectSettingLabeledText } from "./project-setting-labeled-text";
+import { useProjectSettingStyles } from "../styles/project-setting";
 
-const useStyles = makeStyles((theme) => ({
-  title: {
-    display: "flex",
-    alignItems: "center",
-    justifyContent: "space-between",
-  },
-  description: {
-    paddingRight: theme.spacing(6),
-  },
-  titleWithIcon: {
-    display: "flex",
-    alignItems: "center",
-  },
-  valuesWrapper: {
-    padding: theme.spacing(1),
-    display: "flex",
-    justifyContent: "space-between",
-  },
-  values: {
-    padding: theme.spacing(2),
-  },
+const useStyles = makeStyles(() => ({
   disabled: {
     opacity: 0.5,
   },
@@ -62,6 +43,7 @@ const DIALOG_TITLE = `Edit ${SECTION_TITLE}`;
 
 export const StaticAdminForm: FC = memo(function StaticAdminForm() {
   const classes = useStyles();
+  const projectSettingClasses = useProjectSettingStyles();
   const dispatch = useDispatch<AppDispatch>();
   const [isEnabled, currentUsername] = useSelector<
     AppState,
@@ -111,8 +93,11 @@ export const StaticAdminForm: FC = memo(function StaticAdminForm() {
 
   return (
     <>
-      <div className={classes.title}>
-        <Typography variant="h5" className={classes.titleWithIcon}>
+      <div className={projectSettingClasses.title}>
+        <Typography
+          variant="h5"
+          className={projectSettingClasses.titleWithIcon}
+        >
           {SECTION_TITLE}
         </Typography>
 
@@ -127,13 +112,13 @@ export const StaticAdminForm: FC = memo(function StaticAdminForm() {
       <Typography
         variant="body1"
         color="textSecondary"
-        className={classes.description}
+        className={projectSettingClasses.description}
       >
         {STATIC_ADMIN_DESCRIPTION}
       </Typography>
 
       <div
-        className={clsx(classes.valuesWrapper, {
+        className={clsx(projectSettingClasses.valuesWrapper, {
           [classes.disabled]: isEnabled === false,
         })}
       >
@@ -141,7 +126,7 @@ export const StaticAdminForm: FC = memo(function StaticAdminForm() {
           <CircularProgress />
         ) : (
           <>
-            <div className={classes.values}>
+            <div className={projectSettingClasses.values}>
               <ProjectSettingLabeledText
                 label="Username"
                 value={currentUsername}

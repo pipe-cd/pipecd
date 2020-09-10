@@ -1,52 +1,29 @@
-import React, { FC, useState, memo } from "react";
-import EditIcon from "@material-ui/icons/Edit";
 import {
-  IconButton,
-  makeStyles,
-  Typography,
+  Button,
+  CircularProgress,
   Dialog,
   DialogActions,
   DialogContent,
   DialogTitle,
-  Button,
+  IconButton,
   TextField,
-  CircularProgress,
+  Typography,
 } from "@material-ui/core";
+import EditIcon from "@material-ui/icons/Edit";
+import React, { FC, memo, useState } from "react";
+import { useDispatch, useSelector } from "react-redux";
 import { BUTTON_TEXT_CANCEL, BUTTON_TEXT_SAVE } from "../constants/button-text";
 import { RBAC_DESCRIPTION } from "../constants/text";
-import { useDispatch, useSelector } from "react-redux";
-import { AppState } from "../modules";
-import { fetchProject, Teams, updateRBAC } from "../modules/project";
-import { ProjectSettingLabeledText } from "./project-setting-labeled-text";
-import { AppDispatch } from "../store";
-import { addToast } from "../modules/toasts";
 import {
   UPDATE_RBAC_FAILED,
   UPDATE_RBAC_SUCCESS,
 } from "../constants/toast-text";
-
-const useStyles = makeStyles((theme) => ({
-  title: {
-    display: "flex",
-    alignItems: "center",
-    justifyContent: "space-between",
-  },
-  description: {
-    paddingRight: theme.spacing(6),
-  },
-  titleWithIcon: {
-    display: "flex",
-    alignItems: "center",
-  },
-  valuesWrapper: {
-    padding: theme.spacing(1),
-    display: "flex",
-    justifyContent: "space-between",
-  },
-  values: {
-    padding: theme.spacing(2),
-  },
-}));
+import { AppState } from "../modules";
+import { fetchProject, Teams, updateRBAC } from "../modules/project";
+import { addToast } from "../modules/toasts";
+import { AppDispatch } from "../store";
+import { useProjectSettingStyles } from "../styles/project-setting";
+import { ProjectSettingLabeledText } from "./project-setting-labeled-text";
 
 const SECTION_TITLE = "Role-Based Access Control";
 const DIALOG_TITLE = `Edit ${SECTION_TITLE}`;
@@ -57,7 +34,7 @@ const TEAM_LABELS = {
 };
 
 export const RBACForm: FC = memo(function RBACForm() {
-  const classes = useStyles();
+  const projectSettingClasses = useProjectSettingStyles();
   const teams = useSelector<AppState, Teams | null>(
     (state) => state.project.teams
   );
@@ -101,8 +78,11 @@ export const RBACForm: FC = memo(function RBACForm() {
 
   return (
     <>
-      <div className={classes.title}>
-        <Typography variant="h5" className={classes.titleWithIcon}>
+      <div className={projectSettingClasses.title}>
+        <Typography
+          variant="h5"
+          className={projectSettingClasses.titleWithIcon}
+        >
           {SECTION_TITLE}
         </Typography>
       </div>
@@ -110,15 +90,15 @@ export const RBACForm: FC = memo(function RBACForm() {
       <Typography
         variant="body1"
         color="textSecondary"
-        className={classes.description}
+        className={projectSettingClasses.description}
       >
         {RBAC_DESCRIPTION}
       </Typography>
 
-      <div className={classes.valuesWrapper}>
+      <div className={projectSettingClasses.valuesWrapper}>
         {teams ? (
           <>
-            <div className={classes.values}>
+            <div className={projectSettingClasses.values}>
               <ProjectSettingLabeledText
                 label={TEAM_LABELS.ADMIN}
                 value={teams.admin}

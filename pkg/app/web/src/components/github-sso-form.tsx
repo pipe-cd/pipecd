@@ -6,7 +6,6 @@ import {
   DialogContent,
   DialogTitle,
   IconButton,
-  makeStyles,
   TextField,
   Typography,
 } from "@material-ui/core";
@@ -20,43 +19,8 @@ import { AppState } from "../modules";
 import { fetchProject, GitHubSSO, updateGitHubSSO } from "../modules/project";
 import { addToast } from "../modules/toasts";
 import { AppDispatch } from "../store";
+import { useProjectSettingStyles } from "../styles/project-setting";
 import { ProjectSettingLabeledText } from "./project-setting-labeled-text";
-
-const useStyles = makeStyles((theme) => ({
-  title: {
-    display: "flex",
-    alignItems: "center",
-    justifyContent: "space-between",
-  },
-  description: {
-    paddingRight: theme.spacing(6),
-  },
-  titleWithIcon: {
-    display: "flex",
-    alignItems: "center",
-  },
-  valuesWrapper: {
-    padding: theme.spacing(1),
-    display: "flex",
-    justifyContent: "space-between",
-  },
-  values: {
-    padding: theme.spacing(2),
-  },
-  indent: {
-    padding: theme.spacing(1),
-  },
-  name: {
-    color: theme.palette.text.secondary,
-    marginRight: theme.spacing(2),
-    minWidth: 120,
-  },
-  item: {
-    display: "flex",
-    alignItems: "center",
-  },
-}));
-
 export interface GitHubSSOFormParams {
   clientId: string;
   clientSecret: string;
@@ -72,7 +36,7 @@ const SECTION_TITLE = "Single Sign-On";
 const DIALOG_TITLE = `Edit ${SECTION_TITLE}`;
 
 export const GithubSSOForm: FC = memo(function GithubSSOForm() {
-  const classes = useStyles();
+  const projectSettingStyles = useProjectSettingStyles();
   const dispatch = useDispatch<AppDispatch>();
   const [isEdit, setIsEdit] = useState(false);
   const [clientId, setClientID] = useState("");
@@ -116,8 +80,8 @@ export const GithubSSOForm: FC = memo(function GithubSSOForm() {
 
   return (
     <>
-      <div className={classes.title}>
-        <Typography variant="h5" className={classes.titleWithIcon}>
+      <div className={projectSettingStyles.title}>
+        <Typography variant="h5" className={projectSettingStyles.titleWithIcon}>
           {SECTION_TITLE}
         </Typography>
       </div>
@@ -125,15 +89,15 @@ export const GithubSSOForm: FC = memo(function GithubSSOForm() {
       <Typography
         variant="body1"
         color="textSecondary"
-        className={classes.description}
+        className={projectSettingStyles.description}
       >
         {SSO_DESCRIPTION}
       </Typography>
 
-      <div className={classes.valuesWrapper}>
+      <div className={projectSettingStyles.valuesWrapper}>
         {sso ? (
           <>
-            <div className={classes.values}>
+            <div className={projectSettingStyles.values}>
               <ProjectSettingLabeledText label="Client ID" value="********" />
               <ProjectSettingLabeledText
                 label="Client Secret"
