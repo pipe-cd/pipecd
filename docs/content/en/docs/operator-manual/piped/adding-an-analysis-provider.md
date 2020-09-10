@@ -7,7 +7,10 @@ description: >
 ---
 
 
-You define the information needed to connect from your Piped to the Analysis Provider:
+You define the information needed to connect from your Piped to the Analysis Provider.
+
+For instance, you're using Prometheus:
+
 ```yaml
 apiVersion: pipecd.dev/v1beta1
 kind: Piped
@@ -21,4 +24,3 @@ spec:
 
 The full list of configurable fields are [here](/docs/operator-manual/piped/configuration-reference/#analysisprovider).
 
-> TBA
