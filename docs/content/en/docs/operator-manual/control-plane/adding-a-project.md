@@ -1,7 +1,7 @@
 ---
 title: "Adding a project"
 linkTitle: "Adding a project"
-weight: 2
+weight: 3
 description: >
   This page describes how to set up a new project.
 ---
