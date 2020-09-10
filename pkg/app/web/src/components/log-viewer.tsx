@@ -53,6 +53,8 @@ const useStyles = makeStyles((theme) => ({
   },
   toolbarLeft: {
     flex: 1,
+    display: "flex",
+    alignItems: "center",
   },
   toolbarRight: {
     flex: 1,
@@ -61,6 +63,10 @@ const useStyles = makeStyles((theme) => ({
   },
   stageName: {
     fontFamily: "Roboto Mono",
+  },
+  stageDescription: {
+    marginLeft: theme.spacing(2),
+    color: theme.palette.text.secondary,
   },
   logContainer: {
     overflowY: "scroll",
@@ -120,6 +126,9 @@ export const LogViewer: FC = memo(function LogViewer() {
           <div className={classes.toolbarLeft}>
             <Typography variant="subtitle2" className={classes.stageName}>
               {activeStage.name}
+            </Typography>
+            <Typography variant="body2" className={classes.stageDescription}>
+              {activeStage.desc}
             </Typography>
           </div>
           <div className={classes.toolbarRight}>
