@@ -1,0 +1,6 @@
+# Deploy a kustomize package without specifying pipeline.
+apiVersion: pipecd.dev/v1beta1
+kind: KubernetesApp
+spec:
+  input:
+    kustomizeVersion: 3.5.5
