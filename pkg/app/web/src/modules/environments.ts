@@ -14,6 +14,7 @@ export const {
   selectById,
   selectAll,
   selectEntities,
+  selectIds,
 } = environmentsAdapter.getSelectors();
 
 export const fetchEnvironments = createAsyncThunk<Environment[], void>(

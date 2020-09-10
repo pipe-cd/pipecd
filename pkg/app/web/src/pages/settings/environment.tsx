@@ -1,26 +1,26 @@
 import {
+  Button,
+  Divider,
+  Drawer,
+  List,
   makeStyles,
   Toolbar,
-  Divider,
-  Button,
-  List,
-  ListItemText,
-  ListItem,
-  Drawer,
 } from "@material-ui/core";
+import { Add as AddIcon } from "@material-ui/icons";
+import { EntityId } from "@reduxjs/toolkit";
 import React, { FC, memo, useState } from "react";
-import { useSelector, useDispatch } from "react-redux";
+import { useDispatch, useSelector } from "react-redux";
+import { AddEnvForm } from "../../components/add-env-form";
+import { EnvironmentListItem } from "../../components/environment-list-item";
+import { UI_TEXT_ADD } from "../../constants/ui-text";
 import { AppState } from "../../modules";
 import {
-  selectAll as selectEnvsAll,
-  Environment,
   addEnvironment,
   fetchEnvironments,
+  selectIds as selectEnvIds,
 } from "../../modules/environments";
-import AddIcon from "@material-ui/icons/Add";
-import { AddEnvForm } from "../../components/add-env-form";
-import { AppDispatch } from "../../store";
 import { selectProjectName } from "../../modules/me";
+import { AppDispatch } from "../../store";
 
 const useStyles = makeStyles((theme) => ({
   main: {
@@ -31,10 +31,6 @@ const useStyles = makeStyles((theme) => ({
   },
 }));
 
-const TEXT = {
-  NO_DESCRIPTION: "No description",
-};
-
 export const SettingsEnvironmentPage: FC = memo(
   function SettingsEnvironmentPage() {
     const classes = useStyles();
@@ -43,8 +39,8 @@ export const SettingsEnvironmentPage: FC = memo(
     const projectName = useSelector<AppState, string>((state) =>
       selectProjectName(state.me)
     );
-    const envs = useSelector<AppState, Environment[]>((state) =>
-      selectEnvsAll(state.environments)
+    const envIds = useSelector<AppState, EntityId[]>((state) =>
+      selectEnvIds(state.environments)
     );
 
     const handleClose = (): void => {
@@ -57,7 +53,6 @@ export const SettingsEnvironmentPage: FC = memo(
         dispatch(fetchEnvironments());
       });
     };
-
     return (
       <>
         <Toolbar variant="dense">
@@ -66,25 +61,15 @@ export const SettingsEnvironmentPage: FC = memo(
             startIcon={<AddIcon />}
             onClick={() => setIsOpenForm(true)}
           >
-            ADD
+            {UI_TEXT_ADD}
           </Button>
         </Toolbar>
         <Divider />
 
         <div className={classes.main}>
           <List disablePadding>
-            {envs.map((env) => (
-              <ListItem
-                key={`env-${env.id}`}
-                divider
-                dense
-                className={classes.listItem}
-              >
-                <ListItemText
-                  primary={env.name}
-                  secondary={env.desc || TEXT.NO_DESCRIPTION}
-                />
-              </ListItem>
+            {envIds.map((envId) => (
+              <EnvironmentListItem id={envId} key={`env-list-item-${envId}`} />
             ))}
           </List>
         </div>

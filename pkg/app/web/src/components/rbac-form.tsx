@@ -12,7 +12,7 @@ import {
 import EditIcon from "@material-ui/icons/Edit";
 import React, { FC, memo, useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
-import { BUTTON_TEXT_CANCEL, BUTTON_TEXT_SAVE } from "../constants/button-text";
+import { UI_TEXT_CANCEL, UI_TEXT_SAVE } from "../constants/ui-text";
 import { RBAC_DESCRIPTION } from "../constants/text";
 import {
   UPDATE_RBAC_FAILED,
@@ -162,9 +162,9 @@ export const RBACForm: FC = memo(function RBACForm() {
             />
           </DialogContent>
           <DialogActions>
-            <Button onClick={handleClose}>{BUTTON_TEXT_CANCEL}</Button>
+            <Button onClick={handleClose}>{UI_TEXT_CANCEL}</Button>
             <Button type="submit" color="primary" disabled={isNotModified}>
-              {BUTTON_TEXT_SAVE}
+              {UI_TEXT_SAVE}
             </Button>
           </DialogActions>
         </form>

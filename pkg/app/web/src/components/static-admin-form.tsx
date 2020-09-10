@@ -15,7 +15,7 @@ import EditIcon from "@material-ui/icons/Edit";
 import clsx from "clsx";
 import React, { FC, memo, useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
-import { BUTTON_TEXT_CANCEL, BUTTON_TEXT_SAVE } from "../constants/button-text";
+import { UI_TEXT_CANCEL, UI_TEXT_SAVE } from "../constants/ui-text";
 import { STATIC_ADMIN_DESCRIPTION } from "../constants/text";
 import {
   UPDATE_STATIC_ADMIN_INFO_FAILED,
@@ -179,9 +179,9 @@ export const StaticAdminForm: FC = memo(function StaticAdminForm() {
             />
           </DialogContent>
           <DialogActions>
-            <Button onClick={handleClose}>{BUTTON_TEXT_CANCEL}</Button>
+            <Button onClick={handleClose}>{UI_TEXT_CANCEL}</Button>
             <Button type="submit" color="primary" disabled={isInvalidValues}>
-              {BUTTON_TEXT_SAVE}
+              {UI_TEXT_SAVE}
             </Button>
           </DialogActions>
         </form>

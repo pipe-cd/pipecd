@@ -12,7 +12,7 @@ import {
 import EditIcon from "@material-ui/icons/Edit";
 import React, { FC, memo, useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
-import { BUTTON_TEXT_CANCEL, BUTTON_TEXT_SAVE } from "../constants/button-text";
+import { UI_TEXT_CANCEL, UI_TEXT_SAVE } from "../constants/ui-text";
 import { SSO_DESCRIPTION } from "../constants/text";
 import { UPDATE_SSO_FAILED, UPDATE_SSO_SUCCESS } from "../constants/toast-text";
 import { AppState } from "../modules";
@@ -169,9 +169,9 @@ export const GithubSSOForm: FC = memo(function GithubSSOForm() {
             />
           </DialogContent>
           <DialogActions>
-            <Button onClick={handleClose}>{BUTTON_TEXT_CANCEL}</Button>
+            <Button onClick={handleClose}>{UI_TEXT_CANCEL}</Button>
             <Button type="submit" color="primary" disabled={isInvalid}>
-              {BUTTON_TEXT_SAVE}
+              {UI_TEXT_SAVE}
             </Button>
           </DialogActions>
         </form>
