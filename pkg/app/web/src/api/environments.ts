@@ -4,6 +4,8 @@ import {
   ListEnvironmentsResponse,
   AddEnvironmentRequest,
   AddEnvironmentResponse,
+  UpdateEnvironmentDescRequest,
+  UpdateEnvironmentDescResponse,
 } from "pipe/pkg/app/web/api_client/service_pb";
 
 export const getEnvironments = (): Promise<
@@ -23,4 +25,11 @@ export const AddEnvironment = ({
   req.setName(name);
   req.setDesc(desc);
   return apiRequest(req, apiClient.addEnvironment);
+};
+
+export const updateEnvironmentDesc = (
+  desc: string
+): Promise<UpdateEnvironmentDescResponse.AsObject> => {
+  const req = new UpdateEnvironmentDescRequest();
+  return apiRequest(req, apiClient.updateEnvironmentDesc);
 };
