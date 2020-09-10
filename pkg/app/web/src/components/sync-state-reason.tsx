@@ -12,6 +12,8 @@ const useStyles = makeStyles((theme) => ({
     fontFamily: "Roboto Mono",
     marginTop: theme.spacing(1),
     wordBreak: "break-all",
+    overflow: "auto",
+    maxHeight: 400,
   },
   showButton: {
     color: theme.palette.primary.light,
