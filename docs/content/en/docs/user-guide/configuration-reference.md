@@ -230,10 +230,10 @@ spec:
 | Field | Type | Description | Required |
 |-|-|-|-|
 | provider | string | The unique name of provider defined in the Piped Configuration. | Yes |
-| query | string | A query peformed against the [Analysis Provider](/docs/concepts/#analysis-provider). | Yes |
+| query | string | A query performed against the [Analysis Provider](/docs/concepts/#analysis-provider). | Yes |
 | expected | [AnalysisExpected](/docs/user-guide/configuration-reference/#analysisexpected) | The expected query result. | Yes |
 | interval | duration | Run a query at specified intervals. | Yes |
-| failureLimit | int | Maximum number of failed checks before the query result is considered as failure. For instance, If 1 is set, the analysis will be considered a failure after 2 failures. | No |
+| failureLimit | int | Maximum number of failed checks before the query result is considered as failure. For instance, if 1 is set, the analysis will be considered a failure after 2 failures. | No |
 | timeout | duration | How long after which the query times out. | No |
 | template | [AnalysisTemplateRef](/docs/user-guide/configuration-reference/#analysistemplateref) | How long after which the query times out. | No |
 

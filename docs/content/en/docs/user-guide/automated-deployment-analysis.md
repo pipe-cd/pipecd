@@ -109,17 +109,4 @@ Also, custom args is supported. Custom args placeholders can be defined as `{{ .
 
 ### Supported Providers
 
-##### Prometheus
-```yaml
-apiVersion: pipecd.dev/v1beta1
-kind: Piped
-spec:
-  analysisProviders:
-    - name: prometheus-name
-      type: PROMETHEUS
-      config:
-        address: https://your-prometheus.dev
-```
-
-##### Datadog (comming soon)
-
+- [Prometheus](https://prometheus.io/)
