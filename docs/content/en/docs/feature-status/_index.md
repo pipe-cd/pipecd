@@ -23,21 +23,21 @@ Please note that the phases (Incubating, Alpha, Beta, and Stable) are applied to
 
 | Feature | Phase |
 |-|-|
-| Quick Sync Deployment | Beta |
-| Deployment with the Specified Pipeline (canary, bluegreen...) | Beta |
-| Automated Rollback | Beta |
+| Quick Sync Deployment | Alpha |
+| Deployment with the Specified Pipeline (canary, bluegreen...) | Alpha |
+| Automated Rollback | Alpha |
 | [Automated Configuration Drift Detection](/docs/user-guide/configuration-drift-detection/) | Alpha |
 | [Application Live State](/docs/user-guide/application-live-state/) | Alpha |
-| Support Helm | Beta |
-| Support Kustomize | Beta |
-| Support Istio Mesh | Beta |
+| Support Helm | Alpha |
+| Support Kustomize | Alpha |
+| Support Istio Mesh | Alpha |
 | Support SMI Mesh | Incubating |
 
 ### Terraform Deployment
 
 | Feature | Phase |
 |-|-|
-| Quick Sync Deployment | Beta |
+| Quick Sync Deployment | Alpha |
 | Deployment with the Specified Pipeline | Alpha |
 | Automated Rollback | Alpha |
 | [Automated Configuration Drift Detection](/docs/user-guide/configuration-drift-detection/) | Incubating |
@@ -47,8 +47,8 @@ Please note that the phases (Incubating, Alpha, Beta, and Stable) are applied to
 
 | Feature | Phase |
 |-|-|
-| Quick Sync Deployment | Beta |
-| Deployment with the Specified Pipeline | Beta |
+| Quick Sync Deployment | Alpha |
+| Deployment with the Specified Pipeline | Alpha |
 | Automated Rollback | Alpha |
 | [Automated Configuration Drift Detection](/docs/user-guide/configuration-drift-detection/) | Incubating |
 | [Application Live State](/docs/user-guide/application-live-state/) | Incubating |
