@@ -1,13 +1,14 @@
 ---
 title: "Configuring notifications"
 linkTitle: "Configuring notifications"
-weight: 10
+weight: 7
 description: >
   This page describes how to configure piped to send notications to external services.
 ---
 
 > TBA
 
+### Sending notifications to Slack
 
 ![](/images/notification-slack-deployment-planned.png)
 <p style="text-align: center;">
@@ -54,3 +55,5 @@ spec:
         webhook:
           url: https://pipecd.dev/dev-hook
 ```
+
+### Sending notifications to webhook endpoints
