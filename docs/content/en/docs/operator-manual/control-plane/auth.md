@@ -30,11 +30,11 @@ The project can be configured to use a shared SSO configuration (shared OAuth ap
 
 ### Role-Based Access Control (RBAC)
 
-Role-based access control (RBAC) allows restricting access on the PipeCD web based on the roles of user groups within the project. Before using this feature, the SSO must be configured.
+Role-based access control (RBAC) allows restricting access on the PipeCD web-based on the roles of user groups within the project. Before using this feature, the SSO must be configured.
 
 PipeCD provides three roles:
 
-- `viewer`: has only permissions to view application, deployment list and details.
+- `viewer`: has only permissions to view application, deployment list, and details.
 - `editor`: has all viewer permissions, plus permissions for actions that modify state, such as manually syncing application, canceling deployment...
 - `admin`: has all editor permissions, plus permissions for updating project configurations.
 
