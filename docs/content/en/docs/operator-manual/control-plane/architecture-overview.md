@@ -11,7 +11,7 @@ description: >
 Component Architecture
 </p>
 
-The control plane is a centralized part of PipeCD. Tt contains several services as below to manage the application, deployment data and handle all requests from `piped`s and web clients:
+The control plane is a centralized part of PipeCD. It contains several services as below to manage the application, deployment data and handle all requests from `piped`s and web clients:
 
 ##### API
 
@@ -36,4 +36,4 @@ For example, it provides an internal web page for adding and managing projects; 
 
 ##### File Store
 
-`Filre store` is a storage for storing stage logs, application live states. This can be a fully-managed service such as GCP [GCS](https://cloud.google.com/storage), AWS [S3](https://aws.amazon.com/s3/), or a self-managed service such as [Minio](https://github.com/minio/minio). When installing the control plane, you have to choose one of the provided data store services.
+`File store` is a storage for storing stage logs, application live states. This can be a fully-managed service such as GCP [GCS](https://cloud.google.com/storage), AWS [S3](https://aws.amazon.com/s3/), or a self-managed service such as [Minio](https://github.com/minio/minio). When installing the control plane, you have to choose one of the provided data store services.
