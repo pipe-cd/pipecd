@@ -40,7 +40,11 @@ func (s *TerraformDeploymentSpec) Validate() error {
 }
 
 type TerraformDeploymentInput struct {
-	Workspace        string `json:"workspace,omitempty"`
+	// The terraform workspace name.
+	// Empty means "default" workpsace.
+	Workspace string `json:"workspace,omitempty"`
+	// The version of terraform should be used.
+	// Empty means the pre-installed version will be used.
 	TerraformVersion string `json:"terraformVersion,omitempty"`
 	// List of variables that will be set directly on terraform commands with "-var" flag.
 	// The variable must be formatted by "key=value" as below:
@@ -52,7 +56,8 @@ type TerraformDeploymentInput struct {
 	VarFiles []string `json:"varFiles,omitempty"`
 	// Automatically reverts all changes from all stages when one of them failed.
 	// Default is false.
-	AutoRollback bool     `json:"autoRollback"`
+	AutoRollback bool `json:"autoRollback"`
+	// List of directories where their changes will trigger the deployment.
 	Dependencies []string `json:"dependencies,omitempty"`
 }
 

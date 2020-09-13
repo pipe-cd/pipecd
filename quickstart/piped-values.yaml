@@ -9,6 +9,8 @@ config:
       projectID: quickstart
       pipedID: YOUR_PIPED_ID
       pipedKeyFile: /etc/piped-secret/piped-key
+      apiAddress: pipecd:443
+      webAddress: http://pipecd:443
       syncInterval: 1m
       repositories:
         - repoId: examples

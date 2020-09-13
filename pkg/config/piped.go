@@ -30,13 +30,16 @@ var DefaultKubernetesCloudProvider = PipedCloudProvider{
 
 // PipedSpec contains configurable data used to while running Piped.
 type PipedSpec struct {
-	// The identifier of the project which this piped belongs to.
+	// The identifier of the PipeCD project where this piped belongs to.
 	ProjectID string
 	// The unique identifier generated for this piped.
 	PipedID string
-	// The path to the key generated for this piped.
+	// The path to the file containing the generated Key string for this piped.
 	PipedKeyFile string
-	WebURL       string `json:"webURL"`
+	// The address used to connect to the control-plane's API.
+	APIAddress string `json:"apiAddress"`
+	// The address to the control-plane's Web.
+	WebAddress string `json:"webAddress"`
 	// How often to check whether an application should be synced.
 	// Default is 1m.
 	SyncInterval Duration `json:"syncInterval"`
@@ -45,10 +48,13 @@ type PipedSpec struct {
 	// List of git repositories this piped will handle.
 	Repositories []PipedRepository `json:"repositories"`
 	// List of helm chart repositories that should be added while starting up.
-	ChartRepositories []HelmChartRepository   `json:"chartRepositories"`
-	CloudProviders    []PipedCloudProvider    `json:"cloudProviders"`
+	ChartRepositories []HelmChartRepository `json:"chartRepositories"`
+	// List of cloud providers can be used by this piped.
+	CloudProviders []PipedCloudProvider `json:"cloudProviders"`
+	// List of analysis providers can be used by this piped.
 	AnalysisProviders []PipedAnalysisProvider `json:"analysisProviders"`
-	Notifications     Notifications           `json:"notifications"`
+	// Sending notification to Slack, Webhook…
+	Notifications Notifications `json:"notifications"`
 }
 
 // Validate validates configured data of all fields.
@@ -62,7 +68,12 @@ func (s *PipedSpec) Validate() error {
 	if s.PipedKeyFile == "" {
 		return fmt.Errorf("pipedKeyFile must be set")
 	}
-
+	if s.APIAddress == "" {
+		return fmt.Errorf("apiAddress must be set")
+	}
+	if s.WebAddress == "" {
+		return fmt.Errorf("webAddress must be set")
+	}
 	if s.SyncInterval < 0 {
 		s.SyncInterval = Duration(time.Minute)
 	}
@@ -137,8 +148,10 @@ func (s *PipedSpec) GetAnalysisProvider(name string) (PipedAnalysisProvider, boo
 }
 
 type PipedGit struct {
+	// The username that will be configured for `git` user.
 	Username string `json:"username"`
-	Email    string `json:"email"`
+	// The email that will be configured for `git` user.
+	Email string `json:"email"`
 	// Where to write ssh config file.
 	// Default is "/etc/ssh/ssh_config".
 	SSHConfigFilePath string `json:"sshConfigFilePath"`
@@ -151,7 +164,7 @@ type PipedGit struct {
 	// Default is the same value with Host.
 	HostName string `json:"hostName"`
 	// The path to the private ssh key file.
-	// This will be used to clone the source code of the git repositories.
+	// This will be used to clone the source code of the specified git repositories.
 	SSHKeyFile string `json:"sshKeyFile"`
 }
 
@@ -163,17 +176,21 @@ type PipedRepository struct {
 	// Unique identifier for this repository.
 	// This must be unique in the piped scope.
 	RepoID string `json:"repoId"`
-	// Remote address of the repository.
-	// e.g. git@github.com:org/repo1.git
+	// Remote address of the repository used to clone the source code.
+	// e.g. git@github.com:org/repo.git
 	Remote string `json:"remote"`
-	// The branch should be tracked.
+	// The branch will be handled.
 	Branch string `json:"branch"`
 }
 
 type HelmChartRepository struct {
-	Name     string `json:"name"`
-	Address  string `json:"address"`
+	// The name of the Helm chart repository.
+	Name string `json:"name"`
+	// The address to the Helm chart repository.
+	Address string `json:"address"`
+	// Username used for the repository backed by HTTP basic authentication.
 	Username string `json:"username"`
+	// Password used for the repository backed by HTTP basic authentication.
 	Password string `json:"password"`
 }
 
@@ -230,9 +247,14 @@ func (p *PipedCloudProvider) UnmarshalJSON(data []byte) error {
 }
 
 type CloudProviderKubernetesConfig struct {
+	// The master URL of the kubernetes cluster.
+	// Empty means in-cluster.
+	MasterURL string `json:"masterURL"`
+	// The path to the kubeconfig file.
+	// Empty means in-cluster.
+	KubeConfigPath string `json:"kubeConfigPath"`
+	// Configuration for application resource informer.
 	AppStateInformer KubernetesAppStateInformer `json:"appStateInformer"`
-	MasterURL        string                     `json:"masterURL"`
-	KubeConfigPath   string                     `json:"kubeConfigPath"`
 }
 
 type KubernetesAppStateInformer struct {
@@ -246,9 +268,9 @@ type KubernetesAppStateInformer struct {
 }
 
 type KubernetesResourceMatcher struct {
-	// APIVersion of kubernetes resource.
+	// The APIVersion of the kubernetes resource.
 	APIVersion string `json:"apiVersion"`
-	// Kind name of kubernetes resource.
+	// The kind name of the kubernetes resource.
 	// Empty means all kinds are matching.
 	Kind string `json:"kind"`
 }
@@ -268,8 +290,11 @@ type CloudProviderTerraformConfig struct {
 }
 
 type CloudProviderCloudRunConfig struct {
-	Project         string `json:"project"`
-	Region          string `json:"region"`
+	// The GCP project hosting the CloudRun service.
+	Project string `json:"project"`
+	// The region of running CloudRun service.
+	Region string `json:"region"`
+	// The path to the service account file for accessing CloudRun service.
 	CredentialsFile string `json:"credentialsFile"`
 }
 
@@ -345,12 +370,15 @@ type AnalysisProviderStackdriverConfig struct {
 }
 
 type Notifications struct {
-	Routes    []NotificationRoute    `json:"routes"`
+	// List of notification routes.
+	Routes []NotificationRoute `json:"routes"`
+	// List of notification receivers.
 	Receivers []NotificationReceiver `json:"receivers"`
 }
 
 type NotificationRoute struct {
 	Name         string   `json:"name"`
+	Receiver     string   `json:"receiver"`
 	Events       []string `json:"events"`
 	IgnoreEvents []string `json:"ignoreEvents"`
 	Groups       []string `json:"groups"`
@@ -359,7 +387,6 @@ type NotificationRoute struct {
 	IgnoreApps   []string `json:"ignoreApps"`
 	Envs         []string `json:"envs"`
 	IgnoreEnvs   []string `json:"ignoreEnvs"`
-	Receiver     string   `json:"receiver"`
 }
 
 type NotificationReceiver struct {

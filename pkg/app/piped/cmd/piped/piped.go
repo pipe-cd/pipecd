@@ -62,7 +62,6 @@ type piped struct {
 	configFile                           string
 	insecure                             bool
 	certFile                             string
-	controlPlaneAddress                  string
 	adminPort                            int
 	binDir                               string
 	enableDefaultKubernetesCloudProvider bool
@@ -72,10 +71,9 @@ type piped struct {
 
 func NewCommand() *cobra.Command {
 	p := &piped{
-		controlPlaneAddress: "pipecd:443",
-		adminPort:           9085,
-		binDir:              "/usr/local/piped",
-		gracePeriod:         30 * time.Second,
+		adminPort:   9085,
+		binDir:      "/usr/local/piped",
+		gracePeriod: 30 * time.Second,
 	}
 	cmd := &cobra.Command{
 		Use:   "piped",
@@ -87,7 +85,6 @@ func NewCommand() *cobra.Command {
 
 	cmd.Flags().BoolVar(&p.insecure, "insecure", p.insecure, "Whether disabling transport security while connecting to control-plane.")
 	cmd.Flags().StringVar(&p.certFile, "cert-file", p.certFile, "The path to the TLS certificate file.")
-	cmd.Flags().StringVar(&p.controlPlaneAddress, "control-plane-address", p.controlPlaneAddress, "The address used to connect to control plane.")
 	cmd.Flags().IntVar(&p.adminPort, "admin-port", p.adminPort, "The port number used to run a HTTP server for admin tasks such as metrics, healthz.")
 
 	cmd.Flags().StringVar(&p.binDir, "bin-dir", p.binDir, "The path to directory where to install needed tools such as kubectl, helm, kustomize.")
@@ -151,7 +148,7 @@ func (p *piped) run(ctx context.Context, t cli.Telemetry) (runErr error) {
 	}
 
 	// Make gRPC client and connect to the API.
-	apiClient, err := p.createAPIClient(ctx, cfg.ProjectID, cfg.PipedID, cfg.PipedKeyFile, t.Logger)
+	apiClient, err := p.createAPIClient(ctx, cfg.APIAddress, cfg.ProjectID, cfg.PipedID, cfg.PipedKeyFile, t.Logger)
 	if err != nil {
 		t.Logger.Error("failed to create gRPC client to control plane", zap.Error(err))
 		return err
@@ -324,7 +321,7 @@ func (p *piped) run(ctx context.Context, t cli.Telemetry) (runErr error) {
 }
 
 // createAPIClient makes a gRPC client to connect to the API.
-func (p *piped) createAPIClient(ctx context.Context, projectID, pipedID, pipedKeyFile string, logger *zap.Logger) (pipedservice.Client, error) {
+func (p *piped) createAPIClient(ctx context.Context, address, projectID, pipedID, pipedKeyFile string, logger *zap.Logger) (pipedservice.Client, error) {
 	if p.useFakeAPIClient {
 		return pipedclientfake.NewClient(logger), nil
 	}
@@ -357,7 +354,7 @@ func (p *piped) createAPIClient(ctx context.Context, projectID, pipedID, pipedKe
 		options = append(options, rpcclient.WithInsecure())
 	}
 
-	client, err := pipedservice.NewClient(ctx, p.controlPlaneAddress, options...)
+	client, err := pipedservice.NewClient(ctx, address, options...)
 	if err != nil {
 		logger.Error("failed to create api client", zap.Error(err))
 		return nil, err

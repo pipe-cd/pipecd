@@ -28,19 +28,19 @@ import (
 type ControlPlaneSpec struct {
 	// The address to the control plane.
 	Address string `json:"address"`
-	// A random key to generate oauth state paramater.
+	// A randomly generated string used to sign oauth state.
 	StateKey string `json:"stateKey"`
-	// List of debugging/quickstart projects defined in Control Plane configuration.
-	// Please note that do not use this to configure the projects running the production.
-	Projects []ControlPlaneProject `json:"projects"`
-	// List of shared SSO configurations that can be used by any projects.
-	SharedSSOConfigs []SharedSSOConfig `json:"sharedSSOConfigs"`
 	// The configuration of datastore for control plane.
 	Datastore ControlPlaneDataStore `json:"datastore"`
 	// The configuration of filestore for control plane.
 	Filestore ControlPlaneFileStore `json:"filestore"`
 	// The configuration of cache for control plane.
 	Cache ControlPlaneCache `json:"cache"`
+	// List of debugging/quickstart projects defined in Control Plane configuration.
+	// Please note that do not use this to configure the projects running in the production.
+	Projects []ControlPlaneProject `json:"projects"`
+	// List of shared SSO configurations that can be used by any projects.
+	SharedSSOConfigs []SharedSSOConfig `json:"sharedSSOConfigs"`
 }
 
 func (s *ControlPlaneSpec) Validate() error {
@@ -48,13 +48,18 @@ func (s *ControlPlaneSpec) Validate() error {
 }
 
 type ControlPlaneProject struct {
-	Id          string            `json:"id"`
-	Desc        string            `json:"desc"`
+	// The unique identifier of the project.
+	Id string `json:"id"`
+	// The description about the project.
+	Desc string `json:"desc"`
+	// Static admin account of the project.
 	StaticAdmin ProjectStaticUser `json:"staticAdmin"`
 }
 
 type ProjectStaticUser struct {
-	Username     string `json:"username"`
+	// The username string.
+	Username string `json:"username"`
+	// The bcrypt hashsed value of the password string.
 	PasswordHash string `json:"passwordHash"`
 }
 
@@ -187,13 +192,14 @@ func (c ControlPlaneCache) TTLDuration() time.Duration {
 }
 
 type DataStoreFireStoreConfig struct {
-	// The identifier that logically separates the root path of the datastore.
+	// The root path element considered as a logical namespace, e.g. `pipecd`.
 	Namespace string `json:"namespace"`
-	// The identifier that logically separates directly under the namespace of the datastore.
+	// The second path element considered as a logical environment, e.g. `dev`.
+	// All pipecd collections will have path formatted according to `{namespace}/{environment}/{collection-name}`.
 	Environment string `json:"environment"`
-	// The identifier of the GCP project which host the firestore.
+	// The name of GCP project hosting the firestore.
 	Project string `json:"project"`
-	// The path to the credentials file for accessing firestore.
+	// The path to the service account file for accessing firestores.
 	CredentialsFile string `json:"credentialsFile"`
 }
 
@@ -273,6 +279,7 @@ type FileStoreS3Config struct {
 }
 
 type FileStoreMinioConfig struct {
+	// The address of Minio.
 	Endpoint string `json:"endpoint"`
 	// The bucket name to store.
 	Bucket string `json:"bucket"`
@@ -280,6 +287,6 @@ type FileStoreMinioConfig struct {
 	AccessKeyFile string `json:"accessKeyFile"`
 	// The path to the secret key file.
 	SecretKeyFile string `json:"secretKeyFile"`
-	// The given bucket is made automatically if not exists.
+	// Whether the given bucket should be made automatically if not exists.
 	AutoCreateBucket bool `json:"autoCreateBucket"`
 }

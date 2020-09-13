@@ -4,6 +4,8 @@ spec:
   projectID: test-project
   pipedID: test-piped
   pipedKeyFile: etc/piped/key
+  apiAddress: your-pipecd.domain
+  webAddress: https://your-pipecd.domain
   syncInterval: 1m
 
   git:
