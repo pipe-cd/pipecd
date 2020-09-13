@@ -66,7 +66,7 @@ func NewNotifier(cfg *config.PipedSpec, logger *zap.Logger) (*Notifier, error) {
 		var sd sender
 		switch {
 		case receiver.Slack != nil:
-			sd = newSlackSender(receiver.Name, *receiver.Slack, cfg.WebURL, logger)
+			sd = newSlackSender(receiver.Name, *receiver.Slack, cfg.WebAddress, logger)
 		case receiver.Webhook != nil:
 			sd = newWebhookSender(receiver.Name, *receiver.Webhook, logger)
 		default:

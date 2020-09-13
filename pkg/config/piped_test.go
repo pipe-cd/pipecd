@@ -40,6 +40,8 @@ func TestPipedConfig(t *testing.T) {
 				ProjectID:    "test-project",
 				PipedID:      "test-piped",
 				PipedKeyFile: "etc/piped/key",
+				APIAddress:   "your-pipecd.domain",
+				WebAddress:   "https://your-pipecd.domain",
 				SyncInterval: Duration(time.Minute),
 				Git: PipedGit{
 					Username:   "username",

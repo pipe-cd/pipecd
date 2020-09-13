@@ -43,7 +43,7 @@ type CloudRunDeploymentInput struct {
 	// The name of service manifest file placing in application configuration directory.
 	// Default is service.yaml
 	ServiceManifestFile string `json:"serviceManifestFile"`
-	// Automatically reverts all changes from all stages when one of them failed.
+	// Automatically reverts to the previous state when the deployment is failed.
 	// Default is true.
 	AutoRollback bool `json:"autoRollback"`
 }
@@ -54,5 +54,6 @@ type CloudRunSyncStageOptions struct {
 
 // CloudRunPromoteStageOptions contains all configurable values for a CLOUDRUN_PROMOTE stage.
 type CloudRunPromoteStageOptions struct {
+	// Percentage of traffic should be routed to the new version.
 	Percent int `json:"percent"`
 }

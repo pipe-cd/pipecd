@@ -18,7 +18,7 @@ package config
 type KubernetesDeploymentSpec struct {
 	// Input for Kubernetes deployment such as kubectl version, helm version, manifests filter...
 	Input KubernetesDeploymentInput `json:"input"`
-	// Forcibly use QuickSync or Pipeline when commit message matched the specified format.
+	// Forcibly use QuickSync or Pipeline when commit message matched the specified pattern.
 	CommitMatcher DeploymentCommitMatcher `json:"commitMatcher"`
 	// Configuration for quick sync.
 	QuickSync K8sSyncStageOptions `json:"quickSync"`

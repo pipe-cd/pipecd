@@ -20,7 +20,7 @@ spec:
 | Field | Type | Description | Required |
 |-|-|-|-|
 | input | [KubernetesDeploymentInput](/docs/user-guide/configuration-reference/#kubernetesdeploymentinput) | Input for Kubernetes deployment such as kubectl version, helm version, manifests filter... | No |
-| commitMatcher | [CommitMatcher](/docs/user-guide/configuration-reference/#commitmatcher) | Forcibly use QuickSync or Pipeline when commit message matched the specified format. | No |
+| commitMatcher | [CommitMatcher](/docs/user-guide/configuration-reference/#commitmatcher) | Forcibly use QuickSync or Pipeline when commit message matched the specified pattern. | No |
 | quickSync | [KubernetesQuickSync](/docs/user-guide/configuration-reference/#kubernetesquicksync) | Configuration for quick sync. | No |
 | pipeline | [Pipeline](/docs/user-guide/configuration-reference/#pipeline) | Pipeline for deploying progressively. | No |
 | service | [KubernetesService](/docs/user-guide/configuration-reference/#kubernetesservice) | Which Kubernetes resource should be considered as the Service of application. Empty means the first Service resource will be used. | No |
@@ -199,16 +199,25 @@ spec:
 
 | Field | Type | Description | Required |
 |-|-|-|-|
+| workspace | string | The terraform workspace name. Empty means `default` workspace. | No |
+| terraformVersion | string | The version of terraform should be used. Empty means the pre-installed version will be used. | No |
+| vars | []string | List of variables that will be set directly on terraform commands with `-var` flag. The variable must be formatted by `key=value`. | No |
+| varFiles | []string | List of variable files that will be set on terraform commands with `-var-file` flag. | No |
+| autoRollback | bool | Automatically reverts all changes from all stages when one of them failed. | No |
+| dependencies | []string | List of directories where their changes will trigger the deployment. | No |
 
 ## TerraformQuickSync
 
 | Field | Type | Description | Required |
 |-|-|-|-|
+| retries | int | How many times to retry applying terraform changes. Default is `0`. | No |
 
 ## CloudRunDeploymentInput
 
 | Field | Type | Description | Required |
 |-|-|-|-|
+| serviceManifestFile | string | The name of service manifest file placing in application configuration directory. Default is `service.yaml`. | No |
+| autoRollback | bool | Automatically reverts to the previous state when the deployment is failed. Default is `true`. | No |
 
 ## CloudRunQuickSync
 
@@ -318,11 +327,13 @@ spec:
 
 | Field | Type | Description | Required |
 |-|-|-|-|
+| retries | int | How many times to retry applying terraform changes. Default is `0`. | No |
 
 ### CloudRunPromoteStageOptions
 
 | Field | Type | Description | Required |
 |-|-|-|-|
+| percent | int | Percentage of traffic should be routed to the new version. | No |
 
 ### LambdaCanaryRolloutStageOptions
 
@@ -333,6 +344,7 @@ spec:
 
 | Field | Type | Description | Required |
 |-|-|-|-|
+| percent | int | Percentage of traffic should be routed to the new version. | No |
 
 ### AnalysisStageOptions
 
