@@ -35,6 +35,7 @@ description: >
     projectID: YOUR_PROJECT_ID
     pipedID: YOUR_PIPED_ID
     pipedKeyFile: /etc/piped-secret/piped-key
+    apiAddress: YOUR_CONTROL_PLANE_ADDRESS
     git:
       sshKeyFile: /etc/piped-secret/ssh-key
     repositories:
@@ -48,7 +49,6 @@ description: >
 
   ``` console
   helm install dev-piped pipecd/piped --version=VERSION \
-    --set args.address=YOUR_CONTROL_PLANE_ADDRESS \
     --set-file config.data=PATH_TO_PIPED_CONFIG_FILE \
     --set-file secret.pipedKey.data=PATH_TO_PIPED_KEY_FILE \
     --set-file secret.sshKey.data=PATH_TO_PRIVATE_SSH_KEY_FILE
@@ -60,7 +60,6 @@ description: >
   helm repo update
 
   helm upgrade dev-piped pipecd/piped --version=VERSION \
-    --set args.address=YOUR_CONTROL_PLANE_ADDRESS \
     --set-file config.data=PATH_TO_PIPED_CONFIG_FILE \
     --set-file secret.pipedKey.data=PATH_TO_PIPED_KEY_FILE \
     --set-file secret.sshKey.data=PATH_TO_PRIVATE_SSH_KEY_FILE
@@ -81,6 +80,7 @@ description: >
     projectID: YOUR_PROJECT_ID
     pipedID: YOUR_PIPED_ID
     pipedKeyFile: /etc/piped-secret/piped-key
+    apiAddress: YOUR_CONTROL_PLANE_ADDRESS
     git:
       sshKeyFile: /etc/piped-secret/ssh-key
     repositories:
@@ -94,7 +94,6 @@ description: >
 
   ``` console
   ./piped piped \
-  --control-plane-address=YOUR_CONTROL_PLANE_ADDRESS \
   --config-file=PATH_TO_PIPED_CONFIG_FILE \
   --log-encoding=humanize
   ```
