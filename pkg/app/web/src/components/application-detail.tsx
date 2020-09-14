@@ -8,6 +8,7 @@ import {
 } from "@material-ui/core";
 import SyncIcon from "@material-ui/icons/Cached";
 import OpenInNewIcon from "@material-ui/icons/OpenInNew";
+import Skeleton from "@material-ui/lab/Skeleton/Skeleton";
 import dayjs from "dayjs";
 import React, { FC, memo } from "react";
 import { useDispatch, useSelector } from "react-redux";
@@ -140,31 +141,27 @@ export const ApplicationDetail: FC<Props> = memo(function ApplicationDetail({
     }
   };
 
-  if (!app || !env || !pipe) {
-    return (
-      <div className={classes.loading}>
-        <CircularProgress />
-      </div>
-    );
-  }
-
   return (
     <Paper square elevation={1} className={classes.root}>
       <div className={classes.mainContent}>
         <div className={classes.nameAndEnv}>
-          <Typography variant="h5">{app.name}</Typography>
+          <Typography variant="h5">
+            {app ? app.name : <Skeleton width={100} />}
+          </Typography>
           <Typography variant="subtitle2" className={classes.env}>
-            {env.name}
+            {env ? env.name : <Skeleton width={100} />}
           </Typography>
 
-          {liveState && (
-            <Typography className={classes.age} variant="body1">
-              {dayjs(liveState.version.timestamp * 1000).fromNow()}
-            </Typography>
-          )}
+          <Typography className={classes.age} variant="body1">
+            {liveState ? (
+              dayjs(liveState.version.timestamp * 1000).fromNow()
+            ) : (
+              <Skeleton width={150} />
+            )}
+          </Typography>
         </div>
 
-        {app.syncState && (
+        {app?.syncState ? (
           <>
             <div className={classes.statusLine}>
               <SyncStatusIcon status={app.syncState.status} />
@@ -174,7 +171,7 @@ export const ApplicationDetail: FC<Props> = memo(function ApplicationDetail({
                 </Typography>
               </div>
 
-              {liveState && (
+              {liveState ? (
                 <>
                   <ApplicationHealthStatusIcon
                     health={liveState.healthStatus}
@@ -183,6 +180,8 @@ export const ApplicationDetail: FC<Props> = memo(function ApplicationDetail({
                     {APPLICATION_HEALTH_STATUS_TEXT[liveState.healthStatus]}
                   </Typography>
                 </>
+              ) : (
+                <CircularProgress />
               )}
             </div>
 
@@ -191,49 +190,67 @@ export const ApplicationDetail: FC<Props> = memo(function ApplicationDetail({
               detail={app.syncState.reason}
             />
           </>
+        ) : (
+          <Skeleton height={32} width={200} />
         )}
       </div>
 
       <div className={classes.detail}>
         <div className={classes.content}>
-          <LabeledText label="piped" value={`${pipe.name}`} />
+          {app && pipe ? (
+            <>
+              <LabeledText label="piped" value={pipe.name} />
 
-          <LabeledText label="Cloud Provider" value={`${app.cloudProvider}`} />
+              <LabeledText label="Cloud Provider" value={app.cloudProvider} />
 
-          <LabeledText
-            label="Configuration Directory"
-            value={
-              <Link href={app.gitPath.url} target="_blank" rel="noreferrer">
-                {app.gitPath.path}
-                <OpenInNewIcon className={classes.linkIcon} />
-              </Link>
-            }
-          />
+              {app.gitPath && (
+                <LabeledText
+                  label="Configuration Directory"
+                  value={
+                    <Link
+                      href={app.gitPath.url}
+                      target="_blank"
+                      rel="noreferrer"
+                    >
+                      {app.gitPath.path}
+                      <OpenInNewIcon className={classes.linkIcon} />
+                    </Link>
+                  }
+                />
+              )}
+            </>
+          ) : (
+            <Skeleton height={63} width={500} />
+          )}
         </div>
 
-        {app.mostRecentlySuccessfulDeployment && (
-          <div className={classes.content}>
-            <LabeledText
-              label="Latest Deployment"
-              value={
-                <Link
-                  component={RouterLink}
-                  to={`${PAGE_PATH_DEPLOYMENTS}/${app.mostRecentlySuccessfulDeployment.deploymentId}`}
-                >
-                  {app.mostRecentlySuccessfulDeployment.deploymentId}
-                </Link>
-              }
-            />
-            <LabeledText
-              label="Version"
-              value={app.mostRecentlySuccessfulDeployment.version}
-            />
-            <LabeledText
-              label="Summary"
-              value={app.mostRecentlySuccessfulDeployment.summary}
-            />
-          </div>
-        )}
+        <div className={classes.content}>
+          {app?.mostRecentlySuccessfulDeployment ? (
+            <>
+              <LabeledText
+                label="Latest Deployment"
+                value={
+                  <Link
+                    component={RouterLink}
+                    to={`${PAGE_PATH_DEPLOYMENTS}/${app.mostRecentlySuccessfulDeployment.deploymentId}`}
+                  >
+                    {app.mostRecentlySuccessfulDeployment.deploymentId}
+                  </Link>
+                }
+              />
+              <LabeledText
+                label="Version"
+                value={app.mostRecentlySuccessfulDeployment.version}
+              />
+              <LabeledText
+                label="Summary"
+                value={app.mostRecentlySuccessfulDeployment.summary}
+              />
+            </>
+          ) : (
+            <Skeleton height={63} width={500} />
+          )}
+        </div>
       </div>
 
       <div className={classes.actionButtons}>
