@@ -18,6 +18,7 @@ import (
 	"context"
 	"io"
 	"io/ioutil"
+	"net/http"
 
 	"cloud.google.com/go/storage"
 	"go.uber.org/zap"
@@ -33,6 +34,9 @@ type Store struct {
 	useCredentialsFile bool
 	credentialsFile    string
 	logger             *zap.Logger
+
+	// aims to run integration tests
+	httpClient *http.Client
 }
 
 type Option func(*Store)
@@ -41,6 +45,12 @@ func WithCredentialsFile(path string) Option {
 	return func(s *Store) {
 		s.useCredentialsFile = true
 		s.credentialsFile = path
+	}
+}
+
+func WithHTTPClient(client *http.Client) Option {
+	return func(s *Store) {
+		s.httpClient = client
 	}
 }
 
@@ -62,6 +72,8 @@ func NewStore(ctx context.Context, bucket string, opts ...Option) (*Store, error
 	var options []option.ClientOption
 	if s.useCredentialsFile {
 		options = append(options, option.WithCredentialsFile(s.credentialsFile))
+	} else if s.httpClient != nil {
+		options = append(options, option.WithHTTPClient(s.httpClient))
 	}
 	client, err := storage.NewClient(ctx, options...)
 	if err != nil {
