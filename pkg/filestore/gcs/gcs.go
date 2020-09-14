@@ -33,10 +33,8 @@ type Store struct {
 	bucket             string
 	useCredentialsFile bool
 	credentialsFile    string
+	httpClient         *http.Client
 	logger             *zap.Logger
-
-	// aims to run integration tests
-	httpClient *http.Client
 }
 
 type Option func(*Store)
@@ -72,7 +70,8 @@ func NewStore(ctx context.Context, bucket string, opts ...Option) (*Store, error
 	var options []option.ClientOption
 	if s.useCredentialsFile {
 		options = append(options, option.WithCredentialsFile(s.credentialsFile))
-	} else if s.httpClient != nil {
+	}
+	if s.httpClient != nil {
 		options = append(options, option.WithHTTPClient(s.httpClient))
 	}
 	client, err := storage.NewClient(ctx, options...)
