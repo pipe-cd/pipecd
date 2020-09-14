@@ -1,5 +1,4 @@
 args:
-  address: "pipecd:443"
   metrics: true
   useFakeAPI: false
   enableDefaultKubernetesCloudProvider: true
