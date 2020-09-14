@@ -6,24 +6,33 @@ description: >
   This page describes how to configure piped to send notications to external services.
 ---
 
-> TBA
+PipeCD events (deployment triggered, planned, completed, analysis result, piped started...) can be sent to external services like Slack or a Webhook service. While forwarding those events to a chat service helps developers have a quick and convenient way to know the deployment's current status, forwarding to a Webhook service may be useful for triggering other related tasks like CI jobs.
+
+PipeCD events are emitted and sent by the `piped` component. So all of the needed configurations can be specified in the `piped` configuration file.
+Notification configuration including:
+- a list of `Route`s which used to match events and decide where the event should be sent to
+- a list of `Receiver`s which used to know how to send events to the external service
+
+[Notification Route](http://localhost:1313/docs/operator-manual/piped/configuration-reference/#notificationroute) matches events based on their metadata like `name`, `group`, `env`, `app`.
+Below is the list of supporting event names and their groups.
+
+| Event | Group |
+|-|-|
+| DEPLOYMENT_TRIGGERED | DEPLOYMENT |
+| DEPLOYMENT_PLANNED | DEPLOYMENT |
+| DEPLOYMENT_APPROVED | DEPLOYMENT |
+| DEPLOYMENT_ROLLING_BACK | DEPLOYMENT |
+| DEPLOYMENT_SUCCEEDED | DEPLOYMENT |
+| DEPLOYMENT_FAILED | DEPLOYMENT |
+| DEPLOYMENT_CANCELLED | DEPLOYMENT |
+| APPLICATION_SYNCED | APPLICATION_SYNC |
+| APPLICATION_OUT_OF_SYNC | APPLICATION_SYNC |
+| APPLICATION_HEALTHY | APPLICATION_HEALTH |
+| APPLICATION_UNHEALTHY | APPLICATION_HEALTH |
+| PIPED_STARTED | PIPED |
+| PIPED_STOPPED | PIPED |
 
 ### Sending notifications to Slack
-
-![](/images/notification-slack-deployment-planned.png)
-<p style="text-align: center;">
-Deployment was planned
-</p>
-
-![](/images/notification-slack-deployment-completed-successfully.png)
-<p style="text-align: center;">
-Deployment was completed successfully
-</p>
-
-![](/images/notification-slack-piped-started.png)
-<p style="text-align: center;">
-A piped has been started
-</p>
 
 ``` yaml
 apiVersion: pipecd.dev/v1beta1
@@ -31,10 +40,12 @@ kind: Piped
 spec:
   notifications:
     routes:
+      # Sending all event from development environment to dev-slack-channel.
       - name: dev-slack
         envs:
           - dev
         receiver: dev-slack-channel
+      # Only sending deployment started and completed events to prod-slack-channel.
       - name: prod-slack
         events:
           - DEPLOYMENT_STARTED
@@ -42,6 +53,7 @@ spec:
         envs:
           - dev
         receiver: prod-slack-channel
+      # Sending all events a CI service.
       - name: all-events-to-ci
         receiver: ci-webhook
     receivers:
@@ -56,4 +68,20 @@ spec:
           url: https://pipecd.dev/dev-hook
 ```
 
+
+![](/images/slack-notification-deployment.png)
+<p style="text-align: center;">
+Deployment was triggered, planned and completed successfully
+</p>
+
+![](/images/slack-notification-piped-started.png)
+<p style="text-align: center;">
+A piped has been started
+</p>
+
+
+For detailed configuration, please check the [configuration reference](http://localhost:1313/docs/operator-manual/piped/configuration-reference/#notifications) section.
+
 ### Sending notifications to webhook endpoints
+
+> TBA
