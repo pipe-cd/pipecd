@@ -36,4 +36,6 @@ helm install dev-piped pipecd/piped --version=VERSION \
   --set-file secret.sshKey.data=PATH_TO_PRIVATE_SSH_KEY_FILE
 ```
 
+You can see this [configuration reference](http://localhost:1313/docs/operator-manual/piped/configuration-reference/#git) for more configurable fields about Git commands.
+
 Currently, `piped` allows configuring only one private SSH key for all specified Git repositories. So you can configure the same SSH key for all of those private repositories, or break them into separate `piped`s. In the next version, we also want to update `piped` to support loading multiple SSH keys.
