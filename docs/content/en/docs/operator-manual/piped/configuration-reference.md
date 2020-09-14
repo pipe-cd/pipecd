@@ -26,7 +26,7 @@ spec:
 | webAddress | string | The address to the control-plane's Web. | No |
 | syncInterval | duration | How offten to check whether an application should be synced. Default is `1m`. | No |
 | git | [Git](/docs/operator-manual/piped/configuration-reference/#git) | Git configuration needed for Git commands.  | No |
-| repositories | [][Repository](/docs/operator-manual/piped/configuration-reference/#repository) | List of Git repositories this piped will handle. | No |
+| repositories | [][Repository](/docs/operator-manual/piped/configuration-reference/#gitrepository) | List of Git repositories this piped will handle. | No |
 | chartRepositories | [][ChartRepository](/docs/operator-manual/piped/configuration-reference/#chartrepository) | List of Helm chart repositories that should be added while starting up. | No |
 | cloudProviders | [][CloudProvider](/docs/operator-manual/piped/configuration-reference/#cloudprovider) | List of cloud providers can be used by this piped. | No |
 | analysisProviders | [][AnalysisProvider](/docs/operator-manual/piped/configuration-reference/#analysisprovider) | List of analysis providers can be used by this piped. | No |
@@ -43,7 +43,7 @@ spec:
 | hostName | string | The hostname or IP address of the remote git server. Default is the same value with Host. | No |
 | sshKeyFile | string | The path to the private ssh key file. This will be used to clone the source code of the specified git repositories. | No |
 
-## Repository
+## GitRepository
 
 | Field | Type | Description | Required |
 |-|-|-|-|
