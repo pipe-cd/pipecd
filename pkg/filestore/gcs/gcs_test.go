@@ -41,7 +41,9 @@ func TestGetObject(t *testing.T) {
 		Host: "127.0.0.1",
 		Port: 8081,
 	})
+	assert.Nil(t, err)
 	defer server.Stop()
+
 	store, err := NewStore(ctx, bucket, WithHTTPClient(server.HTTPClient()))
 	assert.Nil(t, err)
 
