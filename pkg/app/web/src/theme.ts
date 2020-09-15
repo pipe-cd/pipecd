@@ -36,7 +36,7 @@ export const theme = createMuiTheme({
     },
   },
   palette: {
-    primary: { main: "#2C387E" },
+    primary: { main: "#283778" },
     success: {
       main: "#539d56",
       light: "#83cf84",
