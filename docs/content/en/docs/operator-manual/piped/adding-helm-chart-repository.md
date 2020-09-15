@@ -36,4 +36,4 @@ spec:
       version: v0.5.0
 ```
 
-In case the chart repository is backed by HTTP basic authentication, the username and password strings is required in [configuration](http://localhost:1313/docs/operator-manual/piped/configuration-reference/#chartrepository).
+In case the chart repository is backed by HTTP basic authentication, the username and password strings are required in [configuration](http://localhost:1313/docs/operator-manual/piped/configuration-reference/#chartrepository).
