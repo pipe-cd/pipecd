@@ -4,7 +4,7 @@
 <div class="row justify-content-center py-5 {{ if eq .Params.image_position "right" }} flex-row-reverse {{ end }} border-bottom">
 
   {{ with $value_image }}
-  {{ $image_resized := $value_image.Fit "400x250" }}
+  {{ $image_resized := $value_image.Fit "420x250" }}
   <div class="col-4 text-center">
     <img src="{{ $image_resized.RelPermalink }}" />
   </div>
