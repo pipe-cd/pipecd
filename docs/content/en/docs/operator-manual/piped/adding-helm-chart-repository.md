@@ -21,7 +21,7 @@ spec:
       address: https://pipecd-charts.storage.googleapis.com
 ```
 
-For example, the above snippet enables the offical chart repository of PipeCD project. After that, you can configure the Kubernetes application to load a chart from that chart repository for executing the deployment.
+For example, the above snippet enables the official chart repository of PipeCD project. After that, you can configure the Kubernetes application to load a chart from that chart repository for executing the deployment.
 
 ``` yaml
 # .pipe.yaml
