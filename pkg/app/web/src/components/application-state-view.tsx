@@ -7,6 +7,16 @@ import {
 } from "../modules/applications-live-state";
 import { KubernetesStateView } from "./kubernetes-state-view";
 import { ApplicationKind } from "pipe/pkg/app/web/model/common_pb";
+import { CircularProgress, makeStyles } from "@material-ui/core";
+
+const useStyles = makeStyles(() => ({
+  loading: {
+    display: "flex",
+    justifyContent: "center",
+    alignItems: "center",
+    flex: 1,
+  },
+}));
 
 interface Props {
   applicationId: string;
@@ -14,12 +24,17 @@ interface Props {
 
 export const ApplicationStateView: FC<Props> = memo(
   function ApplicationStateView({ applicationId }) {
+    const classes = useStyles();
     const liveState = useSelector<AppState, ApplicationLiveState | undefined>(
       (state) => selectById(state.applicationLiveState, applicationId)
     );
 
     if (!liveState) {
-      return null;
+      return (
+        <div className={classes.loading}>
+          <CircularProgress />
+        </div>
+      );
     }
 
     switch (liveState.kind) {
