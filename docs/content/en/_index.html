@@ -4,10 +4,10 @@ linkTitle = "PipeCD"
 
 +++
 
-{{< blocks/cover title="Continuous Delivery for Declarative Kubernetes, Serverless Application and Infrastructure" height="full" image_anchor="top" color="white" >}}
+{{< blocks/cover description="Continuous Delivery for Declarative Kubernetes, Serverless Application and Infrastructure" height="med" image_anchor="top" color="primary" >}}
 <div class="mx-auto">
-	<a class="btn btn-lg btn-primary mr-3 mb-4" href="{{< relref "/docs" >}}">
-		Learn More <i class="fas fa-arrow-alt-circle-right ml-2"></i>
+	<a class="btn btn-lg btn-primary mr-3 mb-4" href="{{< relref "/docs/quickstart" >}}">
+		Getting Started <i class="fas fa-arrow-alt-circle-right ml-2"></i>
 	</a>
 	<a class="btn btn-lg btn-secondary mr-3 mb-4" href="https://github.com/pipe-cd/pipe">
 		GitHub <i class="fab fa-github ml-2 "></i>
@@ -17,15 +17,53 @@ linkTitle = "PipeCD"
 
 {{< blocks/section color="white" >}}
 <div class="container">
-
 <div class="row">
 	<div class="col">
-		<h1 class="text-center">TBA</h1>
-	</div>
+		<p class="description text-muted">
+            PipeCD provides a continuous delivery solution that enables deployment operations (rollout, scale, rollback...) by Pull Request for declarative Kubernetes, Serverless, and Infrastructure applications.
+        </p>
+    </div>
 </div>
 
-
 {{< /blocks/section >}}
+
+<div class="row justify-content-md-center">
+	<div class="col-xl-10">
+        {{< blocks/value title="Visibility" image="visibility" image_position="left" >}}
+        <ul class="core-value-detail">
+            <li>Deployment pipeline UI shows clarify what is happening</li>
+            <li>Separate detailed logs view  for each individual deployment</li>
+            <li>Realtime visualization of application state</li>
+            <li>Deployment notifications/alerts to slack, webhook</li>
+            <li>Insight shows the delivery performance</li>
+        </ul>
+        {{< /blocks/value >}}
+
+        {{< blocks/value title="Automation" image="automation" image_position="right" >}}
+        <ul class="core-value-detail">
+            <li>Automated Rollback</li>
+            <li>Automated Deployment Analysis (based on metrics, logs, http requests...)</li>
+            <li>Automated Configuration Drift Detection</li>
+        </ul>
+        {{< /blocks/value >}}
+
+        {{< blocks/value title="Secure" image="secure" image_position="left" >}}
+        <ul class="core-value-detail">
+            <li>Support single sign-on (SSO) and role-based access control (RBAC)</li>
+            <li>Credentials are not exposed outside cluster</li>
+            <li>Piped is doing only outbound requests and able to run inside a restricted/private network</li>
+        </ul>
+        {{< /blocks/value >}}
+
+        {{< blocks/value title="Multi-provider & Multi-Tenancy" image="multi-provider" image_position="right" >}}
+        <ul class="core-value-detail">
+            <li>Support multi-cloud: Kubernetes, Terraform, CloudRun, Lambda...</li>
+            <li>Easy to operate multi-cluster, multi-tenancy.</li>
+            <li>Support multi-strategy: rolling update, canary, bluegreen.</li>
+        </ul>
+        {{< /blocks/value >}}
+    </div>
+</div>
 
 {{< blocks/section color="dark" >}}
 
