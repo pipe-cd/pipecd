@@ -3,15 +3,16 @@ module github.com/pipe-cd/pipe
 go 1.14
 
 require (
-	cloud.google.com/go v0.56.0
+	cloud.google.com/go v0.65.0
 	cloud.google.com/go/firestore v1.2.0
-	cloud.google.com/go/storage v1.6.0
+	cloud.google.com/go/storage v1.11.0
 	github.com/NYTimes/gziphandler v0.0.0-20170623195520-56545f4a5d46
 	github.com/aws/aws-sdk-go v1.34.5 // indirect
 	github.com/dgrijalva/jwt-go v3.2.0+incompatible
 	github.com/envoyproxy/protoc-gen-validate v0.1.0
-	github.com/golang/mock v1.4.3
-	github.com/golang/protobuf v1.4.0
+	github.com/fsouza/fake-gcs-server v1.21.0
+	github.com/golang/mock v1.4.4
+	github.com/golang/protobuf v1.4.2
 	github.com/gomodule/redigo v2.0.0+incompatible
 	github.com/google/go-github/v29 v29.0.3
 	github.com/google/uuid v1.1.1
@@ -29,12 +30,12 @@ require (
 	go.uber.org/multierr v1.2.0 // indirect
 	go.uber.org/zap v1.10.1-0.20190709142728-9a9fa7d4b5f0
 	golang.org/x/crypto v0.0.0-20200728195943-123391ffb6de
-	golang.org/x/net v0.0.0-20200707034311-ab3426394381
+	golang.org/x/net v0.0.0-20200822124328-c89045814202
 	golang.org/x/oauth2 v0.0.0-20200107190931-bf48bf16ab8d
 	golang.org/x/sync v0.0.0-20200625203802-6e8e738ad208
-	google.golang.org/api v0.20.0
-	google.golang.org/grpc v1.28.1
-	google.golang.org/protobuf v1.21.0
+	google.golang.org/api v0.31.0
+	google.golang.org/grpc v1.31.1
+	google.golang.org/protobuf v1.25.0
 	istio.io/api v0.0.0-20200710191538-00b73d23c685
 	k8s.io/api v0.0.0-20200410021914-5778e4f3d00d
 	k8s.io/apimachinery v0.18.1
