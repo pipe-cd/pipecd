@@ -39,7 +39,6 @@ func newEmulator(bucket string, objects map[string]string) (*fakestorage.Server,
 		Host:           "127.0.0.1",
 		Port:           8081,
 	})
-
 }
 
 func TestGetObject(t *testing.T) {
