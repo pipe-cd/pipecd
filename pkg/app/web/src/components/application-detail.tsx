@@ -31,6 +31,7 @@ import {
   selectById as selectEnvById,
 } from "../modules/environments";
 import { Piped, selectById as selectPipeById } from "../modules/pipeds";
+import { ApplicationKindIcon } from "./application-kind-icon";
 import { ApplicationHealthStatusIcon } from "./health-status-icon";
 import { LabeledText } from "./labeled-text";
 import { SyncStateReason } from "./sync-state-reason";
@@ -69,6 +70,7 @@ const useStyles = makeStyles((theme) => ({
   statusLine: {
     display: "flex",
     alignItems: "center",
+    marginTop: theme.spacing(1),
   },
   statusText: {
     display: "flex",
@@ -145,6 +147,7 @@ export const ApplicationDetail: FC<Props> = memo(function ApplicationDetail({
     <Paper square elevation={1} className={classes.root}>
       <div className={classes.mainContent}>
         <div className={classes.nameAndEnv}>
+          {app && <ApplicationKindIcon kind={app.kind} />}
           <Typography variant="h5">
             {app ? app.name : <Skeleton width={100} />}
           </Typography>
