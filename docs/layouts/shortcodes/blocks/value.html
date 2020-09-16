@@ -1,14 +1,9 @@
 {{ $_hugo_config := `{ "version": 1 }` }}
-{{ $value_image := resources.GetMatch (printf "**%s*" .Params.image) }}
 
 <div class="row justify-content-center core-value {{ if eq .Params.image_position "right" }} flex-row-reverse {{ end }} border-bottom">
-
-  {{ with $value_image }}
-  {{ $image_resized := $value_image.Fit "500x250" }}
   <div class="col-md text-center">
-    <img src="{{ $image_resized.RelPermalink }}" />
+    <img src="/images/{{ .Params.image }}" width="500" height="250"/>
   </div>
-  {{ end }}
 
   <div class="col-md">
     <div class="value-title h2">{{ .Params.title }}</div>

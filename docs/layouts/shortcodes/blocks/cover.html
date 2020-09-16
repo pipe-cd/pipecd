@@ -1,6 +1,5 @@
 {{ $_hugo_config := `{ "version": 1 }` }}
 {{ $blockID := printf "td-cover-block-%d" .Ordinal }}
-{{ $logo_image := resources.Get "images/lp-logo.png" }}
 {{ $col_id := .Get "color" | default "primary" }}
 {{ $image_anchor := .Get "image_anchor" | default "smart" }}
 {{ $logo_anchor := .Get "logo_anchor" | default "smart" }}
@@ -13,10 +12,7 @@
       <div class="col-12">
         <div class="text-center">
             <h1 class="display-1 mt-0 mt-md-5 pb-4">
-              {{ with $logo_image }}
-              {{ $logo_image_resized := (.Fit (printf "320x164 %s" $logo_anchor)) }}
-                <img class="td-cover-logo" src="{{ $logo_image_resized.RelPermalink }}" alt="PipeCD Logo">
-              {{ end }}
+                <img class="td-cover-logo" src="images/lp-logo.png" height="164" alt="PipeCD Logo">
             </h1>
           {{ with .Get "description" }}
             {{ $description := . }}
