@@ -11,11 +11,29 @@
 }
 
 .description {
-    font-size: 1.5rem;
+    font-size: 1.15rem;
+}
+
+.core-values {
+    max-width: 80rem;
+}
+
+.core-value {
+    padding: 4rem 0;
 }
 
 .value-title {
-    font-size: 1.5rem;
     color: $primary;
     margin-left: 23px;
+}
+
+.core-value-detail li {
+    padding: 4px;
+}
+
+
+@include media-breakpoint-down(md) {
+    .value-title {
+        margin-top: 1rem;
+    }
 }
