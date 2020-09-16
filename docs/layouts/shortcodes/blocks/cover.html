@@ -1,6 +1,6 @@
 {{ $_hugo_config := `{ "version": 1 }` }}
 {{ $blockID := printf "td-cover-block-%d" .Ordinal }}
-{{ $logo_image := (.Page.Resources.ByType "image").GetMatch "**logo*" }}
+{{ $logo_image := resources.Get "images/lp-logo.png" }}
 {{ $col_id := .Get "color" | default "primary" }}
 {{ $image_anchor := .Get "image_anchor" | default "smart" }}
 {{ $logo_anchor := .Get "logo_anchor" | default "smart" }}
