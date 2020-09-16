@@ -4,9 +4,9 @@ linkTitle = "PipeCD"
 
 +++
 
-{{< blocks/cover description="Continuous Delivery for Declarative Kubernetes, Serverless Application and Infrastructure" height="med" image_anchor="top" color="primary" >}}
+{{< blocks/cover description="Continuous Delivery for Declarative Kubernetes, Serverless and Infrastructure Applications" height="med" image_anchor="top" color="primary" >}}
 <div class="mx-auto">
-	<a class="btn btn-lg btn-primary mr-3 mb-4" href="{{< relref "/docs/quickstart" >}}">
+	<a class="btn btn-lg btn-primary mr-3 mb-4" href="{{< relref "/docs" >}}">
 		Getting Started <i class="fas fa-arrow-alt-circle-right ml-2"></i>
 	</a>
 	<a class="btn btn-lg btn-secondary mr-3 mb-4" href="https://github.com/pipe-cd/pipe">
@@ -20,7 +20,7 @@ linkTitle = "PipeCD"
 <div class="row">
 	<div class="col">
 		<p class="description text-muted">
-            PipeCD provides a continuous delivery solution that enables deployment operations (rollout, scale, rollback...) by Pull Request for declarative Kubernetes, Serverless, and Infrastructure applications.
+            WIP PipeCD provides a unified continuous delivery solution that enables deployment operations (rollout, scale, rollback...) by Pull Request for declarative Kubernetes, Serverless, and Infrastructure applications.
         </p>
     </div>
 </div>
@@ -29,37 +29,37 @@ linkTitle = "PipeCD"
 
 <div class="row justify-content-md-center">
 	<div class="col-xl-10">
-        {{< blocks/value title="Visibility" image="visibility" image_position="left" >}}
+        {{< blocks/value title="Visibility" image="placeholder" image_position="left" >}}
         <ul class="core-value-detail">
             <li>Deployment pipeline UI shows clarify what is happening</li>
-            <li>Separate detailed logs view  for each individual deployment</li>
+            <li>Separate logs viewer for each individual deployment</li>
             <li>Realtime visualization of application state</li>
-            <li>Deployment notifications/alerts to slack, webhook</li>
+            <li>Deployment notifications to slack, webhook endpoints</li>
             <li>Insight shows the delivery performance</li>
         </ul>
         {{< /blocks/value >}}
 
-        {{< blocks/value title="Automation" image="automation" image_position="right" >}}
+        {{< blocks/value title="Automation" image="placeholder" image_position="right" >}}
         <ul class="core-value-detail">
-            <li>Automated Rollback</li>
-            <li>Automated Deployment Analysis (based on metrics, logs, http requests...)</li>
-            <li>Automated Configuration Drift Detection</li>
+            <li>Automated deployment analysis based on metrics, logs, emitted requests</li>
+            <li>Automatically roll back to the previous state as soon as analysis or a pipeline stage fails</li>
+            <li>Automatically detect configuration drift to notify and render the changes</li>
         </ul>
         {{< /blocks/value >}}
 
-        {{< blocks/value title="Secure" image="secure" image_position="left" >}}
+        {{< blocks/value title="Secure" image="placeholder" image_position="left" >}}
         <ul class="core-value-detail">
-            <li>Support single sign-on (SSO) and role-based access control (RBAC)</li>
-            <li>Credentials are not exposed outside cluster</li>
-            <li>Piped is doing only outbound requests and able to run inside a restricted/private network</li>
+            <li>Support single sign-on and role-based access control</li>
+            <li>Credentials are not exposed outside the cluster and not saved in the control-plane</li>
+            <li>Piped makes only outbound requests and can run inside a restricted network</li>
         </ul>
         {{< /blocks/value >}}
 
-        {{< blocks/value title="Multi-provider & Multi-Tenancy" image="multi-provider" image_position="right" >}}
+        {{< blocks/value title="Multi-provider & Multi-Tenancy" image="placeholder" image_position="right" >}}
         <ul class="core-value-detail">
-            <li>Support multi-cloud: Kubernetes, Terraform, CloudRun, Lambda...</li>
-            <li>Easy to operate multi-cluster, multi-tenancy.</li>
-            <li>Support multi-strategy: rolling update, canary, bluegreen.</li>
+            <li>Multiple application kinds on multi-cloud including Kubernetes, Terraform, CloudRun, Lambda</li>
+            <li>Multiple analysis providers including Prometheus, Datadog, Stackdriver, and more</li>
+            <li>Easy to operate multi-cluster, multi-tenancy by separating control-plane and piped</li>
         </ul>
         {{< /blocks/value >}}
     </div>
