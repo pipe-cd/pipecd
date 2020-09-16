@@ -17,8 +17,6 @@ package main
 import (
 	"log"
 
-	"github.com/pipe-cd/pipe/pkg/app/api/cmd/samplepipedapicli"
-	"github.com/pipe-cd/pipe/pkg/app/api/cmd/samplewebapicli"
 	"github.com/pipe-cd/pipe/pkg/app/api/cmd/server"
 	"github.com/pipe-cd/pipe/pkg/cli"
 )
@@ -30,8 +28,6 @@ func main() {
 	)
 	app.AddCommands(
 		server.NewCommand(),
-		samplepipedapicli.NewCommand(),
-		samplewebapicli.NewCommand(),
 	)
 	if err := app.Run(); err != nil {
 		log.Fatal(err)
