@@ -6,4 +6,4 @@ description: >
   This page describes how to add a new container image provider.
 ---
 
-> TBA
+> TBA: This is for image watcher feature.
