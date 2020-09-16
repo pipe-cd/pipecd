@@ -26,12 +26,14 @@ import { useMe } from "../modules/me";
 import ArrowDownIcon from "@material-ui/icons/ArrowDropDown";
 import logo from "../../assets/logo.svg";
 
+export const APP_HEADER_HEIGHT = 56;
+
 const useStyles = makeStyles((theme) => ({
   appBar: {
     zIndex: theme.zIndex.drawer + 1,
   },
   logo: {
-    height: 56,
+    height: APP_HEADER_HEIGHT,
   },
   left: {
     flexGrow: 1,

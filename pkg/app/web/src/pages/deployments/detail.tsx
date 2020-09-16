@@ -27,9 +27,6 @@ const useStyles = makeStyles({
   main: {
     flex: 1,
   },
-  bottomContent: {
-    flex: "initial",
-  },
   loading: {
     flex: 1,
     display: "flex",
@@ -74,9 +71,7 @@ export const DeploymentDetailPage: FC = memo(function DeploymentDetailPage() {
         <DeploymentDetail deploymentId={deploymentId} />
         <Pipeline deploymentId={deploymentId} />
       </div>
-      <div className={classes.bottomContent}>
-        <LogViewer />
-      </div>
+      <LogViewer />
     </div>
   );
 });

@@ -15,8 +15,10 @@ import { clearActiveStage } from "../modules/active-stage";
 import { selectById, Stage, isStageRunning } from "../modules/deployments";
 import Draggable from "react-draggable";
 import clsx from "clsx";
+import { APP_HEADER_HEIGHT } from "./header";
 
 const INITIAL_HEIGHT = 400;
+const TOOLBAR_HEIGHT = 48;
 
 function useActiveStageLog(): [Stage | null, StageLog | null] {
   return useSelector<AppState, [Stage | null, StageLog | null]>((state) => {
@@ -51,6 +53,9 @@ const useStyles = makeStyles((theme) => ({
     bottom: "0px",
     width: "100%",
   },
+  toolbar: {
+    background: theme.palette.background.default,
+  },
   toolbarLeft: {
     flex: 1,
     display: "flex",
@@ -80,28 +85,34 @@ const useStyles = makeStyles((theme) => ({
   handle: {
     position: "absolute",
     // view height + header
-    bottom: `${INITIAL_HEIGHT + 48}px`,
     zIndex: 10,
   },
 }));
 
 export const LogViewer: FC = memo(function LogViewer() {
+  const maxHandlePosY =
+    document.body.clientHeight - APP_HEADER_HEIGHT - TOOLBAR_HEIGHT;
   const classes = useStyles();
   const [activeStage, stageLog] = useActiveStageLog();
   const dispatch = useDispatch();
-  const [posY, setPosY] = useState(0);
-  const [height, setHeight] = useState(INITIAL_HEIGHT);
+  const [handlePosY, setHandlePosY] = useState(maxHandlePosY - INITIAL_HEIGHT);
+  const logViewHeight = maxHandlePosY - handlePosY;
 
   const handleOnClickClose = (): void => {
     dispatch(clearActiveStage());
   };
 
-  const handleOnDrag = useCallback(
+  const handleDrag = useCallback(
     (_, data) => {
-      setPosY(data.y);
-      setHeight(height - (data.y - data.lastY));
+      if (data.y < 0) {
+        setHandlePosY(0);
+      } else if (data.y > maxHandlePosY) {
+        setHandlePosY(maxHandlePosY);
+      } else {
+        setHandlePosY(data.y);
+      }
     },
-    [setPosY, height, setHeight]
+    [setHandlePosY, maxHandlePosY]
   );
 
   if (!stageLog || !activeStage) {
@@ -111,18 +122,19 @@ export const LogViewer: FC = memo(function LogViewer() {
   return (
     <>
       <Draggable
-        onDrag={handleOnDrag}
+        onDrag={handleDrag}
+        onStop={handleDrag}
         handle=".handle"
-        position={{ x: 0, y: posY }}
+        position={{ x: 0, y: handlePosY }}
         defaultClassName={classes.handle}
         axis="y"
       >
-        <div className={clsx("handle", classes.dividerWrapper)}>
-          <Divider />
-        </div>
+        <div className={clsx("handle", classes.dividerWrapper)} />
       </Draggable>
+
       <div className={classes.root}>
-        <Toolbar variant="dense">
+        <Divider />
+        <Toolbar variant="dense" className={classes.toolbar}>
           <div className={classes.toolbarLeft}>
             <Typography variant="subtitle2" className={classes.stageName}>
               {activeStage.name}
@@ -137,7 +149,7 @@ export const LogViewer: FC = memo(function LogViewer() {
             </IconButton>
           </div>
         </Toolbar>
-        <div className={classes.logContainer} style={{ height }}>
+        <div className={classes.logContainer} style={{ height: logViewHeight }}>
           <Log
             loading={isStageRunning(activeStage.status)}
             logs={stageLog.logBlocks}
