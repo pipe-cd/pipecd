@@ -15,10 +15,12 @@
 package datastore
 
 import (
+	"context"
 	"errors"
 	"testing"
 	"time"
 
+	"github.com/golang/mock/gomock"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 
@@ -288,6 +290,71 @@ func TestStageStatusChangedUpdater(t *testing.T) {
 				return
 			}
 			assert.Equal(t, tc.expectedDeployment, tc.deployment)
+		})
+	}
+}
+
+func TestAddDeployment(t *testing.T) {
+	ctrl := gomock.NewController(t)
+	defer ctrl.Finish()
+
+	testcases := []struct {
+		name       string
+		deployment *model.Deployment
+		dsFactory  func(*model.Deployment) DataStore
+		wantErr    bool
+	}{
+		{
+			name:       "Invalid deployment",
+			deployment: &model.Deployment{},
+			dsFactory:  func(d *model.Deployment) DataStore { return nil },
+			wantErr:    true,
+		},
+		{
+			name: "Valid deployment",
+			deployment: &model.Deployment{
+				Id:              "id",
+				ApplicationId:   "app-id",
+				ApplicationName: "app-name",
+				EnvId:           "env-id",
+				PipedId:         "piped-id",
+				ProjectId:       "project-id",
+				Kind:            model.ApplicationKind_KUBERNETES,
+				GitPath: &model.ApplicationGitPath{
+					Repo: &model.ApplicationGitRepository{Id: "id"},
+					Path: "path",
+				},
+				CloudProvider: "cloud-provider",
+				Trigger: &model.DeploymentTrigger{
+					Commit: &model.Commit{
+						Hash:      "hash",
+						Message:   "message",
+						Author:    "author",
+						Branch:    "branch",
+						CreatedAt: 1,
+					},
+					Timestamp: 1,
+				},
+				Status: model.DeploymentStatus_DEPLOYMENT_PENDING,
+
+				CompletedAt: 1,
+				CreatedAt:   1,
+				UpdatedAt:   1,
+			},
+			dsFactory: func(d *model.Deployment) DataStore {
+				ds := NewMockDataStore(ctrl)
+				ds.EXPECT().Create(gomock.Any(), "Deployment", d.Id, d)
+				return ds
+			},
+			wantErr: false,
+		},
+	}
+
+	for _, tc := range testcases {
+		t.Run(tc.name, func(t *testing.T) {
+			s := NewDeploymentStore(tc.dsFactory(tc.deployment))
+			err := s.AddDeployment(context.Background(), tc.deployment)
+			assert.Equal(t, tc.wantErr, err != nil)
 		})
 	}
 }

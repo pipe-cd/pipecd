@@ -8,13 +8,17 @@ go_library(
         "datastore.go",
         "deploymentstore.go",
         "environmentstore.go",
+        "mock.go",
         "pipedstatsstore.go",
         "pipedstore.go",
         "projectstore.go",
     ],
     importpath = "github.com/pipe-cd/pipe/pkg/datastore",
     visibility = ["//visibility:public"],
-    deps = ["//pkg/model:go_default_library"],
+    deps = [
+        "//pkg/model:go_default_library",
+        "@com_github_golang_mock//gomock:go_default_library",
+    ],
 )
 
 go_test(
@@ -24,6 +28,7 @@ go_test(
     embed = [":go_default_library"],
     deps = [
         "//pkg/model:go_default_library",
+        "@com_github_golang_mock//gomock:go_default_library",
         "@com_github_stretchr_testify//assert:go_default_library",
         "@com_github_stretchr_testify//require:go_default_library",
     ],
