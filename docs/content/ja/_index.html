@@ -4,10 +4,16 @@ linkTitle = "PipeCD"
 
 +++
 
-{{< blocks/cover title="Continuous Delivery for Declarative Kubernetes, Serverless Application and Infrastructure" height="full" image_anchor="top" color="white" >}}
+{{< blocks/cover description="Continuous Delivery for Declarative Kubernetes, Serverless and Infrastructure Applications" height="med" image_anchor="top" color="primary" >}}
+<div class="container">
+    <p class="h5 text-muted">
+        A unified continuous delivery solution for multiple application kinds on multi-cloud that empowers engineers to deploy faster with more confidence. A GitOps tool that enables doing deployment operations by pull request on Git.
+    </p>
+</div>
+
 <div class="mx-auto">
 	<a class="btn btn-lg btn-primary mr-3 mb-4" href="{{< relref "/docs" >}}">
-		Learn More <i class="fas fa-arrow-alt-circle-right ml-2"></i>
+		Getting Started <i class="fas fa-arrow-alt-circle-right ml-2"></i>
 	</a>
 	<a class="btn btn-lg btn-secondary mr-3 mb-4" href="https://github.com/pipe-cd/pipe">
 		GitHub <i class="fab fa-github ml-2 "></i>
@@ -15,21 +21,47 @@ linkTitle = "PipeCD"
 </div>
 {{< /blocks/cover >}}
 
-{{< blocks/section color="white" >}}
-<div class="container">
+<div class="row justify-content-md-center">
+	<div class="col core-values">
+        {{< blocks/value title="Visibility" image="visibility.png" image_position="left" >}}
+        <ul class="core-value-detail">
+            <li>Deployment pipeline UI shows clarify what is happening</li>
+            <li>Separate logs viewer for each individual deployment</li>
+            <li>Realtime visualization of application state</li>
+            <li>Deployment notifications to slack, webhook endpoints</li>
+            <li>Insights show the delivery performance</li>
+        </ul>
+        {{< /blocks/value >}}
 
-<div class="row">
-	<div class="col">
-		<h1 class="text-center">Why PipeCD?</h1>
-	</div>
+        {{< blocks/value title="Automation" image="automation.png" image_position="right" >}}
+        <ul class="core-value-detail">
+            <li>Automated deployment analysis based on metrics, logs, emitted requests</li>
+            <li>Automatically roll back to the previous state as soon as analysis or a pipeline stage fails</li>
+            <li>Automatically detect configuration drift to notify and render the changes</li>
+        </ul>
+        {{< /blocks/value >}}
+
+        {{< blocks/value title="Secure" image="secure.png" image_position="left" >}}
+        <ul class="core-value-detail">
+            <li>Support single sign-on and role-based access control</li>
+            <li>Credentials are not exposed outside the cluster and not saved in the control-plane</li>
+            <li>Piped makes only outbound requests and can run inside a restricted network</li>
+        </ul>
+        {{< /blocks/value >}}
+
+        {{< blocks/value title="Multi-provider & Multi-Tenancy" image="multi-provider.png" image_position="right" >}}
+        <ul class="core-value-detail">
+            <li>Support multiple application kinds on multi-cloud including Kubernetes, Terraform, CloudRun, Lambda</li>
+            <li>Support multiple analysis providers including Prometheus, Datadog, Stackdriver, and more</li>
+            <li>Easy to operate multi-cluster, multi-tenancy by separating control-plane and piped</li>
+        </ul>
+        {{< /blocks/value >}}
+    </div>
 </div>
-
-
-{{< /blocks/section >}}
 
 {{< blocks/section color="dark" >}}
 
-{{% blocks/feature icon="fab fa-slack" title="Join the conversation!" url="https://cyberagent.slack.com/archives/CNSTL5F9S" %}}
+{{% blocks/feature icon="fab fa-slack" title="Join the conversation!" url="https://pipecd.slack.com" %}}
 Have a question?
 
 Learn more by talking with other contributors.
@@ -43,11 +75,10 @@ Join us on GitHub to learn how you can help.
 {{% /blocks/feature %}}
 
 
-{{% blocks/feature icon="fab fa-twitter" title="Follow us on Twitter!" url="https://twitter.com/pipe-cd" %}}
+{{% blocks/feature icon="fab fa-twitter" title="Follow us on Twitter!" url="https://twitter.com/pipecd_dev" %}}
 Don't miss out!
 
 Follow us for feature announcements and other news.
 {{% /blocks/feature %}}
 
 {{< /blocks/section >}}
-
