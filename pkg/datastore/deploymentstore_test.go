@@ -17,6 +17,7 @@ package datastore
 import (
 	"context"
 	"errors"
+	"fmt"
 	"testing"
 	"time"
 
@@ -354,6 +355,106 @@ func TestAddDeployment(t *testing.T) {
 		t.Run(tc.name, func(t *testing.T) {
 			s := NewDeploymentStore(tc.dsFactory(tc.deployment))
 			err := s.AddDeployment(context.Background(), tc.deployment)
+			assert.Equal(t, tc.wantErr, err != nil)
+		})
+	}
+}
+
+func TestGetDeployment(t *testing.T) {
+	ctrl := gomock.NewController(t)
+	defer ctrl.Finish()
+
+	testcases := []struct {
+		name    string
+		id      string
+		ds      DataStore
+		wantErr bool
+	}{
+		{
+			name: "successful fetch from datastore",
+			id:   "id",
+			ds: func() DataStore {
+				ds := NewMockDataStore(ctrl)
+				ds.EXPECT().
+					Get(gomock.Any(), "Deployment", "id", &model.Deployment{}).
+					Return(nil)
+				return ds
+			}(),
+			wantErr: false,
+		},
+		{
+			name: "failed fetch from datastore",
+			id:   "id",
+			ds: func() DataStore {
+				ds := NewMockDataStore(ctrl)
+				ds.EXPECT().
+					Get(gomock.Any(), "Deployment", "id", &model.Deployment{}).
+					Return(fmt.Errorf("err"))
+				return ds
+			}(),
+			wantErr: true,
+		},
+	}
+
+	for _, tc := range testcases {
+		t.Run(tc.name, func(t *testing.T) {
+			s := NewDeploymentStore(tc.ds)
+			_, err := s.GetDeployment(context.Background(), tc.id)
+			assert.Equal(t, tc.wantErr, err != nil)
+		})
+	}
+}
+
+func TestListDeployments(t *testing.T) {
+	ctrl := gomock.NewController(t)
+	defer ctrl.Finish()
+
+	testcases := []struct {
+		name    string
+		opts    ListOptions
+		ds      DataStore
+		wantErr bool
+	}{
+		{
+			name: "iterator done",
+			opts: ListOptions{Page: 1},
+			ds: func() DataStore {
+				it := NewMockIterator(ctrl)
+				it.EXPECT().
+					Next(&model.Deployment{}).
+					Return(ErrIteratorDone)
+
+				ds := NewMockDataStore(ctrl)
+				ds.EXPECT().
+					Find(gomock.Any(), "Deployment", ListOptions{Page: 1}).
+					Return(it, nil)
+				return ds
+			}(),
+			wantErr: false,
+		},
+		{
+			name: "unexpected error occurred",
+			opts: ListOptions{Page: 1},
+			ds: func() DataStore {
+				it := NewMockIterator(ctrl)
+				it.EXPECT().
+					Next(&model.Deployment{}).
+					Return(fmt.Errorf("err"))
+
+				ds := NewMockDataStore(ctrl)
+				ds.EXPECT().
+					Find(gomock.Any(), "Deployment", ListOptions{Page: 1}).
+					Return(it, nil)
+				return ds
+			}(),
+			wantErr: true,
+		},
+	}
+
+	for _, tc := range testcases {
+		t.Run(tc.name, func(t *testing.T) {
+			s := NewDeploymentStore(tc.ds)
+			_, err := s.ListDeployments(context.Background(), tc.opts)
 			assert.Equal(t, tc.wantErr, err != nil)
 		})
 	}
