@@ -4,9 +4,18 @@
 <div class="row justify-content-center core-value {{ if eq .Params.image_position "right" }} flex-row-reverse {{ end }} border-bottom">
 
   {{ with $value_image }}
-  {{ $image_resized := $value_image.Fit "500x250" }}
+  {{ $image_resized_500 := $value_image.Fit "500x250" }}
+  {{ $image_resized_750 := $value_image.Fit "750x375" }}
+  {{ $image_resized_1000 := $value_image.Fit "1000x500" }}
+  {{ $image_resized_1500 := $value_image.Fit "1500x750" }}
   <div class="col-md text-center">
-    <img src="{{ $image_resized.RelPermalink }}" />
+    <img
+      src="{{ $image_resized_500.RelPermalink }}"
+      srcset="{{ $image_resized_500.RelPermalink }} 1,
+              {{ $image_resized_750.RelPermalink }} 1.5x,
+              {{ $image_resized_1000.RelPermalink }} 2x,
+              {{ $image_resized_1500.RelPermalink }} 3x"
+    />
   </div>
   {{ end }}
 
