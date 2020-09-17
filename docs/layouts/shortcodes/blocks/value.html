@@ -15,6 +15,8 @@
               {{ $image_resized_750.RelPermalink }} 1.5x,
               {{ $image_resized_1000.RelPermalink }} 2x,
               {{ $image_resized_1500.RelPermalink }} 3x"
+      data-zoom-src="{{ $value_image.RelPermalink }}"
+      data-zoomable
     />
   </div>
   {{ end }}
