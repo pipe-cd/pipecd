@@ -24,7 +24,15 @@ go_library(
 go_test(
     name = "go_default_test",
     size = "small",
-    srcs = ["deploymentstore_test.go"],
+    srcs = [
+        "applicationstore_test.go",
+        "commandstore_test.go",
+        "deploymentstore_test.go",
+        "environmentstore_test.go",
+        "pipedstatsstore_test.go",
+        "pipedstore_test.go",
+        "projectstore_test.go",
+    ],
     embed = [":go_default_library"],
     deps = [
         "//pkg/model:go_default_library",
