@@ -29,8 +29,9 @@ import logo from "../../assets/logo.svg";
 export const APP_HEADER_HEIGHT = 56;
 
 const useStyles = makeStyles((theme) => ({
-  appBar: {
+  root: {
     zIndex: theme.zIndex.drawer + 1,
+    height: APP_HEADER_HEIGHT,
   },
   logo: {
     height: APP_HEADER_HEIGHT,
@@ -53,15 +54,24 @@ const useStyles = makeStyles((theme) => ({
     marginLeft: theme.spacing(1),
     textTransform: "none",
   },
+  right: {
+    height: "100%",
+    "&:hover": {
+      color: theme.palette.grey[400],
+    },
+  },
   link: {
     marginRight: theme.spacing(2),
     display: "inline-flex",
     height: "100%",
     alignItems: "center",
+    "&:hover": {
+      color: theme.palette.grey[100],
+      textDecoration: "none",
+    },
   },
   activeLink: {
-    fontWeight: "bold",
-    borderBottom: `2px solid ${theme.palette.background.paper}`,
+    borderBottom: `4px solid ${theme.palette.background.paper}`,
   },
 }));
 
@@ -75,7 +85,7 @@ export const Header: FC = memo(function Header() {
   };
 
   return (
-    <AppBar position="static" className={classes.appBar}>
+    <AppBar position="static" className={classes.root}>
       <Toolbar variant="dense">
         <div className={classes.left}>
           <Link
@@ -95,55 +105,62 @@ export const Header: FC = memo(function Header() {
             </Button>
           )}
         </div>
-        <Link
-          component={RouterLink}
-          className={classes.link}
-          activeClassName={classes.activeLink}
-          color="inherit"
-          to={PAGE_PATH_APPLICATIONS}
-        >
-          Applications
-        </Link>
-        <Link
-          component={RouterLink}
-          className={classes.link}
-          activeClassName={classes.activeLink}
-          color="inherit"
-          to={PAGE_PATH_DEPLOYMENTS}
-        >
-          Deployments
-        </Link>
-        <Link
-          component={RouterLink}
-          className={classes.link}
-          activeClassName={classes.activeLink}
-          color="inherit"
-          to={PAGE_PATH_INSIGHTS}
-        >
-          Insights
-        </Link>
-        <Link
-          component={RouterLink}
-          className={classes.link}
-          activeClassName={classes.activeLink}
-          color="inherit"
-          to={PAGE_PATH_SETTINGS}
-        >
-          Settings
-        </Link>
-        {me?.isLogin ? (
-          <IconButton
-            aria-controls="user-menu"
-            aria-haspopup="true"
-            onClick={(e) => setAnchorEl(e.currentTarget)}
+        <div className={classes.right}>
+          <Link
+            component={RouterLink}
+            className={classes.link}
+            activeClassName={classes.activeLink}
+            color="inherit"
+            to={PAGE_PATH_APPLICATIONS}
           >
-            <Avatar className={classes.userAvatar} src={me.avatarUrl} />
-          </IconButton>
-        ) : (
-          <Link color="inherit" component={RouterLink} to={PAGE_PATH_LOGIN}>
-            <Typography variant="body2">Login</Typography>
+            Applications
           </Link>
-        )}
+          <Link
+            component={RouterLink}
+            className={classes.link}
+            activeClassName={classes.activeLink}
+            color="inherit"
+            to={PAGE_PATH_DEPLOYMENTS}
+          >
+            Deployments
+          </Link>
+          <Link
+            component={RouterLink}
+            className={classes.link}
+            activeClassName={classes.activeLink}
+            color="inherit"
+            to={PAGE_PATH_INSIGHTS}
+          >
+            Insights
+          </Link>
+          <Link
+            component={RouterLink}
+            className={classes.link}
+            activeClassName={classes.activeLink}
+            color="inherit"
+            to={PAGE_PATH_SETTINGS}
+          >
+            Settings
+          </Link>
+          {me?.isLogin ? (
+            <IconButton
+              aria-controls="user-menu"
+              aria-haspopup="true"
+              onClick={(e) => setAnchorEl(e.currentTarget)}
+            >
+              <Avatar className={classes.userAvatar} src={me.avatarUrl} />
+            </IconButton>
+          ) : (
+            <Link
+              color="inherit"
+              component={RouterLink}
+              to={PAGE_PATH_LOGIN}
+              className={classes.link}
+            >
+              <Typography variant="body2">Login</Typography>
+            </Link>
+          )}
+        </div>
       </Toolbar>
 
       <Menu
