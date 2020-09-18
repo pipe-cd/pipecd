@@ -73,7 +73,7 @@ A temporary middle state between current state and desired state of a deployment
 PipeCD supports multiple clouds and multiple kinds of applications.
 Cloud Provider defines which cloud and where application should be deployed to.
 
-Currently, PipeCD is supporting these 5 cloud providers: `KUBERNETES`, `TERRAFORM`, `CLOUDRUN`, `LAMBDA`, `ECS`.
+Currently, PipeCD is supporting these 4 cloud providers: `KUBERNETES`, `TERRAFORM`, `CLOUDRUN`, `LAMBDA`.
 
 ### Analysis Provider
 

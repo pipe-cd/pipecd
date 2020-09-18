@@ -9,7 +9,7 @@ description: >
 ## What Is PipeCD?
 
 {{% pageinfo %}}
-PipeCD provides a Continuous Delivery solution for declarative Kubernetes, Serverless application and Infrastructure.
+PipeCD provides a unified continuous delivery solution for multiple application kinds on multi-cloud that empowers engineers to deploy faster with more confidence, a GitOps tool that enables doing deployment operations by pull request on Git.
 {{% /pageinfo %}}
 
 
@@ -25,29 +25,27 @@ Deployment Details Page
 
 ## Why PipeCD?
 
-**Powerful**
-- Unified Deployment System: kubernetes (plain-yaml, helm, kustomize), terraform, lambda, cloudrun...
-- Progressive Deployment Strategies: canary, bluegreen, rolling update
-- Automated Analysis: by metrics, log, smoke test...
-- Automated Rollback
-- Automated Configuration Drift Detection
-- Insights shows Delivery Perfomance
-- Support Webhook and Slack notifications
+**Visibility**
+- Deployment pipeline UI shows clarify what is happening
+- Separate logs viewer for each individual deployment
+- Realtime visualization of application state
+- Deployment notifications to slack, webhook endpoints
+- Insights show metrics like lead time, deployment frequency, MTTR and change failure rate to measure delivery performance
 
-**Easy to Use**
-- Operations by Pull Request: scale, rollout, rollback by PR
-- Realtime Visualization of application state
-- Deployment Pipeline to see what is happenning
-- Intuitive UI
-
-**Easy to Operate**
-- Two seperate components: single binary `piped` and `control-plane`
-- `piped` can be run in a Kubernetes cluster, a single VM or even a local machine
-- Easy to operate multi-tenancy, multi-cluster
+**Automation**
+- Automated deployment analysis to measure deployment impact based on metrics, logs, emitted requests
+- Automatically roll back to the previous state as soon as analysis or a pipeline stage fails
+- Automatically detect configuration drift to notify and render the changes
 
 **Safety and Security**
-- Support single sign-on (SSO) and role-based access control (RBAC)
-- Your credentials are not exposed outside your cluster and not saved in control-plane
+- Support single sign-on and role-based access control
+- Credentials are not exposed outside the cluster and not saved in the control-plane
+- Piped makes only outbound requests and can run inside a restricted network
+
+**Multi-provider & Multi-Tenancy**
+- Support multiple application kinds on multi-cloud including Kubernetes, Terraform, CloudRun, Lambda
+- Support multiple analysis providers including Prometheus, Datadog, Stackdriver, and more
+- Easy to operate multi-cluster, multi-tenancy by separating control-plane and piped
 
 **Open Source**
 
