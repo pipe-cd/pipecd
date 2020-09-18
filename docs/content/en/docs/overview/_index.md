@@ -63,4 +63,4 @@ If you are an **user** who are using PipeCD to deploy your application/infrastru
 - [Examples](/docs/user-guide/examples)
 
 If you want to be a **contributor**:
-- [Contributor Guide](/docs/contributor-guide/)
+- [Contributor Guide](/docs/contribution-guidelines/)
