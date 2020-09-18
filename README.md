@@ -42,7 +42,7 @@ PipeCD provides a unified continuous delivery solution for multiple application 
 
 ### Contributing
 
-We'd love you to join us! Please see the [Contributor Guidle](https://pipecd.dev/docs/contribution-guidelines/).
+We'd love you to join us! Please see the [Contributor Guide](https://pipecd.dev/docs/contribution-guidelines/).
 
 #
 
