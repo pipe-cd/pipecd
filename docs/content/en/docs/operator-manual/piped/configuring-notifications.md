@@ -13,7 +13,7 @@ Notification configuration including:
 - a list of `Route`s which used to match events and decide where the event should be sent to
 - a list of `Receiver`s which used to know how to send events to the external service
 
-[Notification Route](http://localhost:1313/docs/operator-manual/piped/configuration-reference/#notificationroute) matches events based on their metadata like `name`, `group`, `env`, `app`.
+[Notification Route](/docs/operator-manual/piped/configuration-reference/#notificationroute) matches events based on their metadata like `name`, `group`, `env`, `app`.
 Below is the list of supporting event names and their groups.
 
 | Event | Group |
@@ -80,7 +80,7 @@ A piped has been started
 </p>
 
 
-For detailed configuration, please check the [configuration reference](http://localhost:1313/docs/operator-manual/piped/configuration-reference/#notifications) section.
+For detailed configuration, please check the [configuration reference](/docs/operator-manual/piped/configuration-reference/#notifications) section.
 
 ### Sending notifications to webhook endpoints
 

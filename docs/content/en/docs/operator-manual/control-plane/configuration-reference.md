@@ -18,11 +18,11 @@ spec:
 
 | Field | Type | Description | Required |
 |-|-|-|-|
-| address | string | The address to the control plane. | Yes |
 | stateKey | string | A randomly generated string used to sign oauth state. | Yes |
 | datastore | [DataStore](/docs/operator-manual/control-plane/configuration-reference/#datastore) | Storage for storing application, deployment data. | Yes |
 | filestore | [FileStore](/docs/operator-manual/control-plane/configuration-reference/#filestore) | File storage for storing deployment logs and application states. | Yes |
 | cache | [Cache](/docs/operator-manual/control-plane/configuration-reference/#cache) | Internal cache configuration. | No |
+| address | string | The address to the control plane. This is required if SSO is enabled. | No |
 | sharedSSOConfigs | [][SharedSSOConfig](/docs/operator-manual/control-plane/configuration-reference/#sharedssoconfig) | List of shared SSO configurations that can be used by any projects. | No |
 | projects | [][Project](/docs/operator-manual/control-plane/configuration-reference/#project) | List of debugging/quickstart projects. Please note that do not use this to configure the projects running in the production. | No |
 
