@@ -89,7 +89,7 @@ spec:
   filestore:
     type: MINIO
     config:
-      endpoint: http://pipecd-minio:9000
+      endpoint: minio-address
       bucket: bucket-name
       accessKeyFile: /etc/pipecd-secret/minio-access-key
       secretKeyFile: /etc/pipecd-secret/minio-secret-key
