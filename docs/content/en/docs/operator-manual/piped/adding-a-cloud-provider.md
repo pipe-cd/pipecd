@@ -20,7 +20,7 @@ The next sections show the specific configuration for each kind of cloud provide
 
 By default, piped deploys Kubernetes application to the cluster where the piped is running in. An external cluster can be connected by specifying the `masterURL` and `kubeConfigPath` in the [configuration](/docs/operator-manual/piped/configuration-reference/#cloudproviderkubernetesconfig).
 
-And, the default resources (defined at [here](https://github.com/pipe-cd/pipe/blob/master/pkg/app/piped/cloudprovider/kubernetes/resourcekey.go#L24-L74)) from all namespaces of the Kubernetes cluster will be watched for rendering the application state in realtime and detecting the configuration drift. In case you want to restrict piped to watch only a single namespace, let specify the namespace in the [KubernetesAppStateInformer](http://localhost:1313/docs/operator-manual/piped/configuration-reference/#kubernetesappstateinformer) field. You can also add other resources or exclude resources to/from the watching targets by that field.
+And, the default resources (defined at [here](https://github.com/pipe-cd/pipe/blob/master/pkg/app/piped/cloudprovider/kubernetes/resourcekey.go#L24-L74)) from all namespaces of the Kubernetes cluster will be watched for rendering the application state in realtime and detecting the configuration drift. In case you want to restrict piped to watch only a single namespace, let specify the namespace in the [KubernetesAppStateInformer](/docs/operator-manual/piped/configuration-reference/#kubernetesappstateinformer) field. You can also add other resources or exclude resources to/from the watching targets by that field.
 
 Below configuration snippet just specifies a name and type of cloud provider. It means the cloud provider `kubernetes-dev` will connect to the Kubernetes cluster where the piped is running in, and this cloud provider watches all of the predefined resources from all namespaces inside that cluster.
 
@@ -34,7 +34,7 @@ spec:
       type: KUBERNETES
 ```
 
-See [ConfigurationReference](http://localhost:1313/docs/operator-manual/piped/configuration-reference/#cloudproviderkubernetesconfig) for the full configuration.
+See [ConfigurationReference](/docs/operator-manual/piped/configuration-reference/#cloudproviderkubernetesconfig) for the full configuration.
 
 ### Configuring Terraform cloud provider
 
@@ -55,7 +55,7 @@ spec:
           - path-to-the-credentials-file
 ```
 
-See [ConfigurationReference](http://localhost:1313/docs/operator-manual/piped/configuration-reference/#cloudproviderterraformconfig) for the full configuration.
+See [ConfigurationReference](/docs/operator-manual/piped/configuration-reference/#cloudproviderterraformconfig) for the full configuration.
 
 ### Configuring CloudRun cloud provider
 
@@ -75,7 +75,7 @@ spec:
         credentialsFile: path-to-the-service-account-file
 ```
 
-See [ConfigurationReference](http://localhost:1313/docs/operator-manual/piped/configuration-reference/#cloudprovidercloudrunconfig) for the full configuration.
+See [ConfigurationReference](/docs/operator-manual/piped/configuration-reference/#cloudprovidercloudrunconfig) for the full configuration.
 
 ### Configuring Lambda cloud provider
 

@@ -27,6 +27,7 @@ import (
 // ControlPlaneSpec defines all configuration for all control-plane components.
 type ControlPlaneSpec struct {
 	// The address to the control plane.
+	// This is required if SSO is enabled.
 	Address string `json:"address"`
 	// A randomly generated string used to sign oauth state.
 	StateKey string `json:"stateKey"`

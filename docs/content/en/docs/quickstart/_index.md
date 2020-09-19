@@ -18,14 +18,14 @@ This guides you to install PipeCD in your kubernetes and deploy a `helloworld` a
 
 Navigate to the root of the repository once cloned.
 
-```bash
+``` console
 git clone https://github.com/pipe-cd/manifests.git
 cd manifests
 ```
 
 ### 2. Installing control plane
 
-```bash
+``` console
 helm install pipecd ./manifests/pipecd --values ./quickstart/control-plane-values.yaml
 ```
 
@@ -33,7 +33,7 @@ helm install pipecd ./manifests/pipecd --values ./quickstart/control-plane-value
 PipeCD comes with an embedded web-based UI.
 First up, using kubectl port-forward to expose the installed control-plane on your localhost:
 
-```bash
+``` console
 kubectl port-forward svc/pipecd 8080:443
 ```
 
@@ -47,7 +47,7 @@ Enter the project name, username and password. Be sure to give the following:
 - Password: `hello-pipecd`
 
 ### 4. Adding an environment
-Go to the `Environment` tab at `Settings` page and click on the `Add` button to add a new [Environment](http://localhost:1313/docs/concepts/#environment) to the project.
+Go to the `Environment` tab at `Settings` page and click on the `Add` button to add a new [Environment](/docs/concepts/#environment) to the project.
 
 Then you give the environment name and its description as shown below:
 
@@ -74,7 +74,7 @@ Open [`./quickstart/piped-values.yaml`](https://github.com/pipe-cd/manifests/blo
 
 You can complete the installation by running the following after replacing `YOUR_PIPED_SECRET_KEY` with what you just got:
 
-```bash
+``` console
 helm install piped ./manifests/piped \
   --values ./quickstart/piped-values.yaml \
   --set secret.pipedKey.data=YOUR_PIPED_SECRET_KEY
@@ -105,7 +105,7 @@ After a short wait, a new deployment will be started to update to `v0.2.0`.
 ### 8. Cleanup
 When you’re finished experimenting with PipeCD, you can uninstall with:
 
-```bash
+``` console
 helm uninstall piped
 helm uninstall pipecd
 kubectl delete deploy canary

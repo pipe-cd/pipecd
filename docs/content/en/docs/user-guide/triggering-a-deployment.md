@@ -12,7 +12,7 @@ So by default, when a new merged pull request touches an application, a new depl
 
 A pull request (commit) is considered as touching an application whenever its changes include:
 - one or more files inside the application configuration directory
-- one or more files inside one of the [dependencies](http://localhost:1313/docs/user-guide/configuration-reference/#kubernetesdeploymentinput) of the application
+- one or more files inside one of the [dependencies](/docs/user-guide/configuration-reference/#kubernetesdeploymentinput) of the application
 
 After a new deployment was triggered, it will be queued to handle by the appropriate `piped`. And at this time the deployment pipeline was not decided yet.
 `piped` schedules all deployments of applications to ensure that for each application only one deployment will be executed at the same time.
