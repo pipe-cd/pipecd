@@ -34,7 +34,7 @@ PipeCD provides a unified continuous delivery solution for multiple application 
 - Piped makes only outbound requests and can run inside a restricted network
 
 **Multi-provider & Multi-Tenancy**
-- Support multiple application kinds on multi-cloud including Kubernetes, Terraform, CloudRun, Lambda
+- Support multiple application kinds on multi-cloud including Kubernetes, Terraform, Cloud Run, AWS Lambda
 - Support multiple analysis providers including Prometheus, Datadog, Stackdriver, and more
 - Easy to operate multi-cluster, multi-tenancy by separating control-plane and piped
 
