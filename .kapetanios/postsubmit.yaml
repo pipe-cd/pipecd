@@ -81,7 +81,7 @@ spec:
         - cd docs
         - npm install autoprefixer
         - npm install postcss-cli
-        - hugo
+        - env HUGO_ENV="production" hugo
 
     - name: docker-build
       description: Build docker image
