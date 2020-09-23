@@ -20,7 +20,7 @@ build:
 
 .PHONY: test
 test:
-	bazelisk ${BAZEL_FLAGS} test ${BAZEL_COMMAND_FLAGS} -- //pkg/...
+	bazelisk ${BAZEL_FLAGS} test ${BAZEL_COMMAND_FLAGS} --config=unit -- //pkg/...
 
 .PHONY: test-debug
 test-debug:
