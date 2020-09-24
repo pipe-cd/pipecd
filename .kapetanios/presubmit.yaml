@@ -3,7 +3,7 @@ kind: Build
 spec:
   presubmits:
   - name: build
-    timeout: 30m
+    timeout: 15m
     machine:
       resource: medium
     steps:
@@ -16,7 +16,7 @@ spec:
         type: PROJECT
 
   - name: test
-    timeout: 30m
+    timeout: 15m
     machine:
       resource: large
     steps:

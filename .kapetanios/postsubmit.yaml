@@ -3,7 +3,7 @@ kind: Build
 spec:
   postsubmits:
   - name: push-images
-    timeout: 30m
+    timeout: 15m
     machine:
       resource: medium
     dockerAuth:
@@ -22,7 +22,7 @@ spec:
         type: PROJECT
 
   - name: publish-piped-linux
-    timeout: 30m
+    timeout: 15m
     machine:
       resource: medium
     skipBranches:
@@ -44,7 +44,7 @@ spec:
         type: PROJECT
 
   - name: publish-piped-darwin
-    timeout: 30m
+    timeout: 15m
     machine:
       resource: medium
     skipBranches:
