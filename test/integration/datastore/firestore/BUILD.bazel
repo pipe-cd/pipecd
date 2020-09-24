@@ -11,5 +11,6 @@ go_test(
         "//pkg/datastore:go_default_library",
         "//pkg/datastore/firestore:go_default_library",
         "@com_github_stretchr_testify//assert:go_default_library",
+        "@com_github_stretchr_testify//require:go_default_library",
     ],
 )

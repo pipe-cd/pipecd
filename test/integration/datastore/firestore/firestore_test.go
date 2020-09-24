@@ -20,6 +20,7 @@ import (
 	"time"
 
 	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/require"
 
 	"github.com/pipe-cd/pipe/pkg/datastore"
 	"github.com/pipe-cd/pipe/pkg/datastore/firestore"
@@ -37,7 +38,7 @@ func TestGet(t *testing.T) {
 	assert.Nil(t, err)
 
 	err = store.Create(ctx, "kind", "id", &Entity{Name: "name"})
-	assert.Nil(t, err)
+	require.NoError(t, err)
 
 	testcases := []struct {
 		name    string
