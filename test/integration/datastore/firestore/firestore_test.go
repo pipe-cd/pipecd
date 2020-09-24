@@ -35,7 +35,7 @@ func TestGet(t *testing.T) {
 	defer cancel()
 
 	store, err := firestore.NewFireStore(ctx, "project", "namespace", "environment")
-	assert.Nil(t, err)
+	require.NoError(t, err)
 
 	err = store.Create(ctx, "kind", "id", &Entity{Name: "name"})
 	require.NoError(t, err)
