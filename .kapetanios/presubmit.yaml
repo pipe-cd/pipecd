@@ -23,7 +23,7 @@ spec:
     - description: Run all tests
       runner: gcr.io/pipecd/runner:1.0.0
       commands:
-        - bazelisk --output_base=/workspace/bazel_out test --config=ci --config=linux //...
+        - bazelisk --output_base=/workspace/bazel_out test --config=ci --config=linux --config=unit //...
       secrets:
       - name: bazel_cache_service_account
         type: PROJECT
