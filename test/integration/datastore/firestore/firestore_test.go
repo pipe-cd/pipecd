@@ -39,7 +39,7 @@ func TestGet(t *testing.T) {
 	err = store.Create(ctx, "kind", "id", &Entity{Name: "name"})
 	assert.Nil(t, err)
 
-	tests := []struct {
+	testcases := []struct {
 		name    string
 		kind    string
 		id      string
@@ -61,12 +61,12 @@ func TestGet(t *testing.T) {
 			wantErr: datastore.ErrNotFound,
 		},
 	}
-	for _, tt := range tests {
-		t.Run(tt.name, func(t *testing.T) {
+	for _, tc := range testcases {
+		t.Run(tc.name, func(t *testing.T) {
 			got := &Entity{}
-			err := store.Get(ctx, tt.kind, tt.id, got)
-			assert.Equal(t, tt.wantErr, err)
-			assert.Equal(t, tt.want, got)
+			err := store.Get(ctx, tc.kind, tc.id, got)
+			assert.Equal(t, tc.wantErr, err)
+			assert.Equal(t, tc.want, got)
 		})
 	}
 }
