@@ -1,0 +1,32 @@
+import React, { FC } from "react";
+import { makeStyles, Typography } from "@material-ui/core";
+
+const useStyles = makeStyles((theme) => ({
+  head: {
+    textAlign: "left",
+  },
+  value: {
+    marginLeft: theme.spacing(1),
+  },
+}));
+
+interface Props {
+  label: string;
+  value: React.ReactChild;
+}
+
+export const DetailTableRow: FC<Props> = ({ label, value }) => {
+  const classes = useStyles();
+  return (
+    <tr>
+      <th className={classes.head}>
+        <Typography variant="subtitle2">{label}</Typography>
+      </th>
+      <td>
+        <Typography variant="body2" className={classes.value}>
+          {value}
+        </Typography>
+      </td>
+    </tr>
+  );
+};

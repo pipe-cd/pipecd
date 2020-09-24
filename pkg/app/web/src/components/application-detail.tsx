@@ -14,11 +14,13 @@ import React, { FC, memo } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import { Link as RouterLink } from "react-router-dom";
 import { PAGE_PATH_DEPLOYMENTS } from "../constants";
+import { APPLICATION_KIND_TEXT } from "../constants/application-kind";
 import { APPLICATION_SYNC_STATUS_TEXT } from "../constants/application-sync-status-text";
 import { APPLICATION_HEALTH_STATUS_TEXT } from "../constants/health-status-text";
 import { AppState } from "../modules";
 import {
   Application,
+  ApplicationDeploymentReference,
   selectById as selectApplicationById,
   syncApplication,
 } from "../modules/applications";
@@ -31,8 +33,8 @@ import {
   selectById as selectEnvById,
 } from "../modules/environments";
 import { Piped, selectById as selectPipeById } from "../modules/pipeds";
+import { DetailTableRow } from "./detail-table-row";
 import { ApplicationHealthStatusIcon } from "./health-status-icon";
-import { LabeledText } from "./labeled-text";
 import { SyncStateReason } from "./sync-state-reason";
 import { SyncStatusIcon } from "./sync-status-icon";
 
@@ -91,14 +93,26 @@ const useStyles = makeStyles((theme) => ({
     marginTop: -12,
     marginLeft: -12,
   },
-  age: {
-    color: theme.palette.text.secondary,
-    marginLeft: theme.spacing(1),
-  },
   linkIcon: {
     fontSize: 16,
     verticalAlign: "text-bottom",
     marginLeft: theme.spacing(0.5),
+  },
+  latestDeploymentTable: {
+    paddingLeft: theme.spacing(2),
+  },
+  latestDeploymentHead: {
+    display: "flex",
+    alignItems: "baseline",
+  },
+  latestDeploymentLink: {
+    marginLeft: theme.spacing(1),
+  },
+  popover: {
+    pointerEvents: "none",
+  },
+  paper: {
+    padding: theme.spacing(1),
   },
 }));
 
@@ -116,11 +130,50 @@ const useIsSyncingApplication = (applicationId: string | null): boolean => {
   });
 };
 
+const MostRecentlySuccessfulDeployment: FC<{
+  deployment?: ApplicationDeploymentReference.AsObject;
+}> = ({ deployment }) => {
+  const classes = useStyles();
+
+  if (!deployment) {
+    return <Skeleton height={63} width={500} />;
+  }
+
+  const date = dayjs(deployment.startedAt * 1000);
+
+  return (
+    <>
+      <div className={classes.latestDeploymentHead}>
+        <Typography variant="subtitle1">Latest Deployment</Typography>
+        <Typography variant="body2" className={classes.latestDeploymentLink}>
+          <Link
+            component={RouterLink}
+            to={`${PAGE_PATH_DEPLOYMENTS}/${deployment.deploymentId}`}
+          >
+            more details
+          </Link>
+        </Typography>
+      </div>
+      <table className={classes.latestDeploymentTable}>
+        <tbody>
+          <DetailTableRow
+            label="Deployed At"
+            value={<span title={date.format()}>{date.fromNow()}</span>}
+          />
+          <DetailTableRow label="Version" value={deployment.version} />
+          <DetailTableRow label="Summary" value={deployment.summary} />
+        </tbody>
+      </table>
+    </>
+  );
+};
+
 export const ApplicationDetail: FC<Props> = memo(function ApplicationDetail({
   applicationId,
 }) {
   const classes = useStyles();
   const dispatch = useDispatch();
+
   const app = useSelector<AppState, Application | undefined>((state) =>
     selectApplicationById(state.applications, applicationId)
   );
@@ -150,14 +203,6 @@ export const ApplicationDetail: FC<Props> = memo(function ApplicationDetail({
           </Typography>
           <Typography variant="subtitle2" className={classes.env}>
             {env ? env.name : <Skeleton width={100} />}
-          </Typography>
-
-          <Typography className={classes.age} variant="body1">
-            {liveState ? (
-              dayjs(liveState.version.timestamp * 1000).fromNow()
-            ) : (
-              <Skeleton width={150} />
-            )}
           </Typography>
         </div>
 
@@ -198,58 +243,44 @@ export const ApplicationDetail: FC<Props> = memo(function ApplicationDetail({
       <div className={classes.detail}>
         <div className={classes.content}>
           {app && pipe ? (
-            <>
-              <LabeledText label="piped" value={pipe.name} />
-
-              <LabeledText label="Cloud Provider" value={app.cloudProvider} />
-
-              {app.gitPath && (
-                <LabeledText
-                  label="Configuration Directory"
-                  value={
-                    <Link
-                      href={app.gitPath.url}
-                      target="_blank"
-                      rel="noreferrer"
-                    >
-                      {app.gitPath.path}
-                      <OpenInNewIcon className={classes.linkIcon} />
-                    </Link>
-                  }
+            <table>
+              <tbody>
+                <DetailTableRow
+                  label="Kind"
+                  value={APPLICATION_KIND_TEXT[app.kind]}
                 />
-              )}
-            </>
+                <DetailTableRow label="Piped" value={pipe.name} />
+                <DetailTableRow
+                  label="Cloud Provider"
+                  value={app.cloudProvider}
+                />
+
+                {app.gitPath && (
+                  <DetailTableRow
+                    label="Configuration Directory"
+                    value={
+                      <Link
+                        href={app.gitPath.url}
+                        target="_blank"
+                        rel="noreferrer"
+                      >
+                        {app.gitPath.path}
+                        <OpenInNewIcon className={classes.linkIcon} />
+                      </Link>
+                    }
+                  />
+                )}
+              </tbody>
+            </table>
           ) : (
             <Skeleton height={63} width={500} />
           )}
         </div>
 
         <div className={classes.content}>
-          {app?.mostRecentlySuccessfulDeployment ? (
-            <>
-              <LabeledText
-                label="Latest Deployment"
-                value={
-                  <Link
-                    component={RouterLink}
-                    to={`${PAGE_PATH_DEPLOYMENTS}/${app.mostRecentlySuccessfulDeployment.deploymentId}`}
-                  >
-                    {app.mostRecentlySuccessfulDeployment.deploymentId}
-                  </Link>
-                }
-              />
-              <LabeledText
-                label="Version"
-                value={app.mostRecentlySuccessfulDeployment.version}
-              />
-              <LabeledText
-                label="Summary"
-                value={app.mostRecentlySuccessfulDeployment.summary}
-              />
-            </>
-          ) : (
-            <Skeleton height={63} width={500} />
-          )}
+          <MostRecentlySuccessfulDeployment
+            deployment={app?.mostRecentlySuccessfulDeployment}
+          />
         </div>
       </div>
 
