@@ -23,7 +23,7 @@ description: >
 - Adding `pipecd` helm chart repository
 
   ```
-  helm repo add pipecd https://pipecd-charts.storage.googleapis.com
+  helm repo add pipecd https://charts.pipecd.dev
   ```
 
 - Preparing a piped configuration file as the following:

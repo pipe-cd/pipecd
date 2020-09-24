@@ -15,12 +15,12 @@ description: >
 
 ### 1. Adding helm chart repository
 
-Installing the control-plane will be done via the helm chart sourced in [pipe-cd/manifests](https://github.com/pipe-cd/manifests/tree/master/manifests/pipecd) GitHub repository. That chart is also published in the Helm chart repository at `https://pipecd-charts.storage.googleapis.com`.
+Installing the control-plane will be done via the helm chart sourced in [pipe-cd/manifests](https://github.com/pipe-cd/manifests/tree/master/manifests/pipecd) GitHub repository. That chart is also published in the Helm chart repository at `https://charts.pipecd.dev`.
 
 So before installing PipeCD, let's add the above Helm chart repository to your Helm client by the following command:
 
 ``` console
-helm repo add pipecd https://pipecd-charts.storage.googleapis.com
+helm repo add pipecd https://charts.pipecd.dev
 ```
 
 ### 2. Preparing a signing key
