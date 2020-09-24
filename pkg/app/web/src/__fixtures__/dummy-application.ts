@@ -5,7 +5,7 @@ import { dummyPiped } from "./dummy-piped";
 
 export const dummyApplication: Application = {
   id: "application-1",
-  cloudProvider: "",
+  cloudProvider: "kubernetes-default",
   createdAt: 0,
   disabled: false,
   envId: dummyEnv.id,

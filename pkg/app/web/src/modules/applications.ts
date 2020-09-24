@@ -173,5 +173,8 @@ export const applicationsSlice = createSlice({
   },
 });
 
-export { ApplicationSyncStatus } from "pipe/pkg/app/web/model/application_pb";
+export {
+  ApplicationSyncStatus,
+  ApplicationDeploymentReference,
+} from "pipe/pkg/app/web/model/application_pb";
 export { ApplicationKind } from "pipe/pkg/app/web/model/common_pb";

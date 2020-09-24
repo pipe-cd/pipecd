@@ -29,7 +29,7 @@ import { fetchStageLog } from "../modules/stage-logs";
 import { useInterval } from "../utils/use-interval";
 import { StatusIcon } from "./deployment-status-icon";
 import OpenInNewIcon from "@material-ui/icons/OpenInNew";
-import { LabeledText } from "./labeled-text";
+import { DetailTableRow } from "./detail-table-row";
 import { SplitButton } from "./split-button";
 
 const useStyles = makeStyles((theme) => ({
@@ -186,53 +186,63 @@ export const DeploymentDetail: FC<Props> = memo(function DeploymentDetail({
         </div>
         <div className={classes.detail}>
           <div className={classes.content}>
-            <LabeledText
-              label="Application"
-              value={
-                <Link
-                  variant="body2"
-                  component={RouterLink}
-                  to={`${PAGE_PATH_APPLICATIONS}/${deployment.applicationId}`}
-                >
-                  {deployment.applicationName}
-                </Link>
-              }
-            />
-            <LabeledText label="Piped" value={piped.name} />
-            <LabeledText label="Summary" value={deployment.summary} />
+            <table>
+              <tbody>
+                <DetailTableRow
+                  label="Application"
+                  value={
+                    <Link
+                      variant="body2"
+                      component={RouterLink}
+                      to={`${PAGE_PATH_APPLICATIONS}/${deployment.applicationId}`}
+                    >
+                      {deployment.applicationName}
+                    </Link>
+                  }
+                />
+                <DetailTableRow label="Piped" value={piped.name} />
+                <DetailTableRow label="Summary" value={deployment.summary} />
+              </tbody>
+            </table>
           </div>
           <div className={classes.content}>
-            {deployment.trigger.commit && (
-              <div className={classes.commitInfo}>
-                <Typography variant="subtitle2" color="textSecondary">
-                  Commit:
-                </Typography>
-                <Typography variant="body2" className={classes.textMargin}>
-                  {deployment.trigger.commit.message}
-                </Typography>
-                <span className={classes.textMargin}>
-                  (
-                  <Link
-                    variant="body2"
-                    href={deployment.trigger.commit.url}
-                    target="_blank"
-                    rel="noreferrer"
-                  >
-                    {`${deployment.trigger.commit.hash.slice(0, 7)}`}
-                    <OpenInNewIcon className={classes.linkIcon} />
-                  </Link>
-                  )
-                </span>
-              </div>
-            )}
-            <LabeledText
-              label="Triggered by"
-              value={
-                deployment.trigger.commander ||
-                deployment.trigger.commit?.author ||
-                ""
-              }
-            />
+            <table>
+              <tbody>
+                {deployment.trigger.commit && (
+                  <DetailTableRow
+                    label="Commit"
+                    value={
+                      <div className={classes.commitInfo}>
+                        <Typography variant="body2">
+                          {deployment.trigger.commit.message}
+                        </Typography>
+                        <span className={classes.textMargin}>
+                          (
+                          <Link
+                            variant="body2"
+                            href={deployment.trigger.commit.url}
+                            target="_blank"
+                            rel="noreferrer"
+                          >
+                            {`${deployment.trigger.commit.hash.slice(0, 7)}`}
+                            <OpenInNewIcon className={classes.linkIcon} />
+                          </Link>
+                          )
+                        </span>
+                      </div>
+                    }
+                  />
+                )}
+                <DetailTableRow
+                  label="Triggered by"
+                  value={
+                    deployment.trigger.commander ||
+                    deployment.trigger.commit?.author ||
+                    ""
+                  }
+                />
+              </tbody>
+            </table>
           </div>
           {isDeploymentRunning(deployment.status) && (
             <SplitButton

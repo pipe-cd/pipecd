@@ -6,6 +6,12 @@ export const theme = createMuiTheme({
     MuiButtonBase: {
       disableRipple: true,
     },
+    MuiTypography: {
+      variantMapping: {
+        body1: "div",
+        body2: "div",
+      },
+    },
   },
   overrides: {
     MuiCssBaseline: {
