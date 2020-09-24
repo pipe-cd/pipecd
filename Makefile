@@ -1,5 +1,6 @@
 BAZEL_FLAGS =
 BAZEL_COMMAND_FLAGS =
+CLOUDSDK_PYTHON = "/usr/bin/python"
 
 ifdef EXTENDED_BAZEL_RC
 	BAZEL_FLAGS += --bazelrc=${EXTENDED_BAZEL_RC}
@@ -14,13 +15,17 @@ ifdef BUILD_PLATFORM
 	BAZEL_COMMAND_FLAGS += --config=${BUILD_PLATFORM}
 endif
 
+ifdef PHTHON_PATH
+  CLOUDSDK_PYTHON=${PHTHON_PATH}
+endif
+
 .PHONY: build
 build:
 	bazelisk ${BAZEL_FLAGS} build ${BAZEL_COMMAND_FLAGS} -- //...
 
 .PHONY: test
 test:
-	bazelisk ${BAZEL_FLAGS} test ${BAZEL_COMMAND_FLAGS} --config=unit -- //pkg/...
+	bazelisk ${BAZEL_FLAGS} test ${BAZEL_COMMAND_FLAGS} -- //pkg/...
 
 .PHONY: test-debug
 test-debug:
@@ -28,7 +33,7 @@ test-debug:
 
 .PHONY: test-integration
 test-integration:
-	bazelisk ${BAZEL_FLAGS} test ${BAZEL_COMMAND_FLAGS} --config=integration -- //pkg/...
+	bazelisk ${BAZEL_FLAGS} test ${BAZEL_COMMAND_FLAGS} --action_env=CLOUDSDK_PYTHON=${CLOUDSDK_PYTHON} -- //test/integration/...
 
 .PHONY: coverage
 coverage:
