@@ -43,6 +43,6 @@ func TestMain(m *testing.M) {
 
 	code := m.Run()
 
-	log.Println("=========================================EMULATOR OUTPUT=======================================", b.String())
+	log.Printf("=== Firestore Emulator Output ===\n%s\n=== Firestore Emulator Output End ===\n", b.String())
 	os.Exit(code)
 }
