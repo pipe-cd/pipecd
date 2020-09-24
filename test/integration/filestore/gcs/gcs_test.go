@@ -23,6 +23,7 @@ import (
 	"github.com/stretchr/testify/assert"
 
 	"github.com/pipe-cd/pipe/pkg/filestore"
+	"github.com/pipe-cd/pipe/pkg/filestore/gcs"
 )
 
 func newEmulator(bucket string, objects map[string]string) (*fakestorage.Server, error) {
@@ -52,7 +53,7 @@ func TestGetObject(t *testing.T) {
 	assert.Nil(t, err)
 	defer server.Stop()
 
-	store, err := NewStore(ctx, bucket, WithHTTPClient(server.HTTPClient()))
+	store, err := gcs.NewStore(ctx, bucket, gcs.WithHTTPClient(server.HTTPClient()))
 	assert.Nil(t, err)
 
 	tests := []struct {
@@ -100,7 +101,7 @@ func TestPutObject(t *testing.T) {
 	assert.Nil(t, err)
 	defer server.Stop()
 
-	store, err := NewStore(ctx, bucket, WithHTTPClient(server.HTTPClient()))
+	store, err := gcs.NewStore(ctx, bucket, gcs.WithHTTPClient(server.HTTPClient()))
 	assert.Nil(t, err)
 
 	tests := []struct {
@@ -157,7 +158,7 @@ func TestListObjects(t *testing.T) {
 	assert.Nil(t, err)
 	defer server.Stop()
 
-	store, err := NewStore(ctx, bucket, WithHTTPClient(server.HTTPClient()))
+	store, err := gcs.NewStore(ctx, bucket, gcs.WithHTTPClient(server.HTTPClient()))
 	assert.Nil(t, err)
 
 	tests := []struct {
@@ -208,7 +209,7 @@ func TestClose(t *testing.T) {
 	assert.Nil(t, err)
 	defer server.Stop()
 
-	store, err := NewStore(ctx, bucket, WithHTTPClient(server.HTTPClient()))
+	store, err := gcs.NewStore(ctx, bucket, gcs.WithHTTPClient(server.HTTPClient()))
 	assert.Nil(t, err)
 
 	err = store.Close()
