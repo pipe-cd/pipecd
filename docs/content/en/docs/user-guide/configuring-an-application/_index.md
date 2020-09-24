@@ -7,7 +7,7 @@ description: >
 ---
 
 An application is a collect of resources and configurations that are managed together.
-It represents the service which you are going to deploy. With PipeCD all application configurations and its deployment configuration (`.piped.yaml`) must be committed to a directory of a Git respository. That directory is called as application configuration directory.
+It represents the service which you are going to deploy. With PipeCD, all application's configurations and its deployment configuration (`.piped.yaml`) must be committed to a directory of a Git respository. That directory is called as application configuration directory.
 
 Before deploying an application, the application must be registered from the web UI and a deployment configuration file (`.piped.yaml`) must be committed to the application configuration directory.
 An application must belong to exactly one environment and can be handled by one of the registered `piped`s. Currently, PipeCD is supporting the following kinds of application:
@@ -19,16 +19,18 @@ An application must belong to exactly one environment and can be handled by one 
 
 ## Registering a new application from Web UI
 
-Registering application helps PipedCD know the basic information about application, where the application configuration is placing, what `piped` should handle the application as well as what cloud the application should be deployed to.
+Registering application helps PipedCD know the basic information about that application, where the application configuration is placing, what `piped` should handle it as well as what cloud the application should be deployed to.
 
-By clicking on `+ADD` button at the application list page, a popup at the right side will be revealed as the following:
-
-After filling all the required fields, click `Save` button to complete application registering.
+By clicking on `+ADD` button at the application list page, a popup will be revealed from the right side as below:
 
 ![](/images/registering-an-application.png)
 <p style="text-align: center;">
 Popup for registering a new application from Web UI
 </p>
+
+After filling all the required fields, click `Save` button to complete the application registering.
+
+Here are the list of fields in the register form:
 
 | Field | Description | Required |
 |-|-|-|-|
@@ -57,3 +59,14 @@ spec:
 
 - `kind` is the application kind. As explained before, supporting kinds of application are: `Kubernetes`, `Terrform`, `CloudRun`, `Lambda`.
 - `spec` is the specific configuration for each application kind.
+
+After clicking on the `Save` button at the previous step, the popup will be changed to allow you fill your deployment configuration. You can also choose one of the prepared templates.
+
+![](/images/adding-deployment-configuration-file.png)
+<p style="text-align: center;">
+Popup for registering a new application from Web UI
+</p>
+
+<br/>
+
+The next sections guide you how to configure the deployment for each specific application kinds.

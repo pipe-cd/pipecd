@@ -14,7 +14,7 @@ Contributions to this project must be accompanied by a Contributor License Agree
 
 You generally only need to sign a CLA once, so if you've already signed one, you probably don't need to do it again.
 
-In case you have not signed yet, [CLA plugin](docs/plugins/cla) will guide you to sign the CLA _when you send the first pull request to [pipe-cd/pipe](https://github.com/pipe-cd/pipe) repository_.
+In case you have not signed yet, [pipecd-bot](https://github.com/pipecd-bot) will guide you to sign the CLA _when you send the first pull request to [pipe-cd/pipe](https://github.com/pipe-cd/pipe) repository_.
 
 ## Creating an issue
 
