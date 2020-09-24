@@ -15,9 +15,9 @@
 package firestore
 
 import (
+	"bytes"
 	"context"
 	"fmt"
-	"io"
 	"log"
 	"os"
 	"os/exec"
@@ -33,29 +33,16 @@ func TestMain(m *testing.M) {
 	os.Setenv("FIRESTORE_EMULATOR_HOST", emulatorHost)
 	cmd := exec.CommandContext(ctx, "gcloud", "beta", "emulators", "firestore", "start", fmt.Sprintf("--host-port=%s", emulatorHost))
 
-	stderr, err := cmd.StderrPipe()
-	if err != nil {
-		log.Fatal(err)
-	}
-	defer stderr.Close()
+	b := new(bytes.Buffer)
+	cmd.Stdout = b
+	cmd.Stderr = b
 
 	if err := cmd.Start(); err != nil {
 		log.Fatal(err)
 	}
 
-	buf := make([]byte, 256, 256)
-	// Spawn another goroutine to see the emulator output.
-	go func() {
-		for {
-			n, err := stderr.Read(buf[:])
-			if err != nil && err == io.EOF {
-				break
-			}
-			if n > 0 {
-				log.Printf("%s", string(buf[:n]))
-			}
-		}
-	}()
+	code := m.Run()
 
-	os.Exit(m.Run())
+	log.Println("=========================================EMULATOR OUTPUT=======================================", b.String())
+	os.Exit(code)
 }
