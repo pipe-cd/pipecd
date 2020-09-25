@@ -191,7 +191,7 @@ func makeErrorCookie(value string) *http.Cookie {
 		MaxAge:   defaultErrorCookieMaxAge,
 		Path:     rootPath,
 		Secure:   true,
-		HttpOnly: true,
+		HttpOnly: false,
 		SameSite: http.SameSiteLaxMode,
 	}
 }

@@ -7,12 +7,16 @@ import {
 } from "@material-ui/core";
 import ArrowRightAltIcon from "@material-ui/icons/ArrowRightAlt";
 import React, { FC, memo, useState } from "react";
+import { useCookies } from "react-cookie";
 import { useDispatch } from "react-redux";
 import { Redirect } from "react-router-dom";
 import { LoginForm } from "../components/login-form";
 import { PAGE_PATH_APPLICATIONS } from "../constants";
 import { setProjectName, useProjectName } from "../modules/login";
 import { useMe } from "../modules/me";
+import MuiAlert from "@material-ui/lab/Alert";
+
+const CONTENT_WIDTH = 500;
 
 const useStyles = makeStyles((theme) => ({
   root: {
@@ -20,13 +24,14 @@ const useStyles = makeStyles((theme) => ({
     display: "flex",
     alignItems: "center",
     justifyContent: "center",
+    flexDirection: "column",
     flex: 1,
   },
   content: {
     display: "flex",
     flexDirection: "column",
     padding: theme.spacing(3),
-    width: 500,
+    width: CONTENT_WIDTH,
     textAlign: "center",
   },
   fields: {
@@ -39,6 +44,10 @@ const useStyles = makeStyles((theme) => ({
     justifyContent: "flex-end",
     marginTop: theme.spacing(4),
   },
+  loginError: {
+    width: CONTENT_WIDTH,
+    marginBottom: theme.spacing(2),
+  },
 }));
 
 export const LoginPage: FC = memo(function LoginPage() {
@@ -47,6 +56,11 @@ export const LoginPage: FC = memo(function LoginPage() {
   const me = useMe();
   const projectName = useProjectName();
   const [name, setName] = useState<string>("");
+  const [cookies, , removeCookie] = useCookies(["error"]);
+
+  const handleCloseErrorAlert = (): void => {
+    removeCookie("error");
+  };
 
   const handleOnContinue = (e: React.FormEvent<HTMLFormElement>): void => {
     e.preventDefault();
@@ -56,6 +70,15 @@ export const LoginPage: FC = memo(function LoginPage() {
   return (
     <div className={classes.root}>
       {me && me.isLogin && <Redirect to={PAGE_PATH_APPLICATIONS} />}
+      {cookies.error && (
+        <MuiAlert
+          severity="error"
+          className={classes.loginError}
+          onClose={handleCloseErrorAlert}
+        >
+          {cookies.error}
+        </MuiAlert>
+      )}
       <Card className={classes.content}>
         {projectName === null ? (
           <form onSubmit={handleOnContinue}>
