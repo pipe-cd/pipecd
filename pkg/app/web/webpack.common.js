@@ -1,6 +1,7 @@
 /* eslint @typescript-eslint/no-var-requires: 0 */
 "use strict";
 const HtmlWebpackPlugin = require("html-webpack-plugin");
+const path = require("path");
 
 module.exports = (_, argv) => {
   return {
@@ -43,6 +44,7 @@ module.exports = (_, argv) => {
         new HtmlWebpackPlugin({
           filename: "index.html",
           template: argv.htmlTemplate,
+          favicon: path.join(__dirname, "assets/favicon.ico"),
         }),
     ].filter(Boolean),
   };
