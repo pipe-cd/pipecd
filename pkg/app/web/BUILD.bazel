@@ -115,7 +115,7 @@ webpack(
         "webpack.common.js",
         "webpack.config.js",
         "@npm//:node_modules",
-    ],
+    ] + glob(["assets/**/*"]),
     output_dir = True,
     visibility = ["//visibility:public"],
 )
