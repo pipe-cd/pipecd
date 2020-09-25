@@ -8,15 +8,10 @@ test --test_output=errors --test_verbose_timeout_warnings
 build:stamping --stamp --workspace_status_command hack/print-workspace-status.sh
 
 # Enable go race detection
-build:unit --features=race
-test:unit --features=race
-
-test:unit --test_tag_filters=-e2e,-integration
-test:integration --test_tag_filters=integration
+build --features=race
 
 # Output profiling to a file
 build --profile=/tmp/build.bazelprofile
-test --profile=/tmp/build.bazelprofile
 
 # Ensure that Bazel never runs as root, which can cause unit tests to fail
 build --sandbox_fake_username
@@ -29,8 +24,6 @@ build --define DOCKER_REGISTRY=local
 
 # https://github.com/bazelbuild/rules_docker/issues/842
 build --host_force_python=PY2
-test --host_force_python=PY2
-run --host_force_python=PY2
 
 # CI configurations
 build:ci --define DOCKER_REGISTRY=gcr.io/pipecd
