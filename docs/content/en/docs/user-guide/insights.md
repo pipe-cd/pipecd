@@ -8,7 +8,7 @@ description: >
 
 > TBA
 
-Based on executed deployment data, PipeCD provides some graphs at the `Insights` tab that helps you understand the delivery performance of a single service or your whole project.
+Based on executed deployment data, PipeCD provides the graphs at the `Insights` page that helps you understand the delivery performance of a single application or your whole project.
 The graph of the following metrics will be provided:
 
 ### Lead Time for Changes
@@ -17,7 +17,7 @@ How long does it take to go from code committed to code successfully running on 
 > Screenshot
 
 ### Deployment Frequency
-How offen does your organization deploy code to production.
+How offen does your application/project deploy code to production.
 
 > Screenshot
 

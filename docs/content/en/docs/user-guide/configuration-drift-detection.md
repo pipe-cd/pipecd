@@ -12,7 +12,7 @@ As PipeCD is using Git as a single source of truth, all application resources an
 PipeCD includes `Configuration Drift Detection` feature, which periodically compares running resources/configurations with the definitions in Git to detect the configuration drift and shows the comparing result in the application details web page as well as sends the notifications to the developers.
 
 ### Detection Result
-There are 3 statuses for the drift detection result: `SYNCED`, `OUT_OF_SYNC`, `DEPLOYING`.
+There are three statuses for the drift detection result: `SYNCED`, `OUT_OF_SYNC`, `DEPLOYING`.
 
 ###### SYNCED
 
@@ -28,7 +28,7 @@ Application is in SYNCED state
 This status means a configuration drift was detected. An application is in this status when at least one of the following conditions is satisfied:
 - at least one resource is defined in Git but NOT running in the cluster
 - at least one resource is NOT defined in Git but running in the cluster
-- at least one resource that is both defined in Git and running in the cluster but NOT the same configuration
+- at least one resource that is both defined in Git and running in the cluster but NOT in the same configuration
 
 This status is showed by a red "Out of Sync" mark at the application details page.
 

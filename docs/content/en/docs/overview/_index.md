@@ -18,11 +18,6 @@ PipeCD provides a unified continuous delivery solution for multiple application 
 Component Architecture
 </p>
 
-![](/images/deployment-details.png)
-<p style="text-align: center;">
-Deployment Details Page
-</p>
-
 ## Why PipeCD?
 
 **Visibility**
@@ -54,7 +49,7 @@ Deployment Details Page
 
 ## Where should I go next?
 
-If you are an **operator** who are wanting to install and configure PipeCD for other developers.
+If you are an **operator** who are wanting to install and configure PipeCD (control-plane and piped) for other developers.
 - [Quickstart](/docs/quickstart/)
 - [Operator Manual](/docs/operator-manual/)
 
