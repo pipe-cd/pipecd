@@ -24,7 +24,7 @@ Each project can have multiple `piped` instances from different clouds or enviro
 
 There are three types of project roles:
 
-- **Viewer** has only view permissions to deployment and application in the project.
+- **Viewer** has only permissions of viewing to deployment and application in the project.
 - **Editor** has all viewer permissions, plus permissions for actions that modify state such as manually trigger/cancel the deployment.
 - **Admin** has all editor permissions, plus permissions for managing project data, managing project `piped`.
 
