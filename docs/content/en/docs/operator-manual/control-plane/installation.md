@@ -63,7 +63,7 @@ See [ConfigurationReference](/docs/operator-manual/control-plane/configuration-r
 After all, install the control-plane as bellow:
 
 ``` console
-helm install pipecd pipecd/pipecd --version=VERSION \
+helm install pipecd pipecd/pipecd --version=VERSION --namespace=NAMESPACE \
   --set-file config.data=path-to-control-plane-configuration-file \
   --set-file secret.signingKey.data=path-to-signing-key-file \
   --set-file secret.firestoreServiceAccount.data=path-to-service-account-file \
@@ -101,7 +101,7 @@ See [ConfigurationReference](/docs/operator-manual/control-plane/configuration-r
 After all, install the control-plane as bellow:
 
 ``` console
-helm install pipecd pipecd/pipecd --version=VERSION \
+helm install pipecd pipecd/pipecd --version=VERSION --namespace=NAMESPACE \
   --set-file config.data=path-to-control-plane-configuration-file \
   --set-file secret.signingKey.data=path-to-signing-key-file \
   --set-file secret.minioAccessKey.data=path-to-minio-access-key-file
