@@ -1,3 +1,3 @@
 ## Development
 
-Please see [this documentation](https://pipecd.dev/docs/contributor-guide/4-piped-development/).
+See [this documentation](https://pipecd.dev/docs/contribution-guidelines/piped-development/)

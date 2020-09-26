@@ -1,3 +1,3 @@
 ## Development
 
-Please see [this documentation](https://pipecd.dev/docs/contributor-guide/5-control-plane-development/).
+See [this documentation](https://pipecd.dev/docs/contribution-guidelines/control-plane-development/).

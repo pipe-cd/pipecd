@@ -1,7 +1,7 @@
 ---
 title: "Triggering a deployment"
 linkTitle: "Triggering a deployment"
-weight: 6
+weight: 3
 description: >
   This page describes when a deployment is trigerred automatically and how to manually trigger a deployment.
 ---
