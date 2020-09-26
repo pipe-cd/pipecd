@@ -15,11 +15,11 @@ The control plane is a centralized part of PipeCD. It contains several services 
 
 ##### API
 
-`api` is the most important service in the control plane. It handles all incoming requests by providing a gRPC server for handling incoming gRPC requests from `piped`s, web clients, and also providing an HTTP server for handling incoming HTTP requests from third party services such as auth callback, webhook requests. This service can be easily scaled by updating the pod number.
+`api` is the most important service in the control plane. It handles all incoming requests by providing a gRPC server for handling incoming gRPC requests from `piped`s, web clients, and providing an HTTP server for handling incoming HTTP requests from third party services such as auth callback, webhook requests. This service can be easily scaled by updating the pod number.
 
 ##### Web
 
-`web` is a service that provides an HTTP server for serving all static assets for web rendering such as HTML, JS, CSS... This service can be easily scaled by updating the pod number.
+`web` is a service providing an HTTP server for serving all static assets for web rendering such as HTML, JS, CSS... This service can be easily scaled by updating the pod number.
 
 ##### Cache
 

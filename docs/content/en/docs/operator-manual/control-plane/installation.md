@@ -15,7 +15,7 @@ description: >
 
 ### 1. Adding helm chart repository
 
-Installing the control-plane will be done via the helm chart sourced in [pipe-cd/manifests](https://github.com/pipe-cd/manifests/tree/master/manifests/pipecd) GitHub repository. That chart is also published in the Helm chart repository at `https://charts.pipecd.dev`.
+Installing the control-plane will be done via the helm chart sourced in [pipe-cd/manifests](https://github.com/pipe-cd/manifests/tree/master/manifests/pipecd) GitHub repository. That chart is published in the Helm chart repository at `https://charts.pipecd.dev`.
 
 So before installing PipeCD, let's add the above Helm chart repository to your Helm client by the following command:
 

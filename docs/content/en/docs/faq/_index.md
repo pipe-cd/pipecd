@@ -12,7 +12,7 @@ Currently, PipeCD can be used to deploy `Kubernetes`, `Terraform`, `CloudRun`, `
 
 In the near future we also want to support `ECS`, `Crossplane`...
 
-### 2. What kind of templating methods for Kubernetes application will be suported?
+### 2. What kind of templating methods for Kubernetes application will be supported?
 
 Currently, PipeCD is supporting `Helm` and `Kustomize` as templating method for Kubernetes applications.
 

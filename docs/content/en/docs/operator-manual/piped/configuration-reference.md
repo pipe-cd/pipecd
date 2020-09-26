@@ -24,7 +24,7 @@ spec:
 | pipedKeyFile | string | The path to the file containing the generated key string for this piped. | Yes |
 | apiAddress | string | The address used to connect to the control-plane's API. | Yes |
 | webAddress | string | The address to the control-plane's Web. | No |
-| syncInterval | duration | How offten to check whether an application should be synced. Default is `1m`. | No |
+| syncInterval | duration | How often to check whether an application should be synced. Default is `1m`. | No |
 | git | [Git](/docs/operator-manual/piped/configuration-reference/#git) | Git configuration needed for Git commands.  | No |
 | repositories | [][Repository](/docs/operator-manual/piped/configuration-reference/#gitrepository) | List of Git repositories this piped will handle. | No |
 | chartRepositories | [][ChartRepository](/docs/operator-manual/piped/configuration-reference/#chartrepository) | List of Helm chart repositories that should be added while starting up. | No |
@@ -48,14 +48,14 @@ spec:
 | Field | Type | Description | Required |
 |-|-|-|-|
 | repoID | string | Unique identifier to the repository. This must be unique in the piped scope. | Yes |
-| remote | string | Remote address of the reposiroty used to clone the source code. e.g. `git@github.com:org/repo.git` | Yes |
+| remote | string | Remote address of the repository used to clone the source code. e.g. `git@github.com:org/repo.git` | Yes |
 | branch | string | The branch will be handled. | Yes |
 
 ## ChartRepository
 
 | Field | Type | Description | Required |
 |-|-|-|-|
-| name | string | The name of the Helm chart repository. Note that is is not a Git repository but a [Helm chart repository](https://helm.sh/docs/topics/chart_repository/). | Yes |
+| name | string | The name of the Helm chart repository. Note that is not a Git repository but a [Helm chart repository](https://helm.sh/docs/topics/chart_repository/). | Yes |
 | address | string | The address to the Helm chart repository. | Yes |
 | username | string | Username used for the repository backed by HTTP basic authentication. | No |
 | password | string | Password used for the repository backed by HTTP basic authentication. | No |
@@ -121,7 +121,7 @@ Must be one of the following structs:
 | Field | Type | Description | Required |
 |-|-|-|-|
 | name | string | The unique name of the analysis provider. | Yes |
-| kind | string | The provider type. Currently only PROMETHEUS is available. | Yes |
+| kind | string | The provider type. Currently, only PROMETHEUS is available. | Yes |
 | prometheus | [AnalysisProviderPrometheus](/docs/operator-manual/piped/configuration-reference/#analysisproviderprometheus) | Configuration needed to connect to Prometheus. | No |
 
 ## AnalysisProviderPrometheus

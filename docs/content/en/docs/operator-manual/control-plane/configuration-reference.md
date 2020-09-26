@@ -115,7 +115,7 @@ Must be one of the following objects:
 | Field | Type | Description | Required |
 |-|-|-|-|
 | username | string | The username string. | Yes |
-| passwordHash | stirng | The bcrypt hashed value of the password string. | Yes |
+| passwordHash | string | The bcrypt hashed value of the password string. | Yes |
 
 ## SharedSSOConfig
 

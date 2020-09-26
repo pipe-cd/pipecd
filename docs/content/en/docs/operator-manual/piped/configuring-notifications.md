@@ -3,12 +3,12 @@ title: "Configuring notifications"
 linkTitle: "Configuring notifications"
 weight: 7
 description: >
-  This page describes how to configure piped to send notications to external services.
+  This page describes how to configure piped to send notifications to external services.
 ---
 
 PipeCD events (deployment triggered, planned, completed, analysis result, piped started...) can be sent to external services like Slack or a Webhook service. While forwarding those events to a chat service helps developers have a quick and convenient way to know the deployment's current status, forwarding to a Webhook service may be useful for triggering other related tasks like CI jobs.
 
-PipeCD events are emitted and sent by the `piped` component. So all of the needed configurations can be specified in the `piped` configuration file.
+PipeCD events are emitted and sent by the `piped` component. So all the needed configurations can be specified in the `piped` configuration file.
 Notification configuration including:
 - a list of `Route`s which used to match events and decide where the event should be sent to
 - a list of `Receiver`s which used to know how to send events to the external service
