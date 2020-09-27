@@ -8,13 +8,13 @@ description: >
 
 ### Piped
 
-`piped` (the ’d’ is for daemon) is a single binary component that you run in your cluster, your local network to handle the deployment tasks.
+`piped` (the ’d’ is short for ’daemon’) is a single binary component you run in your cluster, your local network to handle the deployment tasks.
 It can be run inside a Kubernetes cluster by simply starting a Pod or a Deployment.
-This component is designed to be stateless so it can also be run in a single VM or even your local machine.
+This component is designed to be stateless, so it can also be run in a single VM or even your local machine.
 
 ### Control Plane
 
-A centralized component that manages deployment data and provides gPRC API for connecting `piped`s as well as all web-functionalities of PipeCD such as
+A centralized component managing deployment data and provides gPRC API for connecting `piped`s as well as all web-functionalities of PipeCD such as
 authentication, showing deployment list/details, application list/details, delivery insights...
 
 ### Project
@@ -24,9 +24,9 @@ Each project can have multiple `piped` instances from different clouds or enviro
 
 There are three types of project roles:
 
-- **Viewer** has only view permissions to deployment and application in the project.
+- **Viewer** has only permissions of viewing to deployment and application in the project.
 - **Editor** has all viewer permissions, plus permissions for actions that modify state such as manually trigger/cancel the deployment.
-- **Admin** has all user permissions, plus permissions for managing project data, managing project `piped`.
+- **Admin** has all editor permissions, plus permissions for managing project data, managing project `piped`.
 
 ### Application
 
@@ -36,7 +36,7 @@ PipeCD supports multiple kinds of applications such as `KUBERNETES`, `TERRAFORM`
 ### Environment
 
 An environment is a logical group of applications of a project. A project can have multiple environments.
-Each application must belong to one and only one enviroment. While each piped must belong to at least one environment.
+Each application must belong to one and only one environment. While each piped must belong to at least one environment.
 
 ### Deployment
 
@@ -51,7 +51,7 @@ Each application requires one deployment configuration file at application direc
 ### Application Configuration Directory
 
 A directory in Git repository containing deployment configuration file (`.pipe.yaml`) and application manifests.
-Each application must has one application configuration directory.
+Each application must have one application configuration directory.
 
 ### Quick Sync
 
@@ -62,7 +62,7 @@ Quick sync is a fast way to sync application to the state specified in a Git com
 
 ### Pipeline
 
-A list of stages specified by user in the deployment configuration file that tells `piped` how the application should be deployed. When the pipeline was not specified, the application will be deployed by Quick Sync way.
+A list of stages specified by user in the deployment configuration file that tells `piped` how the application should be deployed. If the pipeline is not specified, the application will be deployed by Quick Sync way.
 
 ### Stage
 

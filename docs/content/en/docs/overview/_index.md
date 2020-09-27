@@ -48,11 +48,11 @@ Component Architecture
 
 ## Where should I go next?
 
-If you are an **operator** who are wanting to install and configure PipeCD (control-plane and piped) for other developers.
+If you are an **operator** wanting to install and configure PipeCD (control-plane and piped) for other developers.
 - [Quickstart](/docs/quickstart/)
 - [Operator Manual](/docs/operator-manual/)
 
-If you are an **user** who are using PipeCD to deploy your application/infrastructure:
+If you are an **user** using PipeCD to deploy your application/infrastructure:
 - [User Guide](/docs/user-guide/)
 - [Examples](/docs/user-guide/examples)
 

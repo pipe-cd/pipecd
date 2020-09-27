@@ -94,7 +94,7 @@ After a bit, the first deployment would be complete automatically to sync the ap
 ### 7. Let's deploy!
 Let's get started with deployment! All you have to do is to make a PR to update the image tag, scale the replicas, or change the manifests.
 
-For instance, open the `kubernetes/canary/deployment.yaml` under the forked examples repository, then change the tag from `v0.1.0` to `v0.2.0`.
+For instance, open the `kubernetes/canary/deployment.yaml` under the forked examples' repository, then change the tag from `v0.1.0` to `v0.2.0`.
 
 ![](/images/quickstart-update-image-tag.png)
 
