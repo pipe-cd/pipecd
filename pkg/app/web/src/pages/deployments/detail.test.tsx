@@ -1,14 +1,13 @@
 import { configureStore } from "@reduxjs/toolkit";
-import { render, waitFor } from "@testing-library/react";
 import React from "react";
-import { Provider } from "react-redux";
 import { MemoryRouter, Route } from "react-router";
+import { render, waitFor } from "../../../test-utils";
 import * as deploymentsApi from "../../api/deployments";
 import { reducers } from "../../modules";
 import { dummyDeployment } from "../../__fixtures__/dummy-deployment";
 import { dummyEnv } from "../../__fixtures__/dummy-environment";
-import { DeploymentDetailPage } from "./detail";
 import { dummyPiped } from "../../__fixtures__/dummy-piped";
+import { DeploymentDetailPage } from "./detail";
 
 jest.mock("../../api/deployments");
 
@@ -35,16 +34,15 @@ describe("DeploymentDetailPage", () => {
     });
 
     const { getByText } = render(
-      <Provider store={store}>
-        <MemoryRouter
-          initialEntries={[`/deployments/${dummyDeployment.id}`]}
-          initialIndex={0}
-        >
-          <Route path="/deployments/:deploymentId">
-            <DeploymentDetailPage />
-          </Route>
-        </MemoryRouter>
-      </Provider>
+      <MemoryRouter
+        initialEntries={[`/deployments/${dummyDeployment.id}`]}
+        initialIndex={0}
+      >
+        <Route path="/deployments/:deploymentId">
+          <DeploymentDetailPage />
+        </Route>
+      </MemoryRouter>,
+      { store }
     );
 
     expect(deploymentsApi.getDeployment).toHaveBeenCalledWith({
