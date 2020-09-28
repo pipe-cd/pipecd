@@ -1,6 +1,6 @@
 import React from "react";
 import { Header } from "./header";
-import { createStore } from "../../.storybook/redux-decorator";
+import { createStore } from "../../test-utils";
 import { Provider } from "react-redux";
 import { Role } from "../../../../../bazel-bin/pkg/app/web/model/role_pb";
 
