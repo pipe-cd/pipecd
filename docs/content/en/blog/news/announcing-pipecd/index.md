@@ -33,8 +33,8 @@ Deployment Details Page
 
 - Visit our website and documentation at https://pipecd.dev
 - Check out the code at https://github.com/pipe-cd/pipe
-- Join us on Slack
-- Follow us on Twitter @[pipecd_dev](https://twitter.com/pipecd_dev)
+- Join us on Slack [@cloud-native/pipecd](https://cloud-native.slack.com/archives/C01B27F9T0X)
+- Follow us on Twitter [@pipecd_dev](https://twitter.com/pipecd_dev)
 - PipeCD team is hiring engineers/interns to work on PipeCD. Please contact us if you are interested.
 
 ### Thanks
