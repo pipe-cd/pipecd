@@ -66,6 +66,10 @@ spec:
       params:
         - key=node_modules
         - path=/workspace/.yarn
+    - description: Generate API client code
+      runner: gcr.io/pipecd/runner:1.0.0
+      commands:
+        - bazelisk build //pkg/app/web:build_api //pkg/app/web:build_model
     - name: test
       description: Run all web tests
       runner: gcr.io/kapetanios/node:12.13.1
