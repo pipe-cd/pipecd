@@ -8,6 +8,7 @@
     "dev": "webpack-dev-server --htmlTemplate ./base.html --config ./webpack.config.dev.js",
     "gen": "scaffdog generate",
     "test": "TZ=Asia/Tokyo jest --config jest.config.local.js",
+    "test:coverage": "yarn test --coverage",
     "lint": "eslint --ext .ts,.tsx ./src",
     "storybook": "start-storybook -p 6006",
     "build-storybook": "build-storybook",
