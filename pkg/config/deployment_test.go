@@ -32,6 +32,15 @@ func TestAppConfig(t *testing.T) {
 		expectedError      error
 	}{
 		{
+			fileName:           "testdata/application/terraform-app-empty.yaml",
+			expectedKind:       KindTerraformApp,
+			expectedAPIVersion: "pipecd.dev/v1beta1",
+			expectedSpec: &TerraformDeploymentSpec{
+				Input: TerraformDeploymentInput{},
+			},
+			expectedError: nil,
+		},
+		{
 			fileName:           "testdata/application/terraform-app.yaml",
 			expectedKind:       KindTerraformApp,
 			expectedAPIVersion: "pipecd.dev/v1beta1",
