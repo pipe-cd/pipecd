@@ -1,6 +1,5 @@
 import {
   Button,
-  CircularProgress,
   Dialog,
   DialogActions,
   DialogContent,
@@ -10,11 +9,12 @@ import {
   Typography,
 } from "@material-ui/core";
 import EditIcon from "@material-ui/icons/Edit";
+import Skeleton from "@material-ui/lab/Skeleton/Skeleton";
 import React, { FC, memo, useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
-import { UI_TEXT_CANCEL, UI_TEXT_SAVE } from "../constants/ui-text";
 import { SSO_DESCRIPTION } from "../constants/text";
 import { UPDATE_SSO_FAILED, UPDATE_SSO_SUCCESS } from "../constants/toast-text";
+import { UI_TEXT_CANCEL, UI_TEXT_SAVE } from "../constants/ui-text";
 import { AppState } from "../modules";
 import { fetchProject, GitHubSSO, updateGitHubSSO } from "../modules/project";
 import { addToast } from "../modules/toasts";
@@ -43,9 +43,10 @@ export const GithubSSOForm: FC = memo(function GithubSSOForm() {
   const [clientSecret, setClientSecret] = useState("");
   const [baseUrl, setBaseUrl] = useState("");
   const [uploadUrl, setUploadUrl] = useState("");
-  const sso = useSelector<AppState, GitHubSSO | null>(
-    (state) => state.project.github
-  );
+  const [sso, sharedSSO] = useSelector<
+    AppState,
+    [GitHubSSO | null | undefined, string | null | undefined]
+  >((state) => [state.project.github, state.project.sharedSSO]);
 
   const handleClose = (): void => {
     setIsEdit(false);
@@ -117,7 +118,22 @@ export const GithubSSOForm: FC = memo(function GithubSSOForm() {
             </div>
           </>
         ) : (
-          <CircularProgress />
+          <div className={projectSettingStyles.values}>
+            {sso === undefined ? (
+              <>
+                <Skeleton width={200} height={28} />
+                <Skeleton width={200} height={28} />
+                <Skeleton width={200} height={28} />
+                <Skeleton width={200} height={28} />
+              </>
+            ) : sharedSSO ? (
+              <ProjectSettingLabeledText label="Shared SSO" value={sharedSSO} />
+            ) : (
+              <Typography variant="body1" color="textSecondary">
+                Not Configured
+              </Typography>
+            )}
+          </div>
         )}
       </div>
 

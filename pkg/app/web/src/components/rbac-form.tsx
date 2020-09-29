@@ -1,6 +1,5 @@
 import {
   Button,
-  CircularProgress,
   Dialog,
   DialogActions,
   DialogContent,
@@ -10,14 +9,15 @@ import {
   Typography,
 } from "@material-ui/core";
 import EditIcon from "@material-ui/icons/Edit";
+import Skeleton from "@material-ui/lab/Skeleton/Skeleton";
 import React, { FC, memo, useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
-import { UI_TEXT_CANCEL, UI_TEXT_SAVE } from "../constants/ui-text";
 import { RBAC_DESCRIPTION } from "../constants/text";
 import {
   UPDATE_RBAC_FAILED,
   UPDATE_RBAC_SUCCESS,
 } from "../constants/toast-text";
+import { UI_TEXT_CANCEL, UI_TEXT_SAVE } from "../constants/ui-text";
 import { AppState } from "../modules";
 import { fetchProject, Teams, updateRBAC } from "../modules/project";
 import { addToast } from "../modules/toasts";
@@ -35,7 +35,7 @@ const TEAM_LABELS = {
 
 export const RBACForm: FC = memo(function RBACForm() {
   const projectSettingClasses = useProjectSettingStyles();
-  const teams = useSelector<AppState, Teams | null>(
+  const teams = useSelector<AppState, Teams | null | undefined>(
     (state) => state.project.teams
   );
   const dispatch = useDispatch<AppDispatch>();
@@ -71,7 +71,7 @@ export const RBACForm: FC = memo(function RBACForm() {
   };
 
   const isNotModified =
-    teams !== null &&
+    !!teams &&
     teams.admin === admin &&
     teams.editor === editor &&
     teams.viewer === viewer;
@@ -119,7 +119,21 @@ export const RBACForm: FC = memo(function RBACForm() {
             </div>
           </>
         ) : (
-          <CircularProgress />
+          <div className={projectSettingClasses.values}>
+            {teams === undefined ? (
+              <>
+                <Skeleton width={200} height={28} />
+                <Skeleton width={200} height={28} />
+                <Skeleton width={200} height={28} />
+              </>
+            ) : (
+              <>
+                <Typography variant="body1" color="textSecondary">
+                  Not Configured
+                </Typography>
+              </>
+            )}
+          </div>
         )}
       </div>
 

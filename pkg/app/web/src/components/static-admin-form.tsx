@@ -1,6 +1,5 @@
 import {
   Button,
-  CircularProgress,
   Dialog,
   DialogActions,
   DialogContent,
@@ -12,15 +11,16 @@ import {
   Typography,
 } from "@material-ui/core";
 import EditIcon from "@material-ui/icons/Edit";
+import Skeleton from "@material-ui/lab/Skeleton/Skeleton";
 import clsx from "clsx";
 import React, { FC, memo, useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
-import { UI_TEXT_CANCEL, UI_TEXT_SAVE } from "../constants/ui-text";
 import { STATIC_ADMIN_DESCRIPTION } from "../constants/text";
 import {
   UPDATE_STATIC_ADMIN_INFO_FAILED,
   UPDATE_STATIC_ADMIN_INFO_SUCCESS,
 } from "../constants/toast-text";
+import { UI_TEXT_CANCEL, UI_TEXT_SAVE } from "../constants/ui-text";
 import { AppState } from "../modules";
 import {
   fetchProject,
@@ -29,8 +29,8 @@ import {
 } from "../modules/project";
 import { addToast } from "../modules/toasts";
 import { AppDispatch } from "../store";
-import { ProjectSettingLabeledText } from "./project-setting-labeled-text";
 import { useProjectSettingStyles } from "../styles/project-setting";
+import { ProjectSettingLabeledText } from "./project-setting-labeled-text";
 
 const useStyles = makeStyles(() => ({
   disabled: {
@@ -122,9 +122,7 @@ export const StaticAdminForm: FC = memo(function StaticAdminForm() {
           [classes.disabled]: isEnabled === false,
         })}
       >
-        {currentUsername === null ? (
-          <CircularProgress />
-        ) : (
+        {currentUsername ? (
           <>
             <div className={projectSettingClasses.values}>
               <ProjectSettingLabeledText
@@ -142,6 +140,11 @@ export const StaticAdminForm: FC = memo(function StaticAdminForm() {
               </IconButton>
             </div>
           </>
+        ) : (
+          <div className={projectSettingClasses.values}>
+            <Skeleton width={200} height={28} />
+            <Skeleton width={200} height={28} />
+          </div>
         )}
       </div>
 

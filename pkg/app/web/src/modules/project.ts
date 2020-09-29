@@ -13,19 +13,19 @@ export interface ProjectState {
   id: string | null;
   desc: string | null;
   username: string | null;
-  teams: Teams | null;
-  github: GitHubSSO | null;
   staticAdminDisabled: boolean;
   isUpdatingStaticAdmin: boolean;
   isUpdatingGitHubSSO: boolean;
+  sharedSSO: string | null;
+  teams?: Teams | null;
+  github?: GitHubSSO | null;
 }
 
 const initialState: ProjectState = {
   id: null,
   desc: null,
   username: null,
-  teams: null,
-  github: null,
+  sharedSSO: null,
   staticAdminDisabled: false,
   isUpdatingStaticAdmin: false,
   isUpdatingGitHubSSO: false,
@@ -36,6 +36,7 @@ export const fetchProject = createAsyncThunk<{
   desc: string | null;
   username: string | null;
   teams: Teams | null;
+  sharedSSO: string | null;
   staticAdminDisabled: boolean;
   github: GitHubSSO | null;
 }>("project/fetchProject", async () => {
@@ -49,6 +50,7 @@ export const fetchProject = createAsyncThunk<{
       username: null,
       teams: null,
       github: null,
+      sharedSSO: null,
     };
   }
 
@@ -59,6 +61,7 @@ export const fetchProject = createAsyncThunk<{
     username: project.staticAdmin?.username || "",
     teams: project.rbac ?? null,
     github: project.sso?.github ?? null,
+    sharedSSO: project.sharedSsoName,
   };
 });
 
@@ -116,6 +119,7 @@ export const projectSlice = createSlice({
         state.staticAdminDisabled = action.payload.staticAdminDisabled;
         state.teams = action.payload.teams;
         state.github = action.payload.github;
+        state.sharedSSO = action.payload.sharedSSO;
       })
       .addCase(fetchProject.rejected, (_, action) => {
         console.log(action);
