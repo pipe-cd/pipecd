@@ -10,8 +10,8 @@ spec:
     - name: golang
       build: test
       step: collect-coverage
-    # - name: javascript
-    #   build: web-test
-    #   step: test
-    #   artifact: lcov.info
-    #   trimSourceFilePrefix: /workspace/src/github.com/pipe-cd/pipe/
+    - name: javascript
+      build: web-test
+      step: test
+      artifact: lcov.info
+      trimSourceFilePrefix: /workspace/src/github.com/pipe-cd/pipe/
