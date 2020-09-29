@@ -2,6 +2,26 @@ apiVersion: pipecd.dev/v1beta1
 kind: AnalysisTemplate
 spec:
   metrics:
+    http_error_rate:
+      interval: 1m
+      provider: prometheus-dev
+      expected:
+        max: 0
+      query: |
+        rate(http_requests_total{status=~"5.*", job="{{ .App.Name }}"}[1m])
+        /
+        rate(http_requests_total{job="{{ .App.Name }}"}[1m])
+
+    http_request_duration_seconds_average:
+      interval: 1m
+      provider: prometheus-dev
+      expected:
+        max: 0.5
+      query: |
+        rate(http_request_duration_seconds_sum{job="{{ .App.Name }}"}[1m])
+        /
+        rate(http_request_duration_seconds_count{job="{{ .App.Name }}"}[1m])
+
     grpc_error_rate_percentage:
       interval: 1m
       provider: prometheus-dev
