@@ -52,3 +52,5 @@ A repository contains some examples for PipeCD.
 | [canary](https://github.com/pipe-cd/examples/tree/master/lambda/canary) | Deployment pipeline with canary strategy. |
 | [analysis](https://github.com/pipe-cd/examples/tree/master/lambda/analysis) | Deployment pipeline that contains an analysis stage. |
 | [remote-git](https://github.com/pipe-cd/examples/tree/master/lambda/remote-git) | Deploy the lambda code sourced from another Git repository. |
+
+**Note** that the `.kapetanios` directory is for our CI configurations. It has nothing to do with PipeCD.
