@@ -29,6 +29,7 @@ import (
 	"github.com/pipe-cd/pipe/pkg/app/api/commandstore"
 	"github.com/pipe-cd/pipe/pkg/app/api/service/webservice"
 	"github.com/pipe-cd/pipe/pkg/app/api/stagelogstore"
+	"github.com/pipe-cd/pipe/pkg/config"
 	"github.com/pipe-cd/pipe/pkg/datastore"
 	"github.com/pipe-cd/pipe/pkg/git"
 	"github.com/pipe-cd/pipe/pkg/model"
@@ -46,11 +47,12 @@ type WebAPI struct {
 	applicationLiveStateStore applicationlivestatestore.Store
 	commandStore              commandstore.Store
 
-	logger *zap.Logger
+	projectsInConfig map[string]config.ControlPlaneProject
+	logger           *zap.Logger
 }
 
 // NewWebAPI creates a new WebAPI instance.
-func NewWebAPI(ds datastore.DataStore, sls stagelogstore.Store, alss applicationlivestatestore.Store, cmds commandstore.Store, logger *zap.Logger) *WebAPI {
+func NewWebAPI(ds datastore.DataStore, sls stagelogstore.Store, alss applicationlivestatestore.Store, cmds commandstore.Store, projs map[string]config.ControlPlaneProject, logger *zap.Logger) *WebAPI {
 	a := &WebAPI{
 		applicationStore:          datastore.NewApplicationStore(ds),
 		environmentStore:          datastore.NewEnvironmentStore(ds),
@@ -60,6 +62,7 @@ func NewWebAPI(ds datastore.DataStore, sls stagelogstore.Store, alss application
 		stageLogStore:             sls,
 		applicationLiveStateStore: alss,
 		commandStore:              cmds,
+		projectsInConfig:          projs,
 		logger:                    logger.Named("web-api"),
 	}
 	return a
@@ -771,6 +774,17 @@ func (a *WebAPI) GetProject(ctx context.Context, req *webservice.GetProjectReque
 }
 
 func (a *WebAPI) getProject(ctx context.Context, projectID string) (*model.Project, error) {
+	if p, ok := a.projectsInConfig[projectID]; ok {
+		return &model.Project{
+			Id:   p.Id,
+			Desc: p.Desc,
+			StaticAdmin: &model.ProjectStaticUser{
+				Username:     p.StaticAdmin.Username,
+				PasswordHash: p.StaticAdmin.PasswordHash,
+			},
+		}, nil
+	}
+
 	project, err := a.projectStore.GetProject(ctx, projectID)
 	if errors.Is(err, datastore.ErrNotFound) {
 		return nil, status.Error(codes.NotFound, "project is not found")
@@ -789,6 +803,11 @@ func (a *WebAPI) UpdateProjectStaticAdmin(ctx context.Context, req *webservice.U
 		a.logger.Error("failed to extract claims", zap.Error(err))
 		return nil, status.Error(codes.Internal, "internal error")
 	}
+
+	if _, ok := a.projectsInConfig[claims.Role.ProjectId]; ok {
+		return nil, status.Error(codes.FailedPrecondition, "failed to update a debug project specified in the control-plane configuration")
+	}
+
 	if err := a.projectStore.UpdateProjectStaticAdmin(ctx, claims.Role.ProjectId, req.Username, req.Password); err != nil {
 		a.logger.Error("failed to update static admin", zap.Error(err))
 		return nil, status.Error(codes.Internal, "failed to update static admin")
@@ -803,6 +822,11 @@ func (a *WebAPI) EnableStaticAdmin(ctx context.Context, req *webservice.EnableSt
 		a.logger.Error("failed to extract claims", zap.Error(err))
 		return nil, status.Error(codes.Internal, "internal error")
 	}
+
+	if _, ok := a.projectsInConfig[claims.Role.ProjectId]; ok {
+		return nil, status.Error(codes.FailedPrecondition, "failed to update a debug project specified in the control-plane configuration")
+	}
+
 	if err := a.projectStore.EnableStaticAdmin(ctx, claims.Role.ProjectId); err != nil {
 		a.logger.Error("failed to enable static admin login", zap.Error(err))
 		return nil, status.Error(codes.Internal, "failed to enable static admin login")
@@ -817,6 +841,11 @@ func (a *WebAPI) DisableStaticAdmin(ctx context.Context, req *webservice.Disable
 		a.logger.Error("failed to extract claims", zap.Error(err))
 		return nil, status.Error(codes.Internal, "internal error")
 	}
+
+	if _, ok := a.projectsInConfig[claims.Role.ProjectId]; ok {
+		return nil, status.Error(codes.FailedPrecondition, "failed to update a debug project specified in the control-plane configuration")
+	}
+
 	if err := a.projectStore.DisableStaticAdmin(ctx, claims.Role.ProjectId); err != nil {
 		a.logger.Error("failed to disenable static admin login", zap.Error(err))
 		return nil, status.Error(codes.Internal, "failed to disenable static admin login")
@@ -831,6 +860,11 @@ func (a *WebAPI) UpdateProjectSSOConfig(ctx context.Context, req *webservice.Upd
 		a.logger.Error("failed to extract claims", zap.Error(err))
 		return nil, status.Error(codes.Internal, "internal error")
 	}
+
+	if _, ok := a.projectsInConfig[claims.Role.ProjectId]; ok {
+		return nil, status.Error(codes.FailedPrecondition, "failed to update a debug project specified in the control-plane configuration")
+	}
+
 	if err := a.projectStore.UpdateProjectSSOConfig(ctx, claims.Role.ProjectId, req.Sso); err != nil {
 		a.logger.Error("failed to update project single sign on settings", zap.Error(err))
 		return nil, status.Error(codes.Internal, "failed to update project single sign on settings")
@@ -845,6 +879,11 @@ func (a *WebAPI) UpdateProjectRBACConfig(ctx context.Context, req *webservice.Up
 		a.logger.Error("failed to extract claims", zap.Error(err))
 		return nil, status.Error(codes.Internal, "internal error")
 	}
+
+	if _, ok := a.projectsInConfig[claims.Role.ProjectId]; ok {
+		return nil, status.Error(codes.FailedPrecondition, "failed to update a debug project specified in the control-plane configuration")
+	}
+
 	if err := a.projectStore.UpdateProjectRBACConfig(ctx, claims.Role.ProjectId, req.Rbac); err != nil {
 		a.logger.Error("failed to update project single sign on settings", zap.Error(err))
 		return nil, status.Error(codes.Internal, "failed to update project single sign on settings")
