@@ -121,17 +121,14 @@ export const projectSlice = createSlice({
         state.github = action.payload.github;
         state.sharedSSO = action.payload.sharedSSO;
       })
-      .addCase(fetchProject.rejected, (_, action) => {
-        console.log(action);
-      })
+      // .addCase(fetchProject.rejected, (_, action) => {})
       .addCase(updateStaticAdmin.pending, (state) => {
         state.isUpdatingStaticAdmin = true;
       })
       .addCase(updateStaticAdmin.fulfilled, (state) => {
         state.isUpdatingStaticAdmin = false;
       })
-      .addCase(updateStaticAdmin.rejected, (state, action) => {
-        console.error(action);
+      .addCase(updateStaticAdmin.rejected, (state) => {
         state.isUpdatingStaticAdmin = false;
       })
       .addCase(updateGitHubSSO.pending, (state) => {
@@ -140,13 +137,10 @@ export const projectSlice = createSlice({
       .addCase(updateGitHubSSO.fulfilled, (state) => {
         state.isUpdatingGitHubSSO = false;
       })
-      .addCase(updateGitHubSSO.rejected, (state, action) => {
-        console.error(action);
+      .addCase(updateGitHubSSO.rejected, (state) => {
         state.isUpdatingGitHubSSO = false;
-      })
-      .addCase(updateRBAC.rejected, (state, action) => {
-        console.error(action);
       });
+    // .addCase(updateRBAC.rejected, (state, action) => {});
   },
 });
 
