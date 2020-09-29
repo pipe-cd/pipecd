@@ -9,5 +9,5 @@ RUN \
     curl https://packages.cloud.google.com/apt/doc/apt-key.gpg | apt-key --keyring /usr/share/keyrings/cloud.google.gpg add - && \
     apt-get update && \
     apt-get -y install \
-      google-cloud-sdk \
+      google-cloud-sdk=311.0.0-0 \
       google-cloud-sdk-firestore-emulator
