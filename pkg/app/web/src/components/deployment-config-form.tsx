@@ -63,7 +63,7 @@ const TEXT = {
     "# Fill the deployment configuration here. You can also choose one of the provided templates above to edit.",
   CONFIGURATION_FILENAME: ".pipe.yaml",
   CREATE_LINK:
-    "Add this deployment configuration file to application configuration directory in Git",
+    "Add to application configuration directory in Git",
 };
 
 interface Props {
