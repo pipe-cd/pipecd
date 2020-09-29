@@ -21,33 +21,32 @@ import (
 	"log"
 	"os"
 	"os/exec"
+	"sync"
 	"testing"
-
-	"go.uber.org/atomic"
 )
 
 const emulatorHost = "localhost:8080"
 
 // buffer wraps `bytes.Buffer` to prevent Buffers from a data race.
 type buffer struct {
-	b *bytes.Buffer
-	s *atomic.String
+	b  *bytes.Buffer
+	mu *sync.RWMutex
 }
 
 func newBuffer() *buffer {
 	return &buffer{
 		b: new(bytes.Buffer),
-		s: atomic.NewString(""),
 	}
 }
 
 func (b *buffer) Write(p []byte) (n int, err error) {
-	b.s.Store(b.s.String() + string(p))
+	b.mu.Lock()
+	defer b.mu.Unlock()
 	return b.b.Write(p)
 }
 
 func (b *buffer) String() string {
-	return b.s.Load()
+	return b.b.String()
 }
 
 func TestMain(m *testing.M) {
@@ -57,7 +56,11 @@ func TestMain(m *testing.M) {
 	os.Setenv("FIRESTORE_EMULATOR_HOST", emulatorHost)
 	cmd := exec.CommandContext(ctx, "gcloud", "beta", "emulators", "firestore", "start", fmt.Sprintf("--host-port=%s", emulatorHost))
 
-	b := newBuffer()
+	mu := &sync.RWMutex{}
+	b := &buffer{
+		b:  new(bytes.Buffer),
+		mu: mu,
+	}
 	cmd.Stdout = b
 	cmd.Stderr = b
 
@@ -67,7 +70,9 @@ func TestMain(m *testing.M) {
 
 	code := m.Run()
 
+	mu.RLock()
 	log.Printf("=== Firestore Emulator Output ===\n%s\n=== Firestore Emulator Output End ===\n", b.String())
+	mu.RUnlock()
 
 	os.Exit(code)
 }
