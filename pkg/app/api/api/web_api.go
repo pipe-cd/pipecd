@@ -805,7 +805,7 @@ func (a *WebAPI) UpdateProjectStaticAdmin(ctx context.Context, req *webservice.U
 	}
 
 	if _, ok := a.projectsInConfig[claims.Role.ProjectId]; ok {
-		return nil, status.Error(codes.FailedPrecondition, "unable to update a debug project specified in the control-plane configuration")
+		return nil, status.Error(codes.FailedPrecondition, "failed to update a debug project specified in the control-plane configuration")
 	}
 
 	if err := a.projectStore.UpdateProjectStaticAdmin(ctx, claims.Role.ProjectId, req.Username, req.Password); err != nil {
@@ -824,7 +824,7 @@ func (a *WebAPI) EnableStaticAdmin(ctx context.Context, req *webservice.EnableSt
 	}
 
 	if _, ok := a.projectsInConfig[claims.Role.ProjectId]; ok {
-		return nil, status.Error(codes.FailedPrecondition, "unable to update a debug project specified in the control-plane configuration")
+		return nil, status.Error(codes.FailedPrecondition, "failed to update a debug project specified in the control-plane configuration")
 	}
 
 	if err := a.projectStore.EnableStaticAdmin(ctx, claims.Role.ProjectId); err != nil {
@@ -843,7 +843,7 @@ func (a *WebAPI) DisableStaticAdmin(ctx context.Context, req *webservice.Disable
 	}
 
 	if _, ok := a.projectsInConfig[claims.Role.ProjectId]; ok {
-		return nil, status.Error(codes.FailedPrecondition, "unable to update a debug project specified in the control-plane configuration")
+		return nil, status.Error(codes.FailedPrecondition, "failed to update a debug project specified in the control-plane configuration")
 	}
 
 	if err := a.projectStore.DisableStaticAdmin(ctx, claims.Role.ProjectId); err != nil {
@@ -862,7 +862,7 @@ func (a *WebAPI) UpdateProjectSSOConfig(ctx context.Context, req *webservice.Upd
 	}
 
 	if _, ok := a.projectsInConfig[claims.Role.ProjectId]; ok {
-		return nil, status.Error(codes.FailedPrecondition, "unable to update a debug project specified in the control-plane configuration")
+		return nil, status.Error(codes.FailedPrecondition, "failed to update a debug project specified in the control-plane configuration")
 	}
 
 	if err := a.projectStore.UpdateProjectSSOConfig(ctx, claims.Role.ProjectId, req.Sso); err != nil {
@@ -881,7 +881,7 @@ func (a *WebAPI) UpdateProjectRBACConfig(ctx context.Context, req *webservice.Up
 	}
 
 	if _, ok := a.projectsInConfig[claims.Role.ProjectId]; ok {
-		return nil, status.Error(codes.FailedPrecondition, "unable to update a debug project specified in the control-plane configuration")
+		return nil, status.Error(codes.FailedPrecondition, "failed to update a debug project specified in the control-plane configuration")
 	}
 
 	if err := a.projectStore.UpdateProjectRBACConfig(ctx, claims.Role.ProjectId, req.Rbac); err != nil {
