@@ -45,6 +45,19 @@ spec:
         - source-exclude-matcher="**/*.mock.go,**/*.pb.go,**/*.validate.go,**/*.embed.go,**/*.deepcopy.go"
         - base-import-path=github.com/pipe-cd/pipe
 
+  - name: integration-test
+    timeout: 15m
+    machine:
+      resource: large
+    steps:
+    - description: Run all integration tests
+      runner: gcr.io/pipecd/runner-integration:1.0.0
+      commands:
+        - bazelisk --output_base=/workspace/bazel_out test --config=ci --config=linux //test/integration/...
+      secrets:
+      - name: bazel_cache_service_account
+        type: PROJECT
+
   - name: web-test
     timeout: 30m
     whenChanged:
