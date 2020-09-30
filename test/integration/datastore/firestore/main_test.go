@@ -21,58 +21,33 @@ import (
 	"log"
 	"os"
 	"os/exec"
-	"sync"
 	"testing"
 )
 
 const emulatorHost = "localhost:8080"
 
-// buffer wraps `bytes.Buffer` to prevent Buffers from a data race.
-type buffer struct {
-	b  *bytes.Buffer
-	mu *sync.RWMutex
-}
-
-func newBuffer() *buffer {
-	return &buffer{
-		b: new(bytes.Buffer),
-	}
-}
-
-func (b *buffer) Write(p []byte) (n int, err error) {
-	b.mu.Lock()
-	defer b.mu.Unlock()
-	return b.b.Write(p)
-}
-
-func (b *buffer) String() string {
-	return b.b.String()
-}
-
 func TestMain(m *testing.M) {
 	ctx, cancel := context.WithCancel(context.Background())
-	defer cancel()
 
 	os.Setenv("FIRESTORE_EMULATOR_HOST", emulatorHost)
 	cmd := exec.CommandContext(ctx, "gcloud", "beta", "emulators", "firestore", "start", fmt.Sprintf("--host-port=%s", emulatorHost))
 
-	mu := &sync.RWMutex{}
-	b := &buffer{
-		b:  new(bytes.Buffer),
-		mu: mu,
-	}
+	b := new(bytes.Buffer)
 	cmd.Stdout = b
 	cmd.Stderr = b
+	defer func() {
+		cancel()
+		if err := cmd.Wait(); err != nil {
+			log.Fatal(err)
+		}
+		log.Printf("=== Firestore Emulator Output ===\n%s\n=== Firestore Emulator Output End ===\n", b.String())
+	}()
 
 	if err := cmd.Start(); err != nil {
 		log.Fatal(err)
 	}
 
 	code := m.Run()
-
-	mu.RLock()
-	log.Printf("=== Firestore Emulator Output ===\n%s\n=== Firestore Emulator Output End ===\n", b.String())
-	mu.RUnlock()
 
 	os.Exit(code)
 }
