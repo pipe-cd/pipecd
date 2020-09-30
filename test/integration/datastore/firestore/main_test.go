@@ -28,7 +28,6 @@ const emulatorHost = "localhost:8080"
 
 func TestMain(m *testing.M) {
 	ctx, cancel := context.WithCancel(context.Background())
-	defer cancel()
 
 	os.Setenv("FIRESTORE_EMULATOR_HOST", emulatorHost)
 	cmd := exec.CommandContext(ctx, "gcloud", "beta", "emulators", "firestore", "start", fmt.Sprintf("--host-port=%s", emulatorHost))
@@ -36,6 +35,13 @@ func TestMain(m *testing.M) {
 	b := new(bytes.Buffer)
 	cmd.Stdout = b
 	cmd.Stderr = b
+	defer func() {
+		cancel()
+		if err := cmd.Wait(); err != nil {
+			log.Fatal(err)
+		}
+		log.Printf("=== Firestore Emulator Output ===\n%s\n=== Firestore Emulator Output End ===\n", b.String())
+	}()
 
 	if err := cmd.Start(); err != nil {
 		log.Fatal(err)
@@ -43,6 +49,5 @@ func TestMain(m *testing.M) {
 
 	code := m.Run()
 
-	log.Printf("=== Firestore Emulator Output ===\n%s\n=== Firestore Emulator Output End ===\n", b.String())
 	os.Exit(code)
 }
