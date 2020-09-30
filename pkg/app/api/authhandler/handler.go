@@ -66,6 +66,7 @@ type Handler struct {
 	projectsInConfig map[string]config.ControlPlaneProject
 	sharedSSOConfigs map[string]*model.ProjectSSOConfig
 	projectGetter    projectGetter
+	secureCookie     bool
 	logger           *zap.Logger
 }
 
@@ -77,6 +78,7 @@ func NewHandler(
 	projectsInConfig map[string]config.ControlPlaneProject,
 	sharedSSOConfigs map[string]*model.ProjectSSOConfig,
 	projectGetter projectGetter,
+	secureCookie bool,
 	logger *zap.Logger,
 ) *Handler {
 	return &Handler{
@@ -86,6 +88,7 @@ func NewHandler(
 		projectsInConfig: projectsInConfig,
 		sharedSSOConfigs: sharedSSOConfigs,
 		projectGetter:    projectGetter,
+		secureCookie:     secureCookie,
 		logger:           logger,
 	}
 }
@@ -102,8 +105,8 @@ func (h *Handler) Register(r func(string, func(http.ResponseWriter, *http.Reques
 func (h *Handler) handleLogout(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Content-Type", "text/html")
 
-	http.SetCookie(w, makeExpiredTokenCookie())
-	http.SetCookie(w, makeExpiredStateCookie())
+	http.SetCookie(w, makeExpiredTokenCookie(h.secureCookie))
+	http.SetCookie(w, makeExpiredStateCookie(h.secureCookie))
 
 	http.Redirect(w, r, rootPath, http.StatusFound)
 }
@@ -132,7 +135,7 @@ func (h *Handler) handleError(w http.ResponseWriter, r *http.Request, responseMe
 		h.logger.Info(fmt.Sprintf("auth-handler: %s", responseMessage))
 	}
 
-	http.SetCookie(w, makeErrorCookie(responseMessage))
+	http.SetCookie(w, makeErrorCookie(responseMessage, h.secureCookie))
 	http.Redirect(w, r, rootPath, http.StatusSeeOther)
 }
 
@@ -148,49 +151,49 @@ func makeTokenCookie(value string, secure bool) *http.Cookie {
 	}
 }
 
-func makeExpiredTokenCookie() *http.Cookie {
+func makeExpiredTokenCookie(secure bool) *http.Cookie {
 	return &http.Cookie{
 		Name:     jwt.SignedTokenKey,
 		Value:    "",
 		MaxAge:   -1,
 		Path:     rootPath,
-		Secure:   true,
+		Secure:   secure,
 		HttpOnly: true,
 		SameSite: http.SameSiteLaxMode,
 	}
 }
 
-func makeStateCookie(value string) *http.Cookie {
+func makeStateCookie(value string, secure bool) *http.Cookie {
 	return &http.Cookie{
 		Name:     stateCookieKey,
 		Value:    value,
 		MaxAge:   defaultStateCookieMaxAge,
 		Path:     rootPath,
-		Secure:   true,
+		Secure:   secure,
 		HttpOnly: true,
 		SameSite: http.SameSiteLaxMode,
 	}
 }
 
-func makeExpiredStateCookie() *http.Cookie {
+func makeExpiredStateCookie(secure bool) *http.Cookie {
 	return &http.Cookie{
 		Name:     stateCookieKey,
 		Value:    "",
 		MaxAge:   -1,
 		Path:     rootPath,
-		Secure:   true,
+		Secure:   secure,
 		HttpOnly: true,
 		SameSite: http.SameSiteLaxMode,
 	}
 }
 
-func makeErrorCookie(value string) *http.Cookie {
+func makeErrorCookie(value string, secure bool) *http.Cookie {
 	return &http.Cookie{
 		Name:     errorCookieKey,
 		Value:    value,
 		MaxAge:   defaultErrorCookieMaxAge,
 		Path:     rootPath,
-		Secure:   true,
+		Secure:   secure,
 		HttpOnly: false,
 		SameSite: http.SameSiteLaxMode,
 	}
