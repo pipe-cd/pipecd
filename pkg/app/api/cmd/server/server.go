@@ -66,9 +66,10 @@ type server struct {
 	cacheAddress string
 	gracePeriod  time.Duration
 
-	tls      bool
-	certFile string
-	keyFile  string
+	tls            bool
+	certFile       string
+	keyFile        string
+	insecureCookie bool
 
 	tokenSigningKeyFile string
 	configFile          string
@@ -103,6 +104,7 @@ func NewCommand() *cobra.Command {
 	cmd.Flags().BoolVar(&s.tls, "tls", s.tls, "Whether running the gRPC server with TLS or not.")
 	cmd.Flags().StringVar(&s.certFile, "cert-file", s.certFile, "The path to the TLS certificate file.")
 	cmd.Flags().StringVar(&s.keyFile, "key-file", s.keyFile, "The path to the TLS key file.")
+	cmd.Flags().BoolVar(&s.insecureCookie, "insecure-cookie", s.insecureCookie, "Allow cookie to be sent over an unsecured HTTP connection.")
 
 	cmd.Flags().StringVar(&s.tokenSigningKeyFile, "token-signing-key-file", s.tokenSigningKeyFile, "The path to key file used to sign ID token.")
 	cmd.Flags().StringVar(&s.configFile, "config-file", s.configFile, "The path to the configuration file.")
@@ -245,6 +247,7 @@ func (s *server) run(ctx context.Context, t cli.Telemetry) error {
 				cfg.ProjectMap(),
 				cfg.SharedSSOConfigMap(),
 				datastore.NewProjectStore(ds),
+				!s.insecureCookie,
 				t.Logger,
 			),
 		}

@@ -90,6 +90,9 @@ spec:
           imagePullPolicy: IfNotPresent
           args:
           - server
+{{- if or .Values.quickstart .Values.api.args.insecureCookie }}
+          - --insecure-cookie=true
+{{- end }}
           - --cache-address={{ .Values.api.args.cacheAddress | default (printf "%s-cache:6379" (include "pipecd.fullname" .)) }}
           - --config-file=/etc/pipecd-config/{{ .Values.config.fileName }}
           - --use-fake-response={{ .Values.api.args.useFakeResponse }}

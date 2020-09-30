@@ -21,6 +21,7 @@ api:
     cacheAddress: ""
     useFakeResponse: false
     enableGRPCReflection: true
+    insecureCookie: false
   resources: {}
 
 web:

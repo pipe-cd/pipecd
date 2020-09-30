@@ -90,7 +90,7 @@ func (h *Handler) handleCallback(w http.ResponseWriter, r *http.Request) {
 	)
 
 	http.SetCookie(w, makeTokenCookie(signedToken, true))
-	http.SetCookie(w, makeExpiredStateCookie())
+	http.SetCookie(w, makeExpiredStateCookie(h.secureCookie))
 	http.Redirect(w, r, rootPath, http.StatusFound)
 }
 

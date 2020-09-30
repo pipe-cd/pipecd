@@ -68,7 +68,7 @@ func (h *Handler) handleSSOLogin(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	http.SetCookie(w, makeStateCookie(state))
+	http.SetCookie(w, makeStateCookie(state, h.secureCookie))
 	http.Redirect(w, r, authURL, http.StatusFound)
 }
 
@@ -98,14 +98,11 @@ func (h *Handler) handleStaticAdminLogin(w http.ResponseWriter, r *http.Request)
 	}
 
 	var admin *model.ProjectStaticUser
-	secureCookie := true
-
 	if p, ok := h.projectsInConfig[projectID]; ok {
 		admin = &model.ProjectStaticUser{
 			Username:     p.StaticAdmin.Username,
 			PasswordHash: p.StaticAdmin.PasswordHash,
 		}
-		secureCookie = false
 	} else {
 		ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
 		defer cancel()
@@ -147,6 +144,6 @@ func (h *Handler) handleStaticAdminLogin(w http.ResponseWriter, r *http.Request)
 		zap.String("project-id", projectID),
 		zap.String("project-role", model.Role_ADMIN.String()),
 	)
-	http.SetCookie(w, makeTokenCookie(signedToken, secureCookie))
+	http.SetCookie(w, makeTokenCookie(signedToken, h.secureCookie))
 	http.Redirect(w, r, rootPath, http.StatusFound)
 }
