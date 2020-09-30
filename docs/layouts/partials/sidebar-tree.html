@@ -39,9 +39,9 @@
         {{ $s.LinkTitle }}
         {{ if ne (len $s.Pages) 0 }}
             {{ if not $show }}
-            <i class="fa fa-angle-up" aria-hidden="true"></i>
+            <i class="fa fa-angle-down ml-1" aria-hidden="true"></i>
             {{ else }}
-            <i class="fa fa-angle-down" aria-hidden="true"></i>
+            <i class="fa fa-angle-up ml-1" aria-hidden="true"></i>
             {{ end }}
         {{ end }}
     </a>
