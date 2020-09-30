@@ -105,6 +105,7 @@ helm install pipecd pipecd/pipecd --version=VERSION --namespace=NAMESPACE \
   --set-file config.data=path-to-control-plane-configuration-file \
   --set-file secret.signingKey.data=path-to-signing-key-file \
   --set-file secret.minioAccessKey.data=path-to-minio-access-key-file
+  --set-file secret.minioSecretKey.data=path-to-minio-secret-key-file
 ```
 
 ### 4. Accessing the PipeCD web
@@ -116,4 +117,4 @@ Otherwise, private PipeCD web can be accessed by using `kubectl port-forward` to
 kubectl port-forward svc/pipecd 8080:443
 ```
 
-Let's Enjoy 🎉!
+Now go to [http://localhost:8080](http://localhost:8080) on your browser, you will see a page to login to your project. But before logging in, you need to initialize a new project by following the [next section](/docs/operator-manual/control-plane/adding-a-project/).
