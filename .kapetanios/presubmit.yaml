@@ -53,7 +53,7 @@ spec:
     - description: Run all integration tests
       runner: gcr.io/pipecd/runner-integration:1.0.0
       commands:
-        - bazelisk test -- //test/integration/...
+        - bazelisk --output_base=/workspace/bazel_out test --config=ci --config=linux //test/integration/...
       secrets:
       - name: bazel_cache_service_account
         type: PROJECT
