@@ -47,7 +47,7 @@ Here are the list of fields in the register form:
 
 After registering the application, one more step left is adding the deployment configuration file (`.pipe.yaml`) for that application into the application configuration directory in Git repository.
 
-While registering application helps PipeCD know the basic information about application, the deployment configuration file is used by `piped`, and it helps `piped` know how the application should be deployed, such as doing canary/bluegreen strategy or requiring a manual approval...
+While registering application helps `control-plane` know the basic information about application, the deployment configuration file is used by `piped`, and it helps `piped` know how the application should be deployed, such as doing canary/bluegreen strategy or requiring a manual approval...
 That deployment configuration file is in `YAML` format as below:
 
 ``` yaml
