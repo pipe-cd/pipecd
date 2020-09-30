@@ -42,6 +42,9 @@ func NewEncrypter(keyFile string) (Encrypter, error) {
 	if err != nil {
 		return nil, fmt.Errorf("unable to read key file: %v", err)
 	}
+	if len(key) < aes256size {
+		return nil, fmt.Errorf("invalid key size: %d", len(key))
+	}
 	return &encrypter{
 		key: key[:aes256size],
 	}, nil
@@ -64,8 +67,8 @@ func (e *encrypter) Encrypt(text string) (string, error) {
 		return "", err
 	}
 
-	cipherText := gcm.Seal(nil, nonce, []byte(text), nil)
-	cipherText = append(nonce, cipherText...)
+	encrypted := gcm.Seal(nil, nonce, []byte(text), nil)
+	encrypted = append(nonce, encrypted...)
 
-	return base64.StdEncoding.EncodeToString(cipherText), nil
+	return base64.StdEncoding.EncodeToString(encrypted), nil
 }

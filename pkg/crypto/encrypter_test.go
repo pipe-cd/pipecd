@@ -22,11 +22,11 @@ import (
 
 func TestEncrypt(t *testing.T) {
 	text := "foo-bar-baz"
-	e, err := NewEncrypter("testdata/secret")
+	e, err := NewEncrypter("testdata/key")
 	require.NoError(t, err)
 	require.NotNil(t, e)
 
-	cipherText, err := e.Encrypt(text)
+	encryptedText, err := e.Encrypt(text)
 	require.NoError(t, err)
-	require.True(t, len(cipherText) > 0)
+	require.True(t, len(encryptedText) > 0)
 }

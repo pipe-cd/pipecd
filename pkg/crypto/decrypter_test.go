@@ -23,19 +23,19 @@ import (
 func TestDecrypt(t *testing.T) {
 	text := "foo-bar-baz"
 
-	e, err := NewEncrypter("testdata/secret")
+	e, err := NewEncrypter("testdata/key")
 	require.NoError(t, err)
 	require.NotNil(t, e)
 
-	cipherText, err := e.Encrypt(text)
+	encryptedText, err := e.Encrypt(text)
 	require.NoError(t, err)
-	require.True(t, len(cipherText) > 0)
+	require.True(t, len(encryptedText) > 0)
 
-	d, err := NewDecrypter("testdata/secret")
+	d, err := NewDecrypter("testdata/key")
 	require.NoError(t, err)
 	require.NotNil(t, d)
 
-	decrepted, err := d.Decrypt(cipherText)
+	decrepted, err := d.Decrypt(encryptedText)
 	require.NoError(t, err)
 	require.Equal(t, text, decrepted)
 }

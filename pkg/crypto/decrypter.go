@@ -24,7 +24,7 @@ import (
 
 // Decrypter is a interface to decrypt data.
 type Decrypter interface {
-	Decrypt(encodedCipherText string) (string, error)
+	Decrypt(encryptedText string) (string, error)
 }
 
 type decrypter struct {
@@ -37,13 +37,16 @@ func NewDecrypter(keyFile string) (Decrypter, error) {
 	if err != nil {
 		return nil, fmt.Errorf("unable to read key file: %v", err)
 	}
+	if len(key) < aes256size {
+		return nil, fmt.Errorf("invalid key size: %d", len(key))
+	}
 	return &decrypter{
 		key: key[:aes256size],
 	}, nil
 }
 
-func (d *decrypter) Decrypt(encodedCipherText string) (string, error) {
-	cipherText, err := base64.StdEncoding.DecodeString(encodedCipherText)
+func (d *decrypter) Decrypt(encryptedText string) (string, error) {
+	encrypted, err := base64.StdEncoding.DecodeString(encryptedText)
 	if err != nil {
 		return "", err
 	}
@@ -58,8 +61,8 @@ func (d *decrypter) Decrypt(encodedCipherText string) (string, error) {
 		return "", err
 	}
 
-	nonce := cipherText[:gcm.NonceSize()]
-	text, err := gcm.Open(nil, nonce, cipherText[gcm.NonceSize():], nil)
+	nonce := encrypted[:gcm.NonceSize()]
+	text, err := gcm.Open(nil, nonce, encrypted[gcm.NonceSize():], nil)
 	if err != nil {
 		return "", err
 	}
