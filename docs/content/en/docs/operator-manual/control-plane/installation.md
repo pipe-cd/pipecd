@@ -117,5 +117,4 @@ Otherwise, private PipeCD web can be accessed by using `kubectl port-forward` to
 kubectl port-forward svc/pipecd 8080:443
 ```
 
-Point your web browser to [http://localhost:8080](http://localhost:8080), then you will see a field where you can give your [Project](https://pipecd.dev/docs/concepts/#project).
-Before moving forward, you need to create a project, the [next section](/docs/operator-manual/control-plane/adding-a-project/) will help you with that.
+Now go to [http://localhost:8080](http://localhost:8080) on your browser, you will see a page to login to your project. But before logging in, you need to initialize a new project by following the [next section](/docs/operator-manual/control-plane/adding-a-project/).
