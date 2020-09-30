@@ -6,6 +6,8 @@ description: >
   List of frequently asked questions.
 ---
 
+If you have any other questions, please feel free to create the issue in the [pipe-cd/pipe](https://github.com/pipe-cd/pipe/issues/new/choose) repository or contact us on [Slack](https://cloud-native.slack.com/archives/C01B27F9T0X).
+
 ### 1. What kind of application (cloud provider) will be supported?
 
 Currently, PipeCD can be used to deploy `Kubernetes`, `Terraform`, `CloudRun`, `Lambda` applications.
