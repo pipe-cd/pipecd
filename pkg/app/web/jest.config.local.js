@@ -18,7 +18,7 @@ module.exports = {
   clearMocks: true,
   setupFiles: ["./jest.setup.js"],
   setupFilesAfterEnv: ["./jest.after-env.ts"],
-  coverageReporters: ["lcovonly", "text-summary"],
+  coverageReporters: ["lcovonly", "text-summary", "html"],
   globals: {
     "ts-jest": {
       diagnostics: {

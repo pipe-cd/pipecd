@@ -7,7 +7,7 @@ import {
   Application as ApplicationModel,
   ApplicationSyncStatus,
 } from "pipe/pkg/app/web/model/application_pb";
-import * as applicationsApi from "../api/applications";
+import * as applicationsAPI from "../api/applications";
 import { ApplicationKind } from "pipe/pkg/app/web/model/common_pb";
 import { fetchCommand, CommandStatus, CommandModel } from "./commands";
 import { AppState } from ".";
@@ -28,7 +28,7 @@ export const fetchApplications = createAsyncThunk<
   { state: AppState }
 >("applications/fetchList", async (_, thunkAPI) => {
   const { applicationFilterOptions } = thunkAPI.getState();
-  const { applicationsList } = await applicationsApi.getApplications({
+  const { applicationsList } = await applicationsAPI.getApplications({
     options: applicationFilterOptions,
   });
   return applicationsList as Application[];
@@ -38,7 +38,7 @@ export const fetchApplication = createAsyncThunk<
   Application | undefined,
   string
 >("applications/fetchById", async (applicationId) => {
-  const { application } = await applicationsApi.getApplication({
+  const { application } = await applicationsAPI.getApplication({
     applicationId,
   });
   return application as Application;
@@ -48,7 +48,7 @@ export const syncApplication = createAsyncThunk<
   void,
   { applicationId: string }
 >("applications/sync", async ({ applicationId }, thunkAPI) => {
-  const { commandId } = await applicationsApi.syncApplication({
+  const { commandId } = await applicationsAPI.syncApplication({
     applicationId,
   });
 
@@ -69,7 +69,7 @@ export const addApplication = createAsyncThunk<
     cloudProvider: string;
   }
 >("applications/add", async (props) => {
-  const { applicationId } = await applicationsApi.addApplication({
+  const { applicationId } = await applicationsAPI.addApplication({
     name: props.name,
     envId: props.env,
     pipedId: props.pipedId,
@@ -95,14 +95,14 @@ export const disableApplication = createAsyncThunk<
   void,
   { applicationId: string }
 >("applications/disable", async (props) => {
-  await applicationsApi.disableApplication(props);
+  await applicationsAPI.disableApplication(props);
 });
 
 export const enableApplication = createAsyncThunk<
   void,
   { applicationId: string }
 >("applications/enable", async (props) => {
-  await applicationsApi.enableApplication(props);
+  await applicationsAPI.enableApplication(props);
 });
 
 export const applicationsSlice = createSlice({
@@ -143,9 +143,8 @@ export const applicationsSlice = createSlice({
       .addCase(addApplication.fulfilled, (state) => {
         state.adding = false;
       })
-      .addCase(addApplication.rejected, (state, action) => {
+      .addCase(addApplication.rejected, (state) => {
         // TODO: Show alert when failed to add an application
-        console.error(action);
         state.adding = false;
       })
       .addCase(syncApplication.pending, (state, action) => {
