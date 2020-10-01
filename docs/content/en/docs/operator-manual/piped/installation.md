@@ -49,18 +49,9 @@ description: >
 - Installing by using `Helm 3`
 
   ``` console
-  helm install dev-piped pipecd/piped --version=VERSION --namespace=NAMESPACE \
-    --set-file config.data=PATH_TO_PIPED_CONFIG_FILE \
-    --set-file secret.pipedKey.data=PATH_TO_PIPED_KEY_FILE \
-    --set-file secret.sshKey.data=PATH_TO_PRIVATE_SSH_KEY_FILE
-  ```
-
-- Or upgrading by using `Helm 3`
-
-  ``` console
   helm repo update
 
-  helm upgrade dev-piped pipecd/piped --version=VERSION --namespace=NAMESPACE \
+  helm upgrade -i dev-piped pipecd/piped --version=VERSION --namespace=NAMESPACE \
     --set-file config.data=PATH_TO_PIPED_CONFIG_FILE \
     --set-file secret.pipedKey.data=PATH_TO_PIPED_KEY_FILE \
     --set-file secret.sshKey.data=PATH_TO_PRIVATE_SSH_KEY_FILE
