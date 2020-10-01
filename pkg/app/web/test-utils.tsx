@@ -5,6 +5,7 @@ import {
   DeepPartial,
   getDefaultMiddleware,
   Store,
+  ThunkDispatch,
 } from "@reduxjs/toolkit";
 import { render, RenderOptions, RenderResult } from "@testing-library/react";
 import React from "react";
@@ -13,13 +14,16 @@ import configureMockStore from "redux-mock-store";
 import { AppState, reducers } from "./src/modules";
 import { theme } from "./src/theme";
 
-const mockStore = configureMockStore(getDefaultMiddleware());
+const mockStore = configureMockStore<
+  AppState,
+  ThunkDispatch<AppState, void, AnyAction>
+>(getDefaultMiddleware());
 const store = configureStore({ reducer: reducers });
 const baseState = store.getState();
 
 export const createStore = (
   initialState: DeepPartial<AppState>
-): Store<any, AnyAction> => {
+): ReturnType<typeof mockStore> => {
   return mockStore(Object.assign({}, baseState, initialState));
 };
 

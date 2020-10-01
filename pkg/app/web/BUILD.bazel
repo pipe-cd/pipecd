@@ -134,6 +134,7 @@ jest_test(
         ":file-transformer.js",
         ":jest.after-env.ts",
         ":jest.setup.js",
+        ":test-utils.tsx",
         ":tsconfig.json",
         "@npm//:node_modules",
     ],
