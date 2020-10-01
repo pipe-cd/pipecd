@@ -36,6 +36,7 @@ description: >
     pipedID: YOUR_PIPED_ID
     pipedKeyFile: /etc/piped-secret/piped-key
     apiAddress: YOUR_CONTROL_PLANE_ADDRESS
+    webAddress: http://YOUR_CONTROL_PLANE_ADDRESS
     git:
       sshKeyFile: /etc/piped-secret/ssh-key
     repositories:
