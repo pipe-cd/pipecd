@@ -30,12 +30,15 @@ import (
 	"github.com/pipe-cd/pipe/pkg/app/api/service/webservice"
 	"github.com/pipe-cd/pipe/pkg/app/api/stagelogstore"
 	"github.com/pipe-cd/pipe/pkg/config"
-	"github.com/pipe-cd/pipe/pkg/crypto"
 	"github.com/pipe-cd/pipe/pkg/datastore"
 	"github.com/pipe-cd/pipe/pkg/git"
 	"github.com/pipe-cd/pipe/pkg/model"
 	"github.com/pipe-cd/pipe/pkg/rpc/rpcauth"
 )
+
+type encrypter interface {
+	Encrypt(text string) (string, error)
+}
 
 // WebAPI implements the behaviors for the gRPC definitions of WebAPI.
 type WebAPI struct {
@@ -47,7 +50,7 @@ type WebAPI struct {
 	stageLogStore             stagelogstore.Store
 	applicationLiveStateStore applicationlivestatestore.Store
 	commandStore              commandstore.Store
-	encrypter                 crypto.Encrypter
+	encrypter                 encrypter
 
 	projectsInConfig map[string]config.ControlPlaneProject
 	logger           *zap.Logger
@@ -60,7 +63,7 @@ func NewWebAPI(
 	alss applicationlivestatestore.Store,
 	cmds commandstore.Store,
 	projs map[string]config.ControlPlaneProject,
-	encrypter crypto.Encrypter,
+	encrypter encrypter,
 	logger *zap.Logger) *WebAPI {
 	a := &WebAPI{
 		applicationStore:          datastore.NewApplicationStore(ds),
@@ -875,7 +878,12 @@ func (a *WebAPI) UpdateProjectSSOConfig(ctx context.Context, req *webservice.Upd
 		return nil, status.Error(codes.FailedPrecondition, "failed to update a debug project specified in the control-plane configuration")
 	}
 
-	if err := a.projectStore.UpdateProjectSSOConfig(ctx, claims.Role.ProjectId, req.Sso, a.encrypter); err != nil {
+	if err := req.Sso.Encrypt(a.encrypter); err != nil {
+		a.logger.Error("failed to sensitive data in sso configurations", zap.Error(err))
+		return nil, status.Error(codes.Internal, "failed to sensitive data in sso configurations")
+	}
+
+	if err := a.projectStore.UpdateProjectSSOConfig(ctx, claims.Role.ProjectId, req.Sso); err != nil {
 		a.logger.Error("failed to update project single sign on settings", zap.Error(err))
 		return nil, status.Error(codes.Internal, "failed to update project single sign on settings")
 	}

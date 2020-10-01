@@ -18,7 +18,6 @@ import (
 	"context"
 	"time"
 
-	"github.com/pipe-cd/pipe/pkg/crypto"
 	"github.com/pipe-cd/pipe/pkg/model"
 )
 
@@ -34,7 +33,7 @@ type ProjectStore interface {
 	UpdateProjectStaticAdmin(ctx context.Context, id, username, password string) error
 	EnableStaticAdmin(ctx context.Context, id string) error
 	DisableStaticAdmin(ctx context.Context, id string) error
-	UpdateProjectSSOConfig(ctx context.Context, id string, sso *model.ProjectSSOConfig, encrypter crypto.Encrypter) error
+	UpdateProjectSSOConfig(ctx context.Context, id string, sso *model.ProjectSSOConfig) error
 	UpdateProjectRBACConfig(ctx context.Context, id string, sso *model.ProjectRBACConfig) error
 	GetProject(ctx context.Context, id string) (*model.Project, error)
 	ListProjects(ctx context.Context, opts ListOptions) ([]model.Project, error)
@@ -107,12 +106,12 @@ func (s *projectStore) DisableStaticAdmin(ctx context.Context, id string) error 
 }
 
 // UpdateProjectSSOConfig updates project single sign on settings.
-func (s *projectStore) UpdateProjectSSOConfig(ctx context.Context, id string, sso *model.ProjectSSOConfig, encrypter crypto.Encrypter) error {
+func (s *projectStore) UpdateProjectSSOConfig(ctx context.Context, id string, sso *model.ProjectSSOConfig) error {
 	return s.UpdateProject(ctx, id, func(p *model.Project) error {
 		if p.Sso == nil {
 			p.Sso = &model.ProjectSSOConfig{}
 		}
-		p.Sso.Update(sso, encrypter)
+		p.Sso.Update(sso)
 		return nil
 	})
 }

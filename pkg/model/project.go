@@ -113,17 +113,29 @@ func (p *ProjectSSOConfig) RedactSensitiveData() {
 }
 
 // Update updates ProjectSSOConfig with given data.
-func (p *ProjectSSOConfig) Update(sso *ProjectSSOConfig, encrypter crypto.Encrypter) error {
+func (p *ProjectSSOConfig) Update(sso *ProjectSSOConfig) error {
 	p.Provider = sso.Provider
 	if sso.Github != nil {
 		if p.Github == nil {
 			p.Github = &ProjectSSOConfig_GitHub{}
 		}
-		if err := p.Github.Update(sso.Github, encrypter); err != nil {
+		if err := p.Github.Update(sso.Github); err != nil {
 			return err
 		}
 	}
 	if sso.Google != nil {
+	}
+	return nil
+}
+
+// Encrypt decrypts encrypted data in ProjectSSOConfig.
+func (p *ProjectSSOConfig) Encrypt(encrypter crypto.Encrypter) error {
+	if p.Github != nil {
+		if err := p.Github.Encrypt(encrypter); err != nil {
+			return err
+		}
+	}
+	if p.Google != nil {
 	}
 	return nil
 }
@@ -167,26 +179,37 @@ func (p *ProjectSSOConfig_GitHub) RedactSensitiveData() {
 }
 
 // Update updates ProjectSSOConfig with given data.
-func (p *ProjectSSOConfig_GitHub) Update(input *ProjectSSOConfig_GitHub, encrypter crypto.Encrypter) error {
+func (p *ProjectSSOConfig_GitHub) Update(input *ProjectSSOConfig_GitHub) error {
 	if input.ClientId != "" {
-		clientID, err := encrypter.Encrypt(input.ClientId)
-		if err != nil {
-			return err
-		}
-		p.ClientId = clientID
+		p.ClientId = input.ClientId
 	}
 	if input.ClientSecret != "" {
-		clientSecret, err := encrypter.Encrypt(input.ClientSecret)
-		if err != nil {
-			return err
-		}
-		p.ClientSecret = clientSecret
+		p.ClientSecret = input.ClientSecret
 	}
 	if input.BaseUrl != "" {
 		p.BaseUrl = input.BaseUrl
 	}
 	if input.UploadUrl != "" {
 		p.UploadUrl = input.UploadUrl
+	}
+	return nil
+}
+
+// Encrypt encrypts sensitive data in ProjectSSOConfig.
+func (p *ProjectSSOConfig_GitHub) Encrypt(encrypter crypto.Encrypter) error {
+	if p.ClientId != "" {
+		encrypedClientID, err := encrypter.Encrypt(p.ClientId)
+		if err != nil {
+			return err
+		}
+		p.ClientId = encrypedClientID
+	}
+	if p.ClientSecret != "" {
+		encryptedClientSecret, err := encrypter.Encrypt(p.ClientSecret)
+		if err != nil {
+			return err
+		}
+		p.ClientSecret = encryptedClientSecret
 	}
 	return nil
 }
