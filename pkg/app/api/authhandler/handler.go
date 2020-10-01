@@ -58,9 +58,14 @@ type projectGetter interface {
 	GetProject(ctx context.Context, id string) (*model.Project, error)
 }
 
+type decrypter interface {
+	Decrypt(encryptedText string) (string, error)
+}
+
 // Handler handles all imcoming requests about authentication.
 type Handler struct {
 	signer           jwt.Signer
+	decrypter        decrypter
 	callbackURL      string
 	stateKey         string
 	projectsInConfig map[string]config.ControlPlaneProject
@@ -73,6 +78,7 @@ type Handler struct {
 // NewHandler returns a handler that will used for authentication.
 func NewHandler(
 	signer jwt.Signer,
+	decrypter decrypter,
 	address string,
 	stateKey string,
 	projectsInConfig map[string]config.ControlPlaneProject,
@@ -83,6 +89,7 @@ func NewHandler(
 ) *Handler {
 	return &Handler{
 		signer:           signer,
+		decrypter:        decrypter,
 		callbackURL:      strings.TrimSuffix(address, "/") + callbackPath,
 		stateKey:         stateKey,
 		projectsInConfig: projectsInConfig,

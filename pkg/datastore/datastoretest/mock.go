@@ -17,6 +17,7 @@ package datastoretest
 import (
 	_ "github.com/golang/mock/gomock"
 
+	_ "github.com/pipe-cd/pipe/pkg/crypto"
 	_ "github.com/pipe-cd/pipe/pkg/datastore"
 	_ "github.com/pipe-cd/pipe/pkg/model"
 )

@@ -65,6 +65,11 @@ func (h *Handler) handleCallback(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	if err := sso.Decrypt(h.decrypter); err != nil {
+		h.handleError(w, r, "Failed to decrypt data", err)
+		return
+	}
+
 	user, err := getUser(ctx, sso, proj.Rbac, proj.Id, authCode)
 	if err != nil {
 		h.handleError(w, r, "Unable to find user", err)

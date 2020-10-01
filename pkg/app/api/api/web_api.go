@@ -36,6 +36,10 @@ import (
 	"github.com/pipe-cd/pipe/pkg/rpc/rpcauth"
 )
 
+type encrypter interface {
+	Encrypt(text string) (string, error)
+}
+
 // WebAPI implements the behaviors for the gRPC definitions of WebAPI.
 type WebAPI struct {
 	applicationStore          datastore.ApplicationStore
@@ -46,13 +50,21 @@ type WebAPI struct {
 	stageLogStore             stagelogstore.Store
 	applicationLiveStateStore applicationlivestatestore.Store
 	commandStore              commandstore.Store
+	encrypter                 encrypter
 
 	projectsInConfig map[string]config.ControlPlaneProject
 	logger           *zap.Logger
 }
 
 // NewWebAPI creates a new WebAPI instance.
-func NewWebAPI(ds datastore.DataStore, sls stagelogstore.Store, alss applicationlivestatestore.Store, cmds commandstore.Store, projs map[string]config.ControlPlaneProject, logger *zap.Logger) *WebAPI {
+func NewWebAPI(
+	ds datastore.DataStore,
+	sls stagelogstore.Store,
+	alss applicationlivestatestore.Store,
+	cmds commandstore.Store,
+	projs map[string]config.ControlPlaneProject,
+	encrypter encrypter,
+	logger *zap.Logger) *WebAPI {
 	a := &WebAPI{
 		applicationStore:          datastore.NewApplicationStore(ds),
 		environmentStore:          datastore.NewEnvironmentStore(ds),
@@ -63,6 +75,7 @@ func NewWebAPI(ds datastore.DataStore, sls stagelogstore.Store, alss application
 		applicationLiveStateStore: alss,
 		commandStore:              cmds,
 		projectsInConfig:          projs,
+		encrypter:                 encrypter,
 		logger:                    logger.Named("web-api"),
 	}
 	return a
@@ -863,6 +876,11 @@ func (a *WebAPI) UpdateProjectSSOConfig(ctx context.Context, req *webservice.Upd
 
 	if _, ok := a.projectsInConfig[claims.Role.ProjectId]; ok {
 		return nil, status.Error(codes.FailedPrecondition, "failed to update a debug project specified in the control-plane configuration")
+	}
+
+	if err := req.Sso.Encrypt(a.encrypter); err != nil {
+		a.logger.Error("failed to encrypt sensitive data in sso configurations", zap.Error(err))
+		return nil, status.Error(codes.Internal, "failed to encrypt sensitive data in sso configurations")
 	}
 
 	if err := a.projectStore.UpdateProjectSSOConfig(ctx, claims.Role.ProjectId, req.Sso); err != nil {

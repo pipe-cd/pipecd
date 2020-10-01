@@ -9,6 +9,7 @@ go_library(
     importpath = "github.com/pipe-cd/pipe/pkg/datastore/datastoretest",
     visibility = ["//visibility:public"],
     deps = [
+        "//pkg/crypto:go_default_library",
         "//pkg/datastore:go_default_library",
         "//pkg/model:go_default_library",
         "@com_github_golang_mock//gomock:go_default_library",
