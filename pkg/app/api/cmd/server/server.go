@@ -37,6 +37,7 @@ import (
 	"github.com/pipe-cd/pipe/pkg/cache/rediscache"
 	"github.com/pipe-cd/pipe/pkg/cli"
 	"github.com/pipe-cd/pipe/pkg/config"
+	"github.com/pipe-cd/pipe/pkg/crypto"
 	"github.com/pipe-cd/pipe/pkg/datastore"
 	"github.com/pipe-cd/pipe/pkg/datastore/firestore"
 	"github.com/pipe-cd/pipe/pkg/datastore/mongodb"
@@ -202,11 +203,16 @@ func (s *server) run(ctx context.Context, t cli.Telemetry) error {
 			t.Logger.Error("failed to create a new JWT verifier", zap.Error(err))
 			return err
 		}
+		encrypter, err := crypto.NewEncrypter(s.tokenSigningKeyFile)
+		if err != nil {
+			t.Logger.Error("failed to create a new encrypter", zap.Error(err))
+			return err
+		}
 		var service rpc.Service
 		if s.useFakeResponse {
 			service = api.NewFakeWebAPI()
 		} else {
-			service = api.NewWebAPI(ds, sls, alss, cmds, cfg.ProjectMap(), t.Logger)
+			service = api.NewWebAPI(ds, sls, alss, cmds, cfg.ProjectMap(), encrypter, t.Logger)
 		}
 		opts := []rpc.Option{
 			rpc.WithPort(s.webAPIPort),
@@ -234,6 +240,11 @@ func (s *server) run(ctx context.Context, t cli.Telemetry) error {
 			t.Logger.Error("failed to create a new signer", zap.Error(err))
 			return err
 		}
+		decrypter, err := crypto.NewDecrypter(s.tokenSigningKeyFile)
+		if err != nil {
+			t.Logger.Error("failed to create a new decrypter", zap.Error(err))
+			return err
+		}
 		mux := http.NewServeMux()
 		httpServer := &http.Server{
 			Addr:    fmt.Sprintf(":%d", s.httpPort),
@@ -242,6 +253,7 @@ func (s *server) run(ctx context.Context, t cli.Telemetry) error {
 		handlers := []httpHandler{
 			authhandler.NewHandler(
 				signer,
+				decrypter,
 				cfg.Address,
 				cfg.StateKey,
 				cfg.ProjectMap(),

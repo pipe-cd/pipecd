@@ -19,6 +19,8 @@ import (
 
 	"github.com/stretchr/testify/assert"
 	"golang.org/x/crypto/bcrypt"
+
+	"github.com/pipe-cd/pipe/pkg/crypto"
 )
 
 func TestRedactSensitiveData(t *testing.T) {
@@ -123,8 +125,17 @@ func TestUpdateProjectSSOConfig(t *testing.T) {
 
 	for _, tc := range cases {
 		t.Run(tc.name, func(t *testing.T) {
+			e, err := crypto.NewEncrypter("testdata/key")
+			assert.NoError(t, err)
+			assert.NotNil(t, e)
+
+			d, err := crypto.NewDecrypter("testdata/key")
+			assert.NoError(t, err)
+			assert.NotNil(t, e)
+
 			p := &ProjectSSOConfig{}
-			p.Update(tc.sso)
+			p.Update(tc.sso, e)
+			p.Decrypt(d)
 			assert.Equal(t, tc.expect, p)
 		})
 	}

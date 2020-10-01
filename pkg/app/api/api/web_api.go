@@ -30,6 +30,7 @@ import (
 	"github.com/pipe-cd/pipe/pkg/app/api/service/webservice"
 	"github.com/pipe-cd/pipe/pkg/app/api/stagelogstore"
 	"github.com/pipe-cd/pipe/pkg/config"
+	"github.com/pipe-cd/pipe/pkg/crypto"
 	"github.com/pipe-cd/pipe/pkg/datastore"
 	"github.com/pipe-cd/pipe/pkg/git"
 	"github.com/pipe-cd/pipe/pkg/model"
@@ -46,13 +47,21 @@ type WebAPI struct {
 	stageLogStore             stagelogstore.Store
 	applicationLiveStateStore applicationlivestatestore.Store
 	commandStore              commandstore.Store
+	encrypter                 crypto.Encrypter
 
 	projectsInConfig map[string]config.ControlPlaneProject
 	logger           *zap.Logger
 }
 
 // NewWebAPI creates a new WebAPI instance.
-func NewWebAPI(ds datastore.DataStore, sls stagelogstore.Store, alss applicationlivestatestore.Store, cmds commandstore.Store, projs map[string]config.ControlPlaneProject, logger *zap.Logger) *WebAPI {
+func NewWebAPI(
+	ds datastore.DataStore,
+	sls stagelogstore.Store,
+	alss applicationlivestatestore.Store,
+	cmds commandstore.Store,
+	projs map[string]config.ControlPlaneProject,
+	encrypter crypto.Encrypter,
+	logger *zap.Logger) *WebAPI {
 	a := &WebAPI{
 		applicationStore:          datastore.NewApplicationStore(ds),
 		environmentStore:          datastore.NewEnvironmentStore(ds),
@@ -63,6 +72,7 @@ func NewWebAPI(ds datastore.DataStore, sls stagelogstore.Store, alss application
 		applicationLiveStateStore: alss,
 		commandStore:              cmds,
 		projectsInConfig:          projs,
+		encrypter:                 encrypter,
 		logger:                    logger.Named("web-api"),
 	}
 	return a
@@ -865,7 +875,7 @@ func (a *WebAPI) UpdateProjectSSOConfig(ctx context.Context, req *webservice.Upd
 		return nil, status.Error(codes.FailedPrecondition, "failed to update a debug project specified in the control-plane configuration")
 	}
 
-	if err := a.projectStore.UpdateProjectSSOConfig(ctx, claims.Role.ProjectId, req.Sso); err != nil {
+	if err := a.projectStore.UpdateProjectSSOConfig(ctx, claims.Role.ProjectId, req.Sso, a.encrypter); err != nil {
 		a.logger.Error("failed to update project single sign on settings", zap.Error(err))
 		return nil, status.Error(codes.Internal, "failed to update project single sign on settings")
 	}

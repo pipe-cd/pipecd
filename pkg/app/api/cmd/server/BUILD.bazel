@@ -17,6 +17,7 @@ go_library(
         "//pkg/cache/rediscache:go_default_library",
         "//pkg/cli:go_default_library",
         "//pkg/config:go_default_library",
+        "//pkg/crypto:go_default_library",
         "//pkg/datastore:go_default_library",
         "//pkg/datastore/firestore:go_default_library",
         "//pkg/datastore/mongodb:go_default_library",

@@ -22,12 +22,15 @@ import (
 	"golang.org/x/crypto/bcrypt"
 	"golang.org/x/oauth2"
 	"golang.org/x/oauth2/github"
+
+	"github.com/pipe-cd/pipe/pkg/crypto"
 )
 
 var (
 	githubScopes = []string{"read:org"}
 )
 
+// SetStaticAdmin sets admin data.
 func (p *Project) SetStaticAdmin(username, password string) error {
 	encoded, err := bcrypt.GenerateFromPassword([]byte(password), bcrypt.DefaultCost)
 	if err != nil {
@@ -110,16 +113,31 @@ func (p *ProjectSSOConfig) RedactSensitiveData() {
 }
 
 // Update updates ProjectSSOConfig with given data.
-func (p *ProjectSSOConfig) Update(sso *ProjectSSOConfig) {
+func (p *ProjectSSOConfig) Update(sso *ProjectSSOConfig, encrypter crypto.Encrypter) error {
 	p.Provider = sso.Provider
 	if sso.Github != nil {
 		if p.Github == nil {
 			p.Github = &ProjectSSOConfig_GitHub{}
 		}
-		p.Github.Update(sso.Github)
+		if err := p.Github.Update(sso.Github, encrypter); err != nil {
+			return err
+		}
 	}
 	if sso.Google != nil {
 	}
+	return nil
+}
+
+// Decrypt decrypts encrypted data in ProjectSSOConfig.
+func (p *ProjectSSOConfig) Decrypt(decrypter crypto.Decrypter) error {
+	if p.Github != nil {
+		if err := p.Github.Decrypt(decrypter); err != nil {
+			return err
+		}
+	}
+	if p.Google != nil {
+	}
+	return nil
 }
 
 // GenerateAuthCodeURL generates an auth URL for the specified configuration.
@@ -149,12 +167,20 @@ func (p *ProjectSSOConfig_GitHub) RedactSensitiveData() {
 }
 
 // Update updates ProjectSSOConfig with given data.
-func (p *ProjectSSOConfig_GitHub) Update(input *ProjectSSOConfig_GitHub) {
+func (p *ProjectSSOConfig_GitHub) Update(input *ProjectSSOConfig_GitHub, encrypter crypto.Encrypter) error {
 	if input.ClientId != "" {
-		p.ClientId = input.ClientId
+		clientID, err := encrypter.Encrypt(input.ClientId)
+		if err != nil {
+			return err
+		}
+		p.ClientId = clientID
 	}
 	if input.ClientSecret != "" {
-		p.ClientSecret = input.ClientSecret
+		clientSecret, err := encrypter.Encrypt(input.ClientSecret)
+		if err != nil {
+			return err
+		}
+		p.ClientSecret = clientSecret
 	}
 	if input.BaseUrl != "" {
 		p.BaseUrl = input.BaseUrl
@@ -162,6 +188,26 @@ func (p *ProjectSSOConfig_GitHub) Update(input *ProjectSSOConfig_GitHub) {
 	if input.UploadUrl != "" {
 		p.UploadUrl = input.UploadUrl
 	}
+	return nil
+}
+
+// Decrypt decrypts ProjectSSOConfig.
+func (p *ProjectSSOConfig_GitHub) Decrypt(decrypter crypto.Decrypter) error {
+	if p.ClientId != "" {
+		decrypedClientID, err := decrypter.Decrypt(p.ClientId)
+		if err != nil {
+			return err
+		}
+		p.ClientId = decrypedClientID
+	}
+	if p.ClientSecret != "" {
+		decryptedClientSecret, err := decrypter.Decrypt(p.ClientSecret)
+		if err != nil {
+			return err
+		}
+		p.ClientSecret = decryptedClientSecret
+	}
+	return nil
 }
 
 // GenerateAuthCodeURL generates an auth URL for the specified configuration.

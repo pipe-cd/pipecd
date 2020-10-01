@@ -11,6 +11,7 @@ go_library(
     visibility = ["//visibility:public"],
     deps = [
         "//pkg/config:go_default_library",
+        "//pkg/crypto:go_default_library",
         "//pkg/jwt:go_default_library",
         "//pkg/model:go_default_library",
         "//pkg/oauth/github:go_default_library",

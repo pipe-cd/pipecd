@@ -24,6 +24,7 @@ import (
 	"go.uber.org/zap"
 
 	"github.com/pipe-cd/pipe/pkg/config"
+	"github.com/pipe-cd/pipe/pkg/crypto"
 	"github.com/pipe-cd/pipe/pkg/jwt"
 	"github.com/pipe-cd/pipe/pkg/model"
 )
@@ -61,6 +62,7 @@ type projectGetter interface {
 // Handler handles all imcoming requests about authentication.
 type Handler struct {
 	signer           jwt.Signer
+	decrypter        crypto.Decrypter
 	callbackURL      string
 	stateKey         string
 	projectsInConfig map[string]config.ControlPlaneProject
@@ -73,6 +75,7 @@ type Handler struct {
 // NewHandler returns a handler that will used for authentication.
 func NewHandler(
 	signer jwt.Signer,
+	decrypter crypto.Decrypter,
 	address string,
 	stateKey string,
 	projectsInConfig map[string]config.ControlPlaneProject,
@@ -83,6 +86,7 @@ func NewHandler(
 ) *Handler {
 	return &Handler{
 		signer:           signer,
+		decrypter:        decrypter,
 		callbackURL:      strings.TrimSuffix(address, "/") + callbackPath,
 		stateKey:         stateKey,
 		projectsInConfig: projectsInConfig,
