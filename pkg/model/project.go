@@ -134,7 +134,7 @@ func (p *ProjectSSOConfig) Update(sso *ProjectSSOConfig) error {
 	return nil
 }
 
-// Encrypt decrypts encrypted data in ProjectSSOConfig.
+// Encrypt encrypts encrypted data in ProjectSSOConfig.
 func (p *ProjectSSOConfig) Encrypt(encrypter encrypter) error {
 	if p.Github != nil {
 		if err := p.Github.Encrypt(encrypter); err != nil {
