@@ -72,8 +72,8 @@ type server struct {
 	keyFile        string
 	insecureCookie bool
 
-	tokenSigningKeyFile string
-	configFile          string
+	encryptionKeyFile string
+	configFile        string
 
 	useFakeResponse      bool
 	enableGRPCReflection bool
@@ -107,7 +107,7 @@ func NewCommand() *cobra.Command {
 	cmd.Flags().StringVar(&s.keyFile, "key-file", s.keyFile, "The path to the TLS key file.")
 	cmd.Flags().BoolVar(&s.insecureCookie, "insecure-cookie", s.insecureCookie, "Allow cookie to be sent over an unsecured HTTP connection.")
 
-	cmd.Flags().StringVar(&s.tokenSigningKeyFile, "token-signing-key-file", s.tokenSigningKeyFile, "The path to key file used to sign ID token.")
+	cmd.Flags().StringVar(&s.encryptionKeyFile, "encryption-key-file", s.encryptionKeyFile, "The path to file containing a random string of bits used to encrypt sensitive data.")
 	cmd.Flags().StringVar(&s.configFile, "config-file", s.configFile, "The path to the configuration file.")
 
 	// For debugging early in development
@@ -198,16 +198,18 @@ func (s *server) run(ctx context.Context, t cli.Telemetry) error {
 
 	// Start a gRPC server for handling WebAPI requests.
 	{
-		verifier, err := jwt.NewVerifier(defaultSigningMethod, s.tokenSigningKeyFile)
+		verifier, err := jwt.NewVerifier(defaultSigningMethod, s.encryptionKeyFile)
 		if err != nil {
 			t.Logger.Error("failed to create a new JWT verifier", zap.Error(err))
 			return err
 		}
-		encrypter, err := crypto.NewEncrypter(s.tokenSigningKeyFile)
+
+		encrypter, err := crypto.NewEncrypter(s.encryptionKeyFile)
 		if err != nil {
 			t.Logger.Error("failed to create a new encrypter", zap.Error(err))
 			return err
 		}
+
 		var service rpc.Service
 		if s.useFakeResponse {
 			service = api.NewFakeWebAPI()
@@ -227,6 +229,7 @@ func (s *server) run(ctx context.Context, t cli.Telemetry) error {
 		if s.enableGRPCReflection {
 			opts = append(opts, rpc.WithGRPCReflection())
 		}
+
 		webAPIServer = rpc.NewServer(service, opts...)
 		group.Go(func() error {
 			return webAPIServer.Run(ctx)
@@ -235,21 +238,24 @@ func (s *server) run(ctx context.Context, t cli.Telemetry) error {
 
 	// Start an http server for handling incoming http requests such as auth callbacks or webhook events.
 	{
-		signer, err := jwt.NewSigner(defaultSigningMethod, s.tokenSigningKeyFile)
+		signer, err := jwt.NewSigner(defaultSigningMethod, s.encryptionKeyFile)
 		if err != nil {
 			t.Logger.Error("failed to create a new signer", zap.Error(err))
 			return err
 		}
-		decrypter, err := crypto.NewDecrypter(s.tokenSigningKeyFile)
+
+		decrypter, err := crypto.NewDecrypter(s.encryptionKeyFile)
 		if err != nil {
 			t.Logger.Error("failed to create a new decrypter", zap.Error(err))
 			return err
 		}
+
 		mux := http.NewServeMux()
 		httpServer := &http.Server{
 			Addr:    fmt.Sprintf(":%d", s.httpPort),
 			Handler: mux,
 		}
+
 		handlers := []httpHandler{
 			authhandler.NewHandler(
 				signer,
@@ -263,6 +269,7 @@ func (s *server) run(ctx context.Context, t cli.Telemetry) error {
 				t.Logger,
 			),
 		}
+
 		for _, h := range handlers {
 			h.Register(mux.HandleFunc)
 		}

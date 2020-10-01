@@ -25,8 +25,8 @@ config:
             passwordHash: "$2a$10$ye96mUqUqTnjUqgwQJbJzel/LJibRhUnmzyypACkvrTSnQpVFZ7qK" # bcrypt value of "hello-pipecd"
 
 secret:
-  signingKey:
-    data: quickstart
+  encryptionKey:
+    data: encryption-key-just-used-for-quickstart
   minioAccessKey:
     data: quickstart-access-key
   minioSecretKey:

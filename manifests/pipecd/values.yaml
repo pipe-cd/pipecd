@@ -63,8 +63,8 @@ secret:
   # The name of the Secret should be mounted to container.
   name: "pipecd-secrets"
   mountPath: /etc/pipecd-secret
-  signingKey:
-    fileName: "signing-key"
+  encryptionKey:
+    fileName: "encryption-key"
     data: ""
   firestoreServiceAccount:
     fileName: "firestore-service-account"

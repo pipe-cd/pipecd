@@ -97,7 +97,7 @@ spec:
           - --config-file=/etc/pipecd-config/{{ .Values.config.fileName }}
           - --use-fake-response={{ .Values.api.args.useFakeResponse }}
           - --enable-grpc-reflection={{ .Values.api.args.enableGRPCReflection }}
-          - --token-signing-key-file={{ .Values.secret.mountPath }}/{{ .Values.secret.signingKey.fileName }}
+          - --encryption-key-file={{ .Values.secret.mountPath }}/{{ .Values.secret.encryptionKey.fileName }}
           ports:
             - name: piped-api
               containerPort: 9080
