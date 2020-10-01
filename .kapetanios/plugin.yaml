@@ -7,11 +7,17 @@ spec:
   approve:
     enabled: true
     allowSelfApproval: true
- 
+
   # A plugin to label the pull request size based on its changes.
   # See more: https://kapetanios.dev/docs/plugins/size
   size:
     enabled: true
+
+  # A plugin to schedule user defined builds.
+  # See more: https://kapetanios.dev/plugins/trigger
+  trigger:
+    enabled: true
+    onlyOrgMembers: true
 
   # A plugin to automatically assign reviewers based on code ownership.
   # See more: https://kapetanios.dev/docs/plugins/reviewassigner
@@ -103,3 +109,9 @@ spec:
   # See more: https://kapetanios.dev/docs/plugins/golinter
   goLinter:
     enabled: true
+
+  cla:
+    enabled: true
+    url: "https://github.com/pipe-cd/pipe/blob/master/CLA.md"
+    skipUsers:
+      - pipecd-bot
