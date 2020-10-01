@@ -43,7 +43,7 @@ func NewEncrypter(keyFile string) (Encrypter, error) {
 		return nil, fmt.Errorf("unable to read key file: %v", err)
 	}
 	if len(key) < aes256size {
-		return nil, fmt.Errorf("invalid key size: %d", len(key))
+		return nil, fmt.Errorf("key size (%d) must be greater than or equal to %d", len(key), aes256size)
 	}
 	return &encrypter{
 		key: key[:aes256size],

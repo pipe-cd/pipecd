@@ -17,6 +17,7 @@ package crypto
 import (
 	"testing"
 
+	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 )
 
@@ -38,4 +39,10 @@ func TestDecrypt(t *testing.T) {
 	decrepted, err := d.Decrypt(encryptedText)
 	require.NoError(t, err)
 	require.Equal(t, text, decrepted)
+}
+
+func TestNewDecrypterInvalidKey(t *testing.T) {
+	e, err := NewEncrypter("testdata/short-key")
+	assert.Nil(t, e)
+	assert.Equal(t, "key size (9) must be greater than or equal to 32", err.Error())
 }
