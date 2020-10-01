@@ -38,6 +38,7 @@
      
 
         > code {
+	    background-color: inherit !important;
             padding: 0;
             margin: 0;
             font-size: 100%;
@@ -45,5 +46,10 @@
             white-space: pre;
             border: 0;
         }
+    }
+
+    pre.mermaid {
+        background-color: inherit;
+        font-size: 0;
     }
 }

@@ -15,7 +15,6 @@
   pages:
     - title: Overview
     - title: Grid
-    - title: Media object
     - title: Utilities for layout
 
 - title: Content
@@ -42,6 +41,7 @@
     - title: Input group
     - title: Jumbotron
     - title: List group
+    - title: Media object
     - title: Modal
     - title: Navs
     - title: Navbar
@@ -49,6 +49,8 @@
     - title: Popovers
     - title: Progress
     - title: Scrollspy
+    - title: Spinners
+    - title: Toasts
     - title: Tooltips
 
 - title: Utilities
@@ -62,11 +64,14 @@
     - title: Flex
     - title: Float
     - title: Image replacement
+    - title: Interactions
+    - title: Overflow
     - title: Position
-    - title: Screenreaders
+    - title: Screen readers
     - title: Shadows
     - title: Sizing
     - title: Spacing
+    - title: Stretched link
     - title: Text
     - title: Vertical align
     - title: Visibility
@@ -81,6 +86,7 @@
 - title: About
   pages:
     - title: Overview
+    - title: Team
     - title: Brand
     - title: License
     - title: Translations
