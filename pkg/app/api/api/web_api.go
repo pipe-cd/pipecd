@@ -879,8 +879,8 @@ func (a *WebAPI) UpdateProjectSSOConfig(ctx context.Context, req *webservice.Upd
 	}
 
 	if err := req.Sso.Encrypt(a.encrypter); err != nil {
-		a.logger.Error("failed to sensitive data in sso configurations", zap.Error(err))
-		return nil, status.Error(codes.Internal, "failed to sensitive data in sso configurations")
+		a.logger.Error("failed to encrypt sensitive data in sso configurations", zap.Error(err))
+		return nil, status.Error(codes.Internal, "failed to encrypt sensitive data in sso configurations")
 	}
 
 	if err := a.projectStore.UpdateProjectSSOConfig(ctx, claims.Role.ProjectId, req.Sso); err != nil {
