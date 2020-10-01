@@ -22,7 +22,7 @@ const store = configureStore({ reducer: reducers });
 const baseState = store.getState();
 
 export const createStore = (
-  initialState: DeepPartial<AppState>
+  initialState: DeepPartial<AppState> | undefined = {}
 ): ReturnType<typeof mockStore> => {
   return mockStore(Object.assign({}, baseState, initialState));
 };

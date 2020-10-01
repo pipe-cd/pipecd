@@ -44,3 +44,5 @@ export const selectProjectName = (state: MeState): string => {
 
 export const useMe = (): MeState =>
   useSelector<AppState, MeState>((state) => state.me);
+
+export { Role } from "pipe/pkg/app/web/model/role_pb";
