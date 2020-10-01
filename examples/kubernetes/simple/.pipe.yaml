@@ -7,4 +7,4 @@ spec:
     manifests:
       - deployment.yaml
       - service.yaml
-    kubectlVersion: 2.1.1
+    kubectlVersion: 1.18.5
