@@ -22,13 +22,19 @@ import (
 	"golang.org/x/crypto/bcrypt"
 	"golang.org/x/oauth2"
 	"golang.org/x/oauth2/github"
-
-	"github.com/pipe-cd/pipe/pkg/crypto"
 )
 
 var (
 	githubScopes = []string{"read:org"}
 )
+
+type encrypter interface {
+	Encrypt(text string) (string, error)
+}
+
+type decrypter interface {
+	Decrypt(encryptedText string) (string, error)
+}
 
 // SetStaticAdmin sets admin data.
 func (p *Project) SetStaticAdmin(username, password string) error {
@@ -129,7 +135,7 @@ func (p *ProjectSSOConfig) Update(sso *ProjectSSOConfig) error {
 }
 
 // Encrypt decrypts encrypted data in ProjectSSOConfig.
-func (p *ProjectSSOConfig) Encrypt(encrypter crypto.Encrypter) error {
+func (p *ProjectSSOConfig) Encrypt(encrypter encrypter) error {
 	if p.Github != nil {
 		if err := p.Github.Encrypt(encrypter); err != nil {
 			return err
@@ -141,7 +147,7 @@ func (p *ProjectSSOConfig) Encrypt(encrypter crypto.Encrypter) error {
 }
 
 // Decrypt decrypts encrypted data in ProjectSSOConfig.
-func (p *ProjectSSOConfig) Decrypt(decrypter crypto.Decrypter) error {
+func (p *ProjectSSOConfig) Decrypt(decrypter decrypter) error {
 	if p.Github != nil {
 		if err := p.Github.Decrypt(decrypter); err != nil {
 			return err
@@ -196,7 +202,7 @@ func (p *ProjectSSOConfig_GitHub) Update(input *ProjectSSOConfig_GitHub) error {
 }
 
 // Encrypt encrypts sensitive data in ProjectSSOConfig.
-func (p *ProjectSSOConfig_GitHub) Encrypt(encrypter crypto.Encrypter) error {
+func (p *ProjectSSOConfig_GitHub) Encrypt(encrypter encrypter) error {
 	if p.ClientId != "" {
 		encrypedClientID, err := encrypter.Encrypt(p.ClientId)
 		if err != nil {
@@ -215,7 +221,7 @@ func (p *ProjectSSOConfig_GitHub) Encrypt(encrypter crypto.Encrypter) error {
 }
 
 // Decrypt decrypts ProjectSSOConfig.
-func (p *ProjectSSOConfig_GitHub) Decrypt(decrypter crypto.Decrypter) error {
+func (p *ProjectSSOConfig_GitHub) Decrypt(decrypter decrypter) error {
 	if p.ClientId != "" {
 		decrypedClientID, err := decrypter.Decrypt(p.ClientId)
 		if err != nil {
