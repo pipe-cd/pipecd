@@ -232,3 +232,18 @@ type TemplatableAnalysisHTTP struct {
 	AnalysisHTTP
 	Template AnalysisTemplateRef `json:"template"`
 }
+
+type DeploymentImageWatcher struct {
+	Targets []ImageWatcherTarget `json:"targets"`
+}
+
+type ImageWatcherTarget struct {
+	Provider string                 `json:"provider"`
+	Image    string                 `json:"image"`
+	Path     ImageWatcherTargetPath `json:"path"`
+}
+
+type ImageWatcherTargetPath struct {
+	Filename string `json:"filename"`
+	Field    string `json:"field"`
+}

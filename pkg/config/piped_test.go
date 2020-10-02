@@ -151,6 +151,16 @@ func TestPipedConfig(t *testing.T) {
 						},
 					},
 				},
+				ImageProviders: []PipedImageProvider{
+					{
+						Name: "my-dockerhub",
+						Type: "DOCKERHUB",
+						DockerhubConfig: &ImageProviderDockerhubConfig{
+							Username:     "foo",
+							PasswordFile: "/etc/piped-secret/dockerhub-pass",
+						},
+					},
+				},
 				Notifications: Notifications{
 					Routes: []NotificationRoute{
 						{

@@ -53,6 +53,8 @@ type PipedSpec struct {
 	CloudProviders []PipedCloudProvider `json:"cloudProviders"`
 	// List of analysis providers can be used by this piped.
 	AnalysisProviders []PipedAnalysisProvider `json:"analysisProviders"`
+	// List of image providers can be used by this piped.
+	ImageProviders []PipedImageProvider `json:"imageProviders"`
 	// Sending notification to Slack, Webhook…
 	Notifications Notifications `json:"notifications"`
 }
@@ -367,6 +369,63 @@ type AnalysisProviderDatadogConfig struct {
 type AnalysisProviderStackdriverConfig struct {
 	// The path to the service account file.
 	ServiceAccountFile string `json:"serviceAccountFile"`
+}
+
+type PipedImageProvider struct {
+	Name string
+	Type model.ImageProviderType
+
+	DockerhubConfig *ImageProviderDockerhubConfig
+	GCRConfig       *ImageProviderGCRConfig
+	ECRConfig       *ImageProviderECRConfig
+}
+
+type genericPipedImageProvider struct {
+	Name   string                  `json:"name"`
+	Type   model.ImageProviderType `json:"type"`
+	Config json.RawMessage         `json:"config"`
+}
+
+func (p *PipedImageProvider) UnmarshalJSON(data []byte) error {
+	var err error
+	gp := genericPipedImageProvider{}
+	if err = json.Unmarshal(data, &gp); err != nil {
+		return err
+	}
+	p.Name = gp.Name
+	p.Type = gp.Type
+
+	switch p.Type {
+	case model.ImageProviderTypeDockerhub:
+		p.DockerhubConfig = &ImageProviderDockerhubConfig{}
+		if len(gp.Config) > 0 {
+			err = json.Unmarshal(gp.Config, p.DockerhubConfig)
+		}
+	case model.ImageProviderTypeGCR:
+		p.GCRConfig = &ImageProviderGCRConfig{}
+		if len(gp.Config) > 0 {
+			err = json.Unmarshal(gp.Config, p.GCRConfig)
+		}
+	case model.ImageProviderTypeECR:
+		p.ECRConfig = &ImageProviderECRConfig{}
+		if len(gp.Config) > 0 {
+			err = json.Unmarshal(gp.Config, p.ECRConfig)
+		}
+	default:
+		err = fmt.Errorf("unsupported image provider type: %s", p.Name)
+	}
+	return err
+}
+
+type ImageProviderGCRConfig struct {
+}
+
+type ImageProviderDockerhubConfig struct {
+	Username     string `json:"username"`
+	PasswordFile string `json:"passwordFile"`
+}
+
+type ImageProviderECRConfig struct {
 }
 
 type Notifications struct {

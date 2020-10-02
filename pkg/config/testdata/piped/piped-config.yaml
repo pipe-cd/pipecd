@@ -79,6 +79,13 @@ spec:
       config:
         serviceAccountFile: /etc/piped-secret/gcp-service-account.json
 
+  imageProviders:
+    - name: my-dockerhub
+      type: DOCKERHUB
+      config:
+        username: foo
+        passwordFile: /etc/piped-secret/dockerhub-pass
+
   notifications:
     routes:
       - name: dev-slack

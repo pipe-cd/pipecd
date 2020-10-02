@@ -50,6 +50,7 @@ go_library(
         "environment.go",
         "event.go",
         "filestore.go",
+        "imageprovider.go",
         "piped.go",
         "project.go",
         "stage.go",
