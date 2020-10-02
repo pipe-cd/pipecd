@@ -21,6 +21,20 @@ import (
 	"golang.org/x/crypto/bcrypt"
 )
 
+type mockEncrypter struct {
+}
+
+func (e mockEncrypter) Encrypt(text string) (string, error) {
+	return "encrypted-" + text, nil
+}
+
+type mockDecrypter struct {
+}
+
+func (d mockDecrypter) Decrypt(text string) (string, error) {
+	return "decrypted-" + text, nil
+}
+
 func TestRedactSensitiveData(t *testing.T) {
 	cases := []struct {
 		name    string
@@ -156,6 +170,88 @@ func TestUpdateProjectRBACConfig(t *testing.T) {
 			p := &ProjectRBACConfig{}
 			p.Update(tc.rbac)
 			assert.Equal(t, tc.expect, p)
+		})
+	}
+}
+
+func TestEncrypt(t *testing.T) {
+	cases := []struct {
+		name   string
+		sso    *ProjectSSOConfig
+		expect *ProjectSSOConfig
+	}{
+		{
+			name: "encrypt",
+			sso: &ProjectSSOConfig{
+				Provider: ProjectSSOConfig_GITHUB,
+				Github: &ProjectSSOConfig_GitHub{
+					ClientId:     "client-id",
+					ClientSecret: "client-secret",
+					BaseUrl:      "base-url",
+					UploadUrl:    "upload-url",
+				},
+				Google: nil,
+			},
+			expect: &ProjectSSOConfig{
+				Provider: ProjectSSOConfig_GITHUB,
+				Github: &ProjectSSOConfig_GitHub{
+					ClientId:     "encrypted-client-id",
+					ClientSecret: "encrypted-client-secret",
+					BaseUrl:      "base-url",
+					UploadUrl:    "upload-url",
+				},
+				Google: nil,
+			},
+		},
+	}
+
+	for _, tc := range cases {
+		t.Run(tc.name, func(t *testing.T) {
+			e := &mockEncrypter{}
+			err := tc.sso.Encrypt(e)
+			assert.NoError(t, err)
+			assert.Equal(t, tc.expect, tc.sso)
+		})
+	}
+}
+
+func TestDecrypt(t *testing.T) {
+	cases := []struct {
+		name   string
+		sso    *ProjectSSOConfig
+		expect *ProjectSSOConfig
+	}{
+		{
+			name: "decrypt",
+			sso: &ProjectSSOConfig{
+				Provider: ProjectSSOConfig_GITHUB,
+				Github: &ProjectSSOConfig_GitHub{
+					ClientId:     "client-id",
+					ClientSecret: "client-secret",
+					BaseUrl:      "base-url",
+					UploadUrl:    "upload-url",
+				},
+				Google: nil,
+			},
+			expect: &ProjectSSOConfig{
+				Provider: ProjectSSOConfig_GITHUB,
+				Github: &ProjectSSOConfig_GitHub{
+					ClientId:     "decrypted-client-id",
+					ClientSecret: "decrypted-client-secret",
+					BaseUrl:      "base-url",
+					UploadUrl:    "upload-url",
+				},
+				Google: nil,
+			},
+		},
+	}
+
+	for _, tc := range cases {
+		t.Run(tc.name, func(t *testing.T) {
+			d := &mockDecrypter{}
+			err := tc.sso.Decrypt(d)
+			assert.NoError(t, err)
+			assert.Equal(t, tc.expect, tc.sso)
 		})
 	}
 }

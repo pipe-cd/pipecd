@@ -58,6 +58,11 @@ func (h *Handler) handleSSOLogin(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	if err := sso.Decrypt(h.decrypter); err != nil {
+		h.handleError(w, r, "Failed to decrypt data", err)
+		return
+	}
+
 	var (
 		stateToken = xsrftoken.Generate(h.stateKey, "", "")
 		state      = hex.EncodeToString([]byte(stateToken))
