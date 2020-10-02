@@ -8,9 +8,9 @@ description: >
 
 ## Prerequisites
 
-##### Registering piped
-- Ensure that the `piped` has been registered from PipeCD web UI and you have copied its ID and Key strings.
-- Please note that only project admin can register a new `piped` at Settings tab.
+##### Having piped's ID and Key strings
+- Ensure that the `piped` has been registered and you are having its PIPED_ID and PIPED_KEY strings.
+- If you are not having them, this [page](/docs/operator-manual/control-plane/registering-a-piped/) guides you how to register a new one.
 
 ##### Preparing a SSH key
 - If your Git repositories are private, `piped` requires a private SSH key to access those repositories.
