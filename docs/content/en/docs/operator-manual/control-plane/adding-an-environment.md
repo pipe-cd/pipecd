@@ -9,7 +9,7 @@ description: >
 An environment is a logical group of applications, pipeds inside a project. A project can have multiple environments.
 Each application must belong to one and only one environment. While each piped must belong to at least one environment.
 
-The list of environments are shown in the Settings page. Anyone who has the project admin role can add a new environment by clicking on the `+ADD` button.
+The list of environments is shown in the Settings page. Anyone who has the project admin role can add a new environment by clicking on the `+ADD` button.
 
 </br>
 
