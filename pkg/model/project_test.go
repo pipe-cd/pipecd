@@ -19,9 +19,21 @@ import (
 
 	"github.com/stretchr/testify/assert"
 	"golang.org/x/crypto/bcrypt"
-
-	"github.com/pipe-cd/pipe/pkg/crypto"
 )
+
+type mockEncrypter struct {
+}
+
+func (e mockEncrypter) Encrypt(text string) (string, error) {
+	return "encrypted-" + text, nil
+}
+
+type mockDecrypter struct {
+}
+
+func (e mockDecrypter) Decrypt(text string) (string, error) {
+	return "decrypted-" + text, nil
+}
 
 func TestRedactSensitiveData(t *testing.T) {
 	cases := []struct {
@@ -180,17 +192,25 @@ func TestEncrypt(t *testing.T) {
 				},
 				Google: nil,
 			},
+			expect: &ProjectSSOConfig{
+				Provider: ProjectSSOConfig_GITHUB,
+				Github: &ProjectSSOConfig_GitHub{
+					ClientId:     "encrypted-client-id",
+					ClientSecret: "encrypted-client-secret",
+					BaseUrl:      "base-url",
+					UploadUrl:    "upload-url",
+				},
+				Google: nil,
+			},
 		},
 	}
 
 	for _, tc := range cases {
 		t.Run(tc.name, func(t *testing.T) {
-			e, err := crypto.NewEncrypter("testdata/key")
+			e := &mockEncrypter{}
+			err := tc.sso.Encrypt(e)
 			assert.NoError(t, err)
-			assert.NotNil(t, e)
-
-			err = tc.sso.Encrypt(e)
-			assert.NoError(t, err)
+			assert.Equal(t, tc.expect, tc.sso)
 		})
 	}
 }
@@ -206,8 +226,8 @@ func TestDecrypt(t *testing.T) {
 			sso: &ProjectSSOConfig{
 				Provider: ProjectSSOConfig_GITHUB,
 				Github: &ProjectSSOConfig_GitHub{
-					ClientId:     "3Z4vveqZyTP8ENp1461ic5RXUVhazyEPiLhv6hKb8LJk3FnSNw==",
-					ClientSecret: "LEKpaIZvvki5vQBX1iDr6BigPVQYMQx4PyvL7Whru/EA2RlOtzbTlas=",
+					ClientId:     "client-id",
+					ClientSecret: "client-secret",
 					BaseUrl:      "base-url",
 					UploadUrl:    "upload-url",
 				},
@@ -216,8 +236,8 @@ func TestDecrypt(t *testing.T) {
 			expect: &ProjectSSOConfig{
 				Provider: ProjectSSOConfig_GITHUB,
 				Github: &ProjectSSOConfig_GitHub{
-					ClientId:     "client-id",
-					ClientSecret: "client-secret",
+					ClientId:     "decrypted-client-id",
+					ClientSecret: "decrypted-client-secret",
 					BaseUrl:      "base-url",
 					UploadUrl:    "upload-url",
 				},
@@ -228,11 +248,8 @@ func TestDecrypt(t *testing.T) {
 
 	for _, tc := range cases {
 		t.Run(tc.name, func(t *testing.T) {
-			d, err := crypto.NewDecrypter("testdata/key")
-			assert.NoError(t, err)
-			assert.NotNil(t, d)
-
-			err = tc.sso.Decrypt(d)
+			d := &mockDecrypter{}
+			err := tc.sso.Decrypt(d)
 			assert.NoError(t, err)
 			assert.Equal(t, tc.expect, tc.sso)
 		})
