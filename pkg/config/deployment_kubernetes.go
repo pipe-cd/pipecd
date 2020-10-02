@@ -37,6 +37,8 @@ type KubernetesDeploymentSpec struct {
 	Workloads []K8sResourceReference `json:"workloads"`
 	// Which method should be used for traffic routing.
 	TrafficRouting *KubernetesTrafficRouting `json:"trafficRouting"`
+	// Configuration for automatic image updates.
+	ImageWatcher DeploymentImageWatcher `json:"imageWatcher"`
 }
 
 func (s *KubernetesDeploymentSpec) GetStage(index int32) (PipelineStage, bool) {
