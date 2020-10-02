@@ -31,7 +31,7 @@ func (e mockEncrypter) Encrypt(text string) (string, error) {
 type mockDecrypter struct {
 }
 
-func (e mockDecrypter) Decrypt(text string) (string, error) {
+func (d mockDecrypter) Decrypt(text string) (string, error) {
 	return "decrypted-" + text, nil
 }
 
