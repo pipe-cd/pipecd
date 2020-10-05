@@ -2,7 +2,7 @@ load("@io_bazel_rules_go//go:def.bzl", "go_library")
 
 go_library(
     name = "go_default_library",
-    srcs = ["registry.go"],
-    importpath = "github.com/pipe-cd/pipe/pkg/app/piped/containerregistry",
+    srcs = ["gcr.go"],
+    importpath = "github.com/pipe-cd/pipe/pkg/app/piped/imageprovider/gcr",
     visibility = ["//visibility:public"],
 )
