@@ -39,7 +39,8 @@ type imageRepo struct {
 
 func NewWatcher(interval time.Duration, logger *zap.Logger) Watcher {
 	return &watcher{
-		timer: time.NewTimer(interval),
+		timer:  time.NewTimer(interval),
+		logger: logger,
 	}
 }
 
