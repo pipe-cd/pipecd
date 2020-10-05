@@ -78,12 +78,13 @@ export const addApplication = async ({
   req.setKind(kind);
   const appGitPath = new ApplicationGitPath();
   const repository = new ApplicationGitRepository();
-  repository.setId(gitPath.repo !== undefined ? gitPath.repo.id : "");
-  appGitPath.setRepo(repository);
-  appGitPath.setPath(gitPath.path);
-  if (gitPath.configPath && gitPath.configPath !== "") {
-    appGitPath.setConfigPath(gitPath.configPath);
+  if (gitPath.repo) {
+    repository.setId(gitPath.repo.id);
+    repository.setBranch(gitPath.repo.branch);
+    repository.setRemote(gitPath.repo.remote);
+    appGitPath.setRepo(repository);
   }
+  appGitPath.setPath(gitPath.path);
   if (gitPath.configFilename && gitPath.configFilename !== "") {
     appGitPath.setConfigFilename(gitPath.configFilename);
   }

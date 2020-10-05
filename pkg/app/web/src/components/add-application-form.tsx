@@ -7,10 +7,14 @@ import {
   Typography,
   CircularProgress,
 } from "@material-ui/core";
-import { ApplicationKind } from "pipe/pkg/app/web/model/common_pb";
-import React, { FC, useReducer } from "react";
+import {
+  ApplicationGitRepository,
+  ApplicationKind,
+} from "pipe/pkg/app/web/model/common_pb";
+import React, { FC, ReactElement, useReducer } from "react";
 import { useSelector } from "react-redux";
 import { APPLICATION_KIND_TEXT } from "../constants/application-kind";
+import { UI_TEXT_CANCEL, UI_TEXT_SAVE } from "../constants/ui-text";
 import { AppState } from "../modules";
 import {
   Environment,
@@ -51,47 +55,64 @@ const useStyles = makeStyles((theme) => ({
   },
 }));
 
-const FormSelectInput: FC<{
+function FormSelectInput<T extends { name: string; value: string }>({
+  id,
+  name,
+  value,
+  items,
+  onChange,
+  disabled = false,
+}: {
+  id: string;
   name: string;
   value: string;
-  items: { name: string; value: string }[];
-  onChange: (value: string) => void;
+  items: T[];
+  onChange: (value: T) => void;
   disabled?: boolean;
-}> = ({ name, value, items, onChange, disabled = false }) => (
-  <TextField
-    fullWidth
-    required
-    select
-    disabled={disabled}
-    label={name}
-    variant="outlined"
-    margin="dense"
-    onChange={(e) => onChange(e.target.value)}
-    value={value}
-    style={{ flex: 1 }}
-  >
-    {items.map((item) => (
-      <MenuItem key={item.name} value={item.value}>
-        {item.name}
-      </MenuItem>
-    ))}
-  </TextField>
-);
+}): ReactElement {
+  return (
+    <TextField
+      id={id}
+      fullWidth
+      required
+      select
+      disabled={disabled}
+      label={name}
+      variant="outlined"
+      margin="dense"
+      onChange={(e) => {
+        const nextItem = items.find((item) => item.value === e.target.value);
+        if (nextItem) {
+          onChange(nextItem);
+        }
+      }}
+      value={value}
+      style={{ flex: 1 }}
+    >
+      {items.map((item) => (
+        <MenuItem key={item.name} value={item.value}>
+          {item.name}
+        </MenuItem>
+      ))}
+    </TextField>
+  );
+}
 
 type FormKey =
   | "name"
   | "env"
   | "pipedId"
-  | "repoId"
   | "repoPath"
   | "configFilename"
   | "cloudProvider";
 type FormAction =
   | { type: "update-piped"; value: string }
   | { type: "update-kind"; value: ApplicationKind }
+  | { type: "update-repo"; value: ApplicationGitRepository.AsObject }
   | { type: "update-form-value"; key: FormKey; value: string };
 export type AddApplicationFormState = Record<FormKey, string> & {
   kind: ApplicationKind;
+  repo: ApplicationGitRepository.AsObject;
 };
 function reducer(
   state: AddApplicationFormState,
@@ -103,13 +124,15 @@ function reducer(
       return {
         ...state,
         pipedId: action.value,
-        repoId: "",
         repoPath: "",
         configFilename: "",
         cloudProvider: "",
+        repo: { id: "", remote: "", branch: "" },
       };
     case "update-form-value":
       return { ...state, [action.key]: action.value };
+    case "update-repo":
+      return { ...state, repo: action.value };
     case "update-kind":
       return { ...state, kind: action.value };
     default:
@@ -137,7 +160,7 @@ export const AddApplicationForm: FC<Props> = ({
     name: "",
     env: "",
     pipedId: "",
-    repoId: "",
+    repo: { id: "", remote: "", branch: "" },
     repoPath: "",
     configFilename: "",
     kind: ApplicationKind.KUBERNETES, // default value
@@ -191,6 +214,7 @@ export const AddApplicationForm: FC<Props> = ({
       <Divider />
       <form className={classes.form}>
         <TextField
+          id="application-name"
           label="Name"
           variant="outlined"
           margin="dense"
@@ -209,6 +233,7 @@ export const AddApplicationForm: FC<Props> = ({
         />
 
         <FormSelectInput
+          id="application-kind"
           name="Kind"
           value={`${formState.kind}`}
           items={Object.keys(APPLICATION_KIND_TEXT).map((key) => ({
@@ -226,39 +251,57 @@ export const AddApplicationForm: FC<Props> = ({
 
         <div className={classes.inputGroup}>
           <FormSelectInput
+            id="application-env"
             name="Environment"
             value={formState.env}
             items={environments.map((v) => ({ name: v.name, value: v.id }))}
-            onChange={(value) =>
-              dispatch({ type: "update-form-value", key: "env", value })
+            onChange={(item) =>
+              dispatch({
+                type: "update-form-value",
+                key: "env",
+                value: item.value,
+              })
             }
             disabled={isAdding}
           />
           <div className={classes.inputGroupSpace} />
           <FormSelectInput
+            id="application-piped"
             name="Piped"
             value={formState.pipedId}
-            onChange={(value) => dispatch({ type: "update-piped", value })}
+            onChange={({ value }) => {
+              dispatch({ type: "update-piped", value });
+            }}
             items={pipeds.map((piped) => ({
               name: `${piped.name} (${piped.id})`,
               value: piped.id,
             }))}
-            disabled={isAdding}
+            disabled={isAdding || !formState.env}
           />
         </div>
 
         <div className={classes.inputGroup}>
           <FormSelectInput
+            id="application-git-repo"
             name="Repository"
-            value={formState.repoId}
+            value={formState.repo?.id || ""}
             onChange={(value) =>
-              dispatch({ type: "update-form-value", key: "repoId", value })
+              dispatch({
+                type: "update-repo",
+                value: {
+                  id: value.value,
+                  branch: value.branch,
+                  remote: value.remote,
+                },
+              })
             }
             items={
               selectedPiped?.repositoriesList?.map((repo) => ({
                 name: repo.id,
                 value: repo.id,
-              })) || emptyItems
+                branch: repo.branch,
+                remote: repo.remote,
+              })) || []
             }
             disabled={selectedPiped === undefined || isAdding}
           />
@@ -266,6 +309,7 @@ export const AddApplicationForm: FC<Props> = ({
           <div className={classes.inputGroupSpace} />
           {/** TODO: Check path is accessible */}
           <TextField
+            id="application-repo-path"
             label="Path"
             variant="outlined"
             margin="dense"
@@ -285,6 +329,7 @@ export const AddApplicationForm: FC<Props> = ({
         </div>
 
         <TextField
+          id="application-config-filename"
           label="Config Filename"
           variant="outlined"
           margin="dense"
@@ -302,9 +347,10 @@ export const AddApplicationForm: FC<Props> = ({
         />
 
         <FormSelectInput
+          id="application-cloud-provider"
           name="Cloud Provider"
           value={formState.cloudProvider}
-          onChange={(value) =>
+          onChange={({ value }) =>
             dispatch({
               type: "update-form-value",
               key: "cloudProvider",
@@ -325,13 +371,13 @@ export const AddApplicationForm: FC<Props> = ({
           onClick={handleSave}
           disabled={isSomeEmptyFormValue() || isAdding}
         >
-          SAVE
+          {UI_TEXT_SAVE}
           {isAdding && (
             <CircularProgress size={24} className={classes.buttonProgress} />
           )}
         </Button>
         <Button onClick={onClose} disabled={isAdding}>
-          CANCEL
+          {UI_TEXT_CANCEL}
         </Button>
       </form>
     </div>
