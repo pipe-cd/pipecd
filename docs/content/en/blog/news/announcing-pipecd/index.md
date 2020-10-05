@@ -1,5 +1,5 @@
 ---
-date: 2020-10-05
+date: 2020-10-06
 title: "Announcing PipeCD"
 linkTitle: "Announcing PipeCD"
 description: "Continuous Delivery for declarative Kubernetes, Serverless and Infrastructure applications"
