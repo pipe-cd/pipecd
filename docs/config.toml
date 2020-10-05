@@ -27,8 +27,7 @@ pygmentsUseClassic = false
 # See https://help.farbox.com/pygments.html
 pygmentsStyle = "tango"
 
- # First one is picked as the Twitter card image if not set on page.
- #images = ["images/project-illustration.png"]
+
 
 # Configure how URLs look like per section.
 [permalinks]
@@ -100,6 +99,9 @@ github_subdir = "docs"
 # Google Custom Search Engine ID. Remove or comment out to disable search.
 # gcs_engine_id = "011737558837375720776:fsdu1nryfng"
 offlineSearch = true
+
+ # First one is picked as the Twitter card image if not set on page.
+images = ["images/ogp-logo.png"]
 
 # User interface configuration
 [params.ui]
