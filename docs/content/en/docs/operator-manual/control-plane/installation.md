@@ -29,6 +29,9 @@ PipeCD requires a key for encrypting sensitive data or signing JWT token while a
 
 ``` console
 openssl rand 64 -out encryption-key
+
+# If it doesn't work, this one is also OK.
+cat /dev/urandom | head -c64 > encryption-key
 ```
 
 ### 3. Preparing control-plane configuration file and installing
