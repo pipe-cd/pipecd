@@ -25,10 +25,13 @@ helm repo add pipecd https://charts.pipecd.dev
 
 ### 2. Preparing an encryption key
 
-PipeCD requires a key for encrypting sensitive data or signing JWT token while authenticating. You can use the following command to generate an encryption key.
+PipeCD requires a key for encrypting sensitive data or signing JWT token while authenticating. You can use one of the following commands to generate an encryption key.
 
 ``` console
 openssl rand 64 -out encryption-key
+
+# or if it doesn't work, this one is also OK.
+cat /dev/urandom | head -c64 > encryption-key
 ```
 
 ### 3. Preparing control-plane configuration file and installing
@@ -106,7 +109,7 @@ helm install pipecd pipecd/pipecd --version=VERSION --namespace=NAMESPACE \
   --set api.args.insecureCookie=true \
   --set-file config.data=path-to-control-plane-configuration-file \
   --set-file secret.encryptionKey.data=path-to-encryption-key-file \
-  --set-file secret.minioAccessKey.data=path-to-minio-access-key-file
+  --set-file secret.minioAccessKey.data=path-to-minio-access-key-file \
   --set-file secret.minioSecretKey.data=path-to-minio-secret-key-file
 ```
 
