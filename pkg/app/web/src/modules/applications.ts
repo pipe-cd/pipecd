@@ -8,7 +8,10 @@ import {
   ApplicationSyncStatus,
 } from "pipe/pkg/app/web/model/application_pb";
 import * as applicationsAPI from "../api/applications";
-import { ApplicationKind } from "pipe/pkg/app/web/model/common_pb";
+import {
+  ApplicationGitRepository,
+  ApplicationKind,
+} from "pipe/pkg/app/web/model/common_pb";
 import { fetchCommand, CommandStatus, CommandModel } from "./commands";
 import { AppState } from ".";
 
@@ -61,7 +64,7 @@ export const addApplication = createAsyncThunk<
     name: string;
     env: string;
     pipedId: string;
-    repoId: string;
+    repo: ApplicationGitRepository.AsObject;
     repoPath: string;
     configPath?: string;
     configFilename?: string;
@@ -74,11 +77,7 @@ export const addApplication = createAsyncThunk<
     envId: props.env,
     pipedId: props.pipedId,
     gitPath: {
-      repo: {
-        id: props.repoId,
-        remote: "",
-        branch: "",
-      },
+      repo: props.repo,
       path: props.repoPath,
       configPath: props.configPath || "",
       configFilename: props.configFilename || "",

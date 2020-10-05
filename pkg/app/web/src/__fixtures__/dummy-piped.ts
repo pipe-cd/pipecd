@@ -2,14 +2,25 @@ import { Piped, PipedModel } from "../modules/pipeds";
 import { dummyEnv } from "./dummy-environment";
 
 export const dummyPiped: Piped = {
-  cloudProvidersList: [],
+  cloudProvidersList: [
+    {
+      name: "kubernetes-default",
+      type: "KUBERNETES",
+    },
+  ],
   createdAt: 0,
   desc: "",
   disabled: false,
   id: "piped-1",
-  name: "demo piped",
+  name: "dummy piped",
   projectId: "project-1",
-  repositoriesList: [],
+  repositoriesList: [
+    {
+      id: "debug-repo",
+      remote: "git@github.com:pipe-cd/debug.git",
+      branch: "master",
+    },
+  ],
   startedAt: 0,
   updatedAt: 0,
   version: "v0.1",
