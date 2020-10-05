@@ -20,6 +20,8 @@ package imagewatcher
 import (
 	"context"
 	"time"
+
+	"go.uber.org/zap"
 )
 
 type Watcher interface {
@@ -27,14 +29,15 @@ type Watcher interface {
 }
 
 type watcher struct {
-	timer *time.Timer
+	timer  *time.Timer
+	logger *zap.Logger
 }
 
 type imageRepos map[string]imageRepo
 type imageRepo struct {
 }
 
-func NewWatcher(interval time.Duration) Watcher {
+func NewWatcher(interval time.Duration, logger *zap.Logger) Watcher {
 	return &watcher{
 		timer: time.NewTimer(interval),
 	}
@@ -46,22 +49,22 @@ func (w *watcher) Run(ctx context.Context) error {
 		case <-ctx.Done():
 			return nil
 		case <-w.timer.C:
-			reposInReg := w.fetchImageReposFromRegistry()
-			reposInGit := w.fetchImageReposFromGit()
+			reposInReg := w.fetchFromRegistry()
+			reposInGit := w.fetchFromGit()
 			outdated := calculateChanges(reposInReg, reposInGit)
 			if err := w.update(outdated); err != nil {
-				// FIXME: Emit log
+				w.logger.Error("failed to update image", zap.Error(err))
 			}
 		}
 	}
 	return nil
 }
 
-func (w *watcher) fetchImageReposFromRegistry() imageRepos {
+func (w *watcher) fetchFromRegistry() imageRepos {
 	return nil
 }
 
-func (w *watcher) fetchImageReposFromGit() imageRepos {
+func (w *watcher) fetchFromGit() imageRepos {
 	return nil
 }
 
