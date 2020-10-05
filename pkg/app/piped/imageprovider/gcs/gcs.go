@@ -12,6 +12,4 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-// Package containerregistry watches the configured container registry
-// for the new images.
-package containerregistry
+package gcs

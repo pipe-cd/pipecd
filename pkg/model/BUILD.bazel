@@ -76,7 +76,6 @@ go_test(
     data = glob(["testdata/**"]),
     embed = [":go_default_library"],
     deps = [
-        "//pkg/crypto:go_default_library",
         "@com_github_stretchr_testify//assert:go_default_library",
         "@org_golang_x_crypto//bcrypt:go_default_library",
     ],
