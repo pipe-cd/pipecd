@@ -1,4 +1,4 @@
-baseURL = "/"
+baseURL = "https://pipecd.dev"
 title = "PipeCD"
 
 enableRobotsTXT = true
