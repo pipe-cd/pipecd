@@ -37,14 +37,8 @@ require (
 	google.golang.org/grpc v1.31.1
 	google.golang.org/protobuf v1.25.0
 	istio.io/api v0.0.0-20200710191538-00b73d23c685
-	k8s.io/api v0.0.0-20200410021914-5778e4f3d00d
-	k8s.io/apimachinery v0.18.1
-	k8s.io/client-go v0.0.0-20200410022504-7b0589a2468d
+	k8s.io/api v0.18.9
+	k8s.io/apimachinery v0.18.9
+	k8s.io/client-go v0.18.9
 	sigs.k8s.io/yaml v1.2.0
-)
-
-replace (
-	k8s.io/api => k8s.io/api v0.0.0-20200410021914-5778e4f3d00d
-	k8s.io/apimachinery => k8s.io/apimachinery v0.0.0-20200410021338-ff54c5b023af
-	k8s.io/client-go => k8s.io/client-go v0.0.0-20200410022504-7b0589a2468d
 )
