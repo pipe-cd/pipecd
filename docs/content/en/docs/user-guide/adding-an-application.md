@@ -7,7 +7,7 @@ description: >
 ---
 
 An application is a collect of resources and configurations that are managed together.
-It represents the service which you are going to deploy. With PipeCD, all application's manifests and its deployment configuration (`.piped.yaml`) must be committed into a directory of a Git respository. That directory is called as application configuration directory.
+It represents the service which you are going to deploy. With PipeCD, all application's manifests and its deployment configuration (`.piped.yaml`) must be committed into a directory of a Git repository. That directory is called as application configuration directory.
 
 Before deploying an application, the application must be registered from the web UI and a deployment configuration file (`.piped.yaml`) must be committed to the application configuration directory.
 An application must belong to exactly one environment and can be handled by one of the registered `piped`s. Currently, PipeCD is supporting the following kinds of application:
