@@ -60,26 +60,26 @@ def go_repositories():
     go_repository(
         name = "com_github_azure_go_autorest_autorest",
         importpath = "github.com/Azure/go-autorest/autorest",
-        sum = "h1:5YWtOnckcudzIw8lPPBcWOnmIFWMtHci1ZWAZulMSx0=",
-        version = "v0.9.6",
+        sum = "h1:MRvx8gncNaXJqOoLmhNjUAKh33JJF8LyxPhomEtOsjs=",
+        version = "v0.9.0",
     )
     go_repository(
         name = "com_github_azure_go_autorest_autorest_adal",
         importpath = "github.com/Azure/go-autorest/autorest/adal",
-        sum = "h1:O1X4oexUxnZCaEUGsvMnr8ZGj8HI37tNezwY4npRqA0=",
-        version = "v0.8.2",
+        sum = "h1:q2gDruN08/guU9vAjuPWff0+QIrpH6ediguzdAzXAUU=",
+        version = "v0.5.0",
     )
     go_repository(
         name = "com_github_azure_go_autorest_autorest_date",
         importpath = "github.com/Azure/go-autorest/autorest/date",
-        sum = "h1:yW+Zlqf26583pE43KhfnhFcdmSWlm5Ew6bxipnr/tbM=",
-        version = "v0.2.0",
+        sum = "h1:YGrhWfrgtFs84+h0o46rJrlmsZtyZRg470CqAXTZaGM=",
+        version = "v0.1.0",
     )
     go_repository(
         name = "com_github_azure_go_autorest_autorest_mocks",
         importpath = "github.com/Azure/go-autorest/autorest/mocks",
-        sum = "h1:qJumjCaCudz+OcqE9/XtEPfvtOjOmKaui4EOpFI6zZc=",
-        version = "v0.3.0",
+        sum = "h1:Ww5g4zThfD/6cLb4z6xxgeyDa7QDkizMkJKe0ysZXp0=",
+        version = "v0.2.0",
     )
     go_repository(
         name = "com_github_azure_go_autorest_logger",
@@ -273,8 +273,8 @@ def go_repositories():
     go_repository(
         name = "com_github_evanphx_json_patch",
         importpath = "github.com/evanphx/json-patch",
-        sum = "h1:fUDGZCv/7iAN7u0puUVhvKCcsR6vRfwrJatElLBEf0I=",
-        version = "v4.2.0+incompatible",
+        sum = "h1:kLcOMZeuLAJvL2BPWLMIj5oaZQobrkAqrL+WFZwQses=",
+        version = "v4.9.0+incompatible",
     )
 
     go_repository(
@@ -300,8 +300,8 @@ def go_repositories():
     go_repository(
         name = "com_github_fsnotify_fsnotify",
         importpath = "github.com/fsnotify/fsnotify",
-        sum = "h1:hsms1Qyu0jgnwNXIxa+/V/PDsU6CfLf6CNO8H7IWoS4=",
-        version = "v1.4.9",
+        sum = "h1:IXs+QLmnXW2CcXuY+8Mzv/fWEsPGWxqefPtCP5CnV9I=",
+        version = "v1.4.7",
     )
     go_repository(
         name = "com_github_fsouza_fake_gcs_server",
@@ -659,8 +659,8 @@ def go_repositories():
     go_repository(
         name = "com_github_googleapis_gnostic",
         importpath = "github.com/googleapis/gnostic",
-        sum = "h1:DLJCy1n/vrD4HPjOvYcT8aYQXpPIzoRZONaYwyycI+I=",
-        version = "v0.4.1",
+        sum = "h1:rVsPeBmXbYv4If/cumu1AzZPwV58q433hvONV1UEZoI=",
+        version = "v0.1.0",
     )
     go_repository(
         name = "com_github_gophercloud_gophercloud",
@@ -880,8 +880,8 @@ def go_repositories():
     go_repository(
         name = "com_github_kr_pretty",
         importpath = "github.com/kr/pretty",
-        sum = "h1:s5hAObm+yFO5uHYt5dYjxi2rXrsnmRpJx4OYvIWUaQs=",
-        version = "v0.2.0",
+        sum = "h1:L/CwN0zerZDmRFUapSPitk6f+Q3+0za1rQkzVuMiMFI=",
+        version = "v0.1.0",
     )
     go_repository(
         name = "com_github_kr_pty",
@@ -1590,25 +1590,22 @@ def go_repositories():
         name = "io_k8s_api",
         build_file_proto_mode = "disable_global",
         importpath = "k8s.io/api",
-        replace = "k8s.io/api",
-        sum = "h1:L1TLh65PVIijaPjSlIAY9DVt7PKdqAS++7Lz7mTq3VQ=",
-        version = "v0.0.0-20200410021914-5778e4f3d00d",
+        sum = "h1:7VDtivqwbvLOf8hmXSd/PDSSbpCBq49MELg84EYBYiQ=",
+        version = "v0.18.9",
     )
     go_repository(
         name = "io_k8s_apimachinery",
         build_file_proto_mode = "disable_global",
         importpath = "k8s.io/apimachinery",
-        replace = "k8s.io/apimachinery",
-        sum = "h1:Sl186R6qq9yuhJzuY/KZUzWI4gJiKNx1lktHJI7zRmA=",
-        version = "v0.0.0-20200410021338-ff54c5b023af",
+        sum = "h1:3ZABKQx3F3xPWlsGhCfUl8W+JXRRblV6Wo2A3zn0pvY=",
+        version = "v0.18.9",
     )
     go_repository(
         name = "io_k8s_client_go",
         build_file_proto_mode = "disable_global",
         importpath = "k8s.io/client-go",
-        replace = "k8s.io/client-go",
-        sum = "h1:hPQuj8u4OPu40vvybpsfOXGNB8rCBlHUefkmyBvl51Y=",
-        version = "v0.0.0-20200410022504-7b0589a2468d",
+        sum = "h1:sPHX49yOtUqv1fl49TwV3f8cC0N3etSnwgFGsIsXnZc=",
+        version = "v0.18.9",
     )
     go_repository(
         name = "io_k8s_gengo",
@@ -1625,8 +1622,8 @@ def go_repositories():
     go_repository(
         name = "io_k8s_kube_openapi",
         importpath = "k8s.io/kube-openapi",
-        sum = "h1:FDWYFE3itI1G8UFOMjUuLbROZExo+Rrfm/Qaf473rm4=",
-        version = "v0.0.0-20200403204345-e1beb1bd0f35",
+        sum = "h1:Oh3Mzx5pJ+yIumsAD0MOECPVeXsVot0UkiaCGVyfGQY=",
+        version = "v0.0.0-20200410145947-61e04a5be9a6",
     )
 
     go_repository(
