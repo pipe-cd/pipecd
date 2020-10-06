@@ -28,8 +28,8 @@ cd manifests
 ``` console
 kubectl create namespace pipecd
 helm install pipecd ./manifests/pipecd \
-  --values ./quickstart/control-plane-values.yaml \
-  --namespace pipecd
+  --namespace pipecd \
+  --values ./quickstart/control-plane-values.yaml
 ```
 
 ### 3. Accessing the PipeCD web
@@ -79,9 +79,9 @@ You can complete the installation by running the following after replacing `YOUR
 
 ``` console
 helm install piped ./manifests/piped \
+  --namespace pipecd \
   --values ./quickstart/piped-values.yaml \
-  --set secret.pipedKey.data=YOUR_PIPED_SECRET_KEY \
-  --namespace pipecd
+  --set secret.pipedKey.data=YOUR_PIPED_SECRET_KEY
 ```
 
 ### 6. Configuring a kubernetes application
