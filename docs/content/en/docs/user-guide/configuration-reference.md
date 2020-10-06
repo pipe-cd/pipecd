@@ -24,7 +24,7 @@ spec:
 | quickSync | [KubernetesQuickSync](/docs/user-guide/configuration-reference/#kubernetesquicksync) | Configuration for quick sync. | No |
 | pipeline | [Pipeline](/docs/user-guide/configuration-reference/#pipeline) | Pipeline for deploying progressively. | No |
 | service | [KubernetesService](/docs/user-guide/configuration-reference/#kubernetesservice) | Which Kubernetes resource should be considered as the Service of application. Empty means the first Service resource will be used. | No |
-| workloads | [][KubernetesWorkload](/docs/user-guide/configuration-reference/#kubernetesworkload) | Which Kubernetes resources should be consiedered as the Workloads of application. Empty means all Deployment resources. | No |
+| workloads | [][KubernetesWorkload](/docs/user-guide/configuration-reference/#kubernetesworkload) | Which Kubernetes resources should be considered as the Workloads of application. Empty means all Deployment resources. | No |
 | trafficRouting | [KubernetesTrafficRouting](/docs/user-guide/configuration-reference/#kubernetestrafficrouting) | How to change traffic routing percentages. | No |
 
 ## Terraform application
@@ -178,7 +178,7 @@ spec:
 
 | Field | Type | Description | Required |
 |-|-|-|-|
-| method | string | Which traffic routing method will be used. Avaiable values are `istio`, `smi`, `podselector`. Default is `podselector`. | No |
+| method | string | Which traffic routing method will be used. Available values are `istio`, `smi`, `podselector`. Default is `podselector`. | No |
 | istio | [IstioTrafficRouting](/docs/user-guide/configuration-reference/#istiotrafficrouting)| Istio configuration when the method is `istio`. | No |
 
 ## IstioTrafficRouting
@@ -313,7 +313,7 @@ spec:
 
 | Field | Type | Description | Required |
 |-|-|-|-|
-| all | string | Which variant should receive all traffic. Avaiable values are "primary", "canary", "baseline". Default is `primary`. | No |
+| all | string | Which variant should receive all traffic. Available values are "primary", "canary", "baseline". Default is `primary`. | No |
 | primary | int | The percentage of traffic should be routed to PRIMARY variant. | No |
 | canary | int | The percentage of traffic should be routed to CANARY variant. | No |
 | baseline | int | The percentage of traffic should be routed to BASELINE variant. | No |

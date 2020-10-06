@@ -1,6 +1,6 @@
 ---
-title: "Architectual overview"
-linkTitle: "Architectual overview"
+title: "Architectural overview"
+linkTitle: "Architectural overview"
 weight: 3
 description: >
   This page describes the architecture of PipeCD.
