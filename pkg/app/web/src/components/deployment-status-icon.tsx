@@ -5,7 +5,7 @@ import {
   Error,
   IndeterminateCheckBox,
 } from "@material-ui/icons";
-import { DeploymentStatus } from "pipe/pkg/app/web/model/deployment_pb";
+import { DeploymentStatus } from "../modules/deployments";
 import React, { FC } from "react";
 import clsx from "clsx";
 
@@ -52,18 +52,41 @@ export const StatusIcon: FC<Props> = ({ status, className }) => {
 
   switch (status) {
     case DeploymentStatus.DEPLOYMENT_SUCCESS:
-      return <CheckCircle className={clsx(classes[status], className)} />;
+      return (
+        <CheckCircle
+          className={clsx(classes[status], className)}
+          data-testid="deployment-success-icon"
+        />
+      );
     case DeploymentStatus.DEPLOYMENT_FAILURE:
     case DeploymentStatus.DEPLOYMENT_CANCELLED:
-      return <Error className={clsx(classes[status], className)} />;
+      return (
+        <Error
+          className={clsx(classes[status], className)}
+          data-testid="deployment-error-icon"
+        />
+      );
     case DeploymentStatus.DEPLOYMENT_RUNNING:
-      return <Cached className={clsx(classes[status], className)} />;
+      return (
+        <Cached
+          className={clsx(classes[status], className)}
+          data-testid="deployment-running-icon"
+        />
+      );
     case DeploymentStatus.DEPLOYMENT_ROLLING_BACK:
-      return <Cached className={clsx(classes[status], className)} />;
+      return (
+        <Cached
+          className={clsx(classes[status], className)}
+          data-testid="deployment-rollback-icon"
+        />
+      );
     case DeploymentStatus.DEPLOYMENT_PENDING:
     case DeploymentStatus.DEPLOYMENT_PLANNED:
       return (
-        <IndeterminateCheckBox className={clsx(classes[status], className)} />
+        <IndeterminateCheckBox
+          className={clsx(classes[status], className)}
+          data-testid="deployment-pending-icon"
+        />
       );
   }
 };
