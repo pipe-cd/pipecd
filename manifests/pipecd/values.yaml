@@ -1,7 +1,6 @@
 # Service and ingress.
 service:
-  port: 443
-  internalPort: 8443
+  port: 80
 
 ingress:
   enabled: false
@@ -14,6 +13,8 @@ gateway:
   replicasCount: 1
   imageTag: v1.10.0
   resources: {}
+  internalTLS:
+    enabled: false
 
 api:
   replicasCount: 1
