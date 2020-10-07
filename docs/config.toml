@@ -56,13 +56,13 @@ id = "UA-178762762-1"
 [languages]
 [languages.en]
 title = "PipeCD"
-description = "Serverless CI and Pluggable Workflow Automations"
+description = "Continuous Delivery for Declarative Kubernetes, Serverless and Infrastructure Applications"
 languageName ="English"
 # Weight used for sorting.
 weight = 1
 [languages.ja]
 title = "PipeCD"
-description = "Serverless CI and Pluggable Workflow Automations"
+description = "Continuous Delivery for Declarative Kubernetes, Serverless and Infrastructure Applications"
 languageName ="日本語"
 contentDir = "content/ja"
 time_format_default = "2006年01月02日"
