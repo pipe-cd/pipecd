@@ -144,6 +144,7 @@ export const Header: FC = memo(function Header() {
           </Link>
           {me?.isLogin ? (
             <IconButton
+              aria-label="User Menu"
               aria-controls="user-menu"
               aria-haspopup="true"
               onClick={(e) => setAnchorEl(e.currentTarget)}

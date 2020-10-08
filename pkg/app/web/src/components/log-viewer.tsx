@@ -132,7 +132,7 @@ export const LogViewer: FC = memo(function LogViewer() {
         <div className={clsx("handle", classes.dividerWrapper)} />
       </Draggable>
 
-      <div className={classes.root}>
+      <div className={classes.root} data-testid="log-viewer">
         <Divider />
         <Toolbar variant="dense" className={classes.toolbar}>
           <div className={classes.toolbarLeft}>
