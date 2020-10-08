@@ -12,7 +12,7 @@ import {
   isDeploymentRunning,
   selectById as selectDeploymentById,
 } from "../../modules/deployments";
-import { useInterval } from "../../utils/use-interval";
+import { useInterval } from "../../hooks/use-interval";
 import { clearActiveStage } from "../../modules/active-stage";
 
 const FETCH_INTERVAL = 4000;
