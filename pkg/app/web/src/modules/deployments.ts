@@ -231,4 +231,7 @@ export const deploymentsSlice = createSlice({
   },
 });
 
-export { DeploymentStatus } from "pipe/pkg/app/web/model/deployment_pb";
+export {
+  DeploymentStatus,
+  StageStatus,
+} from "pipe/pkg/app/web/model/deployment_pb";

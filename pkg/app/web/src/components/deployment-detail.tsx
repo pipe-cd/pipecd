@@ -26,7 +26,7 @@ import {
 } from "../modules/environments";
 import { Piped, selectById } from "../modules/pipeds";
 import { fetchStageLog } from "../modules/stage-logs";
-import { useInterval } from "../utils/use-interval";
+import { useInterval } from "../hooks/use-interval";
 import { StatusIcon } from "./deployment-status-icon";
 import OpenInNewIcon from "@material-ui/icons/OpenInNew";
 import { DetailTableRow } from "./detail-table-row";

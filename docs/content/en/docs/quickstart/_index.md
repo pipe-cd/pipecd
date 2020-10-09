@@ -26,9 +26,7 @@ cd manifests
 ### 2. Installing control plane
 
 ``` console
-kubectl create namespace pipecd
-helm install pipecd ./manifests/pipecd \
-  --namespace pipecd \
+helm -n pipecd install pipecd ./manifests/pipecd --create-namespace \
   --values ./quickstart/control-plane-values.yaml
 ```
 
@@ -78,8 +76,7 @@ Open [`./quickstart/piped-values.yaml`](https://github.com/pipe-cd/manifests/blo
 You can complete the installation by running the following after replacing `YOUR_PIPED_SECRET_KEY` with what you just got:
 
 ``` console
-helm install piped ./manifests/piped \
-  --namespace pipecd \
+helm -n pipecd install piped ./manifests/piped \
   --values ./quickstart/piped-values.yaml \
   --set secret.pipedKey.data=YOUR_PIPED_SECRET_KEY
 ```
@@ -110,8 +107,8 @@ After a short wait, a new deployment will be started to update to `v0.2.0`.
 When you’re finished experimenting with PipeCD, you can uninstall with:
 
 ``` console
-helm uninstall piped -n pipecd
-helm uninstall pipecd -n pipecd
+helm -n pipecd uninstall piped
+helm -n pipecd uninstall pipecd
 kubectl delete deploy canary -n pipecd
 kubectl delete svc canary -n pipecd
 ```

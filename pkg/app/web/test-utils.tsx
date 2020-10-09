@@ -39,7 +39,7 @@ const customRender = (
     ...renderOptions
   }: {
     initialState?: DeepPartial<AppState>;
-    store?: Store<any, AnyAction>;
+    store?: Store<AppState, AnyAction>;
   } & Omit<RenderOptions, "queries">
 ): RenderResult => {
   const Wrapper: React.ComponentType = ({ children }) => (

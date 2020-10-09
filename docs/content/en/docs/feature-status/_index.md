@@ -79,6 +79,7 @@ Please note that the phases (Incubating, Alpha, Beta, and Stable) are applied to
 | [Notification](/docs/operator-manual/piped/configuring-notifications/) to Slack | Beta |
 | [Notification](/docs/operator-manual/piped/configuring-notifications/) to Webhook | Incubating |
 | [Image Watcher](/docs/user-guide/image-watcher/) | Incubating |
+| Secrets Management | Incubating |
 
 ### ControlPlane's Core
 

@@ -5,7 +5,7 @@ import { ApplicationDetail } from "../../components/application-detail";
 import { ApplicationStateView } from "../../components/application-state-view";
 import { fetchApplication } from "../../modules/applications";
 import { fetchApplicationStateById } from "../../modules/applications-live-state";
-import { useInterval } from "../../utils/use-interval";
+import { useInterval } from "../../hooks/use-interval";
 import { addToast } from "../../modules/toasts";
 import { AppDispatch } from "../../store";
 
