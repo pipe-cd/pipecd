@@ -21,3 +21,25 @@ Currently, PipeCD is supporting `Helm` and `Kustomize` as templating method for 
 ### 3. Istio is supported now?
 
 Yes, you can use PipeCD for both mesh (Istio, SMI) applications and non-mesh applications.
+
+### 4. What are the differences between PipeCD and FluxCD?
+
+- Not just Kubernetes applications, PipeCD also provides a unified interface for other cloud services (CloudRun, AWS Lamda...) and Terraform
+- Supports multiple Git repositories
+- Has UI for better visibility
+    - Log viewer for each deployment
+    - Visualization of application component/state in realtime
+    - Show configuration drift in realtime
+- Also supports Canary and BlueGreen for non-mesh applications
+- Has built-in secrets management
+- Supports gradual rollout of a single app to multiple clusters
+- Shows the delivery performance  insights
+
+### 5. What are the differences between PipeCD and ArgoCD?
+
+- Not just Kubernetes applications, PipeCD also provides a unified interface for other cloud services (CloudRun, AWS Lamda...) and Terraform
+- Don't need another CRD or changing the existing manifests for doing Canary/BlueGreen. PipeCD just uses the standard Kubernetes deployment object
+- Easier to operate multi-tenancy, multi-cluster for multiple teams (even some teams are running in a private/restricted network)
+- Has built-in secrets management
+- Supports gradual rollout of a single app to multiple clusters
+- Shows the delivery performance  insights
