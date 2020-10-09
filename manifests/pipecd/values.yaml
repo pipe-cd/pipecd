@@ -1,6 +1,8 @@
 # Service and ingress.
 service:
-  port: 80
+  port: 8080
+  internalPort:
+  type: "NodePort"
 
 ingress:
   enabled: false
@@ -22,7 +24,7 @@ api:
     cacheAddress: ""
     useFakeResponse: false
     enableGRPCReflection: true
-    insecureCookie: false
+    secureCookie: false
   resources: {}
 
 web:
