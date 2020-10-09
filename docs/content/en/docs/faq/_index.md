@@ -39,7 +39,7 @@ Yes, you can use PipeCD for both mesh (Istio, SMI) applications and non-mesh app
 
 - Not just Kubernetes applications, PipeCD also provides a unified interface for other cloud services (CloudRun, AWS Lamda...) and Terraform
 - Don't need another CRD or changing the existing manifests for doing Canary/BlueGreen. PipeCD just uses the standard Kubernetes deployment object
-- Easier to operate multi-tenancy, multi-cluster for multiple teams (even some teams are running in a private/restricted network)
+- Easier and safer to operate multi-tenancy, multi-cluster for multiple teams (even some teams are running in a private/restricted network)
 - Has built-in secrets management
 - Supports gradual rollout of a single app to multiple clusters
 - Shows the delivery performance  insights
