@@ -26,7 +26,7 @@ Yes, you can use PipeCD for both mesh (Istio, SMI) applications and non-mesh app
 
 - Not just Kubernetes applications, PipeCD also provides a unified interface for other cloud services (CloudRun, AWS Lamda...) and Terraform
 - Supports multiple Git repositories
-- Has UI for better visibility
+- Has web UI for better visibility
     - Log viewer for each deployment
     - Visualization of application component/state in realtime
     - Show configuration drift in realtime
