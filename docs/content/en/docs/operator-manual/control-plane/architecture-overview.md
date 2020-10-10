@@ -25,9 +25,9 @@ The control plane is a centralized part of PipeCD. It contains several services 
 
 `cache` is a single pod service for caching internal data used by `api` service. Currently, this `cache` service is using the `redis` docker image. You can configure the control plane to use a fully-managed redis cache service instead of launching a cache pod in your cluster.
 
-##### Operator
+##### Ops
 
-`operator` is a single pod service for operating PipeCD owner's tasks.
+`ops` is a single pod service for operating PipeCD owner's tasks.
 For example, it provides an internal web page for adding and managing projects; it periodically removes the old data; it collects and saves the deployment insights.
 
 ##### Data Store

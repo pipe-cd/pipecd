@@ -17,13 +17,13 @@ package main
 import (
 	"log"
 
-	"github.com/pipe-cd/pipe/pkg/app/operator/cmd/server"
+	"github.com/pipe-cd/pipe/pkg/app/ops/cmd/server"
 	"github.com/pipe-cd/pipe/pkg/cli"
 )
 
 func main() {
 	app := cli.NewApp(
-		"operator",
+		"ops",
 		"A single component for operating owner tasks such as adding new project, deleting old data.",
 	)
 	app.AddCommands(
