@@ -4,23 +4,23 @@ load("//bazel:image.bzl", "app_image")
 go_library(
     name = "go_default_library",
     srcs = ["main.go"],
-    importpath = "github.com/pipe-cd/pipe/cmd/operator",
+    importpath = "github.com/pipe-cd/pipe/cmd/ops",
     visibility = ["//visibility:private"],
     deps = [
-        "//pkg/app/operator/cmd/server:go_default_library",
+        "//pkg/app/ops/cmd/server:go_default_library",
         "//pkg/cli:go_default_library",
     ],
 )
 
 go_binary(
-    name = "operator",
+    name = "ops",
     embed = [":go_default_library"],
     visibility = ["//visibility:public"],
 )
 
 app_image(
-    name = "operator",
-    binary = ":operator",
-    repository = "operator",
+    name = "ops",
+    binary = ":ops",
+    repository = "ops",
     visibility = ["//visibility:public"],
 )

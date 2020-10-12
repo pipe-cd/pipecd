@@ -26,7 +26,7 @@ import (
 	"golang.org/x/sync/errgroup"
 
 	"github.com/pipe-cd/pipe/pkg/admin"
-	"github.com/pipe-cd/pipe/pkg/app/operator/handler"
+	"github.com/pipe-cd/pipe/pkg/app/ops/handler"
 	"github.com/pipe-cd/pipe/pkg/cli"
 	"github.com/pipe-cd/pipe/pkg/config"
 	"github.com/pipe-cd/pipe/pkg/datastore"
@@ -51,7 +51,7 @@ func NewCommand() *cobra.Command {
 	}
 	cmd := &cobra.Command{
 		Use:   "server",
-		Short: "Start running operator server.",
+		Short: "Start running ops server.",
 		RunE:  cli.WithContext(s.run),
 	}
 	cmd.Flags().IntVar(&s.httpPort, "http-port", s.httpPort, "The port number used to run http server.")

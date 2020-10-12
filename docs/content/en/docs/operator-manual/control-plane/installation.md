@@ -117,7 +117,7 @@ If your installation was including an [ingress](https://github.com/pipe-cd/manif
 Otherwise, private PipeCD web can be accessed by using `kubectl port-forward` to expose the installed control-plane on your localhost:
 
 ``` console
-kubectl port-forward svc/pipecd 8080
+kubectl port-forward svc/pipecd 8080 --namespace=NAMESPACE
 ```
 
 Now go to [http://localhost:8080](http://localhost:8080) on your browser, you will see a page to login to your project. But before logging in, you need to initialize a new project by following the [next section](/docs/operator-manual/control-plane/adding-a-project/).
