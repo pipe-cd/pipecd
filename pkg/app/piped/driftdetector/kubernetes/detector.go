@@ -390,7 +390,7 @@ func makeSyncedState() model.ApplicationSyncState {
 
 func makeOutOfSyncState(adds, deletes []provider.Manifest, changes map[provider.Manifest]*diff.Result, commit string) model.ApplicationSyncState {
 	total := len(adds) + len(deletes) + len(changes)
-	shortReason := fmt.Sprintf("There are %d manifests are not synced (%d adds, %d deletes, %d changes)", total, len(adds), len(deletes), len(changes))
+	shortReason := fmt.Sprintf("There are %d manifests not synced (%d adds, %d deletes, %d changes)", total, len(adds), len(deletes), len(changes))
 
 	var b strings.Builder
 	if len(commit) >= 7 {
