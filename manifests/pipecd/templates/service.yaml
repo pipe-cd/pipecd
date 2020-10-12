@@ -13,14 +13,16 @@ metadata:
     beta.cloud.google.com/backend-config: '{"ports": {"internal-service": "{{ include "pipecd.fullname" . }}" }}'
   {{- end }}
 spec:
-  type: NodePort
+  type: {{ .Values.service.type }}
   ports:
     - name: service
       port: {{ .Values.service.port }}
       targetPort: ingress
+    {{- if .Values.service.internalPort }}
     - name: internal-service
       port: {{ .Values.service.internalPort }}
       targetPort: ingress
+    {{- end }}
   selector:
     {{- include "pipecd.selectorLabels" . | nindent 4 }}
     app.kubernetes.io/component: gateway

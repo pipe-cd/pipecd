@@ -80,7 +80,7 @@ data:
                         prefix: /
                       route:
                         cluster: web
-{{- if .Values.ingress.enabled }}
+{{- if .Values.gateway.internalTLS.enabled }}
           tls_context:
             common_tls_context:
               tls_certificates:

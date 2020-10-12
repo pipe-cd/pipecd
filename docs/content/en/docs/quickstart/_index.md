@@ -35,7 +35,7 @@ PipeCD comes with an embedded web-based UI.
 First up, using kubectl port-forward to expose the installed control-plane on your localhost:
 
 ``` console
-kubectl -n pipecd port-forward svc/pipecd 8080:443
+kubectl -n pipecd port-forward svc/pipecd 8080
 ```
 
 Point your web browser to [http://localhost:8080](http://localhost:8080) to login with the configured static admin account.

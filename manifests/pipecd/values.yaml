@@ -1,7 +1,8 @@
 # Service and ingress.
 service:
-  port: 443
-  internalPort: 8443
+  port: 8080
+  internalPort:
+  type: "NodePort"
 
 ingress:
   enabled: false
@@ -14,6 +15,8 @@ gateway:
   replicasCount: 1
   imageTag: v1.10.0
   resources: {}
+  internalTLS:
+    enabled: false
 
 api:
   replicasCount: 1
@@ -21,7 +24,7 @@ api:
     cacheAddress: ""
     useFakeResponse: false
     enableGRPCReflection: true
-    insecureCookie: false
+    secureCookie: false
   resources: {}
 
 web:
