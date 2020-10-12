@@ -44,7 +44,7 @@ spec:
         type: PROJECT
 
   - name: publish-piped-darwin
-    timeout: 15m
+    timeout: 30m
     machine:
       resource: medium
     skipBranches:
