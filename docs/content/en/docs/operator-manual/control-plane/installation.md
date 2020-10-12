@@ -143,7 +143,7 @@ This part provides guidance for a production hardened deployment of the control 
 
     To enable internal tls connection, please set the `gateway.internalTLS.enabled` parameter to be `true`.
 
-    In the case of GKE Service, you should add `cloud.google.com/app-protocols` annotiaion and the result service section in values.yaml will be like as follows:
+    Otherwise, the `cloud.google.com/app-protocols` annotation is also should be configured as the following:
 
     ``` yaml
     service:
