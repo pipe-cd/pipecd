@@ -3,11 +3,11 @@ load("@io_bazel_rules_go//go:def.bzl", "go_library")
 go_library(
     name = "go_default_library",
     srcs = ["server.go"],
-    importpath = "github.com/pipe-cd/pipe/pkg/app/operator/cmd/server",
+    importpath = "github.com/pipe-cd/pipe/pkg/app/ops/cmd/server",
     visibility = ["//visibility:public"],
     deps = [
         "//pkg/admin:go_default_library",
-        "//pkg/app/operator/handler:go_default_library",
+        "//pkg/app/ops/handler:go_default_library",
         "//pkg/cli:go_default_library",
         "//pkg/config:go_default_library",
         "//pkg/datastore:go_default_library",
