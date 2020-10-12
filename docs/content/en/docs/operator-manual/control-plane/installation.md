@@ -147,7 +147,7 @@ This part provides guidance for a production hardened deployment of the control 
 
     ``` yaml
     service:
-    port: 443
-    annotations:
-      cloud.google.com/app-protocols: '{"service":"HTTP2"}'
+      port: 443
+      annotations:
+        cloud.google.com/app-protocols: '{"service":"HTTP2"}'
     ```
