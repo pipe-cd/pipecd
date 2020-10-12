@@ -227,29 +227,29 @@ spec:
 {{- end }}
 
 ---
-# Single operator pod.
+# Single ops pod.
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  name: {{ include "pipecd.fullname" . }}-operator
+  name: {{ include "pipecd.fullname" . }}-ops
   labels:
     {{- include "pipecd.labels" . | nindent 4 }}
-    app.kubernetes.io/component: operator
+    app.kubernetes.io/component: ops
 spec:
   replicas: 1
   selector:
     matchLabels:
       {{- include "pipecd.selectorLabels" . | nindent 6 }}
-      app.kubernetes.io/component: operator
+      app.kubernetes.io/component: ops
   template:
     metadata:
       labels:
         {{- include "pipecd.selectorLabels" . | nindent 8 }}
-        app.kubernetes.io/component: operator
+        app.kubernetes.io/component: ops
     spec:
       containers:
-        - name: operator
-          image: "gcr.io/pipecd/operator:{{ .Chart.AppVersion }}"
+        - name: ops
+          image: "gcr.io/pipecd/ops:{{ .Chart.AppVersion }}"
           imagePullPolicy: IfNotPresent
           args:
           - server
@@ -285,9 +285,9 @@ spec:
         - name: pipecd-config
           configMap:
             name: {{ include "pipecd.configMapName" . }}
-{{- if .Values.operator.resources }}
+{{- if .Values.ops.resources }}
           resources:
-            {{- toYaml .Values.operator.resources | nindent 12 }}
+            {{- toYaml .Values.ops.resources | nindent 12 }}
 {{- end }}
 
 {{- if .Values.quickstart}}

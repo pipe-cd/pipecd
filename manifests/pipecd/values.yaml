@@ -36,7 +36,7 @@ cache:
   password: ""
   resources: {}
 
-operator:
+ops:
   resources: {}
 
 mongodb:
