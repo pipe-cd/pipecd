@@ -142,3 +142,12 @@ This part provides guidance for a production hardened deployment of the control 
     Those key and cert can be configured via [`secret.internalTLSKey.data`](https://github.com/pipe-cd/manifests/blob/master/manifests/pipecd/values.yaml#L83) and [`secret.internalTLSCert.data`](https://github.com/pipe-cd/manifests/blob/master/manifests/pipecd/values.yaml#L86).
 
     To enable internal tls connection, please set the `gateway.internalTLS.enabled` parameter to be `true`.
+
+    In the case of GKE Service, you should add `cloud.google.com/app-protocols` annotiaion and the result service section in values.yaml will be like as follows:
+
+    ``` yaml
+    service:
+    port: 443
+    annotations:
+      cloud.google.com/app-protocols: '{"service":"HTTP2"}'
+    ```
