@@ -117,10 +117,10 @@ spec:
 apiVersion: v1
 kind: Service
 metadata:
-  name: {{ include "pipecd.fullname" . }}-operator
+  name: {{ include "pipecd.fullname" . }}-ops
   labels:
     {{- include "pipecd.labels" . | nindent 4 }}
-    app.kubernetes.io/component: operator
+    app.kubernetes.io/component: ops
 spec:
   type: ClusterIP
   clusterIP: None
@@ -133,7 +133,7 @@ spec:
       targetPort: admin
   selector:
     {{- include "pipecd.selectorLabels" . | nindent 4 }}
-    app.kubernetes.io/component: operator
+    app.kubernetes.io/component: ops
 
 {{- if .Values.quickstart}}
 ---
