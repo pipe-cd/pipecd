@@ -196,6 +196,12 @@ func (s *server) run(ctx context.Context, t cli.Telemetry) error {
 		})
 	}
 
+	encryptDecrypter, err := crypto.NewAESEncryptDecrypter(s.encryptionKeyFile)
+	if err != nil {
+		t.Logger.Error("failed to create a new AES EncryptDecrypter", zap.Error(err))
+		return err
+	}
+
 	// Start a gRPC server for handling WebAPI requests.
 	{
 		verifier, err := jwt.NewVerifier(defaultSigningMethod, s.encryptionKeyFile)
@@ -204,17 +210,11 @@ func (s *server) run(ctx context.Context, t cli.Telemetry) error {
 			return err
 		}
 
-		encrypter, err := crypto.NewEncrypter(s.encryptionKeyFile)
-		if err != nil {
-			t.Logger.Error("failed to create a new encrypter", zap.Error(err))
-			return err
-		}
-
 		var service rpc.Service
 		if s.useFakeResponse {
 			service = api.NewFakeWebAPI()
 		} else {
-			service = api.NewWebAPI(ds, sls, alss, cmds, cfg.ProjectMap(), encrypter, t.Logger)
+			service = api.NewWebAPI(ds, sls, alss, cmds, cfg.ProjectMap(), encryptDecrypter, t.Logger)
 		}
 		opts := []rpc.Option{
 			rpc.WithPort(s.webAPIPort),
@@ -244,12 +244,6 @@ func (s *server) run(ctx context.Context, t cli.Telemetry) error {
 			return err
 		}
 
-		decrypter, err := crypto.NewDecrypter(s.encryptionKeyFile)
-		if err != nil {
-			t.Logger.Error("failed to create a new decrypter", zap.Error(err))
-			return err
-		}
-
 		mux := http.NewServeMux()
 		httpServer := &http.Server{
 			Addr:    fmt.Sprintf(":%d", s.httpPort),
@@ -259,7 +253,7 @@ func (s *server) run(ctx context.Context, t cli.Telemetry) error {
 		handlers := []httpHandler{
 			authhandler.NewHandler(
 				signer,
-				decrypter,
+				encryptDecrypter,
 				cfg.Address,
 				cfg.StateKey,
 				cfg.ProjectMap(),
