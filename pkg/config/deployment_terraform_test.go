@@ -23,7 +23,7 @@ import (
 	"github.com/pipe-cd/pipe/pkg/model"
 )
 
-func TestAppConfig(t *testing.T) {
+func TestTerraformDeploymentConfig(t *testing.T) {
 	testcases := []struct {
 		fileName           string
 		expectedKind       Kind
@@ -48,6 +48,26 @@ func TestAppConfig(t *testing.T) {
 				Input: TerraformDeploymentInput{
 					Workspace:        "dev",
 					TerraformVersion: "0.12.23",
+				},
+				Pipeline: nil,
+			},
+			expectedError: nil,
+		},
+		{
+			fileName:           "testdata/application/terraform-app-sealed-secret.yaml",
+			expectedKind:       KindTerraformApp,
+			expectedAPIVersion: "pipecd.dev/v1beta1",
+			expectedSpec: &TerraformDeploymentSpec{
+				Input: TerraformDeploymentInput{
+					Workspace:        "dev",
+					TerraformVersion: "0.12.23",
+					SealedSecrets: []InputSealedSecret{
+						InputSealedSecret{
+							Path:        "sealed-service-account.yaml",
+							OutDir:      ".terraform-credentials",
+							OutFilename: "service-account.yaml",
+						},
+					},
 				},
 				Pipeline: nil,
 			},
@@ -83,85 +103,6 @@ func TestAppConfig(t *testing.T) {
 			},
 			expectedError: nil,
 		},
-		{
-			fileName:           "testdata/application/k8s-app-bluegreen.yaml",
-			expectedKind:       KindKubernetesApp,
-			expectedAPIVersion: "pipecd.dev/v1beta1",
-			expectedSpec: &KubernetesDeploymentSpec{
-				Input: KubernetesDeploymentInput{AutoRollback: true},
-				Pipeline: &DeploymentPipeline{
-					Stages: []PipelineStage{
-						{
-							Name: model.StageK8sCanaryRollout,
-							K8sCanaryRolloutStageOptions: &K8sCanaryRolloutStageOptions{
-								Replicas: Replicas{
-									Number:       100,
-									IsPercentage: true,
-								},
-							},
-						},
-						{
-							Name: model.StageK8sTrafficRouting,
-							K8sTrafficRoutingStageOptions: &K8sTrafficRoutingStageOptions{
-								Canary: 100,
-							},
-						},
-						{
-							Name:                          model.StageK8sPrimaryRollout,
-							K8sPrimaryRolloutStageOptions: &K8sPrimaryRolloutStageOptions{},
-						},
-						{
-							Name: model.StageK8sTrafficRouting,
-							K8sTrafficRoutingStageOptions: &K8sTrafficRoutingStageOptions{
-								Primary: 100,
-							},
-						},
-						{
-							Name:                       model.StageK8sCanaryClean,
-							K8sCanaryCleanStageOptions: &K8sCanaryCleanStageOptions{},
-						},
-					},
-				},
-				TrafficRouting: &KubernetesTrafficRouting{
-					Method: KubernetesTrafficRoutingMethodPodSelector,
-				},
-			},
-			expectedError: nil,
-		},
-		// {
-		// 	fileName:           "testdata/application/k8s-app-canary.yaml",
-		// 	expectedKind:       KindKubernetesApp,
-		// 	expectedAPIVersion: "pipecd.dev/v1beta1",
-		// 	expectedSpec: &K8sAppSpec{
-		// 		Pipeline: &DeploymentPipeline{
-		// 			Stages: []PipelineStage{
-		// 				PipelineStage{
-		// 					Name: StageK8sCanaryOut,
-		// 					K8sCanaryOutStageOptions: &K8sCanaryOutStageOptions{
-		// 						Weight: 10,
-		// 					},
-		// 					Timeout:   Duration(10 * time.Minute),
-		// 					PostDelay: Duration(time.Minute),
-		// 				},
-		// 				PipelineStage{
-		// 					Name: StageWaitApproval,
-		// 					ApprovalStageOptions: &ApprovalStageOptions{
-		// 						Approvers: []string{"foo", "bar"},
-		// 					},
-		// 				},
-		// 				PipelineStage{
-		// 					Name:                   StageK8sRollout,
-		// 					K8sRolloutStageOptions: &K8sRolloutStageOptions{},
-		// 				},
-		// 				PipelineStage{
-		// 					Name:                    StageK8sCanaryIn,
-		// 					K8sCanaryInStageOptions: &K8sCanaryInStageOptions{},
-		// 				},
-		// 			},
-		// 		},
-		// 	},
-		// 	expectedError: nil,
-		// },
 	}
 	for _, tc := range testcases {
 		t.Run(tc.fileName, func(t *testing.T) {

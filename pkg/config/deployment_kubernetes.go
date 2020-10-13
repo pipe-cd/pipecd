@@ -75,6 +75,9 @@ type KubernetesDeploymentInput struct {
 
 	// The namespace where manifests will be applied.
 	Namespace string `json:"namespace"`
+	// The list of sealed secrets that should be decrypted.
+	SealedSecrets []InputSealedSecret `json:"sealedSecrets"`
+
 	// Automatically reverts all deployment changes on failure.
 	// Default is true.
 	AutoRollback bool `json:"autoRollback"`

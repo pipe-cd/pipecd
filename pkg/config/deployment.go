@@ -247,3 +247,14 @@ type ImageWatcherTargetPath struct {
 	Filename string `json:"filename"`
 	Field    string `json:"field"`
 }
+
+type InputSealedSecret struct {
+	// Relative path from the application configuration directory to sealed secret file.
+	Path string `json:"path"`
+	// The filename for the decrypted secret.
+	// Empty means the same name with the sealed secret file.
+	OutFilename string `json:"outFilename"`
+	// The directory name where to put the decrypted secret.
+	// Empty means the same directory with the sealed secret file.
+	OutDir string `json:"outDir"`
+}

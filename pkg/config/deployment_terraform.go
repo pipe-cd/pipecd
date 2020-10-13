@@ -54,6 +54,8 @@ type TerraformDeploymentInput struct {
 	Vars []string `json:"vars,omitempty"`
 	// List of variable files that will be set on terraform commands with "-var-file" flag.
 	VarFiles []string `json:"varFiles,omitempty"`
+	// The list of sealed secrets that should be decrypted.
+	SealedSecrets []InputSealedSecret `json:"sealedSecrets"`
 	// Automatically reverts all changes from all stages when one of them failed.
 	// Default is false.
 	AutoRollback bool `json:"autoRollback"`
