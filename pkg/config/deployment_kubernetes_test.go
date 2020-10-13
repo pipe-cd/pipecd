@@ -23,7 +23,7 @@ import (
 	"github.com/pipe-cd/pipe/pkg/model"
 )
 
-func TestAppConfig(t *testing.T) {
+func TestKubernetesDeploymentConfig(t *testing.T) {
 	testcases := []struct {
 		fileName           string
 		expectedKind       Kind
@@ -31,58 +31,6 @@ func TestAppConfig(t *testing.T) {
 		expectedSpec       interface{}
 		expectedError      error
 	}{
-		{
-			fileName:           "testdata/application/terraform-app-empty.yaml",
-			expectedKind:       KindTerraformApp,
-			expectedAPIVersion: "pipecd.dev/v1beta1",
-			expectedSpec: &TerraformDeploymentSpec{
-				Input: TerraformDeploymentInput{},
-			},
-			expectedError: nil,
-		},
-		{
-			fileName:           "testdata/application/terraform-app.yaml",
-			expectedKind:       KindTerraformApp,
-			expectedAPIVersion: "pipecd.dev/v1beta1",
-			expectedSpec: &TerraformDeploymentSpec{
-				Input: TerraformDeploymentInput{
-					Workspace:        "dev",
-					TerraformVersion: "0.12.23",
-				},
-				Pipeline: nil,
-			},
-			expectedError: nil,
-		},
-		{
-			fileName:           "testdata/application/terraform-app-with-approval.yaml",
-			expectedKind:       KindTerraformApp,
-			expectedAPIVersion: "pipecd.dev/v1beta1",
-			expectedSpec: &TerraformDeploymentSpec{
-				Input: TerraformDeploymentInput{
-					Workspace:        "dev",
-					TerraformVersion: "0.12.23",
-				},
-				Pipeline: &DeploymentPipeline{
-					Stages: []PipelineStage{
-						{
-							Name:                      model.StageTerraformPlan,
-							TerraformPlanStageOptions: &TerraformPlanStageOptions{},
-						},
-						{
-							Name: model.StageWaitApproval,
-							WaitApprovalStageOptions: &WaitApprovalStageOptions{
-								Approvers: []string{"foo", "bar"},
-							},
-						},
-						{
-							Name:                       model.StageTerraformApply,
-							TerraformApplyStageOptions: &TerraformApplyStageOptions{},
-						},
-					},
-				},
-			},
-			expectedError: nil,
-		},
 		{
 			fileName:           "testdata/application/k8s-app-bluegreen.yaml",
 			expectedKind:       KindKubernetesApp,

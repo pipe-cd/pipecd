@@ -46,6 +46,8 @@ const (
 	KindLambdaApp Kind = "LambdaApp"
 	// KindCloudRunApp represents deployment configuration for a CloudRun application.
 	KindCloudRunApp Kind = "CloudRunApp"
+	// KindSealedSecret represents a sealed secret.
+	KindSealedSecret Kind = "SealedSecret"
 )
 
 const (
@@ -76,6 +78,8 @@ type Config struct {
 	PipedSpec            *PipedSpec
 	ControlPlaneSpec     *ControlPlaneSpec
 	AnalysisTemplateSpec *AnalysisTemplateSpec
+
+	SealedSecretSpec *SealedSecretSpec
 }
 
 type genericConfig struct {
@@ -128,6 +132,10 @@ func (c *Config) init(kind Kind, apiVersion string) error {
 	case KindAnalysisTemplate:
 		c.AnalysisTemplateSpec = &AnalysisTemplateSpec{}
 		c.spec = c.AnalysisTemplateSpec
+
+	case KindSealedSecret:
+		c.SealedSecretSpec = &SealedSecretSpec{}
+		c.spec = c.SealedSecretSpec
 
 	default:
 		return fmt.Errorf("unsupported kind: %s", c.Kind)

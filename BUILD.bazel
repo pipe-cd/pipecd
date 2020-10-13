@@ -35,6 +35,7 @@ buildifier(
 
 genrule(
     name = "copy_piped",
+    # keep
     srcs = ["//cmd/piped:piped"],
     outs = ["piped"],
     cmd = "cp $< $@",
