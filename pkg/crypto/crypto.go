@@ -14,26 +14,15 @@
 
 package crypto
 
-import (
-	"testing"
-
-	"github.com/stretchr/testify/assert"
-	"github.com/stretchr/testify/require"
-)
-
-func TestEncrypt(t *testing.T) {
-	text := "foo-bar-baz"
-	e, err := NewEncrypter("testdata/key")
-	require.NoError(t, err)
-	require.NotNil(t, e)
-
-	encryptedText, err := e.Encrypt(text)
-	require.NoError(t, err)
-	require.True(t, len(encryptedText) > 0)
+type Encrypter interface {
+	Encrypt(text string) (string, error)
 }
 
-func TestNewEncrypterInvalidKey(t *testing.T) {
-	e, err := NewDecrypter("testdata/short-key")
-	assert.Nil(t, e)
-	assert.Equal(t, "key size (9) must be greater than or equal to 32", err.Error())
+type Decrypter interface {
+	Decrypt(encryptedText string) (string, error)
+}
+
+type EncryptDecrypter interface {
+	Encrypter
+	Decrypter
 }

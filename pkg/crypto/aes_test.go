@@ -21,28 +21,24 @@ import (
 	"github.com/stretchr/testify/require"
 )
 
-func TestDecrypt(t *testing.T) {
-	text := "foo-bar-baz"
-
-	e, err := NewEncrypter("testdata/key")
-	require.NoError(t, err)
-	require.NotNil(t, e)
-
-	encryptedText, err := e.Encrypt(text)
-	require.NoError(t, err)
-	require.True(t, len(encryptedText) > 0)
-
-	d, err := NewDecrypter("testdata/key")
-	require.NoError(t, err)
-	require.NotNil(t, d)
-
-	decrepted, err := d.Decrypt(encryptedText)
-	require.NoError(t, err)
-	require.Equal(t, text, decrepted)
+func TestNewAESEncryptDecrypterInvalidKey(t *testing.T) {
+	ed, err := NewAESEncryptDecrypter("testdata/short-key")
+	assert.Nil(t, ed)
+	assert.Equal(t, "key size (9) must be greater than or equal to 32", err.Error())
 }
 
-func TestNewDecrypterInvalidKey(t *testing.T) {
-	e, err := NewEncrypter("testdata/short-key")
-	assert.Nil(t, e)
-	assert.Equal(t, "key size (9) must be greater than or equal to 32", err.Error())
+func TestAESEncryptDecrypt(t *testing.T) {
+	text := "foo-bar-baz"
+
+	ed, err := NewAESEncryptDecrypter("testdata/key")
+	require.NoError(t, err)
+	require.NotNil(t, ed)
+
+	encryptedText, err := ed.Encrypt(text)
+	require.NoError(t, err)
+	assert.True(t, len(encryptedText) > 0)
+
+	decrypted, err := ed.Decrypt(encryptedText)
+	require.NoError(t, err)
+	assert.Equal(t, text, decrypted)
 }

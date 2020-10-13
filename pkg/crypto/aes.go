@@ -23,35 +23,28 @@ import (
 	"io/ioutil"
 )
 
-// Encrypter is a interface to encrypt data.
-type Encrypter interface {
-	Encrypt(text string) (string, error)
-}
-
-type encrypter struct {
+type AESEncryptDecrypter struct {
 	key []byte
 }
 
-const (
-	aes256size = 32
-)
+const aesKeySize = 32
 
-// NewEncrypter returns a new encrypter.
-func NewEncrypter(keyFile string) (Encrypter, error) {
+// NewAESEncryptDecrypter reads the specified key file and returns an AES EncryptDecrypter.
+func NewAESEncryptDecrypter(keyFile string) (*AESEncryptDecrypter, error) {
 	key, err := ioutil.ReadFile(keyFile)
 	if err != nil {
 		return nil, fmt.Errorf("unable to read key file: %v", err)
 	}
-	if len(key) < aes256size {
-		return nil, fmt.Errorf("key size (%d) must be greater than or equal to %d", len(key), aes256size)
+	if len(key) < aesKeySize {
+		return nil, fmt.Errorf("key size (%d) must be greater than or equal to %d", len(key), aesKeySize)
 	}
-	return &encrypter{
-		key: key[:aes256size],
+	return &AESEncryptDecrypter{
+		key: key[:aesKeySize],
 	}, nil
 }
 
-func (e *encrypter) Encrypt(text string) (string, error) {
-	block, err := aes.NewCipher(e.key)
+func (a *AESEncryptDecrypter) Encrypt(text string) (string, error) {
+	block, err := aes.NewCipher(a.key)
 	if err != nil {
 		return "", err
 	}
@@ -71,4 +64,29 @@ func (e *encrypter) Encrypt(text string) (string, error) {
 	encrypted = append(nonce, encrypted...)
 
 	return base64.StdEncoding.EncodeToString(encrypted), nil
+}
+
+func (a *AESEncryptDecrypter) Decrypt(encryptedText string) (string, error) {
+	encrypted, err := base64.StdEncoding.DecodeString(encryptedText)
+	if err != nil {
+		return "", err
+	}
+
+	block, err := aes.NewCipher(a.key)
+	if err != nil {
+		return "", err
+	}
+
+	gcm, err := cipher.NewGCM(block)
+	if err != nil {
+		return "", err
+	}
+
+	nonce := encrypted[:gcm.NonceSize()]
+	text, err := gcm.Open(nil, nonce, encrypted[gcm.NonceSize():], nil)
+	if err != nil {
+		return "", err
+	}
+
+	return string(text), nil
 }

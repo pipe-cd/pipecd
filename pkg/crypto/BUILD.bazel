@@ -3,9 +3,10 @@ load("@io_bazel_rules_go//go:def.bzl", "go_library", "go_test")
 go_library(
     name = "go_default_library",
     srcs = [
-        "decrypter.go",
-        "encrypter.go",
+        "aes.go",
+        "crypto.go",
         "key.go",
+        "rsa.go",
     ],
     importpath = "github.com/pipe-cd/pipe/pkg/crypto",
     visibility = ["//visibility:public"],
@@ -15,9 +16,9 @@ go_test(
     name = "go_default_test",
     size = "small",
     srcs = [
-        "decrypter_test.go",
-        "encrypter_test.go",
+        "aes_test.go",
         "key_test.go",
+        "rsa_test.go",
     ],
     data = glob(["testdata/**"]),
     embed = [":go_default_library"],
