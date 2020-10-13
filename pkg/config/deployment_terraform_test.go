@@ -62,7 +62,7 @@ func TestTerraformDeploymentConfig(t *testing.T) {
 					Workspace:        "dev",
 					TerraformVersion: "0.12.23",
 					SealedSecrets: []InputSealedSecret{
-						InputSealedSecret{
+						{
 							Path:        "sealed-service-account.yaml",
 							OutDir:      ".terraform-credentials",
 							OutFilename: "service-account.yaml",
