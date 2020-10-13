@@ -5,6 +5,7 @@ go_library(
     srcs = [
         "decrypter.go",
         "encrypter.go",
+        "key.go",
     ],
     importpath = "github.com/pipe-cd/pipe/pkg/crypto",
     visibility = ["//visibility:public"],
@@ -16,6 +17,7 @@ go_test(
     srcs = [
         "decrypter_test.go",
         "encrypter_test.go",
+        "key_test.go",
     ],
     data = glob(["testdata/**"]),
     embed = [":go_default_library"],
