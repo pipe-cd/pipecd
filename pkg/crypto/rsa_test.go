@@ -13,3 +13,27 @@
 // limitations under the License.
 
 package crypto
+
+import (
+	"testing"
+
+	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/require"
+)
+
+func TestRSAEncryptDecrypt(t *testing.T) {
+	encrypter, err := NewRSAEncrypter("testdata/public-rsa-pem")
+	require.NoError(t, err)
+
+	text := "original-text"
+	encryptedText, err := encrypter.Encrypt(text)
+	require.NoError(t, err)
+	assert.True(t, len(encryptedText) > 0)
+
+	decrypter, err := NewRSADecrypter("testdata/private-rsa-pem")
+	require.NoError(t, err)
+
+	decryptedText, err := decrypter.Decrypt(encryptedText)
+	require.NoError(t, err)
+	assert.Equal(t, text, decryptedText)
+}

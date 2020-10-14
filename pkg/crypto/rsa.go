@@ -13,3 +13,73 @@
 // limitations under the License.
 
 package crypto
+
+import (
+	"crypto/rand"
+	"crypto/rsa"
+	"crypto/sha512"
+	"encoding/base64"
+)
+
+type RSAEncrypter struct {
+	key *rsa.PublicKey
+}
+
+func NewRSAEncrypter(keyFile string) (*RSAEncrypter, error) {
+	key, err := LoadRSAPublicKey(keyFile)
+	if err != nil {
+		return nil, err
+	}
+	return &RSAEncrypter{
+		key: key,
+	}, nil
+}
+
+func (e *RSAEncrypter) Encrypt(text string) (string, error) {
+	encryptedBytes, err := rsa.EncryptOAEP(
+		sha512.New(),
+		rand.Reader,
+		e.key,
+		[]byte(text),
+		nil,
+	)
+	if err != nil {
+		return "", err
+	}
+
+	return base64.StdEncoding.EncodeToString(encryptedBytes), nil
+}
+
+type RSADecrypter struct {
+	key *rsa.PrivateKey
+}
+
+func NewRSADecrypter(keyFile string) (*RSADecrypter, error) {
+	key, err := LoadRSAPrivateKey(keyFile)
+	if err != nil {
+		return nil, err
+	}
+	return &RSADecrypter{
+		key: key,
+	}, nil
+}
+
+func (d *RSADecrypter) Decrypt(encryptedText string) (string, error) {
+	encryptedBytes, err := base64.StdEncoding.DecodeString(encryptedText)
+	if err != nil {
+		return "", err
+	}
+
+	text, err := rsa.DecryptOAEP(
+		sha512.New(),
+		rand.Reader,
+		d.key,
+		encryptedBytes,
+		nil,
+	)
+	if err != nil {
+		return "", err
+	}
+
+	return string(text), nil
+}
