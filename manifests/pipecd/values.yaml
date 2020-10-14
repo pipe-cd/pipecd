@@ -41,9 +41,11 @@ ops:
 
 mongodb:
   imageTag: "4.2"
+  resources: {}
 
 minio:
   imageTag: "RELEASE.2020-08-26T00-00-49Z"
+  resources: {}
 
 # Control Plane Configurations.
 config:

@@ -126,8 +126,10 @@ spec:
             - name: pipecd-config
               mountPath: /etc/pipecd-config
               readOnly: true
+{{- if .Values.api.resources }}
           resources:
-            {{- toYaml .Values.resources | nindent 12 }}
+            {{- toYaml .Values.api.resources | nindent 12 }}
+{{- end }}
       volumes:
         - name: pipecd-secret
           secret:
@@ -135,10 +137,6 @@ spec:
         - name: pipecd-config
           configMap:
             name: {{ include "pipecd.configMapName" . }}
-{{- if .Values.api.resources }}
-          resources:
-            {{- toYaml .Values.api.resources | nindent 12 }}
-{{- end }}
 
 ---
 # Web workload.
@@ -276,8 +274,10 @@ spec:
             - name: pipecd-config
               mountPath: /etc/pipecd-config
               readOnly: true
+{{- if .Values.ops.resources }}
           resources:
-            {{- toYaml .Values.resources | nindent 12 }}
+            {{- toYaml .Values.ops.resources | nindent 12 }}
+{{- end }}
       volumes:
         - name: pipecd-secret
           secret:
@@ -285,10 +285,6 @@ spec:
         - name: pipecd-config
           configMap:
             name: {{ include "pipecd.configMapName" . }}
-{{- if .Values.ops.resources }}
-          resources:
-            {{- toYaml .Values.ops.resources | nindent 12 }}
-{{- end }}
 
 {{- if .Values.quickstart}}
 ---
@@ -319,6 +315,10 @@ spec:
             - name: mongo
               containerPort: 27017
               protocol: TCP
+{{- if .Values.mongodb.resources }}
+          resources:
+            {{- toYaml .Values.mongodb.resources | nindent 12 }}
+{{- end }}
 
 ---
 apiVersion: apps/v1
@@ -341,24 +341,28 @@ spec:
         app.kubernetes.io/component: minio
     spec:
       containers:
-      - name: minio
-        image: minio/minio:{{ .Values.minio.imageTag }}
-        args:
-        - server
-        - /data
-        env:
-        - name: MINIO_ACCESS_KEY
-          valueFrom:
-            secretKeyRef:
-              name: {{ include "pipecd.secretName" . }}
-              key: {{ .Values.secret.minioAccessKey.fileName }}
-        - name: MINIO_SECRET_KEY
-          valueFrom:
-            secretKeyRef:
-              name: {{ include "pipecd.secretName" . }}
-              key: {{ .Values.secret.minioSecretKey.fileName }}
-        ports:
-          - name: minio
-            containerPort: 9000
-            protocol: TCP
+        - name: minio
+          image: minio/minio:{{ .Values.minio.imageTag }}
+          args:
+          - server
+          - /data
+          env:
+          - name: MINIO_ACCESS_KEY
+            valueFrom:
+              secretKeyRef:
+                name: {{ include "pipecd.secretName" . }}
+                key: {{ .Values.secret.minioAccessKey.fileName }}
+          - name: MINIO_SECRET_KEY
+            valueFrom:
+              secretKeyRef:
+                name: {{ include "pipecd.secretName" . }}
+                key: {{ .Values.secret.minioSecretKey.fileName }}
+          ports:
+            - name: minio
+              containerPort: 9000
+              protocol: TCP
+{{- if .Values.minio.resources }}
+          resources:
+            {{- toYaml .Values.minio.resources | nindent 12 }}
+{{- end }}
 {{- end }}
