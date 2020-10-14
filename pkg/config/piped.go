@@ -57,6 +57,8 @@ type PipedSpec struct {
 	ImageProviders []PipedImageProvider `json:"imageProviders"`
 	// Sending notification to Slack, Webhook…
 	Notifications Notifications `json:"notifications"`
+	// How the sealed secret should be decrypted.
+	SealedSecretDecryption *SealedSecretDecryption `json:"sealedSecretDecryption"`
 }
 
 // Validate validates configured data of all fields.
@@ -78,6 +80,11 @@ func (s *PipedSpec) Validate() error {
 	}
 	if s.SyncInterval < 0 {
 		s.SyncInterval = Duration(time.Minute)
+	}
+	if s.SealedSecretDecryption != nil {
+		if err := s.SealedSecretDecryption.Validate(); err != nil {
+			return err
+		}
 	}
 	return nil
 }
@@ -460,4 +467,25 @@ type NotificationReceiverSlack struct {
 
 type NotificationReceiverWebhook struct {
 	URL string `json:"url"`
+}
+
+type SealedSecretDecryption struct {
+	// The path to the private RSA key file.
+	KeyFile string `json:"keyFile"`
+
+	// Configurable fields when using Google Cloud KMS.
+	// The key name used for decrypting the sealed secret.
+	KMSKeyName string `json:"kmsKeyName"`
+	// The path to the service account to access Google Cloud KMS service.
+	KMSServiceAccountFile string `json:"kmsServiceAccountFile"`
+}
+
+func (d *SealedSecretDecryption) Validate() error {
+	// Currently, we support only way by using the specified RSA private key.
+	// So this is required.
+	if d.KeyFile == "" {
+		return fmt.Errorf("sealedSEcretDecryption.keyFile must be set")
+	}
+
+	return nil
 }
