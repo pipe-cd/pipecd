@@ -11,7 +11,7 @@ import {
   PAGE_PATH_LOGIN,
   PAGE_PATH_SETTINGS,
   PAGE_PATH_TOP,
-} from "../constants";
+} from "../constants/path";
 import { AppState } from "../modules";
 import {
   fetchCommand,

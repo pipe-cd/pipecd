@@ -10,7 +10,7 @@ import dayjs from "dayjs";
 import React, { FC, memo } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import { Link as RouterLink } from "react-router-dom";
-import { PAGE_PATH_APPLICATIONS } from "../constants";
+import { PAGE_PATH_APPLICATIONS } from "../constants/path";
 import { DEPLOYMENT_STATE_TEXT } from "../constants/deployment-status-text";
 import { AppState } from "../modules";
 import { ActiveStage } from "../modules/active-stage";

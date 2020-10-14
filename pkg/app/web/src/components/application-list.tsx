@@ -21,7 +21,7 @@ import dayjs from "dayjs";
 import React, { FC, memo, useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import { Link as RouterLink } from "react-router-dom";
-import { PAGE_PATH_APPLICATIONS } from "../constants";
+import { PAGE_PATH_APPLICATIONS } from "../constants/path";
 import { APPLICATION_SYNC_STATUS_TEXT } from "../constants/application-sync-status-text";
 import { AppState } from "../modules";
 import {

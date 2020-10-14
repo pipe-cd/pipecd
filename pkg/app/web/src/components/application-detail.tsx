@@ -13,7 +13,7 @@ import dayjs from "dayjs";
 import React, { FC, memo } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import { Link as RouterLink } from "react-router-dom";
-import { PAGE_PATH_DEPLOYMENTS } from "../constants";
+import { PAGE_PATH_DEPLOYMENTS } from "../constants/path";
 import { APPLICATION_KIND_TEXT } from "../constants/application-kind";
 import { APPLICATION_SYNC_STATUS_TEXT } from "../constants/application-sync-status-text";
 import { APPLICATION_HEALTH_STATUS_TEXT } from "../constants/health-status-text";

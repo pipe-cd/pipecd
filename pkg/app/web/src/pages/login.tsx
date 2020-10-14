@@ -11,7 +11,7 @@ import { useCookies } from "react-cookie";
 import { useDispatch } from "react-redux";
 import { Redirect } from "react-router-dom";
 import { LoginForm } from "../components/login-form";
-import { PAGE_PATH_APPLICATIONS } from "../constants";
+import { PAGE_PATH_APPLICATIONS } from "../constants/path";
 import { setProjectName, useProjectName } from "../modules/login";
 import { useMe } from "../modules/me";
 import MuiAlert from "@material-ui/lab/Alert";
