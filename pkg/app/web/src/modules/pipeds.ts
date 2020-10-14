@@ -7,7 +7,7 @@ import {
 import { Piped as PipedModel } from "pipe/pkg/app/web/model/piped_pb";
 import * as pipedsApi from "../api/piped";
 
-export type Piped = Required<PipedModel.AsObject>;
+export type Piped = PipedModel.AsObject;
 
 export interface RegisteredPiped {
   id: string;

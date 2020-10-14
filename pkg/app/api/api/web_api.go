@@ -30,6 +30,7 @@ import (
 	"github.com/pipe-cd/pipe/pkg/app/api/service/webservice"
 	"github.com/pipe-cd/pipe/pkg/app/api/stagelogstore"
 	"github.com/pipe-cd/pipe/pkg/config"
+	"github.com/pipe-cd/pipe/pkg/crypto"
 	"github.com/pipe-cd/pipe/pkg/datastore"
 	"github.com/pipe-cd/pipe/pkg/git"
 	"github.com/pipe-cd/pipe/pkg/model"
@@ -550,6 +551,45 @@ func (a *WebAPI) GetApplication(ctx context.Context, req *webservice.GetApplicat
 	}
 	return &webservice.GetApplicationResponse{
 		Application: app,
+	}, nil
+}
+
+func (a *WebAPI) GenerateApplicationSealedSecret(ctx context.Context, req *webservice.GenerateApplicationSealedSecretRequest) (*webservice.GenerateApplicationSealedSecretResponse, error) {
+	piped, err := a.getPiped(ctx, req.PipedId)
+	if err != nil {
+		return nil, err
+	}
+
+	sse := piped.SealedSecretEncryption
+	if sse == nil {
+		return nil, status.Error(codes.FailedPrecondition, "the piped does not contain the encryption configuration")
+	}
+
+	var enc encrypter
+
+	switch model.SealedSecretManagementType(sse.Type) {
+	case model.SealedSecretManagementSealingKey:
+		if sse.PublicKey == "" {
+			return nil, status.Error(codes.FailedPrecondition, "the piped does not contain a public key")
+		}
+		enc, err = crypto.NewRSAEncrypter(sse.PublicKey)
+		if err != nil {
+			a.logger.Error("failed to initialize the crypter", zap.Error(err))
+			return nil, status.Error(codes.FailedPrecondition, "failed to initialize the encrypter")
+		}
+
+	default:
+		return nil, status.Error(codes.FailedPrecondition, "the piped does not contain a valid encryption type")
+	}
+
+	encryptedText, err := enc.Encrypt(req.Data)
+	if err != nil {
+		a.logger.Error("failed to encrypt the secret", zap.Error(err))
+		return nil, status.Error(codes.FailedPrecondition, "failed to encrypt")
+	}
+
+	return &webservice.GenerateApplicationSealedSecretResponse{
+		Data: encryptedText,
 	}, nil
 }
 

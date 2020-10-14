@@ -53,6 +53,7 @@ service WebService {
     rpc ListApplications(ListApplicationsRequest) returns (ListApplicationsResponse) {}
     rpc SyncApplication(SyncApplicationRequest) returns (SyncApplicationResponse) {}
     rpc GetApplication(GetApplicationRequest) returns (GetApplicationResponse) {}
+    rpc GenerateApplicationSealedSecret(GenerateApplicationSealedSecretRequest) returns (GenerateApplicationSealedSecretResponse) {}
 
     // Deployment
     rpc ListDeployments(ListDeploymentsRequest) returns (ListDeploymentsResponse) {}
@@ -210,6 +211,15 @@ message GetApplicationRequest {
 
 message GetApplicationResponse {
     pipe.model.Application application = 1;
+}
+
+message GenerateApplicationSealedSecretRequest {
+    string piped_id = 1 [(validate.rules).string.min_len = 1];
+    string data = 2 [(validate.rules).string.min_len = 1];
+}
+
+message GenerateApplicationSealedSecretResponse {
+    string data = 1 [(validate.rules).string.min_len = 1];
 }
 
 message ListDeploymentsRequest {

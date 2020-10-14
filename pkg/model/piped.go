@@ -27,6 +27,19 @@ const (
 	redactedMessage = "redacted"
 )
 
+type SealedSecretManagementType string
+
+const (
+	SealedSecretManagementNone       SealedSecretManagementType = "NONE"
+	SealedSecretManagementSealingKey SealedSecretManagementType = "SEALING_KEY"
+	SealedSecretManagementGCPKMS     SealedSecretManagementType = "GCP_KMS"
+	SealedSecretManagementAWSKMS     SealedSecretManagementType = "AWS_KMS"
+)
+
+func (t SealedSecretManagementType) String() string {
+	return string(t)
+}
+
 // GeneratePipedKey generates a new key for piped.
 // This returns raw key value for used by piped and
 // a hash value of the key for storing in datastore.
