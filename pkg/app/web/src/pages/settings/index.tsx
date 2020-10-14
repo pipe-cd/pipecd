@@ -13,7 +13,7 @@ import {
   PAGE_PATH_SETTINGS_PIPED,
   PAGE_PATH_SETTINGS_ENV,
   PAGE_PATH_SETTINGS_PROJECT,
-} from "../../constants";
+} from "../../constants/path";
 import { SettingsPipedPage } from "./piped";
 import { SettingsEnvironmentPage } from "./environment";
 import { SettingsProjectPage } from "./project";

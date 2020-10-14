@@ -12,7 +12,6 @@ import {
   Menu,
 } from "@material-ui/core";
 import {
-  APP_NAME,
   PAGE_PATH_APPLICATIONS,
   PAGE_PATH_DEPLOYMENTS,
   PAGE_PATH_INSIGHTS,
@@ -20,7 +19,8 @@ import {
   PAGE_PATH_LOGIN,
   LOGOUT_ENDPOINT,
   PAGE_PATH_TOP,
-} from "../constants";
+} from "../constants/path";
+import { APP_NAME } from "../constants/common";
 import { NavLink as RouterLink } from "react-router-dom";
 import { useMe } from "../modules/me";
 import ArrowDownIcon from "@material-ui/icons/ArrowDropDown";

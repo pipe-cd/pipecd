@@ -1,6 +1,6 @@
 import React, { FC, memo } from "react";
 import { makeStyles, TextField, Button, Typography } from "@material-ui/core";
-import { STATIC_LOGIN_ENDPOINT, LOGIN_ENDPOINT } from "../constants";
+import { STATIC_LOGIN_ENDPOINT, LOGIN_ENDPOINT } from "../constants/path";
 import { useProjectName, clearProjectName } from "../modules/login";
 import { useDispatch } from "react-redux";
 import { MarkGithubIcon } from "@primer/octicons-react";
