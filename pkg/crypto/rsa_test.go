@@ -15,6 +15,7 @@
 package crypto
 
 import (
+	"io/ioutil"
 	"testing"
 
 	"github.com/stretchr/testify/assert"
@@ -22,7 +23,10 @@ import (
 )
 
 func TestRSAEncryptDecrypt(t *testing.T) {
-	encrypter, err := NewRSAEncrypter("testdata/public-rsa-pem")
+	data, err := ioutil.ReadFile("testdata/public-rsa-pem")
+	require.NoError(t, err)
+
+	encrypter, err := NewRSAEncrypter(string(data))
 	require.NoError(t, err)
 
 	text := "original-text"
