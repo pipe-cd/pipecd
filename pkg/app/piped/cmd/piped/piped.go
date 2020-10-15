@@ -411,7 +411,7 @@ func (p *piped) sendPipedMeta(ctx context.Context, client pipedservice.Client, c
 		case model.SealedSecretManagementSealingKey:
 			publicKey, err := ioutil.ReadFile(sm.PublicKeyFile)
 			if err != nil {
-				return fmt.Errorf("failed to read public key for sealed secret management (%v)", err)
+				return fmt.Errorf("failed to read public key for sealed secret management (%w)", err)
 			}
 			req.SealedSecretEncryption = &model.Piped_SealedSecretEncryption{
 				Type:      sm.Type.String(),
