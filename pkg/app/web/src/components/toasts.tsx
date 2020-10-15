@@ -23,7 +23,9 @@ export const Toasts: FC = () => {
             vertical: "bottom",
             horizontal: "left",
           }}
-          autoHideDuration={AUTO_HIDE_DURATION}
+          autoHideDuration={
+            item.severity === "error" ? null : AUTO_HIDE_DURATION
+          }
           onClose={() => dispatch(removeToast({ id: item.id }))}
           message={item.message}
         >
