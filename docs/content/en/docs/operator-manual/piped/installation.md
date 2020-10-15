@@ -35,6 +35,7 @@ description: >
     projectID: YOUR_PROJECT_ID
     pipedID: YOUR_PIPED_ID
     pipedKeyFile: /etc/piped-secret/piped-key
+    # Write in a format like "host:443" because the communication is done via gRCP.
     apiAddress: YOUR_CONTROL_PLANE_ADDRESS
     webAddress: http://YOUR_CONTROL_PLANE_ADDRESS
     git:
@@ -57,6 +58,7 @@ description: >
     --set-file secret.pipedKey.data=PATH_TO_PIPED_KEY_FILE \
     --set-file secret.sshKey.data=PATH_TO_PRIVATE_SSH_KEY_FILE
   ```
+Note: Be sure to set `args.insecure=false` if your control-plane is already TLS-enabled.
 
 ### Installing on a single machine
 
@@ -73,7 +75,9 @@ description: >
     projectID: YOUR_PROJECT_ID
     pipedID: YOUR_PIPED_ID
     pipedKeyFile: /etc/piped-secret/piped-key
+    # Write in a format like "host:443" because the communication is done via gRCP.
     apiAddress: YOUR_CONTROL_PLANE_ADDRESS
+    webAddress: http://YOUR_CONTROL_PLANE_ADDRESS
     git:
       sshKeyFile: /etc/piped-secret/ssh-key
     repositories:
