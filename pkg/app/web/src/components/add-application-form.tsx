@@ -240,10 +240,10 @@ export const AddApplicationForm: FC<Props> = ({
             name: APPLICATION_KIND_TEXT[(key as unknown) as ApplicationKind],
             value: key,
           }))}
-          onChange={(value) =>
+          onChange={({ value }) =>
             dispatch({
               type: "update-kind",
-              value: (value as unknown) as ApplicationKind,
+              value: parseInt(value, 10) as ApplicationKind,
             })
           }
           disabled={isAdding}

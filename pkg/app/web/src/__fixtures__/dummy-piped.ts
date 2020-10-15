@@ -7,6 +7,11 @@ export const dummyPiped: Piped = {
       name: "kubernetes-default",
       type: "KUBERNETES",
     },
+
+    {
+      name: "terraform-default",
+      type: "TERRAFORM",
+    },
   ],
   createdAt: 0,
   desc: "",
@@ -27,4 +32,9 @@ export const dummyPiped: Piped = {
   status: PipedModel.ConnectionStatus.ONLINE,
   keyHash: "12345",
   envIdsList: [dummyEnv.id],
+  sealedSecretEncryption: {
+    encryptServiceAccount: "",
+    publicKey: "",
+    type: "",
+  },
 };

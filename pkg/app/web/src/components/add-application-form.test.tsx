@@ -39,7 +39,7 @@ describe("AddApplicationForm", () => {
     fireEvent.mouseDown(getByRole("button", { name: /Kind/ }));
     fireEvent.click(
       getByRole("option", {
-        name: APPLICATION_KIND_TEXT[ApplicationKind.KUBERNETES],
+        name: APPLICATION_KIND_TEXT[ApplicationKind.TERRAFORM],
       })
     );
     fireEvent.mouseDown(getByRole("button", { name: /Environment/ }));
@@ -58,15 +58,15 @@ describe("AddApplicationForm", () => {
     });
 
     fireEvent.mouseDown(getByRole("button", { name: /Cloud Provider/ }));
-    fireEvent.click(getByRole("option", { name: /kubernetes-default/ }));
+    fireEvent.click(getByRole("option", { name: /terraform-default/ }));
 
     fireEvent.click(getByRole("button", { name: UI_TEXT_SAVE }));
 
     expect(onSubmit).toHaveBeenCalledWith({
-      cloudProvider: "kubernetes-default",
+      cloudProvider: "terraform-default",
       configFilename: "",
       env: "env-1",
-      kind: 0,
+      kind: ApplicationKind.TERRAFORM,
       name: "App",
       pipedId: "piped-1",
       repo: {
