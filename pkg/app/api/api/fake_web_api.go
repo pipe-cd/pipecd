@@ -300,6 +300,10 @@ func (a *FakeWebAPI) GetApplication(ctx context.Context, req *webservice.GetAppl
 	}, nil
 }
 
+func (a *FakeWebAPI) GenerateApplicationSealedSecret(ctx context.Context, req *webservice.GenerateApplicationSealedSecretRequest) (*webservice.GenerateApplicationSealedSecretResponse, error) {
+	return &webservice.GenerateApplicationSealedSecretResponse{}, nil
+}
+
 func (a *FakeWebAPI) ListDeployments(ctx context.Context, req *webservice.ListDeploymentsRequest) (*webservice.ListDeploymentsResponse, error) {
 	now := time.Now()
 	deploymentTime := now

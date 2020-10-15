@@ -397,11 +397,32 @@ func (p *piped) sendPipedMeta(ctx context.Context, client pipedservice.Client, c
 		err   error
 	)
 
+	// Configure the list of specified cloud providers.
 	for _, cp := range cfg.CloudProviders {
 		req.CloudProviders = append(req.CloudProviders, &model.Piped_CloudProvider{
 			Name: cp.Name,
 			Type: cp.Type.String(),
 		})
+	}
+
+	// Configure sealed secret management.
+	if sm := cfg.SealedSecretManagement; sm != nil {
+		switch sm.Type {
+		case model.SealedSecretManagementSealingKey:
+			publicKey, err := ioutil.ReadFile(sm.PublicKeyFile)
+			if err != nil {
+				return fmt.Errorf("failed to read public key for sealed secret management (%w)", err)
+			}
+			req.SealedSecretEncryption = &model.Piped_SealedSecretEncryption{
+				Type:      sm.Type.String(),
+				PublicKey: string(publicKey),
+			}
+		}
+	}
+	if req.SealedSecretEncryption == nil {
+		req.SealedSecretEncryption = &model.Piped_SealedSecretEncryption{
+			Type: model.SealedSecretManagementNone.String(),
+		}
 	}
 
 	for retry.WaitNext(ctx) {

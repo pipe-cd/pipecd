@@ -25,13 +25,13 @@ type RSAEncrypter struct {
 	key *rsa.PublicKey
 }
 
-func NewRSAEncrypter(keyFile string) (*RSAEncrypter, error) {
-	key, err := LoadRSAPublicKey(keyFile)
+func NewRSAEncrypter(key string) (*RSAEncrypter, error) {
+	k, err := ParseRSAPublicKeyFromPem([]byte(key))
 	if err != nil {
 		return nil, err
 	}
 	return &RSAEncrypter{
-		key: key,
+		key: k,
 	}, nil
 }
 

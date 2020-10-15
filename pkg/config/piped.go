@@ -57,8 +57,8 @@ type PipedSpec struct {
 	ImageProviders []PipedImageProvider `json:"imageProviders"`
 	// Sending notification to Slack, Webhook…
 	Notifications Notifications `json:"notifications"`
-	// How the sealed secret should be decrypted.
-	SealedSecretDecryption *SealedSecretDecryption `json:"sealedSecretDecryption"`
+	// How the sealed secret should be managed.
+	SealedSecretManagement *SealedSecretManagement `json:"sealedSecretManagement"`
 }
 
 // Validate validates configured data of all fields.
@@ -81,8 +81,8 @@ func (s *PipedSpec) Validate() error {
 	if s.SyncInterval < 0 {
 		s.SyncInterval = Duration(time.Minute)
 	}
-	if s.SealedSecretDecryption != nil {
-		if err := s.SealedSecretDecryption.Validate(); err != nil {
+	if s.SealedSecretManagement != nil {
+		if err := s.SealedSecretManagement.Validate(); err != nil {
 			return err
 		}
 	}
@@ -469,22 +469,37 @@ type NotificationReceiverWebhook struct {
 	URL string `json:"url"`
 }
 
-type SealedSecretDecryption struct {
+type SealedSecretManagement struct {
+	// Which management service should be used.
+	// Available values: SEALING_KEY, GCP_KMS, AWS_KMS
+	Type model.SealedSecretManagementType `json:"type"`
+
+	// Configurable fields for SEALING_KEY.
 	// The path to the private RSA key file.
-	KeyFile string `json:"keyFile"`
+	PrivateKeyFile string `json:"privateKeyFile"`
+	// The path to the public RSA key file.
+	PublicKeyFile string `json:"publicKeyFile"`
 
 	// Configurable fields when using Google Cloud KMS.
 	// The key name used for decrypting the sealed secret.
-	KMSKeyName string `json:"kmsKeyName"`
-	// The path to the service account to access Google Cloud KMS service.
-	KMSServiceAccountFile string `json:"kmsServiceAccountFile"`
+	KeyName string `json:"keyName"`
+	// The path to the service account used to decrypt secret.
+	DecryptServiceAccountFile string `json:"decryptServiceAccountFile"`
+	// The path to the service account used to encrypt secret.
+	EncryptServiceAccountFile string `json:"encryptServiceAccountFile"`
 }
 
-func (d *SealedSecretDecryption) Validate() error {
-	// Currently, we support only way by using the specified RSA private key.
-	// So this is required.
-	if d.KeyFile == "" {
-		return fmt.Errorf("sealedSEcretDecryption.keyFile must be set")
+func (d *SealedSecretManagement) Validate() error {
+	// Currently, only SEALING_KEY is supported.
+	if d.Type != model.SealedSecretManagementSealingKey {
+		return fmt.Errorf("sealedSecretDecryption.type must be SEALING_KEY")
+	}
+
+	if d.PrivateKeyFile == "" {
+		return fmt.Errorf("sealedSecretDecryption.privateKeyFile must be set")
+	}
+	if d.PublicKeyFile == "" {
+		return fmt.Errorf("sealedSecretDecryption.publicKeyFile must be set")
 	}
 
 	return nil

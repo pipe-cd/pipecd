@@ -18,6 +18,7 @@ go_library(
         "//pkg/app/api/service/webservice:go_default_library",
         "//pkg/app/api/stagelogstore:go_default_library",
         "//pkg/config:go_default_library",
+        "//pkg/crypto:go_default_library",
         "//pkg/datastore:go_default_library",
         "//pkg/git:go_default_library",
         "//pkg/model:go_default_library",

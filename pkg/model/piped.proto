@@ -26,6 +26,12 @@ message Piped {
         string type = 2 [(validate.rules).string.min_len = 1];
     }
 
+    message SealedSecretEncryption {
+        string type = 1 [(validate.rules).string = {in: ["SEALING_KEY", "GCP_KMS", "AWS_KMS", "NONE"]}];
+        string public_key = 2;
+        string encrypt_service_account = 3;
+    }
+
     enum ConnectionStatus {
         ONLINE = 0;
         OFFLINE = 1;
@@ -55,6 +61,8 @@ message Piped {
     repeated ApplicationGitRepository repositories = 10;
     // The latest connection status of piped.
     ConnectionStatus status = 11 [(validate.rules).enum.defined_only = true];
+    // The public key/service account for encrypting the secret data.
+    SealedSecretEncryption sealed_secret_encryption = 12;
 
     // Whether the piped is disabled or not.
     bool disabled = 13;
