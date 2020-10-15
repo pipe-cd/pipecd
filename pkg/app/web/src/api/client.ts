@@ -17,7 +17,9 @@ interface ApiCallback<Res> {
 
 export async function apiRequest<Req, Res>(
   request: Req,
-  api: { (request: Req, meta: {}, callback: ApiCallback<Res>): void }
+  api: {
+    (request: Req, meta: grpcWeb.Metadata, callback: ApiCallback<Res>): void;
+  }
 ): Promise<Res> {
   return new Promise((resolve, reject) => {
     api.bind(apiClient)(request, {}, (err, response) => {
