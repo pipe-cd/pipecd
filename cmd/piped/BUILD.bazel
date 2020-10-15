@@ -19,7 +19,7 @@ go_binary(
 )
 
 app_image(
-    name = "piped",
+    name = "piped_app",
     base = "@piped-base//image",
     binary = ":piped",
     repository = "piped",

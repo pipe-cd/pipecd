@@ -19,7 +19,7 @@ go_binary(
 )
 
 app_image(
-    name = "helloworld",
+    name = "helloworld_app",
     binary = ":helloworld",
     repository = "helloworld",
     visibility = ["//visibility:public"],
