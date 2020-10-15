@@ -19,7 +19,7 @@ go_binary(
 )
 
 app_image(
-    name = "api",
+    name = "api_app",
     binary = ":api",
     repository = "api",
     visibility = ["//visibility:public"],
