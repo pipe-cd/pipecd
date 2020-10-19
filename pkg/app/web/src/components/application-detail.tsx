@@ -226,7 +226,7 @@ export const ApplicationDetail: FC<Props> = memo(function ApplicationDetail({
                   </Typography>
                 </>
               ) : (
-                <CircularProgress />
+                <Skeleton height={32} width={100} />
               )}
             </div>
 

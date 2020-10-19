@@ -1,9 +1,9 @@
 import { ApplicationKind } from "pipe/pkg/app/web/model/common_pb";
-import { Application, ApplicationSyncStatus } from "../modules/applications";
+import { ApplicationSyncStatus } from "../modules/applications";
 import { dummyEnv } from "./dummy-environment";
 import { dummyPiped } from "./dummy-piped";
 
-export const dummyApplication: Application = {
+export const dummyApplication = {
   id: "application-1",
   cloudProvider: "kubernetes-default",
   createdAt: 0,

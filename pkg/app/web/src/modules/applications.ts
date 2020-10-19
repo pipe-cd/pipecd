@@ -15,7 +15,7 @@ import {
 import { fetchCommand, CommandStatus, CommandModel } from "./commands";
 import { AppState } from ".";
 
-export type Application = Required<ApplicationModel.AsObject>;
+export type Application = ApplicationModel.AsObject;
 export type ApplicationSyncStatusKey = keyof typeof ApplicationSyncStatus;
 export type ApplicationKindKey = keyof typeof ApplicationKind;
 
