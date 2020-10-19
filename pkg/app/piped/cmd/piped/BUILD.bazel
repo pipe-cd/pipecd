@@ -27,6 +27,7 @@ go_library(
         "//pkg/cache/memorycache:go_default_library",
         "//pkg/cli:go_default_library",
         "//pkg/config:go_default_library",
+        "//pkg/crypto:go_default_library",
         "//pkg/git:go_default_library",
         "//pkg/model:go_default_library",
         "//pkg/rpc/rpcauth:go_default_library",

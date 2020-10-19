@@ -68,7 +68,6 @@ func (p *Planner) Plan(ctx context.Context, in planner.Input) (out planner.Outpu
 		loader := provider.NewManifestLoader(in.Deployment.ApplicationName, in.AppDir, in.RepoDir, in.Deployment.GitPath.ConfigFilename, cfg.Input, in.Logger)
 		newManifests, err = loader.LoadManifests(ctx)
 		if err != nil {
-			err = fmt.Errorf("failed to load new manifests: %w", err)
 			return
 		}
 		manifestCache.Put(in.Deployment.Trigger.Commit.Hash, newManifests)

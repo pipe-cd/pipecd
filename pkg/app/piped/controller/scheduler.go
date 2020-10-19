@@ -48,26 +48,27 @@ type repoStore interface {
 // scheduler is a dedicated object for a specific deployment of a single application.
 type scheduler struct {
 	// Readonly deployment model.
-	deployment         *model.Deployment
-	envName            string
-	workingDir         string
-	executorRegistry   registry.Registry
-	apiClient          apiClient
-	gitClient          gitClient
-	commandLister      commandLister
-	applicationLister  applicationLister
-	liveResourceLister liveResourceLister
-	logPersister       logpersister.Persister
-	metadataStore      *metadataStore
-	notifier           notifier
-	pipedConfig        *config.PipedSpec
-	appManifestsCache  cache.Cache
-	logger             *zap.Logger
+	deployment            *model.Deployment
+	envName               string
+	workingDir            string
+	executorRegistry      registry.Registry
+	apiClient             apiClient
+	gitClient             gitClient
+	commandLister         commandLister
+	applicationLister     applicationLister
+	liveResourceLister    liveResourceLister
+	logPersister          logpersister.Persister
+	metadataStore         *metadataStore
+	notifier              notifier
+	sealedSecretDecrypter sealedSecretDecrypter
+	pipedConfig           *config.PipedSpec
+	appManifestsCache     cache.Cache
+	logger                *zap.Logger
 
-	deploymentConfig *config.Config
-	pipelineable     config.Pipelineable
-	prepareMu        sync.Mutex
-	prepared         bool
+	deploymentConfig      *config.Config
+	genericDeploymentSpec config.GenericDeploymentSpec
+	prepareMu             sync.Mutex
+	prepared              bool
 	// Current status of each stages.
 	// We stores their current statuses into this field
 	// because the deployment model is readonly to avoid data race.
@@ -95,6 +96,7 @@ func newScheduler(
 	liveResourceLister liveResourceLister,
 	lp logpersister.Persister,
 	notifier notifier,
+	ssd sealedSecretDecrypter,
 	pipedConfig *config.PipedSpec,
 	appManifestsCache cache.Cache,
 	logger *zap.Logger,
@@ -110,24 +112,25 @@ func newScheduler(
 	)
 
 	s := &scheduler{
-		deployment:           d,
-		envName:              envName,
-		workingDir:           workingDir,
-		executorRegistry:     registry.DefaultRegistry(),
-		apiClient:            apiClient,
-		gitClient:            gitClient,
-		commandLister:        commandLister,
-		applicationLister:    applicationLister,
-		liveResourceLister:   liveResourceLister,
-		logPersister:         lp,
-		metadataStore:        NewMetadataStore(apiClient, d),
-		notifier:             notifier,
-		pipedConfig:          pipedConfig,
-		appManifestsCache:    appManifestsCache,
-		doneDeploymentStatus: d.Status,
-		cancelledCh:          make(chan *model.ReportableCommand, 1),
-		logger:               logger,
-		nowFunc:              time.Now,
+		deployment:            d,
+		envName:               envName,
+		workingDir:            workingDir,
+		executorRegistry:      registry.DefaultRegistry(),
+		apiClient:             apiClient,
+		gitClient:             gitClient,
+		commandLister:         commandLister,
+		applicationLister:     applicationLister,
+		liveResourceLister:    liveResourceLister,
+		logPersister:          lp,
+		metadataStore:         NewMetadataStore(apiClient, d),
+		notifier:              notifier,
+		sealedSecretDecrypter: ssd,
+		pipedConfig:           pipedConfig,
+		appManifestsCache:     appManifestsCache,
+		doneDeploymentStatus:  d.Status,
+		cancelledCh:           make(chan *model.ReportableCommand, 1),
+		logger:                logger,
+		nowFunc:               time.Now,
 	}
 
 	// Initialize the map of current status of all stages.
@@ -391,7 +394,7 @@ func (s *scheduler) executeStage(sig executor.StopSignal, ps model.PipelineStage
 
 	var stageConfig *config.PipelineStage
 	if !ps.Predefined {
-		if sc, ok := s.pipelineable.GetStage(ps.Index); ok {
+		if sc, ok := s.genericDeploymentSpec.GetStage(ps.Index); ok {
 			stageConfig = &sc
 		}
 	} else {
@@ -474,10 +477,13 @@ func (s *scheduler) ensurePreparing(ctx context.Context, lp logpersister.StageLo
 		return nil
 	}
 
+	var (
+		repoDirPath = filepath.Join(s.workingDir, workspaceGitRepoDirName)
+		appDirPath  = filepath.Join(repoDirPath, s.deployment.GitPath.Path)
+	)
 	lp.Info("Start preparing for the deployment")
 
 	// Clone repository and checkout to the target revision.
-	repoDirPath := filepath.Join(s.workingDir, workspaceGitRepoDirName)
 	gitRepo, err := prepareDeployRepository(ctx, s.deployment, s.gitClient, repoDirPath, s.pipedConfig)
 	if err != nil {
 		lp.Errorf("Unable to prepare repository (%v)", err)
@@ -485,10 +491,39 @@ func (s *scheduler) ensurePreparing(ctx context.Context, lp logpersister.StageLo
 	}
 	lp.Successf("Successfully cloned repository %s", s.deployment.GitPath.Repo.Id)
 
-	// Copy and checkout the running revision.
+	// Load deployment configuration at the target revision.
+	cfg, err := loadDeploymentConfiguration(gitRepo.GetPath(), s.deployment)
+	if err != nil {
+		lp.Errorf("Failed to load deployment configuration (%v)", err)
+		return fmt.Errorf("failed to load deployment configuration (%w)", err)
+	}
+	s.deploymentConfig = cfg
+
+	gds, ok := cfg.GetGenericDeployment()
+	if !ok {
+		lp.Errorf("Unsupport application kind %s", cfg.Kind)
+		return fmt.Errorf("unsupport application kind %s", cfg.Kind)
+	}
+	s.genericDeploymentSpec = gds
+	lp.Success("Successfully loaded deployment configuration")
+
+	// Decrypt the sealed secrets at the target revision.
+	if len(gds.SealedSecrets) > 0 && s.sealedSecretDecrypter != nil {
+		if err := decryptSealedSecrets(appDirPath, gds.SealedSecrets, s.sealedSecretDecrypter); err != nil {
+			lp.Errorf("Failed to decrypt sealed secrets (%v)", err)
+			return fmt.Errorf("failed to decrypt sealed secrets (%w)", err)
+		}
+		lp.Successf("Successsfully decrypted %d sealed secrets", len(gds.SealedSecrets))
+	}
+
 	if s.deployment.RunningCommitHash != "" {
-		runningRepoPath := filepath.Join(s.workingDir, workspaceGitRunningRepoDirName)
-		runningGitRepo, err := gitRepo.Copy(runningRepoPath)
+		// Copy and checkout the running revision.
+		var (
+			runningRepoPath     = filepath.Join(s.workingDir, workspaceGitRunningRepoDirName)
+			runningGitRepo, err = gitRepo.Copy(runningRepoPath)
+			runningAppDirPath   = filepath.Join(runningRepoPath, s.deployment.GitPath.Path)
+		)
+
 		if err != nil {
 			lp.Errorf("Unable to copy repository (%v)", err)
 			return err
@@ -497,23 +532,28 @@ func (s *scheduler) ensurePreparing(ctx context.Context, lp logpersister.StageLo
 			lp.Errorf("Unable to checkout repository (%v)", err)
 			return err
 		}
-	}
 
-	// Load deployment configuration for this application.
-	cfg, err := loadDeploymentConfiguration(gitRepo.GetPath(), s.deployment)
-	if err != nil {
-		lp.Errorf("Failed to load deployment configuration (%v)", err)
-		return fmt.Errorf("failed to load deployment configuration (%w)", err)
-	}
-	s.deploymentConfig = cfg
+		// Load deployment configuration at the running revision.
+		cfg, err := loadDeploymentConfiguration(runningRepoPath, s.deployment)
+		if err != nil {
+			lp.Errorf("Failed to load deployment configuration at the running commit (%v)", err)
+			return fmt.Errorf("failed to load deployment configuration at the running commit (%w)", err)
+		}
+		gds, ok := cfg.GetGenericDeployment()
+		if !ok {
+			lp.Errorf("Unsupport application kind %s", cfg.Kind)
+			return fmt.Errorf("unsupport application kind %s", cfg.Kind)
+		}
 
-	pp, ok := cfg.GetPipelineable()
-	if !ok {
-		lp.Errorf("Unsupport non pipelineable application %s", cfg.Kind)
-		return fmt.Errorf("unsupport non pipelineable application %s", cfg.Kind)
+		// Decrypt the sealed secrets at the running revision.
+		if len(gds.SealedSecrets) > 0 && s.sealedSecretDecrypter != nil {
+			if err := decryptSealedSecrets(runningAppDirPath, gds.SealedSecrets, s.sealedSecretDecrypter); err != nil {
+				lp.Errorf("Failed to decrypt sealed secrets at running commit (%v)", err)
+				return fmt.Errorf("failed to decrypt sealed secrets at running commit (%w)", err)
+			}
+			lp.Successf("Successsfully decrypted %d sealed secrets at running commit", len(gds.SealedSecrets))
+		}
 	}
-	s.pipelineable = pp
-	lp.Success("Successfully loaded deployment configuration")
 
 	s.prepared = true
 	lp.Info("All preparations have been completed successfully")

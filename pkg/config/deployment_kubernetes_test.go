@@ -36,40 +36,42 @@ func TestKubernetesDeploymentConfig(t *testing.T) {
 			expectedKind:       KindKubernetesApp,
 			expectedAPIVersion: "pipecd.dev/v1beta1",
 			expectedSpec: &KubernetesDeploymentSpec{
-				Input: KubernetesDeploymentInput{AutoRollback: true},
-				Pipeline: &DeploymentPipeline{
-					Stages: []PipelineStage{
-						{
-							Name: model.StageK8sCanaryRollout,
-							K8sCanaryRolloutStageOptions: &K8sCanaryRolloutStageOptions{
-								Replicas: Replicas{
-									Number:       100,
-									IsPercentage: true,
+				GenericDeploymentSpec: GenericDeploymentSpec{
+					Pipeline: &DeploymentPipeline{
+						Stages: []PipelineStage{
+							{
+								Name: model.StageK8sCanaryRollout,
+								K8sCanaryRolloutStageOptions: &K8sCanaryRolloutStageOptions{
+									Replicas: Replicas{
+										Number:       100,
+										IsPercentage: true,
+									},
 								},
 							},
-						},
-						{
-							Name: model.StageK8sTrafficRouting,
-							K8sTrafficRoutingStageOptions: &K8sTrafficRoutingStageOptions{
-								Canary: 100,
+							{
+								Name: model.StageK8sTrafficRouting,
+								K8sTrafficRoutingStageOptions: &K8sTrafficRoutingStageOptions{
+									Canary: 100,
+								},
 							},
-						},
-						{
-							Name:                          model.StageK8sPrimaryRollout,
-							K8sPrimaryRolloutStageOptions: &K8sPrimaryRolloutStageOptions{},
-						},
-						{
-							Name: model.StageK8sTrafficRouting,
-							K8sTrafficRoutingStageOptions: &K8sTrafficRoutingStageOptions{
-								Primary: 100,
+							{
+								Name:                          model.StageK8sPrimaryRollout,
+								K8sPrimaryRolloutStageOptions: &K8sPrimaryRolloutStageOptions{},
 							},
-						},
-						{
-							Name:                       model.StageK8sCanaryClean,
-							K8sCanaryCleanStageOptions: &K8sCanaryCleanStageOptions{},
+							{
+								Name: model.StageK8sTrafficRouting,
+								K8sTrafficRoutingStageOptions: &K8sTrafficRoutingStageOptions{
+									Primary: 100,
+								},
+							},
+							{
+								Name:                       model.StageK8sCanaryClean,
+								K8sCanaryCleanStageOptions: &K8sCanaryCleanStageOptions{},
+							},
 						},
 					},
 				},
+				Input: KubernetesDeploymentInput{AutoRollback: true},
 				TrafficRouting: &KubernetesTrafficRouting{
 					Method: KubernetesTrafficRoutingMethodPodSelector,
 				},

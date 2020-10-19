@@ -45,11 +45,11 @@ func TestTerraformDeploymentConfig(t *testing.T) {
 			expectedKind:       KindTerraformApp,
 			expectedAPIVersion: "pipecd.dev/v1beta1",
 			expectedSpec: &TerraformDeploymentSpec{
+				GenericDeploymentSpec: GenericDeploymentSpec{},
 				Input: TerraformDeploymentInput{
 					Workspace:        "dev",
 					TerraformVersion: "0.12.23",
 				},
-				Pipeline: nil,
 			},
 			expectedError: nil,
 		},
@@ -58,10 +58,8 @@ func TestTerraformDeploymentConfig(t *testing.T) {
 			expectedKind:       KindTerraformApp,
 			expectedAPIVersion: "pipecd.dev/v1beta1",
 			expectedSpec: &TerraformDeploymentSpec{
-				Input: TerraformDeploymentInput{
-					Workspace:        "dev",
-					TerraformVersion: "0.12.23",
-					SealedSecrets: []InputSealedSecret{
+				GenericDeploymentSpec: GenericDeploymentSpec{
+					SealedSecrets: []SealedSecretMapping{
 						{
 							Path:        "sealed-service-account.yaml",
 							OutDir:      ".terraform-credentials",
@@ -69,7 +67,10 @@ func TestTerraformDeploymentConfig(t *testing.T) {
 						},
 					},
 				},
-				Pipeline: nil,
+				Input: TerraformDeploymentInput{
+					Workspace:        "dev",
+					TerraformVersion: "0.12.23",
+				},
 			},
 			expectedError: nil,
 		},
@@ -78,27 +79,29 @@ func TestTerraformDeploymentConfig(t *testing.T) {
 			expectedKind:       KindTerraformApp,
 			expectedAPIVersion: "pipecd.dev/v1beta1",
 			expectedSpec: &TerraformDeploymentSpec{
+				GenericDeploymentSpec: GenericDeploymentSpec{
+					Pipeline: &DeploymentPipeline{
+						Stages: []PipelineStage{
+							{
+								Name:                      model.StageTerraformPlan,
+								TerraformPlanStageOptions: &TerraformPlanStageOptions{},
+							},
+							{
+								Name: model.StageWaitApproval,
+								WaitApprovalStageOptions: &WaitApprovalStageOptions{
+									Approvers: []string{"foo", "bar"},
+								},
+							},
+							{
+								Name:                       model.StageTerraformApply,
+								TerraformApplyStageOptions: &TerraformApplyStageOptions{},
+							},
+						},
+					},
+				},
 				Input: TerraformDeploymentInput{
 					Workspace:        "dev",
 					TerraformVersion: "0.12.23",
-				},
-				Pipeline: &DeploymentPipeline{
-					Stages: []PipelineStage{
-						{
-							Name:                      model.StageTerraformPlan,
-							TerraformPlanStageOptions: &TerraformPlanStageOptions{},
-						},
-						{
-							Name: model.StageWaitApproval,
-							WaitApprovalStageOptions: &WaitApprovalStageOptions{
-								Approvers: []string{"foo", "bar"},
-							},
-						},
-						{
-							Name:                       model.StageTerraformApply,
-							TerraformApplyStageOptions: &TerraformApplyStageOptions{},
-						},
-					},
 				},
 			},
 			expectedError: nil,

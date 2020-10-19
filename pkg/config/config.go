@@ -223,16 +223,16 @@ func ToApplicationKind(k Kind) (model.ApplicationKind, bool) {
 	return model.ApplicationKind_KUBERNETES, false
 }
 
-func (c *Config) GetPipelineable() (Pipelineable, bool) {
+func (c *Config) GetGenericDeployment() (GenericDeploymentSpec, bool) {
 	switch c.Kind {
 	case KindKubernetesApp:
-		return c.KubernetesDeploymentSpec, true
+		return c.KubernetesDeploymentSpec.GenericDeploymentSpec, true
 	case KindTerraformApp:
-		return c.TerraformDeploymentSpec, true
+		return c.TerraformDeploymentSpec.GenericDeploymentSpec, true
 	case KindCloudRunApp:
-		return c.CloudRunDeploymentSpec, true
+		return c.CloudRunDeploymentSpec.GenericDeploymentSpec, true
 	case KindLambdaApp:
-		return c.LambdaDeploymentSpec, true
+		return c.LambdaDeploymentSpec.GenericDeploymentSpec, true
 	}
-	return nil, false
+	return GenericDeploymentSpec{}, false
 }

@@ -5,5 +5,5 @@ spec:
     manifests:
       - demoapp-deployment.yaml
     kubectlVersion: 2.1.1
-    sealedSecrets:
-      - path: sealed-secret.yaml
+  sealedSecrets:
+    - path: sealed-secret.yaml
