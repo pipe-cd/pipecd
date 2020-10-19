@@ -7,6 +7,10 @@ if (process.env.NODE_ENV === "development") {
   apiEndpoint = "/api";
 }
 
+if (process.env.NODE_ENV === "test") {
+  apiEndpoint = "https://test.pipecd.dev";
+}
+
 export const apiClient = new WebServiceClient(apiEndpoint, null, {
   withCredentials: "true",
 });
