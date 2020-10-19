@@ -25,9 +25,7 @@ import (
 	"fmt"
 	"io/ioutil"
 	"os"
-	"path"
 	"path/filepath"
-	"strings"
 	"sync"
 	"time"
 
@@ -621,27 +619,46 @@ func loadDeploymentConfiguration(repoPath string, d *model.Deployment) (*config.
 func decryptSealedSecrets(appDir string, secrets []config.SealedSecretMapping, dcr sealedSecretDecrypter) error {
 	for _, s := range secrets {
 		secretPath := filepath.Join(appDir, s.Path)
-		data, err := ioutil.ReadFile(secretPath)
+		cfg, err := config.LoadFromYAML(secretPath)
 		if err != nil {
-			return fmt.Errorf("unable to read sealed secret file at %s (%w)", s.Path, err)
+			return fmt.Errorf("unable to read sealed secret file %s (%w)", s.Path, err)
+		}
+		if cfg.Kind != config.KindSealedSecret {
+			return fmt.Errorf("unexpected kind in sealed secret file %s, want %q but got %q", s.Path, config.KindSealedSecret, cfg.Kind)
+		}
+		spec := cfg.SealedSecretSpec
+
+		decryptedSecrets := make(map[string]string, len(spec.EncryptedData))
+		for k, v := range spec.EncryptedData {
+			text, err := dcr.Decrypt(v)
+			if err != nil {
+				return fmt.Errorf("unable to decrypt %s field in the sealed secret file %s (%w)", k, s.Path, err)
+			}
+			decryptedSecrets[k] = text
 		}
 
-		content := strings.TrimSpace(string(data))
-		decryptedText, err := dcr.Decrypt(content)
+		content, err := spec.RenderOriginalContent(decryptedSecrets)
 		if err != nil {
-			return fmt.Errorf("unable to decrypt sealed secret file at %s (%w)", s.Path, err)
+			return fmt.Errorf("unable to render the original content of the sealed secret file %s (%v)", s.Path, err)
 		}
 
-		outDir, outFile := path.Split(s.Path)
+		outDir, outFile := filepath.Split(s.Path)
 		if s.OutFilename != "" {
 			outFile = s.OutFilename
 		}
 		if s.OutDir != "" {
 			outDir = s.OutDir
 		}
-		outPath := path.Join(appDir, outDir, outFile)
-		if err := ioutil.WriteFile(outPath, []byte(decryptedText), 0644); err != nil {
-			return fmt.Errorf("unable to write decrypted content of sealed secret file at %s (%w)", s.Path, err)
+		// TODO: Ensure that the output directory must be inside the application directory.
+		if outDir != "" {
+			if err := os.MkdirAll(filepath.Join(appDir, outDir), 0700); err != nil {
+				return fmt.Errorf("unable to write decrypted content of sealed secret file %s to directory %s (%w)", s.Path, outDir, err)
+			}
+		}
+		outPath := filepath.Join(appDir, outDir, outFile)
+
+		if err := ioutil.WriteFile(outPath, content, 0644); err != nil {
+			return fmt.Errorf("unable to write decrypted content of sealed secret file %s (%w)", s.Path, err)
 		}
 	}
 	return nil
