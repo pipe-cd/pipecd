@@ -80,3 +80,36 @@ export const error: React.FC = () => (
     <ApplicationDetail applicationId={dummyApplication.id} />
   </Provider>
 );
+
+export const loadingLiveState: React.FC = () => (
+  <Provider
+    store={createStore({
+      ...dummyStore,
+      applicationLiveState: {
+        entities: {},
+        ids: [],
+      },
+      applications: {
+        adding: false,
+        disabling: {},
+        syncing: {},
+        entities: {
+          [dummyApplication.id]: {
+            ...dummyApplication,
+            syncState: {
+              shortReason: "deployment has error",
+              reason:
+                "long reason of deployment failed. you can see this error if click show detail button.",
+              headDeploymentId: "deployment-id",
+              timestamp: 0,
+              status: ApplicationSyncStatus.OUT_OF_SYNC,
+            },
+          },
+        },
+        ids: [dummyApplication.id],
+      },
+    })}
+  >
+    <ApplicationDetail applicationId={dummyApplication.id} />
+  </Provider>
+);
