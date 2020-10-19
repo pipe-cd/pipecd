@@ -189,7 +189,11 @@ func (e *Executor) addBuiltinAnnontations(manifests []provider.Manifest, variant
 }
 
 func (e *Executor) applyManifests(ctx context.Context, manifests []provider.Manifest) error {
-	e.LogPersister.Infof("Start applying %d manifests", len(manifests))
+	if e.config.Input.Namespace == "" {
+		e.LogPersister.Infof("Start applying %d manifests", len(manifests))
+	} else {
+		e.LogPersister.Infof("Start applying %d manifests to %q namespace", len(manifests), e.config.Input.Namespace)
+	}
 	for _, m := range manifests {
 		if err := e.provider.ApplyManifest(ctx, m); err != nil {
 			e.LogPersister.Errorf("Failed to apply manifest: %s (%v)", m.Key.ReadableString(), err)
