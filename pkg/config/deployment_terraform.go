@@ -16,22 +16,11 @@ package config
 
 // TerraformDeploymentSpec represents a deployment configuration for Terraform application.
 type TerraformDeploymentSpec struct {
+	GenericDeploymentSpec
 	// Input for Terraform deployment such as terraform version, workspace...
 	Input TerraformDeploymentInput `json:"input"`
 	// Configuration for quick sync.
 	QuickSync TerraformApplyStageOptions `json:"quickSync"`
-	// Pipeline for deploying progressively.
-	Pipeline *DeploymentPipeline `json:"pipeline"`
-}
-
-func (s *TerraformDeploymentSpec) GetStage(index int32) (PipelineStage, bool) {
-	if s.Pipeline == nil {
-		return PipelineStage{}, false
-	}
-	if int(index) >= len(s.Pipeline.Stages) {
-		return PipelineStage{}, false
-	}
-	return s.Pipeline.Stages[index], true
 }
 
 // Validate returns an error if any wrong configuration value was found.
@@ -54,8 +43,6 @@ type TerraformDeploymentInput struct {
 	Vars []string `json:"vars,omitempty"`
 	// List of variable files that will be set on terraform commands with "-var-file" flag.
 	VarFiles []string `json:"varFiles,omitempty"`
-	// The list of sealed secrets that should be decrypted.
-	SealedSecrets []InputSealedSecret `json:"sealedSecrets"`
 	// Automatically reverts all changes from all stages when one of them failed.
 	// Default is false.
 	AutoRollback bool `json:"autoRollback"`

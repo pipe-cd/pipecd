@@ -25,7 +25,9 @@ import (
 	"fmt"
 	"io/ioutil"
 	"os"
+	"path"
 	"path/filepath"
+	"strings"
 	"sync"
 	"time"
 
@@ -88,6 +90,10 @@ type notifier interface {
 	Notify(event model.Event)
 }
 
+type sealedSecretDecrypter interface {
+	Decrypt(string) (string, error)
+}
+
 type DeploymentController interface {
 	Run(ctx context.Context) error
 }
@@ -98,17 +104,18 @@ var (
 )
 
 type controller struct {
-	apiClient          apiClient
-	gitClient          gitClient
-	deploymentLister   deploymentLister
-	commandLister      commandLister
-	applicationLister  applicationLister
-	environmentLister  environmentLister
-	liveResourceLister liveResourceLister
-	notifier           notifier
-	pipedConfig        *config.PipedSpec
-	appManifestsCache  cache.Cache
-	logPersister       logpersister.Persister
+	apiClient             apiClient
+	gitClient             gitClient
+	deploymentLister      deploymentLister
+	commandLister         commandLister
+	applicationLister     applicationLister
+	environmentLister     environmentLister
+	liveResourceLister    liveResourceLister
+	notifier              notifier
+	sealedSecretDecrypter sealedSecretDecrypter
+	pipedConfig           *config.PipedSpec
+	appManifestsCache     cache.Cache
+	logPersister          logpersister.Persister
 
 	// Map from application ID to the planner
 	// of a pending deployment of that application.
@@ -145,6 +152,7 @@ func NewController(
 	environmentLister environmentLister,
 	liveResourceLister liveResourceLister,
 	notifier notifier,
+	ssd sealedSecretDecrypter,
 	pipedConfig *config.PipedSpec,
 	appManifestsCache cache.Cache,
 	gracePeriod time.Duration,
@@ -156,17 +164,18 @@ func NewController(
 		lg = logger.Named("controller")
 	)
 	return &controller{
-		apiClient:          apiClient,
-		gitClient:          gitClient,
-		deploymentLister:   deploymentLister,
-		commandLister:      commandLister,
-		applicationLister:  applicationLister,
-		environmentLister:  environmentLister,
-		liveResourceLister: liveResourceLister,
-		notifier:           notifier,
-		appManifestsCache:  appManifestsCache,
-		pipedConfig:        pipedConfig,
-		logPersister:       lp,
+		apiClient:             apiClient,
+		gitClient:             gitClient,
+		deploymentLister:      deploymentLister,
+		commandLister:         commandLister,
+		applicationLister:     applicationLister,
+		environmentLister:     environmentLister,
+		liveResourceLister:    liveResourceLister,
+		notifier:              notifier,
+		sealedSecretDecrypter: ssd,
+		appManifestsCache:     appManifestsCache,
+		pipedConfig:           pipedConfig,
+		logPersister:          lp,
 
 		planners:                      make(map[string]*planner),
 		donePlanners:                  make(map[string]time.Time),
@@ -367,6 +376,7 @@ func (c *controller) startNewPlanner(ctx context.Context, d *model.Deployment) (
 		c.apiClient,
 		c.gitClient,
 		c.notifier,
+		c.sealedSecretDecrypter,
 		c.pipedConfig,
 		c.appManifestsCache,
 		c.logger,
@@ -509,6 +519,7 @@ func (c *controller) startNewScheduler(ctx context.Context, d *model.Deployment)
 		c.liveResourceLister,
 		c.logPersister,
 		c.notifier,
+		c.sealedSecretDecrypter,
 		c.pipedConfig,
 		c.appManifestsCache,
 		c.logger,
@@ -561,7 +572,7 @@ func (c *controller) getMostRecentlySuccessfulDeployment(ctx context.Context, ap
 	return nil, err
 }
 
-// prepareDeployRepository clones repository and checkouts to the target revision.
+// prepareDeployRepository clones the Git repository and checkouts it to the given revision.
 func prepareDeployRepository(ctx context.Context, d *model.Deployment, gitClient gitClient, repoDirPath string, pipedConfig *config.PipedSpec) (git.Repo, error) {
 	var (
 		appID       = d.ApplicationId
@@ -589,6 +600,8 @@ func prepareDeployRepository(ctx context.Context, d *model.Deployment, gitClient
 	return gitRepo, nil
 }
 
+// loadDeploymentConfiguration loads the deployment configuration file to build a Config struct.
+// The repository must be cloned before and repoPath is the absolute path that cloned repository.
 func loadDeploymentConfiguration(repoPath string, d *model.Deployment) (*config.Config, error) {
 	var (
 		relativePath = d.GitPath.GetDeploymentConfigFilePath()
@@ -603,6 +616,35 @@ func loadDeploymentConfiguration(repoPath string, d *model.Deployment) (*config.
 		return nil, fmt.Errorf("applicationKind specified in deployment configuration file is not match, got: %s, expected: %s", appKind, d.Kind)
 	}
 	return cfg, nil
+}
+
+func decryptSealedSecrets(appDir string, secrets []config.SealedSecretMapping, dcr sealedSecretDecrypter) error {
+	for _, s := range secrets {
+		secretPath := filepath.Join(appDir, s.Path)
+		data, err := ioutil.ReadFile(secretPath)
+		if err != nil {
+			return fmt.Errorf("unable to read sealed secret file at %s (%w)", s.Path, err)
+		}
+
+		content := strings.TrimSpace(string(data))
+		decryptedText, err := dcr.Decrypt(content)
+		if err != nil {
+			return fmt.Errorf("unable to decrypt sealed secret file at %s (%w)", s.Path, err)
+		}
+
+		outDir, outFile := path.Split(s.Path)
+		if s.OutFilename != "" {
+			outFile = s.OutFilename
+		}
+		if s.OutDir != "" {
+			outDir = s.OutDir
+		}
+		outPath := path.Join(appDir, outDir, outFile)
+		if err := ioutil.WriteFile(outPath, []byte(decryptedText), 0644); err != nil {
+			return fmt.Errorf("unable to write decrypted content of sealed secret file at %s (%w)", s.Path, err)
+		}
+	}
+	return nil
 }
 
 type appLiveResourceLister struct {

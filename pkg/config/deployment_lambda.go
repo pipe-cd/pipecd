@@ -16,22 +16,11 @@ package config
 
 // LambdaDeploymentSpec represents a deployment configuration for Lambda application.
 type LambdaDeploymentSpec struct {
+	GenericDeploymentSpec
 	// Input for Lambda deployment such as where to fetch source code...
 	Input LambdaDeploymentInput `json:"input"`
 	// Configuration for quick sync.
 	QuickSync LambdaSyncStageOptions `json:"quickSync"`
-	// Pipeline for deploying progressively.
-	Pipeline *DeploymentPipeline `json:"pipeline"`
-}
-
-func (s *LambdaDeploymentSpec) GetStage(index int32) (PipelineStage, bool) {
-	if s.Pipeline == nil {
-		return PipelineStage{}, false
-	}
-	if int(index) >= len(s.Pipeline.Stages) {
-		return PipelineStage{}, false
-	}
-	return s.Pipeline.Stages[index], true
 }
 
 // Validate returns an error if any wrong configuration value was found.

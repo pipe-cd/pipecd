@@ -23,7 +23,7 @@ import (
 	"io/ioutil"
 )
 
-const DefauleRSAKeySize = 2048
+const DefauleRSAKeySize = 4096
 
 // GenerateRSAPems generates RSA key pair and the PEM encoding of them.
 func GenerateRSAPems(size int) (private, public []byte, err error) {

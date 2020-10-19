@@ -21,8 +21,23 @@ import (
 	"github.com/pipe-cd/pipe/pkg/model"
 )
 
-type Pipelineable interface {
-	GetStage(index int32) (PipelineStage, bool)
+type GenericDeploymentSpec struct {
+	// Forcibly use QuickSync or Pipeline when commit message matched the specified pattern.
+	CommitMatcher DeploymentCommitMatcher `json:"commitMatcher"`
+	// Pipeline for deploying progressively.
+	Pipeline *DeploymentPipeline `json:"pipeline"`
+	// The list of sealed secrets that should be decrypted.
+	SealedSecrets []SealedSecretMapping `json:"sealedSecrets"`
+}
+
+func (s GenericDeploymentSpec) GetStage(index int32) (PipelineStage, bool) {
+	if s.Pipeline == nil {
+		return PipelineStage{}, false
+	}
+	if int(index) >= len(s.Pipeline.Stages) {
+		return PipelineStage{}, false
+	}
+	return s.Pipeline.Stages[index], true
 }
 
 // DeploymentCommitMatcher provides a way to decide how to deploy.
@@ -248,7 +263,7 @@ type ImageWatcherTargetPath struct {
 	Field    string `json:"field"`
 }
 
-type InputSealedSecret struct {
+type SealedSecretMapping struct {
 	// Relative path from the application configuration directory to sealed secret file.
 	Path string `json:"path"`
 	// The filename for the decrypted secret.

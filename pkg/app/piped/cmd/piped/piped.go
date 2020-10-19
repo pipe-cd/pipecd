@@ -46,6 +46,7 @@ import (
 	"github.com/pipe-cd/pipe/pkg/cache/memorycache"
 	"github.com/pipe-cd/pipe/pkg/cli"
 	"github.com/pipe-cd/pipe/pkg/config"
+	"github.com/pipe-cd/pipe/pkg/crypto"
 	"github.com/pipe-cd/pipe/pkg/git"
 	"github.com/pipe-cd/pipe/pkg/model"
 	"github.com/pipe-cd/pipe/pkg/rpc/rpcauth"
@@ -269,6 +270,12 @@ func (p *piped) run(ctx context.Context, t cli.Telemetry) (runErr error) {
 		})
 	}
 
+	decrypter, err := p.initializeSealedSecretDecrypter(cfg)
+	if err != nil {
+		t.Logger.Error("failed to initialize sealed secret decrypter", zap.Error(err))
+		return err
+	}
+
 	// Start running deployment controller.
 	{
 		c := controller.NewController(
@@ -280,6 +287,7 @@ func (p *piped) run(ctx context.Context, t cli.Telemetry) (runErr error) {
 			environmentStore,
 			livestatestore.LiveResourceLister{Getter: liveStateGetter},
 			notifier,
+			decrypter,
 			cfg,
 			appManifestsCache,
 			p.gracePeriod,
@@ -375,6 +383,36 @@ func (p *piped) loadConfig() (*config.PipedSpec, error) {
 		cfg.PipedSpec.EnableDefaultKubernetesCloudProvider()
 	}
 	return cfg.PipedSpec, nil
+}
+
+func (p *piped) initializeSealedSecretDecrypter(cfg *config.PipedSpec) (crypto.Decrypter, error) {
+	ssm := cfg.SealedSecretManagement
+	if ssm == nil {
+		return nil, nil
+	}
+
+	switch ssm.Type {
+	case model.SealedSecretManagementNone:
+		return nil, nil
+
+	case model.SealedSecretManagementSealingKey:
+		if ssm.PrivateKeyFile == "" {
+			return nil, fmt.Errorf("sealedSecretManagement.privateKeyFile must be set")
+		}
+		decrypter, err := crypto.NewRSADecrypter(ssm.PrivateKeyFile)
+		if err != nil {
+			return nil, fmt.Errorf("failed to initialize decrypter (%w)", err)
+		}
+		return decrypter, nil
+	case model.SealedSecretManagementGCPKMS:
+		return nil, fmt.Errorf("type %q is not implemented yet", ssm.Type.String())
+
+	case model.SealedSecretManagementAWSKMS:
+		return nil, fmt.Errorf("type %q is not implemented yet", ssm.Type.String())
+
+	default:
+		return nil, fmt.Errorf("unsupported sealed secret management type: %s", ssm.Type.String())
+	}
 }
 
 func (p *piped) sendPipedMeta(ctx context.Context, client pipedservice.Client, cfg *config.PipedSpec, logger *zap.Logger) error {

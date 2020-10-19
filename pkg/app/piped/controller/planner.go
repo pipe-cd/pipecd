@@ -48,6 +48,7 @@ type planner struct {
 	apiClient                apiClient
 	gitClient                gitClient
 	notifier                 notifier
+	sealedSecretDecrypter    sealedSecretDecrypter
 	plannerRegistry          registry.Registry
 	pipedConfig              *config.PipedSpec
 	appManifestsCache        cache.Cache
@@ -70,6 +71,7 @@ func newPlanner(
 	apiClient apiClient,
 	gitClient gitClient,
 	notifier notifier,
+	ssd sealedSecretDecrypter,
 	pipedConfig *config.PipedSpec,
 	appManifestsCache cache.Cache,
 	logger *zap.Logger,
@@ -92,6 +94,7 @@ func newPlanner(
 		apiClient:                apiClient,
 		gitClient:                gitClient,
 		notifier:                 notifier,
+		sealedSecretDecrypter:    ssd,
 		pipedConfig:              pipedConfig,
 		plannerRegistry:          registry.DefaultRegistry(),
 		appManifestsCache:        appManifestsCache,
@@ -134,6 +137,11 @@ func (p *planner) Run(ctx context.Context) error {
 		p.done.Store(true)
 	}()
 
+	var (
+		repoDirPath = filepath.Join(p.workingDir, workspaceGitRepoDirName)
+		appDirPath  = filepath.Join(repoDirPath, p.deployment.GitPath.Path)
+	)
+
 	planner, ok := p.plannerRegistry.Planner(p.deployment.Kind)
 	if !ok {
 		err := fmt.Errorf("no registered planner for application %v", p.deployment.Kind)
@@ -143,7 +151,6 @@ func (p *planner) Run(ctx context.Context) error {
 	}
 
 	// Clone repository and checkout to the target revision.
-	repoDirPath := filepath.Join(p.workingDir, workspaceGitRepoDirName)
 	gitRepo, err := prepareDeployRepository(ctx, p.deployment, p.gitClient, repoDirPath, p.pipedConfig)
 	if err != nil {
 		reason := fmt.Sprintf("Failed because %v", err)
@@ -159,6 +166,18 @@ func (p *planner) Run(ctx context.Context) error {
 		return err
 	}
 	p.deploymentConfig = cfg
+
+	gds, ok := cfg.GetGenericDeployment()
+	if !ok {
+		return fmt.Errorf("unsupport application kind %s", cfg.Kind)
+	}
+
+	// Decrypt the sealed secrets at the target revision.
+	if len(gds.SealedSecrets) > 0 && p.sealedSecretDecrypter != nil {
+		if err := decryptSealedSecrets(appDirPath, gds.SealedSecrets, p.sealedSecretDecrypter); err != nil {
+			return fmt.Errorf("failed to decrypt sealed secrets (%w)", err)
+		}
+	}
 
 	in := pln.Input{
 		Deployment:                     p.deployment,

@@ -15,6 +15,7 @@
 package crypto
 
 import (
+	"fmt"
 	"io/ioutil"
 	"testing"
 
@@ -29,11 +30,23 @@ func TestRSAEncryptDecrypt(t *testing.T) {
 	encrypter, err := NewRSAEncrypter(string(data))
 	require.NoError(t, err)
 
-	text := "original-text"
+	text := `
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: simple-sealed-secret
+data:
+  game.properties: |
+    enemies=aliens
+    lives=3
+    enemies.cheat=true
+`
+
 	encryptedText, err := encrypter.Encrypt(text)
 	require.NoError(t, err)
 	assert.True(t, len(encryptedText) > 0)
 
+	fmt.Println(encryptedText)
 	decrypter, err := NewRSADecrypter("testdata/private-rsa-pem")
 	require.NoError(t, err)
 

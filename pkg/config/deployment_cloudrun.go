@@ -16,22 +16,11 @@ package config
 
 // CloudRunDeploymentSpec represents a deployment configuration for CloudRun application.
 type CloudRunDeploymentSpec struct {
+	GenericDeploymentSpec
 	// Input for CloudRun deployment such as docker image...
 	Input CloudRunDeploymentInput `json:"input"`
 	// Configuration for quick sync.
 	QuickSync CloudRunSyncStageOptions `json:"quickSync"`
-	// Pipline for deploying progressively.
-	Pipeline *DeploymentPipeline `json:"pipeline"`
-}
-
-func (s *CloudRunDeploymentSpec) GetStage(index int32) (PipelineStage, bool) {
-	if s.Pipeline == nil {
-		return PipelineStage{}, false
-	}
-	if int(index) >= len(s.Pipeline.Stages) {
-		return PipelineStage{}, false
-	}
-	return s.Pipeline.Stages[index], true
 }
 
 // Validate returns an error if any wrong configuration value was found.

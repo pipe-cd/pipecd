@@ -16,14 +16,11 @@ package config
 
 // KubernetesDeploymentSpec represents a deployment configuration for Kubernetes application.
 type KubernetesDeploymentSpec struct {
+	GenericDeploymentSpec
 	// Input for Kubernetes deployment such as kubectl version, helm version, manifests filter...
 	Input KubernetesDeploymentInput `json:"input"`
-	// Forcibly use QuickSync or Pipeline when commit message matched the specified pattern.
-	CommitMatcher DeploymentCommitMatcher `json:"commitMatcher"`
 	// Configuration for quick sync.
 	QuickSync K8sSyncStageOptions `json:"quickSync"`
-	// Pipeline for deploying progressively.
-	Pipeline *DeploymentPipeline `json:"pipeline"`
 	// Which resource should be considered as the Service of application.
 	// Empty means the first Service resource will be used.
 	Service K8sResourceReference `json:"service"`
@@ -39,16 +36,6 @@ type KubernetesDeploymentSpec struct {
 	TrafficRouting *KubernetesTrafficRouting `json:"trafficRouting"`
 	// Configuration for automatic image updates.
 	ImageWatcher DeploymentImageWatcher `json:"imageWatcher"`
-}
-
-func (s *KubernetesDeploymentSpec) GetStage(index int32) (PipelineStage, bool) {
-	if s.Pipeline == nil {
-		return PipelineStage{}, false
-	}
-	if int(index) >= len(s.Pipeline.Stages) {
-		return PipelineStage{}, false
-	}
-	return s.Pipeline.Stages[index], true
 }
 
 // Validate returns an error if any wrong configuration value was found.
@@ -75,8 +62,6 @@ type KubernetesDeploymentInput struct {
 
 	// The namespace where manifests will be applied.
 	Namespace string `json:"namespace"`
-	// The list of sealed secrets that should be decrypted.
-	SealedSecrets []InputSealedSecret `json:"sealedSecrets"`
 
 	// Automatically reverts all deployment changes on failure.
 	// Default is true.
