@@ -404,6 +404,11 @@ func (p *piped) initializeSealedSecretDecrypter(cfg *config.PipedSpec) (crypto.D
 			return nil, fmt.Errorf("failed to initialize decrypter (%w)", err)
 		}
 		return decrypter, nil
+	case model.SealedSecretManagementGCPKMS:
+		return nil, fmt.Errorf("type %q is not implemented yet", ssm.Type.String())
+
+	case model.SealedSecretManagementAWSKMS:
+		return nil, fmt.Errorf("type %q is not implemented yet", ssm.Type.String())
 
 	default:
 		return nil, fmt.Errorf("unsupported sealed secret management type: %s", ssm.Type.String())
