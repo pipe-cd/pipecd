@@ -101,7 +101,7 @@ func NewHybridDecrypter(keyFile string) (*HybridDecrypter, error) {
 	}, nil
 }
 
-// HybridDecrypt performs a regular AES-GCM + RSA-OAEP decryption.
+// Decrypt performs a regular AES-GCM + RSA-OAEP decryption.
 //
 // The implementation of this function was brought from well known Bitnami's SealedSecret library.
 // https://github.com/bitnami-labs/sealed-secrets/blob/master/pkg/crypto/crypto.go#L86
