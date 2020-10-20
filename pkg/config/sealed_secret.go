@@ -14,17 +14,51 @@
 
 package config
 
-import "fmt"
+import (
+	"bytes"
+	"fmt"
+	"text/template"
+)
 
 // SealedSecretSpec holds the data of a sealed secret.
 type SealedSecretSpec struct {
+	// The template used to restore the original content.
+	// Empty means the original content is same with the decrypted data of the first encrypted item.
+	Template string
 	// A string that represents the encrypted data of the original file.
-	EncryptedData string
+	EncryptedData map[string]string
 }
 
 func (s *SealedSecretSpec) Validate() error {
-	if s.EncryptedData == "" {
-		return fmt.Errorf("encryptedData must be set")
+	if len(s.EncryptedData) == 0 {
+		return fmt.Errorf("encryptedData must contain at least one item")
 	}
 	return nil
+}
+
+func (s *SealedSecretSpec) RenderOriginalContent(secrets map[string]string) ([]byte, error) {
+	if len(secrets) == 0 {
+		return nil, fmt.Errorf("require at least one secret")
+	}
+
+	// If the template was not configured, the first secret will be used as the original content.
+	if s.Template == "" {
+		for _, v := range secrets {
+			return []byte(v), nil
+		}
+	}
+
+	tmpl, err := template.New("sealedsecret").Option("missingkey=error").Parse(s.Template)
+	if err != nil {
+		return nil, fmt.Errorf("unable to parse secret template (%w)", err)
+	}
+
+	var out bytes.Buffer
+	data := map[string]interface{}{
+		"encryptedData": secrets,
+	}
+	if err := tmpl.Execute(&out, data); err != nil {
+		return nil, err
+	}
+	return out.Bytes(), nil
 }
