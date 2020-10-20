@@ -46,8 +46,6 @@ type TerraformDeploymentInput struct {
 	// Automatically reverts all changes from all stages when one of them failed.
 	// Default is false.
 	AutoRollback bool `json:"autoRollback"`
-	// List of directories where their changes will trigger the deployment.
-	Dependencies []string `json:"dependencies,omitempty"`
 }
 
 // TerraformSyncStageOptions contains all configurable values for a TERRAFORM_SYNC stage.

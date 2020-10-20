@@ -26,6 +26,7 @@ spec:
 | service | [KubernetesService](/docs/user-guide/configuration-reference/#kubernetesservice) | Which Kubernetes resource should be considered as the Service of application. Empty means the first Service resource will be used. | No |
 | workloads | [][KubernetesWorkload](/docs/user-guide/configuration-reference/#kubernetesworkload) | Which Kubernetes resources should be considered as the Workloads of application. Empty means all Deployment resources. | No |
 | trafficRouting | [KubernetesTrafficRouting](/docs/user-guide/configuration-reference/#kubernetestrafficrouting) | How to change traffic routing percentages. | No |
+<!-- | dependencies | []string | List of directories where their changes will trigger the deployment. | No | -->
 
 ## Terraform application
 
@@ -43,6 +44,7 @@ spec:
 | input | [TerraformDeploymentInput](/docs/user-guide/configuration-reference/#terraformdeploymentinput) | Input for Terraform deployment such as terraform version, workspace... | No |
 | quickSync | [TerraformQuickSync](/docs/user-guide/configuration-reference/#terraformquicksync) | Configuration for quick sync. | No |
 | pipeline | [Pipeline](/docs/user-guide/configuration-reference/#pipeline) | Pipeline for deploying progressively. | No |
+<!-- | dependencies | []string | List of directories where their changes will trigger the deployment. | No | -->
 
 ## CloudRun application
 
@@ -133,7 +135,6 @@ spec:
 | helmOptions | [HelmOptions](/docs/user-guide/configuration-reference/#helmoptions) | Configurable parameters for helm commands. | No |
 | namespace | string | The namespace where manifests will be applied. | No |
 | autoRollback | bool | Automatically reverts all deployment changes on failure. Default is `true`. | No |
-| dependencies | []string | List of directories where their changes will trigger the deployment. | No |
 
 ## HelmChart
 
@@ -204,7 +205,6 @@ spec:
 | vars | []string | List of variables that will be set directly on terraform commands with `-var` flag. The variable must be formatted by `key=value`. | No |
 | varFiles | []string | List of variable files that will be set on terraform commands with `-var-file` flag. | No |
 | autoRollback | bool | Automatically reverts all changes from all stages when one of them failed. | No |
-| dependencies | []string | List of directories where their changes will trigger the deployment. | No |
 
 ## TerraformQuickSync
 

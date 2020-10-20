@@ -66,8 +66,6 @@ type KubernetesDeploymentInput struct {
 	// Automatically reverts all deployment changes on failure.
 	// Default is true.
 	AutoRollback bool `json:"autoRollback"`
-	// List of directories where their changes will trigger the deployment.
-	Dependencies []string `json:"dependencies,omitempty"`
 }
 
 type InputHelmChart struct {
