@@ -29,7 +29,7 @@ func TestGenerateRSAPems(t *testing.T) {
 	assert.Nil(t, private)
 	assert.Nil(t, public)
 
-	private, public, err = GenerateRSAPems(4098)
+	private, public, err = GenerateRSAPems(2048)
 	require.NoError(t, err)
 
 	public = bytes.TrimSpace(public)

@@ -6,3 +6,7 @@ This product contains a modified part of docsy-example, distributed by google/do
   * License: https://github.com/google/docsy-example/blob/master/LICENSE (Apache License v2.0)
   * Homepage: https://github.com/google/docsy-example
 
+This product contains a modified part of sealed-secrets, distributed by bitnami-labs:
+
+  * License: https://github.com/bitnami-labs/sealed-secrets/blob/master/LICENSE (Apache License v2.0)
+  * Homepage: https://github.com/bitnami-labs/sealed-secrets
