@@ -34,7 +34,7 @@ interface Props {
   onClose: () => void;
 }
 
-const DIALOG_TITLE = "Generate application sealed secret";
+const DIALOG_TITLE = "Encrypting secret data for application";
 
 export const SealedSecretDialog: FC<Props> = ({
   open,
@@ -135,7 +135,7 @@ export const SealedSecretDialog: FC<Props> = ({
               type="submit"
               disabled={sealedSecret.isLoading}
             >
-              Generate
+              Encrypt
             </Button>
           </DialogActions>
         </form>

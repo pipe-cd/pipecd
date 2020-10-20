@@ -262,7 +262,7 @@ export const ApplicationList: FC = memo(function ApplicationList() {
           <MenuItem onClick={handleOnClickDisable}>Disable</MenuItem>
         )}
         <MenuItem onClick={handleOnClickGenerateSecret}>
-          Generate Secret
+          Encrypt Secret
         </MenuItem>
       </Menu>
 
