@@ -10,6 +10,8 @@ import {
   EnablePipedResponse,
   RecreatePipedKeyRequest,
   RecreatePipedKeyResponse,
+  GenerateApplicationSealedSecretRequest,
+  GenerateApplicationSealedSecretResponse,
 } from "pipe/pkg/app/web/api_client/service_pb";
 
 export const getPipeds = ({
@@ -56,4 +58,16 @@ export const recreatePipedKey = ({
   const req = new RecreatePipedKeyRequest();
   req.setId(id);
   return apiRequest(req, apiClient.recreatePipedKey);
+};
+
+export const generateApplicationSealedSecret = ({
+  pipedId,
+  data,
+}: GenerateApplicationSealedSecretRequest.AsObject): Promise<
+  GenerateApplicationSealedSecretResponse.AsObject
+> => {
+  const req = new GenerateApplicationSealedSecretRequest();
+  req.setPipedId(pipedId);
+  req.setData(data);
+  return apiRequest(req, apiClient.generateApplicationSealedSecret);
 };

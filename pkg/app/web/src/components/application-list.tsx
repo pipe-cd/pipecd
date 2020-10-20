@@ -37,6 +37,7 @@ import {
 import { AppDispatch } from "../store";
 import { DisableApplicationDialog } from "./disable-application-dialog";
 import { SyncStatusIcon } from "./sync-status-icon";
+import { SealedSecretDialog } from "./sealed-secret-dialog";
 
 const useStyles = makeStyles((theme) => ({
   root: {
@@ -72,7 +73,10 @@ export const ApplicationList: FC = memo(function ApplicationList() {
   const [anchorEl, setAnchorEl] = useState<HTMLButtonElement | null>(null);
   const isOpenMenu = Boolean(anchorEl);
   const [actionTarget, setActionTarget] = useState<Application | null>(null);
-  const [openDisableDialog, setOpenDisableDialog] = useState(false);
+  const [dialogState, setDialogState] = useState({
+    disabling: false,
+    generateSecret: false,
+  });
   const [page, setPage] = React.useState(0);
   const [rowsPerPage, setRowsPerPage] = React.useState(20);
 
@@ -93,7 +97,18 @@ export const ApplicationList: FC = memo(function ApplicationList() {
   // Menu item event handler
   const handleOnClickDisable = (): void => {
     setAnchorEl(null);
-    setOpenDisableDialog(true);
+    setDialogState({
+      ...dialogState,
+      disabling: true,
+    });
+  };
+
+  const handleOnClickGenerateSecret = (): void => {
+    setAnchorEl(null);
+    setDialogState({
+      ...dialogState,
+      generateSecret: true,
+    });
   };
 
   const handleOnClickEnable = (): void => {
@@ -107,9 +122,20 @@ export const ApplicationList: FC = memo(function ApplicationList() {
     closeMenu();
   };
 
+  const handleOnCloseGenerateDialog = (): void => {
+    closeMenu();
+    setDialogState({
+      ...dialogState,
+      generateSecret: false,
+    });
+  };
+
   const handleCloseDialog = (): void => {
     closeMenu();
-    setOpenDisableDialog(false);
+    setDialogState({
+      ...dialogState,
+      disabling: false,
+    });
     dispatch(fetchApplications());
   };
 
@@ -235,13 +261,22 @@ export const ApplicationList: FC = memo(function ApplicationList() {
         ) : (
           <MenuItem onClick={handleOnClickDisable}>Disable</MenuItem>
         )}
+        <MenuItem onClick={handleOnClickGenerateSecret}>
+          Generate Secret
+        </MenuItem>
       </Menu>
 
       <DisableApplicationDialog
-        open={openDisableDialog}
+        open={dialogState.disabling}
         applicationId={actionTarget && actionTarget.id}
         onDisable={handleCloseDialog}
         onCancel={handleCloseDialog}
+      />
+
+      <SealedSecretDialog
+        open={Boolean(actionTarget) && dialogState.generateSecret}
+        applicationId={actionTarget && actionTarget.id}
+        onClose={handleOnCloseGenerateDialog}
       />
     </div>
   );
