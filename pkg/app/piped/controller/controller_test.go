@@ -51,9 +51,9 @@ spec:
       name: mysecret
     type: Opaque
     data:
-      username: {{ .encryptedData.username }}
-      password: {{ .encryptedData.password }}
-  encryptedData:
+      username: {{ .encryptedItems.username }}
+      password: {{ .encryptedItems.password }}
+  encryptedItems:
     username: encrypted-username
     password: encrypted-password
 `),
@@ -65,8 +65,7 @@ spec:
 apiVersion: "pipecd.dev/v1beta1"
 kind: SealedSecret
 spec:
-  encryptedData:
-    data: encrypted-data
+  encryptedData: encrypted-data
 `),
 		0644,
 	)

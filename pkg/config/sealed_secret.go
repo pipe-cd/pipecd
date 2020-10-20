@@ -22,30 +22,49 @@ import (
 
 // SealedSecretSpec holds the data of a sealed secret.
 type SealedSecretSpec struct {
-	// The template used to restore the original content.
-	// Empty means the original content is same with the decrypted data of the first encrypted item.
-	Template string
 	// A string that represents the encrypted data of the original file.
-	EncryptedData map[string]string
+	// When this is configured, the template and encryptedItems fields will be ignored.
+	EncryptedData string
+	// The template used to restore the original content.
+	Template string
+	// A list of encrypted items that will be decrypted and inserted to
+	// the specified template to render the original content.
+	EncryptedItems map[string]string
 }
 
 func (s *SealedSecretSpec) Validate() error {
-	if len(s.EncryptedData) == 0 {
-		return fmt.Errorf("encryptedData must contain at least one item")
+	if s.EncryptedData != "" {
+		return nil
+	}
+	if len(s.EncryptedItems) == 0 {
+		return fmt.Errorf("either encryptedData or encryptedItems must be set")
+	}
+	if s.Template == "" {
+		return fmt.Errorf("the template must be set")
 	}
 	return nil
 }
 
-func (s *SealedSecretSpec) RenderOriginalContent(secrets map[string]string) ([]byte, error) {
-	if len(secrets) == 0 {
-		return nil, fmt.Errorf("require at least one secret")
+type sealedSecretDecrypter interface {
+	Decrypt(string) (string, error)
+}
+
+func (s *SealedSecretSpec) RenderOriginalContent(dcr sealedSecretDecrypter) ([]byte, error) {
+	if s.EncryptedData != "" {
+		decryptedData, err := dcr.Decrypt(s.EncryptedData)
+		if err != nil {
+			return nil, err
+		}
+		return []byte(decryptedData), nil
 	}
 
-	// If the template was not configured, the first secret will be used as the original content.
-	if s.Template == "" {
-		for _, v := range secrets {
-			return []byte(v), nil
+	decryptedItems := make(map[string]string, len(s.EncryptedItems))
+	for k, v := range s.EncryptedItems {
+		text, err := dcr.Decrypt(v)
+		if err != nil {
+			return nil, fmt.Errorf("unable to decrypt %s item (%w)", k, err)
 		}
+		decryptedItems[k] = text
 	}
 
 	tmpl, err := template.New("sealedsecret").Option("missingkey=error").Parse(s.Template)
@@ -55,7 +74,7 @@ func (s *SealedSecretSpec) RenderOriginalContent(secrets map[string]string) ([]b
 
 	var out bytes.Buffer
 	data := map[string]interface{}{
-		"encryptedData": secrets,
+		"encryptedItems": decryptedItems,
 	}
 	if err := tmpl.Execute(&out, data); err != nil {
 		return nil, err
