@@ -626,20 +626,10 @@ func decryptSealedSecrets(appDir string, secrets []config.SealedSecretMapping, d
 		if cfg.Kind != config.KindSealedSecret {
 			return fmt.Errorf("unexpected kind in sealed secret file %s, want %q but got %q", s.Path, config.KindSealedSecret, cfg.Kind)
 		}
-		spec := cfg.SealedSecretSpec
 
-		decryptedSecrets := make(map[string]string, len(spec.EncryptedData))
-		for k, v := range spec.EncryptedData {
-			text, err := dcr.Decrypt(v)
-			if err != nil {
-				return fmt.Errorf("unable to decrypt %s field in the sealed secret file %s (%w)", k, s.Path, err)
-			}
-			decryptedSecrets[k] = text
-		}
-
-		content, err := spec.RenderOriginalContent(decryptedSecrets)
+		content, err := cfg.SealedSecretSpec.RenderOriginalContent(dcr)
 		if err != nil {
-			return fmt.Errorf("unable to render the original content of the sealed secret file %s (%v)", s.Path, err)
+			return fmt.Errorf("unable to render the original content of the sealed secret file %s (%w)", s.Path, err)
 		}
 
 		outDir, outFile := filepath.Split(s.Path)
