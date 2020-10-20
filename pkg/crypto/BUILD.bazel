@@ -5,6 +5,7 @@ go_library(
     srcs = [
         "aes.go",
         "crypto.go",
+        "hybrid.go",
         "key.go",
         "rsa.go",
     ],
@@ -17,6 +18,7 @@ go_test(
     size = "small",
     srcs = [
         "aes_test.go",
+        "hybrid_test.go",
         "key_test.go",
         "rsa_test.go",
     ],

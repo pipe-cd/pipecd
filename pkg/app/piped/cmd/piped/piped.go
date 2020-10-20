@@ -399,7 +399,7 @@ func (p *piped) initializeSealedSecretDecrypter(cfg *config.PipedSpec) (crypto.D
 		if ssm.PrivateKeyFile == "" {
 			return nil, fmt.Errorf("sealedSecretManagement.privateKeyFile must be set")
 		}
-		decrypter, err := crypto.NewRSADecrypter(ssm.PrivateKeyFile)
+		decrypter, err := crypto.NewHybridDecrypter(ssm.PrivateKeyFile)
 		if err != nil {
 			return nil, fmt.Errorf("failed to initialize decrypter (%w)", err)
 		}

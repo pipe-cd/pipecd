@@ -15,7 +15,6 @@
 package crypto
 
 import (
-	"fmt"
 	"io/ioutil"
 	"testing"
 
@@ -23,21 +22,30 @@ import (
 	"github.com/stretchr/testify/require"
 )
 
-func TestRSAEncryptDecrypt(t *testing.T) {
+func TestHybridEncryptDecrypt(t *testing.T) {
 	data, err := ioutil.ReadFile("testdata/public-rsa-pem")
 	require.NoError(t, err)
 
-	encrypter, err := NewRSAEncrypter(string(data))
+	encrypter, err := NewHybridEncrypter(string(data))
 	require.NoError(t, err)
 
-	text := "short-text"
+	text := `
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: simple-sealed-secret
+data:
+  game.properties: |
+    enemies=aliens
+    lives=3
+    enemies.cheat=true
+`
 
 	encryptedText, err := encrypter.Encrypt(text)
 	require.NoError(t, err)
 	assert.True(t, len(encryptedText) > 0)
 
-	fmt.Println(encryptedText)
-	decrypter, err := NewRSADecrypter("testdata/private-rsa-pem")
+	decrypter, err := NewHybridDecrypter("testdata/private-rsa-pem")
 	require.NoError(t, err)
 
 	decryptedText, err := decrypter.Decrypt(encryptedText)
