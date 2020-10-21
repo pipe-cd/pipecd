@@ -104,9 +104,6 @@ func TestPipedConfig(t *testing.T) {
 								"project=gcp-project",
 								"region=us-centra1",
 							},
-							CredentialsFiles: []string{
-								"/path-to-credentials-file",
-							},
 						},
 					},
 					{

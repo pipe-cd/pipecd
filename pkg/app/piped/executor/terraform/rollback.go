@@ -34,14 +34,6 @@ func (e *Executor) ensureRollback(ctx context.Context) model.StageStatus {
 	appDir := filepath.Join(e.RunningRepoDir, e.Deployment.GitPath.Path)
 	cmd := provider.NewTerraform(e.terraformPath, appDir, e.vars, e.config.Input.VarFiles)
 
-	if files := e.cloudProviderConfig.CredentialsFiles; len(files) > 0 {
-		if err := prepareCredentialsDirectory(appDir, e.cloudProviderConfig.CredentialsDirName, files); err != nil {
-			e.LogPersister.Errorf("Unable to prepare credentials files (%v)", err)
-			return model.StageStatus_STAGE_FAILURE
-		}
-		e.LogPersister.Infof("Successfully prepared %d credentials files for terraform executions", len(files))
-	}
-
 	if ok := e.showUsingVersion(ctx, cmd); !ok {
 		return model.StageStatus_STAGE_FAILURE
 	}
