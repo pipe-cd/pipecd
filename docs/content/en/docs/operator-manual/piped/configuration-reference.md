@@ -84,8 +84,6 @@ Must be one of the following structs:
 
 | Field | Type | Description | Required |
 |-|-|-|-|
-| credentialsDirName | string | The name of directory where to put the configured credentials files. Default is `.terraform-crendentials`. | No |
-| credentialsFiles | []string | List of credentials files that will be copied to the CredentialsDir before running terraform commands. | No |
 | vars | []string | List of variables that will be set directly on terraform commands with `-var` flag. The variable must be formatted by `key=value`. | No |
 
 ### CloudProviderCloudRunConfig

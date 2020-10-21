@@ -48,8 +48,6 @@ spec:
         vars:
           - "project=gcp-project"
           - "region=us-centra1"
-        credentialsFiles:
-          - /path-to-credentials-file
 
     - name: cloudrun
       type: CLOUDRUN

@@ -16,21 +16,12 @@ package terraform
 
 import (
 	"context"
-	"fmt"
-	"io/ioutil"
-	"os"
-	"path"
-	"path/filepath"
 
 	provider "github.com/pipe-cd/pipe/pkg/app/piped/cloudprovider/terraform"
 	"github.com/pipe-cd/pipe/pkg/app/piped/executor"
 	"github.com/pipe-cd/pipe/pkg/app/piped/toolregistry"
 	"github.com/pipe-cd/pipe/pkg/config"
 	"github.com/pipe-cd/pipe/pkg/model"
-)
-
-const (
-	DefaultCredentialsDirName = ".terraform-credentials"
 )
 
 type Executor struct {
@@ -150,29 +141,4 @@ func (e *Executor) findTerraform(ctx context.Context, version string) (string, b
 		e.LogPersister.Infof("Terraform %q has just been installed to %q because of no pre-installed binary for that version", version, path)
 	}
 	return path, true
-}
-
-func prepareCredentialsDirectory(appDir, credentialsDirName string, files []string) error {
-	if credentialsDirName == "" {
-		credentialsDirName = DefaultCredentialsDirName
-	}
-	dirPath := filepath.Join(appDir, credentialsDirName)
-	if err := os.MkdirAll(dirPath, os.ModePerm); err != nil {
-		return fmt.Errorf("unable to ensure the existence of credentials directory %s (%w)", dirPath, err)
-	}
-
-	for _, f := range files {
-		input, err := ioutil.ReadFile(f)
-		if err != nil {
-			return fmt.Errorf("unable to read credentials file %s (%w)", f, err)
-		}
-
-		des := filepath.Join(dirPath, path.Base(f))
-		err = ioutil.WriteFile(des, input, 0644)
-		if err != nil {
-			return fmt.Errorf("unable to write credentials file %s to %s (%w)", f, des, err)
-		}
-	}
-
-	return nil
 }
