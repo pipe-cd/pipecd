@@ -20,6 +20,7 @@ import (
 	"crypto/rsa"
 	"crypto/x509"
 	"encoding/pem"
+	"fmt"
 	"io/ioutil"
 )
 
@@ -31,18 +32,30 @@ func GenerateRSAPems(size int) (private, public []byte, err error) {
 	if err != nil {
 		return
 	}
+	err = privateKey.Validate()
+	if err != nil {
+		return
+	}
 
+	publicBytes, err := x509.MarshalPKIXPublicKey(&privateKey.PublicKey)
+	if err != nil {
+		return
+	}
 	public = pem.EncodeToMemory(
 		&pem.Block{
-			Type:  "RSA PUBLIC KEY",
-			Bytes: x509.MarshalPKCS1PublicKey(&privateKey.PublicKey),
+			Type:  "PUBLIC KEY",
+			Bytes: publicBytes,
 		},
 	)
 
+	privateBytes, err := x509.MarshalPKCS8PrivateKey(privateKey)
+	if err != nil {
+		return
+	}
 	private = pem.EncodeToMemory(
 		&pem.Block{
-			Type:  "RSA PRIVATE KEY",
-			Bytes: x509.MarshalPKCS1PrivateKey(privateKey),
+			Type:  "PRIVATE KEY",
+			Bytes: privateBytes,
 		},
 	)
 
@@ -70,12 +83,15 @@ func ParseRSAPublicKeyFromPem(data []byte) (*rsa.PublicKey, error) {
 		}
 	}
 
-	key, err := x509.ParsePKCS1PublicKey(bytes)
+	key, err := x509.ParsePKIXPublicKey(bytes)
 	if err != nil {
 		return nil, err
 	}
 
-	return key, nil
+	if k, ok := key.(*rsa.PublicKey); ok {
+		return k, nil
+	}
+	return nil, fmt.Errorf("invalid key format, it must be a public RSA key")
 }
 
 func LoadRSAPrivateKey(path string) (*rsa.PrivateKey, error) {
@@ -99,10 +115,13 @@ func ParseRSAPrivateKeyFromPem(data []byte) (*rsa.PrivateKey, error) {
 		}
 	}
 
-	key, err := x509.ParsePKCS1PrivateKey(bytes)
+	key, err := x509.ParsePKCS8PrivateKey(bytes)
 	if err != nil {
 		return nil, err
 	}
 
-	return key, nil
+	if k, ok := key.(*rsa.PrivateKey); ok {
+		return k, nil
+	}
+	return nil, fmt.Errorf("invalid key format, it must be a private RSA key")
 }
