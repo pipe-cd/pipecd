@@ -17,6 +17,8 @@ package kubernetes
 import (
 	"context"
 	"fmt"
+	"io/ioutil"
+	"os"
 	"path/filepath"
 	"sort"
 	"strings"
@@ -45,21 +47,26 @@ type gitClient interface {
 	Clone(ctx context.Context, repoID, remote, branch, destination string) (git.Repo, error)
 }
 
+type sealedSecretDecrypter interface {
+	Decrypt(string) (string, error)
+}
+
 type reporter interface {
 	ReportApplicationSyncState(ctx context.Context, appID string, state model.ApplicationSyncState) error
 }
 
 type detector struct {
-	provider          config.PipedCloudProvider
-	appLister         applicationLister
-	deploymentLister  deploymentLister
-	gitClient         gitClient
-	stateGetter       kubernetes.Getter
-	reporter          reporter
-	appManifestsCache cache.Cache
-	interval          time.Duration
-	config            *config.PipedSpec
-	logger            *zap.Logger
+	provider              config.PipedCloudProvider
+	appLister             applicationLister
+	deploymentLister      deploymentLister
+	gitClient             gitClient
+	stateGetter           kubernetes.Getter
+	reporter              reporter
+	appManifestsCache     cache.Cache
+	interval              time.Duration
+	config                *config.PipedSpec
+	sealedSecretDecrypter sealedSecretDecrypter
+	logger                *zap.Logger
 
 	gitRepos   map[string]git.Repo
 	syncStates map[string]model.ApplicationSyncState
@@ -74,6 +81,7 @@ func NewDetector(
 	reporter reporter,
 	appManifestsCache cache.Cache,
 	cfg *config.PipedSpec,
+	ssd sealedSecretDecrypter,
 	logger *zap.Logger,
 ) *detector {
 
@@ -81,18 +89,19 @@ func NewDetector(
 		zap.String("cloud-provider", cp.Name),
 	)
 	return &detector{
-		provider:          cp,
-		appLister:         appLister,
-		deploymentLister:  deploymentLister,
-		gitClient:         gitClient,
-		stateGetter:       stateGetter,
-		reporter:          reporter,
-		appManifestsCache: appManifestsCache,
-		interval:          time.Minute,
-		config:            cfg,
-		gitRepos:          make(map[string]git.Repo),
-		syncStates:        make(map[string]model.ApplicationSyncState),
-		logger:            logger,
+		provider:              cp,
+		appLister:             appLister,
+		deploymentLister:      deploymentLister,
+		gitClient:             gitClient,
+		stateGetter:           stateGetter,
+		reporter:              reporter,
+		appManifestsCache:     appManifestsCache,
+		interval:              time.Minute,
+		config:                cfg,
+		sealedSecretDecrypter: ssd,
+		gitRepos:              make(map[string]git.Repo),
+		syncStates:            make(map[string]model.ApplicationSyncState),
+		logger:                logger,
 	}
 }
 
@@ -252,9 +261,35 @@ func (d *detector) loadHeadManifests(ctx context.Context, app *model.Application
 		// When the manifests were not in the cache we have to load them.
 		cfg, err := d.loadDeploymentConfiguration(repoDir, app)
 		if err != nil {
-			err = fmt.Errorf("failed to load deployment configuration: %w", err)
-			return nil, err
+			return nil, fmt.Errorf("failed to load deployment configuration: %w", err)
 		}
+
+		gds, ok := cfg.GetGenericDeployment()
+		if !ok {
+			return nil, fmt.Errorf("unsupport application kind %s", cfg.Kind)
+		}
+
+		if d.sealedSecretDecrypter != nil && len(gds.SealedSecrets) > 0 {
+			// We have to copy repository into another directory because
+			// decrypting the sealed secrets might change the git repository.
+			dir, err := ioutil.TempDir("", "detector-git-decrypt")
+			if err != nil {
+				return nil, fmt.Errorf("failed to prepare a temporary directory for git repository (%w)", err)
+			}
+			defer os.RemoveAll(dir)
+
+			repo, err = repo.Copy(filepath.Join(dir, "repo"))
+			if err != nil {
+				return nil, fmt.Errorf("failed to copy the cloned git repository (%w)", err)
+			}
+			repoDir = repo.GetPath()
+			appDir = filepath.Join(repoDir, app.GitPath.Path)
+
+			if err := decryptSealedSecrets(appDir, gds.SealedSecrets, d.sealedSecretDecrypter); err != nil {
+				return nil, fmt.Errorf("failed to decrypt sealed secrets (%w)", err)
+			}
+		}
+
 		loader := provider.NewManifestLoader(app.Name, appDir, repoDir, app.GitPath.ConfigFilename, cfg.KubernetesDeploymentSpec.Input, d.logger)
 		manifests, err = loader.LoadManifests(ctx)
 		if err != nil {
@@ -281,6 +316,44 @@ func (d *detector) loadHeadManifests(ctx context.Context, app *model.Application
 	}
 
 	return filtered, nil
+}
+
+func decryptSealedSecrets(appDir string, secrets []config.SealedSecretMapping, dcr sealedSecretDecrypter) error {
+	for _, s := range secrets {
+		secretPath := filepath.Join(appDir, s.Path)
+		cfg, err := config.LoadFromYAML(secretPath)
+		if err != nil {
+			return fmt.Errorf("unable to read sealed secret file %s (%w)", s.Path, err)
+		}
+		if cfg.Kind != config.KindSealedSecret {
+			return fmt.Errorf("unexpected kind in sealed secret file %s, want %q but got %q", s.Path, config.KindSealedSecret, cfg.Kind)
+		}
+
+		content, err := cfg.SealedSecretSpec.RenderOriginalContent(dcr)
+		if err != nil {
+			return fmt.Errorf("unable to render the original content of the sealed secret file %s (%w)", s.Path, err)
+		}
+
+		outDir, outFile := filepath.Split(s.Path)
+		if s.OutFilename != "" {
+			outFile = s.OutFilename
+		}
+		if s.OutDir != "" {
+			outDir = s.OutDir
+		}
+		// TODO: Ensure that the output directory must be inside the application directory.
+		if outDir != "" {
+			if err := os.MkdirAll(filepath.Join(appDir, outDir), 0700); err != nil {
+				return fmt.Errorf("unable to write decrypted content of sealed secret file %s to directory %s (%w)", s.Path, outDir, err)
+			}
+		}
+		outPath := filepath.Join(appDir, outDir, outFile)
+
+		if err := ioutil.WriteFile(outPath, content, 0644); err != nil {
+			return fmt.Errorf("unable to write decrypted content of sealed secret file %s (%w)", s.Path, err)
+		}
+	}
+	return nil
 }
 
 // listApplications retrieves all applications those should be handled by this director

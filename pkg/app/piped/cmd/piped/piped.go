@@ -262,18 +262,28 @@ func (p *piped) run(ctx context.Context, t cli.Telemetry) (runErr error) {
 		})
 	}
 
-	// Start running application application drift detector.
-	{
-		d := driftdetector.NewDetector(applicationLister, deploymentLister, gitClient, liveStateGetter, apiClient, appManifestsCache, cfg, t.Logger)
-		group.Go(func() error {
-			return d.Run(ctx)
-		})
-	}
-
 	decrypter, err := p.initializeSealedSecretDecrypter(cfg)
 	if err != nil {
 		t.Logger.Error("failed to initialize sealed secret decrypter", zap.Error(err))
 		return err
+	}
+
+	// Start running application application drift detector.
+	{
+		d := driftdetector.NewDetector(
+			applicationLister,
+			deploymentLister,
+			gitClient,
+			liveStateGetter,
+			apiClient,
+			appManifestsCache,
+			cfg,
+			decrypter,
+			t.Logger,
+		)
+		group.Go(func() error {
+			return d.Run(ctx)
+		})
 	}
 
 	// Start running deployment controller.
