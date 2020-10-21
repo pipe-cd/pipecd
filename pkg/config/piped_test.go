@@ -201,9 +201,11 @@ func TestPipedConfig(t *testing.T) {
 					},
 				},
 				SealedSecretManagement: &SealedSecretManagement{
-					Type:           model.SealedSecretManagementSealingKey,
-					PrivateKeyFile: "/etc/piped-secret/sealing-private-key",
-					PublicKeyFile:  "/etc/piped-secret/sealing-public-key",
+					Type: model.SealedSecretManagementSealingKey,
+					SealingKeyConfig: &SealedSecretManagementSealingKey{
+						PrivateKeyFile: "/etc/piped-secret/sealing-private-key",
+						PublicKeyFile:  "/etc/piped-secret/sealing-public-key",
+					},
 				},
 			},
 			expectedError: nil,

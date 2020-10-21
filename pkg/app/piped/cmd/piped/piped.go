@@ -406,10 +406,10 @@ func (p *piped) initializeSealedSecretDecrypter(cfg *config.PipedSpec) (crypto.D
 		return nil, nil
 
 	case model.SealedSecretManagementSealingKey:
-		if ssm.PrivateKeyFile == "" {
+		if ssm.SealingKeyConfig.PrivateKeyFile == "" {
 			return nil, fmt.Errorf("sealedSecretManagement.privateKeyFile must be set")
 		}
-		decrypter, err := crypto.NewHybridDecrypter(ssm.PrivateKeyFile)
+		decrypter, err := crypto.NewHybridDecrypter(ssm.SealingKeyConfig.PrivateKeyFile)
 		if err != nil {
 			return nil, fmt.Errorf("failed to initialize decrypter (%w)", err)
 		}
@@ -457,7 +457,7 @@ func (p *piped) sendPipedMeta(ctx context.Context, client pipedservice.Client, c
 	if sm := cfg.SealedSecretManagement; sm != nil {
 		switch sm.Type {
 		case model.SealedSecretManagementSealingKey:
-			publicKey, err := ioutil.ReadFile(sm.PublicKeyFile)
+			publicKey, err := ioutil.ReadFile(sm.SealingKeyConfig.PublicKeyFile)
 			if err != nil {
 				return fmt.Errorf("failed to read public key for sealed secret management (%w)", err)
 			}
