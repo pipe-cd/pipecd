@@ -50,11 +50,26 @@ secret:
     fileName: ssh-key
     # Configuration data when create is true.
     data: ""
+  sealedSecretSealingKey:
+    publicKey:
+      fileName: sealed-secret-sealingkey-public-key
+      data: ""
+    privateKey:
+      fileName: sealed-secret-sealingkey-private-key
+      data: ""
+  sealedSecretGCPKMS:
+    encryptServiceAccount:
+      fileName: sealed-secret-gcpkms-encrypt-service-account
+      data: ""
+    decryptServiceAccount:
+      fileName: sealed-secret-gcpkms-decrypt-service-account
+      data: ""
 
 nodeSelector: {}
 
 tolerations: []
 
 affinity: {}
+
 # Specifies how much of each resource the Piped container needs.
 resources: {}

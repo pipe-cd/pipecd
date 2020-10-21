@@ -114,9 +114,11 @@ spec:
 
   sealedSecretManagement:
     type: SEALING_KEY
-    privateKeyFile: /etc/piped-secret/sealing-private-key
-    publicKeyFile: /etc/piped-secret/sealing-public-key
+    config:
+      privateKeyFile: /etc/piped-secret/sealing-private-key
+      publicKeyFile: /etc/piped-secret/sealing-public-key
     # type: GCP_KMS
-    # keyName: key-name
-    # decryptServiceAccountFile: /etc/piped-secret/decrypt-service-account.json 
-    # encryptServiceAccountFile: /etc/piped-secret/encrypt-service-account.json
+    # config:
+    #   keyName: key-name
+    #   decryptServiceAccountFile: /etc/piped-secret/decrypt-service-account.json 
+    #   encryptServiceAccountFile: /etc/piped-secret/encrypt-service-account.json
