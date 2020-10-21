@@ -35,11 +35,11 @@ func TestGenerateRSAPems(t *testing.T) {
 	public = bytes.TrimSpace(public)
 	private = bytes.TrimSpace(private)
 
-	assert.True(t, strings.HasPrefix(string(public), "-----BEGIN RSA PUBLIC KEY-----"))
-	assert.True(t, strings.HasSuffix(string(public), "-----END RSA PUBLIC KEY-----"))
+	assert.True(t, strings.HasPrefix(string(public), "-----BEGIN PUBLIC KEY-----"))
+	assert.True(t, strings.HasSuffix(string(public), "-----END PUBLIC KEY-----"))
 
-	assert.True(t, strings.HasPrefix(string(private), "-----BEGIN RSA PRIVATE KEY-----"))
-	assert.True(t, strings.HasSuffix(string(private), "-----END RSA PRIVATE KEY-----"))
+	assert.True(t, strings.HasPrefix(string(private), "-----BEGIN PRIVATE KEY-----"))
+	assert.True(t, strings.HasSuffix(string(private), "-----END PRIVATE KEY-----"))
 
 	publicKey, err := ParseRSAPublicKeyFromPem(public)
 	require.NoError(t, err)
