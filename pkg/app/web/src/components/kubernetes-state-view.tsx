@@ -34,6 +34,7 @@ const useStyles = makeStyles((theme) => ({
 
 interface Props {
   resources: KubernetesResourceState[];
+  showKinds: string[];
 }
 
 const NODE_HEIGHT = 72;
@@ -42,7 +43,8 @@ const STROKE_WIDTH = 2;
 const SVG_RENDER_PADDING = STROKE_WIDTH * 2;
 
 function useGraph(
-  resources: KubernetesResourceState[]
+  resources: KubernetesResourceState[],
+  showKinds: string[]
 ): dagre.graphlib.Graph<{
   resource: KubernetesResourceState;
 }> {
@@ -51,7 +53,17 @@ function useGraph(
   }>();
   graph.setGraph({ rankdir: "LR", align: "UL" });
   graph.setDefaultEdgeLabel(() => ({}));
+
+  const ignoreMap = resources.reduce<Record<string, boolean>>((prev, r) => {
+    prev[r.id] = !showKinds.includes(r.kind);
+    return prev;
+  }, {});
+
   resources.forEach((resource) => {
+    if (ignoreMap[resource.id]) {
+      return;
+    }
+
     graph.setNode(resource.id, {
       resource,
       height: NODE_HEIGHT,
@@ -59,6 +71,9 @@ function useGraph(
     });
     if (resource.parentIdsList.length > 0) {
       resource.parentIdsList.forEach((parentId) => {
+        if (ignoreMap[parentId]) {
+          return;
+        }
         graph.setEdge(parentId, resource.id);
       });
     }
@@ -70,14 +85,17 @@ function useGraph(
   return graph;
 }
 
-export const KubernetesStateView: FC<Props> = ({ resources }) => {
+export const KubernetesStateView: FC<Props> = ({
+  resources,
+  showKinds = [],
+}) => {
   const classes = useStyles();
   const [
     selectedResource,
     setSelectedResource,
   ] = useState<KubernetesResourceState | null>(null);
 
-  const graph = useGraph(resources);
+  const graph = useGraph(resources, showKinds);
   const nodes = graph
     .nodes()
     .map((v) => graph.node(v))
@@ -96,6 +114,7 @@ export const KubernetesStateView: FC<Props> = ({ resources }) => {
               top={node.y}
               left={node.x}
               zIndex={1}
+              data-testid="kubernetes-resource"
             >
               <KubernetesResource
                 resource={node.resource}
