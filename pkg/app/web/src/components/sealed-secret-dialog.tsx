@@ -4,11 +4,13 @@ import {
   DialogActions,
   DialogContent,
   DialogTitle,
+  IconButton,
   makeStyles,
   TextField,
   Typography,
 } from "@material-ui/core";
-import React, { FC, useState } from "react";
+import CopyIcon from "@material-ui/icons/FileCopyOutlined";
+import React, { FC, useRef, useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import { AppState } from "../modules";
 import { Application, selectById } from "../modules/applications";
@@ -17,6 +19,8 @@ import {
   SealedSecret,
   clearSealedSecret,
 } from "../modules/sealed-secret";
+import copy from "copy-to-clipboard";
+import { addToast } from "../modules/toasts";
 
 const useStyles = makeStyles((theme) => ({
   description: {
@@ -25,6 +29,9 @@ const useStyles = makeStyles((theme) => ({
   targetApp: {
     color: theme.palette.text.primary,
     fontWeight: theme.typography.fontWeightMedium,
+  },
+  encryptedSecret: {
+    wordBreak: "break-all",
   },
 }));
 
@@ -44,6 +51,7 @@ export const SealedSecretDialog: FC<Props> = ({
   const classes = useStyles();
   const dispatch = useDispatch();
   const [data, setData] = useState("");
+  const secretRef = useRef<HTMLDivElement>(null);
 
   const [application, sealedSecret] = useSelector<
     AppState,
@@ -71,6 +79,16 @@ export const SealedSecretDialog: FC<Props> = ({
     }, 200);
   };
 
+  const handleOnClickCopy = (): void => {
+    if (sealedSecret.data) {
+      copy(sealedSecret.data, {
+        onCopy: () => {
+          dispatch(addToast({ message: "Secret copied to clipboard" }));
+        },
+      });
+    }
+  };
+
   if (!application) {
     return null;
   }
@@ -86,20 +104,22 @@ export const SealedSecretDialog: FC<Props> = ({
         <>
           <DialogTitle>{DIALOG_TITLE}</DialogTitle>
           <DialogContent>
-            <TextField
-              value={sealedSecret.data}
-              variant="outlined"
-              margin="dense"
-              label="Secret Data"
-              multiline
-              fullWidth
-              rows={6}
-              required
-              autoFocus
-              onFocus={(e) => {
-                e.target.select();
-              }}
-            />
+            <Typography variant="caption">Encrypted secret data</Typography>
+            <Typography
+              variant="body2"
+              className={classes.encryptedSecret}
+              ref={secretRef}
+            >
+              {sealedSecret.data}
+              <IconButton
+                size="small"
+                style={{ marginLeft: 8 }}
+                aria-label="Copy secret"
+                onClick={handleOnClickCopy}
+              >
+                <CopyIcon style={{ fontSize: 20 }} />
+              </IconButton>
+            </Typography>
           </DialogContent>
           <DialogActions>
             <Button onClick={onClose}>Close</Button>
