@@ -69,6 +69,10 @@ Please note that the phases (Incubating, Alpha, Beta, and Stable) are applied to
 |-|-|
 | [Wait Stage](/docs/user-guide/adding-a-wait-stage/) | Beta |
 | [Wait Manual Approval Stage](/docs/user-guide/adding-a-manual-approval/) | Beta |
+| [Notification](/docs/operator-manual/piped/configuring-notifications/) to Slack | Beta |
+| [Notification](/docs/operator-manual/piped/configuring-notifications/) to Webhook | Incubating |
+| [Secrets Management](/docs/user-guide/sealed-secrets/) | Alpha |
+| [Image Watcher](/docs/user-guide/image-watcher/) | Incubating |
 | [ADA](/docs/user-guide/automated-deployment-analysis/) (Automated Deployment Analysis) by Prometheus metrics | Alpha |
 | [ADA](/docs/user-guide/automated-deployment-analysis/) by Datadog metrics | Incubating |
 | [ADA](/docs/user-guide/automated-deployment-analysis/) by Stackdriver metrics | Incubating |
@@ -76,10 +80,6 @@ Please note that the phases (Incubating, Alpha, Beta, and Stable) are applied to
 | [ADA](/docs/user-guide/automated-deployment-analysis/) by CloudWatch metrics | Incubating |
 | [ADA](/docs/user-guide/automated-deployment-analysis/) by CloudWatch log | Incubating |
 | [ADA](/docs/user-guide/automated-deployment-analysis/) by HTTP request (smoke test...) | Incubating |
-| [Notification](/docs/operator-manual/piped/configuring-notifications/) to Slack | Beta |
-| [Notification](/docs/operator-manual/piped/configuring-notifications/) to Webhook | Incubating |
-| [Image Watcher](/docs/user-guide/image-watcher/) | Incubating |
-| Secrets Management | Incubating |
 
 ### ControlPlane's Core
 
@@ -94,10 +94,8 @@ Please note that the phases (Incubating, Alpha, Beta, and Stable) are applied to
 | Google SSO | Incubating |
 | Bitbucket SSO | Incubating |
 | Support GCP [Firestore](https://cloud.google.com/firestore) as a data store of the control plane | Beta |
-| Support AWS [DynamoDB](https://aws.amazon.com/dynamodb/) as a data store of the control plane | Incubating |
 | Support [MongoDB](https://www.mongodb.com/) as a data store of the control plane | Alpha |
 | Support GCP [GCS](https://cloud.google.com/storage) as a file store of the control plane | Beta |
-| Support AWS [S3](https://aws.amazon.com/s3/) as a file store of the control plane | Incubating |
 | Support [Minio](https://github.com/minio/minio) as a file store of the control plane | Alpha |
 | [Insights](/docs/user-guide/insights/) shows delivery performance | Incubating |
 | Collecting piped's metrics and enabling their dashboards | Incubating |
