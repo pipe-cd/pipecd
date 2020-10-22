@@ -11,7 +11,7 @@ The mission of the deployments is syncing all running resources/components of ap
 So by default, when a new merged pull request touches an application, a new deployment for that application will be triggered to sync the application to the state specified in the newest merged commit.
 
 A pull request (commit) is considered as touching an application whenever its changes include:
-- one or more files inside the application configuration directory
+- one or more files inside the application directory
 - one or more files inside one of the [dependencies](/docs/user-guide/configuration-reference/#kubernetesdeploymentinput) of the application
 
 After a new deployment was triggered, it will be queued to handle by the appropriate `piped`. And at this time the deployment pipeline was not decided yet.

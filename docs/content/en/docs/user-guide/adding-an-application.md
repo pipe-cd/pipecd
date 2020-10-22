@@ -7,9 +7,9 @@ description: >
 ---
 
 An application is a collect of resources and configurations that are managed together.
-It represents the service which you are going to deploy. With PipeCD, all application's manifests and its deployment configuration (`.piped.yaml`) must be committed into a directory of a Git repository. That directory is called as application configuration directory.
+It represents the service which you are going to deploy. With PipeCD, all application's manifests and its deployment configuration (`.piped.yaml`) must be committed into a directory of a Git repository. That directory is called as application directory.
 
-Before deploying an application, the application must be registered from the web UI and a deployment configuration file (`.piped.yaml`) must be committed to the application configuration directory.
+Before deploying an application, the application must be registered from the web UI and a deployment configuration file (`.piped.yaml`) must be committed to the application directory.
 An application must belong to exactly one environment and can be handled by one of the registered `piped`s. Currently, PipeCD is supporting the following kinds of application:
 
 - Kubernetes application
@@ -45,7 +45,7 @@ Here are the list of fields in the register form:
 
 ## Adding deployment configuration file
 
-After registering the application, one more step left is adding the deployment configuration file (`.pipe.yaml`) for that application into the application configuration directory in Git repository.
+After registering the application, one more step left is adding the deployment configuration file (`.pipe.yaml`) for that application into the application directory in Git repository.
 
 While registering application helps `control-plane` know the basic information about application, the deployment configuration file is used by `piped`, and it helps `piped` know how the application should be deployed, such as doing canary/bluegreen strategy or requiring a manual approval...
 That deployment configuration file is in `YAML` format as below:

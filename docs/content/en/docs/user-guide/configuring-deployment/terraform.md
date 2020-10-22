@@ -34,7 +34,7 @@ See the description of each stage at [Configuration Reference](/docs/user-guide/
 
 Terraform module can be loaded from:
 
-- the same git repository with the application configuration directory, we call as a `local module`
+- the same git repository with the application directory, we call as a `local module`
 - a different git repository, we call as a `remote module`
 
 ## Reference

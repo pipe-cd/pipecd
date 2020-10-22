@@ -48,10 +48,10 @@ When the deployment is success, it means the running state is synced with the de
 A `.pipe.yaml` yaml file that contains configuration data to define how to deploy the application.
 Each application requires one deployment configuration file at application directory in the Git repository.
 
-### Application Configuration Directory
+### Application Directory
 
 A directory in Git repository containing deployment configuration file (`.pipe.yaml`) and application manifests.
-Each application must have one application configuration directory.
+Each application must have one application directory.
 
 ### Quick Sync
 

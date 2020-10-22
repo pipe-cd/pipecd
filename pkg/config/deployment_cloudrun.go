@@ -29,7 +29,7 @@ func (s *CloudRunDeploymentSpec) Validate() error {
 }
 
 type CloudRunDeploymentInput struct {
-	// The name of service manifest file placing in application configuration directory.
+	// The name of service manifest file placing in application directory.
 	// Default is service.yaml
 	ServiceManifestFile string `json:"serviceManifestFile"`
 	// Automatically reverts to the previous state when the deployment is failed.

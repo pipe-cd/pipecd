@@ -6,7 +6,7 @@ description: >
   Specific guide for configuring CloudRun deployment.
 ---
 
-Deploying a CloudRun application requires a `service.yaml` file placing inside the application configuration directory. That file contains the service specification used by CloudRun as following: 
+Deploying a CloudRun application requires a `service.yaml` file placing inside the application directory. That file contains the service specification used by CloudRun as following: 
 
 ``` yaml
 apiVersion: serving.knative.dev/v1

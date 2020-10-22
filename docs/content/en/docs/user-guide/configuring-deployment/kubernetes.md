@@ -68,7 +68,7 @@ See the description of each stage at [Configuration Reference](/docs/user-guide/
 In addition to plain-YAML, PipeCD also supports Helm and Kustomize for templating application manifests.
 
 A helm chart can be loaded from:
-- the same git repository with the application configuration directory, we call as a `local chart`
+- the same git repository with the application directory, we call as a `local chart`
 
 ``` yaml
 apiVersion: pipecd.dev/v1beta1
@@ -106,7 +106,7 @@ spec:
 ```
 
 A kustomize base can be loaded from:
-- the same git repository with the application configuration directory, we call as a `local base`
+- the same git repository with the application directory, we call as a `local base`
 - a different git repository, we call as a `remote base`
 
 See [Examples](/docs/user-guide/examples/#kubernetes-applications) for more specific.
