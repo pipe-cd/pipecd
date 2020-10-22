@@ -31,4 +31,3 @@ RUN \
     addgroup -S -g 2000 pipecd && \
     adduser -S -u 1000 -G pipecd -h /home/pipecd pipecd
 
-USER pipecd
