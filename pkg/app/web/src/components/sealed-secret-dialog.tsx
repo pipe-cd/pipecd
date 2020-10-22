@@ -81,11 +81,8 @@ export const SealedSecretDialog: FC<Props> = ({
 
   const handleOnClickCopy = (): void => {
     if (sealedSecret.data) {
-      copy(sealedSecret.data, {
-        onCopy: () => {
-          dispatch(addToast({ message: "Secret copied to clipboard" }));
-        },
-      });
+      copy(sealedSecret.data);
+      dispatch(addToast({ message: "Secret copied to clipboard" }));
     }
   };
 
