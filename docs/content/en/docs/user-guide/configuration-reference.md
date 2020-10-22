@@ -26,6 +26,7 @@ spec:
 | service | [KubernetesService](/docs/user-guide/configuration-reference/#kubernetesservice) | Which Kubernetes resource should be considered as the Service of application. Empty means the first Service resource will be used. | No |
 | workloads | [][KubernetesWorkload](/docs/user-guide/configuration-reference/#kubernetesworkload) | Which Kubernetes resources should be considered as the Workloads of application. Empty means all Deployment resources. | No |
 | trafficRouting | [KubernetesTrafficRouting](/docs/user-guide/configuration-reference/#kubernetestrafficrouting) | How to change traffic routing percentages. | No |
+| sealedSecrets | [][SealedSecretMapping](/docs/user-guide/configuration-reference/#sealedsecretmapping) | The list of sealed secrets the should be decrypted. | No |
 <!-- | dependencies | []string | List of directories where their changes will trigger the deployment. | No | -->
 
 ## Terraform application
@@ -44,6 +45,7 @@ spec:
 | input | [TerraformDeploymentInput](/docs/user-guide/configuration-reference/#terraformdeploymentinput) | Input for Terraform deployment such as terraform version, workspace... | No |
 | quickSync | [TerraformQuickSync](/docs/user-guide/configuration-reference/#terraformquicksync) | Configuration for quick sync. | No |
 | pipeline | [Pipeline](/docs/user-guide/configuration-reference/#pipeline) | Pipeline for deploying progressively. | No |
+| sealedSecrets | [][SealedSecretMapping](/docs/user-guide/configuration-reference/#sealedsecretmapping) | The list of sealed secrets the should be decrypted. | No |
 <!-- | dependencies | []string | List of directories where their changes will trigger the deployment. | No | -->
 
 ## CloudRun application
@@ -62,6 +64,7 @@ spec:
 | input | [CloudRunDeploymentInput](/docs/user-guide/configuration-reference/#cloudrundeploymentinput) | Input for CloudRun deployment such as docker image... | No |
 | quickSync | [CloudRunQuickSync](/docs/user-guide/configuration-reference/#cloudrunquicksync) | Configuration for quick sync. | No |
 | pipeline | [Pipeline](/docs/user-guide/configuration-reference/#pipeline) | Pipeline for deploying progressively. | No |
+| sealedSecrets | [][SealedSecretMapping](/docs/user-guide/configuration-reference/#sealedsecretmapping) | The list of sealed secrets the should be decrypted. | No |
 
 ## Lambda application
 
@@ -79,6 +82,7 @@ spec:
 | input | [CloudRunDeploymentInput](/docs/user-guide/configuration-reference/#cloudrundeploymentinput) | Input for Lambda deployment such as where to fetch source code... | No |
 | quickSync | [CloudRunQuickSync](/docs/user-guide/configuration-reference/#cloudrunquicksync) | Configuration for quick sync. | No |
 | pipeline | [Pipeline](/docs/user-guide/configuration-reference/#pipeline) | Pipeline for deploying progressively. | No |
+| sealedSecrets | [][SealedSecretMapping](/docs/user-guide/configuration-reference/#sealedsecretmapping) | The list of sealed secrets the should be decrypted. | No |
 
 ## Analysis Template Configuration
 
@@ -107,6 +111,14 @@ spec:
 | quickSync | string | Regular expression string to forcibly do QuickSync when it matches the commit message. | No |
 | pipeline | string | Regular expression string to forcibly do Pipeline when it matches the commit message. | No |
 
+## SealedSecretMapping
+
+| Field | Type | Description | Required |
+|-|-|-|-|
+| path | string | Relative path from the application directory to sealed secret file. | Yes |
+| outFilename | string | The filename for the decrypted secret. Empty means the same name with the sealed secret file. | No |
+| outDir | string | The directory name where to put the decrypted secret. Empty means the same directory with the sealed secret file. | No |
+
 ## Pipeline
 
 | Field | Type | Description | Required |
@@ -127,7 +139,7 @@ spec:
 
 | Field | Type | Description | Required |
 |-|-|-|-|
-| manifests | []string | List of manifest files in the application configuration directory used to deploy. Empty means all manifest files in the directory will be used. | No |
+| manifests | []string | List of manifest files in the application directory used to deploy. Empty means all manifest files in the directory will be used. | No |
 | kubectlVersion | string | Version of kubectl will be used. Empty means the [default version](https://github.com/pipe-cd/pipe/blob/master/dockers/piped-base/install-kubectl.sh#L34) will be used. | No |
 | kustomizeVersion | string | Version of kustomize will be used. Empty means the [default version](https://github.com/pipe-cd/pipe/blob/master/dockers/piped-base/install-kustomize.sh#L34) will be used. | No |
 | helmVersion | string | Version of helm will be used. Empty means the [default version](https://github.com/pipe-cd/pipe/blob/master/dockers/piped-base/install-helm.sh#L35) will be used. | No |
@@ -216,7 +228,7 @@ spec:
 
 | Field | Type | Description | Required |
 |-|-|-|-|
-| serviceManifestFile | string | The name of service manifest file placing in application configuration directory. Default is `service.yaml`. | No |
+| serviceManifestFile | string | The name of service manifest file placing in application directory. Default is `service.yaml`. | No |
 | autoRollback | bool | Automatically reverts to the previous state when the deployment is failed. Default is `true`. | No |
 
 ## CloudRunQuickSync
