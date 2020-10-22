@@ -38,7 +38,7 @@ See [ConfigurationReference](/docs/operator-manual/piped/configuration-reference
 
 ### Configuring Terraform cloud provider
 
-A terraform cloud provider contains a list of shared terraform variables that will be applied while running the deployment of its applications. Most of terraform applications require one or more credentials files for accessing the remote backend (GCS, S3...) or communicating with the providers (google, aws...). Because of that, a list of credentials files can be configured for mounting in terraform code. By default, they will be prepared at `.terraform-credentials` directory before executing any terraform commands.
+A terraform cloud provider contains a list of shared terraform variables that will be applied while running the deployment of its applications.
 
 ``` yaml
 apiVersion: pipecd.dev/v1beta1
@@ -51,8 +51,6 @@ spec:
       config:
         vars:
           - "project=pipecd"
-        credentialsFiles:
-          - path-to-the-credentials-file
 ```
 
 See [ConfigurationReference](/docs/operator-manual/piped/configuration-reference/#cloudproviderterraformconfig) for the full configuration.
