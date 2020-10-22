@@ -33,7 +33,10 @@ Host {{ .Host }}
     StrictHostKeyChecking no
 `
 
-var sshConfigTmpl = template.Must(template.New("ssh-config").Parse(sshConfigTemplate))
+var (
+	sshConfigTmpl            = template.Must(template.New("ssh-config").Parse(sshConfigTemplate))
+	defaultSSHConfigFilePath = "/home/pipecd/.ssh/config"
+)
 
 type sshConfig struct {
 	Host         string
@@ -54,7 +57,7 @@ func AddSSHConfig(cfg config.PipedGit) error {
 
 	path := cfg.SSHConfigFilePath
 	if path == "" {
-		path = "/etc/ssh/ssh_config"
+		path = defaultSSHConfigFilePath
 	}
 	dir := filepath.Dir(path)
 
