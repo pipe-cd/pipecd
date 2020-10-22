@@ -43,7 +43,7 @@ passwd_entry(
     gid = 1000,
     uid = 1000,
     username = "pipecd",
-    home = "/home/pipecd"
+    home = "/home/pipecd",
     info = "pipecd user",
 )
 
