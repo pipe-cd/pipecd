@@ -44,7 +44,7 @@ passwd_entry(
     uid = 1000,
     username = "pipecd",
     home = "/home/pipecd"
-    info = "pipecd User",
+    info = "pipecd user",
 )
 
 passwd_file(
