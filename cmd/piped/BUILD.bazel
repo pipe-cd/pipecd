@@ -19,7 +19,7 @@ go_binary(
     visibility = ["//visibility:public"],
 )
 
-# Create a passwd file with a root and nonroot user and uid.
+# Create a passwd file with a root and pipecd user and uid.
 passwd_entry(
     name = "root_user",
     gid = 0,
@@ -59,7 +59,7 @@ container_image(
     name = "passwd_image",
     base = "@piped-base//image",
     tars = [":passwd_tar"],
-    user = "nonroot",
+    user = "pipecd",
 )
 
 app_image(
