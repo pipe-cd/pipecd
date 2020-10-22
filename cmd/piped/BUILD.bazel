@@ -1,5 +1,15 @@
 load("@io_bazel_rules_go//go:def.bzl", "go_binary", "go_library")
 load("//bazel:image.bzl", "app_image")
+load("@rules_pkg//:pkg.bzl", "pkg_tar")
+load(
+    "@io_bazel_rules_docker//contrib:passwd.bzl",
+    "passwd_entry",
+    "passwd_file",
+)
+load(
+    "@io_bazel_rules_docker//container:container.bzl",
+    "container_image",
+)
 
 go_library(
     name = "go_default_library",
@@ -18,9 +28,52 @@ go_binary(
     visibility = ["//visibility:public"],
 )
 
+# Create a passwd file with a root and pipecd user and uid.
+passwd_entry(
+    name = "root_user",
+    gid = 0,
+    uid = 0,
+    username = "root",
+    home = "/root",
+    info = "root",
+)
+
+passwd_entry(
+    name = "pipecd_user",
+    gid = 1000,
+    uid = 1000,
+    username = "pipecd",
+    home = "/home/pipecd",
+    info = "pipecd user",
+)
+
+passwd_file(
+    name = "passwd",
+    entries = [
+        ":root_user",
+        ":pipecd_user",
+    ],
+)
+
+# Create a tar file containing the created passwd file
+pkg_tar(
+    name = "passwd_tar",
+    srcs = [":passwd"],
+    mode = "0o644",
+    package_dir = "etc",
+)
+
+# Include it in our base image as a tar.
+container_image(
+    name = "passwd_image",
+    base = "@piped-base//image",
+    tars = [":passwd_tar"],
+    user = "pipecd",
+)
+
 app_image(
     name = "piped_app",
-    base = "@piped-base//image",
+    base = ":passwd_image",
     binary = ":piped",
     repository = "piped",
     visibility = ["//visibility:public"],
