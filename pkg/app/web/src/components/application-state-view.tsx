@@ -40,12 +40,7 @@ export const ApplicationStateView: FC<Props> = memo(
     switch (liveState.kind) {
       case ApplicationKind.KUBERNETES: {
         const resources = liveState.kubernetes?.resourcesList || [];
-        return (
-          <KubernetesStateView
-            resources={resources}
-            showKinds={Array.from(new Set(resources.map((r) => r.kind)))}
-          />
-        );
+        return <KubernetesStateView resources={resources} />;
       }
       default:
     }
