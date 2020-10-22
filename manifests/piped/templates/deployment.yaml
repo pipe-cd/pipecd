@@ -49,8 +49,8 @@ spec:
             - name: piped-config
               mountPath: /etc/piped-config
               readOnly: true
-            - name: ssh-config
-              mountPath: /home/pipecd/.ssh
+            - name: pipecd-home
+              mountPath: /home/pipecd
           resources:
             {{- toYaml .Values.resources | nindent 12 }}
       volumes:
@@ -61,7 +61,8 @@ spec:
         - name: piped-config
           configMap:
             name: {{ include "piped.configMapName" . }}
-        - name: ssh-config
+        # TODO: Grant write access to the pipecd user's home direcotry in other ways.
+        - name: pipecd-home
           emptyDir: {}
       securityContext:
         runAsNonRoot: true
