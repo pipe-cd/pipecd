@@ -1,4 +1,4 @@
-# Deploy plain-yaml manifests in the application configuration directory
+# Deploy plain-yaml manifests in the application directory
 # without using pipeline.
 apiVersion: pipecd.dev/v1beta1
 kind: KubernetesApp

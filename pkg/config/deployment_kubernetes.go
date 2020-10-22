@@ -45,7 +45,7 @@ func (s *KubernetesDeploymentSpec) Validate() error {
 
 // KubernetesDeploymentInput represents needed input for triggering a Kubernetes deployment.
 type KubernetesDeploymentInput struct {
-	// List of manifest files in the application configuration directory used to deploy.
+	// List of manifest files in the application directory used to deploy.
 	// Empty means all manifest files in the directory will be used.
 	Manifests []string `json:"manifests"`
 	// Version of kubectl will be used.

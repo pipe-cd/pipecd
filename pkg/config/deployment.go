@@ -266,7 +266,7 @@ type ImageWatcherTargetPath struct {
 }
 
 type SealedSecretMapping struct {
-	// Relative path from the application configuration directory to sealed secret file.
+	// Relative path from the application directory to sealed secret file.
 	Path string `json:"path"`
 	// The filename for the decrypted secret.
 	// Empty means the same name with the sealed secret file.
