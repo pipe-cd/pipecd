@@ -27,7 +27,4 @@ RUN \
     /installer/install-terraform.sh && \
     # Delete installer directory.
     rm -rf /installer && \
-    rm -f /var/cache/apk/* && \
-    addgroup -S -g 2000 pipecd && \
-    adduser -S -u 1000 -G pipecd -h /home/pipecd pipecd
-
+    rm -f /var/cache/apk/*
