@@ -8,8 +8,5 @@ export default {
 };
 
 export const overview: React.FC = () => (
-  <KubernetesStateView
-    showKinds={["ReplicaSet", "Pod"]}
-    resources={resourcesList}
-  />
+  <KubernetesStateView resources={resourcesList} />
 );

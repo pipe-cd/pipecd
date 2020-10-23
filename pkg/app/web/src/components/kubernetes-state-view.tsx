@@ -6,6 +6,7 @@ import { KubernetesResourceState } from "../modules/applications-live-state";
 import { theme } from "../theme";
 import { KubernetesResource } from "./kubernetes-resource";
 import { KubernetesResourceDetail } from "./kubernetes-resource-detail";
+import { ResourceFilterPopover } from "./resource-filter-popover";
 
 const useStyles = makeStyles((theme) => ({
   root: {
@@ -34,7 +35,6 @@ const useStyles = makeStyles((theme) => ({
 
 interface Props {
   resources: KubernetesResourceState[];
-  showKinds: string[];
 }
 
 const NODE_HEIGHT = 72;
@@ -85,17 +85,24 @@ function useGraph(
   return graph;
 }
 
-export const KubernetesStateView: FC<Props> = ({
-  resources,
-  showKinds = [],
-}) => {
+export const KubernetesStateView: FC<Props> = ({ resources }) => {
   const classes = useStyles();
   const [
     selectedResource,
     setSelectedResource,
   ] = useState<KubernetesResourceState | null>(null);
 
-  const graph = useGraph(resources, showKinds);
+  const kinds: string[] = Array.from(new Set(resources.map((r) => r.kind)));
+  const [filterState, setFilterState] = useState<Record<string, boolean>>(
+    kinds.reduce<Record<string, boolean>>((prev, current) => {
+      prev[current] = true;
+      return prev;
+    }, {})
+  );
+  const graph = useGraph(
+    resources,
+    Object.keys(filterState).filter((key) => filterState[key])
+  );
   const nodes = graph
     .nodes()
     .map((v) => graph.node(v))
@@ -180,6 +187,13 @@ export const KubernetesStateView: FC<Props> = ({
           )}
         </div>
       </div>
+
+      <Box>
+        <ResourceFilterPopover
+          enables={filterState}
+          onChange={(state) => setFilterState(state)}
+        />
+      </Box>
 
       {selectedResource && (
         <KubernetesResourceDetail
