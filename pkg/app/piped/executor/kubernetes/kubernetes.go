@@ -162,8 +162,15 @@ func (e *Executor) loadRunningManifests(ctx context.Context) (manifests []provid
 
 	// When the manifests were not in the cache we have to load them.
 	var (
-		appDir = filepath.Join(e.RepoDir, e.Deployment.GitPath.Path)
-		p      = provider.NewProvider(e.Deployment.ApplicationName, appDir, e.RunningRepoDir, e.Deployment.GitPath.ConfigFilename, e.config.Input, e.Logger)
+		runningAppDir = filepath.Join(e.RunningRepoDir, e.Deployment.GitPath.Path)
+		p             = provider.NewProvider(
+			e.Deployment.ApplicationName,
+			runningAppDir,
+			e.RunningRepoDir,
+			e.Deployment.GitPath.ConfigFilename,
+			e.config.Input,
+			e.Logger,
+		)
 	)
 	manifests, err = p.LoadManifests(ctx)
 	if err != nil {

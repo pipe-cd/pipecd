@@ -17,6 +17,7 @@ package controller
 import (
 	"context"
 	"fmt"
+	"os"
 	"path/filepath"
 	"sync"
 	"time"
@@ -379,7 +380,11 @@ func (s *scheduler) executeStage(sig executor.StopSignal, ps model.PipelineStage
 	}
 
 	// Ensure that all needed things has been prepared before executing any stage.
-	if err := s.ensurePreparing(ctx, lp); err != nil {
+	var (
+		needTargetCommit  = ps.Name != model.StageRollback.String()
+		needRunningCommit = s.deployment.RunningCommitHash != ""
+	)
+	if err := s.ensurePreparing(ctx, needTargetCommit, needRunningCommit, lp); err != nil {
 		if !sig.Stopped() {
 			if err := s.reportStageStatus(ctx, ps.Id, model.StageStatus_STAGE_FAILURE, ps.Requires); err != nil {
 				s.logger.Error("failed to report stage status", zap.Error(err))
@@ -467,24 +472,31 @@ func (s *scheduler) executeStage(sig executor.StopSignal, ps model.PipelineStage
 // ensurePreparing ensures that all needed things should be prepared before executing any stages.
 // The log of this preparing process will be written to the first executing stage
 // when a new scheduler has been created.
-func (s *scheduler) ensurePreparing(ctx context.Context, lp logpersister.StageLogPersister) error {
+//   needTargetCommit = true means the target commit must be prepared
+//   needRunningCommit = true means the running commit must be prepared
+func (s *scheduler) ensurePreparing(ctx context.Context, needTargetCommit, needRunningCommit bool, lp logpersister.StageLogPersister) error {
 	s.prepareMu.Lock()
 	defer s.prepareMu.Unlock()
 
 	if s.prepared {
 		return nil
 	}
+	lp.Info("Start preparing repository data for the stage")
 
 	var (
-		repoDirPath     = filepath.Join(s.workingDir, workspaceGitRepoDirName)
-		appDirPath      = filepath.Join(repoDirPath, s.deployment.GitPath.Path)
-		runningRepoPath = filepath.Join(s.workingDir, workspaceGitRunningRepoDirName)
+		repoPath = filepath.Join(s.workingDir, workspaceGitRepoDirName)
+		appPath  = filepath.Join(repoPath, s.deployment.GitPath.Path)
 	)
 
-	lp.Info("Start preparing for the deployment")
+	// Ensure that this directory is empty.
+	// Because it maybe created by another stage before.
+	if err := os.RemoveAll(repoPath); err != nil {
+		lp.Errorf("Unable to prepare a temporary directory for storing git repository (%v)", err)
+		return err
+	}
 
 	// Clone repository and checkout to the target revision.
-	gitRepo, err := prepareDeployRepository(ctx, s.deployment, s.gitClient, repoDirPath, s.pipedConfig)
+	gitRepo, err := prepareDeployRepository(ctx, s.deployment, s.gitClient, repoPath, s.pipedConfig)
 	if err != nil {
 		lp.Errorf("Unable to prepare repository (%v)", err)
 		return err
@@ -507,13 +519,21 @@ func (s *scheduler) ensurePreparing(ctx context.Context, lp logpersister.StageLo
 	s.genericDeploymentSpec = gds
 	lp.Success("Successfully loaded deployment configuration")
 
-	if s.deployment.RunningCommitHash != "" {
+	if needRunningCommit {
 		// Copy and checkout the running revision.
 		var (
-			runningGitRepo, err = gitRepo.Copy(runningRepoPath)
-			runningAppDirPath   = filepath.Join(runningRepoPath, s.deployment.GitPath.Path)
+			runningRepoPath = filepath.Join(s.workingDir, workspaceGitRunningRepoDirName)
+			runningAppPath  = filepath.Join(runningRepoPath, s.deployment.GitPath.Path)
 		)
 
+		// Ensure that this directory is empty.
+		// Because it maybe created by another stage before.
+		if err := os.RemoveAll(runningRepoPath); err != nil {
+			lp.Errorf("Unable to prepare a temporary directory for storing git repository (%v)", err)
+			return err
+		}
+
+		runningGitRepo, err := gitRepo.Copy(runningRepoPath)
 		if err != nil {
 			lp.Errorf("Unable to copy repository (%v)", err)
 			return err
@@ -537,7 +557,7 @@ func (s *scheduler) ensurePreparing(ctx context.Context, lp logpersister.StageLo
 
 		// Decrypt the sealed secrets at the running revision.
 		if len(gds.SealedSecrets) > 0 && s.sealedSecretDecrypter != nil {
-			if err := decryptSealedSecrets(runningAppDirPath, gds.SealedSecrets, s.sealedSecretDecrypter); err != nil {
+			if err := decryptSealedSecrets(runningAppPath, gds.SealedSecrets, s.sealedSecretDecrypter); err != nil {
 				lp.Errorf("Failed to decrypt sealed secrets at running commit (%v)", err)
 				return fmt.Errorf("failed to decrypt sealed secrets at running commit (%w)", err)
 			}
@@ -545,13 +565,15 @@ func (s *scheduler) ensurePreparing(ctx context.Context, lp logpersister.StageLo
 		}
 	}
 
-	// Decrypt the sealed secrets at the target revision.
-	if len(gds.SealedSecrets) > 0 && s.sealedSecretDecrypter != nil {
-		if err := decryptSealedSecrets(appDirPath, gds.SealedSecrets, s.sealedSecretDecrypter); err != nil {
-			lp.Errorf("Failed to decrypt sealed secrets (%v)", err)
-			return fmt.Errorf("failed to decrypt sealed secrets (%w)", err)
+	if needTargetCommit {
+		// Decrypt the sealed secrets at the target revision.
+		if len(gds.SealedSecrets) > 0 && s.sealedSecretDecrypter != nil {
+			if err := decryptSealedSecrets(appPath, gds.SealedSecrets, s.sealedSecretDecrypter); err != nil {
+				lp.Errorf("Failed to decrypt sealed secrets (%v)", err)
+				return fmt.Errorf("failed to decrypt sealed secrets (%w)", err)
+			}
+			lp.Successf("Successsfully decrypted %d sealed secrets", len(gds.SealedSecrets))
 		}
-		lp.Successf("Successsfully decrypted %d sealed secrets", len(gds.SealedSecrets))
 	}
 
 	s.prepared = true
