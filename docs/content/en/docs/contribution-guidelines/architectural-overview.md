@@ -23,8 +23,7 @@ A centralized component that manages deployment data and provides gPRC API for c
 authentication, showing deployment list/details, application list/details, delivery insights...
 
 Control Plane contains the following components:
-- `api`: a service to provide api for piped, web and hook requests.
-- `web`: a service to serve static files for web.
+- `server`: a service to provide api for piped, web and serve static assets for web.
 - `cache`: a redis cache service for caching internal data.
 - `datastore`: data storage for storing deployment, application data
   - this can be a fully-managed service such as `Firestore`, `DynamoDB`...
