@@ -16,7 +16,7 @@ RUN \
         curl \
         bash && \
     update-ca-certificates && \
-    mkdir ${PIPED_BIN_DIR} && \
+    mkdir -p ${PIPED_BIN_DIR} && \
     # Pre-install the default version of helm.
     /installer/install-helm.sh && \
     # Pre-install the default version of kubectl.
