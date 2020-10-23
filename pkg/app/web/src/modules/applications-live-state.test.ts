@@ -9,6 +9,7 @@ describe("applicationLiveStateSlice reducer", () => {
     ).toMatchInlineSnapshot(`
       Object {
         "entities": Object {},
+        "hasError": false,
         "ids": Array [],
       }
     `);
