@@ -8,6 +8,7 @@ import {
 import { ApplicationKind } from "pipe/pkg/app/web/model/common_pb";
 import React, { FC, memo } from "react";
 import { useDispatch, useSelector } from "react-redux";
+import { UI_TEXT_REFRESH } from "../constants/ui-text";
 import { AppState } from "../modules";
 import {
   ApplicationLiveState,
@@ -53,7 +54,7 @@ export const ApplicationStateView: FC<Props> = memo(
               dispatch(clearError());
             }}
           >
-            REFRESH
+            {UI_TEXT_REFRESH}
           </Button>
         </Box>
       );
