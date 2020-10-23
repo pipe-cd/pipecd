@@ -38,7 +38,7 @@ spec:
 |-|-|-|-|
 | username | string | The username that will be configured for `git` user. | No |
 | email | string | The email that will be configured for `git` user. | No |
-| sshConfigFilePath | string | Where to write ssh config file. Default is `etc/ssh/ssh_config`. | No |
+| sshConfigFilePath | string | Where to write ssh config file. Default is `/home/pipecd/.ssh/config`. | No |
 | host | string | The host name. Default is `github.com`. | No |
 | hostName | string | The hostname or IP address of the remote git server. Default is the same value with Host. | No |
 | sshKeyFile | string | The path to the private ssh key file. This will be used to clone the source code of the specified git repositories. | No |
