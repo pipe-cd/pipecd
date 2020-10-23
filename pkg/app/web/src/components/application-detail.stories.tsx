@@ -31,6 +31,7 @@ const dummyStore: Partial<AppState> = {
       [dummyApplicationLiveState.applicationId]: dummyApplicationLiveState,
     },
     ids: [dummyApplicationLiveState.applicationId],
+    hasError: false,
   },
   pipeds: {
     entities: {
