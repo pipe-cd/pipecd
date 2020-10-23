@@ -1,4 +1,5 @@
 import {
+  Box,
   Button,
   CircularProgress,
   makeStyles,
@@ -19,7 +20,7 @@ interface Props {
   applicationId: string;
 }
 
-const ERROR_MESSAGE = "Sorry, something went wrong.";
+const ERROR_MESSAGE = "It was unable to fetch the latest state of application.";
 
 const useStyles = makeStyles(() => ({
   container: {
@@ -44,8 +45,8 @@ export const ApplicationStateView: FC<Props> = memo(
 
     if (hasError) {
       return (
-        <div className={classes.container}>
-          <Typography>{ERROR_MESSAGE}</Typography>
+        <Box className={classes.container} flexDirection="column">
+          <Typography variant="body1">{ERROR_MESSAGE}</Typography>
           <Button
             color="primary"
             onClick={() => {
@@ -54,7 +55,7 @@ export const ApplicationStateView: FC<Props> = memo(
           >
             REFRESH
           </Button>
-        </div>
+        </Box>
       );
     }
 
