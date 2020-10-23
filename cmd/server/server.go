@@ -1,0 +1,431 @@
+// Copyright 2020 The PipeCD Authors.
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//     http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+package main
+
+import (
+	"context"
+	"errors"
+	"fmt"
+	"net/http"
+	"path/filepath"
+	"time"
+
+	"github.com/NYTimes/gziphandler"
+	jwtgo "github.com/dgrijalva/jwt-go"
+	"github.com/spf13/cobra"
+	"go.uber.org/zap"
+	"golang.org/x/sync/errgroup"
+
+	"github.com/pipe-cd/pipe/pkg/admin"
+	"github.com/pipe-cd/pipe/pkg/app/api/api"
+	"github.com/pipe-cd/pipe/pkg/app/api/applicationlivestatestore"
+	"github.com/pipe-cd/pipe/pkg/app/api/authhandler"
+	"github.com/pipe-cd/pipe/pkg/app/api/commandstore"
+	"github.com/pipe-cd/pipe/pkg/app/api/pipedtokenverifier"
+	"github.com/pipe-cd/pipe/pkg/app/api/service/webservice"
+	"github.com/pipe-cd/pipe/pkg/app/api/stagelogstore"
+	"github.com/pipe-cd/pipe/pkg/cache/rediscache"
+	"github.com/pipe-cd/pipe/pkg/cli"
+	"github.com/pipe-cd/pipe/pkg/config"
+	"github.com/pipe-cd/pipe/pkg/crypto"
+	"github.com/pipe-cd/pipe/pkg/datastore"
+	"github.com/pipe-cd/pipe/pkg/datastore/firestore"
+	"github.com/pipe-cd/pipe/pkg/datastore/mongodb"
+	"github.com/pipe-cd/pipe/pkg/filestore"
+	"github.com/pipe-cd/pipe/pkg/filestore/gcs"
+	"github.com/pipe-cd/pipe/pkg/filestore/minio"
+	"github.com/pipe-cd/pipe/pkg/jwt"
+	"github.com/pipe-cd/pipe/pkg/model"
+	"github.com/pipe-cd/pipe/pkg/redis"
+	"github.com/pipe-cd/pipe/pkg/rpc"
+	"github.com/pipe-cd/pipe/pkg/version"
+)
+
+var (
+	defaultSigningMethod = jwtgo.SigningMethodHS256
+)
+
+type httpHandler interface {
+	Register(func(pattern string, handler func(http.ResponseWriter, *http.Request)))
+}
+
+type server struct {
+	pipedAPIPort int
+	webAPIPort   int
+	httpPort     int
+	adminPort    int
+	staticDir    string
+	cacheAddress string
+	gracePeriod  time.Duration
+
+	tls            bool
+	certFile       string
+	keyFile        string
+	insecureCookie bool
+
+	encryptionKeyFile string
+	configFile        string
+
+	useFakeResponse      bool
+	enableGRPCReflection bool
+}
+
+// NewCommand creates a new cobra command for executing api server.
+func NewCommand() *cobra.Command {
+	s := &server{
+		pipedAPIPort: 9080,
+		webAPIPort:   9081,
+		httpPort:     9082,
+		adminPort:    9085,
+		staticDir:    "pkg/app/web/public_files",
+		cacheAddress: "cache:6379",
+		gracePeriod:  30 * time.Second,
+	}
+	cmd := &cobra.Command{
+		Use:   "server",
+		Short: "Start running server.",
+		RunE:  cli.WithContext(s.run),
+	}
+
+	cmd.Flags().IntVar(&s.pipedAPIPort, "piped-api-port", s.pipedAPIPort, "The port number used to run a grpc server that serving serves incoming piped requests.")
+	cmd.Flags().IntVar(&s.webAPIPort, "web-api-port", s.webAPIPort, "The port number used to run a grpc server that serves incoming web requests.")
+	cmd.Flags().IntVar(&s.httpPort, "http-port", s.httpPort, "The port number used to run a http server that serves incoming http requests such as auth callbacks or webhook events.")
+	cmd.Flags().IntVar(&s.adminPort, "admin-port", s.adminPort, "The port number used to run a HTTP server for admin tasks such as metrics, healthz.")
+	cmd.Flags().StringVar(&s.staticDir, "static-dir", s.staticDir, "The directory where contains static assets.")
+	cmd.Flags().StringVar(&s.cacheAddress, "cache-address", s.cacheAddress, "The address to cache service.")
+	cmd.Flags().DurationVar(&s.gracePeriod, "grace-period", s.gracePeriod, "How long to wait for graceful shutdown.")
+
+	cmd.Flags().BoolVar(&s.tls, "tls", s.tls, "Whether running the gRPC server with TLS or not.")
+	cmd.Flags().StringVar(&s.certFile, "cert-file", s.certFile, "The path to the TLS certificate file.")
+	cmd.Flags().StringVar(&s.keyFile, "key-file", s.keyFile, "The path to the TLS key file.")
+	cmd.Flags().BoolVar(&s.insecureCookie, "insecure-cookie", s.insecureCookie, "Allow cookie to be sent over an unsecured HTTP connection.")
+
+	cmd.Flags().StringVar(&s.encryptionKeyFile, "encryption-key-file", s.encryptionKeyFile, "The path to file containing a random string of bits used to encrypt sensitive data.")
+	cmd.MarkFlagRequired("encryption-key-file")
+	cmd.Flags().StringVar(&s.configFile, "config-file", s.configFile, "The path to the configuration file.")
+	cmd.MarkFlagRequired("config-file")
+
+	// For debugging early in development
+	cmd.Flags().BoolVar(&s.useFakeResponse, "use-fake-response", s.useFakeResponse, "Whether the server responds fake response or not.")
+	cmd.Flags().BoolVar(&s.enableGRPCReflection, "enable-grpc-reflection", s.enableGRPCReflection, "Whether to enable the reflection service or not.")
+
+	return cmd
+}
+
+func (s *server) run(ctx context.Context, t cli.Telemetry) error {
+	group, ctx := errgroup.WithContext(ctx)
+
+	// Load control plane configuration from the specified file.
+	cfg, err := s.loadConfig()
+	if err != nil {
+		t.Logger.Error("failed to load control-plane configuration",
+			zap.String("config-file", s.configFile),
+			zap.Error(err),
+		)
+		return err
+	}
+	t.Logger.Info("successfully loaded control-plane configuration")
+
+	var (
+		pipedAPIServer *rpc.Server
+		webAPIServer   *rpc.Server
+	)
+
+	ds, err := s.createDatastore(ctx, cfg, t.Logger)
+	if err != nil {
+		t.Logger.Error("failed to create datastore", zap.Error(err))
+		return err
+	}
+	defer func() {
+		if err := ds.Close(); err != nil {
+			t.Logger.Error("failed to close datastore client", zap.Error(err))
+
+		}
+	}()
+	t.Logger.Info("succesfully connected to data store")
+
+	fs, err := s.createFilestore(ctx, cfg, t.Logger)
+	if err != nil {
+		t.Logger.Error("failed to create filestore", zap.Error(err))
+		return err
+	}
+	defer func() {
+		if err := fs.Close(); err != nil {
+			t.Logger.Error("failed to close filestore client", zap.Error(err))
+		}
+	}()
+	t.Logger.Info("successfully connected to file store")
+
+	rd := redis.NewRedis(s.cacheAddress, "")
+	defer func() {
+		if err := rd.Close(); err != nil {
+			t.Logger.Error("failed to close redis client", zap.Error(err))
+		}
+	}()
+	cache := rediscache.NewTTLCache(rd, cfg.Cache.TTLDuration())
+	sls := stagelogstore.NewStore(fs, cache, t.Logger)
+	alss := applicationlivestatestore.NewStore(fs, cache, t.Logger)
+	cmds := commandstore.NewStore(ds, cache, t.Logger)
+
+	// Start a gRPC server for handling PipedAPI requests.
+	{
+		var (
+			verifier = pipedtokenverifier.NewVerifier(ctx, cfg, ds)
+			service  = api.NewPipedAPI(ds, sls, alss, cmds, t.Logger)
+			opts     = []rpc.Option{
+				rpc.WithPort(s.pipedAPIPort),
+				rpc.WithGracePeriod(s.gracePeriod),
+				rpc.WithLogger(t.Logger),
+				rpc.WithLogUnaryInterceptor(t.Logger),
+				rpc.WithPipedTokenAuthUnaryInterceptor(verifier, t.Logger),
+				rpc.WithRequestValidationUnaryInterceptor(),
+			}
+		)
+		if s.tls {
+			opts = append(opts, rpc.WithTLS(s.certFile, s.keyFile))
+		}
+		if s.enableGRPCReflection {
+			opts = append(opts, rpc.WithGRPCReflection())
+		}
+
+		pipedAPIServer = rpc.NewServer(service, opts...)
+		group.Go(func() error {
+			return pipedAPIServer.Run(ctx)
+		})
+	}
+
+	encryptDecrypter, err := crypto.NewAESEncryptDecrypter(s.encryptionKeyFile)
+	if err != nil {
+		t.Logger.Error("failed to create a new AES EncryptDecrypter", zap.Error(err))
+		return err
+	}
+
+	// Start a gRPC server for handling WebAPI requests.
+	{
+		verifier, err := jwt.NewVerifier(defaultSigningMethod, s.encryptionKeyFile)
+		if err != nil {
+			t.Logger.Error("failed to create a new JWT verifier", zap.Error(err))
+			return err
+		}
+
+		var service rpc.Service
+		if s.useFakeResponse {
+			service = api.NewFakeWebAPI()
+		} else {
+			service = api.NewWebAPI(ds, sls, alss, cmds, cfg.ProjectMap(), encryptDecrypter, t.Logger)
+		}
+		opts := []rpc.Option{
+			rpc.WithPort(s.webAPIPort),
+			rpc.WithGracePeriod(s.gracePeriod),
+			rpc.WithLogger(t.Logger),
+			rpc.WithJWTAuthUnaryInterceptor(verifier, webservice.NewRBACAuthorizer(), t.Logger),
+			rpc.WithRequestValidationUnaryInterceptor(),
+		}
+		if s.tls {
+			opts = append(opts, rpc.WithTLS(s.certFile, s.keyFile))
+		}
+		if s.enableGRPCReflection {
+			opts = append(opts, rpc.WithGRPCReflection())
+		}
+
+		webAPIServer = rpc.NewServer(service, opts...)
+		group.Go(func() error {
+			return webAPIServer.Run(ctx)
+		})
+	}
+
+	// Start an http server for handling incoming http requests
+	// such as auth callbacks, webhook events and
+	// serving static assets for web.
+	{
+		signer, err := jwt.NewSigner(defaultSigningMethod, s.encryptionKeyFile)
+		if err != nil {
+			t.Logger.Error("failed to create a new signer", zap.Error(err))
+			return err
+		}
+
+		mux := http.NewServeMux()
+		httpServer := &http.Server{
+			Addr:    fmt.Sprintf(":%d", s.httpPort),
+			Handler: mux,
+		}
+
+		handlers := []httpHandler{
+			authhandler.NewHandler(
+				signer,
+				encryptDecrypter,
+				cfg.Address,
+				cfg.StateKey,
+				cfg.ProjectMap(),
+				cfg.SharedSSOConfigMap(),
+				datastore.NewProjectStore(ds),
+				!s.insecureCookie,
+				t.Logger,
+			),
+		}
+
+		for _, h := range handlers {
+			h.Register(mux.HandleFunc)
+		}
+
+		fs := http.FileServer(http.Dir(filepath.Join(s.staticDir, "assets")))
+		assetsHandler := http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+			w.Header().Set("Cache-Control", "public, max-age=31536000")
+			http.StripPrefix("/assets/", fs).ServeHTTP(w, r)
+		})
+
+		mux.Handle("/assets/", gziphandler.GzipHandler(assetsHandler))
+		mux.HandleFunc("/favicon.ico", func(w http.ResponseWriter, r *http.Request) {
+			http.ServeFile(w, r, filepath.Join(s.staticDir, "favicon.ico"))
+		})
+		mux.HandleFunc("/", func(w http.ResponseWriter, r *http.Request) {
+			http.ServeFile(w, r, filepath.Join(s.staticDir, "/index.html"))
+		})
+
+		group.Go(func() error {
+			return runHTTPServer(ctx, httpServer, s.gracePeriod, t.Logger)
+		})
+	}
+
+	// Start running admin server.
+	{
+		var (
+			ver   = []byte(version.Get().Version)
+			admin = admin.NewAdmin(s.adminPort, s.gracePeriod, t.Logger)
+		)
+
+		admin.HandleFunc("/version", func(w http.ResponseWriter, r *http.Request) {
+			w.Write(ver)
+		})
+		admin.HandleFunc("/healthz", func(w http.ResponseWriter, r *http.Request) {
+			w.Write([]byte("ok"))
+		})
+		admin.Handle("/metrics", t.PrometheusMetricsHandler())
+
+		group.Go(func() error {
+			return admin.Run(ctx)
+		})
+	}
+
+	// Wait until all components have finished.
+	// A terminating signal or a finish of any components
+	// could trigger the finish of server.
+	// This ensures that all components are good or no one.
+	if err := group.Wait(); err != nil {
+		t.Logger.Error("failed while running", zap.Error(err))
+		return err
+	}
+	return nil
+}
+
+func runHTTPServer(ctx context.Context, httpServer *http.Server, gracePeriod time.Duration, logger *zap.Logger) error {
+	doneCh := make(chan error, 1)
+	ctx, cancel := context.WithCancel(ctx)
+
+	go func() {
+		defer cancel()
+		logger.Info(fmt.Sprintf("start running http server on %s", httpServer.Addr))
+		if err := httpServer.ListenAndServe(); err != nil && err != http.ErrServerClosed {
+			logger.Error("failed to listen and http server", zap.Error(err))
+			doneCh <- err
+		}
+		doneCh <- nil
+	}()
+
+	<-ctx.Done()
+
+	ctx, _ = context.WithTimeout(context.Background(), gracePeriod)
+	logger.Info("stopping http server")
+	if err := httpServer.Shutdown(ctx); err != nil {
+		logger.Error("failed to shutdown http server", zap.Error(err))
+	}
+
+	return <-doneCh
+}
+
+func (s *server) loadConfig() (*config.ControlPlaneSpec, error) {
+	cfg, err := config.LoadFromYAML(s.configFile)
+	if err != nil {
+		return nil, err
+	}
+	if cfg.Kind != config.KindControlPlane {
+		return nil, fmt.Errorf("wrong configuration kind for control-plane: %v", cfg.Kind)
+	}
+	return cfg.ControlPlaneSpec, nil
+}
+
+func (s *server) createDatastore(ctx context.Context, cfg *config.ControlPlaneSpec, logger *zap.Logger) (datastore.DataStore, error) {
+	switch cfg.Datastore.Type {
+	case model.DataStoreFirestore:
+		fsConfig := cfg.Datastore.FirestoreConfig
+		options := []firestore.Option{
+			firestore.WithCredentialsFile(fsConfig.CredentialsFile),
+			firestore.WithLogger(logger),
+		}
+		return firestore.NewFireStore(ctx, fsConfig.Project, fsConfig.Namespace, fsConfig.Environment, options...)
+
+	case model.DataStoreDynamoDB:
+		return nil, errors.New("dynamodb is unimplemented yet")
+
+	case model.DataStoreMongoDB:
+		mdConfig := cfg.Datastore.MongoDBConfig
+		options := []mongodb.Option{
+			mongodb.WithLogger(logger),
+		}
+		return mongodb.NewMongoDB(ctx, mdConfig.URL, mdConfig.Database, options...)
+
+	default:
+		return nil, fmt.Errorf("unknown datastore type %q", cfg.Datastore.Type)
+	}
+}
+
+func (s *server) createFilestore(ctx context.Context, cfg *config.ControlPlaneSpec, logger *zap.Logger) (filestore.Store, error) {
+	ctx, cancel := context.WithTimeout(ctx, 5*time.Second)
+	defer cancel()
+
+	switch cfg.Filestore.Type {
+	case model.FileStoreGCS:
+		gcsCfg := cfg.Filestore.GCSConfig
+		options := []gcs.Option{
+			gcs.WithLogger(logger),
+		}
+		if gcsCfg.CredentialsFile != "" {
+			options = append(options, gcs.WithCredentialsFile(gcsCfg.CredentialsFile))
+		}
+		return gcs.NewStore(ctx, gcsCfg.Bucket, options...)
+
+	case model.FileStoreS3:
+		return nil, errors.New("s3 is unimplemented yet")
+
+	case model.FileStoreMINIO:
+		minioCfg := cfg.Filestore.MinioConfig
+		options := []minio.Option{
+			minio.WithLogger(logger),
+		}
+		s, err := minio.NewStore(minioCfg.Endpoint, minioCfg.Bucket, minioCfg.AccessKeyFile, minioCfg.SecretKeyFile, options...)
+		if err != nil {
+			return nil, fmt.Errorf("failed to generate minio store: %w", err)
+		}
+		if minioCfg.AutoCreateBucket {
+			if err := s.EnsureBucket(ctx); err != nil {
+				return nil, fmt.Errorf("failed to ensure bucket: %w", err)
+			}
+		}
+		return s, nil
+
+	default:
+		return nil, fmt.Errorf("unknown filestore type %q", cfg.Filestore.Type)
+	}
+}

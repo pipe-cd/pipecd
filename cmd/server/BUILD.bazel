@@ -1,0 +1,58 @@
+load("@io_bazel_rules_go//go:def.bzl", "go_binary", "go_library")
+load("//bazel:image.bzl", "app_image")
+
+go_library(
+    name = "go_default_library",
+    srcs = [
+        "main.go",
+        "server.go",
+    ],
+    importpath = "github.com/pipe-cd/pipe/cmd/server",
+    visibility = ["//visibility:private"],
+    deps = [
+        "//pkg/admin:go_default_library",
+        "//pkg/app/api/api:go_default_library",
+        "//pkg/app/api/applicationlivestatestore:go_default_library",
+        "//pkg/app/api/authhandler:go_default_library",
+        "//pkg/app/api/commandstore:go_default_library",
+        "//pkg/app/api/pipedtokenverifier:go_default_library",
+        "//pkg/app/api/service/webservice:go_default_library",
+        "//pkg/app/api/stagelogstore:go_default_library",
+        "//pkg/cache/rediscache:go_default_library",
+        "//pkg/cli:go_default_library",
+        "//pkg/config:go_default_library",
+        "//pkg/crypto:go_default_library",
+        "//pkg/datastore:go_default_library",
+        "//pkg/datastore/firestore:go_default_library",
+        "//pkg/datastore/mongodb:go_default_library",
+        "//pkg/filestore:go_default_library",
+        "//pkg/filestore/gcs:go_default_library",
+        "//pkg/filestore/minio:go_default_library",
+        "//pkg/jwt:go_default_library",
+        "//pkg/model:go_default_library",
+        "//pkg/redis:go_default_library",
+        "//pkg/rpc:go_default_library",
+        "//pkg/version:go_default_library",
+        "@com_github_dgrijalva_jwt_go//:go_default_library",
+        "@com_github_nytimes_gziphandler//:go_default_library",
+        "@com_github_spf13_cobra//:go_default_library",
+        "@org_golang_x_sync//errgroup:go_default_library",
+        "@org_uber_go_zap//:go_default_library",
+    ],
+)
+
+go_binary(
+    name = "server",
+    data = [
+        "//pkg/app/web:public_files",
+    ],
+    embed = [":go_default_library"],
+    visibility = ["//visibility:public"],
+)
+
+app_image(
+    name = "server_app",
+    binary = ":server",
+    repository = "server",
+    visibility = ["//visibility:public"],
+)
