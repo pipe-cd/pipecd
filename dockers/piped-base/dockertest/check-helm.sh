@@ -15,8 +15,8 @@
 # limitations under the License.
 
 declare -A pathcases
-#pathcases["helm-2.16.7"]="/usr/local/piped/helm-2.16.7"
-pathcases["helm"]="/usr/local/piped/helm"
+#pathcases["helm-2.16.7"]="/home/pipecd/helm-2.16.7"
+pathcases["helm"]="/home/pipecd/helm"
 
 for h in "${!pathcases[@]}"
 do
