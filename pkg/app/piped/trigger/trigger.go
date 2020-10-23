@@ -162,14 +162,14 @@ func (t *Trigger) checkCommand(ctx context.Context) error {
 		if !ok {
 			t.logger.Warn("detected an AppSync command for an unregistered application",
 				zap.String("command", cmd.Id),
-				zap.String("application-id", syncCmd.ApplicationId),
+				zap.String("app-id", syncCmd.ApplicationId),
 				zap.String("commander", cmd.Commander),
 			)
 			continue
 		}
 		if err := t.syncApplication(ctx, app, cmd.Commander); err != nil {
 			t.logger.Error("failed to sync application",
-				zap.String("application-id", app.Id),
+				zap.String("app-id", app.Id),
 				zap.Error(err),
 			)
 			if err := cmd.Report(ctx, model.CommandStatus_COMMAND_FAILED, nil); err != nil {
@@ -229,7 +229,8 @@ func (t *Trigger) checkCommit(ctx context.Context) error {
 
 func (t *Trigger) checkApplication(ctx context.Context, app *model.Application, repo git.Repo, branch string, headCommit git.Commit) error {
 	logger := t.logger.With(
-		zap.String("application", app.Id),
+		zap.String("app", app.Name),
+		zap.String("app-id", app.Id),
 		zap.String("head-commit", headCommit.Hash),
 	)
 
@@ -244,23 +245,26 @@ func (t *Trigger) checkApplication(ctx context.Context, app *model.Application, 
 		case err == nil:
 			preCommitHash = mostRecent.Trigger.Commit.Hash
 			t.mostRecentlyTriggeredCommits[app.Id] = preCommitHash
+
 		case status.Code(err) == codes.NotFound:
 			logger.Info("there is no previously triggered commit for this application")
+
 		default:
 			logger.Error("unable to get the most recently triggered deployment", zap.Error(err))
+			return err
 		}
 	}
 
 	// Check whether the most recently applied one is the head commit or not.
 	// If so, nothing to do for this time.
 	if headCommit.Hash == preCommitHash {
-		logger.Info(fmt.Sprintf("no update to sync for application: %s, hash: %s", app.Id, headCommit.Hash))
+		logger.Info(fmt.Sprintf("no update to sync for application, hash: %s", headCommit.Hash))
 		return nil
 	}
 
 	trigger := func() error {
 		// Build deployment model and send a request to API to create a new deployment.
-		logger.Info(fmt.Sprintf("application %s should be synced because of the new commit", app.Id),
+		logger.Info("application should be synced because of the new commit",
 			zap.String("most-recently-triggered-commit", preCommitHash),
 		)
 		if err := t.triggerDeployment(ctx, app, branch, headCommit, ""); err != nil {
@@ -283,7 +287,7 @@ func (t *Trigger) checkApplication(ctx context.Context, app *model.Application, 
 		return err
 	}
 	if touched := isTouchedByChangedFiles(app.GitPath.Path, nil, changedFiles); !touched {
-		logger.Info(fmt.Sprintf("application %s was not touched by the new commit", app.Id),
+		logger.Info("application was not touched by the new commit",
 			zap.String("most-recently-triggered-commit", preCommitHash),
 		)
 		t.mostRecentlyTriggeredCommits[app.Id] = headCommit.Hash
@@ -371,6 +375,7 @@ func isTouchedByChangedFiles(appDir string, dependencyDirs []string, changedFile
 	if !strings.HasSuffix(appDir, "/") {
 		appDir += "/"
 	}
+
 	// If any files inside the application directory was changed
 	// this application is considered as touched.
 	for _, cf := range changedFiles {
