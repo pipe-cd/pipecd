@@ -41,10 +41,6 @@ var (
 	defaultDeploymentTimeout       = time.Hour
 )
 
-type repoStore interface {
-	CloneReadOnlyRepo(repo, branch, revision string) (string, error)
-}
-
 // scheduler is a dedicated object for a specific deployment of a single application.
 type scheduler struct {
 	// Readonly deployment model.
@@ -249,6 +245,7 @@ func (s *scheduler) Run(ctx context.Context) error {
 			sig, handler = executor.NewStopSignal()
 			doneCh       = make(chan struct{})
 		)
+
 		go func() {
 			result = s.executeStage(sig, *ps, func(in executor.Input) (executor.Executor, bool) {
 				return s.executorRegistry.Executor(model.Stage(ps.Name), in)
@@ -473,14 +470,17 @@ func (s *scheduler) executeStage(sig executor.StopSignal, ps model.PipelineStage
 func (s *scheduler) ensurePreparing(ctx context.Context, lp logpersister.StageLogPersister) error {
 	s.prepareMu.Lock()
 	defer s.prepareMu.Unlock()
+
 	if s.prepared {
 		return nil
 	}
 
 	var (
-		repoDirPath = filepath.Join(s.workingDir, workspaceGitRepoDirName)
-		appDirPath  = filepath.Join(repoDirPath, s.deployment.GitPath.Path)
+		repoDirPath     = filepath.Join(s.workingDir, workspaceGitRepoDirName)
+		appDirPath      = filepath.Join(repoDirPath, s.deployment.GitPath.Path)
+		runningRepoPath = filepath.Join(s.workingDir, workspaceGitRunningRepoDirName)
 	)
+
 	lp.Info("Start preparing for the deployment")
 
 	// Clone repository and checkout to the target revision.
@@ -507,19 +507,9 @@ func (s *scheduler) ensurePreparing(ctx context.Context, lp logpersister.StageLo
 	s.genericDeploymentSpec = gds
 	lp.Success("Successfully loaded deployment configuration")
 
-	// Decrypt the sealed secrets at the target revision.
-	if len(gds.SealedSecrets) > 0 && s.sealedSecretDecrypter != nil {
-		if err := decryptSealedSecrets(appDirPath, gds.SealedSecrets, s.sealedSecretDecrypter); err != nil {
-			lp.Errorf("Failed to decrypt sealed secrets (%v)", err)
-			return fmt.Errorf("failed to decrypt sealed secrets (%w)", err)
-		}
-		lp.Successf("Successsfully decrypted %d sealed secrets", len(gds.SealedSecrets))
-	}
-
 	if s.deployment.RunningCommitHash != "" {
 		// Copy and checkout the running revision.
 		var (
-			runningRepoPath     = filepath.Join(s.workingDir, workspaceGitRunningRepoDirName)
 			runningGitRepo, err = gitRepo.Copy(runningRepoPath)
 			runningAppDirPath   = filepath.Join(runningRepoPath, s.deployment.GitPath.Path)
 		)
@@ -553,6 +543,15 @@ func (s *scheduler) ensurePreparing(ctx context.Context, lp logpersister.StageLo
 			}
 			lp.Successf("Successsfully decrypted %d sealed secrets at running commit", len(gds.SealedSecrets))
 		}
+	}
+
+	// Decrypt the sealed secrets at the target revision.
+	if len(gds.SealedSecrets) > 0 && s.sealedSecretDecrypter != nil {
+		if err := decryptSealedSecrets(appDirPath, gds.SealedSecrets, s.sealedSecretDecrypter); err != nil {
+			lp.Errorf("Failed to decrypt sealed secrets (%v)", err)
+			return fmt.Errorf("failed to decrypt sealed secrets (%w)", err)
+		}
+		lp.Successf("Successsfully decrypted %d sealed secrets", len(gds.SealedSecrets))
 	}
 
 	s.prepared = true

@@ -50,12 +50,9 @@ type stageLogPersister struct {
 func (sp *stageLogPersister) append(log string, s model.LogSeverity) {
 	now := time.Now()
 
-	// We also send this log messages to the local logger.
-	switch s {
-	case model.LogSeverity_ERROR:
-		sp.logger.Error(log)
-	default:
-		sp.logger.Info(log)
+	// We also send the error logs to the local logger.
+	if s == model.LogSeverity_ERROR {
+		sp.logger.Warn(fmt.Sprintf("STAGE ERROR LOG: %s", log))
 	}
 
 	sp.mu.Lock()

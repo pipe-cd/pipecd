@@ -18,6 +18,7 @@ import (
 	"context"
 	"errors"
 	"fmt"
+	"strings"
 
 	"github.com/google/uuid"
 	"go.uber.org/zap"
@@ -318,6 +319,12 @@ func (a *WebAPI) AddApplication(ctx context.Context, req *webservice.AddApplicat
 		a.logger.Error("failed to extract claims", zap.Error(err))
 		return nil, status.Error(codes.Internal, "internal error")
 	}
+
+	// The path to the application directory must be relative.
+	if strings.HasPrefix(req.GitPath.Path, "/") {
+		return nil, status.Error(codes.InvalidArgument, "the path must be a relative path")
+	}
+
 	gitpath, err := a.makeGitPath(ctx, req.GitPath.Repo.Id, req.GitPath.Path, req.GitPath.ConfigFilename, req.PipedId)
 	if err != nil {
 		return nil, err
