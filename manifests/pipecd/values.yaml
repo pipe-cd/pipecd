@@ -18,17 +18,13 @@ gateway:
   internalTLS:
     enabled: false
 
-api:
+server:
   replicasCount: 1
   args:
     cacheAddress: ""
     useFakeResponse: false
     enableGRPCReflection: true
     secureCookie: false
-  resources: {}
-
-web:
-  replicasCount: 1
   resources: {}
 
 cache:

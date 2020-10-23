@@ -62,24 +62,16 @@ data:
                         prefix: /pipe.api.service.pipedservice.PipedService/
                         grpc:
                       route:
-                        cluster: api-piped-api
+                        cluster: server-piped-api
                     - match:
                         prefix: /pipe.api.service.webservice.WebService/
                         grpc:
                       route:
-                        cluster: api-web-api
+                        cluster: server-web-api
                     - match:
-                        path: /hook
+                        path: /
                       route:
-                        cluster: api-http
-                    - match:
-                        prefix: /auth
-                      route:
-                        cluster: api-http
-                    - match:
-                        prefix: /
-                      route:
-                        cluster: web
+                        cluster: server-http
 {{- if .Values.gateway.internalTLS.enabled }}
           tls_context:
             common_tls_context:
@@ -91,59 +83,45 @@ data:
               alpn_protocols: h2
 {{- end }}
       clusters:
-      - name: api-piped-api
+      - name: server-piped-api
         http2_protocol_options: {}
         connect_timeout: 0.25s
         type: strict_dns
         lb_policy: round_robin
         load_assignment:
-          cluster_name: api-piped-api
+          cluster_name: server-piped-api
           endpoints:
           - lb_endpoints:
             - endpoint:
                 address:
                   socket_address:
-                    address: {{ include "pipecd.fullname" . }}-api
+                    address: {{ include "pipecd.fullname" . }}-server
                     port_value: 9080
-      - name: api-web-api
+      - name: server-web-api
         http2_protocol_options: {}
         connect_timeout: 0.25s
         type: strict_dns
         lb_policy: round_robin
         load_assignment:
-          cluster_name: api-web-api
+          cluster_name: server-web-api
           endpoints:
           - lb_endpoints:
             - endpoint:
                 address:
                   socket_address:
-                    address: {{ include "pipecd.fullname" . }}-api
+                    address: {{ include "pipecd.fullname" . }}-server
                     port_value: 9081
-      - name: api-http
+      - name: server-http
         #http2_protocol_options: {}
         connect_timeout: 0.25s
         type: strict_dns
         lb_policy: round_robin
         load_assignment:
-          cluster_name: api-http
+          cluster_name: server-http
           endpoints:
           - lb_endpoints:
             - endpoint:
                 address:
                   socket_address:
-                    address: {{ include "pipecd.fullname" . }}-api
-                    port_value: 9082
-      - name: web
-        #http2_protocol_options: {}
-        connect_timeout: 0.25s
-        type: strict_dns
-        lb_policy: round_robin
-        load_assignment:
-          cluster_name: web
-          endpoints:
-          - lb_endpoints:
-            - endpoint:
-                address:
-                  socket_address:
-                    address: {{ include "pipecd.fullname" . }}-web
+                    address: {{ include "pipecd.fullname" . }}-server
                     port_value: 9082
