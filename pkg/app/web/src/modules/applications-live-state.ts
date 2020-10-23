@@ -44,15 +44,31 @@ export const fetchApplicationStateById = createAsyncThunk<
 
 export const applicationLiveStateSlice = createSlice({
   name: "applicationLiveState",
-  initialState: applicationLiveStateAdapter.getInitialState({}),
-  reducers: {},
+  initialState: applicationLiveStateAdapter.getInitialState({
+    hasError: false,
+  }),
+  reducers: {
+    clearError(state) {
+      state.hasError = false;
+    },
+  },
   extraReducers: (builder) => {
-    builder.addCase(fetchApplicationStateById.fulfilled, (state, action) => {
-      if (action.payload) {
-        applicationLiveStateAdapter.upsertOne(state, action.payload);
-      }
-    });
+    builder
+      .addCase(fetchApplicationStateById.pending, (state) => {
+        state.hasError = false;
+      })
+      .addCase(fetchApplicationStateById.fulfilled, (state, action) => {
+        state.hasError = false;
+        if (action.payload) {
+          applicationLiveStateAdapter.upsertOne(state, action.payload);
+        }
+      })
+      .addCase(fetchApplicationStateById.rejected, (state) => {
+        state.hasError = true;
+      });
   },
 });
+
+export const { clearError } = applicationLiveStateSlice.actions;
 
 export { ApplicationLiveStateSnapshot as ApplicationLiveStateSnapshotModel } from "pipe/pkg/app/web/model/application_live_state_pb";
