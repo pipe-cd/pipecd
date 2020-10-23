@@ -1,6 +1,6 @@
 FROM alpine:3.10.1
 
-ENV PIPED_BIN_DIR=/home/pipecd
+ENV PIPED_BIN_DIR=/home/pipecd/tools
 ENV PATH="${PIPED_BIN_DIR}:${PATH}"
 
 ADD install-helm.sh /installer/install-helm.sh
