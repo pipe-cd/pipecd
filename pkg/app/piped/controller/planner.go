@@ -169,12 +169,16 @@ func (p *planner) Run(ctx context.Context) error {
 
 	gds, ok := cfg.GetGenericDeployment()
 	if !ok {
+		reason := fmt.Sprintf("Failed because application kind %s is not supported", cfg.Kind)
+		p.reportDeploymentFailed(ctx, reason)
 		return fmt.Errorf("unsupport application kind %s", cfg.Kind)
 	}
 
 	// Decrypt the sealed secrets at the target revision.
 	if len(gds.SealedSecrets) > 0 && p.sealedSecretDecrypter != nil {
 		if err := decryptSealedSecrets(appDirPath, gds.SealedSecrets, p.sealedSecretDecrypter); err != nil {
+			reason := fmt.Sprintf("Failed to decrypt sealed secrets %v", err)
+			p.reportDeploymentFailed(ctx, reason)
 			return fmt.Errorf("failed to decrypt sealed secrets (%w)", err)
 		}
 	}
