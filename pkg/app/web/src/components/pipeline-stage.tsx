@@ -28,6 +28,10 @@ const useStyles = makeStyles((theme) => ({
   },
   name: {
     marginLeft: theme.spacing(1),
+    maxWidth: 200,
+    whiteSpace: "nowrap",
+    textOverflow: "ellipsis",
+    overflow: "hidden",
   },
   stageName: {
     fontFamily: "Roboto Mono",
@@ -86,7 +90,9 @@ export const PipelineStage: FC<Props> = memo(function PipelineStage({
       <div className={classes.main}>
         <StageStatusIcon status={status} />
         <Typography variant="subtitle2" className={classes.name}>
-          <div className={classes.stageName}>{name}</div>
+          <span title={name} className={classes.stageName}>
+            {name}
+          </span>
         </Typography>
       </div>
       {approver !== undefined ? (

@@ -19,6 +19,17 @@ export const overview: React.FC = () => (
   />
 );
 
+export const longName: React.FC = () => (
+  <PipelineStage
+    id="stage-1"
+    status={StageStatus.STAGE_SUCCESS}
+    name="LONG_STAGE_NAME_XXXXXXX_YYYYYY_ZZZZZZZZ"
+    onClick={action("onClick")}
+    active={false}
+    isDeploymentRunning
+  />
+);
+
 export const stopped: React.FC = () => (
   <PipelineStage
     id="stage-1"
