@@ -297,7 +297,7 @@ spec:
 
 | Field | Type | Description | Required |
 |-|-|-|-|
-| replicas | Replicas | How many pods for CANARY workloads. Default is `1` pod. | No |
+| replicas | int | How many pods for CANARY workloads. Default is `1` pod. Alternatively, can be specified a string suffixed by "%" to indicate a percentage value compared to the pod number of PRIMARY | No |
 | suffix | string | Suffix that should be used when naming the CANARY variant's resources. Default is `canary`. | No |
 | createService | bool | Whether the CANARY service should be created. Default is `false`. | No |
 
@@ -311,7 +311,7 @@ spec:
 
 | Field | Type | Description | Required |
 |-|-|-|-|
-| replicas | Replicas | How many pods for BASELINE workloads. Default is `1` pod. | No |
+| replicas | int | How many pods for BASELINE workloads. Default is `1` pod. Alternatively, can be specified a string suffixed by "%" to indicate a percentage value compared to the pod number of PRIMARY | No |
 | suffix | string | Suffix that should be used when naming the BASELINE variant's resources. Default is `baseline`. | No |
 | createService | bool | Whether the BASELINE service should be created. Default is `false`. | No |
 
