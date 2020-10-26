@@ -29,14 +29,14 @@ import (
 	"github.com/pipe-cd/pipe/pkg/model"
 )
 
-func (t *Trigger) triggerDeployment(ctx context.Context, app *model.Application, branch string, commit git.Commit, commander string) (runErr error) {
-	deployment, err := buildDeployment(app, branch, commit, commander, time.Now())
+func (t *Trigger) triggerDeployment(ctx context.Context, app *model.Application, branch string, commit git.Commit, commander string) (deployment *model.Deployment, err error) {
+	deployment, err = buildDeployment(app, branch, commit, commander, time.Now())
 	if err != nil {
-		return err
+		return
 	}
 
 	defer func() {
-		if runErr != nil {
+		if err != nil {
 			return
 		}
 		var envName string
@@ -60,14 +60,16 @@ func (t *Trigger) triggerDeployment(ctx context.Context, app *model.Application,
 	}
 	if _, err = t.apiClient.CreateDeployment(ctx, req); err != nil {
 		t.logger.Error("failed to create deployment", zap.Error(err))
-		return err
+		return
 	}
 
-	if err := t.reportMostRecentlyTriggeredDeployment(ctx, deployment); err != nil {
-		t.logger.Error("failed to report most recently triggered deployment", zap.Error(err))
+	// TODO: Find a better way to ensure that the application should be updated correctly
+	// when the deployment was successfully triggered.
+	if e := t.reportMostRecentlyTriggeredDeployment(ctx, deployment); e != nil {
+		t.logger.Error("failed to report most recently triggered deployment", zap.Error(e))
 	}
 
-	return nil
+	return
 }
 
 func (t *Trigger) loadDeploymentConfiguration(repoPath string, app *model.Application) (*config.Config, error) {
