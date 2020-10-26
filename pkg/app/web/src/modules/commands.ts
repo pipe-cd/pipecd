@@ -8,9 +8,15 @@ import {
   CommandStatus,
 } from "pipe/pkg/app/web/model/command_pb";
 import { getCommand } from "../api/commands";
+import { PAGE_PATH_DEPLOYMENTS } from "../constants/path";
+import { findMetadataByKey } from "../utils/find-metadata-by-key";
 import { addToast } from "./toasts";
 
 export type Command = CommandModel.AsObject;
+
+const METADATA_KEY = {
+  TRIGGERED_DEPLOYMENT_ID: "TriggeredDeploymentID",
+};
 
 export const COMMAND_TYPE_TEXT: Record<CommandModel.Type, string> = {
   [CommandModel.Type.APPROVE_STAGE]: "Approve Stage",
@@ -28,13 +34,34 @@ export const fetchCommand = createAsyncThunk(
       throw Error("command not found");
     }
 
-    if (command.status === CommandStatus.COMMAND_SUCCEEDED) {
-      thunkAPI.dispatch(
-        addToast({
-          message: `Succeed "${COMMAND_TYPE_TEXT[command.type]}"`,
-          severity: "success",
-        })
-      );
+    if (command.status !== CommandStatus.COMMAND_SUCCEEDED) {
+      return command;
+    }
+
+    switch (command.type) {
+      case CommandModel.Type.SYNC_APPLICATION: {
+        const deploymentId = findMetadataByKey(
+          command.metadataMap,
+          METADATA_KEY.TRIGGERED_DEPLOYMENT_ID
+        );
+        thunkAPI.dispatch(
+          addToast({
+            message: `Succeed "${COMMAND_TYPE_TEXT[command.type]}"`,
+            severity: "success",
+            to: deploymentId
+              ? `${PAGE_PATH_DEPLOYMENTS}/${deploymentId}`
+              : undefined,
+          })
+        );
+        break;
+      }
+      default:
+        thunkAPI.dispatch(
+          addToast({
+            message: `Succeed "${COMMAND_TYPE_TEXT[command.type]}"`,
+            severity: "success",
+          })
+        );
     }
 
     return command;

@@ -67,6 +67,7 @@ tsc(
             "**/__mocks__/**",
             "**/__fixtures__/**",
             "src/**/*.test.*",
+            "src/mocks/**",
             "src/**/*.stories.*",
         ],
     ) + [

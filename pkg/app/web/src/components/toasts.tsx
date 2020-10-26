@@ -1,7 +1,8 @@
-import { Snackbar } from "@material-ui/core";
+import { Button, Snackbar } from "@material-ui/core";
 import MuiAlert from "@material-ui/lab/Alert";
 import React, { FC } from "react";
 import { useDispatch, useSelector } from "react-redux";
+import { Link as RouterLink } from "react-router-dom";
 import { AppState } from "../modules";
 import { IToast, removeToast, selectAll } from "../modules/toasts";
 
@@ -15,30 +16,46 @@ export const Toasts: FC = () => {
 
   return (
     <>
-      {toasts.map((item) => (
-        <Snackbar
-          open
-          key={item.id}
-          anchorOrigin={{
-            vertical: "bottom",
-            horizontal: "left",
-          }}
-          autoHideDuration={
-            item.severity === "error" ? null : AUTO_HIDE_DURATION
-          }
-          onClose={() => dispatch(removeToast({ id: item.id }))}
-          message={item.message}
-        >
-          {item.severity && (
-            <MuiAlert
-              onClose={() => dispatch(removeToast({ id: item.id }))}
-              severity={item.severity}
-            >
-              {item.message}
-            </MuiAlert>
-          )}
-        </Snackbar>
-      ))}
+      {toasts.map((item) => {
+        const handleClose = (): void => {
+          dispatch(removeToast({ id: item.id }));
+        };
+        return (
+          <Snackbar
+            open
+            key={item.id}
+            anchorOrigin={{
+              vertical: "bottom",
+              horizontal: "left",
+            }}
+            autoHideDuration={
+              item.severity === "error" ? null : AUTO_HIDE_DURATION
+            }
+            onClose={handleClose}
+            message={item.message}
+          >
+            {item.severity && (
+              <MuiAlert
+                onClose={handleClose}
+                severity={item.severity}
+                action={
+                  item.to ? (
+                    <Button
+                      onClick={handleClose}
+                      component={RouterLink}
+                      to={item.to}
+                    >
+                      OPEN
+                    </Button>
+                  ) : null
+                }
+              >
+                {item.message}
+              </MuiAlert>
+            )}
+          </Snackbar>
+        );
+      })}
     </>
   );
 };
