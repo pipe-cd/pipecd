@@ -13,8 +13,8 @@ spec:
       # while PRIMARY will receive 90% of traffic.
       - name: K8S_TRAFFIC_ROUTING
         with:
-          primary: 50
-          canary: 50
+          primary: 90
+          canary: 10
       - name: WAIT_APPROVAL
       # Update the workload of PRIMARY variant to the new version.
       - name: K8S_PRIMARY_ROLLOUT
