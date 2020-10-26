@@ -1,5 +1,41 @@
-import { dummyCommand } from "../__fixtures__/dummy-command";
+import { createStore } from "../../test-utils";
+import { server } from "../mocks/server";
+import {
+  dummyCommand,
+  dummySyncSucceededCommand,
+} from "../__fixtures__/dummy-command";
 import { commandsSlice, CommandStatus, fetchCommand } from "./commands";
+import { addToast } from "./toasts";
+
+beforeAll(() => {
+  server.listen();
+});
+
+afterEach(() => {
+  server.resetHandlers();
+});
+
+afterAll(() => {
+  server.close();
+});
+
+describe("fetchCommand", () => {
+  it("should dispatch addToast if command type is SYNC_APPLICATION and that is succeeded", async () => {
+    const store = createStore({});
+    await store.dispatch(fetchCommand(dummySyncSucceededCommand.id));
+
+    expect(store.getActions()).toMatchObject([
+      { type: fetchCommand.pending.type },
+      {
+        type: addToast.type,
+        payload: {
+          to: "/deployments/deployment-1",
+        },
+      },
+      { type: fetchCommand.fulfilled.type },
+    ]);
+  });
+});
 
 describe("commandsSlice reducer", () => {
   it("should handle initial state", () => {

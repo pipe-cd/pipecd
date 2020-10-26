@@ -1,2 +1,3 @@
 import { meHandlers } from "./services/me";
-export const handlers = [...meHandlers];
+import { commandHandlers } from "./services/command";
+export const handlers = [...meHandlers, ...commandHandlers];
