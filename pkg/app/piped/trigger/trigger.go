@@ -38,6 +38,10 @@ var (
 	commandCheckInterval = 10 * time.Second
 )
 
+const (
+	triggeredDeploymentIDKey = "TriggeredDeploymentID"
+)
+
 type apiClient interface {
 	GetApplicationMostRecentDeployment(ctx context.Context, req *pipedservice.GetApplicationMostRecentDeploymentRequest, opts ...grpc.CallOption) (*pipedservice.GetApplicationMostRecentDeploymentResponse, error)
 	CreateDeployment(ctx context.Context, in *pipedservice.CreateDeploymentRequest, opts ...grpc.CallOption) (*pipedservice.CreateDeploymentResponse, error)
@@ -167,7 +171,8 @@ func (t *Trigger) checkCommand(ctx context.Context) error {
 			)
 			continue
 		}
-		if err := t.syncApplication(ctx, app, cmd.Commander); err != nil {
+		d, err := t.syncApplication(ctx, app, cmd.Commander)
+		if err != nil {
 			t.logger.Error("failed to sync application",
 				zap.String("app-id", app.Id),
 				zap.Error(err),
@@ -177,29 +182,34 @@ func (t *Trigger) checkCommand(ctx context.Context) error {
 			}
 			continue
 		}
-		if err := cmd.Report(ctx, model.CommandStatus_COMMAND_SUCCEEDED, nil); err != nil {
+
+		metadata := map[string]string{
+			triggeredDeploymentIDKey: d.Id,
+		}
+		if err := cmd.Report(ctx, model.CommandStatus_COMMAND_SUCCEEDED, metadata); err != nil {
 			t.logger.Error("failed to report command status", zap.Error(err))
 		}
 	}
 	return nil
 }
 
-func (t *Trigger) syncApplication(ctx context.Context, app *model.Application, commander string) error {
+func (t *Trigger) syncApplication(ctx context.Context, app *model.Application, commander string) (*model.Deployment, error) {
 	_, branch, headCommit, err := t.updateRepoToLatest(ctx, app.GitPath.Repo.Id)
 	if err != nil {
-		return err
+		return nil, err
 	}
 
 	// Build deployment model and send a request to API to create a new deployment.
 	t.logger.Info(fmt.Sprintf("application %s will be synced because of a sync command", app.Id),
 		zap.String("head-commit", headCommit.Hash),
 	)
-	if err := t.triggerDeployment(ctx, app, branch, headCommit, commander); err != nil {
-		return err
+	d, err := t.triggerDeployment(ctx, app, branch, headCommit, commander)
+	if err != nil {
+		return nil, err
 	}
 	t.mostRecentlyTriggeredCommits[app.Id] = headCommit.Hash
 
-	return nil
+	return d, nil
 }
 
 func (t *Trigger) checkCommit(ctx context.Context) error {
@@ -267,7 +277,7 @@ func (t *Trigger) checkApplication(ctx context.Context, app *model.Application, 
 		logger.Info("application should be synced because of the new commit",
 			zap.String("most-recently-triggered-commit", preCommitHash),
 		)
-		if err := t.triggerDeployment(ctx, app, branch, headCommit, ""); err != nil {
+		if _, err := t.triggerDeployment(ctx, app, branch, headCommit, ""); err != nil {
 			return err
 		}
 		t.mostRecentlyTriggeredCommits[app.Id] = headCommit.Hash
