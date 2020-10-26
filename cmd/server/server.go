@@ -12,15 +12,17 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-package server
+package main
 
 import (
 	"context"
 	"errors"
 	"fmt"
 	"net/http"
+	"path/filepath"
 	"time"
 
+	"github.com/NYTimes/gziphandler"
 	jwtgo "github.com/dgrijalva/jwt-go"
 	"github.com/spf13/cobra"
 	"go.uber.org/zap"
@@ -64,6 +66,7 @@ type server struct {
 	webAPIPort   int
 	httpPort     int
 	adminPort    int
+	staticDir    string
 	cacheAddress string
 	gracePeriod  time.Duration
 
@@ -86,12 +89,13 @@ func NewCommand() *cobra.Command {
 		webAPIPort:   9081,
 		httpPort:     9082,
 		adminPort:    9085,
+		staticDir:    "pkg/app/web/public_files",
 		cacheAddress: "cache:6379",
 		gracePeriod:  30 * time.Second,
 	}
 	cmd := &cobra.Command{
 		Use:   "server",
-		Short: "Start running API server.",
+		Short: "Start running server.",
 		RunE:  cli.WithContext(s.run),
 	}
 
@@ -99,6 +103,7 @@ func NewCommand() *cobra.Command {
 	cmd.Flags().IntVar(&s.webAPIPort, "web-api-port", s.webAPIPort, "The port number used to run a grpc server that serves incoming web requests.")
 	cmd.Flags().IntVar(&s.httpPort, "http-port", s.httpPort, "The port number used to run a http server that serves incoming http requests such as auth callbacks or webhook events.")
 	cmd.Flags().IntVar(&s.adminPort, "admin-port", s.adminPort, "The port number used to run a HTTP server for admin tasks such as metrics, healthz.")
+	cmd.Flags().StringVar(&s.staticDir, "static-dir", s.staticDir, "The directory where contains static assets.")
 	cmd.Flags().StringVar(&s.cacheAddress, "cache-address", s.cacheAddress, "The address to cache service.")
 	cmd.Flags().DurationVar(&s.gracePeriod, "grace-period", s.gracePeriod, "How long to wait for graceful shutdown.")
 
@@ -108,7 +113,9 @@ func NewCommand() *cobra.Command {
 	cmd.Flags().BoolVar(&s.insecureCookie, "insecure-cookie", s.insecureCookie, "Allow cookie to be sent over an unsecured HTTP connection.")
 
 	cmd.Flags().StringVar(&s.encryptionKeyFile, "encryption-key-file", s.encryptionKeyFile, "The path to file containing a random string of bits used to encrypt sensitive data.")
+	cmd.MarkFlagRequired("encryption-key-file")
 	cmd.Flags().StringVar(&s.configFile, "config-file", s.configFile, "The path to the configuration file.")
+	cmd.MarkFlagRequired("config-file")
 
 	// For debugging early in development
 	cmd.Flags().BoolVar(&s.useFakeResponse, "use-fake-response", s.useFakeResponse, "Whether the server responds fake response or not.")
@@ -129,6 +136,7 @@ func (s *server) run(ctx context.Context, t cli.Telemetry) error {
 		)
 		return err
 	}
+	t.Logger.Info("successfully loaded control-plane configuration")
 
 	var (
 		pipedAPIServer *rpc.Server
@@ -146,6 +154,7 @@ func (s *server) run(ctx context.Context, t cli.Telemetry) error {
 
 		}
 	}()
+	t.Logger.Info("succesfully connected to data store")
 
 	fs, err := s.createFilestore(ctx, cfg, t.Logger)
 	if err != nil {
@@ -157,6 +166,7 @@ func (s *server) run(ctx context.Context, t cli.Telemetry) error {
 			t.Logger.Error("failed to close filestore client", zap.Error(err))
 		}
 	}()
+	t.Logger.Info("successfully connected to file store")
 
 	rd := redis.NewRedis(s.cacheAddress, "")
 	defer func() {
@@ -236,7 +246,9 @@ func (s *server) run(ctx context.Context, t cli.Telemetry) error {
 		})
 	}
 
-	// Start an http server for handling incoming http requests such as auth callbacks or webhook events.
+	// Start an http server for handling incoming http requests
+	// such as auth callbacks, webhook events and
+	// serving static assets for web.
 	{
 		signer, err := jwt.NewSigner(defaultSigningMethod, s.encryptionKeyFile)
 		if err != nil {
@@ -267,6 +279,21 @@ func (s *server) run(ctx context.Context, t cli.Telemetry) error {
 		for _, h := range handlers {
 			h.Register(mux.HandleFunc)
 		}
+
+		fs := http.FileServer(http.Dir(filepath.Join(s.staticDir, "assets")))
+		assetsHandler := http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+			w.Header().Set("Cache-Control", "public, max-age=31536000")
+			http.StripPrefix("/assets/", fs).ServeHTTP(w, r)
+		})
+
+		mux.Handle("/assets/", gziphandler.GzipHandler(assetsHandler))
+		mux.HandleFunc("/favicon.ico", func(w http.ResponseWriter, r *http.Request) {
+			http.ServeFile(w, r, filepath.Join(s.staticDir, "favicon.ico"))
+		})
+		mux.HandleFunc("/", func(w http.ResponseWriter, r *http.Request) {
+			http.ServeFile(w, r, filepath.Join(s.staticDir, "/index.html"))
+		})
+
 		group.Go(func() error {
 			return runHTTPServer(ctx, httpServer, s.gracePeriod, t.Logger)
 		})
@@ -309,7 +336,7 @@ func runHTTPServer(ctx context.Context, httpServer *http.Server, gracePeriod tim
 
 	go func() {
 		defer cancel()
-		logger.Info("start running http server")
+		logger.Info(fmt.Sprintf("start running http server on %s", httpServer.Addr))
 		if err := httpServer.ListenAndServe(); err != nil && err != http.ErrServerClosed {
 			logger.Error("failed to listen and http server", zap.Error(err))
 			doneCh <- err
@@ -348,14 +375,17 @@ func (s *server) createDatastore(ctx context.Context, cfg *config.ControlPlaneSp
 			firestore.WithLogger(logger),
 		}
 		return firestore.NewFireStore(ctx, fsConfig.Project, fsConfig.Namespace, fsConfig.Environment, options...)
+
 	case model.DataStoreDynamoDB:
 		return nil, errors.New("dynamodb is unimplemented yet")
+
 	case model.DataStoreMongoDB:
 		mdConfig := cfg.Datastore.MongoDBConfig
 		options := []mongodb.Option{
 			mongodb.WithLogger(logger),
 		}
 		return mongodb.NewMongoDB(ctx, mdConfig.URL, mdConfig.Database, options...)
+
 	default:
 		return nil, fmt.Errorf("unknown datastore type %q", cfg.Datastore.Type)
 	}
@@ -375,8 +405,10 @@ func (s *server) createFilestore(ctx context.Context, cfg *config.ControlPlaneSp
 			options = append(options, gcs.WithCredentialsFile(gcsCfg.CredentialsFile))
 		}
 		return gcs.NewStore(ctx, gcsCfg.Bucket, options...)
+
 	case model.FileStoreS3:
 		return nil, errors.New("s3 is unimplemented yet")
+
 	case model.FileStoreMINIO:
 		minioCfg := cfg.Filestore.MinioConfig
 		options := []minio.Option{
@@ -392,6 +424,7 @@ func (s *server) createFilestore(ctx context.Context, cfg *config.ControlPlaneSp
 			}
 		}
 		return s, nil
+
 	default:
 		return nil, fmt.Errorf("unknown filestore type %q", cfg.Filestore.Type)
 	}

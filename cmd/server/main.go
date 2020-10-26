@@ -17,17 +17,16 @@ package main
 import (
 	"log"
 
-	"github.com/pipe-cd/pipe/pkg/app/api/cmd/server"
 	"github.com/pipe-cd/pipe/pkg/cli"
 )
 
 func main() {
 	app := cli.NewApp(
-		"api",
-		"A service for incoming gRPC requests from pipeds, web and hook events from git provider.",
+		"server",
+		"A server for handling incoming gRPC, HTTP requests and serving static assets for web.",
 	)
 	app.AddCommands(
-		server.NewCommand(),
+		NewCommand(),
 	)
 	if err := app.Run(); err != nil {
 		log.Fatal(err)

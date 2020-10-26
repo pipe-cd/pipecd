@@ -68,35 +68,35 @@ spec:
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  name: {{ include "pipecd.fullname" . }}-api
+  name: {{ include "pipecd.fullname" . }}-server
   labels:
     {{- include "pipecd.labels" . | nindent 4 }}
-    app.kubernetes.io/component: api
+    app.kubernetes.io/component: server
 spec:
-  replicas: {{ .Values.api.replicasCount }}
+  replicas: {{ .Values.server.replicasCount }}
   selector:
     matchLabels:
       {{- include "pipecd.selectorLabels" . | nindent 6 }}
-      app.kubernetes.io/component: api
+      app.kubernetes.io/component: server
   template:
     metadata:
       labels:
         {{- include "pipecd.selectorLabels" . | nindent 8 }}
-        app.kubernetes.io/component: api
+        app.kubernetes.io/component: server
     spec:
       containers:
-        - name: api
-          image: "gcr.io/pipecd/api:{{ .Chart.AppVersion }}"
+        - name: server
+          image: "gcr.io/pipecd/server:{{ .Chart.AppVersion }}"
           imagePullPolicy: IfNotPresent
           args:
           - server
-{{- if not .Values.api.args.secureCookie }}
+{{- if not .Values.server.args.secureCookie }}
           - --insecure-cookie=true
 {{- end }}
-          - --cache-address={{ .Values.api.args.cacheAddress | default (printf "%s-cache:6379" (include "pipecd.fullname" .)) }}
+          - --cache-address={{ .Values.server.args.cacheAddress | default (printf "%s-cache:6379" (include "pipecd.fullname" .)) }}
           - --config-file=/etc/pipecd-config/{{ .Values.config.fileName }}
-          - --use-fake-response={{ .Values.api.args.useFakeResponse }}
-          - --enable-grpc-reflection={{ .Values.api.args.enableGRPCReflection }}
+          - --use-fake-response={{ .Values.server.args.useFakeResponse }}
+          - --enable-grpc-reflection={{ .Values.server.args.enableGRPCReflection }}
           - --encryption-key-file={{ .Values.secret.mountPath }}/{{ .Values.secret.encryptionKey.fileName }}
           ports:
             - name: piped-api
@@ -126,9 +126,9 @@ spec:
             - name: pipecd-config
               mountPath: /etc/pipecd-config
               readOnly: true
-{{- if .Values.api.resources }}
+{{- if .Values.server.resources }}
           resources:
-            {{- toYaml .Values.api.resources | nindent 12 }}
+            {{- toYaml .Values.server.resources | nindent 12 }}
 {{- end }}
       volumes:
         - name: pipecd-secret
@@ -137,53 +137,6 @@ spec:
         - name: pipecd-config
           configMap:
             name: {{ include "pipecd.configMapName" . }}
-
----
-# Web workload.
-apiVersion: apps/v1
-kind: Deployment
-metadata:
-  name: {{ include "pipecd.fullname" . }}-web
-  labels:
-    {{- include "pipecd.labels" . | nindent 4 }}
-    app.kubernetes.io/component: web
-spec:
-  replicas: {{ .Values.web.replicasCount }}
-  selector:
-    matchLabels:
-      {{- include "pipecd.selectorLabels" . | nindent 6 }}
-      app.kubernetes.io/component: web
-  template:
-    metadata:
-      labels:
-        {{- include "pipecd.selectorLabels" . | nindent 8 }}
-        app.kubernetes.io/component: web
-    spec:
-      containers:
-        - name: web
-          image: "gcr.io/pipecd/web:{{ .Chart.AppVersion }}"
-          imagePullPolicy: IfNotPresent
-          args:
-          - server
-          ports:
-            - name: web
-              containerPort: 9082
-              protocol: TCP
-            - name: admin
-              containerPort: 9085
-              protocol: TCP
-          livenessProbe:
-            httpGet:
-              path: /healthz
-              port: admin
-          readinessProbe:
-            httpGet:
-              path: /healthz
-              port: admin
-{{- if .Values.web.resources }}
-          resources:
-            {{- toYaml .Values.web.resources | nindent 12 }}
-{{- end }}
 
 ---
 # Cache workload.

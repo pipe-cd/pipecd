@@ -49,10 +49,10 @@ spec:
 apiVersion: v1
 kind: Service
 metadata:
-  name: {{ include "pipecd.fullname" . }}-api
+  name: {{ include "pipecd.fullname" . }}-server
   labels:
     {{- include "pipecd.labels" . | nindent 4 }}
-    app.kubernetes.io/component: api
+    app.kubernetes.io/component: server
 spec:
   type: ClusterIP
   clusterIP: None
@@ -71,29 +71,7 @@ spec:
       targetPort: admin
   selector:
     {{- include "pipecd.selectorLabels" . | nindent 4 }}
-    app.kubernetes.io/component: api
-
----
-apiVersion: v1
-kind: Service
-metadata:
-  name: {{ include "pipecd.fullname" . }}-web
-  labels:
-    {{- include "pipecd.labels" . | nindent 4 }}
-    app.kubernetes.io/component: web
-spec:
-  type: ClusterIP
-  clusterIP: None
-  ports:
-    - name: service
-      port: 9082
-      targetPort: web
-    - name: admin
-      port: 9085
-      targetPort: admin
-  selector:
-    {{- include "pipecd.selectorLabels" . | nindent 4 }}
-    app.kubernetes.io/component: web
+    app.kubernetes.io/component: server
 
 ---
 apiVersion: v1

@@ -33,7 +33,7 @@ const (
 	// loginPath is the path to login to pipecd projects.
 	loginPath = "/auth/login"
 	// staticLoginPath is the path to login to pipecd projects with password.
-	staticLoginPath = loginPath + "/static"
+	staticLoginPath = "/auth/login/static"
 	// callbackPath is the path configured in the GitHub oauth application settings.
 	callbackPath = "/auth/callback"
 	// logoutPath is the path for logging out from current session.
