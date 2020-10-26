@@ -69,7 +69,7 @@ data:
                       route:
                         cluster: server-web-api
                     - match:
-                        path: /
+                        prefix: /
                       route:
                         cluster: server-http
 {{- if .Values.gateway.internalTLS.enabled }}
