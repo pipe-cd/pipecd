@@ -14,6 +14,7 @@ import {
   ApplicationLiveState,
   clearError,
   selectById as selectLiveStateById,
+  selectHasError,
 } from "../modules/applications-live-state";
 import { KubernetesStateView } from "./kubernetes-state-view";
 
@@ -40,7 +41,7 @@ export const ApplicationStateView: FC<Props> = memo(
       AppState,
       [boolean, ApplicationLiveState | undefined]
     >((state) => [
-      state.applicationLiveState.hasError,
+      selectHasError(state.applicationLiveState, applicationId),
       selectLiveStateById(state.applicationLiveState, applicationId),
     ]);
 
@@ -51,7 +52,7 @@ export const ApplicationStateView: FC<Props> = memo(
           <Button
             color="primary"
             onClick={() => {
-              dispatch(clearError());
+              dispatch(clearError(applicationId));
             }}
           >
             {UI_TEXT_REFRESH}
