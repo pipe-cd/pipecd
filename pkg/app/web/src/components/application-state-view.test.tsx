@@ -13,7 +13,9 @@ it("shows refresh button if live state fetching has error", () => {
         [dummyApplicationLiveState.applicationId]: dummyApplicationLiveState,
       },
       ids: [dummyApplicationLiveState.applicationId],
-      hasError: true,
+      hasError: {
+        [dummyApplicationLiveState.applicationId]: true,
+      },
     },
   });
   render(

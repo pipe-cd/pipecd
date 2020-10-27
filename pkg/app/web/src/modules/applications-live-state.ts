@@ -2,6 +2,7 @@ import {
   createAsyncThunk,
   createEntityAdapter,
   createSlice,
+  PayloadAction,
 } from "@reduxjs/toolkit";
 import {
   ApplicationLiveStateSnapshot as ApplicationLiveStateSnapshotModel,
@@ -42,29 +43,40 @@ export const fetchApplicationStateById = createAsyncThunk<
   }
 });
 
+const initialState = applicationLiveStateAdapter.getInitialState<{
+  hasError: Record<string, boolean>;
+}>({
+  hasError: {},
+});
+
+export const selectHasError = (
+  state: typeof initialState,
+  applicationId: string
+): boolean => {
+  return state.hasError[applicationId] || false;
+};
+
 export const applicationLiveStateSlice = createSlice({
   name: "applicationLiveState",
-  initialState: applicationLiveStateAdapter.getInitialState({
-    hasError: false,
-  }),
+  initialState,
   reducers: {
-    clearError(state) {
-      state.hasError = false;
+    clearError(state, action: PayloadAction<string>) {
+      state.hasError[action.payload] = false;
     },
   },
   extraReducers: (builder) => {
     builder
-      .addCase(fetchApplicationStateById.pending, (state) => {
-        state.hasError = false;
+      .addCase(fetchApplicationStateById.pending, (state, action) => {
+        state.hasError[action.meta.arg] = false;
       })
       .addCase(fetchApplicationStateById.fulfilled, (state, action) => {
-        state.hasError = false;
+        state.hasError[action.meta.arg] = false;
         if (action.payload) {
           applicationLiveStateAdapter.upsertOne(state, action.payload);
         }
       })
-      .addCase(fetchApplicationStateById.rejected, (state) => {
-        state.hasError = true;
+      .addCase(fetchApplicationStateById.rejected, (state, action) => {
+        state.hasError[action.meta.arg] = true;
       });
   },
 });

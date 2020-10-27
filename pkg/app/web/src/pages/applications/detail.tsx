@@ -4,7 +4,11 @@ import { useParams } from "react-router";
 import { ApplicationDetail } from "../../components/application-detail";
 import { ApplicationStateView } from "../../components/application-state-view";
 import { fetchApplication } from "../../modules/applications";
-import { fetchApplicationStateById } from "../../modules/applications-live-state";
+import {
+  clearError,
+  fetchApplicationStateById,
+  selectHasError,
+} from "../../modules/applications-live-state";
 import { useInterval } from "../../hooks/use-interval";
 import { addToast } from "../../modules/toasts";
 import { AppDispatch } from "../../store";
@@ -16,8 +20,8 @@ export const ApplicationDetailPage: FC = memo(function ApplicationDetailPage() {
   const dispatch = useDispatch<AppDispatch>();
   const params = useParams<{ applicationId: string }>();
   const applicationId = decodeURIComponent(params.applicationId);
-  const hasLiveStateError = useSelector<AppState, boolean>(
-    (state) => state.applicationLiveState.hasError
+  const hasLiveStateError = useSelector<AppState, boolean>((state) =>
+    selectHasError(state.applicationLiveState, params.applicationId)
   );
 
   const fetchData = (): void => {
@@ -40,6 +44,12 @@ export const ApplicationDetailPage: FC = memo(function ApplicationDetailPage() {
 
   useEffect(fetchData, [applicationId, dispatch, hasLiveStateError]);
   useInterval(fetchData, applicationId ? FETCH_INTERVAL : null);
+
+  useEffect(() => {
+    return () => {
+      dispatch(clearError(applicationId));
+    };
+  }, [dispatch, applicationId]);
 
   return (
     <>
