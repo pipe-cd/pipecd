@@ -1,14 +1,18 @@
 import {
+  Box,
   Button,
   CircularProgress,
   Divider,
+  IconButton,
   Link,
   makeStyles,
   MenuItem,
   TextField,
   Typography,
 } from "@material-ui/core";
+import CopyIcon from "@material-ui/icons/FileCopyOutlined";
 import OpenInNewIcon from "@material-ui/icons/OpenInNew";
+import copy from "copy-to-clipboard";
 import React, { FC, useEffect, useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import { AppState } from "../modules";
@@ -17,6 +21,7 @@ import {
   fetchTemplateList,
   selectTemplatesByAppId,
 } from "../modules/deployment-configs";
+import { addToast } from "../modules/toasts";
 
 const useStyles = makeStyles((theme) => ({
   root: {
@@ -62,8 +67,7 @@ const TEXT = {
   PLACEHOLDER:
     "# Fill the deployment configuration here. You can also choose one of the provided templates above to edit.",
   CONFIGURATION_FILENAME: ".pipe.yaml",
-  CREATE_LINK:
-    "Add to application configuration directory in Git",
+  CREATE_LINK: "Add to application configuration directory in Git",
 };
 
 interface Props {
@@ -82,6 +86,13 @@ export const DeploymentConfigForm: FC<Props> = ({ applicationId, onSkip }) => {
 
   const template = templates && templates[templateIndex];
 
+  const handleOnClickCopy = (): void => {
+    if (template) {
+      copy(template.content);
+      dispatch(addToast({ message: "Deployment config copied to clipboard" }));
+    }
+  };
+
   useEffect(() => {
     dispatch(fetchTemplateList({ labels: [], applicationId }));
   }, [dispatch, applicationId]);
@@ -91,6 +102,7 @@ export const DeploymentConfigForm: FC<Props> = ({ applicationId, onSkip }) => {
       <Typography className={classes.title} variant="h6">
         {TEXT.TITLE}
       </Typography>
+
       <Divider />
 
       {templates === null ? (
@@ -117,9 +129,22 @@ export const DeploymentConfigForm: FC<Props> = ({ applicationId, onSkip }) => {
             ))}
           </TextField>
 
-          <Typography variant="subtitle1" className={classes.filename}>
-            {TEXT.CONFIGURATION_FILENAME}
-          </Typography>
+          <Box
+            display="flex"
+            alignItems="flex-end"
+            justifyContent="space-between"
+          >
+            <Typography variant="subtitle1" className={classes.filename}>
+              {TEXT.CONFIGURATION_FILENAME}
+            </Typography>
+            <IconButton
+              size="small"
+              aria-label="Copy deployment config"
+              onClick={handleOnClickCopy}
+            >
+              <CopyIcon fontSize="small" />
+            </IconButton>
+          </Box>
           <TextField
             multiline
             fullWidth
@@ -128,10 +153,6 @@ export const DeploymentConfigForm: FC<Props> = ({ applicationId, onSkip }) => {
             rows={30}
             rowsMax={30}
             value={template ? template.content : TEXT.PLACEHOLDER}
-            InputProps={{
-              className: classes.templateContent,
-              margin: "dense",
-            }}
           />
 
           {template && (
