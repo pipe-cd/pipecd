@@ -3,10 +3,10 @@ FROM alpine:3.10.1
 ENV PIPED_BIN_DIR=/home/pipecd/tools
 ENV PATH="${PIPED_BIN_DIR}:${PATH}"
 
-ADD install-helm.sh /installer/install-helm.sh
-ADD install-kubectl.sh /installer/install-kubectl.sh
-ADD install-kustomize.sh /installer/install-kustomize.sh
-ADD install-terraform.sh /installer/install-terraform.sh
+COPY install-helm.sh /installer/install-helm.sh
+COPY install-kubectl.sh /installer/install-kubectl.sh
+COPY install-kustomize.sh /installer/install-kustomize.sh
+COPY install-terraform.sh /installer/install-terraform.sh
 
 RUN \
     addgroup -S -g 1000 pipecd && \
