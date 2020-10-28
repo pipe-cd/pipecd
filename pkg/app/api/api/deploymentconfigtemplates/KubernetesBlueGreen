@@ -1,4 +1,4 @@
-# Deploy progressively with bluegreen stragegy.
+# Deploy progressively with bluegreen strategy.
 apiVersion: pipecd.dev/v1beta1
 kind: KubernetesApp
 spec:

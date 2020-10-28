@@ -1,4 +1,4 @@
-# Deploy progressively with canary stragegy.
+# Deploy progressively with canary strategy.
 apiVersion: pipecd.dev/v1beta1
 kind: KubernetesApp
 spec:
