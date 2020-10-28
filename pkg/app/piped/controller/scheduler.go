@@ -101,10 +101,10 @@ func newScheduler(
 
 	logger = logger.Named("scheduler").With(
 		zap.String("deployment-id", d.Id),
-		zap.String("application-id", d.ApplicationId),
+		zap.String("app-id", d.ApplicationId),
 		zap.String("env-id", d.EnvId),
 		zap.String("project-id", d.ProjectId),
-		zap.String("application-kind", d.Kind.String()),
+		zap.String("app-kind", d.Kind.String()),
 		zap.String("working-dir", workingDir),
 	)
 
@@ -188,7 +188,8 @@ func (s *scheduler) Cancel(cmd model.ReportableCommand) {
 // The returning error does not mean that the pipeline was failed,
 // but it means that the scheduler could not finish its job normally.
 func (s *scheduler) Run(ctx context.Context) error {
-	s.logger.Info("start running a scheduler")
+	s.logger.Info("start running scheduler")
+
 	defer func() {
 		s.doneTimestamp = s.nowFunc()
 		s.done.Store(true)

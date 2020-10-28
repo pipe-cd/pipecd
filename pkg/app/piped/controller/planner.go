@@ -20,8 +20,6 @@ import (
 	"path/filepath"
 	"time"
 
-	"github.com/pipe-cd/pipe/pkg/regexpool"
-
 	"go.uber.org/atomic"
 	"go.uber.org/zap"
 
@@ -31,6 +29,7 @@ import (
 	"github.com/pipe-cd/pipe/pkg/cache"
 	"github.com/pipe-cd/pipe/pkg/config"
 	"github.com/pipe-cd/pipe/pkg/model"
+	"github.com/pipe-cd/pipe/pkg/regexpool"
 )
 
 // What planner does:
@@ -131,7 +130,8 @@ func (p *planner) Cancel(cmd model.ReportableCommand) {
 }
 
 func (p *planner) Run(ctx context.Context) error {
-	p.logger.Info("start running a planner")
+	p.logger.Info("start running planner")
+
 	defer func() {
 		p.doneTimestamp = p.nowFunc()
 		p.done.Store(true)
@@ -144,41 +144,35 @@ func (p *planner) Run(ctx context.Context) error {
 
 	planner, ok := p.plannerRegistry.Planner(p.deployment.Kind)
 	if !ok {
-		err := fmt.Errorf("no registered planner for application %v", p.deployment.Kind)
-		reason := fmt.Sprintf("Failed because %v", err)
-		p.reportDeploymentFailed(ctx, reason)
-		return err
+		p.reportDeploymentFailed(ctx, "Unable to find the planner for this application kind")
+		return fmt.Errorf("unable to find the planner for application %v", p.deployment.Kind)
 	}
 
 	// Clone repository and checkout to the target revision.
 	gitRepo, err := prepareDeployRepository(ctx, p.deployment, p.gitClient, repoDirPath, p.pipedConfig)
 	if err != nil {
-		reason := fmt.Sprintf("Failed because %v", err)
-		p.reportDeploymentFailed(ctx, reason)
+		p.reportDeploymentFailed(ctx, fmt.Sprintf("Unable to prepare git repository (%v)", err))
 		return err
 	}
 
 	// Load deployment configuration for this application.
 	cfg, err := loadDeploymentConfiguration(gitRepo.GetPath(), p.deployment)
 	if err != nil {
-		reason := fmt.Sprintf("Failed because %v", err)
-		p.reportDeploymentFailed(ctx, reason)
+		p.reportDeploymentFailed(ctx, fmt.Sprintf("Unable to load deployment configuration (%v)", err))
 		return err
 	}
 	p.deploymentConfig = cfg
 
 	gds, ok := cfg.GetGenericDeployment()
 	if !ok {
-		reason := fmt.Sprintf("Failed because application kind %s is not supported", cfg.Kind)
-		p.reportDeploymentFailed(ctx, reason)
+		p.reportDeploymentFailed(ctx, "This application kind is not supported yet")
 		return fmt.Errorf("unsupport application kind %s", cfg.Kind)
 	}
 
 	// Decrypt the sealed secrets at the target revision.
 	if len(gds.SealedSecrets) > 0 && p.sealedSecretDecrypter != nil {
 		if err := decryptSealedSecrets(appDirPath, gds.SealedSecrets, p.sealedSecretDecrypter); err != nil {
-			reason := fmt.Sprintf("Failed to decrypt sealed secrets %v", err)
-			p.reportDeploymentFailed(ctx, reason)
+			p.reportDeploymentFailed(ctx, fmt.Sprintf("Unable to decrypt the sealed secrets (%v)", err))
 			return fmt.Errorf("failed to decrypt sealed secrets (%w)", err)
 		}
 	}
@@ -207,10 +201,11 @@ func (p *planner) Run(ctx context.Context) error {
 	default:
 	}
 
-	if err == nil {
-		return p.reportDeploymentPlanned(ctx, p.lastSuccessfulCommitHash, out)
+	if err != nil {
+		return p.reportDeploymentFailed(ctx, fmt.Sprintf("Unable to plan the deployment (%v)", err))
 	}
-	return p.reportDeploymentFailed(ctx, err.Error())
+
+	return p.reportDeploymentPlanned(ctx, p.lastSuccessfulCommitHash, out)
 }
 
 func (p *planner) reportDeploymentPlanned(ctx context.Context, runningCommitHash string, out pln.Output) error {
