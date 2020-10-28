@@ -99,7 +99,9 @@ export const selectPipedsByEnv = (
   state: EntityState<Piped>,
   envId: string
 ): Piped[] => {
-  return selectAll(state).filter((piped) => piped.envIdsList.includes(envId));
+  return selectAll(state).filter(
+    (piped) => piped.envIdsList.includes(envId) && piped.disabled === false
+  );
 };
 
 export const { clearRegisteredPipedInfo } = pipedsSlice.actions;
