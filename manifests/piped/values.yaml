@@ -3,6 +3,7 @@ args:
   useFakeAPI: false
   enableDefaultKubernetesCloudProvider: true
   insecure: false
+  logEncoding: humanize
 
 service:
   enabled: true

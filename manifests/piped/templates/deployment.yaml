@@ -30,6 +30,7 @@ spec:
           - --use-fake-api-client={{ .Values.args.useFakeAPI }}
           - --enable-default-kubernetes-cloud-provider={{ .Values.args.enableDefaultKubernetesCloudProvider }}
           - --insecure={{ .Values.args.insecure }}
+          - --log-encoding={{ .Values.args.logEncoding }}
           ports:
             - name: admin
               containerPort: 9085
