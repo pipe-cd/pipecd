@@ -97,6 +97,7 @@ func newPlanner(
 		pipedConfig:              pipedConfig,
 		plannerRegistry:          registry.DefaultRegistry(),
 		appManifestsCache:        appManifestsCache,
+		cancelledCh:              make(chan *model.ReportableCommand, 1),
 		nowFunc:                  time.Now,
 		logger:                   logger,
 	}
