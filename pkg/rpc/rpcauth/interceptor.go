@@ -28,8 +28,8 @@ import (
 )
 
 var (
-	errUnauthenticated  = status.Error(codes.Unauthenticated, "unauthenticated")
-	errPermissionDenied = status.Error(codes.PermissionDenied, "permission denied")
+	errUnauthenticated  = status.Error(codes.Unauthenticated, "Unauthenticated")
+	errPermissionDenied = status.Error(codes.PermissionDenied, "Permission Denied")
 )
 
 // RBACAuthorizer defines a function to check required role for a specific RPC method.

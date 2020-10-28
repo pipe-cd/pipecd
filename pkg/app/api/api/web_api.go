@@ -91,8 +91,8 @@ func (a *WebAPI) Register(server *grpc.Server) {
 func (a *WebAPI) AddEnvironment(ctx context.Context, req *webservice.AddEnvironmentRequest) (*webservice.AddEnvironmentResponse, error) {
 	claims, err := rpcauth.ExtractClaims(ctx)
 	if err != nil {
-		a.logger.Error("failed to extract claims", zap.Error(err))
-		return nil, status.Error(codes.Internal, "internal error")
+		a.logger.Error("failed to authenticate the current user", zap.Error(err))
+		return nil, err
 	}
 
 	env := model.Environment{
@@ -103,12 +103,13 @@ func (a *WebAPI) AddEnvironment(ctx context.Context, req *webservice.AddEnvironm
 	}
 	err = a.environmentStore.AddEnvironment(ctx, &env)
 	if errors.Is(err, datastore.ErrAlreadyExists) {
-		return nil, status.Error(codes.AlreadyExists, "environment already exists")
+		return nil, status.Error(codes.AlreadyExists, "The environment already exists")
 	}
 	if err != nil {
 		a.logger.Error("failed to create environment", zap.Error(err))
-		return nil, status.Error(codes.Internal, "failed to create environment")
+		return nil, status.Error(codes.Internal, "Failed to create environment")
 	}
+
 	return &webservice.AddEnvironmentResponse{}, nil
 }
 
@@ -119,6 +120,7 @@ func (a *WebAPI) UpdateEnvironmentDesc(ctx context.Context, req *webservice.Upda
 func (a *WebAPI) ListEnvironments(ctx context.Context, req *webservice.ListEnvironmentsRequest) (*webservice.ListEnvironmentsResponse, error) {
 	claims, err := rpcauth.ExtractClaims(ctx)
 	if err != nil {
+		a.logger.Error("failed to authenticate the current user", zap.Error(err))
 		return nil, err
 	}
 
@@ -134,7 +136,7 @@ func (a *WebAPI) ListEnvironments(ctx context.Context, req *webservice.ListEnvir
 	envs, err := a.environmentStore.ListEnvironments(ctx, opts)
 	if err != nil {
 		a.logger.Error("failed to get environments", zap.Error(err))
-		return nil, status.Error(codes.Internal, "failed to get environments")
+		return nil, status.Error(codes.Internal, "Failed to get environments")
 	}
 
 	return &webservice.ListEnvironmentsResponse{
@@ -145,14 +147,14 @@ func (a *WebAPI) ListEnvironments(ctx context.Context, req *webservice.ListEnvir
 func (a *WebAPI) RegisterPiped(ctx context.Context, req *webservice.RegisterPipedRequest) (*webservice.RegisterPipedResponse, error) {
 	claims, err := rpcauth.ExtractClaims(ctx)
 	if err != nil {
-		a.logger.Error("failed to extract claims", zap.Error(err))
-		return nil, status.Error(codes.Internal, "internal error")
+		a.logger.Error("failed to authenticate the current user", zap.Error(err))
+		return nil, err
 	}
 
 	key, keyHash, err := model.GeneratePipedKey()
 	if err != nil {
 		a.logger.Error("failed to generate piped key", zap.Error(err))
-		return nil, status.Error(codes.Internal, "failed to generate the piped key")
+		return nil, status.Error(codes.Internal, "Failed to generate the piped key")
 	}
 	id := uuid.New().String()
 	piped := model.Piped{
@@ -166,11 +168,11 @@ func (a *WebAPI) RegisterPiped(ctx context.Context, req *webservice.RegisterPipe
 	}
 	err = a.pipedStore.AddPiped(ctx, &piped)
 	if errors.Is(err, datastore.ErrAlreadyExists) {
-		return nil, status.Error(codes.AlreadyExists, "piped already exists")
+		return nil, status.Error(codes.AlreadyExists, "The piped already exists")
 	}
 	if err != nil {
 		a.logger.Error("failed to register piped", zap.Error(err))
-		return nil, status.Error(codes.Internal, "failed to register piped")
+		return nil, status.Error(codes.Internal, "Failed to register piped")
 	}
 	return &webservice.RegisterPipedResponse{
 		Id:  id,
@@ -182,7 +184,7 @@ func (a *WebAPI) RecreatePipedKey(ctx context.Context, req *webservice.RecreateP
 	key, keyHash, err := model.GeneratePipedKey()
 	if err != nil {
 		a.logger.Error("failed to generate piped key", zap.Error(err))
-		return nil, status.Error(codes.Internal, "failed to generate the piped key")
+		return nil, status.Error(codes.Internal, "Failed to generate the piped key")
 	}
 
 	updater := func(ctx context.Context, pipedID string) error {
@@ -214,6 +216,7 @@ func (a *WebAPI) DisablePiped(ctx context.Context, req *webservice.DisablePipedR
 func (a *WebAPI) updatePiped(ctx context.Context, pipedID string, updater func(context.Context, string) error) error {
 	claims, err := rpcauth.ExtractClaims(ctx)
 	if err != nil {
+		a.logger.Error("failed to authenticate the current user", zap.Error(err))
 		return err
 	}
 
@@ -223,21 +226,21 @@ func (a *WebAPI) updatePiped(ctx context.Context, pipedID string, updater func(c
 	}
 
 	if claims.Role.ProjectId != piped.ProjectId {
-		return status.Error(codes.PermissionDenied, "The current project does not have requested piped")
+		return status.Error(codes.PermissionDenied, "The current project does not have the requested piped")
 	}
 
 	if err := updater(ctx, pipedID); err != nil {
 		switch err {
 		case datastore.ErrNotFound:
-			return status.Error(codes.InvalidArgument, "piped is not found")
+			return status.Error(codes.InvalidArgument, "The piped is not found")
 		case datastore.ErrInvalidArgument:
-			return status.Error(codes.InvalidArgument, "invalid value for update")
+			return status.Error(codes.InvalidArgument, "Invalid value for update")
 		default:
 			a.logger.Error("failed to update the piped",
 				zap.String("piped-id", pipedID),
 				zap.Error(err),
 			)
-			return status.Error(codes.Internal, "failed to update the piped ")
+			return status.Error(codes.Internal, "Failed to update the piped ")
 		}
 	}
 	return nil
@@ -247,9 +250,10 @@ func (a *WebAPI) updatePiped(ctx context.Context, pipedID string, updater func(c
 func (a *WebAPI) ListPipeds(ctx context.Context, req *webservice.ListPipedsRequest) (*webservice.ListPipedsResponse, error) {
 	claims, err := rpcauth.ExtractClaims(ctx)
 	if err != nil {
-		a.logger.Error("failed to extract claims", zap.Error(err))
-		return nil, status.Error(codes.Internal, "internal error")
+		a.logger.Error("failed to authenticate the current user", zap.Error(err))
+		return nil, err
 	}
+
 	opts := datastore.ListOptions{
 		Filters: []datastore.ListFilter{
 			{
@@ -273,7 +277,7 @@ func (a *WebAPI) ListPipeds(ctx context.Context, req *webservice.ListPipedsReque
 	pipeds, err := a.pipedStore.ListPipeds(ctx, opts)
 	if err != nil {
 		a.logger.Error("failed to get pipeds", zap.Error(err))
-		return nil, status.Error(codes.Internal, "failed to get pipeds")
+		return nil, status.Error(codes.Internal, "Failed to get pipeds")
 	}
 
 	// Redact all sensitive data inside piped message before sending to the client.
@@ -303,11 +307,11 @@ func (a *WebAPI) GetPiped(ctx context.Context, req *webservice.GetPipedRequest) 
 func (a *WebAPI) getPiped(ctx context.Context, pipedID string) (*model.Piped, error) {
 	piped, err := a.pipedStore.GetPiped(ctx, pipedID)
 	if errors.Is(err, datastore.ErrNotFound) {
-		return nil, status.Error(codes.NotFound, "piped is not found")
+		return nil, status.Error(codes.NotFound, "Piped is not found")
 	}
 	if err != nil {
 		a.logger.Error("failed to get piped", zap.Error(err))
-		return nil, status.Error(codes.Internal, "failed to get piped")
+		return nil, status.Error(codes.Internal, "Failed to get piped")
 	}
 	return piped, nil
 }
@@ -316,13 +320,13 @@ func (a *WebAPI) getPiped(ctx context.Context, pipedID string) (*model.Piped, er
 func (a *WebAPI) AddApplication(ctx context.Context, req *webservice.AddApplicationRequest) (*webservice.AddApplicationResponse, error) {
 	claims, err := rpcauth.ExtractClaims(ctx)
 	if err != nil {
-		a.logger.Error("failed to extract claims", zap.Error(err))
-		return nil, status.Error(codes.Internal, "internal error")
+		a.logger.Error("failed to authenticate the current user", zap.Error(err))
+		return nil, err
 	}
 
 	// The path to the application directory must be relative.
 	if strings.HasPrefix(req.GitPath.Path, "/") {
-		return nil, status.Error(codes.InvalidArgument, "the path must be a relative path")
+		return nil, status.Error(codes.InvalidArgument, "The path must be a relative path")
 	}
 
 	gitpath, err := a.makeGitPath(ctx, req.GitPath.Repo.Id, req.GitPath.Path, req.GitPath.ConfigFilename, req.PipedId)
@@ -341,11 +345,11 @@ func (a *WebAPI) AddApplication(ctx context.Context, req *webservice.AddApplicat
 	}
 	err = a.applicationStore.AddApplication(ctx, &app)
 	if errors.Is(err, datastore.ErrAlreadyExists) {
-		return nil, status.Error(codes.AlreadyExists, "application already exists")
+		return nil, status.Error(codes.AlreadyExists, "The application already exists")
 	}
 	if err != nil {
 		a.logger.Error("failed to create application", zap.Error(err))
-		return nil, status.Error(codes.Internal, "failed to create application")
+		return nil, status.Error(codes.Internal, "Failed to create application")
 	}
 
 	return &webservice.AddApplicationResponse{
@@ -373,13 +377,13 @@ func (a *WebAPI) makeGitPath(ctx context.Context, repoID, path, cfgFilename, pip
 			zap.String("piped-id", pipedID),
 			zap.Error(err),
 		)
-		return nil, status.Error(codes.Internal, "repository not found")
+		return nil, status.Error(codes.Internal, "The repository is not found")
 	}
 
 	u, err := git.MakeDirURL(repo.Remote, path, repo.Branch)
 	if err != nil {
 		a.logger.Error("failed to make GitPath URL", zap.Error(err))
-		return nil, status.Error(codes.Internal, "failed to make GitPath URL")
+		return nil, status.Error(codes.Internal, "Failed to make GitPath URL")
 	}
 	return &model.ApplicationGitPath{
 		Repo:           repo,
@@ -406,6 +410,7 @@ func (a *WebAPI) DisableApplication(ctx context.Context, req *webservice.Disable
 func (a *WebAPI) updateApplicationEnable(ctx context.Context, appID string, enable bool) error {
 	claims, err := rpcauth.ExtractClaims(ctx)
 	if err != nil {
+		a.logger.Error("failed to authenticate the current user", zap.Error(err))
 		return err
 	}
 
@@ -427,15 +432,15 @@ func (a *WebAPI) updateApplicationEnable(ctx context.Context, appID string, enab
 	if err := updater(ctx, appID); err != nil {
 		switch err {
 		case datastore.ErrNotFound:
-			return status.Error(codes.InvalidArgument, "application is not found")
+			return status.Error(codes.InvalidArgument, "The application is not found")
 		case datastore.ErrInvalidArgument:
-			return status.Error(codes.InvalidArgument, "invalid value for update")
+			return status.Error(codes.InvalidArgument, "Invalid value for update")
 		default:
 			a.logger.Error("failed to update the application",
 				zap.String("application-id", appID),
 				zap.Error(err),
 			)
-			return status.Error(codes.Internal, "failed to update the application")
+			return status.Error(codes.Internal, "Failed to update the application")
 		}
 	}
 	return nil
@@ -444,8 +449,8 @@ func (a *WebAPI) updateApplicationEnable(ctx context.Context, appID string, enab
 func (a *WebAPI) ListApplications(ctx context.Context, req *webservice.ListApplicationsRequest) (*webservice.ListApplicationsResponse, error) {
 	claims, err := rpcauth.ExtractClaims(ctx)
 	if err != nil {
-		a.logger.Error("failed to extract claims", zap.Error(err))
-		return nil, status.Error(codes.Internal, "internal error")
+		a.logger.Error("failed to authenticate the current user", zap.Error(err))
+		return nil, err
 	}
 
 	orders := []datastore.Order{
@@ -500,7 +505,7 @@ func (a *WebAPI) ListApplications(ctx context.Context, req *webservice.ListAppli
 	})
 	if err != nil {
 		a.logger.Error("failed to get applications", zap.Error(err))
-		return nil, status.Error(codes.Internal, "failed to get applications")
+		return nil, status.Error(codes.Internal, "Failed to get applications")
 	}
 
 	return &webservice.ListApplicationsResponse{
@@ -511,8 +516,8 @@ func (a *WebAPI) ListApplications(ctx context.Context, req *webservice.ListAppli
 func (a *WebAPI) SyncApplication(ctx context.Context, req *webservice.SyncApplicationRequest) (*webservice.SyncApplicationResponse, error) {
 	claims, err := rpcauth.ExtractClaims(ctx)
 	if err != nil {
-		a.logger.Error("failed to extract claims", zap.Error(err))
-		return nil, status.Error(codes.Internal, "internal error")
+		a.logger.Error("failed to authenticate the current user", zap.Error(err))
+		return nil, err
 	}
 
 	app, err := a.getApplication(ctx, req.ApplicationId)
@@ -521,7 +526,7 @@ func (a *WebAPI) SyncApplication(ctx context.Context, req *webservice.SyncApplic
 	}
 
 	if app.ProjectId != claims.Role.ProjectId {
-		return nil, status.Error(codes.PermissionDenied, "The current project does not have requested application")
+		return nil, status.Error(codes.PermissionDenied, "The current project does not have the requested application")
 	}
 
 	commandID := uuid.New().String()
@@ -546,7 +551,7 @@ func (a *WebAPI) SyncApplication(ctx context.Context, req *webservice.SyncApplic
 func (a *WebAPI) addCommand(ctx context.Context, cmd *model.Command) error {
 	if err := a.commandStore.AddCommand(ctx, cmd); err != nil {
 		a.logger.Error("failed to create command", zap.Error(err))
-		return status.Error(codes.Internal, "failed to create command")
+		return status.Error(codes.Internal, "Failed to create command")
 	}
 	return nil
 }
@@ -569,7 +574,7 @@ func (a *WebAPI) GenerateApplicationSealedSecret(ctx context.Context, req *webse
 
 	sse := piped.SealedSecretEncryption
 	if sse == nil {
-		return nil, status.Error(codes.FailedPrecondition, "the piped does not contain the encryption configuration")
+		return nil, status.Error(codes.FailedPrecondition, "The piped does not contain the encryption configuration")
 	}
 
 	var enc encrypter
@@ -577,22 +582,22 @@ func (a *WebAPI) GenerateApplicationSealedSecret(ctx context.Context, req *webse
 	switch model.SealedSecretManagementType(sse.Type) {
 	case model.SealedSecretManagementSealingKey:
 		if sse.PublicKey == "" {
-			return nil, status.Error(codes.FailedPrecondition, "the piped does not contain a public key")
+			return nil, status.Error(codes.FailedPrecondition, "The piped does not contain a public key")
 		}
 		enc, err = crypto.NewHybridEncrypter(sse.PublicKey)
 		if err != nil {
 			a.logger.Error("failed to initialize the crypter", zap.Error(err))
-			return nil, status.Error(codes.FailedPrecondition, "failed to initialize the encrypter")
+			return nil, status.Error(codes.FailedPrecondition, "Failed to initialize the encrypter")
 		}
 
 	default:
-		return nil, status.Error(codes.FailedPrecondition, "the piped does not contain a valid encryption type")
+		return nil, status.Error(codes.FailedPrecondition, "The piped does not contain a valid encryption type")
 	}
 
 	encryptedText, err := enc.Encrypt(req.Data)
 	if err != nil {
 		a.logger.Error("failed to encrypt the secret", zap.Error(err))
-		return nil, status.Error(codes.FailedPrecondition, "failed to encrypt")
+		return nil, status.Error(codes.FailedPrecondition, "Tailed to encrypt the secret")
 	}
 
 	return &webservice.GenerateApplicationSealedSecretResponse{
@@ -603,11 +608,11 @@ func (a *WebAPI) GenerateApplicationSealedSecret(ctx context.Context, req *webse
 func (a *WebAPI) getApplication(ctx context.Context, id string) (*model.Application, error) {
 	app, err := a.applicationStore.GetApplication(ctx, id)
 	if errors.Is(err, datastore.ErrNotFound) {
-		return nil, status.Error(codes.NotFound, "application is not found")
+		return nil, status.Error(codes.NotFound, "The application is not found")
 	}
 	if err != nil {
 		a.logger.Error("failed to get application", zap.Error(err))
-		return nil, status.Error(codes.Internal, "failed to get application")
+		return nil, status.Error(codes.Internal, "Failed to get application")
 	}
 	return app, nil
 }
@@ -615,8 +620,8 @@ func (a *WebAPI) getApplication(ctx context.Context, id string) (*model.Applicat
 func (a *WebAPI) ListDeployments(ctx context.Context, req *webservice.ListDeploymentsRequest) (*webservice.ListDeploymentsResponse, error) {
 	claims, err := rpcauth.ExtractClaims(ctx)
 	if err != nil {
-		a.logger.Error("failed to extract claims", zap.Error(err))
-		return nil, status.Error(codes.Internal, "internal error")
+		a.logger.Error("failed to authenticate the current user", zap.Error(err))
+		return nil, err
 	}
 
 	orders := []datastore.Order{
@@ -679,7 +684,7 @@ func (a *WebAPI) ListDeployments(ctx context.Context, req *webservice.ListDeploy
 	})
 	if err != nil {
 		a.logger.Error("failed to get deployments", zap.Error(err))
-		return nil, status.Error(codes.Internal, "failed to get deployments")
+		return nil, status.Error(codes.Internal, "Failed to get deployments")
 	}
 	return &webservice.ListDeploymentsResponse{
 		Deployments: deployments,
@@ -699,11 +704,11 @@ func (a *WebAPI) GetDeployment(ctx context.Context, req *webservice.GetDeploymen
 func (a *WebAPI) getDeployment(ctx context.Context, id string) (*model.Deployment, error) {
 	deployment, err := a.deploymentStore.GetDeployment(ctx, id)
 	if errors.Is(err, datastore.ErrNotFound) {
-		return nil, status.Error(codes.NotFound, "deployment is not found")
+		return nil, status.Error(codes.NotFound, "The deployment is not found")
 	}
 	if err != nil {
 		a.logger.Error("failed to get deployment", zap.Error(err))
-		return nil, status.Error(codes.Internal, "failed to get deployment")
+		return nil, status.Error(codes.Internal, "Failed to get deployment")
 	}
 	return deployment, nil
 }
@@ -711,11 +716,11 @@ func (a *WebAPI) getDeployment(ctx context.Context, id string) (*model.Deploymen
 func (a *WebAPI) GetStageLog(ctx context.Context, req *webservice.GetStageLogRequest) (*webservice.GetStageLogResponse, error) {
 	blocks, completed, err := a.stageLogStore.FetchLogs(ctx, req.DeploymentId, req.StageId, req.RetriedCount, req.OffsetIndex)
 	if errors.Is(err, stagelogstore.ErrNotFound) {
-		return nil, status.Error(codes.NotFound, "stage log not found")
+		return nil, status.Error(codes.NotFound, "The stage log not found")
 	}
 	if err != nil {
 		a.logger.Error("failed to get stage logs", zap.Error(err))
-		return nil, status.Error(codes.Internal, "failed to get stage logs")
+		return nil, status.Error(codes.Internal, "Failed to get stage logs")
 	}
 
 	return &webservice.GetStageLogResponse{
@@ -727,8 +732,8 @@ func (a *WebAPI) GetStageLog(ctx context.Context, req *webservice.GetStageLogReq
 func (a *WebAPI) CancelDeployment(ctx context.Context, req *webservice.CancelDeploymentRequest) (*webservice.CancelDeploymentResponse, error) {
 	claims, err := rpcauth.ExtractClaims(ctx)
 	if err != nil {
-		a.logger.Error("failed to extract claims", zap.Error(err))
-		return nil, status.Error(codes.Internal, "internal error")
+		a.logger.Error("failed to authenticate the current user", zap.Error(err))
+		return nil, err
 	}
 
 	deployment, err := a.getDeployment(ctx, req.DeploymentId)
@@ -764,8 +769,8 @@ func (a *WebAPI) CancelDeployment(ctx context.Context, req *webservice.CancelDep
 func (a *WebAPI) ApproveStage(ctx context.Context, req *webservice.ApproveStageRequest) (*webservice.ApproveStageResponse, error) {
 	claims, err := rpcauth.ExtractClaims(ctx)
 	if err != nil {
-		a.logger.Error("failed to extract claims", zap.Error(err))
-		return nil, status.Error(codes.Internal, "internal error")
+		a.logger.Error("failed to authenticate the current user", zap.Error(err))
+		return nil, err
 	}
 
 	deployment, err := a.getDeployment(ctx, req.DeploymentId)
@@ -774,10 +779,10 @@ func (a *WebAPI) ApproveStage(ctx context.Context, req *webservice.ApproveStageR
 	}
 	stage, ok := deployment.StageStatusMap()[req.StageId]
 	if !ok {
-		return nil, status.Error(codes.FailedPrecondition, "stage was not found in the deployment")
+		return nil, status.Error(codes.FailedPrecondition, "The stage was not found in the deployment")
 	}
 	if model.IsCompletedStage(stage) {
-		return nil, status.Errorf(codes.FailedPrecondition, "could not approve the stage because it was already completed")
+		return nil, status.Errorf(codes.FailedPrecondition, "Could not approve the stage because it was already completed")
 	}
 
 	commandID := uuid.New().String()
@@ -806,7 +811,7 @@ func (a *WebAPI) GetApplicationLiveState(ctx context.Context, req *webservice.Ge
 	snapshot, err := a.applicationLiveStateStore.GetStateSnapshot(ctx, req.ApplicationId)
 	if err != nil {
 		a.logger.Error("failed to get application live state", zap.Error(err))
-		return nil, status.Error(codes.Internal, "failed to get application live state")
+		return nil, status.Error(codes.Internal, "Failed to get application live state")
 	}
 	return &webservice.GetApplicationLiveStateResponse{
 		Snapshot: snapshot,
@@ -817,9 +822,10 @@ func (a *WebAPI) GetApplicationLiveState(ctx context.Context, req *webservice.Ge
 func (a *WebAPI) GetProject(ctx context.Context, req *webservice.GetProjectRequest) (*webservice.GetProjectResponse, error) {
 	claims, err := rpcauth.ExtractClaims(ctx)
 	if err != nil {
-		a.logger.Error("failed to extract claims", zap.Error(err))
-		return nil, status.Error(codes.Internal, "internal error")
+		a.logger.Error("failed to authenticate the current user", zap.Error(err))
+		return nil, err
 	}
+
 	project, err := a.getProject(ctx, claims.Role.ProjectId)
 	if err != nil {
 		return nil, err
@@ -847,11 +853,11 @@ func (a *WebAPI) getProject(ctx context.Context, projectID string) (*model.Proje
 
 	project, err := a.projectStore.GetProject(ctx, projectID)
 	if errors.Is(err, datastore.ErrNotFound) {
-		return nil, status.Error(codes.NotFound, "project is not found")
+		return nil, status.Error(codes.NotFound, "The project is not found")
 	}
 	if err != nil {
 		a.logger.Error("failed to get project", zap.Error(err))
-		return nil, status.Error(codes.Internal, "failed to get project")
+		return nil, status.Error(codes.Internal, "Failed to get project")
 	}
 	return project, nil
 }
@@ -860,17 +866,17 @@ func (a *WebAPI) getProject(ctx context.Context, projectID string) (*model.Proje
 func (a *WebAPI) UpdateProjectStaticAdmin(ctx context.Context, req *webservice.UpdateProjectStaticAdminRequest) (*webservice.UpdateProjectStaticAdminResponse, error) {
 	claims, err := rpcauth.ExtractClaims(ctx)
 	if err != nil {
-		a.logger.Error("failed to extract claims", zap.Error(err))
-		return nil, status.Error(codes.Internal, "internal error")
+		a.logger.Error("failed to authenticate the current user", zap.Error(err))
+		return nil, err
 	}
 
 	if _, ok := a.projectsInConfig[claims.Role.ProjectId]; ok {
-		return nil, status.Error(codes.FailedPrecondition, "failed to update a debug project specified in the control-plane configuration")
+		return nil, status.Error(codes.FailedPrecondition, "Failed to update a debug project specified in the control-plane configuration")
 	}
 
 	if err := a.projectStore.UpdateProjectStaticAdmin(ctx, claims.Role.ProjectId, req.Username, req.Password); err != nil {
 		a.logger.Error("failed to update static admin", zap.Error(err))
-		return nil, status.Error(codes.Internal, "failed to update static admin")
+		return nil, status.Error(codes.Internal, "Failed to update static admin")
 	}
 	return &webservice.UpdateProjectStaticAdminResponse{}, nil
 }
@@ -879,17 +885,17 @@ func (a *WebAPI) UpdateProjectStaticAdmin(ctx context.Context, req *webservice.U
 func (a *WebAPI) EnableStaticAdmin(ctx context.Context, req *webservice.EnableStaticAdminRequest) (*webservice.EnableStaticAdminResponse, error) {
 	claims, err := rpcauth.ExtractClaims(ctx)
 	if err != nil {
-		a.logger.Error("failed to extract claims", zap.Error(err))
-		return nil, status.Error(codes.Internal, "internal error")
+		a.logger.Error("failed to authenticate the current user", zap.Error(err))
+		return nil, err
 	}
 
 	if _, ok := a.projectsInConfig[claims.Role.ProjectId]; ok {
-		return nil, status.Error(codes.FailedPrecondition, "failed to update a debug project specified in the control-plane configuration")
+		return nil, status.Error(codes.FailedPrecondition, "Failed to update a debug project specified in the control-plane configuration")
 	}
 
 	if err := a.projectStore.EnableStaticAdmin(ctx, claims.Role.ProjectId); err != nil {
 		a.logger.Error("failed to enable static admin login", zap.Error(err))
-		return nil, status.Error(codes.Internal, "failed to enable static admin login")
+		return nil, status.Error(codes.Internal, "Failed to enable static admin login")
 	}
 	return &webservice.EnableStaticAdminResponse{}, nil
 }
@@ -898,17 +904,17 @@ func (a *WebAPI) EnableStaticAdmin(ctx context.Context, req *webservice.EnableSt
 func (a *WebAPI) DisableStaticAdmin(ctx context.Context, req *webservice.DisableStaticAdminRequest) (*webservice.DisableStaticAdminResponse, error) {
 	claims, err := rpcauth.ExtractClaims(ctx)
 	if err != nil {
-		a.logger.Error("failed to extract claims", zap.Error(err))
-		return nil, status.Error(codes.Internal, "internal error")
+		a.logger.Error("failed to authenticate the current user", zap.Error(err))
+		return nil, err
 	}
 
 	if _, ok := a.projectsInConfig[claims.Role.ProjectId]; ok {
-		return nil, status.Error(codes.FailedPrecondition, "failed to update a debug project specified in the control-plane configuration")
+		return nil, status.Error(codes.FailedPrecondition, "Failed to update a debug project specified in the control-plane configuration")
 	}
 
 	if err := a.projectStore.DisableStaticAdmin(ctx, claims.Role.ProjectId); err != nil {
 		a.logger.Error("failed to disenable static admin login", zap.Error(err))
-		return nil, status.Error(codes.Internal, "failed to disenable static admin login")
+		return nil, status.Error(codes.Internal, "Failed to disenable static admin login")
 	}
 	return &webservice.DisableStaticAdminResponse{}, nil
 }
@@ -917,22 +923,22 @@ func (a *WebAPI) DisableStaticAdmin(ctx context.Context, req *webservice.Disable
 func (a *WebAPI) UpdateProjectSSOConfig(ctx context.Context, req *webservice.UpdateProjectSSOConfigRequest) (*webservice.UpdateProjectSSOConfigResponse, error) {
 	claims, err := rpcauth.ExtractClaims(ctx)
 	if err != nil {
-		a.logger.Error("failed to extract claims", zap.Error(err))
-		return nil, status.Error(codes.Internal, "internal error")
+		a.logger.Error("failed to authenticate the current user", zap.Error(err))
+		return nil, err
 	}
 
 	if _, ok := a.projectsInConfig[claims.Role.ProjectId]; ok {
-		return nil, status.Error(codes.FailedPrecondition, "failed to update a debug project specified in the control-plane configuration")
+		return nil, status.Error(codes.FailedPrecondition, "Failed to update a debug project specified in the control-plane configuration")
 	}
 
 	if err := req.Sso.Encrypt(a.encrypter); err != nil {
 		a.logger.Error("failed to encrypt sensitive data in sso configurations", zap.Error(err))
-		return nil, status.Error(codes.Internal, "failed to encrypt sensitive data in sso configurations")
+		return nil, status.Error(codes.Internal, "Failed to encrypt sensitive data in sso configurations")
 	}
 
 	if err := a.projectStore.UpdateProjectSSOConfig(ctx, claims.Role.ProjectId, req.Sso); err != nil {
 		a.logger.Error("failed to update project single sign on settings", zap.Error(err))
-		return nil, status.Error(codes.Internal, "failed to update project single sign on settings")
+		return nil, status.Error(codes.Internal, "Failed to update project single sign on settings")
 	}
 	return &webservice.UpdateProjectSSOConfigResponse{}, nil
 }
@@ -941,17 +947,17 @@ func (a *WebAPI) UpdateProjectSSOConfig(ctx context.Context, req *webservice.Upd
 func (a *WebAPI) UpdateProjectRBACConfig(ctx context.Context, req *webservice.UpdateProjectRBACConfigRequest) (*webservice.UpdateProjectRBACConfigResponse, error) {
 	claims, err := rpcauth.ExtractClaims(ctx)
 	if err != nil {
-		a.logger.Error("failed to extract claims", zap.Error(err))
-		return nil, status.Error(codes.Internal, "internal error")
+		a.logger.Error("failed to authenticate the current user", zap.Error(err))
+		return nil, err
 	}
 
 	if _, ok := a.projectsInConfig[claims.Role.ProjectId]; ok {
-		return nil, status.Error(codes.FailedPrecondition, "failed to update a debug project specified in the control-plane configuration")
+		return nil, status.Error(codes.FailedPrecondition, "Failed to update a debug project specified in the control-plane configuration")
 	}
 
 	if err := a.projectStore.UpdateProjectRBACConfig(ctx, claims.Role.ProjectId, req.Rbac); err != nil {
 		a.logger.Error("failed to update project single sign on settings", zap.Error(err))
-		return nil, status.Error(codes.Internal, "failed to update project single sign on settings")
+		return nil, status.Error(codes.Internal, "Failed to update project single sign on settings")
 	}
 	return &webservice.UpdateProjectRBACConfigResponse{}, nil
 }
@@ -960,9 +966,10 @@ func (a *WebAPI) UpdateProjectRBACConfig(ctx context.Context, req *webservice.Up
 func (a *WebAPI) GetMe(ctx context.Context, req *webservice.GetMeRequest) (*webservice.GetMeResponse, error) {
 	claims, err := rpcauth.ExtractClaims(ctx)
 	if err != nil {
-		a.logger.Error("failed to extract claims", zap.Error(err))
-		return nil, status.Error(codes.Internal, "internal error")
+		a.logger.Error("failed to authenticate the current user", zap.Error(err))
+		return nil, err
 	}
+
 	return &webservice.GetMeResponse{
 		Subject:     claims.Subject,
 		AvatarUrl:   claims.AvatarURL,
@@ -974,10 +981,10 @@ func (a *WebAPI) GetMe(ctx context.Context, req *webservice.GetMeRequest) (*webs
 func (a *WebAPI) GetCommand(ctx context.Context, req *webservice.GetCommandRequest) (*webservice.GetCommandResponse, error) {
 	cmd, err := a.commandStore.GetCommand(ctx, req.CommandId)
 	if errors.Is(err, datastore.ErrNotFound) {
-		return nil, status.Error(codes.NotFound, "command is not found")
+		return nil, status.Error(codes.NotFound, "The command is not found")
 	}
 	if err != nil {
-		return nil, status.Error(codes.Internal, "failed to get command")
+		return nil, status.Error(codes.Internal, "Failed to get command")
 	}
 	return &webservice.GetCommandResponse{
 		Command: cmd,
@@ -1003,7 +1010,7 @@ func (a *WebAPI) ListDeploymentConfigTemplates(ctx context.Context, req *webserv
 	case model.ApplicationKind_CLOUDRUN:
 		templates = cloudrunDeploymentConfigTemplates
 	default:
-		return nil, status.Error(codes.InvalidArgument, fmt.Sprintf("unknown application kind %v", app.Kind))
+		return nil, status.Error(codes.InvalidArgument, fmt.Sprintf("Unknown application kind %v", app.Kind))
 	}
 	for _, t := range templates {
 		g := app.GetGitPath()
@@ -1014,7 +1021,7 @@ func (a *WebAPI) ListDeploymentConfigTemplates(ctx context.Context, req *webserv
 		t.FileCreationUrl, err = git.MakeFileCreationURL(g.Repo.Remote, g.Path, g.Repo.Branch, filename, t.Content)
 		if err != nil {
 			a.logger.Error("failed to make a link to creat a file", zap.Error(err))
-			return nil, status.Error(codes.Internal, "failed to make a link to creat a file")
+			return nil, status.Error(codes.Internal, "Failed to make a link to creat a file")
 		}
 	}
 
