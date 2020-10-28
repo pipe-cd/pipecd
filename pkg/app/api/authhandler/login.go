@@ -52,15 +52,17 @@ func (h *Handler) handleSSOLogin(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	sso, err := h.findSSOConfig(proj)
+	sso, shared, err := h.findSSOConfig(proj)
 	if err != nil {
 		h.handleError(w, r, fmt.Sprintf("Invalid SSO configuration: %v", err), nil)
 		return
 	}
 
-	if err := sso.Decrypt(h.decrypter); err != nil {
-		h.handleError(w, r, "Failed to decrypt data", err)
-		return
+	if !shared {
+		if err := sso.Decrypt(h.decrypter); err != nil {
+			h.handleError(w, r, "Failed to decrypt SSO configuration", err)
+			return
+		}
 	}
 
 	var (

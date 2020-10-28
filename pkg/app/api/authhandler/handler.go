@@ -118,19 +118,19 @@ func (h *Handler) handleLogout(w http.ResponseWriter, r *http.Request) {
 	http.Redirect(w, r, rootPath, http.StatusFound)
 }
 
-func (h *Handler) findSSOConfig(p *model.Project) (*model.ProjectSSOConfig, error) {
+func (h *Handler) findSSOConfig(p *model.Project) (sso *model.ProjectSSOConfig, shared bool, err error) {
 	if p.SharedSsoName == "" {
 		if p.Sso == nil {
-			return nil, fmt.Errorf("missing SSO configuration in project data")
+			return nil, false, fmt.Errorf("missing SSO configuration in project data")
 		}
-		return p.Sso, nil
+		return p.Sso, false, nil
 	}
 
 	sso, ok := h.sharedSSOConfigs[p.SharedSsoName]
 	if ok {
-		return sso, nil
+		return sso, true, nil
 	}
-	return nil, fmt.Errorf("not found shared sso configuration %s", p.SharedSsoName)
+	return nil, false, fmt.Errorf("not found shared sso configuration %s", p.SharedSsoName)
 }
 
 // handleError redirects to the root path and saves the error message to the cookie.
