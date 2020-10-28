@@ -597,7 +597,7 @@ func (a *WebAPI) GenerateApplicationSealedSecret(ctx context.Context, req *webse
 	encryptedText, err := enc.Encrypt(req.Data)
 	if err != nil {
 		a.logger.Error("failed to encrypt the secret", zap.Error(err))
-		return nil, status.Error(codes.FailedPrecondition, "Tailed to encrypt the secret")
+		return nil, status.Error(codes.FailedPrecondition, "Failed to encrypt the secret")
 	}
 
 	return &webservice.GenerateApplicationSealedSecretResponse{
