@@ -5,7 +5,26 @@ import {
   addPiped,
   fetchPipeds,
   recreatePipedKey,
+  selectPipedsByEnv,
+  Piped,
 } from "./pipeds";
+
+test("selectPipedsByEnv", () => {
+  const disabledPiped: Piped = { ...dummyPiped, id: "piped-2", disabled: true };
+  expect(selectPipedsByEnv({ entities: {}, ids: [] }, "env-1")).toEqual([]);
+  expect(
+    selectPipedsByEnv(
+      {
+        entities: {
+          [dummyPiped.id]: dummyPiped,
+          [disabledPiped.id]: disabledPiped,
+        },
+        ids: [dummyPiped.id, disabledPiped.id],
+      },
+      dummyPiped.envIdsList[0]
+    )
+  ).toEqual([dummyPiped]);
+});
 
 describe("pipedsSlice reducer", () => {
   it("should handle initial state", () => {
