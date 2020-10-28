@@ -7,10 +7,6 @@ import { PAGE_PATH_DEPLOYMENTS } from "../constants/path";
 import { DEPLOYMENT_STATE_TEXT } from "../constants/deployment-status-text";
 import { AppState } from "../modules";
 import {
-  Application,
-  selectById as selectApplicationById,
-} from "../modules/applications";
-import {
   Deployment,
   selectById as selectDeploymentById,
 } from "../modules/deployments";
@@ -60,20 +56,14 @@ export const DeploymentItem: FC<Props> = memo(function DeploymentItem({ id }) {
   const deployment = useSelector<AppState, Deployment | undefined>((state) =>
     selectDeploymentById(state.deployments, id)
   );
-  const application = useSelector<AppState, Application | undefined>(
-    (state) => {
-      return deployment
-        ? selectApplicationById(state.applications, deployment.applicationId)
-        : undefined;
-    }
-  );
+
   const env = useSelector<AppState, Environment | undefined>((state) => {
     return deployment
       ? selectById(state.environments, deployment.envId)
       : undefined;
   });
 
-  if (!deployment || !application || !env) {
+  if (!deployment || !env) {
     return null;
   }
 
@@ -93,7 +83,7 @@ export const DeploymentItem: FC<Props> = memo(function DeploymentItem({ id }) {
             {DEPLOYMENT_STATE_TEXT[deployment.status]}
           </Typography>
           <Typography variant="h6" className={classes.name}>
-            {application.name}
+            {deployment.applicationName}
           </Typography>
           <Typography className={classes.env}>{env.name}</Typography>
         </div>
