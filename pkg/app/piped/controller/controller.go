@@ -227,8 +227,8 @@ L:
 		case <-ticker.C:
 			// This must be called before syncPlanner because
 			// after piped is restarted all running deployments need to be loaded firstly.
-			c.syncScheduler(ctx)
-			c.syncPlanner(ctx)
+			c.syncSchedulers(ctx)
+			c.syncPlanners(ctx)
 			c.checkCommands()
 		}
 	}
@@ -252,18 +252,38 @@ func (c *controller) checkCommands() {
 		if cmd.GetCancelDeployment() == nil {
 			continue
 		}
+
+		var handled bool
 		if planner, ok := c.planners[cmd.ApplicationId]; ok && planner.ID() == cmd.DeploymentId {
+			handled = true
 			planner.Cancel(cmd)
+			c.logger.Info("a command CancelDeployment was forwarded to its planner",
+				zap.String("app-id", cmd.ApplicationId),
+				zap.String("deployment-id", cmd.DeploymentId),
+			)
 		}
+
 		if scheduler, ok := c.schedulers[cmd.ApplicationId]; ok && scheduler.ID() == cmd.DeploymentId {
+			handled = true
 			scheduler.Cancel(cmd)
+			c.logger.Info("a command CancelDeployment was forwarded to its scheduler",
+				zap.String("app-id", cmd.ApplicationId),
+				zap.String("deployment-id", cmd.DeploymentId),
+			)
+		}
+
+		if !handled {
+			c.logger.Info("a command CancelDeployment is still not handled",
+				zap.String("app-id", cmd.ApplicationId),
+				zap.String("deployment-id", cmd.DeploymentId),
+			)
 		}
 	}
 }
 
-// syncPlanner adds new planner for newly PENDING deployments.
-func (c *controller) syncPlanner(ctx context.Context) error {
-	// Remove stale planners.
+// syncPlanners adds new planner for newly PENDING deployments.
+func (c *controller) syncPlanners(ctx context.Context) error {
+	// Remove stale planners from the recently completed list.
 	for id, t := range c.donePlanners {
 		if time.Since(t) < plannerStaleDuration {
 			continue
@@ -271,14 +291,15 @@ func (c *controller) syncPlanner(ctx context.Context) error {
 		delete(c.donePlanners, id)
 	}
 
+	// Find all completed ones and add them to donePlaners list.
 	for id, p := range c.planners {
 		if !p.IsDone() {
 			continue
 		}
 		c.logger.Info("deleted done planner",
 			zap.String("deployment-id", p.ID()),
-			zap.String("application-id", id),
-			zap.Int("planner-count", len(c.planners)),
+			zap.String("app-id", id),
+			zap.Int("count", len(c.planners)),
 		)
 		c.donePlanners[p.ID()] = p.DoneTimestamp()
 		delete(c.planners, id)
@@ -291,7 +312,7 @@ func (c *controller) syncPlanner(ctx context.Context) error {
 	}
 
 	c.logger.Info(fmt.Sprintf("there are %d pending deployments for planning", len(pendings)),
-		zap.Int("planner-count", len(c.planners)),
+		zap.Int("count", len(c.planners)),
 	)
 
 	pendingByApp := make(map[string]*model.Deployment, len(pendings))
@@ -310,10 +331,8 @@ func (c *controller) syncPlanner(ctx context.Context) error {
 			continue
 		}
 		// Choose the oldest PENDING deployment of the application to plan.
-		if pre, ok := pendingByApp[appID]; ok {
-			if !d.TriggerBefore(pre) {
-				continue
-			}
+		if pre, ok := pendingByApp[appID]; ok && !d.TriggerBefore(pre) {
+			continue
 		}
 		pendingByApp[appID] = d
 	}
@@ -321,6 +340,11 @@ func (c *controller) syncPlanner(ctx context.Context) error {
 	for appID, d := range pendingByApp {
 		planner, err := c.startNewPlanner(ctx, d)
 		if err != nil {
+			c.logger.Error("failed to start a new planner",
+				zap.String("deployment-id", d.Id),
+				zap.String("app-id", d.ApplicationId),
+				zap.Error(err),
+			)
 			continue
 		}
 		c.planners[appID] = planner
@@ -332,9 +356,9 @@ func (c *controller) syncPlanner(ctx context.Context) error {
 func (c *controller) startNewPlanner(ctx context.Context, d *model.Deployment) (*planner, error) {
 	logger := c.logger.With(
 		zap.String("deployment-id", d.Id),
-		zap.String("application-id", d.ApplicationId),
+		zap.String("app-id", d.ApplicationId),
 	)
-	logger.Info("will add a new planner")
+	logger.Info("a new planner will be started")
 
 	// Ensure the existence of the working directory for the deployment.
 	workingDir, err := ioutil.TempDir(c.workspaceDir, d.Id+"-planner-*")
@@ -342,7 +366,8 @@ func (c *controller) startNewPlanner(ctx context.Context, d *model.Deployment) (
 		logger.Error("failed to create working directory for planner", zap.Error(err))
 		return nil, err
 	}
-	logger.Info("created working directory for planner", zap.String("working-dir", workingDir))
+
+	logger = logger.With(zap.String("working-dir", workingDir))
 
 	// The most recent successful commit is saved in memory.
 	// But when the piped is restarted that data will be cleared too.
@@ -357,7 +382,7 @@ func (c *controller) startNewPlanner(ctx context.Context, d *model.Deployment) (
 		case status.Code(err) == codes.NotFound:
 			logger.Info("there is no previous successful commit for this application")
 		default:
-			logger.Error("unable to get the most recent successful deployment", zap.Error(err))
+			return nil, fmt.Errorf("failed to get the most recently successful deployment (%w)", err)
 		}
 	}
 
@@ -381,12 +406,9 @@ func (c *controller) startNewPlanner(ctx context.Context, d *model.Deployment) (
 	)
 
 	cleanup := func() {
-		logger.Info("cleaning up working directory for planner", zap.String("working-dir", workingDir))
+		logger.Info("cleaning up working directory for planner")
 		if err := os.RemoveAll(workingDir); err != nil {
-			logger.Warn("failed to clean working directory",
-				zap.String("working-dir", workingDir),
-				zap.Error(err),
-			)
+			logger.Warn("failed to clean working directory", zap.Error(err))
 		}
 	}
 
@@ -403,9 +425,9 @@ func (c *controller) startNewPlanner(ctx context.Context, d *model.Deployment) (
 	return planner, nil
 }
 
-// syncScheduler adds new scheduler for newly PLANNED/RUNNING deployments
+// syncSchedulers adds new scheduler for newly PLANNED/RUNNING deployments
 // as well as removes the schedulers for the completed deployments.
-func (c *controller) syncScheduler(ctx context.Context) error {
+func (c *controller) syncSchedulers(ctx context.Context) error {
 	// Update the most recent successful commit hashes.
 	for id, s := range c.schedulers {
 		if !s.IsDone() {
@@ -431,8 +453,8 @@ func (c *controller) syncScheduler(ctx context.Context) error {
 		}
 		c.logger.Info("deleted done scheduler",
 			zap.String("deployment-id", s.ID()),
-			zap.String("application-id", id),
-			zap.Int("scheduler-count", len(c.schedulers)),
+			zap.String("app-id", id),
+			zap.Int("count", len(c.schedulers)),
 		)
 		c.doneSchedulers[s.ID()] = s.DoneTimestamp()
 		delete(c.schedulers, id)
@@ -448,7 +470,7 @@ func (c *controller) syncScheduler(ctx context.Context) error {
 	}
 
 	c.logger.Info(fmt.Sprintf("there are %d planned/running deployments for scheduling", len(runnings)),
-		zap.Int("scheduler-count", len(c.schedulers)),
+		zap.Int("count", len(c.schedulers)),
 	)
 
 	for _, d := range runnings {
@@ -459,7 +481,7 @@ func (c *controller) syncScheduler(ctx context.Context) error {
 		if s, ok := c.schedulers[d.ApplicationId]; ok {
 			if s.ID() != d.Id {
 				c.logger.Warn("detected an application that has more than one running deployments",
-					zap.String("application-id", d.ApplicationId),
+					zap.String("app-id", d.ApplicationId),
 					zap.String("handling-deployment-id", s.ID()),
 					zap.String("deployment-id", d.Id),
 				)
@@ -473,8 +495,8 @@ func (c *controller) syncScheduler(ctx context.Context) error {
 		c.schedulers[d.ApplicationId] = s
 		c.logger.Info("added a new scheduler",
 			zap.String("deployment-id", d.Id),
-			zap.String("application-id", d.ApplicationId),
-			zap.Int("scheduler-count", len(c.schedulers)),
+			zap.String("app-id", d.ApplicationId),
+			zap.Int("count", len(c.schedulers)),
 		)
 	}
 
@@ -488,7 +510,7 @@ func (c *controller) syncScheduler(ctx context.Context) error {
 func (c *controller) startNewScheduler(ctx context.Context, d *model.Deployment) (*scheduler, error) {
 	logger := c.logger.With(
 		zap.String("deployment-id", d.Id),
-		zap.String("application-id", d.ApplicationId),
+		zap.String("app-id", d.ApplicationId),
 	)
 	logger.Info("will add a new scheduler")
 
@@ -573,25 +595,24 @@ func (c *controller) getMostRecentlySuccessfulDeployment(ctx context.Context, ap
 // prepareDeployRepository clones the Git repository and checkouts it to the given revision.
 func prepareDeployRepository(ctx context.Context, d *model.Deployment, gitClient gitClient, repoDirPath string, pipedConfig *config.PipedSpec) (git.Repo, error) {
 	var (
-		appID       = d.ApplicationId
 		repoID      = d.GitPath.Repo.Id
 		revision    = d.Trigger.Commit.Hash
 		repoCfg, ok = pipedConfig.GetRepository(repoID)
 	)
 	if !ok {
-		err := fmt.Errorf("no registered repository id %s for application %s", repoID, appID)
+		err := fmt.Errorf("unable to find %q from the repository list in piped config", repoID)
 		return nil, err
 	}
 
 	gitRepo, err := gitClient.Clone(ctx, repoCfg.RepoID, repoCfg.Remote, repoCfg.Branch, repoDirPath)
 	if err != nil {
-		err = fmt.Errorf("unable to clone repository %s for application %s (%v)", repoID, appID, err)
+		err = fmt.Errorf("unable to clone repository %s (%v)", repoID, err)
 		return nil, err
 	}
 
 	err = gitRepo.Checkout(ctx, revision)
 	if err != nil {
-		err = fmt.Errorf("unable to clone repository %s for application %s (%v)", repoID, appID, err)
+		err = fmt.Errorf("unable to clone repository %s (%v)", repoID, err)
 		return nil, err
 	}
 
