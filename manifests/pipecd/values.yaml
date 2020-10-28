@@ -25,6 +25,7 @@ server:
     useFakeResponse: false
     enableGRPCReflection: true
     secureCookie: false
+    logEncoding: humanize
   resources: {}
 
 cache:

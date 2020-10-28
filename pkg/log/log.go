@@ -32,7 +32,7 @@ const (
 
 const (
 	DefaultLevel    = "info"
-	DefaultEncoding = JSONEncoding
+	DefaultEncoding = HumanizeEncoding
 )
 
 var (
