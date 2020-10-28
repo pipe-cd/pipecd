@@ -50,7 +50,7 @@ func TestDiff(t *testing.T) {
 		{
 			name:     "has diff",
 			yamlFile: "testdata/has_diff.yaml",
-			diffNum:  6,
+			diffNum:  7,
 			diffString: `  #spec.replicas
   spec:
 -   replicas: 2
@@ -68,7 +68,11 @@ func TestDiff(t *testing.T) {
         containers:
           - args:
 -             - hello
-          #spec.template.spec.containers.1
+          #spec.template.spec.containers.1.image
+          -
+-           image: gcr.io/pipecd/helloworld:v2.0.0
++           image: gcr.io/pipecd/helloworld:v2.1.0
+          #spec.template.spec.containers.2
 +         - image: new-image
 +           livenessProbe:
 +             exec:
@@ -98,6 +102,7 @@ func TestDiff(t *testing.T) {
 
 			renderer := NewRenderer(WithLeftPadding(1))
 			ds := renderer.Render(result.Nodes())
+
 			assert.Equal(t, tc.diffString, ds)
 		})
 	}
