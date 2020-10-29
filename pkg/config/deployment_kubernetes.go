@@ -50,14 +50,17 @@ type KubernetesDeploymentInput struct {
 	Manifests []string `json:"manifests"`
 	// Version of kubectl will be used.
 	KubectlVersion string `json:"kubectlVersion"`
+
 	// Version of kustomize will be used.
 	KustomizeVersion string `json:"kustomizeVersion"`
+	// List of options that should be used by Kustomize commands.
+	KustomizeOptions map[string]string `json:"kustomizeOptions"`
 
 	// Version of helm will be used.
 	HelmVersion string `json:"helmVersion"`
 	// Where to fetch helm chart.
 	HelmChart *InputHelmChart `json:"helmChart"`
-	// COnfigurable parameters for helm commands.
+	// Configurable parameters for helm commands.
 	HelmOptions *InputHelmOptions `json:"helmOptions"`
 
 	// The namespace where manifests will be applied.

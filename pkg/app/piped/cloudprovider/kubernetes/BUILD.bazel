@@ -39,7 +39,11 @@ go_library(
 go_test(
     name = "go_default_test",
     size = "small",
-    srcs = ["helm_test.go"],
+    srcs = [
+        "helm_test.go",
+        "kubernetes_test.go",
+        "kustomize_test.go",
+    ],
     data = glob(["testdata/**"]),
     embed = [":go_default_library"],
     deps = [
