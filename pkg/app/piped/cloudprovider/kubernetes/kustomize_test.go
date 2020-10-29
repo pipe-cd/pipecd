@@ -16,7 +16,6 @@ package kubernetes
 
 import (
 	"context"
-	"strings"
 	"testing"
 
 	"github.com/stretchr/testify/assert"
@@ -26,23 +25,20 @@ import (
 	"github.com/pipe-cd/pipe/pkg/app/piped/toolregistry"
 )
 
-func TestTemplateLocalChart(t *testing.T) {
+func TestKustomizeTemplate(t *testing.T) {
 	var (
-		ctx       = context.Background()
-		appName   = "testapp"
-		appDir    = "testdata"
-		chartPath = "testchart"
+		ctx     = context.TODO()
+		appName = "testapp"
+		appDir  = "testdata/testkustomize"
 	)
 
-	// TODO: Preinstall a helm version inside CI runner to avoid installing.
-	helmPath, _, err := toolregistry.DefaultRegistry().Helm(ctx, "")
+	kustomizePath, _, err := toolregistry.DefaultRegistry().Kustomize(ctx, "")
 	require.NoError(t, err)
 
-	helm := NewHelm("", helmPath, zap.NewNop())
-	out, err := helm.TemplateLocalChart(ctx, appName, appDir, chartPath, nil)
+	kustomize := NewKustomize("", kustomizePath, zap.NewNop())
+	out, err := kustomize.Template(ctx, appName, appDir, map[string]string{
+		"load_restrictor": "LoadRestrictionsNone",
+	})
 	require.NoError(t, err)
-
-	out = strings.TrimPrefix(out, "---")
-	manifests := strings.Split(out, "---")
-	assert.Equal(t, 3, len(manifests))
+	assert.True(t, len(out) > 0)
 }

@@ -37,10 +37,17 @@ func NewKustomize(version, path string, logger *zap.Logger) *Kustomize {
 	}
 }
 
-func (c *Kustomize) Template(ctx context.Context, appName, appDir string) (string, error) {
+func (c *Kustomize) Template(ctx context.Context, appName, appDir string, opts map[string]string) (string, error) {
 	args := []string{
 		"build",
 		".",
+	}
+
+	for k, v := range opts {
+		args = append(args, fmt.Sprintf("--%s", k))
+		if v != "" {
+			args = append(args, v)
+		}
 	}
 
 	var stdout, stderr bytes.Buffer

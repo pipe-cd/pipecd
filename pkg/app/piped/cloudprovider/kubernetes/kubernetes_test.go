@@ -15,34 +15,20 @@
 package kubernetes
 
 import (
-	"context"
-	"strings"
+	"log"
+	"os"
 	"testing"
 
-	"github.com/stretchr/testify/assert"
-	"github.com/stretchr/testify/require"
 	"go.uber.org/zap"
 
 	"github.com/pipe-cd/pipe/pkg/app/piped/toolregistry"
 )
 
-func TestTemplateLocalChart(t *testing.T) {
-	var (
-		ctx       = context.Background()
-		appName   = "testapp"
-		appDir    = "testdata"
-		chartPath = "testchart"
-	)
-
-	// TODO: Preinstall a helm version inside CI runner to avoid installing.
-	helmPath, _, err := toolregistry.DefaultRegistry().Helm(ctx, "")
-	require.NoError(t, err)
-
-	helm := NewHelm("", helmPath, zap.NewNop())
-	out, err := helm.TemplateLocalChart(ctx, appName, appDir, chartPath, nil)
-	require.NoError(t, err)
-
-	out = strings.TrimPrefix(out, "---")
-	manifests := strings.Split(out, "---")
-	assert.Equal(t, 3, len(manifests))
+func TestMain(m *testing.M) {
+	binDir := "/tmp/piped-bin"
+	if err := toolregistry.InitDefaultRegistry(binDir, zap.NewNop()); err != nil {
+		log.Fatal(err)
+		os.Exit(1)
+	}
+	os.Exit(m.Run())
 }
