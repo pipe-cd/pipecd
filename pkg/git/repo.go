@@ -23,8 +23,6 @@ import (
 	"os/exec"
 	"path/filepath"
 	"strings"
-
-	"go.uber.org/zap"
 )
 
 var (
@@ -55,17 +53,15 @@ type repo struct {
 	gitPath      string
 	remote       string
 	clonedBranch string
-	logger       *zap.Logger
 }
 
 // NewRepo creates a new Repo instance.
-func NewRepo(dir, gitPath, remote, clonedBranch string, logger *zap.Logger) *repo {
+func NewRepo(dir, gitPath, remote, clonedBranch string) *repo {
 	return &repo{
 		dir:          dir,
 		gitPath:      gitPath,
 		remote:       remote,
 		clonedBranch: clonedBranch,
-		logger:       logger.With(zap.String("repo", remote)),
 	}
 }
 
@@ -84,14 +80,14 @@ func (r *repo) Copy(dest string) (Repo, error) {
 	cmd := exec.Command("cp", "-rf", r.dir, dest)
 	out, err := cmd.CombinedOutput()
 	if err != nil {
-		return nil, fmt.Errorf("failed to copy: %s (%v)", string(out), err)
+		return nil, formatCommandError(err, out)
 	}
+
 	return &repo{
 		dir:          dest,
 		gitPath:      r.gitPath,
 		remote:       r.remote,
 		clonedBranch: r.clonedBranch,
-		logger:       r.logger,
 	}, nil
 }
 
@@ -105,14 +101,12 @@ func (r *repo) ListCommits(ctx context.Context, revisionRange string) ([]Commit,
 	if revisionRange != "" {
 		args = append(args, revisionRange)
 	}
+
 	out, err := r.runGitCommand(ctx, args...)
 	if err != nil {
-		r.logger.Error("failed to log commits",
-			zap.String("out", string(out)),
-			zap.Error(err),
-		)
-		return nil, err
+		return nil, formatCommandError(err, out)
 	}
+
 	return parseCommits(string(out))
 }
 
@@ -122,9 +116,11 @@ func (r *repo) GetLatestCommit(ctx context.Context) (Commit, error) {
 	if err != nil {
 		return Commit{}, err
 	}
+
 	if len(commits) != 1 {
 		return Commit{}, fmt.Errorf("commits must contain one item, got: %d", len(commits))
 	}
+
 	return commits[0], nil
 }
 
@@ -132,13 +128,9 @@ func (r *repo) GetLatestCommit(ctx context.Context) (Commit, error) {
 func (r *repo) GetCommitHashForRev(ctx context.Context, rev string) (string, error) {
 	out, err := r.runGitCommand(ctx, "rev-parse", rev)
 	if err != nil {
-		r.logger.Error("failed to get commit hash for rev",
-			zap.String("rev", rev),
-			zap.String("out", string(out)),
-			zap.Error(err),
-		)
-		return "", err
+		return "", formatCommandError(err, out)
 	}
+
 	return strings.TrimSpace(string(out)), nil
 }
 
@@ -146,13 +138,7 @@ func (r *repo) GetCommitHashForRev(ctx context.Context, rev string) (string, err
 func (r *repo) ChangedFiles(ctx context.Context, from, to string) ([]string, error) {
 	out, err := r.runGitCommand(ctx, "diff", "--name-only", from, to)
 	if err != nil {
-		r.logger.Error("failed to get changed files",
-			zap.String("from", from),
-			zap.String("to", to),
-			zap.String("out", string(out)),
-			zap.Error(err),
-		)
-		return nil, err
+		return nil, formatCommandError(err, out)
 	}
 
 	var (
@@ -173,12 +159,7 @@ func (r *repo) ChangedFiles(ctx context.Context, from, to string) ([]string, err
 func (r *repo) Checkout(ctx context.Context, commitish string) error {
 	out, err := r.runGitCommand(ctx, "checkout", commitish)
 	if err != nil {
-		r.logger.Error("failed to checkout",
-			zap.String("out", string(out)),
-			zap.String("commitish", commitish),
-			zap.Error(err),
-		)
-		return err
+		return formatCommandError(err, out)
 	}
 	return nil
 }
@@ -188,12 +169,7 @@ func (r *repo) CheckoutPullRequest(ctx context.Context, number int, branch strin
 	target := fmt.Sprintf("pull/%d/head:%s", number, branch)
 	out, err := r.runGitCommand(ctx, "fetch", r.remote, target)
 	if err != nil {
-		r.logger.Error("failed to checkout pull request",
-			zap.String("out", string(out)),
-			zap.Int("number", number),
-			zap.Error(err),
-		)
-		return err
+		return formatCommandError(err, out)
 	}
 	return r.Checkout(ctx, branch)
 }
@@ -202,12 +178,7 @@ func (r *repo) CheckoutPullRequest(ctx context.Context, number int, branch strin
 func (r *repo) Pull(ctx context.Context, branch string) error {
 	out, err := r.runGitCommand(ctx, "pull", r.remote, branch)
 	if err != nil {
-		r.logger.Error("failed to pull",
-			zap.String("out", string(out)),
-			zap.String("branch", branch),
-			zap.Error(err),
-		)
-		return err
+		return formatCommandError(err, out)
 	}
 	return nil
 }
@@ -216,12 +187,7 @@ func (r *repo) Pull(ctx context.Context, branch string) error {
 func (r *repo) Push(ctx context.Context, branch string) error {
 	out, err := r.runGitCommand(ctx, "push", r.remote, branch)
 	if err != nil {
-		r.logger.Error("failed to push",
-			zap.String("out", string(out)),
-			zap.String("branch", branch),
-			zap.Error(err),
-		)
-		return err
+		return formatCommandError(err, out)
 	}
 	return nil
 }
@@ -265,12 +231,7 @@ func (r repo) Clean() error {
 func (r *repo) checkoutNewBranch(ctx context.Context, branch string) error {
 	out, err := r.runGitCommand(ctx, "checkout", "-b", branch)
 	if err != nil {
-		r.logger.Error("failed to checkout new branch",
-			zap.String("out", string(out)),
-			zap.String("branch", branch),
-			zap.Error(err),
-		)
-		return err
+		return formatCommandError(err, out)
 	}
 	return nil
 }
@@ -278,23 +239,15 @@ func (r *repo) checkoutNewBranch(ctx context.Context, branch string) error {
 func (r repo) addCommit(ctx context.Context, message string) error {
 	out, err := r.runGitCommand(ctx, "add", ".")
 	if err != nil {
-		r.logger.Error("failed to add current directory",
-			zap.String("out", string(out)),
-			zap.Error(err),
-		)
-		return err
+		return formatCommandError(err, out)
 	}
 	out, err = r.runGitCommand(ctx, "commit", "-m", message)
 	if err != nil {
 		msg := string(out)
-		r.logger.Error("failed to commit",
-			zap.String("out", msg),
-			zap.Error(err),
-		)
 		if strings.Contains(msg, "nothing to commit, working tree clean") {
 			return ErrNoChange
 		}
-		return err
+		return formatCommandError(err, out)
 	}
 	return nil
 }
@@ -302,18 +255,10 @@ func (r repo) addCommit(ctx context.Context, message string) error {
 // setUser configures username and email for local user of this repo.
 func (r *repo) setUser(ctx context.Context, username, email string) error {
 	if out, err := r.runGitCommand(ctx, "config", "user.name", username); err != nil {
-		r.logger.Error("failed to config user.name",
-			zap.String("out", string(out)),
-			zap.Error(err),
-		)
-		return err
+		return formatCommandError(err, out)
 	}
 	if out, err := r.runGitCommand(ctx, "config", "user.email", email); err != nil {
-		r.logger.Error("failed to config user.email",
-			zap.String("out", string(out)),
-			zap.Error(err),
-		)
-		return err
+		return formatCommandError(err, out)
 	}
 	return nil
 }
@@ -321,11 +266,7 @@ func (r *repo) setUser(ctx context.Context, username, email string) error {
 func (r *repo) setRemote(ctx context.Context, remote string) error {
 	out, err := r.runGitCommand(ctx, "remote", "set-url", "origin", remote)
 	if err != nil {
-		r.logger.Error("failed to set remote",
-			zap.String("out", string(out)),
-			zap.Error(err),
-		)
-		return err
+		return formatCommandError(err, out)
 	}
 	return nil
 }
@@ -334,4 +275,8 @@ func (r *repo) runGitCommand(ctx context.Context, args ...string) ([]byte, error
 	cmd := exec.CommandContext(ctx, r.gitPath, args...)
 	cmd.Dir = r.dir
 	return cmd.CombinedOutput()
+}
+
+func formatCommandError(err error, out []byte) error {
+	return fmt.Errorf("err: %w, out: %s", err, string(out))
 }

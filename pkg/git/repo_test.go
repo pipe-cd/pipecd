@@ -24,7 +24,6 @@ import (
 
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
-	"go.uber.org/zap"
 )
 
 func TestGetCommitHashForRev(t *testing.T) {
@@ -43,7 +42,6 @@ func TestGetCommitHashForRev(t *testing.T) {
 	r := &repo{
 		dir:     faker.repoDir(org, repoName),
 		gitPath: faker.gitPath,
-		logger:  zap.NewNop(),
 	}
 
 	commits, err := r.ListCommits(ctx, "")
@@ -71,7 +69,6 @@ func TestChangedFiles(t *testing.T) {
 	r := &repo{
 		dir:     faker.repoDir(org, repoName),
 		gitPath: faker.gitPath,
-		logger:  zap.NewNop(),
 	}
 
 	previousCommitHash, err := r.GetCommitHashForRev(ctx, "HEAD")
@@ -123,7 +120,6 @@ func TestAddCommit(t *testing.T) {
 	r := &repo{
 		dir:     faker.repoDir(org, repoName),
 		gitPath: faker.gitPath,
-		logger:  zap.NewNop(),
 	}
 
 	commits, err := r.ListCommits(ctx, "")
@@ -162,7 +158,6 @@ func TestCommitChanges(t *testing.T) {
 	r := &repo{
 		dir:     faker.repoDir(org, repoName),
 		gitPath: faker.gitPath,
-		logger:  zap.NewNop(),
 	}
 
 	commits, err := r.ListCommits(ctx, "")
