@@ -1,4 +1,4 @@
-import React, { FC, memo, useCallback, useState } from "react";
+import React, { FC, memo, useCallback, useEffect, useState } from "react";
 import {
   makeStyles,
   Dialog,
@@ -27,33 +27,45 @@ import { METADATA_APPROVED_BY } from "../constants/metadata-keys";
 
 const WAIT_APPROVAL_NAME = "WAIT_APPROVAL";
 
-const useConvertedStages = (deploymentId: string): [boolean, Stage[][]] => {
+// Find stage that is running or latest
+const findDefaultActiveStage = (stages: Stage[]): Stage => {
+  const runningStage = stages.find(
+    (stage) => stage.status === StageStatus.STAGE_RUNNING
+  );
+
+  if (runningStage) {
+    return runningStage;
+  }
+
+  return stages[stages.length - 1];
+};
+
+const useDeploymentStage = (
+  deploymentId: string
+): [boolean, Stage[][], Stage | null] => {
   const stages: Stage[][] = [];
   const deployment = useSelector<AppState, Deployment | undefined>((state) =>
     selectById(state.deployments, deploymentId)
   );
 
   if (!deployment) {
-    return [false, stages];
+    return [false, stages, null];
   }
 
+  const visibleStages = deployment.stagesList.filter((stage) => stage.visible);
   const isRunning = isDeploymentRunning(deployment.status);
 
-  stages[0] = deployment.stagesList.filter(
-    (stage) => stage.requiresList.length === 0 && stage.visible
-  );
+  stages[0] = visibleStages.filter((stage) => stage.requiresList.length === 0);
 
   let index = 0;
   while (stages[index].length > 0) {
     const previousIds = stages[index].map((stage) => stage.id);
     index++;
-    stages[index] = deployment.stagesList.filter(
-      (stage) =>
-        stage.requiresList.some((id) => previousIds.includes(id)) &&
-        stage.visible
+    stages[index] = visibleStages.filter((stage) =>
+      stage.requiresList.some((id) => previousIds.includes(id))
     );
   }
-  return [isRunning, stages];
+  return [isRunning, stages, findDefaultActiveStage(visibleStages)];
 };
 
 const STAGE_HEIGHT = 56;
@@ -128,21 +140,42 @@ export const Pipeline: FC<Props> = memo(function Pipeline({ deploymentId }) {
   const dispatch = useDispatch();
   const [approveTargetId, setApproveTargetId] = useState<string | null>(null);
   const isOpenApproveDialog = Boolean(approveTargetId);
-  const [isRunning, stages] = useConvertedStages(deploymentId);
+  const [isRunning, stages, defaultActiveStage] = useDeploymentStage(
+    deploymentId
+  );
   const activeStage = useSelector<AppState, ActiveStage>(
     (state) => state.activeStage
   );
 
-  const handleOnClickStage = useCallback(
-    (stageId: string, stageName: string) => {
+  useEffect(() => {
+    if (defaultActiveStage) {
+      console.log(defaultActiveStage);
+
+      dispatch(
+        updateActiveStage({
+          deploymentId,
+          stageId: defaultActiveStage.id,
+          name: defaultActiveStage.name,
+        })
+      );
+    }
+  }, [dispatch, deploymentId, defaultActiveStage]);
+
+  useEffect(() => {
+    if (activeStage) {
       dispatch(
         fetchStageLog({
           deploymentId,
-          stageId,
+          stageId: activeStage.stageId,
           offsetIndex: 0,
           retriedCount: 0,
         })
       );
+    }
+  }, [dispatch, deploymentId, activeStage]);
+
+  const handleOnClickStage = useCallback(
+    (stageId: string, stageName: string) => {
       dispatch(updateActiveStage({ deploymentId, stageId, name: stageName }));
     },
     [dispatch, deploymentId]
