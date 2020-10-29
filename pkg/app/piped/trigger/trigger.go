@@ -321,20 +321,25 @@ func (t *Trigger) updateRepoToLatest(ctx context.Context, repoID string) (repo g
 
 	// Fetch to update the repository and then
 	if err = repo.Pull(ctx, branch); err != nil {
-		t.logger.Error("failed to update repository branch",
-			zap.String("repo-id", repoID),
-			zap.Error(err),
-		)
+		if ctx.Err() != context.Canceled {
+			t.logger.Error("failed to update repository branch",
+				zap.String("repo-id", repoID),
+				zap.Error(err),
+			)
+		}
 		return
 	}
 
 	// Get the head commit of the repository.
 	headCommit, err = repo.GetLatestCommit(ctx)
 	if err != nil {
-		t.logger.Error("failed to get head commit hash",
-			zap.String("repo-id", repoID),
-			zap.Error(err),
-		)
+		// TODO: Find a better way to skip the CANCELLED error log while shutting down.
+		if ctx.Err() != context.Canceled {
+			t.logger.Error("failed to get head commit hash",
+				zap.String("repo-id", repoID),
+				zap.Error(err),
+			)
+		}
 		return
 	}
 
