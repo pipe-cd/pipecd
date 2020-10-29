@@ -15,6 +15,7 @@
 package config
 
 import (
+	"bytes"
 	"encoding/json"
 	"fmt"
 	"io/ioutil"
@@ -151,14 +152,19 @@ func (c *Config) UnmarshalJSON(data []byte) error {
 		err error
 		gc  = genericConfig{}
 	)
-	if err = json.Unmarshal(data, &gc); err != nil {
+	dec := json.NewDecoder(bytes.NewReader(data))
+	dec.DisallowUnknownFields()
+	if err := dec.Decode(&gc); err != nil {
 		return err
 	}
 	if err = c.init(gc.Kind, gc.APIVersion); err != nil {
 		return err
 	}
+
 	if len(gc.Spec) > 0 {
-		err = json.Unmarshal(gc.Spec, c.spec)
+		dec := json.NewDecoder(bytes.NewReader(gc.Spec))
+		dec.DisallowUnknownFields()
+		err = dec.Decode(c.spec)
 	}
 	return err
 }
