@@ -51,10 +51,6 @@ func TestRenderNodeValue(t *testing.T) {
 		expected string
 	}{
 		{
-			name:     "invalid value",
-			expected: "",
-		},
-		{
 			name:     "int value",
 			value:    reflect.ValueOf(1),
 			expected: "1",

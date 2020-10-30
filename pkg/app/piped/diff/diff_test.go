@@ -50,29 +50,38 @@ func TestDiff(t *testing.T) {
 		{
 			name:     "has diff",
 			yamlFile: "testdata/has_diff.yaml",
-			diffNum:  7,
-			diffString: `  #spec.replicas
-  spec:
+			diffNum:  8,
+			diffString: `  spec:
+    #spec.replicas
 -   replicas: 2
 +   replicas: 3
-    #spec.template.metadata.labels.app
+
     template:
       metadata:
         labels:
+          #spec.template.metadata.labels.app
 -         app: simple
 +         app: simple2
+
           #spec.template.metadata.labels.component
 -         component: foo
-      #spec.template.spec.containers.0.args.1
+
       spec:
         containers:
           - args:
+              #spec.template.spec.containers.0.args.1
 -             - hello
-          #spec.template.spec.containers.1.image
+
           -
+            #spec.template.spec.containers.1.image
 -           image: gcr.io/pipecd/helloworld:v2.0.0
 +           image: gcr.io/pipecd/helloworld:v2.1.0
-          #spec.template.spec.containers.2
+
+          -
+            #spec.template.spec.containers.2.image
+-           image: 
+
+          #spec.template.spec.containers.3
 +         - image: new-image
 +           livenessProbe:
 +             exec:
@@ -81,12 +90,14 @@ func TestDiff(t *testing.T) {
 +                 - /tmp/healthy
 +             initialDelaySeconds: 5
 +           name: foo
+
         #spec.template.spec.strategy
 +       strategy:
 +         rollingUpdate:
 +           maxSurge: 25%
 +           maxUnavailable: 25%
 +         type: RollingUpdate
+
 `,
 		},
 	}
