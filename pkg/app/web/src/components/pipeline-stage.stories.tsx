@@ -15,6 +15,7 @@ export const overview: React.FC = () => (
     name="K8S_CANARY_ROLLOUT"
     onClick={action("onClick")}
     active={false}
+    metadata={[]}
     isDeploymentRunning
   />
 );
@@ -26,6 +27,7 @@ export const longName: React.FC = () => (
     name="LONG_STAGE_NAME_XXXXXXX_YYYYYY_ZZZZZZZZ"
     onClick={action("onClick")}
     active={false}
+    metadata={[]}
     isDeploymentRunning
   />
 );
@@ -37,6 +39,7 @@ export const stopped: React.FC = () => (
     name="K8S_CANARY_ROLLOUT"
     onClick={action("onClick")}
     active={false}
+    metadata={[]}
     isDeploymentRunning={false}
   />
 );
@@ -49,6 +52,23 @@ export const Approved: React.FC = () => (
     onClick={action("onClick")}
     active={false}
     approver="User"
+    metadata={[]}
+    isDeploymentRunning
+  />
+);
+
+export const TrafficPercentage: React.FC = () => (
+  <PipelineStage
+    id="stage-1"
+    status={StageStatus.STAGE_SUCCESS}
+    name="K8S_CANARY_ROLLOUT"
+    onClick={action("onClick")}
+    active={false}
+    metadata={[
+      ["baseline-percentage", "0"],
+      ["canary-percentage", "50"],
+      ["primary-percentage", "50"],
+    ]}
     isDeploymentRunning
   />
 );

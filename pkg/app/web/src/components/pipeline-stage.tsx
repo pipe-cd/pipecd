@@ -41,7 +41,7 @@ const useStyles = makeStyles((theme) => ({
     justifyContent: "flex-start",
     alignItems: "center",
   },
-  approver: {
+  metadata: {
     color: theme.palette.text.secondary,
     marginLeft: theme.spacing(4),
   },
@@ -54,8 +54,25 @@ interface Props {
   active: boolean;
   isDeploymentRunning: boolean;
   approver?: string;
+  metadata: [string, string][];
   onClick: (stageId: string, stageName: string) => void;
 }
+
+const trafficPercentageMetaKey: Record<string, string> = {
+  "primary-percentage": "Primary",
+  "canary-percentage": "Canary",
+  "baseline-percentage": "Baseline",
+};
+const createTrafficPercentageText = (meta: [string, string][]): string =>
+  meta
+    .map(([key, value]) => {
+      if (trafficPercentageMetaKey[key]) {
+        return `${trafficPercentageMetaKey[key]} ${value}%`;
+      }
+      return undefined;
+    })
+    .filter((v) => v)
+    .join(", ");
 
 export const PipelineStage: FC<Props> = memo(function PipelineStage({
   id,
@@ -64,6 +81,7 @@ export const PipelineStage: FC<Props> = memo(function PipelineStage({
   onClick,
   active,
   approver,
+  metadata,
   isDeploymentRunning,
 }) {
   const classes = useStyles();
@@ -77,6 +95,8 @@ export const PipelineStage: FC<Props> = memo(function PipelineStage({
     }
     onClick(id, name);
   }
+
+  const trafficPercentage = createTrafficPercentageText(metadata);
 
   return (
     <Paper
@@ -96,13 +116,20 @@ export const PipelineStage: FC<Props> = memo(function PipelineStage({
         </Typography>
       </div>
       {approver !== undefined ? (
-        <div className={classes.approver}>
+        <div className={classes.metadata}>
           <Typography
             variant="body2"
             color="inherit"
           >{`Approved by ${approver}`}</Typography>
         </div>
       ) : null}
+      {trafficPercentage && (
+        <div className={classes.metadata}>
+          <Typography variant="body2" color="inherit">
+            {trafficPercentage}
+          </Typography>
+        </div>
+      )}
     </Paper>
   );
 });
