@@ -32,6 +32,7 @@ go_test(
     srcs = [
         "analysis_template_test.go",
         "analysis_test.go",
+        "config_test.go",
         "control_plane_test.go",
         "deployment_kubernetes_test.go",
         "deployment_terraform_test.go",
