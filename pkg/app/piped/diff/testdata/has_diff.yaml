@@ -26,6 +26,8 @@ spec:
         - containerPort: 9085
       - name: bar
         image: gcr.io/pipecd/helloworld:v2.0.0
+      - name: helloword2
+        image: ""
 ---
 apiVersion: apps/v1
 kind: Foo
@@ -58,6 +60,7 @@ spec:
         - containerPort: 9085
       - name: bar
         image: gcr.io/pipecd/helloworld:v2.1.0
+      - name: helloword2
       - name: foo
         image: new-image
         livenessProbe:

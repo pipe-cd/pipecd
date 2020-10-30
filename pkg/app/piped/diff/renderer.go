@@ -62,11 +62,11 @@ func (r *Renderer) Render(ns Nodes) string {
 	var b strings.Builder
 
 	printValue := func(mark string, v reflect.Value, lastStep PathStep, depth int) {
-		nodeString, nl := renderNodeValue(v, "")
-		if nodeString == "" {
+		if !v.IsValid() {
 			return
 		}
 
+		nodeString, nl := renderNodeValue(v, "")
 		if lastStep.Type == SliceIndexPathStep {
 			nl = false
 		}
@@ -101,10 +101,10 @@ func (r *Renderer) Render(ns Nodes) string {
 	for _, n := range ns {
 		duplicateDepth := pathDuplicateDepth(n.Path, prePath)
 		prePath = n.Path
-		b.WriteString(fmt.Sprintf("%*s#%s\n", (r.leftPadding+duplicateDepth)*2, "", n.PathString))
+		pathLen := len(n.Path)
 
 		var array bool
-		for i := duplicateDepth; i < len(n.Path)-1; i++ {
+		for i := duplicateDepth; i < pathLen-1; i++ {
 			if n.Path[i].Type == SliceIndexPathStep {
 				b.WriteString(fmt.Sprintf("%*s-", (r.leftPadding+i)*2, ""))
 				array = true
@@ -121,14 +121,17 @@ func (r *Renderer) Render(ns Nodes) string {
 			b.WriteString("\n")
 		}
 
-		lastStep := n.Path[len(n.Path)-1]
+		lastStep := n.Path[pathLen-1]
 		valueX, valueY := n.ValueX, n.ValueY
 		if r.redactPathPrefix != "" && strings.HasPrefix(n.PathString, r.redactPathPrefix) {
 			valueX = reflect.ValueOf(r.redactReplacementX)
 			valueY = reflect.ValueOf(r.redactReplacementY)
 		}
-		printValue("-", valueX, lastStep, r.leftPadding+len(n.Path)-1)
-		printValue("+", valueY, lastStep, r.leftPadding+len(n.Path)-1)
+
+		b.WriteString(fmt.Sprintf("%*s#%s\n", (r.leftPadding+pathLen-1)*2, "", n.PathString))
+		printValue("-", valueX, lastStep, r.leftPadding+pathLen-1)
+		printValue("+", valueY, lastStep, r.leftPadding+pathLen-1)
+		b.WriteString("\n")
 	}
 
 	return b.String()
@@ -150,10 +153,6 @@ func pathDuplicateDepth(x, y []PathStep) int {
 }
 
 func renderNodeValue(v reflect.Value, prefix string) (string, bool) {
-	if !v.IsValid() {
-		return "", false
-	}
-
 	switch v.Kind() {
 	case reflect.Map:
 		out := make([]string, 0, v.Len())
