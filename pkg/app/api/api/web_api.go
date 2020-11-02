@@ -19,6 +19,7 @@ import (
 	"errors"
 	"fmt"
 	"strings"
+	"time"
 
 	"github.com/google/uuid"
 	"go.uber.org/zap"
@@ -30,6 +31,7 @@ import (
 	"github.com/pipe-cd/pipe/pkg/app/api/commandstore"
 	"github.com/pipe-cd/pipe/pkg/app/api/service/webservice"
 	"github.com/pipe-cd/pipe/pkg/app/api/stagelogstore"
+	"github.com/pipe-cd/pipe/pkg/cache/memorycache"
 	"github.com/pipe-cd/pipe/pkg/config"
 	"github.com/pipe-cd/pipe/pkg/crypto"
 	"github.com/pipe-cd/pipe/pkg/datastore"
@@ -54,12 +56,17 @@ type WebAPI struct {
 	commandStore              commandstore.Store
 	encrypter                 encrypter
 
+	appProjectCache        *memorycache.TTLCache
+	deploymentProjectCache *memorycache.TTLCache
+	pipedProjectCache      *memorycache.TTLCache
+
 	projectsInConfig map[string]config.ControlPlaneProject
 	logger           *zap.Logger
 }
 
 // NewWebAPI creates a new WebAPI instance.
 func NewWebAPI(
+	ctx context.Context,
 	ds datastore.DataStore,
 	sls stagelogstore.Store,
 	alss applicationlivestatestore.Store,
@@ -78,6 +85,9 @@ func NewWebAPI(
 		commandStore:              cmds,
 		projectsInConfig:          projs,
 		encrypter:                 encrypter,
+		appProjectCache:           memorycache.NewTTLCache(ctx, 24*time.Hour, 3*time.Hour),
+		deploymentProjectCache:    memorycache.NewTTLCache(ctx, 24*time.Hour, 3*time.Hour),
+		pipedProjectCache:         memorycache.NewTTLCache(ctx, 24*time.Hour, 3*time.Hour),
 		logger:                    logger.Named("web-api"),
 	}
 	return a
@@ -220,13 +230,8 @@ func (a *WebAPI) updatePiped(ctx context.Context, pipedID string, updater func(c
 		return err
 	}
 
-	piped, err := a.getPiped(ctx, pipedID)
-	if err != nil {
+	if err := a.validatePipedBelongsToProject(ctx, pipedID, claims.Role.ProjectId); err != nil {
 		return err
-	}
-
-	if claims.Role.ProjectId != piped.ProjectId {
-		return status.Error(codes.PermissionDenied, "The current project does not have the requested piped")
 	}
 
 	if err := updater(ctx, pipedID); err != nil {
@@ -291,8 +296,17 @@ func (a *WebAPI) ListPipeds(ctx context.Context, req *webservice.ListPipedsReque
 }
 
 func (a *WebAPI) GetPiped(ctx context.Context, req *webservice.GetPipedRequest) (*webservice.GetPipedResponse, error) {
+	claims, err := rpcauth.ExtractClaims(ctx)
+	if err != nil {
+		a.logger.Error("failed to authenticate the current user", zap.Error(err))
+		return nil, err
+	}
+
 	piped, err := a.getPiped(ctx, req.PipedId)
 	if err != nil {
+		return nil, err
+	}
+	if err := a.validatePipedBelongsToProject(ctx, req.PipedId, claims.Role.ProjectId); err != nil {
 		return nil, err
 	}
 
@@ -316,6 +330,26 @@ func (a *WebAPI) getPiped(ctx context.Context, pipedID string) (*model.Piped, er
 	return piped, nil
 }
 
+// validatePipedBelongsToProject checks if the given piped belongs to the given project.
+// It gives back error unless the piped belongs to the project.
+func (a *WebAPI) validatePipedBelongsToProject(ctx context.Context, pipedID, projectID string) error {
+	pid, err := a.pipedProjectCache.Get(pipedID)
+	if err == nil && pid == projectID {
+		return nil
+	}
+
+	piped, err := a.getPiped(ctx, pipedID)
+	if err != nil {
+		return err
+	}
+	a.pipedProjectCache.Put(pipedID, piped.ProjectId)
+
+	if piped.ProjectId != projectID {
+		return status.Error(codes.PermissionDenied, "Requested piped doesn't belong to the project you logged in")
+	}
+	return nil
+}
+
 // TODO: Validate the specified piped to ensure that it belongs to the specified environment.
 func (a *WebAPI) AddApplication(ctx context.Context, req *webservice.AddApplicationRequest) (*webservice.AddApplicationResponse, error) {
 	claims, err := rpcauth.ExtractClaims(ctx)
@@ -329,7 +363,7 @@ func (a *WebAPI) AddApplication(ctx context.Context, req *webservice.AddApplicat
 		return nil, status.Error(codes.InvalidArgument, "The path must be a relative path")
 	}
 
-	gitpath, err := a.makeGitPath(ctx, req.GitPath.Repo.Id, req.GitPath.Path, req.GitPath.ConfigFilename, req.PipedId)
+	gitpath, err := a.makeGitPath(ctx, req.GitPath.Repo.Id, req.GitPath.Path, req.GitPath.ConfigFilename, req.PipedId, claims.Role.ProjectId)
 	if err != nil {
 		return nil, err
 	}
@@ -358,9 +392,12 @@ func (a *WebAPI) AddApplication(ctx context.Context, req *webservice.AddApplicat
 }
 
 // makeGitPath returns an ApplicationGitPath by adding Repository info and GitPath URL to given args.
-func (a *WebAPI) makeGitPath(ctx context.Context, repoID, path, cfgFilename, pipedID string) (*model.ApplicationGitPath, error) {
+func (a *WebAPI) makeGitPath(ctx context.Context, repoID, path, cfgFilename, pipedID, projectID string) (*model.ApplicationGitPath, error) {
 	piped, err := a.getPiped(ctx, pipedID)
 	if err != nil {
+		return nil, err
+	}
+	if err := a.validatePipedBelongsToProject(ctx, pipedID, projectID); err != nil {
 		return nil, err
 	}
 
@@ -414,12 +451,8 @@ func (a *WebAPI) updateApplicationEnable(ctx context.Context, appID string, enab
 		return err
 	}
 
-	app, err := a.getApplication(ctx, appID)
-	if err != nil {
+	if err := a.validateApplicationBelongsToProject(ctx, appID, claims.Role.ProjectId); err != nil {
 		return err
-	}
-	if app.ProjectId != claims.Role.ProjectId {
-		return status.Error(codes.PermissionDenied, "The current project does not have requested application")
 	}
 
 	var updater func(context.Context, string) error
@@ -524,9 +557,8 @@ func (a *WebAPI) SyncApplication(ctx context.Context, req *webservice.SyncApplic
 	if err != nil {
 		return nil, err
 	}
-
-	if app.ProjectId != claims.Role.ProjectId {
-		return nil, status.Error(codes.PermissionDenied, "The current project does not have the requested application")
+	if err := a.validateApplicationBelongsToProject(ctx, req.ApplicationId, claims.Role.ProjectId); err != nil {
+		return nil, err
 	}
 
 	commandID := uuid.New().String()
@@ -557,8 +589,17 @@ func (a *WebAPI) addCommand(ctx context.Context, cmd *model.Command) error {
 }
 
 func (a *WebAPI) GetApplication(ctx context.Context, req *webservice.GetApplicationRequest) (*webservice.GetApplicationResponse, error) {
+	claims, err := rpcauth.ExtractClaims(ctx)
+	if err != nil {
+		a.logger.Error("failed to authenticate the current user", zap.Error(err))
+		return nil, err
+	}
+
 	app, err := a.getApplication(ctx, req.ApplicationId)
 	if err != nil {
+		return nil, err
+	}
+	if err := a.validateApplicationBelongsToProject(ctx, req.ApplicationId, claims.Role.ProjectId); err != nil {
 		return nil, err
 	}
 	return &webservice.GetApplicationResponse{
@@ -567,8 +608,17 @@ func (a *WebAPI) GetApplication(ctx context.Context, req *webservice.GetApplicat
 }
 
 func (a *WebAPI) GenerateApplicationSealedSecret(ctx context.Context, req *webservice.GenerateApplicationSealedSecretRequest) (*webservice.GenerateApplicationSealedSecretResponse, error) {
+	claims, err := rpcauth.ExtractClaims(ctx)
+	if err != nil {
+		a.logger.Error("failed to authenticate the current user", zap.Error(err))
+		return nil, err
+	}
+
 	piped, err := a.getPiped(ctx, req.PipedId)
 	if err != nil {
+		return nil, err
+	}
+	if err := a.validatePipedBelongsToProject(ctx, req.PipedId, claims.Role.ProjectId); err != nil {
 		return nil, err
 	}
 
@@ -605,8 +655,8 @@ func (a *WebAPI) GenerateApplicationSealedSecret(ctx context.Context, req *webse
 	}, nil
 }
 
-func (a *WebAPI) getApplication(ctx context.Context, id string) (*model.Application, error) {
-	app, err := a.applicationStore.GetApplication(ctx, id)
+func (a *WebAPI) getApplication(ctx context.Context, appID string) (*model.Application, error) {
+	app, err := a.applicationStore.GetApplication(ctx, appID)
 	if errors.Is(err, datastore.ErrNotFound) {
 		return nil, status.Error(codes.NotFound, "The application is not found")
 	}
@@ -615,6 +665,26 @@ func (a *WebAPI) getApplication(ctx context.Context, id string) (*model.Applicat
 		return nil, status.Error(codes.Internal, "Failed to get application")
 	}
 	return app, nil
+}
+
+// validateApplicationBelongsToProject checks if the given application belongs to the given project.
+// It gives back error unless the application belongs to the project.
+func (a *WebAPI) validateApplicationBelongsToProject(ctx context.Context, appID, projectID string) error {
+	pid, err := a.appProjectCache.Get(appID)
+	if err == nil && pid == projectID {
+		return nil
+	}
+
+	app, err := a.getApplication(ctx, appID)
+	if err != nil {
+		return err
+	}
+	a.appProjectCache.Put(appID, app.ProjectId)
+
+	if app.ProjectId != projectID {
+		return status.Error(codes.PermissionDenied, "Requested application doesn't belong to the project you logged in")
+	}
+	return nil
 }
 
 func (a *WebAPI) ListDeployments(ctx context.Context, req *webservice.ListDeploymentsRequest) (*webservice.ListDeploymentsResponse, error) {
@@ -692,8 +762,17 @@ func (a *WebAPI) ListDeployments(ctx context.Context, req *webservice.ListDeploy
 }
 
 func (a *WebAPI) GetDeployment(ctx context.Context, req *webservice.GetDeploymentRequest) (*webservice.GetDeploymentResponse, error) {
+	claims, err := rpcauth.ExtractClaims(ctx)
+	if err != nil {
+		a.logger.Error("failed to authenticate the current user", zap.Error(err))
+		return nil, err
+	}
+
 	deployment, err := a.getDeployment(ctx, req.DeploymentId)
 	if err != nil {
+		return nil, err
+	}
+	if err := a.validateDeploymentBelongsToProject(ctx, req.DeploymentId, claims.Role.ProjectId); err != nil {
 		return nil, err
 	}
 	return &webservice.GetDeploymentResponse{
@@ -701,8 +780,8 @@ func (a *WebAPI) GetDeployment(ctx context.Context, req *webservice.GetDeploymen
 	}, nil
 }
 
-func (a *WebAPI) getDeployment(ctx context.Context, id string) (*model.Deployment, error) {
-	deployment, err := a.deploymentStore.GetDeployment(ctx, id)
+func (a *WebAPI) getDeployment(ctx context.Context, deploymentID string) (*model.Deployment, error) {
+	deployment, err := a.deploymentStore.GetDeployment(ctx, deploymentID)
 	if errors.Is(err, datastore.ErrNotFound) {
 		return nil, status.Error(codes.NotFound, "The deployment is not found")
 	}
@@ -713,7 +792,37 @@ func (a *WebAPI) getDeployment(ctx context.Context, id string) (*model.Deploymen
 	return deployment, nil
 }
 
+// validateDeploymentBelongsToProject checks if the given deployment belongs to the given project.
+// It gives back error unless the deployment belongs to the project.
+func (a *WebAPI) validateDeploymentBelongsToProject(ctx context.Context, deploymentID, projectID string) error {
+	pid, err := a.deploymentProjectCache.Get(deploymentID)
+	if err == nil && pid == projectID {
+		return nil
+	}
+
+	deployment, err := a.getDeployment(ctx, deploymentID)
+	if err != nil {
+		return err
+	}
+	a.deploymentProjectCache.Put(deploymentID, deployment.ProjectId)
+
+	if deployment.ProjectId != projectID {
+		return status.Error(codes.PermissionDenied, "Requested deployment doesn't belong to the project you logged in")
+	}
+	return nil
+}
+
 func (a *WebAPI) GetStageLog(ctx context.Context, req *webservice.GetStageLogRequest) (*webservice.GetStageLogResponse, error) {
+	claims, err := rpcauth.ExtractClaims(ctx)
+	if err != nil {
+		a.logger.Error("failed to authenticate the current user", zap.Error(err))
+		return nil, err
+	}
+
+	if err := a.validateDeploymentBelongsToProject(ctx, req.DeploymentId, claims.Role.ProjectId); err != nil {
+		return nil, err
+	}
+
 	blocks, completed, err := a.stageLogStore.FetchLogs(ctx, req.DeploymentId, req.StageId, req.RetriedCount, req.OffsetIndex)
 	if errors.Is(err, stagelogstore.ErrNotFound) {
 		return nil, status.Error(codes.NotFound, "The stage log not found")
@@ -738,6 +847,9 @@ func (a *WebAPI) CancelDeployment(ctx context.Context, req *webservice.CancelDep
 
 	deployment, err := a.getDeployment(ctx, req.DeploymentId)
 	if err != nil {
+		return nil, err
+	}
+	if err := a.validateDeploymentBelongsToProject(ctx, req.DeploymentId, claims.Role.ProjectId); err != nil {
 		return nil, err
 	}
 	if model.IsCompletedDeployment(deployment.Status) {
@@ -777,6 +889,9 @@ func (a *WebAPI) ApproveStage(ctx context.Context, req *webservice.ApproveStageR
 	if err != nil {
 		return nil, err
 	}
+	if err := a.validateDeploymentBelongsToProject(ctx, req.DeploymentId, claims.Role.ProjectId); err != nil {
+		return nil, err
+	}
 	stage, ok := deployment.StageStatusMap()[req.StageId]
 	if !ok {
 		return nil, status.Error(codes.FailedPrecondition, "The stage was not found in the deployment")
@@ -808,6 +923,16 @@ func (a *WebAPI) ApproveStage(ctx context.Context, req *webservice.ApproveStageR
 }
 
 func (a *WebAPI) GetApplicationLiveState(ctx context.Context, req *webservice.GetApplicationLiveStateRequest) (*webservice.GetApplicationLiveStateResponse, error) {
+	claims, err := rpcauth.ExtractClaims(ctx)
+	if err != nil {
+		a.logger.Error("failed to authenticate the current user", zap.Error(err))
+		return nil, err
+	}
+
+	if err := a.validateApplicationBelongsToProject(ctx, req.ApplicationId, claims.Role.ProjectId); err != nil {
+		return nil, err
+	}
+
 	snapshot, err := a.applicationLiveStateStore.GetStateSnapshot(ctx, req.ApplicationId)
 	if err != nil {
 		a.logger.Error("failed to get application live state", zap.Error(err))
@@ -986,14 +1111,26 @@ func (a *WebAPI) GetCommand(ctx context.Context, req *webservice.GetCommandReque
 	if err != nil {
 		return nil, status.Error(codes.Internal, "Failed to get command")
 	}
+
+	// TODO: Add check if requested command belongs to logged-in project, after adding project id field to model.Command.
+
 	return &webservice.GetCommandResponse{
 		Command: cmd,
 	}, nil
 }
 
 func (a *WebAPI) ListDeploymentConfigTemplates(ctx context.Context, req *webservice.ListDeploymentConfigTemplatesRequest) (*webservice.ListDeploymentConfigTemplatesResponse, error) {
+	claims, err := rpcauth.ExtractClaims(ctx)
+	if err != nil {
+		a.logger.Error("failed to authenticate the current user", zap.Error(err))
+		return nil, err
+	}
+
 	app, err := a.getApplication(ctx, req.ApplicationId)
 	if err != nil {
+		return nil, err
+	}
+	if err := a.validateApplicationBelongsToProject(ctx, req.ApplicationId, claims.Role.ProjectId); err != nil {
 		return nil, err
 	}
 
