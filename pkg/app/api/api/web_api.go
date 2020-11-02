@@ -19,6 +19,7 @@ import (
 	"errors"
 	"fmt"
 	"strings"
+	"time"
 
 	"github.com/google/uuid"
 	"go.uber.org/zap"
@@ -55,9 +56,9 @@ type WebAPI struct {
 	commandStore              commandstore.Store
 	encrypter                 encrypter
 
-	applicationProjectMap *memorycache.Cache
-	deploymentProjectMap  *memorycache.Cache
-	pipedProjectMap       *memorycache.Cache
+	appProjectCache        *memorycache.TTLCache
+	deploymentProjectCache *memorycache.TTLCache
+	pipedProjectCache      *memorycache.TTLCache
 
 	projectsInConfig map[string]config.ControlPlaneProject
 	logger           *zap.Logger
@@ -65,12 +66,14 @@ type WebAPI struct {
 
 // NewWebAPI creates a new WebAPI instance.
 func NewWebAPI(
+	ctx context.Context,
 	ds datastore.DataStore,
 	sls stagelogstore.Store,
 	alss applicationlivestatestore.Store,
 	cmds commandstore.Store,
 	projs map[string]config.ControlPlaneProject,
 	encrypter encrypter,
+	ttlDuration time.Duration,
 	logger *zap.Logger) *WebAPI {
 	a := &WebAPI{
 		applicationStore:          datastore.NewApplicationStore(ds),
@@ -83,9 +86,9 @@ func NewWebAPI(
 		commandStore:              cmds,
 		projectsInConfig:          projs,
 		encrypter:                 encrypter,
-		applicationProjectMap:     memorycache.NewCache(),
-		deploymentProjectMap:      memorycache.NewCache(),
-		pipedProjectMap:           memorycache.NewCache(),
+		appProjectCache:           memorycache.NewTTLCache(ctx, ttlDuration, time.Minute),
+		deploymentProjectCache:    memorycache.NewTTLCache(ctx, ttlDuration, time.Minute),
+		pipedProjectCache:         memorycache.NewTTLCache(ctx, ttlDuration, time.Minute),
 		logger:                    logger.Named("web-api"),
 	}
 	return a
@@ -331,7 +334,7 @@ func (a *WebAPI) getPiped(ctx context.Context, pipedID string) (*model.Piped, er
 // pipedBelongsToProject checks if the given piped belongs to the given project.
 // It gives back error unless the piped belongs to the project.
 func (a *WebAPI) pipedBelongsToProject(ctx context.Context, pipedID, projectID string) error {
-	pid, err := a.pipedProjectMap.Get(pipedID)
+	pid, err := a.pipedProjectCache.Get(pipedID)
 	if err == nil && pid == projectID {
 		return nil
 	}
@@ -340,7 +343,7 @@ func (a *WebAPI) pipedBelongsToProject(ctx context.Context, pipedID, projectID s
 	if err != nil {
 		return err
 	}
-	a.pipedProjectMap.Put(pipedID, piped.ProjectId)
+	a.pipedProjectCache.Put(pipedID, piped.ProjectId)
 
 	if piped.ProjectId != projectID {
 		return status.Error(codes.PermissionDenied, "Requested piped doesn't belong to the project you logged in")
@@ -668,7 +671,7 @@ func (a *WebAPI) getApplication(ctx context.Context, appID string) (*model.Appli
 // applicationBelongsToProject checks if the given application belongs to the given project.
 // It gives back error unless the application belongs to the project.
 func (a *WebAPI) applicationBelongsToProject(ctx context.Context, appID, projectID string) error {
-	pid, err := a.applicationProjectMap.Get(appID)
+	pid, err := a.appProjectCache.Get(appID)
 	if err == nil && pid == projectID {
 		return nil
 	}
@@ -677,7 +680,7 @@ func (a *WebAPI) applicationBelongsToProject(ctx context.Context, appID, project
 	if err != nil {
 		return err
 	}
-	a.applicationProjectMap.Put(appID, app.ProjectId)
+	a.appProjectCache.Put(appID, app.ProjectId)
 
 	if app.ProjectId != projectID {
 		return status.Error(codes.PermissionDenied, "Requested application doesn't belong to the project you logged in")
@@ -793,7 +796,7 @@ func (a *WebAPI) getDeployment(ctx context.Context, deploymentID string) (*model
 // deploymentBelongsToProject checks if the given deployment belongs to the given project.
 // It gives back error unless the deployment belongs to the project.
 func (a *WebAPI) deploymentBelongsToProject(ctx context.Context, deploymentID, projectID string) error {
-	pid, err := a.deploymentProjectMap.Get(deploymentID)
+	pid, err := a.deploymentProjectCache.Get(deploymentID)
 	if err == nil && pid == projectID {
 		return nil
 	}
@@ -802,7 +805,7 @@ func (a *WebAPI) deploymentBelongsToProject(ctx context.Context, deploymentID, p
 	if err != nil {
 		return err
 	}
-	a.deploymentProjectMap.Put(deploymentID, deployment.ProjectId)
+	a.deploymentProjectCache.Put(deploymentID, deployment.ProjectId)
 
 	if deployment.ProjectId != projectID {
 		return status.Error(codes.PermissionDenied, "Requested deployment doesn't belong to the project you logged in")

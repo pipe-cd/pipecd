@@ -224,7 +224,7 @@ func (s *server) run(ctx context.Context, t cli.Telemetry) error {
 		if s.useFakeResponse {
 			service = api.NewFakeWebAPI()
 		} else {
-			service = api.NewWebAPI(ds, sls, alss, cmds, cfg.ProjectMap(), encryptDecrypter, t.Logger)
+			service = api.NewWebAPI(ctx, ds, sls, alss, cmds, cfg.ProjectMap(), encryptDecrypter, cfg.Cache.TTLDuration(), t.Logger)
 		}
 		opts := []rpc.Option{
 			rpc.WithPort(s.webAPIPort),
