@@ -73,7 +73,6 @@ func NewWebAPI(
 	cmds commandstore.Store,
 	projs map[string]config.ControlPlaneProject,
 	encrypter encrypter,
-	ttlDuration time.Duration,
 	logger *zap.Logger) *WebAPI {
 	a := &WebAPI{
 		applicationStore:          datastore.NewApplicationStore(ds),
@@ -86,9 +85,9 @@ func NewWebAPI(
 		commandStore:              cmds,
 		projectsInConfig:          projs,
 		encrypter:                 encrypter,
-		appProjectCache:           memorycache.NewTTLCache(ctx, ttlDuration, time.Minute),
-		deploymentProjectCache:    memorycache.NewTTLCache(ctx, ttlDuration, time.Minute),
-		pipedProjectCache:         memorycache.NewTTLCache(ctx, ttlDuration, time.Minute),
+		appProjectCache:           memorycache.NewTTLCache(ctx, 24*time.Hour, 3*time.Hour),
+		deploymentProjectCache:    memorycache.NewTTLCache(ctx, 24*time.Hour, 3*time.Hour),
+		pipedProjectCache:         memorycache.NewTTLCache(ctx, 24*time.Hour, 3*time.Hour),
 		logger:                    logger.Named("web-api"),
 	}
 	return a
@@ -231,7 +230,7 @@ func (a *WebAPI) updatePiped(ctx context.Context, pipedID string, updater func(c
 		return err
 	}
 
-	if err := a.pipedBelongsToProject(ctx, pipedID, claims.Role.ProjectId); err != nil {
+	if err := a.validatePipedBelongsToProject(ctx, pipedID, claims.Role.ProjectId); err != nil {
 		return err
 	}
 
@@ -307,7 +306,7 @@ func (a *WebAPI) GetPiped(ctx context.Context, req *webservice.GetPipedRequest) 
 	if err != nil {
 		return nil, err
 	}
-	if err := a.pipedBelongsToProject(ctx, req.PipedId, claims.Role.ProjectId); err != nil {
+	if err := a.validatePipedBelongsToProject(ctx, req.PipedId, claims.Role.ProjectId); err != nil {
 		return nil, err
 	}
 
@@ -331,9 +330,9 @@ func (a *WebAPI) getPiped(ctx context.Context, pipedID string) (*model.Piped, er
 	return piped, nil
 }
 
-// pipedBelongsToProject checks if the given piped belongs to the given project.
+// validatePipedBelongsToProject checks if the given piped belongs to the given project.
 // It gives back error unless the piped belongs to the project.
-func (a *WebAPI) pipedBelongsToProject(ctx context.Context, pipedID, projectID string) error {
+func (a *WebAPI) validatePipedBelongsToProject(ctx context.Context, pipedID, projectID string) error {
 	pid, err := a.pipedProjectCache.Get(pipedID)
 	if err == nil && pid == projectID {
 		return nil
@@ -398,7 +397,7 @@ func (a *WebAPI) makeGitPath(ctx context.Context, repoID, path, cfgFilename, pip
 	if err != nil {
 		return nil, err
 	}
-	if err := a.pipedBelongsToProject(ctx, pipedID, projectID); err != nil {
+	if err := a.validatePipedBelongsToProject(ctx, pipedID, projectID); err != nil {
 		return nil, err
 	}
 
@@ -452,7 +451,7 @@ func (a *WebAPI) updateApplicationEnable(ctx context.Context, appID string, enab
 		return err
 	}
 
-	if err := a.applicationBelongsToProject(ctx, appID, claims.Role.ProjectId); err != nil {
+	if err := a.validateApplicationBelongsToProject(ctx, appID, claims.Role.ProjectId); err != nil {
 		return err
 	}
 
@@ -558,7 +557,7 @@ func (a *WebAPI) SyncApplication(ctx context.Context, req *webservice.SyncApplic
 	if err != nil {
 		return nil, err
 	}
-	if err := a.applicationBelongsToProject(ctx, req.ApplicationId, claims.Role.ProjectId); err != nil {
+	if err := a.validateApplicationBelongsToProject(ctx, req.ApplicationId, claims.Role.ProjectId); err != nil {
 		return nil, err
 	}
 
@@ -600,7 +599,7 @@ func (a *WebAPI) GetApplication(ctx context.Context, req *webservice.GetApplicat
 	if err != nil {
 		return nil, err
 	}
-	if err := a.applicationBelongsToProject(ctx, req.ApplicationId, claims.Role.ProjectId); err != nil {
+	if err := a.validateApplicationBelongsToProject(ctx, req.ApplicationId, claims.Role.ProjectId); err != nil {
 		return nil, err
 	}
 	return &webservice.GetApplicationResponse{
@@ -619,7 +618,7 @@ func (a *WebAPI) GenerateApplicationSealedSecret(ctx context.Context, req *webse
 	if err != nil {
 		return nil, err
 	}
-	if err := a.pipedBelongsToProject(ctx, req.PipedId, claims.Role.ProjectId); err != nil {
+	if err := a.validatePipedBelongsToProject(ctx, req.PipedId, claims.Role.ProjectId); err != nil {
 		return nil, err
 	}
 
@@ -668,9 +667,9 @@ func (a *WebAPI) getApplication(ctx context.Context, appID string) (*model.Appli
 	return app, nil
 }
 
-// applicationBelongsToProject checks if the given application belongs to the given project.
+// validateApplicationBelongsToProject checks if the given application belongs to the given project.
 // It gives back error unless the application belongs to the project.
-func (a *WebAPI) applicationBelongsToProject(ctx context.Context, appID, projectID string) error {
+func (a *WebAPI) validateApplicationBelongsToProject(ctx context.Context, appID, projectID string) error {
 	pid, err := a.appProjectCache.Get(appID)
 	if err == nil && pid == projectID {
 		return nil
@@ -773,7 +772,7 @@ func (a *WebAPI) GetDeployment(ctx context.Context, req *webservice.GetDeploymen
 	if err != nil {
 		return nil, err
 	}
-	if err := a.deploymentBelongsToProject(ctx, req.DeploymentId, claims.Role.ProjectId); err != nil {
+	if err := a.validateDeploymentBelongsToProject(ctx, req.DeploymentId, claims.Role.ProjectId); err != nil {
 		return nil, err
 	}
 	return &webservice.GetDeploymentResponse{
@@ -793,9 +792,9 @@ func (a *WebAPI) getDeployment(ctx context.Context, deploymentID string) (*model
 	return deployment, nil
 }
 
-// deploymentBelongsToProject checks if the given deployment belongs to the given project.
+// validateDeploymentBelongsToProject checks if the given deployment belongs to the given project.
 // It gives back error unless the deployment belongs to the project.
-func (a *WebAPI) deploymentBelongsToProject(ctx context.Context, deploymentID, projectID string) error {
+func (a *WebAPI) validateDeploymentBelongsToProject(ctx context.Context, deploymentID, projectID string) error {
 	pid, err := a.deploymentProjectCache.Get(deploymentID)
 	if err == nil && pid == projectID {
 		return nil
@@ -820,7 +819,7 @@ func (a *WebAPI) GetStageLog(ctx context.Context, req *webservice.GetStageLogReq
 		return nil, err
 	}
 
-	if err := a.deploymentBelongsToProject(ctx, req.DeploymentId, claims.Role.ProjectId); err != nil {
+	if err := a.validateDeploymentBelongsToProject(ctx, req.DeploymentId, claims.Role.ProjectId); err != nil {
 		return nil, err
 	}
 
@@ -850,7 +849,7 @@ func (a *WebAPI) CancelDeployment(ctx context.Context, req *webservice.CancelDep
 	if err != nil {
 		return nil, err
 	}
-	if err := a.deploymentBelongsToProject(ctx, req.DeploymentId, claims.Role.ProjectId); err != nil {
+	if err := a.validateDeploymentBelongsToProject(ctx, req.DeploymentId, claims.Role.ProjectId); err != nil {
 		return nil, err
 	}
 	if model.IsCompletedDeployment(deployment.Status) {
@@ -890,7 +889,7 @@ func (a *WebAPI) ApproveStage(ctx context.Context, req *webservice.ApproveStageR
 	if err != nil {
 		return nil, err
 	}
-	if err := a.deploymentBelongsToProject(ctx, req.DeploymentId, claims.Role.ProjectId); err != nil {
+	if err := a.validateDeploymentBelongsToProject(ctx, req.DeploymentId, claims.Role.ProjectId); err != nil {
 		return nil, err
 	}
 	stage, ok := deployment.StageStatusMap()[req.StageId]
@@ -930,7 +929,7 @@ func (a *WebAPI) GetApplicationLiveState(ctx context.Context, req *webservice.Ge
 		return nil, err
 	}
 
-	if err := a.applicationBelongsToProject(ctx, req.ApplicationId, claims.Role.ProjectId); err != nil {
+	if err := a.validateApplicationBelongsToProject(ctx, req.ApplicationId, claims.Role.ProjectId); err != nil {
 		return nil, err
 	}
 
@@ -1131,7 +1130,7 @@ func (a *WebAPI) ListDeploymentConfigTemplates(ctx context.Context, req *webserv
 	if err != nil {
 		return nil, err
 	}
-	if err := a.applicationBelongsToProject(ctx, req.ApplicationId, claims.Role.ProjectId); err != nil {
+	if err := a.validateApplicationBelongsToProject(ctx, req.ApplicationId, claims.Role.ProjectId); err != nil {
 		return nil, err
 	}
 
