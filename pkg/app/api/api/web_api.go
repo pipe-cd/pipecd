@@ -56,6 +56,8 @@ type WebAPI struct {
 	encrypter                 encrypter
 
 	applicationProjectMap *memorycache.Cache
+	deploymentProjectMap  *memorycache.Cache
+	pipedProjectMap       *memorycache.Cache
 
 	projectsInConfig map[string]config.ControlPlaneProject
 	logger           *zap.Logger
@@ -82,6 +84,8 @@ func NewWebAPI(
 		projectsInConfig:          projs,
 		encrypter:                 encrypter,
 		applicationProjectMap:     memorycache.NewCache(),
+		deploymentProjectMap:      memorycache.NewCache(),
+		pipedProjectMap:           memorycache.NewCache(),
 		logger:                    logger.Named("web-api"),
 	}
 	return a
@@ -641,6 +645,7 @@ func (a *WebAPI) getApplication(ctx context.Context, appID string) (*model.Appli
 }
 
 // applicationBelongsToProject checks if the given application belongs to the given project.
+// It gives back error unless the application belongs to the project.
 func (a *WebAPI) applicationBelongsToProject(ctx context.Context, appID, projectID string) error {
 	pid, err := a.applicationProjectMap.Get(appID)
 	if err == nil && pid == projectID {
@@ -740,8 +745,11 @@ func (a *WebAPI) GetDeployment(ctx context.Context, req *webservice.GetDeploymen
 		return nil, err
 	}
 
-	deployment, err := a.getDeployment(ctx, req.DeploymentId, claims.Role.ProjectId)
+	deployment, err := a.getDeployment(ctx, req.DeploymentId)
 	if err != nil {
+		return nil, err
+	}
+	if err := a.deploymentBelongsToProject(ctx, req.DeploymentId, claims.Role.ProjectId); err != nil {
 		return nil, err
 	}
 	return &webservice.GetDeploymentResponse{
@@ -749,8 +757,7 @@ func (a *WebAPI) GetDeployment(ctx context.Context, req *webservice.GetDeploymen
 	}, nil
 }
 
-// getDeployment gives back the requested deployment after checking if it belongs to the logged-in project.
-func (a *WebAPI) getDeployment(ctx context.Context, deploymentID, projectID string) (*model.Deployment, error) {
+func (a *WebAPI) getDeployment(ctx context.Context, deploymentID string) (*model.Deployment, error) {
 	deployment, err := a.deploymentStore.GetDeployment(ctx, deploymentID)
 	if errors.Is(err, datastore.ErrNotFound) {
 		return nil, status.Error(codes.NotFound, "The deployment is not found")
@@ -759,10 +766,27 @@ func (a *WebAPI) getDeployment(ctx context.Context, deploymentID, projectID stri
 		a.logger.Error("failed to get deployment", zap.Error(err))
 		return nil, status.Error(codes.Internal, "Failed to get deployment")
 	}
-	if deployment.ProjectId != projectID {
-		return nil, status.Error(codes.PermissionDenied, "Requested deployment doesn't belong to the project you logged in")
-	}
 	return deployment, nil
+}
+
+// deploymentBelongsToProject checks if the given deployment belongs to the given project.
+// It gives back error unless the deployment belongs to the project.
+func (a *WebAPI) deploymentBelongsToProject(ctx context.Context, deploymentID, projectID string) error {
+	pid, err := a.deploymentProjectMap.Get(deploymentID)
+	if err == nil && pid == projectID {
+		return nil
+	}
+
+	deployment, err := a.getDeployment(ctx, deploymentID)
+	if err != nil {
+		return err
+	}
+	a.applicationProjectMap.Put(deploymentID, deployment.ProjectId)
+
+	if deployment.ProjectId != projectID {
+		return status.Error(codes.PermissionDenied, "Requested deployment doesn't belong to the project you logged in")
+	}
+	return nil
 }
 
 func (a *WebAPI) GetStageLog(ctx context.Context, req *webservice.GetStageLogRequest) (*webservice.GetStageLogResponse, error) {
@@ -772,8 +796,10 @@ func (a *WebAPI) GetStageLog(ctx context.Context, req *webservice.GetStageLogReq
 		return nil, err
 	}
 
-	// Check if the requested deployment belongs to the logged in project.
-	if _, err := a.getDeployment(ctx, req.DeploymentId, claims.Role.ProjectId); err != nil {
+	if _, err := a.getDeployment(ctx, req.DeploymentId); err != nil {
+		return nil, err
+	}
+	if err := a.deploymentBelongsToProject(ctx, req.DeploymentId, claims.Role.ProjectId); err != nil {
 		return nil, err
 	}
 
@@ -799,8 +825,11 @@ func (a *WebAPI) CancelDeployment(ctx context.Context, req *webservice.CancelDep
 		return nil, err
 	}
 
-	deployment, err := a.getDeployment(ctx, req.DeploymentId, claims.Role.ProjectId)
+	deployment, err := a.getDeployment(ctx, req.DeploymentId)
 	if err != nil {
+		return nil, err
+	}
+	if err := a.deploymentBelongsToProject(ctx, req.DeploymentId, claims.Role.ProjectId); err != nil {
 		return nil, err
 	}
 	if model.IsCompletedDeployment(deployment.Status) {
@@ -836,8 +865,11 @@ func (a *WebAPI) ApproveStage(ctx context.Context, req *webservice.ApproveStageR
 		return nil, err
 	}
 
-	deployment, err := a.getDeployment(ctx, req.DeploymentId, claims.Role.ProjectId)
+	deployment, err := a.getDeployment(ctx, req.DeploymentId)
 	if err != nil {
+		return nil, err
+	}
+	if err := a.deploymentBelongsToProject(ctx, req.DeploymentId, claims.Role.ProjectId); err != nil {
 		return nil, err
 	}
 	stage, ok := deployment.StageStatusMap()[req.StageId]
