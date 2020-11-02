@@ -112,11 +112,6 @@ export const RBACForm: FC = memo(function RBACForm() {
                 value={teams.viewer}
               />
             </div>
-            <div>
-              <IconButton onClick={() => setIsEdit(true)}>
-                <EditIcon />
-              </IconButton>
-            </div>
           </>
         ) : (
           <div className={projectSettingClasses.values}>
@@ -135,6 +130,11 @@ export const RBACForm: FC = memo(function RBACForm() {
             )}
           </div>
         )}
+        <div>
+          <IconButton onClick={() => setIsEdit(true)}>
+            <EditIcon />
+          </IconButton>
+        </div>
       </div>
 
       <Dialog
