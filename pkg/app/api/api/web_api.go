@@ -220,13 +220,9 @@ func (a *WebAPI) updatePiped(ctx context.Context, pipedID string, updater func(c
 		return err
 	}
 
-	piped, err := a.getPiped(ctx, pipedID, claims.Role.ProjectId)
-	if err != nil {
+	// Check if the requested piped belongs to the logged in project.
+	if _, err := a.getPiped(ctx, pipedID, claims.Role.ProjectId); err != nil {
 		return err
-	}
-
-	if claims.Role.ProjectId != piped.ProjectId {
-		return status.Error(codes.PermissionDenied, "The current project does not have the requested piped")
 	}
 
 	if err := updater(ctx, pipedID); err != nil {
@@ -310,6 +306,7 @@ func (a *WebAPI) GetPiped(ctx context.Context, req *webservice.GetPipedRequest) 
 	}, nil
 }
 
+// getPiped gives back the requested piped after checking if it belongs to the logged-in project.
 func (a *WebAPI) getPiped(ctx context.Context, pipedID, projectID string) (*model.Piped, error) {
 	piped, err := a.pipedStore.GetPiped(ctx, pipedID)
 	if errors.Is(err, datastore.ErrNotFound) {
@@ -320,7 +317,7 @@ func (a *WebAPI) getPiped(ctx context.Context, pipedID, projectID string) (*mode
 		return nil, status.Error(codes.Internal, "Failed to get piped")
 	}
 	if piped.ProjectId != projectID {
-		return nil, status.Error(codes.PermissionDenied, "requested piped doesn't belong to the project you logged in")
+		return nil, status.Error(codes.PermissionDenied, "Requested piped doesn't belong to the project you logged in")
 	}
 	return piped, nil
 }
@@ -423,12 +420,9 @@ func (a *WebAPI) updateApplicationEnable(ctx context.Context, appID string, enab
 		return err
 	}
 
-	app, err := a.getApplication(ctx, appID, claims.Role.ProjectId)
-	if err != nil {
+	// Check if the requested application belongs to the logged in project.
+	if _, err := a.getApplication(ctx, appID, claims.Role.ProjectId); err != nil {
 		return err
-	}
-	if app.ProjectId != claims.Role.ProjectId {
-		return status.Error(codes.PermissionDenied, "The current project does not have requested application")
 	}
 
 	var updater func(context.Context, string) error
@@ -529,13 +523,10 @@ func (a *WebAPI) SyncApplication(ctx context.Context, req *webservice.SyncApplic
 		return nil, err
 	}
 
+	// Check if the requested application belongs to the logged in project.
 	app, err := a.getApplication(ctx, req.ApplicationId, claims.Role.ProjectId)
 	if err != nil {
 		return nil, err
-	}
-
-	if app.ProjectId != claims.Role.ProjectId {
-		return nil, status.Error(codes.PermissionDenied, "The current project does not have the requested application")
 	}
 
 	commandID := uuid.New().String()
@@ -626,6 +617,7 @@ func (a *WebAPI) GenerateApplicationSealedSecret(ctx context.Context, req *webse
 	}, nil
 }
 
+// getApplication gives back the requested application after checking if it belongs to the logged-in project.
 func (a *WebAPI) getApplication(ctx context.Context, appID, projectID string) (*model.Application, error) {
 	app, err := a.applicationStore.GetApplication(ctx, appID)
 	if errors.Is(err, datastore.ErrNotFound) {
@@ -636,7 +628,7 @@ func (a *WebAPI) getApplication(ctx context.Context, appID, projectID string) (*
 		return nil, status.Error(codes.Internal, "Failed to get application")
 	}
 	if app.ProjectId != projectID {
-		return nil, status.Error(codes.PermissionDenied, "requested application doesn't belong to the project you logged in")
+		return nil, status.Error(codes.PermissionDenied, "Requested application doesn't belong to the project you logged in")
 	}
 	return app, nil
 }
@@ -731,6 +723,7 @@ func (a *WebAPI) GetDeployment(ctx context.Context, req *webservice.GetDeploymen
 	}, nil
 }
 
+// getDeployment gives back the requested deployment after checking if it belongs to the logged-in project.
 func (a *WebAPI) getDeployment(ctx context.Context, deploymentID, projectID string) (*model.Deployment, error) {
 	deployment, err := a.deploymentStore.GetDeployment(ctx, deploymentID)
 	if errors.Is(err, datastore.ErrNotFound) {
@@ -741,12 +734,23 @@ func (a *WebAPI) getDeployment(ctx context.Context, deploymentID, projectID stri
 		return nil, status.Error(codes.Internal, "Failed to get deployment")
 	}
 	if deployment.ProjectId != projectID {
-		return nil, status.Error(codes.PermissionDenied, "requested deployment doesn't belong to the project you logged in")
+		return nil, status.Error(codes.PermissionDenied, "Requested deployment doesn't belong to the project you logged in")
 	}
 	return deployment, nil
 }
 
 func (a *WebAPI) GetStageLog(ctx context.Context, req *webservice.GetStageLogRequest) (*webservice.GetStageLogResponse, error) {
+	claims, err := rpcauth.ExtractClaims(ctx)
+	if err != nil {
+		a.logger.Error("failed to authenticate the current user", zap.Error(err))
+		return nil, err
+	}
+
+	// Check if the requested deployment belongs to the logged in project.
+	if _, err := a.getDeployment(ctx, req.DeploymentId, claims.Role.ProjectId); err != nil {
+		return nil, err
+	}
+
 	blocks, completed, err := a.stageLogStore.FetchLogs(ctx, req.DeploymentId, req.StageId, req.RetriedCount, req.OffsetIndex)
 	if errors.Is(err, stagelogstore.ErrNotFound) {
 		return nil, status.Error(codes.NotFound, "The stage log not found")
@@ -841,6 +845,17 @@ func (a *WebAPI) ApproveStage(ctx context.Context, req *webservice.ApproveStageR
 }
 
 func (a *WebAPI) GetApplicationLiveState(ctx context.Context, req *webservice.GetApplicationLiveStateRequest) (*webservice.GetApplicationLiveStateResponse, error) {
+	claims, err := rpcauth.ExtractClaims(ctx)
+	if err != nil {
+		a.logger.Error("failed to authenticate the current user", zap.Error(err))
+		return nil, err
+	}
+
+	// Check if the requested application belongs to the logged in project.
+	if _, err := a.getApplication(ctx, req.ApplicationId, claims.Role.ProjectId); err != nil {
+		return nil, err
+	}
+
 	snapshot, err := a.applicationLiveStateStore.GetStateSnapshot(ctx, req.ApplicationId)
 	if err != nil {
 		a.logger.Error("failed to get application live state", zap.Error(err))
@@ -1019,6 +1034,9 @@ func (a *WebAPI) GetCommand(ctx context.Context, req *webservice.GetCommandReque
 	if err != nil {
 		return nil, status.Error(codes.Internal, "Failed to get command")
 	}
+
+	// TODO: Add check if requested command belongs to logged-in project, after adding project id field to model.Command.
+
 	return &webservice.GetCommandResponse{
 		Command: cmd,
 	}, nil
