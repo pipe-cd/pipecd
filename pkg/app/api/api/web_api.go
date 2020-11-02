@@ -30,6 +30,7 @@ import (
 	"github.com/pipe-cd/pipe/pkg/app/api/commandstore"
 	"github.com/pipe-cd/pipe/pkg/app/api/service/webservice"
 	"github.com/pipe-cd/pipe/pkg/app/api/stagelogstore"
+	"github.com/pipe-cd/pipe/pkg/cache/memorycache"
 	"github.com/pipe-cd/pipe/pkg/config"
 	"github.com/pipe-cd/pipe/pkg/crypto"
 	"github.com/pipe-cd/pipe/pkg/datastore"
@@ -53,6 +54,8 @@ type WebAPI struct {
 	applicationLiveStateStore applicationlivestatestore.Store
 	commandStore              commandstore.Store
 	encrypter                 encrypter
+
+	applicationProjectMap *memorycache.Cache
 
 	projectsInConfig map[string]config.ControlPlaneProject
 	logger           *zap.Logger
@@ -78,6 +81,7 @@ func NewWebAPI(
 		commandStore:              cmds,
 		projectsInConfig:          projs,
 		encrypter:                 encrypter,
+		applicationProjectMap:     memorycache.NewCache(),
 		logger:                    logger.Named("web-api"),
 	}
 	return a
@@ -420,8 +424,10 @@ func (a *WebAPI) updateApplicationEnable(ctx context.Context, appID string, enab
 		return err
 	}
 
-	// Check if the requested application belongs to the logged in project.
-	if _, err := a.getApplication(ctx, appID, claims.Role.ProjectId); err != nil {
+	if _, err := a.getApplication(ctx, appID); err != nil {
+		return err
+	}
+	if err := a.applicationBelongsToProject(ctx, appID, claims.Role.ProjectId); err != nil {
 		return err
 	}
 
@@ -523,9 +529,11 @@ func (a *WebAPI) SyncApplication(ctx context.Context, req *webservice.SyncApplic
 		return nil, err
 	}
 
-	// Check if the requested application belongs to the logged in project.
-	app, err := a.getApplication(ctx, req.ApplicationId, claims.Role.ProjectId)
+	app, err := a.getApplication(ctx, req.ApplicationId)
 	if err != nil {
+		return nil, err
+	}
+	if err := a.applicationBelongsToProject(ctx, req.ApplicationId, claims.Role.ProjectId); err != nil {
 		return nil, err
 	}
 
@@ -563,8 +571,11 @@ func (a *WebAPI) GetApplication(ctx context.Context, req *webservice.GetApplicat
 		return nil, err
 	}
 
-	app, err := a.getApplication(ctx, req.ApplicationId, claims.Role.ProjectId)
+	app, err := a.getApplication(ctx, req.ApplicationId)
 	if err != nil {
+		return nil, err
+	}
+	if err := a.applicationBelongsToProject(ctx, req.ApplicationId, claims.Role.ProjectId); err != nil {
 		return nil, err
 	}
 	return &webservice.GetApplicationResponse{
@@ -617,8 +628,7 @@ func (a *WebAPI) GenerateApplicationSealedSecret(ctx context.Context, req *webse
 	}, nil
 }
 
-// getApplication gives back the requested application after checking if it belongs to the logged-in project.
-func (a *WebAPI) getApplication(ctx context.Context, appID, projectID string) (*model.Application, error) {
+func (a *WebAPI) getApplication(ctx context.Context, appID string) (*model.Application, error) {
 	app, err := a.applicationStore.GetApplication(ctx, appID)
 	if errors.Is(err, datastore.ErrNotFound) {
 		return nil, status.Error(codes.NotFound, "The application is not found")
@@ -627,10 +637,26 @@ func (a *WebAPI) getApplication(ctx context.Context, appID, projectID string) (*
 		a.logger.Error("failed to get application", zap.Error(err))
 		return nil, status.Error(codes.Internal, "Failed to get application")
 	}
-	if app.ProjectId != projectID {
-		return nil, status.Error(codes.PermissionDenied, "Requested application doesn't belong to the project you logged in")
-	}
 	return app, nil
+}
+
+// applicationBelongsToProject checks if the given application belongs to the given project.
+func (a *WebAPI) applicationBelongsToProject(ctx context.Context, appID, projectID string) error {
+	pid, err := a.applicationProjectMap.Get(appID)
+	if err == nil && pid == projectID {
+		return nil
+	}
+
+	app, err := a.getApplication(ctx, appID)
+	if err != nil {
+		return err
+	}
+	a.applicationProjectMap.Put(appID, app.ProjectId)
+
+	if app.ProjectId != projectID {
+		return status.Error(codes.PermissionDenied, "Requested application doesn't belong to the project you logged in")
+	}
+	return nil
 }
 
 func (a *WebAPI) ListDeployments(ctx context.Context, req *webservice.ListDeploymentsRequest) (*webservice.ListDeploymentsResponse, error) {
@@ -851,8 +877,10 @@ func (a *WebAPI) GetApplicationLiveState(ctx context.Context, req *webservice.Ge
 		return nil, err
 	}
 
-	// Check if the requested application belongs to the logged in project.
-	if _, err := a.getApplication(ctx, req.ApplicationId, claims.Role.ProjectId); err != nil {
+	if _, err := a.getApplication(ctx, req.ApplicationId); err != nil {
+		return nil, err
+	}
+	if err := a.applicationBelongsToProject(ctx, req.ApplicationId, claims.Role.ProjectId); err != nil {
 		return nil, err
 	}
 
@@ -1049,8 +1077,11 @@ func (a *WebAPI) ListDeploymentConfigTemplates(ctx context.Context, req *webserv
 		return nil, err
 	}
 
-	app, err := a.getApplication(ctx, req.ApplicationId, claims.Role.ProjectId)
+	app, err := a.getApplication(ctx, req.ApplicationId)
 	if err != nil {
+		return nil, err
+	}
+	if err := a.applicationBelongsToProject(ctx, req.ApplicationId, claims.Role.ProjectId); err != nil {
 		return nil, err
 	}
 
