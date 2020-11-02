@@ -151,7 +151,6 @@ func (s *store) addResource(obj *unstructured.Unstructured, appID string) {
 	s.mu.Lock()
 	s.resources[uid] = appResource{appID: appID, owners: owners, resource: obj}
 	s.mu.Unlock()
-
 }
 
 func (s *store) onAddResource(obj *unstructured.Unstructured) {
@@ -202,7 +201,6 @@ func (s *store) onDeleteResource(obj *unstructured.Unstructured) {
 	}
 
 	// Handle depended nodes from here.
-
 	if appID == "" {
 		s.mu.RLock()
 		if r, ok := s.resources[uid]; ok {
@@ -210,12 +208,19 @@ func (s *store) onDeleteResource(obj *unstructured.Unstructured) {
 		}
 		s.mu.RUnlock()
 	}
+
 	// Try to determine the application ID by traveling its owners.
 	if appID == "" {
 		s.mu.RLock()
 		appID = s.findAppIDByOwners(owners)
 		s.mu.RUnlock()
 	}
+
+	// This must be done before deleting the resource from the dependedNodes
+	// to ensure that all items in the resources list can be found from one of the app.
+	s.mu.Lock()
+	delete(s.resources, uid)
+	s.mu.Unlock()
 
 	// Delete the resource to the application's dependedNodes.
 	s.mu.RLock()
@@ -226,10 +231,6 @@ func (s *store) onDeleteResource(obj *unstructured.Unstructured) {
 			s.addEvent(event)
 		}
 	}
-
-	s.mu.Lock()
-	delete(s.resources, uid)
-	s.mu.Unlock()
 }
 
 func (s *store) getAppManagingNodes(appID string) map[string]node {
