@@ -26,6 +26,8 @@ import { StageStatus } from "pipe/pkg/app/web/model/deployment_pb";
 import { METADATA_APPROVED_BY } from "../constants/metadata-keys";
 
 const WAIT_APPROVAL_NAME = "WAIT_APPROVAL";
+const STAGE_HEIGHT = 56;
+const APPROVED_STAGE_HEIGHT = 66;
 
 // Find stage that is running or latest
 const findDefaultActiveStage = (stages: Stage[]): Stage => {
@@ -68,8 +70,7 @@ const useDeploymentStage = (
   return [isRunning, stages, findDefaultActiveStage(visibleStages)];
 };
 
-const STAGE_HEIGHT = 56;
-const APPROVED_STAGE_HEIGHT = 66;
+const LARGE_STAGE_NAMES = ["WAIT_APPROVAL", "K8S_TRAFFIC_ROUTING"];
 
 const useStyles = makeStyles((theme) => ({
   root: {
@@ -191,7 +192,7 @@ export const Pipeline: FC<Props> = memo(function Pipeline({ deploymentId }) {
   return (
     <div className={classes.root}>
       {stages.map((stageColumn, columnIndex) => {
-        let isPrevStageApproval = false;
+        let isPrevStageLarge = false;
         return (
           <div
             className={classes.pipelineColumn}
@@ -212,7 +213,7 @@ export const Pipeline: FC<Props> = memo(function Pipeline({ deploymentId }) {
                       ? stageIndex > 0
                         ? clsx(classes.requireCurvedLine, {
                             [classes.extendRequireLine]:
-                              Boolean(approver) || isPrevStageApproval,
+                              Boolean(approver) || isPrevStageLarge,
                           })
                         : classes.requireLine
                       : undefined
@@ -233,15 +234,16 @@ export const Pipeline: FC<Props> = memo(function Pipeline({ deploymentId }) {
                       id={stage.id}
                       name={stage.name}
                       status={stage.status}
+                      metadata={stage.metadataMap}
                       onClick={handleOnClickStage}
                       active={isActive}
-                      approver={findApprover(stage.metadataMap)}
+                      approver={approver}
                       isDeploymentRunning={isRunning}
                     />
                   )}
                 </div>
               );
-              isPrevStageApproval = Boolean(approver);
+              isPrevStageLarge = LARGE_STAGE_NAMES.includes(stage.name);
               return stageComp;
             })}
           </div>

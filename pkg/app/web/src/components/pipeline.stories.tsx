@@ -81,7 +81,7 @@ const fakeDeployment: Deployment = {
     }),
     stage({
       id: "fake-stage-id-2-0",
-      name: "K8S_CANARY_CLEAN",
+      name: "K8S_TRAFFIC_ROUTING",
       desc: "waiting approval",
       index: 0,
       requiresList: [
@@ -90,6 +90,11 @@ const fakeDeployment: Deployment = {
         "fake-stage-id-1-2",
       ],
       status: 0,
+      metadataMap: [
+        ["baseline-percentage", "0"],
+        ["canary-percentage", "50"],
+        ["primary-percentage", "50"],
+      ],
     }),
     stage({
       id: "fake-stage-id-2-1",
