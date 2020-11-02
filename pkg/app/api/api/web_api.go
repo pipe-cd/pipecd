@@ -228,8 +228,7 @@ func (a *WebAPI) updatePiped(ctx context.Context, pipedID string, updater func(c
 		return err
 	}
 
-	// Check if the requested piped belongs to the logged in project.
-	if _, err := a.getPiped(ctx, pipedID, claims.Role.ProjectId); err != nil {
+	if err := a.pipedBelongsToProject(ctx, pipedID, claims.Role.ProjectId); err != nil {
 		return err
 	}
 
@@ -301,8 +300,11 @@ func (a *WebAPI) GetPiped(ctx context.Context, req *webservice.GetPipedRequest) 
 		return nil, err
 	}
 
-	piped, err := a.getPiped(ctx, req.PipedId, claims.Role.ProjectId)
+	piped, err := a.getPiped(ctx, req.PipedId)
 	if err != nil {
+		return nil, err
+	}
+	if err := a.pipedBelongsToProject(ctx, req.PipedId, claims.Role.ProjectId); err != nil {
 		return nil, err
 	}
 
@@ -314,8 +316,7 @@ func (a *WebAPI) GetPiped(ctx context.Context, req *webservice.GetPipedRequest) 
 	}, nil
 }
 
-// getPiped gives back the requested piped after checking if it belongs to the logged-in project.
-func (a *WebAPI) getPiped(ctx context.Context, pipedID, projectID string) (*model.Piped, error) {
+func (a *WebAPI) getPiped(ctx context.Context, pipedID string) (*model.Piped, error) {
 	piped, err := a.pipedStore.GetPiped(ctx, pipedID)
 	if errors.Is(err, datastore.ErrNotFound) {
 		return nil, status.Error(codes.NotFound, "Piped is not found")
@@ -324,10 +325,27 @@ func (a *WebAPI) getPiped(ctx context.Context, pipedID, projectID string) (*mode
 		a.logger.Error("failed to get piped", zap.Error(err))
 		return nil, status.Error(codes.Internal, "Failed to get piped")
 	}
-	if piped.ProjectId != projectID {
-		return nil, status.Error(codes.PermissionDenied, "Requested piped doesn't belong to the project you logged in")
-	}
 	return piped, nil
+}
+
+// pipedBelongsToProject checks if the given piped belongs to the given project.
+// It gives back error unless the piped belongs to the project.
+func (a *WebAPI) pipedBelongsToProject(ctx context.Context, pipedID, projectID string) error {
+	pid, err := a.pipedProjectMap.Get(pipedID)
+	if err == nil && pid == projectID {
+		return nil
+	}
+
+	piped, err := a.getPiped(ctx, pipedID)
+	if err != nil {
+		return err
+	}
+	a.pipedProjectMap.Put(pipedID, piped.ProjectId)
+
+	if piped.ProjectId != projectID {
+		return status.Error(codes.PermissionDenied, "Requested piped doesn't belong to the project you logged in")
+	}
+	return nil
 }
 
 // TODO: Validate the specified piped to ensure that it belongs to the specified environment.
@@ -373,8 +391,11 @@ func (a *WebAPI) AddApplication(ctx context.Context, req *webservice.AddApplicat
 
 // makeGitPath returns an ApplicationGitPath by adding Repository info and GitPath URL to given args.
 func (a *WebAPI) makeGitPath(ctx context.Context, repoID, path, cfgFilename, pipedID, projectID string) (*model.ApplicationGitPath, error) {
-	piped, err := a.getPiped(ctx, pipedID, projectID)
+	piped, err := a.getPiped(ctx, pipedID)
 	if err != nil {
+		return nil, err
+	}
+	if err := a.pipedBelongsToProject(ctx, pipedID, projectID); err != nil {
 		return nil, err
 	}
 
@@ -428,9 +449,6 @@ func (a *WebAPI) updateApplicationEnable(ctx context.Context, appID string, enab
 		return err
 	}
 
-	if _, err := a.getApplication(ctx, appID); err != nil {
-		return err
-	}
 	if err := a.applicationBelongsToProject(ctx, appID, claims.Role.ProjectId); err != nil {
 		return err
 	}
@@ -594,8 +612,11 @@ func (a *WebAPI) GenerateApplicationSealedSecret(ctx context.Context, req *webse
 		return nil, err
 	}
 
-	piped, err := a.getPiped(ctx, req.PipedId, claims.Role.ProjectId)
+	piped, err := a.getPiped(ctx, req.PipedId)
 	if err != nil {
+		return nil, err
+	}
+	if err := a.pipedBelongsToProject(ctx, req.PipedId, claims.Role.ProjectId); err != nil {
 		return nil, err
 	}
 
@@ -781,7 +802,7 @@ func (a *WebAPI) deploymentBelongsToProject(ctx context.Context, deploymentID, p
 	if err != nil {
 		return err
 	}
-	a.applicationProjectMap.Put(deploymentID, deployment.ProjectId)
+	a.deploymentProjectMap.Put(deploymentID, deployment.ProjectId)
 
 	if deployment.ProjectId != projectID {
 		return status.Error(codes.PermissionDenied, "Requested deployment doesn't belong to the project you logged in")
@@ -796,9 +817,6 @@ func (a *WebAPI) GetStageLog(ctx context.Context, req *webservice.GetStageLogReq
 		return nil, err
 	}
 
-	if _, err := a.getDeployment(ctx, req.DeploymentId); err != nil {
-		return nil, err
-	}
 	if err := a.deploymentBelongsToProject(ctx, req.DeploymentId, claims.Role.ProjectId); err != nil {
 		return nil, err
 	}
@@ -909,9 +927,6 @@ func (a *WebAPI) GetApplicationLiveState(ctx context.Context, req *webservice.Ge
 		return nil, err
 	}
 
-	if _, err := a.getApplication(ctx, req.ApplicationId); err != nil {
-		return nil, err
-	}
 	if err := a.applicationBelongsToProject(ctx, req.ApplicationId, claims.Role.ProjectId); err != nil {
 		return nil, err
 	}
