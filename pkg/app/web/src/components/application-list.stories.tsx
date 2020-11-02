@@ -2,6 +2,7 @@ import React from "react";
 import { ApplicationList } from "./application-list";
 import { createDecoratorRedux } from "../../.storybook/redux-decorator";
 import { dummyApplication } from "../__fixtures__/dummy-application";
+import { dummyEnv } from "../__fixtures__/dummy-environment";
 
 export default {
   title: "APPLICATION/ApplicationList",
@@ -16,6 +17,12 @@ export default {
           [dummyApplication.id]: dummyApplication,
         },
         ids: [dummyApplication.id],
+      },
+      environments: {
+        entities: {
+          [dummyEnv.id]: dummyEnv,
+        },
+        ids: [dummyEnv.id],
       },
     }),
   ],

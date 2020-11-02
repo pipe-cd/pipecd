@@ -38,6 +38,7 @@ import { AppDispatch } from "../store";
 import { DisableApplicationDialog } from "./disable-application-dialog";
 import { SyncStatusIcon } from "./sync-status-icon";
 import { SealedSecretDialog } from "./sealed-secret-dialog";
+import { APPLICATION_KIND_TEXT } from "../constants/application-kind";
 
 const useStyles = makeStyles((theme) => ({
   root: {
@@ -147,6 +148,7 @@ export const ApplicationList: FC = memo(function ApplicationList() {
             <TableRow>
               <TableCell>Status</TableCell>
               <TableCell>Name</TableCell>
+              <TableCell>Kind</TableCell>
               <TableCell>Environment</TableCell>
               <TableCell>Running Version</TableCell>
               <TableCell>Running Commit</TableCell>
@@ -188,6 +190,7 @@ export const ApplicationList: FC = memo(function ApplicationList() {
                       {app.name}
                     </Link>
                   </TableCell>
+                  <TableCell>{APPLICATION_KIND_TEXT[app.kind]}</TableCell>
                   <TableCell>{envs[app.envId]?.name}</TableCell>
                   {recentlyDeployment ? (
                     <>
