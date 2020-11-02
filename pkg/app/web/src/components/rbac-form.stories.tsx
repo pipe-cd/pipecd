@@ -1,17 +1,33 @@
 import React from "react";
 import { RBACForm } from "./rbac-form";
-import { createDecoratorRedux } from "../../.storybook/redux-decorator";
+import { Provider } from "react-redux";
+import { createStore } from "../../test-utils";
 
 export default {
   title: "RBACForm",
   component: RBACForm,
-  decorators: [
-    createDecoratorRedux({
+};
+
+export const overview: React.FC = () => (
+  <Provider
+    store={createStore({
       project: {
         teams: { admin: "admin", editor: "editor", viewer: "viewer" },
       },
-    }),
-  ],
-};
+    })}
+  >
+    <RBACForm />
+  </Provider>
+);
 
-export const overview: React.FC = () => <RBACForm />;
+export const notConfigured: React.FC = () => (
+  <Provider
+    store={createStore({
+      project: {
+        teams: null,
+      },
+    })}
+  >
+    <RBACForm />
+  </Provider>
+);
