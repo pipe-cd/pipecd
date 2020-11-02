@@ -58,21 +58,35 @@ interface Props {
   onClick: (stageId: string, stageName: string) => void;
 }
 
-const trafficPercentageMetaKey: Record<string, string> = {
-  "primary-percentage": "Primary",
-  "canary-percentage": "Canary",
-  "baseline-percentage": "Baseline",
+const TRAFFIC_PERCENTAGE_META_KEY = {
+  PRIMARY: "primary-percentage",
+  CANARY: "canary-percentage",
+  BASELINE: "baseline-percentage",
 };
-const createTrafficPercentageText = (meta: [string, string][]): string =>
-  meta
-    .map(([key, value]) => {
-      if (trafficPercentageMetaKey[key]) {
-        return `${trafficPercentageMetaKey[key]} ${value}%`;
-      }
-      return undefined;
-    })
-    .filter((v) => v)
-    .join(", ");
+
+const trafficPercentageMetaKey: Record<string, string> = {
+  [TRAFFIC_PERCENTAGE_META_KEY.PRIMARY]: "Primary",
+  [TRAFFIC_PERCENTAGE_META_KEY.CANARY]: "Canary",
+  [TRAFFIC_PERCENTAGE_META_KEY.BASELINE]: "Baseline",
+};
+
+const createTrafficPercentageText = (meta: [string, string][]): string => {
+  const map = meta.reduce<Record<string, string>>((prev, [key, value]) => {
+    if (trafficPercentageMetaKey[key]) {
+      prev[key] = `${trafficPercentageMetaKey[key]} ${value}%`;
+    }
+    return prev;
+  }, {});
+
+  // If the primary exists, other params also exist.
+  if (map[TRAFFIC_PERCENTAGE_META_KEY.PRIMARY]) {
+    return `${map[TRAFFIC_PERCENTAGE_META_KEY.PRIMARY]}, ${
+      map[TRAFFIC_PERCENTAGE_META_KEY.CANARY]
+    }, ${map[TRAFFIC_PERCENTAGE_META_KEY.BASELINE]}`;
+  }
+
+  return "";
+};
 
 export const PipelineStage: FC<Props> = memo(function PipelineStage({
   id,
