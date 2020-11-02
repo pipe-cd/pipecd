@@ -220,7 +220,7 @@ func (a *WebAPI) updatePiped(ctx context.Context, pipedID string, updater func(c
 		return err
 	}
 
-	piped, err := a.getPiped(ctx, pipedID)
+	piped, err := a.getPiped(ctx, pipedID, claims.Role.ProjectId)
 	if err != nil {
 		return err
 	}
@@ -291,7 +291,13 @@ func (a *WebAPI) ListPipeds(ctx context.Context, req *webservice.ListPipedsReque
 }
 
 func (a *WebAPI) GetPiped(ctx context.Context, req *webservice.GetPipedRequest) (*webservice.GetPipedResponse, error) {
-	piped, err := a.getPiped(ctx, req.PipedId)
+	claims, err := rpcauth.ExtractClaims(ctx)
+	if err != nil {
+		a.logger.Error("failed to authenticate the current user", zap.Error(err))
+		return nil, err
+	}
+
+	piped, err := a.getPiped(ctx, req.PipedId, claims.Role.ProjectId)
 	if err != nil {
 		return nil, err
 	}
@@ -304,7 +310,7 @@ func (a *WebAPI) GetPiped(ctx context.Context, req *webservice.GetPipedRequest) 
 	}, nil
 }
 
-func (a *WebAPI) getPiped(ctx context.Context, pipedID string) (*model.Piped, error) {
+func (a *WebAPI) getPiped(ctx context.Context, pipedID, projectID string) (*model.Piped, error) {
 	piped, err := a.pipedStore.GetPiped(ctx, pipedID)
 	if errors.Is(err, datastore.ErrNotFound) {
 		return nil, status.Error(codes.NotFound, "Piped is not found")
@@ -312,6 +318,9 @@ func (a *WebAPI) getPiped(ctx context.Context, pipedID string) (*model.Piped, er
 	if err != nil {
 		a.logger.Error("failed to get piped", zap.Error(err))
 		return nil, status.Error(codes.Internal, "Failed to get piped")
+	}
+	if piped.ProjectId != projectID {
+		return nil, status.Error(codes.PermissionDenied, "requested piped doesn't belong to the project you logged in")
 	}
 	return piped, nil
 }
@@ -329,7 +338,7 @@ func (a *WebAPI) AddApplication(ctx context.Context, req *webservice.AddApplicat
 		return nil, status.Error(codes.InvalidArgument, "The path must be a relative path")
 	}
 
-	gitpath, err := a.makeGitPath(ctx, req.GitPath.Repo.Id, req.GitPath.Path, req.GitPath.ConfigFilename, req.PipedId)
+	gitpath, err := a.makeGitPath(ctx, req.GitPath.Repo.Id, req.GitPath.Path, req.GitPath.ConfigFilename, req.PipedId, claims.Role.ProjectId)
 	if err != nil {
 		return nil, err
 	}
@@ -358,8 +367,8 @@ func (a *WebAPI) AddApplication(ctx context.Context, req *webservice.AddApplicat
 }
 
 // makeGitPath returns an ApplicationGitPath by adding Repository info and GitPath URL to given args.
-func (a *WebAPI) makeGitPath(ctx context.Context, repoID, path, cfgFilename, pipedID string) (*model.ApplicationGitPath, error) {
-	piped, err := a.getPiped(ctx, pipedID)
+func (a *WebAPI) makeGitPath(ctx context.Context, repoID, path, cfgFilename, pipedID, projectID string) (*model.ApplicationGitPath, error) {
+	piped, err := a.getPiped(ctx, pipedID, projectID)
 	if err != nil {
 		return nil, err
 	}
@@ -414,7 +423,7 @@ func (a *WebAPI) updateApplicationEnable(ctx context.Context, appID string, enab
 		return err
 	}
 
-	app, err := a.getApplication(ctx, appID)
+	app, err := a.getApplication(ctx, appID, claims.Role.ProjectId)
 	if err != nil {
 		return err
 	}
@@ -520,7 +529,7 @@ func (a *WebAPI) SyncApplication(ctx context.Context, req *webservice.SyncApplic
 		return nil, err
 	}
 
-	app, err := a.getApplication(ctx, req.ApplicationId)
+	app, err := a.getApplication(ctx, req.ApplicationId, claims.Role.ProjectId)
 	if err != nil {
 		return nil, err
 	}
@@ -557,7 +566,13 @@ func (a *WebAPI) addCommand(ctx context.Context, cmd *model.Command) error {
 }
 
 func (a *WebAPI) GetApplication(ctx context.Context, req *webservice.GetApplicationRequest) (*webservice.GetApplicationResponse, error) {
-	app, err := a.getApplication(ctx, req.ApplicationId)
+	claims, err := rpcauth.ExtractClaims(ctx)
+	if err != nil {
+		a.logger.Error("failed to authenticate the current user", zap.Error(err))
+		return nil, err
+	}
+
+	app, err := a.getApplication(ctx, req.ApplicationId, claims.Role.ProjectId)
 	if err != nil {
 		return nil, err
 	}
@@ -567,7 +582,13 @@ func (a *WebAPI) GetApplication(ctx context.Context, req *webservice.GetApplicat
 }
 
 func (a *WebAPI) GenerateApplicationSealedSecret(ctx context.Context, req *webservice.GenerateApplicationSealedSecretRequest) (*webservice.GenerateApplicationSealedSecretResponse, error) {
-	piped, err := a.getPiped(ctx, req.PipedId)
+	claims, err := rpcauth.ExtractClaims(ctx)
+	if err != nil {
+		a.logger.Error("failed to authenticate the current user", zap.Error(err))
+		return nil, err
+	}
+
+	piped, err := a.getPiped(ctx, req.PipedId, claims.Role.ProjectId)
 	if err != nil {
 		return nil, err
 	}
@@ -605,14 +626,17 @@ func (a *WebAPI) GenerateApplicationSealedSecret(ctx context.Context, req *webse
 	}, nil
 }
 
-func (a *WebAPI) getApplication(ctx context.Context, id string) (*model.Application, error) {
-	app, err := a.applicationStore.GetApplication(ctx, id)
+func (a *WebAPI) getApplication(ctx context.Context, appID, projectID string) (*model.Application, error) {
+	app, err := a.applicationStore.GetApplication(ctx, appID)
 	if errors.Is(err, datastore.ErrNotFound) {
 		return nil, status.Error(codes.NotFound, "The application is not found")
 	}
 	if err != nil {
 		a.logger.Error("failed to get application", zap.Error(err))
 		return nil, status.Error(codes.Internal, "Failed to get application")
+	}
+	if app.ProjectId != projectID {
+		return nil, status.Error(codes.PermissionDenied, "requested application doesn't belong to the project you logged in")
 	}
 	return app, nil
 }
@@ -692,7 +716,13 @@ func (a *WebAPI) ListDeployments(ctx context.Context, req *webservice.ListDeploy
 }
 
 func (a *WebAPI) GetDeployment(ctx context.Context, req *webservice.GetDeploymentRequest) (*webservice.GetDeploymentResponse, error) {
-	deployment, err := a.getDeployment(ctx, req.DeploymentId)
+	claims, err := rpcauth.ExtractClaims(ctx)
+	if err != nil {
+		a.logger.Error("failed to authenticate the current user", zap.Error(err))
+		return nil, err
+	}
+
+	deployment, err := a.getDeployment(ctx, req.DeploymentId, claims.Role.ProjectId)
 	if err != nil {
 		return nil, err
 	}
@@ -701,14 +731,17 @@ func (a *WebAPI) GetDeployment(ctx context.Context, req *webservice.GetDeploymen
 	}, nil
 }
 
-func (a *WebAPI) getDeployment(ctx context.Context, id string) (*model.Deployment, error) {
-	deployment, err := a.deploymentStore.GetDeployment(ctx, id)
+func (a *WebAPI) getDeployment(ctx context.Context, deploymentID, projectID string) (*model.Deployment, error) {
+	deployment, err := a.deploymentStore.GetDeployment(ctx, deploymentID)
 	if errors.Is(err, datastore.ErrNotFound) {
 		return nil, status.Error(codes.NotFound, "The deployment is not found")
 	}
 	if err != nil {
 		a.logger.Error("failed to get deployment", zap.Error(err))
 		return nil, status.Error(codes.Internal, "Failed to get deployment")
+	}
+	if deployment.ProjectId != projectID {
+		return nil, status.Error(codes.PermissionDenied, "requested deployment doesn't belong to the project you logged in")
 	}
 	return deployment, nil
 }
@@ -736,7 +769,7 @@ func (a *WebAPI) CancelDeployment(ctx context.Context, req *webservice.CancelDep
 		return nil, err
 	}
 
-	deployment, err := a.getDeployment(ctx, req.DeploymentId)
+	deployment, err := a.getDeployment(ctx, req.DeploymentId, claims.Role.ProjectId)
 	if err != nil {
 		return nil, err
 	}
@@ -773,7 +806,7 @@ func (a *WebAPI) ApproveStage(ctx context.Context, req *webservice.ApproveStageR
 		return nil, err
 	}
 
-	deployment, err := a.getDeployment(ctx, req.DeploymentId)
+	deployment, err := a.getDeployment(ctx, req.DeploymentId, claims.Role.ProjectId)
 	if err != nil {
 		return nil, err
 	}
@@ -992,7 +1025,13 @@ func (a *WebAPI) GetCommand(ctx context.Context, req *webservice.GetCommandReque
 }
 
 func (a *WebAPI) ListDeploymentConfigTemplates(ctx context.Context, req *webservice.ListDeploymentConfigTemplatesRequest) (*webservice.ListDeploymentConfigTemplatesResponse, error) {
-	app, err := a.getApplication(ctx, req.ApplicationId)
+	claims, err := rpcauth.ExtractClaims(ctx)
+	if err != nil {
+		a.logger.Error("failed to authenticate the current user", zap.Error(err))
+		return nil, err
+	}
+
+	app, err := a.getApplication(ctx, req.ApplicationId, claims.Role.ProjectId)
 	if err != nil {
 		return nil, err
 	}
