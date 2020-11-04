@@ -19,6 +19,7 @@ package logpersister
 
 import (
 	"context"
+	"fmt"
 	"sync"
 	"time"
 
@@ -56,8 +57,9 @@ type key struct {
 }
 
 type persister struct {
-	apiClient               apiClient
-	stagePersisters         sync.Map
+	apiClient       apiClient
+	stagePersisters sync.Map
+
 	flushInterval           time.Duration
 	checkpointFlushInterval time.Duration
 	stalePeriod             time.Duration
@@ -67,14 +69,14 @@ type persister struct {
 
 // NewPersister creates a new persister instance for saving the stage logs into server's storage.
 // This controls how many concurent api calls should be executed and when to flush the logs.
-func NewPersister(apiClient apiClient, logger *zap.Logger) Persister {
+func NewPersister(apiClient apiClient, logger *zap.Logger) *persister {
 	return &persister{
 		apiClient:               apiClient,
 		flushInterval:           5 * time.Second,
 		checkpointFlushInterval: 2 * time.Minute,
 		stalePeriod:             time.Minute,
 		gracePeriod:             30 * time.Second,
-		logger:                  logger.Named("logger-persister"),
+		logger:                  logger.Named("log-persister"),
 	}
 }
 
@@ -106,56 +108,67 @@ L:
 
 // StageLogPersister creates a child persister instance for a specific stage.
 func (p *persister) StageLogPersister(deploymentID, stageID string) StageLogPersister {
-	var (
-		k = key{
-			DeploymentID: deploymentID,
-			StageID:      stageID,
-		}
-		logger = p.logger.With(
-			zap.String("deployment-id", deploymentID),
-			zap.String("stage-id", stageID),
-		)
-		sp = &stageLogPersister{
-			key:                     k,
-			curLogIndex:             time.Now().Unix(),
-			doneCh:                  make(chan struct{}),
-			checkpointFlushInterval: p.checkpointFlushInterval,
-			persister:               p,
-			logger:                  logger,
-		}
+	k := key{
+		DeploymentID: deploymentID,
+		StageID:      stageID,
+	}
+	logger := p.logger.With(
+		zap.String("deployment-id", deploymentID),
+		zap.String("stage-id", stageID),
 	)
+	sp := &stageLogPersister{
+		key:                     k,
+		curLogIndex:             time.Now().Unix(),
+		doneCh:                  make(chan struct{}),
+		checkpointFlushInterval: p.checkpointFlushInterval,
+		persister:               p,
+		logger:                  logger,
+	}
+
 	p.stagePersisters.Store(k, sp)
 	return sp
 }
 
-func (p *persister) flush(ctx context.Context) {
+func (p *persister) flush(ctx context.Context) (flushes, deletes int) {
 	completedKeys := make([]key, 0)
 
-	// Check for new log entries and flush if needed.
+	// Check new log entries and flush them if needed.
 	p.stagePersisters.Range(func(_, v interface{}) bool {
 		sp := v.(*stageLogPersister)
+
 		if sp.isStale(p.stalePeriod) {
 			completedKeys = append(completedKeys, sp.key)
-		} else {
-			sp.flush(ctx)
+			deletes++
+			return true
 		}
-		return false
+
+		sp.flush(ctx)
+		flushes++
+		return true
 	})
 
-	// Clean up all completed stages.
+	// Clean up all completed stage persisters.
 	for _, k := range completedKeys {
 		p.stagePersisters.Delete(k)
 	}
+
+	return
 }
 
-func (p *persister) flushAll(ctx context.Context) {
+func (p *persister) flushAll(ctx context.Context) int {
+	var num = 0
+
 	p.stagePersisters.Range(func(_, v interface{}) bool {
 		sp := v.(*stageLogPersister)
 		if !sp.isStale(p.stalePeriod) {
+			num++
 			go sp.flushFromLastCheckpoint(ctx)
 		}
-		return false
+		return true
 	})
+
+	p.logger.Info(fmt.Sprintf("flushing all of %d stage persisters", num))
+	return num
 }
 
 func (p *persister) reportStageLogs(ctx context.Context, k key, blocks []*model.LogBlock) error {
