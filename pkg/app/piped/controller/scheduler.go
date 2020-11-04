@@ -355,13 +355,20 @@ func (s *scheduler) Run(ctx context.Context) error {
 }
 
 // executeStage finds the executor for the given stage and execute.
-func (s *scheduler) executeStage(sig executor.StopSignal, ps model.PipelineStage, executorFactory func(executor.Input) (executor.Executor, bool)) model.StageStatus {
+func (s *scheduler) executeStage(sig executor.StopSignal, ps model.PipelineStage, executorFactory func(executor.Input) (executor.Executor, bool)) (finalStatus model.StageStatus) {
 	var (
 		ctx            = sig.Context()
 		originalStatus = ps.Status
 		lp             = s.logPersister.StageLogPersister(s.deployment.Id, ps.Id)
 	)
-	defer lp.Complete(time.Minute)
+	defer func() {
+		// When the piped has been stopped while the stage is still running
+		// we should not mark the log persister as completed.
+		if !model.IsCompletedStage(finalStatus) && sig.Stopped() {
+			return
+		}
+		lp.Complete(time.Minute)
+	}()
 
 	// Update stage status to RUNNING if needed.
 	if model.CanUpdateStageStatus(ps.Status, model.StageStatus_STAGE_RUNNING) {
