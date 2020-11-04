@@ -33,7 +33,8 @@ export const dummyDeployment: Deployment = {
   cloudProvider: "kube-1",
   completedAt: 1,
   createdAt: 1,
-  summary: "description",
+  summary:
+    "Quick sync by deploying the new version and configuring all traffic to it because no pipeline was configured",
   envId: dummyEnv.id,
   gitPath: {
     configPath: "",
