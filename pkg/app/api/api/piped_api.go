@@ -48,7 +48,7 @@ type PipedAPI struct {
 
 	appPipedCache        *memorycache.TTLCache
 	deploymentPipedCache *memorycache.TTLCache
-	pipedEnvsCache       *memorycache.TTLCache
+	envProjectCache      *memorycache.TTLCache
 
 	logger *zap.Logger
 }
@@ -67,7 +67,7 @@ func NewPipedAPI(ctx context.Context, ds datastore.DataStore, sls stagelogstore.
 		commandStore:              cs,
 		appPipedCache:             memorycache.NewTTLCache(ctx, 24*time.Hour, 3*time.Hour),
 		deploymentPipedCache:      memorycache.NewTTLCache(ctx, 24*time.Hour, 3*time.Hour),
-		pipedEnvsCache:            memorycache.NewTTLCache(ctx, 24*time.Hour, 3*time.Hour),
+		envProjectCache:           memorycache.NewTTLCache(ctx, 24*time.Hour, 3*time.Hour),
 		logger:                    logger.Named("piped-api"),
 	}
 	return a
@@ -115,11 +115,11 @@ func (a *PipedAPI) ReportPipedMeta(ctx context.Context, req *pipedservice.Report
 
 // GetEnvironment finds and returns the environment for the specified ID.
 func (a *PipedAPI) GetEnvironment(ctx context.Context, req *pipedservice.GetEnvironmentRequest) (*pipedservice.GetEnvironmentResponse, error) {
-	_, pipedID, _, err := rpcauth.ExtractPipedToken(ctx)
+	projectID, _, _, err := rpcauth.ExtractPipedToken(ctx)
 	if err != nil {
 		return nil, err
 	}
-	if err := a.validatePipedBelongsToEnv(ctx, pipedID, req.Id); err != nil {
+	if err := a.validateEnvBelongsToProject(ctx, req.Id, projectID); err != nil {
 		return nil, err
 	}
 
@@ -702,37 +702,29 @@ func (a *PipedAPI) validateDeploymentBelongsToPiped(ctx context.Context, deploym
 	return nil
 }
 
-// validatePipedBelongsToEnv checks if the given piped belongs to the given environment.
-// It gives back an error unless the piped belongs to the environment.
-func (a *PipedAPI) validatePipedBelongsToEnv(ctx context.Context, pipedID, envID string) error {
-	envIDs, err := a.pipedEnvsCache.Get(pipedID)
+// validateEnvBelongsToProject checks if the given environment belongs to the given project.
+// It gives back an error unless the environment belongs to the project.
+func (a *PipedAPI) validateEnvBelongsToProject(ctx context.Context, envID, projectID string) error {
+	pid, err := a.envProjectCache.Get(envID)
 	if err == nil {
-		es, ok := envIDs.([]string)
-		if !ok {
-			return status.Error(codes.Internal, "environment ids are being cached as unknown types")
+		if pid != projectID {
+			return status.Error(codes.PermissionDenied, "requested environment doesn't belong to the project")
 		}
-		for _, e := range es {
-			if e == envID {
-				return nil
-			}
-		}
-		return status.Error(codes.PermissionDenied, "requested piped doesn't belong to the environment")
+		return nil
 	}
 
-	piped, err := a.pipedStore.GetPiped(ctx, pipedID)
+	env, err := a.environmentStore.GetEnvironment(ctx, envID)
 	if errors.Is(err, datastore.ErrNotFound) {
-		return status.Error(codes.NotFound, "the piped is not found")
+		return status.Error(codes.NotFound, "the environment is not found")
 	}
 	if err != nil {
-		a.logger.Error("failed to get piped", zap.Error(err))
-		return status.Error(codes.Internal, "failed to get piped")
+		a.logger.Error("failed to get environment", zap.Error(err))
+		return status.Error(codes.Internal, "failed to get environment")
 	}
-	a.pipedEnvsCache.Put(pipedID, piped.EnvIds)
+	a.envProjectCache.Put(envID, env.ProjectId)
 
-	for _, e := range piped.EnvIds {
-		if e == envID {
-			return nil
-		}
+	if env.ProjectId != projectID {
+		return status.Error(codes.PermissionDenied, "requested environment doesn't belong to the project")
 	}
-	return status.Error(codes.PermissionDenied, "requested piped doesn't belong to the environment")
+	return nil
 }
