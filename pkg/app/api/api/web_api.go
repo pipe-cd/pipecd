@@ -334,7 +334,10 @@ func (a *WebAPI) getPiped(ctx context.Context, pipedID string) (*model.Piped, er
 // It gives back error unless the piped belongs to the project.
 func (a *WebAPI) validatePipedBelongsToProject(ctx context.Context, pipedID, projectID string) error {
 	pid, err := a.pipedProjectCache.Get(pipedID)
-	if err == nil && pid == projectID {
+	if err == nil {
+		if pid != projectID {
+			return status.Error(codes.PermissionDenied, "Requested piped doesn't belong to the project you logged in")
+		}
 		return nil
 	}
 
@@ -671,7 +674,10 @@ func (a *WebAPI) getApplication(ctx context.Context, appID string) (*model.Appli
 // It gives back error unless the application belongs to the project.
 func (a *WebAPI) validateApplicationBelongsToProject(ctx context.Context, appID, projectID string) error {
 	pid, err := a.appProjectCache.Get(appID)
-	if err == nil && pid == projectID {
+	if err == nil {
+		if pid != projectID {
+			return status.Error(codes.PermissionDenied, "Requested application doesn't belong to the project you logged in")
+		}
 		return nil
 	}
 
@@ -796,7 +802,10 @@ func (a *WebAPI) getDeployment(ctx context.Context, deploymentID string) (*model
 // It gives back error unless the deployment belongs to the project.
 func (a *WebAPI) validateDeploymentBelongsToProject(ctx context.Context, deploymentID, projectID string) error {
 	pid, err := a.deploymentProjectCache.Get(deploymentID)
-	if err == nil && pid == projectID {
+	if err == nil {
+		if pid != projectID {
+			return status.Error(codes.PermissionDenied, "Requested deployment doesn't belong to the project you logged in")
+		}
 		return nil
 	}
 

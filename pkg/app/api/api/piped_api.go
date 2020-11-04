@@ -28,6 +28,7 @@ import (
 	"github.com/pipe-cd/pipe/pkg/app/api/commandstore"
 	"github.com/pipe-cd/pipe/pkg/app/api/service/pipedservice"
 	"github.com/pipe-cd/pipe/pkg/app/api/stagelogstore"
+	"github.com/pipe-cd/pipe/pkg/cache/memorycache"
 	"github.com/pipe-cd/pipe/pkg/datastore"
 	"github.com/pipe-cd/pipe/pkg/model"
 	"github.com/pipe-cd/pipe/pkg/rpc/rpcauth"
@@ -45,11 +46,15 @@ type PipedAPI struct {
 	applicationLiveStateStore applicationlivestatestore.Store
 	commandStore              commandstore.Store
 
+	appPipedCache        *memorycache.TTLCache
+	deploymentPipedCache *memorycache.TTLCache
+	pipedEnvsCache       *memorycache.TTLCache
+
 	logger *zap.Logger
 }
 
 // NewPipedAPI creates a new PipedAPI instance.
-func NewPipedAPI(ds datastore.DataStore, sls stagelogstore.Store, alss applicationlivestatestore.Store, cs commandstore.Store, logger *zap.Logger) *PipedAPI {
+func NewPipedAPI(ctx context.Context, ds datastore.DataStore, sls stagelogstore.Store, alss applicationlivestatestore.Store, cs commandstore.Store, logger *zap.Logger) *PipedAPI {
 	a := &PipedAPI{
 		applicationStore:          datastore.NewApplicationStore(ds),
 		deploymentStore:           datastore.NewDeploymentStore(ds),
@@ -60,6 +65,9 @@ func NewPipedAPI(ds datastore.DataStore, sls stagelogstore.Store, alss applicati
 		stageLogStore:             sls,
 		applicationLiveStateStore: alss,
 		commandStore:              cs,
+		appPipedCache:             memorycache.NewTTLCache(ctx, 24*time.Hour, 3*time.Hour),
+		deploymentPipedCache:      memorycache.NewTTLCache(ctx, 24*time.Hour, 3*time.Hour),
+		pipedEnvsCache:            memorycache.NewTTLCache(ctx, 24*time.Hour, 3*time.Hour),
 		logger:                    logger.Named("piped-api"),
 	}
 	return a
@@ -107,6 +115,14 @@ func (a *PipedAPI) ReportPipedMeta(ctx context.Context, req *pipedservice.Report
 
 // GetEnvironment finds and returns the environment for the specified ID.
 func (a *PipedAPI) GetEnvironment(ctx context.Context, req *pipedservice.GetEnvironmentRequest) (*pipedservice.GetEnvironmentResponse, error) {
+	_, pipedID, _, err := rpcauth.ExtractPipedToken(ctx)
+	if err != nil {
+		return nil, err
+	}
+	if err := a.validatePipedBelongsToEnv(ctx, pipedID, req.Id); err != nil {
+		return nil, err
+	}
+
 	env, err := a.environmentStore.GetEnvironment(ctx, req.Id)
 	if errors.Is(err, datastore.ErrNotFound) {
 		return nil, status.Error(codes.NotFound, "environment is not found")
@@ -161,7 +177,15 @@ func (a *PipedAPI) ListApplications(ctx context.Context, req *pipedservice.ListA
 
 // ReportApplicationSyncState is used to update the sync status of an application.
 func (a *PipedAPI) ReportApplicationSyncState(ctx context.Context, req *pipedservice.ReportApplicationSyncStateRequest) (*pipedservice.ReportApplicationSyncStateResponse, error) {
-	err := a.applicationStore.PutApplicationSyncState(ctx, req.ApplicationId, req.State)
+	_, pipedID, _, err := rpcauth.ExtractPipedToken(ctx)
+	if err != nil {
+		return nil, err
+	}
+	if err := a.validateAppBelongsToPiped(ctx, req.ApplicationId, pipedID); err != nil {
+		return nil, err
+	}
+
+	err = a.applicationStore.PutApplicationSyncState(ctx, req.ApplicationId, req.State)
 	if err != nil {
 		switch err {
 		case datastore.ErrNotFound:
@@ -182,7 +206,15 @@ func (a *PipedAPI) ReportApplicationSyncState(ctx context.Context, req *pipedser
 // ReportApplicationMostRecentDeployment is used to update the basic information about
 // the most recent deployment of a specific application.
 func (a *PipedAPI) ReportApplicationMostRecentDeployment(ctx context.Context, req *pipedservice.ReportApplicationMostRecentDeploymentRequest) (*pipedservice.ReportApplicationMostRecentDeploymentResponse, error) {
-	err := a.applicationStore.PutApplicationMostRecentDeployment(ctx, req.ApplicationId, req.Status, req.Deployment)
+	_, pipedID, _, err := rpcauth.ExtractPipedToken(ctx)
+	if err != nil {
+		return nil, err
+	}
+	if err := a.validateAppBelongsToPiped(ctx, req.ApplicationId, pipedID); err != nil {
+		return nil, err
+	}
+
+	err = a.applicationStore.PutApplicationMostRecentDeployment(ctx, req.ApplicationId, req.Status, req.Deployment)
 	if err != nil {
 		switch err {
 		case datastore.ErrNotFound:
@@ -202,6 +234,14 @@ func (a *PipedAPI) ReportApplicationMostRecentDeployment(ctx context.Context, re
 
 // GetApplicationMostRecentDeployment returns the most recent deployment of the given application.
 func (a *PipedAPI) GetApplicationMostRecentDeployment(ctx context.Context, req *pipedservice.GetApplicationMostRecentDeploymentRequest) (*pipedservice.GetApplicationMostRecentDeploymentResponse, error) {
+	_, pipedID, _, err := rpcauth.ExtractPipedToken(ctx)
+	if err != nil {
+		return nil, err
+	}
+	if err := a.validateAppBelongsToPiped(ctx, req.ApplicationId, pipedID); err != nil {
+		return nil, err
+	}
+
 	app, err := a.applicationStore.GetApplication(ctx, req.ApplicationId)
 	if errors.Is(err, datastore.ErrNotFound) {
 		return nil, status.Error(codes.NotFound, "application is not found")
@@ -264,7 +304,15 @@ func (a *PipedAPI) ListNotCompletedDeployments(ctx context.Context, req *pipedse
 // that is managed by this piped.
 // This will be used by DeploymentTrigger component.
 func (a *PipedAPI) CreateDeployment(ctx context.Context, req *pipedservice.CreateDeploymentRequest) (*pipedservice.CreateDeploymentResponse, error) {
-	err := a.deploymentStore.AddDeployment(ctx, req.Deployment)
+	_, pipedID, _, err := rpcauth.ExtractPipedToken(ctx)
+	if err != nil {
+		return nil, err
+	}
+	if err := a.validateAppBelongsToPiped(ctx, req.Deployment.ApplicationId, pipedID); err != nil {
+		return nil, err
+	}
+
+	err = a.deploymentStore.AddDeployment(ctx, req.Deployment)
 	if errors.Is(err, datastore.ErrAlreadyExists) {
 		return nil, status.Error(codes.AlreadyExists, "deployment already exists")
 	}
@@ -278,8 +326,16 @@ func (a *PipedAPI) CreateDeployment(ctx context.Context, req *pipedservice.Creat
 // ReportDeploymentPlanned used by piped to update the status
 // of a specific deployment to PLANNED.
 func (a *PipedAPI) ReportDeploymentPlanned(ctx context.Context, req *pipedservice.ReportDeploymentPlannedRequest) (*pipedservice.ReportDeploymentPlannedResponse, error) {
+	_, pipedID, _, err := rpcauth.ExtractPipedToken(ctx)
+	if err != nil {
+		return nil, err
+	}
+	if err := a.validateDeploymentBelongsToPiped(ctx, req.DeploymentId, pipedID); err != nil {
+		return nil, err
+	}
+
 	updater := datastore.DeploymentToPlannedUpdater(req.Summary, req.StatusReason, req.RunningCommitHash, req.Version, req.Stages)
-	err := a.deploymentStore.UpdateDeployment(ctx, req.DeploymentId, updater)
+	err = a.deploymentStore.UpdateDeployment(ctx, req.DeploymentId, updater)
 	if err != nil {
 		switch err {
 		case datastore.ErrNotFound:
@@ -300,8 +356,16 @@ func (a *PipedAPI) ReportDeploymentPlanned(ctx context.Context, req *pipedservic
 // ReportDeploymentStatusChanged is used to update the status
 // of a specific deployment to RUNNING or ROLLING_BACK.
 func (a *PipedAPI) ReportDeploymentStatusChanged(ctx context.Context, req *pipedservice.ReportDeploymentStatusChangedRequest) (*pipedservice.ReportDeploymentStatusChangedResponse, error) {
+	_, pipedID, _, err := rpcauth.ExtractPipedToken(ctx)
+	if err != nil {
+		return nil, err
+	}
+	if err := a.validateDeploymentBelongsToPiped(ctx, req.DeploymentId, pipedID); err != nil {
+		return nil, err
+	}
+
 	updater := datastore.DeploymentStatusUpdater(req.Status, req.StatusReason)
-	err := a.deploymentStore.UpdateDeployment(ctx, req.DeploymentId, updater)
+	err = a.deploymentStore.UpdateDeployment(ctx, req.DeploymentId, updater)
 	if err != nil {
 		switch err {
 		case datastore.ErrNotFound:
@@ -322,8 +386,16 @@ func (a *PipedAPI) ReportDeploymentStatusChanged(ctx context.Context, req *piped
 // ReportDeploymentCompleted used by piped to update the status
 // of a specific deployment to SUCCESS | FAILURE | CANCELLED.
 func (a *PipedAPI) ReportDeploymentCompleted(ctx context.Context, req *pipedservice.ReportDeploymentCompletedRequest) (*pipedservice.ReportDeploymentCompletedResponse, error) {
+	_, pipedID, _, err := rpcauth.ExtractPipedToken(ctx)
+	if err != nil {
+		return nil, err
+	}
+	if err := a.validateDeploymentBelongsToPiped(ctx, req.DeploymentId, pipedID); err != nil {
+		return nil, err
+	}
+
 	updater := datastore.DeploymentToCompletedUpdater(req.Status, req.StageStatuses, req.StatusReason, req.CompletedAt)
-	err := a.deploymentStore.UpdateDeployment(ctx, req.DeploymentId, updater)
+	err = a.deploymentStore.UpdateDeployment(ctx, req.DeploymentId, updater)
 	if err != nil {
 		switch err {
 		case datastore.ErrNotFound:
@@ -343,7 +415,15 @@ func (a *PipedAPI) ReportDeploymentCompleted(ctx context.Context, req *pipedserv
 
 // SaveDeploymentMetadata used by piped to persist the metadata of a specific deployment.
 func (a *PipedAPI) SaveDeploymentMetadata(ctx context.Context, req *pipedservice.SaveDeploymentMetadataRequest) (*pipedservice.SaveDeploymentMetadataResponse, error) {
-	err := a.deploymentStore.PutDeploymentMetadata(ctx, req.DeploymentId, req.Metadata)
+	_, pipedID, _, err := rpcauth.ExtractPipedToken(ctx)
+	if err != nil {
+		return nil, err
+	}
+	if err := a.validateDeploymentBelongsToPiped(ctx, req.DeploymentId, pipedID); err != nil {
+		return nil, err
+	}
+
+	err = a.deploymentStore.PutDeploymentMetadata(ctx, req.DeploymentId, req.Metadata)
 	if errors.Is(err, datastore.ErrNotFound) {
 		return nil, status.Error(codes.InvalidArgument, "deployment is not found")
 	}
@@ -360,7 +440,15 @@ func (a *PipedAPI) SaveDeploymentMetadata(ctx context.Context, req *pipedservice
 // SaveStageMetadata used by piped to persist the metadata
 // of a specific stage of a deployment.
 func (a *PipedAPI) SaveStageMetadata(ctx context.Context, req *pipedservice.SaveStageMetadataRequest) (*pipedservice.SaveStageMetadataResponse, error) {
-	err := a.deploymentStore.PutDeploymentStageMetadata(ctx, req.DeploymentId, req.StageId, req.Metadata)
+	_, pipedID, _, err := rpcauth.ExtractPipedToken(ctx)
+	if err != nil {
+		return nil, err
+	}
+	if err := a.validateDeploymentBelongsToPiped(ctx, req.DeploymentId, pipedID); err != nil {
+		return nil, err
+	}
+
+	err = a.deploymentStore.PutDeploymentStageMetadata(ctx, req.DeploymentId, req.StageId, req.Metadata)
 	if err != nil {
 		switch errors.Unwrap(err) {
 		case datastore.ErrNotFound:
@@ -381,7 +469,15 @@ func (a *PipedAPI) SaveStageMetadata(ctx context.Context, req *pipedservice.Save
 
 // ReportStageLogs is sent by piped to save the log of a pipeline stage.
 func (a *PipedAPI) ReportStageLogs(ctx context.Context, req *pipedservice.ReportStageLogsRequest) (*pipedservice.ReportStageLogsResponse, error) {
-	err := a.stageLogStore.AppendLogs(ctx, req.DeploymentId, req.StageId, req.RetriedCount, req.Blocks)
+	_, pipedID, _, err := rpcauth.ExtractPipedToken(ctx)
+	if err != nil {
+		return nil, err
+	}
+	if err := a.validateDeploymentBelongsToPiped(ctx, req.DeploymentId, pipedID); err != nil {
+		return nil, err
+	}
+
+	err = a.stageLogStore.AppendLogs(ctx, req.DeploymentId, req.StageId, req.RetriedCount, req.Blocks)
 	if errors.Is(err, stagelogstore.ErrAlreadyCompleted) {
 		return nil, status.Error(codes.FailedPrecondition, "could not append the logs because the stage was already completed")
 	}
@@ -394,7 +490,15 @@ func (a *PipedAPI) ReportStageLogs(ctx context.Context, req *pipedservice.Report
 
 // ReportStageLogsFromLastCheckpoint is used to save the full logs from the most recently saved point.
 func (a *PipedAPI) ReportStageLogsFromLastCheckpoint(ctx context.Context, req *pipedservice.ReportStageLogsFromLastCheckpointRequest) (*pipedservice.ReportStageLogsFromLastCheckpointResponse, error) {
-	err := a.stageLogStore.AppendLogsFromLastCheckpoint(ctx, req.DeploymentId, req.StageId, req.RetriedCount, req.Blocks, req.Completed)
+	_, pipedID, _, err := rpcauth.ExtractPipedToken(ctx)
+	if err != nil {
+		return nil, err
+	}
+	if err := a.validateDeploymentBelongsToPiped(ctx, req.DeploymentId, pipedID); err != nil {
+		return nil, err
+	}
+
+	err = a.stageLogStore.AppendLogsFromLastCheckpoint(ctx, req.DeploymentId, req.StageId, req.RetriedCount, req.Blocks, req.Completed)
 	if errors.Is(err, stagelogstore.ErrAlreadyCompleted) {
 		return nil, status.Error(codes.FailedPrecondition, "could not append the logs because the stage was already completed")
 	}
@@ -408,8 +512,16 @@ func (a *PipedAPI) ReportStageLogsFromLastCheckpoint(ctx context.Context, req *p
 // ReportStageStatusChanged used by piped to update the status
 // of a specific stage of a deployment.
 func (a *PipedAPI) ReportStageStatusChanged(ctx context.Context, req *pipedservice.ReportStageStatusChangedRequest) (*pipedservice.ReportStageStatusChangedResponse, error) {
+	_, pipedID, _, err := rpcauth.ExtractPipedToken(ctx)
+	if err != nil {
+		return nil, err
+	}
+	if err := a.validateDeploymentBelongsToPiped(ctx, req.DeploymentId, pipedID); err != nil {
+		return nil, err
+	}
+
 	updater := datastore.StageStatusChangedUpdater(req.StageId, req.Status, req.StatusReason, req.Requires, req.Visible, req.RetriedCount, req.CompletedAt)
-	err := a.deploymentStore.UpdateDeployment(ctx, req.DeploymentId, updater)
+	err = a.deploymentStore.UpdateDeployment(ctx, req.DeploymentId, updater)
 	if err != nil {
 		switch err {
 		case datastore.ErrNotFound:
@@ -502,6 +614,14 @@ func (a *PipedAPI) getCommand(ctx context.Context, pipedID string) (*model.Comma
 // For kubernetes application, this contains a full tree of its kubernetes resources.
 // The tree data should be written into filestore immediately and then the state in cache should be refreshsed too.
 func (a *PipedAPI) ReportApplicationLiveState(ctx context.Context, req *pipedservice.ReportApplicationLiveStateRequest) (*pipedservice.ReportApplicationLiveStateResponse, error) {
+	_, pipedID, _, err := rpcauth.ExtractPipedToken(ctx)
+	if err != nil {
+		return nil, err
+	}
+	if err := a.validateAppBelongsToPiped(ctx, req.Snapshot.ApplicationId, pipedID); err != nil {
+		return nil, err
+	}
+
 	if err := a.applicationLiveStateStore.PutStateSnapshot(ctx, req.Snapshot); err != nil {
 		return nil, status.Error(codes.Internal, "failed to report application live state")
 	}
@@ -526,4 +646,93 @@ func (a *PipedAPI) ReportApplicationLiveStateEvents(ctx context.Context, req *pi
 	// TODO: Patch Cloud Run application live state
 	// TODO: Patch Lambda application live state
 	return &pipedservice.ReportApplicationLiveStateEventsResponse{}, nil
+}
+
+// validateAppBelongsToPiped checks if the given application belongs to the given piped.
+// It gives back an error unless the application belongs to the piped.
+func (a *PipedAPI) validateAppBelongsToPiped(ctx context.Context, appID, pipedID string) error {
+	pid, err := a.appPipedCache.Get(appID)
+	if err == nil {
+		if pid != pipedID {
+			return status.Error(codes.PermissionDenied, "requested application doesn't belong to the piped")
+		}
+		return nil
+	}
+
+	app, err := a.applicationStore.GetApplication(ctx, appID)
+	if errors.Is(err, datastore.ErrNotFound) {
+		return status.Error(codes.NotFound, "the application is not found")
+	}
+	if err != nil {
+		a.logger.Error("failed to get application", zap.Error(err))
+		return status.Error(codes.Internal, "failed to get application")
+	}
+	a.appPipedCache.Put(appID, app.PipedId)
+
+	if app.PipedId != pipedID {
+		return status.Error(codes.PermissionDenied, "requested application doesn't belong to the piped")
+	}
+	return nil
+}
+
+// validateDeploymentBelongsToPiped checks if the given deployment belongs to the given piped.
+// It gives back an error unless the deployment belongs to the piped.
+func (a *PipedAPI) validateDeploymentBelongsToPiped(ctx context.Context, deploymentID, pipedID string) error {
+	pid, err := a.deploymentPipedCache.Get(deploymentID)
+	if err == nil {
+		if pid != pipedID {
+			return status.Error(codes.PermissionDenied, "requested deployment doesn't belong to the piped")
+		}
+		return nil
+	}
+
+	deployment, err := a.deploymentStore.GetDeployment(ctx, deploymentID)
+	if errors.Is(err, datastore.ErrNotFound) {
+		return status.Error(codes.NotFound, "the deployment is not found")
+	}
+	if err != nil {
+		a.logger.Error("failed to get deployment", zap.Error(err))
+		return status.Error(codes.Internal, "failed to get deployment")
+	}
+	a.deploymentPipedCache.Put(deploymentID, deployment.PipedId)
+
+	if deployment.PipedId != pipedID {
+		return status.Error(codes.PermissionDenied, "requested deployment doesn't belong to the piped")
+	}
+	return nil
+}
+
+// validatePipedBelongsToEnv checks if the given piped belongs to the given environment.
+// It gives back an error unless the piped belongs to the environment.
+func (a *PipedAPI) validatePipedBelongsToEnv(ctx context.Context, pipedID, envID string) error {
+	envIDs, err := a.pipedEnvsCache.Get(pipedID)
+	if err == nil {
+		es, ok := envIDs.([]string)
+		if !ok {
+			return status.Error(codes.Internal, "environment ids are being cached as unknown types")
+		}
+		for _, e := range es {
+			if e == envID {
+				return nil
+			}
+		}
+		return status.Error(codes.PermissionDenied, "requested piped doesn't belong to the environment")
+	}
+
+	piped, err := a.pipedStore.GetPiped(ctx, pipedID)
+	if errors.Is(err, datastore.ErrNotFound) {
+		return status.Error(codes.NotFound, "the piped is not found")
+	}
+	if err != nil {
+		a.logger.Error("failed to get piped", zap.Error(err))
+		return status.Error(codes.Internal, "failed to get piped")
+	}
+	a.pipedEnvsCache.Put(pipedID, piped.EnvIds)
+
+	for _, e := range piped.EnvIds {
+		if e == envID {
+			return nil
+		}
+	}
+	return status.Error(codes.PermissionDenied, "requested piped doesn't belong to the environment")
 }
