@@ -31,6 +31,7 @@ import (
 	"github.com/pipe-cd/pipe/pkg/app/api/commandstore"
 	"github.com/pipe-cd/pipe/pkg/app/api/service/webservice"
 	"github.com/pipe-cd/pipe/pkg/app/api/stagelogstore"
+	"github.com/pipe-cd/pipe/pkg/cache"
 	"github.com/pipe-cd/pipe/pkg/cache/memorycache"
 	"github.com/pipe-cd/pipe/pkg/config"
 	"github.com/pipe-cd/pipe/pkg/crypto"
@@ -56,9 +57,9 @@ type WebAPI struct {
 	commandStore              commandstore.Store
 	encrypter                 encrypter
 
-	appProjectCache        *memorycache.TTLCache
-	deploymentProjectCache *memorycache.TTLCache
-	pipedProjectCache      *memorycache.TTLCache
+	appProjectCache        cache.Cache
+	deploymentProjectCache cache.Cache
+	pipedProjectCache      cache.Cache
 
 	projectsInConfig map[string]config.ControlPlaneProject
 	logger           *zap.Logger
@@ -454,7 +455,7 @@ func (a *WebAPI) updateApplicationEnable(ctx context.Context, appID string, enab
 		return err
 	}
 
-	if err := a.validateApplicationBelongsToProject(ctx, appID, claims.Role.ProjectId); err != nil {
+	if err := a.validateAppBelongsToProject(ctx, appID, claims.Role.ProjectId); err != nil {
 		return err
 	}
 
@@ -560,7 +561,7 @@ func (a *WebAPI) SyncApplication(ctx context.Context, req *webservice.SyncApplic
 	if err != nil {
 		return nil, err
 	}
-	if err := a.validateApplicationBelongsToProject(ctx, req.ApplicationId, claims.Role.ProjectId); err != nil {
+	if err := a.validateAppBelongsToProject(ctx, req.ApplicationId, claims.Role.ProjectId); err != nil {
 		return nil, err
 	}
 
@@ -602,7 +603,7 @@ func (a *WebAPI) GetApplication(ctx context.Context, req *webservice.GetApplicat
 	if err != nil {
 		return nil, err
 	}
-	if err := a.validateApplicationBelongsToProject(ctx, req.ApplicationId, claims.Role.ProjectId); err != nil {
+	if err := a.validateAppBelongsToProject(ctx, req.ApplicationId, claims.Role.ProjectId); err != nil {
 		return nil, err
 	}
 	return &webservice.GetApplicationResponse{
@@ -670,9 +671,9 @@ func (a *WebAPI) getApplication(ctx context.Context, appID string) (*model.Appli
 	return app, nil
 }
 
-// validateApplicationBelongsToProject checks if the given application belongs to the given project.
+// validateAppBelongsToProject checks if the given application belongs to the given project.
 // It gives back error unless the application belongs to the project.
-func (a *WebAPI) validateApplicationBelongsToProject(ctx context.Context, appID, projectID string) error {
+func (a *WebAPI) validateAppBelongsToProject(ctx context.Context, appID, projectID string) error {
 	pid, err := a.appProjectCache.Get(appID)
 	if err == nil {
 		if pid != projectID {
@@ -938,7 +939,7 @@ func (a *WebAPI) GetApplicationLiveState(ctx context.Context, req *webservice.Ge
 		return nil, err
 	}
 
-	if err := a.validateApplicationBelongsToProject(ctx, req.ApplicationId, claims.Role.ProjectId); err != nil {
+	if err := a.validateAppBelongsToProject(ctx, req.ApplicationId, claims.Role.ProjectId); err != nil {
 		return nil, err
 	}
 
@@ -1139,7 +1140,7 @@ func (a *WebAPI) ListDeploymentConfigTemplates(ctx context.Context, req *webserv
 	if err != nil {
 		return nil, err
 	}
-	if err := a.validateApplicationBelongsToProject(ctx, req.ApplicationId, claims.Role.ProjectId); err != nil {
+	if err := a.validateAppBelongsToProject(ctx, req.ApplicationId, claims.Role.ProjectId); err != nil {
 		return nil, err
 	}
 

@@ -28,6 +28,7 @@ import (
 	"github.com/pipe-cd/pipe/pkg/app/api/commandstore"
 	"github.com/pipe-cd/pipe/pkg/app/api/service/pipedservice"
 	"github.com/pipe-cd/pipe/pkg/app/api/stagelogstore"
+	"github.com/pipe-cd/pipe/pkg/cache"
 	"github.com/pipe-cd/pipe/pkg/cache/memorycache"
 	"github.com/pipe-cd/pipe/pkg/datastore"
 	"github.com/pipe-cd/pipe/pkg/model"
@@ -46,9 +47,9 @@ type PipedAPI struct {
 	applicationLiveStateStore applicationlivestatestore.Store
 	commandStore              commandstore.Store
 
-	appPipedCache        *memorycache.TTLCache
-	deploymentPipedCache *memorycache.TTLCache
-	envProjectCache      *memorycache.TTLCache
+	appPipedCache        cache.Cache
+	deploymentPipedCache cache.Cache
+	envProjectCache      cache.Cache
 
 	logger *zap.Logger
 }
