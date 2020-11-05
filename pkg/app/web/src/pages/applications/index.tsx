@@ -12,7 +12,7 @@ import FilterIcon from "@material-ui/icons/FilterList";
 import RefreshIcon from "@material-ui/icons/Refresh";
 import React, { FC, memo, useEffect, useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
-import { AddApplicationForm } from "../../components/add-application-form";
+import { AddApplicationDrawer } from "../../components/add-application-drawer";
 import { ApplicationFilter } from "../../components/application-filter";
 import { ApplicationList } from "../../components/application-list";
 import { AppState } from "../../modules";
@@ -118,24 +118,18 @@ export const ApplicationIndexPage: FC = memo(function ApplicationIndexPage() {
         />
       </div>
 
-      <Drawer
-        anchor="right"
+      <AddApplicationDrawer
         open={isOpenForm}
+        projectName={projectName}
+        onSubmit={(state) => {
+          dispatch(addApplication(state)).then(() => {
+            setIsOpenForm(false);
+            dispatch(fetchApplications());
+          });
+        }}
         onClose={handleClose}
-        ModalProps={{ disableBackdropClick: isAdding }}
-      >
-        <AddApplicationForm
-          projectName={projectName}
-          onSubmit={(state) => {
-            dispatch(addApplication(state)).then(() => {
-              setIsOpenForm(false);
-              dispatch(fetchApplications());
-            });
-          }}
-          onClose={handleClose}
-          isAdding={isAdding}
-        />
-      </Drawer>
+        isAdding={isAdding}
+      />
 
       <Drawer
         anchor="right"
