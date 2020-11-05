@@ -1,4 +1,5 @@
 import {
+  Box,
   CircularProgress,
   Link,
   makeStyles,
@@ -44,23 +45,6 @@ const useStyles = makeStyles((theme) => ({
     color: theme.palette.text.secondary,
     marginLeft: theme.spacing(1),
   },
-  loading: {
-    flex: 1,
-    display: "flex",
-    alignItems: "center",
-    justifyContent: "center",
-  },
-  deploymentMainInfo: {
-    display: "flex",
-    alignItems: "center",
-  },
-  contents: {
-    display: "flex",
-    flexDirection: "column",
-  },
-  detail: {
-    display: "flex",
-  },
   age: {
     color: theme.palette.text.secondary,
     marginLeft: theme.spacing(1),
@@ -68,22 +52,11 @@ const useStyles = makeStyles((theme) => ({
   content: {
     flex: 1,
   },
-  commitInfo: {
-    display: "flex",
-  },
   actionButtons: {
     color: theme.palette.error.main,
     position: "absolute",
     top: theme.spacing(2),
     right: theme.spacing(2),
-  },
-  buttonProgress: {
-    color: theme.palette.primary.main,
-    position: "absolute",
-    top: "50%",
-    left: "50%",
-    marginTop: -12,
-    marginLeft: -12,
   },
   statusReason: {
     paddingTop: theme.spacing(1),
@@ -113,25 +86,25 @@ export const DeploymentDetail: FC<Props> = memo(function DeploymentDetail({
   const classes = useStyles();
   const dispatch = useDispatch();
 
-  const deployment = useSelector<AppState, Deployment | undefined>((state) =>
-    selectDeploymentById(state.deployments, deploymentId)
-  );
-  const env = useSelector<AppState, Environment | undefined>((state) =>
-    selectEnvById(state.environments, deployment?.envId || "")
-  );
-  const piped = useSelector<AppState, Piped | undefined>((state) => {
-    return deployment
-      ? selectById(state.pipeds, deployment.pipedId)
-      : undefined;
-  });
-  const isCanceling = useSelector<AppState, boolean>((state) => {
-    if (deployment?.id) {
-      return state.deployments.canceling[deployment.id];
-    }
-    return false;
-  });
-  const activeStage = useSelector<AppState, ActiveStage | null>(
-    (state) => state.activeStage
+  const [deployment, activeStage] = useSelector<
+    AppState,
+    [Deployment | undefined, ActiveStage | null]
+  >((state) => [
+    selectDeploymentById(state.deployments, deploymentId),
+    state.activeStage,
+  ]);
+
+  const [env, piped, isCanceling] = useSelector<
+    AppState,
+    [Environment | undefined, Piped | undefined, boolean]
+  >((state) =>
+    deployment
+      ? [
+          selectEnvById(state.environments, deployment.envId),
+          selectById(state.pipeds, deployment.pipedId),
+          state.deployments.canceling[deployment.id],
+        ]
+      : [undefined, undefined, false]
   );
 
   useInterval(
@@ -154,17 +127,17 @@ export const DeploymentDetail: FC<Props> = memo(function DeploymentDetail({
 
   if (!deployment || !env || !piped) {
     return (
-      <div className={classes.loading}>
+      <Box flex={1} display="flex" alignItems="center" justifyContent="center">
         <CircularProgress />
-      </div>
+      </Box>
     );
   }
 
   return (
     <Paper square elevation={1} className={classes.root}>
-      <div className={classes.contents}>
+      <Box display="flex" flexDirection="column">
         <div className={classes.content}>
-          <div className={classes.deploymentMainInfo}>
+          <Box display="flex" alignItems="center">
             <StatusIcon status={deployment.status} />
             <Typography className={classes.textMargin} variant="h6">
               {DEPLOYMENT_STATE_TEXT[deployment.status]}
@@ -175,7 +148,7 @@ export const DeploymentDetail: FC<Props> = memo(function DeploymentDetail({
             <Typography variant="body1" className={classes.age}>
               {dayjs(deployment.createdAt * 1000).fromNow()}
             </Typography>
-          </div>
+          </Box>
           <Typography
             variant="body2"
             color="textSecondary"
@@ -184,7 +157,7 @@ export const DeploymentDetail: FC<Props> = memo(function DeploymentDetail({
             {deployment.statusReason}
           </Typography>
         </div>
-        <div className={classes.detail}>
+        <Box display="flex">
           <div className={classes.content}>
             <table>
               <tbody>
@@ -212,7 +185,7 @@ export const DeploymentDetail: FC<Props> = memo(function DeploymentDetail({
                   <DetailTableRow
                     label="Commit"
                     value={
-                      <div className={classes.commitInfo}>
+                      <Box display="flex">
                         <Typography variant="body2">
                           {deployment.trigger.commit.message}
                         </Typography>
@@ -229,7 +202,7 @@ export const DeploymentDetail: FC<Props> = memo(function DeploymentDetail({
                           </Link>
                           )
                         </span>
-                      </div>
+                      </Box>
                     }
                   />
                 )}
@@ -261,8 +234,8 @@ export const DeploymentDetail: FC<Props> = memo(function DeploymentDetail({
               loading={isCanceling}
             />
           )}
-        </div>
-      </div>
+        </Box>
+      </Box>
     </Paper>
   );
 });
