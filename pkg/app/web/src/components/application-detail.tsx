@@ -1,4 +1,5 @@
 import {
+  Box,
   Button,
   CircularProgress,
   Link,
@@ -46,44 +47,16 @@ const useStyles = makeStyles((theme) => ({
     position: "relative",
     flexDirection: "column",
   },
-  nameAndEnv: {
-    display: "flex",
-    alignItems: "baseline",
-  },
-  mainContent: { flex: 1 },
   content: {
     flex: 1,
-  },
-  detail: {
-    display: "flex",
-    marginTop: theme.spacing(1),
-  },
-  loading: {
-    flex: 1,
-    display: "flex",
-    justifyContent: "center",
-    alignItems: "center",
   },
   env: {
     color: theme.palette.text.secondary,
     marginLeft: theme.spacing(1),
   },
-  statusLine: {
-    display: "flex",
-    alignItems: "center",
-  },
-  statusText: {
-    display: "flex",
-    alignItems: "baseline",
-  },
   syncStatusText: {
     marginLeft: theme.spacing(0.5),
     marginRight: theme.spacing(1),
-  },
-  actionButtons: {
-    position: "absolute",
-    right: theme.spacing(2),
-    top: theme.spacing(2),
   },
   buttonProgress: {
     color: theme.palette.primary.main,
@@ -101,18 +74,8 @@ const useStyles = makeStyles((theme) => ({
   latestDeploymentTable: {
     paddingLeft: theme.spacing(2),
   },
-  latestDeploymentHead: {
-    display: "flex",
-    alignItems: "baseline",
-  },
   latestDeploymentLink: {
     marginLeft: theme.spacing(1),
-  },
-  popover: {
-    pointerEvents: "none",
-  },
-  paper: {
-    padding: theme.spacing(1),
   },
 }));
 
@@ -120,7 +83,9 @@ interface Props {
   applicationId: string;
 }
 
-const useIsSyncingApplication = (applicationId: string | null): boolean => {
+const useIsSyncingApplication = (
+  applicationId: string | undefined
+): boolean => {
   return useSelector<AppState, boolean>((state) => {
     if (!applicationId) {
       return false;
@@ -143,7 +108,7 @@ const MostRecentlySuccessfulDeployment: FC<{
 
   return (
     <>
-      <div className={classes.latestDeploymentHead}>
+      <Box display="flex" alignItems="baseline">
         <Typography variant="subtitle1">Latest Deployment</Typography>
         <Typography variant="body2" className={classes.latestDeploymentLink}>
           <Link
@@ -153,7 +118,7 @@ const MostRecentlySuccessfulDeployment: FC<{
             more details
           </Link>
         </Typography>
-      </div>
+      </Box>
       <table className={classes.latestDeploymentTable}>
         <tbody>
           <DetailTableRow
@@ -174,19 +139,23 @@ export const ApplicationDetail: FC<Props> = memo(function ApplicationDetail({
   const classes = useStyles();
   const dispatch = useDispatch();
 
-  const app = useSelector<AppState, Application | undefined>((state) =>
-    selectApplicationById(state.applications, applicationId)
-  );
-  const liveState = useSelector<AppState, ApplicationLiveState | undefined>(
-    (state) => selectLiveStateById(state.applicationLiveState, applicationId)
-  );
-  const env = useSelector<AppState, Environment | undefined>((state) =>
-    app ? selectEnvById(state.environments, app.envId) : undefined
-  );
-  const isSyncing = useIsSyncingApplication(app ? app.id : null);
-  const pipe = useSelector<AppState, Piped | undefined>((state) =>
-    app ? selectPipeById(state.pipeds, app.pipedId) : undefined
-  );
+  const [app, liveState] = useSelector<
+    AppState,
+    [Application | undefined, ApplicationLiveState | undefined]
+  >((state) => [
+    selectApplicationById(state.applications, applicationId),
+    selectLiveStateById(state.applicationLiveState, applicationId),
+  ]);
+
+  const [pipe, env] = useSelector<
+    AppState,
+    [Environment | undefined, Piped | undefined]
+  >((state) => [
+    app ? selectEnvById(state.environments, app.envId) : undefined,
+    app ? selectPipeById(state.pipeds, app.pipedId) : undefined,
+  ]);
+
+  const isSyncing = useIsSyncingApplication(app?.id);
 
   const handleSync = (): void => {
     if (app) {
@@ -196,25 +165,25 @@ export const ApplicationDetail: FC<Props> = memo(function ApplicationDetail({
 
   return (
     <Paper square elevation={1} className={classes.root}>
-      <div className={classes.mainContent}>
-        <div className={classes.nameAndEnv}>
+      <Box flex={1}>
+        <Box display="flex" alignItems="baseline">
           <Typography variant="h5">
             {app ? app.name : <Skeleton width={100} />}
           </Typography>
           <Typography variant="subtitle2" className={classes.env}>
             {env ? env.name : <Skeleton width={100} />}
           </Typography>
-        </div>
+        </Box>
 
         {app?.syncState ? (
           <>
-            <div className={classes.statusLine}>
+            <Box display="flex" alignItems="center">
               <SyncStatusIcon status={app.syncState.status} />
-              <div className={classes.statusText}>
+              <Box display="flex" alignItems="baseline">
                 <Typography variant="h6" className={classes.syncStatusText}>
                   {APPLICATION_SYNC_STATUS_TEXT[app.syncState.status]}
                 </Typography>
-              </div>
+              </Box>
 
               {liveState ? (
                 <>
@@ -228,7 +197,7 @@ export const ApplicationDetail: FC<Props> = memo(function ApplicationDetail({
               ) : (
                 <Skeleton height={32} width={100} />
               )}
-            </div>
+            </Box>
 
             <SyncStateReason
               summary={app.syncState.shortReason}
@@ -238,9 +207,9 @@ export const ApplicationDetail: FC<Props> = memo(function ApplicationDetail({
         ) : (
           <Skeleton height={32} width={200} />
         )}
-      </div>
+      </Box>
 
-      <div className={classes.detail}>
+      <Box mt={1} display="flex">
         <div className={classes.content}>
           {app && pipe ? (
             <table>
@@ -282,9 +251,9 @@ export const ApplicationDetail: FC<Props> = memo(function ApplicationDetail({
             deployment={app?.mostRecentlySuccessfulDeployment}
           />
         </div>
-      </div>
+      </Box>
 
-      <div className={classes.actionButtons}>
+      <Box top={0} right={0} pr={2} pt={2} position="absolute">
         <Button
           variant="outlined"
           color="primary"
@@ -297,7 +266,7 @@ export const ApplicationDetail: FC<Props> = memo(function ApplicationDetail({
             <CircularProgress size={24} className={classes.buttonProgress} />
           )}
         </Button>
-      </div>
+      </Box>
     </Paper>
   );
 });
