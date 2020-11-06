@@ -32,6 +32,8 @@ go_test(
     size = "small",
     srcs = [
         "kubernetes_test.go",
+        "primary_test.go",
+        "sync_test.go",
         "traffic_test.go",
     ],
     data = glob(["testdata/**"]),
