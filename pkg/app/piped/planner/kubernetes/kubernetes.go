@@ -197,14 +197,23 @@ func decideStrategy(olds, news []provider.Manifest) (progressive bool, desc stri
 		return
 	}
 
-	// If the config/secret was touched,
-	// we also need to do progressive deployment to check run with the new config/secret content.
+	// If the config/secret was touched, we also need to do progressive
+	// deployment to check run with the new config/secret content.
 	oldConfigs := findConfigs(olds)
 	newConfigs := findConfigs(news)
-	if len(oldConfigs) > 0 && len(newConfigs) > 0 {
+	if len(oldConfigs) > len(newConfigs) {
+		progressive = true
+		desc = fmt.Sprintf("Sync progressively because %d configmap/secret deleted", len(oldConfigs)-len(newConfigs))
+		return
+	} else if len(oldConfigs) < len(newConfigs) {
+		progressive = true
+		desc = fmt.Sprintf("Sync progressively because new %d configmap/secret added", len(newConfigs)-len(oldConfigs))
+		return
+	} else {
 		for k, oc := range oldConfigs {
 			nc, ok := newConfigs[k]
 			if !ok {
+				progressive = true
 				desc = fmt.Sprintf("Sync progressively because %s %s was deleted", oc.Key.Kind, oc.Key.Name)
 				return
 			}
@@ -219,11 +228,6 @@ func decideStrategy(olds, news []provider.Manifest) (progressive bool, desc stri
 				desc = fmt.Sprintf("Sync progressively because %s %s was updated", oc.Key.Kind, oc.Key.Name)
 				return
 			}
-			delete(newConfigs, k)
-		}
-		if len(newConfigs) > 0 {
-			desc = fmt.Sprintf("Sync progressively because new %d configmap/secret added", len(newConfigs))
-			return
 		}
 	}
 
