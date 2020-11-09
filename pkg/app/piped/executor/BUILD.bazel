@@ -4,6 +4,7 @@ go_library(
     name = "go_default_library",
     srcs = [
         "executor.go",
+        "mock.go",
         "stopsignal.go",
     ],
     importpath = "github.com/pipe-cd/pipe/pkg/app/piped/executor",
@@ -13,6 +14,7 @@ go_library(
         "//pkg/cache:go_default_library",
         "//pkg/config:go_default_library",
         "//pkg/model:go_default_library",
+        "@com_github_golang_mock//gomock:go_default_library",
         "@org_uber_go_atomic//:go_default_library",
         "@org_uber_go_zap//:go_default_library",
     ],

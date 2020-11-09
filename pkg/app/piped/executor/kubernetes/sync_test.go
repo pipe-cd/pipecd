@@ -1,11 +1,22 @@
 package kubernetes
 
 import (
+	"context"
+	"fmt"
 	"testing"
 
+	"github.com/golang/mock/gomock"
 	"github.com/stretchr/testify/assert"
+	"go.uber.org/zap"
+	"k8s.io/apimachinery/pkg/apis/meta/v1/unstructured"
 
 	provider "github.com/pipe-cd/pipe/pkg/app/piped/cloudprovider/kubernetes"
+	"github.com/pipe-cd/pipe/pkg/app/piped/cloudprovider/kubernetes/providertest"
+	"github.com/pipe-cd/pipe/pkg/app/piped/executor"
+	"github.com/pipe-cd/pipe/pkg/cache"
+	"github.com/pipe-cd/pipe/pkg/cache/cachetest"
+	"github.com/pipe-cd/pipe/pkg/config"
+	"github.com/pipe-cd/pipe/pkg/model"
 )
 
 func TestFindRemoveResources(t *testing.T) {
@@ -86,6 +97,104 @@ func TestFindRemoveResources(t *testing.T) {
 		t.Run(tc.name, func(t *testing.T) {
 			got := findRemoveResources(tc.manifests, tc.liveResources)
 			assert.Equal(t, tc.want, got)
+		})
+	}
+}
+
+func TestEnsureSync(t *testing.T) {
+	ctrl := gomock.NewController(t)
+	defer ctrl.Finish()
+
+	tests := []struct {
+		name     string
+		executor *Executor
+		want     model.StageStatus
+	}{
+		{
+			name: "failed to load manifest",
+			want: model.StageStatus_STAGE_FAILURE,
+			executor: &Executor{
+				Input: executor.Input{
+					Deployment: &model.Deployment{
+						ApplicationId: "app-id",
+						Trigger: &model.DeploymentTrigger{
+							Commit: &model.Commit{
+								Hash: "hash",
+							},
+						},
+					},
+					LogPersister: func() executor.LogPersister {
+						l := executor.NewMockLogPersister(ctrl)
+						l.EXPECT().Infof(gomock.Any(), gomock.Any()).AnyTimes()
+						l.EXPECT().Errorf(gomock.Any(), gomock.Any()).AnyTimes()
+						return l
+					}(),
+					AppManifestsCache: func() cache.Cache {
+						c := cachetest.NewMockCache(ctrl)
+						c.EXPECT().Get(gomock.Any()).Return(nil, fmt.Errorf("not found"))
+						return c
+					}(),
+					Logger: zap.NewNop(),
+				},
+				provider: func() provider.Provider {
+					p := providertest.NewMockProvider(ctrl)
+					p.EXPECT().LoadManifests(gomock.Any()).Return(nil, fmt.Errorf("error"))
+					return p
+				}(),
+			},
+		},
+		{
+			name: "missing variant selector",
+			want: model.StageStatus_STAGE_FAILURE,
+			executor: &Executor{
+				Input: executor.Input{
+					Deployment: &model.Deployment{
+						ApplicationId: "app-id",
+						Trigger: &model.DeploymentTrigger{
+							Commit: &model.Commit{
+								Hash: "hash",
+							},
+						},
+					},
+					LogPersister: func() executor.LogPersister {
+						l := executor.NewMockLogPersister(ctrl)
+						l.EXPECT().Infof(gomock.Any(), gomock.Any()).AnyTimes()
+						l.EXPECT().Errorf(gomock.Any(), gomock.Any()).AnyTimes()
+						l.EXPECT().Successf(gomock.Any(), gomock.Any()).AnyTimes()
+						return l
+					}(),
+					AppManifestsCache: func() cache.Cache {
+						c := cachetest.NewMockCache(ctrl)
+						c.EXPECT().Get(gomock.Any()).Return(nil, fmt.Errorf("not found"))
+						c.EXPECT().Put(gomock.Any(), gomock.Any()).Return(nil)
+						return c
+					}(),
+					Logger: zap.NewNop(),
+				},
+				provider: func() provider.Provider {
+					p := providertest.NewMockProvider(ctrl)
+					p.EXPECT().LoadManifests(gomock.Any()).Return([]provider.Manifest{
+						provider.MakeManifest(provider.ResourceKey{
+							APIVersion: "apps/v1",
+							Kind:       provider.KindDeployment,
+						}, &unstructured.Unstructured{}),
+					}, nil)
+					return p
+				}(),
+				config: &config.KubernetesDeploymentSpec{
+					GenericDeploymentSpec: config.GenericDeploymentSpec{
+						Pipeline: &config.DeploymentPipeline{},
+					},
+				},
+			},
+		},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			ctx, cancel := context.WithCancel(context.Background())
+			got := tt.executor.ensureSync(ctx)
+			assert.Equal(t, tt.want, got)
+			cancel()
 		})
 	}
 }

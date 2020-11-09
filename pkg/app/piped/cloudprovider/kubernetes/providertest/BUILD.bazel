@@ -2,7 +2,10 @@ load("@io_bazel_rules_go//go:def.bzl", "go_library")
 
 go_library(
     name = "go_default_library",
-    srcs = ["mock.go"],
+    srcs = [
+        "mock.go",
+        "provider.mock.go",
+    ],
     importpath = "github.com/pipe-cd/pipe/pkg/app/piped/cloudprovider/kubernetes/providertest",
     visibility = ["//visibility:public"],
     deps = [
