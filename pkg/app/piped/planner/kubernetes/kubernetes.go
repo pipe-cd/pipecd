@@ -197,32 +197,36 @@ func decideStrategy(olds, news []provider.Manifest) (progressive bool, desc stri
 		return
 	}
 
-	// If the config/secret was touched,
-	// we also need to do progressive deployment to check run with the new config/secret content.
+	// If the config/secret was touched, we also need to do progressive
+	// deployment to check run with the new config/secret content.
 	oldConfigs := findConfigs(olds)
 	newConfigs := findConfigs(news)
-	if len(oldConfigs) > 0 && len(newConfigs) > 0 {
-		for k, oc := range oldConfigs {
-			nc, ok := newConfigs[k]
-			if !ok {
-				desc = fmt.Sprintf("Sync progressively because %s %s was deleted", oc.Key.Kind, oc.Key.Name)
-				return
-			}
-			result, err := provider.Diff(oc, nc)
-			if err != nil {
-				progressive = true
-				desc = fmt.Sprintf("Sync progressively due to an error while calculating the diff (%v)", err)
-				return
-			}
-			if result.HasDiff() {
-				progressive = true
-				desc = fmt.Sprintf("Sync progressively because %s %s was updated", oc.Key.Kind, oc.Key.Name)
-				return
-			}
-			delete(newConfigs, k)
+	if len(oldConfigs) > len(newConfigs) {
+		progressive = true
+		desc = fmt.Sprintf("Sync progressively because %d configmap/secret deleted", len(oldConfigs)-len(newConfigs))
+		return
+	}
+	if len(oldConfigs) < len(newConfigs) {
+		progressive = true
+		desc = fmt.Sprintf("Sync progressively because new %d configmap/secret added", len(newConfigs)-len(oldConfigs))
+		return
+	}
+	for k, oc := range oldConfigs {
+		nc, ok := newConfigs[k]
+		if !ok {
+			progressive = true
+			desc = fmt.Sprintf("Sync progressively because %s %s was deleted", oc.Key.Kind, oc.Key.Name)
+			return
 		}
-		if len(newConfigs) > 0 {
-			desc = fmt.Sprintf("Sync progressively because new %d configmap/secret added", len(newConfigs))
+		result, err := provider.Diff(oc, nc)
+		if err != nil {
+			progressive = true
+			desc = fmt.Sprintf("Sync progressively due to an error while calculating the diff (%v)", err)
+			return
+		}
+		if result.HasDiff() {
+			progressive = true
+			desc = fmt.Sprintf("Sync progressively because %s %s was updated", oc.Key.Kind, oc.Key.Name)
 			return
 		}
 	}
