@@ -93,7 +93,7 @@ Note: Be sure to set `args.insecure=false` if your control-plane is already TLS-
   ``` console
   ./piped piped \
   --config-file=PATH_TO_PIPED_CONFIG_FILE \
-  --bin-dir=PATH_TO_BIN_DIR
+  --tools-dir=PATH_TO_TOOLS_DIR
   ```
 
-Note that the `BIN_DIR` must be the directory to which `piped` has write permission because `piped` installs the tools to deploy applications underneath it.
+Note that the `TOOLS_DIR` must be the directory to which `piped` has write permission because `piped` installs the tools to deploy applications underneath it.

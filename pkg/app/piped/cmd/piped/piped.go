@@ -64,7 +64,7 @@ type piped struct {
 	insecure                             bool
 	certFile                             string
 	adminPort                            int
-	binDir                               string
+	toolsDir                             string
 	enableDefaultKubernetesCloudProvider bool
 	useFakeAPIClient                     bool
 	gracePeriod                          time.Duration
@@ -73,7 +73,7 @@ type piped struct {
 func NewCommand() *cobra.Command {
 	p := &piped{
 		adminPort:   9085,
-		binDir:      "/home/pipecd/tools",
+		toolsDir:    "/home/pipecd/tools",
 		gracePeriod: 30 * time.Second,
 	}
 	cmd := &cobra.Command{
@@ -88,7 +88,7 @@ func NewCommand() *cobra.Command {
 	cmd.Flags().StringVar(&p.certFile, "cert-file", p.certFile, "The path to the TLS certificate file.")
 	cmd.Flags().IntVar(&p.adminPort, "admin-port", p.adminPort, "The port number used to run a HTTP server for admin tasks such as metrics, healthz.")
 
-	cmd.Flags().StringVar(&p.binDir, "bin-dir", p.binDir, "The path to directory where to install needed tools such as kubectl, helm, kustomize.")
+	cmd.Flags().StringVar(&p.toolsDir, "tools-dir", p.toolsDir, "The path to directory where to install needed tools such as kubectl, helm, kustomize.")
 	cmd.Flags().BoolVar(&p.useFakeAPIClient, "use-fake-api-client", p.useFakeAPIClient, "Whether the fake api client should be used instead of the real one or not.")
 	cmd.Flags().BoolVar(&p.enableDefaultKubernetesCloudProvider, "enable-default-kubernetes-cloud-provider", p.enableDefaultKubernetesCloudProvider, "Whether the default kubernetes provider is enabled or not.")
 	cmd.Flags().DurationVar(&p.gracePeriod, "grace-period", p.gracePeriod, "How long to wait for graceful shutdown.")
@@ -128,7 +128,7 @@ func (p *piped) run(ctx context.Context, t cli.Telemetry) (runErr error) {
 	}
 
 	// Initialize default tool registry.
-	if err := toolregistry.InitDefaultRegistry(p.binDir, t.Logger); err != nil {
+	if err := toolregistry.InitDefaultRegistry(p.toolsDir, t.Logger); err != nil {
 		t.Logger.Error("failed to initialize default tool registry", zap.Error(err))
 		return err
 	}
