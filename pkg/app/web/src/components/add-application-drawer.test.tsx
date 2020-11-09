@@ -1,17 +1,19 @@
 import React from "react";
-import { AddApplicationForm } from "./add-application-form";
-import { render, fireEvent } from "../../test-utils";
+import { AddApplicationDrawer } from "./add-application-drawer";
+import { render } from "../../test-utils";
 import { UI_TEXT_CANCEL, UI_TEXT_SAVE } from "../constants/ui-text";
 import { dummyEnv } from "../__fixtures__/dummy-environment";
 import { APPLICATION_KIND_TEXT } from "../constants/application-kind";
 import { ApplicationKind } from "../modules/applications";
 import { dummyPiped } from "../__fixtures__/dummy-piped";
+import userEvent from "@testing-library/user-event";
 
-describe("AddApplicationForm", () => {
+describe("AddApplicationDrawer", () => {
   it("calls onSubmit if clicked SAVE button", async () => {
     const onSubmit = jest.fn();
     const { getByRole } = render(
-      <AddApplicationForm
+      <AddApplicationDrawer
+        open
         projectName="pipecd"
         onSubmit={onSubmit}
         onClose={jest.fn()}
@@ -31,36 +33,28 @@ describe("AddApplicationForm", () => {
       }
     );
 
-    fireEvent.change(getByRole("textbox", { name: "Name" }), {
-      target: {
-        value: "App",
-      },
-    });
-    fireEvent.mouseDown(getByRole("button", { name: /Kind/ }));
-    fireEvent.click(
+    userEvent.type(getByRole("textbox", { name: "Name" }), "App");
+    userEvent.click(getByRole("button", { name: /Kind/ }));
+    userEvent.click(
       getByRole("option", {
         name: APPLICATION_KIND_TEXT[ApplicationKind.TERRAFORM],
       })
     );
-    fireEvent.mouseDown(getByRole("button", { name: /Environment/ }));
-    fireEvent.click(getByRole("option", { name: dummyEnv.name }));
+    userEvent.click(getByRole("button", { name: /Environment/ }));
+    userEvent.click(getByRole("option", { name: dummyEnv.name }));
 
-    fireEvent.mouseDown(getByRole("button", { name: /Piped/ }));
-    fireEvent.click(getByRole("option", { name: /dummy piped/ }));
+    userEvent.click(getByRole("button", { name: /Piped/ }));
+    userEvent.click(getByRole("option", { name: /dummy piped/ }));
 
-    fireEvent.mouseDown(getByRole("button", { name: /Repository/ }));
-    fireEvent.click(getByRole("option", { name: /debug-repo/ }));
+    userEvent.click(getByRole("button", { name: /Repository/ }));
+    userEvent.click(getByRole("option", { name: /debug-repo/ }));
 
-    fireEvent.change(getByRole("textbox", { name: "Path" }), {
-      target: {
-        value: "path",
-      },
-    });
+    userEvent.type(getByRole("textbox", { name: "Path" }), "path");
 
-    fireEvent.mouseDown(getByRole("button", { name: /Cloud Provider/ }));
-    fireEvent.click(getByRole("option", { name: /terraform-default/ }));
+    userEvent.click(getByRole("button", { name: /Cloud Provider/ }));
+    userEvent.click(getByRole("option", { name: /terraform-default/ }));
 
-    fireEvent.click(getByRole("button", { name: UI_TEXT_SAVE }));
+    userEvent.click(getByRole("button", { name: UI_TEXT_SAVE }));
 
     expect(onSubmit).toHaveBeenCalledWith({
       cloudProvider: "terraform-default",
@@ -81,7 +75,8 @@ describe("AddApplicationForm", () => {
   it("calls onClose handler if clicked CANCEL button", () => {
     const onClose = jest.fn();
     const { getByRole } = render(
-      <AddApplicationForm
+      <AddApplicationDrawer
+        open
         projectName="pipecd"
         onSubmit={jest.fn()}
         onClose={onClose}
@@ -90,7 +85,7 @@ describe("AddApplicationForm", () => {
       {}
     );
 
-    fireEvent.click(getByRole("button", { name: UI_TEXT_CANCEL }));
+    userEvent.click(getByRole("button", { name: UI_TEXT_CANCEL }));
 
     expect(onClose).toHaveBeenCalled();
   });
