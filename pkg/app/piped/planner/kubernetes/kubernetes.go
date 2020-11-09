@@ -205,29 +205,29 @@ func decideStrategy(olds, news []provider.Manifest) (progressive bool, desc stri
 		progressive = true
 		desc = fmt.Sprintf("Sync progressively because %d configmap/secret deleted", len(oldConfigs)-len(newConfigs))
 		return
-	} else if len(oldConfigs) < len(newConfigs) {
+	}
+	if len(oldConfigs) < len(newConfigs) {
 		progressive = true
 		desc = fmt.Sprintf("Sync progressively because new %d configmap/secret added", len(newConfigs)-len(oldConfigs))
 		return
-	} else {
-		for k, oc := range oldConfigs {
-			nc, ok := newConfigs[k]
-			if !ok {
-				progressive = true
-				desc = fmt.Sprintf("Sync progressively because %s %s was deleted", oc.Key.Kind, oc.Key.Name)
-				return
-			}
-			result, err := provider.Diff(oc, nc)
-			if err != nil {
-				progressive = true
-				desc = fmt.Sprintf("Sync progressively due to an error while calculating the diff (%v)", err)
-				return
-			}
-			if result.HasDiff() {
-				progressive = true
-				desc = fmt.Sprintf("Sync progressively because %s %s was updated", oc.Key.Kind, oc.Key.Name)
-				return
-			}
+	}
+	for k, oc := range oldConfigs {
+		nc, ok := newConfigs[k]
+		if !ok {
+			progressive = true
+			desc = fmt.Sprintf("Sync progressively because %s %s was deleted", oc.Key.Kind, oc.Key.Name)
+			return
+		}
+		result, err := provider.Diff(oc, nc)
+		if err != nil {
+			progressive = true
+			desc = fmt.Sprintf("Sync progressively due to an error while calculating the diff (%v)", err)
+			return
+		}
+		if result.HasDiff() {
+			progressive = true
+			desc = fmt.Sprintf("Sync progressively because %s %s was updated", oc.Key.Kind, oc.Key.Name)
+			return
 		}
 	}
 
