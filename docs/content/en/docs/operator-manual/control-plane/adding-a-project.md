@@ -11,7 +11,7 @@ Project adding can be simply done from an internal web page prepared for the ops
 Because that web service is running in an `ops` pod, so in order to access it, using `kubectl port-forward` command to forward a local port to a port on the `ops` pod as following:
 
 ``` console
-kubectl port-forward service/pipecd-ops 9082
+kubectl port-forward service/pipecd-ops 9082 --namespace=NAMESPACE
 ```
 
 Then, access to [http://localhost:9082](http://localhost:9082).
