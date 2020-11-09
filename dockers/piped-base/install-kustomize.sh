@@ -23,8 +23,8 @@ BASE_URL="https://github.com/kubernetes-sigs/kustomize/releases/download/kustomi
 # https://github.com/pipe-cd/pipe/blob/master/pkg/app/piped/toolregistry/install.go#L31
 VERSION="3.8.1"
 
-echo "Installing kustomize-${VERSION} into ${PIPED_BIN_DIR}/kustomize..."
+echo "Installing kustomize-${VERSION} into ${PIPED_TOOLS_DIR}/kustomize..."
 curl -L ${BASE_URL}/v${VERSION}/kustomize_v${VERSION}_linux_amd64.tar.gz | tar xvz
-mv kustomize ${PIPED_BIN_DIR}/kustomize
-chmod +x ${PIPED_BIN_DIR}/kustomize
-echo "Successfully installed kustomize-${VERSION} into ${PIPED_BIN_DIR}/kustomize..."
+mv kustomize ${PIPED_TOOLS_DIR}/kustomize
+chmod +x ${PIPED_TOOLS_DIR}/kustomize
+echo "Successfully installed kustomize-${VERSION} into ${PIPED_TOOLS_DIR}/kustomize..."

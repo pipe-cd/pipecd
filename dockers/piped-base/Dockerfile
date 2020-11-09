@@ -1,7 +1,7 @@
 FROM alpine:3.12.1
 
-ENV PIPED_BIN_DIR=/home/pipecd/tools
-ENV PATH="${PIPED_BIN_DIR}:${PATH}"
+ENV PIPED_TOOLS_DIR=/home/pipecd/tools
+ENV PATH="${PIPED_TOOLS_DIR}:${PATH}"
 
 COPY install-helm.sh /installer/install-helm.sh
 COPY install-kubectl.sh /installer/install-kubectl.sh
@@ -18,8 +18,8 @@ RUN \
         curl \
         bash && \
     update-ca-certificates && \
-    mkdir ${PIPED_BIN_DIR} && \
-    chown pipecd ${PIPED_BIN_DIR} && \
+    mkdir ${PIPED_TOOLS_DIR} && \
+    chown pipecd ${PIPED_TOOLS_DIR} && \
     # Pre-install the default version of helm.
     /installer/install-helm.sh && \
     # Pre-install the default version of kubectl.
