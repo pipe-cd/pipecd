@@ -15,6 +15,7 @@
 package main
 
 import (
+	"bytes"
 	"context"
 	"errors"
 	"fmt"
@@ -292,10 +293,22 @@ func (s *server) run(ctx context.Context, t cli.Telemetry) error {
 			http.StripPrefix("/assets/", fs).ServeHTTP(w, r)
 		})
 
-		tmpl := template.Must(template.ParseFiles(filepath.Join(s.staticDir, "/index.html")))
-		script := ""
+		tmpl := template.New("index.html")
+		tmpl, err = tmpl.ParseFiles(filepath.Join(s.staticDir, "/index.html"))
+		if err != nil {
+			t.Logger.Error("failed to parse index.html", zap.Error(err))
+			return err
+		}
+
+		var data string
 		if s.webAPIEndpoint != "" {
-			script = fmt.Sprintf("<script>window.API_ENDPOINT = '%s';</script>", s.webAPIEndpoint)
+			data = fmt.Sprintf("<script>window.API_ENDPOINT = '%s';</script>", s.webAPIEndpoint)
+		}
+
+		var indexBuf bytes.Buffer
+		if err := tmpl.Execute(&indexBuf, data); err != nil {
+			t.Logger.Error("failed to render index.html", zap.Error(err))
+			return err
 		}
 
 		mux.Handle("/assets/", gziphandler.GzipHandler(assetsHandler))
@@ -303,7 +316,7 @@ func (s *server) run(ctx context.Context, t cli.Telemetry) error {
 			http.ServeFile(w, r, filepath.Join(s.staticDir, "favicon.ico"))
 		})
 		mux.HandleFunc("/", func(w http.ResponseWriter, r *http.Request) {
-			tmpl.Execute(w, script)
+			indexBuf.WriteTo(w)
 		})
 
 		group.Go(func() error {
