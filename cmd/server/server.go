@@ -122,7 +122,7 @@ func NewCommand() *cobra.Command {
 	cmd.Flags().StringVar(&s.configFile, "config-file", s.configFile, "The path to the configuration file.")
 	cmd.MarkFlagRequired("config-file")
 
-	cmd.Flags().StringVar(&s.webAPIEndpoint, "web-api-endpoint", s.webAPIEndpoint, "The endpoint to used to call API from web browser.")
+	cmd.Flags().StringVar(&s.webAPIEndpoint, "web-api-endpoint", s.webAPIEndpoint, "The endpoint of the web API.")
 
 	// For debugging early in development
 	cmd.Flags().BoolVar(&s.useFakeResponse, "use-fake-response", s.useFakeResponse, "Whether the server responds fake response or not.")
