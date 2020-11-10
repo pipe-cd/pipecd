@@ -15,14 +15,31 @@
 package kubernetes
 
 import (
+	"context"
 	"fmt"
 	"testing"
 
+	"github.com/golang/mock/gomock"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
+	"go.uber.org/zap"
 
 	provider "github.com/pipe-cd/pipe/pkg/app/piped/cloudprovider/kubernetes"
+	"github.com/pipe-cd/pipe/pkg/app/piped/cloudprovider/kubernetes/providertest"
+	"github.com/pipe-cd/pipe/pkg/app/piped/executor"
 )
+
+type fakeLogPersister struct{}
+
+func (l *fakeLogPersister) Write(_ []byte) (int, error) {
+	return 0, nil
+}
+func (l *fakeLogPersister) Info(_ string)                       {}
+func (l *fakeLogPersister) Infof(_ string, _ ...interface{})    {}
+func (l *fakeLogPersister) Success(_ string)                    {}
+func (l *fakeLogPersister) Successf(_ string, _ ...interface{}) {}
+func (l *fakeLogPersister) Error(_ string)                      {}
+func (l *fakeLogPersister) Errorf(_ string, _ ...interface{})   {}
 
 func TestGenerateServiceManifests(t *testing.T) {
 	testcases := []struct {
@@ -233,4 +250,95 @@ spec:
 		})
 	}
 
+}
+
+func TestDeleteResources(t *testing.T) {
+	ctrl := gomock.NewController(t)
+	defer ctrl.Finish()
+
+	tests := []struct {
+		name      string
+		executor  *Executor
+		resources []provider.ResourceKey
+		wantErr   bool
+	}{
+		{
+			name:      "no resource to delete",
+			wantErr:   false,
+			resources: []provider.ResourceKey{},
+			executor: &Executor{
+				Input: executor.Input{
+					LogPersister: &fakeLogPersister{},
+					Logger:       zap.NewNop(),
+				},
+			},
+		},
+		{
+			name:    "not found resource to delete",
+			wantErr: false,
+			resources: []provider.ResourceKey{
+				{
+					Name: "foo",
+				},
+			},
+			executor: &Executor{
+				Input: executor.Input{
+					LogPersister: &fakeLogPersister{},
+					Logger:       zap.NewNop(),
+				},
+				provider: func() provider.Provider {
+					p := providertest.NewMockProvider(ctrl)
+					p.EXPECT().Delete(gomock.Any(), gomock.Any()).Return(provider.ErrNotFound)
+					return p
+				}(),
+			},
+		},
+		{
+			name:    "unable to delete",
+			wantErr: true,
+			resources: []provider.ResourceKey{
+				{
+					Name: "foo",
+				},
+			},
+			executor: &Executor{
+				Input: executor.Input{
+					LogPersister: &fakeLogPersister{},
+					Logger:       zap.NewNop(),
+				},
+				provider: func() provider.Provider {
+					p := providertest.NewMockProvider(ctrl)
+					p.EXPECT().Delete(gomock.Any(), gomock.Any()).Return(fmt.Errorf("unexpected error"))
+					return p
+				}(),
+			},
+		},
+		{
+			name:    "successfully deletion",
+			wantErr: false,
+			resources: []provider.ResourceKey{
+				{
+					Name: "foo",
+				},
+			},
+			executor: &Executor{
+				Input: executor.Input{
+					LogPersister: &fakeLogPersister{},
+					Logger:       zap.NewNop(),
+				},
+				provider: func() provider.Provider {
+					p := providertest.NewMockProvider(ctrl)
+					p.EXPECT().Delete(gomock.Any(), gomock.Any()).Return(nil)
+					return p
+				}(),
+			},
+		},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			ctx := context.Background()
+			err := tt.executor.deleteResources(ctx, tt.resources)
+			assert.Equal(t, tt.wantErr, err != nil)
+		})
+	}
 }

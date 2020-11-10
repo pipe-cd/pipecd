@@ -19,17 +19,166 @@ import (
 	"github.com/pipe-cd/pipe/pkg/model"
 )
 
-type fakeLogPersister struct{}
+func TestEnsureSync(t *testing.T) {
+	ctrl := gomock.NewController(t)
+	defer ctrl.Finish()
 
-func (l *fakeLogPersister) Write(_ []byte) (int, error) {
-	return 0, nil
+	tests := []struct {
+		name     string
+		executor *Executor
+		want     model.StageStatus
+	}{
+		{
+			name: "failed to load manifest",
+			want: model.StageStatus_STAGE_FAILURE,
+			executor: &Executor{
+				Input: executor.Input{
+					Deployment: &model.Deployment{
+						Trigger: &model.DeploymentTrigger{
+							Commit: &model.Commit{},
+						},
+					},
+					LogPersister: &fakeLogPersister{},
+					AppManifestsCache: func() cache.Cache {
+						c := cachetest.NewMockCache(ctrl)
+						c.EXPECT().Get(gomock.Any()).Return(nil, fmt.Errorf("not found"))
+						return c
+					}(),
+					Logger: zap.NewNop(),
+				},
+				provider: func() provider.Provider {
+					p := providertest.NewMockProvider(ctrl)
+					p.EXPECT().LoadManifests(gomock.Any()).Return(nil, fmt.Errorf("error"))
+					return p
+				}(),
+			},
+		},
+		{
+			name: "missing variant selector",
+			want: model.StageStatus_STAGE_FAILURE,
+			executor: &Executor{
+				Input: executor.Input{
+					Deployment: &model.Deployment{
+						Trigger: &model.DeploymentTrigger{
+							Commit: &model.Commit{},
+						},
+					},
+					LogPersister: &fakeLogPersister{},
+					AppManifestsCache: func() cache.Cache {
+						c := cachetest.NewMockCache(ctrl)
+						c.EXPECT().Get(gomock.Any()).Return(nil, fmt.Errorf("not found"))
+						c.EXPECT().Put(gomock.Any(), gomock.Any()).Return(nil)
+						return c
+					}(),
+					Logger: zap.NewNop(),
+				},
+				provider: func() provider.Provider {
+					p := providertest.NewMockProvider(ctrl)
+					p.EXPECT().LoadManifests(gomock.Any()).Return([]provider.Manifest{
+						provider.MakeManifest(provider.ResourceKey{
+							APIVersion: "apps/v1",
+							Kind:       provider.KindDeployment,
+						}, &unstructured.Unstructured{}),
+					}, nil)
+					return p
+				}(),
+				config: &config.KubernetesDeploymentSpec{
+					GenericDeploymentSpec: config.GenericDeploymentSpec{
+						Pipeline: &config.DeploymentPipeline{},
+					},
+				},
+			},
+		},
+		{
+			name: "unable to apply manifests",
+			want: model.StageStatus_STAGE_FAILURE,
+			executor: &Executor{
+				Input: executor.Input{
+					Deployment: &model.Deployment{
+						Trigger: &model.DeploymentTrigger{
+							Commit: &model.Commit{},
+						},
+					},
+					PipedConfig:  &config.PipedSpec{},
+					LogPersister: &fakeLogPersister{},
+					AppManifestsCache: func() cache.Cache {
+						c := cachetest.NewMockCache(ctrl)
+						c.EXPECT().Get(gomock.Any()).Return(nil, fmt.Errorf("not found"))
+						c.EXPECT().Put(gomock.Any(), gomock.Any()).Return(nil)
+						return c
+					}(),
+					Logger: zap.NewNop(),
+				},
+				provider: func() provider.Provider {
+					p := providertest.NewMockProvider(ctrl)
+					p.EXPECT().LoadManifests(gomock.Any()).Return([]provider.Manifest{
+						provider.MakeManifest(provider.ResourceKey{
+							APIVersion: "apps/v1",
+							Kind:       provider.KindDeployment,
+						}, &unstructured.Unstructured{
+							Object: map[string]interface{}{"spec": map[string]interface{}{}},
+						}),
+					}, nil)
+					p.EXPECT().ApplyManifest(gomock.Any(), gomock.Any()).Return(fmt.Errorf("error"))
+					return p
+				}(),
+				config: &config.KubernetesDeploymentSpec{
+					QuickSync: config.K8sSyncStageOptions{
+						AddVariantLabelToSelector: true,
+					},
+				},
+			},
+		},
+		{
+			name: "successfully apply manifests",
+			want: model.StageStatus_STAGE_SUCCESS,
+			executor: &Executor{
+				Input: executor.Input{
+					Deployment: &model.Deployment{
+						Trigger: &model.DeploymentTrigger{
+							Commit: &model.Commit{},
+						},
+					},
+					PipedConfig:  &config.PipedSpec{},
+					LogPersister: &fakeLogPersister{},
+					AppManifestsCache: func() cache.Cache {
+						c := cachetest.NewMockCache(ctrl)
+						c.EXPECT().Get(gomock.Any()).Return(nil, fmt.Errorf("not found"))
+						c.EXPECT().Put(gomock.Any(), gomock.Any()).Return(nil)
+						return c
+					}(),
+					Logger: zap.NewNop(),
+				},
+				provider: func() provider.Provider {
+					p := providertest.NewMockProvider(ctrl)
+					p.EXPECT().LoadManifests(gomock.Any()).Return([]provider.Manifest{
+						provider.MakeManifest(provider.ResourceKey{
+							APIVersion: "apps/v1",
+							Kind:       provider.KindDeployment,
+						}, &unstructured.Unstructured{
+							Object: map[string]interface{}{"spec": map[string]interface{}{}},
+						}),
+					}, nil)
+					p.EXPECT().ApplyManifest(gomock.Any(), gomock.Any()).Return(nil)
+					return p
+				}(),
+				config: &config.KubernetesDeploymentSpec{
+					QuickSync: config.K8sSyncStageOptions{
+						AddVariantLabelToSelector: true,
+					},
+				},
+			},
+		},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			ctx, cancel := context.WithCancel(context.Background())
+			got := tt.executor.ensureSync(ctx)
+			assert.Equal(t, tt.want, got)
+			cancel()
+		})
+	}
 }
-func (l *fakeLogPersister) Info(_ string)                       {}
-func (l *fakeLogPersister) Infof(_ string, _ ...interface{})    {}
-func (l *fakeLogPersister) Success(_ string)                    {}
-func (l *fakeLogPersister) Successf(_ string, _ ...interface{}) {}
-func (l *fakeLogPersister) Error(_ string)                      {}
-func (l *fakeLogPersister) Errorf(_ string, _ ...interface{})   {}
 
 func TestFindRemoveResources(t *testing.T) {
 	tests := []struct {
@@ -109,93 +258,6 @@ func TestFindRemoveResources(t *testing.T) {
 		t.Run(tc.name, func(t *testing.T) {
 			got := findRemoveResources(tc.manifests, tc.liveResources)
 			assert.Equal(t, tc.want, got)
-		})
-	}
-}
-
-func TestEnsureSync(t *testing.T) {
-	ctrl := gomock.NewController(t)
-	defer ctrl.Finish()
-
-	tests := []struct {
-		name     string
-		executor *Executor
-		want     model.StageStatus
-	}{
-		{
-			name: "failed to load manifest",
-			want: model.StageStatus_STAGE_FAILURE,
-			executor: &Executor{
-				Input: executor.Input{
-					Deployment: &model.Deployment{
-						ApplicationId: "app-id",
-						Trigger: &model.DeploymentTrigger{
-							Commit: &model.Commit{
-								Hash: "hash",
-							},
-						},
-					},
-					LogPersister: &fakeLogPersister{},
-					AppManifestsCache: func() cache.Cache {
-						c := cachetest.NewMockCache(ctrl)
-						c.EXPECT().Get(gomock.Any()).Return(nil, fmt.Errorf("not found"))
-						return c
-					}(),
-					Logger: zap.NewNop(),
-				},
-				provider: func() provider.Provider {
-					p := providertest.NewMockProvider(ctrl)
-					p.EXPECT().LoadManifests(gomock.Any()).Return(nil, fmt.Errorf("error"))
-					return p
-				}(),
-			},
-		},
-		{
-			name: "missing variant selector",
-			want: model.StageStatus_STAGE_FAILURE,
-			executor: &Executor{
-				Input: executor.Input{
-					Deployment: &model.Deployment{
-						ApplicationId: "app-id",
-						Trigger: &model.DeploymentTrigger{
-							Commit: &model.Commit{
-								Hash: "hash",
-							},
-						},
-					},
-					LogPersister: &fakeLogPersister{},
-					AppManifestsCache: func() cache.Cache {
-						c := cachetest.NewMockCache(ctrl)
-						c.EXPECT().Get(gomock.Any()).Return(nil, fmt.Errorf("not found"))
-						c.EXPECT().Put(gomock.Any(), gomock.Any()).Return(nil)
-						return c
-					}(),
-					Logger: zap.NewNop(),
-				},
-				provider: func() provider.Provider {
-					p := providertest.NewMockProvider(ctrl)
-					p.EXPECT().LoadManifests(gomock.Any()).Return([]provider.Manifest{
-						provider.MakeManifest(provider.ResourceKey{
-							APIVersion: "apps/v1",
-							Kind:       provider.KindDeployment,
-						}, &unstructured.Unstructured{}),
-					}, nil)
-					return p
-				}(),
-				config: &config.KubernetesDeploymentSpec{
-					GenericDeploymentSpec: config.GenericDeploymentSpec{
-						Pipeline: &config.DeploymentPipeline{},
-					},
-				},
-			},
-		},
-	}
-	for _, tt := range tests {
-		t.Run(tt.name, func(t *testing.T) {
-			ctx, cancel := context.WithCancel(context.Background())
-			got := tt.executor.ensureSync(ctx)
-			assert.Equal(t, tt.want, got)
-			cancel()
 		})
 	}
 }
