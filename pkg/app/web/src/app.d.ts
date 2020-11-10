@@ -12,3 +12,7 @@ declare module "*.ico" {
   const src: string;
   export default src;
 }
+
+interface Window {
+  API_ENDPOINT: string;
+}

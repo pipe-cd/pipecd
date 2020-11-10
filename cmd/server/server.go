@@ -15,11 +15,13 @@
 package main
 
 import (
+	"bytes"
 	"context"
 	"errors"
 	"fmt"
 	"net/http"
 	"path/filepath"
+	"text/template"
 	"time"
 
 	"github.com/NYTimes/gziphandler"
@@ -78,6 +80,8 @@ type server struct {
 	encryptionKeyFile string
 	configFile        string
 
+	webAPIEndpoint string
+
 	useFakeResponse      bool
 	enableGRPCReflection bool
 }
@@ -85,13 +89,14 @@ type server struct {
 // NewCommand creates a new cobra command for executing api server.
 func NewCommand() *cobra.Command {
 	s := &server{
-		pipedAPIPort: 9080,
-		webAPIPort:   9081,
-		httpPort:     9082,
-		adminPort:    9085,
-		staticDir:    "pkg/app/web/public_files",
-		cacheAddress: "cache:6379",
-		gracePeriod:  30 * time.Second,
+		pipedAPIPort:   9080,
+		webAPIPort:     9081,
+		httpPort:       9082,
+		adminPort:      9085,
+		staticDir:      "pkg/app/web/public_files",
+		cacheAddress:   "cache:6379",
+		gracePeriod:    30 * time.Second,
+		webAPIEndpoint: "",
 	}
 	cmd := &cobra.Command{
 		Use:   "server",
@@ -116,6 +121,8 @@ func NewCommand() *cobra.Command {
 	cmd.MarkFlagRequired("encryption-key-file")
 	cmd.Flags().StringVar(&s.configFile, "config-file", s.configFile, "The path to the configuration file.")
 	cmd.MarkFlagRequired("config-file")
+
+	cmd.Flags().StringVar(&s.webAPIEndpoint, "web-api-endpoint", s.webAPIEndpoint, "The endpoint of the web API.")
 
 	// For debugging early in development
 	cmd.Flags().BoolVar(&s.useFakeResponse, "use-fake-response", s.useFakeResponse, "Whether the server responds fake response or not.")
@@ -286,12 +293,30 @@ func (s *server) run(ctx context.Context, t cli.Telemetry) error {
 			http.StripPrefix("/assets/", fs).ServeHTTP(w, r)
 		})
 
+		tmpl := template.New("index.html")
+		tmpl, err = tmpl.ParseFiles(filepath.Join(s.staticDir, "/index.html"))
+		if err != nil {
+			t.Logger.Error("failed to parse index.html", zap.Error(err))
+			return err
+		}
+
+		var data string
+		if s.webAPIEndpoint != "" {
+			data = fmt.Sprintf("<script>window.API_ENDPOINT = '%s';</script>", s.webAPIEndpoint)
+		}
+
+		var indexBuf bytes.Buffer
+		if err := tmpl.Execute(&indexBuf, data); err != nil {
+			t.Logger.Error("failed to render index.html", zap.Error(err))
+			return err
+		}
+
 		mux.Handle("/assets/", gziphandler.GzipHandler(assetsHandler))
 		mux.HandleFunc("/favicon.ico", func(w http.ResponseWriter, r *http.Request) {
 			http.ServeFile(w, r, filepath.Join(s.staticDir, "favicon.ico"))
 		})
 		mux.HandleFunc("/", func(w http.ResponseWriter, r *http.Request) {
-			http.ServeFile(w, r, filepath.Join(s.staticDir, "/index.html"))
+			indexBuf.WriteTo(w)
 		})
 
 		group.Go(func() error {
