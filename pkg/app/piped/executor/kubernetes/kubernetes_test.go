@@ -256,7 +256,7 @@ func TestDeleteResources(t *testing.T) {
 	ctrl := gomock.NewController(t)
 	defer ctrl.Finish()
 
-	tests := []struct {
+	testcases := []struct {
 		name      string
 		executor  *Executor
 		resources []provider.ResourceKey
@@ -334,11 +334,11 @@ func TestDeleteResources(t *testing.T) {
 			},
 		},
 	}
-	for _, tt := range tests {
-		t.Run(tt.name, func(t *testing.T) {
+	for _, tc := range testcases {
+		t.Run(tc.name, func(t *testing.T) {
 			ctx := context.Background()
-			err := tt.executor.deleteResources(ctx, tt.resources)
-			assert.Equal(t, tt.wantErr, err != nil)
+			err := tc.executor.deleteResources(ctx, tc.resources)
+			assert.Equal(t, tc.wantErr, err != nil)
 		})
 	}
 }

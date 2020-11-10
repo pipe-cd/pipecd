@@ -23,7 +23,7 @@ func TestEnsureSync(t *testing.T) {
 	ctrl := gomock.NewController(t)
 	defer ctrl.Finish()
 
-	tests := []struct {
+	testcases := []struct {
 		name     string
 		executor *Executor
 		want     model.StageStatus
@@ -170,18 +170,18 @@ func TestEnsureSync(t *testing.T) {
 			},
 		},
 	}
-	for _, tt := range tests {
-		t.Run(tt.name, func(t *testing.T) {
+	for _, tc := range testcases {
+		t.Run(tc.name, func(t *testing.T) {
 			ctx, cancel := context.WithCancel(context.Background())
-			got := tt.executor.ensureSync(ctx)
-			assert.Equal(t, tt.want, got)
+			got := tc.executor.ensureSync(ctx)
+			assert.Equal(t, tc.want, got)
 			cancel()
 		})
 	}
 }
 
 func TestFindRemoveResources(t *testing.T) {
-	tests := []struct {
+	testcases := []struct {
 		name          string
 		manifests     []provider.Manifest
 		liveResources []provider.Manifest
@@ -254,7 +254,7 @@ func TestFindRemoveResources(t *testing.T) {
 			want: []provider.ResourceKey{},
 		},
 	}
-	for _, tc := range tests {
+	for _, tc := range testcases {
 		t.Run(tc.name, func(t *testing.T) {
 			got := findRemoveResources(tc.manifests, tc.liveResources)
 			assert.Equal(t, tc.want, got)
