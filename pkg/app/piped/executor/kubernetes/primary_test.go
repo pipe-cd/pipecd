@@ -88,7 +88,7 @@ func TestEnsurePrimaryRollout(t *testing.T) {
 			},
 		},
 		{
-			name: "successfully apply manifests",
+			name: "successfully apply a manifest",
 			want: model.StageStatus_STAGE_SUCCESS,
 			executor: &Executor{
 				Input: executor.Input{
@@ -127,6 +127,106 @@ func TestEnsurePrimaryRollout(t *testing.T) {
 					return p
 				}(),
 				config: &config.KubernetesDeploymentSpec{},
+			},
+		},
+		{
+			name: "successfully apply two manifests",
+			want: model.StageStatus_STAGE_SUCCESS,
+			executor: &Executor{
+				Input: executor.Input{
+					Deployment: &model.Deployment{
+						Trigger: &model.DeploymentTrigger{
+							Commit: &model.Commit{},
+						},
+					},
+					PipedConfig:  &config.PipedSpec{},
+					LogPersister: &fakeLogPersister{},
+					Stage:        &model.PipelineStage{},
+					StageConfig: config.PipelineStage{
+						K8sPrimaryRolloutStageOptions: &config.K8sPrimaryRolloutStageOptions{
+							AddVariantLabelToSelector: true,
+						},
+					},
+					AppManifestsCache: func() cache.Cache {
+						c := cachetest.NewMockCache(ctrl)
+						c.EXPECT().Get(gomock.Any()).Return(nil, fmt.Errorf("not found"))
+						c.EXPECT().Put(gomock.Any(), gomock.Any()).Return(nil)
+						return c
+					}(),
+					Logger: zap.NewNop(),
+				},
+				provider: func() provider.Provider {
+					p := providertest.NewMockProvider(ctrl)
+					p.EXPECT().LoadManifests(gomock.Any()).Return([]provider.Manifest{
+						provider.MakeManifest(provider.ResourceKey{
+							APIVersion: "apps/v1",
+							Kind:       provider.KindDeployment,
+						}, &unstructured.Unstructured{
+							Object: map[string]interface{}{"spec": map[string]interface{}{}},
+						}),
+						provider.MakeManifest(provider.ResourceKey{
+							APIVersion: "v1",
+							Kind:       provider.KindService,
+							Name:       "foo",
+						}, &unstructured.Unstructured{
+							Object: map[string]interface{}{"spec": map[string]interface{}{}},
+						}),
+					}, nil)
+					p.EXPECT().ApplyManifest(gomock.Any(), gomock.Any()).Return(nil)
+					p.EXPECT().ApplyManifest(gomock.Any(), gomock.Any()).Return(nil)
+					return p
+				}(),
+				config: &config.KubernetesDeploymentSpec{
+					Service: config.K8sResourceReference{
+						Kind: "Service",
+						Name: "foo",
+					},
+				},
+			},
+		},
+		{
+			name: "filter out VirtualService",
+			want: model.StageStatus_STAGE_SUCCESS,
+			executor: &Executor{
+				Input: executor.Input{
+					Deployment: &model.Deployment{
+						Trigger: &model.DeploymentTrigger{
+							Commit: &model.Commit{},
+						},
+					},
+					PipedConfig:  &config.PipedSpec{},
+					LogPersister: &fakeLogPersister{},
+					Stage:        &model.PipelineStage{},
+					StageConfig: config.PipelineStage{
+						K8sPrimaryRolloutStageOptions: &config.K8sPrimaryRolloutStageOptions{
+							AddVariantLabelToSelector: true,
+						},
+					},
+					AppManifestsCache: func() cache.Cache {
+						c := cachetest.NewMockCache(ctrl)
+						c.EXPECT().Get(gomock.Any()).Return(nil, fmt.Errorf("not found"))
+						c.EXPECT().Put(gomock.Any(), gomock.Any()).Return(nil)
+						return c
+					}(),
+					Logger: zap.NewNop(),
+				},
+				provider: func() provider.Provider {
+					p := providertest.NewMockProvider(ctrl)
+					p.EXPECT().LoadManifests(gomock.Any()).Return([]provider.Manifest{
+						provider.MakeManifest(provider.ResourceKey{
+							APIVersion: "apps/v1",
+							Kind:       "VirtualService",
+						}, &unstructured.Unstructured{
+							Object: map[string]interface{}{"spec": map[string]interface{}{}},
+						}),
+					}, nil)
+					return p
+				}(),
+				config: &config.KubernetesDeploymentSpec{
+					TrafficRouting: &config.KubernetesTrafficRouting{
+						Method: config.KubernetesTrafficRoutingMethodIstio,
+					},
+				},
 			},
 		},
 	}
