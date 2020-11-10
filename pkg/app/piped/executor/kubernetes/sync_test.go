@@ -19,6 +19,18 @@ import (
 	"github.com/pipe-cd/pipe/pkg/model"
 )
 
+type fakeLogPersister struct{}
+
+func (l *fakeLogPersister) Write(_ []byte) (int, error) {
+	return 0, nil
+}
+func (l *fakeLogPersister) Info(_ string)                       {}
+func (l *fakeLogPersister) Infof(_ string, _ ...interface{})    {}
+func (l *fakeLogPersister) Success(_ string)                    {}
+func (l *fakeLogPersister) Successf(_ string, _ ...interface{}) {}
+func (l *fakeLogPersister) Error(_ string)                      {}
+func (l *fakeLogPersister) Errorf(_ string, _ ...interface{})   {}
+
 func TestFindRemoveResources(t *testing.T) {
 	tests := []struct {
 		name          string
@@ -123,12 +135,7 @@ func TestEnsureSync(t *testing.T) {
 							},
 						},
 					},
-					LogPersister: func() executor.LogPersister {
-						l := executor.NewMockLogPersister(ctrl)
-						l.EXPECT().Infof(gomock.Any(), gomock.Any()).AnyTimes()
-						l.EXPECT().Errorf(gomock.Any(), gomock.Any()).AnyTimes()
-						return l
-					}(),
+					LogPersister: &fakeLogPersister{},
 					AppManifestsCache: func() cache.Cache {
 						c := cachetest.NewMockCache(ctrl)
 						c.EXPECT().Get(gomock.Any()).Return(nil, fmt.Errorf("not found"))
@@ -156,13 +163,7 @@ func TestEnsureSync(t *testing.T) {
 							},
 						},
 					},
-					LogPersister: func() executor.LogPersister {
-						l := executor.NewMockLogPersister(ctrl)
-						l.EXPECT().Infof(gomock.Any(), gomock.Any()).AnyTimes()
-						l.EXPECT().Errorf(gomock.Any(), gomock.Any()).AnyTimes()
-						l.EXPECT().Successf(gomock.Any(), gomock.Any()).AnyTimes()
-						return l
-					}(),
+					LogPersister: &fakeLogPersister{},
 					AppManifestsCache: func() cache.Cache {
 						c := cachetest.NewMockCache(ctrl)
 						c.EXPECT().Get(gomock.Any()).Return(nil, fmt.Errorf("not found"))
