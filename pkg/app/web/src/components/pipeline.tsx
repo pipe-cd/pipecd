@@ -150,8 +150,6 @@ export const Pipeline: FC<Props> = memo(function Pipeline({ deploymentId }) {
 
   useEffect(() => {
     if (defaultActiveStage) {
-      console.log(defaultActiveStage);
-
       dispatch(
         updateActiveStage({
           deploymentId,

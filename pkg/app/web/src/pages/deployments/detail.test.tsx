@@ -2,23 +2,27 @@ import { configureStore } from "@reduxjs/toolkit";
 import React from "react";
 import { MemoryRouter, Route } from "react-router";
 import { render, waitFor } from "../../../test-utils";
-import * as deploymentsApi from "../../api/deployments";
+import { server } from "../../mocks/server";
 import { reducers } from "../../modules";
 import { dummyDeployment } from "../../__fixtures__/dummy-deployment";
 import { dummyEnv } from "../../__fixtures__/dummy-environment";
 import { dummyPiped } from "../../__fixtures__/dummy-piped";
 import { DeploymentDetailPage } from "./detail";
 
-jest.mock("../../api/deployments");
+beforeAll(() => {
+  server.listen();
+});
+
+afterEach(() => {
+  server.resetHandlers();
+});
+
+afterAll(() => {
+  server.close();
+});
 
 describe("DeploymentDetailPage", () => {
   test("fetch a deployment data and show that data", async () => {
-    jest.spyOn(deploymentsApi, "getDeployment").mockReturnValue(
-      Promise.resolve({
-        deployment: dummyDeployment,
-      })
-    );
-
     const store = configureStore({
       reducer: reducers,
       preloadedState: {
@@ -44,10 +48,6 @@ describe("DeploymentDetailPage", () => {
       </MemoryRouter>,
       { store }
     );
-
-    expect(deploymentsApi.getDeployment).toHaveBeenCalledWith({
-      deploymentId: dummyDeployment.id,
-    });
 
     await waitFor(() => getByText("SUCCESS"));
   });
