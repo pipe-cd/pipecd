@@ -100,7 +100,7 @@ webpack(
         "--config",
         "$(execpath webpack.config.js)",
         "--html-template",
-        "$(execpath prod.html)",
+        "$(execpath base.html)",
         "$(location compile)/index.js",
         "--bazel-bin-path",
         "$(BINDIR)",
@@ -109,7 +109,7 @@ webpack(
     ],
     data = [
         "api_client",
-        "prod.html",
+        "base.html",
         "compile",
         "copy_assets",
         "model",
