@@ -9,7 +9,7 @@ export default {
 
 export const overview: React.FC = () => (
   <AddEnvForm
-    onClose={action("onClose")}
+    onCancel={action("onCancel")}
     onSubmit={action("onSubmit")}
     projectName="project-name"
   />
