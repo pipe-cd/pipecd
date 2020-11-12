@@ -10,14 +10,12 @@ import {
   selectHasError,
 } from "../../modules/applications-live-state";
 import { useInterval } from "../../hooks/use-interval";
-import { addToast } from "../../modules/toasts";
-import { AppDispatch } from "../../store";
 import { AppState } from "../../modules";
 
 const FETCH_INTERVAL = 4000;
 
 export const ApplicationDetailPage: FC = memo(function ApplicationDetailPage() {
-  const dispatch = useDispatch<AppDispatch>();
+  const dispatch = useDispatch();
   const params = useParams<{ applicationId: string }>();
   const applicationId = decodeURIComponent(params.applicationId);
   const hasLiveStateError = useSelector<AppState, boolean>((state) =>
@@ -27,16 +25,7 @@ export const ApplicationDetailPage: FC = memo(function ApplicationDetailPage() {
   const fetchData = (): void => {
     if (applicationId) {
       if (hasLiveStateError === false) {
-        dispatch(fetchApplicationStateById(applicationId)).then((result) => {
-          if (fetchApplicationStateById.rejected.match(result)) {
-            dispatch(
-              addToast({
-                message: "Failed to get application live state",
-                severity: "error",
-              })
-            );
-          }
-        });
+        dispatch(fetchApplicationStateById(applicationId));
       }
       dispatch(fetchApplication(applicationId));
     }

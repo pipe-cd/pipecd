@@ -13,7 +13,7 @@ import Skeleton from "@material-ui/lab/Skeleton/Skeleton";
 import React, { FC, memo, useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import { SSO_DESCRIPTION } from "../constants/text";
-import { UPDATE_SSO_FAILED, UPDATE_SSO_SUCCESS } from "../constants/toast-text";
+import { UPDATE_SSO_SUCCESS } from "../constants/toast-text";
 import { UI_TEXT_CANCEL, UI_TEXT_SAVE } from "../constants/ui-text";
 import { AppState } from "../modules";
 import { fetchProject, GitHubSSO, updateGitHubSSO } from "../modules/project";
@@ -57,14 +57,7 @@ export const GithubSSOForm: FC = memo(function GithubSSOForm() {
     dispatch(
       updateGitHubSSO({ clientId, clientSecret, baseUrl, uploadUrl })
     ).then((result) => {
-      if (updateGitHubSSO.rejected.match(result)) {
-        dispatch(
-          addToast({
-            message: UPDATE_SSO_FAILED,
-            severity: "error",
-          })
-        );
-      } else {
+      if (updateGitHubSSO.fulfilled.match(result)) {
         dispatch(fetchProject());
         dispatch(
           addToast({

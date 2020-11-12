@@ -16,10 +16,7 @@ import clsx from "clsx";
 import React, { FC, memo, useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import { STATIC_ADMIN_DESCRIPTION } from "../constants/text";
-import {
-  UPDATE_STATIC_ADMIN_INFO_FAILED,
-  UPDATE_STATIC_ADMIN_INFO_SUCCESS,
-} from "../constants/toast-text";
+import { UPDATE_STATIC_ADMIN_INFO_SUCCESS } from "../constants/toast-text";
 import { UI_TEXT_CANCEL, UI_TEXT_SAVE } from "../constants/ui-text";
 import { AppState } from "../modules";
 import {
@@ -69,14 +66,7 @@ export const StaticAdminForm: FC = memo(function StaticAdminForm() {
   const handleSave = (e: React.FormEvent<HTMLFormElement>): void => {
     e.preventDefault();
     dispatch(updateStaticAdmin({ username, password })).then((result) => {
-      if (updateStaticAdmin.rejected.match(result)) {
-        dispatch(
-          addToast({
-            message: UPDATE_STATIC_ADMIN_INFO_FAILED,
-            severity: "error",
-          })
-        );
-      } else {
+      if (updateStaticAdmin.fulfilled.match(result)) {
         dispatch(fetchProject());
         dispatch(
           addToast({
