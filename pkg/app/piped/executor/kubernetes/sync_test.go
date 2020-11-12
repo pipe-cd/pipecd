@@ -54,42 +54,6 @@ func TestEnsureSync(t *testing.T) {
 			},
 		},
 		{
-			name: "missing variant selector",
-			want: model.StageStatus_STAGE_FAILURE,
-			executor: &Executor{
-				Input: executor.Input{
-					Deployment: &model.Deployment{
-						Trigger: &model.DeploymentTrigger{
-							Commit: &model.Commit{},
-						},
-					},
-					LogPersister: &fakeLogPersister{},
-					AppManifestsCache: func() cache.Cache {
-						c := cachetest.NewMockCache(ctrl)
-						c.EXPECT().Get(gomock.Any()).Return(nil, fmt.Errorf("not found"))
-						c.EXPECT().Put(gomock.Any(), gomock.Any()).Return(nil)
-						return c
-					}(),
-					Logger: zap.NewNop(),
-				},
-				provider: func() provider.Provider {
-					p := providertest.NewMockProvider(ctrl)
-					p.EXPECT().LoadManifests(gomock.Any()).Return([]provider.Manifest{
-						provider.MakeManifest(provider.ResourceKey{
-							APIVersion: "apps/v1",
-							Kind:       provider.KindDeployment,
-						}, &unstructured.Unstructured{}),
-					}, nil)
-					return p
-				}(),
-				config: &config.KubernetesDeploymentSpec{
-					GenericDeploymentSpec: config.GenericDeploymentSpec{
-						Pipeline: &config.DeploymentPipeline{},
-					},
-				},
-			},
-		},
-		{
 			name: "unable to apply manifests",
 			want: model.StageStatus_STAGE_FAILURE,
 			executor: &Executor{
