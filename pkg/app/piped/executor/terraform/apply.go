@@ -23,7 +23,7 @@ import (
 )
 
 func (e *Executor) ensureApply(ctx context.Context) model.StageStatus {
-	appDir := filepath.Join(e.RepoDir, e.Deployment.GitPath.Path)
+	appDir := filepath.Join(e.repoDir, e.Deployment.GitPath.Path)
 	cmd := provider.NewTerraform(e.terraformPath, appDir, e.vars, e.config.Input.VarFiles)
 
 	if ok := e.showUsingVersion(ctx, cmd); !ok {

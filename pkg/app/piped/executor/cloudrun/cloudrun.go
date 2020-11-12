@@ -19,6 +19,7 @@ import (
 	"path/filepath"
 
 	provider "github.com/pipe-cd/pipe/pkg/app/piped/cloudprovider/cloudrun"
+	"github.com/pipe-cd/pipe/pkg/app/piped/deploysource"
 	"github.com/pipe-cd/pipe/pkg/app/piped/executor"
 	"github.com/pipe-cd/pipe/pkg/config"
 	"github.com/pipe-cd/pipe/pkg/model"
@@ -27,6 +28,8 @@ import (
 type Executor struct {
 	executor.Input
 
+	repoDir             string
+	appDir              string
 	config              *config.CloudRunDeploymentSpec
 	cloudProviderName   string
 	cloudProviderConfig *config.CloudProviderCloudRunConfig
@@ -51,7 +54,27 @@ func Register(r registerer) {
 }
 
 func (e *Executor) Execute(sig executor.StopSignal) model.StageStatus {
-	e.config = e.DeploymentConfig.CloudRunDeploymentSpec
+	var ds *deploysource.DeploySource
+	var err error
+	ctx := sig.Context()
+
+	if model.Stage(e.Stage.Name) == model.StageRollback {
+		ds, err = e.RunningDSP.Get(ctx, e.LogPersister)
+		if err != nil {
+			e.LogPersister.Errorf("Failed to prepare running deploy source data (%v)", err)
+			return model.StageStatus_STAGE_FAILURE
+		}
+	} else {
+		ds, err = e.TargetDSP.Get(ctx, e.LogPersister)
+		if err != nil {
+			e.LogPersister.Errorf("Failed to prepare target deploy source data (%v)", err)
+			return model.StageStatus_STAGE_FAILURE
+		}
+	}
+
+	e.repoDir = ds.RepoDir
+	e.appDir = ds.AppDir
+	e.config = ds.DeploymentConfig.CloudRunDeploymentSpec
 	if e.config == nil {
 		e.LogPersister.Error("Malformed deployment configuration: missing CloudRunDeploymentSpec")
 		return model.StageStatus_STAGE_FAILURE
@@ -71,7 +94,6 @@ func (e *Executor) Execute(sig executor.StopSignal) model.StageStatus {
 	e.cloudProviderConfig = cpConfig.CloudRunConfig
 
 	var (
-		ctx            = sig.Context()
 		originalStatus = e.Stage.Status
 		status         model.StageStatus
 	)
@@ -147,7 +169,7 @@ func (e *Executor) ensurePromote(ctx context.Context) model.StageStatus {
 		e.LogPersister.Errorf("Unable to determine the last deployed commit")
 	}
 
-	lastDeployedServiceManifest, ok := e.loadLastDeployedServiceManifest()
+	lastDeployedServiceManifest, ok := e.loadLastDeployedServiceManifest(ctx)
 	if !ok {
 		return model.StageStatus_STAGE_FAILURE
 	}
@@ -216,7 +238,7 @@ func (e *Executor) ensureRollback(ctx context.Context) model.StageStatus {
 		return model.StageStatus_STAGE_FAILURE
 	}
 
-	sm, ok := e.loadLastDeployedServiceManifest()
+	sm, ok := e.loadLastDeployedServiceManifest(ctx)
 	if !ok {
 		return model.StageStatus_STAGE_FAILURE
 	}
@@ -257,7 +279,7 @@ func (e *Executor) ensureRollback(ctx context.Context) model.StageStatus {
 func (e *Executor) loadServiceManifest() (provider.ServiceManifest, bool) {
 	var (
 		commit = e.Deployment.Trigger.Commit.Hash
-		appDir = filepath.Join(e.RepoDir, e.Deployment.GitPath.Path)
+		appDir = filepath.Join(e.repoDir, e.Deployment.GitPath.Path)
 	)
 
 	e.LogPersister.Infof("Loading service manifest at the triggered commit %s", commit)
@@ -271,19 +293,19 @@ func (e *Executor) loadServiceManifest() (provider.ServiceManifest, bool) {
 	return sm, true
 }
 
-func (e *Executor) loadLastDeployedServiceManifest() (provider.ServiceManifest, bool) {
-	var (
-		commit = e.Deployment.RunningCommitHash
-		appDir = filepath.Join(e.RunningRepoDir, e.Deployment.GitPath.Path)
-	)
+func (e *Executor) loadLastDeployedServiceManifest(ctx context.Context) (provider.ServiceManifest, bool) {
+	ds, err := e.RunningDSP.GetReadOnly(ctx, e.LogPersister)
+	if err != nil {
+		e.LogPersister.Errorf("Failed to prepare running deploy source (%v)", err)
+	}
 
-	e.LogPersister.Infof("Loading service manifest at the last deployed commit %s", commit)
-	sm, err := provider.LoadServiceManifest(appDir, e.config.Input.ServiceManifestFile)
+	e.LogPersister.Infof("Loading service manifest at the %s commit %s", ds.RevisionName, ds.Revision)
+	sm, err := provider.LoadServiceManifest(ds.AppDir, e.config.Input.ServiceManifestFile)
 	if err != nil {
 		e.LogPersister.Errorf("Failed to load service manifest file (%v)", err)
 		return provider.ServiceManifest{}, false
 	}
-	e.LogPersister.Info("Successfully loaded the service manifest")
 
+	e.LogPersister.Info("Successfully loaded the service manifest")
 	return sm, true
 }

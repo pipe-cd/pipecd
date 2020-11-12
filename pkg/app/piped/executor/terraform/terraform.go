@@ -18,6 +18,7 @@ import (
 	"context"
 
 	provider "github.com/pipe-cd/pipe/pkg/app/piped/cloudprovider/terraform"
+	"github.com/pipe-cd/pipe/pkg/app/piped/deploysource"
 	"github.com/pipe-cd/pipe/pkg/app/piped/executor"
 	"github.com/pipe-cd/pipe/pkg/app/piped/toolregistry"
 	"github.com/pipe-cd/pipe/pkg/config"
@@ -27,10 +28,13 @@ import (
 type Executor struct {
 	executor.Input
 
-	config              *config.TerraformDeploymentSpec
 	cloudProviderConfig *config.CloudProviderTerraformConfig
-	terraformPath       string
-	vars                []string
+
+	repoDir       string
+	appDir        string
+	config        *config.TerraformDeploymentSpec
+	terraformPath string
+	vars          []string
 }
 
 type registerer interface {
@@ -52,12 +56,6 @@ func Register(r registerer) {
 }
 
 func (e *Executor) Execute(sig executor.StopSignal) model.StageStatus {
-	e.config = e.DeploymentConfig.TerraformDeploymentSpec
-	if e.config == nil {
-		e.LogPersister.Error("Malformed deployment configuration: missing TerraformDeploymentSpec")
-		return model.StageStatus_STAGE_FAILURE
-	}
-
 	cloudProviderName := e.Application.CloudProvider
 	if cloudProviderName == "" {
 		e.LogPersister.Error("This application configuration was missing CloudProvider name")
@@ -71,12 +69,37 @@ func (e *Executor) Execute(sig executor.StopSignal) model.StageStatus {
 	}
 	e.cloudProviderConfig = cpConfig.TerraformConfig
 
+	var ds *deploysource.DeploySource
+	var err error
+	ctx := sig.Context()
+
+	if model.Stage(e.Stage.Name) == model.StageRollback {
+		ds, err = e.RunningDSP.Get(ctx, e.LogPersister)
+		if err != nil {
+			e.LogPersister.Errorf("Failed to prepare running deploy source data (%v)", err)
+			return model.StageStatus_STAGE_FAILURE
+		}
+	} else {
+		ds, err = e.TargetDSP.Get(ctx, e.LogPersister)
+		if err != nil {
+			e.LogPersister.Errorf("Failed to prepare target deploy source data (%v)", err)
+			return model.StageStatus_STAGE_FAILURE
+		}
+	}
+
+	e.repoDir = ds.RepoDir
+	e.appDir = ds.AppDir
+	e.config = ds.DeploymentConfig.TerraformDeploymentSpec
+	if e.config == nil {
+		e.LogPersister.Error("Malformed deployment configuration: missing TerraformDeploymentSpec")
+		return model.StageStatus_STAGE_FAILURE
+	}
+
 	e.vars = make([]string, 0, len(e.cloudProviderConfig.Vars)+len(e.config.Input.Vars))
 	e.vars = append(e.vars, e.cloudProviderConfig.Vars...)
 	e.vars = append(e.vars, e.config.Input.Vars...)
 
 	var (
-		ctx            = sig.Context()
 		originalStatus = e.Stage.Status
 		status         model.StageStatus
 	)

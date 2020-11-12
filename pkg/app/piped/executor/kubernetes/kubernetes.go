@@ -18,7 +18,6 @@ import (
 	"context"
 	"errors"
 	"fmt"
-	"path/filepath"
 	"strings"
 
 	"go.uber.org/zap"
@@ -27,6 +26,7 @@ import (
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 
 	provider "github.com/pipe-cd/pipe/pkg/app/piped/cloudprovider/kubernetes"
+	"github.com/pipe-cd/pipe/pkg/app/piped/deploysource"
 	"github.com/pipe-cd/pipe/pkg/app/piped/executor"
 	"github.com/pipe-cd/pipe/pkg/config"
 	"github.com/pipe-cd/pipe/pkg/model"
@@ -39,8 +39,10 @@ const (
 type Executor struct {
 	executor.Input
 
-	provider provider.Provider
+	repoDir  string
+	appDir   string
 	config   *config.KubernetesDeploymentSpec
+	provider provider.Provider
 }
 
 type registerer interface {
@@ -68,21 +70,36 @@ func Register(r registerer) {
 }
 
 func (e *Executor) Execute(sig executor.StopSignal) model.StageStatus {
-	e.config = e.DeploymentConfig.KubernetesDeploymentSpec
+	var ds *deploysource.DeploySource
+	var err error
+	ctx := sig.Context()
+
+	if model.Stage(e.Stage.Name) == model.StageRollback {
+		ds, err = e.RunningDSP.Get(ctx, e.LogPersister)
+		if err != nil {
+			e.LogPersister.Errorf("Failed to prepare running deploy source data (%v)", err)
+			return model.StageStatus_STAGE_FAILURE
+		}
+	} else {
+		ds, err = e.TargetDSP.Get(ctx, e.LogPersister)
+		if err != nil {
+			e.LogPersister.Errorf("Failed to prepare target deploy source data (%v)", err)
+			return model.StageStatus_STAGE_FAILURE
+		}
+	}
+
+	e.repoDir = ds.RepoDir
+	e.appDir = ds.AppDir
+	e.config = ds.DeploymentConfig.KubernetesDeploymentSpec
 	if e.config == nil {
 		e.LogPersister.Error("Malformed deployment configuration: missing KubernetesDeploymentSpec")
 		return model.StageStatus_STAGE_FAILURE
 	}
 
-	var (
-		ctx    = sig.Context()
-		appDir = filepath.Join(e.RepoDir, e.Deployment.GitPath.Path)
-	)
-	e.provider = provider.NewProvider(e.Deployment.ApplicationName, appDir, e.RepoDir, e.Deployment.GitPath.ConfigFilename, e.config.Input, e.Logger)
-
+	e.provider = provider.NewProvider(e.Deployment.ApplicationName, e.appDir, e.repoDir, e.Deployment.GitPath.ConfigFilename, e.config.Input, e.Logger)
 	e.Logger.Info("start executing kubernetes stage",
 		zap.String("stage-name", e.Stage.Name),
-		zap.String("app-dir", appDir),
+		zap.String("app-dir", e.appDir),
 	)
 
 	var (
@@ -161,16 +178,18 @@ func (e *Executor) loadRunningManifests(ctx context.Context) (manifests []provid
 	}
 
 	// When the manifests were not in the cache we have to load them.
-	var (
-		runningAppDir = filepath.Join(e.RunningRepoDir, e.Deployment.GitPath.Path)
-		p             = provider.NewProvider(
-			e.Deployment.ApplicationName,
-			runningAppDir,
-			e.RunningRepoDir,
-			e.Deployment.GitPath.ConfigFilename,
-			e.config.Input,
-			e.Logger,
-		)
+	ds, err := e.RunningDSP.Get(ctx, e.LogPersister)
+	if err != nil {
+		e.LogPersister.Errorf("Failed to prepare running deploy source (%v)", err)
+	}
+
+	p := provider.NewProvider(
+		e.Deployment.ApplicationName,
+		ds.AppDir,
+		ds.RepoDir,
+		e.Deployment.GitPath.ConfigFilename,
+		e.config.Input,
+		e.Logger,
 	)
 	manifests, err = p.LoadManifests(ctx)
 	if err != nil {
