@@ -54,7 +54,7 @@ export const RBACForm: FC = memo(function RBACForm() {
         dispatch(
           addToast({
             message: UPDATE_RBAC_FAILED,
-            severity: "success",
+            severity: "error",
           })
         );
       } else {
