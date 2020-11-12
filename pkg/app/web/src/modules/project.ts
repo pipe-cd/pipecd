@@ -99,9 +99,6 @@ export const updateRBAC = createAsyncThunk<
   { state: AppState }
 >("project/updateRBAC", async (params, thunkAPI) => {
   const project = thunkAPI.getState().project;
-  if (project.teams === null) {
-    throw new Error();
-  }
   await projectAPI.updateRBAC(Object.assign({}, project.teams, params));
 });
 
