@@ -28,10 +28,10 @@ helm repo add pipecd https://charts.pipecd.dev
 PipeCD requires a key for encrypting sensitive data or signing JWT token while authenticating. You can use one of the following commands to generate an encryption key.
 
 ``` console
-openssl rand 64 -out encryption-key
+openssl rand 64 | base64 > encryption-key
 
-# or if it doesn't work, this one is also OK.
-cat /dev/urandom | head -c64 > encryption-key
+# or
+cat /dev/urandom | head -c64 | base64 > encryption-key
 ```
 
 ### 3. Preparing control-plane configuration file and installing
