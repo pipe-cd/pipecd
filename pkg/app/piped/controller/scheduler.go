@@ -17,6 +17,7 @@ package controller
 import (
 	"context"
 	"fmt"
+	"io/ioutil"
 	"path/filepath"
 	"time"
 
@@ -66,7 +67,8 @@ type scheduler struct {
 	// because the deployment model is readonly to avoid data race.
 	// We may need a mutex for this field in the future
 	// when the stages can be executed concurrently.
-	stageStatuses map[string]model.StageStatus
+	stageStatuses           map[string]model.StageStatus
+	genericDeploymentConfig config.GenericDeploymentSpec
 
 	done                 atomic.Bool
 	doneTimestamp        time.Time
@@ -245,6 +247,28 @@ func (s *scheduler) Run(ctx context.Context) error {
 		)
 	}
 
+	// We use another deploy source provider to load the deployment configuration
+	// at the target commit. This provider is configured with a nil sealedSecretDecrypter
+	// because decrypting the sealed secrets is not required.
+	// We need only the deployment configuration spec.
+	configDSP := deploysource.NewProvider(
+		filepath.Join(s.workingDir, "target-config"),
+		repoCfg,
+		"target",
+		s.deployment.Trigger.Commit.Hash,
+		s.gitClient,
+		s.deployment.GitPath,
+		nil,
+	)
+	ds, err := configDSP.GetReadOnly(ctx, ioutil.Discard)
+	if err != nil {
+		s.doneDeploymentStatus = model.DeploymentStatus_DEPLOYMENT_FAILURE
+		statusReason = fmt.Sprintf("Unable to prepare deploy source data at target commit (%v)", err)
+		s.reportDeploymentCompleted(ctx, s.doneDeploymentStatus, statusReason, "")
+		return err
+	}
+	s.genericDeploymentConfig = ds.GenericDeploymentConfig
+
 	// Iterate all the stages and execute the uncompleted ones.
 	for i, ps := range s.deployment.Stages {
 		lastStage = s.deployment.Stages[i]
@@ -414,30 +438,15 @@ func (s *scheduler) executeStage(sig executor.StopSignal, ps model.PipelineStage
 	}
 
 	// Load the stage configuration.
-	var stageConfig *config.PipelineStage
+	var stageConfig config.PipelineStage
+	var stageConfigFound bool
 	if ps.Predefined {
-		if sc, ok := pln.GetPredefinedStage(ps.Id); ok {
-			stageConfig = &sc
-		}
+		stageConfig, stageConfigFound = pln.GetPredefinedStage(ps.Id)
 	} else {
-		ds, err := s.targetDSP.GetReadOnly(ctx, lp)
-		if sig.Stopped() {
-			return originalStatus
-		}
-		if err != nil {
-			lp.Errorf("Failed to prepare deploy source data (%v)", err)
-			if err := s.reportStageStatus(ctx, ps.Id, model.StageStatus_STAGE_FAILURE, ps.Requires); err != nil {
-				s.logger.Error("failed to report stage status", zap.Error(err))
-			}
-			return model.StageStatus_STAGE_FAILURE
-		}
-
-		if sc, ok := ds.GenericDeploymentConfig.GetStage(ps.Index); ok {
-			stageConfig = &sc
-		}
+		stageConfig, stageConfigFound = s.genericDeploymentConfig.GetStage(ps.Index)
 	}
 
-	if stageConfig == nil {
+	if !stageConfigFound {
 		lp.Error("Unable to find the stage configuration")
 		if err := s.reportStageStatus(ctx, ps.Id, model.StageStatus_STAGE_FAILURE, ps.Requires); err != nil {
 			s.logger.Error("failed to report stage status", zap.Error(err))
@@ -464,7 +473,7 @@ func (s *scheduler) executeStage(sig executor.StopSignal, ps model.PipelineStage
 	}
 	input := executor.Input{
 		Stage:                 &ps,
-		StageConfig:           *stageConfig,
+		StageConfig:           stageConfig,
 		Deployment:            s.deployment,
 		Application:           app,
 		PipedConfig:           s.pipedConfig,
