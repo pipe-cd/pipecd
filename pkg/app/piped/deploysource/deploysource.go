@@ -103,7 +103,7 @@ func (p *provider) Get(ctx context.Context, lw io.Writer) (*DeploySource, error)
 		return nil, p.err
 	}
 
-	ds, err := p.copy(ctx, lw)
+	ds, err := p.copy(lw)
 	if err != nil {
 		return nil, err
 	}
@@ -197,7 +197,7 @@ func (p *provider) prepare(ctx context.Context, lw io.Writer) (*DeploySource, er
 	}, nil
 }
 
-func (p *provider) copy(ctx context.Context, lw io.Writer) (*DeploySource, error) {
+func (p *provider) copy(lw io.Writer) (*DeploySource, error) {
 	p.copyNum++
 
 	dest := fmt.Sprintf("%s-%d", p.source.RepoDir, p.copyNum)
