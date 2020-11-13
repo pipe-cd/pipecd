@@ -66,14 +66,14 @@ func (p *Planner) Plan(ctx context.Context, in planner.Input) (out planner.Outpu
 	// We just do the quick sync.
 	if in.MostRecentSuccessfulCommitHash == "" {
 		out.Stages = buildQuickSyncPipeline(cfg.Input.AutoRollback, time.Now())
-		out.Summary = "Quick sync by deploying the new version and configuring all traffic to it because it seems this is the first deployment"
+		out.Summary = fmt.Sprintf("Quick sync to deploy image %s and configure all traffic to it because it seems this is the first deployment", out.Version)
 		return
 	}
 
 	// When no pipeline was configured, do the quick sync.
 	if cfg.Pipeline == nil || len(cfg.Pipeline.Stages) == 0 {
 		out.Stages = buildQuickSyncPipeline(cfg.Input.AutoRollback, time.Now())
-		out.Summary = "Quick sync by deploying the new version and configuring all traffic to it because no pipeline was configured"
+		out.Summary = fmt.Sprintf("Quick sync to deploy image %s and configure all traffic to it (pipeline was not configured)", out.Version)
 		return
 	}
 
@@ -82,7 +82,7 @@ func (p *Planner) Plan(ctx context.Context, in planner.Input) (out planner.Outpu
 	if err == nil {
 		if lastVersion, e := p.determineVersion(ds.AppDir, cfg.Input.ServiceManifestFile); e == nil {
 			out.Stages = buildProgressivePipeline(cfg.Pipeline, cfg.Input.AutoRollback, time.Now())
-			out.Summary = fmt.Sprintf("Sync progressively because of updating image from %s to %s", lastVersion, out.Version)
+			out.Summary = fmt.Sprintf("Sync progressively to update image from %s to %s", lastVersion, out.Version)
 			return
 		}
 	}

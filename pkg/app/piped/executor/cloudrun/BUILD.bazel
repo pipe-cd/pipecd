@@ -2,7 +2,11 @@ load("@io_bazel_rules_go//go:def.bzl", "go_library", "go_test")
 
 go_library(
     name = "go_default_library",
-    srcs = ["cloudrun.go"],
+    srcs = [
+        "cloudrun.go",
+        "deploy.go",
+        "rollback.go",
+    ],
     importpath = "github.com/pipe-cd/pipe/pkg/app/piped/executor/cloudrun",
     visibility = ["//visibility:public"],
     deps = [

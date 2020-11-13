@@ -16,7 +16,6 @@ package cloudrun
 
 import (
 	"context"
-	"path/filepath"
 
 	provider "github.com/pipe-cd/pipe/pkg/app/piped/cloudprovider/cloudrun"
 	"github.com/pipe-cd/pipe/pkg/app/piped/deploysource"
@@ -25,16 +24,6 @@ import (
 	"github.com/pipe-cd/pipe/pkg/model"
 )
 
-type Executor struct {
-	executor.Input
-
-	repoDir             string
-	appDir              string
-	config              *config.CloudRunDeploymentSpec
-	cloudProviderName   string
-	cloudProviderConfig *config.CloudProviderCloudRunConfig
-}
-
 type registerer interface {
 	Register(stage model.Stage, f executor.Factory) error
 	RegisterRollback(kind model.ApplicationKind, f executor.Factory) error
@@ -42,270 +31,95 @@ type registerer interface {
 
 func Register(r registerer) {
 	f := func(in executor.Input) executor.Executor {
-		return &Executor{
+		return &deployExecutor{
 			Input: in,
 		}
 	}
-
 	r.Register(model.StageCloudRunSync, f)
 	r.Register(model.StageCloudRunPromote, f)
 
-	r.RegisterRollback(model.ApplicationKind_CLOUDRUN, f)
+	r.RegisterRollback(model.ApplicationKind_CLOUDRUN, func(in executor.Input) executor.Executor {
+		return &rollbackExecutor{
+			Input: in,
+		}
+	})
 }
 
-func (e *Executor) Execute(sig executor.StopSignal) model.StageStatus {
-	var ds *deploysource.DeploySource
+func loadServiceManifest(in *executor.Input, serviceManifestFile string, ds *deploysource.DeploySource) (provider.ServiceManifest, bool) {
+	in.LogPersister.Infof("Loading service manifest at the %s commit (%s)", ds.RevisionName, ds.Revision)
+
+	sm, err := provider.LoadServiceManifest(ds.AppDir, serviceManifestFile)
+	if err != nil {
+		in.LogPersister.Errorf("Failed to load service manifest (%v)", err)
+		return provider.ServiceManifest{}, false
+	}
+
+	in.LogPersister.Infof("Successfully loaded the service manifest at the %s commit", ds.RevisionName)
+	return sm, true
+}
+
+func findCloudProvider(in *executor.Input) (name string, cfg *config.CloudProviderCloudRunConfig, found bool) {
+	name = in.Application.CloudProvider
+	if name == "" {
+		in.LogPersister.Error("Missing the CloudProvider name in the application configuration")
+		return
+	}
+
+	cp, ok := in.PipedConfig.FindCloudProvider(name, model.CloudProviderCloudRun)
+	if !ok {
+		in.LogPersister.Errorf("The specified cloud provider %q was not found in piped configuration", name)
+		return
+	}
+
+	cfg = cp.CloudRunConfig
+	found = true
+	return
+}
+
+func decideRevisionName(in *executor.Input, sm provider.ServiceManifest, commit string) (revision string, ok bool) {
 	var err error
-	ctx := sig.Context()
-
-	if model.Stage(e.Stage.Name) == model.StageRollback {
-		ds, err = e.RunningDSP.Get(ctx, e.LogPersister)
-		if err != nil {
-			e.LogPersister.Errorf("Failed to prepare running deploy source data (%v)", err)
-			return model.StageStatus_STAGE_FAILURE
-		}
-	} else {
-		ds, err = e.TargetDSP.Get(ctx, e.LogPersister)
-		if err != nil {
-			e.LogPersister.Errorf("Failed to prepare target deploy source data (%v)", err)
-			return model.StageStatus_STAGE_FAILURE
-		}
+	revision, err = provider.DecideRevisionName(sm, commit)
+	if err != nil {
+		in.LogPersister.Errorf("Unable to decide revision name for the commit %s (%v)", commit, err)
+		return
 	}
 
-	e.repoDir = ds.RepoDir
-	e.appDir = ds.AppDir
-	e.config = ds.DeploymentConfig.CloudRunDeploymentSpec
-	if e.config == nil {
-		e.LogPersister.Error("Malformed deployment configuration: missing CloudRunDeploymentSpec")
-		return model.StageStatus_STAGE_FAILURE
-	}
-
-	e.cloudProviderName = e.Application.CloudProvider
-	if e.cloudProviderName == "" {
-		e.LogPersister.Error("This application configuration was missing CloudProvider name")
-		return model.StageStatus_STAGE_FAILURE
-	}
-
-	cpConfig, ok := e.PipedConfig.FindCloudProvider(e.cloudProviderName, model.CloudProviderCloudRun)
-	if !ok {
-		e.LogPersister.Errorf("The specified cloud provider %q was not found in piped configuration", e.cloudProviderName)
-		return model.StageStatus_STAGE_FAILURE
-	}
-	e.cloudProviderConfig = cpConfig.CloudRunConfig
-
-	var (
-		originalStatus = e.Stage.Status
-		status         model.StageStatus
-	)
-
-	switch model.Stage(e.Stage.Name) {
-	case model.StageCloudRunSync:
-		status = e.ensureSync(ctx)
-
-	case model.StageCloudRunPromote:
-		status = e.ensurePromote(ctx)
-
-	case model.StageRollback:
-		status = e.ensureRollback(ctx)
-
-	default:
-		e.LogPersister.Errorf("Unsupported stage %s for cloudrun application", e.Stage.Name)
-		return model.StageStatus_STAGE_FAILURE
-	}
-
-	return executor.DetermineStageStatus(sig.Signal(), originalStatus, status)
+	ok = true
+	return
 }
 
-func (e *Executor) ensureSync(ctx context.Context) model.StageStatus {
-	commit := e.Deployment.Trigger.Commit.Hash
-	sm, ok := e.loadServiceManifest()
-	if !ok {
-		return model.StageStatus_STAGE_FAILURE
-	}
-
-	e.LogPersister.Info("Generate a service manifest that configures all traffic to the revision specified at the triggered commit")
-	revision, err := provider.DecideRevisionName(sm, commit)
-	if err != nil {
-		e.LogPersister.Errorf("Unable to decide revision name for the commit %s (%v)", commit, err)
-		return model.StageStatus_STAGE_FAILURE
-	}
-
+func configureServiceManifest(in *executor.Input, sm provider.ServiceManifest, revision string, traffics []provider.RevisionTraffic) bool {
 	if err := sm.SetRevision(revision); err != nil {
-		e.LogPersister.Errorf("Unable to set revision name to service manifest (%v)", err)
-		return model.StageStatus_STAGE_FAILURE
+		in.LogPersister.Errorf("Unable to set revision name to service manifest (%v)", err)
+		return false
 	}
 
-	if err := sm.UpdateAllTraffic(revision); err != nil {
-		e.LogPersister.Errorf("Unable to configure all traffic to revision %s (%v)", revision, err)
-		return model.StageStatus_STAGE_FAILURE
+	if err := sm.UpdateTraffic(traffics); err != nil {
+		in.LogPersister.Errorf("Unable to configure traffic percentages to service manifest (%v)", err)
+		return false
 	}
-	e.LogPersister.Info("Successfully generated the appropriate service manifest")
 
-	e.LogPersister.Info("Start applying the service manifest")
-	client, err := provider.DefaultRegistry().Client(ctx, e.cloudProviderName, e.cloudProviderConfig, e.Logger)
+	in.LogPersister.Info("Successfully configured revision and traffic percentages to the service manifest")
+	for _, t := range traffics {
+		in.LogPersister.Infof("  %s: %d", t.RevisionName, t.Percent)
+	}
+
+	return true
+}
+
+func apply(ctx context.Context, in *executor.Input, cloudProviderName string, cloudProviderCfg *config.CloudProviderCloudRunConfig, sm provider.ServiceManifest) bool {
+	in.LogPersister.Info("Start applying the service manifest")
+	client, err := provider.DefaultRegistry().Client(ctx, cloudProviderName, cloudProviderCfg, in.Logger)
 	if err != nil {
-		e.LogPersister.Errorf("Unable to create ClourRun client for the provider (%v)", err)
-		return model.StageStatus_STAGE_FAILURE
+		in.LogPersister.Errorf("Unable to create ClourRun client for the provider (%v)", err)
+		return false
 	}
+
 	if _, err := client.Apply(ctx, sm); err != nil {
-		e.LogPersister.Errorf("Failed to apply the service manifest (%v)", err)
-		return model.StageStatus_STAGE_FAILURE
-	}
-	e.LogPersister.Info("Successfully applied the service manifest")
-
-	return model.StageStatus_STAGE_SUCCESS
-}
-
-func (e *Executor) ensurePromote(ctx context.Context) model.StageStatus {
-	options := e.StageConfig.CloudRunPromoteStageOptions
-	if options == nil {
-		e.LogPersister.Errorf("Malformed configuration for stage %s", e.Stage.Name)
-		return model.StageStatus_STAGE_FAILURE
+		in.LogPersister.Errorf("Failed to apply the service manifest (%v)", err)
+		return false
 	}
 
-	// Determine the last deployed revision name.
-	lastDeployedCommit := e.Deployment.RunningCommitHash
-	if lastDeployedCommit == "" {
-		e.LogPersister.Errorf("Unable to determine the last deployed commit")
-	}
-
-	lastDeployedServiceManifest, ok := e.loadLastDeployedServiceManifest(ctx)
-	if !ok {
-		return model.StageStatus_STAGE_FAILURE
-	}
-
-	lastDeployedRevisionName, err := provider.DecideRevisionName(lastDeployedServiceManifest, lastDeployedCommit)
-	if err != nil {
-		e.LogPersister.Errorf("Unable to decide the last deployed revision name for the commit %s (%v)", lastDeployedCommit, err)
-		return model.StageStatus_STAGE_FAILURE
-	}
-
-	// Load triggered service manifest to apply.
-	commit := e.Deployment.Trigger.Commit.Hash
-	sm, ok := e.loadServiceManifest()
-	if !ok {
-		return model.StageStatus_STAGE_FAILURE
-	}
-
-	e.LogPersister.Infof("Generating a service manifest that configures traffic as: %d%% to new version, %d%% to old version", options.Percent, 100-options.Percent)
-	revisionName, err := provider.DecideRevisionName(sm, commit)
-	if err != nil {
-		e.LogPersister.Errorf("Unable to decide revision name for the commit %s (%v)", commit, err)
-		return model.StageStatus_STAGE_FAILURE
-	}
-
-	if err := sm.SetRevision(revisionName); err != nil {
-		e.LogPersister.Errorf("Unable to set revision name to service manifest (%v)", err)
-		return model.StageStatus_STAGE_FAILURE
-	}
-
-	revisions := []provider.RevisionTraffic{
-		{
-			RevisionName: revisionName,
-			Percent:      options.Percent,
-		},
-		{
-			RevisionName: lastDeployedRevisionName,
-			Percent:      100 - options.Percent,
-		},
-	}
-	if err := sm.UpdateTraffic(revisions); err != nil {
-		e.LogPersister.Errorf("Unable to configure traffic (%v)", err)
-		return model.StageStatus_STAGE_FAILURE
-	}
-	e.LogPersister.Info("Successfully generated the appropriate service manifest")
-
-	e.LogPersister.Info("Start applying the service manifest")
-	client, err := provider.DefaultRegistry().Client(ctx, e.cloudProviderName, e.cloudProviderConfig, e.Logger)
-	if err != nil {
-		e.LogPersister.Errorf("Unable to create ClourRun client for the provider (%v)", err)
-		return model.StageStatus_STAGE_FAILURE
-	}
-	if _, err := client.Apply(ctx, sm); err != nil {
-		e.LogPersister.Errorf("Failed to apply the service manifest (%v)", err)
-		return model.StageStatus_STAGE_FAILURE
-	}
-	e.LogPersister.Info("Successfully applied the service manifest")
-
-	// TODO: Wait to ensure the traffic was fully configured.
-	return model.StageStatus_STAGE_SUCCESS
-}
-
-func (e *Executor) ensureRollback(ctx context.Context) model.StageStatus {
-	commit := e.Deployment.RunningCommitHash
-	if commit == "" {
-		e.LogPersister.Errorf("Unable to determine the last deployed commit to rollback. It seems this is the first deployment.")
-		return model.StageStatus_STAGE_FAILURE
-	}
-
-	sm, ok := e.loadLastDeployedServiceManifest(ctx)
-	if !ok {
-		return model.StageStatus_STAGE_FAILURE
-	}
-
-	e.LogPersister.Info("Generate a service manifest that configures all traffic to the last deployed revision")
-	revision, err := provider.DecideRevisionName(sm, commit)
-	if err != nil {
-		e.LogPersister.Errorf("Unable to decide revision name for the commit %s (%v)", commit, err)
-		return model.StageStatus_STAGE_FAILURE
-	}
-
-	if err := sm.SetRevision(revision); err != nil {
-		e.LogPersister.Errorf("Unable to set revision name to service manifest (%v)", err)
-		return model.StageStatus_STAGE_FAILURE
-	}
-
-	if err := sm.UpdateAllTraffic(revision); err != nil {
-		e.LogPersister.Errorf("Unable to configure all traffic to revision %s (%v)", revision, err)
-		return model.StageStatus_STAGE_FAILURE
-	}
-	e.LogPersister.Info("Successfully generated the appropriate service manifest")
-
-	e.LogPersister.Info("Start applying the service manifest")
-	client, err := provider.DefaultRegistry().Client(ctx, e.cloudProviderName, e.cloudProviderConfig, e.Logger)
-	if err != nil {
-		e.LogPersister.Errorf("Unable to create ClourRun client for the provider (%v)", err)
-		return model.StageStatus_STAGE_FAILURE
-	}
-	if _, err := client.Apply(ctx, sm); err != nil {
-		e.LogPersister.Errorf("Failed to apply the service manifest (%v)", err)
-		return model.StageStatus_STAGE_FAILURE
-	}
-	e.LogPersister.Info("Successfully applied the service manifest")
-
-	return model.StageStatus_STAGE_SUCCESS
-}
-
-func (e *Executor) loadServiceManifest() (provider.ServiceManifest, bool) {
-	var (
-		commit = e.Deployment.Trigger.Commit.Hash
-		appDir = filepath.Join(e.repoDir, e.Deployment.GitPath.Path)
-	)
-
-	e.LogPersister.Infof("Loading service manifest at the triggered commit %s", commit)
-	sm, err := provider.LoadServiceManifest(appDir, e.config.Input.ServiceManifestFile)
-	if err != nil {
-		e.LogPersister.Errorf("Failed to load service manifest file (%v)", err)
-		return provider.ServiceManifest{}, false
-	}
-	e.LogPersister.Info("Successfully loaded the service manifest")
-
-	return sm, true
-}
-
-func (e *Executor) loadLastDeployedServiceManifest(ctx context.Context) (provider.ServiceManifest, bool) {
-	ds, err := e.RunningDSP.GetReadOnly(ctx, e.LogPersister)
-	if err != nil {
-		e.LogPersister.Errorf("Failed to prepare running deploy source (%v)", err)
-	}
-
-	e.LogPersister.Infof("Loading service manifest at the %s commit %s", ds.RevisionName, ds.Revision)
-	sm, err := provider.LoadServiceManifest(ds.AppDir, e.config.Input.ServiceManifestFile)
-	if err != nil {
-		e.LogPersister.Errorf("Failed to load service manifest file (%v)", err)
-		return provider.ServiceManifest{}, false
-	}
-
-	e.LogPersister.Info("Successfully loaded the service manifest")
-	return sm, true
+	in.LogPersister.Info("Successfully applied the service manifest")
+	return true
 }
