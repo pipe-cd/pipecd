@@ -76,7 +76,6 @@ func NewProvider(
 	appGitPath *model.ApplicationGitPath,
 	ssd sealedSecretDecrypter,
 ) Provider {
-
 	return &provider{
 		workingDir:            workingDir,
 		repoConfig:            repoConfig,
