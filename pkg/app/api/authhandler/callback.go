@@ -59,6 +59,11 @@ func (h *Handler) handleCallback(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	if proj.Rbac == nil {
+		h.handleError(w, r, "Missing RBAC configuration", nil)
+		return
+	}
+
 	sso, shared, err := h.findSSOConfig(proj)
 	if err != nil {
 		h.handleError(w, r, fmt.Sprintf("Invalid SSO configuration: %v", err), nil)
