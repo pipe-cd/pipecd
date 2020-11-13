@@ -36,6 +36,7 @@ go_test(
         "control_plane_test.go",
         "deployment_kubernetes_test.go",
         "deployment_terraform_test.go",
+        "deployment_test.go",
         "piped_test.go",
         "replicas_test.go",
         "sealed_secret_test.go",

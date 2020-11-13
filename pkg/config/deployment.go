@@ -42,6 +42,19 @@ func (s GenericDeploymentSpec) GetStage(index int32) (PipelineStage, bool) {
 	return s.Pipeline.Stages[index], true
 }
 
+// HasStage checks if the given stage is included in the pipeline.
+func (s GenericDeploymentSpec) HasStage(stage model.Stage) bool {
+	if s.Pipeline == nil {
+		return false
+	}
+	for _, s := range s.Pipeline.Stages {
+		if s.Name == stage {
+			return true
+		}
+	}
+	return false
+}
+
 // DeploymentCommitMatcher provides a way to decide how to deploy.
 type DeploymentCommitMatcher struct {
 	// It makes sure to perform syncing if the commit message matches this regular expression.
