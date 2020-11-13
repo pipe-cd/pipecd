@@ -11,6 +11,7 @@ go_library(
     deps = [
         "//pkg/app/piped/cloudprovider/kubernetes:go_default_library",
         "//pkg/app/piped/cloudprovider/kubernetes/resource:go_default_library",
+        "//pkg/app/piped/deploysource:go_default_library",
         "//pkg/app/piped/diff:go_default_library",
         "//pkg/app/piped/planner:go_default_library",
         "//pkg/config:go_default_library",

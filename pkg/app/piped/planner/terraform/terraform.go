@@ -17,6 +17,7 @@ package terraform
 import (
 	"context"
 	"fmt"
+	"io/ioutil"
 	"time"
 
 	"github.com/pipe-cd/pipe/pkg/app/piped/planner"
@@ -38,7 +39,13 @@ func Register(r registerer) {
 
 // Plan decides which pipeline should be used for the given input.
 func (p *Planner) Plan(ctx context.Context, in planner.Input) (out planner.Output, err error) {
-	cfg := in.DeploymentConfig.TerraformDeploymentSpec
+	ds, err := in.TargetDSP.Get(ctx, ioutil.Discard)
+	if err != nil {
+		err = fmt.Errorf("error while preparing deploy source data (%v)", err)
+		return
+	}
+
+	cfg := ds.DeploymentConfig.TerraformDeploymentSpec
 	if cfg == nil {
 		err = fmt.Errorf("missing TerraformDeploymentSpec in deployment configuration")
 		return

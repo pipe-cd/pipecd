@@ -17,15 +17,14 @@ package controller
 import (
 	"context"
 	"fmt"
-	"os"
 	"path/filepath"
-	"sync"
 	"time"
 
 	"go.uber.org/atomic"
 	"go.uber.org/zap"
 
 	"github.com/pipe-cd/pipe/pkg/app/api/service/pipedservice"
+	"github.com/pipe-cd/pipe/pkg/app/piped/deploysource"
 	"github.com/pipe-cd/pipe/pkg/app/piped/executor"
 	"github.com/pipe-cd/pipe/pkg/app/piped/executor/registry"
 	"github.com/pipe-cd/pipe/pkg/app/piped/logpersister"
@@ -36,10 +35,7 @@ import (
 )
 
 var (
-	workspaceGitRepoDirName        = "repo"
-	workspaceGitRunningRepoDirName = "running-repo"
-	workspaceStagesDirName         = "stages"
-	defaultDeploymentTimeout       = time.Hour
+	defaultDeploymentTimeout = time.Hour
 )
 
 // scheduler is a dedicated object for a specific deployment of a single application.
@@ -62,10 +58,9 @@ type scheduler struct {
 	appManifestsCache     cache.Cache
 	logger                *zap.Logger
 
-	deploymentConfig      *config.Config
-	genericDeploymentSpec config.GenericDeploymentSpec
-	prepareMu             sync.Mutex
-	prepared              bool
+	targetDSP  deploysource.Provider
+	runningDSP deploysource.Provider
+
 	// Current status of each stages.
 	// We stores their current statuses into this field
 	// because the deployment model is readonly to avoid data race.
@@ -218,6 +213,37 @@ func (s *scheduler) Run(ctx context.Context) error {
 		lastStage        *model.PipelineStage
 	)
 	defer timer.Stop()
+
+	repoID := s.deployment.GitPath.Repo.Id
+	repoCfg, ok := s.pipedConfig.GetRepository(repoID)
+	if !ok {
+		s.doneDeploymentStatus = model.DeploymentStatus_DEPLOYMENT_FAILURE
+		statusReason = fmt.Sprintf("Unable to find %q from the repository list in piped config", repoID)
+		s.reportDeploymentCompleted(ctx, s.doneDeploymentStatus, statusReason, "")
+		return fmt.Errorf("unable to find %q from the repository list in piped config", repoID)
+	}
+
+	s.targetDSP = deploysource.NewProvider(
+		filepath.Join(s.workingDir, "target-deploysource"),
+		repoCfg,
+		"target",
+		s.deployment.Trigger.Commit.Hash,
+		s.gitClient,
+		s.deployment.GitPath,
+		s.sealedSecretDecrypter,
+	)
+
+	if s.deployment.RunningCommitHash != "" {
+		s.runningDSP = deploysource.NewProvider(
+			filepath.Join(s.workingDir, "running-deploysource"),
+			repoCfg,
+			"running",
+			s.deployment.RunningCommitHash,
+			s.gitClient,
+			s.deployment.GitPath,
+			s.sealedSecretDecrypter,
+		)
+	}
 
 	// Iterate all the stages and execute the uncompleted ones.
 	for i, ps := range s.deployment.Stages {
@@ -387,31 +413,30 @@ func (s *scheduler) executeStage(sig executor.StopSignal, ps model.PipelineStage
 		return model.StageStatus_STAGE_FAILURE
 	}
 
-	// Ensure that all needed things has been prepared before executing any stage.
-	var (
-		needTargetCommit  = ps.Name != model.StageRollback.String()
-		needRunningCommit = s.deployment.RunningCommitHash != ""
-	)
-	if err := s.ensurePreparing(ctx, needTargetCommit, needRunningCommit, lp); err != nil {
-		if !sig.Stopped() {
+	// Load the stage configuration.
+	var stageConfig *config.PipelineStage
+	if ps.Predefined {
+		if sc, ok := pln.GetPredefinedStage(ps.Id); ok {
+			stageConfig = &sc
+		}
+	} else {
+		ds, err := s.targetDSP.GetReadOnly(ctx, lp)
+		if sig.Stopped() {
+			return originalStatus
+		}
+		if err != nil {
+			lp.Errorf("Failed to prepare deploy source data (%v)", err)
 			if err := s.reportStageStatus(ctx, ps.Id, model.StageStatus_STAGE_FAILURE, ps.Requires); err != nil {
 				s.logger.Error("failed to report stage status", zap.Error(err))
 			}
 			return model.StageStatus_STAGE_FAILURE
 		}
-		return originalStatus
+
+		if sc, ok := ds.GenericDeploymentConfig.GetStage(ps.Index); ok {
+			stageConfig = &sc
+		}
 	}
 
-	var stageConfig *config.PipelineStage
-	if !ps.Predefined {
-		if sc, ok := s.genericDeploymentSpec.GetStage(ps.Index); ok {
-			stageConfig = &sc
-		}
-	} else {
-		if sc, ok := pln.GetPredefinedStage(ps.Id); ok {
-			stageConfig = &sc
-		}
-	}
 	if stageConfig == nil {
 		lp.Error("Unable to find the stage configuration")
 		if err := s.reportStageStatus(ctx, ps.Id, model.StageStatus_STAGE_FAILURE, ps.Requires); err != nil {
@@ -427,31 +452,30 @@ func (s *scheduler) executeStage(sig executor.StopSignal, ps model.PipelineStage
 		return model.StageStatus_STAGE_FAILURE
 	}
 
+	cmdLister := stageCommandLister{
+		lister:       s.commandLister,
+		deploymentID: s.deployment.Id,
+		stageID:      ps.Id,
+	}
+	alrLister := appLiveResourceLister{
+		lister:        s.liveResourceLister,
+		cloudProvider: app.CloudProvider,
+		appID:         app.Id,
+	}
 	input := executor.Input{
-		Stage:            &ps,
-		StageConfig:      *stageConfig,
-		Deployment:       s.deployment,
-		DeploymentConfig: s.deploymentConfig,
-		PipedConfig:      s.pipedConfig,
-		Application:      app,
-		WorkingDir:       s.workingDir,
-		RepoDir:          filepath.Join(s.workingDir, workspaceGitRepoDirName),
-		RunningRepoDir:   filepath.Join(s.workingDir, workspaceGitRunningRepoDirName),
-		StageWorkingDir:  filepath.Join(s.workingDir, workspaceStagesDirName, ps.Id),
-		CommandLister: stageCommandLister{
-			lister:       s.commandLister,
-			deploymentID: s.deployment.Id,
-			stageID:      ps.Id,
-		},
-		LogPersister:      lp,
-		MetadataStore:     s.metadataStore,
-		AppManifestsCache: s.appManifestsCache,
-		AppLiveResourceLister: appLiveResourceLister{
-			lister:        s.liveResourceLister,
-			cloudProvider: app.CloudProvider,
-			appID:         app.Id,
-		},
-		Logger: s.logger,
+		Stage:                 &ps,
+		StageConfig:           *stageConfig,
+		Deployment:            s.deployment,
+		Application:           app,
+		PipedConfig:           s.pipedConfig,
+		TargetDSP:             s.targetDSP,
+		RunningDSP:            s.runningDSP,
+		CommandLister:         cmdLister,
+		LogPersister:          lp,
+		MetadataStore:         s.metadataStore,
+		AppManifestsCache:     s.appManifestsCache,
+		AppLiveResourceLister: alrLister,
+		Logger:                s.logger,
 	}
 
 	// Find the executor for this stage.
@@ -475,119 +499,6 @@ func (s *scheduler) executeStage(sig executor.StopSignal, ps model.PipelineStage
 	}
 
 	return originalStatus
-}
-
-// ensurePreparing ensures that all needed things should be prepared before executing any stages.
-// The log of this preparing process will be written to the first executing stage
-// when a new scheduler has been created.
-//   needTargetCommit = true means the target commit must be prepared
-//   needRunningCommit = true means the running commit must be prepared
-func (s *scheduler) ensurePreparing(ctx context.Context, needTargetCommit, needRunningCommit bool, lp logpersister.StageLogPersister) error {
-	s.prepareMu.Lock()
-	defer s.prepareMu.Unlock()
-
-	if s.prepared {
-		return nil
-	}
-	lp.Info("Start preparing repository data for the stage")
-
-	var (
-		repoPath = filepath.Join(s.workingDir, workspaceGitRepoDirName)
-		appPath  = filepath.Join(repoPath, s.deployment.GitPath.Path)
-	)
-
-	// Ensure that this directory is empty.
-	// Because it maybe created by another stage before.
-	if err := os.RemoveAll(repoPath); err != nil {
-		lp.Errorf("Unable to prepare a temporary directory for storing git repository (%v)", err)
-		return err
-	}
-
-	// Clone repository and checkout to the target revision.
-	gitRepo, err := prepareDeployRepository(ctx, s.deployment, s.gitClient, repoPath, s.pipedConfig)
-	if err != nil {
-		lp.Errorf("Unable to prepare repository (%v)", err)
-		return err
-	}
-	lp.Successf("Successfully cloned repository %s", s.deployment.GitPath.Repo.Id)
-
-	// Load deployment configuration at the target revision.
-	cfg, err := loadDeploymentConfiguration(gitRepo.GetPath(), s.deployment)
-	if err != nil {
-		lp.Errorf("Failed to load deployment configuration (%v)", err)
-		return fmt.Errorf("failed to load deployment configuration (%w)", err)
-	}
-	s.deploymentConfig = cfg
-
-	gds, ok := cfg.GetGenericDeployment()
-	if !ok {
-		lp.Errorf("Unsupport application kind %s", cfg.Kind)
-		return fmt.Errorf("unsupport application kind %s", cfg.Kind)
-	}
-	s.genericDeploymentSpec = gds
-	lp.Success("Successfully loaded deployment configuration")
-
-	if needRunningCommit {
-		// Copy and checkout the running revision.
-		var (
-			runningRepoPath = filepath.Join(s.workingDir, workspaceGitRunningRepoDirName)
-			runningAppPath  = filepath.Join(runningRepoPath, s.deployment.GitPath.Path)
-		)
-
-		// Ensure that this directory is empty.
-		// Because it maybe created by another stage before.
-		if err := os.RemoveAll(runningRepoPath); err != nil {
-			lp.Errorf("Unable to prepare a temporary directory for storing git repository (%v)", err)
-			return err
-		}
-
-		runningGitRepo, err := gitRepo.Copy(runningRepoPath)
-		if err != nil {
-			lp.Errorf("Unable to copy repository (%v)", err)
-			return err
-		}
-		if err = runningGitRepo.Checkout(ctx, s.deployment.RunningCommitHash); err != nil {
-			lp.Errorf("Unable to checkout repository (%v)", err)
-			return err
-		}
-
-		// Load deployment configuration at the running revision.
-		cfg, err := loadDeploymentConfiguration(runningRepoPath, s.deployment)
-		if err != nil {
-			lp.Errorf("Failed to load deployment configuration at the running commit (%v)", err)
-			return fmt.Errorf("failed to load deployment configuration at the running commit (%w)", err)
-		}
-		gds, ok := cfg.GetGenericDeployment()
-		if !ok {
-			lp.Errorf("Unsupport application kind %s", cfg.Kind)
-			return fmt.Errorf("unsupport application kind %s", cfg.Kind)
-		}
-
-		// Decrypt the sealed secrets at the running revision.
-		if len(gds.SealedSecrets) > 0 && s.sealedSecretDecrypter != nil {
-			if err := decryptSealedSecrets(runningAppPath, gds.SealedSecrets, s.sealedSecretDecrypter); err != nil {
-				lp.Errorf("Failed to decrypt sealed secrets at running commit (%v)", err)
-				return fmt.Errorf("failed to decrypt sealed secrets at running commit (%w)", err)
-			}
-			lp.Successf("Successsfully decrypted %d sealed secrets at running commit", len(gds.SealedSecrets))
-		}
-	}
-
-	if needTargetCommit {
-		// Decrypt the sealed secrets at the target revision.
-		if len(gds.SealedSecrets) > 0 && s.sealedSecretDecrypter != nil {
-			if err := decryptSealedSecrets(appPath, gds.SealedSecrets, s.sealedSecretDecrypter); err != nil {
-				lp.Errorf("Failed to decrypt sealed secrets (%v)", err)
-				return fmt.Errorf("failed to decrypt sealed secrets (%w)", err)
-			}
-			lp.Successf("Successsfully decrypted %d sealed secrets", len(gds.SealedSecrets))
-		}
-	}
-
-	s.prepared = true
-	lp.Info("All preparations have been completed successfully")
-
-	return nil
 }
 
 func (s *scheduler) reportStageStatus(ctx context.Context, stageID string, status model.StageStatus, requires []string) error {

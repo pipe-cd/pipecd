@@ -18,6 +18,7 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
+	"io/ioutil"
 	"strings"
 	"time"
 
@@ -25,6 +26,7 @@ import (
 
 	provider "github.com/pipe-cd/pipe/pkg/app/piped/cloudprovider/kubernetes"
 	"github.com/pipe-cd/pipe/pkg/app/piped/cloudprovider/kubernetes/resource"
+	"github.com/pipe-cd/pipe/pkg/app/piped/deploysource"
 	"github.com/pipe-cd/pipe/pkg/app/piped/diff"
 	"github.com/pipe-cd/pipe/pkg/app/piped/planner"
 	"github.com/pipe-cd/pipe/pkg/model"
@@ -49,7 +51,12 @@ func Register(r registerer) {
 
 // Plan decides which pipeline should be used for the given input.
 func (p *Planner) Plan(ctx context.Context, in planner.Input) (out planner.Output, err error) {
-	cfg := in.DeploymentConfig.KubernetesDeploymentSpec
+	ds, err := in.TargetDSP.Get(ctx, ioutil.Discard)
+	if err != nil {
+		err = fmt.Errorf("error while preparing deploy source data (%v)", err)
+		return
+	}
+	cfg := ds.DeploymentConfig.KubernetesDeploymentSpec
 	if cfg == nil {
 		err = fmt.Errorf("missing KubernetesDeploymentSpec in deployment configuration")
 		return
@@ -65,7 +72,7 @@ func (p *Planner) Plan(ctx context.Context, in planner.Input) (out planner.Outpu
 	newManifests, ok := manifestCache.Get(in.Deployment.Trigger.Commit.Hash)
 	if !ok {
 		// When the manifests were not in the cache we have to load them.
-		loader := provider.NewManifestLoader(in.Deployment.ApplicationName, in.AppDir, in.RepoDir, in.Deployment.GitPath.ConfigFilename, cfg.Input, in.Logger)
+		loader := provider.NewManifestLoader(in.Deployment.ApplicationName, ds.AppDir, ds.RepoDir, in.Deployment.GitPath.ConfigFilename, cfg.Input, in.Logger)
 		newManifests, err = loader.LoadManifests(ctx)
 		if err != nil {
 			return
@@ -128,18 +135,18 @@ func (p *Planner) Plan(ctx context.Context, in planner.Input) (out planner.Outpu
 		return
 	}
 
-	// Checkout to the most recent successful commit to load its manifests.
-	err = in.Repo.Checkout(ctx, in.MostRecentSuccessfulCommitHash)
-	if err != nil {
-		err = fmt.Errorf("failed to checkout to commit %s: %w", in.MostRecentSuccessfulCommitHash, err)
-		return
-	}
-
 	// Load manifests of the previously applied commit.
 	oldManifests, ok := manifestCache.Get(in.MostRecentSuccessfulCommitHash)
 	if !ok {
 		// When the manifests were not in the cache we have to load them.
-		loader := provider.NewManifestLoader(in.Deployment.ApplicationName, in.AppDir, in.RepoDir, in.Deployment.GitPath.ConfigFilename, cfg.Input, in.Logger)
+		var runningDs *deploysource.DeploySource
+		runningDs, err = in.RunningDSP.Get(ctx, ioutil.Discard)
+		if err != nil {
+			err = fmt.Errorf("failed to prepare the running deploy source data (%v)", err)
+			return
+		}
+
+		loader := provider.NewManifestLoader(in.Deployment.ApplicationName, runningDs.AppDir, runningDs.RepoDir, in.Deployment.GitPath.ConfigFilename, cfg.Input, in.Logger)
 		oldManifests, err = loader.LoadManifests(ctx)
 		if err != nil {
 			err = fmt.Errorf("failed to load previously deployed manifests: %w", err)
