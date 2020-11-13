@@ -323,6 +323,9 @@ spec:
 | | | | |
 
 ### KubernetesTrafficRoutingStageOptions
+This stage routes traffic with the method specified in [KubernetesTrafficRouting](https://pipecd.dev/docs/user-guide/configuration-reference/#kubernetestrafficrouting).
+When using `podselector` method as a traffic routing method, routing is done by updating the Service selector.
+Therefore, note that all traffic will be routed to the primary if the the primary variant's service is rolled out by running the `K8S_PRIMARY_ROLLOUT` stage.
 
 | Field | Type | Description | Required |
 |-|-|-|-|
