@@ -1,6 +1,9 @@
 import { createSlice, createAsyncThunk } from "@reduxjs/toolkit";
 import { LogBlock as LogBlockModel } from "pipe/pkg/app/web/model/logblock_pb";
+import { AppState } from ".";
+import { DeploymentStatus } from "../../../../../bazel-bin/pkg/app/web/model/deployment_pb";
 import { getStageLog } from "../api/stage-log";
+import { selectById as selectDeploymentById } from "./deployments";
 
 export { LogSeverity } from "pipe/pkg/app/web/model/logblock_pb";
 
@@ -29,10 +32,31 @@ export const fetchStageLog = createAsyncThunk<
     stageId: string;
     offsetIndex: number;
     retriedCount: number;
-  }
+  },
+  { state: AppState }
 >(
   "stage-logs/fetch",
-  async ({ deploymentId, offsetIndex, retriedCount, stageId }) => {
+  async ({ deploymentId, offsetIndex, retriedCount, stageId }, thunkAPI) => {
+    const s = thunkAPI.getState();
+    const deployment = selectDeploymentById(s.deployments, deploymentId);
+
+    if (!deployment) {
+      throw new Error(`Deployment: ${deploymentId} is not exists in state.`);
+    }
+
+    // When the Deployment Status is `Pending` and `Planned`, the log doesn't exist, so it returns an empty log instead of requesting it.
+    if (
+      deployment.status === DeploymentStatus.DEPLOYMENT_PLANNED ||
+      deployment.status === DeploymentStatus.DEPLOYMENT_PENDING
+    ) {
+      return {
+        stageId,
+        deploymentId,
+        logBlocks: [],
+        completed: false,
+      };
+    }
+
     const response = await getStageLog({
       deploymentId,
       offsetIndex,
