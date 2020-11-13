@@ -229,6 +229,60 @@ func TestEnsurePrimaryRollout(t *testing.T) {
 				},
 			},
 		},
+		{
+			name: "lack of variant label",
+			want: model.StageStatus_STAGE_FAILURE,
+			executor: &Executor{
+				Input: executor.Input{
+					Deployment: &model.Deployment{
+						Trigger: &model.DeploymentTrigger{
+							Commit: &model.Commit{},
+						},
+					},
+					PipedConfig:  &config.PipedSpec{},
+					LogPersister: &fakeLogPersister{},
+					Stage:        &model.PipelineStage{},
+					StageConfig: config.PipelineStage{
+						K8sPrimaryRolloutStageOptions: &config.K8sPrimaryRolloutStageOptions{
+							AddVariantLabelToSelector: false,
+						},
+					},
+					AppManifestsCache: func() cache.Cache {
+						c := cachetest.NewMockCache(ctrl)
+						c.EXPECT().Get(gomock.Any()).Return(nil, fmt.Errorf("not found"))
+						c.EXPECT().Put(gomock.Any(), gomock.Any()).Return(nil)
+						return c
+					}(),
+					Logger: zap.NewNop(),
+				},
+				provider: func() provider.Provider {
+					p := providertest.NewMockProvider(ctrl)
+					p.EXPECT().LoadManifests(gomock.Any()).Return([]provider.Manifest{
+						provider.MakeManifest(provider.ResourceKey{
+							APIVersion: "apps/v1",
+							Kind:       provider.KindDeployment,
+						}, &unstructured.Unstructured{
+							Object: map[string]interface{}{"spec": map[string]interface{}{}},
+						}),
+					}, nil)
+					return p
+				}(),
+				config: &config.KubernetesDeploymentSpec{
+					GenericDeploymentSpec: config.GenericDeploymentSpec{
+						Pipeline: &config.DeploymentPipeline{
+							Stages: []config.PipelineStage{
+								{
+									Name: model.StageK8sTrafficRouting,
+								},
+							},
+						},
+					},
+					TrafficRouting: &config.KubernetesTrafficRouting{
+						Method: config.KubernetesTrafficRoutingMethodPodSelector,
+					},
+				},
+			},
+		},
 	}
 	for _, tc := range testcases {
 		t.Run(tc.name, func(t *testing.T) {

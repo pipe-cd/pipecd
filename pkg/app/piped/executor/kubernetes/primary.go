@@ -47,8 +47,9 @@ func (e *Executor) ensurePrimaryRollout(ctx context.Context) model.StageStatus {
 	}
 	e.LogPersister.Successf("Successfully loaded %d manifests", len(manifests))
 
+	routingMethod := config.DetermineKubernetesTrafficRoutingMethod(e.config.TrafficRouting)
 	var primaryManifests []provider.Manifest
-	if config.DetermineKubernetesTrafficRoutingMethod(e.config.TrafficRouting) == config.KubernetesTrafficRoutingMethodPodSelector {
+	if routingMethod == config.KubernetesTrafficRoutingMethodPodSelector {
 		primaryManifests = manifests
 	} else {
 		// Find traffic routing manifests and filter out it from primary manifests.
@@ -68,8 +69,10 @@ func (e *Executor) ensurePrimaryRollout(ctx context.Context) model.StageStatus {
 		}
 	}
 
-	// Check the variant selector in the workloads if the addVariantLabelToSelector is false.
-	if !options.AddVariantLabelToSelector {
+	// Check if the variant selector is in the workloads.
+	if !options.AddVariantLabelToSelector &&
+		routingMethod == config.KubernetesTrafficRoutingMethodPodSelector &&
+		e.config.HasStage(model.StageK8sTrafficRouting) {
 		workloads := findWorkloadManifests(primaryManifests, e.config.Workloads)
 		var invalid bool
 		for _, m := range workloads {
