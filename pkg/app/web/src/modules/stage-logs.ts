@@ -1,7 +1,7 @@
 import { createSlice, createAsyncThunk } from "@reduxjs/toolkit";
 import { LogBlock as LogBlockModel } from "pipe/pkg/app/web/model/logblock_pb";
 import { AppState } from ".";
-import { DeploymentStatus } from "../../../../../bazel-bin/pkg/app/web/model/deployment_pb";
+import { DeploymentStatus } from "pipe/pkg/app/web/model/deployment_pb";
 import { getStageLog } from "../api/stage-log";
 import { selectById as selectDeploymentById } from "./deployments";
 
