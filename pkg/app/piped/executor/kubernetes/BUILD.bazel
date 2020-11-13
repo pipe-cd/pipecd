@@ -31,6 +31,7 @@ go_test(
     name = "go_default_test",
     size = "small",
     srcs = [
+        "canary_test.go",
         "kubernetes_test.go",
         "primary_test.go",
         "sync_test.go",

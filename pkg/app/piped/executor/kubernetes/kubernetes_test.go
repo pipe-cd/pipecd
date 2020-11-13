@@ -31,15 +31,22 @@ import (
 
 type fakeLogPersister struct{}
 
-func (l *fakeLogPersister) Write(_ []byte) (int, error) {
-	return 0, nil
-}
+func (l *fakeLogPersister) Write(_ []byte) (int, error)         { return 0, nil }
 func (l *fakeLogPersister) Info(_ string)                       {}
 func (l *fakeLogPersister) Infof(_ string, _ ...interface{})    {}
 func (l *fakeLogPersister) Success(_ string)                    {}
 func (l *fakeLogPersister) Successf(_ string, _ ...interface{}) {}
 func (l *fakeLogPersister) Error(_ string)                      {}
 func (l *fakeLogPersister) Errorf(_ string, _ ...interface{})   {}
+
+type fakeMetadataStore struct{}
+
+func (m *fakeMetadataStore) Get(_ string) (string, bool)                         { return "", false }
+func (m *fakeMetadataStore) Set(_ context.Context, _, _ string) error            { return nil }
+func (m *fakeMetadataStore) GetStageMetadata(_ string) (map[string]string, bool) { return nil, false }
+func (m *fakeMetadataStore) SetStageMetadata(_ context.Context, _ string, _ map[string]string) error {
+	return nil
+}
 
 func TestGenerateServiceManifests(t *testing.T) {
 	testcases := []struct {
