@@ -32,11 +32,11 @@ In another case, even when the pipeline was specified, a PR that just changes th
 
 ## Sync with the specified pipeline
 
-The `pipeline` field in the deployment configuration is used to customize the way to do deployment by specifying and configuring the execution stages. You may want to configure those stages to enable a progressive deployment with a strategy like canary, bluegreen, a manual approval, an analysis stage.
+The `pipeline` field in the deployment configuration is used to customize the way to do deployment by specifying and configuring the execution stages. You may want to configure those stages to enable a progressive deployment with a strategy like canary, blue-green, a manual approval, an analysis stage.
 
-For enabling that customization, PipeCD defines three variants for each Kubernetes application: primary (aka stable), baseline and canary.
+To enable customization, PipeCD defines three variants for each Kubernetes application: primary (aka stable), baseline and canary.
 - `primary` runs the current version of code and configuration.
-- `baseline` runs the same version of code and configuration as the primary variant. (Creating a brand new baseline workload ensures that the metrics produced are free of any effects caused by long-running processes.)
+- `baseline` runs the same version of code and configuration as the primary variant. (Creating a brand-new baseline workload ensures that the metrics produced are free of any effects caused by long-running processes.)
 - `canary` runs the proposed change of code or configuration.
 
 Depending on the configured pipeline, any variants can exist during the deployment process, but after a succeeded deployment only `primary` variants should be remaining.

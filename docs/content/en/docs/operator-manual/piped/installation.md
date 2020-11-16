@@ -12,13 +12,13 @@ description: >
 - Ensure that the `piped` has been registered and you are having its PIPED_ID and PIPED_KEY strings.
 - If you are not having them, this [page](/docs/operator-manual/control-plane/registering-a-piped/) guides you how to register a new one.
 
-##### Preparing a SSH key
+##### Preparing SSH key
 - If your Git repositories are private, `piped` requires a private SSH key to access those repositories.
 - Please checkout [this documentation](https://help.github.com/en/github/authenticating-to-github/generating-a-new-ssh-key-and-adding-it-to-the-ssh-agent) for how to generate a new SSH key. Then add the public key to your repositories. (If you are using GitHub, you can add it to Deploy Keys at the repository's Settings page.)
 
 ## Installation
 
-### Installing on a Kubernetes cluster
+### Installing on Kubernetes cluster
 
 - Adding `pipecd` helm chart repository
 
@@ -60,7 +60,7 @@ description: >
   ```
 Note: Be sure to set `args.insecure=false` if your control-plane is already TLS-enabled.
 
-### Installing on a single machine
+### Installing on single machine
 
 - Downloading the latest `piped` binary for your machine
 

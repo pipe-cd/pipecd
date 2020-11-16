@@ -3,7 +3,7 @@ title: "Concepts"
 linkTitle: "Concepts"
 weight: 2
 description: >
-  This page describes serveral core concepts in PipeCD.
+  This page describes several core concepts in PipeCD.
 ---
 
 ### Piped

@@ -16,7 +16,7 @@ There are three statuses for the drift detection result: `SYNCED`, `OUT_OF_SYNC`
 
 ###### SYNCED
 
-This status means no configuration drift was detected. All resources/configurations are synced from the definitions in Git. From the application details page, this status is showed by a green "Synced" mark.
+This status means no configuration drift was detected. All resources/configurations are synced from the definitions in Git. From the application details page, this status is shown by a green "Synced" mark.
 
 ![](/images/application-synced.png)
 <p style="text-align: center;">
@@ -30,7 +30,7 @@ This status means a configuration drift was detected. An application is in this 
 - at least one resource is NOT defined in Git but running in the cluster
 - at least one resource that is both defined in Git and running in the cluster but NOT in the same configuration
 
-This status is showed by a red "Out of Sync" mark at the application details page.
+This status is shown by a red "Out of Sync" mark on the application details page.
 
 ![](/images/application-out-of-sync.png)
 <p style="text-align: center;">

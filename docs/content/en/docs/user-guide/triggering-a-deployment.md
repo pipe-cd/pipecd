@@ -3,7 +3,7 @@ title: "Triggering a deployment"
 linkTitle: "Triggering a deployment"
 weight: 3
 description: >
-  This page describes when a deployment is trigerred automatically and how to manually trigger a deployment.
+  This page describes when a deployment is triggered automatically and how to manually trigger a deployment.
 ---
 
 PipeCD is using Git as a single source of truth, all application resources and infrastructure changes should be done by making a pull request to Git.
