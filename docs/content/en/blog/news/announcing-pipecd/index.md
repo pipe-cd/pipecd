@@ -102,4 +102,4 @@ PipeCD team is hiring engineers/interns to work on PipeCD. Please contact us if 
 ### Thanks
 
 Finally, we would like to thank the existing open-source CD projects like Spinnaker, FluxCD, ArgoCD... PipeCD has been built on many great ideas from those great projects.
-PipeCD team would also like to thank CyberAgent's engineers and collaborators from other companies, who have sent us so many valuable feedbacks throughout the development process to this day.
+PipeCD team would also like to thank CyberAgent's engineers and collaborators from other companies, who have sent us so much valuable feedback throughout the development process to this day.
