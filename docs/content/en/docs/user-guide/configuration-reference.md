@@ -26,7 +26,7 @@ spec:
 | service | [KubernetesService](/docs/user-guide/configuration-reference/#kubernetesservice) | Which Kubernetes resource should be considered as the Service of application. Empty means the first Service resource will be used. | No |
 | workloads | [][KubernetesWorkload](/docs/user-guide/configuration-reference/#kubernetesworkload) | Which Kubernetes resources should be considered as the Workloads of application. Empty means all Deployment resources. | No |
 | trafficRouting | [KubernetesTrafficRouting](/docs/user-guide/configuration-reference/#kubernetestrafficrouting) | How to change traffic routing percentages. | No |
-| sealedSecrets | [][SealedSecretMapping](/docs/user-guide/configuration-reference/#sealedsecretmapping) | The list of sealed secrets the should be decrypted. | No |
+| sealedSecrets | [][SealedSecretMapping](/docs/user-guide/configuration-reference/#sealedsecretmapping) | The list of sealed secrets should be decrypted. | No |
 <!-- | dependencies | []string | List of directories where their changes will trigger the deployment. | No | -->
 
 ## Terraform application
@@ -45,7 +45,7 @@ spec:
 | input | [TerraformDeploymentInput](/docs/user-guide/configuration-reference/#terraformdeploymentinput) | Input for Terraform deployment such as terraform version, workspace... | No |
 | quickSync | [TerraformQuickSync](/docs/user-guide/configuration-reference/#terraformquicksync) | Configuration for quick sync. | No |
 | pipeline | [Pipeline](/docs/user-guide/configuration-reference/#pipeline) | Pipeline for deploying progressively. | No |
-| sealedSecrets | [][SealedSecretMapping](/docs/user-guide/configuration-reference/#sealedsecretmapping) | The list of sealed secrets the should be decrypted. | No |
+| sealedSecrets | [][SealedSecretMapping](/docs/user-guide/configuration-reference/#sealedsecretmapping) | The list of sealed secrets should be decrypted. | No |
 <!-- | dependencies | []string | List of directories where their changes will trigger the deployment. | No | -->
 
 ## CloudRun application
@@ -64,7 +64,7 @@ spec:
 | input | [CloudRunDeploymentInput](/docs/user-guide/configuration-reference/#cloudrundeploymentinput) | Input for CloudRun deployment such as docker image... | No |
 | quickSync | [CloudRunQuickSync](/docs/user-guide/configuration-reference/#cloudrunquicksync) | Configuration for quick sync. | No |
 | pipeline | [Pipeline](/docs/user-guide/configuration-reference/#pipeline) | Pipeline for deploying progressively. | No |
-| sealedSecrets | [][SealedSecretMapping](/docs/user-guide/configuration-reference/#sealedsecretmapping) | The list of sealed secrets the should be decrypted. | No |
+| sealedSecrets | [][SealedSecretMapping](/docs/user-guide/configuration-reference/#sealedsecretmapping) | The list of sealed secrets should be decrypted. | No |
 
 ## Lambda application
 
@@ -82,7 +82,7 @@ spec:
 | input | [CloudRunDeploymentInput](/docs/user-guide/configuration-reference/#cloudrundeploymentinput) | Input for Lambda deployment such as where to fetch source code... | No |
 | quickSync | [CloudRunQuickSync](/docs/user-guide/configuration-reference/#cloudrunquicksync) | Configuration for quick sync. | No |
 | pipeline | [Pipeline](/docs/user-guide/configuration-reference/#pipeline) | Pipeline for deploying progressively. | No |
-| sealedSecrets | [][SealedSecretMapping](/docs/user-guide/configuration-reference/#sealedsecretmapping) | The list of sealed secrets the should be decrypted. | No |
+| sealedSecrets | [][SealedSecretMapping](/docs/user-guide/configuration-reference/#sealedsecretmapping) | The list of sealed secrets should be decrypted. | No |
 
 ## Analysis Template Configuration
 
@@ -115,7 +115,7 @@ spec:
 
 | Field | Type | Description | Required |
 |-|-|-|-|
-| path | string | Relative path from the application directory to sealed secret file. | Yes |
+| path | string | Relative path from the application directory to the sealed secret file. | Yes |
 | outFilename | string | The filename for the decrypted secret. Empty means the same name with the sealed secret file. | No |
 | outDir | string | The directory name where to put the decrypted secret. Empty means the same directory with the sealed secret file. | No |
 
@@ -164,7 +164,7 @@ spec:
 
 | Field | Type | Description | Required |
 |-|-|-|-|
-| releaseName | string | The release name of helm deployment. By default the release name is equal to the application name. | No |
+| releaseName | string | The release name of helm deployment. By default, the release name is equal to the application name. | No |
 | valueFiles | []string | List of value files should be loaded. | No |
 | setFiles | []string | List of file path for values. | No |
 

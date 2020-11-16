@@ -11,7 +11,7 @@ Each application must belong to one and only one environment. While each piped m
 
 The list of environments is shown in the Settings page. Anyone who has the project admin role can add a new environment by clicking on the `+ADD` button.
 
-</br>
+<br>
 
 ![](/images/settings-add-environment.png)
 <p style="text-align: center;">

@@ -47,7 +47,7 @@ Here are the list of fields in the register form:
 
 After registering the application, one more step left is adding the deployment configuration file (`.pipe.yaml`) for that application into the application directory in Git repository.
 
-While registering application helps `control-plane` know the basic information about application, the deployment configuration file is used by `piped`, and it helps `piped` know how the application should be deployed, such as doing canary/bluegreen strategy or requiring a manual approval...
+While registering application helps `control-plane` know the basic information about application, the deployment configuration file is used by `piped`, and it helps `piped` know how the application should be deployed, such as doing canary/blue-green strategy or requiring a manual approval...
 That deployment configuration file is in `YAML` format as below:
 
 ``` yaml
@@ -60,7 +60,7 @@ spec:
 - `kind` is the application kind. As explained before, supporting kinds of application are: `Kubernetes`, `Terrform`, `CloudRun`, `Lambda`.
 - `spec` is the specific configuration for each application kind.
 
-After clicking on the `Save` button at the previous step, the popup will be changed to allow you fill your deployment configuration. You can also choose one of the prepared templates.
+After clicking on the `Save` button at the previous step, the popup will be changed to allow you to fill your deployment configuration. You can also choose one of the prepared templates.
 
 ![](/images/adding-deployment-configuration-file.png)
 <p style="text-align: center;">
