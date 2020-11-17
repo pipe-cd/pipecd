@@ -12,4 +12,10 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-package pipedtokenverifier
+package providertest
+
+import (
+	_ "github.com/golang/mock/gomock"
+
+	_ "github.com/pipe-cd/pipe/pkg/app/piped/cloudprovider/kubernetes"
+)

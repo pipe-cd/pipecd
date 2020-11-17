@@ -25,7 +25,6 @@ import (
 	"fmt"
 	"io/ioutil"
 	"os"
-	"path/filepath"
 	"sync"
 	"time"
 
@@ -590,89 +589,6 @@ func (c *controller) getMostRecentlySuccessfulDeployment(ctx context.Context, ap
 		}
 	}
 	return nil, err
-}
-
-// prepareDeployRepository clones the Git repository and checkouts it to the given revision.
-func prepareDeployRepository(ctx context.Context, d *model.Deployment, gitClient gitClient, repoDirPath string, pipedConfig *config.PipedSpec) (git.Repo, error) {
-	var (
-		repoID      = d.GitPath.Repo.Id
-		revision    = d.Trigger.Commit.Hash
-		repoCfg, ok = pipedConfig.GetRepository(repoID)
-	)
-	if !ok {
-		err := fmt.Errorf("unable to find %q from the repository list in piped config", repoID)
-		return nil, err
-	}
-
-	gitRepo, err := gitClient.Clone(ctx, repoCfg.RepoID, repoCfg.Remote, repoCfg.Branch, repoDirPath)
-	if err != nil {
-		err = fmt.Errorf("unable to clone repository %s (%v)", repoID, err)
-		return nil, err
-	}
-
-	err = gitRepo.Checkout(ctx, revision)
-	if err != nil {
-		err = fmt.Errorf("unable to clone repository %s (%v)", repoID, err)
-		return nil, err
-	}
-
-	return gitRepo, nil
-}
-
-// loadDeploymentConfiguration loads the deployment configuration file to build a Config struct.
-// The repository must be cloned before and repoPath is the absolute path that cloned repository.
-func loadDeploymentConfiguration(repoPath string, d *model.Deployment) (*config.Config, error) {
-	var (
-		relativePath = d.GitPath.GetDeploymentConfigFilePath()
-		path         = filepath.Join(repoPath, relativePath)
-	)
-	cfg, err := config.LoadFromYAML(path)
-	if err != nil {
-		return nil, fmt.Errorf("unable to load deployment configuration file at %s (%w)", relativePath, err)
-	}
-
-	if appKind, ok := config.ToApplicationKind(cfg.Kind); !ok || appKind != d.Kind {
-		return nil, fmt.Errorf("applicationKind specified in deployment configuration file is not match, got: %s, expected: %s", appKind, d.Kind)
-	}
-	return cfg, nil
-}
-
-func decryptSealedSecrets(appDir string, secrets []config.SealedSecretMapping, dcr sealedSecretDecrypter) error {
-	for _, s := range secrets {
-		secretPath := filepath.Join(appDir, s.Path)
-		cfg, err := config.LoadFromYAML(secretPath)
-		if err != nil {
-			return fmt.Errorf("unable to read sealed secret file %s (%w)", s.Path, err)
-		}
-		if cfg.Kind != config.KindSealedSecret {
-			return fmt.Errorf("unexpected kind in sealed secret file %s, want %q but got %q", s.Path, config.KindSealedSecret, cfg.Kind)
-		}
-
-		content, err := cfg.SealedSecretSpec.RenderOriginalContent(dcr)
-		if err != nil {
-			return fmt.Errorf("unable to render the original content of the sealed secret file %s (%w)", s.Path, err)
-		}
-
-		outDir, outFile := filepath.Split(s.Path)
-		if s.OutFilename != "" {
-			outFile = s.OutFilename
-		}
-		if s.OutDir != "" {
-			outDir = s.OutDir
-		}
-		// TODO: Ensure that the output directory must be inside the application directory.
-		if outDir != "" {
-			if err := os.MkdirAll(filepath.Join(appDir, outDir), 0700); err != nil {
-				return fmt.Errorf("unable to write decrypted content of sealed secret file %s to directory %s (%w)", s.Path, outDir, err)
-			}
-		}
-		outPath := filepath.Join(appDir, outDir, outFile)
-
-		if err := ioutil.WriteFile(outPath, content, 0644); err != nil {
-			return fmt.Errorf("unable to write decrypted content of sealed secret file %s (%w)", s.Path, err)
-		}
-	}
-	return nil
 }
 
 type appLiveResourceLister struct {

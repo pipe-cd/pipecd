@@ -47,36 +47,32 @@ func (e *Executor) ensurePrimaryRollout(ctx context.Context) model.StageStatus {
 	}
 	e.LogPersister.Successf("Successfully loaded %d manifests", len(manifests))
 
-	// Find traffic routing manifests and filter out it from primary manifests.
-	trafficRoutingManifests, err := findTrafficRoutingManifests(manifests, e.config.Service.Name, e.config.TrafficRouting)
-	if err != nil {
-		e.LogPersister.Errorf("Failed while finding traffic routing manifest: (%v)", err)
-		return model.StageStatus_STAGE_FAILURE
-	}
-
-	if len(trafficRoutingManifests) > 1 {
-		e.LogPersister.Infof(
-			"Detected %d traffic routing manifests but only the first one (%s) will be used",
-			len(trafficRoutingManifests),
-			trafficRoutingManifests[0].Key.ReadableString(),
-		)
-	}
-
+	routingMethod := config.DetermineKubernetesTrafficRoutingMethod(e.config.TrafficRouting)
 	var primaryManifests []provider.Manifest
-	if len(trafficRoutingManifests) > 0 {
-		primaryManifests = make([]provider.Manifest, 0, len(manifests)-1)
-		for _, m := range manifests {
-			if m.Key == trafficRoutingManifests[0].Key {
-				continue
-			}
-			primaryManifests = append(primaryManifests, m)
-		}
-	} else {
+	if routingMethod == config.KubernetesTrafficRoutingMethodPodSelector {
 		primaryManifests = manifests
+	} else {
+		// Find traffic routing manifests and filter out it from primary manifests.
+		trafficRoutingManifests, err := findTrafficRoutingManifests(manifests, e.config.Service.Name, e.config.TrafficRouting)
+		if err != nil {
+			e.LogPersister.Errorf("Failed while finding traffic routing manifest: (%v)", err)
+			return model.StageStatus_STAGE_FAILURE
+		}
+		if len(trafficRoutingManifests) > 0 {
+			primaryManifests = make([]provider.Manifest, 0, len(manifests)-1)
+			for _, m := range manifests {
+				if m.Key == trafficRoutingManifests[0].Key {
+					continue
+				}
+				primaryManifests = append(primaryManifests, m)
+			}
+		}
 	}
 
-	// Check the variant selector in the workloads if the addVariantLabelToSelector is false.
-	if !options.AddVariantLabelToSelector {
+	// Check if the variant selector is in the workloads.
+	if !options.AddVariantLabelToSelector &&
+		routingMethod == config.KubernetesTrafficRoutingMethodPodSelector &&
+		e.config.HasStage(model.StageK8sTrafficRouting) {
 		workloads := findWorkloadManifests(primaryManifests, e.config.Workloads)
 		var invalid bool
 		for _, m := range workloads {

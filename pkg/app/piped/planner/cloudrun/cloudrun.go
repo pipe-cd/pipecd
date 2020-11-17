@@ -17,6 +17,7 @@ package cloudrun
 import (
 	"context"
 	"fmt"
+	"io/ioutil"
 	"time"
 
 	"go.uber.org/zap"
@@ -41,14 +42,20 @@ func Register(r registerer) {
 
 // Plan decides which pipeline should be used for the given input.
 func (p *Planner) Plan(ctx context.Context, in planner.Input) (out planner.Output, err error) {
-	cfg := in.DeploymentConfig.CloudRunDeploymentSpec
+	ds, err := in.TargetDSP.Get(ctx, ioutil.Discard)
+	if err != nil {
+		err = fmt.Errorf("error while preparing deploy source data (%v)", err)
+		return
+	}
+
+	cfg := ds.DeploymentConfig.CloudRunDeploymentSpec
 	if cfg == nil {
 		err = fmt.Errorf("missing CloudRunDeploymentSpec in deployment configuration")
 		return
 	}
 
 	// Determine application version from the manifest.
-	if version, e := p.determineVersion(in.AppDir, cfg.Input.ServiceManifestFile); e == nil {
+	if version, e := p.determineVersion(ds.AppDir, cfg.Input.ServiceManifestFile); e == nil {
 		out.Version = version
 	} else {
 		out.Version = "unknown"
@@ -59,22 +66,23 @@ func (p *Planner) Plan(ctx context.Context, in planner.Input) (out planner.Outpu
 	// We just do the quick sync.
 	if in.MostRecentSuccessfulCommitHash == "" {
 		out.Stages = buildQuickSyncPipeline(cfg.Input.AutoRollback, time.Now())
-		out.Summary = "Quick sync by deploying the new version and configuring all traffic to it because it seems this is the first deployment"
+		out.Summary = fmt.Sprintf("Quick sync to deploy image %s and configure all traffic to it because it seems this is the first deployment", out.Version)
 		return
 	}
 
 	// When no pipeline was configured, do the quick sync.
 	if cfg.Pipeline == nil || len(cfg.Pipeline.Stages) == 0 {
 		out.Stages = buildQuickSyncPipeline(cfg.Input.AutoRollback, time.Now())
-		out.Summary = "Quick sync by deploying the new version and configuring all traffic to it because no pipeline was configured"
+		out.Summary = fmt.Sprintf("Quick sync to deploy image %s and configure all traffic to it (pipeline was not configured)", out.Version)
 		return
 	}
 
 	// Load service manifest at the last deployed commit to decide running version.
-	if err = in.Repo.Checkout(ctx, in.MostRecentSuccessfulCommitHash); err == nil {
-		if lastVersion, e := p.determineVersion(in.AppDir, cfg.Input.ServiceManifestFile); e == nil {
+	ds, err = in.RunningDSP.Get(ctx, ioutil.Discard)
+	if err == nil {
+		if lastVersion, e := p.determineVersion(ds.AppDir, cfg.Input.ServiceManifestFile); e == nil {
 			out.Stages = buildProgressivePipeline(cfg.Pipeline, cfg.Input.AutoRollback, time.Now())
-			out.Summary = fmt.Sprintf("Sync progressively because of updating image from %s to %s", lastVersion, out.Version)
+			out.Summary = fmt.Sprintf("Sync progressively to update image from %s to %s", lastVersion, out.Version)
 			return
 		}
 	}

@@ -16,7 +16,6 @@ package terraform
 
 import (
 	"context"
-	"path/filepath"
 
 	provider "github.com/pipe-cd/pipe/pkg/app/piped/cloudprovider/terraform"
 	"github.com/pipe-cd/pipe/pkg/model"
@@ -30,9 +29,7 @@ func (e *Executor) ensureRollback(ctx context.Context) model.StageStatus {
 	}
 
 	e.LogPersister.Infof("Start rolling back to the state defined at commit %s", commit)
-
-	appDir := filepath.Join(e.RunningRepoDir, e.Deployment.GitPath.Path)
-	cmd := provider.NewTerraform(e.terraformPath, appDir, e.vars, e.config.Input.VarFiles)
+	cmd := provider.NewTerraform(e.terraformPath, e.appDir, e.vars, e.config.Input.VarFiles)
 
 	if ok := e.showUsingVersion(ctx, cmd); !ok {
 		return model.StageStatus_STAGE_FAILURE

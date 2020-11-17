@@ -24,6 +24,7 @@ import (
 	"go.uber.org/zap"
 
 	"github.com/pipe-cd/pipe/pkg/app/api/service/pipedservice"
+	"github.com/pipe-cd/pipe/pkg/app/piped/deploysource"
 	pln "github.com/pipe-cd/pipe/pkg/app/piped/planner"
 	"github.com/pipe-cd/pipe/pkg/app/piped/planner/registry"
 	"github.com/pipe-cd/pipe/pkg/cache"
@@ -53,11 +54,10 @@ type planner struct {
 	appManifestsCache        cache.Cache
 	logger                   *zap.Logger
 
-	deploymentConfig *config.Config
-	done             atomic.Bool
-	doneTimestamp    time.Time
-	cancelled        bool
-	cancelledCh      chan *model.ReportableCommand
+	done          atomic.Bool
+	doneTimestamp time.Time
+	cancelled     bool
+	cancelledCh   chan *model.ReportableCommand
 
 	nowFunc func() time.Time
 }
@@ -138,57 +138,49 @@ func (p *planner) Run(ctx context.Context) error {
 		p.done.Store(true)
 	}()
 
-	var (
-		repoDirPath = filepath.Join(p.workingDir, workspaceGitRepoDirName)
-		appDirPath  = filepath.Join(repoDirPath, p.deployment.GitPath.Path)
-	)
-
 	planner, ok := p.plannerRegistry.Planner(p.deployment.Kind)
 	if !ok {
 		p.reportDeploymentFailed(ctx, "Unable to find the planner for this application kind")
 		return fmt.Errorf("unable to find the planner for application %v", p.deployment.Kind)
 	}
 
-	// Clone repository and checkout to the target revision.
-	gitRepo, err := prepareDeployRepository(ctx, p.deployment, p.gitClient, repoDirPath, p.pipedConfig)
-	if err != nil {
-		p.reportDeploymentFailed(ctx, fmt.Sprintf("Unable to prepare git repository (%v)", err))
-		return err
-	}
-
-	// Load deployment configuration for this application.
-	cfg, err := loadDeploymentConfiguration(gitRepo.GetPath(), p.deployment)
-	if err != nil {
-		p.reportDeploymentFailed(ctx, fmt.Sprintf("Unable to load deployment configuration (%v)", err))
-		return err
-	}
-	p.deploymentConfig = cfg
-
-	gds, ok := cfg.GetGenericDeployment()
+	repoID := p.deployment.GitPath.Repo.Id
+	repoCfg, ok := p.pipedConfig.GetRepository(repoID)
 	if !ok {
-		p.reportDeploymentFailed(ctx, "This application kind is not supported yet")
-		return fmt.Errorf("unsupport application kind %s", cfg.Kind)
-	}
-
-	// Decrypt the sealed secrets at the target revision.
-	if len(gds.SealedSecrets) > 0 && p.sealedSecretDecrypter != nil {
-		if err := decryptSealedSecrets(appDirPath, gds.SealedSecrets, p.sealedSecretDecrypter); err != nil {
-			p.reportDeploymentFailed(ctx, fmt.Sprintf("Unable to decrypt the sealed secrets (%v)", err))
-			return fmt.Errorf("failed to decrypt sealed secrets (%w)", err)
-		}
+		p.reportDeploymentFailed(ctx, fmt.Sprintf("Unable to find %q from the repository list in piped config", repoID))
+		return fmt.Errorf("unable to find %q from the repository list in piped config", repoID)
 	}
 
 	in := pln.Input{
 		Deployment:                     p.deployment,
 		MostRecentSuccessfulCommitHash: p.lastSuccessfulCommitHash,
-		DeploymentConfig:               cfg,
-		Repo:                           gitRepo,
-		RepoDir:                        gitRepo.GetPath(),
-		AppDir:                         filepath.Join(gitRepo.GetPath(), p.deployment.GitPath.Path),
 		AppManifestsCache:              p.appManifestsCache,
 		RegexPool:                      regexpool.DefaultPool(),
 		Logger:                         p.logger,
 	}
+
+	in.TargetDSP = deploysource.NewProvider(
+		filepath.Join(p.workingDir, "target-deploysource"),
+		repoCfg,
+		"target",
+		p.deployment.Trigger.Commit.Hash,
+		p.gitClient,
+		p.deployment.GitPath,
+		p.sealedSecretDecrypter,
+	)
+
+	if p.lastSuccessfulCommitHash != "" {
+		in.RunningDSP = deploysource.NewProvider(
+			filepath.Join(p.workingDir, "running-deploysource"),
+			repoCfg,
+			"running",
+			p.lastSuccessfulCommitHash,
+			p.gitClient,
+			p.deployment.GitPath,
+			p.sealedSecretDecrypter,
+		)
+	}
+
 	out, err := planner.Plan(ctx, in)
 
 	// If the deployment was already cancelled, we ignore the plan result.

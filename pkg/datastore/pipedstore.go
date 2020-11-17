@@ -57,7 +57,7 @@ type PipedStore interface {
 	UpdatePiped(ctx context.Context, id string, updater func(piped *model.Piped) error) error
 	EnablePiped(ctx context.Context, id string) error
 	DisablePiped(ctx context.Context, id string) error
-	UpdateKeyHash(ctx context.Context, id, keyhash string) error
+	AddKey(ctx context.Context, id, keyHash, creator string, createdAt time.Time) error
 }
 
 type pipedStore struct {
@@ -144,9 +144,9 @@ func (s *pipedStore) DisablePiped(ctx context.Context, id string) error {
 	})
 }
 
-func (s *pipedStore) UpdateKeyHash(ctx context.Context, id, keyhash string) error {
+func (s *pipedStore) AddKey(ctx context.Context, id, keyHash, creator string, createdAt time.Time) error {
 	return s.UpdatePiped(ctx, id, func(piped *model.Piped) error {
-		piped.KeyHash = keyhash
+		piped.AddKey(keyHash, creator, createdAt)
 		piped.UpdatedAt = time.Now().Unix()
 		return nil
 	})

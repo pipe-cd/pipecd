@@ -13,6 +13,7 @@ go_library(
     visibility = ["//visibility:public"],
     deps = [
         "//pkg/app/piped/cloudprovider/terraform:go_default_library",
+        "//pkg/app/piped/deploysource:go_default_library",
         "//pkg/app/piped/executor:go_default_library",
         "//pkg/app/piped/toolregistry:go_default_library",
         "//pkg/config:go_default_library",

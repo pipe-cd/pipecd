@@ -25,9 +25,9 @@ import (
 
 	"go.uber.org/zap"
 
+	"github.com/pipe-cd/pipe/pkg/app/piped/deploysource"
 	"github.com/pipe-cd/pipe/pkg/cache"
 	"github.com/pipe-cd/pipe/pkg/config"
-	"github.com/pipe-cd/pipe/pkg/git"
 	"github.com/pipe-cd/pipe/pkg/model"
 	"github.com/pipe-cd/pipe/pkg/regexpool"
 )
@@ -40,10 +40,8 @@ type Input struct {
 	// Readonly deployment model.
 	Deployment                     *model.Deployment
 	MostRecentSuccessfulCommitHash string
-	DeploymentConfig               *config.Config
-	Repo                           git.Repo
-	RepoDir                        string
-	AppDir                         string
+	TargetDSP                      deploysource.Provider
+	RunningDSP                     deploysource.Provider
 	AppManifestsCache              cache.Cache
 	RegexPool                      *regexpool.Pool
 	Logger                         *zap.Logger

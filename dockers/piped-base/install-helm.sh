@@ -23,9 +23,9 @@ BASE_URL="https://get.helm.sh"
 # https://github.com/pipe-cd/pipe/blob/master/pkg/app/piped/toolregistry/install.go#L32
 VERSION="3.2.1"
 
-echo "Installing helm-${VERSION} into ${PIPED_BIN_DIR}/helm..."
+echo "Installing helm-${VERSION} into ${PIPED_TOOLS_DIR}/helm..."
 curl -L ${BASE_URL}/helm-v${VERSION}-linux-amd64.tar.gz | tar xvz
-mv linux-amd64/helm ${PIPED_BIN_DIR}/helm
-chmod +x ${PIPED_BIN_DIR}/helm
+mv linux-amd64/helm ${PIPED_TOOLS_DIR}/helm
+chmod +x ${PIPED_TOOLS_DIR}/helm
 rm -rf linux-amd64
-echo "Successfully installed helm-${VERSION} into ${PIPED_BIN_DIR}/helm"
+echo "Successfully installed helm-${VERSION} into ${PIPED_TOOLS_DIR}/helm"

@@ -66,11 +66,13 @@
     "@primer/octicons-react": "^10.0.0",
     "@reduxjs/toolkit": "^1.3.6",
     "@types/dagre": "^0.7.44",
+    "@types/yup": "^0.29.9",
     "clsx": "^1.1.1",
     "copy-to-clipboard": "^3.3.1",
     "dagre": "^0.8.5",
     "dayjs": "^1.8.28",
     "dotenv": "^8.2.0",
+    "formik": "^2.2.4",
     "google-protobuf": "^3.12.0-rc.1",
     "grpc-web": "^1.0.7",
     "history": "^4.10.1",
@@ -81,6 +83,7 @@
     "react-intersection-observer": "^8.26.2",
     "react-redux": "^7.2.0",
     "react-router": "^5.2.0",
-    "react-router-dom": "^5.2.0"
+    "react-router-dom": "^5.2.0",
+    "yup": "^0.29.3"
   }
 }

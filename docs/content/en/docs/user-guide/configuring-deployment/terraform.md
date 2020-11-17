@@ -3,7 +3,7 @@ title: "Terraform"
 linkTitle: "Terraform"
 weight: 2
 description: >
-  Specific guide for configurating Terraform deployment.
+  Specific guide for configuring Terraform deployment.
 ---
 
 ## Quick Sync

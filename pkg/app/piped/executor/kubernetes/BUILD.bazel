@@ -15,6 +15,7 @@ go_library(
     visibility = ["//visibility:public"],
     deps = [
         "//pkg/app/piped/cloudprovider/kubernetes:go_default_library",
+        "//pkg/app/piped/deploysource:go_default_library",
         "//pkg/app/piped/executor:go_default_library",
         "//pkg/config:go_default_library",
         "//pkg/model:go_default_library",
@@ -31,6 +32,7 @@ go_test(
     name = "go_default_test",
     size = "small",
     srcs = [
+        "canary_test.go",
         "kubernetes_test.go",
         "primary_test.go",
         "sync_test.go",
@@ -40,7 +42,16 @@ go_test(
     embed = [":go_default_library"],
     deps = [
         "//pkg/app/piped/cloudprovider/kubernetes:go_default_library",
+        "//pkg/app/piped/cloudprovider/kubernetes/providertest:go_default_library",
+        "//pkg/app/piped/executor:go_default_library",
+        "//pkg/cache:go_default_library",
+        "//pkg/cache/cachetest:go_default_library",
+        "//pkg/config:go_default_library",
+        "//pkg/model:go_default_library",
+        "@com_github_golang_mock//gomock:go_default_library",
         "@com_github_stretchr_testify//assert:go_default_library",
         "@com_github_stretchr_testify//require:go_default_library",
+        "@io_k8s_apimachinery//pkg/apis/meta/v1/unstructured:go_default_library",
+        "@org_uber_go_zap//:go_default_library",
     ],
 )

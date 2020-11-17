@@ -1,12 +1,297 @@
+// Copyright 2020 The PipeCD Authors.
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//     http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
 package kubernetes
 
 import (
+	"context"
+	"fmt"
 	"testing"
 
+	"github.com/golang/mock/gomock"
 	"github.com/stretchr/testify/assert"
+	"go.uber.org/zap"
+	"k8s.io/apimachinery/pkg/apis/meta/v1/unstructured"
 
 	provider "github.com/pipe-cd/pipe/pkg/app/piped/cloudprovider/kubernetes"
+	"github.com/pipe-cd/pipe/pkg/app/piped/cloudprovider/kubernetes/providertest"
+	"github.com/pipe-cd/pipe/pkg/app/piped/executor"
+	"github.com/pipe-cd/pipe/pkg/cache"
+	"github.com/pipe-cd/pipe/pkg/cache/cachetest"
+	"github.com/pipe-cd/pipe/pkg/config"
+	"github.com/pipe-cd/pipe/pkg/model"
 )
+
+func TestEnsurePrimaryRollout(t *testing.T) {
+	ctrl := gomock.NewController(t)
+	defer ctrl.Finish()
+
+	testcases := []struct {
+		name     string
+		executor *Executor
+		want     model.StageStatus
+	}{
+		{
+			name: "malformed configuration",
+			want: model.StageStatus_STAGE_FAILURE,
+			executor: &Executor{
+				Input: executor.Input{
+					Deployment: &model.Deployment{
+						Trigger: &model.DeploymentTrigger{
+							Commit: &model.Commit{},
+						},
+					},
+					Stage:        &model.PipelineStage{},
+					LogPersister: &fakeLogPersister{},
+					Logger:       zap.NewNop(),
+				},
+			},
+		},
+		{
+			name: "failed to load manifest",
+			want: model.StageStatus_STAGE_FAILURE,
+			executor: &Executor{
+				Input: executor.Input{
+					Deployment: &model.Deployment{
+						Trigger: &model.DeploymentTrigger{
+							Commit: &model.Commit{},
+						},
+					},
+					LogPersister: &fakeLogPersister{},
+					Stage:        &model.PipelineStage{},
+					StageConfig: config.PipelineStage{
+						K8sPrimaryRolloutStageOptions: &config.K8sPrimaryRolloutStageOptions{},
+					},
+					AppManifestsCache: func() cache.Cache {
+						c := cachetest.NewMockCache(ctrl)
+						c.EXPECT().Get(gomock.Any()).Return(nil, fmt.Errorf("not found"))
+						return c
+					}(),
+					Logger: zap.NewNop(),
+				},
+				provider: func() provider.Provider {
+					p := providertest.NewMockProvider(ctrl)
+					p.EXPECT().LoadManifests(gomock.Any()).Return(nil, fmt.Errorf("error"))
+					return p
+				}(),
+			},
+		},
+		{
+			name: "successfully apply a manifest",
+			want: model.StageStatus_STAGE_SUCCESS,
+			executor: &Executor{
+				Input: executor.Input{
+					Deployment: &model.Deployment{
+						Trigger: &model.DeploymentTrigger{
+							Commit: &model.Commit{},
+						},
+					},
+					PipedConfig:  &config.PipedSpec{},
+					LogPersister: &fakeLogPersister{},
+					Stage:        &model.PipelineStage{},
+					StageConfig: config.PipelineStage{
+						K8sPrimaryRolloutStageOptions: &config.K8sPrimaryRolloutStageOptions{
+							AddVariantLabelToSelector: true,
+						},
+					},
+					AppManifestsCache: func() cache.Cache {
+						c := cachetest.NewMockCache(ctrl)
+						c.EXPECT().Get(gomock.Any()).Return(nil, fmt.Errorf("not found"))
+						c.EXPECT().Put(gomock.Any(), gomock.Any()).Return(nil)
+						return c
+					}(),
+					Logger: zap.NewNop(),
+				},
+				provider: func() provider.Provider {
+					p := providertest.NewMockProvider(ctrl)
+					p.EXPECT().LoadManifests(gomock.Any()).Return([]provider.Manifest{
+						provider.MakeManifest(provider.ResourceKey{
+							APIVersion: "apps/v1",
+							Kind:       provider.KindDeployment,
+						}, &unstructured.Unstructured{
+							Object: map[string]interface{}{"spec": map[string]interface{}{}},
+						}),
+					}, nil)
+					p.EXPECT().ApplyManifest(gomock.Any(), gomock.Any()).Return(nil)
+					return p
+				}(),
+				config: &config.KubernetesDeploymentSpec{},
+			},
+		},
+		{
+			name: "successfully apply two manifests",
+			want: model.StageStatus_STAGE_SUCCESS,
+			executor: &Executor{
+				Input: executor.Input{
+					Deployment: &model.Deployment{
+						Trigger: &model.DeploymentTrigger{
+							Commit: &model.Commit{},
+						},
+					},
+					PipedConfig:  &config.PipedSpec{},
+					LogPersister: &fakeLogPersister{},
+					Stage:        &model.PipelineStage{},
+					StageConfig: config.PipelineStage{
+						K8sPrimaryRolloutStageOptions: &config.K8sPrimaryRolloutStageOptions{
+							AddVariantLabelToSelector: true,
+						},
+					},
+					AppManifestsCache: func() cache.Cache {
+						c := cachetest.NewMockCache(ctrl)
+						c.EXPECT().Get(gomock.Any()).Return(nil, fmt.Errorf("not found"))
+						c.EXPECT().Put(gomock.Any(), gomock.Any()).Return(nil)
+						return c
+					}(),
+					Logger: zap.NewNop(),
+				},
+				provider: func() provider.Provider {
+					p := providertest.NewMockProvider(ctrl)
+					p.EXPECT().LoadManifests(gomock.Any()).Return([]provider.Manifest{
+						provider.MakeManifest(provider.ResourceKey{
+							APIVersion: "apps/v1",
+							Kind:       provider.KindDeployment,
+						}, &unstructured.Unstructured{
+							Object: map[string]interface{}{"spec": map[string]interface{}{}},
+						}),
+						provider.MakeManifest(provider.ResourceKey{
+							APIVersion: "v1",
+							Kind:       provider.KindService,
+							Name:       "foo",
+						}, &unstructured.Unstructured{
+							Object: map[string]interface{}{"spec": map[string]interface{}{}},
+						}),
+					}, nil)
+					p.EXPECT().ApplyManifest(gomock.Any(), gomock.Any()).Return(nil)
+					p.EXPECT().ApplyManifest(gomock.Any(), gomock.Any()).Return(nil)
+					return p
+				}(),
+				config: &config.KubernetesDeploymentSpec{
+					Service: config.K8sResourceReference{
+						Kind: "Service",
+						Name: "foo",
+					},
+				},
+			},
+		},
+		{
+			name: "filter out VirtualService",
+			want: model.StageStatus_STAGE_SUCCESS,
+			executor: &Executor{
+				Input: executor.Input{
+					Deployment: &model.Deployment{
+						Trigger: &model.DeploymentTrigger{
+							Commit: &model.Commit{},
+						},
+					},
+					PipedConfig:  &config.PipedSpec{},
+					LogPersister: &fakeLogPersister{},
+					Stage:        &model.PipelineStage{},
+					StageConfig: config.PipelineStage{
+						K8sPrimaryRolloutStageOptions: &config.K8sPrimaryRolloutStageOptions{
+							AddVariantLabelToSelector: true,
+						},
+					},
+					AppManifestsCache: func() cache.Cache {
+						c := cachetest.NewMockCache(ctrl)
+						c.EXPECT().Get(gomock.Any()).Return(nil, fmt.Errorf("not found"))
+						c.EXPECT().Put(gomock.Any(), gomock.Any()).Return(nil)
+						return c
+					}(),
+					Logger: zap.NewNop(),
+				},
+				provider: func() provider.Provider {
+					p := providertest.NewMockProvider(ctrl)
+					p.EXPECT().LoadManifests(gomock.Any()).Return([]provider.Manifest{
+						provider.MakeManifest(provider.ResourceKey{
+							APIVersion: "apps/v1",
+							Kind:       "VirtualService",
+						}, &unstructured.Unstructured{
+							Object: map[string]interface{}{"spec": map[string]interface{}{}},
+						}),
+					}, nil)
+					return p
+				}(),
+				config: &config.KubernetesDeploymentSpec{
+					TrafficRouting: &config.KubernetesTrafficRouting{
+						Method: config.KubernetesTrafficRoutingMethodIstio,
+					},
+				},
+			},
+		},
+		{
+			name: "lack of variant label",
+			want: model.StageStatus_STAGE_FAILURE,
+			executor: &Executor{
+				Input: executor.Input{
+					Deployment: &model.Deployment{
+						Trigger: &model.DeploymentTrigger{
+							Commit: &model.Commit{},
+						},
+					},
+					PipedConfig:  &config.PipedSpec{},
+					LogPersister: &fakeLogPersister{},
+					Stage:        &model.PipelineStage{},
+					StageConfig: config.PipelineStage{
+						K8sPrimaryRolloutStageOptions: &config.K8sPrimaryRolloutStageOptions{
+							AddVariantLabelToSelector: false,
+						},
+					},
+					AppManifestsCache: func() cache.Cache {
+						c := cachetest.NewMockCache(ctrl)
+						c.EXPECT().Get(gomock.Any()).Return(nil, fmt.Errorf("not found"))
+						c.EXPECT().Put(gomock.Any(), gomock.Any()).Return(nil)
+						return c
+					}(),
+					Logger: zap.NewNop(),
+				},
+				provider: func() provider.Provider {
+					p := providertest.NewMockProvider(ctrl)
+					p.EXPECT().LoadManifests(gomock.Any()).Return([]provider.Manifest{
+						provider.MakeManifest(provider.ResourceKey{
+							APIVersion: "apps/v1",
+							Kind:       provider.KindDeployment,
+						}, &unstructured.Unstructured{
+							Object: map[string]interface{}{"spec": map[string]interface{}{}},
+						}),
+					}, nil)
+					return p
+				}(),
+				config: &config.KubernetesDeploymentSpec{
+					GenericDeploymentSpec: config.GenericDeploymentSpec{
+						Pipeline: &config.DeploymentPipeline{
+							Stages: []config.PipelineStage{
+								{
+									Name: model.StageK8sTrafficRouting,
+								},
+							},
+						},
+					},
+					TrafficRouting: &config.KubernetesTrafficRouting{
+						Method: config.KubernetesTrafficRoutingMethodPodSelector,
+					},
+				},
+			},
+		},
+	}
+	for _, tc := range testcases {
+		t.Run(tc.name, func(t *testing.T) {
+			ctx := context.Background()
+			got := tc.executor.ensurePrimaryRollout(ctx)
+			assert.Equal(t, tc.want, got)
+		})
+	}
+}
 
 func TestFindRemoveManifests(t *testing.T) {
 	tests := []struct {

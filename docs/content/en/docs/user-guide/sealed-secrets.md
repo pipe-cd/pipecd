@@ -55,7 +55,7 @@ The encrypted data should be shown for you. Copy it to store in Git.
 Application list page
 </p>
 
-</br>
+<br>
 
 ![](/images/sealed-secret-encrypting-form.png)
 <p style="text-align: center;">

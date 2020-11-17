@@ -9,9 +9,9 @@ go_library(
     importpath = "github.com/pipe-cd/pipe/pkg/app/piped/planner",
     visibility = ["//visibility:public"],
     deps = [
+        "//pkg/app/piped/deploysource:go_default_library",
         "//pkg/cache:go_default_library",
         "//pkg/config:go_default_library",
-        "//pkg/git:go_default_library",
         "//pkg/model:go_default_library",
         "//pkg/regexpool:go_default_library",
         "@org_uber_go_zap//:go_default_library",

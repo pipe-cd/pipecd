@@ -13,10 +13,7 @@ import Skeleton from "@material-ui/lab/Skeleton/Skeleton";
 import React, { FC, memo, useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import { RBAC_DESCRIPTION } from "../constants/text";
-import {
-  UPDATE_RBAC_FAILED,
-  UPDATE_RBAC_SUCCESS,
-} from "../constants/toast-text";
+import { UPDATE_RBAC_SUCCESS } from "../constants/toast-text";
 import { UI_TEXT_CANCEL, UI_TEXT_SAVE } from "../constants/ui-text";
 import { AppState } from "../modules";
 import { fetchProject, Teams, updateRBAC } from "../modules/project";
@@ -50,14 +47,7 @@ export const RBACForm: FC = memo(function RBACForm() {
   const handleSave = (e: React.FormEvent<HTMLFormElement>): void => {
     e.preventDefault();
     dispatch(updateRBAC({ admin, editor, viewer })).then((result) => {
-      if (updateRBAC.rejected.match(result)) {
-        dispatch(
-          addToast({
-            message: UPDATE_RBAC_FAILED,
-            severity: "success",
-          })
-        );
-      } else {
+      if (updateRBAC.fulfilled.match(result)) {
         dispatch(fetchProject());
         dispatch(
           addToast({

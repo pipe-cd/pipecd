@@ -36,6 +36,8 @@ import (
 type Executor struct {
 	executor.Input
 
+	repoDir             string
+	config              *config.Config
 	startTime           time.Time
 	previousElapsedTime time.Duration
 }
@@ -78,7 +80,15 @@ func (e *Executor) Execute(sig executor.StopSignal) model.StageStatus {
 		return model.StageStatus_STAGE_FAILURE
 	}
 
-	templateCfg, ok, err := config.LoadAnalysisTemplate(e.RepoDir)
+	ds, err := e.RunningDSP.Get(ctx, e.LogPersister)
+	if err != nil {
+		e.LogPersister.Errorf("Failed to prepare running deploy source data (%v)", err)
+		return model.StageStatus_STAGE_FAILURE
+	}
+	e.repoDir = ds.RepoDir
+	e.config = ds.DeploymentConfig
+
+	templateCfg, ok, err := config.LoadAnalysisTemplate(e.repoDir)
 	if err != nil {
 		e.LogPersister.Error(err.Error())
 		return model.StageStatus_STAGE_FAILURE
@@ -321,9 +331,9 @@ func (e *Executor) render(templateCfg config.AnalysisTemplateSpec, customArgs ma
 			// TODO: Populate Env
 		}{Name: e.Application.Name, Env: ""},
 	}
-	if e.DeploymentConfig.Kind == config.KindKubernetesApp {
+	if e.config.Kind == config.KindKubernetesApp {
 		namespace := "default"
-		if n := e.DeploymentConfig.KubernetesDeploymentSpec.Input.Namespace; n != "" {
+		if n := e.config.KubernetesDeploymentSpec.Input.Namespace; n != "" {
 			namespace = n
 		}
 		args.K8s = struct{ Namespace string }{Namespace: namespace}

@@ -105,7 +105,7 @@ The available built-in args are:
 | App.Name | string | Application Name. |
 | K8s.Namespace | string | The Kubernetes namespace where manifests will be applied. |
 
-Also, custom args is supported. Custom args placeholders can be defined as `{{ .Args.<name> }}`
+Also, custom args is supported. Custom args placeholders can be defined as `{{ .Args.<name> }}`.
 
 ### Supported Providers
 

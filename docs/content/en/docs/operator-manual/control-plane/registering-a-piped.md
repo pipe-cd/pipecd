@@ -8,7 +8,7 @@ description: >
 
 The list of pipeds are shown in the Settings page. Anyone who has the project admin role can register a new piped by clicking on the `+ADD` button.
 
-</br>
+<br>
 
 ![](/images/settings-add-piped.png)
 <p style="text-align: center;">

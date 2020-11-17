@@ -1,16 +1,16 @@
-import React, { FC, useState, memo } from "react";
+import React, { FC, memo } from "react";
 import {
   makeStyles,
   Divider,
   Typography,
   TextField,
   Button,
+  Box,
 } from "@material-ui/core";
+import { useFormik } from "formik";
+import * as Yup from "yup";
 
 const useStyles = makeStyles((theme) => ({
-  main: {
-    width: 600,
-  },
   title: {
     padding: theme.spacing(2),
   },
@@ -19,61 +19,79 @@ const useStyles = makeStyles((theme) => ({
   },
 }));
 
+const validationSchema = Yup.object({
+  name: Yup.string().required("Required"),
+  desc: Yup.string().required("Required"),
+});
+
 interface Props {
   projectName: string;
   onSubmit: (props: { name: string; desc: string }) => void;
-  onClose: () => void;
+  onCancel: () => void;
 }
 
 export const AddEnvForm: FC<Props> = memo(function AddEnvForm({
   projectName,
   onSubmit,
-  onClose,
+  onCancel,
 }) {
   const classes = useStyles();
-  const [name, setName] = useState<string>("");
-  const [desc, setDesc] = useState<string>("");
+  const formik = useFormik({
+    initialValues: {
+      name: "",
+      desc: "",
+    },
+    validationSchema,
+    onSubmit: (values, actions) => {
+      onSubmit(values);
+      actions.resetForm();
+    },
+  });
 
-  const handleSave = (): void => {
-    onSubmit({ name, desc });
+  const handleCancel = (): void => {
+    onCancel();
+    formik.resetForm();
   };
 
   return (
-    <div className={classes.main}>
+    <Box width={600}>
       <Typography
         className={classes.title}
         variant="h6"
       >{`Add a new environment to "${projectName}" project`}</Typography>
       <Divider />
-      <form className={classes.form}>
+      <form className={classes.form} onSubmit={formik.handleSubmit}>
         <TextField
+          id="name"
+          name="name"
           label="Name"
           variant="outlined"
           margin="dense"
-          onChange={(e) => setName(e.currentTarget.value)}
-          value={name}
+          onChange={formik.handleChange}
+          value={formik.values.name}
           fullWidth
           required
         />
         <TextField
+          id="desc"
+          name="desc"
           label="Description"
           variant="outlined"
           margin="dense"
-          onChange={(e) => setDesc(e.currentTarget.value)}
-          value={desc}
+          onChange={formik.handleChange}
+          value={formik.values.desc}
           fullWidth
           required
         />
         <Button
           color="primary"
-          type="button"
-          onClick={handleSave}
-          disabled={name === "" || desc === ""}
+          type="submit"
+          disabled={formik.isValid === false}
         >
           SAVE
         </Button>
-        <Button onClick={onClose}>CANCEL</Button>
+        <Button onClick={handleCancel}>CANCEL</Button>
       </form>
-    </div>
+    </Box>
   );
 });

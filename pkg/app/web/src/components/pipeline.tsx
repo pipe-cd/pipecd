@@ -150,8 +150,6 @@ export const Pipeline: FC<Props> = memo(function Pipeline({ deploymentId }) {
 
   useEffect(() => {
     if (defaultActiveStage) {
-      console.log(defaultActiveStage);
-
       dispatch(
         updateActiveStage({
           deploymentId,
@@ -160,7 +158,8 @@ export const Pipeline: FC<Props> = memo(function Pipeline({ deploymentId }) {
         })
       );
     }
-  }, [dispatch, deploymentId, defaultActiveStage]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [dispatch, deploymentId, defaultActiveStage === null]);
 
   useEffect(() => {
     if (activeStage) {

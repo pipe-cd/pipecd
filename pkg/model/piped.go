@@ -16,6 +16,7 @@ package model
 
 import (
 	"math/rand"
+	"sort"
 	"time"
 	"unsafe"
 
@@ -23,6 +24,7 @@ import (
 )
 
 const (
+	pipedMaxKeyNum  = 3
 	pipedKeyLength  = 50
 	redactedMessage = "redacted"
 )
@@ -54,9 +56,51 @@ func GeneratePipedKey() (key, hash string, err error) {
 	return
 }
 
-// CompareKey compares plaintext key with its hashed value storing in piped.
-func (p *Piped) CompareKey(key string) error {
-	return bcrypt.CompareHashAndPassword([]byte(p.KeyHash), []byte(key))
+// CheckKey checks if the give key is one of the stored keys.
+func (p *Piped) CheckKey(key string) (err error) {
+	// The KeyHash field was deprecated.
+	// And this block will be removed in the future.
+	if p.KeyHash != "" {
+		err = bcrypt.CompareHashAndPassword([]byte(p.KeyHash), []byte(key))
+		if err == nil {
+			return nil
+		}
+	}
+
+	for _, k := range p.Keys {
+		err = bcrypt.CompareHashAndPassword([]byte(k.Hash), []byte(key))
+		if err == nil {
+			return nil
+		}
+	}
+	return
+}
+
+// AddKey adds a new key to the list.
+// If the piped is already having "pipedMaxKeyNum" number of keys
+// the oldest one will be removed before adding.
+func (p *Piped) AddKey(hash, creator string, createdAt time.Time) {
+	key := &PipedKey{
+		Hash:      hash,
+		Creator:   creator,
+		CreatedAt: createdAt.Unix(),
+	}
+	if len(p.Keys) == 0 {
+		p.Keys = []*PipedKey{key}
+		return
+	}
+
+	sort.Slice(p.Keys, func(i, j int) bool {
+		return p.Keys[i].CreatedAt > p.Keys[j].CreatedAt
+	})
+	if len(p.Keys) >= pipedMaxKeyNum {
+		p.Keys = p.Keys[:pipedMaxKeyNum-1]
+	}
+	keys := make([]*PipedKey, 0, len(p.Keys)+1)
+	keys = append(keys, key)
+	keys = append(keys, p.Keys...)
+
+	p.Keys = keys
 }
 
 var randomSrc = rand.NewSource(time.Now().UnixNano())

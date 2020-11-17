@@ -17,7 +17,7 @@ How long does it take to go from code committed to code successfully running on 
 > Screenshot
 
 ### Deployment Frequency
-How offen does your application/project deploy code to production.
+How often does your application/project deploy code to production.
 
 > Screenshot
 
@@ -27,6 +27,6 @@ How long does it generally take to restore service when a service incident occur
 > Screenshot
 
 ### Change Failure Rate
-How often deployment failures occur in production that require immediate remedy (fix, rollback...).
+How often deployment failures occur in production that requires an immediate remedy (fix, rollback...).
 
 > Screenshot

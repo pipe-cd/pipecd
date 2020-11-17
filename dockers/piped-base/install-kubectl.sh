@@ -23,8 +23,8 @@ BASE_URL="https://storage.googleapis.com/kubernetes-release/release"
 # https://github.com/pipe-cd/pipe/blob/master/pkg/app/piped/toolregistry/install.go#L30
 VERSION="1.18.2"
 
-echo "Installing kubectl-${VERSION} into ${PIPED_BIN_DIR}/kubectl..."
+echo "Installing kubectl-${VERSION} into ${PIPED_TOOLS_DIR}/kubectl..."
 curl -LO ${BASE_URL}/v${VERSION}/bin/linux/amd64/kubectl
-mv kubectl ${PIPED_BIN_DIR}/kubectl
-chmod +x ${PIPED_BIN_DIR}/kubectl
-echo "Successfully installed kubectl-${VERSION} into ${PIPED_BIN_DIR}/kubectl..."
+mv kubectl ${PIPED_TOOLS_DIR}/kubectl
+chmod +x ${PIPED_TOOLS_DIR}/kubectl
+echo "Successfully installed kubectl-${VERSION} into ${PIPED_TOOLS_DIR}/kubectl..."

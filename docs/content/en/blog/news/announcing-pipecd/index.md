@@ -12,13 +12,13 @@ Today we are excited to announce the open-source availability of PipeCD: a conti
 PipeCD aims to provide a unified CD solution for multiple application kinds on multi-cloud that empowers engineers to deploy faster with more confidence.
 It is also available as a GitOps tool that enables doing deployment operations by pull request on Git.
 
-</br>
+<br>
 
 ![](/images/deployment-details.png)
 <p style="text-align: center;">
 Deployment Details Page
 </p>
-</br>
+<br>
 
 ### Background
 
@@ -74,13 +74,13 @@ So while designing the PipeCD, we decided not to store those credentials in a ce
 
 Multi-provider means supporting multiple cloud services, multiple container registries, multiple monitoring services for doing deployment analysis.
 You can use PipeCD to deploy your Kubernetes applications, CloudRun, AWS Lambda application and Terraform application.
-It also supports doing progressive delivery with canary and bluegreen strategy.
+It also supports doing progressive delivery with canary and blue-green strategy.
 
 - Easy to operate multi-cluster, multi-tenancy by separating control-plane and piped
 - Support multiple analysis providers including Prometheus, Datadog, Stackdriver, and more
 - Support multiple application kinds on multi-cloud including Kubernetes, Terraform, Cloud Run, AWS Lambda
 
-</br>
+<br>
 
 While designing PipeCD, we simplified its architecture by minimizing the number of components, so you do not have to install many things to enable all features.
 In addition, PipeCD also supports storing data in several fully-managed services to minimize the operating cost.
@@ -102,4 +102,4 @@ PipeCD team is hiring engineers/interns to work on PipeCD. Please contact us if 
 ### Thanks
 
 Finally, we would like to thank the existing open-source CD projects like Spinnaker, FluxCD, ArgoCD... PipeCD has been built on many great ideas from those great projects.
-PipeCD team would also like to thank CyberAgent's engineers and collaborators from other companies, who have sent us so many valuable feedback throughout the development process to this day.
+PipeCD team would also like to thank CyberAgent's engineers and collaborators from other companies, who have sent us so much valuable feedback throughout the development process to this day.

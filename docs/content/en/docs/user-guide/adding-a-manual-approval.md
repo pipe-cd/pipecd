@@ -1,12 +1,12 @@
 ---
-title: "Adding a manual appoval stage"
+title: "Adding a manual approval stage"
 linkTitle: "Adding a manual approval stage"
 weight: 6
 description: >
   This page describes how to add a manual approval stage.
 ---
 
-While deploying an application to production environments, some teams require manual approval from someones before continuing.
+While deploying an application to production environments, some teams require manual approvals before continuing.
 The manual approval stage enables you to control when the deployment is allowed to continue by requiring a specific person or team to approve.
 This stage is named by `WAIT_APPROVAL` and you can add it to your pipeline before some stages should be approved before they can be executed.
 
@@ -26,7 +26,7 @@ spec:
 
 As above example, the deployment requires an approval from `user-abc` before `K8S_PRIMARY_ROLLOUT` stage can be executed.
 
-The value of user ID in the `approvers` list depends on your [SSO configuration](/docs/operator-manual/control-plane/auth/), it must be GitHub's user ID if your SSO was configurated to use GitHub provider, it must be Gmail account if your SSO was configured to use Google provider.
+The value of user ID in the `approvers` list depends on your [SSO configuration](/docs/operator-manual/control-plane/auth/), it must be GitHub's user ID if your SSO was configured to use GitHub provider, it must be Gmail account if your SSO was configured to use Google provider.
 
 In case the `approvers` field was not configured, anyone in the project who has `Editor` or `Admin` role can approve the deployment pipeline.
 

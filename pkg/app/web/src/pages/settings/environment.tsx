@@ -77,7 +77,7 @@ export const SettingsEnvironmentPage: FC = memo(
         <Drawer anchor="right" open={isOpenForm} onClose={handleClose}>
           <AddEnvForm
             projectName={projectName}
-            onClose={handleClose}
+            onCancel={handleClose}
             onSubmit={handleSubmit}
           />
         </Drawer>

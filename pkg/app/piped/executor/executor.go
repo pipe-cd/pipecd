@@ -20,6 +20,7 @@ import (
 	"go.uber.org/zap"
 
 	provider "github.com/pipe-cd/pipe/pkg/app/piped/cloudprovider/kubernetes"
+	"github.com/pipe-cd/pipe/pkg/app/piped/deploysource"
 	"github.com/pipe-cd/pipe/pkg/cache"
 	"github.com/pipe-cd/pipe/pkg/config"
 	"github.com/pipe-cd/pipe/pkg/model"
@@ -63,17 +64,11 @@ type Input struct {
 	Stage       *model.PipelineStage
 	StageConfig config.PipelineStage
 	// Readonly deployment model.
-	Deployment       *model.Deployment
-	DeploymentConfig *config.Config
-	PipedConfig      *config.PipedSpec
-	Application      *model.Application
-	WorkingDir       string
-	// The path to the directory containing repository's source code at target commit.
-	RepoDir string
-	// The path to the directory containing repository's source code at running commit.
-	// This directory is valid only when the Deployment.RunningCommitHash is not empty.
-	RunningRepoDir        string
-	StageWorkingDir       string
+	Deployment            *model.Deployment
+	Application           *model.Application
+	PipedConfig           *config.PipedSpec
+	TargetDSP             deploysource.Provider
+	RunningDSP            deploysource.Provider
 	CommandLister         CommandLister
 	LogPersister          LogPersister
 	MetadataStore         MetadataStore

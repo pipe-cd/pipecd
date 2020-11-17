@@ -34,22 +34,7 @@ func (e *Executor) ensureSync(ctx context.Context) model.StageStatus {
 	}
 	e.LogPersister.Successf("Successfully loaded %d manifests", len(manifests))
 
-	// Check the variant selector in the workloads.
-	if e.config.Pipeline != nil && !e.config.QuickSync.AddVariantLabelToSelector {
-		workloads := findWorkloadManifests(manifests, e.config.Workloads)
-		var invalid bool
-		for _, m := range workloads {
-			if err := checkVariantSelectorInWorkload(m, primaryVariant); err != nil {
-				invalid = true
-				e.LogPersister.Errorf("Missing %q in selector of workload %s (%v)", variantLabel+": "+primaryVariant, m.Key.ReadableString(), err)
-			}
-		}
-		if invalid {
-			return model.StageStatus_STAGE_FAILURE
-		}
-	}
-
-	// Because the loaded maninests are read-only
+	// Because the loaded manifests are read-only
 	// we duplicate them to avoid updating the shared manifests data in cache.
 	manifests = duplicateManifests(manifests, "")
 

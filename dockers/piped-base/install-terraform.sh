@@ -24,9 +24,9 @@ BASE_URL="https://releases.hashicorp.com"
 # https://github.com/pipe-cd/pipe/blob/master/pkg/app/piped/toolregistry/install.go#L33
 VERSION="0.13.0"
 
-echo "Installing terraform-${VERSION} into ${PIPED_BIN_DIR}/terraform..."
+echo "Installing terraform-${VERSION} into ${PIPED_TOOLS_DIR}/terraform..."
 curl ${BASE_URL}/terraform/${VERSION}/terraform_${VERSION}_linux_amd64.zip -o terraform_${VERSION}_linux_amd64.zip
 unzip terraform_${VERSION}_linux_amd64.zip
-mv terraform ${PIPED_BIN_DIR}/
+mv terraform ${PIPED_TOOLS_DIR}/
 rm terraform_${VERSION}_linux_amd64.zip
-echo "Successfully installed terraform-${VERSION} into ${PIPED_BIN_DIR}/terraform"
+echo "Successfully installed terraform-${VERSION} into ${PIPED_TOOLS_DIR}/terraform"
