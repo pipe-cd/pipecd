@@ -15,7 +15,7 @@ go_library(
         "//pkg/app/api/applicationlivestatestore:go_default_library",
         "//pkg/app/api/authhandler:go_default_library",
         "//pkg/app/api/commandstore:go_default_library",
-        "//pkg/app/api/pipedtokenverifier:go_default_library",
+        "//pkg/app/api/pipedverifier:go_default_library",
         "//pkg/app/api/service/webservice:go_default_library",
         "//pkg/app/api/stagelogstore:go_default_library",
         "//pkg/cache/rediscache:go_default_library",

@@ -45,7 +45,7 @@ message Piped {
     string desc = 3;
     // The hash value of the secret key generated for the piped.
     // This is used to authenticate while communicating with the control plane.
-    string key_hash = 4 [(validate.rules).string.min_len = 1];
+    string key_hash = 4 [(validate.rules).string.min_len = 1, deprecated=true];
     // The ID of the project this enviroment belongs to.
     string project_id = 5 [(validate.rules).string.min_len = 1];
     // The IDs of environments where this piped can be connected to.
@@ -64,6 +64,9 @@ message Piped {
     // The public key/service account for encrypting the secret data.
     SealedSecretEncryption sealed_secret_encryption = 12;
 
+    // The list keys can be used to authenticate.
+    repeated PipedKey keys = 20;
+
     // Whether the piped is disabled or not.
     bool disabled = 13;
     // Unix time when the piped is created.
@@ -72,3 +75,11 @@ message Piped {
     int64 updated_at = 15 [(validate.rules).int64.gt = 0];
 }
 
+message PipedKey {
+    // The hash value of the key.
+    string hash = 1 [(validate.rules).string.min_len = 1];
+    // The creator of the key.
+    string creator = 2 [(validate.rules).string.min_len = 1];
+    // Unix time when the key is created.
+    int64 created_at = 10 [(validate.rules).int64.gt = 0];
+}
