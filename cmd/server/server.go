@@ -33,7 +33,7 @@ import (
 	"github.com/pipe-cd/pipe/pkg/app/api/applicationlivestatestore"
 	"github.com/pipe-cd/pipe/pkg/app/api/authhandler"
 	"github.com/pipe-cd/pipe/pkg/app/api/commandstore"
-	"github.com/pipe-cd/pipe/pkg/app/api/pipedtokenverifier"
+	"github.com/pipe-cd/pipe/pkg/app/api/pipedverifier"
 	"github.com/pipe-cd/pipe/pkg/app/api/service/webservice"
 	"github.com/pipe-cd/pipe/pkg/app/api/stagelogstore"
 	"github.com/pipe-cd/pipe/pkg/cache/rediscache"
@@ -182,9 +182,15 @@ func (s *server) run(ctx context.Context, t cli.Telemetry) error {
 	// Start a gRPC server for handling PipedAPI requests.
 	{
 		var (
-			verifier = pipedtokenverifier.NewVerifier(ctx, cfg, ds)
-			service  = api.NewPipedAPI(ctx, ds, sls, alss, cmds, t.Logger)
-			opts     = []rpc.Option{
+			verifier = pipedverifier.NewVerifier(
+				ctx,
+				cfg,
+				datastore.NewProjectStore(ds),
+				datastore.NewPipedStore(ds),
+				t.Logger,
+			)
+			service = api.NewPipedAPI(ctx, ds, sls, alss, cmds, t.Logger)
+			opts    = []rpc.Option{
 				rpc.WithPort(s.pipedAPIPort),
 				rpc.WithGracePeriod(s.gracePeriod),
 				rpc.WithLogger(t.Logger),

@@ -167,16 +167,18 @@ func (a *WebAPI) RegisterPiped(ctx context.Context, req *webservice.RegisterPipe
 		a.logger.Error("failed to generate piped key", zap.Error(err))
 		return nil, status.Error(codes.Internal, "Failed to generate the piped key")
 	}
+
 	id := uuid.New().String()
 	piped := model.Piped{
 		Id:        id,
 		Name:      req.Name,
 		Desc:      req.Desc,
-		KeyHash:   keyHash,
 		ProjectId: claims.Role.ProjectId,
 		EnvIds:    req.EnvIds,
 		Status:    model.Piped_OFFLINE,
 	}
+	piped.AddKey(keyHash, claims.Subject, time.Now())
+
 	err = a.pipedStore.AddPiped(ctx, &piped)
 	if errors.Is(err, datastore.ErrAlreadyExists) {
 		return nil, status.Error(codes.AlreadyExists, "The piped already exists")
@@ -192,6 +194,12 @@ func (a *WebAPI) RegisterPiped(ctx context.Context, req *webservice.RegisterPipe
 }
 
 func (a *WebAPI) RecreatePipedKey(ctx context.Context, req *webservice.RecreatePipedKeyRequest) (*webservice.RecreatePipedKeyResponse, error) {
+	claims, err := rpcauth.ExtractClaims(ctx)
+	if err != nil {
+		a.logger.Error("failed to authenticate the current user", zap.Error(err))
+		return nil, err
+	}
+
 	key, keyHash, err := model.GeneratePipedKey()
 	if err != nil {
 		a.logger.Error("failed to generate piped key", zap.Error(err))
@@ -199,7 +207,7 @@ func (a *WebAPI) RecreatePipedKey(ctx context.Context, req *webservice.RecreateP
 	}
 
 	updater := func(ctx context.Context, pipedID string) error {
-		return a.pipedStore.UpdateKeyHash(ctx, pipedID, keyHash)
+		return a.pipedStore.AddKey(ctx, pipedID, keyHash, claims.Subject, time.Now())
 	}
 	if err := a.updatePiped(ctx, req.Id, updater); err != nil {
 		return nil, err
