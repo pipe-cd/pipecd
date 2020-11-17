@@ -70,14 +70,14 @@ func TestVerify(t *testing.T) {
 	}
 	projectGetter := &fakeProjectGetter{
 		projects: map[string]*model.Project{
-			"project-1": &model.Project{
+			"project-1": {
 				Id: "project-1",
 			},
 		},
 	}
 	pipedGetter := &fakePipedGetter{
 		pipeds: map[string]*model.Piped{
-			"piped-0-1": &model.Piped{
+			"piped-0-1": {
 				Id:        "piped-0-1",
 				ProjectId: "project-0",
 				Keys: []*model.PipedKey{
@@ -86,7 +86,7 @@ func TestVerify(t *testing.T) {
 					},
 				},
 			},
-			"piped-1-1": &model.Piped{
+			"piped-1-1": {
 				Id:        "piped-1-1",
 				ProjectId: "project-1",
 				Keys: []*model.PipedKey{
@@ -95,7 +95,7 @@ func TestVerify(t *testing.T) {
 					},
 				},
 			},
-			"piped-1-2": &model.Piped{
+			"piped-1-2": {
 				Id:        "piped-1-2",
 				ProjectId: "project-non-existence",
 				Keys: []*model.PipedKey{
@@ -104,7 +104,7 @@ func TestVerify(t *testing.T) {
 					},
 				},
 			},
-			"piped-1-3": &model.Piped{
+			"piped-1-3": {
 				Id:        "piped-1-3",
 				ProjectId: "project-1",
 				Keys: []*model.PipedKey{
