@@ -76,7 +76,7 @@ func (p *Piped) CheckKey(key string) (err error) {
 	return
 }
 
-// AddKey add a new key the list.
+// AddKey adds a new key to the list.
 // If the piped is already having "pipedMaxKeyNum" number of keys
 // the oldest one will be removed before adding.
 func (p *Piped) AddKey(hash, creator string, createdAt time.Time) {
