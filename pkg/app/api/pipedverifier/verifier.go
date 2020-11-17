@@ -83,7 +83,7 @@ func (v *Verifier) Verify(ctx context.Context, projectID, pipedID, pipedKey stri
 		// When an error is returned, it is probably because
 		// the requested key has just been added but not updated in the cache.
 		// So in that case, we should refresh the cache data.
-		if err, _ := checkPiped(piped, projectID, pipedID, pipedKey); err == nil {
+		if _, err := checkPiped(piped, projectID, pipedID, pipedKey); err == nil {
 			return nil
 		}
 	}
@@ -98,7 +98,7 @@ func (v *Verifier) Verify(ctx context.Context, projectID, pipedID, pipedKey stri
 		v.logger.Warn("unable to store piped in memory cache", zap.Error(err))
 	}
 
-	err, keyNotMatch := checkPiped(piped, projectID, pipedID, pipedKey)
+	keyNotMatch, err := checkPiped(piped, projectID, pipedID, pipedKey)
 	if err != nil {
 		v.logger.Info("detected an invalid piped key",
 			zap.String("project", projectID),
@@ -136,15 +136,15 @@ func (v *Verifier) verifyProject(ctx context.Context, projectID, pipedID string)
 	return nil
 }
 
-func checkPiped(piped *model.Piped, projectID, pipedID, pipedKey string) (err error, keyNotMatch bool) {
+func checkPiped(piped *model.Piped, projectID, pipedID, pipedKey string) (keyNotMatch bool, err error) {
 	if piped.ProjectId != projectID {
-		return fmt.Errorf("the project of piped %s is not matched, expected=%s, got=%s", pipedID, projectID, piped.ProjectId), false
+		return false, fmt.Errorf("the project of piped %s is not matched, expected=%s, got=%s", pipedID, projectID, piped.ProjectId)
 	}
 	if piped.Disabled {
-		return fmt.Errorf("piped %s was already disabled", pipedID), false
+		return false, fmt.Errorf("piped %s was already disabled", pipedID)
 	}
 	if err := piped.CheckKey(pipedKey); err != nil {
-		return fmt.Errorf("the key of piped %s is not matched, %v", pipedID, err), true
+		return true, fmt.Errorf("the key of piped %s is not matched, %v", pipedID, err)
 	}
-	return nil, false
+	return false, nil
 }
