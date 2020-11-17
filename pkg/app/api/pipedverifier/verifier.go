@@ -88,7 +88,7 @@ func (v *Verifier) Verify(ctx context.Context, projectID, pipedID, pipedKey stri
 		}
 	}
 
-	// If the cache data was not found or stalled,
+	// If the cache data was not found or stale,
 	// we have to retrieve from datastore and save it to the cache.
 	piped, err = v.pipedStore.GetPiped(ctx, pipedID)
 	if err != nil {
