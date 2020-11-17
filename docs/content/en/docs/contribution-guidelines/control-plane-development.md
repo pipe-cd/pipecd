@@ -167,3 +167,5 @@ docker build -t envoy:v1 .
 ```
 docker run -d --net="host" --name web-envoy -p 9095:9095 -p 9090:9090 web-envoy:1.0
 ```
+
+Then go to `http://localhost:9090` on your browser to access PipeCD's web.
