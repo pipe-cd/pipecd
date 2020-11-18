@@ -39,13 +39,13 @@ func TestEnsurePrimaryRollout(t *testing.T) {
 
 	testcases := []struct {
 		name     string
-		executor *Executor
+		executor *deployExecutor
 		want     model.StageStatus
 	}{
 		{
 			name: "malformed configuration",
 			want: model.StageStatus_STAGE_FAILURE,
-			executor: &Executor{
+			executor: &deployExecutor{
 				Input: executor.Input{
 					Deployment: &model.Deployment{
 						Trigger: &model.DeploymentTrigger{
@@ -61,7 +61,7 @@ func TestEnsurePrimaryRollout(t *testing.T) {
 		{
 			name: "failed to load manifest",
 			want: model.StageStatus_STAGE_FAILURE,
-			executor: &Executor{
+			executor: &deployExecutor{
 				Input: executor.Input{
 					Deployment: &model.Deployment{
 						Trigger: &model.DeploymentTrigger{
@@ -90,7 +90,7 @@ func TestEnsurePrimaryRollout(t *testing.T) {
 		{
 			name: "successfully apply a manifest",
 			want: model.StageStatus_STAGE_SUCCESS,
-			executor: &Executor{
+			executor: &deployExecutor{
 				Input: executor.Input{
 					Deployment: &model.Deployment{
 						Trigger: &model.DeploymentTrigger{
@@ -126,13 +126,13 @@ func TestEnsurePrimaryRollout(t *testing.T) {
 					p.EXPECT().ApplyManifest(gomock.Any(), gomock.Any()).Return(nil)
 					return p
 				}(),
-				config: &config.KubernetesDeploymentSpec{},
+				deployCfg: &config.KubernetesDeploymentSpec{},
 			},
 		},
 		{
 			name: "successfully apply two manifests",
 			want: model.StageStatus_STAGE_SUCCESS,
-			executor: &Executor{
+			executor: &deployExecutor{
 				Input: executor.Input{
 					Deployment: &model.Deployment{
 						Trigger: &model.DeploymentTrigger{
@@ -176,7 +176,7 @@ func TestEnsurePrimaryRollout(t *testing.T) {
 					p.EXPECT().ApplyManifest(gomock.Any(), gomock.Any()).Return(nil)
 					return p
 				}(),
-				config: &config.KubernetesDeploymentSpec{
+				deployCfg: &config.KubernetesDeploymentSpec{
 					Service: config.K8sResourceReference{
 						Kind: "Service",
 						Name: "foo",
@@ -187,7 +187,7 @@ func TestEnsurePrimaryRollout(t *testing.T) {
 		{
 			name: "filter out VirtualService",
 			want: model.StageStatus_STAGE_SUCCESS,
-			executor: &Executor{
+			executor: &deployExecutor{
 				Input: executor.Input{
 					Deployment: &model.Deployment{
 						Trigger: &model.DeploymentTrigger{
@@ -222,7 +222,7 @@ func TestEnsurePrimaryRollout(t *testing.T) {
 					}, nil)
 					return p
 				}(),
-				config: &config.KubernetesDeploymentSpec{
+				deployCfg: &config.KubernetesDeploymentSpec{
 					TrafficRouting: &config.KubernetesTrafficRouting{
 						Method: config.KubernetesTrafficRoutingMethodIstio,
 					},
@@ -232,7 +232,7 @@ func TestEnsurePrimaryRollout(t *testing.T) {
 		{
 			name: "lack of variant label",
 			want: model.StageStatus_STAGE_FAILURE,
-			executor: &Executor{
+			executor: &deployExecutor{
 				Input: executor.Input{
 					Deployment: &model.Deployment{
 						Trigger: &model.DeploymentTrigger{
@@ -267,7 +267,7 @@ func TestEnsurePrimaryRollout(t *testing.T) {
 					}, nil)
 					return p
 				}(),
-				config: &config.KubernetesDeploymentSpec{
+				deployCfg: &config.KubernetesDeploymentSpec{
 					GenericDeploymentSpec: config.GenericDeploymentSpec{
 						Pipeline: &config.DeploymentPipeline{
 							Stages: []config.PipelineStage{

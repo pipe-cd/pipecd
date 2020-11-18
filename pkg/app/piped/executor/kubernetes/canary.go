@@ -20,6 +20,7 @@ import (
 	"strings"
 
 	provider "github.com/pipe-cd/pipe/pkg/app/piped/cloudprovider/kubernetes"
+	"github.com/pipe-cd/pipe/pkg/app/piped/executor"
 	"github.com/pipe-cd/pipe/pkg/config"
 	"github.com/pipe-cd/pipe/pkg/model"
 )
@@ -29,19 +30,23 @@ const (
 	addedCanaryResourcesMetadataKey = "canary-resources"
 )
 
-func (e *Executor) ensureCanaryRollout(ctx context.Context) model.StageStatus {
-	var (
-		commitHash = e.Deployment.Trigger.Commit.Hash
-		options    = e.StageConfig.K8sCanaryRolloutStageOptions
-	)
+func (e *deployExecutor) ensureCanaryRollout(ctx context.Context) model.StageStatus {
+	options := e.StageConfig.K8sCanaryRolloutStageOptions
 	if options == nil {
 		e.LogPersister.Errorf("Malformed configuration for stage %s", e.Stage.Name)
 		return model.StageStatus_STAGE_FAILURE
 	}
 
 	// Load the manifests at the triggered commit.
-	e.LogPersister.Infof("Loading manifests at commit %s for handling", commitHash)
-	manifests, err := e.loadManifests(ctx)
+	e.LogPersister.Infof("Loading manifests at commit %s for handling", e.commit)
+	manifests, err := loadManifests(
+		ctx,
+		e.Deployment.ApplicationId,
+		e.commit,
+		e.AppManifestsCache,
+		e.provider,
+		e.Logger,
+	)
 	if err != nil {
 		e.LogPersister.Errorf("Failed while loading manifests (%v)", err)
 		return model.StageStatus_STAGE_FAILURE
@@ -61,7 +66,13 @@ func (e *Executor) ensureCanaryRollout(ctx context.Context) model.StageStatus {
 	}
 
 	// Add builtin annotations for tracking application live state.
-	e.addBuiltinAnnontations(canaryManifests, canaryVariant, commitHash)
+	addBuiltinAnnontations(
+		canaryManifests,
+		canaryVariant,
+		e.commit,
+		e.PipedConfig.PipedID,
+		e.Deployment.ApplicationId,
+	)
 
 	// Store added resource keys into metadata for cleaning later.
 	addedResources := make([]string, 0, len(canaryManifests))
@@ -77,7 +88,8 @@ func (e *Executor) ensureCanaryRollout(ctx context.Context) model.StageStatus {
 
 	// Start rolling out the resources for CANARY variant.
 	e.LogPersister.Info("Start rolling out CANARY variant...")
-	if err := e.applyManifests(ctx, canaryManifests); err != nil {
+	err = applyManifests(ctx, e.provider, canaryManifests, e.deployCfg.Input.Namespace, e.LogPersister)
+	if err != nil {
 		return model.StageStatus_STAGE_FAILURE
 	}
 
@@ -85,7 +97,7 @@ func (e *Executor) ensureCanaryRollout(ctx context.Context) model.StageStatus {
 	return model.StageStatus_STAGE_SUCCESS
 }
 
-func (e *Executor) ensureCanaryClean(ctx context.Context) model.StageStatus {
+func (e *deployExecutor) ensureCanaryClean(ctx context.Context) model.StageStatus {
 	value, ok := e.MetadataStore.Get(addedCanaryResourcesMetadataKey)
 	if !ok {
 		e.LogPersister.Error("Unable to determine the applied CANARY resources")
@@ -93,57 +105,20 @@ func (e *Executor) ensureCanaryClean(ctx context.Context) model.StageStatus {
 	}
 
 	resources := strings.Split(value, ",")
-	if err := e.removeCanaryResources(ctx, resources); err != nil {
+	if err := removeCanaryResources(ctx, e.provider, resources, e.LogPersister); err != nil {
 		e.LogPersister.Errorf("Unable to remove canary resources: %v", err)
 		return model.StageStatus_STAGE_FAILURE
 	}
 	return model.StageStatus_STAGE_SUCCESS
 }
 
-func (e *Executor) removeCanaryResources(ctx context.Context, resources []string) error {
-	if len(resources) == 0 {
-		return nil
-	}
-
-	var (
-		workloadKeys = make([]provider.ResourceKey, 0)
-		serviceKeys  = make([]provider.ResourceKey, 0)
-	)
-	for _, r := range resources {
-		key, err := provider.DecodeResourceKey(r)
-		if err != nil {
-			e.LogPersister.Errorf("Had an error while decoding CANARY resource key: %s, %v", r, err)
-			continue
-		}
-		if key.IsWorkload() {
-			workloadKeys = append(workloadKeys, key)
-		} else {
-			serviceKeys = append(serviceKeys, key)
-		}
-	}
-
-	// We delete the service first to close all incoming connections.
-	e.LogPersister.Info("Starting finding and deleting service resources of CANARY variant")
-	if err := e.deleteResources(ctx, serviceKeys); err != nil {
-		return err
-	}
-
-	// Next, delete all workloads.
-	e.LogPersister.Info("Starting finding and deleting workload resources of CANARY variant")
-	if err := e.deleteResources(ctx, workloadKeys); err != nil {
-		return err
-	}
-
-	return nil
-}
-
-func (e *Executor) generateCanaryManifests(manifests []provider.Manifest, opts config.K8sCanaryRolloutStageOptions) ([]provider.Manifest, error) {
+func (e *deployExecutor) generateCanaryManifests(manifests []provider.Manifest, opts config.K8sCanaryRolloutStageOptions) ([]provider.Manifest, error) {
 	suffix := canaryVariant
 	if opts.Suffix != "" {
 		suffix = opts.Suffix
 	}
 
-	workloads := findWorkloadManifests(manifests, e.config.Workloads)
+	workloads := findWorkloadManifests(manifests, e.deployCfg.Workloads)
 	if len(workloads) == 0 {
 		return nil, fmt.Errorf("unable to find any workload manifests for CANARY variant")
 	}
@@ -152,7 +127,7 @@ func (e *Executor) generateCanaryManifests(manifests []provider.Manifest, opts c
 
 	// Find service manifests and duplicate them for CANARY variant.
 	if opts.CreateService {
-		serviceName := e.config.Service.Name
+		serviceName := e.deployCfg.Service.Name
 		services := findManifests(provider.KindService, serviceName, manifests)
 		if len(services) == 0 {
 			return nil, fmt.Errorf("unable to find any service for name=%q", serviceName)
@@ -197,4 +172,43 @@ func (e *Executor) generateCanaryManifests(manifests []provider.Manifest, opts c
 	canaryManifests = append(canaryManifests, generatedWorkloads...)
 
 	return canaryManifests, nil
+}
+
+func removeCanaryResources(ctx context.Context, applier provider.Applier, resources []string, lp executor.LogPersister) error {
+	if len(resources) == 0 {
+		return nil
+	}
+
+	var (
+		workloadKeys = make([]provider.ResourceKey, 0)
+		serviceKeys  = make([]provider.ResourceKey, 0)
+	)
+	for _, r := range resources {
+		key, err := provider.DecodeResourceKey(r)
+		if err != nil {
+			lp.Errorf("Had an error while decoding CANARY resource key: %s, %v", r, err)
+			continue
+		}
+		if key.IsWorkload() {
+			workloadKeys = append(workloadKeys, key)
+		} else {
+			serviceKeys = append(serviceKeys, key)
+		}
+	}
+
+	// We delete the service first to close all incoming connections.
+	lp.Info("Starting finding and deleting service resources of CANARY variant")
+	err := deleteResources(ctx, applier, serviceKeys, lp)
+	if err != nil {
+		return err
+	}
+
+	// Next, delete all workloads.
+	lp.Info("Starting finding and deleting workload resources of CANARY variant")
+	err = deleteResources(ctx, applier, workloadKeys, lp)
+	if err != nil {
+		return err
+	}
+
+	return nil
 }

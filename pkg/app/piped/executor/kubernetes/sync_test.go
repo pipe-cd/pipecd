@@ -39,13 +39,13 @@ func TestEnsureSync(t *testing.T) {
 
 	testcases := []struct {
 		name     string
-		executor *Executor
+		executor *deployExecutor
 		want     model.StageStatus
 	}{
 		{
 			name: "failed to load manifest",
 			want: model.StageStatus_STAGE_FAILURE,
-			executor: &Executor{
+			executor: &deployExecutor{
 				Input: executor.Input{
 					Deployment: &model.Deployment{
 						Trigger: &model.DeploymentTrigger{
@@ -70,7 +70,7 @@ func TestEnsureSync(t *testing.T) {
 		{
 			name: "unable to apply manifests",
 			want: model.StageStatus_STAGE_FAILURE,
-			executor: &Executor{
+			executor: &deployExecutor{
 				Input: executor.Input{
 					Deployment: &model.Deployment{
 						Trigger: &model.DeploymentTrigger{
@@ -100,7 +100,7 @@ func TestEnsureSync(t *testing.T) {
 					p.EXPECT().ApplyManifest(gomock.Any(), gomock.Any()).Return(fmt.Errorf("error"))
 					return p
 				}(),
-				config: &config.KubernetesDeploymentSpec{
+				deployCfg: &config.KubernetesDeploymentSpec{
 					QuickSync: config.K8sSyncStageOptions{
 						AddVariantLabelToSelector: true,
 					},
@@ -110,7 +110,7 @@ func TestEnsureSync(t *testing.T) {
 		{
 			name: "successfully apply manifests",
 			want: model.StageStatus_STAGE_SUCCESS,
-			executor: &Executor{
+			executor: &deployExecutor{
 				Input: executor.Input{
 					Deployment: &model.Deployment{
 						Trigger: &model.DeploymentTrigger{
@@ -140,7 +140,7 @@ func TestEnsureSync(t *testing.T) {
 					p.EXPECT().ApplyManifest(gomock.Any(), gomock.Any()).Return(nil)
 					return p
 				}(),
-				config: &config.KubernetesDeploymentSpec{
+				deployCfg: &config.KubernetesDeploymentSpec{
 					QuickSync: config.K8sSyncStageOptions{
 						AddVariantLabelToSelector: true,
 					},

@@ -36,7 +36,7 @@ const (
 	baselineMetadataKey = "baseline-percentage"
 )
 
-func (e *Executor) ensureTrafficRouting(ctx context.Context) model.StageStatus {
+func (e *deployExecutor) ensureTrafficRouting(ctx context.Context) model.StageStatus {
 	var (
 		commitHash = e.Deployment.Trigger.Commit.Hash
 		options    = e.StageConfig.K8sTrafficRoutingStageOptions
@@ -45,11 +45,18 @@ func (e *Executor) ensureTrafficRouting(ctx context.Context) model.StageStatus {
 		e.LogPersister.Errorf("Malformed configuration for stage %s", e.Stage.Name)
 		return model.StageStatus_STAGE_FAILURE
 	}
-	method := config.DetermineKubernetesTrafficRoutingMethod(e.config.TrafficRouting)
+	method := config.DetermineKubernetesTrafficRoutingMethod(e.deployCfg.TrafficRouting)
 
 	// Load the manifests at the triggered commit.
 	e.LogPersister.Infof("Loading manifests at commit %s for handling", commitHash)
-	manifests, err := e.loadManifests(ctx)
+	manifests, err := loadManifests(
+		ctx,
+		e.Deployment.ApplicationId,
+		e.commit,
+		e.AppManifestsCache,
+		e.provider,
+		e.Logger,
+	)
 	if err != nil {
 		e.LogPersister.Errorf("Failed while loading manifests (%v)", err)
 		return model.StageStatus_STAGE_FAILURE
@@ -66,7 +73,7 @@ func (e *Executor) ensureTrafficRouting(ctx context.Context) model.StageStatus {
 	e.saveTrafficRoutingMetadata(ctx, primaryPercent, canaryPercent, baselinePercent)
 
 	// Find traffic routing manifests.
-	trafficRoutingManifests, err := findTrafficRoutingManifests(manifests, e.config.Service.Name, e.config.TrafficRouting)
+	trafficRoutingManifests, err := findTrafficRoutingManifests(manifests, e.deployCfg.Service.Name, e.deployCfg.TrafficRouting)
 	if err != nil {
 		e.LogPersister.Errorf("Failed while finding traffic routing manifest: (%v)", err)
 		return model.StageStatus_STAGE_FAILURE
@@ -104,7 +111,7 @@ func (e *Executor) ensureTrafficRouting(ctx context.Context) model.StageStatus {
 		primaryPercent,
 		canaryPercent,
 		baselinePercent,
-		e.config.TrafficRouting,
+		e.deployCfg.TrafficRouting,
 	)
 	if err != nil {
 		e.LogPersister.Errorf("Unable generate traffic routing manifest: (%v)", err)
@@ -112,14 +119,21 @@ func (e *Executor) ensureTrafficRouting(ctx context.Context) model.StageStatus {
 	}
 
 	// Add builtin annotations for tracking application live state.
-	e.addBuiltinAnnontations([]provider.Manifest{trafficRoutingManifest}, primaryVariant, commitHash)
+	addBuiltinAnnontations(
+		[]provider.Manifest{trafficRoutingManifest},
+		primaryVariant,
+		commitHash,
+		e.PipedConfig.PipedID,
+		e.Deployment.ApplicationId,
+	)
 
 	e.LogPersister.Infof("Start updating traffic routing to be percentages: primary=%d, canary=%d, baseline=%d",
 		primaryPercent,
 		canaryPercent,
 		baselinePercent,
 	)
-	if err := e.applyManifests(ctx, []provider.Manifest{trafficRoutingManifest}); err != nil {
+	err = applyManifests(ctx, e.provider, []provider.Manifest{trafficRoutingManifest}, e.deployCfg.Input.Namespace, e.LogPersister)
+	if err != nil {
 		return model.StageStatus_STAGE_FAILURE
 	}
 
@@ -141,7 +155,7 @@ func findTrafficRoutingManifests(manifests []provider.Manifest, serviceName stri
 	return findManifests(provider.KindService, serviceName, manifests), nil
 }
 
-func (e *Executor) generateTrafficRoutingManifest(manifest provider.Manifest, primaryPercent, canaryPercent, baselinePercent int, cfg *config.KubernetesTrafficRouting) (provider.Manifest, error) {
+func (e *deployExecutor) generateTrafficRoutingManifest(manifest provider.Manifest, primaryPercent, canaryPercent, baselinePercent int, cfg *config.KubernetesTrafficRouting) (provider.Manifest, error) {
 	if cfg != nil && cfg.Method == config.KubernetesTrafficRoutingMethodIstio {
 		istioConfig := cfg.Istio
 		if istioConfig == nil {
@@ -176,7 +190,7 @@ func (e *Executor) generateTrafficRoutingManifest(manifest provider.Manifest, pr
 	return manifest, nil
 }
 
-func (e *Executor) saveTrafficRoutingMetadata(ctx context.Context, primary, canary, baseline int) {
+func (e *deployExecutor) saveTrafficRoutingMetadata(ctx context.Context, primary, canary, baseline int) {
 	metadata := map[string]string{
 		primaryMetadataKey:  strconv.FormatInt(int64(primary), 10),
 		canaryMetadataKey:   strconv.FormatInt(int64(canary), 10),
