@@ -33,5 +33,5 @@ we prepared a fake control-plane to be used.
 bazelisk run --run_under="cd $PWD && " //cmd/piped:piped -- piped \
 --use-fake-api-client=true \
 --tools-dir=/tmp/piped-bin \
---config-file=.dev/dev-config.yaml
+--config-file=.dev/piped-config.yaml
 ```
