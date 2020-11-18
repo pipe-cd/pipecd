@@ -1,4 +1,4 @@
-import { makeStyles } from "@material-ui/core";
+import { Box, makeStyles } from "@material-ui/core";
 import React, { FC, memo, useEffect } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import { useParams } from "react-router";
@@ -23,15 +23,6 @@ const useStyles = makeStyles({
     flexDirection: "column",
     alignItems: "stretch",
     flex: 1,
-  },
-  main: {
-    flex: 1,
-  },
-  loading: {
-    flex: 1,
-    display: "flex",
-    alignItems: "center",
-    justifyContent: "center",
   },
 });
 
@@ -67,10 +58,10 @@ export const DeploymentDetailPage: FC = memo(function DeploymentDetailPage() {
 
   return (
     <div className={classes.root}>
-      <div className={classes.main}>
+      <Box flex={1}>
         <DeploymentDetail deploymentId={deploymentId} />
         <Pipeline deploymentId={deploymentId} />
-      </div>
+      </Box>
       <LogViewer />
     </div>
   );

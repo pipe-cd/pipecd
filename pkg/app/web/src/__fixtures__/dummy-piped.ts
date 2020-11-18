@@ -31,6 +31,7 @@ export const dummyPiped: Piped = {
   version: "v0.1",
   status: PipedModel.ConnectionStatus.ONLINE,
   keyHash: "12345",
+  keysList: [],
   envIdsList: [dummyEnv.id],
   sealedSecretEncryption: {
     encryptServiceAccount: "",
