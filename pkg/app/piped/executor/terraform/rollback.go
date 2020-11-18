@@ -18,20 +18,70 @@ import (
 	"context"
 
 	provider "github.com/pipe-cd/pipe/pkg/app/piped/cloudprovider/terraform"
+	"github.com/pipe-cd/pipe/pkg/app/piped/executor"
 	"github.com/pipe-cd/pipe/pkg/model"
 )
 
-func (e *Executor) ensureRollback(ctx context.Context) model.StageStatus {
-	commit := e.Deployment.RunningCommitHash
-	if commit == "" {
+type rollbackExecutor struct {
+	executor.Input
+}
+
+func (e *rollbackExecutor) Execute(sig executor.StopSignal) model.StageStatus {
+	var (
+		ctx            = sig.Context()
+		originalStatus = e.Stage.Status
+		status         model.StageStatus
+	)
+
+	switch model.Stage(e.Stage.Name) {
+	case model.StageRollback:
+		status = e.ensureRollback(ctx)
+
+	default:
+		e.LogPersister.Errorf("Unsupported stage %s for terraform application", e.Stage.Name)
+		return model.StageStatus_STAGE_FAILURE
+	}
+
+	return executor.DetermineStageStatus(sig.Signal(), originalStatus, status)
+}
+
+func (e *rollbackExecutor) ensureRollback(ctx context.Context) model.StageStatus {
+	// There is nothing to do if this is the first deployment.
+	if e.Deployment.RunningCommitHash == "" {
 		e.LogPersister.Errorf("Unable to determine the last deployed commit to rollback. It seems this is the first deployment.")
 		return model.StageStatus_STAGE_FAILURE
 	}
 
-	e.LogPersister.Infof("Start rolling back to the state defined at commit %s", commit)
-	cmd := provider.NewTerraform(e.terraformPath, e.appDir, e.vars, e.config.Input.VarFiles)
+	_, cloudProviderCfg, found := findCloudProvider(&e.Input)
+	if !found {
+		return model.StageStatus_STAGE_FAILURE
+	}
 
-	if ok := e.showUsingVersion(ctx, cmd); !ok {
+	ds, err := e.RunningDSP.Get(ctx, e.LogPersister)
+	if err != nil {
+		e.LogPersister.Errorf("Failed to prepare running deploy source data (%v)", err)
+		return model.StageStatus_STAGE_FAILURE
+	}
+
+	deployCfg := ds.DeploymentConfig.TerraformDeploymentSpec
+	if deployCfg == nil {
+		e.LogPersister.Error("Malformed deployment configuration: missing TerraformDeploymentSpec")
+		return model.StageStatus_STAGE_FAILURE
+	}
+
+	terraformPath, ok := findTerraform(ctx, deployCfg.Input.TerraformVersion, e.LogPersister)
+	if !ok {
+		return model.StageStatus_STAGE_FAILURE
+	}
+
+	vars := make([]string, 0, len(cloudProviderCfg.Vars)+len(deployCfg.Input.Vars))
+	vars = append(vars, cloudProviderCfg.Vars...)
+	vars = append(vars, deployCfg.Input.Vars...)
+
+	e.LogPersister.Infof("Start rolling back to the state defined at commit %s", e.Deployment.RunningCommitHash)
+	cmd := provider.NewTerraform(terraformPath, ds.AppDir, vars, deployCfg.Input.VarFiles)
+
+	if ok := showUsingVersion(ctx, cmd, e.LogPersister); !ok {
 		return model.StageStatus_STAGE_FAILURE
 	}
 
@@ -40,7 +90,7 @@ func (e *Executor) ensureRollback(ctx context.Context) model.StageStatus {
 		return model.StageStatus_STAGE_FAILURE
 	}
 
-	if ok := e.selectWorkspace(ctx, cmd); !ok {
+	if ok := selectWorkspace(ctx, cmd, deployCfg.Input.Workspace, e.LogPersister); !ok {
 		return model.StageStatus_STAGE_FAILURE
 	}
 
