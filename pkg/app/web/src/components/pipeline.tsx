@@ -7,6 +7,7 @@ import {
   DialogActions,
   DialogContentText,
   Button,
+  Box,
 } from "@material-ui/core";
 import { PipelineStage } from "./pipeline-stage";
 import { useSelector, useDispatch } from "react-redux";
@@ -73,9 +74,14 @@ const useDeploymentStage = (
 const LARGE_STAGE_NAMES = ["WAIT_APPROVAL", "K8S_TRAFFIC_ROUTING"];
 
 const useStyles = makeStyles((theme) => ({
-  root: {
-    display: "flex",
-    justifyContent: "center",
+  showScrollbar: {
+    "&::-webkit-scrollbar": {
+      height: "7px",
+    },
+    "&::-webkit-scrollbar-thumb": {
+      borderRadius: 8,
+      backgroundColor: "rgba(0,0,0,0.3)",
+    },
   },
   pipelineColumn: {
     display: "flex",
@@ -189,83 +195,85 @@ export const Pipeline: FC<Props> = memo(function Pipeline({ deploymentId }) {
   };
 
   return (
-    <div className={classes.root}>
-      {stages.map((stageColumn, columnIndex) => {
-        let isPrevStageLarge = false;
-        return (
-          <div
-            className={classes.pipelineColumn}
-            key={`pipeline-${columnIndex}`}
-          >
-            {stageColumn.map((stage, stageIndex) => {
-              const approver = findApprover(stage.metadataMap);
-              const isActive = activeStage
-                ? activeStage.deploymentId === deploymentId &&
-                  activeStage.stageId === stage.id
-                : false;
-              const stageComp = (
-                <div
-                  key={stage.id}
-                  className={clsx(
-                    classes.stage,
-                    columnIndex > 0
-                      ? stageIndex > 0
-                        ? clsx(classes.requireCurvedLine, {
-                            [classes.extendRequireLine]:
-                              Boolean(approver) || isPrevStageLarge,
-                          })
-                        : classes.requireLine
-                      : undefined
-                  )}
-                >
-                  {stage.name === WAIT_APPROVAL_NAME &&
-                  stage.status === StageStatus.STAGE_RUNNING ? (
-                    <ApprovalStage
-                      id={stage.id}
-                      name={stage.name}
-                      onClick={() => {
-                        setApproveTargetId(stage.id);
-                      }}
-                      active={isActive}
-                    />
-                  ) : (
-                    <PipelineStage
-                      id={stage.id}
-                      name={stage.name}
-                      status={stage.status}
-                      metadata={stage.metadataMap}
-                      onClick={handleOnClickStage}
-                      active={isActive}
-                      approver={approver}
-                      isDeploymentRunning={isRunning}
-                    />
-                  )}
-                </div>
-              );
-              isPrevStageLarge = LARGE_STAGE_NAMES.includes(stage.name);
-              return stageComp;
-            })}
-          </div>
-        );
-      })}
+    <Box textAlign="center" overflow="scroll" className={classes.showScrollbar}>
+      <Box display="inline-flex">
+        {stages.map((stageColumn, columnIndex) => {
+          let isPrevStageLarge = false;
+          return (
+            <div
+              className={classes.pipelineColumn}
+              key={`pipeline-${columnIndex}`}
+            >
+              {stageColumn.map((stage, stageIndex) => {
+                const approver = findApprover(stage.metadataMap);
+                const isActive = activeStage
+                  ? activeStage.deploymentId === deploymentId &&
+                    activeStage.stageId === stage.id
+                  : false;
+                const stageComp = (
+                  <div
+                    key={stage.id}
+                    className={clsx(
+                      classes.stage,
+                      columnIndex > 0
+                        ? stageIndex > 0
+                          ? clsx(classes.requireCurvedLine, {
+                              [classes.extendRequireLine]:
+                                Boolean(approver) || isPrevStageLarge,
+                            })
+                          : classes.requireLine
+                        : undefined
+                    )}
+                  >
+                    {stage.name === WAIT_APPROVAL_NAME &&
+                    stage.status === StageStatus.STAGE_RUNNING ? (
+                      <ApprovalStage
+                        id={stage.id}
+                        name={stage.name}
+                        onClick={() => {
+                          setApproveTargetId(stage.id);
+                        }}
+                        active={isActive}
+                      />
+                    ) : (
+                      <PipelineStage
+                        id={stage.id}
+                        name={stage.name}
+                        status={stage.status}
+                        metadata={stage.metadataMap}
+                        onClick={handleOnClickStage}
+                        active={isActive}
+                        approver={approver}
+                        isDeploymentRunning={isRunning}
+                      />
+                    )}
+                  </div>
+                );
+                isPrevStageLarge = LARGE_STAGE_NAMES.includes(stage.name);
+                return stageComp;
+              })}
+            </div>
+          );
+        })}
 
-      <Dialog
-        open={isOpenApproveDialog}
-        onClose={() => setApproveTargetId(null)}
-      >
-        <DialogTitle>Approve stage</DialogTitle>
-        <DialogContent>
-          <DialogContentText>
-            {`To continue deploying, click "APPROVE".`}
-          </DialogContentText>
-        </DialogContent>
-        <DialogActions>
-          <Button onClick={() => setApproveTargetId(null)}>CANCEL</Button>
-          <Button color="primary" onClick={handleApprove}>
-            APPROVE
-          </Button>
-        </DialogActions>
-      </Dialog>
-    </div>
+        <Dialog
+          open={isOpenApproveDialog}
+          onClose={() => setApproveTargetId(null)}
+        >
+          <DialogTitle>Approve stage</DialogTitle>
+          <DialogContent>
+            <DialogContentText>
+              {`To continue deploying, click "APPROVE".`}
+            </DialogContentText>
+          </DialogContent>
+          <DialogActions>
+            <Button onClick={() => setApproveTargetId(null)}>CANCEL</Button>
+            <Button color="primary" onClick={handleApprove}>
+              APPROVE
+            </Button>
+          </DialogActions>
+        </Dialog>
+      </Box>
+    </Box>
   );
 });
