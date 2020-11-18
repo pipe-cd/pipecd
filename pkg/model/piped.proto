@@ -45,7 +45,7 @@ message Piped {
     string desc = 3;
     // The hash value of the secret key generated for the piped.
     // This is used to authenticate while communicating with the control plane.
-    string key_hash = 4 [(validate.rules).string.min_len = 1, deprecated=true];
+    string key_hash = 4 [deprecated=true];
     // The ID of the project this enviroment belongs to.
     string project_id = 5 [(validate.rules).string.min_len = 1];
     // The IDs of environments where this piped can be connected to.
