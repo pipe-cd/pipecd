@@ -96,7 +96,7 @@ func (e *rollbackExecutor) ensureRollback(ctx context.Context) model.StageStatus
 
 	if err := cmd.Apply(ctx, e.LogPersister); err != nil {
 		e.LogPersister.Errorf("Failed to apply changes (%v)", err)
-		return model.StageStatus_STAGE_SUCCESS
+		return model.StageStatus_STAGE_FAILURE
 	}
 
 	e.LogPersister.Success("Successfully rolled back the changes")
