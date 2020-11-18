@@ -1,4 +1,4 @@
-import React, { FC, useState } from "react";
+import React, { FC } from "react";
 import {
   makeStyles,
   Divider,
@@ -6,6 +6,7 @@ import {
   TextField,
   Button,
   Checkbox,
+  Box,
 } from "@material-ui/core";
 import Autocomplete from "@material-ui/lab/Autocomplete";
 import { AppState } from "../modules";
@@ -16,11 +17,10 @@ import {
 import { useSelector } from "react-redux";
 import CheckBoxOutlineBlankIcon from "@material-ui/icons/CheckBoxOutlineBlank";
 import CheckBoxIcon from "@material-ui/icons/CheckBox";
+import { useFormik } from "formik";
+import * as Yup from "yup";
 
 const useStyles = makeStyles((theme) => ({
-  root: {
-    width: 600,
-  },
   title: {
     padding: theme.spacing(2),
   },
@@ -28,6 +28,12 @@ const useStyles = makeStyles((theme) => ({
     padding: theme.spacing(2),
   },
 }));
+
+const validationSchema = Yup.object().shape({
+  name: Yup.string().required(),
+  desc: Yup.string().required(),
+  envs: Yup.array().required(),
+});
 
 interface Props {
   projectName: string;
@@ -40,37 +46,53 @@ export const AddPipedForm: FC<Props> = ({ projectName, onSubmit, onClose }) => {
   const environments = useSelector<AppState, Environment[]>((state) =>
     selectAllEnvs(state.environments)
   );
-  const [name, setName] = useState<string>("");
-  const [desc, setDesc] = useState<string>("");
-  const [envs, setEnvs] = useState<Environment[]>([]);
 
-  const handleSave = (): void => {
-    onSubmit({ name, desc, envIds: envs.map((env) => env.id) });
-  };
+  const formik = useFormik<{ name: string; desc: string; envs: Environment[] }>(
+    {
+      initialValues: {
+        name: "",
+        desc: "",
+        envs: [],
+      },
+      validationSchema,
+      validateOnMount: true,
+      onSubmit: (values) => {
+        onSubmit({
+          name: values.name,
+          desc: values.desc,
+          envIds: values.envs.map((env) => env.id),
+        });
+      },
+    }
+  );
 
   return (
-    <div className={classes.root}>
+    <Box width={600}>
       <Typography
         className={classes.title}
         variant="h6"
       >{`Add a new piped to "${projectName}" project`}</Typography>
       <Divider />
-      <form className={classes.form}>
+      <form className={classes.form} onSubmit={formik.handleSubmit}>
         <TextField
+          id="name"
+          name="name"
           label="Name"
           variant="outlined"
           margin="dense"
-          onChange={(e) => setName(e.currentTarget.value)}
-          value={name}
+          onChange={formik.handleChange}
+          value={formik.values.name}
           fullWidth
           required
         />
         <TextField
+          id="desc"
+          name="desc"
           label="Description"
           variant="outlined"
           margin="dense"
-          onChange={(e) => setDesc(e.currentTarget.value)}
-          value={desc}
+          onChange={formik.handleChange}
+          value={formik.values.desc}
           fullWidth
           required
         />
@@ -79,9 +101,9 @@ export const AddPipedForm: FC<Props> = ({ projectName, onSubmit, onClose }) => {
           id="environments"
           options={environments}
           disableCloseOnSelect
-          value={envs}
+          value={formik.values.envs}
           onChange={(_, newValue) => {
-            setEnvs(newValue);
+            formik.setFieldValue("envs", newValue);
           }}
           getOptionLabel={(option) => option.name}
           renderOption={(option, { selected }) => (
@@ -104,20 +126,18 @@ export const AddPipedForm: FC<Props> = ({ projectName, onSubmit, onClose }) => {
               margin="dense"
               placeholder="Environments"
               fullWidth
-              required
             />
           )}
         />
         <Button
           color="primary"
-          type="button"
-          onClick={handleSave}
-          disabled={name === "" || desc === "" || envs.length === 0}
+          type="submit"
+          disabled={formik.isValid === false}
         >
           SAVE
         </Button>
         <Button onClick={onClose}>CANCEL</Button>
       </form>
-    </div>
+    </Box>
   );
 };
