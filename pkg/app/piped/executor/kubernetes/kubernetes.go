@@ -140,6 +140,7 @@ func (e *deployExecutor) loadRunningManifests(ctx context.Context) (manifests []
 			ds, err := e.RunningDSP.Get(ctx, e.LogPersister)
 			if err != nil {
 				e.LogPersister.Errorf("Failed to prepare running deploy source (%v)", err)
+				return nil, err
 			}
 
 			loader := provider.NewManifestLoader(

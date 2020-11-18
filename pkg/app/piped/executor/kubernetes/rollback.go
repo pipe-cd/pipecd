@@ -18,10 +18,11 @@ import (
 	"context"
 	"strings"
 
+	"go.uber.org/zap"
+
 	provider "github.com/pipe-cd/pipe/pkg/app/piped/cloudprovider/kubernetes"
 	"github.com/pipe-cd/pipe/pkg/app/piped/executor"
 	"github.com/pipe-cd/pipe/pkg/model"
-	"go.uber.org/zap"
 )
 
 type rollbackExecutor struct {
