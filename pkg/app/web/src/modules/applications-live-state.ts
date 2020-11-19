@@ -32,15 +32,11 @@ export const { selectById } = applicationLiveStateAdapter.getSelectors();
 export const fetchApplicationStateById = createAsyncThunk<
   ApplicationLiveState,
   string
->("applicationLiveState/fetchById", async (applicationId, thunkApi) => {
-  try {
-    const { snapshot } = await getApplicationLiveState({
-      applicationId,
-    });
-    return snapshot as ApplicationLiveState;
-  } catch (error) {
-    return thunkApi.rejectWithValue(error);
-  }
+>("applicationLiveState/fetchById", async (applicationId) => {
+  const { snapshot } = await getApplicationLiveState({
+    applicationId,
+  });
+  return snapshot as ApplicationLiveState;
 });
 
 const initialState = applicationLiveStateAdapter.getInitialState<{
