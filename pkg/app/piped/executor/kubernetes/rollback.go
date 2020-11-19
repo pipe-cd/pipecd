@@ -111,8 +111,7 @@ func (e *rollbackExecutor) ensureRollback(ctx context.Context) model.StageStatus
 	)
 
 	// Start applying all manifests to add or update running resources.
-	err = applyManifests(ctx, p, manifests, deployCfg.Input.Namespace, e.LogPersister)
-	if err != nil {
+	if err := applyManifests(ctx, p, manifests, deployCfg.Input.Namespace, e.LogPersister); err != nil {
 		return model.StageStatus_STAGE_FAILURE
 	}
 

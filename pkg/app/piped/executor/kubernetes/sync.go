@@ -65,8 +65,7 @@ func (e *deployExecutor) ensureSync(ctx context.Context) model.StageStatus {
 	)
 
 	// Start applying all manifests to add or update running resources.
-	err = applyManifests(ctx, e.provider, manifests, e.deployCfg.Input.Namespace, e.LogPersister)
-	if err != nil {
+	if err := applyManifests(ctx, e.provider, manifests, e.deployCfg.Input.Namespace, e.LogPersister); err != nil {
 		return model.StageStatus_STAGE_FAILURE
 	}
 
@@ -102,8 +101,7 @@ func (e *deployExecutor) ensureSync(ctx context.Context) model.StageStatus {
 	e.LogPersister.Infof("Found %d live resources that are no longer defined in Git", len(removeKeys))
 
 	// Start deleting all running resources that are not defined in Git.
-	err = deleteResources(ctx, e.provider, removeKeys, e.LogPersister)
-	if err != nil {
+	if err := deleteResources(ctx, e.provider, removeKeys, e.LogPersister); err != nil {
 		return model.StageStatus_STAGE_FAILURE
 	}
 

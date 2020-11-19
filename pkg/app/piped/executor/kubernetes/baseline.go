@@ -83,8 +83,7 @@ func (e *deployExecutor) ensureBaselineRollout(ctx context.Context) model.StageS
 
 	// Start rolling out the resources for BASELINE variant.
 	e.LogPersister.Info("Start rolling out BASELINE variant...")
-	err = applyManifests(ctx, e.provider, baselineManifests, e.deployCfg.Input.Namespace, e.LogPersister)
-	if err != nil {
+	if err := applyManifests(ctx, e.provider, baselineManifests, e.deployCfg.Input.Namespace, e.LogPersister); err != nil {
 		return model.StageStatus_STAGE_FAILURE
 	}
 
@@ -180,15 +179,13 @@ func removeBaselineResources(ctx context.Context, applier provider.Applier, reso
 
 	// We delete the service first to close all incoming connections.
 	lp.Info("Starting finding and deleting service resources of BASELINE variant")
-	err := deleteResources(ctx, applier, serviceKeys, lp)
-	if err != nil {
+	if err := deleteResources(ctx, applier, serviceKeys, lp); err != nil {
 		return err
 	}
 
 	// Next, delete all workloads.
 	lp.Info("Starting finding and deleting workload resources of BASELINE variant")
-	err = deleteResources(ctx, applier, workloadKeys, lp)
-	if err != nil {
+	if err := deleteResources(ctx, applier, workloadKeys, lp); err != nil {
 		return err
 	}
 

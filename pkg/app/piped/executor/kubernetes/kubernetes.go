@@ -178,8 +178,7 @@ func loadManifests(ctx context.Context, appID, commit string, manifestsCache cac
 	}
 
 	// When the manifests were not in the cache we have to load them.
-	manifests, err = loader.LoadManifests(ctx)
-	if err != nil {
+	if manifests, err = loader.LoadManifests(ctx); err != nil {
 		return nil, err
 	}
 	cache.Put(commit, manifests)
