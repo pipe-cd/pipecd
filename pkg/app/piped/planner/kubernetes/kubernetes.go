@@ -92,7 +92,7 @@ func (p *Planner) Plan(ctx context.Context, in planner.Input) (out planner.Outpu
 	// we have only one choise to do is applying all manifestt.
 	if cfg.Pipeline == nil || len(cfg.Pipeline.Stages) == 0 {
 		out.Stages = buildPipeline(cfg.Input.AutoRollback, time.Now())
-		out.Summary = "Quick sync by applying all manifests because no progressive pipeline was configured"
+		out.Summary = "Quick sync by applying all manifests (no pipeline was configured)"
 		return
 	}
 
