@@ -167,7 +167,13 @@ func (p *provider) LoadManifests(ctx context.Context) (manifests []Manifest, err
 				Ref:       p.input.HelmChart.Ref,
 				Path:      p.input.HelmChart.Path,
 			}
-			data, err = p.helm.TemplateRemoteGitChart(ctx, p.appName, p.appDir, chart, sharedGitClient, p.input.HelmOptions)
+			data, err = p.helm.TemplateRemoteGitChart(ctx,
+				p.appName,
+				p.appDir,
+				p.input.Namespace,
+				chart,
+				sharedGitClient,
+				p.input.HelmOptions)
 
 		case p.input.HelmChart.Repository != "":
 			chart := helmRemoteChart{
@@ -175,10 +181,20 @@ func (p *provider) LoadManifests(ctx context.Context) (manifests []Manifest, err
 				Name:       p.input.HelmChart.Name,
 				Version:    p.input.HelmChart.Version,
 			}
-			data, err = p.helm.TemplateRemoteChart(ctx, p.appName, p.appDir, chart, p.input.HelmOptions)
+			data, err = p.helm.TemplateRemoteChart(ctx,
+				p.appName,
+				p.appDir,
+				p.input.Namespace,
+				chart,
+				p.input.HelmOptions)
 
 		default:
-			data, err = p.helm.TemplateLocalChart(ctx, p.appName, p.appDir, p.input.HelmChart.Path, p.input.HelmOptions)
+			data, err = p.helm.TemplateLocalChart(ctx,
+				p.appName,
+				p.appDir,
+				p.input.Namespace,
+				p.input.HelmChart.Path,
+				p.input.HelmOptions)
 		}
 
 		if err != nil {

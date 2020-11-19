@@ -45,7 +45,7 @@ func NewHelm(version, path string, logger *zap.Logger) *Helm {
 	}
 }
 
-func (c *Helm) TemplateLocalChart(ctx context.Context, appName, appDir, chartPath string, opts *config.InputHelmOptions) (string, error) {
+func (c *Helm) TemplateLocalChart(ctx context.Context, appName, appDir, namespace string, chartPath string, opts *config.InputHelmOptions) (string, error) {
 	releaseName := appName
 	if opts != nil && opts.ReleaseName != "" {
 		releaseName = opts.ReleaseName
@@ -57,6 +57,11 @@ func (c *Helm) TemplateLocalChart(ctx context.Context, appName, appDir, chartPat
 		releaseName,
 		chartPath,
 	}
+
+	if namespace != "" {
+		args = append(args, fmt.Sprintf("--namespace=%s", namespace))
+	}
+
 	if opts != nil {
 		for _, v := range opts.ValueFiles {
 			args = append(args, "-f", v)
@@ -88,7 +93,7 @@ type helmRemoteGitChart struct {
 	Path      string
 }
 
-func (c *Helm) TemplateRemoteGitChart(ctx context.Context, appName, appDir string, chart helmRemoteGitChart, gitClient gitClient, opts *config.InputHelmOptions) (string, error) {
+func (c *Helm) TemplateRemoteGitChart(ctx context.Context, appName, appDir, namespace string, chart helmRemoteGitChart, gitClient gitClient, opts *config.InputHelmOptions) (string, error) {
 	// Firstly, we need to download the remote repositoy.
 	repoDir, err := ioutil.TempDir("", "helm-remote-chart")
 	if err != nil {
@@ -109,7 +114,7 @@ func (c *Helm) TemplateRemoteGitChart(ctx context.Context, appName, appDir strin
 	chartPath := filepath.Join(repoDir, chart.Path)
 
 	// After that handle it as a local chart.
-	return c.TemplateLocalChart(ctx, appName, appDir, chartPath, opts)
+	return c.TemplateLocalChart(ctx, appName, appDir, namespace, chartPath, opts)
 }
 
 type helmRemoteChart struct {
@@ -118,7 +123,7 @@ type helmRemoteChart struct {
 	Version    string
 }
 
-func (c *Helm) TemplateRemoteChart(ctx context.Context, appName, appDir string, chart helmRemoteChart, opts *config.InputHelmOptions) (string, error) {
+func (c *Helm) TemplateRemoteChart(ctx context.Context, appName, appDir, namespace string, chart helmRemoteChart, opts *config.InputHelmOptions) (string, error) {
 	releaseName := appName
 	if opts != nil && opts.ReleaseName != "" {
 		releaseName = opts.ReleaseName
@@ -131,6 +136,11 @@ func (c *Helm) TemplateRemoteChart(ctx context.Context, appName, appDir string, 
 		fmt.Sprintf("%s/%s", chart.Repository, chart.Name),
 		fmt.Sprintf("--version=%s", chart.Version),
 	}
+
+	if namespace != "" {
+		args = append(args, fmt.Sprintf("--namespace=%s", namespace))
+	}
+
 	if opts != nil {
 		for _, v := range opts.ValueFiles {
 			args = append(args, "-f", v)

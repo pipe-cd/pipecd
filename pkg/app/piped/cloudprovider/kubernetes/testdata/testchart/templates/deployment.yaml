@@ -4,6 +4,7 @@ metadata:
   name: {{ include "testchart.fullname" . }}
   labels:
     {{- include "testchart.labels" . | nindent 4 }}
+  namespace: {{.Release.Namespace}}
 spec:
 {{- if not .Values.autoscaling.enabled }}
   replicas: {{ .Values.replicaCount }}

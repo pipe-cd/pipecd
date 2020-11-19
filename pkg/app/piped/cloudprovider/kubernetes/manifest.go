@@ -91,6 +91,15 @@ func (m Manifest) GetNestedStringMap(fields ...string) (map[string]string, error
 	return sm, nil
 }
 
+func (m Manifest) GetNestedMap(fields ...string) (map[string]interface{}, error) {
+	sm, _, err := unstructured.NestedMap(m.u.Object, fields...)
+	if err != nil {
+		return nil, err
+	}
+
+	return sm, nil
+}
+
 // AddStringMapValues adds or overrides the given key-values into the string map
 // that can be found at the specified fields.
 func (m Manifest) AddStringMapValues(values map[string]string, fields ...string) error {
