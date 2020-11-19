@@ -1,4 +1,4 @@
-import { fireEvent } from "@testing-library/react";
+import userEvent from "@testing-library/user-event";
 import React from "react";
 import { createStore, render, screen } from "../../test-utils";
 import { clearActiveStage } from "../modules/active-stage";
@@ -89,7 +89,7 @@ it("should dispatch clearActiveStage action if click `close log` button", () => 
     store,
   });
 
-  fireEvent.click(screen.getByRole("button", { name: "close log" }));
+  userEvent.click(screen.getByRole("button", { name: "close log" }));
 
   expect(store.getActions()).toMatchObject([
     {

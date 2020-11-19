@@ -1,4 +1,4 @@
-import { fireEvent } from "@testing-library/react";
+import userEvent from "@testing-library/user-event";
 import React from "react";
 import { render, screen } from "../../test-utils";
 import { resourcesList } from "../__fixtures__/dummy-application-live-state";
@@ -13,9 +13,9 @@ test("render resources", () => {
 test("filter resources", () => {
   render(<KubernetesStateView resources={resourcesList} />, {});
 
-  fireEvent.click(screen.getByRole("button", { name: "FILTER" }));
-  fireEvent.click(screen.getByRole("checkbox", { name: "ReplicaSet" }));
-  fireEvent.click(screen.getByRole("button", { name: "APPLY" }));
+  userEvent.click(screen.getByRole("button", { name: "FILTER" }));
+  userEvent.click(screen.getByRole("checkbox", { name: "ReplicaSet" }));
+  userEvent.click(screen.getByRole("button", { name: "APPLY" }));
 
   expect(screen.queryAllByTestId("kubernetes-resource")).toHaveLength(2);
 });

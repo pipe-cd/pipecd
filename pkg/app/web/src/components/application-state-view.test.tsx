@@ -1,10 +1,10 @@
 import React from "react";
 import { createStore, render, screen } from "../../test-utils";
-import { fireEvent } from "@testing-library/react";
 import { ApplicationStateView } from "./application-state-view";
 import { dummyApplicationLiveState } from "../__fixtures__/dummy-application-live-state";
 import { clearError } from "../modules/applications-live-state";
 import { UI_TEXT_REFRESH } from "../constants/ui-text";
+import userEvent from "@testing-library/user-event";
 
 it("shows refresh button if live state fetching has error", () => {
   const store = createStore({
@@ -33,7 +33,7 @@ it("shows refresh button if live state fetching has error", () => {
 
   expect(store.getActions()).toEqual([]);
 
-  fireEvent.click(screen.getByRole("button", { name: UI_TEXT_REFRESH }));
+  userEvent.click(screen.getByRole("button", { name: UI_TEXT_REFRESH }));
 
   expect(store.getActions()).toMatchObject([{ type: clearError.type }]);
 });
