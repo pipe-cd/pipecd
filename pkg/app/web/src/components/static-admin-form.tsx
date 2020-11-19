@@ -28,6 +28,8 @@ import { addToast } from "../modules/toasts";
 import { AppDispatch } from "../store";
 import { useProjectSettingStyles } from "../styles/project-setting";
 import { ProjectSettingLabeledText } from "./project-setting-labeled-text";
+import { useFormik } from "formik";
+import * as Yup from "yup";
 
 const useStyles = makeStyles(() => ({
   disabled: {
@@ -37,6 +39,81 @@ const useStyles = makeStyles(() => ({
 
 const SECTION_TITLE = "Static Admin";
 const DIALOG_TITLE = `Edit ${SECTION_TITLE}`;
+
+const validationSchema = Yup.object().shape({
+  username: Yup.string().min(1).required(),
+  password: Yup.string().min(1).required(),
+});
+
+const StaticAdminDialog: FC<{
+  open: boolean;
+  currentUsername: string;
+  onClose: () => void;
+  onSubmit: (values: { username: string; password: string }) => void;
+}> = ({ open, currentUsername, onClose, onSubmit }) => {
+  const formik = useFormik({
+    initialValues: {
+      username: currentUsername,
+      password: "",
+    },
+    validationSchema,
+    onSubmit,
+  });
+
+  return (
+    <Dialog
+      open={open}
+      onExited={() => {
+        formik.resetForm();
+      }}
+      onClose={onClose}
+    >
+      <form onSubmit={formik.handleSubmit}>
+        <DialogTitle>{DIALOG_TITLE}</DialogTitle>
+        <DialogContent>
+          <TextField
+            id="username"
+            name="username"
+            value={formik.values.username}
+            variant="outlined"
+            margin="dense"
+            label="Username"
+            fullWidth
+            required
+            autoFocus
+            onChange={formik.handleChange}
+          />
+          <TextField
+            id="password"
+            name="password"
+            value={formik.values.password}
+            autoComplete="new-password"
+            variant="outlined"
+            margin="dense"
+            label="Password"
+            type="password"
+            fullWidth
+            required
+            onChange={formik.handleChange}
+          />
+        </DialogContent>
+        <DialogActions>
+          <Button onClick={onClose}>{UI_TEXT_CANCEL}</Button>
+          <Button
+            type="submit"
+            color="primary"
+            disabled={
+              formik.isValid === false ||
+              formik.values.username === currentUsername
+            }
+          >
+            {UI_TEXT_SAVE}
+          </Button>
+        </DialogActions>
+      </form>
+    </Dialog>
+  );
+};
 
 export const StaticAdminForm: FC = memo(function StaticAdminForm() {
   const classes = useStyles();
@@ -50,22 +127,12 @@ export const StaticAdminForm: FC = memo(function StaticAdminForm() {
     state.project.username,
   ]);
   const [isEdit, setIsEdit] = useState(false);
-  const [username, setUsername] = useState("");
-  const [password, setPassword] = useState("");
 
-  const handleClose = (): void => {
-    setIsEdit(false);
-  };
-
-  const handleToggleAvailability = (): void => {
-    dispatch(toggleAvailability()).then(() => {
-      dispatch(fetchProject());
-    });
-  };
-
-  const handleSave = (e: React.FormEvent<HTMLFormElement>): void => {
-    e.preventDefault();
-    dispatch(updateStaticAdmin({ username, password })).then((result) => {
+  const handleSubmit = (values: {
+    username: string;
+    password: string;
+  }): void => {
+    dispatch(updateStaticAdmin(values)).then((result) => {
       if (updateStaticAdmin.fulfilled.match(result)) {
         dispatch(fetchProject());
         dispatch(
@@ -79,7 +146,15 @@ export const StaticAdminForm: FC = memo(function StaticAdminForm() {
     setIsEdit(false);
   };
 
-  const isInvalidValues = username === "" || password === "";
+  const handleClose = (): void => {
+    setIsEdit(false);
+  };
+
+  const handleToggleAvailability = (): void => {
+    dispatch(toggleAvailability()).then(() => {
+      dispatch(fetchProject());
+    });
+  };
 
   return (
     <>
@@ -123,6 +198,7 @@ export const StaticAdminForm: FC = memo(function StaticAdminForm() {
             </div>
             <div>
               <IconButton
+                aria-label="edit static admin user"
                 onClick={() => setIsEdit(true)}
                 disabled={isEnabled === false}
               >
@@ -137,48 +213,12 @@ export const StaticAdminForm: FC = memo(function StaticAdminForm() {
           </div>
         )}
       </div>
-
-      <Dialog
+      <StaticAdminDialog
         open={isEdit}
-        onEnter={() => {
-          setUsername(currentUsername || "");
-          setPassword("");
-        }}
+        currentUsername={currentUsername || ""}
         onClose={handleClose}
-      >
-        <form onSubmit={handleSave}>
-          <DialogTitle>{DIALOG_TITLE}</DialogTitle>
-          <DialogContent>
-            <TextField
-              value={username}
-              variant="outlined"
-              margin="dense"
-              label="Username"
-              fullWidth
-              required
-              autoFocus
-              onChange={(e) => setUsername(e.currentTarget.value)}
-            />
-            <TextField
-              value={password}
-              autoComplete="new-password"
-              variant="outlined"
-              margin="dense"
-              label="Password"
-              type="password"
-              fullWidth
-              required
-              onChange={(e) => setPassword(e.currentTarget.value)}
-            />
-          </DialogContent>
-          <DialogActions>
-            <Button onClick={handleClose}>{UI_TEXT_CANCEL}</Button>
-            <Button type="submit" color="primary" disabled={isInvalidValues}>
-              {UI_TEXT_SAVE}
-            </Button>
-          </DialogActions>
-        </form>
-      </Dialog>
+        onSubmit={handleSubmit}
+      />
     </>
   );
 });
