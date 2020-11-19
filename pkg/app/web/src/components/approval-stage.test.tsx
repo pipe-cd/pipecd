@@ -1,7 +1,7 @@
 import React from "react";
 import { ApprovalStage } from "./approval-stage";
 import { render, screen } from "../../test-utils";
-import { fireEvent } from "@testing-library/react";
+import userEvent from "@testing-library/user-event";
 
 it("shows stage name", () => {
   const { container } = render(
@@ -29,6 +29,6 @@ it("calls onClick handler if clicked component", () => {
     {}
   );
 
-  fireEvent.click(screen.getByText("APPROVAL_STAGE"));
+  userEvent.click(screen.getByText("APPROVAL_STAGE"));
   expect(onClick).toHaveBeenCalledWith("stageId", "APPROVAL_STAGE");
 });

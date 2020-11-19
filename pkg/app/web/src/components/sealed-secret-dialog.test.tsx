@@ -1,4 +1,4 @@
-import { fireEvent } from "@testing-library/react";
+import userEvent from "@testing-library/user-event";
 import React from "react";
 import { render, screen } from "../../test-utils";
 import { dummyApplication } from "../__fixtures__/dummy-application";
@@ -46,6 +46,6 @@ test("cancel", () => {
     }
   );
 
-  fireEvent.click(screen.getByRole("button", { name: "Cancel" }));
+  userEvent.click(screen.getByRole("button", { name: "Cancel" }));
   expect(onClose).toHaveBeenCalled();
 });

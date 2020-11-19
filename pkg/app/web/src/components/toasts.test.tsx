@@ -1,4 +1,4 @@
-import { fireEvent } from "@testing-library/react";
+import userEvent from "@testing-library/user-event";
 import React from "react";
 import { render, screen, createStore } from "../../test-utils";
 import { IToast, removeToast } from "../modules/toasts";
@@ -79,7 +79,7 @@ describe("error toast", () => {
       store,
     });
 
-    fireEvent.click(screen.getByRole("button", { name: "Close" }));
+    userEvent.click(screen.getByRole("button", { name: "Close" }));
 
     expect(store.getActions()).toEqual([
       {

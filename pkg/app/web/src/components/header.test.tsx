@@ -1,4 +1,4 @@
-import { fireEvent } from "@testing-library/react";
+import userEvent from "@testing-library/user-event";
 import React from "react";
 import { MemoryRouter } from "react-router-dom";
 import { render, screen } from "../../test-utils";
@@ -34,6 +34,6 @@ it("shows logout link if opened user menu", () => {
     }
   );
 
-  fireEvent.click(screen.getByRole("button", { name: "User Menu" }));
+  userEvent.click(screen.getByRole("button", { name: "User Menu" }));
   expect(screen.getByRole("menuitem", { name: "Logout" })).toBeInTheDocument();
 });
