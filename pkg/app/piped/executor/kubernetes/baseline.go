@@ -20,6 +20,7 @@ import (
 	"strings"
 
 	provider "github.com/pipe-cd/pipe/pkg/app/piped/cloudprovider/kubernetes"
+	"github.com/pipe-cd/pipe/pkg/app/piped/executor"
 	"github.com/pipe-cd/pipe/pkg/config"
 	"github.com/pipe-cd/pipe/pkg/model"
 )
@@ -29,10 +30,10 @@ const (
 	addedBaselineResourcesMetadataKey = "baseline-resources"
 )
 
-func (e *Executor) ensureBaselineRollout(ctx context.Context) model.StageStatus {
+func (e *deployExecutor) ensureBaselineRollout(ctx context.Context) model.StageStatus {
 	var (
-		commitHash = e.Deployment.RunningCommitHash
-		options    = e.StageConfig.K8sBaselineRolloutStageOptions
+		runningCommit = e.Deployment.RunningCommitHash
+		options       = e.StageConfig.K8sBaselineRolloutStageOptions
 	)
 	if options == nil {
 		e.LogPersister.Errorf("Malformed configuration for stage %s", e.Stage.Name)
@@ -40,7 +41,7 @@ func (e *Executor) ensureBaselineRollout(ctx context.Context) model.StageStatus 
 	}
 
 	// Load running manifests at the most successful deployed commit.
-	e.LogPersister.Infof("Loading running manifests at commit %s for handling", commitHash)
+	e.LogPersister.Infof("Loading running manifests at commit %s for handling", runningCommit)
 	manifests, err := e.loadRunningManifests(ctx)
 	if err != nil {
 		e.LogPersister.Errorf("Failed while loading running manifests (%v)", err)
@@ -60,7 +61,13 @@ func (e *Executor) ensureBaselineRollout(ctx context.Context) model.StageStatus 
 	}
 
 	// Add builtin annotations for tracking application live state.
-	e.addBuiltinAnnontations(baselineManifests, baselineVariant, commitHash)
+	addBuiltinAnnontations(
+		baselineManifests,
+		baselineVariant,
+		runningCommit,
+		e.PipedConfig.PipedID,
+		e.Deployment.ApplicationId,
+	)
 
 	// Store added resource keys into metadata for cleaning later.
 	addedResources := make([]string, 0, len(baselineManifests))
@@ -76,7 +83,7 @@ func (e *Executor) ensureBaselineRollout(ctx context.Context) model.StageStatus 
 
 	// Start rolling out the resources for BASELINE variant.
 	e.LogPersister.Info("Start rolling out BASELINE variant...")
-	if err := e.applyManifests(ctx, baselineManifests); err != nil {
+	if err := applyManifests(ctx, e.provider, baselineManifests, e.deployCfg.Input.Namespace, e.LogPersister); err != nil {
 		return model.StageStatus_STAGE_FAILURE
 	}
 
@@ -84,7 +91,7 @@ func (e *Executor) ensureBaselineRollout(ctx context.Context) model.StageStatus 
 	return model.StageStatus_STAGE_SUCCESS
 }
 
-func (e *Executor) ensureBaselineClean(ctx context.Context) model.StageStatus {
+func (e *deployExecutor) ensureBaselineClean(ctx context.Context) model.StageStatus {
 	value, ok := e.MetadataStore.Get(addedBaselineResourcesMetadataKey)
 	if !ok {
 		e.LogPersister.Error("Unable to determine the applied BASELINE resources")
@@ -92,57 +99,20 @@ func (e *Executor) ensureBaselineClean(ctx context.Context) model.StageStatus {
 	}
 
 	resources := strings.Split(value, ",")
-	if err := e.removeBaselineResources(ctx, resources); err != nil {
+	if err := removeBaselineResources(ctx, e.provider, resources, e.LogPersister); err != nil {
 		e.LogPersister.Errorf("Unable to remove baseline resources: %v", err)
 		return model.StageStatus_STAGE_FAILURE
 	}
 	return model.StageStatus_STAGE_SUCCESS
 }
 
-func (e *Executor) removeBaselineResources(ctx context.Context, resources []string) error {
-	if len(resources) == 0 {
-		return nil
-	}
-
-	var (
-		workloadKeys = make([]provider.ResourceKey, 0)
-		serviceKeys  = make([]provider.ResourceKey, 0)
-	)
-	for _, r := range resources {
-		key, err := provider.DecodeResourceKey(r)
-		if err != nil {
-			e.LogPersister.Errorf("Had an error while decoding BASELINE resource key: %s, %v", r, err)
-			continue
-		}
-		if key.IsWorkload() {
-			workloadKeys = append(workloadKeys, key)
-		} else {
-			serviceKeys = append(serviceKeys, key)
-		}
-	}
-
-	// We delete the service first to close all incoming connections.
-	e.LogPersister.Info("Starting finding and deleting service resources of BASELINE variant")
-	if err := e.deleteResources(ctx, serviceKeys); err != nil {
-		return err
-	}
-
-	// Next, delete all workloads.
-	e.LogPersister.Info("Starting finding and deleting workload resources of BASELINE variant")
-	if err := e.deleteResources(ctx, workloadKeys); err != nil {
-		return err
-	}
-
-	return nil
-}
-
-func (e *Executor) generateBaselineManifests(manifests []provider.Manifest, opts config.K8sBaselineRolloutStageOptions) ([]provider.Manifest, error) {
+func (e *deployExecutor) generateBaselineManifests(manifests []provider.Manifest, opts config.K8sBaselineRolloutStageOptions) ([]provider.Manifest, error) {
 	suffix := baselineVariant
 	if opts.Suffix != "" {
 		suffix = opts.Suffix
 	}
 
-	workloads := findWorkloadManifests(manifests, e.config.Workloads)
+	workloads := findWorkloadManifests(manifests, e.deployCfg.Workloads)
 	if len(workloads) == 0 {
 		return nil, fmt.Errorf("unable to find any workload manifests for BASELINE variant")
 	}
@@ -151,7 +121,7 @@ func (e *Executor) generateBaselineManifests(manifests []provider.Manifest, opts
 
 	// Find service manifests and duplicate them for BASELINE variant.
 	if opts.CreateService {
-		serviceName := e.config.Service.Name
+		serviceName := e.deployCfg.Service.Name
 		services := findManifests(provider.KindService, serviceName, manifests)
 		if len(services) == 0 {
 			return nil, fmt.Errorf("unable to find any service for name=%q", serviceName)
@@ -183,4 +153,41 @@ func (e *Executor) generateBaselineManifests(manifests []provider.Manifest, opts
 	baselineManifests = append(baselineManifests, generatedWorkloads...)
 
 	return baselineManifests, nil
+}
+
+func removeBaselineResources(ctx context.Context, applier provider.Applier, resources []string, lp executor.LogPersister) error {
+	if len(resources) == 0 {
+		return nil
+	}
+
+	var (
+		workloadKeys = make([]provider.ResourceKey, 0)
+		serviceKeys  = make([]provider.ResourceKey, 0)
+	)
+	for _, r := range resources {
+		key, err := provider.DecodeResourceKey(r)
+		if err != nil {
+			lp.Errorf("Had an error while decoding BASELINE resource key: %s, %v", r, err)
+			continue
+		}
+		if key.IsWorkload() {
+			workloadKeys = append(workloadKeys, key)
+		} else {
+			serviceKeys = append(serviceKeys, key)
+		}
+	}
+
+	// We delete the service first to close all incoming connections.
+	lp.Info("Starting finding and deleting service resources of BASELINE variant")
+	if err := deleteResources(ctx, applier, serviceKeys, lp); err != nil {
+		return err
+	}
+
+	// Next, delete all workloads.
+	lp.Info("Starting finding and deleting workload resources of BASELINE variant")
+	if err := deleteResources(ctx, applier, workloadKeys, lp); err != nil {
+		return err
+	}
+
+	return nil
 }

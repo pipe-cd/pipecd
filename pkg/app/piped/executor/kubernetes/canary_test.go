@@ -39,13 +39,13 @@ func TestEnsureCanaryRollout(t *testing.T) {
 
 	testcases := []struct {
 		name     string
-		executor *Executor
+		executor *deployExecutor
 		want     model.StageStatus
 	}{
 		{
 			name: "malformed configuration",
 			want: model.StageStatus_STAGE_FAILURE,
-			executor: &Executor{
+			executor: &deployExecutor{
 				Input: executor.Input{
 					Deployment: &model.Deployment{
 						Trigger: &model.DeploymentTrigger{
@@ -61,7 +61,7 @@ func TestEnsureCanaryRollout(t *testing.T) {
 		{
 			name: "failed to load manifest",
 			want: model.StageStatus_STAGE_FAILURE,
-			executor: &Executor{
+			executor: &deployExecutor{
 				Input: executor.Input{
 					Deployment: &model.Deployment{
 						Trigger: &model.DeploymentTrigger{
@@ -90,7 +90,7 @@ func TestEnsureCanaryRollout(t *testing.T) {
 		{
 			name: "no manifests to handle",
 			want: model.StageStatus_STAGE_FAILURE,
-			executor: &Executor{
+			executor: &deployExecutor{
 				Input: executor.Input{
 					Deployment: &model.Deployment{
 						Trigger: &model.DeploymentTrigger{
@@ -120,7 +120,7 @@ func TestEnsureCanaryRollout(t *testing.T) {
 		{
 			name: "failed to apply manifests",
 			want: model.StageStatus_STAGE_FAILURE,
-			executor: &Executor{
+			executor: &deployExecutor{
 				Input: executor.Input{
 					Deployment: &model.Deployment{
 						Trigger: &model.DeploymentTrigger{
@@ -163,13 +163,13 @@ func TestEnsureCanaryRollout(t *testing.T) {
 					p.EXPECT().ApplyManifest(gomock.Any(), gomock.Any()).Return(fmt.Errorf("error"))
 					return p
 				}(),
-				config: &config.KubernetesDeploymentSpec{},
+				deployCfg: &config.KubernetesDeploymentSpec{},
 			},
 		},
 		{
 			name: "successfully applying manifests",
 			want: model.StageStatus_STAGE_SUCCESS,
-			executor: &Executor{
+			executor: &deployExecutor{
 				Input: executor.Input{
 					Deployment: &model.Deployment{
 						Trigger: &model.DeploymentTrigger{
@@ -212,7 +212,7 @@ func TestEnsureCanaryRollout(t *testing.T) {
 					p.EXPECT().ApplyManifest(gomock.Any(), gomock.Any()).Return(nil)
 					return p
 				}(),
-				config: &config.KubernetesDeploymentSpec{},
+				deployCfg: &config.KubernetesDeploymentSpec{},
 			},
 		},
 	}

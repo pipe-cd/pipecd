@@ -28,32 +28,36 @@ const (
 	primaryVariant = "primary"
 )
 
-func (e *Executor) ensurePrimaryRollout(ctx context.Context) model.StageStatus {
-	var (
-		commitHash = e.Deployment.Trigger.Commit.Hash
-		options    = e.StageConfig.K8sPrimaryRolloutStageOptions
-	)
+func (e *deployExecutor) ensurePrimaryRollout(ctx context.Context) model.StageStatus {
+	options := e.StageConfig.K8sPrimaryRolloutStageOptions
 	if options == nil {
 		e.LogPersister.Errorf("Malformed configuration for stage %s", e.Stage.Name)
 		return model.StageStatus_STAGE_FAILURE
 	}
 
 	// Load the manifests at the triggered commit.
-	e.LogPersister.Infof("Loading manifests at trigered commit %s for handling", commitHash)
-	manifests, err := e.loadManifests(ctx)
+	e.LogPersister.Infof("Loading manifests at trigered commit %s for handling", e.commit)
+	manifests, err := loadManifests(
+		ctx,
+		e.Deployment.ApplicationId,
+		e.commit,
+		e.AppManifestsCache,
+		e.provider,
+		e.Logger,
+	)
 	if err != nil {
 		e.LogPersister.Errorf("Failed while loading manifests (%v)", err)
 		return model.StageStatus_STAGE_FAILURE
 	}
 	e.LogPersister.Successf("Successfully loaded %d manifests", len(manifests))
 
-	routingMethod := config.DetermineKubernetesTrafficRoutingMethod(e.config.TrafficRouting)
+	routingMethod := config.DetermineKubernetesTrafficRoutingMethod(e.deployCfg.TrafficRouting)
 	var primaryManifests []provider.Manifest
 	if routingMethod == config.KubernetesTrafficRoutingMethodPodSelector {
 		primaryManifests = manifests
 	} else {
 		// Find traffic routing manifests and filter out it from primary manifests.
-		trafficRoutingManifests, err := findTrafficRoutingManifests(manifests, e.config.Service.Name, e.config.TrafficRouting)
+		trafficRoutingManifests, err := findTrafficRoutingManifests(manifests, e.deployCfg.Service.Name, e.deployCfg.TrafficRouting)
 		if err != nil {
 			e.LogPersister.Errorf("Failed while finding traffic routing manifest: (%v)", err)
 			return model.StageStatus_STAGE_FAILURE
@@ -72,8 +76,8 @@ func (e *Executor) ensurePrimaryRollout(ctx context.Context) model.StageStatus {
 	// Check if the variant selector is in the workloads.
 	if !options.AddVariantLabelToSelector &&
 		routingMethod == config.KubernetesTrafficRoutingMethodPodSelector &&
-		e.config.HasStage(model.StageK8sTrafficRouting) {
-		workloads := findWorkloadManifests(primaryManifests, e.config.Workloads)
+		e.deployCfg.HasStage(model.StageK8sTrafficRouting) {
+		workloads := findWorkloadManifests(primaryManifests, e.deployCfg.Workloads)
 		var invalid bool
 		for _, m := range workloads {
 			if err := checkVariantSelectorInWorkload(m, primaryVariant); err != nil {
@@ -88,19 +92,24 @@ func (e *Executor) ensurePrimaryRollout(ctx context.Context) model.StageStatus {
 
 	// Generate the manifests for applying.
 	e.LogPersister.Info("Start generating manifests for PRIMARY variant")
-	applyManifests, err := e.generatePrimaryManifests(primaryManifests, *options)
-	if err != nil {
+	if primaryManifests, err = e.generatePrimaryManifests(primaryManifests, *options); err != nil {
 		e.LogPersister.Errorf("Unable to generate manifests for PRIMARY variant (%v)", err)
 		return model.StageStatus_STAGE_FAILURE
 	}
-	e.LogPersister.Successf("Successfully generated %d manifests for PRIMARY variant", len(applyManifests))
+	e.LogPersister.Successf("Successfully generated %d manifests for PRIMARY variant", len(primaryManifests))
 
 	// Add builtin annotations for tracking application live state.
-	e.addBuiltinAnnontations(applyManifests, primaryVariant, commitHash)
+	addBuiltinAnnontations(
+		primaryManifests,
+		primaryVariant,
+		e.commit,
+		e.PipedConfig.PipedID,
+		e.Deployment.ApplicationId,
+	)
 
 	// Start applying all manifests to add or update running resources.
 	e.LogPersister.Info("Start rolling out PRIMARY variant...")
-	if err := e.applyManifests(ctx, applyManifests); err != nil {
+	if err := applyManifests(ctx, e.provider, primaryManifests, e.deployCfg.Input.Namespace, e.LogPersister); err != nil {
 		return model.StageStatus_STAGE_FAILURE
 	}
 	e.LogPersister.Success("Successfully rolled out PRIMARY variant")
@@ -129,7 +138,7 @@ func (e *Executor) ensurePrimaryRollout(ctx context.Context) model.StageStatus {
 		return model.StageStatus_STAGE_FAILURE
 	}
 
-	removeKeys := findRemoveManifests(runningManifests, manifests, e.config.Input.Namespace)
+	removeKeys := findRemoveManifests(runningManifests, manifests, e.deployCfg.Input.Namespace)
 	if len(removeKeys) == 0 {
 		e.LogPersister.Info("There are no live resources should be removed")
 		return model.StageStatus_STAGE_SUCCESS
@@ -138,7 +147,7 @@ func (e *Executor) ensurePrimaryRollout(ctx context.Context) model.StageStatus {
 
 	// Start deleting all running resources that are not defined in Git.
 	e.LogPersister.Infof("Start deleting %d resources", len(removeKeys))
-	if err := e.deleteResources(ctx, removeKeys); err != nil {
+	if err := deleteResources(ctx, e.provider, removeKeys, e.LogPersister); err != nil {
 		return model.StageStatus_STAGE_FAILURE
 	}
 
@@ -166,7 +175,7 @@ func findRemoveManifests(prevs []provider.Manifest, curs []provider.Manifest, na
 	return removeKeys
 }
 
-func (e *Executor) generatePrimaryManifests(manifests []provider.Manifest, opts config.K8sPrimaryRolloutStageOptions) ([]provider.Manifest, error) {
+func (e *deployExecutor) generatePrimaryManifests(manifests []provider.Manifest, opts config.K8sPrimaryRolloutStageOptions) ([]provider.Manifest, error) {
 	suffix := primaryVariant
 	if opts.Suffix != "" {
 		suffix = opts.Suffix
@@ -179,7 +188,7 @@ func (e *Executor) generatePrimaryManifests(manifests []provider.Manifest, opts 
 	// When addVariantLabelToSelector is true, ensure that all workloads
 	// have the variant label in their selector.
 	if opts.AddVariantLabelToSelector {
-		workloads := findWorkloadManifests(manifests, e.config.Workloads)
+		workloads := findWorkloadManifests(manifests, e.deployCfg.Workloads)
 		for _, m := range workloads {
 			if err := ensureVariantSelectorInWorkload(m, primaryVariant); err != nil {
 				return nil, fmt.Errorf("unable to check/set %q in selector of workload %s (%v)", variantLabel+": "+primaryVariant, m.Key.ReadableString(), err)
@@ -189,7 +198,7 @@ func (e *Executor) generatePrimaryManifests(manifests []provider.Manifest, opts 
 
 	// Find service manifests and duplicate them for PRIMARY variant.
 	if opts.CreateService {
-		serviceName := e.config.Service.Name
+		serviceName := e.deployCfg.Service.Name
 		services := findManifests(provider.KindService, serviceName, manifests)
 		if len(services) == 0 {
 			return nil, fmt.Errorf("unable to find any service for name=%q", serviceName)

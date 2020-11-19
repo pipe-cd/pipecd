@@ -22,12 +22,17 @@ import (
 	"github.com/pipe-cd/pipe/pkg/model"
 )
 
-func (e *Executor) ensureSync(ctx context.Context) model.StageStatus {
-	commitHash := e.Deployment.Trigger.Commit.Hash
-
+func (e *deployExecutor) ensureSync(ctx context.Context) model.StageStatus {
 	// Load the manifests at the specified commit.
-	e.LogPersister.Infof("Loading manifests at commit %s for handling", commitHash)
-	manifests, err := e.loadManifests(ctx)
+	e.LogPersister.Infof("Loading manifests at commit %s for handling", e.commit)
+	manifests, err := loadManifests(
+		ctx,
+		e.Deployment.ApplicationId,
+		e.commit,
+		e.AppManifestsCache,
+		e.provider,
+		e.Logger,
+	)
 	if err != nil {
 		e.LogPersister.Errorf("Failed while loading manifests (%v)", err)
 		return model.StageStatus_STAGE_FAILURE
@@ -40,8 +45,8 @@ func (e *Executor) ensureSync(ctx context.Context) model.StageStatus {
 
 	// When addVariantLabelToSelector is true, ensure that all workloads
 	// have the variant label in their selector.
-	if e.config.QuickSync.AddVariantLabelToSelector {
-		workloads := findWorkloadManifests(manifests, e.config.Workloads)
+	if e.deployCfg.QuickSync.AddVariantLabelToSelector {
+		workloads := findWorkloadManifests(manifests, e.deployCfg.Workloads)
 		for _, m := range workloads {
 			if err := ensureVariantSelectorInWorkload(m, primaryVariant); err != nil {
 				e.LogPersister.Errorf("Unable to check/set %q in selector of workload %s (%v)", variantLabel+": "+primaryVariant, m.Key.ReadableString(), err)
@@ -51,14 +56,20 @@ func (e *Executor) ensureSync(ctx context.Context) model.StageStatus {
 	}
 
 	// Add builtin annotations for tracking application live state.
-	e.addBuiltinAnnontations(manifests, primaryVariant, commitHash)
+	addBuiltinAnnontations(
+		manifests,
+		primaryVariant,
+		e.commit,
+		e.PipedConfig.PipedID,
+		e.Deployment.ApplicationId,
+	)
 
 	// Start applying all manifests to add or update running resources.
-	if err := e.applyManifests(ctx, manifests); err != nil {
+	if err := applyManifests(ctx, e.provider, manifests, e.deployCfg.Input.Namespace, e.LogPersister); err != nil {
 		return model.StageStatus_STAGE_FAILURE
 	}
 
-	if !e.config.QuickSync.Prune {
+	if !e.deployCfg.QuickSync.Prune {
 		e.LogPersister.Info("Resource GC was skipped because sync.prune was not configured")
 		return model.StageStatus_STAGE_SUCCESS
 	}
@@ -90,7 +101,7 @@ func (e *Executor) ensureSync(ctx context.Context) model.StageStatus {
 	e.LogPersister.Infof("Found %d live resources that are no longer defined in Git", len(removeKeys))
 
 	// Start deleting all running resources that are not defined in Git.
-	if err := e.deleteResources(ctx, removeKeys); err != nil {
+	if err := deleteResources(ctx, e.provider, removeKeys, e.LogPersister); err != nil {
 		return model.StageStatus_STAGE_FAILURE
 	}
 

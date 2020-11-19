@@ -26,8 +26,8 @@ import (
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 
 	provider "github.com/pipe-cd/pipe/pkg/app/piped/cloudprovider/kubernetes"
-	"github.com/pipe-cd/pipe/pkg/app/piped/deploysource"
 	"github.com/pipe-cd/pipe/pkg/app/piped/executor"
+	"github.com/pipe-cd/pipe/pkg/cache"
 	"github.com/pipe-cd/pipe/pkg/config"
 	"github.com/pipe-cd/pipe/pkg/model"
 )
@@ -36,13 +36,12 @@ const (
 	variantLabel = "pipecd.dev/variant" // Variant name: primary, stage, baseline
 )
 
-type Executor struct {
+type deployExecutor struct {
 	executor.Input
 
-	repoDir  string
-	appDir   string
-	config   *config.KubernetesDeploymentSpec
-	provider provider.Provider
+	commit    string
+	deployCfg *config.KubernetesDeploymentSpec
+	provider  provider.Provider
 }
 
 type registerer interface {
@@ -53,7 +52,7 @@ type registerer interface {
 // Register registers this executor factory into a given registerer.
 func Register(r registerer) {
 	f := func(in executor.Input) executor.Executor {
-		return &Executor{
+		return &deployExecutor{
 			Input: in,
 		}
 	}
@@ -66,40 +65,33 @@ func Register(r registerer) {
 	r.Register(model.StageK8sBaselineClean, f)
 	r.Register(model.StageK8sTrafficRouting, f)
 
-	r.RegisterRollback(model.ApplicationKind_KUBERNETES, f)
+	r.RegisterRollback(model.ApplicationKind_KUBERNETES, func(in executor.Input) executor.Executor {
+		return &rollbackExecutor{
+			Input: in,
+		}
+	})
 }
 
-func (e *Executor) Execute(sig executor.StopSignal) model.StageStatus {
-	var ds *deploysource.DeploySource
-	var err error
+func (e *deployExecutor) Execute(sig executor.StopSignal) model.StageStatus {
 	ctx := sig.Context()
+	e.commit = e.Deployment.Trigger.Commit.Hash
 
-	if model.Stage(e.Stage.Name) == model.StageRollback {
-		ds, err = e.RunningDSP.Get(ctx, e.LogPersister)
-		if err != nil {
-			e.LogPersister.Errorf("Failed to prepare running deploy source data (%v)", err)
-			return model.StageStatus_STAGE_FAILURE
-		}
-	} else {
-		ds, err = e.TargetDSP.Get(ctx, e.LogPersister)
-		if err != nil {
-			e.LogPersister.Errorf("Failed to prepare target deploy source data (%v)", err)
-			return model.StageStatus_STAGE_FAILURE
-		}
+	ds, err := e.TargetDSP.Get(ctx, e.LogPersister)
+	if err != nil {
+		e.LogPersister.Errorf("Failed to prepare target deploy source data (%v)", err)
+		return model.StageStatus_STAGE_FAILURE
 	}
 
-	e.repoDir = ds.RepoDir
-	e.appDir = ds.AppDir
-	e.config = ds.DeploymentConfig.KubernetesDeploymentSpec
-	if e.config == nil {
+	e.deployCfg = ds.DeploymentConfig.KubernetesDeploymentSpec
+	if e.deployCfg == nil {
 		e.LogPersister.Error("Malformed deployment configuration: missing KubernetesDeploymentSpec")
 		return model.StageStatus_STAGE_FAILURE
 	}
 
-	e.provider = provider.NewProvider(e.Deployment.ApplicationName, e.appDir, e.repoDir, e.Deployment.GitPath.ConfigFilename, e.config.Input, e.Logger)
+	e.provider = provider.NewProvider(e.Deployment.ApplicationName, ds.AppDir, ds.RepoDir, e.Deployment.GitPath.ConfigFilename, e.deployCfg.Input, e.Logger)
 	e.Logger.Info("start executing kubernetes stage",
 		zap.String("stage-name", e.Stage.Name),
-		zap.String("app-dir", e.appDir),
+		zap.String("app-dir", ds.AppDir),
 	)
 
 	var (
@@ -129,9 +121,6 @@ func (e *Executor) Execute(sig executor.StopSignal) model.StageStatus {
 	case model.StageK8sTrafficRouting:
 		status = e.ensureTrafficRouting(ctx)
 
-	case model.StageRollback:
-		status = e.ensureRollback(ctx)
-
 	default:
 		e.LogPersister.Errorf("Unsupported stage %s for kubernetes application", e.Stage.Name)
 		return model.StageStatus_STAGE_FAILURE
@@ -140,72 +129,69 @@ func (e *Executor) Execute(sig executor.StopSignal) model.StageStatus {
 	return executor.DetermineStageStatus(sig.Signal(), originalStatus, status)
 }
 
-func (e *Executor) loadManifests(ctx context.Context) ([]provider.Manifest, error) {
-	cache := provider.AppManifestsCache{
-		AppID:  e.Deployment.ApplicationId,
-		Cache:  e.AppManifestsCache,
-		Logger: e.Logger,
-	}
-	manifests, ok := cache.Get(e.Deployment.Trigger.Commit.Hash)
-	if ok {
-		return manifests, nil
-	}
-
-	// When the manifests were not in the cache we have to load them.
-	manifests, err := e.provider.LoadManifests(ctx)
-	if err != nil {
-		return nil, err
-	}
-	cache.Put(e.Deployment.Trigger.Commit.Hash, manifests)
-
-	return manifests, nil
-}
-
-func (e *Executor) loadRunningManifests(ctx context.Context) (manifests []provider.Manifest, err error) {
-	runningCommit := e.Deployment.RunningCommitHash
-	if runningCommit == "" {
+func (e *deployExecutor) loadRunningManifests(ctx context.Context) (manifests []provider.Manifest, err error) {
+	commit := e.Deployment.RunningCommitHash
+	if commit == "" {
 		return nil, fmt.Errorf("unable to determine running commit")
 	}
 
-	cache := provider.AppManifestsCache{
-		AppID:  e.Deployment.ApplicationId,
-		Cache:  e.AppManifestsCache,
-		Logger: e.Logger,
+	loader := &manifestsLoadFunc{
+		loadFunc: func(ctx context.Context) ([]provider.Manifest, error) {
+			ds, err := e.RunningDSP.Get(ctx, e.LogPersister)
+			if err != nil {
+				e.LogPersister.Errorf("Failed to prepare running deploy source (%v)", err)
+				return nil, err
+			}
+
+			loader := provider.NewManifestLoader(
+				e.Deployment.ApplicationName,
+				ds.AppDir,
+				ds.RepoDir,
+				e.Deployment.GitPath.ConfigFilename,
+				e.deployCfg.Input,
+				e.Logger,
+			)
+			return loader.LoadManifests(ctx)
+		},
 	}
-	manifests, ok := cache.Get(runningCommit)
+
+	return loadManifests(ctx, e.Deployment.ApplicationId, commit, e.AppManifestsCache, loader, e.Logger)
+}
+
+type manifestsLoadFunc struct {
+	loadFunc func(context.Context) ([]provider.Manifest, error)
+}
+
+func (l *manifestsLoadFunc) LoadManifests(ctx context.Context) ([]provider.Manifest, error) {
+	return l.loadFunc(ctx)
+}
+
+func loadManifests(ctx context.Context, appID, commit string, manifestsCache cache.Cache, loader provider.ManifestLoader, logger *zap.Logger) (manifests []provider.Manifest, err error) {
+	cache := provider.AppManifestsCache{
+		AppID:  appID,
+		Cache:  manifestsCache,
+		Logger: logger,
+	}
+	manifests, ok := cache.Get(commit)
 	if ok {
 		return manifests, nil
 	}
 
 	// When the manifests were not in the cache we have to load them.
-	ds, err := e.RunningDSP.Get(ctx, e.LogPersister)
-	if err != nil {
-		e.LogPersister.Errorf("Failed to prepare running deploy source (%v)", err)
-	}
-
-	p := provider.NewProvider(
-		e.Deployment.ApplicationName,
-		ds.AppDir,
-		ds.RepoDir,
-		e.Deployment.GitPath.ConfigFilename,
-		e.config.Input,
-		e.Logger,
-	)
-	manifests, err = p.LoadManifests(ctx)
-	if err != nil {
+	if manifests, err = loader.LoadManifests(ctx); err != nil {
 		return nil, err
 	}
-	cache.Put(runningCommit, manifests)
+	cache.Put(commit, manifests)
 
 	return manifests, nil
 }
 
-func (e *Executor) addBuiltinAnnontations(manifests []provider.Manifest, variant, hash string) {
+func addBuiltinAnnontations(manifests []provider.Manifest, variant, hash, pipedID, appID string) {
 	for i := range manifests {
 		manifests[i].AddAnnotations(map[string]string{
 			provider.LabelManagedBy:          provider.ManagedByPiped,
-			provider.LabelPiped:              e.PipedConfig.PipedID,
-			provider.LabelApplication:        e.Deployment.ApplicationId,
+			provider.LabelPiped:              pipedID,
+			provider.LabelApplication:        appID,
 			variantLabel:                     variant,
 			provider.LabelOriginalAPIVersion: manifests[i].Key.APIVersion,
 			provider.LabelResourceKey:        manifests[i].Key.String(),
@@ -214,54 +200,54 @@ func (e *Executor) addBuiltinAnnontations(manifests []provider.Manifest, variant
 	}
 }
 
-func (e *Executor) applyManifests(ctx context.Context, manifests []provider.Manifest) error {
-	if e.config.Input.Namespace == "" {
-		e.LogPersister.Infof("Start applying %d manifests", len(manifests))
+func applyManifests(ctx context.Context, applier provider.Applier, manifests []provider.Manifest, namespace string, lp executor.LogPersister) error {
+	if namespace == "" {
+		lp.Infof("Start applying %d manifests", len(manifests))
 	} else {
-		e.LogPersister.Infof("Start applying %d manifests to %q namespace", len(manifests), e.config.Input.Namespace)
+		lp.Infof("Start applying %d manifests to %q namespace", len(manifests), namespace)
 	}
 	for _, m := range manifests {
-		if err := e.provider.ApplyManifest(ctx, m); err != nil {
-			e.LogPersister.Errorf("Failed to apply manifest: %s (%v)", m.Key.ReadableString(), err)
+		if err := applier.ApplyManifest(ctx, m); err != nil {
+			lp.Errorf("Failed to apply manifest: %s (%v)", m.Key.ReadableString(), err)
 			return err
 		}
-		e.LogPersister.Successf("- applied manifest: %s", m.Key.ReadableString())
+		lp.Successf("- applied manifest: %s", m.Key.ReadableString())
 	}
-	e.LogPersister.Successf("Successfully applied %d manifests", len(manifests))
+	lp.Successf("Successfully applied %d manifests", len(manifests))
 	return nil
 }
 
-func (e *Executor) deleteResources(ctx context.Context, resources []provider.ResourceKey) error {
+func deleteResources(ctx context.Context, applier provider.Applier, resources []provider.ResourceKey, lp executor.LogPersister) error {
 	resourcesLen := len(resources)
 	if resourcesLen == 0 {
-		e.LogPersister.Info("No resources to delete")
+		lp.Info("No resources to delete")
 		return nil
 	}
 
-	e.LogPersister.Infof("Start deleting %d resources", len(resources))
+	lp.Infof("Start deleting %d resources", len(resources))
 	var deletedCount int
 
 	for _, k := range resources {
-		err := e.provider.Delete(ctx, k)
+		err := applier.Delete(ctx, k)
 		if err == nil {
-			e.LogPersister.Successf("- deleted resource: %s", k.ReadableString())
+			lp.Successf("- deleted resource: %s", k.ReadableString())
 			deletedCount++
 			continue
 		}
 		if errors.Is(err, provider.ErrNotFound) {
-			e.LogPersister.Infof("- no resource %s to delete", k.ReadableString())
+			lp.Infof("- no resource %s to delete", k.ReadableString())
 			deletedCount++
 			continue
 		}
-		e.LogPersister.Errorf("- unable to delete resource: %s (%v)", k.ReadableString(), err)
+		lp.Errorf("- unable to delete resource: %s (%v)", k.ReadableString(), err)
 	}
 
 	if deletedCount < resourcesLen {
-		e.LogPersister.Infof("Deleted %d/%d resources", deletedCount, resourcesLen)
+		lp.Infof("Deleted %d/%d resources", deletedCount, resourcesLen)
 		return fmt.Errorf("unable to delete %d resources", resourcesLen-deletedCount)
 	}
 
-	e.LogPersister.Successf("Successfully deleted %d resources", len(resources))
+	lp.Successf("Successfully deleted %d resources", len(resources))
 	return nil
 }
 

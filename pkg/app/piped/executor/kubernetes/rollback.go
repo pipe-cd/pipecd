@@ -18,18 +18,67 @@ import (
 	"context"
 	"strings"
 
+	"go.uber.org/zap"
+
+	provider "github.com/pipe-cd/pipe/pkg/app/piped/cloudprovider/kubernetes"
+	"github.com/pipe-cd/pipe/pkg/app/piped/executor"
 	"github.com/pipe-cd/pipe/pkg/model"
 )
 
-func (e *Executor) ensureRollback(ctx context.Context) model.StageStatus {
-	commitHash := e.Deployment.RunningCommitHash
+type rollbackExecutor struct {
+	executor.Input
+}
+
+func (e *rollbackExecutor) Execute(sig executor.StopSignal) model.StageStatus {
+	var (
+		ctx            = sig.Context()
+		originalStatus = e.Stage.Status
+		status         model.StageStatus
+	)
+
+	switch model.Stage(e.Stage.Name) {
+	case model.StageRollback:
+		status = e.ensureRollback(ctx)
+
+	default:
+		e.LogPersister.Errorf("Unsupported stage %s for kubernetes application", e.Stage.Name)
+		return model.StageStatus_STAGE_FAILURE
+	}
+
+	return executor.DetermineStageStatus(sig.Signal(), originalStatus, status)
+}
+
+func (e *rollbackExecutor) ensureRollback(ctx context.Context) model.StageStatus {
+	// There is nothing to do if this is the first deployment.
+	if e.Deployment.RunningCommitHash == "" {
+		e.LogPersister.Errorf("Unable to determine the last deployed commit to rollback. It seems this is the first deployment.")
+		return model.StageStatus_STAGE_FAILURE
+	}
+
+	ds, err := e.RunningDSP.Get(ctx, e.LogPersister)
+	if err != nil {
+		e.LogPersister.Errorf("Failed to prepare running deploy source data (%v)", err)
+		return model.StageStatus_STAGE_FAILURE
+	}
+
+	deployCfg := ds.DeploymentConfig.KubernetesDeploymentSpec
+	if deployCfg == nil {
+		e.LogPersister.Error("Malformed deployment configuration: missing KubernetesDeploymentSpec")
+		return model.StageStatus_STAGE_FAILURE
+	}
+
+	p := provider.NewProvider(e.Deployment.ApplicationName, ds.AppDir, ds.RepoDir, e.Deployment.GitPath.ConfigFilename, deployCfg.Input, e.Logger)
+	e.Logger.Info("start executing kubernetes stage",
+		zap.String("stage-name", e.Stage.Name),
+		zap.String("app-dir", ds.AppDir),
+	)
 
 	// Firstly, we reapply all manifests at running commit
 	// to revert PRIMARY resources and TRAFFIC ROUTING resources.
 
 	// Load the manifests at the specified commit.
-	e.LogPersister.Infof("Loading manifests at running commit %s for handling", commitHash)
-	manifests, err := e.loadRunningManifests(ctx)
+	e.LogPersister.Infof("Loading manifests at running commit %s for handling", e.Deployment.RunningCommitHash)
+	manifests, err := loadManifests(ctx, e.Deployment.ApplicationId, e.Deployment.RunningCommitHash, e.AppManifestsCache, p, e.Logger)
 	if err != nil {
 		e.LogPersister.Errorf("Failed while loading running manifests (%v)", err)
 		return model.StageStatus_STAGE_FAILURE
@@ -42,8 +91,8 @@ func (e *Executor) ensureRollback(ctx context.Context) model.StageStatus {
 
 	// When addVariantLabelToSelector is true, ensure that all workloads
 	// have the variant label in their selector.
-	if e.config.QuickSync.AddVariantLabelToSelector {
-		workloads := findWorkloadManifests(manifests, e.config.Workloads)
+	if deployCfg.QuickSync.AddVariantLabelToSelector {
+		workloads := findWorkloadManifests(manifests, deployCfg.Workloads)
 		for _, m := range workloads {
 			if err := ensureVariantSelectorInWorkload(m, primaryVariant); err != nil {
 				e.LogPersister.Errorf("Unable to check/set %q in selector of workload %s (%v)", variantLabel+": "+primaryVariant, m.Key.ReadableString(), err)
@@ -53,10 +102,16 @@ func (e *Executor) ensureRollback(ctx context.Context) model.StageStatus {
 	}
 
 	// Add builtin annotations for tracking application live state.
-	e.addBuiltinAnnontations(manifests, primaryVariant, commitHash)
+	addBuiltinAnnontations(
+		manifests,
+		primaryVariant,
+		e.Deployment.RunningCommitHash,
+		e.PipedConfig.PipedID,
+		e.Deployment.ApplicationId,
+	)
 
 	// Start applying all manifests to add or update running resources.
-	if err := e.applyManifests(ctx, manifests); err != nil {
+	if err := applyManifests(ctx, p, manifests, deployCfg.Input.Namespace, e.LogPersister); err != nil {
 		return model.StageStatus_STAGE_FAILURE
 	}
 
@@ -66,7 +121,7 @@ func (e *Executor) ensureRollback(ctx context.Context) model.StageStatus {
 	e.LogPersister.Info("Start checking to ensure that the CANARY variant should be removed")
 	if value, ok := e.MetadataStore.Get(addedCanaryResourcesMetadataKey); ok {
 		resources := strings.Split(value, ",")
-		if err := e.removeCanaryResources(ctx, resources); err != nil {
+		if err := removeCanaryResources(ctx, p, resources, e.LogPersister); err != nil {
 			errs = append(errs, err)
 		}
 	}
@@ -75,7 +130,7 @@ func (e *Executor) ensureRollback(ctx context.Context) model.StageStatus {
 	e.LogPersister.Info("Start checking to ensure that the BASELINE variant should be removed")
 	if value, ok := e.MetadataStore.Get(addedBaselineResourcesMetadataKey); ok {
 		resources := strings.Split(value, ",")
-		if err := e.removeBaselineResources(ctx, resources); err != nil {
+		if err := removeBaselineResources(ctx, p, resources, e.LogPersister); err != nil {
 			errs = append(errs, err)
 		}
 	}
