@@ -23,13 +23,13 @@ Please note that the phases (Incubating, Alpha, Beta, and Stable) are applied to
 
 | Feature | Phase |
 |-|-|
-| Quick Sync Deployment | Alpha |
-| Deployment with the Specified Pipeline (canary, bluegreen...) | Alpha |
-| Automated Rollback | Alpha |
-| [Automated Configuration Drift Detection](/docs/user-guide/configuration-drift-detection/) | Alpha |
+| Quick Sync Deployment | Beta |
+| Deployment with the Specified Pipeline (canary, bluegreen...) | Beta |
+| Automated Rollback | Beta |
+| [Automated Configuration Drift Detection](/docs/user-guide/configuration-drift-detection/) | Beta |
 | [Application Live State](/docs/user-guide/application-live-state/) | Alpha |
-| Support Helm | Alpha |
-| Support Kustomize | Alpha |
+| Support Helm | Beta |
+| Support Kustomize | Beta |
 | Support Istio Mesh | Alpha |
 | Support SMI Mesh | Incubating |
 
@@ -37,8 +37,8 @@ Please note that the phases (Incubating, Alpha, Beta, and Stable) are applied to
 
 | Feature | Phase |
 |-|-|
-| Quick Sync Deployment | Alpha |
-| Deployment with the Specified Pipeline | Alpha |
+| Quick Sync Deployment | Beta |
+| Deployment with the Specified Pipeline | Beta |
 | Automated Rollback | Alpha |
 | [Automated Configuration Drift Detection](/docs/user-guide/configuration-drift-detection/) | Incubating |
 | [Application Live State](/docs/user-guide/application-live-state/) | Incubating |
@@ -47,8 +47,8 @@ Please note that the phases (Incubating, Alpha, Beta, and Stable) are applied to
 
 | Feature | Phase |
 |-|-|
-| Quick Sync Deployment | Alpha |
-| Deployment with the Specified Pipeline | Alpha |
+| Quick Sync Deployment | Beta |
+| Deployment with the Specified Pipeline | Beta |
 | Automated Rollback | Alpha |
 | [Automated Configuration Drift Detection](/docs/user-guide/configuration-drift-detection/) | Incubating |
 | [Application Live State](/docs/user-guide/application-live-state/) | Incubating |
@@ -71,7 +71,7 @@ Please note that the phases (Incubating, Alpha, Beta, and Stable) are applied to
 | [Wait Manual Approval Stage](/docs/user-guide/adding-a-manual-approval/) | Beta |
 | [Notification](/docs/operator-manual/piped/configuring-notifications/) to Slack | Beta |
 | [Notification](/docs/operator-manual/piped/configuring-notifications/) to Webhook | Incubating |
-| [Secrets Management](/docs/user-guide/sealed-secrets/) | Alpha |
+| [Secrets Management](/docs/user-guide/sealed-secrets/) | Beta |
 | [Image Watcher](/docs/user-guide/image-watcher/) | Incubating |
 | [ADA](/docs/user-guide/automated-deployment-analysis/) (Automated Deployment Analysis) by Prometheus metrics | Alpha |
 | [ADA](/docs/user-guide/automated-deployment-analysis/) by Datadog metrics | Incubating |
