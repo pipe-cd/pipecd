@@ -144,36 +144,6 @@ func TestUpdateProjectSSOConfig(t *testing.T) {
 	}
 }
 
-func TestUpdateProjectRBACConfig(t *testing.T) {
-	cases := []struct {
-		name   string
-		rbac   *ProjectRBACConfig
-		expect *ProjectRBACConfig
-	}{
-		{
-			name: "update",
-			rbac: &ProjectRBACConfig{
-				Admin:  "updated",
-				Editor: "updated",
-				Viewer: "updated",
-			},
-			expect: &ProjectRBACConfig{
-				Admin:  "updated",
-				Editor: "updated",
-				Viewer: "updated",
-			},
-		},
-	}
-
-	for _, tc := range cases {
-		t.Run(tc.name, func(t *testing.T) {
-			p := &ProjectRBACConfig{}
-			p.Update(tc.rbac)
-			assert.Equal(t, tc.expect, p)
-		})
-	}
-}
-
 func TestEncrypt(t *testing.T) {
 	cases := []struct {
 		name   string

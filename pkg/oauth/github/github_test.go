@@ -113,7 +113,7 @@ func TestDecideRole(t *testing.T) {
 			role, err := oc.decideRole(tc.username, tc.teams)
 			assert.Equal(t, tc.wantErr, err != nil)
 			if err == nil {
-				assert.Equal(t, tc.role, *role)
+				assert.Equal(t, tc.role, role)
 			}
 		})
 	}
