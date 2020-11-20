@@ -45,7 +45,7 @@ func NewHelm(version, path string, logger *zap.Logger) *Helm {
 	}
 }
 
-func (c *Helm) TemplateLocalChart(ctx context.Context, appName, appDir, namespace string, chartPath string, opts *config.InputHelmOptions) (string, error) {
+func (c *Helm) TemplateLocalChart(ctx context.Context, appName, appDir, namespace, chartPath string, opts *config.InputHelmOptions) (string, error) {
 	releaseName := appName
 	if opts != nil && opts.ReleaseName != "" {
 		releaseName = opts.ReleaseName
