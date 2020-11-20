@@ -108,36 +108,41 @@ func (c *OAuthClient) GetUser(ctx context.Context) (*model.User, error) {
 		AvatarUrl: user.GetAvatarURL(),
 		Role: &model.Role{
 			ProjectId:   c.projectID,
-			ProjectRole: *role,
+			ProjectRole: role,
 		},
 	}, nil
 }
 
-func (c *OAuthClient) decideRole(user string, teams []*github.Team) (*model.Role_ProjectRole, error) {
-	var viewer, editor bool
+func (c *OAuthClient) decideRole(user string, teams []*github.Team) (role model.Role_ProjectRole, err error) {
+	var found bool
+
 	for _, team := range teams {
 		slug := team.GetSlug()
 		org := team.Organization.GetLogin()
 		if org == "" || slug == "" {
 			continue
 		}
-		switch fmt.Sprintf("%s/%s", org, slug) {
+
+		t := fmt.Sprintf("%s/%s", org, slug)
+		switch t {
 		case c.adminTeam:
-			r := model.Role_ADMIN
-			return &r, nil
+			role = model.Role_ADMIN
+			return
 		case c.editorTeam:
-			editor = true
+			role = model.Role_EDITOR
+			found = true
 		case c.viewerTeam:
-			viewer = true
+			if role != model.Role_EDITOR {
+				role = model.Role_VIEWER
+				found = true
+			}
 		}
 	}
-	if editor {
-		r := model.Role_EDITOR
-		return &r, nil
+
+	if found {
+		return
 	}
-	if viewer {
-		r := model.Role_VIEWER
-		return &r, nil
-	}
-	return nil, fmt.Errorf("user (%s) not found in any of the %d project teams", user, len(teams))
+
+	err = fmt.Errorf("user (%s) not found in any of the %d project teams", user, len(teams))
+	return
 }

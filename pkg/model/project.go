@@ -96,19 +96,6 @@ func (p *ProjectStaticUser) Auth(username, password string) error {
 	return nil
 }
 
-// Update updates ProjectRBACConfig with given data.
-func (p *ProjectRBACConfig) Update(rbac *ProjectRBACConfig) {
-	if rbac.Admin != "" {
-		p.Admin = rbac.Admin
-	}
-	if rbac.Editor != "" {
-		p.Editor = rbac.Editor
-	}
-	if rbac.Viewer != "" {
-		p.Viewer = rbac.Viewer
-	}
-}
-
 // RedactSensitiveData redacts sensitive data.
 func (p *ProjectSSOConfig) RedactSensitiveData() {
 	if p.Github != nil {

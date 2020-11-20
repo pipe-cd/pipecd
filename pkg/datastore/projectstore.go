@@ -119,10 +119,7 @@ func (s *projectStore) UpdateProjectSSOConfig(ctx context.Context, id string, ss
 // UpdateProjectRBACConfig updates project single sign on settings.
 func (s *projectStore) UpdateProjectRBACConfig(ctx context.Context, id string, rbac *model.ProjectRBACConfig) error {
 	return s.UpdateProject(ctx, id, func(p *model.Project) error {
-		if p.Rbac == nil {
-			p.Rbac = &model.ProjectRBACConfig{}
-		}
-		p.Rbac.Update(rbac)
+		p.Rbac = rbac
 		return nil
 	})
 }
