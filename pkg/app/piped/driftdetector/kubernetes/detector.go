@@ -490,9 +490,9 @@ func makeOutOfSyncState(adds, deletes []provider.Manifest, changes map[provider.
 		}
 		switch {
 		case m.Key.IsSecret():
-			opts = append(opts, diff.WithRedactPath("data", "***secret-data-in-git***", "***secret-data-in-cluster***"))
+			opts = append(opts, diff.WithRedactPath("data", "****", "****"))
 		case m.Key.IsConfigMap():
-			opts = append(opts, diff.WithRedactPath("data", "***config-data-in-git***", "***config-data-in-cluster***"))
+			opts = append(opts, diff.WithRedactPath("data", "****", "****"))
 		}
 		renderer := diff.NewRenderer(opts...)
 
