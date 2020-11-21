@@ -23,10 +23,8 @@ import (
 )
 
 type Renderer struct {
-	leftPadding        int
-	redactPathPrefix   string
-	redactReplacementX string
-	redactReplacementY string
+	leftPadding    int
+	maskPathPrefix string
 }
 
 type RenderOption func(*Renderer)
@@ -37,11 +35,9 @@ func WithLeftPadding(p int) RenderOption {
 	}
 }
 
-func WithRedactPath(prefix, replacementX, replacementY string) RenderOption {
+func WithMaskPath(prefix string) RenderOption {
 	return func(r *Renderer) {
-		r.redactPathPrefix = prefix
-		r.redactReplacementX = replacementX
-		r.redactReplacementY = replacementY
+		r.maskPathPrefix = prefix
 	}
 }
 
@@ -123,9 +119,9 @@ func (r *Renderer) Render(ns Nodes) string {
 
 		lastStep := n.Path[pathLen-1]
 		valueX, valueY := n.ValueX, n.ValueY
-		if r.redactPathPrefix != "" && strings.HasPrefix(n.PathString, r.redactPathPrefix) {
-			valueX = reflect.ValueOf(r.redactReplacementX)
-			valueY = reflect.ValueOf(r.redactReplacementY)
+		if r.maskPathPrefix != "" && strings.HasPrefix(n.PathString, r.maskPathPrefix) {
+			valueX = reflect.ValueOf("****")
+			valueY = reflect.ValueOf("****")
 		}
 
 		b.WriteString(fmt.Sprintf("%*s#%s\n", (r.leftPadding+pathLen-1)*2, "", n.PathString))
