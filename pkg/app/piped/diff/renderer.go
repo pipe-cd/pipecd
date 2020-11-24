@@ -29,6 +29,8 @@ type Renderer struct {
 
 type RenderOption func(*Renderer)
 
+const maskString = "*****"
+
 func WithLeftPadding(p int) RenderOption {
 	return func(r *Renderer) {
 		r.leftPadding = p
@@ -120,8 +122,8 @@ func (r *Renderer) Render(ns Nodes) string {
 		lastStep := n.Path[pathLen-1]
 		valueX, valueY := n.ValueX, n.ValueY
 		if r.maskPathPrefix != "" && strings.HasPrefix(n.PathString, r.maskPathPrefix) {
-			valueX = reflect.ValueOf("****")
-			valueY = reflect.ValueOf("****")
+			valueX = reflect.ValueOf(maskString)
+			valueY = reflect.ValueOf(maskString)
 		}
 
 		b.WriteString(fmt.Sprintf("%*s#%s\n", (r.leftPadding+pathLen-1)*2, "", n.PathString))
