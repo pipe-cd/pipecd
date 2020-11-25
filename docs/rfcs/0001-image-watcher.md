@@ -60,7 +60,7 @@ spec:
 
 
 # Alternatives
-Initialy, We were thinking it should be defined in Deployment Configuration, but it's slightly different from configuration about Deployment.
+Initialy, we were thinking it should be defined in Deployment Configuration, but it's slightly different from configuration about Deployment.
 In addition to that, it is too complicated to inspect the entire git path every time.
 
 ```yaml
