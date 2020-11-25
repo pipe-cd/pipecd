@@ -1,5 +1,5 @@
 - Start Date: 2020-11-18
-- Target Version: 1.0
+- Target Version: 1.0.0
 
 # Summary
 This RFC proposes adding a new feature to trigger Deployment when an image tag stored at a container registry is updated.
@@ -11,16 +11,16 @@ The canonical deployment flow with PipeCD is:
 1. CI server pushes the generated image to the container registry after app-repo updated.
 2. User updates the config-repo manually.
 
-It is the User's responsibility to automate these 1 and 2 step to be done in a series of actions, while it is a bit quite painful.
+It is the User's responsibility to automate these steps to be done in a series of actions, while it is quite a bit of painful.
 Therefore, we would like to solve this problem by letting Piped monitor the container registry.
 
 # Detailed design
-Piped compares the image tags defined in git with the latest tags stored in the container registry, and then pushes them to git if there are any deviations.
+Piped periodically compares the image tags defined in git with the latest tags stored in the container registry, and then pushes them to git if there are any deviations.
 
 ### Usage
 Note: Where, we call the client that accesses the container registry to `Image Provider`.
 
-First of all, we need to register the credentials for accessing the image provider with Piped.
+First of all, the using image provider must be specified in the piped configuration.
 
 ```yaml
 apiVersion: pipecd.dev/v1beta1
@@ -36,7 +36,7 @@ spec:
         passwordFile: /etc/piped-secret/dockerhub-pass
 ```
 
-We define the information about image tag underneath `.pipe/` directory:
+Adding a file at `.pipe/` directory to define what image should be watched and what file should be updated:
 ```yaml
 apiVersion: pipecd.dev/v1beta1
 kind: ImageWatcher
@@ -60,7 +60,7 @@ spec:
 
 
 # Alternatives
-Initialy, I was thinking it should be defined in Deployment Configuration, but it's slightly different from configuration about Deployment.
+Initialy, We were thinking it should be defined in Deployment Configuration, but it's slightly different from configuration about Deployment.
 In addition to that, it is too complicated to inspect the entire git path every time.
 
 ```yaml
