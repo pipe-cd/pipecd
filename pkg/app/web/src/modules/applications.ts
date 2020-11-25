@@ -2,6 +2,7 @@ import {
   createSlice,
   createEntityAdapter,
   createAsyncThunk,
+  SerializedError,
 } from "@reduxjs/toolkit";
 import {
   Application as ApplicationModel,
@@ -111,11 +112,13 @@ export const applicationsSlice = createSlice({
     loading: boolean;
     syncing: Record<string, boolean>;
     disabling: Record<string, boolean>;
+    fetchApplicationError: SerializedError | null;
   }>({
     adding: false,
     loading: false,
     syncing: {},
     disabling: {},
+    fetchApplicationError: null,
   }),
   reducers: {},
   extraReducers: (builder) => {
@@ -131,10 +134,17 @@ export const applicationsSlice = createSlice({
       .addCase(fetchApplications.rejected, (state) => {
         state.loading = false;
       })
+      .addCase(fetchApplication.pending, (state) => {
+        state.fetchApplicationError = null;
+      })
       .addCase(fetchApplication.fulfilled, (state, action) => {
+        state.fetchApplicationError = null;
         if (action.payload) {
           applicationsAdapter.upsertOne(state, action.payload);
         }
+      })
+      .addCase(fetchApplication.rejected, (state, action) => {
+        state.fetchApplicationError = action.error;
       })
       .addCase(addApplication.pending, (state) => {
         state.adding = true;

@@ -22,6 +22,7 @@ import { AppState } from "../modules";
 import {
   Application,
   ApplicationDeploymentReference,
+  fetchApplication,
   selectById as selectApplicationById,
   syncApplication,
 } from "../modules/applications";
@@ -38,6 +39,8 @@ import { DetailTableRow } from "./detail-table-row";
 import { ApplicationHealthStatusIcon } from "./health-status-icon";
 import { SyncStateReason } from "./sync-state-reason";
 import { SyncStatusIcon } from "./sync-status-icon";
+import { SerializedError } from "@reduxjs/toolkit";
+import { UI_TEXT_REFRESH } from "../constants/ui-text";
 
 const useStyles = makeStyles((theme) => ({
   root: {
@@ -95,13 +98,15 @@ const useIsSyncingApplication = (
   });
 };
 
+const ERROR_MESSAGE = "It was unable to fetch the application.";
+
 const MostRecentlySuccessfulDeployment: FC<{
   deployment?: ApplicationDeploymentReference.AsObject;
 }> = ({ deployment }) => {
   const classes = useStyles();
 
   if (!deployment) {
-    return <Skeleton height={63} width={500} />;
+    return <Skeleton height={105} width={500} />;
   }
 
   const date = dayjs(deployment.startedAt * 1000);
@@ -139,12 +144,17 @@ export const ApplicationDetail: FC<Props> = memo(function ApplicationDetail({
   const classes = useStyles();
   const dispatch = useDispatch();
 
-  const [app, liveState] = useSelector<
+  const [app, liveState, fetchApplicationError] = useSelector<
     AppState,
-    [Application | undefined, ApplicationLiveState | undefined]
+    [
+      Application | undefined,
+      ApplicationLiveState | undefined,
+      SerializedError | null
+    ]
   >((state) => [
     selectApplicationById(state.applications, applicationId),
     selectLiveStateById(state.applicationLiveState, applicationId),
+    state.applications.fetchApplicationError,
   ]);
 
   const [pipe, env] = useSelector<
@@ -162,6 +172,30 @@ export const ApplicationDetail: FC<Props> = memo(function ApplicationDetail({
       dispatch(syncApplication({ applicationId: app.id }));
     }
   };
+
+  if (fetchApplicationError) {
+    return (
+      <Paper square elevation={1} className={classes.root}>
+        <Box
+          height={200}
+          display="flex"
+          flexDirection="column"
+          justifyContent="center"
+          alignItems="center"
+        >
+          <Typography variant="body1">{ERROR_MESSAGE}</Typography>
+          <Button
+            color="primary"
+            onClick={() => {
+              dispatch(fetchApplication(applicationId));
+            }}
+          >
+            {UI_TEXT_REFRESH}
+          </Button>
+        </Box>
+      </Paper>
+    );
+  }
 
   return (
     <Paper square elevation={1} className={classes.root}>
@@ -242,7 +276,7 @@ export const ApplicationDetail: FC<Props> = memo(function ApplicationDetail({
               </tbody>
             </table>
           ) : (
-            <Skeleton height={63} width={500} />
+            <Skeleton height={105} width={500} />
           )}
         </div>
 
@@ -258,7 +292,7 @@ export const ApplicationDetail: FC<Props> = memo(function ApplicationDetail({
           variant="outlined"
           color="primary"
           onClick={handleSync}
-          disabled={isSyncing}
+          disabled={isSyncing || !app}
           startIcon={<SyncIcon />}
         >
           SYNC
