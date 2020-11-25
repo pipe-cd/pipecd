@@ -1,6 +1,6 @@
 load("@npm//webpack-cli:index.bzl", webpack = "webpack_cli")
-load("@npm//typescript:index.bzl", "tsc")
-load("@npm_bazel_labs//:index.bzl", "ts_proto_library")
+load("@npm//@bazel/typescript:index.bzl", "ts_project")
+load("@npm//@bazel/labs:index.bzl", "ts_proto_library")
 load(":jest.bzl", "jest_test")
 
 ts_proto_library(
@@ -22,9 +22,8 @@ genrule(
     for f in $(SRCS)
     do
         sed -ie "s|.*validate_pb.*||g" $$f
-        sed -ie "s|'.*pkg|'pipe/pkg|g" $$f
+        sed -ie "s|'.*/model/|'pipe/pkg/app/web/model/|g" $$f
         sed -ie "s|.*github_com_gogo_protobuf_gogoproto_gogo_pb.*||g" $$f
-        sed -ie "s|pipe/pkg/model|pipe/pkg/app/web/model|g" $$f
         cp $$f $(OUTS)/
     done
     """,
@@ -51,15 +50,9 @@ genrule(
     visibility = ["//visibility:public"],
 )
 
-tsc(
+ts_project(
     name = "compile",
-    args = [
-        "--project",
-        "$(location :tsconfig.json)",
-        "--outDir",
-        "$(@D)",
-    ],
-    data = glob(
+    srcs = glob(
         [
             "src/**/*",
         ],
@@ -73,10 +66,35 @@ tsc(
     ) + [
         ":build_api",
         ":build_model",
-        ":tsconfig.json",
-        "@npm//:node_modules",
     ],
-    output_dir = True,
+    allow_js = True,
+    tsconfig = ":tsconfig.json",
+    deps = [
+        "@npm//@material-ui",
+        "@npm//@primer/octicons-react",
+        "@npm//@reduxjs/toolkit",
+        "@npm//@types/dagre",
+        "@npm//@types/google-protobuf",
+        "@npm//@types/history",
+        "@npm//@types/jest",
+        "@npm//@types/node",
+        "@npm//@types/react",
+        "@npm//@types/react-dom",
+        "@npm//@types/react-redux",
+        "@npm//@types/react-router",
+        "@npm//@types/react-router-dom",
+        "@npm//@types/yup",
+        "@npm//clsx",
+        "@npm//copy-to-clipboard",
+        "@npm//dayjs",
+        "@npm//formik",
+        "@npm//grpc-web",
+        "@npm//react-cookie",
+        "@npm//react-draggable",
+        "@npm//react-intersection-observer",
+        "@npm//redux",
+        "@npm//redux-thunk",
+    ],
 )
 
 genrule(
@@ -101,16 +119,17 @@ webpack(
         "$(execpath webpack.config.js)",
         "--html-template",
         "$(execpath base.html)",
-        "$(location compile)/index.js",
         "--bazel-bin-path",
         "$(BINDIR)",
         "--output-path",
         "$(@D)",
+        "$(execpath src/index.js)",
     ],
     data = [
         "api_client",
-        "base.html",
+        "src/index.js",
         "compile",
+        "base.html",
         "copy_assets",
         "model",
         "webpack.common.js",

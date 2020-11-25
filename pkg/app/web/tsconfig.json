@@ -1,7 +1,7 @@
 {
   "compilerOptions": {
     "paths": {
-      "pipe/*": ["../../../bazel-bin/*"]
+      "pipe/*": ["../../../bazel-out/darwin-fastbuild/bin/*"]
     },
     "allowUnreachableCode": false,
     "baseUrl": ".",

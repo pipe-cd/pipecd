@@ -15,8 +15,8 @@
     "typecheck": "tsc --noEmit"
   },
   "devDependencies": {
-    "@bazel/labs": "^1.6.1",
-    "@bazel/typescript": "^1.6.1",
+    "@bazel/labs": "^2.3.0",
+    "@bazel/typescript": "^2.3.0",
     "@storybook/addon-actions": "^6.0.16",
     "@storybook/addon-docs": "^6.0.16",
     "@storybook/addons": "^6.0.16",
