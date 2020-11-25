@@ -5,7 +5,6 @@ import { ApplicationDetail } from "../../components/application-detail";
 import { ApplicationStateView } from "../../components/application-state-view";
 import { fetchApplication } from "../../modules/applications";
 import {
-  clearError,
   fetchApplicationStateById,
   selectHasError,
 } from "../../modules/applications-live-state";
@@ -18,27 +17,38 @@ export const ApplicationDetailPage: FC = memo(function ApplicationDetailPage() {
   const dispatch = useDispatch();
   const params = useParams<{ applicationId: string }>();
   const applicationId = decodeURIComponent(params.applicationId);
-  const hasLiveStateError = useSelector<AppState, boolean>((state) =>
-    selectHasError(state.applicationLiveState, params.applicationId)
-  );
-
-  const fetchData = (): void => {
-    if (applicationId) {
-      if (hasLiveStateError === false) {
-        dispatch(fetchApplicationStateById(applicationId));
-      }
-      dispatch(fetchApplication(applicationId));
-    }
-  };
-
-  useEffect(fetchData, [applicationId, dispatch, hasLiveStateError]);
-  useInterval(fetchData, applicationId ? FETCH_INTERVAL : null);
+  const [hasFetchApplicationError, hasLiveStateError] = useSelector<
+    AppState,
+    [boolean, boolean]
+  >((state) => [
+    state.applications.fetchApplicationError !== null,
+    selectHasError(state.applicationLiveState, params.applicationId),
+  ]);
 
   useEffect(() => {
-    return () => {
-      dispatch(clearError(applicationId));
-    };
-  }, [dispatch, applicationId]);
+    if (applicationId) {
+      dispatch(fetchApplicationStateById(applicationId));
+      dispatch(fetchApplication(applicationId));
+    }
+  }, [applicationId, dispatch]);
+
+  useInterval(
+    () => {
+      if (applicationId) {
+        dispatch(fetchApplication(applicationId));
+      }
+    },
+    applicationId && hasFetchApplicationError === false ? FETCH_INTERVAL : null
+  );
+
+  useInterval(
+    () => {
+      if (applicationId) {
+        dispatch(fetchApplicationStateById(applicationId));
+      }
+    },
+    applicationId && hasLiveStateError === false ? FETCH_INTERVAL : null
+  );
 
   return (
     <>

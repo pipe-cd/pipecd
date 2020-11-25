@@ -12,7 +12,7 @@ import { UI_TEXT_REFRESH } from "../constants/ui-text";
 import { AppState } from "../modules";
 import {
   ApplicationLiveState,
-  clearError,
+  fetchApplicationStateById,
   selectById as selectLiveStateById,
   selectHasError,
 } from "../modules/applications-live-state";
@@ -52,7 +52,7 @@ export const ApplicationStateView: FC<Props> = memo(
           <Button
             color="primary"
             onClick={() => {
-              dispatch(clearError(applicationId));
+              dispatch(fetchApplicationStateById(applicationId));
             }}
           >
             {UI_TEXT_REFRESH}

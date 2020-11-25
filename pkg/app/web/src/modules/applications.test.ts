@@ -13,6 +13,16 @@ import {
 import { CommandModel, CommandStatus, fetchCommand } from "./commands";
 import * as applicationsAPI from "../api/applications";
 
+const baseState = {
+  adding: false,
+  disabling: {},
+  entities: {},
+  ids: [],
+  loading: false,
+  syncing: {},
+  fetchApplicationError: null,
+};
+
 describe("fetchApplications", () => {
   it("should get applications by options", async () => {
     jest
@@ -49,14 +59,7 @@ describe("applicationsSlice reducer", () => {
       applicationsSlice.reducer(undefined, {
         type: "TEST_ACTION",
       })
-    ).toEqual({
-      adding: false,
-      disabling: {},
-      entities: {},
-      ids: [],
-      loading: false,
-      syncing: {},
-    });
+    ).toEqual(baseState);
   });
 
   describe("fetchApplications", () => {
@@ -66,40 +69,24 @@ describe("applicationsSlice reducer", () => {
           type: fetchApplications.pending.type,
         })
       ).toEqual({
-        adding: false,
-        disabling: {},
-        entities: {},
-        ids: [],
+        ...baseState,
         loading: true,
-        syncing: {},
       });
     });
 
     it(`should handle ${fetchApplications.fulfilled.type}`, () => {
       expect(
-        applicationsSlice.reducer(
-          {
-            adding: false,
-            disabling: {},
-            entities: {},
-            ids: [],
-            loading: false,
-            syncing: {},
-          },
-          {
-            type: fetchApplications.fulfilled.type,
-            payload: [dummyApplication],
-          }
-        )
+        applicationsSlice.reducer(baseState, {
+          type: fetchApplications.fulfilled.type,
+          payload: [dummyApplication],
+          loading: true,
+        })
       ).toEqual({
-        adding: false,
-        disabling: {},
+        ...baseState,
         entities: {
           [dummyApplication.id]: dummyApplication,
         },
         ids: [dummyApplication.id],
-        loading: false,
-        syncing: {},
       });
     });
 
@@ -107,25 +94,14 @@ describe("applicationsSlice reducer", () => {
       expect(
         applicationsSlice.reducer(
           {
-            adding: false,
-            disabling: {},
-            entities: {},
-            ids: [],
+            ...baseState,
             loading: true,
-            syncing: {},
           },
           {
             type: fetchApplications.rejected.type,
           }
         )
-      ).toEqual({
-        adding: false,
-        disabling: {},
-        entities: {},
-        ids: [],
-        loading: false,
-        syncing: {},
-      });
+      ).toEqual(baseState);
     });
   });
 
@@ -141,14 +117,11 @@ describe("applicationsSlice reducer", () => {
       expect(
         applicationsSlice.reducer(
           {
-            adding: false,
-            disabling: {},
+            ...baseState,
             entities: {
               [dummyApplication.id]: dummyApplication,
             },
             ids: [dummyApplication.id],
-            loading: false,
-            syncing: {},
           },
           {
             type: fetchApplication.fulfilled.type,
@@ -156,14 +129,11 @@ describe("applicationsSlice reducer", () => {
           }
         )
       ).toEqual({
-        adding: false,
-        disabling: {},
+        ...baseState,
         entities: {
           [dummyApplication.id]: updatedApplication,
         },
         ids: [dummyApplication.id],
-        loading: false,
-        syncing: {},
       });
     });
 
@@ -171,28 +141,22 @@ describe("applicationsSlice reducer", () => {
       expect(
         applicationsSlice.reducer(
           {
-            adding: false,
-            disabling: {},
+            ...baseState,
             entities: {
               [dummyApplication.id]: dummyApplication,
             },
             ids: [dummyApplication.id],
-            loading: false,
-            syncing: {},
           },
           {
             type: fetchApplication.fulfilled.type,
           }
         )
       ).toEqual({
-        adding: false,
-        disabling: {},
+        ...baseState,
         entities: {
           [dummyApplication.id]: dummyApplication,
         },
         ids: [dummyApplication.id],
-        loading: false,
-        syncing: {},
       });
     });
   });
@@ -200,26 +164,12 @@ describe("applicationsSlice reducer", () => {
   describe("addApplication", () => {
     it(`should handle ${addApplication.pending.type}`, () => {
       expect(
-        applicationsSlice.reducer(
-          {
-            adding: false,
-            disabling: {},
-            entities: {},
-            ids: [],
-            loading: false,
-            syncing: {},
-          },
-          {
-            type: addApplication.pending.type,
-          }
-        )
+        applicationsSlice.reducer(baseState, {
+          type: addApplication.pending.type,
+        })
       ).toEqual({
+        ...baseState,
         adding: true,
-        disabling: {},
-        entities: {},
-        ids: [],
-        loading: false,
-        syncing: {},
       });
     });
 
@@ -227,50 +177,28 @@ describe("applicationsSlice reducer", () => {
       expect(
         applicationsSlice.reducer(
           {
+            ...baseState,
             adding: true,
-            disabling: {},
-            entities: {},
-            ids: [],
-            loading: false,
-            syncing: {},
           },
           {
             type: addApplication.fulfilled.type,
           }
         )
-      ).toEqual({
-        adding: false,
-        disabling: {},
-        entities: {},
-        ids: [],
-        loading: false,
-        syncing: {},
-      });
+      ).toEqual(baseState);
     });
 
     it(`should handle ${addApplication.rejected.type}`, () => {
       expect(
         applicationsSlice.reducer(
           {
+            ...baseState,
             adding: true,
-            disabling: {},
-            entities: {},
-            ids: [],
-            loading: false,
-            syncing: {},
           },
           {
             type: addApplication.rejected.type,
           }
         )
-      ).toEqual({
-        adding: false,
-        disabling: {},
-        entities: {},
-        ids: [],
-        loading: false,
-        syncing: {},
-      });
+      ).toEqual(baseState);
     });
   });
 
@@ -278,11 +206,7 @@ describe("applicationsSlice reducer", () => {
     expect(
       applicationsSlice.reducer(
         {
-          adding: false,
-          disabling: {},
-          entities: {},
-          ids: [],
-          loading: false,
+          ...baseState,
           syncing: {
             "app-1": true,
           },
@@ -297,11 +221,7 @@ describe("applicationsSlice reducer", () => {
         }
       )
     ).toEqual({
-      adding: false,
-      disabling: {},
-      entities: {},
-      ids: [],
-      loading: false,
+      ...baseState,
       syncing: {
         "app-1": false,
       },
@@ -310,11 +230,7 @@ describe("applicationsSlice reducer", () => {
     expect(
       applicationsSlice.reducer(
         {
-          adding: false,
-          disabling: {},
-          entities: {},
-          ids: [],
-          loading: false,
+          ...baseState,
           syncing: {
             "app-1": true,
           },
@@ -329,11 +245,7 @@ describe("applicationsSlice reducer", () => {
         }
       )
     ).toEqual({
-      adding: false,
-      disabling: {},
-      entities: {},
-      ids: [],
-      loading: false,
+      ...baseState,
       syncing: {
         "app-1": true,
       },
@@ -345,14 +257,11 @@ describe("applicationsSlice reducer", () => {
       expect(
         applicationsSlice.reducer(
           {
-            adding: false,
-            disabling: {},
+            ...baseState,
             entities: {
               [dummyApplication.id]: dummyApplication,
             },
             ids: [dummyApplication.id],
-            loading: false,
-            syncing: {},
           },
           {
             type: disableApplication.pending.type,
@@ -364,7 +273,7 @@ describe("applicationsSlice reducer", () => {
           }
         )
       ).toEqual({
-        adding: false,
+        ...baseState,
         disabling: {
           [dummyApplication.id]: true,
         },
@@ -372,8 +281,6 @@ describe("applicationsSlice reducer", () => {
           [dummyApplication.id]: dummyApplication,
         },
         ids: [dummyApplication.id],
-        loading: false,
-        syncing: {},
       });
     });
 
@@ -381,7 +288,7 @@ describe("applicationsSlice reducer", () => {
       expect(
         applicationsSlice.reducer(
           {
-            adding: false,
+            ...baseState,
             disabling: {
               [dummyApplication.id]: true,
             },
@@ -389,8 +296,6 @@ describe("applicationsSlice reducer", () => {
               [dummyApplication.id]: dummyApplication,
             },
             ids: [dummyApplication.id],
-            loading: false,
-            syncing: {},
           },
           {
             type: disableApplication.fulfilled.type,
@@ -402,14 +307,10 @@ describe("applicationsSlice reducer", () => {
           }
         )
       ).toEqual({
-        adding: false,
+        ...baseState,
         disabling: {
           [dummyApplication.id]: false,
         },
-        entities: {},
-        ids: [],
-        loading: false,
-        syncing: {},
       });
     });
 
@@ -417,7 +318,7 @@ describe("applicationsSlice reducer", () => {
       expect(
         applicationsSlice.reducer(
           {
-            adding: false,
+            ...baseState,
             disabling: {
               [dummyApplication.id]: true,
             },
@@ -425,8 +326,6 @@ describe("applicationsSlice reducer", () => {
               [dummyApplication.id]: dummyApplication,
             },
             ids: [dummyApplication.id],
-            loading: false,
-            syncing: {},
           },
           {
             type: disableApplication.rejected.type,
@@ -438,7 +337,7 @@ describe("applicationsSlice reducer", () => {
           }
         )
       ).toEqual({
-        adding: false,
+        ...baseState,
         disabling: {
           [dummyApplication.id]: false,
         },
@@ -446,8 +345,6 @@ describe("applicationsSlice reducer", () => {
           [dummyApplication.id]: dummyApplication,
         },
         ids: [dummyApplication.id],
-        loading: false,
-        syncing: {},
       });
     });
   });
@@ -455,30 +352,16 @@ describe("applicationsSlice reducer", () => {
   describe("syncApplication", () => {
     it(`should handle ${syncApplication.pending.type}`, () => {
       expect(
-        applicationsSlice.reducer(
-          {
-            adding: false,
-            disabling: {},
-            entities: {},
-            ids: [],
-            loading: false,
-            syncing: {},
-          },
-          {
-            type: syncApplication.pending.type,
-            meta: {
-              arg: {
-                applicationId: dummyApplication.id,
-              },
+        applicationsSlice.reducer(baseState, {
+          type: syncApplication.pending.type,
+          meta: {
+            arg: {
+              applicationId: dummyApplication.id,
             },
-          }
-        )
+          },
+        })
       ).toEqual({
-        adding: false,
-        disabling: {},
-        entities: {},
-        ids: [],
-        loading: false,
+        ...baseState,
         syncing: {
           [dummyApplication.id]: true,
         },

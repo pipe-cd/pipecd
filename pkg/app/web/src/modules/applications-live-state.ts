@@ -2,7 +2,6 @@ import {
   createAsyncThunk,
   createEntityAdapter,
   createSlice,
-  PayloadAction,
 } from "@reduxjs/toolkit";
 import {
   ApplicationLiveStateSnapshot as ApplicationLiveStateSnapshotModel,
@@ -55,11 +54,7 @@ export const selectHasError = (
 export const applicationLiveStateSlice = createSlice({
   name: "applicationLiveState",
   initialState,
-  reducers: {
-    clearError(state, action: PayloadAction<string>) {
-      state.hasError[action.payload] = false;
-    },
-  },
+  reducers: {},
   extraReducers: (builder) => {
     builder
       .addCase(fetchApplicationStateById.pending, (state, action) => {
@@ -76,7 +71,5 @@ export const applicationLiveStateSlice = createSlice({
       });
   },
 });
-
-export const { clearError } = applicationLiveStateSlice.actions;
 
 export { ApplicationLiveStateSnapshot as ApplicationLiveStateSnapshotModel } from "pipe/pkg/app/web/model/application_live_state_pb";
