@@ -61,6 +61,8 @@ const (
 	// This configuration file should be placed in .pipe directory
 	// at the root of the repository.
 	KindAnalysisTemplate Kind = "AnalysisTemplate"
+	// KindImageWatcher represents configuration for Repo Watcher.
+	KindImageWatcher Kind = "ImageWatcher"
 )
 
 // Config represents configuration data load from file.
@@ -79,6 +81,7 @@ type Config struct {
 	PipedSpec            *PipedSpec
 	ControlPlaneSpec     *ControlPlaneSpec
 	AnalysisTemplateSpec *AnalysisTemplateSpec
+	ImageWatcherSpec     *ImageWatcherSpec
 
 	SealedSecretSpec *SealedSecretSpec
 }
@@ -137,6 +140,10 @@ func (c *Config) init(kind Kind, apiVersion string) error {
 	case KindSealedSecret:
 		c.SealedSecretSpec = &SealedSecretSpec{}
 		c.spec = c.SealedSecretSpec
+
+	case KindImageWatcher:
+		c.ImageWatcherSpec = &ImageWatcherSpec{}
+		c.spec = c.ImageWatcherSpec
 
 	default:
 		return fmt.Errorf("unsupported kind: %s", c.Kind)

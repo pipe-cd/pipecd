@@ -9,6 +9,9 @@ require (
 	github.com/NYTimes/gziphandler v0.0.0-20170623195520-56545f4a5d46
 	github.com/aws/aws-sdk-go v1.34.5 // indirect
 	github.com/dgrijalva/jwt-go v3.2.0+incompatible
+	github.com/docker/distribution v2.7.1+incompatible
+	github.com/docker/go-metrics v0.0.1 // indirect
+	github.com/docker/libtrust v0.0.0-20160708172513-aabc10ec26b7 // indirect
 	github.com/envoyproxy/protoc-gen-validate v0.1.0
 	github.com/fsouza/fake-gcs-server v1.21.0
 	github.com/golang/mock v1.4.4
@@ -19,6 +22,8 @@ require (
 	github.com/hashicorp/golang-lru v0.5.1
 	github.com/klauspost/compress v1.10.11 // indirect
 	github.com/minio/minio-go/v7 v7.0.5
+	github.com/opencontainers/go-digest v1.0.0 // indirect
+	github.com/opencontainers/image-spec v1.0.1 // indirect
 	github.com/prometheus/client_golang v1.6.0
 	github.com/prometheus/client_model v0.2.0
 	github.com/prometheus/common v0.9.1

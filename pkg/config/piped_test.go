@@ -150,11 +150,30 @@ func TestPipedConfig(t *testing.T) {
 				},
 				ImageProviders: []PipedImageProvider{
 					{
-						Name: "my-dockerhub",
-						Type: "DOCKERHUB",
+						Name:         "my-dockerhub",
+						Type:         "DOCKERHUB",
+						PullInterval: Duration(time.Minute * 5),
 						DockerhubConfig: &ImageProviderDockerhubConfig{
 							Username:     "foo",
 							PasswordFile: "/etc/piped-secret/dockerhub-pass",
+						},
+					},
+					{
+						Name:         "my-gcr",
+						Type:         "GCR",
+						PullInterval: Duration(time.Minute * 5),
+						GCRConfig: &ImageProviderGCRConfig{
+							Address:         "asia.gcr.io",
+							CredentialsFile: "/etc/piped-secret/gcr-service-account",
+						},
+					},
+					{
+						Name:         "my-ecr",
+						Type:         "ECR",
+						PullInterval: Duration(time.Minute * 5),
+						ECRConfig: &ImageProviderECRConfig{
+							Address:   "012345678910.dkr.ecr.us-east-1.amazonaws.com",
+							TokenFile: "/etc/piped-secret/ecr-authorization-token",
 						},
 					},
 				},

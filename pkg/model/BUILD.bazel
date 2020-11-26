@@ -53,6 +53,7 @@ go_library(
         "environment.go",
         "event.go",
         "filestore.go",
+        "image_name.go",
         "imageprovider.go",
         "model.go",
         "piped.go",

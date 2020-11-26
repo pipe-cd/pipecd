@@ -374,8 +374,10 @@ type AnalysisProviderStackdriverConfig struct {
 }
 
 type PipedImageProvider struct {
-	Name string
-	Type model.ImageProviderType
+	Name string                  `json:"name"`
+	Type model.ImageProviderType `json:"type"`
+	// Default is five minute.
+	PullInterval Duration `json:"pullInterval"`
 
 	DockerhubConfig *ImageProviderDockerhubConfig
 	GCRConfig       *ImageProviderGCRConfig
@@ -383,9 +385,11 @@ type PipedImageProvider struct {
 }
 
 type genericPipedImageProvider struct {
-	Name   string                  `json:"name"`
-	Type   model.ImageProviderType `json:"type"`
-	Config json.RawMessage         `json:"config"`
+	Name         string                  `json:"name"`
+	Type         model.ImageProviderType `json:"type"`
+	PullInterval Duration                `json:"pullInterval"`
+
+	Config json.RawMessage `json:"config"`
 }
 
 func (p *PipedImageProvider) UnmarshalJSON(data []byte) error {
@@ -396,6 +400,10 @@ func (p *PipedImageProvider) UnmarshalJSON(data []byte) error {
 	}
 	p.Name = gp.Name
 	p.Type = gp.Type
+	p.PullInterval = gp.PullInterval
+	if p.PullInterval == 0 {
+		p.PullInterval = Duration(time.Minute * 5)
+	}
 
 	switch p.Type {
 	case model.ImageProviderTypeDockerhub:
@@ -420,6 +428,8 @@ func (p *PipedImageProvider) UnmarshalJSON(data []byte) error {
 }
 
 type ImageProviderGCRConfig struct {
+	Address         string `json:"address"`
+	CredentialsFile string `json:"credentialsFile"`
 }
 
 type ImageProviderDockerhubConfig struct {
@@ -428,6 +438,8 @@ type ImageProviderDockerhubConfig struct {
 }
 
 type ImageProviderECRConfig struct {
+	Address   string `json:"address"`
+	TokenFile string `json:"tokenFile"`
 }
 
 type Notifications struct {

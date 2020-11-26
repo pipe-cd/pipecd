@@ -80,9 +80,22 @@ spec:
   imageProviders:
     - name: my-dockerhub
       type: DOCKERHUB
+      pullInterval: 5m
       config:
         username: foo
         passwordFile: /etc/piped-secret/dockerhub-pass
+    - name: my-gcr
+      type: GCR
+      pullInterval: 5m
+      config:
+        address: asia.gcr.io
+        credentialsFile: /etc/piped-secret/gcr-service-account
+    - name: my-ecr
+      type: ECR
+      pullInterval: 5m
+      config:
+        address: 012345678910.dkr.ecr.us-east-1.amazonaws.com
+        tokenFile: /etc/piped-secret/ecr-authorization-token
 
   notifications:
     routes:

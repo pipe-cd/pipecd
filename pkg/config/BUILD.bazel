@@ -13,6 +13,7 @@ go_library(
         "deployment_lambda.go",
         "deployment_terraform.go",
         "duration.go",
+        "image_watcher.go",
         "piped.go",
         "replicas.go",
         "sealed_secret.go",

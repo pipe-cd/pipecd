@@ -34,8 +34,6 @@ type KubernetesDeploymentSpec struct {
 	Workloads []K8sResourceReference `json:"workloads"`
 	// Which method should be used for traffic routing.
 	TrafficRouting *KubernetesTrafficRouting `json:"trafficRouting"`
-	// Configuration for automatic image updates.
-	ImageWatcher DeploymentImageWatcher `json:"imageWatcher"`
 }
 
 // Validate returns an error if any wrong configuration value was found.
