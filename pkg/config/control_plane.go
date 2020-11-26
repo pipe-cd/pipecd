@@ -211,6 +211,8 @@ type DataStoreMongoDBConfig struct {
 	// The url of MongoDB. All of credentials can be specified via this field.
 	URL string `json:"url"`
 	// The name of the database.
+	// Also set Database as 'AuthSource' (default as 'admin' or '$external') when UsernameFle || PasswordFile specify
+	// Ref: https://github.com/mongodb/mongo-go-driver/blob/9e2aca8afd8821e6b068cc2f25192bc640d90a0d/mongo/client.go#L390
 	Database string `json:"database"`
 	// The path to the username file.
 	// For those who don't want to include the username in the URL.

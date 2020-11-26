@@ -17,6 +17,8 @@ package mongodb
 import (
 	"context"
 	"errors"
+	"fmt"
+	"io/ioutil"
 	"strings"
 
 	"go.mongodb.org/mongo-driver/bson"
@@ -27,17 +29,23 @@ import (
 	"github.com/pipe-cd/pipe/pkg/datastore"
 )
 
-type MongoDB struct {
-	ctx      context.Context
-	client   *mongo.Client
-	database string
+const (
+	// Scram type ref https://github.com/mongodb/mongo-go-driver/blob/9e2aca8afd8821e6b068cc2f25192bc640d90a0d/mongo/client_examples_test.go#L119
+	// Default
+	Scram string = "SCRAM"
+)
 
-	logger *zap.Logger
+type MongoDB struct {
+	ctx           context.Context
+	client        *mongo.Client
+	database      string
+	logger        *zap.Logger
+	authMechanism string
+	usernameFile  string
+	passwordFile  string
 }
 
 func NewMongoDB(ctx context.Context, url, database string, opts ...Option) (*MongoDB, error) {
-	// TODO: Enable to specify username and password via file.
-	//   Need to check if it overrides AuthMechanism etc.
 	m := &MongoDB{
 		ctx:      ctx,
 		database: database,
@@ -49,6 +57,15 @@ func NewMongoDB(ctx context.Context, url, database string, opts ...Option) (*Mon
 	m.logger = m.logger.Named("mongodb")
 
 	clientOpts := options.Client().ApplyURI(url)
+
+	if m.authMechanism != "" {
+		credential, err := m.determineCredential()
+		if err != nil {
+			return nil, err
+		}
+		clientOpts.SetAuth(*credential)
+	}
+
 	client, err := mongo.Connect(ctx, clientOpts)
 	if err != nil {
 		return nil, err
@@ -58,6 +75,14 @@ func NewMongoDB(ctx context.Context, url, database string, opts ...Option) (*Mon
 }
 
 type Option func(*MongoDB)
+
+func WithAuthenticationFile(usernameFile, passwordFile string) Option {
+	return func(m *MongoDB) {
+		m.usernameFile = usernameFile
+		m.passwordFile = passwordFile
+		m.authMechanism = Scram
+	}
+}
 
 func WithLogger(logger *zap.Logger) Option {
 	return func(s *MongoDB) {
@@ -226,4 +251,26 @@ func (m *MongoDB) Close() error {
 
 func makePrimaryKeyFilter(id string) bson.D {
 	return bson.D{{"_id", id}}
+}
+
+func (m *MongoDB) determineCredential() (*options.Credential, error) {
+	switch m.authMechanism {
+	case Scram:
+		username, err := ioutil.ReadFile(m.usernameFile)
+		if err != nil {
+			return nil, fmt.Errorf("failed to read username file: %w", err)
+		}
+		password, err := ioutil.ReadFile(m.passwordFile)
+		if err != nil {
+			return nil, fmt.Errorf("failed to read password file: %w", err)
+		}
+
+		return &options.Credential{
+			Username:   strings.TrimRight(string(username), "\n"),
+			Password:   strings.TrimRight(string(password), "\n"),
+			AuthSource: m.database,
+		}, nil
+	default:
+		return nil, fmt.Errorf("unsupported %q authMechanism credential", m.authMechanism)
+	}
 }
