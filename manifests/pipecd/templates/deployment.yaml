@@ -131,6 +131,11 @@ spec:
           resources:
             {{- toYaml .Values.server.resources | nindent 12 }}
 {{- end }}
+{{- if .Values.server.env }}
+          env:
+            {{- toYaml .Values.server.env | nindent 12 }}
+{{- end }}
+
       volumes:
         - name: pipecd-secret
           secret:
