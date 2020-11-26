@@ -20,7 +20,7 @@ Piped periodically compares the image tags defined in git with the latest tags s
 ### Usage
 Note: Where, we call the client that accesses the container registry to `Image Provider`.
 
-First of all, the using image provider must be specified in the piped configuration.
+First of all, the using image provider must be specified in the Piped configuration.
 
 ```yaml
 apiVersion: pipecd.dev/v1beta1
@@ -34,9 +34,15 @@ spec:
       config:
         username: foo
         passwordFile: /etc/piped-secret/dockerhub-pass
+  # Optional
+  imageWatcher:
+    - repoId: foo
+      includes:
+        - .pipe/imagewatcher-dev.yaml
 ```
 
-Adding a file at `.pipe/` directory to define what image should be watched and what file should be updated:
+Adding an ImageWatcher file at `.pipe/` directory to define what image should be watched and what file should be updated:
+
 ```yaml
 apiVersion: pipecd.dev/v1beta1
 kind: ImageWatcher
@@ -52,9 +58,11 @@ spec:
       field: spec.containers[0].image
 ```
 
+If multiple Pipeds handle a single repository, we can prevent conflicts by splitting into the multiple ImageWatcher file and specifying includes/excludes in the Piped config.
+
 ### Architecture
-`Image Provider` pulls respectively periodically.
-`Image Watcher` pulls from the git repo, compares respectively and pushes the one with differences.
+`Image Provider` pulls respectively periodically. `Image Watcher` pulls from the git repo, compares respectively and pushes the one with differences.
+Note that it uses only pure git push, does not use features that depend on Git hosting services, such as pull requests.
 
 ![](assets/image-watcher.jpg)
 
