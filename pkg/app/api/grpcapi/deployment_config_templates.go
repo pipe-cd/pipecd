@@ -12,7 +12,7 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-package api
+package grpcapi
 
 import (
 	"github.com/pipe-cd/pipe/pkg/app/api/service/webservice"
