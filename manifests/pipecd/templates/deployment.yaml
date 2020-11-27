@@ -95,7 +95,6 @@ spec:
 {{- end }}
           - --cache-address={{ .Values.server.args.cacheAddress | default (printf "%s-cache:6379" (include "pipecd.fullname" .)) }}
           - --config-file=/etc/pipecd-config/{{ .Values.config.fileName }}
-          - --use-fake-response={{ .Values.server.args.useFakeResponse }}
           - --enable-grpc-reflection={{ .Values.server.args.enableGRPCReflection }}
           - --encryption-key-file={{ .Values.secret.mountPath }}/{{ .Values.secret.encryptionKey.fileName }}
           - --log-encoding={{ .Values.server.args.logEncoding }}
