@@ -2,6 +2,7 @@ reviewers:
   - sig-dev
 approvers:
   - sig-dev
+  - sig-release
 
 matches:
 - matchers:

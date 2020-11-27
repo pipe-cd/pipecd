@@ -1,10 +1,8 @@
 sig-dev:
   users:
     - nghialv
-    - gkuga
-    - nakabonne
-    - stormcat24
     - cakecatz
+    - nakabonne
 
 sig-web:
   users:
@@ -18,5 +16,4 @@ sig-build:
 sig-release:
   users:
     - nghialv
-    - gkuga
     - stormcat24
