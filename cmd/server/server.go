@@ -29,10 +29,10 @@ import (
 	"golang.org/x/sync/errgroup"
 
 	"github.com/pipe-cd/pipe/pkg/admin"
-	"github.com/pipe-cd/pipe/pkg/app/api/api"
 	"github.com/pipe-cd/pipe/pkg/app/api/applicationlivestatestore"
 	"github.com/pipe-cd/pipe/pkg/app/api/authhandler"
 	"github.com/pipe-cd/pipe/pkg/app/api/commandstore"
+	"github.com/pipe-cd/pipe/pkg/app/api/grpcapi"
 	"github.com/pipe-cd/pipe/pkg/app/api/pipedverifier"
 	"github.com/pipe-cd/pipe/pkg/app/api/service/webservice"
 	"github.com/pipe-cd/pipe/pkg/app/api/stagelogstore"
@@ -189,7 +189,7 @@ func (s *server) run(ctx context.Context, t cli.Telemetry) error {
 				datastore.NewPipedStore(ds),
 				t.Logger,
 			)
-			service = api.NewPipedAPI(ctx, ds, sls, alss, cmds, t.Logger)
+			service = grpcapi.NewPipedAPI(ctx, ds, sls, alss, cmds, t.Logger)
 			opts    = []rpc.Option{
 				rpc.WithPort(s.pipedAPIPort),
 				rpc.WithGracePeriod(s.gracePeriod),
@@ -228,9 +228,9 @@ func (s *server) run(ctx context.Context, t cli.Telemetry) error {
 
 		var service rpc.Service
 		if s.useFakeResponse {
-			service = api.NewFakeWebAPI()
+			service = grpcapi.NewFakeWebAPI()
 		} else {
-			service = api.NewWebAPI(ctx, ds, sls, alss, cmds, cfg.ProjectMap(), encryptDecrypter, t.Logger)
+			service = grpcapi.NewWebAPI(ctx, ds, sls, alss, cmds, cfg.ProjectMap(), encryptDecrypter, t.Logger)
 		}
 		opts := []rpc.Option{
 			rpc.WithPort(s.webAPIPort),

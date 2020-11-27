@@ -9,7 +9,7 @@ go_library(
         "web_api.go",
         ":deployment_config_templates.embed",  #keep
     ],
-    importpath = "github.com/pipe-cd/pipe/pkg/app/api/api",
+    importpath = "github.com/pipe-cd/pipe/pkg/app/api/grpcapi",
     visibility = ["//visibility:public"],
     deps = [
         "//pkg/app/api/applicationlivestatestore:go_default_library",
@@ -59,7 +59,7 @@ go_embed_data(
     name = "deployment_config_templates.embed",
     srcs = glob(["deploymentconfigtemplates/*"]),
     flatten = True,
-    package = "api",
+    package = "grpcapi",
     string = True,
     var = "DeploymentConfigTemplates",
     visibility = ["//visibility:public"],
