@@ -69,6 +69,7 @@ message ProjectSSOConfig {
         string client_secret = 2 [(validate.rules).string.min_len = 1];
         string base_url = 3;
         string upload_url = 4;
+        string proxy_url = 5;
     }
 
     message Google {

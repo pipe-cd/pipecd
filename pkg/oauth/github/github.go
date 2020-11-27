@@ -17,6 +17,7 @@ package github
 import (
 	"context"
 	"fmt"
+	"net/http"
 	"net/url"
 
 	"github.com/google/go-github/v29/github"
@@ -54,9 +55,22 @@ func NewOAuthClient(ctx context.Context,
 		ClientSecret: sso.ClientSecret,
 		Endpoint:     oauth2github.Endpoint,
 	}
+
+	if sso.ProxyUrl != "" {
+		proxyURL, err := url.Parse(sso.ProxyUrl)
+		if err != nil {
+			return nil, err
+		}
+		t := http.DefaultTransport.(*http.Transport).Clone()
+		t.Proxy = http.ProxyURL(proxyURL)
+
+		ctx = context.WithValue(ctx, oauth2.HTTPClient, &http.Client{Transport: t})
+	}
+
 	if enterprise {
 		return newGHEOAuthClient(ctx, sso, code, c, cfg)
 	}
+
 	token, err := cfg.Exchange(ctx, code)
 	if err != nil {
 		return nil, err
