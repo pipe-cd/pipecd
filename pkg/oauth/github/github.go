@@ -61,9 +61,9 @@ func NewOAuthClient(ctx context.Context,
 		if err != nil {
 			return nil, err
 		}
+
 		t := http.DefaultTransport.(*http.Transport).Clone()
 		t.Proxy = http.ProxyURL(proxyURL)
-
 		ctx = context.WithValue(ctx, oauth2.HTTPClient, &http.Client{Transport: t})
 	}
 
