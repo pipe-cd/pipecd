@@ -28,6 +28,7 @@ import "pkg/model/logblock.proto";
 import "pkg/model/piped.proto";
 import "pkg/model/role.proto";
 import "pkg/model/project.proto";
+import "pkg/model/apikey.proto";
 import "google/protobuf/wrappers.proto";
 
 // WebService contains all RPC definitions for web client.
@@ -79,6 +80,11 @@ service WebService {
 
     // Deployment Config Template
     rpc ListDeploymentConfigTemplates(ListDeploymentConfigTemplatesRequest) returns (ListDeploymentConfigTemplatesResponse) {}
+
+    // API Key
+    rpc GenerateAPIKey(GenerateAPIKeyRequest) returns (GenerateAPIKeyResponse) {}
+    rpc DisableAPIKey(DisableAPIKeyRequest) returns (DisableAPIKeyResponse) {}
+    rpc ListAPIKeys(ListAPIKeysRequest) returns (ListAPIKeysResponse) {}
 }
 
 message AddEnvironmentResponse {
@@ -367,4 +373,31 @@ message ListDeploymentConfigTemplatesRequest {
 
 message ListDeploymentConfigTemplatesResponse {
     repeated DeploymentConfigTemplate templates = 1;
+}
+
+message GenerateAPIKeyRequest {
+    string name = 1 [(validate.rules).string.min_len = 1];
+    model.APIKey.Role role = 2 [(validate.rules).enum.defined_only = true];
+}
+
+message GenerateAPIKeyResponse {
+    model.APIKey key = 1;
+}
+
+message DisableAPIKeyRequest {
+    string id = 1 [(validate.rules).string.min_len = 1];
+}
+
+message DisableAPIKeyResponse {
+}
+
+message ListAPIKeysRequest {
+    message Options {
+        google.protobuf.BoolValue enabled = 1;
+    }
+    Options options = 2;
+}
+
+message ListAPIKeysResponse {
+    repeated model.APIKey keys = 1;
 }
