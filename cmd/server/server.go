@@ -78,7 +78,6 @@ type server struct {
 	encryptionKeyFile string
 	configFile        string
 
-	useFakeResponse      bool
 	enableGRPCReflection bool
 }
 
@@ -118,7 +117,6 @@ func NewCommand() *cobra.Command {
 	cmd.MarkFlagRequired("config-file")
 
 	// For debugging early in development
-	cmd.Flags().BoolVar(&s.useFakeResponse, "use-fake-response", s.useFakeResponse, "Whether the server responds fake response or not.")
 	cmd.Flags().BoolVar(&s.enableGRPCReflection, "enable-grpc-reflection", s.enableGRPCReflection, "Whether to enable the reflection service or not.")
 
 	return cmd
@@ -226,12 +224,7 @@ func (s *server) run(ctx context.Context, t cli.Telemetry) error {
 			return err
 		}
 
-		var service rpc.Service
-		if s.useFakeResponse {
-			service = grpcapi.NewFakeWebAPI()
-		} else {
-			service = grpcapi.NewWebAPI(ctx, ds, sls, alss, cmds, cfg.ProjectMap(), encryptDecrypter, t.Logger)
-		}
+		service := grpcapi.NewWebAPI(ctx, ds, sls, alss, cmds, cfg.ProjectMap(), encryptDecrypter, t.Logger)
 		opts := []rpc.Option{
 			rpc.WithPort(s.webAPIPort),
 			rpc.WithGracePeriod(s.gracePeriod),

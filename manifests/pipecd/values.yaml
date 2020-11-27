@@ -22,8 +22,7 @@ server:
   replicasCount: 1
   args:
     cacheAddress: ""
-    useFakeResponse: false
-    enableGRPCReflection: true
+    enableGRPCReflection: false
     secureCookie: false
     logEncoding: humanize
   resources: {}
