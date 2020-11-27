@@ -1202,3 +1202,15 @@ L:
 	}
 	return filtered
 }
+
+func (a *WebAPI) GenerateAPIKey(ctx context.Context, req *webservice.GenerateAPIKeyRequest) (*webservice.GenerateAPIKeyResponse, error) {
+	return nil, status.Error(codes.Unimplemented, "")
+}
+
+func (a *WebAPI) DisableAPIKey(ctx context.Context, req *webservice.DisableAPIKeyRequest) (*webservice.DisableAPIKeyResponse, error) {
+	return nil, status.Error(codes.Unimplemented, "")
+}
+
+func (a *WebAPI) ListAPIKeys(ctx context.Context, req *webservice.ListAPIKeysRequest) (*webservice.ListAPIKeysResponse, error) {
+	return nil, status.Error(codes.Unimplemented, "")
+}
