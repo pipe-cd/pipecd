@@ -381,7 +381,7 @@ message GenerateAPIKeyRequest {
 }
 
 message GenerateAPIKeyResponse {
-    model.APIKey key = 1;
+    string key = 1;
 }
 
 message DisableAPIKeyRequest {

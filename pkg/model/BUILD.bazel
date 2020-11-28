@@ -41,6 +41,7 @@ go_library(
     name = "go_default_library",
     srcs = [
         "analysisprovider.go",
+        "apikey.go",
         "application.go",
         "application_live_state.go",
         "cloudprovider.go",
@@ -52,6 +53,7 @@ go_library(
         "event.go",
         "filestore.go",
         "imageprovider.go",
+        "model.go",
         "piped.go",
         "project.go",
         "stage.go",
@@ -71,6 +73,8 @@ go_test(
     name = "go_default_test",
     size = "small",
     srcs = [
+        "apikey_test.go",
+        "model_test.go",
         "piped_test.go",
         "project_test.go",
     ],

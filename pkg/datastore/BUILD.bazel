@@ -3,6 +3,7 @@ load("@io_bazel_rules_go//go:def.bzl", "go_library", "go_test")
 go_library(
     name = "go_default_library",
     srcs = [
+        "apikey.go",
         "applicationstore.go",
         "commandstore.go",
         "datastore.go",
@@ -25,6 +26,7 @@ go_test(
     name = "go_default_test",
     size = "small",
     srcs = [
+        "apikey_test.go",
         "applicationstore_test.go",
         "commandstore_test.go",
         "deploymentstore_test.go",
