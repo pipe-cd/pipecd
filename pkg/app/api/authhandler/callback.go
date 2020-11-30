@@ -133,21 +133,11 @@ func checkState(r *http.Request, key string) error {
 
 func getUser(ctx context.Context, sso *model.ProjectSSOConfig, rbac *model.ProjectRBACConfig, projectID, code string) (*model.User, error) {
 	switch sso.Provider {
-	case model.ProjectSSOConfig_GITHUB:
+	case model.ProjectSSOConfig_GITHUB, model.ProjectSSOConfig_GITHUB_ENTERPRISE:
 		if sso.Github == nil {
 			return nil, fmt.Errorf("missing GitHub oauth in the SSO configuration")
 		}
-		cli, err := github.NewOAuthClient(ctx, sso.Github, rbac, projectID, code, false)
-		if err != nil {
-			return nil, err
-		}
-		return cli.GetUser(ctx)
-
-	case model.ProjectSSOConfig_GITHUB_ENTERPRISE:
-		if sso.Github == nil {
-			return nil, fmt.Errorf("missing GitHub oauth in the SSO configuration")
-		}
-		cli, err := github.NewOAuthClient(ctx, sso.Github, rbac, projectID, code, true)
+		cli, err := github.NewOAuthClient(ctx, sso.Github, rbac, projectID, code)
 		if err != nil {
 			return nil, err
 		}
