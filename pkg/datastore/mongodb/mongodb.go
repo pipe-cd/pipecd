@@ -32,7 +32,7 @@ import (
 const (
 	// Scram type ref https://github.com/mongodb/mongo-go-driver/blob/9e2aca8afd8821e6b068cc2f25192bc640d90a0d/mongo/client_examples_test.go#L119
 	// Default
-	Scram string = "SCRAM"
+	scram string = "SCRAM"
 )
 
 type MongoDB struct {
@@ -80,7 +80,7 @@ func WithAuthenticationFile(usernameFile, passwordFile string) Option {
 	return func(m *MongoDB) {
 		m.usernameFile = usernameFile
 		m.passwordFile = passwordFile
-		m.authMechanism = Scram
+		m.authMechanism = scram
 	}
 }
 
@@ -255,7 +255,7 @@ func makePrimaryKeyFilter(id string) bson.D {
 
 func (m *MongoDB) determineCredential() (*options.Credential, error) {
 	switch m.authMechanism {
-	case Scram:
+	case scram:
 		username, err := ioutil.ReadFile(m.usernameFile)
 		if err != nil {
 			return nil, fmt.Errorf("failed to read username file: %w", err)
