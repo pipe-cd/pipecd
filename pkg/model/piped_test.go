@@ -15,7 +15,6 @@
 package model
 
 import (
-	"fmt"
 	"testing"
 	"time"
 
@@ -105,26 +104,4 @@ func TestAddKey(t *testing.T) {
 			CreatedAt: now.Unix() + 1,
 		},
 	}, p.Keys)
-}
-
-func TestGenerateRandomString(t *testing.T) {
-	validator := func(s string) error {
-		for _, c := range s {
-			if (c >= 'a' && c <= 'z') || (c >= '0' && c <= '9') {
-				continue
-			}
-			return fmt.Errorf("invalid character: %#U", c)
-		}
-		return nil
-	}
-
-	s1 := GenerateRandomString(10)
-	assert.Equal(t, 10, len(s1))
-	assert.NoError(t, validator(s1))
-
-	s2 := GenerateRandomString(10)
-	assert.Equal(t, 10, len(s2))
-	assert.NoError(t, validator(s2))
-
-	assert.NotEqual(t, s1, s2)
 }

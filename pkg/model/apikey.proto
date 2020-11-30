@@ -30,10 +30,10 @@ message APIKey {
     string id = 1 [(validate.rules).string.min_len = 1];
     // The name of the key.
     string name = 2 [(validate.rules).string.min_len = 1];
-    // The key string.
-    string key = 3 [(validate.rules).string.min_len = 1];
+    // The hash value of key string.
+    string key_hash = 3 [(validate.rules).string.min_len = 1];
     // The project this key belongs to.
-    string project = 4 [(validate.rules).string.min_len = 1];
+    string project_id = 4 [(validate.rules).string.min_len = 1];
     // The role of the key.
     Role role = 5 [(validate.rules).enum.defined_only = true];
     // Who created the key.

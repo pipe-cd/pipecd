@@ -70,6 +70,13 @@ func (a *authorizer) Authorize(method string, r model.Role) bool {
 		return isAdmin(r)
 	case "/pipe.api.service.webservice.WebService/UpdateProjectRBACConfig":
 		return isAdmin(r)
+	case "/pipe.api.service.webservice.WebService/GenerateAPIKey":
+		return isAdmin(r)
+	case "/pipe.api.service.webservice.WebService/DisableAPIKey":
+		return isAdmin(r)
+	case "/pipe.api.service.webservice.WebService/ListAPIKey":
+		return isAdmin(r)
+
 	case "/pipe.api.service.webservice.WebService/SyncApplication":
 		return isAdmin(r) || isEditor(r)
 	case "/pipe.api.service.webservice.WebService/CancelDeployment":
@@ -78,6 +85,7 @@ func (a *authorizer) Authorize(method string, r model.Role) bool {
 		return isAdmin(r) || isEditor(r)
 	case "/pipe.api.service.webservice.WebService/GenerateApplicationSealedSecret":
 		return isAdmin(r) || isEditor(r)
+
 	case "/pipe.api.service.webservice.WebService/GetApplicationLiveState":
 		return isAdmin(r) || isEditor(r) || isViewer(r)
 	case "/pipe.api.service.webservice.WebService/GetProject":

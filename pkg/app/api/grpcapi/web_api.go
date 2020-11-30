@@ -52,6 +52,7 @@ type WebAPI struct {
 	deploymentStore           datastore.DeploymentStore
 	pipedStore                datastore.PipedStore
 	projectStore              datastore.ProjectStore
+	apiKeyStore               datastore.APIKeyStore
 	stageLogStore             stagelogstore.Store
 	applicationLiveStateStore applicationlivestatestore.Store
 	commandStore              commandstore.Store
@@ -81,6 +82,7 @@ func NewWebAPI(
 		deploymentStore:           datastore.NewDeploymentStore(ds),
 		pipedStore:                datastore.NewPipedStore(ds),
 		projectStore:              datastore.NewProjectStore(ds),
+		apiKeyStore:               datastore.NewAPIKeyStore(ds),
 		stageLogStore:             sls,
 		applicationLiveStateStore: alss,
 		commandStore:              cmds,
@@ -1204,13 +1206,106 @@ L:
 }
 
 func (a *WebAPI) GenerateAPIKey(ctx context.Context, req *webservice.GenerateAPIKeyRequest) (*webservice.GenerateAPIKeyResponse, error) {
-	return nil, status.Error(codes.Unimplemented, "")
+	claims, err := rpcauth.ExtractClaims(ctx)
+	if err != nil {
+		a.logger.Error("failed to authenticate the current user", zap.Error(err))
+		return nil, err
+	}
+
+	id := uuid.New().String()
+	key, hash, err := model.GenerateAPIKey(id)
+	if err != nil {
+		a.logger.Error("failed to generate API key", zap.Error(err))
+		return nil, status.Error(codes.Internal, "Failed to generate API key")
+	}
+
+	apiKey := model.APIKey{
+		Id:        id,
+		Name:      req.Name,
+		KeyHash:   hash,
+		ProjectId: claims.Role.ProjectId,
+		Role:      req.Role,
+		Creator:   claims.Subject,
+	}
+
+	err = a.apiKeyStore.AddAPIKey(ctx, &apiKey)
+	if errors.Is(err, datastore.ErrAlreadyExists) {
+		return nil, status.Error(codes.AlreadyExists, "The API key already exists")
+	}
+	if err != nil {
+		a.logger.Error("failed to create API key", zap.Error(err))
+		return nil, status.Error(codes.Internal, "Failed to create API key")
+	}
+
+	return &webservice.GenerateAPIKeyResponse{
+		Key: key,
+	}, nil
 }
 
 func (a *WebAPI) DisableAPIKey(ctx context.Context, req *webservice.DisableAPIKeyRequest) (*webservice.DisableAPIKeyResponse, error) {
-	return nil, status.Error(codes.Unimplemented, "")
+	claims, err := rpcauth.ExtractClaims(ctx)
+	if err != nil {
+		a.logger.Error("failed to authenticate the current user", zap.Error(err))
+		return nil, err
+	}
+
+	if err := a.apiKeyStore.DisableAPIKey(ctx, req.Id, claims.Role.ProjectId); err != nil {
+		switch err {
+		case datastore.ErrNotFound:
+			return nil, status.Error(codes.InvalidArgument, "The API key is not found")
+		case datastore.ErrInvalidArgument:
+			return nil, status.Error(codes.InvalidArgument, "Invalid value for update")
+		default:
+			a.logger.Error("failed to disable the API key",
+				zap.String("apikey-id", req.Id),
+				zap.Error(err),
+			)
+			return nil, status.Error(codes.Internal, "Failed to disable the API key")
+		}
+	}
+
+	return &webservice.DisableAPIKeyResponse{}, nil
 }
 
 func (a *WebAPI) ListAPIKeys(ctx context.Context, req *webservice.ListAPIKeysRequest) (*webservice.ListAPIKeysResponse, error) {
-	return nil, status.Error(codes.Unimplemented, "")
+	claims, err := rpcauth.ExtractClaims(ctx)
+	if err != nil {
+		a.logger.Error("failed to authenticate the current user", zap.Error(err))
+		return nil, err
+	}
+
+	opts := datastore.ListOptions{
+		Filters: []datastore.ListFilter{
+			{
+				Field:    "ProjectId",
+				Operator: "==",
+				Value:    claims.Role.ProjectId,
+			},
+		},
+	}
+
+	if req.Options != nil {
+		if req.Options.Enabled != nil {
+			opts.Filters = append(opts.Filters, datastore.ListFilter{
+				Field:    "Disabled",
+				Operator: "==",
+				Value:    !req.Options.Enabled.GetValue(),
+			})
+		}
+	}
+
+	apiKeys, err := a.apiKeyStore.ListAPIKeys(ctx, opts)
+	if err != nil {
+		a.logger.Error("failed to list API keys", zap.Error(err))
+		return nil, status.Error(codes.Internal, "Failed to list API keys")
+	}
+
+	// Redact all sensitive data inside API key before sending to the client.
+	for i := range apiKeys {
+		apiKeys[i].RedactSensitiveData()
+	}
+
+	return &webservice.ListAPIKeysResponse{
+		Keys: apiKeys,
+	}, nil
 }
