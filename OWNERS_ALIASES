@@ -8,7 +8,8 @@ sig-dev:
 sig-web:
   users:
     - cakecatz
-    - asukaleido
+    - khanhtc1202
+    - nghialv
 
 sig-build:
   users:
