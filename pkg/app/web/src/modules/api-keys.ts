@@ -35,7 +35,7 @@ export const generateAPIKey = createAsyncThunk<
   return res.key;
 });
 
-export const getAPIKeys = createAsyncThunk<APIKey[], { enabled: boolean }>(
+export const fetchAPIKeys = createAsyncThunk<APIKey[], { enabled: boolean }>(
   `${MODULE_NAME}/getList`,
   async (options) => {
     const res = await APIKeysAPI.getAPIKeys({ options });
@@ -70,15 +70,15 @@ export const apiKeysSlice = createSlice({
         state.generating = false;
         state.generatedKey = action.payload;
       })
-      // getAPIKeys
-      .addCase(getAPIKeys.pending, (state) => {
+      // fetchAPIKeys
+      .addCase(fetchAPIKeys.pending, (state) => {
         state.loading = true;
       })
-      .addCase(getAPIKeys.rejected, (state, action) => {
+      .addCase(fetchAPIKeys.rejected, (state, action) => {
         state.loading = false;
         state.error = action.error;
       })
-      .addCase(getAPIKeys.fulfilled, (state, action) => {
+      .addCase(fetchAPIKeys.fulfilled, (state, action) => {
         state.loading = false;
         state.items = action.payload;
       })
