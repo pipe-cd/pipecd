@@ -7,16 +7,21 @@ import {
   ListAPIKeysRequest,
   ListAPIKeysResponse,
 } from "pipe/pkg/app/web/api_client/service_pb";
+import * as google_protobuf_wrappers_pb from "google-protobuf/google/protobuf/wrappers_pb";
 
 export const getAPIKeys = ({
   options,
-}: ListAPIKeysRequest.AsObject): Promise<ListAPIKeysResponse.AsObject> => {
+}: {
+  options: {
+    enabled: boolean;
+  };
+}): Promise<ListAPIKeysResponse.AsObject> => {
   const req = new ListAPIKeysRequest();
-  if (options) {
-    const opt = new ListAPIKeysRequest.Options();
-    opt.setEnabled(options.enabled);
-    req.setOptions(opt);
-  }
+  const opt = new ListAPIKeysRequest.Options();
+  const enabled = new google_protobuf_wrappers_pb.BoolValue();
+  enabled.setValue(options.enabled);
+  opt.setEnabled(enabled);
+  req.setOptions(opt);
   return apiRequest(req, apiClient.listAPIKeys);
 };
 

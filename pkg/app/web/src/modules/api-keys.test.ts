@@ -4,7 +4,7 @@ import {
   apiKeysSlice,
   disableAPIKey,
   generateAPIKey,
-  getAPIKeys,
+  fetchAPIKeys,
 } from "./api-keys";
 
 const baseState = {
@@ -70,14 +70,14 @@ describe("apiKeysSlice reducer", () => {
     });
   });
 
-  describe("getAPIKeys", () => {
+  describe("fetchAPIKeys", () => {
     const arg = {
       enabled: true,
     };
-    it(`should handle ${getAPIKeys.pending.type}`, () => {
+    it(`should handle ${fetchAPIKeys.pending.type}`, () => {
       expect(
         apiKeysSlice.reducer(baseState, {
-          type: getAPIKeys.pending.type,
+          type: fetchAPIKeys.pending.type,
           meta: {
             arg,
           },
@@ -85,12 +85,12 @@ describe("apiKeysSlice reducer", () => {
       ).toEqual({ ...baseState, loading: true });
     });
 
-    it(`should handle ${getAPIKeys.rejected.type}`, () => {
+    it(`should handle ${fetchAPIKeys.rejected.type}`, () => {
       expect(
         apiKeysSlice.reducer(
           { ...baseState, loading: true },
           {
-            type: getAPIKeys.rejected.type,
+            type: fetchAPIKeys.rejected.type,
             error: { message: "API_ERROR" },
             meta: {
               arg,
@@ -100,12 +100,12 @@ describe("apiKeysSlice reducer", () => {
       ).toEqual({ ...baseState, error: { message: "API_ERROR" } });
     });
 
-    it(`should handle ${getAPIKeys.fulfilled.type}`, () => {
+    it(`should handle ${fetchAPIKeys.fulfilled.type}`, () => {
       expect(
         apiKeysSlice.reducer(
           { ...baseState, loading: true },
           {
-            type: getAPIKeys.fulfilled.type,
+            type: fetchAPIKeys.fulfilled.type,
             payload: [dummyAPIKey],
             meta: { arg },
           }
