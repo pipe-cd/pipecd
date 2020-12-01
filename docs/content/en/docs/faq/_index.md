@@ -6,7 +6,7 @@ description: >
   List of frequently asked questions.
 ---
 
-If you have any other questions, please feel free to create the issue in the [pipe-cd/pipe](https://github.com/pipe-cd/pipe/issues/new/choose) repository or contact us on [Slack](https://cloud-native.slack.com/archives/C01B27F9T0X).
+If you have any other questions, please feel free to create the issue in the [pipe-cd/pipe](https://github.com/pipe-cd/pipe/issues/new/choose) repository or contact us on [Slack](https://join.slack.com/t/cloud-native/shared_invite/zt-fyy3b8up-qHeDNVqbz1j8HDY6g1cY4w).
 
 ### 1. What kind of application (cloud provider) will be supported?
 
