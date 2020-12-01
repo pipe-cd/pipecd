@@ -149,7 +149,7 @@ no = 'Sorry to hear that. Please <a href="https://github.com/pipe-cd/pipe/issues
         desc = "Development takes place here!"
 [[params.links.developer]]
 	name = "Slack"
-	url = "https://cloud-native.slack.com/archives/C01B27F9T0X"
+	url = "https://join.slack.com/t/cloud-native/shared_invite/zt-fyy3b8up-qHeDNVqbz1j8HDY6g1cY4w"
 	icon = "fab fa-slack"
         desc = "Chat with other project developers"
 [[params.links.developer]]
