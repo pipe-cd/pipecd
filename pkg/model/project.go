@@ -148,17 +148,11 @@ func (p *ProjectSSOConfig) Decrypt(decrypter decrypter) error {
 // GenerateAuthCodeURL generates an auth URL for the specified configuration.
 func (p *ProjectSSOConfig) GenerateAuthCodeURL(project, callbackURL, state string) (string, error) {
 	switch p.Provider {
-	case ProjectSSOConfig_GITHUB:
+	case ProjectSSOConfig_GITHUB, ProjectSSOConfig_GITHUB_ENTERPRISE:
 		if p.Github == nil {
 			return "", fmt.Errorf("missing GitHub oauth in the SSO configuration")
 		}
-		return p.Github.GenerateAuthCodeURL(project, callbackURL, state, false)
-
-	case ProjectSSOConfig_GITHUB_ENTERPRISE:
-		if p.Github == nil {
-			return "", fmt.Errorf("missing GitHub oauth in the SSO configuration")
-		}
-		return p.Github.GenerateAuthCodeURL(project, callbackURL, state, true)
+		return p.Github.GenerateAuthCodeURL(project, callbackURL, state)
 
 	default:
 		return "", fmt.Errorf("not implemented")
@@ -227,12 +221,12 @@ func (p *ProjectSSOConfig_GitHub) Decrypt(decrypter decrypter) error {
 }
 
 // GenerateAuthCodeURL generates an auth URL for the specified configuration.
-func (p *ProjectSSOConfig_GitHub) GenerateAuthCodeURL(project, callbackURL, state string, enterprise bool) (string, error) {
+func (p *ProjectSSOConfig_GitHub) GenerateAuthCodeURL(project, callbackURL, state string) (string, error) {
 	cfg := oauth2.Config{
 		ClientID: p.ClientId,
 		Endpoint: github.Endpoint,
 	}
-	if enterprise {
+	if p.BaseUrl != "" {
 		u, err := url.Parse(p.BaseUrl)
 		if err != nil {
 			return "", err

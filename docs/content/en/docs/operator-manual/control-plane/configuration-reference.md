@@ -122,7 +122,7 @@ Must be one of the following objects:
 | Field | Type | Description | Required |
 |-|-|-|-|
 | name | string | The unique name of the configuration. | Yes |
-| provider | string | The SSO service provider. Can be one of the following values<br>`GITHUB`, `GITHUB_ENTERPRISE`, `GOOGLE`... | Yes |
+| provider | string | The SSO service provider. Can be one of the following values<br>`GITHUB`, `GOOGLE`... | Yes |
 | github | [SSOConfigGitHub](/docs/operator-manual/control-plane/configuration-reference/#ssoconfiggithub) | GitHub sso configuration. | No |
 | google | [SSOConfigGoogle](/docs/operator-manual/control-plane/configuration-reference/#ssoconfiggoogle) | Google sso configuration. | No |
 
@@ -133,7 +133,8 @@ Must be one of the following objects:
 | clientId | string | The client id string of GitHub oauth app. | Yes |
 | clientSecret | string | The client secret string of GitHub oauth app. | Yes |
 | baseUrl | string | The address of GitHub service. Required if enterprise. | No |
-| uploadUrl | string | The upload url of GitHub service. Required if enterprise. | No |
+| uploadUrl | string | The upload url of GitHub service. | No |
+| proxyUrl | string | The address of the proxy used while communicating with the GitHub service. | No |
 
 ## SSOConfigGoogle
 

@@ -42,7 +42,6 @@ func NewOAuthClient(ctx context.Context,
 	sso *model.ProjectSSOConfig_GitHub,
 	rbac *model.ProjectRBACConfig,
 	projectID, code string,
-	enterprise bool,
 ) (*OAuthClient, error) {
 	c := &OAuthClient{
 		projectID:  projectID,
@@ -67,38 +66,33 @@ func NewOAuthClient(ctx context.Context,
 		ctx = context.WithValue(ctx, oauth2.HTTPClient, &http.Client{Transport: t})
 	}
 
-	if enterprise {
-		return newGHEOAuthClient(ctx, sso, code, c, cfg)
+	if sso.BaseUrl != "" {
+		baseURL, err := url.Parse(sso.BaseUrl)
+		if err != nil {
+			return nil, err
+		}
+		cfg.Endpoint.TokenURL = fmt.Sprintf("%s://%s%s", baseURL.Scheme, baseURL.Host, "/login/oauth/access_token")
+
+		token, err := cfg.Exchange(ctx, code)
+		if err != nil {
+			return nil, err
+		}
+
+		cli, err := github.NewEnterpriseClient(sso.BaseUrl, sso.UploadUrl, cfg.Client(ctx, token))
+		if err != nil {
+			return nil, err
+		}
+
+		c.Client = cli
+		return c, nil
 	}
 
 	token, err := cfg.Exchange(ctx, code)
 	if err != nil {
 		return nil, err
 	}
+
 	c.Client = github.NewClient(cfg.Client(ctx, token))
-	return c, nil
-}
-
-func newGHEOAuthClient(ctx context.Context,
-	sso *model.ProjectSSOConfig_GitHub,
-	code string,
-	c *OAuthClient,
-	cfg oauth2.Config,
-) (*OAuthClient, error) {
-	baseURL, err := url.Parse(sso.BaseUrl)
-	if err != nil {
-		return nil, err
-	}
-	cfg.Endpoint.TokenURL = fmt.Sprintf("%s://%s%s", baseURL.Scheme, baseURL.Host, "/login/oauth/access_token")
-	token, err := cfg.Exchange(ctx, code)
-	if err != nil {
-		return nil, err
-	}
-	cli, err := github.NewEnterpriseClient(sso.BaseUrl, sso.UploadUrl, cfg.Client(ctx, token))
-	if err != nil {
-		return nil, err
-	}
-	c.Client = cli
 	return c, nil
 }
 
