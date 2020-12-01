@@ -383,8 +383,14 @@ func (s *server) createDatastore(ctx context.Context, cfg *config.ControlPlaneSp
 		options := []mongodb.Option{
 			mongodb.WithLogger(logger),
 		}
-		return mongodb.NewMongoDB(ctx, mdConfig.URL, mdConfig.Database, options...)
-
+		if mdConfig.UsernameFile != "" || mdConfig.PasswordFile != "" {
+			options = append(options, mongodb.WithAuthenticationFile(mdConfig.UsernameFile, mdConfig.PasswordFile))
+		}
+		return mongodb.NewMongoDB(
+			ctx,
+			mdConfig.URL,
+			mdConfig.Database,
+			options...)
 	default:
 		return nil, fmt.Errorf("unknown datastore type %q", cfg.Datastore.Type)
 	}
