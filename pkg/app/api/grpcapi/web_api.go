@@ -1310,7 +1310,7 @@ func (a *WebAPI) ListAPIKeys(ctx context.Context, req *webservice.ListAPIKeysReq
 	}, nil
 }
 
-// [WIP] Made a temporary implementation to satisfy interface
+// GetApplicationDeploymentFrequency [WIP] Made a temporary implementation to satisfy interface
 func (a *WebAPI) GetApplicationDeploymentFrequency(ctx context.Context, req *webservice.GetApplicationDeploymentFrequencyRequest) (*webservice.GetApplicationDeploymentFrequencyResponse, error) {
 	// to pass golangci-lint(unused) check
 	fmt.Print(ctx)
