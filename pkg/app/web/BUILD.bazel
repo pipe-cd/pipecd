@@ -21,9 +21,7 @@ nodejs_binary(
 
 genrule(
     name = "build_api",
-    srcs = [
-        ":api_proto",
-    ],
+    srcs = [":api_proto"],
     outs = ["api_client"],
     cmd = "$(locations strip_imports) $(OUTS) $(SRCS)",
     output_to_bindir = True,
@@ -32,9 +30,7 @@ genrule(
 
 genrule(
     name = "build_model",
-    srcs = [
-        ":model_proto_ts",
-    ],
+    srcs = [":model_proto_ts"],
     outs = ["model"],
     cmd = "$(locations strip_imports) $(OUTS) $(SRCS)",
     output_to_bindir = True,
