@@ -407,10 +407,10 @@ message ListAPIKeysResponse {
 
 message GetApplicationDeploymentFrequencyRequest {
     string application_id = 1 [(validate.rules).string.min_len = 1];
-    repeated int64 days = 2;
+    repeated int64 dates = 2;
 }
 
 message GetApplicationDeploymentFrequencyResponse {
-    // key: day, value: deployment_count_of_the_day
+    // key: date, value: deployment_count_of_the_day
     map<int64, int64> deployment_counts = 1;
 }
