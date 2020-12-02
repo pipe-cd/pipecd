@@ -1309,3 +1309,7 @@ func (a *WebAPI) ListAPIKeys(ctx context.Context, req *webservice.ListAPIKeysReq
 		Keys: apiKeys,
 	}, nil
 }
+
+func (a *WebAPI) GetApplicationDeploymentFrequency(ctx context.Context, req *webservice.GetApplicationDeploymentFrequencyRequest) (*webservice.GetApplicationDeploymentFrequencyResponse, error) {
+	return nil, nil
+}
