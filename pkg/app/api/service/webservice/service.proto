@@ -19,6 +19,7 @@ option go_package = "github.com/pipe-cd/pipe/pkg/app/api/service/webservice";
 
 import "validate/validate.proto";
 import "pkg/model/common.proto";
+import "pkg/model/insight.proto";
 import "pkg/model/application.proto";
 import "pkg/model/application_live_state.proto";
 import "pkg/model/command.proto";
@@ -87,7 +88,7 @@ service WebService {
     rpc ListAPIKeys(ListAPIKeysRequest) returns (ListAPIKeysResponse) {}
 
     // Insights
-    rpc GetApplicationDeploymentFrequency(GetApplicationDeploymentFrequencyRequest) returns (GetApplicationDeploymentFrequencyResponse) {}
+    rpc GetInsightData(GetInsightDataRequest) returns (GetInsightDataResponse) {}
 }
 
 message AddEnvironmentResponse {
@@ -413,4 +414,16 @@ message GetApplicationDeploymentFrequencyRequest {
 message GetApplicationDeploymentFrequencyResponse {
     // key: date, value: deployment_count_of_the_day
     map<int64, int64> deployment_counts = 1;
+}
+
+message GetInsightDataRequest {
+    string application_id = 1 [(validate.rules).string.min_len = 1];
+    pipe.model.InsightMetricsKind metrics_kind = 2;
+    pipe.model.InsightStep insight_step = 3;
+    int64 first_date = 4;
+    int64 last_date = 5;
+}
+message GetInsightDataResponse {
+    int64 updated_at = 1;
+    repeated pipe.model.InsightDataPoint data_points = 2;
 }

@@ -1310,7 +1310,7 @@ func (a *WebAPI) ListAPIKeys(ctx context.Context, req *webservice.ListAPIKeysReq
 	}, nil
 }
 
-// GetApplicationDeploymentFrequency [WIP] Made a temporary implementation to satisfy interface
-func (a *WebAPI) GetApplicationDeploymentFrequency(_ context.Context, _ *webservice.GetApplicationDeploymentFrequencyRequest) (*webservice.GetApplicationDeploymentFrequencyResponse, error) {
+// GetInsightData [WIP] Made a temporary implementation to satisfy interface
+func (a *WebAPI) GetInsightData(_ context.Context, _ *webservice.GetInsightDataRequest) (*webservice.GetInsightDataResponse, error) {
 	return nil, nil
 }
