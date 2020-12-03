@@ -26,7 +26,7 @@ enum InsightMetricsKind {
   DEPLOYMENT_FREQUENCY = 0;
   CHANGE_FAILURE_RATE = 1;
   MTTR = 2;
-  LEAD_TIME_FOR_CHANGES = 3;
+  LEAD_TIME = 3;
 }
 
 enum InsightStep {
