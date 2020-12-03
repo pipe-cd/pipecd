@@ -13,6 +13,7 @@ proto_library(
         "environment.proto",
         "event.proto",
         "logblock.proto",
+        "insight.proto",
         "piped.proto",
         "piped_stats.proto",
         "project.proto",
