@@ -5,6 +5,7 @@ import {
   disableAPIKey,
   generateAPIKey,
   fetchAPIKeys,
+  clearGeneratedKey,
 } from "./api-keys";
 
 const baseState = {
@@ -22,6 +23,21 @@ describe("apiKeysSlice reducer", () => {
       apiKeysSlice.reducer(undefined, {
         type: "TEST_ACTION",
       })
+    ).toEqual(baseState);
+  });
+
+  it("should handle clearGeneratedKey", () => {
+    expect(
+      apiKeysSlice.reducer(
+        {
+          ...baseState,
+          generatedKey:
+            "xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx.bspmf2xvt74area19iaxl0yh33jzwelq493vzil0orgzylrdb1",
+        },
+        {
+          type: clearGeneratedKey.type,
+        }
+      )
     ).toEqual(baseState);
   });
 
