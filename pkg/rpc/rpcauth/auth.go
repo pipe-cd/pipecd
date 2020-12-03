@@ -30,13 +30,14 @@ type CredentialsType string
 
 const (
 	// IDTokenCredentials represents JWT IDToken for a web user.
-	// They can be used for project admin, project viewer or owner.
 	IDTokenCredentials CredentialsType = "ID-TOKEN"
-	// PipedTokenCredentials represents a generated token for authenticating
-	// between Piped and microservices.
+	// PipedTokenCredentials represents a generated token for
+	// authenticating between Piped and control-plane.
 	PipedTokenCredentials CredentialsType = "PIPED-TOKEN"
+	// APIKeyCredentials represents a generated key for
+	// authenticating between pipectl/external-service and control-plane.
+	APIKeyCredentials CredentialsType = "API-KEY"
 	// UnknownCredentials represents an unsupported credentials.
-	// It is used as a return result in case of error.
 	UnknownCredentials CredentialsType = "UNKNOWN"
 )
 
@@ -84,26 +85,36 @@ func extractCredentials(ctx context.Context) (creds Credentials, err error) {
 		err = status.Error(codes.Unauthenticated, "missing credentials")
 		return
 	}
+
 	rawCredentials := md["authorization"]
 	if len(rawCredentials) == 0 {
 		err = status.Error(codes.Unauthenticated, "missing credentials in authorization")
 		return
 	}
+
 	subs := strings.Split(rawCredentials[0], " ")
 	if len(subs) != 2 {
 		err = status.Error(codes.Unauthenticated, "credentials is malformed")
 		return
 	}
+
 	switch CredentialsType(subs[0]) {
 	case IDTokenCredentials:
 		creds.Data = subs[1]
 		creds.Type = IDTokenCredentials
+
 	case PipedTokenCredentials:
 		creds.Data = subs[1]
 		creds.Type = PipedTokenCredentials
+
+	case APIKeyCredentials:
+		creds.Data = subs[1]
+		creds.Type = APIKeyCredentials
+
 	default:
 		err = status.Error(codes.Unauthenticated, "unsupported credentials type")
 	}
+
 	if creds.Data == "" {
 		err = status.Error(codes.Unauthenticated, "credentials is malformed")
 	}

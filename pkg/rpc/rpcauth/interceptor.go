@@ -37,9 +37,14 @@ type RBACAuthorizer interface {
 	Authorize(string, model.Role) bool
 }
 
-// PipedTokenVerifier defines a function to check piped token.
+// PipedTokenVerifier verifies the given piped token.
 type PipedTokenVerifier interface {
 	Verify(ctx context.Context, projectID, pipedID, pipedKey string) error
+}
+
+// APIKeyVerifier verifies the given API key.
+type APIKeyVerifier interface {
+	Verify(ctx context.Context, key string) (*model.APIKey, error)
 }
 
 type (
@@ -50,11 +55,13 @@ type (
 		PipedID   string
 		PipedKey  string
 	}
+	apiKeyContextKey struct{}
 )
 
 var (
 	claimsKey     = claimsContextKey{}
 	pipedTokenKey = pipedTokenContextKey{}
+	apiKeyKey     = apiKeyContextKey{}
 )
 
 // PipedTokenUnaryServerInterceptor extracts credentials from gRPC metadata
@@ -125,6 +132,51 @@ func PipedTokenStreamServerInterceptor(verifier PipedTokenVerifier, logger *zap.
 	}
 }
 
+// ExtractPipedToken returns the verified piped key inside a given context.
+func ExtractPipedToken(ctx context.Context) (projectID, pipedID, pipedKey string, err error) {
+	v, ok := ctx.Value(pipedTokenKey).(pipedTokenContextValue)
+	if !ok {
+		err = errUnauthenticated
+		return
+	}
+	projectID = v.ProjectID
+	pipedID = v.PipedID
+	pipedKey = v.PipedKey
+	return
+}
+
+// APIKeyUnaryServerInterceptor extracts credentials from gRPC metadata
+// and validates it by the specified Verifier.
+// The valid API key will be set to the context.
+func APIKeyUnaryServerInterceptor(verifier APIKeyVerifier, logger *zap.Logger) grpc.UnaryServerInterceptor {
+	return func(ctx context.Context, req interface{}, info *grpc.UnaryServerInfo, handler grpc.UnaryHandler) (interface{}, error) {
+		creds, err := extractCredentials(ctx)
+		if err != nil {
+			return nil, err
+		}
+		if creds.Type != APIKeyCredentials {
+			logger.Warn("wrong credentials type for APIKeyCredentials", zap.Any("credentials", creds))
+			return nil, errUnauthenticated
+		}
+		apiKey, err := verifier.Verify(ctx, creds.Data)
+		if err != nil {
+			logger.Warn("unable to verify api key", zap.Error(err))
+			return nil, errUnauthenticated
+		}
+		ctx = context.WithValue(ctx, apiKeyKey, apiKey)
+		return handler(ctx, req)
+	}
+}
+
+// ExtractAPIKey returns the verified API key inside the given context.
+func ExtractAPIKey(ctx context.Context) (*model.APIKey, error) {
+	k, ok := ctx.Value(apiKeyKey).(*model.APIKey)
+	if !ok {
+		return nil, errUnauthenticated
+	}
+	return k, nil
+}
+
 // JWTUnaryServerInterceptor ensures that the JWT credentials included in the context
 // must be verified by verifier.
 func JWTUnaryServerInterceptor(verifier jwt.Verifier, authorizer RBACAuthorizer, logger *zap.Logger) grpc.UnaryServerInterceptor {
@@ -153,19 +205,6 @@ func JWTUnaryServerInterceptor(verifier jwt.Verifier, authorizer RBACAuthorizer,
 		ctx = context.WithValue(ctx, claimsKey, *claims)
 		return handler(ctx, req)
 	}
-}
-
-// ExtractPipedToken returns the verified piped key inside a given context.
-func ExtractPipedToken(ctx context.Context) (projectID, pipedID, pipedKey string, err error) {
-	v, ok := ctx.Value(pipedTokenKey).(pipedTokenContextValue)
-	if !ok {
-		err = errUnauthenticated
-		return
-	}
-	projectID = v.ProjectID
-	pipedID = v.PipedID
-	pipedKey = v.PipedKey
-	return
 }
 
 // ExtractClaims returns the claims inside a given context.

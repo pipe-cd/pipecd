@@ -48,6 +48,7 @@ type Server struct {
 
 	pipedKeyAuthUnaryInterceptor      grpc.UnaryServerInterceptor
 	pipedKeyAuthStreamInterceptor     grpc.StreamServerInterceptor
+	apiKeyAuthUnaryInterceptor        grpc.UnaryServerInterceptor
 	jwtAuthUnaryInterceptor           grpc.UnaryServerInterceptor
 	requestValidationUnaryInterceptor grpc.UnaryServerInterceptor
 	logUnaryInterceptor               grpc.UnaryServerInterceptor
@@ -74,6 +75,13 @@ func WithPipedTokenAuthUnaryInterceptor(verifier rpcauth.PipedTokenVerifier, log
 func WithPipedTokenAuthStreamInterceptor(verifier rpcauth.PipedTokenVerifier, logger *zap.Logger) Option {
 	return func(s *Server) {
 		s.pipedKeyAuthStreamInterceptor = rpcauth.PipedTokenStreamServerInterceptor(verifier, logger)
+	}
+}
+
+// WithAPIKeyAuthUnaryInterceptor sets an interceptor for validating API key.
+func WithAPIKeyAuthUnaryInterceptor(verifier rpcauth.APIKeyVerifier, logger *zap.Logger) Option {
+	return func(s *Server) {
+		s.apiKeyAuthUnaryInterceptor = rpcauth.APIKeyUnaryServerInterceptor(verifier, logger)
 	}
 }
 
@@ -190,6 +198,9 @@ func (s *Server) init() error {
 	}
 	if s.pipedKeyAuthUnaryInterceptor != nil {
 		unaryInterceptors = append(unaryInterceptors, s.pipedKeyAuthUnaryInterceptor)
+	}
+	if s.apiKeyAuthUnaryInterceptor != nil {
+		unaryInterceptors = append(unaryInterceptors, s.apiKeyAuthUnaryInterceptor)
 	}
 	if s.jwtAuthUnaryInterceptor != nil {
 		unaryInterceptors = append(unaryInterceptors, s.jwtAuthUnaryInterceptor)
