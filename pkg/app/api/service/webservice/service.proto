@@ -406,16 +406,6 @@ message ListAPIKeysResponse {
     repeated model.APIKey keys = 1;
 }
 
-message GetApplicationDeploymentFrequencyRequest {
-    string application_id = 1 [(validate.rules).string.min_len = 1];
-    repeated int64 dates = 2;
-}
-
-message GetApplicationDeploymentFrequencyResponse {
-    // key: date, value: deployment_count_of_the_day
-    map<int64, int64> deployment_counts = 1;
-}
-
 message GetInsightDataRequest {
     string application_id = 1 [(validate.rules).string.min_len = 1];
     pipe.model.InsightMetricsKind metrics_kind = 2;
