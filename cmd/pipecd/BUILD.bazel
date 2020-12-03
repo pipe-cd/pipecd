@@ -5,9 +5,10 @@ go_library(
     name = "go_default_library",
     srcs = [
         "main.go",
+        "ops.go",
         "server.go",
     ],
-    importpath = "github.com/pipe-cd/pipe/cmd/server",
+    importpath = "github.com/pipe-cd/pipe/cmd/pipecd",
     visibility = ["//visibility:private"],
     deps = [
         "//pkg/admin:go_default_library",
@@ -18,6 +19,7 @@ go_library(
         "//pkg/app/api/pipedverifier:go_default_library",
         "//pkg/app/api/service/webservice:go_default_library",
         "//pkg/app/api/stagelogstore:go_default_library",
+        "//pkg/app/ops/handler:go_default_library",
         "//pkg/cache/rediscache:go_default_library",
         "//pkg/cli:go_default_library",
         "//pkg/config:go_default_library",
@@ -42,7 +44,7 @@ go_library(
 )
 
 go_binary(
-    name = "server",
+    name = "pipecd",
     data = [
         "//pkg/app/web:public_files",
     ],
@@ -51,8 +53,8 @@ go_binary(
 )
 
 app_image(
-    name = "server_app",
-    binary = ":server",
-    repository = "server",
+    name = "pipecd_app",
+    binary = ":pipecd",
+    repository = "pipecd",
     visibility = ["//visibility:public"],
 )

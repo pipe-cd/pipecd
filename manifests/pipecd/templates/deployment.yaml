@@ -86,7 +86,7 @@ spec:
     spec:
       containers:
         - name: server
-          image: "gcr.io/pipecd/server:{{ .Chart.AppVersion }}"
+          image: "gcr.io/pipecd/pipecd:{{ .Chart.AppVersion }}"
           imagePullPolicy: IfNotPresent
           args:
           - server
@@ -205,10 +205,10 @@ spec:
     spec:
       containers:
         - name: ops
-          image: "gcr.io/pipecd/ops:{{ .Chart.AppVersion }}"
+          image: "gcr.io/pipecd/pipecd:{{ .Chart.AppVersion }}"
           imagePullPolicy: IfNotPresent
           args:
-          - server
+          - ops
           - --config-file=/etc/pipecd-config/{{ .Values.config.fileName }}
           ports:
             - name: http

@@ -22,11 +22,12 @@ import (
 
 func main() {
 	app := cli.NewApp(
-		"server",
-		"A server for handling incoming gRPC, HTTP requests and serving static assets for web.",
+		"pipecd",
+		"Control-plane component for PipeCD.",
 	)
 	app.AddCommands(
-		NewCommand(),
+		NewServerCommand(),
+		NewOpsCommand(),
 	)
 	if err := app.Run(); err != nil {
 		log.Fatal(err)
