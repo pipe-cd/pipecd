@@ -1309,3 +1309,8 @@ func (a *WebAPI) ListAPIKeys(ctx context.Context, req *webservice.ListAPIKeysReq
 		Keys: apiKeys,
 	}, nil
 }
+
+// GetInsightData returns the accumulated insight data.
+func (a *WebAPI) GetInsightData(_ context.Context, _ *webservice.GetInsightDataRequest) (*webservice.GetInsightDataResponse, error) {
+	return nil, status.Error(codes.Unimplemented, "")
+}

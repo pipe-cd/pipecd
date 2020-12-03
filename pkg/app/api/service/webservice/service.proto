@@ -19,6 +19,7 @@ option go_package = "github.com/pipe-cd/pipe/pkg/app/api/service/webservice";
 
 import "validate/validate.proto";
 import "pkg/model/common.proto";
+import "pkg/model/insight.proto";
 import "pkg/model/application.proto";
 import "pkg/model/application_live_state.proto";
 import "pkg/model/command.proto";
@@ -85,6 +86,9 @@ service WebService {
     rpc GenerateAPIKey(GenerateAPIKeyRequest) returns (GenerateAPIKeyResponse) {}
     rpc DisableAPIKey(DisableAPIKeyRequest) returns (DisableAPIKeyResponse) {}
     rpc ListAPIKeys(ListAPIKeysRequest) returns (ListAPIKeysResponse) {}
+
+    // Insights
+    rpc GetInsightData(GetInsightDataRequest) returns (GetInsightDataResponse) {}
 }
 
 message AddEnvironmentResponse {
@@ -400,4 +404,17 @@ message ListAPIKeysRequest {
 
 message ListAPIKeysResponse {
     repeated model.APIKey keys = 1;
+}
+
+message GetInsightDataRequest {
+    pipe.model.InsightMetricsKind metrics_kind = 1 [(validate.rules).enum.defined_only = true];
+    pipe.model.InsightStep step = 2 [(validate.rules).enum.defined_only = true];
+    int64 range_from = 3 [(validate.rules).int64.gt = 0];
+    int64 range_to = 4 [(validate.rules).int64.gt = 0];
+    string application_id = 5;
+}
+
+message GetInsightDataResponse {
+    int64 updated_at = 1;
+    repeated pipe.model.InsightDataPoint data_points = 2;
 }
