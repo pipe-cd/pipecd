@@ -65,7 +65,7 @@ export const APIKeyPage: FC = memo(function APIKeyPage() {
       <Divider />
 
       <TableContainer component={Paper}>
-        <Table>
+        <Table size="small">
           <TableHead>
             <TableRow>
               <TableCell colSpan={2}>Name</TableCell>
