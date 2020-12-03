@@ -407,12 +407,13 @@ message ListAPIKeysResponse {
 }
 
 message GetInsightDataRequest {
-    string application_id = 1 [(validate.rules).string.min_len = 1];
-    pipe.model.InsightMetricsKind metrics_kind = 2;
-    pipe.model.InsightStep insight_step = 3;
-    int64 first_date = 4;
-    int64 last_date = 5;
+    pipe.model.InsightMetricsKind metrics_kind = 1 [(validate.rules).enum.defined_only = true];
+    pipe.model.InsightStep step = 2 [(validate.rules).enum.defined_only = true];
+    int64 range_from = 3 [(validate.rules).int64.gt = 0];
+    int64 range_to = 4 [(validate.rules).int64.gt = 0];
+    string application_id = 5;
 }
+
 message GetInsightDataResponse {
     int64 updated_at = 1;
     repeated pipe.model.InsightDataPoint data_points = 2;

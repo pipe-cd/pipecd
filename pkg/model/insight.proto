@@ -17,20 +17,23 @@ syntax = "proto3";
 package pipe.model;
 option go_package = "github.com/pipe-cd/pipe/pkg/model";
 
+import "validate/validate.proto";
+
 message InsightDataPoint {
-  int64 timestamp = 1;
-  float value = 2;
+  int64 timestamp = 1 [(validate.rules).int64.gt = 0];
+  float value = 2 [(validate.rules).float.gt = 0];
 }
 
 enum InsightMetricsKind {
   DEPLOYMENT_FREQUENCY = 0;
   CHANGE_FAILURE_RATE = 1;
   MTTR = 2;
-  LEAD_TIME_FOR_CHANGES = 3;
+  LEAD_TIME = 3;
 }
 
 enum InsightStep {
   DAILY = 0;
   WEEKLY = 1;
-  YEARLY = 2;
+  MONTHLY = 2;
+  YEARLY = 3;
 }
