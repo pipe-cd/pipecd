@@ -13,10 +13,12 @@ import {
   PAGE_PATH_SETTINGS_PIPED,
   PAGE_PATH_SETTINGS_ENV,
   PAGE_PATH_SETTINGS_PROJECT,
+  PAGE_PATH_SETTINGS_API_KEY,
 } from "../../constants/path";
 import { SettingsPipedPage } from "./piped";
 import { SettingsEnvironmentPage } from "./environment";
 import { SettingsProjectPage } from "./project";
+import { APIKeyPage } from "./api-key";
 
 const drawerWidth = 240;
 
@@ -50,6 +52,7 @@ const MENU_ITEMS = [
   ["Piped", PAGE_PATH_SETTINGS_PIPED],
   ["Environment", PAGE_PATH_SETTINGS_ENV],
   ["Project", PAGE_PATH_SETTINGS_PROJECT],
+  ["API Key", PAGE_PATH_SETTINGS_API_KEY],
 ];
 
 export const SettingsIndexPage: FC = memo(function SettingsIndexPage() {
@@ -99,6 +102,11 @@ export const SettingsIndexPage: FC = memo(function SettingsIndexPage() {
             exact
             path={PAGE_PATH_SETTINGS_PROJECT}
             component={SettingsProjectPage}
+          />
+          <Route
+            exact
+            path={PAGE_PATH_SETTINGS_API_KEY}
+            component={APIKeyPage}
           />
         </Switch>
       </main>

@@ -53,7 +53,11 @@ export const disableAPIKey = createAsyncThunk<void, { id: string }>(
 export const apiKeysSlice = createSlice({
   name: "apiKeys",
   initialState,
-  reducers: {},
+  reducers: {
+    clearGeneratedKey(state) {
+      state.generatedKey = null;
+    },
+  },
   extraReducers: (builder) => {
     builder
       // generateAPIKey
@@ -95,5 +99,7 @@ export const apiKeysSlice = createSlice({
       });
   },
 });
+
+export const { clearGeneratedKey } = apiKeysSlice.actions;
 
 export { APIKey as APIKeyModel } from "pipe/pkg/app/web/model/apikey_pb";

@@ -16,6 +16,7 @@ import { loginSlice } from "./login";
 import { projectSlice } from "./project";
 import { deploymentConfigsSlice } from "./deployment-configs";
 import { sealedSecretSlice } from "./sealed-secret";
+import { apiKeysSlice } from "./api-keys";
 
 export const reducers = combineReducers({
   deployments: deploymentsSlice.reducer,
@@ -34,6 +35,7 @@ export const reducers = combineReducers({
   project: projectSlice.reducer,
   deploymentConfigs: deploymentConfigsSlice.reducer,
   sealedSecret: sealedSecretSlice.reducer,
+  apiKeys: apiKeysSlice.reducer,
 });
 
 export type AppState = ReturnType<typeof reducers>;
