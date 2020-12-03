@@ -8,8 +8,7 @@ description: >
 
 ## Source code structure
 
-- [cmd/server](https://github.com/pipe-cd/pipe/tree/master/cmd/server): entrypoint for binary of control-plane server.
-
+- [cmd/pipecd](https://github.com/pipe-cd/pipe/tree/master/cmd/pipecd): entrypoint for binary of control-plane server.
 - [pkg/app/api](https://github.com/pipe-cd/pipe/tree/master/pkg/app/api): contains source code for control-plane api.
 - [pkg/app/web](https://github.com/pipe-cd/pipe/tree/master/pkg/app/web): contains source code for control-plane web.
 - [pkg](https://github.com/pipe-cd/pipe/tree/master/pkg): contains shared source code for all components of both `piped` and `control-plane`.

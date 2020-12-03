@@ -1,8 +1,7 @@
 def all_images():
     cmds = {
         "piped": "piped",
-        "server": "server",
-        "ops": "ops",
+        "pipecd": "pipecd",
         "helloworld": "helloworld",
     }
     images = {}

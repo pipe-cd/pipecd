@@ -81,8 +81,8 @@ type server struct {
 	enableGRPCReflection bool
 }
 
-// NewCommand creates a new cobra command for executing api server.
-func NewCommand() *cobra.Command {
+// NewServerCommand creates a new cobra command for executing api server.
+func NewServerCommand() *cobra.Command {
 	s := &server{
 		pipedAPIPort: 9080,
 		webAPIPort:   9081,
@@ -126,7 +126,7 @@ func (s *server) run(ctx context.Context, t cli.Telemetry) error {
 	group, ctx := errgroup.WithContext(ctx)
 
 	// Load control plane configuration from the specified file.
-	cfg, err := s.loadConfig()
+	cfg, err := loadConfig(s.configFile)
 	if err != nil {
 		t.Logger.Error("failed to load control-plane configuration",
 			zap.String("config-file", s.configFile),
@@ -141,7 +141,7 @@ func (s *server) run(ctx context.Context, t cli.Telemetry) error {
 		webAPIServer   *rpc.Server
 	)
 
-	ds, err := s.createDatastore(ctx, cfg, t.Logger)
+	ds, err := createDatastore(ctx, cfg, t.Logger)
 	if err != nil {
 		t.Logger.Error("failed to create datastore", zap.Error(err))
 		return err
@@ -154,7 +154,7 @@ func (s *server) run(ctx context.Context, t cli.Telemetry) error {
 	}()
 	t.Logger.Info("succesfully connected to data store")
 
-	fs, err := s.createFilestore(ctx, cfg, t.Logger)
+	fs, err := createFilestore(ctx, cfg, t.Logger)
 	if err != nil {
 		t.Logger.Error("failed to create filestore", zap.Error(err))
 		return err
@@ -354,8 +354,8 @@ func runHTTPServer(ctx context.Context, httpServer *http.Server, gracePeriod tim
 	return <-doneCh
 }
 
-func (s *server) loadConfig() (*config.ControlPlaneSpec, error) {
-	cfg, err := config.LoadFromYAML(s.configFile)
+func loadConfig(file string) (*config.ControlPlaneSpec, error) {
+	cfg, err := config.LoadFromYAML(file)
 	if err != nil {
 		return nil, err
 	}
@@ -365,7 +365,7 @@ func (s *server) loadConfig() (*config.ControlPlaneSpec, error) {
 	return cfg.ControlPlaneSpec, nil
 }
 
-func (s *server) createDatastore(ctx context.Context, cfg *config.ControlPlaneSpec, logger *zap.Logger) (datastore.DataStore, error) {
+func createDatastore(ctx context.Context, cfg *config.ControlPlaneSpec, logger *zap.Logger) (datastore.DataStore, error) {
 	switch cfg.Datastore.Type {
 	case model.DataStoreFirestore:
 		fsConfig := cfg.Datastore.FirestoreConfig
@@ -396,7 +396,7 @@ func (s *server) createDatastore(ctx context.Context, cfg *config.ControlPlaneSp
 	}
 }
 
-func (s *server) createFilestore(ctx context.Context, cfg *config.ControlPlaneSpec, logger *zap.Logger) (filestore.Store, error) {
+func createFilestore(ctx context.Context, cfg *config.ControlPlaneSpec, logger *zap.Logger) (filestore.Store, error) {
 	ctx, cancel := context.WithTimeout(ctx, 5*time.Second)
 	defer cancel()
 
