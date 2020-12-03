@@ -17,10 +17,7 @@ syntax = "proto3";
 package pipe.model;
 option go_package = "github.com/pipe-cd/pipe/pkg/model";
 
-import "validate/validate.proto";
-import "pkg/model/common.proto";
-
-message insightDataPoint {
+message InsightDataPoint {
   int64 timestamp = 1;
   float value = 2;
 }
