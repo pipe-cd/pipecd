@@ -18,7 +18,7 @@ Therefore, we would like to solve this problem by letting Piped monitor the cont
 Piped periodically compares the image tags defined in git with the latest tags stored in the container registry, and then pushes them to git if there are any deviations.
 
 ### Usage
-Note: Where, we call the client that accesses the container registry to `Image Provider`.
+Note: Where `Image Provider` is the client that accesses the container registry.
 
 First of all, the using image provider must be specified in the Piped configuration.
 
@@ -41,7 +41,7 @@ spec:
         - .pipe/imagewatcher-dev.yaml
 ```
 
-Adding an ImageWatcher file at `.pipe/` directory to define what image should be watched and what file should be updated:
+Adding one or more ImageWatcher files at `.pipe/` directory to define what image should be watched and what file should be updated:
 
 ```yaml
 apiVersion: pipecd.dev/v1beta1
