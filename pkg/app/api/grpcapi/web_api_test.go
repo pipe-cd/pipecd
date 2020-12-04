@@ -685,6 +685,11 @@ func TestGetInsightDataForChangeFailureRate(t *testing.T) {
 					ListDeployments(gomock.Any(), datastore.ListOptions{
 						Filters: []datastore.ListFilter{
 							{
+								Field:    "Status",
+								Operator: "==",
+								Value:    model.DeploymentStatus_DEPLOYMENT_SUCCESS,
+							},
+							{
 								Field:    "ProjectId",
 								Operator: "==",
 								Value:    "projectID",
@@ -703,11 +708,6 @@ func TestGetInsightDataForChangeFailureRate(t *testing.T) {
 								Field:    "ApplicationId",
 								Operator: "==",
 								Value:    "ApplicationId",
-							},
-							{
-								Field:    "Status",
-								Operator: "==",
-								Value:    model.DeploymentStatus_DEPLOYMENT_SUCCESS,
 							},
 						},
 					}).Return([]*model.Deployment{
@@ -726,6 +726,11 @@ func TestGetInsightDataForChangeFailureRate(t *testing.T) {
 					ListDeployments(gomock.Any(), datastore.ListOptions{
 						Filters: []datastore.ListFilter{
 							{
+								Field:    "Status",
+								Operator: "==",
+								Value:    model.DeploymentStatus_DEPLOYMENT_FAILURE,
+							},
+							{
 								Field:    "ProjectId",
 								Operator: "==",
 								Value:    "projectID",
@@ -744,11 +749,6 @@ func TestGetInsightDataForChangeFailureRate(t *testing.T) {
 								Field:    "ApplicationId",
 								Operator: "==",
 								Value:    "ApplicationId",
-							},
-							{
-								Field:    "Status",
-								Operator: "==",
-								Value:    model.DeploymentStatus_DEPLOYMENT_FAILURE,
 							},
 						},
 					}).Return([]*model.Deployment{
@@ -776,6 +776,11 @@ func TestGetInsightDataForChangeFailureRate(t *testing.T) {
 					ListDeployments(gomock.Any(), datastore.ListOptions{
 						Filters: []datastore.ListFilter{
 							{
+								Field:    "Status",
+								Operator: "==",
+								Value:    model.DeploymentStatus_DEPLOYMENT_SUCCESS,
+							},
+							{
 								Field:    "ProjectId",
 								Operator: "==",
 								Value:    "projectID",
@@ -794,11 +799,6 @@ func TestGetInsightDataForChangeFailureRate(t *testing.T) {
 								Field:    "ApplicationId",
 								Operator: "==",
 								Value:    "ApplicationId",
-							},
-							{
-								Field:    "Status",
-								Operator: "==",
-								Value:    model.DeploymentStatus_DEPLOYMENT_SUCCESS,
 							},
 						},
 					}).Return([]*model.Deployment{}, fmt.Errorf("something wrong happens in ListDeployments"))

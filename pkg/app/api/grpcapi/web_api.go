@@ -1488,10 +1488,10 @@ func (a *WebAPI) getInsightDataForChangeFailureRate(
 	}
 
 	// The definition of change failure rate: count_of_failure / (count_of_success + count_of_failure)
-	changeFailureRate := len(failureDeployments) / (len(successDeployments) + len(failureDeployments))
+	changeFailureRate := float32(len(failureDeployments)) / float32(len(successDeployments)+len(failureDeployments))
 
 	return &model.InsightDataPoint{
 		Timestamp: targetRangeFrom.Unix(),
-		Value:     float32(changeFailureRate),
+		Value:     changeFailureRate,
 	}, nil
 }
