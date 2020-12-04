@@ -23,7 +23,6 @@ import (
 	"time"
 
 	"go.uber.org/zap"
-	zapobserver "go.uber.org/zap/zaptest/observer"
 
 	"github.com/golang/mock/gomock"
 	"github.com/stretchr/testify/assert"
@@ -972,15 +971,12 @@ func TestGetInsightDataForDeployFrequency(t *testing.T) {
 		},
 	}
 
-	core, _ := zapobserver.New(zap.InfoLevel)
-	logger := zap.New(core)
-
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			api := &WebAPI{
 				pipedProjectCache: tt.pipedProjectCache,
 				deploymentStore:   tt.deploymentStore,
-				logger:            logger,
+				logger:            zap.NewNop(),
 			}
 			res, err := api.getInsightDataForDeployFrequency(ctx, tt.projectID, tt.req)
 			assert.Equal(t, tt.wantErr, err != nil)

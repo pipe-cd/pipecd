@@ -27,8 +27,8 @@ require (
 	github.com/stretchr/testify v1.5.1
 	go.mongodb.org/mongo-driver v1.4.0
 	go.uber.org/atomic v1.7.0
-	go.uber.org/multierr v1.6.0 // indirect
-	go.uber.org/zap v1.16.0
+	go.uber.org/multierr v1.2.0 // indirect
+	go.uber.org/zap v1.10.1-0.20190709142728-9a9fa7d4b5f0
 	golang.org/x/crypto v0.0.0-20200728195943-123391ffb6de
 	golang.org/x/net v0.0.0-20200822124328-c89045814202
 	golang.org/x/oauth2 v0.0.0-20200107190931-bf48bf16ab8d
