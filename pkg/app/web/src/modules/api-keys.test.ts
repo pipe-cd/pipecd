@@ -132,6 +132,26 @@ describe("apiKeysSlice reducer", () => {
         entities: { [dummyAPIKey.id]: dummyAPIKey },
         ids: [dummyAPIKey.id],
       });
+
+      expect(
+        apiKeysSlice.reducer(
+          {
+            ...baseState,
+            entities: { [dummyAPIKey.id]: dummyAPIKey },
+            ids: [dummyAPIKey.id],
+            loading: true,
+          },
+          {
+            type: fetchAPIKeys.fulfilled.type,
+            payload: [],
+            meta: { arg },
+          }
+        )
+      ).toEqual({
+        ...baseState,
+        entities: {},
+        ids: [],
+      });
     });
   });
 

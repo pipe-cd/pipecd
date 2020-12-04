@@ -82,7 +82,7 @@ export const apiKeysSlice = createSlice({
       })
       .addCase(fetchAPIKeys.fulfilled, (state, action) => {
         state.loading = false;
-        apiKeysAdapter.upsertMany(state, action.payload);
+        apiKeysAdapter.setAll(state, action.payload);
       })
       // disableAPIKey
       .addCase(disableAPIKey.pending, (state) => {
