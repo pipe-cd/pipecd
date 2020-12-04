@@ -1331,8 +1331,14 @@ func (a *WebAPI) getInsightDataForDeployFrequency(ctx context.Context, projectID
 
 	var movePoint func(time.Time, int) time.Time
 	var start time.Time
+	// To prevent heavy loading
+	// - Support only daily
+	// - DataPointCount needs to be less than or equal to 7
 	switch req.Step {
 	case model.InsightStep_DAILY:
+		if req.DataPointCount > 7 {
+			return nil, status.Error(codes.InvalidArgument, "DataPointCount needs to be less than or equal to 7")
+		}
 		movePoint = func(from time.Time, i int) time.Time {
 			return from.AddDate(0, 0, i)
 		}
