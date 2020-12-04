@@ -1338,26 +1338,6 @@ func (a *WebAPI) getInsightDataForDeployFrequency(ctx context.Context, projectID
 		}
 		rangeFrom := time.Unix(req.RangeFrom, 0)
 		start = time.Date(rangeFrom.Year(), rangeFrom.Month(), rangeFrom.Day(), 0, 0, 0, 0, time.UTC)
-	case model.InsightStep_WEEKLY:
-		movePoint = func(from time.Time, i int) time.Time {
-			return from.AddDate(0, 0, 7*i)
-		}
-		rangeFrom := time.Unix(req.RangeFrom, 0)
-		// Sunday in the week of rangeFrom
-		sunday := rangeFrom.AddDate(0, 0, -int(rangeFrom.Weekday()))
-		start = time.Date(sunday.Year(), sunday.Month(), sunday.Day(), 0, 0, 0, 0, time.UTC)
-	case model.InsightStep_MONTHLY:
-		movePoint = func(from time.Time, i int) time.Time {
-			return from.AddDate(0, i, 0)
-		}
-		rangeFrom := time.Unix(req.RangeFrom, 0)
-		start = time.Date(rangeFrom.Year(), rangeFrom.Month(), 1, 0, 0, 0, 0, time.UTC)
-	case model.InsightStep_YEARLY:
-		movePoint = func(from time.Time, i int) time.Time {
-			return from.AddDate(i, 0, 0)
-		}
-		rangeFrom := time.Unix(req.RangeFrom, 0)
-		start = time.Date(rangeFrom.Year(), 1, 1, 0, 0, 0, 0, time.UTC)
 	default:
 		return nil, status.Error(codes.InvalidArgument, "Invalid step")
 	}
