@@ -19,6 +19,7 @@ import (
 	"errors"
 	"reflect"
 	"testing"
+	"time"
 
 	"github.com/golang/mock/gomock"
 	"github.com/stretchr/testify/assert"
@@ -383,6 +384,400 @@ func TestValidatePipedBelongsToProject(t *testing.T) {
 				pipedStore:        tt.pipedStore,
 			}
 			err := api.validatePipedBelongsToProject(ctx, tt.pipedID, tt.projectID)
+			assert.Equal(t, tt.wantErr, err != nil)
+		})
+	}
+}
+
+func TestGetInsightDataForDeployFrequency(t *testing.T) {
+	ctrl := gomock.NewController(t)
+	defer ctrl.Finish()
+
+	ctx, cancel := context.WithCancel(context.Background())
+	defer cancel()
+
+	tests := []struct {
+		name              string
+		pipedID           string
+		projectID         string
+		pipedProjectCache cache.Cache
+		deploymentStore   datastore.DeploymentStore
+		req               *webservice.GetInsightDataRequest
+		wantErr           bool
+	}{
+		{
+			name:      "valid with InsightStep_DAILY",
+			pipedID:   "pipedID",
+			projectID: "projectID",
+			deploymentStore: func() datastore.DeploymentStore {
+				target := time.Date(2020, 1, 1, 0, 0, 0, 0, time.Local)
+				targetNextDate := target.AddDate(0, 0, 1)
+				s := datastoretest.NewMockDeploymentStore(ctrl)
+				s.EXPECT().
+					ListDeployments(gomock.Any(), datastore.ListOptions{
+						Filters: []datastore.ListFilter{
+							{
+								Field:    "ProjectId",
+								Operator: "==",
+								Value:    "projectID",
+							},
+							{
+								Field:    "CreatedAt",
+								Operator: ">=",
+								Value:    target.Unix(),
+							},
+							{
+								Field:    "CreatedAt",
+								Operator: "<",
+								Value:    targetNextDate.Unix(),
+							},
+							{
+								Field:    "ApplicationId",
+								Operator: "==",
+								Value:    "ApplicationId",
+							},
+						},
+					})
+
+				target = time.Date(2020, 1, 2, 0, 0, 0, 0, time.Local)
+				targetNextDate = target.AddDate(0, 0, 1)
+				s.EXPECT().
+					ListDeployments(gomock.Any(), datastore.ListOptions{
+						Filters: []datastore.ListFilter{
+							{
+								Field:    "ProjectId",
+								Operator: "==",
+								Value:    "projectID",
+							},
+							{
+								Field:    "CreatedAt",
+								Operator: ">=",
+								Value:    target.Unix(),
+							},
+							{
+								Field:    "CreatedAt",
+								Operator: "<",
+								Value:    targetNextDate.Unix(),
+							},
+							{
+								Field:    "ApplicationId",
+								Operator: "==",
+								Value:    "ApplicationId",
+							},
+						},
+					})
+
+				return s
+			}(),
+			req: &webservice.GetInsightDataRequest{
+				MetricsKind:    model.InsightMetricsKind_DEPLOYMENT_FREQUENCY,
+				Step:           model.InsightStep_DAILY,
+				RangeFrom:      time.Date(2020, 1, 1, 0, 0, 0, 0, time.Local).Unix(),
+				DataPointCount: 2,
+				ApplicationId:  "ApplicationId",
+			},
+			wantErr: false,
+		},
+		{
+			name:      "valid with InsightStep_WEEKLY and rangeFrom is Sunday",
+			pipedID:   "pipedID",
+			projectID: "projectID",
+			deploymentStore: func() datastore.DeploymentStore {
+				target := time.Date(2020, 1, 5, 0, 0, 0, 0, time.Local)
+				targetNextWeek := target.AddDate(0, 0, 7)
+				s := datastoretest.NewMockDeploymentStore(ctrl)
+				s.EXPECT().
+					ListDeployments(gomock.Any(), datastore.ListOptions{
+						Filters: []datastore.ListFilter{
+							{
+								Field:    "ProjectId",
+								Operator: "==",
+								Value:    "projectID",
+							},
+							{
+								Field:    "CreatedAt",
+								Operator: ">=",
+								Value:    target.Unix(),
+							},
+							{
+								Field:    "CreatedAt",
+								Operator: "<",
+								Value:    targetNextWeek.Unix(),
+							},
+							{
+								Field:    "ApplicationId",
+								Operator: "==",
+								Value:    "ApplicationId",
+							},
+						},
+					})
+
+				target = time.Date(2020, 1, 12, 0, 0, 0, 0, time.Local)
+				targetNextWeek = target.AddDate(0, 0, 7)
+				s.EXPECT().
+					ListDeployments(gomock.Any(), datastore.ListOptions{
+						Filters: []datastore.ListFilter{
+							{
+								Field:    "ProjectId",
+								Operator: "==",
+								Value:    "projectID",
+							},
+							{
+								Field:    "CreatedAt",
+								Operator: ">=",
+								Value:    target.Unix(),
+							},
+							{
+								Field:    "CreatedAt",
+								Operator: "<",
+								Value:    targetNextWeek.Unix(),
+							},
+							{
+								Field:    "ApplicationId",
+								Operator: "==",
+								Value:    "ApplicationId",
+							},
+						},
+					})
+
+				return s
+			}(),
+			req: &webservice.GetInsightDataRequest{
+				MetricsKind:    model.InsightMetricsKind_DEPLOYMENT_FREQUENCY,
+				Step:           model.InsightStep_WEEKLY,
+				RangeFrom:      time.Date(2020, 1, 5, 0, 0, 0, 0, time.Local).Unix(), // 2020/01/05 is Sunday
+				DataPointCount: 2,
+				ApplicationId:  "ApplicationId",
+			},
+			wantErr: false,
+		},
+		{
+			name:      "valid with InsightStep_WEEKLY and rangeFrom is not Sunday",
+			pipedID:   "pipedID",
+			projectID: "projectID",
+			deploymentStore: func() datastore.DeploymentStore {
+				target := time.Date(2020, 1, 5, 0, 0, 0, 0, time.Local)
+				targetNextWeek := target.AddDate(0, 0, 7)
+				s := datastoretest.NewMockDeploymentStore(ctrl)
+				s.EXPECT().
+					ListDeployments(gomock.Any(), datastore.ListOptions{
+						Filters: []datastore.ListFilter{
+							{
+								Field:    "ProjectId",
+								Operator: "==",
+								Value:    "projectID",
+							},
+							{
+								Field:    "CreatedAt",
+								Operator: ">=",
+								Value:    target.Unix(),
+							},
+							{
+								Field:    "CreatedAt",
+								Operator: "<",
+								Value:    targetNextWeek.Unix(),
+							},
+							{
+								Field:    "ApplicationId",
+								Operator: "==",
+								Value:    "ApplicationId",
+							},
+						},
+					})
+
+				target = time.Date(2020, 1, 12, 0, 0, 0, 0, time.Local)
+				targetNextWeek = target.AddDate(0, 0, 7)
+				s.EXPECT().
+					ListDeployments(gomock.Any(), datastore.ListOptions{
+						Filters: []datastore.ListFilter{
+							{
+								Field:    "ProjectId",
+								Operator: "==",
+								Value:    "projectID",
+							},
+							{
+								Field:    "CreatedAt",
+								Operator: ">=",
+								Value:    target.Unix(),
+							},
+							{
+								Field:    "CreatedAt",
+								Operator: "<",
+								Value:    targetNextWeek.Unix(),
+							},
+							{
+								Field:    "ApplicationId",
+								Operator: "==",
+								Value:    "ApplicationId",
+							},
+						},
+					})
+
+				return s
+			}(),
+			req: &webservice.GetInsightDataRequest{
+				MetricsKind:    model.InsightMetricsKind_DEPLOYMENT_FREQUENCY,
+				Step:           model.InsightStep_WEEKLY,
+				RangeFrom:      time.Date(2020, 1, 6, 0, 0, 0, 0, time.Local).Unix(), // 2020/01/06 is Monday
+				DataPointCount: 2,
+				ApplicationId:  "ApplicationId",
+			},
+			wantErr: false,
+		},
+		{
+			name:      "valid with InsightStep_MONTHLY",
+			pipedID:   "pipedID",
+			projectID: "projectID",
+			deploymentStore: func() datastore.DeploymentStore {
+				target := time.Date(2020, 1, 1, 0, 0, 0, 0, time.Local)
+				targetNextMonth := target.AddDate(0, 1, 0)
+				s := datastoretest.NewMockDeploymentStore(ctrl)
+				s.EXPECT().
+					ListDeployments(gomock.Any(), datastore.ListOptions{
+						Filters: []datastore.ListFilter{
+							{
+								Field:    "ProjectId",
+								Operator: "==",
+								Value:    "projectID",
+							},
+							{
+								Field:    "CreatedAt",
+								Operator: ">=",
+								Value:    target.Unix(),
+							},
+							{
+								Field:    "CreatedAt",
+								Operator: "<",
+								Value:    targetNextMonth.Unix(),
+							},
+							{
+								Field:    "ApplicationId",
+								Operator: "==",
+								Value:    "ApplicationId",
+							},
+						},
+					})
+
+				target = time.Date(2020, 2, 1, 0, 0, 0, 0, time.Local)
+				targetNextMonth = target.AddDate(0, 1, 0)
+				s.EXPECT().
+					ListDeployments(gomock.Any(), datastore.ListOptions{
+						Filters: []datastore.ListFilter{
+							{
+								Field:    "ProjectId",
+								Operator: "==",
+								Value:    "projectID",
+							},
+							{
+								Field:    "CreatedAt",
+								Operator: ">=",
+								Value:    target.Unix(),
+							},
+							{
+								Field:    "CreatedAt",
+								Operator: "<",
+								Value:    targetNextMonth.Unix(),
+							},
+							{
+								Field:    "ApplicationId",
+								Operator: "==",
+								Value:    "ApplicationId",
+							},
+						},
+					})
+
+				return s
+			}(),
+			req: &webservice.GetInsightDataRequest{
+				MetricsKind:    model.InsightMetricsKind_DEPLOYMENT_FREQUENCY,
+				Step:           model.InsightStep_MONTHLY,
+				RangeFrom:      time.Date(2020, 1, 4, 0, 0, 0, 0, time.Local).Unix(),
+				DataPointCount: 2,
+				ApplicationId:  "ApplicationId",
+			},
+			wantErr: false,
+		},
+		{
+			name:      "valid with InsightStep_YEARLY",
+			pipedID:   "pipedID",
+			projectID: "projectID",
+			deploymentStore: func() datastore.DeploymentStore {
+				target := time.Date(2020, 1, 1, 0, 0, 0, 0, time.Local)
+				targetNextYear := target.AddDate(1, 0, 0)
+				s := datastoretest.NewMockDeploymentStore(ctrl)
+				s.EXPECT().
+					ListDeployments(gomock.Any(), datastore.ListOptions{
+						Filters: []datastore.ListFilter{
+							{
+								Field:    "ProjectId",
+								Operator: "==",
+								Value:    "projectID",
+							},
+							{
+								Field:    "CreatedAt",
+								Operator: ">=",
+								Value:    target.Unix(),
+							},
+							{
+								Field:    "CreatedAt",
+								Operator: "<",
+								Value:    targetNextYear.Unix(),
+							},
+							{
+								Field:    "ApplicationId",
+								Operator: "==",
+								Value:    "ApplicationId",
+							},
+						},
+					})
+
+				target = time.Date(2021, 1, 1, 0, 0, 0, 0, time.Local)
+				targetNextYear = target.AddDate(1, 0, 0)
+				s.EXPECT().
+					ListDeployments(gomock.Any(), datastore.ListOptions{
+						Filters: []datastore.ListFilter{
+							{
+								Field:    "ProjectId",
+								Operator: "==",
+								Value:    "projectID",
+							},
+							{
+								Field:    "CreatedAt",
+								Operator: ">=",
+								Value:    target.Unix(),
+							},
+							{
+								Field:    "CreatedAt",
+								Operator: "<",
+								Value:    targetNextYear.Unix(),
+							},
+							{
+								Field:    "ApplicationId",
+								Operator: "==",
+								Value:    "ApplicationId",
+							},
+						},
+					})
+
+				return s
+			}(),
+			req: &webservice.GetInsightDataRequest{
+				MetricsKind:    model.InsightMetricsKind_DEPLOYMENT_FREQUENCY,
+				Step:           model.InsightStep_YEARLY,
+				RangeFrom:      time.Date(2020, 1, 4, 0, 0, 0, 0, time.Local).Unix(),
+				DataPointCount: 2,
+				ApplicationId:  "ApplicationId",
+			},
+			wantErr: false,
+		},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			api := &WebAPI{
+				pipedProjectCache: tt.pipedProjectCache,
+				deploymentStore:   tt.deploymentStore,
+			}
+			_, err := api.getInsightDataForDeployFrequency(ctx, tt.projectID, tt.req)
 			assert.Equal(t, tt.wantErr, err != nil)
 		})
 	}
