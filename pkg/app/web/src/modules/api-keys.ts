@@ -2,6 +2,7 @@ import {
   createAsyncThunk,
   createSlice,
   SerializedError,
+  createEntityAdapter,
 } from "@reduxjs/toolkit";
 import { APIKey as APIKeyModel } from "pipe/pkg/app/web/model/apikey_pb";
 import * as APIKeysAPI from "../api/api-keys";
@@ -9,23 +10,8 @@ import * as APIKeysAPI from "../api/api-keys";
 const MODULE_NAME = "apiKeys";
 
 export type APIKey = APIKeyModel.AsObject;
-interface ApiKeys {
-  items: APIKey[];
-  generatedKey: string | null;
-  loading: boolean;
-  generating: boolean;
-  disabling: boolean;
-  error: null | SerializedError;
-}
 
-const initialState: ApiKeys = {
-  items: [],
-  generatedKey: null,
-  loading: false,
-  generating: false,
-  disabling: false,
-  error: null,
-};
+const apiKeysAdapter = createEntityAdapter<APIKey>();
 
 export const generateAPIKey = createAsyncThunk<
   string,
@@ -52,7 +38,19 @@ export const disableAPIKey = createAsyncThunk<void, { id: string }>(
 
 export const apiKeysSlice = createSlice({
   name: "apiKeys",
-  initialState,
+  initialState: apiKeysAdapter.getInitialState<{
+    generatedKey: string | null;
+    loading: boolean;
+    generating: boolean;
+    disabling: boolean;
+    error: null | SerializedError;
+  }>({
+    generatedKey: null,
+    loading: false,
+    generating: false,
+    disabling: false,
+    error: null,
+  }),
   reducers: {
     clearGeneratedKey(state) {
       state.generatedKey = null;
@@ -84,7 +82,7 @@ export const apiKeysSlice = createSlice({
       })
       .addCase(fetchAPIKeys.fulfilled, (state, action) => {
         state.loading = false;
-        state.items = action.payload;
+        apiKeysAdapter.setAll(state, action.payload);
       })
       // disableAPIKey
       .addCase(disableAPIKey.pending, (state) => {
@@ -101,5 +99,6 @@ export const apiKeysSlice = createSlice({
 });
 
 export const { clearGeneratedKey } = apiKeysSlice.actions;
+export const { selectAll, selectById } = apiKeysAdapter.getSelectors();
 
 export { APIKey as APIKeyModel } from "pipe/pkg/app/web/model/apikey_pb";

@@ -3,7 +3,7 @@ import React from "react";
 import { GenerateAPIKeyDialog } from "./generate-api-key-dialog";
 
 export default {
-  title: "GenerateAPIKeyDialog",
+  title: "SETTINGS/APIKey/GenerateAPIKeyDialog",
   component: GenerateAPIKeyDialog,
 };
 
