@@ -42,9 +42,8 @@ type watcher struct {
 	gitClient gitClient
 	logger    *zap.Logger
 
-	mu sync.RWMutex
 	// Indexed by repo id.
-	gitRepos map[string]git.Repo
+	gitRepos sync.Map
 }
 
 func NewWatcher(cfg *config.PipedSpec, gitClient gitClient, logger *zap.Logger) Watcher {
@@ -58,7 +57,6 @@ func NewWatcher(cfg *config.PipedSpec, gitClient gitClient, logger *zap.Logger) 
 // Run spawns goroutines for each image provider.
 func (w *watcher) Run(ctx context.Context) error {
 	// Pre-clone to cache the registered git repositories.
-	w.gitRepos = make(map[string]git.Repo, len(w.config.Repositories))
 	for _, r := range w.config.Repositories {
 		repo, err := w.gitClient.Clone(ctx, r.RepoID, r.Remote, r.Branch, "")
 		if err != nil {
@@ -68,7 +66,7 @@ func (w *watcher) Run(ctx context.Context) error {
 			)
 			return err
 		}
-		w.gitRepos[r.RepoID] = repo
+		w.gitRepos.Store(r.RepoID, repo)
 	}
 
 	for _, cfg := range w.config.ImageProviders {
@@ -95,30 +93,39 @@ func (w *watcher) run(ctx context.Context, provider imageprovider.Provider, inte
 		case <-ticker.C:
 			targets := make([]config.ImageWatcherTarget, 0)
 			// Collect target images for each git repository.
-			for id, repo := range w.gitRepos {
-				w.mu.RLock()
+			w.gitRepos.Range(func(key, value interface{}) bool {
+				id, ok := key.(string)
+				if !ok {
+					w.logger.Error("unknown key type found")
+					return true
+				}
+				repo, ok := value.(git.Repo)
+				if !ok {
+					w.logger.Error("unknown repo type found")
+					return true
+				}
 				branch := repo.GetClonedBranch()
-				w.mu.RUnlock()
 				if err := repo.Pull(ctx, branch); err != nil {
 					w.logger.Error("failed to update repository branch",
 						zap.String("repo-id", id),
 						zap.Error(err),
 					)
-					continue
+					return true
 				}
 
 				cfg, ok, err := config.LoadImageWatcher(repo.GetPath())
 				if err != nil {
 					w.logger.Error("failed to load configuration file for Image Watcher", zap.Error(err))
-					continue
+					return true
 				}
 				if !ok {
 					w.logger.Error("configuration file for Image Watcher not found", zap.Error(err))
-					continue
+					return true
 				}
 				t := filterTargets(provider.Name(), cfg.Targets)
 				targets = append(targets, t...)
-			}
+				return true
+			})
 
 			outdated, err := determineUpdates(ctx, targets, provider)
 			if err != nil {
