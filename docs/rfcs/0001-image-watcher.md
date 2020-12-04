@@ -66,6 +66,11 @@ Note that it uses only pure git push, does not use features that depend on Git h
 
 ![](assets/image-watcher.jpg)
 
+At the initial phase, we do polling as usual, while in the next phase, we provide a FAKE container registry to deal with the rate limit from the container registry.
+The FAKE container registry is deployed at our control-plane and add a new kind of IMAGE_PROVIDER for the Piped to use. So for the big projects, they can:
+
+- use our CLI tool to store metadata about newly created images into the FAKE container registry
+- change their image providers defined in piped configuration to our IMAGE_PROVIDER kind
 
 # Alternatives
 Initialy, we were thinking it should be defined in Deployment Configuration, but it's slightly different from configuration about Deployment.
@@ -87,4 +92,3 @@ spec:
 # Unresolved questions
 
 - How to update template. Currently considering using https://github.com/vmware-tanzu/carvel-ytt
-- In the case that there are a bunch of repositories, is it really able to scale?
