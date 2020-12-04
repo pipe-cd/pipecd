@@ -403,6 +403,7 @@ func TestGetInsightDataForDeployFrequency(t *testing.T) {
 		pipedProjectCache cache.Cache
 		deploymentStore   datastore.DeploymentStore
 		req               *webservice.GetInsightDataRequest
+		res               *webservice.GetInsightDataResponse
 		wantErr           bool
 	}{
 		{
@@ -437,7 +438,14 @@ func TestGetInsightDataForDeployFrequency(t *testing.T) {
 								Value:    "ApplicationId",
 							},
 						},
-					})
+					}).Return([]*model.Deployment{
+					{
+						Id: "id1",
+					},
+					{
+						Id: "id2",
+					},
+				}, nil)
 
 				target = time.Date(2020, 1, 2, 0, 0, 0, 0, time.Local)
 				targetNextDate = target.AddDate(0, 0, 1)
@@ -465,7 +473,17 @@ func TestGetInsightDataForDeployFrequency(t *testing.T) {
 								Value:    "ApplicationId",
 							},
 						},
-					})
+					}).Return([]*model.Deployment{
+					{
+						Id: "id1",
+					},
+					{
+						Id: "id2",
+					},
+					{
+						Id: "id3",
+					},
+				}, nil)
 
 				return s
 			}(),
@@ -475,6 +493,19 @@ func TestGetInsightDataForDeployFrequency(t *testing.T) {
 				RangeFrom:      time.Date(2020, 1, 1, 0, 0, 0, 0, time.Local).Unix(),
 				DataPointCount: 2,
 				ApplicationId:  "ApplicationId",
+			},
+			res: &webservice.GetInsightDataResponse{
+				UpdatedAt: time.Now().Unix(),
+				DataPoints: []*model.InsightDataPoint{
+					{
+						Value:     2,
+						Timestamp: time.Date(2020, 1, 1, 0, 0, 0, 0, time.Local).Unix(),
+					},
+					{
+						Value:     3,
+						Timestamp: time.Date(2020, 1, 2, 0, 0, 0, 0, time.Local).Unix(),
+					},
+				},
 			},
 			wantErr: false,
 		},
@@ -510,7 +541,14 @@ func TestGetInsightDataForDeployFrequency(t *testing.T) {
 								Value:    "ApplicationId",
 							},
 						},
-					})
+					}).Return([]*model.Deployment{
+					{
+						Id: "id1",
+					},
+					{
+						Id: "id2",
+					},
+				}, nil)
 
 				target = time.Date(2020, 1, 12, 0, 0, 0, 0, time.Local)
 				targetNextWeek = target.AddDate(0, 0, 7)
@@ -538,7 +576,17 @@ func TestGetInsightDataForDeployFrequency(t *testing.T) {
 								Value:    "ApplicationId",
 							},
 						},
-					})
+					}).Return([]*model.Deployment{
+					{
+						Id: "id1",
+					},
+					{
+						Id: "id2",
+					},
+					{
+						Id: "id3",
+					},
+				}, nil)
 
 				return s
 			}(),
@@ -548,6 +596,19 @@ func TestGetInsightDataForDeployFrequency(t *testing.T) {
 				RangeFrom:      time.Date(2020, 1, 5, 0, 0, 0, 0, time.Local).Unix(), // 2020/01/05 is Sunday
 				DataPointCount: 2,
 				ApplicationId:  "ApplicationId",
+			},
+			res: &webservice.GetInsightDataResponse{
+				UpdatedAt: time.Now().Unix(),
+				DataPoints: []*model.InsightDataPoint{
+					{
+						Value:     2,
+						Timestamp: time.Date(2020, 1, 5, 0, 0, 0, 0, time.Local).Unix(),
+					},
+					{
+						Value:     3,
+						Timestamp: time.Date(2020, 1, 12, 0, 0, 0, 0, time.Local).Unix(),
+					},
+				},
 			},
 			wantErr: false,
 		},
@@ -583,7 +644,14 @@ func TestGetInsightDataForDeployFrequency(t *testing.T) {
 								Value:    "ApplicationId",
 							},
 						},
-					})
+					}).Return([]*model.Deployment{
+					{
+						Id: "id1",
+					},
+					{
+						Id: "id2",
+					},
+				}, nil)
 
 				target = time.Date(2020, 1, 12, 0, 0, 0, 0, time.Local)
 				targetNextWeek = target.AddDate(0, 0, 7)
@@ -611,7 +679,17 @@ func TestGetInsightDataForDeployFrequency(t *testing.T) {
 								Value:    "ApplicationId",
 							},
 						},
-					})
+					}).Return([]*model.Deployment{
+					{
+						Id: "id1",
+					},
+					{
+						Id: "id2",
+					},
+					{
+						Id: "id3",
+					},
+				}, nil)
 
 				return s
 			}(),
@@ -621,6 +699,19 @@ func TestGetInsightDataForDeployFrequency(t *testing.T) {
 				RangeFrom:      time.Date(2020, 1, 6, 0, 0, 0, 0, time.Local).Unix(), // 2020/01/06 is Monday
 				DataPointCount: 2,
 				ApplicationId:  "ApplicationId",
+			},
+			res: &webservice.GetInsightDataResponse{
+				UpdatedAt: time.Now().Unix(),
+				DataPoints: []*model.InsightDataPoint{
+					{
+						Value:     2,
+						Timestamp: time.Date(2020, 1, 5, 0, 0, 0, 0, time.Local).Unix(),
+					},
+					{
+						Value:     3,
+						Timestamp: time.Date(2020, 1, 12, 0, 0, 0, 0, time.Local).Unix(),
+					},
+				},
 			},
 			wantErr: false,
 		},
@@ -656,7 +747,14 @@ func TestGetInsightDataForDeployFrequency(t *testing.T) {
 								Value:    "ApplicationId",
 							},
 						},
-					})
+					}).Return([]*model.Deployment{
+					{
+						Id: "id1",
+					},
+					{
+						Id: "id2",
+					},
+				}, nil)
 
 				target = time.Date(2020, 2, 1, 0, 0, 0, 0, time.Local)
 				targetNextMonth = target.AddDate(0, 1, 0)
@@ -684,7 +782,17 @@ func TestGetInsightDataForDeployFrequency(t *testing.T) {
 								Value:    "ApplicationId",
 							},
 						},
-					})
+					}).Return([]*model.Deployment{
+					{
+						Id: "id1",
+					},
+					{
+						Id: "id2",
+					},
+					{
+						Id: "id3",
+					},
+				}, nil)
 
 				return s
 			}(),
@@ -694,6 +802,19 @@ func TestGetInsightDataForDeployFrequency(t *testing.T) {
 				RangeFrom:      time.Date(2020, 1, 4, 0, 0, 0, 0, time.Local).Unix(),
 				DataPointCount: 2,
 				ApplicationId:  "ApplicationId",
+			},
+			res: &webservice.GetInsightDataResponse{
+				UpdatedAt: time.Now().Unix(),
+				DataPoints: []*model.InsightDataPoint{
+					{
+						Value:     2,
+						Timestamp: time.Date(2020, 1, 1, 0, 0, 0, 0, time.Local).Unix(),
+					},
+					{
+						Value:     3,
+						Timestamp: time.Date(2020, 2, 1, 0, 0, 0, 0, time.Local).Unix(),
+					},
+				},
 			},
 			wantErr: false,
 		},
@@ -729,7 +850,14 @@ func TestGetInsightDataForDeployFrequency(t *testing.T) {
 								Value:    "ApplicationId",
 							},
 						},
-					})
+					}).Return([]*model.Deployment{
+					{
+						Id: "id1",
+					},
+					{
+						Id: "id2",
+					},
+				}, nil)
 
 				target = time.Date(2021, 1, 1, 0, 0, 0, 0, time.Local)
 				targetNextYear = target.AddDate(1, 0, 0)
@@ -757,7 +885,17 @@ func TestGetInsightDataForDeployFrequency(t *testing.T) {
 								Value:    "ApplicationId",
 							},
 						},
-					})
+					}).Return([]*model.Deployment{
+					{
+						Id: "id1",
+					},
+					{
+						Id: "id2",
+					},
+					{
+						Id: "id3",
+					},
+				}, nil)
 
 				return s
 			}(),
@@ -768,6 +906,19 @@ func TestGetInsightDataForDeployFrequency(t *testing.T) {
 				DataPointCount: 2,
 				ApplicationId:  "ApplicationId",
 			},
+			res: &webservice.GetInsightDataResponse{
+				UpdatedAt: time.Now().Unix(),
+				DataPoints: []*model.InsightDataPoint{
+					{
+						Value:     2,
+						Timestamp: time.Date(2020, 1, 1, 0, 0, 0, 0, time.Local).Unix(),
+					},
+					{
+						Value:     3,
+						Timestamp: time.Date(2021, 1, 1, 0, 0, 0, 0, time.Local).Unix(),
+					},
+				},
+			},
 			wantErr: false,
 		},
 	}
@@ -777,8 +928,9 @@ func TestGetInsightDataForDeployFrequency(t *testing.T) {
 				pipedProjectCache: tt.pipedProjectCache,
 				deploymentStore:   tt.deploymentStore,
 			}
-			_, err := api.getInsightDataForDeployFrequency(ctx, tt.projectID, tt.req)
+			res, err := api.getInsightDataForDeployFrequency(ctx, tt.projectID, tt.req)
 			assert.Equal(t, tt.wantErr, err != nil)
+			assert.Equal(t, tt.res.DataPoints, res.DataPoints)
 		})
 	}
 }

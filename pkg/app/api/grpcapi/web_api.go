@@ -1395,10 +1395,10 @@ func (a *WebAPI) getInsightDataForDeployFrequency(ctx context.Context, projectID
 			return nil, status.Error(codes.Internal, "Failed to get deployments")
 		}
 
-		counts = append(counts, &model.InsightDataPoint{
+		counts[i] = &model.InsightDataPoint{
 			Timestamp: target.Unix(),
 			Value:     float32(len(deployments)),
-		})
+		}
 	}
 
 	return &webservice.GetInsightDataResponse{
