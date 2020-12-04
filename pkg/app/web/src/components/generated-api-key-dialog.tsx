@@ -15,6 +15,7 @@ import { addToast } from "../modules/toasts";
 import { useDispatch, useSelector } from "react-redux";
 import { AppState } from "../modules";
 import { clearGeneratedKey } from "../modules/api-keys";
+import { COPY_API_KEY } from "../constants/toast-text";
 
 const useStyles = makeStyles(() => ({
   key: {
@@ -24,7 +25,6 @@ const useStyles = makeStyles(() => ({
 
 const DIALOG_TITLE = "Generated API Key";
 const VALUE_CAPTION = "API Key";
-const TOAST_MESSAGE = "API Key copied to clipboard";
 
 export const GeneratedAPIKeyDialog: FC = memo(function GeneratedAPIKeyDialog() {
   const classes = useStyles();
@@ -38,7 +38,7 @@ export const GeneratedAPIKeyDialog: FC = memo(function GeneratedAPIKeyDialog() {
   const handleOnClickCopy = useCallback((): void => {
     if (generatedKey) {
       copy(generatedKey);
-      dispatch(addToast({ message: TOAST_MESSAGE }));
+      dispatch(addToast({ message: COPY_API_KEY }));
     }
   }, [generatedKey, dispatch]);
 
