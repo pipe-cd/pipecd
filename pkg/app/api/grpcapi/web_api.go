@@ -1311,6 +1311,98 @@ func (a *WebAPI) ListAPIKeys(ctx context.Context, req *webservice.ListAPIKeysReq
 }
 
 // GetInsightData returns the accumulated insight data.
-func (a *WebAPI) GetInsightData(_ context.Context, _ *webservice.GetInsightDataRequest) (*webservice.GetInsightDataResponse, error) {
+func (a *WebAPI) GetInsightData(ctx context.Context, req *webservice.GetInsightDataRequest) (*webservice.GetInsightDataResponse, error) {
+	claims, err := rpcauth.ExtractClaims(ctx)
+	if err != nil {
+		a.logger.Error("failed to authenticate the current user", zap.Error(err))
+		return nil, err
+	}
+
+	switch req.MetricsKind {
+	case model.InsightMetricsKind_DEPLOYMENT_FREQUENCY:
+		return a.getInsightDataForDeployFrequency(ctx, claims.Role.ProjectId, req)
+	}
 	return nil, status.Error(codes.Unimplemented, "")
+}
+
+// getInsightDataForDeployFrequency returns the accumulated insight data for deploy frequency.
+func (a *WebAPI) getInsightDataForDeployFrequency(ctx context.Context, projectId string, req *webservice.GetInsightDataRequest) (*webservice.GetInsightDataResponse, error) {
+	counts := make([]*model.InsightDataPoint, req.DataPointCount)
+
+	var movePoint func(time.Time, int) time.Time
+	var accumulateFrom time.Time
+	switch req.Step {
+	case model.InsightStep_DAILY:
+		movePoint = func(from time.Time, i int) time.Time {
+			return from.AddDate(0, 0, i)
+		}
+		accumulateFrom = time.Unix(req.RangeFrom, 0)
+	case model.InsightStep_WEEKLY:
+		movePoint = func(from time.Time, i int) time.Time {
+			return from.AddDate(0, 0, 7*i)
+		}
+		rangeFrom := time.Unix(req.RangeFrom, 0)
+		// Sunday in the week of rangeFrom
+		accumulateFrom = rangeFrom.AddDate(0, 0, -int(rangeFrom.Weekday()))
+	case model.InsightStep_MONTHLY:
+		movePoint = func(from time.Time, i int) time.Time {
+			return from.AddDate(0, i, 0)
+		}
+		rangeFrom := time.Unix(req.RangeFrom, 0)
+		accumulateFrom = time.Date(rangeFrom.Year(), rangeFrom.Month(), 1, 0, 0, 0, 0, time.Local)
+	case model.InsightStep_YEARLY:
+		movePoint = func(from time.Time, i int) time.Time {
+			return from.AddDate(i, 0, 0)
+		}
+		rangeFrom := time.Unix(req.RangeFrom, 0)
+		accumulateFrom = time.Date(rangeFrom.Year(), 1, 1, 0, 0, 0, 0, time.Local)
+	}
+
+	for i := 0; i < int(req.DataPointCount); i++ {
+		target := movePoint(accumulateFrom, i)
+
+		filters := []datastore.ListFilter{
+			{
+				Field:    "ProjectId",
+				Operator: "==",
+				Value:    projectId,
+			},
+			{
+				Field:    "CreatedAt",
+				Operator: ">=",
+				Value:    target.Unix(),
+			},
+			{
+				Field:    "CreatedAt",
+				Operator: "<",
+				Value:    movePoint(target, 1).Unix(), // target's finish time on unix time
+			},
+		}
+
+		if req.ApplicationId != "" {
+			filters = append(filters, datastore.ListFilter{
+				Field:    "ApplicationId",
+				Operator: "==",
+				Value:    req.ApplicationId,
+			})
+		}
+
+		deployments, err := a.deploymentStore.ListDeployments(ctx, datastore.ListOptions{
+			Filters: filters,
+		})
+		if err != nil {
+			a.logger.Error("failed to get deployments", zap.Error(err))
+			return nil, status.Error(codes.Internal, "Failed to get deployments")
+		}
+
+		counts = append(counts, &model.InsightDataPoint{
+			Timestamp: target.Unix(),
+			Value:     float32(len(deployments)),
+		})
+	}
+
+	return &webservice.GetInsightDataResponse{
+		UpdatedAt:  time.Now().Unix(),
+		DataPoints: counts,
+	}, nil
 }
