@@ -140,7 +140,7 @@ func (w *watcher) collectTargets(ctx context.Context, provider imageprovider.Pro
 			includes = append(includes, target.Includes...)
 			excludes = append(excludes, target.Excludes...)
 		}
-		cfg, ok, err := config.LoadImageWatchers(repo.GetPath(), includes, excludes)
+		cfg, ok, err := config.LoadImageWatcher(repo.GetPath(), includes, excludes)
 		if err != nil {
 			w.logger.Error("failed to load configuration file for Image Watcher", zap.Error(err))
 			return true

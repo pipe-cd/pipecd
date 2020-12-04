@@ -27,7 +27,7 @@ type ImageWatcherTarget struct {
 
 // LoadImageWatcher finds the config files for the image watcher in the .pipe directory first up.
 // And returns parsed config, False is returned as the second returned value if not found.
-func LoadImageWatchers(repoRoot string, includes, excludes []string) (*ImageWatcherSpec, bool, error) {
+func LoadImageWatcher(repoRoot string, includes, excludes []string) (*ImageWatcherSpec, bool, error) {
 	// TODO: Load image watcher config, referring to AnalysisTemplateSpec
 	return nil, false, nil
 }
