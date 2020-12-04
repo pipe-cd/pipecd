@@ -17,9 +17,13 @@ package grpcapi
 import (
 	"context"
 	"errors"
+	"fmt"
 	"reflect"
 	"testing"
 	"time"
+
+	"go.uber.org/zap"
+	zapobserver "go.uber.org/zap/zaptest/observer"
 
 	"github.com/golang/mock/gomock"
 	"github.com/stretchr/testify/assert"
@@ -921,16 +925,69 @@ func TestGetInsightDataForDeployFrequency(t *testing.T) {
 			},
 			wantErr: false,
 		},
+		{
+			name:      "return error when something wrong happen",
+			pipedID:   "pipedID",
+			projectID: "projectID",
+			deploymentStore: func() datastore.DeploymentStore {
+				target := time.Date(2020, 1, 1, 0, 0, 0, 0, time.Local)
+				targetNextYear := target.AddDate(1, 0, 0)
+				s := datastoretest.NewMockDeploymentStore(ctrl)
+				s.EXPECT().
+					ListDeployments(gomock.Any(), datastore.ListOptions{
+						Filters: []datastore.ListFilter{
+							{
+								Field:    "ProjectId",
+								Operator: "==",
+								Value:    "projectID",
+							},
+							{
+								Field:    "CreatedAt",
+								Operator: ">=",
+								Value:    target.Unix(),
+							},
+							{
+								Field:    "CreatedAt",
+								Operator: "<",
+								Value:    targetNextYear.Unix(),
+							},
+							{
+								Field:    "ApplicationId",
+								Operator: "==",
+								Value:    "ApplicationId",
+							},
+						},
+					}).Return([]*model.Deployment{}, fmt.Errorf("something wrong happens in ListDeployments"))
+				return s
+			}(),
+			req: &webservice.GetInsightDataRequest{
+				MetricsKind:    model.InsightMetricsKind_DEPLOYMENT_FREQUENCY,
+				Step:           model.InsightStep_YEARLY,
+				RangeFrom:      time.Date(2020, 1, 4, 0, 0, 0, 0, time.Local).Unix(),
+				DataPointCount: 2,
+				ApplicationId:  "ApplicationId",
+			},
+			res:     nil,
+			wantErr: true,
+		},
 	}
+
+	core, _ := zapobserver.New(zap.InfoLevel)
+	logger := zap.New(core)
+
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
+
 			api := &WebAPI{
 				pipedProjectCache: tt.pipedProjectCache,
 				deploymentStore:   tt.deploymentStore,
+				logger:            logger,
 			}
 			res, err := api.getInsightDataForDeployFrequency(ctx, tt.projectID, tt.req)
 			assert.Equal(t, tt.wantErr, err != nil)
-			assert.Equal(t, tt.res.DataPoints, res.DataPoints)
+			if err == nil {
+				assert.Equal(t, tt.res.DataPoints, res.DataPoints)
+			}
 		})
 	}
 }
