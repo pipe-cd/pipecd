@@ -1326,7 +1326,7 @@ func (a *WebAPI) GetInsightData(ctx context.Context, req *webservice.GetInsightD
 }
 
 // getInsightDataForDeployFrequency returns the accumulated insight data for deploy frequency.
-func (a *WebAPI) getInsightDataForDeployFrequency(ctx context.Context, projectId string, req *webservice.GetInsightDataRequest) (*webservice.GetInsightDataResponse, error) {
+func (a *WebAPI) getInsightDataForDeployFrequency(ctx context.Context, projectID string, req *webservice.GetInsightDataRequest) (*webservice.GetInsightDataResponse, error) {
 	counts := make([]*model.InsightDataPoint, req.DataPointCount)
 
 	var movePoint func(time.Time, int) time.Time
@@ -1365,7 +1365,7 @@ func (a *WebAPI) getInsightDataForDeployFrequency(ctx context.Context, projectId
 			{
 				Field:    "ProjectId",
 				Operator: "==",
-				Value:    projectId,
+				Value:    projectID,
 			},
 			{
 				Field:    "CreatedAt",
