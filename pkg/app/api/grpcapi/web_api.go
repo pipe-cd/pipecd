@@ -1318,16 +1318,10 @@ func (a *WebAPI) GetInsightData(ctx context.Context, req *webservice.GetInsightD
 		return nil, err
 	}
 
-	switch req.MetricsKind {
-	case model.InsightMetricsKind_DEPLOYMENT_FREQUENCY:
-		return a.getInsightDataForDeployFrequency(ctx, claims.Role.ProjectId, req)
-	}
-	return nil, status.Error(codes.Unimplemented, "")
+	return a.accumulateInsightData(ctx, claims.Role.ProjectId, req)
 }
 
-// getInsightDataForDeployFrequency returns the accumulated insight data for deploy frequency.
-// This function is temporary implementation for front end.
-func (a *WebAPI) getInsightDataForDeployFrequency(ctx context.Context, projectID string, req *webservice.GetInsightDataRequest) (*webservice.GetInsightDataResponse, error) {
+func (a *WebAPI) accumulateInsightData(ctx context.Context, projectID string, req *webservice.GetInsightDataRequest) (*webservice.GetInsightDataResponse, error) {
 	counts := make([]*model.InsightDataPoint, req.DataPointCount)
 
 	var movePoint func(time.Time, int) time.Time
@@ -1350,52 +1344,154 @@ func (a *WebAPI) getInsightDataForDeployFrequency(ctx context.Context, projectID
 	}
 
 	for i := 0; i < int(req.DataPointCount); i++ {
-		target := movePoint(start, i)
+		targetRangeFrom := movePoint(start, i)
+		targetRangeTo := movePoint(targetRangeFrom, 1)
 
-		filters := []datastore.ListFilter{
-			{
-				Field:    "ProjectId",
-				Operator: "==",
-				Value:    projectID,
-			},
-			{
-				Field:    "CreatedAt",
-				Operator: ">=",
-				Value:    target.Unix(),
-			},
-			{
-				Field:    "CreatedAt",
-				Operator: "<",
-				Value:    movePoint(target, 1).Unix(), // target's finish time on unix time
-			},
-		}
-
-		if req.ApplicationId != "" {
-			filters = append(filters, datastore.ListFilter{
-				Field:    "ApplicationId",
-				Operator: "==",
-				Value:    req.ApplicationId,
-			})
-		}
-
-		pageSize := 50
-		deployments, err := a.deploymentStore.ListDeployments(ctx, datastore.ListOptions{
-			PageSize: pageSize,
-			Filters:  filters,
-		})
-		if err != nil {
-			a.logger.Error("failed to get deployments", zap.Error(err))
-			return nil, status.Error(codes.Internal, "Failed to get deployments")
-		}
-
-		counts[i] = &model.InsightDataPoint{
-			Timestamp: target.Unix(),
-			Value:     float32(len(deployments)),
+		switch req.MetricsKind {
+		case model.InsightMetricsKind_DEPLOYMENT_FREQUENCY:
+			count, err := a.getInsightDataForDeployFrequency(ctx, projectID, req.ApplicationId, targetRangeFrom, targetRangeTo)
+			if err != nil {
+				return nil, err
+			}
+			counts[i] = count
+		case model.InsightMetricsKind_CHANGE_FAILURE_RATE:
+			count, err := a.getInsightDataForChangeFailureRate(ctx, projectID, req.ApplicationId, targetRangeFrom, targetRangeTo)
+			if err != nil {
+				return nil, err
+			}
+			counts[i] = count
+		default:
+			return nil, status.Error(codes.Unimplemented, "")
 		}
 	}
 
 	return &webservice.GetInsightDataResponse{
 		UpdatedAt:  time.Now().Unix(),
 		DataPoints: counts,
+	}, nil
+}
+
+// getInsightDataForDeployFrequency accumulate insight data in target range for deploy frequency.
+// This function is temporary implementation for front end.
+func (a *WebAPI) getInsightDataForDeployFrequency(
+	ctx context.Context,
+	projectID string,
+	applicationID string,
+	targetRangeFrom time.Time,
+	targetRangeTo time.Time) (*model.InsightDataPoint, error) {
+	filters := []datastore.ListFilter{
+		{
+			Field:    "ProjectId",
+			Operator: "==",
+			Value:    projectID,
+		},
+		{
+			Field:    "CreatedAt",
+			Operator: ">=",
+			Value:    targetRangeFrom.Unix(),
+		},
+		{
+			Field:    "CreatedAt",
+			Operator: "<",
+			Value:    targetRangeTo.Unix(), // target's finish time on unix time
+		},
+	}
+
+	if applicationID != "" {
+		filters = append(filters, datastore.ListFilter{
+			Field:    "ApplicationId",
+			Operator: "==",
+			Value:    applicationID,
+		})
+	}
+
+	pageSize := 50
+	deployments, err := a.deploymentStore.ListDeployments(ctx, datastore.ListOptions{
+		PageSize: pageSize,
+		Filters:  filters,
+	})
+	if err != nil {
+		a.logger.Error("failed to get deployments", zap.Error(err))
+		return nil, status.Error(codes.Internal, "Failed to get deployments")
+	}
+
+	return &model.InsightDataPoint{
+		Timestamp: targetRangeFrom.Unix(),
+		Value:     float32(len(deployments)),
+	}, nil
+}
+
+// getInsightDataForChangeFailureRate accumulate insight data in target range for change failure rate
+func (a *WebAPI) getInsightDataForChangeFailureRate(
+	ctx context.Context,
+	projectID string,
+	applicationID string,
+	targetRangeFrom time.Time,
+	targetRangeTo time.Time) (*model.InsightDataPoint, error) {
+
+	commonFilters := []datastore.ListFilter{
+		{
+			Field:    "ProjectId",
+			Operator: "==",
+			Value:    projectID,
+		},
+		{
+			Field:    "CreatedAt",
+			Operator: ">=",
+			Value:    targetRangeFrom.Unix(),
+		},
+		{
+			Field:    "CreatedAt",
+			Operator: "<",
+			Value:    targetRangeTo.Unix(), // target's finish time on unix time
+		},
+	}
+
+	if applicationID != "" {
+		commonFilters = append(commonFilters, datastore.ListFilter{
+			Field:    "ApplicationId",
+			Operator: "==",
+			Value:    applicationID,
+		})
+	}
+
+	filterForSuccessDeploy := []datastore.ListFilter{
+		{
+			Field:    "Status",
+			Operator: "==",
+			Value:    model.DeploymentStatus_DEPLOYMENT_SUCCESS,
+		},
+	}
+
+	filterForFailureDeploy := []datastore.ListFilter{
+		{
+			Field:    "Status",
+			Operator: "==",
+			Value:    model.DeploymentStatus_DEPLOYMENT_FAILURE,
+		},
+	}
+
+	successDeployments, err := a.deploymentStore.ListDeployments(ctx, datastore.ListOptions{
+		Filters: append(filterForSuccessDeploy, commonFilters...),
+	})
+	if err != nil {
+		a.logger.Error("failed to get deployments", zap.Error(err))
+		return nil, status.Error(codes.Internal, "Failed to get deployments")
+	}
+
+	failureDeployments, err := a.deploymentStore.ListDeployments(ctx, datastore.ListOptions{
+		Filters: append(filterForFailureDeploy, commonFilters...),
+	})
+	if err != nil {
+		a.logger.Error("failed to get deployments", zap.Error(err))
+		return nil, status.Error(codes.Internal, "Failed to get deployments")
+	}
+
+	// The definition of change failure rate: count_of_failure / (count_of_success + count_of_failure)
+	changeFailureRate := len(failureDeployments) / (len(successDeployments) + len(failureDeployments))
+
+	return &model.InsightDataPoint{
+		Timestamp: targetRangeFrom.Unix(),
+		Value:     float32(changeFailureRate),
 	}, nil
 }
