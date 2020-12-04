@@ -1349,13 +1349,13 @@ func (a *WebAPI) getInsightDataForDeployFrequency(ctx context.Context, projectID
 			return from.AddDate(0, i, 0)
 		}
 		rangeFrom := time.Unix(req.RangeFrom, 0)
-		start = time.Date(rangeFrom.Year(), rangeFrom.Month(), 1, 0, 0, 0, 0, time.Local)
+		start = time.Date(rangeFrom.Year(), rangeFrom.Month(), 1, 0, 0, 0, 0, time.UTC)
 	case model.InsightStep_YEARLY:
 		movePoint = func(from time.Time, i int) time.Time {
 			return from.AddDate(i, 0, 0)
 		}
 		rangeFrom := time.Unix(req.RangeFrom, 0)
-		start = time.Date(rangeFrom.Year(), 1, 1, 0, 0, 0, 0, time.Local)
+		start = time.Date(rangeFrom.Year(), 1, 1, 0, 0, 0, 0, time.UTC)
 	default:
 		return nil, status.Error(codes.InvalidArgument, "Invalid step")
 	}

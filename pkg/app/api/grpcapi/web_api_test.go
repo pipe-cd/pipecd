@@ -414,7 +414,7 @@ func TestGetInsightDataForDeployFrequency(t *testing.T) {
 			pipedID:   "pipedID",
 			projectID: "projectID",
 			deploymentStore: func() datastore.DeploymentStore {
-				target := time.Date(2020, 1, 1, 0, 0, 0, 0, time.Local)
+				target := time.Date(2020, 1, 1, 0, 0, 0, 0, time.UTC)
 				targetNextDate := target.AddDate(0, 0, 1)
 				s := datastoretest.NewMockDeploymentStore(ctrl)
 				s.EXPECT().
@@ -450,7 +450,7 @@ func TestGetInsightDataForDeployFrequency(t *testing.T) {
 					},
 				}, nil)
 
-				target = time.Date(2020, 1, 2, 0, 0, 0, 0, time.Local)
+				target = time.Date(2020, 1, 2, 0, 0, 0, 0, time.UTC)
 				targetNextDate = target.AddDate(0, 0, 1)
 				s.EXPECT().
 					ListDeployments(gomock.Any(), datastore.ListOptions{
@@ -493,7 +493,7 @@ func TestGetInsightDataForDeployFrequency(t *testing.T) {
 			req: &webservice.GetInsightDataRequest{
 				MetricsKind:    model.InsightMetricsKind_DEPLOYMENT_FREQUENCY,
 				Step:           model.InsightStep_DAILY,
-				RangeFrom:      time.Date(2020, 1, 1, 0, 0, 0, 0, time.Local).Unix(),
+				RangeFrom:      time.Date(2020, 1, 1, 0, 0, 0, 0, time.UTC).Unix(),
 				DataPointCount: 2,
 				ApplicationId:  "ApplicationId",
 			},
@@ -502,11 +502,11 @@ func TestGetInsightDataForDeployFrequency(t *testing.T) {
 				DataPoints: []*model.InsightDataPoint{
 					{
 						Value:     2,
-						Timestamp: time.Date(2020, 1, 1, 0, 0, 0, 0, time.Local).Unix(),
+						Timestamp: time.Date(2020, 1, 1, 0, 0, 0, 0, time.UTC).Unix(),
 					},
 					{
 						Value:     3,
-						Timestamp: time.Date(2020, 1, 2, 0, 0, 0, 0, time.Local).Unix(),
+						Timestamp: time.Date(2020, 1, 2, 0, 0, 0, 0, time.UTC).Unix(),
 					},
 				},
 			},
@@ -517,7 +517,7 @@ func TestGetInsightDataForDeployFrequency(t *testing.T) {
 			pipedID:   "pipedID",
 			projectID: "projectID",
 			deploymentStore: func() datastore.DeploymentStore {
-				target := time.Date(2020, 1, 5, 0, 0, 0, 0, time.Local)
+				target := time.Date(2020, 1, 5, 0, 0, 0, 0, time.UTC)
 				targetNextWeek := target.AddDate(0, 0, 7)
 				s := datastoretest.NewMockDeploymentStore(ctrl)
 				s.EXPECT().
@@ -553,7 +553,7 @@ func TestGetInsightDataForDeployFrequency(t *testing.T) {
 					},
 				}, nil)
 
-				target = time.Date(2020, 1, 12, 0, 0, 0, 0, time.Local)
+				target = time.Date(2020, 1, 12, 0, 0, 0, 0, time.UTC)
 				targetNextWeek = target.AddDate(0, 0, 7)
 				s.EXPECT().
 					ListDeployments(gomock.Any(), datastore.ListOptions{
@@ -596,7 +596,7 @@ func TestGetInsightDataForDeployFrequency(t *testing.T) {
 			req: &webservice.GetInsightDataRequest{
 				MetricsKind:    model.InsightMetricsKind_DEPLOYMENT_FREQUENCY,
 				Step:           model.InsightStep_WEEKLY,
-				RangeFrom:      time.Date(2020, 1, 5, 0, 0, 0, 0, time.Local).Unix(), // 2020/01/05 is Sunday
+				RangeFrom:      time.Date(2020, 1, 5, 0, 0, 0, 0, time.UTC).Unix(), // 2020/01/05 is Sunday
 				DataPointCount: 2,
 				ApplicationId:  "ApplicationId",
 			},
@@ -605,11 +605,11 @@ func TestGetInsightDataForDeployFrequency(t *testing.T) {
 				DataPoints: []*model.InsightDataPoint{
 					{
 						Value:     2,
-						Timestamp: time.Date(2020, 1, 5, 0, 0, 0, 0, time.Local).Unix(),
+						Timestamp: time.Date(2020, 1, 5, 0, 0, 0, 0, time.UTC).Unix(),
 					},
 					{
 						Value:     3,
-						Timestamp: time.Date(2020, 1, 12, 0, 0, 0, 0, time.Local).Unix(),
+						Timestamp: time.Date(2020, 1, 12, 0, 0, 0, 0, time.UTC).Unix(),
 					},
 				},
 			},
@@ -620,7 +620,7 @@ func TestGetInsightDataForDeployFrequency(t *testing.T) {
 			pipedID:   "pipedID",
 			projectID: "projectID",
 			deploymentStore: func() datastore.DeploymentStore {
-				target := time.Date(2020, 1, 5, 0, 0, 0, 0, time.Local)
+				target := time.Date(2020, 1, 5, 0, 0, 0, 0, time.UTC)
 				targetNextWeek := target.AddDate(0, 0, 7)
 				s := datastoretest.NewMockDeploymentStore(ctrl)
 				s.EXPECT().
@@ -656,7 +656,7 @@ func TestGetInsightDataForDeployFrequency(t *testing.T) {
 					},
 				}, nil)
 
-				target = time.Date(2020, 1, 12, 0, 0, 0, 0, time.Local)
+				target = time.Date(2020, 1, 12, 0, 0, 0, 0, time.UTC)
 				targetNextWeek = target.AddDate(0, 0, 7)
 				s.EXPECT().
 					ListDeployments(gomock.Any(), datastore.ListOptions{
@@ -699,7 +699,7 @@ func TestGetInsightDataForDeployFrequency(t *testing.T) {
 			req: &webservice.GetInsightDataRequest{
 				MetricsKind:    model.InsightMetricsKind_DEPLOYMENT_FREQUENCY,
 				Step:           model.InsightStep_WEEKLY,
-				RangeFrom:      time.Date(2020, 1, 6, 0, 0, 0, 0, time.Local).Unix(), // 2020/01/06 is Monday
+				RangeFrom:      time.Date(2020, 1, 6, 0, 0, 0, 0, time.UTC).Unix(), // 2020/01/06 is Monday
 				DataPointCount: 2,
 				ApplicationId:  "ApplicationId",
 			},
@@ -708,11 +708,11 @@ func TestGetInsightDataForDeployFrequency(t *testing.T) {
 				DataPoints: []*model.InsightDataPoint{
 					{
 						Value:     2,
-						Timestamp: time.Date(2020, 1, 5, 0, 0, 0, 0, time.Local).Unix(),
+						Timestamp: time.Date(2020, 1, 5, 0, 0, 0, 0, time.UTC).Unix(),
 					},
 					{
 						Value:     3,
-						Timestamp: time.Date(2020, 1, 12, 0, 0, 0, 0, time.Local).Unix(),
+						Timestamp: time.Date(2020, 1, 12, 0, 0, 0, 0, time.UTC).Unix(),
 					},
 				},
 			},
@@ -723,7 +723,7 @@ func TestGetInsightDataForDeployFrequency(t *testing.T) {
 			pipedID:   "pipedID",
 			projectID: "projectID",
 			deploymentStore: func() datastore.DeploymentStore {
-				target := time.Date(2020, 1, 1, 0, 0, 0, 0, time.Local)
+				target := time.Date(2020, 1, 1, 0, 0, 0, 0, time.UTC)
 				targetNextMonth := target.AddDate(0, 1, 0)
 				s := datastoretest.NewMockDeploymentStore(ctrl)
 				s.EXPECT().
@@ -759,7 +759,7 @@ func TestGetInsightDataForDeployFrequency(t *testing.T) {
 					},
 				}, nil)
 
-				target = time.Date(2020, 2, 1, 0, 0, 0, 0, time.Local)
+				target = time.Date(2020, 2, 1, 0, 0, 0, 0, time.UTC)
 				targetNextMonth = target.AddDate(0, 1, 0)
 				s.EXPECT().
 					ListDeployments(gomock.Any(), datastore.ListOptions{
@@ -802,7 +802,7 @@ func TestGetInsightDataForDeployFrequency(t *testing.T) {
 			req: &webservice.GetInsightDataRequest{
 				MetricsKind:    model.InsightMetricsKind_DEPLOYMENT_FREQUENCY,
 				Step:           model.InsightStep_MONTHLY,
-				RangeFrom:      time.Date(2020, 1, 4, 0, 0, 0, 0, time.Local).Unix(),
+				RangeFrom:      time.Date(2020, 1, 4, 0, 0, 0, 0, time.UTC).Unix(),
 				DataPointCount: 2,
 				ApplicationId:  "ApplicationId",
 			},
@@ -811,11 +811,11 @@ func TestGetInsightDataForDeployFrequency(t *testing.T) {
 				DataPoints: []*model.InsightDataPoint{
 					{
 						Value:     2,
-						Timestamp: time.Date(2020, 1, 1, 0, 0, 0, 0, time.Local).Unix(),
+						Timestamp: time.Date(2020, 1, 1, 0, 0, 0, 0, time.UTC).Unix(),
 					},
 					{
 						Value:     3,
-						Timestamp: time.Date(2020, 2, 1, 0, 0, 0, 0, time.Local).Unix(),
+						Timestamp: time.Date(2020, 2, 1, 0, 0, 0, 0, time.UTC).Unix(),
 					},
 				},
 			},
@@ -826,7 +826,7 @@ func TestGetInsightDataForDeployFrequency(t *testing.T) {
 			pipedID:   "pipedID",
 			projectID: "projectID",
 			deploymentStore: func() datastore.DeploymentStore {
-				target := time.Date(2020, 1, 1, 0, 0, 0, 0, time.Local)
+				target := time.Date(2020, 1, 1, 0, 0, 0, 0, time.UTC)
 				targetNextYear := target.AddDate(1, 0, 0)
 				s := datastoretest.NewMockDeploymentStore(ctrl)
 				s.EXPECT().
@@ -862,7 +862,7 @@ func TestGetInsightDataForDeployFrequency(t *testing.T) {
 					},
 				}, nil)
 
-				target = time.Date(2021, 1, 1, 0, 0, 0, 0, time.Local)
+				target = time.Date(2021, 1, 1, 0, 0, 0, 0, time.UTC)
 				targetNextYear = target.AddDate(1, 0, 0)
 				s.EXPECT().
 					ListDeployments(gomock.Any(), datastore.ListOptions{
@@ -905,7 +905,7 @@ func TestGetInsightDataForDeployFrequency(t *testing.T) {
 			req: &webservice.GetInsightDataRequest{
 				MetricsKind:    model.InsightMetricsKind_DEPLOYMENT_FREQUENCY,
 				Step:           model.InsightStep_YEARLY,
-				RangeFrom:      time.Date(2020, 1, 4, 0, 0, 0, 0, time.Local).Unix(),
+				RangeFrom:      time.Date(2020, 1, 4, 0, 0, 0, 0, time.UTC).Unix(),
 				DataPointCount: 2,
 				ApplicationId:  "ApplicationId",
 			},
@@ -914,11 +914,11 @@ func TestGetInsightDataForDeployFrequency(t *testing.T) {
 				DataPoints: []*model.InsightDataPoint{
 					{
 						Value:     2,
-						Timestamp: time.Date(2020, 1, 1, 0, 0, 0, 0, time.Local).Unix(),
+						Timestamp: time.Date(2020, 1, 1, 0, 0, 0, 0, time.UTC).Unix(),
 					},
 					{
 						Value:     3,
-						Timestamp: time.Date(2021, 1, 1, 0, 0, 0, 0, time.Local).Unix(),
+						Timestamp: time.Date(2021, 1, 1, 0, 0, 0, 0, time.UTC).Unix(),
 					},
 				},
 			},
@@ -929,7 +929,7 @@ func TestGetInsightDataForDeployFrequency(t *testing.T) {
 			pipedID:   "pipedID",
 			projectID: "projectID",
 			deploymentStore: func() datastore.DeploymentStore {
-				target := time.Date(2020, 1, 1, 0, 0, 0, 0, time.Local)
+				target := time.Date(2020, 1, 1, 0, 0, 0, 0, time.UTC)
 				targetNextYear := target.AddDate(1, 0, 0)
 				s := datastoretest.NewMockDeploymentStore(ctrl)
 				s.EXPECT().
@@ -962,7 +962,7 @@ func TestGetInsightDataForDeployFrequency(t *testing.T) {
 			req: &webservice.GetInsightDataRequest{
 				MetricsKind:    model.InsightMetricsKind_DEPLOYMENT_FREQUENCY,
 				Step:           model.InsightStep_YEARLY,
-				RangeFrom:      time.Date(2020, 1, 4, 0, 0, 0, 0, time.Local).Unix(),
+				RangeFrom:      time.Date(2020, 1, 4, 0, 0, 0, 0, time.UTC).Unix(),
 				DataPointCount: 2,
 				ApplicationId:  "ApplicationId",
 			},
