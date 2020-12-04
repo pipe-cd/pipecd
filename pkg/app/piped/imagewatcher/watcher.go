@@ -91,42 +91,7 @@ func (w *watcher) run(ctx context.Context, provider imageprovider.Provider, inte
 		case <-ctx.Done():
 			return
 		case <-ticker.C:
-			targets := make([]config.ImageWatcherTarget, 0)
-			// Collect target images for each git repository.
-			w.gitRepos.Range(func(key, value interface{}) bool {
-				id, ok := key.(string)
-				if !ok {
-					w.logger.Error("unknown key type found")
-					return true
-				}
-				repo, ok := value.(git.Repo)
-				if !ok {
-					w.logger.Error("unknown repo type found")
-					return true
-				}
-				branch := repo.GetClonedBranch()
-				if err := repo.Pull(ctx, branch); err != nil {
-					w.logger.Error("failed to update repository branch",
-						zap.String("repo-id", id),
-						zap.Error(err),
-					)
-					return true
-				}
-
-				cfg, ok, err := config.LoadImageWatcher(repo.GetPath())
-				if err != nil {
-					w.logger.Error("failed to load configuration file for Image Watcher", zap.Error(err))
-					return true
-				}
-				if !ok {
-					w.logger.Error("configuration file for Image Watcher not found", zap.Error(err))
-					return true
-				}
-				t := filterTargets(provider.Name(), cfg.Targets)
-				targets = append(targets, t...)
-				return true
-			})
-
+			targets := w.collectTargets(ctx, provider)
 			outdated, err := determineUpdates(ctx, targets, provider)
 			if err != nil {
 				w.logger.Error("failed to determine which one should be updated", zap.Error(err))
@@ -142,6 +107,53 @@ func (w *watcher) run(ctx context.Context, provider imageprovider.Provider, inte
 			}
 		}
 	}
+}
+
+// collectTarget collects target images for each git repository.
+func (w *watcher) collectTargets(ctx context.Context, provider imageprovider.Provider) (targets []config.ImageWatcherTarget) {
+	w.gitRepos.Range(func(key, value interface{}) bool {
+		id, ok := key.(string)
+		if !ok {
+			w.logger.Error("unknown key type found")
+			return true
+		}
+		repo, ok := value.(git.Repo)
+		if !ok {
+			w.logger.Error("unknown repo type found")
+			return true
+		}
+		branch := repo.GetClonedBranch()
+		if err := repo.Pull(ctx, branch); err != nil {
+			w.logger.Error("failed to update repository branch",
+				zap.String("repo-id", id),
+				zap.Error(err),
+			)
+			return true
+		}
+
+		includes := []string{}
+		excludes := []string{}
+		for _, target := range w.config.ImageWatcher.Targets {
+			if target.RepoID != id {
+				continue
+			}
+			includes = append(includes, target.Includes...)
+			excludes = append(excludes, target.Excludes...)
+		}
+		cfg, ok, err := config.LoadImageWatchers(repo.GetPath(), includes, excludes)
+		if err != nil {
+			w.logger.Error("failed to load configuration file for Image Watcher", zap.Error(err))
+			return true
+		}
+		if !ok {
+			w.logger.Error("configuration file for Image Watcher not found", zap.Error(err))
+			return true
+		}
+		t := filterTargets(provider.Name(), cfg.Targets)
+		targets = append(targets, t...)
+		return true
+	})
+	return
 }
 
 // filterTargets gives back the targets corresponding to the given provider.

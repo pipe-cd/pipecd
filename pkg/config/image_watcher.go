@@ -25,9 +25,9 @@ type ImageWatcherTarget struct {
 	Field    string `json:"field"`
 }
 
-// LoadImageWatcher finds the config file for the image watcher in the .pipe directory first up.
+// LoadImageWatcher finds the config files for the image watcher in the .pipe directory first up.
 // And returns parsed config, False is returned as the second returned value if not found.
-func LoadImageWatcher(repoRoot string) (*ImageWatcherSpec, bool, error) {
+func LoadImageWatchers(repoRoot string, includes, excludes []string) (*ImageWatcherSpec, bool, error) {
 	// TODO: Load image watcher config, referring to AnalysisTemplateSpec
 	return nil, false, nil
 }

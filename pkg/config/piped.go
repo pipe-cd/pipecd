@@ -59,6 +59,8 @@ type PipedSpec struct {
 	Notifications Notifications `json:"notifications"`
 	// How the sealed secret should be managed.
 	SealedSecretManagement *SealedSecretManagement `json:"sealedSecretManagement"`
+	// Configuration for image watcher.
+	ImageWatcher PipedImageWatcher `json:"imageWatcher"`
 }
 
 // Validate validates configured data of all fields.
@@ -565,4 +567,16 @@ func (p *SealedSecretManagement) UnmarshalJSON(data []byte) error {
 		err = fmt.Errorf("unsupported sealed secret management type: %s", p.Type)
 	}
 	return err
+}
+
+type PipedImageWatcher struct {
+	Targets []PipedImageWatcherTarget `json:"targets"`
+}
+
+type PipedImageWatcherTarget struct {
+	RepoID string `json:"repoId"`
+	// The paths to ImageWatcher files to be included.
+	Includes []string `json:"includes"`
+	// The paths to ImageWatcher files to be excluded.
+	Excludes []string `json:"excludes"`
 }
