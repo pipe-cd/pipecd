@@ -1391,17 +1391,28 @@ func (a *WebAPI) getInsightDataForDeployFrequency(ctx context.Context, projectID
 			})
 		}
 
-		deployments, err := a.deploymentStore.ListDeployments(ctx, datastore.ListOptions{
-			Filters: filters,
-		})
-		if err != nil {
-			a.logger.Error("failed to get deployments", zap.Error(err))
-			return nil, status.Error(codes.Internal, "Failed to get deployments")
+		pageSize := 50
+		count := 0
+		for j := 0; ; j++ {
+			deployments, err := a.deploymentStore.ListDeployments(ctx, datastore.ListOptions{
+				PageSize: pageSize,
+				Filters:  filters,
+			})
+			if err != nil {
+				a.logger.Error("failed to get deployments", zap.Error(err))
+				return nil, status.Error(codes.Internal, "Failed to get deployments")
+			}
+
+			count += len(deployments)
+
+			if len(deployments) != 50 {
+				break
+			}
 		}
 
 		counts[i] = &model.InsightDataPoint{
 			Timestamp: target.Unix(),
-			Value:     float32(len(deployments)),
+			Value:     float32(count),
 		}
 	}
 

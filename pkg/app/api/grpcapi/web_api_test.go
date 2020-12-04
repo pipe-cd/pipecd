@@ -399,6 +399,7 @@ func TestGetInsightDataForDeployFrequency(t *testing.T) {
 	ctx, cancel := context.WithCancel(context.Background())
 	defer cancel()
 
+	PageSizeForListDeployments := 50
 	tests := []struct {
 		name              string
 		pipedID           string
@@ -419,6 +420,7 @@ func TestGetInsightDataForDeployFrequency(t *testing.T) {
 				s := datastoretest.NewMockDeploymentStore(ctrl)
 				s.EXPECT().
 					ListDeployments(gomock.Any(), datastore.ListOptions{
+						PageSize: PageSizeForListDeployments,
 						Filters: []datastore.ListFilter{
 							{
 								Field:    "ProjectId",
@@ -454,6 +456,7 @@ func TestGetInsightDataForDeployFrequency(t *testing.T) {
 				targetNextDate = target.AddDate(0, 0, 1)
 				s.EXPECT().
 					ListDeployments(gomock.Any(), datastore.ListOptions{
+						PageSize: PageSizeForListDeployments,
 						Filters: []datastore.ListFilter{
 							{
 								Field:    "ProjectId",
@@ -522,6 +525,7 @@ func TestGetInsightDataForDeployFrequency(t *testing.T) {
 				s := datastoretest.NewMockDeploymentStore(ctrl)
 				s.EXPECT().
 					ListDeployments(gomock.Any(), datastore.ListOptions{
+						PageSize: PageSizeForListDeployments,
 						Filters: []datastore.ListFilter{
 							{
 								Field:    "ProjectId",
@@ -557,6 +561,7 @@ func TestGetInsightDataForDeployFrequency(t *testing.T) {
 				targetNextWeek = target.AddDate(0, 0, 7)
 				s.EXPECT().
 					ListDeployments(gomock.Any(), datastore.ListOptions{
+						PageSize: PageSizeForListDeployments,
 						Filters: []datastore.ListFilter{
 							{
 								Field:    "ProjectId",
@@ -625,6 +630,7 @@ func TestGetInsightDataForDeployFrequency(t *testing.T) {
 				s := datastoretest.NewMockDeploymentStore(ctrl)
 				s.EXPECT().
 					ListDeployments(gomock.Any(), datastore.ListOptions{
+						PageSize: PageSizeForListDeployments,
 						Filters: []datastore.ListFilter{
 							{
 								Field:    "ProjectId",
@@ -660,6 +666,7 @@ func TestGetInsightDataForDeployFrequency(t *testing.T) {
 				targetNextWeek = target.AddDate(0, 0, 7)
 				s.EXPECT().
 					ListDeployments(gomock.Any(), datastore.ListOptions{
+						PageSize: PageSizeForListDeployments,
 						Filters: []datastore.ListFilter{
 							{
 								Field:    "ProjectId",
@@ -728,6 +735,7 @@ func TestGetInsightDataForDeployFrequency(t *testing.T) {
 				s := datastoretest.NewMockDeploymentStore(ctrl)
 				s.EXPECT().
 					ListDeployments(gomock.Any(), datastore.ListOptions{
+						PageSize: PageSizeForListDeployments,
 						Filters: []datastore.ListFilter{
 							{
 								Field:    "ProjectId",
@@ -763,6 +771,7 @@ func TestGetInsightDataForDeployFrequency(t *testing.T) {
 				targetNextMonth = target.AddDate(0, 1, 0)
 				s.EXPECT().
 					ListDeployments(gomock.Any(), datastore.ListOptions{
+						PageSize: PageSizeForListDeployments,
 						Filters: []datastore.ListFilter{
 							{
 								Field:    "ProjectId",
@@ -831,6 +840,7 @@ func TestGetInsightDataForDeployFrequency(t *testing.T) {
 				s := datastoretest.NewMockDeploymentStore(ctrl)
 				s.EXPECT().
 					ListDeployments(gomock.Any(), datastore.ListOptions{
+						PageSize: PageSizeForListDeployments,
 						Filters: []datastore.ListFilter{
 							{
 								Field:    "ProjectId",
@@ -866,6 +876,7 @@ func TestGetInsightDataForDeployFrequency(t *testing.T) {
 				targetNextYear = target.AddDate(1, 0, 0)
 				s.EXPECT().
 					ListDeployments(gomock.Any(), datastore.ListOptions{
+						PageSize: PageSizeForListDeployments,
 						Filters: []datastore.ListFilter{
 							{
 								Field:    "ProjectId",
@@ -934,6 +945,7 @@ func TestGetInsightDataForDeployFrequency(t *testing.T) {
 				s := datastoretest.NewMockDeploymentStore(ctrl)
 				s.EXPECT().
 					ListDeployments(gomock.Any(), datastore.ListOptions{
+						PageSize: PageSizeForListDeployments,
 						Filters: []datastore.ListFilter{
 							{
 								Field:    "ProjectId",
