@@ -89,6 +89,3 @@ spec:
       provider: my-dockerhub
 ```
 
-# Unresolved questions
-
-- How to update template. Currently considering using https://github.com/vmware-tanzu/carvel-ytt
