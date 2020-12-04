@@ -1330,38 +1330,38 @@ func (a *WebAPI) getInsightDataForDeployFrequency(ctx context.Context, projectID
 	counts := make([]*model.InsightDataPoint, req.DataPointCount)
 
 	var movePoint func(time.Time, int) time.Time
-	var accumulateFrom time.Time
+	var start time.Time
 	switch req.Step {
 	case model.InsightStep_DAILY:
 		movePoint = func(from time.Time, i int) time.Time {
 			return from.AddDate(0, 0, i)
 		}
-		accumulateFrom = time.Unix(req.RangeFrom, 0)
+		start = time.Unix(req.RangeFrom, 0)
 	case model.InsightStep_WEEKLY:
 		movePoint = func(from time.Time, i int) time.Time {
 			return from.AddDate(0, 0, 7*i)
 		}
 		rangeFrom := time.Unix(req.RangeFrom, 0)
 		// Sunday in the week of rangeFrom
-		accumulateFrom = rangeFrom.AddDate(0, 0, -int(rangeFrom.Weekday()))
+		start = rangeFrom.AddDate(0, 0, -int(rangeFrom.Weekday()))
 	case model.InsightStep_MONTHLY:
 		movePoint = func(from time.Time, i int) time.Time {
 			return from.AddDate(0, i, 0)
 		}
 		rangeFrom := time.Unix(req.RangeFrom, 0)
-		accumulateFrom = time.Date(rangeFrom.Year(), rangeFrom.Month(), 1, 0, 0, 0, 0, time.Local)
+		start = time.Date(rangeFrom.Year(), rangeFrom.Month(), 1, 0, 0, 0, 0, time.Local)
 	case model.InsightStep_YEARLY:
 		movePoint = func(from time.Time, i int) time.Time {
 			return from.AddDate(i, 0, 0)
 		}
 		rangeFrom := time.Unix(req.RangeFrom, 0)
-		accumulateFrom = time.Date(rangeFrom.Year(), 1, 1, 0, 0, 0, 0, time.Local)
+		start = time.Date(rangeFrom.Year(), 1, 1, 0, 0, 0, 0, time.Local)
 	default:
 		return nil, status.Error(codes.InvalidArgument, "Invalid step")
 	}
 
 	for i := 0; i < int(req.DataPointCount); i++ {
-		target := movePoint(accumulateFrom, i)
+		target := movePoint(start, i)
 
 		filters := []datastore.ListFilter{
 			{
