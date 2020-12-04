@@ -410,7 +410,7 @@ message GetInsightDataRequest {
     pipe.model.InsightMetricsKind metrics_kind = 1 [(validate.rules).enum.defined_only = true];
     pipe.model.InsightStep step = 2 [(validate.rules).enum.defined_only = true];
     int64 range_from = 3 [(validate.rules).int64.gt = 0];
-    int64 range_to = 4 [(validate.rules).int64.gt = 0];
+    int64 data_point_count = 4 [(validate.rules).int64.gt = 0];
     string application_id = 5;
 }
 
