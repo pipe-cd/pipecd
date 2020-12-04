@@ -926,7 +926,7 @@ func TestGetInsightDataForDeployFrequency(t *testing.T) {
 			wantErr: false,
 		},
 		{
-			name:      "return error when something wrong happen",
+			name:      "return error when something wrong happen on ListDeployments",
 			pipedID:   "pipedID",
 			projectID: "projectID",
 			deploymentStore: func() datastore.DeploymentStore {

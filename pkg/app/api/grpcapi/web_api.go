@@ -1356,6 +1356,8 @@ func (a *WebAPI) getInsightDataForDeployFrequency(ctx context.Context, projectID
 		}
 		rangeFrom := time.Unix(req.RangeFrom, 0)
 		accumulateFrom = time.Date(rangeFrom.Year(), 1, 1, 0, 0, 0, 0, time.Local)
+	default:
+		return nil, status.Error(codes.InvalidArgument, "Invalid step")
 	}
 
 	for i := 0; i < int(req.DataPointCount); i++ {
