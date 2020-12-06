@@ -1403,6 +1403,7 @@ func (a *WebAPI) getInsightDataForDeployFrequency(
 	count := 0
 	for j := 0; ; j++ {
 		deployments, err := a.deploymentStore.ListDeployments(ctx, datastore.ListOptions{
+			Page:     j + 1,
 			PageSize: pageSize,
 			Filters:  filters,
 		})
@@ -1474,24 +1475,46 @@ func (a *WebAPI) getInsightDataForChangeFailureRate(
 		},
 	}
 
-	successDeployments, err := a.deploymentStore.ListDeployments(ctx, datastore.ListOptions{
-		Filters: append(filterForSuccessDeploy, commonFilters...),
-	})
-	if err != nil {
-		a.logger.Error("failed to get deployments", zap.Error(err))
-		return nil, status.Error(codes.Internal, "Failed to get deployments")
+	pageSize := 50
+	successCount := 0
+	for j := 0; ; j++ {
+		successDeployments, err := a.deploymentStore.ListDeployments(ctx, datastore.ListOptions{
+			Page:     j + 1,
+			PageSize: pageSize,
+			Filters:  append(filterForSuccessDeploy, commonFilters...),
+		})
+		if err != nil {
+			a.logger.Error("failed to get deployments", zap.Error(err))
+			return nil, status.Error(codes.Internal, "Failed to get deployments")
+		}
+
+		successCount += len(successDeployments)
+
+		if len(successDeployments) != 50 {
+			break
+		}
 	}
 
-	failureDeployments, err := a.deploymentStore.ListDeployments(ctx, datastore.ListOptions{
-		Filters: append(filterForFailureDeploy, commonFilters...),
-	})
-	if err != nil {
-		a.logger.Error("failed to get deployments", zap.Error(err))
-		return nil, status.Error(codes.Internal, "Failed to get deployments")
+	failureCount := 0
+	for j := 0; ; j++ {
+		failureDeployments, err := a.deploymentStore.ListDeployments(ctx, datastore.ListOptions{
+			Page:     j + 1,
+			PageSize: pageSize,
+			Filters:  append(filterForFailureDeploy, commonFilters...),
+		})
+		if err != nil {
+			a.logger.Error("failed to get deployments", zap.Error(err))
+			return nil, status.Error(codes.Internal, "Failed to get deployments")
+		}
+
+		failureCount += len(failureDeployments)
+
+		if len(failureDeployments) != 50 {
+			break
+		}
 	}
 
-	// The definition of change failure rate: count_of_failure / (count_of_success + count_of_failure)
-	changeFailureRate := float32(len(failureDeployments)) / float32(len(successDeployments)+len(failureDeployments))
+	changeFailureRate := float32(failureCount) / float32(successCount+failureCount)
 
 	return &model.InsightDataPoint{
 		Timestamp: targetRangeFrom.Unix(),
