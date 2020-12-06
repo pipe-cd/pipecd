@@ -1382,6 +1382,7 @@ func (a *WebAPI) getInsightDataForDeployFrequency(ctx context.Context, projectID
 		for j := 0; ; j++ {
 			deployments, err := a.deploymentStore.ListDeployments(ctx, datastore.ListOptions{
 				PageSize: pageSize,
+				Page: j + 1,
 				Filters:  filters,
 			})
 			if err != nil {
