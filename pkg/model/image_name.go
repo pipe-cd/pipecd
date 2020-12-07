@@ -14,7 +14,10 @@
 
 package model
 
-import "fmt"
+import (
+	"fmt"
+	"path"
+)
 
 // ImageName represents an untagged image. Note that images may have
 // the domain omitted (e.g. Docker Hub). If they only have single path element,
@@ -30,15 +33,7 @@ type ImageName struct {
 }
 
 func (i ImageName) String() string {
-	if i.Repo == "" {
-		return ""
-	}
-
-	var host string
-	if i.Domain != "" {
-		host = i.Domain + "/"
-	}
-	return fmt.Sprintf("%s%s", host, i.Repo)
+	return path.Join(i.Domain, i.Repo)
 }
 
 // Name gives back just repository name without domain.
@@ -59,9 +54,9 @@ type ImageRef struct {
 }
 
 func (i ImageRef) String() string {
-	var tag string
-	if i.Tag != "" {
-		tag = ":" + i.Tag
+	if i.Tag == "" {
+		return i.ImageName.String()
 	}
-	return fmt.Sprintf("%s%s", i.ImageName.String(), tag)
+
+	return fmt.Sprintf("%s:%s", i.ImageName.String(), i.Tag)
 }

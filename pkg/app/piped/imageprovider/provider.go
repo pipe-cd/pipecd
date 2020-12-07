@@ -28,7 +28,7 @@ import (
 	"github.com/pipe-cd/pipe/pkg/model"
 )
 
-// Provider acs as a container registry client.
+// Provider acts as a container registry client.
 type Provider interface {
 	// Name gives back the provider name that is unique in the Piped.
 	Name() string
