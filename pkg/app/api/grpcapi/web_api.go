@@ -1318,10 +1318,10 @@ func (a *WebAPI) GetInsightData(ctx context.Context, req *webservice.GetInsightD
 		return nil, err
 	}
 
-	return a.accumulateInsightData(ctx, claims.Role.ProjectId, req)
+	return a.calculateInsightData(ctx, claims.Role.ProjectId, req)
 }
 
-func (a *WebAPI) accumulateInsightData(ctx context.Context, projectID string, req *webservice.GetInsightDataRequest) (*webservice.GetInsightDataResponse, error) {
+func (a *WebAPI) calculateInsightData(ctx context.Context, projectID string, req *webservice.GetInsightDataRequest) (*webservice.GetInsightDataResponse, error) {
 	counts := make([]*model.InsightDataPoint, req.DataPointCount)
 
 	var movePoint func(time.Time, int) time.Time
