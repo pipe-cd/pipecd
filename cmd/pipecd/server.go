@@ -217,7 +217,7 @@ func (s *server) run(ctx context.Context, t cli.Telemetry) error {
 				datastore.NewAPIKeyStore(ds),
 				t.Logger,
 			)
-			service = grpcapi.NewAPI(ctx, ds, cmds, t.Logger)
+			service = grpcapi.NewAPI(ds, cmds, t.Logger)
 			opts    = []rpc.Option{
 				rpc.WithPort(s.apiPort),
 				rpc.WithGracePeriod(s.gracePeriod),

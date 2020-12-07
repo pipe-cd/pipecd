@@ -39,7 +39,6 @@ type API struct {
 
 // NewAPI creates a new API instance.
 func NewAPI(
-	ctx context.Context,
 	ds datastore.DataStore,
 	cmds commandstore.Store,
 	logger *zap.Logger,
@@ -59,10 +58,10 @@ func (a *API) Register(server *grpc.Server) {
 	apiservice.RegisterAPIServiceServer(server, a)
 }
 
-func (a *API) AddApplication(ctx context.Context, req *apiservice.AddApplicationRequest) (*apiservice.AddApplicationResponse, error) {
+func (a *API) AddApplication(_ context.Context, _ *apiservice.AddApplicationRequest) (*apiservice.AddApplicationResponse, error) {
 	return nil, status.Error(codes.Unimplemented, "")
 }
 
-func (a *API) SyncApplication(ctx context.Context, req *apiservice.SyncApplicationRequest) (*apiservice.SyncApplicationResponse, error) {
+func (a *API) SyncApplication(_ context.Context, _ *apiservice.SyncApplicationRequest) (*apiservice.SyncApplicationResponse, error) {
 	return nil, status.Error(codes.Unimplemented, "")
 }
