@@ -10,11 +10,12 @@ import {
 
 const baseState = {
   error: null,
-  items: [],
   generatedKey: null,
   loading: false,
   generating: false,
   disabling: false,
+  entities: {},
+  ids: [],
 };
 
 describe("apiKeysSlice reducer", () => {
@@ -126,7 +127,31 @@ describe("apiKeysSlice reducer", () => {
             meta: { arg },
           }
         )
-      ).toEqual({ ...baseState, items: [dummyAPIKey] });
+      ).toEqual({
+        ...baseState,
+        entities: { [dummyAPIKey.id]: dummyAPIKey },
+        ids: [dummyAPIKey.id],
+      });
+
+      expect(
+        apiKeysSlice.reducer(
+          {
+            ...baseState,
+            entities: { [dummyAPIKey.id]: dummyAPIKey },
+            ids: [dummyAPIKey.id],
+            loading: true,
+          },
+          {
+            type: fetchAPIKeys.fulfilled.type,
+            payload: [],
+            meta: { arg },
+          }
+        )
+      ).toEqual({
+        ...baseState,
+        entities: {},
+        ids: [],
+      });
     });
   });
 

@@ -82,6 +82,15 @@ func TestExtractToken(t *testing.T) {
 			expectedCredentialsType: PipedTokenCredentials,
 			failed:                  false,
 		},
+		{
+			name: "should be ok with APIKey",
+			ctx: metadata.NewIncomingContext(context.Background(), metadata.MD{
+				"authorization": []string{"API-KEY key"},
+			}),
+			expectedCredentials:     "key",
+			expectedCredentialsType: APIKeyCredentials,
+			failed:                  false,
+		},
 	}
 	for _, tc := range testcases {
 		t.Run(tc.name, func(t *testing.T) {

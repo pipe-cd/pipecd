@@ -23,7 +23,7 @@ import (
 )
 
 const (
-	apiKeyLength = 50
+	apiKeyLength = 32
 )
 
 func GenerateAPIKey(id string) (key, hash string, err error) {
