@@ -1311,6 +1311,91 @@ func (a *WebAPI) ListAPIKeys(ctx context.Context, req *webservice.ListAPIKeysReq
 }
 
 // GetInsightData returns the accumulated insight data.
-func (a *WebAPI) GetInsightData(_ context.Context, _ *webservice.GetInsightDataRequest) (*webservice.GetInsightDataResponse, error) {
+func (a *WebAPI) GetInsightData(ctx context.Context, req *webservice.GetInsightDataRequest) (*webservice.GetInsightDataResponse, error) {
+	claims, err := rpcauth.ExtractClaims(ctx)
+	if err != nil {
+		a.logger.Error("failed to authenticate the current user", zap.Error(err))
+		return nil, err
+	}
+
+	switch req.MetricsKind {
+	case model.InsightMetricsKind_DEPLOYMENT_FREQUENCY:
+		return a.getInsightDataForDeployFrequency(ctx, claims.Role.ProjectId, req)
+	}
 	return nil, status.Error(codes.Unimplemented, "")
+}
+
+// getInsightDataForDeployFrequency returns the accumulated insight data for deploy frequency.
+// This function is temporary implementation for front end.
+func (a *WebAPI) getInsightDataForDeployFrequency(ctx context.Context, projectID string, req *webservice.GetInsightDataRequest) (*webservice.GetInsightDataResponse, error) {
+	counts := make([]*model.InsightDataPoint, req.DataPointCount)
+
+	var movePoint func(time.Time, int) time.Time
+	var start time.Time
+	// To prevent heavy loading
+	// - Support only daily
+	// - DataPointCount needs to be less than or equal to 7
+	switch req.Step {
+	case model.InsightStep_DAILY:
+		if req.DataPointCount > 7 {
+			return nil, status.Error(codes.InvalidArgument, "DataPointCount needs to be less than or equal to 7")
+		}
+		movePoint = func(from time.Time, i int) time.Time {
+			return from.AddDate(0, 0, i)
+		}
+		rangeFrom := time.Unix(req.RangeFrom, 0)
+		start = time.Date(rangeFrom.Year(), rangeFrom.Month(), rangeFrom.Day(), 0, 0, 0, 0, time.UTC)
+	default:
+		return nil, status.Error(codes.InvalidArgument, "Invalid step")
+	}
+
+	for i := 0; i < int(req.DataPointCount); i++ {
+		target := movePoint(start, i)
+
+		filters := []datastore.ListFilter{
+			{
+				Field:    "ProjectId",
+				Operator: "==",
+				Value:    projectID,
+			},
+			{
+				Field:    "CreatedAt",
+				Operator: ">=",
+				Value:    target.Unix(),
+			},
+			{
+				Field:    "CreatedAt",
+				Operator: "<",
+				Value:    movePoint(target, 1).Unix(), // target's finish time on unix time
+			},
+		}
+
+		if req.ApplicationId != "" {
+			filters = append(filters, datastore.ListFilter{
+				Field:    "ApplicationId",
+				Operator: "==",
+				Value:    req.ApplicationId,
+			})
+		}
+
+		pageSize := 50
+		deployments, err := a.deploymentStore.ListDeployments(ctx, datastore.ListOptions{
+			PageSize: pageSize,
+			Filters:  filters,
+		})
+		if err != nil {
+			a.logger.Error("failed to get deployments", zap.Error(err))
+			return nil, status.Error(codes.Internal, "Failed to get deployments")
+		}
+
+		counts[i] = &model.InsightDataPoint{
+			Timestamp: target.Unix(),
+			Value:     float32(len(deployments)),
+		}
+	}
+
+	return &webservice.GetInsightDataResponse{
+		UpdatedAt:  time.Now().Unix(),
+		DataPoints: counts,
+	}, nil
 }
