@@ -18,6 +18,7 @@ import (
 	"context"
 	"errors"
 	"fmt"
+	"sort"
 	"strings"
 	"time"
 
@@ -1520,4 +1521,118 @@ func (a *WebAPI) getInsightDataForChangeFailureRate(
 		Timestamp: targetRangeFrom.Unix(),
 		Value:     changeFailureRate,
 	}, nil
+}
+
+// getInsightDataForMTTR accumulate insight data in target range for mean time to restore
+func (a *WebAPI) getInsightDataForMTTR(
+	ctx context.Context,
+	projectID string,
+	applicationID string,
+	targetRangeFrom time.Time,
+	targetRangeTo time.Time) (*model.InsightDataPoint, error) {
+
+	var applicationIDs []string
+	if applicationID == "" {
+		//TODO
+		apps, err := a.applicationStore.ListApplications(ctx, datastore.ListOptions{})
+		if err != nil {
+			a.logger.Error("failed to get applications", zap.Error(err))
+			return nil, status.Error(codes.Internal, "Failed to get applications")
+		}
+
+		for _, app := range apps {
+			applicationIDs = append(applicationIDs, app.Id)
+		}
+	} else {
+		applicationIDs = append(applicationIDs, applicationID)
+	}
+
+	var mttrs []float32
+	for _, appID := range applicationIDs {
+		filters := []datastore.ListFilter{
+			{
+				Field:    "ProjectId",
+				Operator: "==",
+				Value:    projectID,
+			},
+			{
+				Field:    "CreatedAt",
+				Operator: ">=",
+				Value:    targetRangeFrom.Unix(),
+			},
+			{
+				Field:    "CreatedAt",
+				Operator: "<",
+				Value:    targetRangeTo.Unix(), // target's finish time on unix time
+			},
+			{
+				Field:    "ApplicationId",
+				Operator: "==",
+				Value:    appID,
+			},
+		}
+
+		pageSize := 50
+		appDeployments := []*model.Deployment{}
+		for j := 0; ; j++ {
+			deployments, err := a.deploymentStore.ListDeployments(ctx, datastore.ListOptions{
+				Page:     j + 1,
+				PageSize: pageSize,
+				Filters:  filters,
+			})
+			if err != nil {
+				a.logger.Error("failed to get deployments", zap.Error(err))
+				return nil, status.Error(codes.Internal, "Failed to get deployments")
+			}
+
+			appDeployments = append(appDeployments, deployments...)
+
+			if len(deployments) != 50 {
+				break
+			}
+		}
+
+		mttrs = append(mttrs, calculateAverageMTTR(appDeployments))
+	}
+
+	var total float32 = 0
+	for _, v := range mttrs {
+		total += v
+	}
+
+	return &model.InsightDataPoint{
+		Timestamp: targetRangeFrom.Unix(),
+		Value:     total / float32(len(mttrs)),
+	}, nil
+}
+
+func calculateAverageMTTR(deployments []*model.Deployment) float32 {
+	sort.Slice(deployments, func(i, j int) bool { return deployments[i].CompletedAt < deployments[j].CompletedAt })
+
+	mttrs := []int64{}
+	isAfterFailure := false
+	var failureTimestamp int64 = -1
+	for _, deployment := range deployments {
+		if deployment.Status == model.DeploymentStatus_DEPLOYMENT_FAILURE {
+			isAfterFailure = true
+			if failureTimestamp == -1 {
+				failureTimestamp = deployment.CompletedAt
+			}
+			continue
+		}
+
+		if isAfterFailure && deployment.Status == model.DeploymentStatus_DEPLOYMENT_SUCCESS {
+			mttrs = append(mttrs, deployment.CompletedAt-failureTimestamp)
+
+			failureTimestamp = -1
+			isAfterFailure = false
+		}
+	}
+
+	var total float32 = 0
+	for _, v := range mttrs {
+		total += float32(v)
+	}
+
+	return total / float32(len(mttrs))
 }

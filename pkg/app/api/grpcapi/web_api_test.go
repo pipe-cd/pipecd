@@ -834,3 +834,312 @@ func TestGetInsightDataForChangeFailureRate(t *testing.T) {
 		})
 	}
 }
+func TestGetInsightDataForMTTR(t *testing.T) {
+	ctrl := gomock.NewController(t)
+	defer ctrl.Finish()
+
+	ctx, cancel := context.WithCancel(context.Background())
+	defer cancel()
+
+	PageSizeForListDeployments := 50
+	tests := []struct {
+		name             string
+		projectID        string
+		applicationID    string
+		targetRangeFrom  time.Time
+		targetRangeTo    time.Time
+		deploymentStore  datastore.DeploymentStore
+		applicationStore datastore.ApplicationStore
+		dataPoints       *model.InsightDataPoint
+		wantErr          bool
+	}{
+		{
+			name:            "valid with one failure",
+			projectID:       "projectID",
+			applicationID:   "ApplicationId",
+			targetRangeFrom: time.Date(2020, 1, 1, 0, 0, 0, 0, time.UTC),
+			targetRangeTo:   time.Date(2020, 1, 2, 0, 0, 0, 0, time.UTC),
+			deploymentStore: func() datastore.DeploymentStore {
+				s := datastoretest.NewMockDeploymentStore(ctrl)
+				s.EXPECT().
+					ListDeployments(gomock.Any(), datastore.ListOptions{
+						PageSize: PageSizeForListDeployments,
+						Page:     1,
+						Filters: []datastore.ListFilter{
+							{
+								Field:    "ProjectId",
+								Operator: "==",
+								Value:    "projectID",
+							},
+							{
+								Field:    "CreatedAt",
+								Operator: ">=",
+								Value:    time.Date(2020, 1, 1, 0, 0, 0, 0, time.UTC).Unix(),
+							},
+							{
+								Field:    "CreatedAt",
+								Operator: "<",
+								Value:    time.Date(2020, 1, 2, 0, 0, 0, 0, time.UTC).Unix(),
+							},
+							{
+								Field:    "ApplicationId",
+								Operator: "==",
+								Value:    "ApplicationId",
+							},
+						},
+					}).Return([]*model.Deployment{
+					{
+						Id:          "id1",
+						Status:      model.DeploymentStatus_DEPLOYMENT_FAILURE,
+						CompletedAt: time.Date(2020, 1, 1, 0, 0, 0, 0, time.UTC).Unix(),
+					},
+					{
+						Id:          "id2",
+						Status:      model.DeploymentStatus_DEPLOYMENT_SUCCESS,
+						CompletedAt: time.Date(2020, 1, 1, 0, 0, 10, 0, time.UTC).Unix(),
+					},
+					{
+						Id:          "id3",
+						Status:      model.DeploymentStatus_DEPLOYMENT_SUCCESS,
+						CompletedAt: time.Date(2020, 1, 1, 0, 0, 20, 0, time.UTC).Unix(),
+					},
+				}, nil)
+				return s
+			}(),
+			dataPoints: &model.InsightDataPoint{
+				Value:     10,
+				Timestamp: time.Date(2020, 1, 1, 0, 0, 0, 0, time.UTC).Unix(),
+			},
+			wantErr: false,
+		},
+		{
+			name:            "valid with failure twice in a row",
+			projectID:       "projectID",
+			applicationID:   "ApplicationId",
+			targetRangeFrom: time.Date(2020, 1, 1, 0, 0, 0, 0, time.UTC),
+			targetRangeTo:   time.Date(2020, 1, 2, 0, 0, 0, 0, time.UTC),
+			deploymentStore: func() datastore.DeploymentStore {
+				s := datastoretest.NewMockDeploymentStore(ctrl)
+				s.EXPECT().
+					ListDeployments(gomock.Any(), datastore.ListOptions{
+						PageSize: PageSizeForListDeployments,
+						Page:     1,
+						Filters: []datastore.ListFilter{
+							{
+								Field:    "ProjectId",
+								Operator: "==",
+								Value:    "projectID",
+							},
+							{
+								Field:    "CreatedAt",
+								Operator: ">=",
+								Value:    time.Date(2020, 1, 1, 0, 0, 0, 0, time.UTC).Unix(),
+							},
+							{
+								Field:    "CreatedAt",
+								Operator: "<",
+								Value:    time.Date(2020, 1, 2, 0, 0, 0, 0, time.UTC).Unix(),
+							},
+							{
+								Field:    "ApplicationId",
+								Operator: "==",
+								Value:    "ApplicationId",
+							},
+						},
+					}).Return([]*model.Deployment{
+					{
+						Id:          "id1",
+						Status:      model.DeploymentStatus_DEPLOYMENT_FAILURE,
+						CompletedAt: time.Date(2020, 1, 1, 0, 0, 0, 0, time.UTC).Unix(),
+					},
+					{
+						Id:          "id2",
+						Status:      model.DeploymentStatus_DEPLOYMENT_FAILURE,
+						CompletedAt: time.Date(2020, 1, 1, 0, 0, 10, 0, time.UTC).Unix(),
+					},
+					{
+						Id:          "id3",
+						Status:      model.DeploymentStatus_DEPLOYMENT_SUCCESS,
+						CompletedAt: time.Date(2020, 1, 1, 0, 0, 20, 0, time.UTC).Unix(),
+					},
+				}, nil)
+				return s
+			}(),
+			dataPoints: &model.InsightDataPoint{
+				Value:     20,
+				Timestamp: time.Date(2020, 1, 1, 0, 0, 0, 0, time.UTC).Unix(),
+			},
+			wantErr: false,
+		},
+		{
+			name:            "valid with all application",
+			projectID:       "projectID",
+			applicationID:   "",
+			targetRangeFrom: time.Date(2020, 1, 1, 0, 0, 0, 0, time.UTC),
+			targetRangeTo:   time.Date(2020, 1, 2, 0, 0, 0, 0, time.UTC),
+			deploymentStore: func() datastore.DeploymentStore {
+				s := datastoretest.NewMockDeploymentStore(ctrl)
+				s.EXPECT().
+					ListDeployments(gomock.Any(), datastore.ListOptions{
+						PageSize: PageSizeForListDeployments,
+						Page:     1,
+						Filters: []datastore.ListFilter{
+							{
+								Field:    "ProjectId",
+								Operator: "==",
+								Value:    "projectID",
+							},
+							{
+								Field:    "CreatedAt",
+								Operator: ">=",
+								Value:    time.Date(2020, 1, 1, 0, 0, 0, 0, time.UTC).Unix(),
+							},
+							{
+								Field:    "CreatedAt",
+								Operator: "<",
+								Value:    time.Date(2020, 1, 2, 0, 0, 0, 0, time.UTC).Unix(),
+							},
+							{
+								Field:    "ApplicationId",
+								Operator: "==",
+								Value:    "ApplicationId1",
+							},
+						},
+					}).Return([]*model.Deployment{
+					{
+						Id:          "id1",
+						Status:      model.DeploymentStatus_DEPLOYMENT_SUCCESS,
+						CompletedAt: time.Date(2020, 1, 1, 0, 0, 0, 0, time.UTC).Unix(),
+					},
+					{
+						Id:          "id2",
+						Status:      model.DeploymentStatus_DEPLOYMENT_FAILURE,
+						CompletedAt: time.Date(2020, 1, 1, 0, 0, 10, 0, time.UTC).Unix(),
+					},
+					{
+						Id:          "id3",
+						Status:      model.DeploymentStatus_DEPLOYMENT_SUCCESS,
+						CompletedAt: time.Date(2020, 1, 1, 0, 0, 20, 0, time.UTC).Unix(),
+					},
+				}, nil)
+
+				s.EXPECT().
+					ListDeployments(gomock.Any(), datastore.ListOptions{
+						PageSize: PageSizeForListDeployments,
+						Page:     1,
+						Filters: []datastore.ListFilter{
+							{
+								Field:    "ProjectId",
+								Operator: "==",
+								Value:    "projectID",
+							},
+							{
+								Field:    "CreatedAt",
+								Operator: ">=",
+								Value:    time.Date(2020, 1, 1, 0, 0, 0, 0, time.UTC).Unix(),
+							},
+							{
+								Field:    "CreatedAt",
+								Operator: "<",
+								Value:    time.Date(2020, 1, 2, 0, 0, 0, 0, time.UTC).Unix(),
+							},
+							{
+								Field:    "ApplicationId",
+								Operator: "==",
+								Value:    "ApplicationId2",
+							},
+						},
+					}).Return([]*model.Deployment{
+					{
+						Id:          "id1",
+						Status:      model.DeploymentStatus_DEPLOYMENT_SUCCESS,
+						CompletedAt: time.Date(2020, 1, 1, 0, 0, 0, 0, time.UTC).Unix(),
+					},
+					{
+						Id:          "id2",
+						Status:      model.DeploymentStatus_DEPLOYMENT_FAILURE,
+						CompletedAt: time.Date(2020, 1, 1, 0, 0, 10, 0, time.UTC).Unix(),
+					},
+					{
+						Id:          "id3",
+						Status:      model.DeploymentStatus_DEPLOYMENT_SUCCESS,
+						CompletedAt: time.Date(2020, 1, 1, 0, 0, 100, 0, time.UTC).Unix(),
+					},
+				}, nil)
+				return s
+			}(),
+			applicationStore: func() datastore.ApplicationStore {
+				s := datastoretest.NewMockApplicationStore(ctrl)
+				s.EXPECT().ListApplications(gomock.Any(), datastore.ListOptions{}).Return([]*model.Application{
+					{
+						Id: "ApplicationId1",
+					},
+					{
+						Id: "ApplicationId2",
+					},
+				}, nil)
+
+				return s
+			}(),
+			dataPoints: &model.InsightDataPoint{
+				Value:     50,
+				Timestamp: time.Date(2020, 1, 1, 0, 0, 0, 0, time.UTC).Unix(),
+			},
+			wantErr: false,
+		},
+		{
+			name:            "return error when something wrong happen on ListDeployments",
+			projectID:       "projectID",
+			applicationID:   "ApplicationId",
+			targetRangeFrom: time.Date(2020, 1, 1, 0, 0, 0, 0, time.UTC),
+			targetRangeTo:   time.Date(2020, 1, 2, 0, 0, 0, 0, time.UTC),
+			deploymentStore: func() datastore.DeploymentStore {
+				s := datastoretest.NewMockDeploymentStore(ctrl)
+				s.EXPECT().
+					ListDeployments(gomock.Any(), datastore.ListOptions{
+						PageSize: PageSizeForListDeployments,
+						Page:     1,
+						Filters: []datastore.ListFilter{
+							{
+								Field:    "ProjectId",
+								Operator: "==",
+								Value:    "projectID",
+							},
+							{
+								Field:    "CreatedAt",
+								Operator: ">=",
+								Value:    time.Date(2020, 1, 1, 0, 0, 0, 0, time.UTC).Unix(),
+							},
+							{
+								Field:    "CreatedAt",
+								Operator: "<",
+								Value:    time.Date(2020, 1, 2, 0, 0, 0, 0, time.UTC).Unix(),
+							},
+							{
+								Field:    "ApplicationId",
+								Operator: "==",
+								Value:    "ApplicationId",
+							},
+						},
+					}).Return([]*model.Deployment{}, fmt.Errorf("something wrong happens in ListDeployments"))
+				return s
+			}(),
+			wantErr: true,
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			api := &WebAPI{
+				applicationStore: tt.applicationStore,
+				deploymentStore:  tt.deploymentStore,
+				logger:           zap.NewNop(),
+			}
+			value, err := api.getInsightDataForMTTR(ctx, tt.projectID, tt.applicationID, tt.targetRangeFrom, tt.targetRangeTo)
+			assert.Equal(t, tt.wantErr, err != nil)
+			if err == nil {
+				assert.Equal(t, tt.dataPoints, value)
+			}
+		})
+	}
+}
