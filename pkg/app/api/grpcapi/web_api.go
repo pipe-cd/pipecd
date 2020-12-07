@@ -1326,6 +1326,7 @@ func (a *WebAPI) GetInsightData(ctx context.Context, req *webservice.GetInsightD
 }
 
 // getInsightDataForDeployFrequency returns the accumulated insight data for deploy frequency.
+// This function is temporary implementation for front end.
 func (a *WebAPI) getInsightDataForDeployFrequency(ctx context.Context, projectID string, req *webservice.GetInsightDataRequest) (*webservice.GetInsightDataResponse, error) {
 	counts := make([]*model.InsightDataPoint, req.DataPointCount)
 
@@ -1378,28 +1379,18 @@ func (a *WebAPI) getInsightDataForDeployFrequency(ctx context.Context, projectID
 		}
 
 		pageSize := 50
-		count := 0
-		for j := 0; ; j++ {
-			deployments, err := a.deploymentStore.ListDeployments(ctx, datastore.ListOptions{
-				PageSize: pageSize,
-				Page: j + 1,
-				Filters:  filters,
-			})
-			if err != nil {
-				a.logger.Error("failed to get deployments", zap.Error(err))
-				return nil, status.Error(codes.Internal, "Failed to get deployments")
-			}
-
-			count += len(deployments)
-
-			if len(deployments) != 50 {
-				break
-			}
+		deployments, err := a.deploymentStore.ListDeployments(ctx, datastore.ListOptions{
+			PageSize: pageSize,
+			Filters:  filters,
+		})
+		if err != nil {
+			a.logger.Error("failed to get deployments", zap.Error(err))
+			return nil, status.Error(codes.Internal, "Failed to get deployments")
 		}
 
 		counts[i] = &model.InsightDataPoint{
 			Timestamp: target.Unix(),
-			Value:     float32(count),
+			Value:     float32(len(deployments)),
 		}
 	}
 
