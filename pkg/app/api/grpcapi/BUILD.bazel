@@ -3,6 +3,7 @@ load("@io_bazel_rules_go//go:def.bzl", "go_library", "go_test")
 go_library(
     name = "go_default_library",
     srcs = [
+        "api.go",
         "deployment_config_templates.go",
         "piped_api.go",
         "web_api.go",
@@ -13,6 +14,7 @@ go_library(
     deps = [
         "//pkg/app/api/applicationlivestatestore:go_default_library",
         "//pkg/app/api/commandstore:go_default_library",
+        "//pkg/app/api/service/apiservice:go_default_library",
         "//pkg/app/api/service/pipedservice:go_default_library",
         "//pkg/app/api/service/webservice:go_default_library",
         "//pkg/app/api/stagelogstore:go_default_library",
@@ -36,6 +38,7 @@ go_test(
     name = "go_default_test",
     size = "small",
     srcs = [
+        "api_test.go",
         "piped_api_test.go",
         "web_api_test.go",
     ],

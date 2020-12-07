@@ -43,6 +43,7 @@ genrule(
 # gazelle:exclude pkg/app/helloworld/service/service.pb.validate.go
 # gazelle:exclude pkg/app/api/service/webservice/service.pb.validate.go
 # gazelle:exclude pkg/app/api/service/pipedservice/service.pb.validate.go
+# gazelle:exclude pkg/app/api/service/apiservice/service.pb.validate.go
 # gazelle:exclude pkg/model/apikey.pb.validate.go
 # gazelle:exclude pkg/model/application.pb.validate.go
 # gazelle:exclude pkg/model/application_live_state.pb.validate.go
@@ -51,6 +52,7 @@ genrule(
 # gazelle:exclude pkg/model/deployment.pb.validate.go
 # gazelle:exclude pkg/model/environment.pb.validate.go
 # gazelle:exclude pkg/model/event.pb.validate.go
+# gazelle:exclude pkg/model/insight.pb.validate.go
 # gazelle:exclude pkg/model/logblock.pb.validate.go
 # gazelle:exclude pkg/model/piped.pb.validate.go
 # gazelle:exclude pkg/model/piped_stats.pb.validate.go
