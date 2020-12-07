@@ -1513,7 +1513,6 @@ func (a *WebAPI) getInsightDataForMTTR(
 
 	var applicationIDs []string
 	if applicationID == "" {
-		//TODO
 		apps, err := a.applicationStore.ListApplications(ctx, datastore.ListOptions{})
 		if err != nil {
 			a.logger.Error("failed to get applications", zap.Error(err))
