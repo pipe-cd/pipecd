@@ -41,6 +41,8 @@ type watcher struct {
 	config    *config.PipedSpec
 	gitClient gitClient
 	logger    *zap.Logger
+	wg        sync.WaitGroup
+	mu        sync.Mutex
 
 	// Indexed by repo id.
 	gitRepos sync.Map
@@ -75,14 +77,17 @@ func (w *watcher) Run(ctx context.Context) error {
 			return err
 		}
 
+		w.wg.Add(1)
 		go w.run(ctx, p, cfg.PullInterval.Duration())
 	}
+	w.wg.Wait()
 	return nil
 }
 
 // run periodically compares the image stored in the given provider and one stored in git.
 // And then pushes those with differences.
 func (w *watcher) run(ctx context.Context, provider imageprovider.Provider, interval time.Duration) {
+	defer w.wg.Done()
 	ticker := time.NewTicker(interval)
 	defer ticker.Stop()
 
@@ -123,7 +128,10 @@ func (w *watcher) collectTargets(ctx context.Context, provider imageprovider.Pro
 			return true
 		}
 		branch := repo.GetClonedBranch()
-		if err := repo.Pull(ctx, branch); err != nil {
+		w.mu.Lock()
+		err := repo.Pull(ctx, branch)
+		w.mu.Unlock()
+		if err != nil {
 			w.logger.Error("failed to update repository branch",
 				zap.String("repo-id", id),
 				zap.Error(err),
