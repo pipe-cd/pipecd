@@ -153,7 +153,7 @@ func TestPipedConfig(t *testing.T) {
 						Name:         "my-dockerhub",
 						Type:         "DOCKERHUB",
 						PullInterval: Duration(time.Minute * 5),
-						DockerhubConfig: &ImageProviderDockerhubConfig{
+						DockerHubConfig: &ImageProviderDockerHubConfig{
 							Username:     "foo",
 							PasswordFile: "/etc/piped-secret/dockerhub-pass",
 						},
@@ -224,7 +224,7 @@ func TestPipedConfig(t *testing.T) {
 					},
 				},
 				ImageWatcher: PipedImageWatcher{
-					Targets: []PipedImageWatcherTarget{
+					Repos: []PipedImageWatcherRepoTarget{
 						{
 							RepoID:   "foo",
 							Includes: []string{".pipe/imagewatcher-dev.yaml"},

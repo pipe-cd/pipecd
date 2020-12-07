@@ -45,7 +45,7 @@ func NewProvider(cfg *config.PipedImageProvider, logger *zap.Logger) (Provider, 
 	switch cfg.Type {
 	case model.ImageProviderTypeGCR:
 		return gcr.NewProvider(cfg.Name, cfg.GCRConfig, doChallenge, logger)
-	case model.ImageProviderTypeDockerhub:
+	case model.ImageProviderTypeDockerHub:
 		return nil, fmt.Errorf("not implemented yet")
 	case model.ImageProviderTypeECR:
 		return nil, fmt.Errorf("not implemented yet")

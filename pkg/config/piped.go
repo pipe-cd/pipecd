@@ -378,10 +378,10 @@ type AnalysisProviderStackdriverConfig struct {
 type PipedImageProvider struct {
 	Name string                  `json:"name"`
 	Type model.ImageProviderType `json:"type"`
-	// Default is five minute.
+	// Default is 5m.
 	PullInterval Duration `json:"pullInterval"`
 
-	DockerhubConfig *ImageProviderDockerhubConfig
+	DockerHubConfig *ImageProviderDockerHubConfig
 	GCRConfig       *ImageProviderGCRConfig
 	ECRConfig       *ImageProviderECRConfig
 }
@@ -404,14 +404,14 @@ func (p *PipedImageProvider) UnmarshalJSON(data []byte) error {
 	p.Type = gp.Type
 	p.PullInterval = gp.PullInterval
 	if p.PullInterval == 0 {
-		p.PullInterval = Duration(time.Minute * 5)
+		p.PullInterval = Duration(5 * time.Minute)
 	}
 
 	switch p.Type {
-	case model.ImageProviderTypeDockerhub:
-		p.DockerhubConfig = &ImageProviderDockerhubConfig{}
+	case model.ImageProviderTypeDockerHub:
+		p.DockerHubConfig = &ImageProviderDockerHubConfig{}
 		if len(gp.Config) > 0 {
-			err = json.Unmarshal(gp.Config, p.DockerhubConfig)
+			err = json.Unmarshal(gp.Config, p.DockerHubConfig)
 		}
 	case model.ImageProviderTypeGCR:
 		p.GCRConfig = &ImageProviderGCRConfig{}
@@ -434,7 +434,7 @@ type ImageProviderGCRConfig struct {
 	CredentialsFile string `json:"credentialsFile"`
 }
 
-type ImageProviderDockerhubConfig struct {
+type ImageProviderDockerHubConfig struct {
 	Username     string `json:"username"`
 	PasswordFile string `json:"passwordFile"`
 }
@@ -570,10 +570,10 @@ func (p *SealedSecretManagement) UnmarshalJSON(data []byte) error {
 }
 
 type PipedImageWatcher struct {
-	Targets []PipedImageWatcherTarget `json:"targets"`
+	Repos []PipedImageWatcherRepoTarget `json:"repos"`
 }
 
-type PipedImageWatcherTarget struct {
+type PipedImageWatcherRepoTarget struct {
 	RepoID string `json:"repoId"`
 	// The paths to ImageWatcher files to be included.
 	Includes []string `json:"includes"`

@@ -87,6 +87,7 @@ func (p *Provider) GetLatestImage(ctx context.Context, image *model.ImageName) (
 	if err != nil {
 		return nil, err
 	}
+	// TODO: Stop listing all tags
 	_, err = repository.Tags(ctx).All(ctx)
 	if err != nil {
 		return nil, err
