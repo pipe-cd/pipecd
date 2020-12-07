@@ -20,8 +20,17 @@ option go_package = "github.com/pipe-cd/pipe/pkg/model";
 import "validate/validate.proto";
 
 message InsightDataPoint {
-  int64 timestamp = 1 [(validate.rules).int64.gt = 0];
-  float value = 2 [(validate.rules).float.gt = 0];
+  // The generated unique identifier.
+  string id = 1 [(validate.rules).string.min_len = 1];
+  int64 timestamp = 2 [(validate.rules).int64.gt = 0];
+  float value = 3 [(validate.rules).float.gte = 0];
+  string application_id = 4 [(validate.rules).string.min_len = 1];
+  string env_id = 5 [(validate.rules).string.min_len = 1];
+  string piped_id = 6 [(validate.rules).string.min_len = 1];
+  string project_id = 7 [(validate.rules).string.min_len = 1];
+  InsightMetricsKind metrics_kind = 8 [(validate.rules).enum.defined_only = true];
+  InsightStep step = 9 [(validate.rules).enum.defined_only = true];
+  int64 created_at = 100 [(validate.rules).int64.gte = 0];
 }
 
 enum InsightMetricsKind {
