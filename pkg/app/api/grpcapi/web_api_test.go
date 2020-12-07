@@ -391,7 +391,7 @@ func TestValidatePipedBelongsToProject(t *testing.T) {
 	}
 }
 
-func TestAccumulateInsightData(t *testing.T) {
+func TestCalculateInsightData(t *testing.T) {
 	ctrl := gomock.NewController(t)
 	defer ctrl.Finish()
 
