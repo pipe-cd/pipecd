@@ -13,6 +13,7 @@ go_library(
         "pipedstatsstore.go",
         "pipedstore.go",
         "projectstore.go",
+        "insightstore.go",
     ],
     importpath = "github.com/pipe-cd/pipe/pkg/datastore",
     visibility = ["//visibility:public"],
@@ -34,6 +35,7 @@ go_test(
         "pipedstatsstore_test.go",
         "pipedstore_test.go",
         "projectstore_test.go",
+        "insightstore_test.go",
     ],
     embed = [":go_default_library"],
     deps = [
