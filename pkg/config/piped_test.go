@@ -223,6 +223,14 @@ func TestPipedConfig(t *testing.T) {
 						PublicKeyFile:  "/etc/piped-secret/sealing-public-key",
 					},
 				},
+				ImageWatcher: PipedImageWatcher{
+					Targets: []PipedImageWatcherTarget{
+						{
+							RepoID:   "foo",
+							Includes: []string{".pipe/imagewatcher-dev.yaml"},
+						},
+					},
+				},
 			},
 			expectedError: nil,
 		},

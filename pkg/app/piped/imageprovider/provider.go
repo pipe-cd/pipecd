@@ -65,7 +65,8 @@ func doChallenge(manager challenge.Manager, tx http.RoundTripper, domain string)
 		return nil, err
 	}
 	if len(cs) == 0 {
-		// TODO: Handle referring to https://github.com/fluxcd/flux/blob/72743f209207453a4326757ba89fb03cb514b34d/pkg/registry/client_factory.go#L64-L91
+		// TODO: Handle the no challenge case
+		//   referring to https://github.com/fluxcd/flux/blob/72743f209207453a4326757ba89fb03cb514b34d/pkg/registry/client_factory.go#L64-L91
 	}
 
 	return &registryURL, nil

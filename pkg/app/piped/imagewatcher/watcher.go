@@ -131,8 +131,8 @@ func (w *watcher) collectTargets(ctx context.Context, provider imageprovider.Pro
 			return true
 		}
 
-		includes := []string{}
-		excludes := []string{}
+		includes := make([]string, 0)
+		excludes := make([]string, 0)
 		for _, target := range w.config.ImageWatcher.Targets {
 			if target.RepoID != id {
 				continue

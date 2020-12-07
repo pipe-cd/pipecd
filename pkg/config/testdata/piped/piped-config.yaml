@@ -133,3 +133,9 @@ spec:
     #   keyName: key-name
     #   decryptServiceAccountFile: /etc/piped-secret/decrypt-service-account.json 
     #   encryptServiceAccountFile: /etc/piped-secret/encrypt-service-account.json
+
+  imageWatcher:
+    targets:
+      - repoId: foo
+        includes:
+          - .pipe/imagewatcher-dev.yaml
