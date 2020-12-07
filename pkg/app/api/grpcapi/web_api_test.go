@@ -420,7 +420,6 @@ func TestAccumulateInsightData(t *testing.T) {
 				s.EXPECT().
 					ListDeployments(gomock.Any(), datastore.ListOptions{
 						PageSize: PageSizeForListDeployments,
-						Page:     1,
 						Filters: []datastore.ListFilter{
 							{
 								Field:    "ProjectId",
@@ -457,7 +456,6 @@ func TestAccumulateInsightData(t *testing.T) {
 				s.EXPECT().
 					ListDeployments(gomock.Any(), datastore.ListOptions{
 						PageSize: PageSizeForListDeployments,
-						Page:     1,
 						Filters: []datastore.ListFilter{
 							{
 								Field:    "ProjectId",
@@ -563,7 +561,6 @@ func TestGetInsightDataForDeployFrequency(t *testing.T) {
 				s.EXPECT().
 					ListDeployments(gomock.Any(), datastore.ListOptions{
 						PageSize: PageSizeForListDeployments,
-						Page:     1,
 						Filters: []datastore.ListFilter{
 							{
 								Field:    "ProjectId",
@@ -616,7 +613,6 @@ func TestGetInsightDataForDeployFrequency(t *testing.T) {
 				s.EXPECT().
 					ListDeployments(gomock.Any(), datastore.ListOptions{
 						PageSize: PageSizeForListDeployments,
-						Page:     1,
 						Filters: []datastore.ListFilter{
 							{
 								Field:    "ProjectId",
@@ -689,7 +685,6 @@ func TestGetInsightDataForChangeFailureRate(t *testing.T) {
 				s.EXPECT().
 					ListDeployments(gomock.Any(), datastore.ListOptions{
 						PageSize: PageSizeForListDeployments,
-						Page:     1,
 						Filters: []datastore.ListFilter{
 							{
 								Field:    "Status",
@@ -732,7 +727,6 @@ func TestGetInsightDataForChangeFailureRate(t *testing.T) {
 				s.EXPECT().
 					ListDeployments(gomock.Any(), datastore.ListOptions{
 						PageSize: PageSizeForListDeployments,
-						Page:     1,
 						Filters: []datastore.ListFilter{
 							{
 								Field:    "Status",
@@ -784,7 +778,6 @@ func TestGetInsightDataForChangeFailureRate(t *testing.T) {
 				s.EXPECT().
 					ListDeployments(gomock.Any(), datastore.ListOptions{
 						PageSize: PageSizeForListDeployments,
-						Page:     1,
 						Filters: []datastore.ListFilter{
 							{
 								Field:    "Status",

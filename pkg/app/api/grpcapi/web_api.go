@@ -1422,6 +1422,7 @@ func (a *WebAPI) getInsightDataForDeployFrequency(
 }
 
 // getInsightDataForChangeFailureRate accumulate insight data in target range for change failure rate
+// This function is temporary implementation for front end.
 func (a *WebAPI) getInsightDataForChangeFailureRate(
 	ctx context.Context,
 	projectID string,
@@ -1472,43 +1473,26 @@ func (a *WebAPI) getInsightDataForChangeFailureRate(
 	}
 
 	pageSize := 50
-	successCount := 0
-	for j := 0; ; j++ {
-		successDeployments, err := a.deploymentStore.ListDeployments(ctx, datastore.ListOptions{
-			Page:     j + 1,
-			PageSize: pageSize,
-			Filters:  append(filterForSuccessDeploy, commonFilters...),
-		})
-		if err != nil {
-			a.logger.Error("failed to get deployments", zap.Error(err))
-			return nil, status.Error(codes.Internal, "Failed to get deployments")
-		}
-
-		successCount += len(successDeployments)
-
-		if len(successDeployments) != 50 {
-			break
-		}
+	successDeployments, err := a.deploymentStore.ListDeployments(ctx, datastore.ListOptions{
+		PageSize: pageSize,
+		Filters:  append(filterForSuccessDeploy, commonFilters...),
+	})
+	if err != nil {
+		a.logger.Error("failed to get deployments", zap.Error(err))
+		return nil, status.Error(codes.Internal, "Failed to get deployments")
 	}
 
-	failureCount := 0
-	for j := 0; ; j++ {
-		failureDeployments, err := a.deploymentStore.ListDeployments(ctx, datastore.ListOptions{
-			Page:     j + 1,
-			PageSize: pageSize,
-			Filters:  append(filterForFailureDeploy, commonFilters...),
-		})
-		if err != nil {
-			a.logger.Error("failed to get deployments", zap.Error(err))
-			return nil, status.Error(codes.Internal, "Failed to get deployments")
-		}
-
-		failureCount += len(failureDeployments)
-
-		if len(failureDeployments) != 50 {
-			break
-		}
+	failureDeployments, err := a.deploymentStore.ListDeployments(ctx, datastore.ListOptions{
+		PageSize: pageSize,
+		Filters:  append(filterForFailureDeploy, commonFilters...),
+	})
+	if err != nil {
+		a.logger.Error("failed to get deployments", zap.Error(err))
+		return nil, status.Error(codes.Internal, "Failed to get deployments")
 	}
+
+	successCount := len(successDeployments)
+	failureCount := len(failureDeployments)
 
 	changeFailureRate := float32(failureCount) / float32(successCount+failureCount)
 
