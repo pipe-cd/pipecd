@@ -28,7 +28,7 @@ var insightFactory = func() interface{} {
 }
 
 type InsightStore interface {
-	AddInsight(ctx context.Context, env *model.InsightDataPoint) error
+	AddInsight(ctx context.Context, idp *model.InsightDataPoint) error
 	ListInsights(ctx context.Context, opts ListOptions) ([]*model.InsightDataPoint, error)
 }
 
@@ -62,17 +62,17 @@ func (s *insightStore) ListInsights(ctx context.Context, opts ListOptions) ([]*m
 	if err != nil {
 		return nil, err
 	}
-	envs := make([]*model.InsightDataPoint, 0)
+	idps := make([]*model.InsightDataPoint, 0)
 	for {
-		var env model.InsightDataPoint
-		err := it.Next(&env)
+		var idp model.InsightDataPoint
+		err := it.Next(&idp)
 		if err == ErrIteratorDone {
 			break
 		}
 		if err != nil {
 			return nil, err
 		}
-		envs = append(envs, &env)
+		idps = append(idps, &idp)
 	}
-	return envs, nil
+	return idps, nil
 }
