@@ -21,9 +21,12 @@ import (
 	"testing"
 
 	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/require"
 	"go.uber.org/zap"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/metadata"
+
+	"github.com/pipe-cd/pipe/pkg/model"
 )
 
 type fakeServerStream struct {
@@ -161,6 +164,76 @@ func TestPipedTokenStreamServerInterceptor(t *testing.T) {
 				return nil
 			})
 			assert.Equal(t, tc.failed, err != nil)
+		})
+	}
+}
+
+type testAPIKeyVerifier struct {
+	keyString string
+	key       *model.APIKey
+}
+
+func (v testAPIKeyVerifier) Verify(_ context.Context, key string) (*model.APIKey, error) {
+	if key != v.keyString {
+		return nil, fmt.Errorf("invalid API key, want: %s, got: %s", v.keyString, key)
+	}
+	return v.key, nil
+}
+
+func TestAPIKeyUnaryServerInterceptor(t *testing.T) {
+	verifier := testAPIKeyVerifier{
+		keyString: "test-api-key",
+		key: &model.APIKey{
+			Id: "test-api-key",
+		},
+	}
+	in := APIKeyUnaryServerInterceptor(verifier, zap.NewNop())
+	testcases := []struct {
+		name        string
+		ctx         context.Context
+		expectedKey *model.APIKey
+		errString   string
+	}{
+		{
+			name:      "missing credentials",
+			ctx:       context.TODO(),
+			errString: "rpc error: code = Unauthenticated desc = missing credentials",
+		},
+		{
+			name: "wrong credentials type",
+			ctx: metadata.NewIncomingContext(context.Background(), metadata.MD{
+				"authorization": []string{"PIPED-TOKEN test-project-id,test-piped-id,test-piped-key"},
+			}),
+			errString: "rpc error: code = Unauthenticated desc = Unauthenticated",
+		},
+		{
+			name: "ok",
+			ctx: metadata.NewIncomingContext(context.Background(), metadata.MD{
+				"authorization": []string{"API-KEY test-api-key"},
+			}),
+			expectedKey: &model.APIKey{
+				Id: "test-api-key",
+			},
+		},
+	}
+	for _, tc := range testcases {
+		t.Run(tc.name, func(t *testing.T) {
+			_, err := in(tc.ctx, nil, nil, func(ctx context.Context, req interface{}) (interface{}, error) {
+				apiKey, err := ExtractAPIKey(ctx)
+				if err != nil {
+					return nil, err
+				}
+				if apiKey.Id != tc.expectedKey.Id {
+					return nil, errors.New("invalid api key")
+				}
+				return nil, nil
+			})
+			if tc.errString != "" {
+				require.NotNil(t, err)
+				assert.Equal(t, tc.errString, err.Error())
+			} else {
+				assert.Nil(t, err)
+			}
 		})
 	}
 }

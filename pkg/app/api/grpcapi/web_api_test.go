@@ -22,10 +22,9 @@ import (
 	"testing"
 	"time"
 
-	"go.uber.org/zap"
-
 	"github.com/golang/mock/gomock"
 	"github.com/stretchr/testify/assert"
+	"go.uber.org/zap"
 
 	"github.com/pipe-cd/pipe/pkg/app/api/service/webservice"
 	"github.com/pipe-cd/pipe/pkg/cache"
@@ -392,7 +391,8 @@ func TestValidatePipedBelongsToProject(t *testing.T) {
 	}
 }
 
-func TestAccumulateInsightData(t *testing.T) {
+
+func TestCalculateInsightData(t *testing.T) {
 	ctrl := gomock.NewController(t)
 	defer ctrl.Finish()
 
@@ -526,7 +526,8 @@ func TestAccumulateInsightData(t *testing.T) {
 				deploymentStore:   tt.deploymentStore,
 				logger:            zap.NewNop(),
 			}
-			res, err := api.accumulateInsightData(ctx, tt.projectID, tt.req)
+
+			res, err := api.calculateInsightData(ctx, tt.projectID, tt.req)
 			assert.Equal(t, tt.wantErr, err != nil)
 			if err == nil {
 				assert.Equal(t, tt.res.DataPoints, res.DataPoints)
@@ -617,7 +618,6 @@ func TestGetInsightDataForDeployFrequency(t *testing.T) {
 				s.EXPECT().
 					ListDeployments(gomock.Any(), datastore.ListOptions{
 						PageSize: PageSizeForListDeployments,
-						Page:     1,
 						Filters: []datastore.ListFilter{
 							{
 								Field:    "ProjectId",
@@ -690,7 +690,6 @@ func TestGetInsightDataForChangeFailureRate(t *testing.T) {
 				s.EXPECT().
 					ListDeployments(gomock.Any(), datastore.ListOptions{
 						PageSize: PageSizeForListDeployments,
-						Page:     1,
 						Filters: []datastore.ListFilter{
 							{
 								Field:    "Status",
@@ -733,7 +732,6 @@ func TestGetInsightDataForChangeFailureRate(t *testing.T) {
 				s.EXPECT().
 					ListDeployments(gomock.Any(), datastore.ListOptions{
 						PageSize: PageSizeForListDeployments,
-						Page:     1,
 						Filters: []datastore.ListFilter{
 							{
 								Field:    "Status",
@@ -785,7 +783,6 @@ func TestGetInsightDataForChangeFailureRate(t *testing.T) {
 				s.EXPECT().
 					ListDeployments(gomock.Any(), datastore.ListOptions{
 						PageSize: PageSizeForListDeployments,
-						Page:     1,
 						Filters: []datastore.ListFilter{
 							{
 								Field:    "Status",

@@ -1,0 +1,50 @@
+// Copyright 2020 The PipeCD Authors.
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//     http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+syntax = "proto3";
+
+package pipe.api.service.apiservice;
+option go_package = "github.com/pipe-cd/pipe/pkg/app/api/service/apiservice";
+
+import "validate/validate.proto";
+import "pkg/model/common.proto";
+import "pkg/model/application.proto";
+
+// APIService contains all RPC definitions for external service, pipectl.
+// All of these RPCs are authenticated by using API key.
+service APIService {
+    rpc AddApplication(AddApplicationRequest) returns (AddApplicationResponse) {}
+    rpc SyncApplication(SyncApplicationRequest) returns (SyncApplicationResponse) {}
+}
+
+message AddApplicationRequest {
+    string name = 1 [(validate.rules).string.min_len = 1];
+    string env_id = 2 [(validate.rules).string.min_len = 1];
+    string piped_id = 3 [(validate.rules).string.min_len = 1];
+    model.ApplicationGitPath git_path = 4 [(validate.rules).message.required = true];
+    model.ApplicationKind kind = 5 [(validate.rules).enum.defined_only = true];
+    string cloud_provider = 6 [(validate.rules).string.min_len = 1];
+}
+
+message AddApplicationResponse {
+    string application_id = 1 [(validate.rules).string.min_len = 1];
+}
+
+message SyncApplicationRequest {
+    string application_id = 1 [(validate.rules).string.min_len = 1];
+}
+
+message SyncApplicationResponse {
+    string command_id = 1;
+}

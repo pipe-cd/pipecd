@@ -1,4 +1,4 @@
-import React, { FC, useRef } from "react";
+import React, { FC, useCallback, memo, useRef } from "react";
 import {
   makeStyles,
   Dialog,
@@ -12,7 +12,10 @@ import {
 import CopyIcon from "@material-ui/icons/FileCopyOutlined";
 import copy from "copy-to-clipboard";
 import { addToast } from "../modules/toasts";
-import { useDispatch } from "react-redux";
+import { useDispatch, useSelector } from "react-redux";
+import { AppState } from "../modules";
+import { clearGeneratedKey } from "../modules/api-keys";
+import { COPY_API_KEY } from "../constants/toast-text";
 
 const useStyles = makeStyles(() => ({
   key: {
@@ -20,30 +23,28 @@ const useStyles = makeStyles(() => ({
   },
 }));
 
-interface Props {
-  open: boolean;
-  generatedKey: string | null;
-  onClose: () => void;
-}
-
 const DIALOG_TITLE = "Generated API Key";
 const VALUE_CAPTION = "API Key";
 
-export const GeneratedApiKeyDialog: FC<Props> = ({
-  open,
-  onClose,
-  generatedKey,
-}) => {
+export const GeneratedAPIKeyDialog: FC = memo(function GeneratedAPIKeyDialog() {
   const classes = useStyles();
   const dispatch = useDispatch();
+  const generatedKey = useSelector<AppState, string | null>(
+    (state) => state.apiKeys.generatedKey
+  );
+  const open = Boolean(generatedKey);
   const keyRef = useRef<HTMLDivElement>(null);
 
-  const handleOnClickCopy = (): void => {
+  const handleOnClickCopy = useCallback((): void => {
     if (generatedKey) {
       copy(generatedKey);
-      dispatch(addToast({ message: "API Key copied to clipboard" }));
+      dispatch(addToast({ message: COPY_API_KEY }));
     }
-  };
+  }, [generatedKey, dispatch]);
+
+  const handleClose = useCallback(() => {
+    dispatch(clearGeneratedKey());
+  }, [dispatch]);
 
   return (
     <Dialog open={open}>
@@ -63,8 +64,8 @@ export const GeneratedApiKeyDialog: FC<Props> = ({
         </Typography>
       </DialogContent>
       <DialogActions>
-        <Button onClick={onClose}>Close</Button>
+        <Button onClick={handleClose}>Close</Button>
       </DialogActions>
     </Dialog>
   );
-};
+});

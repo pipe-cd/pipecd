@@ -108,6 +108,9 @@ spec:
             - name: http
               containerPort: 9082
               protocol: TCP
+            - name: api
+              containerPort: 9083
+              protocol: TCP
             - name: admin
               containerPort: 9085
               protocol: TCP

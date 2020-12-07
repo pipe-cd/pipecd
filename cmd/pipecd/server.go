@@ -29,6 +29,7 @@ import (
 	"golang.org/x/sync/errgroup"
 
 	"github.com/pipe-cd/pipe/pkg/admin"
+	"github.com/pipe-cd/pipe/pkg/app/api/apikeyverifier"
 	"github.com/pipe-cd/pipe/pkg/app/api/applicationlivestatestore"
 	"github.com/pipe-cd/pipe/pkg/app/api/authhandler"
 	"github.com/pipe-cd/pipe/pkg/app/api/commandstore"
@@ -65,6 +66,7 @@ type server struct {
 	pipedAPIPort int
 	webAPIPort   int
 	httpPort     int
+	apiPort      int
 	adminPort    int
 	staticDir    string
 	cacheAddress string
@@ -87,6 +89,7 @@ func NewServerCommand() *cobra.Command {
 		pipedAPIPort: 9080,
 		webAPIPort:   9081,
 		httpPort:     9082,
+		apiPort:      9083,
 		adminPort:    9085,
 		staticDir:    "pkg/app/web/public_files",
 		cacheAddress: "cache:6379",
@@ -101,6 +104,7 @@ func NewServerCommand() *cobra.Command {
 	cmd.Flags().IntVar(&s.pipedAPIPort, "piped-api-port", s.pipedAPIPort, "The port number used to run a grpc server that serving serves incoming piped requests.")
 	cmd.Flags().IntVar(&s.webAPIPort, "web-api-port", s.webAPIPort, "The port number used to run a grpc server that serves incoming web requests.")
 	cmd.Flags().IntVar(&s.httpPort, "http-port", s.httpPort, "The port number used to run a http server that serves incoming http requests such as auth callbacks or webhook events.")
+	cmd.Flags().IntVar(&s.apiPort, "api-port", s.apiPort, "The port number used to run a grpc server for external apis.")
 	cmd.Flags().IntVar(&s.adminPort, "admin-port", s.adminPort, "The port number used to run a HTTP server for admin tasks such as metrics, healthz.")
 	cmd.Flags().StringVar(&s.staticDir, "static-dir", s.staticDir, "The directory where contains static assets.")
 	cmd.Flags().StringVar(&s.cacheAddress, "cache-address", s.cacheAddress, "The address to cache service.")
@@ -135,11 +139,6 @@ func (s *server) run(ctx context.Context, t cli.Telemetry) error {
 		return err
 	}
 	t.Logger.Info("successfully loaded control-plane configuration")
-
-	var (
-		pipedAPIServer *rpc.Server
-		webAPIServer   *rpc.Server
-	)
 
 	ds, err := createDatastore(ctx, cfg, t.Logger)
 	if err != nil {
@@ -204,9 +203,37 @@ func (s *server) run(ctx context.Context, t cli.Telemetry) error {
 			opts = append(opts, rpc.WithGRPCReflection())
 		}
 
-		pipedAPIServer = rpc.NewServer(service, opts...)
+		server := rpc.NewServer(service, opts...)
 		group.Go(func() error {
-			return pipedAPIServer.Run(ctx)
+			return server.Run(ctx)
+		})
+	}
+
+	// Start a gRPC server for handling external API requests.
+	{
+		var (
+			verifier = apikeyverifier.NewVerifier(
+				ctx,
+				datastore.NewAPIKeyStore(ds),
+				t.Logger,
+			)
+			service = grpcapi.NewAPI(ds, cmds, t.Logger)
+			opts    = []rpc.Option{
+				rpc.WithPort(s.apiPort),
+				rpc.WithGracePeriod(s.gracePeriod),
+				rpc.WithLogger(t.Logger),
+				rpc.WithLogUnaryInterceptor(t.Logger),
+				rpc.WithAPIKeyAuthUnaryInterceptor(verifier, t.Logger),
+				rpc.WithRequestValidationUnaryInterceptor(),
+			}
+		)
+		if s.tls {
+			opts = append(opts, rpc.WithTLS(s.certFile, s.keyFile))
+		}
+
+		server := rpc.NewServer(service, opts...)
+		group.Go(func() error {
+			return server.Run(ctx)
 		})
 	}
 
@@ -239,9 +266,9 @@ func (s *server) run(ctx context.Context, t cli.Telemetry) error {
 			opts = append(opts, rpc.WithGRPCReflection())
 		}
 
-		webAPIServer = rpc.NewServer(service, opts...)
+		server := rpc.NewServer(service, opts...)
 		group.Go(func() error {
-			return webAPIServer.Run(ctx)
+			return server.Run(ctx)
 		})
 	}
 
