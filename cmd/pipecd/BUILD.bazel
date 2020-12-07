@@ -12,6 +12,7 @@ go_library(
     visibility = ["//visibility:private"],
     deps = [
         "//pkg/admin:go_default_library",
+        "//pkg/app/api/apikeyverifier:go_default_library",
         "//pkg/app/api/applicationlivestatestore:go_default_library",
         "//pkg/app/api/authhandler:go_default_library",
         "//pkg/app/api/commandstore:go_default_library",

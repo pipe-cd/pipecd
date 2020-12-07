@@ -69,6 +69,11 @@ data:
                       route:
                         cluster: server-web-api
                     - match:
+                        prefix: /pipe.api.service.apiservice.APIService/
+                        grpc:
+                      route:
+                        cluster: server-api
+                    - match:
                         prefix: /
                       route:
                         cluster: server-http
@@ -111,6 +116,20 @@ data:
                   socket_address:
                     address: {{ include "pipecd.fullname" . }}-server
                     port_value: 9081
+      - name: server-api
+        http2_protocol_options: {}
+        connect_timeout: 0.25s
+        type: strict_dns
+        lb_policy: round_robin
+        load_assignment:
+          cluster_name: server-api
+          endpoints:
+          - lb_endpoints:
+            - endpoint:
+                address:
+                  socket_address:
+                    address: {{ include "pipecd.fullname" . }}-server
+                    port_value: 9083
       - name: server-http
         #http2_protocol_options: {}
         connect_timeout: 0.25s

@@ -32,6 +32,7 @@ var (
 
 type APIKeyStore interface {
 	AddAPIKey(ctx context.Context, k *model.APIKey) error
+	GetAPIKey(ctx context.Context, id string) (*model.APIKey, error)
 	DisableAPIKey(ctx context.Context, id, projectID string) error
 	ListAPIKeys(ctx context.Context, opts ListOptions) ([]*model.APIKey, error)
 }
@@ -62,6 +63,14 @@ func (s *apiKeyStore) AddAPIKey(ctx context.Context, k *model.APIKey) error {
 		return err
 	}
 	return s.ds.Create(ctx, apiKeyModelKind, k.Id, k)
+}
+
+func (s *apiKeyStore) GetAPIKey(ctx context.Context, id string) (*model.APIKey, error) {
+	var entity model.APIKey
+	if err := s.ds.Get(ctx, apiKeyModelKind, id, &entity); err != nil {
+		return nil, err
+	}
+	return &entity, nil
 }
 
 func (s *apiKeyStore) ListAPIKeys(ctx context.Context, opts ListOptions) ([]*model.APIKey, error) {

@@ -66,6 +66,9 @@ spec:
     - name: http
       port: 9082
       targetPort: http
+    - name: api
+      port: 9083
+      targetPort: api
     - name: admin
       port: 9085
       targetPort: admin
