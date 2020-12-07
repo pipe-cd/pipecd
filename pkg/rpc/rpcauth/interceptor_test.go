@@ -173,7 +173,7 @@ type testAPIKeyVerifier struct {
 	key       *model.APIKey
 }
 
-func (v testAPIKeyVerifier) Verify(ctx context.Context, key string) (*model.APIKey, error) {
+func (v testAPIKeyVerifier) Verify(_ context.Context, key string) (*model.APIKey, error) {
 	if key != v.keyString {
 		return nil, fmt.Errorf("invalid API key, want: %s, got: %s", v.keyString, key)
 	}
