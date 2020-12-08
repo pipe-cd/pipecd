@@ -31,6 +31,10 @@ test:
 test-debug:
 	bazelisk ${BAZEL_FLAGS} test ${BAZEL_COMMAND_FLAGS} --test_output=all -- //pkg/...
 
+.PHONY: test-mod
+test-mod:
+	bazelisk ${BAZEL_FLAGS} test ${BAZEL_COMMAND_FLAGS} -- //${DIR}/...
+
 .PHONY: test-integration
 test-integration:
 	bazelisk ${BAZEL_FLAGS} test ${BAZEL_COMMAND_FLAGS} --action_env=CLOUDSDK_PYTHON=${CLOUDSDK_PYTHON} -- //test/integration/...
