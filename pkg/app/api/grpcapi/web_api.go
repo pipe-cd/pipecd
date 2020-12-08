@@ -1527,52 +1527,42 @@ func (a *WebAPI) getInsightDataForMTTR(
 		applicationIDs = append(applicationIDs, applicationID)
 	}
 
-	var mttrs []float32
-	for _, appID := range applicationIDs {
-		filters := []datastore.ListFilter{
-			{
-				Field:    "ProjectId",
-				Operator: "==",
-				Value:    projectID,
-			},
-			{
-				Field:    "CreatedAt",
-				Operator: ">=",
-				Value:    targetRangeFrom.Unix(),
-			},
-			{
-				Field:    "CreatedAt",
-				Operator: "<",
-				Value:    targetRangeTo.Unix(), // target's finish time on unix time
-			},
-			{
-				Field:    "ApplicationId",
-				Operator: "==",
-				Value:    appID,
-			},
-		}
-
-		pageSize := 50
-		deployments, err := a.deploymentStore.ListDeployments(ctx, datastore.ListOptions{
-			PageSize: pageSize,
-			Filters:  filters,
-		})
-		if err != nil {
-			a.logger.Error("failed to get deployments", zap.Error(err))
-			return nil, status.Error(codes.Internal, "Failed to get deployments")
-		}
-
-		mttrs = append(mttrs, calculateAverageMTTR(deployments))
+	filters := []datastore.ListFilter{
+		{
+			Field:    "ProjectId",
+			Operator: "==",
+			Value:    projectID,
+		},
+		{
+			Field:    "CreatedAt",
+			Operator: ">=",
+			Value:    targetRangeFrom.Unix(),
+		},
+		{
+			Field:    "CreatedAt",
+			Operator: "<",
+			Value:    targetRangeTo.Unix(), // target's finish time on unix time
+		},
+		{
+			Field:    "ApplicationId",
+			Operator: "in",
+			Value:    applicationIDs,
+		},
 	}
 
-	var total float32 = 0
-	for _, v := range mttrs {
-		total += v
+	pageSize := 50
+	deployments, err := a.deploymentStore.ListDeployments(ctx, datastore.ListOptions{
+		PageSize: pageSize,
+		Filters:  filters,
+	})
+	if err != nil {
+		a.logger.Error("failed to get deployments", zap.Error(err))
+		return nil, status.Error(codes.Internal, "Failed to get deployments")
 	}
 
 	return &model.InsightDataPoint{
 		Timestamp: targetRangeFrom.Unix(),
-		Value:     total / float32(len(mttrs)),
+		Value:     calculateAverageMTTR(deployments),
 	}, nil
 }
 
@@ -1580,22 +1570,18 @@ func calculateAverageMTTR(deployments []*model.Deployment) float32 {
 	sort.Slice(deployments, func(i, j int) bool { return deployments[i].CompletedAt < deployments[j].CompletedAt })
 
 	mttrs := []int64{}
-	isAfterFailure := false
-	var failureTimestamp int64 = -1
-	for _, deployment := range deployments {
-		if deployment.Status == model.DeploymentStatus_DEPLOYMENT_FAILURE {
-			isAfterFailure = true
-			if failureTimestamp == -1 {
-				failureTimestamp = deployment.CompletedAt
+	recorder := map[string]int64{}
+	for _, d := range deployments {
+		if d.Status == model.DeploymentStatus_DEPLOYMENT_FAILURE {
+			if _, ok := recorder[d.ApplicationId]; !ok {
+				recorder[d.ApplicationId] = d.CompletedAt
 			}
 			continue
 		}
 
-		if isAfterFailure && deployment.Status == model.DeploymentStatus_DEPLOYMENT_SUCCESS {
-			mttrs = append(mttrs, deployment.CompletedAt-failureTimestamp)
-
-			failureTimestamp = -1
-			isAfterFailure = false
+		if time, ok := recorder[d.ApplicationId]; ok && d.Status == model.DeploymentStatus_DEPLOYMENT_SUCCESS {
+			mttrs = append(mttrs, d.CompletedAt-time)
+			delete(recorder, d.ApplicationId)
 		}
 	}
 

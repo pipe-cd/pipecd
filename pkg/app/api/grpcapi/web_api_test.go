@@ -875,8 +875,8 @@ func TestGetInsightDataForMTTR(t *testing.T) {
 							},
 							{
 								Field:    "ApplicationId",
-								Operator: "==",
-								Value:    "ApplicationId",
+								Operator: "in",
+								Value:    []string{"ApplicationId"},
 							},
 						},
 					}).Return([]*model.Deployment{
@@ -933,8 +933,8 @@ func TestGetInsightDataForMTTR(t *testing.T) {
 							},
 							{
 								Field:    "ApplicationId",
-								Operator: "==",
-								Value:    "ApplicationId",
+								Operator: "in",
+								Value:    []string{"ApplicationId"},
 							},
 						},
 					}).Return([]*model.Deployment{
@@ -991,68 +991,46 @@ func TestGetInsightDataForMTTR(t *testing.T) {
 							},
 							{
 								Field:    "ApplicationId",
-								Operator: "==",
-								Value:    "ApplicationId1",
+								Operator: "in",
+								Value:    []string{"ApplicationId1", "ApplicationId2"},
 							},
 						},
 					}).Return([]*model.Deployment{
 					{
-						Id:          "id1",
-						Status:      model.DeploymentStatus_DEPLOYMENT_SUCCESS,
-						CompletedAt: time.Date(2020, 1, 1, 0, 0, 0, 0, time.UTC).Unix(),
+						Id:            "id1",
+						ApplicationId: "ApplicationId1",
+						Status:        model.DeploymentStatus_DEPLOYMENT_SUCCESS,
+						CompletedAt:   time.Date(2020, 1, 1, 0, 0, 0, 0, time.UTC).Unix(),
 					},
 					{
-						Id:          "id2",
-						Status:      model.DeploymentStatus_DEPLOYMENT_FAILURE,
-						CompletedAt: time.Date(2020, 1, 1, 0, 0, 10, 0, time.UTC).Unix(),
+						Id:            "id2",
+						ApplicationId: "ApplicationId1",
+						Status:        model.DeploymentStatus_DEPLOYMENT_FAILURE,
+						CompletedAt:   time.Date(2020, 1, 1, 0, 0, 10, 0, time.UTC).Unix(),
 					},
 					{
-						Id:          "id3",
-						Status:      model.DeploymentStatus_DEPLOYMENT_SUCCESS,
-						CompletedAt: time.Date(2020, 1, 1, 0, 0, 20, 0, time.UTC).Unix(),
-					},
-				}, nil)
-
-				s.EXPECT().
-					ListDeployments(gomock.Any(), datastore.ListOptions{
-						PageSize: PageSizeForListDeployments,
-						Filters: []datastore.ListFilter{
-							{
-								Field:    "ProjectId",
-								Operator: "==",
-								Value:    "projectID",
-							},
-							{
-								Field:    "CreatedAt",
-								Operator: ">=",
-								Value:    time.Date(2020, 1, 1, 0, 0, 0, 0, time.UTC).Unix(),
-							},
-							{
-								Field:    "CreatedAt",
-								Operator: "<",
-								Value:    time.Date(2020, 1, 2, 0, 0, 0, 0, time.UTC).Unix(),
-							},
-							{
-								Field:    "ApplicationId",
-								Operator: "==",
-								Value:    "ApplicationId2",
-							},
-						},
-					}).Return([]*model.Deployment{
-					{
-						Id:          "id1",
-						Status:      model.DeploymentStatus_DEPLOYMENT_SUCCESS,
-						CompletedAt: time.Date(2020, 1, 1, 0, 0, 0, 0, time.UTC).Unix(),
+						Id:            "id3",
+						ApplicationId: "ApplicationId1",
+						Status:        model.DeploymentStatus_DEPLOYMENT_SUCCESS,
+						CompletedAt:   time.Date(2020, 1, 1, 0, 0, 100, 0, time.UTC).Unix(),
 					},
 					{
-						Id:          "id2",
-						Status:      model.DeploymentStatus_DEPLOYMENT_FAILURE,
-						CompletedAt: time.Date(2020, 1, 1, 0, 0, 10, 0, time.UTC).Unix(),
+						Id:            "id4",
+						ApplicationId: "ApplicationId2",
+						Status:        model.DeploymentStatus_DEPLOYMENT_SUCCESS,
+						CompletedAt:   time.Date(2020, 1, 1, 0, 0, 0, 0, time.UTC).Unix(),
 					},
 					{
-						Id:          "id3",
-						Status:      model.DeploymentStatus_DEPLOYMENT_SUCCESS,
-						CompletedAt: time.Date(2020, 1, 1, 0, 0, 100, 0, time.UTC).Unix(),
+						Id:            "id5",
+						ApplicationId: "ApplicationId2",
+						Status:        model.DeploymentStatus_DEPLOYMENT_FAILURE,
+						CompletedAt:   time.Date(2020, 1, 1, 0, 0, 10, 0, time.UTC).Unix(),
+					},
+					{
+						Id:            "id6",
+						ApplicationId: "ApplicationId2",
+						Status:        model.DeploymentStatus_DEPLOYMENT_SUCCESS,
+						CompletedAt:   time.Date(2020, 1, 1, 0, 0, 20, 0, time.UTC).Unix(),
 					},
 				}, nil)
 				return s
@@ -1105,8 +1083,8 @@ func TestGetInsightDataForMTTR(t *testing.T) {
 							},
 							{
 								Field:    "ApplicationId",
-								Operator: "==",
-								Value:    "ApplicationId",
+								Operator: "in",
+								Value:    []string{"ApplicationId"},
 							},
 						},
 					}).Return([]*model.Deployment{}, fmt.Errorf("something wrong happens in ListDeployments"))
