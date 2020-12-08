@@ -1,8 +1,8 @@
 common --color=yes
 
 # Show us more details
-build --show_timestamps --verbose_failures
-test --test_output=errors --test_verbose_timeout_warnings
+build --show_timestamps --verbose_failures --incompatible_strict_action_env
+test --test_output=errors --test_verbose_timeout_warnings --incompatible_strict_action_env
 
 # Enable stamping workspace variables to binary.
 build:stamping --stamp --workspace_status_command hack/print-workspace-status.sh
