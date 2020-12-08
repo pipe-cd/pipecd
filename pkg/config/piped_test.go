@@ -150,11 +150,30 @@ func TestPipedConfig(t *testing.T) {
 				},
 				ImageProviders: []PipedImageProvider{
 					{
-						Name: "my-dockerhub",
-						Type: "DOCKERHUB",
-						DockerhubConfig: &ImageProviderDockerhubConfig{
+						Name:         "my-dockerhub",
+						Type:         "DOCKER_HUB",
+						PullInterval: Duration(time.Minute * 5),
+						DockerHubConfig: &ImageProviderDockerHubConfig{
 							Username:     "foo",
 							PasswordFile: "/etc/piped-secret/dockerhub-pass",
+						},
+					},
+					{
+						Name:         "my-gcr",
+						Type:         "GCR",
+						PullInterval: Duration(time.Minute * 5),
+						GCRConfig: &ImageProviderGCRConfig{
+							Address:         "asia.gcr.io",
+							CredentialsFile: "/etc/piped-secret/gcr-service-account",
+						},
+					},
+					{
+						Name:         "my-ecr",
+						Type:         "ECR",
+						PullInterval: Duration(time.Minute * 5),
+						ECRConfig: &ImageProviderECRConfig{
+							Address:   "012345678910.dkr.ecr.us-east-1.amazonaws.com",
+							TokenFile: "/etc/piped-secret/ecr-authorization-token",
 						},
 					},
 				},
@@ -202,6 +221,14 @@ func TestPipedConfig(t *testing.T) {
 					SealingKeyConfig: &SealedSecretManagementSealingKey{
 						PrivateKeyFile: "/etc/piped-secret/sealing-private-key",
 						PublicKeyFile:  "/etc/piped-secret/sealing-public-key",
+					},
+				},
+				ImageWatcher: PipedImageWatcher{
+					Repos: []PipedImageWatcherRepoTarget{
+						{
+							RepoID:   "foo",
+							Includes: []string{".pipe/imagewatcher-dev.yaml"},
+						},
 					},
 				},
 			},

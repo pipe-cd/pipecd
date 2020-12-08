@@ -5,5 +5,10 @@ go_library(
     srcs = ["watcher.go"],
     importpath = "github.com/pipe-cd/pipe/pkg/app/piped/imagewatcher",
     visibility = ["//visibility:public"],
-    deps = ["@org_uber_go_zap//:go_default_library"],
+    deps = [
+        "//pkg/app/piped/imageprovider:go_default_library",
+        "//pkg/config:go_default_library",
+        "//pkg/git:go_default_library",
+        "@org_uber_go_zap//:go_default_library",
+    ],
 )

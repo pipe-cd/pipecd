@@ -17,7 +17,7 @@ package model
 type ImageProviderType string
 
 const (
-	ImageProviderTypeDockerhub ImageProviderType = "DOCKERHUB"
+	ImageProviderTypeDockerHub ImageProviderType = "DOCKER_HUB"
 	ImageProviderTypeGCR       ImageProviderType = "GCR"
 	ImageProviderTypeECR       ImageProviderType = "ECR"
 )

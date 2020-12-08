@@ -263,21 +263,6 @@ type TemplatableAnalysisHTTP struct {
 	Template AnalysisTemplateRef `json:"template"`
 }
 
-type DeploymentImageWatcher struct {
-	Targets []ImageWatcherTarget `json:"targets"`
-}
-
-type ImageWatcherTarget struct {
-	Provider string                 `json:"provider"`
-	Image    string                 `json:"image"`
-	Path     ImageWatcherTargetPath `json:"path"`
-}
-
-type ImageWatcherTargetPath struct {
-	Filename string `json:"filename"`
-	Field    string `json:"field"`
-}
-
 type SealedSecretMapping struct {
 	// Relative path from the application directory to sealed secret file.
 	Path string `json:"path"`
