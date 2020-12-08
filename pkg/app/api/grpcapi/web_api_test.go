@@ -523,7 +523,7 @@ func TestCalculateInsightData(t *testing.T) {
 				deploymentStore:   tt.deploymentStore,
 				logger:            zap.NewNop(),
 			}
-			res, err := api.calculateInsightData(ctx, tt.projectID, tt.req)
+			res, err := api.getInsightData(ctx, tt.projectID, tt.req)
 			assert.Equal(t, tt.wantErr, err != nil)
 			if err == nil {
 				assert.Equal(t, tt.res.DataPoints, res.DataPoints)

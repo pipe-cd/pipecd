@@ -1318,10 +1318,10 @@ func (a *WebAPI) GetInsightData(ctx context.Context, req *webservice.GetInsightD
 		return nil, err
 	}
 
-	return a.calculateInsightData(ctx, claims.Role.ProjectId, req)
+	return a.getInsightData(ctx, claims.Role.ProjectId, req)
 }
 
-func (a *WebAPI) calculateInsightData(ctx context.Context, projectID string, req *webservice.GetInsightDataRequest) (*webservice.GetInsightDataResponse, error) {
+func (a *WebAPI) getInsightData(ctx context.Context, projectID string, req *webservice.GetInsightDataRequest) (*webservice.GetInsightDataResponse, error) {
 	counts := make([]*model.InsightDataPoint, req.DataPointCount)
 
 	var movePoint func(time.Time, int) time.Time
@@ -1347,22 +1347,21 @@ func (a *WebAPI) calculateInsightData(ctx context.Context, projectID string, req
 		targetRangeFrom := movePoint(start, i)
 		targetRangeTo := movePoint(targetRangeFrom, 1)
 
+		var getInsightDataForEachKind func(context.Context, string, string, time.Time, time.Time) (*model.InsightDataPoint, error)
 		switch req.MetricsKind {
 		case model.InsightMetricsKind_DEPLOYMENT_FREQUENCY:
-			count, err := a.getInsightDataForDeployFrequency(ctx, projectID, req.ApplicationId, targetRangeFrom, targetRangeTo)
-			if err != nil {
-				return nil, err
-			}
-			counts[i] = count
+			getInsightDataForEachKind = a.getInsightDataForDeployFrequency
 		case model.InsightMetricsKind_CHANGE_FAILURE_RATE:
-			count, err := a.getInsightDataForChangeFailureRate(ctx, projectID, req.ApplicationId, targetRangeFrom, targetRangeTo)
-			if err != nil {
-				return nil, err
-			}
-			counts[i] = count
+			getInsightDataForEachKind = a.getInsightDataForChangeFailureRate
 		default:
 			return nil, status.Error(codes.Unimplemented, "")
 		}
+
+		count, err := getInsightDataForEachKind(ctx, projectID, req.ApplicationId, targetRangeFrom, targetRangeTo)
+		if err != nil {
+			return nil, err
+		}
+		counts[i] = count
 	}
 
 	return &webservice.GetInsightDataResponse{
