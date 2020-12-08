@@ -79,7 +79,7 @@ spec:
 
   imageProviders:
     - name: my-dockerhub
-      type: DOCKERHUB
+      type: DOCKER_HUB
       pullInterval: 5m
       config:
         username: foo

@@ -45,7 +45,7 @@ type watcher struct {
 	mu        sync.Mutex
 
 	// Indexed by repo id.
-	gitRepos sync.Map
+	gitRepos map[string]git.Repo
 }
 
 func NewWatcher(cfg *config.PipedSpec, gitClient gitClient, logger *zap.Logger) Watcher {
@@ -68,7 +68,7 @@ func (w *watcher) Run(ctx context.Context) error {
 			)
 			return err
 		}
-		w.gitRepos.Store(r.RepoID, repo)
+		w.gitRepos[r.RepoID] = repo
 	}
 
 	for _, cfg := range w.config.ImageProviders {
@@ -116,17 +116,7 @@ func (w *watcher) run(ctx context.Context, provider imageprovider.Provider, inte
 
 // collectTarget collects target images for each git repository.
 func (w *watcher) collectTargets(ctx context.Context, provider imageprovider.Provider) (targets []config.ImageWatcherTarget) {
-	w.gitRepos.Range(func(key, value interface{}) bool {
-		id, ok := key.(string)
-		if !ok {
-			w.logger.Error("unknown key type found")
-			return true
-		}
-		repo, ok := value.(git.Repo)
-		if !ok {
-			w.logger.Error("unknown repo type found")
-			return true
-		}
+	for id, repo := range w.gitRepos {
 		branch := repo.GetClonedBranch()
 		w.mu.Lock()
 		err := repo.Pull(ctx, branch)
@@ -136,7 +126,7 @@ func (w *watcher) collectTargets(ctx context.Context, provider imageprovider.Pro
 				zap.String("repo-id", id),
 				zap.Error(err),
 			)
-			return true
+			continue
 		}
 
 		includes := make([]string, 0)
@@ -151,16 +141,15 @@ func (w *watcher) collectTargets(ctx context.Context, provider imageprovider.Pro
 		cfg, ok, err := config.LoadImageWatcher(repo.GetPath(), includes, excludes)
 		if err != nil {
 			w.logger.Error("failed to load configuration file for Image Watcher", zap.Error(err))
-			return true
+			continue
 		}
 		if !ok {
 			w.logger.Error("configuration file for Image Watcher not found", zap.Error(err))
-			return true
+			continue
 		}
 		t := filterTargets(provider.Name(), cfg.Targets)
 		targets = append(targets, t...)
-		return true
-	})
+	}
 	return
 }
 

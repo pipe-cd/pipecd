@@ -151,7 +151,7 @@ func TestPipedConfig(t *testing.T) {
 				ImageProviders: []PipedImageProvider{
 					{
 						Name:         "my-dockerhub",
-						Type:         "DOCKERHUB",
+						Type:         "DOCKER_HUB",
 						PullInterval: Duration(time.Minute * 5),
 						DockerHubConfig: &ImageProviderDockerHubConfig{
 							Username:     "foo",
