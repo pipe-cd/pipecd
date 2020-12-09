@@ -835,15 +835,14 @@ func TestGetInsightDataForMTTR(t *testing.T) {
 
 	PageSizeForListDeployments := 50
 	tests := []struct {
-		name             string
-		projectID        string
-		applicationID    string
-		targetRangeFrom  time.Time
-		targetRangeTo    time.Time
-		deploymentStore  datastore.DeploymentStore
-		applicationStore datastore.ApplicationStore
-		dataPoints       *model.InsightDataPoint
-		wantErr          bool
+		name            string
+		projectID       string
+		applicationID   string
+		targetRangeFrom time.Time
+		targetRangeTo   time.Time
+		deploymentStore datastore.DeploymentStore
+		dataPoints      *model.InsightDataPoint
+		wantErr         bool
 	}{
 		{
 			name:            "valid with one failure",
@@ -874,8 +873,8 @@ func TestGetInsightDataForMTTR(t *testing.T) {
 							},
 							{
 								Field:    "ApplicationId",
-								Operator: "in",
-								Value:    []string{"ApplicationId"},
+								Operator: "==",
+								Value:    "ApplicationId",
 							},
 						},
 					}).Return([]*model.Deployment{
@@ -932,8 +931,8 @@ func TestGetInsightDataForMTTR(t *testing.T) {
 							},
 							{
 								Field:    "ApplicationId",
-								Operator: "in",
-								Value:    []string{"ApplicationId"},
+								Operator: "==",
+								Value:    "ApplicationId",
 							},
 						},
 					}).Return([]*model.Deployment{
@@ -988,11 +987,6 @@ func TestGetInsightDataForMTTR(t *testing.T) {
 								Operator: "<",
 								Value:    time.Date(2020, 1, 2, 0, 0, 0, 0, time.UTC).Unix(),
 							},
-							{
-								Field:    "ApplicationId",
-								Operator: "in",
-								Value:    []string{"ApplicationId1", "ApplicationId2"},
-							},
 						},
 					}).Return([]*model.Deployment{
 					{
@@ -1034,19 +1028,6 @@ func TestGetInsightDataForMTTR(t *testing.T) {
 				}, nil)
 				return s
 			}(),
-			applicationStore: func() datastore.ApplicationStore {
-				s := datastoretest.NewMockApplicationStore(ctrl)
-				s.EXPECT().ListApplications(gomock.Any(), datastore.ListOptions{}).Return([]*model.Application{
-					{
-						Id: "ApplicationId1",
-					},
-					{
-						Id: "ApplicationId2",
-					},
-				}, nil)
-
-				return s
-			}(),
 			dataPoints: &model.InsightDataPoint{
 				Value:     50,
 				Timestamp: time.Date(2020, 1, 1, 0, 0, 0, 0, time.UTC).Unix(),
@@ -1082,8 +1063,8 @@ func TestGetInsightDataForMTTR(t *testing.T) {
 							},
 							{
 								Field:    "ApplicationId",
-								Operator: "in",
-								Value:    []string{"ApplicationId"},
+								Operator: "==",
+								Value:    "ApplicationId",
 							},
 						},
 					}).Return([]*model.Deployment{}, fmt.Errorf("something wrong happens in ListDeployments"))
@@ -1096,9 +1077,8 @@ func TestGetInsightDataForMTTR(t *testing.T) {
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			api := &WebAPI{
-				applicationStore: tt.applicationStore,
-				deploymentStore:  tt.deploymentStore,
-				logger:           zap.NewNop(),
+				deploymentStore: tt.deploymentStore,
+				logger:          zap.NewNop(),
 			}
 			value, err := api.getInsightDataForMTTR(ctx, tt.projectID, tt.applicationID, tt.targetRangeFrom, tt.targetRangeTo)
 			assert.Equal(t, tt.wantErr, err != nil)

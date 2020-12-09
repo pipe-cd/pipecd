@@ -1512,21 +1512,6 @@ func (a *WebAPI) getInsightDataForMTTR(
 	targetRangeFrom time.Time,
 	targetRangeTo time.Time) (*model.InsightDataPoint, error) {
 
-	var applicationIDs []string
-	if applicationID == "" {
-		apps, err := a.applicationStore.ListApplications(ctx, datastore.ListOptions{})
-		if err != nil {
-			a.logger.Error("failed to get applications", zap.Error(err))
-			return nil, status.Error(codes.Internal, "Failed to get applications")
-		}
-
-		for _, app := range apps {
-			applicationIDs = append(applicationIDs, app.Id)
-		}
-	} else {
-		applicationIDs = append(applicationIDs, applicationID)
-	}
-
 	filters := []datastore.ListFilter{
 		{
 			Field:    "ProjectId",
@@ -1543,11 +1528,14 @@ func (a *WebAPI) getInsightDataForMTTR(
 			Operator: "<",
 			Value:    targetRangeTo.Unix(), // target's finish time on unix time
 		},
-		{
+	}
+
+	if applicationID != "" {
+		filters = append(filters, datastore.ListFilter{
 			Field:    "ApplicationId",
-			Operator: "in",
-			Value:    applicationIDs,
-		},
+			Operator: "==",
+			Value:    applicationID,
+		})
 	}
 
 	pageSize := 50
