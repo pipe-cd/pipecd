@@ -1493,7 +1493,12 @@ func (a *WebAPI) getInsightDataForChangeFailureRate(
 	successCount := len(successDeployments)
 	failureCount := len(failureDeployments)
 
-	changeFailureRate := float32(failureCount) / float32(successCount+failureCount)
+	var changeFailureRate float32
+	if successCount+failureCount != 0 {
+		changeFailureRate = float32(failureCount) / float32(successCount+failureCount)
+	} else {
+		changeFailureRate = 1.0
+	}
 
 	return &model.InsightDataPoint{
 		Timestamp: targetRangeFrom.Unix(),
