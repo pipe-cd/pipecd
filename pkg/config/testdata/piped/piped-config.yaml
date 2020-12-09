@@ -94,8 +94,10 @@ spec:
       type: ECR
       pullInterval: 5m
       config:
-        address: 012345678910.dkr.ecr.us-east-1.amazonaws.com
-        tokenFile: /etc/piped-secret/ecr-authorization-token
+        region: us-west-2
+        registryId: default
+        credentialsFile: /etc/piped-secret/aws-credentials
+        profile: user1
 
   notifications:
     routes:

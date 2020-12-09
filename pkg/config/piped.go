@@ -440,8 +440,25 @@ type ImageProviderDockerHubConfig struct {
 }
 
 type ImageProviderECRConfig struct {
-	Address   string `json:"address"`
-	TokenFile string `json:"tokenFile"`
+	// The region to send requests to. This parameter is required.
+	// e.g. "us-west-2"
+	// A full list of regions is: https://docs.aws.amazon.com/general/latest/gr/rande.html
+	Region string `json:"region"`
+	// The AWS account ID associated with the registry that contains the repository
+	// in which to list images. The "default" registry is assumed by default.
+	RegistryId string `json:"registryId"`
+	// Path to the shared credentials file.
+	//
+	// If you do not specify this field, piped attempts to retrieve credentials
+	// from the environment variables by default.
+	// These environment variables are used:
+	//   - AWS_ACCESS_KEY_ID or AWS_ACCESS_KEY
+	//   - AWS_SECRET_ACCESS_KEY or AWS_SECRET_KEY
+	CredentialsFile string `json:"credentialsFile"`
+	// AWS Profile to extract credentials from the shared credentials file.
+	// If empty, the environment variable "AWS_PROFILE" is used.
+	// "default" is populated if the environment variable is also not set.
+	Profile string `json:"profile"`
 }
 
 type Notifications struct {
