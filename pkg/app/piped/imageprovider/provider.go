@@ -50,7 +50,7 @@ func NewProvider(cfg *config.PipedImageProvider, logger *zap.Logger) (Provider, 
 		return nil, fmt.Errorf("not implemented yet")
 	case model.ImageProviderTypeECR:
 		options := []ecr.Option{
-			ecr.WithRegistryID(cfg.ECRConfig.RegistryId),
+			ecr.WithRegistryID(cfg.ECRConfig.RegistryID),
 			ecr.WithCredentialsFile(cfg.ECRConfig.CredentialsFile),
 			ecr.WithProfile(cfg.ECRConfig.Profile),
 			ecr.WithLogger(logger),

@@ -446,7 +446,7 @@ type ImageProviderECRConfig struct {
 	Region string `json:"region"`
 	// The AWS account ID associated with the registry that contains the repository
 	// in which to list images. The "default" registry is assumed by default.
-	RegistryId string `json:"registryId"`
+	RegistryID string `json:"registryId"`
 	// Path to the shared credentials file.
 	//
 	// If you do not specify this field, piped attempts to retrieve credentials

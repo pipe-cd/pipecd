@@ -25,6 +25,6 @@ go_test(
     deps = [
         "@com_github_aws_aws_sdk_go//aws:go_default_library",
         "@com_github_aws_aws_sdk_go//service/ecr:go_default_library",
-        "@com_github_magiconair_properties//assert:go_default_library",
+        "@com_github_stretchr_testify//assert:go_default_library",
     ],
 )

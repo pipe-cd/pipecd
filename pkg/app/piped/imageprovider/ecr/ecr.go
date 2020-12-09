@@ -31,6 +31,11 @@ import (
 	"github.com/pipe-cd/pipe/pkg/semver"
 )
 
+// The maximum number of image results returned by the APIs about images.
+// This value can be between 1 and 1000.
+// See more: https://pkg.go.dev/github.com/aws/aws-sdk-go/service/ecr#ListImagesInput
+const maxResults = 1000
+
 type ECR struct {
 	name            string
 	client          *ecr.ECR
@@ -115,12 +120,21 @@ func (e *ECR) GetLatestImage(ctx context.Context, image *model.ImageName) (*mode
 	input := &ecr.ListImagesInput{
 		RepositoryName: aws.String(image.Repo),
 		Filter:         &ecr.ListImagesFilter{TagStatus: aws.String("TAGGED")},
+		MaxResults:     aws.Int64(maxResults),
 	}
 	if e.registryID != "" {
 		input.RegistryId = &e.registryID
 	}
 
-	res, err := e.client.ListImagesWithContext(ctx, input)
+	// TODO: Consider the way to determine the latest tag other than fetching all tags
+	// Iterate over the pages of a ListImages operation until the last page.
+	// NOTE: A lot of requests may be issued if there are a lot of tags.
+	// For instance, for 6k tags, it will issue 6 requests.
+	imageIDs := make([]*ecr.ImageIdentifier, maxResults)
+	err := e.client.ListImagesPagesWithContext(ctx, input, func(page *ecr.ListImagesOutput, lastPage bool) bool {
+		imageIDs = append(imageIDs, page.ImageIds...)
+		return true
+	})
 	if err != nil {
 		if aerr, ok := err.(awserr.Error); ok {
 			switch aerr.Code() {
@@ -134,15 +148,15 @@ func (e *ECR) GetLatestImage(ctx context.Context, image *model.ImageName) (*mode
 		}
 		return nil, fmt.Errorf("unknow error given: %w", err)
 	}
-	if len(res.ImageIds) == 0 {
+	if len(imageIDs) == 0 {
 		return nil, fmt.Errorf("no ids found")
 	}
 
 	// To avoid reaching the API rate limit, determine by the semantic versioning as much as possible.
-	latestTag, err := latestBySemver(res.ImageIds)
+	latestTag, err := latestBySemver(imageIDs)
 	if err != nil {
 		e.logger.Info("it will try to determine the latest tag by the PushedAt due to the failure by semver")
-		latestTag, err = e.latestByPushedAt(image.Repo, res.ImageIds)
+		latestTag, err = e.latestByPushedAt(ctx, image.Repo, imageIDs)
 		if err != nil {
 			return nil, fmt.Errorf("failed to determine the latest tag: %w", err)
 		}
@@ -155,16 +169,23 @@ func (e *ECR) GetLatestImage(ctx context.Context, image *model.ImageName) (*mode
 
 // latestByPushedAt determines the latest tag by comparing the time pushed at.
 // It first issues a request to the DescribeImages API to fetch the images' PushedAt.
-func (e *ECR) latestByPushedAt(repo string, ids []*ecr.ImageIdentifier) (string, error) {
+func (e *ECR) latestByPushedAt(ctx context.Context, repo string, ids []*ecr.ImageIdentifier) (string, error) {
 	input := &ecr.DescribeImagesInput{
-		Filter:         &ecr.DescribeImagesFilter{TagStatus: aws.String("TAGGED")},
-		ImageIds:       ids,
 		RepositoryName: aws.String(repo),
+		Filter:         &ecr.DescribeImagesFilter{TagStatus: aws.String("TAGGED")},
+		MaxResults:     aws.Int64(maxResults),
+		ImageIds:       ids,
 	}
 	if e.registryID != "" {
 		input.RegistryId = &e.registryID
 	}
-	res, err := e.client.DescribeImages(input)
+	// NOTE: A lot of requests may be issued if there are a lot of tags.
+	// For instance, for 6k tags, it will issue 6 requests.
+	imageDetails := make([]*ecr.ImageDetail, maxResults)
+	err := e.client.DescribeImagesPagesWithContext(ctx, input, func(page *ecr.DescribeImagesOutput, lastPage bool) bool {
+		imageDetails = append(imageDetails, page.ImageDetails...)
+		return true
+	})
 	if err != nil {
 		if aerr, ok := err.(awserr.Error); ok {
 			switch aerr.Code() {
@@ -180,24 +201,24 @@ func (e *ECR) latestByPushedAt(repo string, ids []*ecr.ImageIdentifier) (string,
 		}
 		return "", fmt.Errorf("unknow error given: %w", err)
 	}
-	if len(res.ImageDetails) == 0 {
+	if len(imageDetails) == 0 {
 		return "", fmt.Errorf("no images found")
 	}
 
-	sort.SliceStable(res.ImageDetails, func(i, j int) bool {
-		l, r := res.ImageDetails[i], res.ImageDetails[j]
+	sort.SliceStable(imageDetails, func(i, j int) bool {
+		l, r := imageDetails[i], imageDetails[j]
 		if l.ImagePushedAt == nil || r.ImagePushedAt == nil {
 			return l.ImagePushedAt == nil && r.ImagePushedAt != nil
 		}
 		return l.ImagePushedAt.After(*r.ImagePushedAt)
 	})
-	if len(res.ImageDetails[0].ImageTags) == 0 {
+	if len(imageDetails[0].ImageTags) == 0 {
 		return "", fmt.Errorf("no images tag is associated the image")
 	}
 	// NOTE: Even if the tags are different, they are managed as a single
 	// image if the images' sha256 digests are identical, so there may
 	// be multiple tags associated with a single image.
-	latest := *res.ImageDetails[0].ImageTags[0]
+	latest := *imageDetails[0].ImageTags[0]
 	return latest, nil
 }
 

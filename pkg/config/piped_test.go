@@ -173,7 +173,7 @@ func TestPipedConfig(t *testing.T) {
 						PullInterval: Duration(time.Minute * 5),
 						ECRConfig: &ImageProviderECRConfig{
 							Region:          "us-west-2",
-							RegistryId:      "default",
+							RegistryID:      "default",
 							CredentialsFile: "/etc/piped-secret/aws-credentials",
 							Profile:         "user1",
 						},
