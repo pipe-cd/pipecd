@@ -7,12 +7,12 @@ go_library(
     visibility = ["//visibility:public"],
     deps = [
         "//pkg/model:go_default_library",
-        "//pkg/semver:go_default_library",
         "@com_github_aws_aws_sdk_go//aws:go_default_library",
         "@com_github_aws_aws_sdk_go//aws/awserr:go_default_library",
         "@com_github_aws_aws_sdk_go//aws/credentials:go_default_library",
         "@com_github_aws_aws_sdk_go//aws/session:go_default_library",
         "@com_github_aws_aws_sdk_go//service/ecr:go_default_library",
+        "@com_github_masterminds_semver_v3//:go_default_library",
         "@org_uber_go_zap//:go_default_library",
     ],
 )

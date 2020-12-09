@@ -20,6 +20,7 @@ import (
 	"sort"
 	"strings"
 
+	"github.com/Masterminds/semver/v3"
 	"github.com/aws/aws-sdk-go/aws"
 	"github.com/aws/aws-sdk-go/aws/awserr"
 	"github.com/aws/aws-sdk-go/aws/credentials"
@@ -28,7 +29,6 @@ import (
 	"go.uber.org/zap"
 
 	"github.com/pipe-cd/pipe/pkg/model"
-	"github.com/pipe-cd/pipe/pkg/semver"
 )
 
 // The maximum number of image results returned by the APIs about images.
@@ -237,7 +237,8 @@ func latestBySemver(ids []*ecr.ImageIdentifier) (string, error) {
 		}
 		tags = append(tags, tag)
 	}
-
-	sort.Sort(semver.ByNewer(tags))
+	sort.Slice(tags, func(i, j int) bool {
+		return tags[i].GreaterThan(tags[j])
+	})
 	return tags[0].String(), nil
 }

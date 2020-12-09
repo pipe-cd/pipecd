@@ -30,6 +30,11 @@ func TestLatestBySemver(t *testing.T) {
 		wantErr bool
 	}{
 		{
+			name:    "no ids given",
+			want:    "",
+			wantErr: false,
+		},
+		{
 			name: "include tags tha don't accordance semver",
 			ids: []*ecr.ImageIdentifier{
 				{
@@ -73,10 +78,10 @@ func TestLatestBySemver(t *testing.T) {
 					ImageTag: aws.String("4"),
 				},
 				{
-					ImageTag: aws.String("8.10"),
+					ImageTag: aws.String("14.10"),
 				},
 			},
-			want:    "8.10.0",
+			want:    "14.10.0",
 			wantErr: false,
 		},
 	}
