@@ -1497,7 +1497,7 @@ func (a *WebAPI) getInsightDataForChangeFailureRate(
 	if successCount+failureCount != 0 {
 		changeFailureRate = float32(failureCount) / float32(successCount+failureCount)
 	} else {
-		changeFailureRate = 1.0
+		changeFailureRate = 0
 	}
 
 	return &model.InsightDataPoint{
