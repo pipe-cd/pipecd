@@ -21,7 +21,7 @@ This service can be easily scaled by updating the pod number.
 
 ##### Cache
 
-`cache` is a single pod service for caching internal data used by `api` service. Currently, this `cache` service is using the `redis` docker image.
+`cache` is a single pod service for caching internal data used by `server` service. Currently, this `cache` service is using the `redis` docker image.
 You can configure the control plane to use a fully-managed redis cache service instead of launching a cache pod in your cluster.
 
 ##### Ops
