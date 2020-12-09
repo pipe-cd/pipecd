@@ -127,6 +127,7 @@ func (e *ECR) GetLatestImage(ctx context.Context, image *model.ImageName) (*mode
 	}
 
 	// TODO: Consider the way to determine the latest tag other than fetching all tags
+	//
 	// Iterate over the pages of a ListImages operation until the last page.
 	// NOTE: A lot of requests may be issued if there are a lot of tags.
 	// For instance, for 6k tags, it will issue 6 requests.
@@ -173,7 +174,6 @@ func (e *ECR) latestByPushedAt(ctx context.Context, repo string, ids []*ecr.Imag
 	input := &ecr.DescribeImagesInput{
 		RepositoryName: aws.String(repo),
 		Filter:         &ecr.DescribeImagesFilter{TagStatus: aws.String("TAGGED")},
-		MaxResults:     aws.Int64(maxResults),
 		ImageIds:       ids,
 	}
 	if e.registryID != "" {
