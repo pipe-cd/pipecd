@@ -161,7 +161,7 @@ func (e *ECR) GetLatestImage(ctx context.Context, image *model.ImageName) (*mode
 	if len(imageDetails) == 0 {
 		return nil, fmt.Errorf("no images found")
 	}
-	sort.SliceStable(imageDetails, func(i, j int) bool {
+	sort.Slice(imageDetails, func(i, j int) bool {
 		l, r := imageDetails[i], imageDetails[j]
 		if l.ImagePushedAt == nil || r.ImagePushedAt == nil {
 			return l.ImagePushedAt == nil && r.ImagePushedAt != nil
