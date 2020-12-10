@@ -146,22 +146,40 @@ func (a *API) SyncApplication(ctx context.Context, req *apiservice.SyncApplicati
 	}, nil
 }
 
-func (a *API) GetDeployment(ctx context.Context, _ *apiservice.GetDeploymentRequest) (*apiservice.GetDeploymentResponse, error) {
-	_, err := requireAPIKey(ctx, model.APIKey_READ_ONLY, a.logger)
+func (a *API) GetDeployment(ctx context.Context, req *apiservice.GetDeploymentRequest) (*apiservice.GetDeploymentResponse, error) {
+	key, err := requireAPIKey(ctx, model.APIKey_READ_ONLY, a.logger)
 	if err != nil {
 		return nil, err
 	}
 
-	return nil, status.Error(codes.Unimplemented, "")
+	deployment, err := getDeployment(ctx, a.deploymentStore, req.DeploymentId, a.logger)
+	if err != nil {
+		return nil, err
+	}
+
+	if key.ProjectId != deployment.ProjectId {
+		return nil, status.Error(codes.InvalidArgument, "Requested deployment does not belong to your project")
+	}
+
+	return &apiservice.GetDeploymentResponse{
+		Deployment: deployment,
+	}, nil
 }
 
-func (a *API) GetCommand(ctx context.Context, _ *apiservice.GetCommandRequest) (*apiservice.GetCommandResponse, error) {
+func (a *API) GetCommand(ctx context.Context, req *apiservice.GetCommandRequest) (*apiservice.GetCommandResponse, error) {
 	_, err := requireAPIKey(ctx, model.APIKey_READ_ONLY, a.logger)
 	if err != nil {
 		return nil, err
 	}
 
-	return nil, status.Error(codes.Unimplemented, "")
+	cmd, err := getCommand(ctx, a.commandStore, req.CommandId, a.logger)
+	if err != nil {
+		return nil, err
+	}
+
+	return &apiservice.GetCommandResponse{
+		Command: cmd,
+	}, nil
 }
 
 // requireAPIKey checks the existence of an API key inside the given context

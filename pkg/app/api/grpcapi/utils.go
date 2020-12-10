@@ -54,6 +54,32 @@ func getApplication(ctx context.Context, store datastore.ApplicationStore, id st
 	return app, nil
 }
 
+func getDeployment(ctx context.Context, store datastore.DeploymentStore, id string, logger *zap.Logger) (*model.Deployment, error) {
+	deployment, err := store.GetDeployment(ctx, id)
+	if errors.Is(err, datastore.ErrNotFound) {
+		return nil, status.Error(codes.NotFound, "Deployment is not found")
+	}
+	if err != nil {
+		logger.Error("failed to get deployment", zap.Error(err))
+		return nil, status.Error(codes.Internal, "Failed to get deployment")
+	}
+
+	return deployment, nil
+}
+
+func getCommand(ctx context.Context, store commandstore.Store, id string, logger *zap.Logger) (*model.Command, error) {
+	cmd, err := store.GetCommand(ctx, id)
+	if errors.Is(err, datastore.ErrNotFound) {
+		return nil, status.Error(codes.NotFound, "Command is not found")
+	}
+	if err != nil {
+		logger.Error("failed to get command", zap.Error(err))
+		return nil, status.Error(codes.Internal, "Failed to get command")
+	}
+
+	return cmd, nil
+}
+
 func addCommand(ctx context.Context, store commandstore.Store, cmd *model.Command, logger *zap.Logger) error {
 	if err := store.AddCommand(ctx, cmd); err != nil {
 		logger.Error("failed to create command", zap.Error(err))

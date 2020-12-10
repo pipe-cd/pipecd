@@ -769,28 +769,18 @@ func (a *WebAPI) GetDeployment(ctx context.Context, req *webservice.GetDeploymen
 		return nil, err
 	}
 
-	deployment, err := a.getDeployment(ctx, req.DeploymentId)
+	deployment, err := getDeployment(ctx, a.deploymentStore, req.DeploymentId, a.logger)
 	if err != nil {
 		return nil, err
 	}
-	if err := a.validateDeploymentBelongsToProject(ctx, req.DeploymentId, claims.Role.ProjectId); err != nil {
-		return nil, err
+
+	if claims.Role.ProjectId != deployment.ProjectId {
+		return nil, status.Error(codes.InvalidArgument, "Requested deployment does not belong to your project")
 	}
+
 	return &webservice.GetDeploymentResponse{
 		Deployment: deployment,
 	}, nil
-}
-
-func (a *WebAPI) getDeployment(ctx context.Context, deploymentID string) (*model.Deployment, error) {
-	deployment, err := a.deploymentStore.GetDeployment(ctx, deploymentID)
-	if errors.Is(err, datastore.ErrNotFound) {
-		return nil, status.Error(codes.NotFound, "The deployment is not found")
-	}
-	if err != nil {
-		a.logger.Error("failed to get deployment", zap.Error(err))
-		return nil, status.Error(codes.Internal, "Failed to get deployment")
-	}
-	return deployment, nil
 }
 
 // validateDeploymentBelongsToProject checks if the given deployment belongs to the given project.
@@ -804,7 +794,7 @@ func (a *WebAPI) validateDeploymentBelongsToProject(ctx context.Context, deploym
 		return nil
 	}
 
-	deployment, err := a.getDeployment(ctx, deploymentID)
+	deployment, err := getDeployment(ctx, a.deploymentStore, deploymentID, a.logger)
 	if err != nil {
 		return err
 	}
@@ -849,20 +839,21 @@ func (a *WebAPI) CancelDeployment(ctx context.Context, req *webservice.CancelDep
 		return nil, err
 	}
 
-	deployment, err := a.getDeployment(ctx, req.DeploymentId)
+	deployment, err := getDeployment(ctx, a.deploymentStore, req.DeploymentId, a.logger)
 	if err != nil {
 		return nil, err
 	}
-	if err := a.validateDeploymentBelongsToProject(ctx, req.DeploymentId, claims.Role.ProjectId); err != nil {
-		return nil, err
+
+	if claims.Role.ProjectId != deployment.ProjectId {
+		return nil, status.Error(codes.InvalidArgument, "Requested deployment does not belong to your project")
 	}
+
 	if model.IsCompletedDeployment(deployment.Status) {
 		return nil, status.Errorf(codes.FailedPrecondition, "could not cancel the deployment because it was already completed")
 	}
 
-	commandID := uuid.New().String()
 	cmd := model.Command{
-		Id:            commandID,
+		Id:            uuid.New().String(),
 		PipedId:       deployment.PipedId,
 		ApplicationId: deployment.ApplicationId,
 		DeploymentId:  req.DeploymentId,
@@ -877,8 +868,9 @@ func (a *WebAPI) CancelDeployment(ctx context.Context, req *webservice.CancelDep
 	if err := addCommand(ctx, a.commandStore, &cmd, a.logger); err != nil {
 		return nil, err
 	}
+
 	return &webservice.CancelDeploymentResponse{
-		CommandId: commandID,
+		CommandId: cmd.Id,
 	}, nil
 }
 
@@ -889,7 +881,7 @@ func (a *WebAPI) ApproveStage(ctx context.Context, req *webservice.ApproveStageR
 		return nil, err
 	}
 
-	deployment, err := a.getDeployment(ctx, req.DeploymentId)
+	deployment, err := getDeployment(ctx, a.deploymentStore, req.DeploymentId, a.logger)
 	if err != nil {
 		return nil, err
 	}
@@ -1109,16 +1101,12 @@ func (a *WebAPI) GetMe(ctx context.Context, req *webservice.GetMeRequest) (*webs
 }
 
 func (a *WebAPI) GetCommand(ctx context.Context, req *webservice.GetCommandRequest) (*webservice.GetCommandResponse, error) {
-	cmd, err := a.commandStore.GetCommand(ctx, req.CommandId)
-	if errors.Is(err, datastore.ErrNotFound) {
-		return nil, status.Error(codes.NotFound, "The command is not found")
-	}
+	cmd, err := getCommand(ctx, a.commandStore, req.CommandId, a.logger)
 	if err != nil {
-		return nil, status.Error(codes.Internal, "Failed to get command")
+		return nil, err
 	}
 
 	// TODO: Add check if requested command belongs to logged-in project, after adding project id field to model.Command.
-
 	return &webservice.GetCommandResponse{
 		Command: cmd,
 	}, nil
