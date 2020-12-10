@@ -169,9 +169,8 @@ func (a *WebAPI) RegisterPiped(ctx context.Context, req *webservice.RegisterPipe
 		return nil, status.Error(codes.Internal, "Failed to generate the piped key")
 	}
 
-	id := uuid.New().String()
 	piped := model.Piped{
-		Id:        id,
+		Id:        uuid.New().String(),
 		Name:      req.Name,
 		Desc:      req.Desc,
 		ProjectId: claims.Role.ProjectId,
@@ -189,9 +188,25 @@ func (a *WebAPI) RegisterPiped(ctx context.Context, req *webservice.RegisterPipe
 		return nil, status.Error(codes.Internal, "Failed to register piped")
 	}
 	return &webservice.RegisterPipedResponse{
-		Id:  id,
+		Id:  piped.Id,
 		Key: key,
 	}, nil
+}
+
+func (a *WebAPI) UpdatePiped(ctx context.Context, req *webservice.UpdatePipedRequest) (*webservice.UpdatePipedResponse, error) {
+	updater := func(ctx context.Context, pipedID string) error {
+		return a.pipedStore.UpdatePiped(ctx, req.PipedId, func(p *model.Piped) error {
+			p.Name = req.Name
+			p.Desc = req.Desc
+			p.EnvIds = req.EnvIds
+			return nil
+		})
+	}
+	if err := a.updatePiped(ctx, req.PipedId, updater); err != nil {
+		return nil, err
+	}
+
+	return &webservice.UpdatePipedResponse{}, nil
 }
 
 func (a *WebAPI) RecreatePipedKey(ctx context.Context, req *webservice.RecreatePipedKeyRequest) (*webservice.RecreatePipedKeyResponse, error) {

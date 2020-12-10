@@ -48,6 +48,8 @@ func (a *authorizer) Authorize(method string, r model.Role) bool {
 		return isAdmin(r)
 	case "/pipe.api.service.webservice.WebService/RegisterPiped":
 		return isAdmin(r)
+	case "/pipe.api.service.webservice.WebService/UpdatePiped":
+		return isAdmin(r)
 	case "/pipe.api.service.webservice.WebService/RecreatePipedKey":
 		return isAdmin(r)
 	case "/pipe.api.service.webservice.WebService/EnablePiped":
