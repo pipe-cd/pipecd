@@ -42,6 +42,7 @@ service WebService {
 
     // Piped
     rpc RegisterPiped(RegisterPipedRequest) returns (RegisterPipedResponse) {}
+    rpc UpdatePiped(UpdatePipedRequest) returns (UpdatePipedResponse) {}
     rpc RecreatePipedKey(RecreatePipedKeyRequest) returns (RecreatePipedKeyResponse) {}
     rpc EnablePiped(EnablePipedRequest) returns (EnablePipedResponse) {}
     rpc DisablePiped(DisablePipedRequest) returns (DisablePipedResponse) {}
@@ -117,6 +118,16 @@ message RegisterPipedRequest {
 message RegisterPipedResponse {
     string id = 1;
     string key = 2;
+}
+
+message UpdatePipedRequest {
+    string piped_id = 1 [(validate.rules).string.min_len = 1];
+    string name = 2 [(validate.rules).string.min_len = 1];
+    string desc = 3;
+    repeated string env_ids = 4 [(validate.rules).repeated.min_items = 1];
+}
+
+message UpdatePipedResponse {
 }
 
 message RecreatePipedKeyRequest {
