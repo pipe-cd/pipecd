@@ -83,26 +83,26 @@ func (e *Executor) Execute(sig executor.StopSignal) model.StageStatus {
 	defer ticker.Stop()
 
 	e.LogPersister.Infof("Waiting for %v...", duration)
-	select {
-	case <-timer.C:
-		break
+	for {
+		select {
+		case <-timer.C:
+			e.LogPersister.Infof("Waited for %v", totalDuration)
+			return model.StageStatus_STAGE_SUCCESS
 
-	case <-ticker.C:
-		e.LogPersister.Infof("%v elapsed...", time.Since(startTime))
+		case <-ticker.C:
+			e.LogPersister.Infof("%v elapsed...", time.Since(startTime))
 
-	case s := <-sig.Ch():
-		switch s {
-		case executor.StopSignalCancel:
-			return model.StageStatus_STAGE_CANCELLED
-		case executor.StopSignalTerminate:
-			return originalStatus
-		default:
-			return model.StageStatus_STAGE_FAILURE
+		case s := <-sig.Ch():
+			switch s {
+			case executor.StopSignalCancel:
+				return model.StageStatus_STAGE_CANCELLED
+			case executor.StopSignalTerminate:
+				return originalStatus
+			default:
+				return model.StageStatus_STAGE_FAILURE
+			}
 		}
 	}
-
-	e.LogPersister.Infof("Waited for %v", totalDuration)
-	return model.StageStatus_STAGE_SUCCESS
 }
 
 func (e *Executor) retrieveStartTime() (t time.Time) {
