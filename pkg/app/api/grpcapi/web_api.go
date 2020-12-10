@@ -403,6 +403,50 @@ func (a *WebAPI) AddApplication(ctx context.Context, req *webservice.AddApplicat
 	}, nil
 }
 
+func (a *WebAPI) UpdateApplication(ctx context.Context, req *webservice.UpdateApplicationRequest) (*webservice.UpdateApplicationResponse, error) {
+	claims, err := rpcauth.ExtractClaims(ctx)
+	if err != nil {
+		a.logger.Error("failed to authenticate the current user", zap.Error(err))
+		return nil, err
+	}
+
+	piped, err := getPiped(ctx, a.pipedStore, req.PipedId, a.logger)
+	if err != nil {
+		return nil, err
+	}
+
+	if piped.ProjectId != claims.Role.ProjectId {
+		return nil, status.Error(codes.InvalidArgument, "Requested piped does not belong to your project")
+	}
+
+	gitpath, err := makeGitPath(
+		req.GitPath.Repo.Id,
+		req.GitPath.Path,
+		req.GitPath.ConfigFilename,
+		piped,
+		a.logger,
+	)
+	if err != nil {
+		return nil, err
+	}
+
+	err = a.applicationStore.UpdateApplication(ctx, req.ApplicationId, func(app *model.Application) error {
+		app.Name = req.Name
+		app.EnvId = req.EnvId
+		app.PipedId = req.PipedId
+		app.GitPath = gitpath
+		app.Kind = req.Kind
+		app.CloudProvider = req.CloudProvider
+		return nil
+	})
+	if err != nil {
+		a.logger.Error("failed to update application", zap.Error(err))
+		return nil, status.Error(codes.Internal, "Failed to update application")
+	}
+
+	return &webservice.UpdateApplicationResponse{}, nil
+}
+
 func (a *WebAPI) EnableApplication(ctx context.Context, req *webservice.EnableApplicationRequest) (*webservice.EnableApplicationResponse, error) {
 	if err := a.updateApplicationEnable(ctx, req.ApplicationId, true); err != nil {
 		return nil, err
