@@ -16,7 +16,9 @@ package grpcapi
 
 import (
 	"context"
+	"errors"
 
+	"github.com/google/uuid"
 	"go.uber.org/zap"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/codes"
@@ -25,6 +27,8 @@ import (
 	"github.com/pipe-cd/pipe/pkg/app/api/commandstore"
 	"github.com/pipe-cd/pipe/pkg/app/api/service/apiservice"
 	"github.com/pipe-cd/pipe/pkg/datastore"
+	"github.com/pipe-cd/pipe/pkg/model"
+	"github.com/pipe-cd/pipe/pkg/rpc/rpcauth"
 )
 
 // API implements the behaviors for the gRPC definitions of API.
@@ -58,10 +62,86 @@ func (a *API) Register(server *grpc.Server) {
 	apiservice.RegisterAPIServiceServer(server, a)
 }
 
-func (a *API) AddApplication(_ context.Context, _ *apiservice.AddApplicationRequest) (*apiservice.AddApplicationResponse, error) {
+func (a *API) AddApplication(ctx context.Context, req *apiservice.AddApplicationRequest) (*apiservice.AddApplicationResponse, error) {
+	key, err := requireAPIKey(ctx, model.APIKey_READ_WRITE, a.logger)
+	if err != nil {
+		return nil, err
+	}
+
+	piped, err := getPiped(ctx, a.pipedStore, req.PipedId, a.logger)
+	if err != nil {
+		return nil, err
+	}
+
+	if key.ProjectId != piped.ProjectId {
+		return nil, status.Error(codes.InvalidArgument, "Requested piped does not belong to your project")
+	}
+
+	gitpath, err := makeGitPath(
+		req.GitPath.Repo.Id,
+		req.GitPath.Path,
+		req.GitPath.ConfigFilename,
+		piped,
+		a.logger,
+	)
+	if err != nil {
+		return nil, err
+	}
+
+	app := model.Application{
+		Id:            uuid.New().String(),
+		Name:          req.Name,
+		EnvId:         req.EnvId,
+		PipedId:       req.PipedId,
+		ProjectId:     key.ProjectId,
+		GitPath:       gitpath,
+		Kind:          req.Kind,
+		CloudProvider: req.CloudProvider,
+	}
+	err = a.applicationStore.AddApplication(ctx, &app)
+	if errors.Is(err, datastore.ErrAlreadyExists) {
+		return nil, status.Error(codes.AlreadyExists, "The application already exists")
+	}
+	if err != nil {
+		a.logger.Error("failed to create application", zap.Error(err))
+		return nil, status.Error(codes.Internal, "Failed to create application")
+	}
+
+	return &apiservice.AddApplicationResponse{
+		ApplicationId: app.Id,
+	}, nil
+}
+
+func (a *API) SyncApplication(ctx context.Context, _ *apiservice.SyncApplicationRequest) (*apiservice.SyncApplicationResponse, error) {
+	_, err := requireAPIKey(ctx, model.APIKey_READ_WRITE, a.logger)
+	if err != nil {
+		return nil, err
+	}
+
 	return nil, status.Error(codes.Unimplemented, "")
 }
 
-func (a *API) SyncApplication(_ context.Context, _ *apiservice.SyncApplicationRequest) (*apiservice.SyncApplicationResponse, error) {
-	return nil, status.Error(codes.Unimplemented, "")
+// requireAPIKey checks the existence of an API key inside the given context
+// and ensures that it has enough permissions for the give role.
+func requireAPIKey(ctx context.Context, role model.APIKey_Role, logger *zap.Logger) (*model.APIKey, error) {
+	key, err := rpcauth.ExtractAPIKey(ctx)
+	if err != nil {
+		return nil, err
+	}
+
+	switch key.Role {
+	case model.APIKey_READ_WRITE:
+		return key, nil
+
+	case model.APIKey_READ_ONLY:
+		if role == model.APIKey_READ_ONLY {
+			return key, nil
+		}
+		logger.Warn("detected an API key that has insufficient permissions", zap.String("key", key.Id))
+		return nil, status.Error(codes.PermissionDenied, "Permission denied")
+
+	default:
+		logger.Warn("detected an API key that has an invalid role", zap.String("key", key.Id))
+		return nil, status.Error(codes.PermissionDenied, "Invalid role")
+	}
 }
