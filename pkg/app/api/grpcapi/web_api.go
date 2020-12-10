@@ -561,7 +561,7 @@ func (a *WebAPI) GetApplication(ctx context.Context, req *webservice.GetApplicat
 		return nil, err
 	}
 
-	app, err := a.getApplication(ctx, req.ApplicationId)
+	app, err := getApplication(ctx, a.applicationStore, req.ApplicationId, a.logger)
 	if err != nil {
 		return nil, err
 	}
@@ -621,18 +621,6 @@ func (a *WebAPI) GenerateApplicationSealedSecret(ctx context.Context, req *webse
 	}, nil
 }
 
-func (a *WebAPI) getApplication(ctx context.Context, appID string) (*model.Application, error) {
-	app, err := a.applicationStore.GetApplication(ctx, appID)
-	if errors.Is(err, datastore.ErrNotFound) {
-		return nil, status.Error(codes.NotFound, "The application is not found")
-	}
-	if err != nil {
-		a.logger.Error("failed to get application", zap.Error(err))
-		return nil, status.Error(codes.Internal, "Failed to get application")
-	}
-	return app, nil
-}
-
 // validateAppBelongsToProject checks if the given application belongs to the given project.
 // It gives back error unless the application belongs to the project.
 func (a *WebAPI) validateAppBelongsToProject(ctx context.Context, appID, projectID string) error {
@@ -644,7 +632,7 @@ func (a *WebAPI) validateAppBelongsToProject(ctx context.Context, appID, project
 		return nil
 	}
 
-	app, err := a.getApplication(ctx, appID)
+	app, err := getApplication(ctx, a.applicationStore, appID, a.logger)
 	if err != nil {
 		return err
 	}
@@ -1099,7 +1087,7 @@ func (a *WebAPI) ListDeploymentConfigTemplates(ctx context.Context, req *webserv
 		return nil, err
 	}
 
-	app, err := a.getApplication(ctx, req.ApplicationId)
+	app, err := getApplication(ctx, a.applicationStore, req.ApplicationId, a.logger)
 	if err != nil {
 		return nil, err
 	}
