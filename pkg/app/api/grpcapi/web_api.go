@@ -18,7 +18,6 @@ import (
 	"context"
 	"errors"
 	"fmt"
-	"strings"
 	"time"
 
 	"github.com/google/uuid"
@@ -313,7 +312,7 @@ func (a *WebAPI) GetPiped(ctx context.Context, req *webservice.GetPipedRequest) 
 		return nil, err
 	}
 
-	piped, err := a.getPiped(ctx, req.PipedId)
+	piped, err := getPiped(ctx, a.pipedStore, req.PipedId, a.logger)
 	if err != nil {
 		return nil, err
 	}
@@ -329,18 +328,6 @@ func (a *WebAPI) GetPiped(ctx context.Context, req *webservice.GetPipedRequest) 
 	}, nil
 }
 
-func (a *WebAPI) getPiped(ctx context.Context, pipedID string) (*model.Piped, error) {
-	piped, err := a.pipedStore.GetPiped(ctx, pipedID)
-	if errors.Is(err, datastore.ErrNotFound) {
-		return nil, status.Error(codes.NotFound, "Piped is not found")
-	}
-	if err != nil {
-		a.logger.Error("failed to get piped", zap.Error(err))
-		return nil, status.Error(codes.Internal, "Failed to get piped")
-	}
-	return piped, nil
-}
-
 // validatePipedBelongsToProject checks if the given piped belongs to the given project.
 // It gives back error unless the piped belongs to the project.
 func (a *WebAPI) validatePipedBelongsToProject(ctx context.Context, pipedID, projectID string) error {
@@ -352,7 +339,7 @@ func (a *WebAPI) validatePipedBelongsToProject(ctx context.Context, pipedID, pro
 		return nil
 	}
 
-	piped, err := a.getPiped(ctx, pipedID)
+	piped, err := getPiped(ctx, a.pipedStore, pipedID, a.logger)
 	if err != nil {
 		return err
 	}
@@ -372,15 +359,26 @@ func (a *WebAPI) AddApplication(ctx context.Context, req *webservice.AddApplicat
 		return nil, err
 	}
 
-	// The path to the application directory must be relative.
-	if strings.HasPrefix(req.GitPath.Path, "/") {
-		return nil, status.Error(codes.InvalidArgument, "The path must be a relative path")
-	}
-
-	gitpath, err := a.makeGitPath(ctx, req.GitPath.Repo.Id, req.GitPath.Path, req.GitPath.ConfigFilename, req.PipedId, claims.Role.ProjectId)
+	piped, err := getPiped(ctx, a.pipedStore, req.PipedId, a.logger)
 	if err != nil {
 		return nil, err
 	}
+
+	if piped.ProjectId != claims.Role.ProjectId {
+		return nil, status.Error(codes.InvalidArgument, "Requested piped does not belong to your project")
+	}
+
+	gitpath, err := makeGitPath(
+		req.GitPath.Repo.Id,
+		req.GitPath.Path,
+		req.GitPath.ConfigFilename,
+		piped,
+		a.logger,
+	)
+	if err != nil {
+		return nil, err
+	}
+
 	app := model.Application{
 		Id:            uuid.New().String(),
 		Name:          req.Name,
@@ -402,45 +400,6 @@ func (a *WebAPI) AddApplication(ctx context.Context, req *webservice.AddApplicat
 
 	return &webservice.AddApplicationResponse{
 		ApplicationId: app.Id,
-	}, nil
-}
-
-// makeGitPath returns an ApplicationGitPath by adding Repository info and GitPath URL to given args.
-func (a *WebAPI) makeGitPath(ctx context.Context, repoID, path, cfgFilename, pipedID, projectID string) (*model.ApplicationGitPath, error) {
-	piped, err := a.getPiped(ctx, pipedID)
-	if err != nil {
-		return nil, err
-	}
-	if err := a.validatePipedBelongsToProject(ctx, pipedID, projectID); err != nil {
-		return nil, err
-	}
-
-	var repo *model.ApplicationGitRepository
-	for _, r := range piped.Repositories {
-		if r.Id == repoID {
-			repo = r
-			break
-		}
-	}
-	if repo == nil {
-		a.logger.Error("repository not found",
-			zap.String("repo-id", repoID),
-			zap.String("piped-id", pipedID),
-			zap.Error(err),
-		)
-		return nil, status.Error(codes.Internal, "The repository is not found")
-	}
-
-	u, err := git.MakeDirURL(repo.Remote, path, repo.Branch)
-	if err != nil {
-		a.logger.Error("failed to make GitPath URL", zap.Error(err))
-		return nil, status.Error(codes.Internal, "Failed to make GitPath URL")
-	}
-	return &model.ApplicationGitPath{
-		Repo:           repo,
-		Path:           path,
-		ConfigFilename: cfgFilename,
-		Url:            u,
 	}, nil
 }
 
@@ -628,7 +587,7 @@ func (a *WebAPI) GenerateApplicationSealedSecret(ctx context.Context, req *webse
 		return nil, err
 	}
 
-	piped, err := a.getPiped(ctx, req.PipedId)
+	piped, err := getPiped(ctx, a.pipedStore, req.PipedId, a.logger)
 	if err != nil {
 		return nil, err
 	}

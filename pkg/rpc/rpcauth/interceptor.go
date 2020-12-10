@@ -163,9 +163,14 @@ func APIKeyUnaryServerInterceptor(verifier APIKeyVerifier, logger *zap.Logger) g
 			logger.Warn("unable to verify api key", zap.Error(err))
 			return nil, errUnauthenticated
 		}
-		ctx = context.WithValue(ctx, apiKeyKey, apiKey)
+		ctx = ContextWithAPIKey(ctx, apiKey)
 		return handler(ctx, req)
 	}
+}
+
+// ContextWithAPIKey returns a new context in which the given API key was attached.
+func ContextWithAPIKey(ctx context.Context, k *model.APIKey) context.Context {
+	return context.WithValue(ctx, apiKeyKey, k)
 }
 
 // ExtractAPIKey returns the verified API key inside the given context.
