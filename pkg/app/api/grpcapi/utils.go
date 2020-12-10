@@ -22,6 +22,7 @@ import (
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
 
+	"github.com/pipe-cd/pipe/pkg/app/api/commandstore"
 	"github.com/pipe-cd/pipe/pkg/datastore"
 	"github.com/pipe-cd/pipe/pkg/git"
 	"github.com/pipe-cd/pipe/pkg/model"
@@ -38,6 +39,27 @@ func getPiped(ctx context.Context, store datastore.PipedStore, id string, logger
 	}
 
 	return piped, nil
+}
+
+func getApplication(ctx context.Context, store datastore.ApplicationStore, id string, logger *zap.Logger) (*model.Application, error) {
+	app, err := store.GetApplication(ctx, id)
+	if errors.Is(err, datastore.ErrNotFound) {
+		return nil, status.Error(codes.NotFound, "Application is not found")
+	}
+	if err != nil {
+		logger.Error("failed to get application", zap.Error(err))
+		return nil, status.Error(codes.Internal, "Failed to get application")
+	}
+
+	return app, nil
+}
+
+func addCommand(ctx context.Context, store commandstore.Store, cmd *model.Command, logger *zap.Logger) error {
+	if err := store.AddCommand(ctx, cmd); err != nil {
+		logger.Error("failed to create command", zap.Error(err))
+		return status.Error(codes.Internal, "Failed to create command")
+	}
+	return nil
 }
 
 // makeGitPath returns an ApplicationGitPath by adding Repository info and GitPath URL to given args.

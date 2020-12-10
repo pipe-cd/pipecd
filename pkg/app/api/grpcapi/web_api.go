@@ -526,39 +526,32 @@ func (a *WebAPI) SyncApplication(ctx context.Context, req *webservice.SyncApplic
 		return nil, err
 	}
 
-	app, err := a.getApplication(ctx, req.ApplicationId)
+	app, err := getApplication(ctx, a.applicationStore, req.ApplicationId, a.logger)
 	if err != nil {
 		return nil, err
 	}
-	if err := a.validateAppBelongsToProject(ctx, req.ApplicationId, claims.Role.ProjectId); err != nil {
-		return nil, err
+
+	if claims.Role.ProjectId != app.ProjectId {
+		return nil, status.Error(codes.InvalidArgument, "Requested application does not belong to your project")
 	}
 
-	commandID := uuid.New().String()
 	cmd := model.Command{
-		Id:            commandID,
+		Id:            uuid.New().String(),
 		PipedId:       app.PipedId,
 		ApplicationId: app.Id,
 		Type:          model.Command_SYNC_APPLICATION,
 		Commander:     claims.Subject,
 		SyncApplication: &model.Command_SyncApplication{
-			ApplicationId: req.ApplicationId,
+			ApplicationId: app.Id,
 		},
 	}
-	if err := a.addCommand(ctx, &cmd); err != nil {
+	if err := addCommand(ctx, a.commandStore, &cmd, a.logger); err != nil {
 		return nil, err
 	}
-	return &webservice.SyncApplicationResponse{
-		CommandId: commandID,
-	}, nil
-}
 
-func (a *WebAPI) addCommand(ctx context.Context, cmd *model.Command) error {
-	if err := a.commandStore.AddCommand(ctx, cmd); err != nil {
-		a.logger.Error("failed to create command", zap.Error(err))
-		return status.Error(codes.Internal, "Failed to create command")
-	}
-	return nil
+	return &webservice.SyncApplicationResponse{
+		CommandId: cmd.Id,
+	}, nil
 }
 
 func (a *WebAPI) GetApplication(ctx context.Context, req *webservice.GetApplicationRequest) (*webservice.GetApplicationResponse, error) {
@@ -849,7 +842,7 @@ func (a *WebAPI) CancelDeployment(ctx context.Context, req *webservice.CancelDep
 			ForceNoRollback: req.ForceNoRollback,
 		},
 	}
-	if err := a.addCommand(ctx, &cmd); err != nil {
+	if err := addCommand(ctx, a.commandStore, &cmd, a.logger); err != nil {
 		return nil, err
 	}
 	return &webservice.CancelDeploymentResponse{
@@ -893,9 +886,10 @@ func (a *WebAPI) ApproveStage(ctx context.Context, req *webservice.ApproveStageR
 			StageId:      req.StageId,
 		},
 	}
-	if err := a.addCommand(ctx, &cmd); err != nil {
+	if err := addCommand(ctx, a.commandStore, &cmd, a.logger); err != nil {
 		return nil, err
 	}
+
 	return &webservice.ApproveStageResponse{
 		CommandId: commandID,
 	}, nil

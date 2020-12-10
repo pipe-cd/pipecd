@@ -112,8 +112,51 @@ func (a *API) AddApplication(ctx context.Context, req *apiservice.AddApplication
 	}, nil
 }
 
-func (a *API) SyncApplication(ctx context.Context, _ *apiservice.SyncApplicationRequest) (*apiservice.SyncApplicationResponse, error) {
-	_, err := requireAPIKey(ctx, model.APIKey_READ_WRITE, a.logger)
+func (a *API) SyncApplication(ctx context.Context, req *apiservice.SyncApplicationRequest) (*apiservice.SyncApplicationResponse, error) {
+	key, err := requireAPIKey(ctx, model.APIKey_READ_WRITE, a.logger)
+	if err != nil {
+		return nil, err
+	}
+
+	app, err := getApplication(ctx, a.applicationStore, req.ApplicationId, a.logger)
+	if err != nil {
+		return nil, err
+	}
+
+	if key.ProjectId != app.ProjectId {
+		return nil, status.Error(codes.InvalidArgument, "Requested application does not belong to your project")
+	}
+
+	cmd := model.Command{
+		Id:            uuid.New().String(),
+		PipedId:       app.PipedId,
+		ApplicationId: app.Id,
+		Type:          model.Command_SYNC_APPLICATION,
+		Commander:     key.Id,
+		SyncApplication: &model.Command_SyncApplication{
+			ApplicationId: app.Id,
+		},
+	}
+	if err := addCommand(ctx, a.commandStore, &cmd, a.logger); err != nil {
+		return nil, err
+	}
+
+	return &apiservice.SyncApplicationResponse{
+		CommandId: cmd.Id,
+	}, nil
+}
+
+func (a *API) GetDeployment(ctx context.Context, _ *apiservice.GetDeploymentRequest) (*apiservice.GetDeploymentResponse, error) {
+	_, err := requireAPIKey(ctx, model.APIKey_READ_ONLY, a.logger)
+	if err != nil {
+		return nil, err
+	}
+
+	return nil, status.Error(codes.Unimplemented, "")
+}
+
+func (a *API) GetCommand(ctx context.Context, _ *apiservice.GetCommandRequest) (*apiservice.GetCommandResponse, error) {
+	_, err := requireAPIKey(ctx, model.APIKey_READ_ONLY, a.logger)
 	if err != nil {
 		return nil, err
 	}
