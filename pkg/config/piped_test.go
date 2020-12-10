@@ -172,8 +172,10 @@ func TestPipedConfig(t *testing.T) {
 						Type:         "ECR",
 						PullInterval: Duration(time.Minute * 5),
 						ECRConfig: &ImageProviderECRConfig{
-							Address:   "012345678910.dkr.ecr.us-east-1.amazonaws.com",
-							TokenFile: "/etc/piped-secret/ecr-authorization-token",
+							Region:          "us-west-2",
+							RegistryID:      "default",
+							CredentialsFile: "/etc/piped-secret/aws-credentials",
+							Profile:         "user1",
 						},
 					},
 				},

@@ -23,6 +23,7 @@ import (
 	"github.com/docker/distribution/registry/client/auth/challenge"
 	"go.uber.org/zap"
 
+	"github.com/pipe-cd/pipe/pkg/app/piped/imageprovider/ecr"
 	"github.com/pipe-cd/pipe/pkg/app/piped/imageprovider/gcr"
 	"github.com/pipe-cd/pipe/pkg/config"
 	"github.com/pipe-cd/pipe/pkg/model"
@@ -48,7 +49,13 @@ func NewProvider(cfg *config.PipedImageProvider, logger *zap.Logger) (Provider, 
 	case model.ImageProviderTypeDockerHub:
 		return nil, fmt.Errorf("not implemented yet")
 	case model.ImageProviderTypeECR:
-		return nil, fmt.Errorf("not implemented yet")
+		options := []ecr.Option{
+			ecr.WithRegistryID(cfg.ECRConfig.RegistryID),
+			ecr.WithCredentialsFile(cfg.ECRConfig.CredentialsFile),
+			ecr.WithProfile(cfg.ECRConfig.Profile),
+			ecr.WithLogger(logger),
+		}
+		return ecr.NewECR(cfg.Name, cfg.ECRConfig.Region, options...)
 	default:
 		return nil, fmt.Errorf("unknown image provider type: %s", cfg.Type)
 	}

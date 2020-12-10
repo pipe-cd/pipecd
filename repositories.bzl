@@ -947,6 +947,13 @@ def go_repositories():
         version = "v1.0.1",
     )
     go_repository(
+        name = "com_github_masterminds_semver_v3",
+        importpath = "github.com/Masterminds/semver/v3",
+        sum = "h1:hLg3sBzpNErnxhQtUy/mmLR2I9foDujNK030IGemrRc=",
+        version = "v3.1.1",
+    )
+
+    go_repository(
         name = "com_github_mattn_go_colorable",
         importpath = "github.com/mattn/go-colorable",
         sum = "h1:UVL0vNpWh04HeJXV0KLcaT7r06gOH2l4OW6ddYRUIY4=",
