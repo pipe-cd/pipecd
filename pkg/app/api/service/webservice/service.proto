@@ -50,6 +50,7 @@ service WebService {
 
     // Application
     rpc AddApplication(AddApplicationRequest) returns (AddApplicationResponse) {}
+    rpc UpdateApplication(UpdateApplicationRequest) returns (UpdateApplicationResponse) {}
     rpc EnableApplication(EnableApplicationRequest) returns (EnableApplicationResponse) {}
     rpc DisableApplication(DisableApplicationRequest) returns (DisableApplicationResponse) {}
     rpc ListApplications(ListApplicationsRequest) returns (ListApplicationsResponse) {}
@@ -177,6 +178,19 @@ message AddApplicationRequest {
 
 message AddApplicationResponse {
     string application_id = 1 [(validate.rules).string.min_len = 1];
+}
+
+message UpdateApplicationRequest {
+    string application_id = 1 [(validate.rules).string.min_len = 1];
+    string name = 2 [(validate.rules).string.min_len = 1];
+    string env_id = 3 [(validate.rules).string.min_len = 1];
+    string piped_id = 4 [(validate.rules).string.min_len = 1];
+    model.ApplicationGitPath git_path = 5 [(validate.rules).message.required = true];
+    model.ApplicationKind kind = 6 [(validate.rules).enum.defined_only = true];
+    string cloud_provider = 7 [(validate.rules).string.min_len = 1];
+}
+
+message UpdateApplicationResponse {
 }
 
 message EnableApplicationRequest {
