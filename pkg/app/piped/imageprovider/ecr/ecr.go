@@ -20,7 +20,6 @@ import (
 	"sort"
 	"strings"
 
-	"github.com/Masterminds/semver/v3"
 	"github.com/aws/aws-sdk-go/aws"
 	"github.com/aws/aws-sdk-go/aws/awserr"
 	"github.com/aws/aws-sdk-go/aws/credentials"
@@ -32,7 +31,7 @@ import (
 )
 
 // The maximum number of image results returned by the APIs about images.
-// This value can be between 1 and 1000.
+// The API allows this value to be between 1 and 1000.
 // See more: https://pkg.go.dev/github.com/aws/aws-sdk-go/service/ecr#ListImagesInput
 const maxResults = 1000
 
@@ -73,6 +72,11 @@ func WithLogger(logger *zap.Logger) Option {
 	}
 }
 
+// NewECR attempts to retrieve credentials from the environment
+// variables if the credentials file was not given.
+// These environment variables are used:
+//   - AWS_ACCESS_KEY_ID or AWS_ACCESS_KEY
+//   - AWS_SECRET_ACCESS_KEY or AWS_SECRET_KEY
 func NewECR(name string, region string, opts ...Option) (*ECR, error) {
 	if region != "" {
 		return nil, fmt.Errorf("region is required")
@@ -92,7 +96,10 @@ func NewECR(name string, region string, opts ...Option) (*ECR, error) {
 	} else {
 		cfg = cfg.WithCredentials(credentials.NewEnvCredentials())
 	}
-	sess := session.Must(session.NewSession())
+	sess, err := session.NewSession()
+	if err != nil {
+		return nil, fmt.Errorf("failed to create a session: %w", err)
+	}
 	e.client = ecr.New(sess, cfg)
 	return e, nil
 }
@@ -117,9 +124,9 @@ func (e *ECR) ParseImage(image string) (*model.ImageName, error) {
 }
 
 func (e *ECR) GetLatestImage(ctx context.Context, image *model.ImageName) (*model.ImageRef, error) {
-	input := &ecr.ListImagesInput{
+	input := &ecr.DescribeImagesInput{
 		RepositoryName: aws.String(image.Repo),
-		Filter:         &ecr.ListImagesFilter{TagStatus: aws.String("TAGGED")},
+		Filter:         &ecr.DescribeImagesFilter{TagStatus: aws.String("TAGGED")},
 		MaxResults:     aws.Int64(maxResults),
 	}
 	if e.registryID != "" {
@@ -128,12 +135,12 @@ func (e *ECR) GetLatestImage(ctx context.Context, image *model.ImageName) (*mode
 
 	// TODO: Consider the way to determine the latest tag other than fetching all tags
 	//
-	// Iterate over the pages of a ListImages operation until the last page.
+	// Iterate over the pages of a DescribeImages operation until the last page.
 	// NOTE: A lot of requests may be issued if there are a lot of tags.
 	// For instance, for 6k tags, it will issue 6 requests.
-	imageIDs := make([]*ecr.ImageIdentifier, maxResults)
-	err := e.client.ListImagesPagesWithContext(ctx, input, func(page *ecr.ListImagesOutput, lastPage bool) bool {
-		imageIDs = append(imageIDs, page.ImageIds...)
+	imageDetails := make([]*ecr.ImageDetail, 0, maxResults)
+	err := e.client.DescribeImagesPagesWithContext(ctx, input, func(page *ecr.DescribeImagesOutput, lastPage bool) bool {
+		imageDetails = append(imageDetails, page.ImageDetails...)
 		return true
 	})
 	if err != nil {
@@ -145,66 +152,15 @@ func (e *ECR) GetLatestImage(ctx context.Context, image *model.ImageName) (*mode
 				return nil, fmt.Errorf("invalid parameter given: %w", err)
 			case ecr.ErrCodeRepositoryNotFoundException:
 				return nil, fmt.Errorf("repository not found: %w", err)
+			case ecr.ErrCodeImageNotFoundException:
+				return nil, fmt.Errorf("image not found: %w", err)
 			}
 		}
 		return nil, fmt.Errorf("unknow error given: %w", err)
 	}
-	if len(imageIDs) == 0 {
-		return nil, fmt.Errorf("no ids found")
-	}
-
-	// To avoid reaching the API rate limit, determine by the semantic versioning as much as possible.
-	latestTag, err := latestBySemver(imageIDs)
-	if err != nil {
-		e.logger.Info("it will try to determine the latest tag by the PushedAt due to the failure by semver")
-		latestTag, err = e.latestByPushedAt(ctx, image.Repo, imageIDs)
-		if err != nil {
-			return nil, fmt.Errorf("failed to determine the latest tag: %w", err)
-		}
-	}
-	return &model.ImageRef{
-		ImageName: *image,
-		Tag:       latestTag,
-	}, nil
-}
-
-// latestByPushedAt determines the latest tag by comparing the time pushed at.
-// It first issues a request to the DescribeImages API to fetch the images' PushedAt.
-func (e *ECR) latestByPushedAt(ctx context.Context, repo string, ids []*ecr.ImageIdentifier) (string, error) {
-	input := &ecr.DescribeImagesInput{
-		RepositoryName: aws.String(repo),
-		Filter:         &ecr.DescribeImagesFilter{TagStatus: aws.String("TAGGED")},
-		ImageIds:       ids,
-	}
-	if e.registryID != "" {
-		input.RegistryId = &e.registryID
-	}
-	// NOTE: A lot of requests may be issued if there are a lot of tags.
-	// For instance, for 6k tags, it will issue 6 requests.
-	imageDetails := make([]*ecr.ImageDetail, maxResults)
-	err := e.client.DescribeImagesPagesWithContext(ctx, input, func(page *ecr.DescribeImagesOutput, lastPage bool) bool {
-		imageDetails = append(imageDetails, page.ImageDetails...)
-		return true
-	})
-	if err != nil {
-		if aerr, ok := err.(awserr.Error); ok {
-			switch aerr.Code() {
-			case ecr.ErrCodeServerException:
-				return "", fmt.Errorf("server-side issue occured: %w", err)
-			case ecr.ErrCodeInvalidParameterException:
-				return "", fmt.Errorf("invalid parameter given: %w", err)
-			case ecr.ErrCodeRepositoryNotFoundException:
-				return "", fmt.Errorf("repository not found: %w", err)
-			case ecr.ErrCodeImageNotFoundException:
-				return "", fmt.Errorf("image not found: %w", err)
-			}
-		}
-		return "", fmt.Errorf("unknow error given: %w", err)
-	}
 	if len(imageDetails) == 0 {
-		return "", fmt.Errorf("no images found")
+		return nil, fmt.Errorf("no images found")
 	}
-
 	sort.SliceStable(imageDetails, func(i, j int) bool {
 		l, r := imageDetails[i], imageDetails[j]
 		if l.ImagePushedAt == nil || r.ImagePushedAt == nil {
@@ -213,32 +169,15 @@ func (e *ECR) latestByPushedAt(ctx context.Context, repo string, ids []*ecr.Imag
 		return l.ImagePushedAt.After(*r.ImagePushedAt)
 	})
 	if len(imageDetails[0].ImageTags) == 0 {
-		return "", fmt.Errorf("no images tag is associated the image")
+		return nil, fmt.Errorf("no images tag is associated the image")
 	}
 	// NOTE: Even if the tags are different, they are managed as a single
 	// image if the images' sha256 digests are identical, so there may
-	// be multiple tags associated with a single image.
+	// be multiple tags associated with a single image. That's why
+	// an ImageDetail has multiple tags.
 	latest := *imageDetails[0].ImageTags[0]
-	return latest, nil
-}
-
-// latestBySemver gives back the latest tag after sorting tags by semver.
-// Returns an error if one of any tag couldn't be parsed.
-func latestBySemver(ids []*ecr.ImageIdentifier) (string, error) {
-	length := len(ids)
-	if length == 0 {
-		return "", nil
-	}
-	tags := make([]*semver.Version, 0, length)
-	for _, id := range ids {
-		tag, err := semver.NewVersion(*id.ImageTag)
-		if err != nil {
-			return "", fmt.Errorf("failed to parse the tag: %w", err)
-		}
-		tags = append(tags, tag)
-	}
-	sort.Slice(tags, func(i, j int) bool {
-		return tags[i].GreaterThan(tags[j])
-	})
-	return tags[0].String(), nil
+	return &model.ImageRef{
+		ImageName: *image,
+		Tag:       latest,
+	}, nil
 }

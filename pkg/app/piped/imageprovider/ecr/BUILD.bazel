@@ -12,7 +12,6 @@ go_library(
         "@com_github_aws_aws_sdk_go//aws/credentials:go_default_library",
         "@com_github_aws_aws_sdk_go//aws/session:go_default_library",
         "@com_github_aws_aws_sdk_go//service/ecr:go_default_library",
-        "@com_github_masterminds_semver_v3//:go_default_library",
         "@org_uber_go_zap//:go_default_library",
     ],
 )
@@ -22,9 +21,4 @@ go_test(
     size = "small",
     srcs = ["ecr_test.go"],
     embed = [":go_default_library"],
-    deps = [
-        "@com_github_aws_aws_sdk_go//aws:go_default_library",
-        "@com_github_aws_aws_sdk_go//service/ecr:go_default_library",
-        "@com_github_stretchr_testify//assert:go_default_library",
-    ],
 )

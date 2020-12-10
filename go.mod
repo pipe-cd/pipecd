@@ -6,7 +6,6 @@ require (
 	cloud.google.com/go v0.65.0
 	cloud.google.com/go/firestore v1.2.0
 	cloud.google.com/go/storage v1.11.0
-	github.com/Masterminds/semver/v3 v3.1.1
 	github.com/NYTimes/gziphandler v0.0.0-20170623195520-56545f4a5d46
 	github.com/aws/aws-sdk-go v1.34.5
 	github.com/dgrijalva/jwt-go v3.2.0+incompatible
