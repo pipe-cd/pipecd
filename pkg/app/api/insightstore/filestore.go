@@ -33,6 +33,36 @@ type insightFileStore struct {
 	filestore filestore.Store
 }
 
+// GetReports returns data as report
+func (f *insightFileStore) GetReports(
+	ctx context.Context,
+	projectID string,
+	appID string,
+	metricsKind model.InsightMetricsKind,
+	step model.InsightStep,
+	from time.Time,
+	dataPointCount int) ([]Report, error) {
+	from = formatFrom(from, step)
+
+	paths := insightFilePaths(projectID, appID, from, dataPointCount, metricsKind, step)
+	var reports []Report
+	for _, p := range paths {
+		obj, err := f.filestore.GetObject(ctx, p)
+		if err != nil {
+			return nil, err
+		}
+		r, err := f.getReport(obj, metricsKind)
+		if err != nil {
+			return nil, err
+		}
+
+		reports = append(reports, r)
+	}
+
+	return reports, nil
+}
+
+// List returns data as insight data point
 func (f *insightFileStore) List(
 	ctx context.Context,
 	projectID string,
@@ -63,7 +93,7 @@ func (f *insightFileStore) List(
 }
 
 func (f *insightFileStore) getInsightDataPoint(obj filestore.Object, from time.Time, dataPointCount int, step model.InsightStep, kind model.InsightMetricsKind) ([]*model.InsightDataPoint, error) {
-	points, err := f.getDataPoint(obj, kind)
+	report, err := f.getReport(obj, kind)
 	if err != nil {
 		return nil, err
 	}
@@ -106,7 +136,7 @@ func (f *insightFileStore) getInsightDataPoint(obj filestore.Object, from time.T
 	targetDate := from
 	for i := 0; i < dataPointCount; i++ {
 		key := getKey(targetDate)
-		value, err := points.Value(step, key)
+		value, err := report.Value(step, key)
 		if err != nil {
 			return nil, err
 		}
@@ -122,8 +152,8 @@ func (f *insightFileStore) getInsightDataPoint(obj filestore.Object, from time.T
 	return idps, nil
 }
 
-func (f *insightFileStore) getDataPoint(obj filestore.Object, kind model.InsightMetricsKind) (datapoint, error) {
-	var points datapoint
+func (f *insightFileStore) getReport(obj filestore.Object, kind model.InsightMetricsKind) (Report, error) {
+	var points Report
 	switch kind {
 	case model.InsightMetricsKind_DEPLOYMENT_FREQUENCY:
 		var df deployFrequencyReport
@@ -131,7 +161,7 @@ func (f *insightFileStore) getDataPoint(obj filestore.Object, kind model.Insight
 		if err != nil {
 			return nil, err
 		}
-		points, err = toDatapoint(df.Datapoints)
+		points, err = toDatapoint(df)
 		if err != nil {
 			return nil, err
 		}
@@ -141,7 +171,7 @@ func (f *insightFileStore) getDataPoint(obj filestore.Object, kind model.Insight
 		if err != nil {
 			return nil, err
 		}
-		points, err = toDatapoint(cfr.Datapoints)
+		points, err = toDatapoint(cfr)
 		if err != nil {
 			return nil, err
 		}

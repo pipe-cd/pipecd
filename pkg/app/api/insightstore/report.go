@@ -13,7 +13,7 @@ type deployFrequencyReport struct {
 	Datapoints    deployFrequencyDataPoint `json:"datapoints"`
 }
 
-// deployFrequencyDataPoint satisfy the interface `datapoint`
+// deployFrequencyDataPoint satisfy the interface `Report`
 type deployFrequencyDataPoint struct {
 	Daily   map[string]deployFrequency `json:"daily"`
 	Weekly  map[string]deployFrequency `json:"weekly"`
@@ -31,7 +31,7 @@ type changeFailureRateReport struct {
 	Datapoints    changeFailureRateDataPoint `json:"datapoints"`
 }
 
-// changeFailureRateDataPoint satisfy the interface `datapoint`
+// changeFailureRateDataPoint satisfy the interface `Report`
 type changeFailureRateDataPoint struct {
 	Daily   map[string]changeFailureRate `json:"daily"`
 	Weekly  map[string]changeFailureRate `json:"weekly"`
@@ -45,47 +45,47 @@ type changeFailureRate struct {
 	FailureCount int64   `json:"failure_count"`
 }
 
-type datapoint interface {
+type Report interface {
 	// Value get data by step and key
 	Value(step model.InsightStep, key string) (float32, error)
 }
 
-func toDatapoint(i interface{}) (datapoint, error) {
+func toDatapoint(i interface{}) (Report, error) {
 	switch p := i.(type) {
-	case deployFrequencyDataPoint:
+	case deployFrequencyReport:
 		return p, nil
-	case changeFailureRateDataPoint:
+	case changeFailureRateReport:
 		return p, nil
 	default:
-		return nil, fmt.Errorf("cannot convert to datapoint: %v", p)
+		return nil, fmt.Errorf("cannot convert to Report: %v", p)
 	}
 
 }
 
-func (d deployFrequencyDataPoint) Value(step model.InsightStep, key string) (float32, error) {
+func (d deployFrequencyReport) Value(step model.InsightStep, key string) (float32, error) {
 	switch step {
 	case model.InsightStep_YEARLY:
-		return d.Yearly[key].DeployCount, nil
+		return d.Datapoints.Yearly[key].DeployCount, nil
 	case model.InsightStep_MONTHLY:
-		return d.Monthly[key].DeployCount, nil
+		return d.Datapoints.Monthly[key].DeployCount, nil
 	case model.InsightStep_WEEKLY:
-		return d.Weekly[key].DeployCount, nil
+		return d.Datapoints.Weekly[key].DeployCount, nil
 	case model.InsightStep_DAILY:
-		return d.Daily[key].DeployCount, nil
+		return d.Datapoints.Daily[key].DeployCount, nil
 	}
 	return 0, fmt.Errorf("value not found. step: %d, key: %s", step, key)
 }
 
-func (c changeFailureRateDataPoint) Value(step model.InsightStep, key string) (float32, error) {
+func (c changeFailureRateReport) Value(step model.InsightStep, key string) (float32, error) {
 	switch step {
 	case model.InsightStep_YEARLY:
-		return c.Yearly[key].Rate, nil
+		return c.Datapoints.Yearly[key].Rate, nil
 	case model.InsightStep_MONTHLY:
-		return c.Monthly[key].Rate, nil
+		return c.Datapoints.Monthly[key].Rate, nil
 	case model.InsightStep_WEEKLY:
-		return c.Weekly[key].Rate, nil
+		return c.Datapoints.Weekly[key].Rate, nil
 	case model.InsightStep_DAILY:
-		return c.Daily[key].Rate, nil
+		return c.Datapoints.Daily[key].Rate, nil
 	}
 	return 0, fmt.Errorf("value not found. step: %d, key: %s", step, key)
 }
