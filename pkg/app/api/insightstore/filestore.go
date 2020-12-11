@@ -43,7 +43,7 @@ func (f *insightFileStore) GetReports(
 	dataPointCount int) ([]Report, error) {
 	from = formatFrom(from, step)
 
-	paths := newFilePaths(projectID, appID, from, dataPointCount, metricsKind, step)
+	paths := getFilePaths(projectID, appID, from, dataPointCount, metricsKind, step)
 	var reports []Report
 	for _, p := range paths {
 		r, err := f.getReport(ctx, p, metricsKind)
@@ -68,7 +68,7 @@ func (f *insightFileStore) List(
 	dataPointCount int) ([]*model.InsightDataPoint, error) {
 	from = formatFrom(from, step)
 
-	paths := newFilePaths(projectID, appID, from, dataPointCount, metricsKind, step)
+	paths := getFilePaths(projectID, appID, from, dataPointCount, metricsKind, step)
 
 	var idps []*model.InsightDataPoint
 	for _, p := range paths {

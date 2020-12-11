@@ -8,7 +8,7 @@ import (
 	"github.com/pipe-cd/pipe/pkg/model"
 )
 
-func Test_insightFilePaths(t *testing.T) {
+func Test_getFilePaths(t *testing.T) {
 	type args struct {
 		projectID      string
 		appID          string
@@ -97,8 +97,8 @@ func Test_insightFilePaths(t *testing.T) {
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			if got := newFilePaths(tt.args.projectID, tt.args.appID, tt.args.from, tt.args.dataPointCount, tt.args.metricsKind, tt.args.step); !reflect.DeepEqual(got, tt.want) {
-				t.Errorf("newFilePaths() = %v, want %v", got, tt.want)
+			if got := getFilePaths(tt.args.projectID, tt.args.appID, tt.args.from, tt.args.dataPointCount, tt.args.metricsKind, tt.args.step); !reflect.DeepEqual(got, tt.want) {
+				t.Errorf("getFilePaths() = %v, want %v", got, tt.want)
 			}
 		})
 	}

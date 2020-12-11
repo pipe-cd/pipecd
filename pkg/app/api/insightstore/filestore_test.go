@@ -251,7 +251,7 @@ func TestGetReport(t *testing.T) {
 	}
 	for _, tc := range testcases {
 		t.Run(tc.name, func(t *testing.T) {
-			path := newFilePaths(tc.projectID, tc.appID, tc.from, tc.dataPointCount, tc.kind, tc.step)
+			path := getFilePaths(tc.projectID, tc.appID, tc.from, tc.dataPointCount, tc.kind, tc.step)
 			if len(path) != 1 {
 				t.Fatalf("the count of path must be one, but, %d", len(path))
 			}
