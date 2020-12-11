@@ -113,7 +113,7 @@ func ReplaceValue(yml []byte, path string, value interface{}) ([]byte, error) {
 			Token:    oldNode.GetToken(),
 		}
 	default:
-		return nil, fmt.Errorf("")
+		return nil, fmt.Errorf("the given value is unsupported type")
 	}
 	err = p.ReplaceWithNode(file, newNode)
 	return []byte(file.String()), err
