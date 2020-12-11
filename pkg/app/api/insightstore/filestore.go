@@ -18,7 +18,6 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
-	"strconv"
 	"time"
 
 	"github.com/pipe-cd/pipe/pkg/filestore"
@@ -44,14 +43,10 @@ func (f *insightFileStore) GetReports(
 	dataPointCount int) ([]Report, error) {
 	from = formatFrom(from, step)
 
-	paths := insightFilePaths(projectID, appID, from, dataPointCount, metricsKind, step)
+	paths := newFilePaths(projectID, appID, from, dataPointCount, metricsKind, step)
 	var reports []Report
 	for _, p := range paths {
-		obj, err := f.filestore.GetObject(ctx, p)
-		if err != nil {
-			return nil, err
-		}
-		r, err := f.getReport(obj, metricsKind)
+		r, err := f.getReport(ctx, p, metricsKind)
 		if err != nil {
 			return nil, err
 		}
@@ -73,15 +68,16 @@ func (f *insightFileStore) List(
 	dataPointCount int) ([]*model.InsightDataPoint, error) {
 	from = formatFrom(from, step)
 
-	paths := insightFilePaths(projectID, appID, from, dataPointCount, metricsKind, step)
+	paths := newFilePaths(projectID, appID, from, dataPointCount, metricsKind, step)
 
 	var idps []*model.InsightDataPoint
 	for _, p := range paths {
-		obj, err := f.filestore.GetObject(ctx, p)
+		report, err := f.getReport(ctx, p, metricsKind)
 		if err != nil {
 			return nil, err
 		}
-		idp, err := f.getInsightDataPoint(obj, from, dataPointCount, step, metricsKind)
+
+		idp, err := convertToInsightDataPoints(report, from, dataPointCount, step)
 		if err != nil {
 			return nil, err
 		}
@@ -92,68 +88,27 @@ func (f *insightFileStore) List(
 	return idps, nil
 }
 
-func (f *insightFileStore) getInsightDataPoint(obj filestore.Object, from time.Time, dataPointCount int, step model.InsightStep, kind model.InsightMetricsKind) ([]*model.InsightDataPoint, error) {
-	report, err := f.getReport(obj, kind)
+// Put create of update report
+func (f *insightFileStore) Put(ctx context.Context, report Report) error {
+	data, err := json.Marshal(report)
+	if err != nil {
+		return err
+	}
+	err = f.filestore.PutObject(ctx, report.GetFilePath(), data)
+	if err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func (f *insightFileStore) getReport(ctx context.Context, path string, kind model.InsightMetricsKind) (Report, error) {
+	obj, err := f.filestore.GetObject(ctx, path)
 	if err != nil {
 		return nil, err
 	}
 
-	var getKey func(t time.Time) string
-	var nextTargetDate func(t time.Time) time.Time
-	switch step {
-	case model.InsightStep_YEARLY:
-		getKey = func(t time.Time) string {
-			return strconv.Itoa(t.Year())
-		}
-		nextTargetDate = func(t time.Time) time.Time {
-			return t.AddDate(1, 0, 0)
-		}
-	case model.InsightStep_MONTHLY:
-		getKey = func(t time.Time) string {
-			return t.Format("2006-01")
-		}
-		nextTargetDate = func(t time.Time) time.Time {
-			return t.AddDate(0, 1, 0)
-		}
-	case model.InsightStep_WEEKLY:
-		getKey = func(t time.Time) string {
-			// This day must be a Sunday, otherwise it will fail to get the value from the map.
-			return t.Format("2006-01-02")
-		}
-		nextTargetDate = func(t time.Time) time.Time {
-			return t.AddDate(0, 0, 7)
-		}
-	case model.InsightStep_DAILY:
-		getKey = func(t time.Time) string {
-			return t.Format("2006-01-02")
-		}
-		nextTargetDate = func(t time.Time) time.Time {
-			return t.AddDate(0, 0, 1)
-		}
-	}
-
-	idps := make([]*model.InsightDataPoint, dataPointCount)
-	targetDate := from
-	for i := 0; i < dataPointCount; i++ {
-		key := getKey(targetDate)
-		value, err := report.Value(step, key)
-		if err != nil {
-			return nil, err
-		}
-
-		idps[i] = &model.InsightDataPoint{
-			Value:     value,
-			Timestamp: targetDate.Unix(),
-		}
-
-		targetDate = nextTargetDate(targetDate)
-	}
-
-	return idps, nil
-}
-
-func (f *insightFileStore) getReport(obj filestore.Object, kind model.InsightMetricsKind) (Report, error) {
-	var points Report
+	var report Report
 	switch kind {
 	case model.InsightMetricsKind_DEPLOYMENT_FREQUENCY:
 		var df deployFrequencyReport
@@ -161,7 +116,7 @@ func (f *insightFileStore) getReport(obj filestore.Object, kind model.InsightMet
 		if err != nil {
 			return nil, err
 		}
-		points, err = toDatapoint(df)
+		report, err = toReport(&df)
 		if err != nil {
 			return nil, err
 		}
@@ -171,7 +126,7 @@ func (f *insightFileStore) getReport(obj filestore.Object, kind model.InsightMet
 		if err != nil {
 			return nil, err
 		}
-		points, err = toDatapoint(cfr)
+		report, err = toReport(&cfr)
 		if err != nil {
 			return nil, err
 		}
@@ -179,7 +134,8 @@ func (f *insightFileStore) getReport(obj filestore.Object, kind model.InsightMet
 		return nil, fmt.Errorf("unimpremented insight kind: %s", kind)
 	}
 
-	return points, nil
+	report.PutFilePath(path)
+	return report, nil
 }
 
 func formatFrom(from time.Time, step model.InsightStep) time.Time {
@@ -197,82 +153,4 @@ func formatFrom(from time.Time, step model.InsightStep) time.Time {
 		formattedTime = time.Date(from.Year(), 1, 1, 0, 0, 0, 0, time.UTC)
 	}
 	return formattedTime
-}
-
-// insightFilePaths return an insight file paths according to the following format
-//
-// insights
-//  ├─ project-id
-//    ├─ deployment-frequency
-//        ├─ project  # aggregated from all applications
-//            ├─ years.json
-//            ├─ 2020-01.json
-//            ├─ 2020-02.json
-//            ...
-//        ├─ app-id
-//            ├─ years.json
-//            ├─ 2020-01.json
-//            ├─ 2020-02.json
-//            ...
-func insightFilePaths(projectID string, appID string, from time.Time, dataPointCount int, metricsKind model.InsightMetricsKind, step model.InsightStep) []string {
-	if appID == "" {
-		appID = "project"
-	}
-	metricsKindKebab := getKebabCaseMetricsKind(metricsKind)
-	switch step {
-	case model.InsightStep_YEARLY:
-		return []string{fmt.Sprintf("insights/%s/%s/%s/years.json", projectID, metricsKindKebab, appID)}
-	default:
-		months := getPointsMonths(from, dataPointCount, step)
-		var paths []string
-		for _, m := range months {
-			path := fmt.Sprintf("insights/%s/%s/%s/%s.json", projectID, metricsKindKebab, appID, m)
-			paths = append(paths, path)
-		}
-		return paths
-	}
-}
-
-// getPointsMonths return months between two dates.
-func getPointsMonths(date time.Time, count int, step model.InsightStep) []string {
-	var to time.Time
-
-	switch step {
-	case model.InsightStep_YEARLY:
-		to = date.AddDate(count-1, 0, 0)
-	case model.InsightStep_MONTHLY:
-		to = date.AddDate(0, count-1, 0)
-	case model.InsightStep_WEEKLY:
-		to = date.AddDate(0, 0, (count-1)*7)
-	case model.InsightStep_DAILY:
-		to = date.AddDate(0, 0, count-1)
-	}
-
-	var months []string
-	y1, m1, _ := to.Date()
-	for {
-		// 2015-05-05 08:05:15.828452891 +0900 UST → 2015-05
-		months = append(months, date.Format("2006-01"))
-		y2, m2, _ := date.Date()
-		if y1 == y2 && m1 == m2 {
-			return months
-		}
-
-		date = date.AddDate(0, 1, 0)
-	}
-}
-
-func getKebabCaseMetricsKind(kind model.InsightMetricsKind) string {
-	var kebabKind string
-	switch kind {
-	case model.InsightMetricsKind_DEPLOYMENT_FREQUENCY:
-		kebabKind = "deployment_frequency"
-	case model.InsightMetricsKind_CHANGE_FAILURE_RATE:
-		kebabKind = "change_failure_rate"
-	case model.InsightMetricsKind_MTTR:
-		kebabKind = "mean_time_to_restore"
-	case model.InsightMetricsKind_LEAD_TIME:
-		kebabKind = "lead_time"
-	}
-	return kebabKind
 }

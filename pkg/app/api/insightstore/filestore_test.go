@@ -15,6 +15,7 @@
 package insightstore
 
 import (
+	"context"
 	"reflect"
 	"testing"
 	"time"
@@ -27,24 +28,28 @@ import (
 	"github.com/pipe-cd/pipe/pkg/model"
 )
 
-func TestGetInsightDataPoints(t *testing.T) {
+func TestGetReport(t *testing.T) {
 	ctrl := gomock.NewController(t)
 	defer ctrl.Finish()
 	store := filestoretest.NewMockStore(ctrl)
 
 	testcases := []struct {
 		name           string
+		projectID      string
+		appID          string
 		content        string
 		from           time.Time
 		dataPointCount int
 		step           model.InsightStep
 		kind           model.InsightMetricsKind
 		readerErr      error
-		expected       []*model.InsightDataPoint
+		expected       Report
 		expectedErr    error
 	}{
 		{
 			name:           "file not found in filestore",
+			projectID:      "projectID",
+			appID:          "appID",
 			from:           time.Date(2020, 1, 1, 0, 0, 0, 0, time.UTC),
 			dataPointCount: 7,
 			step:           model.InsightStep_DAILY,
@@ -55,6 +60,8 @@ func TestGetInsightDataPoints(t *testing.T) {
 		},
 		{
 			name:           "[deploy frequency] success in yearly",
+			projectID:      "projectID",
+			appID:          "appID",
 			step:           model.InsightStep_YEARLY,
 			from:           time.Date(2020, 1, 1, 0, 0, 0, 0, time.UTC),
 			dataPointCount: 2,
@@ -72,22 +79,29 @@ func TestGetInsightDataPoints(t *testing.T) {
 					}
 				}
 			}`,
-			expected: []*model.InsightDataPoint{
-				{
-					Value:     1000,
-					Timestamp: time.Date(2020, 1, 1, 0, 0, 0, 0, time.UTC).Unix(),
-				},
-				{
-					Value:     3000,
-					Timestamp: time.Date(2021, 1, 1, 0, 0, 0, 0, time.UTC).Unix(),
-				},
-			},
+			expected: func() Report {
+				path := newYearlyFilePath("projectID", model.InsightMetricsKind_DEPLOYMENT_FREQUENCY, "appID")
+				expected := deployFrequencyReport{
+					AccumulatedTo: 1609459200,
+					Datapoints: deployFrequencyDataPoint{
+						Yearly: map[string]deployFrequency{
+							"2020": {DeployCount: 1000},
+							"2021": {DeployCount: 3000},
+						},
+					},
+					FilePath: path,
+				}
+				report, _ := toReport(&expected)
+				return report
+			}(),
 		},
 		{
 			name:           "[deploy frequency] success in monthly",
+			projectID:      "projectID",
+			appID:          "appID",
 			step:           model.InsightStep_MONTHLY,
 			from:           time.Date(2020, 1, 1, 0, 0, 0, 0, time.UTC),
-			dataPointCount: 2,
+			dataPointCount: 1,
 			kind:           model.InsightMetricsKind_DEPLOYMENT_FREQUENCY,
 			content: `{
 				"accumulated_to": 1609459200,
@@ -95,26 +109,29 @@ func TestGetInsightDataPoints(t *testing.T) {
 					"monthly": {
 						"2020-01": {
 							"deploy_count": 1000
-						},
-						"2020-02": {
-							"deploy_count": 3000
 						}
 					}
 				}
 			}`,
-			expected: []*model.InsightDataPoint{
-				{
-					Value:     1000,
-					Timestamp: time.Date(2020, 1, 1, 0, 0, 0, 0, time.UTC).Unix(),
-				},
-				{
-					Value:     3000,
-					Timestamp: time.Date(2020, 2, 1, 0, 0, 0, 0, time.UTC).Unix(),
-				},
-			},
+			expected: func() Report {
+				path := newMonthlyFilePath("projectID", model.InsightMetricsKind_DEPLOYMENT_FREQUENCY, "appID", "2020-01")
+				expected := deployFrequencyReport{
+					AccumulatedTo: 1609459200,
+					Datapoints: deployFrequencyDataPoint{
+						Monthly: map[string]deployFrequency{
+							"2020-01": {DeployCount: 1000},
+						},
+					},
+					FilePath: path,
+				}
+				report, _ := toReport(&expected)
+				return report
+			}(),
 		},
 		{
 			name:           "[deploy frequency] success in weekly",
+			projectID:      "projectID",
+			appID:          "appID",
 			step:           model.InsightStep_WEEKLY,
 			from:           time.Date(2021, 1, 3, 0, 0, 0, 0, time.UTC),
 			dataPointCount: 2,
@@ -132,19 +149,26 @@ func TestGetInsightDataPoints(t *testing.T) {
 					}
 				}
 			}`,
-			expected: []*model.InsightDataPoint{
-				{
-					Value:     1000,
-					Timestamp: time.Date(2021, 1, 3, 0, 0, 0, 0, time.UTC).Unix(),
-				},
-				{
-					Value:     3000,
-					Timestamp: time.Date(2021, 1, 10, 0, 0, 0, 0, time.UTC).Unix(),
-				},
-			},
+			expected: func() Report {
+				path := newMonthlyFilePath("projectID", model.InsightMetricsKind_DEPLOYMENT_FREQUENCY, "appID", "2021-01")
+				expected := deployFrequencyReport{
+					AccumulatedTo: 1609459200,
+					Datapoints: deployFrequencyDataPoint{
+						Weekly: map[string]deployFrequency{
+							"2021-01-03": {DeployCount: 1000},
+							"2021-01-10": {DeployCount: 3000},
+						},
+					},
+					FilePath: path,
+				}
+				report, _ := toReport(&expected)
+				return report
+			}(),
 		},
 		{
 			name:           "[deploy frequency] success in daily",
+			projectID:      "projectID",
+			appID:          "appID",
 			step:           model.InsightStep_DAILY,
 			from:           time.Date(2021, 1, 3, 0, 0, 0, 0, time.UTC),
 			dataPointCount: 2,
@@ -162,19 +186,27 @@ func TestGetInsightDataPoints(t *testing.T) {
 					}
 				}
 			}`,
-			expected: []*model.InsightDataPoint{
-				{
-					Value:     1000,
-					Timestamp: time.Date(2021, 1, 3, 0, 0, 0, 0, time.UTC).Unix(),
-				},
-				{
-					Value:     3000,
-					Timestamp: time.Date(2021, 1, 4, 0, 0, 0, 0, time.UTC).Unix(),
-				},
-			},
+			expected: func() Report {
+				path := newMonthlyFilePath("projectID", model.InsightMetricsKind_DEPLOYMENT_FREQUENCY, "appID", "2021-01")
+				expected := deployFrequencyReport{
+					AccumulatedTo: 1609459200,
+					Datapoints: deployFrequencyDataPoint{
+						Daily: map[string]deployFrequency{
+							"2021-01-03": {DeployCount: 1000},
+							"2021-01-04": {DeployCount: 3000},
+						},
+					},
+					FilePath: path,
+				}
+				report, _ := toReport(&expected)
+				return report
+			}(),
 		},
+
 		{
 			name:           "[change failure rate] success",
+			projectID:      "projectID",
+			appID:          "appID",
 			step:           model.InsightStep_YEARLY,
 			from:           time.Date(2020, 1, 1, 0, 0, 0, 0, time.UTC),
 			dataPointCount: 2,
@@ -196,16 +228,21 @@ func TestGetInsightDataPoints(t *testing.T) {
 					}
 				}
 			}`,
-			expected: []*model.InsightDataPoint{
-				{
-					Value:     0.75,
-					Timestamp: time.Date(2020, 1, 1, 0, 0, 0, 0, time.UTC).Unix(),
-				},
-				{
-					Value:     0.50,
-					Timestamp: time.Date(2021, 1, 1, 0, 0, 0, 0, time.UTC).Unix(),
-				},
-			},
+			expected: func() Report {
+				path := newYearlyFilePath("projectID", model.InsightMetricsKind_CHANGE_FAILURE_RATE, "appID")
+				expected := changeFailureRateReport{
+					AccumulatedTo: 1609459200,
+					Datapoints: changeFailureRateDataPoint{
+						Yearly: map[string]changeFailureRate{
+							"2020": {Rate: 0.75, SuccessCount: 1000, FailureCount: 3000},
+							"2021": {Rate: 0.50, SuccessCount: 1000, FailureCount: 1000},
+						},
+					},
+					FilePath: path,
+				}
+				report, _ := toReport(&expected)
+				return report
+			}(),
 		},
 	}
 
@@ -214,10 +251,15 @@ func TestGetInsightDataPoints(t *testing.T) {
 	}
 	for _, tc := range testcases {
 		t.Run(tc.name, func(t *testing.T) {
+			path := newFilePaths(tc.projectID, tc.appID, tc.from, tc.dataPointCount, tc.kind, tc.step)
+			if len(path) != 1 {
+				t.Fatalf("the count of path must be one, but, %d", len(path))
+			}
 			obj := filestore.Object{
 				Content: []byte(tc.content),
 			}
-			idps, err := fs.getInsightDataPoint(obj, tc.from, tc.dataPointCount, tc.step, tc.kind)
+			store.EXPECT().GetObject(context.TODO(), path[0]).Return(obj, tc.readerErr)
+			idps, err := fs.getReport(context.Background(), path[0], tc.kind)
 			if err != nil {
 				if tc.expectedErr == nil {
 					assert.NoError(t, err)
@@ -372,8 +414,8 @@ func Test_insightFilePaths(t *testing.T) {
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			if got := insightFilePaths(tt.args.projectID, tt.args.appID, tt.args.from, tt.args.dataPointCount, tt.args.metricsKind, tt.args.step); !reflect.DeepEqual(got, tt.want) {
-				t.Errorf("insightFilePaths() = %v, want %v", got, tt.want)
+			if got := newFilePaths(tt.args.projectID, tt.args.appID, tt.args.from, tt.args.dataPointCount, tt.args.metricsKind, tt.args.step); !reflect.DeepEqual(got, tt.want) {
+				t.Errorf("newFilePaths() = %v, want %v", got, tt.want)
 			}
 		})
 	}

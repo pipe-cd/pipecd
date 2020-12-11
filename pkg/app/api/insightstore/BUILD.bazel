@@ -5,6 +5,7 @@ go_library(
     srcs = [
         "report.go",
         "filestore.go",
+        "filepath.go",
     ],
     importpath = "github.com/pipe-cd/pipe/pkg/app/api/insightstore",
     visibility = ["//visibility:public"],
@@ -21,6 +22,7 @@ go_test(
     size = "small",
     srcs = [
         "filestore_test.go",
+        "report_test.go",
     ],
     embed = [":go_default_library"],
     deps = [
