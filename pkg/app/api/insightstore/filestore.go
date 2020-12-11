@@ -33,6 +33,35 @@ type insightFileStore struct {
 	filestore filestore.Store
 }
 
+func (f *insightFileStore) List(
+	ctx context.Context,
+	projectID string,
+	appID string,
+	metricsKind model.InsightMetricsKind,
+	step model.InsightStep,
+	from time.Time,
+	dataPointCount int) ([]*model.InsightDataPoint, error) {
+	from = formatFrom(from, step)
+
+	paths := insightFilePaths(projectID, appID, from, dataPointCount, metricsKind, step)
+
+	var idps []*model.InsightDataPoint
+	for _, p := range paths {
+		obj, err := f.filestore.GetObject(ctx, p)
+		if err != nil {
+			return nil, err
+		}
+		idp, err := f.getInsightDataPoints(obj, from, dataPointCount, step, metricsKind)
+		if err != nil {
+			return nil, err
+		}
+
+		idps = append(idps, idp...)
+	}
+
+	return idps, nil
+}
+
 func (f *insightFileStore) getInsightDataPoints(obj filestore.Object, from time.Time, dataPointCount int, step model.InsightStep, kind model.InsightMetricsKind) ([]*model.InsightDataPoint, error) {
 	var c commonReport
 	if err := json.Unmarshal(obj.Content, &c); err != nil {
@@ -119,35 +148,6 @@ func (f *insightFileStore) getInsightDataPoints(obj filestore.Object, from time.
 		}
 
 		targetDate = nextTargetDate(targetDate)
-	}
-
-	return idps, nil
-}
-
-func (f *insightFileStore) List(
-	ctx context.Context,
-	projectID string,
-	appID string,
-	metricsKind model.InsightMetricsKind,
-	step model.InsightStep,
-	from time.Time,
-	dataPointCount int) ([]*model.InsightDataPoint, error) {
-	from = formatFrom(from, step)
-
-	paths := insightFilePaths(projectID, appID, from, dataPointCount, metricsKind, step)
-
-	var idps []*model.InsightDataPoint
-	for _, p := range paths {
-		obj, err := f.filestore.GetObject(ctx, p)
-		if err != nil {
-			return nil, err
-		}
-		idp, err := f.getInsightDataPoints(obj, from, dataPointCount, step, metricsKind)
-		if err != nil {
-			return nil, err
-		}
-
-		idps = append(idps, idp...)
 	}
 
 	return idps, nil
