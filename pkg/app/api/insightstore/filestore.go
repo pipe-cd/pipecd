@@ -106,13 +106,13 @@ func (f *insightFileStore) getInsightDataPoints(obj filestore.Object, from time.
 	targetDate := from
 	for i := 0; i < dataPointCount; i++ {
 		key := getKey(targetDate)
-		d, ok := points[key]
-		if !ok {
-			return nil, fmt.Errorf("datapoints not found, key: %s", key)
+		value, err := points.Value(step, key)
+		if err != nil {
+			return nil, err
 		}
 
 		idps[i] = &model.InsightDataPoint{
-			Value:     d.Value(),
+			Value:     value,
 			Timestamp: targetDate.Unix(),
 		}
 
@@ -122,43 +122,26 @@ func (f *insightFileStore) getInsightDataPoints(obj filestore.Object, from time.
 	return idps, nil
 }
 
-func (f *insightFileStore) getDataPointsMap(obj filestore.Object, step model.InsightStep, kind model.InsightMetricsKind) (map[string]datapoint, error) {
-	var c commonReport
-	if err := json.Unmarshal(obj.Content, &c); err != nil {
-		return nil, err
-	}
-
-	var targetJSON []byte
-	switch step {
-	case model.InsightStep_YEARLY:
-		targetJSON = c.Datapoints.Yearly
-	case model.InsightStep_MONTHLY:
-		targetJSON = c.Datapoints.Monthly
-	case model.InsightStep_WEEKLY:
-		targetJSON = c.Datapoints.Weekly
-	case model.InsightStep_DAILY:
-		targetJSON = c.Datapoints.Daily
-	}
-
-	var points map[string]datapoint
+func (f *insightFileStore) getDataPointsMap(obj filestore.Object, step model.InsightStep, kind model.InsightMetricsKind) (datapoint, error) {
+	var points datapoint
 	switch kind {
 	case model.InsightMetricsKind_DEPLOYMENT_FREQUENCY:
-		var df map[string]deployFrequency
-		err := json.Unmarshal(targetJSON, &df)
+		var df deployFrequencyReport
+		err := json.Unmarshal(obj.Content, &df)
 		if err != nil {
 			return nil, err
 		}
-		points, err = toDatapoint(df)
+		points, err = toDatapoint(df.Datapoints)
 		if err != nil {
 			return nil, err
 		}
 	case model.InsightMetricsKind_CHANGE_FAILURE_RATE:
-		var cfr map[string]changeFailureRate
-		err := json.Unmarshal(targetJSON, &cfr)
+		var cfr changeFailureRateReport
+		err := json.Unmarshal(obj.Content, &cfr)
 		if err != nil {
 			return nil, err
 		}
-		points, err = toDatapoint(cfr)
+		points, err = toDatapoint(cfr.Datapoints)
 		if err != nil {
 			return nil, err
 		}

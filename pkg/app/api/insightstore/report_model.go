@@ -1,61 +1,91 @@
 package insightstore
 
 import (
-	"encoding/json"
 	"fmt"
+
+	"github.com/pipe-cd/pipe/pkg/model"
 )
 
-type commonReport struct {
-	AccumulatedTo int64      `json:"accumulated_to"`
-	Datapoints    datapoints `json:"datapoints"`
+// deploy frequency
+
+type deployFrequencyReport struct {
+	AccumulatedTo int64                    `json:"accumulated_to"`
+	Datapoints    deployFrequencyDataPoint `json:"datapoints"`
 }
 
-type datapoints struct {
-	Daily   json.RawMessage `json:"daily"`
-	Weekly  json.RawMessage `json:"weekly"`
-	Monthly json.RawMessage `json:"monthly"`
-	Yearly  json.RawMessage `json:"yearly"`
+// deployFrequencyDataPoint satisfy the interface `datapoint`
+type deployFrequencyDataPoint struct {
+	Daily   map[string]deployFrequency `json:"daily"`
+	Weekly  map[string]deployFrequency `json:"weekly"`
+	Monthly map[string]deployFrequency `json:"monthly"`
+	Yearly  map[string]deployFrequency `json:"yearly"`
 }
 
-type datapoint interface {
-	Value() float32
-}
-
-func toDatapoint(i interface{}) (map[string]datapoint, error) {
-	datapoints := map[string]datapoint{}
-	switch p := i.(type) {
-	case map[string]deployFrequency:
-		for k, v := range p {
-			datapoints[k] = v
-		}
-		return datapoints, nil
-	case map[string]changeFailureRate:
-		for k, v := range p {
-			datapoints[k] = v
-		}
-		return datapoints, nil
-	default:
-		return nil, fmt.Errorf("cannot convert to datapoint: %v", p)
-	}
-
-}
-
-// deployFrequency satisfy the interface `datapoint`
 type deployFrequency struct {
 	DeployCount float32 `json:"deploy_count"`
 }
 
-func (d deployFrequency) Value() float32 {
-	return d.DeployCount
+// change failure rate
+type changeFailureRateReport struct {
+	AccumulatedTo int64                      `json:"accumulated_to"`
+	Datapoints    changeFailureRateDataPoint `json:"datapoints"`
 }
 
-// changeFailureRate satisfy the interface `datapoint`
+// changeFailureRateDataPoint satisfy the interface `datapoint`
+type changeFailureRateDataPoint struct {
+	Daily   map[string]changeFailureRate `json:"daily"`
+	Weekly  map[string]changeFailureRate `json:"weekly"`
+	Monthly map[string]changeFailureRate `json:"monthly"`
+	Yearly  map[string]changeFailureRate `json:"yearly"`
+}
+
 type changeFailureRate struct {
 	Rate         float32 `json:"rate"`
 	SuccessCount int64   `json:"success_count"`
 	FailureCount int64   `json:"failure_count"`
 }
 
-func (c changeFailureRate) Value() float32 {
-	return c.Rate
+type datapoint interface {
+	// Value get data by step and key
+	Value(step model.InsightStep, key string) (float32, error)
+}
+
+func toDatapoint(i interface{}) (datapoint, error) {
+	switch p := i.(type) {
+	case deployFrequencyDataPoint:
+		return p, nil
+	case changeFailureRateDataPoint:
+		return p, nil
+	default:
+		return nil, fmt.Errorf("cannot convert to datapoint: %v", p)
+	}
+
+}
+
+func (d deployFrequencyDataPoint) Value(step model.InsightStep, key string) (float32, error) {
+	switch step {
+	case model.InsightStep_YEARLY:
+		return d.Yearly[key].DeployCount, nil
+	case model.InsightStep_MONTHLY:
+		return d.Monthly[key].DeployCount, nil
+	case model.InsightStep_WEEKLY:
+		return d.Weekly[key].DeployCount, nil
+	case model.InsightStep_DAILY:
+		return d.Daily[key].DeployCount, nil
+	}
+	return 0, fmt.Errorf("value not found. step: %d, key: %s", step, key)
+}
+
+func (c changeFailureRateDataPoint) Value(step model.InsightStep, key string) (float32, error) {
+	switch step {
+	case model.InsightStep_YEARLY:
+		return c.Yearly[key].Rate, nil
+	case model.InsightStep_MONTHLY:
+		return c.Monthly[key].Rate, nil
+	case model.InsightStep_WEEKLY:
+		return c.Weekly[key].Rate, nil
+	case model.InsightStep_DAILY:
+		return c.Daily[key].Rate, nil
+	}
+	return 0, fmt.Errorf("value not found. step: %d, key: %s", step, key)
 }
