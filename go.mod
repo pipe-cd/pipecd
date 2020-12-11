@@ -14,6 +14,7 @@ require (
 	github.com/docker/libtrust v0.0.0-20160708172513-aabc10ec26b7 // indirect
 	github.com/envoyproxy/protoc-gen-validate v0.1.0
 	github.com/fsouza/fake-gcs-server v1.21.0
+	github.com/goccy/go-yaml v1.8.4
 	github.com/golang/mock v1.4.4
 	github.com/golang/protobuf v1.4.2
 	github.com/gomodule/redigo v2.0.0+incompatible
