@@ -6,6 +6,11 @@ describe("updateApplicationSlice reducer", () => {
       updateApplicationSlice.reducer(undefined, {
         type: "TEST_ACTION",
       })
-    ).toMatchInlineSnapshot();
+    ).toMatchInlineSnapshot(`
+      Object {
+        "targetId": null,
+        "updating": false,
+      }
+    `);
   });
 });
