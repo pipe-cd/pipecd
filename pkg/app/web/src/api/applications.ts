@@ -14,6 +14,8 @@ import {
   DisableApplicationResponse,
   EnableApplicationRequest,
   EnableApplicationResponse,
+  UpdateApplicationRequest,
+  UpdateApplicationResponse,
 } from "pipe/pkg/app/web/api_client/service_pb";
 import { ApplicationGitPath } from "pipe/pkg/app/web/model/common_pb";
 import { ApplicationGitRepository } from "pipe/pkg/app/web/model/common_pb";
@@ -120,4 +122,40 @@ export const enableApplication = async ({
   const req = new EnableApplicationRequest();
   req.setApplicationId(applicationId);
   return apiRequest(req, apiClient.enableApplication);
+};
+
+export const updateApplication = async ({
+  applicationId,
+  cloudProvider,
+  envId,
+  kind,
+  name,
+  pipedId,
+  gitPath,
+}: Required<UpdateApplicationRequest.AsObject>): Promise<
+  UpdateApplicationResponse.AsObject
+> => {
+  console.log(UpdateApplicationRequest);
+
+  const req = new UpdateApplicationRequest();
+  req.setApplicationId(applicationId);
+  req.setName(name);
+  req.setEnvId(envId);
+  req.setPipedId(pipedId);
+  req.setCloudProvider(cloudProvider);
+  req.setKind(kind);
+  const appGitPath = new ApplicationGitPath();
+  const repository = new ApplicationGitRepository();
+  if (gitPath.repo) {
+    repository.setId(gitPath.repo.id);
+    repository.setBranch(gitPath.repo.branch);
+    repository.setRemote(gitPath.repo.remote);
+    appGitPath.setRepo(repository);
+  }
+  appGitPath.setPath(gitPath.path);
+  if (gitPath.configFilename && gitPath.configFilename !== "") {
+    appGitPath.setConfigFilename(gitPath.configFilename);
+  }
+  req.setGitPath(appGitPath);
+  return apiRequest(req, apiClient.updateApplication);
 };

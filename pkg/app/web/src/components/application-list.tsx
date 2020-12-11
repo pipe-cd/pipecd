@@ -18,7 +18,7 @@ import {
 import MenuIcon from "@material-ui/icons/MoreVert";
 import { Dictionary } from "@reduxjs/toolkit";
 import dayjs from "dayjs";
-import React, { FC, memo, useState } from "react";
+import React, { FC, memo, useCallback, useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import { Link as RouterLink } from "react-router-dom";
 import { PAGE_PATH_APPLICATIONS } from "../constants/path";
@@ -39,6 +39,7 @@ import { DisableApplicationDialog } from "./disable-application-dialog";
 import { SyncStatusIcon } from "./sync-status-icon";
 import { SealedSecretDialog } from "./sealed-secret-dialog";
 import { APPLICATION_KIND_TEXT } from "../constants/application-kind";
+import { setUpdateTargetId } from "../modules/update-application";
 
 const useStyles = makeStyles((theme) => ({
   root: {
@@ -139,6 +140,13 @@ export const ApplicationList: FC = memo(function ApplicationList() {
     });
     dispatch(fetchApplications());
   };
+
+  const handleEditClick = useCallback(() => {
+    if (actionTarget) {
+      dispatch(setUpdateTargetId(actionTarget.id));
+    }
+    closeMenu();
+  }, [dispatch, actionTarget]);
 
   return (
     <div className={classes.root}>
@@ -259,6 +267,7 @@ export const ApplicationList: FC = memo(function ApplicationList() {
           },
         }}
       >
+        <MenuItem onClick={handleEditClick}>Edit</MenuItem>
         {actionTarget && actionTarget.disabled ? (
           <MenuItem onClick={handleOnClickEnable}>Enable</MenuItem>
         ) : (

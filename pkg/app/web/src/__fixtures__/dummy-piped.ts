@@ -1,5 +1,6 @@
 import { Piped, PipedModel } from "../modules/pipeds";
 import { dummyEnv } from "./dummy-environment";
+import { dummyRepo } from "./dummy-repo";
 
 export const dummyPiped: Piped = {
   cloudProvidersList: [
@@ -19,13 +20,7 @@ export const dummyPiped: Piped = {
   id: "piped-1",
   name: "dummy piped",
   projectId: "project-1",
-  repositoriesList: [
-    {
-      id: "debug-repo",
-      remote: "git@github.com:pipe-cd/debug.git",
-      branch: "master",
-    },
-  ],
+  repositoriesList: [dummyRepo],
   startedAt: 0,
   updatedAt: 0,
   version: "v0.1",

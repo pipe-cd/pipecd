@@ -17,6 +17,7 @@ import { projectSlice } from "./project";
 import { deploymentConfigsSlice } from "./deployment-configs";
 import { sealedSecretSlice } from "./sealed-secret";
 import { apiKeysSlice } from "./api-keys";
+import { updateApplicationSlice } from "./update-application";
 
 export const reducers = combineReducers({
   deployments: deploymentsSlice.reducer,
@@ -24,6 +25,7 @@ export const reducers = combineReducers({
   applicationLiveState: applicationLiveStateSlice.reducer,
   applications: applicationsSlice.reducer,
   applicationFilterOptions: applicationFilterOptionsSlice.reducer,
+  updateApplication: updateApplicationSlice.reducer,
   stageLogs: stageLogsSlice.reducer,
   activeStage: activeStageSlice.reducer,
   pipeds: pipedsSlice.reducer,

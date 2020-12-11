@@ -12,7 +12,7 @@ import FilterIcon from "@material-ui/icons/FilterList";
 import RefreshIcon from "@material-ui/icons/Refresh";
 import React, { FC, memo, useEffect, useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
-import { AddApplicationDrawer } from "../../components/add-application-drawer";
+import { ApplicationFormDrawer } from "../../components/application-form-drawer";
 import { ApplicationFilter } from "../../components/application-filter";
 import { ApplicationList } from "../../components/application-list";
 import { AppState } from "../../modules";
@@ -21,6 +21,7 @@ import { AppDispatch } from "../../store";
 import { selectProjectName } from "../../modules/me";
 import { DeploymentConfigForm } from "../../components/deployment-config-form";
 import { clearTemplateTarget } from "../../modules/deployment-configs";
+import { EditApplicationDrawer } from "../../components/edit-application-drawer";
 
 const useStyles = makeStyles((theme) => ({
   main: {
@@ -118,9 +119,9 @@ export const ApplicationIndexPage: FC = memo(function ApplicationIndexPage() {
         />
       </div>
 
-      <AddApplicationDrawer
+      <ApplicationFormDrawer
+        title={`Add a new application to "${projectName}" project`}
         open={isOpenForm}
-        projectName={projectName}
         onSubmit={(state) => {
           dispatch(addApplication(state)).then(() => {
             setIsOpenForm(false);
@@ -128,8 +129,10 @@ export const ApplicationIndexPage: FC = memo(function ApplicationIndexPage() {
           });
         }}
         onClose={handleClose}
-        isAdding={isAdding}
+        isProcessing={isAdding}
       />
+
+      <EditApplicationDrawer />
 
       <Drawer
         anchor="right"
