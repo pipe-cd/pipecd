@@ -1,5 +1,5 @@
 import React from "react";
-import { AddApplicationDrawer } from "./add-application-drawer";
+import { ApplicationFormDrawer } from "./application-form-drawer";
 import { render, screen, waitFor } from "../../test-utils";
 import { UI_TEXT_CANCEL, UI_TEXT_SAVE } from "../constants/ui-text";
 import { dummyEnv } from "../__fixtures__/dummy-environment";
@@ -8,16 +8,16 @@ import { ApplicationKind } from "../modules/applications";
 import { dummyPiped } from "../__fixtures__/dummy-piped";
 import userEvent from "@testing-library/user-event";
 
-describe("AddApplicationDrawer", () => {
+describe("ApplicationFormDrawer", () => {
   it("should calls onSubmit if clicked SAVE button", async () => {
     const onSubmit = jest.fn();
     render(
-      <AddApplicationDrawer
+      <ApplicationFormDrawer
         open
-        projectName="pipecd"
+        title="add application"
         onSubmit={onSubmit}
         onClose={jest.fn()}
-        isAdding={false}
+        isProcessing={false}
       />,
       {
         initialState: {
@@ -79,12 +79,12 @@ describe("AddApplicationDrawer", () => {
   it("should clear depended fields if change environment", async () => {
     const altEnv = { ...dummyEnv, id: "env-2", name: "env-2" };
     render(
-      <AddApplicationDrawer
+      <ApplicationFormDrawer
         open
-        projectName="pipecd"
+        title="add application"
         onSubmit={() => null}
         onClose={() => null}
-        isAdding={false}
+        isProcessing={false}
       />,
       {
         initialState: {
@@ -151,12 +151,12 @@ describe("AddApplicationDrawer", () => {
   it("should calls onClose handler if clicked CANCEL button", () => {
     const onClose = jest.fn();
     render(
-      <AddApplicationDrawer
+      <ApplicationFormDrawer
         open
-        projectName="pipecd"
+        title="add application"
         onSubmit={jest.fn()}
         onClose={onClose}
-        isAdding={false}
+        isProcessing={false}
       />,
       {}
     );

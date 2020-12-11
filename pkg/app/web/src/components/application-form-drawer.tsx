@@ -131,28 +131,31 @@ const validationSchema = Yup.object().shape({
   cloudProvider: Yup.string().required(),
 });
 
-interface Props {
-  open: boolean;
-  isAdding: boolean;
-  projectName: string;
-  onSubmit: (state: {
-    name: string;
-    env: string;
-    kind: ApplicationKind;
-    pipedId: string;
-    repoPath: string;
-    configFilename: string;
-    cloudProvider: string;
-    repo: {
-      id: string;
-      remote: string;
-      branch: string;
-    };
-  }) => void;
-  onClose: () => void;
+export interface ApplicationFormValue {
+  name: string;
+  env: string;
+  kind: ApplicationKind;
+  pipedId: string;
+  repoPath: string;
+  configFilename: string;
+  cloudProvider: string;
+  repo: {
+    id: string;
+    remote: string;
+    branch: string;
+  };
 }
 
-const initialFormValues = {
+interface Props {
+  title: string;
+  open: boolean;
+  isProcessing: boolean;
+  onSubmit: (state: ApplicationFormValue) => void;
+  onClose: () => void;
+  initialFormValues?: ApplicationFormValue;
+}
+
+const emptyFormValues: ApplicationFormValue = {
   name: "",
   env: "",
   kind: ApplicationKind.KUBERNETES,
@@ -167,21 +170,24 @@ const initialFormValues = {
   },
 };
 
-export const AddApplicationDrawer: FC<Props> = memo(
+export const ApplicationFormDrawer: FC<Props> = memo(
   function AddApplicationName({
+    title,
     open,
-    isAdding,
-    projectName,
+    isProcessing,
     onSubmit,
     onClose,
+    initialFormValues = emptyFormValues,
   }) {
     const classes = useStyles();
     const formik = useFormik({
       initialValues: initialFormValues,
       validateOnMount: true,
       validationSchema,
+      enableReinitialize: true,
       onSubmit: (values) => {
         onSubmit(values);
+        formik.resetForm();
       },
     });
 
@@ -201,7 +207,7 @@ export const AddApplicationDrawer: FC<Props> = memo(
 
     const handleClose = (): void => {
       onClose();
-      formik.resetForm({ values: initialFormValues });
+      formik.resetForm();
     };
 
     const cloudProviders = createCloudProviderListFromPiped({
@@ -214,13 +220,12 @@ export const AddApplicationDrawer: FC<Props> = memo(
         anchor="right"
         open={open}
         onClose={handleClose}
-        ModalProps={{ disableBackdropClick: isAdding }}
+        ModalProps={{ disableBackdropClick: isProcessing }}
       >
         <Box width={600}>
-          <Typography
-            className={classes.title}
-            variant="h6"
-          >{`Add a new application to "${projectName}" project`}</Typography>
+          <Typography className={classes.title} variant="h6">
+            {title}
+          </Typography>
           <Divider />
           <form className={classes.form} onSubmit={formik.handleSubmit}>
             <TextField
@@ -233,7 +238,7 @@ export const AddApplicationDrawer: FC<Props> = memo(
               value={formik.values.name}
               fullWidth
               required
-              disabled={isAdding}
+              disabled={isProcessing}
               className={classes.textInput}
             />
 
@@ -249,7 +254,7 @@ export const AddApplicationDrawer: FC<Props> = memo(
               onChange={({ value }) =>
                 formik.setFieldValue("kind", parseInt(value, 10))
               }
-              disabled={isAdding}
+              disabled={isProcessing}
             />
 
             <div className={classes.inputGroup}>
@@ -260,13 +265,13 @@ export const AddApplicationDrawer: FC<Props> = memo(
                 items={environments.map((v) => ({ name: v.name, value: v.id }))}
                 onChange={(item) => {
                   formik.setValues({
-                    ...initialFormValues,
+                    ...emptyFormValues,
                     name: formik.values.name,
                     kind: formik.values.kind,
                     env: item.value,
                   });
                 }}
-                disabled={isAdding}
+                disabled={isProcessing}
               />
               <div className={classes.inputGroupSpace} />
               <FormSelectInput
@@ -275,7 +280,7 @@ export const AddApplicationDrawer: FC<Props> = memo(
                 value={formik.values.pipedId}
                 onChange={({ value }) => {
                   formik.setValues({
-                    ...initialFormValues,
+                    ...emptyFormValues,
                     name: formik.values.name,
                     kind: formik.values.kind,
                     env: formik.values.env,
@@ -286,7 +291,9 @@ export const AddApplicationDrawer: FC<Props> = memo(
                   name: `${piped.name} (${piped.id})`,
                   value: piped.id,
                 }))}
-                disabled={isAdding || !formik.values.env || pipeds.length === 0}
+                disabled={
+                  isProcessing || !formik.values.env || pipeds.length === 0
+                }
               />
             </div>
 
@@ -310,7 +317,7 @@ export const AddApplicationDrawer: FC<Props> = memo(
                     remote: repo.remote,
                   })) || []
                 }
-                disabled={selectedPiped === undefined || isAdding}
+                disabled={selectedPiped === undefined || isProcessing}
               />
 
               <div className={classes.inputGroupSpace} />
@@ -320,7 +327,7 @@ export const AddApplicationDrawer: FC<Props> = memo(
                 label="Path"
                 variant="outlined"
                 margin="dense"
-                disabled={selectedPiped === undefined || isAdding}
+                disabled={selectedPiped === undefined || isProcessing}
                 onChange={formik.handleChange}
                 value={formik.values.repoPath}
                 fullWidth
@@ -334,7 +341,7 @@ export const AddApplicationDrawer: FC<Props> = memo(
               label="Config Filename"
               variant="outlined"
               margin="dense"
-              disabled={selectedPiped === undefined || isAdding}
+              disabled={selectedPiped === undefined || isProcessing}
               onChange={formik.handleChange}
               value={formik.values.configFilename}
               fullWidth
@@ -352,24 +359,24 @@ export const AddApplicationDrawer: FC<Props> = memo(
               disabled={
                 selectedPiped === undefined ||
                 cloudProviders.length === 0 ||
-                isAdding
+                isProcessing
               }
             />
 
             <Button
               color="primary"
               type="submit"
-              disabled={formik.isValid === false || isAdding}
+              disabled={formik.isValid === false || isProcessing}
             >
               {UI_TEXT_SAVE}
-              {isAdding && (
+              {isProcessing && (
                 <CircularProgress
                   size={24}
                   className={classes.buttonProgress}
                 />
               )}
             </Button>
-            <Button onClick={handleClose} disabled={isAdding}>
+            <Button onClick={handleClose} disabled={isProcessing}>
               {UI_TEXT_CANCEL}
             </Button>
           </form>

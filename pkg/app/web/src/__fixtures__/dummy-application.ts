@@ -2,6 +2,7 @@ import { ApplicationKind } from "pipe/pkg/app/web/model/common_pb";
 import { ApplicationSyncStatus } from "../modules/applications";
 import { dummyEnv } from "./dummy-environment";
 import { dummyPiped } from "./dummy-piped";
+import { dummyRepo } from "./dummy-repo";
 
 export const dummyApplication = {
   id: "application-1",
@@ -14,11 +15,7 @@ export const dummyApplication = {
     configFilename: "",
     path: "dir/dir1",
     url: "",
-    repo: {
-      id: "repo-1",
-      branch: "master",
-      remote: "xxx",
-    },
+    repo: dummyRepo,
   },
   kind: ApplicationKind.KUBERNETES,
   name: "DemoApp",
