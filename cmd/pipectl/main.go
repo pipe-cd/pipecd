@@ -17,6 +17,8 @@ package main
 import (
 	"log"
 
+	"github.com/pipe-cd/pipe/pkg/app/pipectl/cmd/application"
+	"github.com/pipe-cd/pipe/pkg/app/pipectl/cmd/deployment"
 	"github.com/pipe-cd/pipe/pkg/cli"
 )
 
@@ -26,7 +28,10 @@ func main() {
 		"The command line tool for PipeCD.",
 	)
 
-	app.AddCommands()
+	app.AddCommands(
+		application.NewCommand(),
+		deployment.NewCommand(),
+	)
 
 	if err := app.Run(); err != nil {
 		log.Fatal(err)

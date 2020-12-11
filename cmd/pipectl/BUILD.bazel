@@ -6,7 +6,11 @@ go_library(
     srcs = ["main.go"],
     importpath = "github.com/pipe-cd/pipe/cmd/pipectl",
     visibility = ["//visibility:private"],
-    deps = ["//pkg/cli:go_default_library"],
+    deps = [
+        "//pkg/app/pipectl/cmd/application:go_default_library",
+        "//pkg/app/pipectl/cmd/deployment:go_default_library",
+        "//pkg/cli:go_default_library",
+    ],
 )
 
 go_binary(
