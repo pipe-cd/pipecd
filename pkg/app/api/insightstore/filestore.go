@@ -24,10 +24,6 @@ import (
 	"github.com/pipe-cd/pipe/pkg/model"
 )
 
-var (
-	eol = []byte("EOL")
-)
-
 type insightFileStore struct {
 	filestore filestore.Store
 }
@@ -94,12 +90,11 @@ func (f *insightFileStore) Put(ctx context.Context, report Report) error {
 	if err != nil {
 		return err
 	}
-	err = f.filestore.PutObject(ctx, report.GetFilePath(), data)
-	if err != nil {
-		return err
+	path := report.GetFilePath()
+	if path == "" {
+		return fmt.Errorf("filepath not found on report struct")
 	}
-
-	return nil
+	return f.filestore.PutObject(ctx, path, data)
 }
 
 func (f *insightFileStore) getReport(ctx context.Context, path string, kind model.InsightMetricsKind) (Report, error) {
