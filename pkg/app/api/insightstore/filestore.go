@@ -41,10 +41,10 @@ func (f *insightFileStore) getInsightDataPoints(obj filestore.Object, from time.
 
 	var getKey func(t time.Time) string
 	var nextTargetDate func(t time.Time) time.Time
-	var targetJson []byte
+	var targetJSON []byte
 	switch step {
 	case model.InsightStep_YEARLY:
-		targetJson = c.Datapoints.Yearly
+		targetJSON = c.Datapoints.Yearly
 		getKey = func(t time.Time) string {
 			return strconv.Itoa(t.Year())
 		}
@@ -52,7 +52,7 @@ func (f *insightFileStore) getInsightDataPoints(obj filestore.Object, from time.
 			return t.AddDate(1, 0, 0)
 		}
 	case model.InsightStep_MONTHLY:
-		targetJson = c.Datapoints.Monthly
+		targetJSON = c.Datapoints.Monthly
 		getKey = func(t time.Time) string {
 			return t.Format("2006-01")
 		}
@@ -60,7 +60,7 @@ func (f *insightFileStore) getInsightDataPoints(obj filestore.Object, from time.
 			return t.AddDate(0, 1, 0)
 		}
 	case model.InsightStep_WEEKLY:
-		targetJson = c.Datapoints.Weekly
+		targetJSON = c.Datapoints.Weekly
 		getKey = func(t time.Time) string {
 			// This day must be a Sunday, otherwise it will fail to get the value from the map.
 			return t.Format("2006-01-02")
@@ -69,7 +69,7 @@ func (f *insightFileStore) getInsightDataPoints(obj filestore.Object, from time.
 			return t.AddDate(0, 0, 7)
 		}
 	case model.InsightStep_DAILY:
-		targetJson = c.Datapoints.Daily
+		targetJSON = c.Datapoints.Daily
 		getKey = func(t time.Time) string {
 			return t.Format("2006-01-02")
 		}
@@ -82,7 +82,7 @@ func (f *insightFileStore) getInsightDataPoints(obj filestore.Object, from time.
 	switch kind {
 	case model.InsightMetricsKind_DEPLOYMENT_FREQUENCY:
 		var df map[string]deployFrequency
-		err := json.Unmarshal(targetJson, &df)
+		err := json.Unmarshal(targetJSON, &df)
 		if err != nil {
 			return nil, err
 		}
@@ -92,7 +92,7 @@ func (f *insightFileStore) getInsightDataPoints(obj filestore.Object, from time.
 		}
 	case model.InsightMetricsKind_CHANGE_FAILURE_RATE:
 		var cfr map[string]changeFailureRate
-		err := json.Unmarshal(targetJson, &cfr)
+		err := json.Unmarshal(targetJSON, &cfr)
 		if err != nil {
 			return nil, err
 		}
