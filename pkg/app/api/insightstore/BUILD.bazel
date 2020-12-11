@@ -23,6 +23,7 @@ go_test(
     srcs = [
         "filestore_test.go",
         "report_test.go",
+        "filepath_test.go"
     ],
     embed = [":go_default_library"],
     deps = [
