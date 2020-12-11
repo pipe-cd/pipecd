@@ -217,7 +217,7 @@ func TestGetInsightDataPoints(t *testing.T) {
 			obj := filestore.Object{
 				Content: []byte(tc.content),
 			}
-			idps, err := fs.getInsightDataPoints(obj, tc.from, tc.dataPointCount, tc.step, tc.kind)
+			idps, err := fs.getInsightDataPoint(obj, tc.from, tc.dataPointCount, tc.step, tc.kind)
 			if err != nil {
 				if tc.expectedErr == nil {
 					assert.NoError(t, err)

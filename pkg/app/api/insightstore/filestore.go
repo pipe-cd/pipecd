@@ -51,7 +51,7 @@ func (f *insightFileStore) List(
 		if err != nil {
 			return nil, err
 		}
-		idp, err := f.getInsightDataPoints(obj, from, dataPointCount, step, metricsKind)
+		idp, err := f.getInsightDataPoint(obj, from, dataPointCount, step, metricsKind)
 		if err != nil {
 			return nil, err
 		}
@@ -62,8 +62,8 @@ func (f *insightFileStore) List(
 	return idps, nil
 }
 
-func (f *insightFileStore) getInsightDataPoints(obj filestore.Object, from time.Time, dataPointCount int, step model.InsightStep, kind model.InsightMetricsKind) ([]*model.InsightDataPoint, error) {
-	points, err := f.getDataPointsMap(obj, step, kind)
+func (f *insightFileStore) getInsightDataPoint(obj filestore.Object, from time.Time, dataPointCount int, step model.InsightStep, kind model.InsightMetricsKind) ([]*model.InsightDataPoint, error) {
+	points, err := f.getDataPoint(obj, kind)
 	if err != nil {
 		return nil, err
 	}
@@ -122,7 +122,7 @@ func (f *insightFileStore) getInsightDataPoints(obj filestore.Object, from time.
 	return idps, nil
 }
 
-func (f *insightFileStore) getDataPointsMap(obj filestore.Object, step model.InsightStep, kind model.InsightMetricsKind) (datapoint, error) {
+func (f *insightFileStore) getDataPoint(obj filestore.Object, kind model.InsightMetricsKind) (datapoint, error) {
 	var points datapoint
 	switch kind {
 	case model.InsightMetricsKind_DEPLOYMENT_FREQUENCY:
