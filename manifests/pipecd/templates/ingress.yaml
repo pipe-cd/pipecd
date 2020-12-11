@@ -28,6 +28,10 @@ spec:
         backend:
           serviceName: {{ include "pipecd.fullname" . }}
           servicePort: {{ .Values.service.port }}
+      - path: /pipe.api.service.apiservice.APIService/*
+        backend:
+          serviceName: {{ include "pipecd.fullname" . }}
+          servicePort: {{ .Values.service.port }}
   {{ else }}
   backend:
     serviceName: {{ include "pipecd.fullname" . }}
