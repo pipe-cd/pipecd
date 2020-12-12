@@ -17,6 +17,7 @@ package yamlutil
 import (
 	"bytes"
 	"fmt"
+	"io"
 
 	gyaml "github.com/goccy/go-yaml"
 	"github.com/goccy/go-yaml/ast"
@@ -33,7 +34,7 @@ import (
 // [num] : object/element of array by number
 // [*]   : all objects/elements for array.
 //
-// e.g. "$.spec.template.spec.containers[0].image"
+// e.g. "$.foo.bar[0].baz"
 func GetValue(yml []byte, path string) (interface{}, error) {
 	if len(yml) == 0 {
 		return nil, fmt.Errorf("empty yaml given")
@@ -55,10 +56,10 @@ func GetValue(yml []byte, path string) (interface{}, error) {
 }
 
 // ReplaceValue replaces the value placed at a given path with
-// a given value, and then gives back the new yaml content.
-// The supported types are: string, bool, float64, int64, uint64 and nil.
-// An error is returned if other types is given as a value.
-func ReplaceValue(yml []byte, path string, value interface{}) ([]byte, error) {
+// a given value, and then gives back the new yaml bytes.
+//
+// For available operators for the path, see GetValue().
+func ReplaceValue(yml []byte, path string, value string) ([]byte, error) {
 	if len(yml) == 0 {
 		return nil, fmt.Errorf("empty yaml given")
 	}
@@ -80,41 +81,17 @@ func ReplaceValue(yml []byte, path string, value interface{}) ([]byte, error) {
 	if err != nil {
 		return nil, err
 	}
-
-	var newNode ast.Node
-	switch v := value.(type) {
-	case string:
-		newNode = &ast.StringNode{
-			BaseNode: &ast.BaseNode{},
-			Token:    oldNode.GetToken(),
-			Value:    v,
-		}
-	case bool:
-		newNode = &ast.BoolNode{
-			BaseNode: &ast.BaseNode{},
-			Token:    oldNode.GetToken(),
-			Value:    v,
-		}
-	case float64:
-		newNode = &ast.FloatNode{
-			BaseNode: &ast.BaseNode{},
-			Token:    oldNode.GetToken(),
-			Value:    v,
-		}
-	case int64, uint64:
-		newNode = &ast.IntegerNode{
-			BaseNode: &ast.BaseNode{},
-			Token:    oldNode.GetToken(),
-			Value:    v,
-		}
-	case nil:
-		newNode = &ast.NullNode{
-			BaseNode: &ast.BaseNode{},
-			Token:    oldNode.GetToken(),
-		}
-	default:
-		return nil, fmt.Errorf("the given value is unsupported type")
+	newNode := &ast.StringNode{
+		BaseNode: &ast.BaseNode{},
+		Token:    oldNode.GetToken(),
+		Value:    value,
 	}
+
 	err = p.ReplaceWithNode(file, newNode)
-	return []byte(file.String()), err
+	if err != nil {
+		return nil, err
+	}
+	buf := new(bytes.Buffer)
+	_, err = io.Copy(buf, file)
+	return buf.Bytes(), err
 }

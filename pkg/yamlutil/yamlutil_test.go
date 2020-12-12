@@ -1,3 +1,17 @@
+// Copyright 2020 The PipeCD Authors.
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//     http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
 package yamlutil
 
 import (
@@ -106,7 +120,7 @@ func TestReplaceValue(t *testing.T) {
 		name    string
 		yml     string
 		path    string
-		value   interface{}
+		value   string
 		want    []byte
 		wantErr bool
 	}{
@@ -114,18 +128,40 @@ func TestReplaceValue(t *testing.T) {
 			name:    "empty yaml given",
 			yml:     "",
 			path:    "$.foo",
-			value:   1,
+			value:   "new-text",
 			wantErr: true,
 		},
 		{
 			name:    "empty path given",
 			yml:     "foo: bar",
 			path:    "",
-			value:   1,
+			value:   "new-text",
 			wantErr: true,
 		},
 		{
-			name:    "string value given",
+			name:    "wrong path given",
+			yml:     "foo: bar",
+			path:    "wrong",
+			value:   "new-text",
+			wantErr: true,
+		},
+		{
+			name:    "wrong yaml given",
+			yml:     "::",
+			path:    "$.foo",
+			value:   "new-text",
+			wantErr: true,
+		},
+		{
+			name:    "empty value given",
+			yml:     "foo: bar",
+			path:    "$.foo",
+			value:   "",
+			want:    []byte("foo: "),
+			wantErr: false,
+		},
+		{
+			name:    "valid value given",
 			yml:     "foo: bar",
 			path:    "$.foo",
 			value:   "new-text",
@@ -133,48 +169,8 @@ func TestReplaceValue(t *testing.T) {
 			wantErr: false,
 		},
 		{
-			name:    "bool value given",
-			yml:     "foo: bar",
-			path:    "$.foo",
-			value:   "true",
-			want:    []byte("foo: true"),
-			wantErr: false,
-		},
-		{
-			name:    "float64 value given",
-			yml:     "foo: bar",
-			path:    "$.foo",
-			value:   "1.5",
-			want:    []byte("foo: 1.5"),
-			wantErr: false,
-		},
-		{
-			name:    "int value given",
-			yml:     "foo: bar",
-			path:    "$.foo",
-			value:   "1",
-			want:    []byte("foo: 1"),
-			wantErr: false,
-		},
-		{
-			name:    "nil given",
-			yml:     "foo: bar",
-			path:    "$.foo",
-			value:   nil,
-			want:    []byte("foo: null"),
-			wantErr: false,
-		},
-		{
-			name:    "unsupported type given",
-			yml:     "foo: bar",
-			path:    "$.foo",
-			value:   []string{"bar"},
-			wantErr: true,
-		},
-		{
-			name: "there is an useless blank line",
-			yml: `
-foo:
+			name: "array in block style",
+			yml: `foo:
   - bar
   - baz`,
 			path:  "$.foo[0]",
@@ -190,6 +186,19 @@ foo:
 			path:    "$.foo[0]",
 			value:   "new-text",
 			want:    []byte(`foo: [new-text, baz]`),
+			wantErr: false,
+		},
+		{
+			name: "there is an useless blank line",
+			yml: `
+foo:
+  - bar
+  - baz`,
+			path:  "$.foo[0]",
+			value: "new-text",
+			want: []byte(`foo:
+  - new-text
+  - baz`),
 			wantErr: false,
 		},
 	}
