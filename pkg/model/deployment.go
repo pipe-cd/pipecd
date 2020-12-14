@@ -15,6 +15,8 @@
 package model
 
 import (
+	"fmt"
+
 	"google.golang.org/protobuf/proto"
 )
 
@@ -165,4 +167,26 @@ func (d *Deployment) FindRollbackStage() (*PipelineStage, bool) {
 		}
 	}
 	return nil, false
+}
+
+// DeploymentStatusesFromStrings converts a list of strings to list of DeploymentStatus.
+func DeploymentStatusesFromStrings(statuses []string) ([]DeploymentStatus, error) {
+	out := make([]DeploymentStatus, 0, len(statuses))
+	for _, s := range statuses {
+		status, ok := DeploymentStatus_value[s]
+		if !ok {
+			return nil, fmt.Errorf("invalid status %s", s)
+		}
+		out = append(out, DeploymentStatus(status))
+	}
+	return out, nil
+}
+
+// DeploymentStatusStrings returns a list of available deployment statuses in string.
+func DeploymentStatusStrings() []string {
+	out := make([]string, 0, len(DeploymentStatus_value))
+	for s := range DeploymentStatus_value {
+		out = append(out, s)
+	}
+	return out
 }
