@@ -20,9 +20,10 @@ import (
 	"strings"
 	"time"
 
+	"go.uber.org/zap"
+
 	"github.com/pipe-cd/pipe/pkg/app/api/service/apiservice"
 	"github.com/pipe-cd/pipe/pkg/model"
-	"go.uber.org/zap"
 )
 
 // WaitDeploymentStatuses waits a given deployment until it reaches one of the specified statuses.
