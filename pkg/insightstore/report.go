@@ -53,13 +53,29 @@ func (d *DeployFrequencyReport) PutFilePath(path string) {
 func (d *DeployFrequencyReport) Value(step model.InsightStep, key string) (float32, error) {
 	switch step {
 	case model.InsightStep_YEARLY:
-		return d.Datapoints.Yearly[key].DeployCount, nil
+		yearly, ok := d.Datapoints.Yearly[key]
+		if !ok {
+			return 0, fmt.Errorf("get value failed, because the report does not have Yearly field's value")
+		}
+		return yearly.DeployCount, nil
 	case model.InsightStep_MONTHLY:
-		return d.Datapoints.Monthly[key].DeployCount, nil
+		monthly, ok := d.Datapoints.Monthly[key]
+		if !ok {
+			return 0, fmt.Errorf("get value failed, because the report does not have Monthly field's value")
+		}
+		return monthly.DeployCount, nil
 	case model.InsightStep_WEEKLY:
-		return d.Datapoints.Weekly[key].DeployCount, nil
+		weekly, ok := d.Datapoints.Weekly[key]
+		if !ok {
+			return 0, fmt.Errorf("get value failed, because the report does not have Weekly field's value")
+		}
+		return weekly.DeployCount, nil
 	case model.InsightStep_DAILY:
-		return d.Datapoints.Daily[key].DeployCount, nil
+		daily, ok := d.Datapoints.Daily[key]
+		if !ok {
+			return 0, fmt.Errorf("get value failed, because the report does not have Daily field's value")
+		}
+		return daily.DeployCount, nil
 	}
 	return 0, fmt.Errorf("value not found. step: %d, key: %s", step, key)
 }
@@ -111,13 +127,29 @@ func (c *ChangeFailureRateReport) PutFilePath(path string) {
 func (c *ChangeFailureRateReport) Value(step model.InsightStep, key string) (float32, error) {
 	switch step {
 	case model.InsightStep_YEARLY:
-		return c.Datapoints.Yearly[key].Rate, nil
+		yearly, ok := c.Datapoints.Yearly[key]
+		if !ok {
+			return 0, fmt.Errorf("get value failed, because the report does not have Yearly field's value")
+		}
+		return yearly.Rate, nil
 	case model.InsightStep_MONTHLY:
-		return c.Datapoints.Monthly[key].Rate, nil
+		monthly, ok := c.Datapoints.Monthly[key]
+		if !ok {
+			return 0, fmt.Errorf("get value failed, because the report does not have Monthly field's value")
+		}
+		return monthly.Rate, nil
 	case model.InsightStep_WEEKLY:
-		return c.Datapoints.Weekly[key].Rate, nil
+		weekly, ok := c.Datapoints.Weekly[key]
+		if !ok {
+			return 0, fmt.Errorf("get value failed, because the report does not have Weekly field's value")
+		}
+		return weekly.Rate, nil
 	case model.InsightStep_DAILY:
-		return c.Datapoints.Daily[key].Rate, nil
+		daily, ok := c.Datapoints.Daily[key]
+		if !ok {
+			return 0, fmt.Errorf("get value failed, because the report does not have Daily field's value")
+		}
+		return daily.Rate, nil
 	}
 	return 0, fmt.Errorf("value not found. step: %d, key: %s", step, key)
 }
