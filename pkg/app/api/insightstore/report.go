@@ -8,85 +8,6 @@ import (
 	"github.com/pipe-cd/pipe/pkg/model"
 )
 
-type Report interface {
-	// GetFilePath get filepath
-	GetFilePath() string
-	// PutFilePath update filepath
-	PutFilePath(path string)
-	// Value get data by step and key
-	Value(step model.InsightStep, key string) (float32, error)
-}
-
-// convert below types to report
-// - pointer of deployFrequencyReport
-// - pointer of changeFailureRateReport
-func toReport(i interface{}) (Report, error) {
-	switch p := i.(type) {
-	case *deployFrequencyReport:
-		return p, nil
-	case *changeFailureRateReport:
-		return p, nil
-	default:
-		return nil, fmt.Errorf("cannot convert to Report: %v", p)
-	}
-
-}
-
-func convertToInsightDataPoints(report Report, from time.Time, dataPointCount int, step model.InsightStep) ([]*model.InsightDataPoint, error) {
-	var getKey func(t time.Time) string
-	var nextTargetDate func(t time.Time) time.Time
-	switch step {
-	case model.InsightStep_YEARLY:
-		getKey = func(t time.Time) string {
-			return strconv.Itoa(t.Year())
-		}
-		nextTargetDate = func(t time.Time) time.Time {
-			return t.AddDate(1, 0, 0)
-		}
-	case model.InsightStep_MONTHLY:
-		getKey = func(t time.Time) string {
-			return t.Format("2006-01")
-		}
-		nextTargetDate = func(t time.Time) time.Time {
-			return t.AddDate(0, 1, 0)
-		}
-	case model.InsightStep_WEEKLY:
-		getKey = func(t time.Time) string {
-			// This day must be a Sunday, otherwise it will fail to get the value from the map.
-			return t.Format("2006-01-02")
-		}
-		nextTargetDate = func(t time.Time) time.Time {
-			return t.AddDate(0, 0, 7)
-		}
-	case model.InsightStep_DAILY:
-		getKey = func(t time.Time) string {
-			return t.Format("2006-01-02")
-		}
-		nextTargetDate = func(t time.Time) time.Time {
-			return t.AddDate(0, 0, 1)
-		}
-	}
-
-	idps := make([]*model.InsightDataPoint, dataPointCount)
-	targetDate := from
-	for i := 0; i < dataPointCount; i++ {
-		key := getKey(targetDate)
-		value, err := report.Value(step, key)
-		if err != nil {
-			return nil, err
-		}
-
-		idps[i] = &model.InsightDataPoint{
-			Value:     value,
-			Timestamp: targetDate.Unix(),
-		}
-
-		targetDate = nextTargetDate(targetDate)
-	}
-
-	return idps, nil
-}
-
 // deploy frequency
 
 // deployFrequencyReport satisfy the interface `Report`
@@ -171,4 +92,83 @@ func (c *changeFailureRateReport) Value(step model.InsightStep, key string) (flo
 		return c.Datapoints.Daily[key].Rate, nil
 	}
 	return 0, fmt.Errorf("value not found. step: %d, key: %s", step, key)
+}
+
+type Report interface {
+	// GetFilePath get filepath
+	GetFilePath() string
+	// PutFilePath update filepath
+	PutFilePath(path string)
+	// Value get data by step and key
+	Value(step model.InsightStep, key string) (float32, error)
+}
+
+// convert below types to report
+// - pointer of deployFrequencyReport
+// - pointer of changeFailureRateReport
+func toReport(i interface{}) (Report, error) {
+	switch p := i.(type) {
+	case *deployFrequencyReport:
+		return p, nil
+	case *changeFailureRateReport:
+		return p, nil
+	default:
+		return nil, fmt.Errorf("cannot convert to Report: %v", p)
+	}
+
+}
+
+func convertToInsightDataPoints(report Report, from time.Time, dataPointCount int, step model.InsightStep) ([]*model.InsightDataPoint, error) {
+	var getKey func(t time.Time) string
+	var nextTargetDate func(t time.Time) time.Time
+	switch step {
+	case model.InsightStep_YEARLY:
+		getKey = func(t time.Time) string {
+			return strconv.Itoa(t.Year())
+		}
+		nextTargetDate = func(t time.Time) time.Time {
+			return t.AddDate(1, 0, 0)
+		}
+	case model.InsightStep_MONTHLY:
+		getKey = func(t time.Time) string {
+			return t.Format("2006-01")
+		}
+		nextTargetDate = func(t time.Time) time.Time {
+			return t.AddDate(0, 1, 0)
+		}
+	case model.InsightStep_WEEKLY:
+		getKey = func(t time.Time) string {
+			// This day must be a Sunday, otherwise it will fail to get the value from the map.
+			return t.Format("2006-01-02")
+		}
+		nextTargetDate = func(t time.Time) time.Time {
+			return t.AddDate(0, 0, 7)
+		}
+	case model.InsightStep_DAILY:
+		getKey = func(t time.Time) string {
+			return t.Format("2006-01-02")
+		}
+		nextTargetDate = func(t time.Time) time.Time {
+			return t.AddDate(0, 0, 1)
+		}
+	}
+
+	idps := make([]*model.InsightDataPoint, dataPointCount)
+	targetDate := from
+	for i := 0; i < dataPointCount; i++ {
+		key := getKey(targetDate)
+		value, err := report.Value(step, key)
+		if err != nil {
+			return nil, err
+		}
+
+		idps[i] = &model.InsightDataPoint{
+			Value:     value,
+			Timestamp: targetDate.Unix(),
+		}
+
+		targetDate = nextTargetDate(targetDate)
+	}
+
+	return idps, nil
 }
