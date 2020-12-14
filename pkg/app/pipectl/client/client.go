@@ -24,6 +24,7 @@ import (
 	"google.golang.org/grpc/credentials"
 
 	"github.com/pipe-cd/pipe/pkg/app/api/service/apiservice"
+	"github.com/pipe-cd/pipe/pkg/model"
 	"github.com/pipe-cd/pipe/pkg/rpc/rpcauth"
 	"github.com/pipe-cd/pipe/pkg/rpc/rpcclient"
 )
@@ -96,4 +97,15 @@ func (o *Options) NewClient(ctx context.Context) (apiservice.Client, error) {
 	}
 
 	return client, nil
+}
+
+func getCommand(ctx context.Context, cli apiservice.Client, cmdID string) (*model.Command, error) {
+	req := &apiservice.GetCommandRequest{
+		CommandId: cmdID,
+	}
+	resp, err := cli.GetCommand(ctx, req)
+	if err != nil {
+		return nil, err
+	}
+	return resp.Command, nil
 }
