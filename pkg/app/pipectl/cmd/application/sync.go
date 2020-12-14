@@ -31,7 +31,7 @@ type sync struct {
 	root *command
 
 	appID         string
-	status        []string
+	statuses      []string
 	checkInterval time.Duration
 	timeout       time.Duration
 }
@@ -49,7 +49,7 @@ func newSyncCommand(root *command) *cobra.Command {
 	}
 
 	cmd.Flags().StringVar(&c.appID, "app-id", c.appID, "The application ID.")
-	cmd.Flags().StringSliceVar(&c.status, "wait-status", c.status, fmt.Sprintf("The list of waiting statuses. Empty means returning immediately after triggered. (%s)", strings.Join(model.DeploymentStatusStrings(), "|")))
+	cmd.Flags().StringSliceVar(&c.statuses, "wait-status", c.statuses, fmt.Sprintf("The list of waiting statuses. Empty means returning immediately after triggered. (%s)", strings.Join(model.DeploymentStatusStrings(), "|")))
 	cmd.Flags().DurationVar(&c.checkInterval, "check-interval", c.checkInterval, "The interval of checking the requested command.")
 	cmd.Flags().DurationVar(&c.timeout, "timeout", c.timeout, "Maximum execution time.")
 
@@ -59,7 +59,7 @@ func newSyncCommand(root *command) *cobra.Command {
 }
 
 func (c *sync) run(ctx context.Context, t cli.Telemetry) error {
-	statuses, err := model.DeploymentStatusesFromStrings(c.status)
+	statuses, err := model.DeploymentStatusesFromStrings(c.statuses)
 	if err != nil {
 		return fmt.Errorf("invalid deployment status: %w", err)
 	}

@@ -31,7 +31,7 @@ type waitStatus struct {
 	root *command
 
 	deploymentID  string
-	status        []string
+	statuses      []string
 	checkInterval time.Duration
 	timeout       time.Duration
 }
@@ -49,7 +49,7 @@ func newWaitStatusCommand(root *command) *cobra.Command {
 	}
 
 	cmd.Flags().StringVar(&c.deploymentID, "deployment-id", c.deploymentID, "The deployment ID.")
-	cmd.Flags().StringSliceVar(&c.status, "status", c.status, fmt.Sprintf("The list of waiting statuses. (%s)", strings.Join(model.DeploymentStatusStrings(), "|")))
+	cmd.Flags().StringSliceVar(&c.statuses, "status", c.statuses, fmt.Sprintf("The list of waiting statuses. (%s)", strings.Join(model.DeploymentStatusStrings(), "|")))
 	cmd.Flags().DurationVar(&c.checkInterval, "check-interval", c.checkInterval, "The interval of checking the deployment status.")
 	cmd.Flags().DurationVar(&c.timeout, "timeout", c.timeout, "Maximum execution time.")
 
@@ -60,7 +60,7 @@ func newWaitStatusCommand(root *command) *cobra.Command {
 }
 
 func (c *waitStatus) run(ctx context.Context, t cli.Telemetry) error {
-	statuses, err := model.DeploymentStatusesFromStrings(c.status)
+	statuses, err := model.DeploymentStatusesFromStrings(c.statuses)
 	if err != nil {
 		return fmt.Errorf("invalid deployment status: %w", err)
 	}
