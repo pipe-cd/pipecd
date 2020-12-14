@@ -34,15 +34,15 @@ type add struct {
 	pipedID       string
 	cloudProvider string
 
-	gitPathRepoID         string
-	gitPathAppDir         string
-	gitPathConfigFileName string
+	repoID         string
+	appDir         string
+	configFileName string
 }
 
 func newAddCommand(root *command) *cobra.Command {
 	c := &add{
-		root:                  root,
-		gitPathConfigFileName: ".pipe.yaml",
+		root:           root,
+		configFileName: model.DefaultDeploymentConfigFileName,
 	}
 	cmd := &cobra.Command{
 		Use:   "add",
@@ -56,17 +56,17 @@ func newAddCommand(root *command) *cobra.Command {
 	cmd.Flags().StringVar(&c.pipedID, "piped-id", c.pipedID, "The ID of piped that should handle this applicaiton.")
 	cmd.Flags().StringVar(&c.cloudProvider, "cloud-provider", c.cloudProvider, "The cloud provider name. One of the registered providers in the piped configuration.")
 
-	cmd.Flags().StringVar(&c.gitPathRepoID, "gitpath-repo-id", c.gitPathRepoID, "The repository ID. One the registered repositories in the piped configuration.")
-	cmd.Flags().StringVar(&c.gitPathAppDir, "gitpath-app-dir", c.gitPathAppDir, "The relative path from the root of repository to the application directory.")
-	cmd.Flags().StringVar(&c.gitPathConfigFileName, "gitpath-config-file-name", c.gitPathConfigFileName, "The configuration file name. Default is .pipe.yaml")
+	cmd.Flags().StringVar(&c.repoID, "repo-id", c.repoID, "The repository ID. One the registered repositories in the piped configuration.")
+	cmd.Flags().StringVar(&c.appDir, "app-dir", c.appDir, "The relative path from the root of repository to the application directory.")
+	cmd.Flags().StringVar(&c.configFileName, "config-file-name", c.configFileName, "The configuration file name. Default is .pipe.yaml")
 
 	cmd.MarkFlagRequired("app-name")
 	cmd.MarkFlagRequired("app-kind")
 	cmd.MarkFlagRequired("env-id")
 	cmd.MarkFlagRequired("piped-id")
 	cmd.MarkFlagRequired("cloud-provider")
-	cmd.MarkFlagRequired("gitpath-repo-id")
-	cmd.MarkFlagRequired("gitpath-app-dir")
+	cmd.MarkFlagRequired("repo-id")
+	cmd.MarkFlagRequired("app-dir")
 
 	return cmd
 }
@@ -89,10 +89,10 @@ func (c *add) run(ctx context.Context, t cli.Telemetry) error {
 		PipedId: c.pipedID,
 		GitPath: &model.ApplicationGitPath{
 			Repo: &model.ApplicationGitRepository{
-				Id: c.gitPathRepoID,
+				Id: c.repoID,
 			},
-			Path:           c.gitPathAppDir,
-			ConfigFilename: c.gitPathConfigFileName,
+			Path:           c.appDir,
+			ConfigFilename: c.configFileName,
 		},
 		Kind:          model.ApplicationKind(appKind),
 		CloudProvider: c.cloudProvider,
