@@ -18,6 +18,8 @@ import { deploymentConfigsSlice } from "./deployment-configs";
 import { sealedSecretSlice } from "./sealed-secret";
 import { apiKeysSlice } from "./api-keys";
 import { updateApplicationSlice } from "./update-application";
+import { insightSlice } from "./insight";
+import { deploymentFrequencySlice } from "./deployment-frequency";
 
 export const reducers = combineReducers({
   deployments: deploymentsSlice.reducer,
@@ -38,6 +40,8 @@ export const reducers = combineReducers({
   deploymentConfigs: deploymentConfigsSlice.reducer,
   sealedSecret: sealedSecretSlice.reducer,
   apiKeys: apiKeysSlice.reducer,
+  insight: insightSlice.reducer,
+  deploymentFrequency: deploymentFrequencySlice.reducer,
 });
 
 export type AppState = ReturnType<typeof reducers>;

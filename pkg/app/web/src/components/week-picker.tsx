@@ -1,7 +1,6 @@
-import DayJSUtils from "@date-io/dayjs";
 import { DateType } from "@date-io/type";
 import { IconButton, makeStyles } from "@material-ui/core";
-import { DatePicker, MuiPickersUtilsProvider } from "@material-ui/pickers";
+import { DatePicker } from "@material-ui/pickers";
 import { MaterialUiPickersDate } from "@material-ui/pickers/typings/date";
 import clsx from "clsx";
 import React, { FC, memo, useCallback } from "react";
@@ -56,15 +55,17 @@ const formatWeekSelectLabel = (
 };
 
 interface Props {
-  value: Date | null;
+  value: Date | number | null;
   label: string;
   onChange: (date: MaterialUiPickersDate) => void;
+  className?: string;
 }
 
 export const WeekPicker: FC<Props> = memo(function WeekPicker({
   value,
   label,
   onChange,
+  className,
 }) {
   const classes = useStyles();
 
@@ -101,17 +102,16 @@ export const WeekPicker: FC<Props> = memo(function WeekPicker({
   );
 
   return (
-    <MuiPickersUtilsProvider utils={DayJSUtils}>
-      <DatePicker
-        margin="dense"
-        inputVariant="outlined"
-        variant="inline"
-        label={label}
-        onChange={onChange}
-        value={value}
-        renderDay={renderWeekDay as any}
-        labelFunc={formatWeekSelectLabel}
-      />
-    </MuiPickersUtilsProvider>
+    <DatePicker
+      margin="dense"
+      inputVariant="outlined"
+      variant="dialog"
+      label={label}
+      onChange={onChange}
+      value={value}
+      renderDay={renderWeekDay as any}
+      labelFunc={formatWeekSelectLabel}
+      className={className}
+    />
   );
 });

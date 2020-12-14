@@ -1,45 +1,34 @@
-import { Box, makeStyles, Typography } from "@material-ui/core";
-import React, { FC, memo } from "react";
-
-const useStyles = makeStyles((theme) => ({
-  main: {
-    flex: 1,
-    display: "flex",
-    justifyContent: "center",
-    alignItems: "center",
-  },
-  chart: {
-    position: "absolute",
-    display: "flex",
-    alignItems: "flex-end",
-  },
-  bar: {
-    width: 80,
-    background: theme.palette.grey[300],
-    margin: theme.spacing(1),
-  },
-  message: {
-    zIndex: 10,
-  },
-}));
+import { Box } from "@material-ui/core";
+import React, { FC, memo, useEffect } from "react";
+import { useDispatch, useSelector } from "react-redux";
+import { DeploymentFrequencyChart } from "../../components/deployment-frequency-chart";
+import { InsightHeader } from "../../components/insight-header";
+import { AppState } from "../../modules";
+import { fetchApplications } from "../../modules/applications";
+import { InsightDataPoint } from "../../modules/insight";
 
 export const InsightIndexPage: FC = memo(function InsightIndexPage() {
-  const classes = useStyles();
+  const dispatch = useDispatch();
+
+  const deploymentFrequency = useSelector<AppState, InsightDataPoint[]>(
+    (state) => state.deploymentFrequency.data
+  );
+
+  useEffect(() => {
+    dispatch(fetchApplications());
+  }, [dispatch]);
+
   return (
-    <div className={classes.main}>
-      <Typography variant="h2" className={classes.message}>
-        COMING SOON
-      </Typography>
-      <div className={classes.chart}>
-        <Box className={classes.bar} height={140} />
-        <Box className={classes.bar} height={300} />
-        <Box className={classes.bar} height={70} />
-        <Box className={classes.bar} height={140} />
-        <Box className={classes.bar} height={260} />
-        <Box className={classes.bar} height={180} />
-        <Box className={classes.bar} height={220} />
-        <Box className={classes.bar} height={180} />
-      </div>
-    </div>
+    <Box flex={1} p={2}>
+      <InsightHeader />
+      <Box
+        display="grid"
+        gridGap="24px"
+        gridTemplateColumns="repeat(2, 1fr)"
+        mt={2}
+      >
+        <DeploymentFrequencyChart data={deploymentFrequency} />
+      </Box>
+    </Box>
   );
 });
