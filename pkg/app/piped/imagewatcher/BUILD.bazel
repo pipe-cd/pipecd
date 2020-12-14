@@ -9,6 +9,7 @@ go_library(
         "//pkg/app/piped/imageprovider:go_default_library",
         "//pkg/config:go_default_library",
         "//pkg/git:go_default_library",
+        "//pkg/yamlprocessor:go_default_library",
         "@org_uber_go_zap//:go_default_library",
     ],
 )
