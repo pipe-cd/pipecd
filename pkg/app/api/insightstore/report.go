@@ -24,33 +24,33 @@ import (
 
 // deploy frequency
 
-// deployFrequencyReport satisfy the interface `Report`
-type deployFrequencyReport struct {
+// DeployFrequencyReport satisfy the interface `Report`
+type DeployFrequencyReport struct {
 	AccumulatedTo int64                    `json:"accumulated_to"`
-	Datapoints    deployFrequencyDataPoint `json:"datapoints"`
+	Datapoints    DeployFrequencyDataPoint `json:"datapoints"`
 	FilePath      string
 }
 
-type deployFrequencyDataPoint struct {
-	Daily   map[string]deployFrequency `json:"daily"`
-	Weekly  map[string]deployFrequency `json:"weekly"`
-	Monthly map[string]deployFrequency `json:"monthly"`
-	Yearly  map[string]deployFrequency `json:"yearly"`
+type DeployFrequencyDataPoint struct {
+	Daily   map[string]DeployFrequency `json:"daily"`
+	Weekly  map[string]DeployFrequency `json:"weekly"`
+	Monthly map[string]DeployFrequency `json:"monthly"`
+	Yearly  map[string]DeployFrequency `json:"yearly"`
 }
 
-type deployFrequency struct {
+type DeployFrequency struct {
 	DeployCount float32 `json:"deploy_count"`
 }
 
-func (d *deployFrequencyReport) GetFilePath() string {
+func (d *DeployFrequencyReport) GetFilePath() string {
 	return d.FilePath
 }
 
-func (d *deployFrequencyReport) PutFilePath(path string) {
+func (d *DeployFrequencyReport) PutFilePath(path string) {
 	d.FilePath = path
 }
 
-func (d *deployFrequencyReport) Value(step model.InsightStep, key string) (float32, error) {
+func (d *DeployFrequencyReport) Value(step model.InsightStep, key string) (float32, error) {
 	switch step {
 	case model.InsightStep_YEARLY:
 		return d.Datapoints.Yearly[key].DeployCount, nil
@@ -66,35 +66,35 @@ func (d *deployFrequencyReport) Value(step model.InsightStep, key string) (float
 
 // change failure rate
 
-// changeFailureRateReport satisfy the interface `Report`
-type changeFailureRateReport struct {
+// ChangeFailureRateReport satisfy the interface `Report`
+type ChangeFailureRateReport struct {
 	AccumulatedTo int64                      `json:"accumulated_to"`
-	Datapoints    changeFailureRateDataPoint `json:"datapoints"`
+	Datapoints    ChangeFailureRateDataPoint `json:"datapoints"`
 	FilePath      string
 }
 
-type changeFailureRateDataPoint struct {
-	Daily   map[string]changeFailureRate `json:"daily"`
-	Weekly  map[string]changeFailureRate `json:"weekly"`
-	Monthly map[string]changeFailureRate `json:"monthly"`
-	Yearly  map[string]changeFailureRate `json:"yearly"`
+type ChangeFailureRateDataPoint struct {
+	Daily   map[string]ChangeFailureRate `json:"daily"`
+	Weekly  map[string]ChangeFailureRate `json:"weekly"`
+	Monthly map[string]ChangeFailureRate `json:"monthly"`
+	Yearly  map[string]ChangeFailureRate `json:"yearly"`
 }
 
-type changeFailureRate struct {
+type ChangeFailureRate struct {
 	Rate         float32 `json:"rate"`
 	SuccessCount int64   `json:"success_count"`
 	FailureCount int64   `json:"failure_count"`
 }
 
-func (c *changeFailureRateReport) GetFilePath() string {
+func (c *ChangeFailureRateReport) GetFilePath() string {
 	return c.FilePath
 }
 
-func (c *changeFailureRateReport) PutFilePath(path string) {
+func (c *ChangeFailureRateReport) PutFilePath(path string) {
 	c.FilePath = path
 }
 
-func (c *changeFailureRateReport) Value(step model.InsightStep, key string) (float32, error) {
+func (c *ChangeFailureRateReport) Value(step model.InsightStep, key string) (float32, error) {
 	switch step {
 	case model.InsightStep_YEARLY:
 		return c.Datapoints.Yearly[key].Rate, nil
@@ -118,13 +118,13 @@ type Report interface {
 }
 
 // convert below types to report
-// - pointer of deployFrequencyReport
-// - pointer of changeFailureRateReport
+// - pointer of DeployFrequencyReport
+// - pointer of ChangeFailureRateReport
 func toReport(i interface{}) (Report, error) {
 	switch p := i.(type) {
-	case *deployFrequencyReport:
+	case *DeployFrequencyReport:
 		return p, nil
-	case *changeFailureRateReport:
+	case *ChangeFailureRateReport:
 		return p, nil
 	default:
 		return nil, fmt.Errorf("cannot convert to Report: %v", p)

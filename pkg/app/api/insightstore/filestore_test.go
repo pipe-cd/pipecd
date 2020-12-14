@@ -81,10 +81,10 @@ func TestGetReport(t *testing.T) {
 			}`,
 			expected: func() Report {
 				path := newYearlyFilePath("projectID", model.InsightMetricsKind_DEPLOYMENT_FREQUENCY, "appID")
-				expected := deployFrequencyReport{
+				expected := DeployFrequencyReport{
 					AccumulatedTo: 1609459200,
-					Datapoints: deployFrequencyDataPoint{
-						Yearly: map[string]deployFrequency{
+					Datapoints: DeployFrequencyDataPoint{
+						Yearly: map[string]DeployFrequency{
 							"2020": {DeployCount: 1000},
 							"2021": {DeployCount: 3000},
 						},
@@ -115,10 +115,10 @@ func TestGetReport(t *testing.T) {
 			}`,
 			expected: func() Report {
 				path := newMonthlyFilePath("projectID", model.InsightMetricsKind_DEPLOYMENT_FREQUENCY, "appID", "2020-01")
-				expected := deployFrequencyReport{
+				expected := DeployFrequencyReport{
 					AccumulatedTo: 1609459200,
-					Datapoints: deployFrequencyDataPoint{
-						Monthly: map[string]deployFrequency{
+					Datapoints: DeployFrequencyDataPoint{
+						Monthly: map[string]DeployFrequency{
 							"2020-01": {DeployCount: 1000},
 						},
 					},
@@ -151,10 +151,10 @@ func TestGetReport(t *testing.T) {
 			}`,
 			expected: func() Report {
 				path := newMonthlyFilePath("projectID", model.InsightMetricsKind_DEPLOYMENT_FREQUENCY, "appID", "2021-01")
-				expected := deployFrequencyReport{
+				expected := DeployFrequencyReport{
 					AccumulatedTo: 1609459200,
-					Datapoints: deployFrequencyDataPoint{
-						Weekly: map[string]deployFrequency{
+					Datapoints: DeployFrequencyDataPoint{
+						Weekly: map[string]DeployFrequency{
 							"2021-01-03": {DeployCount: 1000},
 							"2021-01-10": {DeployCount: 3000},
 						},
@@ -188,10 +188,10 @@ func TestGetReport(t *testing.T) {
 			}`,
 			expected: func() Report {
 				path := newMonthlyFilePath("projectID", model.InsightMetricsKind_DEPLOYMENT_FREQUENCY, "appID", "2021-01")
-				expected := deployFrequencyReport{
+				expected := DeployFrequencyReport{
 					AccumulatedTo: 1609459200,
-					Datapoints: deployFrequencyDataPoint{
-						Daily: map[string]deployFrequency{
+					Datapoints: DeployFrequencyDataPoint{
+						Daily: map[string]DeployFrequency{
 							"2021-01-03": {DeployCount: 1000},
 							"2021-01-04": {DeployCount: 3000},
 						},
@@ -230,10 +230,10 @@ func TestGetReport(t *testing.T) {
 			}`,
 			expected: func() Report {
 				path := newYearlyFilePath("projectID", model.InsightMetricsKind_CHANGE_FAILURE_RATE, "appID")
-				expected := changeFailureRateReport{
+				expected := ChangeFailureRateReport{
 					AccumulatedTo: 1609459200,
-					Datapoints: changeFailureRateDataPoint{
-						Yearly: map[string]changeFailureRate{
+					Datapoints: ChangeFailureRateDataPoint{
+						Yearly: map[string]ChangeFailureRate{
 							"2020": {Rate: 0.75, SuccessCount: 1000, FailureCount: 3000},
 							"2021": {Rate: 0.50, SuccessCount: 1000, FailureCount: 1000},
 						},

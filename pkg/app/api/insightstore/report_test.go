@@ -41,10 +41,10 @@ func Test_convertToInsightDataPoints(t *testing.T) {
 			args: args{
 				report: func() Report {
 					path := newYearlyFilePath("projectID", model.InsightMetricsKind_DEPLOYMENT_FREQUENCY, "appID")
-					expected := deployFrequencyReport{
+					expected := DeployFrequencyReport{
 						AccumulatedTo: 1609459200,
-						Datapoints: deployFrequencyDataPoint{
-							Yearly: map[string]deployFrequency{
+						Datapoints: DeployFrequencyDataPoint{
+							Yearly: map[string]DeployFrequency{
 								"2020": {DeployCount: 1000},
 								"2021": {DeployCount: 3000},
 							},
@@ -74,10 +74,10 @@ func Test_convertToInsightDataPoints(t *testing.T) {
 			args: args{
 				report: func() Report {
 					path := newYearlyFilePath("projectID", model.InsightMetricsKind_DEPLOYMENT_FREQUENCY, "appID")
-					expected := deployFrequencyReport{
+					expected := DeployFrequencyReport{
 						AccumulatedTo: 1609459200,
-						Datapoints: deployFrequencyDataPoint{
-							Monthly: map[string]deployFrequency{
+						Datapoints: DeployFrequencyDataPoint{
+							Monthly: map[string]DeployFrequency{
 								"2020-01": {DeployCount: 1000},
 							},
 						},
@@ -102,10 +102,10 @@ func Test_convertToInsightDataPoints(t *testing.T) {
 			args: args{
 				report: func() Report {
 					path := newYearlyFilePath("projectID", model.InsightMetricsKind_DEPLOYMENT_FREQUENCY, "appID")
-					expected := deployFrequencyReport{
+					expected := DeployFrequencyReport{
 						AccumulatedTo: 1609459200,
-						Datapoints: deployFrequencyDataPoint{
-							Weekly: map[string]deployFrequency{
+						Datapoints: DeployFrequencyDataPoint{
+							Weekly: map[string]DeployFrequency{
 								"2021-01-03": {DeployCount: 1000},
 								"2021-01-10": {DeployCount: 3000},
 							},
@@ -135,10 +135,10 @@ func Test_convertToInsightDataPoints(t *testing.T) {
 			args: args{
 				report: func() Report {
 					path := newYearlyFilePath("projectID", model.InsightMetricsKind_DEPLOYMENT_FREQUENCY, "appID")
-					expected := deployFrequencyReport{
+					expected := DeployFrequencyReport{
 						AccumulatedTo: 1609459200,
-						Datapoints: deployFrequencyDataPoint{
-							Daily: map[string]deployFrequency{
+						Datapoints: DeployFrequencyDataPoint{
+							Daily: map[string]DeployFrequency{
 								"2021-01-03": {DeployCount: 1000},
 								"2021-01-04": {DeployCount: 3000},
 							},

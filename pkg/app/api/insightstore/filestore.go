@@ -106,7 +106,7 @@ func (f *insightFileStore) getReport(ctx context.Context, path string, kind mode
 	var report Report
 	switch kind {
 	case model.InsightMetricsKind_DEPLOYMENT_FREQUENCY:
-		var df deployFrequencyReport
+		var df DeployFrequencyReport
 		err := json.Unmarshal(obj.Content, &df)
 		if err != nil {
 			return nil, err
@@ -116,7 +116,7 @@ func (f *insightFileStore) getReport(ctx context.Context, path string, kind mode
 			return nil, err
 		}
 	case model.InsightMetricsKind_CHANGE_FAILURE_RATE:
-		var cfr changeFailureRateReport
+		var cfr ChangeFailureRateReport
 		err := json.Unmarshal(obj.Content, &cfr)
 		if err != nil {
 			return nil, err
