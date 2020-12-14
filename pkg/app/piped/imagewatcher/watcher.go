@@ -60,7 +60,8 @@ func NewWatcher(cfg *config.PipedSpec, gitClient gitClient, logger *zap.Logger) 
 	}
 }
 
-// Run spawns goroutines for each image provider.
+// Run spawns goroutines for each image provider. They periodically pull the image
+// from the container registry to compare the image with one in the git repository.
 func (w *watcher) Run(ctx context.Context) error {
 	// Pre-clone to cache the registered git repositories.
 	for _, r := range w.config.Repositories {
@@ -134,7 +135,7 @@ func (w *watcher) determineUpdates(ctx context.Context, repoID string, repo git.
 		return nil, fmt.Errorf("failed to fetch from and integrate with a local branch: %w", err)
 	}
 
-	// Load Image Watcher Config
+	// Load Image Watcher Config for the given repo.
 	includes := make([]string, 0)
 	excludes := make([]string, 0)
 	for _, target := range w.config.ImageWatcher.Repos {
@@ -154,6 +155,9 @@ func (w *watcher) determineUpdates(ctx context.Context, repoID string, repo git.
 
 	updates := make([]config.ImageWatcherTarget, 0)
 	for _, target := range cfg.Targets {
+		if provider.Name() != target.Provider {
+			continue
+		}
 		outdated, err := checkOutdated(ctx, target, repo, provider)
 		if err != nil {
 			return nil, fmt.Errorf("failed to check the image is outdated: %w", err)
@@ -167,9 +171,6 @@ func (w *watcher) determineUpdates(ctx context.Context, repoID string, repo git.
 
 // checkOutdated checks if the image defined in the given target is identical to the one in image provider.
 func checkOutdated(ctx context.Context, target config.ImageWatcherTarget, repo git.Repo, provider imageprovider.Provider) (bool, error) {
-	if provider.Name() != target.Provider {
-		return false, nil
-	}
 	i, err := provider.ParseImage(target.Image)
 	if err != nil {
 		return false, err
