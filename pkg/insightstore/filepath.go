@@ -40,6 +40,7 @@ func newYearlyFilePath(projectID string, metricsKind model.InsightMetricsKind, a
 	metricsKindKebab := getKebabCaseMetricsKind(metricsKind)
 	return fmt.Sprintf("insights/%s/%s/%s/years.json", projectID, metricsKindKebab, appID)
 }
+
 func newMonthlyFilePath(projectID string, metricsKind model.InsightMetricsKind, appID string, month string) string {
 	metricsKindKebab := getKebabCaseMetricsKind(metricsKind)
 	return fmt.Sprintf("insights/%s/%s/%s/%s.json", projectID, metricsKindKebab, appID, month)
