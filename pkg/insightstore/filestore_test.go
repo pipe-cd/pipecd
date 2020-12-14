@@ -16,7 +16,6 @@ package insightstore
 
 import (
 	"context"
-	"reflect"
 	"testing"
 	"time"
 
@@ -427,9 +426,8 @@ func TestFormatFrom(t *testing.T) {
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			if got := formatFrom(tt.args.from, tt.args.step); !reflect.DeepEqual(got, tt.want) {
-				t.Errorf("formatFrom() = %v, want %v", got, tt.want)
-			}
+			got := formatFrom(tt.args.from, tt.args.step)
+			assert.Equal(t, got, tt.want)
 		})
 	}
 }

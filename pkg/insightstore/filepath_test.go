@@ -15,11 +15,11 @@
 package insightstore
 
 import (
-	"reflect"
 	"testing"
 	"time"
 
 	"github.com/pipe-cd/pipe/pkg/model"
+	"github.com/stretchr/testify/assert"
 )
 
 func Test_getFilePaths(t *testing.T) {
@@ -111,9 +111,8 @@ func Test_getFilePaths(t *testing.T) {
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			if got := searchFilePaths(tt.args.projectID, tt.args.appID, tt.args.from, tt.args.dataPointCount, tt.args.metricsKind, tt.args.step); !reflect.DeepEqual(got, tt.want) {
-				t.Errorf("searchFilePaths() = %v, want %v", got, tt.want)
-			}
+			got := searchFilePaths(tt.args.projectID, tt.args.appID, tt.args.from, tt.args.dataPointCount, tt.args.metricsKind, tt.args.step)
+			assert.Equal(t, got, tt.want)
 		})
 	}
 }
