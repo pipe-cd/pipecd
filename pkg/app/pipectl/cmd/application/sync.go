@@ -49,7 +49,7 @@ func newSyncCommand(root *command) *cobra.Command {
 	}
 
 	cmd.Flags().StringVar(&c.appID, "app-id", c.appID, "The application ID.")
-	cmd.Flags().StringSliceVar(&c.status, "status", c.status, fmt.Sprintf("The list of waiting statuses. Empty means returning immediately after triggered. (%s)", strings.Join(availableStatuses(), "|")))
+	cmd.Flags().StringSliceVar(&c.status, "wait-status", c.status, fmt.Sprintf("The list of waiting statuses. Empty means returning immediately after triggered. (%s)", strings.Join(availableStatuses(), "|")))
 	cmd.Flags().DurationVar(&c.checkInterval, "check-interval", c.checkInterval, "The interval of checking the requested command.")
 	cmd.Flags().DurationVar(&c.timeout, "timeout", c.timeout, "Maximum execution time.")
 
