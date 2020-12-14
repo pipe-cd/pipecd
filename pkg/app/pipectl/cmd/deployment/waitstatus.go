@@ -48,8 +48,16 @@ func newWaitStatusCommand(root *command) *cobra.Command {
 		RunE:  cli.WithContext(c.run),
 	}
 
+	var statuses = func() []string {
+		ss := make([]string, 0, len(model.DeploymentStatus_value))
+		for s := range model.DeploymentStatus_value {
+			ss = append(ss, strings.TrimPrefix(s, "DEPLOYMENT_"))
+		}
+		return ss
+	}()
+
 	cmd.Flags().StringVar(&c.deploymentID, "deployment-id", c.deploymentID, "The deployment ID.")
-	cmd.Flags().StringSliceVar(&c.status, "status", c.status, "The list of waiting statuses. (PENDING|PLANNED|RUNNING|ROLLING_BACK|SUCCESS|FAILURE|CANCELLED)")
+	cmd.Flags().StringSliceVar(&c.status, "status", c.status, fmt.Sprintf("The list of waiting statuses. (%s)", strings.Join(statuses, "|")))
 	cmd.Flags().DurationVar(&c.checkInterval, "check-interval", c.checkInterval, "The interval of checking the deployment status.")
 	cmd.Flags().DurationVar(&c.timeout, "timeout", c.timeout, "Maximum execution time.")
 
@@ -59,17 +67,15 @@ func newWaitStatusCommand(root *command) *cobra.Command {
 	return cmd
 }
 
-func (c *waitStatus) run(ctx context.Context, _ cli.Telemetry) error {
-	logger := c.root.logOptions.NewLogger()
-
+func (c *waitStatus) run(ctx context.Context, t cli.Telemetry) error {
 	statuses, err := makeDeploymentStatuses(c.status)
 	if err != nil {
-		logger.Fatal("Invalid deployment status: %v", err)
+		return fmt.Errorf("invalid deployment status: %w", err)
 	}
 
 	cli, err := c.root.clientOptions.NewClient(ctx)
 	if err != nil {
-		logger.Fatal("Failed to initialize client (%v)", err)
+		return fmt.Errorf("failed to initialize client: %w", err)
 	}
 	defer cli.Close()
 
@@ -85,7 +91,7 @@ func (c *waitStatus) run(ctx context.Context, _ cli.Telemetry) error {
 		}
 		resp, err := cli.GetDeployment(ctx, req)
 		if err != nil {
-			logger.Error("Failed while retrieving deployment information. Try again. (%v)", err)
+			t.Logger.Error(fmt.Sprintf("Failed while retrieving deployment information. Try again. (%v)", err))
 			shouldRetry = true
 			return
 		}
@@ -102,7 +108,7 @@ func (c *waitStatus) run(ctx context.Context, _ cli.Telemetry) error {
 	// Do the first check immediately.
 	status, shouldRetry := check()
 	if !shouldRetry {
-		logger.Info("Deployment is at %s status", status)
+		t.Logger.Info(fmt.Sprintf("Deployment is at %s status", status))
 		return nil
 	}
 
@@ -112,16 +118,16 @@ func (c *waitStatus) run(ctx context.Context, _ cli.Telemetry) error {
 			return nil
 
 		case <-timer.C:
-			logger.Fatal("Timed out %v", c.timeout)
+			return fmt.Errorf("timed out: %v", c.timeout)
 
 		case <-ticker.C:
 			status, shouldRetry := check()
 			if shouldRetry {
-				logger.Info("...")
+				t.Logger.Info("...")
 				continue
 			}
 
-			logger.Info("Deployment is at %s status", status)
+			t.Logger.Info(fmt.Sprintf("Deployment is at %s status", status))
 			return nil
 		}
 	}

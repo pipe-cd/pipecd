@@ -18,29 +18,24 @@ import (
 	"github.com/spf13/cobra"
 
 	"github.com/pipe-cd/pipe/pkg/app/pipectl/client"
-	"github.com/pipe-cd/pipe/pkg/app/pipectl/log"
 )
 
 type command struct {
 	clientOptions *client.Options
-	logOptions    *log.Options
 }
 
 func NewCommand() *cobra.Command {
 	c := &command{
 		clientOptions: &client.Options{},
-		logOptions:    &log.Options{},
 	}
 	cmd := &cobra.Command{
-		Use:          "deployment",
-		Short:        "Manage deployment resources.",
-		SilenceUsage: true,
+		Use:   "deployment",
+		Short: "Manage deployment resources.",
 	}
 
 	cmd.AddCommand(newWaitStatusCommand(c))
 
 	c.clientOptions.RegisterPersistentFlags(cmd)
-	c.logOptions.RegisterPersistentFlags(cmd)
 
 	return cmd
 }

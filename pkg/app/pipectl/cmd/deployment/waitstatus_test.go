@@ -42,8 +42,8 @@ func TestMakeDeploymentStatuses(t *testing.T) {
 			name:     "ok",
 			statuses: []string{"SUCCESS", "PLANNED"},
 			expected: map[model.DeploymentStatus]struct{}{
-				model.DeploymentStatus_DEPLOYMENT_SUCCESS: struct{}{},
-				model.DeploymentStatus_DEPLOYMENT_PLANNED: struct{}{},
+				model.DeploymentStatus_DEPLOYMENT_SUCCESS: {},
+				model.DeploymentStatus_DEPLOYMENT_PLANNED: {},
 			},
 		},
 	}

@@ -32,8 +32,9 @@ type App struct {
 func NewApp(name, desc string) *App {
 	a := &App{
 		rootCmd: &cobra.Command{
-			Use:   name,
-			Short: desc,
+			Use:           name,
+			Short:         desc,
+			SilenceErrors: true,
 		},
 		telemetryFlags: defaultTelemetryFlags,
 	}

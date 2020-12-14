@@ -16,7 +16,6 @@ package log
 
 import (
 	"errors"
-	"time"
 
 	"go.uber.org/zap"
 	"go.uber.org/zap/zapcore"
@@ -101,7 +100,6 @@ func newEncoderConfig(encoding EncodingType) zapcore.EncoderConfig {
 			StacktraceKey:  "stacktrace",
 			LineEnding:     zapcore.DefaultLineEnding,
 			EncodeLevel:    encodeLevel,
-			EncodeTime:     HumanizeTimeEncoder,
 			EncodeDuration: zapcore.SecondsDurationEncoder,
 			EncodeCaller:   zapcore.ShortCallerEncoder,
 		}
@@ -153,8 +151,4 @@ func (sc ServiceContext) MarshalLogObject(enc zapcore.ObjectEncoder) error {
 	enc.AddString("service", sc.Service)
 	enc.AddString("version", sc.Version)
 	return nil
-}
-
-func HumanizeTimeEncoder(t time.Time, enc zapcore.PrimitiveArrayEncoder) {
-	enc.AppendString(t.Format("15:04:05"))
 }

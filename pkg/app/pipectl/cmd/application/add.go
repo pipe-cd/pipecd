@@ -16,6 +16,7 @@ package application
 
 import (
 	"context"
+	"fmt"
 
 	"github.com/spf13/cobra"
 
@@ -70,17 +71,16 @@ func newAddCommand(root *command) *cobra.Command {
 	return cmd
 }
 
-func (c *add) run(ctx context.Context, _ cli.Telemetry) error {
-	logger := c.root.logOptions.NewLogger()
+func (c *add) run(ctx context.Context, t cli.Telemetry) error {
 	cli, err := c.root.clientOptions.NewClient(ctx)
 	if err != nil {
-		logger.Fatal("Failed to initialize client: %v", err)
+		return fmt.Errorf("failed to initialize client: %w", err)
 	}
 	defer cli.Close()
 
 	appKind, ok := model.ApplicationKind_value[c.appKind]
 	if !ok {
-		logger.Fatal("Unsupported application kind %s", c.appKind)
+		return fmt.Errorf("unsupported application kind %s", c.appKind)
 	}
 
 	req := &apiservice.AddApplicationRequest{
@@ -100,9 +100,9 @@ func (c *add) run(ctx context.Context, _ cli.Telemetry) error {
 
 	resp, err := cli.AddApplication(ctx, req)
 	if err != nil {
-		logger.Fatal("Failed to add application: %v", err)
+		return fmt.Errorf("failed to add application: %w", err)
 	}
 
-	logger.Info("Successfully added application id = %s", resp.ApplicationId)
+	t.Logger.Info(fmt.Sprintf("Successfully added application id = %s", resp.ApplicationId))
 	return nil
 }

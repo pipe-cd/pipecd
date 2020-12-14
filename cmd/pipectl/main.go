@@ -15,7 +15,8 @@
 package main
 
 import (
-	"log"
+	"fmt"
+	"os"
 
 	"github.com/pipe-cd/pipe/pkg/app/pipectl/cmd/application"
 	"github.com/pipe-cd/pipe/pkg/app/pipectl/cmd/deployment"
@@ -34,6 +35,7 @@ func main() {
 	)
 
 	if err := app.Run(); err != nil {
-		log.Fatal(err)
+		fmt.Println("Error:", err)
+		os.Exit(1)
 	}
 }

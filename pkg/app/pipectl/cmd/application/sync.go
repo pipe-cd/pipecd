@@ -55,12 +55,10 @@ func newSyncCommand(root *command) *cobra.Command {
 	return cmd
 }
 
-func (c *sync) run(ctx context.Context, _ cli.Telemetry) error {
-	logger := c.root.logOptions.NewLogger()
-
+func (c *sync) run(ctx context.Context, t cli.Telemetry) error {
 	cli, err := c.root.clientOptions.NewClient(ctx)
 	if err != nil {
-		logger.Fatal("Failed to initialize client: %v", err)
+		return fmt.Errorf("failed to initialize client: %w", err)
 	}
 	defer cli.Close()
 
@@ -69,10 +67,10 @@ func (c *sync) run(ctx context.Context, _ cli.Telemetry) error {
 	}
 	resp, err := cli.SyncApplication(ctx, req)
 	if err != nil {
-		logger.Fatal("Failed to sync application: %v", err)
+		return fmt.Errorf("failed to sync application %w", err)
 	}
 
-	logger.Info("Sent a request to sync application and waiting to be accepted...")
+	t.Logger.Info("Sent a request to sync application and waiting to be accepted...")
 
 	timer := time.NewTimer(c.timeout)
 	defer timer.Stop()
@@ -84,13 +82,13 @@ func (c *sync) run(ctx context.Context, _ cli.Telemetry) error {
 		const triggeredDeploymentIDKey = "TriggeredDeploymentID"
 		cmd, err := retrieveSyncCommand(ctx, cli, resp.CommandId)
 		if err != nil {
-			logger.Error("Failed while retrieving command information. Try again. (%v)", err)
+			t.Logger.Error(fmt.Sprintf("Failed while retrieving command information. Try again. (%v)", err))
 			shouldRetry = true
 			return
 		}
 
 		if cmd.Type != model.Command_SYNC_APPLICATION {
-			logger.Error("Unexpected command type, want: %s, got: %s", model.Command_SYNC_APPLICATION.String(), cmd.Type.String())
+			t.Logger.Error(fmt.Sprintf("Unexpected command type, want: %s, got: %s", model.Command_SYNC_APPLICATION.String(), cmd.Type.String()))
 			return
 		}
 
@@ -100,11 +98,11 @@ func (c *sync) run(ctx context.Context, _ cli.Telemetry) error {
 			return
 
 		case model.CommandStatus_COMMAND_FAILED:
-			logger.Error("The request was unable to handle")
+			t.Logger.Error("The request was unable to handle")
 			return
 
 		case model.CommandStatus_COMMAND_TIMEOUT:
-			logger.Error("The request was timed out")
+			t.Logger.Error("The request was timed out")
 			return
 
 		default:
@@ -119,19 +117,19 @@ func (c *sync) run(ctx context.Context, _ cli.Telemetry) error {
 			return nil
 
 		case <-timer.C:
-			logger.Fatal("Timed out %v", c.timeout)
+			return fmt.Errorf("timed out: %v", c.timeout)
 
 		case <-ticker.C:
 			deploymentID, shouldRetry := check()
 			if shouldRetry {
-				logger.Info("...")
+				t.Logger.Info("...")
 				continue
 			}
 			if deploymentID == "" {
-				logger.Fatal("Unable to detect the triggered deployment ID")
+				return fmt.Errorf("failed to detect the triggered deployment ID")
 			}
 
-			logger.Info("Successfully triggered deployment %s", deploymentID)
+			t.Logger.Info(fmt.Sprintf("Successfully triggered deployment %s", deploymentID))
 			fmt.Println(deploymentID)
 			return nil
 		}
