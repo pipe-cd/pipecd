@@ -16,6 +16,7 @@ package insightstore
 
 import (
 	"fmt"
+	"strings"
 	"time"
 
 	"github.com/pipe-cd/pipe/pkg/model"
@@ -37,12 +38,12 @@ import (
 //            ├─ 2020-02.json
 //            ...
 func newYearlyFilePath(projectID string, metricsKind model.InsightMetricsKind, appID string) string {
-	metricsKindKebab := getKebabCaseMetricsKind(metricsKind)
+	metricsKindKebab := strings.ToLower(model.InsightMetricsKind_name[int32(metricsKind)])
 	return fmt.Sprintf("insights/%s/%s/%s/years.json", projectID, metricsKindKebab, appID)
 }
 
 func newMonthlyFilePath(projectID string, metricsKind model.InsightMetricsKind, appID string, month string) string {
-	metricsKindKebab := getKebabCaseMetricsKind(metricsKind)
+	metricsKindKebab := strings.ToLower(model.InsightMetricsKind_name[int32(metricsKind)])
 	return fmt.Sprintf("insights/%s/%s/%s/%s.json", projectID, metricsKindKebab, appID, month)
 }
 
@@ -62,21 +63,6 @@ func searchFilePaths(projectID string, appID string, from time.Time, dataPointCo
 		}
 		return paths
 	}
-}
-
-func getKebabCaseMetricsKind(kind model.InsightMetricsKind) string {
-	var kebabKind string
-	switch kind {
-	case model.InsightMetricsKind_DEPLOYMENT_FREQUENCY:
-		kebabKind = "deployment_frequency"
-	case model.InsightMetricsKind_CHANGE_FAILURE_RATE:
-		kebabKind = "change_failure_rate"
-	case model.InsightMetricsKind_MTTR:
-		kebabKind = "mean_time_to_restore"
-	case model.InsightMetricsKind_LEAD_TIME:
-		kebabKind = "lead_time"
-	}
-	return kebabKind
 }
 
 // getPointsMonths return months between two dates.
