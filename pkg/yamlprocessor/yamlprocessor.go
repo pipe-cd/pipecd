@@ -12,14 +12,14 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-package yamlutil
+package yamlprocessor
 
 import (
 	"bytes"
 	"fmt"
 	"io"
 
-	gyaml "github.com/goccy/go-yaml"
+	goyaml "github.com/goccy/go-yaml"
 	"github.com/goccy/go-yaml/ast"
 	"github.com/goccy/go-yaml/parser"
 )
@@ -43,7 +43,7 @@ func GetValue(yml []byte, path string) (interface{}, error) {
 		return nil, fmt.Errorf("no path given")
 	}
 
-	p, err := gyaml.PathString(path)
+	p, err := goyaml.PathString(path)
 	if err != nil {
 		return nil, err
 	}
@@ -67,7 +67,7 @@ func ReplaceValue(yml []byte, path string, value string) ([]byte, error) {
 		return nil, fmt.Errorf("no path given")
 	}
 
-	p, err := gyaml.PathString(path)
+	p, err := goyaml.PathString(path)
 	if err != nil {
 		return nil, err
 	}
