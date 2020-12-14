@@ -31,7 +31,7 @@ func newMonthlyFilePath(projectID string, metricsKind model.InsightMetricsKind, 
 	return fmt.Sprintf("insights/%s/%s/%s/%s.json", projectID, metricsKindKebab, appID, month)
 }
 
-func getFilePaths(projectID string, appID string, from time.Time, dataPointCount int, metricsKind model.InsightMetricsKind, step model.InsightStep) []string {
+func searchFilePaths(projectID string, appID string, from time.Time, dataPointCount int, metricsKind model.InsightMetricsKind, step model.InsightStep) []string {
 	if appID == "" {
 		appID = "project"
 	}
