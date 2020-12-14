@@ -21,7 +21,7 @@ import (
 	"github.com/pipe-cd/pipe/pkg/model"
 )
 
-// insight file paths according to the following format
+// insight file paths according to the following format.
 //
 // insights
 //  ├─ project-id

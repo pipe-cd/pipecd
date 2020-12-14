@@ -28,7 +28,7 @@ type insightFileStore struct {
 	filestore filestore.Store
 }
 
-// GetReports returns data as report
+// GetReports returns data as report.
 func (f *insightFileStore) GetReports(
 	ctx context.Context,
 	projectID string,
@@ -61,7 +61,7 @@ func (f *insightFileStore) GetReports(
 	return reports, nil
 }
 
-// List returns data as insight data point
+// List returns data as insight data point.
 func (f *insightFileStore) List(
 	ctx context.Context,
 	projectID string,
@@ -87,7 +87,7 @@ func (f *insightFileStore) List(
 	return idps, nil
 }
 
-// Put create of update report
+// Put create of update report.
 func (f *insightFileStore) Put(ctx context.Context, report Report) error {
 	data, err := json.Marshal(report)
 	if err != nil {

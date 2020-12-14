@@ -24,7 +24,7 @@ import (
 
 // deploy frequency
 
-// DeployFrequencyReport satisfy the interface `Report`
+// DeployFrequencyReport satisfy the interface `Report`.
 type DeployFrequencyReport struct {
 	AccumulatedTo int64                    `json:"accumulated_to"`
 	Datapoints    DeployFrequencyDataPoint `json:"datapoints"`
@@ -80,7 +80,7 @@ func (d *DeployFrequencyReport) DataCount(step model.InsightStep) int {
 
 // change failure rate
 
-// ChangeFailureRateReport satisfy the interface `Report`
+// ChangeFailureRateReport satisfy the interface `Report`.
 type ChangeFailureRateReport struct {
 	AccumulatedTo int64                      `json:"accumulated_to"`
 	Datapoints    ChangeFailureRateDataPoint `json:"datapoints"`
@@ -137,17 +137,17 @@ func (c *ChangeFailureRateReport) DataCount(step model.InsightStep) int {
 }
 
 type Report interface {
-	// GetFilePath get filepath
+	// GetFilePath gets filepath
 	GetFilePath() string
-	// PutFilePath update filepath
+	// PutFilePath updates filepath
 	PutFilePath(path string)
-	// Value get data by step and key
+	// Value gets data by step and key
 	Value(step model.InsightStep, key string) (float32, error)
-	// DataCount return count of data in specify step
+	// DataCount returns count of data in specify step
 	DataCount(step model.InsightStep) int
 }
 
-// convert below types to report
+// convert below types to report.
 // - pointer of DeployFrequencyReport
 // - pointer of ChangeFailureRateReport
 func toReport(i interface{}) (Report, error) {
