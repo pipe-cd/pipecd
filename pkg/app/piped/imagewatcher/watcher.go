@@ -131,7 +131,7 @@ func (w *watcher) determineUpdates(ctx context.Context, repoID string, repo git.
 	err := repo.Pull(ctx, branch)
 	w.mu.Unlock()
 	if err != nil {
-		return nil, fmt.Errorf("failed to update repository branch: %w", err)
+		return nil, fmt.Errorf("failed to fetch from and integrate with a local branch: %w", err)
 	}
 
 	// Load Image Watcher Config
