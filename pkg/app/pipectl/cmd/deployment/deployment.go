@@ -12,30 +12,30 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-package main
+package deployment
 
 import (
-	"fmt"
-	"os"
+	"github.com/spf13/cobra"
 
-	"github.com/pipe-cd/pipe/pkg/app/pipectl/cmd/application"
-	"github.com/pipe-cd/pipe/pkg/app/pipectl/cmd/deployment"
-	"github.com/pipe-cd/pipe/pkg/cli"
+	"github.com/pipe-cd/pipe/pkg/app/pipectl/client"
 )
 
-func main() {
-	app := cli.NewApp(
-		"pipectl",
-		"The command line tool for PipeCD.",
-	)
+type command struct {
+	clientOptions *client.Options
+}
 
-	app.AddCommands(
-		application.NewCommand(),
-		deployment.NewCommand(),
-	)
-
-	if err := app.Run(); err != nil {
-		fmt.Println("Error:", err)
-		os.Exit(1)
+func NewCommand() *cobra.Command {
+	c := &command{
+		clientOptions: &client.Options{},
 	}
+	cmd := &cobra.Command{
+		Use:   "deployment",
+		Short: "Manage deployment resources.",
+	}
+
+	cmd.AddCommand(newWaitStatusCommand(c))
+
+	c.clientOptions.RegisterPersistentFlags(cmd)
+
+	return cmd
 }

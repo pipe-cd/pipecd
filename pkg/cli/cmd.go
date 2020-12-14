@@ -16,7 +16,6 @@ package cli
 
 import (
 	"context"
-	"fmt"
 	"net/http"
 	"os"
 	"os/signal"
@@ -88,7 +87,6 @@ func runWithContext(cmd *cobra.Command, signalCh <-chan os.Signal, runner Runner
 		}
 	}()
 
-	logger.Info(fmt.Sprintf("start running %s %s(%s)", service, version.Version, version.BuildDate))
 	return runner(ctx, telemetry)
 }
 
