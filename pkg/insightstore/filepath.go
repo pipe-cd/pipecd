@@ -38,12 +38,12 @@ import (
 //            ├─ 2020-02.json
 //            ...
 func newYearlyFilePath(projectID string, metricsKind model.InsightMetricsKind, appID string) string {
-	metricsKindKebab := strings.ToLower(model.InsightMetricsKind_name[int32(metricsKind)])
+	metricsKindKebab := strings.ToLower(metricsKind.String())
 	return fmt.Sprintf("insights/%s/%s/%s/years.json", projectID, metricsKindKebab, appID)
 }
 
 func newMonthlyFilePath(projectID string, metricsKind model.InsightMetricsKind, appID string, month string) string {
-	metricsKindKebab := strings.ToLower(model.InsightMetricsKind_name[int32(metricsKind)])
+	metricsKindKebab := strings.ToLower(metricsKind.String())
 	return fmt.Sprintf("insights/%s/%s/%s/%s.json", projectID, metricsKindKebab, appID, month)
 }
 
