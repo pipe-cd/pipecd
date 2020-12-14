@@ -48,6 +48,14 @@ func (f *insightFileStore) GetReports(
 		}
 
 		reports = append(reports, r)
+
+		dataPointCount = dataPointCount - r.DataCount(step)
+
+		nextMonth := time.Date(from.Year(), from.Month()+1, 1, 0, 0, 0, 0, time.UTC)
+		from = formatFrom(nextMonth, step)
+		if step == model.InsightStep_WEEKLY && from.Month() != nextMonth.Month() {
+			from = from.AddDate(0, 0, 7)
+		}
 	}
 
 	return reports, nil
@@ -62,18 +70,13 @@ func (f *insightFileStore) List(
 	step model.InsightStep,
 	from time.Time,
 	dataPointCount int) ([]*model.InsightDataPoint, error) {
-	from = formatFrom(from, step)
-
-	paths := searchFilePaths(projectID, appID, from, dataPointCount, metricsKind, step)
-
+	reports, err := f.GetReports(ctx, projectID, appID, metricsKind, step, from, dataPointCount)
+	if err != nil {
+		return nil, err
+	}
 	var idps []*model.InsightDataPoint
-	for _, p := range paths {
-		report, err := f.getReport(ctx, p, metricsKind)
-		if err != nil {
-			return nil, err
-		}
-
-		idp, err := convertToInsightDataPoints(report, from, dataPointCount, step)
+	for _, r := range reports {
+		idp, err := convertToInsightDataPoints(r, from, dataPointCount, step)
 		if err != nil {
 			return nil, err
 		}

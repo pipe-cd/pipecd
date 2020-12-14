@@ -64,6 +64,20 @@ func (d *DeployFrequencyReport) Value(step model.InsightStep, key string) (float
 	return 0, fmt.Errorf("value not found. step: %d, key: %s", step, key)
 }
 
+func (d *DeployFrequencyReport) DataCount(step model.InsightStep) int {
+	switch step {
+	case model.InsightStep_YEARLY:
+		return len(d.Datapoints.Yearly)
+	case model.InsightStep_MONTHLY:
+		return len(d.Datapoints.Monthly)
+	case model.InsightStep_WEEKLY:
+		return len(d.Datapoints.Weekly)
+	case model.InsightStep_DAILY:
+		return len(d.Datapoints.Daily)
+	}
+	return 0
+}
+
 // change failure rate
 
 // ChangeFailureRateReport satisfy the interface `Report`
@@ -108,6 +122,20 @@ func (c *ChangeFailureRateReport) Value(step model.InsightStep, key string) (flo
 	return 0, fmt.Errorf("value not found. step: %d, key: %s", step, key)
 }
 
+func (c *ChangeFailureRateReport) DataCount(step model.InsightStep) int {
+	switch step {
+	case model.InsightStep_YEARLY:
+		return len(c.Datapoints.Yearly)
+	case model.InsightStep_MONTHLY:
+		return len(c.Datapoints.Monthly)
+	case model.InsightStep_WEEKLY:
+		return len(c.Datapoints.Weekly)
+	case model.InsightStep_DAILY:
+		return len(c.Datapoints.Daily)
+	}
+	return 0
+}
+
 type Report interface {
 	// GetFilePath get filepath
 	GetFilePath() string
@@ -115,6 +143,8 @@ type Report interface {
 	PutFilePath(path string)
 	// Value get data by step and key
 	Value(step model.InsightStep, key string) (float32, error)
+	// DataCount return count of data in specify step
+	DataCount(step model.InsightStep) int
 }
 
 // convert below types to report

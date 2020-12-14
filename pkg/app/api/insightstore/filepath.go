@@ -79,6 +79,7 @@ func getKebabCaseMetricsKind(kind model.InsightMetricsKind) string {
 }
 
 // getPointsMonths return months between two dates.
+// returning months will be sorted.
 func getPointsMonths(date time.Time, count int, step model.InsightStep) []string {
 	var to time.Time
 
@@ -93,16 +94,19 @@ func getPointsMonths(date time.Time, count int, step model.InsightStep) []string
 		to = date.AddDate(0, 0, count-1)
 	}
 
+	fromMonth := time.Date(date.Year(), date.Month(), 1, 1, 1, 1, 1, time.UTC)
+	toMonth := time.Date(to.Year(), to.Month(), 1, 1, 1, 1, 1, time.UTC)
+
 	var months []string
-	y1, m1, _ := to.Date()
+	y1, m1, _ := toMonth.Date()
 	for {
 		// 2015-05-05 08:05:15.828452891 +0900 UST → 2015-05
-		months = append(months, date.Format("2006-01"))
-		y2, m2, _ := date.Date()
+		months = append(months, fromMonth.Format("2006-01"))
+		y2, m2, _ := fromMonth.Date()
 		if y1 == y2 && m1 == m2 {
 			return months
 		}
 
-		date = date.AddDate(0, 1, 0)
+		fromMonth = fromMonth.AddDate(0, 1, 0)
 	}
 }
