@@ -229,7 +229,7 @@ func TestPipedConfig(t *testing.T) {
 					Repos: []PipedImageWatcherRepoTarget{
 						{
 							RepoID:   "foo",
-							Includes: []string{".pipe/imagewatcher-dev.yaml"},
+							Includes: []string{"imagewatcher-dev.yaml", "imagewatcher-stg.yaml"},
 						},
 					},
 				},
@@ -246,6 +246,56 @@ func TestPipedConfig(t *testing.T) {
 				assert.Equal(t, tc.expectedAPIVersion, cfg.APIVersion)
 				assert.Equal(t, tc.expectedSpec, cfg.spec)
 			}
+		})
+	}
+}
+
+func TestPipedImageWatcherValidate(t *testing.T) {
+	testcases := []struct {
+		name         string
+		imageWatcher PipedImageWatcher
+		wantErr      bool
+	}{
+		{
+			name:    "duplicated repo exists",
+			wantErr: true,
+			imageWatcher: PipedImageWatcher{Repos: []PipedImageWatcherRepoTarget{
+				{
+					RepoID: "foo",
+				},
+				{
+					RepoID: "foo",
+				},
+			}},
+		},
+		{
+			name:    "repos are unique",
+			wantErr: false,
+			imageWatcher: PipedImageWatcher{Repos: []PipedImageWatcherRepoTarget{
+				{
+					RepoID: "foo",
+				},
+				{
+					RepoID: "bar",
+				},
+			}},
+		},
+		{
+			name:    "both includes and excludes are given",
+			wantErr: true,
+			imageWatcher: PipedImageWatcher{Repos: []PipedImageWatcherRepoTarget{
+				{
+					RepoID:   "foo",
+					Includes: []string{"imagewatcher-dev.yaml"},
+					Excludes: []string{"imagewatcher-prod.yaml"},
+				},
+			}},
+		},
+	}
+	for _, tc := range testcases {
+		t.Run(tc.name, func(t *testing.T) {
+			err := tc.imageWatcher.Validate()
+			assert.Equal(t, tc.wantErr, err != nil)
 		})
 	}
 }

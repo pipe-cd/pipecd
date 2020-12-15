@@ -14,6 +14,13 @@
 
 package config
 
+import (
+	"fmt"
+	"io/ioutil"
+	"os"
+	"path/filepath"
+)
+
 type ImageWatcherSpec struct {
 	Targets []ImageWatcherTarget `json:"targets"`
 }
@@ -25,12 +32,78 @@ type ImageWatcherTarget struct {
 	Field    string `json:"field"`
 }
 
-// LoadImageWatcher finds the config files for the image watcher in the .pipe directory first up.
-// And returns parsed config, False is returned as the second returned value if not found.
+// LoadImageWatcher finds the config files for the image watcher in the .pipe
+// directory first up. And returns parsed config after merging the targets.
+// Only one of includes or excludes can be used.
+// False is returned as the second returned value if not found.
 func LoadImageWatcher(repoRoot string, includes, excludes []string) (*ImageWatcherSpec, bool, error) {
-	// TODO: Load image watcher config
-	//   referring to AnalysisTemplateSpec
-	return nil, false, nil
+	dir := filepath.Join(repoRoot, SharedConfigurationDirName)
+	files, err := ioutil.ReadDir(dir)
+	if err != nil {
+		return nil, false, fmt.Errorf("failed to read %s: %w", dir, err)
+	}
+
+	spec := &ImageWatcherSpec{
+		Targets: make([]ImageWatcherTarget, 0),
+	}
+	filtered, err := filterImageWatcherFiles(files, includes, excludes)
+	if err != nil {
+		return nil, false, fmt.Errorf("failed to filter image watcher files at %s: %w", dir, err)
+	}
+	for _, f := range filtered {
+		if f.IsDir() {
+			continue
+		}
+		path := filepath.Join(dir, f.Name())
+		cfg, err := LoadFromYAML(path)
+		if err != nil {
+			return nil, false, fmt.Errorf("failed to load config file %s: %w", path, err)
+		}
+		if cfg.Kind == KindImageWatcher {
+			spec.Targets = append(spec.Targets, cfg.ImageWatcherSpec.Targets...)
+		}
+	}
+	if len(spec.Targets) == 0 {
+		return nil, false, nil
+	}
+
+	return spec, true, nil
+}
+
+// filterImageWatcherFiles filters the given files based on the given includes and excludes.
+func filterImageWatcherFiles(files []os.FileInfo, includes, excludes []string) ([]os.FileInfo, error) {
+	if len(includes) != 0 && len(excludes) != 0 {
+		return nil, fmt.Errorf("only one of includes or excludes can be used")
+	}
+	if len(includes) == 0 && len(excludes) == 0 {
+		return files, nil
+	}
+
+	useWhitelist := len(includes) != 0 && len(excludes) == 0
+	filtered := make([]os.FileInfo, 0, len(files))
+
+	if useWhitelist {
+		whiteList := make(map[string]struct{}, len(includes))
+		for _, i := range includes {
+			whiteList[i] = struct{}{}
+		}
+		for _, f := range files {
+			if _, ok := whiteList[f.Name()]; ok {
+				filtered = append(filtered, f)
+			}
+		}
+	} else {
+		blackList := make(map[string]struct{}, len(excludes))
+		for _, e := range excludes {
+			blackList[e] = struct{}{}
+		}
+		for _, f := range files {
+			if _, ok := blackList[f.Name()]; !ok {
+				filtered = append(filtered, f)
+			}
+		}
+	}
+	return filtered, nil
 }
 
 func (s *ImageWatcherSpec) Validate() error {

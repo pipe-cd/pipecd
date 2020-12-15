@@ -140,4 +140,5 @@ spec:
     repos:
       - repoId: foo
         includes:
-          - .pipe/imagewatcher-dev.yaml
+          - imagewatcher-dev.yaml
+          - imagewatcher-stg.yaml

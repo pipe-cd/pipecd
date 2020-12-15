@@ -88,6 +88,9 @@ func (s *PipedSpec) Validate() error {
 			return err
 		}
 	}
+	if err := s.ImageWatcher.Validate(); err != nil {
+		return err
+	}
 	return nil
 }
 
@@ -588,6 +591,22 @@ func (p *SealedSecretManagement) UnmarshalJSON(data []byte) error {
 
 type PipedImageWatcher struct {
 	Repos []PipedImageWatcherRepoTarget `json:"repos"`
+}
+
+// Validate checks if the duplicated repository setting exists.
+func (i *PipedImageWatcher) Validate() error {
+	repos := make(map[string]struct{})
+	for _, repo := range i.Repos {
+		if _, ok := repos[repo.RepoID]; ok {
+			return fmt.Errorf("duplicated repo id (%s) found in the imageWatcher directive", repo.RepoID)
+		}
+		repos[repo.RepoID] = struct{}{}
+
+		if len(repo.Includes) != 0 && len(repo.Excludes) != 0 {
+			return fmt.Errorf("both includes and excludes are given in %s", repo.RepoID)
+		}
+	}
+	return nil
 }
 
 type PipedImageWatcherRepoTarget struct {
