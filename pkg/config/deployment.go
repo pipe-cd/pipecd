@@ -30,7 +30,7 @@ type GenericDeploymentSpec struct {
 	SealedSecrets []SealedSecretMapping `json:"sealedSecrets"`
 	// List of directories or files where their changes will trigger the deployment.
 	// Regular expression can be used.
-	Changes []string `json:"changes,omitempty"`
+	TriggerPaths []string `json:"triggerPaths,omitempty"`
 }
 
 func (s GenericDeploymentSpec) GetStage(index int32) (PipelineStage, bool) {

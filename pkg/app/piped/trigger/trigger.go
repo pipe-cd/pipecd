@@ -304,7 +304,7 @@ func (t *Trigger) checkApplication(ctx context.Context, app *model.Application, 
 		return err
 	}
 
-	touched, err := isTouchedByChangedFiles(app.GitPath.Path, deployConfig.Changes, changedFiles)
+	touched, err := isTouchedByChangedFiles(app.GitPath.Path, deployConfig.TriggerPaths, changedFiles)
 	if err != nil {
 		return err
 	}

@@ -27,7 +27,7 @@ spec:
 | workloads | [][KubernetesWorkload](/docs/user-guide/configuration-reference/#kubernetesworkload) | Which Kubernetes resources should be considered as the Workloads of application. Empty means all Deployment resources. | No |
 | trafficRouting | [KubernetesTrafficRouting](/docs/user-guide/configuration-reference/#kubernetestrafficrouting) | How to change traffic routing percentages. | No |
 | sealedSecrets | [][SealedSecretMapping](/docs/user-guide/configuration-reference/#sealedsecretmapping) | The list of sealed secrets should be decrypted. | No |
-| changes | []string | List of directories or files where their changes will trigger the deployment. Regular expression can be used. | No |
+| triggerPaths | []string | List of directories or files where their changes will trigger the deployment. Regular expression can be used. | No |
 
 ## Terraform application
 
