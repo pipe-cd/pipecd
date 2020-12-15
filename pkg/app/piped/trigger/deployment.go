@@ -17,14 +17,12 @@ package trigger
 import (
 	"context"
 	"fmt"
-	"path/filepath"
 	"time"
 
 	"github.com/google/uuid"
 	"go.uber.org/zap"
 
 	"github.com/pipe-cd/pipe/pkg/app/api/service/pipedservice"
-	"github.com/pipe-cd/pipe/pkg/config"
 	"github.com/pipe-cd/pipe/pkg/git"
 	"github.com/pipe-cd/pipe/pkg/model"
 )
@@ -70,18 +68,6 @@ func (t *Trigger) triggerDeployment(ctx context.Context, app *model.Application,
 	}
 
 	return
-}
-
-func (t *Trigger) loadDeploymentConfiguration(repoPath string, app *model.Application) (*config.Config, error) {
-	path := filepath.Join(repoPath, app.GitPath.GetDeploymentConfigFilePath())
-	cfg, err := config.LoadFromYAML(path)
-	if err != nil {
-		return nil, err
-	}
-	if appKind, ok := config.ToApplicationKind(cfg.Kind); !ok || appKind != app.Kind {
-		return nil, fmt.Errorf("application in deployment configuration file is not match, got: %s, expected: %s", appKind, app.Kind)
-	}
-	return cfg, nil
 }
 
 func (t *Trigger) reportMostRecentlyTriggeredDeployment(ctx context.Context, d *model.Deployment) error {
