@@ -24,12 +24,16 @@ import (
 	"github.com/pipe-cd/pipe/pkg/model"
 )
 
-type insightFileStore struct {
+type InsightFileStore struct {
 	filestore filestore.Store
 }
 
+func NewInsightFileStore(fs filestore.Store) InsightFileStore {
+	return InsightFileStore{filestore: fs}
+}
+
 // GetReports returns data as report.
-func (f *insightFileStore) GetReports(
+func (f *InsightFileStore) GetReports(
 	ctx context.Context,
 	projectID string,
 	appID string,
@@ -62,7 +66,7 @@ func (f *insightFileStore) GetReports(
 }
 
 // List returns data as insight data point.
-func (f *insightFileStore) List(
+func (f *InsightFileStore) List(
 	ctx context.Context,
 	projectID string,
 	appID string,
@@ -88,7 +92,7 @@ func (f *insightFileStore) List(
 }
 
 // Put create of update report.
-func (f *insightFileStore) Put(ctx context.Context, report Report) error {
+func (f *InsightFileStore) Put(ctx context.Context, report Report) error {
 	data, err := json.Marshal(report)
 	if err != nil {
 		return err
@@ -100,7 +104,7 @@ func (f *insightFileStore) Put(ctx context.Context, report Report) error {
 	return f.filestore.PutObject(ctx, path, data)
 }
 
-func (f *insightFileStore) getReport(ctx context.Context, path string, kind model.InsightMetricsKind) (Report, error) {
+func (f *InsightFileStore) getReport(ctx context.Context, path string, kind model.InsightMetricsKind) (Report, error) {
 	obj, err := f.filestore.GetObject(ctx, path)
 	if err != nil {
 		return nil, err

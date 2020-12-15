@@ -104,7 +104,7 @@ func TestGetReports(t *testing.T) {
 		},
 	}
 
-	fs := insightFileStore{
+	fs := InsightFileStore{
 		filestore: store,
 	}
 	for _, tc := range testcases {
@@ -354,7 +354,7 @@ func TestGetReport(t *testing.T) {
 		},
 	}
 
-	fs := insightFileStore{
+	fs := InsightFileStore{
 		filestore: store,
 	}
 	for _, tc := range testcases {
