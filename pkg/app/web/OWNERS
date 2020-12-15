@@ -1,8 +1,7 @@
 reviewers:
-  - sig-web
+  - sig-frontend
 approvers:
-  - sig-web
-  - sig-dev
+  - sig-frontend
 
 labels:
   - area/web

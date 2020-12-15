@@ -1,11 +1,10 @@
-sig-dev:
+sig-backend:
   users:
     - nghialv
-    - cakecatz
     - nakabonne
     - khanhtc1202
 
-sig-web:
+sig-frontend:
   users:
     - cakecatz
     - khanhtc1202
@@ -14,6 +13,7 @@ sig-web:
 sig-build:
   users:
     - nghialv
+    - khanhtc1202
 
 sig-release:
   users:
