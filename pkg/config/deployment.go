@@ -28,8 +28,9 @@ type GenericDeploymentSpec struct {
 	Pipeline *DeploymentPipeline `json:"pipeline"`
 	// The list of sealed secrets that should be decrypted.
 	SealedSecrets []SealedSecretMapping `json:"sealedSecrets"`
-	// List of directories where their changes will trigger the deployment.
-	Dependencies []string `json:"dependencies,omitempty"`
+	// List of directories or files where their changes will trigger the deployment.
+	// Regular expression can be used.
+	Changes []string `json:"changes,omitempty"`
 }
 
 func (s GenericDeploymentSpec) GetStage(index int32) (PipelineStage, bool) {

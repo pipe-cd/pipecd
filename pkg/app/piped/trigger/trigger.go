@@ -20,6 +20,7 @@ package trigger
 import (
 	"context"
 	"fmt"
+	"path/filepath"
 	"strings"
 	"time"
 
@@ -30,6 +31,7 @@ import (
 
 	"github.com/pipe-cd/pipe/pkg/app/api/service/pipedservice"
 	"github.com/pipe-cd/pipe/pkg/config"
+	"github.com/pipe-cd/pipe/pkg/filematcher"
 	"github.com/pipe-cd/pipe/pkg/git"
 	"github.com/pipe-cd/pipe/pkg/model"
 )
@@ -296,7 +298,17 @@ func (t *Trigger) checkApplication(ctx context.Context, app *model.Application, 
 	if err != nil {
 		return err
 	}
-	if touched := isTouchedByChangedFiles(app.GitPath.Path, nil, changedFiles); !touched {
+
+	deployConfig, err := loadDeploymentConfiguration(repo.GetPath(), app)
+	if err != nil {
+		return err
+	}
+
+	touched, err := isTouchedByChangedFiles(app.GitPath.Path, deployConfig.Changes, changedFiles)
+	if err != nil {
+		return err
+	}
+	if !touched {
 		logger.Info("application was not touched by the new commit",
 			zap.String("most-recently-triggered-commit", preCommitHash),
 		)
@@ -386,7 +398,25 @@ func (t *Trigger) getMostRecentlyTriggeredDeployment(ctx context.Context, applic
 	return nil, err
 }
 
-func isTouchedByChangedFiles(appDir string, dependencyDirs []string, changedFiles []string) bool {
+func loadDeploymentConfiguration(repoPath string, app *model.Application) (*config.GenericDeploymentSpec, error) {
+	path := filepath.Join(repoPath, app.GitPath.GetDeploymentConfigFilePath())
+	cfg, err := config.LoadFromYAML(path)
+	if err != nil {
+		return nil, err
+	}
+	if appKind, ok := config.ToApplicationKind(cfg.Kind); !ok || appKind != app.Kind {
+		return nil, fmt.Errorf("invalid application kind in the deployment config file, got: %s, expected: %s", appKind, app.Kind)
+	}
+
+	spec, ok := cfg.GetGenericDeployment()
+	if !ok {
+		return nil, fmt.Errorf("unsupported application kind: %w", app.Kind)
+	}
+
+	return &spec, nil
+}
+
+func isTouchedByChangedFiles(appDir string, changes []string, changedFiles []string) (bool, error) {
 	if !strings.HasSuffix(appDir, "/") {
 		appDir += "/"
 	}
@@ -395,19 +425,21 @@ func isTouchedByChangedFiles(appDir string, dependencyDirs []string, changedFile
 	// this application is considered as touched.
 	for _, cf := range changedFiles {
 		if ok := strings.HasPrefix(cf, appDir); ok {
-			return true
+			return true, nil
 		}
 	}
 
-	// If any files inside the app's dependencies was changed
+	// If any changed files matches the specified "changes"
 	// this application is consided as touched too.
-	for _, depDir := range dependencyDirs {
-		for _, cf := range changedFiles {
-			if ok := strings.HasPrefix(cf, depDir); ok {
-				return true
-			}
+	for _, change := range changes {
+		matcher, err := filematcher.NewPatternMatcher([]string{change})
+		if err != nil {
+			return false, err
+		}
+		if matcher.MatchesAny(changedFiles) {
+			return true, nil
 		}
 	}
 
-	return false
+	return false, nil
 }

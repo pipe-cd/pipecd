@@ -22,16 +22,15 @@ import (
 
 func TestIsTouchedByChangedFiles(t *testing.T) {
 	testcases := []struct {
-		name           string
-		appDir         string
-		dependencyDirs []string
-		changedFiles   []string
-		expected       bool
+		name         string
+		appDir       string
+		changes      []string
+		changedFiles []string
+		expected     bool
 	}{
 		{
-			name:           "not touched",
-			appDir:         "app/demo",
-			dependencyDirs: nil,
+			name:   "not touched",
+			appDir: "app/demo",
 			changedFiles: []string{
 				"app/hello.txt",
 				"app/foo/deployment.yaml",
@@ -47,9 +46,8 @@ func TestIsTouchedByChangedFiles(t *testing.T) {
 			expected: false,
 		},
 		{
-			name:           "touched in app dir",
-			appDir:         "app/demo",
-			dependencyDirs: nil,
+			name:   "touched in app dir",
+			appDir: "app/demo",
 			changedFiles: []string{
 				"app/hello.txt",
 				"app/demo/deployment.yaml",
@@ -57,11 +55,11 @@ func TestIsTouchedByChangedFiles(t *testing.T) {
 			expected: true,
 		},
 		{
-			name:   "touched in dependency dir",
+			name:   "touched in the changes",
 			appDir: "app/demo",
-			dependencyDirs: []string{
+			changes: []string{
 				"charts/demo",
-				"charts/bar",
+				"charts/bar/*",
 			},
 			changedFiles: []string{
 				"app/hello.txt",
@@ -73,7 +71,8 @@ func TestIsTouchedByChangedFiles(t *testing.T) {
 
 	for _, tc := range testcases {
 		t.Run(tc.name, func(t *testing.T) {
-			got := isTouchedByChangedFiles(tc.appDir, tc.dependencyDirs, tc.changedFiles)
+			got, err := isTouchedByChangedFiles(tc.appDir, tc.changes, tc.changedFiles)
+			assert.NoError(t, err)
 			assert.Equal(t, tc.expected, got)
 		})
 	}
