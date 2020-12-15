@@ -593,7 +593,8 @@ type PipedImageWatcher struct {
 	Repos []PipedImageWatcherRepoTarget `json:"repos"`
 }
 
-// Validate checks if the duplicated repository setting exists.
+// Validate checks if the duplicated repository setting exists,
+// and if both includes and excludes are given in each repo.
 func (i *PipedImageWatcher) Validate() error {
 	repos := make(map[string]struct{})
 	for _, repo := range i.Repos {
