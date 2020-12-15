@@ -2,8 +2,13 @@ import {
   Button,
   Divider,
   Drawer,
-  List,
-  makeStyles,
+  Paper,
+  Table,
+  TableBody,
+  TableCell,
+  TableContainer,
+  TableHead,
+  TableRow,
   Toolbar,
 } from "@material-ui/core";
 import { Add as AddIcon } from "@material-ui/icons";
@@ -22,18 +27,8 @@ import {
 import { selectProjectName } from "../../modules/me";
 import { AppDispatch } from "../../store";
 
-const useStyles = makeStyles((theme) => ({
-  main: {
-    overflow: "auto",
-  },
-  listItem: {
-    backgroundColor: theme.palette.background.paper,
-  },
-}));
-
 export const SettingsEnvironmentPage: FC = memo(
   function SettingsEnvironmentPage() {
-    const classes = useStyles();
     const dispatch = useDispatch<AppDispatch>();
     const [isOpenForm, setIsOpenForm] = useState(false);
     const projectName = useSelector<AppState, string>((state) =>
@@ -66,13 +61,27 @@ export const SettingsEnvironmentPage: FC = memo(
         </Toolbar>
         <Divider />
 
-        <div className={classes.main}>
-          <List disablePadding>
-            {envIds.map((envId) => (
-              <EnvironmentListItem id={envId} key={`env-list-item-${envId}`} />
-            ))}
-          </List>
-        </div>
+        <TableContainer component={Paper} square>
+          <Table aria-label="environment list" size="small" stickyHeader>
+            <TableHead>
+              <TableRow>
+                <TableCell>Name</TableCell>
+                <TableCell colSpan={2}>Description</TableCell>
+                <TableCell>ID</TableCell>
+                <TableCell align="right" />
+              </TableRow>
+            </TableHead>
+
+            <TableBody>
+              {envIds.map((envId) => (
+                <EnvironmentListItem
+                  id={envId}
+                  key={`env-list-item-${envId}`}
+                />
+              ))}
+            </TableBody>
+          </Table>
+        </TableContainer>
 
         <Drawer anchor="right" open={isOpenForm} onClose={handleClose}>
           <AddEnvForm

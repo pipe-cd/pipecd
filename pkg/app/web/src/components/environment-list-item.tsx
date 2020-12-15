@@ -5,13 +5,13 @@ import {
   DialogContent,
   DialogTitle,
   IconButton,
-  ListItem,
-  ListItemSecondaryAction,
-  ListItemText,
   makeStyles,
   Menu,
   MenuItem,
+  TableCell,
+  TableRow,
   TextField,
+  Typography,
 } from "@material-ui/core";
 import { MoreVert as MoreVertIcon } from "@material-ui/icons";
 import { EntityId } from "@reduxjs/toolkit";
@@ -83,22 +83,25 @@ export const EnvironmentListItem: FC<Props> = memo(
 
     return (
       <>
-        <ListItem key={`env-${env.id}`} divider dense className={classes.item}>
-          <ListItemText
-            primary={env.name}
-            secondary={env.desc || TEXT_NO_DESCRIPTION}
-          />
-          {/** TODO: Remove this style after implemented editing environment's desc API */}
-          <ListItemSecondaryAction style={{ display: "none" }}>
+        <TableRow key={`env-${env.id}`} className={classes.item}>
+          <TableCell>
+            <Typography variant="subtitle2" component="span">
+              {env.name}
+            </Typography>
+          </TableCell>
+          <TableCell colSpan={2}>{env.desc || TEXT_NO_DESCRIPTION}</TableCell>
+          <TableCell>{env.id}</TableCell>
+          <TableCell align="right" style={{ height: 61 }}>
             <IconButton
               edge="end"
               aria-label="open menu"
               onClick={handleClickMenu}
+              style={{ display: "none" }}
             >
               <MoreVertIcon />
             </IconButton>
-          </ListItemSecondaryAction>
-        </ListItem>
+          </TableCell>
+        </TableRow>
 
         <Menu
           id="env-menu"
