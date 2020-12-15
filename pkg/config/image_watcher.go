@@ -39,8 +39,11 @@ type ImageWatcherTarget struct {
 func LoadImageWatcher(repoRoot string, includes, excludes []string) (*ImageWatcherSpec, bool, error) {
 	dir := filepath.Join(repoRoot, SharedConfigurationDirName)
 	files, err := ioutil.ReadDir(dir)
-	if err != nil {
+	if os.IsNotExist(err) {
 		return nil, false, nil
+	}
+	if err != nil {
+		return nil, false, fmt.Errorf("failed to read %s: %w", dir, err)
 	}
 
 	spec := &ImageWatcherSpec{
