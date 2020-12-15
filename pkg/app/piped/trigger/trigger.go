@@ -410,7 +410,7 @@ func loadDeploymentConfiguration(repoPath string, app *model.Application) (*conf
 
 	spec, ok := cfg.GetGenericDeployment()
 	if !ok {
-		return nil, fmt.Errorf("unsupported application kind: %w", app.Kind)
+		return nil, fmt.Errorf("unsupported application kind: %s", app.Kind)
 	}
 
 	return &spec, nil
