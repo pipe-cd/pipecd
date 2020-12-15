@@ -59,15 +59,16 @@ func TestFilterImageWatcherFiles(t *testing.T) {
 			wantErr: false,
 		},
 		{
-			name: "both includes and excludes aren given",
+			name: "both includes and excludes are given",
 			files: []os.FileInfo{
 				&fakeFileInfo{
 					name: "file-1",
 				},
 			},
+			want:     []os.FileInfo{},
 			includes: []string{"file-1"},
 			excludes: []string{"file-1"},
-			wantErr:  true,
+			wantErr:  false,
 		},
 		{
 			name: "includes given",

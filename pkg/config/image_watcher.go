@@ -40,7 +40,7 @@ func LoadImageWatcher(repoRoot string, includes, excludes []string) (*ImageWatch
 	dir := filepath.Join(repoRoot, SharedConfigurationDirName)
 	files, err := ioutil.ReadDir(dir)
 	if err != nil {
-		return nil, false, fmt.Errorf("failed to read %s: %w", dir, err)
+		return nil, false, nil
 	}
 
 	spec := &ImageWatcherSpec{
@@ -70,18 +70,15 @@ func LoadImageWatcher(repoRoot string, includes, excludes []string) (*ImageWatch
 	return spec, true, nil
 }
 
-// filterImageWatcherFiles filters the given files based on the given includes and excludes.
+// filterImageWatcherFiles filters the given files based on the given Includes and Excludes.
+// Excludes are prioritized if both Excludes and Includes are given.
 func filterImageWatcherFiles(files []os.FileInfo, includes, excludes []string) ([]os.FileInfo, error) {
-	if len(includes) != 0 && len(excludes) != 0 {
-		return nil, fmt.Errorf("only one of includes or excludes can be used")
-	}
 	if len(includes) == 0 && len(excludes) == 0 {
 		return files, nil
 	}
 
-	useWhitelist := len(includes) != 0 && len(excludes) == 0
 	filtered := make([]os.FileInfo, 0, len(files))
-
+	useWhitelist := len(includes) != 0 && len(excludes) == 0
 	if useWhitelist {
 		whiteList := make(map[string]struct{}, len(includes))
 		for _, i := range includes {
@@ -92,15 +89,16 @@ func filterImageWatcherFiles(files []os.FileInfo, includes, excludes []string) (
 				filtered = append(filtered, f)
 			}
 		}
-	} else {
-		blackList := make(map[string]struct{}, len(excludes))
-		for _, e := range excludes {
-			blackList[e] = struct{}{}
-		}
-		for _, f := range files {
-			if _, ok := blackList[f.Name()]; !ok {
-				filtered = append(filtered, f)
-			}
+		return filtered, nil
+	}
+
+	blackList := make(map[string]struct{}, len(excludes))
+	for _, e := range excludes {
+		blackList[e] = struct{}{}
+	}
+	for _, f := range files {
+		if _, ok := blackList[f.Name()]; !ok {
+			filtered = append(filtered, f)
 		}
 	}
 	return filtered, nil

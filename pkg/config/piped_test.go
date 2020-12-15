@@ -280,17 +280,6 @@ func TestPipedImageWatcherValidate(t *testing.T) {
 				},
 			}},
 		},
-		{
-			name:    "both includes and excludes are given",
-			wantErr: true,
-			imageWatcher: PipedImageWatcher{Repos: []PipedImageWatcherRepoTarget{
-				{
-					RepoID:   "foo",
-					Includes: []string{"imagewatcher-dev.yaml"},
-					Excludes: []string{"imagewatcher-prod.yaml"},
-				},
-			}},
-		},
 	}
 	for _, tc := range testcases {
 		t.Run(tc.name, func(t *testing.T) {
