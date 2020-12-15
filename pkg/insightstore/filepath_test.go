@@ -23,7 +23,7 @@ import (
 	"github.com/pipe-cd/pipe/pkg/model"
 )
 
-func Test_getFilePaths(t *testing.T) {
+func Test_determineFilePaths(t *testing.T) {
 	type args struct {
 		projectID      string
 		appID          string
@@ -112,8 +112,8 @@ func Test_getFilePaths(t *testing.T) {
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			got := searchFilePaths(tt.args.projectID, tt.args.appID, tt.args.from, tt.args.dataPointCount, tt.args.metricsKind, tt.args.step)
-			assert.Equal(t, got, tt.want)
+			got := determineFilePaths(tt.args.projectID, tt.args.appID, tt.args.metricsKind, tt.args.step, tt.args.from, tt.args.dataPointCount)
+			assert.Equal(t, tt.want, got)
 		})
 	}
 }

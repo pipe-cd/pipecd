@@ -37,16 +37,16 @@ func (f *InsightFileStore) GetReports(
 	ctx context.Context,
 	projectID string,
 	appID string,
-	metricsKind model.InsightMetricsKind,
+	kind model.InsightMetricsKind,
 	step model.InsightStep,
 	from time.Time,
 	dataPointCount int) ([]Report, error) {
 	from = formatFrom(from, step)
 
-	paths := searchFilePaths(projectID, appID, from, dataPointCount, metricsKind, step)
+	paths := determineFilePaths(projectID, appID, kind, step, from, dataPointCount)
 	var reports []Report
 	for _, p := range paths {
-		r, err := f.getReport(ctx, p, metricsKind)
+		r, err := f.getReport(ctx, p, kind)
 		if err != nil {
 			return nil, err
 		}
@@ -70,11 +70,11 @@ func (f *InsightFileStore) List(
 	ctx context.Context,
 	projectID string,
 	appID string,
-	metricsKind model.InsightMetricsKind,
+	kind model.InsightMetricsKind,
 	step model.InsightStep,
 	from time.Time,
 	dataPointCount int) ([]*model.InsightDataPoint, error) {
-	reports, err := f.GetReports(ctx, projectID, appID, metricsKind, step, from, dataPointCount)
+	reports, err := f.GetReports(ctx, projectID, appID, kind, step, from, dataPointCount)
 	if err != nil {
 		return nil, err
 	}

@@ -40,7 +40,7 @@ func Test_convertToInsightDataPoints(t *testing.T) {
 			name: "success with yearly",
 			args: args{
 				report: func() Report {
-					path := newYearlyFilePath("projectID", model.InsightMetricsKind_DEPLOYMENT_FREQUENCY, "appID")
+					path := makeYearsFilePath("projectID", model.InsightMetricsKind_DEPLOYMENT_FREQUENCY, "appID")
 					expected := DeployFrequencyReport{
 						AccumulatedTo: 1609459200,
 						Datapoints: DeployFrequencyDataPoint{
@@ -73,7 +73,7 @@ func Test_convertToInsightDataPoints(t *testing.T) {
 			name: "success with monthly",
 			args: args{
 				report: func() Report {
-					path := newYearlyFilePath("projectID", model.InsightMetricsKind_DEPLOYMENT_FREQUENCY, "appID")
+					path := makeYearsFilePath("projectID", model.InsightMetricsKind_DEPLOYMENT_FREQUENCY, "appID")
 					expected := DeployFrequencyReport{
 						AccumulatedTo: 1609459200,
 						Datapoints: DeployFrequencyDataPoint{
@@ -101,7 +101,7 @@ func Test_convertToInsightDataPoints(t *testing.T) {
 			name: "success with weekly",
 			args: args{
 				report: func() Report {
-					path := newYearlyFilePath("projectID", model.InsightMetricsKind_DEPLOYMENT_FREQUENCY, "appID")
+					path := makeYearsFilePath("projectID", model.InsightMetricsKind_DEPLOYMENT_FREQUENCY, "appID")
 					expected := DeployFrequencyReport{
 						AccumulatedTo: 1609459200,
 						Datapoints: DeployFrequencyDataPoint{
@@ -134,7 +134,7 @@ func Test_convertToInsightDataPoints(t *testing.T) {
 			name: "success with daily",
 			args: args{
 				report: func() Report {
-					path := newYearlyFilePath("projectID", model.InsightMetricsKind_DEPLOYMENT_FREQUENCY, "appID")
+					path := makeYearsFilePath("projectID", model.InsightMetricsKind_DEPLOYMENT_FREQUENCY, "appID")
 					expected := DeployFrequencyReport{
 						AccumulatedTo: 1609459200,
 						Datapoints: DeployFrequencyDataPoint{

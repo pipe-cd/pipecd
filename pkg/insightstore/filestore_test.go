@@ -16,6 +16,7 @@ package insightstore
 
 import (
 	"context"
+	"fmt"
 	"testing"
 	"time"
 
@@ -77,7 +78,7 @@ func TestGetReports(t *testing.T) {
 					}
 				}`},
 			expected: func() []Report {
-				path := newMonthlyFilePath("projectID", model.InsightMetricsKind_DEPLOYMENT_FREQUENCY, "appID", "2021-01")
+				path := makeChunkFilePath("projectID", model.InsightMetricsKind_DEPLOYMENT_FREQUENCY, "appID", "2021-01")
 				expected1 := DeployFrequencyReport{
 					AccumulatedTo: 1609459200,
 					Datapoints: DeployFrequencyDataPoint{
@@ -88,7 +89,7 @@ func TestGetReports(t *testing.T) {
 					FilePath: path,
 				}
 				report1, _ := toReport(&expected1)
-				path = newMonthlyFilePath("projectID", model.InsightMetricsKind_DEPLOYMENT_FREQUENCY, "appID", "2021-02")
+				path = makeChunkFilePath("projectID", model.InsightMetricsKind_DEPLOYMENT_FREQUENCY, "appID", "2021-02")
 				expected2 := DeployFrequencyReport{
 					AccumulatedTo: 1612123592,
 					Datapoints: DeployFrequencyDataPoint{
@@ -109,9 +110,10 @@ func TestGetReports(t *testing.T) {
 	}
 	for _, tc := range testcases {
 		t.Run(tc.name, func(t *testing.T) {
-			paths := searchFilePaths(tc.projectID, tc.appID, tc.from, tc.dataPointCount, tc.kind, tc.step)
+			fmt.Print(tc)
+			paths := determineFilePaths(tc.projectID, tc.appID, tc.kind, tc.step, tc.from, tc.dataPointCount)
 			if len(paths) != tc.fileCount {
-				t.Fatalf("the count of path must be %d, but, %d", tc.fileCount, len(paths))
+				t.Fatalf("the count of path must be %d, but, %d : &v", tc.fileCount, len(paths), paths)
 			}
 
 			for i, c := range tc.contents {
@@ -188,7 +190,7 @@ func TestGetReport(t *testing.T) {
 				}
 			}`,
 			expected: func() Report {
-				path := newYearlyFilePath("projectID", model.InsightMetricsKind_DEPLOYMENT_FREQUENCY, "appID")
+				path := makeYearsFilePath("projectID", model.InsightMetricsKind_DEPLOYMENT_FREQUENCY, "appID")
 				expected := DeployFrequencyReport{
 					AccumulatedTo: 1609459200,
 					Datapoints: DeployFrequencyDataPoint{
@@ -222,7 +224,7 @@ func TestGetReport(t *testing.T) {
 				}
 			}`,
 			expected: func() Report {
-				path := newMonthlyFilePath("projectID", model.InsightMetricsKind_DEPLOYMENT_FREQUENCY, "appID", "2020-01")
+				path := makeChunkFilePath("projectID", model.InsightMetricsKind_DEPLOYMENT_FREQUENCY, "appID", "2020-01")
 				expected := DeployFrequencyReport{
 					AccumulatedTo: 1609459200,
 					Datapoints: DeployFrequencyDataPoint{
@@ -258,7 +260,7 @@ func TestGetReport(t *testing.T) {
 				}
 			}`,
 			expected: func() Report {
-				path := newMonthlyFilePath("projectID", model.InsightMetricsKind_DEPLOYMENT_FREQUENCY, "appID", "2021-01")
+				path := makeChunkFilePath("projectID", model.InsightMetricsKind_DEPLOYMENT_FREQUENCY, "appID", "2021-01")
 				expected := DeployFrequencyReport{
 					AccumulatedTo: 1609459200,
 					Datapoints: DeployFrequencyDataPoint{
@@ -295,7 +297,7 @@ func TestGetReport(t *testing.T) {
 				}
 			}`,
 			expected: func() Report {
-				path := newMonthlyFilePath("projectID", model.InsightMetricsKind_DEPLOYMENT_FREQUENCY, "appID", "2021-01")
+				path := makeChunkFilePath("projectID", model.InsightMetricsKind_DEPLOYMENT_FREQUENCY, "appID", "2021-01")
 				expected := DeployFrequencyReport{
 					AccumulatedTo: 1609459200,
 					Datapoints: DeployFrequencyDataPoint{
@@ -337,7 +339,7 @@ func TestGetReport(t *testing.T) {
 				}
 			}`,
 			expected: func() Report {
-				path := newYearlyFilePath("projectID", model.InsightMetricsKind_CHANGE_FAILURE_RATE, "appID")
+				path := makeYearsFilePath("projectID", model.InsightMetricsKind_CHANGE_FAILURE_RATE, "appID")
 				expected := ChangeFailureRateReport{
 					AccumulatedTo: 1609459200,
 					Datapoints: ChangeFailureRateDataPoint{
@@ -359,7 +361,7 @@ func TestGetReport(t *testing.T) {
 	}
 	for _, tc := range testcases {
 		t.Run(tc.name, func(t *testing.T) {
-			path := searchFilePaths(tc.projectID, tc.appID, tc.from, tc.dataPointCount, tc.kind, tc.step)
+			path := determineFilePaths(tc.projectID, tc.appID, tc.kind, tc.step, tc.from, tc.dataPointCount)
 			if len(path) != 1 {
 				t.Fatalf("the count of path must be 1, but, %d", len(path))
 			}

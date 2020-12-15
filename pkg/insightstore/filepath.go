@@ -37,63 +37,58 @@ import (
 //            ├─ 2020-01.json
 //            ├─ 2020-02.json
 //            ...
-func newYearlyFilePath(projectID string, metricsKind model.InsightMetricsKind, appID string) string {
+func makeYearsFilePath(projectID string, metricsKind model.InsightMetricsKind, appID string) string {
 	metricsKindKebab := strings.ToLower(metricsKind.String())
 	return fmt.Sprintf("insights/%s/%s/%s/years.json", projectID, metricsKindKebab, appID)
 }
 
-func newMonthlyFilePath(projectID string, metricsKind model.InsightMetricsKind, appID string, month string) string {
+func makeChunkFilePath(projectID string, metricsKind model.InsightMetricsKind, appID string, month string) string {
 	metricsKindKebab := strings.ToLower(metricsKind.String())
 	return fmt.Sprintf("insights/%s/%s/%s/%s.json", projectID, metricsKindKebab, appID, month)
 }
 
-func searchFilePaths(projectID string, appID string, from time.Time, dataPointCount int, metricsKind model.InsightMetricsKind, step model.InsightStep) []string {
+func determineFilePaths(projectID string, appID string, kind model.InsightMetricsKind, step model.InsightStep, from time.Time, count int) []string {
 	if appID == "" {
 		appID = "project"
 	}
 	switch step {
 	case model.InsightStep_YEARLY:
-		return []string{newYearlyFilePath(projectID, metricsKind, appID)}
+		return []string{makeYearsFilePath(projectID, kind, appID)}
 	default:
-		months := getPointsMonths(from, dataPointCount, step)
+		months := determineChunkKeys(step, from, count)
 		var paths []string
 		for _, m := range months {
-			path := newMonthlyFilePath(projectID, metricsKind, appID, m)
+			path := makeChunkFilePath(projectID, kind, appID, m)
 			paths = append(paths, path)
 		}
 		return paths
 	}
 }
 
-// getPointsMonths return months between two dates.
+// determineChunkKeys return months between two dates.
 // returning months will be sorted.
-func getPointsMonths(date time.Time, count int, step model.InsightStep) []string {
+func determineChunkKeys(step model.InsightStep, from time.Time, count int) []string {
 	var to time.Time
 
 	switch step {
 	case model.InsightStep_YEARLY:
-		to = date.AddDate(count-1, 0, 0)
+		to = from.AddDate(count-1, 0, 0)
 	case model.InsightStep_MONTHLY:
-		to = date.AddDate(0, count-1, 0)
+		to = from.AddDate(0, count-1, 0)
 	case model.InsightStep_WEEKLY:
-		to = date.AddDate(0, 0, (count-1)*7)
+		to = from.AddDate(0, 0, (count-1)*7)
 	case model.InsightStep_DAILY:
-		to = date.AddDate(0, 0, count-1)
+		to = from.AddDate(0, 0, count-1)
 	}
 
-	fromMonth := time.Date(date.Year(), date.Month(), 1, 1, 1, 1, 1, time.UTC)
-	toMonth := time.Date(to.Year(), to.Month(), 1, 1, 1, 1, 1, time.UTC)
+	from = time.Date(from.Year(), from.Month(), 1, 0, 0, 0, 0, time.UTC)
+	to = time.Date(to.Year(), to.Month(), 1, 0, 0, 0, 0, time.UTC)
 
-	var months []string
-	y1, m1, _ := toMonth.Date()
-	for {
-		// 2015-05-05 08:05:15.828452891 +0900 UST → 2015-05
-		months = append(months, fromMonth.Format("2006-01"))
-		y2, m2, _ := fromMonth.Date()
-		if y1 == y2 && m1 == m2 {
-			return months
-		}
-
-		fromMonth = fromMonth.AddDate(0, 1, 0)
+	var keys []string
+	cur := from
+	for cur.Before(to) || cur.Equal(to) {
+		keys = append(keys, cur.Format("2006-01"))
+		cur = cur.AddDate(0, 1, 0)
 	}
+	return keys
 }
