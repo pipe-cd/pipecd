@@ -40,3 +40,9 @@ genrule(
     cmd = "cp $< $@",
 )
 
+genrule(
+    name = "copy_pipectl",
+    srcs = ["//cmd/pipectl"],
+    outs = ["pipectl"],
+    cmd = "cp $< $@",
+)
