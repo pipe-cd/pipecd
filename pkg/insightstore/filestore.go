@@ -40,10 +40,11 @@ func (s *Store) GetReports(
 	kind model.InsightMetricsKind,
 	step model.InsightStep,
 	from time.Time,
-	dataPointCount int) ([]Report, error) {
+	count int,
+) ([]Report, error) {
 	from = formatFrom(from, step)
 
-	paths := determineFilePaths(projectID, appID, kind, step, from, dataPointCount)
+	paths := determineFilePaths(projectID, appID, kind, step, from, count)
 	var reports []Report
 	for _, p := range paths {
 		r, err := s.getReport(ctx, p, kind)
@@ -66,23 +67,24 @@ func (s *Store) List(
 	kind model.InsightMetricsKind,
 	step model.InsightStep,
 	from time.Time,
-	dataPointCount int) ([]*model.InsightDataPoint, error) {
+	count int,
+) ([]*model.InsightDataPoint, error) {
 	from = formatFrom(from, step)
 
-	reports, err := s.GetReports(ctx, projectID, appID, kind, step, from, dataPointCount)
+	reports, err := s.GetReports(ctx, projectID, appID, kind, step, from, count)
 	if err != nil {
 		return nil, err
 	}
 	var idps []*model.InsightDataPoint
 	for _, r := range reports {
-		idp, err := convertToInsightDataPoints(r, from, dataPointCount, step)
+		idp, err := convertToInsightDataPoints(r, from, count, step)
 		if err != nil {
 			return nil, err
 		}
 
 		idps = append(idps, idp...)
 
-		dataPointCount = dataPointCount - r.DataCount(step)
+		count = count - r.DataCount(step)
 
 		nextMonth := time.Date(from.Year(), from.Month()+1, 1, 0, 0, 0, 0, time.UTC)
 		from = formatFrom(nextMonth, step)

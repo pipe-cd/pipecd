@@ -222,7 +222,7 @@ func toReport(i interface{}) (Report, error) {
 
 }
 
-func convertToInsightDataPoints(report Report, from time.Time, dataPointCount int, step model.InsightStep) ([]*model.InsightDataPoint, error) {
+func convertToInsightDataPoints(report Report, from time.Time, count int, step model.InsightStep) ([]*model.InsightDataPoint, error) {
 	var getKey func(t time.Time) string
 	var nextTargetDate func(t time.Time) time.Time
 	switch step {
@@ -259,7 +259,7 @@ func convertToInsightDataPoints(report Report, from time.Time, dataPointCount in
 
 	var idps []*model.InsightDataPoint
 	targetDate := from
-	for i := 0; i < dataPointCount; i++ {
+	for i := 0; i < count; i++ {
 		key := getKey(targetDate)
 		value, err := report.Value(step, key)
 		if err != nil {
