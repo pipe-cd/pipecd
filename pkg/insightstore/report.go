@@ -15,12 +15,15 @@
 package insightstore
 
 import (
+	"errors"
 	"fmt"
 	"strconv"
 	"time"
 
 	"github.com/pipe-cd/pipe/pkg/model"
 )
+
+var ErrValueNotFound = errors.New("value not found")
 
 // deploy frequency
 
@@ -54,26 +57,38 @@ func (d *DeployFrequencyReport) Value(step model.InsightStep, key string) (float
 	switch step {
 	case model.InsightStep_YEARLY:
 		yearly, ok := d.Datapoints.Yearly[key]
-		if !ok {
+		if d.Datapoints.Yearly == nil {
 			return 0, fmt.Errorf("get value failed, because the report does not have Yearly field's value")
+		}
+		if !ok {
+			return 0, ErrValueNotFound
 		}
 		return yearly.DeployCount, nil
 	case model.InsightStep_MONTHLY:
 		monthly, ok := d.Datapoints.Monthly[key]
+		if d.Datapoints.Monthly == nil {
+			return 0, fmt.Errorf("get value failed, because the report does not have Yearly field's value")
+		}
 		if !ok {
-			return 0, fmt.Errorf("get value failed, because the report does not have Monthly field's value")
+			return 0, ErrValueNotFound
 		}
 		return monthly.DeployCount, nil
 	case model.InsightStep_WEEKLY:
 		weekly, ok := d.Datapoints.Weekly[key]
-		if !ok {
+		if d.Datapoints.Weekly == nil {
 			return 0, fmt.Errorf("get value failed, because the report does not have Weekly field's value")
+		}
+		if !ok {
+			return 0, ErrValueNotFound
 		}
 		return weekly.DeployCount, nil
 	case model.InsightStep_DAILY:
 		daily, ok := d.Datapoints.Daily[key]
+		if d.Datapoints.Daily == nil {
+			return 0, fmt.Errorf("get value failed, because the report does not have Daily field's value", key)
+		}
 		if !ok {
-			return 0, fmt.Errorf("get value failed, because the report does not have Daily field's value")
+			return 0, ErrValueNotFound
 		}
 		return daily.DeployCount, nil
 	}
@@ -128,26 +143,39 @@ func (c *ChangeFailureRateReport) Value(step model.InsightStep, key string) (flo
 	switch step {
 	case model.InsightStep_YEARLY:
 		yearly, ok := c.Datapoints.Yearly[key]
-		if !ok {
+		if c.Datapoints.Yearly == nil {
 			return 0, fmt.Errorf("get value failed, because the report does not have Yearly field's value")
+		}
+		if !ok {
+			return 0, ErrValueNotFound
 		}
 		return yearly.Rate, nil
 	case model.InsightStep_MONTHLY:
 		monthly, ok := c.Datapoints.Monthly[key]
-		if !ok {
+		if c.Datapoints.Monthly == nil {
+
 			return 0, fmt.Errorf("get value failed, because the report does not have Monthly field's value")
+		}
+		if !ok {
+			return 0, ErrValueNotFound
 		}
 		return monthly.Rate, nil
 	case model.InsightStep_WEEKLY:
 		weekly, ok := c.Datapoints.Weekly[key]
-		if !ok {
+		if c.Datapoints.Weekly == nil {
 			return 0, fmt.Errorf("get value failed, because the report does not have Weekly field's value")
+		}
+		if !ok {
+			return 0, ErrValueNotFound
 		}
 		return weekly.Rate, nil
 	case model.InsightStep_DAILY:
 		daily, ok := c.Datapoints.Daily[key]
-		if !ok {
+		if c.Datapoints.Daily == nil {
 			return 0, fmt.Errorf("get value failed, because the report does not have Daily field's value")
+		}
+		if !ok {
+			return 0, ErrValueNotFound
 		}
 		return daily.Rate, nil
 	}
@@ -229,19 +257,22 @@ func convertToInsightDataPoints(report Report, from time.Time, dataPointCount in
 		}
 	}
 
-	idps := make([]*model.InsightDataPoint, dataPointCount)
+	var idps []*model.InsightDataPoint
 	targetDate := from
 	for i := 0; i < dataPointCount; i++ {
 		key := getKey(targetDate)
 		value, err := report.Value(step, key)
 		if err != nil {
+			if err == ErrValueNotFound {
+				return idps, nil
+			}
 			return nil, err
 		}
 
-		idps[i] = &model.InsightDataPoint{
+		idps = append(idps, &model.InsightDataPoint{
 			Value:     value,
 			Timestamp: targetDate.Unix(),
-		}
+		})
 
 		targetDate = nextTargetDate(targetDate)
 	}

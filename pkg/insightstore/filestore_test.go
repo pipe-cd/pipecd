@@ -16,7 +16,6 @@ package insightstore
 
 import (
 	"context"
-	"fmt"
 	"testing"
 	"time"
 
@@ -105,12 +104,11 @@ func TestGetReports(t *testing.T) {
 		},
 	}
 
-	fs := InsightFileStore{
+	fs := Store{
 		filestore: store,
 	}
 	for _, tc := range testcases {
 		t.Run(tc.name, func(t *testing.T) {
-			fmt.Print(tc)
 			paths := determineFilePaths(tc.projectID, tc.appID, tc.kind, tc.step, tc.from, tc.dataPointCount)
 			if len(paths) != tc.fileCount {
 				t.Fatalf("the count of path must be %d, but, %d : &v", tc.fileCount, len(paths), paths)
@@ -125,6 +123,100 @@ func TestGetReports(t *testing.T) {
 			}
 
 			rs, err := fs.GetReports(context.Background(), tc.projectID, tc.appID, tc.kind, tc.step, tc.from, tc.dataPointCount)
+			if err != nil {
+				if tc.expectedErr == nil {
+					assert.NoError(t, err)
+					return
+				}
+				assert.Error(t, err, tc.expectedErr)
+				return
+			}
+			assert.Equal(t, tc.expected, rs)
+		})
+	}
+}
+
+func TestList(t *testing.T) {
+	ctrl := gomock.NewController(t)
+	defer ctrl.Finish()
+	store := filestoretest.NewMockStore(ctrl)
+
+	testcases := []struct {
+		name           string
+		projectID      string
+		appID          string
+		contents       []string
+		from           time.Time
+		dataPointCount int
+		fileCount      int
+		step           model.InsightStep
+		kind           model.InsightMetricsKind
+		readerErr      error
+		expected       []*model.InsightDataPoint
+		expectedErr    error
+	}{
+		{
+			name:           "[deploy frequency] success in daily with dates that straddles months",
+			projectID:      "projectID",
+			appID:          "appID",
+			step:           model.InsightStep_DAILY,
+			from:           time.Date(2021, 1, 31, 0, 0, 0, 0, time.UTC),
+			dataPointCount: 2,
+			fileCount:      2,
+			kind:           model.InsightMetricsKind_DEPLOYMENT_FREQUENCY,
+			contents: []string{
+				`{
+					"accumulated_to": 1609459200,
+					"datapoints": {
+						"daily": {
+							"2021-01-31": {
+								"deploy_count": 1000
+							}
+						}
+					}
+				}`,
+				`{
+					"accumulated_to": 1612123592,
+					"datapoints": {
+						"daily": {
+							"2021-02-01": {
+								"deploy_count": 3000
+							}
+						}
+					}
+				}`},
+			expected: []*model.InsightDataPoint{
+				{
+					Timestamp: 1612051200,
+					Value:     1000,
+				},
+				{
+					Timestamp: 1612137600,
+					Value:     3000,
+				},
+			},
+		},
+	}
+
+	fs := Store{
+		filestore: store,
+	}
+	for _, tc := range testcases {
+		t.Run(tc.name, func(t *testing.T) {
+			paths := determineFilePaths(tc.projectID, tc.appID, tc.kind, tc.step, tc.from, tc.dataPointCount)
+			if len(paths) != tc.fileCount {
+				t.Fatalf("the count of path must be %d, but, %d : &v", tc.fileCount, len(paths), paths)
+			}
+
+			for i, c := range tc.contents {
+				obj := filestore.Object{
+					Content: []byte(c),
+				}
+				store.EXPECT().GetObject(context.TODO(), paths[i]).Return(obj, tc.readerErr)
+
+			}
+
+			rs, err := fs.List(context.Background(), tc.projectID, tc.appID, tc.kind, tc.step, tc.from, tc.dataPointCount)
 			if err != nil {
 				if tc.expectedErr == nil {
 					assert.NoError(t, err)
@@ -356,7 +448,7 @@ func TestGetReport(t *testing.T) {
 		},
 	}
 
-	fs := InsightFileStore{
+	fs := Store{
 		filestore: store,
 	}
 	for _, tc := range testcases {

@@ -24,16 +24,16 @@ import (
 	"github.com/pipe-cd/pipe/pkg/model"
 )
 
-type InsightFileStore struct {
+type Store struct {
 	filestore filestore.Store
 }
 
-func NewInsightFileStore(fs filestore.Store) InsightFileStore {
-	return InsightFileStore{filestore: fs}
+func NewInsightFileStore(fs filestore.Store) Store {
+	return Store{filestore: fs}
 }
 
 // GetReports returns data as report.
-func (f *InsightFileStore) GetReports(
+func (s *Store) GetReports(
 	ctx context.Context,
 	projectID string,
 	appID string,
@@ -46,27 +46,20 @@ func (f *InsightFileStore) GetReports(
 	paths := determineFilePaths(projectID, appID, kind, step, from, dataPointCount)
 	var reports []Report
 	for _, p := range paths {
-		r, err := f.getReport(ctx, p, kind)
+		r, err := s.getReport(ctx, p, kind)
 		if err != nil {
 			return nil, err
 		}
 
 		reports = append(reports, r)
 
-		dataPointCount = dataPointCount - r.DataCount(step)
-
-		nextMonth := time.Date(from.Year(), from.Month()+1, 1, 0, 0, 0, 0, time.UTC)
-		from = formatFrom(nextMonth, step)
-		if step == model.InsightStep_WEEKLY && from.Month() != nextMonth.Month() {
-			from = from.AddDate(0, 0, 7)
-		}
 	}
 
 	return reports, nil
 }
 
 // List returns data as insight data point.
-func (f *InsightFileStore) List(
+func (s *Store) List(
 	ctx context.Context,
 	projectID string,
 	appID string,
@@ -74,7 +67,9 @@ func (f *InsightFileStore) List(
 	step model.InsightStep,
 	from time.Time,
 	dataPointCount int) ([]*model.InsightDataPoint, error) {
-	reports, err := f.GetReports(ctx, projectID, appID, kind, step, from, dataPointCount)
+	from = formatFrom(from, step)
+
+	reports, err := s.GetReports(ctx, projectID, appID, kind, step, from, dataPointCount)
 	if err != nil {
 		return nil, err
 	}
@@ -86,13 +81,21 @@ func (f *InsightFileStore) List(
 		}
 
 		idps = append(idps, idp...)
+
+		dataPointCount = dataPointCount - r.DataCount(step)
+
+		nextMonth := time.Date(from.Year(), from.Month()+1, 1, 0, 0, 0, 0, time.UTC)
+		from = formatFrom(nextMonth, step)
+		if step == model.InsightStep_WEEKLY && from.Month() != nextMonth.Month() {
+			from = from.AddDate(0, 0, 7)
+		}
 	}
 
 	return idps, nil
 }
 
 // Put create of update report.
-func (f *InsightFileStore) Put(ctx context.Context, report Report) error {
+func (s *Store) Put(ctx context.Context, report Report) error {
 	data, err := json.Marshal(report)
 	if err != nil {
 		return err
@@ -101,11 +104,11 @@ func (f *InsightFileStore) Put(ctx context.Context, report Report) error {
 	if path == "" {
 		return fmt.Errorf("filepath not found on report struct")
 	}
-	return f.filestore.PutObject(ctx, path, data)
+	return s.filestore.PutObject(ctx, path, data)
 }
 
-func (f *InsightFileStore) getReport(ctx context.Context, path string, kind model.InsightMetricsKind) (Report, error) {
-	obj, err := f.filestore.GetObject(ctx, path)
+func (s *Store) getReport(ctx context.Context, path string, kind model.InsightMetricsKind) (Report, error) {
+	obj, err := s.filestore.GetObject(ctx, path)
 	if err != nil {
 		return nil, err
 	}
