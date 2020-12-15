@@ -1,7 +1,8 @@
 reviewers:
-  - sig-dev
+  - sig-backend
 approvers:
-  - sig-dev
+  - sig-backend
+  - sig-frontend
   - sig-release
 
 matches:
