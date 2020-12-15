@@ -114,11 +114,16 @@ func (w *watcher) run(ctx context.Context, provider imageprovider.Provider, inte
 				updates = append(updates, u...)
 			}
 			if len(updates) == 0 {
-				w.logger.Info("no image to be updated")
+				w.logger.Info("no image to be updated",
+					zap.String("image-provider", provider.Name()),
+				)
 				continue
 			}
 			if err := update(updates); err != nil {
-				w.logger.Error("failed to update image", zap.Error(err))
+				w.logger.Error("failed to update image",
+					zap.String("image-provider", provider.Name()),
+					zap.Error(err),
+				)
 				continue
 			}
 		}
@@ -136,14 +141,13 @@ func (w *watcher) determineUpdates(ctx context.Context, repoID string, repo git.
 	}
 
 	// Load Image Watcher Config for the given repo.
-	includes := make([]string, 0)
-	excludes := make([]string, 0)
+	var includes, excludes []string
 	for _, target := range w.config.ImageWatcher.Repos {
-		if target.RepoID != repoID {
-			continue
+		if target.RepoID == repoID {
+			includes = target.Includes
+			excludes = target.Excludes
+			break
 		}
-		includes = append(includes, target.Includes...)
-		excludes = append(excludes, target.Excludes...)
 	}
 	cfg, ok, err := config.LoadImageWatcher(repo.GetPath(), includes, excludes)
 	if err != nil {

@@ -88,6 +88,9 @@ func (s *PipedSpec) Validate() error {
 			return err
 		}
 	}
+	if err := s.ImageWatcher.Validate(); err != nil {
+		return err
+	}
 	return nil
 }
 
@@ -590,10 +593,23 @@ type PipedImageWatcher struct {
 	Repos []PipedImageWatcherRepoTarget `json:"repos"`
 }
 
+// Validate checks if the duplicated repository setting exists.
+func (i *PipedImageWatcher) Validate() error {
+	repos := make(map[string]struct{})
+	for _, repo := range i.Repos {
+		if _, ok := repos[repo.RepoID]; ok {
+			return fmt.Errorf("duplicated repo id (%s) found in the imageWatcher directive", repo.RepoID)
+		}
+		repos[repo.RepoID] = struct{}{}
+	}
+	return nil
+}
+
 type PipedImageWatcherRepoTarget struct {
 	RepoID string `json:"repoId"`
 	// The paths to ImageWatcher files to be included.
 	Includes []string `json:"includes"`
 	// The paths to ImageWatcher files to be excluded.
+	// This is prioritized if both includes and this are given.
 	Excludes []string `json:"excludes"`
 }
