@@ -120,8 +120,8 @@ func (w *watcher) run(ctx context.Context, provider imageprovider.Provider, inte
 				continue
 			}
 			if err := update(updates); err != nil {
-				w.logger.Error("failed to update image", zap.String("image-provider",
-					provider.Name()),
+				w.logger.Error("failed to update image",
+					zap.String("image-provider", provider.Name()),
 					zap.Error(err),
 				)
 				continue
