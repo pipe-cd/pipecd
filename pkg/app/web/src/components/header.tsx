@@ -14,7 +14,6 @@ import {
 import {
   PAGE_PATH_APPLICATIONS,
   PAGE_PATH_DEPLOYMENTS,
-  PAGE_PATH_INSIGHTS,
   PAGE_PATH_SETTINGS,
   PAGE_PATH_LOGIN,
   LOGOUT_ENDPOINT,
@@ -124,15 +123,7 @@ export const Header: FC = memo(function Header() {
           >
             Deployments
           </Link>
-          <Link
-            component={RouterLink}
-            className={classes.link}
-            activeClassName={classes.activeLink}
-            color="inherit"
-            to={PAGE_PATH_INSIGHTS}
-          >
-            Insights
-          </Link>
+          {/** TODO: Restore a link to the insights in the v1 release */}
           <Link
             component={RouterLink}
             className={classes.link}
