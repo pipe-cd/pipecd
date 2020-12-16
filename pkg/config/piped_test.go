@@ -226,7 +226,7 @@ func TestPipedConfig(t *testing.T) {
 					},
 				},
 				ImageWatcher: PipedImageWatcher{
-					Repos: []PipedImageWatcherRepoTarget{
+					Filters: []PipedImageWatcherFilter{
 						{
 							RepoID:   "foo",
 							Includes: []string{"imagewatcher-dev.yaml", "imagewatcher-stg.yaml"},
@@ -259,7 +259,7 @@ func TestPipedImageWatcherValidate(t *testing.T) {
 		{
 			name:    "duplicated repo exists",
 			wantErr: true,
-			imageWatcher: PipedImageWatcher{Repos: []PipedImageWatcherRepoTarget{
+			imageWatcher: PipedImageWatcher{Filters: []PipedImageWatcherFilter{
 				{
 					RepoID: "foo",
 				},
@@ -271,7 +271,7 @@ func TestPipedImageWatcherValidate(t *testing.T) {
 		{
 			name:    "repos are unique",
 			wantErr: false,
-			imageWatcher: PipedImageWatcher{Repos: []PipedImageWatcherRepoTarget{
+			imageWatcher: PipedImageWatcher{Filters: []PipedImageWatcherFilter{
 				{
 					RepoID: "foo",
 				},

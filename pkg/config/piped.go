@@ -590,13 +590,13 @@ func (p *SealedSecretManagement) UnmarshalJSON(data []byte) error {
 }
 
 type PipedImageWatcher struct {
-	Repos []PipedImageWatcherRepoTarget `json:"repos"`
+	Filters []PipedImageWatcherFilter `json:"filters"`
 }
 
 // Validate checks if the duplicated repository setting exists.
 func (i *PipedImageWatcher) Validate() error {
 	repos := make(map[string]struct{})
-	for _, repo := range i.Repos {
+	for _, repo := range i.Filters {
 		if _, ok := repos[repo.RepoID]; ok {
 			return fmt.Errorf("duplicated repo id (%s) found in the imageWatcher directive", repo.RepoID)
 		}
@@ -605,7 +605,7 @@ func (i *PipedImageWatcher) Validate() error {
 	return nil
 }
 
-type PipedImageWatcherRepoTarget struct {
+type PipedImageWatcherFilter struct {
 	RepoID string `json:"repoId"`
 	// The paths to ImageWatcher files to be included.
 	Includes []string `json:"includes"`
