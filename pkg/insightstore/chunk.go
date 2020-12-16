@@ -84,7 +84,7 @@ func (c *DeployFrequencyChunk) GetDataPoints(step model.InsightStep) ([]DataPoin
 	case model.InsightStep_DAILY:
 		return toDataPoints(c.DataPoints.Daily)
 	}
-	return []DataPoint{}, fmt.Errorf("invalid step: %v", step)
+	return nil, fmt.Errorf("invalid step: %v", step)
 }
 
 func (d DeployFrequency) GetTimestamp() int64 {
@@ -146,7 +146,7 @@ func (c *ChangeFailureRateChunk) GetDataPoints(step model.InsightStep) ([]DataPo
 	case model.InsightStep_DAILY:
 		return toDataPoints(c.DataPoints.Daily)
 	}
-	return []DataPoint{}, fmt.Errorf("invalid step: %v", step)
+	return nil, fmt.Errorf("invalid step: %v", step)
 }
 
 func (c *ChangeFailureRateChunk) DataCount(step model.InsightStep) int {
@@ -256,7 +256,7 @@ func (cs Chunks) ExtractDataPoints(step model.InsightStep, from time.Time, count
 func extractDataPoints(chunk Chunk, step model.InsightStep, from, to time.Time) ([]*model.InsightDataPoint, error) {
 	target, err := chunk.GetDataPoints(step)
 	if err != nil {
-		return []*model.InsightDataPoint{}, nil
+		return nil, err
 	}
 
 	var result []*model.InsightDataPoint
