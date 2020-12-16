@@ -83,7 +83,7 @@ func TestGetChunks(t *testing.T) {
 				expected1 := DeployFrequencyChunk{
 					AccumulatedTo: 1612051200,
 					DataPoints: DeployFrequencyDataPoint{
-						Daily: []*DeployFrequency{
+						Daily: []DeployFrequency{
 							{
 								DeployCount: 1000,
 								Timestamp:   time.Date(2021, 1, 31, 0, 0, 0, 0, time.UTC).Unix(),
@@ -97,7 +97,7 @@ func TestGetChunks(t *testing.T) {
 				expected2 := DeployFrequencyChunk{
 					AccumulatedTo: 1612137600,
 					DataPoints: DeployFrequencyDataPoint{
-						Daily: []*DeployFrequency{
+						Daily: []DeployFrequency{
 							{
 								DeployCount: 1000,
 								Timestamp:   time.Date(2021, 2, 1, 0, 0, 0, 0, time.UTC).Unix(),
@@ -202,7 +202,7 @@ func TestGetChunk(t *testing.T) {
 				expected := DeployFrequencyChunk{
 					AccumulatedTo: 1609459200,
 					DataPoints: DeployFrequencyDataPoint{
-						Yearly: []*DeployFrequency{
+						Yearly: []DeployFrequency{
 							{
 								DeployCount: 1000,
 								Timestamp:   time.Date(2020, 1, 1, 0, 0, 0, 0, time.UTC).Unix(),
@@ -243,7 +243,7 @@ func TestGetChunk(t *testing.T) {
 				expected := DeployFrequencyChunk{
 					AccumulatedTo: 1609459200,
 					DataPoints: DeployFrequencyDataPoint{
-						Monthly: []*DeployFrequency{
+						Monthly: []DeployFrequency{
 							{
 								DeployCount: 1000,
 								Timestamp:   time.Date(2020, 1, 1, 0, 0, 0, 0, time.UTC).Unix(),
@@ -284,7 +284,7 @@ func TestGetChunk(t *testing.T) {
 				expected := DeployFrequencyChunk{
 					AccumulatedTo: 1609459200,
 					DataPoints: DeployFrequencyDataPoint{
-						Weekly: []*DeployFrequency{
+						Weekly: []DeployFrequency{
 							{
 								DeployCount: 1000,
 								Timestamp:   time.Date(2021, 1, 3, 0, 0, 0, 0, time.UTC).Unix(),
@@ -329,7 +329,7 @@ func TestGetChunk(t *testing.T) {
 				expected := DeployFrequencyChunk{
 					AccumulatedTo: 1609459200,
 					DataPoints: DeployFrequencyDataPoint{
-						Daily: []*DeployFrequency{
+						Daily: []DeployFrequency{
 							{
 								DeployCount: 1000,
 								Timestamp:   time.Date(2021, 1, 3, 0, 0, 0, 0, time.UTC).Unix(),
@@ -379,7 +379,7 @@ func TestGetChunk(t *testing.T) {
 				expected := ChangeFailureRateChunk{
 					AccumulatedTo: 1609459200,
 					DataPoints: ChangeFailureRateDataPoint{
-						Yearly: []*ChangeFailureRate{
+						Yearly: []ChangeFailureRate{
 							{
 								Rate:         0.75,
 								SuccessCount: 1000,

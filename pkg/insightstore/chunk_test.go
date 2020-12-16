@@ -24,12 +24,12 @@ import (
 	"github.com/pipe-cd/pipe/pkg/model"
 )
 
-func Test_ChunkToDataPoints(t *testing.T) {
+func Test_ExtractDataPoints(t *testing.T) {
 	type args struct {
-		chunk          Chunk
-		from           time.Time
-		dataPointCount int
-		step           model.InsightStep
+		chunk Chunk
+		from  time.Time
+		to    time.Time
+		step  model.InsightStep
 	}
 	tests := []struct {
 		name    string
@@ -45,7 +45,7 @@ func Test_ChunkToDataPoints(t *testing.T) {
 					expected := DeployFrequencyChunk{
 						AccumulatedTo: 1609459200,
 						DataPoints: DeployFrequencyDataPoint{
-							Yearly: []*DeployFrequency{
+							Yearly: []DeployFrequency{
 								{
 									DeployCount: 1000,
 									Timestamp:   time.Date(2020, 1, 1, 0, 0, 0, 0, time.UTC).Unix(),
@@ -61,9 +61,9 @@ func Test_ChunkToDataPoints(t *testing.T) {
 					chunk, _ := toChunk(&expected)
 					return chunk
 				}(),
-				from:           time.Date(2020, 1, 1, 0, 0, 0, 0, time.UTC),
-				dataPointCount: 2,
-				step:           model.InsightStep_YEARLY,
+				from: time.Date(2020, 1, 1, 0, 0, 0, 0, time.UTC),
+				to:   time.Date(2021, 1, 1, 0, 0, 0, 0, time.UTC),
+				step: model.InsightStep_YEARLY,
 			},
 			want: []*model.InsightDataPoint{
 				{
@@ -84,7 +84,7 @@ func Test_ChunkToDataPoints(t *testing.T) {
 					expected := DeployFrequencyChunk{
 						AccumulatedTo: 1609459200,
 						DataPoints: DeployFrequencyDataPoint{
-							Monthly: []*DeployFrequency{
+							Monthly: []DeployFrequency{
 								{
 									DeployCount: 1000,
 									Timestamp:   time.Date(2020, 1, 1, 0, 0, 0, 0, time.UTC).Unix(),
@@ -96,9 +96,9 @@ func Test_ChunkToDataPoints(t *testing.T) {
 					chunk, _ := toChunk(&expected)
 					return chunk
 				}(),
-				from:           time.Date(2020, 1, 1, 0, 0, 0, 0, time.UTC),
-				dataPointCount: 1,
-				step:           model.InsightStep_MONTHLY,
+				from: time.Date(2020, 1, 1, 0, 0, 0, 0, time.UTC),
+				to:   time.Date(2020, 1, 1, 0, 0, 0, 0, time.UTC),
+				step: model.InsightStep_MONTHLY,
 			},
 			want: []*model.InsightDataPoint{
 				{
@@ -115,7 +115,7 @@ func Test_ChunkToDataPoints(t *testing.T) {
 					expected := DeployFrequencyChunk{
 						AccumulatedTo: 1609459200,
 						DataPoints: DeployFrequencyDataPoint{
-							Weekly: []*DeployFrequency{
+							Weekly: []DeployFrequency{
 								{
 									DeployCount: 1000,
 									Timestamp:   time.Date(2021, 1, 3, 0, 0, 0, 0, time.UTC).Unix(),
@@ -131,9 +131,9 @@ func Test_ChunkToDataPoints(t *testing.T) {
 					chunk, _ := toChunk(&expected)
 					return chunk
 				}(),
-				from:           time.Date(2021, 1, 3, 0, 0, 0, 0, time.UTC),
-				dataPointCount: 2,
-				step:           model.InsightStep_WEEKLY,
+				from: time.Date(2021, 1, 3, 0, 0, 0, 0, time.UTC),
+				to:   time.Date(2021, 1, 10, 0, 0, 0, 0, time.UTC),
+				step: model.InsightStep_WEEKLY,
 			},
 			want: []*model.InsightDataPoint{
 				{
@@ -154,7 +154,7 @@ func Test_ChunkToDataPoints(t *testing.T) {
 					expected := DeployFrequencyChunk{
 						AccumulatedTo: 1609459200,
 						DataPoints: DeployFrequencyDataPoint{
-							Daily: []*DeployFrequency{
+							Daily: []DeployFrequency{
 								{
 									DeployCount: 1000,
 									Timestamp:   time.Date(2021, 1, 3, 0, 0, 0, 0, time.UTC).Unix(),
@@ -170,9 +170,9 @@ func Test_ChunkToDataPoints(t *testing.T) {
 					chunk, _ := toChunk(&expected)
 					return chunk
 				}(),
-				from:           time.Date(2021, 1, 3, 0, 0, 0, 0, time.UTC),
-				dataPointCount: 2,
-				step:           model.InsightStep_DAILY,
+				from: time.Date(2021, 1, 3, 0, 0, 0, 0, time.UTC),
+				to:   time.Date(2021, 1, 4, 0, 0, 0, 0, time.UTC),
+				step: model.InsightStep_DAILY,
 			},
 			want: []*model.InsightDataPoint{
 				{
@@ -188,7 +188,7 @@ func Test_ChunkToDataPoints(t *testing.T) {
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			got, err := chunkToDataPoints(tt.args.chunk, tt.args.from, tt.args.dataPointCount, tt.args.step)
+			got, err := extractDataPoints(tt.args.chunk, tt.args.step, tt.args.from, tt.args.to)
 			if (err != nil) != tt.wantErr {
 				if !tt.wantErr {
 					assert.NoError(t, err)
@@ -234,7 +234,7 @@ func TestChunksToDataPoints(t *testing.T) {
 				expected1 := DeployFrequencyChunk{
 					AccumulatedTo: 1609459200,
 					DataPoints: DeployFrequencyDataPoint{
-						Daily: []*DeployFrequency{
+						Daily: []DeployFrequency{
 							{
 								DeployCount: 1000,
 								Timestamp:   1612051200,
@@ -248,7 +248,7 @@ func TestChunksToDataPoints(t *testing.T) {
 				expected2 := DeployFrequencyChunk{
 					AccumulatedTo: 1612123592,
 					DataPoints: DeployFrequencyDataPoint{
-						Daily: []*DeployFrequency{
+						Daily: []DeployFrequency{
 							{
 								DeployCount: 3000,
 								Timestamp:   1612137600,
