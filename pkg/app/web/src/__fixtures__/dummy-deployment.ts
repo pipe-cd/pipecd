@@ -4,6 +4,7 @@ import { dummyApplication } from "./dummy-application";
 import { dummyEnv } from "./dummy-environment";
 import { dummyPiped } from "./dummy-piped";
 import { dummyStage } from "./dummy-stage";
+import { SyncStrategy } from "pipe/pkg/app/web/model/deployment_pb";
 
 export const dummyDeployment: Deployment = {
   id: "deployment-1",
@@ -27,6 +28,7 @@ export const dummyDeployment: Deployment = {
       pullRequest: 123,
       url: "",
     },
+    syncStrategy: SyncStrategy.NONE,
   },
   updatedAt: 1,
   version: "0.0.0",
