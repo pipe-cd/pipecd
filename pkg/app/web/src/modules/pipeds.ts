@@ -14,6 +14,8 @@ export interface RegisteredPiped {
   key: string;
 }
 
+const MODULE_NAME = "pipeds";
+
 const pipedsAdapter = createEntityAdapter<Piped>({});
 
 export const {
@@ -23,7 +25,7 @@ export const {
 } = pipedsAdapter.getSelectors();
 
 export const fetchPipeds = createAsyncThunk<Piped[], boolean>(
-  "pipeds/fetchList",
+  `${MODULE_NAME}/fetchList`,
   async (withStatus: boolean) => {
     const { pipedsList } = await pipedsApi.getPipeds({ withStatus });
 
@@ -34,7 +36,7 @@ export const fetchPipeds = createAsyncThunk<Piped[], boolean>(
 export const addPiped = createAsyncThunk<
   RegisteredPiped,
   { name: string; desc: string; envIds: string[] }
->("pipeds/add", async (props) => {
+>(`${MODULE_NAME}/add`, async (props) => {
   const res = await pipedsApi.registerPiped({
     desc: props.desc,
     envIdsList: props.envIds,
@@ -44,33 +46,46 @@ export const addPiped = createAsyncThunk<
 });
 
 export const disablePiped = createAsyncThunk<void, { pipedId: string }>(
-  "pipeds/disable",
+  `${MODULE_NAME}/disable`,
   async ({ pipedId }) => {
     await pipedsApi.disablePiped({ pipedId });
   }
 );
 
 export const enablePiped = createAsyncThunk<void, { pipedId: string }>(
-  "pipeds/enable",
+  `${MODULE_NAME}/enable`,
   async ({ pipedId }) => {
     await pipedsApi.enablePiped({ pipedId });
   }
 );
 
 export const recreatePipedKey = createAsyncThunk<string, { pipedId: string }>(
-  "pipeds/recreateKey",
+  `${MODULE_NAME}/recreateKey`,
   async ({ pipedId }) => {
     const { key } = await pipedsApi.recreatePipedKey({ id: pipedId });
     return key;
   }
 );
+export const editPiped = createAsyncThunk<
+  void,
+  { pipedId: string; name: string; desc: string; envIds: string[] }
+>(`${MODULE_NAME}/edit`, async ({ pipedId, name, desc, envIds }) => {
+  await pipedsApi.updatePiped({
+    pipedId,
+    name,
+    desc,
+    envIdsList: envIds,
+  });
+});
 
 export const pipedsSlice = createSlice({
-  name: "pipeds",
+  name: MODULE_NAME,
   initialState: pipedsAdapter.getInitialState<{
     registeredPiped: RegisteredPiped | null;
+    updating: boolean;
   }>({
     registeredPiped: null,
+    updating: false,
   }),
   reducers: {
     clearRegisteredPipedInfo(state) {
@@ -91,6 +106,15 @@ export const pipedsSlice = createSlice({
           id: action.meta.arg.pipedId,
           key: action.payload,
         };
+      })
+      .addCase(editPiped.pending, (state) => {
+        state.updating = true;
+      })
+      .addCase(editPiped.rejected, (state) => {
+        state.updating = false;
+      })
+      .addCase(editPiped.fulfilled, (state) => {
+        state.updating = false;
       });
   },
 });

@@ -1,14 +1,14 @@
-import React from "react";
-import { AddPipedForm } from "./add-piped-form";
 import { action } from "@storybook/addon-actions";
+import React from "react";
 import { createDecoratorRedux } from "../../.storybook/redux-decorator";
 import { dummyEnv } from "../__fixtures__/dummy-environment";
+import { AddPipedDrawer } from "./add-piped-drawer";
 
 const env2 = { ...dummyEnv, id: "env-2", name: "development" };
 
 export default {
-  title: "SETTINGS/AddPipedForm",
-  component: AddPipedForm,
+  title: "SETTINGS/Piped/AddPipedDrawer",
+  component: AddPipedDrawer,
   decorators: [
     createDecoratorRedux({
       environments: {
@@ -23,9 +23,5 @@ export default {
 };
 
 export const overview: React.FC = () => (
-  <AddPipedForm
-    onClose={action("onClose")}
-    onSubmit={action("onSubmit")}
-    projectName="project-name"
-  />
+  <AddPipedDrawer open onClose={action("onClose")} />
 );

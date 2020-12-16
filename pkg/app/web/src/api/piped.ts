@@ -12,6 +12,8 @@ import {
   RecreatePipedKeyResponse,
   GenerateApplicationSealedSecretRequest,
   GenerateApplicationSealedSecretResponse,
+  UpdatePipedRequest,
+  UpdatePipedResponse,
 } from "pipe/pkg/app/web/api_client/service_pb";
 
 export const getPipeds = ({
@@ -70,4 +72,18 @@ export const generateApplicationSealedSecret = ({
   req.setPipedId(pipedId);
   req.setData(data);
   return apiRequest(req, apiClient.generateApplicationSealedSecret);
+};
+
+export const updatePiped = ({
+  pipedId,
+  name,
+  desc,
+  envIdsList,
+}: UpdatePipedRequest.AsObject): Promise<UpdatePipedResponse.AsObject> => {
+  const req = new UpdatePipedRequest();
+  req.setPipedId(pipedId);
+  req.setName(name);
+  req.setDesc(desc);
+  req.setEnvIdsList(envIdsList);
+  return apiRequest(req, apiClient.updatePiped);
 };
