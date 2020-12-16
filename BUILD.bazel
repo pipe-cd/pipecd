@@ -40,6 +40,12 @@ genrule(
     cmd = "cp $< $@",
 )
 
+genrule(
+    name = "copy_pipectl",
+    srcs = ["//cmd/pipectl"],
+    outs = ["pipectl"],
+    cmd = "cp $< $@",
+)
 # gazelle:exclude pkg/app/helloworld/service/service.pb.validate.go
 # gazelle:exclude pkg/app/api/service/webservice/service.pb.validate.go
 # gazelle:exclude pkg/app/api/service/pipedservice/service.pb.validate.go
