@@ -38,13 +38,13 @@ import (
 //            ├─ 2020-02.json
 //            ...
 func makeYearsFilePath(projectID string, metricsKind model.InsightMetricsKind, appID string) string {
-	metricsKindKebab := strings.ToLower(metricsKind.String())
-	return fmt.Sprintf("insights/%s/%s/%s/years.json", projectID, metricsKindKebab, appID)
+	k := strings.ToLower(metricsKind.String())
+	return fmt.Sprintf("insights/%s/%s/%s/years.json", projectID, k, appID)
 }
 
 func makeChunkFilePath(projectID string, metricsKind model.InsightMetricsKind, appID string, month string) string {
-	metricsKindKebab := strings.ToLower(metricsKind.String())
-	return fmt.Sprintf("insights/%s/%s/%s/%s.json", projectID, metricsKindKebab, appID, month)
+	k := strings.ToLower(metricsKind.String())
+	return fmt.Sprintf("insights/%s/%s/%s/%s.json", projectID, k, appID, month)
 }
 
 func determineFilePaths(projectID string, appID string, kind model.InsightMetricsKind, step model.InsightStep, from time.Time, count int) []string {

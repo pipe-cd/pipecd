@@ -58,7 +58,7 @@ func TestGetChunks(t *testing.T) {
 			contents: []string{
 				`{
 					"accumulated_to": 1609459200,
-					"datapoints": {
+					"data_points": {
 						"daily": {
 							"2021-01-31": {
 								"deploy_count": 1000
@@ -68,7 +68,7 @@ func TestGetChunks(t *testing.T) {
 				}`,
 				`{
 					"accumulated_to": 1612123592,
-					"datapoints": {
+					"data_points": {
 						"daily": {
 							"2021-02-01": {
 								"deploy_count": 3000
@@ -176,7 +176,7 @@ func TestGetChunk(t *testing.T) {
 			kind:           model.InsightMetricsKind_DEPLOYMENT_FREQUENCY,
 			content: `{
 				"accumulated_to": 1609459200,
-				"datapoints": {
+				"data_points": {
 					"yearly": {
 						"2020": {
 							"deploy_count": 1000
@@ -213,7 +213,7 @@ func TestGetChunk(t *testing.T) {
 			kind:           model.InsightMetricsKind_DEPLOYMENT_FREQUENCY,
 			content: `{
 				"accumulated_to": 1609459200,
-				"datapoints": {
+				"data_points": {
 					"monthly": {
 						"2020-01": {
 							"deploy_count": 1000
@@ -246,7 +246,7 @@ func TestGetChunk(t *testing.T) {
 			kind:           model.InsightMetricsKind_DEPLOYMENT_FREQUENCY,
 			content: `{
 				"accumulated_to": 1609459200,
-				"datapoints": {
+				"data_points": {
 					"weekly": {
 						"2021-01-03": {
 							"deploy_count": 1000
@@ -283,7 +283,7 @@ func TestGetChunk(t *testing.T) {
 			kind:           model.InsightMetricsKind_DEPLOYMENT_FREQUENCY,
 			content: `{
 				"accumulated_to": 1609459200,
-				"datapoints": {
+				"data_points": {
 					"daily": {
 						"2021-01-03": {
 							"deploy_count": 1000
@@ -321,7 +321,7 @@ func TestGetChunk(t *testing.T) {
 			kind:           model.InsightMetricsKind_CHANGE_FAILURE_RATE,
 			content: `{
 				"accumulated_to": 1609459200,
-				"datapoints": {
+				"data_points": {
 					"yearly": {
 						"2020": {
 							"rate": 0.75,

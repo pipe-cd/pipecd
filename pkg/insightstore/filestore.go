@@ -28,30 +28,28 @@ type Store struct {
 	filestore filestore.Store
 }
 
-func NewInsightFileStore(fs filestore.Store) Store {
+func NewStore(fs filestore.Store) Store {
 	return Store{filestore: fs}
 }
 
-// LoadChunks returns data as chunk.
+// LoadChunks returns all needed chunks for the specified kind and time range.
 func (s *Store) LoadChunks(
 	ctx context.Context,
-	projectID string,
-	appID string,
+	projectID, appID string,
 	kind model.InsightMetricsKind,
 	step model.InsightStep,
 	from time.Time,
 	count int,
 ) ([]Chunk, error) {
 	from = normalizeTime(from, step)
-
 	paths := determineFilePaths(projectID, appID, kind, step, from, count)
 	var chunks []Chunk
 	for _, p := range paths {
-		r, err := s.getChunk(ctx, p, kind)
+		c, err := s.getChunk(ctx, p, kind)
 		if err != nil {
 			return nil, err
 		}
-		chunks = append(chunks, r)
+		chunks = append(chunks, c)
 	}
 
 	return chunks, nil
@@ -95,7 +93,7 @@ func (s *Store) getChunk(ctx context.Context, path string, kind model.InsightMet
 		return nil, err
 	}
 
-	chunk.PutFilePath(path)
+	chunk.SetFilePath(path)
 	return chunk, nil
 }
 

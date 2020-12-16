@@ -248,7 +248,7 @@ func TestChunksToDataPoints(t *testing.T) {
 
 	for _, tc := range testcases {
 		t.Run(tc.name, func(t *testing.T) {
-			rs, err := tc.chunks.ChunksToDataPoints(tc.from, tc.dataPointCount, tc.step)
+			rs, err := tc.chunks.ExtractDataPoints(tc.step, tc.from, tc.dataPointCount)
 			if err != nil {
 				if tc.expectedErr == nil {
 					assert.NoError(t, err)

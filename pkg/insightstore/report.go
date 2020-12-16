@@ -30,7 +30,7 @@ var ErrValueNotFound = errors.New("value not found")
 // DeployFrequencyChunk satisfy the interface `Chunk`.
 type DeployFrequencyChunk struct {
 	AccumulatedTo int64                    `json:"accumulated_to"`
-	DataPoints    DeployFrequencyDataPoint `json:"datapoints"`
+	DataPoints    DeployFrequencyDataPoint `json:"data_points"`
 	FilePath      string
 }
 
@@ -49,8 +49,16 @@ func (d *DeployFrequencyChunk) GetFilePath() string {
 	return d.FilePath
 }
 
-func (d *DeployFrequencyChunk) PutFilePath(path string) {
+func (d *DeployFrequencyChunk) SetFilePath(path string) {
 	d.FilePath = path
+}
+
+func (d *DeployFrequencyChunk) GetAccumulatedTo() int64 {
+	return d.AccumulatedTo
+}
+
+func (d *DeployFrequencyChunk) SetAccumulatedTo(a int64) {
+	d.AccumulatedTo = a
 }
 
 func (d *DeployFrequencyChunk) Value(step model.InsightStep, key string) (float32, error) {
@@ -114,7 +122,7 @@ func (d *DeployFrequencyChunk) DataCount(step model.InsightStep) int {
 // ChangeFailureRateChunk satisfy the interface `Chunk`.
 type ChangeFailureRateChunk struct {
 	AccumulatedTo int64                      `json:"accumulated_to"`
-	DataPoints    ChangeFailureRateDataPoint `json:"datapoints"`
+	DataPoints    ChangeFailureRateDataPoint `json:"data_points"`
 	FilePath      string
 }
 
@@ -135,8 +143,16 @@ func (c *ChangeFailureRateChunk) GetFilePath() string {
 	return c.FilePath
 }
 
-func (c *ChangeFailureRateChunk) PutFilePath(path string) {
+func (c *ChangeFailureRateChunk) SetFilePath(path string) {
 	c.FilePath = path
+}
+
+func (c *ChangeFailureRateChunk) GetAccumulatedTo() int64 {
+	return c.AccumulatedTo
+}
+
+func (c *ChangeFailureRateChunk) SetAccumulatedTo(a int64) {
+	c.AccumulatedTo = a
 }
 
 func (c *ChangeFailureRateChunk) Value(step model.InsightStep, key string) (float32, error) {
@@ -199,8 +215,12 @@ func (c *ChangeFailureRateChunk) DataCount(step model.InsightStep) int {
 type Chunk interface {
 	// GetFilePath gets filepath
 	GetFilePath() string
-	// PutFilePath updates filepath
-	PutFilePath(path string)
+	// SetFilePath sets filepath
+	SetFilePath(path string)
+	// GetAccumulatedTo gets AccumulatedTo
+	GetAccumulatedTo() int64
+	// SetAccumulatedTo sets AccumulatedTo
+	SetAccumulatedTo(a int64)
 	// Value gets data by step and key
 	Value(step model.InsightStep, key string) (float32, error)
 	// DataCount returns count of data in specify step
@@ -224,7 +244,7 @@ func toChunk(i interface{}) (Chunk, error) {
 
 type Chunks []Chunk
 
-func (cs Chunks) ChunksToDataPoints(from time.Time, count int, step model.InsightStep) ([]*model.InsightDataPoint, error) {
+func (cs Chunks) ExtractDataPoints(step model.InsightStep, from time.Time, count int) ([]*model.InsightDataPoint, error) {
 	var idps []*model.InsightDataPoint
 	for _, c := range cs {
 		idp, err := chunkToDataPoints(c, from, count, step)
