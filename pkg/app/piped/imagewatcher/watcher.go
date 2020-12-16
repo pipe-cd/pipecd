@@ -21,7 +21,6 @@ import (
 	"context"
 	"fmt"
 	"io/ioutil"
-	"os"
 	"path/filepath"
 	"sync"
 	"time"
@@ -33,6 +32,8 @@ import (
 	"github.com/pipe-cd/pipe/pkg/git"
 	"github.com/pipe-cd/pipe/pkg/yamlprocessor"
 )
+
+const defaultCommitMessageFormat = "Update image %s to %s defined at %s in %s"
 
 type Watcher interface {
 	Run(context.Context) error
@@ -65,8 +66,10 @@ func NewWatcher(cfg *config.PipedSpec, gitClient gitClient, logger *zap.Logger) 
 // Run spawns goroutines for each image provider. They periodically pull the image
 // from the container registry to compare the image with one in the git repository.
 func (w *watcher) Run(ctx context.Context) error {
+	// TODO: Spawn goroutines for each repository
 	// Pre-clone to cache the registered git repositories.
 	for _, r := range w.config.Repositories {
+		// TODO: Clone repository another temporary destination
 		repo, err := w.gitClient.Clone(ctx, r.RepoID, r.Remote, r.Branch, "")
 		if err != nil {
 			w.logger.Error("failed to clone repository",
@@ -141,10 +144,10 @@ func (w *watcher) loadImageWatcherConfig(ctx context.Context, repoID string, rep
 	}
 
 	var includes, excludes []string
-	for _, filter := range w.config.ImageWatcher.Repos {
-		if filter.RepoID == repoID {
-			includes = filter.Includes
-			excludes = filter.Excludes
+	for _, repos := range w.config.ImageWatcher.Repos {
+		if repos.RepoID == repoID {
+			includes = repos.Includes
+			excludes = repos.Excludes
 			break
 		}
 	}
@@ -197,16 +200,14 @@ func (w *watcher) updateOutdatedImage(ctx context.Context, target *config.ImageW
 	if err != nil {
 		return fmt.Errorf("failed to replace value at %s with %s: %w", target.Field, imageInRegistry, err)
 	}
+	changes := map[string][]byte{
+		target.FilePath: newYml,
+	}
+	// TODO: Make it changeable the commit message
+	msg := fmt.Sprintf(defaultCommitMessageFormat, imageInGit, imageInRegistry.String(), target.Field, target.FilePath)
 	w.mu.Lock()
-	f, err := os.OpenFile(path, os.O_WRONLY|os.O_TRUNC, os.ModeAppend)
-	if err != nil {
-		return fmt.Errorf("failed to open file %s: %w", path, err)
-	}
-	if _, err := f.Write(newYml); err != nil {
-		return fmt.Errorf("failed to write into %s: %w", path, err)
-	}
-	if err := f.Close(); err != nil {
-		return fmt.Errorf("failed to close file %s: %w", path, err)
+	if err := repo.CommitChanges(ctx, repo.GetClonedBranch(), msg, false, changes); err != nil {
+		return fmt.Errorf("failed to perform git commit: %w", err)
 	}
 	err = repo.Push(ctx, repo.GetClonedBranch())
 	w.mu.Unlock()
