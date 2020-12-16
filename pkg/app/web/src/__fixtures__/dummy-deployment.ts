@@ -28,7 +28,7 @@ export const dummyDeployment: Deployment = {
       pullRequest: 123,
       url: "",
     },
-    syncStrategy: SyncStrategy.NONE,
+    syncStrategy: SyncStrategy.AUTO,
   },
   updatedAt: 1,
   version: "0.0.0",

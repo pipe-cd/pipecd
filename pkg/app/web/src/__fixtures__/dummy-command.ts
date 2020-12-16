@@ -15,7 +15,7 @@ export const dummyCommand: Command = {
   type: CommandModel.Type.SYNC_APPLICATION,
   syncApplication: {
     applicationId: "app-1",
-    syncStrategy: SyncStrategy.NONE,
+    syncStrategy: SyncStrategy.AUTO,
   },
   createdAt: 0,
   updatedAt: 0,

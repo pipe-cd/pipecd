@@ -55,7 +55,7 @@ export const syncApplication = createAsyncThunk<
 >("applications/sync", async ({ applicationId }, thunkAPI) => {
   const { commandId } = await applicationsAPI.syncApplication({
     applicationId: applicationId,
-    syncStrategy: SyncStrategy.NONE,
+    syncStrategy: SyncStrategy.AUTO,
   });
 
   await thunkAPI.dispatch(fetchCommand(commandId));

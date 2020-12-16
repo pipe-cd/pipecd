@@ -89,7 +89,7 @@ message Deployment {
 }
 
 enum SyncStrategy {
-    NONE = 0;
+    AUTO = 0;
     QUICK_SYNC = 1;
     PIPELINE = 2;
 }

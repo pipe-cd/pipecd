@@ -279,7 +279,7 @@ func (t *Trigger) checkApplication(ctx context.Context, app *model.Application, 
 		logger.Info("application should be synced because of the new commit",
 			zap.String("most-recently-triggered-commit", preCommitHash),
 		)
-		if _, err := t.triggerDeployment(ctx, app, branch, headCommit, "", model.SyncStrategy_NONE); err != nil {
+		if _, err := t.triggerDeployment(ctx, app, branch, headCommit, "", model.SyncStrategy_AUTO); err != nil {
 			return err
 		}
 		t.mostRecentlyTriggeredCommits[app.Id] = headCommit.Hash
