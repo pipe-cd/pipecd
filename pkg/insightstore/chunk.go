@@ -248,14 +248,6 @@ func (cs Chunks) ExtractDataPoints(step model.InsightStep, from time.Time, count
 		}
 
 		out = append(out, idp...)
-
-		count = count - c.DataCount(step)
-
-		nextMonth := time.Date(from.Year(), from.Month()+1, 1, 0, 0, 0, 0, time.UTC)
-		from = normalizeTime(nextMonth, step)
-		if step == model.InsightStep_WEEKLY && from.Month() != nextMonth.Month() {
-			from = from.AddDate(0, 0, 7)
-		}
 	}
 
 	return out, nil
@@ -270,14 +262,15 @@ func extractDataPoints(chunk Chunk, step model.InsightStep, from, to time.Time) 
 	var result []*model.InsightDataPoint
 	for _, d := range target {
 		ts := d.GetTimestamp()
-		if ts <= to.Unix() && ts >= from.Unix() {
+		if ts > to.Unix() {
+			break
+		}
+
+		if ts >= from.Unix() {
 			result = append(result, &model.InsightDataPoint{
 				Timestamp: ts,
 				Value:     d.Value(),
 			})
-		}
-		if ts > to.Unix() {
-			break
 		}
 	}
 	return result, nil
