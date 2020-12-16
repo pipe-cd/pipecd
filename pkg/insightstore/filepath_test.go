@@ -59,7 +59,10 @@ func Test_determineFilePaths(t *testing.T) {
 				metricsKind:    model.InsightMetricsKind_DEPLOYMENT_FREQUENCY,
 				step:           model.InsightStep_DAILY,
 			},
-			want: []string{"insights/projectID/deployment_frequency/appID/2020-01.json", "insights/projectID/deployment_frequency/appID/2020-02.json"},
+			want: []string{
+				"insights/projectID/deployment_frequency/appID/2020-01.json",
+				"insights/projectID/deployment_frequency/appID/2020-02.json",
+			},
 		},
 		{
 			name: "return correct path with weekly",
@@ -83,7 +86,10 @@ func Test_determineFilePaths(t *testing.T) {
 				metricsKind:    model.InsightMetricsKind_DEPLOYMENT_FREQUENCY,
 				step:           model.InsightStep_WEEKLY,
 			},
-			want: []string{"insights/projectID/deployment_frequency/appID/2020-01.json", "insights/projectID/deployment_frequency/appID/2020-02.json"},
+			want: []string{
+				"insights/projectID/deployment_frequency/appID/2020-01.json",
+				"insights/projectID/deployment_frequency/appID/2020-02.json",
+			},
 		},
 		{
 			name: "return correct path with monthly",
@@ -95,7 +101,10 @@ func Test_determineFilePaths(t *testing.T) {
 				metricsKind:    model.InsightMetricsKind_DEPLOYMENT_FREQUENCY,
 				step:           model.InsightStep_MONTHLY,
 			},
-			want: []string{"insights/projectID/deployment_frequency/appID/2020-01.json", "insights/projectID/deployment_frequency/appID/2020-02.json"},
+			want: []string{
+				"insights/projectID/deployment_frequency/appID/2020-01.json",
+				"insights/projectID/deployment_frequency/appID/2020-02.json",
+			},
 		},
 		{
 			name: "return correct path with yearly",

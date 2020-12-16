@@ -27,7 +27,7 @@ import (
 	"github.com/pipe-cd/pipe/pkg/model"
 )
 
-func TestGetReports(t *testing.T) {
+func TestGetChunks(t *testing.T) {
 	ctrl := gomock.NewController(t)
 	defer ctrl.Finish()
 	store := filestoretest.NewMockStore(ctrl)
@@ -43,7 +43,7 @@ func TestGetReports(t *testing.T) {
 		step           model.InsightStep
 		kind           model.InsightMetricsKind
 		readerErr      error
-		expected       []Report
+		expected       []Chunk
 		expectedErr    error
 	}{
 		{
@@ -76,9 +76,9 @@ func TestGetReports(t *testing.T) {
 						}
 					}
 				}`},
-			expected: func() []Report {
+			expected: func() []Chunk {
 				path := makeChunkFilePath("projectID", model.InsightMetricsKind_DEPLOYMENT_FREQUENCY, "appID", "2021-01")
-				expected1 := DeployFrequencyReport{
+				expected1 := DeployFrequencyChunk{
 					AccumulatedTo: 1609459200,
 					Datapoints: DeployFrequencyDataPoint{
 						Daily: map[string]DeployFrequency{
@@ -87,9 +87,9 @@ func TestGetReports(t *testing.T) {
 					},
 					FilePath: path,
 				}
-				report1, _ := toReport(&expected1)
+				chunk1, _ := toChunk(&expected1)
 				path = makeChunkFilePath("projectID", model.InsightMetricsKind_DEPLOYMENT_FREQUENCY, "appID", "2021-02")
-				expected2 := DeployFrequencyReport{
+				expected2 := DeployFrequencyChunk{
 					AccumulatedTo: 1612123592,
 					Datapoints: DeployFrequencyDataPoint{
 						Daily: map[string]DeployFrequency{
@@ -98,8 +98,8 @@ func TestGetReports(t *testing.T) {
 					},
 					FilePath: path,
 				}
-				report2, _ := toReport(&expected2)
-				return []Report{report1, report2}
+				chunk2, _ := toChunk(&expected2)
+				return []Chunk{chunk1, chunk2}
 			}(),
 		},
 	}
@@ -122,7 +122,7 @@ func TestGetReports(t *testing.T) {
 
 			}
 
-			rs, err := fs.GetReports(context.Background(), tc.projectID, tc.appID, tc.kind, tc.step, tc.from, tc.dataPointCount)
+			rs, err := fs.LoadChunks(context.Background(), tc.projectID, tc.appID, tc.kind, tc.step, tc.from, tc.dataPointCount)
 			if err != nil {
 				if tc.expectedErr == nil {
 					assert.NoError(t, err)
@@ -136,101 +136,7 @@ func TestGetReports(t *testing.T) {
 	}
 }
 
-func TestList(t *testing.T) {
-	ctrl := gomock.NewController(t)
-	defer ctrl.Finish()
-	store := filestoretest.NewMockStore(ctrl)
-
-	testcases := []struct {
-		name           string
-		projectID      string
-		appID          string
-		contents       []string
-		from           time.Time
-		dataPointCount int
-		fileCount      int
-		step           model.InsightStep
-		kind           model.InsightMetricsKind
-		readerErr      error
-		expected       []*model.InsightDataPoint
-		expectedErr    error
-	}{
-		{
-			name:           "[deploy frequency] success in daily with dates that straddles months",
-			projectID:      "projectID",
-			appID:          "appID",
-			step:           model.InsightStep_DAILY,
-			from:           time.Date(2021, 1, 31, 0, 0, 0, 0, time.UTC),
-			dataPointCount: 2,
-			fileCount:      2,
-			kind:           model.InsightMetricsKind_DEPLOYMENT_FREQUENCY,
-			contents: []string{
-				`{
-					"accumulated_to": 1609459200,
-					"datapoints": {
-						"daily": {
-							"2021-01-31": {
-								"deploy_count": 1000
-							}
-						}
-					}
-				}`,
-				`{
-					"accumulated_to": 1612123592,
-					"datapoints": {
-						"daily": {
-							"2021-02-01": {
-								"deploy_count": 3000
-							}
-						}
-					}
-				}`},
-			expected: []*model.InsightDataPoint{
-				{
-					Timestamp: 1612051200,
-					Value:     1000,
-				},
-				{
-					Timestamp: 1612137600,
-					Value:     3000,
-				},
-			},
-		},
-	}
-
-	fs := Store{
-		filestore: store,
-	}
-	for _, tc := range testcases {
-		t.Run(tc.name, func(t *testing.T) {
-			paths := determineFilePaths(tc.projectID, tc.appID, tc.kind, tc.step, tc.from, tc.dataPointCount)
-			if len(paths) != tc.fileCount {
-				t.Fatalf("the count of path must be %d, but, %d : &v", tc.fileCount, len(paths), paths)
-			}
-
-			for i, c := range tc.contents {
-				obj := filestore.Object{
-					Content: []byte(c),
-				}
-				store.EXPECT().GetObject(context.TODO(), paths[i]).Return(obj, tc.readerErr)
-
-			}
-
-			rs, err := fs.List(context.Background(), tc.projectID, tc.appID, tc.kind, tc.step, tc.from, tc.dataPointCount)
-			if err != nil {
-				if tc.expectedErr == nil {
-					assert.NoError(t, err)
-					return
-				}
-				assert.Error(t, err, tc.expectedErr)
-				return
-			}
-			assert.Equal(t, tc.expected, rs)
-		})
-	}
-}
-
-func TestGetReport(t *testing.T) {
+func TestGetChunk(t *testing.T) {
 	ctrl := gomock.NewController(t)
 	defer ctrl.Finish()
 	store := filestoretest.NewMockStore(ctrl)
@@ -245,7 +151,7 @@ func TestGetReport(t *testing.T) {
 		step           model.InsightStep
 		kind           model.InsightMetricsKind
 		readerErr      error
-		expected       Report
+		expected       Chunk
 		expectedErr    error
 	}{
 		{
@@ -281,9 +187,9 @@ func TestGetReport(t *testing.T) {
 					}
 				}
 			}`,
-			expected: func() Report {
+			expected: func() Chunk {
 				path := makeYearsFilePath("projectID", model.InsightMetricsKind_DEPLOYMENT_FREQUENCY, "appID")
-				expected := DeployFrequencyReport{
+				expected := DeployFrequencyChunk{
 					AccumulatedTo: 1609459200,
 					Datapoints: DeployFrequencyDataPoint{
 						Yearly: map[string]DeployFrequency{
@@ -293,8 +199,8 @@ func TestGetReport(t *testing.T) {
 					},
 					FilePath: path,
 				}
-				report, _ := toReport(&expected)
-				return report
+				chunk, _ := toChunk(&expected)
+				return chunk
 			}(),
 		},
 		{
@@ -315,9 +221,9 @@ func TestGetReport(t *testing.T) {
 					}
 				}
 			}`,
-			expected: func() Report {
+			expected: func() Chunk {
 				path := makeChunkFilePath("projectID", model.InsightMetricsKind_DEPLOYMENT_FREQUENCY, "appID", "2020-01")
-				expected := DeployFrequencyReport{
+				expected := DeployFrequencyChunk{
 					AccumulatedTo: 1609459200,
 					Datapoints: DeployFrequencyDataPoint{
 						Monthly: map[string]DeployFrequency{
@@ -326,8 +232,8 @@ func TestGetReport(t *testing.T) {
 					},
 					FilePath: path,
 				}
-				report, _ := toReport(&expected)
-				return report
+				chunk, _ := toChunk(&expected)
+				return chunk
 			}(),
 		},
 		{
@@ -351,9 +257,9 @@ func TestGetReport(t *testing.T) {
 					}
 				}
 			}`,
-			expected: func() Report {
+			expected: func() Chunk {
 				path := makeChunkFilePath("projectID", model.InsightMetricsKind_DEPLOYMENT_FREQUENCY, "appID", "2021-01")
-				expected := DeployFrequencyReport{
+				expected := DeployFrequencyChunk{
 					AccumulatedTo: 1609459200,
 					Datapoints: DeployFrequencyDataPoint{
 						Weekly: map[string]DeployFrequency{
@@ -363,8 +269,8 @@ func TestGetReport(t *testing.T) {
 					},
 					FilePath: path,
 				}
-				report, _ := toReport(&expected)
-				return report
+				chunk, _ := toChunk(&expected)
+				return chunk
 			}(),
 		},
 		{
@@ -388,9 +294,9 @@ func TestGetReport(t *testing.T) {
 					}
 				}
 			}`,
-			expected: func() Report {
+			expected: func() Chunk {
 				path := makeChunkFilePath("projectID", model.InsightMetricsKind_DEPLOYMENT_FREQUENCY, "appID", "2021-01")
-				expected := DeployFrequencyReport{
+				expected := DeployFrequencyChunk{
 					AccumulatedTo: 1609459200,
 					Datapoints: DeployFrequencyDataPoint{
 						Daily: map[string]DeployFrequency{
@@ -400,8 +306,8 @@ func TestGetReport(t *testing.T) {
 					},
 					FilePath: path,
 				}
-				report, _ := toReport(&expected)
-				return report
+				chunk, _ := toChunk(&expected)
+				return chunk
 			}(),
 		},
 
@@ -430,9 +336,9 @@ func TestGetReport(t *testing.T) {
 					}
 				}
 			}`,
-			expected: func() Report {
+			expected: func() Chunk {
 				path := makeYearsFilePath("projectID", model.InsightMetricsKind_CHANGE_FAILURE_RATE, "appID")
-				expected := ChangeFailureRateReport{
+				expected := ChangeFailureRateChunk{
 					AccumulatedTo: 1609459200,
 					Datapoints: ChangeFailureRateDataPoint{
 						Yearly: map[string]ChangeFailureRate{
@@ -442,8 +348,8 @@ func TestGetReport(t *testing.T) {
 					},
 					FilePath: path,
 				}
-				report, _ := toReport(&expected)
-				return report
+				chunk, _ := toChunk(&expected)
+				return chunk
 			}(),
 		},
 	}
@@ -461,7 +367,7 @@ func TestGetReport(t *testing.T) {
 				Content: []byte(tc.content),
 			}
 			store.EXPECT().GetObject(context.TODO(), path[0]).Return(obj, tc.readerErr)
-			idps, err := fs.getReport(context.Background(), path[0], tc.kind)
+			idps, err := fs.getChunk(context.Background(), path[0], tc.kind)
 			if err != nil {
 				if tc.expectedErr == nil {
 					assert.NoError(t, err)
@@ -520,7 +426,7 @@ func TestFormatFrom(t *testing.T) {
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			got := formatFrom(tt.args.from, tt.args.step)
+			got := normalizeTime(tt.args.from, tt.args.step)
 			assert.Equal(t, got, tt.want)
 		})
 	}

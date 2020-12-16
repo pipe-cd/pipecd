@@ -32,8 +32,8 @@ func NewInsightFileStore(fs filestore.Store) Store {
 	return Store{filestore: fs}
 }
 
-// GetReports returns data as report.
-func (s *Store) GetReports(
+// LoadChunks returns data as chunk.
+func (s *Store) LoadChunks(
 	ctx context.Context,
 	projectID string,
 	appID string,
@@ -41,111 +41,65 @@ func (s *Store) GetReports(
 	step model.InsightStep,
 	from time.Time,
 	count int,
-) ([]Report, error) {
-	from = formatFrom(from, step)
+) ([]Chunk, error) {
+	from = normalizeTime(from, step)
 
 	paths := determineFilePaths(projectID, appID, kind, step, from, count)
-	var reports []Report
+	var chunks []Chunk
 	for _, p := range paths {
-		r, err := s.getReport(ctx, p, kind)
+		r, err := s.getChunk(ctx, p, kind)
 		if err != nil {
 			return nil, err
 		}
-
-		reports = append(reports, r)
-
+		chunks = append(chunks, r)
 	}
 
-	return reports, nil
+	return chunks, nil
 }
 
-// List returns data as insight data point.
-func (s *Store) List(
-	ctx context.Context,
-	projectID string,
-	appID string,
-	kind model.InsightMetricsKind,
-	step model.InsightStep,
-	from time.Time,
-	count int,
-) ([]*model.InsightDataPoint, error) {
-	from = formatFrom(from, step)
-
-	reports, err := s.GetReports(ctx, projectID, appID, kind, step, from, count)
-	if err != nil {
-		return nil, err
-	}
-	var idps []*model.InsightDataPoint
-	for _, r := range reports {
-		idp, err := convertToInsightDataPoints(r, from, count, step)
-		if err != nil {
-			return nil, err
-		}
-
-		idps = append(idps, idp...)
-
-		count = count - r.DataCount(step)
-
-		nextMonth := time.Date(from.Year(), from.Month()+1, 1, 0, 0, 0, 0, time.UTC)
-		from = formatFrom(nextMonth, step)
-		if step == model.InsightStep_WEEKLY && from.Month() != nextMonth.Month() {
-			from = from.AddDate(0, 0, 7)
-		}
-	}
-
-	return idps, nil
-}
-
-// Put create of update report.
-func (s *Store) Put(ctx context.Context, report Report) error {
-	data, err := json.Marshal(report)
+// PutChunk create or update chunk.
+func (s *Store) PutChunk(ctx context.Context, chunk Chunk) error {
+	data, err := json.Marshal(chunk)
 	if err != nil {
 		return err
 	}
-	path := report.GetFilePath()
+	path := chunk.GetFilePath()
 	if path == "" {
-		return fmt.Errorf("filepath not found on report struct")
+		return fmt.Errorf("filepath not found on chunk struct")
 	}
 	return s.filestore.PutObject(ctx, path, data)
 }
 
-func (s *Store) getReport(ctx context.Context, path string, kind model.InsightMetricsKind) (Report, error) {
+func (s *Store) getChunk(ctx context.Context, path string, kind model.InsightMetricsKind) (Chunk, error) {
 	obj, err := s.filestore.GetObject(ctx, path)
 	if err != nil {
 		return nil, err
 	}
 
-	var report Report
+	var c interface{}
 	switch kind {
 	case model.InsightMetricsKind_DEPLOYMENT_FREQUENCY:
-		var df DeployFrequencyReport
-		err := json.Unmarshal(obj.Content, &df)
-		if err != nil {
-			return nil, err
-		}
-		report, err = toReport(&df)
-		if err != nil {
-			return nil, err
-		}
+		c = &DeployFrequencyChunk{}
 	case model.InsightMetricsKind_CHANGE_FAILURE_RATE:
-		var cfr ChangeFailureRateReport
-		err := json.Unmarshal(obj.Content, &cfr)
-		if err != nil {
-			return nil, err
-		}
-		report, err = toReport(&cfr)
-		if err != nil {
-			return nil, err
-		}
+		c = &ChangeFailureRateChunk{}
 	default:
 		return nil, fmt.Errorf("unimpremented insight kind: %s", kind)
 	}
 
-	report.PutFilePath(path)
-	return report, nil
+	err = json.Unmarshal(obj.Content, c)
+	if err != nil {
+		return nil, err
+	}
+	chunk, err := toChunk(c)
+	if err != nil {
+		return nil, err
+	}
+
+	chunk.PutFilePath(path)
+	return chunk, nil
 }
 
-func formatFrom(from time.Time, step model.InsightStep) time.Time {
+func normalizeTime(from time.Time, step model.InsightStep) time.Time {
 	var formattedTime time.Time
 	switch step {
 	case model.InsightStep_DAILY:

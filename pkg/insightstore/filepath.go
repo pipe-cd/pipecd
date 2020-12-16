@@ -55,18 +55,17 @@ func determineFilePaths(projectID string, appID string, kind model.InsightMetric
 	case model.InsightStep_YEARLY:
 		return []string{makeYearsFilePath(projectID, kind, appID)}
 	default:
-		months := determineChunkKeys(step, from, count)
+		keys := determineChunkKeys(step, from, count)
 		var paths []string
-		for _, m := range months {
-			path := makeChunkFilePath(projectID, kind, appID, m)
+		for _, k := range keys {
+			path := makeChunkFilePath(projectID, kind, appID, k)
 			paths = append(paths, path)
 		}
 		return paths
 	}
 }
 
-// determineChunkKeys return months between two dates.
-// returning months will be sorted.
+// determineChunkKeys returns a sorted list of chunk keys needed for a given time range.
 func determineChunkKeys(step model.InsightStep, from time.Time, count int) []string {
 	var to time.Time
 
@@ -86,7 +85,7 @@ func determineChunkKeys(step model.InsightStep, from time.Time, count int) []str
 
 	var keys []string
 	cur := from
-	for cur.Before(to) || cur.Equal(to) {
+	for !cur.After(to) {
 		keys = append(keys, cur.Format("2006-01"))
 		cur = cur.AddDate(0, 1, 0)
 	}
