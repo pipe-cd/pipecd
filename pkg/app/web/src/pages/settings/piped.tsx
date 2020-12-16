@@ -1,53 +1,47 @@
 import {
-  Button,
-  Divider,
-  Drawer,
-  Toolbar,
-  Dialog,
-  DialogTitle,
-  DialogContent,
-  TextField,
+  Accordion,
+  AccordionDetails,
+  AccordionSummary,
   Box,
+  Button,
+  Dialog,
+  DialogContent,
+  DialogTitle,
+  Divider,
+  IconButton,
   List,
   ListItem,
+  ListItemSecondaryAction,
   ListItemText,
   makeStyles,
-  ListItemSecondaryAction,
-  IconButton,
   Menu,
   MenuItem,
+  TextField,
+  Toolbar,
   Typography,
-  Accordion,
-  AccordionSummary,
-  AccordionDetails,
 } from "@material-ui/core";
 import { Add as AddIcon, MoreVert as MoreVertIcon } from "@material-ui/icons";
-import React, { FC, memo, useState } from "react";
-import dayjs from "dayjs";
-import { AddPipedForm } from "../../components/add-piped-form";
-import { useDispatch, useSelector } from "react-redux";
-import {
-  addPiped,
-  RegisteredPiped,
-  clearRegisteredPipedInfo,
-  Piped,
-  selectAll,
-  fetchPipeds,
-  disablePiped,
-  enablePiped,
-  recreatePipedKey,
-} from "../../modules/pipeds";
-import { AppState } from "../../modules";
-import { AppDispatch } from "../../store";
 import ExpandMoreIcon from "@material-ui/icons/ExpandMore";
 import clsx from "clsx";
-import { selectProjectName } from "../../modules/me";
+import dayjs from "dayjs";
+import React, { FC, memo, useCallback, useState } from "react";
+import { useDispatch, useSelector } from "react-redux";
+import { AddPipedDrawer } from "../../components/add-piped-drawer";
+import { EditPipedDrawer } from "../../components/edit-piped-drawer";
+import { AppState } from "../../modules";
+import {
+  clearRegisteredPipedInfo,
+  disablePiped,
+  enablePiped,
+  fetchPipeds,
+  Piped,
+  recreatePipedKey,
+  RegisteredPiped,
+  selectAll,
+} from "../../modules/pipeds";
+import { AppDispatch } from "../../store";
 
 const useStyles = makeStyles((theme) => ({
-  main: {
-    height: "100%",
-    overflow: "auto",
-  },
   item: {
     backgroundColor: theme.palette.background.paper,
   },
@@ -94,34 +88,32 @@ export const SettingsPipedPage: FC = memo(function SettingsPipedPage() {
   const classes = useStyles();
   const [isOpenForm, setIsOpenForm] = useState(false);
   const [actionTarget, setActionTarget] = useState<Piped | null>(null);
+  const [editPipedId, setEditPipedId] = useState<string | null>(null);
   const [anchorEl, setAnchorEl] = useState<HTMLButtonElement | null>(null);
   const isOpenMenu = Boolean(anchorEl);
   const dispatch = useDispatch<AppDispatch>();
   const [enabledPipeds, disabledPipeds] = usePipeds();
-  const projectName = useSelector<AppState, string>((state) =>
-    selectProjectName(state.me)
-  );
 
   const registeredPiped = useSelector<AppState, RegisteredPiped | null>(
     (state) => state.pipeds.registeredPiped
   );
 
-  const handleMenuOpen = (
-    event: React.MouseEvent<HTMLButtonElement>,
-    piped: Piped
-  ): void => {
-    setActionTarget(piped);
-    setAnchorEl(event.currentTarget);
-  };
+  const handleMenuOpen = useCallback(
+    (event: React.MouseEvent<HTMLButtonElement>, piped: Piped): void => {
+      setActionTarget(piped);
+      setAnchorEl(event.currentTarget);
+    },
+    []
+  );
 
-  const closeMenu = (): void => {
+  const closeMenu = useCallback(() => {
     setAnchorEl(null);
     setTimeout(() => {
       setActionTarget(null);
     }, 200);
-  };
+  }, []);
 
-  const handleDisableClick = (): void => {
+  const handleDisableClick = useCallback(() => {
     closeMenu();
     if (!actionTarget) {
       return;
@@ -132,33 +124,34 @@ export const SettingsPipedPage: FC = memo(function SettingsPipedPage() {
     dispatch(act({ pipedId: actionTarget.id })).then(() => {
       dispatch(fetchPipeds(true));
     });
-  };
+  }, [dispatch, actionTarget, closeMenu]);
 
-  const handleSubmit = (props: {
-    name: string;
-    desc: string;
-    envIds: string[];
-  }): void => {
-    dispatch(addPiped(props)).then(() => {
-      setIsOpenForm(false);
-    });
-  };
-
-  const handleClose = (): void => {
+  const handleClose = useCallback(() => {
     setIsOpenForm(false);
-  };
+  }, []);
 
-  const handleClosePipedInfo = (): void => {
+  const handleClosePipedInfo = useCallback(() => {
     dispatch(clearRegisteredPipedInfo());
     dispatch(fetchPipeds(true));
-  };
+  }, [dispatch]);
 
-  const handleRecreate = (): void => {
+  const handleRecreate = useCallback(() => {
     if (actionTarget) {
       dispatch(recreatePipedKey({ pipedId: actionTarget.id }));
     }
     closeMenu();
-  };
+  }, [dispatch, actionTarget, closeMenu]);
+
+  const handleEdit = useCallback(() => {
+    if (actionTarget) {
+      setEditPipedId(actionTarget.id);
+    }
+    closeMenu();
+  }, [actionTarget, closeMenu]);
+
+  const handleEditClose = useCallback(() => {
+    setEditPipedId(null);
+  }, []);
 
   return (
     <>
@@ -173,7 +166,7 @@ export const SettingsPipedPage: FC = memo(function SettingsPipedPage() {
       </Toolbar>
       <Divider />
 
-      <div className={classes.main}>
+      <Box height="100%" overflow="auto">
         <List disablePadding className={classes.pipedsList}>
           {enabledPipeds.map((piped) => (
             <ListItem
@@ -186,7 +179,7 @@ export const SettingsPipedPage: FC = memo(function SettingsPipedPage() {
                 primary={`${piped.name}: ${piped.version}`}
                 secondary={`${piped.desc}: ${piped.id}`}
               />
-              {dayjs(piped.startedAt * 1000).fromNow()}
+              <Box>{dayjs(piped.startedAt * 1000).fromNow()}</Box>
               <ListItemSecondaryAction>
                 <IconButton
                   edge="end"
@@ -238,7 +231,7 @@ export const SettingsPipedPage: FC = memo(function SettingsPipedPage() {
             </List>
           </AccordionDetails>
         </Accordion>
-      </div>
+      </Box>
 
       <Menu
         id="piped-menu"
@@ -257,23 +250,21 @@ export const SettingsPipedPage: FC = memo(function SettingsPipedPage() {
           <MenuItem onClick={handleDisableClick}>Enable</MenuItem>
         ) : (
           [
-            <MenuItem key="piped-menu-disable" onClick={handleDisableClick}>
-              Disable
+            <MenuItem key="piped-menu-edit" onClick={handleEdit}>
+              Edit
             </MenuItem>,
             <MenuItem key="piped-menu-recreate" onClick={handleRecreate}>
               Recreate Key
+            </MenuItem>,
+            <MenuItem key="piped-menu-disable" onClick={handleDisableClick}>
+              Disable
             </MenuItem>,
           ]
         )}
       </Menu>
 
-      <Drawer anchor="right" open={isOpenForm} onClose={handleClose}>
-        <AddPipedForm
-          projectName={projectName}
-          onSubmit={handleSubmit}
-          onClose={handleClose}
-        />
-      </Drawer>
+      <AddPipedDrawer open={isOpenForm} onClose={handleClose} />
+      <EditPipedDrawer pipedId={editPipedId} onClose={handleEditClose} />
 
       <Dialog open={Boolean(registeredPiped)}>
         <DialogTitle>Piped registered</DialogTitle>

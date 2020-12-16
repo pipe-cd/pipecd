@@ -35,6 +35,7 @@ const dummyStore: Partial<AppState> = {
     hasError: {},
   },
   pipeds: {
+    updating: false,
     entities: {
       [dummyPiped.id]: dummyPiped,
     },

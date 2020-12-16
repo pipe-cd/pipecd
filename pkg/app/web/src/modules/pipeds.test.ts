@@ -9,6 +9,13 @@ import {
   Piped,
 } from "./pipeds";
 
+const baseState = {
+  entities: {},
+  ids: [],
+  registeredPiped: null,
+  updating: false,
+};
+
 test("selectPipedsByEnv", () => {
   const disabledPiped: Piped = { ...dummyPiped, id: "piped-2", disabled: true };
   expect(selectPipedsByEnv({ entities: {}, ids: [] }, "env-1")).toEqual([]);
@@ -32,19 +39,14 @@ describe("pipedsSlice reducer", () => {
       pipedsSlice.reducer(undefined, {
         type: "TEST_ACTION",
       })
-    ).toEqual({
-      entities: {},
-      ids: [],
-      registeredPiped: null,
-    });
+    ).toEqual(baseState);
   });
 
   it(`should handle ${clearRegisteredPipedInfo.type}`, () => {
     expect(
       pipedsSlice.reducer(
         {
-          entities: {},
-          ids: [],
+          ...baseState,
           registeredPiped: {
             id: "piped-1",
             key: "piped-key",
@@ -54,33 +56,21 @@ describe("pipedsSlice reducer", () => {
           type: clearRegisteredPipedInfo.type,
         }
       )
-    ).toEqual({
-      entities: {},
-      ids: [],
-      registeredPiped: null,
-    });
+    ).toEqual(baseState);
   });
 
   describe("addPiped", () => {
     it(`should handle ${addPiped.fulfilled.type}`, () => {
       expect(
-        pipedsSlice.reducer(
-          {
-            entities: {},
-            ids: [],
-            registeredPiped: null,
+        pipedsSlice.reducer(baseState, {
+          type: addPiped.fulfilled.type,
+          payload: {
+            id: "piped-1",
+            key: "piped-key",
           },
-          {
-            type: addPiped.fulfilled.type,
-            payload: {
-              id: "piped-1",
-              key: "piped-key",
-            },
-          }
-        )
+        })
       ).toEqual({
-        entities: {},
-        ids: [],
+        ...baseState,
         registeredPiped: {
           id: "piped-1",
           key: "piped-key",
@@ -92,21 +82,14 @@ describe("pipedsSlice reducer", () => {
   describe("fetchPipeds", () => {
     it(`should handle ${fetchPipeds.fulfilled.type}`, () => {
       expect(
-        pipedsSlice.reducer(
-          {
-            entities: {},
-            ids: [],
-            registeredPiped: null,
-          },
-          {
-            type: fetchPipeds.fulfilled.type,
-            payload: [dummyPiped],
-          }
-        )
+        pipedsSlice.reducer(baseState, {
+          type: fetchPipeds.fulfilled.type,
+          payload: [dummyPiped],
+        })
       ).toEqual({
+        ...baseState,
         entities: { [dummyPiped.id]: dummyPiped },
         ids: [dummyPiped.id],
-        registeredPiped: null,
       });
     });
   });
@@ -114,25 +97,17 @@ describe("pipedsSlice reducer", () => {
   describe("recreatePipedKey", () => {
     it(`should handle ${recreatePipedKey.fulfilled.type}`, () => {
       expect(
-        pipedsSlice.reducer(
-          {
-            entities: {},
-            ids: [],
-            registeredPiped: null,
-          },
-          {
-            type: recreatePipedKey.fulfilled.type,
-            payload: "recreated-piped-key",
-            meta: {
-              arg: {
-                pipedId: "piped-1",
-              },
+        pipedsSlice.reducer(baseState, {
+          type: recreatePipedKey.fulfilled.type,
+          payload: "recreated-piped-key",
+          meta: {
+            arg: {
+              pipedId: "piped-1",
             },
-          }
-        )
+          },
+        })
       ).toEqual({
-        entities: {},
-        ids: [],
+        ...baseState,
         registeredPiped: {
           id: "piped-1",
           key: "recreated-piped-key",
