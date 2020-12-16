@@ -44,7 +44,7 @@ func Test_ChunkToDataPoints(t *testing.T) {
 					path := makeYearsFilePath("projectID", model.InsightMetricsKind_DEPLOYMENT_FREQUENCY, "appID")
 					expected := DeployFrequencyChunk{
 						AccumulatedTo: 1609459200,
-						Datapoints: DeployFrequencyDataPoint{
+						DataPoints: DeployFrequencyDataPoint{
 							Yearly: map[string]DeployFrequency{
 								"2020": {DeployCount: 1000},
 								"2021": {DeployCount: 3000},
@@ -77,7 +77,7 @@ func Test_ChunkToDataPoints(t *testing.T) {
 					path := makeYearsFilePath("projectID", model.InsightMetricsKind_DEPLOYMENT_FREQUENCY, "appID")
 					expected := DeployFrequencyChunk{
 						AccumulatedTo: 1609459200,
-						Datapoints: DeployFrequencyDataPoint{
+						DataPoints: DeployFrequencyDataPoint{
 							Monthly: map[string]DeployFrequency{
 								"2020-01": {DeployCount: 1000},
 							},
@@ -105,7 +105,7 @@ func Test_ChunkToDataPoints(t *testing.T) {
 					path := makeYearsFilePath("projectID", model.InsightMetricsKind_DEPLOYMENT_FREQUENCY, "appID")
 					expected := DeployFrequencyChunk{
 						AccumulatedTo: 1609459200,
-						Datapoints: DeployFrequencyDataPoint{
+						DataPoints: DeployFrequencyDataPoint{
 							Weekly: map[string]DeployFrequency{
 								"2021-01-03": {DeployCount: 1000},
 								"2021-01-10": {DeployCount: 3000},
@@ -138,7 +138,7 @@ func Test_ChunkToDataPoints(t *testing.T) {
 					path := makeYearsFilePath("projectID", model.InsightMetricsKind_DEPLOYMENT_FREQUENCY, "appID")
 					expected := DeployFrequencyChunk{
 						AccumulatedTo: 1609459200,
-						Datapoints: DeployFrequencyDataPoint{
+						DataPoints: DeployFrequencyDataPoint{
 							Daily: map[string]DeployFrequency{
 								"2021-01-03": {DeployCount: 1000},
 								"2021-01-04": {DeployCount: 3000},
@@ -212,7 +212,7 @@ func TestChunksToDataPoints(t *testing.T) {
 				path := makeChunkFilePath("projectID", model.InsightMetricsKind_DEPLOYMENT_FREQUENCY, "appID", "2021-01")
 				expected1 := DeployFrequencyChunk{
 					AccumulatedTo: 1609459200,
-					Datapoints: DeployFrequencyDataPoint{
+					DataPoints: DeployFrequencyDataPoint{
 						Daily: map[string]DeployFrequency{
 							"2021-01-31": {DeployCount: 1000},
 						},
@@ -223,7 +223,7 @@ func TestChunksToDataPoints(t *testing.T) {
 				path = makeChunkFilePath("projectID", model.InsightMetricsKind_DEPLOYMENT_FREQUENCY, "appID", "2021-02")
 				expected2 := DeployFrequencyChunk{
 					AccumulatedTo: 1612123592,
-					Datapoints: DeployFrequencyDataPoint{
+					DataPoints: DeployFrequencyDataPoint{
 						Daily: map[string]DeployFrequency{
 							"2021-02-01": {DeployCount: 3000},
 						},
