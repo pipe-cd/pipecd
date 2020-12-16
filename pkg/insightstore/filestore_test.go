@@ -57,32 +57,37 @@ func TestGetChunks(t *testing.T) {
 			kind:           model.InsightMetricsKind_DEPLOYMENT_FREQUENCY,
 			contents: []string{
 				`{
-					"accumulated_to": 1609459200,
+					"accumulated_to": 1612051200,
 					"data_points": {
-						"daily": {
-							"2021-01-31": {
-								"deploy_count": 1000
+						"daily": [
+							{
+								"deploy_count": 1000,
+								"timestamp": 1612051200
 							}
-						}
+						]
 					}
 				}`,
 				`{
-					"accumulated_to": 1612123592,
+					"accumulated_to": 1612137600,
 					"data_points": {
-						"daily": {
-							"2021-02-01": {
-								"deploy_count": 3000
+						"daily": [
+							{
+								"deploy_count": 1000,
+								"timestamp": 1612137600
 							}
-						}
+						]
 					}
 				}`},
 			expected: func() []Chunk {
 				path := makeChunkFilePath("projectID", model.InsightMetricsKind_DEPLOYMENT_FREQUENCY, "appID", "2021-01")
 				expected1 := DeployFrequencyChunk{
-					AccumulatedTo: 1609459200,
+					AccumulatedTo: 1612051200,
 					DataPoints: DeployFrequencyDataPoint{
-						Daily: map[string]DeployFrequency{
-							"2021-01-31": {DeployCount: 1000},
+						Daily: []*DeployFrequency{
+							{
+								DeployCount: 1000,
+								Timestamp:   time.Date(2021, 1, 31, 0, 0, 0, 0, time.UTC).Unix(),
+							},
 						},
 					},
 					FilePath: path,
@@ -90,10 +95,13 @@ func TestGetChunks(t *testing.T) {
 				chunk1, _ := toChunk(&expected1)
 				path = makeChunkFilePath("projectID", model.InsightMetricsKind_DEPLOYMENT_FREQUENCY, "appID", "2021-02")
 				expected2 := DeployFrequencyChunk{
-					AccumulatedTo: 1612123592,
+					AccumulatedTo: 1612137600,
 					DataPoints: DeployFrequencyDataPoint{
-						Daily: map[string]DeployFrequency{
-							"2021-02-01": {DeployCount: 3000},
+						Daily: []*DeployFrequency{
+							{
+								DeployCount: 1000,
+								Timestamp:   time.Date(2021, 2, 1, 0, 0, 0, 0, time.UTC).Unix(),
+							},
 						},
 					},
 					FilePath: path,
@@ -177,14 +185,16 @@ func TestGetChunk(t *testing.T) {
 			content: `{
 				"accumulated_to": 1609459200,
 				"data_points": {
-					"yearly": {
-						"2020": {
-							"deploy_count": 1000
+					"yearly": [
+						{
+							"deploy_count": 1000,
+							"timestamp": 1577836800
 						},
-						"2021": {
-							"deploy_count": 3000
+						{
+							"deploy_count": 3000,
+							"timestamp": 1609459200
 						}
-					}
+					]
 				}
 			}`,
 			expected: func() Chunk {
@@ -192,9 +202,15 @@ func TestGetChunk(t *testing.T) {
 				expected := DeployFrequencyChunk{
 					AccumulatedTo: 1609459200,
 					DataPoints: DeployFrequencyDataPoint{
-						Yearly: map[string]DeployFrequency{
-							"2020": {DeployCount: 1000},
-							"2021": {DeployCount: 3000},
+						Yearly: []*DeployFrequency{
+							{
+								DeployCount: 1000,
+								Timestamp:   time.Date(2020, 1, 1, 0, 0, 0, 0, time.UTC).Unix(),
+							},
+							{
+								DeployCount: 3000,
+								Timestamp:   time.Date(2021, 1, 1, 0, 0, 0, 0, time.UTC).Unix(),
+							},
 						},
 					},
 					FilePath: path,
@@ -214,11 +230,12 @@ func TestGetChunk(t *testing.T) {
 			content: `{
 				"accumulated_to": 1609459200,
 				"data_points": {
-					"monthly": {
-						"2020-01": {
-							"deploy_count": 1000
+					"monthly": [
+						{
+							"deploy_count": 1000,
+							"timestamp": 1577836800
 						}
-					}
+					]
 				}
 			}`,
 			expected: func() Chunk {
@@ -226,8 +243,11 @@ func TestGetChunk(t *testing.T) {
 				expected := DeployFrequencyChunk{
 					AccumulatedTo: 1609459200,
 					DataPoints: DeployFrequencyDataPoint{
-						Monthly: map[string]DeployFrequency{
-							"2020-01": {DeployCount: 1000},
+						Monthly: []*DeployFrequency{
+							{
+								DeployCount: 1000,
+								Timestamp:   time.Date(2020, 1, 1, 0, 0, 0, 0, time.UTC).Unix(),
+							},
 						},
 					},
 					FilePath: path,
@@ -247,14 +267,16 @@ func TestGetChunk(t *testing.T) {
 			content: `{
 				"accumulated_to": 1609459200,
 				"data_points": {
-					"weekly": {
-						"2021-01-03": {
-							"deploy_count": 1000
+					"weekly": [
+						{
+							"deploy_count": 1000,
+							"timestamp": 1609632000
 						},
-						"2021-01-10": {
-							"deploy_count": 3000
+						{
+							"deploy_count": 3000,
+							"timestamp": 1610236800
 						}
-					}
+					]
 				}
 			}`,
 			expected: func() Chunk {
@@ -262,9 +284,15 @@ func TestGetChunk(t *testing.T) {
 				expected := DeployFrequencyChunk{
 					AccumulatedTo: 1609459200,
 					DataPoints: DeployFrequencyDataPoint{
-						Weekly: map[string]DeployFrequency{
-							"2021-01-03": {DeployCount: 1000},
-							"2021-01-10": {DeployCount: 3000},
+						Weekly: []*DeployFrequency{
+							{
+								DeployCount: 1000,
+								Timestamp:   time.Date(2021, 1, 3, 0, 0, 0, 0, time.UTC).Unix(),
+							},
+							{
+								DeployCount: 3000,
+								Timestamp:   time.Date(2021, 1, 10, 0, 0, 0, 0, time.UTC).Unix(),
+							},
 						},
 					},
 					FilePath: path,
@@ -284,14 +312,16 @@ func TestGetChunk(t *testing.T) {
 			content: `{
 				"accumulated_to": 1609459200,
 				"data_points": {
-					"daily": {
-						"2021-01-03": {
-							"deploy_count": 1000
+					"daily": [
+						{
+							"deploy_count": 1000,
+							"timestamp": 1609632000
 						},
-						"2021-01-04": {
-							"deploy_count": 3000
+						{
+							"deploy_count": 3000,
+							"timestamp": 1609718400
 						}
-					}
+					]
 				}
 			}`,
 			expected: func() Chunk {
@@ -299,9 +329,15 @@ func TestGetChunk(t *testing.T) {
 				expected := DeployFrequencyChunk{
 					AccumulatedTo: 1609459200,
 					DataPoints: DeployFrequencyDataPoint{
-						Daily: map[string]DeployFrequency{
-							"2021-01-03": {DeployCount: 1000},
-							"2021-01-04": {DeployCount: 3000},
+						Daily: []*DeployFrequency{
+							{
+								DeployCount: 1000,
+								Timestamp:   time.Date(2021, 1, 3, 0, 0, 0, 0, time.UTC).Unix(),
+							},
+							{
+								DeployCount: 3000,
+								Timestamp:   time.Date(2021, 1, 4, 0, 0, 0, 0, time.UTC).Unix(),
+							},
 						},
 					},
 					FilePath: path,
@@ -322,18 +358,20 @@ func TestGetChunk(t *testing.T) {
 			content: `{
 				"accumulated_to": 1609459200,
 				"data_points": {
-					"yearly": {
-						"2020": {
+					"yearly": [
+						{
 							"rate": 0.75,
 							"success_count": 1000,
-							"failure_count": 3000
+							"failure_count": 3000,
+							"timestamp": 1609632000
 						},
-						"2021": {
+						{
 							"rate": 0.50,
 							"success_count": 1000,
-							"failure_count": 1000
+							"failure_count": 1000,
+							"timestamp": 1609718400
 						}
-					}
+					]
 				}
 			}`,
 			expected: func() Chunk {
@@ -341,9 +379,19 @@ func TestGetChunk(t *testing.T) {
 				expected := ChangeFailureRateChunk{
 					AccumulatedTo: 1609459200,
 					DataPoints: ChangeFailureRateDataPoint{
-						Yearly: map[string]ChangeFailureRate{
-							"2020": {Rate: 0.75, SuccessCount: 1000, FailureCount: 3000},
-							"2021": {Rate: 0.50, SuccessCount: 1000, FailureCount: 1000},
+						Yearly: []*ChangeFailureRate{
+							{
+								Rate:         0.75,
+								SuccessCount: 1000,
+								FailureCount: 3000,
+								Timestamp:    time.Date(2021, 1, 3, 0, 0, 0, 0, time.UTC).Unix(),
+							},
+							{
+								Rate:         0.50,
+								SuccessCount: 1000,
+								FailureCount: 1000,
+								Timestamp:    time.Date(2021, 1, 4, 0, 0, 0, 0, time.UTC).Unix(),
+							},
 						},
 					},
 					FilePath: path,

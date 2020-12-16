@@ -45,9 +45,15 @@ func Test_ChunkToDataPoints(t *testing.T) {
 					expected := DeployFrequencyChunk{
 						AccumulatedTo: 1609459200,
 						DataPoints: DeployFrequencyDataPoint{
-							Yearly: map[string]DeployFrequency{
-								"2020": {DeployCount: 1000},
-								"2021": {DeployCount: 3000},
+							Yearly: []*DeployFrequency{
+								{
+									DeployCount: 1000,
+									Timestamp:   time.Date(2020, 1, 1, 0, 0, 0, 0, time.UTC).Unix(),
+								},
+								{
+									DeployCount: 3000,
+									Timestamp:   time.Date(2021, 1, 1, 0, 0, 0, 0, time.UTC).Unix(),
+								},
 							},
 						},
 						FilePath: path,
@@ -78,8 +84,11 @@ func Test_ChunkToDataPoints(t *testing.T) {
 					expected := DeployFrequencyChunk{
 						AccumulatedTo: 1609459200,
 						DataPoints: DeployFrequencyDataPoint{
-							Monthly: map[string]DeployFrequency{
-								"2020-01": {DeployCount: 1000},
+							Monthly: []*DeployFrequency{
+								{
+									DeployCount: 1000,
+									Timestamp:   time.Date(2020, 1, 1, 0, 0, 0, 0, time.UTC).Unix(),
+								},
 							},
 						},
 						FilePath: path,
@@ -106,9 +115,15 @@ func Test_ChunkToDataPoints(t *testing.T) {
 					expected := DeployFrequencyChunk{
 						AccumulatedTo: 1609459200,
 						DataPoints: DeployFrequencyDataPoint{
-							Weekly: map[string]DeployFrequency{
-								"2021-01-03": {DeployCount: 1000},
-								"2021-01-10": {DeployCount: 3000},
+							Weekly: []*DeployFrequency{
+								{
+									DeployCount: 1000,
+									Timestamp:   time.Date(2021, 1, 3, 0, 0, 0, 0, time.UTC).Unix(),
+								},
+								{
+									DeployCount: 3000,
+									Timestamp:   time.Date(2021, 1, 10, 0, 0, 0, 0, time.UTC).Unix(),
+								},
 							},
 						},
 						FilePath: path,
@@ -139,9 +154,15 @@ func Test_ChunkToDataPoints(t *testing.T) {
 					expected := DeployFrequencyChunk{
 						AccumulatedTo: 1609459200,
 						DataPoints: DeployFrequencyDataPoint{
-							Daily: map[string]DeployFrequency{
-								"2021-01-03": {DeployCount: 1000},
-								"2021-01-04": {DeployCount: 3000},
+							Daily: []*DeployFrequency{
+								{
+									DeployCount: 1000,
+									Timestamp:   time.Date(2021, 1, 3, 0, 0, 0, 0, time.UTC).Unix(),
+								},
+								{
+									DeployCount: 3000,
+									Timestamp:   time.Date(2021, 1, 4, 0, 0, 0, 0, time.UTC).Unix(),
+								},
 							},
 						},
 						FilePath: path,
@@ -213,8 +234,11 @@ func TestChunksToDataPoints(t *testing.T) {
 				expected1 := DeployFrequencyChunk{
 					AccumulatedTo: 1609459200,
 					DataPoints: DeployFrequencyDataPoint{
-						Daily: map[string]DeployFrequency{
-							"2021-01-31": {DeployCount: 1000},
+						Daily: []*DeployFrequency{
+							{
+								DeployCount: 1000,
+								Timestamp:   1612051200,
+							},
 						},
 					},
 					FilePath: path,
@@ -224,8 +248,11 @@ func TestChunksToDataPoints(t *testing.T) {
 				expected2 := DeployFrequencyChunk{
 					AccumulatedTo: 1612123592,
 					DataPoints: DeployFrequencyDataPoint{
-						Daily: map[string]DeployFrequency{
-							"2021-02-01": {DeployCount: 3000},
+						Daily: []*DeployFrequency{
+							{
+								DeployCount: 3000,
+								Timestamp:   1612137600,
+							},
 						},
 					},
 					FilePath: path,

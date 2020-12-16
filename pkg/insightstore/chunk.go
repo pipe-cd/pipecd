@@ -15,19 +15,15 @@
 package insightstore
 
 import (
-	"errors"
 	"fmt"
-	"strconv"
 	"time"
 
 	"github.com/pipe-cd/pipe/pkg/model"
 )
 
-var ErrValueNotFound = errors.New("value not found")
-
 // deploy frequency
 
-// DeployFrequencyChunk satisfy the interface `Chunk`.
+// DeployFrequencyChunk satisfy the interface Chunk.
 type DeployFrequencyChunk struct {
 	AccumulatedTo int64                    `json:"accumulated_to"`
 	DataPoints    DeployFrequencyDataPoint `json:"data_points"`
@@ -35,13 +31,15 @@ type DeployFrequencyChunk struct {
 }
 
 type DeployFrequencyDataPoint struct {
-	Daily   map[string]DeployFrequency `json:"daily"`
-	Weekly  map[string]DeployFrequency `json:"weekly"`
-	Monthly map[string]DeployFrequency `json:"monthly"`
-	Yearly  map[string]DeployFrequency `json:"yearly"`
+	Daily   []*DeployFrequency `json:"daily"`
+	Weekly  []*DeployFrequency `json:"weekly"`
+	Monthly []*DeployFrequency `json:"monthly"`
+	Yearly  []*DeployFrequency `json:"yearly"`
 }
 
+// DeployFrequency satisfy the interface DataPoint.
 type DeployFrequency struct {
+	Timestamp   int64   `json:"timestamp"`
 	DeployCount float32 `json:"deploy_count"`
 }
 
@@ -61,48 +59,6 @@ func (d *DeployFrequencyChunk) SetAccumulatedTo(a int64) {
 	d.AccumulatedTo = a
 }
 
-func (d *DeployFrequencyChunk) Value(step model.InsightStep, key string) (float32, error) {
-	switch step {
-	case model.InsightStep_YEARLY:
-		yearly, ok := d.DataPoints.Yearly[key]
-		if d.DataPoints.Yearly == nil {
-			return 0, fmt.Errorf("get value failed, because the chunk does not have Yearly field's value")
-		}
-		if !ok {
-			return 0, ErrValueNotFound
-		}
-		return yearly.DeployCount, nil
-	case model.InsightStep_MONTHLY:
-		monthly, ok := d.DataPoints.Monthly[key]
-		if d.DataPoints.Monthly == nil {
-			return 0, fmt.Errorf("get value failed, because the chunk does not have Yearly field's value")
-		}
-		if !ok {
-			return 0, ErrValueNotFound
-		}
-		return monthly.DeployCount, nil
-	case model.InsightStep_WEEKLY:
-		weekly, ok := d.DataPoints.Weekly[key]
-		if d.DataPoints.Weekly == nil {
-			return 0, fmt.Errorf("get value failed, because the chunk does not have Weekly field's value")
-		}
-		if !ok {
-			return 0, ErrValueNotFound
-		}
-		return weekly.DeployCount, nil
-	case model.InsightStep_DAILY:
-		daily, ok := d.DataPoints.Daily[key]
-		if d.DataPoints.Daily == nil {
-			return 0, fmt.Errorf("get value failed, because the chunk does not have Daily field's value", key)
-		}
-		if !ok {
-			return 0, ErrValueNotFound
-		}
-		return daily.DeployCount, nil
-	}
-	return 0, fmt.Errorf("value not found. step: %d, key: %s", step, key)
-}
-
 func (d *DeployFrequencyChunk) DataCount(step model.InsightStep) int {
 	switch step {
 	case model.InsightStep_YEARLY:
@@ -117,9 +73,31 @@ func (d *DeployFrequencyChunk) DataCount(step model.InsightStep) int {
 	return 0
 }
 
+func (d *DeployFrequencyChunk) GetDataPoint(step model.InsightStep) ([]DataPoint, error) {
+	switch step {
+	case model.InsightStep_YEARLY:
+		return toDataPoints(d.DataPoints.Yearly)
+	case model.InsightStep_MONTHLY:
+		return toDataPoints(d.DataPoints.Monthly)
+	case model.InsightStep_WEEKLY:
+		return toDataPoints(d.DataPoints.Weekly)
+	case model.InsightStep_DAILY:
+		return toDataPoints(d.DataPoints.Daily)
+	}
+	return []DataPoint{}, fmt.Errorf("invalid step: %v", step)
+}
+
+func (d *DeployFrequency) GetTimestamp() int64 {
+	return d.Timestamp
+}
+
+func (d *DeployFrequency) Value() float32 {
+	return d.DeployCount
+}
+
 // change failure rate
 
-// ChangeFailureRateChunk satisfy the interface `Chunk`.
+// ChangeFailureRateChunk satisfy the interface Chunk.
 type ChangeFailureRateChunk struct {
 	AccumulatedTo int64                      `json:"accumulated_to"`
 	DataPoints    ChangeFailureRateDataPoint `json:"data_points"`
@@ -127,13 +105,15 @@ type ChangeFailureRateChunk struct {
 }
 
 type ChangeFailureRateDataPoint struct {
-	Daily   map[string]ChangeFailureRate `json:"daily"`
-	Weekly  map[string]ChangeFailureRate `json:"weekly"`
-	Monthly map[string]ChangeFailureRate `json:"monthly"`
-	Yearly  map[string]ChangeFailureRate `json:"yearly"`
+	Daily   []*ChangeFailureRate `json:"daily"`
+	Weekly  []*ChangeFailureRate `json:"weekly"`
+	Monthly []*ChangeFailureRate `json:"monthly"`
+	Yearly  []*ChangeFailureRate `json:"yearly"`
 }
 
+// ChangeFailureRate satisfy the interface Chunk.
 type ChangeFailureRate struct {
+	Timestamp    int64   `json:"timestamp"`
 	Rate         float32 `json:"rate"`
 	SuccessCount int64   `json:"success_count"`
 	FailureCount int64   `json:"failure_count"`
@@ -155,47 +135,18 @@ func (c *ChangeFailureRateChunk) SetAccumulatedTo(a int64) {
 	c.AccumulatedTo = a
 }
 
-func (c *ChangeFailureRateChunk) Value(step model.InsightStep, key string) (float32, error) {
+func (c *ChangeFailureRateChunk) GetDataPoint(step model.InsightStep) ([]DataPoint, error) {
 	switch step {
 	case model.InsightStep_YEARLY:
-		yearly, ok := c.DataPoints.Yearly[key]
-		if c.DataPoints.Yearly == nil {
-			return 0, fmt.Errorf("get value failed, because the chunk does not have Yearly field's value")
-		}
-		if !ok {
-			return 0, ErrValueNotFound
-		}
-		return yearly.Rate, nil
+		return toDataPoints(c.DataPoints.Yearly)
 	case model.InsightStep_MONTHLY:
-		monthly, ok := c.DataPoints.Monthly[key]
-		if c.DataPoints.Monthly == nil {
-
-			return 0, fmt.Errorf("get value failed, because the chunk does not have Monthly field's value")
-		}
-		if !ok {
-			return 0, ErrValueNotFound
-		}
-		return monthly.Rate, nil
+		return toDataPoints(c.DataPoints.Monthly)
 	case model.InsightStep_WEEKLY:
-		weekly, ok := c.DataPoints.Weekly[key]
-		if c.DataPoints.Weekly == nil {
-			return 0, fmt.Errorf("get value failed, because the chunk does not have Weekly field's value")
-		}
-		if !ok {
-			return 0, ErrValueNotFound
-		}
-		return weekly.Rate, nil
+		return toDataPoints(c.DataPoints.Weekly)
 	case model.InsightStep_DAILY:
-		daily, ok := c.DataPoints.Daily[key]
-		if c.DataPoints.Daily == nil {
-			return 0, fmt.Errorf("get value failed, because the chunk does not have Daily field's value")
-		}
-		if !ok {
-			return 0, ErrValueNotFound
-		}
-		return daily.Rate, nil
+		return toDataPoints(c.DataPoints.Daily)
 	}
-	return 0, fmt.Errorf("value not found. step: %d, key: %s", step, key)
+	return []DataPoint{}, fmt.Errorf("invalid step: %v", step)
 }
 
 func (c *ChangeFailureRateChunk) DataCount(step model.InsightStep) int {
@@ -212,6 +163,14 @@ func (c *ChangeFailureRateChunk) DataCount(step model.InsightStep) int {
 	return 0
 }
 
+func (c *ChangeFailureRate) GetTimestamp() int64 {
+	return c.Timestamp
+}
+
+func (c *ChangeFailureRate) Value() float32 {
+	return c.Rate
+}
+
 type Chunk interface {
 	// GetFilePath gets filepath
 	GetFilePath() string
@@ -221,15 +180,13 @@ type Chunk interface {
 	GetAccumulatedTo() int64
 	// SetAccumulatedTo sets AccumulatedTo
 	SetAccumulatedTo(a int64)
-	// Value gets data by step and key
-	Value(step model.InsightStep, key string) (float32, error)
+	// GetDataPoint gets list of data points of specify step
+	GetDataPoint(step model.InsightStep) ([]DataPoint, error)
 	// DataCount returns count of data in specify step
 	DataCount(step model.InsightStep) int
 }
 
-// convert below types to chunk.
-// - pointer of DeployFrequencyChunk
-// - pointer of ChangeFailureRateChunk
+// convert types to Chunk.
 func toChunk(i interface{}) (Chunk, error) {
 	switch p := i.(type) {
 	case *DeployFrequencyChunk:
@@ -239,7 +196,33 @@ func toChunk(i interface{}) (Chunk, error) {
 	default:
 		return nil, fmt.Errorf("cannot convert to Chunk: %v", p)
 	}
+}
 
+type DataPoint interface {
+	// Value gets data for model.InsightDataPoint
+	Value() float32
+	// Timestamp gets timestamp
+	GetTimestamp() int64
+}
+
+// convert types to list of DataPoint.
+func toDataPoints(i interface{}) ([]DataPoint, error) {
+	switch dps := i.(type) {
+	case []*DeployFrequency:
+		dataPoints := make([]DataPoint, len(dps))
+		for j, dp := range dps {
+			dataPoints[j] = dp
+		}
+		return dataPoints, nil
+	case []*ChangeFailureRate:
+		dataPoints := make([]DataPoint, len(dps))
+		for j, dp := range dps {
+			dataPoints[j] = dp
+		}
+		return dataPoints, nil
+	default:
+		return nil, fmt.Errorf("cannot convert to DataPoints: %v", dps)
+	}
 }
 
 type Chunks []Chunk
@@ -267,59 +250,31 @@ func (cs Chunks) ExtractDataPoints(step model.InsightStep, from time.Time, count
 }
 
 func chunkToDataPoints(chunk Chunk, from time.Time, count int, step model.InsightStep) ([]*model.InsightDataPoint, error) {
-	var getKey func(t time.Time) string
-	var nextTargetDate func(t time.Time) time.Time
+	target, err := chunk.GetDataPoint(step)
+	if err != nil {
+		return []*model.InsightDataPoint{}, nil
+	}
+	var to time.Time
 	switch step {
 	case model.InsightStep_YEARLY:
-		getKey = func(t time.Time) string {
-			return strconv.Itoa(t.Year())
-		}
-		nextTargetDate = func(t time.Time) time.Time {
-			return t.AddDate(1, 0, 0)
-		}
+		to = from.AddDate(count-1, 0, 0)
 	case model.InsightStep_MONTHLY:
-		getKey = func(t time.Time) string {
-			return t.Format("2006-01")
-		}
-		nextTargetDate = func(t time.Time) time.Time {
-			return t.AddDate(0, 1, 0)
-		}
+		to = from.AddDate(0, count-1, 0)
 	case model.InsightStep_WEEKLY:
-		getKey = func(t time.Time) string {
-			// This day must be a Sunday, otherwise it will fail to get the value from the map.
-			return t.Format("2006-01-02")
-		}
-		nextTargetDate = func(t time.Time) time.Time {
-			return t.AddDate(0, 0, 7)
-		}
+		to = from.AddDate(0, 0, (count-1)*7)
 	case model.InsightStep_DAILY:
-		getKey = func(t time.Time) string {
-			return t.Format("2006-01-02")
-		}
-		nextTargetDate = func(t time.Time) time.Time {
-			return t.AddDate(0, 0, 1)
-		}
+		to = from.AddDate(0, 0, count-1)
 	}
 
-	var idps []*model.InsightDataPoint
-	targetDate := from
-	for i := 0; i < count; i++ {
-		key := getKey(targetDate)
-		value, err := chunk.Value(step, key)
-		if err != nil {
-			if err == ErrValueNotFound {
-				return idps, nil
-			}
-			return nil, err
+	var result []*model.InsightDataPoint
+	for _, d := range target {
+		ts := d.GetTimestamp()
+		if ts <= to.Unix() && ts >= from.Unix() {
+			result = append(result, &model.InsightDataPoint{
+				Timestamp: ts,
+				Value:     d.Value(),
+			})
 		}
-
-		idps = append(idps, &model.InsightDataPoint{
-			Value:     value,
-			Timestamp: targetDate.Unix(),
-		})
-
-		targetDate = nextTargetDate(targetDate)
 	}
-
-	return idps, nil
+	return result, nil
 }
