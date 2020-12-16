@@ -141,7 +141,7 @@ func (w *watcher) loadImageWatcherConfig(ctx context.Context, repoID string, rep
 	}
 
 	var includes, excludes []string
-	for _, filter := range w.config.ImageWatcher.Filters {
+	for _, filter := range w.config.ImageWatcher.Repos {
 		if filter.RepoID == repoID {
 			includes = filter.Includes
 			excludes = filter.Excludes

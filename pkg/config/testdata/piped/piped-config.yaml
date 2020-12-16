@@ -137,7 +137,7 @@ spec:
     #   encryptServiceAccountFile: /etc/piped-secret/encrypt-service-account.json
 
   imageWatcher:
-    filters:
+    repos:
       - repoId: foo
         includes:
           - imagewatcher-dev.yaml
