@@ -10,7 +10,7 @@ import (
 	"github.com/pipe-cd/pipe/pkg/model"
 )
 
-func TestBuildPipeline(t *testing.T) {
+func TestBuildQuickSyncPipeline(t *testing.T) {
 	tests := []struct {
 		name             string
 		wantAutoRollback bool
@@ -26,7 +26,7 @@ func TestBuildPipeline(t *testing.T) {
 	}
 	for _, tc := range tests {
 		t.Run(tc.name, func(t *testing.T) {
-			gotStages := buildPipeline(tc.wantAutoRollback, time.Now())
+			gotStages := buildQuickSyncPipeline(tc.wantAutoRollback, time.Now())
 			var gotAutoRollback bool
 			for _, stage := range gotStages {
 				if stage.Name == string(model.StageRollback) {

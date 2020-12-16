@@ -602,6 +602,7 @@ func (a *WebAPI) SyncApplication(ctx context.Context, req *webservice.SyncApplic
 		Commander:     claims.Subject,
 		SyncApplication: &model.Command_SyncApplication{
 			ApplicationId: app.Id,
+			SyncStrategy:  req.SyncStrategy,
 		},
 	}
 	if err := addCommand(ctx, a.commandStore, &cmd, a.logger); err != nil {

@@ -51,11 +51,28 @@ func (p *Planner) Plan(ctx context.Context, in planner.Input) (out planner.Outpu
 		return
 	}
 
+	// If the deployment was triggered by forcing via web UI,
+	// we rely on the user's decision.
+	switch in.Deployment.Trigger.SyncStrategy {
+	case model.SyncStrategy_QUICK_SYNC:
+		out.Stages = buildQuickSyncPipeline(cfg.Input.AutoRollback, time.Now())
+		out.Summary = "Quick sync by automatically applying any detected changes because no pipeline was configured (forced via web)"
+		return
+	case model.SyncStrategy_PIPELINE:
+		if cfg.Pipeline == nil {
+			err = fmt.Errorf("unable to force sync with pipeline because no pipeline was specified")
+			return
+		}
+		out.Stages = buildProgressivePipeline(cfg.Pipeline, cfg.Input.AutoRollback, time.Now())
+		out.Summary = "Sync with the specified progressive pipeline (forced via web)"
+		return
+	}
+
 	now := time.Now()
 	out.Version = "N/A"
 
 	if cfg.Pipeline == nil || len(cfg.Pipeline.Stages) == 0 {
-		out.Stages = builQuickSyncPipeline(cfg.Input.AutoRollback, now)
+		out.Stages = buildQuickSyncPipeline(cfg.Input.AutoRollback, now)
 		out.Summary = "Quick sync by automatically applying any detected changes because no pipeline was configured"
 		return
 	}

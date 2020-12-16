@@ -173,7 +173,7 @@ func (t *Trigger) checkCommand(ctx context.Context) error {
 			)
 			continue
 		}
-		d, err := t.syncApplication(ctx, app, cmd.Commander)
+		d, err := t.syncApplication(ctx, app, cmd.Commander, syncCmd.SyncStrategy)
 		if err != nil {
 			t.logger.Error("failed to sync application",
 				zap.String("app-id", app.Id),
@@ -195,7 +195,7 @@ func (t *Trigger) checkCommand(ctx context.Context) error {
 	return nil
 }
 
-func (t *Trigger) syncApplication(ctx context.Context, app *model.Application, commander string) (*model.Deployment, error) {
+func (t *Trigger) syncApplication(ctx context.Context, app *model.Application, commander string, syncStrategy model.SyncStrategy) (*model.Deployment, error) {
 	_, branch, headCommit, err := t.updateRepoToLatest(ctx, app.GitPath.Repo.Id)
 	if err != nil {
 		return nil, err
@@ -205,7 +205,7 @@ func (t *Trigger) syncApplication(ctx context.Context, app *model.Application, c
 	t.logger.Info(fmt.Sprintf("application %s will be synced because of a sync command", app.Id),
 		zap.String("head-commit", headCommit.Hash),
 	)
-	d, err := t.triggerDeployment(ctx, app, branch, headCommit, commander)
+	d, err := t.triggerDeployment(ctx, app, branch, headCommit, commander, syncStrategy)
 	if err != nil {
 		return nil, err
 	}
@@ -279,7 +279,7 @@ func (t *Trigger) checkApplication(ctx context.Context, app *model.Application, 
 		logger.Info("application should be synced because of the new commit",
 			zap.String("most-recently-triggered-commit", preCommitHash),
 		)
-		if _, err := t.triggerDeployment(ctx, app, branch, headCommit, ""); err != nil {
+		if _, err := t.triggerDeployment(ctx, app, branch, headCommit, "", model.SyncStrategy_NONE); err != nil {
 			return err
 		}
 		t.mostRecentlyTriggeredCommits[app.Id] = headCommit.Hash
