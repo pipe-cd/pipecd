@@ -1,3 +1,4 @@
+import { SyncStrategy } from "pipe/pkg/app/web/model/deployment_pb";
 import { Command, CommandModel, CommandStatus } from "../modules/commands";
 import { dummyDeployment } from "./dummy-deployment";
 
@@ -14,6 +15,7 @@ export const dummyCommand: Command = {
   type: CommandModel.Type.SYNC_APPLICATION,
   syncApplication: {
     applicationId: "app-1",
+    syncStrategy: SyncStrategy.AUTO,
   },
   createdAt: 0,
   updatedAt: 0,

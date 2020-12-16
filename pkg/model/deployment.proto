@@ -88,11 +88,18 @@ message Deployment {
     int64 updated_at = 102 [(validate.rules).int64.gte = 0];
 }
 
+enum SyncStrategy {
+    AUTO = 0;
+    QUICK_SYNC = 1;
+    PIPELINE = 2;
+}
+
 message DeploymentTrigger {
     Commit commit = 1 [(validate.rules).message.required = true];
     // Who triggered this deployment via web page.
     string commander= 2;
     int64 timestamp = 3 [(validate.rules).int64.gt = 0];
+    SyncStrategy sync_strategy = 4;
 }
 
 message PipelineStage {

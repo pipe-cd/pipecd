@@ -135,6 +135,7 @@ func (a *API) SyncApplication(ctx context.Context, req *apiservice.SyncApplicati
 		Commander:     key.Id,
 		SyncApplication: &model.Command_SyncApplication{
 			ApplicationId: app.Id,
+			SyncStrategy:  model.SyncStrategy_AUTO,
 		},
 	}
 	if err := addCommand(ctx, a.commandStore, &cmd, a.logger); err != nil {

@@ -96,11 +96,13 @@ export const addApplication = async ({
 
 export const syncApplication = async ({
   applicationId,
+  syncStrategy,
 }: SyncApplicationRequest.AsObject): Promise<
   SyncApplicationResponse.AsObject
 > => {
   const req = new SyncApplicationRequest();
   req.setApplicationId(applicationId);
+  req.setSyncStrategy(syncStrategy);
   return apiRequest(req, apiClient.syncApplication);
 };
 

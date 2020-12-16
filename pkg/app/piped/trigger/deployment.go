@@ -27,8 +27,15 @@ import (
 	"github.com/pipe-cd/pipe/pkg/model"
 )
 
-func (t *Trigger) triggerDeployment(ctx context.Context, app *model.Application, branch string, commit git.Commit, commander string) (deployment *model.Deployment, err error) {
-	deployment, err = buildDeployment(app, branch, commit, commander, time.Now())
+func (t *Trigger) triggerDeployment(
+	ctx context.Context,
+	app *model.Application,
+	branch string,
+	commit git.Commit,
+	commander string,
+	syncStrategy model.SyncStrategy,
+) (deployment *model.Deployment, err error) {
+	deployment, err = buildDeployment(app, branch, commit, commander, syncStrategy, time.Now())
 	if err != nil {
 		return
 	}
@@ -97,7 +104,14 @@ func (t *Trigger) reportMostRecentlyTriggeredDeployment(ctx context.Context, d *
 	return err
 }
 
-func buildDeployment(app *model.Application, branch string, commit git.Commit, commander string, now time.Time) (*model.Deployment, error) {
+func buildDeployment(
+	app *model.Application,
+	branch string,
+	commit git.Commit,
+	commander string,
+	syncStrategy model.SyncStrategy,
+	now time.Time,
+) (*model.Deployment, error) {
 	commitURL := ""
 	if r := app.GitPath.Repo; r != nil {
 		var err error
@@ -124,8 +138,9 @@ func buildDeployment(app *model.Application, branch string, commit git.Commit, c
 				Url:       commitURL,
 				CreatedAt: int64(commit.CreatedAt),
 			},
-			Commander: commander,
-			Timestamp: now.Unix(),
+			Commander:    commander,
+			Timestamp:    now.Unix(),
+			SyncStrategy: syncStrategy,
 		},
 		GitPath:       app.GitPath,
 		CloudProvider: app.CloudProvider,

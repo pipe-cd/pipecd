@@ -23,7 +23,7 @@ import (
 	"github.com/pipe-cd/pipe/pkg/model"
 )
 
-func builQuickSyncPipeline(autoRollback bool, now time.Time) []*model.PipelineStage {
+func buildQuickSyncPipeline(autoRollback bool, now time.Time) []*model.PipelineStage {
 	var (
 		s, _ = planner.GetPredefinedStage(planner.PredefinedStageTerraformSync)
 		out  = make([]*model.PipelineStage, 0, 2)

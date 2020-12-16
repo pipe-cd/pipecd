@@ -234,6 +234,7 @@ message ListApplicationsResponse {
 
 message SyncApplicationRequest {
     string application_id = 1 [(validate.rules).string.min_len = 1];
+    model.SyncStrategy sync_strategy = 2;
 }
 
 message SyncApplicationResponse {
