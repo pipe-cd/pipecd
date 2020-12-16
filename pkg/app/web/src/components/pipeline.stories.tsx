@@ -4,6 +4,7 @@ import { Pipeline } from "./pipeline";
 import { Deployment, Stage } from "../modules/deployments";
 import { dummyStage } from "../__fixtures__/dummy-stage";
 import { METADATA_APPROVED_BY } from "../constants/metadata-keys";
+import { SyncStrategy } from "pipe/pkg/app/web/model/deployment_pb";
 
 const stage = (props?: Partial<Stage>): Stage => ({
   ...dummyStage,
@@ -44,6 +45,7 @@ const fakeDeployment: Deployment = {
     },
     commander: "cakecatz",
     timestamp: 1592201366,
+    syncStrategy: SyncStrategy.NONE,
   },
   runningCommitHash: "3808585b46f1e90196d7ffe8dd04c807a251febc",
   summary: "This deployment is debug",
