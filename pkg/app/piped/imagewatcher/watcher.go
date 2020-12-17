@@ -48,9 +48,8 @@ type gitClient interface {
 }
 
 type commit struct {
-	filePath string
-	content  []byte
-	message  string
+	changes map[string][]byte
+	message string
 }
 
 type watcher struct {
@@ -190,10 +189,7 @@ func (w *watcher) updateOutdatedImages(ctx context.Context, repo git.Repo, targe
 		return fmt.Errorf("failed to copy the repository to the temporary directory: %w", err)
 	}
 	for _, c := range commits {
-		err := tmpRepo.CommitChanges(ctx, tmpRepo.GetClonedBranch(), commitMsg, false, map[string][]byte{
-			c.filePath: c.content,
-		})
-		if err != nil {
+		if err := tmpRepo.CommitChanges(ctx, tmpRepo.GetClonedBranch(), c.message, false, c.changes); err != nil {
 			return fmt.Errorf("failed to perform git commit: %w", err)
 		}
 	}
@@ -252,8 +248,9 @@ func (w *watcher) checkOutdatedImage(ctx context.Context, target *config.ImageWa
 		commitMsg = fmt.Sprintf(defaultCommitMessageFormat, imageInGit, imageInRegistry.String(), target.Field, target.FilePath)
 	}
 	return &commit{
-		filePath: target.FilePath,
-		content:  newYml,
-		message:  commitMsg,
+		changes: map[string][]byte{
+			target.FilePath: newYml,
+		},
+		message: commitMsg,
 	}, nil
 }
