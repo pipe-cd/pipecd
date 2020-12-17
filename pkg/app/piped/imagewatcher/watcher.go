@@ -47,6 +47,12 @@ type gitClient interface {
 	Clone(ctx context.Context, repoID, remote, branch, destination string) (git.Repo, error)
 }
 
+type commit struct {
+	filePath string
+	content  []byte
+	message  string
+}
+
 type watcher struct {
 	config    *config.PipedSpec
 	gitClient gitClient
@@ -144,8 +150,8 @@ func (w *watcher) run(ctx context.Context, repo git.Repo, repoCfg *config.PipedR
 				)
 				continue
 			}
-			if err := w.pushOutdatedImages(ctx, repo, cfg.Targets, commitMsg); err != nil {
-				w.logger.Error("failed to push the changes",
+			if err := w.updateOutdatedImages(ctx, repo, cfg.Targets, commitMsg); err != nil {
+				w.logger.Error("failed to update the targets",
 					zap.String("repo-id", repoCfg.RepoID),
 					zap.Error(err),
 				)
@@ -154,8 +160,25 @@ func (w *watcher) run(ctx context.Context, repo git.Repo, repoCfg *config.PipedR
 	}
 }
 
-// pushOutdatedImages inspects all targets and pushes to git repo after commting the changes.
-func (w *watcher) pushOutdatedImages(ctx context.Context, repo git.Repo, targets []config.ImageWatcherTarget, commitMsg string) error {
+// updateOutdatedImages inspects all targets and pushes the changes to git repo if there is.
+func (w *watcher) updateOutdatedImages(ctx context.Context, repo git.Repo, targets []config.ImageWatcherTarget, commitMsg string) error {
+	commits := make([]*commit, 0)
+	for _, t := range targets {
+		c, err := w.checkOutdatedImage(ctx, &t, repo, commitMsg)
+		if err != nil {
+			w.logger.Error("failed to update image",
+				zap.Error(err),
+			)
+			continue
+		}
+		if c != nil {
+			commits = append(commits, c)
+		}
+	}
+	if len(commits) == 0 {
+		return nil
+	}
+
 	// Copy the repo to another directory to avoid pull failure in the future.
 	tmpDir, err := ioutil.TempDir("", "image-watcher")
 	if err != nil {
@@ -166,71 +189,71 @@ func (w *watcher) pushOutdatedImages(ctx context.Context, repo git.Repo, targets
 	if err != nil {
 		return fmt.Errorf("failed to copy the repository to the temporary directory: %w", err)
 	}
-
-	for _, t := range targets {
-		if err := w.commitOutdatedImage(ctx, &t, tmpRepo, commitMsg); err != nil {
-			w.logger.Error("failed to update image",
-				zap.Error(err),
-			)
-			continue
+	for _, c := range commits {
+		err := tmpRepo.CommitChanges(ctx, tmpRepo.GetClonedBranch(), commitMsg, false, map[string][]byte{
+			c.filePath: c.content,
+		})
+		if err != nil {
+			return fmt.Errorf("failed to perform git commit: %w", err)
 		}
 	}
 
 	return tmpRepo.Push(ctx, tmpRepo.GetClonedBranch())
 }
 
-// commitOutdatedImage first compares the image in the given git repository and one in the
-// image provider. Then commits rewritten one to the git repository if any deviation exists.
-func (w *watcher) commitOutdatedImage(ctx context.Context, target *config.ImageWatcherTarget, repo git.Repo, commitMsg string) error {
+// checkOutdatedImage gives back a change content if any deviation exists
+// between the image in the given git repository and one in the image provider.
+func (w *watcher) checkOutdatedImage(ctx context.Context, target *config.ImageWatcherTarget, repo git.Repo, commitMsg string) (*commit, error) {
 	// Retrieve the image from the image provider.
 	providerCfg, ok := w.providerCfgs[target.Provider]
 	if !ok {
-		return fmt.Errorf("unknown image provider %s is defined", target.Provider)
+		return nil, fmt.Errorf("unknown image provider %s is defined", target.Provider)
 	}
 	provider, err := imageprovider.NewProvider(&providerCfg, w.logger)
 	if err != nil {
-		return fmt.Errorf("failed to yield image provider %s: %w", providerCfg.Name, err)
+		return nil, fmt.Errorf("failed to yield image provider %s: %w", providerCfg.Name, err)
 	}
 	i, err := provider.ParseImage(target.Image)
 	if err != nil {
-		return fmt.Errorf("failed to parse image string \"%s\": %w", target.Image, err)
+		return nil, fmt.Errorf("failed to parse image string \"%s\": %w", target.Image, err)
 	}
 	// TODO: Control not to reach the rate limit
 	imageInRegistry, err := provider.GetLatestImage(ctx, i)
 	if err != nil {
-		return fmt.Errorf("failed to get latest image from %s: %w", provider.Name(), err)
+		return nil, fmt.Errorf("failed to get latest image from %s: %w", provider.Name(), err)
 	}
 
 	// Retrieve the image from the file cloned from the git repository.
 	path := filepath.Join(repo.GetPath(), target.FilePath)
 	yml, err := ioutil.ReadFile(path)
 	if err != nil {
-		return fmt.Errorf("failed to read file: %w", err)
+		return nil, fmt.Errorf("failed to read file: %w", err)
 	}
 	value, err := yamlprocessor.GetValue(yml, target.Field)
 	if err != nil {
-		return fmt.Errorf("failed to get value at %s in %s: %w", target.Field, target.FilePath, err)
+		return nil, fmt.Errorf("failed to get value at %s in %s: %w", target.Field, target.FilePath, err)
 	}
 	imageInGit, ok := value.(string)
 	if !ok {
-		return fmt.Errorf("unknown value is defined at %s in %s", target.FilePath, target.Field)
+		return nil, fmt.Errorf("unknown value is defined at %s in %s", target.FilePath, target.Field)
 	}
 
 	outdated := imageInRegistry.String() != imageInGit
 	if !outdated {
-		return nil
+		return nil, nil
 	}
 
-	// Update the outdated image and commit it.
+	// Give back a change content.
 	newYml, err := yamlprocessor.ReplaceValue(yml, target.Field, imageInRegistry.String())
 	if err != nil {
-		return fmt.Errorf("failed to replace value at %s with %s: %w", target.Field, imageInRegistry, err)
-	}
-	changes := map[string][]byte{
-		target.FilePath: newYml,
+		return nil, fmt.Errorf("failed to replace value at %s with %s: %w", target.Field, imageInRegistry, err)
 	}
 	if commitMsg == "" {
 		commitMsg = fmt.Sprintf(defaultCommitMessageFormat, imageInGit, imageInRegistry.String(), target.Field, target.FilePath)
 	}
-	return repo.CommitChanges(ctx, repo.GetClonedBranch(), commitMsg, false, changes)
+	return &commit{
+		filePath: target.FilePath,
+		content:  newYml,
+		message:  commitMsg,
+	}, nil
 }
