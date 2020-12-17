@@ -1,10 +1,10 @@
 import {
   Button,
+  CircularProgress,
   Divider,
   Drawer,
   makeStyles,
   Toolbar,
-  CircularProgress,
 } from "@material-ui/core";
 import { Add } from "@material-ui/icons";
 import CloseIcon from "@material-ui/icons/Close";
@@ -12,16 +12,15 @@ import FilterIcon from "@material-ui/icons/FilterList";
 import RefreshIcon from "@material-ui/icons/Refresh";
 import React, { FC, memo, useEffect, useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
-import { ApplicationFormDrawer } from "../../components/application-form-drawer";
 import { ApplicationFilter } from "../../components/application-filter";
+import { AddApplicationDrawer } from "../../components/add-application-drawer";
 import { ApplicationList } from "../../components/application-list";
-import { AppState } from "../../modules";
-import { addApplication, fetchApplications } from "../../modules/applications";
-import { AppDispatch } from "../../store";
-import { selectProjectName } from "../../modules/me";
 import { DeploymentConfigForm } from "../../components/deployment-config-form";
-import { clearTemplateTarget } from "../../modules/deployment-configs";
 import { EditApplicationDrawer } from "../../components/edit-application-drawer";
+import { AppState } from "../../modules";
+import { fetchApplications } from "../../modules/applications";
+import { clearTemplateTarget } from "../../modules/deployment-configs";
+import { AppDispatch } from "../../store";
 
 const useStyles = makeStyles((theme) => ({
   main: {
@@ -45,22 +44,15 @@ const useStyles = makeStyles((theme) => ({
 export const ApplicationIndexPage: FC = memo(function ApplicationIndexPage() {
   const classes = useStyles();
   const dispatch = useDispatch<AppDispatch>();
-  const [isOpenForm, setIsOpenForm] = useState(false);
+  const [openAddForm, setOpenAddForm] = useState(false);
   const [isOpenFilter, setIsOpenFilter] = useState(false);
   const [isLoading, isAdding] = useSelector<AppState, [boolean, boolean]>(
     (state) => [state.applications.loading, state.applications.adding]
-  );
-  const projectName = useSelector<AppState, string>((state) =>
-    selectProjectName(state.me)
   );
 
   const addedApplicationId = useSelector<AppState, string | null>(
     (state) => state.deploymentConfigs.targetApplicationId
   );
-
-  const handleClose = (): void => {
-    setIsOpenForm(false);
-  };
 
   const handleChangeFilterOptions = (): void => {
     dispatch(fetchApplications());
@@ -84,7 +76,7 @@ export const ApplicationIndexPage: FC = memo(function ApplicationIndexPage() {
         <Button
           color="primary"
           startIcon={<Add />}
-          onClick={() => setIsOpenForm(true)}
+          onClick={() => setOpenAddForm(true)}
         >
           ADD
         </Button>
@@ -119,19 +111,10 @@ export const ApplicationIndexPage: FC = memo(function ApplicationIndexPage() {
         />
       </div>
 
-      <ApplicationFormDrawer
-        title={`Add a new application to "${projectName}" project`}
-        open={isOpenForm}
-        onSubmit={(state) => {
-          dispatch(addApplication(state)).then(() => {
-            setIsOpenForm(false);
-            dispatch(fetchApplications());
-          });
-        }}
-        onClose={handleClose}
-        isProcessing={isAdding}
+      <AddApplicationDrawer
+        open={openAddForm}
+        onClose={() => setOpenAddForm(false)}
       />
-
       <EditApplicationDrawer />
 
       <Drawer
