@@ -1,3 +1,4 @@
+import { LoadingStatus } from "../types/module";
 import { dummyDeployment } from "../__fixtures__/dummy-deployment";
 import { CommandModel, fetchCommand, CommandStatus } from "./commands";
 import {
@@ -17,8 +18,7 @@ const initialState = {
   entities: {},
   hasMore: true,
   ids: [],
-  isLoadingItems: false,
-  isLoadingMoreItems: false,
+  status: "idle" as LoadingStatus,
   loading: {},
 };
 
@@ -70,8 +70,7 @@ describe("deploymentsSlice reducer", () => {
         entities: {},
         hasMore: true,
         ids: [],
-        isLoadingItems: false,
-        isLoadingMoreItems: false,
+        status: "idle",
         loading: {
           "deployment-1": true,
         },
@@ -138,7 +137,7 @@ describe("deploymentsSlice reducer", () => {
         })
       ).toEqual({
         ...initialState,
-        isLoadingItems: true,
+        status: "loading",
       });
     });
 
@@ -147,7 +146,7 @@ describe("deploymentsSlice reducer", () => {
         deploymentsSlice.reducer(
           {
             ...initialState,
-            isLoadingItems: true,
+            status: "loading",
           },
           {
             type: fetchDeployments.rejected.type,
@@ -155,7 +154,7 @@ describe("deploymentsSlice reducer", () => {
         )
       ).toEqual({
         ...initialState,
-        isLoadingItems: false,
+        status: "failed",
       });
     });
 
@@ -164,7 +163,7 @@ describe("deploymentsSlice reducer", () => {
         deploymentsSlice.reducer(
           {
             ...initialState,
-            isLoadingItems: true,
+            status: "loading",
           },
           {
             type: fetchDeployments.fulfilled.type,
@@ -176,7 +175,7 @@ describe("deploymentsSlice reducer", () => {
         entities: { [dummyDeployment.id]: dummyDeployment },
         hasMore: false,
         ids: [dummyDeployment.id],
-        isLoadingItems: false,
+        status: "succeeded",
       });
     });
   });
@@ -187,24 +186,24 @@ describe("deploymentsSlice reducer", () => {
         deploymentsSlice.reducer(initialState, {
           type: fetchMoreDeployments.pending.type,
         })
-      ).toEqual({ ...initialState, isLoadingMoreItems: true });
+      ).toEqual({ ...initialState, status: "loading" });
     });
 
     it(`should handle ${fetchMoreDeployments.rejected.type}`, () => {
       expect(
         deploymentsSlice.reducer(
-          { ...initialState, isLoadingMoreItems: true },
+          { ...initialState, status: "loading" },
           {
             type: fetchMoreDeployments.rejected.type,
           }
         )
-      ).toEqual({ ...initialState, isLoadingMoreItems: false });
+      ).toEqual({ ...initialState, status: "failed" });
     });
 
     it(`should handle ${fetchMoreDeployments.fulfilled.type}`, () => {
       expect(
         deploymentsSlice.reducer(
-          { ...initialState, isLoadingMoreItems: true },
+          { ...initialState, status: "loading" },
           {
             type: fetchMoreDeployments.fulfilled.type,
             payload: [dummyDeployment],
@@ -212,10 +211,10 @@ describe("deploymentsSlice reducer", () => {
         )
       ).toEqual({
         ...initialState,
-        isLoadingMoreItems: false,
         hasMore: false,
         ids: [dummyDeployment.id],
         entities: { [dummyDeployment.id]: dummyDeployment },
+        status: "succeeded",
       });
     });
   });
