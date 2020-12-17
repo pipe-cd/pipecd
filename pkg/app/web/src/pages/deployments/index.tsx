@@ -1,4 +1,5 @@
 import {
+  Box,
   Button,
   CircularProgress,
   Divider,
@@ -32,22 +33,11 @@ import {
   fetchMoreDeployments,
 } from "../../modules/deployments";
 import { useInView } from "react-intersection-observer";
+import { LoadingStatus } from "../../types/module";
+import { UI_TEXT_REFRESH } from "../../constants/ui-text";
+import { useStyles as useButtonStyles } from "../../styles/button";
 
 const useStyles = makeStyles((theme) => ({
-  root: {
-    display: "flex",
-    overflow: "hidden",
-    flex: 1,
-    flexDirection: "column",
-  },
-  main: {
-    display: "flex",
-    overflow: "hidden",
-    flex: 1,
-  },
-  toolbarSpacer: {
-    flexGrow: 1,
-  },
   deploymentLists: {
     listStyle: "none",
     padding: theme.spacing(3),
@@ -56,23 +46,9 @@ const useStyles = makeStyles((theme) => ({
     flex: 1,
     overflowY: "scroll",
   },
-  loadingContainer: {
-    display: "flex",
-    justifyContent: "center",
-    marginTop: theme.spacing(3),
-  },
-  deployments: {
-    listStyle: "none",
-    padding: 0,
-  },
   date: {
     marginTop: theme.spacing(2),
     marginBottom: theme.spacing(2),
-  },
-  empty: {
-    display: "flex",
-    justifyContent: "center",
-    marginTop: theme.spacing(3),
   },
 }));
 
@@ -85,26 +61,20 @@ function filterUndefined<TValue>(value: TValue | undefined): value is TValue {
 }
 
 const useGroupedDeployments = (): [
-  boolean,
-  boolean,
+  LoadingStatus,
   boolean,
   Record<string, Deployment[]>
 ] => {
-  const [
-    isLoadingItems,
-    isLoadingMoreItems,
-    hasMore,
-    deployments,
-  ] = useSelector<AppState, [boolean, boolean, boolean, Deployment[]]>(
-    (state) => [
-      state.deployments.isLoadingItems,
-      state.deployments.isLoadingMoreItems,
-      state.deployments.hasMore,
-      selectDeploymentIds(state.deployments)
-        .map((id) => selectDeploymentById(state.deployments, id))
-        .filter(filterUndefined),
-    ]
-  );
+  const [status, hasMore, deployments] = useSelector<
+    AppState,
+    [LoadingStatus, boolean, Deployment[]]
+  >((state) => [
+    state.deployments.status,
+    state.deployments.hasMore,
+    selectDeploymentIds(state.deployments)
+      .map((id) => selectDeploymentById(state.deployments, id))
+      .filter(filterUndefined),
+  ]);
 
   const result: Record<string, Deployment[]> = {};
 
@@ -116,60 +86,57 @@ const useGroupedDeployments = (): [
     result[dateStr].push(deployment);
   });
 
-  return [isLoadingItems, isLoadingMoreItems, hasMore, result];
+  return [status, hasMore, result];
 };
 
 export const DeploymentIndexPage: FC = memo(function DeploymentIndexPage() {
   const classes = useStyles();
+  const buttonClasses = useButtonStyles();
   const dispatch = useDispatch();
   const listRef = useRef(null);
-  const [
-    isLoading,
-    isLoadingMoreItems,
-    hasMore,
-    groupedDeployments,
-  ] = useGroupedDeployments();
+  const [status, hasMore, groupedDeployments] = useGroupedDeployments();
   const [isOpenFilter, setIsOpenFilter] = useState(false);
   const [ref, inView] = useInView({
     rootMargin: "400px",
     root: listRef.current,
   });
+  const isLoading = status === "loading";
 
   useEffect(() => {
     dispatch(fetchApplications());
+    dispatch(fetchDeployments());
   }, [dispatch]);
 
   useEffect(() => {
-    if (
-      inView &&
-      hasMore &&
-      isLoading === false &&
-      isLoadingMoreItems === false
-    ) {
+    if (inView && hasMore && isLoading) {
       dispatch(fetchMoreDeployments());
     }
-  }, [dispatch, inView, hasMore, isLoading, isLoadingMoreItems]);
+  }, [dispatch, inView, hasMore, isLoading]);
 
-  const handleChangeFilter = useCallback(() => {
+  const handleFilterChange = useCallback(() => {
     dispatch(fetchDeployments());
   }, [dispatch]);
 
-  const handleRefresh = (): void => {
+  const handleRefreshClick = useCallback(() => {
     dispatch(fetchDeployments());
-  };
+  }, [dispatch]);
 
   const dates = Object.keys(groupedDeployments).sort(sortComp);
 
   return (
-    <div className={classes.root}>
+    <Box display="flex" overflow="hidden" flex={1} flexDirection="column">
       <Toolbar variant="dense">
-        <div className={classes.toolbarSpacer} />
+        <Box flexGrow={1} />
         <Button
           color="primary"
           startIcon={<RefreshIcon />}
-          onClick={handleRefresh}
+          onClick={handleRefreshClick}
+          disabled={isLoading}
         >
-          {"REFRESH"}
+          {UI_TEXT_REFRESH}
+          {isLoading && (
+            <CircularProgress size={24} className={buttonClasses.progress} />
+          )}
         </Button>
         <Button
           color="primary"
@@ -181,41 +148,39 @@ export const DeploymentIndexPage: FC = memo(function DeploymentIndexPage() {
       </Toolbar>
 
       <Divider />
-      <div className={classes.main}>
+      <Box display="flex" overflow="hidden" flex={1}>
         <ol className={classes.deploymentLists} ref={listRef}>
-          {isLoading ? (
-            <div className={classes.loadingContainer}>
-              <CircularProgress />
-            </div>
-          ) : dates.length === 0 ? (
-            <div className={classes.empty}>
-              <Typography>No deployments</Typography>
-            </div>
-          ) : (
-            dates.map((date) => (
-              <li key={date}>
-                <Typography variant="subtitle1" className={classes.date}>
-                  {date}
-                </Typography>
-                <List>
-                  {groupedDeployments[date]
-                    .sort((a, b) => sortComp(a.createdAt, b.createdAt))
-                    .map((deployment) => (
-                      <DeploymentItem
-                        id={deployment.id}
-                        key={`deployment-item-${deployment.id}`}
-                      />
-                    ))}
-                </List>
-              </li>
-            ))
-          )}
-          {isLoading === false && isLoadingMoreItems === false && (
-            <div ref={ref} />
-          )}
+          {dates.length === 0 &&
+            (isLoading ? (
+              <Box display="flex" justifyContent="center" mt={3}>
+                <CircularProgress />
+              </Box>
+            ) : (
+              <Box display="flex" justifyContent="center" mt={3}>
+                <Typography>No deployments</Typography>
+              </Box>
+            ))}
+          {dates.map((date) => (
+            <li key={date}>
+              <Typography variant="subtitle1" className={classes.date}>
+                {date}
+              </Typography>
+              <List>
+                {groupedDeployments[date]
+                  .sort((a, b) => sortComp(a.createdAt, b.createdAt))
+                  .map((deployment) => (
+                    <DeploymentItem
+                      id={deployment.id}
+                      key={`deployment-item-${deployment.id}`}
+                    />
+                  ))}
+              </List>
+            </li>
+          ))}
+          {status === "succeeded" && <div ref={ref} />}
         </ol>
-        <DeploymentFilter open={isOpenFilter} onChange={handleChangeFilter} />
-      </div>
-    </div>
+        <DeploymentFilter open={isOpenFilter} onChange={handleFilterChange} />
+      </Box>
+    </Box>
   );
 });

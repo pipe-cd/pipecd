@@ -12,6 +12,7 @@ import {
 import * as deploymentsApi from "../api/deployments";
 import { fetchCommand, CommandModel, CommandStatus } from "./commands";
 import { AppState } from ".";
+import { LoadingStatus } from "../types/module";
 
 export type Deployment = Required<DeploymentModel.AsObject>;
 export type Stage = Required<PipelineStage.AsObject>;
@@ -64,16 +65,14 @@ export const {
 } = deploymentsAdapter.getSelectors();
 
 const initialState = deploymentsAdapter.getInitialState<{
+  status: LoadingStatus;
   loading: Record<string, boolean>;
   canceling: Record<string, boolean>;
-  isLoadingItems: boolean;
-  isLoadingMoreItems: boolean;
   hasMore: boolean;
 }>({
+  status: "idle",
   loading: {},
   canceling: {},
-  isLoadingItems: false,
-  isLoadingMoreItems: false,
   hasMore: true,
 });
 
@@ -187,34 +186,34 @@ export const deploymentsSlice = createSlice({
         state.loading[action.meta.arg] = false;
       })
       .addCase(fetchDeployments.pending, (state) => {
-        state.isLoadingItems = true;
+        state.status = "loading";
         state.hasMore = true;
       })
       .addCase(fetchDeployments.fulfilled, (state, action) => {
+        state.status = "succeeded";
         deploymentsAdapter.removeAll(state);
         if (action.payload.length > 0) {
           deploymentsAdapter.upsertMany(state, action.payload);
         }
-        state.isLoadingItems = false;
         if (action.payload.length < ITEMS_PER_PAGE) {
           state.hasMore = false;
         }
       })
       .addCase(fetchDeployments.rejected, (state) => {
-        state.isLoadingItems = false;
+        state.status = "failed";
       })
       .addCase(fetchMoreDeployments.pending, (state) => {
-        state.isLoadingMoreItems = true;
+        state.status = "loading";
       })
       .addCase(fetchMoreDeployments.fulfilled, (state, action) => {
+        state.status = "succeeded";
         deploymentsAdapter.upsertMany(state, action.payload);
-        state.isLoadingMoreItems = false;
         if (action.payload.length < FETCH_MORE_ITEMS_PER_PAGE) {
           state.hasMore = false;
         }
       })
       .addCase(fetchMoreDeployments.rejected, (state) => {
-        state.isLoadingMoreItems = false;
+        state.status = "failed";
       })
 
       .addCase(cancelDeployment.pending, (state, action) => {
