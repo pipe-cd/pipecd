@@ -1,37 +1,41 @@
 import React from "react";
-import { ApplicationFormDrawer } from "./application-form-drawer";
-import { render, screen, waitFor } from "../../test-utils";
+import { AddApplicationDrawer } from "./add-application-drawer";
+import { createStore, render, screen, waitFor } from "../../test-utils";
 import { UI_TEXT_CANCEL, UI_TEXT_SAVE } from "../constants/ui-text";
 import { dummyEnv } from "../__fixtures__/dummy-environment";
 import { APPLICATION_KIND_TEXT } from "../constants/application-kind";
-import { ApplicationKind } from "../modules/applications";
+import { addApplication, ApplicationKind } from "../modules/applications";
 import { dummyPiped } from "../__fixtures__/dummy-piped";
 import userEvent from "@testing-library/user-event";
+import { server } from "../mocks/server";
 
-describe("ApplicationFormDrawer", () => {
+beforeAll(() => {
+  server.listen();
+});
+
+afterEach(() => {
+  server.resetHandlers();
+});
+
+afterAll(() => {
+  server.close();
+});
+
+describe("AddApplicationDrawer", () => {
   it("should calls onSubmit if clicked SAVE button", async () => {
-    const onSubmit = jest.fn();
-    render(
-      <ApplicationFormDrawer
-        open
-        title="add application"
-        onSubmit={onSubmit}
-        onClose={jest.fn()}
-        isProcessing={false}
-      />,
-      {
-        initialState: {
-          pipeds: {
-            entities: { [dummyPiped.id]: dummyPiped },
-            ids: [dummyPiped.id],
-          },
-          environments: {
-            entities: { [dummyEnv.id]: dummyEnv },
-            ids: [dummyEnv.id],
-          },
-        },
-      }
-    );
+    const store = createStore({
+      pipeds: {
+        entities: { [dummyPiped.id]: dummyPiped },
+        ids: [dummyPiped.id],
+      },
+      environments: {
+        entities: { [dummyEnv.id]: dummyEnv },
+        ids: [dummyEnv.id],
+      },
+    });
+    render(<AddApplicationDrawer open onClose={jest.fn()} />, {
+      store,
+    });
 
     userEvent.type(screen.getByRole("textbox", { name: "Name" }), "App");
 
@@ -59,46 +63,44 @@ describe("ApplicationFormDrawer", () => {
     userEvent.click(screen.getByRole("button", { name: UI_TEXT_SAVE }));
 
     await waitFor(() =>
-      expect(onSubmit).toHaveBeenCalledWith({
-        cloudProvider: "terraform-default",
-        configFilename: "",
-        env: "env-1",
-        kind: ApplicationKind.TERRAFORM,
-        name: "App",
-        pipedId: "piped-1",
-        repo: {
-          branch: "master",
-          id: "debug-repo",
-          remote: "git@github.com:pipe-cd/debug.git",
+      expect(store.getActions()).toMatchObject([
+        {
+          type: addApplication.pending.type,
+          meta: {
+            arg: {
+              cloudProvider: "terraform-default",
+              configFilename: "",
+              env: "env-1",
+              kind: ApplicationKind.TERRAFORM,
+              name: "App",
+              pipedId: "piped-1",
+              repo: {
+                branch: "master",
+                id: "debug-repo",
+                remote: "git@github.com:pipe-cd/debug.git",
+              },
+              repoPath: "path",
+            },
+          },
         },
-        repoPath: "path",
-      })
+      ])
     );
   });
 
   it("should clear depended fields if change environment", async () => {
     const altEnv = { ...dummyEnv, id: "env-2", name: "env-2" };
-    render(
-      <ApplicationFormDrawer
-        open
-        title="add application"
-        onSubmit={() => null}
-        onClose={() => null}
-        isProcessing={false}
-      />,
-      {
-        initialState: {
-          pipeds: {
-            entities: { [dummyPiped.id]: dummyPiped },
-            ids: [dummyPiped.id],
-          },
-          environments: {
-            entities: { [dummyEnv.id]: dummyEnv, [altEnv.id]: altEnv },
-            ids: [dummyEnv.id, altEnv.id],
-          },
+    render(<AddApplicationDrawer open onClose={() => null} />, {
+      initialState: {
+        pipeds: {
+          entities: { [dummyPiped.id]: dummyPiped },
+          ids: [dummyPiped.id],
         },
-      }
-    );
+        environments: {
+          entities: { [dummyEnv.id]: dummyEnv, [altEnv.id]: altEnv },
+          ids: [dummyEnv.id, altEnv.id],
+        },
+      },
+    });
 
     await waitFor(() =>
       expect(screen.getByRole("button", { name: UI_TEXT_SAVE })).toBeDisabled()
@@ -150,16 +152,7 @@ describe("ApplicationFormDrawer", () => {
 
   it("should calls onClose handler if clicked CANCEL button", () => {
     const onClose = jest.fn();
-    render(
-      <ApplicationFormDrawer
-        open
-        title="add application"
-        onSubmit={jest.fn()}
-        onClose={onClose}
-        isProcessing={false}
-      />,
-      {}
-    );
+    render(<AddApplicationDrawer open onClose={onClose} />, {});
 
     userEvent.click(screen.getByRole("button", { name: UI_TEXT_CANCEL }));
 

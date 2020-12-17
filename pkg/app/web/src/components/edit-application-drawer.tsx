@@ -11,63 +11,70 @@ import {
   selectById as selectAppById,
 } from "../modules/applications";
 import {
-  ApplicationFormDrawer,
+  ApplicationForm,
+  validationSchema,
   ApplicationFormValue,
-} from "./application-form-drawer";
+  emptyFormValues,
+} from "./application-form";
 import { AppDispatch } from "../store";
+import { useFormik } from "formik";
+import { Drawer } from "@material-ui/core";
 
 export const EditApplicationDrawer: FC = memo(function EditApplicationDrawer() {
   const dispatch = useDispatch<AppDispatch>();
-  const [applicationId, isUpdating] = useSelector<
-    AppState,
-    [string | null, boolean]
-  >((state) => [
-    state.updateApplication.targetId,
-    state.updateApplication.updating,
-  ]);
+
+  const [applicationId] = useSelector<AppState, [string | null, boolean]>(
+    (state) => [
+      state.updateApplication.targetId,
+      state.updateApplication.updating,
+    ]
+  );
 
   const app = useSelector<AppState, Application | undefined>((state) =>
     applicationId ? selectAppById(state.applications, applicationId) : undefined
   );
 
+  const formik = useFormik<ApplicationFormValue>({
+    initialValues: app
+      ? {
+          name: app.name,
+          env: app.envId,
+          kind: app.kind,
+          pipedId: app.pipedId,
+          repoPath: app.gitPath?.path || "",
+          repo: app.gitPath?.repo || { id: "", remote: "", branch: "" },
+          configFilename: app.gitPath?.configFilename || "",
+          cloudProvider: app.cloudProvider,
+        }
+      : emptyFormValues,
+    validateOnMount: true,
+    validationSchema,
+    enableReinitialize: true,
+    async onSubmit(values) {
+      if (!app) {
+        return;
+      }
+      await dispatch(updateApplication({ ...values, applicationId: app.id }));
+      dispatch(fetchApplications());
+    },
+  });
+
   const handleClose = useCallback(() => {
     dispatch(clearUpdateTarget());
   }, [dispatch]);
 
-  const handleSubmit = useCallback(
-    (values: ApplicationFormValue) => {
-      if (app) {
-        dispatch(updateApplication({ ...values, applicationId: app.id })).then(
-          () => {
-            dispatch(fetchApplications());
-          }
-        );
-      }
-    },
-    [dispatch, app]
-  );
-
   return (
-    <ApplicationFormDrawer
+    <Drawer
+      anchor="right"
       open={Boolean(app)}
-      title={`Edit "${app?.name}"`}
-      onSubmit={handleSubmit}
-      isProcessing={isUpdating}
       onClose={handleClose}
-      initialFormValues={
-        app
-          ? {
-              name: app.name,
-              env: app.envId,
-              kind: app.kind,
-              pipedId: app.pipedId,
-              repoPath: app.gitPath?.path || "",
-              repo: app.gitPath?.repo || { id: "", remote: "", branch: "" },
-              configFilename: app.gitPath?.configFilename || "",
-              cloudProvider: app.cloudProvider,
-            }
-          : undefined
-      }
-    />
+      ModalProps={{ disableBackdropClick: formik.isSubmitting }}
+    >
+      <ApplicationForm
+        {...formik}
+        title={`Edit "${app?.name}"`}
+        onClose={handleClose}
+      />
+    </Drawer>
   );
 });
