@@ -73,9 +73,18 @@ func (w *watcher) Run(ctx context.Context) error {
 		w.providerCfgs[cfg.Name] = cfg
 	}
 
-	for _, repo := range w.config.Repositories {
+	for _, repoCfg := range w.config.Repositories {
+		repo, err := w.gitClient.Clone(ctx, repoCfg.RepoID, repoCfg.Remote, repoCfg.Branch, "")
+		if err != nil {
+			w.logger.Error("failed to clone repository",
+				zap.String("repo-id", repoCfg.RepoID),
+				zap.Error(err),
+			)
+			return fmt.Errorf("failed to clone repository %s: %w", repoCfg.RepoID, err)
+		}
+
 		w.wg.Add(1)
-		go w.run(ctx, &repo)
+		go w.run(ctx, repo, &repoCfg)
 	}
 
 	w.wg.Wait()
@@ -84,35 +93,24 @@ func (w *watcher) Run(ctx context.Context) error {
 
 // run periodically compares the image in the given git repository and one in the image provider.
 // And then pushes those with differences.
-func (w *watcher) run(ctx context.Context, repoCfg *config.PipedRepository) {
+func (w *watcher) run(ctx context.Context, repo git.Repo, repoCfg *config.PipedRepository) {
 	defer w.wg.Done()
 
 	var (
-		pullInterval = defaultPullInterval
-		commitMsg    = ""
-		includedCfgs = []string{}
-		excludedCfgs = []string{}
+		pullInterval               = defaultPullInterval
+		commitMsg                  string
+		includedCfgs, excludedCfgs []string
 	)
 	// Use user-defined settings if there is.
 	for _, r := range w.config.ImageWatcher.Repos {
 		if r.RepoID != repoCfg.RepoID {
 			continue
 		}
-		pullInterval = time.Duration(r.PullInterval)
+		pullInterval = time.Duration(r.CheckInterval)
 		commitMsg = r.CommitMessage
 		includedCfgs = r.Includes
 		excludedCfgs = r.Excludes
 		break
-	}
-
-	// Periodically update this cloned directory as long as this worker continues.
-	repo, err := w.gitClient.Clone(ctx, repoCfg.RepoID, repoCfg.Remote, repoCfg.Branch, "")
-	if err != nil {
-		w.logger.Error("failed to clone repository",
-			zap.String("repo-id", repoCfg.RepoID),
-			zap.Error(err),
-		)
-		return
 	}
 
 	ticker := time.NewTicker(pullInterval)
@@ -146,23 +144,44 @@ func (w *watcher) run(ctx context.Context, repoCfg *config.PipedRepository) {
 				)
 				continue
 			}
-			// Inspect all targets defined in the repo, and update outdated images.
-			for _, target := range cfg.Targets {
-				if err := w.updateOutdatedImage(ctx, &target, repoCfg, repo.GetPath(), commitMsg); err != nil {
-					w.logger.Error("failed to update image",
-						zap.String("repo-id", repoCfg.RepoID),
-						zap.Error(err),
-					)
-					continue
-				}
+			if err := w.pushOutdatedImages(ctx, repo, cfg.Targets, commitMsg); err != nil {
+				w.logger.Error("failed to push the changes",
+					zap.String("repo-id", repoCfg.RepoID),
+					zap.Error(err),
+				)
 			}
 		}
 	}
 }
 
-// updateOutdatedImage first compares the image in the given git repository and one in the
-// image provider. Then pushes rewritten one to the git repository if any deviation exists.
-func (w *watcher) updateOutdatedImage(ctx context.Context, target *config.ImageWatcherTarget, repoCfg *config.PipedRepository, repoRoot, commitMsg string) error {
+// pushOutdatedImages inspects all targets and pushes to git repo after commting the changes.
+func (w *watcher) pushOutdatedImages(ctx context.Context, repo git.Repo, targets []config.ImageWatcherTarget, commitMsg string) error {
+	// Copy the repo to another directory to avoid pull failure in the future.
+	tmpDir, err := ioutil.TempDir("", "image-watcher")
+	if err != nil {
+		return fmt.Errorf("failed to create a new temporary directory: %w", err)
+	}
+	defer os.RemoveAll(tmpDir)
+	tmpRepo, err := repo.Copy(tmpDir)
+	if err != nil {
+		return fmt.Errorf("failed to copy the repository to the temporary directory: %w", err)
+	}
+
+	for _, t := range targets {
+		if err := w.commitOutdatedImage(ctx, &t, tmpRepo, commitMsg); err != nil {
+			w.logger.Error("failed to update image",
+				zap.Error(err),
+			)
+			continue
+		}
+	}
+
+	return tmpRepo.Push(ctx, tmpRepo.GetClonedBranch())
+}
+
+// commitOutdatedImage first compares the image in the given git repository and one in the
+// image provider. Then commits rewritten one to the git repository if any deviation exists.
+func (w *watcher) commitOutdatedImage(ctx context.Context, target *config.ImageWatcherTarget, repo git.Repo, commitMsg string) error {
 	// Retrieve the image from the image provider.
 	providerCfg, ok := w.providerCfgs[target.Provider]
 	if !ok {
@@ -183,7 +202,7 @@ func (w *watcher) updateOutdatedImage(ctx context.Context, target *config.ImageW
 	}
 
 	// Retrieve the image from the file cloned from the git repository.
-	path := filepath.Join(repoRoot, target.FilePath)
+	path := filepath.Join(repo.GetPath(), target.FilePath)
 	yml, err := ioutil.ReadFile(path)
 	if err != nil {
 		return fmt.Errorf("failed to read file: %w", err)
@@ -202,18 +221,7 @@ func (w *watcher) updateOutdatedImage(ctx context.Context, target *config.ImageW
 		return nil
 	}
 
-	// Update the outdated image.
-	//
-	// Clone repo into another directory to avoid pull failure in the future.
-	tmpDir, err := ioutil.TempDir("", "image-watcher")
-	if err != nil {
-		return fmt.Errorf("failed to create a new temporary directory: %w", err)
-	}
-	defer os.RemoveAll(tmpDir)
-	repo, err := w.gitClient.Clone(ctx, repoCfg.RepoID, repoCfg.Remote, repoCfg.Branch, tmpDir)
-	if err != nil {
-		return fmt.Errorf("failed to clone %s into the temporary directory: %w", repoCfg.RepoID, err)
-	}
+	// Update the outdated image and commit it.
 	newYml, err := yamlprocessor.ReplaceValue(yml, target.Field, imageInRegistry.String())
 	if err != nil {
 		return fmt.Errorf("failed to replace value at %s with %s: %w", target.Field, imageInRegistry, err)
@@ -224,12 +232,5 @@ func (w *watcher) updateOutdatedImage(ctx context.Context, target *config.ImageW
 	if commitMsg == "" {
 		commitMsg = fmt.Sprintf(defaultCommitMessageFormat, imageInGit, imageInRegistry.String(), target.Field, target.FilePath)
 	}
-	if err := repo.CommitChanges(ctx, repo.GetClonedBranch(), commitMsg, false, changes); err != nil {
-		return fmt.Errorf("failed to perform git commit: %w", err)
-	}
-	err = repo.Push(ctx, repo.GetClonedBranch())
-	if err != nil {
-		return fmt.Errorf("failed to perform git push: %w", err)
-	}
-	return nil
+	return repo.CommitChanges(ctx, repo.GetClonedBranch(), commitMsg, false, changes)
 }

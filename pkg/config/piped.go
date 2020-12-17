@@ -600,8 +600,8 @@ func (p *PipedImageWatcher) Validate() error {
 		}
 		repos[p.Repos[i].RepoID] = struct{}{}
 
-		if p.Repos[i].PullInterval == 0 {
-			p.Repos[i].PullInterval = defaultImageWatcherPullInterval
+		if p.Repos[i].CheckInterval == 0 {
+			p.Repos[i].CheckInterval = defaultImageWatcherPullInterval
 		}
 	}
 	return nil
@@ -609,10 +609,9 @@ func (p *PipedImageWatcher) Validate() error {
 
 type PipedImageWatcherRepoTarget struct {
 	RepoID string `json:"repoId"`
-	// Interval to pull from git repository and pull images defined
-	// in image watcher file in the repo from image provider.
-	// Default is 5m.
-	PullInterval Duration `json:"pullInterval"`
+	// Interval to compare if the image in the git repository
+	// and one in the images provider. Default is 5m.
+	CheckInterval Duration `json:"checkInterval"`
 	// The commit message used to push after updating image.
 	// Default message is used if not given.
 	CommitMessage string `json:"commitMessage"`

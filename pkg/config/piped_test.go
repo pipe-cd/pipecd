@@ -226,7 +226,7 @@ func TestPipedConfig(t *testing.T) {
 					Repos: []PipedImageWatcherRepoTarget{
 						{
 							RepoID:        "foo",
-							PullInterval:  Duration(10 * time.Minute),
+							CheckInterval: Duration(10 * time.Minute),
 							CommitMessage: "foo bar",
 							Includes:      []string{"imagewatcher-dev.yaml", "imagewatcher-stg.yaml"},
 						},
@@ -262,24 +262,24 @@ func TestPipedImageWatcherValidate(t *testing.T) {
 			imageWatcher: PipedImageWatcher{
 				Repos: []PipedImageWatcherRepoTarget{
 					{
-						RepoID:       "foo",
-						PullInterval: Duration(time.Minute),
+						RepoID:        "foo",
+						CheckInterval: Duration(time.Minute),
 					},
 					{
-						RepoID:       "foo",
-						PullInterval: Duration(time.Minute),
+						RepoID:        "foo",
+						CheckInterval: Duration(time.Minute),
 					},
 				},
 			},
 			wantPipedImageWatcher: PipedImageWatcher{
 				Repos: []PipedImageWatcherRepoTarget{
 					{
-						RepoID:       "foo",
-						PullInterval: Duration(time.Minute),
+						RepoID:        "foo",
+						CheckInterval: Duration(time.Minute),
 					},
 					{
-						RepoID:       "foo",
-						PullInterval: Duration(time.Minute),
+						RepoID:        "foo",
+						CheckInterval: Duration(time.Minute),
 					},
 				},
 			},
@@ -300,12 +300,12 @@ func TestPipedImageWatcherValidate(t *testing.T) {
 			wantPipedImageWatcher: PipedImageWatcher{
 				Repos: []PipedImageWatcherRepoTarget{
 					{
-						RepoID:       "foo",
-						PullInterval: Duration(5 * time.Minute),
+						RepoID:        "foo",
+						CheckInterval: Duration(5 * time.Minute),
 					},
 					{
-						RepoID:       "bar",
-						PullInterval: Duration(5 * time.Minute),
+						RepoID:        "bar",
+						CheckInterval: Duration(5 * time.Minute),
 					},
 				},
 			},

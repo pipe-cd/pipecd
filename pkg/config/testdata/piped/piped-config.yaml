@@ -136,7 +136,7 @@ spec:
   imageWatcher:
     repos:
       - repoId: foo
-        pullInterval: 10m
+        checkInterval: 10m
         commitMessage: "foo bar"
         includes:
           - imagewatcher-dev.yaml
