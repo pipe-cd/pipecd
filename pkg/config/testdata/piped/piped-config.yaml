@@ -80,19 +80,16 @@ spec:
   imageProviders:
     - name: my-dockerhub
       type: DOCKER_HUB
-      pullInterval: 5m
       config:
         username: foo
         passwordFile: /etc/piped-secret/dockerhub-pass
     - name: my-gcr
       type: GCR
-      pullInterval: 5m
       config:
         address: asia.gcr.io
         credentialsFile: /etc/piped-secret/gcr-service-account
     - name: my-ecr
       type: ECR
-      pullInterval: 5m
       config:
         region: us-west-2
         registryId: default
@@ -139,6 +136,8 @@ spec:
   imageWatcher:
     repos:
       - repoId: foo
+        pullInterval: 10m
+        commitMessage: "foo bar"
         includes:
           - imagewatcher-dev.yaml
           - imagewatcher-stg.yaml
