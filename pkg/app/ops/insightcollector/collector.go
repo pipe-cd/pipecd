@@ -91,39 +91,57 @@ func (i *InsightCollector) Run(ctx context.Context) error {
 
 		for _, app := range apps {
 			for _, k := range aggregateKinds {
-				yearsFiles, err := i.insightstore.LoadChunks(ctx, app.ProjectId, app.Id, k, model.InsightStep_YEARLY, now, 1)
-				if err != nil {
-					return err
-				}
-				years := yearsFiles[0]
-
-				chunkFiles, err := i.insightstore.LoadChunks(ctx, app.ProjectId, app.Id, k, model.InsightStep_MONTHLY, now, 1)
-				if err != nil {
-					return err
-				}
-				chunk := chunkFiles[0]
-				chunkAccumulatedTo := time.Unix(chunk.GetAccumulatedTo(), 0).UTC()
-
-				updatedps, accumulateTo, err := i.getDailyInsightData(ctx, app.Id, k, chunkAccumulatedTo, now)
-				if err != nil {
-					return err
-				}
-
-				for _, s := range model.InsightStep_value {
-					step := model.InsightStep(s)
-					if step == model.InsightStep_YEARLY {
-						years, err = i.updateChunk(years, step, k, updatedps, accumulateTo)
-					} else {
-						chunk, err = i.updateChunk(chunk, step, k, updatedps, accumulateTo)
+				// Update chunk insight file
+				{
+					chunkFiles, err := i.insightstore.LoadChunks(ctx, app.ProjectId, app.Id, k, model.InsightStep_MONTHLY, now, 1)
+					if err != nil {
+						return err
 					}
+					chunk := chunkFiles[0]
+					accumulatedTo := time.Unix(chunk.GetAccumulatedTo(), 0).UTC()
+
+					updatedps, accumulateTo, err := i.getDailyInsightData(ctx, app.Id, k, accumulatedTo, now)
+					if err != nil {
+						return err
+					}
+
+					for _, s := range model.InsightStep_value {
+						step := model.InsightStep(s)
+						chunk, err = i.updateChunk(chunk, step, k, updatedps, accumulateTo)
+						if err != nil {
+							return err
+						}
+					}
+					err = i.insightstore.PutChunk(ctx, chunk)
 					if err != nil {
 						return err
 					}
 				}
-				err = i.insightstore.PutChunk(ctx, chunk)
-				err = i.insightstore.PutChunk(ctx, years)
-				if err != nil {
-					return err
+				// Update years insight file
+				{
+					yearsFiles, err := i.insightstore.LoadChunks(ctx, app.ProjectId, app.Id, k, model.InsightStep_YEARLY, now, 1)
+					if err != nil {
+						return err
+					}
+					years := yearsFiles[0]
+					accumulatedTo := time.Unix(yearsFiles[0].GetAccumulatedTo(), 0).UTC()
+
+					updatedps, accumulateTo, err := i.getDailyInsightData(ctx, app.Id, k, accumulatedTo, now)
+					if err != nil {
+						return err
+					}
+
+					for _, s := range model.InsightStep_value {
+						step := model.InsightStep(s)
+						years, err = i.updateChunk(years, step, k, updatedps, accumulateTo)
+						if err != nil {
+							return err
+						}
+					}
+					err = i.insightstore.PutChunk(ctx, years)
+					if err != nil {
+						return err
+					}
 				}
 			}
 		}
