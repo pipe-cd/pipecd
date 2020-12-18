@@ -221,6 +221,7 @@ export const DeploymentDetail: FC<Props> = memo(function DeploymentDetail({
             <SplitButton
               className={classes.actionButtons}
               options={CANCEL_OPTIONS}
+              label="select merge strategy"
               onClick={(index) => {
                 dispatch(
                   cancelDeployment({

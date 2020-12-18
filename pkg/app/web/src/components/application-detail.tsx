@@ -1,7 +1,6 @@
 import {
   Box,
   Button,
-  CircularProgress,
   Link,
   makeStyles,
   Paper,
@@ -10,14 +9,16 @@ import {
 import SyncIcon from "@material-ui/icons/Cached";
 import OpenInNewIcon from "@material-ui/icons/OpenInNew";
 import Skeleton from "@material-ui/lab/Skeleton/Skeleton";
+import { SerializedError } from "@reduxjs/toolkit";
 import dayjs from "dayjs";
 import React, { FC, memo } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import { Link as RouterLink } from "react-router-dom";
-import { PAGE_PATH_DEPLOYMENTS } from "../constants/path";
 import { APPLICATION_KIND_TEXT } from "../constants/application-kind";
 import { APPLICATION_SYNC_STATUS_TEXT } from "../constants/application-sync-status-text";
 import { APPLICATION_HEALTH_STATUS_TEXT } from "../constants/health-status-text";
+import { PAGE_PATH_DEPLOYMENTS } from "../constants/path";
+import { UI_TEXT_REFRESH } from "../constants/ui-text";
 import { AppState } from "../modules";
 import {
   Application,
@@ -30,6 +31,7 @@ import {
   ApplicationLiveState,
   selectById as selectLiveStateById,
 } from "../modules/applications-live-state";
+import { SyncStrategy } from "../modules/deployments";
 import {
   Environment,
   selectById as selectEnvById,
@@ -37,10 +39,9 @@ import {
 import { Piped, selectById as selectPipeById } from "../modules/pipeds";
 import { DetailTableRow } from "./detail-table-row";
 import { ApplicationHealthStatusIcon } from "./health-status-icon";
+import { SplitButton } from "./split-button";
 import { SyncStateReason } from "./sync-state-reason";
 import { SyncStatusIcon } from "./sync-status-icon";
-import { SerializedError } from "@reduxjs/toolkit";
-import { UI_TEXT_REFRESH } from "../constants/ui-text";
 
 const useStyles = makeStyles((theme) => ({
   root: {
@@ -138,6 +139,13 @@ const MostRecentlySuccessfulDeployment: FC<{
   );
 };
 
+const syncOptions = ["Sync", "Quick Sync", "Pipeline Sync"];
+const syncStrategyByIndex: SyncStrategy[] = [
+  SyncStrategy.AUTO,
+  SyncStrategy.QUICK_SYNC,
+  SyncStrategy.PIPELINE,
+];
+
 export const ApplicationDetail: FC<Props> = memo(function ApplicationDetail({
   applicationId,
 }) {
@@ -167,9 +175,14 @@ export const ApplicationDetail: FC<Props> = memo(function ApplicationDetail({
 
   const isSyncing = useIsSyncingApplication(app?.id);
 
-  const handleSync = (): void => {
+  const handleSync = (index: number): void => {
     if (app) {
-      dispatch(syncApplication({ applicationId: app.id }));
+      dispatch(
+        syncApplication({
+          applicationId: app.id,
+          syncStrategy: syncStrategyByIndex[index],
+        })
+      );
     }
   };
 
@@ -288,18 +301,14 @@ export const ApplicationDetail: FC<Props> = memo(function ApplicationDetail({
       </Box>
 
       <Box top={0} right={0} pr={2} pt={2} position="absolute">
-        <Button
-          variant="outlined"
+        <SplitButton
+          label="select sync strategy"
           color="primary"
+          loading={isSyncing}
           onClick={handleSync}
-          disabled={isSyncing || !app}
+          options={syncOptions}
           startIcon={<SyncIcon />}
-        >
-          SYNC
-          {isSyncing && (
-            <CircularProgress size={24} className={classes.buttonProgress} />
-          )}
-        </Button>
+        />
       </Box>
     </Paper>
   );
