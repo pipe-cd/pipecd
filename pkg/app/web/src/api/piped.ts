@@ -65,12 +65,14 @@ export const recreatePipedKey = ({
 export const generateApplicationSealedSecret = ({
   pipedId,
   data,
+  base64Encoding,
 }: GenerateApplicationSealedSecretRequest.AsObject): Promise<
   GenerateApplicationSealedSecretResponse.AsObject
 > => {
   const req = new GenerateApplicationSealedSecretRequest();
   req.setPipedId(pipedId);
   req.setData(data);
+  req.setBase64Encoding(base64Encoding);
   return apiRequest(req, apiClient.generateApplicationSealedSecret);
 };
 

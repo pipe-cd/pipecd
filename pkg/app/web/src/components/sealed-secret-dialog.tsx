@@ -64,7 +64,7 @@ export const SealedSecretDialog: FC<Props> = ({
   const handleGenerate = (e: React.FormEvent<HTMLFormElement>): void => {
     e.preventDefault();
     if (application) {
-      dispatch(generateSealedSecret({ data, pipedId: application.pipedId }));
+      dispatch(generateSealedSecret({ data, pipedId: application.pipedId, base64Encoding: false }));
     }
   };
 
