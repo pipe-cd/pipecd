@@ -675,7 +675,7 @@ func (a *WebAPI) GenerateApplicationSealedSecret(ctx context.Context, req *webse
 		return nil, status.Error(codes.FailedPrecondition, "The piped does not contain a valid encryption type")
 	}
 
-	encryptedText, err := enc.Encrypt(req.Data)
+	encryptedText, err := enc.Encrypt(data)
 	if err != nil {
 		a.logger.Error("failed to encrypt the secret", zap.Error(err))
 		return nil, status.Error(codes.FailedPrecondition, "Failed to encrypt the secret")
