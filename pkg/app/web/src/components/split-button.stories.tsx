@@ -10,6 +10,7 @@ export default {
 
 export const overview: React.FC = () => (
   <SplitButton
+    label="select option"
     startIcon={<CancelIcon />}
     options={["Cancel", "Cancel Without Rollback"]}
     onClick={action("onClick")}
@@ -19,6 +20,7 @@ export const overview: React.FC = () => (
 
 export const loading: React.FC = () => (
   <SplitButton
+    label="select option"
     startIcon={<CancelIcon />}
     options={["Cancel", "Cancel Without Rollback"]}
     onClick={action("onClick")}
