@@ -16,6 +16,7 @@ package grpcapi
 
 import (
 	"context"
+	"encoding/base64"
 	"errors"
 	"fmt"
 	"time"
@@ -653,8 +654,12 @@ func (a *WebAPI) GenerateApplicationSealedSecret(ctx context.Context, req *webse
 		return nil, status.Error(codes.FailedPrecondition, "The piped does not contain the encryption configuration")
 	}
 
-	var enc encrypter
+	data := req.Data
+	if req.Base64Encoding {
+		data = base64.StdEncoding.EncodeToString([]byte(data))
+	}
 
+	var enc encrypter
 	switch model.SealedSecretManagementType(sse.Type) {
 	case model.SealedSecretManagementSealingKey:
 		if sse.PublicKey == "" {

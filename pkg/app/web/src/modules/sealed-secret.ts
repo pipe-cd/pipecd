@@ -13,7 +13,7 @@ const initialState: SealedSecret = {
 
 export const generateSealedSecret = createAsyncThunk<
   string,
-  { pipedId: string; data: string }
+  { pipedId: string; data: string, base64Encoding: boolean }
 >("sealedSecret/generate", async (params) => {
   const res = await generateApplicationSealedSecret(params);
   return res.data;

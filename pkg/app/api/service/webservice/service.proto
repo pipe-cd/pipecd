@@ -252,6 +252,8 @@ message GetApplicationResponse {
 message GenerateApplicationSealedSecretRequest {
     string piped_id = 1 [(validate.rules).string.min_len = 1];
     string data = 2 [(validate.rules).string.min_len = 1];
+    // Whether the data should be base64 encoded before encrypting or not.
+    bool base64_encoding = 3;
 }
 
 message GenerateApplicationSealedSecretResponse {
