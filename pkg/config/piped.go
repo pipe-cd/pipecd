@@ -23,7 +23,7 @@ import (
 )
 
 const (
-	defaultImageWatcherPullInterval = Duration(5 * time.Minute)
+	defaultImageWatcherCheckInterval = Duration(5 * time.Minute)
 )
 
 var DefaultKubernetesCloudProvider = PipedCloudProvider{
