@@ -6,7 +6,7 @@ import { Provider } from "react-redux";
 import { createStore } from "../../test-utils";
 
 export default {
-  title: "SealedSecretDialog",
+  title: "APPLICATION/SealedSecretDialog",
   component: SealedSecretDialog,
 };
 
