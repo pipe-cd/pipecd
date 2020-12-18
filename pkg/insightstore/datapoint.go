@@ -114,7 +114,7 @@ func Merge(dp1 DataPoint, dp2 DataPoint, kind model.InsightMetricsKind) (DataPoi
 }
 
 // convert types to list of DataPoint.
-func toDataPoints(i interface{}) ([]DataPoint, error) {
+func ToDataPoints(i interface{}) ([]DataPoint, error) {
 	switch dps := i.(type) {
 	case []DeployFrequency:
 		dataPoints := make([]DataPoint, len(dps))

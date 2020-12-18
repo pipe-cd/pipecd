@@ -49,7 +49,7 @@ func Test_ExtractDataPoints(t *testing.T) {
 							Timestamp:   time.Date(2021, 1, 1, 0, 0, 0, 0, time.UTC).Unix(),
 						},
 					}
-					dp, _ := toDataPoints(df)
+					dp, _ := ToDataPoints(df)
 					return dp
 				}(),
 				from: time.Date(2020, 1, 1, 0, 0, 0, 0, time.UTC),
@@ -76,7 +76,7 @@ func Test_ExtractDataPoints(t *testing.T) {
 							Timestamp:   time.Date(2020, 1, 1, 0, 0, 0, 0, time.UTC).Unix(),
 						},
 					}
-					dp, _ := toDataPoints(df)
+					dp, _ := ToDataPoints(df)
 					return dp
 				}(),
 				from: time.Date(2020, 1, 1, 0, 0, 0, 0, time.UTC),
@@ -103,7 +103,7 @@ func Test_ExtractDataPoints(t *testing.T) {
 							Timestamp:   time.Date(2021, 1, 10, 0, 0, 0, 0, time.UTC).Unix(),
 						},
 					}
-					dp, _ := toDataPoints(df)
+					dp, _ := ToDataPoints(df)
 					return dp
 				}(),
 				from: time.Date(2021, 1, 3, 0, 0, 0, 0, time.UTC),
@@ -134,7 +134,7 @@ func Test_ExtractDataPoints(t *testing.T) {
 							Timestamp:   time.Date(2021, 1, 4, 0, 0, 0, 0, time.UTC).Unix(),
 						},
 					}
-					dp, _ := toDataPoints(df)
+					dp, _ := ToDataPoints(df)
 					return dp
 				}(),
 				from: time.Date(2021, 1, 3, 0, 0, 0, 0, time.UTC),

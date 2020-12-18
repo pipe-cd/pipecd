@@ -56,13 +56,13 @@ func (c *DeployFrequencyChunk) SetAccumulatedTo(a int64) {
 func (c *DeployFrequencyChunk) GetDataPoints(step model.InsightStep) ([]DataPoint, error) {
 	switch step {
 	case model.InsightStep_YEARLY:
-		return toDataPoints(c.DataPoints.Yearly)
+		return ToDataPoints(c.DataPoints.Yearly)
 	case model.InsightStep_MONTHLY:
-		return toDataPoints(c.DataPoints.Monthly)
+		return ToDataPoints(c.DataPoints.Monthly)
 	case model.InsightStep_WEEKLY:
-		return toDataPoints(c.DataPoints.Weekly)
+		return ToDataPoints(c.DataPoints.Weekly)
 	case model.InsightStep_DAILY:
-		return toDataPoints(c.DataPoints.Daily)
+		return ToDataPoints(c.DataPoints.Daily)
 	}
 	return nil, fmt.Errorf("invalid step: %v", step)
 }
@@ -122,13 +122,13 @@ func (c *ChangeFailureRateChunk) SetAccumulatedTo(a int64) {
 func (c *ChangeFailureRateChunk) GetDataPoints(step model.InsightStep) ([]DataPoint, error) {
 	switch step {
 	case model.InsightStep_YEARLY:
-		return toDataPoints(c.DataPoints.Yearly)
+		return ToDataPoints(c.DataPoints.Yearly)
 	case model.InsightStep_MONTHLY:
-		return toDataPoints(c.DataPoints.Monthly)
+		return ToDataPoints(c.DataPoints.Monthly)
 	case model.InsightStep_WEEKLY:
-		return toDataPoints(c.DataPoints.Weekly)
+		return ToDataPoints(c.DataPoints.Weekly)
 	case model.InsightStep_DAILY:
-		return toDataPoints(c.DataPoints.Daily)
+		return ToDataPoints(c.DataPoints.Daily)
 	}
 	return nil, fmt.Errorf("invalid step: %v", step)
 }

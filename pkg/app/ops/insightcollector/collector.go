@@ -18,6 +18,7 @@ import (
 	"context"
 	"errors"
 	"fmt"
+	"sort"
 	"time"
 
 	"github.com/pipe-cd/pipe/pkg/filestore"
@@ -57,12 +58,12 @@ func NewInsightCollector(
 	return a
 }
 
-func (a *InsightCollector) Run(ctx context.Context) error {
+func (i *InsightCollector) Run(ctx context.Context) error {
 	now := time.Now().UTC()
+	maxUpdateAt := now.Unix()
 
 	for {
-		maxUpdateAt := now.Unix()
-		apps, err := a.applicationStore.ListApplications(ctx, datastore.ListOptions{
+		apps, err := i.applicationStore.ListApplications(ctx, datastore.ListOptions{
 			Page:     0,
 			PageSize: 50,
 			Filters: []datastore.ListFilter{
@@ -90,98 +91,109 @@ func (a *InsightCollector) Run(ctx context.Context) error {
 
 		for _, app := range apps {
 			for _, k := range aggregateKinds {
-				yearsFiles, err := a.insightstore.LoadChunks(ctx, app.ProjectId, app.Id, k, model.InsightStep_YEARLY, now, 1)
+				yearsFiles, err := i.insightstore.LoadChunks(ctx, app.ProjectId, app.Id, k, model.InsightStep_YEARLY, now, 1)
 				if err != nil {
 					return err
 				}
 				years := yearsFiles[0]
-				yearsAccumulatedTo := time.Unix(years.GetAccumulatedTo(), 0).UTC()
 
-				chunkFiles, err := a.insightstore.LoadChunks(ctx, app.ProjectId, app.Id, k, model.InsightStep_MONTHLY, now, 1)
+				chunkFiles, err := i.insightstore.LoadChunks(ctx, app.ProjectId, app.Id, k, model.InsightStep_MONTHLY, now, 1)
 				if err != nil {
 					return err
 				}
 				chunk := chunkFiles[0]
 				chunkAccumulatedTo := time.Unix(chunk.GetAccumulatedTo(), 0).UTC()
 
+				updatedps, accumulateTo, err := i.getDailyInsightData(ctx, app.Id, k, chunkAccumulatedTo, now)
+				if err != nil {
+					return err
+				}
+
 				for _, s := range model.InsightStep_value {
 					step := model.InsightStep(s)
 					if step == model.InsightStep_YEARLY {
-						chunk, err = a.getInsightData(ctx, app.Id, k, step, yearsAccumulatedTo, now, years)
+						years, err = i.updateChunk(years, step, k, updatedps, accumulateTo)
 					} else {
-						chunk, err = a.getInsightData(ctx, app.Id, k, step, chunkAccumulatedTo, now, chunk)
+						chunk, err = i.updateChunk(chunk, step, k, updatedps, accumulateTo)
 					}
 					if err != nil {
 						return err
 					}
 				}
-				err = a.insightstore.PutChunk(ctx, chunk)
+				err = i.insightstore.PutChunk(ctx, chunk)
+				err = i.insightstore.PutChunk(ctx, years)
 				if err != nil {
 					return err
 				}
 			}
 		}
-
 		maxUpdateAt = apps[len(apps)-1].UpdatedAt
 	}
 	return nil
 }
 
-func (a *InsightCollector) getInsightData(
-	ctx context.Context,
-	appID string,
-	kind model.InsightMetricsKind,
-	step model.InsightStep,
-	rangeFrom time.Time,
-	rangeTo time.Time,
-	chunk insightstore.Chunk,
-) (insightstore.Chunk, error) {
+func (i *InsightCollector) updateChunk(chunk insightstore.Chunk, step model.InsightStep, kind model.InsightMetricsKind, updatedps map[int64]insightstore.DataPoint, accumulatedTo int64) (insightstore.Chunk, error) {
 	dps, err := chunk.GetDataPoints(step)
 	if err != nil {
 		return nil, err
 	}
 
-	var movePoint func(time.Time, int) time.Time
-	switch step {
-	case model.InsightStep_DAILY:
-		movePoint = func(from time.Time, i int) time.Time {
-			from = insightstore.NormalizeTime(from, step)
-			return from.AddDate(0, 0, i)
+	for k, d := range updatedps {
+		key := insightstore.NormalizeTime(time.Unix(k, 0).UTC(), step)
+		dp, err := insightstore.GetDataPoint(dps, key.Unix())
+		if err != nil && err != insightstore.ErrNotFound {
+			return nil, err
 		}
-	case model.InsightStep_WEEKLY:
-		movePoint = func(from time.Time, i int) time.Time {
-			from = insightstore.NormalizeTime(from, step)
-			return from.AddDate(0, 0, i*7)
+		new, err := insightstore.Merge(dp, d, kind)
+		if err != nil {
+			return nil, err
 		}
-	case model.InsightStep_MONTHLY:
-		movePoint = func(from time.Time, i int) time.Time {
-			from = insightstore.NormalizeTime(from, step)
-			return from.AddDate(0, i, 0)
-		}
-	case model.InsightStep_YEARLY:
-		movePoint = func(from time.Time, i int) time.Time {
-			from = insightstore.NormalizeTime(from, step)
-			return from.AddDate(i, 0, 0)
-		}
-	default:
-		return nil, fmt.Errorf("invalid step: %v", step)
+		dps = insightstore.SetDataPoint(dps, new, k)
 	}
+	sort.SliceStable(dps, func(i, j int) bool { return dps[i].GetTimestamp() < dps[j].GetTimestamp() })
+
+	chunk.SetAccumulatedTo(accumulatedTo)
+	err = chunk.SetDataPoints(step, dps)
+	if err != nil {
+		return nil, err
+	}
+
+	return chunk, nil
+}
+
+func (i *InsightCollector) getDailyInsightData(
+	ctx context.Context,
+	appID string,
+	kind model.InsightMetricsKind,
+	rangeFrom time.Time,
+	rangeTo time.Time,
+) (map[int64]insightstore.DataPoint, int64, error) {
+	step := model.InsightStep_DAILY
+
+	var movePoint func(time.Time, int) time.Time
+	movePoint = func(from time.Time, i int) time.Time {
+		from = insightstore.NormalizeTime(from, step)
+		return from.AddDate(0, 0, i)
+	}
+
+	updatedps := map[int64]insightstore.DataPoint{}
 
 	to := movePoint(rangeFrom, 1)
 	until := movePoint(rangeTo, 1)
+	var accumulatedTo time.Time
 	for {
 		targetTimestamp := insightstore.NormalizeTime(rangeFrom, step).Unix()
 
 		var data insightstore.DataPoint
-		var accumulatedTo time.Time
+		var a time.Time
 		var err error
 		switch kind {
 		case model.InsightMetricsKind_DEPLOYMENT_FREQUENCY:
-			data, accumulatedTo, err = a.getInsightDataForDeployFrequency(ctx, appID, targetTimestamp, rangeFrom, to)
+			data, a, err = i.getInsightDataForDeployFrequency(ctx, appID, targetTimestamp, rangeFrom, to)
 		case model.InsightMetricsKind_CHANGE_FAILURE_RATE:
-			data, accumulatedTo, err = a.getInsightDataForChangeFailureRate(ctx, appID, targetTimestamp, rangeFrom, to)
+			data, a, err = i.getInsightDataForChangeFailureRate(ctx, appID, targetTimestamp, rangeFrom, to)
 		default:
-			return nil, fmt.Errorf("invalid step: %v", kind)
+			return nil, 0, fmt.Errorf("invalid step: %v", kind)
 		}
 		if err != nil {
 			if err == ErrDeploymentNotFound {
@@ -192,28 +204,15 @@ func (a *InsightCollector) getInsightData(
 				to = movePoint(to, 1)
 				continue
 			}
-			return nil, err
+			return nil, 0, err
 		}
 
-		// update data point and set it into chunk
-		dp, err := insightstore.GetDataPoint(dps, targetTimestamp)
-		if err != nil && err != insightstore.ErrNotFound {
-			return nil, err
-		}
-		new, err := insightstore.Merge(dp, data, kind)
-		if err != nil {
-			return nil, err
-		}
-		dps = insightstore.SetDataPoint(dps, new, targetTimestamp)
+		updatedps[targetTimestamp] = data
+		rangeFrom = a
+		accumulatedTo = a
+	}
 
-		chunk.SetAccumulatedTo(accumulatedTo.Unix())
-		rangeFrom = accumulatedTo
-	}
-	err = chunk.SetDataPoints(step, dps)
-	if err != nil {
-		return nil, err
-	}
-	return chunk, nil
+	return updatedps, accumulatedTo.Unix(), nil
 }
 
 var (
@@ -221,7 +220,7 @@ var (
 )
 
 // getInsightDataForDeployFrequency accumulate insight data in target range for deploy frequency.
-func (a *InsightCollector) getInsightDataForDeployFrequency(
+func (i *InsightCollector) getInsightDataForDeployFrequency(
 	ctx context.Context,
 	applicationID string,
 	targetTimestamp int64,
@@ -249,12 +248,12 @@ func (a *InsightCollector) getInsightDataForDeployFrequency(
 	}
 
 	pageSize := 50
-	deployments, err := a.deploymentStore.ListDeployments(ctx, datastore.ListOptions{
+	deployments, err := i.deploymentStore.ListDeployments(ctx, datastore.ListOptions{
 		PageSize: pageSize,
 		Filters:  filters,
 	})
 	if err != nil {
-		a.logger.Error("failed to get deployments", zap.Error(err))
+		i.logger.Error("failed to get deployments", zap.Error(err))
 		return insightstore.DeployFrequency{}, time.Time{}, fmt.Errorf("failed to get deployments")
 	}
 	if len(deployments) == 0 {
@@ -275,7 +274,7 @@ func (a *InsightCollector) getInsightDataForDeployFrequency(
 }
 
 // getInsightDataForChangeFailureRate accumulate insight data in target range for change failure rate
-func (a *InsightCollector) getInsightDataForChangeFailureRate(
+func (i *InsightCollector) getInsightDataForChangeFailureRate(
 	ctx context.Context,
 	applicationID string,
 	targetTimestamp int64,
@@ -309,12 +308,12 @@ func (a *InsightCollector) getInsightDataForChangeFailureRate(
 	}
 
 	pageSize := 50
-	deployments, err := a.deploymentStore.ListDeployments(ctx, datastore.ListOptions{
+	deployments, err := i.deploymentStore.ListDeployments(ctx, datastore.ListOptions{
 		PageSize: pageSize,
 		Filters:  filters,
 	})
 	if err != nil {
-		a.logger.Error("failed to get deployments", zap.Error(err))
+		i.logger.Error("failed to get deployments", zap.Error(err))
 		return insightstore.ChangeFailureRate{}, time.Time{}, fmt.Errorf("failed to get deployments")
 	}
 
