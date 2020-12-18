@@ -234,7 +234,7 @@ func (p *provider) ApplyManifest(ctx context.Context, manifest Manifest) error {
 		return p.initErr
 	}
 
-	return p.kubectl.Apply(ctx, p.getNamespaceForRun(manifest.Key), manifest)
+	return p.kubectl.Apply(ctx, p.getNamespaceToRun(manifest.Key), manifest)
 }
 
 // Delete deletes the given resource from Kubernetes cluster.
@@ -244,12 +244,12 @@ func (p *provider) Delete(ctx context.Context, k ResourceKey) (err error) {
 		return p.initErr
 	}
 
-	return p.kubectl.Delete(ctx, p.getNamespaceForRun(k), k)
+	return p.kubectl.Delete(ctx, p.getNamespaceToRun(k), k)
 }
 
-// getNamespaceForRun returns namespace used on kubectl apply/delete commands
+// getNamespaceToRun returns namespace used on kubectl apply/delete commands
 // priority: config.KubernetesDeploymentInput > kubernetes.ResourceKey
-func (p *provider) getNamespaceForRun(k ResourceKey) string {
+func (p *provider) getNamespaceToRun(k ResourceKey) string {
 	if p.input.Namespace != "" {
 		return p.input.Namespace
 	}
