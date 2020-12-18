@@ -328,8 +328,8 @@ func (p *piped) run(ctx context.Context, t cli.Telemetry) (runErr error) {
 		})
 	}
 
-	// Start running image watcher.
-	{
+	if len(cfg.ImageProviders) > 0 {
+		// Start running image watcher.
 		t := imagewatcher.NewWatcher(
 			cfg,
 			gitClient,
