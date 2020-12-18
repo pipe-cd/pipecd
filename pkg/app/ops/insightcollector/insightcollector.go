@@ -57,47 +57,74 @@ func NewInsightCollector(
 	return a
 }
 
-func (a *InsightCollector) run(ctx context.Context) {
+func (a *InsightCollector) Run(ctx context.Context) error {
 	now := time.Now().UTC()
-	apps, err := a.applicationStore.ListApplications(ctx, datastore.ListOptions{
-		Page:     0,
-		PageSize: 0,
-		Filters:  nil,
-		Orders:   nil,
-		Cursor:   "",
-	})
-	if err != nil {
-		return
-	}
 
-	for _, app := range apps {
-		for _, k := range aggregateKinds {
-			yearsFiles, err := a.insightstore.LoadChunks(ctx, app.ProjectId, app.Id, k, model.InsightStep_YEARLY, now, 1)
-			if err != nil {
-				return
-			}
-			years := yearsFiles[0]
-			yearsAccumulatedTo := time.Unix(years.GetAccumulatedTo(), 0).UTC()
+	for {
+		maxUpdateAt := now.Unix()
+		apps, err := a.applicationStore.ListApplications(ctx, datastore.ListOptions{
+			Page:     0,
+			PageSize: 50,
+			Filters: []datastore.ListFilter{
+				{
+					Field:    "UpdatedAt",
+					Operator: "<",
+					Value:    maxUpdateAt,
+				},
+			},
+			Orders: []datastore.Order{
+				{
+					Field:     "UpdatedAt",
+					Direction: datastore.Desc,
+				},
+			},
+			Cursor: "",
+		})
+		if err != nil {
+			return err
+		}
+		if len(apps) == 0 {
+			// updated all application completely
+			break
+		}
 
-			chunkFiles, err := a.insightstore.LoadChunks(ctx, app.ProjectId, app.Id, k, model.InsightStep_MONTHLY, now, 1)
-			if err != nil {
-				return
-			}
-			chunk := chunkFiles[0]
-			chunkAccumulatedTo := time.Unix(chunk.GetAccumulatedTo(), 0).UTC()
+		for _, app := range apps {
+			for _, k := range aggregateKinds {
+				yearsFiles, err := a.insightstore.LoadChunks(ctx, app.ProjectId, app.Id, k, model.InsightStep_YEARLY, now, 1)
+				if err != nil {
+					return err
+				}
+				years := yearsFiles[0]
+				yearsAccumulatedTo := time.Unix(years.GetAccumulatedTo(), 0).UTC()
 
-			for _, s := range model.InsightStep_value {
-				step := model.InsightStep(s)
-				if step == model.InsightStep_YEARLY {
-					a.getInsightData(ctx, app.Id, k, step, yearsAccumulatedTo, now, years)
-				} else {
-					a.getInsightData(ctx, app.Id, k, step, chunkAccumulatedTo, now, chunk)
+				chunkFiles, err := a.insightstore.LoadChunks(ctx, app.ProjectId, app.Id, k, model.InsightStep_MONTHLY, now, 1)
+				if err != nil {
+					return err
+				}
+				chunk := chunkFiles[0]
+				chunkAccumulatedTo := time.Unix(chunk.GetAccumulatedTo(), 0).UTC()
+
+				for _, s := range model.InsightStep_value {
+					step := model.InsightStep(s)
+					if step == model.InsightStep_YEARLY {
+						chunk, err = a.getInsightData(ctx, app.Id, k, step, yearsAccumulatedTo, now, years)
+					} else {
+						chunk, err = a.getInsightData(ctx, app.Id, k, step, chunkAccumulatedTo, now, chunk)
+					}
+					if err != nil {
+						return err
+					}
+				}
+				err = a.insightstore.PutChunk(ctx, chunk)
+				if err != nil {
+					return err
 				}
 			}
 		}
 
+		maxUpdateAt = apps[len(apps)-1].UpdatedAt
 	}
-
+	return nil
 }
 
 func (a *InsightCollector) getInsightData(
