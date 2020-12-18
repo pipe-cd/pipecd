@@ -36,7 +36,7 @@ import (
 
 const (
 	defaultCommitMessageFormat = "Update image %s to %s defined at %s in %s"
-	defaultCheckInterval        = 5 * time.Minute
+	defaultCheckInterval       = 5 * time.Minute
 )
 
 type Watcher interface {
@@ -102,7 +102,7 @@ func (w *watcher) run(ctx context.Context, repo git.Repo, repoCfg *config.PipedR
 	defer w.wg.Done()
 
 	var (
-		checkInterval               = defaultCheckInterval
+		checkInterval              = defaultCheckInterval
 		commitMsg                  string
 		includedCfgs, excludedCfgs []string
 	)
