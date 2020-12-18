@@ -18,8 +18,9 @@ import (
 	"testing"
 	"time"
 
-	"github.com/pipe-cd/pipe/pkg/model"
 	"github.com/stretchr/testify/assert"
+
+	"github.com/pipe-cd/pipe/pkg/model"
 )
 
 func Test_ExtractDataPoints(t *testing.T) {

@@ -24,9 +24,10 @@ import (
 
 	"github.com/pipe-cd/pipe/pkg/insightstore"
 
+	"go.uber.org/zap"
+
 	"github.com/pipe-cd/pipe/pkg/datastore"
 	"github.com/pipe-cd/pipe/pkg/model"
-	"go.uber.org/zap"
 )
 
 var aggregateKinds = []model.InsightMetricsKind{
