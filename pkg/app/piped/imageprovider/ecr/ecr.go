@@ -83,6 +83,7 @@ func NewECR(name string, region string, opts ...Option) (*ECR, error) {
 	}
 	e := &ECR{
 		name:   name,
+		region: region,
 		logger: zap.NewNop(),
 	}
 	for _, opt := range opts {
