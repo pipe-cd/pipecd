@@ -73,6 +73,8 @@ func NewWatcher(cfg *config.PipedSpec, gitClient gitClient, logger *zap.Logger) 
 // Run spawns goroutines for each git repository. They periodically pull the image
 // from the container registry to compare the image with one in the git repository.
 func (w *watcher) Run(ctx context.Context) error {
+	w.logger.Info("start running image watcher")
+
 	w.providerCfgs = make(map[string]config.PipedImageProvider, len(w.config.ImageProviders))
 	for _, cfg := range w.config.ImageProviders {
 		w.providerCfgs[cfg.Name] = cfg
