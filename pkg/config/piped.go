@@ -601,7 +601,7 @@ func (p *PipedImageWatcher) Validate() error {
 		repos[p.Repos[i].RepoID] = struct{}{}
 
 		if p.Repos[i].CheckInterval == 0 {
-			p.Repos[i].CheckInterval = defaultImageWatcherPullInterval
+			p.Repos[i].CheckInterval = defaultImageWatcherCheckInterval
 		}
 	}
 	return nil
