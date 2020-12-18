@@ -19,8 +19,6 @@ import (
 	"net/http"
 	"time"
 
-	"github.com/pipe-cd/pipe/pkg/app/ops/insightcollector"
-
 	"github.com/robfig/cron/v3"
 	"github.com/spf13/cobra"
 	"go.uber.org/zap"
@@ -28,6 +26,7 @@ import (
 
 	"github.com/pipe-cd/pipe/pkg/admin"
 	"github.com/pipe-cd/pipe/pkg/app/ops/handler"
+	"github.com/pipe-cd/pipe/pkg/app/ops/insightcollector"
 	"github.com/pipe-cd/pipe/pkg/cli"
 	"github.com/pipe-cd/pipe/pkg/datastore"
 	"github.com/pipe-cd/pipe/pkg/version"
