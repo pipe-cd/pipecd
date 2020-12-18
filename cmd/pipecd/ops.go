@@ -19,6 +19,9 @@ import (
 	"net/http"
 	"time"
 
+	"github.com/pipe-cd/pipe/pkg/app/ops/insightcollector"
+
+	"github.com/robfig/cron/v3"
 	"github.com/spf13/cobra"
 	"go.uber.org/zap"
 	"golang.org/x/sync/errgroup"
@@ -81,6 +84,26 @@ func (s *ops) run(ctx context.Context, t cli.Telemetry) error {
 
 		}
 	}()
+
+	fs, err := createFilestore(ctx, cfg, t.Logger)
+	if err != nil {
+		t.Logger.Error("failed to create filestore", zap.Error(err))
+		return err
+	}
+	defer func() {
+		if err := fs.Close(); err != nil {
+			t.Logger.Error("failed to close filestore client", zap.Error(err))
+		}
+	}()
+
+	// Set insight collector
+	{
+		collector := insightcollector.NewInsightCollector(ds, fs, t.Logger)
+		c := cron.New()
+		c.AddFunc(cfg.InsightCollectorConfig.Schedule, func() {
+			collector.Run(ctx)
+		})
+	}
 
 	// Start running HTTP server.
 	{
