@@ -247,7 +247,7 @@ func (p *provider) Delete(ctx context.Context, k ResourceKey) (err error) {
 	return p.kubectl.Delete(ctx, p.getNamespaceToRun(k), k)
 }
 
-// getNamespaceToRun returns namespace used on kubectl apply/delete commands
+// getNamespaceToRun returns namespace used on kubectl apply/delete commands.
 // priority: config.KubernetesDeploymentInput > kubernetes.ResourceKey
 func (p *provider) getNamespaceToRun(k ResourceKey) string {
 	if p.input.Namespace != "" {
