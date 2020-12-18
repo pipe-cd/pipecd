@@ -22,6 +22,10 @@ import (
 	"github.com/pipe-cd/pipe/pkg/model"
 )
 
+const (
+	defaultImageWatcherCheckInterval = Duration(5 * time.Minute)
+)
+
 var DefaultKubernetesCloudProvider = PipedCloudProvider{
 	Name:             "kubernetes-default",
 	Type:             model.CloudProviderKubernetes,
@@ -59,7 +63,7 @@ type PipedSpec struct {
 	Notifications Notifications `json:"notifications"`
 	// How the sealed secret should be managed.
 	SealedSecretManagement *SealedSecretManagement `json:"sealedSecretManagement"`
-	// Configuration for image watcher.
+	// Optional settings for image watcher.
 	ImageWatcher PipedImageWatcher `json:"imageWatcher"`
 }
 
@@ -381,8 +385,6 @@ type AnalysisProviderStackdriverConfig struct {
 type PipedImageProvider struct {
 	Name string                  `json:"name"`
 	Type model.ImageProviderType `json:"type"`
-	// Default is 5m.
-	PullInterval Duration `json:"pullInterval"`
 
 	DockerHubConfig *ImageProviderDockerHubConfig
 	GCRConfig       *ImageProviderGCRConfig
@@ -390,9 +392,8 @@ type PipedImageProvider struct {
 }
 
 type genericPipedImageProvider struct {
-	Name         string                  `json:"name"`
-	Type         model.ImageProviderType `json:"type"`
-	PullInterval Duration                `json:"pullInterval"`
+	Name string                  `json:"name"`
+	Type model.ImageProviderType `json:"type"`
 
 	Config json.RawMessage `json:"config"`
 }
@@ -405,10 +406,6 @@ func (p *PipedImageProvider) UnmarshalJSON(data []byte) error {
 	}
 	p.Name = gp.Name
 	p.Type = gp.Type
-	p.PullInterval = gp.PullInterval
-	if p.PullInterval == 0 {
-		p.PullInterval = Duration(5 * time.Minute)
-	}
 
 	switch p.Type {
 	case model.ImageProviderTypeDockerHub:
@@ -594,19 +591,30 @@ type PipedImageWatcher struct {
 }
 
 // Validate checks if the duplicated repository setting exists.
-func (i *PipedImageWatcher) Validate() error {
-	repos := make(map[string]struct{})
-	for _, repo := range i.Repos {
-		if _, ok := repos[repo.RepoID]; ok {
-			return fmt.Errorf("duplicated repo id (%s) found in the imageWatcher directive", repo.RepoID)
+// And it populates default value if not set.
+func (p *PipedImageWatcher) Validate() error {
+	repos := make(map[string]struct{}, len(p.Repos))
+	for i := 0; i < len(p.Repos); i++ {
+		if _, ok := repos[p.Repos[i].RepoID]; ok {
+			return fmt.Errorf("duplicated repo id (%s) found in the imageWatcher directive", p.Repos[i].RepoID)
 		}
-		repos[repo.RepoID] = struct{}{}
+		repos[p.Repos[i].RepoID] = struct{}{}
+
+		if p.Repos[i].CheckInterval == 0 {
+			p.Repos[i].CheckInterval = defaultImageWatcherCheckInterval
+		}
 	}
 	return nil
 }
 
 type PipedImageWatcherRepoTarget struct {
 	RepoID string `json:"repoId"`
+	// Interval to compare if the image in the git repository
+	// and one in the images provider. Default is 5m.
+	CheckInterval Duration `json:"checkInterval"`
+	// The commit message used to push after updating image.
+	// Default message is used if not given.
+	CommitMessage string `json:"commitMessage"`
 	// The paths to ImageWatcher files to be included.
 	Includes []string `json:"includes"`
 	// The paths to ImageWatcher files to be excluded.

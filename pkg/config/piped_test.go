@@ -150,27 +150,24 @@ func TestPipedConfig(t *testing.T) {
 				},
 				ImageProviders: []PipedImageProvider{
 					{
-						Name:         "my-dockerhub",
-						Type:         "DOCKER_HUB",
-						PullInterval: Duration(time.Minute * 5),
+						Name: "my-dockerhub",
+						Type: "DOCKER_HUB",
 						DockerHubConfig: &ImageProviderDockerHubConfig{
 							Username:     "foo",
 							PasswordFile: "/etc/piped-secret/dockerhub-pass",
 						},
 					},
 					{
-						Name:         "my-gcr",
-						Type:         "GCR",
-						PullInterval: Duration(time.Minute * 5),
+						Name: "my-gcr",
+						Type: "GCR",
 						GCRConfig: &ImageProviderGCRConfig{
 							Address:         "asia.gcr.io",
 							CredentialsFile: "/etc/piped-secret/gcr-service-account",
 						},
 					},
 					{
-						Name:         "my-ecr",
-						Type:         "ECR",
-						PullInterval: Duration(time.Minute * 5),
+						Name: "my-ecr",
+						Type: "ECR",
 						ECRConfig: &ImageProviderECRConfig{
 							Region:          "us-west-2",
 							RegistryID:      "default",
@@ -228,8 +225,10 @@ func TestPipedConfig(t *testing.T) {
 				ImageWatcher: PipedImageWatcher{
 					Repos: []PipedImageWatcherRepoTarget{
 						{
-							RepoID:   "foo",
-							Includes: []string{"imagewatcher-dev.yaml", "imagewatcher-stg.yaml"},
+							RepoID:        "foo",
+							CheckInterval: Duration(10 * time.Minute),
+							CommitMessage: "foo bar",
+							Includes:      []string{"imagewatcher-dev.yaml", "imagewatcher-stg.yaml"},
 						},
 					},
 				},
@@ -252,39 +251,71 @@ func TestPipedConfig(t *testing.T) {
 
 func TestPipedImageWatcherValidate(t *testing.T) {
 	testcases := []struct {
-		name         string
-		imageWatcher PipedImageWatcher
-		wantErr      bool
+		name                  string
+		imageWatcher          PipedImageWatcher
+		wantErr               bool
+		wantPipedImageWatcher PipedImageWatcher
 	}{
 		{
 			name:    "duplicated repo exists",
 			wantErr: true,
-			imageWatcher: PipedImageWatcher{Repos: []PipedImageWatcherRepoTarget{
-				{
-					RepoID: "foo",
+			imageWatcher: PipedImageWatcher{
+				Repos: []PipedImageWatcherRepoTarget{
+					{
+						RepoID:        "foo",
+						CheckInterval: Duration(time.Minute),
+					},
+					{
+						RepoID:        "foo",
+						CheckInterval: Duration(time.Minute),
+					},
 				},
-				{
-					RepoID: "foo",
+			},
+			wantPipedImageWatcher: PipedImageWatcher{
+				Repos: []PipedImageWatcherRepoTarget{
+					{
+						RepoID:        "foo",
+						CheckInterval: Duration(time.Minute),
+					},
+					{
+						RepoID:        "foo",
+						CheckInterval: Duration(time.Minute),
+					},
 				},
-			}},
+			},
 		},
 		{
 			name:    "repos are unique",
 			wantErr: false,
-			imageWatcher: PipedImageWatcher{Repos: []PipedImageWatcherRepoTarget{
-				{
-					RepoID: "foo",
+			imageWatcher: PipedImageWatcher{
+				Repos: []PipedImageWatcherRepoTarget{
+					{
+						RepoID: "foo",
+					},
+					{
+						RepoID: "bar",
+					},
 				},
-				{
-					RepoID: "bar",
+			},
+			wantPipedImageWatcher: PipedImageWatcher{
+				Repos: []PipedImageWatcherRepoTarget{
+					{
+						RepoID:        "foo",
+						CheckInterval: Duration(5 * time.Minute),
+					},
+					{
+						RepoID:        "bar",
+						CheckInterval: Duration(5 * time.Minute),
+					},
 				},
-			}},
+			},
 		},
 	}
 	for _, tc := range testcases {
 		t.Run(tc.name, func(t *testing.T) {
 			err := tc.imageWatcher.Validate()
 			assert.Equal(t, tc.wantErr, err != nil)
+			assert.Equal(t, tc.wantPipedImageWatcher, tc.imageWatcher)
 		})
 	}
 }
