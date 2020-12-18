@@ -36,7 +36,7 @@ import (
 
 const (
 	defaultCommitMessageFormat = "Update image %s to %s defined at %s in %s"
-	defaultPullInterval        = 5 * time.Minute
+	defaultCheckInterval        = 5 * time.Minute
 )
 
 type Watcher interface {
@@ -102,7 +102,7 @@ func (w *watcher) run(ctx context.Context, repo git.Repo, repoCfg *config.PipedR
 	defer w.wg.Done()
 
 	var (
-		pullInterval               = defaultPullInterval
+		checkInterval               = defaultCheckInterval
 		commitMsg                  string
 		includedCfgs, excludedCfgs []string
 	)
@@ -111,14 +111,14 @@ func (w *watcher) run(ctx context.Context, repo git.Repo, repoCfg *config.PipedR
 		if r.RepoID != repoCfg.RepoID {
 			continue
 		}
-		pullInterval = time.Duration(r.CheckInterval)
+		checkInterval = time.Duration(r.CheckInterval)
 		commitMsg = r.CommitMessage
 		includedCfgs = r.Includes
 		excludedCfgs = r.Excludes
 		break
 	}
 
-	ticker := time.NewTicker(pullInterval)
+	ticker := time.NewTicker(checkInterval)
 	defer ticker.Stop()
 	for {
 		select {
@@ -165,9 +165,7 @@ func (w *watcher) updateOutdatedImages(ctx context.Context, repo git.Repo, targe
 	for _, t := range targets {
 		c, err := w.checkOutdatedImage(ctx, &t, repo, commitMsg)
 		if err != nil {
-			w.logger.Error("failed to update image",
-				zap.Error(err),
-			)
+			w.logger.Error("failed to update image", zap.Error(err))
 			continue
 		}
 		if c != nil {
