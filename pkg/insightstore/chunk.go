@@ -37,12 +37,6 @@ type DeployFrequencyDataPoint struct {
 	Yearly  []DeployFrequency `json:"yearly"`
 }
 
-// DeployFrequency represents a data point that shows the deployment frequency metrics.
-type DeployFrequency struct {
-	Timestamp   int64   `json:"timestamp"`
-	DeployCount float32 `json:"deploy_count"`
-}
-
 func (c *DeployFrequencyChunk) GetFilePath() string {
 	return c.FilePath
 }
@@ -59,20 +53,6 @@ func (c *DeployFrequencyChunk) SetAccumulatedTo(a int64) {
 	c.AccumulatedTo = a
 }
 
-func (c *DeployFrequencyChunk) DataCount(step model.InsightStep) int {
-	switch step {
-	case model.InsightStep_YEARLY:
-		return len(c.DataPoints.Yearly)
-	case model.InsightStep_MONTHLY:
-		return len(c.DataPoints.Monthly)
-	case model.InsightStep_WEEKLY:
-		return len(c.DataPoints.Weekly)
-	case model.InsightStep_DAILY:
-		return len(c.DataPoints.Daily)
-	}
-	return 0
-}
-
 func (c *DeployFrequencyChunk) GetDataPoints(step model.InsightStep) ([]DataPoint, error) {
 	switch step {
 	case model.InsightStep_YEARLY:
@@ -87,12 +67,24 @@ func (c *DeployFrequencyChunk) GetDataPoints(step model.InsightStep) ([]DataPoin
 	return nil, fmt.Errorf("invalid step: %v", step)
 }
 
-func (d DeployFrequency) GetTimestamp() int64 {
-	return d.Timestamp
-}
-
-func (d DeployFrequency) Value() float32 {
-	return d.DeployCount
+func (c *DeployFrequencyChunk) SetDataPoints(step model.InsightStep, points []DataPoint) error {
+	dfs := make([]DeployFrequency, len(points))
+	for i, p := range points {
+		dfs[i] = p.(DeployFrequency)
+	}
+	switch step {
+	case model.InsightStep_YEARLY:
+		c.DataPoints.Yearly = dfs
+	case model.InsightStep_MONTHLY:
+		c.DataPoints.Monthly = dfs
+	case model.InsightStep_WEEKLY:
+		c.DataPoints.Weekly = dfs
+	case model.InsightStep_DAILY:
+		c.DataPoints.Daily = dfs
+	default:
+		return fmt.Errorf("invalid step: %v", step)
+	}
+	return nil
 }
 
 // change failure rate
@@ -109,14 +101,6 @@ type ChangeFailureRateDataPoint struct {
 	Weekly  []ChangeFailureRate `json:"weekly"`
 	Monthly []ChangeFailureRate `json:"monthly"`
 	Yearly  []ChangeFailureRate `json:"yearly"`
-}
-
-// ChangeFailureRate represents a data point that shows the change failure rate metrics.
-type ChangeFailureRate struct {
-	Timestamp    int64   `json:"timestamp"`
-	Rate         float32 `json:"rate"`
-	SuccessCount int64   `json:"success_count"`
-	FailureCount int64   `json:"failure_count"`
 }
 
 func (c *ChangeFailureRateChunk) GetFilePath() string {
@@ -149,26 +133,24 @@ func (c *ChangeFailureRateChunk) GetDataPoints(step model.InsightStep) ([]DataPo
 	return nil, fmt.Errorf("invalid step: %v", step)
 }
 
-func (c *ChangeFailureRateChunk) DataCount(step model.InsightStep) int {
+func (c *ChangeFailureRateChunk) SetDataPoints(step model.InsightStep, points []DataPoint) error {
+	cfs := make([]ChangeFailureRate, len(points))
+	for i, p := range points {
+		cfs[i] = p.(ChangeFailureRate)
+	}
 	switch step {
 	case model.InsightStep_YEARLY:
-		return len(c.DataPoints.Yearly)
+		c.DataPoints.Yearly = cfs
 	case model.InsightStep_MONTHLY:
-		return len(c.DataPoints.Monthly)
+		c.DataPoints.Monthly = cfs
 	case model.InsightStep_WEEKLY:
-		return len(c.DataPoints.Weekly)
+		c.DataPoints.Weekly = cfs
 	case model.InsightStep_DAILY:
-		return len(c.DataPoints.Daily)
+		c.DataPoints.Daily = cfs
+	default:
+		return fmt.Errorf("invalid step: %v", step)
 	}
-	return 0
-}
-
-func (c ChangeFailureRate) GetTimestamp() int64 {
-	return c.Timestamp
-}
-
-func (c ChangeFailureRate) Value() float32 {
-	return c.Rate
+	return nil
 }
 
 type Chunk interface {
@@ -180,14 +162,14 @@ type Chunk interface {
 	GetAccumulatedTo() int64
 	// SetAccumulatedTo sets AccumulatedTo
 	SetAccumulatedTo(a int64)
-	// GetDataPoint gets list of data points of specify step
+	// GetDataPoints gets list of data points of specify step
 	GetDataPoints(step model.InsightStep) ([]DataPoint, error)
-	// DataCount returns count of data in specify step
-	DataCount(step model.InsightStep) int
+	// SetDataPoints sets list of data points of specify step
+	SetDataPoints(step model.InsightStep, points []DataPoint) error
 }
 
 // convert types to Chunk.
-func toChunk(i interface{}) (Chunk, error) {
+func ToChunk(i interface{}) (Chunk, error) {
 	switch p := i.(type) {
 	case *DeployFrequencyChunk:
 		return p, nil
@@ -195,33 +177,6 @@ func toChunk(i interface{}) (Chunk, error) {
 		return p, nil
 	default:
 		return nil, fmt.Errorf("cannot convert to Chunk: %v", p)
-	}
-}
-
-type DataPoint interface {
-	// Value gets data for model.InsightDataPoint
-	Value() float32
-	// Timestamp gets timestamp
-	GetTimestamp() int64
-}
-
-// convert types to list of DataPoint.
-func toDataPoints(i interface{}) ([]DataPoint, error) {
-	switch dps := i.(type) {
-	case []DeployFrequency:
-		dataPoints := make([]DataPoint, len(dps))
-		for j, dp := range dps {
-			dataPoints[j] = dp
-		}
-		return dataPoints, nil
-	case []ChangeFailureRate:
-		dataPoints := make([]DataPoint, len(dps))
-		for j, dp := range dps {
-			dataPoints[j] = dp
-		}
-		return dataPoints, nil
-	default:
-		return nil, fmt.Errorf("cannot convert to DataPoints: %v", dps)
 	}
 }
 
@@ -242,7 +197,12 @@ func (cs Chunks) ExtractDataPoints(step model.InsightStep, from time.Time, count
 	}
 
 	for _, c := range cs {
-		idp, err := extractDataPoints(c, step, from, to)
+		dp, err := c.GetDataPoints(step)
+		if err != nil {
+			return nil, err
+		}
+
+		idp, err := extractDataPoints(dp, from, to)
 		if err != nil {
 			return nil, err
 		}
@@ -251,27 +211,4 @@ func (cs Chunks) ExtractDataPoints(step model.InsightStep, from time.Time, count
 	}
 
 	return out, nil
-}
-
-func extractDataPoints(chunk Chunk, step model.InsightStep, from, to time.Time) ([]*model.InsightDataPoint, error) {
-	target, err := chunk.GetDataPoints(step)
-	if err != nil {
-		return nil, err
-	}
-
-	var result []*model.InsightDataPoint
-	for _, d := range target {
-		ts := d.GetTimestamp()
-		if ts > to.Unix() {
-			break
-		}
-
-		if ts >= from.Unix() {
-			result = append(result, &model.InsightDataPoint{
-				Timestamp: ts,
-				Value:     d.Value(),
-			})
-		}
-	}
-	return result, nil
 }

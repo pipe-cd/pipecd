@@ -92,7 +92,7 @@ func TestGetChunks(t *testing.T) {
 					},
 					FilePath: path,
 				}
-				chunk1, _ := toChunk(&expected1)
+				chunk1, _ := ToChunk(&expected1)
 				path = makeChunkFilePath("projectID", model.InsightMetricsKind_DEPLOYMENT_FREQUENCY, "appID", "2021-02")
 				expected2 := DeployFrequencyChunk{
 					AccumulatedTo: 1612137600,
@@ -106,7 +106,7 @@ func TestGetChunks(t *testing.T) {
 					},
 					FilePath: path,
 				}
-				chunk2, _ := toChunk(&expected2)
+				chunk2, _ := ToChunk(&expected2)
 				return []Chunk{chunk1, chunk2}
 			}(),
 		},
@@ -215,7 +215,7 @@ func TestGetChunk(t *testing.T) {
 					},
 					FilePath: path,
 				}
-				chunk, _ := toChunk(&expected)
+				chunk, _ := ToChunk(&expected)
 				return chunk
 			}(),
 		},
@@ -252,7 +252,7 @@ func TestGetChunk(t *testing.T) {
 					},
 					FilePath: path,
 				}
-				chunk, _ := toChunk(&expected)
+				chunk, _ := ToChunk(&expected)
 				return chunk
 			}(),
 		},
@@ -297,7 +297,7 @@ func TestGetChunk(t *testing.T) {
 					},
 					FilePath: path,
 				}
-				chunk, _ := toChunk(&expected)
+				chunk, _ := ToChunk(&expected)
 				return chunk
 			}(),
 		},
@@ -342,7 +342,7 @@ func TestGetChunk(t *testing.T) {
 					},
 					FilePath: path,
 				}
-				chunk, _ := toChunk(&expected)
+				chunk, _ := ToChunk(&expected)
 				return chunk
 			}(),
 		},
@@ -396,7 +396,7 @@ func TestGetChunk(t *testing.T) {
 					},
 					FilePath: path,
 				}
-				chunk, _ := toChunk(&expected)
+				chunk, _ := ToChunk(&expected)
 				return chunk
 			}(),
 		},
@@ -474,7 +474,7 @@ func TestFormatFrom(t *testing.T) {
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			got := normalizeTime(tt.args.from, tt.args.step)
+			got := NormalizeTime(tt.args.from, tt.args.step)
 			assert.Equal(t, got, tt.want)
 		})
 	}
