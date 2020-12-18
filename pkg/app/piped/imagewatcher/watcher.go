@@ -143,7 +143,7 @@ func (w *watcher) run(ctx context.Context, repo git.Repo, repoCfg *config.PipedR
 				continue
 			}
 			if !ok {
-				w.logger.Error("configuration file for Image Watcher not found",
+				w.logger.Info("configuration file for Image Watcher not found",
 					zap.String("repo-id", repoCfg.RepoID),
 					zap.Error(err),
 				)
