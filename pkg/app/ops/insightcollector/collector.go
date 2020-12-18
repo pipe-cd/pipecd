@@ -294,8 +294,8 @@ func (a *InsightCollector) getInsightDataForChangeFailureRate(
 		return insightstore.ChangeFailureRate{}, time.Time{}, ErrDeploymentNotFound
 	}
 
-	var successCount int64 = 0
-	var failureCount int64 = 0
+	var successCount int64
+	var failureCount int64
 	for _, d := range deployments {
 		switch d.Status {
 		case model.DeploymentStatus_DEPLOYMENT_SUCCESS:
