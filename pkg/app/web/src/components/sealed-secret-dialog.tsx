@@ -1,31 +1,33 @@
 import {
   Button,
+  Checkbox,
   Dialog,
   DialogActions,
   DialogContent,
   DialogTitle,
+  FormControlLabel,
   IconButton,
   makeStyles,
   TextField,
   Typography,
 } from "@material-ui/core";
 import CopyIcon from "@material-ui/icons/FileCopyOutlined";
-import React, { FC, useRef, useState } from "react";
+import React, { FC, memo, useCallback, useRef } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import { AppState } from "../modules";
 import { Application, selectById } from "../modules/applications";
 import {
   generateSealedSecret,
-  SealedSecret,
   clearSealedSecret,
 } from "../modules/sealed-secret";
 import copy from "copy-to-clipboard";
 import { addToast } from "../modules/toasts";
+import { useFormik } from "formik";
+import * as Yup from "yup";
+import { AppDispatch } from "../store";
+import { UI_TEXT_CANCEL, UI_TEXT_CLOSE } from "../constants/ui-text";
 
 const useStyles = makeStyles((theme) => ({
-  description: {
-    marginBottom: theme.spacing(2),
-  },
   targetApp: {
     color: theme.palette.text.primary,
     fontWeight: theme.typography.fontWeightMedium,
@@ -42,35 +44,56 @@ interface Props {
 }
 
 const DIALOG_TITLE = "Encrypting secret data for application";
+const BASE64_CHECKBOX_LABEL =
+  "Use base64 encoding before encrypting the secret";
 
-export const SealedSecretDialog: FC<Props> = ({
+const validationSchema = Yup.object({
+  secretData: Yup.string().required(),
+  base64: Yup.bool(),
+});
+
+export const SealedSecretDialog: FC<Props> = memo(function SealedSecretDialog({
   open,
   applicationId,
   onClose,
-}) => {
+}) {
   const classes = useStyles();
-  const dispatch = useDispatch();
-  const [data, setData] = useState("");
+  const dispatch = useDispatch<AppDispatch>();
   const secretRef = useRef<HTMLDivElement>(null);
 
-  const [application, sealedSecret] = useSelector<
+  const [application, isLoading, sealedSecret] = useSelector<
     AppState,
-    [Application | undefined, SealedSecret]
+    [Application | undefined, boolean, string | null]
   >((state) => [
     applicationId ? selectById(state.applications, applicationId) : undefined,
-    state.sealedSecret,
+    state.sealedSecret.isLoading,
+    state.sealedSecret.data,
   ]);
 
-  const handleGenerate = (e: React.FormEvent<HTMLFormElement>): void => {
-    e.preventDefault();
-    if (application) {
-      dispatch(generateSealedSecret({ data, pipedId: application.pipedId, base64Encoding: false }));
-    }
-  };
+  const formik = useFormik({
+    initialValues: {
+      secretData: "",
+      base64: false,
+    },
+    validationSchema,
+    validateOnMount: true,
+    async onSubmit(values) {
+      if (!application) {
+        return;
+      }
+      await dispatch(
+        generateSealedSecret({
+          data: values.secretData,
+          pipedId: application.pipedId,
+          base64Encoding: values.base64,
+        })
+      );
+    },
+  });
 
-  const handleOnEnter = (): void => {
-    setData("");
-  };
+  const handleOnEnter = useCallback(() => {
+    formik.resetForm();
+  }, [formik]);
 
   const handleOnExited = (): void => {
     // Clear state after closed dialog
@@ -79,12 +102,12 @@ export const SealedSecretDialog: FC<Props> = ({
     }, 200);
   };
 
-  const handleOnClickCopy = (): void => {
-    if (sealedSecret.data) {
-      copy(sealedSecret.data);
+  const handleOnClickCopy = useCallback(() => {
+    if (sealedSecret) {
+      copy(sealedSecret);
       dispatch(addToast({ message: "Secret copied to clipboard" }));
     }
-  };
+  }, [dispatch, sealedSecret]);
 
   if (!application) {
     return null;
@@ -97,17 +120,19 @@ export const SealedSecretDialog: FC<Props> = ({
       onExit={handleOnExited}
       onClose={onClose}
     >
-      {sealedSecret.data ? (
+      {sealedSecret ? (
         <>
           <DialogTitle>{DIALOG_TITLE}</DialogTitle>
           <DialogContent>
-            <Typography variant="caption">Encrypted secret data</Typography>
+            <Typography variant="caption" color="textSecondary">
+              Encrypted secret data
+            </Typography>
             <Typography
               variant="body2"
               className={classes.encryptedSecret}
               ref={secretRef}
             >
-              {sealedSecret.data}
+              {sealedSecret}
               <IconButton
                 size="small"
                 style={{ marginLeft: 8 }}
@@ -119,19 +144,23 @@ export const SealedSecretDialog: FC<Props> = ({
             </Typography>
           </DialogContent>
           <DialogActions>
-            <Button onClick={onClose}>Close</Button>
+            <Button onClick={onClose}>{UI_TEXT_CLOSE}</Button>
           </DialogActions>
         </>
       ) : (
-        <form onSubmit={handleGenerate}>
+        <form onSubmit={formik.handleSubmit}>
           <DialogTitle>{DIALOG_TITLE}</DialogTitle>
           <DialogContent>
-            <Typography variant="caption">Application</Typography>
+            <Typography variant="caption" color="textSecondary">
+              Application
+            </Typography>
             <Typography variant="body1" className={classes.targetApp}>
               {application.name}
             </Typography>
             <TextField
-              value={data}
+              id="secretData"
+              name="secretData"
+              value={formik.values.secretData}
               variant="outlined"
               margin="dense"
               label="Secret Data"
@@ -140,17 +169,29 @@ export const SealedSecretDialog: FC<Props> = ({
               rows={4}
               required
               autoFocus
-              onChange={(e) => setData(e.currentTarget.value)}
+              onChange={formik.handleChange}
+            />
+            <FormControlLabel
+              control={
+                <Checkbox
+                  color="primary"
+                  checked={formik.values.base64}
+                  onChange={formik.handleChange}
+                  name="base64"
+                />
+              }
+              disabled={formik.isSubmitting}
+              label={BASE64_CHECKBOX_LABEL}
             />
           </DialogContent>
           <DialogActions>
-            <Button onClick={onClose} disabled={sealedSecret.isLoading}>
-              Cancel
+            <Button onClick={onClose} disabled={isLoading}>
+              {UI_TEXT_CANCEL}
             </Button>
             <Button
               color="primary"
               type="submit"
-              disabled={sealedSecret.isLoading}
+              disabled={isLoading || formik.isValid === false}
             >
               Encrypt
             </Button>
@@ -159,4 +200,4 @@ export const SealedSecretDialog: FC<Props> = ({
       )}
     </Dialog>
   );
-};
+});
