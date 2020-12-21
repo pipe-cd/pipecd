@@ -99,9 +99,14 @@ func (s *ops) run(ctx context.Context, t cli.Telemetry) error {
 	{
 		collector := insightcollector.NewInsightCollector(ds, fs, t.Logger)
 		c := cron.New(cron.WithLocation(time.UTC))
-		c.AddFunc(cfg.InsightCollectorConfig.Schedule, func() {
-			collector.Run(ctx)
+		_, err := c.AddFunc(cfg.InsightCollectorConfig.Schedule, func() {
+			if err := collector.Run(ctx); err != nil {
+				t.Logger.Error("failed to run the insight collector", zap.Error(err))
+			}
 		})
+		if err != nil {
+			t.Logger.Error("failed to configure the insight collector", zap.Error(err))
+		}
 	}
 
 	// Start running HTTP server.
