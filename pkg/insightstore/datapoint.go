@@ -124,17 +124,6 @@ func ToDataPoints(i interface{}) ([]DataPoint, error) {
 	}
 }
 
-// GetDataPoint gets a data point by timestamp
-func GetDataPoint(dp []DataPoint, timestamp int64) (DataPoint, error) {
-	for _, d := range dp {
-		ts := d.GetTimestamp()
-		if ts == timestamp {
-			return d, nil
-		}
-	}
-	return nil, ErrNotFound
-}
-
 // UpdateDataPoint sets data point
 func UpdateDataPoint(dp []DataPoint, point DataPoint, timestamp int64) ([]DataPoint, error) {
 	latestData := dp[len(dp)-1]
