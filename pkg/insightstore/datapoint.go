@@ -47,7 +47,7 @@ func (d *DeployFrequency) Merge(point DataPoint) error {
 
 	df, ok := point.(*DeployFrequency)
 	if !ok {
-		return fmt.Errorf("cannot cast to DeployFrequency. DataPoint: %v", point)
+		return fmt.Errorf("can not cast to DataPoint to DeployFrequency, %v", point)
 	}
 
 	if df.Timestamp != d.Timestamp {
@@ -82,7 +82,7 @@ func (c *ChangeFailureRate) Merge(point DataPoint) error {
 
 	cfr, ok := point.(*ChangeFailureRate)
 	if !ok {
-		return fmt.Errorf("cannot cast to DeployFrequency. DataPoint: %v", point)
+		return fmt.Errorf("can not cast to DataPoint to ChangeFailureRate, %v", point)
 	}
 
 	if cfr.Timestamp != c.Timestamp {
