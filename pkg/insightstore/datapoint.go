@@ -104,7 +104,7 @@ type DataPoint interface {
 	Merge(point DataPoint) error
 }
 
-// convert types to list of DataPoint.
+// ToDataPoints converts a list of concrete points into the list of DataPoints
 func ToDataPoints(i interface{}) ([]DataPoint, error) {
 	switch dps := i.(type) {
 	case []*DeployFrequency:
