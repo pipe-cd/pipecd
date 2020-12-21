@@ -6,7 +6,7 @@ import { StatusIcon } from "./deployment-status-icon";
 test("DEPLOYMENT_CANCELLED", () => {
   render(<StatusIcon status={DeploymentStatus.DEPLOYMENT_CANCELLED} />, {});
 
-  expect(screen.getByTestId("deployment-error-icon")).toBeInTheDocument();
+  expect(screen.getByTestId("deployment-cancel-icon")).toBeInTheDocument();
 });
 
 test("DEPLOYMENT_FAILURE", () => {
