@@ -56,16 +56,18 @@ func NewInsightCollector(
 	return a
 }
 
+var (
+	pageSize = 50
+)
+
 func (i *InsightCollector) Run(ctx context.Context) error {
 	now := time.Now().UTC()
 	maxUpdateAt := now.Unix()
 
 	for {
-		listAppsPageSize := 50
-
 		// TODO: When [#1195](https://github.com/pipe-cd/pipe/issues/1195) is resolved, modify to use page option instead of filter with updatedAt.
 		apps, err := i.applicationStore.ListApplications(ctx, datastore.ListOptions{
-			PageSize: listAppsPageSize,
+			PageSize: pageSize,
 			Filters: []datastore.ListFilter{
 				{
 					Field:    "UpdatedAt",
@@ -258,7 +260,6 @@ func (i *InsightCollector) getInsightDataForDeployFrequency(
 		})
 	}
 
-	pageSize := 50
 	deployments, err := i.deploymentStore.ListDeployments(ctx, datastore.ListOptions{
 		PageSize: pageSize,
 		Filters:  filters,
@@ -318,7 +319,6 @@ func (i *InsightCollector) getInsightDataForChangeFailureRate(
 		})
 	}
 
-	pageSize := 50
 	deployments, err := i.deploymentStore.ListDeployments(ctx, datastore.ListOptions{
 		PageSize: pageSize,
 		Filters:  filters,
