@@ -21,13 +21,14 @@ import (
 	"testing"
 
 	"github.com/golang/mock/gomock"
+	"github.com/stretchr/testify/assert"
+
 	"github.com/pipe-cd/pipe/pkg/app/api/service/webservice"
 	"github.com/pipe-cd/pipe/pkg/cache"
 	"github.com/pipe-cd/pipe/pkg/cache/cachetest"
 	"github.com/pipe-cd/pipe/pkg/datastore"
 	"github.com/pipe-cd/pipe/pkg/datastore/datastoretest"
 	"github.com/pipe-cd/pipe/pkg/model"
-	"github.com/stretchr/testify/assert"
 )
 
 func Test_filterDeploymentConfigTemplates(t *testing.T) {
