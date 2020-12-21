@@ -22,8 +22,6 @@ import (
 	"path/filepath"
 	"time"
 
-	"github.com/pipe-cd/pipe/pkg/insightstore"
-
 	"github.com/NYTimes/gziphandler"
 	jwtgo "github.com/dgrijalva/jwt-go"
 	"github.com/spf13/cobra"
@@ -49,6 +47,7 @@ import (
 	"github.com/pipe-cd/pipe/pkg/filestore"
 	"github.com/pipe-cd/pipe/pkg/filestore/gcs"
 	"github.com/pipe-cd/pipe/pkg/filestore/minio"
+	"github.com/pipe-cd/pipe/pkg/insightstore"
 	"github.com/pipe-cd/pipe/pkg/jwt"
 	"github.com/pipe-cd/pipe/pkg/model"
 	"github.com/pipe-cd/pipe/pkg/redis"
