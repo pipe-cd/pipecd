@@ -35,7 +35,7 @@ import (
 )
 
 const (
-	defaultCommitMessageFormat = "Update image %s to %s defined at %s in %s"
+	defaultCommitMessageFormat = "Update %s in %s to %s"
 	defaultCheckInterval       = 5 * time.Minute
 )
 
@@ -245,7 +245,7 @@ func (w *watcher) checkOutdatedImage(ctx context.Context, target *config.ImageWa
 		return nil, fmt.Errorf("failed to replace value at %s with %s: %w", target.Field, imageInRegistry, err)
 	}
 	if commitMsg == "" {
-		commitMsg = fmt.Sprintf(defaultCommitMessageFormat, imageInGit, imageInRegistry.String(), target.Field, target.FilePath)
+		commitMsg = fmt.Sprintf(defaultCommitMessageFormat, imageInGit, target.FilePath, imageInRegistry.Tag)
 	}
 	return &commit{
 		changes: map[string][]byte{
