@@ -1,19 +1,19 @@
 import { createAsyncThunk, createSlice } from "@reduxjs/toolkit";
 import { generateApplicationSealedSecret } from "../api/piped";
 
-export type SealedSecret = {
+export interface SealedSecretState {
   isLoading: boolean;
   data: string | null;
-};
+}
 
-const initialState: SealedSecret = {
+const initialState: SealedSecretState = {
   isLoading: false,
   data: null,
 };
 
 export const generateSealedSecret = createAsyncThunk<
   string,
-  { pipedId: string; data: string, base64Encoding: boolean }
+  { pipedId: string; data: string; base64Encoding: boolean }
 >("sealedSecret/generate", async (params) => {
   const res = await generateApplicationSealedSecret(params);
   return res.data;
