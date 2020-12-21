@@ -18,7 +18,6 @@ import (
 	"context"
 	"errors"
 	"fmt"
-	"sort"
 	"time"
 
 	"go.uber.org/zap"
@@ -104,7 +103,7 @@ func (i *InsightCollector) Run(ctx context.Context) error {
 
 					for _, s := range model.InsightStep_value {
 						step := model.InsightStep(s)
-						chunk, err = i.updateChunk(chunk, step, k, updatedps, accumulateTo)
+						chunk, err = i.updateChunk(chunk, step, updatedps, accumulateTo)
 						if err != nil {
 							return err
 						}
@@ -130,7 +129,7 @@ func (i *InsightCollector) Run(ctx context.Context) error {
 
 					for _, s := range model.InsightStep_value {
 						step := model.InsightStep(s)
-						years, err = i.updateChunk(years, step, k, updatedps, accumulateTo)
+						years, err = i.updateChunk(years, step, updatedps, accumulateTo)
 						if err != nil {
 							return err
 						}
@@ -147,26 +146,20 @@ func (i *InsightCollector) Run(ctx context.Context) error {
 	return nil
 }
 
-func (i *InsightCollector) updateChunk(chunk insightstore.Chunk, step model.InsightStep, kind model.InsightMetricsKind, updatedps map[int64]insightstore.DataPoint, accumulatedTo int64) (insightstore.Chunk, error) {
+func (i *InsightCollector) updateChunk(chunk insightstore.Chunk, step model.InsightStep, updatedps []insightstore.DataPoint, accumulatedTo int64) (insightstore.Chunk, error) {
 	dps, err := chunk.GetDataPoints(step)
 	if err != nil {
 		return nil, err
 	}
 
-	for k, d := range updatedps {
-		key := insightstore.NormalizeTime(time.Unix(k, 0).UTC(), step)
-		dp, err := insightstore.GetDataPoint(dps, key.Unix())
-		if err != nil && err != insightstore.ErrNotFound {
-			return nil, err
-		}
-		err = d.Merge(dp)
+	for _, d := range updatedps {
+		key := insightstore.NormalizeTime(time.Unix(d.GetTimestamp(), 0).UTC(), step)
+
+		dps, err = insightstore.UpdateDataPoint(dps, d, key.Unix())
 		if err != nil {
 			return nil, err
 		}
-		dps = insightstore.SetDataPoint(dps, d, k)
 	}
-	sort.SliceStable(dps, func(i, j int) bool { return dps[i].GetTimestamp() < dps[j].GetTimestamp() })
-
 	chunk.SetAccumulatedTo(accumulatedTo)
 	err = chunk.SetDataPoints(step, dps)
 	if err != nil {
@@ -182,7 +175,7 @@ func (i *InsightCollector) getDailyInsightData(
 	kind model.InsightMetricsKind,
 	rangeFrom time.Time,
 	rangeTo time.Time,
-) (map[int64]insightstore.DataPoint, int64, error) {
+) ([]insightstore.DataPoint, int64, error) {
 	step := model.InsightStep_DAILY
 
 	var movePoint func(time.Time, int) time.Time
@@ -191,7 +184,7 @@ func (i *InsightCollector) getDailyInsightData(
 		return from.AddDate(0, 0, i)
 	}
 
-	updatedps := map[int64]insightstore.DataPoint{}
+	var updatedps []insightstore.DataPoint
 
 	to := movePoint(rangeFrom, 1)
 	until := movePoint(rangeTo, 1)
@@ -222,7 +215,7 @@ func (i *InsightCollector) getDailyInsightData(
 			return nil, 0, err
 		}
 
-		updatedps[targetTimestamp] = data
+		updatedps = append(updatedps, data)
 		rangeFrom = a
 		accumulatedTo = a
 	}

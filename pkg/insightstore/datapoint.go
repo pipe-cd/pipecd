@@ -124,17 +124,6 @@ func ToDataPoints(i interface{}) ([]DataPoint, error) {
 	}
 }
 
-// findDataPoint find key in the list of data points by timestamp
-func findDataPoint(dp []DataPoint, timestamp int64) (int, error) {
-	for i, d := range dp {
-		ts := d.GetTimestamp()
-		if ts == timestamp {
-			return i, nil
-		}
-	}
-	return 0, ErrNotFound
-}
-
 // GetDataPoint gets a data point by timestamp
 func GetDataPoint(dp []DataPoint, timestamp int64) (DataPoint, error) {
 	for _, d := range dp {
@@ -146,16 +135,23 @@ func GetDataPoint(dp []DataPoint, timestamp int64) (DataPoint, error) {
 	return nil, ErrNotFound
 }
 
-// SetDataPoint sets data point specified by timestamp
-func SetDataPoint(dp []DataPoint, point DataPoint, timestamp int64) []DataPoint {
-	k, err := findDataPoint(dp, timestamp)
-	if err != nil {
-		if err == ErrNotFound {
-			return append(dp, point)
-		}
+// UpdateDataPoint sets data point
+func UpdateDataPoint(dp []DataPoint, point DataPoint, timestamp int64) ([]DataPoint, error) {
+	latestData := dp[len(dp)-1]
+	if timestamp < latestData.GetTimestamp() {
+		return nil, fmt.Errorf("invalid timestamp")
 	}
-	dp[k] = point
-	return dp
+
+	if timestamp == latestData.GetTimestamp() {
+		err := latestData.Merge(point)
+		if err != nil {
+			return nil, err
+		}
+		dp[len(dp)-1] = latestData
+	} else {
+		dp = append(dp, point)
+	}
+	return dp, nil
 }
 
 func extractDataPoints(dp []DataPoint, from, to time.Time) ([]*model.InsightDataPoint, error) {

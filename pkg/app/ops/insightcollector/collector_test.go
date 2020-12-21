@@ -47,7 +47,7 @@ func TestInsightCollector_getDailyInsightData(t *testing.T) {
 		name                   string
 		prepareMockDataStoreFn func(m *datastoretest.MockDeploymentStore)
 		args                   args
-		want                   map[int64]insightstore.DataPoint
+		want                   []insightstore.DataPoint
 		wantAccumulatedTo      int64
 		wantErr                bool
 	}{
@@ -242,7 +242,7 @@ func TestInsightCollector_getDailyInsightData(t *testing.T) {
 				rangeFrom: time.Date(2020, 10, 11, 4, 0, 0, 0, time.UTC),
 				rangeTo:   time.Date(2020, 10, 14, 0, 0, 0, 0, time.UTC),
 			},
-			want: func() map[int64]insightstore.DataPoint {
+			want: func() []insightstore.DataPoint {
 				daily := []*insightstore.DeployFrequency{
 					{
 						Timestamp:   time.Date(2020, 10, 11, 0, 0, 0, 0, time.UTC).Unix(),
@@ -261,11 +261,7 @@ func TestInsightCollector_getDailyInsightData(t *testing.T) {
 				if e != nil {
 					t.Fatalf("error when convert to data points: %v", e)
 				}
-				m := map[int64]insightstore.DataPoint{}
-				for _, d := range dps {
-					m[d.GetTimestamp()] = d
-				}
-				return m
+				return dps
 			}(),
 			wantAccumulatedTo: time.Date(2020, 10, 13, 1, 0, 0, 0, time.UTC).Unix(),
 			wantErr:           false,
@@ -508,7 +504,7 @@ func TestInsightCollector_getDailyInsightData(t *testing.T) {
 				rangeFrom: time.Date(2020, 10, 11, 4, 0, 0, 0, time.UTC),
 				rangeTo:   time.Date(2020, 10, 14, 0, 0, 0, 0, time.UTC),
 			},
-			want: func() map[int64]insightstore.DataPoint {
+			want: func() []insightstore.DataPoint {
 				daily := []*insightstore.ChangeFailureRate{
 					{
 						Timestamp:    time.Date(2020, 10, 11, 0, 0, 0, 0, time.UTC).Unix(),
@@ -533,11 +529,7 @@ func TestInsightCollector_getDailyInsightData(t *testing.T) {
 				if e != nil {
 					t.Fatalf("error when convert to data points: %v", e)
 				}
-				m := map[int64]insightstore.DataPoint{}
-				for _, d := range dps {
-					m[d.GetTimestamp()] = d
-				}
-				return m
+				return dps
 			}(),
 			wantAccumulatedTo: time.Date(2020, 10, 13, 8, 0, 0, 0, time.UTC).Unix(),
 			wantErr:           false,
@@ -835,8 +827,7 @@ func TestInsightCollector_updateChunk(t *testing.T) {
 	type args struct {
 		chunk         insightstore.Chunk
 		step          model.InsightStep
-		kind          model.InsightMetricsKind
-		updatedps     map[int64]insightstore.DataPoint
+		updatedps     []insightstore.DataPoint
 		accumulatedTo int64
 	}
 	tests := []struct {
@@ -871,8 +862,7 @@ func TestInsightCollector_updateChunk(t *testing.T) {
 					return c
 				}(),
 				step: model.InsightStep_DAILY,
-				kind: model.InsightMetricsKind_DEPLOYMENT_FREQUENCY,
-				updatedps: func() map[int64]insightstore.DataPoint {
+				updatedps: func() []insightstore.DataPoint {
 					daily := []*insightstore.DeployFrequency{
 						{
 							Timestamp:   time.Date(2020, 10, 11, 0, 0, 0, 0, time.UTC).Unix(),
@@ -891,11 +881,7 @@ func TestInsightCollector_updateChunk(t *testing.T) {
 					if e != nil {
 						t.Fatalf("error when convert to data points: %v", e)
 					}
-					m := map[int64]insightstore.DataPoint{}
-					for _, d := range dps {
-						m[d.GetTimestamp()] = d
-					}
-					return m
+					return dps
 				}(),
 				accumulatedTo: time.Date(2020, 10, 13, 1, 0, 0, 0, time.UTC).Unix(),
 			},
@@ -960,8 +946,7 @@ func TestInsightCollector_updateChunk(t *testing.T) {
 					return c
 				}(),
 				step: model.InsightStep_WEEKLY,
-				kind: model.InsightMetricsKind_DEPLOYMENT_FREQUENCY,
-				updatedps: func() map[int64]insightstore.DataPoint {
+				updatedps: func() []insightstore.DataPoint {
 					df := []*insightstore.DeployFrequency{
 						{
 							Timestamp:   time.Date(2020, 10, 11, 0, 0, 0, 0, time.UTC).Unix(),
@@ -972,11 +957,7 @@ func TestInsightCollector_updateChunk(t *testing.T) {
 					if e != nil {
 						t.Fatalf("error when convert to data points: %v", e)
 					}
-					m := map[int64]insightstore.DataPoint{}
-					for _, d := range dps {
-						m[d.GetTimestamp()] = d
-					}
-					return m
+					return dps
 				}(),
 				accumulatedTo: time.Date(2020, 10, 13, 3, 0, 0, 0, time.UTC).Unix(),
 			},
@@ -1033,8 +1014,7 @@ func TestInsightCollector_updateChunk(t *testing.T) {
 					return c
 				}(),
 				step: model.InsightStep_MONTHLY,
-				kind: model.InsightMetricsKind_DEPLOYMENT_FREQUENCY,
-				updatedps: func() map[int64]insightstore.DataPoint {
+				updatedps: func() []insightstore.DataPoint {
 					df := []*insightstore.DeployFrequency{
 						{
 							Timestamp:   time.Date(2020, 10, 1, 0, 0, 0, 0, time.UTC).Unix(),
@@ -1049,11 +1029,7 @@ func TestInsightCollector_updateChunk(t *testing.T) {
 					if e != nil {
 						t.Fatalf("error when convert to data points: %v", e)
 					}
-					m := map[int64]insightstore.DataPoint{}
-					for _, d := range dps {
-						m[d.GetTimestamp()] = d
-					}
-					return m
+					return dps
 				}(),
 				accumulatedTo: time.Date(2020, 11, 13, 3, 0, 0, 0, time.UTC).Unix(),
 			},
@@ -1110,8 +1086,7 @@ func TestInsightCollector_updateChunk(t *testing.T) {
 					return c
 				}(),
 				step: model.InsightStep_YEARLY,
-				kind: model.InsightMetricsKind_DEPLOYMENT_FREQUENCY,
-				updatedps: func() map[int64]insightstore.DataPoint {
+				updatedps: func() []insightstore.DataPoint {
 					df := []*insightstore.DeployFrequency{
 						{
 							Timestamp:   time.Date(2020, 1, 1, 0, 0, 0, 0, time.UTC).Unix(),
@@ -1126,11 +1101,7 @@ func TestInsightCollector_updateChunk(t *testing.T) {
 					if e != nil {
 						t.Fatalf("error when convert to data points: %v", e)
 					}
-					m := map[int64]insightstore.DataPoint{}
-					for _, d := range dps {
-						m[d.GetTimestamp()] = d
-					}
-					return m
+					return dps
 				}(),
 				accumulatedTo: time.Date(2021, 1, 13, 3, 0, 0, 0, time.UTC).Unix(),
 			},
@@ -1189,8 +1160,7 @@ func TestInsightCollector_updateChunk(t *testing.T) {
 					return c
 				}(),
 				step: model.InsightStep_DAILY,
-				kind: model.InsightMetricsKind_CHANGE_FAILURE_RATE,
-				updatedps: func() map[int64]insightstore.DataPoint {
+				updatedps: func() []insightstore.DataPoint {
 					daily := []*insightstore.ChangeFailureRate{
 						{
 							Timestamp:    time.Date(2020, 10, 11, 0, 0, 0, 0, time.UTC).Unix(),
@@ -1215,11 +1185,7 @@ func TestInsightCollector_updateChunk(t *testing.T) {
 					if e != nil {
 						t.Fatalf("error when convert to data points: %v", e)
 					}
-					m := map[int64]insightstore.DataPoint{}
-					for _, d := range dps {
-						m[d.GetTimestamp()] = d
-					}
-					return m
+					return dps
 				}(),
 				accumulatedTo: time.Date(2020, 10, 13, 8, 0, 0, 0, time.UTC).Unix(),
 			},
@@ -1270,7 +1236,7 @@ func TestInsightCollector_updateChunk(t *testing.T) {
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			a := &InsightCollector{}
-			got, err := a.updateChunk(tt.args.chunk, tt.args.step, tt.args.kind, tt.args.updatedps, tt.args.accumulatedTo)
+			got, err := a.updateChunk(tt.args.chunk, tt.args.step, tt.args.updatedps, tt.args.accumulatedTo)
 			if (err != nil) != tt.wantErr {
 				if !tt.wantErr {
 					assert.NoError(t, err)
