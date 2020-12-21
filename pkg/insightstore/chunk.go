@@ -31,10 +31,10 @@ type DeployFrequencyChunk struct {
 }
 
 type DeployFrequencyDataPoint struct {
-	Daily   []DeployFrequency `json:"daily"`
-	Weekly  []DeployFrequency `json:"weekly"`
-	Monthly []DeployFrequency `json:"monthly"`
-	Yearly  []DeployFrequency `json:"yearly"`
+	Daily   []*DeployFrequency `json:"daily"`
+	Weekly  []*DeployFrequency `json:"weekly"`
+	Monthly []*DeployFrequency `json:"monthly"`
+	Yearly  []*DeployFrequency `json:"yearly"`
 }
 
 func (c *DeployFrequencyChunk) GetFilePath() string {
@@ -68,9 +68,9 @@ func (c *DeployFrequencyChunk) GetDataPoints(step model.InsightStep) ([]DataPoin
 }
 
 func (c *DeployFrequencyChunk) SetDataPoints(step model.InsightStep, points []DataPoint) error {
-	dfs := make([]DeployFrequency, len(points))
+	dfs := make([]*DeployFrequency, len(points))
 	for i, p := range points {
-		dfs[i] = p.(DeployFrequency)
+		dfs[i] = p.(*DeployFrequency)
 	}
 	switch step {
 	case model.InsightStep_YEARLY:
@@ -97,10 +97,10 @@ type ChangeFailureRateChunk struct {
 }
 
 type ChangeFailureRateDataPoint struct {
-	Daily   []ChangeFailureRate `json:"daily"`
-	Weekly  []ChangeFailureRate `json:"weekly"`
-	Monthly []ChangeFailureRate `json:"monthly"`
-	Yearly  []ChangeFailureRate `json:"yearly"`
+	Daily   []*ChangeFailureRate `json:"daily"`
+	Weekly  []*ChangeFailureRate `json:"weekly"`
+	Monthly []*ChangeFailureRate `json:"monthly"`
+	Yearly  []*ChangeFailureRate `json:"yearly"`
 }
 
 func (c *ChangeFailureRateChunk) GetFilePath() string {
@@ -134,9 +134,9 @@ func (c *ChangeFailureRateChunk) GetDataPoints(step model.InsightStep) ([]DataPo
 }
 
 func (c *ChangeFailureRateChunk) SetDataPoints(step model.InsightStep, points []DataPoint) error {
-	cfs := make([]ChangeFailureRate, len(points))
+	cfs := make([]*ChangeFailureRate, len(points))
 	for i, p := range points {
-		cfs[i] = p.(ChangeFailureRate)
+		cfs[i] = p.(*ChangeFailureRate)
 	}
 	switch step {
 	case model.InsightStep_YEARLY:

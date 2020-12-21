@@ -243,7 +243,7 @@ func TestInsightCollector_getDailyInsightData(t *testing.T) {
 				rangeTo:   time.Date(2020, 10, 14, 0, 0, 0, 0, time.UTC),
 			},
 			want: func() map[int64]insightstore.DataPoint {
-				daily := []insightstore.DeployFrequency{
+				daily := []*insightstore.DeployFrequency{
 					{
 						Timestamp:   time.Date(2020, 10, 11, 0, 0, 0, 0, time.UTC).Unix(),
 						DeployCount: 3,
@@ -509,7 +509,7 @@ func TestInsightCollector_getDailyInsightData(t *testing.T) {
 				rangeTo:   time.Date(2020, 10, 14, 0, 0, 0, 0, time.UTC),
 			},
 			want: func() map[int64]insightstore.DataPoint {
-				daily := []insightstore.ChangeFailureRate{
+				daily := []*insightstore.ChangeFailureRate{
 					{
 						Timestamp:    time.Date(2020, 10, 11, 0, 0, 0, 0, time.UTC).Unix(),
 						Rate:         0.5,
@@ -586,7 +586,7 @@ func TestGetInsightDataForDeployFrequency(t *testing.T) {
 		targetRangeTo   time.Time
 		targetTimestamp int64
 		deploymentStore datastore.DeploymentStore
-		dataPoint       insightstore.DeployFrequency
+		dataPoint       *insightstore.DeployFrequency
 		accumulateTo    time.Time
 		wantErr         bool
 	}{
@@ -634,7 +634,7 @@ func TestGetInsightDataForDeployFrequency(t *testing.T) {
 				}, nil)
 				return s
 			}(),
-			dataPoint: insightstore.DeployFrequency{
+			dataPoint: &insightstore.DeployFrequency{
 				Timestamp:   time.Date(2020, 1, 1, 0, 0, 0, 0, time.UTC).Unix(),
 				DeployCount: 3,
 			},
@@ -705,7 +705,7 @@ func TestGetInsightDataForChangeFailureRate(t *testing.T) {
 		targetRangeTo   time.Time
 		targetTimestamp int64
 		deploymentStore datastore.DeploymentStore
-		dataPoint       insightstore.ChangeFailureRate
+		dataPoint       *insightstore.ChangeFailureRate
 		accumulatedTo   time.Time
 		wantErr         bool
 	}{
@@ -767,7 +767,7 @@ func TestGetInsightDataForChangeFailureRate(t *testing.T) {
 
 				return s
 			}(),
-			dataPoint: insightstore.ChangeFailureRate{
+			dataPoint: &insightstore.ChangeFailureRate{
 				Timestamp:    time.Date(2020, 1, 1, 0, 0, 0, 0, time.UTC).Unix(),
 				Rate:         0.25,
 				SuccessCount: 3,
@@ -852,7 +852,7 @@ func TestInsightCollector_updateChunk(t *testing.T) {
 					df := &insightstore.DeployFrequencyChunk{
 						AccumulatedTo: time.Date(2020, 10, 11, 1, 0, 0, 0, time.UTC).Unix(),
 						DataPoints: insightstore.DeployFrequencyDataPoint{
-							Daily: []insightstore.DeployFrequency{
+							Daily: []*insightstore.DeployFrequency{
 								{
 									Timestamp:   time.Date(2020, 10, 10, 0, 0, 0, 0, time.UTC).Unix(),
 									DeployCount: 10,
@@ -873,7 +873,7 @@ func TestInsightCollector_updateChunk(t *testing.T) {
 				step: model.InsightStep_DAILY,
 				kind: model.InsightMetricsKind_DEPLOYMENT_FREQUENCY,
 				updatedps: func() map[int64]insightstore.DataPoint {
-					daily := []insightstore.DeployFrequency{
+					daily := []*insightstore.DeployFrequency{
 						{
 							Timestamp:   time.Date(2020, 10, 11, 0, 0, 0, 0, time.UTC).Unix(),
 							DeployCount: 3,
@@ -903,7 +903,7 @@ func TestInsightCollector_updateChunk(t *testing.T) {
 				df := &insightstore.DeployFrequencyChunk{
 					AccumulatedTo: time.Date(2020, 10, 13, 1, 0, 0, 0, time.UTC).Unix(),
 					DataPoints: insightstore.DeployFrequencyDataPoint{
-						Daily: []insightstore.DeployFrequency{
+						Daily: []*insightstore.DeployFrequency{
 							{
 								Timestamp:   time.Date(2020, 10, 10, 0, 0, 0, 0, time.UTC).Unix(),
 								DeployCount: 10,
@@ -941,7 +941,7 @@ func TestInsightCollector_updateChunk(t *testing.T) {
 					df := &insightstore.DeployFrequencyChunk{
 						AccumulatedTo: time.Date(2020, 10, 11, 1, 0, 0, 0, time.UTC).Unix(),
 						DataPoints: insightstore.DeployFrequencyDataPoint{
-							Weekly: []insightstore.DeployFrequency{
+							Weekly: []*insightstore.DeployFrequency{
 								{
 									Timestamp:   time.Date(2020, 10, 4, 0, 0, 0, 0, time.UTC).Unix(),
 									DeployCount: 10,
@@ -962,7 +962,7 @@ func TestInsightCollector_updateChunk(t *testing.T) {
 				step: model.InsightStep_WEEKLY,
 				kind: model.InsightMetricsKind_DEPLOYMENT_FREQUENCY,
 				updatedps: func() map[int64]insightstore.DataPoint {
-					df := []insightstore.DeployFrequency{
+					df := []*insightstore.DeployFrequency{
 						{
 							Timestamp:   time.Date(2020, 10, 11, 0, 0, 0, 0, time.UTC).Unix(),
 							DeployCount: 7,
@@ -984,7 +984,7 @@ func TestInsightCollector_updateChunk(t *testing.T) {
 				df := &insightstore.DeployFrequencyChunk{
 					AccumulatedTo: time.Date(2020, 10, 13, 3, 0, 0, 0, time.UTC).Unix(),
 					DataPoints: insightstore.DeployFrequencyDataPoint{
-						Weekly: []insightstore.DeployFrequency{
+						Weekly: []*insightstore.DeployFrequency{
 							{
 								Timestamp:   time.Date(2020, 10, 4, 0, 0, 0, 0, time.UTC).Unix(),
 								DeployCount: 10,
@@ -1014,7 +1014,7 @@ func TestInsightCollector_updateChunk(t *testing.T) {
 					df := &insightstore.DeployFrequencyChunk{
 						AccumulatedTo: time.Date(2020, 10, 11, 1, 0, 0, 0, time.UTC).Unix(),
 						DataPoints: insightstore.DeployFrequencyDataPoint{
-							Monthly: []insightstore.DeployFrequency{
+							Monthly: []*insightstore.DeployFrequency{
 								{
 									Timestamp:   time.Date(2020, 10, 1, 0, 0, 0, 0, time.UTC).Unix(),
 									DeployCount: 10,
@@ -1035,7 +1035,7 @@ func TestInsightCollector_updateChunk(t *testing.T) {
 				step: model.InsightStep_MONTHLY,
 				kind: model.InsightMetricsKind_DEPLOYMENT_FREQUENCY,
 				updatedps: func() map[int64]insightstore.DataPoint {
-					df := []insightstore.DeployFrequency{
+					df := []*insightstore.DeployFrequency{
 						{
 							Timestamp:   time.Date(2020, 10, 1, 0, 0, 0, 0, time.UTC).Unix(),
 							DeployCount: 3,
@@ -1061,7 +1061,7 @@ func TestInsightCollector_updateChunk(t *testing.T) {
 				df := &insightstore.DeployFrequencyChunk{
 					AccumulatedTo: time.Date(2020, 11, 13, 3, 0, 0, 0, time.UTC).Unix(),
 					DataPoints: insightstore.DeployFrequencyDataPoint{
-						Monthly: []insightstore.DeployFrequency{
+						Monthly: []*insightstore.DeployFrequency{
 							{
 								Timestamp:   time.Date(2020, 10, 1, 0, 0, 0, 0, time.UTC).Unix(),
 								DeployCount: 13,
@@ -1091,7 +1091,7 @@ func TestInsightCollector_updateChunk(t *testing.T) {
 					df := &insightstore.DeployFrequencyChunk{
 						AccumulatedTo: time.Date(2020, 10, 11, 1, 0, 0, 0, time.UTC).Unix(),
 						DataPoints: insightstore.DeployFrequencyDataPoint{
-							Yearly: []insightstore.DeployFrequency{
+							Yearly: []*insightstore.DeployFrequency{
 								{
 									Timestamp:   time.Date(2020, 1, 1, 0, 0, 0, 0, time.UTC).Unix(),
 									DeployCount: 10,
@@ -1112,7 +1112,7 @@ func TestInsightCollector_updateChunk(t *testing.T) {
 				step: model.InsightStep_YEARLY,
 				kind: model.InsightMetricsKind_DEPLOYMENT_FREQUENCY,
 				updatedps: func() map[int64]insightstore.DataPoint {
-					df := []insightstore.DeployFrequency{
+					df := []*insightstore.DeployFrequency{
 						{
 							Timestamp:   time.Date(2020, 1, 1, 0, 0, 0, 0, time.UTC).Unix(),
 							DeployCount: 3,
@@ -1138,7 +1138,7 @@ func TestInsightCollector_updateChunk(t *testing.T) {
 				df := &insightstore.DeployFrequencyChunk{
 					AccumulatedTo: time.Date(2021, 1, 13, 3, 0, 0, 0, time.UTC).Unix(),
 					DataPoints: insightstore.DeployFrequencyDataPoint{
-						Yearly: []insightstore.DeployFrequency{
+						Yearly: []*insightstore.DeployFrequency{
 							{
 								Timestamp:   time.Date(2020, 1, 1, 0, 0, 0, 0, time.UTC).Unix(),
 								DeployCount: 13,
@@ -1168,7 +1168,7 @@ func TestInsightCollector_updateChunk(t *testing.T) {
 					df := &insightstore.ChangeFailureRateChunk{
 						AccumulatedTo: time.Date(2020, 10, 11, 1, 0, 0, 0, time.UTC).Unix(),
 						DataPoints: insightstore.ChangeFailureRateDataPoint{
-							Daily: []insightstore.ChangeFailureRate{
+							Daily: []*insightstore.ChangeFailureRate{
 								{
 									Timestamp:    time.Date(2020, 10, 10, 0, 0, 0, 0, time.UTC).Unix(),
 									Rate:         0,
@@ -1191,7 +1191,7 @@ func TestInsightCollector_updateChunk(t *testing.T) {
 				step: model.InsightStep_DAILY,
 				kind: model.InsightMetricsKind_CHANGE_FAILURE_RATE,
 				updatedps: func() map[int64]insightstore.DataPoint {
-					daily := []insightstore.ChangeFailureRate{
+					daily := []*insightstore.ChangeFailureRate{
 						{
 							Timestamp:    time.Date(2020, 10, 11, 0, 0, 0, 0, time.UTC).Unix(),
 							Rate:         0.5,
@@ -1227,7 +1227,7 @@ func TestInsightCollector_updateChunk(t *testing.T) {
 				df := &insightstore.ChangeFailureRateChunk{
 					AccumulatedTo: time.Date(2020, 10, 13, 8, 0, 0, 0, time.UTC).Unix(),
 					DataPoints: insightstore.ChangeFailureRateDataPoint{
-						Daily: []insightstore.ChangeFailureRate{
+						Daily: []*insightstore.ChangeFailureRate{
 							{
 								Timestamp:    time.Date(2020, 10, 10, 0, 0, 0, 0, time.UTC).Unix(),
 								Rate:         0,

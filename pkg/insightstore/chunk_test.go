@@ -56,7 +56,7 @@ func TestExtractDataPoints(t *testing.T) {
 				expected1 := DeployFrequencyChunk{
 					AccumulatedTo: 1609459200,
 					DataPoints: DeployFrequencyDataPoint{
-						Daily: []DeployFrequency{
+						Daily: []*DeployFrequency{
 							{
 								DeployCount: 1000,
 								Timestamp:   1612051200,
@@ -70,7 +70,7 @@ func TestExtractDataPoints(t *testing.T) {
 				expected2 := DeployFrequencyChunk{
 					AccumulatedTo: 1612123592,
 					DataPoints: DeployFrequencyDataPoint{
-						Daily: []DeployFrequency{
+						Daily: []*DeployFrequency{
 							{
 								DeployCount: 3000,
 								Timestamp:   1612137600,

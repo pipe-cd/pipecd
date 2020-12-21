@@ -159,11 +159,11 @@ func (i *InsightCollector) updateChunk(chunk insightstore.Chunk, step model.Insi
 		if err != nil && err != insightstore.ErrNotFound {
 			return nil, err
 		}
-		new, err := insightstore.Merge(dp, d, kind)
+		err = d.Merge(dp)
 		if err != nil {
 			return nil, err
 		}
-		dps = insightstore.SetDataPoint(dps, new, k)
+		dps = insightstore.SetDataPoint(dps, d, k)
 	}
 	sort.SliceStable(dps, func(i, j int) bool { return dps[i].GetTimestamp() < dps[j].GetTimestamp() })
 
@@ -240,7 +240,7 @@ func (i *InsightCollector) getInsightDataForDeployFrequency(
 	applicationID string,
 	targetTimestamp int64,
 	from time.Time,
-	to time.Time) (insightstore.DeployFrequency, time.Time, error) {
+	to time.Time) (*insightstore.DeployFrequency, time.Time, error) {
 	filters := []datastore.ListFilter{
 		{
 			Field:    "CreatedAt",
@@ -269,10 +269,10 @@ func (i *InsightCollector) getInsightDataForDeployFrequency(
 	})
 	if err != nil {
 		i.logger.Error("failed to get deployments", zap.Error(err))
-		return insightstore.DeployFrequency{}, time.Time{}, fmt.Errorf("failed to get deployments")
+		return &insightstore.DeployFrequency{}, time.Time{}, fmt.Errorf("failed to get deployments")
 	}
 	if len(deployments) == 0 {
-		return insightstore.DeployFrequency{}, time.Time{}, ErrDeploymentNotFound
+		return &insightstore.DeployFrequency{}, time.Time{}, ErrDeploymentNotFound
 	}
 
 	accumulatedTo := from.Unix()
@@ -282,7 +282,7 @@ func (i *InsightCollector) getInsightDataForDeployFrequency(
 		}
 	}
 
-	return insightstore.DeployFrequency{
+	return &insightstore.DeployFrequency{
 		Timestamp:   targetTimestamp,
 		DeployCount: float32(len(deployments)),
 	}, time.Unix(accumulatedTo, 0).UTC(), nil
@@ -294,7 +294,7 @@ func (i *InsightCollector) getInsightDataForChangeFailureRate(
 	applicationID string,
 	targetTimestamp int64,
 	from time.Time,
-	to time.Time) (insightstore.ChangeFailureRate, time.Time, error) {
+	to time.Time) (*insightstore.ChangeFailureRate, time.Time, error) {
 
 	filters := []datastore.ListFilter{
 		{
@@ -329,11 +329,11 @@ func (i *InsightCollector) getInsightDataForChangeFailureRate(
 	})
 	if err != nil {
 		i.logger.Error("failed to get deployments", zap.Error(err))
-		return insightstore.ChangeFailureRate{}, time.Time{}, fmt.Errorf("failed to get deployments")
+		return &insightstore.ChangeFailureRate{}, time.Time{}, fmt.Errorf("failed to get deployments")
 	}
 
 	if len(deployments) == 0 {
-		return insightstore.ChangeFailureRate{}, time.Time{}, ErrDeploymentNotFound
+		return &insightstore.ChangeFailureRate{}, time.Time{}, ErrDeploymentNotFound
 	}
 
 	var successCount int64
@@ -361,7 +361,7 @@ func (i *InsightCollector) getInsightDataForChangeFailureRate(
 		}
 	}
 
-	return insightstore.ChangeFailureRate{
+	return &insightstore.ChangeFailureRate{
 		Timestamp:    targetTimestamp,
 		Rate:         changeFailureRate,
 		SuccessCount: successCount,

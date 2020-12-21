@@ -39,7 +39,7 @@ func Test_ExtractDataPoints(t *testing.T) {
 			name: "success with yearly",
 			args: args{
 				datapoints: func() []DataPoint {
-					df := []DeployFrequency{
+					df := []*DeployFrequency{
 						{
 							DeployCount: 1000,
 							Timestamp:   time.Date(2020, 1, 1, 0, 0, 0, 0, time.UTC).Unix(),
@@ -70,7 +70,7 @@ func Test_ExtractDataPoints(t *testing.T) {
 			name: "success with monthly",
 			args: args{
 				datapoints: func() []DataPoint {
-					df := []DeployFrequency{
+					df := []*DeployFrequency{
 						{
 							DeployCount: 1000,
 							Timestamp:   time.Date(2020, 1, 1, 0, 0, 0, 0, time.UTC).Unix(),
@@ -93,7 +93,7 @@ func Test_ExtractDataPoints(t *testing.T) {
 			name: "success with weekly",
 			args: args{
 				datapoints: func() []DataPoint {
-					df := []DeployFrequency{
+					df := []*DeployFrequency{
 						{
 							DeployCount: 1000,
 							Timestamp:   time.Date(2021, 1, 3, 0, 0, 0, 0, time.UTC).Unix(),
@@ -124,7 +124,7 @@ func Test_ExtractDataPoints(t *testing.T) {
 			name: "success with daily",
 			args: args{
 				datapoints: func() []DataPoint {
-					df := []DeployFrequency{
+					df := []*DeployFrequency{
 						{
 							DeployCount: 1000,
 							Timestamp:   time.Date(2021, 1, 3, 0, 0, 0, 0, time.UTC).Unix(),

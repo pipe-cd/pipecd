@@ -32,12 +32,31 @@ type DeployFrequency struct {
 	DeployCount float32 `json:"deploy_count"`
 }
 
-func (d DeployFrequency) GetTimestamp() int64 {
+func (d *DeployFrequency) GetTimestamp() int64 {
 	return d.Timestamp
 }
 
-func (d DeployFrequency) Value() float32 {
+func (d *DeployFrequency) Value() float32 {
 	return d.DeployCount
+}
+
+func (d *DeployFrequency) Merge(point DataPoint) error {
+	if point == nil {
+		return nil
+	}
+
+	df, ok := point.(*DeployFrequency)
+	if !ok {
+		return fmt.Errorf("cannot cast to DeployFrequency. DataPoint: %v", point)
+	}
+
+	if df.Timestamp != d.Timestamp {
+		return fmt.Errorf("mismatch timestamp. want: %d, acutual: %d", d.Timestamp, df.Timestamp)
+	}
+
+	d.DeployCount += df.DeployCount
+	return nil
+
 }
 
 // ChangeFailureRate represents a data point that shows the change failure rate metrics.
@@ -48,81 +67,53 @@ type ChangeFailureRate struct {
 	FailureCount int64   `json:"failure_count"`
 }
 
-func (c ChangeFailureRate) GetTimestamp() int64 {
+func (c *ChangeFailureRate) GetTimestamp() int64 {
 	return c.Timestamp
 }
 
-func (c ChangeFailureRate) Value() float32 {
+func (c *ChangeFailureRate) Value() float32 {
 	return c.Rate
 }
 
-type DataPoint interface {
-	// Value gets data for model.InsightDataPoint
-	Value() float32
-	// Timestamp gets timestamp
-	GetTimestamp() int64
+func (c *ChangeFailureRate) Merge(point DataPoint) error {
+	if point == nil {
+		return nil
+	}
+
+	cfr, ok := point.(*ChangeFailureRate)
+	if !ok {
+		return fmt.Errorf("cannot cast to DeployFrequency. DataPoint: %v", point)
+	}
+
+	if cfr.Timestamp != c.Timestamp {
+		return fmt.Errorf("mismatch timestamp. want: %d, acutual: %d", c.Timestamp, cfr.Timestamp)
+	}
+
+	c.FailureCount += cfr.FailureCount
+	c.SuccessCount += cfr.SuccessCount
+	c.Rate = float32(c.FailureCount) / float32(c.FailureCount+c.SuccessCount)
+	return nil
 }
 
-func Merge(dp1 DataPoint, dp2 DataPoint, kind model.InsightMetricsKind) (DataPoint, error) {
-	if dp1 == nil {
-		return dp2, nil
-	}
-	if dp2 == nil {
-		return dp1, nil
-	}
-
-	switch kind {
-	case model.InsightMetricsKind_DEPLOYMENT_FREQUENCY:
-		df1, ok := dp1.(DeployFrequency)
-		if !ok {
-			return nil, fmt.Errorf("cannot cast to DeployFrequency. DataPoint: %v", dp1)
-		}
-
-		df2, ok := dp2.(DeployFrequency)
-		if !ok {
-			return nil, fmt.Errorf("cannot cast to DeployFrequency. DataPoint: %v", dp1)
-		}
-
-		if df1.Timestamp != df2.Timestamp {
-			return nil, fmt.Errorf("mismatch timestamp. dp1: %d, dp2: %d", df1.Timestamp, df2.Timestamp)
-		}
-
-		df1.DeployCount += df2.DeployCount
-		return df1, nil
-	case model.InsightMetricsKind_CHANGE_FAILURE_RATE:
-		cfr1, ok := dp1.(ChangeFailureRate)
-		if !ok {
-			return nil, fmt.Errorf("cannot cast to ChangeFailureRate. DataPoint: %v", dp1)
-		}
-
-		cfr2, ok := dp2.(ChangeFailureRate)
-		if !ok {
-			return nil, fmt.Errorf("cannot cast to ChangeFailureRate. DataPoint: %v", dp2)
-		}
-
-		if cfr1.Timestamp != cfr2.Timestamp {
-			return nil, fmt.Errorf("mismatch timestamp. dp1: %d, dp2: %d", cfr1.Timestamp, cfr2.Timestamp)
-		}
-
-		cfr1.FailureCount += cfr2.FailureCount
-		cfr1.SuccessCount += cfr2.SuccessCount
-		cfr1.Rate = float32(cfr1.FailureCount) / float32(cfr1.FailureCount+cfr1.SuccessCount)
-		return cfr1, nil
-	default:
-		return nil, fmt.Errorf("invalid kind: %v", kind)
-	}
+type DataPoint interface {
+	// Value gets data for model.InsightDataPoint.
+	Value() float32
+	// Timestamp gets timestamp.
+	GetTimestamp() int64
+	// Merge merges other DataPoint.
+	Merge(point DataPoint) error
 }
 
 // convert types to list of DataPoint.
 func ToDataPoints(i interface{}) ([]DataPoint, error) {
 	switch dps := i.(type) {
-	case []DeployFrequency:
+	case []*DeployFrequency:
 		dataPoints := make([]DataPoint, len(dps))
 		for j, dp := range dps {
 			dataPoints[j] = dp
 		}
 		return dataPoints, nil
-	case []ChangeFailureRate:
+	case []*ChangeFailureRate:
 		dataPoints := make([]DataPoint, len(dps))
 		for j, dp := range dps {
 			dataPoints[j] = dp
