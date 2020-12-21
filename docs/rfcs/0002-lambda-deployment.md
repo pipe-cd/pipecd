@@ -3,7 +3,7 @@
 
 # Summary
 
-This RFC proposes adding a new service deployment from PipeCD: AWS Lambda deployment. Similar to the current [Google clould run deployment](https://pipecd.dev/docs/feature-status/#cloudrun-deployment)
+This RFC proposes adding a new service deployment from PipeCD: AWS Lambda deployment. Similar to the current [Google clould run deployment](https://pipecd.dev/docs/feature-status/#cloudrun-deployment).
 
 # Motivation
 
@@ -17,7 +17,7 @@ Note:
 
 ### Usage
 
-The deployment configuration is used to customize the way to do the deployment. In case of Lambda function deployment, current common stage options (`WAIT`, `WAIT_APPROVAL`, `ANALYSIS`) are all inherit, beside with the stages for Lambda deployment itself: `LAMBDA_CANARY_ROLLOUT`, `LAMBDA_TRAFFIC_ROUTING`.
+The deployment configuration is used to customize the way to do the deployment. In case of Lambda function deployment, current common stage options (`WAIT`, `WAIT_APPROVAL`, `ANALYSIS`) are all inherited, besides with the stages for Lambda deployment itself: `LAMBDA_CANARY_ROLLOUT`, `LAMBDA_TRAFFIC_ROUTING`.
 
 ```yaml
 # https://docs.aws.amazon.com/lambda/latest/dg/configuration-versions.html
@@ -54,11 +54,11 @@ Just as current CloudRun but under `pkg/cloudprovider/lambda` package.
 
 # Alternatives
 
-Lambda function could also be deployed via source code by 2 difference methods:
-1. Directly: Compress the source code and submit it to AWS lambda controlplane
-2. Indirectly: Configure piped to be able to clone the source of Lambda function ( on the same repo which deployment be handled by piped or via remote git repo )
+Lambda function could also be deployed via source code by 2 steps method:
+1. Configure piped to be able to clone the source of Lambda function ( on the same repo which deployment be handled by piped or via remote git repo ).
+2. Compress the source code and deploy with [SAM](https://docs.aws.amazon.com/serverless-application-model/latest/developerguide/serverless-sam-cli-command-reference.html) or using [aws-sdk](https://github.com/aws/aws-lambda-go) ( piped handle the deployment ).
 
-The second method configuration sample as bellow:
+The deployment configuration sample as bellow:
 
 In case of source code for Lambda function is on the same repo handled by Piped
 ```yaml
