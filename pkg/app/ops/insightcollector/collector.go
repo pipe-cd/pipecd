@@ -62,24 +62,21 @@ var (
 
 func (i *InsightCollector) Run(ctx context.Context) error {
 	now := time.Now().UTC()
-	maxUpdateAt := now.Unix()
+	maxCreatedAt := now.Unix()
 
 	for {
-		//
-		// TODO: Modify to use page option instead of filter with updatedAt.
-		// related issue: [#1195](https://github.com/pipe-cd/pipe/issues/1195)
 		apps, err := i.applicationStore.ListApplications(ctx, datastore.ListOptions{
 			PageSize: pageSize,
 			Filters: []datastore.ListFilter{
 				{
-					Field:    "UpdatedAt",
+					Field:    "CreatedAt",
 					Operator: "<",
-					Value:    maxUpdateAt,
+					Value:    maxCreatedAt,
 				},
 			},
 			Orders: []datastore.Order{
 				{
-					Field:     "UpdatedAt",
+					Field:     "CreatedAt",
 					Direction: datastore.Desc,
 				},
 			},
@@ -88,7 +85,7 @@ func (i *InsightCollector) Run(ctx context.Context) error {
 			return err
 		}
 		if len(apps) == 0 {
-			// updated all application completely
+			// updated all application's insights completely
 			break
 		}
 
@@ -148,7 +145,7 @@ func (i *InsightCollector) Run(ctx context.Context) error {
 				}
 			}
 		}
-		maxUpdateAt = apps[len(apps)-1].UpdatedAt
+		maxCreatedAt = apps[len(apps)-1].CreatedAt
 	}
 	return nil
 }
