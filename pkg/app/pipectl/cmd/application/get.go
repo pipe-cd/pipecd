@@ -47,7 +47,7 @@ func newGetCommand(root *command) *cobra.Command {
 	return cmd
 }
 
-func (c *get) run(ctx context.Context, t cli.Telemetry) error {
+func (c *get) run(ctx context.Context, _ cli.Telemetry) error {
 	cli, err := c.root.clientOptions.NewClient(ctx)
 	if err != nil {
 		return fmt.Errorf("failed to initialize client: %w", err)
