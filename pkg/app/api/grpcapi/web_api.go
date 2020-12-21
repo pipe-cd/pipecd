@@ -37,6 +37,7 @@ import (
 	"github.com/pipe-cd/pipe/pkg/crypto"
 	"github.com/pipe-cd/pipe/pkg/datastore"
 	"github.com/pipe-cd/pipe/pkg/git"
+	"github.com/pipe-cd/pipe/pkg/insightstore"
 	"github.com/pipe-cd/pipe/pkg/model"
 	"github.com/pipe-cd/pipe/pkg/rpc/rpcauth"
 )
@@ -55,6 +56,7 @@ type WebAPI struct {
 	apiKeyStore               datastore.APIKeyStore
 	stageLogStore             stagelogstore.Store
 	applicationLiveStateStore applicationlivestatestore.Store
+	insightstore              insightstore.Store
 	commandStore              commandstore.Store
 	encrypter                 encrypter
 
@@ -73,6 +75,7 @@ func NewWebAPI(
 	sls stagelogstore.Store,
 	alss applicationlivestatestore.Store,
 	cmds commandstore.Store,
+	is insightstore.Store,
 	projs map[string]config.ControlPlaneProject,
 	encrypter encrypter,
 	logger *zap.Logger) *WebAPI {
@@ -84,6 +87,7 @@ func NewWebAPI(
 		projectStore:              datastore.NewProjectStore(ds),
 		apiKeyStore:               datastore.NewAPIKeyStore(ds),
 		stageLogStore:             sls,
+		insightstore:              is,
 		applicationLiveStateStore: alss,
 		commandStore:              cmds,
 		projectsInConfig:          projs,
@@ -1314,190 +1318,31 @@ func (a *WebAPI) GetInsightData(ctx context.Context, req *webservice.GetInsightD
 		return nil, err
 	}
 
-	return a.getInsightData(ctx, claims.Role.ProjectId, req)
-}
+	count := int(req.DataPointCount)
+	from := time.Unix(req.RangeFrom, 0)
 
-func (a *WebAPI) getInsightData(ctx context.Context, projectID string, req *webservice.GetInsightDataRequest) (*webservice.GetInsightDataResponse, error) {
-	counts := make([]*model.InsightDataPoint, req.DataPointCount)
-
-	var movePoint func(time.Time, int) time.Time
-	var start time.Time
-	// To prevent heavy loading
-	// - Support only daily
-	// - DataPointCount needs to be less than or equal to 7
-	switch req.Step {
-	case model.InsightStep_DAILY:
-		if req.DataPointCount > 7 {
-			return nil, status.Error(codes.InvalidArgument, "DataPointCount needs to be less than or equal to 7")
-		}
-		movePoint = func(from time.Time, i int) time.Time {
-			return from.AddDate(0, 0, i)
-		}
-		rangeFrom := time.Unix(req.RangeFrom, 0)
-		start = time.Date(rangeFrom.Year(), rangeFrom.Month(), rangeFrom.Day(), 0, 0, 0, 0, time.UTC)
-	default:
-		return nil, status.Error(codes.InvalidArgument, "Invalid step")
+	// TODO: caching the insight data inside the cache service
+	chunks, err := a.insightstore.LoadChunks(ctx, claims.Role.ProjectId, req.ApplicationId, req.MetricsKind, req.Step, from, count)
+	if err != nil {
+		a.logger.Error("failed to load chunks from insightstore", zap.Error(err))
+		return nil, err
 	}
 
-	for i := 0; i < int(req.DataPointCount); i++ {
-		targetRangeFrom := movePoint(start, i)
-		targetRangeTo := movePoint(targetRangeFrom, 1)
+	idp, err := insightstore.Chunks(chunks).ExtractDataPoints(req.Step, from, count)
+	if err != nil {
+		a.logger.Error("failed to extract data points from chunks", zap.Error(err))
+	}
 
-		var getInsightDataForEachKind func(context.Context, string, string, time.Time, time.Time) (*model.InsightDataPoint, error)
-		switch req.MetricsKind {
-		case model.InsightMetricsKind_DEPLOYMENT_FREQUENCY:
-			getInsightDataForEachKind = a.getInsightDataForDeployFrequency
-		case model.InsightMetricsKind_CHANGE_FAILURE_RATE:
-			getInsightDataForEachKind = a.getInsightDataForChangeFailureRate
-		default:
-			return nil, status.Error(codes.Unimplemented, "")
+	var updateAt int64
+	for _, c := range chunks {
+		accumulatedTo := c.GetAccumulatedTo()
+		if accumulatedTo > updateAt {
+			updateAt = accumulatedTo
 		}
-
-		count, err := getInsightDataForEachKind(ctx, projectID, req.ApplicationId, targetRangeFrom, targetRangeTo)
-		if err != nil {
-			return nil, err
-		}
-		counts[i] = count
 	}
 
 	return &webservice.GetInsightDataResponse{
-		UpdatedAt:  time.Now().Unix(),
-		DataPoints: counts,
-	}, nil
-}
-
-// getInsightDataForDeployFrequency accumulate insight data in target range for deploy frequency.
-// This function is temporary implementation for front end.
-func (a *WebAPI) getInsightDataForDeployFrequency(
-	ctx context.Context,
-	projectID string,
-	applicationID string,
-	targetRangeFrom time.Time,
-	targetRangeTo time.Time) (*model.InsightDataPoint, error) {
-	filters := []datastore.ListFilter{
-		{
-			Field:    "ProjectId",
-			Operator: "==",
-			Value:    projectID,
-		},
-		{
-			Field:    "CreatedAt",
-			Operator: ">=",
-			Value:    targetRangeFrom.Unix(),
-		},
-		{
-			Field:    "CreatedAt",
-			Operator: "<",
-			Value:    targetRangeTo.Unix(), // target's finish time on unix time
-		},
-	}
-
-	if applicationID != "" {
-		filters = append(filters, datastore.ListFilter{
-			Field:    "ApplicationId",
-			Operator: "==",
-			Value:    applicationID,
-		})
-	}
-
-	pageSize := 50
-	deployments, err := a.deploymentStore.ListDeployments(ctx, datastore.ListOptions{
-		PageSize: pageSize,
-		Filters:  filters,
-	})
-	if err != nil {
-		a.logger.Error("failed to get deployments", zap.Error(err))
-		return nil, status.Error(codes.Internal, "Failed to get deployments")
-	}
-
-	return &model.InsightDataPoint{
-		Timestamp: targetRangeFrom.Unix(),
-		Value:     float32(len(deployments)),
-	}, nil
-}
-
-// getInsightDataForChangeFailureRate accumulate insight data in target range for change failure rate
-// This function is temporary implementation for front end.
-func (a *WebAPI) getInsightDataForChangeFailureRate(
-	ctx context.Context,
-	projectID string,
-	applicationID string,
-	targetRangeFrom time.Time,
-	targetRangeTo time.Time) (*model.InsightDataPoint, error) {
-
-	commonFilters := []datastore.ListFilter{
-		{
-			Field:    "ProjectId",
-			Operator: "==",
-			Value:    projectID,
-		},
-		{
-			Field:    "CreatedAt",
-			Operator: ">=",
-			Value:    targetRangeFrom.Unix(),
-		},
-		{
-			Field:    "CreatedAt",
-			Operator: "<",
-			Value:    targetRangeTo.Unix(), // target's finish time on unix time
-		},
-	}
-
-	if applicationID != "" {
-		commonFilters = append(commonFilters, datastore.ListFilter{
-			Field:    "ApplicationId",
-			Operator: "==",
-			Value:    applicationID,
-		})
-	}
-
-	filterForSuccessDeploy := []datastore.ListFilter{
-		{
-			Field:    "Status",
-			Operator: "==",
-			Value:    model.DeploymentStatus_DEPLOYMENT_SUCCESS,
-		},
-	}
-
-	filterForFailureDeploy := []datastore.ListFilter{
-		{
-			Field:    "Status",
-			Operator: "==",
-			Value:    model.DeploymentStatus_DEPLOYMENT_FAILURE,
-		},
-	}
-
-	pageSize := 50
-	successDeployments, err := a.deploymentStore.ListDeployments(ctx, datastore.ListOptions{
-		PageSize: pageSize,
-		Filters:  append(filterForSuccessDeploy, commonFilters...),
-	})
-	if err != nil {
-		a.logger.Error("failed to get deployments", zap.Error(err))
-		return nil, status.Error(codes.Internal, "Failed to get deployments")
-	}
-
-	failureDeployments, err := a.deploymentStore.ListDeployments(ctx, datastore.ListOptions{
-		PageSize: pageSize,
-		Filters:  append(filterForFailureDeploy, commonFilters...),
-	})
-	if err != nil {
-		a.logger.Error("failed to get deployments", zap.Error(err))
-		return nil, status.Error(codes.Internal, "Failed to get deployments")
-	}
-
-	successCount := len(successDeployments)
-	failureCount := len(failureDeployments)
-
-	var changeFailureRate float32
-	if successCount+failureCount != 0 {
-		changeFailureRate = float32(failureCount) / float32(successCount+failureCount)
-	} else {
-		changeFailureRate = 0
-	}
-
-	return &model.InsightDataPoint{
-		Timestamp: targetRangeFrom.Unix(),
-		Value:     changeFailureRate,
+		UpdatedAt:  updateAt,
+		DataPoints: idp,
 	}, nil
 }
