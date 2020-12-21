@@ -4,14 +4,16 @@ go_library(
     name = "go_default_library",
     srcs = [
         "chunk.go",
-        "filepath.go",
         "filestore.go",
+        "filepath.go",
     ],
     importpath = "github.com/pipe-cd/pipe/pkg/insightstore",
     visibility = ["//visibility:public"],
     deps = [
+        "//pkg/cache:go_default_library",
         "//pkg/filestore:go_default_library",
         "//pkg/model:go_default_library",
+        "@org_uber_go_zap//:go_default_library",
     ],
 )
 
@@ -19,12 +21,14 @@ go_test(
     name = "go_default_test",
     size = "small",
     srcs = [
-        "chunk_test.go",
-        "filepath_test.go",
         "filestore_test.go",
+        "chunk_test.go",
+        "filepath_test.go"
     ],
     embed = [":go_default_library"],
     deps = [
+        "//pkg/cache:go_default_library",
+        "//pkg/cache/cachetest:go_default_library",
         "//pkg/filestore:go_default_library",
         "//pkg/filestore/filestoretest:go_default_library",
         "//pkg/model:go_default_library",
