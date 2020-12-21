@@ -626,9 +626,11 @@ func (a *WebAPI) GetApplication(ctx context.Context, req *webservice.GetApplicat
 	if err != nil {
 		return nil, err
 	}
-	if err := a.validateAppBelongsToProject(ctx, req.ApplicationId, claims.Role.ProjectId); err != nil {
-		return nil, err
+
+	if app.ProjectId != claims.Role.ProjectId {
+		return nil, status.Error(codes.InvalidArgument, "Requested application does not belong to your project")
 	}
+
 	return &webservice.GetApplicationResponse{
 		Application: app,
 	}, nil
