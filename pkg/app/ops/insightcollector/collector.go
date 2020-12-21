@@ -21,13 +21,11 @@ import (
 	"sort"
 	"time"
 
-	"github.com/pipe-cd/pipe/pkg/filestore"
-
-	"github.com/pipe-cd/pipe/pkg/insightstore"
-
 	"go.uber.org/zap"
 
 	"github.com/pipe-cd/pipe/pkg/datastore"
+	"github.com/pipe-cd/pipe/pkg/filestore"
+	"github.com/pipe-cd/pipe/pkg/insightstore"
 	"github.com/pipe-cd/pipe/pkg/model"
 )
 
@@ -64,7 +62,6 @@ func (i *InsightCollector) Run(ctx context.Context) error {
 
 	for {
 		apps, err := i.applicationStore.ListApplications(ctx, datastore.ListOptions{
-			Page:     0,
 			PageSize: 50,
 			Filters: []datastore.ListFilter{
 				{
@@ -79,7 +76,6 @@ func (i *InsightCollector) Run(ctx context.Context) error {
 					Direction: datastore.Desc,
 				},
 			},
-			Cursor: "",
 		})
 		if err != nil {
 			return err
