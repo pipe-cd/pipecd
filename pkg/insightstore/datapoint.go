@@ -124,11 +124,6 @@ func ToDataPoints(i interface{}) ([]DataPoint, error) {
 	}
 }
 
-// AppendDataPoint append new data point to the end of list
-func AppendDataPoint(dp []DataPoint, point DataPoint) []DataPoint {
-	return append(dp, point)
-}
-
 // findDataPoint find key in the list of data points by timestamp
 func findDataPoint(dp []DataPoint, timestamp int64) (int, error) {
 	for i, d := range dp {
@@ -156,7 +151,7 @@ func SetDataPoint(dp []DataPoint, point DataPoint, timestamp int64) []DataPoint 
 	k, err := findDataPoint(dp, timestamp)
 	if err != nil {
 		if err == ErrNotFound {
-			return AppendDataPoint(dp, point)
+			return append(dp, point)
 		}
 	}
 	dp[k] = point
