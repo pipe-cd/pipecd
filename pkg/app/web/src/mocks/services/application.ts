@@ -1,6 +1,7 @@
 import { rest } from "msw";
 import {
   AddApplicationResponse,
+  ListApplicationsResponse,
   SyncApplicationResponse,
   UpdateApplicationResponse,
 } from "pipe/pkg/app/web/api_client/service_pb";
@@ -34,6 +35,16 @@ export const applicationHandlers = [
   }),
   rest.post<Uint8Array>(createMask("/UpdateApplication"), (req, res, ctx) => {
     const response = new UpdateApplicationResponse();
+    const data = serialize(response.serializeBinary());
+    return res(
+      ctx.status(200),
+      ctx.set("Content-Type", "application/grpc-web+proto"),
+      ctx.body(data)
+    );
+  }),
+  rest.post<Uint8Array>(createMask("/ListApplications"), (req, res, ctx) => {
+    const response = new ListApplicationsResponse();
+    response.setApplicationsList([]);
     const data = serialize(response.serializeBinary());
     return res(
       ctx.status(200),
