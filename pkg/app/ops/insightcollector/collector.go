@@ -65,7 +65,9 @@ func (i *InsightCollector) Run(ctx context.Context) error {
 	maxUpdateAt := now.Unix()
 
 	for {
-		// TODO: When [#1195](https://github.com/pipe-cd/pipe/issues/1195) is resolved, modify to use page option instead of filter with updatedAt.
+		//
+		// TODO: Modify to use page option instead of filter with updatedAt.
+		// related issue: [#1195](https://github.com/pipe-cd/pipe/issues/1195)
 		apps, err := i.applicationStore.ListApplications(ctx, datastore.ListOptions{
 			PageSize: pageSize,
 			Filters: []datastore.ListFilter{
