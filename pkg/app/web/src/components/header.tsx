@@ -105,43 +105,45 @@ export const Header: FC = memo(function Header() {
           )}
         </div>
         <div className={classes.right}>
-          <Link
-            component={RouterLink}
-            className={classes.link}
-            activeClassName={classes.activeLink}
-            color="inherit"
-            to={PAGE_PATH_APPLICATIONS}
-          >
-            Applications
-          </Link>
-          <Link
-            component={RouterLink}
-            className={classes.link}
-            activeClassName={classes.activeLink}
-            color="inherit"
-            to={PAGE_PATH_DEPLOYMENTS}
-          >
-            Deployments
-          </Link>
-          {/** TODO: Restore a link to the insights in the v1 release */}
-          <Link
-            component={RouterLink}
-            className={classes.link}
-            activeClassName={classes.activeLink}
-            color="inherit"
-            to={PAGE_PATH_SETTINGS}
-          >
-            Settings
-          </Link>
           {me?.isLogin ? (
-            <IconButton
-              aria-label="User Menu"
-              aria-controls="user-menu"
-              aria-haspopup="true"
-              onClick={(e) => setAnchorEl(e.currentTarget)}
-            >
-              <Avatar className={classes.userAvatar} src={me.avatarUrl} />
-            </IconButton>
+            <>
+              <Link
+                component={RouterLink}
+                className={classes.link}
+                activeClassName={classes.activeLink}
+                color="inherit"
+                to={PAGE_PATH_APPLICATIONS}
+              >
+                Applications
+              </Link>
+              <Link
+                component={RouterLink}
+                className={classes.link}
+                activeClassName={classes.activeLink}
+                color="inherit"
+                to={PAGE_PATH_DEPLOYMENTS}
+              >
+                Deployments
+              </Link>
+              {/** TODO: Restore a link to the insights in the v1 release */}
+              <Link
+                component={RouterLink}
+                className={classes.link}
+                activeClassName={classes.activeLink}
+                color="inherit"
+                to={PAGE_PATH_SETTINGS}
+              >
+                Settings
+              </Link>
+              <IconButton
+                aria-label="User Menu"
+                aria-controls="user-menu"
+                aria-haspopup="true"
+                onClick={(e) => setAnchorEl(e.currentTarget)}
+              >
+                <Avatar className={classes.userAvatar} src={me.avatarUrl} />
+              </IconButton>
+            </>
           ) : (
             <Link
               color="inherit"
