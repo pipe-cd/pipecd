@@ -18,6 +18,8 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
+	"io"
+	"os"
 
 	"github.com/spf13/cobra"
 
@@ -28,12 +30,14 @@ import (
 type get struct {
 	root *command
 
-	appID string
+	appID  string
+	stdout io.Writer
 }
 
 func newGetCommand(root *command) *cobra.Command {
 	c := &get{
-		root: root,
+		root:   root,
+		stdout: os.Stdout,
 	}
 	cmd := &cobra.Command{
 		Use:   "get",
@@ -68,6 +72,6 @@ func (c *get) run(ctx context.Context, _ cli.Telemetry) error {
 		return fmt.Errorf("failed to marshal application: %w", err)
 	}
 
-	fmt.Println(string(bytes))
+	fmt.Fprintln(c.stdout, string(bytes))
 	return nil
 }
