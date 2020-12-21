@@ -187,7 +187,6 @@ type ControlPlaneCache struct {
 
 type ControlPlaneInsightCollector struct {
 	Schedule string `json:"schedule"`
-	Disable  bool   `json:"disable"`
 }
 
 func (c ControlPlaneCache) TTLDuration() time.Duration {

@@ -82,7 +82,6 @@ func TestControlPlaneConfig(t *testing.T) {
 				},
 				InsightCollector: ControlPlaneInsightCollector{
 					Schedule: "0 0 * * *",
-					Disable:  true,
 				},
 			},
 		},

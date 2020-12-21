@@ -33,10 +33,11 @@ import (
 )
 
 type ops struct {
-	httpPort    int
-	adminPort   int
-	gracePeriod time.Duration
-	configFile  string
+	httpPort               int
+	adminPort              int
+	gracePeriod            time.Duration
+	enableInsightCollector bool
+	configFile             string
 }
 
 func NewOpsCommand() *cobra.Command {
@@ -53,7 +54,7 @@ func NewOpsCommand() *cobra.Command {
 	cmd.Flags().IntVar(&s.httpPort, "http-port", s.httpPort, "The port number used to run http server.")
 	cmd.Flags().IntVar(&s.adminPort, "admin-port", s.adminPort, "The port number used to run a HTTP server for admin tasks such as metrics, healthz.")
 	cmd.Flags().DurationVar(&s.gracePeriod, "grace-period", s.gracePeriod, "How long to wait for graceful shutdown.")
-
+	cmd.Flags().BoolVar(&s.enableInsightCollector, "enable-insight-collector", s.enableInsightCollector, "enable insight collector.")
 	cmd.Flags().StringVar(&s.configFile, "config-file", s.configFile, "The path to the configuration file.")
 	return cmd
 }
@@ -96,7 +97,7 @@ func (s *ops) run(ctx context.Context, t cli.Telemetry) error {
 	}()
 
 	// Set insight collector
-	if !cfg.InsightCollector.Disable {
+	if s.enableInsightCollector {
 		collector := insightcollector.NewInsightCollector(ds, fs, t.Logger)
 		c := cron.New(cron.WithLocation(time.UTC))
 		_, err := c.AddFunc(cfg.InsightCollector.Schedule, func() {

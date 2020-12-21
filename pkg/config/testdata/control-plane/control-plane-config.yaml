@@ -35,4 +35,3 @@ spec:
 
   insightCollector:
     schedule: "0 0 * * *"
-    disable: true
