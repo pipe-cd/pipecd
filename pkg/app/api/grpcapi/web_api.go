@@ -1319,6 +1319,7 @@ func (a *WebAPI) GetInsightData(ctx context.Context, req *webservice.GetInsightD
 	count := int(req.DataPointCount)
 	from := time.Unix(req.RangeFrom, 0)
 
+	// TODO: caching the insight data inside the cache service
 	chunks, err := a.insightstore.LoadChunks(ctx, claims.Role.ProjectId, req.ApplicationId, req.MetricsKind, req.Step, from, count)
 	if err != nil {
 		a.logger.Error("failed to load chunks from insightstore", zap.Error(err))
