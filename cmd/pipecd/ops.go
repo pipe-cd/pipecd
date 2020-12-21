@@ -96,7 +96,7 @@ func (s *ops) run(ctx context.Context, t cli.Telemetry) error {
 	}()
 
 	// Set insight collector
-	{
+	if !cfg.InsightCollector.Disable {
 		collector := insightcollector.NewInsightCollector(ds, fs, t.Logger)
 		c := cron.New(cron.WithLocation(time.UTC))
 		_, err := c.AddFunc(cfg.InsightCollector.Schedule, func() {
