@@ -147,6 +147,26 @@ func (a *API) SyncApplication(ctx context.Context, req *apiservice.SyncApplicati
 	}, nil
 }
 
+func (a *API) GetApplication(ctx context.Context, req *apiservice.GetApplicationRequest) (*apiservice.GetApplicationResponse, error) {
+	key, err := requireAPIKey(ctx, model.APIKey_READ_ONLY, a.logger)
+	if err != nil {
+		return nil, err
+	}
+
+	app, err := getApplication(ctx, a.applicationStore, req.ApplicationId, a.logger)
+	if err != nil {
+		return nil, err
+	}
+
+	if app.ProjectId != key.ProjectId {
+		return nil, status.Error(codes.InvalidArgument, "Requested application does not belong to your project")
+	}
+
+	return &apiservice.GetApplicationResponse{
+		Application: app,
+	}, nil
+}
+
 func (a *API) GetDeployment(ctx context.Context, req *apiservice.GetDeploymentRequest) (*apiservice.GetDeploymentResponse, error) {
 	key, err := requireAPIKey(ctx, model.APIKey_READ_ONLY, a.logger)
 	if err != nil {
