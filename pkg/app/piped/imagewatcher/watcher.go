@@ -35,6 +35,7 @@ import (
 )
 
 const (
+	// image ref, file name and new tag are supposed.
 	defaultCommitMessageFormat = "Update %s in %s to %s"
 	defaultCheckInterval       = 5 * time.Minute
 )
