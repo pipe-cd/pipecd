@@ -46,7 +46,8 @@ type InsightCollector struct {
 func NewInsightCollector(
 	ds datastore.DataStore,
 	fs filestore.Store,
-	logger *zap.Logger) *InsightCollector {
+	logger *zap.Logger,
+) *InsightCollector {
 	a := &InsightCollector{
 		applicationStore: datastore.NewApplicationStore(ds),
 		deploymentStore:  datastore.NewDeploymentStore(ds),

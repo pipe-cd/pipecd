@@ -80,7 +80,7 @@ func TestControlPlaneConfig(t *testing.T) {
 				Cache: ControlPlaneCache{
 					TTL: Duration(5 * time.Minute),
 				},
-				InsightCollectorConfig: ControlPlaneInsightCollector{
+				InsightCollector: ControlPlaneInsightCollector{
 					Schedule: "0 0 * * *",
 				},
 			},

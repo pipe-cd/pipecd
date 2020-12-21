@@ -37,8 +37,8 @@ type ControlPlaneSpec struct {
 	Filestore ControlPlaneFileStore `json:"filestore"`
 	// The configuration of cache for control plane.
 	Cache ControlPlaneCache `json:"cache"`
-	// The configuration of insight collector
-	InsightCollectorConfig ControlPlaneInsightCollector `json:"insightCollector"`
+	// The configuration of insight collector.
+	InsightCollector ControlPlaneInsightCollector `json:"insightCollector"`
 	// List of debugging/quickstart projects defined in Control Plane configuration.
 	// Please note that do not use this to configure the projects running in the production.
 	Projects []ControlPlaneProject `json:"projects"`
