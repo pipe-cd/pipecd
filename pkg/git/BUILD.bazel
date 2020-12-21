@@ -4,6 +4,8 @@ go_library(
     name = "go_default_library",
     srcs = [
         "client.go",
+        "command_darwin.go",
+        "command_linux.go",
         "commit.go",
         "repo.go",
         "ssh_config.go",
