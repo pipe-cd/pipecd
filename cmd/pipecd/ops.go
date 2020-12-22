@@ -19,22 +19,25 @@ import (
 	"net/http"
 	"time"
 
+	"github.com/robfig/cron/v3"
 	"github.com/spf13/cobra"
 	"go.uber.org/zap"
 	"golang.org/x/sync/errgroup"
 
 	"github.com/pipe-cd/pipe/pkg/admin"
 	"github.com/pipe-cd/pipe/pkg/app/ops/handler"
+	"github.com/pipe-cd/pipe/pkg/app/ops/insightcollector"
 	"github.com/pipe-cd/pipe/pkg/cli"
 	"github.com/pipe-cd/pipe/pkg/datastore"
 	"github.com/pipe-cd/pipe/pkg/version"
 )
 
 type ops struct {
-	httpPort    int
-	adminPort   int
-	gracePeriod time.Duration
-	configFile  string
+	httpPort               int
+	adminPort              int
+	gracePeriod            time.Duration
+	enableInsightCollector bool
+	configFile             string
 }
 
 func NewOpsCommand() *cobra.Command {
@@ -51,7 +54,7 @@ func NewOpsCommand() *cobra.Command {
 	cmd.Flags().IntVar(&s.httpPort, "http-port", s.httpPort, "The port number used to run http server.")
 	cmd.Flags().IntVar(&s.adminPort, "admin-port", s.adminPort, "The port number used to run a HTTP server for admin tasks such as metrics, healthz.")
 	cmd.Flags().DurationVar(&s.gracePeriod, "grace-period", s.gracePeriod, "How long to wait for graceful shutdown.")
-
+	cmd.Flags().BoolVar(&s.enableInsightCollector, "enableInsightCollector-insight-collector", s.enableInsightCollector, "Enable insight collector.")
 	cmd.Flags().StringVar(&s.configFile, "config-file", s.configFile, "The path to the configuration file.")
 	return cmd
 }
@@ -81,6 +84,41 @@ func (s *ops) run(ctx context.Context, t cli.Telemetry) error {
 
 		}
 	}()
+
+	fs, err := createFilestore(ctx, cfg, t.Logger)
+	if err != nil {
+		t.Logger.Error("failed to create filestore", zap.Error(err))
+		return err
+	}
+	defer func() {
+		if err := fs.Close(); err != nil {
+			t.Logger.Error("failed to close filestore client", zap.Error(err))
+		}
+	}()
+
+	// Starting a cron job for insight collector.
+	if s.enableInsightCollector {
+		collector := insightcollector.NewInsightCollector(ds, fs, t.Logger)
+		c := cron.New(cron.WithLocation(time.UTC))
+		_, err := c.AddFunc(cfg.InsightCollector.Schedule, func() {
+			start := time.Now()
+			if err := collector.CollectProjectsInsight(ctx); err != nil {
+				t.Logger.Error("failed to run the project insight collector", zap.Error(err))
+			} else {
+				t.Logger.Info("project insight collector successfully finished", zap.Duration("duration", time.Since(start)))
+			}
+
+			start = time.Now()
+			if err := collector.CollectApplicationInsight(ctx); err != nil {
+				t.Logger.Error("failed to run the application insight collector", zap.Error(err))
+			} else {
+				t.Logger.Info("application insight collector successfully finished", zap.Duration("duration", time.Since(start)))
+			}
+		})
+		if err != nil {
+			t.Logger.Error("failed to configure the insight collector", zap.Error(err))
+		}
+	}
 
 	// Start running HTTP server.
 	{

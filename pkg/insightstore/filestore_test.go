@@ -83,7 +83,7 @@ func TestGetChunks(t *testing.T) {
 				expected1 := DeployFrequencyChunk{
 					AccumulatedTo: 1612051200,
 					DataPoints: DeployFrequencyDataPoint{
-						Daily: []DeployFrequency{
+						Daily: []*DeployFrequency{
 							{
 								DeployCount: 1000,
 								Timestamp:   time.Date(2021, 1, 31, 0, 0, 0, 0, time.UTC).Unix(),
@@ -92,12 +92,12 @@ func TestGetChunks(t *testing.T) {
 					},
 					FilePath: path,
 				}
-				chunk1, _ := toChunk(&expected1)
+				chunk1, _ := ToChunk(&expected1)
 				path = makeChunkFilePath("projectID", model.InsightMetricsKind_DEPLOYMENT_FREQUENCY, "appID", "2021-02")
 				expected2 := DeployFrequencyChunk{
 					AccumulatedTo: 1612137600,
 					DataPoints: DeployFrequencyDataPoint{
-						Daily: []DeployFrequency{
+						Daily: []*DeployFrequency{
 							{
 								DeployCount: 1000,
 								Timestamp:   time.Date(2021, 2, 1, 0, 0, 0, 0, time.UTC).Unix(),
@@ -106,7 +106,7 @@ func TestGetChunks(t *testing.T) {
 					},
 					FilePath: path,
 				}
-				chunk2, _ := toChunk(&expected2)
+				chunk2, _ := ToChunk(&expected2)
 				return []Chunk{chunk1, chunk2}
 			}(),
 		},
@@ -202,7 +202,7 @@ func TestGetChunk(t *testing.T) {
 				expected := DeployFrequencyChunk{
 					AccumulatedTo: 1609459200,
 					DataPoints: DeployFrequencyDataPoint{
-						Yearly: []DeployFrequency{
+						Yearly: []*DeployFrequency{
 							{
 								DeployCount: 1000,
 								Timestamp:   time.Date(2020, 1, 1, 0, 0, 0, 0, time.UTC).Unix(),
@@ -215,7 +215,7 @@ func TestGetChunk(t *testing.T) {
 					},
 					FilePath: path,
 				}
-				chunk, _ := toChunk(&expected)
+				chunk, _ := ToChunk(&expected)
 				return chunk
 			}(),
 		},
@@ -243,7 +243,7 @@ func TestGetChunk(t *testing.T) {
 				expected := DeployFrequencyChunk{
 					AccumulatedTo: 1609459200,
 					DataPoints: DeployFrequencyDataPoint{
-						Monthly: []DeployFrequency{
+						Monthly: []*DeployFrequency{
 							{
 								DeployCount: 1000,
 								Timestamp:   time.Date(2020, 1, 1, 0, 0, 0, 0, time.UTC).Unix(),
@@ -252,7 +252,7 @@ func TestGetChunk(t *testing.T) {
 					},
 					FilePath: path,
 				}
-				chunk, _ := toChunk(&expected)
+				chunk, _ := ToChunk(&expected)
 				return chunk
 			}(),
 		},
@@ -284,7 +284,7 @@ func TestGetChunk(t *testing.T) {
 				expected := DeployFrequencyChunk{
 					AccumulatedTo: 1609459200,
 					DataPoints: DeployFrequencyDataPoint{
-						Weekly: []DeployFrequency{
+						Weekly: []*DeployFrequency{
 							{
 								DeployCount: 1000,
 								Timestamp:   time.Date(2021, 1, 3, 0, 0, 0, 0, time.UTC).Unix(),
@@ -297,7 +297,7 @@ func TestGetChunk(t *testing.T) {
 					},
 					FilePath: path,
 				}
-				chunk, _ := toChunk(&expected)
+				chunk, _ := ToChunk(&expected)
 				return chunk
 			}(),
 		},
@@ -329,7 +329,7 @@ func TestGetChunk(t *testing.T) {
 				expected := DeployFrequencyChunk{
 					AccumulatedTo: 1609459200,
 					DataPoints: DeployFrequencyDataPoint{
-						Daily: []DeployFrequency{
+						Daily: []*DeployFrequency{
 							{
 								DeployCount: 1000,
 								Timestamp:   time.Date(2021, 1, 3, 0, 0, 0, 0, time.UTC).Unix(),
@@ -342,7 +342,7 @@ func TestGetChunk(t *testing.T) {
 					},
 					FilePath: path,
 				}
-				chunk, _ := toChunk(&expected)
+				chunk, _ := ToChunk(&expected)
 				return chunk
 			}(),
 		},
@@ -379,7 +379,7 @@ func TestGetChunk(t *testing.T) {
 				expected := ChangeFailureRateChunk{
 					AccumulatedTo: 1609459200,
 					DataPoints: ChangeFailureRateDataPoint{
-						Yearly: []ChangeFailureRate{
+						Yearly: []*ChangeFailureRate{
 							{
 								Rate:         0.75,
 								SuccessCount: 1000,
@@ -396,7 +396,7 @@ func TestGetChunk(t *testing.T) {
 					},
 					FilePath: path,
 				}
-				chunk, _ := toChunk(&expected)
+				chunk, _ := ToChunk(&expected)
 				return chunk
 			}(),
 		},
@@ -474,7 +474,7 @@ func TestFormatFrom(t *testing.T) {
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			got := normalizeTime(tt.args.from, tt.args.step)
+			got := NormalizeTime(tt.args.from, tt.args.step)
 			assert.Equal(t, got, tt.want)
 		})
 	}

@@ -6,6 +6,7 @@ go_library(
         "chunk.go",
         "filestore.go",
         "filepath.go",
+        "datapoint.go"
     ],
     importpath = "github.com/pipe-cd/pipe/pkg/insightstore",
     visibility = ["//visibility:public"],
@@ -23,6 +24,7 @@ go_test(
     srcs = [
         "filestore_test.go",
         "chunk_test.go",
+        "datapoint_test.go",
         "filepath_test.go"
     ],
     embed = [":go_default_library"],

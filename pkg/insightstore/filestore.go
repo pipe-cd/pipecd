@@ -41,7 +41,7 @@ func (s *Store) LoadChunks(
 	from time.Time,
 	count int,
 ) ([]Chunk, error) {
-	from = normalizeTime(from, step)
+	from = NormalizeTime(from, step)
 	paths := determineFilePaths(projectID, appID, kind, step, from, count)
 	var chunks []Chunk
 	for _, p := range paths {
@@ -88,7 +88,7 @@ func (s *Store) getChunk(ctx context.Context, path string, kind model.InsightMet
 	if err != nil {
 		return nil, err
 	}
-	chunk, err := toChunk(c)
+	chunk, err := ToChunk(c)
 	if err != nil {
 		return nil, err
 	}
@@ -97,7 +97,7 @@ func (s *Store) getChunk(ctx context.Context, path string, kind model.InsightMet
 	return chunk, nil
 }
 
-func normalizeTime(from time.Time, step model.InsightStep) time.Time {
+func NormalizeTime(from time.Time, step model.InsightStep) time.Time {
 	var formattedTime time.Time
 	switch step {
 	case model.InsightStep_DAILY:
