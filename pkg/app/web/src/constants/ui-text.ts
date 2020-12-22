@@ -4,3 +4,4 @@ export const UI_TEXT_ADD = "Add";
 export const UI_TEXT_EDIT = "Edit";
 export const UI_TEXT_REFRESH = "REFRESH";
 export const UI_TEXT_CLOSE = "Close";
+export const UI_TEXT_DELETE = "Delete";

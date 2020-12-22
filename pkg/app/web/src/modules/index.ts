@@ -20,6 +20,7 @@ import { apiKeysSlice } from "./api-keys";
 import { updateApplicationSlice } from "./update-application";
 import { insightSlice } from "./insight";
 import { deploymentFrequencySlice } from "./deployment-frequency";
+import { deleteApplicationSlice } from "./delete-application";
 
 export const reducers = combineReducers({
   deployments: deploymentsSlice.reducer,
@@ -28,6 +29,7 @@ export const reducers = combineReducers({
   applications: applicationsSlice.reducer,
   applicationFilterOptions: applicationFilterOptionsSlice.reducer,
   updateApplication: updateApplicationSlice.reducer,
+  deleteApplication: deleteApplicationSlice.reducer,
   stageLogs: stageLogsSlice.reducer,
   activeStage: activeStageSlice.reducer,
   pipeds: pipedsSlice.reducer,
