@@ -33,7 +33,7 @@ type list struct {
 	root *command
 
 	appName string
-	envId   string
+	envID   string
 	appKind string
 	stdout  io.Writer
 }
@@ -50,7 +50,7 @@ func newListCommand(root *command) *cobra.Command {
 	}
 
 	cmd.Flags().StringVar(&c.appName, "app-name", c.appName, "The application name.")
-	cmd.Flags().StringVar(&c.envId, "env-id", c.envId, "The environment ID.")
+	cmd.Flags().StringVar(&c.envID, "env-id", c.envID, "The environment ID.")
 	cmd.Flags().StringVar(&c.appKind, "app-kind", c.appKind, fmt.Sprintf("The kind of application. (%s)", strings.Join(model.ApplicationKindStrings(), "|")))
 
 	return cmd
@@ -71,7 +71,7 @@ func (c *list) run(ctx context.Context, _ cli.Telemetry) error {
 
 	req := &apiservice.ListApplicationsRequest{
 		Name:  c.appName,
-		EnvId: c.envId,
+		EnvId: c.envID,
 		Kind:  c.appKind,
 	}
 
