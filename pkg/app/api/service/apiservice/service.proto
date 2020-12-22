@@ -29,6 +29,7 @@ service APIService {
     rpc AddApplication(AddApplicationRequest) returns (AddApplicationResponse) {}
     rpc SyncApplication(SyncApplicationRequest) returns (SyncApplicationResponse) {}
     rpc GetApplication(GetApplicationRequest) returns (GetApplicationResponse) {}
+    rpc ListApplications(ListApplicationsRequest) returns (ListApplicationsResponse) {}
 
     rpc GetDeployment(GetDeploymentRequest) returns (GetDeploymentResponse) {}
 
@@ -62,6 +63,16 @@ message GetApplicationRequest {
 
 message GetApplicationResponse {
     pipe.model.Application application = 1;
+}
+
+message ListApplicationsRequest {
+    string name = 1;
+    string kind = 2;
+    string env_id = 3;
+}
+
+message ListApplicationsResponse {
+    repeated pipe.model.Application applications = 1;
 }
 
 message GetDeploymentRequest {
