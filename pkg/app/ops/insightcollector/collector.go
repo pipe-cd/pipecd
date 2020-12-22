@@ -93,9 +93,8 @@ func (i *InsightCollector) CollectProjectsInsight(ctx context.Context) error {
 
 		for _, p := range projects {
 			for _, k := range aggregateKinds {
-				err = i.updateApplicationChunks(ctx, p.Id, "", k, now)
-				if err != nil {
-					return err
+				if err := i.updateApplicationChunks(ctx, p.Id, "", k, now); err != nil {
+					i.logger.Error("failed to update application chunks", zap.Error(err))
 				}
 			}
 		}
@@ -135,9 +134,9 @@ func (i *InsightCollector) CollectApplicationInsight(ctx context.Context) error 
 
 		for _, app := range apps {
 			for _, k := range aggregateKinds {
-				err = i.updateApplicationChunks(ctx, app.ProjectId, app.Id, k, now)
-				if err != nil {
-					return err
+
+				if err := i.updateApplicationChunks(ctx, app.ProjectId, app.Id, k, now); err != nil {
+					i.logger.Error("failed to update application chunks", zap.Error(err))
 				}
 			}
 		}
