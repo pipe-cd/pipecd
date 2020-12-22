@@ -17,7 +17,6 @@ package client
 import (
 	"context"
 	"fmt"
-	"strings"
 	"time"
 
 	"go.uber.org/zap"
@@ -58,7 +57,7 @@ func WaitDeploymentStatuses(
 			return
 		}
 
-		status = strings.TrimPrefix(resp.Deployment.Status.String(), "DEPLOYMENT_")
+		status = resp.Deployment.Status.String()
 		return
 	}
 
