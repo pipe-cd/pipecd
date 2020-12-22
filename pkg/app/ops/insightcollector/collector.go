@@ -91,25 +91,25 @@ func (i *InsightCollector) Run(ctx context.Context) error {
 
 		for _, app := range apps {
 			for _, k := range aggregateKinds {
-				var chunk insightstore.Chunk
 				chunkFiles, err := i.insightstore.LoadChunks(ctx, app.ProjectId, app.Id, k, model.InsightStep_MONTHLY, now, 1)
-				if err != nil {
-					if err == filestore.ErrNotFound {
-						chunk = insightstore.NewChunk(app.ProjectId, k, model.InsightStep_MONTHLY, app.ProjectId, now)
-					}
+				var chunk insightstore.Chunk
+				if err == filestore.ErrNotFound {
+					chunk = insightstore.NewChunk(app.ProjectId, k, model.InsightStep_MONTHLY, app.ProjectId, now)
+				} else if err != nil {
 					return err
+				} else {
+					chunk = chunkFiles[0]
 				}
-				chunk = chunkFiles[0]
 
-				var years insightstore.Chunk
 				yearsFiles, err := i.insightstore.LoadChunks(ctx, app.ProjectId, app.Id, k, model.InsightStep_YEARLY, now, 1)
-				if err != nil {
-					if err == filestore.ErrNotFound {
-						years = insightstore.NewChunk(app.ProjectId, k, model.InsightStep_YEARLY, app.ProjectId, now)
-					}
+				var years insightstore.Chunk
+				if err == filestore.ErrNotFound {
+					years = insightstore.NewChunk(app.ProjectId, k, model.InsightStep_YEARLY, app.ProjectId, now)
+				} else if err != nil {
 					return err
+				} else {
+					years = yearsFiles[0]
 				}
-				years = yearsFiles[0]
 
 				chunk, years, err = i.updateChunk(ctx, chunk, years, app.Id, k, now)
 				if err != nil {
