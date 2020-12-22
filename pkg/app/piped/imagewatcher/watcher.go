@@ -90,6 +90,7 @@ func (w *watcher) Run(ctx context.Context) error {
 			)
 			return fmt.Errorf("failed to clone repository %s: %w", repoCfg.RepoID, err)
 		}
+		defer os.RemoveAll(repo.GetPath())
 
 		w.wg.Add(1)
 		go w.run(ctx, repo, &repoCfg)
@@ -185,7 +186,7 @@ func (w *watcher) updateOutdatedImages(ctx context.Context, repo git.Repo, targe
 		return fmt.Errorf("failed to create a new temporary directory: %w", err)
 	}
 	defer os.RemoveAll(tmpDir)
-	tmpRepo, err := repo.Copy(tmpDir)
+	tmpRepo, err := repo.Copy(filepath.Join(tmpDir, "tmp-repo"))
 	if err != nil {
 		return fmt.Errorf("failed to copy the repository to the temporary directory: %w", err)
 	}
