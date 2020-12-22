@@ -6,6 +6,7 @@ import {
 } from "@reduxjs/toolkit";
 import {
   Application as ApplicationModel,
+  ApplicationSyncState as ApplicationSyncStateModel,
   ApplicationSyncStatus,
 } from "pipe/pkg/app/web/model/application_pb";
 import * as applicationsAPI from "../api/applications";
@@ -20,6 +21,7 @@ import { AppState } from ".";
 export type Application = ApplicationModel.AsObject;
 export type ApplicationSyncStatusKey = keyof typeof ApplicationSyncStatus;
 export type ApplicationKindKey = keyof typeof ApplicationKind;
+export type ApplicationSyncState = ApplicationSyncStateModel.AsObject;
 
 export const applicationsAdapter = createEntityAdapter<Application>({
   selectId: (app) => app.id,
