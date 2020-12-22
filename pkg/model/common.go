@@ -12,35 +12,13 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-package application
+package model
 
-import (
-	"github.com/spf13/cobra"
-
-	"github.com/pipe-cd/pipe/pkg/app/pipectl/client"
-)
-
-type command struct {
-	clientOptions *client.Options
-}
-
-func NewCommand() *cobra.Command {
-	c := &command{
-		clientOptions: &client.Options{},
+// ApplicationKindStrings returns a list of available deployment kinds in string.
+func ApplicationKindStrings() []string {
+	out := make([]string, 0, len(ApplicationKind_value))
+	for k := range ApplicationKind_value {
+		out = append(out, k)
 	}
-	cmd := &cobra.Command{
-		Use:   "application",
-		Short: "Manage application resources.",
-	}
-
-	cmd.AddCommand(
-		newAddCommand(c),
-		newSyncCommand(c),
-		newGetCommand(c),
-		newListCommand(c),
-	)
-
-	c.clientOptions.RegisterPersistentFlags(cmd)
-
-	return cmd
+	return out
 }

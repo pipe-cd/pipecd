@@ -54,6 +54,16 @@ func getApplication(ctx context.Context, store datastore.ApplicationStore, id st
 	return app, nil
 }
 
+func listApplications(ctx context.Context, store datastore.ApplicationStore, opts datastore.ListOptions, logger *zap.Logger) ([]*model.Application, error) {
+	apps, err := store.ListApplications(ctx, opts)
+	if err != nil {
+		logger.Error("failed to list applications", zap.Error(err))
+		return nil, status.Error(codes.Internal, "Failed to list applications")
+	}
+
+	return apps, nil
+}
+
 func getDeployment(ctx context.Context, store datastore.DeploymentStore, id string, logger *zap.Logger) (*model.Deployment, error) {
 	deployment, err := store.GetDeployment(ctx, id)
 	if errors.Is(err, datastore.ErrNotFound) {
