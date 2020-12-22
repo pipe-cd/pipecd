@@ -495,7 +495,7 @@ func (a *WebAPI) DeleteApplication(ctx context.Context, req *webservice.DeleteAp
 	if err := a.applicationStore.DeleteApplication(ctx, req.ApplicationId); err != nil {
 		switch err {
 		case datastore.ErrNotFound:
-			return nil, status.Error(codes.InvalidArgument, "The application is not found")
+			return nil, status.Error(codes.NotFound, "The application is not found")
 		case datastore.ErrInvalidArgument:
 			return nil, status.Error(codes.InvalidArgument, "Invalid value to delete")
 		default:
