@@ -310,12 +310,12 @@ func (i *InsightCollector) getInsightDataForChangeFailureRate(
 
 	filters := []datastore.ListFilter{
 		{
-			Field:    "CreatedAt",
+			Field:    "UpdatedAt",
 			Operator: ">=",
 			Value:    from.Unix(),
 		},
 		{
-			Field:    "CreatedAt",
+			Field:    "UpdatedAt",
 			Operator: "<",
 			Value:    to.Unix(),
 		},
@@ -367,8 +367,8 @@ func (i *InsightCollector) getInsightDataForChangeFailureRate(
 
 	accumulatedTo := from.Unix()
 	for _, d := range deployments {
-		if d.CreatedAt > accumulatedTo {
-			accumulatedTo = d.CreatedAt
+		if d.UpdatedAt > accumulatedTo {
+			accumulatedTo = d.UpdatedAt
 		}
 	}
 
