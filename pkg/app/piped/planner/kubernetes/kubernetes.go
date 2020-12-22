@@ -93,7 +93,7 @@ func (p *Planner) Plan(ctx context.Context, in planner.Input) (out planner.Outpu
 	switch in.Deployment.Trigger.SyncStrategy {
 	case model.SyncStrategy_QUICK_SYNC:
 		out.Stages = buildQuickSyncPipeline(cfg.Input.AutoRollback, time.Now())
-		out.Summary = fmt.Sprintf("Quick sync by applying all manifests (forced via web)", out.Version)
+		out.Summary = "Quick sync by applying all manifests (forced via web)"
 		return
 	case model.SyncStrategy_PIPELINE:
 		if cfg.Pipeline == nil {
