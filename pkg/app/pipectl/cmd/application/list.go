@@ -32,10 +32,11 @@ import (
 type list struct {
 	root *command
 
-	appName string
-	envID   string
-	appKind string
-	stdout  io.Writer
+	appName  string
+	envID    string
+	appKind  string
+	disabled bool
+	stdout   io.Writer
 }
 
 func newListCommand(root *command) *cobra.Command {
@@ -52,6 +53,7 @@ func newListCommand(root *command) *cobra.Command {
 	cmd.Flags().StringVar(&c.appName, "app-name", c.appName, "The application name.")
 	cmd.Flags().StringVar(&c.envID, "env-id", c.envID, "The environment ID.")
 	cmd.Flags().StringVar(&c.appKind, "app-kind", c.appKind, fmt.Sprintf("The kind of application. (%s)", strings.Join(model.ApplicationKindStrings(), "|")))
+	cmd.Flags().BoolVar(&c.disabled, "disabled", c.disabled, "True to show only disabled applications.")
 
 	return cmd
 }
@@ -70,9 +72,10 @@ func (c *list) run(ctx context.Context, _ cli.Telemetry) error {
 	defer cli.Close()
 
 	req := &apiservice.ListApplicationsRequest{
-		Name:  c.appName,
-		EnvId: c.envID,
-		Kind:  c.appKind,
+		Name:     c.appName,
+		EnvId:    c.envID,
+		Kind:     c.appKind,
+		Disabled: c.disabled,
 	}
 
 	resp, err := cli.ListApplications(ctx, req)

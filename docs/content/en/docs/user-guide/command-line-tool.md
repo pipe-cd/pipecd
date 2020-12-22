@@ -150,6 +150,30 @@ pipectl application sync \
     --wait-status=DEPLOYMENT_SUCCESS,DEPLOYMENT_FAILURE
 ```
 
+### Getting an application
+
+- Display the information of a given application in JSON format:
+
+``` console
+pipectl application get \
+    --address=CONTROL_PLANE_API_ADDRESS \
+    --api-key=API_KEY \
+    --app-id=APPLICATION_ID
+```
+
+### Listing applications
+
+- Find and display the information of matching applications in JSON format:
+
+``` console
+pipectl application list \
+    --address=CONTROL_PLANE_API_ADDRESS \
+    --api-key=API_KEY \
+    --app-name=APPLICATION_NAME \
+    --app-kind=KUBERNETES \
+    --env-id=dev
+```
+
 ### Waiting a deployment status
 
 Wait until a given deployment reaches one of the specified statuses:
