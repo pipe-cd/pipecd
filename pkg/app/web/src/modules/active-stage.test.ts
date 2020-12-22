@@ -5,7 +5,7 @@ import {
 } from "./active-stage";
 
 describe("activeStageSlice reducer", () => {
-  it("should handle initial state", () => {
+  it("should return the initial state", () => {
     expect(
       activeStageSlice.reducer(undefined, {
         type: "TEST_ACTION",

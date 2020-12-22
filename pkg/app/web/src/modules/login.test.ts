@@ -1,7 +1,7 @@
 import { loginSlice, clearProjectName, setProjectName } from "./login";
 
 describe("loginSlice reducer", () => {
-  it("should handle initial state", () => {
+  it("should return the initial state", () => {
     expect(
       loginSlice.reducer(undefined, {
         type: "TEST_ACTION",

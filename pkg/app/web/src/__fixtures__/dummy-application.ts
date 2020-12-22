@@ -1,10 +1,22 @@
 import { ApplicationKind } from "pipe/pkg/app/web/model/common_pb";
-import { ApplicationSyncStatus } from "../modules/applications";
+import {
+  Application,
+  ApplicationSyncStatus,
+  ApplicationSyncState,
+} from "../modules/applications";
 import { dummyEnv } from "./dummy-environment";
 import { dummyPiped } from "./dummy-piped";
 import { dummyRepo } from "./dummy-repo";
 
-export const dummyApplication = {
+export const dummyApplicationSyncState: ApplicationSyncState = {
+  headDeploymentId: "deployment-1",
+  reason: "",
+  shortReason: "",
+  status: ApplicationSyncStatus.SYNCED,
+  timestamp: 0,
+};
+
+export const dummyApplication: Application = {
   id: "application-1",
   cloudProvider: "kubernetes-default",
   createdAt: 0,
@@ -35,12 +47,7 @@ export const dummyApplication = {
     startedAt: 0,
     version: "v1",
   },
-  syncState: {
-    headDeploymentId: "deployment-1",
-    reason: "",
-    shortReason: "",
-    status: ApplicationSyncStatus.SYNCED,
-    timestamp: 0,
-  },
+  syncState: dummyApplicationSyncState,
   updatedAt: 0,
+  deleted: false,
 };

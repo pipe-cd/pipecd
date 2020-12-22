@@ -29,7 +29,7 @@ export const {{ input | camel }}Slice = createSlice({
 import { {{ input | camel }}Slice } from "./{{ input }}";
 
 describe("{{ input | camel }}Slice reducer", () => {
-  it("should handle initial state", () => {
+  it("should return the initial state", () => {
     expect(
       {{ input | camel }}Slice.reducer(undefined, {
         type: "TEST_ACTION",

@@ -19,7 +19,7 @@ const baseState = {
 };
 
 describe("apiKeysSlice reducer", () => {
-  it("should handle initial state", () => {
+  it("should return the initial state", () => {
     expect(
       apiKeysSlice.reducer(undefined, {
         type: "TEST_ACTION",

@@ -1,4 +1,7 @@
-import { dummyApplication } from "../__fixtures__/dummy-application";
+import {
+  dummyApplication,
+  dummyApplicationSyncState,
+} from "../__fixtures__/dummy-application";
 import { createStore } from "../../test-utils";
 import {
   addApplication,
@@ -54,7 +57,7 @@ describe("fetchApplications", () => {
 });
 
 describe("applicationsSlice reducer", () => {
-  it("should handle initial state", () => {
+  it("should return the initial state", () => {
     expect(
       applicationsSlice.reducer(undefined, {
         type: "TEST_ACTION",
@@ -110,7 +113,7 @@ describe("applicationsSlice reducer", () => {
       const updatedApplication: Application = {
         ...dummyApplication,
         syncState: {
-          ...dummyApplication.syncState,
+          ...dummyApplicationSyncState,
           status: ApplicationSyncStatus.OUT_OF_SYNC,
         },
       };

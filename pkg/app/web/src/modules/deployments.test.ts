@@ -48,7 +48,7 @@ test("isStageRunning", () => {
 });
 
 describe("deploymentsSlice reducer", () => {
-  it("should handle initial state", () => {
+  it("should return the initial state", () => {
     expect(
       deploymentsSlice.reducer(undefined, {
         type: "TEST_ACTION",
