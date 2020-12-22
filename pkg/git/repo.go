@@ -76,6 +76,8 @@ func (r *repo) GetClonedBranch() string {
 }
 
 // Copy does copying the repository to the given destination.
+// NOTE: the given “dest” must be a path that doesn’t exist yet.
+// If you don't, it copies the repo root itself to the given dest as a subdirectory.
 func (r *repo) Copy(dest string) (Repo, error) {
 	cmd := exec.Command("cp", "-rf", r.dir, dest)
 	out, err := cmd.CombinedOutput()
