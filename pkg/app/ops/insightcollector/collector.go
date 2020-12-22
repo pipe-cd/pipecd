@@ -376,19 +376,14 @@ func (i *InsightCollector) getInsightDataForChangeFailureRate(
 
 	filters := []datastore.ListFilter{
 		{
-			Field:    "UpdatedAt",
+			Field:    "CompletedAt",
 			Operator: ">=",
 			Value:    from.Unix(),
 		},
 		{
-			Field:    "UpdatedAt",
+			Field:    "CompletedAt",
 			Operator: "<",
 			Value:    to.Unix(),
-		},
-		{
-			Field:    "Status",
-			Operator: "in",
-			Value:    []model.DeploymentStatus{model.DeploymentStatus_DEPLOYMENT_FAILURE, model.DeploymentStatus_DEPLOYMENT_SUCCESS},
 		},
 	}
 
@@ -441,8 +436,8 @@ func (i *InsightCollector) getInsightDataForChangeFailureRate(
 
 	accumulatedTo := from.Unix()
 	for _, d := range deployments {
-		if d.UpdatedAt > accumulatedTo {
-			accumulatedTo = d.UpdatedAt
+		if d.CompletedAt > accumulatedTo {
+			accumulatedTo = d.CompletedAt
 		}
 	}
 

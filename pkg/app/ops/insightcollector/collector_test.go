@@ -274,19 +274,14 @@ func TestInsightCollector_getDailyInsightData(t *testing.T) {
 					PageSize: 50,
 					Filters: []datastore.ListFilter{
 						{
-							Field:    "UpdatedAt",
+							Field:    "CompletedAt",
 							Operator: ">=",
 							Value:    time.Date(2020, 10, 11, 4, 0, 0, 0, time.UTC).Unix(),
 						},
 						{
-							Field:    "UpdatedAt",
+							Field:    "CompletedAt",
 							Operator: "<",
 							Value:    time.Date(2020, 10, 12, 0, 0, 0, 0, time.UTC).Unix(),
-						},
-						{
-							Field:    "Status",
-							Operator: "in",
-							Value:    []model.DeploymentStatus{model.DeploymentStatus_DEPLOYMENT_FAILURE, model.DeploymentStatus_DEPLOYMENT_SUCCESS},
 						},
 						{
 							Field:    "ApplicationId",
@@ -298,39 +293,34 @@ func TestInsightCollector_getDailyInsightData(t *testing.T) {
 					Cursor: "",
 				}).Return([]*model.Deployment{
 					{
-						Status:    model.DeploymentStatus_DEPLOYMENT_FAILURE,
-						UpdatedAt: time.Date(2020, 10, 11, 5, 0, 0, 0, time.UTC).Unix(),
+						Status:      model.DeploymentStatus_DEPLOYMENT_FAILURE,
+						CompletedAt: time.Date(2020, 10, 11, 5, 0, 0, 0, time.UTC).Unix(),
 					},
 					{
-						Status:    model.DeploymentStatus_DEPLOYMENT_FAILURE,
-						UpdatedAt: time.Date(2020, 10, 11, 5, 0, 0, 0, time.UTC).Unix(),
+						Status:      model.DeploymentStatus_DEPLOYMENT_FAILURE,
+						CompletedAt: time.Date(2020, 10, 11, 5, 0, 0, 0, time.UTC).Unix(),
 					},
 					{
-						Status:    model.DeploymentStatus_DEPLOYMENT_SUCCESS,
-						UpdatedAt: time.Date(2020, 10, 11, 5, 0, 0, 0, time.UTC).Unix(),
+						Status:      model.DeploymentStatus_DEPLOYMENT_SUCCESS,
+						CompletedAt: time.Date(2020, 10, 11, 5, 0, 0, 0, time.UTC).Unix(),
 					},
 					{
-						Status:    model.DeploymentStatus_DEPLOYMENT_SUCCESS,
-						UpdatedAt: time.Date(2020, 10, 11, 5, 0, 0, 0, time.UTC).Unix(),
+						Status:      model.DeploymentStatus_DEPLOYMENT_SUCCESS,
+						CompletedAt: time.Date(2020, 10, 11, 5, 0, 0, 0, time.UTC).Unix(),
 					},
 				}, nil)
 				m.EXPECT().ListDeployments(gomock.Any(), datastore.ListOptions{
 					PageSize: 50,
 					Filters: []datastore.ListFilter{
 						{
-							Field:    "UpdatedAt",
+							Field:    "CompletedAt",
 							Operator: ">=",
 							Value:    time.Date(2020, 10, 11, 5, 0, 0, 0, time.UTC).Unix(),
 						},
 						{
-							Field:    "UpdatedAt",
+							Field:    "CompletedAt",
 							Operator: "<",
 							Value:    time.Date(2020, 10, 12, 0, 0, 0, 0, time.UTC).Unix(),
-						},
-						{
-							Field:    "Status",
-							Operator: "in",
-							Value:    []model.DeploymentStatus{model.DeploymentStatus_DEPLOYMENT_FAILURE, model.DeploymentStatus_DEPLOYMENT_SUCCESS},
 						},
 						{
 							Field:    "ApplicationId",
@@ -345,19 +335,14 @@ func TestInsightCollector_getDailyInsightData(t *testing.T) {
 					PageSize: 50,
 					Filters: []datastore.ListFilter{
 						{
-							Field:    "UpdatedAt",
+							Field:    "CompletedAt",
 							Operator: ">=",
 							Value:    time.Date(2020, 10, 12, 0, 0, 0, 0, time.UTC).Unix(),
 						},
 						{
-							Field:    "UpdatedAt",
+							Field:    "CompletedAt",
 							Operator: "<",
 							Value:    time.Date(2020, 10, 13, 0, 0, 0, 0, time.UTC).Unix(),
-						},
-						{
-							Field:    "Status",
-							Operator: "in",
-							Value:    []model.DeploymentStatus{model.DeploymentStatus_DEPLOYMENT_FAILURE, model.DeploymentStatus_DEPLOYMENT_SUCCESS},
 						},
 						{
 							Field:    "ApplicationId",
@@ -369,39 +354,34 @@ func TestInsightCollector_getDailyInsightData(t *testing.T) {
 					Cursor: "",
 				}).Return([]*model.Deployment{
 					{
-						Status:    model.DeploymentStatus_DEPLOYMENT_FAILURE,
-						UpdatedAt: time.Date(2020, 10, 12, 5, 0, 0, 0, time.UTC).Unix(),
+						Status:      model.DeploymentStatus_DEPLOYMENT_FAILURE,
+						CompletedAt: time.Date(2020, 10, 12, 5, 0, 0, 0, time.UTC).Unix(),
 					},
 					{
-						Status:    model.DeploymentStatus_DEPLOYMENT_SUCCESS,
-						UpdatedAt: time.Date(2020, 10, 12, 5, 0, 0, 0, time.UTC).Unix(),
+						Status:      model.DeploymentStatus_DEPLOYMENT_SUCCESS,
+						CompletedAt: time.Date(2020, 10, 12, 5, 0, 0, 0, time.UTC).Unix(),
 					},
 					{
-						Status:    model.DeploymentStatus_DEPLOYMENT_SUCCESS,
-						UpdatedAt: time.Date(2020, 10, 12, 5, 0, 0, 0, time.UTC).Unix(),
+						Status:      model.DeploymentStatus_DEPLOYMENT_SUCCESS,
+						CompletedAt: time.Date(2020, 10, 12, 5, 0, 0, 0, time.UTC).Unix(),
 					},
 					{
-						Status:    model.DeploymentStatus_DEPLOYMENT_SUCCESS,
-						UpdatedAt: time.Date(2020, 10, 12, 5, 0, 0, 0, time.UTC).Unix(),
+						Status:      model.DeploymentStatus_DEPLOYMENT_SUCCESS,
+						CompletedAt: time.Date(2020, 10, 12, 5, 0, 0, 0, time.UTC).Unix(),
 					},
 				}, nil)
 				m.EXPECT().ListDeployments(gomock.Any(), datastore.ListOptions{
 					PageSize: 50,
 					Filters: []datastore.ListFilter{
 						{
-							Field:    "UpdatedAt",
+							Field:    "CompletedAt",
 							Operator: ">=",
 							Value:    time.Date(2020, 10, 12, 5, 0, 0, 0, time.UTC).Unix(),
 						},
 						{
-							Field:    "UpdatedAt",
+							Field:    "CompletedAt",
 							Operator: "<",
 							Value:    time.Date(2020, 10, 13, 0, 0, 0, 0, time.UTC).Unix(),
-						},
-						{
-							Field:    "Status",
-							Operator: "in",
-							Value:    []model.DeploymentStatus{model.DeploymentStatus_DEPLOYMENT_FAILURE, model.DeploymentStatus_DEPLOYMENT_SUCCESS},
 						},
 						{
 							Field:    "ApplicationId",
@@ -416,19 +396,14 @@ func TestInsightCollector_getDailyInsightData(t *testing.T) {
 					PageSize: 50,
 					Filters: []datastore.ListFilter{
 						{
-							Field:    "UpdatedAt",
+							Field:    "CompletedAt",
 							Operator: ">=",
 							Value:    time.Date(2020, 10, 13, 0, 0, 0, 0, time.UTC).Unix(),
 						},
 						{
-							Field:    "UpdatedAt",
+							Field:    "CompletedAt",
 							Operator: "<",
 							Value:    time.Date(2020, 10, 14, 0, 0, 0, 0, time.UTC).Unix(),
-						},
-						{
-							Field:    "Status",
-							Operator: "in",
-							Value:    []model.DeploymentStatus{model.DeploymentStatus_DEPLOYMENT_FAILURE, model.DeploymentStatus_DEPLOYMENT_SUCCESS},
 						},
 						{
 							Field:    "ApplicationId",
@@ -440,27 +415,22 @@ func TestInsightCollector_getDailyInsightData(t *testing.T) {
 					Cursor: "",
 				}).Return([]*model.Deployment{
 					{
-						Status:    model.DeploymentStatus_DEPLOYMENT_SUCCESS,
-						UpdatedAt: time.Date(2020, 10, 13, 8, 0, 0, 0, time.UTC).Unix(),
+						Status:      model.DeploymentStatus_DEPLOYMENT_SUCCESS,
+						CompletedAt: time.Date(2020, 10, 13, 8, 0, 0, 0, time.UTC).Unix(),
 					},
 				}, nil)
 				m.EXPECT().ListDeployments(gomock.Any(), datastore.ListOptions{
 					PageSize: 50,
 					Filters: []datastore.ListFilter{
 						{
-							Field:    "UpdatedAt",
+							Field:    "CompletedAt",
 							Operator: ">=",
 							Value:    time.Date(2020, 10, 13, 8, 0, 0, 0, time.UTC).Unix(),
 						},
 						{
-							Field:    "UpdatedAt",
+							Field:    "CompletedAt",
 							Operator: "<",
 							Value:    time.Date(2020, 10, 14, 0, 0, 0, 0, time.UTC).Unix(),
-						},
-						{
-							Field:    "Status",
-							Operator: "in",
-							Value:    []model.DeploymentStatus{model.DeploymentStatus_DEPLOYMENT_FAILURE, model.DeploymentStatus_DEPLOYMENT_SUCCESS},
 						},
 						{
 							Field:    "ApplicationId",
@@ -475,19 +445,14 @@ func TestInsightCollector_getDailyInsightData(t *testing.T) {
 					PageSize: 50,
 					Filters: []datastore.ListFilter{
 						{
-							Field:    "UpdatedAt",
+							Field:    "CompletedAt",
 							Operator: ">=",
 							Value:    time.Date(2020, 10, 14, 0, 0, 0, 0, time.UTC).Unix(),
 						},
 						{
-							Field:    "UpdatedAt",
+							Field:    "CompletedAt",
 							Operator: "<",
 							Value:    time.Date(2020, 10, 15, 0, 0, 0, 0, time.UTC).Unix(),
-						},
-						{
-							Field:    "Status",
-							Operator: "in",
-							Value:    []model.DeploymentStatus{model.DeploymentStatus_DEPLOYMENT_FAILURE, model.DeploymentStatus_DEPLOYMENT_SUCCESS},
 						},
 						{
 							Field:    "ApplicationId",
@@ -717,19 +682,14 @@ func TestGetInsightDataForChangeFailureRate(t *testing.T) {
 						PageSize: PageSizeForListDeployments,
 						Filters: []datastore.ListFilter{
 							{
-								Field:    "UpdatedAt",
+								Field:    "CompletedAt",
 								Operator: ">=",
 								Value:    time.Date(2020, 1, 1, 0, 0, 0, 0, time.UTC).Unix(),
 							},
 							{
-								Field:    "UpdatedAt",
+								Field:    "CompletedAt",
 								Operator: "<",
 								Value:    time.Date(2020, 1, 2, 0, 0, 0, 0, time.UTC).Unix(),
-							},
-							{
-								Field:    "Status",
-								Operator: "in",
-								Value:    []model.DeploymentStatus{model.DeploymentStatus_DEPLOYMENT_FAILURE, model.DeploymentStatus_DEPLOYMENT_SUCCESS},
 							},
 							{
 								Field:    "ApplicationId",
@@ -739,24 +699,24 @@ func TestGetInsightDataForChangeFailureRate(t *testing.T) {
 						},
 					}).Return([]*model.Deployment{
 					{
-						Id:        "id1",
-						Status:    model.DeploymentStatus_DEPLOYMENT_SUCCESS,
-						UpdatedAt: time.Date(2020, 1, 1, 8, 0, 0, 0, time.UTC).Unix(),
+						Id:          "id1",
+						Status:      model.DeploymentStatus_DEPLOYMENT_SUCCESS,
+						CompletedAt: time.Date(2020, 1, 1, 8, 0, 0, 0, time.UTC).Unix(),
 					},
 					{
-						Id:        "id2",
-						Status:    model.DeploymentStatus_DEPLOYMENT_SUCCESS,
-						UpdatedAt: time.Date(2020, 1, 1, 5, 0, 0, 0, time.UTC).Unix(),
+						Id:          "id2",
+						Status:      model.DeploymentStatus_DEPLOYMENT_SUCCESS,
+						CompletedAt: time.Date(2020, 1, 1, 5, 0, 0, 0, time.UTC).Unix(),
 					},
 					{
-						Id:        "id3",
-						Status:    model.DeploymentStatus_DEPLOYMENT_FAILURE,
-						UpdatedAt: time.Date(2020, 1, 1, 5, 0, 0, 0, time.UTC).Unix(),
+						Id:          "id3",
+						Status:      model.DeploymentStatus_DEPLOYMENT_FAILURE,
+						CompletedAt: time.Date(2020, 1, 1, 5, 0, 0, 0, time.UTC).Unix(),
 					},
 					{
-						Id:        "id4",
-						Status:    model.DeploymentStatus_DEPLOYMENT_SUCCESS,
-						UpdatedAt: time.Date(2020, 1, 1, 8, 0, 0, 0, time.UTC).Unix(),
+						Id:          "id4",
+						Status:      model.DeploymentStatus_DEPLOYMENT_SUCCESS,
+						CompletedAt: time.Date(2020, 1, 1, 8, 0, 0, 0, time.UTC).Unix(),
 					},
 				}, nil)
 
@@ -784,19 +744,14 @@ func TestGetInsightDataForChangeFailureRate(t *testing.T) {
 						PageSize: PageSizeForListDeployments,
 						Filters: []datastore.ListFilter{
 							{
-								Field:    "UpdatedAt",
+								Field:    "CompletedAt",
 								Operator: ">=",
 								Value:    time.Date(2020, 1, 1, 0, 0, 0, 0, time.UTC).Unix(),
 							},
 							{
-								Field:    "UpdatedAt",
+								Field:    "CompletedAt",
 								Operator: "<",
 								Value:    time.Date(2020, 1, 2, 0, 0, 0, 0, time.UTC).Unix(),
-							},
-							{
-								Field:    "Status",
-								Operator: "in",
-								Value:    []model.DeploymentStatus{model.DeploymentStatus_DEPLOYMENT_FAILURE, model.DeploymentStatus_DEPLOYMENT_SUCCESS},
 							},
 							{
 								Field:    "ProjectId",
@@ -806,24 +761,24 @@ func TestGetInsightDataForChangeFailureRate(t *testing.T) {
 						},
 					}).Return([]*model.Deployment{
 					{
-						Id:        "id1",
-						Status:    model.DeploymentStatus_DEPLOYMENT_SUCCESS,
-						UpdatedAt: time.Date(2020, 1, 1, 8, 0, 0, 0, time.UTC).Unix(),
+						Id:          "id1",
+						Status:      model.DeploymentStatus_DEPLOYMENT_SUCCESS,
+						CompletedAt: time.Date(2020, 1, 1, 8, 0, 0, 0, time.UTC).Unix(),
 					},
 					{
-						Id:        "id2",
-						Status:    model.DeploymentStatus_DEPLOYMENT_SUCCESS,
-						UpdatedAt: time.Date(2020, 1, 1, 5, 0, 0, 0, time.UTC).Unix(),
+						Id:          "id2",
+						Status:      model.DeploymentStatus_DEPLOYMENT_SUCCESS,
+						CompletedAt: time.Date(2020, 1, 1, 5, 0, 0, 0, time.UTC).Unix(),
 					},
 					{
-						Id:        "id3",
-						Status:    model.DeploymentStatus_DEPLOYMENT_FAILURE,
-						UpdatedAt: time.Date(2020, 1, 1, 5, 0, 0, 0, time.UTC).Unix(),
+						Id:          "id3",
+						Status:      model.DeploymentStatus_DEPLOYMENT_FAILURE,
+						CompletedAt: time.Date(2020, 1, 1, 5, 0, 0, 0, time.UTC).Unix(),
 					},
 					{
-						Id:        "id4",
-						Status:    model.DeploymentStatus_DEPLOYMENT_SUCCESS,
-						UpdatedAt: time.Date(2020, 1, 1, 8, 0, 0, 0, time.UTC).Unix(),
+						Id:          "id4",
+						Status:      model.DeploymentStatus_DEPLOYMENT_SUCCESS,
+						CompletedAt: time.Date(2020, 1, 1, 8, 0, 0, 0, time.UTC).Unix(),
 					},
 				}, nil)
 
@@ -850,19 +805,14 @@ func TestGetInsightDataForChangeFailureRate(t *testing.T) {
 						PageSize: PageSizeForListDeployments,
 						Filters: []datastore.ListFilter{
 							{
-								Field:    "UpdatedAt",
+								Field:    "CompletedAt",
 								Operator: ">=",
 								Value:    time.Date(2020, 1, 1, 0, 0, 0, 0, time.UTC).Unix(),
 							},
 							{
-								Field:    "UpdatedAt",
+								Field:    "CompletedAt",
 								Operator: "<",
 								Value:    time.Date(2020, 1, 2, 0, 0, 0, 0, time.UTC).Unix(),
-							},
-							{
-								Field:    "Status",
-								Operator: "in",
-								Value:    []model.DeploymentStatus{model.DeploymentStatus_DEPLOYMENT_FAILURE, model.DeploymentStatus_DEPLOYMENT_SUCCESS},
 							},
 							{
 								Field:    "ApplicationId",
