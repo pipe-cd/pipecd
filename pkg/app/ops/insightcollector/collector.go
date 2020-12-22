@@ -133,6 +133,9 @@ func (i *InsightCollector) CollectApplicationInsight(ctx context.Context) error 
 		}
 
 		for _, app := range apps {
+			if app.Deleted {
+				continue
+			}
 			for _, k := range aggregateKinds {
 
 				if err := i.updateApplicationChunks(ctx, app.ProjectId, app.Id, k, now); err != nil {
