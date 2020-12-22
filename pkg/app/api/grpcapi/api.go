@@ -147,6 +147,82 @@ func (a *API) SyncApplication(ctx context.Context, req *apiservice.SyncApplicati
 	}, nil
 }
 
+func (a *API) GetApplication(ctx context.Context, req *apiservice.GetApplicationRequest) (*apiservice.GetApplicationResponse, error) {
+	key, err := requireAPIKey(ctx, model.APIKey_READ_ONLY, a.logger)
+	if err != nil {
+		return nil, err
+	}
+
+	app, err := getApplication(ctx, a.applicationStore, req.ApplicationId, a.logger)
+	if err != nil {
+		return nil, err
+	}
+
+	if app.ProjectId != key.ProjectId {
+		return nil, status.Error(codes.InvalidArgument, "Requested application does not belong to your project")
+	}
+
+	return &apiservice.GetApplicationResponse{
+		Application: app,
+	}, nil
+}
+
+// ListApplications returns the application list of the project where the caller belongs to.
+// Currently, the maximum number of returned applications is 10.
+func (a *API) ListApplications(ctx context.Context, req *apiservice.ListApplicationsRequest) (*apiservice.ListApplicationsResponse, error) {
+	key, err := requireAPIKey(ctx, model.APIKey_READ_ONLY, a.logger)
+	if err != nil {
+		return nil, err
+	}
+
+	const limit = 10
+	filters := []datastore.ListFilter{
+		{
+			Field:    "ProjectId",
+			Operator: "==",
+			Value:    key.ProjectId,
+		},
+	}
+	if req.Name != "" {
+		filters = append(filters, datastore.ListFilter{
+			Field:    "Name",
+			Operator: "==",
+			Value:    req.Name,
+		})
+	}
+	if req.Kind != "" {
+		kind, ok := model.ApplicationKind_value[req.Kind]
+		if !ok {
+			return nil, status.Error(codes.InvalidArgument, "Invalid application kind")
+		}
+		filters = append(filters, datastore.ListFilter{
+			Field:    "Kind",
+			Operator: "==",
+			Value:    model.ApplicationKind(kind),
+		})
+	}
+	if req.EnvId != "" {
+		filters = append(filters, datastore.ListFilter{
+			Field:    "EnvId",
+			Operator: "==",
+			Value:    req.EnvId,
+		})
+	}
+	opts := datastore.ListOptions{
+		Filters:  filters,
+		PageSize: limit,
+	}
+
+	apps, err := listApplications(ctx, a.applicationStore, opts, a.logger)
+	if err != nil {
+		return nil, err
+	}
+
+	return &apiservice.ListApplicationsResponse{
+		Applications: apps,
+	}, nil
+}
+
 func (a *API) GetDeployment(ctx context.Context, req *apiservice.GetDeploymentRequest) (*apiservice.GetDeploymentResponse, error) {
 	key, err := requireAPIKey(ctx, model.APIKey_READ_ONLY, a.logger)
 	if err != nil {

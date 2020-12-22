@@ -5,12 +5,12 @@ import { ApplicationKind } from "./applications";
 
 const MODULE_NAME = "updateApplication";
 
-interface UpdateApplication {
+export interface UpdateApplicationState {
   updating: boolean;
   targetId: string | null;
 }
 
-const initialState: UpdateApplication = {
+const initialState: UpdateApplicationState = {
   updating: false,
   targetId: null,
 };

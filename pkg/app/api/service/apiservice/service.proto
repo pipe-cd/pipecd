@@ -28,6 +28,8 @@ import "pkg/model/command.proto";
 service APIService {
     rpc AddApplication(AddApplicationRequest) returns (AddApplicationResponse) {}
     rpc SyncApplication(SyncApplicationRequest) returns (SyncApplicationResponse) {}
+    rpc GetApplication(GetApplicationRequest) returns (GetApplicationResponse) {}
+    rpc ListApplications(ListApplicationsRequest) returns (ListApplicationsResponse) {}
 
     rpc GetDeployment(GetDeploymentRequest) returns (GetDeploymentResponse) {}
 
@@ -53,6 +55,24 @@ message SyncApplicationRequest {
 
 message SyncApplicationResponse {
     string command_id = 1;
+}
+
+message GetApplicationRequest {
+    string application_id = 1 [(validate.rules).string.min_len = 1];
+}
+
+message GetApplicationResponse {
+    pipe.model.Application application = 1;
+}
+
+message ListApplicationsRequest {
+    string name = 1;
+    string kind = 2;
+    string env_id = 3;
+}
+
+message ListApplicationsResponse {
+    repeated pipe.model.Application applications = 1;
 }
 
 message GetDeploymentRequest {

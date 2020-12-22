@@ -4,6 +4,7 @@ import {
   CheckCircle,
   Error,
   IndeterminateCheckBox,
+  Cancel,
 } from "@material-ui/icons";
 import { DeploymentStatus } from "../modules/deployments";
 import React, { FC } from "react";
@@ -24,7 +25,7 @@ const useStyles = makeStyles((theme) => ({
     color: theme.palette.error.main,
   },
   [DeploymentStatus.DEPLOYMENT_CANCELLED]: {
-    color: theme.palette.error.main,
+    color: theme.palette.grey[500],
   },
   [DeploymentStatus.DEPLOYMENT_PENDING]: {
     color: theme.palette.grey[500],
@@ -59,11 +60,17 @@ export const StatusIcon: FC<Props> = ({ status, className }) => {
         />
       );
     case DeploymentStatus.DEPLOYMENT_FAILURE:
-    case DeploymentStatus.DEPLOYMENT_CANCELLED:
       return (
         <Error
           className={clsx(classes[status], className)}
           data-testid="deployment-error-icon"
+        />
+      );
+    case DeploymentStatus.DEPLOYMENT_CANCELLED:
+      return (
+        <Cancel
+          className={clsx(classes[status], className)}
+          data-testid="deployment-cancel-icon"
         />
       );
     case DeploymentStatus.DEPLOYMENT_RUNNING:

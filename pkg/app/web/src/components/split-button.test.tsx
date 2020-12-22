@@ -7,6 +7,7 @@ it("calls onClick handler with option's index if clicked", () => {
   const onClick = jest.fn();
   render(
     <SplitButton
+      label="select option"
       loading={false}
       onClick={onClick}
       options={["option1", "option2"]}
@@ -19,9 +20,7 @@ it("calls onClick handler with option's index if clicked", () => {
   expect(onClick).toHaveBeenCalledWith(0);
 
   act(() => {
-    userEvent.click(
-      screen.getByRole("button", { name: "select merge strategy" })
-    );
+    userEvent.click(screen.getByRole("button", { name: "select option" }));
   });
   userEvent.click(screen.getByRole("menuitem", { name: "option2" }));
   userEvent.click(screen.getByRole("button", { name: "option2" }));

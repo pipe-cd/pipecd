@@ -13,7 +13,7 @@ import {
   ApplicationGitRepository,
   ApplicationKind,
 } from "pipe/pkg/app/web/model/common_pb";
-import { SyncStrategy } from "pipe/pkg/app/web/model/deployment_pb";
+import { SyncStrategy } from "./deployments";
 import { fetchCommand, CommandStatus, CommandModel } from "./commands";
 import { AppState } from ".";
 
@@ -51,12 +51,9 @@ export const fetchApplication = createAsyncThunk<
 
 export const syncApplication = createAsyncThunk<
   void,
-  { applicationId: string }
->("applications/sync", async ({ applicationId }, thunkAPI) => {
-  const { commandId } = await applicationsAPI.syncApplication({
-    applicationId: applicationId,
-    syncStrategy: SyncStrategy.AUTO,
-  });
+  { applicationId: string; syncStrategy: SyncStrategy }
+>("applications/sync", async (values, thunkAPI) => {
+  const { commandId } = await applicationsAPI.syncApplication(values);
 
   await thunkAPI.dispatch(fetchCommand(commandId));
 });

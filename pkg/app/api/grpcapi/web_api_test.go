@@ -19,11 +19,9 @@ import (
 	"errors"
 	"reflect"
 	"testing"
-	"time"
 
 	"github.com/golang/mock/gomock"
 	"github.com/stretchr/testify/assert"
-	"go.uber.org/zap"
 
 	"github.com/pipe-cd/pipe/pkg/app/api/service/webservice"
 	"github.com/pipe-cd/pipe/pkg/cache"
@@ -386,147 +384,6 @@ func TestValidatePipedBelongsToProject(t *testing.T) {
 			}
 			err := api.validatePipedBelongsToProject(ctx, tt.pipedID, tt.projectID)
 			assert.Equal(t, tt.wantErr, err != nil)
-		})
-	}
-}
-
-func TestCalculateInsightData(t *testing.T) {
-	ctrl := gomock.NewController(t)
-	defer ctrl.Finish()
-
-	ctx, cancel := context.WithCancel(context.Background())
-	defer cancel()
-
-	PageSizeForListDeployments := 50
-	tests := []struct {
-		name              string
-		pipedID           string
-		projectID         string
-		pipedProjectCache cache.Cache
-		deploymentStore   datastore.DeploymentStore
-		req               *webservice.GetInsightDataRequest
-		res               *webservice.GetInsightDataResponse
-		wantErr           bool
-	}{
-		{
-			name:      "valid with InsightStep_DAILY",
-			pipedID:   "pipedID",
-			projectID: "projectID",
-			deploymentStore: func() datastore.DeploymentStore {
-				target := time.Date(2020, 1, 1, 0, 0, 0, 0, time.UTC)
-				targetNextDate := target.AddDate(0, 0, 1)
-				s := datastoretest.NewMockDeploymentStore(ctrl)
-				s.EXPECT().
-					ListDeployments(gomock.Any(), datastore.ListOptions{
-						PageSize: PageSizeForListDeployments,
-						Filters: []datastore.ListFilter{
-							{
-								Field:    "ProjectId",
-								Operator: "==",
-								Value:    "projectID",
-							},
-							{
-								Field:    "CreatedAt",
-								Operator: ">=",
-								Value:    target.Unix(),
-							},
-							{
-								Field:    "CreatedAt",
-								Operator: "<",
-								Value:    targetNextDate.Unix(),
-							},
-							{
-								Field:    "ApplicationId",
-								Operator: "==",
-								Value:    "ApplicationId",
-							},
-						},
-					}).Return([]*model.Deployment{
-					{
-						Id: "id1",
-					},
-					{
-						Id: "id2",
-					},
-				}, nil)
-
-				target = time.Date(2020, 1, 2, 0, 0, 0, 0, time.UTC)
-				targetNextDate = target.AddDate(0, 0, 1)
-				s.EXPECT().
-					ListDeployments(gomock.Any(), datastore.ListOptions{
-						PageSize: PageSizeForListDeployments,
-						Filters: []datastore.ListFilter{
-							{
-								Field:    "ProjectId",
-								Operator: "==",
-								Value:    "projectID",
-							},
-							{
-								Field:    "CreatedAt",
-								Operator: ">=",
-								Value:    target.Unix(),
-							},
-							{
-								Field:    "CreatedAt",
-								Operator: "<",
-								Value:    targetNextDate.Unix(),
-							},
-							{
-								Field:    "ApplicationId",
-								Operator: "==",
-								Value:    "ApplicationId",
-							},
-						},
-					}).Return([]*model.Deployment{
-					{
-						Id: "id1",
-					},
-					{
-						Id: "id2",
-					},
-					{
-						Id: "id3",
-					},
-				}, nil)
-
-				return s
-			}(),
-			req: &webservice.GetInsightDataRequest{
-				MetricsKind:    model.InsightMetricsKind_DEPLOYMENT_FREQUENCY,
-				Step:           model.InsightStep_DAILY,
-				RangeFrom:      time.Date(2020, 1, 1, 0, 0, 0, 0, time.UTC).Unix(),
-				DataPointCount: 2,
-				ApplicationId:  "ApplicationId",
-			},
-			res: &webservice.GetInsightDataResponse{
-				UpdatedAt: time.Now().Unix(),
-				DataPoints: []*model.InsightDataPoint{
-					{
-						Value:     2,
-						Timestamp: time.Date(2020, 1, 1, 0, 0, 0, 0, time.UTC).Unix(),
-					},
-					{
-						Value:     3,
-						Timestamp: time.Date(2020, 1, 2, 0, 0, 0, 0, time.UTC).Unix(),
-					},
-				},
-			},
-			wantErr: false,
-		},
-	}
-
-	for _, tt := range tests {
-		t.Run(tt.name, func(t *testing.T) {
-			api := &WebAPI{
-				pipedProjectCache: tt.pipedProjectCache,
-				deploymentStore:   tt.deploymentStore,
-				logger:            zap.NewNop(),
-			}
-			res, err := api.getInsightData(ctx, tt.projectID, tt.req)
-			assert.Equal(t, tt.wantErr, err != nil)
-			if err == nil {
-				assert.Equal(t, tt.res.DataPoints, res.DataPoints)
-			}
 		})
 	}
 }

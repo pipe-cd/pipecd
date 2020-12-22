@@ -25,6 +25,7 @@ go_library(
         "//pkg/crypto:go_default_library",
         "//pkg/datastore:go_default_library",
         "//pkg/git:go_default_library",
+        "//pkg/insightstore:go_default_library",
         "//pkg/model:go_default_library",
         "//pkg/rpc/rpcauth:go_default_library",
         "@com_github_google_uuid//:go_default_library",

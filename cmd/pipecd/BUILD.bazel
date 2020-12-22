@@ -32,6 +32,7 @@ go_library(
         "//pkg/filestore:go_default_library",
         "//pkg/filestore/gcs:go_default_library",
         "//pkg/filestore/minio:go_default_library",
+        "//pkg/insightstore:go_default_library",
         "//pkg/jwt:go_default_library",
         "//pkg/model:go_default_library",
         "//pkg/redis:go_default_library",

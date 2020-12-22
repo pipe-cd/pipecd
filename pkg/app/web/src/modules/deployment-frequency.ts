@@ -4,15 +4,16 @@ import { InsightMetricsKind, InsightDataPoint } from "./insight";
 import dayjs from "dayjs";
 import * as InsightAPI from "../api/insight";
 import { InsightStep } from "pipe/pkg/app/web/model/insight_pb";
+import { LoadingStatus } from "../types/module";
 
 const MODULE_NAME = "deploymentFrequency";
 
-interface DeploymentFrequency {
-  status: "idle" | "success" | "loading" | "failure";
+export interface DeploymentFrequencyState {
+  status: LoadingStatus;
   data: InsightDataPoint[];
 }
 
-const initialState: DeploymentFrequency = {
+const initialState: DeploymentFrequencyState = {
   status: "idle",
   data: [],
 };
@@ -54,10 +55,10 @@ export const deploymentFrequencySlice = createSlice({
         state.status = "loading";
       })
       .addCase(fetchDeploymentFrequency.rejected, (state) => {
-        state.status = "failure";
+        state.status = "failed";
       })
       .addCase(fetchDeploymentFrequency.fulfilled, (state, action) => {
-        state.status = "success";
+        state.status = "succeeded";
         state.data = action.payload;
       });
   },

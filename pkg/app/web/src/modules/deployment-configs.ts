@@ -6,12 +6,12 @@ import {
 } from "pipe/pkg/app/web/api_client/service_pb";
 import { addApplication } from "./applications";
 
-interface DeploymentConfigs {
+export interface DeploymentConfigsState {
   templates: Record<string, DeploymentConfigTemplate.AsObject[]>;
   targetApplicationId: string | null;
 }
 export type DeploymentConfigTemplateLabelKey = keyof typeof DeploymentConfigTemplateLabel;
-const initialState: DeploymentConfigs = {
+const initialState: DeploymentConfigsState = {
   templates: {},
   targetApplicationId: null,
 };
@@ -39,12 +39,8 @@ export const deploymentConfigsSlice = createSlice({
   },
   extraReducers: (builder) => {
     builder
-      .addCase(fetchTemplateList.pending, (state) => {})
       .addCase(fetchTemplateList.fulfilled, (state, action) => {
         state.templates[action.meta.arg.applicationId] = action.payload;
-      })
-      .addCase(fetchTemplateList.rejected, (state, action) => {
-        console.error(action);
       })
       .addCase(addApplication.fulfilled, (state, action) => {
         state.targetApplicationId = action.payload;
@@ -53,7 +49,7 @@ export const deploymentConfigsSlice = createSlice({
 });
 
 export const selectTemplatesByAppId = (
-  state: DeploymentConfigs
+  state: DeploymentConfigsState
 ): DeploymentConfigTemplate.AsObject[] | null => {
   if (!state.targetApplicationId) {
     return null;

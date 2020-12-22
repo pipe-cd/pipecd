@@ -35,7 +35,8 @@ import (
 )
 
 const (
-	defaultCommitMessageFormat = "Update image %s to %s defined at %s in %s"
+	// image ref, file name and new tag are supposed.
+	defaultCommitMessageFormat = "Update %s in %s to %s"
 	defaultCheckInterval       = 5 * time.Minute
 )
 
@@ -73,6 +74,8 @@ func NewWatcher(cfg *config.PipedSpec, gitClient gitClient, logger *zap.Logger) 
 // Run spawns goroutines for each git repository. They periodically pull the image
 // from the container registry to compare the image with one in the git repository.
 func (w *watcher) Run(ctx context.Context) error {
+	w.logger.Info("start running image watcher")
+
 	w.providerCfgs = make(map[string]config.PipedImageProvider, len(w.config.ImageProviders))
 	for _, cfg := range w.config.ImageProviders {
 		w.providerCfgs[cfg.Name] = cfg
@@ -87,6 +90,7 @@ func (w *watcher) Run(ctx context.Context) error {
 			)
 			return fmt.Errorf("failed to clone repository %s: %w", repoCfg.RepoID, err)
 		}
+		defer os.RemoveAll(repo.GetPath())
 
 		w.wg.Add(1)
 		go w.run(ctx, repo, &repoCfg)
@@ -182,7 +186,7 @@ func (w *watcher) updateOutdatedImages(ctx context.Context, repo git.Repo, targe
 		return fmt.Errorf("failed to create a new temporary directory: %w", err)
 	}
 	defer os.RemoveAll(tmpDir)
-	tmpRepo, err := repo.Copy(tmpDir)
+	tmpRepo, err := repo.Copy(filepath.Join(tmpDir, "tmp-repo"))
 	if err != nil {
 		return fmt.Errorf("failed to copy the repository to the temporary directory: %w", err)
 	}
@@ -243,7 +247,7 @@ func (w *watcher) checkOutdatedImage(ctx context.Context, target *config.ImageWa
 		return nil, fmt.Errorf("failed to replace value at %s with %s: %w", target.Field, imageInRegistry, err)
 	}
 	if commitMsg == "" {
-		commitMsg = fmt.Sprintf(defaultCommitMessageFormat, imageInGit, imageInRegistry.String(), target.Field, target.FilePath)
+		commitMsg = fmt.Sprintf(defaultCommitMessageFormat, imageInGit, target.FilePath, imageInRegistry.Tag)
 	}
 	return &commit{
 		changes: map[string][]byte{

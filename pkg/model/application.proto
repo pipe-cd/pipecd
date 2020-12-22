@@ -49,6 +49,8 @@ message Application {
     // Current sync state.
     ApplicationSyncState sync_state = 13;
 
+    // Whether the application is deleted or not.
+    bool deleted = 99;
     // Whether the application is disabled or not.
     bool disabled = 100;
     // Unix time when the application is created.

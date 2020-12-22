@@ -78,11 +78,12 @@ func WithLogger(logger *zap.Logger) Option {
 //   - AWS_ACCESS_KEY_ID or AWS_ACCESS_KEY
 //   - AWS_SECRET_ACCESS_KEY or AWS_SECRET_KEY
 func NewECR(name string, region string, opts ...Option) (*ECR, error) {
-	if region != "" {
+	if region == "" {
 		return nil, fmt.Errorf("region is required")
 	}
 	e := &ECR{
 		name:   name,
+		region: region,
 		logger: zap.NewNop(),
 	}
 	for _, opt := range opts {

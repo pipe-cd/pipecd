@@ -5,6 +5,8 @@ go_library(
     srcs = [
         "add.go",
         "application.go",
+        "get.go",
+        "list.go",
         "sync.go",
     ],
     importpath = "github.com/pipe-cd/pipe/pkg/app/pipectl/cmd/application",

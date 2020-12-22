@@ -47,6 +47,7 @@ go_library(
         "application_live_state.go",
         "cloudprovider.go",
         "command.go",
+        "common.go",
         "datastore.go",
         "deployment.go",
         "docs.go",

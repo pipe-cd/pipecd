@@ -2,10 +2,11 @@ import { DeepPartial } from "@reduxjs/toolkit";
 import userEvent from "@testing-library/user-event";
 import React from "react";
 import { MemoryRouter } from "react-router";
-import { createStore, render, screen } from "../../test-utils";
+import { createStore, render, screen, waitFor } from "../../test-utils";
 import { server } from "../mocks/server";
 import { AppState } from "../modules";
 import { syncApplication } from "../modules/applications";
+import { SyncStrategy } from "../modules/deployments";
 import { dummyApplication } from "../__fixtures__/dummy-application";
 import { dummyApplicationLiveState } from "../__fixtures__/dummy-application-live-state";
 import { dummyEnv } from "../__fixtures__/dummy-environment";
@@ -71,27 +72,68 @@ describe("ApplicationDetail", () => {
     expect(screen.getByText(dummyApplication.name)).toBeInTheDocument();
     expect(screen.getByText("Healthy")).toBeInTheDocument();
     expect(screen.getByText("Synced")).toBeInTheDocument();
-    expect(screen.getByRole("button", { name: /sync/i })).toBeInTheDocument();
+    expect(screen.getByRole("button", { name: /sync$/i })).toBeInTheDocument();
   });
 
-  it("dispatch sync action if click sync button", async () => {
-    const store = createStore(baseState);
-    render(
-      <MemoryRouter>
-        <ApplicationDetail applicationId={dummyApplication.id} />
-      </MemoryRouter>,
-      {
-        store,
-      }
-    );
+  describe("sync", () => {
+    it("dispatch sync action if click sync button", async () => {
+      const store = createStore(baseState);
+      render(
+        <MemoryRouter>
+          <ApplicationDetail applicationId={dummyApplication.id} />
+        </MemoryRouter>,
+        {
+          store,
+        }
+      );
 
-    userEvent.click(screen.getByRole("button", { name: /sync/i }));
+      userEvent.click(screen.getByRole("button", { name: /sync$/i }));
 
-    expect(store.getActions()).toMatchObject([
-      {
-        type: syncApplication.pending.type,
-        meta: { arg: { applicationId: dummyApplication.id } },
-      },
-    ]);
+      await waitFor(() =>
+        expect(store.getActions()).toMatchObject([
+          {
+            type: syncApplication.pending.type,
+            meta: {
+              arg: {
+                applicationId: dummyApplication.id,
+                syncStrategy: SyncStrategy.AUTO,
+              },
+            },
+          },
+        ])
+      );
+    });
+
+    it("dispatch sync action with selected sync strategy if changed strategy and click the sync button", async () => {
+      const store = createStore(baseState);
+      render(
+        <MemoryRouter>
+          <ApplicationDetail applicationId={dummyApplication.id} />
+        </MemoryRouter>,
+        {
+          store,
+        }
+      );
+
+      userEvent.click(
+        screen.getByRole("button", { name: /select sync strategy/i })
+      );
+      userEvent.click(screen.getByRole("menuitem", { name: /pipeline sync/i }));
+      userEvent.click(screen.getByRole("button", { name: /pipeline sync/i }));
+
+      await waitFor(() =>
+        expect(store.getActions()).toMatchObject([
+          {
+            type: syncApplication.pending.type,
+            meta: {
+              arg: {
+                applicationId: dummyApplication.id,
+                syncStrategy: SyncStrategy.PIPELINE,
+              },
+            },
+          },
+        ])
+      );
+    });
   });
 });

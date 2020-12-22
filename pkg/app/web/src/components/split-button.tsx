@@ -1,6 +1,7 @@
 import {
   Button,
   ButtonGroup,
+  PropTypes,
   CircularProgress,
   ClickAwayListener,
   Grow,
@@ -26,9 +27,11 @@ const useStyles = makeStyles((theme) => ({
 
 interface Props {
   options: string[];
+  label: string;
   onClick: (index: number) => void;
   startIcon?: React.ReactNode;
   loading: boolean;
+  color?: PropTypes.Color;
   className?: string;
 }
 
@@ -38,6 +41,8 @@ export const SplitButton: FC<Props> = ({
   loading,
   startIcon,
   className,
+  color,
+  label,
 }) => {
   const classes = useStyles();
   const anchorRef = useRef(null);
@@ -48,7 +53,7 @@ export const SplitButton: FC<Props> = ({
     <div className={className}>
       <ButtonGroup
         variant="outlined"
-        color="inherit"
+        color={color || "inherit"}
         ref={anchorRef}
         disabled={loading}
       >
@@ -66,7 +71,7 @@ export const SplitButton: FC<Props> = ({
           size="small"
           aria-controls={openCancelMenu ? "split-button-menu" : undefined}
           aria-expanded={openCancelMenu ? "true" : undefined}
-          aria-label="select merge strategy"
+          aria-label={label}
           aria-haspopup="menu"
           onClick={() => setOpenCancelMenu(!openCancelMenu)}
         >

@@ -5,8 +5,8 @@ spec:
     - image: gcr.io/pipecd/foo
       provider: my-gcr
       filePath: foo/deployment.yaml
-      field: spec.containers[0].image
+      field: $.spec.containers[0].image
     - image: pipecd/bar
       provider: my-dockerhub
       filePath: bar/deployment.yaml
-      field: spec.containers[0].image
+      field: $.spec.containers[0].image
