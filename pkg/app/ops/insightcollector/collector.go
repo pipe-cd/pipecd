@@ -101,14 +101,15 @@ func (i *InsightCollector) Run(ctx context.Context) error {
 				}
 				chunk = chunkFiles[0]
 
+				var years insightstore.Chunk
 				yearsFiles, err := i.insightstore.LoadChunks(ctx, app.ProjectId, app.Id, k, model.InsightStep_YEARLY, now, 1)
 				if err != nil {
 					if err == filestore.ErrNotFound {
-						chunk = insightstore.NewChunk(app.ProjectId, k, model.InsightStep_YEARLY, app.ProjectId, now)
+						years = insightstore.NewChunk(app.ProjectId, k, model.InsightStep_YEARLY, app.ProjectId, now)
 					}
 					return err
 				}
-				years := yearsFiles[0]
+				years = yearsFiles[0]
 
 				chunk, years, err = i.updateChunk(ctx, chunk, years, app.Id, k, now)
 				if err != nil {
