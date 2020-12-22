@@ -40,6 +40,8 @@ import { SyncStatusIcon } from "./sync-status-icon";
 import { SealedSecretDialog } from "./sealed-secret-dialog";
 import { APPLICATION_KIND_TEXT } from "../constants/application-kind";
 import { setUpdateTargetId } from "../modules/update-application";
+import { DeleteApplicationDialog } from "./delete-application-dialog";
+import { setDeletingAppId } from "../modules/delete-application";
 
 const useStyles = makeStyles((theme) => ({
   root: {
@@ -147,6 +149,13 @@ export const ApplicationList: FC = memo(function ApplicationList() {
     }
     closeMenu();
   }, [dispatch, actionTarget]);
+
+  const handleDeleteClick = useCallback(() => {
+    if (actionTarget) {
+      dispatch(setDeletingAppId(actionTarget.id));
+    }
+    closeMenu();
+  }, [actionTarget, dispatch]);
 
   return (
     <div className={classes.root}>
@@ -268,14 +277,15 @@ export const ApplicationList: FC = memo(function ApplicationList() {
         }}
       >
         <MenuItem onClick={handleEditClick}>Edit</MenuItem>
+        <MenuItem onClick={handleOnClickGenerateSecret}>
+          Encrypt Secret
+        </MenuItem>
         {actionTarget && actionTarget.disabled ? (
           <MenuItem onClick={handleOnClickEnable}>Enable</MenuItem>
         ) : (
           <MenuItem onClick={handleOnClickDisable}>Disable</MenuItem>
         )}
-        <MenuItem onClick={handleOnClickGenerateSecret}>
-          Encrypt Secret
-        </MenuItem>
+        <MenuItem onClick={handleDeleteClick}>Delete</MenuItem>
       </Menu>
 
       <DisableApplicationDialog
@@ -290,6 +300,8 @@ export const ApplicationList: FC = memo(function ApplicationList() {
         applicationId={actionTarget && actionTarget.id}
         onClose={handleOnCloseGenerateDialog}
       />
+
+      <DeleteApplicationDialog />
     </div>
   );
 });

@@ -12,11 +12,12 @@ import {
   fetchApplication,
   fetchApplications,
   syncApplication,
+  ApplicationsState,
 } from "./applications";
 import { CommandModel, CommandStatus, fetchCommand } from "./commands";
 import * as applicationsAPI from "../api/applications";
 
-const baseState = {
+const baseState: ApplicationsState = {
   adding: false,
   disabling: {},
   entities: {},

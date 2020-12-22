@@ -16,6 +16,8 @@ import {
   EnableApplicationResponse,
   UpdateApplicationRequest,
   UpdateApplicationResponse,
+  DeleteApplicationRequest,
+  DeleteApplicationResponse,
 } from "pipe/pkg/app/web/api_client/service_pb";
 import { ApplicationGitPath } from "pipe/pkg/app/web/model/common_pb";
 import { ApplicationGitRepository } from "pipe/pkg/app/web/model/common_pb";
@@ -137,8 +139,6 @@ export const updateApplication = async ({
 }: Required<UpdateApplicationRequest.AsObject>): Promise<
   UpdateApplicationResponse.AsObject
 > => {
-  console.log(UpdateApplicationRequest);
-
   const req = new UpdateApplicationRequest();
   req.setApplicationId(applicationId);
   req.setName(name);
@@ -160,4 +160,14 @@ export const updateApplication = async ({
   }
   req.setGitPath(appGitPath);
   return apiRequest(req, apiClient.updateApplication);
+};
+
+export const deleteApplication = async ({
+  applicationId,
+}: DeleteApplicationRequest.AsObject): Promise<
+  DeleteApplicationResponse.AsObject
+> => {
+  const req = new DeleteApplicationRequest();
+  req.setApplicationId(applicationId);
+  return apiRequest(req, apiClient.deleteApplication);
 };

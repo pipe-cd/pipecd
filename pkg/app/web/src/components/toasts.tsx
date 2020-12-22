@@ -38,6 +38,7 @@ export const Toasts: FC = () => {
               <MuiAlert
                 onClose={handleClose}
                 severity={item.severity}
+                elevation={6}
                 action={
                   item.to ? (
                     <Button

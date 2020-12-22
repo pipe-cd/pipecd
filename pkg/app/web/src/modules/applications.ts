@@ -106,21 +106,25 @@ export const enableApplication = createAsyncThunk<
   await applicationsAPI.enableApplication(props);
 });
 
+const initialState = applicationsAdapter.getInitialState<{
+  adding: boolean;
+  loading: boolean;
+  syncing: Record<string, boolean>;
+  disabling: Record<string, boolean>;
+  fetchApplicationError: SerializedError | null;
+}>({
+  adding: false,
+  loading: false,
+  syncing: {},
+  disabling: {},
+  fetchApplicationError: null,
+});
+
+export type ApplicationsState = typeof initialState;
+
 export const applicationsSlice = createSlice({
   name: "applications",
-  initialState: applicationsAdapter.getInitialState<{
-    adding: boolean;
-    loading: boolean;
-    syncing: Record<string, boolean>;
-    disabling: Record<string, boolean>;
-    fetchApplicationError: SerializedError | null;
-  }>({
-    adding: false,
-    loading: false,
-    syncing: {},
-    disabling: {},
-    fetchApplicationError: null,
-  }),
+  initialState,
   reducers: {},
   extraReducers: (builder) => {
     builder
