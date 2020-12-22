@@ -32,7 +32,7 @@ describe("fetchMe", () => {
 });
 
 describe("meSlice reducer", () => {
-  it("should handle initial state", () => {
+  it("should return the initial state", () => {
     expect(
       meSlice.reducer(undefined, {
         type: "TEST_ACTION",

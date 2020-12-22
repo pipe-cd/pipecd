@@ -34,7 +34,7 @@ test("selectPipedsByEnv", () => {
 });
 
 describe("pipedsSlice reducer", () => {
-  it("should handle initial state", () => {
+  it("should return the initial state", () => {
     expect(
       pipedsSlice.reducer(undefined, {
         type: "TEST_ACTION",

@@ -13,7 +13,7 @@ test("createActiveStageKey", () => {
 });
 
 describe("stageLogsSlice reducer", () => {
-  it("should handle initial state", () => {
+  it("should return the initial state", () => {
     expect(
       stageLogsSlice.reducer(undefined, {
         type: "TEST_ACTION",

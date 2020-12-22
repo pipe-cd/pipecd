@@ -1,7 +1,7 @@
 import { projectSlice, fetchProject, updateStaticAdmin } from "./project";
 
 describe("projectSlice reducer", () => {
-  it("should handle initial state", () => {
+  it("should return the initial state", () => {
     expect(
       projectSlice.reducer(undefined, {
         type: "TEST_ACTION",

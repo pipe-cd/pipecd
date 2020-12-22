@@ -54,7 +54,7 @@ describe("fetchApplications", () => {
 });
 
 describe("applicationsSlice reducer", () => {
-  it("should handle initial state", () => {
+  it("should return the initial state", () => {
     expect(
       applicationsSlice.reducer(undefined, {
         type: "TEST_ACTION",

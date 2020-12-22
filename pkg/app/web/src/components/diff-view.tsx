@@ -1,5 +1,7 @@
-import React, { FC } from "react";
+import React, { FC, memo } from "react";
 import { makeStyles } from "@material-ui/core";
+import red from "@material-ui/core/colors/red";
+import green from "@material-ui/core/colors/green";
 
 const useStyles = makeStyles((theme) => ({
   root: {
@@ -8,12 +10,12 @@ const useStyles = makeStyles((theme) => ({
     whiteSpace: "pre-wrap",
   },
   add: {
-    color: "#22863a",
-    backgroundColor: "#f0fff4",
+    color: green[800],
+    backgroundColor: green[50],
   },
   del: {
-    color: "#b31d28",
-    backgroundColor: "#ffeef0",
+    color: red[800],
+    backgroundColor: red[50],
   },
   line: {
     minHeight: `${theme.typography.body2.lineHeight}em`,
@@ -24,7 +26,7 @@ interface Props {
   content: string;
 }
 
-export const DiffView: FC<Props> = ({ content }) => {
+export const DiffView: FC<Props> = memo(function DiffView({ content }) {
   const classes = useStyles();
   return (
     <div className={classes.root}>
@@ -32,7 +34,7 @@ export const DiffView: FC<Props> = ({ content }) => {
         switch (line[0]) {
           case "+":
             return (
-              <div key={i} className={classes.line}>
+              <div key={i} className={classes.line} data-testid="added-line">
                 <span key={i} className={classes.add}>
                   {line}
                 </span>
@@ -40,7 +42,7 @@ export const DiffView: FC<Props> = ({ content }) => {
             );
           case "-":
             return (
-              <div key={i} className={classes.line}>
+              <div key={i} className={classes.line} data-testid="deleted-line">
                 <span className={classes.del}>{line}</span>
               </div>
             );
@@ -54,4 +56,4 @@ export const DiffView: FC<Props> = ({ content }) => {
       })}
     </div>
   );
-};
+});

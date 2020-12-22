@@ -44,8 +44,10 @@ const initialState = applicationLiveStateAdapter.getInitialState<{
   hasError: {},
 });
 
+export type ApplicationLiveStateState = typeof initialState;
+
 export const selectHasError = (
-  state: typeof initialState,
+  state: ApplicationLiveStateState,
   applicationId: string
 ): boolean => {
   return state.hasError[applicationId] || false;

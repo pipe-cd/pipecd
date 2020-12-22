@@ -1,7 +1,7 @@
 import { toastsSlice, addToast, removeToast } from "./toasts";
 
 describe("toastsSlice reducer", () => {
-  it("should handle initial state", () => {
+  it("should return the initial state", () => {
     expect(
       toastsSlice.reducer(undefined, {
         type: "TEST_ACTION",

@@ -2,7 +2,7 @@ import { dummyEnv } from "../__fixtures__/dummy-environment";
 import { environmentsSlice, fetchEnvironments } from "./environments";
 
 describe("environmentsSlice reducer", () => {
-  it("should handle initial state", () => {
+  it("should return the initial state", () => {
     expect(
       environmentsSlice.reducer(undefined, {
         type: "TEST_ACTION",

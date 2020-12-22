@@ -9,7 +9,7 @@ export type InsightDataPoint = InsightDataPointModel.AsObject;
 
 const MODULE_NAME = "insight";
 
-interface Insight {
+export interface InsightState {
   applicationId: string;
   step: InsightStep;
   rangeFrom: number;
@@ -18,7 +18,7 @@ interface Insight {
 
 const now = dayjs(Date.now());
 
-const initialState: Insight = {
+const initialState: InsightState = {
   applicationId: "",
   step: InsightStep.DAILY,
   rangeFrom: now.valueOf(),
