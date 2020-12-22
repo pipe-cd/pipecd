@@ -101,8 +101,11 @@ func (s *ops) run(ctx context.Context, t cli.Telemetry) error {
 		collector := insightcollector.NewInsightCollector(ds, fs, t.Logger)
 		c := cron.New(cron.WithLocation(time.UTC))
 		_, err := c.AddFunc(cfg.InsightCollector.Schedule, func() {
-			if err := collector.Run(ctx); err != nil {
-				t.Logger.Error("failed to run the insight collector", zap.Error(err))
+			if err := collector.CollectProjectsInsight(ctx); err != nil {
+				t.Logger.Error("failed to run the project insight collector", zap.Error(err))
+			}
+			if err := collector.CollectApplicationInsight(ctx); err != nil {
+				t.Logger.Error("failed to run the application insight collector", zap.Error(err))
 			}
 		})
 		if err != nil {

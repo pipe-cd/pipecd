@@ -35,6 +35,7 @@ var aggregateKinds = []model.InsightMetricsKind{
 
 // InsightCollector implements the behaviors for the gRPC definitions of InsightCollector.
 type InsightCollector struct {
+	projectStore     datastore.ProjectStore
 	applicationStore datastore.ApplicationStore
 	deploymentStore  datastore.DeploymentStore
 	insightstore     insightstore.Store
@@ -48,6 +49,7 @@ func NewInsightCollector(
 	logger *zap.Logger,
 ) *InsightCollector {
 	a := &InsightCollector{
+		projectStore:     datastore.NewProjectStore(ds),
 		applicationStore: datastore.NewApplicationStore(ds),
 		deploymentStore:  datastore.NewDeploymentStore(ds),
 		insightstore:     insightstore.NewStore(fs),
@@ -60,7 +62,49 @@ var (
 	pageSize = 50
 )
 
-func (i *InsightCollector) Run(ctx context.Context) error {
+func (i *InsightCollector) CollectProjectsInsight(ctx context.Context) error {
+	now := time.Now().UTC()
+	maxCreatedAt := now.Unix()
+
+	for {
+		projects, err := i.projectStore.ListProjects(ctx, datastore.ListOptions{
+			PageSize: pageSize,
+			Filters: []datastore.ListFilter{
+				{
+					Field:    "CreatedAt",
+					Operator: "<",
+					Value:    maxCreatedAt,
+				},
+			},
+			Orders: []datastore.Order{
+				{
+					Field:     "CreatedAt",
+					Direction: datastore.Desc,
+				},
+			},
+		})
+		if err != nil {
+			return err
+		}
+		if len(projects) == 0 {
+			// updated all project's insights completely
+			break
+		}
+
+		for _, p := range projects {
+			for _, k := range aggregateKinds {
+				err = i.updateApplicationChunks(ctx, p.Id, "", k, now)
+				if err != nil {
+					return err
+				}
+			}
+		}
+		maxCreatedAt = projects[len(projects)-1].CreatedAt
+	}
+	return nil
+}
+
+func (i *InsightCollector) CollectApplicationInsight(ctx context.Context) error {
 	now := time.Now().UTC()
 	maxCreatedAt := now.Unix()
 
@@ -91,37 +135,7 @@ func (i *InsightCollector) Run(ctx context.Context) error {
 
 		for _, app := range apps {
 			for _, k := range aggregateKinds {
-				chunkFiles, err := i.insightstore.LoadChunks(ctx, app.ProjectId, app.Id, k, model.InsightStep_MONTHLY, now, 1)
-				var chunk insightstore.Chunk
-				if err == filestore.ErrNotFound {
-					chunk = insightstore.NewChunk(app.ProjectId, k, model.InsightStep_MONTHLY, app.ProjectId, now)
-				} else if err != nil {
-					return err
-				} else {
-					chunk = chunkFiles[0]
-				}
-
-				yearsFiles, err := i.insightstore.LoadChunks(ctx, app.ProjectId, app.Id, k, model.InsightStep_YEARLY, now, 1)
-				var years insightstore.Chunk
-				if err == filestore.ErrNotFound {
-					years = insightstore.NewChunk(app.ProjectId, k, model.InsightStep_YEARLY, app.ProjectId, now)
-				} else if err != nil {
-					return err
-				} else {
-					years = yearsFiles[0]
-				}
-
-				chunk, years, err = i.updateChunk(ctx, chunk, years, app.Id, k, now)
-				if err != nil {
-					return err
-				}
-
-				err = i.insightstore.PutChunk(ctx, chunk)
-				if err != nil {
-					return err
-				}
-
-				err = i.insightstore.PutChunk(ctx, years)
+				err = i.updateApplicationChunks(ctx, app.ProjectId, app.Id, k, now)
 				if err != nil {
 					return err
 				}
@@ -132,22 +146,66 @@ func (i *InsightCollector) Run(ctx context.Context) error {
 	return nil
 }
 
+func (i *InsightCollector) updateApplicationChunks(
+	ctx context.Context,
+	projectID, appID string,
+	kind model.InsightMetricsKind,
+	to time.Time,
+) error {
+	chunkFiles, err := i.insightstore.LoadChunks(ctx, projectID, appID, kind, model.InsightStep_MONTHLY, to, 1)
+	var chunk insightstore.Chunk
+	if err == filestore.ErrNotFound {
+		chunk = insightstore.NewChunk(projectID, kind, model.InsightStep_MONTHLY, appID, to)
+	} else if err != nil {
+		return err
+	} else {
+		chunk = chunkFiles[0]
+	}
+
+	yearsFiles, err := i.insightstore.LoadChunks(ctx, projectID, appID, kind, model.InsightStep_YEARLY, to, 1)
+	var years insightstore.Chunk
+	if err == filestore.ErrNotFound {
+		years = insightstore.NewChunk(projectID, kind, model.InsightStep_YEARLY, appID, to)
+	} else if err != nil {
+		return err
+	} else {
+		years = yearsFiles[0]
+	}
+
+	chunk, years, err = i.updateChunk(ctx, chunk, years, projectID, appID, kind, to)
+	if err != nil {
+		return err
+	}
+
+	err = i.insightstore.PutChunk(ctx, chunk)
+	if err != nil {
+		return err
+	}
+
+	err = i.insightstore.PutChunk(ctx, years)
+	if err != nil {
+		return err
+	}
+
+	return nil
+}
+
 func (i *InsightCollector) updateChunk(
 	ctx context.Context,
 	chunk, years insightstore.Chunk,
-	appID string,
+	projectID, appID string,
 	kind model.InsightMetricsKind,
 	to time.Time,
 ) (insightstore.Chunk, insightstore.Chunk, error) {
 	accumulatedTo := time.Unix(chunk.GetAccumulatedTo(), 0).UTC()
 	yearsAccumulatedTo := time.Unix(years.GetAccumulatedTo(), 0).UTC()
 
-	updatedps, accumulateTo, err := i.getDailyInsightData(ctx, appID, kind, accumulatedTo, to)
+	updatedps, accumulateTo, err := i.getDailyInsightData(ctx, projectID, appID, kind, accumulatedTo, to)
 	if err != nil {
 		return nil, nil, err
 	}
 
-	updatedpsForYears, yearAccumulateTo, err := i.getDailyInsightData(ctx, appID, kind, yearsAccumulatedTo, to)
+	updatedpsForYears, yearAccumulateTo, err := i.getDailyInsightData(ctx, projectID, appID, kind, yearsAccumulatedTo, to)
 	if err != nil {
 		return nil, nil, err
 	}
@@ -191,7 +249,7 @@ func (i *InsightCollector) updateDataPoints(chunk insightstore.Chunk, step model
 
 func (i *InsightCollector) getDailyInsightData(
 	ctx context.Context,
-	appID string,
+	projectID, appID string,
 	kind model.InsightMetricsKind,
 	rangeFrom time.Time,
 	rangeTo time.Time,
@@ -217,9 +275,9 @@ func (i *InsightCollector) getDailyInsightData(
 		var err error
 		switch kind {
 		case model.InsightMetricsKind_DEPLOYMENT_FREQUENCY:
-			data, a, err = i.getInsightDataForDeployFrequency(ctx, appID, targetTimestamp, rangeFrom, to)
+			data, a, err = i.getInsightDataForDeployFrequency(ctx, projectID, appID, targetTimestamp, rangeFrom, to)
 		case model.InsightMetricsKind_CHANGE_FAILURE_RATE:
-			data, a, err = i.getInsightDataForChangeFailureRate(ctx, appID, targetTimestamp, rangeFrom, to)
+			data, a, err = i.getInsightDataForChangeFailureRate(ctx, projectID, appID, targetTimestamp, rangeFrom, to)
 		default:
 			return nil, 0, fmt.Errorf("invalid step: %v", kind)
 		}
@@ -250,7 +308,7 @@ var (
 // getInsightDataForDeployFrequency accumulate insight data in target range for deploy frequency.
 func (i *InsightCollector) getInsightDataForDeployFrequency(
 	ctx context.Context,
-	applicationID string,
+	projectID, applicationID string,
 	targetTimestamp int64,
 	from time.Time,
 	to time.Time) (*insightstore.DeployFrequency, time.Time, error) {
@@ -272,6 +330,14 @@ func (i *InsightCollector) getInsightDataForDeployFrequency(
 			Field:    "ApplicationId",
 			Operator: "==",
 			Value:    applicationID,
+		})
+	}
+
+	if projectID != "" {
+		filters = append(filters, datastore.ListFilter{
+			Field:    "ProjectId",
+			Operator: "==",
+			Value:    projectID,
 		})
 	}
 
@@ -303,7 +369,7 @@ func (i *InsightCollector) getInsightDataForDeployFrequency(
 // getInsightDataForChangeFailureRate accumulate insight data in target range for change failure rate
 func (i *InsightCollector) getInsightDataForChangeFailureRate(
 	ctx context.Context,
-	applicationID string,
+	projectID, applicationID string,
 	targetTimestamp int64,
 	from time.Time,
 	to time.Time) (*insightstore.ChangeFailureRate, time.Time, error) {
@@ -331,6 +397,14 @@ func (i *InsightCollector) getInsightDataForChangeFailureRate(
 			Field:    "ApplicationId",
 			Operator: "==",
 			Value:    applicationID,
+		})
+	}
+
+	if projectID != "" {
+		filters = append(filters, datastore.ListFilter{
+			Field:    "ProjectId",
+			Operator: "==",
+			Value:    projectID,
 		})
 	}
 

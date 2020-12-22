@@ -38,6 +38,7 @@ import (
 
 func TestInsightCollector_getDailyInsightData(t *testing.T) {
 	type args struct {
+		projectID string
 		appID     string
 		kind      model.InsightMetricsKind
 		rangeFrom time.Time
@@ -549,7 +550,7 @@ func TestInsightCollector_getDailyInsightData(t *testing.T) {
 				insightstore:     insightstore.NewStore(filestoretest.NewMockStore(ctrl)),
 				logger:           zap.NewNop(),
 			}
-			got, accumulatedTo, err := a.getDailyInsightData(context.Background(), tt.args.appID, tt.args.kind, tt.args.rangeFrom, tt.args.rangeTo)
+			got, accumulatedTo, err := a.getDailyInsightData(context.Background(), tt.args.projectID, tt.args.appID, tt.args.kind, tt.args.rangeFrom, tt.args.rangeTo)
 			if (err != nil) != tt.wantErr {
 				if !tt.wantErr {
 					assert.NoError(t, err)
@@ -573,6 +574,7 @@ func TestGetInsightDataForDeployFrequency(t *testing.T) {
 	PageSizeForListDeployments := 50
 	tests := []struct {
 		name            string
+		projectID       string
 		applicationID   string
 		targetRangeFrom time.Time
 		targetRangeTo   time.Time
@@ -673,7 +675,7 @@ func TestGetInsightDataForDeployFrequency(t *testing.T) {
 				deploymentStore: tt.deploymentStore,
 				logger:          zap.NewNop(),
 			}
-			value, accumulatedTo, err := i.getInsightDataForDeployFrequency(ctx, tt.applicationID, tt.targetTimestamp, tt.targetRangeFrom, tt.targetRangeTo)
+			value, accumulatedTo, err := i.getInsightDataForDeployFrequency(ctx, tt.projectID, tt.applicationID, tt.targetTimestamp, tt.targetRangeFrom, tt.targetRangeTo)
 			assert.Equal(t, tt.wantErr, err != nil)
 			if err == nil {
 				assert.Equal(t, tt.dataPoint, value)
@@ -692,6 +694,7 @@ func TestGetInsightDataForChangeFailureRate(t *testing.T) {
 	PageSizeForListDeployments := 50
 	tests := []struct {
 		name            string
+		projectID       string
 		applicationID   string
 		targetRangeFrom time.Time
 		targetRangeTo   time.Time
@@ -702,7 +705,7 @@ func TestGetInsightDataForChangeFailureRate(t *testing.T) {
 		wantErr         bool
 	}{
 		{
-			name:            "valid with InsightStep_DAILY",
+			name:            "valid with InsightStep_DAILY and app id",
 			applicationID:   "ApplicationId",
 			targetRangeFrom: time.Date(2020, 1, 1, 0, 0, 0, 0, time.UTC),
 			targetRangeTo:   time.Date(2020, 1, 2, 0, 0, 0, 0, time.UTC),
@@ -732,6 +735,73 @@ func TestGetInsightDataForChangeFailureRate(t *testing.T) {
 								Field:    "ApplicationId",
 								Operator: "==",
 								Value:    "ApplicationId",
+							},
+						},
+					}).Return([]*model.Deployment{
+					{
+						Id:        "id1",
+						Status:    model.DeploymentStatus_DEPLOYMENT_SUCCESS,
+						UpdatedAt: time.Date(2020, 1, 1, 8, 0, 0, 0, time.UTC).Unix(),
+					},
+					{
+						Id:        "id2",
+						Status:    model.DeploymentStatus_DEPLOYMENT_SUCCESS,
+						UpdatedAt: time.Date(2020, 1, 1, 5, 0, 0, 0, time.UTC).Unix(),
+					},
+					{
+						Id:        "id3",
+						Status:    model.DeploymentStatus_DEPLOYMENT_FAILURE,
+						UpdatedAt: time.Date(2020, 1, 1, 5, 0, 0, 0, time.UTC).Unix(),
+					},
+					{
+						Id:        "id4",
+						Status:    model.DeploymentStatus_DEPLOYMENT_SUCCESS,
+						UpdatedAt: time.Date(2020, 1, 1, 8, 0, 0, 0, time.UTC).Unix(),
+					},
+				}, nil)
+
+				return s
+			}(),
+			dataPoint: &insightstore.ChangeFailureRate{
+				Timestamp:    time.Date(2020, 1, 1, 0, 0, 0, 0, time.UTC).Unix(),
+				Rate:         0.25,
+				SuccessCount: 3,
+				FailureCount: 1,
+			},
+			accumulatedTo: time.Date(2020, 1, 1, 8, 0, 0, 0, time.UTC),
+			wantErr:       false,
+		},
+		{
+			name:            "valid with InsightStep_DAILY and projectId",
+			projectID:       "ProjectId",
+			targetRangeFrom: time.Date(2020, 1, 1, 0, 0, 0, 0, time.UTC),
+			targetRangeTo:   time.Date(2020, 1, 2, 0, 0, 0, 0, time.UTC),
+			targetTimestamp: time.Date(2020, 1, 1, 0, 0, 0, 0, time.UTC).Unix(),
+			deploymentStore: func() datastore.DeploymentStore {
+				s := datastoretest.NewMockDeploymentStore(ctrl)
+				s.EXPECT().
+					ListDeployments(gomock.Any(), datastore.ListOptions{
+						PageSize: PageSizeForListDeployments,
+						Filters: []datastore.ListFilter{
+							{
+								Field:    "UpdatedAt",
+								Operator: ">=",
+								Value:    time.Date(2020, 1, 1, 0, 0, 0, 0, time.UTC).Unix(),
+							},
+							{
+								Field:    "UpdatedAt",
+								Operator: "<",
+								Value:    time.Date(2020, 1, 2, 0, 0, 0, 0, time.UTC).Unix(),
+							},
+							{
+								Field:    "Status",
+								Operator: "in",
+								Value:    []model.DeploymentStatus{model.DeploymentStatus_DEPLOYMENT_FAILURE, model.DeploymentStatus_DEPLOYMENT_SUCCESS},
+							},
+							{
+								Field:    "ProjectId",
+								Operator: "==",
+								Value:    "ProjectId",
 							},
 						},
 					}).Return([]*model.Deployment{
@@ -813,7 +883,7 @@ func TestGetInsightDataForChangeFailureRate(t *testing.T) {
 				deploymentStore: tt.deploymentStore,
 				logger:          zap.NewNop(),
 			}
-			value, accumulatedTo, err := i.getInsightDataForChangeFailureRate(ctx, tt.applicationID, tt.targetTimestamp, tt.targetRangeFrom, tt.targetRangeTo)
+			value, accumulatedTo, err := i.getInsightDataForChangeFailureRate(ctx, tt.projectID, tt.applicationID, tt.targetTimestamp, tt.targetRangeFrom, tt.targetRangeTo)
 			assert.Equal(t, tt.wantErr, err != nil)
 			if err == nil {
 				assert.Equal(t, tt.dataPoint, value)
