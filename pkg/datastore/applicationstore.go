@@ -134,6 +134,9 @@ func (s *applicationStore) UpdateApplication(ctx context.Context, id string, upd
 	now := s.nowFunc().Unix()
 	return s.ds.Update(ctx, applicationModelKind, id, applicationFactory, func(e interface{}) error {
 		a := e.(*model.Application)
+		if a.Deleted == true {
+			return errors.New("unable to update a deleted application")
+		}
 		if err := updater(a); err != nil {
 			return err
 		}
