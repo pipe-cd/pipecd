@@ -77,7 +77,7 @@ func (r *repo) GetClonedBranch() string {
 
 // Copy does copying the repository to the given destination.
 func (r *repo) Copy(dest string) (Repo, error) {
-	cmd := copyCommand(r.dir, dest)
+	cmd := exec.Command("cp", "-rf", r.dir, dest)
 	out, err := cmd.CombinedOutput()
 	if err != nil {
 		return nil, formatCommandError(err, out)
