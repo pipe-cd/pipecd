@@ -65,6 +65,9 @@ secret:
     decryptServiceAccount:
       fileName: sealed-secret-gcpkms-decrypt-service-account
       data: ""
+  awsCredentials:
+    fileName: aws-credentials
+    data: ""
 
 nodeSelector: {}
 
