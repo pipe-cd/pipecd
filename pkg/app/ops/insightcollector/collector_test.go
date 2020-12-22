@@ -823,7 +823,7 @@ func TestGetInsightDataForChangeFailureRate(t *testing.T) {
 	}
 }
 
-func TestInsightCollector_updateChunk(t *testing.T) {
+func TestInsightCollector_updateDataPoints(t *testing.T) {
 	type args struct {
 		chunk         insightstore.Chunk
 		step          model.InsightStep
@@ -1236,7 +1236,7 @@ func TestInsightCollector_updateChunk(t *testing.T) {
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			a := &InsightCollector{}
-			got, err := a.updateChunk(tt.args.chunk, tt.args.step, tt.args.updatedps, tt.args.accumulatedTo)
+			got, err := a.updateDataPoints(tt.args.chunk, tt.args.step, tt.args.updatedps, tt.args.accumulatedTo)
 			if (err != nil) != tt.wantErr {
 				if !tt.wantErr {
 					assert.NoError(t, err)
