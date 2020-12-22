@@ -182,6 +182,11 @@ func (a *API) ListApplications(ctx context.Context, req *apiservice.ListApplicat
 			Operator: "==",
 			Value:    key.ProjectId,
 		},
+		{
+			Field:    "Disabled",
+			Operator: "==",
+			Value:    req.Disabled,
+		},
 	}
 	if req.Name != "" {
 		filters = append(filters, datastore.ListFilter{
