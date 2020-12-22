@@ -54,6 +54,7 @@ service WebService {
     rpc UpdateApplication(UpdateApplicationRequest) returns (UpdateApplicationResponse) {}
     rpc EnableApplication(EnableApplicationRequest) returns (EnableApplicationResponse) {}
     rpc DisableApplication(DisableApplicationRequest) returns (DisableApplicationResponse) {}
+    rpc DeleteApplication(DeleteApplicationRequest) returns (DeleteApplicationResponse) {}
     rpc ListApplications(ListApplicationsRequest) returns (ListApplicationsResponse) {}
     rpc SyncApplication(SyncApplicationRequest) returns (SyncApplicationResponse) {}
     rpc GetApplication(GetApplicationRequest) returns (GetApplicationResponse) {}
@@ -216,6 +217,13 @@ message DisableApplicationRequest {
 }
 
 message DisableApplicationResponse {
+}
+
+message DeleteApplicationRequest {
+    string application_id = 1 [(validate.rules).string.min_len = 1];
+}
+
+message DeleteApplicationResponse {
 }
 
 message ListApplicationsRequest {

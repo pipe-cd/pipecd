@@ -16,6 +16,7 @@ package datastore
 
 import (
 	"context"
+	"errors"
 	"time"
 
 	"github.com/pipe-cd/pipe/pkg/model"
@@ -31,6 +32,7 @@ type ApplicationStore interface {
 	AddApplication(ctx context.Context, app *model.Application) error
 	EnableApplication(ctx context.Context, id string) error
 	DisableApplication(ctx context.Context, id string) error
+	DeleteApplication(ctx context.Context, id string) error
 	GetApplication(ctx context.Context, id string) (*model.Application, error)
 	ListApplications(ctx context.Context, opts ListOptions) ([]*model.Application, error)
 	UpdateApplication(ctx context.Context, id string, updater func(*model.Application) error) error
@@ -69,8 +71,11 @@ func (s *applicationStore) AddApplication(ctx context.Context, app *model.Applic
 func (s *applicationStore) EnableApplication(ctx context.Context, id string) error {
 	return s.ds.Update(ctx, applicationModelKind, id, applicationFactory, func(e interface{}) error {
 		app := e.(*model.Application)
+		if app.Deleted == true {
+			return errors.New("unable to enable a deleted application")
+		}
 		app.Disabled = false
-		app.UpdatedAt = time.Now().Unix()
+		app.UpdatedAt = s.nowFunc().Unix()
 		return nil
 	})
 }
@@ -78,8 +83,21 @@ func (s *applicationStore) EnableApplication(ctx context.Context, id string) err
 func (s *applicationStore) DisableApplication(ctx context.Context, id string) error {
 	return s.ds.Update(ctx, applicationModelKind, id, applicationFactory, func(e interface{}) error {
 		app := e.(*model.Application)
+		if app.Deleted == true {
+			return errors.New("unable to disable a deleted application")
+		}
 		app.Disabled = true
-		app.UpdatedAt = time.Now().Unix()
+		app.UpdatedAt = s.nowFunc().Unix()
+		return nil
+	})
+}
+
+func (s *applicationStore) DeleteApplication(ctx context.Context, id string) error {
+	return s.ds.Update(ctx, applicationModelKind, id, applicationFactory, func(e interface{}) error {
+		app := e.(*model.Application)
+		app.Deleted = true
+		app.Disabled = true
+		app.UpdatedAt = s.nowFunc().Unix()
 		return nil
 	})
 }
