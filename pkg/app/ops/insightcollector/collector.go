@@ -91,14 +91,21 @@ func (i *InsightCollector) Run(ctx context.Context) error {
 
 		for _, app := range apps {
 			for _, k := range aggregateKinds {
+				var chunk insightstore.Chunk
 				chunkFiles, err := i.insightstore.LoadChunks(ctx, app.ProjectId, app.Id, k, model.InsightStep_MONTHLY, now, 1)
 				if err != nil {
+					if err == filestore.ErrNotFound {
+						chunk = insightstore.NewChunk(app.ProjectId, k, model.InsightStep_MONTHLY, app.ProjectId, now)
+					}
 					return err
 				}
-				chunk := chunkFiles[0]
+				chunk = chunkFiles[0]
 
 				yearsFiles, err := i.insightstore.LoadChunks(ctx, app.ProjectId, app.Id, k, model.InsightStep_YEARLY, now, 1)
 				if err != nil {
+					if err == filestore.ErrNotFound {
+						chunk = insightstore.NewChunk(app.ProjectId, k, model.InsightStep_YEARLY, app.ProjectId, now)
+					}
 					return err
 				}
 				years := yearsFiles[0]

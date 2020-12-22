@@ -168,6 +168,33 @@ type Chunk interface {
 	SetDataPoints(step model.InsightStep, points []DataPoint) error
 }
 
+func NewChunk(projectID string, metricsKind model.InsightMetricsKind, step model.InsightStep, appID string, timestamp time.Time) Chunk {
+	var path string
+	switch step {
+	case model.InsightStep_YEARLY:
+		path = makeYearsFilePath(projectID, metricsKind, appID)
+	default:
+		month := determineChunkKeys(step, timestamp, 1)
+		path = makeChunkFilePath(projectID, metricsKind, appID, month[0])
+	}
+
+	var chunk Chunk
+	switch metricsKind {
+	case model.InsightMetricsKind_DEPLOYMENT_FREQUENCY:
+		chunk = &DeployFrequencyChunk{
+			FilePath: path,
+		}
+	case model.InsightMetricsKind_CHANGE_FAILURE_RATE:
+		chunk = &ChangeFailureRateChunk{
+			FilePath: path,
+		}
+	default:
+		return nil
+	}
+
+	return chunk
+}
+
 // convert types to Chunk.
 func ToChunk(i interface{}) (Chunk, error) {
 	switch p := i.(type) {
