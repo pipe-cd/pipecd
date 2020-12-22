@@ -273,12 +273,12 @@ func TestInsightCollector_getDailyInsightData(t *testing.T) {
 					PageSize: 50,
 					Filters: []datastore.ListFilter{
 						{
-							Field:    "CreatedAt",
+							Field:    "UpdatedAt",
 							Operator: ">=",
 							Value:    time.Date(2020, 10, 11, 4, 0, 0, 0, time.UTC).Unix(),
 						},
 						{
-							Field:    "CreatedAt",
+							Field:    "UpdatedAt",
 							Operator: "<",
 							Value:    time.Date(2020, 10, 12, 0, 0, 0, 0, time.UTC).Unix(),
 						},
@@ -298,31 +298,31 @@ func TestInsightCollector_getDailyInsightData(t *testing.T) {
 				}).Return([]*model.Deployment{
 					{
 						Status:    model.DeploymentStatus_DEPLOYMENT_FAILURE,
-						CreatedAt: time.Date(2020, 10, 11, 5, 0, 0, 0, time.UTC).Unix(),
+						UpdatedAt: time.Date(2020, 10, 11, 5, 0, 0, 0, time.UTC).Unix(),
 					},
 					{
 						Status:    model.DeploymentStatus_DEPLOYMENT_FAILURE,
-						CreatedAt: time.Date(2020, 10, 11, 5, 0, 0, 0, time.UTC).Unix(),
+						UpdatedAt: time.Date(2020, 10, 11, 5, 0, 0, 0, time.UTC).Unix(),
 					},
 					{
 						Status:    model.DeploymentStatus_DEPLOYMENT_SUCCESS,
-						CreatedAt: time.Date(2020, 10, 11, 5, 0, 0, 0, time.UTC).Unix(),
+						UpdatedAt: time.Date(2020, 10, 11, 5, 0, 0, 0, time.UTC).Unix(),
 					},
 					{
 						Status:    model.DeploymentStatus_DEPLOYMENT_SUCCESS,
-						CreatedAt: time.Date(2020, 10, 11, 5, 0, 0, 0, time.UTC).Unix(),
+						UpdatedAt: time.Date(2020, 10, 11, 5, 0, 0, 0, time.UTC).Unix(),
 					},
 				}, nil)
 				m.EXPECT().ListDeployments(gomock.Any(), datastore.ListOptions{
 					PageSize: 50,
 					Filters: []datastore.ListFilter{
 						{
-							Field:    "CreatedAt",
+							Field:    "UpdatedAt",
 							Operator: ">=",
 							Value:    time.Date(2020, 10, 11, 5, 0, 0, 0, time.UTC).Unix(),
 						},
 						{
-							Field:    "CreatedAt",
+							Field:    "UpdatedAt",
 							Operator: "<",
 							Value:    time.Date(2020, 10, 12, 0, 0, 0, 0, time.UTC).Unix(),
 						},
@@ -344,12 +344,12 @@ func TestInsightCollector_getDailyInsightData(t *testing.T) {
 					PageSize: 50,
 					Filters: []datastore.ListFilter{
 						{
-							Field:    "CreatedAt",
+							Field:    "UpdatedAt",
 							Operator: ">=",
 							Value:    time.Date(2020, 10, 12, 0, 0, 0, 0, time.UTC).Unix(),
 						},
 						{
-							Field:    "CreatedAt",
+							Field:    "UpdatedAt",
 							Operator: "<",
 							Value:    time.Date(2020, 10, 13, 0, 0, 0, 0, time.UTC).Unix(),
 						},
@@ -369,31 +369,31 @@ func TestInsightCollector_getDailyInsightData(t *testing.T) {
 				}).Return([]*model.Deployment{
 					{
 						Status:    model.DeploymentStatus_DEPLOYMENT_FAILURE,
-						CreatedAt: time.Date(2020, 10, 12, 5, 0, 0, 0, time.UTC).Unix(),
+						UpdatedAt: time.Date(2020, 10, 12, 5, 0, 0, 0, time.UTC).Unix(),
 					},
 					{
 						Status:    model.DeploymentStatus_DEPLOYMENT_SUCCESS,
-						CreatedAt: time.Date(2020, 10, 12, 5, 0, 0, 0, time.UTC).Unix(),
+						UpdatedAt: time.Date(2020, 10, 12, 5, 0, 0, 0, time.UTC).Unix(),
 					},
 					{
 						Status:    model.DeploymentStatus_DEPLOYMENT_SUCCESS,
-						CreatedAt: time.Date(2020, 10, 12, 5, 0, 0, 0, time.UTC).Unix(),
+						UpdatedAt: time.Date(2020, 10, 12, 5, 0, 0, 0, time.UTC).Unix(),
 					},
 					{
 						Status:    model.DeploymentStatus_DEPLOYMENT_SUCCESS,
-						CreatedAt: time.Date(2020, 10, 12, 5, 0, 0, 0, time.UTC).Unix(),
+						UpdatedAt: time.Date(2020, 10, 12, 5, 0, 0, 0, time.UTC).Unix(),
 					},
 				}, nil)
 				m.EXPECT().ListDeployments(gomock.Any(), datastore.ListOptions{
 					PageSize: 50,
 					Filters: []datastore.ListFilter{
 						{
-							Field:    "CreatedAt",
+							Field:    "UpdatedAt",
 							Operator: ">=",
 							Value:    time.Date(2020, 10, 12, 5, 0, 0, 0, time.UTC).Unix(),
 						},
 						{
-							Field:    "CreatedAt",
+							Field:    "UpdatedAt",
 							Operator: "<",
 							Value:    time.Date(2020, 10, 13, 0, 0, 0, 0, time.UTC).Unix(),
 						},
@@ -415,12 +415,12 @@ func TestInsightCollector_getDailyInsightData(t *testing.T) {
 					PageSize: 50,
 					Filters: []datastore.ListFilter{
 						{
-							Field:    "CreatedAt",
+							Field:    "UpdatedAt",
 							Operator: ">=",
 							Value:    time.Date(2020, 10, 13, 0, 0, 0, 0, time.UTC).Unix(),
 						},
 						{
-							Field:    "CreatedAt",
+							Field:    "UpdatedAt",
 							Operator: "<",
 							Value:    time.Date(2020, 10, 14, 0, 0, 0, 0, time.UTC).Unix(),
 						},
@@ -440,19 +440,19 @@ func TestInsightCollector_getDailyInsightData(t *testing.T) {
 				}).Return([]*model.Deployment{
 					{
 						Status:    model.DeploymentStatus_DEPLOYMENT_SUCCESS,
-						CreatedAt: time.Date(2020, 10, 13, 8, 0, 0, 0, time.UTC).Unix(),
+						UpdatedAt: time.Date(2020, 10, 13, 8, 0, 0, 0, time.UTC).Unix(),
 					},
 				}, nil)
 				m.EXPECT().ListDeployments(gomock.Any(), datastore.ListOptions{
 					PageSize: 50,
 					Filters: []datastore.ListFilter{
 						{
-							Field:    "CreatedAt",
+							Field:    "UpdatedAt",
 							Operator: ">=",
 							Value:    time.Date(2020, 10, 13, 8, 0, 0, 0, time.UTC).Unix(),
 						},
 						{
-							Field:    "CreatedAt",
+							Field:    "UpdatedAt",
 							Operator: "<",
 							Value:    time.Date(2020, 10, 14, 0, 0, 0, 0, time.UTC).Unix(),
 						},
@@ -474,12 +474,12 @@ func TestInsightCollector_getDailyInsightData(t *testing.T) {
 					PageSize: 50,
 					Filters: []datastore.ListFilter{
 						{
-							Field:    "CreatedAt",
+							Field:    "UpdatedAt",
 							Operator: ">=",
 							Value:    time.Date(2020, 10, 14, 0, 0, 0, 0, time.UTC).Unix(),
 						},
 						{
-							Field:    "CreatedAt",
+							Field:    "UpdatedAt",
 							Operator: "<",
 							Value:    time.Date(2020, 10, 15, 0, 0, 0, 0, time.UTC).Unix(),
 						},
@@ -714,12 +714,12 @@ func TestGetInsightDataForChangeFailureRate(t *testing.T) {
 						PageSize: PageSizeForListDeployments,
 						Filters: []datastore.ListFilter{
 							{
-								Field:    "CreatedAt",
+								Field:    "UpdatedAt",
 								Operator: ">=",
 								Value:    time.Date(2020, 1, 1, 0, 0, 0, 0, time.UTC).Unix(),
 							},
 							{
-								Field:    "CreatedAt",
+								Field:    "UpdatedAt",
 								Operator: "<",
 								Value:    time.Date(2020, 1, 2, 0, 0, 0, 0, time.UTC).Unix(),
 							},
@@ -738,22 +738,22 @@ func TestGetInsightDataForChangeFailureRate(t *testing.T) {
 					{
 						Id:        "id1",
 						Status:    model.DeploymentStatus_DEPLOYMENT_SUCCESS,
-						CreatedAt: time.Date(2020, 1, 1, 8, 0, 0, 0, time.UTC).Unix(),
+						UpdatedAt: time.Date(2020, 1, 1, 8, 0, 0, 0, time.UTC).Unix(),
 					},
 					{
 						Id:        "id2",
 						Status:    model.DeploymentStatus_DEPLOYMENT_SUCCESS,
-						CreatedAt: time.Date(2020, 1, 1, 5, 0, 0, 0, time.UTC).Unix(),
+						UpdatedAt: time.Date(2020, 1, 1, 5, 0, 0, 0, time.UTC).Unix(),
 					},
 					{
 						Id:        "id3",
 						Status:    model.DeploymentStatus_DEPLOYMENT_FAILURE,
-						CreatedAt: time.Date(2020, 1, 1, 5, 0, 0, 0, time.UTC).Unix(),
+						UpdatedAt: time.Date(2020, 1, 1, 5, 0, 0, 0, time.UTC).Unix(),
 					},
 					{
 						Id:        "id4",
 						Status:    model.DeploymentStatus_DEPLOYMENT_SUCCESS,
-						CreatedAt: time.Date(2020, 1, 1, 8, 0, 0, 0, time.UTC).Unix(),
+						UpdatedAt: time.Date(2020, 1, 1, 8, 0, 0, 0, time.UTC).Unix(),
 					},
 				}, nil)
 
@@ -780,12 +780,12 @@ func TestGetInsightDataForChangeFailureRate(t *testing.T) {
 						PageSize: PageSizeForListDeployments,
 						Filters: []datastore.ListFilter{
 							{
-								Field:    "CreatedAt",
+								Field:    "UpdatedAt",
 								Operator: ">=",
 								Value:    time.Date(2020, 1, 1, 0, 0, 0, 0, time.UTC).Unix(),
 							},
 							{
-								Field:    "CreatedAt",
+								Field:    "UpdatedAt",
 								Operator: "<",
 								Value:    time.Date(2020, 1, 2, 0, 0, 0, 0, time.UTC).Unix(),
 							},
