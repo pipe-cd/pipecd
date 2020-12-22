@@ -481,6 +481,35 @@ func (a *WebAPI) DisableApplication(ctx context.Context, req *webservice.Disable
 	return &webservice.DisableApplicationResponse{}, nil
 }
 
+func (a *WebAPI) DeleteApplication(ctx context.Context, req *webservice.DeleteApplicationRequest) (*webservice.DeleteApplicationResponse, error) {
+	claims, err := rpcauth.ExtractClaims(ctx)
+	if err != nil {
+		a.logger.Error("failed to authenticate the current user", zap.Error(err))
+		return nil, err
+	}
+
+	if err := a.validateAppBelongsToProject(ctx, req.ApplicationId, claims.Role.ProjectId); err != nil {
+		return nil, err
+	}
+
+	if err := a.applicationStore.DeleteApplication(ctx, req.ApplicationId); err != nil {
+		switch err {
+		case datastore.ErrNotFound:
+			return nil, status.Error(codes.NotFound, "The application is not found")
+		case datastore.ErrInvalidArgument:
+			return nil, status.Error(codes.InvalidArgument, "Invalid value to delete")
+		default:
+			a.logger.Error("failed to delete the application",
+				zap.String("application-id", req.ApplicationId),
+				zap.Error(err),
+			)
+			return nil, status.Error(codes.Internal, "Failed to delete the application")
+		}
+	}
+
+	return &webservice.DeleteApplicationResponse{}, nil
+}
+
 func (a *WebAPI) updateApplicationEnable(ctx context.Context, appID string, enable bool) error {
 	claims, err := rpcauth.ExtractClaims(ctx)
 	if err != nil {

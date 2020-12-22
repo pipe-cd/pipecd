@@ -64,6 +64,8 @@ func (a *authorizer) Authorize(method string, r model.Role) bool {
 		return isAdmin(r)
 	case "/pipe.api.service.webservice.WebService/DisableApplication":
 		return isAdmin(r)
+	case "/pipe.api.service.webservice.WebService/DeleteApplication":
+		return isAdmin(r)
 	case "/pipe.api.service.webservice.WebService/UpdateProjectStaticAdmin":
 		return isAdmin(r)
 	case "/pipe.api.service.webservice.WebService/EnableStaticAdmin":
