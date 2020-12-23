@@ -63,6 +63,7 @@ type WebAPI struct {
 	appProjectCache        cache.Cache
 	deploymentProjectCache cache.Cache
 	pipedProjectCache      cache.Cache
+	insightCache           cache.Cache
 
 	projectsInConfig map[string]config.ControlPlaneProject
 	logger           *zap.Logger
@@ -95,6 +96,7 @@ func NewWebAPI(
 		appProjectCache:           memorycache.NewTTLCache(ctx, 24*time.Hour, 3*time.Hour),
 		deploymentProjectCache:    memorycache.NewTTLCache(ctx, 24*time.Hour, 3*time.Hour),
 		pipedProjectCache:         memorycache.NewTTLCache(ctx, 24*time.Hour, 3*time.Hour),
+		insightCache:              memorycache.NewTTLCache(ctx, 24*time.Hour, 3*time.Hour),
 		logger:                    logger.Named("web-api"),
 	}
 	return a
@@ -1350,14 +1352,27 @@ func (a *WebAPI) GetInsightData(ctx context.Context, req *webservice.GetInsightD
 	count := int(req.DataPointCount)
 	from := time.Unix(req.RangeFrom, 0)
 
-	// TODO: caching the insight data inside the cache service
-	chunks, err := a.insightstore.LoadChunks(ctx, claims.Role.ProjectId, req.ApplicationId, req.MetricsKind, req.Step, from, count)
-	if err != nil {
-		a.logger.Error("failed to load chunks from insightstore", zap.Error(err))
-		return nil, err
+	var key string
+	switch req.Step {
+	case model.InsightStep_YEARLY:
+		key = claims.Role.ProjectId + req.ApplicationId + req.MetricsKind.String() + "years"
+	default:
+		key = claims.Role.ProjectId + req.ApplicationId + req.MetricsKind.String()
 	}
 
-	idp, err := insightstore.Chunks(chunks).ExtractDataPoints(req.Step, from, count)
+	cs, err := a.insightCache.Get(key)
+	chunks, ok := cs.(insightstore.Chunks)
+	if err != nil || !ok {
+		chunks, err = a.insightstore.LoadChunks(ctx, claims.Role.ProjectId, req.ApplicationId, req.MetricsKind, req.Step, from, count)
+		if err != nil {
+			a.logger.Error("failed to load chunks from insightstore", zap.Error(err))
+			return nil, err
+		}
+
+		a.insightCache.Put(key, chunks)
+	}
+
+	idp, err := chunks.ExtractDataPoints(req.Step, from, count)
 	if err != nil {
 		a.logger.Error("failed to extract data points from chunks", zap.Error(err))
 	}
