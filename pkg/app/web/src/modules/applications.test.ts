@@ -94,7 +94,7 @@ describe("applicationsSlice reducer", () => {
       });
 
       const deletedApp = { ...dummyApplication, id: "app-2", deleted: true };
-      const oldApp = { ...dummyApplication, id: "app-2", deleted: undefined };
+      const oldApp = { ...dummyApplication, id: "app-3", deleted: false };
       expect(
         applicationsSlice.reducer(baseState, {
           type: fetchApplications.fulfilled.type,
@@ -105,8 +105,9 @@ describe("applicationsSlice reducer", () => {
         ...baseState,
         entities: {
           [dummyApplication.id]: dummyApplication,
+          [oldApp.id]: oldApp,
         },
-        ids: [dummyApplication.id],
+        ids: [dummyApplication.id, oldApp.id],
       });
     });
 
