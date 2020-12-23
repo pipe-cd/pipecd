@@ -17,6 +17,7 @@ package config
 import (
 	"bytes"
 	"encoding/json"
+	"errors"
 	"fmt"
 	"io/ioutil"
 
@@ -63,6 +64,10 @@ const (
 	KindAnalysisTemplate Kind = "AnalysisTemplate"
 	// KindImageWatcher represents configuration for Repo Watcher.
 	KindImageWatcher Kind = "ImageWatcher"
+)
+
+var (
+	ErrNotFound = errors.New("not found")
 )
 
 // Config represents configuration data load from file.

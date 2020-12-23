@@ -17,6 +17,7 @@ package config
 import (
 	"fmt"
 	"io/ioutil"
+	"os"
 	"path/filepath"
 )
 
@@ -26,13 +27,16 @@ type AnalysisTemplateSpec struct {
 	HTTPs   map[string]AnalysisHTTP    `json:"https"`
 }
 
-// LoadAnalysisTemplate finds the config file for the analysis template in the .pipe directory first up.
-// And returns parsed config, False is returned as the second returned value if not found.
-func LoadAnalysisTemplate(repoRoot string) (*AnalysisTemplateSpec, bool, error) {
+// LoadAnalysisTemplate finds the config file for the analysis template in the .pipe
+// directory first up. And returns parsed config, ErrNotFound is returned if not found.
+func LoadAnalysisTemplate(repoRoot string) (*AnalysisTemplateSpec, error) {
 	dir := filepath.Join(repoRoot, SharedConfigurationDirName)
 	files, err := ioutil.ReadDir(dir)
+	if os.IsNotExist(err) {
+		return nil, ErrNotFound
+	}
 	if err != nil {
-		return nil, false, fmt.Errorf("failed to read %s: %w", dir, err)
+		return nil, fmt.Errorf("failed to read %s: %w", dir, err)
 	}
 
 	for _, f := range files {
@@ -42,14 +46,13 @@ func LoadAnalysisTemplate(repoRoot string) (*AnalysisTemplateSpec, bool, error) 
 		path := filepath.Join(dir, f.Name())
 		cfg, err := LoadFromYAML(path)
 		if err != nil {
-			return nil, false, fmt.Errorf("failed to load config file %s: %w", path, err)
+			return nil, fmt.Errorf("failed to load config file %s: %w", path, err)
 		}
 		if cfg.Kind == KindAnalysisTemplate {
-			return cfg.AnalysisTemplateSpec, true, nil
+			return cfg.AnalysisTemplateSpec, nil
 		}
 	}
-	// AnalysisTemplate not found
-	return nil, false, nil
+	return nil, ErrNotFound
 }
 
 func (s *AnalysisTemplateSpec) Validate() error {
