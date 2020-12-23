@@ -135,12 +135,7 @@ export const applicationsSlice = createSlice({
         applicationsAdapter.removeAll(state);
         applicationsAdapter.upsertMany(
           state,
-          action.payload.filter((app) => {
-            if (typeof app === undefined) {
-              return false;
-            }
-            return app.deleted === false;
-          })
+          action.payload.filter((app) => app.deleted === false)
         );
         state.loading = false;
       })
