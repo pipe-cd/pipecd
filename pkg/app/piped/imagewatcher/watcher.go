@@ -19,6 +19,7 @@ package imagewatcher
 
 import (
 	"context"
+	"errors"
 	"fmt"
 	"io/ioutil"
 	"os"
@@ -138,16 +139,16 @@ func (w *watcher) run(ctx context.Context, repo git.Repo, repoCfg *config.PipedR
 				)
 				continue
 			}
-			cfg, ok, err := config.LoadImageWatcher(repo.GetPath(), includedCfgs, excludedCfgs)
-			if err != nil {
-				w.logger.Error("failed to load configuration file for Image Watcher",
+			cfg, err := config.LoadImageWatcher(repo.GetPath(), includedCfgs, excludedCfgs)
+			if errors.Is(err, config.ErrNotFound) {
+				w.logger.Info("configuration file for Image Watcher not found",
 					zap.String("repo-id", repoCfg.RepoID),
 					zap.Error(err),
 				)
 				continue
 			}
-			if !ok {
-				w.logger.Info("configuration file for Image Watcher not found",
+			if err != nil {
+				w.logger.Error("failed to load configuration file for Image Watcher",
 					zap.String("repo-id", repoCfg.RepoID),
 					zap.Error(err),
 				)
@@ -180,6 +181,7 @@ func (w *watcher) updateOutdatedImages(ctx context.Context, repo git.Repo, targe
 		return nil
 	}
 
+	w.logger.Info(fmt.Sprintf("there are %d outdated images", len(commits)))
 	// Copy the repo to another directory to avoid pull failure in the future.
 	tmpDir, err := ioutil.TempDir("", "image-watcher")
 	if err != nil {

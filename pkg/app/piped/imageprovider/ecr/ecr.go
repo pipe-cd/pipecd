@@ -111,6 +111,8 @@ func NewECR(name string, region string, opts ...Option) (*ECR, error) {
 		},
 	)
 	cfg := aws.NewConfig().WithRegion(e.region).WithCredentials(creds)
+	// TODO: Use ecrpublic package when public image given
+	//   See more: https://docs.aws.amazon.com/sdk-for-go/api/service/ecrpublic
 	e.client = ecr.New(sess, cfg)
 	return e, nil
 }

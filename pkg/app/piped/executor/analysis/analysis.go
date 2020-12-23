@@ -18,6 +18,7 @@ import (
 	"bytes"
 	"context"
 	"encoding/json"
+	"errors"
 	"fmt"
 	"text/template"
 	"time"
@@ -88,14 +89,13 @@ func (e *Executor) Execute(sig executor.StopSignal) model.StageStatus {
 	e.repoDir = ds.RepoDir
 	e.config = ds.DeploymentConfig
 
-	templateCfg, ok, err := config.LoadAnalysisTemplate(e.repoDir)
-	if err != nil {
-		e.LogPersister.Error(err.Error())
-		return model.StageStatus_STAGE_FAILURE
-	}
-	if !ok {
+	templateCfg, err := config.LoadAnalysisTemplate(e.repoDir)
+	if errors.Is(err, config.ErrNotFound) {
 		e.Logger.Info("config file for AnalysisTemplate not found")
 		templateCfg = &config.AnalysisTemplateSpec{}
+	} else if err != nil {
+		e.LogPersister.Error(err.Error())
+		return model.StageStatus_STAGE_FAILURE
 	}
 
 	timeout := time.Duration(options.Duration)

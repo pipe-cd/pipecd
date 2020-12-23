@@ -34,16 +34,15 @@ type ImageWatcherTarget struct {
 
 // LoadImageWatcher finds the config files for the image watcher in the .pipe
 // directory first up. And returns parsed config after merging the targets.
-// Only one of includes or excludes can be used.
-// False is returned as the second returned value if not found.
-func LoadImageWatcher(repoRoot string, includes, excludes []string) (*ImageWatcherSpec, bool, error) {
+// Only one of includes or excludes can be used. ErrNotFound is returned if not found.
+func LoadImageWatcher(repoRoot string, includes, excludes []string) (*ImageWatcherSpec, error) {
 	dir := filepath.Join(repoRoot, SharedConfigurationDirName)
 	files, err := ioutil.ReadDir(dir)
 	if os.IsNotExist(err) {
-		return nil, false, nil
+		return nil, ErrNotFound
 	}
 	if err != nil {
-		return nil, false, fmt.Errorf("failed to read %s: %w", dir, err)
+		return nil, fmt.Errorf("failed to read %s: %w", dir, err)
 	}
 
 	spec := &ImageWatcherSpec{
@@ -51,7 +50,7 @@ func LoadImageWatcher(repoRoot string, includes, excludes []string) (*ImageWatch
 	}
 	filtered, err := filterImageWatcherFiles(files, includes, excludes)
 	if err != nil {
-		return nil, false, fmt.Errorf("failed to filter image watcher files at %s: %w", dir, err)
+		return nil, fmt.Errorf("failed to filter image watcher files at %s: %w", dir, err)
 	}
 	for _, f := range filtered {
 		if f.IsDir() {
@@ -60,17 +59,17 @@ func LoadImageWatcher(repoRoot string, includes, excludes []string) (*ImageWatch
 		path := filepath.Join(dir, f.Name())
 		cfg, err := LoadFromYAML(path)
 		if err != nil {
-			return nil, false, fmt.Errorf("failed to load config file %s: %w", path, err)
+			return nil, fmt.Errorf("failed to load config file %s: %w", path, err)
 		}
 		if cfg.Kind == KindImageWatcher {
 			spec.Targets = append(spec.Targets, cfg.ImageWatcherSpec.Targets...)
 		}
 	}
 	if len(spec.Targets) == 0 {
-		return nil, false, nil
+		return nil, ErrNotFound
 	}
 
-	return spec, true, nil
+	return spec, nil
 }
 
 // filterImageWatcherFiles filters the given files based on the given Includes and Excludes.
