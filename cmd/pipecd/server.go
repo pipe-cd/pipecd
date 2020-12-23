@@ -253,7 +253,7 @@ func (s *server) run(ctx context.Context, t cli.Telemetry) error {
 			return err
 		}
 
-		service := grpcapi.NewWebAPI(ctx, ds, sls, alss, cmds, is, cfg.ProjectMap(), encryptDecrypter, t.Logger)
+		service := grpcapi.NewWebAPI(ctx, ds, sls, alss, cmds, is, rd, cfg.ProjectMap(), encryptDecrypter, t.Logger)
 		opts := []rpc.Option{
 			rpc.WithPort(s.webAPIPort),
 			rpc.WithGracePeriod(s.gracePeriod),

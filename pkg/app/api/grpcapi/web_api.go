@@ -19,6 +19,7 @@ import (
 	"encoding/base64"
 	"errors"
 	"fmt"
+	"strconv"
 	"time"
 
 	"github.com/google/uuid"
@@ -33,12 +34,14 @@ import (
 	"github.com/pipe-cd/pipe/pkg/app/api/stagelogstore"
 	"github.com/pipe-cd/pipe/pkg/cache"
 	"github.com/pipe-cd/pipe/pkg/cache/memorycache"
+	"github.com/pipe-cd/pipe/pkg/cache/rediscache"
 	"github.com/pipe-cd/pipe/pkg/config"
 	"github.com/pipe-cd/pipe/pkg/crypto"
 	"github.com/pipe-cd/pipe/pkg/datastore"
 	"github.com/pipe-cd/pipe/pkg/git"
 	"github.com/pipe-cd/pipe/pkg/insightstore"
 	"github.com/pipe-cd/pipe/pkg/model"
+	"github.com/pipe-cd/pipe/pkg/redis"
 	"github.com/pipe-cd/pipe/pkg/rpc/rpcauth"
 )
 
@@ -77,6 +80,7 @@ func NewWebAPI(
 	alss applicationlivestatestore.Store,
 	cmds commandstore.Store,
 	is insightstore.Store,
+	rd redis.Redis,
 	projs map[string]config.ControlPlaneProject,
 	encrypter encrypter,
 	logger *zap.Logger) *WebAPI {
@@ -96,7 +100,7 @@ func NewWebAPI(
 		appProjectCache:           memorycache.NewTTLCache(ctx, 24*time.Hour, 3*time.Hour),
 		deploymentProjectCache:    memorycache.NewTTLCache(ctx, 24*time.Hour, 3*time.Hour),
 		pipedProjectCache:         memorycache.NewTTLCache(ctx, 24*time.Hour, 3*time.Hour),
-		insightCache:              memorycache.NewTTLCache(ctx, 24*time.Hour, 3*time.Hour),
+		insightCache:              rediscache.NewTTLCache(rd, 24*time.Hour),
 		logger:                    logger.Named("web-api"),
 	}
 	return a
@@ -1355,9 +1359,11 @@ func (a *WebAPI) GetInsightData(ctx context.Context, req *webservice.GetInsightD
 	var key string
 	switch req.Step {
 	case model.InsightStep_YEARLY:
-		key = claims.Role.ProjectId + req.ApplicationId + req.MetricsKind.String() + "years"
+		f := insightstore.NormalizeTime(from, req.Step)
+		key = claims.Role.ProjectId + req.ApplicationId + req.MetricsKind.String() + f.String() + strconv.Itoa(count) + "years"
 	default:
-		key = claims.Role.ProjectId + req.ApplicationId + req.MetricsKind.String()
+		f := insightstore.NormalizeTime(from, req.Step)
+		key = claims.Role.ProjectId + req.ApplicationId + req.MetricsKind.String() + f.String() + strconv.Itoa(count)
 	}
 
 	cs, err := a.insightCache.Get(key)
