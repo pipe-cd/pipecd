@@ -133,7 +133,15 @@ export const applicationsSlice = createSlice({
       })
       .addCase(fetchApplications.fulfilled, (state, action) => {
         applicationsAdapter.removeAll(state);
-        applicationsAdapter.upsertMany(state, action.payload);
+        applicationsAdapter.upsertMany(
+          state,
+          action.payload.filter((app) => {
+            if (typeof app === undefined) {
+              return false;
+            }
+            return app.deleted === false;
+          })
+        );
         state.loading = false;
       })
       .addCase(fetchApplications.rejected, (state) => {
