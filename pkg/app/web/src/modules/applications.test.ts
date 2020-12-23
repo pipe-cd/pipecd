@@ -92,6 +92,21 @@ describe("applicationsSlice reducer", () => {
         },
         ids: [dummyApplication.id],
       });
+
+      const deletedApp = { ...dummyApplication, id: "app-2", deleted: true };
+      expect(
+        applicationsSlice.reducer(baseState, {
+          type: fetchApplications.fulfilled.type,
+          payload: [dummyApplication, deletedApp],
+          loading: true,
+        })
+      ).toEqual({
+        ...baseState,
+        entities: {
+          [dummyApplication.id]: dummyApplication,
+        },
+        ids: [dummyApplication.id],
+      });
     });
 
     it(`should handle ${fetchApplications.rejected.type}`, () => {
