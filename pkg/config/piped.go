@@ -449,11 +449,12 @@ type ImageProviderECRConfig struct {
 	RegistryID string `json:"registryId"`
 	// Path to the shared credentials file.
 	//
-	// If you do not specify this field, piped attempts to retrieve credentials
-	// from the environment variables by default.
-	// These environment variables are used:
+	// Piped attempts to retrieve credentials in the following order:
+	// 1. from the environment variables. Available environment variables are:
 	//   - AWS_ACCESS_KEY_ID or AWS_ACCESS_KEY
 	//   - AWS_SECRET_ACCESS_KEY or AWS_SECRET_KEY
+	// 2. from the given credentials file.
+	// 3. from the EC2 Instance Role
 	CredentialsFile string `json:"credentialsFile"`
 	// AWS Profile to extract credentials from the shared credentials file.
 	// If empty, the environment variable "AWS_PROFILE" is used.

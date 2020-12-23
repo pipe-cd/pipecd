@@ -23,6 +23,8 @@ import (
 	"github.com/aws/aws-sdk-go/aws"
 	"github.com/aws/aws-sdk-go/aws/awserr"
 	"github.com/aws/aws-sdk-go/aws/credentials"
+	"github.com/aws/aws-sdk-go/aws/credentials/ec2rolecreds"
+	"github.com/aws/aws-sdk-go/aws/ec2metadata"
 	"github.com/aws/aws-sdk-go/aws/session"
 	"github.com/aws/aws-sdk-go/service/ecr"
 	"go.uber.org/zap"
@@ -72,11 +74,12 @@ func WithLogger(logger *zap.Logger) Option {
 	}
 }
 
-// NewECR attempts to retrieve credentials from the environment
-// variables if the credentials file was not given.
-// These environment variables are used:
+// NewECR attempts to retrieve credentials in the following order:
+// 1. from the environment variables. Available environment variables are:
 //   - AWS_ACCESS_KEY_ID or AWS_ACCESS_KEY
 //   - AWS_SECRET_ACCESS_KEY or AWS_SECRET_KEY
+// 2. from the given credentials file.
+// 3. from the EC2 Instance Role
 func NewECR(name string, region string, opts ...Option) (*ECR, error) {
 	if region == "" {
 		return nil, fmt.Errorf("region is required")
@@ -91,16 +94,23 @@ func NewECR(name string, region string, opts ...Option) (*ECR, error) {
 	}
 	e.logger = e.logger.Named("ecr-provider")
 
-	cfg := aws.NewConfig().WithRegion(e.region)
-	if e.credentialsFile != "" {
-		cfg = cfg.WithCredentials(credentials.NewSharedCredentials(e.credentialsFile, e.profile))
-	} else {
-		cfg = cfg.WithCredentials(credentials.NewEnvCredentials())
-	}
 	sess, err := session.NewSession()
 	if err != nil {
 		return nil, fmt.Errorf("failed to create a session: %w", err)
 	}
+	creds := credentials.NewChainCredentials(
+		[]credentials.Provider{
+			&credentials.EnvProvider{},
+			&credentials.SharedCredentialsProvider{
+				Filename: e.credentialsFile,
+				Profile:  e.profile,
+			},
+			&ec2rolecreds.EC2RoleProvider{
+				Client: ec2metadata.New(sess),
+			},
+		},
+	)
+	cfg := aws.NewConfig().WithRegion(e.region).WithCredentials(creds)
 	e.client = ecr.New(sess, cfg)
 	return e, nil
 }
