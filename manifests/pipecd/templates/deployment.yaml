@@ -196,6 +196,8 @@ metadata:
     app.kubernetes.io/component: ops
 spec:
   replicas: 1
+  strategy:
+    type: Recreate
   selector:
     matchLabels:
       {{- include "pipecd.selectorLabels" . | nindent 6 }}
