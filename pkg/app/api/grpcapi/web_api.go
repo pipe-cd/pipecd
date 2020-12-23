@@ -99,7 +99,7 @@ func NewWebAPI(
 		appProjectCache:           memorycache.NewTTLCache(ctx, 24*time.Hour, 3*time.Hour),
 		deploymentProjectCache:    memorycache.NewTTLCache(ctx, 24*time.Hour, 3*time.Hour),
 		pipedProjectCache:         memorycache.NewTTLCache(ctx, 24*time.Hour, 3*time.Hour),
-		insightCache:              rediscache.NewTTLCache(rd, 24*time.Hour),
+		insightCache:              rediscache.NewTTLCache(rd, 3*time.Hour),
 		logger:                    logger.Named("web-api"),
 	}
 	return a
