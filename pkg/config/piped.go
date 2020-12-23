@@ -167,8 +167,10 @@ func (s *PipedSpec) GetAnalysisProvider(name string) (PipedAnalysisProvider, boo
 
 type PipedGit struct {
 	// The username that will be configured for `git` user.
+	// Default is "piped".
 	Username string `json:"username"`
 	// The email that will be configured for `git` user.
+	// Default is "pipecd.dev@gmail.com".
 	Email string `json:"email"`
 	// Where to write ssh config file.
 	// Default is "/home/pipecd/.ssh/config".
