@@ -121,7 +121,7 @@ func Test_determineFilePaths(t *testing.T) {
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			got := determineFilePaths(tt.args.projectID, tt.args.appID, tt.args.metricsKind, tt.args.step, tt.args.from, tt.args.dataPointCount)
+			got := DetermineFilePaths(tt.args.projectID, tt.args.appID, tt.args.metricsKind, tt.args.step, tt.args.from, tt.args.dataPointCount)
 			assert.Equal(t, tt.want, got)
 		})
 	}

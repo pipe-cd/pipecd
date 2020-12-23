@@ -42,7 +42,7 @@ func (s *Store) LoadChunks(
 	count int,
 ) ([]Chunk, error) {
 	from = NormalizeTime(from, step)
-	paths := determineFilePaths(projectID, appID, kind, step, from, count)
+	paths := DetermineFilePaths(projectID, appID, kind, step, from, count)
 	var chunks []Chunk
 	for _, p := range paths {
 		c, err := s.getChunk(ctx, p, kind)

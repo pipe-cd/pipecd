@@ -19,7 +19,6 @@ import (
 	"encoding/base64"
 	"errors"
 	"fmt"
-	"strconv"
 	"time"
 
 	"github.com/google/uuid"
@@ -1356,26 +1355,15 @@ func (a *WebAPI) GetInsightData(ctx context.Context, req *webservice.GetInsightD
 	count := int(req.DataPointCount)
 	from := time.Unix(req.RangeFrom, 0)
 
-	var key string
-	switch req.Step {
-	case model.InsightStep_YEARLY:
-		f := insightstore.NormalizeTime(from, req.Step)
-		key = claims.Role.ProjectId + req.ApplicationId + req.MetricsKind.String() + f.String() + strconv.Itoa(count) + "years"
-	default:
-		f := insightstore.NormalizeTime(from, req.Step)
-		key = claims.Role.ProjectId + req.ApplicationId + req.MetricsKind.String() + f.String() + strconv.Itoa(count)
-	}
-
-	cs, err := a.insightCache.Get(key)
-	chunks, ok := cs.(insightstore.Chunks)
-	if err != nil || !ok {
+	chunks, err := a.getInsightFromCache(claims.Role.ProjectId, req.ApplicationId, req.MetricsKind, req.Step, from, count)
+	if err != nil {
 		chunks, err = a.insightstore.LoadChunks(ctx, claims.Role.ProjectId, req.ApplicationId, req.MetricsKind, req.Step, from, count)
 		if err != nil {
 			a.logger.Error("failed to load chunks from insightstore", zap.Error(err))
 			return nil, err
 		}
 
-		a.insightCache.Put(key, chunks)
+		a.putInsightToCache(chunks)
 	}
 
 	idp, err := chunks.ExtractDataPoints(req.Step, from, count)
@@ -1395,4 +1383,26 @@ func (a *WebAPI) GetInsightData(ctx context.Context, req *webservice.GetInsightD
 		UpdatedAt:  updateAt,
 		DataPoints: idp,
 	}, nil
+}
+
+func (a *WebAPI) getInsightFromCache(projectID, appID string, kind model.InsightMetricsKind, step model.InsightStep, from time.Time, count int) (insightstore.Chunks, error) {
+	var chunks insightstore.Chunks
+	paths := insightstore.DetermineFilePaths(projectID, appID, kind, step, from, count)
+	for _, p := range paths {
+		c, err := a.insightCache.Get(p)
+		chunk, ok := c.(insightstore.Chunk)
+		if err != nil || !ok {
+			return nil, fmt.Errorf("failed to get insight from cache")
+		}
+		chunks = append(chunks, chunk)
+	}
+
+	return chunks, nil
+}
+
+func (a *WebAPI) putInsightToCache(chunks insightstore.Chunks) {
+	for _, c := range chunks {
+		a.insightCache.Put(c.GetFilePath(), c)
+	}
+	return
 }
