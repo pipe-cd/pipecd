@@ -28,6 +28,11 @@ import (
 	"go.uber.org/zap"
 )
 
+const (
+	defaultUsername = "piped"
+	defaultEmail    = "pipecd.dev@gmail.com"
+)
+
 // Client is a git client for cloning/fetching git repo.
 // It keeps a local cache for faster future cloning.
 type Client interface {
@@ -58,6 +63,13 @@ func NewClient(username, email string, logger *zap.Logger) (Client, error) {
 	cacheDir, err := ioutil.TempDir("", "gitcache")
 	if err != nil {
 		return nil, fmt.Errorf("unable to create a temporary directory for git cache: %v", err)
+	}
+
+	if username == "" {
+		username = defaultUsername
+	}
+	if email == "" {
+		email = defaultEmail
 	}
 
 	return &client{

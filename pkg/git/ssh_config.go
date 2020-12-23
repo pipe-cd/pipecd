@@ -24,7 +24,11 @@ import (
 	"github.com/pipe-cd/pipe/pkg/config"
 )
 
-const sshConfigTemplate = `
+const (
+	defaultSSHConfigFilePath = "/home/pipecd/.ssh/config"
+	defaultHost              = "github.com"
+
+	sshConfigTemplate = `
 Host {{ .Host }}
     Hostname {{ .HostName }}
     User git
@@ -32,10 +36,10 @@ Host {{ .Host }}
     UserKnownHostsFile /dev/null
     StrictHostKeyChecking no
 `
+)
 
 var (
-	sshConfigTmpl            = template.Must(template.New("ssh-config").Parse(sshConfigTemplate))
-	defaultSSHConfigFilePath = "/home/pipecd/.ssh/config"
+	sshConfigTmpl = template.Must(template.New("ssh-config").Parse(sshConfigTemplate))
 )
 
 type sshConfig struct {
@@ -82,7 +86,7 @@ func generateSSHConfig(cfg config.PipedGit) (string, error) {
 	var (
 		buffer bytes.Buffer
 		data   = sshConfig{
-			Host:         "github.com",
+			Host:         defaultHost,
 			IdentityFile: cfg.SSHKeyFile,
 		}
 	)
