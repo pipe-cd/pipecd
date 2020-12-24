@@ -17,6 +17,7 @@ package insight
 import (
 	"context"
 	"encoding/json"
+	"errors"
 	"fmt"
 	"time"
 
@@ -76,9 +77,13 @@ func LoadChunksFromCache(cache cache.Cache, projectID, appID string, kind model.
 	paths := determineFilePaths(projectID, appID, kind, step, from, count)
 	for _, p := range paths {
 		c, err := cache.Get(p)
+		if err != nil {
+			return nil, err
+		}
+
 		chunk, ok := c.(Chunk)
-		if err != nil || !ok {
-			return nil, fmt.Errorf("failed to get insight from cache")
+		if !ok {
+			return nil, errors.New("malformed chunk data in cache")
 		}
 		chunks = append(chunks, chunk)
 	}
