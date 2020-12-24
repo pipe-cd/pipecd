@@ -119,10 +119,15 @@ Must be one of the following structs:
 | Field | Type | Description | Required |
 |-|-|-|-|
 | name | string | The unique name of the analysis provider. | Yes |
-| kind | string | The provider type. Currently, only PROMETHEUS is available. | Yes |
-| prometheus | [AnalysisProviderPrometheus](/docs/operator-manual/piped/configuration-reference/#analysisproviderprometheus) | Configuration needed to connect to Prometheus. | No |
+| type | string | The provider type. Currently, only PROMETHEUS is available. | Yes |
+| config | [AnalysisProviderConfig](/docs/operator-manual/piped/configuration-reference/#analysisproviderconfig) | Specific configuration for the specified type of analysis provider. | Yes |
 
-## AnalysisProviderPrometheus
+## AnalysisProviderConfig
+
+Must be one of the following structs:
+
+### AnalysisProviderPrometheusConfig
+
 | Field | Type | Description | Required |
 |-|-|-|-|
 | address | string | The Prometheus server address. | Yes |
