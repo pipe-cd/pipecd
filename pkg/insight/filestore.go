@@ -75,7 +75,7 @@ func (s *Store) PutChunk(ctx context.Context, chunk Chunk) error {
 func LoadChunksFromCache(cache cache.Cache, projectID, appID string, kind model.InsightMetricsKind, step model.InsightStep, from time.Time, count int) (Chunks, error) {
 	paths := determineFilePaths(projectID, appID, kind, step, from, count)
 	chunks := make([]Chunk, 0, len(paths))
-	for i, p := range paths {
+	for _, p := range paths {
 		c, err := cache.Get(p)
 		if err != nil {
 			return nil, err
@@ -85,7 +85,7 @@ func LoadChunksFromCache(cache cache.Cache, projectID, appID string, kind model.
 		if !ok {
 			return nil, errors.New("malformed chunk data in cache")
 		}
-		chunks[i] = chunk
+		chunks = append(chunks, chunk)
 	}
 
 	return chunks, nil
