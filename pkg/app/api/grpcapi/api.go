@@ -198,7 +198,6 @@ func (a *API) ListApplications(ctx context.Context, req *apiservice.ListApplicat
 			Value:    req.EnvId,
 		})
 	}
-	var envs []*model.Environment
 	// env-id has higher priority than env-name, only use env-name filter in case env-id is not set.
 	if req.EnvId == "" && req.EnvName != "" {
 		envListOpts := datastore.ListOptions{
@@ -216,7 +215,7 @@ func (a *API) ListApplications(ctx context.Context, req *apiservice.ListApplicat
 			},
 			PageSize: limit,
 		}
-		envs, err = listEnvironments(ctx, a.environmentStore, envListOpts, a.logger)
+		envs, err := listEnvironments(ctx, a.environmentStore, envListOpts, a.logger)
 		if err != nil {
 			return nil, err
 		}
