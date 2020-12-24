@@ -71,7 +71,7 @@ func (s *Store) PutChunk(ctx context.Context, chunk Chunk) error {
 	return s.filestore.PutObject(ctx, path, data)
 }
 
-func (s *Store) LoadChunksCache(cache cache.Cache, projectID, appID string, kind model.InsightMetricsKind, step model.InsightStep, from time.Time, count int) ([]Chunk, error) {
+func LoadChunksFromCache(cache cache.Cache, projectID, appID string, kind model.InsightMetricsKind, step model.InsightStep, from time.Time, count int) ([]Chunk, error) {
 	var chunks Chunks
 	paths := determineFilePaths(projectID, appID, kind, step, from, count)
 	for _, p := range paths {
@@ -86,7 +86,7 @@ func (s *Store) LoadChunksCache(cache cache.Cache, projectID, appID string, kind
 	return chunks, nil
 }
 
-func (s *Store) PutChunksToCache(cache cache.Cache, chunks Chunks) error {
+func PutChunksToCache(cache cache.Cache, chunks Chunks) error {
 	var err error
 	for _, c := range chunks {
 		// continue process even if an error occurs.
