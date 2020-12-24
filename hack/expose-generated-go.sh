@@ -77,7 +77,7 @@ expose_package () {
 }
 
 # Build all packages.
-bazelisk build -- //...
+bazelisk build --noincompatible_strict_action_env -- //...
 
 ####################
 # For proto go giles
