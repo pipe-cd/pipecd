@@ -178,41 +178,6 @@ func (a *API) ListApplications(ctx context.Context, req *apiservice.ListApplicat
 	}
 
 	const limit = 10
-
-	envFilters := []datastore.ListFilter{
-		{
-			Field:    "ProjectId",
-			Operator: "==",
-			Value:    key.ProjectId,
-		},
-	}
-	if req.EnvId != "" {
-		envFilters = append(envFilters, datastore.ListFilter{
-			Field:    "Id",
-			Operator: "==",
-			Value:    req.EnvId,
-		})
-	}
-	if req.EnvName != "" {
-		envFilters = append(envFilters, datastore.ListFilter{
-			Field:    "Name",
-			Operator: "==",
-			Value:    req.EnvName,
-		})
-	}
-	var envs []*model.Environment
-	// only query for environments list in case EnvName or EnvId is set on request.
-	if req.EnvName != "" || req.EnvId != "" {
-		envListOpts := datastore.ListOptions{
-			Filters:  envFilters,
-			PageSize: limit,
-		}
-		envs, err = listEnvironments(ctx, a.environmentStore, envListOpts, a.logger)
-		if err != nil {
-			return nil, err
-		}
-	}
-
 	filters := []datastore.ListFilter{
 		{
 			Field:    "ProjectId",
@@ -225,17 +190,59 @@ func (a *API) ListApplications(ctx context.Context, req *apiservice.ListApplicat
 			Value:    req.Disabled,
 		},
 	}
-	if len(envs) != 0 {
-		envsID := make([]string, 0, len(envs))
-		for _, env := range envs {
-			envsID = append(envsID, env.Id)
-		}
+
+	if req.EnvId != "" {
 		filters = append(filters, datastore.ListFilter{
-			Field:    "EnvId",
-			Operator: "in",
-			Value:    envsID,
+			Field:    "Id",
+			Operator: "==",
+			Value:    req.EnvId,
 		})
 	}
+	var envs []*model.Environment
+	// env-id has higher priority than env-name, only use env-name filter in case env-id is not set.
+	if req.EnvId == "" && req.EnvName != "" {
+		envListOpts := datastore.ListOptions{
+			Filters: []datastore.ListFilter{
+				{
+					Field:    "ProjectId",
+					Operator: "==",
+					Value:    key.ProjectId,
+				},
+				{
+					Field:    "Name",
+					Operator: "==",
+					Value:    req.EnvName,
+				},
+			},
+			PageSize: limit,
+		}
+		envs, err = listEnvironments(ctx, a.environmentStore, envListOpts, a.logger)
+		if err != nil {
+			return nil, err
+		}
+
+		switch len(envs) {
+		case 0:
+			return nil, status.Error(codes.NotFound, "No application under given environment")
+		case 1:
+			filters = append(filters, datastore.ListFilter{
+				Field:    "EnvId",
+				Operator: "==",
+				Value:    envs[0].Id,
+			})
+		default:
+			envsID := make([]string, 0, len(envs))
+			for _, env := range envs {
+				envsID = append(envsID, env.Id)
+			}
+			filters = append(filters, datastore.ListFilter{
+				Field:    "EnvId",
+				Operator: "in",
+				Value:    envsID,
+			})
+		}
+	}
+
 	if req.Name != "" {
 		filters = append(filters, datastore.ListFilter{
 			Field:    "Name",
