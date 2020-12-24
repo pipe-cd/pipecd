@@ -13,7 +13,7 @@ go_library(
     deps = [
         "//pkg/filestore:go_default_library",
         "//pkg/model:go_default_library",
-        "//pkg/redis:go_default_library",
+        "//pkg/cache:go_default_library",
         "@org_uber_go_zap//:go_default_library",
     ],
 )
