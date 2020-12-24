@@ -90,7 +90,9 @@ func PutChunksToCache(cache cache.Cache, chunks Chunks) error {
 	var err error
 	for _, c := range chunks {
 		// continue process even if an error occurs.
-		err = cache.Put(c.GetFilePath(), c)
+		if e := cache.Put(c.GetFilePath(), c); e != nil {
+			err = e
+		}
 	}
 	return err
 }
