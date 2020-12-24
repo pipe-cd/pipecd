@@ -20,10 +20,10 @@ go_test(
     srcs = ["collector_test.go"],
     embed = [":go_default_library"],
     deps = [
-        "//pkg/insight:go_default_library",
         "//pkg/datastore:go_default_library",
         "//pkg/datastore/datastoretest:go_default_library",
         "//pkg/filestore/filestoretest:go_default_library",
+        "//pkg/insight:go_default_library",
         "//pkg/model:go_default_library",
         "@com_github_golang_mock//gomock:go_default_library",
         "@com_github_stretchr_testify//assert:go_default_library",
