@@ -12,14 +12,16 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-package insightstore
+package insight
 
 import (
 	"context"
 	"encoding/json"
+	"errors"
 	"fmt"
 	"time"
 
+	"github.com/pipe-cd/pipe/pkg/cache"
 	"github.com/pipe-cd/pipe/pkg/filestore"
 	"github.com/pipe-cd/pipe/pkg/model"
 )
@@ -29,7 +31,9 @@ type Store struct {
 }
 
 func NewStore(fs filestore.Store) Store {
-	return Store{filestore: fs}
+	return Store{
+		filestore: fs,
+	}
 }
 
 // LoadChunks returns all needed chunks for the specified kind and time range.
@@ -40,7 +44,7 @@ func (s *Store) LoadChunks(
 	step model.InsightStep,
 	from time.Time,
 	count int,
-) ([]Chunk, error) {
+) (Chunks, error) {
 	from = NormalizeTime(from, step)
 	paths := determineFilePaths(projectID, appID, kind, step, from, count)
 	var chunks []Chunk
@@ -66,6 +70,36 @@ func (s *Store) PutChunk(ctx context.Context, chunk Chunk) error {
 		return fmt.Errorf("filepath not found on chunk struct")
 	}
 	return s.filestore.PutObject(ctx, path, data)
+}
+
+func LoadChunksFromCache(cache cache.Cache, projectID, appID string, kind model.InsightMetricsKind, step model.InsightStep, from time.Time, count int) (Chunks, error) {
+	paths := determineFilePaths(projectID, appID, kind, step, from, count)
+	chunks := make([]Chunk, 0, len(paths))
+	for _, p := range paths {
+		c, err := cache.Get(p)
+		if err != nil {
+			return nil, err
+		}
+
+		chunk, ok := c.(Chunk)
+		if !ok {
+			return nil, errors.New("malformed chunk data in cache")
+		}
+		chunks = append(chunks, chunk)
+	}
+
+	return chunks, nil
+}
+
+func PutChunksToCache(cache cache.Cache, chunks Chunks) error {
+	var err error
+	for _, c := range chunks {
+		// continue process even if an error occurs.
+		if e := cache.Put(c.GetFilePath(), c); e != nil {
+			err = e
+		}
+	}
+	return err
 }
 
 func (s *Store) getChunk(ctx context.Context, path string, kind model.InsightMetricsKind) (Chunk, error) {

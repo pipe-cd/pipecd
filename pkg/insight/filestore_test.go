@@ -12,7 +12,7 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-package insightstore
+package insight
 
 import (
 	"context"
@@ -43,7 +43,7 @@ func TestGetChunks(t *testing.T) {
 		step           model.InsightStep
 		kind           model.InsightMetricsKind
 		readerErr      error
-		expected       []Chunk
+		expected       Chunks
 		expectedErr    error
 	}{
 		{

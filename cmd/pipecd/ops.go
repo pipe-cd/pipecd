@@ -85,6 +85,7 @@ func (s *ops) run(ctx context.Context, t cli.Telemetry) error {
 		}
 	}()
 
+	// Connect to the file store.
 	fs, err := createFilestore(ctx, cfg, t.Logger)
 	if err != nil {
 		t.Logger.Error("failed to create filestore", zap.Error(err))

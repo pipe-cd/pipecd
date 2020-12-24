@@ -33,12 +33,14 @@ import (
 	"github.com/pipe-cd/pipe/pkg/app/api/stagelogstore"
 	"github.com/pipe-cd/pipe/pkg/cache"
 	"github.com/pipe-cd/pipe/pkg/cache/memorycache"
+	"github.com/pipe-cd/pipe/pkg/cache/rediscache"
 	"github.com/pipe-cd/pipe/pkg/config"
 	"github.com/pipe-cd/pipe/pkg/crypto"
 	"github.com/pipe-cd/pipe/pkg/datastore"
 	"github.com/pipe-cd/pipe/pkg/git"
-	"github.com/pipe-cd/pipe/pkg/insightstore"
+	"github.com/pipe-cd/pipe/pkg/insight"
 	"github.com/pipe-cd/pipe/pkg/model"
+	"github.com/pipe-cd/pipe/pkg/redis"
 	"github.com/pipe-cd/pipe/pkg/rpc/rpcauth"
 )
 
@@ -56,13 +58,14 @@ type WebAPI struct {
 	apiKeyStore               datastore.APIKeyStore
 	stageLogStore             stagelogstore.Store
 	applicationLiveStateStore applicationlivestatestore.Store
-	insightstore              insightstore.Store
+	insightstore              insight.Store
 	commandStore              commandstore.Store
 	encrypter                 encrypter
 
 	appProjectCache        cache.Cache
 	deploymentProjectCache cache.Cache
 	pipedProjectCache      cache.Cache
+	insightCache           cache.Cache
 
 	projectsInConfig map[string]config.ControlPlaneProject
 	logger           *zap.Logger
@@ -75,7 +78,8 @@ func NewWebAPI(
 	sls stagelogstore.Store,
 	alss applicationlivestatestore.Store,
 	cmds commandstore.Store,
-	is insightstore.Store,
+	is insight.Store,
+	rd redis.Redis,
 	projs map[string]config.ControlPlaneProject,
 	encrypter encrypter,
 	logger *zap.Logger) *WebAPI {
@@ -95,6 +99,7 @@ func NewWebAPI(
 		appProjectCache:           memorycache.NewTTLCache(ctx, 24*time.Hour, 3*time.Hour),
 		deploymentProjectCache:    memorycache.NewTTLCache(ctx, 24*time.Hour, 3*time.Hour),
 		pipedProjectCache:         memorycache.NewTTLCache(ctx, 24*time.Hour, 3*time.Hour),
+		insightCache:              rediscache.NewTTLCache(rd, 3*time.Hour),
 		logger:                    logger.Named("web-api"),
 	}
 	return a
@@ -1350,14 +1355,21 @@ func (a *WebAPI) GetInsightData(ctx context.Context, req *webservice.GetInsightD
 	count := int(req.DataPointCount)
 	from := time.Unix(req.RangeFrom, 0)
 
-	// TODO: caching the insight data inside the cache service
-	chunks, err := a.insightstore.LoadChunks(ctx, claims.Role.ProjectId, req.ApplicationId, req.MetricsKind, req.Step, from, count)
+	chunks, err := insight.LoadChunksFromCache(a.insightCache, claims.Role.ProjectId, req.ApplicationId, req.MetricsKind, req.Step, from, count)
 	if err != nil {
-		a.logger.Error("failed to load chunks from insightstore", zap.Error(err))
-		return nil, err
+		a.logger.Error("failed to load chunks from cache", zap.Error(err))
+
+		chunks, err = a.insightstore.LoadChunks(ctx, claims.Role.ProjectId, req.ApplicationId, req.MetricsKind, req.Step, from, count)
+		if err != nil {
+			a.logger.Error("failed to load chunks from insightstore", zap.Error(err))
+			return nil, err
+		}
+		if err := insight.PutChunksToCache(a.insightCache, chunks); err != nil {
+			a.logger.Error("failed to put chunks to cache", zap.Error(err))
+		}
 	}
 
-	idp, err := insightstore.Chunks(chunks).ExtractDataPoints(req.Step, from, count)
+	idp, err := chunks.ExtractDataPoints(req.Step, from, count)
 	if err != nil {
 		a.logger.Error("failed to extract data points from chunks", zap.Error(err))
 	}
