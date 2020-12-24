@@ -69,8 +69,8 @@ message ListApplicationsRequest {
     string name = 1;
     string kind = 2;
     string env_id = 3;
-    string env_name = 4;
-    bool disabled = 5;
+    bool disabled = 4;
+    string env_name = 5;
 }
 
 message ListApplicationsResponse {
