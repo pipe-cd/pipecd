@@ -176,7 +176,7 @@ func (s *server) run(ctx context.Context, t cli.Telemetry) error {
 	sls := stagelogstore.NewStore(fs, cache, t.Logger)
 	alss := applicationlivestatestore.NewStore(fs, cache, t.Logger)
 	cmds := commandstore.NewStore(ds, cache, t.Logger)
-	is := insight.NewStore(fs, rd)
+	is := insight.NewStore(fs)
 
 	// Start a gRPC server for handling PipedAPI requests.
 	{
