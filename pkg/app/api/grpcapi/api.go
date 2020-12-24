@@ -199,7 +199,7 @@ func (a *API) ListApplications(ctx context.Context, req *apiservice.ListApplicat
 			Value:    req.EnvId,
 		})
 	}
-	// env-id has higher priority than env-name, only use env-name filter in case env-id is not set.
+	// Use env-name as listApplications filter only in case env-id is not set.
 	if req.EnvId == "" && req.EnvName != "" {
 		envListOpts := datastore.ListOptions{
 			Filters: []datastore.ListFilter{
