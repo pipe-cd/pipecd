@@ -43,7 +43,7 @@ func TestGetChunks(t *testing.T) {
 		step           model.InsightStep
 		kind           model.InsightMetricsKind
 		readerErr      error
-		expected       []Chunk
+		expected       Chunks
 		expectedErr    error
 	}{
 		{
