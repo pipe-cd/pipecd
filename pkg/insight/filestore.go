@@ -44,7 +44,7 @@ func (s *Store) LoadChunks(
 	step model.InsightStep,
 	from time.Time,
 	count int,
-) ([]Chunk, error) {
+) (Chunks, error) {
 	from = NormalizeTime(from, step)
 	paths := determineFilePaths(projectID, appID, kind, step, from, count)
 	var chunks []Chunk
@@ -72,7 +72,7 @@ func (s *Store) PutChunk(ctx context.Context, chunk Chunk) error {
 	return s.filestore.PutObject(ctx, path, data)
 }
 
-func LoadChunksFromCache(cache cache.Cache, projectID, appID string, kind model.InsightMetricsKind, step model.InsightStep, from time.Time, count int) ([]Chunk, error) {
+func LoadChunksFromCache(cache cache.Cache, projectID, appID string, kind model.InsightMetricsKind, step model.InsightStep, from time.Time, count int) (Chunks, error) {
 	paths := determineFilePaths(projectID, appID, kind, step, from, count)
 	chunks := make([]Chunk, 0, len(paths))
 	for i, p := range paths {
