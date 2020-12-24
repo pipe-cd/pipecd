@@ -21,21 +21,17 @@ import (
 	"time"
 
 	"github.com/pipe-cd/pipe/pkg/cache"
-	"github.com/pipe-cd/pipe/pkg/cache/rediscache"
 	"github.com/pipe-cd/pipe/pkg/filestore"
 	"github.com/pipe-cd/pipe/pkg/model"
-	"github.com/pipe-cd/pipe/pkg/redis"
 )
 
 type Store struct {
 	filestore filestore.Store
-	cache     cache.Cache
 }
 
-func NewStore(fs filestore.Store, rd redis.Redis) Store {
+func NewStore(fs filestore.Store) Store {
 	return Store{
 		filestore: fs,
-		cache:     rediscache.NewTTLCache(rd, 3*time.Hour),
 	}
 }
 
@@ -75,11 +71,11 @@ func (s *Store) PutChunk(ctx context.Context, chunk Chunk) error {
 	return s.filestore.PutObject(ctx, path, data)
 }
 
-func (s *Store) LoadChunksCache(projectID, appID string, kind model.InsightMetricsKind, step model.InsightStep, from time.Time, count int) ([]Chunk, error) {
+func (s *Store) LoadChunksCache(cache cache.Cache, projectID, appID string, kind model.InsightMetricsKind, step model.InsightStep, from time.Time, count int) ([]Chunk, error) {
 	var chunks Chunks
 	paths := determineFilePaths(projectID, appID, kind, step, from, count)
 	for _, p := range paths {
-		c, err := s.cache.Get(p)
+		c, err := cache.Get(p)
 		chunk, ok := c.(Chunk)
 		if err != nil || !ok {
 			return nil, fmt.Errorf("failed to get insight from cache")
@@ -90,11 +86,11 @@ func (s *Store) LoadChunksCache(projectID, appID string, kind model.InsightMetri
 	return chunks, nil
 }
 
-func (s *Store) PutChunksToCache(chunks Chunks) error {
+func (s *Store) PutChunksToCache(cache cache.Cache, chunks Chunks) error {
 	var err error
 	for _, c := range chunks {
 		// continue process even if an error occurs.
-		err = s.cache.Put(c.GetFilePath(), c)
+		err = cache.Put(c.GetFilePath(), c)
 	}
 	return err
 }

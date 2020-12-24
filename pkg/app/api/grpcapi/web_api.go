@@ -21,6 +21,10 @@ import (
 	"fmt"
 	"time"
 
+	"github.com/pipe-cd/pipe/pkg/cache/rediscache"
+
+	"github.com/pipe-cd/pipe/pkg/redis"
+
 	"github.com/google/uuid"
 	"go.uber.org/zap"
 	"google.golang.org/grpc"
@@ -63,6 +67,7 @@ type WebAPI struct {
 	appProjectCache        cache.Cache
 	deploymentProjectCache cache.Cache
 	pipedProjectCache      cache.Cache
+	insightCache           cache.Cache
 
 	projectsInConfig map[string]config.ControlPlaneProject
 	logger           *zap.Logger
@@ -76,6 +81,7 @@ func NewWebAPI(
 	alss applicationlivestatestore.Store,
 	cmds commandstore.Store,
 	is insight.Store,
+	rd redis.Redis,
 	projs map[string]config.ControlPlaneProject,
 	encrypter encrypter,
 	logger *zap.Logger) *WebAPI {
@@ -95,6 +101,7 @@ func NewWebAPI(
 		appProjectCache:           memorycache.NewTTLCache(ctx, 24*time.Hour, 3*time.Hour),
 		deploymentProjectCache:    memorycache.NewTTLCache(ctx, 24*time.Hour, 3*time.Hour),
 		pipedProjectCache:         memorycache.NewTTLCache(ctx, 24*time.Hour, 3*time.Hour),
+		insightCache:              rediscache.NewTTLCache(rd, 3*time.Hour),
 		logger:                    logger.Named("web-api"),
 	}
 	return a
@@ -1351,14 +1358,14 @@ func (a *WebAPI) GetInsightData(ctx context.Context, req *webservice.GetInsightD
 	from := time.Unix(req.RangeFrom, 0)
 
 	var chunks insight.Chunks
-	chunks, err = a.insightstore.LoadChunksCache(claims.Role.ProjectId, req.ApplicationId, req.MetricsKind, req.Step, from, count)
+	chunks, err = a.insightstore.LoadChunksCache(a.insightCache, claims.Role.ProjectId, req.ApplicationId, req.MetricsKind, req.Step, from, count)
 	if err != nil {
 		chunks, err = a.insightstore.LoadChunks(ctx, claims.Role.ProjectId, req.ApplicationId, req.MetricsKind, req.Step, from, count)
 		if err != nil {
 			a.logger.Error("failed to load chunks from insightstore", zap.Error(err))
 			return nil, err
 		}
-		a.insightstore.PutChunksToCache(chunks)
+		a.insightstore.PutChunksToCache(a.insightCache, chunks)
 	}
 
 	idp, err := chunks.ExtractDataPoints(req.Step, from, count)

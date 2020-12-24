@@ -512,7 +512,7 @@ func TestInsightCollector_getDailyInsightData(t *testing.T) {
 			a := &InsightCollector{
 				applicationStore: nil,
 				deploymentStore:  mock,
-				insightstore:     insight.NewStore(filestoretest.NewMockStore(ctrl), nil),
+				insightstore:     insight.NewStore(filestoretest.NewMockStore(ctrl)),
 				logger:           zap.NewNop(),
 			}
 			got, accumulatedTo, err := a.getDailyInsightData(context.Background(), tt.args.projectID, tt.args.appID, tt.args.kind, tt.args.rangeFrom, tt.args.rangeTo)
