@@ -17,6 +17,7 @@ package grpcapi
 import (
 	"context"
 	"errors"
+	"fmt"
 
 	"github.com/google/uuid"
 	"go.uber.org/zap"
@@ -222,7 +223,7 @@ func (a *API) ListApplications(ctx context.Context, req *apiservice.ListApplicat
 
 		switch len(envs) {
 		case 0:
-			return nil, status.Error(codes.NotFound, "No application under given environment")
+			return nil, status.Error(codes.NotFound, fmt.Sprintf("No environment named as %s", req.EnvName))
 		case 1:
 			filters = append(filters, datastore.ListFilter{
 				Field:    "EnvId",
