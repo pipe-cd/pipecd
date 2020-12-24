@@ -124,3 +124,13 @@ func makeGitPath(repoID, path, cfgFilename string, piped *model.Piped, logger *z
 		Url:            u,
 	}, nil
 }
+
+func listEnvironments(ctx context.Context, store datastore.EnvironmentStore, opts datastore.ListOptions, logger *zap.Logger) ([]*model.Environment, error) {
+	envs, err := store.ListEnvironments(ctx, opts)
+	if err != nil {
+		logger.Error("failed to list environments", zap.Error(err))
+		return nil, status.Error(codes.Internal, "Failed to list environments")
+	}
+
+	return envs, nil
+}

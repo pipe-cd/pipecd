@@ -17,6 +17,7 @@ package grpcapi
 import (
 	"context"
 	"errors"
+	"fmt"
 
 	"github.com/google/uuid"
 	"go.uber.org/zap"
@@ -34,6 +35,7 @@ import (
 // API implements the behaviors for the gRPC definitions of API.
 type API struct {
 	applicationStore datastore.ApplicationStore
+	environmentStore datastore.EnvironmentStore
 	deploymentStore  datastore.DeploymentStore
 	pipedStore       datastore.PipedStore
 	commandStore     commandstore.Store
@@ -49,6 +51,7 @@ func NewAPI(
 ) *API {
 	a := &API{
 		applicationStore: datastore.NewApplicationStore(ds),
+		environmentStore: datastore.NewEnvironmentStore(ds),
 		deploymentStore:  datastore.NewDeploymentStore(ds),
 		pipedStore:       datastore.NewPipedStore(ds),
 		commandStore:     cmds,
@@ -188,6 +191,58 @@ func (a *API) ListApplications(ctx context.Context, req *apiservice.ListApplicat
 			Value:    req.Disabled,
 		},
 	}
+
+	if req.EnvId != "" {
+		filters = append(filters, datastore.ListFilter{
+			Field:    "EnvId",
+			Operator: "==",
+			Value:    req.EnvId,
+		})
+	}
+	// Use env-name as listApplications filter only in case env-id is not set.
+	if req.EnvId == "" && req.EnvName != "" {
+		envListOpts := datastore.ListOptions{
+			Filters: []datastore.ListFilter{
+				{
+					Field:    "ProjectId",
+					Operator: "==",
+					Value:    key.ProjectId,
+				},
+				{
+					Field:    "Name",
+					Operator: "==",
+					Value:    req.EnvName,
+				},
+			},
+			PageSize: limit,
+		}
+		envs, err := listEnvironments(ctx, a.environmentStore, envListOpts, a.logger)
+		if err != nil {
+			return nil, err
+		}
+
+		switch len(envs) {
+		case 0:
+			return nil, status.Error(codes.NotFound, fmt.Sprintf("No environment named as %s", req.EnvName))
+		case 1:
+			filters = append(filters, datastore.ListFilter{
+				Field:    "EnvId",
+				Operator: "==",
+				Value:    envs[0].Id,
+			})
+		default:
+			envsID := make([]string, 0, len(envs))
+			for _, env := range envs {
+				envsID = append(envsID, env.Id)
+			}
+			filters = append(filters, datastore.ListFilter{
+				Field:    "EnvId",
+				Operator: "in",
+				Value:    envsID,
+			})
+		}
+	}
+
 	if req.Name != "" {
 		filters = append(filters, datastore.ListFilter{
 			Field:    "Name",
@@ -204,13 +259,6 @@ func (a *API) ListApplications(ctx context.Context, req *apiservice.ListApplicat
 			Field:    "Kind",
 			Operator: "==",
 			Value:    model.ApplicationKind(kind),
-		})
-	}
-	if req.EnvId != "" {
-		filters = append(filters, datastore.ListFilter{
-			Field:    "EnvId",
-			Operator: "==",
-			Value:    req.EnvId,
 		})
 	}
 	opts := datastore.ListOptions{
