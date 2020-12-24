@@ -12,7 +12,7 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-package insightstore
+package insight
 
 import (
 	"fmt"
@@ -47,7 +47,7 @@ func makeChunkFilePath(projectID string, metricsKind model.InsightMetricsKind, a
 	return fmt.Sprintf("insights/%s/%s/%s/%s.json", projectID, k, appID, month)
 }
 
-func DetermineFilePaths(projectID string, appID string, kind model.InsightMetricsKind, step model.InsightStep, from time.Time, count int) []string {
+func determineFilePaths(projectID string, appID string, kind model.InsightMetricsKind, step model.InsightStep, from time.Time, count int) []string {
 	if appID == "" {
 		appID = "project"
 	}

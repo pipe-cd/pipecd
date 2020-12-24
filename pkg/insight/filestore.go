@@ -12,7 +12,7 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-package insightstore
+package insight
 
 import (
 	"context"
@@ -20,16 +20,23 @@ import (
 	"fmt"
 	"time"
 
+	"github.com/pipe-cd/pipe/pkg/cache"
+	"github.com/pipe-cd/pipe/pkg/cache/rediscache"
 	"github.com/pipe-cd/pipe/pkg/filestore"
 	"github.com/pipe-cd/pipe/pkg/model"
+	"github.com/pipe-cd/pipe/pkg/redis"
 )
 
 type Store struct {
 	filestore filestore.Store
+	cache     cache.Cache
 }
 
-func NewStore(fs filestore.Store) Store {
-	return Store{filestore: fs}
+func NewStore(fs filestore.Store, rd redis.Redis) Store {
+	return Store{
+		filestore: fs,
+		cache:     rediscache.NewTTLCache(rd, 3*time.Hour),
+	}
 }
 
 // LoadChunks returns all needed chunks for the specified kind and time range.
@@ -42,7 +49,7 @@ func (s *Store) LoadChunks(
 	count int,
 ) ([]Chunk, error) {
 	from = NormalizeTime(from, step)
-	paths := DetermineFilePaths(projectID, appID, kind, step, from, count)
+	paths := determineFilePaths(projectID, appID, kind, step, from, count)
 	var chunks []Chunk
 	for _, p := range paths {
 		c, err := s.getChunk(ctx, p, kind)
@@ -66,6 +73,30 @@ func (s *Store) PutChunk(ctx context.Context, chunk Chunk) error {
 		return fmt.Errorf("filepath not found on chunk struct")
 	}
 	return s.filestore.PutObject(ctx, path, data)
+}
+
+func (s *Store) LoadChunksCache(projectID, appID string, kind model.InsightMetricsKind, step model.InsightStep, from time.Time, count int) ([]Chunk, error) {
+	var chunks Chunks
+	paths := determineFilePaths(projectID, appID, kind, step, from, count)
+	for _, p := range paths {
+		c, err := s.cache.Get(p)
+		chunk, ok := c.(Chunk)
+		if err != nil || !ok {
+			return nil, fmt.Errorf("failed to get insight from cache")
+		}
+		chunks = append(chunks, chunk)
+	}
+
+	return chunks, nil
+}
+
+func (s *Store) PutChunksToCache(chunks Chunks) error {
+	var err error
+	for _, c := range chunks {
+		// continue process even if an error occurs.
+		err = s.cache.Put(c.GetFilePath(), c)
+	}
+	return err
 }
 
 func (s *Store) getChunk(ctx context.Context, path string, kind model.InsightMetricsKind) (Chunk, error) {

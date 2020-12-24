@@ -8,11 +8,13 @@ go_library(
         "filepath.go",
         "filestore.go",
     ],
-    importpath = "github.com/pipe-cd/pipe/pkg/insightstore",
+    importpath = "github.com/pipe-cd/pipe/pkg/insight",
     visibility = ["//visibility:public"],
     deps = [
         "//pkg/filestore:go_default_library",
         "//pkg/model:go_default_library",
+        "//pkg/redis:go_default_library",
+        "@org_uber_go_zap//:go_default_library",
     ],
 )
 

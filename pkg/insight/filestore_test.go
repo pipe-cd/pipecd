@@ -12,7 +12,7 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-package insightstore
+package insight
 
 import (
 	"context"
@@ -117,7 +117,7 @@ func TestGetChunks(t *testing.T) {
 	}
 	for _, tc := range testcases {
 		t.Run(tc.name, func(t *testing.T) {
-			paths := DetermineFilePaths(tc.projectID, tc.appID, tc.kind, tc.step, tc.from, tc.dataPointCount)
+			paths := determineFilePaths(tc.projectID, tc.appID, tc.kind, tc.step, tc.from, tc.dataPointCount)
 			if len(paths) != tc.fileCount {
 				t.Fatalf("the count of path must be %d, but, %d : &v", tc.fileCount, len(paths), paths)
 			}
@@ -407,7 +407,7 @@ func TestGetChunk(t *testing.T) {
 	}
 	for _, tc := range testcases {
 		t.Run(tc.name, func(t *testing.T) {
-			path := DetermineFilePaths(tc.projectID, tc.appID, tc.kind, tc.step, tc.from, tc.dataPointCount)
+			path := determineFilePaths(tc.projectID, tc.appID, tc.kind, tc.step, tc.from, tc.dataPointCount)
 			if len(path) != 1 {
 				t.Fatalf("the count of path must be 1, but, %d", len(path))
 			}

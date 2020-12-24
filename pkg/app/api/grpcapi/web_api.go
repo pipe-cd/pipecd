@@ -33,14 +33,12 @@ import (
 	"github.com/pipe-cd/pipe/pkg/app/api/stagelogstore"
 	"github.com/pipe-cd/pipe/pkg/cache"
 	"github.com/pipe-cd/pipe/pkg/cache/memorycache"
-	"github.com/pipe-cd/pipe/pkg/cache/rediscache"
 	"github.com/pipe-cd/pipe/pkg/config"
 	"github.com/pipe-cd/pipe/pkg/crypto"
 	"github.com/pipe-cd/pipe/pkg/datastore"
 	"github.com/pipe-cd/pipe/pkg/git"
-	"github.com/pipe-cd/pipe/pkg/insightstore"
+	"github.com/pipe-cd/pipe/pkg/insight"
 	"github.com/pipe-cd/pipe/pkg/model"
-	"github.com/pipe-cd/pipe/pkg/redis"
 	"github.com/pipe-cd/pipe/pkg/rpc/rpcauth"
 )
 
@@ -58,14 +56,13 @@ type WebAPI struct {
 	apiKeyStore               datastore.APIKeyStore
 	stageLogStore             stagelogstore.Store
 	applicationLiveStateStore applicationlivestatestore.Store
-	insightstore              insightstore.Store
+	insightstore              insight.Store
 	commandStore              commandstore.Store
 	encrypter                 encrypter
 
 	appProjectCache        cache.Cache
 	deploymentProjectCache cache.Cache
 	pipedProjectCache      cache.Cache
-	insightCache           cache.Cache
 
 	projectsInConfig map[string]config.ControlPlaneProject
 	logger           *zap.Logger
@@ -78,8 +75,7 @@ func NewWebAPI(
 	sls stagelogstore.Store,
 	alss applicationlivestatestore.Store,
 	cmds commandstore.Store,
-	is insightstore.Store,
-	rd redis.Redis,
+	is insight.Store,
 	projs map[string]config.ControlPlaneProject,
 	encrypter encrypter,
 	logger *zap.Logger) *WebAPI {
@@ -99,7 +95,6 @@ func NewWebAPI(
 		appProjectCache:           memorycache.NewTTLCache(ctx, 24*time.Hour, 3*time.Hour),
 		deploymentProjectCache:    memorycache.NewTTLCache(ctx, 24*time.Hour, 3*time.Hour),
 		pipedProjectCache:         memorycache.NewTTLCache(ctx, 24*time.Hour, 3*time.Hour),
-		insightCache:              rediscache.NewTTLCache(rd, 3*time.Hour),
 		logger:                    logger.Named("web-api"),
 	}
 	return a
@@ -1355,15 +1350,15 @@ func (a *WebAPI) GetInsightData(ctx context.Context, req *webservice.GetInsightD
 	count := int(req.DataPointCount)
 	from := time.Unix(req.RangeFrom, 0)
 
-	chunks, err := a.getInsightFromCache(claims.Role.ProjectId, req.ApplicationId, req.MetricsKind, req.Step, from, count)
+	var chunks insight.Chunks
+	chunks, err = a.insightstore.LoadChunksCache(claims.Role.ProjectId, req.ApplicationId, req.MetricsKind, req.Step, from, count)
 	if err != nil {
 		chunks, err = a.insightstore.LoadChunks(ctx, claims.Role.ProjectId, req.ApplicationId, req.MetricsKind, req.Step, from, count)
 		if err != nil {
 			a.logger.Error("failed to load chunks from insightstore", zap.Error(err))
 			return nil, err
 		}
-
-		a.putInsightToCache(chunks)
+		a.insightstore.PutChunksToCache(chunks)
 	}
 
 	idp, err := chunks.ExtractDataPoints(req.Step, from, count)
@@ -1383,26 +1378,4 @@ func (a *WebAPI) GetInsightData(ctx context.Context, req *webservice.GetInsightD
 		UpdatedAt:  updateAt,
 		DataPoints: idp,
 	}, nil
-}
-
-func (a *WebAPI) getInsightFromCache(projectID, appID string, kind model.InsightMetricsKind, step model.InsightStep, from time.Time, count int) (insightstore.Chunks, error) {
-	var chunks insightstore.Chunks
-	paths := insightstore.DetermineFilePaths(projectID, appID, kind, step, from, count)
-	for _, p := range paths {
-		c, err := a.insightCache.Get(p)
-		chunk, ok := c.(insightstore.Chunk)
-		if err != nil || !ok {
-			return nil, fmt.Errorf("failed to get insight from cache")
-		}
-		chunks = append(chunks, chunk)
-	}
-
-	return chunks, nil
-}
-
-func (a *WebAPI) putInsightToCache(chunks insightstore.Chunks) {
-	for _, c := range chunks {
-		a.insightCache.Put(c.GetFilePath(), c)
-	}
-	return
 }

@@ -12,7 +12,7 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-package insightstore
+package insight
 
 import (
 	"testing"
@@ -121,7 +121,7 @@ func Test_determineFilePaths(t *testing.T) {
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			got := DetermineFilePaths(tt.args.projectID, tt.args.appID, tt.args.metricsKind, tt.args.step, tt.args.from, tt.args.dataPointCount)
+			got := determineFilePaths(tt.args.projectID, tt.args.appID, tt.args.metricsKind, tt.args.step, tt.args.from, tt.args.dataPointCount)
 			assert.Equal(t, tt.want, got)
 		})
 	}

@@ -8,7 +8,7 @@ go_library(
     deps = [
         "//pkg/datastore:go_default_library",
         "//pkg/filestore:go_default_library",
-        "//pkg/insightstore:go_default_library",
+        "//pkg/insight:go_default_library",
         "//pkg/model:go_default_library",
         "@org_uber_go_zap//:go_default_library",
     ],
@@ -20,6 +20,8 @@ go_test(
     srcs = ["collector_test.go"],
     embed = [":go_default_library"],
     deps = [
+        "//pkg/insight:go_default_library",
+        "//pkg/filestore/filestoretest:go_default_library",
         "//pkg/datastore:go_default_library",
         "//pkg/datastore/datastoretest:go_default_library",
         "//pkg/filestore/filestoretest:go_default_library",
