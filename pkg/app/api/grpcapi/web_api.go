@@ -1358,12 +1358,16 @@ func (a *WebAPI) GetInsightData(ctx context.Context, req *webservice.GetInsightD
 	var chunks insight.Chunks
 	chunks, err = insight.LoadChunksFromCache(a.insightCache, claims.Role.ProjectId, req.ApplicationId, req.MetricsKind, req.Step, from, count)
 	if err != nil {
+		a.logger.Error("failed to load chunks from cache", zap.Error(err))
+
 		chunks, err = a.insightstore.LoadChunks(ctx, claims.Role.ProjectId, req.ApplicationId, req.MetricsKind, req.Step, from, count)
 		if err != nil {
 			a.logger.Error("failed to load chunks from insightstore", zap.Error(err))
 			return nil, err
 		}
-		insight.PutChunksToCache(a.insightCache, chunks)
+		if err := insight.PutChunksToCache(a.insightCache, chunks); err != nil {
+			a.logger.Error("failed to put chunks to cache", zap.Error(err))
+		}
 	}
 
 	idp, err := chunks.ExtractDataPoints(req.Step, from, count)
