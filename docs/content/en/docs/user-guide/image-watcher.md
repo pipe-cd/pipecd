@@ -38,7 +38,7 @@ spec:
 
 Image watcher periodically compares the latest tag of the following images:
 - a given `image` in a given `provider`
-- an image defined at a given 'field' in a given `filePath`
+- an image defined at a given `field` in a given `filePath`
 
 And then pushes them to the git repository if there are any deviations.
 Note that it uses only pure git push, does not use features that depend on Git hosting services, such as pull requests.
