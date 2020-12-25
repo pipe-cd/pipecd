@@ -1,0 +1,12 @@
+apiVersion: pipecd.dev/v1beta1
+kind: ImageWatcher
+spec:
+  targets:
+    - image: gcr.io/pipecd/helloworld
+      provider: dev-gcr
+      filePath: kubernetes/simple/deployment.yaml
+      field: $.spec.template.spec.containers[0].image
+    - image: gcr.io/pipecd/helloworld
+      provider: dev-gcr
+      filePath: cloudrun/simple/service.yaml
+      field: $.spec.template.spec.containers[0].image

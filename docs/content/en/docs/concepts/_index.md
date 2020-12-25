@@ -79,3 +79,9 @@ Currently, PipeCD is supporting these four cloud providers: `KUBERNETES`, `TERRA
 
 PipeCD supports multiple methods to automate the analysis process of the deployment. It can be done by using metrics, logs or by checking the configured http requests.
 Analysis Provider defines where to get those metrics/log data, like `Prometheus`, `Datadog`, `Stackdriver`, `CloudWatch`, and so on.
+
+### Image Provider
+
+PipeCD can automatically trigger a new Deployment when a new image tag stored at a container registry is pushed by enabling the [Image watcher](/docs/user-guide/image-watcher) feature.
+Image Provider defines which container registry should be monitored.
+Currently, PipeCD is supporting only `ECR`. `GCR` and `DOCKERHUB` are on the roadmap.

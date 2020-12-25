@@ -30,6 +30,8 @@ spec:
 | chartRepositories | [][ChartRepository](/docs/operator-manual/piped/configuration-reference/#chartrepository) | List of Helm chart repositories that should be added while starting up. | No |
 | cloudProviders | [][CloudProvider](/docs/operator-manual/piped/configuration-reference/#cloudprovider) | List of cloud providers can be used by this piped. | No |
 | analysisProviders | [][AnalysisProvider](/docs/operator-manual/piped/configuration-reference/#analysisprovider) | List of analysis providers can be used by this piped. | No |
+| imageProviders | [][ImageProvider](/docs/operator-manual/piped/configuration-reference/#imageprovider) | List of image providers can be used by this piped. | No |
+| imageWatcher | [ImageWatcher](/docs/operator-manual/piped/configuration-reference/#imagewatcher) | Optional Image watcher settings for each git repository | No |
 | notifications | [Notifications](/docs/operator-manual/piped/configuration-reference/#notifications) | Sending notifications to Slack, Webhook... | No |
 
 ## Git
@@ -133,6 +135,43 @@ Must be one of the following structs:
 | address | string | The Prometheus server address. | Yes |
 | usernameFile | string | The path to the username file. | No |
 | passwordFile | string | The path to the password file. | No |
+
+## ImageProvider
+
+| Field | Type | Description | Required |
+|-|-|-|-|
+| name | string | The unique name of the analysis provider. | Yes |
+| type | string | The provider type. Currently, only ECR is available. | Yes |
+| config | [ImageProviderConfig](/docs/operator-manual/piped/configuration-reference/#imageproviderconfig) | Specific configuration for the specified type of image provider. | Yes |
+
+## ImageProviderConfig
+
+Must be one of the following structs:
+
+### ImageProviderECRConfig
+
+| Field | Type | Description | Required |
+|-|-|-|-|
+| region | string | The region to send requests to. This parameter is required. e.g. "us-west-2". A full list of regions is: https://docs.aws.amazon.com/general/latest/gr/rande.html | Yes |
+| registryId | string | The AWS account ID associated with the registry that contains the repository in which to list images. The "default" registry is assumed by default. | No |
+| credentialsFile | string | Path to the shared credentials file. | No |
+| profile | string | AWS Profile to extract credentials from the shared credentials file. If empty, the environment variable "AWS_PROFILE" is used. "default" is populated if the environment variable is also not set. | No |
+
+## ImageWatcher
+
+| Field | Type | Description | Required |
+|-|-|-|-|
+| repos | []ImageWatcherRepoTarget | List of settings for each git repository | No |
+
+### ImageWatcherRepoTarget
+
+| Field | Type | Description | Required |
+|-|-|-|-|
+| repoId | string | Id of the git repository. This must be unique within the repos' elements. | Yes |
+| checkInterval | duration |  Interval to compare the image in the git repository and one in the images provider. Defaults to `5m`. | No |
+| commitMessage | string |  The commit message used to push after updating image. Default message is used if not given. | No |
+| includes | []string | The paths to ImageWatcher files to be included. | No |
+| excludes | []string |  The paths to ImageWatcher files to be excluded. This is prioritized if both includes and this are given. | No |
 
 ## Notifications
 
