@@ -18,22 +18,22 @@ func NewInsightMilestoneStore(ds DataStore) *InsightMilestoneStore {
 	}
 }
 
-const insightModelKind = "InsightMilestone"
-const insightMilestone = "InsightMilestone"
+const insightModelKind = "insight"
+const insightMilestone = "milestone"
 
 type MilestornStore interface {
-	GetInsightMilestone(ctx context.Context) (*insight.InsightMilestone, error)
+	GetInsightMilestone(ctx context.Context) (*insight.Milestone, error)
 	PutInsightMilestone(ctx context.Context) error
 }
 
-func (s *InsightMilestoneStore) GetInsightMilestone(ctx context.Context) (*insight.InsightMilestone, error) {
-	var entity insight.InsightMilestone
+func (s *InsightMilestoneStore) GetInsightMilestone(ctx context.Context) (*insight.Milestone, error) {
+	var entity insight.Milestone
 	if err := s.ds.Get(ctx, insightModelKind, insightMilestone, &entity); err != nil {
 		return nil, err
 	}
 	return &entity, nil
 }
 
-func (s *InsightMilestoneStore) PutInsightMilestone(ctx context.Context, m *insight.InsightMilestone) error {
+func (s *InsightMilestoneStore) PutInsightMilestone(ctx context.Context, m *insight.Milestone) error {
 	return s.ds.Put(ctx, insightModelKind, insightMilestone, m)
 }

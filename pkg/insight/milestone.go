@@ -16,12 +16,12 @@ package insight
 
 import "github.com/pipe-cd/pipe/pkg/model"
 
-type InsightMilestone struct {
+type Milestone struct {
 	DeploymentCreatedAtMilestone   int64 // Mark that our collector has handled all deployment that was created before this value
 	DeploymentCompletedAtMilestone int64 // Mark that our collector has handled all deployment that was completed before this value. This will be used while calculating CHANGE_FAILURE_RATE.
 }
 
-func (i *InsightMilestone) updateMilestone(m int64, kind model.InsightMetricsKind) {
+func (i *Milestone) updateMilestone(m int64, kind model.InsightMetricsKind) {
 	switch kind {
 	case model.InsightMetricsKind_CHANGE_FAILURE_RATE:
 		i.DeploymentCompletedAtMilestone = m

@@ -27,7 +27,7 @@ func TestGetInsightMilestone(t *testing.T) {
 			ds: func() DataStore {
 				ds := NewMockDataStore(ctrl)
 				ds.EXPECT().
-					Get(gomock.Any(), insightModelKind, insightMilestone, &insight.InsightMilestone{}).
+					Get(gomock.Any(), insightModelKind, insightMilestone, &insight.Milestone{}).
 					Return(nil)
 				return ds
 			}(),
@@ -39,7 +39,7 @@ func TestGetInsightMilestone(t *testing.T) {
 			ds: func() DataStore {
 				ds := NewMockDataStore(ctrl)
 				ds.EXPECT().
-					Get(gomock.Any(), insightModelKind, insightMilestone, &insight.InsightMilestone{}).
+					Get(gomock.Any(), insightModelKind, insightMilestone, &insight.Milestone{}).
 					Return(fmt.Errorf("err"))
 				return ds
 			}(),
