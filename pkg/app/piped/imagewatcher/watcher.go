@@ -107,20 +107,22 @@ func (w *watcher) run(ctx context.Context, repo git.Repo, repoCfg *config.PipedR
 	defer w.wg.Done()
 
 	var (
-		checkInterval              = defaultCheckInterval
 		commitMsg                  string
 		includedCfgs, excludedCfgs []string
 	)
 	// Use user-defined settings if there is.
-	for _, r := range w.config.ImageWatcher.Repos {
+	for _, r := range w.config.ImageWatcher.GitRepos {
 		if r.RepoID != repoCfg.RepoID {
 			continue
 		}
-		checkInterval = time.Duration(r.CheckInterval)
 		commitMsg = r.CommitMessage
 		includedCfgs = r.Includes
 		excludedCfgs = r.Excludes
 		break
+	}
+	checkInterval := time.Duration(w.config.ImageWatcher.CheckInterval)
+	if checkInterval == 0 {
+		checkInterval = defaultCheckInterval
 	}
 
 	ticker := time.NewTicker(checkInterval)

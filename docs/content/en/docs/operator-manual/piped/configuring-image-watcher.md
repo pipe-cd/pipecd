@@ -62,24 +62,25 @@ The full list of ECR fields are [here](/docs/operator-manual/piped/configuration
 >The FAKE container registry is deployed at the control-plane, and you can store the metadata about newly updated images whenever you want to (e.g. on your CI).
 
 
-## [optional] Settings for each git repository
-The `imageWatcher` field allows you to configure the settings for each git repository.
+## [optional] Settings for watcher
+The Piped's behavior can be finely controlled by setting the `imageWatcher` field.
 
 ```yaml
 apiVersion: pipecd.dev/v1beta1
 kind: Piped
 spec:
   imageWatcher:
-    repos:
+    checkInterval: 5m
+    gitRepos:
       - repoId: foo
-        checkInterval: 5m
         commitMessage: Update image
         includes:
           - imagewatcher-dev.yaml
           - imagewatcher-stg.yaml
 ```
 
-If multiple Pipeds handle a single repository, you can prevent conflicts by splitting into the multiple files and specifying `includes/excludes`. `excludes` is prioritized if both `includes` and `excludes` are given.
+If multiple Pipeds handle a single repository, you can prevent conflicts by splitting into the multiple ImageWatcher files and setting `includes/excludes` to specify the files that should be monitored by this Piped.
+`excludes` is prioritized if both `includes` and `excludes` are given.
 
 The full list of configurable fields are [here](/docs/operator-manual/piped/configuration-reference/#imagewatcher).
 
