@@ -104,6 +104,32 @@ spec:
 |-|-|-|-|
 | metrics | map[string][AnalysisMetrics](/docs/user-guide/configuration-reference/#analysismetrics) | Template for metrics. | No |
 
+## Image Watcher Configuration
+
+```yaml
+apiVersion: pipecd.dev/v1beta1
+kind: ImageWatcher
+spec:
+  targets:
+    - image: gcr.io/pipecd/helloworld
+      provider: my-gcr
+      filePath: foo/deployment.yaml
+      field: $.spec.template.spec.containers[0].image
+```
+
+| Field | Type | Description | Required |
+|-|-|-|-|
+| targets | [][ImageWatcherTarget](/docs/user-guide/configuration-reference/#imagewatchertarget) | Target images to be watched. | No |
+
+## ImageWatcherTarget
+
+| Field | Type | Description | Required |
+|-|-|-|-|
+| image | string | Fully qualified image name. | Yes |
+| provider | string | The name of Image provider that must be configured in the piped config. See [here](/docs/operator-manual/piped/configuration-reference/#imageprovider) for more details. | Yes |
+| filePath | string | The path to the file to be updated. | Yes |
+| field | string |  The path to the field to be updated. It requires to start with `$` which represents the root element. e.g. `$.foo.bar[0].baz`. | Yes |
+
 ## CommitMatcher
 
 | Field | Type | Description | Required |
