@@ -72,6 +72,30 @@ func (s *Store) PutChunk(ctx context.Context, chunk Chunk) error {
 	return s.filestore.PutObject(ctx, path, data)
 }
 
+const milestonePath = "insights/milestone.json"
+
+func (s *Store) LoadMilestone(ctx context.Context) (*Milestone, error) {
+	var m *Milestone
+	obj, err := s.filestore.GetObject(ctx, milestonePath)
+	if err != nil {
+		return nil, err
+	}
+	err = json.Unmarshal(obj.Content, m)
+	if err != nil {
+		return nil, err
+	}
+
+	return m, nil
+}
+
+func (s *Store) putMilestone(ctx context.Context, m Milestone) error {
+	data, err := json.Marshal(m)
+	if err != nil {
+		return err
+	}
+	return s.filestore.PutObject(ctx, milestonePath, data)
+}
+
 func LoadChunksFromCache(cache cache.Cache, projectID, appID string, kind model.InsightMetricsKind, step model.InsightStep, from time.Time, count int) (Chunks, error) {
 	paths := determineFilePaths(projectID, appID, kind, step, from, count)
 	chunks := make([]Chunk, 0, len(paths))
