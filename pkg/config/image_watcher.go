@@ -25,11 +25,20 @@ type ImageWatcherSpec struct {
 	Targets []ImageWatcherTarget `json:"targets"`
 }
 
+// ImageWatcherTarget provides information to compare the latest tags.
+//
+// Image watcher typically compares the "Image" in the "Provider" and
+// an image defined at the "Field" in the "FilePath".
 type ImageWatcherTarget struct {
+	// The name of Image provider.
 	Provider string `json:"provider"`
-	Image    string `json:"image"`
+	// Fully qualified image name.
+	Image string `json:"image"`
+	// The path to the file to be updated.
 	FilePath string `json:"filePath"`
-	Field    string `json:"field"`
+	// The path to the field to be updated. It requires to start
+	// with `$` which represents the root element. e.g. `$.foo.bar[0].baz`.
+	Field string `json:"field"`
 }
 
 // LoadImageWatcher finds the config files for the image watcher in the .pipe
@@ -67,6 +76,9 @@ func LoadImageWatcher(repoRoot string, includes, excludes []string) (*ImageWatch
 	}
 	if len(spec.Targets) == 0 {
 		return nil, ErrNotFound
+	}
+	if err := spec.Validate(); err != nil {
+		return nil, err
 	}
 
 	return spec, nil
@@ -107,5 +119,19 @@ func filterImageWatcherFiles(files []os.FileInfo, includes, excludes []string) (
 }
 
 func (s *ImageWatcherSpec) Validate() error {
+	for _, t := range s.Targets {
+		if t.Provider == "" {
+			return fmt.Errorf("provider must not be empty")
+		}
+		if t.Image == "" {
+			return fmt.Errorf("image must not be empty")
+		}
+		if t.FilePath == "" {
+			return fmt.Errorf("filePath must not be empty")
+		}
+		if t.Field == "" {
+			return fmt.Errorf("field must not be empty")
+		}
+	}
 	return nil
 }

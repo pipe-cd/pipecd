@@ -134,10 +134,10 @@ spec:
     #   encryptServiceAccountFile: /etc/piped-secret/encrypt-service-account.json
 
   imageWatcher:
-    repos:
+    checkInterval: 10m
+    gitRepos:
       - repoId: foo
-        checkInterval: 10m
-        commitMessage: "foo bar"
+        commitMessage: Update image
         includes:
           - imagewatcher-dev.yaml
           - imagewatcher-stg.yaml

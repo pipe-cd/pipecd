@@ -161,14 +161,14 @@ Must be one of the following structs:
 
 | Field | Type | Description | Required |
 |-|-|-|-|
-| repos | []ImageWatcherRepoTarget | List of settings for each git repository | No |
+| checkInterval | duration |  Interval to compare the image in the git repository and one in the images provider. Defaults to `5m`. | No |
+| gitRepos | [][ImageWatcherGitRepo](/docs/operator-manual/piped/configuration-reference/#imagewatchergitrepo) | List of settings for each git repository | No |
 
-### ImageWatcherRepoTarget
+### ImageWatcherGitRepo
 
 | Field | Type | Description | Required |
 |-|-|-|-|
 | repoId | string | Id of the git repository. This must be unique within the repos' elements. | Yes |
-| checkInterval | duration |  Interval to compare the image in the git repository and one in the images provider. Defaults to `5m`. | No |
 | commitMessage | string |  The commit message used to push after updating image. Default message is used if not given. | No |
 | includes | []string | The paths to ImageWatcher files to be included. | No |
 | excludes | []string |  The paths to ImageWatcher files to be excluded. This is prioritized if both includes and this are given. | No |

@@ -223,11 +223,11 @@ func TestPipedConfig(t *testing.T) {
 					},
 				},
 				ImageWatcher: PipedImageWatcher{
-					Repos: []PipedImageWatcherRepoTarget{
+					CheckInterval: Duration(10 * time.Minute),
+					GitRepos: []PipedImageWatcherGitRepo{
 						{
 							RepoID:        "foo",
-							CheckInterval: Duration(10 * time.Minute),
-							CommitMessage: "foo bar",
+							CommitMessage: "Update image",
 							Includes:      []string{"imagewatcher-dev.yaml", "imagewatcher-stg.yaml"},
 						},
 					},
@@ -257,29 +257,43 @@ func TestPipedImageWatcherValidate(t *testing.T) {
 		wantPipedImageWatcher PipedImageWatcher
 	}{
 		{
-			name:    "duplicated repo exists",
+			name:    "missing repo id",
 			wantErr: true,
 			imageWatcher: PipedImageWatcher{
-				Repos: []PipedImageWatcherRepoTarget{
+				GitRepos: []PipedImageWatcherGitRepo{
 					{
-						RepoID:        "foo",
-						CheckInterval: Duration(time.Minute),
-					},
-					{
-						RepoID:        "foo",
-						CheckInterval: Duration(time.Minute),
+						RepoID: "",
 					},
 				},
 			},
 			wantPipedImageWatcher: PipedImageWatcher{
-				Repos: []PipedImageWatcherRepoTarget{
+				GitRepos: []PipedImageWatcherGitRepo{
 					{
-						RepoID:        "foo",
-						CheckInterval: Duration(time.Minute),
+						RepoID: "",
+					},
+				},
+			},
+		},
+		{
+			name:    "duplicated repo exists",
+			wantErr: true,
+			imageWatcher: PipedImageWatcher{
+				GitRepos: []PipedImageWatcherGitRepo{
+					{
+						RepoID: "foo",
 					},
 					{
-						RepoID:        "foo",
-						CheckInterval: Duration(time.Minute),
+						RepoID: "foo",
+					},
+				},
+			},
+			wantPipedImageWatcher: PipedImageWatcher{
+				GitRepos: []PipedImageWatcherGitRepo{
+					{
+						RepoID: "foo",
+					},
+					{
+						RepoID: "foo",
 					},
 				},
 			},
@@ -288,7 +302,7 @@ func TestPipedImageWatcherValidate(t *testing.T) {
 			name:    "repos are unique",
 			wantErr: false,
 			imageWatcher: PipedImageWatcher{
-				Repos: []PipedImageWatcherRepoTarget{
+				GitRepos: []PipedImageWatcherGitRepo{
 					{
 						RepoID: "foo",
 					},
@@ -298,14 +312,12 @@ func TestPipedImageWatcherValidate(t *testing.T) {
 				},
 			},
 			wantPipedImageWatcher: PipedImageWatcher{
-				Repos: []PipedImageWatcherRepoTarget{
+				GitRepos: []PipedImageWatcherGitRepo{
 					{
-						RepoID:        "foo",
-						CheckInterval: Duration(5 * time.Minute),
+						RepoID: "foo",
 					},
 					{
-						RepoID:        "bar",
-						CheckInterval: Duration(5 * time.Minute),
+						RepoID: "bar",
 					},
 				},
 			},

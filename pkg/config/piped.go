@@ -22,10 +22,6 @@ import (
 	"github.com/pipe-cd/pipe/pkg/model"
 )
 
-const (
-	defaultImageWatcherCheckInterval = Duration(5 * time.Minute)
-)
-
 var DefaultKubernetesCloudProvider = PipedCloudProvider{
 	Name:             "kubernetes-default",
 	Type:             model.CloudProviderKubernetes,
@@ -590,31 +586,34 @@ func (p *SealedSecretManagement) UnmarshalJSON(data []byte) error {
 }
 
 type PipedImageWatcher struct {
-	Repos []PipedImageWatcherRepoTarget `json:"repos"`
+	// Interval to compare the image in the git repository
+	// and one in the images provider. Default is 5m.
+	CheckInterval Duration `json:"checkInterval"`
+	// Settings for each git repository.
+	GitRepos []PipedImageWatcherGitRepo `json:"gitRepos"`
 }
 
-// Validate checks if the duplicated repository setting exists.
-// And it populates default value if not set.
+// Validate checks if:
+// - empty repo ids exist
+// - duplicated repository settings exist
 func (p *PipedImageWatcher) Validate() error {
-	repos := make(map[string]struct{}, len(p.Repos))
-	for i := 0; i < len(p.Repos); i++ {
-		if _, ok := repos[p.Repos[i].RepoID]; ok {
-			return fmt.Errorf("duplicated repo id (%s) found in the imageWatcher directive", p.Repos[i].RepoID)
+	repos := make(map[string]struct{}, len(p.GitRepos))
+	for i := 0; i < len(p.GitRepos); i++ {
+		if p.GitRepos[i].RepoID == "" {
+			return fmt.Errorf("repoId is required", p.GitRepos[i].RepoID)
 		}
-		repos[p.Repos[i].RepoID] = struct{}{}
-
-		if p.Repos[i].CheckInterval == 0 {
-			p.Repos[i].CheckInterval = defaultImageWatcherCheckInterval
+		if _, ok := repos[p.GitRepos[i].RepoID]; ok {
+			return fmt.Errorf("duplicated repo id (%s) found in the imageWatcher directive", p.GitRepos[i].RepoID)
 		}
+		repos[p.GitRepos[i].RepoID] = struct{}{}
 	}
 	return nil
 }
 
-type PipedImageWatcherRepoTarget struct {
+type PipedImageWatcherGitRepo struct {
+	// Id of the git repository. This must be unique within
+	// the repos' elements.
 	RepoID string `json:"repoId"`
-	// Interval to compare if the image in the git repository
-	// and one in the images provider. Default is 5m.
-	CheckInterval Duration `json:"checkInterval"`
 	// The commit message used to push after updating image.
 	// Default message is used if not given.
 	CommitMessage string `json:"commitMessage"`

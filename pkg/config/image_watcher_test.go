@@ -124,3 +124,74 @@ func TestFilterImageWatcherFiles(t *testing.T) {
 		})
 	}
 }
+
+func TestImageWatcherValidate(t *testing.T) {
+	testcases := []struct {
+		name             string
+		imageWatcherSpec ImageWatcherSpec
+		wantErr          bool
+	}{
+		{
+			name: "empty provider given",
+			imageWatcherSpec: ImageWatcherSpec{Targets: []ImageWatcherTarget{
+				{
+					Image:    "image",
+					FilePath: "filePath",
+					Field:    "field",
+				},
+			}},
+			wantErr: true,
+		},
+		{
+			name: "empty image given",
+			imageWatcherSpec: ImageWatcherSpec{Targets: []ImageWatcherTarget{
+				{
+					Provider: "provider",
+					FilePath: "filePath",
+					Field:    "field",
+				},
+			}},
+			wantErr: true,
+		},
+		{
+			name: "empty file path given",
+			imageWatcherSpec: ImageWatcherSpec{Targets: []ImageWatcherTarget{
+				{
+					Provider: "provider",
+					Image:    "image",
+					Field:    "field",
+				},
+			}},
+			wantErr: true,
+		},
+		{
+			name: "empty field given",
+			imageWatcherSpec: ImageWatcherSpec{Targets: []ImageWatcherTarget{
+				{
+					Provider: "provider",
+					Image:    "image",
+					FilePath: "filePath",
+				},
+			}},
+			wantErr: true,
+		},
+		{
+			name: "all fields given",
+			imageWatcherSpec: ImageWatcherSpec{Targets: []ImageWatcherTarget{
+				{
+					Provider: "provider",
+					Image:    "image",
+					FilePath: "filePath",
+					Field:    "field",
+				},
+			}},
+			wantErr: false,
+		},
+	}
+	for _, tc := range testcases {
+		t.Run(tc.name, func(t *testing.T) {
+			err := tc.imageWatcherSpec.Validate()
+			assert.Equal(t, tc.wantErr, err != nil)
+		})
+	}
+}
