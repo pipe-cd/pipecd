@@ -99,7 +99,7 @@ func (i *InsightCollector) AggregateWithCreatedAt(ctx context.Context) error {
 			}
 		}
 	}
-	if returnErr != nil {
+	if returnErr == nil {
 		m.DeploymentCreatedAtMilestone = targetDate.Unix()
 	}
 	if err := i.insightstore.PutMilestone(ctx, m); err != nil {
@@ -143,7 +143,7 @@ func (i *InsightCollector) AggregateWithCompletedAt(ctx context.Context) error {
 			}
 		}
 	}
-	if returnErr != nil {
+	if returnErr == nil {
 		m.DeploymentCompletedAtMilestone = targetDate.Unix()
 	}
 	if err := i.insightstore.PutMilestone(ctx, m); err != nil {
