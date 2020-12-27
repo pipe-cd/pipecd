@@ -851,7 +851,7 @@ func TestInsightCollector_getDeploymentsWithCompletedAt(t *testing.T) {
 	}
 }
 
-func TestInsightCollector_getDailyInsightData(t *testing.T) {
+func TestInsightCollector_extractDailyInsightDataPoints(t *testing.T) {
 	type args struct {
 		kind        model.InsightMetricsKind
 		deployments []*model.Deployment
@@ -1000,7 +1000,7 @@ func TestInsightCollector_getDailyInsightData(t *testing.T) {
 			a := &InsightCollector{
 				logger: zap.NewNop(),
 			}
-			got, err := a.getDailyInsightData(tt.args.deployments, tt.args.kind, tt.args.rangeFrom, tt.args.rangeTo)
+			got, err := a.extractDailyInsightDataPoints(tt.args.deployments, tt.args.kind, tt.args.rangeFrom, tt.args.rangeTo)
 			if (err != nil) != tt.wantErr {
 				if !tt.wantErr {
 					assert.NoError(t, err)
