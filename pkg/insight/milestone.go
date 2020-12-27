@@ -26,7 +26,7 @@ type Milestone struct {
 	DeploymentCompletedAtMilestone int64 `json:"deployment_completed_at_milestone"`
 }
 
-func (i *Milestone) updateMilestone(m int64, kind model.InsightMetricsKind) {
+func (i *Milestone) UpdateMilestone(m int64, kind model.InsightMetricsKind) {
 	switch kind {
 	case model.InsightMetricsKind_CHANGE_FAILURE_RATE:
 		i.DeploymentCompletedAtMilestone = m

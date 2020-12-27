@@ -102,18 +102,32 @@ func (s *ops) run(ctx context.Context, t cli.Telemetry) error {
 		collector := insightcollector.NewInsightCollector(ds, fs, t.Logger)
 		c := cron.New(cron.WithLocation(time.UTC))
 		_, err := c.AddFunc(cfg.InsightCollector.Schedule, func() {
-			start := time.Now()
-			if err := collector.CollectProjectsInsight(ctx); err != nil {
-				t.Logger.Error("failed to run the project insight collector", zap.Error(err))
-			} else {
-				t.Logger.Info("project insight collector successfully finished", zap.Duration("duration", time.Since(start)))
-			}
+			insightCollectorRetryTime := 3
+			retryAggregateWithCompletedAt := true
+			retryAggregateWithCreatedAt := true
+			for i := 0; i < insightCollectorRetryTime; i++ {
+				start := time.Now()
+				var err error
+				if retryAggregateWithCompletedAt {
+					err = collector.AggregateWithCompletedAt(ctx)
+				}
+				if err != nil {
+					t.Logger.Error("failed to aggregate with completedAt", zap.Error(err))
+				} else {
+					t.Logger.Info("aggregate with completedAt successfully finished", zap.Duration("duration", time.Since(start)))
+					retryAggregateWithCompletedAt = false
+				}
 
-			start = time.Now()
-			if err := collector.CollectApplicationInsight(ctx); err != nil {
-				t.Logger.Error("failed to run the application insight collector", zap.Error(err))
-			} else {
-				t.Logger.Info("application insight collector successfully finished", zap.Duration("duration", time.Since(start)))
+				start = time.Now()
+				if retryAggregateWithCreatedAt {
+					err = collector.AggregateWithCreatedAt(ctx)
+				}
+				if err != nil {
+					t.Logger.Error("failed to aggregate with createdAt", zap.Error(err))
+				} else {
+					t.Logger.Info("aggregate with createdAt successfully finished", zap.Duration("duration", time.Since(start)))
+					retryAggregateWithCreatedAt = false
+				}
 			}
 		})
 		if err != nil {
