@@ -77,20 +77,23 @@ func (i *InsightCollector) AggregateWithCreatedAt(ctx context.Context) error {
 	}
 
 	dc, err := i.getDeploymentsWithCreatedAt(ctx, m.DeploymentCreatedAtMilestone, targetDate.Unix())
+	if err != nil {
+		return err
+	}
 	appMap, projectMap := i.groupingDeployments(dc)
 
 	var returnErr error
-	for appId, ds := range appMap {
+	for appID, ds := range appMap {
 		for _, k := range metricsAggregateWithCreatedAt {
-			if err := i.updateApplicationChunks(ctx, ds[0].ProjectId, appId, ds, k, targetDate); err != nil {
+			if err := i.updateApplicationChunks(ctx, ds[0].ProjectId, appID, ds, k, targetDate); err != nil {
 				i.logger.Error("failed to update application chunks", zap.Error(err))
 				returnErr = err
 			}
 		}
 	}
-	for proId, ds := range projectMap {
+	for proID, ds := range projectMap {
 		for _, k := range metricsAggregateWithCreatedAt {
-			if err := i.updateApplicationChunks(ctx, proId, ds[0].ApplicationId, ds, k, targetDate); err != nil {
+			if err := i.updateApplicationChunks(ctx, proID, ds[0].ApplicationId, ds, k, targetDate); err != nil {
 				i.logger.Error("failed to update application chunks", zap.Error(err))
 				returnErr = err
 			}
@@ -118,20 +121,23 @@ func (i *InsightCollector) AggregateWithCompletedAt(ctx context.Context) error {
 	}
 
 	dc, err := i.getDeploymentsWithCompletedAt(ctx, m.DeploymentCompletedAtMilestone, targetDate.Unix())
+	if err != nil {
+		return err
+	}
 	appMap, projectMap := i.groupingDeployments(dc)
 
 	var returnErr error
-	for appId, ds := range appMap {
+	for appID, ds := range appMap {
 		for _, k := range metricsAggregateWithCompletedAt {
-			if err := i.updateApplicationChunks(ctx, ds[0].ProjectId, appId, ds, k, targetDate); err != nil {
+			if err := i.updateApplicationChunks(ctx, ds[0].ProjectId, appID, ds, k, targetDate); err != nil {
 				i.logger.Error("failed to update application chunks", zap.Error(err))
 				returnErr = err
 			}
 		}
 	}
-	for proId, ds := range projectMap {
+	for proID, ds := range projectMap {
 		for _, k := range metricsAggregateWithCompletedAt {
-			if err := i.updateApplicationChunks(ctx, proId, ds[0].ApplicationId, ds, k, targetDate); err != nil {
+			if err := i.updateApplicationChunks(ctx, proID, ds[0].ApplicationId, ds, k, targetDate); err != nil {
 				i.logger.Error("failed to update project chunks", zap.Error(err))
 				returnErr = err
 			}
