@@ -158,34 +158,29 @@ func (i *InsightCollector) updateApplicationChunks(
 	projectID, appID string,
 	deployment []*model.Deployment,
 	kind model.InsightMetricsKind,
-	to time.Time,
+	targetDate time.Time,
 ) error {
-	chunkFiles, err := i.insightstore.LoadChunks(ctx, projectID, appID, kind, model.InsightStep_MONTHLY, to, 1)
+	chunkFiles, err := i.insightstore.LoadChunks(ctx, projectID, appID, kind, model.InsightStep_MONTHLY, targetDate, 1)
 	var chunk insight.Chunk
 	if err == filestore.ErrNotFound {
-		chunk = insight.NewChunk(projectID, kind, model.InsightStep_MONTHLY, appID, to)
+		chunk = insight.NewChunk(projectID, kind, model.InsightStep_MONTHLY, appID, targetDate)
 	} else if err != nil {
 		return err
 	} else {
 		chunk = chunkFiles[0]
 	}
 
-	if chunk.GetAccumulatedTo() == to.Unix() {
-		// chunk already updated
-		return nil
-	}
-
-	yearsFiles, err := i.insightstore.LoadChunks(ctx, projectID, appID, kind, model.InsightStep_YEARLY, to, 1)
+	yearsFiles, err := i.insightstore.LoadChunks(ctx, projectID, appID, kind, model.InsightStep_YEARLY, targetDate, 1)
 	var years insight.Chunk
 	if err == filestore.ErrNotFound {
-		years = insight.NewChunk(projectID, kind, model.InsightStep_YEARLY, appID, to)
+		years = insight.NewChunk(projectID, kind, model.InsightStep_YEARLY, appID, targetDate)
 	} else if err != nil {
 		return err
 	} else {
 		years = yearsFiles[0]
 	}
 
-	chunk, years, err = i.updateChunk(deployment, chunk, years, kind, to)
+	chunk, years, err = i.updateChunk(deployment, chunk, years, kind, targetDate)
 	if err != nil {
 		return err
 	}
@@ -207,32 +202,39 @@ func (i *InsightCollector) updateChunk(
 	deployment []*model.Deployment,
 	chunk, years insight.Chunk,
 	kind model.InsightMetricsKind,
-	to time.Time,
+	targetDate time.Time,
 ) (insight.Chunk, insight.Chunk, error) {
 	accumulatedTo := time.Unix(chunk.GetAccumulatedTo(), 0).UTC()
 	yearsAccumulatedTo := time.Unix(years.GetAccumulatedTo(), 0).UTC()
 
-	updatedps, err := i.getDailyInsightData(deployment, kind, accumulatedTo, to)
-	if err != nil {
-		return nil, nil, err
-	}
-
-	updatedpsForYears, err := i.getDailyInsightData(deployment, kind, yearsAccumulatedTo, to)
-	if err != nil {
-		return nil, nil, err
-	}
-
-	for _, s := range model.InsightStep_value {
-		step := model.InsightStep(s)
-		if step == model.InsightStep_YEARLY {
-			chunk, err = i.updateDataPoints(years, step, updatedpsForYears, to.Unix())
-		} else {
-			chunk, err = i.updateDataPoints(chunk, step, updatedps, to.Unix())
+	if accumulatedTo != targetDate {
+		updatedps, err := i.getDailyInsightData(deployment, kind, accumulatedTo, targetDate)
+		if err != nil {
+			return nil, nil, err
 		}
+		for _, s := range model.InsightStep_value {
+			step := model.InsightStep(s)
+			if step != model.InsightStep_YEARLY {
+				chunk, err = i.updateDataPoints(years, step, updatedps, targetDate.Unix())
+				if err != nil {
+					return nil, nil, err
+				}
+			}
+		}
+	}
+
+	if yearsAccumulatedTo != targetDate {
+		updatedpsForYears, err := i.getDailyInsightData(deployment, kind, yearsAccumulatedTo, targetDate)
+		if err != nil {
+			return nil, nil, err
+		}
+
+		chunk, err = i.updateDataPoints(chunk, model.InsightStep_YEARLY, updatedpsForYears, targetDate.Unix())
 		if err != nil {
 			return nil, nil, err
 		}
 	}
+
 	return chunk, years, nil
 }
 
