@@ -137,7 +137,7 @@ func (i *InsightCollector) AggregateWithCompletedAt(ctx context.Context) error {
 	}
 	for proID, ds := range projectMap {
 		for _, k := range metricsAggregateWithCompletedAt {
-			if err := i.updateApplicationChunks(ctx, proID, ds[0].ApplicationId, ds, k, targetDate); err != nil {
+			if err := i.updateApplicationChunks(ctx, proID, "", ds, k, targetDate); err != nil {
 				i.logger.Error("failed to update project chunks", zap.Error(err))
 				returnErr = err
 			}
