@@ -35,3 +35,5 @@ spec:
 
   insightCollector:
     schedule: "0 0 * * *"
+    retryTime: 3
+    retryIntervalHour: 3

@@ -186,7 +186,9 @@ type ControlPlaneCache struct {
 }
 
 type ControlPlaneInsightCollector struct {
-	Schedule string `json:"schedule"`
+	Schedule          string `json:"schedule"`
+	RetryTime         int    `json:"retryTime"`
+	RetryIntervalHour int    `json:"retryIntervalHour"`
 }
 
 func (c ControlPlaneCache) TTLDuration() time.Duration {

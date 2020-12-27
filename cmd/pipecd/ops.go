@@ -102,10 +102,9 @@ func (s *ops) run(ctx context.Context, t cli.Telemetry) error {
 		collector := insightcollector.NewInsightCollector(ds, fs, t.Logger)
 		c := cron.New(cron.WithLocation(time.UTC))
 		_, err := c.AddFunc(cfg.InsightCollector.Schedule, func() {
-			insightCollectorRetryTime := 3
 			retryAggregateWithCompletedAt := true
 			retryAggregateWithCreatedAt := true
-			for i := 0; i < insightCollectorRetryTime; i++ {
+			for i := 0; i < cfg.InsightCollector.RetryTime; i++ {
 				start := time.Now()
 				var err error
 				if retryAggregateWithCompletedAt {
@@ -128,6 +127,8 @@ func (s *ops) run(ctx context.Context, t cli.Telemetry) error {
 					t.Logger.Info("aggregate with createdAt successfully finished", zap.Duration("duration", time.Since(start)))
 					retryAggregateWithCreatedAt = false
 				}
+
+				time.Sleep(time.Duration(cfg.InsightCollector.RetryIntervalHour) * time.Hour)
 			}
 		})
 		if err != nil {
