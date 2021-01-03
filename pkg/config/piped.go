@@ -310,7 +310,10 @@ type CloudProviderCloudRunConfig struct {
 }
 
 type CloudProviderLambdaConfig struct {
+	// The region of running Lambda service.
 	Region string `json:"region"`
+	// The path to the service account file for accessing Lambda service.
+	CredentialsFile string `json:"credentialsFile"`
 }
 
 type PipedAnalysisProvider struct {
