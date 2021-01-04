@@ -108,7 +108,7 @@ func (s *ops) run(ctx context.Context, t cli.Telemetry) error {
 				start := time.Now()
 				var err error
 				if retryAggregateWithCompletedAt {
-					err = collector.AggregateWithCompletedAt(ctx)
+					err = collector.processNewlyCompletedDeployments(ctx)
 				}
 				if err != nil {
 					t.Logger.Error("failed to aggregate with completedAt", zap.Error(err))
@@ -119,7 +119,7 @@ func (s *ops) run(ctx context.Context, t cli.Telemetry) error {
 
 				start = time.Now()
 				if retryAggregateWithCreatedAt {
-					err = collector.AggregateWithCreatedAt(ctx)
+					err = collector.processNewlyCreatedDeployments(ctx)
 				}
 				if err != nil {
 					t.Logger.Error("failed to aggregate with createdAt", zap.Error(err))

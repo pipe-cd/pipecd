@@ -65,9 +65,9 @@ var (
 	pageSize = 50
 )
 
-func (i *InsightCollector) AggregateWithCreatedAt(ctx context.Context) error {
-	currentTime := time.Now()
-	targetDate := time.Date(currentTime.Year(), currentTime.Month(), currentTime.Day(), 0, 0, 0, 0, time.UTC)
+func (i *InsightCollector) processNewlyCreatedDeployments(ctx context.Context) error {
+	now := time.Now()
+	targetDate := time.Date(now.Year(), now.Month(), now.Day(), 0, 0, 0, 0, time.UTC)
 	m, err := i.insightstore.LoadMilestone(ctx)
 	if err != nil {
 		if err == filestore.ErrNotFound {
@@ -80,38 +80,38 @@ func (i *InsightCollector) AggregateWithCreatedAt(ctx context.Context) error {
 	if err != nil {
 		return err
 	}
-	appMap, projectMap := i.groupingDeployments(dc)
+	apps, projects := i.groupingDeployments(dc)
 
-	var returnErr error
-	for appID, ds := range appMap {
+	var updateErr error
+	for id, ds := range apps {
 		for _, k := range metricsAggregateWithCreatedAt {
-			if err := i.updateApplicationChunks(ctx, ds[0].ProjectId, appID, ds, k, targetDate); err != nil {
+			if err := i.updateApplicationChunks(ctx, ds[0].ProjectId, id, ds, k, targetDate); err != nil {
 				i.logger.Error("failed to update application chunks", zap.Error(err))
-				returnErr = err
+				updateErr = err
 			}
 		}
 	}
-	for proID, ds := range projectMap {
+	for id, ds := range projects {
 		for _, k := range metricsAggregateWithCreatedAt {
-			if err := i.updateApplicationChunks(ctx, proID, ds[0].ApplicationId, ds, k, targetDate); err != nil {
+			if err := i.updateApplicationChunks(ctx, id, ds[0].ApplicationId, ds, k, targetDate); err != nil {
 				i.logger.Error("failed to update application chunks", zap.Error(err))
-				returnErr = err
+				updateErr = err
 			}
 		}
 	}
-	if returnErr == nil {
+	if updateErr == nil {
 		m.DeploymentCreatedAtMilestone = targetDate.Unix()
 	}
 	if err := i.insightstore.PutMilestone(ctx, m); err != nil {
 		return err
 	}
 
-	return returnErr
+	return updateErr
 }
 
-func (i *InsightCollector) AggregateWithCompletedAt(ctx context.Context) error {
-	currentTime := time.Now()
-	targetDate := time.Date(currentTime.Year(), currentTime.Month(), currentTime.Day(), 0, 0, 0, 0, time.UTC)
+func (i *InsightCollector) processNewlyCompletedDeployments(ctx context.Context) error {
+	now := time.Now()
+	targetDate := time.Date(now.Year(), now.Month(), now.Day(), 0, 0, 0, 0, time.UTC)
 	m, err := i.insightstore.LoadMilestone(ctx)
 	if err != nil {
 		if err == filestore.ErrNotFound {
@@ -124,33 +124,33 @@ func (i *InsightCollector) AggregateWithCompletedAt(ctx context.Context) error {
 	if err != nil {
 		return err
 	}
-	appMap, projectMap := i.groupingDeployments(dc)
+	apps, projects := i.groupingDeployments(dc)
 
-	var returnErr error
-	for appID, ds := range appMap {
+	var updateErr error
+	for id, ds := range apps {
 		for _, k := range metricsAggregateWithCompletedAt {
-			if err := i.updateApplicationChunks(ctx, ds[0].ProjectId, appID, ds, k, targetDate); err != nil {
+			if err := i.updateApplicationChunks(ctx, ds[0].ProjectId, id, ds, k, targetDate); err != nil {
 				i.logger.Error("failed to update application chunks", zap.Error(err))
-				returnErr = err
+				updateErr = err
 			}
 		}
 	}
-	for proID, ds := range projectMap {
+	for id, ds := range projects {
 		for _, k := range metricsAggregateWithCompletedAt {
-			if err := i.updateApplicationChunks(ctx, proID, "", ds, k, targetDate); err != nil {
+			if err := i.updateApplicationChunks(ctx, id, "", ds, k, targetDate); err != nil {
 				i.logger.Error("failed to update project chunks", zap.Error(err))
-				returnErr = err
+				updateErr = err
 			}
 		}
 	}
-	if returnErr == nil {
+	if updateErr == nil {
 		m.DeploymentCompletedAtMilestone = targetDate.Unix()
 	}
 	if err := i.insightstore.PutMilestone(ctx, m); err != nil {
 		return err
 	}
 
-	return returnErr
+	return updateErr
 }
 
 // updateApplicationChunks updates chunk in filestore
