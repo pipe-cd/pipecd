@@ -65,7 +65,7 @@ var (
 	pageSize = 50
 )
 
-func (i *InsightCollector) processNewlyCreatedDeployments(ctx context.Context) error {
+func (i *InsightCollector) ProcessNewlyCreatedDeployments(ctx context.Context) error {
 	now := time.Now()
 	targetDate := time.Date(now.Year(), now.Month(), now.Day(), 0, 0, 0, 0, time.UTC)
 	m, err := i.insightstore.LoadMilestone(ctx)
@@ -109,7 +109,7 @@ func (i *InsightCollector) processNewlyCreatedDeployments(ctx context.Context) e
 	return updateErr
 }
 
-func (i *InsightCollector) processNewlyCompletedDeployments(ctx context.Context) error {
+func (i *InsightCollector) ProcessNewlyCompletedDeployments(ctx context.Context) error {
 	now := time.Now()
 	targetDate := time.Date(now.Year(), now.Month(), now.Day(), 0, 0, 0, 0, time.UTC)
 	m, err := i.insightstore.LoadMilestone(ctx)
