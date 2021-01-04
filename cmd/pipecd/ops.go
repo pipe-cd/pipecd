@@ -27,6 +27,7 @@ import (
 	"github.com/pipe-cd/pipe/pkg/admin"
 	"github.com/pipe-cd/pipe/pkg/app/ops/handler"
 	"github.com/pipe-cd/pipe/pkg/app/ops/insightcollector"
+	"github.com/pipe-cd/pipe/pkg/backoff"
 	"github.com/pipe-cd/pipe/pkg/cli"
 	"github.com/pipe-cd/pipe/pkg/datastore"
 	"github.com/pipe-cd/pipe/pkg/version"
@@ -102,33 +103,28 @@ func (s *ops) run(ctx context.Context, t cli.Telemetry) error {
 		collector := insightcollector.NewInsightCollector(ds, fs, t.Logger)
 		c := cron.New(cron.WithLocation(time.UTC))
 		_, err := c.AddFunc(cfg.InsightCollector.Schedule, func() {
-			retryAggregateWithCompletedAt := true
-			retryAggregateWithCreatedAt := true
-			for i := 0; i < cfg.InsightCollector.RetryTime; i++ {
+			retry := backoff.NewRetry(cfg.InsightCollector.RetryTime, backoff.NewConstant(time.Duration(cfg.InsightCollector.RetryIntervalHour)*time.Hour))
+			for retry.WaitNext(ctx) {
+				var failed bool
 				start := time.Now()
-				var err error
-				if retryAggregateWithCompletedAt {
-					err = collector.ProcessNewlyCompletedDeployments(ctx)
-				}
-				if err != nil {
-					t.Logger.Error("failed to aggregate with completedAt", zap.Error(err))
+				if err = collector.ProcessNewlyCompletedDeployments(ctx); err != nil {
+					t.Logger.Error("failed to process the insight collector with completedAt", zap.Error(err))
+					failed = true
 				} else {
-					t.Logger.Info("aggregate with completedAt successfully finished", zap.Duration("duration", time.Since(start)))
-					retryAggregateWithCompletedAt = false
+					t.Logger.Info("processing the insight collector with completedAt successfully finished", zap.Duration("duration", time.Since(start)))
 				}
 
 				start = time.Now()
-				if retryAggregateWithCreatedAt {
-					err = collector.ProcessNewlyCreatedDeployments(ctx)
-				}
-				if err != nil {
-					t.Logger.Error("failed to aggregate with createdAt", zap.Error(err))
+				if err = collector.ProcessNewlyCreatedDeployments(ctx); err != nil {
+					t.Logger.Error("failed to process the insight collector with createdAt", zap.Error(err))
+					failed = true
 				} else {
-					t.Logger.Info("aggregate with createdAt successfully finished", zap.Duration("duration", time.Since(start)))
-					retryAggregateWithCreatedAt = false
+					t.Logger.Info("processing the insight collector with createdAt successfully finished", zap.Duration("duration", time.Since(start)))
 				}
 
-				time.Sleep(time.Duration(cfg.InsightCollector.RetryIntervalHour) * time.Hour)
+				if !failed {
+					return
+				}
 			}
 		})
 		if err != nil {
