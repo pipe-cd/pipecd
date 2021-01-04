@@ -428,8 +428,8 @@ func (p *PipedImageProvider) UnmarshalJSON(data []byte) error {
 }
 
 type ImageProviderGCRConfig struct {
-	Address         string `json:"address"`
-	CredentialsFile string `json:"credentialsFile"`
+	// Path to the json file of service account with the required "roles/storage.objectViewer" role.
+	ServiceAccountFile string `json:"serviceAccountFile"`
 }
 
 type ImageProviderDockerHubConfig struct {

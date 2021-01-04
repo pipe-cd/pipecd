@@ -10,7 +10,6 @@ go_library(
         "//pkg/app/piped/imageprovider/gcr:go_default_library",
         "//pkg/config:go_default_library",
         "//pkg/model:go_default_library",
-        "@com_github_docker_distribution//registry/client/auth/challenge:go_default_library",
         "@org_uber_go_zap//:go_default_library",
     ],
 )
