@@ -101,9 +101,9 @@ func (i *InsightCollector) processNewlyCreatedDeployments(ctx context.Context) e
 	}
 	if updateErr == nil {
 		m.DeploymentCreatedAtMilestone = targetDate.Unix()
-	}
-	if err := i.insightstore.PutMilestone(ctx, m); err != nil {
-		return err
+		if err := i.insightstore.PutMilestone(ctx, m); err != nil {
+			return err
+		}
 	}
 
 	return updateErr
@@ -145,9 +145,9 @@ func (i *InsightCollector) processNewlyCompletedDeployments(ctx context.Context)
 	}
 	if updateErr == nil {
 		m.DeploymentCompletedAtMilestone = targetDate.Unix()
-	}
-	if err := i.insightstore.PutMilestone(ctx, m); err != nil {
-		return err
+		if err := i.insightstore.PutMilestone(ctx, m); err != nil {
+			return err
+		}
 	}
 
 	return updateErr
