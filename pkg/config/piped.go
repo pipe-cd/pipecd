@@ -310,7 +310,26 @@ type CloudProviderCloudRunConfig struct {
 }
 
 type CloudProviderLambdaConfig struct {
+	// The region to send requests to. This parameter is required.
+	// e.g. "us-west-2"
+	// A full list of regions is: https://docs.aws.amazon.com/general/latest/gr/rande.html
 	Region string `json:"region"`
+	// The AWS account ID associated with the registry that contains the repository
+	// in which to list images. The "default" registry is assumed by default.
+	RegistryID string `json:"registryId"`
+	// Path to the shared credentials file.
+	//
+	// Piped attempts to retrieve credentials in the following order:
+	// 1. from the environment variables. Available environment variables are:
+	//   - AWS_ACCESS_KEY_ID or AWS_ACCESS_KEY
+	//   - AWS_SECRET_ACCESS_KEY or AWS_SECRET_KEY
+	// 2. from the given credentials file.
+	// 3. from the EC2 Instance Role
+	CredentialsFile string `json:"credentialsFile"`
+	// AWS Profile to extract credentials from the shared credentials file.
+	// If empty, the environment variable "AWS_PROFILE" is used.
+	// "default" is populated if the environment variable is also not set.
+	Profile string `json:"profile"`
 }
 
 type PipedAnalysisProvider struct {

@@ -13,3 +13,72 @@
 // limitations under the License.
 
 package lambda
+
+import (
+	"context"
+	"path/filepath"
+	"sync"
+
+	"go.uber.org/zap"
+	"golang.org/x/sync/singleflight"
+
+	"github.com/pipe-cd/pipe/pkg/config"
+)
+
+const (
+	DefaultFunctionManifestFilename = "function.yaml"
+)
+
+type Client interface {
+	Apply(ctx context.Context, fm FunctionManifest) error
+}
+
+type Registry interface {
+	Client(ctx context.Context, name string, cfg *config.CloudProviderLambdaConfig, logger *zap.Logger) (Client, error)
+}
+
+func LoadFunctionManifest(appDir, functionManifestFilename string) (FunctionManifest, error) {
+	if functionManifestFilename == "" {
+		functionManifestFilename = DefaultFunctionManifestFilename
+	}
+	path := filepath.Join(appDir, functionManifestFilename)
+	return loadFunctionManifest(path)
+}
+
+type registry struct {
+	clients  map[string]Client
+	mu       sync.RWMutex
+	newGroup *singleflight.Group
+}
+
+func (r *registry) Client(ctx context.Context, name string, cfg *config.CloudProviderLambdaConfig, logger *zap.Logger) (Client, error) {
+	r.mu.RLock()
+	client, ok := r.clients[name]
+	r.mu.RUnlock()
+	if ok {
+		return client, nil
+	}
+
+	c, err, _ := r.newGroup.Do(name, func() (interface{}, error) {
+		return newClient(ctx, cfg.Region, cfg.Profile, cfg.CredentialsFile, logger)
+	})
+	if err != nil {
+		return nil, err
+	}
+
+	client = c.(Client)
+	r.mu.Lock()
+	r.clients[name] = client
+	r.mu.Unlock()
+
+	return client, nil
+}
+
+var defaultRegistry = &registry{
+	clients:  make(map[string]Client),
+	newGroup: &singleflight.Group{},
+}
+
+func DefaultRegistry() Registry {
+	return defaultRegistry
+}
