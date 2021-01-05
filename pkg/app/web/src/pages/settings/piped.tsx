@@ -1,7 +1,4 @@
 import {
-  Accordion,
-  AccordionDetails,
-  AccordionSummary,
   Box,
   Button,
   Dialog,
@@ -9,25 +6,32 @@ import {
   DialogTitle,
   Divider,
   IconButton,
-  List,
-  ListItem,
-  ListItemSecondaryAction,
-  ListItemText,
   makeStyles,
   Menu,
   MenuItem,
+  Paper,
+  Table,
+  TableBody,
+  TableCell,
+  TableContainer,
+  TableHead,
+  TableRow,
   TextField,
   Toolbar,
   Typography,
 } from "@material-ui/core";
-import { Add as AddIcon, MoreVert as MoreVertIcon } from "@material-ui/icons";
-import ExpandMoreIcon from "@material-ui/icons/ExpandMore";
-import clsx from "clsx";
+import {
+  Add as AddIcon,
+  Close as CloseIcon,
+  MoreVert as MoreVertIcon,
+  FilterList as FilterIcon,
+} from "@material-ui/icons";
 import dayjs from "dayjs";
 import React, { FC, memo, useCallback, useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import { AddPipedDrawer } from "../../components/add-piped-drawer";
 import { EditPipedDrawer } from "../../components/edit-piped-drawer";
+import { PipedFilter, FilterValues } from "../../components/piped-filter";
 import { AppState } from "../../modules";
 import {
   clearRegisteredPipedInfo,
@@ -61,38 +65,42 @@ const useStyles = makeStyles((theme) => ({
   disabledItem: {
     opacity: 0.6,
   },
+  toolbarSpacer: {
+    flexGrow: 1,
+  },
 }));
 
 const ITEM_HEIGHT = 48;
 
-const usePipeds = (): [Piped[], Piped[]] => {
+const usePipeds = (filterValues: FilterValues): Piped[] => {
   const pipeds = useSelector<AppState, Piped[]>((state) =>
     selectAll(state.pipeds)
   );
 
-  const disabled: Piped[] = [];
-  const enabled: Piped[] = [];
+  if (filterValues.enabled) {
+    return pipeds.filter((piped) => piped.disabled === false);
+  }
 
-  pipeds.forEach((piped) => {
-    if (piped.disabled) {
-      disabled.push(piped);
-    } else {
-      enabled.push(piped);
-    }
-  });
+  if (filterValues.enabled === false) {
+    return pipeds.filter((piped) => piped.disabled);
+  }
 
-  return [enabled, disabled];
+  return pipeds;
 };
 
 export const SettingsPipedPage: FC = memo(function SettingsPipedPage() {
   const classes = useStyles();
+  const [openFilter, setOpenFilter] = useState(false);
   const [isOpenForm, setIsOpenForm] = useState(false);
   const [actionTarget, setActionTarget] = useState<Piped | null>(null);
   const [editPipedId, setEditPipedId] = useState<string | null>(null);
+  const [filterValues, setFilterValues] = useState<FilterValues>({
+    enabled: true,
+  });
   const [anchorEl, setAnchorEl] = useState<HTMLButtonElement | null>(null);
   const isOpenMenu = Boolean(anchorEl);
   const dispatch = useDispatch<AppDispatch>();
-  const [enabledPipeds, disabledPipeds] = usePipeds();
+  const pipeds = usePipeds(filterValues);
 
   const registeredPiped = useSelector<AppState, RegisteredPiped | null>(
     (state) => state.pipeds.registeredPiped
@@ -163,61 +171,49 @@ export const SettingsPipedPage: FC = memo(function SettingsPipedPage() {
         >
           ADD
         </Button>
+        <div className={classes.toolbarSpacer} />
+        <Button
+          color="primary"
+          startIcon={openFilter ? <CloseIcon /> : <FilterIcon />}
+          onClick={() => setOpenFilter(!openFilter)}
+        >
+          {openFilter ? "HIDE FILTER" : "FILTER"}
+        </Button>
       </Toolbar>
       <Divider />
 
-      <Box height="100%" overflow="auto">
-        <List disablePadding className={classes.pipedsList}>
-          {enabledPipeds.map((piped) => (
-            <ListItem
-              key={`pipe-${piped.id}`}
-              divider
-              dense
-              className={classes.item}
-            >
-              <ListItemText
-                primary={`${piped.name}: ${piped.version}`}
-                secondary={`${piped.desc}: ${piped.id}`}
-              />
-              <Box>{dayjs(piped.startedAt * 1000).fromNow()}</Box>
-              <ListItemSecondaryAction>
-                <IconButton
-                  edge="end"
-                  aria-label="open menu"
-                  onClick={(e) => handleMenuOpen(e, piped)}
-                >
-                  <MoreVertIcon />
-                </IconButton>
-              </ListItemSecondaryAction>
-            </ListItem>
-          ))}
-        </List>
-
-        <Accordion>
-          <AccordionSummary
-            expandIcon={<ExpandMoreIcon />}
-            className={classes.disabledItemsSummary}
-          >
-            <Typography>Disabled pipeds</Typography>
-            <Typography
-              className={classes.disabledItemsSecondaryHeader}
-            >{`Items: ${disabledPipeds.length}`}</Typography>
-          </AccordionSummary>
-          <AccordionDetails className={classes.disabledPipedsAccordion}>
-            <List disablePadding className={classes.pipedsList}>
-              {disabledPipeds.map((piped) => (
-                <ListItem
-                  key={`pipe-${piped.id}`}
-                  divider
-                  dense
-                  className={clsx(classes.item, classes.disabledItem)}
-                >
-                  <ListItemText
-                    primary={`${piped.name}: ${piped.version}`}
-                    secondary={`${piped.desc}: ${piped.id}`}
-                  />
-                  {dayjs(piped.startedAt * 1000).fromNow()}
-                  <ListItemSecondaryAction>
+      <Box display="flex" height="100%">
+        <TableContainer component={Paper} square>
+          <Table aria-label="piped list" size="small" stickyHeader>
+            <TableHead>
+              <TableRow>
+                <TableCell>Name</TableCell>
+                <TableCell>Version</TableCell>
+                <TableCell>Description</TableCell>
+                <TableCell>Started At</TableCell>
+                <TableCell align="right" />
+              </TableRow>
+            </TableHead>
+            <TableBody>
+              {pipeds.map((piped) => (
+                <TableRow key={`pipe-${piped.id}`}>
+                  <TableCell>
+                    <Typography variant="subtitle2">
+                      {`${piped.name} (${piped.id.slice(0, 8)})`}
+                    </Typography>
+                  </TableCell>
+                  <TableCell>{piped.version}</TableCell>
+                  <TableCell>
+                    <Typography variant="body2" color="textSecondary">
+                      {piped.desc}
+                    </Typography>
+                  </TableCell>
+                  <TableCell>
+                    {piped.startedAt === 0
+                      ? "Not running"
+                      : dayjs(piped.startedAt * 1000).fromNow()}
+                  </TableCell>
+                  <TableCell align="right">
                     <IconButton
                       edge="end"
                       aria-label="open menu"
@@ -225,12 +221,16 @@ export const SettingsPipedPage: FC = memo(function SettingsPipedPage() {
                     >
                       <MoreVertIcon />
                     </IconButton>
-                  </ListItemSecondaryAction>
-                </ListItem>
+                  </TableCell>
+                </TableRow>
               ))}
-            </List>
-          </AccordionDetails>
-        </Accordion>
+            </TableBody>
+          </Table>
+        </TableContainer>
+
+        {openFilter && (
+          <PipedFilter values={filterValues} onChange={setFilterValues} />
+        )}
       </Box>
 
       <Menu
