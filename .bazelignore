@@ -5,6 +5,5 @@ terraform
 vendor
 .git
 .github
-hack
 template
 pkg/app/web/node_modules

@@ -1,6 +1,6 @@
 module github.com/pipe-cd/pipe
 
-go 1.14
+go 1.15
 
 require (
 	cloud.google.com/go v0.65.0
@@ -12,7 +12,7 @@ require (
 	github.com/docker/distribution v2.7.1+incompatible
 	github.com/docker/go-metrics v0.0.1 // indirect
 	github.com/docker/libtrust v0.0.0-20160708172513-aabc10ec26b7 // indirect
-	github.com/envoyproxy/protoc-gen-validate v0.1.0
+	github.com/envoyproxy/protoc-gen-validate v0.4.1
 	github.com/fsouza/fake-gcs-server v1.21.0
 	github.com/goccy/go-yaml v1.8.4
 	github.com/golang/mock v1.4.4
@@ -21,17 +21,19 @@ require (
 	github.com/google/go-github/v29 v29.0.3
 	github.com/google/uuid v1.1.1
 	github.com/hashicorp/golang-lru v0.5.1
+	github.com/iancoleman/strcase v0.1.2 // indirect
 	github.com/klauspost/compress v1.10.11 // indirect
+	github.com/lyft/protoc-gen-star v0.5.2 // indirect
 	github.com/minio/minio-go/v7 v7.0.5
 	github.com/opencontainers/go-digest v1.0.0 // indirect
 	github.com/opencontainers/image-spec v1.0.1 // indirect
 	github.com/prometheus/client_golang v1.6.0
 	github.com/prometheus/client_model v0.2.0
 	github.com/prometheus/common v0.9.1
-	github.com/robfig/cron/v3 v3.0.1 // indirect
+	github.com/robfig/cron/v3 v3.0.1
 	github.com/spf13/cobra v0.0.5
 	github.com/spf13/pflag v1.0.5
-	github.com/stretchr/testify v1.5.1
+	github.com/stretchr/testify v1.6.1
 	go.mongodb.org/mongo-driver v1.4.0
 	go.uber.org/atomic v1.7.0
 	go.uber.org/multierr v1.2.0 // indirect

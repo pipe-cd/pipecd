@@ -1,7 +1,6 @@
 load("@bazel_gazelle//:def.bzl", "gazelle")
 
 # gazelle:exclude docs
-# gazelle:exclude hack
 # gazelle:exclude dockers
 # gazelle:exclude manifests
 # gazelle:exclude terraform
@@ -9,8 +8,6 @@ load("@bazel_gazelle//:def.bzl", "gazelle")
 # gazelle:exclude vendor
 # gazelle:exclude pkg/app/web/node_modules
 # gazelle:exclude pkg/plugin/golinter/gofmt/testdata
-# gazelle:exclude pkg/app/kapetool/cmd/godifflinter/pkg/linters/unusedparam/testdata
-# gazelle:exclude pkg/app/kapetool/cmd/godifflinter/pkg/linters/ineffassign/testdata
 
 # gazelle:build_file_name BUILD.bazel
 # gazelle:prefix github.com/pipe-cd/pipe

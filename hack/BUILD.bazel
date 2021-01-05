@@ -2,8 +2,8 @@ load("@io_bazel_rules_go//go:def.bzl", "go_library")
 
 go_library(
     name = "go_default_library",
-    srcs = ["tools.go"],
+    srcs = ["tool.go"],
     importpath = "github.com/pipe-cd/pipe/hack",
     visibility = ["//visibility:public"],
-    deps = ["@io_k8s_code_generator//:go_default_library"],
+    deps = ["@com_github_envoyproxy_protoc_gen_validate//module:go_default_library"],
 )
