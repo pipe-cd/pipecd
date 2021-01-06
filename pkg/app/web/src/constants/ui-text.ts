@@ -5,3 +5,6 @@ export const UI_TEXT_EDIT = "Edit";
 export const UI_TEXT_REFRESH = "REFRESH";
 export const UI_TEXT_CLOSE = "Close";
 export const UI_TEXT_DELETE = "Delete";
+export const UI_TEXT_FILTER = "FILTER";
+export const UI_TEXT_FILTERED = "FILTERED";
+export const UI_TEXT_HIDE_FILTER = "HIDE FILTER";

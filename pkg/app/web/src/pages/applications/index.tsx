@@ -21,6 +21,7 @@ import { AppState } from "../../modules";
 import { fetchApplications } from "../../modules/applications";
 import { clearTemplateTarget } from "../../modules/deployment-configs";
 import { AppDispatch } from "../../store";
+import { UI_TEXT_FILTER, UI_TEXT_HIDE_FILTER } from "../../constants/ui-text";
 
 const useStyles = makeStyles((theme) => ({
   main: {
@@ -45,7 +46,7 @@ export const ApplicationIndexPage: FC = memo(function ApplicationIndexPage() {
   const classes = useStyles();
   const dispatch = useDispatch<AppDispatch>();
   const [openAddForm, setOpenAddForm] = useState(false);
-  const [isOpenFilter, setIsOpenFilter] = useState(false);
+  const [openFilter, setOpenFilter] = useState(false);
   const [isLoading, isAdding] = useSelector<AppState, [boolean, boolean]>(
     (state) => [state.applications.loading, state.applications.adding]
   );
@@ -94,10 +95,10 @@ export const ApplicationIndexPage: FC = memo(function ApplicationIndexPage() {
         </Button>
         <Button
           color="primary"
-          startIcon={isOpenFilter ? <CloseIcon /> : <FilterIcon />}
-          onClick={() => setIsOpenFilter(!isOpenFilter)}
+          startIcon={openFilter ? <CloseIcon /> : <FilterIcon />}
+          onClick={() => setOpenFilter(!openFilter)}
         >
-          {isOpenFilter ? "HIDE FILTER" : "FILTER"}
+          {openFilter ? UI_TEXT_HIDE_FILTER : UI_TEXT_FILTER}
         </Button>
       </Toolbar>
 
@@ -105,10 +106,9 @@ export const ApplicationIndexPage: FC = memo(function ApplicationIndexPage() {
 
       <div className={classes.main}>
         <ApplicationList />
-        <ApplicationFilter
-          open={isOpenFilter}
-          onChange={handleChangeFilterOptions}
-        />
+        {openFilter && (
+          <ApplicationFilter onChange={handleChangeFilterOptions} />
+        )}
       </div>
 
       <AddApplicationDrawer

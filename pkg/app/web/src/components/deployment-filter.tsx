@@ -1,13 +1,10 @@
 import {
-  Button,
   FormControl,
   InputLabel,
   makeStyles,
   MenuItem,
-  Paper,
   Select,
   TextField,
-  Typography,
 } from "@material-ui/core";
 import Autocomplete from "@material-ui/lab/Autocomplete";
 import React, { FC, memo, useCallback } from "react";
@@ -29,25 +26,12 @@ import {
 } from "../modules/deployment-filter-options";
 import { DeploymentStatus, DeploymentStatusKey } from "../modules/deployments";
 import { Environment, selectAll } from "../modules/environments";
-
-const FILTER_PAPER_WIDTH = 360;
+import { FilterView } from "./filter-view";
 
 const useStyles = makeStyles((theme) => ({
-  header: {
-    display: "flex",
-    justifyContent: "space-between",
-  },
-  toolbarSpacer: {
-    flexGrow: 1,
-  },
   formItem: {
     width: "100%",
     marginTop: theme.spacing(4),
-  },
-  filterPaper: {
-    width: FILTER_PAPER_WIDTH,
-    padding: theme.spacing(3),
-    height: "100%",
   },
   select: {
     width: "100%",
@@ -57,16 +41,13 @@ const useStyles = makeStyles((theme) => ({
 const ALL_VALUE = "ALL";
 
 interface Props {
-  open: boolean;
   onChange: () => void;
 }
 
 export const DeploymentFilter: FC<Props> = memo(function DeploymentFilter({
-  open,
   onChange,
 }) {
   const classes = useStyles();
-
   const dispatch = useDispatch();
   const envs = useSelector<AppState, Environment[]>((state) =>
     selectAll(state.environments)
@@ -88,25 +69,13 @@ export const DeploymentFilter: FC<Props> = memo(function DeploymentFilter({
     [dispatch, onChange]
   );
 
-  if (open === false) {
-    return null;
-  }
-
   return (
-    <Paper className={classes.filterPaper} square>
-      <div className={classes.header}>
-        <Typography variant="h6">Filters</Typography>
-        <Button
-          color="primary"
-          onClick={() => {
-            dispatch(clearDeploymentFilter());
-            onChange();
-          }}
-        >
-          Clear
-        </Button>
-      </div>
-
+    <FilterView
+      onClear={() => {
+        dispatch(clearDeploymentFilter());
+        onChange();
+      }}
+    >
       <FormControl className={classes.formItem} variant="outlined">
         <InputLabel id="filter-env">Environment</InputLabel>
         <Select
@@ -229,6 +198,6 @@ export const DeploymentFilter: FC<Props> = memo(function DeploymentFilter({
           ))}
         </Select>
       </FormControl>
-    </Paper>
+    </FilterView>
   );
 });
