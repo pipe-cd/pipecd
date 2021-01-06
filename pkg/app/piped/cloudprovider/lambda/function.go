@@ -28,6 +28,17 @@ type FunctionManifest struct {
 	u    *unstructured.Unstructured
 }
 
+func (fm FunctionManifest) GetImageURI() (string, error) {
+	imageURI, ok, err := unstructured.NestedString(fm.u.Object, "spec", "template", "spec", "image")
+	if err != nil {
+		return "", err
+	}
+	if !ok || imageURI == "" {
+		return "", fmt.Errorf("spec.template.spec.image is missing")
+	}
+	return imageURI, nil
+}
+
 func loadFunctionManifest(path string) (FunctionManifest, error) {
 	data, err := ioutil.ReadFile(path)
 	if err != nil {
@@ -62,12 +73,9 @@ func DecideRevisionName(fm FunctionManifest, commit string) (string, error) {
 }
 
 func FindImageTag(fm FunctionManifest) (string, error) {
-	imageURI, ok, err := unstructured.NestedString(fm.u.Object, "spec", "template", "spec", "image")
+	imageURI, err := fm.GetImageURI()
 	if err != nil {
 		return "", err
-	}
-	if !ok || imageURI == "" {
-		return "", fmt.Errorf("spec.template.spec.image is missing")
 	}
 	_, tag := parseContainerImage(imageURI)
 	return tag, nil

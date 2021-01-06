@@ -19,6 +19,7 @@ import (
 	"fmt"
 
 	"github.com/aws/aws-sdk-go/aws"
+	"github.com/aws/aws-sdk-go/aws/awserr"
 	"github.com/aws/aws-sdk-go/aws/credentials"
 	"github.com/aws/aws-sdk-go/aws/credentials/ec2rolecreds"
 	"github.com/aws/aws-sdk-go/aws/ec2metadata"
@@ -65,7 +66,35 @@ func newClient(region, profile, credentialsFile string, logger *zap.Logger) (*cl
 	return c, nil
 }
 
-func (c *client) Apply(ctx context.Context) error {
-	// TODO implement
+func (c *client) Apply(ctx context.Context, fm FunctionManifest, role string) error {
+	imageURI, err := fm.GetImageURI()
+	if err != nil {
+		return err
+	}
+	if role == "" {
+		return fmt.Errorf("role arn is required")
+	}
+	input := &lambda.CreateFunctionInput{
+		Code:         &lambda.FunctionCode{ImageUri: &imageURI},
+		FunctionName: &fm.Name,
+		Role:         &role,
+	}
+	_, err = c.client.CreateFunctionWithContext(ctx, input)
+	if err != nil {
+		if aerr, ok := err.(awserr.Error); ok {
+			switch aerr.Code() {
+			case lambda.ErrCodeInvalidParameterValueException:
+				return fmt.Errorf("invalid parameter given: %w", err)
+			case lambda.ErrCodeServiceException:
+				return fmt.Errorf("aws lambda service encountered an internal error: %w", err)
+			case lambda.ErrCodeCodeStorageExceededException:
+				return fmt.Errorf("total code size per account exceeded: %w", err)
+			case lambda.ErrCodeResourceNotFoundException:
+			case lambda.ErrCodeResourceNotReadyException:
+				return fmt.Errorf("resource error occurred: %w", err)
+			}
+		}
+		return fmt.Errorf("unknown error given: %w", err)
+	}
 	return nil
 }

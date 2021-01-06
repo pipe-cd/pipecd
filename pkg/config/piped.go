@@ -314,9 +314,8 @@ type CloudProviderLambdaConfig struct {
 	// e.g. "us-west-2"
 	// A full list of regions is: https://docs.aws.amazon.com/general/latest/gr/rande.html
 	Region string `json:"region"`
-	// The AWS account ID associated with the registry that contains the repository
-	// in which to list images. The "default" registry is assumed by default.
-	RegistryID string `json:"registryId"`
+	// The Amazon Resource Name (ARN) of the function's execution role.
+	Role string `json:"role"`
 	// Path to the shared credentials file.
 	//
 	// Piped attempts to retrieve credentials in the following order:

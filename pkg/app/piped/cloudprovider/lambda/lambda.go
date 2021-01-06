@@ -30,7 +30,7 @@ const (
 )
 
 type Client interface {
-	Apply(ctx context.Context, fm FunctionManifest) error
+	Apply(ctx context.Context, fm FunctionManifest, role string) error
 }
 
 type Registry interface {
