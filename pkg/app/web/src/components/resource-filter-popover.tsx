@@ -7,6 +7,7 @@ import {
   Popover,
 } from "@material-ui/core";
 import FilterListIcon from "@material-ui/icons/FilterList";
+import { UI_TEXT_FILTER, UI_TEXT_FILTERED } from "../constants/ui-text";
 
 interface Props {
   enables: Record<string, boolean>;
@@ -38,7 +39,7 @@ export const ResourceFilterPopover: FC<Props> = ({ enables, onChange }) => {
           color={isFiltered ? "primary" : "default"}
           onClick={() => setOpen(!open)}
         >
-          {isFiltered ? "FILTERED" : "FILTER"}
+          {isFiltered ? UI_TEXT_FILTERED : UI_TEXT_FILTER}
         </Button>
       </Box>
       <Popover open={open} anchorEl={buttonRef.current} onClose={handleClose}>

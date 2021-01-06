@@ -6,7 +6,7 @@ description: >
   Watching container image changes and automatically deploying the new images.
 ---
 
-Image watcher automatically triggers a new Deployment when a new image tag stored at a container registry is pushed. That is, it frees you from the hassle of manually updating config-repo every time.
+Image watcher automatically triggers a new Deployment when a new image tag is pushed to your container registry.
 
 The canonical deployment flow with PipeCD is:
 
@@ -14,7 +14,8 @@ The canonical deployment flow with PipeCD is:
 1. You update the config-repo manually.
 
 It is the User's responsibility to automate these steps to be done in a series of actions, while it is quite a bit of painful.
-Image watcher lets you automate this workflow by continuously pushing to your config-repo.
+Image watcher lets you automate this workflow by continuously performing `git push` to your config-repo.
+That is, it frees you from the hassle of manually updating config-repo every time.
 
 ## Prerequisites
 Before configuring ImageWatcher, all required Image providers must be configured in the Piped Configuration according to [this guide](/docs/operator-manual/piped/configuring-image-watcher/).
@@ -23,7 +24,6 @@ Before configuring ImageWatcher, all required Image providers must be configured
 
 Prepare ImageWatcher files placed at the `.pipe/` directory at the root of the Git repository.
 In that files, you define what image should be watched and what file should be updated.
-
 
 ```yaml
 apiVersion: pipecd.dev/v1beta1
@@ -36,7 +36,7 @@ spec:
       field: $.spec.template.spec.containers[0].image
 ```
 
-Image watcher periodically compares the latest tag of the following images:
+Image watcher periodically compares the latest tag of the following two images:
 - a given `image` in a given `provider`
 - an image defined at a given `field` in a given `filePath`
 

@@ -86,8 +86,7 @@ spec:
     - name: my-gcr
       type: GCR
       config:
-        address: asia.gcr.io
-        credentialsFile: /etc/piped-secret/gcr-service-account
+        serviceAccountFile: /etc/piped-secret/gcr-service-account.json
     - name: my-ecr
       type: ECR
       config:

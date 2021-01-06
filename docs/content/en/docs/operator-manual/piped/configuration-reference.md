@@ -141,12 +141,18 @@ Must be one of the following structs:
 | Field | Type | Description | Required |
 |-|-|-|-|
 | name | string | The unique name of the analysis provider. | Yes |
-| type | string | The provider type. Currently, only ECR is available. | Yes |
+| type | string | The provider type. Currently, `GCR` and `ECR` are available. | Yes |
 | config | [ImageProviderConfig](/docs/operator-manual/piped/configuration-reference/#imageproviderconfig) | Specific configuration for the specified type of image provider. | Yes |
 
 ## ImageProviderConfig
 
 Must be one of the following structs:
+
+### ImageProviderGCRConfig
+
+| Field | Type | Description | Required |
+|-|-|-|-|
+| serviceAccountFile | string | The path to the json file of service account with the required `roles/storage.objectViewer` role. | No |
 
 ### ImageProviderECRConfig
 
