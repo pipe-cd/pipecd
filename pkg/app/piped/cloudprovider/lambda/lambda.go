@@ -34,7 +34,7 @@ type Client interface {
 }
 
 type Registry interface {
-	Client(ctx context.Context, name string, cfg *config.CloudProviderLambdaConfig, logger *zap.Logger) (Client, error)
+	Client(name string, cfg *config.CloudProviderLambdaConfig, logger *zap.Logger) (Client, error)
 }
 
 func LoadFunctionManifest(appDir, functionManifestFilename string) (FunctionManifest, error) {
@@ -51,7 +51,7 @@ type registry struct {
 	newGroup *singleflight.Group
 }
 
-func (r *registry) Client(ctx context.Context, name string, cfg *config.CloudProviderLambdaConfig, logger *zap.Logger) (Client, error) {
+func (r *registry) Client(name string, cfg *config.CloudProviderLambdaConfig, logger *zap.Logger) (Client, error) {
 	r.mu.RLock()
 	client, ok := r.clients[name]
 	r.mu.RUnlock()
@@ -60,7 +60,7 @@ func (r *registry) Client(ctx context.Context, name string, cfg *config.CloudPro
 	}
 
 	c, err, _ := r.newGroup.Do(name, func() (interface{}, error) {
-		return newClient(ctx, cfg.Region, cfg.Profile, cfg.CredentialsFile, logger)
+		return newClient(cfg.Region, cfg.Profile, cfg.CredentialsFile, logger)
 	})
 	if err != nil {
 		return nil, err
