@@ -34,7 +34,11 @@ import {
 } from "../../modules/deployments";
 import { useInView } from "react-intersection-observer";
 import { LoadingStatus } from "../../types/module";
-import { UI_TEXT_REFRESH } from "../../constants/ui-text";
+import {
+  UI_TEXT_FILTER,
+  UI_TEXT_HIDE_FILTER,
+  UI_TEXT_REFRESH,
+} from "../../constants/ui-text";
 import { useStyles as useButtonStyles } from "../../styles/button";
 
 const useStyles = makeStyles((theme) => ({
@@ -95,7 +99,7 @@ export const DeploymentIndexPage: FC = memo(function DeploymentIndexPage() {
   const dispatch = useDispatch();
   const listRef = useRef(null);
   const [status, hasMore, groupedDeployments] = useGroupedDeployments();
-  const [isOpenFilter, setIsOpenFilter] = useState(false);
+  const [openFilter, setOpenFilter] = useState(false);
   const [ref, inView] = useInView({
     rootMargin: "400px",
     root: listRef.current,
@@ -140,10 +144,10 @@ export const DeploymentIndexPage: FC = memo(function DeploymentIndexPage() {
         </Button>
         <Button
           color="primary"
-          startIcon={isOpenFilter ? <CloseIcon /> : <FilterIcon />}
-          onClick={() => setIsOpenFilter(!isOpenFilter)}
+          startIcon={openFilter ? <CloseIcon /> : <FilterIcon />}
+          onClick={() => setOpenFilter(!openFilter)}
         >
-          {isOpenFilter ? "HIDE FILTER" : "FILTER"}
+          {openFilter ? UI_TEXT_HIDE_FILTER : UI_TEXT_FILTER}
         </Button>
       </Toolbar>
 
@@ -179,7 +183,7 @@ export const DeploymentIndexPage: FC = memo(function DeploymentIndexPage() {
           ))}
           {status === "succeeded" && <div ref={ref} />}
         </ol>
-        <DeploymentFilter open={isOpenFilter} onChange={handleFilterChange} />
+        {openFilter && <DeploymentFilter onChange={handleFilterChange} />}
       </Box>
     </Box>
   );
