@@ -104,25 +104,30 @@ func (s *ops) run(ctx context.Context, t cli.Telemetry) error {
 		c := cron.New(cron.WithLocation(time.UTC))
 		_, err := c.AddFunc(cfg.InsightCollector.Schedule, func() {
 			retry := backoff.NewRetry(cfg.InsightCollector.RetryTime, backoff.NewConstant(time.Duration(cfg.InsightCollector.RetryIntervalHour)*time.Hour))
+			successProcessNewlyCompletedDeployments := false
+			successProcessNewlyCreatedDeployments := false
 			for retry.WaitNext(ctx) {
-				var failed bool
-				start := time.Now()
-				if err = collector.ProcessNewlyCompletedDeployments(ctx); err != nil {
-					t.Logger.Error("failed to process the newly completed deployments while accumulating insight data", zap.Error(err))
-					failed = true
-				} else {
-					t.Logger.Info("successfully processed the newly completed deployments while accumulating insight data", zap.Duration("duration", time.Since(start)))
+				if !successProcessNewlyCompletedDeployments {
+					start := time.Now()
+					if err = collector.ProcessNewlyCompletedDeployments(ctx); err != nil {
+						t.Logger.Error("failed to process the newly completed deployments while accumulating insight data", zap.Error(err))
+					} else {
+						t.Logger.Info("successfully processed the newly completed deployments while accumulating insight data", zap.Duration("duration", time.Since(start)))
+						successProcessNewlyCompletedDeployments = true
+					}
 				}
 
-				start = time.Now()
-				if err = collector.ProcessNewlyCreatedDeployments(ctx); err != nil {
-					t.Logger.Error("failed to process the newly created deployments while accumulating insight data", zap.Error(err))
-					failed = true
-				} else {
-					t.Logger.Info("successfully processed the newly created deployments while accumulating insight data", zap.Duration("duration", time.Since(start)))
+				if !successProcessNewlyCreatedDeployments {
+					start := time.Now()
+					if err = collector.ProcessNewlyCreatedDeployments(ctx); err != nil {
+						t.Logger.Error("failed to process the newly created deployments while accumulating insight data", zap.Error(err))
+					} else {
+						t.Logger.Info("successfully processed the newly created deployments while accumulating insight data", zap.Duration("duration", time.Since(start)))
+						successProcessNewlyCreatedDeployments = true
+					}
 				}
 
-				if !failed {
+				if successProcessNewlyCompletedDeployments && successProcessNewlyCreatedDeployments {
 					return
 				}
 			}
