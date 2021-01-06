@@ -97,9 +97,10 @@ func TestPutImageMetadata(t *testing.T) {
 	for _, tc := range testcases {
 		t.Run(tc.name, func(t *testing.T) {
 			s := NewImageMetadataStore(tc.ds)
-			s.nowFunc = func() time.Time { return now }
+			store := s.(*imageMetadataStore)
+			store.nowFunc = func() time.Time { return now }
 
-			err := s.PutImageMetadata(context.Background(), im)
+			err := store.PutImageMetadata(context.Background(), im)
 			assert.Equal(t, tc.wantErr, err != nil)
 		})
 	}

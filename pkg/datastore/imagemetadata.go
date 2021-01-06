@@ -40,7 +40,7 @@ type imageMetadataStore struct {
 	nowFunc func() time.Time
 }
 
-func NewImageMetadataStore(ds DataStore) *imageMetadataStore {
+func NewImageMetadataStore(ds DataStore) ImageMetadataStore {
 	return &imageMetadataStore{
 		backend: backend{
 			ds: ds,
