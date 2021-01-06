@@ -34,11 +34,12 @@ import (
 
 // API implements the behaviors for the gRPC definitions of API.
 type API struct {
-	applicationStore datastore.ApplicationStore
-	environmentStore datastore.EnvironmentStore
-	deploymentStore  datastore.DeploymentStore
-	pipedStore       datastore.PipedStore
-	commandStore     commandstore.Store
+	applicationStore   datastore.ApplicationStore
+	environmentStore   datastore.EnvironmentStore
+	deploymentStore    datastore.DeploymentStore
+	pipedStore         datastore.PipedStore
+	imageMetadataStore datastore.ImageMetadataStore
+	commandStore       commandstore.Store
 
 	logger *zap.Logger
 }
@@ -50,12 +51,13 @@ func NewAPI(
 	logger *zap.Logger,
 ) *API {
 	a := &API{
-		applicationStore: datastore.NewApplicationStore(ds),
-		environmentStore: datastore.NewEnvironmentStore(ds),
-		deploymentStore:  datastore.NewDeploymentStore(ds),
-		pipedStore:       datastore.NewPipedStore(ds),
-		commandStore:     cmds,
-		logger:           logger.Named("api"),
+		applicationStore:   datastore.NewApplicationStore(ds),
+		environmentStore:   datastore.NewEnvironmentStore(ds),
+		deploymentStore:    datastore.NewDeploymentStore(ds),
+		pipedStore:         datastore.NewPipedStore(ds),
+		imageMetadataStore: datastore.NewImageMetadataStore(ds),
+		commandStore:       cmds,
+		logger:             logger.Named("api"),
 	}
 	return a
 }
@@ -310,6 +312,26 @@ func (a *API) GetCommand(ctx context.Context, req *apiservice.GetCommandRequest)
 	return &apiservice.GetCommandResponse{
 		Command: cmd,
 	}, nil
+}
+
+func (a *API) PushImageMetadata(ctx context.Context, req *apiservice.PushImageMetadataRequest) (*apiservice.PushImageMetadataResponse, error) {
+	key, err := requireAPIKey(ctx, model.APIKey_READ_WRITE, a.logger)
+	if err != nil {
+		return nil, err
+	}
+
+	im := model.ImageMetadata{
+		Id:        model.GenerateImageMetadataID(key.ProjectId, req.RepoName),
+		RepoName:  req.RepoName,
+		Tag:       req.Tag,
+		ProjectId: key.ProjectId,
+	}
+	if err := a.imageMetadataStore.PutImageMetadata(ctx, im); err != nil {
+		a.logger.Error("failed to put image metadata", zap.Error(err))
+		return nil, status.Error(codes.Internal, "Failed to put image metadata")
+	}
+
+	return &apiservice.PushImageMetadataResponse{}, nil
 }
 
 // requireAPIKey checks the existence of an API key inside the given context
