@@ -76,11 +76,11 @@ func (i *InsightCollector) ProcessNewlyCreatedDeployments(ctx context.Context) e
 		return err
 	}
 
-	dc, err := i.getDeploymentsWithCreatedAt(ctx, m.DeploymentCreatedAtMilestone, targetDate.Unix())
+	dc, err := i.findDeploymentsCreatedInRange(ctx, m.DeploymentCreatedAtMilestone, targetDate.Unix())
 	if err != nil {
 		return err
 	}
-	apps, projects := i.groupingDeployments(dc)
+	apps, projects := i.groupDeployments(dc)
 
 	var updateErr error
 	for id, ds := range apps {
@@ -120,11 +120,11 @@ func (i *InsightCollector) ProcessNewlyCompletedDeployments(ctx context.Context)
 		return err
 	}
 
-	dc, err := i.getDeploymentsWithCompletedAt(ctx, m.DeploymentCompletedAtMilestone, targetDate.Unix())
+	dc, err := i.findDeploymentsCompletedInRange(ctx, m.DeploymentCompletedAtMilestone, targetDate.Unix())
 	if err != nil {
 		return err
 	}
-	apps, projects := i.groupingDeployments(dc)
+	apps, projects := i.groupDeployments(dc)
 
 	var updateErr error
 	for id, ds := range apps {
@@ -288,9 +288,9 @@ func (i *InsightCollector) extractDailyInsightDataPoints(
 		var data insight.DataPoint
 		switch kind {
 		case model.InsightMetricsKind_DEPLOYMENT_FREQUENCY:
-			data, deployments = i.extractDeployFrequency(deployments, rangeFrom.Unix(), to.Unix(), targetTimestamp)
+			data, deployments = extractDeployFrequency(deployments, rangeFrom.Unix(), to.Unix(), targetTimestamp)
 		case model.InsightMetricsKind_CHANGE_FAILURE_RATE:
-			data, deployments = i.extractChangeFailureRate(deployments, rangeFrom.Unix(), to.Unix(), targetTimestamp)
+			data, deployments = extractChangeFailureRate(deployments, rangeFrom.Unix(), to.Unix(), targetTimestamp)
 		default:
 			return nil, fmt.Errorf("invalid step: %v", kind)
 		}
@@ -303,7 +303,7 @@ func (i *InsightCollector) extractDailyInsightDataPoints(
 	return updatedps, nil
 }
 
-func (i *InsightCollector) getDeploymentsWithCreatedAt(
+func (i *InsightCollector) findDeploymentsCreatedInRange(
 	ctx context.Context,
 	from, to int64,
 ) ([]*model.Deployment, error) {
@@ -347,7 +347,7 @@ func (i *InsightCollector) getDeploymentsWithCreatedAt(
 	return deployments, nil
 }
 
-func (i *InsightCollector) getDeploymentsWithCompletedAt(
+func (i *InsightCollector) findDeploymentsCompletedInRange(
 	ctx context.Context,
 	from, to int64,
 ) ([]*model.Deployment, error) {
@@ -391,15 +391,15 @@ func (i *InsightCollector) getDeploymentsWithCompletedAt(
 	return deployments, nil
 }
 
-// groupingDeployments groups deoloyments by applicationID and projectID
-func (i *InsightCollector) groupingDeployments(deployments []*model.Deployment) (map[string][]*model.Deployment, map[string][]*model.Deployment) {
-	appmap := map[string][]*model.Deployment{}
-	projectmap := map[string][]*model.Deployment{}
+// groupDeployments groups deployments by applicationID and projectID
+func (i *InsightCollector) groupDeployments(deployments []*model.Deployment) (map[string][]*model.Deployment, map[string][]*model.Deployment) {
+	apps := map[string][]*model.Deployment{}
+	projects := map[string][]*model.Deployment{}
 	for _, d := range deployments {
-		appmap[d.ApplicationId] = append(appmap[d.ApplicationName], d)
-		projectmap[d.ProjectId] = append(projectmap[d.ApplicationName], d)
+		apps[d.ApplicationId] = append(apps[d.ApplicationName], d)
+		projects[d.ProjectId] = append(projects[d.ApplicationName], d)
 	}
-	return appmap, projectmap
+	return apps, projects
 }
 
 var (
@@ -407,7 +407,7 @@ var (
 )
 
 // extractDeployFrequency extracts deploy frequency from deployments with specified range
-func (i *InsightCollector) extractDeployFrequency(deployments []*model.Deployment, from, to int64, targetTimestamp int64) (*insight.DeployFrequency, []*model.Deployment) {
+func extractDeployFrequency(deployments []*model.Deployment, from, to int64, targetTimestamp int64) (*insight.DeployFrequency, []*model.Deployment) {
 	var ds []*model.Deployment
 	var rest []*model.Deployment
 	for _, d := range deployments {
@@ -424,8 +424,8 @@ func (i *InsightCollector) extractDeployFrequency(deployments []*model.Deploymen
 	}, rest
 }
 
-// extractDeployFrequency extracts change failure rate from deployments with specified range
-func (i *InsightCollector) extractChangeFailureRate(deployments []*model.Deployment, from, to int64, targetTimestamp int64) (*insight.ChangeFailureRate, []*model.Deployment) {
+// extractChangeFailureRate extracts change failure rate from deployments with specified range
+func extractChangeFailureRate(deployments []*model.Deployment, from, to int64, targetTimestamp int64) (*insight.ChangeFailureRate, []*model.Deployment) {
 	var ds []*model.Deployment
 	var rest []*model.Deployment
 	for _, d := range deployments {

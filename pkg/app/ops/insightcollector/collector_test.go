@@ -458,7 +458,7 @@ func TestInsightCollector_updateDataPoints(t *testing.T) {
 		})
 	}
 }
-func TestInsightCollector_getDeploymentsWithCreatedAt(t *testing.T) {
+func TestInsightCollector_findDeploymentsCreatedInRange(t *testing.T) {
 	type args struct {
 		from int64
 		to   int64
@@ -641,7 +641,7 @@ func TestInsightCollector_getDeploymentsWithCreatedAt(t *testing.T) {
 				insightstore:     insight.NewStore(filestoretest.NewMockStore(ctrl)),
 				logger:           zap.NewNop(),
 			}
-			got, err := a.getDeploymentsWithCreatedAt(context.Background(), tt.args.from, tt.args.to)
+			got, err := a.findDeploymentsCreatedInRange(context.Background(), tt.args.from, tt.args.to)
 			if (err != nil) != tt.wantErr {
 				if !tt.wantErr {
 					assert.NoError(t, err)
@@ -654,7 +654,7 @@ func TestInsightCollector_getDeploymentsWithCreatedAt(t *testing.T) {
 		})
 	}
 }
-func TestInsightCollector_getDeploymentsWithCompletedAt(t *testing.T) {
+func TestInsightCollector_findDeploymentsCompletedInRange(t *testing.T) {
 	type args struct {
 		from int64
 		to   int64
@@ -837,7 +837,7 @@ func TestInsightCollector_getDeploymentsWithCompletedAt(t *testing.T) {
 				insightstore:     insight.NewStore(filestoretest.NewMockStore(ctrl)),
 				logger:           zap.NewNop(),
 			}
-			got, err := a.getDeploymentsWithCompletedAt(context.Background(), tt.args.from, tt.args.to)
+			got, err := a.findDeploymentsCompletedInRange(context.Background(), tt.args.from, tt.args.to)
 			if (err != nil) != tt.wantErr {
 				if !tt.wantErr {
 					assert.NoError(t, err)
