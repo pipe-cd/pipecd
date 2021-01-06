@@ -16,10 +16,7 @@ package datastore
 
 import (
 	"context"
-	"errors"
-	"fmt"
 	"testing"
-	"time"
 
 	"github.com/golang/mock/gomock"
 	"github.com/stretchr/testify/assert"
@@ -27,125 +24,51 @@ import (
 	"github.com/pipe-cd/pipe/pkg/model"
 )
 
-func TestPutImageMetadata(t *testing.T) {
+func TestAddImageMetadata(t *testing.T) {
 	ctrl := gomock.NewController(t)
 	defer ctrl.Finish()
 
-	now := time.Now()
 	im := model.ImageMetadata{
 		Id:        "id",
 		RepoName:  "repo",
 		Tag:       "tag",
 		ProjectId: "projectId",
+		CreatedAt: 12345,
+		UpdatedAt: 12345,
 	}
+
 	testcases := []struct {
 		name    string
+		im      model.ImageMetadata
 		ds      DataStore
 		wantErr bool
 	}{
 		{
-			name: "First time to put",
+			name: "Invalid image metadata",
+			im:   model.ImageMetadata{},
 			ds: func() DataStore {
-				ds := NewMockDataStore(ctrl)
-				ds.EXPECT().
-					Get(gomock.Any(), "ImageMetadata", im.Id, &model.ImageMetadata{}).
-					Return(ErrNotFound)
-
-				expectedOne := im
-				expectedOne.CreatedAt = now.Unix()
-				expectedOne.UpdatedAt = now.Unix()
-
-				ds.EXPECT().
-					Put(gomock.Any(), "ImageMetadata", im.Id, &expectedOne).
-					Return(nil)
-
-				return ds
-			}(),
-			wantErr: false,
-		},
-		{
-			name: "Put an existing one",
-			ds: func() DataStore {
-				ds := NewMockDataStore(ctrl)
-
-				ds.EXPECT().
-					Get(gomock.Any(), "ImageMetadata", im.Id, &model.ImageMetadata{}).
-					DoAndReturn(func(_ context.Context, _, _ string, entity interface{}) error {
-						e, ok := entity.(*model.ImageMetadata)
-						if !ok {
-							return fmt.Errorf("unexpected type, want ImageMetadata but got %t", entity)
-						}
-						e.CreatedAt = 12345
-						e.UpdatedAt = 12345
-						return nil
-					})
-
-				expectedOne := im
-				expectedOne.CreatedAt = 12345
-				expectedOne.UpdatedAt = now.Unix()
-
-				ds.EXPECT().
-					Put(gomock.Any(), "ImageMetadata", im.Id, &expectedOne).
-					Return(nil)
-
-				return ds
-			}(),
-			wantErr: false,
-		},
-	}
-
-	for _, tc := range testcases {
-		t.Run(tc.name, func(t *testing.T) {
-			s := NewImageMetadataStore(tc.ds)
-			store := s.(*imageMetadataStore)
-			store.nowFunc = func() time.Time { return now }
-
-			err := store.PutImageMetadata(context.Background(), im)
-			assert.Equal(t, tc.wantErr, err != nil)
-		})
-	}
-}
-
-func TestGetImageMetadata(t *testing.T) {
-	ctrl := gomock.NewController(t)
-	defer ctrl.Finish()
-
-	testcases := []struct {
-		name    string
-		id      string
-		ds      DataStore
-		wantErr bool
-	}{
-		{
-			name: "successfully fetched from datastore",
-			id:   "id",
-			ds: func() DataStore {
-				ds := NewMockDataStore(ctrl)
-				ds.EXPECT().
-					Get(gomock.Any(), "ImageMetadata", "id", &model.ImageMetadata{}).
-					Return(nil)
-				return ds
-			}(),
-			wantErr: false,
-		},
-		{
-			name: "failed to fetch from datastore",
-			id:   "id",
-			ds: func() DataStore {
-				ds := NewMockDataStore(ctrl)
-				ds.EXPECT().
-					Get(gomock.Any(), "ImageMetadata", "id", &model.ImageMetadata{}).
-					Return(errors.New("test error"))
-				return ds
+				return NewMockDataStore(ctrl)
 			}(),
 			wantErr: true,
 		},
+		{
+			name: "OK to create",
+			im:   im,
+			ds: func() DataStore {
+				ds := NewMockDataStore(ctrl)
+				ds.EXPECT().
+					Create(gomock.Any(), "ImageMetadata", im.Id, &im).
+					Return(nil)
+				return ds
+			}(),
+			wantErr: false,
+		},
 	}
 
 	for _, tc := range testcases {
 		t.Run(tc.name, func(t *testing.T) {
 			s := NewImageMetadataStore(tc.ds)
-			_, err := s.GetImageMetadata(context.Background(), tc.id)
+			err := s.AddImageMetadata(context.Background(), tc.im)
 			assert.Equal(t, tc.wantErr, err != nil)
 		})
 	}

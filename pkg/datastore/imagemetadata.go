@@ -16,7 +16,6 @@ package datastore
 
 import (
 	"context"
-	"errors"
 	"time"
 
 	"github.com/pipe-cd/pipe/pkg/model"
@@ -31,8 +30,7 @@ var (
 )
 
 type ImageMetadataStore interface {
-	PutImageMetadata(ctx context.Context, im model.ImageMetadata) error
-	GetImageMetadata(ctx context.Context, id string) (*model.ImageMetadata, error)
+	AddImageMetadata(ctx context.Context, im model.ImageMetadata) error
 }
 
 type imageMetadataStore struct {
@@ -49,33 +47,16 @@ func NewImageMetadataStore(ds DataStore) ImageMetadataStore {
 	}
 }
 
-func (s *imageMetadataStore) PutImageMetadata(ctx context.Context, im model.ImageMetadata) error {
+func (s *imageMetadataStore) AddImageMetadata(ctx context.Context, im model.ImageMetadata) error {
 	now := s.nowFunc().Unix()
-	// Load the previously saved one to get the CreatedAt value.
-	// In the future maybe we should change the interface of Put function to save this DB call.
-	cur, err := s.GetImageMetadata(ctx, im.Id)
-	if err != nil {
-		if !errors.Is(err, ErrNotFound) {
-			return err
-		}
+	if im.CreatedAt == 0 {
 		im.CreatedAt = now
-	} else {
-		im.CreatedAt = cur.CreatedAt
 	}
-
 	if im.UpdatedAt == 0 {
 		im.UpdatedAt = now
 	}
 	if err := im.Validate(); err != nil {
 		return err
 	}
-	return s.ds.Put(ctx, imageMetadataModelKind, im.Id, &im)
-}
-
-func (s *imageMetadataStore) GetImageMetadata(ctx context.Context, id string) (*model.ImageMetadata, error) {
-	var entity model.ImageMetadata
-	if err := s.ds.Get(ctx, imageMetadataModelKind, id, &entity); err != nil {
-		return nil, err
-	}
-	return &entity, nil
+	return s.ds.Create(ctx, imageMetadataModelKind, im.Id, &im)
 }

@@ -321,14 +321,19 @@ func (a *API) PushImageMetadata(ctx context.Context, req *apiservice.PushImageMe
 	}
 
 	im := model.ImageMetadata{
-		Id:        model.GenerateImageMetadataID(key.ProjectId, req.RepoName),
+		Id:        uuid.New().String(),
 		RepoName:  req.RepoName,
+		Digest:    req.Digest,
 		Tag:       req.Tag,
 		ProjectId: key.ProjectId,
 	}
-	if err := a.imageMetadataStore.PutImageMetadata(ctx, im); err != nil {
-		a.logger.Error("failed to put image metadata", zap.Error(err))
-		return nil, status.Error(codes.Internal, "Failed to put image metadata")
+	err = a.imageMetadataStore.AddImageMetadata(ctx, im)
+	if errors.Is(err, datastore.ErrAlreadyExists) {
+		return nil, status.Error(codes.AlreadyExists, "The image metadata already exists")
+	}
+	if err != nil {
+		a.logger.Error("failed to add image metadata", zap.Error(err))
+		return nil, status.Error(codes.Internal, "Failed to add image metadata")
 	}
 
 	return &apiservice.PushImageMetadataResponse{}, nil
