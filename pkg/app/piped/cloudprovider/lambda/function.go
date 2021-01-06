@@ -51,8 +51,13 @@ func parseFunctionManifest(data []byte) (FunctionManifest, error) {
 		return FunctionManifest{}, fmt.Errorf("spec.template.spec.image is missing")
 	}
 
+	functionName := obj.GetName()
+	if functionName == "" {
+		return FunctionManifest{}, fmt.Errorf("metadata.name is missing")
+	}
+
 	return FunctionManifest{
-		Name:     obj.GetName(),
+		Name:     functionName,
 		ImageURI: imageURI,
 	}, nil
 }
