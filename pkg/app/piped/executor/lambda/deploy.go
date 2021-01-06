@@ -71,8 +71,17 @@ func (e *deployExecutor) Execute(sig executor.StopSignal) model.StageStatus {
 	return executor.DetermineStageStatus(sig.Signal(), originalStatus, status)
 }
 
-func (e *deployExecutor) ensureSync(_ context.Context) model.StageStatus {
-	return model.StageStatus_STAGE_FAILURE
+func (e *deployExecutor) ensureSync(ctx context.Context) model.StageStatus {
+	fm, ok := loadFunctionManifest(&e.Input, e.deployCfg.Input.FunctionManifestFile, e.deploySource)
+	if !ok {
+		return model.StageStatus_STAGE_FAILURE
+	}
+
+	if !apply(ctx, &e.Input, e.cloudProviderName, e.cloudProviderCfg, fm) {
+		return model.StageStatus_STAGE_FAILURE
+	}
+
+	return model.StageStatus_STAGE_SUCCESS
 }
 
 func (e *deployExecutor) ensurePromote(_ context.Context) model.StageStatus {
