@@ -1,4 +1,4 @@
-// Copyright 2020 The PipeCD Authors.
+// Copyright 2021 The PipeCD Authors.
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -86,6 +86,7 @@ func (c *client) Apply(ctx context.Context, fm FunctionManifest, role string) er
 			case lambda.ErrCodeCodeStorageExceededException:
 				return fmt.Errorf("total code size per account exceeded: %w", err)
 			case lambda.ErrCodeResourceNotFoundException:
+				fallthrough
 			case lambda.ErrCodeResourceNotReadyException:
 				return fmt.Errorf("resource error occurred: %w", err)
 			}
