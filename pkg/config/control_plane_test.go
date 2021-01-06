@@ -82,7 +82,7 @@ func TestControlPlaneConfig(t *testing.T) {
 				},
 				InsightCollector: ControlPlaneInsightCollector{
 					Schedule:          "0 0 * * *",
-					RetryTime:         3,
+					RetryTime:         3, //The default value applied.
 					RetryIntervalHour: 3,
 				},
 			},
