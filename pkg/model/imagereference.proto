@@ -19,7 +19,7 @@ option go_package = "github.com/pipe-cd/pipe/pkg/model";
 
 import "validate/validate.proto";
 
-message ImageMetadata {
+message ImageReference {
     // The generated unique identifier.
     string id = 1 [(validate.rules).string.min_len = 1];
     // The repository name.

@@ -34,12 +34,12 @@ import (
 
 // API implements the behaviors for the gRPC definitions of API.
 type API struct {
-	applicationStore   datastore.ApplicationStore
-	environmentStore   datastore.EnvironmentStore
-	deploymentStore    datastore.DeploymentStore
-	pipedStore         datastore.PipedStore
-	imageMetadataStore datastore.ImageMetadataStore
-	commandStore       commandstore.Store
+	applicationStore    datastore.ApplicationStore
+	environmentStore    datastore.EnvironmentStore
+	deploymentStore     datastore.DeploymentStore
+	pipedStore          datastore.PipedStore
+	imageReferenceStore datastore.ImageReferenceStore
+	commandStore        commandstore.Store
 
 	logger *zap.Logger
 }
@@ -51,13 +51,13 @@ func NewAPI(
 	logger *zap.Logger,
 ) *API {
 	a := &API{
-		applicationStore:   datastore.NewApplicationStore(ds),
-		environmentStore:   datastore.NewEnvironmentStore(ds),
-		deploymentStore:    datastore.NewDeploymentStore(ds),
-		pipedStore:         datastore.NewPipedStore(ds),
-		imageMetadataStore: datastore.NewImageMetadataStore(ds),
-		commandStore:       cmds,
-		logger:             logger.Named("api"),
+		applicationStore:    datastore.NewApplicationStore(ds),
+		environmentStore:    datastore.NewEnvironmentStore(ds),
+		deploymentStore:     datastore.NewDeploymentStore(ds),
+		pipedStore:          datastore.NewPipedStore(ds),
+		imageReferenceStore: datastore.NewImageReferenceStore(ds),
+		commandStore:        cmds,
+		logger:              logger.Named("api"),
 	}
 	return a
 }
@@ -314,29 +314,29 @@ func (a *API) GetCommand(ctx context.Context, req *apiservice.GetCommandRequest)
 	}, nil
 }
 
-func (a *API) PushImageMetadata(ctx context.Context, req *apiservice.PushImageMetadataRequest) (*apiservice.PushImageMetadataResponse, error) {
+func (a *API) PushImageReference(ctx context.Context, req *apiservice.PushImageReferenceRequest) (*apiservice.PushImageReferenceResponse, error) {
 	key, err := requireAPIKey(ctx, model.APIKey_READ_WRITE, a.logger)
 	if err != nil {
 		return nil, err
 	}
 
-	im := model.ImageMetadata{
+	im := model.ImageReference{
 		Id:        uuid.New().String(),
 		RepoName:  req.RepoName,
 		Digest:    req.Digest,
 		Tag:       req.Tag,
 		ProjectId: key.ProjectId,
 	}
-	err = a.imageMetadataStore.AddImageMetadata(ctx, im)
+	err = a.imageReferenceStore.AddImageReference(ctx, im)
 	if errors.Is(err, datastore.ErrAlreadyExists) {
-		return nil, status.Error(codes.AlreadyExists, "The image metadata already exists")
+		return nil, status.Error(codes.AlreadyExists, "The image reference already exists")
 	}
 	if err != nil {
-		a.logger.Error("failed to add image metadata", zap.Error(err))
-		return nil, status.Error(codes.Internal, "Failed to add image metadata")
+		a.logger.Error("failed to add image reference", zap.Error(err))
+		return nil, status.Error(codes.Internal, "Failed to add image reference")
 	}
 
-	return &apiservice.PushImageMetadataResponse{}, nil
+	return &apiservice.PushImageReferenceResponse{}, nil
 }
 
 // requireAPIKey checks the existence of an API key inside the given context

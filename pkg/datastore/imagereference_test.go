@@ -24,11 +24,11 @@ import (
 	"github.com/pipe-cd/pipe/pkg/model"
 )
 
-func TestAddImageMetadata(t *testing.T) {
+func TestAddImageReference(t *testing.T) {
 	ctrl := gomock.NewController(t)
 	defer ctrl.Finish()
 
-	im := model.ImageMetadata{
+	im := model.ImageReference{
 		Id:        "id",
 		RepoName:  "repo",
 		Tag:       "tag",
@@ -39,13 +39,13 @@ func TestAddImageMetadata(t *testing.T) {
 
 	testcases := []struct {
 		name    string
-		im      model.ImageMetadata
+		im      model.ImageReference
 		ds      DataStore
 		wantErr bool
 	}{
 		{
 			name: "Invalid image metadata",
-			im:   model.ImageMetadata{},
+			im:   model.ImageReference{},
 			ds: func() DataStore {
 				return NewMockDataStore(ctrl)
 			}(),
@@ -57,7 +57,7 @@ func TestAddImageMetadata(t *testing.T) {
 			ds: func() DataStore {
 				ds := NewMockDataStore(ctrl)
 				ds.EXPECT().
-					Create(gomock.Any(), "ImageMetadata", im.Id, &im).
+					Create(gomock.Any(), "ImageReference", im.Id, &im).
 					Return(nil)
 				return ds
 			}(),
@@ -67,8 +67,8 @@ func TestAddImageMetadata(t *testing.T) {
 
 	for _, tc := range testcases {
 		t.Run(tc.name, func(t *testing.T) {
-			s := NewImageMetadataStore(tc.ds)
-			err := s.AddImageMetadata(context.Background(), tc.im)
+			s := NewImageReferenceStore(tc.ds)
+			err := s.AddImageReference(context.Background(), tc.im)
 			assert.Equal(t, tc.wantErr, err != nil)
 		})
 	}

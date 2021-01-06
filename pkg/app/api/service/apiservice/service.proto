@@ -35,7 +35,7 @@ service APIService {
 
     rpc GetCommand(GetCommandRequest) returns (GetCommandResponse) {}
 
-    rpc PushImageMetadata(PushImageMetadataRequest) returns (PushImageMetadataResponse) {}
+    rpc PushImageReference(PushImageReferenceRequest) returns (PushImageReferenceResponse) {}
 }
 
 message AddApplicationRequest {
@@ -95,11 +95,11 @@ message GetCommandResponse {
     pipe.model.Command command = 1;
 }
 
-message PushImageMetadataRequest {
+message PushImageReferenceRequest {
     string repo_name = 1 [(validate.rules).string.min_len = 1];
     string tag = 2 [(validate.rules).string.min_len = 1];
     string digest = 3;
 }
 
-message PushImageMetadataResponse {
+message PushImageReferenceResponse {
 }

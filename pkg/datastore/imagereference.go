@@ -21,25 +21,25 @@ import (
 	"github.com/pipe-cd/pipe/pkg/model"
 )
 
-const imageMetadataModelKind = "ImageMetadata"
+const imageReferenceModelKind = "ImageReference"
 
 var (
-	imageMetadataFactory = func() interface{} {
-		return &model.ImageMetadata{}
+	imageReferenceFactory = func() interface{} {
+		return &model.ImageReference{}
 	}
 )
 
-type ImageMetadataStore interface {
-	AddImageMetadata(ctx context.Context, im model.ImageMetadata) error
+type ImageReferenceStore interface {
+	AddImageReference(ctx context.Context, im model.ImageReference) error
 }
 
-type imageMetadataStore struct {
+type imageReferenceStore struct {
 	backend
 	nowFunc func() time.Time
 }
 
-func NewImageMetadataStore(ds DataStore) ImageMetadataStore {
-	return &imageMetadataStore{
+func NewImageReferenceStore(ds DataStore) ImageReferenceStore {
+	return &imageReferenceStore{
 		backend: backend{
 			ds: ds,
 		},
@@ -47,7 +47,7 @@ func NewImageMetadataStore(ds DataStore) ImageMetadataStore {
 	}
 }
 
-func (s *imageMetadataStore) AddImageMetadata(ctx context.Context, im model.ImageMetadata) error {
+func (s *imageReferenceStore) AddImageReference(ctx context.Context, im model.ImageReference) error {
 	now := s.nowFunc().Unix()
 	if im.CreatedAt == 0 {
 		im.CreatedAt = now
@@ -58,5 +58,5 @@ func (s *imageMetadataStore) AddImageMetadata(ctx context.Context, im model.Imag
 	if err := im.Validate(); err != nil {
 		return err
 	}
-	return s.ds.Create(ctx, imageMetadataModelKind, im.Id, &im)
+	return s.ds.Create(ctx, imageReferenceModelKind, im.Id, &im)
 }
