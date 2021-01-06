@@ -23,20 +23,10 @@ import (
 	"sigs.k8s.io/yaml"
 )
 
+// FunctionManifest contains configuration for LambdaFunction.
 type FunctionManifest struct {
-	Name string
-	u    *unstructured.Unstructured
-}
-
-func (fm FunctionManifest) GetImageURI() (string, error) {
-	imageURI, ok, err := unstructured.NestedString(fm.u.Object, "spec", "template", "spec", "image")
-	if err != nil {
-		return "", err
-	}
-	if !ok || imageURI == "" {
-		return "", fmt.Errorf("spec.template.spec.image is missing")
-	}
-	return imageURI, nil
+	Name     string
+	ImageURI string
 }
 
 func loadFunctionManifest(path string) (FunctionManifest, error) {
@@ -53,12 +43,21 @@ func parseFunctionManifest(data []byte) (FunctionManifest, error) {
 		return FunctionManifest{}, err
 	}
 
+	imageURI, ok, err := unstructured.NestedString(obj.Object, "spec", "template", "spec", "image")
+	if err != nil {
+		return FunctionManifest{}, err
+	}
+	if !ok || imageURI == "" {
+		return FunctionManifest{}, fmt.Errorf("spec.template.spec.image is missing")
+	}
+
 	return FunctionManifest{
-		Name: obj.GetName(),
-		u:    &obj,
+		Name:     obj.GetName(),
+		ImageURI: imageURI,
 	}, nil
 }
 
+// DecideRevisionName returns revision name to apply.
 func DecideRevisionName(fm FunctionManifest, commit string) (string, error) {
 	tag, err := FindImageTag(fm)
 	if err != nil {
@@ -72,12 +71,12 @@ func DecideRevisionName(fm FunctionManifest, commit string) (string, error) {
 	return fmt.Sprintf("%s-%s-%s", fm.Name, tag, commit), nil
 }
 
+// FindImageTag parses image tag from given LambdaFunction manifest.
 func FindImageTag(fm FunctionManifest) (string, error) {
-	imageURI, err := fm.GetImageURI()
-	if err != nil {
-		return "", err
+	name, tag := parseContainerImage(fm.ImageURI)
+	if name == "" {
+		return "", fmt.Errorf("image name could not be empty")
 	}
-	_, tag := parseContainerImage(imageURI)
 	return tag, nil
 }
 

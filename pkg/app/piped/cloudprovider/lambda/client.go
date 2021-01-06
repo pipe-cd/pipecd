@@ -67,19 +67,15 @@ func newClient(region, profile, credentialsFile string, logger *zap.Logger) (*cl
 }
 
 func (c *client) Apply(ctx context.Context, fm FunctionManifest, role string) error {
-	imageURI, err := fm.GetImageURI()
-	if err != nil {
-		return err
-	}
 	if role == "" {
 		return fmt.Errorf("role arn is required")
 	}
 	input := &lambda.CreateFunctionInput{
-		Code:         &lambda.FunctionCode{ImageUri: &imageURI},
+		Code:         &lambda.FunctionCode{ImageUri: &fm.ImageURI},
 		FunctionName: &fm.Name,
 		Role:         &role,
 	}
-	_, err = c.client.CreateFunctionWithContext(ctx, input)
+	_, err := c.client.CreateFunctionWithContext(ctx, input)
 	if err != nil {
 		if aerr, ok := err.(awserr.Error); ok {
 			switch aerr.Code() {

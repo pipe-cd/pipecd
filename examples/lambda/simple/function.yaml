@@ -1,5 +1,5 @@
 apiVersion: pipecd.dev/v1beta1
-kind: Function
+kind: LambdaFunction
 metadata:
   name: SimpleFunction
 spec:
