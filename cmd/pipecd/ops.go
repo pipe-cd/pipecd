@@ -108,18 +108,18 @@ func (s *ops) run(ctx context.Context, t cli.Telemetry) error {
 				var failed bool
 				start := time.Now()
 				if err = collector.ProcessNewlyCompletedDeployments(ctx); err != nil {
-					t.Logger.Error("failed to process the insight collector with completedAt", zap.Error(err))
+					t.Logger.Error("failed to process the newly completed deployments while accumulating insight data", zap.Error(err))
 					failed = true
 				} else {
-					t.Logger.Info("processing the insight collector with completedAt successfully finished", zap.Duration("duration", time.Since(start)))
+					t.Logger.Info("successfully processed the newly completed deployments while accumulating insight data", zap.Duration("duration", time.Since(start)))
 				}
 
 				start = time.Now()
 				if err = collector.ProcessNewlyCreatedDeployments(ctx); err != nil {
-					t.Logger.Error("failed to process the insight collector with createdAt", zap.Error(err))
+					t.Logger.Error("failed to process the newly created deployments while accumulating insight data", zap.Error(err))
 					failed = true
 				} else {
-					t.Logger.Info("processing the insight collector with createdAt successfully finished", zap.Duration("duration", time.Since(start)))
+					t.Logger.Info("successfully processed the newly created deployments while accumulating insight data", zap.Duration("duration", time.Since(start)))
 				}
 
 				if !failed {
