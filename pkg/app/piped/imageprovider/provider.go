@@ -17,10 +17,7 @@ package imageprovider
 import (
 	"context"
 	"fmt"
-	"net/http"
-	"net/url"
 
-	"github.com/docker/distribution/registry/client/auth/challenge"
 	"go.uber.org/zap"
 
 	"github.com/pipe-cd/pipe/pkg/app/piped/imageprovider/ecr"
@@ -45,9 +42,11 @@ type Provider interface {
 func NewProvider(cfg *config.PipedImageProvider, logger *zap.Logger) (Provider, error) {
 	switch cfg.Type {
 	case model.ImageProviderTypeGCR:
-		return gcr.NewProvider(cfg.Name, cfg.GCRConfig, doChallenge, logger)
-	case model.ImageProviderTypeDockerHub:
-		return nil, fmt.Errorf("not implemented yet")
+		options := []gcr.Option{
+			gcr.WithServiceAccountFile(cfg.GCRConfig.ServiceAccountFile),
+			gcr.WithLogger(logger),
+		}
+		return gcr.NewGCR(cfg.Name, options...)
 	case model.ImageProviderTypeECR:
 		options := []ecr.Option{
 			ecr.WithRegistryID(cfg.ECRConfig.RegistryID),
@@ -56,25 +55,9 @@ func NewProvider(cfg *config.PipedImageProvider, logger *zap.Logger) (Provider, 
 			ecr.WithLogger(logger),
 		}
 		return ecr.NewECR(cfg.Name, cfg.ECRConfig.Region, options...)
+	case model.ImageProviderTypeDockerHub:
+		return nil, fmt.Errorf("not implemented yet")
 	default:
 		return nil, fmt.Errorf("unknown image provider type: %s", cfg.Type)
 	}
-}
-
-func doChallenge(manager challenge.Manager, tx http.RoundTripper, domain string) (*url.URL, error) {
-	registryURL := url.URL{
-		Scheme: "https",
-		Host:   domain,
-		Path:   "/v2/",
-	}
-	cs, err := manager.GetChallenges(registryURL)
-	if err != nil {
-		return nil, err
-	}
-	if len(cs) == 0 {
-		// TODO: Handle the no challenge case
-		//   referring to https://github.com/fluxcd/flux/blob/72743f209207453a4326757ba89fb03cb514b34d/pkg/registry/client_factory.go#L64-L91
-	}
-
-	return &registryURL, nil
 }

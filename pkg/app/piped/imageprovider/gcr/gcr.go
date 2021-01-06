@@ -17,61 +17,70 @@ package gcr
 import (
 	"context"
 	"fmt"
-	"net/http"
-	"net/url"
+	"io/ioutil"
+	"sort"
 	"strings"
-	"time"
 
-	"github.com/docker/distribution/registry/client"
-	"github.com/docker/distribution/registry/client/auth"
-	"github.com/docker/distribution/registry/client/auth/challenge"
-	"github.com/docker/distribution/registry/client/transport"
+	"github.com/google/go-containerregistry/pkg/authn"
+	"github.com/google/go-containerregistry/pkg/name"
+	"github.com/google/go-containerregistry/pkg/v1/google"
 	"go.uber.org/zap"
 
-	"github.com/pipe-cd/pipe/pkg/config"
 	"github.com/pipe-cd/pipe/pkg/model"
 )
 
-type Provider struct {
-	name      string
-	baseURL   url.URL
-	transport http.RoundTripper
-
-	logger *zap.Logger
+type GCR struct {
+	name               string
+	serviceAccountFile string
+	// If nil, treated as an anonymous user.
+	authenticator authn.Authenticator
+	logger        *zap.Logger
 }
 
-type determineURL func(manager challenge.Manager, tx http.RoundTripper, domain string) (*url.URL, error)
+type Option func(*GCR)
 
-func NewProvider(name string, cfg *config.ImageProviderGCRConfig, fn determineURL, logger *zap.Logger) (*Provider, error) {
-	var tx http.RoundTripper = &http.Transport{
-		MaxIdleConns:    10,
-		IdleConnTimeout: 10 * time.Second,
-		Proxy:           http.ProxyFromEnvironment,
+func WithServiceAccountFile(path string) Option {
+	return func(e *GCR) {
+		e.serviceAccountFile = path
 	}
-	manager := challenge.NewSimpleManager()
+}
 
-	u, err := fn(manager, tx, cfg.Address)
-	if err != nil {
-		return nil, fmt.Errorf("failed to determine registry URL: %w", err)
+func WithLogger(logger *zap.Logger) Option {
+	return func(e *GCR) {
+		e.logger = logger
 	}
-	a := newAuthorizer(tx, manager)
-	return &Provider{
-		name:      name,
-		baseURL:   *u,
-		transport: transport.NewTransport(tx, a),
-		logger:    logger.Named("gcr-provider"),
-	}, nil
 }
 
-func (p *Provider) Name() string {
-	return p.name
+// NewGCR generates a GCR client with an anonymous user if no authenticate method set.
+func NewGCR(name string, opts ...Option) (*GCR, error) {
+	g := &GCR{
+		name:   name,
+		logger: zap.NewNop(),
+	}
+	for _, opt := range opts {
+		opt(g)
+	}
+	g.logger = g.logger.Named("gcr-provider")
+
+	if g.serviceAccountFile != "" {
+		b, err := ioutil.ReadFile(g.serviceAccountFile)
+		if err != nil {
+			return nil, fmt.Errorf("failed to open the service account file: %w", err)
+		}
+		g.authenticator = google.NewJSONKeyAuthenticator(string(b))
+	}
+	return g, nil
 }
 
-func (p *Provider) Type() model.ImageProviderType {
+func (g *GCR) Name() string {
+	return g.name
+}
+
+func (g *GCR) Type() model.ImageProviderType {
 	return model.ImageProviderTypeGCR
 }
 
-func (p *Provider) ParseImage(image string) (*model.ImageName, error) {
+func (g *GCR) ParseImage(image string) (*model.ImageName, error) {
 	ss := strings.SplitN(image, "/", 2)
 	if len(ss) < 2 {
 		return nil, fmt.Errorf("invalid image format (e.g. gcr.io/pipecd/helloworld)")
@@ -82,25 +91,45 @@ func (p *Provider) ParseImage(image string) (*model.ImageName, error) {
 	}, nil
 }
 
-func (p *Provider) GetLatestImage(ctx context.Context, image *model.ImageName) (*model.ImageRef, error) {
-	repository, err := client.NewRepository(image, p.baseURL.String(), p.transport)
+func (g *GCR) GetLatestImage(ctx context.Context, image *model.ImageName) (*model.ImageRef, error) {
+	repo, err := name.NewRepository(image.String())
 	if err != nil {
-		return nil, err
+		return nil, fmt.Errorf("%s is invalid repository: %w", image, err)
 	}
-	// TODO: Stop listing all tags
-	_, err = repository.Tags(ctx).All(ctx)
+	options := []google.ListerOption{
+		google.WithContext(ctx),
+	}
+	if g.authenticator != nil {
+		options = append(options, google.WithAuth(g.authenticator))
+	}
+	// TODO: Use pagination to retrieve image tags from GCR
+	// Currently, the result could be quite large size if there are a lot of tags.
+	// "google/go-containerregistry" doesn't provide any option to paginate.
+	// We can propose it to them, or just borrow and modify for us.
+	// See more: https://docs.docker.com/registry/spec/api/#listing-image-tags
+	res, err := google.List(repo, options...)
 	if err != nil {
-		return nil, err
+		return nil, fmt.Errorf("failed to list tags: %w", err)
 	}
-	// TODO: Give back latest image from GCR
-	return nil, nil
-}
+	if len(res.Manifests) == 0 {
+		return nil, fmt.Errorf("no manifests found in %s", repo.Name())
+	}
 
-func newAuthorizer(tx http.RoundTripper, manager challenge.Manager) transport.RequestModifier {
-	// TODO: Use credentials for GCR configured by user
-	authHandlers := []auth.AuthenticationHandler{
-		auth.NewTokenHandler(tx, nil, "", "pull"),
-		auth.NewBasicHandler(nil),
+	// Determine the latest by sorting by the uploaded time.
+	manifests := make([]google.ManifestInfo, 0, len(res.Manifests))
+	for _, m := range res.Manifests {
+		manifests = append(manifests, m)
 	}
-	return auth.NewAuthorizer(manager, authHandlers...)
+	sort.Slice(manifests, func(i, j int) bool {
+		return manifests[i].Uploaded.After(manifests[j].Uploaded)
+	})
+	latest := manifests[0]
+	if len(latest.Tags) == 0 {
+		return nil, fmt.Errorf("no tag is associated to the latest image")
+	}
+	return &model.ImageRef{
+		ImageName: *image,
+		// TODO: Enable to specify the tag if multiple tags are associated to an image
+		Tag: latest.Tags[0],
+	}, nil
 }
