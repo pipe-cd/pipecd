@@ -25,9 +25,7 @@ import (
 	"github.com/pipe-cd/pipe/pkg/config"
 )
 
-const (
-	DefaultFunctionManifestFilename = "function.yaml"
-)
+const DefaultFunctionManifestFilename = "function.yaml"
 
 type Client interface {
 	Apply(ctx context.Context, fm FunctionManifest, role string) error

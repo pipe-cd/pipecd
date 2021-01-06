@@ -71,8 +71,8 @@ func (c *client) Apply(ctx context.Context, fm FunctionManifest, role string) er
 		return fmt.Errorf("role arn is required")
 	}
 	input := &lambda.CreateFunctionInput{
-		Code:         &lambda.FunctionCode{ImageUri: &fm.ImageURI},
-		FunctionName: &fm.Name,
+		Code:         &lambda.FunctionCode{ImageUri: &fm.Spec.ImageURI},
+		FunctionName: &fm.Spec.Name,
 		Role:         &role,
 	}
 	_, err := c.client.CreateFunctionWithContext(ctx, input)

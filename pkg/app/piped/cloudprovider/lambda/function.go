@@ -19,14 +19,48 @@ import (
 	"io/ioutil"
 	"strings"
 
-	"k8s.io/apimachinery/pkg/apis/meta/v1/unstructured"
 	"sigs.k8s.io/yaml"
 )
 
-// FunctionManifest contains configuration for LambdaFunction.
+const (
+	versionV1Beta1       = "pipecd.dev/v1beta1"
+	FunctionManifestKind = "LambdaFunction"
+)
+
 type FunctionManifest struct {
-	Name     string
-	ImageURI string
+	Kind       string               `json:"kind"`
+	APIVersion string               `json:"apiVersion,omitempty"`
+	Spec       FunctionManifestSpec `json:"spec"`
+}
+
+func (fm *FunctionManifest) validate() error {
+	if fm.APIVersion != versionV1Beta1 {
+		return fmt.Errorf("unsupported version: %s", fm.APIVersion)
+	}
+	if fm.Kind != FunctionManifestKind {
+		return fmt.Errorf("invalid manifest kind given: %s", fm.Kind)
+	}
+	if err := fm.Spec.validate(); err != nil {
+		return err
+	}
+	return nil
+}
+
+// FunctionManifestSpec contains configuration for LambdaFunction.
+type FunctionManifestSpec struct {
+	Name     string            `json:"name"`
+	ImageURI string            `json:"image"`
+	Tags     map[string]string `json:"tags,omitempty"`
+}
+
+func (fmp FunctionManifestSpec) validate() error {
+	if len(fmp.Name) == 0 {
+		return fmt.Errorf("lambda function is missing")
+	}
+	if len(fmp.ImageURI) == 0 {
+		return fmt.Errorf("image uri is missing")
+	}
+	return nil
 }
 
 func loadFunctionManifest(path string) (FunctionManifest, error) {
@@ -38,28 +72,14 @@ func loadFunctionManifest(path string) (FunctionManifest, error) {
 }
 
 func parseFunctionManifest(data []byte) (FunctionManifest, error) {
-	var obj unstructured.Unstructured
+	var obj FunctionManifest
 	if err := yaml.Unmarshal(data, &obj); err != nil {
 		return FunctionManifest{}, err
 	}
-
-	imageURI, ok, err := unstructured.NestedString(obj.Object, "spec", "template", "spec", "image")
-	if err != nil {
+	if err := obj.validate(); err != nil {
 		return FunctionManifest{}, err
 	}
-	if !ok || imageURI == "" {
-		return FunctionManifest{}, fmt.Errorf("spec.template.spec.image is missing")
-	}
-
-	functionName := obj.GetName()
-	if functionName == "" {
-		return FunctionManifest{}, fmt.Errorf("metadata.name is missing")
-	}
-
-	return FunctionManifest{
-		Name:     functionName,
-		ImageURI: imageURI,
-	}, nil
+	return obj, nil
 }
 
 // DecideRevisionName returns revision name to apply.
@@ -73,12 +93,12 @@ func DecideRevisionName(fm FunctionManifest, commit string) (string, error) {
 	if len(commit) > 7 {
 		commit = commit[:7]
 	}
-	return fmt.Sprintf("%s-%s-%s", fm.Name, tag, commit), nil
+	return fmt.Sprintf("%s-%s-%s", fm.Spec.Name, tag, commit), nil
 }
 
 // FindImageTag parses image tag from given LambdaFunction manifest.
 func FindImageTag(fm FunctionManifest) (string, error) {
-	name, tag := parseContainerImage(fm.ImageURI)
+	name, tag := parseContainerImage(fm.Spec.ImageURI)
 	if name == "" {
 		return "", fmt.Errorf("image name could not be empty")
 	}

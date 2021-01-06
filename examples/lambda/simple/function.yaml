@@ -1,11 +1,7 @@
 apiVersion: pipecd.dev/v1beta1
 kind: LambdaFunction
-metadata:
-  name: SimpleFunction
 spec:
-  template:
-    metadata:
-      tags:
-        app: simple
-    spec:
-      image: ecr.ap-northeast-1.amazonaws.com/lambda-test:v0.0.1
+  name: SimpleFunction
+  image: ecr.ap-northeast-1.amazonaws.com/lambda-test:v0.0.1
+  tags:
+    app: simple
