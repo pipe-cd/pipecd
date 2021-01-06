@@ -774,12 +774,6 @@ def go_repositories():
         sum = "h1:X2ev0eStA3AbceY54o37/0PQ/UWqKEiiO2dKL5OPaFM=",
         version = "v0.5.2",
     )
-    go_repository(
-        name = "com_github_google_go_containerregistry",
-        importpath = "github.com/google/go-containerregistry",
-        sum = "h1:+vqpHdgIbD7xSeufHJq0iuAx7ILcEeh3fR5Og2nW1R0=",
-        version = "v0.3.0",
-    )
 
     go_repository(
         name = "com_github_google_go_github_v29",
