@@ -16,11 +16,37 @@ Define arbitrary number of [image providers](/docs/concepts#image-provider) whic
 It will run a pull operation every 5 minutes by default. This interval can be set in the `imageWatcher` field touch upon later.
 Also, we plan to provide a FAKE image provider mentioned below to avoid the rate limit.
 
-Currently, PipeCD is supporting only `ECR`. `GCR` and `DOCKERHUB` are on the roadmap.
+Currently, PipeCD is supporting:
+- [Google Container Registry (GCR)](https://cloud.google.com/container-registry)
+- [Amazon Elastic Container Registry (ECR)](https://aws.amazon.com/ecr)
+
+### GCR
+Append the `GCR` image provider to the Piped configuration file as:
+
+```yaml
+apiVersion: pipecd.dev/v1beta1
+kind: Piped
+spec:
+  imageProviders:
+    - name: my-gcr
+      type: GCR
+      config:
+        serviceAccountFile: /etc/piped-secret/gcr-service-account.json
+```
+
+For public repositories, no configuration is required.
+
+If you want to watch private repository, you should set up authentication.
+A [service account](https://cloud.google.com/compute/docs/access/service-accounts) is the only authentication way currently available.
+You give the path to the json file of service account with the required `roles/storage.objectViewer` role.
+
+The full list of GCR fields are [here](/docs/operator-manual/piped/configuration-reference/#imageprovidergcrconfig).
 
 ### ECR
 
 >NOTE: Currently, it supports only ECR private repositories.
+
+Append the `ECR` image provider to the Piped configuration file as:
 
 ```yaml
 apiVersion: pipecd.dev/v1beta1
@@ -46,10 +72,6 @@ It attempts to retrieve credentials in the following order:
 Hence, you don't have to set `credentialsFile` if you use the environment variables or the EC2 Instance Role. Keep in mind the IAM role/user that you use with your Piped must possess the IAM policy permission for `ecr:DescribeImages`.
 
 The full list of ECR fields are [here](/docs/operator-manual/piped/configuration-reference/#imageproviderecrconfig).
-
-### GCR
-
->TBA
 
 ### DockerHub
 
