@@ -27,6 +27,7 @@ import (
 	"github.com/pipe-cd/pipe/pkg/admin"
 	"github.com/pipe-cd/pipe/pkg/app/ops/handler"
 	"github.com/pipe-cd/pipe/pkg/app/ops/insightcollector"
+	"github.com/pipe-cd/pipe/pkg/backoff"
 	"github.com/pipe-cd/pipe/pkg/cli"
 	"github.com/pipe-cd/pipe/pkg/datastore"
 	"github.com/pipe-cd/pipe/pkg/version"
@@ -102,18 +103,33 @@ func (s *ops) run(ctx context.Context, t cli.Telemetry) error {
 		collector := insightcollector.NewInsightCollector(ds, fs, t.Logger)
 		c := cron.New(cron.WithLocation(time.UTC))
 		_, err := c.AddFunc(cfg.InsightCollector.Schedule, func() {
-			start := time.Now()
-			if err := collector.CollectProjectsInsight(ctx); err != nil {
-				t.Logger.Error("failed to run the project insight collector", zap.Error(err))
-			} else {
-				t.Logger.Info("project insight collector successfully finished", zap.Duration("duration", time.Since(start)))
-			}
+			retry := backoff.NewRetry(cfg.InsightCollector.RetryTime, backoff.NewConstant(time.Duration(cfg.InsightCollector.RetryIntervalHour)*time.Hour))
+			successProcessNewlyCompletedDeployments := false
+			successProcessNewlyCreatedDeployments := false
+			for retry.WaitNext(ctx) {
+				if !successProcessNewlyCompletedDeployments {
+					start := time.Now()
+					if err = collector.ProcessNewlyCompletedDeployments(ctx); err != nil {
+						t.Logger.Error("failed to process the newly completed deployments while accumulating insight data", zap.Error(err))
+					} else {
+						t.Logger.Info("successfully processed the newly completed deployments while accumulating insight data", zap.Duration("duration", time.Since(start)))
+						successProcessNewlyCompletedDeployments = true
+					}
+				}
 
-			start = time.Now()
-			if err := collector.CollectApplicationInsight(ctx); err != nil {
-				t.Logger.Error("failed to run the application insight collector", zap.Error(err))
-			} else {
-				t.Logger.Info("application insight collector successfully finished", zap.Duration("duration", time.Since(start)))
+				if !successProcessNewlyCreatedDeployments {
+					start := time.Now()
+					if err = collector.ProcessNewlyCreatedDeployments(ctx); err != nil {
+						t.Logger.Error("failed to process the newly created deployments while accumulating insight data", zap.Error(err))
+					} else {
+						t.Logger.Info("successfully processed the newly created deployments while accumulating insight data", zap.Duration("duration", time.Since(start)))
+						successProcessNewlyCreatedDeployments = true
+					}
+				}
+
+				if successProcessNewlyCompletedDeployments && successProcessNewlyCreatedDeployments {
+					return
+				}
 			}
 		})
 		if err != nil {

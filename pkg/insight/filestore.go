@@ -88,7 +88,7 @@ func (s *Store) LoadMilestone(ctx context.Context) (*Milestone, error) {
 	return m, nil
 }
 
-func (s *Store) putMilestone(ctx context.Context, m Milestone) error {
+func (s *Store) PutMilestone(ctx context.Context, m *Milestone) error {
 	data, err := json.Marshal(m)
 	if err != nil {
 		return err

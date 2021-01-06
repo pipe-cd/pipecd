@@ -186,7 +186,36 @@ type ControlPlaneCache struct {
 }
 
 type ControlPlaneInsightCollector struct {
-	Schedule string `json:"schedule"`
+	Schedule          string `json:"schedule"`
+	RetryTime         int    `json:"retryTime"`
+	RetryIntervalHour int    `json:"retryIntervalHour"`
+}
+
+var (
+	defaultSchedule          = "0 0 * * *"
+	defaultRetryTime         = 3
+	defaultRetryIntervalHour = 1
+)
+
+func (d *ControlPlaneInsightCollector) UnmarshalJSON(data []byte) error {
+	if d.Schedule == "" {
+		d.Schedule = defaultSchedule
+	}
+	if d.RetryTime == 0 {
+		d.RetryTime = defaultRetryTime
+	}
+
+	if d.RetryIntervalHour == 0 {
+		d.RetryIntervalHour = defaultRetryIntervalHour
+	}
+	type Alias ControlPlaneInsightCollector
+	ic := &struct {
+		*Alias
+	}{
+		Alias: (*Alias)(d),
+	}
+
+	return json.Unmarshal(data, &ic)
 }
 
 func (c ControlPlaneCache) TTLDuration() time.Duration {
