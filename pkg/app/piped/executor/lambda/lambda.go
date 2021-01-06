@@ -16,12 +16,9 @@ package lambda
 
 import (
 	"github.com/pipe-cd/pipe/pkg/app/piped/executor"
+	"github.com/pipe-cd/pipe/pkg/config"
 	"github.com/pipe-cd/pipe/pkg/model"
 )
-
-type Executor struct {
-	executor.Input
-}
 
 type registerer interface {
 	Register(stage model.Stage, f executor.Factory) error
@@ -29,13 +26,29 @@ type registerer interface {
 }
 
 func Register(r registerer) {
-	_ = func(in executor.Input) executor.Executor {
-		return &Executor{
+	f := func(in executor.Input) executor.Executor {
+		return &deployExecutor{
 			Input: in,
 		}
 	}
+	r.Register(model.StageLambdaSync, f)
+	r.Register(model.StageLambdaPromote, f)
 }
 
-func (e *Executor) Execute(sig executor.StopSignal) model.StageStatus {
-	return model.StageStatus_STAGE_SUCCESS
+func findCloudProvider(in *executor.Input) (name string, cfg *config.CloudProviderLambdaConfig, found bool) {
+	name = in.Application.CloudProvider
+	if name == "" {
+		in.LogPersister.Errorf("Missing the CloudProvider name in the application configuration")
+		return
+	}
+
+	cp, ok := in.PipedConfig.FindCloudProvider(name, model.CloudProviderLambda)
+	if !ok {
+		in.LogPersister.Errorf("The specified cloud provider %q was not found in piped configuration", name)
+		return
+	}
+
+	cfg = cp.LambdaConfig
+	found = true
+	return
 }
