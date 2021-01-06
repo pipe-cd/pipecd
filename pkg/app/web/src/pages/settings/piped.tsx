@@ -210,7 +210,7 @@ export const SettingsPipedPage: FC = memo(function SettingsPipedPage() {
                   </TableCell>
                   <TableCell>
                     {piped.startedAt === 0
-                      ? "Not running"
+                      ? "Not Yet Started"
                       : dayjs(piped.startedAt * 1000).fromNow()}
                   </TableCell>
                   <TableCell align="right">
