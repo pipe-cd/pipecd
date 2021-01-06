@@ -161,8 +161,7 @@ func TestPipedConfig(t *testing.T) {
 						Name: "my-gcr",
 						Type: "GCR",
 						GCRConfig: &ImageProviderGCRConfig{
-							Address:         "asia.gcr.io",
-							CredentialsFile: "/etc/piped-secret/gcr-service-account",
+							ServiceAccountFile: "/etc/piped-secret/gcr-service-account.json",
 						},
 					},
 					{
