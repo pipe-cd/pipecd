@@ -24,7 +24,7 @@ import (
 
 const (
 	versionV1Beta1       = "pipecd.dev/v1beta1"
-	FunctionManifestKind = "LambdaFunction"
+	functionManifestKind = "LambdaFunction"
 )
 
 type FunctionManifest struct {
@@ -37,7 +37,7 @@ func (fm *FunctionManifest) validate() error {
 	if fm.APIVersion != versionV1Beta1 {
 		return fmt.Errorf("unsupported version: %s", fm.APIVersion)
 	}
-	if fm.Kind != FunctionManifestKind {
+	if fm.Kind != functionManifestKind {
 		return fmt.Errorf("invalid manifest kind given: %s", fm.Kind)
 	}
 	if err := fm.Spec.validate(); err != nil {
