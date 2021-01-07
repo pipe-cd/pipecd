@@ -12,6 +12,7 @@ proto_library(
         "deployment.proto",
         "environment.proto",
         "event.proto",
+        "imagereference.proto",
         "insight.proto",
         "logblock.proto",
         "piped.proto",
