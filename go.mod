@@ -7,7 +7,7 @@ require (
 	cloud.google.com/go/firestore v1.2.0
 	cloud.google.com/go/storage v1.11.0
 	github.com/NYTimes/gziphandler v0.0.0-20170623195520-56545f4a5d46
-	github.com/aws/aws-sdk-go v1.34.5
+	github.com/aws/aws-sdk-go v1.36.21
 	github.com/dgrijalva/jwt-go v3.2.0+incompatible
 	github.com/envoyproxy/protoc-gen-validate v0.1.0
 	github.com/fsouza/fake-gcs-server v1.21.0
@@ -33,7 +33,7 @@ require (
 	go.uber.org/multierr v1.2.0 // indirect
 	go.uber.org/zap v1.10.1-0.20190709142728-9a9fa7d4b5f0
 	golang.org/x/crypto v0.0.0-20201002170205-7f63de1d35b0
-	golang.org/x/net v0.0.0-20200822124328-c89045814202
+	golang.org/x/net v0.0.0-20201110031124-69a78807bb2b
 	golang.org/x/oauth2 v0.0.0-20200107190931-bf48bf16ab8d
 	golang.org/x/sync v0.0.0-20201207232520-09787c993a3a
 	google.golang.org/api v0.31.0

@@ -1,8 +1,35 @@
-load("@io_bazel_rules_go//go:def.bzl", "go_library")
+load("@io_bazel_rules_go//go:def.bzl", "go_library", "go_test")
 
 go_library(
     name = "go_default_library",
-    srcs = ["lambda.go"],
+    srcs = [
+        "client.go",
+        "lambda.go",
+        "function.go",
+    ],
     importpath = "github.com/pipe-cd/pipe/pkg/app/piped/cloudprovider/lambda",
     visibility = ["//visibility:public"],
+    deps = [
+        "//pkg/config:go_default_library",
+        "@io_k8s_sigs_yaml//:go_default_library",
+        "@com_github_aws_aws_sdk_go//aws:go_default_library",
+        "@com_github_aws_aws_sdk_go//aws/awserr:go_default_library",
+        "@com_github_aws_aws_sdk_go//aws/credentials:go_default_library",
+        "@com_github_aws_aws_sdk_go//aws/credentials/ec2rolecreds:go_default_library",
+        "@com_github_aws_aws_sdk_go//aws/ec2metadata:go_default_library",
+        "@com_github_aws_aws_sdk_go//aws/session:go_default_library",
+        "@com_github_aws_aws_sdk_go//service/lambda:go_default_library",
+        "@org_golang_x_sync//singleflight:go_default_library",
+        "@org_uber_go_zap//:go_default_library",
+    ],
+)
+
+go_test(
+    name = "go_default_test",
+    size = "small",
+    srcs = ["function_test.go"],
+    embed = [":go_default_library"],
+    deps = [
+        "@com_github_stretchr_testify//assert:go_default_library",
+    ],
 )

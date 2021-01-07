@@ -47,8 +47,8 @@ def go_repositories():
     go_repository(
         name = "com_github_aws_aws_sdk_go",
         importpath = "github.com/aws/aws-sdk-go",
-        sum = "h1:FwubVVX9u+kW9qDCjVzyWOdsL+W5wPq683wMk2R2GXk=",
-        version = "v1.34.5",
+        sum = "h1:7CcrvoPUYex6CVeEK7/UZlYx5/AcVCWrl1FsX7fVvFw=",
+        version = "v1.36.21",
     )
     go_repository(
         name = "com_github_azure_azure_sdk_for_go",
@@ -955,8 +955,14 @@ def go_repositories():
     go_repository(
         name = "com_github_jmespath_go_jmespath",
         importpath = "github.com/jmespath/go-jmespath",
-        sum = "h1:OS12ieG61fsCg5+qLJ+SsW9NicxNkg3b25OyT2yCeUc=",
-        version = "v0.3.0",
+        sum = "h1:BEgLn5cpjn8UN1mAw4NjwDrS35OdebyEtFe+9YPoQUg=",
+        version = "v0.4.0",
+    )
+    go_repository(
+        name = "com_github_jmespath_go_jmespath_internal_testify",
+        importpath = "github.com/jmespath/go-jmespath/internal/testify",
+        sum = "h1:shLQSRRSCCPj3f2gpwzGwWFoC7ycTf1rcQZHOlsJ6N8=",
+        version = "v1.5.1",
     )
     go_repository(
         name = "com_github_joefitzgerald_rainbow_reporter",
@@ -2135,8 +2141,8 @@ def go_repositories():
     go_repository(
         name = "org_golang_x_net",
         importpath = "golang.org/x/net",
-        sum = "h1:VvcQYSHwXgi7W+TpUR6A9g6Up98WAHf3f/ulnJ62IyA=",
-        version = "v0.0.0-20200822124328-c89045814202",
+        sum = "h1:uwuIcX0g4Yl1NC5XAz37xsr2lTtcqevgzYNVt49waME=",
+        version = "v0.0.0-20201110031124-69a78807bb2b",
     )
     go_repository(
         name = "org_golang_x_oauth2",
@@ -2153,8 +2159,8 @@ def go_repositories():
     go_repository(
         name = "org_golang_x_sys",
         importpath = "golang.org/x/sys",
-        sum = "h1:kCCpuwSAoYJPkNc6x0xT9yTtV4oKtARo4RGBQWOfg9E=",
-        version = "v0.0.0-20200828194041-157a740278f4",
+        sum = "h1:+Nyd8tzPX9R7BWHguqsrbFdRx3WQ/1ib8I44HXV5yTA=",
+        version = "v0.0.0-20200930185726-fdedc70b468f",
     )
     go_repository(
         name = "org_golang_x_text",
