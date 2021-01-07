@@ -28,5 +28,5 @@ export default {
 };
 
 export const overview: React.FC = () => (
-  <DeploymentFilter open onChange={action("onChange")} />
+  <DeploymentFilter onChange={action("onChange")} />
 );

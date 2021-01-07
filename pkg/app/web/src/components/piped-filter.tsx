@@ -1,30 +1,17 @@
 import {
-  Button,
   FormControl,
   InputLabel,
   makeStyles,
   MenuItem,
-  Paper,
   Select,
-  Typography,
 } from "@material-ui/core";
 import React, { FC } from "react";
-
-const FILTER_PAPER_WIDTH = 360;
+import { FilterView } from "./filter-view";
 
 const useStyles = makeStyles((theme) => ({
-  filterPaper: {
-    width: FILTER_PAPER_WIDTH,
-    padding: theme.spacing(3),
-    height: "100%",
-  },
   formItem: {
     width: "100%",
     marginTop: theme.spacing(4),
-  },
-  header: {
-    display: "flex",
-    justifyContent: "space-between",
   },
   select: {
     width: "100%",
@@ -53,21 +40,7 @@ export const PipedFilter: FC<Props> = ({ values, onChange }) => {
   const classes = useStyles();
 
   return (
-    <Paper square className={classes.filterPaper}>
-      <div className={classes.header}>
-        <Typography variant="h6" component="span">
-          Filters
-        </Typography>
-        <Button
-          color="primary"
-          onClick={() => {
-            onChange({ enabled: true });
-          }}
-        >
-          Clear
-        </Button>
-      </div>
-
+    <FilterView onClear={() => onChange({ enabled: true })}>
       <FormControl className={classes.formItem} variant="outlined">
         <InputLabel id="filter-active-status">Active Status</InputLabel>
         <Select
@@ -93,6 +66,6 @@ export const PipedFilter: FC<Props> = ({ values, onChange }) => {
           <MenuItem value="disabled">Disabled</MenuItem>
         </Select>
       </FormControl>
-    </Paper>
+    </FilterView>
   );
 };

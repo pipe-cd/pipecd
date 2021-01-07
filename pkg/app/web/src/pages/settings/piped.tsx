@@ -32,6 +32,7 @@ import { useDispatch, useSelector } from "react-redux";
 import { AddPipedDrawer } from "../../components/add-piped-drawer";
 import { EditPipedDrawer } from "../../components/edit-piped-drawer";
 import { PipedFilter, FilterValues } from "../../components/piped-filter";
+import { UI_TEXT_FILTER, UI_TEXT_HIDE_FILTER } from "../../constants/ui-text";
 import { AppState } from "../../modules";
 import {
   clearRegisteredPipedInfo,
@@ -177,7 +178,7 @@ export const SettingsPipedPage: FC = memo(function SettingsPipedPage() {
           startIcon={openFilter ? <CloseIcon /> : <FilterIcon />}
           onClick={() => setOpenFilter(!openFilter)}
         >
-          {openFilter ? "HIDE FILTER" : "FILTER"}
+          {openFilter ? UI_TEXT_HIDE_FILTER : UI_TEXT_FILTER}
         </Button>
       </Toolbar>
       <Divider />
