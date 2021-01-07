@@ -324,7 +324,7 @@ func (a *API) PushImageReference(ctx context.Context, req *apiservice.PushImageR
 		Id:        uuid.New().String(),
 		RepoName:  req.RepoName,
 		Digest:    req.Digest,
-		Tag:       req.Tag,
+		Tags:      req.Tags,
 		ProjectId: key.ProjectId,
 	}
 	err = a.imageReferenceStore.AddImageReference(ctx, im)

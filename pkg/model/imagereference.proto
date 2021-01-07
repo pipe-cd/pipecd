@@ -26,8 +26,8 @@ message ImageReference {
     string repo_name = 2 [(validate.rules).string.min_len = 1];
     // The image digest.
     string digest = 3;
-    // The image tag.
-    string tag = 4 [(validate.rules).string.min_len = 1];
+    // The image tags.
+    repeated string tags = 4 [(validate.rules).repeated.min_items = 1];
     // The ID of the project this image belongs to.
     string project_id = 5 [(validate.rules).string.min_len = 1];
 

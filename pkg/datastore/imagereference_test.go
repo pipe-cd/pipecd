@@ -31,7 +31,7 @@ func TestAddImageReference(t *testing.T) {
 	im := model.ImageReference{
 		Id:        "id",
 		RepoName:  "repo",
-		Tag:       "tag",
+		Tags:      []string{"tag"},
 		ProjectId: "projectId",
 		CreatedAt: 12345,
 		UpdatedAt: 12345,
@@ -44,7 +44,7 @@ func TestAddImageReference(t *testing.T) {
 		wantErr bool
 	}{
 		{
-			name: "Invalid image metadata",
+			name: "Invalid image reference",
 			im:   model.ImageReference{},
 			ds: func() DataStore {
 				return NewMockDataStore(ctrl)
