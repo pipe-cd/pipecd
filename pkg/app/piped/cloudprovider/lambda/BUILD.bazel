@@ -4,14 +4,13 @@ go_library(
     name = "go_default_library",
     srcs = [
         "client.go",
-        "lambda.go",
         "function.go",
+        "lambda.go",
     ],
     importpath = "github.com/pipe-cd/pipe/pkg/app/piped/cloudprovider/lambda",
     visibility = ["//visibility:public"],
     deps = [
         "//pkg/config:go_default_library",
-        "@io_k8s_sigs_yaml//:go_default_library",
         "@com_github_aws_aws_sdk_go//aws:go_default_library",
         "@com_github_aws_aws_sdk_go//aws/awserr:go_default_library",
         "@com_github_aws_aws_sdk_go//aws/credentials:go_default_library",
@@ -19,6 +18,7 @@ go_library(
         "@com_github_aws_aws_sdk_go//aws/ec2metadata:go_default_library",
         "@com_github_aws_aws_sdk_go//aws/session:go_default_library",
         "@com_github_aws_aws_sdk_go//service/lambda:go_default_library",
+        "@io_k8s_sigs_yaml//:go_default_library",
         "@org_golang_x_sync//singleflight:go_default_library",
         "@org_uber_go_zap//:go_default_library",
     ],

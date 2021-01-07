@@ -9,6 +9,7 @@ go_library(
     deps = [
         "//pkg/app/pipectl/cmd/application:go_default_library",
         "//pkg/app/pipectl/cmd/deployment:go_default_library",
+        "//pkg/app/pipectl/cmd/image:go_default_library",
         "//pkg/cli:go_default_library",
     ],
 )

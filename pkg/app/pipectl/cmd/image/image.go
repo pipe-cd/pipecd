@@ -1,4 +1,4 @@
-// Copyright 2020 The PipeCD Authors.
+// Copyright 2021 The PipeCD Authors.
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -12,32 +12,32 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-package main
+package image
 
 import (
-	"fmt"
-	"os"
+	"github.com/spf13/cobra"
 
-	"github.com/pipe-cd/pipe/pkg/app/pipectl/cmd/application"
-	"github.com/pipe-cd/pipe/pkg/app/pipectl/cmd/deployment"
-	"github.com/pipe-cd/pipe/pkg/app/pipectl/cmd/image"
-	"github.com/pipe-cd/pipe/pkg/cli"
+	"github.com/pipe-cd/pipe/pkg/app/pipectl/client"
 )
 
-func main() {
-	app := cli.NewApp(
-		"pipectl",
-		"The command line tool for PipeCD.",
-	)
+type command struct {
+	clientOptions *client.Options
+}
 
-	app.AddCommands(
-		application.NewCommand(),
-		deployment.NewCommand(),
-		image.NewCommand(),
-	)
-
-	if err := app.Run(); err != nil {
-		fmt.Println("Error:", err)
-		os.Exit(1)
+func NewCommand() *cobra.Command {
+	c := &command{
+		clientOptions: &client.Options{},
 	}
+	cmd := &cobra.Command{
+		Use:   "image",
+		Short: "Manage image resources.",
+	}
+
+	cmd.AddCommand(
+		newPushReferenceCommand(c),
+	)
+
+	c.clientOptions.RegisterPersistentFlags(cmd)
+
+	return cmd
 }
