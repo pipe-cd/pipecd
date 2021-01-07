@@ -16,7 +16,7 @@ You can use pipectl to add and sync applications, wait for a deployment status.
 1. Download the appropriate version for your platform from [PipeCD Releases](https://github.com/pipe-cd/pipe/releases).
 
     We recommend using the latest version of pipectl to avoid unforeseen issues.
-    Please set `${VERSION}` to the same format like `v0.9.2`.
+    Please set `${VERSION}` to the same format like `v0.9.4`.
 
     ``` console
     curl -Lo ./pipectl https://github.com/pipe-cd/pipe/releases/download/${VERSION}/pipectl_${VERSION}_darwin_amd64
@@ -184,6 +184,18 @@ pipectl deployment wait-status \
     --api-key=API_KEY \
     --deployment-id=DEPLOYMENT_ID \
     --status=DEPLOYMENT_SUCCESS
+```
+
+### Pushing an image reference
+
+Push a new container image reference that can be used by ImageWatcher.
+
+``` console
+pipectl image push-reference \
+    --address=CONTROL_PLANE_API_ADDRESS \
+    --api-key=API_KEY \
+    --repo-name=gcr.io/pipecd/example \
+    --tag=v0.1.0
 ```
 
 ### You want more?
