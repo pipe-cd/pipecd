@@ -43,7 +43,7 @@ func (e *deployExecutor) Execute(sig executor.StopSignal) model.StageStatus {
 	e.deploySource = ds
 	e.deployCfg = ds.DeploymentConfig.LambdaDeploymentSpec
 	if e.deployCfg == nil {
-		e.LogPersister.Errorf("Malformed deployment configuration: missiong LambdaDeploymentSpec")
+		e.LogPersister.Errorf("Malformed deployment configuration: missing LambdaDeploymentSpec")
 		return model.StageStatus_STAGE_FAILURE
 	}
 
@@ -85,5 +85,6 @@ func (e *deployExecutor) ensureSync(ctx context.Context) model.StageStatus {
 }
 
 func (e *deployExecutor) ensurePromote(_ context.Context) model.StageStatus {
+	e.LogPersister.Error("This stage is not implemented yet")
 	return model.StageStatus_STAGE_FAILURE
 }
