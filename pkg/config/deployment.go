@@ -201,11 +201,6 @@ func (s *PipelineStage) UnmarshalJSON(data []byte) error {
 		if len(gs.With) > 0 {
 			err = json.Unmarshal(gs.With, s.LambdaSyncStageOptions)
 		}
-	case model.StageLambdaCanaryRollout:
-		s.LambdaCanaryRolloutStageOptions = &LambdaCanaryRolloutStageOptions{}
-		if len(gs.With) > 0 {
-			err = json.Unmarshal(gs.With, s.LambdaCanaryRolloutStageOptions)
-		}
 	case model.StageLambdaPromote:
 		s.LambdaPromoteStageOptions = &LambdaPromoteStageOptions{}
 		if len(gs.With) > 0 {

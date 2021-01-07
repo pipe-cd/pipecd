@@ -29,9 +29,9 @@ func (s *LambdaDeploymentSpec) Validate() error {
 }
 
 type LambdaDeploymentInput struct {
-	Git  string `json:"git"`
-	Path string `json:"path"`
-	Ref  string `json:"ref"`
+	// The name of service manifest file placing in application directory.
+	// Default is function.yaml
+	FunctionManifestFile string `json:"functionManifestFile"`
 	// Automatically reverts all changes from all stages when one of them failed.
 	// Default is true.
 	AutoRollback bool `json:"autoRollback"`
