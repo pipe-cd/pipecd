@@ -43,7 +43,7 @@ func newPushReferenceCommand(root *command) *cobra.Command {
 	}
 
 	cmd.Flags().StringVar(&c.repoName, "repo-name", c.repoName, "The repository name of container image. e.g. gcr.io/pipecd/pipecd, envoyproxy/envoy-alpine...")
-	cmd.Flags().StringSliceVar(&c.tags, "tag", c.tags, "The image tag.")
+	cmd.Flags().StringSliceVar(&c.tags, "tag", c.tags, "The image tag; Can be used multiple times to set multiple tags.")
 	cmd.Flags().StringVar(&c.digest, "digest", c.digest, "The image digest.")
 
 	cmd.MarkFlagRequired("repo-name")
