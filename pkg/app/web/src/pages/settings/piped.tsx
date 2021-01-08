@@ -26,6 +26,7 @@ import {
   MoreVert as MoreVertIcon,
   FilterList as FilterIcon,
 } from "@material-ui/icons";
+import clsx from "clsx";
 import dayjs from "dayjs";
 import React, { FC, memo, useCallback, useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
@@ -47,24 +48,8 @@ import {
 import { AppDispatch } from "../../store";
 
 const useStyles = makeStyles((theme) => ({
-  item: {
-    backgroundColor: theme.palette.background.paper,
-  },
-  disabledPipedsAccordion: {
-    padding: 0,
-  },
-  disabledItemsSummary: {
-    borderBottom: "1px solid rgba(0, 0, 0, .125)",
-  },
-  pipedsList: {
-    flex: 1,
-  },
-  disabledItemsSecondaryHeader: {
-    color: theme.palette.text.secondary,
-    marginLeft: theme.spacing(3),
-  },
   disabledItem: {
-    opacity: 0.6,
+    background: theme.palette.grey[200],
   },
   toolbarSpacer: {
     flexGrow: 1,
@@ -197,7 +182,10 @@ export const SettingsPipedPage: FC = memo(function SettingsPipedPage() {
             </TableHead>
             <TableBody>
               {pipeds.map((piped) => (
-                <TableRow key={`pipe-${piped.id}`}>
+                <TableRow
+                  key={`pipe-${piped.id}`}
+                  className={clsx({ [classes.disabledItem]: piped.disabled })}
+                >
                   <TableCell>
                     <Typography variant="subtitle2">
                       {`${piped.name} (${piped.id.slice(0, 8)})`}
