@@ -36,7 +36,7 @@ import (
 )
 
 var (
-	defaultDeploymentTimeout = time.Hour
+	defaultDeploymentTimeout = 6 * time.Hour
 )
 
 // scheduler is a dedicated object for a specific deployment of a single application.
@@ -220,7 +220,7 @@ func (s *scheduler) Run(ctx context.Context) error {
 	repoCfg, ok := s.pipedConfig.GetRepository(repoID)
 	if !ok {
 		s.doneDeploymentStatus = model.DeploymentStatus_DEPLOYMENT_FAILURE
-		statusReason = fmt.Sprintf("Unable to find %q from the repository list in piped config", repoID)
+		statusReason = fmt.Sprintf("Repository %q is not found in the piped config", repoID)
 		s.reportDeploymentCompleted(ctx, s.doneDeploymentStatus, statusReason, "")
 		return fmt.Errorf("unable to find %q from the repository list in piped config", repoID)
 	}
@@ -247,8 +247,8 @@ func (s *scheduler) Run(ctx context.Context) error {
 		)
 	}
 
-	// We use another deploy source provider to load the deployment configuration
-	// at the target commit. This provider is configured with a nil sealedSecretDecrypter
+	// We use another deploy source provider to load the deployment configuration at the target commit.
+	// This provider is configured with a nil sealedSecretDecrypter
 	// because decrypting the sealed secrets is not required.
 	// We need only the deployment configuration spec.
 	configDSP := deploysource.NewProvider(
@@ -327,27 +327,30 @@ func (s *scheduler) Run(ctx context.Context) error {
 		}
 
 		// If all operations of the stage were completed successfully
-		// go the next stage to handle.
+		// forward to handle the next stage.
 		if result == model.StageStatus_STAGE_SUCCESS {
 			continue
 		}
 
-		sigType := sig.Signal()
-
 		// The deployment was cancelled by a web user.
-		if sigType == executor.StopSignalCancel {
+		if result == model.StageStatus_STAGE_CANCELLED {
 			deploymentStatus = model.DeploymentStatus_DEPLOYMENT_CANCELLED
-			statusReason = fmt.Sprintf("Deployment was cancelled by %s while executing stage %s", cancelCommander, ps.Id)
+			statusReason = fmt.Sprintf("Cancelled by %s while executing stage %s", cancelCommander, ps.Id)
 			break
 		}
 
-		// The stage was failed but not caused by the stop signal.
-		if result == model.StageStatus_STAGE_FAILURE && sigType == executor.StopSignalNone {
+		if result == model.StageStatus_STAGE_FAILURE {
 			deploymentStatus = model.DeploymentStatus_DEPLOYMENT_FAILURE
-			statusReason = fmt.Sprintf("Failed while executing stage %s", ps.Id)
+			// The stage was failed because of timing out.
+			if sig.Signal() == executor.StopSignalTimeout {
+				statusReason = fmt.Sprintf("Timed out while executing stage %s", ps.Id)
+			} else {
+				statusReason = fmt.Sprintf("Failed while executing stage %s", ps.Id)
+			}
 			break
 		}
 
+		s.logger.Info("stop scheduler because of temination signal", zap.String("stage-id", ps.Id))
 		return nil
 	}
 
