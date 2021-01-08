@@ -112,3 +112,6 @@ helm -n pipecd uninstall pipecd
 kubectl delete deploy canary -n pipecd
 kubectl delete svc canary -n pipecd
 ```
+
+### What's next?
+You want to know some details on how to set up for a production environment? Visit [Operating Control Plane](/docs/operator-manual/control-plane/) at first. After reading that, the [Operating Piped](/docs/operator-manual/piped/) page will be for you.
