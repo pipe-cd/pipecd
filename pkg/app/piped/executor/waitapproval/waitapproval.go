@@ -55,6 +55,8 @@ func (e *Executor) Execute(sig executor.StopSignal) model.StageStatus {
 	)
 	defer ticker.Stop()
 
+	timer := time.NewTimer(time.Duration(e.StageConfig.WaitApprovalStageOptions.Timeout) * time.Second)
+
 	e.LogPersister.Info("Waiting for an approval...")
 	for {
 		select {
@@ -73,6 +75,9 @@ func (e *Executor) Execute(sig executor.StopSignal) model.StageStatus {
 			default:
 				return model.StageStatus_STAGE_FAILURE
 			}
+		case <-timer.C:
+			e.LogPersister.Info("Timeout wait approval")
+			return model.StageStatus_STAGE_FAILURE
 		}
 	}
 }
