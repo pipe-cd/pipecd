@@ -94,10 +94,12 @@ func (s *applicationStore) DisableApplication(ctx context.Context, id string) er
 
 func (s *applicationStore) DeleteApplication(ctx context.Context, id string) error {
 	return s.ds.Update(ctx, applicationModelKind, id, applicationFactory, func(e interface{}) error {
+		now := s.nowFunc().Unix()
 		app := e.(*model.Application)
 		app.Deleted = true
 		app.Disabled = true
-		app.UpdatedAt = s.nowFunc().Unix()
+		app.DeletedAt = now
+		app.UpdatedAt = now
 		return nil
 	})
 }

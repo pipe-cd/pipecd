@@ -49,6 +49,8 @@ message Application {
     // Current sync state.
     ApplicationSyncState sync_state = 13;
 
+    // Unix time when the application was deleted.
+    int64 deleted_at = 98 [(validate.rules).int64.gt = 0];
     // Whether the application is deleted or not.
     bool deleted = 99;
     // Whether the application is disabled or not.
