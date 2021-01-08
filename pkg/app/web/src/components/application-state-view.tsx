@@ -27,7 +27,8 @@ interface Props {
 }
 
 const ERROR_MESSAGE = "It was unable to fetch the latest state of application.";
-const DISABLED_APPLICATION_MESSAGE = "This application is disabled.";
+const DISABLED_APPLICATION_MESSAGE =
+  "This application is currently disabled. You can enable it from the application list page.";
 
 const useStyles = makeStyles(() => ({
   container: {
