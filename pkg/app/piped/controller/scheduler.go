@@ -327,7 +327,7 @@ func (s *scheduler) Run(ctx context.Context) error {
 		}
 
 		// If all operations of the stage were completed successfully
-		// forward to handle the next stage.
+		// handle the next stage.
 		if result == model.StageStatus_STAGE_SUCCESS {
 			continue
 		}
