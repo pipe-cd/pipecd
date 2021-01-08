@@ -70,7 +70,7 @@ func (p *Planner) Plan(ctx context.Context, in planner.Input) (out planner.Outpu
 		out.Summary = fmt.Sprintf("Quick sync to deploy image %s and configure all traffic to it (forced via web)", out.Version)
 		return
 	case model.SyncStrategy_PIPELINE:
-		err = fmt.Errorf("Pipeline sync for lambda application is not yet implemented")
+		err = fmt.Errorf("pipeline sync for lambda application is not yet implemented")
 		return
 	}
 
@@ -89,7 +89,7 @@ func (p *Planner) Plan(ctx context.Context, in planner.Input) (out planner.Outpu
 		return
 	}
 
-	err = fmt.Errorf("Currently only QUICK_SYNC strategy deployement is supported")
+	err = fmt.Errorf("currently only QUICK_SYNC strategy deployement is supported")
 	return
 }
 
