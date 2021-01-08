@@ -2,7 +2,10 @@ load("@io_bazel_rules_go//go:def.bzl", "go_library")
 
 go_library(
     name = "go_default_library",
-    srcs = ["lambda.go"],
+    srcs = [
+        "lambda.go",
+        "pipeline.go",
+    ],
     importpath = "github.com/pipe-cd/pipe/pkg/app/piped/planner/lambda",
     visibility = ["//visibility:public"],
     deps = [
