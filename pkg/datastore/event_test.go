@@ -29,8 +29,10 @@ func TestAddEvent(t *testing.T) {
 	defer ctrl.Finish()
 
 	event := model.Event{
+		Id:        "id",
 		Name:      "name",
 		Data:      "data",
+		ProjectId: "project",
 		CreatedAt: 12345,
 		UpdatedAt: 12345,
 	}
