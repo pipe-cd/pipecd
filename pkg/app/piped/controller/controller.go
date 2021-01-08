@@ -192,7 +192,7 @@ func (c *controller) Run(ctx context.Context) error {
 	c.logger.Info("start running controller")
 
 	// Make sure the existence of the workspace directory.
-	// Each scheduler/deployment will have an working directory inside this workspace.
+	// Each planner/scheduler will have an working directory inside this workspace.
 	dir, err := ioutil.TempDir("", "workspace")
 	if err != nil {
 		c.logger.Error("failed to create workspace directory", zap.Error(err))
@@ -224,7 +224,7 @@ L:
 			break L
 
 		case <-ticker.C:
-			// This must be called before syncPlanner because
+			// syncSchedulers must be called before syncPlanners because
 			// after piped is restarted all running deployments need to be loaded firstly.
 			c.syncSchedulers(ctx)
 			c.syncPlanners(ctx)
@@ -284,10 +284,9 @@ func (c *controller) checkCommands() {
 func (c *controller) syncPlanners(ctx context.Context) error {
 	// Remove stale planners from the recently completed list.
 	for id, t := range c.donePlanners {
-		if time.Since(t) < plannerStaleDuration {
-			continue
+		if time.Since(t) >= plannerStaleDuration {
+			delete(c.donePlanners, id)
 		}
-		delete(c.donePlanners, id)
 	}
 
 	// Find all completed ones and add them to donePlaners list.
@@ -440,10 +439,9 @@ func (c *controller) syncSchedulers(ctx context.Context) error {
 
 	// Remove done schedulers.
 	for id, t := range c.doneSchedulers {
-		if time.Since(t) < schedulerStaleDuration {
-			continue
+		if time.Since(t) >= schedulerStaleDuration {
+			delete(c.doneSchedulers, id)
 		}
-		delete(c.doneSchedulers, id)
 	}
 
 	for id, s := range c.schedulers {
@@ -462,17 +460,17 @@ func (c *controller) syncSchedulers(ctx context.Context) error {
 	// Add missing schedulers.
 	planneds := c.deploymentLister.ListPlanneds()
 	runnings := c.deploymentLister.ListRunnings()
-	runnings = append(runnings, planneds...)
+	targets := append(runnings, planneds...)
 
-	if len(runnings) == 0 {
+	if len(targets) == 0 {
 		return nil
 	}
 
-	c.logger.Info(fmt.Sprintf("there are %d planned/running deployments for scheduling", len(runnings)),
+	c.logger.Info(fmt.Sprintf("there are %d planned/running deployments for scheduling", len(targets)),
 		zap.Int("count", len(c.schedulers)),
 	)
 
-	for _, d := range runnings {
+	for _, d := range targets {
 		// Ignore already processed one.
 		if _, ok := c.doneSchedulers[d.Id]; ok {
 			continue
