@@ -90,6 +90,7 @@ func TestTerraformDeploymentConfig(t *testing.T) {
 								Name: model.StageWaitApproval,
 								WaitApprovalStageOptions: &WaitApprovalStageOptions{
 									Approvers: []string{"foo", "bar"},
+									Timeout:   defaultWaitApprovalTimeout, // set default timeout value when nothing sets on config
 								},
 							},
 							{
