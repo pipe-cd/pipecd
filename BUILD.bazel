@@ -58,6 +58,7 @@ genrule(
 # gazelle:exclude pkg/model/deployment.pb.validate.go
 # gazelle:exclude pkg/model/environment.pb.validate.go
 # gazelle:exclude pkg/model/event.pb.validate.go
+# gazelle:exclude pkg/model/imagereference.pb.validate.go
 # gazelle:exclude pkg/model/insight.pb.validate.go
 # gazelle:exclude pkg/model/logblock.pb.validate.go
 # gazelle:exclude pkg/model/piped.pb.validate.go
