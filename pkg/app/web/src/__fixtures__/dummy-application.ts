@@ -49,5 +49,6 @@ export const dummyApplication: Application = {
   },
   syncState: dummyApplicationSyncState,
   updatedAt: 0,
+  deletedAt: 0,
   deleted: false,
 };

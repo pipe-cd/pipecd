@@ -233,6 +233,7 @@ export const DeploymentDetail: FC<Props> = memo(function DeploymentDetail({
               }}
               startIcon={<CancelIcon />}
               loading={isCanceling}
+              disabled={isCanceling}
             />
           )}
         </Box>

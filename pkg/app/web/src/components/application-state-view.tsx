@@ -11,6 +11,10 @@ import { useDispatch, useSelector } from "react-redux";
 import { UI_TEXT_REFRESH } from "../constants/ui-text";
 import { AppState } from "../modules";
 import {
+  Application,
+  selectById as selectAppById,
+} from "../modules/applications";
+import {
   ApplicationLiveState,
   fetchApplicationStateById,
   selectById as selectLiveStateById,
@@ -23,6 +27,8 @@ interface Props {
 }
 
 const ERROR_MESSAGE = "It was unable to fetch the latest state of application.";
+const DISABLED_APPLICATION_MESSAGE =
+  "This application is currently disabled. You can enable it from the application list page.";
 
 const useStyles = makeStyles(() => ({
   container: {
@@ -37,13 +43,29 @@ export const ApplicationStateView: FC<Props> = memo(
   function ApplicationStateView({ applicationId }) {
     const classes = useStyles();
     const dispatch = useDispatch();
-    const [hasError, liveState] = useSelector<
+    const [hasError, liveState, app] = useSelector<
       AppState,
-      [boolean, ApplicationLiveState | undefined]
+      [boolean, ApplicationLiveState | undefined, Application | undefined]
     >((state) => [
       selectHasError(state.applicationLiveState, applicationId),
       selectLiveStateById(state.applicationLiveState, applicationId),
+      selectAppById(state.applications, applicationId),
     ]);
+
+    if (app?.disabled) {
+      return (
+        <Box
+          display="flex"
+          justifyContent="center"
+          alignItems="center"
+          flex={1}
+        >
+          <Typography variant="h6" component="span">
+            {DISABLED_APPLICATION_MESSAGE}
+          </Typography>
+        </Box>
+      );
+    }
 
     if (hasError) {
       return (

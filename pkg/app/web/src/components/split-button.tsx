@@ -30,6 +30,7 @@ interface Props {
   label: string;
   onClick: (index: number) => void;
   startIcon?: React.ReactNode;
+  disabled: boolean;
   loading: boolean;
   color?: PropTypes.Color;
   className?: string;
@@ -38,6 +39,7 @@ interface Props {
 export const SplitButton: FC<Props> = ({
   onClick,
   options,
+  disabled,
   loading,
   startIcon,
   className,
@@ -55,12 +57,12 @@ export const SplitButton: FC<Props> = ({
         variant="outlined"
         color={color || "inherit"}
         ref={anchorRef}
-        disabled={loading}
+        disabled={disabled}
       >
         <Button
           startIcon={startIcon}
           onClick={() => onClick(selectedCancelOption)}
-          disabled={loading}
+          disabled={disabled}
         >
           {options[selectedCancelOption]}
           {loading && (

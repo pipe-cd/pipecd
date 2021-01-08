@@ -1,6 +1,6 @@
 import userEvent from "@testing-library/user-event";
 import React from "react";
-import { render, screen, act } from "../../test-utils";
+import { act, render, screen } from "../../test-utils";
 import { SplitButton } from "./split-button";
 
 it("calls onClick handler with option's index if clicked", () => {
@@ -9,6 +9,7 @@ it("calls onClick handler with option's index if clicked", () => {
     <SplitButton
       label="select option"
       loading={false}
+      disabled={false}
       onClick={onClick}
       options={["option1", "option2"]}
     />,
