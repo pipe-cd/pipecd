@@ -35,7 +35,7 @@ service APIService {
 
     rpc GetCommand(GetCommandRequest) returns (GetCommandResponse) {}
 
-    rpc PushImageReference(PushImageReferenceRequest) returns (PushImageReferenceResponse) {}
+    rpc RegisterEvent(RegisterEventRequest) returns (RegisterEventResponse) {}
 }
 
 message AddApplicationRequest {
@@ -95,11 +95,10 @@ message GetCommandResponse {
     pipe.model.Command command = 1;
 }
 
-message PushImageReferenceRequest {
-    string repo_name = 1 [(validate.rules).string.min_len = 1];
-    repeated string tags = 2 [(validate.rules).repeated.min_items = 1];
-    string digest = 3;
+message RegisterEventRequest {
+    string name = 1 [(validate.rules).string.min_len = 1];
+    string data = 2 [(validate.rules).string.min_len = 1];
 }
 
-message PushImageReferenceResponse {
+message RegisterEventResponse {
 }

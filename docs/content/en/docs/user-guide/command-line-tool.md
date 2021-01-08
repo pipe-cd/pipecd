@@ -186,16 +186,16 @@ pipectl deployment wait-status \
     --status=DEPLOYMENT_SUCCESS
 ```
 
-### Pushing an image reference
+### Registering an event for EventWatcher
 
-Push a new container image reference that can be used by ImageWatcher.
+Register an event that can be used by EventWatcher.
 
 ``` console
-pipectl image push-reference \
+pipectl event register \
     --address=CONTROL_PLANE_API_ADDRESS \
     --api-key=API_KEY \
-    --repo-name=gcr.io/pipecd/example \
-    --tag=v0.1.0
+    --name=example-image-pushed \
+    --data=gcr.io/pipecd/example:v0.1.0
 ```
 
 ### You want more?
