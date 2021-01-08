@@ -14,54 +14,54 @@
 
 package model
 
-type Event struct {
-	Type     EventType
+type NotificationEvent struct {
+	Type     NotificationEventType
 	Metadata interface{}
 }
 
-func (e Event) Group() EventGroup {
+func (e NotificationEvent) Group() NotificationEventGroup {
 	switch {
 	case e.Type < 100:
-		return EventGroup_EVENT_DEPLOYMENT
+		return NotificationEventGroup_EVENT_DEPLOYMENT
 	case e.Type < 200:
-		return EventGroup_EVENT_APPLICATION_SYNC
+		return NotificationEventGroup_EVENT_APPLICATION_SYNC
 	case e.Type < 300:
-		return EventGroup_EVENT_APPLICATION_HEALTH
+		return NotificationEventGroup_EVENT_APPLICATION_HEALTH
 	case e.Type < 400:
-		return EventGroup_EVENT_PIPED
+		return NotificationEventGroup_EVENT_PIPED
 	default:
-		return EventGroup_EVENT_NONE
+		return NotificationEventGroup_EVENT_NONE
 	}
 }
 
-func (e *EventDeploymentTriggered) GetAppName() string {
+func (e *NotificationEventDeploymentTriggered) GetAppName() string {
 	return e.Deployment.ApplicationName
 }
 
-func (e *EventDeploymentPlanned) GetAppName() string {
+func (e *NotificationEventDeploymentPlanned) GetAppName() string {
 	return e.Deployment.ApplicationName
 }
 
-func (e *EventDeploymentApproved) GetAppName() string {
+func (e *NotificationEventDeploymentApproved) GetAppName() string {
 	return e.Deployment.ApplicationName
 }
 
-func (e *EventDeploymentRollingBack) GetAppName() string {
+func (e *NotificationEventDeploymentRollingBack) GetAppName() string {
 	return e.Deployment.ApplicationName
 }
 
-func (e *EventDeploymentSucceeded) GetAppName() string {
+func (e *NotificationEventDeploymentSucceeded) GetAppName() string {
 	return e.Deployment.ApplicationName
 }
 
-func (e *EventDeploymentFailed) GetAppName() string {
+func (e *NotificationEventDeploymentFailed) GetAppName() string {
 	return e.Deployment.ApplicationName
 }
 
-func (e *EventApplicationSynced) GetAppName() string {
+func (e *NotificationEventApplicationSynced) GetAppName() string {
 	return e.Application.Id
 }
 
-func (e *EventApplicationOutOfSync) GetAppName() string {
+func (e *NotificationEventApplicationOutOfSync) GetAppName() string {
 	return e.Application.Id
 }

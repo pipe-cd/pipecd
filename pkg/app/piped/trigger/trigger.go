@@ -68,7 +68,7 @@ type environmentLister interface {
 }
 
 type notifier interface {
-	Notify(event model.Event)
+	Notify(event model.NotificationEvent)
 }
 
 type Trigger struct {

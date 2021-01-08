@@ -581,18 +581,18 @@ func (s *scheduler) reportDeploymentCompleted(ctx context.Context, status model.
 	defer func() {
 		switch status {
 		case model.DeploymentStatus_DEPLOYMENT_SUCCESS:
-			s.notifier.Notify(model.Event{
-				Type: model.EventType_EVENT_DEPLOYMENT_SUCCEEDED,
-				Metadata: &model.EventDeploymentSucceeded{
+			s.notifier.Notify(model.NotificationEvent{
+				Type: model.NotificationEventType_EVENT_DEPLOYMENT_SUCCEEDED,
+				Metadata: &model.NotificationEventDeploymentSucceeded{
 					Deployment: s.deployment,
 					EnvName:    s.envName,
 				},
 			})
 
 		case model.DeploymentStatus_DEPLOYMENT_FAILURE:
-			s.notifier.Notify(model.Event{
-				Type: model.EventType_EVENT_DEPLOYMENT_FAILED,
-				Metadata: &model.EventDeploymentFailed{
+			s.notifier.Notify(model.NotificationEvent{
+				Type: model.NotificationEventType_EVENT_DEPLOYMENT_FAILED,
+				Metadata: &model.NotificationEventDeploymentFailed{
 					Deployment: s.deployment,
 					EnvName:    s.envName,
 					Reason:     desc,
@@ -600,9 +600,9 @@ func (s *scheduler) reportDeploymentCompleted(ctx context.Context, status model.
 			})
 
 		case model.DeploymentStatus_DEPLOYMENT_CANCELLED:
-			s.notifier.Notify(model.Event{
-				Type: model.EventType_EVENT_DEPLOYMENT_CANCELLED,
-				Metadata: &model.EventDeploymentCancelled{
+			s.notifier.Notify(model.NotificationEvent{
+				Type: model.NotificationEventType_EVENT_DEPLOYMENT_CANCELLED,
+				Metadata: &model.NotificationEventDeploymentCancelled{
 					Deployment: s.deployment,
 					EnvName:    s.envName,
 					Commander:  cancelCommander,

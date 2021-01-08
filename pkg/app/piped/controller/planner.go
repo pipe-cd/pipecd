@@ -216,9 +216,9 @@ func (p *planner) reportDeploymentPlanned(ctx context.Context, runningCommitHash
 	)
 
 	defer func() {
-		p.notifier.Notify(model.Event{
-			Type: model.EventType_EVENT_DEPLOYMENT_PLANNED,
-			Metadata: &model.EventDeploymentPlanned{
+		p.notifier.Notify(model.NotificationEvent{
+			Type: model.NotificationEventType_EVENT_DEPLOYMENT_PLANNED,
+			Metadata: &model.NotificationEventDeploymentPlanned{
 				Deployment: p.deployment,
 				EnvName:    p.envName,
 				Summary:    out.Summary,
@@ -254,9 +254,9 @@ func (p *planner) reportDeploymentFailed(ctx context.Context, reason string) err
 	)
 
 	defer func() {
-		p.notifier.Notify(model.Event{
-			Type: model.EventType_EVENT_DEPLOYMENT_FAILED,
-			Metadata: &model.EventDeploymentFailed{
+		p.notifier.Notify(model.NotificationEvent{
+			Type: model.NotificationEventType_EVENT_DEPLOYMENT_FAILED,
+			Metadata: &model.NotificationEventDeploymentFailed{
 				Deployment: p.deployment,
 				EnvName:    p.envName,
 				Reason:     reason,
@@ -292,9 +292,9 @@ func (p *planner) reportDeploymentCancelled(ctx context.Context, commander, reas
 	)
 
 	defer func() {
-		p.notifier.Notify(model.Event{
-			Type: model.EventType_EVENT_DEPLOYMENT_CANCELLED,
-			Metadata: &model.EventDeploymentCancelled{
+		p.notifier.Notify(model.NotificationEvent{
+			Type: model.NotificationEventType_EVENT_DEPLOYMENT_CANCELLED,
+			Metadata: &model.NotificationEventDeploymentCancelled{
 				Deployment: p.deployment,
 				EnvName:    p.envName,
 				Commander:  commander,

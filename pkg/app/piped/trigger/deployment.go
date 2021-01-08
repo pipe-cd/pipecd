@@ -48,9 +48,9 @@ func (t *Trigger) triggerDeployment(
 		if env, ok := t.environmentLister.Get(deployment.EnvId); ok {
 			envName = env.Name
 		}
-		t.notifier.Notify(model.Event{
-			Type: model.EventType_EVENT_DEPLOYMENT_TRIGGERED,
-			Metadata: &model.EventDeploymentTriggered{
+		t.notifier.Notify(model.NotificationEvent{
+			Type: model.NotificationEventType_EVENT_DEPLOYMENT_TRIGGERED,
+			Metadata: &model.NotificationEventDeploymentTriggered{
 				Deployment: deployment,
 				EnvName:    envName,
 			},

@@ -51,7 +51,7 @@ type envNameMetadata interface {
 	GetEnvName() string
 }
 
-func (m *matcher) Match(event model.Event) bool {
+func (m *matcher) Match(event model.NotificationEvent) bool {
 	if _, ok := m.ignoreEvents[event.Type.String()]; ok {
 		return false
 	}

@@ -44,7 +44,7 @@ type slack struct {
 	config     config.NotificationReceiverSlack
 	webURL     string
 	httpClient *http.Client
-	eventCh    chan model.Event
+	eventCh    chan model.NotificationEvent
 	logger     *zap.Logger
 }
 
@@ -56,7 +56,7 @@ func newSlackSender(name string, cfg config.NotificationReceiverSlack, webURL st
 		httpClient: &http.Client{
 			Timeout: 5 * time.Second,
 		},
-		eventCh: make(chan model.Event, 100),
+		eventCh: make(chan model.NotificationEvent, 100),
 		logger:  logger.Named("slack"),
 	}
 }
@@ -74,7 +74,7 @@ func (s *slack) Run(ctx context.Context) error {
 	}
 }
 
-func (s *slack) Notify(event model.Event) {
+func (s *slack) Notify(event model.NotificationEvent) {
 	s.eventCh <- event
 }
 
@@ -95,7 +95,7 @@ func (s *slack) Close(ctx context.Context) {
 	}
 }
 
-func (s *slack) sendEvent(ctx context.Context, event model.Event) {
+func (s *slack) sendEvent(ctx context.Context, event model.NotificationEvent) {
 	msg, ok := s.buildSlackMessage(event, s.webURL)
 	if !ok {
 		s.logger.Info(fmt.Sprintf("ignore event %s", event.Type.String()))
@@ -131,7 +131,7 @@ func (s *slack) sendMessage(ctx context.Context, msg slackMessage) error {
 	return nil
 }
 
-func (s *slack) buildSlackMessage(event model.Event, webURL string) (slackMessage, bool) {
+func (s *slack) buildSlackMessage(event model.NotificationEvent, webURL string) (slackMessage, bool) {
 	var (
 		title, link, text string
 		color             = slackInfoColor
@@ -159,44 +159,44 @@ func (s *slack) buildSlackMessage(event model.Event, webURL string) (slackMessag
 	}
 
 	switch event.Type {
-	case model.EventType_EVENT_DEPLOYMENT_TRIGGERED:
-		md := event.Metadata.(*model.EventDeploymentTriggered)
+	case model.NotificationEventType_EVENT_DEPLOYMENT_TRIGGERED:
+		md := event.Metadata.(*model.NotificationEventDeploymentTriggered)
 		title = fmt.Sprintf("Triggered a new deployment for %q", md.Deployment.ApplicationName)
 		generateDeploymentEventData(md.Deployment, md.EnvName)
 
-	case model.EventType_EVENT_DEPLOYMENT_PLANNED:
-		md := event.Metadata.(*model.EventDeploymentPlanned)
+	case model.NotificationEventType_EVENT_DEPLOYMENT_PLANNED:
+		md := event.Metadata.(*model.NotificationEventDeploymentPlanned)
 		title = fmt.Sprintf("Deployment for %q was planned", md.Deployment.ApplicationName)
 		text = md.Summary
 		generateDeploymentEventData(md.Deployment, md.EnvName)
 
-	case model.EventType_EVENT_DEPLOYMENT_SUCCEEDED:
-		md := event.Metadata.(*model.EventDeploymentSucceeded)
+	case model.NotificationEventType_EVENT_DEPLOYMENT_SUCCEEDED:
+		md := event.Metadata.(*model.NotificationEventDeploymentSucceeded)
 		title = fmt.Sprintf("Deployment for %q was completed successfully", md.Deployment.ApplicationName)
 		color = slackSuccessColor
 		generateDeploymentEventData(md.Deployment, md.EnvName)
 
-	case model.EventType_EVENT_DEPLOYMENT_FAILED:
-		md := event.Metadata.(*model.EventDeploymentFailed)
+	case model.NotificationEventType_EVENT_DEPLOYMENT_FAILED:
+		md := event.Metadata.(*model.NotificationEventDeploymentFailed)
 		title = fmt.Sprintf("Deployment for %q was failed", md.Deployment.ApplicationName)
 		text = md.Reason
 		color = slackErrorColor
 		generateDeploymentEventData(md.Deployment, md.EnvName)
 
-	case model.EventType_EVENT_DEPLOYMENT_CANCELLED:
-		md := event.Metadata.(*model.EventDeploymentCancelled)
+	case model.NotificationEventType_EVENT_DEPLOYMENT_CANCELLED:
+		md := event.Metadata.(*model.NotificationEventDeploymentCancelled)
 		title = fmt.Sprintf("Deployment for %q was cancelled", md.Deployment.ApplicationName)
 		text = fmt.Sprintf("Cancelled by %s", md.Commander)
 		color = slackWarnColor
 		generateDeploymentEventData(md.Deployment, md.EnvName)
 
-	case model.EventType_EVENT_PIPED_STARTED:
-		md := event.Metadata.(*model.EventPipedStarted)
+	case model.NotificationEventType_EVENT_PIPED_STARTED:
+		md := event.Metadata.(*model.NotificationEventPipedStarted)
 		title = "A piped has been started"
 		generatePipedEventData(md.Id, md.Version)
 
-	case model.EventType_EVENT_PIPED_STOPPED:
-		md := event.Metadata.(*model.EventPipedStopped)
+	case model.NotificationEventType_EVENT_PIPED_STOPPED:
+		md := event.Metadata.(*model.NotificationEventPipedStopped)
 		title = "A piped has been stopped"
 		generatePipedEventData(md.Id, md.Version)
 
