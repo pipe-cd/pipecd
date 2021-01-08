@@ -12,9 +12,7 @@ describe("applicationFilterOptionsSlice reducer", () => {
         type: "TEST_ACTION",
       })
     ).toEqual({
-      enabled: {
-        value: true,
-      },
+      enabled: undefined,
       envIdsList: [],
       kindsList: [],
       syncStatusesList: [],
@@ -25,9 +23,7 @@ describe("applicationFilterOptionsSlice reducer", () => {
     expect(
       applicationFilterOptionsSlice.reducer(
         {
-          enabled: {
-            value: true,
-          },
+          enabled: undefined,
           envIdsList: [],
           kindsList: [],
           syncStatusesList: [],
@@ -42,9 +38,7 @@ describe("applicationFilterOptionsSlice reducer", () => {
         }
       )
     ).toEqual({
-      enabled: {
-        value: true,
-      },
+      enabled: undefined,
       envIdsList: ["env1"],
       kindsList: [ApplicationKind.TERRAFORM],
       syncStatusesList: [ApplicationSyncStatus.SYNCED],
@@ -55,9 +49,7 @@ describe("applicationFilterOptionsSlice reducer", () => {
     expect(
       applicationFilterOptionsSlice.reducer(
         {
-          enabled: {
-            value: true,
-          },
+          enabled: undefined,
           envIdsList: ["env1"],
           kindsList: [ApplicationKind.KUBERNETES],
           syncStatusesList: [ApplicationSyncStatus.DEPLOYING],
@@ -65,9 +57,7 @@ describe("applicationFilterOptionsSlice reducer", () => {
         { type: clearApplicationFilter.type }
       )
     ).toEqual({
-      enabled: {
-        value: true,
-      },
+      enabled: undefined,
       envIdsList: [],
       kindsList: [],
       syncStatusesList: [],

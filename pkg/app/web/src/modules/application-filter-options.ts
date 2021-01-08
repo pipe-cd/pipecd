@@ -9,7 +9,7 @@ export type ApplicationFilterOptions = {
 };
 
 const initialState: ApplicationFilterOptions = {
-  enabled: { value: true },
+  enabled: undefined,
   kindsList: [],
   envIdsList: [],
   syncStatusesList: [],
