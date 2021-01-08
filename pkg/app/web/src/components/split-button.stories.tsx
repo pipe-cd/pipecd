@@ -14,6 +14,7 @@ export const overview: React.FC = () => (
     startIcon={<CancelIcon />}
     options={["Cancel", "Cancel Without Rollback"]}
     onClick={action("onClick")}
+    disabled={false}
     loading={false}
   />
 );
@@ -25,5 +26,6 @@ export const loading: React.FC = () => (
     options={["Cancel", "Cancel Without Rollback"]}
     onClick={action("onClick")}
     loading
+    disabled
   />
 );

@@ -10,6 +10,7 @@ import SyncIcon from "@material-ui/icons/Cached";
 import OpenInNewIcon from "@material-ui/icons/OpenInNew";
 import Skeleton from "@material-ui/lab/Skeleton/Skeleton";
 import { SerializedError } from "@reduxjs/toolkit";
+import clsx from "clsx";
 import dayjs from "dayjs";
 import React, { FC, memo } from "react";
 import { useDispatch, useSelector } from "react-redux";
@@ -50,6 +51,9 @@ const useStyles = makeStyles((theme) => ({
     zIndex: theme.zIndex.appBar,
     position: "relative",
     flexDirection: "column",
+  },
+  disabled: {
+    opacity: 0.6,
   },
   content: {
     flex: 1,
@@ -211,7 +215,13 @@ export const ApplicationDetail: FC<Props> = memo(function ApplicationDetail({
   }
 
   return (
-    <Paper square elevation={1} className={classes.root}>
+    <Paper
+      square
+      elevation={1}
+      className={clsx(classes.root, {
+        [classes.disabled]: app?.disabled,
+      })}
+    >
       <Box flex={1}>
         <Box display="flex" alignItems="baseline">
           <Typography variant="h5">
@@ -305,6 +315,7 @@ export const ApplicationDetail: FC<Props> = memo(function ApplicationDetail({
           label="select sync strategy"
           color="primary"
           loading={isSyncing}
+          disabled={isSyncing || Boolean(app?.disabled)}
           onClick={handleSync}
           options={syncOptions}
           startIcon={<SyncIcon />}

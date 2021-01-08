@@ -42,6 +42,7 @@ import { APPLICATION_KIND_TEXT } from "../constants/application-kind";
 import { setUpdateTargetId } from "../modules/update-application";
 import { DeleteApplicationDialog } from "./delete-application-dialog";
 import { setDeletingAppId } from "../modules/delete-application";
+import clsx from "clsx";
 
 const useStyles = makeStyles((theme) => ({
   root: {
@@ -55,6 +56,9 @@ const useStyles = makeStyles((theme) => ({
   },
   statusText: {
     marginLeft: theme.spacing(1),
+  },
+  disabledRow: {
+    background: theme.palette.grey[200],
   },
 }));
 
@@ -184,7 +188,10 @@ export const ApplicationList: FC = memo(function ApplicationList() {
             ).map((app) => {
               const recentlyDeployment = app.mostRecentlySuccessfulDeployment;
               return (
-                <TableRow key={`app-${app.id}`}>
+                <TableRow
+                  key={`app-${app.id}`}
+                  className={clsx({ [classes.disabledRow]: app.disabled })}
+                >
                   <TableCell>
                     <div className={classes.statusCell}>
                       {app.syncState ? (
