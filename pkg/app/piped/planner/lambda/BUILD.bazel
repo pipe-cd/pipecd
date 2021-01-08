@@ -9,7 +9,10 @@ go_library(
     importpath = "github.com/pipe-cd/pipe/pkg/app/piped/planner/lambda",
     visibility = ["//visibility:public"],
     deps = [
+        "//pkg/app/piped/cloudprovider/lambda:go_default_library",
         "//pkg/app/piped/planner:go_default_library",
+        "//pkg/config:go_default_library",
         "//pkg/model:go_default_library",
+        "@org_uber_go_zap//:go_default_library",
     ],
 )
