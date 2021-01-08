@@ -84,7 +84,7 @@ type liveResourceLister interface {
 }
 
 type notifier interface {
-	Notify(event model.Event)
+	Notify(event model.NotificationEvent)
 }
 
 type sealedSecretDecrypter interface {

@@ -27,14 +27,14 @@ func TestMatch(t *testing.T) {
 	testcases := []struct {
 		name      string
 		config    config.NotificationRoute
-		matchings map[model.Event]bool
+		matchings map[model.NotificationEvent]bool
 	}{
 		{
 			name:   "empty config",
 			config: config.NotificationRoute{},
-			matchings: map[model.Event]bool{
+			matchings: map[model.NotificationEvent]bool{
 				{}: true,
-				{Type: model.EventType_EVENT_DEPLOYMENT_TRIGGERED}: true,
+				{Type: model.NotificationEventType_EVENT_DEPLOYMENT_TRIGGERED}: true,
 			},
 		},
 		{
@@ -47,12 +47,12 @@ func TestMatch(t *testing.T) {
 					"DEPLOYMENT_ROLLING_BACK",
 				},
 			},
-			matchings: map[model.Event]bool{
+			matchings: map[model.NotificationEvent]bool{
 				{
-					Type: model.EventType_EVENT_DEPLOYMENT_TRIGGERED,
+					Type: model.NotificationEventType_EVENT_DEPLOYMENT_TRIGGERED,
 				}: true,
 				{
-					Type: model.EventType_EVENT_DEPLOYMENT_ROLLING_BACK,
+					Type: model.NotificationEventType_EVENT_DEPLOYMENT_ROLLING_BACK,
 				}: false,
 			},
 		},
@@ -66,12 +66,12 @@ func TestMatch(t *testing.T) {
 					"APPLICATION",
 				},
 			},
-			matchings: map[model.Event]bool{
+			matchings: map[model.NotificationEvent]bool{
 				{
-					Type: model.EventType_EVENT_DEPLOYMENT_TRIGGERED,
+					Type: model.NotificationEventType_EVENT_DEPLOYMENT_TRIGGERED,
 				}: true,
 				{
-					Type: model.EventType_EVENT_APPLICATION_SYNCED,
+					Type: model.NotificationEventType_EVENT_APPLICATION_SYNCED,
 				}: false,
 			},
 		},
@@ -85,34 +85,34 @@ func TestMatch(t *testing.T) {
 					"bluegreen",
 				},
 			},
-			matchings: map[model.Event]bool{
+			matchings: map[model.NotificationEvent]bool{
 				{
-					Type: model.EventType_EVENT_DEPLOYMENT_TRIGGERED,
-					Metadata: &model.EventDeploymentTriggered{
+					Type: model.NotificationEventType_EVENT_DEPLOYMENT_TRIGGERED,
+					Metadata: &model.NotificationEventDeploymentTriggered{
 						Deployment: &model.Deployment{
 							ApplicationName: "canary",
 						},
 					},
 				}: true,
 				{
-					Type: model.EventType_EVENT_DEPLOYMENT_PLANNED,
-					Metadata: &model.EventDeploymentTriggered{
+					Type: model.NotificationEventType_EVENT_DEPLOYMENT_PLANNED,
+					Metadata: &model.NotificationEventDeploymentTriggered{
 						Deployment: &model.Deployment{
 							ApplicationName: "bluegreen",
 						},
 					},
 				}: false,
 				{
-					Type: model.EventType_EVENT_DEPLOYMENT_SUCCEEDED,
-					Metadata: &model.EventDeploymentTriggered{
+					Type: model.NotificationEventType_EVENT_DEPLOYMENT_SUCCEEDED,
+					Metadata: &model.NotificationEventDeploymentTriggered{
 						Deployment: &model.Deployment{
 							ApplicationName: "not-specified",
 						},
 					},
 				}: false,
 				{
-					Type:     model.EventType_EVENT_PIPED_STARTED,
-					Metadata: &model.EventPipedStarted{},
+					Type:     model.NotificationEventType_EVENT_PIPED_STARTED,
+					Metadata: &model.NotificationEventPipedStarted{},
 				}: true,
 			},
 		},
@@ -126,10 +126,10 @@ func TestMatch(t *testing.T) {
 					"dev",
 				},
 			},
-			matchings: map[model.Event]bool{
+			matchings: map[model.NotificationEvent]bool{
 				{
-					Type: model.EventType_EVENT_DEPLOYMENT_TRIGGERED,
-					Metadata: &model.EventDeploymentTriggered{
+					Type: model.NotificationEventType_EVENT_DEPLOYMENT_TRIGGERED,
+					Metadata: &model.NotificationEventDeploymentTriggered{
 						Deployment: &model.Deployment{
 							EnvId: "prod-id",
 						},
@@ -137,8 +137,8 @@ func TestMatch(t *testing.T) {
 					},
 				}: true,
 				{
-					Type: model.EventType_EVENT_DEPLOYMENT_PLANNED,
-					Metadata: &model.EventDeploymentTriggered{
+					Type: model.NotificationEventType_EVENT_DEPLOYMENT_PLANNED,
+					Metadata: &model.NotificationEventDeploymentTriggered{
 						Deployment: &model.Deployment{
 							EnvId: "dev-id",
 						},
@@ -146,8 +146,8 @@ func TestMatch(t *testing.T) {
 					},
 				}: false,
 				{
-					Type: model.EventType_EVENT_DEPLOYMENT_SUCCEEDED,
-					Metadata: &model.EventDeploymentTriggered{
+					Type: model.NotificationEventType_EVENT_DEPLOYMENT_SUCCEEDED,
+					Metadata: &model.NotificationEventDeploymentTriggered{
 						Deployment: &model.Deployment{
 							EnvId: "not-specified",
 						},
@@ -155,8 +155,8 @@ func TestMatch(t *testing.T) {
 					},
 				}: false,
 				{
-					Type:     model.EventType_EVENT_PIPED_STARTED,
-					Metadata: &model.EventPipedStarted{},
+					Type:     model.NotificationEventType_EVENT_PIPED_STARTED,
+					Metadata: &model.NotificationEventPipedStarted{},
 				}: true,
 			},
 		},

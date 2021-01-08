@@ -45,7 +45,7 @@ type handler struct {
 
 type sender interface {
 	Run(ctx context.Context) error
-	Notify(event model.Event)
+	Notify(event model.NotificationEvent)
 	Close(ctx context.Context)
 }
 
@@ -99,9 +99,9 @@ func (n *Notifier) Run(ctx context.Context) error {
 	}
 
 	// Send the PIPED_STARTED event.
-	n.Notify(model.Event{
-		Type: model.EventType_EVENT_PIPED_STARTED,
-		Metadata: &model.EventPipedStarted{
+	n.Notify(model.NotificationEvent{
+		Type: model.NotificationEventType_EVENT_PIPED_STARTED,
+		Metadata: &model.NotificationEventPipedStarted{
 			Id:      n.config.PipedID,
 			Version: version.Get().Version,
 		},
@@ -114,9 +114,9 @@ func (n *Notifier) Run(ctx context.Context) error {
 	}
 
 	// Send the PIPED_STOPPED event.
-	n.Notify(model.Event{
-		Type: model.EventType_EVENT_PIPED_STOPPED,
-		Metadata: &model.EventPipedStopped{
+	n.Notify(model.NotificationEvent{
+		Type: model.NotificationEventType_EVENT_PIPED_STOPPED,
+		Metadata: &model.NotificationEventPipedStopped{
 			Id:      n.config.PipedID,
 			Version: version.Get().Version,
 		},
@@ -136,7 +136,7 @@ func (n *Notifier) Run(ctx context.Context) error {
 	return nil
 }
 
-func (n *Notifier) Notify(event model.Event) {
+func (n *Notifier) Notify(event model.NotificationEvent) {
 	if n.closed.Load() {
 		n.logger.Warn("ignore an event because notifier is already closed", zap.String("type", event.Type.String()))
 		return
