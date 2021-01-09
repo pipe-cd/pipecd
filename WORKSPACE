@@ -28,6 +28,19 @@ load(
     "go_rules_dependencies",
 )
 
+go_rules_dependencies()
+
+go_register_toolchains(
+    go_version = "1.14.10",
+)
+
+load(
+    "@io_bazel_rules_go//extras:embed_data_deps.bzl",
+    "go_embed_data_dependencies",
+)
+
+go_embed_data_dependencies()
+
 http_archive(
     name = "bazel_gazelle",
     sha256 = "b85f48fa105c4403326e9525ad2b2cc437babaa6e15a3fc0b1dbab0ab064bc7c",
@@ -42,31 +55,6 @@ load(
     "gazelle_dependencies",
     "go_repository",
 )
-
-# TODO: Investigate why "go-containerregistry" package is overridden
-# The downloaded source inside bazel-pipe/external/com_github_google_go_containerregistry is not containing some functions.
-# Maybe gazelle downloaded the wrong version.
-# As a workaround, we moved the go_repository part from repositories.bzl to here. We have to stop doing that ASAP.
-# See: https://github.com/pipe-cd/pipe/pull/1344#issuecomment-755075915
-go_repository(
-    name = "com_github_google_go_containerregistry",
-    importpath = "github.com/google/go-containerregistry",
-    sum = "h1:+vqpHdgIbD7xSeufHJq0iuAx7ILcEeh3fR5Og2nW1R0=",
-    version = "v0.3.0",
-)
-
-go_rules_dependencies()
-
-go_register_toolchains(
-    go_version = "1.14.10",
-)
-
-load(
-    "@io_bazel_rules_go//extras:embed_data_deps.bzl",
-    "go_embed_data_dependencies",
-)
-
-go_embed_data_dependencies()
 
 gazelle_dependencies()
 
