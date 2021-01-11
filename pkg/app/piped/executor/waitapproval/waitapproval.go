@@ -76,7 +76,7 @@ func (e *Executor) Execute(sig executor.StopSignal) model.StageStatus {
 				return model.StageStatus_STAGE_FAILURE
 			}
 		case <-timer.C:
-			e.LogPersister.Info("Timeout wait approval")
+			e.LogPersister.Errorf("Timed out %v", e.StageConfig.WaitApprovalStageOptions.Timeout)
 			return model.StageStatus_STAGE_FAILURE
 		}
 	}
