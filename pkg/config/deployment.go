@@ -223,7 +223,7 @@ type WaitStageOptions struct {
 
 // WaitStageOptions contains all configurable values for a WAIT_APPROVAL stage.
 type WaitApprovalStageOptions struct {
-	// number of seconds to timeout wait approval
+	// The maximum length of time to wait before giving up.
 	Timeout   int64    `json:"timeout"`
 	Approvers []string `json:"approvers"`
 }
