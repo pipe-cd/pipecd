@@ -291,9 +291,9 @@ func determineReplicaSetHealth(obj *unstructured.Unstructured) (status model.Kub
 	return
 }
 
-// TODO: Check health state of CronJob resource
 func determineCronJobHealth(obj *unstructured.Unstructured) (status model.KubernetesResourceState_HealthStatus, desc string) {
-	desc = "Unimplemented yet"
+	desc = fmt.Sprintf("%q was applied successfully", obj.GetName())
+	status = model.KubernetesResourceState_HEALTHY
 	return
 }
 
