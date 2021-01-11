@@ -17,6 +17,7 @@ package config
 import (
 	"encoding/json"
 	"fmt"
+	"time"
 
 	"github.com/pipe-cd/pipe/pkg/model"
 )
@@ -224,11 +225,11 @@ type WaitStageOptions struct {
 // WaitStageOptions contains all configurable values for a WAIT_APPROVAL stage.
 type WaitApprovalStageOptions struct {
 	// The maximum length of time to wait before giving up.
-	Timeout   int64    `json:"timeout"`
+	Timeout   Duration `json:"timeout"`
 	Approvers []string `json:"approvers"`
 }
 
-var defaultWaitApprovalTimeout int64 = 600
+var defaultWaitApprovalTimeout = Duration(6 * time.Hour)
 
 // AnalysisStageOptions contains all configurable values for a K8S_ANALYSIS stage.
 type AnalysisStageOptions struct {
