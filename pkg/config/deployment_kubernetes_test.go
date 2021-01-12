@@ -16,6 +16,7 @@ package config
 
 import (
 	"testing"
+	"time"
 
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
@@ -70,6 +71,7 @@ func TestKubernetesDeploymentConfig(t *testing.T) {
 							},
 						},
 					},
+					Timeout: Duration(6 * time.Hour),
 				},
 				Input: KubernetesDeploymentInput{AutoRollback: true},
 				TrafficRouting: &KubernetesTrafficRouting{

@@ -17,6 +17,7 @@ package config
 import (
 	"encoding/json"
 	"fmt"
+	"time"
 
 	"github.com/pipe-cd/pipe/pkg/model"
 )
@@ -31,6 +32,16 @@ type GenericDeploymentSpec struct {
 	// List of directories or files where their changes will trigger the deployment.
 	// Regular expression can be used.
 	TriggerPaths []string `json:"triggerPaths,omitempty"`
+	// The maximum length of time to execute deployment before giving up.
+	// Default is 6h.
+	Timeout Duration `json:"timeout,omitempty"`
+}
+
+func (s *GenericDeploymentSpec) Validate() error {
+	if s.Timeout == 0 {
+		s.Timeout = Duration(6 * time.Hour)
+	}
+	return nil
 }
 
 func (s GenericDeploymentSpec) GetStage(index int32) (PipelineStage, bool) {
