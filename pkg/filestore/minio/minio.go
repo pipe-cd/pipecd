@@ -106,7 +106,7 @@ func (s *Store) NewReader(ctx context.Context, path string) (rc io.ReadCloser, e
 		if e.StatusCode == http.StatusNotFound {
 			err = filestore.ErrNotFound
 		}
-		s.logger.Error("failed to stat minio object", 
+		s.logger.Error("failed to stat minio object",
 			zap.String("path", path),
 			zap.Error(err),
 		)
