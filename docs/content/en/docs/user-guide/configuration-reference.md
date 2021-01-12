@@ -47,6 +47,7 @@ spec:
 | quickSync | [TerraformQuickSync](/docs/user-guide/configuration-reference/#terraformquicksync) | Configuration for quick sync. | No |
 | pipeline | [Pipeline](/docs/user-guide/configuration-reference/#pipeline) | Pipeline for deploying progressively. | No |
 | sealedSecrets | [][SealedSecretMapping](/docs/user-guide/configuration-reference/#sealedsecretmapping) | The list of sealed secrets should be decrypted. | No |
+| triggerPaths | []string | List of directories or files where their changes will trigger the deployment. Regular expression can be used. | No |
 | timeout | duration | The maximum length of time to execute deployment before giving up. Default is 6h. | No |
 
 ## CloudRun application
@@ -65,6 +66,7 @@ spec:
 | input | [CloudRunDeploymentInput](/docs/user-guide/configuration-reference/#cloudrundeploymentinput) | Input for CloudRun deployment such as docker image... | No |
 | quickSync | [CloudRunQuickSync](/docs/user-guide/configuration-reference/#cloudrunquicksync) | Configuration for quick sync. | No |
 | pipeline | [Pipeline](/docs/user-guide/configuration-reference/#pipeline) | Pipeline for deploying progressively. | No |
+| triggerPaths | []string | List of directories or files where their changes will trigger the deployment. Regular expression can be used. | No |
 | sealedSecrets | [][SealedSecretMapping](/docs/user-guide/configuration-reference/#sealedsecretmapping) | The list of sealed secrets should be decrypted. | No |
 | timeout | duration | The maximum length of time to execute deployment before giving up. Default is 6h. | No |
 
@@ -84,6 +86,7 @@ spec:
 | input | [CloudRunDeploymentInput](/docs/user-guide/configuration-reference/#cloudrundeploymentinput) | Input for Lambda deployment such as where to fetch source code... | No |
 | quickSync | [CloudRunQuickSync](/docs/user-guide/configuration-reference/#cloudrunquicksync) | Configuration for quick sync. | No |
 | pipeline | [Pipeline](/docs/user-guide/configuration-reference/#pipeline) | Pipeline for deploying progressively. | No |
+| triggerPaths | []string | List of directories or files where their changes will trigger the deployment. Regular expression can be used. | No |
 | sealedSecrets | [][SealedSecretMapping](/docs/user-guide/configuration-reference/#sealedsecretmapping) | The list of sealed secrets should be decrypted. | No |
 | timeout | duration | The maximum length of time to execute deployment before giving up. Default is 6h. | No |
 
