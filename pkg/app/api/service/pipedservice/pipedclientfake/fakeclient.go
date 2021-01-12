@@ -159,7 +159,7 @@ func (c *fakeClient) ReportApplicationSyncState(ctx context.Context, req *pipeds
 }
 
 // ReportApplicationDeployingStatus is used to report whether the specified application is deploying or not.
-func (c *fakeClient) ReportApplicationDeployingStatus(ctx context.Context, req *pipedservice.ReportApplicationDeployingStatusRequest, opts ...grpc.CallOption) (*pipedservice.ReportApplicationDeployingStatusResponse, error) {
+func (c *fakeClient) ReportApplicationDeployingStatus(_ context.Context, req *pipedservice.ReportApplicationDeployingStatusRequest, _ ...grpc.CallOption) (*pipedservice.ReportApplicationDeployingStatusResponse, error) {
 	c.logger.Info("fake client received ReportApplicationDeployingStatus rpc", zap.Any("request", req))
 	c.mu.RLock()
 	defer c.mu.RUnlock()
