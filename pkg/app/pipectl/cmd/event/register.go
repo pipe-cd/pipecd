@@ -43,6 +43,7 @@ func newRegisterCommand(root *command) *cobra.Command {
 
 	cmd.Flags().StringVar(&r.name, "name", r.name, "The name of event.")
 	cmd.Flags().StringVar(&r.data, "data", r.data, "The string value of event data.")
+	// TODO: Allow specifying event labels.
 
 	cmd.MarkFlagRequired("name")
 	cmd.MarkFlagRequired("data")
