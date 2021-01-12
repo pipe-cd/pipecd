@@ -51,4 +51,5 @@ export const dummyApplication: Application = {
   updatedAt: 0,
   deletedAt: 0,
   deleted: false,
+  deploying: false,
 };
