@@ -44,6 +44,7 @@ import (
 
 type apiClient interface {
 	GetApplicationMostRecentDeployment(ctx context.Context, req *pipedservice.GetApplicationMostRecentDeploymentRequest, opts ...grpc.CallOption) (*pipedservice.GetApplicationMostRecentDeploymentResponse, error)
+	ReportApplicationDeployingStatus(ctx context.Context, req *pipedservice.ReportApplicationDeployingStatusRequest, opts ...grpc.CallOption) (*pipedservice.ReportApplicationDeployingStatusResponse, error)
 	ReportDeploymentPlanned(ctx context.Context, req *pipedservice.ReportDeploymentPlannedRequest, opts ...grpc.CallOption) (*pipedservice.ReportDeploymentPlannedResponse, error)
 	ReportDeploymentStatusChanged(ctx context.Context, req *pipedservice.ReportDeploymentStatusChangedRequest, opts ...grpc.CallOption) (*pipedservice.ReportDeploymentStatusChangedResponse, error)
 	ReportDeploymentCompleted(ctx context.Context, req *pipedservice.ReportDeploymentCompletedRequest, opts ...grpc.CallOption) (*pipedservice.ReportDeploymentCompletedResponse, error)
@@ -192,7 +193,7 @@ func (c *controller) Run(ctx context.Context) error {
 	c.logger.Info("start running controller")
 
 	// Make sure the existence of the workspace directory.
-	// Each planner/scheduler will have an working directory inside this workspace.
+	// Each planner/scheduler will have a working directory inside this workspace.
 	dir, err := ioutil.TempDir("", "workspace")
 	if err != nil {
 		c.logger.Error("failed to create workspace directory", zap.Error(err))
@@ -587,6 +588,25 @@ func (c *controller) getMostRecentlySuccessfulDeployment(ctx context.Context, ap
 		}
 	}
 	return nil, err
+}
+
+func (c *controller) reportApplicationDeployingStatus(ctx context.Context, appID string, deploying bool) error {
+	var (
+		err   error
+		retry = pipedservice.NewRetry(10)
+		req   = &pipedservice.ReportApplicationDeployingStatusRequest{
+			ApplicationId: appID,
+			Deploying:     deploying,
+		}
+	)
+
+	for retry.WaitNext(ctx) {
+		if _, err = c.apiClient.ReportApplicationDeployingStatus(ctx, req); err == nil {
+			return nil
+		}
+		err = fmt.Errorf("failed to report application deploying status to control-plane: %w", err)
+	}
+	return err
 }
 
 type appLiveResourceLister struct {
