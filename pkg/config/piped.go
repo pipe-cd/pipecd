@@ -645,25 +645,24 @@ type PipedImageWatcherGitRepo struct {
 }
 
 type PipedEventWatcher struct {
-	// Interval to fetch the latest event and compare it with one defined in replacement files.
+	// Interval to fetch the latest event and compare it with one defined in EventWatcher config files
 	CheckInterval Duration `json:"checkInterval"`
 	// Settings for each git repository.
 	GitRepos []PipedEventWatcherGitRepo `json:"gitRepos"`
 }
 
-// Validate checks if:
-// - empty repo ids exist
-// - duplicated repository settings exist
 func (p *PipedEventWatcher) Validate() error {
-	repos := make(map[string]struct{}, len(p.GitRepos))
-	for i := 0; i < len(p.GitRepos); i++ {
-		if p.GitRepos[i].RepoID == "" {
-			return fmt.Errorf("repoId is required", p.GitRepos[i].RepoID)
+	seen := make(map[string]struct{}, len(p.GitRepos))
+	for i, repo := range p.GitRepos {
+		// Validate the existence of repo ID.
+		if repo.RepoID == "" {
+			return fmt.Errorf("missing repoID at index %d", i)
 		}
-		if _, ok := repos[p.GitRepos[i].RepoID]; ok {
-			return fmt.Errorf("duplicated repo id (%s) found in the eventWatcher directive", p.GitRepos[i].RepoID)
+		// Validate if duplicated repository settings exist.
+		if _, ok := seen[repo.RepoID]; ok {
+			return fmt.Errorf("duplicated repo id (%s) found in the eventWatcher directive", repo.RepoID)
 		}
-		repos[p.GitRepos[i].RepoID] = struct{}{}
+		seen[repo.RepoID] = struct{}{}
 	}
 	return nil
 }

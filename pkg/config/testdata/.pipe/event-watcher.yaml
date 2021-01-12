@@ -7,8 +7,8 @@ spec:
         - file: app1/deployment.yaml
           yamlField: $.spec.template.spec.containers[0].image
     - name: app2-helm-release
+      labels:
+        repoId: repo-1
       replacements:
         - file: app2/.pipe.yaml
           yamlField: $.spec.input.helmChart.version
-      labels:
-        repoId: repo-1

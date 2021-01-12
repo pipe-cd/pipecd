@@ -27,13 +27,13 @@ type EventWatcherSpec struct {
 
 // EventWatcherEvent defines which file will be replaced when the given event happened.
 type EventWatcherEvent struct {
-	// The event name. The combination of this name and labels must be unique within a project.
+	// The event name.
 	Name string `json:"name"`
-	// List of places where will be replaced when the new event found.
-	Replacements []EventWatcherReplacement `json:"replacements"`
 	// Additional attributes of event. This can make an event definition
 	// unique even if the one with the same name exists.
 	Labels map[string]string `json:"labels"`
+	// List of places where will be replaced when the new event matches.
+	Replacements []EventWatcherReplacement `json:"replacements"`
 }
 
 type EventWatcherReplacement struct {
@@ -59,6 +59,7 @@ func LoadEventWatcher(repoRoot string, includes, excludes []string) (*EventWatch
 		return nil, fmt.Errorf("failed to read %s: %w", dir, err)
 	}
 
+	// Start merging events defined across multiple files.
 	spec := &EventWatcherSpec{
 		Events: make([]EventWatcherEvent, 0),
 	}
@@ -79,6 +80,7 @@ func LoadEventWatcher(repoRoot string, includes, excludes []string) (*EventWatch
 			spec.Events = append(spec.Events, cfg.EventWatcherSpec.Events...)
 		}
 	}
+
 	if err := spec.Validate(); err != nil {
 		return nil, err
 	}
@@ -121,10 +123,6 @@ func filterEventWatcherFiles(files []os.FileInfo, includes, excludes []string) (
 }
 
 func (s *EventWatcherSpec) Validate() error {
-	if len(s.Events) == 0 {
-		return ErrNotFound
-	}
-
 	for _, e := range s.Events {
 		if e.Name == "" {
 			return fmt.Errorf("event name must not be empty")
@@ -132,6 +130,7 @@ func (s *EventWatcherSpec) Validate() error {
 		if len(e.Replacements) == 0 {
 			return fmt.Errorf("there must be at least one replacement to an event")
 		}
+		// TODO: Consider merging events if there are events whose combination of name and labels is the same
 	}
 	return nil
 }

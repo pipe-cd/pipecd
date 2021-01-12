@@ -35,14 +35,14 @@ func TestLoadEventWatcher(t *testing.T) {
 		},
 		{
 			Name: "app2-helm-release",
+			Labels: map[string]string{
+				"repoId": "repo-1",
+			},
 			Replacements: []EventWatcherReplacement{
 				{
 					File:      "app2/.pipe.yaml",
 					YAMLField: "$.spec.input.helmChart.version",
 				},
-			},
-			Labels: map[string]string{
-				"repoId": "repo-1",
 			},
 		},
 	}}
