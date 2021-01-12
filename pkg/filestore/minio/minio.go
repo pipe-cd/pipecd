@@ -21,6 +21,7 @@ import (
 	"io"
 	"io/ioutil"
 	"mime"
+	"net/http"
 	"net/url"
 	"path/filepath"
 	"strings"
@@ -100,7 +101,17 @@ func (s *Store) EnsureBucket(ctx context.Context) error {
 }
 
 func (s *Store) NewReader(ctx context.Context, path string) (rc io.ReadCloser, err error) {
-	// No error returned even if the object does not exist.
+	if _, err = s.client.StatObject(ctx, s.bucket, path, minio.GetObjectOptions{}); err != nil {
+		e := minio.ToErrorResponse(err)
+		if e.StatusCode == http.StatusNotFound {
+			err = filestore.ErrNotFound
+		}
+		s.logger.Error("failed to stat minio object",
+			zap.String("path", path),
+			zap.Error(err),
+		)
+		return
+	}
 	return s.client.GetObject(ctx, s.bucket, path, minio.GetObjectOptions{})
 }
 
