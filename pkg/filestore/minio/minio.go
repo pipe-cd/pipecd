@@ -101,7 +101,7 @@ func (s *Store) EnsureBucket(ctx context.Context) error {
 }
 
 func (s *Store) NewReader(ctx context.Context, path string) (rc io.ReadCloser, err error) {
-	if _, err := s.client.StatObject(ctx, s.bucket, path, minio.GetObjectOptions{}); err != nil {
+	if _, err = s.client.StatObject(ctx, s.bucket, path, minio.GetObjectOptions{}); err != nil {
 		e := minio.ToErrorResponse(err)
 		if e.StatusCode == http.StatusNotFound {
 			err = filestore.ErrNotFound
