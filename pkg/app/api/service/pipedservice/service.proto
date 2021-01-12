@@ -51,6 +51,9 @@ service PipedService {
     // ReportApplicationSyncState is used to update the sync status of an application.
     rpc ReportApplicationSyncState(ReportApplicationSyncStateRequest) returns (ReportApplicationSyncStateResponse) {}
 
+    // ReportApplicationDeployingStatus is used to report whether the specified application is deploying or not.
+    rpc ReportApplicationDeployingStatus(ReportApplicationDeployingStatusRequest) returns (ReportApplicationDeployingStatusResponse) {}
+
     // ReportApplicationMostRecentDeployment is used to update the basic information about
     // the most recent deployment of a specific application.
     rpc ReportApplicationMostRecentDeployment(ReportApplicationMostRecentDeploymentRequest) returns (ReportApplicationMostRecentDeploymentResponse) {}
@@ -171,6 +174,14 @@ message ReportApplicationSyncStateRequest {
 }
 
 message ReportApplicationSyncStateResponse {
+}
+
+message ReportApplicationDeployingStatusRequest {
+    string application_id = 1 [(validate.rules).string.min_len = 1];
+    bool deploying = 2;
+}
+
+message ReportApplicationDeployingStatusResponse {
 }
 
 message ReportApplicationMostRecentDeploymentRequest {

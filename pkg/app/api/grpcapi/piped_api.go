@@ -204,6 +204,36 @@ func (a *PipedAPI) ReportApplicationSyncState(ctx context.Context, req *pipedser
 	return &pipedservice.ReportApplicationSyncStateResponse{}, nil
 }
 
+// ReportApplicationDeployingStatus is used to report whether the specified application is deploying or not.
+func (a *PipedAPI) ReportApplicationDeployingStatus(ctx context.Context, req *pipedservice.ReportApplicationDeployingStatusRequest) (*pipedservice.ReportApplicationDeployingStatusResponse, error) {
+	_, pipedID, _, err := rpcauth.ExtractPipedToken(ctx)
+	if err != nil {
+		return nil, err
+	}
+	if err := a.validateAppBelongsToPiped(ctx, req.ApplicationId, pipedID); err != nil {
+		return nil, err
+	}
+
+	err = a.applicationStore.UpdateApplication(ctx, req.ApplicationId, func(app *model.Application) error {
+		app.Deploying = req.Deploying
+		return nil
+	})
+	switch err {
+	case datastore.ErrNotFound:
+		return nil, status.Error(codes.InvalidArgument, "application is not found")
+	case datastore.ErrInvalidArgument:
+		return nil, status.Error(codes.InvalidArgument, "invalid value for update")
+	default:
+		a.logger.Error("failed to update deploying status of application",
+			zap.String("application-id", req.ApplicationId),
+			zap.Error(err),
+		)
+		return nil, status.Error(codes.Internal, "failed to update deploying status of application")
+	}
+
+	return &pipedservice.ReportApplicationDeployingStatusResponse{}, nil
+}
+
 // ReportApplicationMostRecentDeployment is used to update the basic information about
 // the most recent deployment of a specific application.
 func (a *PipedAPI) ReportApplicationMostRecentDeployment(ctx context.Context, req *pipedservice.ReportApplicationMostRecentDeploymentRequest) (*pipedservice.ReportApplicationMostRecentDeploymentResponse, error) {
