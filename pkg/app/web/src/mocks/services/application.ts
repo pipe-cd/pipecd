@@ -1,6 +1,9 @@
 import { rest } from "msw";
 import {
   AddApplicationResponse,
+  DeleteApplicationResponse,
+  DisableApplicationResponse,
+  EnableApplicationResponse,
   ListApplicationsResponse,
   SyncApplicationResponse,
   UpdateApplicationResponse,
@@ -14,6 +17,36 @@ export const applicationHandlers = [
     const response = new SyncApplicationResponse();
 
     response.setCommandId("sync-command");
+
+    const data = serialize(response.serializeBinary());
+    return res(
+      ctx.status(200),
+      ctx.set("Content-Type", "application/grpc-web+proto"),
+      ctx.body(data)
+    );
+  }),
+  rest.post<Uint8Array>(createMask("/EnableApplication"), (req, res, ctx) => {
+    const response = new EnableApplicationResponse();
+
+    const data = serialize(response.serializeBinary());
+    return res(
+      ctx.status(200),
+      ctx.set("Content-Type", "application/grpc-web+proto"),
+      ctx.body(data)
+    );
+  }),
+  rest.post<Uint8Array>(createMask("/DisableApplication"), (req, res, ctx) => {
+    const response = new DisableApplicationResponse();
+
+    const data = serialize(response.serializeBinary());
+    return res(
+      ctx.status(200),
+      ctx.set("Content-Type", "application/grpc-web+proto"),
+      ctx.body(data)
+    );
+  }),
+  rest.post<Uint8Array>(createMask("/DeleteApplication"), (req, res, ctx) => {
+    const response = new DeleteApplicationResponse();
 
     const data = serialize(response.serializeBinary());
     return res(
