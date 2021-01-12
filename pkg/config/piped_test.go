@@ -231,6 +231,16 @@ func TestPipedConfig(t *testing.T) {
 						},
 					},
 				},
+				EventWatcher: PipedEventWatcher{
+					CheckInterval: Duration(10 * time.Minute),
+					GitRepos: []PipedEventWatcherGitRepo{
+						{
+							RepoID:        "repo-1",
+							CommitMessage: "Update values by Event watcher",
+							Includes:      []string{"event-watcher-dev.yaml", "event-watcher-stg.yaml"},
+						},
+					},
+				},
 			},
 			expectedError: nil,
 		},
