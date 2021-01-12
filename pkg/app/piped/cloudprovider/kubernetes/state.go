@@ -98,11 +98,43 @@ func determineResourceHealth(key ResourceKey, obj *unstructured.Unstructured) (s
 		return determineSecretHealth(obj)
 	case KindServiceAccount:
 		return determineServiceAccountHealth(obj)
+	case KindRole:
+		return determineRoleHealth(obj)
+	case KindRoleBinding:
+		return determineRoleBindingHealth(obj)
+	case KindClusterRole:
+		return determineClusterRoleHealth(obj)
+	case KindClusterRoleBinding:
+		return determineClusterRoleBindingHealth(obj)
 	default:
 		desc = "Unimplemented or unknown resource"
 		return
 	}
 
+	return
+}
+
+func determineRoleHealth(obj *unstructured.Unstructured) (status model.KubernetesResourceState_HealthStatus, desc string) {
+	desc = fmt.Sprintf("%q was applied successfully", obj.GetName())
+	status = model.KubernetesResourceState_HEALTHY
+	return
+}
+
+func determineRoleBindingHealth(obj *unstructured.Unstructured) (status model.KubernetesResourceState_HealthStatus, desc string) {
+	desc = fmt.Sprintf("%q was applied successfully", obj.GetName())
+	status = model.KubernetesResourceState_HEALTHY
+	return
+}
+
+func determineClusterRoleHealth(obj *unstructured.Unstructured) (status model.KubernetesResourceState_HealthStatus, desc string) {
+	desc = fmt.Sprintf("%q was applied successfully", obj.GetName())
+	status = model.KubernetesResourceState_HEALTHY
+	return
+}
+
+func determineClusterRoleBindingHealth(obj *unstructured.Unstructured) (status model.KubernetesResourceState_HealthStatus, desc string) {
+	desc = fmt.Sprintf("%q was applied successfully", obj.GetName())
+	status = model.KubernetesResourceState_HEALTHY
 	return
 }
 

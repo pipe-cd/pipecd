@@ -72,6 +72,10 @@ const (
 	KindService               = "Service"
 	KindIngress               = "Ingress"
 	KindServiceAccount        = "ServiceAccount"
+	KindRole                  = "Role"
+	KindRoleBinding           = "RoleBinding"
+	KindClusterRole           = "ClusterRole"
+	KindClusterRoleBinding    = "ClusterRoleBinding"
 
 	DefaultNamespace = "default"
 )
