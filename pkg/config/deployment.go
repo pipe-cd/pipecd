@@ -22,6 +22,8 @@ import (
 	"github.com/pipe-cd/pipe/pkg/model"
 )
 
+var defaultWaitApprovalTimeout = Duration(6 * time.Hour)
+
 type GenericDeploymentSpec struct {
 	// Forcibly use QuickSync or Pipeline when commit message matched the specified pattern.
 	CommitMatcher DeploymentCommitMatcher `json:"commitMatcher"`
@@ -228,8 +230,6 @@ type WaitApprovalStageOptions struct {
 	Timeout   Duration `json:"timeout"`
 	Approvers []string `json:"approvers"`
 }
-
-var defaultWaitApprovalTimeout = Duration(6 * time.Hour)
 
 // AnalysisStageOptions contains all configurable values for a K8S_ANALYSIS stage.
 type AnalysisStageOptions struct {
