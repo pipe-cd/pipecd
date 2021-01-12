@@ -64,6 +64,8 @@ const (
 	KindAnalysisTemplate Kind = "AnalysisTemplate"
 	// KindImageWatcher represents configuration for Repo Watcher.
 	KindImageWatcher Kind = "ImageWatcher"
+	// KindEventWatcher represents configuration for Event Watcher.
+	KindEventWatcher Kind = "EventWatcher"
 )
 
 var (
@@ -87,6 +89,7 @@ type Config struct {
 	ControlPlaneSpec     *ControlPlaneSpec
 	AnalysisTemplateSpec *AnalysisTemplateSpec
 	ImageWatcherSpec     *ImageWatcherSpec
+	EventWatcherSpec     *EventWatcherSpec
 
 	SealedSecretSpec *SealedSecretSpec
 }
@@ -149,6 +152,10 @@ func (c *Config) init(kind Kind, apiVersion string) error {
 	case KindImageWatcher:
 		c.ImageWatcherSpec = &ImageWatcherSpec{}
 		c.spec = c.ImageWatcherSpec
+
+	case KindEventWatcher:
+		c.EventWatcherSpec = &EventWatcherSpec{}
+		c.spec = c.EventWatcherSpec
 
 	default:
 		return fmt.Errorf("unsupported kind: %s", c.Kind)

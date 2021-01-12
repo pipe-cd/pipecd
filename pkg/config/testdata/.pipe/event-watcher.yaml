@@ -1,0 +1,14 @@
+apiVersion: pipecd.dev/v1beta1
+kind: EventWatcher
+spec:
+  events:
+    - name: app1-image-update
+      replacements:
+        - file: app1/deployment.yaml
+          yamlField: $.spec.template.spec.containers[0].image
+    - name: app2-helm-release
+      labels:
+        repoId: repo-1
+      replacements:
+        - file: app2/.pipe.yaml
+          yamlField: $.spec.input.helmChart.version

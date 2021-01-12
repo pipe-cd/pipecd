@@ -61,6 +61,8 @@ type PipedSpec struct {
 	SealedSecretManagement *SealedSecretManagement `json:"sealedSecretManagement"`
 	// Optional settings for image watcher.
 	ImageWatcher PipedImageWatcher `json:"imageWatcher"`
+	// Optional settings for event watcher.
+	EventWatcher PipedEventWatcher `json:"eventWatcher"`
 }
 
 // Validate validates configured data of all fields.
@@ -639,5 +641,42 @@ type PipedImageWatcherGitRepo struct {
 	Includes []string `json:"includes"`
 	// The paths to ImageWatcher files to be excluded.
 	// This is prioritized if both includes and this are given.
+	Excludes []string `json:"excludes"`
+}
+
+type PipedEventWatcher struct {
+	// Interval to fetch the latest event and compare it with one defined in EventWatcher config files
+	CheckInterval Duration `json:"checkInterval"`
+	// Settings for each git repository.
+	GitRepos []PipedEventWatcherGitRepo `json:"gitRepos"`
+}
+
+func (p *PipedEventWatcher) Validate() error {
+	seen := make(map[string]struct{}, len(p.GitRepos))
+	for i, repo := range p.GitRepos {
+		// Validate the existence of repo ID.
+		if repo.RepoID == "" {
+			return fmt.Errorf("missing repoID at index %d", i)
+		}
+		// Validate if duplicated repository settings exist.
+		if _, ok := seen[repo.RepoID]; ok {
+			return fmt.Errorf("duplicated repo id (%s) found in the eventWatcher directive", repo.RepoID)
+		}
+		seen[repo.RepoID] = struct{}{}
+	}
+	return nil
+}
+
+type PipedEventWatcherGitRepo struct {
+	// Id of the git repository. This must be unique within
+	// the repos' elements.
+	RepoID string `json:"repoId"`
+	// The commit message used to push after replacing values.
+	// Default message is used if not given.
+	CommitMessage string `json:"commitMessage"`
+	// The paths to files to be included.
+	Includes []string `json:"includes"`
+	// The paths to files to be excluded.
+	// This is prioritized if both includes and this one are given.
 	Excludes []string `json:"excludes"`
 }

@@ -140,3 +140,12 @@ spec:
         includes:
           - imagewatcher-dev.yaml
           - imagewatcher-stg.yaml
+
+  eventWatcher:
+    checkInterval: 10m
+    gitRepos:
+      - repoId: repo-1
+        commitMessage: Update values by Event watcher
+        includes:
+          - event-watcher-dev.yaml
+          - event-watcher-stg.yaml
