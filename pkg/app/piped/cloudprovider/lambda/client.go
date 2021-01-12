@@ -72,8 +72,10 @@ func (c *client) Apply(ctx context.Context, fm FunctionManifest, role string) er
 	}
 	input := &lambda.CreateFunctionInput{
 		Code:         &lambda.FunctionCode{ImageUri: &fm.Spec.ImageURI},
-		FunctionName: &fm.Spec.Name,
 		Role:         &role,
+		FunctionName: &fm.Spec.Name,
+		Runtime:      &fm.Spec.Runtime,
+		Handler:      &fm.Spec.Handler,
 	}
 	_, err := c.client.CreateFunctionWithContext(ctx, input)
 	if err != nil {
