@@ -11,7 +11,7 @@ ignore: []
 
 ```tsx
 import React, { memo, FC, useEffect } from "react";
-import { useParams } from "react-router";
+import { useParams } from "react-router-dom";
 
 export const {{ input | pascal }}Page: FC = memo(() => {
   return <div>hello</div>;

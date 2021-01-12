@@ -1,6 +1,6 @@
 import { configureStore } from "@reduxjs/toolkit";
 import React from "react";
-import { MemoryRouter, Route } from "react-router";
+import { MemoryRouter, Route } from "react-router-dom";
 import { render, waitFor } from "../../../test-utils";
 import { server } from "../../mocks/server";
 import { reducers } from "../../modules";
