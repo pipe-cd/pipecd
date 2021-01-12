@@ -35,10 +35,6 @@ import (
 	"github.com/pipe-cd/pipe/pkg/model"
 )
 
-var (
-	defaultDeploymentTimeout = 6 * time.Hour
-)
-
 // scheduler is a dedicated object for a specific deployment of a single application.
 type scheduler struct {
 	// Readonly deployment model.
@@ -209,12 +205,10 @@ func (s *scheduler) Run(ctx context.Context) error {
 	var (
 		deploymentStatus = model.DeploymentStatus_DEPLOYMENT_SUCCESS
 		statusReason     = "The deployment was completed successfully"
-		timer            = time.NewTimer(defaultDeploymentTimeout)
 		cancelCommand    *model.ReportableCommand
 		cancelCommander  string
 		lastStage        *model.PipelineStage
 	)
-	defer timer.Stop()
 
 	repoID := s.deployment.GitPath.Repo.Id
 	repoCfg, ok := s.pipedConfig.GetRepository(repoID)
@@ -268,6 +262,9 @@ func (s *scheduler) Run(ctx context.Context) error {
 		return err
 	}
 	s.genericDeploymentConfig = ds.GenericDeploymentConfig
+
+	timer := time.NewTimer(s.genericDeploymentConfig.Timeout.Duration())
+	defer timer.Stop()
 
 	// Iterate all the stages and execute the uncompleted ones.
 	for i, ps := range s.deployment.Stages {

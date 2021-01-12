@@ -28,6 +28,7 @@ spec:
 | trafficRouting | [KubernetesTrafficRouting](/docs/user-guide/configuration-reference/#kubernetestrafficrouting) | How to change traffic routing percentages. | No |
 | sealedSecrets | [][SealedSecretMapping](/docs/user-guide/configuration-reference/#sealedsecretmapping) | The list of sealed secrets should be decrypted. | No |
 | triggerPaths | []string | List of directories or files where their changes will trigger the deployment. Regular expression can be used. | No |
+| timeout | duration | The maximum length of time to execute deployment before giving up. Default is 6h. | No |
 
 ## Terraform application
 
@@ -46,7 +47,7 @@ spec:
 | quickSync | [TerraformQuickSync](/docs/user-guide/configuration-reference/#terraformquicksync) | Configuration for quick sync. | No |
 | pipeline | [Pipeline](/docs/user-guide/configuration-reference/#pipeline) | Pipeline for deploying progressively. | No |
 | sealedSecrets | [][SealedSecretMapping](/docs/user-guide/configuration-reference/#sealedsecretmapping) | The list of sealed secrets should be decrypted. | No |
-<!-- | dependencies | []string | List of directories where their changes will trigger the deployment. | No | -->
+| timeout | duration | The maximum length of time to execute deployment before giving up. Default is 6h. | No |
 
 ## CloudRun application
 
@@ -65,6 +66,7 @@ spec:
 | quickSync | [CloudRunQuickSync](/docs/user-guide/configuration-reference/#cloudrunquicksync) | Configuration for quick sync. | No |
 | pipeline | [Pipeline](/docs/user-guide/configuration-reference/#pipeline) | Pipeline for deploying progressively. | No |
 | sealedSecrets | [][SealedSecretMapping](/docs/user-guide/configuration-reference/#sealedsecretmapping) | The list of sealed secrets should be decrypted. | No |
+| timeout | duration | The maximum length of time to execute deployment before giving up. Default is 6h. | No |
 
 ## Lambda application
 
@@ -83,6 +85,7 @@ spec:
 | quickSync | [CloudRunQuickSync](/docs/user-guide/configuration-reference/#cloudrunquicksync) | Configuration for quick sync. | No |
 | pipeline | [Pipeline](/docs/user-guide/configuration-reference/#pipeline) | Pipeline for deploying progressively. | No |
 | sealedSecrets | [][SealedSecretMapping](/docs/user-guide/configuration-reference/#sealedsecretmapping) | The list of sealed secrets should be decrypted. | No |
+| timeout | duration | The maximum length of time to execute deployment before giving up. Default is 6h. | No |
 
 ## Analysis Template Configuration
 
