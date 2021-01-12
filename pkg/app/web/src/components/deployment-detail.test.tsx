@@ -4,7 +4,7 @@ import { DeploymentDetail } from "./deployment-detail";
 import { dummyDeployment } from "../__fixtures__/dummy-deployment";
 import { dummyEnv } from "../__fixtures__/dummy-environment";
 import { dummyPiped } from "../__fixtures__/dummy-piped";
-import { MemoryRouter } from "react-router";
+import { MemoryRouter } from "react-router-dom";
 import { cancelDeployment, DeploymentStatus } from "../modules/deployments";
 import userEvent from "@testing-library/user-event";
 

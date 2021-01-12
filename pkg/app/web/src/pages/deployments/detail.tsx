@@ -1,7 +1,7 @@
 import { Box, makeStyles } from "@material-ui/core";
 import React, { FC, memo, useEffect } from "react";
 import { useDispatch, useSelector } from "react-redux";
-import { useParams } from "react-router";
+import { useParams } from "react-router-dom";
 import { DeploymentDetail } from "../../components/deployment-detail";
 import { LogViewer } from "../../components/log-viewer";
 import { Pipeline } from "../../components/pipeline";
