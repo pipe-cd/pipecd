@@ -19,20 +19,21 @@ option go_package = "github.com/pipe-cd/pipe/pkg/model";
 
 import "validate/validate.proto";
 
-message ImageReference {
+message Event {
     // The generated unique identifier.
     string id = 1 [(validate.rules).string.min_len = 1];
-    // The repository name.
-    string repo_name = 2 [(validate.rules).string.min_len = 1];
-    // The image digest.
-    string digest = 3;
-    // The image tags.
-    repeated string tags = 4 [(validate.rules).repeated.min_items = 1];
-    // The ID of the project this image belongs to.
-    string project_id = 5 [(validate.rules).string.min_len = 1];
+    // The name of event.
+    string name = 2 [(validate.rules).string.min_len = 1];
+    // The data of event.
+    string data = 3 [(validate.rules).string.min_len = 3];
+    // The ID of the project this event belongs to.
+    string project_id = 4 [(validate.rules).string.min_len = 1];
+    // The key/value pairs that are attached to event.
+    // This is intended to be used to specify additional attributes of event.
+    map<string,string> labels = 5;
 
-    // Unix time when the image metadata was created.
+    // Unix time when the event was created.
     int64 created_at = 14 [(validate.rules).int64.gt = 0];
-    // Unix time of the last time when the image metadata is updated.
+    // Unix time of the last time when the event was updated.
     int64 updated_at = 15 [(validate.rules).int64.gt = 0];
 }

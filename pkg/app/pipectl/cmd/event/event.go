@@ -12,7 +12,7 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-package image
+package event
 
 import (
 	"github.com/spf13/cobra"
@@ -29,12 +29,12 @@ func NewCommand() *cobra.Command {
 		clientOptions: &client.Options{},
 	}
 	cmd := &cobra.Command{
-		Use:   "image",
-		Short: "Manage image resources.",
+		Use:   "event",
+		Short: "Manage event resources.",
 	}
 
 	cmd.AddCommand(
-		newPushReferenceCommand(c),
+		newRegisterCommand(c),
 	)
 
 	c.clientOptions.RegisterPersistentFlags(cmd)

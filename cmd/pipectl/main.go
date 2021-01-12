@@ -20,7 +20,7 @@ import (
 
 	"github.com/pipe-cd/pipe/pkg/app/pipectl/cmd/application"
 	"github.com/pipe-cd/pipe/pkg/app/pipectl/cmd/deployment"
-	"github.com/pipe-cd/pipe/pkg/app/pipectl/cmd/image"
+	"github.com/pipe-cd/pipe/pkg/app/pipectl/cmd/event"
 	"github.com/pipe-cd/pipe/pkg/cli"
 )
 
@@ -33,7 +33,7 @@ func main() {
 	app.AddCommands(
 		application.NewCommand(),
 		deployment.NewCommand(),
-		image.NewCommand(),
+		event.NewCommand(),
 	)
 
 	if err := app.Run(); err != nil {

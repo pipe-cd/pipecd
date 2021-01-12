@@ -11,7 +11,7 @@ proto_library(
         "common.proto",
         "deployment.proto",
         "environment.proto",
-        "imagereference.proto",
+        "event.proto",
         "insight.proto",
         "logblock.proto",
         "notificationevent.proto",

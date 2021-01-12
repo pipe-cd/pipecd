@@ -21,25 +21,25 @@ import (
 	"github.com/pipe-cd/pipe/pkg/model"
 )
 
-const imageReferenceModelKind = "ImageReference"
+const eventModelKind = "Event"
 
 var (
-	imageReferenceFactory = func() interface{} {
-		return &model.ImageReference{}
+	eventFactory = func() interface{} {
+		return &model.Event{}
 	}
 )
 
-type ImageReferenceStore interface {
-	AddImageReference(ctx context.Context, im model.ImageReference) error
+type EventStore interface {
+	AddEvent(ctx context.Context, e model.Event) error
 }
 
-type imageReferenceStore struct {
+type eventStore struct {
 	backend
 	nowFunc func() time.Time
 }
 
-func NewImageReferenceStore(ds DataStore) ImageReferenceStore {
-	return &imageReferenceStore{
+func NewEventStore(ds DataStore) EventStore {
+	return &eventStore{
 		backend: backend{
 			ds: ds,
 		},
@@ -47,16 +47,16 @@ func NewImageReferenceStore(ds DataStore) ImageReferenceStore {
 	}
 }
 
-func (s *imageReferenceStore) AddImageReference(ctx context.Context, im model.ImageReference) error {
+func (s *eventStore) AddEvent(ctx context.Context, e model.Event) error {
 	now := s.nowFunc().Unix()
-	if im.CreatedAt == 0 {
-		im.CreatedAt = now
+	if e.CreatedAt == 0 {
+		e.CreatedAt = now
 	}
-	if im.UpdatedAt == 0 {
-		im.UpdatedAt = now
+	if e.UpdatedAt == 0 {
+		e.UpdatedAt = now
 	}
-	if err := im.Validate(); err != nil {
+	if err := e.Validate(); err != nil {
 		return err
 	}
-	return s.ds.Create(ctx, imageReferenceModelKind, im.Id, &im)
+	return s.ds.Create(ctx, eventModelKind, e.Id, &e)
 }

@@ -24,40 +24,40 @@ import (
 	"github.com/pipe-cd/pipe/pkg/model"
 )
 
-func TestAddImageReference(t *testing.T) {
+func TestAddEvent(t *testing.T) {
 	ctrl := gomock.NewController(t)
 	defer ctrl.Finish()
 
-	im := model.ImageReference{
+	event := model.Event{
 		Id:        "id",
-		RepoName:  "repo",
-		Tags:      []string{"tag"},
-		ProjectId: "projectId",
+		Name:      "name",
+		Data:      "data",
+		ProjectId: "project",
 		CreatedAt: 12345,
 		UpdatedAt: 12345,
 	}
 
 	testcases := []struct {
 		name    string
-		im      model.ImageReference
+		event   model.Event
 		ds      DataStore
 		wantErr bool
 	}{
 		{
-			name: "Invalid image reference",
-			im:   model.ImageReference{},
+			name:  "Invalid event",
+			event: model.Event{},
 			ds: func() DataStore {
 				return NewMockDataStore(ctrl)
 			}(),
 			wantErr: true,
 		},
 		{
-			name: "OK to create",
-			im:   im,
+			name:  "OK",
+			event: event,
 			ds: func() DataStore {
 				ds := NewMockDataStore(ctrl)
 				ds.EXPECT().
-					Create(gomock.Any(), "ImageReference", im.Id, &im).
+					Create(gomock.Any(), "Event", event.Id, &event).
 					Return(nil)
 				return ds
 			}(),
@@ -67,8 +67,8 @@ func TestAddImageReference(t *testing.T) {
 
 	for _, tc := range testcases {
 		t.Run(tc.name, func(t *testing.T) {
-			s := NewImageReferenceStore(tc.ds)
-			err := s.AddImageReference(context.Background(), tc.im)
+			s := NewEventStore(tc.ds)
+			err := s.AddEvent(context.Background(), tc.event)
 			assert.Equal(t, tc.wantErr, err != nil)
 		})
 	}

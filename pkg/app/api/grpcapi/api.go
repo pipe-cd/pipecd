@@ -34,12 +34,12 @@ import (
 
 // API implements the behaviors for the gRPC definitions of API.
 type API struct {
-	applicationStore    datastore.ApplicationStore
-	environmentStore    datastore.EnvironmentStore
-	deploymentStore     datastore.DeploymentStore
-	pipedStore          datastore.PipedStore
-	imageReferenceStore datastore.ImageReferenceStore
-	commandStore        commandstore.Store
+	applicationStore datastore.ApplicationStore
+	environmentStore datastore.EnvironmentStore
+	deploymentStore  datastore.DeploymentStore
+	pipedStore       datastore.PipedStore
+	eventStore       datastore.EventStore
+	commandStore     commandstore.Store
 
 	logger *zap.Logger
 }
@@ -51,13 +51,13 @@ func NewAPI(
 	logger *zap.Logger,
 ) *API {
 	a := &API{
-		applicationStore:    datastore.NewApplicationStore(ds),
-		environmentStore:    datastore.NewEnvironmentStore(ds),
-		deploymentStore:     datastore.NewDeploymentStore(ds),
-		pipedStore:          datastore.NewPipedStore(ds),
-		imageReferenceStore: datastore.NewImageReferenceStore(ds),
-		commandStore:        cmds,
-		logger:              logger.Named("api"),
+		applicationStore: datastore.NewApplicationStore(ds),
+		environmentStore: datastore.NewEnvironmentStore(ds),
+		deploymentStore:  datastore.NewDeploymentStore(ds),
+		pipedStore:       datastore.NewPipedStore(ds),
+		eventStore:       datastore.NewEventStore(ds),
+		commandStore:     cmds,
+		logger:           logger.Named("api"),
 	}
 	return a
 }
@@ -314,29 +314,27 @@ func (a *API) GetCommand(ctx context.Context, req *apiservice.GetCommandRequest)
 	}, nil
 }
 
-func (a *API) PushImageReference(ctx context.Context, req *apiservice.PushImageReferenceRequest) (*apiservice.PushImageReferenceResponse, error) {
+func (a *API) RegisterEvent(ctx context.Context, req *apiservice.RegisterEventRequest) (*apiservice.RegisterEventResponse, error) {
 	key, err := requireAPIKey(ctx, model.APIKey_READ_WRITE, a.logger)
 	if err != nil {
 		return nil, err
 	}
 
-	im := model.ImageReference{
+	err = a.eventStore.AddEvent(ctx, model.Event{
 		Id:        uuid.New().String(),
-		RepoName:  req.RepoName,
-		Digest:    req.Digest,
-		Tags:      req.Tags,
+		Name:      req.Name,
+		Data:      req.Data,
 		ProjectId: key.ProjectId,
-	}
-	err = a.imageReferenceStore.AddImageReference(ctx, im)
+	})
 	if errors.Is(err, datastore.ErrAlreadyExists) {
-		return nil, status.Error(codes.AlreadyExists, "The image reference already exists")
+		return nil, status.Error(codes.AlreadyExists, "The event already exists")
 	}
 	if err != nil {
-		a.logger.Error("failed to add image reference", zap.Error(err))
-		return nil, status.Error(codes.Internal, "Failed to add image reference")
+		a.logger.Error("failed to register event", zap.Error(err))
+		return nil, status.Error(codes.Internal, "Failed to register event")
 	}
 
-	return &apiservice.PushImageReferenceResponse{}, nil
+	return &apiservice.RegisterEventResponse{}, nil
 }
 
 // requireAPIKey checks the existence of an API key inside the given context
