@@ -430,10 +430,25 @@ func determineSecretHealth(obj *unstructured.Unstructured) (status model.Kuberne
 	return
 }
 
-// TODO: Check health state of PersistentVolume resource
 func determinePersistentVolumeHealth(obj *unstructured.Unstructured) (status model.KubernetesResourceState_HealthStatus, desc string) {
-	desc = "Unimplemented yet"
-	return
+	pv := &corev1.PersistentVolume{}
+	err := scheme.Scheme.Convert(obj, pv, nil)
+	if err != nil {
+		status = model.KubernetesResourceState_OTHER
+		desc = fmt.Sprintf("Unexpected error while calculating: unable to convert %T to %T: %v", obj, pv, err)
+		return
+	}
+
+	switch pv.Status.Phase {
+	case corev1.VolumeBound, corev1.VolumeAvailable:
+		status = model.KubernetesResourceState_HEALTHY
+		desc = pv.Status.Message
+		return
+	default:
+		status = model.KubernetesResourceState_OTHER
+		desc = pv.Status.Message
+		return
+	}
 }
 
 func determinePVCHealth(obj *unstructured.Unstructured) (status model.KubernetesResourceState_HealthStatus, desc string) {
