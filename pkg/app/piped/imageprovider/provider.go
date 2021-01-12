@@ -21,7 +21,6 @@ import (
 	"go.uber.org/zap"
 
 	"github.com/pipe-cd/pipe/pkg/app/piped/imageprovider/ecr"
-	"github.com/pipe-cd/pipe/pkg/app/piped/imageprovider/gcr"
 	"github.com/pipe-cd/pipe/pkg/config"
 	"github.com/pipe-cd/pipe/pkg/model"
 )
@@ -42,11 +41,14 @@ type Provider interface {
 func NewProvider(cfg *config.PipedImageProvider, logger *zap.Logger) (Provider, error) {
 	switch cfg.Type {
 	case model.ImageProviderTypeGCR:
-		options := []gcr.Option{
-			gcr.WithServiceAccountFile(cfg.GCRConfig.ServiceAccountFile),
-			gcr.WithLogger(logger),
-		}
-		return gcr.NewGCR(cfg.Name, options...)
+		/*
+			options := []gcr.Option{
+				gcr.WithServiceAccountFile(cfg.GCRConfig.ServiceAccountFile),
+				gcr.WithLogger(logger),
+			}
+			return gcr.NewGCR(cfg.Name, options...)
+		*/
+		return nil, nil
 	case model.ImageProviderTypeECR:
 		options := []ecr.Option{
 			ecr.WithRegistryID(cfg.ECRConfig.RegistryID),

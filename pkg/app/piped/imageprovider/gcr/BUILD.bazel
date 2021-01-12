@@ -5,11 +5,4 @@ go_library(
     srcs = ["gcr.go"],
     importpath = "github.com/pipe-cd/pipe/pkg/app/piped/imageprovider/gcr",
     visibility = ["//visibility:public"],
-    deps = [
-        "//pkg/model:go_default_library",
-        "@com_github_google_go_containerregistry//pkg/authn:go_default_library",
-        "@com_github_google_go_containerregistry//pkg/name:go_default_library",
-        "@com_github_google_go_containerregistry//pkg/v1/google:go_default_library",
-        "@org_uber_go_zap//:go_default_library",
-    ],
 )

@@ -14,6 +14,7 @@
 
 package gcr
 
+/*
 import (
 	"context"
 	"fmt"
@@ -133,3 +134,4 @@ func (g *GCR) GetLatestImage(ctx context.Context, image *model.ImageName) (*mode
 		Tag: latest.Tags[0],
 	}, nil
 }
+*/
