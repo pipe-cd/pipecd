@@ -51,6 +51,8 @@ type FunctionManifestSpec struct {
 	Name     string            `json:"name"`
 	ImageURI string            `json:"image"`
 	Tags     map[string]string `json:"tags,omitempty"`
+	Runtime  string            `json:"runtime"`
+	Handler  string            `json:"handler"`
 }
 
 func (fmp FunctionManifestSpec) validate() error {
@@ -59,6 +61,12 @@ func (fmp FunctionManifestSpec) validate() error {
 	}
 	if len(fmp.ImageURI) == 0 {
 		return fmt.Errorf("image uri is missing")
+	}
+	if len(fmp.Runtime) == 0 {
+		return fmt.Errorf("runtime is missing")
+	}
+	if len(fmp.Handler) == 0 {
+		return fmt.Errorf("handler is missing")
 	}
 	return nil
 }
