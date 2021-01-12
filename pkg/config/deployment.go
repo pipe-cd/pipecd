@@ -22,6 +22,8 @@ import (
 	"github.com/pipe-cd/pipe/pkg/model"
 )
 
+var defaultWaitApprovalTimeout = Duration(6 * time.Hour)
+
 type GenericDeploymentSpec struct {
 	// Forcibly use QuickSync or Pipeline when commit message matched the specified pattern.
 	CommitMatcher DeploymentCommitMatcher `json:"commitMatcher"`
@@ -77,13 +79,13 @@ type DeploymentCommitMatcher struct {
 
 // DeploymentPipeline represents the way to deploy the application.
 // The pipeline is triggered by changes in any of the following objects:
-// - Target PodSpec (Target can be Deployment, DaemonSet, StatefullSet)
+// - Target PodSpec (Target can be Deployment, DaemonSet, StatefulSet)
 // - ConfigMaps, Secrets that are mounted as volumes or envs in the deployment.
 type DeploymentPipeline struct {
 	Stages []PipelineStage `json:"stages"`
 }
 
-// PiplineStage represents a single stage of a pipeline.
+// PipelineStage represents a single stage of a pipeline.
 // This is used as a generic struct for all stage type.
 type PipelineStage struct {
 	Id      string
@@ -143,6 +145,9 @@ func (s *PipelineStage) UnmarshalJSON(data []byte) error {
 		s.WaitApprovalStageOptions = &WaitApprovalStageOptions{}
 		if len(gs.With) > 0 {
 			err = json.Unmarshal(gs.With, s.WaitApprovalStageOptions)
+		}
+		if s.WaitApprovalStageOptions.Timeout <= 0 {
+			s.WaitApprovalStageOptions.Timeout = defaultWaitApprovalTimeout
 		}
 	case model.StageAnalysis:
 		s.AnalysisStageOptions = &AnalysisStageOptions{}
@@ -231,6 +236,8 @@ type WaitStageOptions struct {
 
 // WaitStageOptions contains all configurable values for a WAIT_APPROVAL stage.
 type WaitApprovalStageOptions struct {
+	// The maximum length of time to wait before giving up.
+	Timeout   Duration `json:"timeout"`
 	Approvers []string `json:"approvers"`
 }
 
