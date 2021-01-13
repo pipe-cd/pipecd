@@ -412,9 +412,9 @@ func (s *scheduler) executeStage(sig executor.StopSignal, ps model.PipelineStage
 		lp             = s.logPersister.StageLogPersister(s.deployment.Id, ps.Id)
 	)
 	defer func() {
-		// When the piped has been stopped while the stage is still running
+		// When the piped has been terminated (PS kill) while the stage is still running
 		// we should not mark the log persister as completed.
-		if !model.IsCompletedStage(finalStatus) && sig.Stopped() {
+		if !model.IsCompletedStage(finalStatus) && sig.Terminated() {
 			return
 		}
 		lp.Complete(time.Minute)
@@ -499,14 +499,20 @@ func (s *scheduler) executeStage(sig executor.StopSignal, ps model.PipelineStage
 	// Start running executor.
 	status := ex.Execute(sig)
 
+	// Commit deployment state status in the following cases:
+	// - Apply state successfully.
+	// - State was canceled while running (cancel via Controlpane).
+	// - Apply state failed but not because of terminating piped process.
 	if status == model.StageStatus_STAGE_SUCCESS ||
 		status == model.StageStatus_STAGE_CANCELLED ||
-		(status == model.StageStatus_STAGE_FAILURE && !sig.Stopped()) {
+		(status == model.StageStatus_STAGE_FAILURE && !sig.Terminated()) {
 
 		s.reportStageStatus(ctx, ps.Id, status, ps.Requires)
 		return status
 	}
 
+	// In case piped process got killed (Terminated signal occurred)
+	// the original state status will be returned.
 	return originalStatus
 }
 
