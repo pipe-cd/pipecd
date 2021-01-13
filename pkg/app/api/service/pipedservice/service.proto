@@ -138,7 +138,7 @@ service PipedService {
     // GetLatestEvent returns the latest event that meets the given conditions.
     rpc GetLatestEvent(GetLatestEventRequest) returns (GetLatestEventResponse) {}
 
-    // ListEvents returns a list of Events newly created after the given time.
+    // ListEvents returns a list of Events inside the given range.
     rpc ListEvents(ListEventsRequest) returns (ListEventsResponse) {}
 }
 
@@ -363,8 +363,8 @@ message GetLatestEventResponse {
 }
 
 message ListEventsRequest {
-    // returns all events created after this value.
-    int64 after = 1 [(validate.rules).int64.gt = 0];
+    int64 from = 1 [(validate.rules).int64.gt = 0];
+    int64 to = 2 [(validate.rules).int64.gt = 0];
 }
 
 message ListEventsResponse {

@@ -725,7 +725,7 @@ func (a *PipedAPI) GetLatestEvent(ctx context.Context, req *pipedservice.GetLate
 	}, nil
 }
 
-// ListEvents returns a list of Events newly created after the given time.
+// ListEvents returns a list of Events inside the given range.
 func (a *PipedAPI) ListEvents(ctx context.Context, req *pipedservice.ListEventsRequest) (*pipedservice.ListEventsResponse, error) {
 	projectID, _, _, err := rpcauth.ExtractPipedToken(ctx)
 	if err != nil {
@@ -741,8 +741,13 @@ func (a *PipedAPI) ListEvents(ctx context.Context, req *pipedservice.ListEventsR
 			},
 			{
 				Field:    "CreatedAt",
-				Operator: ">",
-				Value:    req.After,
+				Operator: ">=",
+				Value:    req.From,
+			},
+			{
+				Field:    "CreatedAt",
+				Operator: "<",
+				Value:    req.To,
 			},
 		},
 	}
