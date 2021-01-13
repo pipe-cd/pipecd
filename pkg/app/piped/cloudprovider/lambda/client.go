@@ -71,11 +71,13 @@ func (c *client) Apply(ctx context.Context, fm FunctionManifest, role string) er
 		return fmt.Errorf("role arn is required")
 	}
 	input := &lambda.CreateFunctionInput{
-		Code:         &lambda.FunctionCode{ImageUri: &fm.Spec.ImageURI},
-		Role:         &role,
-		FunctionName: &fm.Spec.Name,
-		Runtime:      &fm.Spec.Runtime,
-		Handler:      &fm.Spec.Handler,
+		Code: &lambda.FunctionCode{
+			ImageUri: aws.String(fm.Spec.ImageURI),
+		},
+		Role:         aws.String(role),
+		FunctionName: aws.String(fm.Spec.Name),
+		Runtime:      aws.String(fm.Spec.Runtime),
+		Handler:      aws.String(fm.Spec.Handler),
 	}
 	_, err := c.client.CreateFunctionWithContext(ctx, input)
 	if err != nil {
