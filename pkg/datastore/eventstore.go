@@ -31,6 +31,7 @@ var (
 
 type EventStore interface {
 	AddEvent(ctx context.Context, e model.Event) error
+	ListEvents(ctx context.Context, opts ListOptions) ([]*model.Event, error)
 }
 
 type eventStore struct {
@@ -59,4 +60,24 @@ func (s *eventStore) AddEvent(ctx context.Context, e model.Event) error {
 		return err
 	}
 	return s.ds.Create(ctx, eventModelKind, e.Id, &e)
+}
+
+func (s *eventStore) ListEvents(ctx context.Context, opts ListOptions) ([]*model.Event, error) {
+	it, err := s.ds.Find(ctx, eventModelKind, opts)
+	if err != nil {
+		return nil, err
+	}
+	es := make([]*model.Event, 0)
+	for {
+		var e model.Event
+		err := it.Next(&e)
+		if err == ErrIteratorDone {
+			break
+		}
+		if err != nil {
+			return nil, err
+		}
+		es = append(es, &e)
+	}
+	return es, nil
 }

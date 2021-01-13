@@ -463,4 +463,20 @@ func (c *fakeClient) ReportApplicationLiveStateEvents(ctx context.Context, req *
 	return &pipedservice.ReportApplicationLiveStateEventsResponse{}, nil
 }
 
+func (c *fakeClient) GetLatestEvent(ctx context.Context, req *pipedservice.GetLatestEventRequest, opts ...grpc.CallOption) (*pipedservice.GetLatestEventResponse, error) {
+	c.logger.Info("fake client received GetLatestEvent rpc", zap.Any("request", req))
+	return &pipedservice.GetLatestEventResponse{
+		Event: &model.Event{
+			Id:        "dev",
+			Name:      "dev",
+			ProjectId: "dev",
+		},
+	}, nil
+}
+
+func (c *fakeClient) ListEvents(ctx context.Context, req *pipedservice.ListEventsRequest, opts ...grpc.CallOption) (*pipedservice.ListEventsResponse, error) {
+	c.logger.Info("fake client received ListEvents rpc", zap.Any("request", req))
+	return &pipedservice.ListEventsResponse{}, nil
+}
+
 var _ pipedservice.PipedServiceClient = (*fakeClient)(nil)

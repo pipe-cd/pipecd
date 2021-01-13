@@ -43,6 +43,7 @@ type PipedAPI struct {
 	pipedStatsStore           datastore.PipedStatsStore
 	pipedStore                datastore.PipedStore
 	projectStore              datastore.ProjectStore
+	eventStore                datastore.EventStore
 	stageLogStore             stagelogstore.Store
 	applicationLiveStateStore applicationlivestatestore.Store
 	commandStore              commandstore.Store
@@ -63,6 +64,7 @@ func NewPipedAPI(ctx context.Context, ds datastore.DataStore, sls stagelogstore.
 		pipedStatsStore:           datastore.NewPipedStatsStore(ds),
 		pipedStore:                datastore.NewPipedStore(ds),
 		projectStore:              datastore.NewProjectStore(ds),
+		eventStore:                datastore.NewEventStore(ds),
 		stageLogStore:             sls,
 		applicationLiveStateStore: alss,
 		commandStore:              cs,
@@ -677,6 +679,87 @@ func (a *PipedAPI) ReportApplicationLiveStateEvents(ctx context.Context, req *pi
 	// TODO: Patch Cloud Run application live state
 	// TODO: Patch Lambda application live state
 	return &pipedservice.ReportApplicationLiveStateEventsResponse{}, nil
+}
+
+// GetLatestEvent returns the latest event that meets the given conditions.
+func (a *PipedAPI) GetLatestEvent(ctx context.Context, req *pipedservice.GetLatestEventRequest) (*pipedservice.GetLatestEventResponse, error) {
+	projectID, _, _, err := rpcauth.ExtractPipedToken(ctx)
+	if err != nil {
+		return nil, err
+	}
+
+	// Try to fetch the most recently registered event.
+	opts := datastore.ListOptions{
+		PageSize: 1,
+		Filters: []datastore.ListFilter{
+			{
+				Field:    "ProjectId",
+				Operator: "==",
+				Value:    projectID,
+			},
+			{
+				Field:    "Name",
+				Operator: "==",
+				Value:    req.Name,
+			},
+			// TODO: Enable to use labels to filter Events
+		},
+		Orders: []datastore.Order{
+			{
+				Field:     "UpdatedAt",
+				Direction: datastore.Desc,
+			},
+		},
+	}
+	events, err := a.eventStore.ListEvents(ctx, opts)
+	if err != nil {
+		a.logger.Error("failed to list events", zap.Error(err))
+		return nil, status.Error(codes.Internal, "failed to list event")
+	}
+	if len(events) == 0 {
+		return nil, status.Error(codes.NotFound, "no events found")
+	}
+
+	return &pipedservice.GetLatestEventResponse{
+		Event: events[0],
+	}, nil
+}
+
+// ListEvents returns a list of Events inside the given range.
+func (a *PipedAPI) ListEvents(ctx context.Context, req *pipedservice.ListEventsRequest) (*pipedservice.ListEventsResponse, error) {
+	projectID, _, _, err := rpcauth.ExtractPipedToken(ctx)
+	if err != nil {
+		return nil, err
+	}
+
+	opts := datastore.ListOptions{
+		Filters: []datastore.ListFilter{
+			{
+				Field:    "ProjectId",
+				Operator: "==",
+				Value:    projectID,
+			},
+			{
+				Field:    "CreatedAt",
+				Operator: ">=",
+				Value:    req.From,
+			},
+			{
+				Field:    "CreatedAt",
+				Operator: "<",
+				Value:    req.To,
+			},
+		},
+	}
+
+	events, err := a.eventStore.ListEvents(ctx, opts)
+	if err != nil {
+		a.logger.Error("failed to list events", zap.Error(err))
+		return nil, status.Error(codes.Internal, "failed to list events")
+	}
+	return &pipedservice.ListEventsResponse{
+		Events: events,
+	}, nil
 }
 
 // validateAppBelongsToPiped checks if the given application belongs to the given piped.
