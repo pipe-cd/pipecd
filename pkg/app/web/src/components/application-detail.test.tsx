@@ -5,7 +5,11 @@ import { MemoryRouter } from "react-router-dom";
 import { createStore, render, screen, waitFor } from "../../test-utils";
 import { server } from "../mocks/server";
 import { AppState } from "../modules";
-import { syncApplication } from "../modules/applications";
+import {
+  Application,
+  syncApplication,
+  ApplicationSyncStatus,
+} from "../modules/applications";
 import { SyncStrategy } from "../modules/deployments";
 import { dummyApplication } from "../__fixtures__/dummy-application";
 import { dummyApplicationLiveState } from "../__fixtures__/dummy-application-live-state";
@@ -25,11 +29,25 @@ afterAll(() => {
   server.close();
 });
 
+const deployingApp: Application = {
+  ...dummyApplication,
+  deploying: true,
+  id: "deploying-app",
+  syncState: {
+    status: ApplicationSyncStatus.DEPLOYING,
+    headDeploymentId: "",
+    reason: "",
+    shortReason: "",
+    timestamp: 0,
+  },
+};
+
 const baseState: DeepPartial<AppState> = {
   applications: {
-    ids: [dummyApplication.id],
+    ids: [dummyApplication.id, deployingApp.id],
     entities: {
       [dummyApplication.id]: dummyApplication,
+      [deployingApp.id]: deployingApp,
     },
     adding: false,
     disabling: {},
@@ -73,6 +91,20 @@ describe("ApplicationDetail", () => {
     expect(screen.getByText("Healthy")).toBeInTheDocument();
     expect(screen.getByText("Synced")).toBeInTheDocument();
     expect(screen.getByRole("button", { name: /sync$/i })).toBeInTheDocument();
+  });
+
+  it("shows application sync state as deploying if application is deploying", () => {
+    const store = createStore(baseState);
+    render(
+      <MemoryRouter>
+        <ApplicationDetail applicationId={deployingApp.id} />
+      </MemoryRouter>,
+      {
+        store,
+      }
+    );
+
+    expect(screen.getByText("Deploying")).toBeInTheDocument();
   });
 
   describe("sync", () => {

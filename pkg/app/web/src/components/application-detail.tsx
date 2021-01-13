@@ -24,6 +24,7 @@ import { AppState } from "../modules";
 import {
   Application,
   ApplicationDeploymentReference,
+  ApplicationSyncStatus,
   fetchApplication,
   selectById as selectApplicationById,
   syncApplication,
@@ -235,10 +236,17 @@ export const ApplicationDetail: FC<Props> = memo(function ApplicationDetail({
         {app?.syncState ? (
           <>
             <Box display="flex" alignItems="center">
-              <SyncStatusIcon status={app.syncState.status} />
+              <SyncStatusIcon
+                status={app.syncState.status}
+                deploying={app.deploying}
+              />
               <Box display="flex" alignItems="baseline">
                 <Typography variant="h6" className={classes.syncStatusText}>
-                  {APPLICATION_SYNC_STATUS_TEXT[app.syncState.status]}
+                  {app.deploying
+                    ? APPLICATION_SYNC_STATUS_TEXT[
+                        ApplicationSyncStatus.DEPLOYING
+                      ]
+                    : APPLICATION_SYNC_STATUS_TEXT[app.syncState.status]}
                 </Typography>
               </Box>
 
