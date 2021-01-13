@@ -40,7 +40,7 @@ type StopSignal interface {
 	Context() context.Context
 	Ch() <-chan StopSignalType
 	Signal() StopSignalType
-	Stopped() bool
+	Terminated() bool
 }
 
 type StopSignalHandler interface {
@@ -101,7 +101,7 @@ func (s *stopSignal) Signal() StopSignalType {
 	return StopSignalType(value)
 }
 
-func (s *stopSignal) Stopped() bool {
+func (s *stopSignal) Terminated() bool {
 	value := s.signal.Load()
-	return StopSignalType(value) != StopSignalNone
+	return StopSignalType(value) == StopSignalTerminate
 }
