@@ -9,9 +9,12 @@ export default {
 
 export const overview: React.FC = () => (
   <>
-    <SyncStatusIcon status={ApplicationSyncStatus.UNKNOWN} />
-    <SyncStatusIcon status={ApplicationSyncStatus.SYNCED} />
-    <SyncStatusIcon status={ApplicationSyncStatus.DEPLOYING} />
-    <SyncStatusIcon status={ApplicationSyncStatus.OUT_OF_SYNC} />
+    <SyncStatusIcon status={ApplicationSyncStatus.UNKNOWN} deploying={false} />
+    <SyncStatusIcon status={ApplicationSyncStatus.SYNCED} deploying={false} />
+    <SyncStatusIcon status={ApplicationSyncStatus.DEPLOYING} deploying={true} />
+    <SyncStatusIcon
+      status={ApplicationSyncStatus.OUT_OF_SYNC}
+      deploying={false}
+    />
   </>
 );

@@ -116,7 +116,10 @@ export const ApplicationListItem: FC<Props> = memo(
             <Box display="flex" alignItems="center">
               {app.syncState ? (
                 <>
-                  <SyncStatusIcon status={app.syncState.status} />
+                  <SyncStatusIcon
+                    status={app.syncState.status}
+                    deploying={app.deploying}
+                  />
                   <Typography className={classes.statusText}>
                     {APPLICATION_SYNC_STATUS_TEXT[app.syncState.status]}
                   </Typography>
