@@ -135,10 +135,10 @@ service PipedService {
     // By that way we can control the traffic to the datastore in a better way.
     rpc ReportApplicationLiveStateEvents(ReportApplicationLiveStateEventsRequest) returns (ReportApplicationLiveStateEventsResponse) {}
 
-    // GetLatestEvent gives back the latest event that meets the given conditions.
+    // GetLatestEvent returns the latest event that meets the given conditions.
     rpc GetLatestEvent(GetLatestEventRequest) returns (GetLatestEventResponse) {}
 
-    // ListEvents returns a list of Events newly created after the given milestone.
+    // ListEvents returns a list of Events newly created after the given time.
     rpc ListEvents(ListEventsRequest) returns (ListEventsResponse) {}
 }
 
@@ -363,8 +363,8 @@ message GetLatestEventResponse {
 }
 
 message ListEventsRequest {
-    // Mark that the client has handled all events created before this value.
-    int64 milestone = 1 [(validate.rules).int64.gt = 0];
+    // returns all events created after this value.
+    int64 after = 1 [(validate.rules).int64.gt = 0];
 }
 
 message ListEventsResponse {

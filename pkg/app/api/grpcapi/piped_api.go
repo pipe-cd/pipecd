@@ -681,7 +681,7 @@ func (a *PipedAPI) ReportApplicationLiveStateEvents(ctx context.Context, req *pi
 	return &pipedservice.ReportApplicationLiveStateEventsResponse{}, nil
 }
 
-// GetLatestEvent gives back the latest event that meets the given conditions.
+// GetLatestEvent returns the latest event that meets the given conditions.
 func (a *PipedAPI) GetLatestEvent(ctx context.Context, req *pipedservice.GetLatestEventRequest) (*pipedservice.GetLatestEventResponse, error) {
 	projectID, _, _, err := rpcauth.ExtractPipedToken(ctx)
 	if err != nil {
@@ -717,11 +717,6 @@ func (a *PipedAPI) GetLatestEvent(ctx context.Context, req *pipedservice.GetLate
 		return nil, status.Error(codes.Internal, "failed to list event")
 	}
 	if len(events) == 0 {
-		a.logger.Error("no events found",
-			zap.String("project-id", projectID),
-			zap.String("name", req.Name),
-			zap.Any("labels", req.Labels),
-		)
 		return nil, status.Error(codes.NotFound, "no events found")
 	}
 
@@ -730,7 +725,7 @@ func (a *PipedAPI) GetLatestEvent(ctx context.Context, req *pipedservice.GetLate
 	}, nil
 }
 
-// ListEvents returns a list of Events newly created after the given milestone.
+// ListEvents returns a list of Events newly created after the given time.
 func (a *PipedAPI) ListEvents(ctx context.Context, req *pipedservice.ListEventsRequest) (*pipedservice.ListEventsResponse, error) {
 	projectID, _, _, err := rpcauth.ExtractPipedToken(ctx)
 	if err != nil {
@@ -747,7 +742,7 @@ func (a *PipedAPI) ListEvents(ctx context.Context, req *pipedservice.ListEventsR
 			{
 				Field:    "CreatedAt",
 				Operator: ">",
-				Value:    req.Milestone,
+				Value:    req.After,
 			},
 		},
 	}
@@ -756,13 +751,6 @@ func (a *PipedAPI) ListEvents(ctx context.Context, req *pipedservice.ListEventsR
 	if err != nil {
 		a.logger.Error("failed to list events", zap.Error(err))
 		return nil, status.Error(codes.Internal, "failed to list events")
-	}
-	if len(events) == 0 {
-		a.logger.Error("no events found",
-			zap.String("project-id", projectID),
-			zap.Int64("milestone", req.Milestone),
-		)
-		return nil, status.Error(codes.NotFound, "no events found")
 	}
 	return &pipedservice.ListEventsResponse{
 		Events: events,
