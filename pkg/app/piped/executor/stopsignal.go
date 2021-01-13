@@ -103,5 +103,5 @@ func (s *stopSignal) Signal() StopSignalType {
 
 func (s *stopSignal) Terminated() bool {
 	value := s.signal.Load()
-	return StopSignalType(value) != StopSignalTerminate
+	return StopSignalType(value) == StopSignalTerminate
 }
