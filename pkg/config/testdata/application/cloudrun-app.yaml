@@ -1,6 +1,2 @@
 apiVersion: pipecd.dev/v1beta1
 kind: CloudRunApp
-spec:
-  input:
-    image: gcr.io/demo-project/demoapp:v1.0.0
-

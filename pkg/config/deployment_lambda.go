@@ -25,6 +25,9 @@ type LambdaDeploymentSpec struct {
 
 // Validate returns an error if any wrong configuration value was found.
 func (s *LambdaDeploymentSpec) Validate() error {
+	if err := s.GenericDeploymentSpec.Validate(); err != nil {
+		return err
+	}
 	return nil
 }
 

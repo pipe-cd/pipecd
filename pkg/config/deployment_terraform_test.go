@@ -16,6 +16,7 @@ package config
 
 import (
 	"testing"
+	"time"
 
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
@@ -36,6 +37,9 @@ func TestTerraformDeploymentConfig(t *testing.T) {
 			expectedKind:       KindTerraformApp,
 			expectedAPIVersion: "pipecd.dev/v1beta1",
 			expectedSpec: &TerraformDeploymentSpec{
+				GenericDeploymentSpec: GenericDeploymentSpec{
+					Timeout: Duration(6 * time.Hour),
+				},
 				Input: TerraformDeploymentInput{},
 			},
 			expectedError: nil,
@@ -45,7 +49,9 @@ func TestTerraformDeploymentConfig(t *testing.T) {
 			expectedKind:       KindTerraformApp,
 			expectedAPIVersion: "pipecd.dev/v1beta1",
 			expectedSpec: &TerraformDeploymentSpec{
-				GenericDeploymentSpec: GenericDeploymentSpec{},
+				GenericDeploymentSpec: GenericDeploymentSpec{
+					Timeout: Duration(6 * time.Hour),
+				},
 				Input: TerraformDeploymentInput{
 					Workspace:        "dev",
 					TerraformVersion: "0.12.23",
@@ -66,6 +72,7 @@ func TestTerraformDeploymentConfig(t *testing.T) {
 							OutFilename: "service-account.yaml",
 						},
 					},
+					Timeout: Duration(6 * time.Hour),
 				},
 				Input: TerraformDeploymentInput{
 					Workspace:        "dev",
@@ -100,6 +107,7 @@ func TestTerraformDeploymentConfig(t *testing.T) {
 							},
 						},
 					},
+					Timeout: Duration(6 * time.Hour),
 				},
 				Input: TerraformDeploymentInput{
 					Workspace:        "dev",
