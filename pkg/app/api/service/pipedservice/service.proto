@@ -27,6 +27,7 @@ import "pkg/model/deployment.proto";
 import "pkg/model/logblock.proto";
 import "pkg/model/piped.proto";
 import "pkg/model/piped_stats.proto";
+import "pkg/model/event.proto";
 
 // PipedService contains all RPC definitions for piped.
 // All of these RPCs are only called by piped and authenticated by using PIPED_TOKEN.
@@ -133,6 +134,9 @@ service PipedService {
     // and then another Handler service will pick them inorder to apply to build new state.
     // By that way we can control the traffic to the datastore in a better way.
     rpc ReportApplicationLiveStateEvents(ReportApplicationLiveStateEventsRequest) returns (ReportApplicationLiveStateEventsResponse) {}
+
+    // GetLatestEvent gives back the latest event that meets the given conditions.
+    rpc GetLatestEvent(GetLatestEventRequest) returns (GetLatestEventResponse) {}
 }
 
 message PingRequest {
@@ -344,4 +348,13 @@ message ReportApplicationLiveStateEventsRequest {
 
 message ReportApplicationLiveStateEventsResponse {
     repeated string failed_ids = 1;
+}
+
+message GetLatestEventRequest {
+    string name = 1 [(validate.rules).string.min_len = 1];
+    map<string,string> labels = 2;
+}
+
+message GetLatestEventResponse {
+    pipe.model.Event event = 1 [(validate.rules).message.required = true];
 }
