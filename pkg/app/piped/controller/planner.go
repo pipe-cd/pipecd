@@ -54,10 +54,11 @@ type planner struct {
 	appManifestsCache        cache.Cache
 	logger                   *zap.Logger
 
-	done          atomic.Bool
-	doneTimestamp time.Time
-	cancelled     bool
-	cancelledCh   chan *model.ReportableCommand
+	done                 atomic.Bool
+	doneTimestamp        time.Time
+	doneDeploymentStatus model.DeploymentStatus
+	cancelled            bool
+	cancelledCh          chan *model.ReportableCommand
 
 	nowFunc func() time.Time
 }
@@ -97,6 +98,7 @@ func newPlanner(
 		pipedConfig:              pipedConfig,
 		plannerRegistry:          registry.DefaultRegistry(),
 		appManifestsCache:        appManifestsCache,
+		doneDeploymentStatus:     d.Status,
 		cancelledCh:              make(chan *model.ReportableCommand, 1),
 		nowFunc:                  time.Now,
 		logger:                   logger,
@@ -121,6 +123,12 @@ func (p *planner) DoneTimestamp() time.Time {
 	return p.doneTimestamp
 }
 
+// DoneDeploymentStatus returns the deployment status when planner has done.
+// This can be used only after IsDone() returns true.
+func (p *planner) DoneDeploymentStatus() model.DeploymentStatus {
+	return p.doneDeploymentStatus
+}
+
 func (p *planner) Cancel(cmd model.ReportableCommand) {
 	if p.cancelled {
 		return
@@ -140,6 +148,7 @@ func (p *planner) Run(ctx context.Context) error {
 
 	planner, ok := p.plannerRegistry.Planner(p.deployment.Kind)
 	if !ok {
+		p.doneDeploymentStatus = model.DeploymentStatus_DEPLOYMENT_FAILURE
 		p.reportDeploymentFailed(ctx, "Unable to find the planner for this application kind")
 		return fmt.Errorf("unable to find the planner for application %v", p.deployment.Kind)
 	}
@@ -147,6 +156,7 @@ func (p *planner) Run(ctx context.Context) error {
 	repoID := p.deployment.GitPath.Repo.Id
 	repoCfg, ok := p.pipedConfig.GetRepository(repoID)
 	if !ok {
+		p.doneDeploymentStatus = model.DeploymentStatus_DEPLOYMENT_FAILURE
 		p.reportDeploymentFailed(ctx, fmt.Sprintf("Unable to find %q from the repository list in piped config", repoID))
 		return fmt.Errorf("unable to find %q from the repository list in piped config", repoID)
 	}
@@ -187,6 +197,7 @@ func (p *planner) Run(ctx context.Context) error {
 	select {
 	case cmd := <-p.cancelledCh:
 		if cmd != nil {
+			p.doneDeploymentStatus = model.DeploymentStatus_DEPLOYMENT_CANCELLED
 			desc := fmt.Sprintf("Deployment was cancelled by %s while planning", cmd.Commander)
 			p.reportDeploymentCancelled(ctx, cmd.Commander, desc)
 			return cmd.Report(ctx, model.CommandStatus_COMMAND_SUCCEEDED, nil)
@@ -195,9 +206,11 @@ func (p *planner) Run(ctx context.Context) error {
 	}
 
 	if err != nil {
+		p.doneDeploymentStatus = model.DeploymentStatus_DEPLOYMENT_FAILURE
 		return p.reportDeploymentFailed(ctx, fmt.Sprintf("Unable to plan the deployment (%v)", err))
 	}
 
+	p.doneDeploymentStatus = model.DeploymentStatus_DEPLOYMENT_PLANNED
 	return p.reportDeploymentPlanned(ctx, p.lastSuccessfulCommitHash, out)
 }
 
