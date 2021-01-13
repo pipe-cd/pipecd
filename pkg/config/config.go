@@ -197,10 +197,19 @@ func (c *Config) Validate() error {
 	if c.APIVersion != versionV1Beta1 {
 		return fmt.Errorf("unsupported version: %s", c.APIVersion)
 	}
-	if spec, ok := c.spec.(validator); ok && spec != nil {
-		if err := spec.Validate(); err != nil {
-			return err
-		}
+	if c.Kind == "" {
+		return fmt.Errorf("kind is required")
+	}
+	if c.spec == nil {
+		return fmt.Errorf("spec is required")
+	}
+
+	spec, ok := c.spec.(validator)
+	if !ok {
+		return fmt.Errorf("spec must have Validate function")
+	}
+	if err := spec.Validate(); err != nil {
+		return err
 	}
 	return nil
 }
