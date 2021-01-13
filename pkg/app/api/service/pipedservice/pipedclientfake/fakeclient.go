@@ -474,4 +474,9 @@ func (c *fakeClient) GetLatestEvent(ctx context.Context, req *pipedservice.GetLa
 	}, nil
 }
 
+func (c *fakeClient) ListEvents(ctx context.Context, req *pipedservice.ListEventsRequest, opts ...grpc.CallOption) (*pipedservice.ListEventsResponse, error) {
+	c.logger.Info("fake client received ListEvents rpc", zap.Any("request", req))
+	return &pipedservice.ListEventsResponse{}, nil
+}
+
 var _ pipedservice.PipedServiceClient = (*fakeClient)(nil)

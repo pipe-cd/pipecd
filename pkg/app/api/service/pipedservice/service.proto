@@ -137,6 +137,9 @@ service PipedService {
 
     // GetLatestEvent gives back the latest event that meets the given conditions.
     rpc GetLatestEvent(GetLatestEventRequest) returns (GetLatestEventResponse) {}
+
+    // ListEvents returns a list of Events newly created after the given milestone.
+    rpc ListEvents(ListEventsRequest) returns (ListEventsResponse) {}
 }
 
 message PingRequest {
@@ -357,4 +360,13 @@ message GetLatestEventRequest {
 
 message GetLatestEventResponse {
     pipe.model.Event event = 1 [(validate.rules).message.required = true];
+}
+
+message ListEventsRequest {
+    // Mark that the client has handled all events created before this value.
+    int64 milestone = 1 [(validate.rules).int64.gt = 0];
+}
+
+message ListEventsResponse {
+    repeated pipe.model.Event events = 1;
 }

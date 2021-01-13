@@ -730,6 +730,45 @@ func (a *PipedAPI) GetLatestEvent(ctx context.Context, req *pipedservice.GetLate
 	}, nil
 }
 
+// ListEvents returns a list of Events newly created after the given milestone.
+func (a *PipedAPI) ListEvents(ctx context.Context, req *pipedservice.ListEventsRequest) (*pipedservice.ListEventsResponse, error) {
+	projectID, _, _, err := rpcauth.ExtractPipedToken(ctx)
+	if err != nil {
+		return nil, err
+	}
+
+	opts := datastore.ListOptions{
+		Filters: []datastore.ListFilter{
+			{
+				Field:    "ProjectId",
+				Operator: "==",
+				Value:    projectID,
+			},
+			{
+				Field:    "CreatedAt",
+				Operator: ">",
+				Value:    req.Milestone,
+			},
+		},
+	}
+
+	events, err := a.eventStore.ListEvents(ctx, opts)
+	if err != nil {
+		a.logger.Error("failed to list events", zap.Error(err))
+		return nil, status.Error(codes.Internal, "failed to list events")
+	}
+	if len(events) == 0 {
+		a.logger.Error("no events found",
+			zap.String("project-id", projectID),
+			zap.Int64("milestone", req.Milestone),
+		)
+		return nil, status.Error(codes.NotFound, "no events found")
+	}
+	return &pipedservice.ListEventsResponse{
+		Events: events,
+	}, nil
+}
+
 // validateAppBelongsToPiped checks if the given application belongs to the given piped.
 // It gives back an error unless the application belongs to the piped.
 func (a *PipedAPI) validateAppBelongsToPiped(ctx context.Context, appID, pipedID string) error {
