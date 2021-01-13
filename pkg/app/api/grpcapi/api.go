@@ -324,6 +324,7 @@ func (a *API) RegisterEvent(ctx context.Context, req *apiservice.RegisterEventRe
 		Id:        uuid.New().String(),
 		Name:      req.Name,
 		Data:      req.Data,
+		Labels:    req.Labels,
 		ProjectId: key.ProjectId,
 	})
 	if errors.Is(err, datastore.ErrAlreadyExists) {

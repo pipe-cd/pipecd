@@ -27,8 +27,9 @@ import (
 type register struct {
 	root *command
 
-	name string
-	data string
+	name   string
+	data   string
+	labels map[string]string
 }
 
 func newRegisterCommand(root *command) *cobra.Command {
@@ -43,7 +44,7 @@ func newRegisterCommand(root *command) *cobra.Command {
 
 	cmd.Flags().StringVar(&r.name, "name", r.name, "The name of event.")
 	cmd.Flags().StringVar(&r.data, "data", r.data, "The string value of event data.")
-	// TODO: Allow specifying event labels.
+	cmd.Flags().StringToStringVar(&r.labels, "labels", r.labels, "The list of labels for event. Format: key=value,key2=value2 .")
 
 	cmd.MarkFlagRequired("name")
 	cmd.MarkFlagRequired("data")
@@ -59,8 +60,9 @@ func (r *register) run(ctx context.Context, t cli.Telemetry) error {
 	defer cli.Close()
 
 	req := &apiservice.RegisterEventRequest{
-		Name: r.name,
-		Data: r.data,
+		Name:   r.name,
+		Data:   r.data,
+		Labels: r.labels,
 	}
 
 	if _, err := cli.RegisterEvent(ctx, req); err != nil {
