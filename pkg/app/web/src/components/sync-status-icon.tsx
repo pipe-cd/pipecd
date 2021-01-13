@@ -29,15 +29,10 @@ const useStyles = makeStyles((theme) => ({
 
 interface Props {
   status: ApplicationSyncStatus;
-  deploying: boolean;
 }
 
-export const SyncStatusIcon: FC<Props> = ({ status, deploying }) => {
+export const SyncStatusIcon: FC<Props> = ({ status }) => {
   const classes = useStyles();
-
-  if (deploying) {
-    return <Cached className={classes[ApplicationSyncStatus.DEPLOYING]} />;
-  }
 
   switch (status) {
     case ApplicationSyncStatus.UNKNOWN:

@@ -16,7 +16,6 @@ import React, { FC, memo } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import { Link as RouterLink } from "react-router-dom";
 import { APPLICATION_KIND_TEXT } from "../constants/application-kind";
-import { APPLICATION_SYNC_STATUS_TEXT } from "../constants/application-sync-status-text";
 import { APPLICATION_HEALTH_STATUS_TEXT } from "../constants/health-status-text";
 import { PAGE_PATH_DEPLOYMENTS } from "../constants/path";
 import { UI_TEXT_REFRESH } from "../constants/ui-text";
@@ -24,7 +23,6 @@ import { AppState } from "../modules";
 import {
   Application,
   ApplicationDeploymentReference,
-  ApplicationSyncStatus,
   fetchApplication,
   selectById as selectApplicationById,
   syncApplication,
@@ -39,11 +37,11 @@ import {
   selectById as selectEnvById,
 } from "../modules/environments";
 import { Piped, selectById as selectPipeById } from "../modules/pipeds";
+import { AppSyncStatus } from "./app-sync-status";
 import { DetailTableRow } from "./detail-table-row";
 import { ApplicationHealthStatusIcon } from "./health-status-icon";
 import { SplitButton } from "./split-button";
 import { SyncStateReason } from "./sync-state-reason";
-import { SyncStatusIcon } from "./sync-status-icon";
 
 const useStyles = makeStyles((theme) => ({
   root: {
@@ -63,9 +61,11 @@ const useStyles = makeStyles((theme) => ({
     color: theme.palette.text.secondary,
     marginLeft: theme.spacing(1),
   },
-  syncStatusText: {
-    marginLeft: theme.spacing(0.5),
+  AppSyncState: {
     marginRight: theme.spacing(1),
+  },
+  liveStateText: {
+    marginLeft: theme.spacing(0.5),
   },
   buttonProgress: {
     color: theme.palette.primary.main,
@@ -233,29 +233,22 @@ export const ApplicationDetail: FC<Props> = memo(function ApplicationDetail({
           </Typography>
         </Box>
 
-        {app?.syncState ? (
+        {app ? (
           <>
             <Box display="flex" alignItems="center">
-              <SyncStatusIcon
-                status={app.syncState.status}
+              <AppSyncStatus
+                syncState={app.syncState}
                 deploying={app.deploying}
+                size="large"
+                className={classes.AppSyncState}
               />
-              <Box display="flex" alignItems="baseline">
-                <Typography variant="h6" className={classes.syncStatusText}>
-                  {app.deploying
-                    ? APPLICATION_SYNC_STATUS_TEXT[
-                        ApplicationSyncStatus.DEPLOYING
-                      ]
-                    : APPLICATION_SYNC_STATUS_TEXT[app.syncState.status]}
-                </Typography>
-              </Box>
 
               {liveState ? (
                 <>
                   <ApplicationHealthStatusIcon
                     health={liveState.healthStatus}
                   />
-                  <Typography variant="h6" className={classes.syncStatusText}>
+                  <Typography variant="h6" className={classes.liveStateText}>
                     {APPLICATION_HEALTH_STATUS_TEXT[liveState.healthStatus]}
                   </Typography>
                 </>
@@ -264,10 +257,12 @@ export const ApplicationDetail: FC<Props> = memo(function ApplicationDetail({
               )}
             </Box>
 
-            <SyncStateReason
-              summary={app.syncState.shortReason}
-              detail={app.syncState.reason}
-            />
+            {app.syncState && (
+              <SyncStateReason
+                summary={app.syncState.shortReason}
+                detail={app.syncState.reason}
+              />
+            )}
           </>
         ) : (
           <Skeleton height={32} width={200} />
