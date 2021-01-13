@@ -1,9 +1,2 @@
-# https://docs.aws.amazon.com/lambda/latest/dg/configuration-versions.html
 apiVersion: pipecd.dev/v1beta1
 kind: LambdaApp
-spec:
-  input:
-    # Where to fetch the source code to create lambda package.
-    git: git@github.com:org/source-repo.git
-    path: lambdas/demoapp
-    ref: v1.0.0
