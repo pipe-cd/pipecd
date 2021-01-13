@@ -220,6 +220,10 @@ func (a *PipedAPI) ReportApplicationDeployingStatus(ctx context.Context, req *pi
 		app.Deploying = req.Deploying
 		return nil
 	})
+	if err == nil {
+		return &pipedservice.ReportApplicationDeployingStatusResponse{}, nil
+	}
+
 	switch err {
 	case datastore.ErrNotFound:
 		return nil, status.Error(codes.InvalidArgument, "application is not found")
@@ -232,8 +236,6 @@ func (a *PipedAPI) ReportApplicationDeployingStatus(ctx context.Context, req *pi
 		)
 		return nil, status.Error(codes.Internal, "failed to update deploying status of application")
 	}
-
-	return &pipedservice.ReportApplicationDeployingStatusResponse{}, nil
 }
 
 // ReportApplicationMostRecentDeployment is used to update the basic information about
