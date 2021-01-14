@@ -39,10 +39,6 @@ type applicationLister interface {
 	ListByCloudProvider(name string) []*model.Application
 }
 
-type deploymentLister interface {
-	ListAppHeadDeployments() map[string]*model.Deployment
-}
-
 type gitClient interface {
 	Clone(ctx context.Context, repoID, remote, branch, destination string) (git.Repo, error)
 }
@@ -58,7 +54,6 @@ type reporter interface {
 type detector struct {
 	provider              config.PipedCloudProvider
 	appLister             applicationLister
-	deploymentLister      deploymentLister
 	gitClient             gitClient
 	stateGetter           kubernetes.Getter
 	reporter              reporter
@@ -75,7 +70,6 @@ type detector struct {
 func NewDetector(
 	cp config.PipedCloudProvider,
 	appLister applicationLister,
-	deploymentLister deploymentLister,
 	gitClient gitClient,
 	stateGetter kubernetes.Getter,
 	reporter reporter,
@@ -91,7 +85,6 @@ func NewDetector(
 	return &detector{
 		provider:              cp,
 		appLister:             appLister,
-		deploymentLister:      deploymentLister,
 		gitClient:             gitClient,
 		stateGetter:           stateGetter,
 		reporter:              reporter,
@@ -127,35 +120,9 @@ L:
 }
 
 func (d *detector) check(ctx context.Context) error {
-	var (
-		err             error
-		applications    = d.listApplications()
-		headDeployments = d.deploymentLister.ListAppHeadDeployments()
-	)
+	appsByRepo := d.listGroupedApplication()
 
-	for repoID, apps := range applications {
-		var notDeployingApps []*model.Application
-
-		// Firstly, handle all deploying applications
-		// and remove them from the list.
-		for _, app := range apps {
-			headDeployment, ok := headDeployments[app.Id]
-			if !ok {
-				notDeployingApps = append(notDeployingApps, app)
-				continue
-			}
-			state := makeDeployingState(headDeployment)
-			if err := d.reporter.ReportApplicationSyncState(ctx, app.Id, state); err != nil {
-				d.logger.Error("failed to report application sync state", zap.Error(err))
-			}
-		}
-
-		if len(notDeployingApps) == 0 {
-			continue
-		}
-
-		// Next, we have to clone the lastest commit of repository
-		// to compare the states.
+	for repoID, apps := range appsByRepo {
 		gitRepo, ok := d.gitRepos[repoID]
 		if !ok {
 			// Clone repository for the first time.
@@ -164,7 +131,7 @@ func (d *detector) check(ctx context.Context) error {
 				d.logger.Error(fmt.Sprintf("repository %s was not found in piped configuration", repoID))
 				continue
 			}
-			gitRepo, err = d.gitClient.Clone(ctx, repoID, repoCfg.Remote, repoCfg.Branch, "")
+			gr, err := d.gitClient.Clone(ctx, repoID, repoCfg.Remote, repoCfg.Branch, "")
 			if err != nil {
 				d.logger.Error("failed to clone repository",
 					zap.String("repo-id", repoID),
@@ -172,10 +139,11 @@ func (d *detector) check(ctx context.Context) error {
 				)
 				continue
 			}
+			gitRepo = gr
 			d.gitRepos[repoID] = gitRepo
 		}
 
-		// Fetch to update the repository.
+		// Fetch the latest commit to compare the states.
 		branch := gitRepo.GetClonedBranch()
 		if err := gitRepo.Pull(ctx, branch); err != nil {
 			d.logger.Error("failed to update repository branch",
@@ -195,7 +163,8 @@ func (d *detector) check(ctx context.Context) error {
 			continue
 		}
 
-		for _, app := range notDeployingApps {
+		// Start checking all applications in this repository.
+		for _, app := range apps {
 			if err := d.checkApplication(ctx, app, gitRepo, headCommit); err != nil {
 				d.logger.Error(fmt.Sprintf("failed to check application: %s", app.Id), zap.Error(err))
 			}
@@ -356,9 +325,9 @@ func decryptSealedSecrets(appDir string, secrets []config.SealedSecretMapping, d
 	return nil
 }
 
-// listApplications retrieves all applications those should be handled by this director
+// listGroupedApplication retrieves all applications those should be handled by this director
 // and then groups them by repoID.
-func (d *detector) listApplications() map[string][]*model.Application {
+func (d *detector) listGroupedApplication() map[string][]*model.Application {
 	var (
 		apps = d.appLister.ListByCloudProvider(d.provider.Name)
 		m    = make(map[string][]*model.Application)
@@ -433,23 +402,6 @@ func groupManifests(heads, lives []provider.Manifest) (adds, deletes, headInters
 		adds = append(adds, lives[l:]...)
 	}
 	return
-}
-
-func makeDeployingState(deployment *model.Deployment) model.ApplicationSyncState {
-	var (
-		shortReason = "A deployment of this application is running"
-		reason      = deployment.Summary
-	)
-	if reason == "" {
-		reason = shortReason
-	}
-	return model.ApplicationSyncState{
-		Status:           model.ApplicationSyncStatus_DEPLOYING,
-		ShortReason:      shortReason,
-		Reason:           reason,
-		HeadDeploymentId: deployment.Id,
-		Timestamp:        time.Now().Unix(),
-	}
 }
 
 func makeSyncedState() model.ApplicationSyncState {

@@ -75,7 +75,6 @@ type providerDetector interface {
 
 func NewDetector(
 	appLister applicationLister,
-	deploymentLister deploymentLister,
 	gitClient gitClient,
 	stateGetter livestatestore.Getter,
 	apiClient apiClient,
@@ -103,7 +102,6 @@ func NewDetector(
 			d.detectors = append(d.detectors, kubernetes.NewDetector(
 				cp,
 				appLister,
-				deploymentLister,
 				gitClient,
 				sg,
 				d,
