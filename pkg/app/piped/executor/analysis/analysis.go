@@ -197,7 +197,7 @@ func (e *Executor) newAnalyzerForMetrics(i int, templatable *config.TemplatableA
 	if err != nil {
 		return nil, err
 	}
-	provider, err := e.newMetricsProvider(cfg.Provider, factory)
+	provider, err := e.newMetricsProvider(cfg.Provider, templatable, factory)
 	if err != nil {
 		return nil, err
 	}
@@ -237,12 +237,12 @@ func (e *Executor) newAnalyzerForHTTP(i int, templatable *config.TemplatableAnal
 	}, time.Duration(cfg.Interval), cfg.FailureLimit, e.Logger, e.LogPersister), nil
 }
 
-func (e *Executor) newMetricsProvider(providerName string, factory *metrics.Factory) (metrics.Provider, error) {
+func (e *Executor) newMetricsProvider(providerName string, templatable *config.TemplatableAnalysisMetrics, factory *metrics.Factory) (metrics.Provider, error) {
 	cfg, ok := e.PipedConfig.GetAnalysisProvider(providerName)
 	if !ok {
 		return nil, fmt.Errorf("unknown provider name %s", providerName)
 	}
-	provider, err := factory.NewProvider(&cfg)
+	provider, err := factory.NewProvider(templatable, &cfg)
 	if err != nil {
 		return nil, err
 	}

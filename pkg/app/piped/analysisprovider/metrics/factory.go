@@ -35,10 +35,10 @@ func NewFactory(logger *zap.Logger) *Factory {
 }
 
 // NewProvider generates an appropriate provider according to analysis provider config.
-func (f *Factory) NewProvider(providerCfg *config.PipedAnalysisProvider) (provider Provider, err error) {
+func (f *Factory) NewProvider(analysisTempCfg *config.TemplatableAnalysisMetrics, providerCfg *config.PipedAnalysisProvider) (provider Provider, err error) {
 	switch providerCfg.Type {
 	case model.AnalysisProviderPrometheus:
-		provider, err = prometheus.NewProvider(providerCfg.PrometheusConfig.Address, f.logger)
+		provider, err = prometheus.NewProvider(providerCfg.PrometheusConfig.Address, analysisTempCfg.Timeout.Duration(), f.logger)
 		if err != nil {
 			return
 		}

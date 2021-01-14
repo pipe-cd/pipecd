@@ -43,7 +43,7 @@ type Provider struct {
 	logger  *zap.Logger
 }
 
-func NewProvider(address string, logger *zap.Logger) (*Provider, error) {
+func NewProvider(address string, timeout time.Duration, logger *zap.Logger) (*Provider, error) {
 	client, err := api.NewClient(api.Config{
 		Address: address,
 	})
@@ -53,7 +53,7 @@ func NewProvider(address string, logger *zap.Logger) (*Provider, error) {
 
 	return &Provider{
 		api:     v1.NewAPI(client),
-		timeout: defaultTimeout,
+		timeout: timeout,
 		logger:  logger.With(zap.String("analysis-provider", ProviderType)),
 	}, nil
 }
