@@ -90,7 +90,20 @@ func apply(ctx context.Context, in *executor.Input, cloudProviderName string, cl
 		return false
 	}
 
-	if err := client.Apply(ctx, fm, cloudProviderCfg.Role); err != nil {
+	ok, err := client.AvailableFunctionName(ctx, fm.Spec.Name)
+	if err != nil {
+		in.LogPersister.Errorf("Unable to check avalability of given function name %s: %v", fm.Spec.Name, err)
+		return false
+	}
+	if !ok {
+		// Try to delete the function which name overlap with given function name in lambda function manifest.
+		if err := client.DeleteFunction(ctx, fm.Spec.Name); err != nil {
+			in.LogPersister.Errorf("Failed to prepare function name resource to apply the lambda function manifest (%v)", err)
+			return false
+		}
+	}
+
+	if err := client.CreateFunction(ctx, fm, cloudProviderCfg.Role); err != nil {
 		in.LogPersister.Errorf("Failed to apply the lambda function manifest (%v)", err)
 		return false
 	}
