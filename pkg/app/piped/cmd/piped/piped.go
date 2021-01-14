@@ -273,7 +273,6 @@ func (p *piped) run(ctx context.Context, t cli.Telemetry) (runErr error) {
 	{
 		d := driftdetector.NewDetector(
 			applicationLister,
-			deploymentLister,
 			gitClient,
 			liveStateGetter,
 			apiClient,
