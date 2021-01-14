@@ -130,7 +130,6 @@ func (s *EventWatcherSpec) Validate() error {
 		if len(e.Replacements) == 0 {
 			return fmt.Errorf("there must be at least one replacement to an event")
 		}
-		// TODO: Consider merging events if there are events whose combination of name and labels is the same
 	}
 	return nil
 }
