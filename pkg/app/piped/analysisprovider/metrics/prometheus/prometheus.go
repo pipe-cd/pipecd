@@ -51,6 +51,10 @@ func NewProvider(address string, timeout time.Duration, logger *zap.Logger) (*Pr
 		return nil, err
 	}
 
+	if timeout == 0 {
+		timeout = defaultTimeout
+	}
+
 	return &Provider{
 		api:     v1.NewAPI(client),
 		timeout: timeout,
