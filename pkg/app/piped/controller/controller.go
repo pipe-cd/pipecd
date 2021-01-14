@@ -302,6 +302,17 @@ func (c *controller) syncPlanners(ctx context.Context) error {
 		)
 		c.donePlanners[p.ID()] = p.DoneTimestamp()
 		delete(c.planners, id)
+
+		// Application will be marked as NOT deploying when planner's deployment was completed.
+		if model.IsCompletedDeployment(p.DoneDeploymentStatus()) {
+			if err := reportApplicationDeployingStatus(ctx, c.apiClient, id, false); err != nil {
+				c.logger.Error("failed to mark application as NOT deploying",
+					zap.String("deployment-id", p.ID()),
+					zap.String("app-id", id),
+					zap.Error(err),
+				)
+			}
+		}
 	}
 
 	// Add missing planners.
@@ -347,6 +358,15 @@ func (c *controller) syncPlanners(ctx context.Context) error {
 			continue
 		}
 		c.planners[appID] = planner
+
+		// Application will be marked as DEPLOYING after its planner was successfully created.
+		if err := reportApplicationDeployingStatus(ctx, c.apiClient, d.ApplicationId, true); err != nil {
+			c.logger.Error("failed to mark application as deploying",
+				zap.String("deployment-id", d.Id),
+				zap.String("app-id", d.ApplicationId),
+				zap.Error(err),
+			)
+		}
 	}
 
 	return nil
@@ -456,6 +476,17 @@ func (c *controller) syncSchedulers(ctx context.Context) error {
 		)
 		c.doneSchedulers[s.ID()] = s.DoneTimestamp()
 		delete(c.schedulers, id)
+
+		// Application will be marked as NOT deploying when scheduler's deployment was completed.
+		if model.IsCompletedDeployment(s.DoneDeploymentStatus()) {
+			if err := reportApplicationDeployingStatus(ctx, c.apiClient, id, false); err != nil {
+				c.logger.Error("failed to mark application as NOT deploying",
+					zap.String("deployment-id", s.ID()),
+					zap.String("app-id", id),
+					zap.Error(err),
+				)
+			}
+		}
 	}
 
 	// Add missing schedulers.
@@ -590,7 +621,17 @@ func (c *controller) getMostRecentlySuccessfulDeployment(ctx context.Context, ap
 	return nil, err
 }
 
-func (c *controller) reportApplicationDeployingStatus(ctx context.Context, appID string, deploying bool) error {
+type appLiveResourceLister struct {
+	lister        liveResourceLister
+	cloudProvider string
+	appID         string
+}
+
+func (l appLiveResourceLister) ListKubernetesResources() ([]provider.Manifest, bool) {
+	return l.lister.ListKubernetesAppLiveResources(l.cloudProvider, l.appID)
+}
+
+func reportApplicationDeployingStatus(ctx context.Context, c apiClient, appID string, deploying bool) error {
 	var (
 		err   error
 		retry = pipedservice.NewRetry(10)
@@ -601,20 +642,10 @@ func (c *controller) reportApplicationDeployingStatus(ctx context.Context, appID
 	)
 
 	for retry.WaitNext(ctx) {
-		if _, err = c.apiClient.ReportApplicationDeployingStatus(ctx, req); err == nil {
+		if _, err = c.ReportApplicationDeployingStatus(ctx, req); err == nil {
 			return nil
 		}
 		err = fmt.Errorf("failed to report application deploying status to control-plane: %w", err)
 	}
 	return err
-}
-
-type appLiveResourceLister struct {
-	lister        liveResourceLister
-	cloudProvider string
-	appID         string
-}
-
-func (l appLiveResourceLister) ListKubernetesResources() ([]provider.Manifest, bool) {
-	return l.lister.ListKubernetesAppLiveResources(l.cloudProvider, l.appID)
 }
