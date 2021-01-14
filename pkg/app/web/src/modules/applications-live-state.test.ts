@@ -30,7 +30,11 @@ describe("applicationLiveStateSlice reducer", () => {
             arg: "application-1",
           },
         })
-      ).toEqual({ ...initialState, hasError: { "application-1": false } });
+      ).toEqual({
+        ...initialState,
+        hasError: { "application-1": false },
+        loading: { "application-1": true },
+      });
     });
 
     it(`should handle ${fetchApplicationStateById.rejected.type}`, () => {
@@ -44,7 +48,11 @@ describe("applicationLiveStateSlice reducer", () => {
             },
           }
         )
-      ).toEqual({ ...initialState, hasError: { "application-1": true } });
+      ).toEqual({
+        ...initialState,
+        hasError: { "application-1": true },
+        loading: { "application-1": false },
+      });
     });
 
     it(`should handle ${fetchApplicationStateById.fulfilled.type}`, () => {
@@ -65,6 +73,7 @@ describe("applicationLiveStateSlice reducer", () => {
         },
         ids: [dummyApplicationLiveState.applicationId],
         hasError: { "application-1": false },
+        loading: { "application-1": false },
       });
     });
   });

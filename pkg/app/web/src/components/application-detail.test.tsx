@@ -59,6 +59,7 @@ const baseState: DeepPartial<AppState> = {
     entities: {
       [dummyApplicationLiveState.applicationId]: dummyApplicationLiveState,
     },
+    loading: {},
     hasError: {},
   },
   environments: {
