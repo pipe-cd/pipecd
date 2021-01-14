@@ -103,8 +103,7 @@ func (s *store) Run(ctx context.Context) error {
 	}
 }
 
-// sync fetches a list of events inside the range between own milestone and the current local time.
-// Only this function takes responsibility for updating the cache.
+// sync fetches a list of events newly created after its own milestone.
 func (s *store) sync(ctx context.Context) error {
 	resp, err := s.apiClient.ListEvents(ctx, &pipedservice.ListEventsRequest{
 		From:  s.milestone,
