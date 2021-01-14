@@ -16,7 +16,10 @@ package eventstore
 
 import (
 	"context"
-	"sync/atomic"
+	"fmt"
+	"sort"
+	"strings"
+	"sync"
 	"time"
 
 	"go.uber.org/zap"
@@ -50,11 +53,12 @@ type store struct {
 	gracePeriod  time.Duration
 	logger       *zap.Logger
 
-	// Mark that it has handled all events that was created before this value.
+	// Mark that it has handled all events that was created before this UNIX time.
 	milestone int64
-	// The key is supposed to be event-definition ID, a string consists of name and labels.
+	mu        sync.RWMutex
+	// The key is supposed to be a string consists of name and labels.
 	// And the value is the address to the latest Event.
-	latestEventMap atomic.Value
+	latestEventMap map[string]*model.Event
 }
 
 const (
@@ -64,14 +68,13 @@ const (
 // NewStore creates a new event store instance.
 // This syncs with the control plane to keep the list of events for this runner up-to-date.
 func NewStore(apiClient apiClient, gracePeriod time.Duration, logger *zap.Logger) Store {
-	s := &store{
-		apiClient:    apiClient,
-		syncInterval: defaultSyncInterval,
-		gracePeriod:  gracePeriod,
-		logger:       logger.Named("event-store"),
+	return &store{
+		apiClient:      apiClient,
+		syncInterval:   defaultSyncInterval,
+		gracePeriod:    gracePeriod,
+		latestEventMap: make(map[string]*model.Event),
+		logger:         logger.Named("event-store"),
 	}
-	s.latestEventMap.Store(make(map[string]*model.Event))
-	return s
 }
 
 // Run starts runner that periodically makes the Events in the cache up-to-date
@@ -89,7 +92,9 @@ func (s *store) Run(ctx context.Context) error {
 	for {
 		select {
 		case <-syncTicker.C:
-			s.sync(ctx)
+			if err := s.sync(ctx); err != nil {
+				s.logger.Error("failed to sync events", zap.Error(err))
+			}
 
 		case <-ctx.Done():
 			s.logger.Info("event store has been stopped")
@@ -101,29 +106,26 @@ func (s *store) Run(ctx context.Context) error {
 // sync fetches a list of events inside the range between own milestone and the current local time.
 // Only this function takes responsibility for updating the cache.
 func (s *store) sync(ctx context.Context) error {
-	// TODO: Use UTC and let control-plane convert it into the control-plane's Local time
-	// Unexpected behavior can be happened if Piped uses different timezone from the control-plane.
-	to := time.Now().Unix()
 	resp, err := s.apiClient.ListEvents(ctx, &pipedservice.ListEventsRequest{
 		From:  s.milestone,
-		To:    to,
-		Order: pipedservice.ListEventsOrder_FROM_OLDEST,
+		Order: pipedservice.ListOrder_ASC,
 	})
 	if err != nil {
-		s.logger.Error("failed to list events", zap.Error(err))
-		return err
+		return fmt.Errorf("failed to list events: %w", err)
 	}
-	// Set this time's "to" as the next time's "from".
-	s.milestone = to
 
 	// Make the cache up-to-date by traversing events sorted by oldest first.
-	eventMap := s.latestEventMap.Load().(map[string]*model.Event)
+	var latestTime int64
+	s.mu.Lock()
 	for _, event := range resp.Events {
-		id := model.EventDefinitionID(event.Name, event.Labels)
-		eventMap[id] = event
+		id := eventDefinitionID(event.Name, event.Labels)
+		s.latestEventMap[id] = event
+		latestTime = event.CreatedAt
 	}
-	s.latestEventMap.Store(eventMap)
+	s.mu.Unlock()
 
+	// Set the latest one within the result as the next time's "from".
+	s.milestone = latestTime + 1
 	return nil
 }
 
@@ -132,9 +134,10 @@ func (s *store) Getter() Getter {
 }
 
 func (s *store) GetLatest(ctx context.Context, name string, labels map[string]string) (*model.Event, bool) {
-	eventMap := s.latestEventMap.Load().(map[string]*model.Event)
-	id := model.EventDefinitionID(name, labels)
-	event, ok := eventMap[id]
+	id := eventDefinitionID(name, labels)
+	s.mu.RLock()
+	event, ok := s.latestEventMap[id]
+	s.mu.RUnlock()
 	if ok {
 		return event, true
 	}
@@ -149,6 +152,30 @@ func (s *store) GetLatest(ctx context.Context, name string, labels map[string]st
 		return nil, false
 	}
 
-	// NOTE: Don't update the cache to prevent it from being overwritten by slightly older ones.
+	s.mu.Lock()
+	s.latestEventMap[id] = resp.Event
+	s.mu.Unlock()
 	return resp.Event, true
+}
+
+// eventDefinitionID builds a unique identifier based on the given name and labels.
+// It returns the exact same string as long as both are the same.
+func eventDefinitionID(name string, labels map[string]string) string {
+	if len(labels) == 0 {
+		return name
+	}
+
+	var b strings.Builder
+	b.WriteString(name)
+
+	// Guarantee uniqueness by sorting by keys.
+	keys := make([]string, 0, len(labels))
+	for key := range labels {
+		keys = append(keys, key)
+	}
+	sort.Strings(keys)
+	for _, key := range keys {
+		b.WriteString(fmt.Sprintf("/%s:%s", key, labels[key]))
+	}
+	return b.String()
 }

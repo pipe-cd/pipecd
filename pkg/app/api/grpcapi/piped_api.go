@@ -734,6 +734,7 @@ func (a *PipedAPI) ListEvents(ctx context.Context, req *pipedservice.ListEventsR
 		return nil, err
 	}
 
+	// Build options based on the request.
 	opts := datastore.ListOptions{
 		Filters: []datastore.ListFilter{
 			{
@@ -741,27 +742,31 @@ func (a *PipedAPI) ListEvents(ctx context.Context, req *pipedservice.ListEventsR
 				Operator: "==",
 				Value:    projectID,
 			},
-			{
-				Field:    "CreatedAt",
-				Operator: ">=",
-				Value:    req.From,
-			},
-			{
-				Field:    "CreatedAt",
-				Operator: "<",
-				Value:    req.To,
-			},
 		},
 	}
+	if req.From > 0 {
+		opts.Filters = append(opts.Filters, datastore.ListFilter{
+			Field:    "CreatedAt",
+			Operator: ">=",
+			Value:    req.From,
+		})
+	}
+	if req.To > 0 {
+		opts.Filters = append(opts.Filters, datastore.ListFilter{
+			Field:    "CreatedAt",
+			Operator: "<",
+			Value:    req.To,
+		})
+	}
 	switch req.Order {
-	case pipedservice.ListEventsOrder_FROM_OLDEST:
+	case pipedservice.ListOrder_ASC:
 		opts.Orders = []datastore.Order{
 			{
 				Field:     "CreatedAt",
 				Direction: datastore.Asc,
 			},
 		}
-	case pipedservice.ListEventsOrder_FROM_NEWEST:
+	case pipedservice.ListOrder_DESC:
 		opts.Orders = []datastore.Order{
 			{
 				Field:     "CreatedAt",

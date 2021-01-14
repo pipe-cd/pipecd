@@ -13,3 +13,51 @@
 // limitations under the License.
 
 package eventstore
+
+import (
+	"testing"
+
+	"github.com/stretchr/testify/assert"
+)
+
+func TestEventDefinitionID(t *testing.T) {
+	testcases := []struct {
+		testname string
+		name     string
+		labels   map[string]string
+		want     string
+	}{
+		{
+			testname: "no name and labels given",
+			want:     "",
+		},
+		{
+			testname: "no labels given",
+			name:     "name1",
+			want:     "name1",
+		},
+		{
+			testname: "no name given",
+			labels: map[string]string{
+				"key1": "value1",
+			},
+			want: "/key1:value1",
+		},
+		{
+			testname: "labels given",
+			name:     "name1",
+			labels: map[string]string{
+				"key1": "value",
+				"key2": "value",
+				"key3": "value",
+			},
+			want: "name1/key1:value/key2:value/key3:value",
+		},
+	}
+	for _, tc := range testcases {
+		t.Run(tc.testname, func(t *testing.T) {
+			got := eventDefinitionID(tc.name, tc.labels)
+			assert.Equal(t, tc.want, got)
+		})
+	}
+}
