@@ -66,10 +66,7 @@ func newClient(region, profile, credentialsFile string, logger *zap.Logger) (*cl
 	return c, nil
 }
 
-func (c *client) Apply(ctx context.Context, fm FunctionManifest, role string) error {
-	if role == "" {
-		return fmt.Errorf("role arn is required")
-	}
+func (c *client) CreateFunction(ctx context.Context, fm FunctionManifest, role string) error {
 	input := &lambda.CreateFunctionInput{
 		Code: &lambda.FunctionCode{
 			ImageUri: aws.String(fm.Spec.ImageURI),
@@ -90,6 +87,57 @@ func (c *client) Apply(ctx context.Context, fm FunctionManifest, role string) er
 				return fmt.Errorf("total code size per account exceeded: %w", err)
 			case lambda.ErrCodeResourceNotFoundException, lambda.ErrCodeResourceNotReadyException:
 				return fmt.Errorf("resource error occurred: %w", err)
+			case lambda.ErrCodeTooManyRequestsException:
+				return fmt.Errorf("request throughput limit was exceeded: %w", err)
+			}
+		}
+		return fmt.Errorf("unknown error given: %w", err)
+	}
+	return nil
+}
+
+func (c *client) AvailableFunctionName(ctx context.Context, name string) (bool, error) {
+	input := &lambda.GetFunctionInput{
+		FunctionName: aws.String(name),
+	}
+	_, err := c.client.GetFunctionWithContext(ctx, input)
+	if err != nil {
+		if aerr, ok := err.(awserr.Error); ok {
+			switch aerr.Code() {
+			case lambda.ErrCodeInvalidParameterValueException:
+				return false, fmt.Errorf("invalid parameter given: %w", err)
+			case lambda.ErrCodeServiceException:
+				return false, fmt.Errorf("aws lambda service encountered an internal error: %w", err)
+			case lambda.ErrCodeTooManyRequestsException:
+				return false, fmt.Errorf("request throughput limit was exceeded: %w", err)
+			// Return true only in case not found resource (function) with the given name.
+			case lambda.ErrCodeResourceNotFoundException:
+				return true, nil
+			}
+		}
+		return false, fmt.Errorf("unknown error given: %w", err)
+	}
+	return false, nil
+}
+
+func (c *client) DeleteFunction(ctx context.Context, name string) error {
+	input := &lambda.DeleteFunctionInput{
+		FunctionName: aws.String(name),
+	}
+	_, err := c.client.DeleteFunctionWithContext(ctx, input)
+	if err != nil {
+		if aerr, ok := err.(awserr.Error); ok {
+			switch aerr.Code() {
+			case lambda.ErrCodeInvalidParameterValueException:
+				return fmt.Errorf("invalid parameter given: %w", err)
+			case lambda.ErrCodeServiceException:
+				return fmt.Errorf("aws lambda service encountered an internal error: %w", err)
+			case lambda.ErrCodeTooManyRequestsException:
+				return fmt.Errorf("request throughput limit was exceeded: %w", err)
+			case lambda.ErrCodeResourceNotFoundException:
+				return fmt.Errorf("resource error occurred: %w", err)
+			case lambda.ErrCodeResourceConflictException:
+				return fmt.Errorf("other operation is in progress with resource: %w", err)
 			}
 		}
 		return fmt.Errorf("unknown error given: %w", err)
