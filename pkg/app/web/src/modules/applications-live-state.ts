@@ -39,8 +39,10 @@ export const fetchApplicationStateById = createAsyncThunk<
 });
 
 const initialState = applicationLiveStateAdapter.getInitialState<{
+  loading: Record<string, boolean>;
   hasError: Record<string, boolean>;
 }>({
+  loading: {},
   hasError: {},
 });
 
@@ -53,6 +55,13 @@ export const selectHasError = (
   return state.hasError[applicationId] || false;
 };
 
+export const selectLoadingById = (
+  state: ApplicationLiveStateState,
+  applicationId: string
+): boolean => {
+  return state.loading[applicationId] || false;
+};
+
 export const applicationLiveStateSlice = createSlice({
   name: "applicationLiveState",
   initialState,
@@ -60,15 +69,18 @@ export const applicationLiveStateSlice = createSlice({
   extraReducers: (builder) => {
     builder
       .addCase(fetchApplicationStateById.pending, (state, action) => {
+        state.loading[action.meta.arg] = true;
         state.hasError[action.meta.arg] = false;
       })
       .addCase(fetchApplicationStateById.fulfilled, (state, action) => {
+        state.loading[action.meta.arg] = false;
         state.hasError[action.meta.arg] = false;
         if (action.payload) {
           applicationLiveStateAdapter.upsertOne(state, action.payload);
         }
       })
       .addCase(fetchApplicationStateById.rejected, (state, action) => {
+        state.loading[action.meta.arg] = false;
         state.hasError[action.meta.arg] = true;
       });
   },

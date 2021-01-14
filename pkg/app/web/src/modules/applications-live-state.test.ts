@@ -8,6 +8,7 @@ import {
 const initialState: ApplicationLiveStateState = {
   entities: {},
   hasError: {},
+  loading: {},
   ids: [],
 };
 
