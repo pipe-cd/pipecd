@@ -74,10 +74,9 @@ func (c *client) Apply(ctx context.Context, fm FunctionManifest, role string) er
 		Code: &lambda.FunctionCode{
 			ImageUri: aws.String(fm.Spec.ImageURI),
 		},
+		PackageType:  aws.String("Image"),
 		Role:         aws.String(role),
 		FunctionName: aws.String(fm.Spec.Name),
-		Runtime:      aws.String(fm.Spec.Runtime),
-		Handler:      aws.String(fm.Spec.Handler),
 	}
 	_, err := c.client.CreateFunctionWithContext(ctx, input)
 	if err != nil {
@@ -89,9 +88,7 @@ func (c *client) Apply(ctx context.Context, fm FunctionManifest, role string) er
 				return fmt.Errorf("aws lambda service encountered an internal error: %w", err)
 			case lambda.ErrCodeCodeStorageExceededException:
 				return fmt.Errorf("total code size per account exceeded: %w", err)
-			case lambda.ErrCodeResourceNotFoundException:
-				fallthrough
-			case lambda.ErrCodeResourceNotReadyException:
+			case lambda.ErrCodeResourceNotFoundException, lambda.ErrCodeResourceNotReadyException:
 				return fmt.Errorf("resource error occurred: %w", err)
 			}
 		}
