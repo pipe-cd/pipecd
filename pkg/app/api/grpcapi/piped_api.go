@@ -753,6 +753,22 @@ func (a *PipedAPI) ListEvents(ctx context.Context, req *pipedservice.ListEventsR
 			},
 		},
 	}
+	switch req.Order {
+	case pipedservice.ListEventsOrder_FROM_OLDEST:
+		opts.Orders = []datastore.Order{
+			{
+				Field:     "CreatedAt",
+				Direction: datastore.Asc,
+			},
+		}
+	case pipedservice.ListEventsOrder_FROM_NEWEST:
+		opts.Orders = []datastore.Order{
+			{
+				Field:     "CreatedAt",
+				Direction: datastore.Desc,
+			},
+		}
+	}
 
 	events, err := a.eventStore.ListEvents(ctx, opts)
 	if err != nil {

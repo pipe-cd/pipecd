@@ -362,9 +362,16 @@ message GetLatestEventResponse {
     pipe.model.Event event = 1 [(validate.rules).message.required = true];
 }
 
+enum ListEventsOrder {
+    NONE = 0;
+    FROM_OLDEST = 1;
+    FROM_NEWEST = 2;
+}
+
 message ListEventsRequest {
     int64 from = 1 [(validate.rules).int64.gt = 0];
     int64 to = 2 [(validate.rules).int64.gt = 0];
+    ListEventsOrder order = 3 [(validate.rules).enum.defined_only = true];
 }
 
 message ListEventsResponse {
