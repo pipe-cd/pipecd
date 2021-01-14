@@ -61,7 +61,7 @@ const useStyles = makeStyles((theme) => ({
     color: theme.palette.text.secondary,
     marginLeft: theme.spacing(1),
   },
-  AppSyncState: {
+  appSyncState: {
     marginRight: theme.spacing(1),
   },
   liveStateText: {
@@ -240,7 +240,7 @@ export const ApplicationDetail: FC<Props> = memo(function ApplicationDetail({
                 syncState={app.syncState}
                 deploying={app.deploying}
                 size="large"
-                className={classes.AppSyncState}
+                className={classes.appSyncState}
               />
 
               {liveState ? (
