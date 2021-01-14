@@ -23,6 +23,7 @@ import {
 } from "../modules/environments";
 import clsx from "clsx";
 import { AppSyncStatus } from "./app-sync-status";
+import { UI_TEXT_NOT_AVAILABLE_TEXT } from "../constants/ui-text";
 
 const useStyles = makeStyles((theme) => ({
   root: {
@@ -37,14 +38,12 @@ const useStyles = makeStyles((theme) => ({
 
 const EmptyDeploymentData: FC = () => (
   <>
-    <TableCell>{NOT_AVAILABLE_TEXT}</TableCell>
-    <TableCell>{NOT_AVAILABLE_TEXT}</TableCell>
-    <TableCell>{NOT_AVAILABLE_TEXT}</TableCell>
-    <TableCell>{NOT_AVAILABLE_TEXT}</TableCell>
+    <TableCell>{UI_TEXT_NOT_AVAILABLE_TEXT}</TableCell>
+    <TableCell>{UI_TEXT_NOT_AVAILABLE_TEXT}</TableCell>
+    <TableCell>{UI_TEXT_NOT_AVAILABLE_TEXT}</TableCell>
+    <TableCell>{UI_TEXT_NOT_AVAILABLE_TEXT}</TableCell>
   </>
 );
-
-const NOT_AVAILABLE_TEXT = "N/A";
 
 interface Props {
   applicationId: string;
@@ -130,12 +129,12 @@ export const ApplicationListItem: FC<Props> = memo(
               <TableCell>{recentlyDeployment.version}</TableCell>
               <TableCell>
                 {recentlyDeployment.trigger?.commit?.hash.slice(0, 8) ??
-                  NOT_AVAILABLE_TEXT}
+                  UI_TEXT_NOT_AVAILABLE_TEXT}
               </TableCell>
               <TableCell>
                 {recentlyDeployment.trigger?.commander ||
                   recentlyDeployment.trigger?.commit?.author ||
-                  NOT_AVAILABLE_TEXT}
+                  UI_TEXT_NOT_AVAILABLE_TEXT}
               </TableCell>
               <TableCell>
                 {dayjs(recentlyDeployment.startedAt * 1000).fromNow()}

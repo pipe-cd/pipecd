@@ -6,6 +6,7 @@ import {
   ApplicationSyncState,
   ApplicationSyncStatus,
 } from "../modules/applications";
+import { UI_TEXT_NOT_AVAILABLE_TEXT } from "../constants/ui-text";
 
 const useStyles = makeStyles((theme) => ({
   statusText: {
@@ -19,8 +20,6 @@ interface Props {
   className?: string;
   size?: "medium" | "large";
 }
-
-const NOT_AVAILABLE_TEXT = "N/A";
 
 export const AppSyncStatus: FC<Props> = ({
   syncState,
@@ -56,7 +55,7 @@ export const AppSyncStatus: FC<Props> = ({
       >
         {syncState
           ? APPLICATION_SYNC_STATUS_TEXT[syncState.status]
-          : NOT_AVAILABLE_TEXT}
+          : UI_TEXT_NOT_AVAILABLE_TEXT}
       </Typography>
     </Box>
   );

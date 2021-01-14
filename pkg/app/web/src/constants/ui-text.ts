@@ -8,3 +8,4 @@ export const UI_TEXT_DELETE = "Delete";
 export const UI_TEXT_FILTER = "FILTER";
 export const UI_TEXT_FILTERED = "FILTERED";
 export const UI_TEXT_HIDE_FILTER = "HIDE FILTER";
+export const UI_TEXT_NOT_AVAILABLE_TEXT = "N/A";
