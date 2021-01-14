@@ -257,7 +257,7 @@ func (s *scheduler) Run(ctx context.Context) error {
 	ds, err := configDSP.GetReadOnly(ctx, ioutil.Discard)
 	if err != nil {
 		s.doneDeploymentStatus = model.DeploymentStatus_DEPLOYMENT_FAILURE
-		statusReason = fmt.Sprintf("Unable to prepare deploy source data at target commit (%v)", err)
+		statusReason = fmt.Sprintf("Unable to prepare deployment configuration source data at target commit (%v)", err)
 		s.reportDeploymentCompleted(ctx, s.doneDeploymentStatus, statusReason, "")
 		return err
 	}
