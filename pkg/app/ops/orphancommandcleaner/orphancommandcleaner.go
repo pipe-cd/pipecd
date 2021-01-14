@@ -4,9 +4,10 @@ import (
 	"context"
 	"time"
 
+	"go.uber.org/zap"
+
 	"github.com/pipe-cd/pipe/pkg/datastore"
 	"github.com/pipe-cd/pipe/pkg/model"
-	"go.uber.org/zap"
 )
 
 var (
