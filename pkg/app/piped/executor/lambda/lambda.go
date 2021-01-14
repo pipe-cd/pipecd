@@ -37,6 +37,12 @@ func Register(r registerer) {
 	}
 	r.Register(model.StageLambdaSync, f)
 	r.Register(model.StageLambdaPromote, f)
+
+	r.RegisterRollback(model.ApplicationKind_LAMBDA, func(in executor.Input) executor.Executor {
+		return &rollbackExecutor{
+			Input: in,
+		}
+	})
 }
 
 func findCloudProvider(in *executor.Input) (name string, cfg *config.CloudProviderLambdaConfig, found bool) {
