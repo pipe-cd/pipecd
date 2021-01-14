@@ -32,6 +32,7 @@ const dummyStore: Partial<AppState> = {
       [dummyApplicationLiveState.applicationId]: dummyApplicationLiveState,
     },
     ids: [dummyApplicationLiveState.applicationId],
+    loading: {},
     hasError: {},
   },
   pipeds: {
@@ -91,6 +92,9 @@ export const loadingLiveState: React.FC = () => (
       applicationLiveState: {
         entities: {},
         ids: [],
+        loading: {
+          [dummyApplication.id]: true,
+        },
       },
       applications: {
         adding: false,
@@ -107,6 +111,33 @@ export const loadingLiveState: React.FC = () => (
               timestamp: 0,
               status: ApplicationSyncStatus.OUT_OF_SYNC,
             },
+          },
+        },
+        ids: [dummyApplication.id],
+      },
+    })}
+  >
+    <ApplicationDetail applicationId={dummyApplication.id} />
+  </Provider>
+);
+
+export const notAvailable: React.FC = () => (
+  <Provider
+    store={createStore({
+      ...dummyStore,
+      applicationLiveState: {
+        entities: {},
+        ids: [],
+        loading: {},
+      },
+      applications: {
+        adding: false,
+        disabling: {},
+        syncing: {},
+        entities: {
+          [dummyApplication.id]: {
+            ...dummyApplication,
+            syncState: undefined,
           },
         },
         ids: [dummyApplication.id],

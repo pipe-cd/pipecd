@@ -16,7 +16,6 @@ import React, { FC, memo } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import { Link as RouterLink } from "react-router-dom";
 import { APPLICATION_KIND_TEXT } from "../constants/application-kind";
-import { APPLICATION_HEALTH_STATUS_TEXT } from "../constants/health-status-text";
 import { PAGE_PATH_DEPLOYMENTS } from "../constants/path";
 import { UI_TEXT_REFRESH } from "../constants/ui-text";
 import { AppState } from "../modules";
@@ -27,19 +26,15 @@ import {
   selectById as selectApplicationById,
   syncApplication,
 } from "../modules/applications";
-import {
-  ApplicationLiveState,
-  selectById as selectLiveStateById,
-} from "../modules/applications-live-state";
 import { SyncStrategy } from "../modules/deployments";
 import {
   Environment,
   selectById as selectEnvById,
 } from "../modules/environments";
 import { Piped, selectById as selectPipeById } from "../modules/pipeds";
+import { AppLiveState } from "./app-live-state";
 import { AppSyncStatus } from "./app-sync-status";
 import { DetailTableRow } from "./detail-table-row";
-import { ApplicationHealthStatusIcon } from "./health-status-icon";
 import { SplitButton } from "./split-button";
 import { SyncStateReason } from "./sync-state-reason";
 
@@ -63,9 +58,6 @@ const useStyles = makeStyles((theme) => ({
   },
   appSyncState: {
     marginRight: theme.spacing(1),
-  },
-  liveStateText: {
-    marginLeft: theme.spacing(0.5),
   },
   buttonProgress: {
     color: theme.palette.primary.main,
@@ -157,16 +149,11 @@ export const ApplicationDetail: FC<Props> = memo(function ApplicationDetail({
   const classes = useStyles();
   const dispatch = useDispatch();
 
-  const [app, liveState, fetchApplicationError] = useSelector<
+  const [app, fetchApplicationError] = useSelector<
     AppState,
-    [
-      Application | undefined,
-      ApplicationLiveState | undefined,
-      SerializedError | null
-    ]
+    [Application | undefined, SerializedError | null]
   >((state) => [
     selectApplicationById(state.applications, applicationId),
-    selectLiveStateById(state.applicationLiveState, applicationId),
     state.applications.fetchApplicationError,
   ]);
 
@@ -242,19 +229,7 @@ export const ApplicationDetail: FC<Props> = memo(function ApplicationDetail({
                 size="large"
                 className={classes.appSyncState}
               />
-
-              {liveState ? (
-                <>
-                  <ApplicationHealthStatusIcon
-                    health={liveState.healthStatus}
-                  />
-                  <Typography variant="h6" className={classes.liveStateText}>
-                    {APPLICATION_HEALTH_STATUS_TEXT[liveState.healthStatus]}
-                  </Typography>
-                </>
-              ) : (
-                <Skeleton height={32} width={100} />
-              )}
+              <AppLiveState applicationId={applicationId} />
             </Box>
 
             {app.syncState && (
