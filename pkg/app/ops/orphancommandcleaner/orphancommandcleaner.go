@@ -11,8 +11,8 @@ import (
 )
 
 var (
-	commandTimeOut = 7 * 24 * time.Hour
-	interval       = 24 * time.Hour
+	commandTimeOut = 24 * time.Hour
+	interval       = 6 * time.Hour
 )
 
 type OrphanCommandCleaner struct {
