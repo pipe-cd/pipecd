@@ -101,7 +101,9 @@ func (s *ops) run(ctx context.Context, t cli.Telemetry) error {
 
 	// Starting orphan commands cleaner
 	cleaner := orphancommandcleaner.NewOrphanCommandCleaner(ds, t.Logger)
-	cleaner.Run(ctx)
+	group.Go(func() error {
+		return cleaner.Run(ctx)
+	})
 
 	// Starting a cron job for insight collector.
 	if s.enableInsightCollector {

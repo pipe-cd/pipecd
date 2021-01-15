@@ -11,8 +11,9 @@ import (
 )
 
 var (
-	commandTimeOut = 24 * time.Hour
-	interval       = 6 * time.Hour
+	commandTimeOut              = 24 * time.Hour
+	interval                    = 6 * time.Hour
+	maxConsecutiveFailuresCount = 3
 )
 
 type OrphanCommandCleaner struct {
@@ -30,17 +31,28 @@ func NewOrphanCommandCleaner(
 	}
 }
 
-func (o *OrphanCommandCleaner) Run(ctx context.Context) {
+func (c *OrphanCommandCleaner) Run(ctx context.Context) error {
+	consecutiveFailuresCount := 0
+
+	t := time.NewTicker(interval)
 	for {
-		if err := o.updateOrphanCommandsStatus(ctx); err != nil {
-			o.logger.Error("failed to update orphan commands", zap.Error(err))
+		select {
+		case <-t.C:
+			if err := c.updateOrphanCommandsStatus(ctx); err != nil {
+				c.logger.Error("failed to update orphan commands", zap.Error(err))
+				consecutiveFailuresCount++
+				if consecutiveFailuresCount == maxConsecutiveFailuresCount {
+					return err
+				}
+			} else {
+				consecutiveFailuresCount = 0
+			}
 		}
-		time.Sleep(interval)
 	}
 }
 
-func (o *OrphanCommandCleaner) updateOrphanCommandsStatus(ctx context.Context) error {
-	timeoutedTime := time.Now().Add(-commandTimeOut).Unix()
+func (c *OrphanCommandCleaner) updateOrphanCommandsStatus(ctx context.Context) error {
+	timeout := time.Now().Add(-commandTimeOut).Unix()
 	opts := datastore.ListOptions{
 		Filters: []datastore.ListFilter{
 			{
@@ -51,20 +63,22 @@ func (o *OrphanCommandCleaner) updateOrphanCommandsStatus(ctx context.Context) e
 			{
 				Field:    "CreatedAt",
 				Operator: "<=",
-				Value:    timeoutedTime,
+				Value:    timeout,
 			},
 		},
 	}
-	commands, err := o.commandstore.ListCommands(ctx, opts)
+	commands, err := c.commandstore.ListCommands(ctx, opts)
 	if err != nil {
 		return err
 	}
 
-	for _, c := range commands {
-		o.commandstore.UpdateCommand(ctx, c.Id, func(c *model.Command) error {
-			c.Status = model.CommandStatus_COMMAND_TIMEOUT
+	for _, command := range commands {
+		if err := c.commandstore.UpdateCommand(ctx, command.Id, func(cmd *model.Command) error {
+			cmd.Status = model.CommandStatus_COMMAND_TIMEOUT
 			return nil
-		})
+		}); err != nil {
+			c.logger.Error("failed to update orphan commands", zap.Error(err))
+		}
 	}
 
 	return nil
