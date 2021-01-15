@@ -79,7 +79,7 @@ func (c *OrphanCommandCleaner) updateOrphanCommandsStatus(ctx context.Context) e
 			cmd.Status = model.CommandStatus_COMMAND_TIMEOUT
 			return nil
 		}); err != nil {
-			c.logger.Error("failed to update orphan commands", zap.Error(err))
+			c.logger.Error("failed to update orphan command", zap.Error(err), zap.String("id", command.Id), zap.String("type", command.Type.String()))
 		}
 	}
 
