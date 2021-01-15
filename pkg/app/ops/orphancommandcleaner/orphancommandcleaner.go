@@ -11,9 +11,8 @@ import (
 )
 
 var (
-	commandTimeOut              = 24 * time.Hour
-	interval                    = 6 * time.Hour
-	maxConsecutiveFailuresCount = 3
+	commandTimeOut = 24 * time.Hour
+	interval       = 6 * time.Hour
 )
 
 type OrphanCommandCleaner struct {
@@ -32,22 +31,15 @@ func NewOrphanCommandCleaner(
 }
 
 func (c *OrphanCommandCleaner) Run(ctx context.Context) error {
-	consecutiveFailuresCount := 0
-
 	t := time.NewTicker(interval)
 	for {
 		select {
 		case <-ctx.Done():
 			return nil
 		case <-t.C:
-			if err := c.updateOrphanCommandsStatus(ctx); err != nil {
-				c.logger.Error("failed to update orphan commands", zap.Error(err))
-				consecutiveFailuresCount++
-				if consecutiveFailuresCount == maxConsecutiveFailuresCount {
-					return err
-				}
-			} else {
-				consecutiveFailuresCount = 0
+			start := time.Now()
+			if err := c.updateOrphanCommandsStatus(ctx); err == nil {
+				c.logger.Info("successfully update orphan commands status", zap.Duration("duration", time.Since(start)))
 			}
 		}
 	}
