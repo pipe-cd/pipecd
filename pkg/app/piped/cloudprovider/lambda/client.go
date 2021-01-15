@@ -66,16 +66,13 @@ func newClient(region, profile, credentialsFile string, logger *zap.Logger) (*cl
 	return c, nil
 }
 
-func (c *client) Apply(ctx context.Context, fm FunctionManifest, role string) error {
-	if role == "" {
-		return fmt.Errorf("role arn is required")
-	}
+func (c *client) Apply(ctx context.Context, fm FunctionManifest) error {
 	input := &lambda.CreateFunctionInput{
 		Code: &lambda.FunctionCode{
 			ImageUri: aws.String(fm.Spec.ImageURI),
 		},
 		PackageType:  aws.String("Image"),
-		Role:         aws.String(role),
+		Role:         aws.String(fm.Spec.Role),
 		FunctionName: aws.String(fm.Spec.Name),
 	}
 	_, err := c.client.CreateFunctionWithContext(ctx, input)

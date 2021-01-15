@@ -28,7 +28,7 @@ import (
 const DefaultFunctionManifestFilename = "function.yaml"
 
 type Client interface {
-	Apply(ctx context.Context, fm FunctionManifest, role string) error
+	Apply(ctx context.Context, fm FunctionManifest) error
 }
 
 type Registry interface {
