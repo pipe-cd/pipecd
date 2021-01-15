@@ -229,10 +229,13 @@ func (w *watcher) checkOutdatedValues(ctx context.Context, event *config.EventWa
 			// Already up-to-date.
 			continue
 		}
-		// Put it into the change list.
+		// Edit the local file and put it into the change list.
 		newYml, err := yamlprocessor.ReplaceValue(yml, r.YAMLField, latestEvent.Data)
 		if err != nil {
 			return nil, fmt.Errorf("failed to replace value at %s with %s: %w", r.YAMLField, latestEvent.Data, err)
+		}
+		if err := ioutil.WriteFile(path, newYml, os.ModePerm); err != nil {
+			return nil, fmt.Errorf("failed to write file: %w", err)
 		}
 		changes[r.File] = newYml
 	}
