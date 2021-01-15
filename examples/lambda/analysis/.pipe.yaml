@@ -4,9 +4,6 @@
 apiVersion: pipecd.dev/v1beta1
 kind: LambdaApp
 spec:
-  input:
-    # Lambda code sourced from the same Git repository.
-    path: lambdas/helloworld
   pipeline:
     stages:
       # Deploy workloads of the new version.
