@@ -113,14 +113,15 @@ func (s *store) sync(ctx context.Context) error {
 	if err != nil {
 		return fmt.Errorf("failed to list events: %w", err)
 	}
+	if len(resp.Events) == 0 {
+		return nil
+	}
 
 	// Eliminate events that have duplicated key.
-	var latestTime int64
 	filtered := make(map[string]*model.Event, len(resp.Events))
 	for _, e := range resp.Events {
 		key := makeEventKey(e.Name, e.Labels)
 		filtered[key] = e
-		latestTime = e.CreatedAt
 	}
 	// Make the cache up-to-date.
 	s.mu.Lock()
@@ -134,7 +135,7 @@ func (s *store) sync(ctx context.Context) error {
 	s.mu.Unlock()
 
 	// Set the latest one within the result as the next time's "from".
-	s.milestone = latestTime + 1
+	s.milestone = resp.Events[len(resp.Events)-1].CreatedAt + 1
 	return nil
 }
 
