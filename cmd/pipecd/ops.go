@@ -27,6 +27,7 @@ import (
 	"github.com/pipe-cd/pipe/pkg/admin"
 	"github.com/pipe-cd/pipe/pkg/app/ops/handler"
 	"github.com/pipe-cd/pipe/pkg/app/ops/insightcollector"
+	"github.com/pipe-cd/pipe/pkg/app/ops/orphancommandcleaner"
 	"github.com/pipe-cd/pipe/pkg/backoff"
 	"github.com/pipe-cd/pipe/pkg/cli"
 	"github.com/pipe-cd/pipe/pkg/datastore"
@@ -97,6 +98,12 @@ func (s *ops) run(ctx context.Context, t cli.Telemetry) error {
 			t.Logger.Error("failed to close filestore client", zap.Error(err))
 		}
 	}()
+
+	// Starting orphan commands cleaner
+	cleaner := orphancommandcleaner.NewOrphanCommandCleaner(ds, t.Logger)
+	group.Go(func() error {
+		return cleaner.Run(ctx)
+	})
 
 	// Starting a cron job for insight collector.
 	if s.enableInsightCollector {
