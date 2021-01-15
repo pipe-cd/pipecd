@@ -20,7 +20,7 @@ import (
 	"github.com/stretchr/testify/assert"
 )
 
-func TestEventDefinitionID(t *testing.T) {
+func TestMakeEventKey(t *testing.T) {
 	testcases := []struct {
 		testname string
 		name     string
@@ -56,7 +56,7 @@ func TestEventDefinitionID(t *testing.T) {
 	}
 	for _, tc := range testcases {
 		t.Run(tc.testname, func(t *testing.T) {
-			got := eventDefinitionID(tc.name, tc.labels)
+			got := makeEventKey(tc.name, tc.labels)
 			assert.Equal(t, tc.want, got)
 		})
 	}

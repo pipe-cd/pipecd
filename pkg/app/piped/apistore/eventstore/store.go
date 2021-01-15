@@ -58,7 +58,7 @@ type store struct {
 	mu        sync.RWMutex
 	// The key is supposed to be a string consists of name and labels.
 	// And the value is the address to the latest Event.
-	latestEventMap map[string]*model.Event
+	latestEvents map[string]*model.Event
 }
 
 const (
@@ -69,11 +69,11 @@ const (
 // This syncs with the control plane to keep the list of events for this runner up-to-date.
 func NewStore(apiClient apiClient, gracePeriod time.Duration, logger *zap.Logger) Store {
 	return &store{
-		apiClient:      apiClient,
-		syncInterval:   defaultSyncInterval,
-		gracePeriod:    gracePeriod,
-		latestEventMap: make(map[string]*model.Event),
-		logger:         logger.Named("event-store"),
+		apiClient:    apiClient,
+		syncInterval: defaultSyncInterval,
+		gracePeriod:  gracePeriod,
+		latestEvents: make(map[string]*model.Event),
+		logger:       logger.Named("event-store"),
 	}
 }
 
@@ -103,7 +103,8 @@ func (s *store) Run(ctx context.Context) error {
 	}
 }
 
-// sync fetches a list of events newly created after its own milestone.
+// sync fetches a list of events newly created after its own milestone,
+// and updates the cache of latest events.
 func (s *store) sync(ctx context.Context) error {
 	resp, err := s.apiClient.ListEvents(ctx, &pipedservice.ListEventsRequest{
 		From:  s.milestone,
@@ -113,13 +114,22 @@ func (s *store) sync(ctx context.Context) error {
 		return fmt.Errorf("failed to list events: %w", err)
 	}
 
-	// Make the cache up-to-date by traversing events sorted by oldest first.
+	// Eliminate events that have duplicated key.
 	var latestTime int64
+	filtered := make(map[string]*model.Event, len(resp.Events))
+	for _, e := range resp.Events {
+		key := makeEventKey(e.Name, e.Labels)
+		filtered[key] = e
+		latestTime = e.CreatedAt
+	}
+	// Make the cache up-to-date.
 	s.mu.Lock()
-	for _, event := range resp.Events {
-		id := eventDefinitionID(event.Name, event.Labels)
-		s.latestEventMap[id] = event
-		latestTime = event.CreatedAt
+	for key, event := range filtered {
+		cached, ok := s.latestEvents[key]
+		if ok && cached.CreatedAt > event.CreatedAt {
+			continue
+		}
+		s.latestEvents[key] = event
 	}
 	s.mu.Unlock()
 
@@ -133,9 +143,9 @@ func (s *store) Getter() Getter {
 }
 
 func (s *store) GetLatest(ctx context.Context, name string, labels map[string]string) (*model.Event, bool) {
-	id := eventDefinitionID(name, labels)
+	key := makeEventKey(name, labels)
 	s.mu.RLock()
-	event, ok := s.latestEventMap[id]
+	event, ok := s.latestEvents[key]
 	s.mu.RUnlock()
 	if ok {
 		return event, true
@@ -152,14 +162,18 @@ func (s *store) GetLatest(ctx context.Context, name string, labels map[string]st
 	}
 
 	s.mu.Lock()
-	s.latestEventMap[id] = resp.Event
-	s.mu.Unlock()
+	defer s.mu.Unlock()
+	cached, ok := s.latestEvents[key]
+	if ok && cached.CreatedAt > event.CreatedAt {
+		return resp.Event, true
+	}
+	s.latestEvents[key] = resp.Event
 	return resp.Event, true
 }
 
-// eventDefinitionID builds a unique identifier based on the given name and labels.
+// makeEventKey builds a unique identifier based on the given name and labels.
 // It returns the exact same string as long as both are the same.
-func eventDefinitionID(name string, labels map[string]string) string {
+func makeEventKey(name string, labels map[string]string) string {
 	if len(labels) == 0 {
 		return name
 	}
