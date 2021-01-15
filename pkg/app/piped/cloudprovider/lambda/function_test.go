@@ -34,8 +34,6 @@ func TestparseFunctionManifest(t *testing.T) {
   "kind": "LambdaFunction",
   "spec": {
 	  "name": "SimpleFunction",
-	  "runtime": "nodejs12.x",
-	  "handler": "SampleFunction",
 	  "image": "ecr.region.amazonaws.com/lambda-simple-function:v0.0.1"
   }
 }`,
@@ -45,8 +43,6 @@ func TestparseFunctionManifest(t *testing.T) {
 				Spec: FunctionManifestSpec{
 					Name:     "SimpleFunction",
 					ImageURI: "ecr.region.amazonaws.com/lambda-simple-function:v0.0.1",
-					Runtime:  "nodejs12.x",
-					Handler:  "SampleFunction",
 				},
 			},
 			wantErr: false,
