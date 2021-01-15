@@ -26,7 +26,7 @@ func NewOrphanCommandCleaner(
 ) *OrphanCommandCleaner {
 	return &OrphanCommandCleaner{
 		commandstore: datastore.NewCommandStore(ds),
-		logger:       logger.Named("orphan-command-finder"),
+		logger:       logger.Named("orphan-command-cleaner"),
 	}
 }
 
