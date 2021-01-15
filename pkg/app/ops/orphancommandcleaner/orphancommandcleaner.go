@@ -37,6 +37,8 @@ func (c *OrphanCommandCleaner) Run(ctx context.Context) error {
 	t := time.NewTicker(interval)
 	for {
 		select {
+		case <-ctx.Done():
+			return nil
 		case <-t.C:
 			if err := c.updateOrphanCommandsStatus(ctx); err != nil {
 				c.logger.Error("failed to update orphan commands", zap.Error(err))
