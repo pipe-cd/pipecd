@@ -34,6 +34,7 @@ func TestparseFunctionManifest(t *testing.T) {
   "kind": "LambdaFunction",
   "spec": {
 	  "name": "SimpleFunction",
+	  "role": "arn:aws:iam::xxxxx:role/lambda-role",
 	  "image": "ecr.region.amazonaws.com/lambda-simple-function:v0.0.1"
   }
 }`,
@@ -42,6 +43,7 @@ func TestparseFunctionManifest(t *testing.T) {
 				APIVersion: "pipecd.dev/v1beta1",
 				Spec: FunctionManifestSpec{
 					Name:     "SimpleFunction",
+					Role:     "arn:aws:iam::xxxxx:role/lambda-role",
 					ImageURI: "ecr.region.amazonaws.com/lambda-simple-function:v0.0.1",
 				},
 			},

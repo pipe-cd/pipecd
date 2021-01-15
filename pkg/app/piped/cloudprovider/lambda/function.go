@@ -49,6 +49,7 @@ func (fm *FunctionManifest) validate() error {
 // FunctionManifestSpec contains configuration for LambdaFunction.
 type FunctionManifestSpec struct {
 	Name     string            `json:"name"`
+	Role     string            `json:"role"`
 	ImageURI string            `json:"image"`
 	Tags     map[string]string `json:"tags,omitempty"`
 }
@@ -59,6 +60,9 @@ func (fmp FunctionManifestSpec) validate() error {
 	}
 	if len(fmp.ImageURI) == 0 {
 		return fmt.Errorf("image uri is missing")
+	}
+	if len(fmp.Role) == 0 {
+		return fmt.Errorf("role is missing")
 	}
 	return nil
 }
