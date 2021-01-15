@@ -166,9 +166,20 @@ func (w *watcher) run(ctx context.Context, repo git.Repo, repoCfg *config.PipedR
 
 // updateValues inspects all Event-definition and pushes the changes to git repo if there is.
 func (w *watcher) updateValues(ctx context.Context, repo git.Repo, events []config.EventWatcherEvent, commitMsg string) error {
+	// Copy the repo to another directory to avoid pull failure in the future.
+	tmpDir, err := ioutil.TempDir("", "event-watcher")
+	if err != nil {
+		return fmt.Errorf("failed to create a new temporary directory: %w", err)
+	}
+	defer os.RemoveAll(tmpDir)
+	tmpRepo, err := repo.Copy(filepath.Join(tmpDir, "tmp-repo"))
+	if err != nil {
+		return fmt.Errorf("failed to copy the repository to the temporary directory: %w", err)
+	}
+
 	commits := make([]*commit, 0)
 	for _, e := range events {
-		c, err := w.checkOutdatedValues(ctx, &e, repo, commitMsg)
+		c, err := w.modifyFiles(ctx, &e, tmpRepo, commitMsg)
 		if err != nil {
 			w.logger.Error("failed to check outdated value", zap.Error(err))
 			continue
@@ -182,28 +193,17 @@ func (w *watcher) updateValues(ctx context.Context, repo git.Repo, events []conf
 	}
 
 	w.logger.Info(fmt.Sprintf("there are %d outdated values", len(commits)))
-	// Copy the repo to another directory to avoid pull failure in the future.
-	tmpDir, err := ioutil.TempDir("", "event-watcher")
-	if err != nil {
-		return fmt.Errorf("failed to create a new temporary directory: %w", err)
-	}
-	defer os.RemoveAll(tmpDir)
-	tmpRepo, err := repo.Copy(filepath.Join(tmpDir, "tmp-repo"))
-	if err != nil {
-		return fmt.Errorf("failed to copy the repository to the temporary directory: %w", err)
-	}
 	for _, c := range commits {
 		if err := tmpRepo.CommitChanges(ctx, tmpRepo.GetClonedBranch(), c.message, false, c.changes); err != nil {
 			return fmt.Errorf("failed to perform git commit: %w", err)
 		}
 	}
-
 	return tmpRepo.Push(ctx, tmpRepo.GetClonedBranch())
 }
 
-// checkOutdatedValues gives back a change contents if any deviation exists between the value in
-// the given git repository and one in the control-plane.
-func (w *watcher) checkOutdatedValues(ctx context.Context, event *config.EventWatcherEvent, repo git.Repo, commitMsg string) (*commit, error) {
+// modifyFiles modifies files defined in a given Event if any deviation exists between the value in
+// the git repository and one in the control-plane. And gives back a change contents.
+func (w *watcher) modifyFiles(ctx context.Context, event *config.EventWatcherEvent, repo git.Repo, commitMsg string) (*commit, error) {
 	latestEvent, ok := w.eventGetter.GetLatest(ctx, event.Name, event.Labels)
 	if !ok {
 		return nil, fmt.Errorf("failed to get the latest Event with the name %q", event.Name)
@@ -229,7 +229,7 @@ func (w *watcher) checkOutdatedValues(ctx context.Context, event *config.EventWa
 			// Already up-to-date.
 			continue
 		}
-		// Edit the local file and put it into the change list.
+		// Modify the local file and put it into the change list.
 		newYml, err := yamlprocessor.ReplaceValue(yml, r.YAMLField, latestEvent.Data)
 		if err != nil {
 			return nil, fmt.Errorf("failed to replace value at %s with %s: %w", r.YAMLField, latestEvent.Data, err)
