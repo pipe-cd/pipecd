@@ -34,9 +34,11 @@ import (
 	"github.com/pipe-cd/pipe/pkg/app/piped/apistore/commandstore"
 	"github.com/pipe-cd/pipe/pkg/app/piped/apistore/deploymentstore"
 	"github.com/pipe-cd/pipe/pkg/app/piped/apistore/environmentstore"
+	"github.com/pipe-cd/pipe/pkg/app/piped/apistore/eventstore"
 	"github.com/pipe-cd/pipe/pkg/app/piped/chartrepo"
 	"github.com/pipe-cd/pipe/pkg/app/piped/controller"
 	"github.com/pipe-cd/pipe/pkg/app/piped/driftdetector"
+	"github.com/pipe-cd/pipe/pkg/app/piped/eventwatcher"
 	"github.com/pipe-cd/pipe/pkg/app/piped/imagewatcher"
 	"github.com/pipe-cd/pipe/pkg/app/piped/livestatereporter"
 	"github.com/pipe-cd/pipe/pkg/app/piped/livestatestore"
@@ -242,6 +244,16 @@ func (p *piped) run(ctx context.Context, t cli.Telemetry) (runErr error) {
 		commandLister = store.Lister()
 	}
 
+	// Start running event store.
+	var eventGetter eventstore.Getter
+	{
+		store := eventstore.NewStore(apiClient, p.gracePeriod, t.Logger)
+		group.Go(func() error {
+			return store.Run(ctx)
+		})
+		eventGetter = store.Getter()
+	}
+
 	// Create memory caches.
 	appManifestsCache := memorycache.NewTTLCache(ctx, time.Hour, time.Minute)
 
@@ -331,6 +343,19 @@ func (p *piped) run(ctx context.Context, t cli.Telemetry) (runErr error) {
 		// Start running image watcher.
 		t := imagewatcher.NewWatcher(
 			cfg,
+			gitClient,
+			t.Logger,
+		)
+		group.Go(func() error {
+			return t.Run(ctx)
+		})
+	}
+
+	{
+		// Start running event watcher.
+		t := eventwatcher.NewWatcher(
+			cfg,
+			eventGetter,
 			gitClient,
 			t.Logger,
 		)
