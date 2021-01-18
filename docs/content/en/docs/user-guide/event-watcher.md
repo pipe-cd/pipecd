@@ -25,7 +25,7 @@ Therefore, you mainly need to:
 1. define which values in which files should be updated when a new Event found.
 1. integrate a step to push an Event to the control-plane using `pipectl` into your CI workflow.
 
-### 1. Define Events
+### 1. Defining Events
 Prepare EventWatcher files placed at the `.pipe/` directory at the root of the Git repository.
 In that files, you define which values in which files should be updated when the Piped found out a new Event.
 
@@ -46,12 +46,12 @@ The full list of configurable `EventWatcher` fields are [here](/docs/user-guide/
 
 ### 2. Pushing an Event with `pipectl`
 To register a new value corresponding to Event such as the above in the control-plane, you need to perform `pipectl`.
-And if you want to push Events continuously, we highly recommend integrating a step for that into your CI workflow.
+And we highly recommend integrating a step for that into your CI workflow.
 
-According to [this guide](http://localhost:1313/docs/user-guide/command-line-tool/#installation), you first install it on your CI system or where you want to run.
-And then you grab the API key for the control-plane according to [this guide](http://localhost:1313/docs/user-guide/command-line-tool/#authentication).
+According to [this guide](/docs/user-guide/command-line-tool/#installation), you first install it on your CI system or where you want to run.
+And then you grab the API key for the control-plane according to [this guide](/docs/user-guide/command-line-tool/#authentication).
 
-Once you're all set up, now all we need to do is to execute a command like:
+Once you're all set up, pushing a new Event to the control-plane by the following command:
 
 ```bash
 pipectl event register \
@@ -72,7 +72,7 @@ After a while, Piped will create a commit as shown below:
 +        image: gcr.io/pipecd/helloworld:v0.2.0
 ```
 
-NOTE: Keep in mind that it will take a little while because Piped checks if a new Event exists by periodically issuing a request to the control-plane. You can set its interval according to [here](/docs/operator-manual/piped/configuring-event-watcher/#optional-settings-for-watcher).
+NOTE: Keep in mind that it may take a little while because Piped periodically fetches the new events from the control-plane. You can change its interval according to [here](/docs/operator-manual/piped/configuring-event-watcher/#optional-settings-for-watcher).
 
 ### [optional] Using labels
 Event watcher is a project-wide feature, hence an event name is unique inside a project. That is, you can update multiple repositories at the same time if you use the same event name for different events.

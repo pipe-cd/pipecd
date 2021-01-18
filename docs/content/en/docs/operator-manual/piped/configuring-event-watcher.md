@@ -8,8 +8,8 @@ description: >
 
 To enable [EventWatcher](/docs/user-guide/event-watcher/), you have to configure your piped at first.
 
-### [require] Grant write permission
-The [SSH key used by Piped](/docs/operator-manual/piped/configuration-reference/#git) must be a key with write-access because Event watcher automates the deployment flow by commitng and pushing to your git repository.
+### [required] Grant write permission
+The [SSH key used by Piped](/docs/operator-manual/piped/configuration-reference/#git) must be a key with write-access because piped needs to commit and push to your git repository when any incoming event matches.
 
 ### [optional] Settings for watcher
 The Piped's behavior can be finely controlled by setting the `eventWatcher` field.

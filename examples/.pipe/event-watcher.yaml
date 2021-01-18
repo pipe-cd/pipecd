@@ -2,7 +2,7 @@ apiVersion: pipecd.dev/v1beta1
 kind: EventWatcher
 spec:
   events:
-    # For those who want to update the manifest file when pushing docker image.
+    # For those who want to update the manifest file when a new docker image was pushed.
     - name: helloworld-image-update
       replacements:
         - file: helloworld/deployment.yaml
