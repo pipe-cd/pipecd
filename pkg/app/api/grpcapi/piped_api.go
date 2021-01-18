@@ -690,7 +690,7 @@ func (a *PipedAPI) GetLatestEvent(ctx context.Context, req *pipedservice.GetLate
 		return nil, err
 	}
 
-	// Try to fetch the most recently registered event.
+	// Try to fetch the most recently registered event that has the given parameters.
 	opts := datastore.ListOptions{
 		PageSize: 1,
 		Filters: []datastore.ListFilter{
@@ -704,11 +704,15 @@ func (a *PipedAPI) GetLatestEvent(ctx context.Context, req *pipedservice.GetLate
 				Operator: "==",
 				Value:    req.Name,
 			},
-			// TODO: Enable to use labels to filter Events
+			{
+				Field:    "EventKey",
+				Operator: "==",
+				Value:    model.MakeEventKey(req.Name, req.Labels),
+			},
 		},
 		Orders: []datastore.Order{
 			{
-				Field:     "UpdatedAt",
+				Field:     "CreatedAt",
 				Direction: datastore.Desc,
 			},
 		},

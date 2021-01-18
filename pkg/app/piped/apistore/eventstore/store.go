@@ -17,8 +17,6 @@ package eventstore
 import (
 	"context"
 	"fmt"
-	"sort"
-	"strings"
 	"sync"
 	"time"
 
@@ -120,7 +118,7 @@ func (s *store) sync(ctx context.Context) error {
 	// Eliminate events that have duplicated key.
 	filtered := make(map[string]*model.Event, len(resp.Events))
 	for _, e := range resp.Events {
-		key := makeEventKey(e.Name, e.Labels)
+		key := model.MakeEventKey(e.Name, e.Labels)
 		filtered[key] = e
 	}
 	// Make the cache up-to-date.
@@ -144,7 +142,7 @@ func (s *store) Getter() Getter {
 }
 
 func (s *store) GetLatest(ctx context.Context, name string, labels map[string]string) (*model.Event, bool) {
-	key := makeEventKey(name, labels)
+	key := model.MakeEventKey(name, labels)
 	s.mu.RLock()
 	event, ok := s.latestEvents[key]
 	s.mu.RUnlock()
@@ -170,26 +168,4 @@ func (s *store) GetLatest(ctx context.Context, name string, labels map[string]st
 	}
 	s.latestEvents[key] = resp.Event
 	return resp.Event, true
-}
-
-// makeEventKey builds a unique identifier based on the given name and labels.
-// It returns the exact same string as long as both are the same.
-func makeEventKey(name string, labels map[string]string) string {
-	if len(labels) == 0 {
-		return name
-	}
-
-	var b strings.Builder
-	b.WriteString(name)
-
-	// Guarantee uniqueness by sorting by keys.
-	keys := make([]string, 0, len(labels))
-	for key := range labels {
-		keys = append(keys, key)
-	}
-	sort.Strings(keys)
-	for _, key := range keys {
-		b.WriteString(fmt.Sprintf("/%s:%s", key, labels[key]))
-	}
-	return b.String()
 }
