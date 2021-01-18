@@ -92,19 +92,19 @@ func sync(ctx context.Context, in *executor.Input, cloudProviderName string, clo
 		return false
 	}
 
-	ok, err := client.AvailableFunctionName(ctx, fm.Spec.Name)
+	found, err := client.IsFunctionExist(ctx, fm.Spec.Name)
 	if err != nil {
 		in.LogPersister.Errorf("Unable to validate function name %s: %v", fm.Spec.Name, err)
 		return false
 	}
-	if ok {
-		if err := client.CreateFunction(ctx, fm); err != nil {
-			in.LogPersister.Errorf("Failed to create lambda function %s: %v", fm.Spec.Name, err)
+	if found {
+		if err := client.UpdateFunction(ctx, fm); err != nil {
+			in.LogPersister.Errorf("Failed to update lambda function %s: %v", fm.Spec.Name, err)
 			return false
 		}
 	} else {
-		if err := client.UpdateFunction(ctx, fm); err != nil {
-			in.LogPersister.Errorf("Failed to update lambda function %s: %v", fm.Spec.Name, err)
+		if err := client.CreateFunction(ctx, fm); err != nil {
+			in.LogPersister.Errorf("Failed to create lambda function %s: %v", fm.Spec.Name, err)
 			return false
 		}
 	}
@@ -114,6 +114,9 @@ func sync(ctx context.Context, in *executor.Input, cloudProviderName string, clo
 	time.Sleep(3 * time.Minute)
 
 	// Commit version for applied Lambda function.
+	// Note: via the current docs of [Lambda.PublishVersion](https://docs.aws.amazon.com/sdk-for-go/api/service/lambda/#Lambda.PublishVersion)
+	// AWS Lambda doesn't publish a version if the function's configuration and code haven't changed since the last version.
+	// But currently, unchanged revision is able to make publish (versionId++) as usual.
 	version, err := client.PublishFunction(ctx, fm)
 	if err != nil {
 		in.LogPersister.Errorf("Failed to commit new version for Lambda function %s: %v", fm.Spec.Name, err)
@@ -123,7 +126,7 @@ func sync(ctx context.Context, in *executor.Input, cloudProviderName string, clo
 	_, err = client.GetTrafficConfig(ctx, fm)
 	// Create Alias on not yet existed.
 	if errors.Is(err, provider.ErrNotFound) {
-		if err := client.CreateRoutingTraffic(ctx, fm, version); err != nil {
+		if err := client.CreateTrafficConfig(ctx, fm, version); err != nil {
 			in.LogPersister.Errorf("Failed to create traffic routing for Lambda function %s (version: %s): %v", fm.Spec.Name, version, err)
 			return false
 		}
@@ -131,9 +134,10 @@ func sync(ctx context.Context, in *executor.Input, cloudProviderName string, clo
 		return true
 	}
 	if err != nil {
-		in.LogPersister.Errorf("Failed to prapare traffic routing for Lambda function %s: %v", fm.Spec.Name, err)
+		in.LogPersister.Errorf("Failed to prepare traffic routing for Lambda function %s: %v", fm.Spec.Name, err)
 		return false
 	}
+
 	// Update 100% traffic to the new lambda version.
 	routingCfg := []provider.VersionTraffic{
 		{
@@ -141,7 +145,7 @@ func sync(ctx context.Context, in *executor.Input, cloudProviderName string, clo
 			Percent: 100,
 		},
 	}
-	if err = client.UpdateRoutingTraffic(ctx, fm, routingCfg); err != nil {
+	if err = client.UpdateTrafficConfig(ctx, fm, routingCfg); err != nil {
 		in.LogPersister.Errorf("Failed to update traffic routing for Lambda function %s (version: %s): %v", fm.Spec.Name, version, err)
 		return false
 	}

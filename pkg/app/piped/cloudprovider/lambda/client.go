@@ -72,7 +72,7 @@ func newClient(region, profile, credentialsFile string, logger *zap.Logger) (*cl
 	return c, nil
 }
 
-func (c *client) AvailableFunctionName(ctx context.Context, name string) (bool, error) {
+func (c *client) IsFunctionExist(ctx context.Context, name string) (bool, error) {
 	input := &lambda.GetFunctionInput{
 		FunctionName: aws.String(name),
 	}
@@ -86,14 +86,14 @@ func (c *client) AvailableFunctionName(ctx context.Context, name string) (bool, 
 				return false, fmt.Errorf("aws lambda service encountered an internal error: %w", err)
 			case lambda.ErrCodeTooManyRequestsException:
 				return false, fmt.Errorf("request throughput limit was exceeded: %w", err)
-			// Only in case ResourceNotFound error occurred, the FunctionName is available.
+			// Only in case ResourceNotFound error occurred, the FunctionName is available for create so do not raise error.
 			case lambda.ErrCodeResourceNotFoundException:
-				return true, nil
+				return false, nil
 			}
 		}
 		return false, fmt.Errorf("unknown error given: %w", err)
 	}
-	return false, nil
+	return true, nil
 }
 
 func (c *client) CreateFunction(ctx context.Context, fm FunctionManifest) error {
@@ -227,7 +227,7 @@ func (c *client) GetTrafficConfig(ctx context.Context, fm FunctionManifest) (rou
 	return
 }
 
-func (c *client) CreateRoutingTraffic(ctx context.Context, fm FunctionManifest, version string) error {
+func (c *client) CreateTrafficConfig(ctx context.Context, fm FunctionManifest, version string) error {
 	input := &lambda.CreateAliasInput{
 		FunctionName:    aws.String(fm.Spec.Name),
 		FunctionVersion: aws.String(version),
@@ -254,7 +254,7 @@ func (c *client) CreateRoutingTraffic(ctx context.Context, fm FunctionManifest, 
 	return nil
 }
 
-func (c *client) UpdateRoutingTraffic(ctx context.Context, fm FunctionManifest, routingTraffic []VersionTraffic) error {
+func (c *client) UpdateTrafficConfig(ctx context.Context, fm FunctionManifest, routingTraffic []VersionTraffic) error {
 	routingTrafficMap := make(map[string]*float64)
 	switch len(routingTraffic) {
 	case 2:
