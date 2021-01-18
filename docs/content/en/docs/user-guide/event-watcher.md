@@ -10,7 +10,7 @@ The only way to upgrade your application with PipeCD is modifying configuration 
 It brings benefits quite a bit, but it can be painful to manually update them every time in some cases (e.g. continuous deployment to your development environment for debugging, the latest prerelease to the staging environment).
 
 If you're experiencing any of the above pains, Event watcher is for you.
-Event watcher works as a helper facility to seamlessly link CI and CD. This feature lets you automatically update files managed by your Piped when an arbitrary event occurs.
+Event watcher works as a helper facility to seamlessly link CI and CD. This feature lets you automatically update files managed by your Piped when an arbitrary event has occurred.
 While it empowers you to build pretty versatile workflows, the canonical use case is that you trigger a new deployment by image updates, package releases, etc.
 
 This guide walks you through configuring Event watcher and how to push an Event.
@@ -26,7 +26,7 @@ Therefore, you mainly need to:
 1. integrate a step to push an Event to the control-plane using `pipectl` into your CI workflow.
 
 ### 1. Defining Events
-Prepare EventWatcher files placed at the `.pipe/` directory at the root of the Git repository.
+Prepare EventWatcher configuration files under the `.pipe/` directory at the root of your Git repository.
 In that files, you define which values in which files should be updated when the Piped found out a new Event.
 
 For instance, suppose you want to update the Kubernetes manifest defined in `helloworld/deployment.yaml` when an Event with the name `helloworld-image-update` occurs:
