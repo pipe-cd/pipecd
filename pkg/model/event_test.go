@@ -50,7 +50,7 @@ func TestMakeEventKey(t *testing.T) {
 			wantSame: true,
 		},
 		{
-			testname: "the exact wantSame labels given",
+			testname: "the exact same labels given",
 			name1:    "name",
 			labels1: map[string]string{
 				"key1": "value",
