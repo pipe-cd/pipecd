@@ -90,7 +90,7 @@ func apply(ctx context.Context, in *executor.Input, cloudProviderName string, cl
 		return false
 	}
 
-	if err := client.Apply(ctx, fm); err != nil {
+	if err := client.CreateFunction(ctx, fm); err != nil {
 		in.LogPersister.Errorf("Failed to apply the lambda function manifest (%v)", err)
 		return false
 	}
