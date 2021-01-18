@@ -17,6 +17,7 @@ package lambda
 import (
 	"context"
 	"errors"
+	"time"
 
 	provider "github.com/pipe-cd/pipe/pkg/app/piped/cloudprovider/lambda"
 	"github.com/pipe-cd/pipe/pkg/app/piped/deploysource"
@@ -107,6 +108,11 @@ func sync(ctx context.Context, in *executor.Input, cloudProviderName string, clo
 			return false
 		}
 	}
+
+	// Wait before ready to commit change.
+	in.LogPersister.Info("Waiting to update lambda function in progress...")
+	time.Sleep(3 * time.Minute)
+
 	// Commit version for applied Lambda function.
 	version, err := client.PublishFunction(ctx, fm)
 	if err != nil {

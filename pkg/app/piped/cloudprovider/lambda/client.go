@@ -150,28 +150,8 @@ func (c *client) UpdateFunction(ctx context.Context, fm FunctionManifest) error 
 		return fmt.Errorf("unknown error given: %w", err)
 	}
 
-	// More configurable fields from here:
+	// TODO more configurable fields from here:
 	// https://docs.aws.amazon.com/sdk-for-go/api/service/lambda/#UpdateFunctionConfigurationInput
-	cfgInput := &lambda.UpdateFunctionConfigurationInput{
-		FunctionName: aws.String(fm.Spec.Name),
-		Role:         aws.String(fm.Spec.Role),
-	}
-	_, err = c.client.UpdateFunctionConfigurationWithContext(ctx, cfgInput)
-	if err != nil {
-		if aerr, ok := err.(awserr.Error); ok {
-			switch aerr.Code() {
-			case lambda.ErrCodeInvalidParameterValueException:
-				return fmt.Errorf("invalid parameter given: %w", err)
-			case lambda.ErrCodeServiceException:
-				return fmt.Errorf("aws lambda service encountered an internal error: %w", err)
-			case lambda.ErrCodeTooManyRequestsException:
-				return fmt.Errorf("request throughput limit was exceeded: %w", err)
-			case lambda.ErrCodeResourceNotFoundException:
-				return fmt.Errorf("resource not found: %w", err)
-			}
-		}
-		return fmt.Errorf("unknown error given: %w", err)
-	}
 
 	return nil
 }
