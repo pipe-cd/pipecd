@@ -118,8 +118,7 @@ func (s *store) sync(ctx context.Context) error {
 	// Eliminate events that have duplicated key.
 	filtered := make(map[string]*model.Event, len(resp.Events))
 	for _, e := range resp.Events {
-		key := model.MakeEventKey(e.Name, e.Labels)
-		filtered[key] = e
+		filtered[e.EventKey] = e
 	}
 	// Make the cache up-to-date.
 	s.mu.Lock()
@@ -142,8 +141,8 @@ func (s *store) Getter() Getter {
 }
 
 func (s *store) GetLatest(ctx context.Context, name string, labels map[string]string) (*model.Event, bool) {
-	key := model.MakeEventKey(name, labels)
 	s.mu.RLock()
+	key := model.MakeEventKey(name, labels)
 	event, ok := s.latestEvents[key]
 	s.mu.RUnlock()
 	if ok {

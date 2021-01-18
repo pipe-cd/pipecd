@@ -23,41 +23,69 @@ import (
 func TestMakeEventKey(t *testing.T) {
 	testcases := []struct {
 		testname string
-		name     string
-		labels   map[string]string
-		want     string
+		name1    string
+		labels1  map[string]string
+		name2    string
+		labels2  map[string]string
+		wantSame bool
 	}{
 		{
 			testname: "no name and labels given",
-			want:     "",
+			wantSame: true,
 		},
 		{
 			testname: "no labels given",
-			name:     "name1",
-			want:     "name1",
+			name1:    "name",
+			name2:    "name",
+			wantSame: true,
 		},
 		{
 			testname: "no name given",
-			labels: map[string]string{
+			labels1: map[string]string{
 				"key1": "value1",
 			},
-			want: "/key1:value1",
+			labels2: map[string]string{
+				"key1": "value1",
+			},
+			wantSame: true,
 		},
 		{
-			testname: "labels given",
-			name:     "name1",
-			labels: map[string]string{
+			testname: "the exact wantSame labels given",
+			name1:    "name",
+			labels1: map[string]string{
 				"key1": "value",
 				"key2": "value",
 				"key3": "value",
 			},
-			want: "name1/key1:value/key2:value/key3:value",
+			name2: "name",
+			labels2: map[string]string{
+				"key2": "value",
+				"key3": "value",
+				"key1": "value",
+			},
+			wantSame: true,
+		},
+		{
+			testname: "the sub match labels given",
+			name1:    "name",
+			labels1: map[string]string{
+				"key1": "value",
+				"key2": "value",
+				"key3": "value",
+			},
+			name2: "name",
+			labels2: map[string]string{
+				"key1": "value",
+			},
+			wantSame: false,
 		},
 	}
 	for _, tc := range testcases {
 		t.Run(tc.testname, func(t *testing.T) {
-			got := MakeEventKey(tc.name, tc.labels)
-			assert.Equal(t, tc.want, got)
+			// Check if we can get the exact same string.
+			got1 := MakeEventKey(tc.name1, tc.labels1)
+			got2 := MakeEventKey(tc.name2, tc.labels2)
+			assert.Equal(t, tc.wantSame, got1 == got2)
 		})
 	}
 }

@@ -15,16 +15,22 @@
 package model
 
 import (
+	"crypto/sha256"
+	"encoding/hex"
 	"fmt"
 	"sort"
 	"strings"
 )
 
-// MakeEventKey builds a unique identifier based on the given name and labels.
-// It returns the exact same string as long as both are the same.
+var hashFunc = sha256.New
+
+// MakeEventKey builds a fixed-length identifier based on the given name
+// and labels. It returns the exact same string as long as both are the same.
 func MakeEventKey(name string, labels map[string]string) string {
+	h := hashFunc()
 	if len(labels) == 0 {
-		return name
+		h.Write([]byte(name))
+		return hex.EncodeToString(h.Sum(nil))
 	}
 
 	var b strings.Builder
@@ -39,5 +45,8 @@ func MakeEventKey(name string, labels map[string]string) string {
 	for _, key := range keys {
 		b.WriteString(fmt.Sprintf("/%s:%s", key, labels[key]))
 	}
-	return b.String()
+
+	// Make a hash to be fixed length regardless of the length of the event key.
+	h.Write([]byte(b.String()))
+	return hex.EncodeToString(h.Sum(nil))
 }
