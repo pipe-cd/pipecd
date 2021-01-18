@@ -258,10 +258,10 @@ func (c *client) UpdateRoutingTraffic(ctx context.Context, fm FunctionManifest, 
 	routingTrafficMap := make(map[string]*float64)
 	switch len(routingTraffic) {
 	case 2:
-		routingTrafficMap[routingTraffic[0].Version] = aws.Float64(routingTraffic[0].Percent)
-		routingTrafficMap[routingTraffic[1].Version] = aws.Float64(routingTraffic[1].Percent)
+		routingTrafficMap[routingTraffic[0].Version] = aws.Float64(precentToPercentage(routingTraffic[0].Percent))
+		routingTrafficMap[routingTraffic[1].Version] = aws.Float64(precentToPercentage(routingTraffic[1].Percent))
 	case 1:
-		routingTrafficMap[routingTraffic[0].Version] = aws.Float64(routingTraffic[0].Percent)
+		routingTrafficMap[routingTraffic[0].Version] = aws.Float64(precentToPercentage(routingTraffic[0].Percent))
 	default:
 		return fmt.Errorf("invalid routing traffic configuration given")
 	}
@@ -293,4 +293,8 @@ func (c *client) UpdateRoutingTraffic(ctx context.Context, fm FunctionManifest, 
 		return fmt.Errorf("unknown error given: %w", err)
 	}
 	return nil
+}
+
+func precentToPercentage(in float64) float64 {
+	return in / 100.0
 }
