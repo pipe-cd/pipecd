@@ -1,0 +1,29 @@
+apiVersion: pipecd.dev/v1beta1
+kind: EventWatcher
+spec:
+  events:
+    # For those who want to update the manifest file when pushing docker image.
+    - name: helloworld-image-update
+      replacements:
+        - file: helloworld/deployment.yaml
+          yamlField: $.spec.template.spec.containers[0].image
+    # For those who want to update the deployment config file when releasing a new Helm package.
+    - name: helloworld-helm-release
+      replacements:
+        - file: helloworld/.pipe.yaml
+          yamlField: $.spec.input.helmChart.version
+    # For those who want to identify Events using labels.
+    - name: image-update
+      labels:
+        repoId: repo-1
+        appName: helloworld
+      replacements:
+        - file: helloworld/deployment.yaml
+          yamlField: $.spec.template.spec.containers[0].image
+    # For those who want to update multiple files at once.
+    - name: helloworld-image-update
+      replacements:
+        - file: dev/helloworld/deployment.yaml
+          yamlField: $.spec.template.spec.containers[0].image
+        - file: stg/helloworld/deployment.yaml
+          yamlField: $.spec.template.spec.containers[0].image

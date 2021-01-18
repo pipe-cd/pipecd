@@ -1,7 +1,7 @@
 ---
 title: "Configuring image watcher"
 linkTitle: "Configuring image watcher"
-weight: 6
+weight: 10
 description: >
   This page describes how to configure piped to enable image watcher.
 ---
