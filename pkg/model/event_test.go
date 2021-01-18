@@ -85,6 +85,8 @@ func TestMakeEventKey(t *testing.T) {
 			// Check if we can get the exact same string.
 			got1 := MakeEventKey(tc.name1, tc.labels1)
 			got2 := MakeEventKey(tc.name2, tc.labels2)
+			assert.NotEmpty(t, got1)
+			assert.NotEmpty(t, got2)
 			assert.Equal(t, tc.wantSame, got1 == got2)
 		})
 	}

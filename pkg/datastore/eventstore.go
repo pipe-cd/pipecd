@@ -49,7 +49,6 @@ func NewEventStore(ds DataStore) EventStore {
 }
 
 func (s *eventStore) AddEvent(ctx context.Context, e model.Event) error {
-	e.EventKey = model.MakeEventKey(e.Name, e.Labels)
 	now := s.nowFunc().Unix()
 	if e.CreatedAt == 0 {
 		e.CreatedAt = now

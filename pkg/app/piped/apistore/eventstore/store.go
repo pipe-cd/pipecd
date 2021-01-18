@@ -141,8 +141,8 @@ func (s *store) Getter() Getter {
 }
 
 func (s *store) GetLatest(ctx context.Context, name string, labels map[string]string) (*model.Event, bool) {
-	s.mu.RLock()
 	key := model.MakeEventKey(name, labels)
+	s.mu.RLock()
 	event, ok := s.latestEvents[key]
 	s.mu.RUnlock()
 	if ok {
