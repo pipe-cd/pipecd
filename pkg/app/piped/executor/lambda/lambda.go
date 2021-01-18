@@ -16,6 +16,7 @@ package lambda
 
 import (
 	"context"
+	"errors"
 
 	provider "github.com/pipe-cd/pipe/pkg/app/piped/cloudprovider/lambda"
 	"github.com/pipe-cd/pipe/pkg/app/piped/deploysource"
@@ -82,7 +83,7 @@ func decideRevisionName(in *executor.Input, fm provider.FunctionManifest, commit
 	return
 }
 
-func apply(ctx context.Context, in *executor.Input, cloudProviderName string, cloudProviderCfg *config.CloudProviderLambdaConfig, fm provider.FunctionManifest) bool {
+func sync(ctx context.Context, in *executor.Input, cloudProviderName string, cloudProviderCfg *config.CloudProviderLambdaConfig, fm provider.FunctionManifest) bool {
 	in.LogPersister.Infof("Start applying the lambda function manifest")
 	client, err := provider.DefaultRegistry().Client(cloudProviderName, cloudProviderCfg, in.Logger)
 	if err != nil {
@@ -90,8 +91,52 @@ func apply(ctx context.Context, in *executor.Input, cloudProviderName string, cl
 		return false
 	}
 
-	if err := client.CreateFunction(ctx, fm); err != nil {
-		in.LogPersister.Errorf("Failed to apply the lambda function manifest (%v)", err)
+	ok, err := client.AvailableFunctionName(ctx, fm.Spec.Name)
+	if err != nil {
+		in.LogPersister.Errorf("Unable to validate function name %s: %v", fm.Spec.Name, err)
+		return false
+	}
+	if ok {
+		if err := client.CreateFunction(ctx, fm); err != nil {
+			in.LogPersister.Errorf("Failed to create lambda function %s: %v", fm.Spec.Name, err)
+			return false
+		}
+	} else {
+		if err := client.UpdateFunction(ctx, fm); err != nil {
+			in.LogPersister.Errorf("Failed to update lambda function %s: %v", fm.Spec.Name, err)
+			return false
+		}
+	}
+	// Commit version for applied Lambda function.
+	version, err := client.PublishFunction(ctx, fm)
+	if err != nil {
+		in.LogPersister.Errorf("Failed to commit new version for Lambda function %s: %v", fm.Spec.Name, err)
+		return false
+	}
+
+	_, err = client.GetTrafficConfig(ctx, fm)
+	// Create Alias on not yet existed.
+	if errors.Is(err, provider.ErrNotFound) {
+		if err := client.CreateRoutingTraffic(ctx, fm, version); err != nil {
+			in.LogPersister.Errorf("Failed to create traffic routing for Lambda function %s (version: %s): %v", fm.Spec.Name, version, err)
+			return false
+		}
+		in.LogPersister.Infof("Successfully applied the lambda function manifest")
+		return true
+	}
+	if err != nil {
+		in.LogPersister.Errorf("Failed to prapare traffic routing for Lambda function %s: %v", fm.Spec.Name, err)
+		return false
+	}
+	// Update 100% traffic to the new lambda version.
+	routingCfg := []provider.VersionTraffic{
+		{
+			Version: version,
+			Percent: 100,
+		},
+	}
+	if err = client.UpdateRoutingTraffic(ctx, fm, routingCfg); err != nil {
+		in.LogPersister.Errorf("Failed to update traffic routing for Lambda function %s (version: %s): %v", fm.Spec.Name, version, err)
 		return false
 	}
 

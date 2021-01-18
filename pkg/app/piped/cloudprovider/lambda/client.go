@@ -88,7 +88,7 @@ func (c *client) AvailableFunctionName(ctx context.Context, name string) (bool, 
 				return false, fmt.Errorf("request throughput limit was exceeded: %w", err)
 			// Only in case ResourceNotFound error occurred, the FunctionName is available.
 			case lambda.ErrCodeResourceNotFoundException:
-				return true, fmt.Errorf("resource not found: %w", err)
+				return true, nil
 			}
 		}
 		return false, fmt.Errorf("unknown error given: %w", err)
