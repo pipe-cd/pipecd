@@ -33,6 +33,7 @@ func TestAddEvent(t *testing.T) {
 		Name:      "name",
 		Data:      "data",
 		ProjectId: "project",
+		EventKey:  "82a3537ff0dbce7eec35d69edc3a189ee6f17d82f353a553f9aa96cb0be3ce89",
 		CreatedAt: 12345,
 		UpdatedAt: 12345,
 	}

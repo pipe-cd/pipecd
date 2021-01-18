@@ -53,6 +53,7 @@ go_library(
         "deployment.go",
         "docs.go",
         "environment.go",
+        "event.go",
         "filestore.go",
         "image_name.go",
         "imageprovider.go",
@@ -79,6 +80,7 @@ go_test(
     srcs = [
         "apikey_test.go",
         "common_test.go",
+        "event_test.go",
         "image_name_test.go",
         "model_test.go",
         "piped_test.go",
