@@ -215,11 +215,14 @@ func (c *client) GetTrafficConfig(ctx context.Context, fm FunctionManifest) (rou
 		return
 	}
 
-	for version := range cfg.RoutingConfig.AdditionalVersionWeights {
-		routingTrafficCfg = append(routingTrafficCfg, VersionTraffic{
-			Version: version,
-			Percent: *cfg.RoutingConfig.AdditionalVersionWeights[version],
-		})
+	if cfg.RoutingConfig != nil {
+		routingTrafficCfg = make([]VersionTraffic, 0, len(cfg.RoutingConfig.AdditionalVersionWeights))
+		for version := range cfg.RoutingConfig.AdditionalVersionWeights {
+			routingTrafficCfg = append(routingTrafficCfg, VersionTraffic{
+				Version: version,
+				Percent: *cfg.RoutingConfig.AdditionalVersionWeights[version],
+			})
+		}
 	}
 	return
 }
