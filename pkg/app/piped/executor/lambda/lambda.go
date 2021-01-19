@@ -22,6 +22,7 @@ import (
 	provider "github.com/pipe-cd/pipe/pkg/app/piped/cloudprovider/lambda"
 	"github.com/pipe-cd/pipe/pkg/app/piped/deploysource"
 	"github.com/pipe-cd/pipe/pkg/app/piped/executor"
+	"github.com/pipe-cd/pipe/pkg/backoff"
 	"github.com/pipe-cd/pipe/pkg/config"
 	"github.com/pipe-cd/pipe/pkg/model"
 )
@@ -112,16 +113,31 @@ func sync(ctx context.Context, in *executor.Input, cloudProviderName string, clo
 	// TODO: Using backoff instead of time sleep waiting for a specific duration of time.
 	// Wait before ready to commit change.
 	in.LogPersister.Info("Waiting to update lambda function in progress...")
-	time.Sleep(3 * time.Minute)
+	// time.Sleep(3 * time.Minute)
 
-	// Commit version for applied Lambda function.
-	// Note: via the current docs of [Lambda.PublishVersion](https://docs.aws.amazon.com/sdk-for-go/api/service/lambda/#Lambda.PublishVersion)
-	// AWS Lambda doesn't publish a version if the function's configuration and code haven't changed since the last version.
-	// But currently, unchanged revision is able to make publish (versionId++) as usual.
-	version, err := client.PublishFunction(ctx, fm)
-	if err != nil {
-		in.LogPersister.Errorf("Failed to commit new version for Lambda function %s: %v", fm.Spec.Name, err)
-		return false
+	retry := backoff.NewRetry(3, backoff.NewConstant(time.Duration(1)*time.Minute))
+	updateFunctionSucceed := false
+	startWaitingStamp := time.Now()
+	var version string
+	for retry.WaitNext(ctx) {
+		if !updateFunctionSucceed {
+			// Commit version for applied Lambda function.
+			// Note: via the current docs of [Lambda.PublishVersion](https://docs.aws.amazon.com/sdk-for-go/api/service/lambda/#Lambda.PublishVersion)
+			// AWS Lambda doesn't publish a version if the function's configuration and code haven't changed since the last version.
+			// But currently, unchanged revision is able to make publish (versionId++) as usual.
+			version, err = client.PublishFunction(ctx, fm)
+			if err != nil {
+				in.LogPersister.Errorf("Failed to commit new version for Lambda function %s: %v", fm.Spec.Name, err)
+				return false
+			}
+			in.LogPersister.Errorf("Commit new version for Lambda function %s after duration %v", fm.Spec.Name, time.Since(startWaitingStamp))
+			updateFunctionSucceed = true
+
+		}
+
+		if updateFunctionSucceed {
+			break
+		}
 	}
 
 	_, err = client.GetTrafficConfig(ctx, fm)
