@@ -77,7 +77,7 @@ func (e *deployExecutor) ensureSync(ctx context.Context) model.StageStatus {
 		return model.StageStatus_STAGE_FAILURE
 	}
 
-	if !apply(ctx, &e.Input, e.cloudProviderName, e.cloudProviderCfg, fm) {
+	if !sync(ctx, &e.Input, e.cloudProviderName, e.cloudProviderCfg, fm) {
 		return model.StageStatus_STAGE_FAILURE
 	}
 

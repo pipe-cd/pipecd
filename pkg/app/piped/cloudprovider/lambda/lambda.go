@@ -25,19 +25,28 @@ import (
 	"github.com/pipe-cd/pipe/pkg/config"
 )
 
-const DefaultFunctionManifestFilename = "function.yaml"
+const defaultFunctionManifestFilename = "function.yaml"
 
+// Client is wrapper of AWS client.
 type Client interface {
-	Apply(ctx context.Context, fm FunctionManifest) error
+	IsFunctionExist(ctx context.Context, name string) (bool, error)
+	CreateFunction(ctx context.Context, fm FunctionManifest) error
+	UpdateFunction(ctx context.Context, fm FunctionManifest) error
+	PublishFunction(ctx context.Context, fm FunctionManifest) (version string, err error)
+	GetTrafficConfig(ctx context.Context, fm FunctionManifest) (routingTrafficCfg []VersionTraffic, err error)
+	CreateTrafficConfig(ctx context.Context, fm FunctionManifest, version string) error
+	UpdateTrafficConfig(ctx context.Context, fm FunctionManifest, routingTraffic []VersionTraffic) error
 }
 
+// Registry holds a pool of aws client wrappers.
 type Registry interface {
 	Client(name string, cfg *config.CloudProviderLambdaConfig, logger *zap.Logger) (Client, error)
 }
 
+// LoadFunctionManifest returns FunctionManifest object from a given Function config manifest file.
 func LoadFunctionManifest(appDir, functionManifestFilename string) (FunctionManifest, error) {
 	if functionManifestFilename == "" {
-		functionManifestFilename = DefaultFunctionManifestFilename
+		functionManifestFilename = defaultFunctionManifestFilename
 	}
 	path := filepath.Join(appDir, functionManifestFilename)
 	return loadFunctionManifest(path)
@@ -77,6 +86,7 @@ var defaultRegistry = &registry{
 	newGroup: &singleflight.Group{},
 }
 
+// DefaultRegistry returns a pool of aws clients and a mutex associated with it.
 func DefaultRegistry() Registry {
 	return defaultRegistry
 }
