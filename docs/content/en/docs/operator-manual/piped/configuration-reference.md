@@ -32,6 +32,7 @@ spec:
 | analysisProviders | [][AnalysisProvider](/docs/operator-manual/piped/configuration-reference/#analysisprovider) | List of analysis providers can be used by this piped. | No |
 | imageProviders | [][ImageProvider](/docs/operator-manual/piped/configuration-reference/#imageprovider) | List of image providers can be used by this piped. | No |
 | imageWatcher | [ImageWatcher](/docs/operator-manual/piped/configuration-reference/#imagewatcher) | Optional Image watcher settings for each git repository | No |
+| eventWatcher | [EventWatcher](/docs/operator-manual/piped/configuration-reference/#eventwatcher) | Optional Event watcher settings | No |
 | notifications | [Notifications](/docs/operator-manual/piped/configuration-reference/#notifications) | Sending notifications to Slack, Webhook... | No |
 
 ## Git
@@ -178,6 +179,22 @@ Must be one of the following structs:
 | commitMessage | string |  The commit message used to push after updating image. Default message is used if not given. | No |
 | includes | []string | The paths to ImageWatcher files to be included. | No |
 | excludes | []string |  The paths to ImageWatcher files to be excluded. This is prioritized if both includes and this are given. | No |
+
+## EventWatcher
+
+| Field | Type | Description | Required |
+|-|-|-|-|
+| checkInterval | duration | Interval to fetch the latest event and compare it with one defined in EventWatcher config files. Defaults to `5m`. | No |
+| gitRepos | [][EventWatcherGitRepo](/docs/operator-manual/piped/configuration-reference/#eventwatchergitrepo) | List of settings for each git repository | No |
+
+### EventWatcherGitRepo
+
+| Field | Type | Description | Required |
+|-|-|-|-|
+| repoId | string | Id of the git repository. This must be unique within the repos' elements. | Yes |
+| commitMessage | string | The commit message used to push after replacing values. Default message is used if not given. | No |
+| includes | []string | The paths to EventWatcher files to be included. | No |
+| excludes | []string | The paths to EventWatcher files to be excluded. This is prioritized if both includes and this are given. | No |
 
 ## Notifications
 

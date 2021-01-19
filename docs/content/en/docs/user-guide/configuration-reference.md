@@ -136,6 +136,32 @@ spec:
 | filePath | string | The path to the file to be updated. | Yes |
 | field | string |  The path to the field to be updated. It requires to start with `$` which represents the root element. e.g. `$.foo.bar[0].baz`. | Yes |
 
+## Event Watcher Configuration
+
+```yaml
+apiVersion: pipecd.dev/v1beta1
+kind: EventWatcher
+spec:
+  events:
+    - name: helloworld-image-update
+      replacements:
+        - file: helloworld/deployment.yaml
+          yamlField: $.spec.template.spec.containers[0].image
+```
+
+| Field | Type | Description | Required |
+|-|-|-|-|
+| name | string | The event name. | Yes |
+| labels | map[string]string | Additional attributes of event. This can make an event definition unique even if the one with the same name exists. | No |
+| replacements | [][EventWatcherReplacement](/docs/user-guide/configuration-reference/#eventwatcherreplacement) | List of places where will be replaced when the new event matches. | Yes |
+
+## EventWatcherReplacement
+
+| Field | Type | Description | Required |
+|-|-|-|-|
+| file | string | The path to the file to be updated. | Yes |
+| yamlField | string | The yaml path to the field to be updated. It requires to start with `$` which represents the root element. e.g. `$.foo.bar[0].baz`. | Yes |
+
 ## CommitMatcher
 
 | Field | Type | Description | Required |
