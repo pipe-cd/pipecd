@@ -112,6 +112,7 @@ func sync(ctx context.Context, in *executor.Input, cloudProviderName string, clo
 
 	in.LogPersister.Info("Waiting to update lambda function in progress...")
 	retry := backoff.NewRetry(provider.RequestRetryTime, backoff.NewConstant(provider.RetryIntervalDuration))
+	publishFunctionSucceed := false
 	startWaitingStamp := time.Now()
 	var version string
 	for retry.WaitNext(ctx) {
@@ -124,8 +125,13 @@ func sync(ctx context.Context, in *executor.Input, cloudProviderName string, clo
 			in.Logger.Error("Failed publish new version for Lambda function")
 		} else {
 			in.LogPersister.Infof("Successfully committed new version for Lambda function %s after duration %v", fm.Spec.Name, time.Since(startWaitingStamp))
+			publishFunctionSucceed = true
 			break
 		}
+	}
+	if !publishFunctionSucceed {
+		in.LogPersister.Errorf("Failed to commit new version for Lambda function %s: %v", fm.Spec.Name, err)
+		return false
 	}
 
 	_, err = client.GetTrafficConfig(ctx, fm)
