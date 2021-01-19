@@ -122,10 +122,10 @@ func sync(ctx context.Context, in *executor.Input, cloudProviderName string, clo
 		version, err = client.PublishFunction(ctx, fm)
 		if err != nil {
 			in.Logger.Error("Failed publish new version for Lambda function")
-			continue
+		} else {
+			in.LogPersister.Infof("Successfully committed new version for Lambda function %s after duration %v", fm.Spec.Name, time.Since(startWaitingStamp))
+			break
 		}
-		in.LogPersister.Infof("Successfully committed new version for Lambda function %s after duration %v", fm.Spec.Name, time.Since(startWaitingStamp))
-		break
 	}
 
 	_, err = client.GetTrafficConfig(ctx, fm)
