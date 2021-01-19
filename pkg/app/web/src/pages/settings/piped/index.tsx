@@ -5,10 +5,7 @@ import {
   DialogContent,
   DialogTitle,
   Divider,
-  IconButton,
   makeStyles,
-  Menu,
-  MenuItem,
   Paper,
   Table,
   TableBody,
@@ -18,23 +15,24 @@ import {
   TableRow,
   TextField,
   Toolbar,
-  Typography,
 } from "@material-ui/core";
 import {
   Add as AddIcon,
   Close as CloseIcon,
-  MoreVert as MoreVertIcon,
   FilterList as FilterIcon,
 } from "@material-ui/icons";
-import clsx from "clsx";
-import dayjs from "dayjs";
 import React, { FC, memo, useCallback, useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
-import { AddPipedDrawer } from "../../components/add-piped-drawer";
-import { EditPipedDrawer } from "../../components/edit-piped-drawer";
-import { PipedFilter, FilterValues } from "../../components/piped-filter";
-import { UI_TEXT_FILTER, UI_TEXT_HIDE_FILTER } from "../../constants/ui-text";
-import { AppState } from "../../modules";
+import { AddPipedDrawer } from "../../../components/add-piped-drawer";
+import { EditPipedDrawer } from "../../../components/edit-piped-drawer";
+import { FilterValues, PipedFilter } from "../../../components/piped-filter";
+import {
+  UI_TEXT_ADD,
+  UI_TEXT_CLOSE,
+  UI_TEXT_FILTER,
+  UI_TEXT_HIDE_FILTER,
+} from "../../../constants/ui-text";
+import { AppState } from "../../../modules";
 import {
   clearRegisteredPipedInfo,
   disablePiped,
@@ -44,19 +42,15 @@ import {
   recreatePipedKey,
   RegisteredPiped,
   selectAll,
-} from "../../modules/pipeds";
-import { AppDispatch } from "../../store";
+} from "../../../modules/pipeds";
+import { AppDispatch } from "../../../store";
+import { PipedTableRow } from "./piped-table-row";
 
-const useStyles = makeStyles((theme) => ({
-  disabledItem: {
-    background: theme.palette.grey[200],
-  },
+const useStyles = makeStyles(() => ({
   toolbarSpacer: {
     flexGrow: 1,
   },
 }));
-
-const ITEM_HEIGHT = 48;
 
 const usePipeds = (filterValues: FilterValues): Piped[] => {
   const pipeds = useSelector<AppState, Piped[]>((state) =>
@@ -78,13 +72,10 @@ export const SettingsPipedPage: FC = memo(function SettingsPipedPage() {
   const classes = useStyles();
   const [openFilter, setOpenFilter] = useState(false);
   const [isOpenForm, setIsOpenForm] = useState(false);
-  const [actionTarget, setActionTarget] = useState<Piped | null>(null);
   const [editPipedId, setEditPipedId] = useState<string | null>(null);
   const [filterValues, setFilterValues] = useState<FilterValues>({
     enabled: true,
   });
-  const [anchorEl, setAnchorEl] = useState<HTMLButtonElement | null>(null);
-  const isOpenMenu = Boolean(anchorEl);
   const dispatch = useDispatch<AppDispatch>();
   const pipeds = usePipeds(filterValues);
 
@@ -92,33 +83,33 @@ export const SettingsPipedPage: FC = memo(function SettingsPipedPage() {
     (state) => state.pipeds.registeredPiped
   );
 
-  const handleMenuOpen = useCallback(
-    (event: React.MouseEvent<HTMLButtonElement>, piped: Piped): void => {
-      setActionTarget(piped);
-      setAnchorEl(event.currentTarget);
+  const handleDisable = useCallback(
+    (id: string) => {
+      dispatch(disablePiped({ pipedId: id })).then(() => {
+        dispatch(fetchPipeds(true));
+      });
     },
-    []
+    [dispatch]
+  );
+  const handleEnable = useCallback(
+    (id: string) => {
+      dispatch(enablePiped({ pipedId: id })).then(() => {
+        dispatch(fetchPipeds(true));
+      });
+    },
+    [dispatch]
   );
 
-  const closeMenu = useCallback(() => {
-    setAnchorEl(null);
-    setTimeout(() => {
-      setActionTarget(null);
-    }, 200);
+  const handleRecreate = useCallback(
+    (id: string) => {
+      dispatch(recreatePipedKey({ pipedId: id }));
+    },
+    [dispatch]
+  );
+
+  const handleEdit = useCallback((id: string) => {
+    setEditPipedId(id);
   }, []);
-
-  const handleDisableClick = useCallback(() => {
-    closeMenu();
-    if (!actionTarget) {
-      return;
-    }
-
-    const act = actionTarget.disabled ? enablePiped : disablePiped;
-
-    dispatch(act({ pipedId: actionTarget.id })).then(() => {
-      dispatch(fetchPipeds(true));
-    });
-  }, [dispatch, actionTarget, closeMenu]);
 
   const handleClose = useCallback(() => {
     setIsOpenForm(false);
@@ -128,20 +119,6 @@ export const SettingsPipedPage: FC = memo(function SettingsPipedPage() {
     dispatch(clearRegisteredPipedInfo());
     dispatch(fetchPipeds(true));
   }, [dispatch]);
-
-  const handleRecreate = useCallback(() => {
-    if (actionTarget) {
-      dispatch(recreatePipedKey({ pipedId: actionTarget.id }));
-    }
-    closeMenu();
-  }, [dispatch, actionTarget, closeMenu]);
-
-  const handleEdit = useCallback(() => {
-    if (actionTarget) {
-      setEditPipedId(actionTarget.id);
-    }
-    closeMenu();
-  }, [actionTarget, closeMenu]);
 
   const handleEditClose = useCallback(() => {
     setEditPipedId(null);
@@ -155,7 +132,7 @@ export const SettingsPipedPage: FC = memo(function SettingsPipedPage() {
           startIcon={<AddIcon />}
           onClick={() => setIsOpenForm(true)}
         >
-          ADD
+          {UI_TEXT_ADD}
         </Button>
         <div className={classes.toolbarSpacer} />
         <Button
@@ -182,36 +159,14 @@ export const SettingsPipedPage: FC = memo(function SettingsPipedPage() {
             </TableHead>
             <TableBody>
               {pipeds.map((piped) => (
-                <TableRow
-                  key={`pipe-${piped.id}`}
-                  className={clsx({ [classes.disabledItem]: piped.disabled })}
-                >
-                  <TableCell>
-                    <Typography variant="subtitle2">
-                      {`${piped.name} (${piped.id.slice(0, 8)})`}
-                    </Typography>
-                  </TableCell>
-                  <TableCell>{piped.version}</TableCell>
-                  <TableCell>
-                    <Typography variant="body2" color="textSecondary">
-                      {piped.desc}
-                    </Typography>
-                  </TableCell>
-                  <TableCell>
-                    {piped.startedAt === 0
-                      ? "Not Yet Started"
-                      : dayjs(piped.startedAt * 1000).fromNow()}
-                  </TableCell>
-                  <TableCell align="right">
-                    <IconButton
-                      edge="end"
-                      aria-label="open menu"
-                      onClick={(e) => handleMenuOpen(e, piped)}
-                    >
-                      <MoreVertIcon />
-                    </IconButton>
-                  </TableCell>
-                </TableRow>
+                <PipedTableRow
+                  key={piped.id}
+                  pipedId={piped.id}
+                  onEdit={handleEdit}
+                  onRecreateKey={handleRecreate}
+                  onDisable={handleDisable}
+                  onEnable={handleEnable}
+                />
               ))}
             </TableBody>
           </Table>
@@ -221,36 +176,6 @@ export const SettingsPipedPage: FC = memo(function SettingsPipedPage() {
           <PipedFilter values={filterValues} onChange={setFilterValues} />
         )}
       </Box>
-
-      <Menu
-        id="piped-menu"
-        anchorEl={anchorEl}
-        keepMounted
-        open={isOpenMenu}
-        onClose={() => closeMenu()}
-        PaperProps={{
-          style: {
-            maxHeight: ITEM_HEIGHT * 4.5,
-            width: "20ch",
-          },
-        }}
-      >
-        {actionTarget && actionTarget.disabled ? (
-          <MenuItem onClick={handleDisableClick}>Enable</MenuItem>
-        ) : (
-          [
-            <MenuItem key="piped-menu-edit" onClick={handleEdit}>
-              Edit
-            </MenuItem>,
-            <MenuItem key="piped-menu-recreate" onClick={handleRecreate}>
-              Recreate Key
-            </MenuItem>,
-            <MenuItem key="piped-menu-disable" onClick={handleDisableClick}>
-              Disable
-            </MenuItem>,
-          ]
-        )}
-      </Menu>
 
       <AddPipedDrawer open={isOpenForm} onClose={handleClose} />
       <EditPipedDrawer pipedId={editPipedId} onClose={handleEditClose} />
@@ -274,7 +199,7 @@ export const SettingsPipedPage: FC = memo(function SettingsPipedPage() {
           />
           <Box display="flex" justifyContent="flex-end" m={1} mt={2}>
             <Button color="primary" onClick={handleClosePipedInfo}>
-              CLOSE
+              {UI_TEXT_CLOSE}
             </Button>
           </Box>
         </DialogContent>
