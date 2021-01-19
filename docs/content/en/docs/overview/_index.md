@@ -30,7 +30,7 @@ Component Architecture
 - Automated deployment analysis to measure deployment impact based on metrics, logs, emitted requests
 - Automatically roll back to the previous state as soon as analysis or a pipeline stage fails
 - Automatically detect configuration drift to notify and render the changes
-- Automatically update configuration files when it finds out a new event
+- Automatically trigger a new deployment when an arbitrary event has occurred (e.g. container image updated, helm chart publishing, etc)
 
 **Safety and Security**
 - Support single sign-on and role-based access control
