@@ -150,8 +150,8 @@ func (c *client) UpdateFunction(ctx context.Context, fm FunctionManifest) error 
 		return fmt.Errorf("unknown error given: %w", err)
 	}
 
-	// TODO more configurable fields from here:
-	// https://docs.aws.amazon.com/sdk-for-go/api/service/lambda/#UpdateFunctionConfigurationInput
+	// TODO: Support more configurable fields using Lambda.UpdateFunctionConfiguration.
+	// https://docs.aws.amazon.com/sdk-for-go/api/service/lambda/#UpdateFunctionConfiguration
 
 	return nil
 }
@@ -162,23 +162,25 @@ func (c *client) PublishFunction(ctx context.Context, fm FunctionManifest) (vers
 	}
 	cfg, err := c.client.PublishVersionWithContext(ctx, input)
 	if err != nil {
-		if aerr, ok := err.(awserr.Error); ok {
-			switch aerr.Code() {
-			case lambda.ErrCodeInvalidParameterValueException:
-				err = fmt.Errorf("invalid parameter given: %w", err)
-			case lambda.ErrCodeServiceException:
-				err = fmt.Errorf("aws lambda service encountered an internal error: %w", err)
-			case lambda.ErrCodeTooManyRequestsException:
-				err = fmt.Errorf("request throughput limit was exceeded: %w", err)
-			case lambda.ErrCodeCodeStorageExceededException:
-				err = fmt.Errorf("total code size per account exceeded: %w", err)
-			case lambda.ErrCodeResourceNotFoundException:
-				err = fmt.Errorf("resource not found: %w", err)
-			case lambda.ErrCodeResourceConflictException:
-				err = fmt.Errorf("resource already existed or in progress: %w", err)
-			}
+		aerr, ok := err.(awserr.Error)
+		if !ok {
+			err = fmt.Errorf("unknown error given: %w", err)
+			return
 		}
-		err = fmt.Errorf("unknown error given: %w", err)
+		switch aerr.Code() {
+		case lambda.ErrCodeInvalidParameterValueException:
+			err = fmt.Errorf("invalid parameter given: %w", err)
+		case lambda.ErrCodeServiceException:
+			err = fmt.Errorf("aws lambda service encountered an internal error: %w", err)
+		case lambda.ErrCodeTooManyRequestsException:
+			err = fmt.Errorf("request throughput limit was exceeded: %w", err)
+		case lambda.ErrCodeCodeStorageExceededException:
+			err = fmt.Errorf("total code size per account exceeded: %w", err)
+		case lambda.ErrCodeResourceNotFoundException:
+			err = fmt.Errorf("resource not found: %w", err)
+		case lambda.ErrCodeResourceConflictException:
+			err = fmt.Errorf("resource already existed or in progress: %w", err)
+		}
 		return
 	}
 	version = *cfg.Version
@@ -199,30 +201,34 @@ func (c *client) GetTrafficConfig(ctx context.Context, fm FunctionManifest) (rou
 
 	cfg, err := c.client.GetAliasWithContext(ctx, input)
 	if err != nil {
-		if aerr, ok := err.(awserr.Error); ok {
-			switch aerr.Code() {
-			case lambda.ErrCodeInvalidParameterValueException:
-				err = fmt.Errorf("invalid parameter given: %w", err)
-			case lambda.ErrCodeServiceException:
-				err = fmt.Errorf("aws lambda service encountered an internal error: %w", err)
-			case lambda.ErrCodeTooManyRequestsException:
-				err = fmt.Errorf("request throughput limit was exceeded: %w", err)
-			case lambda.ErrCodeResourceNotFoundException:
-				err = ErrNotFound
-			}
+		aerr, ok := err.(awserr.Error)
+		if !ok {
+			err = fmt.Errorf("unknown error given: %w", err)
+			return
 		}
-		err = fmt.Errorf("unknown error given: %w", err)
+		switch aerr.Code() {
+		case lambda.ErrCodeInvalidParameterValueException:
+			err = fmt.Errorf("invalid parameter given: %w", err)
+		case lambda.ErrCodeServiceException:
+			err = fmt.Errorf("aws lambda service encountered an internal error: %w", err)
+		case lambda.ErrCodeTooManyRequestsException:
+			err = fmt.Errorf("request throughput limit was exceeded: %w", err)
+		case lambda.ErrCodeResourceNotFoundException:
+			err = ErrNotFound
+		}
 		return
 	}
 
-	if cfg.RoutingConfig != nil {
-		routingTrafficCfg = make([]VersionTraffic, 0, len(cfg.RoutingConfig.AdditionalVersionWeights))
-		for version := range cfg.RoutingConfig.AdditionalVersionWeights {
-			routingTrafficCfg = append(routingTrafficCfg, VersionTraffic{
-				Version: version,
-				Percent: *cfg.RoutingConfig.AdditionalVersionWeights[version],
-			})
-		}
+	// TODO: Fix Lambda.AliasConfiguration.RoutingConfig nil value.
+	if cfg.RoutingConfig == nil {
+		return
+	}
+	routingTrafficCfg = make([]VersionTraffic, 0, len(cfg.RoutingConfig.AdditionalVersionWeights))
+	for version := range cfg.RoutingConfig.AdditionalVersionWeights {
+		routingTrafficCfg = append(routingTrafficCfg, VersionTraffic{
+			Version: version,
+			Percent: *cfg.RoutingConfig.AdditionalVersionWeights[version],
+		})
 	}
 	return
 }

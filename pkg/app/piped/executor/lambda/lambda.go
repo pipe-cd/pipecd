@@ -109,6 +109,7 @@ func sync(ctx context.Context, in *executor.Input, cloudProviderName string, clo
 		}
 	}
 
+	// Fixme: Using backoff instead of time sleep waiting for a specific duration of time.
 	// Wait before ready to commit change.
 	in.LogPersister.Info("Waiting to update lambda function in progress...")
 	time.Sleep(3 * time.Minute)
