@@ -110,12 +110,8 @@ func sync(ctx context.Context, in *executor.Input, cloudProviderName string, clo
 		}
 	}
 
-	// TODO: Using backoff instead of time sleep waiting for a specific duration of time.
-	// Wait before ready to commit change.
 	in.LogPersister.Info("Waiting to update lambda function in progress...")
-	// time.Sleep(3 * time.Minute)
-
-	retry := backoff.NewRetry(3, backoff.NewConstant(time.Duration(1)*time.Minute))
+	retry := backoff.NewRetry(provider.RequestRetryTime, backoff.NewConstant(provider.RetryIntervalDuration))
 	startWaitingStamp := time.Now()
 	var version string
 	for retry.WaitNext(ctx) {
@@ -128,7 +124,7 @@ func sync(ctx context.Context, in *executor.Input, cloudProviderName string, clo
 			in.Logger.Error("Failed publish new version for Lambda function")
 			continue
 		}
-		in.LogPersister.Infof("Commit new version for Lambda function %s after duration %v", fm.Spec.Name, time.Since(startWaitingStamp))
+		in.LogPersister.Infof("Successfully committed new version for Lambda function %s after duration %v", fm.Spec.Name, time.Since(startWaitingStamp))
 		break
 	}
 

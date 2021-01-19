@@ -18,6 +18,7 @@ import (
 	"context"
 	"errors"
 	"fmt"
+	"time"
 
 	"github.com/aws/aws-sdk-go/aws"
 	"github.com/aws/aws-sdk-go/aws/awserr"
@@ -29,7 +30,13 @@ import (
 	"go.uber.org/zap"
 )
 
-const defaultAliasName = "Service"
+const (
+	defaultAliasName = "Service"
+	// RequestRetryTime represents the number of times calling to AWS resource control.
+	RequestRetryTime = 3
+	// RetryIntervalDuration represents duration time between retry.
+	RetryIntervalDuration = 1 * time.Minute
+)
 
 // ErrNotFound lambda resource occurred.
 var ErrNotFound = errors.New("lambda resource not found")
