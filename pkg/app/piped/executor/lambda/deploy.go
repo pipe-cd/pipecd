@@ -63,6 +63,8 @@ func (e *deployExecutor) Execute(sig executor.StopSignal) model.StageStatus {
 		status = e.ensureSync(ctx)
 	case model.StageLambdaPromote:
 		status = e.ensurePromote(ctx)
+	case model.StageLambdaCanaryRollout:
+		status = e.ensureRollout(ctx)
 	default:
 		e.LogPersister.Errorf("Unsupported stage %s for lambda application", e.Stage.Name)
 		return model.StageStatus_STAGE_FAILURE
@@ -84,7 +86,28 @@ func (e *deployExecutor) ensureSync(ctx context.Context) model.StageStatus {
 	return model.StageStatus_STAGE_SUCCESS
 }
 
-func (e *deployExecutor) ensurePromote(_ context.Context) model.StageStatus {
-	e.LogPersister.Error("This stage is not implemented yet")
+func (e *deployExecutor) ensurePromote(ctx context.Context) model.StageStatus {
+	fm, ok := loadFunctionManifest(&e.Input, e.deployCfg.Input.FunctionManifestFile, e.deploySource)
+	if !ok {
+		return model.StageStatus_STAGE_FAILURE
+	}
+
+	if !promote(ctx, &e.Input, e.cloudProviderName, e.cloudProviderCfg, fm) {
+		return model.StageStatus_STAGE_FAILURE
+	}
+
 	return model.StageStatus_STAGE_FAILURE
+}
+
+func (e *deployExecutor) ensureRollout(ctx context.Context) model.StageStatus {
+	fm, ok := loadFunctionManifest(&e.Input, e.deployCfg.Input.FunctionManifestFile, e.deploySource)
+	if !ok {
+		return model.StageStatus_STAGE_FAILURE
+	}
+
+	if !rollout(ctx, &e.Input, e.cloudProviderName, e.cloudProviderCfg, fm) {
+		return model.StageStatus_STAGE_FAILURE
+	}
+
+	return model.StageStatus_STAGE_SUCCESS
 }

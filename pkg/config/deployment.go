@@ -222,6 +222,11 @@ func (s *PipelineStage) UnmarshalJSON(data []byte) error {
 		if len(gs.With) > 0 {
 			err = json.Unmarshal(gs.With, s.LambdaPromoteStageOptions)
 		}
+	case model.StageLambdaCanaryRollout:
+		s.LambdaCanaryRolloutStageOptions = &LambdaCanaryRolloutStageOptions{}
+		if len(gs.With) > 0 {
+			err = json.Unmarshal(gs.With, s.LambdaCanaryRolloutStageOptions)
+		}
 
 	default:
 		err = fmt.Errorf("unsupported stage name: %s", s.Name)

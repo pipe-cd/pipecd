@@ -68,6 +68,9 @@ const (
 	// StageLambdaSync does quick sync by rolling out the new version
 	// and switching all traffic to it.
 	StageLambdaSync Stage = "LAMBDA_SYNC"
+	// StageLambdaCanaryRollout represents the state where
+	// the CANARY variant resources has been rolled out with the new version/configuration.
+	StageLambdaCanaryRollout Stage = "LAMBDA_CANARY_ROLLOUT"
 	// StageLambdaPromote prmotes the new version to receive amount of traffic.
 	StageLambdaPromote Stage = "LAMBDA_PROMOTE"
 

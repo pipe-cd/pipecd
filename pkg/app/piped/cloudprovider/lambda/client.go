@@ -226,6 +226,8 @@ func (c *client) GetTrafficConfig(ctx context.Context, fm FunctionManifest) (rou
 		return
 	}
 
+	c.logger.Info("[DEBUG] GetTrafficConfig", zap.Any("routing config", cfg))
+
 	// TODO: Fix Lambda.AliasConfiguration.RoutingConfig nil value.
 	if cfg.RoutingConfig == nil {
 		return
