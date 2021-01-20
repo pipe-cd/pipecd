@@ -272,13 +272,26 @@ func promote(ctx context.Context, in *executor.Input, cloudProviderName string, 
 		in.LogPersister.Errorf("Failed to prepare traffic routing for Lambda function %s: primary version not found", fm.Spec.Name)
 		return false
 	}
-	trafficCfg["secondary"] = provider.VersionTraffic{
-		Version: primary.Version,
-		Percent: float64(100 - options.Percent),
-	}
+
+	// Set built version by rollout stage as new primary.
 	trafficCfg["primary"] = provider.VersionTraffic{
 		Version: version,
 		Percent: float64(options.Percent),
+	}
+	// Make the current primary version as new secondary version in case it's not the latest built version by rollout stage.
+	if primary.Version != version {
+		trafficCfg["secondary"] = provider.VersionTraffic{
+			Version: primary.Version,
+			Percent: float64(100 - options.Percent),
+		}
+	} else {
+		// Update traffic to the secondary and keep it as new secondary.
+		if secondary, ok := trafficCfg["secondary"]; ok {
+			trafficCfg["secondary"] = provider.VersionTraffic{
+				Version: secondary.Version,
+				Percent: float64(100 - options.Percent),
+			}
+		}
 	}
 
 	if err = client.UpdateTrafficConfig(ctx, fm, trafficCfg); err != nil {
@@ -286,5 +299,6 @@ func promote(ctx context.Context, in *executor.Input, cloudProviderName string, 
 		return false
 	}
 
+	in.LogPersister.Infof("Successfully promote new version (v%s) of Lambda function %s, it will handle %v percent of traffic", version, fm.Spec.Name, options.Percent)
 	return true
 }

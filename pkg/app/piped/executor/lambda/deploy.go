@@ -96,7 +96,7 @@ func (e *deployExecutor) ensurePromote(ctx context.Context) model.StageStatus {
 		return model.StageStatus_STAGE_FAILURE
 	}
 
-	return model.StageStatus_STAGE_FAILURE
+	return model.StageStatus_STAGE_SUCCESS
 }
 
 func (e *deployExecutor) ensureRollout(ctx context.Context) model.StageStatus {
