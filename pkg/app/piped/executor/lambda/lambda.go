@@ -152,13 +152,13 @@ func sync(ctx context.Context, in *executor.Input, cloudProviderName string, clo
 	}
 
 	// Update 100% traffic to the new lambda version.
-	routingCfg := []provider.VersionTraffic{
-		{
-			Version: version,
-			Percent: 100,
-		},
+	trafficCfg := make(map[string]provider.VersionTraffic)
+	trafficCfg["primary"] = provider.VersionTraffic{
+		Version: version,
+		Percent: 100,
 	}
-	if err = client.UpdateTrafficConfig(ctx, fm, routingCfg); err != nil {
+
+	if err = client.UpdateTrafficConfig(ctx, fm, trafficCfg); err != nil {
 		in.LogPersister.Errorf("Failed to update traffic routing for Lambda function %s (version: %s): %v", fm.Spec.Name, version, err)
 		return false
 	}
@@ -247,7 +247,7 @@ func promote(ctx context.Context, in *executor.Input, cloudProviderName string, 
 		return false
 	}
 
-	runningTrafficCfg, err := client.GetTrafficConfig(ctx, fm)
+	trafficCfg, err := client.GetTrafficConfig(ctx, fm)
 	// Create Alias on not yet existed.
 	if errors.Is(err, provider.ErrNotFound) {
 		if options.Percent != 100 {
@@ -265,22 +265,26 @@ func promote(ctx context.Context, in *executor.Input, cloudProviderName string, 
 		in.LogPersister.Errorf("Failed to prepare traffic routing for Lambda function %s: %v", fm.Spec.Name, err)
 		return false
 	}
-	if len(runningTrafficCfg) != 2 {
-		in.LogPersister.Errorf("Failed to prepare traffic routing for Lambda function %s: invalid routing traffic found", fm.Spec.Name)
-		return false
-	}
 
 	// Update traffic to the new lambda version.
-	routingCfg := []provider.VersionTraffic{
-		{
-			Version: version,
-			Percent: 100,
-		},
+	primary, ok := trafficCfg["primary"]
+	if !ok {
+		in.LogPersister.Errorf("Failed to prepare traffic routing for Lambda function %s: primary version not found", fm.Spec.Name)
+		return false
 	}
-	if err = client.UpdateTrafficConfig(ctx, fm, routingCfg); err != nil {
+	trafficCfg["secondary"] = provider.VersionTraffic{
+		Version: primary.Version,
+		Percent: float64(100 - options.Percent),
+	}
+	trafficCfg["primary"] = provider.VersionTraffic{
+		Version: version,
+		Percent: float64(options.Percent),
+	}
+
+	if err = client.UpdateTrafficConfig(ctx, fm, trafficCfg); err != nil {
 		in.LogPersister.Errorf("Failed to update traffic routing for Lambda function %s (version: %s): %v", fm.Spec.Name, version, err)
 		return false
 	}
 
-	return false
+	return true
 }
