@@ -216,7 +216,7 @@ func rollout(ctx context.Context, in *executor.Input, cloudProviderName string, 
 	}
 
 	// Update latest version name to metadata store
-	latestVersionKeyName := fmt.Sprintf("%s-latest", fm.Spec.Name)
+	latestVersionKeyName := fmt.Sprintf("%s-%s", fm.Spec.Name, in.Deployment.RunningCommitHash)
 	if err := in.MetadataStore.Set(ctx, latestVersionKeyName, version); err != nil {
 		in.LogPersister.Errorf("Failed to update latest version name to metadata store for Lambda function %s: %v", fm.Spec.Name, err)
 		return false
@@ -234,7 +234,7 @@ func promote(ctx context.Context, in *executor.Input, cloudProviderName string, 
 		return false
 	}
 
-	latestVersionKeyName := fmt.Sprintf("%s-latest", fm.Spec.Name)
+	latestVersionKeyName := fmt.Sprintf("%s-%s", fm.Spec.Name, in.Deployment.RunningCommitHash)
 	version, ok := in.MetadataStore.Get(latestVersionKeyName)
 	if !ok {
 		in.LogPersister.Errorf("Unable to prepare version to promote for Lambda function %s: Not found", fm.Spec.Name)
