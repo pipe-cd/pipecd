@@ -272,7 +272,6 @@ func promote(ctx context.Context, in *executor.Input, cloudProviderName string, 
 		in.LogPersister.Errorf("Failed to prepare traffic routing for Lambda function %s: primary version not found", fm.Spec.Name)
 		return false
 	}
-
 	// Set built version by rollout stage as new primary.
 	trafficCfg["primary"] = provider.VersionTraffic{
 		Version: version,
