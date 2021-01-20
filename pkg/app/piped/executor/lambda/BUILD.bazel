@@ -5,6 +5,7 @@ go_library(
     srcs = [
         "deploy.go",
         "lambda.go",
+        "rollback.go",
     ],
     importpath = "github.com/pipe-cd/pipe/pkg/app/piped/executor/lambda",
     visibility = ["//visibility:public"],
