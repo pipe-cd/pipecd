@@ -1,5 +1,6 @@
 import { EntityId } from "@reduxjs/toolkit";
 import React, { FC, memo, useEffect } from "react";
+import loadable from "@loadable/component";
 import { useDispatch, useSelector } from "react-redux";
 import { Route, Switch, Redirect } from "react-router-dom";
 import { Header } from "../components/header";
@@ -21,13 +22,41 @@ import { fetchEnvironments } from "../modules/environments";
 import { useMe } from "../modules/me";
 import { fetchPipeds } from "../modules/pipeds";
 import { useInterval } from "../hooks/use-interval";
-import { ApplicationDetailPage } from "./applications/detail";
 import { ApplicationIndexPage } from "./applications/index";
-import { DeploymentDetailPage } from "./deployments/detail";
 import { DeploymentIndexPage } from "./deployments/index";
-import { InsightIndexPage } from "./insight";
 import { LoginPage } from "./login";
-import { SettingsIndexPage } from "./settings";
+
+const SettingsIndexPage = loadable(
+  () => import(/* webpackChunkName: "settings" */ "./settings"),
+  {
+    resolveComponent: (components) => components.SettingsIndexPage,
+  }
+);
+
+const InsightIndexPage = loadable(
+  () => import(/* webpackChunkName: "insight" */ "./insight"),
+  {
+    resolveComponent: (components) => components.InsightIndexPage,
+  }
+);
+
+const DeploymentDetailPage = loadable(
+  () =>
+    import(/* webpackChunkName: "deployments-detail" */ "./deployments/detail"),
+  {
+    resolveComponent: (components) => components.DeploymentDetailPage,
+  }
+);
+
+const ApplicationDetailPage = loadable(
+  () =>
+    import(
+      /* webpackChunkName: "applications-detail" */ "./applications/detail"
+    ),
+  {
+    resolveComponent: (components) => components.ApplicationDetailPage,
+  }
+);
 
 // Fetch commands detail periodically
 const FETCH_COMMANDS_INTERVAL = 3000;

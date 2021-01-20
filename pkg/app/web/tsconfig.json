@@ -5,7 +5,7 @@
     },
     "allowUnreachableCode": false,
     "baseUrl": ".",
-    "module": "CommonJS",
+    "module": "esnext",
     "moduleResolution": "node",
     "noImplicitReturns": true,
     "noFallthroughCasesInSwitch": true,
