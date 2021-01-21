@@ -19,6 +19,7 @@ spec:
       - name: K8S_CANARY_ROLLOUT
       - name: WAIT_APPROVAL
         with:
+          timeout: 6h
           approvers:
             - user-abc
       - name: K8S_PRIMARY_ROLLOUT
@@ -29,6 +30,8 @@ As above example, the deployment requires an approval from `user-abc` before `K8
 The value of user ID in the `approvers` list depends on your [SSO configuration](/docs/operator-manual/control-plane/auth/), it must be GitHub's user ID if your SSO was configured to use GitHub provider, it must be Gmail account if your SSO was configured to use Google provider.
 
 In case the `approvers` field was not configured, anyone in the project who has `Editor` or `Admin` role can approve the deployment pipeline.
+
+Also, it will end with failure when the time specified in `timeout` has elapsed. Default is `6h`.
 
 ![](/images/deployment-wait-approval-stage.png)
 <p style="text-align: center;">

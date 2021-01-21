@@ -54,8 +54,8 @@ func (e *Executor) Execute(sig executor.StopSignal) model.StageStatus {
 		ticker         = time.NewTicker(5 * time.Second)
 	)
 	defer ticker.Stop()
-
-	timer := time.NewTimer(time.Duration(e.StageConfig.WaitApprovalStageOptions.Timeout) * time.Second)
+	timeout := time.Duration(e.StageConfig.WaitApprovalStageOptions.Timeout)
+	timer := time.NewTimer(timeout)
 
 	e.LogPersister.Info("Waiting for an approval...")
 	for {
@@ -76,7 +76,7 @@ func (e *Executor) Execute(sig executor.StopSignal) model.StageStatus {
 				return model.StageStatus_STAGE_FAILURE
 			}
 		case <-timer.C:
-			e.LogPersister.Errorf("Timed out %v", e.StageConfig.WaitApprovalStageOptions.Timeout)
+			e.LogPersister.Errorf("Timed out %v", timeout)
 			return model.StageStatus_STAGE_FAILURE
 		}
 	}
