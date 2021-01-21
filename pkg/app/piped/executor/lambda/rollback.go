@@ -91,10 +91,11 @@ func rollback(ctx context.Context, in *executor.Input, cloudProviderName string,
 		return false
 	}
 
+	// Restore original traffic config from metadata store.
 	originalTrafficKeyName := fmt.Sprintf("%s-%s-original", fm.Spec.Name, in.Deployment.RunningCommitHash)
 	originalTrafficCfgData, ok := in.MetadataStore.Get(originalTrafficKeyName)
 	if !ok {
-		in.LogPersister.Errorf("Unable to prepare original traffic config to rollback Lambda function %s: not found", fm.Spec.Name)
+		in.LogPersister.Errorf("Unable to prepare original traffic config to rollback Lambda function %s. It seems this is the first deployment.", fm.Spec.Name)
 		return false
 	}
 
@@ -104,16 +105,52 @@ func rollback(ctx context.Context, in *executor.Input, cloudProviderName string,
 		return false
 	}
 
-	// TODO: fix case == 1
-	if len(originalTrafficCfg) != 2 {
-		in.LogPersister.Errorf("Unable to prepare original traffic config to rollback Lambda function %s: invalid traffic config stored", fm.Spec.Name)
+	// Restore promoted traffic config from metadata store.
+	promotedTrafficKeyName := fmt.Sprintf("%s-%s-promote", fm.Spec.Name, in.Deployment.RunningCommitHash)
+	promotedTrafficCfgData, ok := in.MetadataStore.Get(promotedTrafficKeyName)
+	// If there is no previous promoted traffic config, which mean no promote run previously so no need to do anything to rollback.
+	if !ok {
+		in.LogPersister.Info("No promoted traffic config found. No need to rollback current remote traffic config.")
+		return true
+	}
+
+	promotedTrafficCfg := provider.RoutingTrafficConfig{}
+	if err := json.Unmarshal([]byte(promotedTrafficCfgData), &promotedTrafficCfg); err != nil {
+		in.LogPersister.Errorf("Unable to prepare promoted traffic config to rollback Lambda function %s: %v", fm.Spec.Name, err)
 		return false
 	}
 
-	if err = client.UpdateTrafficConfig(ctx, fm, originalTrafficCfg); err != nil {
-		in.LogPersister.Errorf("Failed to rollback original traffic config for Lambda function %s: %v", fm.Spec.Name, err)
+	switch len(originalTrafficCfg) {
+	// Original traffic config has both PRIMARY and SECONDARY version config.
+	case 2:
+		if err = client.UpdateTrafficConfig(ctx, fm, originalTrafficCfg); err != nil {
+			in.LogPersister.Errorf("Failed to rollback original traffic config for Lambda function %s: %v", fm.Spec.Name, err)
+			return false
+		}
+		return true
+	// Original traffic config is PRIMARY ONLY config,
+	// we need to reset any others SECONDARY created by previous (until failed) PROMOTE stages.
+	case 1:
+		// Validate stored original traffic config, since it PRIMARY ONLY, the percent must be float64(100)
+		primary, ok := originalTrafficCfg["primary"]
+		if !ok || primary.Percent != float64(100) {
+			in.LogPersister.Errorf("Unable to prepare original traffic config: invalid original traffic config stored")
+			return false
+		}
+
+		// Update promoted traffic config by add 0% SECONDARY for reset remote promoted version config.
+		if !configureTrafficRouting(promotedTrafficCfg, primary.Version, 100) {
+			in.LogPersister.Errorf("Unable to prepare traffic config to rollback Lambda function %s: can not reset promoted version", fm.Spec.Name)
+			return false
+		}
+
+		if err = client.UpdateTrafficConfig(ctx, fm, promotedTrafficCfg); err != nil {
+			in.LogPersister.Errorf("Failed to rollback original traffic config for Lambda function %s: %v", fm.Spec.Name, err)
+			return false
+		}
+		return true
+	default:
+		in.LogPersister.Errorf("Unable to prepare original traffic config: invalid original traffic config stored")
 		return false
 	}
-
-	return true
 }

@@ -97,19 +97,6 @@ func sync(ctx context.Context, in *executor.Input, cloudProviderName string, clo
 	}
 
 	trafficCfg, err := client.GetTrafficConfig(ctx, fm)
-	// Store the current traffic config if existed for rollback if necessary.
-	if trafficCfg != nil {
-		originalTrafficCfg, ok := trafficCfg.Encode()
-		if !ok {
-			in.LogPersister.Errorf("Unable to store current traffic config for rollback: encode failed")
-			return false
-		}
-		originalTrafficKeyName := fmt.Sprintf("%s-%s-original", fm.Spec.Name, in.Deployment.RunningCommitHash)
-		if e := in.MetadataStore.Set(ctx, originalTrafficKeyName, originalTrafficCfg); e != nil {
-			in.LogPersister.Errorf("Unable to store current traffic config for rollback: %v", e)
-			return false
-		}
-	}
 	// Create Alias on not yet existed.
 	if errors.Is(err, provider.ErrNotFound) {
 		if err := client.CreateTrafficConfig(ctx, fm, version); err != nil {
@@ -122,6 +109,19 @@ func sync(ctx context.Context, in *executor.Input, cloudProviderName string, clo
 	if err != nil {
 		in.LogPersister.Errorf("Failed to prepare traffic routing for Lambda function %s: %v", fm.Spec.Name, err)
 		return false
+	}
+	// Store the current traffic config for rollback if necessary.
+	if trafficCfg != nil {
+		originalTrafficCfg, ok := trafficCfg.Encode()
+		if !ok {
+			in.LogPersister.Errorf("Unable to store current traffic config for rollback: encode failed")
+			return false
+		}
+		originalTrafficKeyName := fmt.Sprintf("%s-%s-original", fm.Spec.Name, in.Deployment.RunningCommitHash)
+		if e := in.MetadataStore.Set(ctx, originalTrafficKeyName, originalTrafficCfg); e != nil {
+			in.LogPersister.Errorf("Unable to store current traffic config for rollback: %v", e)
+			return false
+		}
 	}
 
 	// Update 100% traffic to the new lambda version.
@@ -222,6 +222,18 @@ func promote(ctx context.Context, in *executor.Input, cloudProviderName string, 
 	// Update traffic to the new lambda version.
 	if !configureTrafficRouting(trafficCfg, version, options.Percent) {
 		in.LogPersister.Errorf("Failed to prepare traffic routing for Lambda function %s", fm.Spec.Name)
+		return false
+	}
+
+	// Store promote traffic config for rollback if necessary.
+	promoteTrafficCfgData, ok := trafficCfg.Encode()
+	if !ok {
+		in.LogPersister.Errorf("Unable to store current traffic config for rollback: encode failed")
+		return false
+	}
+	promoteTrafficKeyName := fmt.Sprintf("%s-%s-promote", fm.Spec.Name, in.Deployment.RunningCommitHash)
+	if err := in.MetadataStore.Set(ctx, promoteTrafficKeyName, promoteTrafficCfgData); err != nil {
+		in.LogPersister.Errorf("Unable to store promote traffic config for rollback: %v", err)
 		return false
 	}
 
