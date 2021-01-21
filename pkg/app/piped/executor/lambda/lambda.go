@@ -83,46 +83,12 @@ func sync(ctx context.Context, in *executor.Input, cloudProviderName string, clo
 		return false
 	}
 
-	found, err := client.IsFunctionExist(ctx, fm.Spec.Name)
-	if err != nil {
-		in.LogPersister.Errorf("Unable to validate function name %s: %v", fm.Spec.Name, err)
+	// Build and publish new version of Lambda function.
+	version, ok := build(ctx, in, client, fm)
+	if !ok {
+		in.LogPersister.Errorf("Failed to build new version for Lambda function %s", fm.Spec.Name)
 		return false
 	}
-	if found {
-		if err := client.UpdateFunction(ctx, fm); err != nil {
-			in.LogPersister.Errorf("Failed to update lambda function %s: %v", fm.Spec.Name, err)
-			return false
-		}
-	} else {
-		if err := client.CreateFunction(ctx, fm); err != nil {
-			in.LogPersister.Errorf("Failed to create lambda function %s: %v", fm.Spec.Name, err)
-			return false
-		}
-	}
-
-	in.LogPersister.Info("Waiting to update lambda function in progress...")
-	retry := backoff.NewRetry(provider.RequestRetryTime, backoff.NewConstant(provider.RetryIntervalDuration))
-	publishFunctionSucceed := false
-	startWaitingStamp := time.Now()
-	var version string
-	for retry.WaitNext(ctx) {
-		// Commit version for applied Lambda function.
-		// Note: via the current docs of [Lambda.PublishVersion](https://docs.aws.amazon.com/sdk-for-go/api/service/lambda/#Lambda.PublishVersion)
-		// AWS Lambda doesn't publish a version if the function's configuration and code haven't changed since the last version.
-		// But currently, unchanged revision is able to make publish (versionId++) as usual.
-		version, err = client.PublishFunction(ctx, fm)
-		if err != nil {
-			in.Logger.Error("Failed publish new version for Lambda function")
-		} else {
-			publishFunctionSucceed = true
-			break
-		}
-	}
-	if !publishFunctionSucceed {
-		in.LogPersister.Errorf("Failed to commit new version for Lambda function %s: %v", fm.Spec.Name, err)
-		return false
-	}
-	in.LogPersister.Infof("Successfully committed new version (v%s) for Lambda function %s after duration %v", version, fm.Spec.Name, time.Since(startWaitingStamp))
 
 	trafficCfg, err := client.GetTrafficConfig(ctx, fm)
 	// Create Alias on not yet existed.
@@ -162,43 +128,10 @@ func rollout(ctx context.Context, in *executor.Input, cloudProviderName string, 
 		return false
 	}
 
-	found, err := client.IsFunctionExist(ctx, fm.Spec.Name)
-	if err != nil {
-		in.LogPersister.Errorf("Unable to validate function name %s: %v", fm.Spec.Name, err)
-		return false
-	}
-	if found {
-		if err := client.UpdateFunction(ctx, fm); err != nil {
-			in.LogPersister.Errorf("Failed to update lambda function %s: %v", fm.Spec.Name, err)
-			return false
-		}
-	} else {
-		if err := client.CreateFunction(ctx, fm); err != nil {
-			in.LogPersister.Errorf("Failed to create lambda function %s: %v", fm.Spec.Name, err)
-			return false
-		}
-	}
-
-	in.LogPersister.Info("Waiting to update lambda function in progress...")
-	retry := backoff.NewRetry(provider.RequestRetryTime, backoff.NewConstant(provider.RetryIntervalDuration))
-	publishFunctionSucceed := false
-	startWaitingStamp := time.Now()
-	var version string
-	for retry.WaitNext(ctx) {
-		// Commit version for applied Lambda function.
-		// Note: via the current docs of [Lambda.PublishVersion](https://docs.aws.amazon.com/sdk-for-go/api/service/lambda/#Lambda.PublishVersion)
-		// AWS Lambda doesn't publish a version if the function's configuration and code haven't changed since the last version.
-		// But currently, unchanged revision is able to make publish (versionId++) as usual.
-		version, err = client.PublishFunction(ctx, fm)
-		if err != nil {
-			in.Logger.Error("Failed publish new version for Lambda function")
-		} else {
-			publishFunctionSucceed = true
-			break
-		}
-	}
-	if !publishFunctionSucceed {
-		in.LogPersister.Errorf("Failed to commit new version for Lambda function %s: %v", fm.Spec.Name, err)
+	// Build and publish new version of Lambda function.
+	version, ok := build(ctx, in, client, fm)
+	if !ok {
+		in.LogPersister.Errorf("Failed to build new version for Lambda function %s", fm.Spec.Name)
 		return false
 	}
 
@@ -209,7 +142,6 @@ func rollout(ctx context.Context, in *executor.Input, cloudProviderName string, 
 		return false
 	}
 
-	in.LogPersister.Infof("Successfully committed new version (v%s) for Lambda function %s after duration %v", version, fm.Spec.Name, time.Since(startWaitingStamp))
 	return true
 }
 
@@ -295,4 +227,49 @@ func configureTrafficRouting(trafficCfg provider.RoutingTrafficConfig, version s
 		}
 	}
 	return true
+}
+
+func build(ctx context.Context, in *executor.Input, client provider.Client, fm provider.FunctionManifest) (version string, ok bool) {
+	found, err := client.IsFunctionExist(ctx, fm.Spec.Name)
+	if err != nil {
+		in.LogPersister.Errorf("Unable to validate function name %s: %v", fm.Spec.Name, err)
+		return
+	}
+	if found {
+		if err := client.UpdateFunction(ctx, fm); err != nil {
+			in.LogPersister.Errorf("Failed to update lambda function %s: %v", fm.Spec.Name, err)
+			return
+		}
+	} else {
+		if err := client.CreateFunction(ctx, fm); err != nil {
+			in.LogPersister.Errorf("Failed to create lambda function %s: %v", fm.Spec.Name, err)
+			return
+		}
+	}
+
+	in.LogPersister.Info("Waiting to update lambda function in progress...")
+	retry := backoff.NewRetry(provider.RequestRetryTime, backoff.NewConstant(provider.RetryIntervalDuration))
+	publishFunctionSucceed := false
+	startWaitingStamp := time.Now()
+	for retry.WaitNext(ctx) {
+		// Commit version for applied Lambda function.
+		// Note: via the current docs of [Lambda.PublishVersion](https://docs.aws.amazon.com/sdk-for-go/api/service/lambda/#Lambda.PublishVersion)
+		// AWS Lambda doesn't publish a version if the function's configuration and code haven't changed since the last version.
+		// But currently, unchanged revision is able to make publish (versionId++) as usual.
+		version, err = client.PublishFunction(ctx, fm)
+		if err != nil {
+			in.Logger.Error("Failed publish new version for Lambda function")
+		} else {
+			publishFunctionSucceed = true
+			break
+		}
+	}
+	if !publishFunctionSucceed {
+		in.LogPersister.Errorf("Failed to commit new version for Lambda function %s: %v", fm.Spec.Name, err)
+		return
+	}
+
+	in.LogPersister.Infof("Successfully committed new version (v%s) for Lambda function %s after duration %v", version, fm.Spec.Name, time.Since(startWaitingStamp))
+	ok = true
+	return
 }
