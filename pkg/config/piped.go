@@ -53,14 +53,10 @@ type PipedSpec struct {
 	CloudProviders []PipedCloudProvider `json:"cloudProviders"`
 	// List of analysis providers can be used by this piped.
 	AnalysisProviders []PipedAnalysisProvider `json:"analysisProviders"`
-	// List of image providers can be used by this piped.
-	ImageProviders []PipedImageProvider `json:"imageProviders"`
 	// Sending notification to Slack, Webhook…
 	Notifications Notifications `json:"notifications"`
 	// How the sealed secret should be managed.
 	SealedSecretManagement *SealedSecretManagement `json:"sealedSecretManagement"`
-	// Optional settings for image watcher.
-	ImageWatcher PipedImageWatcher `json:"imageWatcher"`
 	// Optional settings for event watcher.
 	EventWatcher PipedEventWatcher `json:"eventWatcher"`
 }
@@ -89,9 +85,6 @@ func (s *PipedSpec) Validate() error {
 		if err := s.SealedSecretManagement.Validate(); err != nil {
 			return err
 		}
-	}
-	if err := s.ImageWatcher.Validate(); err != nil {
-		return err
 	}
 	return nil
 }
@@ -398,86 +391,6 @@ type AnalysisProviderStackdriverConfig struct {
 	ServiceAccountFile string `json:"serviceAccountFile"`
 }
 
-type PipedImageProvider struct {
-	Name string                  `json:"name"`
-	Type model.ImageProviderType `json:"type"`
-
-	DockerHubConfig *ImageProviderDockerHubConfig
-	GCRConfig       *ImageProviderGCRConfig
-	ECRConfig       *ImageProviderECRConfig
-}
-
-type genericPipedImageProvider struct {
-	Name string                  `json:"name"`
-	Type model.ImageProviderType `json:"type"`
-
-	Config json.RawMessage `json:"config"`
-}
-
-func (p *PipedImageProvider) UnmarshalJSON(data []byte) error {
-	var err error
-	gp := genericPipedImageProvider{}
-	if err = json.Unmarshal(data, &gp); err != nil {
-		return err
-	}
-	p.Name = gp.Name
-	p.Type = gp.Type
-
-	switch p.Type {
-	case model.ImageProviderTypeDockerHub:
-		p.DockerHubConfig = &ImageProviderDockerHubConfig{}
-		if len(gp.Config) > 0 {
-			err = json.Unmarshal(gp.Config, p.DockerHubConfig)
-		}
-	case model.ImageProviderTypeGCR:
-		p.GCRConfig = &ImageProviderGCRConfig{}
-		if len(gp.Config) > 0 {
-			err = json.Unmarshal(gp.Config, p.GCRConfig)
-		}
-	case model.ImageProviderTypeECR:
-		p.ECRConfig = &ImageProviderECRConfig{}
-		if len(gp.Config) > 0 {
-			err = json.Unmarshal(gp.Config, p.ECRConfig)
-		}
-	default:
-		err = fmt.Errorf("unsupported image provider type: %s", p.Name)
-	}
-	return err
-}
-
-type ImageProviderGCRConfig struct {
-	// Path to the json file of service account with the required "roles/storage.objectViewer" role.
-	ServiceAccountFile string `json:"serviceAccountFile"`
-}
-
-type ImageProviderDockerHubConfig struct {
-	Username     string `json:"username"`
-	PasswordFile string `json:"passwordFile"`
-}
-
-type ImageProviderECRConfig struct {
-	// The region to send requests to. This parameter is required.
-	// e.g. "us-west-2"
-	// A full list of regions is: https://docs.aws.amazon.com/general/latest/gr/rande.html
-	Region string `json:"region"`
-	// The AWS account ID associated with the registry that contains the repository
-	// in which to list images. The "default" registry is assumed by default.
-	RegistryID string `json:"registryId"`
-	// Path to the shared credentials file.
-	//
-	// Piped attempts to retrieve credentials in the following order:
-	// 1. from the environment variables. Available environment variables are:
-	//   - AWS_ACCESS_KEY_ID or AWS_ACCESS_KEY
-	//   - AWS_SECRET_ACCESS_KEY or AWS_SECRET_KEY
-	// 2. from the given credentials file.
-	// 3. from the EC2 Instance Role
-	CredentialsFile string `json:"credentialsFile"`
-	// AWS Profile to extract credentials from the shared credentials file.
-	// If empty, the environment variable "AWS_PROFILE" is used.
-	// "default" is populated if the environment variable is also not set.
-	Profile string `json:"profile"`
-}
-
 type Notifications struct {
 	// List of notification routes.
 	Routes []NotificationRoute `json:"routes"`
@@ -601,45 +514,6 @@ func (p *SealedSecretManagement) UnmarshalJSON(data []byte) error {
 		err = fmt.Errorf("unsupported sealed secret management type: %s", p.Type)
 	}
 	return err
-}
-
-type PipedImageWatcher struct {
-	// Interval to compare the image in the git repository
-	// and one in the images provider. Default is 5m.
-	CheckInterval Duration `json:"checkInterval"`
-	// Settings for each git repository.
-	GitRepos []PipedImageWatcherGitRepo `json:"gitRepos"`
-}
-
-// Validate checks if:
-// - empty repo ids exist
-// - duplicated repository settings exist
-func (p *PipedImageWatcher) Validate() error {
-	repos := make(map[string]struct{}, len(p.GitRepos))
-	for i := 0; i < len(p.GitRepos); i++ {
-		if p.GitRepos[i].RepoID == "" {
-			return fmt.Errorf("repoId is required", p.GitRepos[i].RepoID)
-		}
-		if _, ok := repos[p.GitRepos[i].RepoID]; ok {
-			return fmt.Errorf("duplicated repo id (%s) found in the imageWatcher directive", p.GitRepos[i].RepoID)
-		}
-		repos[p.GitRepos[i].RepoID] = struct{}{}
-	}
-	return nil
-}
-
-type PipedImageWatcherGitRepo struct {
-	// Id of the git repository. This must be unique within
-	// the repos' elements.
-	RepoID string `json:"repoId"`
-	// The commit message used to push after updating image.
-	// Default message is used if not given.
-	CommitMessage string `json:"commitMessage"`
-	// The paths to ImageWatcher files to be included.
-	Includes []string `json:"includes"`
-	// The paths to ImageWatcher files to be excluded.
-	// This is prioritized if both includes and this are given.
-	Excludes []string `json:"excludes"`
 }
 
 type PipedEventWatcher struct {

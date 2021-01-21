@@ -62,8 +62,6 @@ const (
 	// This configuration file should be placed in .pipe directory
 	// at the root of the repository.
 	KindAnalysisTemplate Kind = "AnalysisTemplate"
-	// KindImageWatcher represents configuration for Repo Watcher.
-	KindImageWatcher Kind = "ImageWatcher"
 	// KindEventWatcher represents configuration for Event Watcher.
 	KindEventWatcher Kind = "EventWatcher"
 )
@@ -88,7 +86,6 @@ type Config struct {
 	PipedSpec            *PipedSpec
 	ControlPlaneSpec     *ControlPlaneSpec
 	AnalysisTemplateSpec *AnalysisTemplateSpec
-	ImageWatcherSpec     *ImageWatcherSpec
 	EventWatcherSpec     *EventWatcherSpec
 
 	SealedSecretSpec *SealedSecretSpec
@@ -148,10 +145,6 @@ func (c *Config) init(kind Kind, apiVersion string) error {
 	case KindSealedSecret:
 		c.SealedSecretSpec = &SealedSecretSpec{}
 		c.spec = c.SealedSecretSpec
-
-	case KindImageWatcher:
-		c.ImageWatcherSpec = &ImageWatcherSpec{}
-		c.spec = c.ImageWatcherSpec
 
 	case KindEventWatcher:
 		c.EventWatcherSpec = &EventWatcherSpec{}

@@ -77,24 +77,6 @@ spec:
       config:
         serviceAccountFile: /etc/piped-secret/gcp-service-account.json
 
-  imageProviders:
-    - name: my-dockerhub
-      type: DOCKER_HUB
-      config:
-        username: foo
-        passwordFile: /etc/piped-secret/dockerhub-pass
-    - name: my-gcr
-      type: GCR
-      config:
-        serviceAccountFile: /etc/piped-secret/gcr-service-account.json
-    - name: my-ecr
-      type: ECR
-      config:
-        region: us-west-2
-        registryId: default
-        credentialsFile: /etc/piped-secret/aws-credentials
-        profile: user1
-
   notifications:
     routes:
       - name: dev-slack
@@ -131,15 +113,6 @@ spec:
     #   keyName: key-name
     #   decryptServiceAccountFile: /etc/piped-secret/decrypt-service-account.json 
     #   encryptServiceAccountFile: /etc/piped-secret/encrypt-service-account.json
-
-  imageWatcher:
-    checkInterval: 10m
-    gitRepos:
-      - repoId: foo
-        commitMessage: Update image
-        includes:
-          - imagewatcher-dev.yaml
-          - imagewatcher-stg.yaml
 
   eventWatcher:
     checkInterval: 10m
