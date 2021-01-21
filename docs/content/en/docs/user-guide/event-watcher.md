@@ -53,7 +53,7 @@ And we highly recommend integrating a step for that into your CI workflow.
 You first need to set-up the `pipectl`:
 
 - Install it on your CI system or where you want to run according to [this guide](/docs/user-guide/command-line-tool/#installation).
-- And then you grab the API key to which the `READ_WRITE` role is attached according to [this guide](/docs/user-guide/command-line-tool/#authentication).
+- Grab the API key to which the `READ_WRITE` role is attached according to [this guide](/docs/user-guide/command-line-tool/#authentication).
 
 Once you're all set up, pushing a new Event to the control-plane by the following command:
 
