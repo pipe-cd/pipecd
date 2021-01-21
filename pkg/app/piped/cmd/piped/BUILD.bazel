@@ -19,7 +19,6 @@ go_library(
         "//pkg/app/piped/driftdetector:go_default_library",
         "//pkg/app/piped/eventwatcher:go_default_library",
         "//pkg/app/piped/executor/registry:go_default_library",
-        "//pkg/app/piped/imagewatcher:go_default_library",
         "//pkg/app/piped/livestatereporter:go_default_library",
         "//pkg/app/piped/livestatestore:go_default_library",
         "//pkg/app/piped/notifier:go_default_library",

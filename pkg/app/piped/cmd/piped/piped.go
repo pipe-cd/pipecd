@@ -39,7 +39,6 @@ import (
 	"github.com/pipe-cd/pipe/pkg/app/piped/controller"
 	"github.com/pipe-cd/pipe/pkg/app/piped/driftdetector"
 	"github.com/pipe-cd/pipe/pkg/app/piped/eventwatcher"
-	"github.com/pipe-cd/pipe/pkg/app/piped/imagewatcher"
 	"github.com/pipe-cd/pipe/pkg/app/piped/livestatereporter"
 	"github.com/pipe-cd/pipe/pkg/app/piped/livestatestore"
 	"github.com/pipe-cd/pipe/pkg/app/piped/notifier"
@@ -332,18 +331,6 @@ func (p *piped) run(ctx context.Context, t cli.Telemetry) (runErr error) {
 			notifier,
 			cfg,
 			p.gracePeriod,
-			t.Logger,
-		)
-		group.Go(func() error {
-			return t.Run(ctx)
-		})
-	}
-
-	if len(cfg.ImageProviders) > 0 {
-		// Start running image watcher.
-		t := imagewatcher.NewWatcher(
-			cfg,
-			gitClient,
 			t.Logger,
 		)
 		group.Go(func() error {

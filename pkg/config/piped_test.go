@@ -148,33 +148,6 @@ func TestPipedConfig(t *testing.T) {
 						},
 					},
 				},
-				ImageProviders: []PipedImageProvider{
-					{
-						Name: "my-dockerhub",
-						Type: "DOCKER_HUB",
-						DockerHubConfig: &ImageProviderDockerHubConfig{
-							Username:     "foo",
-							PasswordFile: "/etc/piped-secret/dockerhub-pass",
-						},
-					},
-					{
-						Name: "my-gcr",
-						Type: "GCR",
-						GCRConfig: &ImageProviderGCRConfig{
-							ServiceAccountFile: "/etc/piped-secret/gcr-service-account.json",
-						},
-					},
-					{
-						Name: "my-ecr",
-						Type: "ECR",
-						ECRConfig: &ImageProviderECRConfig{
-							Region:          "us-west-2",
-							RegistryID:      "default",
-							CredentialsFile: "/etc/piped-secret/aws-credentials",
-							Profile:         "user1",
-						},
-					},
-				},
 				Notifications: Notifications{
 					Routes: []NotificationRoute{
 						{
@@ -221,16 +194,6 @@ func TestPipedConfig(t *testing.T) {
 						PublicKeyFile:  "/etc/piped-secret/sealing-public-key",
 					},
 				},
-				ImageWatcher: PipedImageWatcher{
-					CheckInterval: Duration(10 * time.Minute),
-					GitRepos: []PipedImageWatcherGitRepo{
-						{
-							RepoID:        "foo",
-							CommitMessage: "Update image",
-							Includes:      []string{"imagewatcher-dev.yaml", "imagewatcher-stg.yaml"},
-						},
-					},
-				},
 				EventWatcher: PipedEventWatcher{
 					CheckInterval: Duration(10 * time.Minute),
 					GitRepos: []PipedEventWatcherGitRepo{
@@ -258,25 +221,25 @@ func TestPipedConfig(t *testing.T) {
 	}
 }
 
-func TestPipedImageWatcherValidate(t *testing.T) {
+func TestPipedEventWatcherValidate(t *testing.T) {
 	testcases := []struct {
 		name                  string
-		imageWatcher          PipedImageWatcher
+		eventWatcher          PipedEventWatcher
 		wantErr               bool
-		wantPipedImageWatcher PipedImageWatcher
+		wantPipedEventWatcher PipedEventWatcher
 	}{
 		{
 			name:    "missing repo id",
 			wantErr: true,
-			imageWatcher: PipedImageWatcher{
-				GitRepos: []PipedImageWatcherGitRepo{
+			eventWatcher: PipedEventWatcher{
+				GitRepos: []PipedEventWatcherGitRepo{
 					{
 						RepoID: "",
 					},
 				},
 			},
-			wantPipedImageWatcher: PipedImageWatcher{
-				GitRepos: []PipedImageWatcherGitRepo{
+			wantPipedEventWatcher: PipedEventWatcher{
+				GitRepos: []PipedEventWatcherGitRepo{
 					{
 						RepoID: "",
 					},
@@ -286,8 +249,8 @@ func TestPipedImageWatcherValidate(t *testing.T) {
 		{
 			name:    "duplicated repo exists",
 			wantErr: true,
-			imageWatcher: PipedImageWatcher{
-				GitRepos: []PipedImageWatcherGitRepo{
+			eventWatcher: PipedEventWatcher{
+				GitRepos: []PipedEventWatcherGitRepo{
 					{
 						RepoID: "foo",
 					},
@@ -296,8 +259,8 @@ func TestPipedImageWatcherValidate(t *testing.T) {
 					},
 				},
 			},
-			wantPipedImageWatcher: PipedImageWatcher{
-				GitRepos: []PipedImageWatcherGitRepo{
+			wantPipedEventWatcher: PipedEventWatcher{
+				GitRepos: []PipedEventWatcherGitRepo{
 					{
 						RepoID: "foo",
 					},
@@ -310,8 +273,8 @@ func TestPipedImageWatcherValidate(t *testing.T) {
 		{
 			name:    "repos are unique",
 			wantErr: false,
-			imageWatcher: PipedImageWatcher{
-				GitRepos: []PipedImageWatcherGitRepo{
+			eventWatcher: PipedEventWatcher{
+				GitRepos: []PipedEventWatcherGitRepo{
 					{
 						RepoID: "foo",
 					},
@@ -320,8 +283,8 @@ func TestPipedImageWatcherValidate(t *testing.T) {
 					},
 				},
 			},
-			wantPipedImageWatcher: PipedImageWatcher{
-				GitRepos: []PipedImageWatcherGitRepo{
+			wantPipedEventWatcher: PipedEventWatcher{
+				GitRepos: []PipedEventWatcherGitRepo{
 					{
 						RepoID: "foo",
 					},
@@ -334,9 +297,9 @@ func TestPipedImageWatcherValidate(t *testing.T) {
 	}
 	for _, tc := range testcases {
 		t.Run(tc.name, func(t *testing.T) {
-			err := tc.imageWatcher.Validate()
+			err := tc.eventWatcher.Validate()
 			assert.Equal(t, tc.wantErr, err != nil)
-			assert.Equal(t, tc.wantPipedImageWatcher, tc.imageWatcher)
+			assert.Equal(t, tc.wantPipedEventWatcher, tc.eventWatcher)
 		})
 	}
 }
