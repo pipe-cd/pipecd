@@ -81,18 +81,6 @@ func loadFunctionManifest(in *executor.Input, functionManifestFile string, ds *d
 	return fm, true
 }
 
-func decideRevisionName(in *executor.Input, fm provider.FunctionManifest, commit string) (revision string, ok bool) {
-	var err error
-	revision, err = provider.DecideRevisionName(fm, commit)
-	if err != nil {
-		in.LogPersister.Errorf("Unable to decide revision name for the commit %s (%v)", commit, err)
-		return
-	}
-
-	ok = true
-	return
-}
-
 func sync(ctx context.Context, in *executor.Input, cloudProviderName string, cloudProviderCfg *config.CloudProviderLambdaConfig, fm provider.FunctionManifest) bool {
 	in.LogPersister.Infof("Start applying the lambda function manifest")
 	client, err := provider.DefaultRegistry().Client(cloudProviderName, cloudProviderCfg, in.Logger)
@@ -101,48 +89,14 @@ func sync(ctx context.Context, in *executor.Input, cloudProviderName string, clo
 		return false
 	}
 
-	found, err := client.IsFunctionExist(ctx, fm.Spec.Name)
-	if err != nil {
-		in.LogPersister.Errorf("Unable to validate function name %s: %v", fm.Spec.Name, err)
+	// Build and publish new version of Lambda function.
+	version, ok := build(ctx, in, client, fm)
+	if !ok {
+		in.LogPersister.Errorf("Failed to build new version for Lambda function %s", fm.Spec.Name)
 		return false
 	}
-	if found {
-		if err := client.UpdateFunction(ctx, fm); err != nil {
-			in.LogPersister.Errorf("Failed to update lambda function %s: %v", fm.Spec.Name, err)
-			return false
-		}
-	} else {
-		if err := client.CreateFunction(ctx, fm); err != nil {
-			in.LogPersister.Errorf("Failed to create lambda function %s: %v", fm.Spec.Name, err)
-			return false
-		}
-	}
 
-	in.LogPersister.Info("Waiting to update lambda function in progress...")
-	retry := backoff.NewRetry(provider.RequestRetryTime, backoff.NewConstant(provider.RetryIntervalDuration))
-	publishFunctionSucceed := false
-	startWaitingStamp := time.Now()
-	var version string
-	for retry.WaitNext(ctx) {
-		// Commit version for applied Lambda function.
-		// Note: via the current docs of [Lambda.PublishVersion](https://docs.aws.amazon.com/sdk-for-go/api/service/lambda/#Lambda.PublishVersion)
-		// AWS Lambda doesn't publish a version if the function's configuration and code haven't changed since the last version.
-		// But currently, unchanged revision is able to make publish (versionId++) as usual.
-		version, err = client.PublishFunction(ctx, fm)
-		if err != nil {
-			in.Logger.Error("Failed publish new version for Lambda function")
-		} else {
-			publishFunctionSucceed = true
-			break
-		}
-	}
-	if !publishFunctionSucceed {
-		in.LogPersister.Errorf("Failed to commit new version for Lambda function %s: %v", fm.Spec.Name, err)
-		return false
-	}
-	in.LogPersister.Infof("Successfully committed new version (v%s) for Lambda function %s after duration %v", version, fm.Spec.Name, time.Since(startWaitingStamp))
-
-	_, err = client.GetTrafficConfig(ctx, fm)
+	trafficCfg, err := client.GetTrafficConfig(ctx, fm)
 	// Create Alias on not yet existed.
 	if errors.Is(err, provider.ErrNotFound) {
 		if err := client.CreateTrafficConfig(ctx, fm, version); err != nil {
@@ -158,10 +112,9 @@ func sync(ctx context.Context, in *executor.Input, cloudProviderName string, clo
 	}
 
 	// Update 100% traffic to the new lambda version.
-	trafficCfg := make(map[string]provider.VersionTraffic)
-	trafficCfg["primary"] = provider.VersionTraffic{
-		Version: version,
-		Percent: 100,
+	if !configureTrafficRouting(trafficCfg, version, 100) {
+		in.LogPersister.Errorf("Failed to prepare traffic routing for Lambda function %s", fm.Spec.Name)
+		return false
 	}
 
 	if err = client.UpdateTrafficConfig(ctx, fm, trafficCfg); err != nil {
@@ -169,7 +122,7 @@ func sync(ctx context.Context, in *executor.Input, cloudProviderName string, clo
 		return false
 	}
 
-	in.LogPersister.Infof("Successfully applied the lambda function manifest")
+	in.LogPersister.Infof("Successfully applied the manifest for Lambda function %s version (v%s)", fm.Spec.Name, version)
 	return true
 }
 
@@ -181,43 +134,10 @@ func rollout(ctx context.Context, in *executor.Input, cloudProviderName string, 
 		return false
 	}
 
-	found, err := client.IsFunctionExist(ctx, fm.Spec.Name)
-	if err != nil {
-		in.LogPersister.Errorf("Unable to validate function name %s: %v", fm.Spec.Name, err)
-		return false
-	}
-	if found {
-		if err := client.UpdateFunction(ctx, fm); err != nil {
-			in.LogPersister.Errorf("Failed to update lambda function %s: %v", fm.Spec.Name, err)
-			return false
-		}
-	} else {
-		if err := client.CreateFunction(ctx, fm); err != nil {
-			in.LogPersister.Errorf("Failed to create lambda function %s: %v", fm.Spec.Name, err)
-			return false
-		}
-	}
-
-	in.LogPersister.Info("Waiting to update lambda function in progress...")
-	retry := backoff.NewRetry(provider.RequestRetryTime, backoff.NewConstant(provider.RetryIntervalDuration))
-	publishFunctionSucceed := false
-	startWaitingStamp := time.Now()
-	var version string
-	for retry.WaitNext(ctx) {
-		// Commit version for applied Lambda function.
-		// Note: via the current docs of [Lambda.PublishVersion](https://docs.aws.amazon.com/sdk-for-go/api/service/lambda/#Lambda.PublishVersion)
-		// AWS Lambda doesn't publish a version if the function's configuration and code haven't changed since the last version.
-		// But currently, unchanged revision is able to make publish (versionId++) as usual.
-		version, err = client.PublishFunction(ctx, fm)
-		if err != nil {
-			in.Logger.Error("Failed publish new version for Lambda function")
-		} else {
-			publishFunctionSucceed = true
-			break
-		}
-	}
-	if !publishFunctionSucceed {
-		in.LogPersister.Errorf("Failed to commit new version for Lambda function %s: %v", fm.Spec.Name, err)
+	// Build and publish new version of Lambda function.
+	version, ok := build(ctx, in, client, fm)
+	if !ok {
+		in.LogPersister.Errorf("Failed to build new version for Lambda function %s", fm.Spec.Name)
 		return false
 	}
 
@@ -228,7 +148,6 @@ func rollout(ctx context.Context, in *executor.Input, cloudProviderName string, 
 		return false
 	}
 
-	in.LogPersister.Infof("Successfully committed new version (v%s) for Lambda function %s after duration %v", version, fm.Spec.Name, time.Since(startWaitingStamp))
 	return true
 }
 
@@ -273,30 +192,9 @@ func promote(ctx context.Context, in *executor.Input, cloudProviderName string, 
 	}
 
 	// Update traffic to the new lambda version.
-	primary, ok := trafficCfg["primary"]
-	if !ok {
-		in.LogPersister.Errorf("Failed to prepare traffic routing for Lambda function %s: primary version not found", fm.Spec.Name)
+	if !configureTrafficRouting(trafficCfg, version, options.Percent) {
+		in.LogPersister.Errorf("Failed to prepare traffic routing for Lambda function %s", fm.Spec.Name)
 		return false
-	}
-	// Set built version by rollout stage as new primary.
-	trafficCfg["primary"] = provider.VersionTraffic{
-		Version: version,
-		Percent: float64(options.Percent),
-	}
-	// Make the current primary version as new secondary version in case it's not the latest built version by rollout stage.
-	if primary.Version != version {
-		trafficCfg["secondary"] = provider.VersionTraffic{
-			Version: primary.Version,
-			Percent: float64(100 - options.Percent),
-		}
-	} else {
-		// Update traffic to the secondary and keep it as new secondary.
-		if secondary, ok := trafficCfg["secondary"]; ok {
-			trafficCfg["secondary"] = provider.VersionTraffic{
-				Version: secondary.Version,
-				Percent: float64(100 - options.Percent),
-			}
-		}
 	}
 
 	if err = client.UpdateTrafficConfig(ctx, fm, trafficCfg); err != nil {
@@ -306,4 +204,78 @@ func promote(ctx context.Context, in *executor.Input, cloudProviderName string, 
 
 	in.LogPersister.Infof("Successfully promote new version (v%s) of Lambda function %s, it will handle %v percent of traffic", version, fm.Spec.Name, options.Percent)
 	return true
+}
+
+func configureTrafficRouting(trafficCfg provider.RoutingTrafficConfig, version string, percent int) bool {
+	// The primary version has to be set on trafficCfg.
+	primary, ok := trafficCfg["primary"]
+	if !ok {
+		return false
+	}
+	// Set built version by rollout stage as new primary.
+	trafficCfg["primary"] = provider.VersionTraffic{
+		Version: version,
+		Percent: float64(percent),
+	}
+	// Make the current primary version as new secondary version in case it's not the latest built version by rollout stage.
+	if primary.Version != version {
+		trafficCfg["secondary"] = provider.VersionTraffic{
+			Version: primary.Version,
+			Percent: float64(100 - percent),
+		}
+	} else {
+		// Update traffic to the secondary and keep it as new secondary.
+		if secondary, ok := trafficCfg["secondary"]; ok {
+			trafficCfg["secondary"] = provider.VersionTraffic{
+				Version: secondary.Version,
+				Percent: float64(100 - percent),
+			}
+		}
+	}
+	return true
+}
+
+func build(ctx context.Context, in *executor.Input, client provider.Client, fm provider.FunctionManifest) (version string, ok bool) {
+	found, err := client.IsFunctionExist(ctx, fm.Spec.Name)
+	if err != nil {
+		in.LogPersister.Errorf("Unable to validate function name %s: %v", fm.Spec.Name, err)
+		return
+	}
+	if found {
+		if err := client.UpdateFunction(ctx, fm); err != nil {
+			in.LogPersister.Errorf("Failed to update lambda function %s: %v", fm.Spec.Name, err)
+			return
+		}
+	} else {
+		if err := client.CreateFunction(ctx, fm); err != nil {
+			in.LogPersister.Errorf("Failed to create lambda function %s: %v", fm.Spec.Name, err)
+			return
+		}
+	}
+
+	in.LogPersister.Info("Waiting to update lambda function in progress...")
+	retry := backoff.NewRetry(provider.RequestRetryTime, backoff.NewConstant(provider.RetryIntervalDuration))
+	publishFunctionSucceed := false
+	startWaitingStamp := time.Now()
+	for retry.WaitNext(ctx) {
+		// Commit version for applied Lambda function.
+		// Note: via the current docs of [Lambda.PublishVersion](https://docs.aws.amazon.com/sdk-for-go/api/service/lambda/#Lambda.PublishVersion)
+		// AWS Lambda doesn't publish a version if the function's configuration and code haven't changed since the last version.
+		// But currently, unchanged revision is able to make publish (versionId++) as usual.
+		version, err = client.PublishFunction(ctx, fm)
+		if err != nil {
+			in.Logger.Error("Failed publish new version for Lambda function")
+		} else {
+			publishFunctionSucceed = true
+			break
+		}
+	}
+	if !publishFunctionSucceed {
+		in.LogPersister.Errorf("Failed to commit new version for Lambda function %s: %v", fm.Spec.Name, err)
+		return
+	}
+
+	in.LogPersister.Infof("Successfully committed new version (v%s) for Lambda function %s after duration %v", version, fm.Spec.Name, time.Since(startWaitingStamp))
+	ok = true
+	return
 }

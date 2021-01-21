@@ -259,8 +259,8 @@ func (c *client) GetTrafficConfig(ctx context.Context, fm FunctionManifest) (rou
 		}
 		return
 	}
-	// In case RoutingConfig is provided, FunctionVersion value represents the older version while
-	// RoutingConfig.AdditionalVersionWeights key represents the newer version.
+	// In case RoutingConfig is provided, FunctionVersion value represents the primary version while
+	// RoutingConfig.AdditionalVersionWeights key represents the secondary version.
 	var newerVersionTraffic float64
 	for version := range cfg.RoutingConfig.AdditionalVersionWeights {
 		newerVersionTraffic = percentageToPercent(*cfg.RoutingConfig.AdditionalVersionWeights[version])
