@@ -269,7 +269,7 @@ func promote(ctx context.Context, in *executor.Input, cloudProviderName string, 
 }
 
 func configureTrafficRouting(trafficCfg provider.RoutingTrafficConfig, version string, percent int) bool {
-	// Update traffic to the new lambda version.
+	// The primary version has to be set on trafficCfg.
 	primary, ok := trafficCfg["primary"]
 	if !ok {
 		return false
