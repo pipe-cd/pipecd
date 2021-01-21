@@ -130,7 +130,7 @@ spec:
           yamlField: $.spec.input.helmChart.version
 ```
 
-Push a new version `0.2.0` as a data when the Helm release is complete.
+Push a new version `0.2.0` as data when the Helm release is completed.
 
 ```bash
 pipectl event register \
