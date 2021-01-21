@@ -54,7 +54,7 @@ func (e *Executor) Execute(sig executor.StopSignal) model.StageStatus {
 		ticker         = time.NewTicker(5 * time.Second)
 	)
 	defer ticker.Stop()
-	timeout := time.Duration(e.StageConfig.WaitApprovalStageOptions.Timeout)
+	timeout := e.StageConfig.WaitApprovalStageOptions.Timeout.Duration()
 	timer := time.NewTimer(timeout)
 
 	e.LogPersister.Info("Waiting for an approval...")
