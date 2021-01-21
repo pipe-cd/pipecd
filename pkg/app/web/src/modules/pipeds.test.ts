@@ -7,6 +7,7 @@ import {
   recreatePipedKey,
   selectPipedsByEnv,
   Piped,
+  editPiped,
 } from "./pipeds";
 
 const baseState = {
@@ -112,6 +113,47 @@ describe("pipedsSlice reducer", () => {
           id: "piped-1",
           key: "recreated-piped-key",
         },
+      });
+    });
+  });
+
+  describe("editPiped", () => {
+    it(`should handle ${editPiped.pending.type}`, () => {
+      expect(
+        pipedsSlice.reducer(baseState, {
+          type: editPiped.pending.type,
+        })
+      ).toEqual({
+        ...baseState,
+        updating: true,
+      });
+    });
+
+    it(`should handle ${editPiped.rejected.type}`, () => {
+      expect(
+        pipedsSlice.reducer(
+          { ...baseState, updating: true },
+          {
+            type: editPiped.rejected.type,
+          }
+        )
+      ).toEqual({
+        ...baseState,
+        updating: false,
+      });
+    });
+
+    it(`should handle ${editPiped.fulfilled.type}`, () => {
+      expect(
+        pipedsSlice.reducer(
+          { ...baseState, updating: true },
+          {
+            type: editPiped.fulfilled.type,
+          }
+        )
+      ).toEqual({
+        ...baseState,
+        updating: false,
       });
     });
   });
