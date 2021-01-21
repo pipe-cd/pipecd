@@ -16,6 +16,7 @@ package lambda
 
 import (
 	"context"
+	"encoding/json"
 	"errors"
 	"fmt"
 	"time"
@@ -197,10 +198,18 @@ func (c *client) PublishFunction(ctx context.Context, fm FunctionManifest) (vers
 // RoutingTrafficConfig presents a map of primary and secondary version traffic for lambda function alias.
 type RoutingTrafficConfig map[string]VersionTraffic
 
+func (c *RoutingTrafficConfig) Encode() (string, bool) {
+	out, err := json.Marshal(c)
+	if err != nil {
+		return "", false
+	}
+	return string(out), true
+}
+
 // VersionTraffic presents the version, and the percent of traffic that's routed to it.
 type VersionTraffic struct {
-	Version string
-	Percent float64
+	Version string  `json:"version"`
+	Percent float64 `json:"percent"`
 }
 
 func (c *client) GetTrafficConfig(ctx context.Context, fm FunctionManifest) (routingTrafficCfg RoutingTrafficConfig, err error) {

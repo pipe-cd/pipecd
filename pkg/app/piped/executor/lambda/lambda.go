@@ -42,6 +42,12 @@ func Register(r registerer) {
 	r.Register(model.StageLambdaSync, f)
 	r.Register(model.StageLambdaPromote, f)
 	r.Register(model.StageLambdaCanaryRollout, f)
+
+	r.RegisterRollback(model.ApplicationKind_LAMBDA, func(in executor.Input) executor.Executor {
+		return &rollbackExecutor{
+			Input: in,
+		}
+	})
 }
 
 func findCloudProvider(in *executor.Input) (name string, cfg *config.CloudProviderLambdaConfig, found bool) {
@@ -91,6 +97,19 @@ func sync(ctx context.Context, in *executor.Input, cloudProviderName string, clo
 	}
 
 	trafficCfg, err := client.GetTrafficConfig(ctx, fm)
+	// Store the current traffic config if existed for rollback if necessary.
+	if trafficCfg != nil {
+		originalTrafficCfg, ok := trafficCfg.Encode()
+		if !ok {
+			in.LogPersister.Errorf("Unable to store current traffic config for rollback: encode failed")
+			return false
+		}
+		originalTrafficKeyName := fmt.Sprintf("%s-%s-original", fm.Spec.Name, in.Deployment.RunningCommitHash)
+		if e := in.MetadataStore.Set(ctx, originalTrafficKeyName, originalTrafficCfg); e != nil {
+			in.LogPersister.Errorf("Unable to store current traffic config for rollback: %v", e)
+			return false
+		}
+	}
 	// Create Alias on not yet existed.
 	if errors.Is(err, provider.ErrNotFound) {
 		if err := client.CreateTrafficConfig(ctx, fm, version); err != nil {
@@ -140,6 +159,21 @@ func rollout(ctx context.Context, in *executor.Input, cloudProviderName string, 
 	if err := in.MetadataStore.Set(ctx, rolloutVersionKeyName, version); err != nil {
 		in.LogPersister.Errorf("Failed to update latest version name to metadata store for Lambda function %s: %v", fm.Spec.Name, err)
 		return false
+	}
+
+	// Store current traffic config for rollback if necessary.
+	if trafficCfg, err := client.GetTrafficConfig(ctx, fm); err == nil {
+		// Store the current traffic config.
+		originalTrafficCfg, ok := trafficCfg.Encode()
+		if !ok {
+			in.LogPersister.Errorf("Unable to store current traffic config for rollback: encode failed")
+			return false
+		}
+		originalTrafficKeyName := fmt.Sprintf("%s-%s-original", fm.Spec.Name, in.Deployment.RunningCommitHash)
+		if e := in.MetadataStore.Set(ctx, originalTrafficKeyName, originalTrafficCfg); e != nil {
+			in.LogPersister.Errorf("Unable to store current traffic config for rollback: %v", e)
+			return false
+		}
 	}
 
 	return true
