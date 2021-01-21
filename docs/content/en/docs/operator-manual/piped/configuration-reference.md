@@ -99,6 +99,9 @@ Must be one of the following structs:
 
 | Field | Type | Description | Required |
 |-|-|-|-|
+| region | string | The region of running Lambda service. | Yes |
+| credentialsFile | string | The path to the credential file for logging into AWS cluster. If this value is not provided, piped will read credential info from environment variables. | No |
+| profile | string | The profile to use for logging into AWS cluster. The default value is `default`. | No |
 
 ## KubernetesAppStateInformer
 

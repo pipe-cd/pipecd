@@ -76,15 +76,13 @@ spec:
 apiVersion: pipecd.dev/v1beta1
 kind: LambdaApp
 spec:
-  input:
   pipeline:
   ...
 ```
 
 | Field | Type | Description | Required |
 |-|-|-|-|
-| input | [CloudRunDeploymentInput](/docs/user-guide/configuration-reference/#cloudrundeploymentinput) | Input for Lambda deployment such as where to fetch source code... | No |
-| quickSync | [CloudRunQuickSync](/docs/user-guide/configuration-reference/#cloudrunquicksync) | Configuration for quick sync. | No |
+| quickSync | [LambdaQuickSync](/docs/user-guide/configuration-reference/#lambdaquicksync) | Configuration for quick sync. | No |
 | pipeline | [Pipeline](/docs/user-guide/configuration-reference/#pipeline) | Pipeline for deploying progressively. | No |
 | triggerPaths | []string | List of directories or files where their changes will trigger the deployment. Regular expression can be used. | No |
 | sealedSecrets | [][SealedSecretMapping](/docs/user-guide/configuration-reference/#sealedsecretmapping) | The list of sealed secrets should be decrypted. | No |

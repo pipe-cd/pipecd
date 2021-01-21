@@ -77,4 +77,19 @@ See [ConfigurationReference](/docs/operator-manual/piped/configuration-reference
 
 ### Configuring Lambda cloud provider
 
-> TBA
+Adding a Lambda provider requires the region name where Lambda service is running. For authorization, the piped agent gets the credential information from environment variables by default or from a credential file provided via the below `credentialsFile` value.
+
+```yaml
+apiVersion: pipecd.dev/v1beta1
+kind: Piped
+spec:
+  ...
+  cloudProviders:
+    - name: lambda-dev
+      type: LAMBDA
+      config:
+        region: lambda-region
+        credentialsFile: path-to-the-credential-file
+```
+
+See [ConfigurationReference](/docs/operator-manual/piped/configuration-reference/#cloudproviderlambdaconfig) for the full configuration.
