@@ -75,18 +75,6 @@ func loadFunctionManifest(in *executor.Input, functionManifestFile string, ds *d
 	return fm, true
 }
 
-func decideRevisionName(in *executor.Input, fm provider.FunctionManifest, commit string) (revision string, ok bool) {
-	var err error
-	revision, err = provider.DecideRevisionName(fm, commit)
-	if err != nil {
-		in.LogPersister.Errorf("Unable to decide revision name for the commit %s (%v)", commit, err)
-		return
-	}
-
-	ok = true
-	return
-}
-
 func sync(ctx context.Context, in *executor.Input, cloudProviderName string, cloudProviderCfg *config.CloudProviderLambdaConfig, fm provider.FunctionManifest) bool {
 	in.LogPersister.Infof("Start applying the lambda function manifest")
 	client, err := provider.DefaultRegistry().Client(cloudProviderName, cloudProviderCfg, in.Logger)
