@@ -33,9 +33,9 @@ type Client interface {
 	CreateFunction(ctx context.Context, fm FunctionManifest) error
 	UpdateFunction(ctx context.Context, fm FunctionManifest) error
 	PublishFunction(ctx context.Context, fm FunctionManifest) (version string, err error)
-	GetTrafficConfig(ctx context.Context, fm FunctionManifest) (routingTrafficCfg []VersionTraffic, err error)
+	GetTrafficConfig(ctx context.Context, fm FunctionManifest) (routingTrafficCfg RoutingTrafficConfig, err error)
 	CreateTrafficConfig(ctx context.Context, fm FunctionManifest, version string) error
-	UpdateTrafficConfig(ctx context.Context, fm FunctionManifest, routingTraffic []VersionTraffic) error
+	UpdateTrafficConfig(ctx context.Context, fm FunctionManifest, routingTraffic RoutingTrafficConfig) error
 }
 
 // Registry holds a pool of aws client wrappers.
