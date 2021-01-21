@@ -18,7 +18,7 @@ While it empowers you to build pretty versatile workflows, the canonical use cas
 This guide walks you through configuring Event watcher and how to push an Event.
 
 ## Prerequisites
-Before configuring EventWatcher, be sure to grant write permission to the SSH key used by Piped. See [here](/docs/operator-manual/piped/configuring-event-watcher/) for more details.
+Before we get into configuring EventWatcher, be sure to grant write permission to the SSH key used by Piped. See [here](/docs/operator-manual/piped/configuring-event-watcher/) for more details.
 
 ## Usage
 File updating can be done by registering the latest value corresponding to the Event in the control-plane and comparing it with the current value.
@@ -50,8 +50,10 @@ The full list of configurable `EventWatcher` fields are [here](/docs/user-guide/
 To register a new value corresponding to Event such as the above in the control-plane, you need to perform `pipectl`.
 And we highly recommend integrating a step for that into your CI workflow.
 
-According to [this guide](/docs/user-guide/command-line-tool/#installation), you first install it on your CI system or where you want to run.
-And then you grab the API key for the control-plane according to [this guide](/docs/user-guide/command-line-tool/#authentication).
+You first need to set-up the `pipectl`:
+
+- Install it on your CI system or where you want to run according to [this guide](/docs/user-guide/command-line-tool/#installation).
+- Grab the API key to which the `READ_WRITE` role is attached according to [this guide](/docs/user-guide/command-line-tool/#authentication).
 
 Once you're all set up, pushing a new Event to the control-plane by the following command:
 
@@ -80,7 +82,7 @@ NOTE: Keep in mind that it may take a little while because Piped periodically fe
 Event watcher is a project-wide feature, hence an event name is unique inside a project. That is, you can update multiple repositories at the same time if you use the same event name for different events.
 
 On the contrary, if you want to explicitly distinguish those, we recommend using labels. You can make an event definition unique by using any number of labels with arbitrary keys and values.
-Suppose you define an event with the labels `repoId: repo-1` and `appName: helloworld`:
+Suppose you define an event with the labels `env: dev` and `appName: helloworld`:
 
 ```yaml
 apiVersion: pipecd.dev/v1beta1
@@ -89,7 +91,7 @@ spec:
   events:
     - name: image-update
       labels:
-        repoId: repo-1
+        env: dev
         appName: helloworld
       replacements:
         - file: helloworld/deployment.yaml
@@ -103,14 +105,16 @@ pipectl event register \
     --address=CONTROL_PLANE_API_ADDRESS \
     --api-key=API_KEY \
     --name=image-update \
-    --labels repoId=repo-1,appName=helloworld \
+    --labels env=dev,appName=helloworld \
     --data=gcr.io/pipecd/helloworld:v0.2.0
 ```
 
 Note that it is considered a match only when labels are an exact match.
 
 ## Examples
-For Helm release:
+Suppose you want to update your configuration file after releasing a new Helm chart.
+
+You define `.pipe/event-watcher.yaml` like:
 
 ```yaml
 apiVersion: pipecd.dev/v1beta1
@@ -119,21 +123,21 @@ spec:
   events:
     - name: helm-release
       labels:
-        repoId: repo-1
+        env: dev
         appName: helloworld
       replacements:
         - file: helloworld/.pipe.yaml
           yamlField: $.spec.input.helmChart.version
 ```
 
-Push a new version `0.2.0` as a data.
+Push a new version `0.2.0` as data when the Helm release is completed.
 
 ```bash
 pipectl event register \
     --address=CONTROL_PLANE_API_ADDRESS \
     --api-key=API_KEY \
     --name=helm-release \
-    --labels repoId=repo-1,appName=helloworld \
+    --labels env=dev,appName=helloworld \
     --data=0.2.0
 ```
 
