@@ -80,6 +80,13 @@ func TestGetValue(t *testing.T) {
 			wantErr: false,
 		},
 		{
+			name:    "given a int64 path",
+			yml:     "foo: -1",
+			path:    "$.foo",
+			want:    int64(-1),
+			wantErr: false,
+		},
+		{
 			name:    "given a float64 path",
 			yml:     "foo: 1.5",
 			path:    "$.foo",
@@ -87,7 +94,7 @@ func TestGetValue(t *testing.T) {
 			wantErr: false,
 		},
 		{
-			name: "given a array path",
+			name: "given an array path",
 			yml: `
 foo:
 - bar: 1`,
@@ -96,7 +103,17 @@ foo:
 			wantErr: false,
 		},
 		{
-			name: "given a array path with wildcard",
+			name: "given an entire array path",
+			yml: `
+foo:
+- bar: 1
+- baz: 2`,
+			path:    "$.foo",
+			want:    []interface{}{map[string]interface{}{"bar": uint64(1)}, map[string]interface{}{"baz": uint64(2)}},
+			wantErr: false,
+		},
+		{
+			name: "given an entire array path with wildcard",
 			yml: `
 foo:
 - bar: 1

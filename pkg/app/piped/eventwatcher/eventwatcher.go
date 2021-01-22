@@ -222,16 +222,9 @@ func (w *watcher) modifyFiles(ctx context.Context, event *config.EventWatcherEve
 		if err != nil {
 			return nil, fmt.Errorf("failed to get value at %s in %s: %w", r.YAMLField, r.File, err)
 		}
-		var value string
-		switch vv := v.(type) {
-		case string:
-			value = vv
-		case int:
-			value = strconv.Itoa(vv)
-		case float64:
-			value = strconv.FormatFloat(vv, 'f', -1, 64)
-		default:
-			return nil, fmt.Errorf("unknown type of value is defined at %s in %s", r.YAMLField, r.File)
+		value, err := convertStr(v)
+		if err != nil {
+			return nil, fmt.Errorf("a value of unknown type is defined at %s in %s: %w", err, r.YAMLField, r.File)
 		}
 		if latestEvent.Data == value {
 			// Already up-to-date.
@@ -259,4 +252,25 @@ func (w *watcher) modifyFiles(ctx context.Context, event *config.EventWatcherEve
 		changes: changes,
 		message: commitMsg,
 	}, nil
+}
+
+// convertStr converts a given value into a string.
+func convertStr(value interface{}) (out string, err error) {
+	switch v := value.(type) {
+	case string:
+		out = v
+	case int:
+		out = strconv.Itoa(v)
+	case int64:
+		out = strconv.FormatInt(v, 10)
+	case uint64:
+		out = strconv.FormatUint(v, 10)
+	case float64:
+		out = strconv.FormatFloat(v, 'f', -1, 64)
+	case bool:
+		out = strconv.FormatBool(v)
+	default:
+		err = fmt.Errorf("failed to convert %T into string", v)
+	}
+	return
 }
