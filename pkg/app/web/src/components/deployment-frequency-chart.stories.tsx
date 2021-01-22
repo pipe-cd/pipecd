@@ -1,3 +1,4 @@
+import { Box } from "@material-ui/core";
 import React from "react";
 import { DeploymentFrequencyChart } from "./deployment-frequency-chart";
 
@@ -12,6 +13,12 @@ const randData = Array.from(new Array(20)).map((_, v) => ({
 }));
 
 export const overview: React.FC = () => (
-  <DeploymentFrequencyChart data={randData} />
+  <Box width={800}>
+    <DeploymentFrequencyChart data={randData} />
+  </Box>
 );
-export const noData: React.FC = () => <DeploymentFrequencyChart data={[]} />;
+export const noData: React.FC = () => (
+  <Box width={800}>
+    <DeploymentFrequencyChart data={[]} />
+  </Box>
+);
