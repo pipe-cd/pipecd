@@ -190,7 +190,7 @@ func (c *client) PublishFunction(ctx context.Context, fm FunctionManifest) (vers
 		}
 		return
 	}
-	version = *cfg.Version
+	version = aws.StringValue(cfg.Version)
 	return
 }
 
@@ -254,24 +254,24 @@ func (c *client) GetTrafficConfig(ctx context.Context, fm FunctionManifest) (rou
 	// In case RoutingConfig is nil, 100 percent of current traffic is handled by FunctionVersion version.
 	if cfg.RoutingConfig == nil {
 		routingTrafficCfg["primary"] = VersionTraffic{
-			Version: *cfg.FunctionVersion,
+			Version: aws.StringValue(cfg.FunctionVersion),
 			Percent: 100,
 		}
 		return
 	}
 	// In case RoutingConfig is provided, FunctionVersion value represents the primary version while
 	// RoutingConfig.AdditionalVersionWeights key represents the secondary version.
-	var newerVersionTraffic float64
-	for version := range cfg.RoutingConfig.AdditionalVersionWeights {
-		newerVersionTraffic = percentageToPercent(*cfg.RoutingConfig.AdditionalVersionWeights[version])
+	var secondaryVersionTraffic float64
+	for version, weight := range cfg.RoutingConfig.AdditionalVersionWeights {
+		secondaryVersionTraffic = percentageToPercent(weight)
 		routingTrafficCfg["secondary"] = VersionTraffic{
 			Version: version,
-			Percent: newerVersionTraffic,
+			Percent: secondaryVersionTraffic,
 		}
 	}
 	routingTrafficCfg["primary"] = VersionTraffic{
-		Version: *cfg.FunctionVersion,
-		Percent: 100 - newerVersionTraffic,
+		Version: aws.StringValue(cfg.FunctionVersion),
+		Percent: 100 - secondaryVersionTraffic,
 	}
 
 	return
