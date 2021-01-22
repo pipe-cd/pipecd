@@ -24,7 +24,8 @@ import (
 	"github.com/goccy/go-yaml/parser"
 )
 
-// GetValue gives back the value placed at a given path.
+// GetValue gives back the value placed at a given path. The type of
+// returned value can be string, int64, uint64, float64, bool, and []interface{}.
 //
 // The path requires to start with "$" which represents the root element.
 // Available operators are:
@@ -48,6 +49,10 @@ func GetValue(yml []byte, path string) (interface{}, error) {
 		return nil, err
 	}
 
+	// NOTE: Validate value in YAML before actual reading
+	// because it panics if:
+	//   - the value is -0.
+	//   - unexistence path given.
 	var value interface{}
 	if err := p.Read(bytes.NewReader(yml), &value); err != nil {
 		return nil, err
