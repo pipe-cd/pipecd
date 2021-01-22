@@ -205,19 +205,19 @@ func (c *client) PublishFunction(ctx context.Context, fm FunctionManifest) (vers
 // RoutingTrafficConfig presents a map of primary and secondary version traffic for lambda function alias.
 type RoutingTrafficConfig map[TrafficConfigKeyName]VersionTraffic
 
-func (c *RoutingTrafficConfig) Encode() (string, bool) {
+func (c *RoutingTrafficConfig) Encode() (string, error) {
 	out, err := json.Marshal(c)
 	if err != nil {
-		return "", false
+		return "", err
 	}
-	return string(out), true
+	return string(out), nil
 }
 
-func (c *RoutingTrafficConfig) Decode(data []byte) bool {
+func (c *RoutingTrafficConfig) Decode(data []byte) error {
 	if err := json.Unmarshal(data, c); err != nil {
-		return false
+		return err
 	}
-	return true
+	return nil
 }
 
 // VersionTraffic presents the version, and the percent of traffic that's routed to it.

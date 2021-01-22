@@ -99,7 +99,7 @@ func rollback(ctx context.Context, in *executor.Input, cloudProviderName string,
 	}
 
 	originalTrafficCfg := provider.RoutingTrafficConfig{}
-	if !originalTrafficCfg.Decode([]byte(originalTrafficCfgData)) {
+	if err := originalTrafficCfg.Decode([]byte(originalTrafficCfgData)); err != nil {
 		in.LogPersister.Errorf("Unable to prepare original traffic config to rollback Lambda function %s: %v", fm.Spec.Name, err)
 		return false
 	}
@@ -114,7 +114,7 @@ func rollback(ctx context.Context, in *executor.Input, cloudProviderName string,
 	}
 
 	promotedTrafficCfg := provider.RoutingTrafficConfig{}
-	if !promotedTrafficCfg.Decode([]byte(promotedTrafficCfgData)) {
+	if err := promotedTrafficCfg.Decode([]byte(promotedTrafficCfgData)); err != nil {
 		in.LogPersister.Errorf("Unable to prepare promoted traffic config to rollback Lambda function %s: %v", fm.Spec.Name, err)
 		return false
 	}
