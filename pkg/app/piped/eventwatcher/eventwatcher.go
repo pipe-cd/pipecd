@@ -224,7 +224,7 @@ func (w *watcher) modifyFiles(ctx context.Context, event *config.EventWatcherEve
 		}
 		value, err := convertStr(v)
 		if err != nil {
-			return nil, fmt.Errorf("a value of unknown type (%v) is defined at %s in %s", err, r.YAMLField, r.File)
+			return nil, fmt.Errorf("a value of unknown type is defined at %s in %s: %w", err, r.YAMLField, r.File)
 		}
 		if latestEvent.Data == value {
 			// Already up-to-date.
@@ -270,7 +270,7 @@ func convertStr(value interface{}) (out string, err error) {
 	case bool:
 		out = strconv.FormatBool(v)
 	default:
-		return "", fmt.Errorf("%T", v)
+		err = fmt.Errorf("failed to convert %T into string", v)
 	}
 	return
 }

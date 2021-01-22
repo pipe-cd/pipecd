@@ -52,12 +52,6 @@ func TestGetValue(t *testing.T) {
 			wantErr: false,
 		},
 		{
-			name:    "uint64",
-			value:   uint64(1),
-			want:    "1",
-			wantErr: false,
-		},
-		{
 			name:    "float64",
 			value:   1.1,
 			want:    "1.1",
