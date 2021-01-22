@@ -3500,18 +3500,6 @@
   resolved "https://registry.yarnpkg.com/@types/cookie/-/cookie-0.4.0.tgz#14f854c0f93d326e39da6e3b6f34f7d37513d108"
   integrity sha512-y7mImlc/rNkvCRmg8gC3/lj87S7pTUIJ6QGjwHR9WQJcFs+ZMTOaoPrkdFA/YdbuqVEmEbb5RdhVxMkAcgOnpg==
 
-"@types/d3-path@^1":
-  version "1.0.9"
-  resolved "https://registry.yarnpkg.com/@types/d3-path/-/d3-path-1.0.9.tgz#73526b150d14cd96e701597cbf346cfd1fd4a58c"
-  integrity sha512-NaIeSIBiFgSC6IGUBjZWcscUJEq7vpVu7KthHN8eieTV9d9MqkSOZLH4chq1PmcKy06PNe3axLeKmRIyxJ+PZQ==
-
-"@types/d3-shape@^1":
-  version "1.3.5"
-  resolved "https://registry.yarnpkg.com/@types/d3-shape/-/d3-shape-1.3.5.tgz#c0164c1be1429473016f855871d487f806c4e968"
-  integrity sha512-aPEax03owTAKynoK8ZkmkZEDZvvT4Y5pWgii4Jp4oQt0gH45j6siDl9gNDVC5kl64XHN2goN9jbYoHK88tFAcA==
-  dependencies:
-    "@types/d3-path" "^1"
-
 "@types/dagre@^0.7.44":
   version "0.7.44"
   resolved "https://registry.yarnpkg.com/@types/dagre/-/dagre-0.7.44.tgz#8f4b796b118ca29c132da7068fbc0d0351ee5851"
@@ -3845,14 +3833,6 @@
   resolved "https://registry.yarnpkg.com/@types/reactcss/-/reactcss-1.2.3.tgz#af28ae11bbb277978b99d04d1eedfd068ca71834"
   integrity sha512-d2gQQ0IL6hXLnoRfVYZukQNWHuVsE75DzFTLPUuyyEhJS8G2VvlE+qfQQ91SJjaMqlURRCNIsX7Jcsw6cEuJlA==
   dependencies:
-    "@types/react" "*"
-
-"@types/recharts@^1.8.18":
-  version "1.8.18"
-  resolved "https://registry.yarnpkg.com/@types/recharts/-/recharts-1.8.18.tgz#dc7f2a27441ebc902b30ae7cd1d1af50381161db"
-  integrity sha512-wohEYbFZJDY+WbTdJKv/Z2y5T0qckZ40yUJhx+Pfbj5WynBhkBForFmGCigEFa0bIcaeoSeTNuCi9udGy2CeJQ==
-  dependencies:
-    "@types/d3-shape" "^1"
     "@types/react" "*"
 
 "@types/redux-mock-store@^1.0.2":

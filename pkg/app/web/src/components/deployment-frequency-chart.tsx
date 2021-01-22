@@ -83,11 +83,7 @@ export const DeploymentFrequencyChart: FC<Props> = ({ data }) => {
               dot={{ fill: theme.palette.primary.main }}
             />
             <YAxis axisLine={false} tickLine={false} />
-            <XAxis
-              dataKey="timestamp"
-              tickFormatter={tickFormatter}
-              tickMargin={8}
-            />
+            <XAxis dataKey="timestamp" tickFormatter={tickFormatter} />
             <Tooltip labelFormatter={labelFormatter} />
           </LineChart>
         </ResponsiveContainer>
