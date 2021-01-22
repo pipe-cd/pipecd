@@ -29,6 +29,7 @@ PipeCD provides a unified continuous delivery solution for multiple application 
 - Automated deployment analysis to measure deployment impact based on metrics, logs, emitted requests
 - Automatically roll back to the previous state as soon as analysis or a pipeline stage fails
 - Automatically detect configuration drift to notify and render the changes
+- Automatically trigger a new deployment when a defined event has occurred (e.g. container image pushed, helm chart published, etc)
 
 **Safety and Security**
 - Support single sign-on and role-based access control
