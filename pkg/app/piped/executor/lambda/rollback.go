@@ -16,7 +16,6 @@ package lambda
 
 import (
 	"context"
-	"encoding/json"
 	"fmt"
 
 	provider "github.com/pipe-cd/pipe/pkg/app/piped/cloudprovider/lambda"
@@ -100,7 +99,7 @@ func rollback(ctx context.Context, in *executor.Input, cloudProviderName string,
 	}
 
 	originalTrafficCfg := provider.RoutingTrafficConfig{}
-	if err := json.Unmarshal([]byte(originalTrafficCfgData), &originalTrafficCfg); err != nil {
+	if !originalTrafficCfg.Decode([]byte(originalTrafficCfgData)) {
 		in.LogPersister.Errorf("Unable to prepare original traffic config to rollback Lambda function %s: %v", fm.Spec.Name, err)
 		return false
 	}
@@ -110,12 +109,12 @@ func rollback(ctx context.Context, in *executor.Input, cloudProviderName string,
 	promotedTrafficCfgData, ok := in.MetadataStore.Get(promotedTrafficKeyName)
 	// If there is no previous promoted traffic config, which mean no promote run previously so no need to do anything to rollback.
 	if !ok {
-		in.LogPersister.Info("No promoted traffic config found. No need to rollback current remote traffic config.")
+		in.LogPersister.Info("It seems the traffic has not been changed during the deployment process. No need to rollback the traffic config.")
 		return true
 	}
 
 	promotedTrafficCfg := provider.RoutingTrafficConfig{}
-	if err := json.Unmarshal([]byte(promotedTrafficCfgData), &promotedTrafficCfg); err != nil {
+	if !promotedTrafficCfg.Decode([]byte(promotedTrafficCfgData)) {
 		in.LogPersister.Errorf("Unable to prepare promoted traffic config to rollback Lambda function %s: %v", fm.Spec.Name, err)
 		return false
 	}

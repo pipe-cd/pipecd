@@ -206,6 +206,13 @@ func (c *RoutingTrafficConfig) Encode() (string, bool) {
 	return string(out), true
 }
 
+func (c *RoutingTrafficConfig) Decode(data []byte) bool {
+	if err := json.Unmarshal(data, c); err != nil {
+		return false
+	}
+	return true
+}
+
 // VersionTraffic presents the version, and the percent of traffic that's routed to it.
 type VersionTraffic struct {
 	Version string  `json:"version"`
