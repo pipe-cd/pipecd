@@ -91,7 +91,7 @@ func rollback(ctx context.Context, in *executor.Input, cloudProviderName string,
 	}
 
 	// Restore original traffic config from metadata store.
-	originalTrafficKeyName := fmt.Sprintf("%s-%s-original", fm.Spec.Name, in.Deployment.RunningCommitHash)
+	originalTrafficKeyName := fmt.Sprintf("original-traffic-%s", in.Deployment.RunningCommitHash)
 	originalTrafficCfgData, ok := in.MetadataStore.Get(originalTrafficKeyName)
 	if !ok {
 		in.LogPersister.Errorf("Unable to prepare original traffic config to rollback Lambda function %s. It seems this is the first deployment.", fm.Spec.Name)
@@ -105,7 +105,7 @@ func rollback(ctx context.Context, in *executor.Input, cloudProviderName string,
 	}
 
 	// Restore promoted traffic config from metadata store.
-	promotedTrafficKeyName := fmt.Sprintf("%s-%s-promote", fm.Spec.Name, in.Deployment.RunningCommitHash)
+	promotedTrafficKeyName := fmt.Sprintf("latest-promote-traffic-%s", in.Deployment.RunningCommitHash)
 	promotedTrafficCfgData, ok := in.MetadataStore.Get(promotedTrafficKeyName)
 	// If there is no previous promoted traffic config, which mean no promote run previously so no need to do anything to rollback.
 	if !ok {

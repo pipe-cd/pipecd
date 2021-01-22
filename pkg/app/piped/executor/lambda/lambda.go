@@ -117,7 +117,7 @@ func sync(ctx context.Context, in *executor.Input, cloudProviderName string, clo
 			in.LogPersister.Errorf("Unable to store current traffic config for rollback: encode failed")
 			return false
 		}
-		originalTrafficKeyName := fmt.Sprintf("%s-%s-original", fm.Spec.Name, in.Deployment.RunningCommitHash)
+		originalTrafficKeyName := fmt.Sprintf("original-traffic-%s", in.Deployment.RunningCommitHash)
 		if e := in.MetadataStore.Set(ctx, originalTrafficKeyName, originalTrafficCfg); e != nil {
 			in.LogPersister.Errorf("Unable to store current traffic config for rollback: %v", e)
 			return false
@@ -169,7 +169,7 @@ func rollout(ctx context.Context, in *executor.Input, cloudProviderName string, 
 			in.LogPersister.Errorf("Unable to store current traffic config for rollback: encode failed")
 			return false
 		}
-		originalTrafficKeyName := fmt.Sprintf("%s-%s-original", fm.Spec.Name, in.Deployment.RunningCommitHash)
+		originalTrafficKeyName := fmt.Sprintf("original-traffic-%s", in.Deployment.RunningCommitHash)
 		if e := in.MetadataStore.Set(ctx, originalTrafficKeyName, originalTrafficCfg); e != nil {
 			in.LogPersister.Errorf("Unable to store current traffic config for rollback: %v", e)
 			return false
@@ -231,7 +231,7 @@ func promote(ctx context.Context, in *executor.Input, cloudProviderName string, 
 		in.LogPersister.Errorf("Unable to store current traffic config for rollback: encode failed")
 		return false
 	}
-	promoteTrafficKeyName := fmt.Sprintf("%s-%s-promote", fm.Spec.Name, in.Deployment.RunningCommitHash)
+	promoteTrafficKeyName := fmt.Sprintf("latest-promote-traffic-%s", in.Deployment.RunningCommitHash)
 	if err := in.MetadataStore.Set(ctx, promoteTrafficKeyName, promoteTrafficCfgData); err != nil {
 		in.LogPersister.Errorf("Unable to store promote traffic config for rollback: %v", err)
 		return false
