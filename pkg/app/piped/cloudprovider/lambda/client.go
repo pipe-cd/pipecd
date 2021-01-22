@@ -16,6 +16,7 @@ package lambda
 
 import (
 	"context"
+	"encoding/json"
 	"errors"
 	"fmt"
 	"time"
@@ -30,12 +31,19 @@ import (
 	"go.uber.org/zap"
 )
 
+type TrafficConfigKeyName string
+
 const (
 	defaultAliasName = "Service"
 	// RequestRetryTime represents the number of times calling to AWS resource control.
 	RequestRetryTime = 3
 	// RetryIntervalDuration represents duration time between retry.
 	RetryIntervalDuration = 1 * time.Minute
+
+	// TrafficPrimaryVersionKeyName represents the key points to primary version config on traffic routing map.
+	TrafficPrimaryVersionKeyName TrafficConfigKeyName = "primary"
+	// TrafficSecondaryVersionKeyName represents the key points to primary version config on traffic routing map.
+	TrafficSecondaryVersionKeyName TrafficConfigKeyName = "secondary"
 )
 
 // ErrNotFound lambda resource occurred.
@@ -195,12 +203,27 @@ func (c *client) PublishFunction(ctx context.Context, fm FunctionManifest) (vers
 }
 
 // RoutingTrafficConfig presents a map of primary and secondary version traffic for lambda function alias.
-type RoutingTrafficConfig map[string]VersionTraffic
+type RoutingTrafficConfig map[TrafficConfigKeyName]VersionTraffic
+
+func (c *RoutingTrafficConfig) Encode() (string, error) {
+	out, err := json.Marshal(c)
+	if err != nil {
+		return "", err
+	}
+	return string(out), nil
+}
+
+func (c *RoutingTrafficConfig) Decode(data []byte) error {
+	if err := json.Unmarshal(data, c); err != nil {
+		return err
+	}
+	return nil
+}
 
 // VersionTraffic presents the version, and the percent of traffic that's routed to it.
 type VersionTraffic struct {
-	Version string
-	Percent float64
+	Version string  `json:"version"`
+	Percent float64 `json:"percent"`
 }
 
 func (c *client) GetTrafficConfig(ctx context.Context, fm FunctionManifest) (routingTrafficCfg RoutingTrafficConfig, err error) {
@@ -229,7 +252,7 @@ func (c *client) GetTrafficConfig(ctx context.Context, fm FunctionManifest) (rou
 		return
 	}
 
-	routingTrafficCfg = make(map[string]VersionTraffic)
+	routingTrafficCfg = make(map[TrafficConfigKeyName]VersionTraffic)
 	/* The current return value from GetAlias as below
 	{
 		"AliasArn": "arn:aws:lambda:ap-northeast-1:769161735124:function:SimpleCanaryFunction:Service",
@@ -253,7 +276,7 @@ func (c *client) GetTrafficConfig(ctx context.Context, fm FunctionManifest) (rou
 	*/
 	// In case RoutingConfig is nil, 100 percent of current traffic is handled by FunctionVersion version.
 	if cfg.RoutingConfig == nil {
-		routingTrafficCfg["primary"] = VersionTraffic{
+		routingTrafficCfg[TrafficPrimaryVersionKeyName] = VersionTraffic{
 			Version: aws.StringValue(cfg.FunctionVersion),
 			Percent: 100,
 		}
@@ -264,12 +287,12 @@ func (c *client) GetTrafficConfig(ctx context.Context, fm FunctionManifest) (rou
 	var secondaryVersionTraffic float64
 	for version, weight := range cfg.RoutingConfig.AdditionalVersionWeights {
 		secondaryVersionTraffic = percentageToPercent(aws.Float64Value(weight))
-		routingTrafficCfg["secondary"] = VersionTraffic{
+		routingTrafficCfg[TrafficSecondaryVersionKeyName] = VersionTraffic{
 			Version: version,
 			Percent: secondaryVersionTraffic,
 		}
 	}
-	routingTrafficCfg["primary"] = VersionTraffic{
+	routingTrafficCfg[TrafficPrimaryVersionKeyName] = VersionTraffic{
 		Version: aws.StringValue(cfg.FunctionVersion),
 		Percent: 100 - secondaryVersionTraffic,
 	}
@@ -305,7 +328,7 @@ func (c *client) CreateTrafficConfig(ctx context.Context, fm FunctionManifest, v
 }
 
 func (c *client) UpdateTrafficConfig(ctx context.Context, fm FunctionManifest, routingTraffic RoutingTrafficConfig) error {
-	primary, ok := routingTraffic["primary"]
+	primary, ok := routingTraffic[TrafficPrimaryVersionKeyName]
 	if !ok {
 		return fmt.Errorf("invalid routing traffic configuration given: primary version not found")
 	}
@@ -316,7 +339,7 @@ func (c *client) UpdateTrafficConfig(ctx context.Context, fm FunctionManifest, r
 		FunctionVersion: aws.String(primary.Version),
 	}
 
-	if secondary, ok := routingTraffic["secondary"]; ok {
+	if secondary, ok := routingTraffic[TrafficSecondaryVersionKeyName]; ok {
 		routingTrafficMap := make(map[string]*float64)
 		routingTrafficMap[secondary.Version] = aws.Float64(precentToPercentage(secondary.Percent))
 		input.RoutingConfig = &lambda.AliasRoutingConfiguration{

@@ -120,19 +120,19 @@ func TestConfigureTrafficRouting(t *testing.T) {
 
 	for _, tc := range testcases {
 		t.Run(tc.name, func(t *testing.T) {
-			trafficCfg := make(map[string]provider.VersionTraffic)
+			trafficCfg := make(map[provider.TrafficConfigKeyName]provider.VersionTraffic)
 			if tc.primary != nil {
-				trafficCfg["primary"] = *tc.primary
+				trafficCfg[provider.TrafficPrimaryVersionKeyName] = *tc.primary
 			}
 			if tc.secondary != nil {
-				trafficCfg["secondary"] = *tc.secondary
+				trafficCfg[provider.TrafficSecondaryVersionKeyName] = *tc.secondary
 			}
 			ok := configureTrafficRouting(trafficCfg, tc.version, tc.percent)
 			assert.Equal(t, tc.out, ok)
-			if primary, ok := trafficCfg["primary"]; ok {
+			if primary, ok := trafficCfg[provider.TrafficPrimaryVersionKeyName]; ok {
 				assert.Equal(t, tc.version, primary.Version)
 				assert.Equal(t, float64(tc.percent), primary.Percent)
-				if secondary, ok := trafficCfg["secondary"]; ok {
+				if secondary, ok := trafficCfg[provider.TrafficSecondaryVersionKeyName]; ok {
 					assert.Equal(t, float64(100-tc.percent), secondary.Percent)
 				}
 			}

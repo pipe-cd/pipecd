@@ -42,6 +42,12 @@ func Register(r registerer) {
 	r.Register(model.StageLambdaSync, f)
 	r.Register(model.StageLambdaPromote, f)
 	r.Register(model.StageLambdaCanaryRollout, f)
+
+	r.RegisterRollback(model.ApplicationKind_LAMBDA, func(in executor.Input) executor.Executor {
+		return &rollbackExecutor{
+			Input: in,
+		}
+	})
 }
 
 func findCloudProvider(in *executor.Input) (name string, cfg *config.CloudProviderLambdaConfig, found bool) {
@@ -104,6 +110,19 @@ func sync(ctx context.Context, in *executor.Input, cloudProviderName string, clo
 		in.LogPersister.Errorf("Failed to prepare traffic routing for Lambda function %s: %v", fm.Spec.Name, err)
 		return false
 	}
+	// Store the current traffic config for rollback if necessary.
+	if trafficCfg != nil {
+		originalTrafficCfg, err := trafficCfg.Encode()
+		if err != nil {
+			in.LogPersister.Errorf("Unable to store current traffic config for rollback: encode failed: %v", err)
+			return false
+		}
+		originalTrafficKeyName := fmt.Sprintf("original-traffic-%s", in.Deployment.RunningCommitHash)
+		if e := in.MetadataStore.Set(ctx, originalTrafficKeyName, originalTrafficCfg); e != nil {
+			in.LogPersister.Errorf("Unable to store current traffic config for rollback: %v", e)
+			return false
+		}
+	}
 
 	// Update 100% traffic to the new lambda version.
 	if !configureTrafficRouting(trafficCfg, version, 100) {
@@ -140,6 +159,21 @@ func rollout(ctx context.Context, in *executor.Input, cloudProviderName string, 
 	if err := in.MetadataStore.Set(ctx, rolloutVersionKeyName, version); err != nil {
 		in.LogPersister.Errorf("Failed to update latest version name to metadata store for Lambda function %s: %v", fm.Spec.Name, err)
 		return false
+	}
+
+	// Store current traffic config for rollback if necessary.
+	if trafficCfg, err := client.GetTrafficConfig(ctx, fm); err == nil {
+		// Store the current traffic config.
+		originalTrafficCfg, err := trafficCfg.Encode()
+		if err != nil {
+			in.LogPersister.Errorf("Unable to store current traffic config for rollback: encode failed: %v", err)
+			return false
+		}
+		originalTrafficKeyName := fmt.Sprintf("original-traffic-%s", in.Deployment.RunningCommitHash)
+		if e := in.MetadataStore.Set(ctx, originalTrafficKeyName, originalTrafficCfg); e != nil {
+			in.LogPersister.Errorf("Unable to store current traffic config for rollback: %v", e)
+			return false
+		}
 	}
 
 	return true
@@ -191,6 +225,18 @@ func promote(ctx context.Context, in *executor.Input, cloudProviderName string, 
 		return false
 	}
 
+	// Store promote traffic config for rollback if necessary.
+	promoteTrafficCfgData, err := trafficCfg.Encode()
+	if err != nil {
+		in.LogPersister.Errorf("Unable to store current traffic config for rollback: encode failed: %v", err)
+		return false
+	}
+	promoteTrafficKeyName := fmt.Sprintf("latest-promote-traffic-%s", in.Deployment.RunningCommitHash)
+	if err := in.MetadataStore.Set(ctx, promoteTrafficKeyName, promoteTrafficCfgData); err != nil {
+		in.LogPersister.Errorf("Unable to store promote traffic config for rollback: %v", err)
+		return false
+	}
+
 	if err = client.UpdateTrafficConfig(ctx, fm, trafficCfg); err != nil {
 		in.LogPersister.Errorf("Failed to update traffic routing for Lambda function %s (version: %s): %v", fm.Spec.Name, version, err)
 		return false
@@ -202,25 +248,25 @@ func promote(ctx context.Context, in *executor.Input, cloudProviderName string, 
 
 func configureTrafficRouting(trafficCfg provider.RoutingTrafficConfig, version string, percent int) bool {
 	// The primary version has to be set on trafficCfg.
-	primary, ok := trafficCfg["primary"]
+	primary, ok := trafficCfg[provider.TrafficPrimaryVersionKeyName]
 	if !ok {
 		return false
 	}
 	// Set built version by rollout stage as new primary.
-	trafficCfg["primary"] = provider.VersionTraffic{
+	trafficCfg[provider.TrafficPrimaryVersionKeyName] = provider.VersionTraffic{
 		Version: version,
 		Percent: float64(percent),
 	}
 	// Make the current primary version as new secondary version in case it's not the latest built version by rollout stage.
 	if primary.Version != version {
-		trafficCfg["secondary"] = provider.VersionTraffic{
+		trafficCfg[provider.TrafficSecondaryVersionKeyName] = provider.VersionTraffic{
 			Version: primary.Version,
 			Percent: float64(100 - percent),
 		}
 	} else {
 		// Update traffic to the secondary and keep it as new secondary.
-		if secondary, ok := trafficCfg["secondary"]; ok {
-			trafficCfg["secondary"] = provider.VersionTraffic{
+		if secondary, ok := trafficCfg[provider.TrafficSecondaryVersionKeyName]; ok {
+			trafficCfg[provider.TrafficSecondaryVersionKeyName] = provider.VersionTraffic{
 				Version: secondary.Version,
 				Percent: float64(100 - percent),
 			}
