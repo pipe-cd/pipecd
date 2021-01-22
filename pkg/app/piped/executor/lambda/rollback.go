@@ -131,7 +131,7 @@ func rollback(ctx context.Context, in *executor.Input, cloudProviderName string,
 	// we need to reset any others SECONDARY created by previous (until failed) PROMOTE stages.
 	case 1:
 		// Validate stored original traffic config, since it PRIMARY ONLY, the percent must be float64(100)
-		primary, ok := originalTrafficCfg["primary"]
+		primary, ok := originalTrafficCfg[provider.TrafficPrimaryVersionKeyName]
 		if !ok || primary.Percent != float64(100) {
 			in.LogPersister.Errorf("Unable to prepare original traffic config: invalid original traffic config stored")
 			return false

@@ -248,25 +248,25 @@ func promote(ctx context.Context, in *executor.Input, cloudProviderName string, 
 
 func configureTrafficRouting(trafficCfg provider.RoutingTrafficConfig, version string, percent int) bool {
 	// The primary version has to be set on trafficCfg.
-	primary, ok := trafficCfg["primary"]
+	primary, ok := trafficCfg[provider.TrafficPrimaryVersionKeyName]
 	if !ok {
 		return false
 	}
 	// Set built version by rollout stage as new primary.
-	trafficCfg["primary"] = provider.VersionTraffic{
+	trafficCfg[provider.TrafficPrimaryVersionKeyName] = provider.VersionTraffic{
 		Version: version,
 		Percent: float64(percent),
 	}
 	// Make the current primary version as new secondary version in case it's not the latest built version by rollout stage.
 	if primary.Version != version {
-		trafficCfg["secondary"] = provider.VersionTraffic{
+		trafficCfg[provider.TrafficSecondaryVersionKeyName] = provider.VersionTraffic{
 			Version: primary.Version,
 			Percent: float64(100 - percent),
 		}
 	} else {
 		// Update traffic to the secondary and keep it as new secondary.
-		if secondary, ok := trafficCfg["secondary"]; ok {
-			trafficCfg["secondary"] = provider.VersionTraffic{
+		if secondary, ok := trafficCfg[provider.TrafficSecondaryVersionKeyName]; ok {
+			trafficCfg[provider.TrafficSecondaryVersionKeyName] = provider.VersionTraffic{
 				Version: secondary.Version,
 				Percent: float64(100 - percent),
 			}
