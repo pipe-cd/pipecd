@@ -51,17 +51,30 @@ func (e *deployExecutor) ensurePrimaryRollout(ctx context.Context) model.StageSt
 	}
 	e.LogPersister.Successf("Successfully loaded %d manifests", len(manifests))
 
-	routingMethod := config.DetermineKubernetesTrafficRoutingMethod(e.deployCfg.TrafficRouting)
 	var primaryManifests []provider.Manifest
-	if routingMethod == config.KubernetesTrafficRoutingMethodPodSelector {
+	routingMethod := config.DetermineKubernetesTrafficRoutingMethod(e.deployCfg.TrafficRouting)
+
+	switch routingMethod {
+	// In case of routing by Pod selector,
+	// all manifests can be used as primary manifests.
+	case config.KubernetesTrafficRoutingMethodPodSelector:
 		primaryManifests = manifests
-	} else {
-		// Find traffic routing manifests and filter out it from primary manifests.
-		trafficRoutingManifests, err := findTrafficRoutingManifests(manifests, e.deployCfg.Service.Name, e.deployCfg.TrafficRouting)
+
+	// In case of routing by Istio,
+	// VirtualService manifest will be used to manipulate the traffic ratio.
+	// Other manifests can be used as primary manifests.
+	case config.KubernetesTrafficRoutingMethodIstio:
+		// Firstly, find the VirtualService manifests.
+		istioCfg := e.deployCfg.TrafficRouting.Istio
+		if istioCfg == nil {
+			istioCfg = &config.IstioTrafficRouting{}
+		}
+		trafficRoutingManifests, err := findIstioVirtualServiceManifests(manifests, istioCfg.VirtualService)
 		if err != nil {
 			e.LogPersister.Errorf("Failed while finding traffic routing manifest: (%v)", err)
 			return model.StageStatus_STAGE_FAILURE
 		}
+		// Then remove them from the list of primary manifests.
 		if len(trafficRoutingManifests) > 0 {
 			primaryManifests = make([]provider.Manifest, 0, len(manifests)-1)
 			for _, m := range manifests {
@@ -71,6 +84,10 @@ func (e *deployExecutor) ensurePrimaryRollout(ctx context.Context) model.StageSt
 				primaryManifests = append(primaryManifests, m)
 			}
 		}
+
+	default:
+		e.LogPersister.Errorf("Traffic routing method %v is not supported", routingMethod)
+		return model.StageStatus_STAGE_FAILURE
 	}
 
 	// Check if the variant selector is in the workloads.

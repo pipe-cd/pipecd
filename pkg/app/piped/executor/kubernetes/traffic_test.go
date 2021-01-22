@@ -32,12 +32,12 @@ func TestGenerateVirtualServiceManifest(t *testing.T) {
 		expectedFile   string
 	}{
 		{
-			name:         "generated correct manifest",
+			name:         "apply all routes",
 			manifestFile: "testdata/virtual-service.yaml",
 			expectedFile: "testdata/generated-virtual-service.yaml",
 		},
 		{
-			name:           "generated correct manifest",
+			name:           "apply only speficied routes",
 			manifestFile:   "testdata/virtual-service.yaml",
 			editableRoutes: []string{"only-primary-destination"},
 			expectedFile:   "testdata/generated-virtual-service-for-editable-routes.yaml",
@@ -61,7 +61,7 @@ func TestGenerateVirtualServiceManifest(t *testing.T) {
 			got, err := generatedManifest.YamlBytes()
 			require.NoError(t, err)
 
-			assert.EqualValues(t, expected, got)
+			assert.EqualValues(t, string(expected), string(got))
 		})
 	}
 }
