@@ -49,7 +49,7 @@ func GetValue(yml []byte, path string) (interface{}, error) {
 		return nil, err
 	}
 
-	// NOTE: Validate value in YAML before actual reading
+	// TODO: Validate value in YAML before actual reading
 	// because it panics if:
 	//   - the value is -0.
 	//   - unexistence path given.
