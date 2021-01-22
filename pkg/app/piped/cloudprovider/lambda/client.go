@@ -263,7 +263,7 @@ func (c *client) GetTrafficConfig(ctx context.Context, fm FunctionManifest) (rou
 	// RoutingConfig.AdditionalVersionWeights key represents the secondary version.
 	var secondaryVersionTraffic float64
 	for version, weight := range cfg.RoutingConfig.AdditionalVersionWeights {
-		secondaryVersionTraffic = percentageToPercent(weight)
+		secondaryVersionTraffic = percentageToPercent(aws.Float64Value(weight))
 		routingTrafficCfg["secondary"] = VersionTraffic{
 			Version: version,
 			Percent: secondaryVersionTraffic,
