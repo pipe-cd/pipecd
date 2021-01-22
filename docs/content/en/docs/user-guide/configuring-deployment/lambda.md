@@ -24,6 +24,8 @@ spec:
 
 Except the `tags` field, all others are required fields for the deployment to run.
 
+The `role` value represents the service role (for your Lambda function to run), not for Piped agent to deploy your Lambda application. To be able to pull container images from AWS ECR, besides policies to run as usual, you need to add `Lambda.ElasticContainerRegistry` __read__ permission to your Lambda function service role.
+
 ## Quick sync
 
 By default, when the [pipeline](/docs/user-guide/configuration-reference/#lambda-application) was not specified, PipeCD triggers a quick sync deployment for the merged pull request.
