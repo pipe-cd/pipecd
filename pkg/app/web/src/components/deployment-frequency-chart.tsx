@@ -1,4 +1,4 @@
-import React, { FC, useCallback } from "react";
+import React, { FC } from "react";
 import { Box, makeStyles, Paper, Typography } from "@material-ui/core";
 import { InsightDataPoint } from "pipe/pkg/app/web/model/insight_pb";
 import {
@@ -12,11 +12,18 @@ import {
 } from "recharts";
 import dayjs from "dayjs";
 import { theme } from "../theme";
+import { WarningOutlined } from "@material-ui/icons";
 
 const useStyles = makeStyles((theme) => ({
   root: {
     padding: theme.spacing(3),
     minWidth: 600,
+  },
+  noDataMessage: {
+    display: "flex",
+  },
+  noDataMessageIcon: {
+    marginRight: theme.spacing(1),
   },
 }));
 
@@ -24,13 +31,16 @@ interface Props {
   data: InsightDataPoint.AsObject[];
 }
 
+const tickFormatter = (time: number | string): string =>
+  dayjs(time).format("MMM DD");
+
+const labelFormatter = (time: number | string): string =>
+  dayjs(time).format("YYYY MMM DD");
+
+const NO_DATA_TEXT = "No data is available.";
+
 export const DeploymentFrequencyChart: FC<Props> = ({ data }) => {
   const classes = useStyles();
-
-  const formatter = useCallback(
-    (time: number | string) => dayjs(time).format("MMM DD"),
-    []
-  );
 
   return (
     <Paper elevation={1} className={classes.root}>
@@ -44,7 +54,14 @@ export const DeploymentFrequencyChart: FC<Props> = ({ data }) => {
           justifyContent="center"
           height={420}
         >
-          <Typography variant="body1">No data</Typography>
+          <Typography
+            variant="body1"
+            color="textSecondary"
+            className={classes.noDataMessage}
+          >
+            <WarningOutlined className={classes.noDataMessageIcon} />
+            {NO_DATA_TEXT}
+          </Typography>
         </Box>
       ) : (
         <ResponsiveContainer width="100%" aspect={2}>
@@ -65,9 +82,13 @@ export const DeploymentFrequencyChart: FC<Props> = ({ data }) => {
               isAnimationActive={false}
               dot={{ fill: theme.palette.primary.main }}
             />
-            <YAxis />
-            <XAxis dataKey="timestamp" tickFormatter={formatter} />
-            <Tooltip labelFormatter={formatter} />
+            <YAxis axisLine={false} tickLine={false} />
+            <XAxis
+              dataKey="timestamp"
+              tickFormatter={tickFormatter}
+              tickMargin={8}
+            />
+            <Tooltip labelFormatter={labelFormatter} />
           </LineChart>
         </ResponsiveContainer>
       )}
