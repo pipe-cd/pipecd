@@ -24,6 +24,7 @@ import (
 	"io/ioutil"
 	"os"
 	"path/filepath"
+	"strconv"
 	"sync"
 	"time"
 
@@ -221,8 +222,15 @@ func (w *watcher) modifyFiles(ctx context.Context, event *config.EventWatcherEve
 		if err != nil {
 			return nil, fmt.Errorf("failed to get value at %s in %s: %w", r.YAMLField, r.File, err)
 		}
-		value, ok := v.(string)
-		if !ok {
+		var value string
+		switch vv := v.(type) {
+		case string:
+			value = vv
+		case int:
+			value = strconv.Itoa(vv)
+		case float64:
+			value = strconv.FormatFloat(vv, 'f', -1, 64)
+		default:
 			return nil, fmt.Errorf("unknown type of value is defined at %s in %s", r.YAMLField, r.File)
 		}
 		if latestEvent.Data == value {
