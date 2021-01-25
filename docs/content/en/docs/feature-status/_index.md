@@ -72,7 +72,7 @@ Please note that the phases (Incubating, Alpha, Beta, and Stable) are applied to
 | [Notification](/docs/operator-manual/piped/configuring-notifications/) to Slack | Beta |
 | [Notification](/docs/operator-manual/piped/configuring-notifications/) to Webhook | Incubating |
 | [Secrets Management](/docs/user-guide/sealed-secrets/) | Beta |
-| [Event Watcher](/docs/user-guide/event-watcher/) | Incubating |
+| [Event Watcher](/docs/user-guide/event-watcher/) | Alpha |
 | Support executing custom stage | Incubating |
 | [ADA](/docs/user-guide/automated-deployment-analysis/) (Automated Deployment Analysis) by Prometheus metrics | Alpha |
 | [ADA](/docs/user-guide/automated-deployment-analysis/) by Datadog metrics | Incubating |
