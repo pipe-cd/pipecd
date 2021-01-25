@@ -32,11 +32,12 @@ import (
 )
 
 var (
-	manifestsDir    string
-	bucket          string
-	credentialsFile string
-	indexFileName   = "index.yaml"
-	timeout         = 10 * time.Minute
+	manifestsDir     string
+	bucket           string
+	credentialsFile  string
+	indexFileName    = "index.yaml"
+	disableCacheAttr = "private, max-age=0, no-transform"
+	timeout          = 10 * time.Minute
 
 	charts = []string{
 		"helloworld",
@@ -131,13 +132,13 @@ func main() {
 			return nil
 		}
 		log.Printf("Start uploading package %s...", info.Name())
-		return storeFile(ctx, client, path)
+		return storeFile(ctx, client, path, false)
 	})
 	if err != nil {
 		log.Fatalf("Unable to store chart packages: %v", err)
 	}
 
-	if err := storeFile(ctx, client, filepath.Join(workingDir, indexFileName)); err != nil {
+	if err := storeFile(ctx, client, filepath.Join(workingDir, indexFileName), true); err != nil {
 		log.Fatalf("Unable to store index file: %v", err)
 	}
 
@@ -182,7 +183,7 @@ func downloadIndexFile(ctx context.Context, client *storage.Client, dest string)
 	return ioutil.WriteFile(dest, content, 0644)
 }
 
-func storeFile(ctx context.Context, client *storage.Client, path string) error {
+func storeFile(ctx context.Context, client *storage.Client, path string, disableCache bool) error {
 	name := filepath.Base(path)
 	wc := client.Bucket(bucket).Object(name).NewWriter(ctx)
 	defer wc.Close()
@@ -192,6 +193,9 @@ func storeFile(ctx context.Context, client *storage.Client, path string) error {
 		return err
 	}
 
+	if disableCache {
+		wc.CacheControl = disableCacheAttr
+	}
 	_, err = wc.Write(content)
 	return err
 }
