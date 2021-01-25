@@ -1,4 +1,3 @@
-import { rest } from "msw";
 import {
   GetCommandRequest,
   GetCommandResponse,
@@ -8,8 +7,7 @@ import {
   dummyCommand,
   dummySyncSucceededCommand,
 } from "../../__fixtures__/dummy-command";
-import { serialize } from "../serializer";
-import { createMask } from "../utils";
+import { createHandler } from "../create-handler";
 
 const createCommandModel = (
   commandObj: CommandModel.AsObject
@@ -33,10 +31,9 @@ const createCommandModel = (
 };
 
 export const commandHandlers = [
-  rest.post<Uint8Array>(createMask("/GetCommand"), (req, res, ctx) => {
+  createHandler<GetCommandResponse>("/GetCommand", (requestBody) => {
     const response = new GetCommandResponse();
-
-    const request = GetCommandRequest.deserializeBinary(req.body.slice(5));
+    const request = GetCommandRequest.deserializeBinary(requestBody);
 
     if (request.getCommandId() === dummySyncSucceededCommand.id) {
       response.setCommand(createCommandModel(dummySyncSucceededCommand));
@@ -44,11 +41,6 @@ export const commandHandlers = [
       response.setCommand(createCommandModel(dummyCommand));
     }
 
-    const data = serialize(response.serializeBinary());
-    return res(
-      ctx.status(200),
-      ctx.set("Content-Type", "application/grpc-web+proto"),
-      ctx.body(data)
-    );
+    return response;
   }),
 ];
