@@ -132,6 +132,7 @@ func main() {
 			return nil
 		}
 		log.Printf("Start uploading package %s...", info.Name())
+		// We do not disable cache in this case because Helm packages are immutable.
 		return storeFile(ctx, client, path, false)
 	})
 	if err != nil {
