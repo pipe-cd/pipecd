@@ -29,19 +29,17 @@ import (
 )
 
 type Store struct {
-	client             *storage.Client
-	bucket             string
-	useCredentialsFile bool
-	credentialsFile    string
-	httpClient         *http.Client
-	logger             *zap.Logger
+	client          *storage.Client
+	bucket          string
+	credentialsFile string
+	httpClient      *http.Client
+	logger          *zap.Logger
 }
 
 type Option func(*Store)
 
 func WithCredentialsFile(path string) Option {
 	return func(s *Store) {
-		s.useCredentialsFile = true
 		s.credentialsFile = path
 	}
 }
@@ -68,7 +66,7 @@ func NewStore(ctx context.Context, bucket string, opts ...Option) (*Store, error
 	}
 
 	var options []option.ClientOption
-	if s.useCredentialsFile {
+	if s.credentialsFile != "" {
 		options = append(options, option.WithCredentialsFile(s.credentialsFile))
 	}
 	if s.httpClient != nil {
