@@ -48,7 +48,7 @@ func WithLogger(logger *zap.Logger) Option {
 	}
 }
 
-func NewStore(ctx context.Context, region, profile, credentialsFile, bucket string, opts ...Option) (*Store, error) {
+func NewStore(region, profile, credentialsFile, bucket string, opts ...Option) (*Store, error) {
 	if region == "" {
 		return nil, fmt.Errorf("region is required field")
 	}
