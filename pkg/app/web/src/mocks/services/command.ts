@@ -1,4 +1,3 @@
-import { rest } from "msw";
 import {
   GetCommandRequest,
   GetCommandResponse,
@@ -8,8 +7,6 @@ import {
   dummyCommand,
   dummySyncSucceededCommand,
 } from "../../__fixtures__/dummy-command";
-import { serialize } from "../serializer";
-import { createMask } from "../utils";
 import { createHandler } from "../create-handler";
 
 const createCommandModel = (
