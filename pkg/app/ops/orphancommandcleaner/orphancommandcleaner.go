@@ -31,11 +31,15 @@ func NewOrphanCommandCleaner(
 }
 
 func (c *OrphanCommandCleaner) Run(ctx context.Context) error {
+	c.logger.Info("start running OrphanCommandCleaner")
+
 	t := time.NewTicker(interval)
 	for {
 		select {
 		case <-ctx.Done():
+			c.logger.Info("OrphanCommandCleaner has been stopped")
 			return nil
+
 		case <-t.C:
 			start := time.Now()
 			if err := c.updateOrphanCommandsStatus(ctx); err == nil {
@@ -63,15 +67,21 @@ func (c *OrphanCommandCleaner) updateOrphanCommandsStatus(ctx context.Context) e
 	}
 	commands, err := c.commandstore.ListCommands(ctx, opts)
 	if err != nil {
+		c.logger.Error("failed to list not-handled commands", zap.Error(err))
 		return err
 	}
 
 	for _, command := range commands {
-		if err := c.commandstore.UpdateCommand(ctx, command.Id, func(cmd *model.Command) error {
+		err := c.commandstore.UpdateCommand(ctx, command.Id, func(cmd *model.Command) error {
 			cmd.Status = model.CommandStatus_COMMAND_TIMEOUT
 			return nil
-		}); err != nil {
-			c.logger.Error("failed to update orphan command", zap.Error(err), zap.String("id", command.Id), zap.String("type", command.Type.String()))
+		})
+		if err != nil {
+			c.logger.Error("failed to mark orphan command as timed out",
+				zap.String("id", command.Id),
+				zap.String("type", command.Type.String()),
+				zap.Error(err),
+			)
 		}
 	}
 
