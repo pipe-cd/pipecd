@@ -1,5 +1,5 @@
 import { createSlice, createAsyncThunk } from "@reduxjs/toolkit";
-import { LogBlock as LogBlockModel } from "pipe/pkg/app/web/model/logblock_pb";
+import { LogBlock } from "pipe/pkg/app/web/model/logblock_pb";
 import { AppState } from ".";
 import { DeploymentStatus } from "pipe/pkg/app/web/model/deployment_pb";
 import { getStageLog } from "../api/stage-log";
@@ -7,12 +7,10 @@ import { selectById as selectDeploymentById } from "./deployments";
 
 export { LogSeverity } from "pipe/pkg/app/web/model/logblock_pb";
 
-export type LogBlock = LogBlockModel.AsObject;
-
 export type StageLog = {
   deploymentId: string;
   stageId: string;
-  logBlocks: LogBlock[];
+  logBlocks: LogBlock.AsObject[];
   completed: boolean;
 };
 
@@ -113,3 +111,5 @@ export const selectStageLogById = (
 ): StageLog | null => {
   return state[createActiveStageKey(props)];
 };
+
+export { LogBlock } from "pipe/pkg/app/web/model/logblock_pb";

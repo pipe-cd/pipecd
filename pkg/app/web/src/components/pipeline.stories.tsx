@@ -12,7 +12,7 @@ const stage = (props?: Partial<Stage>): Stage => ({
 });
 
 const DEPLOYMENT_ID = "debug-deployment-id-01";
-const fakeDeployment: Deployment = {
+const fakeDeployment: Deployment.AsObject = {
   id: DEPLOYMENT_ID,
   applicationId: "debug-project/development/debug-app",
   applicationName: "demo-app",

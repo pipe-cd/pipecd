@@ -20,8 +20,8 @@ const useStyles = makeStyles((theme) => ({
 }));
 
 interface Props {
-  resource: KubernetesResourceState;
-  onClick: (resource: KubernetesResourceState) => void;
+  resource: KubernetesResourceState.AsObject;
+  onClick: (resource: KubernetesResourceState.AsObject) => void;
 }
 
 export const KubernetesResource: FC<Props> = memo(function KubernetesResource({

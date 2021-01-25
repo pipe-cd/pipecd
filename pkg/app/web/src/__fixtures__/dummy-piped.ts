@@ -1,8 +1,8 @@
-import { Piped, PipedModel } from "../modules/pipeds";
+import { Piped } from "../modules/pipeds";
 import { dummyEnv } from "./dummy-environment";
 import { dummyRepo } from "./dummy-repo";
 
-export const dummyPiped: Piped = {
+export const dummyPiped: Piped.AsObject = {
   cloudProvidersList: [
     {
       name: "kubernetes-default",
@@ -24,7 +24,7 @@ export const dummyPiped: Piped = {
   startedAt: 0,
   updatedAt: 0,
   version: "v0.1",
-  status: PipedModel.ConnectionStatus.ONLINE,
+  status: Piped.ConnectionStatus.ONLINE,
   keyHash: "12345",
   keysList: [],
   envIdsList: [dummyEnv.id],

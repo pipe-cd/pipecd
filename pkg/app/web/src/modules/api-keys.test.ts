@@ -1,6 +1,6 @@
 import { dummyAPIKey } from "../__fixtures__/dummy-api-key";
 import {
-  APIKeyModel,
+  APIKey,
   apiKeysSlice,
   disableAPIKey,
   generateAPIKey,
@@ -45,7 +45,7 @@ describe("apiKeysSlice reducer", () => {
   describe("generateAPIKey", () => {
     const arg = {
       name: "new API key",
-      role: APIKeyModel.Role.READ_ONLY,
+      role: APIKey.Role.READ_ONLY,
     };
     it(`should handle ${generateAPIKey.pending.type}`, () => {
       expect(

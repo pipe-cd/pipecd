@@ -4,10 +4,8 @@ import {
   createEntityAdapter,
   EntityState,
 } from "@reduxjs/toolkit";
-import { Piped as PipedModel } from "pipe/pkg/app/web/model/piped_pb";
+import { Piped } from "pipe/pkg/app/web/model/piped_pb";
 import * as pipedsApi from "../api/piped";
-
-export type Piped = PipedModel.AsObject;
 
 export interface RegisteredPiped {
   id: string;
@@ -16,7 +14,7 @@ export interface RegisteredPiped {
 
 const MODULE_NAME = "pipeds";
 
-const pipedsAdapter = createEntityAdapter<Piped>({});
+const pipedsAdapter = createEntityAdapter<Piped.AsObject>({});
 
 export const {
   selectById,
@@ -24,7 +22,7 @@ export const {
   selectAll,
 } = pipedsAdapter.getSelectors();
 
-export const fetchPipeds = createAsyncThunk<Piped[], boolean>(
+export const fetchPipeds = createAsyncThunk<Piped.AsObject[], boolean>(
   `${MODULE_NAME}/fetchList`,
   async (withStatus: boolean) => {
     const { pipedsList } = await pipedsApi.getPipeds({ withStatus });
@@ -120,13 +118,13 @@ export const pipedsSlice = createSlice({
 });
 
 export const selectPipedsByEnv = (
-  state: EntityState<Piped>,
+  state: EntityState<Piped.AsObject>,
   envId: string
-): Piped[] => {
+): Piped.AsObject[] => {
   return selectAll(state).filter(
     (piped) => piped.envIdsList.includes(envId) && piped.disabled === false
   );
 };
 
 export const { clearRegisteredPipedInfo } = pipedsSlice.actions;
-export { Piped as PipedModel } from "pipe/pkg/app/web/model/piped_pb";
+export { Piped } from "pipe/pkg/app/web/model/piped_pb";

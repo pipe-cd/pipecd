@@ -2,7 +2,7 @@ import React, { FC, memo } from "react";
 import { makeStyles } from "@material-ui/core";
 import {
   HealthStatus,
-  ApplicationLiveStateSnapshotModel,
+  ApplicationLiveStateSnapshot,
 } from "../modules/applications-live-state";
 import FavoriteIcon from "@material-ui/icons/Favorite";
 import OtherIcon from "@material-ui/icons/HelpOutline";
@@ -35,15 +35,15 @@ export const KubernetesResourceHealthStatusIcon: FC<{
 });
 
 export const ApplicationHealthStatusIcon: FC<{
-  health: ApplicationLiveStateSnapshotModel.Status;
+  health: ApplicationLiveStateSnapshot.Status;
 }> = memo(function HealthStatusIcon({ health }) {
   const classes = useStyles();
   switch (health) {
-    case ApplicationLiveStateSnapshotModel.Status.UNKNOWN:
+    case ApplicationLiveStateSnapshot.Status.UNKNOWN:
       return <UnknownIcon className={classes.unknown} />;
-    case ApplicationLiveStateSnapshotModel.Status.HEALTHY:
+    case ApplicationLiveStateSnapshot.Status.HEALTHY:
       return <FavoriteIcon className={classes.healthy} />;
-    case ApplicationLiveStateSnapshotModel.Status.OTHER:
+    case ApplicationLiveStateSnapshot.Status.OTHER:
       return <OtherIcon className={classes.other} />;
   }
 });

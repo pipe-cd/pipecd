@@ -4,21 +4,17 @@ import {
   createSlice,
 } from "@reduxjs/toolkit";
 import {
-  ApplicationLiveStateSnapshot as ApplicationLiveStateSnapshotModel,
-  KubernetesResourceState as KubernetesResourceStateModel,
+  ApplicationLiveStateSnapshot,
+  KubernetesResourceState,
 } from "pipe/pkg/app/web/model/application_live_state_pb";
 import { getApplicationLiveState } from "../api/applications";
 
 export type ApplicationLiveState = Required<
-  ApplicationLiveStateSnapshotModel.AsObject
+  ApplicationLiveStateSnapshot.AsObject
 >;
 
-export type KubernetesResourceState = Required<
-  KubernetesResourceStateModel.AsObject
->;
-
-export const HealthStatus = KubernetesResourceStateModel.HealthStatus;
-export type HealthStatus = KubernetesResourceStateModel.HealthStatus;
+export const HealthStatus = KubernetesResourceState.HealthStatus;
+export type HealthStatus = KubernetesResourceState.HealthStatus;
 
 export const applicationLiveStateAdapter = createEntityAdapter<
   ApplicationLiveState
@@ -86,4 +82,7 @@ export const applicationLiveStateSlice = createSlice({
   },
 });
 
-export { ApplicationLiveStateSnapshot as ApplicationLiveStateSnapshotModel } from "pipe/pkg/app/web/model/application_live_state_pb";
+export {
+  ApplicationLiveStateSnapshot,
+  KubernetesResourceState,
+} from "pipe/pkg/app/web/model/application_live_state_pb";

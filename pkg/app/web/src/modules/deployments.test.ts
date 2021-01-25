@@ -1,6 +1,6 @@
 import { LoadingStatus } from "../types/module";
 import { dummyDeployment } from "../__fixtures__/dummy-deployment";
-import { CommandModel, fetchCommand, CommandStatus } from "./commands";
+import { Command, fetchCommand, CommandStatus } from "./commands";
 import {
   deploymentsSlice,
   isDeploymentRunning,
@@ -253,7 +253,7 @@ describe("deploymentsSlice reducer", () => {
             type: fetchCommand.fulfilled.type,
             payload: {
               deploymentId: "deployment-1",
-              type: CommandModel.Type.CANCEL_DEPLOYMENT,
+              type: Command.Type.CANCEL_DEPLOYMENT,
               status: CommandStatus.COMMAND_SUCCEEDED,
             },
           }

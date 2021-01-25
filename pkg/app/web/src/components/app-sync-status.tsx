@@ -15,7 +15,7 @@ const useStyles = makeStyles((theme) => ({
 }));
 
 interface Props {
-  syncState?: ApplicationSyncState;
+  syncState?: ApplicationSyncState.AsObject;
   deploying: boolean;
   className?: string;
   size?: "medium" | "large";

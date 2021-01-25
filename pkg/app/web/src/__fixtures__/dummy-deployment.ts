@@ -6,7 +6,7 @@ import { dummyPiped } from "./dummy-piped";
 import { dummyStage } from "./dummy-stage";
 import { SyncStrategy } from "pipe/pkg/app/web/model/deployment_pb";
 
-export const dummyDeployment: Deployment = {
+export const dummyDeployment: Deployment.AsObject = {
   id: "deployment-1",
   pipedId: dummyPiped.id,
   projectId: "project-1",

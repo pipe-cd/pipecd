@@ -5,8 +5,7 @@ import {
   SerializedError,
 } from "@reduxjs/toolkit";
 import {
-  Application as ApplicationModel,
-  ApplicationSyncState as ApplicationSyncStateModel,
+  Application,
   ApplicationSyncStatus,
 } from "pipe/pkg/app/web/model/application_pb";
 import * as applicationsAPI from "../api/applications";
@@ -15,22 +14,20 @@ import {
   ApplicationKind,
 } from "pipe/pkg/app/web/model/common_pb";
 import { SyncStrategy } from "./deployments";
-import { fetchCommand, CommandStatus, CommandModel } from "./commands";
+import { fetchCommand, CommandStatus, Command } from "./commands";
 import { AppState } from ".";
 
-export type Application = ApplicationModel.AsObject;
 export type ApplicationSyncStatusKey = keyof typeof ApplicationSyncStatus;
 export type ApplicationKindKey = keyof typeof ApplicationKind;
-export type ApplicationSyncState = ApplicationSyncStateModel.AsObject;
 
-export const applicationsAdapter = createEntityAdapter<Application>({
+export const applicationsAdapter = createEntityAdapter<Application.AsObject>({
   selectId: (app) => app.id,
 });
 
 export const { selectAll, selectById } = applicationsAdapter.getSelectors();
 
 export const fetchApplications = createAsyncThunk<
-  Application[],
+  Application.AsObject[],
   void,
   { state: AppState }
 >("applications/fetchList", async (_, thunkAPI) => {
@@ -38,17 +35,17 @@ export const fetchApplications = createAsyncThunk<
   const { applicationsList } = await applicationsAPI.getApplications({
     options: applicationFilterOptions,
   });
-  return applicationsList as Application[];
+  return applicationsList as Application.AsObject[];
 });
 
 export const fetchApplication = createAsyncThunk<
-  Application | undefined,
+  Application.AsObject | undefined,
   string
 >("applications/fetchById", async (applicationId) => {
   const { application } = await applicationsAPI.getApplication({
     applicationId,
   });
-  return application as Application;
+  return application as Application.AsObject;
 });
 
 export const syncApplication = createAsyncThunk<
@@ -169,7 +166,7 @@ export const applicationsSlice = createSlice({
       })
       .addCase(fetchCommand.fulfilled, (state, action) => {
         if (
-          action.payload.type === CommandModel.Type.SYNC_APPLICATION &&
+          action.payload.type === Command.Type.SYNC_APPLICATION &&
           action.payload.status !== CommandStatus.COMMAND_NOT_HANDLED_YET
         ) {
           // If command type is sync application and that process is finished, change syncing status to false
@@ -190,6 +187,8 @@ export const applicationsSlice = createSlice({
 });
 
 export {
+  Application,
+  ApplicationSyncState,
   ApplicationSyncStatus,
   ApplicationDeploymentReference,
 } from "pipe/pkg/app/web/model/application_pb";

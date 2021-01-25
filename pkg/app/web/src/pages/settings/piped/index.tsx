@@ -52,8 +52,8 @@ const useStyles = makeStyles(() => ({
   },
 }));
 
-const usePipeds = (filterValues: FilterValues): Piped[] => {
-  const pipeds = useSelector<AppState, Piped[]>((state) =>
+const usePipeds = (filterValues: FilterValues): Piped.AsObject[] => {
+  const pipeds = useSelector<AppState, Piped.AsObject[]>((state) =>
     selectAll(state.pipeds)
   );
 

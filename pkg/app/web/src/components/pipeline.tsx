@@ -47,8 +47,8 @@ const useDeploymentStage = (
   deploymentId: string
 ): [boolean, Stage[][], Stage | null] => {
   const stages: Stage[][] = [];
-  const deployment = useSelector<AppState, Deployment | undefined>((state) =>
-    selectById(state.deployments, deploymentId)
+  const deployment = useSelector<AppState, Deployment.AsObject | undefined>(
+    (state) => selectById(state.deployments, deploymentId)
   );
 
   if (!deployment) {

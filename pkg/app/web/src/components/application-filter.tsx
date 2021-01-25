@@ -50,7 +50,7 @@ export const ApplicationFilter: FC<Props> = memo(function ApplicationFilter({
 }) {
   const classes = useStyles();
   const dispatch = useDispatch();
-  const envs = useSelector<AppState, Environment[]>((state) =>
+  const envs = useSelector<AppState, Environment.AsObject[]>((state) =>
     selectAll(state.environments)
   );
   const options = useSelector<AppState, ApplicationFilterOptions>(

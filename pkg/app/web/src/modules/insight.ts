@@ -1,11 +1,6 @@
 import { createSlice, PayloadAction } from "@reduxjs/toolkit";
-import {
-  InsightStep,
-  InsightDataPoint as InsightDataPointModel,
-} from "pipe/pkg/app/web/model/insight_pb";
+import { InsightStep } from "pipe/pkg/app/web/model/insight_pb";
 import dayjs from "dayjs";
-
-export type InsightDataPoint = InsightDataPointModel.AsObject;
 
 const MODULE_NAME = "insight";
 
@@ -54,4 +49,5 @@ export const {
 export {
   InsightMetricsKind,
   InsightStep,
+  InsightDataPoint,
 } from "pipe/pkg/app/web/model/insight_pb";

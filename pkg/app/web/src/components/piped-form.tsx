@@ -61,7 +61,7 @@ export const PipedForm: FC<Props> = memo(function PipedForm({
   const classes = useStyles();
   const [envs, entities] = useSelector<
     AppState,
-    [Environment[], Dictionary<Environment>]
+    [Environment.AsObject[], Dictionary<Environment.AsObject>]
   >((state) => [
     selectAll(state.environments),
     selectEntities(state.environments),
@@ -103,7 +103,9 @@ export const PipedForm: FC<Props> = memo(function PipedForm({
           id="environments"
           options={envs}
           disableCloseOnSelect
-          value={values.envIds.map((id) => entities[id]) as Environment[]}
+          value={
+            values.envIds.map((id) => entities[id]) as Environment.AsObject[]
+          }
           onChange={(_, newValue) => {
             setFieldValue(
               "envIds",

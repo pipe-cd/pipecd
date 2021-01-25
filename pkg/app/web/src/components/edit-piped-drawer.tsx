@@ -19,7 +19,7 @@ export const EditPipedDrawer: FC<Props> = memo(function EditPipedDrawer({
   onClose,
 }) {
   const dispatch = useDispatch<AppDispatch>();
-  const piped = useSelector<AppState, Piped | undefined>((state) =>
+  const piped = useSelector<AppState, Piped.AsObject | undefined>((state) =>
     pipedId ? selectById(state.pipeds, pipedId) : undefined
   );
 

@@ -57,7 +57,7 @@ export const DeleteApplicationDialog: FC = memo(
 
     const [application, isDeleting] = useSelector<
       AppState,
-      [Application | undefined, boolean]
+      [Application.AsObject | undefined, boolean]
     >(
       (state) => [
         state.deleteApplication.applicationId

@@ -49,17 +49,18 @@ export const DeploymentFilter: FC<Props> = memo(function DeploymentFilter({
 }) {
   const classes = useStyles();
   const dispatch = useDispatch();
-  const envs = useSelector<AppState, Environment[]>((state) =>
+  const envs = useSelector<AppState, Environment.AsObject[]>((state) =>
     selectAll(state.environments)
   );
-  const applications = useSelector<AppState, Application[]>((state) =>
+  const applications = useSelector<AppState, Application.AsObject[]>((state) =>
     selectAllApplications(state.applications)
   );
   const options = useSelector<AppState, DeploymentFilterOptions>(
     (state) => state.deploymentFilterOptions
   );
-  const selectedApp = useSelector<AppState, Application | undefined>((state) =>
-    selectApplicationById(state.applications, options.applicationIds[0])
+  const selectedApp = useSelector<AppState, Application.AsObject | undefined>(
+    (state) =>
+      selectApplicationById(state.applications, options.applicationIds[0])
   );
   const handleUpdateFilterValue = useCallback(
     (opts: Partial<DeploymentFilterOptions>): void => {

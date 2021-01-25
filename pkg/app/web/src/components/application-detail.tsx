@@ -151,7 +151,7 @@ export const ApplicationDetail: FC<Props> = memo(function ApplicationDetail({
 
   const [app, fetchApplicationError] = useSelector<
     AppState,
-    [Application | undefined, SerializedError | null]
+    [Application.AsObject | undefined, SerializedError | null]
   >((state) => [
     selectApplicationById(state.applications, applicationId),
     state.applications.fetchApplicationError,
@@ -159,7 +159,7 @@ export const ApplicationDetail: FC<Props> = memo(function ApplicationDetail({
 
   const [pipe, env] = useSelector<
     AppState,
-    [Environment | undefined, Piped | undefined]
+    [Environment.AsObject | undefined, Piped.AsObject | undefined]
   >((state) => [
     app ? selectEnvById(state.environments, app.envId) : undefined,
     app ? selectPipeById(state.pipeds, app.pipedId) : undefined,

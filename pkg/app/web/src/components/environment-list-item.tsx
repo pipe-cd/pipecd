@@ -48,8 +48,8 @@ export const EnvironmentListItem: FC<Props> = memo(
     const [anchorEl, setAnchorEl] = useState<HTMLButtonElement | null>(null);
     const [isEdit, setIsEdit] = useState(false);
     const [desc, setDesc] = useState("");
-    const env = useSelector<AppState, Environment | undefined>((state) =>
-      selectEnvById(state.environments, id)
+    const env = useSelector<AppState, Environment.AsObject | undefined>(
+      (state) => selectEnvById(state.environments, id)
     );
 
     // menu event handler

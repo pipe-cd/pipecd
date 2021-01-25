@@ -63,7 +63,7 @@ export const SealedSecretDialog: FC<Props> = memo(function SealedSecretDialog({
 
   const [application, isLoading, sealedSecret] = useSelector<
     AppState,
-    [Application | undefined, boolean, string | null]
+    [Application.AsObject | undefined, boolean, string | null]
   >((state) => [
     applicationId ? selectById(state.applications, applicationId) : undefined,
     state.sealedSecret.isLoading,

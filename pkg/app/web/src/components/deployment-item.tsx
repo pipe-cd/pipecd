@@ -47,15 +47,17 @@ const NO_DESCRIPTION = "No description.";
 
 export const DeploymentItem: FC<Props> = memo(function DeploymentItem({ id }) {
   const classes = useStyles();
-  const deployment = useSelector<AppState, Deployment | undefined>((state) =>
-    selectDeploymentById(state.deployments, id)
+  const deployment = useSelector<AppState, Deployment.AsObject | undefined>(
+    (state) => selectDeploymentById(state.deployments, id)
   );
 
-  const env = useSelector<AppState, Environment | undefined>((state) => {
-    return deployment
-      ? selectById(state.environments, deployment.envId)
-      : undefined;
-  });
+  const env = useSelector<AppState, Environment.AsObject | undefined>(
+    (state) => {
+      return deployment
+        ? selectById(state.environments, deployment.envId)
+        : undefined;
+    }
+  );
 
   if (!deployment || !env) {
     return null;

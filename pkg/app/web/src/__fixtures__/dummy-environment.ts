@@ -1,6 +1,6 @@
 import { Environment } from "../modules/environments";
 
-export const dummyEnv: Environment = {
+export const dummyEnv: Environment.AsObject = {
   createdAt: 0,
   desc: "",
   name: "staging",

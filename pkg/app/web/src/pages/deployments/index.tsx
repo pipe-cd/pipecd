@@ -67,11 +67,11 @@ function filterUndefined<TValue>(value: TValue | undefined): value is TValue {
 const useGroupedDeployments = (): [
   LoadingStatus,
   boolean,
-  Record<string, Deployment[]>
+  Record<string, Deployment.AsObject[]>
 ] => {
   const [status, hasMore, deployments] = useSelector<
     AppState,
-    [LoadingStatus, boolean, Deployment[]]
+    [LoadingStatus, boolean, Deployment.AsObject[]]
   >((state) => [
     state.deployments.status,
     state.deployments.hasMore,
@@ -80,7 +80,7 @@ const useGroupedDeployments = (): [
       .filter(filterUndefined),
   ]);
 
-  const result: Record<string, Deployment[]> = {};
+  const result: Record<string, Deployment.AsObject[]> = {};
 
   deployments.forEach((deployment) => {
     const dateStr = dayjs(deployment.createdAt * 1000).format("YYYY/MM/DD");

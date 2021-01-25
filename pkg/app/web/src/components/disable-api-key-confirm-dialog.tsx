@@ -35,7 +35,7 @@ const DESCRIPTION = "Are you sure you want to disable the API key?";
 export const DisableAPIKeyConfirmDialog: FC<Props> = memo(
   function DisableAPIKeyConfirmDialog({ apiKeyId, onDisable, onCancel }) {
     const classes = useStyles();
-    const apiKey = useSelector<AppState, APIKey | undefined>((state) =>
+    const apiKey = useSelector<AppState, APIKey.AsObject | undefined>((state) =>
       apiKeyId ? selectById(state.apiKeys, apiKeyId) : undefined
     );
     const open = Boolean(apiKey);
