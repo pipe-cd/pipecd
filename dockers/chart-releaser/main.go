@@ -49,7 +49,7 @@ var (
 func init() {
 	flag.StringVar(&manifestsDir, "manifests-dir", "", "The path to the manifests directory")
 	flag.StringVar(&bucket, "bucket", "", "The name of GCS bucket where to put charts")
-	flag.StringVar(&credentialsFile, "credentials-file", "", "The path to the credentials file used while commucating with GCS")
+	flag.StringVar(&credentialsFile, "credentials-file", "", "The path to the credentials file used while communicating with GCS")
 	flag.Parse()
 
 	if manifestsDir == "" {
