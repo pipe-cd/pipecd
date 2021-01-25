@@ -44,6 +44,25 @@ export const loading: React.FC = () => (
   </Provider>
 );
 
+export const refresh: React.FC = () => (
+  <Provider
+    store={createStore({
+      applicationLiveState: {
+        entities: {
+          [dummyApplication.id]: dummyApplicationLiveState,
+        },
+        ids: [dummyApplication.id],
+        hasError: {},
+        loading: {
+          [dummyApplication.id]: true,
+        },
+      },
+    })}
+  >
+    <AppLiveState applicationId={dummyApplication.id} />
+  </Provider>
+);
+
 export const notAvailable: React.FC = () => (
   <Provider
     store={createStore({

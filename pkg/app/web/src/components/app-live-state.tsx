@@ -34,7 +34,7 @@ export const AppLiveState: FC<Props> = memo(function AppLiveState({
     selectLoadingById(state.applicationLiveState, applicationId),
   ]);
 
-  if (liveStateLoading) {
+  if (liveStateLoading && liveState === undefined) {
     return <Skeleton height={32} width={100} />;
   }
 
