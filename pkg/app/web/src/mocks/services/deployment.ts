@@ -1,4 +1,3 @@
-import { rest } from "msw";
 import { GetDeploymentResponse } from "pipe/pkg/app/web/api_client/service_pb";
 import {
   Commit,
@@ -11,8 +10,7 @@ import {
   ApplicationGitRepository,
 } from "pipe/pkg/app/web/model/common_pb";
 import { dummyDeployment } from "../../__fixtures__/dummy-deployment";
-import { serialize } from "../serializer";
-import { createMask } from "../utils";
+import { createHandler } from "../create-handler";
 
 const createGitPath = (o: ApplicationGitPath.AsObject): ApplicationGitPath => {
   const gitPath = new ApplicationGitPath();
@@ -77,16 +75,9 @@ const createDeployment = (o: Deployment.AsObject): Deployment => {
 };
 
 export const deploymentHandlers = [
-  rest.post<Uint8Array>(createMask("/GetDeployment"), (req, res, ctx) => {
+  createHandler<GetDeploymentResponse>("/GetDeployment", () => {
     const response = new GetDeploymentResponse();
-
     response.setDeployment(createDeployment(dummyDeployment));
-
-    const data = serialize(response.serializeBinary());
-    return res(
-      ctx.status(200),
-      ctx.set("Content-Type", "application/grpc-web+proto"),
-      ctx.body(data)
-    );
+    return response;
   }),
 ];
