@@ -65,11 +65,12 @@ export const ApplicationListItem: FC<Props> = memo(
   }) {
     const classes = useStyles();
     const [anchorEl, setAnchorEl] = useState<HTMLButtonElement | null>(null);
-    const app = useSelector<AppState, Application | undefined>((state) =>
-      selectById(state.applications, applicationId)
+    const app = useSelector<AppState, Application.AsObject | undefined>(
+      (state) => selectById(state.applications, applicationId)
     );
-    const env = useSelector<AppState, Environment | undefined>((state) =>
-      app ? selectEnvById(state.environments, app.envId) : undefined
+    const env = useSelector<AppState, Environment.AsObject | undefined>(
+      (state) =>
+        app ? selectEnvById(state.environments, app.envId) : undefined
     );
 
     const handleEdit = (): void => {

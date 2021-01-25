@@ -31,7 +31,7 @@ const createCloudProviderListFromPiped = ({
   kind,
   piped,
 }: {
-  piped?: Piped;
+  piped?: Piped.AsObject;
   kind: ApplicationKind;
 }): Array<{ name: string; value: string }> => {
   if (!piped) {
@@ -178,16 +178,16 @@ export const ApplicationForm: FC<Props> = memo(function ApplicationForm({
 }) {
   const classes = useStyles();
 
-  const environments = useSelector<AppState, Environment[]>((state) =>
+  const environments = useSelector<AppState, Environment.AsObject[]>((state) =>
     selectEnvironments(state.environments)
   );
 
-  const pipeds = useSelector<AppState, Piped[]>((state) =>
+  const pipeds = useSelector<AppState, Piped.AsObject[]>((state) =>
     values.env !== "" ? selectPipedsByEnv(state.pipeds, values.env) : []
   );
 
-  const selectedPiped = useSelector<AppState, Piped | undefined>((state) =>
-    selectPipedById(state.pipeds, values.pipedId)
+  const selectedPiped = useSelector<AppState, Piped.AsObject | undefined>(
+    (state) => selectPipedById(state.pipeds, values.pipedId)
   );
 
   const cloudProviders = createCloudProviderListFromPiped({

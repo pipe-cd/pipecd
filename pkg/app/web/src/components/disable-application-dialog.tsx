@@ -45,7 +45,7 @@ export const DisableApplicationDialog: FC<Props> = memo(
     const classes = useStyles();
     const dispatch = useDispatch<AppDispatch>();
 
-    const application = useSelector<AppState, Application | undefined>(
+    const application = useSelector<AppState, Application.AsObject | undefined>(
       (state) =>
         applicationId
           ? selectById(state.applications, applicationId)

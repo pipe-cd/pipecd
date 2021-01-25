@@ -29,7 +29,7 @@ afterAll(() => {
   server.close();
 });
 
-const deployingApp: Application = {
+const deployingApp: Application.AsObject = {
   ...dummyApplication,
   deploying: true,
   id: "deploying-app",

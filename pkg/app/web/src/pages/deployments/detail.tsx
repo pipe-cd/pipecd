@@ -30,8 +30,8 @@ export const DeploymentDetailPage: FC = memo(function DeploymentDetailPage() {
   const classes = useStyles();
   const dispatch = useDispatch();
   const { deploymentId } = useParams<{ deploymentId: string }>();
-  const deployment = useSelector<AppState, Deployment | undefined>((state) =>
-    selectDeploymentById(state.deployments, deploymentId)
+  const deployment = useSelector<AppState, Deployment.AsObject | undefined>(
+    (state) => selectDeploymentById(state.deployments, deploymentId)
   );
 
   const fetchData = (): void => {

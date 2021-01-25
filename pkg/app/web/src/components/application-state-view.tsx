@@ -45,7 +45,11 @@ export const ApplicationStateView: FC<Props> = memo(
     const dispatch = useDispatch();
     const [hasError, liveState, app] = useSelector<
       AppState,
-      [boolean, ApplicationLiveState | undefined, Application | undefined]
+      [
+        boolean,
+        ApplicationLiveState | undefined,
+        Application.AsObject | undefined
+      ]
     >((state) => [
       selectHasError(state.applicationLiveState, applicationId),
       selectLiveStateById(state.applicationLiveState, applicationId),

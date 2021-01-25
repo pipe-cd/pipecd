@@ -3,12 +3,12 @@ import {
   createEntityAdapter,
   createAsyncThunk,
 } from "@reduxjs/toolkit";
-import { Environment as EnvironmentModel } from "pipe/pkg/app/web/model/environment_pb";
+import { Environment } from "pipe/pkg/app/web/model/environment_pb";
 import * as envsApi from "../api/environments";
 
-export type Environment = EnvironmentModel.AsObject;
-
-export const environmentsAdapter = createEntityAdapter<Environment>({});
+export const environmentsAdapter = createEntityAdapter<Environment.AsObject>(
+  {}
+);
 
 export const {
   selectById,
@@ -17,7 +17,7 @@ export const {
   selectIds,
 } = environmentsAdapter.getSelectors();
 
-export const fetchEnvironments = createAsyncThunk<Environment[], void>(
+export const fetchEnvironments = createAsyncThunk<Environment.AsObject[], void>(
   "environments/fetchList",
   async () => {
     const { environmentsList } = await envsApi.getEnvironments();
@@ -42,3 +42,5 @@ export const environmentsSlice = createSlice({
     });
   },
 });
+
+export { Environment } from "pipe/pkg/app/web/model/environment_pb";

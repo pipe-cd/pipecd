@@ -10,9 +10,10 @@ import { InsightDataPoint } from "../../modules/insight";
 export const InsightIndexPage: FC = memo(function InsightIndexPage() {
   const dispatch = useDispatch();
 
-  const deploymentFrequency = useSelector<AppState, InsightDataPoint[]>(
-    (state) => state.deploymentFrequency.data
-  );
+  const deploymentFrequency = useSelector<
+    AppState,
+    InsightDataPoint.AsObject[]
+  >((state) => state.deploymentFrequency.data);
 
   useEffect(() => {
     dispatch(fetchApplications());

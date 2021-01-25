@@ -30,7 +30,7 @@ export const EditApplicationDrawer: FC = memo(function EditApplicationDrawer() {
     ]
   );
 
-  const app = useSelector<AppState, Application | undefined>((state) =>
+  const app = useSelector<AppState, Application.AsObject | undefined>((state) =>
     applicationId ? selectAppById(state.applications, applicationId) : undefined
   );
 

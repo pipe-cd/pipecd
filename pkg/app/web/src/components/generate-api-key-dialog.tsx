@@ -14,11 +14,11 @@ import { useFormik } from "formik";
 import React, { FC } from "react";
 import * as Yup from "yup";
 import { API_KEY_ROLE_TEXT } from "../constants/api-key-role-text";
-import { APIKeyModel } from "../modules/api-keys";
+import { APIKey } from "../modules/api-keys";
 interface Props {
   open: boolean;
   onClose: () => void;
-  onSubmit: (values: { name: string; role: APIKeyModel.Role }) => void;
+  onSubmit: (values: { name: string; role: APIKey.Role }) => void;
 }
 
 const validationSchema = Yup.object({
@@ -34,7 +34,7 @@ export const GenerateAPIKeyDialog: FC<Props> = ({
   const formik = useFormik({
     initialValues: {
       name: "",
-      role: APIKeyModel.Role.READ_ONLY,
+      role: APIKey.Role.READ_ONLY,
     },
     validationSchema,
     validateOnMount: true,
@@ -76,11 +76,11 @@ export const GenerateAPIKeyDialog: FC<Props> = ({
               label="Role"
               onChange={formik.handleChange}
             >
-              <MenuItem value={APIKeyModel.Role.READ_ONLY}>
-                {API_KEY_ROLE_TEXT[APIKeyModel.Role.READ_ONLY]}
+              <MenuItem value={APIKey.Role.READ_ONLY}>
+                {API_KEY_ROLE_TEXT[APIKey.Role.READ_ONLY]}
               </MenuItem>
-              <MenuItem value={APIKeyModel.Role.READ_WRITE}>
-                {API_KEY_ROLE_TEXT[APIKeyModel.Role.READ_WRITE]}
+              <MenuItem value={APIKey.Role.READ_WRITE}>
+                {API_KEY_ROLE_TEXT[APIKey.Role.READ_WRITE]}
               </MenuItem>
             </Select>
           </FormControl>

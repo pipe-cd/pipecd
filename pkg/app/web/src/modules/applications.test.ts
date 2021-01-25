@@ -14,7 +14,7 @@ import {
   syncApplication,
   ApplicationsState,
 } from "./applications";
-import { CommandModel, CommandStatus, fetchCommand } from "./commands";
+import { Command, CommandStatus, fetchCommand } from "./commands";
 import * as applicationsAPI from "../api/applications";
 
 const baseState: ApplicationsState = {
@@ -128,7 +128,7 @@ describe("applicationsSlice reducer", () => {
 
   describe("fetchApplication", () => {
     it(`should handle ${fetchApplication.fulfilled.type}`, () => {
-      const updatedApplication: Application = {
+      const updatedApplication: Application.AsObject = {
         ...dummyApplication,
         syncState: {
           ...dummyApplicationSyncState,
@@ -235,7 +235,7 @@ describe("applicationsSlice reducer", () => {
         {
           type: fetchCommand.fulfilled.type,
           payload: {
-            type: CommandModel.Type.SYNC_APPLICATION,
+            type: Command.Type.SYNC_APPLICATION,
             status: CommandStatus.COMMAND_SUCCEEDED,
             applicationId: "app-1",
           },
@@ -259,7 +259,7 @@ describe("applicationsSlice reducer", () => {
         {
           type: fetchCommand.fulfilled.type,
           payload: {
-            type: CommandModel.Type.SYNC_APPLICATION,
+            type: Command.Type.SYNC_APPLICATION,
             status: CommandStatus.COMMAND_NOT_HANDLED_YET,
             applicationId: "app-1",
           },

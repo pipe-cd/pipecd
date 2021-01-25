@@ -88,7 +88,7 @@ export const DeploymentDetail: FC<Props> = memo(function DeploymentDetail({
 
   const [deployment, activeStage] = useSelector<
     AppState,
-    [Deployment | undefined, ActiveStage | null]
+    [Deployment.AsObject | undefined, ActiveStage | null]
   >((state) => [
     selectDeploymentById(state.deployments, deploymentId),
     state.activeStage,
@@ -96,7 +96,7 @@ export const DeploymentDetail: FC<Props> = memo(function DeploymentDetail({
 
   const [env, piped, isCanceling] = useSelector<
     AppState,
-    [Environment | undefined, Piped | undefined, boolean]
+    [Environment.AsObject | undefined, Piped.AsObject | undefined, boolean]
   >((state) =>
     deployment
       ? [
@@ -181,7 +181,7 @@ export const DeploymentDetail: FC<Props> = memo(function DeploymentDetail({
           <div className={classes.content}>
             <table>
               <tbody>
-                {deployment.trigger.commit && (
+                {deployment.trigger?.commit && (
                   <DetailTableRow
                     label="Commit"
                     value={
@@ -209,8 +209,8 @@ export const DeploymentDetail: FC<Props> = memo(function DeploymentDetail({
                 <DetailTableRow
                   label="Triggered by"
                   value={
-                    deployment.trigger.commander ||
-                    deployment.trigger.commit?.author ||
+                    deployment.trigger?.commander ||
+                    deployment.trigger?.commit?.author ||
                     ""
                   }
                 />

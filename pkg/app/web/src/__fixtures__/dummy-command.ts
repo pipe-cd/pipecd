@@ -1,8 +1,8 @@
 import { SyncStrategy } from "pipe/pkg/app/web/model/deployment_pb";
-import { Command, CommandModel, CommandStatus } from "../modules/commands";
+import { Command, CommandStatus } from "../modules/commands";
 import { dummyDeployment } from "./dummy-deployment";
 
-export const dummyCommand: Command = {
+export const dummyCommand: Command.AsObject = {
   id: "command-1",
   pipedId: "piped-1",
   applicationId: "app-1",
@@ -12,7 +12,7 @@ export const dummyCommand: Command = {
   status: CommandStatus.COMMAND_NOT_HANDLED_YET,
   metadataMap: [],
   handledAt: 0,
-  type: CommandModel.Type.SYNC_APPLICATION,
+  type: Command.Type.SYNC_APPLICATION,
   syncApplication: {
     applicationId: "app-1",
     syncStrategy: SyncStrategy.AUTO,
@@ -21,7 +21,7 @@ export const dummyCommand: Command = {
   updatedAt: 0,
 };
 
-export const dummySyncSucceededCommand: Command = {
+export const dummySyncSucceededCommand: Command.AsObject = {
   ...dummyCommand,
   id: "sync-succeeded",
   status: CommandStatus.COMMAND_SUCCEEDED,

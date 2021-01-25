@@ -4,17 +4,16 @@ import {
   createSlice,
 } from "@reduxjs/toolkit";
 import {
-  Deployment as DeploymentModel,
+  Deployment,
   PipelineStage,
   DeploymentStatus,
   StageStatus,
 } from "pipe/pkg/app/web/model/deployment_pb";
 import * as deploymentsApi from "../api/deployments";
-import { fetchCommand, CommandModel, CommandStatus } from "./commands";
+import { fetchCommand, Command, CommandStatus } from "./commands";
 import { AppState } from ".";
 import { LoadingStatus } from "../types/module";
 
-export type Deployment = Required<DeploymentModel.AsObject>;
 export type Stage = Required<PipelineStage.AsObject>;
 export type DeploymentStatusKey = keyof typeof DeploymentStatus;
 
@@ -53,7 +52,7 @@ export const isStageRunning = (status: StageStatus): boolean => {
   }
 };
 
-export const deploymentsAdapter = createEntityAdapter<Deployment>({
+export const deploymentsAdapter = createEntityAdapter<Deployment.AsObject>({
   sortComparer: (a, b) => b.updatedAt - a.updatedAt,
 });
 
@@ -76,7 +75,9 @@ const initialState = deploymentsAdapter.getInitialState<{
   hasMore: true,
 });
 
-const selectLastItem = (state: typeof initialState): Deployment | undefined => {
+const selectLastItem = (
+  state: typeof initialState
+): Deployment.AsObject | undefined => {
   if (state.ids.length === 0) {
     return undefined;
   }
@@ -85,19 +86,19 @@ const selectLastItem = (state: typeof initialState): Deployment | undefined => {
   return state.entities[lastId];
 };
 
-export const fetchDeploymentById = createAsyncThunk<Deployment, string>(
-  "deployments/fetchById",
-  async (deploymentId) => {
-    const { deployment } = await deploymentsApi.getDeployment({ deploymentId });
-    return deployment as Deployment;
-  }
-);
+export const fetchDeploymentById = createAsyncThunk<
+  Deployment.AsObject,
+  string
+>("deployments/fetchById", async (deploymentId) => {
+  const { deployment } = await deploymentsApi.getDeployment({ deploymentId });
+  return deployment as Deployment.AsObject;
+});
 
 /**
  * This action will clear old items and add items.
  */
 export const fetchDeployments = createAsyncThunk<
-  Deployment[],
+  Deployment.AsObject[],
   void,
   { state: AppState }
 >("deployments/fetchList", async (_, thunkAPI) => {
@@ -112,14 +113,14 @@ export const fetchDeployments = createAsyncThunk<
     },
     pageSize: ITEMS_PER_PAGE,
   });
-  return (deploymentsList as Deployment[]) || [];
+  return (deploymentsList as Deployment.AsObject[]) || [];
 });
 
 /**
  * This action will add items to current state.
  */
 export const fetchMoreDeployments = createAsyncThunk<
-  Deployment[],
+  Deployment.AsObject[],
   void,
   { state: AppState }
 >("deployments/fetchMoreList", async (_, thunkAPI) => {
@@ -136,7 +137,7 @@ export const fetchMoreDeployments = createAsyncThunk<
     },
     pageSize: FETCH_MORE_ITEMS_PER_PAGE,
   });
-  return (deploymentsList as Deployment[]) || [];
+  return (deploymentsList as Deployment.AsObject[]) || [];
 });
 
 export const approveStage = createAsyncThunk<
@@ -221,7 +222,7 @@ export const deploymentsSlice = createSlice({
       })
       .addCase(fetchCommand.fulfilled, (state, action) => {
         if (
-          action.payload.type === CommandModel.Type.CANCEL_DEPLOYMENT &&
+          action.payload.type === Command.Type.CANCEL_DEPLOYMENT &&
           action.payload.status !== CommandStatus.COMMAND_NOT_HANDLED_YET
         ) {
           state.canceling[action.payload.deploymentId] = false;
@@ -231,7 +232,9 @@ export const deploymentsSlice = createSlice({
 });
 
 export {
+  Deployment,
   DeploymentStatus,
   StageStatus,
   SyncStrategy,
+  PipelineStage,
 } from "pipe/pkg/app/web/model/deployment_pb";

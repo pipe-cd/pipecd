@@ -2,17 +2,15 @@ import {
   GetCommandRequest,
   GetCommandResponse,
 } from "pipe/pkg/app/web/api_client/service_pb";
-import { CommandModel } from "../../modules/commands";
+import { Command } from "../../modules/commands";
 import {
   dummyCommand,
   dummySyncSucceededCommand,
 } from "../../__fixtures__/dummy-command";
 import { createHandler } from "../create-handler";
 
-const createCommandModel = (
-  commandObj: CommandModel.AsObject
-): CommandModel => {
-  const command = new CommandModel();
+const createCommandModel = (commandObj: Command.AsObject): Command => {
+  const command = new Command();
   command.setId(commandObj.id);
   command.setApplicationId(commandObj.applicationId);
   command.setPipedId(commandObj.pipedId);

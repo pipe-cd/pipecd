@@ -19,7 +19,7 @@ const useStyles = makeStyles((theme) => ({
 }));
 
 interface Props {
-  logs: LogBlock[];
+  logs: LogBlock.AsObject[];
   loading: boolean;
 }
 

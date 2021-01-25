@@ -51,7 +51,7 @@ export const PipedTableRow: FC<Props> = memo(function PipedTableRow({
   onRecreateKey,
 }) {
   const classes = useStyles();
-  const piped = useSelector<AppState, Piped | undefined>((state) =>
+  const piped = useSelector<AppState, Piped.AsObject | undefined>((state) =>
     selectById(state.pipeds, pipedId)
   );
   const [anchorEl, setAnchorEl] = useState<HTMLButtonElement | null>(null);

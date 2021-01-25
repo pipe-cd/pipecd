@@ -10,7 +10,7 @@ const MODULE_NAME = "deploymentFrequency";
 
 export interface DeploymentFrequencyState {
   status: LoadingStatus;
-  data: InsightDataPoint[];
+  data: InsightDataPoint.AsObject[];
 }
 
 const initialState: DeploymentFrequencyState = {
@@ -26,7 +26,7 @@ const STEP_UNIT_MAP: Record<InsightStep, "day" | "week" | "month" | "year"> = {
 };
 
 export const fetchDeploymentFrequency = createAsyncThunk<
-  InsightDataPoint[],
+  InsightDataPoint.AsObject[],
   void,
   { state: AppState }
 >(`${MODULE_NAME}/fetch`, async (_, thunkAPI) => {

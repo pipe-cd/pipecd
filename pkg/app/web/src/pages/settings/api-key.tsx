@@ -30,7 +30,6 @@ import {
 import { AppState } from "../../modules";
 import {
   APIKey,
-  APIKeyModel,
   generateAPIKey,
   fetchAPIKeys,
   selectAll as selectAPIKeys,
@@ -70,7 +69,7 @@ const EmptyTableContent = memo(function EmptyTableContent() {
 
 export const APIKeyPage: FC = memo(function APIKeyPage() {
   const dispatch = useDispatch<AppDispatch>();
-  const [loading, keys] = useSelector<AppState, [boolean, APIKey[]]>(
+  const [loading, keys] = useSelector<AppState, [boolean, APIKey.AsObject[]]>(
     (state) => [state.apiKeys.loading, selectAPIKeys(state.apiKeys)]
   );
   const [isOpenAddForm, setIsOpenAddForm] = useState(false);
@@ -84,7 +83,7 @@ export const APIKeyPage: FC = memo(function APIKeyPage() {
   }, [dispatch]);
 
   const handleSubmit = useCallback(
-    (values: { name: string; role: APIKeyModel.Role }) => {
+    (values: { name: string; role: APIKey.Role }) => {
       dispatch(generateAPIKey(values)).then(() => {
         dispatch(fetchAPIKeys({ enabled: true }));
         dispatch(addToast({ message: GENERATE_API_KEY_SUCCESS }));

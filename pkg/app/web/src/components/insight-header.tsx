@@ -56,10 +56,10 @@ export const InsightHeader: FC = memo(function InsightHeader() {
     state.insight.rangeTo,
   ]);
 
-  const selectedApp = useSelector<AppState, Application | null>(
+  const selectedApp = useSelector<AppState, Application.AsObject | null>(
     (state) => selectById(state.applications, applicationId) || null
   );
-  const applications = useSelector<AppState, Application[]>((state) =>
+  const applications = useSelector<AppState, Application.AsObject[]>((state) =>
     selectAll(state.applications)
   );
 
@@ -67,7 +67,7 @@ export const InsightHeader: FC = memo(function InsightHeader() {
   const Picker = step === InsightStep.WEEKLY ? WeekPicker : DatePicker;
 
   const handleApplicationChange = useCallback(
-    (_, newValue: Application | null) => {
+    (_, newValue: Application.AsObject | null) => {
       if (newValue) {
         dispatch(changeApplication(newValue.id));
       } else {

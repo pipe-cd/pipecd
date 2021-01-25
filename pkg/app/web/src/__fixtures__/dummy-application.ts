@@ -8,7 +8,7 @@ import { dummyEnv } from "./dummy-environment";
 import { dummyPiped } from "./dummy-piped";
 import { dummyRepo } from "./dummy-repo";
 
-export const dummyApplicationSyncState: ApplicationSyncState = {
+export const dummyApplicationSyncState: ApplicationSyncState.AsObject = {
   headDeploymentId: "deployment-1",
   reason: "",
   shortReason: "",
@@ -16,7 +16,7 @@ export const dummyApplicationSyncState: ApplicationSyncState = {
   timestamp: 0,
 };
 
-export const dummyApplication: Application = {
+export const dummyApplication: Application.AsObject = {
   id: "application-1",
   cloudProvider: "kubernetes-default",
   createdAt: 0,

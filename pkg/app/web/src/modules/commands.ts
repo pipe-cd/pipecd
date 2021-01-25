@@ -3,29 +3,24 @@ import {
   createEntityAdapter,
   createSlice,
 } from "@reduxjs/toolkit";
-import {
-  Command as CommandModel,
-  CommandStatus,
-} from "pipe/pkg/app/web/model/command_pb";
+import { Command, CommandStatus } from "pipe/pkg/app/web/model/command_pb";
 import { getCommand } from "../api/commands";
 import { PAGE_PATH_DEPLOYMENTS } from "../constants/path";
 import { findMetadataByKey } from "../utils/find-metadata-by-key";
 import { addToast } from "./toasts";
 
-export type Command = CommandModel.AsObject;
-
 const METADATA_KEY = {
   TRIGGERED_DEPLOYMENT_ID: "TriggeredDeploymentID",
 };
 
-export const COMMAND_TYPE_TEXT: Record<CommandModel.Type, string> = {
-  [CommandModel.Type.APPROVE_STAGE]: "Approve Stage",
-  [CommandModel.Type.CANCEL_DEPLOYMENT]: "Cancel Deployment",
-  [CommandModel.Type.SYNC_APPLICATION]: "Sync Application",
-  [CommandModel.Type.UPDATE_APPLICATION_CONFIG]: "Update Application Config",
+export const COMMAND_TYPE_TEXT: Record<Command.Type, string> = {
+  [Command.Type.APPROVE_STAGE]: "Approve Stage",
+  [Command.Type.CANCEL_DEPLOYMENT]: "Cancel Deployment",
+  [Command.Type.SYNC_APPLICATION]: "Sync Application",
+  [Command.Type.UPDATE_APPLICATION_CONFIG]: "Update Application Config",
 };
 
-const commandsAdapter = createEntityAdapter<Command>();
+const commandsAdapter = createEntityAdapter<Command.AsObject>();
 export const fetchCommand = createAsyncThunk(
   "commands/fetch",
   async (commandId: string, thunkAPI) => {
@@ -39,7 +34,7 @@ export const fetchCommand = createAsyncThunk(
     }
 
     switch (command.type) {
-      case CommandModel.Type.SYNC_APPLICATION: {
+      case Command.Type.SYNC_APPLICATION: {
         const deploymentId = findMetadataByKey(
           command.metadataMap,
           METADATA_KEY.TRIGGERED_DEPLOYMENT_ID
@@ -86,7 +81,4 @@ export const commandsSlice = createSlice({
   },
 });
 
-export {
-  CommandStatus,
-  Command as CommandModel,
-} from "pipe/pkg/app/web/model/command_pb";
+export { CommandStatus, Command } from "pipe/pkg/app/web/model/command_pb";

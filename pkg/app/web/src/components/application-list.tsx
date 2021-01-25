@@ -51,7 +51,7 @@ export const ApplicationList: FC = memo(function ApplicationList() {
   const [page, setPage] = React.useState(0);
   const [rowsPerPage, setRowsPerPage] = React.useState(20);
 
-  const applications = useSelector<AppState, Application[]>((state) =>
+  const applications = useSelector<AppState, Application.AsObject[]>((state) =>
     selectAll(state.applications)
   );
 

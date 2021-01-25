@@ -18,7 +18,11 @@ const baseState = {
 };
 
 test("selectPipedsByEnv", () => {
-  const disabledPiped: Piped = { ...dummyPiped, id: "piped-2", disabled: true };
+  const disabledPiped: Piped.AsObject = {
+    ...dummyPiped,
+    id: "piped-2",
+    disabled: true,
+  };
   expect(selectPipedsByEnv({ entities: {}, ids: [] }, "env-1")).toEqual([]);
   expect(
     selectPipedsByEnv(

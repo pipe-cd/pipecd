@@ -4,30 +4,28 @@ import {
   SerializedError,
   createEntityAdapter,
 } from "@reduxjs/toolkit";
-import { APIKey as APIKeyModel } from "pipe/pkg/app/web/model/apikey_pb";
+import { APIKey } from "pipe/pkg/app/web/model/apikey_pb";
 import * as APIKeysAPI from "../api/api-keys";
 
 const MODULE_NAME = "apiKeys";
 
-export type APIKey = APIKeyModel.AsObject;
-
-const apiKeysAdapter = createEntityAdapter<APIKey>();
+const apiKeysAdapter = createEntityAdapter<APIKey.AsObject>();
 
 export const generateAPIKey = createAsyncThunk<
   string,
-  { name: string; role: APIKeyModel.Role }
+  { name: string; role: APIKey.Role }
 >(`${MODULE_NAME}/generate`, async ({ name, role }) => {
   const res = await APIKeysAPI.generateAPIKey({ name, role });
   return res.key;
 });
 
-export const fetchAPIKeys = createAsyncThunk<APIKey[], { enabled: boolean }>(
-  `${MODULE_NAME}/getList`,
-  async (options) => {
-    const res = await APIKeysAPI.getAPIKeys({ options });
-    return res.keysList;
-  }
-);
+export const fetchAPIKeys = createAsyncThunk<
+  APIKey.AsObject[],
+  { enabled: boolean }
+>(`${MODULE_NAME}/getList`, async (options) => {
+  const res = await APIKeysAPI.getAPIKeys({ options });
+  return res.keysList;
+});
 
 export const disableAPIKey = createAsyncThunk<void, { id: string }>(
   `${MODULE_NAME}/disable`,
@@ -101,4 +99,4 @@ export const apiKeysSlice = createSlice({
 export const { clearGeneratedKey } = apiKeysSlice.actions;
 export const { selectAll, selectById } = apiKeysAdapter.getSelectors();
 
-export { APIKey as APIKeyModel } from "pipe/pkg/app/web/model/apikey_pb";
+export { APIKey } from "pipe/pkg/app/web/model/apikey_pb";
