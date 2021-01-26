@@ -73,11 +73,9 @@ func TestGetObject(t *testing.T) {
 			wantErr: nil,
 		},
 		{
-			name: "not found",
-			path: "path/to/wrong.txt",
-			want: filestore.Object{
-				Path: "path/to/wrong.txt",
-			},
+			name:    "not found",
+			path:    "path/to/wrong.txt",
+			want:    filestore.Object{},
 			wantErr: filestore.ErrNotFound,
 		},
 	}
