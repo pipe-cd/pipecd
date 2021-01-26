@@ -3,7 +3,7 @@ import React, { FC, memo, useEffect } from "react";
 import { useDispatch } from "react-redux";
 import { GithubSSOForm } from "../../components/github-sso-form";
 import { RBACForm } from "../../components/rbac-form";
-import { StaticAdminForm } from "../../components/static-admin-form";
+import { StaticAdminForm } from "../../components/static-admin-form/static-admin-form";
 import { fetchProject } from "../../modules/project";
 import { AppDispatch } from "../../store";
 
