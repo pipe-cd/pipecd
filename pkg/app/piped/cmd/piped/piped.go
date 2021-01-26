@@ -465,7 +465,7 @@ func (p *piped) sendPipedMeta(ctx context.Context, client pipedservice.Client, c
 			Repositories:   repos,
 			CloudProviders: make([]*model.Piped_CloudProvider, 0, len(cfg.CloudProviders)),
 		}
-		retry = pipedservice.NewRetry(10)
+		retry = pipedservice.NewRetry(5)
 		err   error
 	)
 
@@ -501,7 +501,10 @@ func (p *piped) sendPipedMeta(ctx context.Context, client pipedservice.Client, c
 		if _, err = client.ReportPipedMeta(ctx, req); err == nil {
 			return nil
 		}
-		logger.Warn("failed to report piped meta to control-plane, wait to the next retry", zap.Int("calls", retry.Calls()))
+		logger.Warn("failed to report piped meta to control-plane, wait to the next retry",
+			zap.Int("calls", retry.Calls()),
+			zap.Error(err),
+		)
 	}
 
 	return err
