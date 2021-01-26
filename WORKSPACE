@@ -144,6 +144,14 @@ container_pull(
     tag = "0.0.1",
 )
 
+container_pull(
+    name = "alpine",
+    digest = "sha256:d0710affa17fad5f466a70159cc458227bd25d4afb39514ef662ead3e6c99515",
+    registry = "index.docker.io",
+    repository = "alpine",
+    tag = "3.13",
+)
+
 ### Protoc-gen-validate
 git_repository(
     name = "com_github_envoyproxy_protoc_gen_validate",
