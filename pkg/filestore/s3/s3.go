@@ -122,20 +122,27 @@ func (s *Store) NewReader(ctx context.Context, path string) (rc io.ReadCloser, e
 }
 
 func (s *Store) GetObject(ctx context.Context, path string) (object filestore.Object, err error) {
-	object.Path = path
 	rc, err := s.NewReader(ctx, path)
 	if err != nil {
 		return
 	}
+
 	content, err := ioutil.ReadAll(rc)
+	defer func() {
+		if e := rc.Close(); e != nil {
+			if err == nil {
+				err = fmt.Errorf("unable to close read object stream: %w", e)
+			} else {
+				err = fmt.Errorf("%w and unable to close read object stream: %s", err, e.Error())
+			}
+		}
+	}()
 	if err != nil {
-		rc.Close()
+		err = fmt.Errorf("failed to get object: %w", err)
 		return
 	}
-	err = rc.Close()
-	if err != nil {
-		return
-	}
+
+	object.Path = path
 	object.Content = content
 	object.Size = int64(len(content))
 	return
