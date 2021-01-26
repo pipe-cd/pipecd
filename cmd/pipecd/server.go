@@ -47,6 +47,7 @@ import (
 	"github.com/pipe-cd/pipe/pkg/filestore"
 	"github.com/pipe-cd/pipe/pkg/filestore/gcs"
 	"github.com/pipe-cd/pipe/pkg/filestore/minio"
+	"github.com/pipe-cd/pipe/pkg/filestore/s3"
 	"github.com/pipe-cd/pipe/pkg/insight"
 	"github.com/pipe-cd/pipe/pkg/jwt"
 	"github.com/pipe-cd/pipe/pkg/model"
@@ -441,7 +442,14 @@ func createFilestore(ctx context.Context, cfg *config.ControlPlaneSpec, logger *
 		return gcs.NewStore(ctx, gcsCfg.Bucket, options...)
 
 	case model.FileStoreS3:
-		return nil, errors.New("s3 is unimplemented yet")
+		s3Cfg := cfg.Filestore.S3Config
+		options := []s3.Option{
+			s3.WithLogger(logger),
+		}
+		if s3Cfg.CredentialsFile != "" {
+			options = append(options, s3.WithCredentialsFile(s3Cfg.CredentialsFile, s3Cfg.Profile))
+		}
+		return s3.NewStore(s3Cfg.Region, s3Cfg.Bucket, options...)
 
 	case model.FileStoreMINIO:
 		minioCfg := cfg.Filestore.MinioConfig
