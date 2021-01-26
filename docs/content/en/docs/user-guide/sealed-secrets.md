@@ -78,7 +78,7 @@ spec:
     metadata:
         name: simple-sealed-secret
     data:
-      password={{ .encryptedItems.password }}
+      password: {{ .encryptedItems.password }}
   encryptedItems:
     password: encrypted-data
 ```
