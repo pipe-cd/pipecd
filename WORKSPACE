@@ -145,11 +145,11 @@ container_pull(
 )
 
 container_pull(
-    name = "alpine",
-    digest = "sha256:d0710affa17fad5f466a70159cc458227bd25d4afb39514ef662ead3e6c99515",
-    registry = "index.docker.io",
-    repository = "alpine",
-    tag = "3.13",
+    name = "pipectl-base",
+    digest = "sha256:3f3c780070d03fdf6bc48a4a4fb7dd0007a61a1249753efe96e8d6c44666a957",
+    registry = "gcr.io",
+    repository = "pipecd/pipectl-base",
+    tag = "0.1.0",
 )
 
 ### Protoc-gen-validate
