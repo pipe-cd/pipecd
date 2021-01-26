@@ -101,6 +101,9 @@ func (s *Store) NewReader(ctx context.Context, path string) (rc io.ReadCloser, e
 			case s3.ErrCodeInvalidObjectState:
 				err = fmt.Errorf("invalid object state: %w", err)
 				return
+			default:
+				err = fmt.Errorf("unexpected aws error given: %w", err)
+				return
 			}
 		}
 		err = fmt.Errorf("unknown error given: %w", err)
