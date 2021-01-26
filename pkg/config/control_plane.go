@@ -307,14 +307,14 @@ func (f *ControlPlaneFileStore) UnmarshalJSON(data []byte) error {
 }
 
 type FileStoreGCSConfig struct {
-	// The bucket name to store artifacts and logs in the pipe.
+	// The bucket name to store artifacts and logs in the piped.
 	Bucket string `json:"bucket"`
 	// The path to the credentials file for accessing GCS.
 	CredentialsFile string `json:"credentialsFile"`
 }
 
 type FileStoreS3Config struct {
-	// The bucket name to store artifacts and logs in the pipe.
+	// The bucket name to store artifacts and logs in the piped.
 	Bucket string `json:"bucket"`
 	// The aws region of S3 bucket.
 	Region string `json:"region"`

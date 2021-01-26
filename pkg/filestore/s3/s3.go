@@ -165,7 +165,8 @@ func (s *Store) ListObjects(ctx context.Context, prefix string) ([]filestore.Obj
 				})
 			}
 			return *page.IsTruncated
-		})
+		},
+	)
 	if err != nil {
 		return nil, fmt.Errorf("failed to get list objects: %w", err)
 	}
