@@ -126,19 +126,14 @@ func (s *Store) GetObject(ctx context.Context, path string) (object filestore.Ob
 	if err != nil {
 		return
 	}
-
-	content, err := ioutil.ReadAll(rc)
 	defer func() {
-		if e := rc.Close(); e != nil {
-			if err == nil {
-				err = fmt.Errorf("unable to close read object stream: %w", e)
-			} else {
-				err = fmt.Errorf("%w and unable to close read object stream: %s", err, e.Error())
-			}
+		if err := rc.Close(); err != nil {
+			s.logger.Error("failed to close object reader")
 		}
 	}()
+
+	content, err := ioutil.ReadAll(rc)
 	if err != nil {
-		err = fmt.Errorf("failed to get object: %w", err)
 		return
 	}
 
