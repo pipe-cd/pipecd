@@ -96,6 +96,7 @@ export const PipedTableRow: FC<Props> = memo(function PipedTableRow({
       <TableRow
         key={`pipe-${piped.id}`}
         className={clsx({ [classes.disabledItem]: piped.disabled })}
+        title={piped.id}
       >
         <TableCell>
           <Typography variant="subtitle2">
