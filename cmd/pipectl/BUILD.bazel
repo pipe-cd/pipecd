@@ -22,7 +22,7 @@ go_binary(
 
 app_image(
     name = "pipectl_app",
-    base = "@alpine//image",
+    base = "@pipectl-base//image",
     binary = ":pipectl",
     repository = "pipectl",
     visibility = ["//visibility:public"],
