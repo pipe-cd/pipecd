@@ -95,20 +95,22 @@ func (s *Store) NewReader(ctx context.Context, path string) (rc io.ReadCloser, e
 }
 
 func (s *Store) GetObject(ctx context.Context, path string) (object filestore.Object, err error) {
-	object.Path = path
 	rc, err := s.NewReader(ctx, path)
 	if err != nil {
 		return
 	}
+	defer func() {
+		if err := rc.Close(); err != nil {
+			s.logger.Error("failed to close object reader")
+		}
+	}()
+
 	content, err := ioutil.ReadAll(rc)
 	if err != nil {
-		rc.Close()
 		return
 	}
-	err = rc.Close()
-	if err != nil {
-		return
-	}
+
+	object.Path = path
 	object.Content = content
 	object.Size = int64(len(content))
 	return
