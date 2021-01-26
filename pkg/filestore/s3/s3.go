@@ -34,8 +34,10 @@ import (
 )
 
 type Store struct {
-	client *s3.S3
-	bucket string
+	client          *s3.S3
+	bucket          string
+	profile         string
+	credentialsFile string
 
 	logger *zap.Logger
 }
@@ -48,7 +50,14 @@ func WithLogger(logger *zap.Logger) Option {
 	}
 }
 
-func NewStore(region, profile, credentialsFile, bucket string, opts ...Option) (*Store, error) {
+func WithCredentialsFile(path, profile string) Option {
+	return func(s *Store) {
+		s.profile = profile
+		s.credentialsFile = path
+	}
+}
+
+func NewStore(region, bucket string, opts ...Option) (*Store, error) {
 	if region == "" {
 		return nil, fmt.Errorf("region is required field")
 	}
@@ -72,8 +81,8 @@ func NewStore(region, profile, credentialsFile, bucket string, opts ...Option) (
 		[]credentials.Provider{
 			&credentials.EnvProvider{},
 			&credentials.SharedCredentialsProvider{
-				Filename: credentialsFile,
-				Profile:  profile,
+				Filename: s.credentialsFile,
+				Profile:  s.profile,
 			},
 			&ec2rolecreds.EC2RoleProvider{
 				Client: ec2metadata.New(sess),

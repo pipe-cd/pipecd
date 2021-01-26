@@ -446,7 +446,10 @@ func createFilestore(ctx context.Context, cfg *config.ControlPlaneSpec, logger *
 		options := []s3.Option{
 			s3.WithLogger(logger),
 		}
-		return s3.NewStore(s3Cfg.Region, s3Cfg.Profile, s3Cfg.CredentialsFile, s3Cfg.Bucket, options...)
+		if s3Cfg.CredentialsFile != "" {
+			options = append(options, s3.WithCredentialsFile(s3Cfg.CredentialsFile, s3Cfg.Profile))
+		}
+		return s3.NewStore(s3Cfg.Region, s3Cfg.Bucket, options...)
 
 	case model.FileStoreMINIO:
 		minioCfg := cfg.Filestore.MinioConfig
