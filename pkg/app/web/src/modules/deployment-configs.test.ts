@@ -3,6 +3,7 @@ import {
   DeploymentConfigsState,
   clearTemplateTarget,
   fetchTemplateList,
+  selectTemplatesByAppId,
 } from "./deployment-configs";
 import { dummyDeploymentConfigTemplates } from "../__fixtures__/dummy-deployment-config";
 import { addApplication } from "./applications";
@@ -65,5 +66,26 @@ describe("deploymentConfigsSlice reducer", () => {
         targetApplicationId: "application-id",
       });
     });
+  });
+});
+
+describe("selectTemplatesByAppId", () => {
+  let state: DeploymentConfigsState;
+  beforeEach(() => {
+    state = {
+      targetApplicationId: null,
+      templates: { "app-1": dummyDeploymentConfigTemplates },
+    };
+  });
+
+  it("should return null if target is null", () => {
+    expect(selectTemplatesByAppId(state)).toEqual(null);
+  });
+
+  it("should return templates by target id", () => {
+    state.targetApplicationId = "app-1";
+    expect(selectTemplatesByAppId(state)).toEqual(
+      dummyDeploymentConfigTemplates
+    );
   });
 });

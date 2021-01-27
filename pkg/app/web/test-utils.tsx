@@ -17,7 +17,7 @@ import { theme } from "./src/theme";
 const mockStore = configureMockStore<
   AppState,
   ThunkDispatch<AppState, void, AnyAction>
->(getDefaultMiddleware());
+>(getDefaultMiddleware({ serializableCheck: false, immutableCheck: false }));
 const store = configureStore({ reducer: reducers });
 const baseState = store.getState();
 
