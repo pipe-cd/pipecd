@@ -36,9 +36,8 @@ type FireStore struct {
 	namespace   string
 	environment string
 
-	useCredentialsFile bool
-	credentialsFile    string
-	logger             *zap.Logger
+	credentialsFile string
+	logger          *zap.Logger
 }
 
 func NewFireStore(ctx context.Context, projectID, namespace, environment string, opts ...Option) (*FireStore, error) {
@@ -56,7 +55,7 @@ func NewFireStore(ctx context.Context, projectID, namespace, environment string,
 	s.logger = s.logger.Named("firestore")
 
 	var options []option.ClientOption
-	if s.useCredentialsFile {
+	if s.credentialsFile != "" {
 		options = append(options, option.WithCredentialsFile(s.credentialsFile))
 	}
 
@@ -72,7 +71,6 @@ type Option func(*FireStore)
 
 func WithCredentialsFile(path string) Option {
 	return func(s *FireStore) {
-		s.useCredentialsFile = true
 		s.credentialsFile = path
 	}
 }
