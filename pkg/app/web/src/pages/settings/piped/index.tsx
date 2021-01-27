@@ -150,7 +150,8 @@ export const SettingsPipedPage: FC = memo(function SettingsPipedPage() {
           <Table aria-label="piped list" size="small" stickyHeader>
             <TableHead>
               <TableRow>
-                <TableCell colSpan={2}>Name</TableCell>
+                <TableCell>Name</TableCell>
+                <TableCell />
                 <TableCell>Version</TableCell>
                 <TableCell>Description</TableCell>
                 <TableCell>Started At</TableCell>

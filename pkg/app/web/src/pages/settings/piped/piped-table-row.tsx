@@ -105,7 +105,7 @@ export const PipedTableRow: FC<Props> = memo(function PipedTableRow({
       copy(piped.id);
       dispatch(addToast({ message: COPY_PIPED_ID }));
     }
-  }, [piped]);
+  }, [dispatch, piped]);
 
   if (!piped) {
     return null;
@@ -116,10 +116,9 @@ export const PipedTableRow: FC<Props> = memo(function PipedTableRow({
       <TableRow
         key={`pipe-${piped.id}`}
         className={clsx({ [classes.disabledItem]: piped.disabled })}
-        title={piped.id}
       >
         <TableCell>
-          <Typography variant="subtitle2">
+          <Typography variant="subtitle2" title={piped.id}>
             {`${piped.name} (${piped.id.slice(0, 8)})`}
           </Typography>
         </TableCell>
