@@ -208,7 +208,7 @@ func LoadPlainYAMLManifests(dir string, names []string, configFileName string) (
 		path := filepath.Join(dir, name)
 		ms, err := LoadManifestsFromYAMLFile(path)
 		if err != nil {
-			return nil, fmt.Errorf("failed to load maninifest at %s (%w)", path, err)
+			return nil, fmt.Errorf("failed to load manifest at %s (%w)", path, err)
 		}
 		manifests = append(manifests, ms...)
 	}
