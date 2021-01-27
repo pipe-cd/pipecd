@@ -1,1 +1,2 @@
-export { GithubSSOForm, GitHubSSOFormParams } from "./github-sso-form";
+export { GithubSSOForm } from "./github-sso-form";
+export type { GitHubSSOFormParams } from "./github-sso-form";
