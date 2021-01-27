@@ -1,4 +1,5 @@
 import {
+  Box,
   Button,
   Checkbox,
   Dialog,
@@ -12,25 +13,30 @@ import {
   Typography,
 } from "@material-ui/core";
 import CopyIcon from "@material-ui/icons/FileCopyOutlined";
-import React, { FC, memo, useCallback, useRef } from "react";
+import copy from "copy-to-clipboard";
+import { useFormik } from "formik";
+import React, { FC, memo, useCallback } from "react";
 import { useDispatch, useSelector } from "react-redux";
+import * as Yup from "yup";
+import { UI_TEXT_CANCEL, UI_TEXT_CLOSE } from "../../constants/ui-text";
 import { AppState } from "../../modules";
 import { Application, selectById } from "../../modules/applications";
 import {
-  generateSealedSecret,
   clearSealedSecret,
+  generateSealedSecret,
 } from "../../modules/sealed-secret";
-import copy from "copy-to-clipboard";
 import { addToast } from "../../modules/toasts";
-import { useFormik } from "formik";
-import * as Yup from "yup";
 import { AppDispatch } from "../../store";
-import { UI_TEXT_CANCEL, UI_TEXT_CLOSE } from "../../constants/ui-text";
 
 const useStyles = makeStyles((theme) => ({
   targetApp: {
     color: theme.palette.text.primary,
     fontWeight: theme.typography.fontWeightMedium,
+  },
+  secretInput: {
+    border: "none",
+    fontSize: 14,
+    flex: 1,
   },
   encryptedSecret: {
     wordBreak: "break-all",
@@ -59,7 +65,6 @@ export const SealedSecretDialog: FC<Props> = memo(function SealedSecretDialog({
 }) {
   const classes = useStyles();
   const dispatch = useDispatch<AppDispatch>();
-  const secretRef = useRef<HTMLDivElement>(null);
 
   const [application, isLoading, sealedSecret] = useSelector<
     AppState,
@@ -127,12 +132,12 @@ export const SealedSecretDialog: FC<Props> = memo(function SealedSecretDialog({
             <Typography variant="caption" color="textSecondary">
               Encrypted secret data
             </Typography>
-            <Typography
-              variant="body2"
-              className={classes.encryptedSecret}
-              ref={secretRef}
-            >
-              {sealedSecret}
+            <Box display="flex" p={1} border={1} borderColor="divider">
+              <input
+                readOnly
+                value={sealedSecret}
+                className={classes.secretInput}
+              />
               <IconButton
                 size="small"
                 style={{ marginLeft: 8 }}
@@ -141,7 +146,7 @@ export const SealedSecretDialog: FC<Props> = memo(function SealedSecretDialog({
               >
                 <CopyIcon style={{ fontSize: 20 }} />
               </IconButton>
-            </Typography>
+            </Box>
           </DialogContent>
           <DialogActions>
             <Button onClick={onClose}>{UI_TEXT_CLOSE}</Button>
