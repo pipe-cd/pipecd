@@ -9,7 +9,7 @@ const useStyles = makeStyles((theme) => ({
   },
   detail: {
     padding: theme.spacing(2),
-    fontFamily: "Roboto Mono",
+    fontFamily: theme.typography.fontFamilyMono,
     marginTop: theme.spacing(1),
     wordBreak: "break-all",
     overflow: "auto",
