@@ -1,4 +1,5 @@
 import {
+  Box,
   IconButton,
   makeStyles,
   Menu,
@@ -32,6 +33,7 @@ const useStyles = makeStyles((theme) => ({
     background: theme.palette.grey[200],
   },
   copyButton: {
+    marginLeft: theme.spacing(1),
     visibility: "hidden",
     "tr:hover &": {
       visibility: "visible",
@@ -118,18 +120,19 @@ export const PipedTableRow: FC<Props> = memo(function PipedTableRow({
         className={clsx({ [classes.disabledItem]: piped.disabled })}
       >
         <TableCell>
-          <Typography variant="subtitle2" title={piped.id}>
-            {`${piped.name} (${piped.id.slice(0, 8)})`}
-          </Typography>
+          <Typography variant="subtitle2">{piped.name}</Typography>
         </TableCell>
-        <TableCell>
-          <IconButton
-            className={classes.copyButton}
-            aria-label="Copy piped id"
-            onClick={handleCopy}
-          >
-            <CopyIcon />
-          </IconButton>
+        <TableCell title={piped.id}>
+          <Box display="flex" alignItems="center" fontFamily="Roboto Mono">
+            {piped.id}
+            <IconButton
+              className={classes.copyButton}
+              aria-label="Copy piped id"
+              onClick={handleCopy}
+            >
+              <CopyIcon />
+            </IconButton>
+          </Box>
         </TableCell>
         <TableCell>{piped.version}</TableCell>
         <TableCell>

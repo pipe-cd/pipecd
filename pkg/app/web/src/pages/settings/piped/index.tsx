@@ -151,7 +151,7 @@ export const SettingsPipedPage: FC = memo(function SettingsPipedPage() {
             <TableHead>
               <TableRow>
                 <TableCell>Name</TableCell>
-                <TableCell />
+                <TableCell>ID</TableCell>
                 <TableCell>Version</TableCell>
                 <TableCell>Description</TableCell>
                 <TableCell>Started At</TableCell>
