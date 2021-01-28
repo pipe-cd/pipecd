@@ -1,6 +1,16 @@
 import { createMuiTheme } from "@material-ui/core/styles";
 import cyan from "@material-ui/core/colors/cyan";
 
+declare module "@material-ui/core/styles/createTypography" {
+  interface FontStyle {
+    fontFamilyMono: string;
+  }
+
+  interface FontStyleOptions {
+    fontFamilyMono: string;
+  }
+}
+
 export const theme = createMuiTheme({
   props: {
     MuiButtonBase: {
@@ -59,5 +69,7 @@ export const theme = createMuiTheme({
     subtitle2: {
       fontWeight: 600,
     },
+    fontFamilyMono:
+      '"Roboto Mono",SFMono-Regular,Menlo,Monaco,Consolas,"Liberation Mono","Courier New",monospace',
   },
 });

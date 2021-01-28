@@ -28,11 +28,11 @@ const useStyles = makeStyles((theme) => ({
   },
   filename: {
     marginTop: theme.spacing(2),
-    fontFamily: "Roboto Mono",
+    fontFamily: theme.typography.fontFamilyMono,
     color: theme.palette.text.secondary,
   },
   templateContent: {
-    fontFamily: "Roboto Mono",
+    fontFamily: theme.typography.fontFamilyMono,
     fontSize: 14,
   },
   linkIcon: {

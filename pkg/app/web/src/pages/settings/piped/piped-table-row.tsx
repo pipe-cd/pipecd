@@ -123,7 +123,7 @@ export const PipedTableRow: FC<Props> = memo(function PipedTableRow({
           <Typography variant="subtitle2">{piped.name}</Typography>
         </TableCell>
         <TableCell title={piped.id}>
-          <Box display="flex" alignItems="center" fontFamily="Roboto Mono">
+          <Box display="flex" alignItems="center" fontFamily="fontFamilyMono">
             {piped.id}
             <IconButton
               className={classes.copyButton}

@@ -23,7 +23,7 @@ const useStyles = makeStyles((theme) => ({
     marginLeft: theme.spacing(1),
   },
   stageName: {
-    fontFamily: "Roboto Mono",
+    fontFamily: theme.typography.fontFamilyMono,
   },
   main: {
     display: "flex",

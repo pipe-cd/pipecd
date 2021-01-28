@@ -34,7 +34,7 @@ const useStyles = makeStyles((theme) => ({
     overflow: "hidden",
   },
   stageName: {
-    fontFamily: "Roboto Mono",
+    fontFamily: theme.typography.fontFamilyMono,
   },
   main: {
     display: "flex",

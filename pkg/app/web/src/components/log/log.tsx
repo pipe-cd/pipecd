@@ -6,7 +6,7 @@ import { LogBlock } from "../../modules/stage-logs";
 
 const useStyles = makeStyles((theme) => ({
   container: {
-    fontFamily: "Roboto Mono",
+    fontFamily: theme.typography.fontFamilyMono,
     backgroundColor: DEFAULT_BACKGROUND_COLOR,
     paddingTop: theme.spacing(1),
     paddingBottom: theme.spacing(1),

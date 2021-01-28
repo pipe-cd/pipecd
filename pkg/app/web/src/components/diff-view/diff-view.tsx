@@ -5,7 +5,7 @@ import green from "@material-ui/core/colors/green";
 
 const useStyles = makeStyles((theme) => ({
   root: {
-    fontFamily: "Roboto Mono",
+    fontFamily: theme.typography.fontFamilyMono,
     wordBreak: "break-all",
     whiteSpace: "pre-wrap",
   },
