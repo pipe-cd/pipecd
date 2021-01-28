@@ -19,6 +19,12 @@ spec:
     - destination:
         host: helloworld
         subset: baseline
+  - name: zero-weights-were-not-specified
+    route:
+    - destination:
+        host: helloworld
+        subset: primary
+      weight: 100
   - match:
     - headers:
         end-user:

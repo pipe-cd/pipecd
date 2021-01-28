@@ -143,18 +143,34 @@ func (e *deployExecutor) ensureTrafficRouting(ctx context.Context) model.StageSt
 func findTrafficRoutingManifests(manifests []provider.Manifest, serviceName string, cfg *config.KubernetesTrafficRouting) ([]provider.Manifest, error) {
 	method := config.DetermineKubernetesTrafficRoutingMethod(cfg)
 
-	if method == config.KubernetesTrafficRoutingMethodIstio {
+	switch method {
+	case config.KubernetesTrafficRoutingMethodPodSelector:
+		return findManifests(provider.KindService, serviceName, manifests), nil
+
+	case config.KubernetesTrafficRoutingMethodIstio:
 		istioConfig := cfg.Istio
 		if istioConfig == nil {
 			istioConfig = &config.IstioTrafficRouting{}
 		}
 		return findIstioVirtualServiceManifests(manifests, istioConfig.VirtualService)
-	}
 
-	return findManifests(provider.KindService, serviceName, manifests), nil
+	default:
+		return nil, fmt.Errorf("unsupport traffic routing method %v", method)
+	}
 }
 
 func (e *deployExecutor) generateTrafficRoutingManifest(manifest provider.Manifest, primaryPercent, canaryPercent, baselinePercent int, cfg *config.KubernetesTrafficRouting) (provider.Manifest, error) {
+	// Because the loaded maninests are read-only
+	// so we duplicate them to avoid updating the shared manifests data in cache.
+	manifest = duplicateManifest(manifest, "")
+
+	// When all traffic should be routed to primary variant
+	// we do not need to change the traffic manifest
+	// just copy and return the one specified in the target commit.
+	if primaryPercent == 100 {
+		return manifest, nil
+	}
+
 	if cfg != nil && cfg.Method == config.KubernetesTrafficRoutingMethodIstio {
 		istioConfig := cfg.Istio
 		if istioConfig == nil {
@@ -166,10 +182,6 @@ func (e *deployExecutor) generateTrafficRoutingManifest(manifest provider.Manife
 		}
 		return generateVirtualServiceManifest(manifest, istioConfig.Host, istioConfig.EditableRoutes, int32(canaryPercent), int32(baselinePercent))
 	}
-
-	// Because the loaded maninests are read-only
-	// so we duplicate them to avoid updating the shared manifests data in cache.
-	manifest = duplicateManifest(manifest, "")
 
 	// Determine which variant will receive 100% percent of traffic.
 	var variant string
@@ -276,29 +288,32 @@ func generateVirtualServiceManifest(m provider.Manifest, host string, editableRo
 			primaryWeight  = variantsWeight - canaryWeight - baselineWeight
 			routes         = make([]*istiov1beta1.HTTPRouteDestination, 0, len(otherHostRoutes)+3)
 		)
-		routes = append(routes,
-			&istiov1beta1.HTTPRouteDestination{
-				Destination: &istiov1beta1.Destination{
-					Host:   host,
-					Subset: primaryVariant,
-				},
-				Weight: primaryWeight,
+
+		routes = append(routes, &istiov1beta1.HTTPRouteDestination{
+			Destination: &istiov1beta1.Destination{
+				Host:   host,
+				Subset: primaryVariant,
 			},
-			&istiov1beta1.HTTPRouteDestination{
+			Weight: primaryWeight,
+		})
+		if canaryWeight > 0 {
+			routes = append(routes, &istiov1beta1.HTTPRouteDestination{
 				Destination: &istiov1beta1.Destination{
 					Host:   host,
 					Subset: canaryVariant,
 				},
 				Weight: canaryWeight,
-			},
-			&istiov1beta1.HTTPRouteDestination{
+			})
+		}
+		if baselineWeight > 0 {
+			routes = append(routes, &istiov1beta1.HTTPRouteDestination{
 				Destination: &istiov1beta1.Destination{
 					Host:   host,
 					Subset: baselineVariant,
 				},
 				Weight: baselineWeight,
-			},
-		)
+			})
+		}
 		routes = append(routes, otherHostRoutes...)
 		http.Route = routes
 	}
@@ -359,29 +374,32 @@ func generateVirtualServiceManifestV1Alpha3(m provider.Manifest, host string, ed
 			primaryWeight  = variantsWeight - canaryWeight - baselineWeight
 			routes         = make([]*istiov1alpha3.HTTPRouteDestination, 0, len(otherHostRoutes)+3)
 		)
-		routes = append(routes,
-			&istiov1alpha3.HTTPRouteDestination{
-				Destination: &istiov1alpha3.Destination{
-					Host:   host,
-					Subset: primaryVariant,
-				},
-				Weight: primaryWeight,
+
+		routes = append(routes, &istiov1alpha3.HTTPRouteDestination{
+			Destination: &istiov1alpha3.Destination{
+				Host:   host,
+				Subset: primaryVariant,
 			},
-			&istiov1alpha3.HTTPRouteDestination{
+			Weight: primaryWeight,
+		})
+		if canaryWeight > 0 {
+			routes = append(routes, &istiov1alpha3.HTTPRouteDestination{
 				Destination: &istiov1alpha3.Destination{
 					Host:   host,
 					Subset: canaryVariant,
 				},
 				Weight: canaryWeight,
-			},
-			&istiov1alpha3.HTTPRouteDestination{
+			})
+		}
+		if baselineWeight > 0 {
+			routes = append(routes, &istiov1alpha3.HTTPRouteDestination{
 				Destination: &istiov1alpha3.Destination{
 					Host:   host,
 					Subset: baselineVariant,
 				},
 				Weight: baselineWeight,
-			},
-		)
+			})
+		}
 		routes = append(routes, otherHostRoutes...)
 		http.Route = routes
 	}

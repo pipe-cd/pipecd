@@ -34,6 +34,20 @@ spec:
         host: helloworld
         subset: baseline
       weight: 20
+  - name: zero-weights-were-not-specified
+    route:
+    - destination:
+        host: helloworld
+        subset: primary
+      weight: 50
+    - destination:
+        host: helloworld
+        subset: canary
+      weight: 30
+    - destination:
+        host: helloworld
+        subset: baseline
+      weight: 20
   - match:
     - headers:
         end-user:
