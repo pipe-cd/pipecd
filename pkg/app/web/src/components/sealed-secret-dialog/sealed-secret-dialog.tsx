@@ -37,6 +37,7 @@ const useStyles = makeStyles((theme) => ({
     border: "none",
     fontSize: 14,
     flex: 1,
+    textOverflow: "ellipsis",
   },
   encryptedSecret: {
     wordBreak: "break-all",
