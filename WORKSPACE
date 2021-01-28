@@ -146,10 +146,10 @@ container_pull(
 
 container_pull(
     name = "pipectl-base",
-    digest = "sha256:3f3c780070d03fdf6bc48a4a4fb7dd0007a61a1249753efe96e8d6c44666a957",
+    digest = "sha256:0cf7eacedb0cc8d759248f0e25bd8eddf659de6f2c1db315ac95a272ec2e60cc",
     registry = "gcr.io",
     repository = "pipecd/pipectl-base",
-    tag = "0.1.0",
+    tag = "0.2.0",
 )
 
 ### Protoc-gen-validate
