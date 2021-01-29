@@ -81,7 +81,8 @@ style = "tango"
 # Everything below this are Site Params
 
 [params]
-copyright = "2020 - 2021 The PipeCD Authors"
+copyright = "The PipeCD Authors"
+copyright_since = "2020"
 privacy_policy = "https://github.com/pipe-cd/pipe/blob/master/LICENSE"
 
 # Menu title if your navbar has a versions selector to access old versions of your site.
