@@ -101,6 +101,8 @@ Must be one of the following structs:
 |-|-|-|-|
 | region | string | The region of running Lambda service. | Yes |
 | credentialsFile | string | The path to the credential file for logging into AWS cluster. If this value is not provided, piped will read credential info from environment variables. | No |
+| roleARN | string | The IAM role arn to use when assuming an role. Required if you want to use the AWS SecurityTokenService. | No |
+| tokenFile | string | The path to the WebIdentity token the SDK should use to assume a role with. Required if you want to use the AWS SecurityTokenService. | No |
 | profile | string | The profile to use for logging into AWS cluster. The default value is `default`. | No |
 
 ## KubernetesAppStateInformer
