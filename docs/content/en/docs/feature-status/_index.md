@@ -27,7 +27,7 @@ Please note that the phases (Incubating, Alpha, Beta, and Stable) are applied to
 | Deployment with the Specified Pipeline (canary, bluegreen...) | Beta |
 | Automated Rollback | Beta |
 | [Automated Configuration Drift Detection](/docs/user-guide/configuration-drift-detection/) | Beta |
-| [Application Live State](/docs/user-guide/application-live-state/) | Alpha |
+| [Application Live State](/docs/user-guide/application-live-state/) | Beta |
 | Support Helm | Beta |
 | Support Kustomize | Beta |
 | Support Istio Mesh | Alpha |
