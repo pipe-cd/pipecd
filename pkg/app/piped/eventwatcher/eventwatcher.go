@@ -180,9 +180,13 @@ func (w *watcher) updateValues(ctx context.Context, repo git.Repo, events []conf
 
 	commits := make([]*commit, 0)
 	for _, e := range events {
-		c, err := w.modifyFiles(ctx, &e, tmpRepo, commitMsg)
+		latestEvent, ok := w.eventGetter.GetLatest(ctx, e.Name, e.Labels)
+		if !ok {
+			continue
+		}
+		c, err := w.modifyFiles(latestEvent, &e, tmpRepo, commitMsg)
 		if err != nil {
-			w.logger.Error("failed to check outdated value", zap.Error(err))
+			w.logger.Error("failed to modify outdated files", zap.Error(err))
 			continue
 		}
 		if c != nil {
@@ -193,7 +197,7 @@ func (w *watcher) updateValues(ctx context.Context, repo git.Repo, events []conf
 		return nil
 	}
 
-	w.logger.Info(fmt.Sprintf("there are %d outdated values", len(commits)))
+	w.logger.Info(fmt.Sprintf("Event watcher will update %d outdated values", len(commits)))
 	for _, c := range commits {
 		if err := tmpRepo.CommitChanges(ctx, tmpRepo.GetClonedBranch(), c.message, false, c.changes); err != nil {
 			return fmt.Errorf("failed to perform git commit: %w", err)
@@ -204,15 +208,10 @@ func (w *watcher) updateValues(ctx context.Context, repo git.Repo, events []conf
 
 // modifyFiles modifies files defined in a given Event if any deviation exists between the value in
 // the git repository and one in the control-plane. And gives back a change contents.
-func (w *watcher) modifyFiles(ctx context.Context, event *config.EventWatcherEvent, repo git.Repo, commitMsg string) (*commit, error) {
-	latestEvent, ok := w.eventGetter.GetLatest(ctx, event.Name, event.Labels)
-	if !ok {
-		return nil, fmt.Errorf("failed to get the latest Event with the name %q", event.Name)
-	}
-
+func (w *watcher) modifyFiles(latestEvent *model.Event, eventCfg *config.EventWatcherEvent, repo git.Repo, commitMsg string) (*commit, error) {
 	// Determine files to be changed.
 	changes := make(map[string][]byte, 0)
-	for _, r := range event.Replacements {
+	for _, r := range eventCfg.Replacements {
 		path := filepath.Join(repo.GetPath(), r.File)
 		yml, err := ioutil.ReadFile(path)
 		if err != nil {
@@ -246,7 +245,7 @@ func (w *watcher) modifyFiles(ctx context.Context, event *config.EventWatcherEve
 	}
 
 	if commitMsg == "" {
-		commitMsg = fmt.Sprintf(defaultCommitMessageFormat, latestEvent.Data, event.Name)
+		commitMsg = fmt.Sprintf(defaultCommitMessageFormat, latestEvent.Data, eventCfg.Name)
 	}
 	return &commit{
 		changes: changes,

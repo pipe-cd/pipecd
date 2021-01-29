@@ -22,6 +22,8 @@ import (
 
 	"go.uber.org/zap"
 	"google.golang.org/grpc"
+	"google.golang.org/grpc/codes"
+	"google.golang.org/grpc/status"
 
 	"github.com/pipe-cd/pipe/pkg/app/api/service/pipedservice"
 	"github.com/pipe-cd/pipe/pkg/model"
@@ -154,6 +156,13 @@ func (s *store) GetLatest(ctx context.Context, name string, labels map[string]st
 		Name:   name,
 		Labels: labels,
 	})
+	if status.Code(err) == codes.NotFound {
+		s.logger.Warn("given event not found",
+			zap.String("event-name", name),
+			zap.Any("labels", labels),
+		)
+		return nil, false
+	}
 	if err != nil {
 		s.logger.Error("failed to get the latest event", zap.Error(err))
 		return nil, false
