@@ -72,15 +72,6 @@ func newClient(region, profile, credentialsFile, roleARN, tokenPath string, logg
 		return nil, fmt.Errorf("failed to create a session: %w", err)
 	}
 
-	var webIdentityRoleProvider *stscreds.WebIdentityRoleProvider
-	if roleARN != "" && tokenPath != "" {
-		stssvs := sts.New(sess)
-		// roleSessionName specifies the IAM role session name to use when assuming a role.
-		// it will be generated automatically in case of empty string passed.
-		// ref: https://github.com/aws/aws-sdk-go/blob/0dd12669013412980b665d4f6e2947d57b1cd062/aws/credentials/stscreds/web_identity_provider.go#L116-L121
-		webIdentityRoleProvider = stscreds.NewWebIdentityRoleProvider(stssvs, roleARN, "", tokenPath)
-	}
-
 	// Piped attempts to retrieve credentials in the following order:
 	// 1. from the environment variables. Available environment variables are:
 	//   - AWS_ACCESS_KEY_ID or AWS_ACCESS_KEY
@@ -95,7 +86,10 @@ func newClient(region, profile, credentialsFile, roleARN, tokenPath string, logg
 				Filename: credentialsFile,
 				Profile:  profile,
 			},
-			webIdentityRoleProvider,
+			// roleSessionName specifies the IAM role session name to use when assuming a role.
+			// it will be generated automatically in case of empty string passed.
+			// ref: https://github.com/aws/aws-sdk-go/blob/0dd12669013412980b665d4f6e2947d57b1cd062/aws/credentials/stscreds/web_identity_provider.go#L116-L121
+			stscreds.NewWebIdentityRoleProvider(sts.New(sess), roleARN, "", tokenPath),
 			&ec2rolecreds.EC2RoleProvider{
 				Client: ec2metadata.New(sess),
 			},
