@@ -197,7 +197,7 @@ func (w *watcher) updateValues(ctx context.Context, repo git.Repo, events []conf
 		return nil
 	}
 
-	w.logger.Info(fmt.Sprintf("Event watcher will update %d outdated values", len(commits)))
+	w.logger.Info(fmt.Sprintf("event watcher will update %d outdated values", len(commits)))
 	for _, c := range commits {
 		if err := tmpRepo.CommitChanges(ctx, tmpRepo.GetClonedBranch(), c.message, false, c.changes); err != nil {
 			return fmt.Errorf("failed to perform git commit: %w", err)
