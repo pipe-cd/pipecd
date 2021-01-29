@@ -56,9 +56,7 @@ export const ApplicationList: FC = memo(function ApplicationList() {
   );
 
   const closeMenu = useCallback(() => {
-    setTimeout(() => {
-      setActionTarget(null);
-    }, 200);
+    setActionTarget(null);
   }, []);
 
   const handleOnCloseGenerateDialog = (): void => {

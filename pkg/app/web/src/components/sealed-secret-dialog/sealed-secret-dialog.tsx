@@ -98,12 +98,9 @@ export const SealedSecretDialog: FC<Props> = memo(function SealedSecretDialog({
     formik.resetForm();
   }, [formik]);
 
-  const handleOnExited = (): void => {
-    // Clear state after closed dialog
-    setTimeout(() => {
-      dispatch(clearSealedSecret());
-    }, 200);
-  };
+  const handleOnExited = useCallback(() => {
+    dispatch(clearSealedSecret());
+  }, [dispatch]);
 
   const handleOnClickCopy = useCallback(() => {
     dispatch(addToast({ message: "Secret copied to clipboard" }));
