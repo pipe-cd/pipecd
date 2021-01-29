@@ -25,9 +25,11 @@ import (
 	"github.com/aws/aws-sdk-go/aws/awserr"
 	"github.com/aws/aws-sdk-go/aws/credentials"
 	"github.com/aws/aws-sdk-go/aws/credentials/ec2rolecreds"
+	"github.com/aws/aws-sdk-go/aws/credentials/stscreds"
 	"github.com/aws/aws-sdk-go/aws/ec2metadata"
 	"github.com/aws/aws-sdk-go/aws/session"
 	"github.com/aws/aws-sdk-go/service/s3"
+	"github.com/aws/aws-sdk-go/service/sts"
 	"go.uber.org/zap"
 
 	"github.com/pipe-cd/pipe/pkg/filestore"
@@ -38,6 +40,8 @@ type Store struct {
 	bucket          string
 	profile         string
 	credentialsFile string
+	roleARN         string
+	tokenFile       string
 
 	logger *zap.Logger
 }
@@ -54,6 +58,13 @@ func WithCredentialsFile(path, profile string) Option {
 	return func(s *Store) {
 		s.profile = profile
 		s.credentialsFile = path
+	}
+}
+
+func WithTokenFile(roleARN, path string) Option {
+	return func(s *Store) {
+		s.roleARN = roleARN
+		s.tokenFile = path
 	}
 }
 
@@ -77,6 +88,7 @@ func NewStore(region, bucket string, opts ...Option) (*Store, error) {
 	if err != nil {
 		return nil, fmt.Errorf("failed to create a session: %w", err)
 	}
+
 	creds := credentials.NewChainCredentials(
 		[]credentials.Provider{
 			&credentials.EnvProvider{},
@@ -84,6 +96,10 @@ func NewStore(region, bucket string, opts ...Option) (*Store, error) {
 				Filename: s.credentialsFile,
 				Profile:  s.profile,
 			},
+			// roleSessionName specifies the IAM role session name to use when assuming a role.
+			// it will be generated automatically in case of empty string passed.
+			// ref: https://github.com/aws/aws-sdk-go/blob/0dd12669013412980b665d4f6e2947d57b1cd062/aws/credentials/stscreds/web_identity_provider.go#L116-L121
+			stscreds.NewWebIdentityRoleProvider(sts.New(sess), s.roleARN, "", s.tokenFile),
 			&ec2rolecreds.EC2RoleProvider{
 				Client: ec2metadata.New(sess),
 			},
