@@ -1,37 +1,37 @@
 ---
 name: "module"
-description: "module of description"
-message: "Please enter module name"
+questions:
+  name: "Please enter module name"
 root: "src/modules"
 output: "**/*"
 ignore: []
 ---
 
-# `{{ input }}.ts`
+# `{{ inputs.name }}.ts`
 
 ```ts
 import { createSlice } from "@reduxjs/toolkit";
 
-type {{ input | pascal }} = {};
+type {{ inputs.name | pascal }} = {};
 
-const initialState: {{ input | pascal }} = {};
+const initialState: {{ inputs.name | pascal }} = {};
 
-export const {{ input | camel }}Slice = createSlice({
-  name: "{{ input | camel }}",
+export const {{ inputs.name | camel }}Slice = createSlice({
+  name: "{{ inputs.name | camel }}",
   initialState,
   reducers: {},
 });
 ```
 
-# `{{ input }}.test.ts`
+# `{{ inputs.name }}.test.ts`
 
 ```ts
-import { {{ input | camel }}Slice } from "./{{ input }}";
+import { {{ inputs.name | camel }}Slice } from "./{{ inputs.name }}";
 
-describe("{{ input | camel }}Slice reducer", () => {
+describe("{{ inputs.name | camel }}Slice reducer", () => {
   it("should return the initial state", () => {
     expect(
-      {{ input | camel }}Slice.reducer(undefined, {
+      {{ inputs.name | camel }}Slice.reducer(undefined, {
         type: "TEST_ACTION",
       })
     ).toMatchInlineSnapshot();

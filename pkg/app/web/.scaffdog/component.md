@@ -1,13 +1,19 @@
 ---
 name: "comp"
-description: "Generate a component file"
-message: "Please enter a component name."
+questions:
+  name: "Please enter a component name."
 root: "src/components"
 output: "**/*"
 ignore: []
 ---
 
-# `{{ input }}.tsx`
+# `{{ inputs.name }}/index.ts`
+
+```tsx
+export { {{ inputs.name | pascal }} } from "./{{ inputs.name }}";
+```
+
+# `{{ inputs.name }}/{{ inputs.name }}.tsx`
 
 ```tsx
 import React, { FC } from "react";
@@ -18,28 +24,28 @@ const useStyles = makeStyles(() => ({}));
 interface Props {
 }
 
-export const {{ input | pascal }}: FC<Props> = ({ }) => {
+export const {{ inputs.name | pascal }}: FC<Props> = ({ }) => {
   const classes = useStyles();
   return (
     <div>
-      Hello
+      {{ inputs.name }}
     </div>
   )
 };
 ```
 
-# `{{ input }}.stories.tsx`
+# `{{ inputs.name }}/{{ inputs.name }}.stories.tsx`
 
 ```tsx
 import React from "react";
-import { {{ input | pascal }} } from "./{{ input }}";
+import { {{ inputs.name | pascal }} } from "./{{ inputs.name }}";
 
 export default {
-  title: "{{ input | pascal }}",
-  component: {{ input | pascal }}
+  title: "{{ inputs.name | pascal }}",
+  component: {{ inputs.name | pascal }}
 };
 
 export const overview: React.FC = () => (
-  <{{ input | pascal }} />
+  <{{ inputs.name | pascal }} />
 );
 ```
