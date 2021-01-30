@@ -19,6 +19,21 @@ option go_package = "github.com/pipe-cd/pipe/pkg/model";
 
 import "validate/validate.proto";
 
+enum InsightResultType {
+  MATRIX = 0;
+  VECTOR = 1;
+}
+
+message InsightSample {
+  map<string,string> labels = 1;
+  InsightDataPoint data_point = 2;
+}
+
+message InsightSampleStream {
+  map<string,string> labels = 1;
+  repeated InsightDataPoint data_points = 2;
+}
+
 message InsightDataPoint {
   int64 timestamp = 1 [(validate.rules).int64.gt = 0];
   float value = 2 [(validate.rules).float.gt = 0];
@@ -29,6 +44,7 @@ enum InsightMetricsKind {
   CHANGE_FAILURE_RATE = 1;
   MTTR = 2;
   LEAD_TIME = 3;
+  APPLICATIONS_COUNT = 4;
 }
 
 enum InsightStep {
