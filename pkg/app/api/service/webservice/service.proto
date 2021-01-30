@@ -452,5 +452,8 @@ message GetInsightDataRequest {
 
 message GetInsightDataResponse {
     int64 updated_at = 1;
-    repeated pipe.model.InsightDataPoint data_points = 2;
+    repeated pipe.model.InsightDataPoint data_points = 2 [deprecated = true];
+    pipe.model.InsightResultType type = 3;
+    repeated model.InsightSample vector = 4;
+    repeated model.InsightSampleStream matrix = 5;
 }
