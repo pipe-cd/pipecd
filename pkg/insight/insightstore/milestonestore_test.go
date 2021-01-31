@@ -19,10 +19,11 @@ import (
 	"testing"
 
 	"github.com/golang/mock/gomock"
+	"github.com/stretchr/testify/assert"
+
 	"github.com/pipe-cd/pipe/pkg/filestore"
 	"github.com/pipe-cd/pipe/pkg/filestore/filestoretest"
 	"github.com/pipe-cd/pipe/pkg/insight/dto"
-	"github.com/stretchr/testify/assert"
 )
 
 func TestLoadMilestone(t *testing.T) {
