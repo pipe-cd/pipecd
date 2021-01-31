@@ -12,7 +12,7 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-package insight
+package insightstore
 
 import (
 	"context"
@@ -23,6 +23,8 @@ import (
 
 	"github.com/pipe-cd/pipe/pkg/cache"
 	"github.com/pipe-cd/pipe/pkg/filestore"
+	"github.com/pipe-cd/pipe/pkg/insight"
+	"github.com/pipe-cd/pipe/pkg/insight/dto"
 	"github.com/pipe-cd/pipe/pkg/model"
 )
 
@@ -44,10 +46,10 @@ func (s *Store) LoadChunks(
 	step model.InsightStep,
 	from time.Time,
 	count int,
-) (Chunks, error) {
-	from = NormalizeTime(from, step)
-	paths := determineFilePaths(projectID, appID, kind, step, from, count)
-	var chunks []Chunk
+) (dto.Chunks, error) {
+	from = insight.NormalizeTime(from, step)
+	paths := dto.DetermineFilePaths(projectID, appID, kind, step, from, count)
+	var chunks []dto.Chunk
 	for _, p := range paths {
 		c, err := s.getChunk(ctx, p, kind)
 		if err != nil {
@@ -60,7 +62,7 @@ func (s *Store) LoadChunks(
 }
 
 // PutChunk create or update chunk.
-func (s *Store) PutChunk(ctx context.Context, chunk Chunk) error {
+func (s *Store) PutChunk(ctx context.Context, chunk dto.Chunk) error {
 	data, err := json.Marshal(chunk)
 	if err != nil {
 		return err
@@ -72,40 +74,16 @@ func (s *Store) PutChunk(ctx context.Context, chunk Chunk) error {
 	return s.filestore.PutObject(ctx, path, data)
 }
 
-const milestonePath = "insights/milestone.json"
-
-func (s *Store) LoadMilestone(ctx context.Context) (*Milestone, error) {
-	var m *Milestone
-	obj, err := s.filestore.GetObject(ctx, milestonePath)
-	if err != nil {
-		return nil, err
-	}
-	err = json.Unmarshal(obj.Content, m)
-	if err != nil {
-		return nil, err
-	}
-
-	return m, nil
-}
-
-func (s *Store) PutMilestone(ctx context.Context, m *Milestone) error {
-	data, err := json.Marshal(m)
-	if err != nil {
-		return err
-	}
-	return s.filestore.PutObject(ctx, milestonePath, data)
-}
-
-func LoadChunksFromCache(cache cache.Cache, projectID, appID string, kind model.InsightMetricsKind, step model.InsightStep, from time.Time, count int) (Chunks, error) {
-	paths := determineFilePaths(projectID, appID, kind, step, from, count)
-	chunks := make([]Chunk, 0, len(paths))
+func LoadChunksFromCache(cache cache.Cache, projectID, appID string, kind model.InsightMetricsKind, step model.InsightStep, from time.Time, count int) (dto.Chunks, error) {
+	paths := dto.DetermineFilePaths(projectID, appID, kind, step, from, count)
+	chunks := make([]dto.Chunk, 0, len(paths))
 	for _, p := range paths {
 		c, err := cache.Get(p)
 		if err != nil {
 			return nil, err
 		}
 
-		chunk, ok := c.(Chunk)
+		chunk, ok := c.(dto.Chunk)
 		if !ok {
 			return nil, errors.New("malformed chunk data in cache")
 		}
@@ -115,7 +93,7 @@ func LoadChunksFromCache(cache cache.Cache, projectID, appID string, kind model.
 	return chunks, nil
 }
 
-func PutChunksToCache(cache cache.Cache, chunks Chunks) error {
+func PutChunksToCache(cache cache.Cache, chunks dto.Chunks) error {
 	var err error
 	for _, c := range chunks {
 		// continue process even if an error occurs.
@@ -126,7 +104,7 @@ func PutChunksToCache(cache cache.Cache, chunks Chunks) error {
 	return err
 }
 
-func (s *Store) getChunk(ctx context.Context, path string, kind model.InsightMetricsKind) (Chunk, error) {
+func (s *Store) getChunk(ctx context.Context, path string, kind model.InsightMetricsKind) (dto.Chunk, error) {
 	obj, err := s.filestore.GetObject(ctx, path)
 	if err != nil {
 		return nil, err
@@ -135,9 +113,9 @@ func (s *Store) getChunk(ctx context.Context, path string, kind model.InsightMet
 	var c interface{}
 	switch kind {
 	case model.InsightMetricsKind_DEPLOYMENT_FREQUENCY:
-		c = &DeployFrequencyChunk{}
+		c = &dto.DeployFrequencyChunk{}
 	case model.InsightMetricsKind_CHANGE_FAILURE_RATE:
-		c = &ChangeFailureRateChunk{}
+		c = &dto.ChangeFailureRateChunk{}
 	default:
 		return nil, fmt.Errorf("unimpremented insight kind: %s", kind)
 	}
@@ -146,28 +124,11 @@ func (s *Store) getChunk(ctx context.Context, path string, kind model.InsightMet
 	if err != nil {
 		return nil, err
 	}
-	chunk, err := ToChunk(c)
+	chunk, err := dto.ToChunk(c)
 	if err != nil {
 		return nil, err
 	}
 
 	chunk.SetFilePath(path)
 	return chunk, nil
-}
-
-func NormalizeTime(from time.Time, step model.InsightStep) time.Time {
-	var formattedTime time.Time
-	switch step {
-	case model.InsightStep_DAILY:
-		formattedTime = time.Date(from.Year(), from.Month(), from.Day(), 0, 0, 0, 0, time.UTC)
-	case model.InsightStep_WEEKLY:
-		// Sunday in the week of rangeFrom
-		sunday := from.AddDate(0, 0, -int(from.Weekday()))
-		formattedTime = time.Date(sunday.Year(), sunday.Month(), sunday.Day(), 0, 0, 0, 0, time.UTC)
-	case model.InsightStep_MONTHLY:
-		formattedTime = time.Date(from.Year(), from.Month(), 1, 0, 0, 0, 0, time.UTC)
-	case model.InsightStep_YEARLY:
-		formattedTime = time.Date(from.Year(), 1, 1, 0, 0, 0, 0, time.UTC)
-	}
-	return formattedTime
 }

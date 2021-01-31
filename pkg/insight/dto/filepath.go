@@ -12,7 +12,7 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-package insight
+package dto
 
 import (
 	"fmt"
@@ -37,28 +37,28 @@ import (
 //            ├─ 2020-01.json
 //            ├─ 2020-02.json
 //            ...
-func makeYearsFilePath(projectID string, metricsKind model.InsightMetricsKind, appID string) string {
+func MakeYearsFilePath(projectID string, metricsKind model.InsightMetricsKind, appID string) string {
 	k := strings.ToLower(metricsKind.String())
 	return fmt.Sprintf("insights/%s/%s/%s/years.json", projectID, k, appID)
 }
 
-func makeChunkFilePath(projectID string, metricsKind model.InsightMetricsKind, appID string, month string) string {
+func MakeChunkFilePath(projectID string, metricsKind model.InsightMetricsKind, appID string, month string) string {
 	k := strings.ToLower(metricsKind.String())
 	return fmt.Sprintf("insights/%s/%s/%s/%s.json", projectID, k, appID, month)
 }
 
-func determineFilePaths(projectID string, appID string, kind model.InsightMetricsKind, step model.InsightStep, from time.Time, count int) []string {
+func DetermineFilePaths(projectID string, appID string, kind model.InsightMetricsKind, step model.InsightStep, from time.Time, count int) []string {
 	if appID == "" {
 		appID = "project"
 	}
 	switch step {
 	case model.InsightStep_YEARLY:
-		return []string{makeYearsFilePath(projectID, kind, appID)}
+		return []string{MakeYearsFilePath(projectID, kind, appID)}
 	default:
 		keys := determineChunkKeys(step, from, count)
 		var paths []string
 		for _, k := range keys {
-			path := makeChunkFilePath(projectID, kind, appID, k)
+			path := MakeChunkFilePath(projectID, kind, appID, k)
 			paths = append(paths, path)
 		}
 		return paths

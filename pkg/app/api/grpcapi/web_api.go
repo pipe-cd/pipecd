@@ -38,7 +38,7 @@ import (
 	"github.com/pipe-cd/pipe/pkg/crypto"
 	"github.com/pipe-cd/pipe/pkg/datastore"
 	"github.com/pipe-cd/pipe/pkg/git"
-	"github.com/pipe-cd/pipe/pkg/insight"
+	insightfilestore "github.com/pipe-cd/pipe/pkg/insight/insightstore"
 	"github.com/pipe-cd/pipe/pkg/model"
 	"github.com/pipe-cd/pipe/pkg/redis"
 	"github.com/pipe-cd/pipe/pkg/rpc/rpcauth"
@@ -58,7 +58,7 @@ type WebAPI struct {
 	apiKeyStore               datastore.APIKeyStore
 	stageLogStore             stagelogstore.Store
 	applicationLiveStateStore applicationlivestatestore.Store
-	insightstore              insight.Store
+	insightstore              insightfilestore.Store
 	commandStore              commandstore.Store
 	encrypter                 encrypter
 
@@ -78,7 +78,7 @@ func NewWebAPI(
 	sls stagelogstore.Store,
 	alss applicationlivestatestore.Store,
 	cmds commandstore.Store,
-	is insight.Store,
+	is insightfilestore.Store,
 	rd redis.Redis,
 	projs map[string]config.ControlPlaneProject,
 	encrypter encrypter,
@@ -1355,7 +1355,7 @@ func (a *WebAPI) GetInsightData(ctx context.Context, req *webservice.GetInsightD
 	count := int(req.DataPointCount)
 	from := time.Unix(req.RangeFrom, 0)
 
-	chunks, err := insight.LoadChunksFromCache(a.insightCache, claims.Role.ProjectId, req.ApplicationId, req.MetricsKind, req.Step, from, count)
+	chunks, err := insightfilestore.LoadChunksFromCache(a.insightCache, claims.Role.ProjectId, req.ApplicationId, req.MetricsKind, req.Step, from, count)
 	if err != nil {
 		a.logger.Error("failed to load chunks from cache", zap.Error(err))
 
@@ -1364,7 +1364,7 @@ func (a *WebAPI) GetInsightData(ctx context.Context, req *webservice.GetInsightD
 			a.logger.Error("failed to load chunks from insightstore", zap.Error(err))
 			return nil, err
 		}
-		if err := insight.PutChunksToCache(a.insightCache, chunks); err != nil {
+		if err := insightfilestore.PutChunksToCache(a.insightCache, chunks); err != nil {
 			a.logger.Error("failed to put chunks to cache", zap.Error(err))
 		}
 	}

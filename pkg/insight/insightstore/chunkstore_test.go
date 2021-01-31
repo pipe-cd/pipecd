@@ -12,7 +12,7 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-package insight
+package insightstore
 
 import (
 	"context"
@@ -24,6 +24,7 @@ import (
 
 	"github.com/pipe-cd/pipe/pkg/filestore"
 	"github.com/pipe-cd/pipe/pkg/filestore/filestoretest"
+	"github.com/pipe-cd/pipe/pkg/insight/dto"
 	"github.com/pipe-cd/pipe/pkg/model"
 )
 
@@ -43,7 +44,7 @@ func TestGetChunks(t *testing.T) {
 		step           model.InsightStep
 		kind           model.InsightMetricsKind
 		readerErr      error
-		expected       Chunks
+		expected       dto.Chunks
 		expectedErr    error
 	}{
 		{
@@ -78,12 +79,12 @@ func TestGetChunks(t *testing.T) {
 						]
 					}
 				}`},
-			expected: func() []Chunk {
-				path := makeChunkFilePath("projectID", model.InsightMetricsKind_DEPLOYMENT_FREQUENCY, "appID", "2021-01")
-				expected1 := DeployFrequencyChunk{
+			expected: func() []dto.Chunk {
+				path := dto.MakeChunkFilePath("projectID", model.InsightMetricsKind_DEPLOYMENT_FREQUENCY, "appID", "2021-01")
+				expected1 := dto.DeployFrequencyChunk{
 					AccumulatedTo: 1612051200,
-					DataPoints: DeployFrequencyDataPoint{
-						Daily: []*DeployFrequency{
+					DataPoints: dto.DeployFrequencyDataPoint{
+						Daily: []*dto.DeployFrequency{
 							{
 								DeployCount: 1000,
 								Timestamp:   time.Date(2021, 1, 31, 0, 0, 0, 0, time.UTC).Unix(),
@@ -92,12 +93,12 @@ func TestGetChunks(t *testing.T) {
 					},
 					FilePath: path,
 				}
-				chunk1, _ := ToChunk(&expected1)
-				path = makeChunkFilePath("projectID", model.InsightMetricsKind_DEPLOYMENT_FREQUENCY, "appID", "2021-02")
-				expected2 := DeployFrequencyChunk{
+				chunk1, _ := dto.ToChunk(&expected1)
+				path = dto.MakeChunkFilePath("projectID", model.InsightMetricsKind_DEPLOYMENT_FREQUENCY, "appID", "2021-02")
+				expected2 := dto.DeployFrequencyChunk{
 					AccumulatedTo: 1612137600,
-					DataPoints: DeployFrequencyDataPoint{
-						Daily: []*DeployFrequency{
+					DataPoints: dto.DeployFrequencyDataPoint{
+						Daily: []*dto.DeployFrequency{
 							{
 								DeployCount: 1000,
 								Timestamp:   time.Date(2021, 2, 1, 0, 0, 0, 0, time.UTC).Unix(),
@@ -106,8 +107,8 @@ func TestGetChunks(t *testing.T) {
 					},
 					FilePath: path,
 				}
-				chunk2, _ := ToChunk(&expected2)
-				return []Chunk{chunk1, chunk2}
+				chunk2, _ := dto.ToChunk(&expected2)
+				return []dto.Chunk{chunk1, chunk2}
 			}(),
 		},
 	}
@@ -117,9 +118,9 @@ func TestGetChunks(t *testing.T) {
 	}
 	for _, tc := range testcases {
 		t.Run(tc.name, func(t *testing.T) {
-			paths := determineFilePaths(tc.projectID, tc.appID, tc.kind, tc.step, tc.from, tc.dataPointCount)
+			paths := dto.DetermineFilePaths(tc.projectID, tc.appID, tc.kind, tc.step, tc.from, tc.dataPointCount)
 			if len(paths) != tc.fileCount {
-				t.Fatalf("the count of path must be %d, but, %d : &v", tc.fileCount, len(paths), paths)
+				t.Fatalf("the count of path must be %d, but, %d : %v", tc.fileCount, len(paths), paths)
 			}
 
 			for i, c := range tc.contents {
@@ -159,7 +160,7 @@ func TestGetChunk(t *testing.T) {
 		step           model.InsightStep
 		kind           model.InsightMetricsKind
 		readerErr      error
-		expected       Chunk
+		expected       dto.Chunk
 		expectedErr    error
 	}{
 		{
@@ -197,12 +198,12 @@ func TestGetChunk(t *testing.T) {
 					]
 				}
 			}`,
-			expected: func() Chunk {
-				path := makeYearsFilePath("projectID", model.InsightMetricsKind_DEPLOYMENT_FREQUENCY, "appID")
-				expected := DeployFrequencyChunk{
+			expected: func() dto.Chunk {
+				path := dto.MakeYearsFilePath("projectID", model.InsightMetricsKind_DEPLOYMENT_FREQUENCY, "appID")
+				expected := dto.DeployFrequencyChunk{
 					AccumulatedTo: 1609459200,
-					DataPoints: DeployFrequencyDataPoint{
-						Yearly: []*DeployFrequency{
+					DataPoints: dto.DeployFrequencyDataPoint{
+						Yearly: []*dto.DeployFrequency{
 							{
 								DeployCount: 1000,
 								Timestamp:   time.Date(2020, 1, 1, 0, 0, 0, 0, time.UTC).Unix(),
@@ -215,7 +216,7 @@ func TestGetChunk(t *testing.T) {
 					},
 					FilePath: path,
 				}
-				chunk, _ := ToChunk(&expected)
+				chunk, _ := dto.ToChunk(&expected)
 				return chunk
 			}(),
 		},
@@ -238,12 +239,12 @@ func TestGetChunk(t *testing.T) {
 					]
 				}
 			}`,
-			expected: func() Chunk {
-				path := makeChunkFilePath("projectID", model.InsightMetricsKind_DEPLOYMENT_FREQUENCY, "appID", "2020-01")
-				expected := DeployFrequencyChunk{
+			expected: func() dto.Chunk {
+				path := dto.MakeChunkFilePath("projectID", model.InsightMetricsKind_DEPLOYMENT_FREQUENCY, "appID", "2020-01")
+				expected := dto.DeployFrequencyChunk{
 					AccumulatedTo: 1609459200,
-					DataPoints: DeployFrequencyDataPoint{
-						Monthly: []*DeployFrequency{
+					DataPoints: dto.DeployFrequencyDataPoint{
+						Monthly: []*dto.DeployFrequency{
 							{
 								DeployCount: 1000,
 								Timestamp:   time.Date(2020, 1, 1, 0, 0, 0, 0, time.UTC).Unix(),
@@ -252,7 +253,7 @@ func TestGetChunk(t *testing.T) {
 					},
 					FilePath: path,
 				}
-				chunk, _ := ToChunk(&expected)
+				chunk, _ := dto.ToChunk(&expected)
 				return chunk
 			}(),
 		},
@@ -279,12 +280,12 @@ func TestGetChunk(t *testing.T) {
 					]
 				}
 			}`,
-			expected: func() Chunk {
-				path := makeChunkFilePath("projectID", model.InsightMetricsKind_DEPLOYMENT_FREQUENCY, "appID", "2021-01")
-				expected := DeployFrequencyChunk{
+			expected: func() dto.Chunk {
+				path := dto.MakeChunkFilePath("projectID", model.InsightMetricsKind_DEPLOYMENT_FREQUENCY, "appID", "2021-01")
+				expected := dto.DeployFrequencyChunk{
 					AccumulatedTo: 1609459200,
-					DataPoints: DeployFrequencyDataPoint{
-						Weekly: []*DeployFrequency{
+					DataPoints: dto.DeployFrequencyDataPoint{
+						Weekly: []*dto.DeployFrequency{
 							{
 								DeployCount: 1000,
 								Timestamp:   time.Date(2021, 1, 3, 0, 0, 0, 0, time.UTC).Unix(),
@@ -297,7 +298,7 @@ func TestGetChunk(t *testing.T) {
 					},
 					FilePath: path,
 				}
-				chunk, _ := ToChunk(&expected)
+				chunk, _ := dto.ToChunk(&expected)
 				return chunk
 			}(),
 		},
@@ -324,12 +325,12 @@ func TestGetChunk(t *testing.T) {
 					]
 				}
 			}`,
-			expected: func() Chunk {
-				path := makeChunkFilePath("projectID", model.InsightMetricsKind_DEPLOYMENT_FREQUENCY, "appID", "2021-01")
-				expected := DeployFrequencyChunk{
+			expected: func() dto.Chunk {
+				path := dto.MakeChunkFilePath("projectID", model.InsightMetricsKind_DEPLOYMENT_FREQUENCY, "appID", "2021-01")
+				expected := dto.DeployFrequencyChunk{
 					AccumulatedTo: 1609459200,
-					DataPoints: DeployFrequencyDataPoint{
-						Daily: []*DeployFrequency{
+					DataPoints: dto.DeployFrequencyDataPoint{
+						Daily: []*dto.DeployFrequency{
 							{
 								DeployCount: 1000,
 								Timestamp:   time.Date(2021, 1, 3, 0, 0, 0, 0, time.UTC).Unix(),
@@ -342,7 +343,7 @@ func TestGetChunk(t *testing.T) {
 					},
 					FilePath: path,
 				}
-				chunk, _ := ToChunk(&expected)
+				chunk, _ := dto.ToChunk(&expected)
 				return chunk
 			}(),
 		},
@@ -374,12 +375,12 @@ func TestGetChunk(t *testing.T) {
 					]
 				}
 			}`,
-			expected: func() Chunk {
-				path := makeYearsFilePath("projectID", model.InsightMetricsKind_CHANGE_FAILURE_RATE, "appID")
-				expected := ChangeFailureRateChunk{
+			expected: func() dto.Chunk {
+				path := dto.MakeYearsFilePath("projectID", model.InsightMetricsKind_CHANGE_FAILURE_RATE, "appID")
+				expected := dto.ChangeFailureRateChunk{
 					AccumulatedTo: 1609459200,
-					DataPoints: ChangeFailureRateDataPoint{
-						Yearly: []*ChangeFailureRate{
+					DataPoints: dto.ChangeFailureRateDataPoint{
+						Yearly: []*dto.ChangeFailureRate{
 							{
 								Rate:         0.75,
 								SuccessCount: 1000,
@@ -396,7 +397,7 @@ func TestGetChunk(t *testing.T) {
 					},
 					FilePath: path,
 				}
-				chunk, _ := ToChunk(&expected)
+				chunk, _ := dto.ToChunk(&expected)
 				return chunk
 			}(),
 		},
@@ -407,7 +408,7 @@ func TestGetChunk(t *testing.T) {
 	}
 	for _, tc := range testcases {
 		t.Run(tc.name, func(t *testing.T) {
-			path := determineFilePaths(tc.projectID, tc.appID, tc.kind, tc.step, tc.from, tc.dataPointCount)
+			path := dto.DetermineFilePaths(tc.projectID, tc.appID, tc.kind, tc.step, tc.from, tc.dataPointCount)
 			if len(path) != 1 {
 				t.Fatalf("the count of path must be 1, but, %d", len(path))
 			}
@@ -425,57 +426,6 @@ func TestGetChunk(t *testing.T) {
 				return
 			}
 			assert.Equal(t, tc.expected, idps)
-		})
-	}
-}
-
-func TestFormatFrom(t *testing.T) {
-	type args struct {
-		from time.Time
-		step model.InsightStep
-	}
-	tests := []struct {
-		name string
-		args args
-		want time.Time
-	}{
-		{
-			name: "formatted correctly with daily",
-			args: args{
-				from: time.Date(2020, 1, 1, 1, 1, 1, 1, time.UTC),
-				step: model.InsightStep_DAILY,
-			},
-			want: time.Date(2020, 1, 1, 0, 0, 0, 0, time.UTC),
-		},
-		{
-			name: "formatted correctly with weekly",
-			args: args{
-				from: time.Date(2020, 1, 10, 1, 1, 1, 1, time.UTC),
-				step: model.InsightStep_WEEKLY,
-			},
-			want: time.Date(2020, 1, 5, 0, 0, 0, 0, time.UTC),
-		},
-		{
-			name: "formatted correctly with monthly",
-			args: args{
-				from: time.Date(2020, 1, 7, 1, 1, 1, 1, time.UTC),
-				step: model.InsightStep_MONTHLY,
-			},
-			want: time.Date(2020, 1, 1, 0, 0, 0, 0, time.UTC),
-		},
-		{
-			name: "formatted correctly with yearly",
-			args: args{
-				from: time.Date(2020, 7, 7, 1, 1, 1, 1, time.UTC),
-				step: model.InsightStep_YEARLY,
-			},
-			want: time.Date(2020, 1, 1, 0, 0, 0, 0, time.UTC),
-		},
-	}
-	for _, tt := range tests {
-		t.Run(tt.name, func(t *testing.T) {
-			got := NormalizeTime(tt.args.from, tt.args.step)
-			assert.Equal(t, got, tt.want)
 		})
 	}
 }

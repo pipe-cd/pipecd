@@ -25,6 +25,8 @@ import (
 	"github.com/pipe-cd/pipe/pkg/datastore"
 	"github.com/pipe-cd/pipe/pkg/filestore"
 	"github.com/pipe-cd/pipe/pkg/insight"
+	"github.com/pipe-cd/pipe/pkg/insight/dto"
+	insightfilestore "github.com/pipe-cd/pipe/pkg/insight/insightstore"
 	"github.com/pipe-cd/pipe/pkg/model"
 )
 
@@ -41,7 +43,7 @@ type InsightCollector struct {
 	projectStore     datastore.ProjectStore
 	applicationStore datastore.ApplicationStore
 	deploymentStore  datastore.DeploymentStore
-	insightstore     insight.Store
+	insightstore     insightfilestore.Store
 	logger           *zap.Logger
 }
 
@@ -55,7 +57,7 @@ func NewInsightCollector(
 		projectStore:     datastore.NewProjectStore(ds),
 		applicationStore: datastore.NewApplicationStore(ds),
 		deploymentStore:  datastore.NewDeploymentStore(ds),
-		insightstore:     insight.NewStore(fs),
+		insightstore:     insightfilestore.NewStore(fs),
 		logger:           logger.Named("insight-collector"),
 	}
 	return a
@@ -71,7 +73,7 @@ func (i *InsightCollector) ProcessNewlyCreatedDeployments(ctx context.Context) e
 	m, err := i.insightstore.LoadMilestone(ctx)
 	if err != nil {
 		if err == filestore.ErrNotFound {
-			m = &insight.Milestone{}
+			m = &dto.Milestone{}
 		}
 		return err
 	}
@@ -115,7 +117,7 @@ func (i *InsightCollector) ProcessNewlyCompletedDeployments(ctx context.Context)
 	m, err := i.insightstore.LoadMilestone(ctx)
 	if err != nil {
 		if err == filestore.ErrNotFound {
-			m = &insight.Milestone{}
+			m = &dto.Milestone{}
 		}
 		return err
 	}
@@ -162,9 +164,9 @@ func (i *InsightCollector) updateApplicationChunks(
 	targetDate time.Time,
 ) error {
 	chunkFiles, err := i.insightstore.LoadChunks(ctx, projectID, appID, kind, model.InsightStep_MONTHLY, targetDate, 1)
-	var chunk insight.Chunk
+	var chunk dto.Chunk
 	if err == filestore.ErrNotFound {
-		chunk = insight.NewChunk(projectID, kind, model.InsightStep_MONTHLY, appID, targetDate)
+		chunk = dto.NewChunk(projectID, kind, model.InsightStep_MONTHLY, appID, targetDate)
 	} else if err != nil {
 		return err
 	} else {
@@ -172,9 +174,9 @@ func (i *InsightCollector) updateApplicationChunks(
 	}
 
 	yearsFiles, err := i.insightstore.LoadChunks(ctx, projectID, appID, kind, model.InsightStep_YEARLY, targetDate, 1)
-	var years insight.Chunk
+	var years dto.Chunk
 	if err == filestore.ErrNotFound {
-		years = insight.NewChunk(projectID, kind, model.InsightStep_YEARLY, appID, targetDate)
+		years = dto.NewChunk(projectID, kind, model.InsightStep_YEARLY, appID, targetDate)
 	} else if err != nil {
 		return err
 	} else {
@@ -202,10 +204,10 @@ func (i *InsightCollector) updateApplicationChunks(
 // updateChunk updates passed chunk with deployments
 func (i *InsightCollector) updateChunk(
 	deployments []*model.Deployment,
-	chunk, years insight.Chunk,
+	chunk, years dto.Chunk,
 	kind model.InsightMetricsKind,
 	targetDate time.Time,
-) (insight.Chunk, insight.Chunk, error) {
+) (dto.Chunk, dto.Chunk, error) {
 	accumulatedTo := time.Unix(chunk.GetAccumulatedTo(), 0).UTC()
 	yearsAccumulatedTo := time.Unix(years.GetAccumulatedTo(), 0).UTC()
 
@@ -241,7 +243,7 @@ func (i *InsightCollector) updateChunk(
 }
 
 // updateDataPoints updates chunk's datapoints with accumuleatedTo and datapoints for update
-func (i *InsightCollector) updateDataPoints(chunk insight.Chunk, step model.InsightStep, updatedps []insight.DataPoint, accumulatedTo int64) (insight.Chunk, error) {
+func (i *InsightCollector) updateDataPoints(chunk dto.Chunk, step model.InsightStep, updatedps []dto.DataPoint, accumulatedTo int64) (dto.Chunk, error) {
 	dps, err := chunk.GetDataPoints(step)
 	if err != nil {
 		return nil, err
@@ -250,7 +252,7 @@ func (i *InsightCollector) updateDataPoints(chunk insight.Chunk, step model.Insi
 	for _, d := range updatedps {
 		key := insight.NormalizeTime(time.Unix(d.GetTimestamp(), 0).UTC(), step)
 
-		dps, err = insight.UpdateDataPoint(dps, d, key.Unix())
+		dps, err = dto.UpdateDataPoint(dps, d, key.Unix())
 		if err != nil {
 			return nil, err
 		}
@@ -270,7 +272,7 @@ func (i *InsightCollector) extractDailyInsightDataPoints(
 	kind model.InsightMetricsKind,
 	rangeFrom time.Time,
 	rangeTo time.Time,
-) ([]insight.DataPoint, error) {
+) ([]dto.DataPoint, error) {
 	step := model.InsightStep_DAILY
 
 	var movePoint func(time.Time, int) time.Time
@@ -279,13 +281,13 @@ func (i *InsightCollector) extractDailyInsightDataPoints(
 		return from.AddDate(0, 0, i)
 	}
 
-	var updatedps []insight.DataPoint
+	var updatedps []dto.DataPoint
 
 	to := movePoint(rangeFrom, 1)
 	for !to.After(rangeTo) {
 		targetTimestamp := insight.NormalizeTime(rangeFrom, step).Unix()
 
-		var data insight.DataPoint
+		var data dto.DataPoint
 		switch kind {
 		case model.InsightMetricsKind_DEPLOYMENT_FREQUENCY:
 			data, deployments = extractDeployFrequency(deployments, rangeFrom.Unix(), to.Unix(), targetTimestamp)
@@ -407,7 +409,7 @@ var (
 )
 
 // extractDeployFrequency extracts deploy frequency from deployments with specified range
-func extractDeployFrequency(deployments []*model.Deployment, from, to int64, targetTimestamp int64) (*insight.DeployFrequency, []*model.Deployment) {
+func extractDeployFrequency(deployments []*model.Deployment, from, to int64, targetTimestamp int64) (*dto.DeployFrequency, []*model.Deployment) {
 	var ds []*model.Deployment
 	var rest []*model.Deployment
 	for _, d := range deployments {
@@ -418,14 +420,14 @@ func extractDeployFrequency(deployments []*model.Deployment, from, to int64, tar
 		}
 	}
 
-	return &insight.DeployFrequency{
+	return &dto.DeployFrequency{
 		Timestamp:   targetTimestamp,
 		DeployCount: float32(len(ds)),
 	}, rest
 }
 
 // extractChangeFailureRate extracts change failure rate from deployments with specified range
-func extractChangeFailureRate(deployments []*model.Deployment, from, to int64, targetTimestamp int64) (*insight.ChangeFailureRate, []*model.Deployment) {
+func extractChangeFailureRate(deployments []*model.Deployment, from, to int64, targetTimestamp int64) (*dto.ChangeFailureRate, []*model.Deployment) {
 	var ds []*model.Deployment
 	var rest []*model.Deployment
 	for _, d := range deployments {
@@ -453,7 +455,7 @@ func extractChangeFailureRate(deployments []*model.Deployment, from, to int64, t
 		changeFailureRate = 0
 	}
 
-	return &insight.ChangeFailureRate{
+	return &dto.ChangeFailureRate{
 		Timestamp:    targetTimestamp,
 		Rate:         changeFailureRate,
 		SuccessCount: successCount,
