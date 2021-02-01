@@ -322,6 +322,10 @@ type FileStoreS3Config struct {
 	Profile string `json:"profile"`
 	// The path to the credentials file for accessing AWS.
 	CredentialsFile string `json:"credentialsFile"`
+	// The IAM role arn to use when assuming an role.
+	RoleARN string `json:"roleARN"`
+	// Path to the WebIdentity token the SDK should use to assume a role with.
+	TokenFile string `json:"tokenFile"`
 }
 
 type FileStoreMinioConfig struct {
