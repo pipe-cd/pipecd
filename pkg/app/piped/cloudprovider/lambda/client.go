@@ -25,9 +25,11 @@ import (
 	"github.com/aws/aws-sdk-go/aws/awserr"
 	"github.com/aws/aws-sdk-go/aws/credentials"
 	"github.com/aws/aws-sdk-go/aws/credentials/ec2rolecreds"
+	"github.com/aws/aws-sdk-go/aws/credentials/stscreds"
 	"github.com/aws/aws-sdk-go/aws/ec2metadata"
 	"github.com/aws/aws-sdk-go/aws/session"
 	"github.com/aws/aws-sdk-go/service/lambda"
+	"github.com/aws/aws-sdk-go/service/sts"
 	"go.uber.org/zap"
 )
 
@@ -55,7 +57,7 @@ type client struct {
 	logger *zap.Logger
 }
 
-func newClient(region, profile, credentialsFile string, logger *zap.Logger) (*client, error) {
+func newClient(region, profile, credentialsFile, roleARN, tokenPath string, logger *zap.Logger) (*client, error) {
 	if region == "" {
 		return nil, fmt.Errorf("region is required field")
 	}
@@ -69,6 +71,14 @@ func newClient(region, profile, credentialsFile string, logger *zap.Logger) (*cl
 	if err != nil {
 		return nil, fmt.Errorf("failed to create a session: %w", err)
 	}
+
+	// Piped attempts to retrieve credentials in the following order:
+	// 1. from the environment variables. Available environment variables are:
+	//   - AWS_ACCESS_KEY_ID or AWS_ACCESS_KEY
+	//   - AWS_SECRET_ACCESS_KEY or AWS_SECRET_KEY
+	// 2. from the given credentials file.
+	// 3. from the pod running in EKS cluster via STS (SecurityTokenService) as WebIdentityRole.
+	// 4. from the EC2 Instance Role.
 	creds := credentials.NewChainCredentials(
 		[]credentials.Provider{
 			&credentials.EnvProvider{},
@@ -76,6 +86,10 @@ func newClient(region, profile, credentialsFile string, logger *zap.Logger) (*cl
 				Filename: credentialsFile,
 				Profile:  profile,
 			},
+			// roleSessionName specifies the IAM role session name to use when assuming a role.
+			// it will be generated automatically in case of empty string passed.
+			// ref: https://github.com/aws/aws-sdk-go/blob/0dd12669013412980b665d4f6e2947d57b1cd062/aws/credentials/stscreds/web_identity_provider.go#L116-L121
+			stscreds.NewWebIdentityRoleProvider(sts.New(sess), roleARN, "", tokenPath),
 			&ec2rolecreds.EC2RoleProvider{
 				Client: ec2metadata.New(sess),
 			},
