@@ -39,11 +39,15 @@ type EventWatcherEvent struct {
 type EventWatcherReplacement struct {
 	// The path to the file to be updated.
 	File string `json:"file"`
-	// The yaml path to the field to be updated. It requires to start
+	// The field to be updated. Only one of these can be used.
+	//
+	// The YAML path to the field to be updated. It requires to start
 	// with `$` which represents the root element. e.g. `$.foo.bar[0].baz`.
 	YAMLField string `json:"yamlField"`
-	// TODO: Support JSONField to replace values in json format
-	// TODO: Support HCLField to replace values in HCL format
+	// The JSON path to the field to be updated.
+	JSONField string `json:"jsonField"`
+	// The HCL path to the field to be updated.
+	HCLField string `json:"HCLField"`
 }
 
 // LoadEventWatcher gives back parsed EventWatcher config after merging config files placed under
@@ -124,11 +128,40 @@ func filterEventWatcherFiles(files []os.FileInfo, includes, excludes []string) (
 
 func (s *EventWatcherSpec) Validate() error {
 	for _, e := range s.Events {
-		if e.Name == "" {
-			return fmt.Errorf("event name must not be empty")
+		if err := e.Validate(); err != nil {
+			return err
 		}
-		if len(e.Replacements) == 0 {
-			return fmt.Errorf("there must be at least one replacement to an event")
+	}
+	return nil
+}
+
+func (e *EventWatcherEvent) Validate() error {
+	if e.Name == "" {
+		return fmt.Errorf("event name must not be empty")
+	}
+	if len(e.Replacements) == 0 {
+		return fmt.Errorf("there must be at least one replacement to an event")
+	}
+	for _, r := range e.Replacements {
+		if r.File == "" {
+			return fmt.Errorf("event %q has a replacement with no file name", e.Name)
+		}
+
+		var count int
+		if r.YAMLField != "" {
+			count++
+		}
+		if r.JSONField != "" {
+			count++
+		}
+		if r.HCLField != "" {
+			count++
+		}
+		if count == 0 {
+			return fmt.Errorf("event %q has a replacement with no field", e.Name)
+		}
+		if count > 2 {
+			return fmt.Errorf("event %q has multiple fields", e.Name)
 		}
 	}
 	return nil

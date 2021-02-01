@@ -20,7 +20,7 @@ import (
 	"github.com/stretchr/testify/assert"
 )
 
-func TestGetValue(t *testing.T) {
+func TestConvertStr(t *testing.T) {
 	testcases := []struct {
 		name    string
 		value   interface{}
@@ -75,6 +75,45 @@ func TestGetValue(t *testing.T) {
 			got, err := convertStr(tc.value)
 			assert.Equal(t, tc.wantErr, err != nil)
 			assert.Equal(t, tc.want, got)
+		})
+	}
+}
+
+func TestModifyYAML(t *testing.T) {
+	testcases := []struct {
+		name         string
+		path         string
+		field        string
+		newValue     string
+		wantNewYml   []byte
+		wantUpToDate bool
+		wantErr      bool
+	}{
+		{
+			name:         "different between defined one and given one",
+			path:         "testdata/a.yaml",
+			field:        "$.foo",
+			newValue:     "2",
+			wantNewYml:   []byte("foo: 2"),
+			wantUpToDate: false,
+			wantErr:      false,
+		},
+		{
+			name:         "already up-to-date",
+			path:         "testdata/a.yaml",
+			field:        "$.foo",
+			newValue:     "1",
+			wantNewYml:   nil,
+			wantUpToDate: true,
+			wantErr:      false,
+		},
+	}
+	for _, tc := range testcases {
+		t.Run(tc.name, func(t *testing.T) {
+			gotNewYml, gotUpToDate, err := modifyYAML(tc.path, tc.field, tc.newValue)
+			assert.Equal(t, tc.wantErr, err != nil)
+			assert.Equal(t, tc.wantNewYml, gotNewYml)
+			assert.Equal(t, tc.wantUpToDate, gotUpToDate)
 		})
 	}
 }

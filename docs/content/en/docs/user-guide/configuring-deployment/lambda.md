@@ -69,14 +69,14 @@ spec:
         with:
           duration: 10m
       # Promote new version to receive 50% of traffic.
-      - name: CLOUDRUN_PROMOTE
+      - name: LAMBDA_PROMOTE
         with:
           percent: 50
       - name: WAIT
         with:
           duration: 10m
       # Promote new version to receive all traffic.
-      - name: CLOUDRUN_PROMOTE
+      - name: LAMBDA_PROMOTE
         with:
           percent: 100
 ```

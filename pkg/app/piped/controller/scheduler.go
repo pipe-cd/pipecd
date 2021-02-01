@@ -182,9 +182,11 @@ func (s *scheduler) Cancel(cmd model.ReportableCommand) {
 // but it means that the scheduler could not finish its job normally.
 func (s *scheduler) Run(ctx context.Context) error {
 	s.logger.Info("start running scheduler")
+	deploymentStatus := s.deployment.Status
 
 	defer func() {
 		s.doneTimestamp = s.nowFunc()
+		s.doneDeploymentStatus = deploymentStatus
 		s.done.Store(true)
 	}()
 
@@ -203,19 +205,19 @@ func (s *scheduler) Run(ctx context.Context) error {
 	}
 
 	var (
-		deploymentStatus = model.DeploymentStatus_DEPLOYMENT_SUCCESS
-		statusReason     = "The deployment was completed successfully"
-		cancelCommand    *model.ReportableCommand
-		cancelCommander  string
-		lastStage        *model.PipelineStage
+		cancelCommand   *model.ReportableCommand
+		cancelCommander string
+		lastStage       *model.PipelineStage
+		repoID          = s.deployment.GitPath.Repo.Id
+		statusReason    = "The deployment was completed successfully"
 	)
+	deploymentStatus = model.DeploymentStatus_DEPLOYMENT_SUCCESS
 
-	repoID := s.deployment.GitPath.Repo.Id
 	repoCfg, ok := s.pipedConfig.GetRepository(repoID)
 	if !ok {
-		s.doneDeploymentStatus = model.DeploymentStatus_DEPLOYMENT_FAILURE
+		deploymentStatus = model.DeploymentStatus_DEPLOYMENT_FAILURE
 		statusReason = fmt.Sprintf("Repository %q is not found in the piped config", repoID)
-		s.reportDeploymentCompleted(ctx, s.doneDeploymentStatus, statusReason, "")
+		s.reportDeploymentCompleted(ctx, deploymentStatus, statusReason, "")
 		return fmt.Errorf("unable to find %q from the repository list in piped config", repoID)
 	}
 
@@ -256,9 +258,9 @@ func (s *scheduler) Run(ctx context.Context) error {
 	)
 	ds, err := configDSP.GetReadOnly(ctx, ioutil.Discard)
 	if err != nil {
-		s.doneDeploymentStatus = model.DeploymentStatus_DEPLOYMENT_FAILURE
+		deploymentStatus = model.DeploymentStatus_DEPLOYMENT_FAILURE
 		statusReason = fmt.Sprintf("Unable to prepare deployment configuration source data at target commit (%v)", err)
-		s.reportDeploymentCompleted(ctx, s.doneDeploymentStatus, statusReason, "")
+		s.reportDeploymentCompleted(ctx, deploymentStatus, statusReason, "")
 		return err
 	}
 	s.genericDeploymentConfig = ds.GenericDeploymentConfig
@@ -392,7 +394,6 @@ func (s *scheduler) Run(ctx context.Context) error {
 		if err == nil && deploymentStatus == model.DeploymentStatus_DEPLOYMENT_SUCCESS {
 			s.reportMostRecentlySuccessfulDeployment(ctx)
 		}
-		s.doneDeploymentStatus = deploymentStatus
 	}
 
 	if cancelCommand != nil {
