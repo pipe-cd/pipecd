@@ -97,7 +97,7 @@ You will generally need your AWS credentials to authenticate with Lambda. Piped 
 It attempts to retrieve credentials in the following order:
 1. From the environment variables. Available environment variables are `AWS_ACCESS_KEY_ID` or `AWS_ACCESS_KEY` and `AWS_SECRET_ACCESS_KEY` or `AWS_SECRET_KEY`.
 2. From the given credentials file. (the `credentialsFile field in above sample`)
-3. from the pod running in EKS cluster via STS (SecurityTokenService).
+3. From the pod running in EKS cluster via STS (SecurityTokenService).
 4. From the EC2 Instance Role.
 
 Therefore, you don't have to set credentialsFile if you use the environment variables or the EC2 Instance Role. Keep in mind the IAM role/user that you use with your Piped must possess the IAM policy permission for at least `Lambda.Function` and `Lambda.Alias` resources controll (list/read/write).
