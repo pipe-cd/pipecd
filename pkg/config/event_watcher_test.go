@@ -88,6 +88,87 @@ func TestEventWatcherValidate(t *testing.T) {
 			wantErr: true,
 		},
 		{
+			name: "no replacement file given",
+			eventWatcherSpec: EventWatcherSpec{
+				Events: []EventWatcherEvent{
+					{
+						Replacements: []EventWatcherReplacement{
+							{
+								YAMLField: "$.foo",
+							},
+						},
+					},
+				},
+			},
+			wantErr: true,
+		},
+		{
+			name: "no replacement field given",
+			eventWatcherSpec: EventWatcherSpec{
+				Events: []EventWatcherEvent{
+					{
+						Replacements: []EventWatcherReplacement{
+							{
+								File: "file",
+							},
+						},
+					},
+				},
+			},
+			wantErr: true,
+		},
+		{
+			name: "both yaml and json given",
+			eventWatcherSpec: EventWatcherSpec{
+				Events: []EventWatcherEvent{
+					{
+						Replacements: []EventWatcherReplacement{
+							{
+								File:      "file",
+								YAMLField: "$.foo",
+								JSONField: "$.foo",
+							},
+						},
+					},
+				},
+			},
+			wantErr: true,
+		},
+		{
+			name: "both yaml and hcl given",
+			eventWatcherSpec: EventWatcherSpec{
+				Events: []EventWatcherEvent{
+					{
+						Replacements: []EventWatcherReplacement{
+							{
+								File:      "file",
+								YAMLField: "$.foo",
+								HCLField:  "$.foo",
+							},
+						},
+					},
+				},
+			},
+			wantErr: true,
+		},
+		{
+			name: "both json and hcl given",
+			eventWatcherSpec: EventWatcherSpec{
+				Events: []EventWatcherEvent{
+					{
+						Replacements: []EventWatcherReplacement{
+							{
+								File:      "file",
+								JSONField: "$.foo",
+								HCLField:  "$.foo",
+							},
+						},
+					},
+				},
+			},
+			wantErr: true,
+		},
+		{
 			name: "valid config given",
 			eventWatcherSpec: EventWatcherSpec{
 				Events: []EventWatcherEvent{
