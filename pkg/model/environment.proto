@@ -27,9 +27,9 @@ message Environment {
     string name = 2 [(validate.rules).string.min_len = 1];
     // The additional description about the environment.
     string desc = 3;
-    // The ID of the project this enviroment belongs to.
+    // The ID of the project this environment belongs to.
     string project_id = 4 [(validate.rules).string.min_len = 1];
-    // Unix time when the enviroment is created.
+    // Unix time when the environment is created.
     int64 created_at = 14 [(validate.rules).int64.gt = 0];
     // Unix time of the last time when the environment is updated.
     int64 updated_at = 15 [(validate.rules).int64.gt = 0];

@@ -1,5 +1,4 @@
 import {
-  Box,
   Button,
   Checkbox,
   Dialog,
@@ -7,13 +6,10 @@ import {
   DialogContent,
   DialogTitle,
   FormControlLabel,
-  IconButton,
   makeStyles,
   TextField,
   Typography,
 } from "@material-ui/core";
-import CopyIcon from "@material-ui/icons/FileCopyOutlined";
-import copy from "copy-to-clipboard";
 import { useFormik } from "formik";
 import React, { FC, memo, useCallback } from "react";
 import { useDispatch, useSelector } from "react-redux";
@@ -27,6 +23,7 @@ import {
 } from "../../modules/sealed-secret";
 import { addToast } from "../../modules/toasts";
 import { AppDispatch } from "../../store";
+import { TextWithCopyButton } from "../text-with-copy-button";
 
 const useStyles = makeStyles((theme) => ({
   targetApp: {
@@ -101,19 +98,13 @@ export const SealedSecretDialog: FC<Props> = memo(function SealedSecretDialog({
     formik.resetForm();
   }, [formik]);
 
-  const handleOnExited = (): void => {
-    // Clear state after closed dialog
-    setTimeout(() => {
-      dispatch(clearSealedSecret());
-    }, 200);
-  };
+  const handleOnExited = useCallback(() => {
+    dispatch(clearSealedSecret());
+  }, [dispatch]);
 
   const handleOnClickCopy = useCallback(() => {
-    if (sealedSecret) {
-      copy(sealedSecret);
-      dispatch(addToast({ message: "Secret copied to clipboard" }));
-    }
-  }, [dispatch, sealedSecret]);
+    dispatch(addToast({ message: "Secret copied to clipboard" }));
+  }, [dispatch]);
 
   if (!application) {
     return null;
@@ -133,21 +124,11 @@ export const SealedSecretDialog: FC<Props> = memo(function SealedSecretDialog({
             <Typography variant="caption" color="textSecondary">
               Encrypted secret data
             </Typography>
-            <Box display="flex" p={1} border={1} borderColor="divider">
-              <input
-                readOnly
-                value={sealedSecret}
-                className={classes.secretInput}
-              />
-              <IconButton
-                size="small"
-                style={{ marginLeft: 8 }}
-                aria-label="Copy secret"
-                onClick={handleOnClickCopy}
-              >
-                <CopyIcon style={{ fontSize: 20 }} />
-              </IconButton>
-            </Box>
+            <TextWithCopyButton
+              label="Copy secret"
+              value={sealedSecret}
+              onCopy={handleOnClickCopy}
+            />
           </DialogContent>
           <DialogActions>
             <Button onClick={onClose}>{UI_TEXT_CLOSE}</Button>
