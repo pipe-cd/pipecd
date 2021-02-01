@@ -18,6 +18,7 @@ go_test(
     name = "go_default_test",
     size = "small",
     srcs = ["eventwatcher_test.go"],
+    data = glob(["testdata/**"]),
     embed = [":go_default_library"],
     deps = ["@com_github_stretchr_testify//assert:go_default_library"],
 )

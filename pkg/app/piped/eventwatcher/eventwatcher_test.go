@@ -20,7 +20,7 @@ import (
 	"github.com/stretchr/testify/assert"
 )
 
-func TestGetValue(t *testing.T) {
+func TestConvertStr(t *testing.T) {
 	testcases := []struct {
 		name    string
 		value   interface{}
@@ -73,6 +73,41 @@ func TestGetValue(t *testing.T) {
 	for _, tc := range testcases {
 		t.Run(tc.name, func(t *testing.T) {
 			got, err := convertStr(tc.value)
+			assert.Equal(t, tc.wantErr, err != nil)
+			assert.Equal(t, tc.want, got)
+		})
+	}
+}
+
+func TestModifyYAML(t *testing.T) {
+	testcases := []struct {
+		name       string
+		path       string
+		field      string
+		latestData string
+		want       []byte
+		wantErr    bool
+	}{
+		{
+			name:       "different between defined one and given one",
+			path:       "testdata/a.yaml",
+			field:      "$.foo",
+			latestData: "2",
+			want:       []byte("foo: 2"),
+			wantErr:    false,
+		},
+		{
+			name:       "already up-to-date",
+			path:       "testdata/a.yaml",
+			field:      "$.foo",
+			latestData: "1",
+			want:       nil,
+			wantErr:    false,
+		},
+	}
+	for _, tc := range testcases {
+		t.Run(tc.name, func(t *testing.T) {
+			got, err := modifyYAML(tc.path, tc.field, tc.latestData)
 			assert.Equal(t, tc.wantErr, err != nil)
 			assert.Equal(t, tc.want, got)
 		})
