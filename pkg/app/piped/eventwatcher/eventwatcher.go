@@ -215,11 +215,12 @@ func (w *watcher) modifyFiles(latestEvent *model.Event, eventCfg *config.EventWa
 		var (
 			path       = filepath.Join(repo.GetPath(), r.File)
 			newContent []byte
+			upToDate   bool
 			err        error
 		)
 		switch {
 		case r.YAMLField != "":
-			newContent, err = modifyYAML(path, r.YAMLField, latestEvent.Data)
+			newContent, upToDate, err = modifyYAML(path, r.YAMLField, latestEvent.Data)
 		case r.JSONField != "":
 			// TODO: Empower Event watcher to parse JSON format
 		case r.HCLField != "":
@@ -228,8 +229,7 @@ func (w *watcher) modifyFiles(latestEvent *model.Event, eventCfg *config.EventWa
 		if err != nil {
 			return nil, err
 		}
-		if newContent == nil {
-			// Already up-to-date.
+		if upToDate {
 			continue
 		}
 		// To avoid being conflict, we have to update the local file.
@@ -252,32 +252,32 @@ func (w *watcher) modifyFiles(latestEvent *model.Event, eventCfg *config.EventWa
 	}, nil
 }
 
-// modifyYAML returns a new YAML content as a first returned value if the value
-// of given field was outdated. Nil means it's already up-to-date.
-func modifyYAML(path, field, latestData string) ([]byte, error) {
+// modifyYAML returns a new YAML content as a first returned value if the value of given
+// field was outdated. True as a second returned value means it's already up-to-date.
+func modifyYAML(path, field, newValue string) ([]byte, bool, error) {
 	yml, err := ioutil.ReadFile(path)
 	if err != nil {
-		return nil, fmt.Errorf("failed to read file: %w", err)
+		return nil, false, fmt.Errorf("failed to read file: %w", err)
 	}
 	v, err := yamlprocessor.GetValue(yml, field)
 	if err != nil {
-		return nil, fmt.Errorf("failed to get value at %s in %s: %w", field, path, err)
+		return nil, false, fmt.Errorf("failed to get value at %s in %s: %w", field, path, err)
 	}
 	value, err := convertStr(v)
 	if err != nil {
-		return nil, fmt.Errorf("a value of unknown type is defined at %s in %s: %w", err, field, path)
+		return nil, false, fmt.Errorf("a value of unknown type is defined at %s in %s: %w", err, field, path)
 	}
-	if latestData == value {
+	if newValue == value {
 		// Already up-to-date.
-		return nil, nil
+		return nil, true, nil
 	}
 
 	// Modify the local file and put it into the change list.
-	newYml, err := yamlprocessor.ReplaceValue(yml, field, latestData)
+	newYml, err := yamlprocessor.ReplaceValue(yml, field, newValue)
 	if err != nil {
-		return nil, fmt.Errorf("failed to replace value at %s with %s: %w", field, latestData, err)
+		return nil, false, fmt.Errorf("failed to replace value at %s with %s: %w", field, newValue, err)
 	}
-	return newYml, nil
+	return newYml, false, nil
 }
 
 // convertStr converts a given value into a string.

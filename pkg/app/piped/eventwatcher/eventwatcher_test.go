@@ -81,35 +81,39 @@ func TestConvertStr(t *testing.T) {
 
 func TestModifyYAML(t *testing.T) {
 	testcases := []struct {
-		name       string
-		path       string
-		field      string
-		latestData string
-		want       []byte
-		wantErr    bool
+		name         string
+		path         string
+		field        string
+		newValue     string
+		wantNewYml   []byte
+		wantUpToDate bool
+		wantErr      bool
 	}{
 		{
-			name:       "different between defined one and given one",
-			path:       "testdata/a.yaml",
-			field:      "$.foo",
-			latestData: "2",
-			want:       []byte("foo: 2"),
-			wantErr:    false,
+			name:         "different between defined one and given one",
+			path:         "testdata/a.yaml",
+			field:        "$.foo",
+			newValue:     "2",
+			wantNewYml:   []byte("foo: 2"),
+			wantUpToDate: false,
+			wantErr:      false,
 		},
 		{
-			name:       "already up-to-date",
-			path:       "testdata/a.yaml",
-			field:      "$.foo",
-			latestData: "1",
-			want:       nil,
-			wantErr:    false,
+			name:         "already up-to-date",
+			path:         "testdata/a.yaml",
+			field:        "$.foo",
+			newValue:     "1",
+			wantNewYml:   nil,
+			wantUpToDate: true,
+			wantErr:      false,
 		},
 	}
 	for _, tc := range testcases {
 		t.Run(tc.name, func(t *testing.T) {
-			got, err := modifyYAML(tc.path, tc.field, tc.latestData)
+			gotNewYml, gotUpToDate, err := modifyYAML(tc.path, tc.field, tc.newValue)
 			assert.Equal(t, tc.wantErr, err != nil)
-			assert.Equal(t, tc.want, got)
+			assert.Equal(t, tc.wantNewYml, gotNewYml)
+			assert.Equal(t, tc.wantUpToDate, gotUpToDate)
 		})
 	}
 }

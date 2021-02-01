@@ -146,18 +146,21 @@ func (e *EventWatcherEvent) Validate() error {
 		if r.File == "" {
 			return fmt.Errorf("event %q has a replacement with no file name", e.Name)
 		}
-		if r.YAMLField == "" && r.JSONField == "" && r.HCLField == "" {
-			return fmt.Errorf("event %q has a replacement with no field", e.Name)
-		}
-		// Check if multiple fields aren't given.
-		given := r.YAMLField != ""
-		if given && r.JSONField != "" {
-			return fmt.Errorf("event %q has multiple fields", e.Name)
+
+		var count int
+		if r.YAMLField != "" {
+			count++
 		}
 		if r.JSONField != "" {
-			given = true
+			count++
 		}
-		if given && r.HCLField != "" {
+		if r.HCLField != "" {
+			count++
+		}
+		if count == 0 {
+			return fmt.Errorf("event %q has a replacement with no field", e.Name)
+		}
+		if count > 2 {
 			return fmt.Errorf("event %q has multiple fields", e.Name)
 		}
 	}
