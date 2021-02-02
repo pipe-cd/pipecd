@@ -1,1 +1,0 @@
-export { Log } from "./log";
