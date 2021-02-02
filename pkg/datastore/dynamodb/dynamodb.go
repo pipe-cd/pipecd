@@ -23,10 +23,12 @@ import (
 	"github.com/aws/aws-sdk-go/aws/awserr"
 	"github.com/aws/aws-sdk-go/aws/credentials"
 	"github.com/aws/aws-sdk-go/aws/credentials/ec2rolecreds"
+	"github.com/aws/aws-sdk-go/aws/credentials/stscreds"
 	"github.com/aws/aws-sdk-go/aws/ec2metadata"
 	"github.com/aws/aws-sdk-go/aws/session"
 	"github.com/aws/aws-sdk-go/service/dynamodb"
 	"github.com/aws/aws-sdk-go/service/dynamodb/dynamodbattribute"
+	"github.com/aws/aws-sdk-go/service/sts"
 	"go.uber.org/zap"
 
 	"github.com/pipe-cd/pipe/pkg/datastore"
@@ -37,6 +39,8 @@ type DynamoDB struct {
 	client          *dynamodb.DynamoDB
 	profile         string
 	credentialsFile string
+	roleARN         string
+	tokenFile       string
 	endpoint        string
 
 	logger *zap.Logger
@@ -57,6 +61,14 @@ func WithCredentialsFile(profile, path string) Option {
 	return func(s *DynamoDB) {
 		s.profile = profile
 		s.credentialsFile = path
+	}
+}
+
+// WithTokenFile returns authenticate with token setup function
+func WithTokenFile(roleARN, path string) Option {
+	return func(s *DynamoDB) {
+		s.roleARN = roleARN
+		s.tokenFile = path
 	}
 }
 
@@ -87,6 +99,10 @@ func NewDynamoDB(region, endpoint string, opts ...Option) (*DynamoDB, error) {
 				Filename: s.credentialsFile,
 				Profile:  s.profile,
 			},
+			// roleSessionName specifies the IAM role session name to use when assuming a role.
+			// it will be generated automatically in case of empty string passed.
+			// ref: https://github.com/aws/aws-sdk-go/blob/0dd12669013412980b665d4f6e2947d57b1cd062/aws/credentials/stscreds/web_identity_provider.go#L116-L121
+			stscreds.NewWebIdentityRoleProvider(sts.New(sess), s.roleARN, "", s.tokenFile),
 			&ec2rolecreds.EC2RoleProvider{
 				Client: ec2metadata.New(sess),
 			},
@@ -100,7 +116,38 @@ func NewDynamoDB(region, endpoint string, opts ...Option) (*DynamoDB, error) {
 
 // Find implementation for DynamoDB
 func (s *DynamoDB) Find(ctx context.Context, kind string, opts datastore.ListOptions) (datastore.Iterator, error) {
-	return nil, datastore.ErrUnimplemented
+	expr, err := buildDynamoDBExpression(opts)
+	if err != nil {
+		s.logger.Error("failed to build query",
+			zap.String("kind", kind),
+			zap.Error(err),
+		)
+	}
+	input := &dynamodb.ScanInput{
+		ExpressionAttributeNames:  expr.Names(),
+		ExpressionAttributeValues: expr.Values(),
+		FilterExpression:          expr.Filter(),
+		TableName:                 aws.String(kind),
+	}
+	var items []map[string]*dynamodb.AttributeValue
+	err = s.client.ScanPagesWithContext(ctx, input,
+		func(page *dynamodb.ScanOutput, lastPage bool) bool {
+			items = append(items, page.Items...)
+			// The only way to know when you have reached
+			// the end of the result set is when LastEvaluatedKey is empty.
+			return len(page.LastEvaluatedKey) != 0
+		},
+	)
+	if err != nil {
+		s.logger.Error("failed to get cursor",
+			zap.String("kind", kind),
+			zap.Error(err),
+		)
+		return nil, fmt.Errorf("failed to get cursor: %v", err)
+	}
+	return &Iterator{
+		datapool: items,
+	}, nil
 }
 
 // Get implementation for DynamoDB

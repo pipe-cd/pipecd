@@ -5,6 +5,7 @@ go_library(
     srcs = [
         "dynamodb.go",
         "iterator.go",
+        "operator.go",
     ],
     importpath = "github.com/pipe-cd/pipe/pkg/datastore/dynamodb",
     visibility = ["//visibility:public"],
@@ -14,10 +15,13 @@ go_library(
         "@com_github_aws_aws_sdk_go//aws/awserr:go_default_library",
         "@com_github_aws_aws_sdk_go//aws/credentials:go_default_library",
         "@com_github_aws_aws_sdk_go//aws/credentials/ec2rolecreds:go_default_library",
+        "@com_github_aws_aws_sdk_go//aws/credentials/stscreds:go_default_library",
         "@com_github_aws_aws_sdk_go//aws/ec2metadata:go_default_library",
         "@com_github_aws_aws_sdk_go//aws/session:go_default_library",
         "@com_github_aws_aws_sdk_go//service/dynamodb:go_default_library",
         "@com_github_aws_aws_sdk_go//service/dynamodb/dynamodbattribute:go_default_library",
+        "@com_github_aws_aws_sdk_go//service/dynamodb/expression:go_default_library",
+        "@com_github_aws_aws_sdk_go//service/sts:go_default_library",
         "@org_uber_go_zap//:go_default_library",
     ],
 )

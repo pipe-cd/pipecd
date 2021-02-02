@@ -13,3 +13,34 @@
 // limitations under the License.
 
 package dynamodb
+
+import (
+	"github.com/aws/aws-sdk-go/service/dynamodb"
+	"github.com/aws/aws-sdk-go/service/dynamodb/dynamodbattribute"
+
+	"github.com/pipe-cd/pipe/pkg/datastore"
+)
+
+// Iterator is wrapper of queried data pool
+type Iterator struct {
+	datapool []map[string]*dynamodb.AttributeValue
+}
+
+// Next implementation of DynamoDB Iterator
+func (it *Iterator) Next(dst interface{}) error {
+	// If the data pool is empty, it means all items is popped
+	if len(it.datapool) == 0 {
+		return datastore.ErrIteratorDone
+	}
+	// Pop the first item from data pool
+	item, rest := it.datapool[0], it.datapool[1:]
+	it.datapool = rest
+
+	return dynamodbattribute.UnmarshalMap(item, dst)
+}
+
+// Cursor implementation of DynamoDB Iterator
+func (it *Iterator) Cursor() (string, error) {
+	// Note: Perhaps, not required.
+	return "", datastore.ErrUnimplemented
+}
