@@ -6,8 +6,8 @@ description: >
   How to enable canary deployment for Kubernetes application with Istio.
 ---
 
-"Canary release is a technique to reduce the risk of introducing a new software version in production by slowly rolling out the change to a small subset of users before rolling it out to the entire infrastructure and making it available to everybody."
-By [martinfowler.com/canaryrelease](https://martinfowler.com/bliki/CanaryRelease.html).
+> Canary release is a technique to reduce the risk of introducing a new software version in production by slowly rolling out the change to a small subset of users before rolling it out to the entire infrastructure and making it available to everybody.
+> -- <cite>[martinfowler.com/canaryrelease](https://martinfowler.com/bliki/CanaryRelease.html)</cite>
 
 With Istio, we can accomplish this goal by configuring a sequence of rules that route a percentage of traffic to each [variant](/docs/user-guide/configuring-deployment/kubernetes/#sync-with-the-specified-pipeline) of the application.
 And with PipeCD, you can enable and automate the canary strategy for your Kubernetes application even easier.
@@ -98,7 +98,7 @@ Deployment Details Page
 
 ## Understanding what happened
 
-In this example, you configured the deployment configuration file (`.pipe.yaml`) to migrate traffic from an old to new version of application using Istio's weighted routing feature.
+In this example, you configured the deployment configuration file (`.pipe.yaml`) to migrate traffic from an old to a new version of the application using Istio's weighted routing feature.
 
 - Stage 1: `K8S_CANARY_ROLLOUT` ensures that the workloads of canary variant (new version) should be deployed. But at this time, they still handle nothing, all traffic are handled by workloads of primary variant.
 The number of workloads (e.g. pod) for canary variant is configured to be 50% of the replicas number of primary varant.
@@ -111,7 +111,7 @@ The number of workloads (e.g. pod) for canary variant is configured to be 50% of
 
 - Stage 3: `WAIT_APPROVAL` waits for a manual approval from someone in your team.
 
-- Stage 4: `K8S_PRIMARY_ROLLOUT` ensures that all resources of primary variant will be updated to new version.
+- Stage 4: `K8S_PRIMARY_ROLLOUT` ensures that all resources of primary variant will be updated to the new version.
 
 ![](/images/example-canary-kubernetes-istio-stage-4.png)
 
