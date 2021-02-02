@@ -11,7 +11,7 @@ import {
   emptyFormValues,
   validationSchema,
   ApplicationFormValue,
-} from "../application-form/application-form";
+} from "../application-form";
 
 interface Props {
   open: boolean;

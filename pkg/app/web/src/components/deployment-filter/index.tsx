@@ -29,7 +29,7 @@ import {
   DeploymentStatusKey,
 } from "../../modules/deployments";
 import { Environment, selectAll } from "../../modules/environments";
-import { FilterView } from "../filter-view/filter-view";
+import { FilterView } from "../filter-view";
 
 const useStyles = makeStyles((theme) => ({
   formItem: {

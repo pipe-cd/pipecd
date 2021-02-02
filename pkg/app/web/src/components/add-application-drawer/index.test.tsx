@@ -1,5 +1,5 @@
 import React from "react";
-import { AddApplicationDrawer } from "./add-application-drawer";
+import { AddApplicationDrawer } from "./";
 import { createStore, render, screen, waitFor } from "../../../test-utils";
 import { UI_TEXT_CANCEL, UI_TEXT_SAVE } from "../../constants/ui-text";
 import { dummyEnv } from "../../__fixtures__/dummy-environment";

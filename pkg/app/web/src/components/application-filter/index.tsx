@@ -22,7 +22,7 @@ import {
   ApplicationSyncStatusKey,
 } from "../../modules/applications";
 import { Environment, selectAll } from "../../modules/environments";
-import { FilterView } from "../filter-view/filter-view";
+import { FilterView } from "../filter-view";
 
 const useStyles = makeStyles((theme) => ({
   toolbarSpacer: {

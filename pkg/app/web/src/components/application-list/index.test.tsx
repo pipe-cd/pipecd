@@ -11,7 +11,7 @@ import { setDeletingAppId } from "../../modules/delete-application";
 import { generateSealedSecret } from "../../modules/sealed-secret";
 import { setUpdateTargetId } from "../../modules/update-application";
 import { dummyApplication } from "../../__fixtures__/dummy-application";
-import { ApplicationList } from "./application-list";
+import { ApplicationList } from "./";
 
 beforeAll(() => {
   server.listen();
