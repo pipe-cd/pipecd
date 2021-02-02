@@ -1,7 +1,7 @@
 ---
 title: "Configuration reference"
 linkTitle: "Configuration reference"
-weight: 23
+weight: 22
 description: >
   This page describes all configurable fields in the deployment configuration and analysis template.
 ---

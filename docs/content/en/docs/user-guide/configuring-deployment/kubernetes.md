@@ -39,7 +39,7 @@ To enable customization, PipeCD defines three variants for each Kubernetes appli
 - `baseline` runs the same version of code and configuration as the primary variant. (Creating a brand-new baseline workload ensures that the metrics produced are free of any effects caused by long-running processes.)
 - `canary` runs the proposed change of code or configuration.
 
-Depending on the configured pipeline, any variants can exist during the deployment process, but after a succeeded deployment only `primary` variants should be remaining.
+Depending on the configured pipeline, any variants can exist and receive the traffic during the deployment process but once the deployment is completed, only the `primary` variant should be remained.
 
 These are the provided stages for Kubernetes application you can use to build your pipeline:
 
