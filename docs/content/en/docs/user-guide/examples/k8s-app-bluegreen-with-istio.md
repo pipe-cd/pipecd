@@ -107,7 +107,7 @@ The number of workloads (e.g. pod) for canary variant is configured to be 100% o
 ![](/images/example-bluegreen-kubernetes-istio-stage-1.png)
 
 - Stage 2: `K8S_TRAFFIC_ROUTING` ensures that all traffic should be routed to canary variant. Because the `trafficRouting` is configured to use Istio, PipeCD will find Istio's VirtualService resource of this application to control the traffic percentage.
-(You can add a ANALYSIS stage after this to validate the new version. When any nagative impacts are detected, an auto-rollback stage will be executed to switch all traffic back to the primary variant.)
+(You can add an [ANALYSIS](/docs/user-guide/automated-deployment-analysis/) stage after this to validate the new version. When any negative impacts are detected, an auto-rollback stage will be executed to switch all traffic back to the primary variant.)
 
 ![](/images/example-bluegreen-kubernetes-istio-stage-2.png)
 
