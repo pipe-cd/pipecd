@@ -199,7 +199,7 @@ func (s *DynamoDB) Put(ctx context.Context, kind, id string, entity interface{})
 	}
 	_, err = s.client.PutItemWithContext(ctx, input)
 	if err != nil {
-		s.logger.Error("failed to insert entity",
+		s.logger.Error("failed to put entity",
 			zap.String("id", id),
 			zap.String("kind", kind),
 			zap.Error(err),
@@ -225,8 +225,24 @@ func (s *DynamoDB) Update(ctx context.Context, kind, id string, factory datastor
 		)
 		return err
 	}
-	// UpdateItem
-	return datastore.ErrUnimplemented
+
+	if err := updater(entity); err != nil {
+		s.logger.Error("failed to update entity",
+			zap.String("id", id),
+			zap.String("kind", kind),
+			zap.Error(err),
+		)
+		return err
+	}
+	if err := s.Put(ctx, kind, id, entity); err != nil {
+		s.logger.Error("failed to update entity",
+			zap.String("id", id),
+			zap.String("kind", kind),
+			zap.Error(err),
+		)
+		return err
+	}
+	return nil
 }
 
 // Close implementation for DynamoDB
