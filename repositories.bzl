@@ -465,8 +465,8 @@ def go_repositories():
     go_repository(
         name = "com_github_goccy_go_yaml",
         importpath = "github.com/goccy/go-yaml",
-        sum = "h1:AOEdR7aQgbgwHznGe3BLkDQVujxCPUpHOZZcQcp8Y3M=",
-        version = "v1.8.4",
+        sum = "h1:IAGui0h0QUFuI7hZ3wiJGuUpgKqiM7IqMarccnpXzdc=",
+        version = "v1.8.7",
     )
 
     go_repository(
