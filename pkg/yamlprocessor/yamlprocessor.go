@@ -48,14 +48,21 @@ func GetValue(yml []byte, path string) (interface{}, error) {
 	if err != nil {
 		return nil, err
 	}
-
-	// TODO: Validate value in YAML before actual reading
-	// because it panics if:
-	//   - the value is -0.
-	//   - unexistence path given.
-	var value interface{}
-	if err := p.Read(bytes.NewReader(yml), &value); err != nil {
+	// Build an AST node based on the given path.
+	node, err := p.ReadNode(bytes.NewReader(yml))
+	if err != nil {
 		return nil, err
+	}
+	if node == nil {
+		return nil, fmt.Errorf("wrong path (%s) given", path)
+	}
+
+	// TODO: Disallow yamlprocessor panic if the value is -0
+	// TODO: Use goyaml.Read() upon merging our patch
+	// https://github.com/goccy/go-yaml/pull/194
+	var value interface{}
+	if err := goyaml.Unmarshal([]byte(node.String()), &value); err != nil {
+		return nil, fmt.Errorf("failed to unmarshal the node placed at the given path: %w", err)
 	}
 	return value, nil
 }
