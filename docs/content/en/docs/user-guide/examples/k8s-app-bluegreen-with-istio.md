@@ -62,7 +62,7 @@ spec:
 
 ## Enabling blue-green strategy
 
-- Add the following `.pipe.yaml` file into the application directory in Git.
+- Add the following `.pipe.yaml` file into the application directory in the Git repository.
 
 ``` yaml
 apiVersion: pipecd.dev/v1beta1
