@@ -47,11 +47,11 @@ func buildDynamoDBExpression(opts datastore.ListOptions) (expression.Expression,
 	var expr expression.Expression
 	ops := make([]expression.ConditionBuilder, len(opts.Filters))
 	for i, f := range opts.Filters {
-		exp, err := buildDynamoDBCondition(f)
+		op, err := buildDynamoDBCondition(f)
 		if err != nil {
 			return expr, err
 		}
-		ops[i] = exp
+		ops[i] = op
 	}
 	if len(ops) == 0 {
 		return expr, fmt.Errorf("missing expression for dynamodb")
