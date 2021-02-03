@@ -129,6 +129,8 @@ func (s *DynamoDB) Find(ctx context.Context, kind string, opts datastore.ListOpt
 		FilterExpression:          expr.Filter(),
 		TableName:                 aws.String(kind),
 	}
+	// TODO: Support pagination with ListOptions.Page and ListOptions.PageSize for DynamoDB.
+	// TODO: Support ordering with ListOptions.Orders for DynamoDB.
 	var items []map[string]*dynamodb.AttributeValue
 	err = s.client.ScanPagesWithContext(ctx, input,
 		func(page *dynamodb.ScanOutput, lastPage bool) bool {
