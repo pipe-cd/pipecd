@@ -10,12 +10,12 @@ const useStyles = makeStyles((theme) => ({
   },
 }));
 
-interface Props {
+export interface DetailTableRowProps {
   label: string;
   value: React.ReactChild;
 }
 
-export const DetailTableRow: FC<Props> = ({ label, value }) => {
+export const DetailTableRow: FC<DetailTableRowProps> = ({ label, value }) => {
   const classes = useStyles();
   return (
     <tr>

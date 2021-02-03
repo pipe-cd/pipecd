@@ -54,14 +54,14 @@ const formatWeekSelectLabel = (
   return date ? `Week of ${date.day(0).format("MMM Do")}` : invalidLabel;
 };
 
-interface Props {
+export interface WeekPickerProps {
   value: Date | number | null;
   label: string;
   onChange: (date: MaterialUiPickersDate) => void;
   className?: string;
 }
 
-export const WeekPicker: FC<Props> = memo(function WeekPicker({
+export const WeekPicker: FC<WeekPickerProps> = memo(function WeekPicker({
   value,
   label,
   onChange,

@@ -50,12 +50,15 @@ const TEXT = {
   CREATE_LINK: "Add to application configuration directory in Git",
 };
 
-interface Props {
+export interface DeploymentConfigFormProps {
   applicationId: string;
   onSkip: () => void;
 }
 
-export const DeploymentConfigForm: FC<Props> = ({ applicationId, onSkip }) => {
+export const DeploymentConfigForm: FC<DeploymentConfigFormProps> = ({
+  applicationId,
+  onSkip,
+}) => {
   const classes = useStyles();
   const dispatch = useDispatch();
   const [templateIndex, setTemplateIndex] = useState(0);

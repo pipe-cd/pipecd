@@ -36,11 +36,11 @@ const useStyles = makeStyles((theme) => ({
   },
 }));
 
-interface Props {
+export interface StageStatusIconProps {
   status: StageStatus;
 }
 
-export const StageStatusIcon: FC<Props> = ({ status }) => {
+export const StageStatusIcon: FC<StageStatusIconProps> = ({ status }) => {
   const classes = useStyles();
 
   switch (status) {

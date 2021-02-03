@@ -13,12 +13,12 @@ import {
   ApplicationFormValue,
 } from "../application-form";
 
-interface Props {
+export interface AddApplicationDrawerProps {
   open: boolean;
   onClose: () => void;
 }
 
-export const AddApplicationDrawer: FC<Props> = memo(
+export const AddApplicationDrawer: FC<AddApplicationDrawerProps> = memo(
   function AddApplicationDrawer({ open, onClose }) {
     const dispatch = useDispatch<AppDispatch>();
     const formik = useFormik<ApplicationFormValue>({

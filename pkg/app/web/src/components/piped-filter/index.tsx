@@ -31,12 +31,12 @@ export interface FilterValues {
   enabled: boolean | undefined;
 }
 
-interface Props {
+export interface PipedFilterProps {
   values: FilterValues;
   onChange: (values: FilterValues) => void;
 }
 
-export const PipedFilter: FC<Props> = ({ values, onChange }) => {
+export const PipedFilter: FC<PipedFilterProps> = ({ values, onChange }) => {
   const classes = useStyles();
 
   return (

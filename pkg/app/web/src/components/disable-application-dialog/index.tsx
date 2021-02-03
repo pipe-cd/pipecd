@@ -28,14 +28,14 @@ const useStyles = makeStyles((theme) => ({
   },
 }));
 
-interface Props {
+export interface DisableApplicationDialogProps {
   open: boolean;
   applicationId: string | null;
   onCancel: () => void;
   onDisable: () => void;
 }
 
-export const DisableApplicationDialog: FC<Props> = memo(
+export const DisableApplicationDialog: FC<DisableApplicationDialogProps> = memo(
   function DisableApplicationDialog({
     applicationId,
     open,

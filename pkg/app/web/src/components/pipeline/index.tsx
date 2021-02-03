@@ -126,7 +126,7 @@ const useStyles = makeStyles((theme) => ({
   },
 }));
 
-interface Props {
+export interface PipelineProps {
   deploymentId: string;
 }
 
@@ -142,7 +142,9 @@ const findApprover = (
   return undefined;
 };
 
-export const Pipeline: FC<Props> = memo(function Pipeline({ deploymentId }) {
+export const Pipeline: FC<PipelineProps> = memo(function Pipeline({
+  deploymentId,
+}) {
   const classes = useStyles();
   const dispatch = useDispatch();
   const [approveTargetId, setApproveTargetId] = useState<string | null>(null);

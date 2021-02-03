@@ -18,11 +18,11 @@ const useStyles = makeStyles((theme) => ({
   },
 }));
 
-interface Props {
+export interface AppLiveStateProps {
   applicationId: string;
 }
 
-export const AppLiveState: FC<Props> = memo(function AppLiveState({
+export const AppLiveState: FC<AppLiveStateProps> = memo(function AppLiveState({
   applicationId,
 }) {
   const classes = useStyles();

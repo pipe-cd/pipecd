@@ -23,7 +23,7 @@ const useStyles = makeStyles((theme) => ({
   },
 }));
 
-interface Props {
+export interface DisableAPIKeyConfirmDialogProps {
   apiKeyId: string | null;
   onCancel: () => void;
   onDisable: (id: string) => void;
@@ -32,7 +32,7 @@ interface Props {
 const DIALOG_TITLE = "Disable API Key";
 const DESCRIPTION = "Are you sure you want to disable the API key?";
 
-export const DisableAPIKeyConfirmDialog: FC<Props> = memo(
+export const DisableAPIKeyConfirmDialog: FC<DisableAPIKeyConfirmDialogProps> = memo(
   function DisableAPIKeyConfirmDialog({ apiKeyId, onDisable, onCancel }) {
     const classes = useStyles();
     const apiKey = useSelector<AppState, APIKey.AsObject | undefined>((state) =>

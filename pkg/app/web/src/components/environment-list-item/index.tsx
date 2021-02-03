@@ -38,11 +38,11 @@ const ITEM_HEIGHT = 48;
 const TEXT_NO_DESCRIPTION = "No description";
 const DIALOG_TITLE = "Edit Environment description";
 
-interface Props {
+export interface EnvironmentListItemProps {
   id: EntityId;
 }
 
-export const EnvironmentListItem: FC<Props> = memo(
+export const EnvironmentListItem: FC<EnvironmentListItemProps> = memo(
   function EnvironmentListItem({ id }) {
     const classes = useStyles();
     const [anchorEl, setAnchorEl] = useState<HTMLButtonElement | null>(null);

@@ -45,7 +45,7 @@ const EmptyDeploymentData: FC = () => (
   </>
 );
 
-interface Props {
+export interface ApplicationListItemProps {
   applicationId: string;
   onEdit: (id: string) => void;
   onEnable: (id: string) => void;
@@ -54,7 +54,7 @@ interface Props {
   onEncryptSecret: (id: string) => void;
 }
 
-export const ApplicationListItem: FC<Props> = memo(
+export const ApplicationListItem: FC<ApplicationListItemProps> = memo(
   function ApplicationListItem({
     applicationId,
     onDisable,

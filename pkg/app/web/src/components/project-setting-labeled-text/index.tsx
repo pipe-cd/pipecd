@@ -13,12 +13,15 @@ const useStyles = makeStyles((theme) => ({
   },
 }));
 
-interface Props {
+export interface ProjectSettingLabeledTextProps {
   label: string;
   value: string;
 }
 
-export const ProjectSettingLabeledText: FC<Props> = ({ label, value }) => {
+export const ProjectSettingLabeledText: FC<ProjectSettingLabeledTextProps> = ({
+  label,
+  value,
+}) => {
   const classes = useStyles();
   return (
     <div className={classes.root}>

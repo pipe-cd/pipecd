@@ -43,12 +43,15 @@ const useStyles = makeStyles((theme) => ({
   },
 }));
 
-interface Props {
+export interface DeploymentStatusIconProps {
   status: DeploymentStatus;
   className?: string;
 }
 
-export const StatusIcon: FC<Props> = ({ status, className }) => {
+export const DeploymentStatusIcon: FC<DeploymentStatusIconProps> = ({
+  status,
+  className,
+}) => {
   const classes = useStyles();
 
   switch (status) {

@@ -21,12 +21,15 @@ const useStyles = makeStyles((theme) => ({
   },
 }));
 
-interface Props {
+export interface SyncStateReasonProps {
   summary: string;
   detail: string;
 }
 
-export const SyncStateReason: FC<Props> = ({ summary, detail }) => {
+export const SyncStateReason: FC<SyncStateReasonProps> = ({
+  summary,
+  detail,
+}) => {
   const classes = useStyles();
   const [showReason, setShowReason] = useState(false);
   return (

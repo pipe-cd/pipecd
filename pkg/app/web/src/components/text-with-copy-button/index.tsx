@@ -8,13 +8,17 @@ const useStyles = makeStyles((theme) => ({
   input: { border: "none", fontSize: 14, flex: 1, textOverflow: "ellipsis" },
 }));
 
-interface Props {
+export interface TextWithCopyButtonProps {
   label: string;
   value: string;
   onCopy: () => void;
 }
 
-export const TextWithCopyButton: FC<Props> = ({ label, value, onCopy }) => {
+export const TextWithCopyButton: FC<TextWithCopyButtonProps> = ({
+  label,
+  value,
+  onCopy,
+}) => {
   const classes = useStyles();
   const handleCopy = useCallback(() => {
     copy(value);

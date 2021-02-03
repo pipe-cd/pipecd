@@ -24,13 +24,13 @@ const validationSchema = Yup.object({
   desc: Yup.string().required("Required"),
 });
 
-interface Props {
+export interface AddEnvFormProps {
   projectName: string;
   onSubmit: (props: { name: string; desc: string }) => void;
   onCancel: () => void;
 }
 
-export const AddEnvForm: FC<Props> = memo(function AddEnvForm({
+export const AddEnvForm: FC<AddEnvFormProps> = memo(function AddEnvForm({
   projectName,
   onSubmit,
   onCancel,

@@ -22,7 +22,7 @@ import {
 } from "../../modules/applications-live-state";
 import { KubernetesStateView } from "../kubernetes-state-view";
 
-interface Props {
+export interface ApplicationStateViewProps {
   applicationId: string;
 }
 
@@ -39,7 +39,7 @@ const useStyles = makeStyles(() => ({
   },
 }));
 
-export const ApplicationStateView: FC<Props> = memo(
+export const ApplicationStateView: FC<ApplicationStateViewProps> = memo(
   function ApplicationStateView({ applicationId }) {
     const classes = useStyles();
     const dispatch = useDispatch();

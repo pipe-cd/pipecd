@@ -9,12 +9,15 @@ import {
 import FilterListIcon from "@material-ui/icons/FilterList";
 import { UI_TEXT_FILTER, UI_TEXT_FILTERED } from "../../constants/ui-text";
 
-interface Props {
+export interface ResourceFilterPopoverProps {
   enables: Record<string, boolean>;
   onChange: (state: Record<string, boolean>) => void;
 }
 
-export const ResourceFilterPopover: FC<Props> = ({ enables, onChange }) => {
+export const ResourceFilterPopover: FC<ResourceFilterPopoverProps> = ({
+  enables,
+  onChange,
+}) => {
   const buttonRef = useRef<HTMLButtonElement | null>(null);
   const [state, setState] = useState<Record<string, boolean>>(enables);
   const [open, setOpen] = useState(false);

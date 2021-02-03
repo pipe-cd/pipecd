@@ -80,7 +80,7 @@ const useStyles = makeStyles((theme) => ({
   },
 }));
 
-interface Props {
+export interface ApplicationDetailProps {
   applicationId: string;
 }
 
@@ -143,162 +143,162 @@ const syncStrategyByIndex: SyncStrategy[] = [
   SyncStrategy.PIPELINE,
 ];
 
-export const ApplicationDetail: FC<Props> = memo(function ApplicationDetail({
-  applicationId,
-}) {
-  const classes = useStyles();
-  const dispatch = useDispatch();
+export const ApplicationDetail: FC<ApplicationDetailProps> = memo(
+  function ApplicationDetail({ applicationId }) {
+    const classes = useStyles();
+    const dispatch = useDispatch();
 
-  const [app, fetchApplicationError] = useSelector<
-    AppState,
-    [Application.AsObject | undefined, SerializedError | null]
-  >((state) => [
-    selectApplicationById(state.applications, applicationId),
-    state.applications.fetchApplicationError,
-  ]);
+    const [app, fetchApplicationError] = useSelector<
+      AppState,
+      [Application.AsObject | undefined, SerializedError | null]
+    >((state) => [
+      selectApplicationById(state.applications, applicationId),
+      state.applications.fetchApplicationError,
+    ]);
 
-  const [pipe, env] = useSelector<
-    AppState,
-    [Environment.AsObject | undefined, Piped.AsObject | undefined]
-  >((state) => [
-    app ? selectEnvById(state.environments, app.envId) : undefined,
-    app ? selectPipeById(state.pipeds, app.pipedId) : undefined,
-  ]);
+    const [pipe, env] = useSelector<
+      AppState,
+      [Environment.AsObject | undefined, Piped.AsObject | undefined]
+    >((state) => [
+      app ? selectEnvById(state.environments, app.envId) : undefined,
+      app ? selectPipeById(state.pipeds, app.pipedId) : undefined,
+    ]);
 
-  const isSyncing = useIsSyncingApplication(app?.id);
+    const isSyncing = useIsSyncingApplication(app?.id);
 
-  const handleSync = (index: number): void => {
-    if (app) {
-      dispatch(
-        syncApplication({
-          applicationId: app.id,
-          syncStrategy: syncStrategyByIndex[index],
-        })
+    const handleSync = (index: number): void => {
+      if (app) {
+        dispatch(
+          syncApplication({
+            applicationId: app.id,
+            syncStrategy: syncStrategyByIndex[index],
+          })
+        );
+      }
+    };
+
+    if (fetchApplicationError) {
+      return (
+        <Paper square elevation={1} className={classes.root}>
+          <Box
+            height={200}
+            display="flex"
+            flexDirection="column"
+            justifyContent="center"
+            alignItems="center"
+          >
+            <Typography variant="body1">{ERROR_MESSAGE}</Typography>
+            <Button
+              color="primary"
+              onClick={() => {
+                dispatch(fetchApplication(applicationId));
+              }}
+            >
+              {UI_TEXT_REFRESH}
+            </Button>
+          </Box>
+        </Paper>
       );
     }
-  };
 
-  if (fetchApplicationError) {
     return (
-      <Paper square elevation={1} className={classes.root}>
-        <Box
-          height={200}
-          display="flex"
-          flexDirection="column"
-          justifyContent="center"
-          alignItems="center"
-        >
-          <Typography variant="body1">{ERROR_MESSAGE}</Typography>
-          <Button
+      <Paper
+        square
+        elevation={1}
+        className={clsx(classes.root, {
+          [classes.disabled]: app?.disabled,
+        })}
+      >
+        <Box flex={1}>
+          <Box display="flex" alignItems="baseline">
+            <Typography variant="h5">
+              {app ? app.name : <Skeleton width={100} />}
+            </Typography>
+            <Typography variant="subtitle2" className={classes.env}>
+              {env ? env.name : <Skeleton width={100} />}
+            </Typography>
+          </Box>
+
+          {app ? (
+            <>
+              <Box display="flex" alignItems="center">
+                <AppSyncStatus
+                  syncState={app.syncState}
+                  deploying={app.deploying}
+                  size="large"
+                  className={classes.appSyncState}
+                />
+                <AppLiveState applicationId={applicationId} />
+              </Box>
+
+              {app.syncState && (
+                <SyncStateReason
+                  summary={app.syncState.shortReason}
+                  detail={app.syncState.reason}
+                />
+              )}
+            </>
+          ) : (
+            <Skeleton height={32} width={200} />
+          )}
+        </Box>
+
+        <Box mt={1} display="flex">
+          <div className={classes.content}>
+            {app && pipe ? (
+              <table>
+                <tbody>
+                  <DetailTableRow
+                    label="Kind"
+                    value={APPLICATION_KIND_TEXT[app.kind]}
+                  />
+                  <DetailTableRow label="Piped" value={pipe.name} />
+                  <DetailTableRow
+                    label="Cloud Provider"
+                    value={app.cloudProvider}
+                  />
+
+                  {app.gitPath && (
+                    <DetailTableRow
+                      label="Configuration Directory"
+                      value={
+                        <Link
+                          href={app.gitPath.url}
+                          target="_blank"
+                          rel="noreferrer"
+                        >
+                          {app.gitPath.path}
+                          <OpenInNewIcon className={classes.linkIcon} />
+                        </Link>
+                      }
+                    />
+                  )}
+                </tbody>
+              </table>
+            ) : (
+              <Skeleton height={105} width={500} />
+            )}
+          </div>
+
+          <div className={classes.content}>
+            <MostRecentlySuccessfulDeployment
+              deployment={app?.mostRecentlySuccessfulDeployment}
+            />
+          </div>
+        </Box>
+
+        <Box top={0} right={0} pr={2} pt={2} position="absolute">
+          <SplitButton
+            label="select sync strategy"
             color="primary"
-            onClick={() => {
-              dispatch(fetchApplication(applicationId));
-            }}
-          >
-            {UI_TEXT_REFRESH}
-          </Button>
+            loading={isSyncing}
+            disabled={isSyncing || Boolean(app?.disabled)}
+            onClick={handleSync}
+            options={syncOptions}
+            startIcon={<SyncIcon />}
+          />
         </Box>
       </Paper>
     );
   }
-
-  return (
-    <Paper
-      square
-      elevation={1}
-      className={clsx(classes.root, {
-        [classes.disabled]: app?.disabled,
-      })}
-    >
-      <Box flex={1}>
-        <Box display="flex" alignItems="baseline">
-          <Typography variant="h5">
-            {app ? app.name : <Skeleton width={100} />}
-          </Typography>
-          <Typography variant="subtitle2" className={classes.env}>
-            {env ? env.name : <Skeleton width={100} />}
-          </Typography>
-        </Box>
-
-        {app ? (
-          <>
-            <Box display="flex" alignItems="center">
-              <AppSyncStatus
-                syncState={app.syncState}
-                deploying={app.deploying}
-                size="large"
-                className={classes.appSyncState}
-              />
-              <AppLiveState applicationId={applicationId} />
-            </Box>
-
-            {app.syncState && (
-              <SyncStateReason
-                summary={app.syncState.shortReason}
-                detail={app.syncState.reason}
-              />
-            )}
-          </>
-        ) : (
-          <Skeleton height={32} width={200} />
-        )}
-      </Box>
-
-      <Box mt={1} display="flex">
-        <div className={classes.content}>
-          {app && pipe ? (
-            <table>
-              <tbody>
-                <DetailTableRow
-                  label="Kind"
-                  value={APPLICATION_KIND_TEXT[app.kind]}
-                />
-                <DetailTableRow label="Piped" value={pipe.name} />
-                <DetailTableRow
-                  label="Cloud Provider"
-                  value={app.cloudProvider}
-                />
-
-                {app.gitPath && (
-                  <DetailTableRow
-                    label="Configuration Directory"
-                    value={
-                      <Link
-                        href={app.gitPath.url}
-                        target="_blank"
-                        rel="noreferrer"
-                      >
-                        {app.gitPath.path}
-                        <OpenInNewIcon className={classes.linkIcon} />
-                      </Link>
-                    }
-                  />
-                )}
-              </tbody>
-            </table>
-          ) : (
-            <Skeleton height={105} width={500} />
-          )}
-        </div>
-
-        <div className={classes.content}>
-          <MostRecentlySuccessfulDeployment
-            deployment={app?.mostRecentlySuccessfulDeployment}
-          />
-        </div>
-      </Box>
-
-      <Box top={0} right={0} pr={2} pt={2} position="absolute">
-        <SplitButton
-          label="select sync strategy"
-          color="primary"
-          loading={isSyncing}
-          disabled={isSyncing || Boolean(app?.disabled)}
-          onClick={handleSync}
-          options={syncOptions}
-          startIcon={<SyncIcon />}
-        />
-      </Box>
-    </Paper>
-  );
-});
+);

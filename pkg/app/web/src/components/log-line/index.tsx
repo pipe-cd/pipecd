@@ -41,7 +41,7 @@ const useStyles = makeStyles((theme) => ({
   },
 }));
 
-interface Props {
+export interface LogLineProps {
   lineNumber: number;
   body: string;
   severity: LogSeverity;
@@ -50,7 +50,7 @@ interface Props {
 
 const TIMESTAMP_FORMAT = "YYYY-MM-DD HH:mm:ss Z";
 
-export const LogLine: FC<Props> = ({
+export const LogLine: FC<LogLineProps> = ({
   body,
   lineNumber,
   severity,
