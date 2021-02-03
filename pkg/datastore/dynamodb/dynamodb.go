@@ -145,7 +145,7 @@ func (s *DynamoDB) Find(ctx context.Context, kind string, opts datastore.ListOpt
 			zap.String("kind", kind),
 			zap.Error(err),
 		)
-		return nil, fmt.Errorf("failed to get cursor: %v", err)
+		return nil, fmt.Errorf("failed to get cursor: %w", err)
 	}
 	return &Iterator{
 		datapool: items,

@@ -33,8 +33,8 @@ func (it *Iterator) Next(dst interface{}) error {
 		return datastore.ErrIteratorDone
 	}
 	// Pop the first item from data pool
-	item, rest := it.datapool[0], it.datapool[1:]
-	it.datapool = rest
+	item := it.datapool[0]
+	it.datapool = it.datapool[1:]
 
 	return dynamodbattribute.UnmarshalMap(item, dst)
 }
