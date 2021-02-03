@@ -24,7 +24,6 @@ import (
 	"github.com/pipe-cd/pipe/pkg/cache"
 	"github.com/pipe-cd/pipe/pkg/filestore"
 	"github.com/pipe-cd/pipe/pkg/insight"
-	"github.com/pipe-cd/pipe/pkg/insight/dto"
 	"github.com/pipe-cd/pipe/pkg/model"
 )
 
@@ -46,10 +45,10 @@ func (s *Store) LoadChunks(
 	step model.InsightStep,
 	from time.Time,
 	count int,
-) (dto.Chunks, error) {
+) (insight.Chunks, error) {
 	from = insight.NormalizeTime(from, step)
-	paths := dto.DetermineFilePaths(projectID, appID, kind, step, from, count)
-	var chunks []dto.Chunk
+	paths := insight.DetermineFilePaths(projectID, appID, kind, step, from, count)
+	var chunks []insight.Chunk
 	for _, p := range paths {
 		c, err := s.getChunk(ctx, p, kind)
 		if err != nil {
@@ -62,7 +61,7 @@ func (s *Store) LoadChunks(
 }
 
 // PutChunk create or update chunk.
-func (s *Store) PutChunk(ctx context.Context, chunk dto.Chunk) error {
+func (s *Store) PutChunk(ctx context.Context, chunk insight.Chunk) error {
 	data, err := json.Marshal(chunk)
 	if err != nil {
 		return err
@@ -74,16 +73,16 @@ func (s *Store) PutChunk(ctx context.Context, chunk dto.Chunk) error {
 	return s.filestore.PutObject(ctx, path, data)
 }
 
-func LoadChunksFromCache(cache cache.Cache, projectID, appID string, kind model.InsightMetricsKind, step model.InsightStep, from time.Time, count int) (dto.Chunks, error) {
-	paths := dto.DetermineFilePaths(projectID, appID, kind, step, from, count)
-	chunks := make([]dto.Chunk, 0, len(paths))
+func LoadChunksFromCache(cache cache.Cache, projectID, appID string, kind model.InsightMetricsKind, step model.InsightStep, from time.Time, count int) (insight.Chunks, error) {
+	paths := insight.DetermineFilePaths(projectID, appID, kind, step, from, count)
+	chunks := make([]insight.Chunk, 0, len(paths))
 	for _, p := range paths {
 		c, err := cache.Get(p)
 		if err != nil {
 			return nil, err
 		}
 
-		chunk, ok := c.(dto.Chunk)
+		chunk, ok := c.(insight.Chunk)
 		if !ok {
 			return nil, errors.New("malformed chunk data in cache")
 		}
@@ -93,7 +92,7 @@ func LoadChunksFromCache(cache cache.Cache, projectID, appID string, kind model.
 	return chunks, nil
 }
 
-func PutChunksToCache(cache cache.Cache, chunks dto.Chunks) error {
+func PutChunksToCache(cache cache.Cache, chunks insight.Chunks) error {
 	var err error
 	for _, c := range chunks {
 		// continue process even if an error occurs.
@@ -104,7 +103,7 @@ func PutChunksToCache(cache cache.Cache, chunks dto.Chunks) error {
 	return err
 }
 
-func (s *Store) getChunk(ctx context.Context, path string, kind model.InsightMetricsKind) (dto.Chunk, error) {
+func (s *Store) getChunk(ctx context.Context, path string, kind model.InsightMetricsKind) (insight.Chunk, error) {
 	obj, err := s.filestore.GetObject(ctx, path)
 	if err != nil {
 		return nil, err
@@ -113,9 +112,9 @@ func (s *Store) getChunk(ctx context.Context, path string, kind model.InsightMet
 	var c interface{}
 	switch kind {
 	case model.InsightMetricsKind_DEPLOYMENT_FREQUENCY:
-		c = &dto.DeployFrequencyChunk{}
+		c = &insight.DeployFrequencyChunk{}
 	case model.InsightMetricsKind_CHANGE_FAILURE_RATE:
-		c = &dto.ChangeFailureRateChunk{}
+		c = &insight.ChangeFailureRateChunk{}
 	default:
 		return nil, fmt.Errorf("unimpremented insight kind: %s", kind)
 	}
@@ -124,7 +123,7 @@ func (s *Store) getChunk(ctx context.Context, path string, kind model.InsightMet
 	if err != nil {
 		return nil, err
 	}
-	chunk, err := dto.ToChunk(c)
+	chunk, err := insight.ToChunk(c)
 	if err != nil {
 		return nil, err
 	}

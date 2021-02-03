@@ -27,32 +27,32 @@ import (
 	"github.com/pipe-cd/pipe/pkg/datastore"
 	"github.com/pipe-cd/pipe/pkg/datastore/datastoretest"
 	"github.com/pipe-cd/pipe/pkg/filestore/filestoretest"
-	"github.com/pipe-cd/pipe/pkg/insight/dto"
+	"github.com/pipe-cd/pipe/pkg/insight"
 	"github.com/pipe-cd/pipe/pkg/insight/insightstore"
 	"github.com/pipe-cd/pipe/pkg/model"
 )
 
 func TestInsightCollector_updateDataPoints(t *testing.T) {
 	type args struct {
-		chunk         dto.Chunk
+		chunk         insight.Chunk
 		step          model.InsightStep
-		updatedps     []dto.DataPoint
+		updatedps     []insight.DataPoint
 		accumulatedTo int64
 	}
 	tests := []struct {
 		name    string
 		args    args
-		want    dto.Chunk
+		want    insight.Chunk
 		wantErr bool
 	}{
 		{
 			name: "success with daily and deploy frequency",
 			args: args{
-				chunk: func() dto.Chunk {
-					df := &dto.DeployFrequencyChunk{
+				chunk: func() insight.Chunk {
+					df := &insight.DeployFrequencyChunk{
 						AccumulatedTo: time.Date(2020, 10, 11, 1, 0, 0, 0, time.UTC).Unix(),
-						DataPoints: dto.DeployFrequencyDataPoint{
-							Daily: []*dto.DeployFrequency{
+						DataPoints: insight.DeployFrequencyDataPoint{
+							Daily: []*insight.DeployFrequency{
 								{
 									Timestamp:   time.Date(2020, 10, 10, 0, 0, 0, 0, time.UTC).Unix(),
 									DeployCount: 10,
@@ -64,15 +64,15 @@ func TestInsightCollector_updateDataPoints(t *testing.T) {
 						},
 						FilePath: "",
 					}
-					c, e := dto.ToChunk(df)
+					c, e := insight.ToChunk(df)
 					if e != nil {
 						t.Fatalf("error when convert to chunk: %v", e)
 					}
 					return c
 				}(),
 				step: model.InsightStep_DAILY,
-				updatedps: func() []dto.DataPoint {
-					daily := []*dto.DeployFrequency{
+				updatedps: func() []insight.DataPoint {
+					daily := []*insight.DeployFrequency{
 						{
 							Timestamp:   time.Date(2020, 10, 11, 0, 0, 0, 0, time.UTC).Unix(),
 							DeployCount: 3,
@@ -86,7 +86,7 @@ func TestInsightCollector_updateDataPoints(t *testing.T) {
 							DeployCount: 1,
 						},
 					}
-					dps, e := dto.ToDataPoints(daily)
+					dps, e := insight.ToDataPoints(daily)
 					if e != nil {
 						t.Fatalf("error when convert to data points: %v", e)
 					}
@@ -94,11 +94,11 @@ func TestInsightCollector_updateDataPoints(t *testing.T) {
 				}(),
 				accumulatedTo: time.Date(2020, 10, 13, 1, 0, 0, 0, time.UTC).Unix(),
 			},
-			want: func() dto.Chunk {
-				df := &dto.DeployFrequencyChunk{
+			want: func() insight.Chunk {
+				df := &insight.DeployFrequencyChunk{
 					AccumulatedTo: time.Date(2020, 10, 13, 1, 0, 0, 0, time.UTC).Unix(),
-					DataPoints: dto.DeployFrequencyDataPoint{
-						Daily: []*dto.DeployFrequency{
+					DataPoints: insight.DeployFrequencyDataPoint{
+						Daily: []*insight.DeployFrequency{
 							{
 								Timestamp:   time.Date(2020, 10, 10, 0, 0, 0, 0, time.UTC).Unix(),
 								DeployCount: 10,
@@ -122,7 +122,7 @@ func TestInsightCollector_updateDataPoints(t *testing.T) {
 					},
 					FilePath: "",
 				}
-				c, e := dto.ToChunk(df)
+				c, e := insight.ToChunk(df)
 				if e != nil {
 					t.Fatalf("error when convert to chunk: %v", e)
 				}
@@ -132,11 +132,11 @@ func TestInsightCollector_updateDataPoints(t *testing.T) {
 		{
 			name: "success with weekly and deploy frequency",
 			args: args{
-				chunk: func() dto.Chunk {
-					df := &dto.DeployFrequencyChunk{
+				chunk: func() insight.Chunk {
+					df := &insight.DeployFrequencyChunk{
 						AccumulatedTo: time.Date(2020, 10, 11, 1, 0, 0, 0, time.UTC).Unix(),
-						DataPoints: dto.DeployFrequencyDataPoint{
-							Weekly: []*dto.DeployFrequency{
+						DataPoints: insight.DeployFrequencyDataPoint{
+							Weekly: []*insight.DeployFrequency{
 								{
 									Timestamp:   time.Date(2020, 10, 4, 0, 0, 0, 0, time.UTC).Unix(),
 									DeployCount: 10,
@@ -148,21 +148,21 @@ func TestInsightCollector_updateDataPoints(t *testing.T) {
 						},
 						FilePath: "",
 					}
-					c, e := dto.ToChunk(df)
+					c, e := insight.ToChunk(df)
 					if e != nil {
 						t.Fatalf("error when convert to chunk: %v", e)
 					}
 					return c
 				}(),
 				step: model.InsightStep_WEEKLY,
-				updatedps: func() []dto.DataPoint {
-					df := []*dto.DeployFrequency{
+				updatedps: func() []insight.DataPoint {
+					df := []*insight.DeployFrequency{
 						{
 							Timestamp:   time.Date(2020, 10, 11, 0, 0, 0, 0, time.UTC).Unix(),
 							DeployCount: 7,
 						},
 					}
-					dps, e := dto.ToDataPoints(df)
+					dps, e := insight.ToDataPoints(df)
 					if e != nil {
 						t.Fatalf("error when convert to data points: %v", e)
 					}
@@ -170,11 +170,11 @@ func TestInsightCollector_updateDataPoints(t *testing.T) {
 				}(),
 				accumulatedTo: time.Date(2020, 10, 13, 3, 0, 0, 0, time.UTC).Unix(),
 			},
-			want: func() dto.Chunk {
-				df := &dto.DeployFrequencyChunk{
+			want: func() insight.Chunk {
+				df := &insight.DeployFrequencyChunk{
 					AccumulatedTo: time.Date(2020, 10, 13, 3, 0, 0, 0, time.UTC).Unix(),
-					DataPoints: dto.DeployFrequencyDataPoint{
-						Weekly: []*dto.DeployFrequency{
+					DataPoints: insight.DeployFrequencyDataPoint{
+						Weekly: []*insight.DeployFrequency{
 							{
 								Timestamp:   time.Date(2020, 10, 4, 0, 0, 0, 0, time.UTC).Unix(),
 								DeployCount: 10,
@@ -190,7 +190,7 @@ func TestInsightCollector_updateDataPoints(t *testing.T) {
 					},
 					FilePath: "",
 				}
-				c, e := dto.ToChunk(df)
+				c, e := insight.ToChunk(df)
 				if e != nil {
 					t.Fatalf("error when convert to chunk: %v", e)
 				}
@@ -200,11 +200,11 @@ func TestInsightCollector_updateDataPoints(t *testing.T) {
 		{
 			name: "success with monthly and deploy frequency",
 			args: args{
-				chunk: func() dto.Chunk {
-					df := &dto.DeployFrequencyChunk{
+				chunk: func() insight.Chunk {
+					df := &insight.DeployFrequencyChunk{
 						AccumulatedTo: time.Date(2020, 10, 11, 1, 0, 0, 0, time.UTC).Unix(),
-						DataPoints: dto.DeployFrequencyDataPoint{
-							Monthly: []*dto.DeployFrequency{
+						DataPoints: insight.DeployFrequencyDataPoint{
+							Monthly: []*insight.DeployFrequency{
 								{
 									Timestamp:   time.Date(2020, 10, 1, 0, 0, 0, 0, time.UTC).Unix(),
 									DeployCount: 10,
@@ -216,15 +216,15 @@ func TestInsightCollector_updateDataPoints(t *testing.T) {
 						},
 						FilePath: "",
 					}
-					c, e := dto.ToChunk(df)
+					c, e := insight.ToChunk(df)
 					if e != nil {
 						t.Fatalf("error when convert to chunk: %v", e)
 					}
 					return c
 				}(),
 				step: model.InsightStep_MONTHLY,
-				updatedps: func() []dto.DataPoint {
-					df := []*dto.DeployFrequency{
+				updatedps: func() []insight.DataPoint {
+					df := []*insight.DeployFrequency{
 						{
 							Timestamp:   time.Date(2020, 10, 1, 0, 0, 0, 0, time.UTC).Unix(),
 							DeployCount: 3,
@@ -234,7 +234,7 @@ func TestInsightCollector_updateDataPoints(t *testing.T) {
 							DeployCount: 7,
 						},
 					}
-					dps, e := dto.ToDataPoints(df)
+					dps, e := insight.ToDataPoints(df)
 					if e != nil {
 						t.Fatalf("error when convert to data points: %v", e)
 					}
@@ -242,11 +242,11 @@ func TestInsightCollector_updateDataPoints(t *testing.T) {
 				}(),
 				accumulatedTo: time.Date(2020, 11, 13, 3, 0, 0, 0, time.UTC).Unix(),
 			},
-			want: func() dto.Chunk {
-				df := &dto.DeployFrequencyChunk{
+			want: func() insight.Chunk {
+				df := &insight.DeployFrequencyChunk{
 					AccumulatedTo: time.Date(2020, 11, 13, 3, 0, 0, 0, time.UTC).Unix(),
-					DataPoints: dto.DeployFrequencyDataPoint{
-						Monthly: []*dto.DeployFrequency{
+					DataPoints: insight.DeployFrequencyDataPoint{
+						Monthly: []*insight.DeployFrequency{
 							{
 								Timestamp:   time.Date(2020, 10, 1, 0, 0, 0, 0, time.UTC).Unix(),
 								DeployCount: 13,
@@ -262,7 +262,7 @@ func TestInsightCollector_updateDataPoints(t *testing.T) {
 					},
 					FilePath: "",
 				}
-				c, e := dto.ToChunk(df)
+				c, e := insight.ToChunk(df)
 				if e != nil {
 					t.Fatalf("error when convert to chunk: %v", e)
 				}
@@ -272,11 +272,11 @@ func TestInsightCollector_updateDataPoints(t *testing.T) {
 		{
 			name: "success with yearly and deploy frequency",
 			args: args{
-				chunk: func() dto.Chunk {
-					df := &dto.DeployFrequencyChunk{
+				chunk: func() insight.Chunk {
+					df := &insight.DeployFrequencyChunk{
 						AccumulatedTo: time.Date(2020, 10, 11, 1, 0, 0, 0, time.UTC).Unix(),
-						DataPoints: dto.DeployFrequencyDataPoint{
-							Yearly: []*dto.DeployFrequency{
+						DataPoints: insight.DeployFrequencyDataPoint{
+							Yearly: []*insight.DeployFrequency{
 								{
 									Timestamp:   time.Date(2020, 1, 1, 0, 0, 0, 0, time.UTC).Unix(),
 									DeployCount: 10,
@@ -288,15 +288,15 @@ func TestInsightCollector_updateDataPoints(t *testing.T) {
 						},
 						FilePath: "",
 					}
-					c, e := dto.ToChunk(df)
+					c, e := insight.ToChunk(df)
 					if e != nil {
 						t.Fatalf("error when convert to chunk: %v", e)
 					}
 					return c
 				}(),
 				step: model.InsightStep_YEARLY,
-				updatedps: func() []dto.DataPoint {
-					df := []*dto.DeployFrequency{
+				updatedps: func() []insight.DataPoint {
+					df := []*insight.DeployFrequency{
 						{
 							Timestamp:   time.Date(2020, 1, 1, 0, 0, 0, 0, time.UTC).Unix(),
 							DeployCount: 3,
@@ -306,7 +306,7 @@ func TestInsightCollector_updateDataPoints(t *testing.T) {
 							DeployCount: 7,
 						},
 					}
-					dps, e := dto.ToDataPoints(df)
+					dps, e := insight.ToDataPoints(df)
 					if e != nil {
 						t.Fatalf("error when convert to data points: %v", e)
 					}
@@ -314,11 +314,11 @@ func TestInsightCollector_updateDataPoints(t *testing.T) {
 				}(),
 				accumulatedTo: time.Date(2021, 1, 13, 3, 0, 0, 0, time.UTC).Unix(),
 			},
-			want: func() dto.Chunk {
-				df := &dto.DeployFrequencyChunk{
+			want: func() insight.Chunk {
+				df := &insight.DeployFrequencyChunk{
 					AccumulatedTo: time.Date(2021, 1, 13, 3, 0, 0, 0, time.UTC).Unix(),
-					DataPoints: dto.DeployFrequencyDataPoint{
-						Yearly: []*dto.DeployFrequency{
+					DataPoints: insight.DeployFrequencyDataPoint{
+						Yearly: []*insight.DeployFrequency{
 							{
 								Timestamp:   time.Date(2020, 1, 1, 0, 0, 0, 0, time.UTC).Unix(),
 								DeployCount: 13,
@@ -334,7 +334,7 @@ func TestInsightCollector_updateDataPoints(t *testing.T) {
 					},
 					FilePath: "",
 				}
-				c, e := dto.ToChunk(df)
+				c, e := insight.ToChunk(df)
 				if e != nil {
 					t.Fatalf("error when convert to chunk: %v", e)
 				}
@@ -344,11 +344,11 @@ func TestInsightCollector_updateDataPoints(t *testing.T) {
 		{
 			name: "success with daily and change failure rate",
 			args: args{
-				chunk: func() dto.Chunk {
-					df := &dto.ChangeFailureRateChunk{
+				chunk: func() insight.Chunk {
+					df := &insight.ChangeFailureRateChunk{
 						AccumulatedTo: time.Date(2020, 10, 11, 1, 0, 0, 0, time.UTC).Unix(),
-						DataPoints: dto.ChangeFailureRateDataPoint{
-							Daily: []*dto.ChangeFailureRate{
+						DataPoints: insight.ChangeFailureRateDataPoint{
+							Daily: []*insight.ChangeFailureRate{
 								{
 									Timestamp:    time.Date(2020, 10, 10, 0, 0, 0, 0, time.UTC).Unix(),
 									Rate:         0,
@@ -362,15 +362,15 @@ func TestInsightCollector_updateDataPoints(t *testing.T) {
 						},
 						FilePath: "",
 					}
-					c, e := dto.ToChunk(df)
+					c, e := insight.ToChunk(df)
 					if e != nil {
 						t.Fatalf("error when convert to chunk: %v", e)
 					}
 					return c
 				}(),
 				step: model.InsightStep_DAILY,
-				updatedps: func() []dto.DataPoint {
-					daily := []*dto.ChangeFailureRate{
+				updatedps: func() []insight.DataPoint {
+					daily := []*insight.ChangeFailureRate{
 						{
 							Timestamp:    time.Date(2020, 10, 11, 0, 0, 0, 0, time.UTC).Unix(),
 							Rate:         0.5,
@@ -390,7 +390,7 @@ func TestInsightCollector_updateDataPoints(t *testing.T) {
 							FailureCount: 0,
 						},
 					}
-					dps, e := dto.ToDataPoints(daily)
+					dps, e := insight.ToDataPoints(daily)
 					if e != nil {
 						t.Fatalf("error when convert to data points: %v", e)
 					}
@@ -398,11 +398,11 @@ func TestInsightCollector_updateDataPoints(t *testing.T) {
 				}(),
 				accumulatedTo: time.Date(2020, 10, 13, 8, 0, 0, 0, time.UTC).Unix(),
 			},
-			want: func() dto.Chunk {
-				df := &dto.ChangeFailureRateChunk{
+			want: func() insight.Chunk {
+				df := &insight.ChangeFailureRateChunk{
 					AccumulatedTo: time.Date(2020, 10, 13, 8, 0, 0, 0, time.UTC).Unix(),
-					DataPoints: dto.ChangeFailureRateDataPoint{
-						Daily: []*dto.ChangeFailureRate{
+					DataPoints: insight.ChangeFailureRateDataPoint{
+						Daily: []*insight.ChangeFailureRate{
 							{
 								Timestamp:    time.Date(2020, 10, 10, 0, 0, 0, 0, time.UTC).Unix(),
 								Rate:         0,
@@ -434,7 +434,7 @@ func TestInsightCollector_updateDataPoints(t *testing.T) {
 					},
 					FilePath: "",
 				}
-				c, e := dto.ToChunk(df)
+				c, e := insight.ToChunk(df)
 				if e != nil {
 					t.Fatalf("error when convert to chunk: %v", e)
 				}
@@ -862,7 +862,7 @@ func TestInsightCollector_extractDailyInsightDataPoints(t *testing.T) {
 	tests := []struct {
 		name    string
 		args    args
-		want    []dto.DataPoint
+		want    []insight.DataPoint
 		wantErr bool
 	}{
 		{
@@ -898,8 +898,8 @@ func TestInsightCollector_extractDailyInsightDataPoints(t *testing.T) {
 				rangeFrom: time.Date(2020, 10, 11, 4, 0, 0, 0, time.UTC),
 				rangeTo:   time.Date(2020, 10, 14, 0, 0, 0, 0, time.UTC),
 			},
-			want: func() []dto.DataPoint {
-				daily := []*dto.DeployFrequency{
+			want: func() []insight.DataPoint {
+				daily := []*insight.DeployFrequency{
 					{
 						Timestamp:   time.Date(2020, 10, 11, 0, 0, 0, 0, time.UTC).Unix(),
 						DeployCount: 3,
@@ -913,7 +913,7 @@ func TestInsightCollector_extractDailyInsightDataPoints(t *testing.T) {
 						DeployCount: 1,
 					},
 				}
-				dps, e := dto.ToDataPoints(daily)
+				dps, e := insight.ToDataPoints(daily)
 				if e != nil {
 					t.Fatalf("error when convert to data points: %v", e)
 				}
@@ -966,8 +966,8 @@ func TestInsightCollector_extractDailyInsightDataPoints(t *testing.T) {
 				rangeFrom: time.Date(2020, 10, 11, 4, 0, 0, 0, time.UTC),
 				rangeTo:   time.Date(2020, 10, 14, 0, 0, 0, 0, time.UTC),
 			},
-			want: func() []dto.DataPoint {
-				daily := []*dto.ChangeFailureRate{
+			want: func() []insight.DataPoint {
+				daily := []*insight.ChangeFailureRate{
 					{
 						Timestamp:    time.Date(2020, 10, 11, 0, 0, 0, 0, time.UTC).Unix(),
 						Rate:         0.5,
@@ -987,7 +987,7 @@ func TestInsightCollector_extractDailyInsightDataPoints(t *testing.T) {
 						FailureCount: 0,
 					},
 				}
-				dps, e := dto.ToDataPoints(daily)
+				dps, e := insight.ToDataPoints(daily)
 				if e != nil {
 					t.Fatalf("error when convert to data points: %v", e)
 				}

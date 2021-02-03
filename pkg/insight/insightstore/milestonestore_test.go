@@ -19,10 +19,11 @@ import (
 	"testing"
 
 	"github.com/golang/mock/gomock"
+	"github.com/stretchr/testify/assert"
+
 	"github.com/pipe-cd/pipe/pkg/filestore"
 	"github.com/pipe-cd/pipe/pkg/filestore/filestoretest"
-	"github.com/pipe-cd/pipe/pkg/insight/dto"
-	"github.com/stretchr/testify/assert"
+	"github.com/pipe-cd/pipe/pkg/insight"
 )
 
 func TestLoadMilestone(t *testing.T) {
@@ -34,7 +35,7 @@ func TestLoadMilestone(t *testing.T) {
 		name    string
 		content string
 
-		expected    *dto.Milestone
+		expected    *insight.Milestone
 		readerErr   error
 		expectedErr error
 	}{
@@ -50,7 +51,7 @@ func TestLoadMilestone(t *testing.T) {
 				"deployment_created_at_milestone": 1234,
 				"deployment_completed_at_milestone": 1234
 			}`,
-			expected: &dto.Milestone{
+			expected: &insight.Milestone{
 				DeploymentCreatedAtMilestone:   1234,
 				DeploymentCompletedAtMilestone: 1234,
 			},

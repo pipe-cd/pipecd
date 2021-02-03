@@ -18,13 +18,13 @@ import (
 	"context"
 	"encoding/json"
 
-	"github.com/pipe-cd/pipe/pkg/insight/dto"
+	"github.com/pipe-cd/pipe/pkg/insight"
 )
 
 const milestonePath = "insights/milestone.json"
 
-func (s *Store) LoadMilestone(ctx context.Context) (*dto.Milestone, error) {
-	m := &dto.Milestone{}
+func (s *Store) LoadMilestone(ctx context.Context) (*insight.Milestone, error) {
+	m := &insight.Milestone{}
 	obj, err := s.filestore.GetObject(ctx, milestonePath)
 	if err != nil {
 		return nil, err
@@ -37,7 +37,7 @@ func (s *Store) LoadMilestone(ctx context.Context) (*dto.Milestone, error) {
 	return m, nil
 }
 
-func (s *Store) PutMilestone(ctx context.Context, m *dto.Milestone) error {
+func (s *Store) PutMilestone(ctx context.Context, m *insight.Milestone) error {
 	data, err := json.Marshal(m)
 	if err != nil {
 		return err
