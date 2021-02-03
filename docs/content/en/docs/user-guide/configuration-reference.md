@@ -196,7 +196,7 @@ spec:
 |-|-|-|-|
 | releaseName | string | The release name of helm deployment. By default, the release name is equal to the application name. | No |
 | valueFiles | []string | List of value files should be loaded. | No |
-| setFiles | []string | List of file path for values. | No |
+| setFiles | map[string]string | List of file path for values. | No |
 
 ## KubernetesQuickSync
 
