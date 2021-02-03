@@ -22,7 +22,7 @@ If you've found a problem, please create an issue in the [pipe-cd/pipe](https://
 
 ## Creating a pull request
 
-Look at our [help wanted issues](https://github.com/pipe-cd/pipe/issues?utf8=%E2%9C%93&q=is%3Aissue+is%3Aopen+label%3Akind%2Fhelp-wanted) for finding some good issues for your first pull request.
+Look at our [help wanted issues](https://github.com/pipe-cd/pipe/issues?q=is%3Aissue+is%3Aopen+label%3A"help+wanted") or our [good first issues](https://github.com/pipe-cd/pipe/issues?q=is%3Aissue+is%3Aopen+label%3A"good+first+issue") for finding some good issues for your first pull request.
 
 ## Code reviews
 
