@@ -172,10 +172,10 @@ func NewChunk(projectID string, metricsKind model.InsightMetricsKind, step model
 	var path string
 	switch step {
 	case model.InsightStep_YEARLY:
-		path = makeYearsFilePath(projectID, metricsKind, appID)
+		path = MakeYearsFilePath(projectID, metricsKind, appID)
 	default:
 		month := determineChunkKeys(step, timestamp, 1)
-		path = makeChunkFilePath(projectID, metricsKind, appID, month[0])
+		path = MakeChunkFilePath(projectID, metricsKind, appID, month[0])
 	}
 
 	var chunk Chunk

@@ -48,7 +48,7 @@ import (
 	"github.com/pipe-cd/pipe/pkg/filestore/gcs"
 	"github.com/pipe-cd/pipe/pkg/filestore/minio"
 	"github.com/pipe-cd/pipe/pkg/filestore/s3"
-	"github.com/pipe-cd/pipe/pkg/insight"
+	"github.com/pipe-cd/pipe/pkg/insight/insightstore"
 	"github.com/pipe-cd/pipe/pkg/jwt"
 	"github.com/pipe-cd/pipe/pkg/model"
 	"github.com/pipe-cd/pipe/pkg/redis"
@@ -177,7 +177,7 @@ func (s *server) run(ctx context.Context, t cli.Telemetry) error {
 	sls := stagelogstore.NewStore(fs, cache, t.Logger)
 	alss := applicationlivestatestore.NewStore(fs, cache, t.Logger)
 	cmds := commandstore.NewStore(ds, cache, t.Logger)
-	is := insight.NewStore(fs)
+	is := insightstore.NewStore(fs)
 
 	// Start a gRPC server for handling PipedAPI requests.
 	{

@@ -28,6 +28,7 @@ import (
 	"github.com/pipe-cd/pipe/pkg/datastore/datastoretest"
 	"github.com/pipe-cd/pipe/pkg/filestore/filestoretest"
 	"github.com/pipe-cd/pipe/pkg/insight"
+	"github.com/pipe-cd/pipe/pkg/insight/insightstore"
 	"github.com/pipe-cd/pipe/pkg/model"
 )
 
@@ -638,7 +639,7 @@ func TestInsightCollector_findDeploymentsCreatedInRange(t *testing.T) {
 			a := &InsightCollector{
 				applicationStore: nil,
 				deploymentStore:  mock,
-				insightstore:     insight.NewStore(filestoretest.NewMockStore(ctrl)),
+				insightstore:     insightstore.NewStore(filestoretest.NewMockStore(ctrl)),
 				logger:           zap.NewNop(),
 			}
 			got, err := a.findDeploymentsCreatedInRange(context.Background(), tt.args.from, tt.args.to)
@@ -834,7 +835,7 @@ func TestInsightCollector_findDeploymentsCompletedInRange(t *testing.T) {
 			a := &InsightCollector{
 				applicationStore: nil,
 				deploymentStore:  mock,
-				insightstore:     insight.NewStore(filestoretest.NewMockStore(ctrl)),
+				insightstore:     insightstore.NewStore(filestoretest.NewMockStore(ctrl)),
 				logger:           zap.NewNop(),
 			}
 			got, err := a.findDeploymentsCompletedInRange(context.Background(), tt.args.from, tt.args.to)

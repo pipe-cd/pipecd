@@ -52,7 +52,7 @@ func TestExtractDataPoints(t *testing.T) {
 			fileCount:      2,
 			kind:           model.InsightMetricsKind_DEPLOYMENT_FREQUENCY,
 			chunks: func() []Chunk {
-				path := makeChunkFilePath("projectID", model.InsightMetricsKind_DEPLOYMENT_FREQUENCY, "appID", "2021-01")
+				path := MakeChunkFilePath("projectID", model.InsightMetricsKind_DEPLOYMENT_FREQUENCY, "appID", "2021-01")
 				expected1 := DeployFrequencyChunk{
 					AccumulatedTo: 1609459200,
 					DataPoints: DeployFrequencyDataPoint{
@@ -66,7 +66,7 @@ func TestExtractDataPoints(t *testing.T) {
 					FilePath: path,
 				}
 				chunk1, _ := ToChunk(&expected1)
-				path = makeChunkFilePath("projectID", model.InsightMetricsKind_DEPLOYMENT_FREQUENCY, "appID", "2021-02")
+				path = MakeChunkFilePath("projectID", model.InsightMetricsKind_DEPLOYMENT_FREQUENCY, "appID", "2021-02")
 				expected2 := DeployFrequencyChunk{
 					AccumulatedTo: 1612123592,
 					DataPoints: DeployFrequencyDataPoint{
