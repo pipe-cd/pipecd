@@ -7,13 +7,7 @@ output: "**/*"
 ignore: []
 ---
 
-# `{{ inputs.name }}/index.ts`
-
-```tsx
-export { {{ inputs.name | pascal }} } from "./{{ inputs.name }}";
-```
-
-# `{{ inputs.name }}/{{ inputs.name }}.tsx`
+# `{{ inputs.name }}/index.tsx`
 
 ```tsx
 import React, { FC } from "react";
@@ -21,10 +15,10 @@ import { makeStyles } from "@material-ui/core";
 
 const useStyles = makeStyles(() => ({}));
 
-interface Props {
+interface {{ inputs.name | pascal }}Props {
 }
 
-export const {{ inputs.name | pascal }}: FC<Props> = ({ }) => {
+export const {{ inputs.name | pascal }}: FC<{{ inputs.name | pascal }}Props> = ({ }) => {
   const classes = useStyles();
   return (
     <div>
@@ -34,18 +28,19 @@ export const {{ inputs.name | pascal }}: FC<Props> = ({ }) => {
 };
 ```
 
-# `{{ inputs.name }}/{{ inputs.name }}.stories.tsx`
+# `{{ inputs.name }}/index.stories.tsx`
 
 ```tsx
 import React from "react";
-import { {{ inputs.name | pascal }} } from "./{{ inputs.name }}";
+import { {{ inputs.name | pascal }}, {{ inputs.name | pascal }}Props } from "./{{ inputs.name }}";
 
 export default {
   title: "{{ inputs.name | pascal }}",
   component: {{ inputs.name | pascal }}
 };
 
-export const overview: React.FC = () => (
-  <{{ inputs.name | pascal }} />
-);
+const Template: Story<{{ inputs.name | pascal }}Props> = (args) => <{{ inputs.name | pascal }} {...args} />;
+
+export const Overview = Template.bind({});
+Overview.args = {};
 ```
