@@ -16,7 +16,6 @@ package firestore
 
 import (
 	"context"
-	"errors"
 
 	"cloud.google.com/go/firestore"
 	"go.uber.org/zap"
@@ -82,10 +81,6 @@ func WithLogger(logger *zap.Logger) Option {
 }
 
 func (s *FireStore) Find(ctx context.Context, kind string, opts datastore.ListOptions) (datastore.Iterator, error) {
-	if opts.Cursor != "" && len(opts.Orders) == 0 {
-		return nil, errors.New("opts.Cursor also requires Orders to be set")
-	}
-
 	cursorSnapshot, err := s.fetchCursorDocumentSnapshot(ctx, kind, opts)
 	if err != nil {
 		return nil, err
@@ -103,7 +98,7 @@ func (s *FireStore) Find(ctx context.Context, kind string, opts datastore.ListOp
 	// The pseudo cursor points one behind of the target document.
 	// See more: https://cloud.google.com/firestore/docs/query-data/query-cursors?hl=ja
 	if cursorSnapshot != nil {
-		q = q.StartAfter(cursorSnapshot.Data()[opts.Orders[0].Field])
+		q = q.StartAfter(cursorSnapshot.Data()["CreatedAt"], cursorSnapshot.Data()["Id"])
 	}
 
 	if opts.PageSize > 0 {
