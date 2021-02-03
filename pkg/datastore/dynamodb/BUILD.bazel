@@ -4,8 +4,8 @@ go_library(
     name = "go_default_library",
     srcs = [
         "dynamodb.go",
+        "expression.go",
         "iterator.go",
-        "operator.go",
     ],
     importpath = "github.com/pipe-cd/pipe/pkg/datastore/dynamodb",
     visibility = ["//visibility:public"],

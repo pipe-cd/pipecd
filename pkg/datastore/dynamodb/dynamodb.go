@@ -190,19 +190,6 @@ func (s *DynamoDB) Get(ctx context.Context, kind, id string, v interface{}) erro
 
 // Create implementation for DynamoDB
 func (s *DynamoDB) Create(ctx context.Context, kind, id string, entity interface{}) error {
-	err := s.Get(ctx, kind, id, entity)
-	if err == nil {
-		return datastore.ErrAlreadyExists
-	}
-	if !errors.Is(err, datastore.ErrNotFound) {
-		s.logger.Error("failed to retrieve entity",
-			zap.String("id", id),
-			zap.String("kind", kind),
-			zap.Error(err),
-		)
-		return err
-	}
-
 	av, err := dynamodbattribute.MarshalMap(entity)
 	if err != nil {
 		s.logger.Error("failed to marshal entity",
@@ -213,9 +200,23 @@ func (s *DynamoDB) Create(ctx context.Context, kind, id string, entity interface
 		return err
 	}
 
+	// Only create in case the data item which contains key with specificed value not existed.
+	expr, err := buildDynamoDBKeyNotExistedExpression("Id", id)
+	if err != nil {
+		s.logger.Error("failed to build condition expresion for create",
+			zap.String("id", id),
+			zap.String("kind", kind),
+			zap.Error(err),
+		)
+		return err
+	}
+
 	input := &dynamodb.PutItemInput{
-		TableName: aws.String(kind),
-		Item:      av,
+		TableName:                 aws.String(kind),
+		Item:                      av,
+		ConditionExpression:       expr.Condition(),
+		ExpressionAttributeNames:  expr.Names(),
+		ExpressionAttributeValues: expr.Values(),
 	}
 	_, err = s.client.PutItemWithContext(ctx, input)
 	if err != nil {
@@ -261,6 +262,7 @@ func (s *DynamoDB) Put(ctx context.Context, kind, id string, entity interface{})
 
 // Update implementation for DynamoDB
 func (s *DynamoDB) Update(ctx context.Context, kind, id string, factory datastore.Factory, updater datastore.Updater) error {
+	// Get existing data item.
 	entity := factory()
 	err := s.Get(ctx, kind, id, entity)
 	if errors.Is(err, datastore.ErrNotFound) {
@@ -275,6 +277,7 @@ func (s *DynamoDB) Update(ctx context.Context, kind, id string, factory datastor
 		return err
 	}
 
+	// Update entity by updater.
 	if err := updater(entity); err != nil {
 		s.logger.Error("failed to update entity",
 			zap.String("id", id),
@@ -283,7 +286,37 @@ func (s *DynamoDB) Update(ctx context.Context, kind, id string, factory datastor
 		)
 		return err
 	}
-	if err := s.Put(ctx, kind, id, entity); err != nil {
+
+	// Put back the updated data to database.
+	av, err := dynamodbattribute.MarshalMap(entity)
+	if err != nil {
+		s.logger.Error("failed to marshal entity",
+			zap.String("id", id),
+			zap.String("kind", kind),
+			zap.Error(err),
+		)
+		return err
+	}
+	// Only update in case the data item which contains key with specificed value existed.
+	expr, err := buildDynamoDBKeyExistedExpression("Id", id)
+	if err != nil {
+		s.logger.Error("failed to build condition expresion for update",
+			zap.String("id", id),
+			zap.String("kind", kind),
+			zap.Error(err),
+		)
+		return err
+	}
+
+	input := &dynamodb.PutItemInput{
+		TableName:                 aws.String(kind),
+		Item:                      av,
+		ConditionExpression:       expr.Condition(),
+		ExpressionAttributeNames:  expr.Names(),
+		ExpressionAttributeValues: expr.Values(),
+	}
+	_, err = s.client.PutItemWithContext(ctx, input)
+	if err != nil {
 		s.logger.Error("failed to update entity",
 			zap.String("id", id),
 			zap.String("kind", kind),
@@ -291,6 +324,7 @@ func (s *DynamoDB) Update(ctx context.Context, kind, id string, factory datastor
 		)
 		return err
 	}
+
 	return nil
 }
 

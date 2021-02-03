@@ -67,3 +67,11 @@ func buildDynamoDBExpression(opts datastore.ListOptions) (expression.Expression,
 	}
 	return expression.NewBuilder().WithFilter(cond).Build()
 }
+
+func buildDynamoDBKeyExistedExpression(key string, value interface{}) (expression.Expression, error) {
+	return expression.NewBuilder().WithCondition(expression.Name(key).Equal(expression.Value(value))).Build()
+}
+
+func buildDynamoDBKeyNotExistedExpression(key string, value interface{}) (expression.Expression, error) {
+	return expression.NewBuilder().WithCondition(expression.Name(key).NotEqual(expression.Value(value))).Build()
+}
