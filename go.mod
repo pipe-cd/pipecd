@@ -14,7 +14,7 @@ require (
 	github.com/envoyproxy/protoc-gen-validate v0.1.0
 	github.com/fsnotify/fsnotify v1.4.9 // indirect
 	github.com/fsouza/fake-gcs-server v1.21.0
-	github.com/goccy/go-yaml v1.8.7
+	github.com/goccy/go-yaml v1.8.8
 	github.com/golang/mock v1.4.4
 	github.com/golang/protobuf v1.4.2
 	github.com/gomodule/redigo v2.0.0+incompatible
