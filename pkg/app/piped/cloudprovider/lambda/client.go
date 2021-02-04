@@ -183,7 +183,6 @@ func (c *client) UpdateFunction(ctx context.Context, fm FunctionManifest) error 
 
 	retry := backoff.NewRetry(RequestRetryTime, backoff.NewConstant(RetryIntervalDuration))
 	updateFunctionConfigurationSucceed := false
-	var configErr error
 	for retry.WaitNext(ctx) {
 		configInput := &lambda.UpdateFunctionConfigurationInput{
 			FunctionName: aws.String(fm.Spec.Name),
@@ -196,14 +195,13 @@ func (c *client) UpdateFunction(ctx context.Context, fm FunctionManifest) error 
 		_, err := c.client.UpdateFunctionConfigurationWithContext(ctx, configInput)
 		if err != nil {
 			c.logger.Error("Failed to update function configuration")
-			configErr = err
 		} else {
 			updateFunctionConfigurationSucceed = true
 			break
 		}
 	}
 	if !updateFunctionConfigurationSucceed && configErr != nil {
-		return fmt.Errorf("failed to update configuration for Lambda function %s: %w", fm.Spec.Name, configErr)
+		return fmt.Errorf("failed to update configuration for Lambda function %s: %w", fm.Spec.Name, err)
 	}
 
 	return nil
