@@ -16,6 +16,7 @@ go_library(
 
 go_test(
     name = "go_default_test",
+    size = "small",
     srcs = [
         "chunk_test.go",
         "datapoint_test.go",
