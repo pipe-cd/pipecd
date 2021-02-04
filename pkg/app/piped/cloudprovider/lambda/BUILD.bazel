@@ -10,6 +10,7 @@ go_library(
     importpath = "github.com/pipe-cd/pipe/pkg/app/piped/cloudprovider/lambda",
     visibility = ["//visibility:public"],
     deps = [
+        "//pkg/backoff:go_default_library",
         "//pkg/config:go_default_library",
         "@com_github_aws_aws_sdk_go//aws:go_default_library",
         "@com_github_aws_aws_sdk_go//aws/awserr:go_default_library",

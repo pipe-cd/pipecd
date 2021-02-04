@@ -25,6 +25,11 @@ import (
 const (
 	versionV1Beta1       = "pipecd.dev/v1beta1"
 	functionManifestKind = "LambdaFunction"
+	// Memory and Timeout lower and upper limit as noted via
+	// https://docs.aws.amazon.com/sdk-for-go/api/service/lambda/#UpdateFunctionConfigurationInput
+	memoryLowerLimit  = 1
+	timeoutLowerLimit = 1
+	timeoutUpperLimit = 900
 )
 
 type FunctionManifest struct {
@@ -48,10 +53,13 @@ func (fm *FunctionManifest) validate() error {
 
 // FunctionManifestSpec contains configuration for LambdaFunction.
 type FunctionManifestSpec struct {
-	Name     string            `json:"name"`
-	Role     string            `json:"role"`
-	ImageURI string            `json:"image"`
-	Tags     map[string]string `json:"tags,omitempty"`
+	Name         string            `json:"name"`
+	Role         string            `json:"role"`
+	ImageURI     string            `json:"image"`
+	Memory       int64             `json:"memory"`
+	Timeout      int64             `json:"timeout"`
+	Tags         map[string]string `json:"tags,omitempty"`
+	Environments map[string]string `json:"environments,omitempty"`
 }
 
 func (fmp FunctionManifestSpec) validate() error {
@@ -63,6 +71,12 @@ func (fmp FunctionManifestSpec) validate() error {
 	}
 	if len(fmp.Role) == 0 {
 		return fmt.Errorf("role is missing")
+	}
+	if fmp.Memory < memoryLowerLimit {
+		return fmt.Errorf("memory is missing")
+	}
+	if fmp.Timeout < timeoutLowerLimit || fmp.Timeout > timeoutUpperLimit {
+		return fmt.Errorf("timeout is missing or out of range")
 	}
 	return nil
 }

@@ -35,6 +35,8 @@ func TestparseFunctionManifest(t *testing.T) {
   "spec": {
 	  "name": "SimpleFunction",
 	  "role": "arn:aws:iam::xxxxx:role/lambda-role",
+	  "memory": 128,
+	  "timeout": 5,
 	  "image": "ecr.region.amazonaws.com/lambda-simple-function:v0.0.1"
   }
 }`,
@@ -44,6 +46,8 @@ func TestparseFunctionManifest(t *testing.T) {
 				Spec: FunctionManifestSpec{
 					Name:     "SimpleFunction",
 					Role:     "arn:aws:iam::xxxxx:role/lambda-role",
+					Memory:   128,
+					Timeout:  5,
 					ImageURI: "ecr.region.amazonaws.com/lambda-simple-function:v0.0.1",
 				},
 			},
@@ -55,6 +59,37 @@ func TestparseFunctionManifest(t *testing.T) {
   "apiVersion": "pipecd.dev/v1beta1",
   "kind": "LambdaFunction",
   "spec": {}
+}`,
+			wantSpec: FunctionManifest{},
+			wantErr:  true,
+		},
+		{
+			name: "missing memory value",
+			data: `{
+  "apiVersion": "pipecd.dev/v1beta1",
+  "kind": "LambdaFunction",
+  "spec": {
+	  "name": "SimpleFunction",
+	  "role": "arn:aws:iam::xxxxx:role/lambda-role",
+	  "timeout": 5,
+	  "image": "ecr.region.amazonaws.com/lambda-simple-function:v0.0.1"
+  }
+}`,
+			wantSpec: FunctionManifest{},
+			wantErr:  true,
+		},
+		{
+			name: "invalid timeout value",
+			data: `{
+  "apiVersion": "pipecd.dev/v1beta1",
+  "kind": "LambdaFunction",
+  "spec": {
+	  "name": "SimpleFunction",
+	  "role": "arn:aws:iam::xxxxx:role/lambda-role",
+	  "memory": 128,
+	  "timeout": 1000,
+	  "image": "ecr.region.amazonaws.com/lambda-simple-function:v0.0.1"
+  }
 }`,
 			wantSpec: FunctionManifest{},
 			wantErr:  true,
