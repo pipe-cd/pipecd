@@ -31,6 +31,8 @@ import (
 	"github.com/aws/aws-sdk-go/service/lambda"
 	"github.com/aws/aws-sdk-go/service/sts"
 	"go.uber.org/zap"
+
+	"github.com/pipe-cd/pipe/pkg/backoff"
 )
 
 type TrafficConfigKeyName string
@@ -179,8 +181,30 @@ func (c *client) UpdateFunction(ctx context.Context, fm FunctionManifest) error 
 		return fmt.Errorf("unknown error given: %w", err)
 	}
 
-	// TODO: Support more configurable fields using Lambda.UpdateFunctionConfiguration.
-	// https://docs.aws.amazon.com/sdk-for-go/api/service/lambda/#UpdateFunctionConfiguration
+	retry := backoff.NewRetry(RequestRetryTime, backoff.NewConstant(RetryIntervalDuration))
+	updateFunctionConfigurationSucceed := false
+	var configErr error
+	for retry.WaitNext(ctx) {
+		configInput := &lambda.UpdateFunctionConfigurationInput{
+			FunctionName: aws.String(fm.Spec.Name),
+			MemorySize:   aws.Int64(fm.Spec.Memory),
+			Timeout:      aws.Int64(fm.Spec.Timeout),
+			Environment: &lambda.Environment{
+				Variables: aws.StringMap(fm.Spec.Environments),
+			},
+		}
+		_, err := c.client.UpdateFunctionConfigurationWithContext(ctx, configInput)
+		if err != nil {
+			c.logger.Error("Failed to update function configuration")
+			configErr = err
+		} else {
+			updateFunctionConfigurationSucceed = true
+			break
+		}
+	}
+	if !updateFunctionConfigurationSucceed && configErr != nil {
+		return fmt.Errorf("failed to update configuration for Lambda function %s: %w", fm.Spec.Name, configErr)
+	}
 
 	return nil
 }

@@ -48,10 +48,13 @@ func (fm *FunctionManifest) validate() error {
 
 // FunctionManifestSpec contains configuration for LambdaFunction.
 type FunctionManifestSpec struct {
-	Name     string            `json:"name"`
-	Role     string            `json:"role"`
-	ImageURI string            `json:"image"`
-	Tags     map[string]string `json:"tags,omitempty"`
+	Name         string            `json:"name"`
+	Role         string            `json:"role"`
+	ImageURI     string            `json:"image"`
+	Memory       int64             `json:"memory,omitempty"`
+	Timeout      int64             `json:"timeout,omitempty"`
+	Tags         map[string]string `json:"tags,omitempty"`
+	Environments map[string]string `json:"environments,omitempty"`
 }
 
 func (fmp FunctionManifestSpec) validate() error {
