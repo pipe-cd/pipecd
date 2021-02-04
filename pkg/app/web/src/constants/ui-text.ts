@@ -2,6 +2,7 @@ export const UI_TEXT_SAVE = "Save";
 export const UI_TEXT_CANCEL = "Cancel";
 export const UI_TEXT_ADD = "Add";
 export const UI_TEXT_EDIT = "Edit";
+export const UI_TEXT_DISCARD = "Discard";
 export const UI_TEXT_DISABLE = "Disable";
 export const UI_TEXT_ENABLE = "Enable";
 export const UI_TEXT_RECREATE_KEY = "Recreate Key";
