@@ -16,13 +16,18 @@ package cloudrun
 
 import (
 	"context"
+	"strconv"
 
 	provider "github.com/pipe-cd/pipe/pkg/app/piped/cloudprovider/cloudrun"
 	"github.com/pipe-cd/pipe/pkg/app/piped/deploysource"
 	"github.com/pipe-cd/pipe/pkg/app/piped/executor"
 	"github.com/pipe-cd/pipe/pkg/config"
 	"github.com/pipe-cd/pipe/pkg/model"
+
+	"go.uber.org/zap"
 )
+
+const promotePercentageMetadataKey = "promote-percentage"
 
 type deployExecutor struct {
 	executor.Input
@@ -107,6 +112,12 @@ func (e *deployExecutor) ensurePromote(ctx context.Context) model.StageStatus {
 	if options == nil {
 		e.LogPersister.Errorf("Malformed configuration for stage %s", e.Stage.Name)
 		return model.StageStatus_STAGE_FAILURE
+	}
+	metadata := map[string]string{
+		promotePercentageMetadataKey: strconv.FormatInt(int64(options.Percent), 10),
+	}
+	if err := e.MetadataStore.SetStageMetadata(ctx, e.Stage.Id, metadata); err != nil {
+		e.Logger.Error("failed to save routing percentages to metadata", zap.Error(err))
 	}
 
 	// Loaded the last deployed data.

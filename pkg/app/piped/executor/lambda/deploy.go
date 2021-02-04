@@ -92,16 +92,21 @@ func (e *deployExecutor) ensureSync(ctx context.Context) model.StageStatus {
 }
 
 func (e *deployExecutor) ensurePromote(ctx context.Context) model.StageStatus {
-	fm, ok := loadFunctionManifest(&e.Input, e.deployCfg.Input.FunctionManifestFile, e.deploySource)
-	if !ok {
+	options := e.StageConfig.LambdaPromoteStageOptions
+	if options == nil {
+		e.LogPersister.Errorf("Malformed configuration for stage %s", e.Stage.Name)
 		return model.StageStatus_STAGE_FAILURE
 	}
-
 	metadata := map[string]string{
-		promotePercentageMetadataKey: strconv.FormatInt(int64(e.StageConfig.LambdaPromoteStageOptions.Percent), 10),
+		promotePercentageMetadataKey: strconv.FormatInt(int64(options.Percent), 10),
 	}
 	if err := e.MetadataStore.SetStageMetadata(ctx, e.Stage.Id, metadata); err != nil {
 		e.Logger.Error("failed to save routing percentages to metadata", zap.Error(err))
+	}
+
+	fm, ok := loadFunctionManifest(&e.Input, e.deployCfg.Input.FunctionManifestFile, e.deploySource)
+	if !ok {
+		return model.StageStatus_STAGE_FAILURE
 	}
 
 	if !promote(ctx, &e.Input, e.cloudProviderName, e.cloudProviderCfg, fm) {
