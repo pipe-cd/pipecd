@@ -72,6 +72,22 @@ func wrapModel(entity interface{}) (interface{}, error) {
 			ID:      e.GetId(),
 			Project: *e,
 		}, nil
+	case *model.APIKey:
+		if e == nil {
+			return nil, fmt.Errorf("nil entity given")
+		}
+		return &apiKey{
+			ID:     e.GetId(),
+			APIKey: *e,
+		}, nil
+	case *model.Event:
+		if e == nil {
+			return nil, fmt.Errorf("nil entity given")
+		}
+		return &event{
+			ID:    e.GetId(),
+			Event: *e,
+		}, nil
 	default:
 		return nil, fmt.Errorf("%T is not supported", e)
 	}
@@ -118,6 +134,18 @@ func extractModel(wrapper interface{}, e interface{}) error {
 			return fmt.Errorf(msg, w)
 		}
 		*e = w.Project
+	case *apiKey:
+		e, ok := e.(*model.APIKey)
+		if !ok {
+			return fmt.Errorf(msg, w)
+		}
+		*e = w.APIKey
+	case *event:
+		e, ok := e.(*model.Event)
+		if !ok {
+			return fmt.Errorf(msg, w)
+		}
+		*e = w.Event
 	default:
 		return fmt.Errorf("%T is not supported", w)
 	}
@@ -152,4 +180,14 @@ type piped struct {
 type project struct {
 	model.Project `bson:",inline"`
 	ID            string `bson:"_id"`
+}
+
+type apiKey struct {
+	model.APIKey `bson:",inline"`
+	ID           string `bson:"_id"`
+}
+
+type event struct {
+	model.Event `bson:",inline"`
+	ID          string `bson:"_id"`
 }
