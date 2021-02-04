@@ -133,6 +133,7 @@ func (c *client) CreateFunction(ctx context.Context, fm FunctionManifest) error 
 		PackageType:  aws.String("Image"),
 		Role:         aws.String(fm.Spec.Role),
 		FunctionName: aws.String(fm.Spec.Name),
+		Tags:         aws.StringMap(fm.Spec.Tags),
 	}
 	_, err := c.client.CreateFunctionWithContext(ctx, input)
 	if err != nil {
