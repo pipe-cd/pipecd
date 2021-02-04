@@ -200,7 +200,7 @@ func (c *client) UpdateFunction(ctx context.Context, fm FunctionManifest) error 
 			break
 		}
 	}
-	if !updateFunctionConfigurationSucceed && configErr != nil {
+	if !updateFunctionConfigurationSucceed {
 		return fmt.Errorf("failed to update configuration for Lambda function %s: %w", fm.Spec.Name, err)
 	}
 

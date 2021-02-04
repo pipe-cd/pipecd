@@ -75,7 +75,7 @@ func (fmp FunctionManifestSpec) validate() error {
 	if fmp.Memory < memoryLowerLimit {
 		return fmt.Errorf("memory is missing")
 	}
-	if fmt.Timeout < timeoutLowerLimit || fmt.Timeout > timeoutUpperLimit {
+	if fmp.Timeout < timeoutLowerLimit || fmp.Timeout > timeoutUpperLimit {
 		return fmt.Errorf("timeout is missing or out of range")
 	}
 	return nil
