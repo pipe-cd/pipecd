@@ -16,12 +16,17 @@ package lambda
 
 import (
 	"context"
+	"strconv"
 
 	"github.com/pipe-cd/pipe/pkg/app/piped/deploysource"
 	"github.com/pipe-cd/pipe/pkg/app/piped/executor"
 	"github.com/pipe-cd/pipe/pkg/config"
 	"github.com/pipe-cd/pipe/pkg/model"
+
+	"go.uber.org/zap"
 )
+
+const promotePercentageMetadataKey = "promote-percentage"
 
 type deployExecutor struct {
 	executor.Input
@@ -90,6 +95,13 @@ func (e *deployExecutor) ensurePromote(ctx context.Context) model.StageStatus {
 	fm, ok := loadFunctionManifest(&e.Input, e.deployCfg.Input.FunctionManifestFile, e.deploySource)
 	if !ok {
 		return model.StageStatus_STAGE_FAILURE
+	}
+
+	metadata := map[string]string{
+		promotePercentageMetadataKey: strconv.FormatInt(int64(e.StageConfig.LambdaPromoteStageOptions.Percent), 10),
+	}
+	if err := e.MetadataStore.SetStageMetadata(ctx, e.Stage.Id, metadata); err != nil {
+		e.Logger.Error("failed to save routing percentages to metadata", zap.Error(err))
 	}
 
 	if !promote(ctx, &e.Input, e.cloudProviderName, e.cloudProviderCfg, fm) {
