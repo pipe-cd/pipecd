@@ -22,11 +22,11 @@ const useStyles = makeStyles((theme) => ({
   },
 }));
 
-interface Props {
+export interface DiffViewProps {
   content: string;
 }
 
-export const DiffView: FC<Props> = memo(function DiffView({ content }) {
+export const DiffView: FC<DiffViewProps> = memo(function DiffView({ content }) {
   const classes = useStyles();
   return (
     <div className={classes.root}>

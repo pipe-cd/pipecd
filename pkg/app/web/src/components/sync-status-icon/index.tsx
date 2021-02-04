@@ -27,11 +27,11 @@ const useStyles = makeStyles((theme) => ({
   },
 }));
 
-interface Props {
+export interface SyncStatusIconProps {
   status: ApplicationSyncStatus;
 }
 
-export const SyncStatusIcon: FC<Props> = ({ status }) => {
+export const SyncStatusIcon: FC<SyncStatusIconProps> = ({ status }) => {
   const classes = useStyles();
 
   switch (status) {

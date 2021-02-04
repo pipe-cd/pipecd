@@ -41,7 +41,7 @@ const useStyles = makeStyles((theme) => ({
   },
 }));
 
-interface Props {
+export interface SealedSecretDialogProps {
   applicationId: string | null;
   open: boolean;
   onClose: () => void;
@@ -56,135 +56,133 @@ const validationSchema = Yup.object({
   base64: Yup.bool(),
 });
 
-export const SealedSecretDialog: FC<Props> = memo(function SealedSecretDialog({
-  open,
-  applicationId,
-  onClose,
-}) {
-  const classes = useStyles();
-  const dispatch = useDispatch<AppDispatch>();
+export const SealedSecretDialog: FC<SealedSecretDialogProps> = memo(
+  function SealedSecretDialog({ open, applicationId, onClose }) {
+    const classes = useStyles();
+    const dispatch = useDispatch<AppDispatch>();
 
-  const [application, isLoading, sealedSecret] = useSelector<
-    AppState,
-    [Application.AsObject | undefined, boolean, string | null]
-  >((state) => [
-    applicationId ? selectById(state.applications, applicationId) : undefined,
-    state.sealedSecret.isLoading,
-    state.sealedSecret.data,
-  ]);
+    const [application, isLoading, sealedSecret] = useSelector<
+      AppState,
+      [Application.AsObject | undefined, boolean, string | null]
+    >((state) => [
+      applicationId ? selectById(state.applications, applicationId) : undefined,
+      state.sealedSecret.isLoading,
+      state.sealedSecret.data,
+    ]);
 
-  const formik = useFormik({
-    initialValues: {
-      secretData: "",
-      base64: false,
-    },
-    validationSchema,
-    validateOnMount: true,
-    async onSubmit(values) {
-      if (!application) {
-        return;
-      }
-      await dispatch(
-        generateSealedSecret({
-          data: values.secretData,
-          pipedId: application.pipedId,
-          base64Encoding: values.base64,
-        })
-      );
-    },
-  });
+    const formik = useFormik({
+      initialValues: {
+        secretData: "",
+        base64: false,
+      },
+      validationSchema,
+      validateOnMount: true,
+      async onSubmit(values) {
+        if (!application) {
+          return;
+        }
+        await dispatch(
+          generateSealedSecret({
+            data: values.secretData,
+            pipedId: application.pipedId,
+            base64Encoding: values.base64,
+          })
+        );
+      },
+    });
 
-  const handleOnEnter = useCallback(() => {
-    formik.resetForm();
-  }, [formik]);
+    const handleOnEnter = useCallback(() => {
+      formik.resetForm();
+    }, [formik]);
 
-  const handleOnExited = useCallback(() => {
-    dispatch(clearSealedSecret());
-  }, [dispatch]);
+    const handleOnExited = useCallback(() => {
+      dispatch(clearSealedSecret());
+    }, [dispatch]);
 
-  const handleOnClickCopy = useCallback(() => {
-    dispatch(addToast({ message: "Secret copied to clipboard" }));
-  }, [dispatch]);
+    const handleOnClickCopy = useCallback(() => {
+      dispatch(addToast({ message: "Secret copied to clipboard" }));
+    }, [dispatch]);
 
-  if (!application) {
-    return null;
+    if (!application) {
+      return null;
+    }
+
+    return (
+      <Dialog
+        open={open}
+        onEnter={handleOnEnter}
+        onExit={handleOnExited}
+        onClose={onClose}
+      >
+        {sealedSecret ? (
+          <>
+            <DialogTitle>{DIALOG_TITLE}</DialogTitle>
+            <DialogContent>
+              <Typography variant="caption" color="textSecondary">
+                Encrypted secret data
+              </Typography>
+              <TextWithCopyButton
+                label="Copy secret"
+                value={sealedSecret}
+                onCopy={handleOnClickCopy}
+              />
+            </DialogContent>
+            <DialogActions>
+              <Button onClick={onClose}>{UI_TEXT_CLOSE}</Button>
+            </DialogActions>
+          </>
+        ) : (
+          <form onSubmit={formik.handleSubmit}>
+            <DialogTitle>{DIALOG_TITLE}</DialogTitle>
+            <DialogContent>
+              <Typography variant="caption" color="textSecondary">
+                Application
+              </Typography>
+              <Typography variant="body1" className={classes.targetApp}>
+                {application.name}
+              </Typography>
+              <TextField
+                id="secretData"
+                name="secretData"
+                value={formik.values.secretData}
+                variant="outlined"
+                margin="dense"
+                label="Secret Data"
+                multiline
+                fullWidth
+                rows={4}
+                required
+                autoFocus
+                onChange={formik.handleChange}
+              />
+              <FormControlLabel
+                control={
+                  <Checkbox
+                    color="primary"
+                    checked={formik.values.base64}
+                    onChange={formik.handleChange}
+                    name="base64"
+                  />
+                }
+                disabled={formik.isSubmitting}
+                label={BASE64_CHECKBOX_LABEL}
+              />
+            </DialogContent>
+            <DialogActions>
+              <Button onClick={onClose} disabled={isLoading}>
+                {UI_TEXT_CANCEL}
+              </Button>
+              <Button
+                color="primary"
+                type="submit"
+                disabled={isLoading || formik.isValid === false}
+              >
+                Encrypt
+              </Button>
+            </DialogActions>
+          </form>
+        )}
+      </Dialog>
+    );
   }
-
-  return (
-    <Dialog
-      open={open}
-      onEnter={handleOnEnter}
-      onExit={handleOnExited}
-      onClose={onClose}
-    >
-      {sealedSecret ? (
-        <>
-          <DialogTitle>{DIALOG_TITLE}</DialogTitle>
-          <DialogContent>
-            <Typography variant="caption" color="textSecondary">
-              Encrypted secret data
-            </Typography>
-            <TextWithCopyButton
-              label="Copy secret"
-              value={sealedSecret}
-              onCopy={handleOnClickCopy}
-            />
-          </DialogContent>
-          <DialogActions>
-            <Button onClick={onClose}>{UI_TEXT_CLOSE}</Button>
-          </DialogActions>
-        </>
-      ) : (
-        <form onSubmit={formik.handleSubmit}>
-          <DialogTitle>{DIALOG_TITLE}</DialogTitle>
-          <DialogContent>
-            <Typography variant="caption" color="textSecondary">
-              Application
-            </Typography>
-            <Typography variant="body1" className={classes.targetApp}>
-              {application.name}
-            </Typography>
-            <TextField
-              id="secretData"
-              name="secretData"
-              value={formik.values.secretData}
-              variant="outlined"
-              margin="dense"
-              label="Secret Data"
-              multiline
-              fullWidth
-              rows={4}
-              required
-              autoFocus
-              onChange={formik.handleChange}
-            />
-            <FormControlLabel
-              control={
-                <Checkbox
-                  color="primary"
-                  checked={formik.values.base64}
-                  onChange={formik.handleChange}
-                  name="base64"
-                />
-              }
-              disabled={formik.isSubmitting}
-              label={BASE64_CHECKBOX_LABEL}
-            />
-          </DialogContent>
-          <DialogActions>
-            <Button onClick={onClose} disabled={isLoading}>
-              {UI_TEXT_CANCEL}
-            </Button>
-            <Button
-              color="primary"
-              type="submit"
-              disabled={isLoading || formik.isValid === false}
-            >
-              Encrypt
-            </Button>
-          </DialogActions>
-        </form>
-      )}
-    </Dialog>
-  );
-});
+);

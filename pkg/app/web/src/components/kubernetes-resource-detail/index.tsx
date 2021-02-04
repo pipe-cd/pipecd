@@ -42,7 +42,7 @@ const useStyles = makeStyles((theme) => ({
   },
 }));
 
-interface Props {
+export interface KubernetesResourceDetailProps {
   resource: {
     name: string;
     kind: string;
@@ -53,7 +53,10 @@ interface Props {
   onClose: () => void;
 }
 
-export const KubernetesResourceDetail: FC<Props> = ({ resource, onClose }) => {
+export const KubernetesResourceDetail: FC<KubernetesResourceDetailProps> = ({
+  resource,
+  onClose,
+}) => {
   const classes = useStyles();
   return (
     <Paper className={classes.root} square>

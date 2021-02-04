@@ -28,7 +28,7 @@ import {
 import { Piped, selectById } from "../../modules/pipeds";
 import { fetchStageLog } from "../../modules/stage-logs";
 import { useInterval } from "../../hooks/use-interval";
-import { StatusIcon } from "../deployment-status-icon";
+import { DeploymentStatusIcon } from "../deployment-status-icon";
 import OpenInNewIcon from "@material-ui/icons/OpenInNew";
 import { DetailTableRow } from "../detail-table-row";
 import { SplitButton } from "../split-button";
@@ -69,7 +69,7 @@ const useStyles = makeStyles((theme) => ({
   },
 }));
 
-interface Props {
+export interface DeploymentDetailProps {
   deploymentId: string;
 }
 
@@ -80,164 +80,169 @@ const CANCEL_OPTIONS = [
 ];
 const LOG_FETCH_INTERVAL = 2000;
 
-export const DeploymentDetail: FC<Props> = memo(function DeploymentDetail({
-  deploymentId,
-}) {
-  const classes = useStyles();
-  const dispatch = useDispatch();
+export const DeploymentDetail: FC<DeploymentDetailProps> = memo(
+  function DeploymentDetail({ deploymentId }) {
+    const classes = useStyles();
+    const dispatch = useDispatch();
 
-  const [deployment, activeStage] = useSelector<
-    AppState,
-    [Deployment.AsObject | undefined, ActiveStage | null]
-  >((state) => [
-    selectDeploymentById(state.deployments, deploymentId),
-    state.activeStage,
-  ]);
+    const [deployment, activeStage] = useSelector<
+      AppState,
+      [Deployment.AsObject | undefined, ActiveStage | null]
+    >((state) => [
+      selectDeploymentById(state.deployments, deploymentId),
+      state.activeStage,
+    ]);
 
-  const [env, piped, isCanceling] = useSelector<
-    AppState,
-    [Environment.AsObject | undefined, Piped.AsObject | undefined, boolean]
-  >((state) =>
-    deployment
-      ? [
-          selectEnvById(state.environments, deployment.envId),
-          selectById(state.pipeds, deployment.pipedId),
-          state.deployments.canceling[deployment.id],
-        ]
-      : [undefined, undefined, false]
-  );
-
-  useInterval(
-    () => {
-      if (activeStage) {
-        dispatch(
-          fetchStageLog({
-            deploymentId: activeStage.deploymentId,
-            stageId: activeStage.stageId,
-            offsetIndex: 0,
-            retriedCount: 0,
-          })
-        );
-      }
-    },
-    activeStage && isDeploymentRunning(deployment?.status)
-      ? LOG_FETCH_INTERVAL
-      : null
-  );
-
-  if (!deployment || !env || !piped) {
-    return (
-      <Box flex={1} display="flex" alignItems="center" justifyContent="center">
-        <CircularProgress />
-      </Box>
+    const [env, piped, isCanceling] = useSelector<
+      AppState,
+      [Environment.AsObject | undefined, Piped.AsObject | undefined, boolean]
+    >((state) =>
+      deployment
+        ? [
+            selectEnvById(state.environments, deployment.envId),
+            selectById(state.pipeds, deployment.pipedId),
+            state.deployments.canceling[deployment.id],
+          ]
+        : [undefined, undefined, false]
     );
-  }
 
-  return (
-    <Paper square elevation={1} className={classes.root}>
-      <Box display="flex" flexDirection="column">
-        <div className={classes.content}>
-          <Box display="flex" alignItems="center">
-            <StatusIcon status={deployment.status} />
-            <Typography className={classes.textMargin} variant="h6">
-              {DEPLOYMENT_STATE_TEXT[deployment.status]}
-            </Typography>
-            <Typography variant="subtitle1" className={classes.env}>
-              {env.name}
-            </Typography>
-            <Typography variant="body1" className={classes.age}>
-              {dayjs(deployment.createdAt * 1000).fromNow()}
-            </Typography>
-          </Box>
-          <Typography
-            variant="body2"
-            color="textSecondary"
-            className={classes.statusReason}
-          >
-            {deployment.statusReason}
-          </Typography>
-        </div>
-        <Box display="flex">
+    useInterval(
+      () => {
+        if (activeStage) {
+          dispatch(
+            fetchStageLog({
+              deploymentId: activeStage.deploymentId,
+              stageId: activeStage.stageId,
+              offsetIndex: 0,
+              retriedCount: 0,
+            })
+          );
+        }
+      },
+      activeStage && isDeploymentRunning(deployment?.status)
+        ? LOG_FETCH_INTERVAL
+        : null
+    );
+
+    if (!deployment || !env || !piped) {
+      return (
+        <Box
+          flex={1}
+          display="flex"
+          alignItems="center"
+          justifyContent="center"
+        >
+          <CircularProgress />
+        </Box>
+      );
+    }
+
+    return (
+      <Paper square elevation={1} className={classes.root}>
+        <Box display="flex" flexDirection="column">
           <div className={classes.content}>
-            <table>
-              <tbody>
-                <DetailTableRow
-                  label="Application"
-                  value={
-                    <Link
-                      variant="body2"
-                      component={RouterLink}
-                      to={`${PAGE_PATH_APPLICATIONS}/${deployment.applicationId}`}
-                    >
-                      {deployment.applicationName}
-                    </Link>
-                  }
-                />
-                <DetailTableRow label="Piped" value={piped.name} />
-                <DetailTableRow label="Summary" value={deployment.summary} />
-              </tbody>
-            </table>
+            <Box display="flex" alignItems="center">
+              <DeploymentStatusIcon status={deployment.status} />
+              <Typography className={classes.textMargin} variant="h6">
+                {DEPLOYMENT_STATE_TEXT[deployment.status]}
+              </Typography>
+              <Typography variant="subtitle1" className={classes.env}>
+                {env.name}
+              </Typography>
+              <Typography variant="body1" className={classes.age}>
+                {dayjs(deployment.createdAt * 1000).fromNow()}
+              </Typography>
+            </Box>
+            <Typography
+              variant="body2"
+              color="textSecondary"
+              className={classes.statusReason}
+            >
+              {deployment.statusReason}
+            </Typography>
           </div>
-          <div className={classes.content}>
-            <table>
-              <tbody>
-                {deployment.trigger?.commit && (
+          <Box display="flex">
+            <div className={classes.content}>
+              <table>
+                <tbody>
                   <DetailTableRow
-                    label="Commit"
+                    label="Application"
                     value={
-                      <Box display="flex">
-                        <Typography variant="body2">
-                          {deployment.trigger.commit.message}
-                        </Typography>
-                        <span className={classes.textMargin}>
-                          (
-                          <Link
-                            variant="body2"
-                            href={deployment.trigger.commit.url}
-                            target="_blank"
-                            rel="noreferrer"
-                          >
-                            {`${deployment.trigger.commit.hash.slice(0, 7)}`}
-                            <OpenInNewIcon className={classes.linkIcon} />
-                          </Link>
-                          )
-                        </span>
-                      </Box>
+                      <Link
+                        variant="body2"
+                        component={RouterLink}
+                        to={`${PAGE_PATH_APPLICATIONS}/${deployment.applicationId}`}
+                      >
+                        {deployment.applicationName}
+                      </Link>
                     }
                   />
-                )}
-                <DetailTableRow
-                  label="Triggered by"
-                  value={
-                    deployment.trigger?.commander ||
-                    deployment.trigger?.commit?.author ||
-                    ""
-                  }
-                />
-              </tbody>
-            </table>
-          </div>
-          {isDeploymentRunning(deployment.status) && (
-            <SplitButton
-              className={classes.actionButtons}
-              options={CANCEL_OPTIONS}
-              label="select merge strategy"
-              onClick={(index) => {
-                dispatch(
-                  cancelDeployment({
-                    deploymentId,
-                    forceRollback: index === 1,
-                    forceNoRollback: index === 2,
-                  })
-                );
-              }}
-              startIcon={<CancelIcon />}
-              loading={isCanceling}
-              disabled={isCanceling}
-            />
-          )}
+                  <DetailTableRow label="Piped" value={piped.name} />
+                  <DetailTableRow label="Summary" value={deployment.summary} />
+                </tbody>
+              </table>
+            </div>
+            <div className={classes.content}>
+              <table>
+                <tbody>
+                  {deployment.trigger?.commit && (
+                    <DetailTableRow
+                      label="Commit"
+                      value={
+                        <Box display="flex">
+                          <Typography variant="body2">
+                            {deployment.trigger.commit.message}
+                          </Typography>
+                          <span className={classes.textMargin}>
+                            (
+                            <Link
+                              variant="body2"
+                              href={deployment.trigger.commit.url}
+                              target="_blank"
+                              rel="noreferrer"
+                            >
+                              {`${deployment.trigger.commit.hash.slice(0, 7)}`}
+                              <OpenInNewIcon className={classes.linkIcon} />
+                            </Link>
+                            )
+                          </span>
+                        </Box>
+                      }
+                    />
+                  )}
+                  <DetailTableRow
+                    label="Triggered by"
+                    value={
+                      deployment.trigger?.commander ||
+                      deployment.trigger?.commit?.author ||
+                      ""
+                    }
+                  />
+                </tbody>
+              </table>
+            </div>
+            {isDeploymentRunning(deployment.status) && (
+              <SplitButton
+                className={classes.actionButtons}
+                options={CANCEL_OPTIONS}
+                label="select merge strategy"
+                onClick={(index) => {
+                  dispatch(
+                    cancelDeployment({
+                      deploymentId,
+                      forceRollback: index === 1,
+                      forceNoRollback: index === 2,
+                    })
+                  );
+                }}
+                startIcon={<CancelIcon />}
+                loading={isCanceling}
+                disabled={isCanceling}
+              />
+            )}
+          </Box>
         </Box>
-      </Box>
-    </Paper>
-  );
-});
+      </Paper>
+    );
+  }
+);

@@ -10,12 +10,12 @@ const useStyles = makeStyles((theme) => ({
   },
 }));
 
-interface Props {
+export interface FilterViewProps {
   onClear: () => void;
   children: React.ReactNode;
 }
 
-export const FilterView: FC<Props> = ({ onClear, children }) => {
+export const FilterView: FC<FilterViewProps> = ({ onClear, children }) => {
   const classes = useStyles();
   return (
     <Paper square className={classes.filterPaper}>

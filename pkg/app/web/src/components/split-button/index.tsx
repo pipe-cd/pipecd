@@ -25,7 +25,7 @@ const useStyles = makeStyles((theme) => ({
   },
 }));
 
-interface Props {
+export interface SplitButtonProps {
   options: string[];
   label: string;
   onClick: (index: number) => void;
@@ -36,7 +36,7 @@ interface Props {
   className?: string;
 }
 
-export const SplitButton: FC<Props> = ({
+export const SplitButton: FC<SplitButtonProps> = ({
   onClick,
   options,
   disabled,

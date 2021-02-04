@@ -14,14 +14,14 @@ const useStyles = makeStyles((theme) => ({
   },
 }));
 
-interface Props {
+export interface AppSyncStatusProps {
   syncState?: ApplicationSyncState.AsObject;
   deploying: boolean;
   className?: string;
   size?: "medium" | "large";
 }
 
-export const AppSyncStatus: FC<Props> = ({
+export const AppSyncStatus: FC<AppSyncStatusProps> = ({
   syncState,
   deploying,
   className,

@@ -43,12 +43,12 @@ export interface PipedFormValues {
   envIds: string[];
 }
 
-type Props = FormikProps<PipedFormValues> & {
+export type PipedFormProps = FormikProps<PipedFormValues> & {
   title: string;
   onClose: () => void;
 };
 
-export const PipedForm: FC<Props> = memo(function PipedForm({
+export const PipedForm: FC<PipedFormProps> = memo(function PipedForm({
   title,
   onClose,
   handleSubmit,

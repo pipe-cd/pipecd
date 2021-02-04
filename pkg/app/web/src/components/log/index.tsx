@@ -18,12 +18,12 @@ const useStyles = makeStyles((theme) => ({
   },
 }));
 
-interface Props {
+export interface LogProps {
   logs: LogBlock.AsObject[];
   loading: boolean;
 }
 
-export const Log: FC<Props> = memo(function Log({ logs, loading }) {
+export const Log: FC<LogProps> = memo(function Log({ logs, loading }) {
   const classes = useStyles();
   return (
     <div className={classes.container}>

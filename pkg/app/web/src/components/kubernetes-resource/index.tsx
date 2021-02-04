@@ -19,25 +19,24 @@ const useStyles = makeStyles((theme) => ({
   },
 }));
 
-interface Props {
+export interface KubernetesResourceProps {
   resource: KubernetesResourceState.AsObject;
   onClick: (resource: KubernetesResourceState.AsObject) => void;
 }
 
-export const KubernetesResource: FC<Props> = memo(function KubernetesResource({
-  resource,
-  onClick,
-}) {
-  const classes = useStyles();
-  return (
-    <Paper square className={classes.root} onClick={() => onClick(resource)}>
-      <Typography variant="caption">{resource.kind}</Typography>
-      <div className={classes.nameLine}>
-        <KubernetesResourceHealthStatusIcon health={resource.healthStatus} />
-        <Typography variant="subtitle2" className={classes.name}>
-          {resource.name}
-        </Typography>
-      </div>
-    </Paper>
-  );
-});
+export const KubernetesResource: FC<KubernetesResourceProps> = memo(
+  function KubernetesResource({ resource, onClick }) {
+    const classes = useStyles();
+    return (
+      <Paper square className={classes.root} onClick={() => onClick(resource)}>
+        <Typography variant="caption">{resource.kind}</Typography>
+        <div className={classes.nameLine}>
+          <KubernetesResourceHealthStatusIcon health={resource.healthStatus} />
+          <Typography variant="subtitle2" className={classes.name}>
+            {resource.name}
+          </Typography>
+        </div>
+      </Paper>
+    );
+  }
+);

@@ -33,7 +33,7 @@ const useStyles = makeStyles((theme) => ({
   },
 }));
 
-interface Props {
+export interface KubernetesStateViewProps {
   resources: KubernetesResourceState.AsObject[];
 }
 
@@ -85,7 +85,9 @@ function useGraph(
   return graph;
 }
 
-export const KubernetesStateView: FC<Props> = ({ resources }) => {
+export const KubernetesStateView: FC<KubernetesStateViewProps> = ({
+  resources,
+}) => {
   const classes = useStyles();
   const [
     selectedResource,

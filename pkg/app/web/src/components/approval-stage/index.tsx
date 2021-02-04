@@ -32,33 +32,30 @@ const useStyles = makeStyles((theme) => ({
   },
 }));
 
-interface Props {
+export interface ApprovalStageProps {
   id: string;
   name: string;
   active: boolean;
   onClick: (stageId: string, stageName: string) => void;
 }
 
-export const ApprovalStage: FC<Props> = memo(function ApprovalStage({
-  id,
-  name,
-  onClick,
-  active,
-}) {
-  const classes = useStyles({ active });
+export const ApprovalStage: FC<ApprovalStageProps> = memo(
+  function ApprovalStage({ id, name, onClick, active }) {
+    const classes = useStyles({ active });
 
-  function handleOnClick(): void {
-    onClick(id, name);
+    function handleOnClick(): void {
+      onClick(id, name);
+    }
+
+    return (
+      <Paper square className={classes.root} onClick={handleOnClick}>
+        <div className={classes.main}>
+          <WaitIcon className={classes.icon} />
+          <Typography variant="subtitle2" className={classes.name}>
+            <div className={classes.stageName}>{name}</div>
+          </Typography>
+        </div>
+      </Paper>
+    );
   }
-
-  return (
-    <Paper square className={classes.root} onClick={handleOnClick}>
-      <div className={classes.main}>
-        <WaitIcon className={classes.icon} />
-        <Typography variant="subtitle2" className={classes.name}>
-          <div className={classes.stageName}>{name}</div>
-        </Typography>
-      </div>
-    </Paper>
-  );
-});
+);

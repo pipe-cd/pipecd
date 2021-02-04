@@ -27,7 +27,7 @@ const useStyles = makeStyles((theme) => ({
   },
 }));
 
-interface Props {
+export interface DeploymentFrequencyChartProps {
   data: InsightDataPoint.AsObject[];
 }
 
@@ -39,7 +39,9 @@ const labelFormatter = (time: number | string): string =>
 
 const NO_DATA_TEXT = "No data is available.";
 
-export const DeploymentFrequencyChart: FC<Props> = ({ data }) => {
+export const DeploymentFrequencyChart: FC<DeploymentFrequencyChartProps> = ({
+  data,
+}) => {
   const classes = useStyles();
 
   return (

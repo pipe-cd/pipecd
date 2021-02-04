@@ -145,7 +145,7 @@ export interface ApplicationFormValue {
   };
 }
 
-type Props = FormikProps<ApplicationFormValue> & {
+export type ApplicationFormProps = FormikProps<ApplicationFormValue> & {
   title: string;
   onClose: () => void;
 };
@@ -165,185 +165,187 @@ export const emptyFormValues: ApplicationFormValue = {
   },
 };
 
-export const ApplicationForm: FC<Props> = memo(function ApplicationForm({
-  title,
-  values,
-  handleSubmit,
-  handleChange,
-  isSubmitting,
-  isValid,
-  setFieldValue,
-  setValues,
-  onClose,
-}) {
-  const classes = useStyles();
+export const ApplicationForm: FC<ApplicationFormProps> = memo(
+  function ApplicationForm({
+    title,
+    values,
+    handleSubmit,
+    handleChange,
+    isSubmitting,
+    isValid,
+    setFieldValue,
+    setValues,
+    onClose,
+  }) {
+    const classes = useStyles();
 
-  const environments = useSelector<AppState, Environment.AsObject[]>((state) =>
-    selectEnvironments(state.environments)
-  );
+    const environments = useSelector<AppState, Environment.AsObject[]>(
+      (state) => selectEnvironments(state.environments)
+    );
 
-  const pipeds = useSelector<AppState, Piped.AsObject[]>((state) =>
-    values.env !== "" ? selectPipedsByEnv(state.pipeds, values.env) : []
-  );
+    const pipeds = useSelector<AppState, Piped.AsObject[]>((state) =>
+      values.env !== "" ? selectPipedsByEnv(state.pipeds, values.env) : []
+    );
 
-  const selectedPiped = useSelector<AppState, Piped.AsObject | undefined>(
-    (state) => selectPipedById(state.pipeds, values.pipedId)
-  );
+    const selectedPiped = useSelector<AppState, Piped.AsObject | undefined>(
+      (state) => selectPipedById(state.pipeds, values.pipedId)
+    );
 
-  const cloudProviders = createCloudProviderListFromPiped({
-    piped: selectedPiped,
-    kind: values.kind,
-  });
+    const cloudProviders = createCloudProviderListFromPiped({
+      piped: selectedPiped,
+      kind: values.kind,
+    });
 
-  return (
-    <Box width={600}>
-      <Typography className={classes.title} variant="h6">
-        {title}
-      </Typography>
-      <Divider />
-      <form className={classes.form} onSubmit={handleSubmit}>
-        <TextField
-          id="name"
-          name="name"
-          label="Name"
-          variant="outlined"
-          margin="dense"
-          onChange={handleChange}
-          value={values.name}
-          fullWidth
-          required
-          disabled={isSubmitting}
-          className={classes.textInput}
-        />
+    return (
+      <Box width={600}>
+        <Typography className={classes.title} variant="h6">
+          {title}
+        </Typography>
+        <Divider />
+        <form className={classes.form} onSubmit={handleSubmit}>
+          <TextField
+            id="name"
+            name="name"
+            label="Name"
+            variant="outlined"
+            margin="dense"
+            onChange={handleChange}
+            value={values.name}
+            fullWidth
+            required
+            disabled={isSubmitting}
+            className={classes.textInput}
+          />
 
-        <FormSelectInput
-          id="kind"
-          label="Kind"
-          value={`${values.kind}`}
-          items={Object.keys(APPLICATION_KIND_TEXT).map((key) => ({
-            name: APPLICATION_KIND_TEXT[(key as unknown) as ApplicationKind],
-            value: key,
-          }))}
-          onChange={({ value }) => setFieldValue("kind", parseInt(value, 10))}
-          disabled={isSubmitting}
-        />
-
-        <div className={classes.inputGroup}>
           <FormSelectInput
-            id="env"
-            label="Environment"
-            value={values.env}
-            items={environments.map((v) => ({ name: v.name, value: v.id }))}
-            onChange={(item) => {
-              setValues({
-                ...emptyFormValues,
-                name: values.name,
-                kind: values.kind,
-                env: item.value,
-              });
-            }}
+            id="kind"
+            label="Kind"
+            value={`${values.kind}`}
+            items={Object.keys(APPLICATION_KIND_TEXT).map((key) => ({
+              name: APPLICATION_KIND_TEXT[(key as unknown) as ApplicationKind],
+              value: key,
+            }))}
+            onChange={({ value }) => setFieldValue("kind", parseInt(value, 10))}
             disabled={isSubmitting}
           />
-          <div className={classes.inputGroupSpace} />
-          <FormSelectInput
-            id="piped"
-            label="Piped"
-            value={values.pipedId}
-            onChange={({ value }) => {
-              setValues({
-                ...emptyFormValues,
-                name: values.name,
-                kind: values.kind,
-                env: values.env,
-                pipedId: value,
-              });
-            }}
-            items={pipeds.map((piped) => ({
-              name: `${piped.name} (${piped.id})`,
-              value: piped.id,
-            }))}
-            disabled={isSubmitting || !values.env || pipeds.length === 0}
-          />
-        </div>
 
-        <div className={classes.inputGroup}>
-          <FormSelectInput
-            id="git-repo"
-            label="Repository"
-            value={values.repo.id || ""}
-            onChange={(value) =>
-              setFieldValue("repo", {
-                id: value.value,
-                branch: value.branch,
-                remote: value.remote,
-              })
-            }
-            items={
-              selectedPiped?.repositoriesList?.map((repo) => ({
-                name: repo.id,
-                value: repo.id,
-                branch: repo.branch,
-                remote: repo.remote,
-              })) || []
-            }
-            disabled={selectedPiped === undefined || isSubmitting}
-          />
+          <div className={classes.inputGroup}>
+            <FormSelectInput
+              id="env"
+              label="Environment"
+              value={values.env}
+              items={environments.map((v) => ({ name: v.name, value: v.id }))}
+              onChange={(item) => {
+                setValues({
+                  ...emptyFormValues,
+                  name: values.name,
+                  kind: values.kind,
+                  env: item.value,
+                });
+              }}
+              disabled={isSubmitting}
+            />
+            <div className={classes.inputGroupSpace} />
+            <FormSelectInput
+              id="piped"
+              label="Piped"
+              value={values.pipedId}
+              onChange={({ value }) => {
+                setValues({
+                  ...emptyFormValues,
+                  name: values.name,
+                  kind: values.kind,
+                  env: values.env,
+                  pipedId: value,
+                });
+              }}
+              items={pipeds.map((piped) => ({
+                name: `${piped.name} (${piped.id})`,
+                value: piped.id,
+              }))}
+              disabled={isSubmitting || !values.env || pipeds.length === 0}
+            />
+          </div>
 
-          <div className={classes.inputGroupSpace} />
-          {/** TODO: Check path is accessible */}
+          <div className={classes.inputGroup}>
+            <FormSelectInput
+              id="git-repo"
+              label="Repository"
+              value={values.repo.id || ""}
+              onChange={(value) =>
+                setFieldValue("repo", {
+                  id: value.value,
+                  branch: value.branch,
+                  remote: value.remote,
+                })
+              }
+              items={
+                selectedPiped?.repositoriesList?.map((repo) => ({
+                  name: repo.id,
+                  value: repo.id,
+                  branch: repo.branch,
+                  remote: repo.remote,
+                })) || []
+              }
+              disabled={selectedPiped === undefined || isSubmitting}
+            />
+
+            <div className={classes.inputGroupSpace} />
+            {/** TODO: Check path is accessible */}
+            <TextField
+              id="repoPath"
+              label="Path"
+              variant="outlined"
+              margin="dense"
+              disabled={selectedPiped === undefined || isSubmitting}
+              onChange={handleChange}
+              value={values.repoPath}
+              fullWidth
+              required
+              className={classes.textInput}
+            />
+          </div>
+
           <TextField
-            id="repoPath"
-            label="Path"
+            id="configFilename"
+            label="Config Filename"
             variant="outlined"
             margin="dense"
             disabled={selectedPiped === undefined || isSubmitting}
             onChange={handleChange}
-            value={values.repoPath}
+            value={values.configFilename}
             fullWidth
-            required
             className={classes.textInput}
           />
-        </div>
 
-        <TextField
-          id="configFilename"
-          label="Config Filename"
-          variant="outlined"
-          margin="dense"
-          disabled={selectedPiped === undefined || isSubmitting}
-          onChange={handleChange}
-          value={values.configFilename}
-          fullWidth
-          className={classes.textInput}
-        />
+          <FormSelectInput
+            id="cloudProvider"
+            label="Cloud Provider"
+            value={values.cloudProvider}
+            onChange={({ value }) => setFieldValue("cloudProvider", value)}
+            items={cloudProviders}
+            disabled={
+              selectedPiped === undefined ||
+              cloudProviders.length === 0 ||
+              isSubmitting
+            }
+          />
 
-        <FormSelectInput
-          id="cloudProvider"
-          label="Cloud Provider"
-          value={values.cloudProvider}
-          onChange={({ value }) => setFieldValue("cloudProvider", value)}
-          items={cloudProviders}
-          disabled={
-            selectedPiped === undefined ||
-            cloudProviders.length === 0 ||
-            isSubmitting
-          }
-        />
-
-        <Button
-          color="primary"
-          type="submit"
-          disabled={isValid === false || isSubmitting}
-        >
-          {UI_TEXT_SAVE}
-          {isSubmitting && (
-            <CircularProgress size={24} className={classes.buttonProgress} />
-          )}
-        </Button>
-        <Button onClick={onClose} disabled={isSubmitting}>
-          {UI_TEXT_CANCEL}
-        </Button>
-      </form>
-    </Box>
-  );
-});
+          <Button
+            color="primary"
+            type="submit"
+            disabled={isValid === false || isSubmitting}
+          >
+            {UI_TEXT_SAVE}
+            {isSubmitting && (
+              <CircularProgress size={24} className={classes.buttonProgress} />
+            )}
+          </Button>
+          <Button onClick={onClose} disabled={isSubmitting}>
+            {UI_TEXT_CANCEL}
+          </Button>
+        </form>
+      </Box>
+    );
+  }
+);

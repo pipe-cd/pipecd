@@ -1,5 +1,5 @@
 import React from "react";
-import { StatusIcon as DeploymentStatusIcon } from "./";
+import { DeploymentStatusIcon } from "./";
 import { DeploymentStatus } from "pipe/pkg/app/web/model/deployment_pb";
 
 export default {
