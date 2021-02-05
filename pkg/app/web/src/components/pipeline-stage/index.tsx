@@ -70,13 +70,17 @@ const trafficPercentageMetaKey: Record<string, string> = {
   [TRAFFIC_PERCENTAGE_META_KEY.PRIMARY]: "Primary",
   [TRAFFIC_PERCENTAGE_META_KEY.CANARY]: "Canary",
   [TRAFFIC_PERCENTAGE_META_KEY.BASELINE]: "Baseline",
-  [TRAFFIC_PERCENTAGE_META_KEY.PROMOTE]: "Promote",
+  [TRAFFIC_PERCENTAGE_META_KEY.PROMOTE]: "Promoted",
 };
 
 const createTrafficPercentageText = (meta: [string, string][]): string => {
   const map = meta.reduce<Record<string, string>>((prev, [key, value]) => {
     if (trafficPercentageMetaKey[key]) {
-      prev[key] = `${trafficPercentageMetaKey[key]} ${value}%`;
+      if (key === TRAFFIC_PERCENTAGE_META_KEY.PROMOTE) {
+        prev[key] = `${value}% ${trafficPercentageMetaKey[key]}`;
+      } else {
+        prev[key] = `${trafficPercentageMetaKey[key]} ${value}%`;
+      }
     }
     return prev;
   }, {});
