@@ -16,15 +16,25 @@ apiVersion: pipecd.dev/v1beta1
 kind: LambdaFunction
 spec:
   name: SimpleFunction
-  role: arn:aws:iam::76xxxxxxx:role/lambda-role
   image: ecr.ap-northeast-1.amazonaws.com/lambda-test:v0.0.1
+  role: arn:aws:iam::76xxxxxxx:role/lambda-role
+  # The amount of memory available to the Lambda application 
+  # at runtime. The value can be any multiple of 1 MB.
+  memory: 512
+  # Timeout of the Lambda application, the value must
+  # in between 1 to 900 seconds.
+  timeout: 30
   tags:
     app: simple
+  environments:
+    FOO: bar
 ```
 
-Except the `tags` field, all others are required fields for the deployment to run.
+Except the `tags` and the `environments` field, all others are required fields for the deployment to run.
 
 The `role` value represents the service role (for your Lambda function to run), not for Piped agent to deploy your Lambda application. To be able to pull container images from AWS ECR, besides policies to run as usual, you need to add `Lambda.ElasticContainerRegistry` __read__ permission to your Lambda function service role.
+
+The `environments` field represents environment variables that can be accessed by your Lambda application at runtime. __In case of no value set for this field, all environment variables for the deploying Lambda application will be revoked__, so make sure you set all currently required environment variables of your running Lambda application on `function.yaml` if you migrate your app to PipeCD deployment.
 
 ## Quick sync
 
