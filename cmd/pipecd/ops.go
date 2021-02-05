@@ -25,12 +25,14 @@ import (
 	"golang.org/x/sync/errgroup"
 
 	"github.com/pipe-cd/pipe/pkg/admin"
+	"github.com/pipe-cd/pipe/pkg/app/ops/firestoreindexensurer"
 	"github.com/pipe-cd/pipe/pkg/app/ops/handler"
 	"github.com/pipe-cd/pipe/pkg/app/ops/insightcollector"
 	"github.com/pipe-cd/pipe/pkg/app/ops/orphancommandcleaner"
 	"github.com/pipe-cd/pipe/pkg/backoff"
 	"github.com/pipe-cd/pipe/pkg/cli"
 	"github.com/pipe-cd/pipe/pkg/datastore"
+	"github.com/pipe-cd/pipe/pkg/model"
 	"github.com/pipe-cd/pipe/pkg/version"
 )
 
@@ -40,6 +42,7 @@ type ops struct {
 	gracePeriod            time.Duration
 	enableInsightCollector bool
 	configFile             string
+	gcloudPath             string
 }
 
 func NewOpsCommand() *cobra.Command {
@@ -58,6 +61,7 @@ func NewOpsCommand() *cobra.Command {
 	cmd.Flags().DurationVar(&s.gracePeriod, "grace-period", s.gracePeriod, "How long to wait for graceful shutdown.")
 	cmd.Flags().BoolVar(&s.enableInsightCollector, "enableInsightCollector-insight-collector", s.enableInsightCollector, "Enable insight collector.")
 	cmd.Flags().StringVar(&s.configFile, "config-file", s.configFile, "The path to the configuration file.")
+	cmd.Flags().StringVar(&s.gcloudPath, "gcloud-path", s.gcloudPath, "The path to the gcloud command executable.")
 	return cmd
 }
 
@@ -142,6 +146,14 @@ func (s *ops) run(ctx context.Context, t cli.Telemetry) error {
 		if err != nil {
 			t.Logger.Error("failed to configure the insight collector", zap.Error(err))
 		}
+	}
+
+	if cfg.Datastore.Type == model.DataStoreFirestore {
+		// Create needed composite indexes for Firestore.
+		ensurer := firestoreindexensurer.NewIndexEnsurer(s.gcloudPath, cfg.Datastore.FirestoreConfig.Project, cfg.Datastore.FirestoreConfig.CredentialsFile, t.Logger)
+		group.Go(func() error {
+			return ensurer.CreateIndexes(ctx)
+		})
 	}
 
 	// Start running HTTP server.
