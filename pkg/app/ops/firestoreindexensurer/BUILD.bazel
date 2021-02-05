@@ -5,7 +5,6 @@ go_library(
     srcs = [
         "gcloud.go",
         "indexensurer.go",
-        "indexes.embed.go",
         "indexes.go",
         ":indexes.embed",  #keep
     ],
