@@ -27,11 +27,11 @@ func TestParseIndexes(t *testing.T) {
 			{
 				CollectionGroup: "Application",
 				Fields: []field{
-					field{
+					{
 						FieldPath: "Deleted",
 						Order:     "ASCENDING",
 					},
-					field{
+					{
 						FieldPath: "CreatedAt",
 						Order:     "ASCENDING",
 					},
@@ -40,11 +40,11 @@ func TestParseIndexes(t *testing.T) {
 			{
 				CollectionGroup: "Application",
 				Fields: []field{
-					field{
+					{
 						FieldPath: "Disabled",
 						Order:     "ASCENDING",
 					},
-					field{
+					{
 						FieldPath: "UpdatedAt",
 						Order:     "DESCENDING",
 					},
@@ -53,11 +53,11 @@ func TestParseIndexes(t *testing.T) {
 			{
 				CollectionGroup: "Application",
 				Fields: []field{
-					field{
+					{
 						FieldPath: "EnvId",
 						Order:     "ASCENDING",
 					},
-					field{
+					{
 						FieldPath: "UpdatedAt",
 						Order:     "DESCENDING",
 					},
@@ -66,11 +66,11 @@ func TestParseIndexes(t *testing.T) {
 			{
 				CollectionGroup: "Application",
 				Fields: []field{
-					field{
+					{
 						FieldPath: "Kind",
 						Order:     "ASCENDING",
 					},
-					field{
+					{
 						FieldPath: "UpdatedAt",
 						Order:     "DESCENDING",
 					},
@@ -79,11 +79,11 @@ func TestParseIndexes(t *testing.T) {
 			{
 				CollectionGroup: "Application",
 				Fields: []field{
-					field{
+					{
 						FieldPath: "ProjectId",
 						Order:     "ASCENDING",
 					},
-					field{
+					{
 						FieldPath: "UpdatedAt",
 						Order:     "DESCENDING",
 					},
@@ -92,11 +92,11 @@ func TestParseIndexes(t *testing.T) {
 			{
 				CollectionGroup: "Application",
 				Fields: []field{
-					field{
+					{
 						FieldPath: "SyncState.Status",
 						Order:     "ASCENDING",
 					},
-					field{
+					{
 						FieldPath: "UpdatedAt",
 						Order:     "DESCENDING",
 					},
@@ -105,11 +105,11 @@ func TestParseIndexes(t *testing.T) {
 			{
 				CollectionGroup: "Command",
 				Fields: []field{
-					field{
+					{
 						FieldPath: "Status",
 						Order:     "ASCENDING",
 					},
-					field{
+					{
 						FieldPath: "CreatedAt",
 						Order:     "ASCENDING",
 					},
@@ -118,11 +118,11 @@ func TestParseIndexes(t *testing.T) {
 			{
 				CollectionGroup: "Deployment",
 				Fields: []field{
-					field{
+					{
 						FieldPath: "ApplicationId",
 						Order:     "ASCENDING",
 					},
-					field{
+					{
 						FieldPath: "UpdatedAt",
 						Order:     "DESCENDING",
 					},
@@ -131,11 +131,11 @@ func TestParseIndexes(t *testing.T) {
 			{
 				CollectionGroup: "Deployment",
 				Fields: []field{
-					field{
+					{
 						FieldPath: "EnvId",
 						Order:     "ASCENDING",
 					},
-					field{
+					{
 						FieldPath: "UpdatedAt",
 						Order:     "DESCENDING",
 					},
@@ -144,11 +144,11 @@ func TestParseIndexes(t *testing.T) {
 			{
 				CollectionGroup: "Deployment",
 				Fields: []field{
-					field{
+					{
 						FieldPath: "Kind",
 						Order:     "ASCENDING",
 					},
-					field{
+					{
 						FieldPath: "UpdatedAt",
 						Order:     "DESCENDING",
 					},
@@ -157,11 +157,11 @@ func TestParseIndexes(t *testing.T) {
 			{
 				CollectionGroup: "Deployment",
 				Fields: []field{
-					field{
+					{
 						FieldPath: "ProjectId",
 						Order:     "ASCENDING",
 					},
-					field{
+					{
 						FieldPath: "UpdatedAt",
 						Order:     "DESCENDING",
 					},
@@ -170,11 +170,11 @@ func TestParseIndexes(t *testing.T) {
 			{
 				CollectionGroup: "Deployment",
 				Fields: []field{
-					field{
+					{
 						FieldPath: "Status",
 						Order:     "ASCENDING",
 					},
-					field{
+					{
 						FieldPath: "UpdatedAt",
 						Order:     "DESCENDING",
 					},
@@ -183,19 +183,19 @@ func TestParseIndexes(t *testing.T) {
 			{
 				CollectionGroup: "Event",
 				Fields: []field{
-					field{
+					{
 						FieldPath: "EventKey",
 						Order:     "ASCENDING",
 					},
-					field{
+					{
 						FieldPath: "Name",
 						Order:     "ASCENDING",
 					},
-					field{
+					{
 						FieldPath: "ProjectId",
 						Order:     "ASCENDING",
 					},
-					field{
+					{
 						FieldPath: "CreatedAt",
 						Order:     "DESCENDING",
 					},
@@ -204,11 +204,11 @@ func TestParseIndexes(t *testing.T) {
 			{
 				CollectionGroup: "Event",
 				Fields: []field{
-					field{
+					{
 						FieldPath: "ProjectId",
 						Order:     "ASCENDING",
 					},
-					field{
+					{
 						FieldPath: "CreatedAt",
 						Order:     "ASCENDING",
 					},
