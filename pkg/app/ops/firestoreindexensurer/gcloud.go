@@ -12,7 +12,7 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-package firestoreindexcreator
+package firestoreindexensurer
 
 import (
 	"bytes"
@@ -63,15 +63,23 @@ func (c *gcloud) authorize(ctx context.Context) error {
 		return fmt.Errorf("failed to parse service account: %w", err)
 	}
 	if serviceAccount.ClientEmail == "" {
-		return fmt.Errorf("unexpected service account file format")
+		return fmt.Errorf("missing \"client_email\" field in service account file")
 	}
 
 	return c.runGcloudCommand(ctx, "auth", "activate-service-account", serviceAccount.ClientEmail, "--key-file", c.serviceAccountFile)
 }
 
-func (c *gcloud) createIndex(ctx context.Context, idx *index) {
+func (c *gcloud) createIndex(ctx context.Context, idx *index) error {
+	// TODO: Track the progress of Firebase indexes creation and ensure the operation in progress to complete
+	// For that, seems like additional permission is required. We have to look out for.
+
 	// Run gcloud command in async mode, which returns immediately without waiting for the operation in progress to complete.
-	args := []string{"firestore", "indexes", "composite", "create", "--async", "--project", c.projectID, "--collection-group", idx.CollectionGroup}
+	args := []string{
+		"firestore", "indexes", "composite", "create",
+		"--async",
+		"--project", c.projectID,
+		"--collection-group", idx.CollectionGroup,
+	}
 	for _, f := range idx.Fields {
 		fieldCfg := fmt.Sprintf("field-path=%s", f.FieldPath)
 		if f.Order != "" {
@@ -85,11 +93,9 @@ func (c *gcloud) createIndex(ctx context.Context, idx *index) {
 
 	c.logger.Info("start creating a Firestore index", zap.Strings("command", args))
 	if err := c.runGcloudCommand(ctx, args...); err != nil {
-		c.logger.Error("failed to create a Firestore composite index",
-			zap.Any("index", idx),
-			zap.Error(err),
-		)
+		return err
 	}
+	return nil
 }
 
 func (c *gcloud) runGcloudCommand(ctx context.Context, args ...string) error {

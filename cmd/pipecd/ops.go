@@ -25,7 +25,7 @@ import (
 	"golang.org/x/sync/errgroup"
 
 	"github.com/pipe-cd/pipe/pkg/admin"
-	"github.com/pipe-cd/pipe/pkg/app/ops/firestoreindexcreator"
+	"github.com/pipe-cd/pipe/pkg/app/ops/firestoreindexensurer"
 	"github.com/pipe-cd/pipe/pkg/app/ops/handler"
 	"github.com/pipe-cd/pipe/pkg/app/ops/insightcollector"
 	"github.com/pipe-cd/pipe/pkg/app/ops/orphancommandcleaner"
@@ -150,9 +150,9 @@ func (s *ops) run(ctx context.Context, t cli.Telemetry) error {
 
 	if cfg.Datastore.Type == model.DataStoreFirestore {
 		// Create needed composite indexes for Firestore.
-		creator := firestoreindexcreator.NewIndexCreator(s.gcloudPath, cfg.Datastore.FirestoreConfig.Project, cfg.Datastore.FirestoreConfig.CredentialsFile, t.Logger)
+		ensurer := firestoreindexensurer.NewIndexEnsurer(s.gcloudPath, cfg.Datastore.FirestoreConfig.Project, cfg.Datastore.FirestoreConfig.CredentialsFile, t.Logger)
 		group.Go(func() error {
-			return creator.CreateIndexes(ctx)
+			return ensurer.CreateIndexes(ctx)
 		})
 	}
 

@@ -12,9 +12,9 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-// Package firestoreindexcreator automatically creates the needed composite indexes for Google Firestore,
-// based on well-defined JSON format indexes list with the name indexes.json.
-package firestoreindexcreator
+// Package firestoreindexensurer automatically creates/deletes the needed composite indexes
+// for Google Firestore, based on well-defined JSON format indexes list.
+package firestoreindexensurer
 
 import (
 	"context"
@@ -23,31 +23,31 @@ import (
 	"go.uber.org/zap"
 )
 
-type IndexCreator interface {
+type IndexEnsurer interface {
 	CreateIndexes(ctx context.Context) error
 }
 
 type firestoreClient interface {
 	authorize(ctx context.Context) error
-	createIndex(ctx context.Context, idx *index)
+	createIndex(ctx context.Context, idx *index) error
 }
 
-type indexCreator struct {
+type indexEnsurer struct {
 	firestoreClient
 	logger *zap.Logger
 }
 
-func NewIndexCreator(gcloudPath, projectID, serviceAcccountFile string, logger *zap.Logger) IndexCreator {
-	return &indexCreator{
+func NewIndexEnsurer(gcloudPath, projectID, serviceAcccountFile string, logger *zap.Logger) IndexEnsurer {
+	return &indexEnsurer{
 		// TODO: Use Go SDK to create Firebase indexes upon it will be started providing
 		firestoreClient: newGcloud(gcloudPath, projectID, serviceAcccountFile, logger),
-		logger:          logger.Named("firestore-index-creator"),
+		logger:          logger.Named("firestore-index-ensurer"),
 	}
 }
 
 // CreateIndexes creates needed composite indexes for Google Firestore based on
 // well-defined indexes list.
-func (c *indexCreator) CreateIndexes(ctx context.Context) error {
+func (c *indexEnsurer) CreateIndexes(ctx context.Context) error {
 	if err := c.authorize(ctx); err != nil {
 		return fmt.Errorf("failed to authorize: %w", err)
 	}
@@ -58,7 +58,12 @@ func (c *indexCreator) CreateIndexes(ctx context.Context) error {
 	}
 	for i := 0; i < len(idxs.Indexes); i++ {
 		// TODO: Check if the index is already added and if so skip creating
-		c.createIndex(ctx, &idxs.Indexes[i])
+		if err := c.createIndex(ctx, &idxs.Indexes[i]); err != nil {
+			c.logger.Error("failed to create a Firestore composite index",
+				zap.Any("index", idxs.Indexes[i]),
+				zap.Error(err),
+			)
+		}
 	}
 	return nil
 }
