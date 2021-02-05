@@ -1,74 +1,82 @@
-import React from "react";
-import { PipelineStage } from "./";
+import { Story } from "@storybook/react/types-6-0";
 import { StageStatus } from "pipe/pkg/app/web/model/deployment_pb";
-import { action } from "@storybook/addon-actions";
+import React from "react";
+import { PipelineStage, PipelineStageProps } from "./";
 
 export default {
   title: "DEPLOYMENT/Pipeline/PipelineStage",
   component: PipelineStage,
+  argTypes: {
+    onClick: {
+      action: "onClick",
+    },
+  },
 };
 
-export const overview: React.FC = () => (
-  <PipelineStage
-    id="stage-1"
-    status={StageStatus.STAGE_SUCCESS}
-    name="K8S_CANARY_ROLLOUT"
-    onClick={action("onClick")}
-    active={false}
-    metadata={[]}
-    isDeploymentRunning
-  />
+const Template: Story<PipelineStageProps> = (args) => (
+  <PipelineStage {...args} />
 );
+export const Overview = Template.bind({});
+Overview.args = {
+  id: "stage-1",
+  status: StageStatus.STAGE_SUCCESS,
+  name: "K8S_CANARY_ROLLOUT",
+  active: false,
+  metadata: [],
+  isDeploymentRunning: true,
+};
 
-export const longName: React.FC = () => (
-  <PipelineStage
-    id="stage-1"
-    status={StageStatus.STAGE_SUCCESS}
-    name="LONG_STAGE_NAME_XXXXXXX_YYYYYY_ZZZZZZZZ"
-    onClick={action("onClick")}
-    active={false}
-    metadata={[]}
-    isDeploymentRunning
-  />
-);
+export const LongName = Template.bind({});
+LongName.args = {
+  id: "stage-1",
+  status: StageStatus.STAGE_SUCCESS,
+  name: "LONG_STAGE_NAME_XXXXXXX_YYYYYY_ZZZZZZZZ",
+  active: false,
+  metadata: [],
+  isDeploymentRunning: true,
+};
 
-export const stopped: React.FC = () => (
-  <PipelineStage
-    id="stage-1"
-    status={StageStatus.STAGE_NOT_STARTED_YET}
-    name="K8S_CANARY_ROLLOUT"
-    onClick={action("onClick")}
-    active={false}
-    metadata={[]}
-    isDeploymentRunning={false}
-  />
-);
+export const Stopped = Template.bind({});
+Stopped.args = {
+  id: "stage-1",
+  status: StageStatus.STAGE_NOT_STARTED_YET,
+  name: "K8S_CANARY_ROLLOUT",
+  active: false,
+  metadata: [],
+  isDeploymentRunning: false,
+};
 
-export const Approved: React.FC = () => (
-  <PipelineStage
-    id="stage-1"
-    status={StageStatus.STAGE_SUCCESS}
-    name="K8S_CANARY_ROLLOUT"
-    onClick={action("onClick")}
-    active={false}
-    approver="User"
-    metadata={[]}
-    isDeploymentRunning
-  />
-);
+export const Approved = Template.bind({});
+Approved.args = {
+  id: "stage-1",
+  status: StageStatus.STAGE_SUCCESS,
+  name: "K8S_CANARY_ROLLOUT",
+  active: false,
+  metadata: [],
+  approver: "User",
+  isDeploymentRunning: true,
+};
 
-export const TrafficPercentage: React.FC = () => (
-  <PipelineStage
-    id="stage-1"
-    status={StageStatus.STAGE_SUCCESS}
-    name="K8S_CANARY_ROLLOUT"
-    onClick={action("onClick")}
-    active={false}
-    metadata={[
-      ["baseline-percentage", "0"],
-      ["canary-percentage", "50"],
-      ["primary-percentage", "50"],
-    ]}
-    isDeploymentRunning
-  />
-);
+export const TrafficPercentage = Template.bind({});
+TrafficPercentage.args = {
+  id: "stage-1",
+  status: StageStatus.STAGE_SUCCESS,
+  name: "K8S_CANARY_ROLLOUT",
+  active: false,
+  metadata: [
+    ["baseline-percentage", "0"],
+    ["canary-percentage", "50"],
+    ["primary-percentage", "50"],
+  ],
+  isDeploymentRunning: true,
+};
+
+export const PromotePercentage = Template.bind({});
+PromotePercentage.args = {
+  id: "stage-1",
+  status: StageStatus.STAGE_SUCCESS,
+  name: "K8S_CANARY_ROLLOUT",
+  active: false,
+  metadata: [["promote-percentage", "75"]],
+  isDeploymentRunning: true,
+};
