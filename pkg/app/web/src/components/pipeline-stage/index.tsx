@@ -44,6 +44,7 @@ const useStyles = makeStyles((theme) => ({
   metadata: {
     color: theme.palette.text.secondary,
     marginLeft: theme.spacing(4),
+    textAlign: "left",
   },
 }));
 
@@ -62,18 +63,24 @@ const TRAFFIC_PERCENTAGE_META_KEY = {
   PRIMARY: "primary-percentage",
   CANARY: "canary-percentage",
   BASELINE: "baseline-percentage",
+  PROMOTE: "promote-percentage",
 };
 
 const trafficPercentageMetaKey: Record<string, string> = {
   [TRAFFIC_PERCENTAGE_META_KEY.PRIMARY]: "Primary",
   [TRAFFIC_PERCENTAGE_META_KEY.CANARY]: "Canary",
   [TRAFFIC_PERCENTAGE_META_KEY.BASELINE]: "Baseline",
+  [TRAFFIC_PERCENTAGE_META_KEY.PROMOTE]: "Promoted",
 };
 
 const createTrafficPercentageText = (meta: [string, string][]): string => {
   const map = meta.reduce<Record<string, string>>((prev, [key, value]) => {
     if (trafficPercentageMetaKey[key]) {
-      prev[key] = `${trafficPercentageMetaKey[key]} ${value}%`;
+      if (key === TRAFFIC_PERCENTAGE_META_KEY.PROMOTE) {
+        prev[key] = `${value}% ${trafficPercentageMetaKey[key]}`;
+      } else {
+        prev[key] = `${trafficPercentageMetaKey[key]} ${value}%`;
+      }
     }
     return prev;
   }, {});
@@ -83,6 +90,10 @@ const createTrafficPercentageText = (meta: [string, string][]): string => {
     return `${map[TRAFFIC_PERCENTAGE_META_KEY.PRIMARY]}, ${
       map[TRAFFIC_PERCENTAGE_META_KEY.CANARY]
     }, ${map[TRAFFIC_PERCENTAGE_META_KEY.BASELINE]}`;
+  }
+
+  if (map[TRAFFIC_PERCENTAGE_META_KEY.PROMOTE]) {
+    return `${map[TRAFFIC_PERCENTAGE_META_KEY.PROMOTE]}`;
   }
 
   return "";
