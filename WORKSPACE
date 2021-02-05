@@ -152,6 +152,14 @@ container_pull(
     tag = "0.2.0",
 )
 
+container_pull(
+    name = "pipecd-base",
+    digest = "sha256:f3e98a27b85b8ead610c4f93cec8d936c760a43866cf817d32563daf9b198358",
+    registry = "gcr.io",
+    repository = "pipecd/pipecd-base",
+    tag = "0.1.0",
+)
+
 ### Protoc-gen-validate
 git_repository(
     name = "com_github_envoyproxy_protoc_gen_validate",

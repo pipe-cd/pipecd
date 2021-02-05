@@ -61,6 +61,7 @@ go_binary(
 
 app_image(
     name = "pipecd_app",
+    base = "@pipecd-base//image",
     binary = ":pipecd",
     repository = "pipecd",
     visibility = ["//visibility:public"],
