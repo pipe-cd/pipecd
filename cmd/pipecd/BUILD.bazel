@@ -20,6 +20,7 @@ go_library(
         "//pkg/app/api/pipedverifier:go_default_library",
         "//pkg/app/api/service/webservice:go_default_library",
         "//pkg/app/api/stagelogstore:go_default_library",
+        "//pkg/app/ops/firestoreindexcreator:go_default_library",
         "//pkg/app/ops/handler:go_default_library",
         "//pkg/app/ops/insightcollector:go_default_library",
         "//pkg/app/ops/orphancommandcleaner:go_default_library",
