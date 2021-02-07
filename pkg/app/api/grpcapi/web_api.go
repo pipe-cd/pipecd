@@ -1385,5 +1385,12 @@ func (a *WebAPI) GetInsightData(ctx context.Context, req *webservice.GetInsightD
 	return &webservice.GetInsightDataResponse{
 		UpdatedAt:  updateAt,
 		DataPoints: idp,
+		Type:       model.InsightResultType_MATRIX,
+		Matrix: []*model.InsightSampleStream{
+			{
+				Labels:     nil,
+				DataPoints: idp,
+			},
+		},
 	}, nil
 }
