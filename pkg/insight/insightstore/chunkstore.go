@@ -60,7 +60,7 @@ func (s *Store) LoadChunks(
 	return chunks, nil
 }
 
-// PutChunk create or update chunk.
+// PutChunk creates or updates chunk.
 func (s *Store) PutChunk(ctx context.Context, chunk insight.Chunk) error {
 	data, err := json.Marshal(chunk)
 	if err != nil {
