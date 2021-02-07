@@ -5,10 +5,10 @@ import (
 	"testing"
 
 	"github.com/golang/mock/gomock"
-	"github.com/pipe-cd/pipe/pkg/filestore/filestoretest"
 	"github.com/stretchr/testify/assert"
 
 	"github.com/pipe-cd/pipe/pkg/filestore"
+	"github.com/pipe-cd/pipe/pkg/filestore/filestoretest"
 	"github.com/pipe-cd/pipe/pkg/insight"
 )
 
