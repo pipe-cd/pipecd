@@ -46,18 +46,19 @@ PipeCD requires a GCS bucket and service account files to access Firestore and G
 apiVersion: "pipecd.dev/v1beta1"
 kind: ControlPlane
 spec:
-  stateKey: random-string
+  stateKey: {RANDOM_STRING}
   datastore:
     type: FIRESTORE
     config:
       namespace: pipecd
       environment: dev
-      project: gcp-project-name
+      project: {YOUR_GCP_PROJECT_NAME}
+      # Must be a service account with "Cloud Datastore User" and "Cloud Datastore Index Admin" roles.
       credentialsFile: /etc/pipecd-secret/firestore-service-account
   filestore:
     type: GCS
     config:
-      bucket: bucket-name
+      bucket: {YOUR_BUCKET_NAME}
       credentialsFile: /etc/pipecd-secret/gcs-service-account
 ```
 
@@ -83,17 +84,17 @@ helm install pipecd pipecd/pipecd --version=VERSION --namespace=NAMESPACE \
 apiVersion: "pipecd.dev/v1beta1"
 kind: ControlPlane
 spec:
-  stateKey: random-string
+  stateKey: {RANDOM_STRING}
   datastore:
     type: MONGODB
     config:
-      url: mongodb-address
-      database: database-name
+      url: {YOUR_MONGODB_ADDRESS}
+      database: {YOUR_DATABASE_NAME}
   filestore:
     type: MINIO
     config:
-      endpoint: minio-address
-      bucket: bucket-name
+      endpoint: {YOUR_MINIO_ADDRESS}
+      bucket: {YOUR_BUCKET_NAME}
       accessKeyFile: /etc/pipecd-secret/minio-access-key
       secretKeyFile: /etc/pipecd-secret/minio-secret-key
       autoCreateBucket: true
