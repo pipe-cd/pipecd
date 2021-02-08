@@ -1,4 +1,8 @@
+import faker from "faker";
 import { Environment } from "../modules/environments";
+import { createdRandTime, subtractRandTimeFrom } from "./utils";
+
+faker.seed(1);
 
 export const createEnvFromObject = (o: Environment.AsObject): Environment => {
   const env = new Environment();
@@ -11,11 +15,14 @@ export const createEnvFromObject = (o: Environment.AsObject): Environment => {
   return env;
 };
 
+const updatedAt = createdRandTime();
+const createdAt = subtractRandTimeFrom(updatedAt);
+
 export const dummyEnv: Environment.AsObject = {
-  createdAt: 0,
-  desc: "",
+  id: faker.random.uuid(),
+  desc: faker.lorem.words(8),
   name: "staging",
   projectId: "project-1",
-  updatedAt: 0,
-  id: "env-1",
+  updatedAt: updatedAt.unix(),
+  createdAt: createdAt.unix(),
 };

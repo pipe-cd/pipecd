@@ -64,3 +64,11 @@ expose-generated-go:
 .PHONY: site
 site:
 	hugo server --source=docs
+
+.PHONY: web-dep
+web-dep:
+	bazelisk build //pkg/app/web:build_api //pkg/app/web:build_model
+
+.PHONY: web-dev
+web-dev:
+	cd pkg/app/web; yarn dev

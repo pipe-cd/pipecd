@@ -4,6 +4,9 @@ import { applicationHandlers } from "./services/application";
 import { deploymentHandlers } from "./services/deployment";
 import { projectHandlers } from "./services/project";
 import { pipedHandlers } from "./services/piped";
+import { environmentHandlers } from "./services/environment";
+import { liveStateHandlers } from "./services/live-state";
+
 export const handlers = [
   ...meHandlers,
   ...commandHandlers,
@@ -11,4 +14,6 @@ export const handlers = [
   ...deploymentHandlers,
   ...projectHandlers,
   ...pipedHandlers,
+  ...environmentHandlers,
+  ...liveStateHandlers,
 ];

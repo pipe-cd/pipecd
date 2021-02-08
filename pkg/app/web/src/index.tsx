@@ -11,18 +11,30 @@ import { history } from "./history";
 import { setupDayjs } from "./utils/setup-dayjs";
 import { fetchMe } from "./modules/me";
 
-setupDayjs();
+async function run(): Promise<void> {
+  if (process.env.NODE_ENV === "development") {
+    // NOTE: Ignore check exists this module, because this module exclude from production build.
+    // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+    // @ts-ignore
+    const { worker } = await import("./mocks/browser");
+    worker.start();
+  }
 
-store.dispatch(fetchMe());
+  setupDayjs();
 
-render(
-  <Provider store={store}>
-    <ThemeProvider theme={theme}>
-      <Router history={history}>
-        <CssBaseline />
-        <App />
-      </Router>
-    </ThemeProvider>
-  </Provider>,
-  document.getElementById("root")
-);
+  store.dispatch(fetchMe());
+
+  render(
+    <Provider store={store}>
+      <ThemeProvider theme={theme}>
+        <Router history={history}>
+          <CssBaseline />
+          <App />
+        </Router>
+      </ThemeProvider>
+    </Provider>,
+    document.getElementById("root")
+  );
+}
+
+run();

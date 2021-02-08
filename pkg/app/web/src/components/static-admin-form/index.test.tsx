@@ -64,21 +64,20 @@ it("should dispatch action that update static admin when input fields and click 
 
   await waitForElementToBeRemoved(() => screen.getByText("Edit Static Admin"));
 
-  expect(store.getActions()).toMatchObject([
-    {
-      type: updateStaticAdmin.pending.type,
-      meta: {
-        arg: {
-          username: "pipe-user-new",
-          password: "new-password",
-        },
-      },
-    },
-    {
-      type: updateStaticAdmin.fulfilled.type,
-    },
-    {},
-    {},
-    {},
-  ]);
+  expect(store.getActions()).toEqual(
+    expect.arrayContaining([
+      expect.objectContaining({
+        type: updateStaticAdmin.pending.type,
+        meta: expect.objectContaining({
+          arg: {
+            username: "pipe-user-new",
+            password: "new-password",
+          },
+        }),
+      }),
+      expect.objectContaining({
+        type: updateStaticAdmin.fulfilled.type,
+      }),
+    ])
+  );
 });
