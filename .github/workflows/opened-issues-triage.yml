@@ -1,4 +1,4 @@
-name: Move new issues into Triage
+name: Move new issues into Future column
 on:
   issues:
     types: [opened]
