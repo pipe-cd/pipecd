@@ -22,196 +22,308 @@ import (
 )
 
 func TestParseIndexes(t *testing.T) {
-	want := &indexes{
-		Indexes: []index{
-			{
-				CollectionGroup: "Application",
-				Fields: []field{
-					{
-						FieldPath: "Deleted",
-						Order:     "ASCENDING",
-					},
-					{
-						FieldPath: "CreatedAt",
-						Order:     "ASCENDING",
-					},
+	want := []index{
+		index{
+			CollectionGroup: "Application",
+			QueryScope:      "COLLECTION",
+			Fields: []field{
+				field{
+					FieldPath:   "Disabled",
+					Order:       "ASCENDING",
+					ArrayConfig: "",
+				},
+				field{
+					FieldPath:   "UpdatedAt",
+					Order:       "DESCENDING",
+					ArrayConfig: "",
+				},
+				field{
+					FieldPath:   "__name__",
+					Order:       "DESCENDING",
+					ArrayConfig: "",
 				},
 			},
-			{
-				CollectionGroup: "Application",
-				Fields: []field{
-					{
-						FieldPath: "Disabled",
-						Order:     "ASCENDING",
-					},
-					{
-						FieldPath: "UpdatedAt",
-						Order:     "DESCENDING",
-					},
+		},
+		index{
+			CollectionGroup: "Application",
+			QueryScope:      "COLLECTION",
+			Fields: []field{
+				field{
+					FieldPath:   "EnvId",
+					Order:       "ASCENDING",
+					ArrayConfig: "",
+				},
+				field{
+					FieldPath:   "UpdatedAt",
+					Order:       "DESCENDING",
+					ArrayConfig: "",
+				},
+				field{
+					FieldPath:   "__name__",
+					Order:       "DESCENDING",
+					ArrayConfig: "",
 				},
 			},
-			{
-				CollectionGroup: "Application",
-				Fields: []field{
-					{
-						FieldPath: "EnvId",
-						Order:     "ASCENDING",
-					},
-					{
-						FieldPath: "UpdatedAt",
-						Order:     "DESCENDING",
-					},
+		},
+		index{
+			CollectionGroup: "Application",
+			QueryScope:      "COLLECTION",
+			Fields: []field{
+				field{
+					FieldPath:   "Deleted",
+					Order:       "ASCENDING",
+					ArrayConfig: "",
+				},
+				field{
+					FieldPath:   "CreatedAt",
+					Order:       "ASCENDING",
+					ArrayConfig: "",
+				},
+				field{
+					FieldPath:   "__name__",
+					Order:       "ASCENDING",
+					ArrayConfig: "",
 				},
 			},
-			{
-				CollectionGroup: "Application",
-				Fields: []field{
-					{
-						FieldPath: "Kind",
-						Order:     "ASCENDING",
-					},
-					{
-						FieldPath: "UpdatedAt",
-						Order:     "DESCENDING",
-					},
+		},
+		index{
+			CollectionGroup: "Application",
+			QueryScope:      "COLLECTION",
+			Fields: []field{
+				field{
+					FieldPath:   "Kind",
+					Order:       "ASCENDING",
+					ArrayConfig: "",
+				},
+				field{
+					FieldPath:   "UpdatedAt",
+					Order:       "DESCENDING",
+					ArrayConfig: "",
+				},
+				field{
+					FieldPath:   "__name__",
+					Order:       "DESCENDING",
+					ArrayConfig: "",
 				},
 			},
-			{
-				CollectionGroup: "Application",
-				Fields: []field{
-					{
-						FieldPath: "ProjectId",
-						Order:     "ASCENDING",
-					},
-					{
-						FieldPath: "UpdatedAt",
-						Order:     "DESCENDING",
-					},
+		},
+		index{
+			CollectionGroup: "Application",
+			QueryScope:      "COLLECTION",
+			Fields: []field{
+				field{
+					FieldPath:   "SyncState.Status",
+					Order:       "ASCENDING",
+					ArrayConfig: "",
+				},
+				field{
+					FieldPath:   "UpdatedAt",
+					Order:       "DESCENDING",
+					ArrayConfig: "",
+				},
+				field{
+					FieldPath:   "__name__",
+					Order:       "DESCENDING",
+					ArrayConfig: "",
 				},
 			},
-			{
-				CollectionGroup: "Application",
-				Fields: []field{
-					{
-						FieldPath: "SyncState.Status",
-						Order:     "ASCENDING",
-					},
-					{
-						FieldPath: "UpdatedAt",
-						Order:     "DESCENDING",
-					},
+		},
+		index{
+			CollectionGroup: "Application",
+			QueryScope:      "COLLECTION",
+			Fields: []field{
+				field{
+					FieldPath:   "ProjectId",
+					Order:       "ASCENDING",
+					ArrayConfig: "",
+				},
+				field{
+					FieldPath:   "UpdatedAt",
+					Order:       "DESCENDING",
+					ArrayConfig: "",
+				},
+				field{
+					FieldPath:   "__name__",
+					Order:       "DESCENDING",
+					ArrayConfig: "",
 				},
 			},
-			{
-				CollectionGroup: "Command",
-				Fields: []field{
-					{
-						FieldPath: "Status",
-						Order:     "ASCENDING",
-					},
-					{
-						FieldPath: "CreatedAt",
-						Order:     "ASCENDING",
-					},
+		},
+		index{
+			CollectionGroup: "Command",
+			QueryScope:      "COLLECTION",
+			Fields: []field{
+				field{
+					FieldPath:   "Status",
+					Order:       "ASCENDING",
+					ArrayConfig: "",
+				},
+				field{
+					FieldPath:   "CreatedAt",
+					Order:       "ASCENDING",
+					ArrayConfig: "",
+				},
+				field{
+					FieldPath:   "__name__",
+					Order:       "ASCENDING",
+					ArrayConfig: "",
 				},
 			},
-			{
-				CollectionGroup: "Deployment",
-				Fields: []field{
-					{
-						FieldPath: "ApplicationId",
-						Order:     "ASCENDING",
-					},
-					{
-						FieldPath: "UpdatedAt",
-						Order:     "DESCENDING",
-					},
+		},
+		index{
+			CollectionGroup: "Deployment",
+			QueryScope:      "COLLECTION",
+			Fields: []field{
+				field{
+					FieldPath:   "ApplicationId",
+					Order:       "ASCENDING",
+					ArrayConfig: "",
+				},
+				field{
+					FieldPath:   "UpdatedAt",
+					Order:       "DESCENDING",
+					ArrayConfig: "",
+				},
+				field{
+					FieldPath:   "__name__",
+					Order:       "DESCENDING",
+					ArrayConfig: "",
 				},
 			},
-			{
-				CollectionGroup: "Deployment",
-				Fields: []field{
-					{
-						FieldPath: "EnvId",
-						Order:     "ASCENDING",
-					},
-					{
-						FieldPath: "UpdatedAt",
-						Order:     "DESCENDING",
-					},
+		},
+		index{
+			CollectionGroup: "Deployment",
+			QueryScope:      "COLLECTION",
+			Fields: []field{
+				field{
+					FieldPath:   "ProjectId",
+					Order:       "ASCENDING",
+					ArrayConfig: "",
+				},
+				field{
+					FieldPath:   "UpdatedAt",
+					Order:       "DESCENDING",
+					ArrayConfig: "",
+				},
+				field{
+					FieldPath:   "__name__",
+					Order:       "DESCENDING",
+					ArrayConfig: "",
 				},
 			},
-			{
-				CollectionGroup: "Deployment",
-				Fields: []field{
-					{
-						FieldPath: "Kind",
-						Order:     "ASCENDING",
-					},
-					{
-						FieldPath: "UpdatedAt",
-						Order:     "DESCENDING",
-					},
+		},
+		index{
+			CollectionGroup: "Deployment",
+			QueryScope:      "COLLECTION",
+			Fields: []field{
+				field{
+					FieldPath:   "EnvId",
+					Order:       "ASCENDING",
+					ArrayConfig: "",
+				},
+				field{
+					FieldPath:   "UpdatedAt",
+					Order:       "DESCENDING",
+					ArrayConfig: "",
+				},
+				field{
+					FieldPath:   "__name__",
+					Order:       "DESCENDING",
+					ArrayConfig: "",
 				},
 			},
-			{
-				CollectionGroup: "Deployment",
-				Fields: []field{
-					{
-						FieldPath: "ProjectId",
-						Order:     "ASCENDING",
-					},
-					{
-						FieldPath: "UpdatedAt",
-						Order:     "DESCENDING",
-					},
+		},
+		index{
+			CollectionGroup: "Deployment",
+			QueryScope:      "COLLECTION",
+			Fields: []field{
+				field{
+					FieldPath:   "Kind",
+					Order:       "ASCENDING",
+					ArrayConfig: "",
+				},
+				field{
+					FieldPath:   "UpdatedAt",
+					Order:       "DESCENDING",
+					ArrayConfig: "",
+				},
+				field{
+					FieldPath:   "__name__",
+					Order:       "DESCENDING",
+					ArrayConfig: "",
 				},
 			},
-			{
-				CollectionGroup: "Deployment",
-				Fields: []field{
-					{
-						FieldPath: "Status",
-						Order:     "ASCENDING",
-					},
-					{
-						FieldPath: "UpdatedAt",
-						Order:     "DESCENDING",
-					},
+		},
+		index{
+			CollectionGroup: "Deployment",
+			QueryScope:      "COLLECTION",
+			Fields: []field{
+				field{
+					FieldPath:   "Status",
+					Order:       "ASCENDING",
+					ArrayConfig: "",
+				},
+				field{
+					FieldPath:   "UpdatedAt",
+					Order:       "DESCENDING",
+					ArrayConfig: "",
+				},
+				field{
+					FieldPath:   "__name__",
+					Order:       "DESCENDING",
+					ArrayConfig: "",
 				},
 			},
-			{
-				CollectionGroup: "Event",
-				Fields: []field{
-					{
-						FieldPath: "EventKey",
-						Order:     "ASCENDING",
-					},
-					{
-						FieldPath: "Name",
-						Order:     "ASCENDING",
-					},
-					{
-						FieldPath: "ProjectId",
-						Order:     "ASCENDING",
-					},
-					{
-						FieldPath: "CreatedAt",
-						Order:     "DESCENDING",
-					},
+		},
+		index{
+			CollectionGroup: "Event",
+			QueryScope:      "COLLECTION",
+			Fields: []field{
+				field{
+					FieldPath:   "ProjectId",
+					Order:       "ASCENDING",
+					ArrayConfig: "",
+				},
+				field{
+					FieldPath:   "CreatedAt",
+					Order:       "ASCENDING",
+					ArrayConfig: "",
+				},
+				field{
+					FieldPath:   "__name__",
+					Order:       "ASCENDING",
+					ArrayConfig: "",
 				},
 			},
-			{
-				CollectionGroup: "Event",
-				Fields: []field{
-					{
-						FieldPath: "ProjectId",
-						Order:     "ASCENDING",
-					},
-					{
-						FieldPath: "CreatedAt",
-						Order:     "ASCENDING",
-					},
+		},
+		index{
+			CollectionGroup: "Event",
+			QueryScope:      "COLLECTION",
+			Fields: []field{
+				field{
+					FieldPath:   "EventKey",
+					Order:       "ASCENDING",
+					ArrayConfig: "",
+				},
+				field{
+					FieldPath:   "Name",
+					Order:       "ASCENDING",
+					ArrayConfig: "",
+				},
+				field{
+					FieldPath:   "ProjectId",
+					Order:       "ASCENDING",
+					ArrayConfig: "",
+				},
+				field{
+					FieldPath:   "CreatedAt",
+					Order:       "DESCENDING",
+					ArrayConfig: "",
+				},
+				field{
+					FieldPath:   "__name__",
+					Order:       "DESCENDING",
+					ArrayConfig: "",
 				},
 			},
 		},
@@ -220,4 +332,123 @@ func TestParseIndexes(t *testing.T) {
 	got, err := parseIndexes()
 	assert.Equal(t, want, got)
 	require.NoError(t, err)
+}
+
+func TestFilterIndexes(t *testing.T) {
+	testcases := []struct {
+		name     string
+		indexes  []index
+		excludes []index
+		want     []index
+	}{
+		{
+			name: "no excludes given",
+			indexes: []index{
+				{
+					CollectionGroup: "collection-group",
+					QueryScope:      "COLLECTION",
+					Fields: []field{
+						{
+							FieldPath: "field-path",
+							Order:     "ASCENDING",
+						},
+					},
+				},
+			},
+			excludes: []index{},
+			want: []index{
+				{
+					CollectionGroup: "collection-group",
+					QueryScope:      "COLLECTION",
+					Fields: []field{
+						{
+							FieldPath: "field-path",
+							Order:     "ASCENDING",
+						},
+					},
+				},
+			},
+		},
+		{
+			name: "exclude an index",
+			indexes: []index{
+				{
+					CollectionGroup: "collection-group",
+					QueryScope:      "COLLECTION",
+					Fields: []field{
+						{
+							FieldPath: "field-path",
+							Order:     "ASCENDING",
+						},
+					},
+				},
+			},
+			excludes: []index{
+				{
+					CollectionGroup: "collection-group",
+					QueryScope:      "COLLECTION",
+					Fields: []field{
+						{
+							FieldPath: "field-path",
+							Order:     "ASCENDING",
+						},
+					},
+				},
+			},
+			want: []index{},
+		},
+	}
+	for _, tc := range testcases {
+		t.Run(tc.name, func(t *testing.T) {
+			got := filterIndexes(tc.indexes, tc.excludes)
+			assert.Equal(t, tc.want, got)
+		})
+	}
+}
+
+func TestIndexID(t *testing.T) {
+	testcases := []struct {
+		name string
+		idx  index
+		want string
+	}{
+		{
+			name: "single field",
+			idx: index{
+				CollectionGroup: "collection-group",
+				QueryScope:      "COLLECTION",
+				Fields: []field{
+					{
+						FieldPath: "field-path",
+						Order:     "ASCENDING",
+					},
+				},
+			},
+			want: "collection-group/COLLECTION/field-path:field-path/order:ASCENDING",
+		},
+		{
+			name: "two fields",
+			idx: index{
+				CollectionGroup: "collection-group",
+				QueryScope:      "COLLECTION",
+				Fields: []field{
+					{
+						FieldPath: "field-path1",
+						Order:     "ASCENDING",
+					},
+					{
+						FieldPath:   "field-path2",
+						ArrayConfig: "contains",
+					},
+				},
+			},
+			want: "collection-group/COLLECTION/field-path:field-path1/order:ASCENDING/field-path:field-path2/array-config:contains",
+		},
+	}
+	for _, tc := range testcases {
+		t.Run(tc.name, func(t *testing.T) {
+			got := tc.idx.id()
+			assert.Equal(t, tc.want, got)
+		})
+	}
 }

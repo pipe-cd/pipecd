@@ -30,6 +30,7 @@ type IndexEnsurer interface {
 type firestoreClient interface {
 	authorize(ctx context.Context) error
 	createIndex(ctx context.Context, idx *index) error
+	listIndexes(ctx context.Context) ([]index, error)
 }
 
 type indexEnsurer struct {
@@ -47,20 +48,29 @@ func NewIndexEnsurer(gcloudPath, projectID, serviceAcccountFile string, logger *
 
 // CreateIndexes creates needed composite indexes for Google Firestore based on
 // well-defined indexes list.
-func (c *indexEnsurer) CreateIndexes(ctx context.Context) error {
-	if err := c.authorize(ctx); err != nil {
+func (e *indexEnsurer) CreateIndexes(ctx context.Context) error {
+	if err := e.authorize(ctx); err != nil {
 		return fmt.Errorf("failed to authorize: %w", err)
 	}
 
-	idxs, err := parseIndexes()
+	indexes, err := parseIndexes()
 	if err != nil {
 		return err
 	}
-	for i := 0; i < len(idxs.Indexes); i++ {
-		// TODO: Check if the index is already added and if so skip creating
-		if err := c.createIndex(ctx, &idxs.Indexes[i]); err != nil {
-			c.logger.Error("failed to create a Firestore composite index",
-				zap.Any("index", idxs.Indexes[i]),
+	exists, err := e.listIndexes(ctx)
+	if err != nil {
+		return err
+	}
+	filtered := filterIndexes(indexes, exists)
+	if len(filtered) == 0 {
+		return nil
+	}
+
+	e.logger.Info(fmt.Sprintf("%d missing Firebase composite indexes found", len(filtered)))
+	for i := 0; i < len(filtered); i++ {
+		if err := e.createIndex(ctx, &filtered[i]); err != nil {
+			e.logger.Error("failed to create a Firestore composite index",
+				zap.Any("index", filtered[i]),
 				zap.Error(err),
 			)
 		}

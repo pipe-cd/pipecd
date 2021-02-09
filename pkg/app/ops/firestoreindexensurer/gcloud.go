@@ -21,6 +21,7 @@ import (
 	"fmt"
 	"io/ioutil"
 	"os/exec"
+	"strings"
 
 	"go.uber.org/zap"
 )
@@ -66,7 +67,8 @@ func (c *gcloud) authorize(ctx context.Context) error {
 		return fmt.Errorf("missing \"client_email\" field in service account file")
 	}
 
-	return c.runGcloudCommand(ctx, "auth", "activate-service-account", serviceAccount.ClientEmail, "--key-file", c.serviceAccountFile)
+	_, err = c.runGcloudCommand(ctx, "auth", "activate-service-account", serviceAccount.ClientEmail, "--key-file", c.serviceAccountFile)
+	return err
 }
 
 func (c *gcloud) createIndex(ctx context.Context, idx *index) error {
@@ -92,19 +94,59 @@ func (c *gcloud) createIndex(ctx context.Context, idx *index) error {
 	}
 
 	c.logger.Info("start creating a Firestore index", zap.Strings("command", args))
-	if err := c.runGcloudCommand(ctx, args...); err != nil {
+	if _, err := c.runGcloudCommand(ctx, args...); err != nil {
 		return err
 	}
 	return nil
 }
 
-func (c *gcloud) runGcloudCommand(ctx context.Context, args ...string) error {
-	var stderr bytes.Buffer
+func (c *gcloud) listIndexes(ctx context.Context) ([]index, error) {
+	type rawIndex struct {
+		Name       string  `json:"name"`
+		QueryScope string  `json:"queryScope"`
+		Fields     []field `json:"fields"`
+	}
+	args := []string{
+		"firestore", "indexes", "composite", "list",
+		"--sort-by", "name",
+		"--format", "json",
+		"--project", c.projectID,
+	}
+	out, err := c.runGcloudCommand(ctx, args...)
+	if err != nil {
+		return nil, err
+	}
+	var rawIndexes []rawIndex
+	if err := json.Unmarshal(out, &rawIndexes); err != nil {
+		return nil, fmt.Errorf("failed to parse indexes list: %w", err)
+	}
+
+	// Start converting the raw indexes into our own index type.
+	indexes := make([]index, 0, len(rawIndexes))
+	for _, idx := range rawIndexes {
+		// Supposed to be like "projects/project-a/databases/(default)/collectionGroups/CollectionA/indexes/CICAgLjRnZMK"
+		name := strings.Split(idx.Name, "/")
+		if len(name) < 6 {
+			c.logger.Warn("index has unexpected name", zap.String("name", idx.Name))
+			continue
+		}
+		indexes = append(indexes, index{
+			CollectionGroup: name[5],
+			QueryScope:      idx.QueryScope,
+			Fields:          idx.Fields,
+		})
+	}
+	return indexes, nil
+}
+
+func (c *gcloud) runGcloudCommand(ctx context.Context, args ...string) ([]byte, error) {
+	var stdout, stderr bytes.Buffer
 	cmd := exec.CommandContext(ctx, c.gcloudPath, args...)
+	cmd.Stdout = &stdout
 	cmd.Stderr = &stderr
 
 	if err := cmd.Run(); err != nil {
-		return fmt.Errorf("failed to run gcloud: stderr: %s: err: %w", stderr.String(), err)
+		return nil, fmt.Errorf("failed to run gcloud: stderr: %s: err: %w", stderr.String(), err)
 	}
-	return nil
+	return stdout.Bytes(), nil
 }
