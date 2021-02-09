@@ -1,4 +1,4 @@
-// Copyright 2020 The PipeCD Authors.
+// Copyright 2021 The PipeCD Authors.
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -22,9 +22,9 @@ import (
 	"github.com/pipe-cd/pipe/pkg/insight"
 )
 
-// LoadApplicationsCount loads insight.ApplicationsCount.
-func (s *Store) LoadApplicationsCount(ctx context.Context, projectID string) (*insight.ApplicationsCount, error) {
-	a := &insight.ApplicationsCount{}
+// LoadApplicationCount loads insight.ApplicationCount.
+func (s *Store) LoadApplicationCount(ctx context.Context, projectID string) (*insight.ApplicationCount, error) {
+	a := &insight.ApplicationCount{}
 	obj, err := s.filestore.GetObject(ctx, determineFilePath(projectID))
 	if err != nil {
 		return nil, err
@@ -37,8 +37,8 @@ func (s *Store) LoadApplicationsCount(ctx context.Context, projectID string) (*i
 	return a, nil
 }
 
-// PutApplicationsCount creates or updates insight.ApplicationsCount.
-func (s *Store) PutApplicationsCount(ctx context.Context, ac *insight.ApplicationsCount, projectID string) error {
+// PutApplicationCount creates or updates insight.ApplicationCount.
+func (s *Store) PutApplicationCount(ctx context.Context, ac *insight.ApplicationCount, projectID string) error {
 	data, err := json.Marshal(ac)
 	if err != nil {
 		return err
