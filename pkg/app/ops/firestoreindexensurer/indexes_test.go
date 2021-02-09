@@ -433,16 +433,38 @@ func TestIndexID(t *testing.T) {
 				QueryScope:      "COLLECTION",
 				Fields: []field{
 					{
-						FieldPath: "field-path1",
-						Order:     "ASCENDING",
-					},
-					{
 						FieldPath:   "field-path2",
 						ArrayConfig: "contains",
+					},
+					{
+						FieldPath: "field-path1",
+						Order:     "ASCENDING",
 					},
 				},
 			},
 			want: "collection-group/COLLECTION/field-path:field-path1/order:ASCENDING/field-path:field-path2/array-config:contains",
+		},
+		{
+			name: "ensure it's always sorted",
+			idx: index{
+				CollectionGroup: "collection-group",
+				QueryScope:      "COLLECTION",
+				Fields: []field{
+					{
+						FieldPath:   "field-path2",
+						ArrayConfig: "contains",
+					},
+					{
+						FieldPath: "field-path3",
+						Order:     "ASCENDING",
+					},
+					{
+						FieldPath: "field-path1",
+						Order:     "ASCENDING",
+					},
+				},
+			},
+			want: "collection-group/COLLECTION/field-path:field-path1/order:ASCENDING/field-path:field-path2/array-config:contains/field-path:field-path3/order:ASCENDING",
 		},
 	}
 	for _, tc := range testcases {
