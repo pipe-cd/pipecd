@@ -169,14 +169,8 @@ type Chunk interface {
 }
 
 func NewChunk(projectID string, metricsKind model.InsightMetricsKind, step model.InsightStep, appID string, timestamp time.Time) Chunk {
-	var path string
-	switch step {
-	case model.InsightStep_YEARLY:
-		path = MakeYearsFilePath(projectID, metricsKind, appID)
-	default:
-		month := determineChunkKeys(step, timestamp, 1)
-		path = MakeChunkFilePath(projectID, metricsKind, appID, month[0])
-	}
+	paths := DetermineFilePaths(projectID, appID, metricsKind, step, timestamp, 1)
+	path := paths[0]
 
 	var chunk Chunk
 	switch metricsKind {
