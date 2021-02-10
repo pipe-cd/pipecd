@@ -22,7 +22,10 @@ module.exports = (env, argv) =>
       modules: [path.resolve(__dirname, "node_modules"), "node_modules"],
     },
     devServer: {
-      contentBase: path.join(__dirname, "dist"),
+      contentBase: [
+        path.join(__dirname, "dist"),
+        path.join(__dirname, "public"),
+      ],
       compress: true,
       port: 9090,
       historyApiFallback: true,

@@ -1,15 +1,6 @@
 import * as grpcWeb from "grpc-web";
 import { WebServiceClient } from "pipe/pkg/app/web/api_client/service_grpc_web_pb";
-
-let apiEndpoint = `${location.protocol}//${location.host}`;
-
-if (process.env.NODE_ENV === "development") {
-  apiEndpoint = "/api";
-}
-
-if (process.env.NODE_ENV === "test") {
-  apiEndpoint = "https://test.pipecd.dev";
-}
+import { apiEndpoint } from "../constants/api-endpoint";
 
 export const apiClient = new WebServiceClient(apiEndpoint, null, {
   withCredentials: "true",

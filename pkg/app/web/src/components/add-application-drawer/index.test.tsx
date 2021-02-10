@@ -50,7 +50,7 @@ describe("AddApplicationDrawer", () => {
     userEvent.click(screen.getByRole("option", { name: dummyEnv.name }));
 
     userEvent.click(screen.getByRole("button", { name: /Piped/ }));
-    userEvent.click(screen.getByRole("option", { name: /dummy piped/ }));
+    userEvent.click(screen.getByRole("option", { name: /dummy-piped/ }));
 
     userEvent.click(screen.getByRole("button", { name: /Repository/ }));
     userEvent.click(screen.getByRole("option", { name: /debug-repo/ }));
@@ -63,27 +63,29 @@ describe("AddApplicationDrawer", () => {
     userEvent.click(screen.getByRole("button", { name: UI_TEXT_SAVE }));
 
     await waitFor(() =>
-      expect(store.getActions()).toMatchObject([
-        {
-          type: addApplication.pending.type,
-          meta: {
-            arg: {
-              cloudProvider: "terraform-default",
-              configFilename: "",
-              env: "env-1",
-              kind: ApplicationKind.TERRAFORM,
-              name: "App",
-              pipedId: "piped-1",
-              repo: {
-                branch: "master",
-                id: "debug-repo",
-                remote: "git@github.com:pipe-cd/debug.git",
+      expect(store.getActions()).toEqual(
+        expect.arrayContaining([
+          {
+            type: addApplication.pending.type,
+            meta: expect.objectContaining({
+              arg: {
+                cloudProvider: "terraform-default",
+                configFilename: "",
+                env: dummyEnv.id,
+                kind: ApplicationKind.TERRAFORM,
+                name: "App",
+                pipedId: dummyPiped.id,
+                repo: {
+                  branch: "master",
+                  id: "debug-repo",
+                  remote: "git@github.com:pipe-cd/debug.git",
+                },
+                repoPath: "path",
               },
-              repoPath: "path",
-            },
+            }),
           },
-        },
-      ])
+        ])
+      )
     );
   });
 
@@ -119,7 +121,7 @@ describe("AddApplicationDrawer", () => {
     userEvent.click(screen.getByRole("option", { name: dummyEnv.name }));
 
     userEvent.click(screen.getByRole("button", { name: /Piped/ }));
-    userEvent.click(screen.getByRole("option", { name: /dummy piped/i }));
+    userEvent.click(screen.getByRole("option", { name: /dummy-piped/i }));
 
     userEvent.click(screen.getByRole("button", { name: /Repository/ }));
     userEvent.click(screen.getByRole("option", { name: /debug-repo/i }));
@@ -127,7 +129,7 @@ describe("AddApplicationDrawer", () => {
     userEvent.type(screen.getByRole("textbox", { name: /Path/ }), "path");
 
     expect(screen.getByRole("button", { name: /Piped/ })).toHaveTextContent(
-      /dummy piped/
+      /dummy-piped/
     );
     expect(
       screen.getByRole("button", { name: /Repository/ })
@@ -140,7 +142,7 @@ describe("AddApplicationDrawer", () => {
     userEvent.click(screen.getByRole("option", { name: altEnv.name }));
 
     expect(screen.getByRole("button", { name: /Piped/ })).not.toHaveTextContent(
-      /dummy piped/
+      /dummy-piped/
     );
     expect(screen.getByRole("textbox", { name: /Path/ })).toHaveDisplayValue(
       ""

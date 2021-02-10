@@ -1,2 +1,4 @@
+import { apiEndpoint } from "../constants/api-endpoint";
+
 export const createMask = (path: string): string =>
-  `https://test.pipecd.dev/pipe.api.service.webservice.WebService${path}`;
+  `${apiEndpoint}/pipe.api.service.webservice.WebService${path}`;

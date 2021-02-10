@@ -1,12 +1,17 @@
+import faker from "faker";
 import { ApplicationKind } from "pipe/pkg/app/web/model/common_pb";
 import {
   Application,
-  ApplicationSyncStatus,
+  ApplicationDeploymentReference,
   ApplicationSyncState,
+  ApplicationSyncStatus,
 } from "../modules/applications";
+import { createGitPathFromObject } from "./common";
 import { dummyEnv } from "./dummy-environment";
 import { dummyPiped } from "./dummy-piped";
 import { dummyRepo } from "./dummy-repo";
+import { createTriggerFromObject, dummyTrigger } from "./dummy-trigger";
+import { createdRandTime, subtractRandTimeFrom } from "./utils";
 
 export const dummyApplicationSyncState: ApplicationSyncState.AsObject = {
   headDeploymentId: "deployment-1",
@@ -16,10 +21,13 @@ export const dummyApplicationSyncState: ApplicationSyncState.AsObject = {
   timestamp: 0,
 };
 
+const updatedAt = createdRandTime();
+const startedAt = subtractRandTimeFrom(updatedAt);
+const createdAt = subtractRandTimeFrom(updatedAt);
+
 export const dummyApplication: Application.AsObject = {
-  id: "application-1",
+  id: faker.random.uuid(),
   cloudProvider: "kubernetes-default",
-  createdAt: 0,
   disabled: false,
   envId: dummyEnv.id,
   gitPath: {
@@ -37,19 +45,85 @@ export const dummyApplication: Application.AsObject = {
     deploymentId: "deployment-1",
     completedAt: 0,
     summary: "",
-    startedAt: 0,
+    startedAt: startedAt.unix(),
     version: "v1",
+    trigger: dummyTrigger,
   },
   mostRecentlyTriggeredDeployment: {
     deploymentId: "deployment-1",
     completedAt: 0,
-    summary: "",
-    startedAt: 0,
+    summary: "summary",
+    startedAt: startedAt.unix(),
     version: "v1",
+    trigger: dummyTrigger,
   },
   syncState: dummyApplicationSyncState,
-  updatedAt: 0,
+  updatedAt: updatedAt.unix(),
   deletedAt: 0,
+  createdAt: createdAt.unix(),
   deleted: false,
   deploying: false,
 };
+
+function createAppSyncStateFromObject(
+  o: ApplicationSyncState.AsObject
+): ApplicationSyncState {
+  const state = new ApplicationSyncState();
+  state.setHeadDeploymentId(o.headDeploymentId);
+  state.setReason(o.reason);
+  state.setShortReason(o.shortReason);
+  state.setStatus(o.status);
+  state.setTimestamp(o.timestamp);
+  return state;
+}
+
+function createAppDeploymentReferenceFromObject(
+  o: ApplicationDeploymentReference.AsObject
+): ApplicationDeploymentReference {
+  const ref = new ApplicationDeploymentReference();
+  ref.setDeploymentId(o.deploymentId);
+  ref.setSummary(o.summary);
+  ref.setVersion(o.version);
+  ref.setStartedAt(o.startedAt);
+  ref.setCompletedAt(o.completedAt);
+  if (o.trigger) {
+    ref.setTrigger(createTriggerFromObject(o.trigger));
+  }
+  return ref;
+}
+
+export function createApplicationFromObject(
+  o: Application.AsObject
+): Application {
+  const app = new Application();
+  app.setId(o.id);
+  app.setCloudProvider(o.cloudProvider);
+  app.setDisabled(o.disabled);
+  app.setEnvId(o.envId);
+  app.setKind(o.kind);
+  app.setName(o.name);
+  app.setPipedId(o.pipedId);
+  app.setProjectId(o.projectId);
+  app.setCreatedAt(o.createdAt);
+  app.setUpdatedAt(o.updatedAt);
+  app.setDeletedAt(o.deletedAt);
+  app.setDeleted(o.deleted);
+  app.setDeploying(o.deploying);
+  if (o.syncState) {
+    app.setSyncState(createAppSyncStateFromObject(o.syncState));
+  }
+  if (o.gitPath) {
+    app.setGitPath(createGitPathFromObject(o.gitPath));
+  }
+  if (o.mostRecentlySuccessfulDeployment) {
+    app.setMostRecentlySuccessfulDeployment(
+      createAppDeploymentReferenceFromObject(o.mostRecentlySuccessfulDeployment)
+    );
+  }
+  if (o.mostRecentlyTriggeredDeployment) {
+    app.setMostRecentlyTriggeredDeployment(
+      createAppDeploymentReferenceFromObject(o.mostRecentlyTriggeredDeployment)
+    );
+  }
+  return app;
+}

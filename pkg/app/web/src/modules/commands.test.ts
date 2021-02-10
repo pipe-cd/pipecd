@@ -4,6 +4,7 @@ import {
   dummyCommand,
   dummySyncSucceededCommand,
 } from "../__fixtures__/dummy-command";
+import { dummyDeployment } from "../__fixtures__/dummy-deployment";
 import { commandsSlice, CommandStatus, fetchCommand } from "./commands";
 import { addToast } from "./toasts";
 
@@ -29,7 +30,7 @@ describe("fetchCommand", () => {
       {
         type: addToast.type,
         payload: {
-          to: "/deployments/deployment-1",
+          to: `/deployments/${dummyDeployment.id}`,
         },
       },
       { type: fetchCommand.fulfilled.type },

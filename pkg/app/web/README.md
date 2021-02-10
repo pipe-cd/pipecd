@@ -1,29 +1,33 @@
-# web
+# PipeCD web
+
+## Setup
+
+```bash
+bazelisk build //pkg/app/web:build_api //pkg/app/web:build_model # generate models and API client from proto files. Also will install dependencies by yarn
+```
 
 ## Development
 
-```
-yarn
-bazelisk build //pkg/app/web:build_api
+### Running with Mocks(msw)
+
+We use `msw` for mocking API, so you can see UI without running API server.
+
+```bash
 yarn dev
 ```
 
-## Run API server
+The app will be available at http://localhost:9090.
 
-1. Run `cmd/api` server
+### Connect Real API server
 
-See `cmd/api` README.
-
-2. Setup proxy server(envoy, grpcwebproxy)
-
-```sh
-grpcwebproxy \
-   --backend_addr=localhost:9081 \
-   --run_tls_server=false
+```bash
+cp .env.example .env
 ```
 
-3. Copy `.env.example` and set `API_ENDPOINT`
+Add your API endpoint to the env file like this:
 
-```sh
-API_ENDPOINT=http://localhost:8080 # 8080 is grpcwebproxy default port
 ```
+API_ENDPOINT=https://api.pipecd.dev
+```
+
+If API server has authorization by cookie, you can use `API_COOKIE` for adding cookie to request.

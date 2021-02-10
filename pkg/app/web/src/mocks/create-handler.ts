@@ -6,10 +6,12 @@ const DummyHandler = rest.post("", (_0, res, ctx) => {
   return res(ctx.status(200));
 });
 
+type HandlerType = typeof DummyHandler;
+
 export function createHandler<T extends { serializeBinary(): Uint8Array }>(
   serviceName: string,
   getResponseMessage: (requestData: Uint8Array) => T
-): typeof DummyHandler {
+): HandlerType {
   return rest.post(createMask(serviceName), (req, res, ctx) => {
     const message = getResponseMessage(req.body?.slice(5));
     const data = serialize(message.serializeBinary());
