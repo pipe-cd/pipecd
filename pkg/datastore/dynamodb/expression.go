@@ -45,6 +45,13 @@ func buildDynamoDBCondition(f datastore.ListFilter) (expression.ConditionBuilder
 
 func buildDynamoDBExpression(opts datastore.ListOptions) (expression.Expression, error) {
 	var expr expression.Expression
+	if ok := hasHashKeyField(opts); !ok {
+		return expr, fmt.Errorf("missing required field: %s", hashKeyFieldName)
+	}
+
+	// TODO: Build KeyConditionExpression.
+
+	// Build FilterExpression.
 	ops := make([]expression.ConditionBuilder, len(opts.Filters))
 	for i, f := range opts.Filters {
 		op, err := buildDynamoDBCondition(f)
@@ -53,19 +60,22 @@ func buildDynamoDBExpression(opts datastore.ListOptions) (expression.Expression,
 		}
 		ops[i] = op
 	}
-	if len(ops) == 0 {
-		return expr, fmt.Errorf("missing expression for dynamodb")
-	}
-	var cond expression.ConditionBuilder
+	// if len(ops) == 0 {
+	// 	return expr, fmt.Errorf("missing expression for dynamodb")
+	// }
+	var filter expression.ConditionBuilder
 	switch len(ops) {
+	case 0:
+		// if there is no filter, just pass nil filter is okay.
+		break
 	case 1:
-		cond = ops[0]
+		filter = ops[0]
 	case 2:
-		cond = expression.And(ops[0], ops[1])
+		filter = expression.And(ops[0], ops[1])
 	default:
-		cond = expression.And(ops[0], ops[1], ops[2:]...)
+		filter = expression.And(ops[0], ops[1], ops[2:]...)
 	}
-	return expression.NewBuilder().WithFilter(cond).Build()
+	return expression.NewBuilder().WithFilter(filter).Build()
 }
 
 func buildDynamoDBKeyExistedExpression(key string, value interface{}) (expression.Expression, error) {
@@ -74,4 +84,13 @@ func buildDynamoDBKeyExistedExpression(key string, value interface{}) (expressio
 
 func buildDynamoDBKeyNotExistedExpression(key string, value interface{}) (expression.Expression, error) {
 	return expression.NewBuilder().WithCondition(expression.Name(key).NotEqual(expression.Value(value))).Build()
+}
+
+func hasHashKeyField(opts datastore.ListOptions) bool {
+	for _, f := range opts.Filters {
+		if f.Field == hashKeyFieldName {
+			return true
+		}
+	}
+	return false
 }

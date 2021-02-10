@@ -46,6 +46,7 @@ type DataStore interface {
 	Find(ctx context.Context, kind string, opts ListOptions) (Iterator, error)
 	// Get gets one document specified with ID, and unmarshal it to typed struct.
 	// If the document can not be found in datastore, ErrNotFound will be returned.
+	// TODO: add ProjectId as partition id for aws dynamodb implementation.
 	Get(ctx context.Context, kind, id string, entity interface{}) error
 	// Create saves a new entity to the datastore.
 	// If an entity with the same ID is already existing, ErrAlreadyExists will be returned.
@@ -55,6 +56,7 @@ type DataStore interface {
 	Put(ctx context.Context, kind, id string, entity interface{}) error
 	// Update updates an existing entity in the datastore.
 	// If updating entity was not found in the datastore, ErrNotFound will be returned.
+	// TODO: add ProjectId as partition id for aws dynamodb implementation.
 	Update(ctx context.Context, kind, id string, factory Factory, updater Updater) error
 	// Close closes datastore resources held by the client.
 	Close() error

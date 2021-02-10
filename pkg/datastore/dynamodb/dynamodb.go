@@ -34,6 +34,8 @@ import (
 	"github.com/pipe-cd/pipe/pkg/datastore"
 )
 
+const hashKeyFieldName = "projectId"
+
 // DynamoDB is wrapper for AWS dynamoDB client
 type DynamoDB struct {
 	client          *dynamodb.DynamoDB
@@ -122,6 +124,7 @@ func (s *DynamoDB) Find(ctx context.Context, kind string, opts datastore.ListOpt
 			zap.String("kind", kind),
 			zap.Error(err),
 		)
+		return nil, fmt.Errorf("failed to build query: %w", err)
 	}
 	input := &dynamodb.ScanInput{
 		ExpressionAttributeNames:  expr.Names(),
@@ -152,17 +155,46 @@ func (s *DynamoDB) Find(ctx context.Context, kind string, opts datastore.ListOpt
 	}, nil
 }
 
+func (s *DynamoDB) FindQuery(ctx context.Context, kind string, opts datastore.ListOptions) (datastore.Iterator, error) {
+	// expr, err := buildDynamoDBExpression(opts)
+	// if err != nil {
+	// 	s.logger.Error("failed to build query",
+	// 		zap.String("kind", kind),
+	// 		zap.Error(err),
+	// 	)
+	// 	return nil, fmt.Errorf("failed to build query: %w", err)
+	// }
+	// input := &dynamodb.QueryInput{
+	// 	TableName: aws.String(kind),
+	// }
+	return nil, nil
+}
+
 // Get implementation for DynamoDB
 func (s *DynamoDB) Get(ctx context.Context, kind, id string, v interface{}) error {
-	input := &dynamodb.GetItemInput{
+	// input := &dynamodb.GetItemInput{
+	// 	TableName: aws.String(kind),
+	// 	Key: map[string]*dynamodb.AttributeValue{
+	// 		// "projectId": {
+	// 		// 	S: aws.String("project-2"),
+	// 		// },
+	// 		"Id": {
+	// 			S: aws.String(id),
+	// 		},
+	// 	},
+	// }
+	// result, err := s.client.GetItemWithContext(ctx, input)
+	input := &dynamodb.QueryInput{
 		TableName: aws.String(kind),
-		Key: map[string]*dynamodb.AttributeValue{
-			"Id": {
+		ExpressionAttributeValues: map[string]*dynamodb.AttributeValue{
+			":id": {
 				S: aws.String(id),
 			},
 		},
+		KeyConditionExpression: aws.String("id = :id"),
+		IndexName:              aws.String("id-index"),
 	}
-	result, err := s.client.GetItemWithContext(ctx, input)
+	result, err := s.client.QueryWithContext(ctx, input)
 	if err != nil {
 		if aerr, ok := err.(awserr.Error); ok {
 			switch aerr.Code() {
@@ -174,7 +206,7 @@ func (s *DynamoDB) Get(ctx context.Context, kind, id string, v interface{}) erro
 					zap.String("kind", kind),
 					zap.Error(err),
 				)
-				return err
+				return fmt.Errorf("failed to retrieve entity: aws error: %w", err)
 			}
 		}
 		s.logger.Error("failed to retrieve entity",
@@ -182,10 +214,10 @@ func (s *DynamoDB) Get(ctx context.Context, kind, id string, v interface{}) erro
 			zap.String("kind", kind),
 			zap.Error(err),
 		)
-		return err
+		return fmt.Errorf("failed to retrieve entity: unknown error: %w", err)
 	}
 
-	return dynamodbattribute.UnmarshalMap(result.Item, v)
+	return dynamodbattribute.UnmarshalMap(result.Items[0], v)
 }
 
 // Create implementation for DynamoDB
@@ -274,7 +306,7 @@ func (s *DynamoDB) Update(ctx context.Context, kind, id string, factory datastor
 			zap.String("kind", kind),
 			zap.Error(err),
 		)
-		return err
+		return fmt.Errorf("failed to retrieve entity: %w", err)
 	}
 
 	// Update entity by updater.
@@ -284,7 +316,7 @@ func (s *DynamoDB) Update(ctx context.Context, kind, id string, factory datastor
 			zap.String("kind", kind),
 			zap.Error(err),
 		)
-		return err
+		return fmt.Errorf("failed to apply updater: %w", err)
 	}
 
 	// Put back the updated data to database.
@@ -322,7 +354,7 @@ func (s *DynamoDB) Update(ctx context.Context, kind, id string, factory datastor
 			zap.String("kind", kind),
 			zap.Error(err),
 		)
-		return err
+		return fmt.Errorf("failed to update entity: %w", err)
 	}
 
 	return nil
