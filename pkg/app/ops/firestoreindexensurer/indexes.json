@@ -1,209 +1,306 @@
-{
-  "indexes": [
-    {
-      "collectionGroup": "Application",
-      "queryScope": "COLLECTION",
-      "fields": [
-        {
-          "fieldPath": "Deleted",
-          "order": "ASCENDING"
-        },
-        {
-          "fieldPath": "CreatedAt",
-          "order": "ASCENDING"
-        }
-      ]
-    },
-    {
-      "collectionGroup": "Application",
-      "queryScope": "COLLECTION",
-      "fields": [
-        {
-          "fieldPath": "Disabled",
-          "order": "ASCENDING"
-        },
-        {
-          "fieldPath": "UpdatedAt",
-          "order": "DESCENDING"
-        }
-      ]
-    },
-    {
-      "collectionGroup": "Application",
-      "queryScope": "COLLECTION",
-      "fields": [
-        {
-          "fieldPath": "EnvId",
-          "order": "ASCENDING"
-        },
-        {
-          "fieldPath": "UpdatedAt",
-          "order": "DESCENDING"
-        }
-      ]
-    },
-    {
-      "collectionGroup": "Application",
-      "queryScope": "COLLECTION",
-      "fields": [
-        {
-          "fieldPath": "Kind",
-          "order": "ASCENDING"
-        },
-        {
-          "fieldPath": "UpdatedAt",
-          "order": "DESCENDING"
-        }
-      ]
-    },
-    {
-      "collectionGroup": "Application",
-      "queryScope": "COLLECTION",
-      "fields": [
-        {
-          "fieldPath": "ProjectId",
-          "order": "ASCENDING"
-        },
-        {
-          "fieldPath": "UpdatedAt",
-          "order": "DESCENDING"
-        }
-      ]
-    },
-    {
-      "collectionGroup": "Application",
-      "queryScope": "COLLECTION",
-      "fields": [
-        {
-          "fieldPath": "SyncState.Status",
-          "order": "ASCENDING"
-        },
-        {
-          "fieldPath": "UpdatedAt",
-          "order": "DESCENDING"
-        }
-      ]
-    },
-    {
-      "collectionGroup": "Command",
-      "queryScope": "COLLECTION",
-      "fields": [
-        {
-          "fieldPath": "Status",
-          "order": "ASCENDING"
-        },
-        {
-          "fieldPath": "CreatedAt",
-          "order": "ASCENDING"
-        }
-      ]
-    },
-    {
-      "collectionGroup": "Deployment",
-      "queryScope": "COLLECTION",
-      "fields": [
-        {
-          "fieldPath": "ApplicationId",
-          "order": "ASCENDING"
-        },
-        {
-          "fieldPath": "UpdatedAt",
-          "order": "DESCENDING"
-        }
-      ]
-    },
-    {
-      "collectionGroup": "Deployment",
-      "queryScope": "COLLECTION",
-      "fields": [
-        {
-          "fieldPath": "EnvId",
-          "order": "ASCENDING"
-        },
-        {
-          "fieldPath": "UpdatedAt",
-          "order": "DESCENDING"
-        }
-      ]
-    },
-    {
-      "collectionGroup": "Deployment",
-      "queryScope": "COLLECTION",
-      "fields": [
-        {
-          "fieldPath": "Kind",
-          "order": "ASCENDING"
-        },
-        {
-          "fieldPath": "UpdatedAt",
-          "order": "DESCENDING"
-        }
-      ]
-    },
-    {
-      "collectionGroup": "Deployment",
-      "queryScope": "COLLECTION",
-      "fields": [
-        {
-          "fieldPath": "ProjectId",
-          "order": "ASCENDING"
-        },
-        {
-          "fieldPath": "UpdatedAt",
-          "order": "DESCENDING"
-        }
-      ]
-    },
-    {
-      "collectionGroup": "Deployment",
-      "queryScope": "COLLECTION",
-      "fields": [
-        {
-          "fieldPath": "Status",
-          "order": "ASCENDING"
-        },
-        {
-          "fieldPath": "UpdatedAt",
-          "order": "DESCENDING"
-        }
-      ]
-    },
-    {
-      "collectionGroup": "Event",
-      "queryScope": "COLLECTION",
-      "fields": [
-        {
-          "fieldPath": "EventKey",
-          "order": "ASCENDING"
-        },
-        {
-          "fieldPath": "Name",
-          "order": "ASCENDING"
-        },
-        {
-          "fieldPath": "ProjectId",
-          "order": "ASCENDING"
-        },
-        {
-          "fieldPath": "CreatedAt",
-          "order": "DESCENDING"
-        }
-      ]
-    },
-    {
-      "collectionGroup": "Event",
-      "queryScope": "COLLECTION",
-      "fields": [
-        {
-          "fieldPath": "ProjectId",
-          "order": "ASCENDING"
-        },
-        {
-          "fieldPath": "CreatedAt",
-          "order": "ASCENDING"
-        }
-      ]
-    }
-  ],
-  "fieldOverrides": []
-}
+[
+  {
+    "collectionGroup": "Application",
+    "queryScope": "COLLECTION",
+    "fields": [
+      {
+        "fieldPath": "Disabled",
+        "order": "ASCENDING",
+        "arrayConfig": ""
+      },
+      {
+        "fieldPath": "UpdatedAt",
+        "order": "DESCENDING",
+        "arrayConfig": ""
+      },
+      {
+        "fieldPath": "__name__",
+        "order": "DESCENDING",
+        "arrayConfig": ""
+      }
+    ]
+  },
+  {
+    "collectionGroup": "Application",
+    "queryScope": "COLLECTION",
+    "fields": [
+      {
+        "fieldPath": "EnvId",
+        "order": "ASCENDING",
+        "arrayConfig": ""
+      },
+      {
+        "fieldPath": "UpdatedAt",
+        "order": "DESCENDING",
+        "arrayConfig": ""
+      },
+      {
+        "fieldPath": "__name__",
+        "order": "DESCENDING",
+        "arrayConfig": ""
+      }
+    ]
+  },
+  {
+    "collectionGroup": "Application",
+    "queryScope": "COLLECTION",
+    "fields": [
+      {
+        "fieldPath": "Deleted",
+        "order": "ASCENDING",
+        "arrayConfig": ""
+      },
+      {
+        "fieldPath": "CreatedAt",
+        "order": "ASCENDING",
+        "arrayConfig": ""
+      },
+      {
+        "fieldPath": "__name__",
+        "order": "ASCENDING",
+        "arrayConfig": ""
+      }
+    ]
+  },
+  {
+    "collectionGroup": "Application",
+    "queryScope": "COLLECTION",
+    "fields": [
+      {
+        "fieldPath": "Kind",
+        "order": "ASCENDING",
+        "arrayConfig": ""
+      },
+      {
+        "fieldPath": "UpdatedAt",
+        "order": "DESCENDING",
+        "arrayConfig": ""
+      },
+      {
+        "fieldPath": "__name__",
+        "order": "DESCENDING",
+        "arrayConfig": ""
+      }
+    ]
+  },
+  {
+    "collectionGroup": "Application",
+    "queryScope": "COLLECTION",
+    "fields": [
+      {
+        "fieldPath": "SyncState.Status",
+        "order": "ASCENDING",
+        "arrayConfig": ""
+      },
+      {
+        "fieldPath": "UpdatedAt",
+        "order": "DESCENDING",
+        "arrayConfig": ""
+      },
+      {
+        "fieldPath": "__name__",
+        "order": "DESCENDING",
+        "arrayConfig": ""
+      }
+    ]
+  },
+  {
+    "collectionGroup": "Application",
+    "queryScope": "COLLECTION",
+    "fields": [
+      {
+        "fieldPath": "ProjectId",
+        "order": "ASCENDING",
+        "arrayConfig": ""
+      },
+      {
+        "fieldPath": "UpdatedAt",
+        "order": "DESCENDING",
+        "arrayConfig": ""
+      },
+      {
+        "fieldPath": "__name__",
+        "order": "DESCENDING",
+        "arrayConfig": ""
+      }
+    ]
+  },
+  {
+    "collectionGroup": "Command",
+    "queryScope": "COLLECTION",
+    "fields": [
+      {
+        "fieldPath": "Status",
+        "order": "ASCENDING",
+        "arrayConfig": ""
+      },
+      {
+        "fieldPath": "CreatedAt",
+        "order": "ASCENDING",
+        "arrayConfig": ""
+      },
+      {
+        "fieldPath": "__name__",
+        "order": "ASCENDING",
+        "arrayConfig": ""
+      }
+    ]
+  },
+  {
+    "collectionGroup": "Deployment",
+    "queryScope": "COLLECTION",
+    "fields": [
+      {
+        "fieldPath": "ApplicationId",
+        "order": "ASCENDING",
+        "arrayConfig": ""
+      },
+      {
+        "fieldPath": "UpdatedAt",
+        "order": "DESCENDING",
+        "arrayConfig": ""
+      },
+      {
+        "fieldPath": "__name__",
+        "order": "DESCENDING",
+        "arrayConfig": ""
+      }
+    ]
+  },
+  {
+    "collectionGroup": "Deployment",
+    "queryScope": "COLLECTION",
+    "fields": [
+      {
+        "fieldPath": "ProjectId",
+        "order": "ASCENDING",
+        "arrayConfig": ""
+      },
+      {
+        "fieldPath": "UpdatedAt",
+        "order": "DESCENDING",
+        "arrayConfig": ""
+      },
+      {
+        "fieldPath": "__name__",
+        "order": "DESCENDING",
+        "arrayConfig": ""
+      }
+    ]
+  },
+  {
+    "collectionGroup": "Deployment",
+    "queryScope": "COLLECTION",
+    "fields": [
+      {
+        "fieldPath": "EnvId",
+        "order": "ASCENDING",
+        "arrayConfig": ""
+      },
+      {
+        "fieldPath": "UpdatedAt",
+        "order": "DESCENDING",
+        "arrayConfig": ""
+      },
+      {
+        "fieldPath": "__name__",
+        "order": "DESCENDING",
+        "arrayConfig": ""
+      }
+    ]
+  },
+  {
+    "collectionGroup": "Deployment",
+    "queryScope": "COLLECTION",
+    "fields": [
+      {
+        "fieldPath": "Kind",
+        "order": "ASCENDING",
+        "arrayConfig": ""
+      },
+      {
+        "fieldPath": "UpdatedAt",
+        "order": "DESCENDING",
+        "arrayConfig": ""
+      },
+      {
+        "fieldPath": "__name__",
+        "order": "DESCENDING",
+        "arrayConfig": ""
+      }
+    ]
+  },
+  {
+    "collectionGroup": "Deployment",
+    "queryScope": "COLLECTION",
+    "fields": [
+      {
+        "fieldPath": "Status",
+        "order": "ASCENDING",
+        "arrayConfig": ""
+      },
+      {
+        "fieldPath": "UpdatedAt",
+        "order": "DESCENDING",
+        "arrayConfig": ""
+      },
+      {
+        "fieldPath": "__name__",
+        "order": "DESCENDING",
+        "arrayConfig": ""
+      }
+    ]
+  },
+  {
+    "collectionGroup": "Event",
+    "queryScope": "COLLECTION",
+    "fields": [
+      {
+        "fieldPath": "ProjectId",
+        "order": "ASCENDING",
+        "arrayConfig": ""
+      },
+      {
+        "fieldPath": "CreatedAt",
+        "order": "ASCENDING",
+        "arrayConfig": ""
+      },
+      {
+        "fieldPath": "__name__",
+        "order": "ASCENDING",
+        "arrayConfig": ""
+      }
+    ]
+  },
+  {
+    "collectionGroup": "Event",
+    "queryScope": "COLLECTION",
+    "fields": [
+      {
+        "fieldPath": "EventKey",
+        "order": "ASCENDING",
+        "arrayConfig": ""
+      },
+      {
+        "fieldPath": "Name",
+        "order": "ASCENDING",
+        "arrayConfig": ""
+      },
+      {
+        "fieldPath": "ProjectId",
+        "order": "ASCENDING",
+        "arrayConfig": ""
+      },
+      {
+        "fieldPath": "CreatedAt",
+        "order": "DESCENDING",
+        "arrayConfig": ""
+      },
+      {
+        "fieldPath": "__name__",
+        "order": "DESCENDING",
+        "arrayConfig": ""
+      }
+    ]
+  }
+]

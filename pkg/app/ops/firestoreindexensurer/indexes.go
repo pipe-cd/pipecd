@@ -17,15 +17,14 @@ package firestoreindexensurer
 import (
 	"encoding/json"
 	"fmt"
+	"sort"
+	"strings"
 )
 
-// indexes is a mapper for the indexes JSON file emitted by "firebase firestore:indexes".
-type indexes struct {
-	Indexes []index `json:"indexes"`
-}
-
+// index represents a Firestore composite index.
 type index struct {
 	CollectionGroup string  `json:"collectionGroup"`
+	QueryScope      string  `json:"queryScope"`
 	Fields          []field `json:"fields"`
 }
 
@@ -35,31 +34,82 @@ type field struct {
 	ArrayConfig string `json:"arrayConfig"`
 }
 
-func (i *indexes) validate() error {
-	for _, idx := range i.Indexes {
-		if idx.CollectionGroup == "" {
-			return fmt.Errorf("index must have a collectionGroup")
+func (idx *index) validate() error {
+	if idx.CollectionGroup == "" {
+		return fmt.Errorf("index must have a collection group")
+	}
+	if len(idx.Fields) == 0 {
+		return fmt.Errorf("index must have a field")
+	}
+	for _, f := range idx.Fields {
+		if f.FieldPath == "" {
+			return fmt.Errorf("field must have a fieldPath")
 		}
-		for _, f := range idx.Fields {
-			if f.FieldPath == "" {
-				return fmt.Errorf("field must have a fieldPath")
-			}
-			if f.Order == "" && f.ArrayConfig == "" {
-				return fmt.Errorf("field must have one of order or arrayConfig")
-			}
+		if f.Order == "" && f.ArrayConfig == "" {
+			return fmt.Errorf("field must have one of order or arrayConfig")
 		}
 	}
 	return nil
 }
 
+// id builds a unique string based on its fields.
+func (idx *index) id() string {
+	var b strings.Builder
+	b.WriteString(fmt.Sprintf("%s/%s", idx.CollectionGroup, idx.QueryScope))
+
+	fields := idx.Fields
+	sort.Slice(fields, func(i, j int) bool {
+		if fields[i].FieldPath != fields[j].FieldPath {
+			return fields[i].FieldPath < fields[j].FieldPath
+		}
+		if fields[i].Order != fields[j].Order {
+			return fields[i].Order < fields[j].Order
+		}
+		return fields[i].ArrayConfig < fields[j].ArrayConfig
+	})
+	for _, f := range fields {
+		b.WriteString(fmt.Sprintf("/field-path:%s", f.FieldPath))
+		if f.Order != "" {
+			b.WriteString(fmt.Sprintf("/order:%s", f.Order))
+		}
+		if f.ArrayConfig != "" {
+			b.WriteString(fmt.Sprintf("/array-config:%s", f.ArrayConfig))
+		}
+	}
+	return b.String()
+}
+
 // parseIndexes gives back indexes made of well-defined JSON file.
-func parseIndexes() (*indexes, error) {
-	var out indexes
+func parseIndexes() ([]index, error) {
+	var out []index
 	if err := json.Unmarshal(indexesJSON, &out); err != nil {
 		return nil, fmt.Errorf("failed to parse indexes list: %w", err)
 	}
-	if err := out.validate(); err != nil {
-		return nil, err
+	for _, i := range out {
+		if err := i.validate(); err != nil {
+			return nil, err
+		}
 	}
-	return &out, nil
+	return out, nil
+}
+
+// filterIndexes gives back a new slice excluding the given one.
+// TODO: Enable to extract indexes to be deleted
+func filterIndexes(indexes []index, excludes []index) []index {
+	if len(indexes) == 0 || len(excludes) == 0 {
+		return indexes
+	}
+
+	blackList := make(map[string]struct{}, len(excludes))
+	for _, e := range excludes {
+		blackList[e.id()] = struct{}{}
+	}
+
+	filtered := make([]index, 0, len(indexes))
+	for _, idx := range indexes {
+		if _, ok := blackList[idx.id()]; !ok {
+			filtered = append(filtered, idx)
+		}
+	}
+	return filtered
 }
