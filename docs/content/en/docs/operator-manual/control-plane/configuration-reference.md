@@ -43,8 +43,9 @@ Must be one of the following objects:
 |-|-|-|-|
 | namespace | string | The root path element considered as a logical namespace, e.g. `pipecd`. | Yes |
 | environment | string | The second path element considered as a logical environment, e.g. `dev`. All pipecd collections will have path formatted according to `{namespace}/{environment}/{collection-name}`. | Yes |
-| project | string | The name of GCP project hosting the firestore. | Yes |
-| credentialsFile | string | The path to the service account file for accessing firestores. | No |
+| collectionNamePrefix | string | The prefix for collection name. This can be used to avoid conflicts with existing collections in your Firestore database. | No |
+| project | string | The name of GCP project hosting the Firestore. | Yes |
+| credentialsFile | string | The path to the service account file for accessing Firestores. | No |
 
 
 ### DataStoreDynamoDBConfig
