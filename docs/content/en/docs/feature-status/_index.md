@@ -63,6 +63,16 @@ Please note that the phases (Incubating, Alpha, Beta, and Stable) are applied to
 | [Automated Configuration Drift Detection](/docs/user-guide/configuration-drift-detection/) | Incubating |
 | [Application Live State](/docs/user-guide/application-live-state/) | Incubating |
 
+### Amazon ECS Deployment
+
+| Feature | Phase |
+|-|-|
+| Quick Sync Deployment | Incubating |
+| Deployment with the Specified Pipeline | Incubating |
+| Automated Rollback | Incubating |
+| [Automated Configuration Drift Detection](/docs/user-guide/configuration-drift-detection/) | Incubating |
+| [Application Live State](/docs/user-guide/application-live-state/) | Incubating |
+
 ### Piped's Core
 
 | Feature | Phase |
