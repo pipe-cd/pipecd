@@ -62,6 +62,8 @@ spec:
       credentialsFile: /etc/pipecd-secret/gcs-service-account
 ```
 
+PipeCD automatically creates needed Firestore composite indexes in the background. So you have to prepare the service account with not only `Cloud Datastore User` but `Cloud Datastore Index Admin` roles to perform this behavior.
+
 See [ConfigurationReference](/docs/operator-manual/control-plane/configuration-reference/) for the full configuration.
 
 After all, install the control-plane as bellow:
