@@ -233,9 +233,12 @@ type DataStoreFireStoreConfig struct {
 	// The second path element considered as a logical environment, e.g. `dev`.
 	// All pipecd collections will have path formatted according to `{namespace}/{environment}/{collection-name}`.
 	Environment string `json:"environment"`
-	// The name of GCP project hosting the firestore.
+	// The prefix for collection name.
+	// This can be used to avoid conflicts with existing collections in your Firestore database.
+	CollectionNamePrefix string `json:"collectionNamePrefix"`
+	// The name of GCP project hosting the Firestore.
 	Project string `json:"project"`
-	// The path to the service account file for accessing firestores.
+	// The path to the service account file for accessing Firestores.
 	CredentialsFile string `json:"credentialsFile"`
 }
 

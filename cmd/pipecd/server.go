@@ -403,6 +403,9 @@ func createDatastore(ctx context.Context, cfg *config.ControlPlaneSpec, logger *
 			firestore.WithCredentialsFile(fsConfig.CredentialsFile),
 			firestore.WithLogger(logger),
 		}
+		if p := fsConfig.CollectionNamePrefix; p != "" {
+			options = append(options, firestore.WithCollectionNamePrefix(p))
+		}
 		return firestore.NewFireStore(ctx, fsConfig.Project, fsConfig.Namespace, fsConfig.Environment, options...)
 
 	case model.DataStoreDynamoDB:
