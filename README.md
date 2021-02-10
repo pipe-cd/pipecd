@@ -53,3 +53,4 @@ We'd love you to join us! Please see the [Contributor Guide](https://pipecd.dev/
 ### License
 
 Apache License 2.0, see [LICENSE](https://github.com/pipe-cd/pipe/blob/master/LICENSE).
+
