@@ -111,7 +111,9 @@ func (s *ops) run(ctx context.Context, t cli.Telemetry) error {
 
 	// Starting a cron job for insight collector.
 	if s.enableInsightCollector {
-		collector := insightcollector.NewInsightCollector(ds, fs, t.Logger)
+		mode := insightcollector.NewCollectorMode()
+		mode.Set("CD")
+		collector := insightcollector.NewInsightCollector(ds, fs, t.Logger, mode)
 		c := cron.New(cron.WithLocation(time.UTC))
 		_, err := c.AddFunc(cfg.InsightCollector.Schedule, func() {
 			retry := backoff.NewRetry(cfg.InsightCollector.RetryTime, backoff.NewConstant(time.Duration(cfg.InsightCollector.RetryIntervalHour)*time.Hour))
