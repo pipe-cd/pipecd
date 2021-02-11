@@ -23,7 +23,10 @@ go_library(
 go_test(
     name = "go_default_test",
     size = "small",
-    srcs = ["deployments_test.go"],
+    srcs = [
+        "deployments_test.go",
+        "mode_test.go",
+    ],
     embed = [":go_default_library"],
     deps = [
         "//pkg/datastore:go_default_library",
