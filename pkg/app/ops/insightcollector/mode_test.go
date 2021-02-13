@@ -33,7 +33,7 @@ func TestCollectorMode_EnableChangeFailureRate(t *testing.T) {
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			got := tt.m.EnableChangeFailureRate()
+			got := tt.m.ChangeFailureRateEnabled()
 			assert.Equal(t, tt.want, got)
 		})
 	}
@@ -65,7 +65,7 @@ func TestCollectorMode_EnableDevelopmentFrequency(t *testing.T) {
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			got := tt.m.EnableDevelopmentFrequency()
+			got := tt.m.DevelopmentFrequencyEnabled()
 			assert.Equal(t, tt.want, got)
 		})
 	}
@@ -97,7 +97,7 @@ func TestCollectorMode_EnableApplicationCount(t *testing.T) {
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			got := tt.m.EnableApplicationCount()
+			got := tt.m.ApplicationCountEnabled()
 			assert.Equal(t, tt.want, got)
 		})
 	}

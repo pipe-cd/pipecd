@@ -37,13 +37,13 @@ func NewCollectorMode() CollectorMode {
 
 func (m CollectorMode) String() string {
 	var buf bytes.Buffer
-	if m&EnableChangeFailureRate != 0 {
+	if m.ChangeFailureRateEnabled() {
 		buf.WriteByte('C')
 	}
-	if m&EnableDevelopmentFrequency != 0 {
+	if m.DevelopmentFrequencyEnabled() {
 		buf.WriteByte('D')
 	}
-	if m&EnableApplicationCount != 0 {
+	if m.ApplicationCountEnabled() {
 		buf.WriteByte('A')
 	}
 	return buf.String()
@@ -65,12 +65,12 @@ func (m *CollectorMode) Set(s string) {
 	*m = mode
 }
 
-func (m CollectorMode) EnableChangeFailureRate() bool {
+func (m CollectorMode) ChangeFailureRateEnabled() bool {
 	return m&EnableChangeFailureRate != 0
 }
-func (m CollectorMode) EnableDevelopmentFrequency() bool {
+func (m CollectorMode) DevelopmentFrequencyEnabled() bool {
 	return m&EnableDevelopmentFrequency != 0
 }
-func (m CollectorMode) EnableApplicationCount() bool {
+func (m CollectorMode) ApplicationCountEnabled() bool {
 	return m&EnableApplicationCount != 0
 }
