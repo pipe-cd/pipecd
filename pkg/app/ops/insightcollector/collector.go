@@ -33,7 +33,7 @@ type InsightCollector struct {
 	projectStore     datastore.ProjectStore
 	applicationStore datastore.ApplicationStore
 	deploymentStore  datastore.DeploymentStore
-	insightstore     insightstore.Store
+	insightstore     insightstore.IStore
 
 	applicationsHandlers              []func(ctx context.Context, applications []*model.Application, target time.Time) error
 	newlyCreatedDeploymentsHandlers   []func(ctx context.Context, developments []*model.Deployment, target time.Time) error
@@ -44,11 +44,12 @@ type InsightCollector struct {
 
 // NewInsightCollector creates a new InsightCollector instance.
 func NewInsightCollector(ds datastore.DataStore, fs filestore.Store, metrics CollectorMetrics, logger *zap.Logger) *InsightCollector {
+	is := insightstore.NewStore(fs)
 	c := &InsightCollector{
 		projectStore:     datastore.NewProjectStore(ds),
 		applicationStore: datastore.NewApplicationStore(ds),
 		deploymentStore:  datastore.NewDeploymentStore(ds),
-		insightstore:     insightstore.NewStore(fs),
+		insightstore:     &is,
 		logger:           logger.Named("insight-collector"),
 	}
 	c.setHandlers(metrics)
@@ -160,12 +161,28 @@ func (c *InsightCollector) ProcessNewlyCompletedDeployments(ctx context.Context)
 	return nil
 }
 
-func (c *InsightCollector) ProcessApplications(_ context.Context) error {
+func (c *InsightCollector) ProcessApplications(ctx context.Context) error {
 	c.logger.Info("will retrieve all applications to build insight data")
 	if len(c.newlyCreatedDeploymentsHandlers) == 0 {
 		c.logger.Info("skip building insight data for applications because there is no configured handlers")
 		return nil
 	}
 
-	return errors.New("not implemented yet")
+	now := time.Now()
+	targetDate := time.Date(now.Year(), now.Month(), now.Day(), 0, 0, 0, 0, time.UTC)
+	apps, err := c.getApplications(ctx, targetDate)
+	if err != nil {
+		c.logger.Error("failed to get applications", zap.Error(err))
+		return err
+	}
+
+	var handleErr error
+	for _, handler := range c.applicationsHandlers {
+		if err := handler(ctx, apps, targetDate); err != nil {
+			c.logger.Error("failed to execute a handler for applications", zap.Error(err))
+			// In order to give all handlers the chance to handle the received data, we do not return here.
+			handleErr = err
+		}
+	}
+	return handleErr
 }

@@ -27,7 +27,7 @@ import (
 	"github.com/pipe-cd/pipe/pkg/model"
 )
 
-const listDeploymentsPageSize = 50
+const pageSize = 50
 
 func (c *InsightCollector) collectDeploymentChangeFailureRate(ctx context.Context, ds []*model.Deployment, target time.Time) error {
 	apps, projects := groupDeployments(ds)
@@ -82,7 +82,7 @@ func (c *InsightCollector) findDeploymentsCreatedInRange(ctx context.Context, fr
 	maxCreatedAt := to
 	for {
 		d, err := c.deploymentStore.ListDeployments(ctx, datastore.ListOptions{
-			PageSize: listDeploymentsPageSize,
+			PageSize: pageSize,
 			Filters: append(filters, datastore.ListFilter{
 				Field:    "CreatedAt",
 				Operator: "<",
@@ -122,7 +122,7 @@ func (c *InsightCollector) findDeploymentsCompletedInRange(ctx context.Context, 
 	maxCompletedAt := to
 	for {
 		d, err := c.deploymentStore.ListDeployments(ctx, datastore.ListOptions{
-			PageSize: listDeploymentsPageSize,
+			PageSize: pageSize,
 			Filters: append(filters, datastore.ListFilter{
 				Field:    "CompletedAt",
 				Operator: "<",

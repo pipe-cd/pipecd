@@ -5,6 +5,7 @@ go_library(
     srcs = [
         "applicationcountstore.go",
         "chunkstore.go",
+        "insightstore.go",
         "milestonestore.go",
     ],
     importpath = "github.com/pipe-cd/pipe/pkg/insight/insightstore",
