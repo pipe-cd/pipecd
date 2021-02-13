@@ -18,13 +18,12 @@ import (
 	"context"
 	"time"
 
-	"github.com/pipe-cd/pipe/pkg/model"
-
 	"go.uber.org/zap"
 
 	"github.com/pipe-cd/pipe/pkg/datastore"
 	"github.com/pipe-cd/pipe/pkg/filestore"
 	"github.com/pipe-cd/pipe/pkg/insight/insightstore"
+	"github.com/pipe-cd/pipe/pkg/model"
 )
 
 // InsightCollector implements the behaviors for the gRPC definitions of InsightCollector.
@@ -67,13 +66,13 @@ func NewInsightCollector(
 
 func (i *InsightCollector) setCollectFunctions(mode CollectorMode) {
 	cf := collectFunctions{}
-	if mode.EnableApplicationCount() {
+	if mode.ApplicationCountEnabled() {
 		cf.applicationCollectFns = append(cf.applicationCollectFns, i.collectApplicationCount)
 	}
-	if mode.EnableDevelopmentFrequency() {
+	if mode.DevelopmentFrequencyEnabled() {
 		cf.developmentCollectFns.newlyCreatedDeploymentsFns = append(cf.developmentCollectFns.newlyCreatedDeploymentsFns, i.collectDevelopmentFrequency)
 	}
-	if mode.EnableChangeFailureRate() {
+	if mode.ChangeFailureRateEnabled() {
 		cf.developmentCollectFns.newlyCompletedDeploymentsFns = append(cf.developmentCollectFns.newlyCompletedDeploymentsFns, i.collectChangeFailureRate)
 	}
 	i.collectFuncs = cf
