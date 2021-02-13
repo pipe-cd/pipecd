@@ -1,4 +1,4 @@
-// Copyright 2020 The PipeCD Authors.
+// Copyright 2021 The PipeCD Authors.
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -41,8 +41,9 @@ func (i *InsightCollector) ProcessNewlyCreatedDeployments(ctx context.Context) e
 	if err != nil {
 		if err == filestore.ErrNotFound {
 			m = &insight.Milestone{}
+		} else {
+			return err
 		}
-		return err
 	}
 
 	dc, err := i.findDeploymentsCreatedInRange(ctx, m.DeploymentCreatedAtMilestone, targetDate.Unix())
@@ -61,14 +62,12 @@ func (i *InsightCollector) ProcessNewlyCreatedDeployments(ctx context.Context) e
 		}
 	}
 
-	if updateErr == nil {
-		m.DeploymentCreatedAtMilestone = targetDate.Unix()
-		if err := i.insightstore.PutMilestone(ctx, m); err != nil {
-			return err
-		}
+	if updateErr != nil {
+		return updateErr
 	}
 
-	return updateErr
+	m.DeploymentCreatedAtMilestone = targetDate.Unix()
+	return i.insightstore.PutMilestone(ctx, m)
 }
 
 func (i *InsightCollector) ProcessNewlyCompletedDeployments(ctx context.Context) error {
@@ -78,8 +77,9 @@ func (i *InsightCollector) ProcessNewlyCompletedDeployments(ctx context.Context)
 	if err != nil {
 		if err == filestore.ErrNotFound {
 			m = &insight.Milestone{}
+		} else {
+			return err
 		}
-		return err
 	}
 
 	dc, err := i.findDeploymentsCompletedInRange(ctx, m.DeploymentCompletedAtMilestone, targetDate.Unix())
@@ -98,14 +98,12 @@ func (i *InsightCollector) ProcessNewlyCompletedDeployments(ctx context.Context)
 		}
 	}
 
-	if updateErr == nil {
-		m.DeploymentCompletedAtMilestone = targetDate.Unix()
-		if err := i.insightstore.PutMilestone(ctx, m); err != nil {
-			return err
-		}
+	if updateErr != nil {
+		return updateErr
 	}
 
-	return updateErr
+	m.DeploymentCompletedAtMilestone = targetDate.Unix()
+	return i.insightstore.PutMilestone(ctx, m)
 }
 
 func (i *InsightCollector) collectChangeFailureRate(ctx context.Context, ds []*model.Deployment, target time.Time) error {
