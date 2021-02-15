@@ -1,17 +1,14 @@
 import { ApplicationKind } from "pipe/pkg/app/web/model/common_pb";
-import {
-  Deployment,
-  DeploymentStatus,
-  PipelineStage,
-} from "../modules/deployments";
+import { Deployment, DeploymentStatus } from "../modules/deployments";
 import { createGitPathFromObject } from "./common";
 import { dummyApplication } from "./dummy-application";
 import { dummyEnv } from "./dummy-environment";
 import { dummyPiped } from "./dummy-piped";
-import { dummyStage } from "./dummy-stage";
+import { dummyPipeline } from "./dummy-pipeline";
 import { dummyTrigger, createTriggerFromObject } from "./dummy-trigger";
 import { createdRandTime, subtractRandTimeFrom } from "./utils";
 import faker from "faker";
+import { createPipelineFromObject } from "./dummy-pipeline";
 
 faker.seed(1);
 
@@ -26,7 +23,7 @@ export const dummyDeployment: Deployment.AsObject = {
   applicationName: dummyApplication.name,
   applicationId: dummyApplication.id,
   runningCommitHash: faker.random.uuid().slice(0, 8),
-  stagesList: [dummyStage],
+  stagesList: dummyPipeline,
   status: DeploymentStatus.DEPLOYMENT_SUCCESS,
   statusReason: "good",
   trigger: dummyTrigger,
@@ -52,12 +49,6 @@ export const dummyDeployment: Deployment.AsObject = {
   kind: ApplicationKind.KUBERNETES,
   metadataMap: [],
 };
-
-function createPipelineFromObject(
-  o: PipelineStage.AsObject[]
-): PipelineStage[] {
-  return [];
-}
 
 export function createDeploymentFromObject(o: Deployment.AsObject): Deployment {
   const deployment = new Deployment();

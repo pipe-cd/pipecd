@@ -6,6 +6,7 @@ import { projectHandlers } from "./services/project";
 import { pipedHandlers } from "./services/piped";
 import { environmentHandlers } from "./services/environment";
 import { liveStateHandlers } from "./services/live-state";
+import { stageLogHandlers } from "./services/stage-log";
 
 export const handlers = [
   ...meHandlers,
@@ -16,4 +17,5 @@ export const handlers = [
   ...pipedHandlers,
   ...environmentHandlers,
   ...liveStateHandlers,
+  ...stageLogHandlers,
 ];
