@@ -122,6 +122,7 @@ func (s *DynamoDB) Find(ctx context.Context, kind string, opts datastore.ListOpt
 			zap.String("kind", kind),
 			zap.Error(err),
 		)
+		return nil, err
 	}
 	input := &dynamodb.ScanInput{
 		ExpressionAttributeNames:  expr.Names(),
