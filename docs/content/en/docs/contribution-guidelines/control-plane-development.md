@@ -20,7 +20,7 @@ description: >
 Prepare a ControlPlane configuration file as described at [Installation](https://pipecd.dev/docs/operator-manual/control-plane/installation/) and start running by the following command:
 
 ``` console
-bazelisk run //cmd/server:server -- server \
+bazelisk run //cmd/pipecd -- server \
 --config-file=absolute-path-to-control-plane-config.yaml \
 --encryption-key-file=absolute-path-to-a-random-key-file
 ```
