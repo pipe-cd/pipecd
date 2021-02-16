@@ -12,6 +12,9 @@ files.forEach((file) => {
 
   fs.writeFileSync(
     `${OUTPUT_DIR}/${basename}`,
-    f.replace(/.*validate_pb.*/g, "").replace(/'.*pkg/g, "'pipe/pkg/app/web")
+    f
+      .replace(/.*validate_pb.*/g, "")
+      .replace(/'.*pkg/g, "'pipe/pkg/app/web")
+      .replace(/'.*\/model\//g, "'pipe/pkg/app/web/model/")
   );
 });
