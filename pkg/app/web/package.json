@@ -16,8 +16,8 @@
   },
   "devDependencies": {
     "@babel/core": "^7.12.9",
-    "@bazel/labs": "^1.6.1",
-    "@bazel/typescript": "^1.6.1",
+    "@bazel/labs": "^3.2.0",
+    "@bazel/typescript": "^3.2.0",
     "@storybook/addon-actions": "^6.1.16",
     "@storybook/addon-essentials": "^6.1.16",
     "@storybook/react": "^6.1.16",

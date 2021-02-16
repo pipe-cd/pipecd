@@ -1,6 +1,6 @@
 load("@npm//webpack-cli:index.bzl", webpack = "webpack_cli")
-load("@npm//typescript:index.bzl", "tsc")
-load("@npm_bazel_labs//:index.bzl", "ts_proto_library")
+load("@npm//@bazel/labs:index.bzl", "ts_proto_library")
+load("@npm//@bazel/typescript:index.bzl", "ts_project")
 load("@build_bazel_rules_nodejs//:index.bzl", "nodejs_binary")
 load(":jest.bzl", "jest_test")
 
@@ -37,18 +37,10 @@ genrule(
     tools = [":strip_imports"],
 )
 
-tsc(
+ts_project(
     name = "compile",
-    args = [
-        "--project",
-        "$(location :tsconfig.json)",
-        "--outDir",
-        "$(@D)",
-    ],
-    data = glob(
-        [
-            "src/**/*",
-        ],
+    srcs = glob(
+        ["src/**/*"],
         exclude = [
             "**/__mocks__/**",
             "**/__fixtures__/**",
@@ -59,10 +51,13 @@ tsc(
     ) + [
         ":build_api",
         ":build_model",
-        ":tsconfig.json",
-        "@npm//:node_modules",
     ],
-    output_dir = True,
+    allow_js = True,
+    tsconfig = ":tsconfig.json",
+    deps = [
+        "@npm//:node_modules",
+        "@npm//@types",
+    ],
 )
 
 genrule(
@@ -87,7 +82,7 @@ webpack(
         "$(execpath webpack.config.js)",
         "--html-template",
         "$(execpath base.html)",
-        "$(location compile)/index.js",
+        "$(BINDIR)/pkg/app/web/src/index.js",
         "--bazel-bin-path",
         "$(BINDIR)",
         "--output-path",

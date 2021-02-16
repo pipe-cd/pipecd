@@ -172,8 +172,8 @@ git_repository(
 
 http_archive(
     name = "build_bazel_rules_nodejs",
-    sha256 = "d14076339deb08e5460c221fae5c5e9605d2ef4848eee1f0c81c9ffdc1ab31c1",
-    urls = ["https://github.com/bazelbuild/rules_nodejs/releases/download/1.6.1/rules_nodejs-1.6.1.tar.gz"],
+    sha256 = "fcc6dccb39ca88d481224536eb8f9fa754619676c6163f87aa6af94059b02b12",
+    urls = ["https://github.com/bazelbuild/rules_nodejs/releases/download/3.2.0/rules_nodejs-3.2.0.tar.gz"],
 )
 
 load(
@@ -195,17 +195,9 @@ yarn_install(
     yarn_lock = "//pkg/app/web:yarn.lock",
 )
 
-load("@npm//:install_bazel_dependencies.bzl", "install_bazel_dependencies")
-
-install_bazel_dependencies()
-
-load("@npm_bazel_labs//:package.bzl", "npm_bazel_labs_dependencies")
+load("@npm//@bazel/labs:package.bzl", "npm_bazel_labs_dependencies")
 
 npm_bazel_labs_dependencies()
-
-load("@npm_bazel_typescript//:index.bzl", "ts_setup_workspace")
-
-ts_setup_workspace()
 
 # gazelle:repository_macro repositories.bzl%go_repositories
 
