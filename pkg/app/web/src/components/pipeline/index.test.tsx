@@ -21,8 +21,8 @@ it("should dispatch updateActiveState when first rendering", () => {
     {
       type: updateActiveStage.type,
       payload: {
-        name: dummyDeployment.stagesList[0].name,
-        stageId: dummyDeployment.stagesList[0].id,
+        name: dummyDeployment.stagesList[1].name,
+        stageId: dummyDeployment.stagesList[1].id,
         deploymentId: dummyDeployment.id,
       },
     },

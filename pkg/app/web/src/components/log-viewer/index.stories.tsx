@@ -3,7 +3,7 @@ import { LogViewer } from "./";
 import { createDecoratorRedux } from "../../../.storybook/redux-decorator";
 import { LogSeverity, createActiveStageKey } from "../../modules/stage-logs";
 import { dummyDeployment } from "../../__fixtures__/dummy-deployment";
-import { dummyStage } from "../../__fixtures__/dummy-stage";
+import { dummyPipelineStage } from "../../__fixtures__/dummy-pipeline";
 
 export default {
   title: "DEPLOYMENT/LogViewer",
@@ -12,7 +12,7 @@ export default {
     createDecoratorRedux({
       activeStage: {
         deploymentId: dummyDeployment.id,
-        stageId: dummyStage.id,
+        stageId: dummyPipelineStage.id,
         name: "active-log",
       },
       deployments: {
@@ -24,7 +24,7 @@ export default {
       stageLogs: {
         [createActiveStageKey({
           deploymentId: dummyDeployment.id,
-          stageId: dummyStage.id,
+          stageId: dummyPipelineStage.id,
         })]: {
           completed: true,
           deploymentId: dummyDeployment.id,
@@ -48,7 +48,7 @@ export default {
               severity: LogSeverity.INFO,
             },
           ],
-          stageId: dummyStage.id,
+          stageId: dummyPipelineStage.id,
         },
       },
     }),

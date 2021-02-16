@@ -1,15 +1,10 @@
 import React from "react";
 import { createDecoratorRedux } from "../../../.storybook/redux-decorator";
 import { Pipeline } from "./";
-import { Deployment, Stage } from "../../modules/deployments";
-import { dummyStage } from "../../__fixtures__/dummy-stage";
+import { Deployment } from "../../modules/deployments";
+import { createPipelineStage } from "../../__fixtures__/dummy-pipeline";
 import { METADATA_APPROVED_BY } from "../../constants/metadata-keys";
 import { SyncStrategy } from "pipe/pkg/app/web/model/deployment_pb";
-
-const stage = (props?: Partial<Stage>): Stage => ({
-  ...dummyStage,
-  ...props,
-});
 
 const DEPLOYMENT_ID = "debug-deployment-id-01";
 const fakeDeployment: Deployment.AsObject = {
@@ -52,14 +47,14 @@ const fakeDeployment: Deployment.AsObject = {
   status: 2,
   statusReason: "",
   stagesList: [
-    stage({ id: "fake-stage-id-0-0" }),
-    stage({
+    createPipelineStage({ id: "fake-stage-id-0-0" }),
+    createPipelineStage({
       index: 1,
       id: "fake-stage-id-1-0",
       requiresList: ["fake-stage-id-0-0"],
       status: 1,
     }),
-    stage({
+    createPipelineStage({
       id: "fake-stage-id-1-1",
       name: "WAIT_APPROVAL",
       index: 2,
@@ -67,21 +62,21 @@ const fakeDeployment: Deployment.AsObject = {
       status: 2,
       metadataMap: [[METADATA_APPROVED_BY, "User"]],
     }),
-    stage({
+    createPipelineStage({
       id: "fake-stage-id-1-2",
       name: "K8S_CANARY_ROLLOUT",
       index: 2,
       requiresList: ["fake-stage-id-0-0"],
       status: 3,
     }),
-    stage({
+    createPipelineStage({
       id: "fake-stage-id-1-3",
       name: "WAIT_APPROVAL",
       index: 2,
       requiresList: ["fake-stage-id-0-0"],
       status: 1,
     }),
-    stage({
+    createPipelineStage({
       id: "fake-stage-id-2-0",
       name: "K8S_TRAFFIC_ROUTING",
       desc: "waiting approval",
@@ -98,7 +93,7 @@ const fakeDeployment: Deployment.AsObject = {
         ["primary-percentage", "50"],
       ],
     }),
-    stage({
+    createPipelineStage({
       id: "fake-stage-id-2-1",
       name: "K8S_CANARY_CLEAN",
       desc: "approved by cakecatz",
@@ -110,7 +105,7 @@ const fakeDeployment: Deployment.AsObject = {
       ],
       status: 0,
     }),
-    stage({
+    createPipelineStage({
       id: "fake-stage-id-3-0",
       name: "K8S_CANARY_ROLLOUT",
       index: 0,
