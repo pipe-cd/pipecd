@@ -7,6 +7,7 @@ import { pipedHandlers } from "./services/piped";
 import { environmentHandlers } from "./services/environment";
 import { liveStateHandlers } from "./services/live-state";
 import { stageLogHandlers } from "./services/stage-log";
+import { apiKeyHandlers } from "./services/api-keys";
 
 export const handlers = [
   ...meHandlers,
@@ -18,4 +19,5 @@ export const handlers = [
   ...environmentHandlers,
   ...liveStateHandlers,
   ...stageLogHandlers,
+  ...apiKeyHandlers,
 ];

@@ -1,6 +1,9 @@
 import { SyncStrategy } from "pipe/pkg/app/web/model/deployment_pb";
 import { Command, CommandStatus } from "../modules/commands";
 import { dummyDeployment } from "./dummy-deployment";
+import { createRandTimes } from "./utils";
+
+const [createdAt, handledAt] = createRandTimes(3);
 
 export const dummyCommand: Command.AsObject = {
   id: "command-1",
@@ -11,14 +14,14 @@ export const dummyCommand: Command.AsObject = {
   commander: "user",
   status: CommandStatus.COMMAND_NOT_HANDLED_YET,
   metadataMap: [],
-  handledAt: 0,
   type: Command.Type.SYNC_APPLICATION,
   syncApplication: {
     applicationId: "app-1",
     syncStrategy: SyncStrategy.AUTO,
   },
-  createdAt: 0,
-  updatedAt: 0,
+  createdAt: createdAt.unix(),
+  updatedAt: handledAt.unix(),
+  handledAt: handledAt.unix(),
 };
 
 export const dummySyncSucceededCommand: Command.AsObject = {

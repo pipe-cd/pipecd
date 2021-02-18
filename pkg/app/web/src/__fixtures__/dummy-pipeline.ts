@@ -1,18 +1,13 @@
 import { PipelineStage, StageStatus } from "../modules/deployments";
 import * as jspb from "google-protobuf";
-import { createdRandTime, subtractRandTimeFrom } from "./utils";
-import faker from "faker";
+import { createRandTimes, randomUUID, randomWords } from "./utils";
 
-faker.seed(1);
-
-const completedAt = createdRandTime();
-const updatedAt = subtractRandTimeFrom(completedAt);
-const createdAt = subtractRandTimeFrom(updatedAt);
+const [createdAt, updatedAt, completedAt] = createRandTimes(3);
 
 export const dummyPipelineStage: PipelineStage.AsObject = {
-  id: faker.random.uuid(),
+  id: randomUUID(),
   name: "K8S_CANARY_ROLLOUT",
-  desc: "",
+  desc: randomWords(8),
   index: 0,
   predefined: true,
   requiresList: [],
@@ -30,7 +25,7 @@ export function createPipelineStage(
   pipeline: Partial<PipelineStage.AsObject>
 ): PipelineStage.AsObject {
   return Object.assign({}, dummyPipelineStage, pipeline, {
-    id: faker.random.uuid(),
+    id: randomUUID(),
   });
 }
 

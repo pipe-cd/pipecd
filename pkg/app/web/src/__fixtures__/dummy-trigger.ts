@@ -3,10 +3,9 @@ import {
   SyncStrategy,
   Commit,
 } from "pipe/pkg/app/web/model/deployment_pb";
-import { createdRandTime } from "./utils";
-import faker from "faker";
+import { createRandTime, randomUUID } from "./utils";
 
-const commitTimestamp = createdRandTime();
+const commitTimestamp = createRandTime();
 
 export const dummyTrigger: DeploymentTrigger.AsObject = {
   commander: "user",
@@ -15,7 +14,7 @@ export const dummyTrigger: DeploymentTrigger.AsObject = {
     author: "pipecd-user",
     branch: "feat/awesome-feature",
     createdAt: 1,
-    hash: faker.random.uuid().slice(0, 8),
+    hash: randomUUID().slice(0, 8),
     message: "fix",
     pullRequest: 123,
     url: "",
