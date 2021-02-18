@@ -193,7 +193,7 @@ func (c *client) UpdateFunction(ctx context.Context, fm FunctionManifest) error 
 				Variables: aws.StringMap(fm.Spec.Environments),
 			},
 		}
-		_, err := c.client.UpdateFunctionConfigurationWithContext(ctx, configInput)
+		_, err = c.client.UpdateFunctionConfigurationWithContext(ctx, configInput)
 		if err != nil {
 			c.logger.Error("Failed to update function configuration")
 		} else {
