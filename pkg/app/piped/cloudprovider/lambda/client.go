@@ -19,6 +19,7 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
+	"reflect"
 	"time"
 
 	"github.com/aws/aws-sdk-go/aws"
@@ -159,6 +160,7 @@ func (c *client) CreateFunction(ctx context.Context, fm FunctionManifest) error 
 }
 
 func (c *client) UpdateFunction(ctx context.Context, fm FunctionManifest) error {
+	// Update function code.
 	codeInput := &lambda.UpdateFunctionCodeInput{
 		FunctionName: aws.String(fm.Spec.Name),
 		ImageUri:     aws.String(fm.Spec.ImageURI),
@@ -182,6 +184,7 @@ func (c *client) UpdateFunction(ctx context.Context, fm FunctionManifest) error 
 		return fmt.Errorf("unknown error given: %w", err)
 	}
 
+	// Update function configuration.
 	retry := backoff.NewRetry(RequestRetryTime, backoff.NewConstant(RetryIntervalDuration))
 	updateFunctionConfigurationSucceed := false
 	for retry.WaitNext(ctx) {
@@ -205,7 +208,8 @@ func (c *client) UpdateFunction(ctx context.Context, fm FunctionManifest) error 
 		return fmt.Errorf("failed to update configuration for Lambda function %s: %w", fm.Spec.Name, err)
 	}
 
-	return nil
+	// Tag/Untag function if necessary.
+	return c.updateTagsConfig(ctx, fm)
 }
 
 func (c *client) PublishFunction(ctx context.Context, fm FunctionManifest) (version string, err error) {
@@ -402,6 +406,100 @@ func (c *client) UpdateTrafficConfig(ctx context.Context, fm FunctionManifest, r
 		}
 		return fmt.Errorf("unknown error given: %w", err)
 	}
+	return nil
+}
+
+func (c *client) updateTagsConfig(ctx context.Context, fm FunctionManifest) error {
+	getFuncInput := &lambda.GetFunctionInput{
+		FunctionName: aws.String(fm.Spec.Name),
+	}
+	output, err := c.client.GetFunctionWithContext(ctx, getFuncInput)
+	if err != nil {
+		if aerr, ok := err.(awserr.Error); ok {
+			switch aerr.Code() {
+			case lambda.ErrCodeInvalidParameterValueException:
+				return fmt.Errorf("invalid parameter given: %w", err)
+			case lambda.ErrCodeServiceException:
+				return fmt.Errorf("aws lambda service encountered an internal error: %w", err)
+			case lambda.ErrCodeTooManyRequestsException:
+				return fmt.Errorf("request throughput limit was exceeded: %w", err)
+			case lambda.ErrCodeResourceNotFoundException:
+				return fmt.Errorf("resource not found: %w", err)
+			}
+		}
+		return fmt.Errorf("unknown error occurred on list tags of Lambda function %s: %w", fm.Spec.Name, err)
+	}
+
+	functionArn := aws.StringValue(output.Configuration.FunctionArn)
+	currentTags := aws.StringValueMap(output.Tags)
+	// Skip if there are no changes on tags.
+	if reflect.DeepEqual(currentTags, fm.Spec.Tags) {
+		return nil
+	}
+
+	// Skip untag resource if remote resource has no tags.
+	if len(output.Tags) == 0 {
+		goto Tags
+	}
+
+	{ // Untag previous tags from the current resource.
+		tagsKeys := make([]string, 0, len(currentTags))
+		for k := range currentTags {
+			tagsKeys = append(tagsKeys, k)
+		}
+		untagInput := &lambda.UntagResourceInput{
+			Resource: aws.String(functionArn),
+			TagKeys:  aws.StringSlice(tagsKeys),
+		}
+		_, err = c.client.UntagResourceWithContext(ctx, untagInput)
+		if err != nil {
+			if aerr, ok := err.(awserr.Error); ok {
+				switch aerr.Code() {
+				case lambda.ErrCodeInvalidParameterValueException:
+					return fmt.Errorf("invalid parameter given: %w", err)
+				case lambda.ErrCodeServiceException:
+					return fmt.Errorf("aws lambda service encountered an internal error: %w", err)
+				case lambda.ErrCodeTooManyRequestsException:
+					return fmt.Errorf("request throughput limit was exceeded: %w", err)
+				case lambda.ErrCodeResourceNotFoundException:
+					return fmt.Errorf("resource not found: %w", err)
+				case lambda.ErrCodeResourceConflictException:
+					return fmt.Errorf("resource already existed or in progress: %w", err)
+				}
+			}
+			return fmt.Errorf("unknown error occurred on untags for Lambda function %s: %w", fm.Spec.Name, err)
+		}
+	}
+
+Tags:
+	// Skip add empty tags to remote Lambda function.
+	if len(fm.Spec.Tags) == 0 {
+		return nil
+	}
+
+	// Tag resource with the news tags.
+	retry := backoff.NewRetry(RequestRetryTime, backoff.NewConstant(RetryIntervalDuration))
+	tagResourceSucceed := false
+	for retry.WaitNext(ctx) {
+		tagInput := &lambda.TagResourceInput{
+			Resource: aws.String(functionArn),
+			Tags:     aws.StringMap(fm.Spec.Tags),
+		}
+		_, err = c.client.TagResourceWithContext(ctx, tagInput)
+		if err != nil {
+			c.logger.Error("Failed to add tags to resource",
+				zap.String("name", fm.Spec.Name),
+				zap.Error(err),
+			)
+		} else {
+			tagResourceSucceed = true
+			break
+		}
+	}
+	if !tagResourceSucceed {
+		return fmt.Errorf("failed to add tags for Lambda function %s: %w", fm.Spec.Name, err)
+	}
+
 	return nil
 }
 
