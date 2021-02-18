@@ -94,7 +94,7 @@ We value every contribution and invite you to join us on GitHub, Slack and Twitt
 
 - Visit our website and documentation at [https://pipecd.dev](https://pipecd.dev)
 - Check out the code at [https://github.com/pipe-cd/pipe](https://github.com/pipe-cd/pipe) or explore the [examples](https://pipecd.dev/docs/examples/)
-- Join us on Slack [@cloud-native/pipecd](https://join.slack.com/t/cloud-native/shared_invite/zt-fyy3b8up-qHeDNVqbz1j8HDY6g1cY4w) to chat with other developers
+- Join us on Slack [@cloud-native/pipecd](https://slack.cncf.io) to chat with other developers
 - Follow us on Twitter [@pipecd_dev](https://twitter.com/pipecd_dev) to get the latest news
 
 PipeCD team is hiring engineers/interns to work on PipeCD. Please contact us if you are interested.
