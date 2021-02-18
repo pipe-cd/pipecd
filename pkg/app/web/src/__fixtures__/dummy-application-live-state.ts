@@ -10,14 +10,11 @@ import {
 } from "../modules/applications-live-state";
 import { dummyApplication } from "./dummy-application";
 import { dummyEnv } from "./dummy-environment";
-import faker from "faker";
 import { dummyPiped } from "./dummy-piped";
+import { createRandTimes, randomUUID } from "./utils";
 
-const resourceIds = [
-  faker.random.uuid(),
-  faker.random.uuid(),
-  faker.random.uuid(),
-];
+const resourceIds = [randomUUID(), randomUUID(), randomUUID()];
+const resourceTimes = createRandTimes(3);
 
 export const resourcesList: KubernetesResourceState.AsObject[] = [
   {
@@ -30,8 +27,8 @@ export const resourcesList: KubernetesResourceState.AsObject[] = [
     namespace: "default",
     healthStatus: KubernetesResourceState.HealthStatus.HEALTHY,
     healthDescription: "",
-    createdAt: 1592472088,
-    updatedAt: 1592472088,
+    createdAt: resourceTimes[0].unix(),
+    updatedAt: resourceTimes[0].unix(),
   },
   {
     id: resourceIds[1],
@@ -43,8 +40,8 @@ export const resourcesList: KubernetesResourceState.AsObject[] = [
     namespace: "default",
     healthStatus: KubernetesResourceState.HealthStatus.HEALTHY,
     healthDescription: "",
-    createdAt: 1592472088,
-    updatedAt: 1592472088,
+    createdAt: resourceTimes[1].unix(),
+    updatedAt: resourceTimes[1].unix(),
   },
   {
     id: "f55c7891-ba25-44bb-bca4-ffbc16b0089f",
@@ -56,8 +53,8 @@ export const resourcesList: KubernetesResourceState.AsObject[] = [
     namespace: "default",
     healthStatus: KubernetesResourceState.HealthStatus.OTHER,
     healthDescription: "",
-    createdAt: 1592472088,
-    updatedAt: 1592472088,
+    createdAt: resourceTimes[2].unix(),
+    updatedAt: resourceTimes[2].unix(),
   },
 ];
 

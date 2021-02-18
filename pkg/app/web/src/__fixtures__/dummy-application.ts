@@ -1,4 +1,3 @@
-import faker from "faker";
 import { ApplicationKind } from "pipe/pkg/app/web/model/common_pb";
 import {
   Application,
@@ -11,7 +10,7 @@ import { dummyEnv } from "./dummy-environment";
 import { dummyPiped } from "./dummy-piped";
 import { dummyRepo } from "./dummy-repo";
 import { createTriggerFromObject, dummyTrigger } from "./dummy-trigger";
-import { createdRandTime, subtractRandTimeFrom } from "./utils";
+import { createRandTimes, randomUUID } from "./utils";
 
 export const dummyApplicationSyncState: ApplicationSyncState.AsObject = {
   headDeploymentId: "deployment-1",
@@ -21,12 +20,10 @@ export const dummyApplicationSyncState: ApplicationSyncState.AsObject = {
   timestamp: 0,
 };
 
-const updatedAt = createdRandTime();
-const startedAt = subtractRandTimeFrom(updatedAt);
-const createdAt = subtractRandTimeFrom(updatedAt);
+const [createdAt, startedAt, updatedAt] = createRandTimes(3);
 
 export const dummyApplication: Application.AsObject = {
-  id: faker.random.uuid(),
+  id: randomUUID(),
   cloudProvider: "kubernetes-default",
   disabled: false,
   envId: dummyEnv.id,

@@ -1,14 +1,9 @@
 import { Piped } from "../modules/pipeds";
 import { dummyEnv } from "./dummy-environment";
 import { createApplicationGitRepository, dummyRepo } from "./dummy-repo";
-import faker from "faker";
-import { createdRandTime, subtractRandTimeFrom } from "./utils";
+import { createRandTimes, randomText, randomUUID } from "./utils";
 
-faker.seed(1);
-
-const updatedAt = createdRandTime();
-const startedAt = subtractRandTimeFrom(updatedAt);
-const createdAt = subtractRandTimeFrom(startedAt);
+const [createdAt, startedAt, updatedAt] = createRandTimes(3);
 
 export const dummyPiped: Piped.AsObject = {
   cloudProvidersList: [
@@ -22,9 +17,9 @@ export const dummyPiped: Piped.AsObject = {
       type: "TERRAFORM",
     },
   ],
-  desc: faker.lorem.text(1),
+  desc: randomText(1),
   disabled: false,
-  id: faker.random.uuid(),
+  id: randomUUID(),
   name: "dummy-piped",
   projectId: "project-1",
   repositoriesList: [dummyRepo],
