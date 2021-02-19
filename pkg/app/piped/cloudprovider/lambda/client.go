@@ -440,24 +440,7 @@ func (c *client) updateTagsConfig(ctx context.Context, fm FunctionManifest) erro
 		return nil
 	}
 
-	newDefinedTags := make(map[string]string)
-	updatedTags := make(map[string]string)
-	removedTags := make(map[string]string)
-	for k, v := range fm.Spec.Tags {
-		val, ok := currentTags[k]
-		if !ok {
-			newDefinedTags[k] = v
-		}
-		if val != v {
-			updatedTags[k] = v
-		}
-	}
-	for k, v := range currentTags {
-		_, ok := fm.Spec.Tags[k]
-		if !ok {
-			removedTags[k] = v
-		}
-	}
+	newDefinedTags, updatedTags, removedTags := makeFlowControlTagsMaps(currentTags, fm.Spec.Tags)
 
 	if len(newDefinedTags) > 0 {
 		if err := c.tagFunction(ctx, functionArn, newDefinedTags); err != nil {
@@ -488,24 +471,23 @@ func (c *client) tagFunction(ctx context.Context, functionArn string, tags map[s
 		Resource: aws.String(functionArn),
 		Tags:     aws.StringMap(tags),
 	}
-
-	retry := backoff.NewRetry(RequestRetryTime, backoff.NewConstant(RetryIntervalDuration))
-	tagResourceSucceed := false
-	var err error
-	for retry.WaitNext(ctx) {
-		_, err = c.client.TagResourceWithContext(ctx, tagInput)
-		if err != nil {
-			c.logger.Error("Failed to add tags to resource",
-				zap.String("name", functionArn),
-				zap.Error(err),
-			)
-		} else {
-			tagResourceSucceed = true
-			break
+	_, err := c.client.TagResourceWithContext(ctx, tagInput)
+	if err != nil {
+		if aerr, ok := err.(awserr.Error); ok {
+			switch aerr.Code() {
+			case lambda.ErrCodeInvalidParameterValueException:
+				return fmt.Errorf("invalid parameter given: %w", err)
+			case lambda.ErrCodeServiceException:
+				return fmt.Errorf("aws lambda service encountered an internal error: %w", err)
+			case lambda.ErrCodeTooManyRequestsException:
+				return fmt.Errorf("request throughput limit was exceeded: %w", err)
+			case lambda.ErrCodeResourceNotFoundException:
+				return fmt.Errorf("resource not found: %w", err)
+			case lambda.ErrCodeResourceConflictException:
+				return fmt.Errorf("resource already existed or in progress: %w", err)
+			}
 		}
-	}
-	if !tagResourceSucceed {
-		return fmt.Errorf("tags failed: %w", err)
+		return fmt.Errorf("unknown error given: %w", err)
 	}
 
 	return nil
@@ -520,27 +502,49 @@ func (c *client) untagFunction(ctx context.Context, functionArn string, tags map
 		Resource: aws.String(functionArn),
 		TagKeys:  aws.StringSlice(tagsKeys),
 	}
-
-	retry := backoff.NewRetry(RequestRetryTime, backoff.NewConstant(RetryIntervalDuration))
-	untagResourceSucceed := false
-	var err error
-	for retry.WaitNext(ctx) {
-		_, err = c.client.UntagResourceWithContext(ctx, untagInput)
-		if err != nil {
-			c.logger.Error("Failed to remove tags to resource",
-				zap.String("name", functionArn),
-				zap.Error(err),
-			)
-		} else {
-			untagResourceSucceed = true
-			break
+	_, err := c.client.UntagResourceWithContext(ctx, untagInput)
+	if err != nil {
+		if aerr, ok := err.(awserr.Error); ok {
+			switch aerr.Code() {
+			case lambda.ErrCodeInvalidParameterValueException:
+				return fmt.Errorf("invalid parameter given: %w", err)
+			case lambda.ErrCodeServiceException:
+				return fmt.Errorf("aws lambda service encountered an internal error: %w", err)
+			case lambda.ErrCodeTooManyRequestsException:
+				return fmt.Errorf("request throughput limit was exceeded: %w", err)
+			case lambda.ErrCodeResourceNotFoundException:
+				return fmt.Errorf("resource not found: %w", err)
+			case lambda.ErrCodeResourceConflictException:
+				return fmt.Errorf("resource already existed or in progress: %w", err)
+			}
 		}
-	}
-	if !untagResourceSucceed {
-		return fmt.Errorf("untags failed: %w", err)
+		return fmt.Errorf("unknown error given: %w", err)
 	}
 
 	return nil
+}
+
+func makeFlowControlTagsMaps(remoteTags, definedTags map[string]string) (newDefinedTags, updatedTags, removedTags map[string]string) {
+	newDefinedTags = make(map[string]string)
+	updatedTags = make(map[string]string)
+	removedTags = make(map[string]string)
+	for k, v := range definedTags {
+		val, ok := remoteTags[k]
+		if !ok {
+			newDefinedTags[k] = v
+			break
+		}
+		if val != v {
+			updatedTags[k] = v
+		}
+	}
+	for k, v := range remoteTags {
+		_, ok := definedTags[k]
+		if !ok {
+			removedTags[k] = v
+		}
+	}
+	return
 }
 
 func precentToPercentage(in float64) float64 {
