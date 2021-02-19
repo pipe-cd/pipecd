@@ -150,7 +150,13 @@ func (s *ops) run(ctx context.Context, t cli.Telemetry) error {
 
 	if cfg.Datastore.Type == model.DataStoreFirestore {
 		// Create needed composite indexes for Firestore.
-		ensurer := firestoreindexensurer.NewIndexEnsurer(s.gcloudPath, cfg.Datastore.FirestoreConfig.Project, cfg.Datastore.FirestoreConfig.CredentialsFile, t.Logger)
+		ensurer := firestoreindexensurer.NewIndexEnsurer(
+			s.gcloudPath,
+			cfg.Datastore.FirestoreConfig.Project,
+			cfg.Datastore.FirestoreConfig.CredentialsFile,
+			cfg.Datastore.FirestoreConfig.CollectionNamePrefix,
+			t.Logger,
+		)
 		group.Go(func() error {
 			return ensurer.CreateIndexes(ctx)
 		})

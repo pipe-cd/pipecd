@@ -35,14 +35,16 @@ type firestoreClient interface {
 
 type indexEnsurer struct {
 	firestoreClient
-	logger *zap.Logger
+	collectionNamePrefix string
+	logger               *zap.Logger
 }
 
-func NewIndexEnsurer(gcloudPath, projectID, serviceAcccountFile string, logger *zap.Logger) IndexEnsurer {
+func NewIndexEnsurer(gcloudPath, projectID, serviceAcccountFile, colPrefix string, logger *zap.Logger) IndexEnsurer {
 	return &indexEnsurer{
 		// TODO: Use Go SDK to create Firebase indexes upon it will be started providing
-		firestoreClient: newGcloud(gcloudPath, projectID, serviceAcccountFile, logger),
-		logger:          logger.Named("firestore-index-ensurer"),
+		firestoreClient:      newGcloud(gcloudPath, projectID, serviceAcccountFile, logger),
+		collectionNamePrefix: colPrefix,
+		logger:               logger.Named("firestore-index-ensurer"),
 	}
 }
 
@@ -57,10 +59,16 @@ func (e *indexEnsurer) CreateIndexes(ctx context.Context) error {
 	if err != nil {
 		return err
 	}
+
+	if p := e.collectionNamePrefix; p != "" {
+		prefixIndexes(indexes, p)
+	}
+
 	exists, err := e.listIndexes(ctx)
 	if err != nil {
 		return err
 	}
+
 	filtered := filterIndexes(indexes, exists)
 	if len(filtered) == 0 {
 		return nil
