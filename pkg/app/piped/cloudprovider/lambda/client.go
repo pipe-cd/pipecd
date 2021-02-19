@@ -19,6 +19,7 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
+	"reflect"
 	"time"
 
 	"github.com/aws/aws-sdk-go/aws"
@@ -162,6 +163,7 @@ func (c *client) CreateFunction(ctx context.Context, fm FunctionManifest) error 
 }
 
 func (c *client) UpdateFunction(ctx context.Context, fm FunctionManifest) error {
+	// Update function code.
 	codeInput := &lambda.UpdateFunctionCodeInput{
 		FunctionName: aws.String(fm.Spec.Name),
 		ImageUri:     aws.String(fm.Spec.ImageURI),
@@ -185,6 +187,7 @@ func (c *client) UpdateFunction(ctx context.Context, fm FunctionManifest) error 
 		return fmt.Errorf("unknown error given: %w", err)
 	}
 
+	// Update function configuration.
 	retry := backoff.NewRetry(RequestRetryTime, backoff.NewConstant(RetryIntervalDuration))
 	updateFunctionConfigurationSucceed := false
 	for retry.WaitNext(ctx) {
@@ -208,7 +211,8 @@ func (c *client) UpdateFunction(ctx context.Context, fm FunctionManifest) error 
 		return fmt.Errorf("failed to update configuration for Lambda function %s: %w", fm.Spec.Name, err)
 	}
 
-	return nil
+	// Tag/Untag function if necessary.
+	return c.updateTagsConfig(ctx, fm)
 }
 
 func (c *client) PublishFunction(ctx context.Context, fm FunctionManifest) (version string, err error) {
@@ -406,6 +410,141 @@ func (c *client) UpdateTrafficConfig(ctx context.Context, fm FunctionManifest, r
 		return fmt.Errorf("unknown error given: %w", err)
 	}
 	return nil
+}
+
+func (c *client) updateTagsConfig(ctx context.Context, fm FunctionManifest) error {
+	getFuncInput := &lambda.GetFunctionInput{
+		FunctionName: aws.String(fm.Spec.Name),
+	}
+	output, err := c.client.GetFunctionWithContext(ctx, getFuncInput)
+	if err != nil {
+		if aerr, ok := err.(awserr.Error); ok {
+			switch aerr.Code() {
+			case lambda.ErrCodeInvalidParameterValueException:
+				return fmt.Errorf("invalid parameter given: %w", err)
+			case lambda.ErrCodeServiceException:
+				return fmt.Errorf("aws lambda service encountered an internal error: %w", err)
+			case lambda.ErrCodeTooManyRequestsException:
+				return fmt.Errorf("request throughput limit was exceeded: %w", err)
+			case lambda.ErrCodeResourceNotFoundException:
+				return fmt.Errorf("resource not found: %w", err)
+			}
+		}
+		return fmt.Errorf("unknown error occurred on list tags of Lambda function %s: %w", fm.Spec.Name, err)
+	}
+
+	functionArn := aws.StringValue(output.Configuration.FunctionArn)
+	currentTags := aws.StringValueMap(output.Tags)
+	// Skip if there are no changes on tags.
+	if reflect.DeepEqual(currentTags, fm.Spec.Tags) {
+		return nil
+	}
+
+	newDefinedTags, updatedTags, removedTags := makeFlowControlTagsMaps(currentTags, fm.Spec.Tags)
+
+	if len(newDefinedTags) > 0 {
+		if err := c.tagFunction(ctx, functionArn, newDefinedTags); err != nil {
+			return fmt.Errorf("failed on add new defined tags to Lambda function %s: %w", fm.Spec.Name, err)
+		}
+	}
+
+	if len(updatedTags) > 0 {
+		if err := c.untagFunction(ctx, functionArn, updatedTags); err != nil {
+			return fmt.Errorf("failed on update changed tags to Lambda function %s: %w", fm.Spec.Name, err)
+		}
+		if err := c.tagFunction(ctx, functionArn, updatedTags); err != nil {
+			return fmt.Errorf("failed on update changed tags to Lambda function %s: %w", fm.Spec.Name, err)
+		}
+	}
+
+	if len(removedTags) > 0 {
+		if err := c.untagFunction(ctx, functionArn, removedTags); err != nil {
+			return fmt.Errorf("failed on remove tags for Lambda function %s: %w", fm.Spec.Name, err)
+		}
+	}
+
+	return nil
+}
+
+func (c *client) tagFunction(ctx context.Context, functionArn string, tags map[string]string) error {
+	tagInput := &lambda.TagResourceInput{
+		Resource: aws.String(functionArn),
+		Tags:     aws.StringMap(tags),
+	}
+	_, err := c.client.TagResourceWithContext(ctx, tagInput)
+	if err != nil {
+		if aerr, ok := err.(awserr.Error); ok {
+			switch aerr.Code() {
+			case lambda.ErrCodeInvalidParameterValueException:
+				return fmt.Errorf("invalid parameter given: %w", err)
+			case lambda.ErrCodeServiceException:
+				return fmt.Errorf("aws lambda service encountered an internal error: %w", err)
+			case lambda.ErrCodeTooManyRequestsException:
+				return fmt.Errorf("request throughput limit was exceeded: %w", err)
+			case lambda.ErrCodeResourceNotFoundException:
+				return fmt.Errorf("resource not found: %w", err)
+			case lambda.ErrCodeResourceConflictException:
+				return fmt.Errorf("resource already existed or in progress: %w", err)
+			}
+		}
+		return fmt.Errorf("unknown error given: %w", err)
+	}
+
+	return nil
+}
+
+func (c *client) untagFunction(ctx context.Context, functionArn string, tags map[string]string) error {
+	tagsKeys := make([]string, 0, len(tags))
+	for k := range tags {
+		tagsKeys = append(tagsKeys, k)
+	}
+	untagInput := &lambda.UntagResourceInput{
+		Resource: aws.String(functionArn),
+		TagKeys:  aws.StringSlice(tagsKeys),
+	}
+	_, err := c.client.UntagResourceWithContext(ctx, untagInput)
+	if err != nil {
+		if aerr, ok := err.(awserr.Error); ok {
+			switch aerr.Code() {
+			case lambda.ErrCodeInvalidParameterValueException:
+				return fmt.Errorf("invalid parameter given: %w", err)
+			case lambda.ErrCodeServiceException:
+				return fmt.Errorf("aws lambda service encountered an internal error: %w", err)
+			case lambda.ErrCodeTooManyRequestsException:
+				return fmt.Errorf("request throughput limit was exceeded: %w", err)
+			case lambda.ErrCodeResourceNotFoundException:
+				return fmt.Errorf("resource not found: %w", err)
+			case lambda.ErrCodeResourceConflictException:
+				return fmt.Errorf("resource already existed or in progress: %w", err)
+			}
+		}
+		return fmt.Errorf("unknown error given: %w", err)
+	}
+
+	return nil
+}
+
+func makeFlowControlTagsMaps(remoteTags, definedTags map[string]string) (newDefinedTags, updatedTags, removedTags map[string]string) {
+	newDefinedTags = make(map[string]string)
+	updatedTags = make(map[string]string)
+	removedTags = make(map[string]string)
+	for k, v := range definedTags {
+		val, ok := remoteTags[k]
+		if !ok {
+			newDefinedTags[k] = v
+			break
+		}
+		if val != v {
+			updatedTags[k] = v
+		}
+	}
+	for k, v := range remoteTags {
+		_, ok := definedTags[k]
+		if !ok {
+			removedTags[k] = v
+		}
+	}
+	return
 }
 
 func precentToPercentage(in float64) float64 {
