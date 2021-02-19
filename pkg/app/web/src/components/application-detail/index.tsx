@@ -156,7 +156,7 @@ export const ApplicationDetail: FC<ApplicationDetailProps> = memo(
       state.applications.fetchApplicationError,
     ]);
 
-    const [pipe, env] = useSelector<
+    const [env, pipe] = useSelector<
       AppState,
       [Environment.AsObject | undefined, Piped.AsObject | undefined]
     >((state) => [
