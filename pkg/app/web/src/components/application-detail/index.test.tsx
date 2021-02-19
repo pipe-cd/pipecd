@@ -89,6 +89,8 @@ describe("ApplicationDetail", () => {
     );
 
     expect(screen.getByText(dummyApplication.name)).toBeInTheDocument();
+    expect(screen.getByText(dummyPiped.name)).toBeInTheDocument();
+    expect(screen.getByText(dummyEnv.name)).toBeInTheDocument();
     expect(screen.getByText("Healthy")).toBeInTheDocument();
     expect(screen.getByText("Synced")).toBeInTheDocument();
     expect(screen.getByRole("button", { name: /sync$/i })).toBeInTheDocument();
