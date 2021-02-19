@@ -113,3 +113,11 @@ func filterIndexes(indexes []index, excludes []index) []index {
 	}
 	return filtered
 }
+
+// prefixIndexes adds the given prefix to all indexes.
+// Currently, it just prefixes the CollectionGroup.
+func prefixIndexes(indexes []index, prefix string) {
+	for i := range indexes {
+		indexes[i].CollectionGroup = prefix + indexes[i].CollectionGroup
+	}
+}

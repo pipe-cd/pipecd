@@ -474,3 +474,45 @@ func TestIndexID(t *testing.T) {
 		})
 	}
 }
+
+func TestPrefixIndexes(t *testing.T) {
+	testcases := []struct {
+		name     string
+		indexes  []index
+		prefix   string
+		expected []index
+	}{
+		{
+			name:   "nil list",
+			prefix: "TestPrefix",
+		},
+		{
+			name:   "normal list",
+			prefix: "TestPrefix",
+			indexes: []index{
+				{
+					CollectionGroup: "CollectionA",
+				},
+				{
+					CollectionGroup: "CollectionB",
+				},
+			},
+			expected: []index{
+				{
+					CollectionGroup: "TestPrefixCollectionA",
+				},
+				{
+					CollectionGroup: "TestPrefixCollectionB",
+				},
+			},
+		},
+	}
+
+	for _, tc := range testcases {
+		t.Run(tc.name, func(t *testing.T) {
+			indexes := tc.indexes
+			prefixIndexes(indexes, tc.prefix)
+			assert.Equal(t, tc.expected, indexes)
+		})
+	}
+}
