@@ -136,6 +136,9 @@ func (c *client) CreateFunction(ctx context.Context, fm FunctionManifest) error 
 		Role:         aws.String(fm.Spec.Role),
 		FunctionName: aws.String(fm.Spec.Name),
 		Tags:         aws.StringMap(fm.Spec.Tags),
+		Environment: &lambda.Environment{
+			Variables: aws.StringMap(fm.Spec.Environments),
+		},
 	}
 	_, err := c.client.CreateFunctionWithContext(ctx, input)
 	if err != nil {
