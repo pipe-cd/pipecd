@@ -437,12 +437,8 @@ func (c *client) updateTagsConfig(ctx context.Context, fm FunctionManifest) erro
 		return nil
 	}
 
-	// Skip untag resource if remote resource has no tags.
-	if len(output.Tags) == 0 {
-		goto Tags
-	}
-
-	{ // Untag previous tags from the current resource.
+	// Untag previous tags from the current resource in case it's existing.
+	if len(output.Tags) > 0 {
 		tagsKeys := make([]string, 0, len(currentTags))
 		for k := range currentTags {
 			tagsKeys = append(tagsKeys, k)
@@ -471,13 +467,12 @@ func (c *client) updateTagsConfig(ctx context.Context, fm FunctionManifest) erro
 		}
 	}
 
-Tags:
-	// Skip add empty tags to remote Lambda function.
+	// Skip add tags to remote Lambda function if nothing is defined in `function.yaml`.
 	if len(fm.Spec.Tags) == 0 {
 		return nil
 	}
 
-	// Tag resource with the news tags.
+	// Tag resource with the newly defined tags.
 	retry := backoff.NewRetry(RequestRetryTime, backoff.NewConstant(RetryIntervalDuration))
 	tagResourceSucceed := false
 	for retry.WaitNext(ctx) {
