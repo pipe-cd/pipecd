@@ -90,11 +90,19 @@ func rollback(ctx context.Context, in *executor.Input, cloudProviderName string,
 		return false
 	}
 
+	// Rollback Lambda application configuration to previous state.
+	if err := client.UpdateFunction(ctx, fm); err != nil {
+		in.LogPersister.Errorf("Unable to rollback Lambda function %s configuration to previous stage: %w", fm.Spec.Name, err)
+		return false
+	}
+	in.LogPersister.Infof("Rolled back the lambda function %s configuration to original stage", fm.Spec.Name)
+
+	// Rollback traffic routing to previous state.
 	// Restore original traffic config from metadata store.
 	originalTrafficKeyName := fmt.Sprintf("original-traffic-%s", in.Deployment.RunningCommitHash)
 	originalTrafficCfgData, ok := in.MetadataStore.Get(originalTrafficKeyName)
 	if !ok {
-		in.LogPersister.Errorf("Unable to prepare original traffic config to rollback Lambda function %s. It seems this is the first deployment.", fm.Spec.Name)
+		in.LogPersister.Errorf("Unable to prepare original traffic config to rollback Lambda function %s. No traffic changes have been committed yet.", fm.Spec.Name)
 		return false
 	}
 
