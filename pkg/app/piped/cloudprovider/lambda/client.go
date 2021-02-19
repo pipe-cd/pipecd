@@ -440,53 +440,63 @@ func (c *client) updateTagsConfig(ctx context.Context, fm FunctionManifest) erro
 		return nil
 	}
 
-	// Untag previous tags from the current resource in case it's existing.
-	if len(output.Tags) > 0 {
-		tagsKeys := make([]string, 0, len(currentTags))
-		for k := range currentTags {
-			tagsKeys = append(tagsKeys, k)
+	newDefinedTags := make(map[string]string)
+	updatedTags := make(map[string]string)
+	removedTags := make(map[string]string)
+	for k, v := range fm.Spec.Tags {
+		val, ok := currentTags[k]
+		if !ok {
+			newDefinedTags[k] = v
 		}
-		untagInput := &lambda.UntagResourceInput{
-			Resource: aws.String(functionArn),
-			TagKeys:  aws.StringSlice(tagsKeys),
+		if val != v {
+			updatedTags[k] = v
 		}
-		_, err = c.client.UntagResourceWithContext(ctx, untagInput)
-		if err != nil {
-			if aerr, ok := err.(awserr.Error); ok {
-				switch aerr.Code() {
-				case lambda.ErrCodeInvalidParameterValueException:
-					return fmt.Errorf("invalid parameter given: %w", err)
-				case lambda.ErrCodeServiceException:
-					return fmt.Errorf("aws lambda service encountered an internal error: %w", err)
-				case lambda.ErrCodeTooManyRequestsException:
-					return fmt.Errorf("request throughput limit was exceeded: %w", err)
-				case lambda.ErrCodeResourceNotFoundException:
-					return fmt.Errorf("resource not found: %w", err)
-				case lambda.ErrCodeResourceConflictException:
-					return fmt.Errorf("resource already existed or in progress: %w", err)
-				}
-			}
-			return fmt.Errorf("unknown error occurred on untags for Lambda function %s: %w", fm.Spec.Name, err)
+	}
+	for k, v := range currentTags {
+		_, ok := fm.Spec.Tags[k]
+		if !ok {
+			removedTags[k] = v
 		}
 	}
 
-	// Skip add tags to remote Lambda function if nothing is defined in `function.yaml`.
-	if len(fm.Spec.Tags) == 0 {
-		return nil
+	if len(newDefinedTags) > 0 {
+		if err := c.tagFunction(ctx, functionArn, newDefinedTags); err != nil {
+			return fmt.Errorf("failed on add new defined tags to Lambda function %s: %w", fm.Spec.Name, err)
+		}
 	}
 
-	// Tag resource with the newly defined tags.
+	if len(updatedTags) > 0 {
+		if err := c.untagFunction(ctx, functionArn, updatedTags); err != nil {
+			return fmt.Errorf("failed on update changed tags to Lambda function %s: %w", fm.Spec.Name, err)
+		}
+		if err := c.tagFunction(ctx, functionArn, updatedTags); err != nil {
+			return fmt.Errorf("failed on update changed tags to Lambda function %s: %w", fm.Spec.Name, err)
+		}
+	}
+
+	if len(removedTags) > 0 {
+		if err := c.untagFunction(ctx, functionArn, removedTags); err != nil {
+			return fmt.Errorf("failed on remove tags for Lambda function %s: %w", fm.Spec.Name, err)
+		}
+	}
+
+	return nil
+}
+
+func (c *client) tagFunction(ctx context.Context, functionArn string, tags map[string]string) error {
+	tagInput := &lambda.TagResourceInput{
+		Resource: aws.String(functionArn),
+		Tags:     aws.StringMap(tags),
+	}
+
 	retry := backoff.NewRetry(RequestRetryTime, backoff.NewConstant(RetryIntervalDuration))
 	tagResourceSucceed := false
+	var err error
 	for retry.WaitNext(ctx) {
-		tagInput := &lambda.TagResourceInput{
-			Resource: aws.String(functionArn),
-			Tags:     aws.StringMap(fm.Spec.Tags),
-		}
 		_, err = c.client.TagResourceWithContext(ctx, tagInput)
 		if err != nil {
 			c.logger.Error("Failed to add tags to resource",
-				zap.String("name", fm.Spec.Name),
+				zap.String("name", functionArn),
 				zap.Error(err),
 			)
 		} else {
@@ -495,7 +505,39 @@ func (c *client) updateTagsConfig(ctx context.Context, fm FunctionManifest) erro
 		}
 	}
 	if !tagResourceSucceed {
-		return fmt.Errorf("failed to add tags for Lambda function %s: %w", fm.Spec.Name, err)
+		return fmt.Errorf("tags failed: %w", err)
+	}
+
+	return nil
+}
+
+func (c *client) untagFunction(ctx context.Context, functionArn string, tags map[string]string) error {
+	tagsKeys := make([]string, 0, len(tags))
+	for k := range tags {
+		tagsKeys = append(tagsKeys, k)
+	}
+	untagInput := &lambda.UntagResourceInput{
+		Resource: aws.String(functionArn),
+		TagKeys:  aws.StringSlice(tagsKeys),
+	}
+
+	retry := backoff.NewRetry(RequestRetryTime, backoff.NewConstant(RetryIntervalDuration))
+	untagResourceSucceed := false
+	var err error
+	for retry.WaitNext(ctx) {
+		_, err = c.client.UntagResourceWithContext(ctx, untagInput)
+		if err != nil {
+			c.logger.Error("Failed to remove tags to resource",
+				zap.String("name", functionArn),
+				zap.Error(err),
+			)
+		} else {
+			untagResourceSucceed = true
+			break
+		}
+	}
+	if !untagResourceSucceed {
+		return fmt.Errorf("untags failed: %w", err)
 	}
 
 	return nil
