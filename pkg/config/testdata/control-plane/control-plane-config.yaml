@@ -36,3 +36,6 @@ spec:
   insightCollector:
     schedule: "0 0 * * *"
     retryIntervalHour: 3
+    featureFlags:
+      enableDevelopmentFrequency: true
+      enableChangeFailureRate: true

@@ -19,6 +19,8 @@ import (
 	"net/http"
 	"time"
 
+	"github.com/pipe-cd/pipe/pkg/config"
+
 	"github.com/robfig/cron/v3"
 	"github.com/spf13/cobra"
 	"go.uber.org/zap"
@@ -111,8 +113,7 @@ func (s *ops) run(ctx context.Context, t cli.Telemetry) error {
 
 	// Starting a cron job for insight collector.
 	if s.enableInsightCollector {
-		mode := insightcollector.NewCollectorMode()
-		mode.Set("CD")
+		mode := loadCollectorMode(cfg)
 		collector := insightcollector.NewInsightCollector(ds, fs, t.Logger, mode)
 		c := cron.New(cron.WithLocation(time.UTC))
 		_, err := c.AddFunc(cfg.InsightCollector.Schedule, func() {
@@ -195,4 +196,15 @@ func (s *ops) run(ctx context.Context, t cli.Telemetry) error {
 		return err
 	}
 	return nil
+}
+
+func loadCollectorMode(cfg *config.ControlPlaneSpec) insightcollector.CollectorMode {
+	mode := insightcollector.NewCollectorMode()
+	if cfg.InsightCollector.FeatureFlags.EnableDevelopmentFrequency {
+		mode.Set("D")
+	}
+	if cfg.InsightCollector.FeatureFlags.EnableChangeFailureRate {
+		mode.Set("C")
+	}
+	return mode
 }
