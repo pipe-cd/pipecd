@@ -39,11 +39,10 @@ func (i *InsightCollector) ProcessNewlyCreatedDeployments(ctx context.Context) e
 	targetDate := time.Date(now.Year(), now.Month(), now.Day(), 0, 0, 0, 0, time.UTC)
 	m, err := i.insightstore.LoadMilestone(ctx)
 	if err != nil {
-		if err == filestore.ErrNotFound {
-			m = &insight.Milestone{}
-		} else {
+		if !errors.Is(err, filestore.ErrNotFound) {
 			return err
 		}
+		m = &insight.Milestone{}
 	}
 
 	dc, err := i.findDeploymentsCreatedInRange(ctx, m.DeploymentCreatedAtMilestone, targetDate.Unix())
@@ -75,11 +74,10 @@ func (i *InsightCollector) ProcessNewlyCompletedDeployments(ctx context.Context)
 	targetDate := time.Date(now.Year(), now.Month(), now.Day(), 0, 0, 0, 0, time.UTC)
 	m, err := i.insightstore.LoadMilestone(ctx)
 	if err != nil {
-		if err == filestore.ErrNotFound {
-			m = &insight.Milestone{}
-		} else {
+		if !errors.Is(err, filestore.ErrNotFound) {
 			return err
 		}
+		m = &insight.Milestone{}
 	}
 
 	dc, err := i.findDeploymentsCompletedInRange(ctx, m.DeploymentCompletedAtMilestone, targetDate.Unix())
