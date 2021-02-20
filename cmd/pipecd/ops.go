@@ -19,8 +19,6 @@ import (
 	"net/http"
 	"time"
 
-	"github.com/pipe-cd/pipe/pkg/config"
-
 	"github.com/robfig/cron/v3"
 	"github.com/spf13/cobra"
 	"go.uber.org/zap"
@@ -33,6 +31,7 @@ import (
 	"github.com/pipe-cd/pipe/pkg/app/ops/orphancommandcleaner"
 	"github.com/pipe-cd/pipe/pkg/backoff"
 	"github.com/pipe-cd/pipe/pkg/cli"
+	"github.com/pipe-cd/pipe/pkg/config"
 	"github.com/pipe-cd/pipe/pkg/datastore"
 	"github.com/pipe-cd/pipe/pkg/model"
 	"github.com/pipe-cd/pipe/pkg/version"
