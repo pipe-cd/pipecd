@@ -45,7 +45,7 @@ For indexing issue:
 - PostgreSQL indexing for the attributes of Jsonb data type is as follow: [Json indexing](https://www.postgresql.org/docs/current/datatype-json.html#JSON-INDEXING)
 - MySQL also support indexing for attributes of Json data type as follow: [Json indexing by secondary indexes](https://dev.mysql.com/doc/refman/8.0/en/create-table-secondary-indexes.html)
 
-(note: both Jsonb and Json point to the type of storing Json data in those databases. The key difference is that JSON data is stored as an exact copy of the JSON input text, whereas jsonb stores data in a decomposed binary form. Jsonb seems a better choice since it reduces the cost of encode/decode on read/write operator)
+(note: both Jsonb and Json point to the type of storing JSON data in those databases. The key difference is that Json data is stored as an exact copy of the JSON input text, whereas Jsonb stores data in a decomposed binary form. Jsonb seems a better choice since it supports indexing with significant performance increases)
 
 # Alternatives
 
