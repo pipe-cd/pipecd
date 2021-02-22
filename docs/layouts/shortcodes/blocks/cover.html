@@ -14,12 +14,14 @@
         <div class="text-center">
             <h1 class="display-1 mt-0 mt-md-5 pb-4">
               {{ with $logo_image }}
-              {{ $logo_image_resized := (.Fit (printf "320x164 %s" $logo_anchor)) }}
-              {{ $logo_image_resized_1_5x := (.Fit (printf "480x246 %s" $logo_anchor)) }}
-              {{ $logo_image_resized_2x := (.Fit (printf "640x328 %s" $logo_anchor)) }}
+              {{ $logo_image_resized := (.Fit (printf "320x159 %s" $logo_anchor)) }}
+              {{ $logo_image_resized_1_5x := (.Fit (printf "480x238 %s" $logo_anchor)) }}
+              {{ $logo_image_resized_2x := (.Fit (printf "640x318 %s" $logo_anchor)) }}
                 <img 
                   class="td-cover-logo"
                   src="{{ $logo_image_resized.RelPermalink }}"
+                  width="320"
+                  height="159"
                   srcset="{{ $logo_image_resized.RelPermalink }},
                           {{ $logo_image_resized_1_5x.RelPermalink }} 1.5x,
                           {{ $logo_image_resized_2x.RelPermalink }} 2x"
