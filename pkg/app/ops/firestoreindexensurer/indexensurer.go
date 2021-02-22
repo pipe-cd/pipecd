@@ -51,6 +51,7 @@ func NewIndexEnsurer(gcloudPath, projectID, serviceAcccountFile, colPrefix strin
 // CreateIndexes creates needed composite indexes for Google Firestore based on
 // well-defined indexes list.
 func (e *indexEnsurer) CreateIndexes(ctx context.Context) error {
+	e.logger.Info("start ensuring the existence of composite indexes for Google Cloud Firestore")
 	if err := e.authorize(ctx); err != nil {
 		return fmt.Errorf("failed to authorize: %w", err)
 	}

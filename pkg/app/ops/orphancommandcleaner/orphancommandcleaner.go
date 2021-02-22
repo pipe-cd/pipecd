@@ -2,6 +2,7 @@ package orphancommandcleaner
 
 import (
 	"context"
+	"fmt"
 	"time"
 
 	"go.uber.org/zap"
@@ -37,16 +38,18 @@ func (c *OrphanCommandCleaner) Run(ctx context.Context) error {
 	for {
 		select {
 		case <-ctx.Done():
-			c.logger.Info("OrphanCommandCleaner has been stopped")
-			return nil
+			break
 
 		case <-t.C:
 			start := time.Now()
 			if err := c.updateOrphanCommandsStatus(ctx); err == nil {
-				c.logger.Info("successfully update orphan commands status", zap.Duration("duration", time.Since(start)))
+				c.logger.Info("successfully cleaned orphan commands", zap.Duration("duration", time.Since(start)))
 			}
 		}
 	}
+
+	c.logger.Info("orphanCommandCleaner has been stopped")
+	return nil
 }
 
 func (c *OrphanCommandCleaner) updateOrphanCommandsStatus(ctx context.Context) error {
@@ -69,6 +72,11 @@ func (c *OrphanCommandCleaner) updateOrphanCommandsStatus(ctx context.Context) e
 	if err != nil {
 		c.logger.Error("failed to list not-handled commands", zap.Error(err))
 		return err
+	}
+
+	c.logger.Info(fmt.Sprintf("there are %d orphan commands to clean", len(commands)))
+	if len(commands) == 0 {
+		return nil
 	}
 
 	for _, command := range commands {
