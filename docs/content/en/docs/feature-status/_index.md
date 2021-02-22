@@ -30,7 +30,7 @@ Please note that the phases (Incubating, Alpha, Beta, and Stable) are applied to
 | [Application Live State](/docs/user-guide/application-live-state/) | Beta |
 | Support Helm | Beta |
 | Support Kustomize | Beta |
-| Support Istio Mesh | Alpha |
+| Support Istio Mesh | Beta |
 | Support SMI Mesh | Incubating |
 
 ### Terraform Deployment
