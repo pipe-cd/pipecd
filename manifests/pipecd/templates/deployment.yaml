@@ -215,6 +215,7 @@ spec:
           args:
           - ops
           - --config-file=/etc/pipecd-config/{{ .Values.config.fileName }}
+          - --log-encoding={{ .Values.ops.args.logEncoding }}
           ports:
             - name: http
               containerPort: 9082
