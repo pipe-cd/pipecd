@@ -2,6 +2,7 @@ package orphancommandcleaner
 
 import (
 	"context"
+	"fmt"
 	"time"
 
 	"go.uber.org/zap"
@@ -73,7 +74,7 @@ func (c *OrphanCommandCleaner) updateOrphanCommandsStatus(ctx context.Context) e
 		return err
 	}
 
-	c.logger.Info(fmt.Sprintf("there are %d orphan commands to clean", len(commands))
+	c.logger.Info(fmt.Sprintf("there are %d orphan commands to clean", len(commands)))
 	if len(commands) == 0 {
 		return nil
 	}
