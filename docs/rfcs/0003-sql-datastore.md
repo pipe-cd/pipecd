@@ -49,7 +49,7 @@ For indexing issue:
 
 # Alternatives
 
-Currently we consider between MySQL and PostgreSQL for those support for NoSQL fearures, PostgreSQL has a longer time on this field.
+Currently, we consider between MySQL and PostgreSQL for those support for NoSQL features, PostgreSQL has a longer time in this field.
 
 # Unresolved questions
 
