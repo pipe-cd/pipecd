@@ -29,7 +29,7 @@ CREATE TABLE project (
 	id VARCHAR ( 32 ) PRIMARY KEY,
 	data JSON NOT NULL,
 	created_at TIMESTAMP NOT NULL,
-    updated_at TIMESTAMP NOT NULL
+	updated_at TIMESTAMP NOT NULL,
 );
 
 CREATE TABLE application (
@@ -37,13 +37,13 @@ CREATE TABLE application (
 	project_id VARCHAR ( 32 ) NOT NULL,
 	data JSON NOT NULL,
 	created_at TIMESTAMP NOT NULL,
-    updated_at TIMESTAMP NOT NULL
+	updated_at TIMESTAMP NOT NULL,
 );
 ```
 
 For indexing issue:
-- PostgreSQL indexing for the attributes of Jsonb data type is as follow: https://www.postgresql.org/docs/current/datatype-json.html#JSON-INDEXING
-- MySQL also support indexing for attributes of Json data type as follow: https://dev.mysql.com/doc/refman/8.0/en/create-table-secondary-indexes.html
+- PostgreSQL indexing for the attributes of Jsonb data type is as follow: [Json indexing](https://www.postgresql.org/docs/current/datatype-json.html#JSON-INDEXING)
+- MySQL also support indexing for attributes of Json data type as follow: [Json indexing by secondary indexes](https://dev.mysql.com/doc/refman/8.0/en/create-table-secondary-indexes.html)
 
 (note: both Jsonb and Json point to the type of storing Json data in those databases. The key difference is that JSON data is stored as an exact copy of the JSON input text, whereas jsonb stores data in a decomposed binary form. Jsonb seems a better choice since it reduces the cost of encode/decode on read/write operator)
 
