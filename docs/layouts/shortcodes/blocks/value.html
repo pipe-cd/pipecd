@@ -11,7 +11,9 @@
   {{ $image_resized_zoom := $value_image.Fit "3000x1500 jpg" }}
   <div class="col-md text-center mw-100 d-flex flex-column" style="max-width: 80%;">
     <img
-      class="mw-100 align-self-center"
+      class="mw-100 h-auto align-self-center"
+      width="500"
+      height="250"
       src="{{ $image_resized_500.RelPermalink }}"
       srcset="{{ $image_resized_500.RelPermalink }},
               {{ $image_resized_750.RelPermalink }} 1.5x,

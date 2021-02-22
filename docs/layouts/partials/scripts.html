@@ -8,7 +8,7 @@
 {{ $jsSearch = resources.Get "js/offline-search.js" }}
 {{ end }}
 {{ $jsImageZoom := resources.Get "js/medium-zoom.js"   }}
-<script async defer src="{{ $jsImageZoom.RelPermalink }}" integrity="{{ $jsImageZoom.Data.Integrity }}" crossorigin="anonymous"></script>
+<script defer src="{{ $jsImageZoom.RelPermalink }}" integrity="{{ $jsImageZoom.Data.Integrity }}" crossorigin="anonymous"></script>
 {{ $js := (slice $jsBase $jsAnchor $jsSearch) | resources.Concat "js/main.js" }}
 {{ if .Site.IsServer }}
 <script src="{{ $js.RelPermalink }}"></script>

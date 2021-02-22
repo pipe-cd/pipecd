@@ -4,7 +4,7 @@
   <div class="mb-4 h1">
     <i class="{{ if not (or (hasPrefix $icon "fas ") (hasPrefix $icon "fab ")) }}fas {{ end }}{{ $icon }}"></i>
   </div>
-  <h4 class="h4">{{ .Get "title" | markdownify }}</h4>
+  <p class="h4">{{ .Get "title" | markdownify }}</p>
   <p class="mb-0">{{ .Inner }}</p>
   {{ with .Get "url" }}<p><a href="{{ . }}">{{ with $url_text }}{{ $url_text }}{{ else }}{{ T "ui_read_more" }}{{ end }} …</a></p>{{ end }}
 </div>

@@ -39,6 +39,7 @@ plainIDAnchors = true
 hrefTargetBlank = true
 angledQuotes = false
 latexDashes = true
+noreferrerLinks = true
 
 # Image processing configuration.
 [imaging]
