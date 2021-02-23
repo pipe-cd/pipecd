@@ -55,7 +55,8 @@ Currently, we consider between MySQL and PostgreSQL for those support for NoSQL 
 
 Currently, we have 2 points which need to investigate more
 1. The support of each cloud providers (GCP and AWS for now) for the chosen SQL database, since it's not the native service of those cloud providers (not as firestore of GCP and dynamodb of AWS for instance).
-- AWS is going to support latest MySQL 8.0 in a near future (not currently).
+- AWS supported MySQL 8 recently (the latest version).
+- GCP supported MySQL 8 for now (the latest version).
 - AWS is supporting PostgreSQL 12 for now (the latest version is 13).
-- GCP is supporting PostgreSQL 13 for now (the latest version).
+- GCP supported PostgreSQL 13 for now (the latest version).
 2. In case `PostgreSQL` is chosen, there is no official driver for golang currently, we have a list of candidates: [lib/pg](https://github.com/lib/pq), [go-pg/pg](https://github.com/go-pg/pg).
