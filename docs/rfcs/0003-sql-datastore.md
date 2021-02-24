@@ -25,20 +25,38 @@ We're using NoSQL for now due to its schemaless characteristic is good for the d
 The sample table creates commands for the `project` model and `application` model (other models than project model is as same as the application) as below.
 
 ```sql
-CREATE TABLE project (
-	id VARCHAR ( 32 ) PRIMARY KEY,
-	data JSON NOT NULL,
-	created_at TIMESTAMP NOT NULL,
-	updated_at TIMESTAMP NOT NULL,
+# PostgreSQL
+CREATE TABLE projects (
+	id UUID PRIMARY KEY,
+	data JSONB NOT NULL,
+	disabled BOOL NOT NULL,
+	created_at BIGINT NOT NULL,
+	updated_at BIGINT NOT NULL
+);
+CREATE TABLE applications (
+	id UUID PRIMARY KEY,
+	project_id UUID NOT NULL,
+	data JSONB NOT NULL,
+	disabled BOOL NOT NULL,
+	created_at BIGINT NOT NULL,
+	updated_at BIGINT NOT NULL
 );
 
-CREATE TABLE application (
-	id VARCHAR ( 32 ) PRIMARY KEY,
-	project_id VARCHAR ( 32 ) NOT NULL,
-	data JSON NOT NULL,
-	created_at TIMESTAMP NOT NULL,
-	updated_at TIMESTAMP NOT NULL,
-);
+# MySQL
+CREATE TABLE `projects` (
+  `id` binary(16) PRIMARY KEY,
+  `data` json NOT NULL,
+  `created_at` int(11) NOT NULL,
+  `updated_at` int(11) NOT NULL
+) ENGINE=InnoDB;
+
+CREATE TABLE `applications` (
+  `id` binary(16) PRIMARY KEY,
+  `project_id` binary(16) NOT NULL,
+  `data` json NOT NULL,
+  `created_at` int(11) NOT NULL,
+  `updated_at` int(11) NOT NULL
+) ENGINE=InnoDB;
 ```
 
 For indexing issue:
@@ -49,14 +67,103 @@ For indexing issue:
 
 # Alternatives
 
-Currently, we consider between MySQL and PostgreSQL for those support for NoSQL features, PostgreSQL has a longer time in this field.
+Currently, we consider between MySQL and PostgreSQL for those support for NoSQL features, PostgreSQL has a longer time in this field. Some considering factors:
+- ability to index a specific attribute of the JSON field
+- supported operators on specific JSON field
+- performance of query operation on indexed JSON field
+- able to keep the advantage of schemaless pattern
+
+## Ability to index a specific attribute of the JSON field
+
+For `MySQL 8.0`, we have 2 points which have to be considered.
+
+1. UUID data for `id` and `project_id` fields
+
+Since we're using `application side UUID generate` pattern, (which mean to MySQL, those ids are true random UUID) store those ids under `VARCHAR(32)` data type is costly for both read and write operation due to the indexes does not work, using `UUID_TO_BIN` & `BIN_TO_UUID` with `swap_flag` and store data under `BINARY(16)` would help.
+
+From MySQL docs
+```
+  o If swap_flag is 0, the two-argument form is equivalent to the
+    one-argument form. The binary result is in the same order as the
+    string argument.
+
+  o If swap_flag is 1, the format of the return value differs: The
+    time-low and time-high parts (the first and third groups of
+    hexadecimal digits, respectively) are swapped. This moves the more
+    rapidly varying part to the right and can improve indexing
+    efficiency if the result is stored in an indexed column.
+
+```
+
+2. Create indexes for JSON attribute without affecting the schemaless advantage
+
+We could use `CREATE INDEX` to create secondary indexes on generated columns which stored JSON attributes as an indirect way to indexes JSON attributes.
+In order to keep the advantage of the schemaless pattern, we will use `virtual generated columns` instead of `stored generated columns` (which will physically store along with other columns of table). __The virtual generated columns wouldn't be generated on READ as long as we keep all generated columns as part of some secondary indexes__, which reduce the cost of recomputing from READ operation (note that computing virtual columns value cost on WRITE remains).
+
+Sample secondary indexes creation as follow
+
+```sql
+mysql> CREATE INDEX idx ON applications ( ( CAST( data->>"$.name" AS CHAR(10) ) ) );
+# OR
+mysql> CREATE INDEX idy ON applications ( (JSON_VALUE(data, '$.name' RETURNING CHAR(10))) );
+```
+
+ref:
+- https://dev.mysql.com/doc/refman/8.0/en/create-table-secondary-indexes.html
+- https://dev.mysql.com/doc/refman/8.0/en/create-index.html
+
+## Supported operators on specific JSON field
+
+For our use-case, we plan to only focus on search function across attributes of JSON data and will always get back full JSON column data instead of just part (JSON object which contains only necessary keys or raw values) of it. Both MySQL and PostgreSQL search functions work with indexed attributes of JSON by using `->>` or `->` operator to specific attribute for `where` condition.
+
+In case of using MySQL, though it had been noted on [the docs](https://dev.mysql.com/doc/refman/8.0/en/json-search-functions.html#function_json-value) that `JSON_VALUE()` equal to `CAST(JSON_UNQUOTE(JSON_EXTRACT(json_doc, path)))` or `CAST(json_doc->>path)`, we have to use exactly `where condition` which matches the `index expression` in order to make indexes work.
+
+With the above defined `applications` table
+```sql
+mysql> SELECT data FROM applications;
++---------------------------------------------------------------+
+| data                                                          |
++---------------------------------------------------------------+
+| {"attr": "value_1", "name": "app-1", "tags": ["test"]}        |
+| {"attr": "value_2", "name": "app-2", "tags": ["app"]}         |
+| {"attr": "value_3", "name": "app-3", "tags": ["app", "test"]} |
++---------------------------------------------------------------+
+mysql> CREATE INDEX idx ON applications ((CAST(data->>"$.name" AS CHAR(10))));
+mysql> CREATE INDEX idy ON applications ( (JSON_VALUE(data, '$.name' RETURNING CHAR(10))) );
+...
+mysql> EXPLAIN SELECT data->>"$.name" FROM applications WHERE CAST(data->>'$.name' AS CHAR(10)) = 'app-1';
++----+-------------+--------------+------------+------+---------------+------+---------+-------+------+----------+-------+
+| id | select_type | table        | partitions | type | possible_keys | key  | key_len | ref   | rows | filtered | Extra |
++----+-------------+--------------+------------+------+---------------+------+---------+-------+------+----------+-------+
+|  1 | SIMPLE      | applications | NULL       | ref  | idx           | idx  | 13      | const |    1 |   100.00 | NULL  |
++----+-------------+--------------+------------+------+---------------+------+---------+-------+------+----------+-------+
+1 row in set, 1 warning (0.00 sec)
+
+mysql> EXPLAIN SELECT data->>"$.name" FROM applications WHERE JSON_VALUE(data, '$.name' RETURNING CHAR(10)) = 'app-1';
++----+-------------+--------------+------------+------+---------------+------+---------+-------+------+----------+-------+
+| id | select_type | table        | partitions | type | possible_keys | key  | key_len | ref   | rows | filtered | Extra |
++----+-------------+--------------+------------+------+---------------+------+---------+-------+------+----------+-------+
+|  1 | SIMPLE      | applications | NULL       | ref  | idy           | idy  | 43      | const |    1 |   100.00 | NULL  |
++----+-------------+--------------+------------+------+---------------+------+---------+-------+------+----------+-------+
+1 row in set, 1 warning (0.00 sec)
+```
+
+note: indexing using `JSON_VALUE` costs more than `CAST` (key_len value is longer) and may cost more disk usage.
+
+## Performance of query operation on indexed JSON field
+
+For queries which uses search function on indexed JSON fields and without using JOIN (in our use-case)
+
+- On read queries, MySQL has a bit advantage due to its fast read-only characteristic. Besides, in case all virtual generated columns are secondary indexed columns, generated column values are materialized in the records of the index, which means MySQL will not recalculate virtual generated columns on query.
+- On `write queries`, PostgreSQL has a bit advantage due to MySQL cost on calculating virtual generated columns on each writes.
+
+ref: https://dev.mysql.com/doc/refman/8.0/en/create-table-secondary-indexes.html
+## Able to keep advantage of schemaless pattern
+
+Yes, for both 🎉
 
 # Unresolved questions
 
 Currently, we have 2 points which need to investigate more
-1. The support of each cloud providers (GCP and AWS for now) for the chosen SQL database, since it's not the native service of those cloud providers (not as firestore of GCP and dynamodb of AWS for instance).
-- AWS supported MySQL 8 recently (the latest version).
-- GCP supported MySQL 8 for now (the latest version).
-- AWS is supporting PostgreSQL 12 for now (the latest version is 13).
-- GCP supported PostgreSQL 13 for now (the latest version).
-2. In case `PostgreSQL` is chosen, there is no official driver for golang currently, we have a list of candidates: [lib/pg](https://github.com/lib/pq), [go-pg/pg](https://github.com/go-pg/pg).
+1. The support of each cloud providers (GCP and AWS for now) for the chosen SQL database, since it's not the native service of those cloud providers (not as firestore of GCP and dynamodb of AWS for instance). Both AWS and GCP support latest versions of PostgreSQL(v13) and MySQL(v8).
+2. In case `PostgreSQL` is chosen, there is no official driver for golang currently, we have a list of candidates: [pgx](https://github.com/jackc/pgx), [go-pg/pg](https://github.com/go-pg/pg).
