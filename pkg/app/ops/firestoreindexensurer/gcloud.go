@@ -130,10 +130,18 @@ func (c *gcloud) listIndexes(ctx context.Context) ([]index, error) {
 			c.logger.Warn("index has unexpected name", zap.String("name", idx.Name))
 			continue
 		}
+		// Ignore the "__name__" field which is automatically created by Firestore.
+		fields := make([]field, 0, len(idx.Fields)-1)
+		for _, f := range idx.Fields {
+			if f.FieldPath == "__name__" {
+				continue
+			}
+			fields = append(fields, f)
+		}
 		indexes = append(indexes, index{
 			CollectionGroup: name[5],
 			QueryScope:      idx.QueryScope,
-			Fields:          idx.Fields,
+			Fields:          fields,
 		})
 	}
 	return indexes, nil

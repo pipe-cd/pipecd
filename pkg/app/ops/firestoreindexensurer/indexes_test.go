@@ -37,11 +37,6 @@ func TestParseIndexes(t *testing.T) {
 					Order:       "DESCENDING",
 					ArrayConfig: "",
 				},
-				{
-					FieldPath:   "__name__",
-					Order:       "DESCENDING",
-					ArrayConfig: "",
-				},
 			},
 		},
 		{
@@ -55,11 +50,6 @@ func TestParseIndexes(t *testing.T) {
 				},
 				{
 					FieldPath:   "UpdatedAt",
-					Order:       "DESCENDING",
-					ArrayConfig: "",
-				},
-				{
-					FieldPath:   "__name__",
 					Order:       "DESCENDING",
 					ArrayConfig: "",
 				},
@@ -79,11 +69,6 @@ func TestParseIndexes(t *testing.T) {
 					Order:       "ASCENDING",
 					ArrayConfig: "",
 				},
-				{
-					FieldPath:   "__name__",
-					Order:       "ASCENDING",
-					ArrayConfig: "",
-				},
 			},
 		},
 		{
@@ -97,11 +82,6 @@ func TestParseIndexes(t *testing.T) {
 				},
 				{
 					FieldPath:   "UpdatedAt",
-					Order:       "DESCENDING",
-					ArrayConfig: "",
-				},
-				{
-					FieldPath:   "__name__",
 					Order:       "DESCENDING",
 					ArrayConfig: "",
 				},
@@ -121,11 +101,6 @@ func TestParseIndexes(t *testing.T) {
 					Order:       "DESCENDING",
 					ArrayConfig: "",
 				},
-				{
-					FieldPath:   "__name__",
-					Order:       "DESCENDING",
-					ArrayConfig: "",
-				},
 			},
 		},
 		{
@@ -139,11 +114,6 @@ func TestParseIndexes(t *testing.T) {
 				},
 				{
 					FieldPath:   "UpdatedAt",
-					Order:       "DESCENDING",
-					ArrayConfig: "",
-				},
-				{
-					FieldPath:   "__name__",
 					Order:       "DESCENDING",
 					ArrayConfig: "",
 				},
@@ -163,11 +133,6 @@ func TestParseIndexes(t *testing.T) {
 					Order:       "ASCENDING",
 					ArrayConfig: "",
 				},
-				{
-					FieldPath:   "__name__",
-					Order:       "ASCENDING",
-					ArrayConfig: "",
-				},
 			},
 		},
 		{
@@ -184,11 +149,6 @@ func TestParseIndexes(t *testing.T) {
 					Order:       "DESCENDING",
 					ArrayConfig: "",
 				},
-				{
-					FieldPath:   "__name__",
-					Order:       "DESCENDING",
-					ArrayConfig: "",
-				},
 			},
 		},
 		{
@@ -202,11 +162,6 @@ func TestParseIndexes(t *testing.T) {
 				},
 				{
 					FieldPath:   "UpdatedAt",
-					Order:       "DESCENDING",
-					ArrayConfig: "",
-				},
-				{
-					FieldPath:   "__name__",
 					Order:       "DESCENDING",
 					ArrayConfig: "",
 				},
@@ -226,11 +181,6 @@ func TestParseIndexes(t *testing.T) {
 					Order:       "DESCENDING",
 					ArrayConfig: "",
 				},
-				{
-					FieldPath:   "__name__",
-					Order:       "DESCENDING",
-					ArrayConfig: "",
-				},
 			},
 		},
 		{
@@ -244,11 +194,6 @@ func TestParseIndexes(t *testing.T) {
 				},
 				{
 					FieldPath:   "UpdatedAt",
-					Order:       "DESCENDING",
-					ArrayConfig: "",
-				},
-				{
-					FieldPath:   "__name__",
 					Order:       "DESCENDING",
 					ArrayConfig: "",
 				},
@@ -268,11 +213,6 @@ func TestParseIndexes(t *testing.T) {
 					Order:       "DESCENDING",
 					ArrayConfig: "",
 				},
-				{
-					FieldPath:   "__name__",
-					Order:       "DESCENDING",
-					ArrayConfig: "",
-				},
 			},
 		},
 		{
@@ -286,11 +226,6 @@ func TestParseIndexes(t *testing.T) {
 				},
 				{
 					FieldPath:   "CreatedAt",
-					Order:       "ASCENDING",
-					ArrayConfig: "",
-				},
-				{
-					FieldPath:   "__name__",
 					Order:       "ASCENDING",
 					ArrayConfig: "",
 				},
@@ -317,11 +252,6 @@ func TestParseIndexes(t *testing.T) {
 				},
 				{
 					FieldPath:   "CreatedAt",
-					Order:       "DESCENDING",
-					ArrayConfig: "",
-				},
-				{
-					FieldPath:   "__name__",
 					Order:       "DESCENDING",
 					ArrayConfig: "",
 				},
