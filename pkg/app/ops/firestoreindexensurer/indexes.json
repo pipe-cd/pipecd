@@ -12,11 +12,6 @@
         "fieldPath": "UpdatedAt",
         "order": "DESCENDING",
         "arrayConfig": ""
-      },
-      {
-        "fieldPath": "__name__",
-        "order": "DESCENDING",
-        "arrayConfig": ""
       }
     ]
   },
@@ -31,11 +26,6 @@
       },
       {
         "fieldPath": "UpdatedAt",
-        "order": "DESCENDING",
-        "arrayConfig": ""
-      },
-      {
-        "fieldPath": "__name__",
         "order": "DESCENDING",
         "arrayConfig": ""
       }
@@ -54,11 +44,6 @@
         "fieldPath": "CreatedAt",
         "order": "ASCENDING",
         "arrayConfig": ""
-      },
-      {
-        "fieldPath": "__name__",
-        "order": "ASCENDING",
-        "arrayConfig": ""
       }
     ]
   },
@@ -73,11 +58,6 @@
       },
       {
         "fieldPath": "UpdatedAt",
-        "order": "DESCENDING",
-        "arrayConfig": ""
-      },
-      {
-        "fieldPath": "__name__",
         "order": "DESCENDING",
         "arrayConfig": ""
       }
@@ -96,11 +76,6 @@
         "fieldPath": "UpdatedAt",
         "order": "DESCENDING",
         "arrayConfig": ""
-      },
-      {
-        "fieldPath": "__name__",
-        "order": "DESCENDING",
-        "arrayConfig": ""
       }
     ]
   },
@@ -115,11 +90,6 @@
       },
       {
         "fieldPath": "UpdatedAt",
-        "order": "DESCENDING",
-        "arrayConfig": ""
-      },
-      {
-        "fieldPath": "__name__",
         "order": "DESCENDING",
         "arrayConfig": ""
       }
@@ -138,11 +108,6 @@
         "fieldPath": "CreatedAt",
         "order": "ASCENDING",
         "arrayConfig": ""
-      },
-      {
-        "fieldPath": "__name__",
-        "order": "ASCENDING",
-        "arrayConfig": ""
       }
     ]
   },
@@ -159,11 +124,6 @@
         "fieldPath": "UpdatedAt",
         "order": "DESCENDING",
         "arrayConfig": ""
-      },
-      {
-        "fieldPath": "__name__",
-        "order": "DESCENDING",
-        "arrayConfig": ""
       }
     ]
   },
@@ -178,11 +138,6 @@
       },
       {
         "fieldPath": "UpdatedAt",
-        "order": "DESCENDING",
-        "arrayConfig": ""
-      },
-      {
-        "fieldPath": "__name__",
         "order": "DESCENDING",
         "arrayConfig": ""
       }
@@ -201,11 +156,6 @@
         "fieldPath": "UpdatedAt",
         "order": "DESCENDING",
         "arrayConfig": ""
-      },
-      {
-        "fieldPath": "__name__",
-        "order": "DESCENDING",
-        "arrayConfig": ""
       }
     ]
   },
@@ -220,11 +170,6 @@
       },
       {
         "fieldPath": "UpdatedAt",
-        "order": "DESCENDING",
-        "arrayConfig": ""
-      },
-      {
-        "fieldPath": "__name__",
         "order": "DESCENDING",
         "arrayConfig": ""
       }
@@ -243,11 +188,6 @@
         "fieldPath": "UpdatedAt",
         "order": "DESCENDING",
         "arrayConfig": ""
-      },
-      {
-        "fieldPath": "__name__",
-        "order": "DESCENDING",
-        "arrayConfig": ""
       }
     ]
   },
@@ -262,11 +202,6 @@
       },
       {
         "fieldPath": "CreatedAt",
-        "order": "ASCENDING",
-        "arrayConfig": ""
-      },
-      {
-        "fieldPath": "__name__",
         "order": "ASCENDING",
         "arrayConfig": ""
       }
@@ -293,11 +228,6 @@
       },
       {
         "fieldPath": "CreatedAt",
-        "order": "DESCENDING",
-        "arrayConfig": ""
-      },
-      {
-        "fieldPath": "__name__",
         "order": "DESCENDING",
         "arrayConfig": ""
       }
