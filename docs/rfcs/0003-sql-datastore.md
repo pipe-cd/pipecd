@@ -27,19 +27,19 @@ The sample table creates commands for the `project` model and `application` mode
 ```sql
 # PostgreSQL
 CREATE TABLE projects (
-	id UUID PRIMARY KEY,
-	data JSONB NOT NULL,
-	disabled BOOL NOT NULL,
-	created_at BIGINT NOT NULL,
-	updated_at BIGINT NOT NULL
+  id UUID PRIMARY KEY,
+  data JSONB NOT NULL,
+  disabled BOOL NOT NULL,
+  created_at BIGINT NOT NULL,
+  updated_at BIGINT NOT NULL
 );
 CREATE TABLE applications (
-	id UUID PRIMARY KEY,
-	project_id UUID NOT NULL,
-	data JSONB NOT NULL,
-	disabled BOOL NOT NULL,
-	created_at BIGINT NOT NULL,
-	updated_at BIGINT NOT NULL
+  id UUID PRIMARY KEY,
+  project_id UUID NOT NULL,
+  data JSONB NOT NULL,
+  disabled BOOL NOT NULL,
+  created_at BIGINT NOT NULL,
+  updated_at BIGINT NOT NULL
 );
 
 # MySQL
@@ -156,8 +156,8 @@ note: indexing using `JSON_VALUE` costs more than `CAST` (key_len value is longe
 
 For queries which uses search function on indexed JSON fields and without using JOIN (in our use-case)
 
-- On read queries, MySQL has a bit advantage due to its fast read-only characteristic. Besides, in case all virtual generated columns are secondary indexed columns, generated column values are materialized in the records of the index, which means MySQL will not recalculate virtual generated columns on query.
-- On write queries, PostgreSQL has a bit advantage due to MySQL cost on calculating virtual generated columns on each writes.
+- For read queries, MySQL has a bit advantage due to its fast read-only characteristic. Besides, in case all virtual generated columns are secondary indexed columns, generated column values are materialized in the records of the index, which means MySQL will not recalculate virtual generated columns on query.
+- For write queries, PostgreSQL has a bit advantage due to MySQL cost on calculating virtual generated columns on each writes.
 
 ref: https://dev.mysql.com/doc/refman/8.0/en/create-table-secondary-indexes.html
 ## Able to keep advantage of schemaless pattern
