@@ -12,7 +12,7 @@ import { setupDayjs } from "./utils/setup-dayjs";
 import { fetchMe } from "./modules/me";
 
 async function run(): Promise<void> {
-  if (process.env.NODE_ENV === "development") {
+  if (process.env.ENABLE_MOCK === "true") {
     // NOTE: Ignore check exists this module, because this module exclude from production build.
     // eslint-disable-next-line @typescript-eslint/ban-ts-comment
     // @ts-ignore
