@@ -44,18 +44,20 @@ CREATE TABLE applications (
 
 # MySQL
 CREATE TABLE `projects` (
-  `id` binary(16) PRIMARY KEY,
-  `data` json NOT NULL,
-  `created_at` int(11) NOT NULL,
-  `updated_at` int(11) NOT NULL
+  id BINARY(16) PRIMARY KEY,
+  data JSON NOT NULL,
+  disabled BOOL NOT NULL,
+  created_at INT(11) NOT NULL,
+  updated_at INT(11) NOT NULL
 ) ENGINE=InnoDB;
 
 CREATE TABLE `applications` (
-  `id` binary(16) PRIMARY KEY,
-  `project_id` binary(16) NOT NULL,
-  `data` json NOT NULL,
-  `created_at` int(11) NOT NULL,
-  `updated_at` int(11) NOT NULL
+  id BINARY(16) PRIMARY KEY,
+  project_id BINARY(16) NOT NULL,
+  data JSON NOT NULL,
+  disabled BOOL NOT NULL,
+  created_at INT(11) NOT NULL,
+  updated_at INT(11) NOT NULL
 ) ENGINE=InnoDB;
 ```
 
@@ -155,7 +157,7 @@ note: indexing using `JSON_VALUE` costs more than `CAST` (key_len value is longe
 For queries which uses search function on indexed JSON fields and without using JOIN (in our use-case)
 
 - On read queries, MySQL has a bit advantage due to its fast read-only characteristic. Besides, in case all virtual generated columns are secondary indexed columns, generated column values are materialized in the records of the index, which means MySQL will not recalculate virtual generated columns on query.
-- On `write queries`, PostgreSQL has a bit advantage due to MySQL cost on calculating virtual generated columns on each writes.
+- On write queries, PostgreSQL has a bit advantage due to MySQL cost on calculating virtual generated columns on each writes.
 
 ref: https://dev.mysql.com/doc/refman/8.0/en/create-table-secondary-indexes.html
 ## Able to keep advantage of schemaless pattern
