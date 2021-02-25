@@ -152,6 +152,34 @@ mysql> EXPLAIN SELECT data->>"$.name" FROM applications WHERE JSON_VALUE(data, '
 
 note: indexing using `JSON_VALUE` costs more than `CAST` (key_len value is longer) and may cost more disk usage.
 
+Another issue is that `LIKE` operator could not use the indexes for query on JSON attributes.
+
+```sql
+mysql> EXPLAIN SELECT data->>"$.name" FROM applications FORCE INDEX (idx) WHERE CAST(data->>'$.name' AS CHAR(10)) = 'app-1';
++----+-------------+--------------+------------+------+---------------+------+---------+-------+------+----------+-------+
+| id | select_type | table        | partitions | type | possible_keys | key  | key_len | ref   | rows | filtered | Extra |
++----+-------------+--------------+------------+------+---------------+------+---------+-------+------+----------+-------+
+|  1 | SIMPLE      | applications | NULL       | ref  | idx           | idx  | 13      | const |    1 |   100.00 | NULL  |
++----+-------------+--------------+------------+------+---------------+------+---------+-------+------+----------+-------+
+1 row in set, 1 warning (0.00 sec)
+
+mysql> EXPLAIN SELECT data->>"$.name" FROM applications FORCE INDEX (idx) WHERE CAST(data->>'$.name' AS CHAR(10)) LIKE 'app-%';
++----+-------------+--------------+------------+------+---------------+------+---------+------+------+----------+-------------+
+| id | select_type | table        | partitions | type | possible_keys | key  | key_len | ref  | rows | filtered | Extra       |
++----+-------------+--------------+------------+------+---------------+------+---------+------+------+----------+-------------+
+|  1 | SIMPLE      | applications | NULL       | ALL  | NULL          | NULL | NULL    | NULL |    6 |   100.00 | Using where |
++----+-------------+--------------+------------+------+---------------+------+---------+------+------+----------+-------------+
+1 row in set, 1 warning (0.00 sec)
+
+mysql> EXPLAIN SELECT data->>"$.name" FROM applications FORCE INDEX (idy) WHERE JSON_VALUE(data, '$.name' RETURNING CHAR(10)) LIKE 'app-%';
++----+-------------+--------------+------------+------+---------------+------+---------+------+------+----------+-------------+
+| id | select_type | table        | partitions | type | possible_keys | key  | key_len | ref  | rows | filtered | Extra       |
++----+-------------+--------------+------------+------+---------------+------+---------+------+------+----------+-------------+
+|  1 | SIMPLE      | applications | NULL       | ALL  | NULL          | NULL | NULL    | NULL |    6 |   100.00 | Using where |
++----+-------------+--------------+------------+------+---------------+------+---------+------+------+----------+-------------+
+1 row in set, 1 warning (0.00 sec)
+```
+
 ## Performance of query operation on indexed JSON field
 
 For queries which uses search function on indexed JSON fields and without using JOIN (in our use-case)
