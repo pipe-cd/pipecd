@@ -2,6 +2,7 @@
 "use strict";
 const HtmlWebpackPlugin = require("html-webpack-plugin");
 const path = require("path");
+const webpack = require("webpack");
 
 module.exports = (_, argv) => {
   return {
@@ -46,6 +47,7 @@ module.exports = (_, argv) => {
           template: argv.htmlTemplate,
           favicon: path.join(__dirname, "assets/favicon.ico"),
         }),
+      new webpack.EnvironmentPlugin(["NODE_ENV", "ENABLE_MOCK"]),
     ].filter(Boolean),
   };
 };

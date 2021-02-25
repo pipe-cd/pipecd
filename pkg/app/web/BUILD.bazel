@@ -50,10 +50,7 @@ tsc(
             "src/**/*",
         ],
         exclude = [
-            "**/__mocks__/**",
-            "**/__fixtures__/**",
             "src/**/*.test.*",
-            "src/mocks/**",
             "src/**/*.stories.*",
         ],
     ) + [
@@ -93,6 +90,7 @@ webpack(
         "--output-path",
         "$(@D)",
     ],
+    configuration_env_vars = ["ENABLE_MOCK"],
     data = [
         "api_client",
         "base.html",
