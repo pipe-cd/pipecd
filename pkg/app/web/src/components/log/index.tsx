@@ -38,7 +38,7 @@ export const Log: FC<LogProps> = memo(function Log({ logs, loading }) {
       ))}
       {loading && (
         <Box display="flex" justifyContent="center" p={1}>
-          <CircularProgress />
+          <CircularProgress color="secondary" />
         </Box>
       )}
       <div className={classes.space} />
