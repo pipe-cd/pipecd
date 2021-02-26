@@ -444,22 +444,10 @@ func (a *WebAPI) UpdateApplication(ctx context.Context, req *webservice.UpdateAp
 		return nil, status.Error(codes.InvalidArgument, "Requested piped does not belong to your project")
 	}
 
-	gitpath, err := makeGitPath(
-		req.GitPath.Repo.Id,
-		req.GitPath.Path,
-		req.GitPath.ConfigFilename,
-		piped,
-		a.logger,
-	)
-	if err != nil {
-		return nil, err
-	}
-
 	err = a.applicationStore.UpdateApplication(ctx, req.ApplicationId, func(app *model.Application) error {
 		app.Name = req.Name
 		app.EnvId = req.EnvId
 		app.PipedId = req.PipedId
-		app.GitPath = gitpath
 		app.Kind = req.Kind
 		app.CloudProvider = req.CloudProvider
 		return nil
