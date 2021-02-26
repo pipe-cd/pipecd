@@ -26,6 +26,7 @@
     "@testing-library/react": "^10.4.3",
     "@testing-library/react-hooks": "^3.4.2",
     "@testing-library/user-event": "^12.2.0",
+    "@types/echarts": "^4.9.4",
     "@types/faker": "^5.1.6",
     "@types/google-protobuf": "^3.7.2",
     "@types/jest": "^25.2.3",
@@ -79,6 +80,7 @@
     "dagre": "^0.8.5",
     "dayjs": "^1.8.28",
     "dotenv": "^8.2.0",
+    "echarts": "^5.0.2",
     "formik": "^2.2.4",
     "google-protobuf": "^3.12.0-rc.1",
     "grpc-web": "^1.0.7",
@@ -90,7 +92,6 @@
     "react-intersection-observer": "^8.26.2",
     "react-redux": "^7.2.0",
     "react-router-dom": "^5.2.0",
-    "recharts": "^2.0.3",
     "redux": "^4.0.5",
     "yup": "^0.29.3"
   }
