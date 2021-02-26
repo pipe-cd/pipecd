@@ -11,7 +11,7 @@ The background of this proposal is we are going to add complex queries and more 
 
 # Detailed design
 
-As mention is the motivation section, the root cause of this change is: we're going to add complex queries with those indexes to the datastore of PipeCD control-plane. The use-case of those queries requires:
+As mention in the motivation section, the root cause of this change is: we're going to add complex queries with those indexes to the datastore of PipeCD control-plane. The use-case of those queries requires:
 - easy way to pagination query result
 - easy way to ordering query result
 - easy way to add indexes for future adding queries
@@ -20,7 +20,7 @@ Besides, to keep `simplicity on installing` characteristic of PipeCD, the chosen
 - easy to be installed on cloud provider environment (GCP, AWS, etc)
 - can use the updated version easily
 
-We're using NoSQL for now due to its schemaless characteristic is good for the deployment process, so we focus on NoSQL support features on the chosen SQL database.
+We're using NoSQL for now because of its schemaless characteristic is good for the deployment process, so we focus on NoSQL support features on the chosen SQL database. In order to accomplish the schema flexibility on SQL database, we use a JSON field to store our model data containing fluctuant structure fields, just some stable fields like ID, CreatedAt, UpdatedAt will be explicitly declared while defining the table schema.
 
 The sample table creates commands for the `project` model and `application` model (other models than project model is as same as the application) as below.
 
@@ -43,7 +43,7 @@ CREATE TABLE applications (
 );
 
 # MySQL
-CREATE TABLE `projects` (
+CREATE TABLE projects (
   id BINARY(16) PRIMARY KEY,
   data JSON NOT NULL,
   disabled BOOL NOT NULL,
@@ -51,7 +51,7 @@ CREATE TABLE `projects` (
   updated_at INT(11) NOT NULL
 ) ENGINE=InnoDB;
 
-CREATE TABLE `applications` (
+CREATE TABLE applications (
   id BINARY(16) PRIMARY KEY,
   project_id BINARY(16) NOT NULL,
   data JSON NOT NULL,
@@ -61,12 +61,9 @@ CREATE TABLE `applications` (
 ) ENGINE=InnoDB;
 ```
 
-For indexing issue:
-- PostgreSQL indexing for the attributes of Jsonb data type is as follow: [Json indexing](https://www.postgresql.org/docs/current/datatype-json.html#JSON-INDEXING)
-- MySQL also support indexing for attributes of Json data type as follow: [Json indexing by secondary indexes](https://dev.mysql.com/doc/refman/8.0/en/create-table-secondary-indexes.html)
-
-(note: both Jsonb and Json point to the type of storing JSON data in those databases. The key difference is that Json data is stored as an exact copy of the JSON input text, whereas Jsonb stores data in a decomposed binary form. Jsonb seems a better choice since it supports indexing with significant performance increases)
-
+Note:
+- Both Jsonb and Json point to the type of storing JSON data in those databases. The key difference is that Json data is stored as an exact copy of the JSON input text, whereas Jsonb stores data in a decomposed binary form. Jsonb seems a better choice since it supports indexing with significant performance increases.
+- Save those data redundantly (both as table columns and as attributes of the JSON data) to reduce model object initialization costs.
 # Alternatives
 
 Currently, we consider between MySQL and PostgreSQL for those support for NoSQL features, PostgreSQL has a longer time in this field. Some considering factors:
@@ -77,11 +74,11 @@ Currently, we consider between MySQL and PostgreSQL for those support for NoSQL 
 
 ## Ability to index a specific attribute of the JSON field
 
-For `MySQL 8.0`, we have 2 points which have to be considered.
+We have 2 points which have to be considered.
 
-1. UUID data for `id` and `project_id` fields
+1. UUID as primary keys should not affect queries performance
 
-Since we're using `application side UUID generate` pattern, (which mean to MySQL, those ids are true random UUID) store those ids under `VARCHAR(32)` data type is costly for both read and write operation due to the indexes does not work, using `UUID_TO_BIN` & `BIN_TO_UUID` with `swap_flag` and store data under `BINARY(16)` would help.
+While MySQL does not have UUID data type, since we're using `application side UUID generate` pattern, (which mean to MySQL, those ids are true random UUID) store those ids under `VARCHAR(32)` data type is costly for both read and write operation due to the indexes does not work, using `UUID_TO_BIN` & `BIN_TO_UUID` with `swap_flag` and store data under `BINARY(16)` would help.
 
 From MySQL docs
 ```
@@ -97,12 +94,16 @@ From MySQL docs
 
 ```
 
-2. Create indexes for JSON attribute without affecting the schemaless advantage
+PostgreSQL has UUID type to store this kind of data and support it as primary key as well.
 
-We could use `CREATE INDEX` to create secondary indexes on generated columns which stored JSON attributes as an indirect way to indexes JSON attributes.
+MySQL: 👍 PostgreSQL: 👍
+
+2. Create indexes for JSON attributes without affecting the schemaless advantage
+
+For MySQL, we could use `CREATE INDEX` to create secondary indexes on generated columns which stored JSON attributes as an indirect way to indexes JSON attributes.
 In order to keep the advantage of the schemaless pattern, we will use `virtual generated columns` instead of `stored generated columns` (which will physically store along with other columns of table). __The virtual generated columns wouldn't be generated on READ as long as we keep all generated columns as part of some secondary indexes__, which reduce the cost of recomputing from READ operation (note that computing virtual columns value cost on WRITE remains).
 
-Sample secondary indexes creation as follow
+Sample secondary indexes creation commands as follow
 
 ```sql
 mysql> CREATE INDEX idx ON applications ( ( CAST( data->>"$.name" AS CHAR(10) ) ) );
@@ -113,6 +114,20 @@ mysql> CREATE INDEX idy ON applications ( (JSON_VALUE(data, '$.name' RETURNING C
 ref:
 - https://dev.mysql.com/doc/refman/8.0/en/create-table-secondary-indexes.html
 - https://dev.mysql.com/doc/refman/8.0/en/create-index.html
+
+For PostgreSQL, we also have `CREATE INDEX` statement for this task too. The good thing is, PostgreSQL treats indexes for JSON attributes as same as indexes for normal columns so that we don't have to worry about generated columns or something else be added to our schema.
+
+Sample indexes creation commands as follow
+
+```sql
+postgres=> CREATE INDEX idx ON test.applications ((data->>'name'));
+```
+
+ref: https://www.postgresql.org/docs/13/datatype-json.html
+
+Since both MySQL and PostgreSQL have multi-columns indexes, it's okay if we want to add index to multi attributes of JSON data.
+
+MySQL: 👍 PostgreSQL: 👍
 
 ## Supported operators on specific JSON field
 
@@ -152,7 +167,11 @@ mysql> EXPLAIN SELECT data->>"$.name" FROM applications WHERE JSON_VALUE(data, '
 
 note: indexing using `JSON_VALUE` costs more than `CAST` (key_len value is longer) and may cost more disk usage.
 
-Another issue is that `LIKE` operator could not use the indexes for query on JSON attributes.
+MySQL: 👍 PostgreSQL: 👍
+
+## Text search operations on specific JSON field
+
+For future functions which require text search on JSON field, in case we use `LIKE` operator for text comparison, it looks like both MySQL and PostgreSQL queries do not use normal indexes on JSON attributes.
 
 ```sql
 mysql> EXPLAIN SELECT data->>"$.name" FROM applications FORCE INDEX (idx) WHERE CAST(data->>'$.name' AS CHAR(10)) = 'app-1';
@@ -180,6 +199,58 @@ mysql> EXPLAIN SELECT data->>"$.name" FROM applications FORCE INDEX (idy) WHERE 
 1 row in set, 1 warning (0.00 sec)
 ```
 
+PostgreSQL tends to use Seq Scan for this kind of task.
+
+```sql
+# set enable_seqscan=false;
+postgres=> explain select data from test.applications where data->>'name' like 'app-%';
+                                   QUERY PLAN                                    
+---------------------------------------------------------------------------------
+ Seq Scan on applications  (cost=10000000000.00..10000000001.05 rows=1 width=32)
+   Filter: ((data ->> 'name'::text) ~~ 'app-%'::text)
+ JIT:
+   Functions: 4
+   Options: Inlining true, Optimization true, Expressions true, Deforming true
+(5 rows)
+# set enable_seqscan=true;
+postgres=> explain select data from test.applications where data->>'name' like 'app-%';
+                         QUERY PLAN                          
+-------------------------------------------------------------
+ Seq Scan on applications  (cost=0.00..1.04 rows=1 width=32)
+   Filter: ((data ->> 'name'::text) ~~ 'app-%'::text)
+(2 rows)
+```
+
+To resolve this issue, MySQL provides `FULLTEXT` index and PostgreSQL provides `GIN` index.
+
+For MySQL, the `FULLTEXT` index requires a physically stored column (`STORED GENERATED COLUMN` in case of JSON attribute indexes) to be used, which means __if we want to add it to a not yet existed column/JSON attribute, we have to use ALTER TABLE statement__. Otherwise, an error will be raised as follow
+```sql
+# MySQL v8
+mysql> CREATE FULLTEXT INDEX idz ON applications ((CAST(data->>'$.name' AS CHAR(10))));
+ERROR 3759 (HY000): Fulltext functional index is not supported.
+```
+
+For PostgreSQL, looks like we do not have an critical issue which this feature
+```sql
+postgres=> CREATE INDEX idf ON test.applications USING GIN(data);
+CREATE INDEX
+postgres=> \d test.applications
+               Table "test.applications"
+   Column   |  Type   | Collation | Nullable | Default 
+------------+---------+-----------+----------+---------
+ id         | uuid    |           | not null | 
+ project_id | uuid    |           | not null | 
+ data       | jsonb   |           | not null | 
+ disabled   | boolean |           | not null | 
+ created_at | bigint  |           | not null | 
+ updated_at | bigint  |           | not null | 
+Indexes:
+    "applications_pkey" PRIMARY KEY, btree (id)
+    "idf" gin (data)
+```
+
+MySQL: 👎 PostgreSQL: 👍
+
 ## Performance of query operation on indexed JSON field
 
 For queries which uses search function on indexed JSON fields and without using JOIN (in our use-case)
@@ -187,7 +258,7 @@ For queries which uses search function on indexed JSON fields and without using 
 - For read queries, MySQL has a bit advantage due to its fast read-only characteristic. Besides, in case all virtual generated columns are secondary indexed columns, generated column values are materialized in the records of the index, which means MySQL will not recalculate virtual generated columns on query.
 - For write queries, PostgreSQL has a bit advantage due to MySQL cost on calculating virtual generated columns on each writes.
 
-ref: https://dev.mysql.com/doc/refman/8.0/en/create-table-secondary-indexes.html
+MySQL: 👍 PostgreSQL: 👍
 ## Able to keep advantage of schemaless pattern
 
 Yes, for both 🎉
@@ -195,5 +266,15 @@ Yes, for both 🎉
 # Unresolved questions
 
 Currently, we have 2 points which need to investigate more
-1. The support of each cloud providers (GCP and AWS for now) for the chosen SQL database, since it's not the native service of those cloud providers (not as firestore of GCP and dynamodb of AWS for instance). Both AWS and GCP support latest versions of PostgreSQL(v13) and MySQL(v8).
-2. In case `PostgreSQL` is chosen, there is no official driver for golang currently, we have a list of candidates: [pgx](https://github.com/jackc/pgx), [go-pg/pg](https://github.com/go-pg/pg).
+## The support of each cloud providers
+
+With GCP and AWS (for now), since it's not the native service of those cloud providers, we have to use them fully-managed SQL services (SQL for GCP and RDS for AWS).\
+Besides, both AWS and GCP support the latest versions of PostgreSQL(v13) and MySQL(v8), but other cloud providers such as Azure only support up-to-date MySQL(v8) and a little behind PostgreSQL(v11).
+
+MySQL: 👍 PostgreSQL: 👎
+## Community supports
+
+In case `PostgreSQL` is chosen, there is no official driver for golang currently, we have a list of candidates: [pgx](https://github.com/jackc/pgx), [go-pg/pg](https://github.com/go-pg/pg).\
+`MySQL` is better in that field since it has a wider range of users/services and also has an official golang driver.
+
+MySQL: 👍 PostgreSQL: 👎
