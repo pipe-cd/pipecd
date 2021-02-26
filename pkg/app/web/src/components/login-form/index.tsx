@@ -1,9 +1,12 @@
 import React, { FC, memo } from "react";
 import { makeStyles, TextField, Button, Typography } from "@material-ui/core";
-import { STATIC_LOGIN_ENDPOINT, LOGIN_ENDPOINT } from "../../constants/path";
-import { useProjectName, clearProjectName } from "../../modules/login";
-import { useDispatch } from "react-redux";
+import {
+  STATIC_LOGIN_ENDPOINT,
+  LOGIN_ENDPOINT,
+  PAGE_PATH_LOGIN,
+} from "../../constants/path";
 import { MarkGithubIcon } from "@primer/octicons-react";
+import { Link } from "react-router-dom";
 
 const useStyles = makeStyles((theme) => ({
   root: {
@@ -55,14 +58,12 @@ const useStyles = makeStyles((theme) => ({
   },
 }));
 
-export const LoginForm: FC = memo(function LoginForm() {
-  const classes = useStyles();
-  const dispatch = useDispatch();
-  const projectName = useProjectName();
+interface Props {
+  projectName: string;
+}
 
-  const handleReset = (): void => {
-    dispatch(clearProjectName());
-  };
+export const LoginForm: FC<Props> = memo(function LoginForm({ projectName }) {
+  const classes = useStyles();
 
   return (
     <div className={classes.root}>
@@ -71,7 +72,7 @@ export const LoginForm: FC = memo(function LoginForm() {
         <form method="POST" action={LOGIN_ENDPOINT} className={classes.form}>
           <input
             type="hidden"
-            id="project"
+            id="project-gh"
             name="project"
             value={projectName || undefined}
           />
@@ -121,7 +122,12 @@ export const LoginForm: FC = memo(function LoginForm() {
             required
           />
           <div className={classes.buttons}>
-            <Button type="reset" color="primary" onClick={handleReset}>
+            <Button
+              type="reset"
+              color="primary"
+              component={Link}
+              to={PAGE_PATH_LOGIN}
+            >
               back
             </Button>
             <Button type="submit" color="primary" variant="contained">

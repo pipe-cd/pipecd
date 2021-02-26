@@ -8,11 +8,9 @@ import {
 import ArrowRightAltIcon from "@material-ui/icons/ArrowRightAlt";
 import React, { FC, memo, useState } from "react";
 import { useCookies } from "react-cookie";
-import { useDispatch } from "react-redux";
-import { Redirect } from "react-router-dom";
+import { Link, Redirect, useHistory, useParams } from "react-router-dom";
 import { LoginForm } from "../components/login-form";
-import { PAGE_PATH_APPLICATIONS } from "../constants/path";
-import { setProjectName, useProjectName } from "../modules/login";
+import { PAGE_PATH_APPLICATIONS, PAGE_PATH_LOGIN } from "../constants/path";
 import { useMe } from "../modules/me";
 import MuiAlert from "@material-ui/lab/Alert";
 
@@ -52,11 +50,11 @@ const useStyles = makeStyles((theme) => ({
 
 export const LoginPage: FC = memo(function LoginPage() {
   const classes = useStyles();
-  const dispatch = useDispatch();
   const me = useMe();
-  const projectName = useProjectName();
   const [name, setName] = useState<string>("");
   const [cookies, , removeCookie] = useCookies(["error"]);
+  const { projectName } = useParams<{ projectName?: string }>();
+  const history = useHistory();
 
   const handleCloseErrorAlert = (): void => {
     removeCookie("error");
@@ -64,7 +62,7 @@ export const LoginPage: FC = memo(function LoginPage() {
 
   const handleOnContinue = (e: React.FormEvent<HTMLFormElement>): void => {
     e.preventDefault();
-    dispatch(setProjectName(name));
+    history.push(`${PAGE_PATH_LOGIN}/${name}`);
   };
 
   return (
@@ -80,7 +78,9 @@ export const LoginPage: FC = memo(function LoginPage() {
         </MuiAlert>
       )}
       <Card className={classes.content}>
-        {projectName === null ? (
+        {projectName ? (
+          <LoginForm projectName={projectName} />
+        ) : (
           <form onSubmit={handleOnContinue}>
             <Typography variant="h4">Sign in to your project</Typography>
             <div className={classes.fields}>
@@ -101,14 +101,14 @@ export const LoginPage: FC = memo(function LoginPage() {
                 color="primary"
                 variant="contained"
                 endIcon={<ArrowRightAltIcon />}
+                component={Link}
                 disabled={name === ""}
+                to={`${PAGE_PATH_LOGIN}/${name}`}
               >
                 CONTINUE
               </Button>
             </div>
           </form>
-        ) : (
-          <LoginForm />
         )}
       </Card>
     </div>
