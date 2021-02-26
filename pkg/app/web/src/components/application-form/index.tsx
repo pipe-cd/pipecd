@@ -148,6 +148,7 @@ export interface ApplicationFormValue {
 export type ApplicationFormProps = FormikProps<ApplicationFormValue> & {
   title: string;
   onClose: () => void;
+  disableGitPath?: boolean;
 };
 
 export const emptyFormValues: ApplicationFormValue = {
@@ -176,6 +177,7 @@ export const ApplicationForm: FC<ApplicationFormProps> = memo(
     setFieldValue,
     setValues,
     onClose,
+    disableGitPath = false,
   }) {
     const classes = useStyles();
 
@@ -287,7 +289,9 @@ export const ApplicationForm: FC<ApplicationFormProps> = memo(
                   remote: repo.remote,
                 })) || []
               }
-              disabled={selectedPiped === undefined || isSubmitting}
+              disabled={
+                selectedPiped === undefined || isSubmitting || disableGitPath
+              }
             />
 
             <div className={classes.inputGroupSpace} />
@@ -297,7 +301,9 @@ export const ApplicationForm: FC<ApplicationFormProps> = memo(
               label="Path"
               variant="outlined"
               margin="dense"
-              disabled={selectedPiped === undefined || isSubmitting}
+              disabled={
+                selectedPiped === undefined || isSubmitting || disableGitPath
+              }
               onChange={handleChange}
               value={values.repoPath}
               fullWidth
@@ -311,7 +317,9 @@ export const ApplicationForm: FC<ApplicationFormProps> = memo(
             label="Config Filename"
             variant="outlined"
             margin="dense"
-            disabled={selectedPiped === undefined || isSubmitting}
+            disabled={
+              selectedPiped === undefined || isSubmitting || disableGitPath
+            }
             onChange={handleChange}
             value={values.configFilename}
             fullWidth
