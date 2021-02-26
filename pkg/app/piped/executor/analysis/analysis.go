@@ -202,9 +202,9 @@ func (e *Executor) newAnalyzerForMetrics(i int, templatable *config.TemplatableA
 		return nil, err
 	}
 	id := fmt.Sprintf("metrics-%d", i)
-	return newAnalyzer(id, provider.Type(), func(ctx context.Context) (bool, error) {
+	return newAnalyzer(id, provider.Type(), func() (bool, error) {
 		e.LogPersister.Infof("[%s] Run query against %s: %q", id, provider.Type(), cfg.Query)
-		return provider.RunQuery(ctx, cfg.Query, cfg.Expected)
+		return provider.RunQuery(cfg.Query, cfg.Expected)
 	}, time.Duration(cfg.Interval), cfg.FailureLimit, e.Logger, e.LogPersister), nil
 }
 
@@ -218,9 +218,9 @@ func (e *Executor) newAnalyzerForLog(i int, templatable *config.TemplatableAnaly
 		return nil, err
 	}
 	id := fmt.Sprintf("log-%d", i)
-	return newAnalyzer(id, provider.Type(), func(ctx context.Context) (bool, error) {
+	return newAnalyzer(id, provider.Type(), func() (bool, error) {
 		e.LogPersister.Infof("[%s] Run query against %s: %q", id, provider.Type(), cfg.Query)
-		return provider.RunQuery(ctx, cfg.Query)
+		return provider.RunQuery(cfg.Query)
 	}, time.Duration(cfg.Interval), cfg.FailureLimit, e.Logger, e.LogPersister), nil
 }
 
@@ -231,9 +231,9 @@ func (e *Executor) newAnalyzerForHTTP(i int, templatable *config.TemplatableAnal
 	}
 	provider := httpprovider.NewProvider(time.Duration(cfg.Timeout))
 	id := fmt.Sprintf("http-%d", i)
-	return newAnalyzer(id, provider.Type(), func(ctx context.Context) (bool, error) {
+	return newAnalyzer(id, provider.Type(), func() (bool, error) {
 		e.LogPersister.Infof("[%s] Start running query against %s: %s %s", id, provider.Type(), cfg.Method, cfg.URL)
-		return provider.Run(ctx, cfg)
+		return provider.Run(cfg)
 	}, time.Duration(cfg.Interval), cfg.FailureLimit, e.Logger, e.LogPersister), nil
 }
 

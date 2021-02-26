@@ -15,7 +15,6 @@
 package metrics
 
 import (
-	"context"
 	"errors"
 
 	"github.com/pipe-cd/pipe/pkg/app/piped/analysisprovider"
@@ -31,5 +30,5 @@ type Provider interface {
 	analysisprovider.Provider
 	// RunQuery runs the given query against the metrics provider,
 	// and then checks if the results are expected or not.
-	RunQuery(ctx context.Context, query string, expected config.AnalysisExpected) (result bool, err error)
+	RunQuery(query string, expected config.AnalysisExpected) (result bool, err error)
 }

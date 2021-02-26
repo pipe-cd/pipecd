@@ -15,8 +15,6 @@
 package log
 
 import (
-	"context"
-
 	"github.com/pipe-cd/pipe/pkg/app/piped/analysisprovider"
 )
 
@@ -25,5 +23,5 @@ type Provider interface {
 	analysisprovider.Provider
 	// RunQuery runs the given query against the log provider,
 	// and then checks if there is at least one error log..
-	RunQuery(ctx context.Context, query string) (result bool, err error)
+	RunQuery(query string) (result bool, err error)
 }

@@ -14,7 +14,7 @@ import (
 type analyzer struct {
 	id           string
 	providerType string
-	runQuery     func(ctx context.Context) (bool, error)
+	runQuery     func() (bool, error)
 	interval     time.Duration
 	// The analysis will fail, ff this value is exceeded,
 	failureLimit int
@@ -23,7 +23,7 @@ type analyzer struct {
 	logPersister executor.LogPersister
 }
 
-func newAnalyzer(id string, providerType string, runQuery func(ctx context.Context) (bool, error), interval time.Duration, failureLimit int, logger *zap.Logger, logPersister executor.LogPersister) *analyzer {
+func newAnalyzer(id string, providerType string, runQuery func() (bool, error), interval time.Duration, failureLimit int, logger *zap.Logger, logPersister executor.LogPersister) *analyzer {
 	l := logger.With(
 		zap.String("analyzer-id", id),
 		zap.String("provider-type", providerType),
@@ -50,7 +50,7 @@ func (a *analyzer) run(ctx context.Context) error {
 		select {
 		case <-ticker.C:
 			reason := ""
-			success, err := a.runQuery(ctx)
+			success, err := a.runQuery()
 			if err != nil {
 				// The failure of the query itself is treated as a failure.
 				reason = fmt.Sprintf("failed to run query: %s", err.Error())
