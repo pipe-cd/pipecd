@@ -229,6 +229,7 @@ For MySQL, the `FULLTEXT` index requires a physically stored column (`STORED GEN
 mysql> CREATE FULLTEXT INDEX idz ON applications ((CAST(data->>'$.name' AS CHAR(10))));
 ERROR 3759 (HY000): Fulltext functional index is not supported.
 ```
+Another option is to create a `stored generated column` that shadows value from an extra attribute of JSON data, then we could create indexes (FULLTEXT or normal) on that column for search features.
 
 For PostgreSQL, looks like we do not have an critical issue which this feature
 ```sql
