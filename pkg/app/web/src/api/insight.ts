@@ -19,7 +19,5 @@ export const getInsightData = ({
   req.setMetricsKind(metricsKind);
   req.setRangeFrom(rangeFrom);
   req.setStep(step);
-  console.log(step);
-
   return apiRequest(req, apiClient.getInsightData);
 };
