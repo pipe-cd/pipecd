@@ -197,7 +197,7 @@ message UpdateApplicationRequest {
     string name = 2 [(validate.rules).string.min_len = 1];
     string env_id = 3 [(validate.rules).string.min_len = 1];
     string piped_id = 4 [(validate.rules).string.min_len = 1];
-    // TODO: Rmove right after removing the web form for Git path
+    // TODO: Remove git path field right after removing the web form for it
     model.ApplicationGitPath git_path = 5 [deprecated = true];;
     model.ApplicationKind kind = 6 [(validate.rules).enum.defined_only = true];
     string cloud_provider = 7 [(validate.rules).string.min_len = 1];
