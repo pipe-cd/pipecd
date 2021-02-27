@@ -81,9 +81,9 @@ func TestControlPlaneConfig(t *testing.T) {
 					TTL: Duration(5 * time.Minute),
 				},
 				InsightCollector: ControlPlaneInsightCollector{
-					FeatureFlags: insightFeatureFlags{
-						EnableDevelopmentFrequency: true,
-						EnableChangeFailureRate:    true,
+					DisabledMetrics: InsightCollectorDisabledMetrics{
+						DeploymentFrequency: true,
+						ChangeFailureRate:   true,
 					},
 					Schedule:          "0 0 * * *",
 					RetryTime:         3, //The default value applied.

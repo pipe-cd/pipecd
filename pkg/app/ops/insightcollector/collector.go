@@ -51,7 +51,7 @@ func NewInsightCollector(
 	ds datastore.DataStore,
 	fs filestore.Store,
 	logger *zap.Logger,
-	mode CollectorMode,
+	metrics CollectorMetrics,
 ) *InsightCollector {
 	i := &InsightCollector{
 		projectStore:     datastore.NewProjectStore(ds),
@@ -60,19 +60,19 @@ func NewInsightCollector(
 		insightstore:     insightstore.NewStore(fs),
 		logger:           logger.Named("insight-collector"),
 	}
-	i.setCollectFunctions(mode)
+	i.setCollectFunctions(metrics)
 	return i
 }
 
-func (i *InsightCollector) setCollectFunctions(mode CollectorMode) {
+func (i *InsightCollector) setCollectFunctions(metrics CollectorMetrics) {
 	cf := collectFunctions{}
-	if mode.ApplicationCountEnabled() {
+	if metrics.IsEnabled(ApplicationCount) {
 		cf.applicationCollectFns = append(cf.applicationCollectFns, i.collectApplicationCount)
 	}
-	if mode.DevelopmentFrequencyEnabled() {
+	if metrics.IsEnabled(DevelopmentFrequency) {
 		cf.developmentCollectFns.newlyCreatedDeploymentsFns = append(cf.developmentCollectFns.newlyCreatedDeploymentsFns, i.collectDevelopmentFrequency)
 	}
-	if mode.ChangeFailureRateEnabled() {
+	if metrics.IsEnabled(ChangeFailureRate) {
 		cf.developmentCollectFns.newlyCompletedDeploymentsFns = append(cf.developmentCollectFns.newlyCompletedDeploymentsFns, i.collectChangeFailureRate)
 	}
 	i.collectFuncs = cf

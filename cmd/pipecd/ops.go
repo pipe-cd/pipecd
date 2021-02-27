@@ -197,13 +197,13 @@ func (s *ops) run(ctx context.Context, t cli.Telemetry) error {
 	return nil
 }
 
-func loadCollectorMode(cfg *config.ControlPlaneSpec) insightcollector.CollectorMode {
-	mode := insightcollector.NewCollectorMode()
-	if cfg.InsightCollector.FeatureFlags.EnableDevelopmentFrequency {
-		mode.Set("D")
+func loadCollectorMode(cfg *config.ControlPlaneSpec) insightcollector.CollectorMetrics {
+	metrics := insightcollector.NewCollectorMetrics()
+	if !cfg.InsightCollector.DisabledMetrics.DeploymentFrequency {
+		metrics.Enable(insightcollector.DevelopmentFrequency)
 	}
-	if cfg.InsightCollector.FeatureFlags.EnableChangeFailureRate {
-		mode.Set("C")
+	if cfg.InsightCollector.DisabledMetrics.ChangeFailureRate {
+		metrics.Enable(insightcollector.ChangeFailureRate)
 	}
-	return mode
+	return metrics
 }
