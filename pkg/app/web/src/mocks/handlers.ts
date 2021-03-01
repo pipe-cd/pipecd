@@ -8,6 +8,7 @@ import { environmentHandlers } from "./services/environment";
 import { liveStateHandlers } from "./services/live-state";
 import { stageLogHandlers } from "./services/stage-log";
 import { apiKeyHandlers } from "./services/api-keys";
+import { insightHandlers } from "./services/insight";
 
 export const handlers = [
   ...meHandlers,
@@ -20,4 +21,5 @@ export const handlers = [
   ...liveStateHandlers,
   ...stageLogHandlers,
   ...apiKeyHandlers,
+  ...insightHandlers,
 ];
