@@ -2,7 +2,12 @@ load("@io_bazel_rules_go//go:def.bzl", "go_library", "go_test")
 
 go_library(
     name = "go_default_library",
-    srcs = ["collector.go"],
+    srcs = [
+        "applications.go",
+        "collector.go",
+        "deployments.go",
+        "metrics.go",
+    ],
     importpath = "github.com/pipe-cd/pipe/pkg/app/ops/insightcollector",
     visibility = ["//visibility:public"],
     deps = [
@@ -18,7 +23,10 @@ go_library(
 go_test(
     name = "go_default_test",
     size = "small",
-    srcs = ["collector_test.go"],
+    srcs = [
+        "deployments_test.go",
+        "metrics_test.go",
+    ],
     embed = [":go_default_library"],
     deps = [
         "//pkg/datastore:go_default_library",

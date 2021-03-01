@@ -31,6 +31,7 @@ import (
 	"github.com/pipe-cd/pipe/pkg/app/ops/orphancommandcleaner"
 	"github.com/pipe-cd/pipe/pkg/backoff"
 	"github.com/pipe-cd/pipe/pkg/cli"
+	"github.com/pipe-cd/pipe/pkg/config"
 	"github.com/pipe-cd/pipe/pkg/datastore"
 	"github.com/pipe-cd/pipe/pkg/model"
 	"github.com/pipe-cd/pipe/pkg/version"
@@ -111,7 +112,8 @@ func (s *ops) run(ctx context.Context, t cli.Telemetry) error {
 
 	// Starting a cron job for insight collector.
 	if s.enableInsightCollector {
-		collector := insightcollector.NewInsightCollector(ds, fs, t.Logger)
+		mode := loadCollectorMode(cfg)
+		collector := insightcollector.NewInsightCollector(ds, fs, t.Logger, mode)
 		c := cron.New(cron.WithLocation(time.UTC))
 		_, err := c.AddFunc(cfg.InsightCollector.Schedule, func() {
 			retry := backoff.NewRetry(cfg.InsightCollector.RetryTime, backoff.NewConstant(time.Duration(cfg.InsightCollector.RetryIntervalHour)*time.Hour))
@@ -199,4 +201,15 @@ func (s *ops) run(ctx context.Context, t cli.Telemetry) error {
 		return err
 	}
 	return nil
+}
+
+func loadCollectorMode(cfg *config.ControlPlaneSpec) insightcollector.CollectorMetrics {
+	metrics := insightcollector.NewCollectorMetrics()
+	if !cfg.InsightCollector.DisabledMetrics.DeploymentFrequency {
+		metrics.Enable(insightcollector.DevelopmentFrequency)
+	}
+	if cfg.InsightCollector.DisabledMetrics.ChangeFailureRate {
+		metrics.Enable(insightcollector.ChangeFailureRate)
+	}
+	return metrics
 }

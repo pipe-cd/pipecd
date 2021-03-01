@@ -186,9 +186,15 @@ type ControlPlaneCache struct {
 }
 
 type ControlPlaneInsightCollector struct {
-	Schedule          string `json:"schedule"`
-	RetryTime         int    `json:"retryTime"`
-	RetryIntervalHour int    `json:"retryIntervalHour"`
+	Schedule          string                          `json:"schedule"`
+	RetryTime         int                             `json:"retryTime"`
+	RetryIntervalHour int                             `json:"retryIntervalHour"`
+	DisabledMetrics   InsightCollectorDisabledMetrics `json:"disabledMetrics"`
+}
+
+type InsightCollectorDisabledMetrics struct {
+	DeploymentFrequency bool `json:"disabledDeploymentFrequency"`
+	ChangeFailureRate   bool `json:"disabledChangeFailureRate"`
 }
 
 var (
