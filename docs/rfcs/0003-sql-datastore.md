@@ -96,7 +96,7 @@ From MySQL docs
 
 PostgreSQL has UUID type to store this kind of data and support it as primary key as well.
 
-MySQL: 👍 PostgreSQL: 👍
+MySQL: 👍 PostgreSQL: 👍👍
 
 2. Create indexes for JSON attributes without affecting the schemaless advantage
 
