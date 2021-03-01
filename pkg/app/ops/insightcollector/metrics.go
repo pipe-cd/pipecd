@@ -14,8 +14,6 @@
 
 package insightcollector
 
-import "bytes"
-
 type CollectorMetrics uint
 
 // Options controlling the InsightCollector.
@@ -27,24 +25,6 @@ const (
 
 func NewCollectorMetrics() CollectorMetrics {
 	return CollectorMetrics(0)
-}
-
-// CollectorMetrics is represented as a sequence of zero or more of these letters:
-// C: [C]hange failure rate.
-// D: [D]evelopment frequency.
-// A: [A]pplication count.
-func (m CollectorMetrics) String() string {
-	var buf bytes.Buffer
-	if m.IsEnabled(ChangeFailureRate) {
-		buf.WriteByte('C')
-	}
-	if m.IsEnabled(DevelopmentFrequency) {
-		buf.WriteByte('D')
-	}
-	if m.IsEnabled(ApplicationCount) {
-		buf.WriteByte('A')
-	}
-	return buf.String()
 }
 
 func (m *CollectorMetrics) Enable(a CollectorMetrics) {
