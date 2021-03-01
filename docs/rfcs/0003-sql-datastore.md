@@ -250,7 +250,7 @@ Indexes:
     "idf" gin (data)
 ```
 
-MySQL: 👎 PostgreSQL: 👍
+MySQL: 👍 PostgreSQL: 👍👍
 
 ## Performance of query operation on indexed JSON field
 
@@ -272,10 +272,10 @@ Currently, we have 2 points which need to investigate more
 With GCP and AWS (for now), since it's not the native service of those cloud providers, we have to use them fully-managed SQL services (SQL for GCP and RDS for AWS).\
 Besides, both AWS and GCP support the latest versions of PostgreSQL(v13) and MySQL(v8), but other cloud providers such as Azure only support up-to-date MySQL(v8) and a little behind PostgreSQL(v11).
 
-MySQL: 👍 PostgreSQL: 👎
+MySQL: 👍👍 PostgreSQL: 👍
 ## Community supports
 
 In case `PostgreSQL` is chosen, there is no official driver for golang currently, we have a list of candidates: [pgx](https://github.com/jackc/pgx), [go-pg/pg](https://github.com/go-pg/pg).\
 `MySQL` is better in that field since it has a wider range of users/services and also has an official golang driver.
 
-MySQL: 👍 PostgreSQL: 👎
+MySQL: 👍👍 PostgreSQL: 👍
