@@ -135,7 +135,6 @@ export const updateApplication = async ({
   kind,
   name,
   pipedId,
-  gitPath,
 }: Required<UpdateApplicationRequest.AsObject>): Promise<
   UpdateApplicationResponse.AsObject
 > => {
@@ -146,19 +145,6 @@ export const updateApplication = async ({
   req.setPipedId(pipedId);
   req.setCloudProvider(cloudProvider);
   req.setKind(kind);
-  const appGitPath = new ApplicationGitPath();
-  const repository = new ApplicationGitRepository();
-  if (gitPath.repo) {
-    repository.setId(gitPath.repo.id);
-    repository.setBranch(gitPath.repo.branch);
-    repository.setRemote(gitPath.repo.remote);
-    appGitPath.setRepo(repository);
-  }
-  appGitPath.setPath(gitPath.path);
-  if (gitPath.configFilename && gitPath.configFilename !== "") {
-    appGitPath.setConfigFilename(gitPath.configFilename);
-  }
-  req.setGitPath(appGitPath);
   return apiRequest(req, apiClient.updateApplication);
 };
 

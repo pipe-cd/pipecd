@@ -35,13 +35,6 @@ export const updateApplication = createAsyncThunk<
     name: values.name,
     envId: values.env,
     pipedId: values.pipedId,
-    gitPath: {
-      repo: values.repo,
-      path: values.repoPath,
-      configPath: values.configPath || "",
-      configFilename: values.configFilename || "",
-      url: "",
-    },
     cloudProvider: values.cloudProvider,
     kind: values.kind,
   });
