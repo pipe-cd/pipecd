@@ -193,8 +193,8 @@ type ControlPlaneInsightCollector struct {
 }
 
 type InsightCollectorDisabledMetrics struct {
-	DeploymentFrequency bool `json:"disabledDeploymentFrequency"`
-	ChangeFailureRate   bool `json:"disabledChangeFailureRate"`
+	DeploymentFrequency bool `json:"deploymentFrequency"`
+	ChangeFailureRate   bool `json:"changeFailureRate"`
 }
 
 var (

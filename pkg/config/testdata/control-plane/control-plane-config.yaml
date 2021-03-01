@@ -37,5 +37,5 @@ spec:
     schedule: "0 0 * * *"
     retryIntervalHour: 3
     disabledMetrics:
-      disabledDeploymentFrequency: true
-      disabledChangeFailureRate: true
+      deploymentFrequency: true
+      changeFailureRate: true
