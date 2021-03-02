@@ -72,3 +72,11 @@ web-dep:
 .PHONY: web-dev
 web-dev:
 	cd pkg/app/web; yarn dev
+
+.PHONY: generate-test-tls
+generate-test-tls:
+	openssl req -x509 -nodes -days 3650 -newkey rsa:2048 \
+		-keyout pkg/rpc/testdata/tls.key \
+		-out pkg/rpc/testdata/tls.crt \
+		-subj "/CN=localhost" \
+		-config pkg/rpc/testdata/tls.config
