@@ -80,6 +80,8 @@ genrule(
 webpack(
     name = "public_files",
     args = [
+        "--mode",
+        "production",
         "--config",
         "$(execpath webpack.config.js)",
         "--html-template",
