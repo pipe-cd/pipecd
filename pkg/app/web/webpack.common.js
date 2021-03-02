@@ -47,7 +47,7 @@ module.exports = (_, argv) => {
           template: argv.htmlTemplate,
           favicon: path.join(__dirname, "assets/favicon.ico"),
         }),
-      new webpack.EnvironmentPlugin(["NODE_ENV", "ENABLE_MOCK"]),
+      new webpack.EnvironmentPlugin(["ENABLE_MOCK"]),
     ].filter(Boolean),
   };
 };
