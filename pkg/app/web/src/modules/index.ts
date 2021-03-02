@@ -12,7 +12,6 @@ import { commandsSlice } from "./commands";
 import { applicationFilterOptionsSlice } from "./application-filter-options";
 import { meSlice } from "./me";
 import { deploymentFilterOptionsSlice } from "./deployment-filter-options";
-import { loginSlice } from "./login";
 import { projectSlice } from "./project";
 import { deploymentConfigsSlice } from "./deployment-configs";
 import { sealedSecretSlice } from "./sealed-secret";
@@ -37,7 +36,6 @@ export const reducers = combineReducers({
   commands: commandsSlice.reducer,
   toasts: toastsSlice.reducer,
   me: meSlice.reducer,
-  login: loginSlice.reducer,
   project: projectSlice.reducer,
   deploymentConfigs: deploymentConfigsSlice.reducer,
   sealedSecret: sealedSecretSlice.reducer,

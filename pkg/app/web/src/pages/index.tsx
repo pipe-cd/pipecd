@@ -99,7 +99,9 @@ export const Pages: FC = memo(function Pages() {
     return (
       <>
         <Header />
-        <LoginPage />
+        <Route path={`${PAGE_PATH_LOGIN}/:projectName?`}>
+          <LoginPage />
+        </Route>
       </>
     );
   }
@@ -113,7 +115,6 @@ export const Pages: FC = memo(function Pages() {
           path={PAGE_PATH_TOP}
           component={() => <Redirect to={PAGE_PATH_APPLICATIONS} />}
         />
-        <Route exact path={PAGE_PATH_LOGIN} component={LoginPage} />
         <Route
           exact
           path={PAGE_PATH_APPLICATIONS}

@@ -8,4 +8,4 @@ export default {
   decorators: [createDecoratorRedux({})],
 };
 
-export const overview: React.FC = () => <LoginForm />;
+export const overview: React.FC = () => <LoginForm projectName="pipecd" />;
