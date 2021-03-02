@@ -430,7 +430,7 @@ func createDatastore(ctx context.Context, cfg *config.ControlPlaneSpec, logger *
 		options := []mysql.Option{
 			mysql.WithLogger(logger),
 		}
-		if mqConfig.UsernameFile != "" && mqConfig.PasswordFile != "" {
+		if mqConfig.UsernameFile != "" || mqConfig.PasswordFile != "" {
 			options = append(options, mysql.WithAuthenticationFile(mqConfig.UsernameFile, mqConfig.PasswordFile))
 		}
 		return mysql.NewMySQL(mqConfig.URL, mqConfig.Database, options...)
