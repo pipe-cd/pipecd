@@ -41,8 +41,8 @@ coverage:
 
 .PHONY: dep
 dep:
-	GO111MODULE=on go mod tidy
-	GO111MODULE=on go mod vendor
+	go mod tidy
+	go mod vendor
 	bazelisk run //:gazelle -- update-repos -from_file=go.mod -prune -to_macro=repositories.bzl%go_repositories
 
 .PHONY: gazelle
