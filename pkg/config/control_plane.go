@@ -142,6 +142,8 @@ type ControlPlaneDataStore struct {
 	DynamoDBConfig *DataStoreDynamoDBConfig
 	// The configuration in the case of general MongoDB.
 	MongoDBConfig *DataStoreMongoDBConfig
+	// The configuration in the case of general MySQL.
+	MySQLConfig *DataStoreMySQLConfig
 }
 
 type genericControlPlaneDataStore struct {
@@ -172,6 +174,11 @@ func (d *ControlPlaneDataStore) UnmarshalJSON(data []byte) error {
 		d.MongoDBConfig = &DataStoreMongoDBConfig{}
 		if len(gc.Config) > 0 {
 			err = json.Unmarshal(gc.Config, d.MongoDBConfig)
+		}
+	case model.DataStoreMySQL:
+		d.MySQLConfig = &DataStoreMySQLConfig{}
+		if len(gc.Config) > 0 {
+			err = json.Unmarshal(gc.Config, d.MySQLConfig)
 		}
 	default:
 		// Left comment out for mock response.
@@ -257,6 +264,19 @@ type DataStoreMongoDBConfig struct {
 	// The name of the database.
 	// Also set Database as 'AuthSource' (default as 'admin' or '$external') when UsernameFle || PasswordFile specify
 	// Ref: https://github.com/mongodb/mongo-go-driver/blob/9e2aca8afd8821e6b068cc2f25192bc640d90a0d/mongo/client.go#L390
+	Database string `json:"database"`
+	// The path to the username file.
+	// For those who don't want to include the username in the URL.
+	UsernameFile string `json:"usernameFile"`
+	// The path to the password file.
+	// For those who don't want to include the password in the URL.
+	PasswordFile string `json:"passwordFile"`
+}
+
+type DataStoreMySQLConfig struct {
+	// The url of MySQL. All of credentials can be specified via this field.
+	URL string `json:"url"`
+	// The name of the database.
 	Database string `json:"database"`
 	// The path to the username file.
 	// For those who don't want to include the username in the URL.

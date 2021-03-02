@@ -76,7 +76,7 @@ func NewMySQL(url, database string, opts ...Option) (*MySQL, error) {
 }
 
 // Find implementation for MySQL
-func (m *MySQL) Find(ctx context.Context, kind string, opts datastore.ListFilter) (datastore.Iterator, error) {
+func (m *MySQL) Find(ctx context.Context, kind string, opts datastore.ListOptions) (datastore.Iterator, error) {
 	return nil, datastore.ErrUnimplemented
 }
 
@@ -112,8 +112,10 @@ func (m *MySQL) buildDataSourceName(url, database string) (string, error) {
 	if database == "" {
 		return "", fmt.Errorf("database is required field")
 	}
+	// In case username and password files are not provided,
+	// those values may included in the URL already so just return the given URL.
 	if m.usernameFile == "" || m.passwordFile == "" {
-		return "", fmt.Errorf("credentials info are missing")
+		return url, nil
 	}
 
 	username, err := ioutil.ReadFile(m.usernameFile)
