@@ -1,6 +1,6 @@
 module github.com/pipe-cd/pipe
 
-go 1.14
+go 1.16
 
 require (
 	cloud.google.com/go v0.65.0
@@ -12,7 +12,6 @@ require (
 	github.com/aws/aws-sdk-go v1.36.21
 	github.com/dgrijalva/jwt-go v3.2.0+incompatible
 	github.com/envoyproxy/protoc-gen-validate v0.1.0
-	github.com/fsnotify/fsnotify v1.4.9 // indirect
 	github.com/fsouza/fake-gcs-server v1.21.0
 	github.com/goccy/go-yaml v1.8.8
 	github.com/golang/mock v1.4.4
@@ -26,8 +25,6 @@ require (
 	github.com/kr/text v0.2.0 // indirect
 	github.com/minio/minio-go/v7 v7.0.5
 	github.com/niemeyer/pretty v0.0.0-20200227124842-a10e7caefd8e // indirect
-	github.com/onsi/ginkgo v1.12.0 // indirect
-	github.com/onsi/gomega v1.9.0 // indirect
 	github.com/prometheus/client_golang v1.6.0
 	github.com/prometheus/client_model v0.2.0
 	github.com/prometheus/common v0.9.1
