@@ -131,7 +131,7 @@ func (e *deployExecutor) generateCanaryManifests(manifests []provider.Manifest, 
 		if len(services) == 0 {
 			return nil, fmt.Errorf("unable to find any service for name=%q", serviceName)
 		}
-		// Because the loaded maninests are read-only
+		// Because the loaded manifests are read-only
 		// so we duplicate them to avoid updating the shared manifests data in cache.
 		services = duplicateManifests(services, "")
 

@@ -198,7 +198,7 @@ func (e *deployExecutor) generatePrimaryManifests(manifests []provider.Manifest,
 		suffix = opts.Suffix
 	}
 
-	// Because the loaded maninests are read-only
+	// Because the loaded manifests are read-only
 	// we duplicate them to avoid updating the shared manifests data in cache.
 	manifests = duplicateManifests(manifests, "")
 
