@@ -22,9 +22,9 @@ import (
 
 	// mysql driver
 	_ "github.com/go-sql-driver/mysql"
+	"go.uber.org/zap"
 
 	"github.com/pipe-cd/pipe/pkg/datastore"
-	"go.uber.org/zap"
 )
 
 // MySQL client wrapper
