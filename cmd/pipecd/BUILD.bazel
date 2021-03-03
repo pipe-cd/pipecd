@@ -32,6 +32,7 @@ go_library(
         "//pkg/datastore:go_default_library",
         "//pkg/datastore/firestore:go_default_library",
         "//pkg/datastore/mongodb:go_default_library",
+        "//pkg/datastore/mysql:go_default_library",
         "//pkg/filestore:go_default_library",
         "//pkg/filestore/gcs:go_default_library",
         "//pkg/filestore/minio:go_default_library",

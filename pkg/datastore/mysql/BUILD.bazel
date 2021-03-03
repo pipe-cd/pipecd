@@ -1,0 +1,21 @@
+load("@io_bazel_rules_go//go:def.bzl", "go_library", "go_test")
+
+go_library(
+    name = "go_default_library",
+    srcs = ["mysql.go"],
+    importpath = "github.com/pipe-cd/pipe/pkg/datastore/mysql",
+    visibility = ["//visibility:public"],
+    deps = [
+        "//pkg/datastore:go_default_library",
+        "@com_github_go_sql_driver_mysql//:go_default_library",
+        "@org_uber_go_zap//:go_default_library",
+    ],
+)
+
+go_test(
+    name = "go_default_test",
+    srcs = ["mysql_test.go"],
+    data = glob(["testdata/**"]),
+    embed = [":go_default_library"],
+    deps = ["@com_github_stretchr_testify//assert:go_default_library"],
+)
