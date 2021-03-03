@@ -85,7 +85,7 @@ func (e *rollbackExecutor) ensureRollback(ctx context.Context) model.StageStatus
 	}
 	e.LogPersister.Successf("Successfully loaded %d manifests", len(manifests))
 
-	// Because the loaded maninests are read-only
+	// Because the loaded manifests are read-only
 	// we duplicate them to avoid updating the shared manifests data in cache.
 	manifests = duplicateManifests(manifests, "")
 

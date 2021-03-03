@@ -160,7 +160,7 @@ func findTrafficRoutingManifests(manifests []provider.Manifest, serviceName stri
 }
 
 func (e *deployExecutor) generateTrafficRoutingManifest(manifest provider.Manifest, primaryPercent, canaryPercent, baselinePercent int, cfg *config.KubernetesTrafficRouting) (provider.Manifest, error) {
-	// Because the loaded maninests are read-only
+	// Because the loaded manifests are read-only
 	// so we duplicate them to avoid updating the shared manifests data in cache.
 	manifest = duplicateManifest(manifest, "")
 
@@ -240,7 +240,7 @@ func findIstioVirtualServiceManifests(manifests []provider.Manifest, ref config.
 }
 
 func generateVirtualServiceManifest(m provider.Manifest, host string, editableRoutes []string, canaryPercent, baselinePercent int32) (provider.Manifest, error) {
-	// Because the loaded maninests are read-only
+	// Because the loaded manifests are read-only
 	// so we duplicate them to avoid updating the shared manifests data in cache.
 	m = duplicateManifest(m, "")
 
@@ -326,7 +326,7 @@ func generateVirtualServiceManifest(m provider.Manifest, host string, editableRo
 }
 
 func generateVirtualServiceManifestV1Alpha3(m provider.Manifest, host string, editableRoutes []string, canaryPercent, baselinePercent int32) (provider.Manifest, error) {
-	// Because the loaded maninests are read-only
+	// Because the loaded manifests are read-only
 	// so we duplicate them to avoid updating the shared manifests data in cache.
 	m = duplicateManifest(m, "")
 
