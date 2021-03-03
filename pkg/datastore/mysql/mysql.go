@@ -62,7 +62,7 @@ func NewMySQL(url, database string, opts ...Option) (*MySQL, error) {
 		opt(m)
 	}
 
-	dataSourceName, err := m.buildDataSourceName(url, database)
+	dataSourceName, err := buildDataSourceName(url, database, m.usernameFile, m.passwordFile)
 	if err != nil {
 		return nil, err
 	}
@@ -105,7 +105,7 @@ func (m *MySQL) Close() error {
 	return m.client.Close()
 }
 
-func (m *MySQL) buildDataSourceName(url, database string) (string, error) {
+func buildDataSourceName(url, database, usernameFile, passwordFile string) (string, error) {
 	if url == "" {
 		return "", fmt.Errorf("url is required field")
 	}
@@ -114,15 +114,15 @@ func (m *MySQL) buildDataSourceName(url, database string) (string, error) {
 	}
 	// In case username and password files are not provided,
 	// those values may be included in the URL already so just return the given URL attached with Database name.
-	if m.usernameFile == "" || m.passwordFile == "" {
+	if usernameFile == "" || passwordFile == "" {
 		return fmt.Sprintf("%s/%s", url, database), nil
 	}
 
-	username, err := ioutil.ReadFile(m.usernameFile)
+	username, err := ioutil.ReadFile(usernameFile)
 	if err != nil {
 		return "", fmt.Errorf("failed to read username file: %w", err)
 	}
-	password, err := ioutil.ReadFile(m.passwordFile)
+	password, err := ioutil.ReadFile(passwordFile)
 	if err != nil {
 		return "", fmt.Errorf("failed to read password file: %w", err)
 	}

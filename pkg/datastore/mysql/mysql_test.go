@@ -68,11 +68,7 @@ func TestBuildDataSourceName(t *testing.T) {
 
 	for _, tc := range testcases {
 		t.Run(tc.name, func(t *testing.T) {
-			m := &MySQL{
-				usernameFile: tc.usernameFile,
-				passwordFile: tc.passwordFile,
-			}
-			dataSourceName, err := m.buildDataSourceName(tc.url, tc.database)
+			dataSourceName, err := buildDataSourceName(tc.url, tc.database, tc.usernameFile, tc.passwordFile)
 			assert.Equal(t, tc.expectErr, err != nil)
 			assert.Equal(t, tc.dataSourceName, dataSourceName)
 		})
