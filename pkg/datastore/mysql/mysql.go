@@ -113,9 +113,9 @@ func (m *MySQL) buildDataSourceName(url, database string) (string, error) {
 		return "", fmt.Errorf("database is required field")
 	}
 	// In case username and password files are not provided,
-	// those values may included in the URL already so just return the given URL.
+	// those values may be included in the URL already so just return the given URL attached with Database name.
 	if m.usernameFile == "" || m.passwordFile == "" {
-		return url, nil
+		return fmt.Sprintf("%s/%s", url, database), nil
 	}
 
 	username, err := ioutil.ReadFile(m.usernameFile)
