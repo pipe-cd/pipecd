@@ -285,8 +285,7 @@ func buildDataSourceName(url, database, usernameFile, passwordFile string) (stri
 func buildGetQuery(table string) string {
 	// TODO: make kinds from datastore package public
 	if table == "Project" {
-		// TODO: Should we find this using WHERE condition on `extra` field or on `data->>"$.id"`` attribute (need to create index on that attribute to reduce recomputing cost).
-		return fmt.Sprintf("SELECT data FROM %s WHERE extra = ?", table)
+		return fmt.Sprintf("SELECT data FROM %s WHERE data->>\"$.id\" = ?", table)
 	}
 	return fmt.Sprintf("SELECT data FROM %s WHERE id = UUID_TO_BIN(?,true)", table)
 }
@@ -294,8 +293,7 @@ func buildGetQuery(table string) string {
 func buildUpdateQuery(table string) string {
 	// TODO: make kinds from datastore package public
 	if table == "Project" {
-		// TODO: Should we find this using WHERE condition on `extra` field or on `data->>"$.id"`` attribute (need to create index on that attribute to reduce recomputing cost).
-		return fmt.Sprintf("UPDATE %s SET data = ? WHERE extra = ?", table)
+		return fmt.Sprintf("UPDATE %s SET data = ? WHERE data->>\"$.id\" = ?", table)
 	}
 	return fmt.Sprintf("UPDATE %s SET data = ? WHERE id = UUID_TO_BIN(?,true)", table)
 }

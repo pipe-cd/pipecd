@@ -87,7 +87,7 @@ func TestBuildGetQuery(t *testing.T) {
 		{
 			name:          "query for Project kind",
 			kind:          "Project",
-			expectedQuery: "SELECT data FROM Project WHERE extra = ?",
+			expectedQuery: "SELECT data FROM Project WHERE data->>\"$.id\" = ?",
 		},
 		{
 			name:          "query for other kinds than Project",
@@ -113,7 +113,7 @@ func TestBuildUpdateQuery(t *testing.T) {
 		{
 			name:          "query for Project kind",
 			kind:          "Project",
-			expectedQuery: "UPDATE Project SET data = ? WHERE extra = ?",
+			expectedQuery: "UPDATE Project SET data = ? WHERE data->>\"$.id\" = ?",
 		},
 		{
 			name:          "query for other kinds than Project",
