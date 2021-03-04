@@ -46,7 +46,7 @@ export const ApplicationIndexPage: FC = memo(function ApplicationIndexPage() {
   const classes = useStyles();
   const dispatch = useDispatch<AppDispatch>();
   const [openAddForm, setOpenAddForm] = useState(false);
-  const [openFilter, setOpenFilter] = useState(false);
+  const [openFilter, setOpenFilter] = useState(true);
   const [isLoading, isAdding] = useSelector<AppState, [boolean, boolean]>(
     (state) => [state.applications.loading, state.applications.adding]
   );

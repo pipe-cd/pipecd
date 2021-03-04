@@ -99,7 +99,7 @@ export const DeploymentIndexPage: FC = memo(function DeploymentIndexPage() {
   const dispatch = useDispatch();
   const listRef = useRef(null);
   const [status, hasMore, groupedDeployments] = useGroupedDeployments();
-  const [openFilter, setOpenFilter] = useState(false);
+  const [openFilter, setOpenFilter] = useState(true);
   const [ref, inView] = useInView({
     rootMargin: "400px",
     root: listRef.current,
