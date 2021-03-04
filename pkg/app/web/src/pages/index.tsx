@@ -82,9 +82,11 @@ export const Pages: FC = memo(function Pages() {
   const dispatch = useDispatch();
   const me = useMe();
   useEffect(() => {
-    dispatch(fetchEnvironments());
-    dispatch(fetchPipeds(false));
-  }, [dispatch]);
+    if (me?.isLogin) {
+      dispatch(fetchEnvironments());
+      dispatch(fetchPipeds(false));
+    }
+  }, [dispatch, me]);
   useCommandsStatusChecking();
 
   if (me === null) {
@@ -99,9 +101,16 @@ export const Pages: FC = memo(function Pages() {
     return (
       <>
         <Header />
-        <Route path={`${PAGE_PATH_LOGIN}/:projectName?`}>
-          <LoginPage />
-        </Route>
+        <Switch>
+          <Route
+            exact
+            path={PAGE_PATH_TOP}
+            component={() => <Redirect to={PAGE_PATH_LOGIN} />}
+          />
+          <Route path={`${PAGE_PATH_LOGIN}/:projectName?`}>
+            <LoginPage />
+          </Route>
+        </Switch>
       </>
     );
   }
