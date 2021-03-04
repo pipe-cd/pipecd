@@ -17,11 +17,12 @@ package mysql
 import (
 	"context"
 	"database/sql"
+	"encoding/json"
 	"fmt"
 	"io/ioutil"
 
-	// mysql driver
-	_ "github.com/go-sql-driver/mysql"
+	"github.com/go-sql-driver/mysql"
+	"github.com/google/uuid"
 	"go.uber.org/zap"
 
 	"github.com/pipe-cd/pipe/pkg/datastore"
@@ -82,22 +83,173 @@ func (m *MySQL) Find(ctx context.Context, kind string, opts datastore.ListOption
 
 // Get implementation for MySQL
 func (m *MySQL) Get(ctx context.Context, kind, id string, v interface{}) error {
-	return datastore.ErrUnimplemented
+	query := buildGetQuery(kind)
+	row := m.client.QueryRowContext(ctx, query, id)
+	var val string
+	err := row.Scan(&val)
+	if err == sql.ErrNoRows {
+		return datastore.ErrNotFound
+	}
+	if err != nil {
+		m.logger.Error("failed to get entity",
+			zap.String("id", id),
+			zap.String("kind", kind),
+			zap.Error(err),
+		)
+		return err
+	}
+
+	return json.Unmarshal([]byte(val), v)
 }
 
 // Create implementation for MySQL
 func (m *MySQL) Create(ctx context.Context, kind, id string, entity interface{}) error {
-	return datastore.ErrUnimplemented
+	stmt, err := m.client.PrepareContext(ctx, fmt.Sprintf("INSERT INTO %s (id, data) VALUE (UUID_TO_BIN(?,true), ?)", kind))
+	if err != nil {
+		m.logger.Error("failed to create entity",
+			zap.String("id", id),
+			zap.String("kind", kind),
+			zap.Error(err),
+		)
+		return err
+	}
+	defer stmt.Close()
+
+	val, err := json.Marshal(entity)
+	if err != nil {
+		return datastore.ErrInvalidArgument
+	}
+
+	// In case the given model is `project`, id is not in uuid type so just generate random uuid instead.
+	if _, err := uuid.Parse(id); err != nil {
+		id = uuid.New().String()
+	}
+
+	_, err = stmt.ExecContext(ctx, id, string(val))
+	if err != nil && err.(*mysql.MySQLError).Number == 1062 {
+		return datastore.ErrAlreadyExists
+	}
+	if err != nil {
+		m.logger.Error("failed to create entity",
+			zap.String("id", id),
+			zap.String("kind", kind),
+			zap.Error(err),
+		)
+		return err
+	}
+	return nil
 }
 
 // Put implementation for MySQL
 func (m *MySQL) Put(ctx context.Context, kind, id string, entity interface{}) error {
-	return datastore.ErrUnimplemented
+	stmt, err := m.client.PrepareContext(ctx, fmt.Sprintf("INSERT INTO %s (id, data) VALUE (UUID_TO_BIN(?,true), ?) ON DUPLICATE KEY UPDATE data = ?", kind))
+	if err != nil {
+		m.logger.Error("failed to put entity",
+			zap.String("id", id),
+			zap.String("kind", kind),
+			zap.Error(err),
+		)
+		return err
+	}
+	defer stmt.Close()
+
+	val, err := json.Marshal(entity)
+	if err != nil {
+		return datastore.ErrInvalidArgument
+	}
+
+	// In case the given model is `project`, id is not in uuid type so just generate random uuid instead.
+	if _, err := uuid.Parse(id); err != nil {
+		id = uuid.New().String()
+	}
+
+	_, err = stmt.ExecContext(ctx, id, string(val), string(val))
+	if err != nil {
+		m.logger.Error("failed to put entity",
+			zap.String("id", id),
+			zap.String("kind", kind),
+			zap.Error(err),
+		)
+		return err
+	}
+	return nil
 }
 
 // Update implementation for MySQL
 func (m *MySQL) Update(ctx context.Context, kind, id string, factory datastore.Factory, updater datastore.Updater) error {
-	return datastore.ErrUnimplemented
+	// Start transaction with default isolation level.
+	tx, err := m.client.BeginTx(ctx, nil)
+	if err != nil {
+		m.logger.Error("failed to update entity",
+			zap.String("id", id),
+			zap.String("kind", kind),
+			zap.Error(err),
+		)
+		return err
+	}
+
+	query := buildGetQuery(kind)
+	row := tx.QueryRowContext(ctx, query, id)
+	var val string
+	err = row.Scan(&val)
+	if err == sql.ErrNoRows {
+		tx.Rollback()
+		return datastore.ErrNotFound
+	}
+	if err != nil {
+		m.logger.Error("failed to update entity",
+			zap.String("id", id),
+			zap.String("kind", kind),
+			zap.Error(err),
+		)
+		tx.Rollback()
+		return err
+	}
+
+	entity := factory()
+	if err := json.Unmarshal([]byte(val), entity); err != nil {
+		m.logger.Error("failed to update entity",
+			zap.String("id", id),
+			zap.String("kind", kind),
+			zap.Error(err),
+		)
+		tx.Rollback()
+		return err
+	}
+
+	if err := updater(entity); err != nil {
+		m.logger.Error("failed to update entity",
+			zap.String("id", id),
+			zap.String("kind", kind),
+			zap.Error(err),
+		)
+		tx.Rollback()
+		return err
+	}
+
+	updateQuery := buildUpdateQuery(kind)
+	encodedEntity, err := json.Marshal(entity)
+	if err != nil {
+		m.logger.Error("failed to update entity",
+			zap.String("id", id),
+			zap.String("kind", kind),
+			zap.Error(err),
+		)
+		tx.Rollback()
+		return err
+	}
+	_, err = tx.ExecContext(ctx, updateQuery, string(encodedEntity), id)
+	if err != nil {
+		m.logger.Error("failed to update entity",
+			zap.String("id", id),
+			zap.String("kind", kind),
+			zap.Error(err),
+		)
+		tx.Rollback()
+		return err
+	}
+
+	return tx.Commit()
 }
 
 // Close implementation for MySQL
@@ -128,4 +280,22 @@ func buildDataSourceName(url, database, usernameFile, passwordFile string) (stri
 	}
 
 	return fmt.Sprintf("%s:%s@tcp(%s)/%s", username, password, url, database), nil
+}
+
+func buildGetQuery(table string) string {
+	// TODO: make kinds from datastore package public
+	if table == "Project" {
+		// TODO: Should we find this using WHERE condition on `extra` field or on `data->>"$.id"`` attribute (need to create index on that attribute to reduce recomputing cost).
+		return fmt.Sprintf("SELECT data FROM %s WHERE extra = ?", table)
+	}
+	return fmt.Sprintf("SELECT data FROM %s WHERE id = UUID_TO_BIN(?,true)", table)
+}
+
+func buildUpdateQuery(table string) string {
+	// TODO: make kinds from datastore package public
+	if table == "Project" {
+		// TODO: Should we find this using WHERE condition on `extra` field or on `data->>"$.id"`` attribute (need to create index on that attribute to reduce recomputing cost).
+		return fmt.Sprintf("UPDATE %s SET data = ? WHERE extra = ?", table)
+	}
+	return fmt.Sprintf("UPDATE %s SET data = ? WHERE id = UUID_TO_BIN(?,true)", table)
 }

@@ -15,9 +15,12 @@
 package mysql
 
 import (
+	"context"
 	"testing"
 
 	"github.com/stretchr/testify/assert"
+
+	"github.com/pipe-cd/pipe/pkg/model"
 )
 
 func TestBuildDataSourceName(t *testing.T) {
@@ -73,4 +76,110 @@ func TestBuildDataSourceName(t *testing.T) {
 			assert.Equal(t, tc.dataSourceName, dataSourceName)
 		})
 	}
+}
+
+func TestBuildGetQuery(t *testing.T) {
+	testcases := []struct {
+		name          string
+		kind          string
+		expectedQuery string
+	}{
+		{
+			name:          "query for Project kind",
+			kind:          "Project",
+			expectedQuery: "SELECT data FROM Project WHERE extra = ?",
+		},
+		{
+			name:          "query for other kinds than Project",
+			kind:          "Application",
+			expectedQuery: "SELECT data FROM Application WHERE id = UUID_TO_BIN(?,true)",
+		},
+	}
+
+	for _, tc := range testcases {
+		t.Run(tc.name, func(t *testing.T) {
+			query := buildGetQuery(tc.kind)
+			assert.Equal(t, tc.expectedQuery, query)
+		})
+	}
+}
+
+func TestBuildUpdateQuery(t *testing.T) {
+	testcases := []struct {
+		name          string
+		kind          string
+		expectedQuery string
+	}{
+		{
+			name:          "query for Project kind",
+			kind:          "Project",
+			expectedQuery: "UPDATE Project SET data = ? WHERE extra = ?",
+		},
+		{
+			name:          "query for other kinds than Project",
+			kind:          "Application",
+			expectedQuery: "UPDATE Application SET data = ? WHERE id = UUID_TO_BIN(?,true)",
+		},
+	}
+
+	for _, tc := range testcases {
+		t.Run(tc.name, func(t *testing.T) {
+			query := buildUpdateQuery(tc.kind)
+			assert.Equal(t, tc.expectedQuery, query)
+		})
+	}
+}
+
+func makeTestableMySQLClient() *MySQL {
+	options := []Option{
+		WithAuthenticationFile("/Users/s12228/workspace/pipe-cd/pipe/.dev/mysql_username", "/Users/s12228/workspace/pipe-cd/pipe/.dev/mysql_password"),
+	}
+	m, _ := NewMySQL("127.0.0.1:3307", "pipecd", options...)
+	return m
+}
+
+func _TestPut(t *testing.T) {
+	m := makeTestableMySQLClient()
+	err := m.Put(context.TODO(), "Project", "proj-1", &model.Project{
+		Id:        "proj-1",
+		CreatedAt: 100,
+		UpdatedAt: 102,
+	})
+	assert.Equal(t, nil, err)
+}
+
+func _TestCreate(t *testing.T) {
+	m := makeTestableMySQLClient()
+	err := m.Create(context.TODO(), "Project", "proj-1", &model.Project{
+		Id:        "proj-1",
+		CreatedAt: 100,
+		UpdatedAt: 100,
+	})
+	assert.Equal(t, nil, err)
+}
+
+func _TestGet(t *testing.T) {
+	m := makeTestableMySQLClient()
+	p := &model.Project{}
+	err := m.Get(context.TODO(), "Project", "proj-1", p)
+	assert.Equal(t, nil, err)
+	assert.Equal(t, "proj-1", p.Id)
+}
+
+var projectFactory = func() interface{} {
+	return &model.Project{}
+}
+
+var projectUpdater = func(p *model.Project) error {
+	p.UpdatedAt++
+	return nil
+}
+
+func _TestUpdate(t *testing.T) {
+	m := makeTestableMySQLClient()
+	err := m.Update(context.TODO(), "Project", "proj-1", projectFactory, func(e interface{}) error {
+		d := e.(*model.Project)
+		return projectUpdater(d)
+	})
+	assert.Nil(t, err)
 }
