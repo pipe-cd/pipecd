@@ -16,6 +16,7 @@ describe("applicationFilterOptionsSlice reducer", () => {
       envIdsList: [],
       kindsList: [],
       syncStatusesList: [],
+      name: "",
     });
   });
 
@@ -27,6 +28,7 @@ describe("applicationFilterOptionsSlice reducer", () => {
           envIdsList: [],
           kindsList: [],
           syncStatusesList: [],
+          name: "",
         },
         {
           type: updateApplicationFilter.type,
@@ -42,6 +44,7 @@ describe("applicationFilterOptionsSlice reducer", () => {
       envIdsList: ["env1"],
       kindsList: [ApplicationKind.TERRAFORM],
       syncStatusesList: [ApplicationSyncStatus.SYNCED],
+      name: "",
     });
   });
 
@@ -53,6 +56,7 @@ describe("applicationFilterOptionsSlice reducer", () => {
           envIdsList: ["env1"],
           kindsList: [ApplicationKind.KUBERNETES],
           syncStatusesList: [ApplicationSyncStatus.DEPLOYING],
+          name: "",
         },
         { type: clearApplicationFilter.type }
       )
@@ -61,6 +65,7 @@ describe("applicationFilterOptionsSlice reducer", () => {
       envIdsList: [],
       kindsList: [],
       syncStatusesList: [],
+      name: "",
     });
   });
 });

@@ -6,6 +6,7 @@ export type ApplicationFilterOptions = {
   kindsList: ApplicationKind[];
   envIdsList: string[];
   syncStatusesList: ApplicationSyncStatus[];
+  name: string;
 };
 
 const initialState: ApplicationFilterOptions = {
@@ -13,6 +14,7 @@ const initialState: ApplicationFilterOptions = {
   kindsList: [],
   envIdsList: [],
   syncStatusesList: [],
+  name: "",
 };
 
 export const applicationFilterOptionsSlice = createSlice({
