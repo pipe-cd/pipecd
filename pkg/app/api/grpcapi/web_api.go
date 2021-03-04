@@ -589,6 +589,13 @@ func (a *WebAPI) ListApplications(ctx context.Context, req *webservice.ListAppli
 				Value:    o.EnvIds[0],
 			})
 		}
+		if o.Name != "" {
+			filters = append(filters, datastore.ListFilter{
+				Field:    "Name",
+				Operator: "==",
+				Value:    o.Name,
+			})
+		}
 	}
 
 	apps, err := a.applicationStore.ListApplications(ctx, datastore.ListOptions{

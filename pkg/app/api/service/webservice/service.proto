@@ -231,6 +231,7 @@ message ListApplicationsRequest {
         repeated model.ApplicationKind kinds = 2;
         repeated model.ApplicationSyncStatus sync_statuses = 3;
         repeated string env_ids = 4;
+        string name = 5;
     }
     Options options = 1;
 }
