@@ -17,7 +17,6 @@ package mysql
 import (
 	"context"
 	"database/sql"
-	"encoding/json"
 	"fmt"
 	"io/ioutil"
 
@@ -99,7 +98,7 @@ func (m *MySQL) Get(ctx context.Context, kind, id string, v interface{}) error {
 		return err
 	}
 
-	return json.Unmarshal([]byte(val), v)
+	return decodeJSONValue(val, v)
 }
 
 // Create implementation for MySQL
@@ -115,9 +114,14 @@ func (m *MySQL) Create(ctx context.Context, kind, id string, entity interface{})
 	}
 	defer stmt.Close()
 
-	val, err := json.Marshal(entity)
+	val, err := encodeJSONValue(entity)
 	if err != nil {
-		return datastore.ErrInvalidArgument
+		m.logger.Error("failed to create entity",
+			zap.String("id", id),
+			zap.String("kind", kind),
+			zap.Error(err),
+		)
+		return err
 	}
 
 	// In case the given model is `project`, id is not in uuid type so just generate random uuid instead.
@@ -125,7 +129,7 @@ func (m *MySQL) Create(ctx context.Context, kind, id string, entity interface{})
 		id = uuid.New().String()
 	}
 
-	_, err = stmt.ExecContext(ctx, id, string(val))
+	_, err = stmt.ExecContext(ctx, id, val)
 	if err != nil && err.(*mysql.MySQLError).Number == 1062 {
 		return datastore.ErrAlreadyExists
 	}
@@ -153,9 +157,14 @@ func (m *MySQL) Put(ctx context.Context, kind, id string, entity interface{}) er
 	}
 	defer stmt.Close()
 
-	val, err := json.Marshal(entity)
+	val, err := encodeJSONValue(entity)
 	if err != nil {
-		return datastore.ErrInvalidArgument
+		m.logger.Error("failed to put entity",
+			zap.String("id", id),
+			zap.String("kind", kind),
+			zap.Error(err),
+		)
+		return err
 	}
 
 	// In case the given model is `project`, id is not in uuid type so just generate random uuid instead.
@@ -163,7 +172,7 @@ func (m *MySQL) Put(ctx context.Context, kind, id string, entity interface{}) er
 		id = uuid.New().String()
 	}
 
-	_, err = stmt.ExecContext(ctx, id, string(val), string(val))
+	_, err = stmt.ExecContext(ctx, id, val, val)
 	if err != nil {
 		m.logger.Error("failed to put entity",
 			zap.String("id", id),
@@ -207,7 +216,7 @@ func (m *MySQL) Update(ctx context.Context, kind, id string, factory datastore.F
 	}
 
 	entity := factory()
-	if err := json.Unmarshal([]byte(val), entity); err != nil {
+	if err := decodeJSONValue(val, entity); err != nil {
 		m.logger.Error("failed to update entity",
 			zap.String("id", id),
 			zap.String("kind", kind),
@@ -228,7 +237,7 @@ func (m *MySQL) Update(ctx context.Context, kind, id string, factory datastore.F
 	}
 
 	updateQuery := buildUpdateQuery(kind)
-	encodedEntity, err := json.Marshal(entity)
+	val, err = encodeJSONValue(entity)
 	if err != nil {
 		m.logger.Error("failed to update entity",
 			zap.String("id", id),
@@ -238,7 +247,7 @@ func (m *MySQL) Update(ctx context.Context, kind, id string, factory datastore.F
 		tx.Rollback()
 		return err
 	}
-	_, err = tx.ExecContext(ctx, updateQuery, string(encodedEntity), id)
+	_, err = tx.ExecContext(ctx, updateQuery, val, id)
 	if err != nil {
 		m.logger.Error("failed to update entity",
 			zap.String("id", id),
