@@ -4,7 +4,9 @@ import {
   makeStyles,
   MenuItem,
   Select,
+  TextField,
 } from "@material-ui/core";
+import Autocomplete from "@material-ui/lab/Autocomplete";
 import React, { FC, memo } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import { APPLICATION_KIND_TEXT } from "../../constants/application-kind";
@@ -20,8 +22,10 @@ import {
   ApplicationKindKey,
   ApplicationSyncStatus,
   ApplicationSyncStatusKey,
+  selectAll as selectAllApplications,
 } from "../../modules/applications";
 import { Environment, selectAll } from "../../modules/environments";
+import { uniqueArray } from "../../utils/unique-array";
 import { FilterView } from "../filter-view";
 
 const useStyles = makeStyles((theme) => ({
@@ -55,6 +59,11 @@ export const ApplicationFilter: FC<ApplicationFilterProps> = memo(
     const options = useSelector<AppState, ApplicationFilterOptions>(
       (state) => state.applicationFilterOptions
     );
+    const applications = useSelector<AppState, string[]>((state) =>
+      uniqueArray(
+        selectAllApplications(state.applications).map((app) => app.name)
+      )
+    );
 
     const handleUpdateFilterValue = (
       options: Partial<ApplicationFilterOptions>
@@ -70,6 +79,22 @@ export const ApplicationFilter: FC<ApplicationFilterProps> = memo(
           onChange();
         }}
       >
+        <div className={classes.formItem}>
+          <Autocomplete
+            id="name"
+            options={applications}
+            value={options.name || null}
+            onChange={(_, value) => {
+              handleUpdateFilterValue({
+                name: value || "",
+              });
+            }}
+            renderInput={(params) => (
+              <TextField {...params} label="Name" variant="outlined" />
+            )}
+          />
+        </div>
+
         <FormControl className={classes.formItem} variant="outlined">
           <InputLabel id="filter-env">Environment</InputLabel>
           <Select
@@ -99,12 +124,12 @@ export const ApplicationFilter: FC<ApplicationFilterProps> = memo(
         </FormControl>
 
         <FormControl className={classes.formItem} variant="outlined">
-          <InputLabel id="filter-application-kind">Application Kind</InputLabel>
+          <InputLabel id="filter-kind">Kind</InputLabel>
           <Select
-            labelId="filter-application-kind"
-            id="filter-application-kind"
+            labelId="filter-kind"
+            id="filter-kind"
             value={options.kindsList[0] ?? ALL_VALUE}
-            label="Application Kind"
+            label="Kind"
             className={classes.select}
             onChange={(e) => {
               handleUpdateFilterValue({
