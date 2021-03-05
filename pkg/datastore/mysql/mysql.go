@@ -280,7 +280,12 @@ func buildDataSourceName(url, database, usernameFile, passwordFile string) (stri
 	return fmt.Sprintf("%s:%s@tcp(%s)/%s", username, password, url, database), nil
 }
 
-// makeRowID converts a given string (UUID or not) to UUID to be used as MySQL table primary key id.
+// makeRowID converts a given string which not in UUID format to UUID string.
+// Otherwise, return the id itself.
 func makeRowID(id string) string {
+	_, err := uuid.Parse(id)
+	if err == nil {
+		return id
+	}
 	return uuid.NewSHA1(uuid.NameSpaceOID, []byte(id)).String()
 }
