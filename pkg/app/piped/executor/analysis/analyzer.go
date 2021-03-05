@@ -2,6 +2,7 @@ package analysis
 
 import (
 	"context"
+	"errors"
 	"fmt"
 	"time"
 
@@ -51,6 +52,10 @@ func (a *analyzer) run(ctx context.Context) error {
 		case <-ticker.C:
 			reason := ""
 			success, err := a.runQuery(ctx)
+			if errors.Is(err, context.DeadlineExceeded) && ctx.Err() == context.DeadlineExceeded {
+				// Ignore parent's context deadline exceeded error, and return immediately.
+				return nil
+			}
 			if err != nil {
 				// The failure of the query itself is treated as a failure.
 				reason = fmt.Sprintf("failed to run query: %s", err.Error())

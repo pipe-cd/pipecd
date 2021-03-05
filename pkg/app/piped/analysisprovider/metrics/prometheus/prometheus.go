@@ -16,7 +16,6 @@ package prometheus
 
 import (
 	"context"
-	"errors"
 	"fmt"
 	"math"
 	"time"
@@ -74,10 +73,6 @@ func (p *Provider) RunQuery(ctx context.Context, query string, expected config.A
 	p.logger.Info("run query", zap.String("query", query))
 	// TODO: Use HTTP Basic Authentication with the username and password when needed.
 	response, warnings, err := p.api.Query(ctx, query, time.Now())
-	if errors.Is(err, context.DeadlineExceeded) {
-		// Treat as a success because query duration is already ended.
-		return true, nil
-	}
 	if err != nil {
 		return false, err
 	}
