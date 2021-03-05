@@ -29,12 +29,7 @@ func TestBuildGetQuery(t *testing.T) {
 		{
 			name:          "query for Project kind",
 			kind:          "Project",
-			expectedQuery: "SELECT data FROM Project WHERE data->>\"$.id\" = ?",
-		},
-		{
-			name:          "query for other kinds than Project",
-			kind:          "Application",
-			expectedQuery: "SELECT data FROM Application WHERE id = UUID_TO_BIN(?,true)",
+			expectedQuery: "SELECT data FROM Project WHERE id = UUID_TO_BIN(?,true)",
 		},
 	}
 
@@ -55,12 +50,7 @@ func TestBuildUpdateQuery(t *testing.T) {
 		{
 			name:          "query for Project kind",
 			kind:          "Project",
-			expectedQuery: "UPDATE Project SET data = ? WHERE data->>\"$.id\" = ?",
-		},
-		{
-			name:          "query for other kinds than Project",
-			kind:          "Application",
-			expectedQuery: "UPDATE Application SET data = ? WHERE id = UUID_TO_BIN(?,true)",
+			expectedQuery: "UPDATE Project SET data = ? WHERE id = UUID_TO_BIN(?,true)",
 		},
 	}
 

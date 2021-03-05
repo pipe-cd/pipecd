@@ -17,6 +17,8 @@ package mysql
 import (
 	"testing"
 
+	"github.com/google/uuid"
+
 	"github.com/stretchr/testify/assert"
 )
 
@@ -71,6 +73,30 @@ func TestBuildDataSourceName(t *testing.T) {
 			dataSourceName, err := buildDataSourceName(tc.url, tc.database, tc.usernameFile, tc.passwordFile)
 			assert.Equal(t, tc.expectErr, err != nil)
 			assert.Equal(t, tc.dataSourceName, dataSourceName)
+		})
+	}
+}
+
+func TestMakeRowID(t *testing.T) {
+	testcases := []struct {
+		name    string
+		modelID string
+	}{
+		{
+			name:    "modelID is simple string, not UUID",
+			modelID: "pipecd",
+		},
+		{
+			name:    "modelID is UUID",
+			modelID: "dfc55495-7dbd-11eb-8636-42010a920020",
+		},
+	}
+
+	for _, tc := range testcases {
+		t.Run(tc.name, func(t *testing.T) {
+			rowID := makeRowID(tc.modelID)
+			_, err := uuid.Parse(rowID)
+			assert.Nil(t, err)
 		})
 	}
 }

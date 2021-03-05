@@ -17,17 +17,10 @@ package mysql
 import "fmt"
 
 func buildGetQuery(table string) string {
-	// TODO: Make kinds from datastore package public
-	if table == "Project" {
-		return fmt.Sprintf("SELECT data FROM %s WHERE data->>\"$.id\" = ?", table)
-	}
 	return fmt.Sprintf("SELECT data FROM %s WHERE id = UUID_TO_BIN(?,true)", table)
 }
 
 func buildUpdateQuery(table string) string {
-	if table == "Project" {
-		return fmt.Sprintf("UPDATE %s SET data = ? WHERE data->>\"$.id\" = ?", table)
-	}
 	return fmt.Sprintf("UPDATE %s SET data = ? WHERE id = UUID_TO_BIN(?,true)", table)
 }
 
