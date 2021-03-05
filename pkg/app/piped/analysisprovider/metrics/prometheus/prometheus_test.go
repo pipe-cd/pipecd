@@ -1,6 +1,7 @@
 package prometheus
 
 import (
+	"context"
 	"testing"
 
 	"github.com/prometheus/common/model"
@@ -81,7 +82,7 @@ func TestRunQuery(t *testing.T) {
 				timeout: defaultTimeout,
 				logger:  zap.NewNop(),
 			}
-			res, err := p.RunQuery("dummy", tc.expected)
+			res, err := p.RunQuery(context.Background(), "dummy", tc.expected)
 			assert.Equal(t, tc.wantErr, err != nil)
 			assert.Equal(t, res, tc.wantResult)
 		})

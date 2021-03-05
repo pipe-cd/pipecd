@@ -15,6 +15,7 @@
 package datadog
 
 import (
+	"context"
 	"time"
 
 	"github.com/pipe-cd/pipe/pkg/config"
@@ -52,6 +53,6 @@ func (p *Provider) Type() string {
 	return ProviderType
 }
 
-func (p *Provider) RunQuery(query string, expected config.AnalysisExpected) (bool, error) {
+func (p *Provider) RunQuery(ctx context.Context, query string, expected config.AnalysisExpected) (bool, error) {
 	return false, nil
 }

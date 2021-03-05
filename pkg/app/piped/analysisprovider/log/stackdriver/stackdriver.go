@@ -15,6 +15,7 @@
 package stackdriver
 
 import (
+	"context"
 	"time"
 )
 
@@ -37,6 +38,6 @@ func (p *Provider) Type() string {
 	return ProviderType
 }
 
-func (p *Provider) RunQuery(query string) (bool, error) {
+func (p *Provider) RunQuery(ctx context.Context, query string) (bool, error) {
 	return false, nil
 }

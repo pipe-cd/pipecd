@@ -17,6 +17,7 @@
 package http
 
 import (
+	"context"
 	"fmt"
 	"net/http"
 	"time"
@@ -47,8 +48,8 @@ func NewProvider(timeout time.Duration) *Provider {
 }
 
 // Run sends an HTTP request and then evaluate whether the response is expected one.
-func (p *Provider) Run(cfg *config.AnalysisHTTP) (bool, error) {
-	req, err := p.makeRequest(cfg)
+func (p *Provider) Run(ctx context.Context, cfg *config.AnalysisHTTP) (bool, error) {
+	req, err := p.makeRequest(ctx, cfg)
 	if err != nil {
 		return false, err
 	}
@@ -66,8 +67,8 @@ func (p *Provider) Run(cfg *config.AnalysisHTTP) (bool, error) {
 	return true, nil
 }
 
-func (p *Provider) makeRequest(cfg *config.AnalysisHTTP) (*http.Request, error) {
-	req, err := http.NewRequest(cfg.Method, cfg.URL, nil)
+func (p *Provider) makeRequest(ctx context.Context, cfg *config.AnalysisHTTP) (*http.Request, error) {
+	req, err := http.NewRequestWithContext(ctx, cfg.Method, cfg.URL, nil)
 	if err != nil {
 		return nil, err
 	}
