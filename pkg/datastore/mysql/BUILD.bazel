@@ -5,6 +5,7 @@ go_library(
     srcs = [
         "model_wrapper.go",
         "mysql.go",
+        "query.go",
     ],
     importpath = "github.com/pipe-cd/pipe/pkg/datastore/mysql",
     visibility = ["//visibility:public"],
@@ -20,11 +21,11 @@ go_library(
 go_test(
     name = "go_default_test",
     size = "small",
-    srcs = ["mysql_test.go"],
+    srcs = [
+        "mysql_test.go",
+        "query_test.go",
+    ],
     data = glob(["testdata/**"]),
     embed = [":go_default_library"],
-    deps = [
-        "//pkg/model:go_default_library",
-        "@com_github_stretchr_testify//assert:go_default_library",
-    ],
+    deps = ["@com_github_stretchr_testify//assert:go_default_library"],
 )

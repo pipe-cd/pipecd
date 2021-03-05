@@ -27,6 +27,8 @@ import (
 	"github.com/pipe-cd/pipe/pkg/datastore"
 )
 
+const mysqlErrorCodeDuplicate = 1062
+
 // MySQL client wrapper
 type MySQL struct {
 	client       *sql.DB
@@ -82,8 +84,7 @@ func (m *MySQL) Find(ctx context.Context, kind string, opts datastore.ListOption
 
 // Get implementation for MySQL
 func (m *MySQL) Get(ctx context.Context, kind, id string, v interface{}) error {
-	query := buildGetQuery(kind)
-	row := m.client.QueryRowContext(ctx, query, id)
+	row := m.client.QueryRowContext(ctx, buildGetQuery(kind), id)
 	var val string
 	err := row.Scan(&val)
 	if err == sql.ErrNoRows {
@@ -103,9 +104,9 @@ func (m *MySQL) Get(ctx context.Context, kind, id string, v interface{}) error {
 
 // Create implementation for MySQL
 func (m *MySQL) Create(ctx context.Context, kind, id string, entity interface{}) error {
-	stmt, err := m.client.PrepareContext(ctx, fmt.Sprintf("INSERT INTO %s (id, data) VALUE (UUID_TO_BIN(?,true), ?)", kind))
+	stmt, err := m.client.PrepareContext(ctx, buildCreateQuery(kind))
 	if err != nil {
-		m.logger.Error("failed to create entity",
+		m.logger.Error("failed to create entity: failed to prepare query",
 			zap.String("id", id),
 			zap.String("kind", kind),
 			zap.Error(err),
@@ -114,9 +115,9 @@ func (m *MySQL) Create(ctx context.Context, kind, id string, entity interface{})
 	}
 	defer stmt.Close()
 
-	val, err := encodeJSONValue(entity)
+	data, err := encodeJSONValue(entity)
 	if err != nil {
-		m.logger.Error("failed to create entity",
+		m.logger.Error("failed to create entity: failed to encode json data",
 			zap.String("id", id),
 			zap.String("kind", kind),
 			zap.Error(err),
@@ -125,12 +126,12 @@ func (m *MySQL) Create(ctx context.Context, kind, id string, entity interface{})
 	}
 
 	// In case the given model is `project`, id is not in uuid type so just generate random uuid instead.
-	if _, err := uuid.Parse(id); err != nil {
+	if kind == "Project" {
 		id = uuid.New().String()
 	}
 
-	_, err = stmt.ExecContext(ctx, id, val)
-	if err != nil && err.(*mysql.MySQLError).Number == 1062 {
+	_, err = stmt.ExecContext(ctx, id, data)
+	if mysqlErr, ok := err.(*mysql.MySQLError); ok && mysqlErr.Number == mysqlErrorCodeDuplicate {
 		return datastore.ErrAlreadyExists
 	}
 	if err != nil {
@@ -146,9 +147,9 @@ func (m *MySQL) Create(ctx context.Context, kind, id string, entity interface{})
 
 // Put implementation for MySQL
 func (m *MySQL) Put(ctx context.Context, kind, id string, entity interface{}) error {
-	stmt, err := m.client.PrepareContext(ctx, fmt.Sprintf("INSERT INTO %s (id, data) VALUE (UUID_TO_BIN(?,true), ?) ON DUPLICATE KEY UPDATE data = ?", kind))
+	stmt, err := m.client.PrepareContext(ctx, buildPutQuery(kind))
 	if err != nil {
-		m.logger.Error("failed to put entity",
+		m.logger.Error("failed to put entity: failed to prepare query",
 			zap.String("id", id),
 			zap.String("kind", kind),
 			zap.Error(err),
@@ -157,9 +158,9 @@ func (m *MySQL) Put(ctx context.Context, kind, id string, entity interface{}) er
 	}
 	defer stmt.Close()
 
-	val, err := encodeJSONValue(entity)
+	data, err := encodeJSONValue(entity)
 	if err != nil {
-		m.logger.Error("failed to put entity",
+		m.logger.Error("failed to put entity: failed to encode json data",
 			zap.String("id", id),
 			zap.String("kind", kind),
 			zap.Error(err),
@@ -168,11 +169,11 @@ func (m *MySQL) Put(ctx context.Context, kind, id string, entity interface{}) er
 	}
 
 	// In case the given model is `project`, id is not in uuid type so just generate random uuid instead.
-	if _, err := uuid.Parse(id); err != nil {
+	if kind == "Project" {
 		id = uuid.New().String()
 	}
 
-	_, err = stmt.ExecContext(ctx, id, val, val)
+	_, err = stmt.ExecContext(ctx, id, data, data)
 	if err != nil {
 		m.logger.Error("failed to put entity",
 			zap.String("id", id),
@@ -189,7 +190,7 @@ func (m *MySQL) Update(ctx context.Context, kind, id string, factory datastore.F
 	// Start transaction with default isolation level.
 	tx, err := m.client.BeginTx(ctx, nil)
 	if err != nil {
-		m.logger.Error("failed to update entity",
+		m.logger.Error("failed to update entity: failed to start transaction",
 			zap.String("id", id),
 			zap.String("kind", kind),
 			zap.Error(err),
@@ -197,8 +198,7 @@ func (m *MySQL) Update(ctx context.Context, kind, id string, factory datastore.F
 		return err
 	}
 
-	query := buildGetQuery(kind)
-	row := tx.QueryRowContext(ctx, query, id)
+	row := tx.QueryRowContext(ctx, buildGetQuery(kind), id)
 	var val string
 	err = row.Scan(&val)
 	if err == sql.ErrNoRows {
@@ -206,7 +206,7 @@ func (m *MySQL) Update(ctx context.Context, kind, id string, factory datastore.F
 		return datastore.ErrNotFound
 	}
 	if err != nil {
-		m.logger.Error("failed to update entity",
+		m.logger.Error("failed to update entity: failed to get entity",
 			zap.String("id", id),
 			zap.String("kind", kind),
 			zap.Error(err),
@@ -217,7 +217,7 @@ func (m *MySQL) Update(ctx context.Context, kind, id string, factory datastore.F
 
 	entity := factory()
 	if err := decodeJSONValue(val, entity); err != nil {
-		m.logger.Error("failed to update entity",
+		m.logger.Error("failed to update entity: failed to decode data",
 			zap.String("id", id),
 			zap.String("kind", kind),
 			zap.Error(err),
@@ -227,7 +227,7 @@ func (m *MySQL) Update(ctx context.Context, kind, id string, factory datastore.F
 	}
 
 	if err := updater(entity); err != nil {
-		m.logger.Error("failed to update entity",
+		m.logger.Error("failed to update entity: failed to apply updater",
 			zap.String("id", id),
 			zap.String("kind", kind),
 			zap.Error(err),
@@ -236,10 +236,9 @@ func (m *MySQL) Update(ctx context.Context, kind, id string, factory datastore.F
 		return err
 	}
 
-	updateQuery := buildUpdateQuery(kind)
-	val, err = encodeJSONValue(entity)
+	data, err := encodeJSONValue(entity)
 	if err != nil {
-		m.logger.Error("failed to update entity",
+		m.logger.Error("failed to update entity: failed to encode json data",
 			zap.String("id", id),
 			zap.String("kind", kind),
 			zap.Error(err),
@@ -247,7 +246,7 @@ func (m *MySQL) Update(ctx context.Context, kind, id string, factory datastore.F
 		tx.Rollback()
 		return err
 	}
-	_, err = tx.ExecContext(ctx, updateQuery, val, id)
+	_, err = tx.ExecContext(ctx, buildUpdateQuery(kind), data, id)
 	if err != nil {
 		m.logger.Error("failed to update entity",
 			zap.String("id", id),
@@ -289,20 +288,4 @@ func buildDataSourceName(url, database, usernameFile, passwordFile string) (stri
 	}
 
 	return fmt.Sprintf("%s:%s@tcp(%s)/%s", username, password, url, database), nil
-}
-
-func buildGetQuery(table string) string {
-	// TODO: make kinds from datastore package public
-	if table == "Project" {
-		return fmt.Sprintf("SELECT data FROM %s WHERE data->>\"$.id\" = ?", table)
-	}
-	return fmt.Sprintf("SELECT data FROM %s WHERE id = UUID_TO_BIN(?,true)", table)
-}
-
-func buildUpdateQuery(table string) string {
-	// TODO: make kinds from datastore package public
-	if table == "Project" {
-		return fmt.Sprintf("UPDATE %s SET data = ? WHERE data->>\"$.id\" = ?", table)
-	}
-	return fmt.Sprintf("UPDATE %s SET data = ? WHERE id = UUID_TO_BIN(?,true)", table)
 }

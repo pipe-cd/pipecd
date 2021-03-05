@@ -29,7 +29,7 @@ func wrapModel(entity interface{}) (interface{}, error) {
 		}
 		return &project{
 			Project: *e,
-			Extra:   e.GetId(),
+			Extra:   e.Id,
 		}, nil
 	case *model.Application:
 		if e == nil {
@@ -37,7 +37,7 @@ func wrapModel(entity interface{}) (interface{}, error) {
 		}
 		return &application{
 			Application: *e,
-			Extra:       e.GetName(),
+			Extra:       e.Name,
 		}, nil
 	case *model.Command:
 		if e == nil {
@@ -45,7 +45,7 @@ func wrapModel(entity interface{}) (interface{}, error) {
 		}
 		return &command{
 			Command: *e,
-			Extra:   e.GetId(),
+			Extra:   e.Id,
 		}, nil
 	case *model.Deployment:
 		if e == nil {
@@ -53,7 +53,7 @@ func wrapModel(entity interface{}) (interface{}, error) {
 		}
 		return &deployment{
 			Deployment: *e,
-			Extra:      e.GetId(),
+			Extra:      e.ApplicationName,
 		}, nil
 	case *model.Environment:
 		if e == nil {
@@ -61,7 +61,7 @@ func wrapModel(entity interface{}) (interface{}, error) {
 		}
 		return &environment{
 			Environment: *e,
-			Extra:       e.GetName(),
+			Extra:       e.Name,
 		}, nil
 	case *model.Piped:
 		if e == nil {
@@ -69,7 +69,7 @@ func wrapModel(entity interface{}) (interface{}, error) {
 		}
 		return &piped{
 			Piped: *e,
-			Extra: e.GetName(),
+			Extra: e.Name,
 		}, nil
 	case *model.APIKey:
 		if e == nil {
@@ -77,7 +77,7 @@ func wrapModel(entity interface{}) (interface{}, error) {
 		}
 		return &apiKey{
 			APIKey: *e,
-			Extra:  e.GetName(),
+			Extra:  e.Name,
 		}, nil
 	case *model.Event:
 		if e == nil {
@@ -85,7 +85,7 @@ func wrapModel(entity interface{}) (interface{}, error) {
 		}
 		return &event{
 			Event: *e,
-			Extra: e.GetName(),
+			Extra: e.Name,
 		}, nil
 	default:
 		return nil, fmt.Errorf("%T is not supported", e)
@@ -110,40 +110,40 @@ func decodeJSONValue(val string, target interface{}) error {
 
 type project struct {
 	model.Project `json:",inline"`
-	Extra         string `json:"extra"`
+	Extra         string `json:"_extra"`
 }
 
 type application struct {
 	model.Application `json:",inline"`
-	Extra             string `json:"extra"`
+	Extra             string `json:"_extra"`
 }
 
 type command struct {
 	model.Command `json:",inline"`
-	Extra         string `json:"extra"`
+	Extra         string `json:"_extra"`
 }
 
 type deployment struct {
 	model.Deployment `json:",inline"`
-	Extra            string `json:"extra"`
+	Extra            string `json:"_extra"`
 }
 
 type environment struct {
 	model.Environment `json:",inline"`
-	Extra             string `json:"extra"`
+	Extra             string `json:"_extra"`
 }
 
 type piped struct {
 	model.Piped `json:",inline"`
-	Extra       string `json:"extra"`
+	Extra       string `json:"_extra"`
 }
 
 type apiKey struct {
 	model.APIKey `json:",inline"`
-	Extra        string `json:"extra"`
+	Extra        string `json:"_extra"`
 }
 
 type event struct {
 	model.Event `json:",inline"`
-	Extra       string `json:"extra"`
+	Extra       string `json:"_extra"`
 }
