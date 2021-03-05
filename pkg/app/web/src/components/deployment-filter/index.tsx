@@ -28,7 +28,7 @@ import {
   DeploymentStatus,
   DeploymentStatusKey,
 } from "../../modules/deployments";
-import { Environment, selectAll } from "../../modules/environments";
+import { selectAllEnvs } from "../../modules/environments";
 import { FilterView } from "../filter-view";
 
 const useStyles = makeStyles((theme) => ({
@@ -51,9 +51,7 @@ export const DeploymentFilter: FC<DeploymentFilterProps> = memo(
   function DeploymentFilter({ onChange }) {
     const classes = useStyles();
     const dispatch = useDispatch();
-    const envs = useSelector<AppState, Environment.AsObject[]>((state) =>
-      selectAll(state.environments)
-    );
+    const envs = useSelector(selectAllEnvs);
     const applications = useSelector<AppState, Application.AsObject[]>(
       (state) => selectAllApplications(state.applications)
     );

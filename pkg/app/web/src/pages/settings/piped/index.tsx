@@ -21,6 +21,7 @@ import {
   Close as CloseIcon,
   FilterList as FilterIcon,
 } from "@material-ui/icons";
+import { createSelector } from "@reduxjs/toolkit";
 import React, { FC, memo, useCallback, useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import { AddPipedDrawer } from "../../../components/add-piped-drawer";
@@ -41,7 +42,7 @@ import {
   Piped,
   recreatePipedKey,
   RegisteredPiped,
-  selectAll,
+  selectAllPipeds,
 } from "../../../modules/pipeds";
 import { AppDispatch } from "../../../store";
 import { PipedTableRow } from "./piped-table-row";
@@ -52,21 +53,26 @@ const useStyles = makeStyles(() => ({
   },
 }));
 
-const usePipeds = (filterValues: FilterValues): Piped.AsObject[] => {
-  const pipeds = useSelector<AppState, Piped.AsObject[]>((state) =>
-    selectAll(state.pipeds)
-  );
-
-  if (filterValues.enabled) {
-    return pipeds.filter((piped) => piped.disabled === false);
+const selectFilteredPipeds = createSelector<
+  AppState,
+  boolean | undefined,
+  Piped.AsObject[],
+  boolean | undefined,
+  Piped.AsObject[]
+>(
+  selectAllPipeds,
+  (_, enabled) => enabled,
+  (pipeds, enabled) => {
+    switch (enabled) {
+      case true:
+        return pipeds.filter((piped) => piped.disabled === false);
+      case false:
+        return pipeds.filter((piped) => piped.disabled);
+      default:
+        return pipeds;
+    }
   }
-
-  if (filterValues.enabled === false) {
-    return pipeds.filter((piped) => piped.disabled);
-  }
-
-  return pipeds;
-};
+);
 
 export const SettingsPipedPage: FC = memo(function SettingsPipedPage() {
   const classes = useStyles();
@@ -77,7 +83,9 @@ export const SettingsPipedPage: FC = memo(function SettingsPipedPage() {
     enabled: true,
   });
   const dispatch = useDispatch<AppDispatch>();
-  const pipeds = usePipeds(filterValues);
+  const pipeds = useSelector((state: AppState) =>
+    selectFilteredPipeds(state, filterValues.enabled)
+  );
 
   const registeredPiped = useSelector<AppState, RegisteredPiped | null>(
     (state) => state.pipeds.registeredPiped

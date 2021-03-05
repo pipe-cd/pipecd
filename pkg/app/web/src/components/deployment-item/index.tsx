@@ -3,17 +3,17 @@ import dayjs from "dayjs";
 import React, { FC, memo } from "react";
 import { useSelector } from "react-redux";
 import { Link as RouterLink } from "react-router-dom";
-import { PAGE_PATH_DEPLOYMENTS } from "../../constants/path";
+import { APPLICATION_KIND_TEXT } from "../../constants/application-kind";
 import { DEPLOYMENT_STATE_TEXT } from "../../constants/deployment-status-text";
+import { PAGE_PATH_DEPLOYMENTS } from "../../constants/path";
 import { AppState } from "../../modules";
 import {
   Deployment,
   selectById as selectDeploymentById,
 } from "../../modules/deployments";
-import { Environment, selectById } from "../../modules/environments";
-import { DeploymentStatusIcon } from "../deployment-status-icon";
-import { APPLICATION_KIND_TEXT } from "../../constants/application-kind";
+import { selectEnvById } from "../../modules/environments";
 import { ellipsis } from "../../styles/text";
+import { DeploymentStatusIcon } from "../deployment-status-icon";
 
 const useStyles = makeStyles((theme) => ({
   root: {
@@ -51,14 +51,7 @@ export const DeploymentItem: FC<DeploymentItemProps> = memo(
     const deployment = useSelector<AppState, Deployment.AsObject | undefined>(
       (state) => selectDeploymentById(state.deployments, id)
     );
-
-    const env = useSelector<AppState, Environment.AsObject | undefined>(
-      (state) => {
-        return deployment
-          ? selectById(state.environments, deployment.envId)
-          : undefined;
-      }
-    );
+    const env = useSelector(selectEnvById(deployment?.envId));
 
     if (!deployment || !env) {
       return null;

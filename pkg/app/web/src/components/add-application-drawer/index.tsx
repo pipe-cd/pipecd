@@ -10,15 +10,14 @@ import { useFormik } from "formik";
 import React, { FC, memo, useCallback, useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import { UI_TEXT_CANCEL, UI_TEXT_DISCARD } from "../../constants/ui-text";
-import { AppState } from "../../modules";
 import { addApplication, fetchApplications } from "../../modules/applications";
 import { selectProjectName } from "../../modules/me";
 import { AppDispatch } from "../../store";
 import {
   ApplicationForm,
+  ApplicationFormValue,
   emptyFormValues,
   validationSchema,
-  ApplicationFormValue,
 } from "../application-form";
 
 export interface AddApplicationDrawerProps {
@@ -46,9 +45,7 @@ export const AddApplicationDrawer: FC<AddApplicationDrawerProps> = memo(
       },
     });
 
-    const projectName = useSelector<AppState, string>((state) =>
-      selectProjectName(state.me)
-    );
+    const projectName = useSelector(selectProjectName);
 
     const handleClose = useCallback(() => {
       if (formik.dirty) {

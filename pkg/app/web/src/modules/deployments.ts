@@ -2,6 +2,7 @@ import {
   createAsyncThunk,
   createEntityAdapter,
   createSlice,
+  EntityId,
 } from "@reduxjs/toolkit";
 import {
   Deployment,
@@ -55,13 +56,6 @@ export const isStageRunning = (status: StageStatus): boolean => {
 export const deploymentsAdapter = createEntityAdapter<Deployment.AsObject>({
   sortComparer: (a, b) => b.updatedAt - a.updatedAt,
 });
-
-export const {
-  selectById,
-  selectAll,
-  selectEntities,
-  selectIds,
-} = deploymentsAdapter.getSelectors();
 
 const initialState = deploymentsAdapter.getInitialState<{
   status: LoadingStatus;
@@ -230,6 +224,17 @@ export const deploymentsSlice = createSlice({
       });
   },
 });
+
+export const {
+  selectById,
+  selectAll,
+  selectEntities,
+  selectIds,
+} = deploymentsAdapter.getSelectors();
+
+export const selectDeploymentIsCanceling = (id: EntityId) => (
+  state: AppState
+): boolean => (id ? state.deployments.canceling[id] : false);
 
 export {
   Deployment,

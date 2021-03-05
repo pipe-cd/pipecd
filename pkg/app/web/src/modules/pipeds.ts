@@ -3,8 +3,10 @@ import {
   createAsyncThunk,
   createEntityAdapter,
   EntityState,
+  EntityId,
 } from "@reduxjs/toolkit";
 import { Piped } from "pipe/pkg/app/web/model/piped_pb";
+import { AppState } from ".";
 import * as pipedsApi from "../api/piped";
 
 export interface RegisteredPiped {
@@ -16,11 +18,16 @@ const MODULE_NAME = "pipeds";
 
 const pipedsAdapter = createEntityAdapter<Piped.AsObject>({});
 
-export const {
-  selectById,
-  selectIds,
-  selectAll,
-} = pipedsAdapter.getSelectors();
+const { selectById, selectIds, selectAll } = pipedsAdapter.getSelectors();
+
+export const selectPipedById = (id?: EntityId | null) => (
+  state: AppState
+): Piped.AsObject | undefined =>
+  id ? selectById(state.pipeds, id) : undefined;
+export const selectPipedIds = (state: AppState): EntityId[] =>
+  selectIds(state.pipeds);
+export const selectAllPipeds = (state: AppState): Piped.AsObject[] =>
+  selectAll(state.pipeds);
 
 export const fetchPipeds = createAsyncThunk<Piped.AsObject[], boolean>(
   `${MODULE_NAME}/fetchList`,

@@ -10,16 +10,14 @@ import {
 import CheckBoxIcon from "@material-ui/icons/CheckBox";
 import CheckBoxOutlineBlankIcon from "@material-ui/icons/CheckBoxOutlineBlank";
 import Autocomplete from "@material-ui/lab/Autocomplete";
-import { Dictionary } from "@reduxjs/toolkit";
 import { FormikProps } from "formik";
 import React, { FC, memo } from "react";
 import { useSelector } from "react-redux";
 import * as Yup from "yup";
-import { AppState } from "../../modules";
 import {
   Environment,
-  selectEntities,
-  selectAll,
+  selectAllEnvs,
+  selectEnvEntities,
 } from "../../modules/environments";
 
 const useStyles = makeStyles((theme) => ({
@@ -59,13 +57,8 @@ export const PipedForm: FC<PipedFormProps> = memo(function PipedForm({
   isSubmitting,
 }) {
   const classes = useStyles();
-  const [envs, entities] = useSelector<
-    AppState,
-    [Environment.AsObject[], Dictionary<Environment.AsObject>]
-  >((state) => [
-    selectAll(state.environments),
-    selectEntities(state.environments),
-  ]);
+  const envs = useSelector(selectAllEnvs);
+  const entities = useSelector(selectEnvEntities);
 
   return (
     <Box width={600}>

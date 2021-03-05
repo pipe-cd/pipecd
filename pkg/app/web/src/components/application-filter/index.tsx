@@ -24,7 +24,7 @@ import {
   ApplicationSyncStatusKey,
   selectAll as selectAllApplications,
 } from "../../modules/applications";
-import { Environment, selectAll } from "../../modules/environments";
+import { selectAllEnvs } from "../../modules/environments";
 import { uniqueArray } from "../../utils/unique-array";
 import { FilterView } from "../filter-view";
 
@@ -53,9 +53,7 @@ export const ApplicationFilter: FC<ApplicationFilterProps> = memo(
   function ApplicationFilter({ onChange }) {
     const classes = useStyles();
     const dispatch = useDispatch();
-    const envs = useSelector<AppState, Environment.AsObject[]>((state) =>
-      selectAll(state.environments)
-    );
+    const envs = useSelector(selectAllEnvs);
     const options = useSelector<AppState, ApplicationFilterOptions>(
       (state) => state.applicationFilterOptions
     );

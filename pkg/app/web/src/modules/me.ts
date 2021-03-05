@@ -34,9 +34,9 @@ export const meSlice = createSlice({
   },
 });
 
-export const selectProjectName = (state: MeState): string => {
-  if (state && state.isLogin) {
-    return state.projectId;
+export const selectProjectName = (state: { me: MeState }): string => {
+  if (state.me && state.me.isLogin) {
+    return state.me.projectId;
   }
 
   return "";
