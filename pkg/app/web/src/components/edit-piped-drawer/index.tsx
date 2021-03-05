@@ -1,18 +1,12 @@
-import React, { FC, memo, useCallback } from "react";
 import { Drawer } from "@material-ui/core";
-import { PipedForm, PipedFormValues, validationSchema } from "../piped-form";
 import { useFormik } from "formik";
+import React, { FC, memo, useCallback } from "react";
 import { useDispatch, useSelector } from "react-redux";
-import { AppState } from "../../modules";
-import {
-  editPiped,
-  fetchPipeds,
-  Piped,
-  selectById,
-} from "../../modules/pipeds";
-import { AppDispatch } from "../../store";
-import { addToast } from "../../modules/toasts";
 import { UPDATE_PIPED_SUCCESS } from "../../constants/toast-text";
+import { editPiped, fetchPipeds, selectPipedById } from "../../modules/pipeds";
+import { addToast } from "../../modules/toasts";
+import { AppDispatch } from "../../store";
+import { PipedForm, PipedFormValues, validationSchema } from "../piped-form";
 
 export interface EditPipedDrawerProps {
   pipedId: string | null;
@@ -22,9 +16,7 @@ export interface EditPipedDrawerProps {
 export const EditPipedDrawer: FC<EditPipedDrawerProps> = memo(
   function EditPipedDrawer({ pipedId, onClose }) {
     const dispatch = useDispatch<AppDispatch>();
-    const piped = useSelector<AppState, Piped.AsObject | undefined>((state) =>
-      pipedId ? selectById(state.pipeds, pipedId) : undefined
-    );
+    const piped = useSelector(selectPipedById(pipedId));
 
     const formik = useFormik<PipedFormValues>({
       initialValues: {

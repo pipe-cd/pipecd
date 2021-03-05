@@ -7,12 +7,14 @@ import {
   Typography,
 } from "@material-ui/core";
 import CancelIcon from "@material-ui/icons/Cancel";
+import OpenInNewIcon from "@material-ui/icons/OpenInNew";
 import dayjs from "dayjs";
 import React, { FC, memo } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import { Link as RouterLink } from "react-router-dom";
-import { PAGE_PATH_APPLICATIONS } from "../../constants/path";
 import { DEPLOYMENT_STATE_TEXT } from "../../constants/deployment-status-text";
+import { PAGE_PATH_APPLICATIONS } from "../../constants/path";
+import { useInterval } from "../../hooks/use-interval";
 import { AppState } from "../../modules";
 import { ActiveStage } from "../../modules/active-stage";
 import {
@@ -20,16 +22,12 @@ import {
   Deployment,
   isDeploymentRunning,
   selectById as selectDeploymentById,
+  selectDeploymentIsCanceling,
 } from "../../modules/deployments";
-import {
-  Environment,
-  selectById as selectEnvById,
-} from "../../modules/environments";
-import { Piped, selectById } from "../../modules/pipeds";
+import { selectEnvById } from "../../modules/environments";
+import { selectPipedById } from "../../modules/pipeds";
 import { fetchStageLog } from "../../modules/stage-logs";
-import { useInterval } from "../../hooks/use-interval";
 import { DeploymentStatusIcon } from "../deployment-status-icon";
-import OpenInNewIcon from "@material-ui/icons/OpenInNew";
 import { DetailTableRow } from "../detail-table-row";
 import { SplitButton } from "../split-button";
 
@@ -93,18 +91,9 @@ export const DeploymentDetail: FC<DeploymentDetailProps> = memo(
       state.activeStage,
     ]);
 
-    const [env, piped, isCanceling] = useSelector<
-      AppState,
-      [Environment.AsObject | undefined, Piped.AsObject | undefined, boolean]
-    >((state) =>
-      deployment
-        ? [
-            selectEnvById(state.environments, deployment.envId),
-            selectById(state.pipeds, deployment.pipedId),
-            state.deployments.canceling[deployment.id],
-          ]
-        : [undefined, undefined, false]
-    );
+    const env = useSelector(selectEnvById(deployment?.envId));
+    const piped = useSelector(selectPipedById(deployment?.pipedId));
+    const isCanceling = useSelector(selectDeploymentIsCanceling(deploymentId));
 
     useInterval(
       () => {

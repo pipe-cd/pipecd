@@ -16,13 +16,10 @@ import * as Yup from "yup";
 import { APPLICATION_KIND_TEXT } from "../../constants/application-kind";
 import { UI_TEXT_CANCEL, UI_TEXT_SAVE } from "../../constants/ui-text";
 import { AppState } from "../../modules";
-import {
-  Environment,
-  selectAll as selectEnvironments,
-} from "../../modules/environments";
+import { selectAllEnvs } from "../../modules/environments";
 import {
   Piped,
-  selectById as selectPipedById,
+  selectPipedById,
   selectPipedsByEnv,
 } from "../../modules/pipeds";
 
@@ -181,17 +178,13 @@ export const ApplicationForm: FC<ApplicationFormProps> = memo(
   }) {
     const classes = useStyles();
 
-    const environments = useSelector<AppState, Environment.AsObject[]>(
-      (state) => selectEnvironments(state.environments)
-    );
+    const environments = useSelector(selectAllEnvs);
 
     const pipeds = useSelector<AppState, Piped.AsObject[]>((state) =>
       values.env !== "" ? selectPipedsByEnv(state.pipeds, values.env) : []
     );
 
-    const selectedPiped = useSelector<AppState, Piped.AsObject | undefined>(
-      (state) => selectPipedById(state.pipeds, values.pipedId)
-    );
+    const selectedPiped = useSelector(selectPipedById(values.pipedId));
 
     const cloudProviders = createCloudProviderListFromPiped({
       piped: selectedPiped,

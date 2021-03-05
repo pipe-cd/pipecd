@@ -12,17 +12,15 @@ import {
   Toolbar,
 } from "@material-ui/core";
 import { Add as AddIcon } from "@material-ui/icons";
-import { EntityId } from "@reduxjs/toolkit";
 import React, { FC, memo, useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import { AddEnvForm } from "../../components/add-env-form";
 import { EnvironmentListItem } from "../../components/environment-list-item";
 import { UI_TEXT_ADD } from "../../constants/ui-text";
-import { AppState } from "../../modules";
 import {
   addEnvironment,
   fetchEnvironments,
-  selectIds as selectEnvIds,
+  selectEnvIds,
 } from "../../modules/environments";
 import { selectProjectName } from "../../modules/me";
 import { AppDispatch } from "../../store";
@@ -31,12 +29,8 @@ export const SettingsEnvironmentPage: FC = memo(
   function SettingsEnvironmentPage() {
     const dispatch = useDispatch<AppDispatch>();
     const [isOpenForm, setIsOpenForm] = useState(false);
-    const projectName = useSelector<AppState, string>((state) =>
-      selectProjectName(state.me)
-    );
-    const envIds = useSelector<AppState, EntityId[]>((state) =>
-      selectEnvIds(state.environments)
-    );
+    const projectName = useSelector(selectProjectName);
+    const envIds = useSelector(selectEnvIds);
 
     const handleClose = (): void => {
       setIsOpenForm(false);

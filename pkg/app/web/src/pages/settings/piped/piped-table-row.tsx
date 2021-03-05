@@ -24,8 +24,7 @@ import {
   UI_TEXT_ENABLE,
   UI_TEXT_RECREATE_KEY,
 } from "../../../constants/ui-text";
-import { AppState } from "../../../modules";
-import { Piped, selectById } from "../../../modules/pipeds";
+import { selectPipedById } from "../../../modules/pipeds";
 import { addToast } from "../../../modules/toasts";
 
 const useStyles = makeStyles((theme) => ({
@@ -65,9 +64,7 @@ export const PipedTableRow: FC<Props> = memo(function PipedTableRow({
   onRecreateKey,
 }) {
   const classes = useStyles();
-  const piped = useSelector<AppState, Piped.AsObject | undefined>((state) =>
-    selectById(state.pipeds, pipedId)
-  );
+  const piped = useSelector(selectPipedById(pipedId));
   const dispatch = useDispatch();
   const [anchorEl, setAnchorEl] = useState<HTMLButtonElement | null>(null);
 

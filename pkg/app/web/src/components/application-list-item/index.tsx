@@ -9,21 +9,18 @@ import {
   TableRow,
 } from "@material-ui/core";
 import MenuIcon from "@material-ui/icons/MoreVert";
+import clsx from "clsx";
 import dayjs from "dayjs";
 import React, { FC, memo, useState } from "react";
 import { useSelector } from "react-redux";
 import { Link as RouterLink } from "react-router-dom";
 import { APPLICATION_KIND_TEXT } from "../../constants/application-kind";
 import { PAGE_PATH_APPLICATIONS } from "../../constants/path";
+import { UI_TEXT_NOT_AVAILABLE_TEXT } from "../../constants/ui-text";
 import { AppState } from "../../modules";
 import { Application, selectById } from "../../modules/applications";
-import {
-  Environment,
-  selectById as selectEnvById,
-} from "../../modules/environments";
-import clsx from "clsx";
+import { selectEnvById } from "../../modules/environments";
 import { AppSyncStatus } from "../app-sync-status";
-import { UI_TEXT_NOT_AVAILABLE_TEXT } from "../../constants/ui-text";
 
 const useStyles = makeStyles((theme) => ({
   root: {
@@ -68,10 +65,7 @@ export const ApplicationListItem: FC<ApplicationListItemProps> = memo(
     const app = useSelector<AppState, Application.AsObject | undefined>(
       (state) => selectById(state.applications, applicationId)
     );
-    const env = useSelector<AppState, Environment.AsObject | undefined>(
-      (state) =>
-        app ? selectEnvById(state.environments, app.envId) : undefined
-    );
+    const env = useSelector(selectEnvById(app?.envId));
 
     const handleEdit = (): void => {
       setAnchorEl(null);

@@ -22,11 +22,7 @@ import {
   UI_TEXT_EDIT,
   UI_TEXT_SAVE,
 } from "../../constants/ui-text";
-import { AppState } from "../../modules";
-import {
-  Environment,
-  selectById as selectEnvById,
-} from "../../modules/environments";
+import { selectEnvById } from "../../modules/environments";
 
 const useStyles = makeStyles((theme) => ({
   item: {
@@ -48,9 +44,7 @@ export const EnvironmentListItem: FC<EnvironmentListItemProps> = memo(
     const [anchorEl, setAnchorEl] = useState<HTMLButtonElement | null>(null);
     const [isEdit, setIsEdit] = useState(false);
     const [desc, setDesc] = useState("");
-    const env = useSelector<AppState, Environment.AsObject | undefined>(
-      (state) => selectEnvById(state.environments, id)
-    );
+    const env = useSelector(selectEnvById(id));
 
     // menu event handler
     const handleClickMenu = useCallback(

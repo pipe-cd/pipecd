@@ -78,11 +78,13 @@ describe("selectProjectName", () => {
   it("should returns projectId", () => {
     expect(
       selectProjectName({
-        subject: "userName",
-        avatarUrl: "avatar-url",
-        projectId: "pipecd",
-        projectRole: Role.ProjectRole.ADMIN,
-        isLogin: true,
+        me: {
+          subject: "userName",
+          avatarUrl: "avatar-url",
+          projectId: "pipecd",
+          projectRole: Role.ProjectRole.ADMIN,
+          isLogin: true,
+        },
       })
     ).toBe("pipecd");
   });
@@ -90,12 +92,14 @@ describe("selectProjectName", () => {
   it("should returns empty string if user is not logged in", () => {
     expect(
       selectProjectName({
-        isLogin: false,
+        me: {
+          isLogin: false,
+        },
       })
     ).toBe("");
   });
 
   it("should returns empty string if MeState is null", () => {
-    expect(selectProjectName(null)).toBe("");
+    expect(selectProjectName({ me: null })).toBe("");
   });
 });

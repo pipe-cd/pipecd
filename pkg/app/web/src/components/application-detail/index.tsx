@@ -27,11 +27,8 @@ import {
   syncApplication,
 } from "../../modules/applications";
 import { SyncStrategy } from "../../modules/deployments";
-import {
-  Environment,
-  selectById as selectEnvById,
-} from "../../modules/environments";
-import { Piped, selectById as selectPipeById } from "../../modules/pipeds";
+import { selectEnvById } from "../../modules/environments";
+import { selectPipedById } from "../../modules/pipeds";
 import { AppLiveState } from "../app-live-state";
 import { AppSyncStatus } from "../app-sync-status";
 import { DetailTableRow } from "../detail-table-row";
@@ -156,14 +153,8 @@ export const ApplicationDetail: FC<ApplicationDetailProps> = memo(
       state.applications.fetchApplicationError,
     ]);
 
-    const [env, pipe] = useSelector<
-      AppState,
-      [Environment.AsObject | undefined, Piped.AsObject | undefined]
-    >((state) => [
-      app ? selectEnvById(state.environments, app.envId) : undefined,
-      app ? selectPipeById(state.pipeds, app.pipedId) : undefined,
-    ]);
-
+    const env = useSelector(selectEnvById(app?.envId));
+    const piped = useSelector(selectPipedById(app?.pipedId));
     const isSyncing = useIsSyncingApplication(app?.id);
 
     const handleSync = (index: number): void => {
@@ -245,14 +236,14 @@ export const ApplicationDetail: FC<ApplicationDetailProps> = memo(
 
         <Box mt={1} display="flex">
           <div className={classes.content}>
-            {app && pipe ? (
+            {app && piped ? (
               <table>
                 <tbody>
                   <DetailTableRow
                     label="Kind"
                     value={APPLICATION_KIND_TEXT[app.kind]}
                   />
-                  <DetailTableRow label="Piped" value={pipe.name} />
+                  <DetailTableRow label="Piped" value={piped.name} />
                   <DetailTableRow
                     label="Cloud Provider"
                     value={app.cloudProvider}
