@@ -13,7 +13,7 @@ PipeCD aims to support a wide range of deployable services, currently, [Terrafor
 
 The deployment configuration is used to customize the way to do the deployment. In the case of AWS ECS deployment, current common stages (`WAIT`, `WAIT_APPROVAL`, `ANALYSIS`) are all inherited, besides with the stages for ECS deployment `ECS_SYNC`, `ECS_CANARY_ROLLOUT` and `ECS_TRAFFIC_ROUTING`.
 
-In case of `ECS_SYNC`, PipeCD simply applys `serviceDefinition` and `taskDefinition`.
+In case of `ECS_SYNC`, PipeCD simply applys `serviceDefinition` and `taskDefinition` using [UpdateService](https://docs.aws.amazon.com/AmazonECS/latest/APIReference/API_UpdateService.html) and [RegisterTaskDefinition](https://docs.aws.amazon.com/AmazonECS/latest/APIReference/API_RegisterTaskDefinition.html).
 In case of using pipeline, you need to use `External` as a deployment controller in your `serviceDefinition`.
 In case of `ECS_TRAFFIC_ROUTING`, PipeCD changes the configuration of the load balancer you specified in .pipe.yaml in order to change the traffic routing state.
 
