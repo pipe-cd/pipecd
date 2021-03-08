@@ -106,7 +106,7 @@ func (e *Executor) Execute(sig executor.StopSignal) model.StageStatus {
 	}
 	defer e.saveElapsedTime(ctx)
 
-	ctx, cancel := context.WithTimeout(sig.Context(), timeout)
+	ctx, cancel := context.WithTimeout(ctx, timeout)
 	defer cancel()
 
 	eg, ctx := errgroup.WithContext(ctx)
@@ -117,6 +117,7 @@ func (e *Executor) Execute(sig executor.StopSignal) model.StageStatus {
 		analyzer, err := e.newAnalyzerForMetrics(i, &options.Metrics[i], templateCfg, mf)
 		if err != nil {
 			e.LogPersister.Error(err.Error())
+			// TODO: Consider treating it as a failure when unknown analysis provider given
 			continue
 		}
 		eg.Go(func() error {
