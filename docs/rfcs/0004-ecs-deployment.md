@@ -48,8 +48,8 @@ spec:
     taskDefinition: path/to/taskdef.json
     loadBalancerInfo:
         containerName: sample-app
-  pipeline:
         containerPort: 80
+  pipeline:
     stages:
       # Deploy workloads of the new version.
       # But this is still receiving no traffic.
