@@ -1,5 +1,5 @@
 - Start Date: (2021-03-02)
-- Target Version: (1.x / 2.x)
+- Target Version: 1.1.0
 
 # Summary
 
@@ -48,8 +48,8 @@ spec:
     taskDefinition: path/to/taskdef.json
     loadBalancerInfo:
         containerName: sample-app
-        containerPort: 80
   pipeline:
+        containerPort: 80
     stages:
       # Deploy workloads of the new version.
       # But this is still receiving no traffic.
