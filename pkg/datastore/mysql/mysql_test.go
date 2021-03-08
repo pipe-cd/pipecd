@@ -74,3 +74,34 @@ func TestBuildDataSourceName(t *testing.T) {
 		})
 	}
 }
+
+func TestMakeRowID(t *testing.T) {
+	testcases := []struct {
+		name    string
+		modelID string
+		rowID   string
+	}{
+		{
+			name:    "modelID is simple string, not UUID",
+			modelID: "pipecd",
+			rowID:   "1b247cf8-ee2c-56db-af91-be9e25ff3b6a",
+		},
+		{
+			name:    "modelID is as same as previuos, ensure test",
+			modelID: "pipecd",
+			rowID:   "1b247cf8-ee2c-56db-af91-be9e25ff3b6a",
+		},
+		{
+			name:    "modelID is UUID",
+			modelID: "dfc55495-7dbd-11eb-8636-42010a920020",
+			rowID:   "dfc55495-7dbd-11eb-8636-42010a920020",
+		},
+	}
+
+	for _, tc := range testcases {
+		t.Run(tc.name, func(t *testing.T) {
+			rowID := makeRowID(tc.modelID)
+			assert.Equal(t, tc.rowID, rowID)
+		})
+	}
+}

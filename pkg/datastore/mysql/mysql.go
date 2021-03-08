@@ -84,7 +84,7 @@ func (m *MySQL) Find(ctx context.Context, kind string, opts datastore.ListOption
 
 // Get implementation for MySQL
 func (m *MySQL) Get(ctx context.Context, kind, id string, v interface{}) error {
-	row := m.client.QueryRowContext(ctx, buildGetQuery(kind), id)
+	row := m.client.QueryRowContext(ctx, buildGetQuery(kind), makeRowID(id))
 	var val string
 	err := row.Scan(&val)
 	if err == sql.ErrNoRows {
@@ -125,12 +125,7 @@ func (m *MySQL) Create(ctx context.Context, kind, id string, entity interface{})
 		return err
 	}
 
-	// In case the given model is `project`, id is not in uuid type so just generate random uuid instead.
-	if kind == "Project" {
-		id = uuid.New().String()
-	}
-
-	_, err = stmt.ExecContext(ctx, id, data)
+	_, err = stmt.ExecContext(ctx, makeRowID(id), data)
 	if mysqlErr, ok := err.(*mysql.MySQLError); ok && mysqlErr.Number == mysqlErrorCodeDuplicate {
 		return datastore.ErrAlreadyExists
 	}
@@ -168,12 +163,7 @@ func (m *MySQL) Put(ctx context.Context, kind, id string, entity interface{}) er
 		return err
 	}
 
-	// In case the given model is `project`, id is not in uuid type so just generate random uuid instead.
-	if kind == "Project" {
-		id = uuid.New().String()
-	}
-
-	_, err = stmt.ExecContext(ctx, id, data, data)
+	_, err = stmt.ExecContext(ctx, makeRowID(id), data, data)
 	if err != nil {
 		m.logger.Error("failed to put entity",
 			zap.String("id", id),
@@ -198,7 +188,7 @@ func (m *MySQL) Update(ctx context.Context, kind, id string, factory datastore.F
 		return err
 	}
 
-	row := tx.QueryRowContext(ctx, buildGetQuery(kind), id)
+	row := tx.QueryRowContext(ctx, buildGetQuery(kind), makeRowID(id))
 	var val string
 	err = row.Scan(&val)
 	if err == sql.ErrNoRows {
@@ -246,7 +236,7 @@ func (m *MySQL) Update(ctx context.Context, kind, id string, factory datastore.F
 		tx.Rollback()
 		return err
 	}
-	_, err = tx.ExecContext(ctx, buildUpdateQuery(kind), data, id)
+	_, err = tx.ExecContext(ctx, buildUpdateQuery(kind), data, makeRowID(id))
 	if err != nil {
 		m.logger.Error("failed to update entity",
 			zap.String("id", id),
@@ -288,4 +278,14 @@ func buildDataSourceName(url, database, usernameFile, passwordFile string) (stri
 	}
 
 	return fmt.Sprintf("%s:%s@tcp(%s)/%s", username, password, url, database), nil
+}
+
+// makeRowID converts a given string which not in UUID format to UUID string.
+// Otherwise, return the id itself.
+func makeRowID(id string) string {
+	_, err := uuid.Parse(id)
+	if err == nil {
+		return id
+	}
+	return uuid.NewSHA1(uuid.NameSpaceOID, []byte(id)).String()
 }
