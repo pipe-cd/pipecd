@@ -156,8 +156,11 @@ func (e *Executor) Execute(sig executor.StopSignal) model.StageStatus {
 		return model.StageStatus_STAGE_FAILURE
 	}
 
-	e.LogPersister.Success("All analyses were successful.")
-	return model.StageStatus_STAGE_SUCCESS
+	status := executor.DetermineStageStatus(sig.Signal(), e.Stage.Status, model.StageStatus_STAGE_SUCCESS)
+	if status == model.StageStatus_STAGE_SUCCESS {
+		e.LogPersister.Success("All analyses were successful.")
+	}
+	return status
 }
 
 const elapsedTimeKey = "elapsedTime"
