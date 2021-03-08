@@ -13,13 +13,18 @@ PipeCD aims to support a wide range of deployable services, currently, [Terrafor
 
 The deployment configuration is used to customize the way to do the deployment. In the case of AWS ECS deployment, current common stages (`WAIT`, `WAIT_APPROVAL`, `ANALYSIS`) are all inherited, besides with the stages for ECS deployment `ECS_SYNC`, `ECS_CANARY_ROLLOUT` and `ECS_TRAFFIC_ROUTING`.
 
-In case of `ECS_SYNC`, PipeCD simply applies `serviceDefinition` and `taskDefinition` using [UpdateService](https://docs.aws.amazon.com/AmazonECS/latest/APIReference/API_UpdateService.html) and [RegisterTaskDefinition](https://docs.aws.amazon.com/AmazonECS/latest/APIReference/API_RegisterTaskDefinition.html).
+`ECS_SYNC` simply applies `serviceDefinition` and `taskDefinition`. It uses API such as [`CreateService`](https://docs.aws.amazon.com/AmazonECS/latest/APIReference/API_CreateService.html), [`UpdateService`](https://docs.aws.amazon.com/AmazonECS/latest/APIReference/API_UpdateService.html), [`RegisterTaskDefinition`](https://docs.aws.amazon.com/AmazonECS/latest/APIReference/API_RegisterTaskDefinition.html) and [`CreateTaskSet`](https://docs.aws.amazon.com/AmazonECS/latest/APIReference/API_CreateTaskSet.html).
+
+`ECS_CANARY_ROLLOUT` deploys workloads of the new version. it uses API such as [`DescribeServices`](https://docs.aws.amazon.com/AmazonECS/latest/APIReference/API_DescribeServices.html), [`CreateTaskSet`](https://docs.aws.amazon.com/AmazonECS/latest/APIReference/API_CreateTaskSet.html), [`UpdateServicePrimaryTaskSet`](https://docs.aws.amazon.com/AmazonECS/latest/APIReference/API_UpdateServicePrimaryTaskSet.html) and [`DeleteTaskSet`](https://docs.aws.amazon.com/AmazonECS/latest/APIReference/API_DeleteTaskSet.html).
+
+`ECS_TRAFFIC_ROUTING` changes the configuration of the load balancer you specified in .pipe.yaml in order to change the traffic routing state. It uses API such as [`DescribeTargetGroups`](https://docs.aws.amazon.com/elasticloadbalancing/latest/APIReference/API_DescribeTargetGroups.html), [`DescribeListeners`](https://docs.aws.amazon.com/elasticloadbalancing/latest/APIReference/API_DescribeListeners.html), [`ModifyListener`](https://docs.aws.amazon.com/elasticloadbalancing/latest/APIReference/API_ModifyListener.html), [`DescribeRules`](https://docs.aws.amazon.com/elasticloadbalancing/latest/APIReference/API_DescribeRules.html) and [`ModifyRule`](https://docs.aws.amazon.com/elasticloadbalancing/latest/APIReference/API_ModifyRule.html).
+
 In case of using pipeline, you need to use `External` as a deployment controller in your `serviceDefinition`.
-In case of `ECS_TRAFFIC_ROUTING`, PipeCD changes the configuration of the load balancer you specified in .pipe.yaml in order to change the traffic routing state.
 
 ## Example
 
-canary
+### Canary Deployment
+
 ```yaml
 apiVersion: pipecd.dev/v1beta1
 kind: ECSApp
@@ -51,6 +56,33 @@ spec:
       - name: ECS_TRAFFIC_ROUTING
         with:
           canary: 100
+```
+
+### Blue-Green Deployment
+
+```yaml
+apiVersion: pipecd.dev/v1beta1
+kind: ECSApp
+spec:
+  input:
+    name: Sample
+    serviceDefinition: path/to/servicedef.json # optional
+    taskDefinition: path/to/taskdef.json       # required
+    loadBalancerInfo:                          # optional
+        containerName: sample-app
+        containerPort: 80
+  pipeline:
+    stages:
+      # Deploy workloads of the new version.
+      # But this is still receiving no traffic.
+      - name: ECS_CANARY_ROLLOUT
+      # Change the traffic routing state where
+      # the new version will receive all traffic.
+      # This is known as multi-phase canary strategy.
+      - name: ECS_TRAFFIC_ROUTING
+        with:
+          all: canary
+      - name: ANALYSIS
 ```
 
 ## Architecture
