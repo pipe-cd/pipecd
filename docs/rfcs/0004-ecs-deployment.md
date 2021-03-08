@@ -7,14 +7,14 @@ This RFC proposes adding a new service deployment from PipeCD: AWS ECS deploymen
 
 # Motivation
 
-PipeCD aims to support wide range of deployable services, currently [Terraform deployment](https://pipecd.dev/docs/feature-status/#terraform-deployment) and [Lambda deployment](https://pipecd.dev/docs/feature-status/#lambda-deployment) are supported. ECS deployment meets a lot of requests we received.
+PipeCD aims to support a wide range of deployable services, currently, [Terraform deployment](https://pipecd.dev/docs/feature-status/#terraform-deployment) and [Lambda deployment](https://pipecd.dev/docs/feature-status/#lambda-deployment) are supported. ECS deployment meets a lot of requests we received.
 
 # Detailed design
 
 The deployment configuration is used to customize the way to do the deployment. In the case of AWS ECS deployment, current common stages (`WAIT`, `WAIT_APPROVAL`, `ANALYSIS`) are all inherited, besides with the stages for ECS deployment `ECS_SYNC`, `ECS_CANARY_ROLLOUT` and `ECS_TRAFFIC_ROUTING`.
 
 In case of `ECS_SYNC`, PipeCD simply applys `serviceDefinition` and `taskDefinition`.
-In case you use pipeline, you need to use `External` as a deployment controller in your `serviceDefinition`.
+In case of using pipeline, you need to use `External` as a deployment controller in your `serviceDefinition`.
 In case of `ECS_TRAFFIC_ROUTING`, PipeCD changes the configuration of the load balancer you specified in .pipe.yaml in order to change the traffic routing state.
 
 ```yaml
@@ -53,23 +53,6 @@ spec:
 ## Architecture
 
 Just as current Lambda but under `pkg/cloudprovider/ecs` package.
-
-# Alternatives
-
-The deployment configuration sample as bellow:
-
-```yaml
-apiVersion: pipecd.dev/v1beta1
-kind: ECSApp
-spec:
-  input:
-    name: Sample
-    serviceDefinition: path/to/servicedef.json # optional
-    taskDefinition: path/to/taskdef.json       # required
-    loadBalancerInfo:                          # optional
-        containerName: sample-app
-        containerPort: 80
-```
 
 # Unresolved questions
 
