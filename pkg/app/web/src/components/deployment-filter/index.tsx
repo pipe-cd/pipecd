@@ -8,7 +8,7 @@ import {
 } from "@material-ui/core";
 import Autocomplete from "@material-ui/lab/Autocomplete";
 import React, { FC, memo, useCallback } from "react";
-import { useDispatch, useSelector } from "react-redux";
+import { useSelector } from "react-redux";
 import { APPLICATION_KIND_TEXT } from "../../constants/application-kind";
 import { DEPLOYMENT_STATE_TEXT } from "../../constants/deployment-status-text";
 import { AppState } from "../../modules";
@@ -20,13 +20,9 @@ import {
   selectById as selectApplicationById,
 } from "../../modules/applications";
 import {
-  clearDeploymentFilter,
-  DeploymentFilterOptions,
-  updateDeploymentFilter,
-} from "../../modules/deployment-filter-options";
-import {
   DeploymentStatus,
   DeploymentStatusKey,
+  DeploymentFilterOptions,
 } from "../../modules/deployments";
 import { selectAllEnvs } from "../../modules/environments";
 import { FilterView } from "../filter-view";
@@ -44,37 +40,35 @@ const useStyles = makeStyles((theme) => ({
 const ALL_VALUE = "ALL";
 
 export interface DeploymentFilterProps {
-  onChange: () => void;
+  options: DeploymentFilterOptions;
+  onClear: () => void;
+  onChange: (options: DeploymentFilterOptions) => void;
 }
 
 export const DeploymentFilter: FC<DeploymentFilterProps> = memo(
-  function DeploymentFilter({ onChange }) {
+  function DeploymentFilter({ options, onChange, onClear }) {
     const classes = useStyles();
-    const dispatch = useDispatch();
     const envs = useSelector(selectAllEnvs);
     const applications = useSelector<AppState, Application.AsObject[]>(
       (state) => selectAllApplications(state.applications)
     );
-    const options = useSelector<AppState, DeploymentFilterOptions>(
-      (state) => state.deploymentFilterOptions
-    );
     const selectedApp = useSelector<AppState, Application.AsObject | undefined>(
       (state) =>
-        selectApplicationById(state.applications, options.applicationIds[0])
+        options.applicationId
+          ? selectApplicationById(state.applications, options.applicationId)
+          : undefined
     );
     const handleUpdateFilterValue = useCallback(
       (opts: Partial<DeploymentFilterOptions>): void => {
-        dispatch(updateDeploymentFilter(opts));
-        onChange();
+        onChange({ ...options, ...opts });
       },
-      [dispatch, onChange]
+      [options, onChange]
     );
 
     return (
       <FilterView
         onClear={() => {
-          dispatch(clearDeploymentFilter());
-          onChange();
+          onClear();
         }}
       >
         <FormControl className={classes.formItem} variant="outlined">
@@ -82,15 +76,15 @@ export const DeploymentFilter: FC<DeploymentFilterProps> = memo(
           <Select
             labelId="filter-env"
             id="filter-env"
-            value={options.envIds[0] || ALL_VALUE}
+            value={options.envId ?? ALL_VALUE}
             label="Environment"
             className={classes.select}
             onChange={(e) => {
               handleUpdateFilterValue({
-                envIds:
+                envId:
                   e.target.value === ALL_VALUE
-                    ? []
-                    : [e.target.value as string],
+                    ? undefined
+                    : (e.target.value as string),
               });
             }}
           >
@@ -110,15 +104,15 @@ export const DeploymentFilter: FC<DeploymentFilterProps> = memo(
           <Select
             labelId="filter-application-kind"
             id="filter-application-kind"
-            value={options.kinds[0] ?? ALL_VALUE}
+            value={options.kind ?? ALL_VALUE}
             label="Application Kind"
             className={classes.select}
             onChange={(e) => {
               handleUpdateFilterValue({
-                kinds:
+                kind:
                   e.target.value === ALL_VALUE
-                    ? []
-                    : [e.target.value as ApplicationKind],
+                    ? undefined
+                    : `${e.target.value}`,
               });
             }}
           >
@@ -150,7 +144,7 @@ export const DeploymentFilter: FC<DeploymentFilterProps> = memo(
             value={selectedApp || null}
             onChange={(_, value) => {
               handleUpdateFilterValue({
-                applicationIds: value ? [value.id] : [],
+                applicationId: value ? value.id : undefined,
               });
             }}
             renderInput={(params) => (
@@ -173,15 +167,15 @@ export const DeploymentFilter: FC<DeploymentFilterProps> = memo(
           <Select
             labelId="filter-deployment-status"
             id="filter-deployment-status"
-            value={options.statuses[0] ?? ALL_VALUE}
+            value={options.status ?? ALL_VALUE}
             label="Deployment Status"
             className={classes.select}
             onChange={(e) => {
               handleUpdateFilterValue({
-                statuses:
+                status:
                   e.target.value === ALL_VALUE
-                    ? []
-                    : [e.target.value as DeploymentStatus],
+                    ? undefined
+                    : `${e.target.value}`,
               });
             }}
           >
