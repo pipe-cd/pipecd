@@ -17,6 +17,9 @@ In case of `ECS_SYNC`, PipeCD simply applies `serviceDefinition` and `taskDefini
 In case of using pipeline, you need to use `External` as a deployment controller in your `serviceDefinition`.
 In case of `ECS_TRAFFIC_ROUTING`, PipeCD changes the configuration of the load balancer you specified in .pipe.yaml in order to change the traffic routing state.
 
+## Example
+
+canary
 ```yaml
 apiVersion: pipecd.dev/v1beta1
 kind: ECSApp
@@ -38,7 +41,7 @@ spec:
       # This is known as multi-phase canary strategy.
       - name: ECS_TRAFFIC_ROUTING
         with:
-          newVersion: 10
+          canary: 10
       # Optional: We can also add an ANALYSIS stage to verify the new version.
       # If this stage finds any not good metrics of the new version,
       # a rollback process to the previous version will be executed.
@@ -47,7 +50,7 @@ spec:
       # thre new version will receive 100% of the traffic.
       - name: ECS_TRAFFIC_ROUTING
         with:
-          newVersion: 100
+          canary: 100
 ```
 
 ## Architecture
