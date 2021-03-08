@@ -1,4 +1,4 @@
-- Start Date: (fill me in with today's date, YYYY-MM-DD)
+- Start Date: (2021-03-02)
 - Target Version: (1.x / 2.x)
 
 # Summary
@@ -7,28 +7,50 @@ This RFC proposes adding a new service deployment from PipeCD: AWS ECS deploymen
 
 # Motivation
 
-Why are we doing this? What do we expect?
+PipeCD aims to support wide range of deployable services, currently [Terraform deployment](https://pipecd.dev/docs/feature-status/#terraform-deployment) and [CloudRun deployment](https://pipecd.dev/docs/feature-status/#cloudrun-deployment) are supported. ECS deployment meets a lot of requests we received.
 
 # Detailed design
 
-Note:
-- Since the `Lambda function as container image` feature was available on AWS recently, we plan to implement PipeCD Lambda deployment based on that update.
-- To simplify the implementation, the initial release of this feature will only support container images from ECR ( the AWS container registry ).
-
 ## Usage
 
-The deployment configuration is used to customize the way to do the deployment. In the case of AWS ECS deployment, current common stages (`WAIT`, `WAIT_APPROVAL`, `ANALYSIS`) are all inherited, besides with the stages for ECS deployment `ECS_SYNC`.
+The deployment configuration is used to customize the way to do the deployment. In the case of AWS ECS deployment, current common stages (`WAIT`, `WAIT_APPROVAL`, `ANALYSIS`) are all inherited, besides with the stages for ECS deployment `ECS_SYNC`, `ECS_CANARY_ROLLOUT` and `ECS_TRAFFIC_ROUTING`.
 
 ```yaml
-# https://docs.aws.amazon.com/lambda/latest/dg/configuration-versions.html
 apiVersion: pipecd.dev/v1beta1
 kind: ECSApp
 spec:
   input:
     name: Sample
-    taskDefinition: path/to/taskdef.json
-    image: xxxxxxxxxxxx.dkr.ecr.ap-northeast-1.amazonaws.com/demoapp:v0.0.1
+    serviceDefinition: path/to/servicedef.json # optional
+    taskDefinition: path/to/taskdef.json       # required
+    loadBalancerInfo:
+        containerName: "sample-app"
+        containerPort: 80
+  pipeline:
+    stages:
+      # Deploy workloads of the new version.
+      # But this is still receiving no traffic.
+      - name: ECS_CANARY_ROLLOUT
+      # Change the traffic routing state where
+      # the new version will receive the specified percentage of traffic.
+      # This is known as multi-phase canary strategy.
+      - name: ECS_TRAFFIC_ROUTING
+        with:
+          newVersion: 10
+      # Optional: We can also add an ANALYSIS stage to verify the new version.
+      # If this stage finds any not good metrics of the new version,
+      # a rollback process to the previous version will be executed.
+      - name: ANALYSIS
+      # Change the traffic routing state where
+      # thre new version will receive 100% of the traffic.
+      - name: ECS_TRAFFIC_ROUTING
+        with:
+          newVersion: 100
 ```
+
+In case of `ECS_SYNC`, PipeCD simply apply `serviceDefinition` and `taskDefinition`.
+
+In case you use pipeline, you need to use `External` as a deployment controller in your `serviceDefinition`.
 
 ## Architecture
 
@@ -36,7 +58,20 @@ Just as current Lambda but under `pkg/cloudprovider/ecs` package.
 
 # Alternatives
 
-What other designs have been considered? What is the impact of not doing this?
+The deployment configuration sample as bellow:
+
+```yaml
+apiVersion: pipecd.dev/v1beta1
+kind: ECSApp
+spec:
+  input:
+    name: Sample
+    serviceDefinition: path/to/servicedef.json # optional
+    taskDefinition: path/to/taskdef.json       # required
+    loadBalancerInfo:                          # optional
+        containerName: "sample-app"
+        containerPort: 80
+```
 
 # Unresolved questions
 
