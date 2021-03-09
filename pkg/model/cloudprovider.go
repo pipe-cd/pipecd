@@ -21,6 +21,7 @@ const (
 	CloudProviderTerraform  CloudProviderType = "TERRAFORM"
 	CloudProviderCloudRun   CloudProviderType = "CLOUDRUN"
 	CloudProviderLambda     CloudProviderType = "LAMBDA"
+	CloudProviderECS        CloudProviderType = "ECS"
 )
 
 func (t CloudProviderType) String() string {
