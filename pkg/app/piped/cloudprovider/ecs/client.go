@@ -80,6 +80,55 @@ func newClient(region, profile, credentialsFile, roleARN, tokenPath string, logg
 	return c, nil
 }
 
+func (c *client) CreateService(ctx context.Context, service ecs.Service) (ecs.Service, error) {
+	input := &ecs.CreateServiceInput{
+		Cluster:                       service.ClusterArn,
+		DeploymentConfiguration:       service.DeploymentConfiguration,
+		DeploymentController:          service.DeploymentController,
+		DesiredCount:                  service.DesiredCount,
+		EnableECSManagedTags:          service.EnableECSManagedTags,
+		HealthCheckGracePeriodSeconds: service.HealthCheckGracePeriodSeconds,
+		LaunchType:                    service.LaunchType,
+		LoadBalancers:                 service.LoadBalancers,
+		NetworkConfiguration:          service.NetworkConfiguration,
+		PlacementConstraints:          service.PlacementConstraints,
+		PlacementStrategy:             service.PlacementStrategy,
+		PlatformVersion:               service.PlatformVersion,
+		PropagateTags:                 service.PropagateTags,
+		Role:                          service.RoleArn,
+		SchedulingStrategy:            service.SchedulingStrategy,
+		ServiceName:                   service.ServiceName,
+		ServiceRegistries:             service.ServiceRegistries,
+		Tags:                          service.Tags,
+		TaskDefinition:                service.TaskDefinition,
+	}
+	cfg, err := c.client.CreateServiceWithContext(ctx, input)
+	if err != nil {
+		aerr, ok := err.(awserr.Error)
+		if !ok {
+			err = fmt.Errorf("unknown error given: %w", err)
+			return ecs.Service{}, err
+		}
+		switch aerr.Code() {
+		case ecs.ErrCodeServerException:
+			return ecs.Service{}, fmt.Errorf("aws ecs service encountered an internal error: %w", err)
+		case ecs.ErrCodeClientException:
+			return ecs.Service{}, fmt.Errorf("aws ecs service encountered an client error: %w", err)
+		case ecs.ErrCodeInvalidParameterException:
+			return ecs.Service{}, fmt.Errorf("invalid parameter given: %w", err)
+		case ecs.ErrCodeClusterNotFoundException:
+			return ecs.Service{}, fmt.Errorf("aws ecs cluster not found: %w", err)
+		case ecs.ErrCodeUnsupportedFeatureException:
+			return ecs.Service{}, fmt.Errorf("unsupported feature given: %w", err)
+		case ecs.ErrCodePlatformUnknownException:
+			return ecs.Service{}, fmt.Errorf("unknown platform given: %w", err)
+		case ecs.ErrCodePlatformTaskDefinitionIncompatibilityException:
+			return ecs.Service{}, fmt.Errorf("specified platform version does not satisfy the task definition's required: %w", err)
+		}
+	}
+	return *cfg.Service, nil
+}
+
 func (c *client) ServiceExist(ctx context.Context, clusterName string, services []string) (bool, error) {
 	input := &ecs.DescribeServicesInput{
 		Cluster:  aws.String(clusterName),
