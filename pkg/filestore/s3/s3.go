@@ -81,8 +81,7 @@ func NewStore(ctx context.Context, region, bucket string, opts ...Option) (*Stor
 		opt(s)
 	}
 
-	var optFns []func(*config.LoadOptions) error
-	optFns = append(optFns, config.WithRegion(region))
+	optFns := []func(*config.LoadOptions) error{config.WithRegion(region)}
 	if s.credentialsFile != "" {
 		optFns = append(optFns, config.WithSharedCredentialsFiles([]string{s.credentialsFile}))
 	}
