@@ -10,7 +10,7 @@ import { Add } from "@material-ui/icons";
 import CloseIcon from "@material-ui/icons/Close";
 import FilterIcon from "@material-ui/icons/FilterList";
 import RefreshIcon from "@material-ui/icons/Refresh";
-import React, { FC, memo, useEffect, useState } from "react";
+import React, { FC, memo, useCallback, useEffect, useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import { ApplicationFilter } from "../../components/application-filter";
 import { AddApplicationDrawer } from "../../components/add-application-drawer";
@@ -22,6 +22,12 @@ import { fetchApplications } from "../../modules/applications";
 import { clearTemplateTarget } from "../../modules/deployment-configs";
 import { AppDispatch } from "../../store";
 import { UI_TEXT_FILTER, UI_TEXT_HIDE_FILTER } from "../../constants/ui-text";
+import {
+  stringifySearchParams,
+  useSearchParams,
+} from "../../utils/search-params";
+import { useHistory } from "react-router-dom";
+import { PAGE_PATH_APPLICATIONS } from "../../constants/path";
 
 const useStyles = makeStyles((theme) => ({
   main: {
@@ -45,6 +51,8 @@ const useStyles = makeStyles((theme) => ({
 export const ApplicationIndexPage: FC = memo(function ApplicationIndexPage() {
   const classes = useStyles();
   const dispatch = useDispatch<AppDispatch>();
+  const history = useHistory();
+  const filterOptions = useSearchParams();
   const [openAddForm, setOpenAddForm] = useState(false);
   const [openFilter, setOpenFilter] = useState(true);
   const [isLoading, isAdding] = useSelector<AppState, [boolean, boolean]>(
@@ -55,21 +63,29 @@ export const ApplicationIndexPage: FC = memo(function ApplicationIndexPage() {
     (state) => state.deploymentConfigs.targetApplicationId
   );
 
-  const handleChangeFilterOptions = (): void => {
-    dispatch(fetchApplications());
-  };
+  const handleFilterChange = useCallback(
+    (options) => {
+      history.replace(
+        `${PAGE_PATH_APPLICATIONS}?${stringifySearchParams(options)}`
+      );
+    },
+    [history]
+  );
+  const handleFilterClear = useCallback(() => {
+    history.replace(PAGE_PATH_APPLICATIONS);
+  }, [history]);
 
-  const handleRefresh = (): void => {
-    dispatch(fetchApplications());
-  };
+  const handleRefresh = useCallback(() => {
+    dispatch(fetchApplications(filterOptions));
+  }, [dispatch, filterOptions]);
 
   const handleCloseTemplateForm = (): void => {
     dispatch(clearTemplateTarget());
   };
 
   useEffect(() => {
-    dispatch(fetchApplications());
-  }, [dispatch]);
+    dispatch(fetchApplications(filterOptions));
+  }, [dispatch, filterOptions]);
 
   return (
     <>
@@ -107,7 +123,11 @@ export const ApplicationIndexPage: FC = memo(function ApplicationIndexPage() {
       <div className={classes.main}>
         <ApplicationList />
         {openFilter && (
-          <ApplicationFilter onChange={handleChangeFilterOptions} />
+          <ApplicationFilter
+            options={filterOptions}
+            onChange={handleFilterChange}
+            onClear={handleFilterClear}
+          />
         )}
       </div>
 

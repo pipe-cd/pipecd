@@ -26,14 +26,33 @@ export const applicationsAdapter = createEntityAdapter<Application.AsObject>({
 
 export const { selectAll, selectById } = applicationsAdapter.getSelectors();
 
+export interface ApplicationsFilterOptions {
+  activeStatus?: string;
+  kind?: string;
+  envId?: string;
+  syncStatus?: string;
+  name?: string;
+}
+
 export const fetchApplications = createAsyncThunk<
   Application.AsObject[],
-  void,
+  ApplicationsFilterOptions | undefined,
   { state: AppState }
->("applications/fetchList", async (_, thunkAPI) => {
-  const { applicationFilterOptions } = thunkAPI.getState();
+>("applications/fetchList", async (options = {}) => {
   const { applicationsList } = await applicationsAPI.getApplications({
-    options: applicationFilterOptions,
+    options: {
+      envIdsList: options.envId ? [options.envId] : [],
+      kindsList: options.kind
+        ? [parseInt(options.kind, 10) as ApplicationKind]
+        : [],
+      name: options.name ?? "",
+      syncStatusesList: options.syncStatus
+        ? [parseInt(options.syncStatus, 10) as ApplicationSyncStatus]
+        : [],
+      enabled: options.activeStatus
+        ? { value: options.activeStatus === "enabled" }
+        : undefined,
+    },
   });
   return applicationsList as Application.AsObject[];
 });

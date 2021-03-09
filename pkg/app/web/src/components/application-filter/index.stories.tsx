@@ -26,5 +26,9 @@ export default {
 };
 
 export const overview: React.FC = () => (
-  <ApplicationFilter onChange={action("onChange")} />
+  <ApplicationFilter
+    options={{}}
+    onChange={action("onChange")}
+    onClear={action("onClear")}
+  />
 );
