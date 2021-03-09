@@ -1,4 +1,4 @@
-// Copyright 2020 The PipeCD Authors.
+// Copyright 2021 The PipeCD Authors.
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -16,36 +16,74 @@ package datadog
 
 import (
 	"context"
+	"fmt"
+	"net/http"
 	"time"
+
+	"github.com/DataDog/datadog-api-client-go/api/v1/datadog"
+	"go.uber.org/zap"
 
 	"github.com/pipe-cd/pipe/pkg/config"
 )
 
-const ProviderType = "Datadog"
+const (
+	ProviderType   = "Datadog"
+	defaultAddress = "datadoghq.com"
+	defaultTimeout = 30 * time.Second
 
-// Provider is a client for datadog.
+	fromDeltaMultiplierOnMetricInterval = 10
+)
+
+// Provider works as an HTTP client for datadog.
 type Provider struct {
-	metricsQueryEndpoint     string
-	apiKeyValidationEndpoint string
-
-	timeout        time.Duration
+	address        string
 	apiKey         string
 	applicationKey string
-	fromDelta      int64
+
+	fromDelta int64
+	timeout   time.Duration
+	logger    *zap.Logger
 }
 
-func NewProvider(address, apiKey, applicationKey string) (*Provider, error) {
-	return &Provider{
-		metricsQueryEndpoint: address,
-		apiKey:               apiKey,
-		applicationKey:       applicationKey,
-	}, nil
+func NewProvider(apiKey, applicationKey string, interval time.Duration, opts ...Option) (*Provider, error) {
+	if apiKey == "" {
+		return nil, fmt.Errorf("api-key is required")
+	}
+	if applicationKey == "" {
+		return nil, fmt.Errorf("application-key is required")
+	}
+	p := &Provider{
+		address:        defaultAddress,
+		apiKey:         apiKey,
+		applicationKey: applicationKey,
+		// TODO: Think about how to calculate from delta
+		fromDelta: int64(fromDeltaMultiplierOnMetricInterval * interval.Seconds()),
+		timeout:   defaultTimeout,
+		logger:    zap.NewNop(),
+	}
+	for _, opt := range opts {
+		opt(p)
+	}
+	return p, nil
 }
 
-// response represents a response from datadog server.
-type response struct {
-	Series []struct {
-		Pointlist [][]float64 `json:"pointlist"`
+type Option func(*Provider)
+
+func WithAddress(address string) Option {
+	return func(p *Provider) {
+		p.address = address
+	}
+}
+
+func WithLogger(logger *zap.Logger) Option {
+	return func(p *Provider) {
+		p.logger = logger.Named("datadog-provider")
+	}
+}
+
+func WithTimeout(timeout time.Duration) Option {
+	return func(p *Provider) {
+		p.timeout = timeout
 	}
 }
 
@@ -53,6 +91,56 @@ func (p *Provider) Type() string {
 	return ProviderType
 }
 
+// RunQuery issues an HTTP request to the API named "MetricsApi.QueryMetrics", then evaluate its response.
+// See: https://docs.datadoghq.com/api/latest/metrics/#query-timeseries-points
 func (p *Provider) RunQuery(ctx context.Context, query string, expected config.AnalysisExpected) (bool, error) {
+	ctx, cancel := context.WithTimeout(ctx, p.timeout)
+	defer cancel()
+	ctx = context.WithValue(
+		ctx,
+		datadog.ContextAPIKeys,
+		map[string]datadog.APIKey{
+			"apiKeyAuth": {
+				Key: p.apiKey,
+			},
+			"appKeyAuth": {
+				Key: p.applicationKey,
+			},
+		},
+	)
+	ctx = context.WithValue(
+		ctx,
+		datadog.ContextServerVariables,
+		map[string]string{"site": p.address},
+	)
+	from := time.Now().Unix() - p.fromDelta
+	to := time.Now().Unix()
+
+	cfg := datadog.NewConfiguration()
+	api_client := datadog.NewAPIClient(cfg)
+	resp, rawResp, err := api_client.MetricsApi.QueryMetrics(ctx).From(from).To(to).Query(query).Execute()
+	if err != nil {
+		return false, fmt.Errorf("failed to call \"MetricsApi.QueryMetrics\": %w", err)
+	}
+	if rawResp.StatusCode != http.StatusOK {
+		return false, fmt.Errorf("unexpected status from \"MetricsApi.QueryMetrics\"")
+	}
+	if resp.Series == nil || len(*resp.Series) == 0 {
+		return false, fmt.Errorf("no timeseries queried found")
+	}
+	points := (*resp.Series)[0].Pointlist
+	if points == nil || len(*points) == 0 {
+		return false, fmt.Errorf("no points of the time series found")
+	}
+	values := (*points)[len(*points)-1]
+	if len(values) == 0 {
+		return false, fmt.Errorf("no values found")
+	}
+	// TODO: Careful investigate which value should be evaluated
+	return p.evaluate(expected, values[0])
+}
+
+func (p *Provider) evaluate(expected config.AnalysisExpected, response float64) (bool, error) {
+	// TODO: Evaluate response from Datadog
 	return false, nil
 }

@@ -376,10 +376,12 @@ type AnalysisProviderPrometheusConfig struct {
 }
 
 type AnalysisProviderDatadogConfig struct {
+	// The address of Datadog API server.
+	// Defaults to "datadoghq.com"
 	Address string `json:"address"`
-	// The path to the api key file.
+	// Required: The path to the api key file.
 	APIKeyFile string `json:"apiKeyFile"`
-	// The path to the application key file.
+	// Required: The path to the application key file.
 	ApplicationKeyFile string `json:"applicationKeyFile"`
 }
 

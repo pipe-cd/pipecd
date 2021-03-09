@@ -35,37 +35,34 @@ func NewFactory(logger *zap.Logger) *Factory {
 }
 
 // NewProvider generates an appropriate provider according to analysis provider config.
-func (f *Factory) NewProvider(analysisTempCfg *config.TemplatableAnalysisMetrics, providerCfg *config.PipedAnalysisProvider) (provider Provider, err error) {
+func (f *Factory) NewProvider(analysisTempCfg *config.TemplatableAnalysisMetrics, providerCfg *config.PipedAnalysisProvider) (Provider, error) {
 	switch providerCfg.Type {
 	case model.AnalysisProviderPrometheus:
-		provider, err = prometheus.NewProvider(providerCfg.PrometheusConfig.Address, analysisTempCfg.Timeout.Duration(), f.logger)
-		if err != nil {
-			return
-		}
+		return prometheus.NewProvider(providerCfg.PrometheusConfig.Address, analysisTempCfg.Timeout.Duration(), f.logger)
 	case model.AnalysisProviderDatadog:
 		var apiKey, applicationKey string
 		cfg := providerCfg.DatadogConfig
 		if cfg.APIKeyFile != "" {
 			a, err := ioutil.ReadFile(cfg.APIKeyFile)
 			if err != nil {
-				return nil, err
+				return nil, fmt.Errorf("failed to read the api-key file: %w", err)
 			}
 			apiKey = string(a)
 		}
 		if cfg.ApplicationKeyFile != "" {
 			a, err := ioutil.ReadFile(cfg.ApplicationKeyFile)
 			if err != nil {
-				return nil, err
+				return nil, fmt.Errorf("failed to read the application-key file: %w", err)
 			}
 			applicationKey = string(a)
 		}
-		provider, err = datadog.NewProvider(cfg.Address, apiKey, applicationKey)
-		if err != nil {
-			return
+		options := []datadog.Option{
+			datadog.WithAddress(cfg.Address),
+			datadog.WithTimeout(analysisTempCfg.Timeout.Duration()),
+			datadog.WithLogger(f.logger),
 		}
+		return datadog.NewProvider(apiKey, applicationKey, analysisTempCfg.Interval.Duration(), options...)
 	default:
-		err = fmt.Errorf("any of providers config not found")
-		return
+		return nil, fmt.Errorf("any of providers config not found")
 	}
-	return
 }
