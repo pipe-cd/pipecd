@@ -14,7 +14,7 @@ import * as deploymentsApi from "../api/deployments";
 import { fetchCommand, Command, CommandStatus } from "./commands";
 import { AppState } from ".";
 import { LoadingStatus } from "../types/module";
-import { ListDeploymentsRequest } from "../../../../../bazel-bin/pkg/app/web/api_client/service_pb";
+import { ListDeploymentsRequest } from "pipe/pkg/app/web/api_client/service_pb";
 import { ApplicationKind } from "./applications";
 
 export type Stage = Required<PipelineStage.AsObject>;
