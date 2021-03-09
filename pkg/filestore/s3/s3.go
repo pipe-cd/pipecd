@@ -17,26 +17,23 @@ package s3
 import (
 	"bytes"
 	"context"
+	"errors"
 	"fmt"
 	"io"
 	"io/ioutil"
 
-	"github.com/aws/aws-sdk-go/aws"
-	"github.com/aws/aws-sdk-go/aws/awserr"
-	"github.com/aws/aws-sdk-go/aws/credentials"
-	"github.com/aws/aws-sdk-go/aws/credentials/ec2rolecreds"
-	"github.com/aws/aws-sdk-go/aws/credentials/stscreds"
-	"github.com/aws/aws-sdk-go/aws/ec2metadata"
-	"github.com/aws/aws-sdk-go/aws/session"
-	"github.com/aws/aws-sdk-go/service/s3"
-	"github.com/aws/aws-sdk-go/service/sts"
+	"github.com/aws/aws-sdk-go-v2/aws"
+	"github.com/aws/aws-sdk-go-v2/config"
+	"github.com/aws/aws-sdk-go-v2/credentials/stscreds"
+	"github.com/aws/aws-sdk-go-v2/service/s3"
+	"github.com/aws/aws-sdk-go-v2/service/s3/types"
 	"go.uber.org/zap"
 
 	"github.com/pipe-cd/pipe/pkg/filestore"
 )
 
 type Store struct {
-	client          *s3.S3
+	client          *s3.Client
 	bucket          string
 	profile         string
 	credentialsFile string
@@ -68,7 +65,7 @@ func WithTokenFile(roleARN, path string) Option {
 	}
 }
 
-func NewStore(region, bucket string, opts ...Option) (*Store, error) {
+func NewStore(ctx context.Context, region, bucket string, opts ...Option) (*Store, error) {
 	if region == "" {
 		return nil, fmt.Errorf("region is required field")
 	}
@@ -84,55 +81,50 @@ func NewStore(region, bucket string, opts ...Option) (*Store, error) {
 		opt(s)
 	}
 
-	sess, err := session.NewSession()
-	if err != nil {
-		return nil, fmt.Errorf("failed to create a session: %w", err)
+	optFns := []func(*config.LoadOptions) error{config.WithRegion(region)}
+	if s.credentialsFile != "" {
+		optFns = append(optFns, config.WithSharedCredentialsFiles([]string{s.credentialsFile}))
+	}
+	if s.tokenFile != "" && s.roleARN != "" {
+		optFns = append(optFns, config.WithWebIdentityRoleCredentialOptions(func(v *stscreds.WebIdentityRoleOptions) {
+			v.RoleARN = s.roleARN
+			v.TokenRetriever = stscreds.IdentityTokenFile(s.tokenFile)
+		}))
 	}
 
-	creds := credentials.NewChainCredentials(
-		[]credentials.Provider{
-			&credentials.EnvProvider{},
-			&credentials.SharedCredentialsProvider{
-				Filename: s.credentialsFile,
-				Profile:  s.profile,
-			},
-			// roleSessionName specifies the IAM role session name to use when assuming a role.
-			// it will be generated automatically in case of empty string passed.
-			// ref: https://github.com/aws/aws-sdk-go/blob/0dd12669013412980b665d4f6e2947d57b1cd062/aws/credentials/stscreds/web_identity_provider.go#L116-L121
-			stscreds.NewWebIdentityRoleProvider(sts.New(sess), s.roleARN, "", s.tokenFile),
-			&ec2rolecreds.EC2RoleProvider{
-				Client: ec2metadata.New(sess),
-			},
-		},
-	)
-	cfg := aws.NewConfig().WithRegion(region).WithCredentials(creds)
-	s.client = s3.New(sess, cfg)
+	// When you initialize an aws.Config instance using config.LoadDefaultConfig, the SDK uses its default credential chain to find AWS credentials.
+	// This default credential chain looks for credentials in the following order:
+	//
+	// 1. Environment variables.
+	//   1. Static Credentials (AWS_ACCESS_KEY_ID, AWS_SECRET_ACCESS_KEY, AWS_SESSION_TOKEN)
+	//   2. Web Identity Token (AWS_WEB_IDENTITY_TOKEN_FILE)
+	// 2. Shared configuration files.
+	//   1. SDK defaults to credentials file under .aws folder that is placed in the home folder on your computer.
+	//   2. SDK defaults to config file under .aws folder that is placed in the home folder on your computer.
+	// 3. If your application uses an ECS task definition or RunTask API operation, IAM role for tasks.
+	// 4. If your application is running on an Amazon EC2 instance, IAM role for Amazon EC2.
+	// ref: https://aws.github.io/aws-sdk-go-v2/docs/configuring-sdk/#specifying-credentials
+	cfg, err := config.LoadDefaultConfig(ctx, optFns...)
+	if err != nil {
+		return nil, fmt.Errorf("failed to load config to create s3 client: %w", err)
+	}
+	s.client = s3.NewFromConfig(cfg)
 
 	return s, nil
 }
 
-func (s *Store) NewReader(ctx context.Context, path string) (rc io.ReadCloser, err error) {
+func (s *Store) NewReader(ctx context.Context, path string) (io.ReadCloser, error) {
 	input := &s3.GetObjectInput{
 		Bucket: aws.String(s.bucket),
 		Key:    aws.String(path),
 	}
-	out, err := s.client.GetObjectWithContext(ctx, input)
+	out, err := s.client.GetObject(ctx, input)
 	if err != nil {
-		if aerr, ok := err.(awserr.Error); ok {
-			switch aerr.Code() {
-			case s3.ErrCodeNoSuchKey:
-				err = filestore.ErrNotFound
-				return
-			case s3.ErrCodeInvalidObjectState:
-				err = fmt.Errorf("invalid object state: %w", err)
-				return
-			default:
-				err = fmt.Errorf("unexpected aws error given: %w", err)
-				return
-			}
+		var nfe *types.NoSuchKey
+		if errors.As(err, &nfe) {
+			return nil, filestore.ErrNotFound
 		}
-		err = fmt.Errorf("unknown error given: %w", err)
-		return
+		return nil, err
 	}
 	return out.Body, nil
 }
@@ -161,19 +153,13 @@ func (s *Store) GetObject(ctx context.Context, path string) (object filestore.Ob
 
 func (s *Store) PutObject(ctx context.Context, path string, content []byte) error {
 	input := &s3.PutObjectInput{
-		Body:   aws.ReadSeekCloser(bytes.NewReader(content)),
+		Body:   bytes.NewReader(content),
 		Bucket: aws.String(s.bucket),
 		Key:    aws.String(path),
 	}
-	_, err := s.client.PutObjectWithContext(ctx, input)
+	_, err := s.client.PutObject(ctx, input)
 	if err != nil {
-		if aerr, ok := err.(awserr.Error); ok {
-			switch aerr.Code() {
-			default:
-				return fmt.Errorf("error occured on aws side: %w", err)
-			}
-		}
-		return fmt.Errorf("unknown error given: %w", err)
+		return err
 	}
 	return nil
 }
@@ -185,20 +171,19 @@ func (s *Store) ListObjects(ctx context.Context, prefix string) ([]filestore.Obj
 		Prefix: aws.String(prefix),
 	}
 
-	err := s.client.ListObjectsV2PagesWithContext(ctx, input,
-		func(page *s3.ListObjectsV2Output, lastPage bool) bool {
-			for _, obj := range page.Contents {
-				objects = append(objects, filestore.Object{
-					Path:    aws.StringValue(obj.Key),
-					Size:    aws.Int64Value(obj.Size),
-					Content: []byte{},
-				})
-			}
-			return *page.IsTruncated
-		},
-	)
-	if err != nil {
-		return nil, fmt.Errorf("failed to get list objects: %w", err)
+	paginator := s3.NewListObjectsV2Paginator(s.client, input)
+	for paginator.HasMorePages() {
+		page, err := paginator.NextPage(ctx)
+		if err != nil {
+			return nil, fmt.Errorf("failed to get list objects: %w", err)
+		}
+		for _, obj := range page.Contents {
+			objects = append(objects, filestore.Object{
+				Path:    aws.ToString(obj.Key),
+				Size:    obj.Size,
+				Content: []byte{},
+			})
+		}
 	}
 	return objects, nil
 }

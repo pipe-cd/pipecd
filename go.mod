@@ -10,6 +10,10 @@ require (
 	github.com/Azure/go-autorest/autorest/adal v0.9.5 // indirect
 	github.com/NYTimes/gziphandler v0.0.0-20170623195520-56545f4a5d46
 	github.com/aws/aws-sdk-go v1.36.21
+	github.com/aws/aws-sdk-go-v2 v1.2.0
+	github.com/aws/aws-sdk-go-v2/config v1.1.1
+	github.com/aws/aws-sdk-go-v2/credentials v1.1.1
+	github.com/aws/aws-sdk-go-v2/service/s3 v1.2.0
 	github.com/dgrijalva/jwt-go v3.2.0+incompatible
 	github.com/envoyproxy/protoc-gen-validate v0.1.0
 	github.com/fsouza/fake-gcs-server v1.21.0
