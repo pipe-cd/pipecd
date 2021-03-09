@@ -377,6 +377,7 @@ type AnalysisProviderPrometheusConfig struct {
 
 type AnalysisProviderDatadogConfig struct {
 	// The address of Datadog API server.
+	// Only "datadoghq.com", "us3.datadoghq.com", "datadoghq.eu", "ddog-gov.com" are available.
 	// Defaults to "datadoghq.com"
 	Address string `json:"address"`
 	// Required: The path to the api key file.

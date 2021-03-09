@@ -30,36 +30,39 @@ const (
 	ProviderType   = "Datadog"
 	defaultAddress = "datadoghq.com"
 	defaultTimeout = 30 * time.Second
-
-	fromDeltaMultiplierOnMetricInterval = 10
 )
 
 // Provider works as an HTTP client for datadog.
 type Provider struct {
-	address        string
-	apiKey         string
-	applicationKey string
+	client *datadog.APIClient
 
-	fromDelta int64
-	timeout   time.Duration
-	logger    *zap.Logger
+	address           string
+	apiKey            string
+	applicationKey    string
+	queriedTimePeriod int64
+	timeout           time.Duration
+	logger            *zap.Logger
 }
 
-func NewProvider(apiKey, applicationKey string, interval time.Duration, opts ...Option) (*Provider, error) {
+func NewProvider(apiKey, applicationKey string, queriedTimePeriod time.Duration, opts ...Option) (*Provider, error) {
 	if apiKey == "" {
 		return nil, fmt.Errorf("api-key is required")
 	}
 	if applicationKey == "" {
 		return nil, fmt.Errorf("application-key is required")
 	}
+	if queriedTimePeriod == 0 {
+		return nil, fmt.Errorf("aggregation period is required")
+	}
+
 	p := &Provider{
-		address:        defaultAddress,
-		apiKey:         apiKey,
-		applicationKey: applicationKey,
-		// TODO: Think about how to calculate from delta
-		fromDelta: int64(fromDeltaMultiplierOnMetricInterval * interval.Seconds()),
-		timeout:   defaultTimeout,
-		logger:    zap.NewNop(),
+		client:            datadog.NewAPIClient(datadog.NewConfiguration()),
+		address:           defaultAddress,
+		apiKey:            apiKey,
+		applicationKey:    applicationKey,
+		queriedTimePeriod: int64(queriedTimePeriod.Seconds()),
+		timeout:           defaultTimeout,
+		logger:            zap.NewNop(),
 	}
 	for _, opt := range opts {
 		opt(p)
@@ -92,10 +95,18 @@ func (p *Provider) Type() string {
 }
 
 // RunQuery issues an HTTP request to the API named "MetricsApi.QueryMetrics", then evaluate its response.
-// See: https://docs.datadoghq.com/api/latest/metrics/#query-timeseries-points
+// It performs the given query for the period specified by its own queried time period using the current
+// time as the end of the queried time period.
+//
+// See more: https://docs.datadoghq.com/api/latest/metrics/#query-timeseries-points
 func (p *Provider) RunQuery(ctx context.Context, query string, expected config.AnalysisExpected) (bool, error) {
 	ctx, cancel := context.WithTimeout(ctx, p.timeout)
 	defer cancel()
+	ctx = context.WithValue(
+		ctx,
+		datadog.ContextServerVariables,
+		map[string]string{"site": p.address},
+	)
 	ctx = context.WithValue(
 		ctx,
 		datadog.ContextAPIKeys,
@@ -108,22 +119,16 @@ func (p *Provider) RunQuery(ctx context.Context, query string, expected config.A
 			},
 		},
 	)
-	ctx = context.WithValue(
-		ctx,
-		datadog.ContextServerVariables,
-		map[string]string{"site": p.address},
-	)
-	from := time.Now().Unix() - p.fromDelta
+
+	from := time.Now().Unix() - p.queriedTimePeriod
 	to := time.Now().Unix()
 
-	cfg := datadog.NewConfiguration()
-	api_client := datadog.NewAPIClient(cfg)
-	resp, rawResp, err := api_client.MetricsApi.QueryMetrics(ctx).From(from).To(to).Query(query).Execute()
+	resp, httpResp, err := p.client.MetricsApi.QueryMetrics(ctx).From(from).To(to).Query(query).Execute()
 	if err != nil {
 		return false, fmt.Errorf("failed to call \"MetricsApi.QueryMetrics\": %w", err)
 	}
-	if rawResp.StatusCode != http.StatusOK {
-		return false, fmt.Errorf("unexpected status from \"MetricsApi.QueryMetrics\"")
+	if httpResp.StatusCode != http.StatusOK {
+		return false, fmt.Errorf("unexpected HTTP status code from %s: %d", httpResp.Request.URL, httpResp.StatusCode)
 	}
 	if resp.Series == nil || len(*resp.Series) == 0 {
 		return false, fmt.Errorf("no timeseries queried found")
@@ -141,6 +146,5 @@ func (p *Provider) RunQuery(ctx context.Context, query string, expected config.A
 }
 
 func (p *Provider) evaluate(expected config.AnalysisExpected, response float64) (bool, error) {
-	// TODO: Evaluate response from Datadog
 	return false, nil
 }
