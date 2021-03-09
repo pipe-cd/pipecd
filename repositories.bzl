@@ -75,6 +75,13 @@ def go_repositories():
         version = "v1.1.0",
     )
     go_repository(
+        name = "com_github_aws_aws_sdk_go_v2_service_lambda",
+        importpath = "github.com/aws/aws-sdk-go-v2/service/lambda",
+        sum = "h1:ptubVb1eLQgZh7U4i+k2vpf3PlL4ZoTmGdTj+VowqqM=",
+        version = "v1.1.1",
+    )
+
+    go_repository(
         name = "com_github_aws_aws_sdk_go_v2_service_s3",
         importpath = "github.com/aws/aws-sdk-go-v2/service/s3",
         sum = "h1:p20kkvl+DwV3wYsnLGcmsspBzWGD6EsWKi/W+09Z1NI=",

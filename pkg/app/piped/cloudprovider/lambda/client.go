@@ -16,27 +16,20 @@ package lambda
 
 import (
 	"context"
-	"encoding/json"
 	"errors"
 	"fmt"
 	"reflect"
 	"time"
 
-	"github.com/aws/aws-sdk-go/aws"
-	"github.com/aws/aws-sdk-go/aws/awserr"
-	"github.com/aws/aws-sdk-go/aws/credentials"
-	"github.com/aws/aws-sdk-go/aws/credentials/ec2rolecreds"
-	"github.com/aws/aws-sdk-go/aws/credentials/stscreds"
-	"github.com/aws/aws-sdk-go/aws/ec2metadata"
-	"github.com/aws/aws-sdk-go/aws/session"
-	"github.com/aws/aws-sdk-go/service/lambda"
-	"github.com/aws/aws-sdk-go/service/sts"
+	"github.com/aws/aws-sdk-go-v2/aws"
+	"github.com/aws/aws-sdk-go-v2/config"
+	"github.com/aws/aws-sdk-go-v2/credentials/stscreds"
+	"github.com/aws/aws-sdk-go-v2/service/lambda"
+	"github.com/aws/aws-sdk-go-v2/service/lambda/types"
 	"go.uber.org/zap"
 
 	"github.com/pipe-cd/pipe/pkg/backoff"
 )
-
-type TrafficConfigKeyName string
 
 const (
 	defaultAliasName = "Service"
@@ -44,19 +37,13 @@ const (
 	RequestRetryTime = 3
 	// RetryIntervalDuration represents duration time between retry.
 	RetryIntervalDuration = 1 * time.Minute
-
-	// TrafficPrimaryVersionKeyName represents the key points to primary version config on traffic routing map.
-	TrafficPrimaryVersionKeyName TrafficConfigKeyName = "primary"
-	// TrafficSecondaryVersionKeyName represents the key points to primary version config on traffic routing map.
-	TrafficSecondaryVersionKeyName TrafficConfigKeyName = "secondary"
 )
 
 // ErrNotFound lambda resource occurred.
 var ErrNotFound = errors.New("lambda resource not found")
 
 type client struct {
-	region string
-	client *lambda.Lambda
+	client *lambda.Client
 	logger *zap.Logger
 }
 
@@ -66,40 +53,37 @@ func newClient(region, profile, credentialsFile, roleARN, tokenPath string, logg
 	}
 
 	c := &client{
-		region: region,
 		logger: logger.Named("lambda"),
 	}
 
-	sess, err := session.NewSession()
-	if err != nil {
-		return nil, fmt.Errorf("failed to create a session: %w", err)
+	optFns := []func(*config.LoadOptions) error{config.WithRegion(region)}
+	if credentialsFile != "" {
+		optFns = append(optFns, config.WithSharedCredentialsFiles([]string{credentialsFile}))
+	}
+	if tokenPath != "" && roleARN != "" {
+		optFns = append(optFns, config.WithWebIdentityRoleCredentialOptions(func(v *stscreds.WebIdentityRoleOptions) {
+			v.RoleARN = roleARN
+			v.TokenRetriever = stscreds.IdentityTokenFile(tokenPath)
+		}))
 	}
 
-	// Piped attempts to retrieve credentials in the following order:
-	// 1. from the environment variables. Available environment variables are:
-	//   - AWS_ACCESS_KEY_ID or AWS_ACCESS_KEY
-	//   - AWS_SECRET_ACCESS_KEY or AWS_SECRET_KEY
-	// 2. from the given credentials file.
-	// 3. from the pod running in EKS cluster via STS (SecurityTokenService) as WebIdentityRole.
-	// 4. from the EC2 Instance Role.
-	creds := credentials.NewChainCredentials(
-		[]credentials.Provider{
-			&credentials.EnvProvider{},
-			&credentials.SharedCredentialsProvider{
-				Filename: credentialsFile,
-				Profile:  profile,
-			},
-			// roleSessionName specifies the IAM role session name to use when assuming a role.
-			// it will be generated automatically in case of empty string passed.
-			// ref: https://github.com/aws/aws-sdk-go/blob/0dd12669013412980b665d4f6e2947d57b1cd062/aws/credentials/stscreds/web_identity_provider.go#L116-L121
-			stscreds.NewWebIdentityRoleProvider(sts.New(sess), roleARN, "", tokenPath),
-			&ec2rolecreds.EC2RoleProvider{
-				Client: ec2metadata.New(sess),
-			},
-		},
-	)
-	cfg := aws.NewConfig().WithRegion(c.region).WithCredentials(creds)
-	c.client = lambda.New(sess, cfg)
+	// When you initialize an aws.Config instance using config.LoadDefaultConfig, the SDK uses its default credential chain to find AWS credentials.
+	// This default credential chain looks for credentials in the following order:
+	//
+	// 1. Environment variables.
+	//   1. Static Credentials (AWS_ACCESS_KEY_ID, AWS_SECRET_ACCESS_KEY, AWS_SESSION_TOKEN)
+	//   2. Web Identity Token (AWS_WEB_IDENTITY_TOKEN_FILE)
+	// 2. Shared configuration files.
+	//   1. SDK defaults to credentials file under .aws folder that is placed in the home folder on your computer.
+	//   2. SDK defaults to config file under .aws folder that is placed in the home folder on your computer.
+	// 3. If your application uses an ECS task definition or RunTask API operation, IAM role for tasks.
+	// 4. If your application is running on an Amazon EC2 instance, IAM role for Amazon EC2.
+	// ref: https://aws.github.io/aws-sdk-go-v2/docs/configuring-sdk/#specifying-credentials
+	cfg, err := config.LoadDefaultConfig(context.Background(), optFns...)
+	if err != nil {
+		return nil, fmt.Errorf("failed to load config to create lambda client: %w", err)
+	}
+	c.client = lambda.NewFromConfig(cfg)
 
 	return c, nil
 }
@@ -108,56 +92,34 @@ func (c *client) IsFunctionExist(ctx context.Context, name string) (bool, error)
 	input := &lambda.GetFunctionInput{
 		FunctionName: aws.String(name),
 	}
-	_, err := c.client.GetFunctionWithContext(ctx, input)
+	_, err := c.client.GetFunction(ctx, input)
 	if err != nil {
-		if aerr, ok := err.(awserr.Error); ok {
-			switch aerr.Code() {
-			case lambda.ErrCodeInvalidParameterValueException:
-				return false, fmt.Errorf("invalid parameter given: %w", err)
-			case lambda.ErrCodeServiceException:
-				return false, fmt.Errorf("aws lambda service encountered an internal error: %w", err)
-			case lambda.ErrCodeTooManyRequestsException:
-				return false, fmt.Errorf("request throughput limit was exceeded: %w", err)
+		var nfe *types.ResourceNotFoundException
+		if errors.As(err, &nfe) {
 			// Only in case ResourceNotFound error occurred, the FunctionName is available for create so do not raise error.
-			case lambda.ErrCodeResourceNotFoundException:
-				return false, nil
-			}
+			return false, nil
 		}
-		return false, fmt.Errorf("unknown error given: %w", err)
+		return false, err
 	}
 	return true, nil
 }
 
 func (c *client) CreateFunction(ctx context.Context, fm FunctionManifest) error {
 	input := &lambda.CreateFunctionInput{
-		Code: &lambda.FunctionCode{
+		Code: &types.FunctionCode{
 			ImageUri: aws.String(fm.Spec.ImageURI),
 		},
-		PackageType:  aws.String("Image"),
+		PackageType:  types.PackageType("Image"),
 		Role:         aws.String(fm.Spec.Role),
 		FunctionName: aws.String(fm.Spec.Name),
-		Tags:         aws.StringMap(fm.Spec.Tags),
-		Environment: &lambda.Environment{
-			Variables: aws.StringMap(fm.Spec.Environments),
+		Tags:         fm.Spec.Tags,
+		Environment: &types.Environment{
+			Variables: fm.Spec.Environments,
 		},
 	}
-	_, err := c.client.CreateFunctionWithContext(ctx, input)
+	_, err := c.client.CreateFunction(ctx, input)
 	if err != nil {
-		if aerr, ok := err.(awserr.Error); ok {
-			switch aerr.Code() {
-			case lambda.ErrCodeInvalidParameterValueException:
-				return fmt.Errorf("invalid parameter given: %w", err)
-			case lambda.ErrCodeServiceException:
-				return fmt.Errorf("aws lambda service encountered an internal error: %w", err)
-			case lambda.ErrCodeCodeStorageExceededException:
-				return fmt.Errorf("total code size per account exceeded: %w", err)
-			case lambda.ErrCodeResourceNotFoundException, lambda.ErrCodeResourceNotReadyException:
-				return fmt.Errorf("resource error occurred: %w", err)
-			case lambda.ErrCodeTooManyRequestsException:
-				return fmt.Errorf("request throughput limit was exceeded: %w", err)
-			}
-		}
-		return fmt.Errorf("unknown error given: %w", err)
+		return fmt.Errorf("failed to create Lambda function %s: %w", fm.Spec.Name, err)
 	}
 	return nil
 }
@@ -168,23 +130,9 @@ func (c *client) UpdateFunction(ctx context.Context, fm FunctionManifest) error 
 		FunctionName: aws.String(fm.Spec.Name),
 		ImageUri:     aws.String(fm.Spec.ImageURI),
 	}
-	_, err := c.client.UpdateFunctionCodeWithContext(ctx, codeInput)
+	_, err := c.client.UpdateFunctionCode(ctx, codeInput)
 	if err != nil {
-		if aerr, ok := err.(awserr.Error); ok {
-			switch aerr.Code() {
-			case lambda.ErrCodeInvalidParameterValueException:
-				return fmt.Errorf("invalid parameter given: %w", err)
-			case lambda.ErrCodeServiceException:
-				return fmt.Errorf("aws lambda service encountered an internal error: %w", err)
-			case lambda.ErrCodeCodeStorageExceededException:
-				return fmt.Errorf("total code size per account exceeded: %w", err)
-			case lambda.ErrCodeTooManyRequestsException:
-				return fmt.Errorf("request throughput limit was exceeded: %w", err)
-			case lambda.ErrCodeResourceConflictException:
-				return fmt.Errorf("resource already existed or in progress: %w", err)
-			}
-		}
-		return fmt.Errorf("unknown error given: %w", err)
+		return fmt.Errorf("failed to update function code for Lambda function %s: %w", fm.Spec.Name, err)
 	}
 
 	// Update function configuration.
@@ -193,13 +141,13 @@ func (c *client) UpdateFunction(ctx context.Context, fm FunctionManifest) error 
 	for retry.WaitNext(ctx) {
 		configInput := &lambda.UpdateFunctionConfigurationInput{
 			FunctionName: aws.String(fm.Spec.Name),
-			MemorySize:   aws.Int64(fm.Spec.Memory),
-			Timeout:      aws.Int64(fm.Spec.Timeout),
-			Environment: &lambda.Environment{
-				Variables: aws.StringMap(fm.Spec.Environments),
+			MemorySize:   aws.Int32(fm.Spec.Memory),
+			Timeout:      aws.Int32(fm.Spec.Timeout),
+			Environment: &types.Environment{
+				Variables: fm.Spec.Environments,
 			},
 		}
-		_, err = c.client.UpdateFunctionConfigurationWithContext(ctx, configInput)
+		_, err = c.client.UpdateFunctionConfiguration(ctx, configInput)
 		if err != nil {
 			c.logger.Error("Failed to update function configuration")
 		} else {
@@ -215,59 +163,15 @@ func (c *client) UpdateFunction(ctx context.Context, fm FunctionManifest) error 
 	return c.updateTagsConfig(ctx, fm)
 }
 
-func (c *client) PublishFunction(ctx context.Context, fm FunctionManifest) (version string, err error) {
+func (c *client) PublishFunction(ctx context.Context, fm FunctionManifest) (string, error) {
 	input := &lambda.PublishVersionInput{
 		FunctionName: aws.String(fm.Spec.Name),
 	}
-	cfg, err := c.client.PublishVersionWithContext(ctx, input)
+	cfg, err := c.client.PublishVersion(ctx, input)
 	if err != nil {
-		aerr, ok := err.(awserr.Error)
-		if !ok {
-			err = fmt.Errorf("unknown error given: %w", err)
-			return
-		}
-		switch aerr.Code() {
-		case lambda.ErrCodeInvalidParameterValueException:
-			err = fmt.Errorf("invalid parameter given: %w", err)
-		case lambda.ErrCodeServiceException:
-			err = fmt.Errorf("aws lambda service encountered an internal error: %w", err)
-		case lambda.ErrCodeTooManyRequestsException:
-			err = fmt.Errorf("request throughput limit was exceeded: %w", err)
-		case lambda.ErrCodeCodeStorageExceededException:
-			err = fmt.Errorf("total code size per account exceeded: %w", err)
-		case lambda.ErrCodeResourceNotFoundException:
-			err = fmt.Errorf("resource not found: %w", err)
-		case lambda.ErrCodeResourceConflictException:
-			err = fmt.Errorf("resource already existed or in progress: %w", err)
-		}
-		return
+		return "", fmt.Errorf("failed to publish new version for Lambda function %s: %w", fm.Spec.Name, err)
 	}
-	version = aws.StringValue(cfg.Version)
-	return
-}
-
-// RoutingTrafficConfig presents a map of primary and secondary version traffic for lambda function alias.
-type RoutingTrafficConfig map[TrafficConfigKeyName]VersionTraffic
-
-func (c *RoutingTrafficConfig) Encode() (string, error) {
-	out, err := json.Marshal(c)
-	if err != nil {
-		return "", err
-	}
-	return string(out), nil
-}
-
-func (c *RoutingTrafficConfig) Decode(data []byte) error {
-	if err := json.Unmarshal(data, c); err != nil {
-		return err
-	}
-	return nil
-}
-
-// VersionTraffic presents the version, and the percent of traffic that's routed to it.
-type VersionTraffic struct {
-	Version string  `json:"version"`
-	Percent float64 `json:"percent"`
+	return aws.ToString(cfg.Version), nil
 }
 
 func (c *client) GetTrafficConfig(ctx context.Context, fm FunctionManifest) (routingTrafficCfg RoutingTrafficConfig, err error) {
@@ -276,23 +180,8 @@ func (c *client) GetTrafficConfig(ctx context.Context, fm FunctionManifest) (rou
 		Name:         aws.String(defaultAliasName),
 	}
 
-	cfg, err := c.client.GetAliasWithContext(ctx, input)
+	cfg, err := c.client.GetAlias(ctx, input)
 	if err != nil {
-		aerr, ok := err.(awserr.Error)
-		if !ok {
-			err = fmt.Errorf("unknown error given: %w", err)
-			return
-		}
-		switch aerr.Code() {
-		case lambda.ErrCodeInvalidParameterValueException:
-			err = fmt.Errorf("invalid parameter given: %w", err)
-		case lambda.ErrCodeServiceException:
-			err = fmt.Errorf("aws lambda service encountered an internal error: %w", err)
-		case lambda.ErrCodeTooManyRequestsException:
-			err = fmt.Errorf("request throughput limit was exceeded: %w", err)
-		case lambda.ErrCodeResourceNotFoundException:
-			err = ErrNotFound
-		}
 		return
 	}
 
@@ -321,7 +210,7 @@ func (c *client) GetTrafficConfig(ctx context.Context, fm FunctionManifest) (rou
 	// In case RoutingConfig is nil, 100 percent of current traffic is handled by FunctionVersion version.
 	if cfg.RoutingConfig == nil {
 		routingTrafficCfg[TrafficPrimaryVersionKeyName] = VersionTraffic{
-			Version: aws.StringValue(cfg.FunctionVersion),
+			Version: aws.ToString(cfg.FunctionVersion),
 			Percent: 100,
 		}
 		return
@@ -330,14 +219,14 @@ func (c *client) GetTrafficConfig(ctx context.Context, fm FunctionManifest) (rou
 	// RoutingConfig.AdditionalVersionWeights key represents the secondary version.
 	var secondaryVersionTraffic float64
 	for version, weight := range cfg.RoutingConfig.AdditionalVersionWeights {
-		secondaryVersionTraffic = percentageToPercent(aws.Float64Value(weight))
+		secondaryVersionTraffic = percentageToPercent(weight)
 		routingTrafficCfg[TrafficSecondaryVersionKeyName] = VersionTraffic{
 			Version: version,
 			Percent: secondaryVersionTraffic,
 		}
 	}
 	routingTrafficCfg[TrafficPrimaryVersionKeyName] = VersionTraffic{
-		Version: aws.StringValue(cfg.FunctionVersion),
+		Version: aws.ToString(cfg.FunctionVersion),
 		Percent: 100 - secondaryVersionTraffic,
 	}
 
@@ -350,23 +239,9 @@ func (c *client) CreateTrafficConfig(ctx context.Context, fm FunctionManifest, v
 		FunctionVersion: aws.String(version),
 		Name:            aws.String(defaultAliasName),
 	}
-	_, err := c.client.CreateAliasWithContext(ctx, input)
+	_, err := c.client.CreateAlias(ctx, input)
 	if err != nil {
-		if aerr, ok := err.(awserr.Error); ok {
-			switch aerr.Code() {
-			case lambda.ErrCodeInvalidParameterValueException:
-				return fmt.Errorf("invalid parameter given: %w", err)
-			case lambda.ErrCodeServiceException:
-				return fmt.Errorf("aws lambda service encountered an internal error: %w", err)
-			case lambda.ErrCodeTooManyRequestsException:
-				return fmt.Errorf("request throughput limit was exceeded: %w", err)
-			case lambda.ErrCodeResourceNotFoundException:
-				return fmt.Errorf("resource not found: %w", err)
-			case lambda.ErrCodeResourceConflictException:
-				return fmt.Errorf("resource already existed or in progress: %w", err)
-			}
-		}
-		return fmt.Errorf("unknown error given: %w", err)
+		return fmt.Errorf("failed to create traffic config for Lambda function %s: %w", fm.Spec.Name, err)
 	}
 	return nil
 }
@@ -384,30 +259,16 @@ func (c *client) UpdateTrafficConfig(ctx context.Context, fm FunctionManifest, r
 	}
 
 	if secondary, ok := routingTraffic[TrafficSecondaryVersionKeyName]; ok {
-		routingTrafficMap := make(map[string]*float64)
-		routingTrafficMap[secondary.Version] = aws.Float64(precentToPercentage(secondary.Percent))
-		input.RoutingConfig = &lambda.AliasRoutingConfiguration{
+		routingTrafficMap := make(map[string]float64)
+		routingTrafficMap[secondary.Version] = precentToPercentage(secondary.Percent)
+		input.RoutingConfig = &types.AliasRoutingConfiguration{
 			AdditionalVersionWeights: routingTrafficMap,
 		}
 	}
 
-	_, err := c.client.UpdateAliasWithContext(ctx, input)
+	_, err := c.client.UpdateAlias(ctx, input)
 	if err != nil {
-		if aerr, ok := err.(awserr.Error); ok {
-			switch aerr.Code() {
-			case lambda.ErrCodeInvalidParameterValueException:
-				return fmt.Errorf("invalid parameter given: %w", err)
-			case lambda.ErrCodeServiceException:
-				return fmt.Errorf("aws lambda service encountered an internal error: %w", err)
-			case lambda.ErrCodeTooManyRequestsException:
-				return fmt.Errorf("request throughput limit was exceeded: %w", err)
-			case lambda.ErrCodeResourceNotFoundException:
-				return fmt.Errorf("resource not found: %w", err)
-			case lambda.ErrCodeResourceConflictException:
-				return fmt.Errorf("resource already existed or in progress: %w", err)
-			}
-		}
-		return fmt.Errorf("unknown error given: %w", err)
+		return fmt.Errorf("failed to update traffic config for Lambda function %s: %w", fm.Spec.Name, err)
 	}
 	return nil
 }
@@ -416,25 +277,13 @@ func (c *client) updateTagsConfig(ctx context.Context, fm FunctionManifest) erro
 	getFuncInput := &lambda.GetFunctionInput{
 		FunctionName: aws.String(fm.Spec.Name),
 	}
-	output, err := c.client.GetFunctionWithContext(ctx, getFuncInput)
+	output, err := c.client.GetFunction(ctx, getFuncInput)
 	if err != nil {
-		if aerr, ok := err.(awserr.Error); ok {
-			switch aerr.Code() {
-			case lambda.ErrCodeInvalidParameterValueException:
-				return fmt.Errorf("invalid parameter given: %w", err)
-			case lambda.ErrCodeServiceException:
-				return fmt.Errorf("aws lambda service encountered an internal error: %w", err)
-			case lambda.ErrCodeTooManyRequestsException:
-				return fmt.Errorf("request throughput limit was exceeded: %w", err)
-			case lambda.ErrCodeResourceNotFoundException:
-				return fmt.Errorf("resource not found: %w", err)
-			}
-		}
-		return fmt.Errorf("unknown error occurred on list tags of Lambda function %s: %w", fm.Spec.Name, err)
+		return fmt.Errorf("error occurred on list tags of Lambda function %s: %w", fm.Spec.Name, err)
 	}
 
-	functionArn := aws.StringValue(output.Configuration.FunctionArn)
-	currentTags := aws.StringValueMap(output.Tags)
+	functionArn := aws.ToString(output.Configuration.FunctionArn)
+	currentTags := output.Tags
 	// Skip if there are no changes on tags.
 	if reflect.DeepEqual(currentTags, fm.Spec.Tags) {
 		return nil
@@ -469,25 +318,11 @@ func (c *client) updateTagsConfig(ctx context.Context, fm FunctionManifest) erro
 func (c *client) tagFunction(ctx context.Context, functionArn string, tags map[string]string) error {
 	tagInput := &lambda.TagResourceInput{
 		Resource: aws.String(functionArn),
-		Tags:     aws.StringMap(tags),
+		Tags:     tags,
 	}
-	_, err := c.client.TagResourceWithContext(ctx, tagInput)
+	_, err := c.client.TagResource(ctx, tagInput)
 	if err != nil {
-		if aerr, ok := err.(awserr.Error); ok {
-			switch aerr.Code() {
-			case lambda.ErrCodeInvalidParameterValueException:
-				return fmt.Errorf("invalid parameter given: %w", err)
-			case lambda.ErrCodeServiceException:
-				return fmt.Errorf("aws lambda service encountered an internal error: %w", err)
-			case lambda.ErrCodeTooManyRequestsException:
-				return fmt.Errorf("request throughput limit was exceeded: %w", err)
-			case lambda.ErrCodeResourceNotFoundException:
-				return fmt.Errorf("resource not found: %w", err)
-			case lambda.ErrCodeResourceConflictException:
-				return fmt.Errorf("resource already existed or in progress: %w", err)
-			}
-		}
-		return fmt.Errorf("unknown error given: %w", err)
+		return err
 	}
 
 	return nil
@@ -500,25 +335,11 @@ func (c *client) untagFunction(ctx context.Context, functionArn string, tags map
 	}
 	untagInput := &lambda.UntagResourceInput{
 		Resource: aws.String(functionArn),
-		TagKeys:  aws.StringSlice(tagsKeys),
+		TagKeys:  tagsKeys,
 	}
-	_, err := c.client.UntagResourceWithContext(ctx, untagInput)
+	_, err := c.client.UntagResource(ctx, untagInput)
 	if err != nil {
-		if aerr, ok := err.(awserr.Error); ok {
-			switch aerr.Code() {
-			case lambda.ErrCodeInvalidParameterValueException:
-				return fmt.Errorf("invalid parameter given: %w", err)
-			case lambda.ErrCodeServiceException:
-				return fmt.Errorf("aws lambda service encountered an internal error: %w", err)
-			case lambda.ErrCodeTooManyRequestsException:
-				return fmt.Errorf("request throughput limit was exceeded: %w", err)
-			case lambda.ErrCodeResourceNotFoundException:
-				return fmt.Errorf("resource not found: %w", err)
-			case lambda.ErrCodeResourceConflictException:
-				return fmt.Errorf("resource already existed or in progress: %w", err)
-			}
-		}
-		return fmt.Errorf("unknown error given: %w", err)
+		return err
 	}
 
 	return nil

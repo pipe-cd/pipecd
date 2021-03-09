@@ -56,8 +56,8 @@ type FunctionManifestSpec struct {
 	Name         string            `json:"name"`
 	Role         string            `json:"role"`
 	ImageURI     string            `json:"image"`
-	Memory       int64             `json:"memory"`
-	Timeout      int64             `json:"timeout"`
+	Memory       int32             `json:"memory"`
+	Timeout      int32             `json:"timeout"`
 	Tags         map[string]string `json:"tags,omitempty"`
 	Environments map[string]string `json:"environments,omitempty"`
 }
