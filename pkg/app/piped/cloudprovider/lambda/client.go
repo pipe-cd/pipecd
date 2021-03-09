@@ -141,8 +141,8 @@ func (c *client) UpdateFunction(ctx context.Context, fm FunctionManifest) error 
 	for retry.WaitNext(ctx) {
 		configInput := &lambda.UpdateFunctionConfigurationInput{
 			FunctionName: aws.String(fm.Spec.Name),
-			MemorySize:   aws.Int32(int32(fm.Spec.Memory)),
-			Timeout:      aws.Int32(int32(fm.Spec.Timeout)),
+			MemorySize:   aws.Int32(fm.Spec.Memory),
+			Timeout:      aws.Int32(fm.Spec.Timeout),
 			Environment: &types.Environment{
 				Variables: fm.Spec.Environments,
 			},
