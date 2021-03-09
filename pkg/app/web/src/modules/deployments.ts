@@ -14,12 +14,21 @@ import * as deploymentsApi from "../api/deployments";
 import { fetchCommand, Command, CommandStatus } from "./commands";
 import { AppState } from ".";
 import { LoadingStatus } from "../types/module";
+import { ListDeploymentsRequest } from "pipe/pkg/app/web/api_client/service_pb";
+import { ApplicationKind } from "./applications";
 
 export type Stage = Required<PipelineStage.AsObject>;
 export type DeploymentStatusKey = keyof typeof DeploymentStatus;
 
 const ITEMS_PER_PAGE = 50;
 const FETCH_MORE_ITEMS_PER_PAGE = 30;
+
+export interface DeploymentFilterOptions {
+  status?: string;
+  kind?: string;
+  applicationId?: string;
+  envId?: string;
+}
 
 export const isDeploymentRunning = (
   status: DeploymentStatus | undefined
@@ -88,23 +97,32 @@ export const fetchDeploymentById = createAsyncThunk<
   return deployment as Deployment.AsObject;
 });
 
+const convertFilterOptions = (
+  options: DeploymentFilterOptions & { maxUpdatedAt: number }
+): ListDeploymentsRequest.Options.AsObject => {
+  return {
+    applicationIdsList: options.applicationId ? [options.applicationId] : [],
+    envIdsList: options.envId ? [options.envId] : [],
+    kindsList: options.kind
+      ? [parseInt(options.kind, 10) as ApplicationKind]
+      : [],
+    statusesList: options.status
+      ? [parseInt(options.status, 10) as DeploymentStatus]
+      : [],
+    maxUpdatedAt: options.maxUpdatedAt,
+  };
+};
+
 /**
  * This action will clear old items and add items.
  */
 export const fetchDeployments = createAsyncThunk<
   Deployment.AsObject[],
-  void,
+  DeploymentFilterOptions,
   { state: AppState }
->("deployments/fetchList", async (_, thunkAPI) => {
-  const { deploymentFilterOptions } = thunkAPI.getState();
+>("deployments/fetchList", async (options) => {
   const { deploymentsList } = await deploymentsApi.getDeployments({
-    options: {
-      applicationIdsList: deploymentFilterOptions.applicationIds,
-      envIdsList: deploymentFilterOptions.envIds,
-      kindsList: deploymentFilterOptions.kinds,
-      statusesList: deploymentFilterOptions.statuses,
-      maxUpdatedAt: 0,
-    },
+    options: convertFilterOptions({ ...options, maxUpdatedAt: 0 }),
     pageSize: ITEMS_PER_PAGE,
   });
   return (deploymentsList as Deployment.AsObject[]) || [];
@@ -115,20 +133,15 @@ export const fetchDeployments = createAsyncThunk<
  */
 export const fetchMoreDeployments = createAsyncThunk<
   Deployment.AsObject[],
-  void,
+  DeploymentFilterOptions,
   { state: AppState }
->("deployments/fetchMoreList", async (_, thunkAPI) => {
-  const { deployments, deploymentFilterOptions } = thunkAPI.getState();
+>("deployments/fetchMoreList", async (options, thunkAPI) => {
+  const { deployments } = thunkAPI.getState();
   const lastItem = selectLastItem(deployments);
   const maxUpdatedAt = lastItem ? lastItem.updatedAt : 0;
+
   const { deploymentsList } = await deploymentsApi.getDeployments({
-    options: {
-      applicationIdsList: deploymentFilterOptions.applicationIds,
-      envIdsList: deploymentFilterOptions.envIds,
-      kindsList: deploymentFilterOptions.kinds,
-      statusesList: deploymentFilterOptions.statuses,
-      maxUpdatedAt,
-    },
+    options: convertFilterOptions({ ...options, maxUpdatedAt }),
     pageSize: FETCH_MORE_ITEMS_PER_PAGE,
   });
   return (deploymentsList as Deployment.AsObject[]) || [];

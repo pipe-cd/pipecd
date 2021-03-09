@@ -28,5 +28,14 @@ export default {
 };
 
 export const overview: React.FC = () => (
-  <DeploymentFilter onChange={action("onChange")} />
+  <DeploymentFilter
+    onChange={action("onChange")}
+    onClear={action("onClear")}
+    options={{
+      applicationId: undefined,
+      envId: undefined,
+      kind: undefined,
+      status: undefined,
+    }}
+  />
 );

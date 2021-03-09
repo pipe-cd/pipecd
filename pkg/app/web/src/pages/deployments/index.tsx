@@ -19,6 +19,7 @@ import React, {
   useEffect,
   useState,
   useRef,
+  useMemo,
 } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import { DeploymentFilter } from "../../components/deployment-filter";
@@ -31,6 +32,7 @@ import {
   selectIds as selectDeploymentIds,
   selectById as selectDeploymentById,
   fetchMoreDeployments,
+  DeploymentFilterOptions,
 } from "../../modules/deployments";
 import { useInView } from "react-intersection-observer";
 import { LoadingStatus } from "../../types/module";
@@ -40,6 +42,8 @@ import {
   UI_TEXT_REFRESH,
 } from "../../constants/ui-text";
 import { useStyles as useButtonStyles } from "../../styles/button";
+import { useHistory, useLocation } from "react-router-dom";
+import { PAGE_PATH_DEPLOYMENTS } from "../../constants/path";
 
 const useStyles = makeStyles((theme) => ({
   deploymentLists: {
@@ -93,37 +97,79 @@ const useGroupedDeployments = (): [
   return [status, hasMore, result];
 };
 
+function useSearchParams<T>(): T {
+  const location = useLocation();
+
+  return useMemo<T>((): T => {
+    const result: any = {};
+    const searchParams = new URLSearchParams(location.search);
+    searchParams.forEach((value, key) => {
+      result[key] = value;
+    });
+    return result;
+  }, [location.search]);
+}
+
+function objectToSearchStr(
+  options: Record<string, string | undefined>
+): string {
+  const searchParams = new URLSearchParams();
+  Object.entries(options).forEach(([key, value]) => {
+    if (value !== undefined) {
+      searchParams.set(key, value);
+    }
+  });
+  return searchParams.toString();
+}
+
 export const DeploymentIndexPage: FC = memo(function DeploymentIndexPage() {
   const classes = useStyles();
   const buttonClasses = useButtonStyles();
+  const history = useHistory();
   const dispatch = useDispatch();
   const listRef = useRef(null);
   const [status, hasMore, groupedDeployments] = useGroupedDeployments();
+  const filterOptions = useSearchParams<DeploymentFilterOptions>();
   const [openFilter, setOpenFilter] = useState(true);
   const [ref, inView] = useInView({
     rootMargin: "400px",
     root: listRef.current,
   });
+
   const isLoading = status === "loading";
 
   useEffect(() => {
     dispatch(fetchApplications());
-    dispatch(fetchDeployments());
   }, [dispatch]);
 
   useEffect(() => {
-    if (inView && hasMore && isLoading) {
-      dispatch(fetchMoreDeployments());
-    }
-  }, [dispatch, inView, hasMore, isLoading]);
+    dispatch(fetchDeployments(filterOptions));
+  }, [dispatch, filterOptions]);
 
-  const handleFilterChange = useCallback(() => {
-    dispatch(fetchDeployments());
-  }, [dispatch]);
+  useEffect(() => {
+    if (inView && hasMore && isLoading === false) {
+      dispatch(fetchMoreDeployments(filterOptions));
+    }
+  }, [dispatch, inView, hasMore, isLoading, filterOptions]);
+
+  // filter handlers
+  const handleFilterChange = useCallback(
+    (options: DeploymentFilterOptions) => {
+      history.replace(
+        `${PAGE_PATH_DEPLOYMENTS}?${objectToSearchStr(
+          options as Record<string, string | undefined>
+        )}`
+      );
+    },
+    [history]
+  );
+  const handleFilterClear = useCallback(() => {
+    history.replace(PAGE_PATH_DEPLOYMENTS);
+  }, [history]);
 
   const handleRefreshClick = useCallback(() => {
-    dispatch(fetchDeployments());
-  }, [dispatch]);
+    dispatch(fetchDeployments(filterOptions));
+  }, [dispatch, filterOptions]);
 
   const dates = Object.keys(groupedDeployments).sort(sortComp);
 
@@ -183,7 +229,13 @@ export const DeploymentIndexPage: FC = memo(function DeploymentIndexPage() {
           ))}
           {status === "succeeded" && <div ref={ref} />}
         </ol>
-        {openFilter && <DeploymentFilter onChange={handleFilterChange} />}
+        {openFilter && (
+          <DeploymentFilter
+            options={filterOptions}
+            onChange={handleFilterChange}
+            onClear={handleFilterClear}
+          />
+        )}
       </Box>
     </Box>
   );
