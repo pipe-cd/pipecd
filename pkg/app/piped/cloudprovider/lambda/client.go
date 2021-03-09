@@ -119,7 +119,7 @@ func (c *client) CreateFunction(ctx context.Context, fm FunctionManifest) error 
 	}
 	_, err := c.client.CreateFunction(ctx, input)
 	if err != nil {
-		return err
+		return fmt.Errorf("failed to create Lambda function %s: %w", fm.Spec.Name, err)
 	}
 	return nil
 }
@@ -132,7 +132,7 @@ func (c *client) UpdateFunction(ctx context.Context, fm FunctionManifest) error 
 	}
 	_, err := c.client.UpdateFunctionCode(ctx, codeInput)
 	if err != nil {
-		return err
+		return fmt.Errorf("failed to update function code for Lambda function %s: %w", fm.Spec.Name, err)
 	}
 
 	// Update function configuration.
@@ -169,7 +169,7 @@ func (c *client) PublishFunction(ctx context.Context, fm FunctionManifest) (stri
 	}
 	cfg, err := c.client.PublishVersion(ctx, input)
 	if err != nil {
-		return "", err
+		return "", fmt.Errorf("failed to publish new version for Lambda function %s: %w", fm.Spec.Name, err)
 	}
 	return aws.ToString(cfg.Version), nil
 }
@@ -241,7 +241,7 @@ func (c *client) CreateTrafficConfig(ctx context.Context, fm FunctionManifest, v
 	}
 	_, err := c.client.CreateAlias(ctx, input)
 	if err != nil {
-		return err
+		return fmt.Errorf("failed to create traffic config for Lambda function %s: %w", fm.Spec.Name, err)
 	}
 	return nil
 }
@@ -268,7 +268,7 @@ func (c *client) UpdateTrafficConfig(ctx context.Context, fm FunctionManifest, r
 
 	_, err := c.client.UpdateAlias(ctx, input)
 	if err != nil {
-		return err
+		return fmt.Errorf("failed to update traffic config for Lambda function %s: %w", fm.Spec.Name, err)
 	}
 	return nil
 }
