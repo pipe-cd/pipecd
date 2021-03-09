@@ -17,6 +17,7 @@ package s3
 import (
 	"bytes"
 	"context"
+	"errors"
 	"fmt"
 	"io"
 	"io/ioutil"
@@ -25,6 +26,7 @@ import (
 	"github.com/aws/aws-sdk-go-v2/config"
 	"github.com/aws/aws-sdk-go-v2/credentials/stscreds"
 	"github.com/aws/aws-sdk-go-v2/service/s3"
+	"github.com/aws/aws-sdk-go-v2/service/s3/types"
 	"go.uber.org/zap"
 
 	"github.com/pipe-cd/pipe/pkg/filestore"
@@ -119,6 +121,10 @@ func (s *Store) NewReader(ctx context.Context, path string) (io.ReadCloser, erro
 	}
 	out, err := s.client.GetObject(ctx, input)
 	if err != nil {
+		var nfe *types.NoSuchKey
+		if errors.As(err, &nfe) {
+			return nil, filestore.ErrNotFound
+		}
 		return nil, err
 	}
 	return out.Body, nil
