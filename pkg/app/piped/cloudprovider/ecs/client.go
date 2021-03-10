@@ -115,17 +115,14 @@ func (c *client) UpdateService(ctx context.Context, service types.Service) error
 	return nil
 }
 
-func (c *client) CreateTaskSet(ctx context.Context, taskDefinition types.TaskDefinition) error {
-	input := &ecs.CreateTaskSetInput{
-		Cluster:         service.ClusterArn,
-		Service:         service.ServiceName,
-		TaskDefinition:  taskDefinition,
-		PlatformVersion: service.PlatformVersion,
-		TaskDefinition:  service.TaskDefinition,
+func (c *client) RegisterTaskDefinition(ctx context.Context, taskDefinition types.TaskDefinition) error {
+	input := &ecs.RegisterTaskDefinitionInput{
+		ContainerDefinitions: taskDefinition.ContainerDefinitions,
+		Family:               taskDefinition.Family,
 	}
-	_, err := c.client.UpdateService(ctx, input)
+	_, err := c.client.RegisterTaskDefinition(ctx, input)
 	if err != nil {
-		return fmt.Errorf("failed to update ECS service %s: %w", *service.ServiceName, err)
+		return fmt.Errorf("failed to register ECS task definition %s: %w", *taskDefinition.TaskDefinitionArn, err)
 	}
 	return nil
 }
