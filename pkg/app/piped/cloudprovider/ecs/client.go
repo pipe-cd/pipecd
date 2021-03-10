@@ -146,7 +146,20 @@ func (c *client) CreateTaskSet(ctx context.Context, service types.Service, taskD
 	}
 	_, err := c.client.CreateTaskSet(ctx, input)
 	if err != nil {
-		return fmt.Errorf("failed to deregister ECS task definition %s: %w", *taskDefinition.TaskDefinitionArn, err)
+		return fmt.Errorf("failed to create ECS task set %s: %w", *taskDefinition.TaskDefinitionArn, err)
+	}
+	return nil
+}
+
+func (c *client) DeleteTaskSet(ctx context.Context, service types.Service, taskSet types.TaskSet) error {
+	input := &ecs.DeleteTaskSetInput{
+		Cluster: service.ClusterArn,
+		Service: service.ServiceArn,
+		TaskSet: taskSet.TaskSetArn,
+	}
+	_, err := c.client.DeleteTaskSet(ctx, input)
+	if err != nil {
+		return fmt.Errorf("failed to delete ECS task set %s: %w", *taskSet.TaskSetArn, err)
 	}
 	return nil
 }
