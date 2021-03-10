@@ -38,7 +38,14 @@ func buildCreateQuery(table string) string {
 }
 
 func buildFindQuery(table string, ops datastore.ListOptions) string {
-	return strings.TrimSpace(fmt.Sprintf("SELECT data FROM %s %s %s", table, buildWhereClause(ops.Filters), buildOrderByClause(ops.Orders)))
+	rawQuery := fmt.Sprintf(
+		"SELECT data FROM %s %s %s %s",
+		table,
+		buildWhereClause(ops.Filters),
+		buildOrderByClause(ops.Orders),
+		buildPaginationClause(ops.Page, ops.PageSize),
+	)
+	return strings.Join(strings.Fields(rawQuery), " ")
 }
 
 func buildWhereClause(filters []datastore.ListFilter) string {
@@ -63,6 +70,17 @@ func buildOrderByClause(orders []datastore.Order) string {
 		conds = append(conds, fmt.Sprintf("%s %s", ord.Field, toMySQLDirection(ord.Direction)))
 	}
 	return fmt.Sprintf("ORDER BY %s", strings.Join(conds[:], ", "))
+}
+
+func buildPaginationClause(page, pageSize int) string {
+	var clause string
+	if pageSize > 0 {
+		clause = fmt.Sprintf("LIMIT %d ", pageSize)
+		if page > 0 {
+			clause = fmt.Sprintf("%sOFFSET %d", clause, pageSize*page)
+		}
+	}
+	return clause
 }
 
 func toMySQLDirection(d datastore.OrderDirection) string {

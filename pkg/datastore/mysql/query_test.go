@@ -196,6 +196,23 @@ func TestBuildFindQuery(t *testing.T) {
 			},
 			expectedQuery: "SELECT data FROM Project WHERE extra LIKE ? ORDER BY created_at ASC, updated_at DESC",
 		},
+		{
+			name: "query with limit",
+			kind: "Project",
+			listOptions: datastore.ListOptions{
+				PageSize: 20,
+			},
+			expectedQuery: "SELECT data FROM Project LIMIT 20",
+		},
+		{
+			name: "query with limit offset",
+			kind: "Project",
+			listOptions: datastore.ListOptions{
+				PageSize: 20,
+				Page:     20,
+			},
+			expectedQuery: "SELECT data FROM Project LIMIT 20 OFFSET 400",
+		},
 	}
 
 	for _, tc := range testcases {
