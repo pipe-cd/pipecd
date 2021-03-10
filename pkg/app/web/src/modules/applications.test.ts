@@ -34,14 +34,11 @@ describe("fetchApplications", () => {
       .mockImplementation(() =>
         Promise.resolve({ applicationsList: [dummyApplication] })
       );
-    const store = createStore({
-      applicationFilterOptions: {
-        enabled: { value: true },
-        envIdsList: ["env-1"],
-      },
-    });
+    const store = createStore({});
 
-    await store.dispatch(fetchApplications());
+    await store.dispatch(
+      fetchApplications({ activeStatus: "enabled", envId: "env-1" })
+    );
 
     expect(store.getActions()).toMatchObject([
       { type: fetchApplications.pending.type },
@@ -52,6 +49,9 @@ describe("fetchApplications", () => {
       options: {
         enabled: { value: true },
         envIdsList: ["env-1"],
+        kindsList: [],
+        name: "",
+        syncStatusesList: [],
       },
     });
   });
