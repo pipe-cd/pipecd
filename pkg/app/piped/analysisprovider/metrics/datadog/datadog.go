@@ -36,9 +36,10 @@ const (
 type Provider struct {
 	client *datadog.APIClient
 
-	address           string
-	apiKey            string
-	applicationKey    string
+	address        string
+	apiKey         string
+	applicationKey string
+	// TODO: Change to give queriedTimePeriod whenever calling RunQuery()
 	queriedTimePeriod int64
 	timeout           time.Duration
 	logger            *zap.Logger
