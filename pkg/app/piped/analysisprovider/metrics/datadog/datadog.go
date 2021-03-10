@@ -135,16 +135,18 @@ func (p *Provider) RunQuery(ctx context.Context, query string, expected config.A
 	}
 	points := (*resp.Series)[0].Pointlist
 	if points == nil || len(*points) == 0 {
-		return false, fmt.Errorf("no points of the time series found")
+		return false, fmt.Errorf("no data points of the time series found")
 	}
-	values := (*points)[len(*points)-1]
-	if len(values) == 0 {
-		return false, fmt.Errorf("no values found")
+	// TODO: Think about how to handle multiple data points
+	point := (*points)[len(*points)-1]
+	if len(point) < 2 {
+		return false, fmt.Errorf("invalid data point found")
 	}
-	// TODO: Careful investigate which value should be evaluated
-	return p.evaluate(expected, values[0])
+	// A data point is assumed to be kind of like [unix-time, value].
+	return p.evaluate(expected, point[1])
 }
 
 func (p *Provider) evaluate(expected config.AnalysisExpected, response float64) (bool, error) {
+	// TODO: Implement evaluation of response from Datadog
 	return false, nil
 }
