@@ -26,10 +26,12 @@ import (
 	"github.com/pipe-cd/pipe/pkg/config"
 )
 
-const defaultTaskDefinitionFilename = "taskdef.json"
-const defaultserviceDefinitionFilename = "servicedef.json"
+const (
+	defaultTaskDefinitionFilename = "taskdef.json"
+	defaultserviceDefinitionFilename = "servicedef.json"
+)
 
-// Client is wrapper of AWS client.
+// Client is wrapper of ECS client.
 type Client interface {
 	IsServiceExist(ctx context.Context, name string) (bool, error)
 	CreateService(ctx context.Context) error
