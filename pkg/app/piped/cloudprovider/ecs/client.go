@@ -16,23 +16,20 @@ package ecs
 
 import (
 	"context"
+	"errors"
 	"fmt"
 
+	"github.com/aws/aws-sdk-go-v2/config"
+	"github.com/aws/aws-sdk-go-v2/credentials/stscreds"
+	"github.com/aws/aws-sdk-go-v2/service/ecs"
+	"github.com/aws/aws-sdk-go-v2/service/ecs/types"
 	"github.com/aws/aws-sdk-go/aws"
-	"github.com/aws/aws-sdk-go/aws/awserr"
-	"github.com/aws/aws-sdk-go/aws/credentials"
-	"github.com/aws/aws-sdk-go/aws/credentials/ec2rolecreds"
-	"github.com/aws/aws-sdk-go/aws/credentials/stscreds"
-	"github.com/aws/aws-sdk-go/aws/ec2metadata"
-	"github.com/aws/aws-sdk-go/aws/session"
-	"github.com/aws/aws-sdk-go/service/ecs"
-	"github.com/aws/aws-sdk-go/service/sts"
 	"go.uber.org/zap"
 )
 
 type client struct {
 	region string
-	client *ecs.ECS
+	client *ecs.Client
 	logger *zap.Logger
 }
 
@@ -43,49 +40,35 @@ func newClient(region, profile, credentialsFile, roleARN, tokenPath string, logg
 
 	c := &client{
 		region: region,
-		logger: logger.Named("lambda"),
+		logger: logger.Named("ecs"),
 	}
 
-	sess, err := session.NewSession()
+	optFns := []func(*config.LoadOptions) error{config.WithRegion(region)}
+	if credentialsFile != "" {
+		optFns = append(optFns, config.WithSharedCredentialsFiles([]string{credentialsFile}))
+	}
+	if tokenPath != "" && roleARN != "" {
+		optFns = append(optFns, config.WithWebIdentityRoleCredentialOptions(func(v *stscreds.WebIdentityRoleOptions) {
+			v.RoleARN = roleARN
+			v.TokenRetriever = stscreds.IdentityTokenFile(tokenPath)
+		}))
+	}
+
+	cfg, err := config.LoadDefaultConfig(context.Background(), optFns...)
 	if err != nil {
-		return nil, fmt.Errorf("failed to create a session: %w", err)
+		return nil, fmt.Errorf("failed to load config to create ecs client: %w", err)
 	}
-
-	// Piped attempts to retrieve credentials in the following order:
-	// 1. from the environment variables. Available environment variables are:
-	//   - AWS_ACCESS_KEY_ID or AWS_ACCESS_KEY
-	//   - AWS_SECRET_ACCESS_KEY or AWS_SECRET_KEY
-	// 2. from the given credentials file.
-	// 3. from the pod running in EKS cluster via STS (SecurityTokenService) as WebIdentityRole.
-	// 4. from the EC2 Instance Role.
-	creds := credentials.NewChainCredentials(
-		[]credentials.Provider{
-			&credentials.EnvProvider{},
-			&credentials.SharedCredentialsProvider{
-				Filename: credentialsFile,
-				Profile:  profile,
-			},
-			// roleSessionName specifies the IAM role session name to use when assuming a role.
-			// it will be generated automatically in case of empty string passed.
-			// ref: https://github.com/aws/aws-sdk-go/blob/0dd12669013412980b665d4f6e2947d57b1cd062/aws/credentials/stscreds/web_identity_provider.go#L116-L121
-			stscreds.NewWebIdentityRoleProvider(sts.New(sess), roleARN, "", tokenPath),
-			&ec2rolecreds.EC2RoleProvider{
-				Client: ec2metadata.New(sess),
-			},
-		},
-	)
-	cfg := aws.NewConfig().WithRegion(c.region).WithCredentials(creds)
-	c.client = ecs.New(sess, cfg)
+	c.client = ecs.NewFromConfig(cfg)
 
 	return c, nil
 }
 
-func (c *client) CreateService(ctx context.Context, service ecs.Service) (ecs.Service, error) {
+func (c *client) CreateService(ctx context.Context, service types.Service) error {
 	input := &ecs.CreateServiceInput{
 		Cluster:                       service.ClusterArn,
 		DeploymentConfiguration:       service.DeploymentConfiguration,
 		DeploymentController:          service.DeploymentController,
-		DesiredCount:                  service.DesiredCount,
+		DesiredCount:                  &service.DesiredCount,
 		EnableECSManagedTags:          service.EnableECSManagedTags,
 		HealthCheckGracePeriodSeconds: service.HealthCheckGracePeriodSeconds,
 		LaunchType:                    service.LaunchType,
@@ -102,53 +85,45 @@ func (c *client) CreateService(ctx context.Context, service ecs.Service) (ecs.Se
 		Tags:                          service.Tags,
 		TaskDefinition:                service.TaskDefinition,
 	}
-	cfg, err := c.client.CreateServiceWithContext(ctx, input)
+	_, err := c.client.CreateService(ctx, input)
 	if err != nil {
-		aerr, ok := err.(awserr.Error)
-		if !ok {
-			err = fmt.Errorf("unknown error given: %w", err)
-			return ecs.Service{}, err
-		}
-		switch aerr.Code() {
-		case ecs.ErrCodeServerException:
-			return ecs.Service{}, fmt.Errorf("aws ecs service encountered an internal error: %w", err)
-		case ecs.ErrCodeClientException:
-			return ecs.Service{}, fmt.Errorf("aws ecs service encountered an client error: %w", err)
-		case ecs.ErrCodeInvalidParameterException:
-			return ecs.Service{}, fmt.Errorf("invalid parameter given: %w", err)
-		case ecs.ErrCodeClusterNotFoundException:
-			return ecs.Service{}, fmt.Errorf("aws ecs cluster not found: %w", err)
-		case ecs.ErrCodeUnsupportedFeatureException:
-			return ecs.Service{}, fmt.Errorf("unsupported feature given: %w", err)
-		case ecs.ErrCodePlatformUnknownException:
-			return ecs.Service{}, fmt.Errorf("unknown platform given: %w", err)
-		case ecs.ErrCodePlatformTaskDefinitionIncompatibilityException:
-			return ecs.Service{}, fmt.Errorf("specified platform version does not satisfy the task definition's required: %w", err)
-		}
+		return fmt.Errorf("failed to create ECS service %s: %w", *service.ServiceName, err)
 	}
-	return *cfg.Service, nil
+	return nil
+}
+
+func (c *client) UpdateService(ctx context.Context, service types.Service) error {
+	input := &ecs.UpdateServiceInput{
+		Cluster:                       service.ClusterArn,
+		DeploymentConfiguration:       service.DeploymentConfiguration,
+		DesiredCount:                  &service.DesiredCount,
+		HealthCheckGracePeriodSeconds: service.HealthCheckGracePeriodSeconds,
+		NetworkConfiguration:          service.NetworkConfiguration,
+		PlacementConstraints:          service.PlacementConstraints,
+		PlacementStrategy:             service.PlacementStrategy,
+		PlatformVersion:               service.PlatformVersion,
+		TaskDefinition:                service.TaskDefinition,
+	}
+	_, err := c.client.UpdateService(ctx, input)
+	if err != nil {
+		return fmt.Errorf("failed to update ECS service %s: %w", *service.ServiceName, err)
+	}
+	return nil
 }
 
 func (c *client) ServiceExist(ctx context.Context, clusterName string, services []string) (bool, error) {
 	input := &ecs.DescribeServicesInput{
 		Cluster:  aws.String(clusterName),
-		Services: aws.StringSlice(services),
+		Services: services,
 	}
-	_, err := c.client.DescribeServicesWithContext(ctx, input)
+	_, err := c.client.DescribeServices(ctx, input)
 	if err != nil {
-		if aerr, ok := err.(awserr.Error); ok {
-			switch aerr.Code() {
-			case ecs.ErrCodeServerException:
-				return false, fmt.Errorf("aws ecs service encountered an internal error: %w", err)
-			case ecs.ErrCodeClientException:
-				return false, fmt.Errorf("aws ecs service encountered an client error: %w", err)
-			case ecs.ErrCodeInvalidParameterException:
-				return false, fmt.Errorf("invalid parameter given: %w", err)
-			case ecs.ErrCodeClusterNotFoundException:
-				return false, fmt.Errorf("aws ecs cluster not found: %w", err)
-			}
+		var nfe *types.ResourceNotFoundException
+		if errors.As(err, &nfe) {
+			// Only in case ResourceNotFound error occurred, the FunctionName is available for create so do not raise error.
+			return false, nil
 		}
-		return false, fmt.Errorf("unknown error given: %w", err)
+		return false, err
 	}
 	return true, nil
 }

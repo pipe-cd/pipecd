@@ -19,7 +19,7 @@ import (
 	"path/filepath"
 	"sync"
 
-	"github.com/aws/aws-sdk-go/service/ecs"
+	"github.com/aws/aws-sdk-go-v2/service/ecs/types"
 	"go.uber.org/zap"
 	"golang.org/x/sync/singleflight"
 
@@ -46,7 +46,7 @@ type Registry interface {
 }
 
 // LoadServiceDefinition returns ServiceDefinition object from a given service definition file.
-func LoadServiceDefinition(appDir, serviceDefinitionFilename string) (ecs.Service, error) {
+func LoadServiceDefinition(appDir, serviceDefinitionFilename string) (types.Service, error) {
 	if serviceDefinitionFilename == "" {
 		serviceDefinitionFilename = defaultserviceDefinitionFilename
 	}
@@ -55,7 +55,7 @@ func LoadServiceDefinition(appDir, serviceDefinitionFilename string) (ecs.Servic
 }
 
 // LoadTaskDefinition returns TaskDefinition object from a given task definition file.
-func LoadTaskDefinition(appDir, serviceDefinitionFilename string) (ecs.TaskDefinition, error) {
+func LoadTaskDefinition(appDir, serviceDefinitionFilename string) (types.TaskDefinition, error) {
 	if serviceDefinitionFilename == "" {
 		serviceDefinitionFilename = defaultserviceDefinitionFilename
 	}

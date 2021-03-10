@@ -10,14 +10,14 @@ require (
 	github.com/Azure/go-autorest/autorest/adal v0.9.5 // indirect
 	github.com/DataDog/datadog-api-client-go v1.0.0-beta.16
 	github.com/NYTimes/gziphandler v0.0.0-20170623195520-56545f4a5d46
-	github.com/aws/aws-sdk-go v1.36.21 // indirect
+	github.com/aws/aws-sdk-go v1.36.21
 	github.com/aws/aws-sdk-go-v2 v1.2.0
 	github.com/aws/aws-sdk-go-v2/config v1.1.1
 	github.com/aws/aws-sdk-go-v2/credentials v1.1.1
+	github.com/aws/aws-sdk-go-v2/service/ecs v1.1.1
 	github.com/aws/aws-sdk-go-v2/service/lambda v1.1.1
 	github.com/aws/aws-sdk-go-v2/service/s3 v1.2.0
 	github.com/dgrijalva/jwt-go v3.2.0+incompatible
-	github.com/envoyproxy/protoc-gen-validate v0.1.0
 	github.com/fsouza/fake-gcs-server v1.21.0
 	github.com/go-sql-driver/mysql v1.5.0
 	github.com/goccy/go-yaml v1.8.8
@@ -49,7 +49,8 @@ require (
 	google.golang.org/api v0.31.0
 	google.golang.org/grpc v1.31.1
 	google.golang.org/protobuf v1.25.0
-	gopkg.in/yaml.v2 v2.3.0 // indirect
+	gopkg.in/check.v1 v1.0.0-20200227125254-8fa46927fb4f // indirect
+	gopkg.in/yaml.v2 v2.3.0
 	istio.io/api v0.0.0-20200710191538-00b73d23c685
 	k8s.io/api v0.18.9
 	k8s.io/apimachinery v0.18.9

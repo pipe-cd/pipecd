@@ -17,26 +17,22 @@ package ecs
 import (
 	"io/ioutil"
 
-	"github.com/aws/aws-sdk-go/service/ecs"
+	"github.com/aws/aws-sdk-go-v2/service/ecs/types"
 	"gopkg.in/yaml.v2"
 )
 
-func loadTaskDefinition(path string) (ecs.TaskDefinition, error) {
+func loadTaskDefinition(path string) (types.TaskDefinition, error) {
 	data, err := ioutil.ReadFile(path)
 	if err != nil {
-		return ecs.TaskDefinition{}, err
+		return types.TaskDefinition{}, err
 	}
 	return parseTaskDefinition(data)
 }
 
-func parseTaskDefinition(data []byte) (ecs.TaskDefinition, error) {
-	var obj ecs.TaskDefinition
+func parseTaskDefinition(data []byte) (types.TaskDefinition, error) {
+	var obj types.TaskDefinition
 	if err := yaml.Unmarshal(data, &obj); err != nil {
-		return ecs.TaskDefinition{}, err
+		return types.TaskDefinition{}, err
 	}
-	// TODO: define validate()
-	// if err := obj.validate(); err != nil {
-	// 	return ServiceDefition{}, err
-	// }
 	return obj, nil
 }
