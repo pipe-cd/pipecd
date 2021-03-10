@@ -34,10 +34,6 @@ type Client interface {
 	IsServiceExist(ctx context.Context, name string) (bool, error)
 	CreateService(ctx context.Context) error
 	UpdateService(ctx context.Context) error
-	PublishService(ctx context.Context) (version string, err error)
-	GetTrafficConfig(ctx context.Context) (err error)
-	CreateTrafficConfig(ctx context.Context, version string) error
-	UpdateTrafficConfig(ctx context.Context) error
 }
 
 // Registry holds a pool of aws client wrappers.

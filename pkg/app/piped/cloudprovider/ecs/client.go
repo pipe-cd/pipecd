@@ -112,6 +112,21 @@ func (c *client) UpdateService(ctx context.Context, service types.Service) error
 	return nil
 }
 
+func (c *client) CreateTaskSet(ctx context.Context, taskDefinition types.TaskDefinition) error {
+	input := &ecs.CreateTaskSetInput{
+		Cluster:         service.ClusterArn,
+		Service:         service.ServiceName,
+		TaskDefinition:  taskDefinition,
+		PlatformVersion: service.PlatformVersion,
+		TaskDefinition:  service.TaskDefinition,
+	}
+	_, err := c.client.UpdateService(ctx, input)
+	if err != nil {
+		return fmt.Errorf("failed to update ECS service %s: %w", *service.ServiceName, err)
+	}
+	return nil
+}
+
 func (c *client) ServiceExist(ctx context.Context, clusterName string, services []string) (bool, error) {
 	input := &ecs.DescribeServicesInput{
 		Cluster:  aws.String(clusterName),
