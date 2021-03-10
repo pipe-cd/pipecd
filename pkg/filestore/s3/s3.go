@@ -85,6 +85,9 @@ func NewStore(ctx context.Context, region, bucket string, opts ...Option) (*Stor
 	if s.credentialsFile != "" {
 		optFns = append(optFns, config.WithSharedCredentialsFiles([]string{s.credentialsFile}))
 	}
+	if s.profile != "" {
+		optFns = append(optFns, config.WithSharedConfigProfile(s.profile))
+	}
 	if s.tokenFile != "" && s.roleARN != "" {
 		optFns = append(optFns, config.WithWebIdentityRoleCredentialOptions(func(v *stscreds.WebIdentityRoleOptions) {
 			v.RoleARN = s.roleARN
