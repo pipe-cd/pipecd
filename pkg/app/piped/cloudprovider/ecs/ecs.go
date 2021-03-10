@@ -37,6 +37,7 @@ type Client interface {
 	CreateService(ctx context.Context) error
 	UpdateService(ctx context.Context) error
 	RegisterTaskDefinition(ctx context.Context) error
+	DeregisterTaskDefinition(ctx context.Context) error
 }
 
 // Registry holds a pool of aws client wrappers.

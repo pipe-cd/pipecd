@@ -127,6 +127,17 @@ func (c *client) RegisterTaskDefinition(ctx context.Context, taskDefinition type
 	return nil
 }
 
+func (c *client) DeregisterTaskDefinition(ctx context.Context, taskDefinition types.TaskDefinition) error {
+	input := &ecs.DeregisterTaskDefinitionInput{
+		TaskDefinition: taskDefinition.TaskDefinitionArn,
+	}
+	_, err := c.client.DeregisterTaskDefinition(ctx, input)
+	if err != nil {
+		return fmt.Errorf("failed to deregister ECS task definition %s: %w", *taskDefinition.TaskDefinitionArn, err)
+	}
+	return nil
+}
+
 func (c *client) ServiceExist(ctx context.Context, clusterName string, services []string) (bool, error) {
 	input := &ecs.DescribeServicesInput{
 		Cluster:  aws.String(clusterName),
