@@ -27,7 +27,7 @@ import (
 )
 
 const (
-	defaultTaskDefinitionFilename = "taskdef.json"
+	defaultTaskDefinitionFilename    = "taskdef.json"
 	defaultserviceDefinitionFilename = "servicedef.json"
 )
 
@@ -36,6 +36,7 @@ type Client interface {
 	IsServiceExist(ctx context.Context, name string) (bool, error)
 	CreateService(ctx context.Context) error
 	UpdateService(ctx context.Context) error
+	RegisterTaskDefinition(ctx context.Context) error
 }
 
 // Registry holds a pool of aws client wrappers.
