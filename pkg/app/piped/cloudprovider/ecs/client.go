@@ -47,6 +47,9 @@ func newClient(region, profile, credentialsFile, roleARN, tokenPath string, logg
 	if credentialsFile != "" {
 		optFns = append(optFns, config.WithSharedCredentialsFiles([]string{credentialsFile}))
 	}
+	if profile != "" {
+		optFns = append(optFns, config.WithSharedConfigProfile(profile))
+	}
 	if tokenPath != "" && roleARN != "" {
 		optFns = append(optFns, config.WithWebIdentityRoleCredentialOptions(func(v *stscreds.WebIdentityRoleOptions) {
 			v.RoleARN = roleARN
