@@ -18,6 +18,8 @@ import (
 	"testing"
 
 	"github.com/stretchr/testify/assert"
+
+	"github.com/pipe-cd/pipe/pkg/datastore"
 )
 
 func TestBuildGetQuery(t *testing.T) {
@@ -99,6 +101,106 @@ func TestBuildPutQuery(t *testing.T) {
 	for _, tc := range testcases {
 		t.Run(tc.name, func(t *testing.T) {
 			query := buildPutQuery(tc.kind)
+			assert.Equal(t, tc.expectedQuery, query)
+		})
+	}
+}
+
+func TestBuildFindQuery(t *testing.T) {
+	testcases := []struct {
+		name          string
+		kind          string
+		listOptions   datastore.ListOptions
+		expectedQuery string
+	}{
+		{
+			name:          "query without filter and order",
+			kind:          "Project",
+			listOptions:   datastore.ListOptions{},
+			expectedQuery: "SELECT data FROM Project",
+		},
+		{
+			name: "query with one filter",
+			kind: "Project",
+			listOptions: datastore.ListOptions{
+				Filters: []datastore.ListFilter{
+					{
+						Field:    "extra",
+						Operator: "LIKE",
+						Value:    "app-1%",
+					},
+				},
+			},
+			expectedQuery: "SELECT data FROM Project WHERE extra LIKE ?",
+		},
+		{
+			name: "query with multi filters",
+			kind: "Project",
+			listOptions: datastore.ListOptions{
+				Filters: []datastore.ListFilter{
+					{
+						Field:    "data->>\"$.name\"",
+						Operator: "=",
+						Value:    "app-123",
+					},
+					{
+						Field:    "extra",
+						Operator: "LIKE",
+						Value:    "app-1%",
+					},
+				},
+			},
+			expectedQuery: "SELECT data FROM Project WHERE data->>\"$.name\" = ? AND extra LIKE ?",
+		},
+		{
+			name: "query with one filter and one order by column",
+			kind: "Project",
+			listOptions: datastore.ListOptions{
+				Filters: []datastore.ListFilter{
+					{
+						Field:    "extra",
+						Operator: "LIKE",
+						Value:    "app-1%",
+					},
+				},
+				Orders: []datastore.Order{
+					{
+						Field:     "updated_at",
+						Direction: datastore.Desc,
+					},
+				},
+			},
+			expectedQuery: "SELECT data FROM Project WHERE extra LIKE ? ORDER BY updated_at DESC",
+		},
+		{
+			name: "query with one filter and one order by on 2 columns",
+			kind: "Project",
+			listOptions: datastore.ListOptions{
+				Filters: []datastore.ListFilter{
+					{
+						Field:    "extra",
+						Operator: "LIKE",
+						Value:    "app-1%",
+					},
+				},
+				Orders: []datastore.Order{
+					{
+						Field:     "created_at",
+						Direction: datastore.Asc,
+					},
+					{
+						Field:     "updated_at",
+						Direction: datastore.Desc,
+					},
+				},
+			},
+			expectedQuery: "SELECT data FROM Project WHERE extra LIKE ? ORDER BY created_at ASC, updated_at DESC",
+		},
+	}
+
+	for _, tc := range testcases {
+		t.Run(tc.name, func(t *testing.T) {
+			query := buildFindQuery(tc.kind, tc.listOptions)
 			assert.Equal(t, tc.expectedQuery, query)
 		})
 	}
