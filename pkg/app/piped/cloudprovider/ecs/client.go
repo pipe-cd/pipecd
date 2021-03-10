@@ -65,6 +65,7 @@ func newClient(region, profile, credentialsFile, roleARN, tokenPath string, logg
 
 func (c *client) CreateService(ctx context.Context, service types.Service) error {
 	input := &ecs.CreateServiceInput{
+		ServiceName:                   service.ServiceName,
 		Cluster:                       service.ClusterArn,
 		DeploymentConfiguration:       service.DeploymentConfiguration,
 		DeploymentController:          service.DeploymentController,
@@ -80,7 +81,6 @@ func (c *client) CreateService(ctx context.Context, service types.Service) error
 		PropagateTags:                 service.PropagateTags,
 		Role:                          service.RoleArn,
 		SchedulingStrategy:            service.SchedulingStrategy,
-		ServiceName:                   service.ServiceName,
 		ServiceRegistries:             service.ServiceRegistries,
 		Tags:                          service.Tags,
 		TaskDefinition:                service.TaskDefinition,
@@ -94,6 +94,7 @@ func (c *client) CreateService(ctx context.Context, service types.Service) error
 
 func (c *client) UpdateService(ctx context.Context, service types.Service) error {
 	input := &ecs.UpdateServiceInput{
+		Service:                       service.ServiceName,
 		Cluster:                       service.ClusterArn,
 		DeploymentConfiguration:       service.DeploymentConfiguration,
 		DesiredCount:                  &service.DesiredCount,
