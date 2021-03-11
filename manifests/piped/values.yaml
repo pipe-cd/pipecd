@@ -77,3 +77,5 @@ affinity: {}
 
 # Specifies how much of each resource the Piped container needs.
 resources: {}
+
+serviceAccountAnnotations: {}

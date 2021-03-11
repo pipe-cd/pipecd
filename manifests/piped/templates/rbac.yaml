@@ -4,6 +4,10 @@ metadata:
   name: {{ include "piped.fullname" . }}
   labels:
     {{- include "piped.labels" . | nindent 4 }}
+  {{- with .Values.serviceAccountAnnotations }}
+  annotations:
+    {{- toYaml . | nindent 4 }}
+  {{- end }}
 
 ---
 apiVersion: rbac.authorization.k8s.io/v1
