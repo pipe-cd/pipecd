@@ -39,7 +39,6 @@ func newClient(region, profile, credentialsFile, roleARN, tokenPath string, logg
 	}
 
 	c := &client{
-		region: region,
 		logger: logger.Named("ecs"),
 	}
 
