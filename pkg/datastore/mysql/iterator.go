@@ -22,16 +22,16 @@ import (
 
 // Iterator for MySQL result set
 type Iterator struct {
-	cur *sql.Rows
+	rows *sql.Rows
 }
 
 // Next implementation for MySQL Iterator
 func (it *Iterator) Next(dst interface{}) error {
-	if !it.cur.Next() {
+	if !it.rows.Next() {
 		return datastore.ErrIteratorDone
 	}
 	var val string
-	err := it.cur.Scan(&val)
+	err := it.rows.Scan(&val)
 	if err != nil {
 		return err
 	}
