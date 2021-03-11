@@ -50,8 +50,7 @@ require (
 	google.golang.org/api v0.31.0
 	google.golang.org/grpc v1.31.1
 	google.golang.org/protobuf v1.25.0
-	gopkg.in/check.v1 v1.0.0-20200227125254-8fa46927fb4f // indirect
-	gopkg.in/yaml.v2 v2.3.0
+	gopkg.in/yaml.v2 v2.3.0 // indirect
 	istio.io/api v0.0.0-20200710191538-00b73d23c685
 	k8s.io/api v0.18.9
 	k8s.io/apimachinery v0.18.9

@@ -17,8 +17,9 @@ package ecs
 import (
 	"io/ioutil"
 
+	"sigs.k8s.io/yaml"
+
 	"github.com/aws/aws-sdk-go-v2/service/ecs/types"
-	"gopkg.in/yaml.v2"
 )
 
 func loadServiceDefinition(path string) (types.Service, error) {
