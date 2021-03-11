@@ -53,9 +53,9 @@ func buildWhereClause(filters []datastore.ListFilter) string {
 		return ""
 	}
 
-	var conds []string
-	for _, filter := range filters {
-		conds = append(conds, fmt.Sprintf("%s %s ?", filter.Field, filter.Operator))
+	conds := make([]string, len(filters))
+	for i, filter := range filters {
+		conds[i] = fmt.Sprintf("%s %s ?", filter.Field, filter.Operator)
 	}
 	return fmt.Sprintf("WHERE %s", strings.Join(conds[:], " AND "))
 }
@@ -65,9 +65,9 @@ func buildOrderByClause(orders []datastore.Order) string {
 		return ""
 	}
 
-	var conds []string
-	for _, ord := range orders {
-		conds = append(conds, fmt.Sprintf("%s %s", ord.Field, toMySQLDirection(ord.Direction)))
+	conds := make([]string, len(orders))
+	for i, ord := range orders {
+		conds[i] = fmt.Sprintf("%s %s", ord.Field, toMySQLDirection(ord.Direction))
 	}
 	return fmt.Sprintf("ORDER BY %s", strings.Join(conds[:], ", "))
 }
