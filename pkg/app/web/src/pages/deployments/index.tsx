@@ -19,7 +19,6 @@ import React, {
   useEffect,
   useState,
   useRef,
-  useMemo,
 } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import { DeploymentFilter } from "../../components/deployment-filter";
@@ -42,8 +41,12 @@ import {
   UI_TEXT_REFRESH,
 } from "../../constants/ui-text";
 import { useStyles as useButtonStyles } from "../../styles/button";
-import { useHistory, useLocation } from "react-router-dom";
+import { useHistory } from "react-router-dom";
 import { PAGE_PATH_DEPLOYMENTS } from "../../constants/path";
+import {
+  stringifySearchParams,
+  useSearchParams,
+} from "../../utils/search-params";
 
 const useStyles = makeStyles((theme) => ({
   deploymentLists: {
@@ -97,31 +100,6 @@ const useGroupedDeployments = (): [
   return [status, hasMore, result];
 };
 
-function useSearchParams<T>(): T {
-  const location = useLocation();
-
-  return useMemo<T>((): T => {
-    const result: any = {};
-    const searchParams = new URLSearchParams(location.search);
-    searchParams.forEach((value, key) => {
-      result[key] = value;
-    });
-    return result;
-  }, [location.search]);
-}
-
-function objectToSearchStr(
-  options: Record<string, string | undefined>
-): string {
-  const searchParams = new URLSearchParams();
-  Object.entries(options).forEach(([key, value]) => {
-    if (value !== undefined) {
-      searchParams.set(key, value);
-    }
-  });
-  return searchParams.toString();
-}
-
 export const DeploymentIndexPage: FC = memo(function DeploymentIndexPage() {
   const classes = useStyles();
   const buttonClasses = useButtonStyles();
@@ -129,7 +107,7 @@ export const DeploymentIndexPage: FC = memo(function DeploymentIndexPage() {
   const dispatch = useDispatch();
   const listRef = useRef(null);
   const [status, hasMore, groupedDeployments] = useGroupedDeployments();
-  const filterOptions = useSearchParams<DeploymentFilterOptions>();
+  const filterOptions = useSearchParams();
   const [openFilter, setOpenFilter] = useState(true);
   const [ref, inView] = useInView({
     rootMargin: "400px",
@@ -156,9 +134,7 @@ export const DeploymentIndexPage: FC = memo(function DeploymentIndexPage() {
   const handleFilterChange = useCallback(
     (options: DeploymentFilterOptions) => {
       history.replace(
-        `${PAGE_PATH_DEPLOYMENTS}?${objectToSearchStr(
-          options as Record<string, string | undefined>
-        )}`
+        `${PAGE_PATH_DEPLOYMENTS}?${stringifySearchParams(options)}`
       );
     },
     [history]

@@ -8,18 +8,14 @@ import {
 } from "@material-ui/core";
 import Autocomplete from "@material-ui/lab/Autocomplete";
 import React, { FC, memo } from "react";
-import { useDispatch, useSelector } from "react-redux";
+import { useSelector } from "react-redux";
 import { APPLICATION_KIND_TEXT } from "../../constants/application-kind";
 import { APPLICATION_SYNC_STATUS_TEXT } from "../../constants/application-sync-status-text";
 import { AppState } from "../../modules";
 import {
-  ApplicationFilterOptions,
-  clearApplicationFilter,
-  updateApplicationFilter,
-} from "../../modules/application-filter-options";
-import {
   ApplicationKind,
   ApplicationKindKey,
+  ApplicationsFilterOptions,
   ApplicationSyncStatus,
   ApplicationSyncStatusKey,
   selectAll as selectAllApplications,
@@ -42,21 +38,17 @@ const useStyles = makeStyles((theme) => ({
 }));
 
 export interface ApplicationFilterProps {
-  onChange: () => void;
+  options: ApplicationsFilterOptions;
+  onChange: (options: ApplicationsFilterOptions) => void;
+  onClear: () => void;
 }
 
 const ALL_VALUE = "ALL";
-const getActiveStatusText = (v: boolean): string =>
-  v ? "enabled" : "disabled";
 
 export const ApplicationFilter: FC<ApplicationFilterProps> = memo(
-  function ApplicationFilter({ onChange }) {
+  function ApplicationFilter({ options, onChange, onClear }) {
     const classes = useStyles();
-    const dispatch = useDispatch();
     const envs = useSelector(selectAllEnvs);
-    const options = useSelector<AppState, ApplicationFilterOptions>(
-      (state) => state.applicationFilterOptions
-    );
     const applications = useSelector<AppState, string[]>((state) =>
       uniqueArray(
         selectAllApplications(state.applications).map((app) => app.name)
@@ -64,24 +56,22 @@ export const ApplicationFilter: FC<ApplicationFilterProps> = memo(
     );
 
     const handleUpdateFilterValue = (
-      options: Partial<ApplicationFilterOptions>
+      optionPart: Partial<ApplicationsFilterOptions>
     ): void => {
-      dispatch(updateApplicationFilter(options));
-      onChange();
+      onChange({ ...options, ...optionPart });
     };
 
     return (
       <FilterView
         onClear={() => {
-          dispatch(clearApplicationFilter());
-          onChange();
+          onClear();
         }}
       >
         <div className={classes.formItem}>
           <Autocomplete
             id="name"
             options={applications}
-            value={options.name || null}
+            value={options.name ?? null}
             onChange={(_, value) => {
               handleUpdateFilterValue({
                 name: value || "",
@@ -98,15 +88,15 @@ export const ApplicationFilter: FC<ApplicationFilterProps> = memo(
           <Select
             labelId="filter-env"
             id="filter-env"
-            value={options.envIdsList[0] || ALL_VALUE}
+            value={options.envId ?? ALL_VALUE}
             label="Environment"
             className={classes.select}
             onChange={(e) => {
               handleUpdateFilterValue({
-                envIdsList:
+                envId:
                   e.target.value === ALL_VALUE
-                    ? []
-                    : [e.target.value as string],
+                    ? undefined
+                    : (e.target.value as string),
               });
             }}
           >
@@ -126,15 +116,15 @@ export const ApplicationFilter: FC<ApplicationFilterProps> = memo(
           <Select
             labelId="filter-kind"
             id="filter-kind"
-            value={options.kindsList[0] ?? ALL_VALUE}
+            value={options.kind ?? ALL_VALUE}
             label="Kind"
             className={classes.select}
             onChange={(e) => {
               handleUpdateFilterValue({
-                kindsList:
+                kind:
                   e.target.value === ALL_VALUE
-                    ? []
-                    : [e.target.value as ApplicationKind],
+                    ? undefined
+                    : (e.target.value as string),
               });
             }}
           >
@@ -162,15 +152,15 @@ export const ApplicationFilter: FC<ApplicationFilterProps> = memo(
           <Select
             labelId="filter-sync-status"
             id="filter-sync-status"
-            value={options.syncStatusesList[0] ?? ALL_VALUE}
+            value={options.syncStatus ?? ALL_VALUE}
             label="Sync Status"
             className={classes.select}
             onChange={(e) => {
               handleUpdateFilterValue({
-                syncStatusesList:
+                syncStatus:
                   e.target.value === ALL_VALUE
-                    ? []
-                    : [e.target.value as ApplicationSyncStatus],
+                    ? undefined
+                    : (e.target.value as string),
               });
             }}
           >
@@ -199,18 +189,18 @@ export const ApplicationFilter: FC<ApplicationFilterProps> = memo(
             labelId="filter-active-status"
             id="filter-active-status"
             value={
-              options.enabled === undefined
+              options.activeStatus === undefined
                 ? ALL_VALUE
-                : getActiveStatusText(options.enabled.value)
+                : options.activeStatus
             }
             label="Active Status"
             className={classes.select}
             onChange={(e) => {
               handleUpdateFilterValue({
-                enabled:
+                activeStatus:
                   e.target.value === ALL_VALUE
                     ? undefined
-                    : { value: e.target.value === "enabled" },
+                    : (e.target.value as string),
               });
             }}
           >

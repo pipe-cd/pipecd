@@ -85,6 +85,7 @@
     "google-protobuf": "^3.12.0-rc.1",
     "grpc-web": "^1.0.7",
     "history": "^4.10.1",
+    "query-string": "^6.14.1",
     "react": "^16.13.1",
     "react-cookie": "^4.0.3",
     "react-dom": "^16.13.1",
