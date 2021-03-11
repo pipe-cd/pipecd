@@ -65,7 +65,7 @@ func newClient(region, profile, credentialsFile, roleARN, tokenPath string, logg
 	return c, nil
 }
 
-func (c *client) CreateService(ctx context.Context, service types.Service) (*ecs.CreateServiceOutput, error) {
+func (c *client) CreateService(ctx context.Context, service types.Service) (*types.Service, error) {
 	input := &ecs.CreateServiceInput{
 		ServiceName:                   service.ServiceName,
 		Cluster:                       service.ClusterArn,
@@ -89,12 +89,12 @@ func (c *client) CreateService(ctx context.Context, service types.Service) (*ecs
 	}
 	output, err := c.client.CreateService(ctx, input)
 	if err != nil {
-		return &ecs.CreateServiceOutput{}, fmt.Errorf("failed to create ECS service %s: %w", *service.ServiceName, err)
+		return nil, fmt.Errorf("failed to create ECS service %s: %w", *service.ServiceName, err)
 	}
-	return output, nil
+	return output.Service, nil
 }
 
-func (c *client) UpdateService(ctx context.Context, service types.Service) (*ecs.UpdateServiceOutput, error) {
+func (c *client) UpdateService(ctx context.Context, service types.Service) (*types.Service, error) {
 	input := &ecs.UpdateServiceInput{
 		Service:                       service.ServiceName,
 		Cluster:                       service.ClusterArn,
@@ -109,35 +109,35 @@ func (c *client) UpdateService(ctx context.Context, service types.Service) (*ecs
 	}
 	output, err := c.client.UpdateService(ctx, input)
 	if err != nil {
-		return &ecs.UpdateServiceOutput{}, fmt.Errorf("failed to update ECS service %s: %w", *service.ServiceName, err)
+		return nil, fmt.Errorf("failed to update ECS service %s: %w", *service.ServiceName, err)
 	}
-	return output, nil
+	return output.Service, nil
 }
 
-func (c *client) RegisterTaskDefinition(ctx context.Context, taskDefinition types.TaskDefinition) (*ecs.RegisterTaskDefinitionOutput, error) {
+func (c *client) RegisterTaskDefinition(ctx context.Context, taskDefinition types.TaskDefinition) (*types.TaskDefinition, error) {
 	input := &ecs.RegisterTaskDefinitionInput{
 		ContainerDefinitions: taskDefinition.ContainerDefinitions,
 		Family:               taskDefinition.Family,
 	}
 	output, err := c.client.RegisterTaskDefinition(ctx, input)
 	if err != nil {
-		return &ecs.RegisterTaskDefinitionOutput{}, fmt.Errorf("failed to register ECS task definition %s: %w", *taskDefinition.TaskDefinitionArn, err)
+		return nil, fmt.Errorf("failed to register ECS task definition %s: %w", *taskDefinition.TaskDefinitionArn, err)
 	}
-	return output, nil
+	return output.TaskDefinition, nil
 }
 
-func (c *client) DeregisterTaskDefinition(ctx context.Context, taskDefinition types.TaskDefinition) (*ecs.DeregisterTaskDefinitionOutput, error) {
+func (c *client) DeregisterTaskDefinition(ctx context.Context, taskDefinition types.TaskDefinition) (*types.TaskDefinition, error) {
 	input := &ecs.DeregisterTaskDefinitionInput{
 		TaskDefinition: taskDefinition.TaskDefinitionArn,
 	}
 	output, err := c.client.DeregisterTaskDefinition(ctx, input)
 	if err != nil {
-		return &ecs.DeregisterTaskDefinitionOutput{}, fmt.Errorf("failed to deregister ECS task definition %s: %w", *taskDefinition.TaskDefinitionArn, err)
+		return nil, fmt.Errorf("failed to deregister ECS task definition %s: %w", *taskDefinition.TaskDefinitionArn, err)
 	}
-	return output, nil
+	return output.TaskDefinition, nil
 }
 
-func (c *client) CreateTaskSet(ctx context.Context, service types.Service, taskDefinition types.TaskDefinition) (*ecs.CreateTaskSetOutput, error) {
+func (c *client) CreateTaskSet(ctx context.Context, service types.Service, taskDefinition types.TaskDefinition) (*types.TaskSet, error) {
 	input := &ecs.CreateTaskSetInput{
 		Cluster:        service.ClusterArn,
 		Service:        service.ServiceArn,
@@ -145,12 +145,12 @@ func (c *client) CreateTaskSet(ctx context.Context, service types.Service, taskD
 	}
 	output, err := c.client.CreateTaskSet(ctx, input)
 	if err != nil {
-		return &ecs.CreateTaskSetOutput{}, fmt.Errorf("failed to create ECS task set %s: %w", *taskDefinition.TaskDefinitionArn, err)
+		return nil, fmt.Errorf("failed to create ECS task set %s: %w", *taskDefinition.TaskDefinitionArn, err)
 	}
-	return output, nil
+	return output.TaskSet, nil
 }
 
-func (c *client) DeleteTaskSet(ctx context.Context, service types.Service, taskSet types.TaskSet) (*ecs.DeleteTaskSetOutput, error) {
+func (c *client) DeleteTaskSet(ctx context.Context, service types.Service, taskSet types.TaskSet) (*types.TaskSet, error) {
 	input := &ecs.DeleteTaskSetInput{
 		Cluster: service.ClusterArn,
 		Service: service.ServiceArn,
@@ -158,9 +158,9 @@ func (c *client) DeleteTaskSet(ctx context.Context, service types.Service, taskS
 	}
 	output, err := c.client.DeleteTaskSet(ctx, input)
 	if err != nil {
-		return &ecs.DeleteTaskSetOutput{}, fmt.Errorf("failed to delete ECS task set %s: %w", *taskSet.TaskSetArn, err)
+		return nil, fmt.Errorf("failed to delete ECS task set %s: %w", *taskSet.TaskSetArn, err)
 	}
-	return output, nil
+	return output.TaskSet, nil
 }
 
 func (c *client) ServiceExists(ctx context.Context, clusterName string, services []string) (bool, error) {
