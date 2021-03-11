@@ -12,7 +12,7 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-package log
+package factory
 
 import (
 	"fmt"
@@ -20,21 +20,14 @@ import (
 
 	"go.uber.org/zap"
 
+	"github.com/pipe-cd/pipe/pkg/app/piped/analysisprovider/log"
 	"github.com/pipe-cd/pipe/pkg/app/piped/analysisprovider/log/stackdriver"
 	"github.com/pipe-cd/pipe/pkg/config"
 	"github.com/pipe-cd/pipe/pkg/model"
 )
 
-type Factory struct {
-	logger *zap.Logger
-}
-
-func NewFactory(logger *zap.Logger) *Factory {
-	return &Factory{logger: logger}
-}
-
 // NewProvider generates an appropriate provider according to analysis provider config.
-func (f *Factory) NewProvider(providerCfg *config.PipedAnalysisProvider) (provider Provider, err error) {
+func NewProvider(providerCfg *config.PipedAnalysisProvider, logger *zap.Logger) (provider log.Provider, err error) {
 	switch providerCfg.Type {
 	case model.AnalysisProviderStackdriver:
 		cfg := providerCfg.StackdriverConfig

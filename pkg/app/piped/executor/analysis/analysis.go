@@ -28,7 +28,9 @@ import (
 
 	httpprovider "github.com/pipe-cd/pipe/pkg/app/piped/analysisprovider/http"
 	"github.com/pipe-cd/pipe/pkg/app/piped/analysisprovider/log"
+	logfactory "github.com/pipe-cd/pipe/pkg/app/piped/analysisprovider/log/factory"
 	"github.com/pipe-cd/pipe/pkg/app/piped/analysisprovider/metrics"
+	metricsfactory "github.com/pipe-cd/pipe/pkg/app/piped/analysisprovider/metrics/factory"
 	"github.com/pipe-cd/pipe/pkg/app/piped/executor"
 	"github.com/pipe-cd/pipe/pkg/config"
 	"github.com/pipe-cd/pipe/pkg/model"
@@ -112,9 +114,8 @@ func (e *Executor) Execute(sig executor.StopSignal) model.StageStatus {
 	eg, ctx := errgroup.WithContext(ctx)
 
 	// Run analyses with metrics providers.
-	mf := metrics.NewFactory(e.Logger)
 	for i := range options.Metrics {
-		analyzer, err := e.newAnalyzerForMetrics(i, &options.Metrics[i], templateCfg, mf)
+		analyzer, err := e.newAnalyzerForMetrics(i, &options.Metrics[i], templateCfg)
 		if err != nil {
 			e.LogPersister.Error(err.Error())
 			// TODO: Consider treating it as a failure when unknown analysis provider given
@@ -126,9 +127,8 @@ func (e *Executor) Execute(sig executor.StopSignal) model.StageStatus {
 		})
 	}
 	// Run analyses with logging providers.
-	lf := log.NewFactory(e.Logger)
 	for i := range options.Logs {
-		analyzer, err := e.newAnalyzerForLog(i, &options.Logs[i], templateCfg, lf)
+		analyzer, err := e.newAnalyzerForLog(i, &options.Logs[i], templateCfg)
 		if err != nil {
 			e.LogPersister.Error(err.Error())
 			continue
@@ -196,12 +196,12 @@ func (e *Executor) retrievePreviousElapsedTime() time.Duration {
 	return et
 }
 
-func (e *Executor) newAnalyzerForMetrics(i int, templatable *config.TemplatableAnalysisMetrics, templateCfg *config.AnalysisTemplateSpec, factory *metrics.Factory) (*analyzer, error) {
+func (e *Executor) newAnalyzerForMetrics(i int, templatable *config.TemplatableAnalysisMetrics, templateCfg *config.AnalysisTemplateSpec) (*analyzer, error) {
 	cfg, err := e.getMetricsConfig(templatable, templateCfg, templatable.Template.Args)
 	if err != nil {
 		return nil, err
 	}
-	provider, err := e.newMetricsProvider(cfg.Provider, templatable, factory)
+	provider, err := e.newMetricsProvider(cfg.Provider, templatable)
 	if err != nil {
 		return nil, err
 	}
@@ -212,12 +212,12 @@ func (e *Executor) newAnalyzerForMetrics(i int, templatable *config.TemplatableA
 	}, time.Duration(cfg.Interval), cfg.FailureLimit, e.Logger, e.LogPersister), nil
 }
 
-func (e *Executor) newAnalyzerForLog(i int, templatable *config.TemplatableAnalysisLog, templateCfg *config.AnalysisTemplateSpec, factory *log.Factory) (*analyzer, error) {
+func (e *Executor) newAnalyzerForLog(i int, templatable *config.TemplatableAnalysisLog, templateCfg *config.AnalysisTemplateSpec) (*analyzer, error) {
 	cfg, err := e.getLogConfig(templatable, templateCfg, templatable.Template.Args)
 	if err != nil {
 		return nil, err
 	}
-	provider, err := e.newLogProvider(cfg.Provider, factory)
+	provider, err := e.newLogProvider(cfg.Provider)
 	if err != nil {
 		return nil, err
 	}
@@ -241,24 +241,24 @@ func (e *Executor) newAnalyzerForHTTP(i int, templatable *config.TemplatableAnal
 	}, time.Duration(cfg.Interval), cfg.FailureLimit, e.Logger, e.LogPersister), nil
 }
 
-func (e *Executor) newMetricsProvider(providerName string, templatable *config.TemplatableAnalysisMetrics, factory *metrics.Factory) (metrics.Provider, error) {
+func (e *Executor) newMetricsProvider(providerName string, templatable *config.TemplatableAnalysisMetrics) (metrics.Provider, error) {
 	cfg, ok := e.PipedConfig.GetAnalysisProvider(providerName)
 	if !ok {
 		return nil, fmt.Errorf("unknown provider name %s", providerName)
 	}
-	provider, err := factory.NewProvider(templatable, &cfg)
+	provider, err := metricsfactory.NewProvider(templatable, &cfg, e.Logger)
 	if err != nil {
 		return nil, err
 	}
 	return provider, nil
 }
 
-func (e *Executor) newLogProvider(providerName string, factory *log.Factory) (log.Provider, error) {
+func (e *Executor) newLogProvider(providerName string) (log.Provider, error) {
 	cfg, ok := e.PipedConfig.GetAnalysisProvider(providerName)
 	if !ok {
 		return nil, fmt.Errorf("unknown provider name %s", providerName)
 	}
-	provider, err := factory.NewProvider(&cfg)
+	provider, err := logfactory.NewProvider(&cfg, e.Logger)
 	if err != nil {
 		return nil, err
 	}
