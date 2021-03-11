@@ -71,7 +71,7 @@ func (c *client) CreateService(ctx context.Context, service types.Service) (*ecs
 		Cluster:                       service.ClusterArn,
 		DeploymentConfiguration:       service.DeploymentConfiguration,
 		DeploymentController:          service.DeploymentController,
-		DesiredCount:                  &service.DesiredCount,
+		DesiredCount:                  aws.Int32(service.DesiredCount),
 		EnableECSManagedTags:          service.EnableECSManagedTags,
 		HealthCheckGracePeriodSeconds: service.HealthCheckGracePeriodSeconds,
 		LaunchType:                    service.LaunchType,
