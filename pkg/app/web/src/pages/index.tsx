@@ -125,6 +125,10 @@ export const Pages: FC = memo(function Pages() {
           component={() => <Redirect to={PAGE_PATH_APPLICATIONS} />}
         />
         <Route
+          path={PAGE_PATH_LOGIN}
+          component={() => <Redirect to={PAGE_PATH_APPLICATIONS} />}
+        />
+        <Route
           exact
           path={PAGE_PATH_APPLICATIONS}
           component={ApplicationIndexPage}
