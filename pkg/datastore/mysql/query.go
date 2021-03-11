@@ -14,7 +14,12 @@
 
 package mysql
 
-import "fmt"
+import (
+	"fmt"
+	"strings"
+
+	"github.com/pipe-cd/pipe/pkg/datastore"
+)
 
 func buildGetQuery(table string) string {
 	return fmt.Sprintf("SELECT data FROM %s WHERE id = UUID_TO_BIN(?,true)", table)
@@ -30,4 +35,61 @@ func buildPutQuery(table string) string {
 
 func buildCreateQuery(table string) string {
 	return fmt.Sprintf("INSERT INTO %s (id, data) VALUE (UUID_TO_BIN(?,true), ?)", table)
+}
+
+func buildFindQuery(table string, ops datastore.ListOptions) string {
+	rawQuery := fmt.Sprintf(
+		"SELECT data FROM %s %s %s %s",
+		table,
+		buildWhereClause(ops.Filters),
+		buildOrderByClause(ops.Orders),
+		buildPaginationClause(ops.Page, ops.PageSize),
+	)
+	return strings.Join(strings.Fields(rawQuery), " ")
+}
+
+func buildWhereClause(filters []datastore.ListFilter) string {
+	if len(filters) == 0 {
+		return ""
+	}
+
+	conds := make([]string, len(filters))
+	for i, filter := range filters {
+		conds[i] = fmt.Sprintf("%s %s ?", filter.Field, filter.Operator)
+	}
+	return fmt.Sprintf("WHERE %s", strings.Join(conds[:], " AND "))
+}
+
+func buildOrderByClause(orders []datastore.Order) string {
+	if len(orders) == 0 {
+		return ""
+	}
+
+	conds := make([]string, len(orders))
+	for i, ord := range orders {
+		conds[i] = fmt.Sprintf("%s %s", ord.Field, toMySQLDirection(ord.Direction))
+	}
+	return fmt.Sprintf("ORDER BY %s", strings.Join(conds[:], ", "))
+}
+
+func buildPaginationClause(page, pageSize int) string {
+	var clause string
+	if pageSize > 0 {
+		clause = fmt.Sprintf("LIMIT %d ", pageSize)
+		if page > 0 {
+			clause = fmt.Sprintf("%sOFFSET %d", clause, pageSize*page)
+		}
+	}
+	return clause
+}
+
+func toMySQLDirection(d datastore.OrderDirection) string {
+	switch d {
+	case datastore.Asc:
+		return "ASC"
+	case datastore.Desc:
+		return "DESC"
+	default:
+		return ""
+	}
 }
