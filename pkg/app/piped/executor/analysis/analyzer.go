@@ -56,6 +56,7 @@ func (a *analyzer) run(ctx context.Context) error {
 				// Ignore parent's context deadline exceeded error, and return immediately.
 				return nil
 			}
+			// TODO: Consider how to handle the case of analysisprovider.ErrNoValuesFound
 			if err != nil {
 				// The failure of the query itself is treated as a failure.
 				reason = fmt.Sprintf("failed to run query: %s", err.Error())

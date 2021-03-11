@@ -83,13 +83,17 @@ func (p *Provider) RunQuery(ctx context.Context, query string, expected config.A
 }
 
 func (p *Provider) evaluate(expected config.AnalysisExpected, response model.Value) (bool, error) {
+	if err := expected.Validate(); err != nil {
+		return false, err
+	}
+
 	switch value := response.(type) {
 	case *model.Scalar:
 		result := float64(value.Value)
 		if math.IsNaN(result) {
 			return false, fmt.Errorf("the result %v is not a number", result)
 		}
-		return p.inRange(expected, result)
+		return expected.InRange(result), nil
 	case model.Vector:
 		lv := len(value)
 		if lv == 0 {
@@ -108,23 +112,8 @@ func (p *Provider) evaluate(expected config.AnalysisExpected, response model.Val
 		}
 		p.logger.Info("vector results found", zap.Float64s("results", results))
 		// TODO: Consider the case of multiple results.
-		return p.inRange(expected, results[0])
+		return expected.InRange(results[0]), nil
 	default:
 		return false, fmt.Errorf("unsupported prometheus metrics type")
 	}
-}
-
-func (p *Provider) inRange(expected config.AnalysisExpected, value float64) (bool, error) {
-	if expected.Min == nil && expected.Max == nil {
-		return false, fmt.Errorf("expected range is undefined")
-	}
-	if min := expected.Min; min != nil && *min > value {
-		p.logger.Info("failure because the query response was below expected minimum", zap.Float64("response", value), zap.Float64("expected-min", *min))
-		return false, nil
-	}
-	if max := expected.Max; max != nil && *max < value {
-		p.logger.Info("failure because the query response exceeded expected maximum", zap.Float64("response", value), zap.Float64("expected-max", *max))
-		return false, nil
-	}
-	return true, nil
 }

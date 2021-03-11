@@ -14,6 +14,8 @@
 
 package config
 
+import "fmt"
+
 // AnalysisMetrics contains common configurable values for deployment analysis with metrics.
 type AnalysisMetrics struct {
 	Query    string           `json:"query"`
@@ -31,6 +33,24 @@ type AnalysisMetrics struct {
 type AnalysisExpected struct {
 	Min *float64 `json:"min"`
 	Max *float64 `json:"max"`
+}
+
+func (e *AnalysisExpected) Validate() error {
+	if e.Min == nil && e.Max == nil {
+		return fmt.Errorf("expected range is undefined")
+	}
+	return nil
+}
+
+// InRange returns true if the given value is within the range.
+func (e *AnalysisExpected) InRange(value float64) bool {
+	if min := e.Min; min != nil && *min > value {
+		return false
+	}
+	if max := e.Max; max != nil && *max < value {
+		return false
+	}
+	return true
 }
 
 // AnalysisLog contains common configurable values for deployment analysis with log.
