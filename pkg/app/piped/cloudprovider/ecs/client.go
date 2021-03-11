@@ -164,7 +164,7 @@ func (c *client) DeleteTaskSet(ctx context.Context, service types.Service, taskS
 	return nil
 }
 
-func (c *client) ServiceExist(ctx context.Context, clusterName string, services []string) (bool, error) {
+func (c *client) ServiceExists(ctx context.Context, clusterName string, services []string) (bool, error) {
 	input := &ecs.DescribeServicesInput{
 		Cluster:  aws.String(clusterName),
 		Services: services,
