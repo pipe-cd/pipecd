@@ -64,6 +64,13 @@ def go_repositories():
         version = "v1.0.2",
     )
     go_repository(
+        name = "com_github_aws_aws_sdk_go_v2_service_ecs",
+        importpath = "github.com/aws/aws-sdk-go-v2/service/ecs",
+        sum = "h1:McBGvH3M7n8s6SGuS+UNm8+q5BEmE30cNH/81qy0B4Q=",
+        version = "v1.1.1",
+    )
+
+    go_repository(
         name = "com_github_aws_aws_sdk_go_v2_service_internal_accept_encoding",
         importpath = "github.com/aws/aws-sdk-go-v2/service/internal/accept-encoding",
         sum = "h1:q+3dVb1s3piv/Q/Ft0+OjU5iKItBRfCvU5wNLQUyIbA=",
