@@ -32,7 +32,7 @@ func loadServiceDefinition(path string) (types.Service, error) {
 
 func parseServiceDefinition(data []byte) (types.Service, error) {
 	var obj types.Service
-	// TODO: support json
+	// TODO: Support loading ServiceDefinition file with JSON format
 	if err := yaml.Unmarshal(data, &obj); err != nil {
 		return types.Service{}, err
 	}
