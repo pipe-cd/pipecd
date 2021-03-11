@@ -23,7 +23,7 @@ import (
 	"github.com/DataDog/datadog-api-client-go/api/v1/datadog"
 	"go.uber.org/zap"
 
-	"github.com/pipe-cd/pipe/pkg/app/piped/analysisprovider"
+	"github.com/pipe-cd/pipe/pkg/app/piped/analysisprovider/metrics"
 	"github.com/pipe-cd/pipe/pkg/config"
 )
 
@@ -133,7 +133,7 @@ func (p *Provider) RunQuery(ctx context.Context, query string, expected config.A
 		return false, fmt.Errorf("unexpected HTTP status code from %s: %d", httpResp.Request.URL, httpResp.StatusCode)
 	}
 	if resp.Series == nil || len(*resp.Series) == 0 {
-		return false, analysisprovider.ErrNoValuesFound
+		return false, metrics.ErrNoValuesFound
 	}
 	return p.evaluate(expected, *resp.Series)
 }

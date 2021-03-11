@@ -16,9 +16,14 @@ package metrics
 
 import (
 	"context"
+	"errors"
 
 	"github.com/pipe-cd/pipe/pkg/app/piped/analysisprovider"
 	"github.com/pipe-cd/pipe/pkg/config"
+)
+
+var (
+	ErrNoValuesFound = errors.New("no values found")
 )
 
 // Provider represents a client for metrics provider which provides metrics for analysis.

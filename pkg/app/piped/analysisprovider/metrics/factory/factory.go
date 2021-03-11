@@ -12,7 +12,7 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-package metrics
+package factory
 
 import (
 	"fmt"
@@ -20,25 +20,18 @@ import (
 
 	"go.uber.org/zap"
 
+	"github.com/pipe-cd/pipe/pkg/app/piped/analysisprovider/metrics"
 	"github.com/pipe-cd/pipe/pkg/app/piped/analysisprovider/metrics/datadog"
 	"github.com/pipe-cd/pipe/pkg/app/piped/analysisprovider/metrics/prometheus"
 	"github.com/pipe-cd/pipe/pkg/config"
 	"github.com/pipe-cd/pipe/pkg/model"
 )
 
-type Factory struct {
-	logger *zap.Logger
-}
-
-func NewFactory(logger *zap.Logger) *Factory {
-	return &Factory{logger: logger}
-}
-
 // NewProvider generates an appropriate provider according to analysis provider config.
-func (f *Factory) NewProvider(analysisTempCfg *config.TemplatableAnalysisMetrics, providerCfg *config.PipedAnalysisProvider) (Provider, error) {
+func NewProvider(analysisTempCfg *config.TemplatableAnalysisMetrics, providerCfg *config.PipedAnalysisProvider, logger *zap.Logger) (metrics.Provider, error) {
 	switch providerCfg.Type {
 	case model.AnalysisProviderPrometheus:
-		return prometheus.NewProvider(providerCfg.PrometheusConfig.Address, analysisTempCfg.Timeout.Duration(), f.logger)
+		return prometheus.NewProvider(providerCfg.PrometheusConfig.Address, analysisTempCfg.Timeout.Duration(), logger)
 	case model.AnalysisProviderDatadog:
 		var apiKey, applicationKey string
 		cfg := providerCfg.DatadogConfig
@@ -59,7 +52,7 @@ func (f *Factory) NewProvider(analysisTempCfg *config.TemplatableAnalysisMetrics
 		options := []datadog.Option{
 			datadog.WithAddress(cfg.Address),
 			datadog.WithTimeout(analysisTempCfg.Timeout.Duration()),
-			datadog.WithLogger(f.logger),
+			datadog.WithLogger(logger),
 		}
 		return datadog.NewProvider(apiKey, applicationKey, analysisTempCfg.Interval.Duration(), options...)
 	default:
