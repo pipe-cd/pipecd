@@ -40,15 +40,15 @@ type LambdaDeploymentInput struct {
 	AutoRollback bool `json:"autoRollback"`
 }
 
-// LambdaSyncStageOptions contains all configurable values for a CLOUDRUN_SYNC stage.
+// LambdaSyncStageOptions contains all configurable values for a LAMBDA_SYNC stage.
 type LambdaSyncStageOptions struct {
 }
 
-// LambdaCanaryRolloutStageOptions contains all configurable values for a CLOUDRUN_CANARY_ROLLOUT stage.
+// LambdaCanaryRolloutStageOptions contains all configurable values for a LAMBDA_CANARY_ROLLOUT stage.
 type LambdaCanaryRolloutStageOptions struct {
 }
 
-// LambdaPromoteStageOptions contains all configurable values for a CLOUDRUN_PROMOTE stage.
+// LambdaPromoteStageOptions contains all configurable values for a LAMBDA_PROMOTE stage.
 type LambdaPromoteStageOptions struct {
 	// Percentage of traffic should be routed to the new version.
 	Percent int `json:"percent"`
