@@ -140,6 +140,10 @@ func (p *Provider) RunQuery(ctx context.Context, query string, expected config.A
 
 // evaluate checks if all data points for all time series are within the expected range.
 func (p *Provider) evaluate(expected config.AnalysisExpected, series []datadog.MetricsQueryMetadata) (bool, error) {
+	if err := expected.Validate(); err != nil {
+		return false, err
+	}
+
 	for _, s := range series {
 		points := s.Pointlist
 		if points == nil || len(*points) == 0 {
@@ -150,11 +154,8 @@ func (p *Provider) evaluate(expected config.AnalysisExpected, series []datadog.M
 				return false, fmt.Errorf("invalid response: invalid data point found")
 			}
 			// NOTE: A data point is assumed to be kind of like [unix-time, value].
-			valid, err := expected.InRange(point[1])
-			if err == nil {
-				return false, err
-			}
-			if !valid {
+			value := point[1]
+			if !expected.InRange(value) {
 				p.logger.Info("the result isn't within the expected range", zap.Float64("value", point[1]))
 				return false, nil
 			}

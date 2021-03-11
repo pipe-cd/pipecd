@@ -83,13 +83,17 @@ func (p *Provider) RunQuery(ctx context.Context, query string, expected config.A
 }
 
 func (p *Provider) evaluate(expected config.AnalysisExpected, response model.Value) (bool, error) {
+	if err := expected.Validate(); err != nil {
+		return false, err
+	}
+
 	switch value := response.(type) {
 	case *model.Scalar:
 		result := float64(value.Value)
 		if math.IsNaN(result) {
 			return false, fmt.Errorf("the result %v is not a number", result)
 		}
-		return expected.InRange(result)
+		return expected.InRange(result), nil
 	case model.Vector:
 		lv := len(value)
 		if lv == 0 {
@@ -108,7 +112,7 @@ func (p *Provider) evaluate(expected config.AnalysisExpected, response model.Val
 		}
 		p.logger.Info("vector results found", zap.Float64s("results", results))
 		// TODO: Consider the case of multiple results.
-		return expected.InRange(results[0])
+		return expected.InRange(results[0]), nil
 	default:
 		return false, fmt.Errorf("unsupported prometheus metrics type")
 	}
