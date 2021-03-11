@@ -27,8 +27,8 @@ import (
 )
 
 const (
-	defaultTaskDefinitionFilename    = "taskdef.json"
-	defaultserviceDefinitionFilename = "servicedef.json"
+	defaultTaskDefinitionFilename    = "taskdef.yaml"
+	defaultserviceDefinitionFilename = "servicedef.yaml"
 )
 
 // Client is wrapper of ECS client.
