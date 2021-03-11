@@ -34,12 +34,12 @@ const (
 // Client is wrapper of ECS client.
 type Client interface {
 	ServiceExists(ctx context.Context, clusterName string, services []string) (bool, error)
-	CreateService(ctx context.Context, service types.Service) error
-	UpdateService(ctx context.Context, service types.Service) error
-	RegisterTaskDefinition(ctx context.Context, taskDefinition types.TaskDefinition) error
-	DeregisterTaskDefinition(ctx context.Context, taskDefinition types.TaskDefinition) error
-	CreateTaskSet(service types.Service, taskDefinition types.TaskDefinition) error
-	DeleteTaskSet(service types.Service, taskDefinition types.TaskDefinition) error
+	CreateService(ctx context.Context, service types.Service) (*types.Service, error)
+	UpdateService(ctx context.Context, service types.Service) (*types.Service, error)
+	RegisterTaskDefinition(ctx context.Context, taskDefinition types.TaskDefinition) (*types.TaskDefinition, error)
+	DeregisterTaskDefinition(ctx context.Context, taskDefinition types.TaskDefinition) (*types.TaskDefinition, error)
+	CreateTaskSet(service types.Service, taskDefinition types.TaskDefinition) (*types.TaskSet, error)
+	DeleteTaskSet(service types.Service, taskDefinition types.TaskDefinition) (*types.TaskSet, error)
 }
 
 // Registry holds a pool of aws client wrappers.
