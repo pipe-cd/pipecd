@@ -14,6 +14,12 @@
 
 package analysisprovider
 
+import "errors"
+
+var (
+	ErrNoValuesFound = errors.New("no values found")
+)
+
 // Provider represents a client for analysis provider which provides data for analysis.
 type Provider interface {
 	Type() string

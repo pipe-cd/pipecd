@@ -23,6 +23,7 @@ import (
 	"github.com/DataDog/datadog-api-client-go/api/v1/datadog"
 	"go.uber.org/zap"
 
+	"github.com/pipe-cd/pipe/pkg/app/piped/analysisprovider"
 	"github.com/pipe-cd/pipe/pkg/config"
 )
 
@@ -132,22 +133,32 @@ func (p *Provider) RunQuery(ctx context.Context, query string, expected config.A
 		return false, fmt.Errorf("unexpected HTTP status code from %s: %d", httpResp.Request.URL, httpResp.StatusCode)
 	}
 	if resp.Series == nil || len(*resp.Series) == 0 {
-		return false, fmt.Errorf("no timeseries queried found")
+		return false, analysisprovider.ErrNoValuesFound
 	}
-	points := (*resp.Series)[0].Pointlist
-	if points == nil || len(*points) == 0 {
-		return false, fmt.Errorf("no data points of the time series found")
-	}
-	// TODO: Think about how to handle multiple data points
-	point := (*points)[len(*points)-1]
-	if len(point) < 2 {
-		return false, fmt.Errorf("invalid data point found")
-	}
-	// A data point is assumed to be kind of like [unix-time, value].
-	return p.evaluate(expected, point[1])
+	return p.evaluate(expected, *resp.Series)
 }
 
-func (p *Provider) evaluate(expected config.AnalysisExpected, response float64) (bool, error) {
-	// TODO: Implement evaluation of response from Datadog
-	return false, nil
+// evaluate checks if all data points for all time series are within the expected range.
+func (p *Provider) evaluate(expected config.AnalysisExpected, series []datadog.MetricsQueryMetadata) (bool, error) {
+	for _, s := range series {
+		points := s.Pointlist
+		if points == nil || len(*points) == 0 {
+			return false, fmt.Errorf("invalid response: no data points of the time series found")
+		}
+		for _, point := range *points {
+			if len(point) < 2 {
+				return false, fmt.Errorf("invalid response: invalid data point found")
+			}
+			// NOTE: A data point is assumed to be kind of like [unix-time, value].
+			valid, err := expected.InRange(point[1])
+			if err == nil {
+				return false, err
+			}
+			if !valid {
+				p.logger.Info("the result isn't within the expected range", zap.Float64("value", point[1]))
+				return false, nil
+			}
+		}
+	}
+	return true, nil
 }
