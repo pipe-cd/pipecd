@@ -33,7 +33,7 @@ type client struct {
 	logger *zap.Logger
 }
 
-func newClient(region, profile, credentialsFile, roleARN, tokenPath string, logger *zap.Logger) (*client, error) {
+func newClient(region, profile, credentialsFile, roleARN, tokenPath string, logger *zap.Logger) (Client, error) {
 	if region == "" {
 		return nil, fmt.Errorf("region is required field")
 	}
