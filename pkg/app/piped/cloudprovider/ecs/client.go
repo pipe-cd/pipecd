@@ -99,7 +99,7 @@ func (c *client) UpdateService(ctx context.Context, service types.Service) (*typ
 		Service:                       service.ServiceName,
 		Cluster:                       service.ClusterArn,
 		DeploymentConfiguration:       service.DeploymentConfiguration,
-		DesiredCount:                  &service.DesiredCount,
+		DesiredCount:                  aws.Int32(service.DesiredCount),
 		HealthCheckGracePeriodSeconds: service.HealthCheckGracePeriodSeconds,
 		NetworkConfiguration:          service.NetworkConfiguration,
 		PlacementConstraints:          service.PlacementConstraints,
