@@ -112,41 +112,16 @@ func (s *ops) run(ctx context.Context, t cli.Telemetry) error {
 
 	// Starting a cron job for insight collector.
 	if s.enableInsightCollector {
-		mode := loadCollectorMode(cfg)
-		collector := insightcollector.NewInsightCollector(ds, fs, t.Logger, mode)
+		insightCfg := cfg.InsightCollector
+		mode := loadCollectorMode(insightCfg)
+		collector := insightcollector.NewInsightCollector(ds, fs, mode, t.Logger)
+
 		c := cron.New(cron.WithLocation(time.UTC))
-		_, err := c.AddFunc(cfg.InsightCollector.Schedule, func() {
-			retry := backoff.NewRetry(cfg.InsightCollector.RetryTime, backoff.NewConstant(time.Duration(cfg.InsightCollector.RetryIntervalHour)*time.Hour))
-			successProcessNewlyCompletedDeployments := false
-			successProcessNewlyCreatedDeployments := false
-			for retry.WaitNext(ctx) {
-				if !successProcessNewlyCompletedDeployments {
-					start := time.Now()
-					if err = collector.ProcessNewlyCompletedDeployments(ctx); err != nil {
-						t.Logger.Error("failed to process the newly completed deployments while accumulating insight data", zap.Error(err))
-					} else {
-						t.Logger.Info("successfully processed the newly completed deployments while accumulating insight data", zap.Duration("duration", time.Since(start)))
-						successProcessNewlyCompletedDeployments = true
-					}
-				}
-
-				if !successProcessNewlyCreatedDeployments {
-					start := time.Now()
-					if err = collector.ProcessNewlyCreatedDeployments(ctx); err != nil {
-						t.Logger.Error("failed to process the newly created deployments while accumulating insight data", zap.Error(err))
-					} else {
-						t.Logger.Info("successfully processed the newly created deployments while accumulating insight data", zap.Duration("duration", time.Since(start)))
-						successProcessNewlyCreatedDeployments = true
-					}
-				}
-
-				if successProcessNewlyCompletedDeployments && successProcessNewlyCreatedDeployments {
-					return
-				}
-			}
+		_, err := c.AddFunc(insightCfg.Schedule, func() {
+			s.runDeploymentCollector(ctx, collector, mode, insightCfg, t.Logger)
 		})
 		if err != nil {
-			t.Logger.Error("failed to configure the insight collector", zap.Error(err))
+			t.Logger.Error("failed to configure cron job for collecting insight data about deployment", zap.Error(err))
 		}
 	}
 
@@ -203,12 +178,47 @@ func (s *ops) run(ctx context.Context, t cli.Telemetry) error {
 	return nil
 }
 
-func loadCollectorMode(cfg *config.ControlPlaneSpec) insightcollector.CollectorMetrics {
+func (s *ops) runDeploymentCollector(ctx context.Context, col *insightcollector.InsightCollector, mode insightcollector.CollectorMetrics, cfg config.ControlPlaneInsightCollector, logger *zap.Logger) {
+	var doneNewlyCompleted, doneNewlyCreated bool
+	retry := backoff.NewRetry(
+		cfg.RetryTime,
+		backoff.NewConstant(time.Duration(cfg.RetryIntervalHour)*time.Hour),
+	)
+
+	for retry.WaitNext(ctx) {
+		if !doneNewlyCompleted {
+			start := time.Now()
+			if err := col.ProcessNewlyCompletedDeployments(ctx); err != nil {
+				logger.Error("failed to process the newly completed deployments while accumulating insight data", zap.Error(err))
+			} else {
+				logger.Info("successfully processed the newly completed deployments while accumulating insight data", zap.Duration("duration", time.Since(start)))
+				doneNewlyCompleted = true
+			}
+		}
+
+		if !doneNewlyCreated {
+			start := time.Now()
+			if err := col.ProcessNewlyCreatedDeployments(ctx); err != nil {
+				logger.Error("failed to process the newly created deployments while accumulating insight data", zap.Error(err))
+			} else {
+				logger.Info("successfully processed the newly created deployments while accumulating insight data", zap.Duration("duration", time.Since(start)))
+				doneNewlyCreated = true
+			}
+		}
+
+		if doneNewlyCompleted && doneNewlyCreated {
+			return
+		}
+		logger.Info("will do another try to collect insight data")
+	}
+}
+
+func loadCollectorMode(cfg config.ControlPlaneInsightCollector) insightcollector.CollectorMetrics {
 	metrics := insightcollector.NewCollectorMetrics()
-	if !cfg.InsightCollector.DisabledMetrics.DeploymentFrequency {
+	if !cfg.DisabledMetrics.DeploymentFrequency {
 		metrics.Enable(insightcollector.DevelopmentFrequency)
 	}
-	if cfg.InsightCollector.DisabledMetrics.ChangeFailureRate {
+	if !cfg.DisabledMetrics.ChangeFailureRate {
 		metrics.Enable(insightcollector.ChangeFailureRate)
 	}
 	return metrics

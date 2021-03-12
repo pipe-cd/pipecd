@@ -444,8 +444,7 @@ func TestInsightCollector_updateDataPoints(t *testing.T) {
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			a := &InsightCollector{}
-			got, err := a.updateDataPoints(tt.args.chunk, tt.args.step, tt.args.updatedps, tt.args.accumulatedTo)
+			got, err := updateDataPoints(tt.args.chunk, tt.args.step, tt.args.updatedps, tt.args.accumulatedTo)
 			if (err != nil) != tt.wantErr {
 				if !tt.wantErr {
 					assert.NoError(t, err)
@@ -998,10 +997,7 @@ func TestInsightCollector_extractDailyInsightDataPoints(t *testing.T) {
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			a := &InsightCollector{
-				logger: zap.NewNop(),
-			}
-			got, err := a.extractDailyInsightDataPoints(tt.args.deployments, tt.args.kind, tt.args.rangeFrom, tt.args.rangeTo)
+			got, err := extractDailyInsightDataPoints(tt.args.deployments, tt.args.kind, tt.args.rangeFrom, tt.args.rangeTo)
 			if (err != nil) != tt.wantErr {
 				if !tt.wantErr {
 					assert.NoError(t, err)
