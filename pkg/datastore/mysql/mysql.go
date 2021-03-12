@@ -27,7 +27,7 @@ import (
 	"github.com/pipe-cd/pipe/pkg/datastore"
 )
 
-const mysqlErrorCodeDuplicate = 1062
+const mysqlErrorCodeDuplicateEntry = 1062
 
 // MySQL client wrapper
 type MySQL struct {
@@ -140,7 +140,7 @@ func (m *MySQL) Create(ctx context.Context, kind, id string, entity interface{})
 	}
 
 	_, err = stmt.ExecContext(ctx, makeRowID(id), data)
-	if mysqlErr, ok := err.(*mysql.MySQLError); ok && mysqlErr.Number == mysqlErrorCodeDuplicate {
+	if mysqlErr, ok := err.(*mysql.MySQLError); ok && mysqlErr.Number == mysqlErrorCodeDuplicateEntry {
 		return datastore.ErrAlreadyExists
 	}
 	if err != nil {
