@@ -15,7 +15,9 @@
 package ecs
 
 import (
+	"fmt"
 	"io/ioutil"
+	"strings"
 
 	"sigs.k8s.io/yaml"
 
@@ -37,4 +39,23 @@ func parseTaskDefinition(data []byte) (types.TaskDefinition, error) {
 		return types.TaskDefinition{}, err
 	}
 	return obj, nil
+}
+
+// FindImageTag parses image tag from given ECS task definition.
+func FindImageTag(taskDefinition types.TaskDefinition) (string, error) {
+	name, tag := parseContainerImage(*taskDefinition.ContainerDefinitions[0].Image)
+	if name == "" {
+		return "", fmt.Errorf("image name could not be empty")
+	}
+	return tag, nil
+}
+
+func parseContainerImage(image string) (name, tag string) {
+	parts := strings.Split(image, ":")
+	if len(parts) == 2 {
+		tag = parts[1]
+	}
+	paths := strings.Split(parts[0], "/")
+	name = paths[len(paths)-1]
+	return
 }
