@@ -34,10 +34,10 @@ func (s *ECSDeploymentSpec) Validate() error {
 type ECSDeploymentInput struct {
 	// The name of service definition file placing in application directory.
 	// Default is servicedef.yaml
-	ServiceDefinitionFile string `json:"serviceDefinition"`
+	ServiceDefinitionFile string `json:"serviceDefinitionFile"`
 	// The name of task definition file placing in application directory.
 	// Default is taskdef.yaml
-	TaskDefinitionFile string `json:"taskDefinition"`
+	TaskDefinitionFile string `json:"taskDefinitionFile"`
 	// Automatically reverts all changes from all stages when one of them failed.
 	// Default is true.
 	AutoRollback bool `json:"autoRollback"`
