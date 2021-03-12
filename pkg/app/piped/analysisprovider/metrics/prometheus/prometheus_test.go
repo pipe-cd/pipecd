@@ -108,3 +108,22 @@ func newVector(f float64) model.Value {
 		},
 	}
 }
+
+func TestEvaluate(t *testing.T) {
+	testcases := []struct {
+		name      string
+		evaluator metrics.Evaluator
+		response  model.Value
+		want      bool
+		wantErr   bool
+	}{
+		// TODO: Add tests for Prometheus evaluation
+	}
+	for _, tc := range testcases {
+		t.Run(tc.name, func(t *testing.T) {
+			got, err := evaluate(tc.evaluator, tc.response)
+			assert.Equal(t, tc.wantErr, err != nil)
+			assert.Equal(t, tc.want, got)
+		})
+	}
+}

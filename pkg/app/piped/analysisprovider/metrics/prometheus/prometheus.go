@@ -104,10 +104,10 @@ func (p *Provider) RunQuery(ctx context.Context, query string, queryRange metric
 	for _, w := range warnings {
 		p.logger.Warn("non critical error occurred", zap.String("warning", w))
 	}
-	return p.evaluate(evaluator, response)
+	return evaluate(evaluator, response)
 }
 
-func (p *Provider) evaluate(evaluator metrics.Evaluator, response model.Value) (bool, error) {
+func evaluate(evaluator metrics.Evaluator, response model.Value) (bool, error) {
 	if err := evaluator.Validate(); err != nil {
 		return false, err
 	}

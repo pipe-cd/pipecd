@@ -133,11 +133,11 @@ func (p *Provider) RunQuery(ctx context.Context, query string, queryRange metric
 	if resp.Series == nil || len(*resp.Series) == 0 {
 		return false, metrics.ErrNoValuesFound
 	}
-	return p.evaluate(evaluator, *resp.Series)
+	return evaluate(evaluator, *resp.Series)
 }
 
 // evaluate checks if all data points for all time series are within the expected range.
-func (p *Provider) evaluate(evaluator metrics.Evaluator, series []datadog.MetricsQueryMetadata) (bool, error) {
+func evaluate(evaluator metrics.Evaluator, series []datadog.MetricsQueryMetadata) (bool, error) {
 	if err := evaluator.Validate(); err != nil {
 		return false, err
 	}
@@ -154,7 +154,6 @@ func (p *Provider) evaluate(evaluator metrics.Evaluator, series []datadog.Metric
 			// NOTE: A data point is assumed to be kind of like [unix-time, value].
 			value := point[1]
 			if !evaluator.InRange(value) {
-				p.logger.Info("the result isn't within the expected range", zap.Float64("value", point[1]))
 				return false, nil
 			}
 		}
