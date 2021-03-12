@@ -123,6 +123,7 @@ func (s *ops) run(ctx context.Context, t cli.Telemetry) error {
 		if err != nil {
 			t.Logger.Error("failed to configure cron job for collecting insight data about deployment", zap.Error(err))
 		}
+		c.Start()
 	}
 
 	if cfg.Datastore.Type == model.DataStoreFirestore {
