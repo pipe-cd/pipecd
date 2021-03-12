@@ -24,6 +24,7 @@ const (
 	PredefinedStageTerraformSync = "TerraformSync"
 	PredefinedStageCloudRunSync  = "CloudRunSync"
 	PredefinedStageLambdaSync    = "LambdaSync"
+	PredefinedStageECSSync       = "ECSSync"
 	PredefinedStageRollback      = "Rollback"
 )
 
@@ -46,6 +47,11 @@ var predefinedStages = map[string]config.PipelineStage{
 	PredefinedStageLambdaSync: {
 		Id:   PredefinedStageLambdaSync,
 		Name: model.StageLambdaSync,
+		Desc: "Deploy the new version and configure all traffic to it",
+	},
+	PredefinedStageECSSync: {
+		Id:   PredefinedStageECSSync,
+		Name: model.StageECSSync,
 		Desc: "Deploy the new version and configure all traffic to it",
 	},
 	PredefinedStageRollback: {
