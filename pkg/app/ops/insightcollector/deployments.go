@@ -60,7 +60,7 @@ func (c *InsightCollector) collectDevelopmentFrequency(ctx context.Context, ds [
 		}
 	}
 	for id, ds := range projects {
-		if err := c.updateApplicationChunks(ctx, id, "", ds, model.InsightMetricsKind_DEPLOYMENT_FREQUENCY, target); err != nil {
+		if err := c.updateApplicationChunks(ctx, id, ds[0].ApplicationId, ds, model.InsightMetricsKind_DEPLOYMENT_FREQUENCY, target); err != nil {
 			c.logger.Error("failed to update project chunks", zap.Error(err))
 			updateErr = err
 		}
