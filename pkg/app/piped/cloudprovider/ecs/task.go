@@ -43,6 +43,9 @@ func parseTaskDefinition(data []byte) (types.TaskDefinition, error) {
 
 // FindImageTag parses image tag from given ECS task definition.
 func FindImageTag(taskDefinition types.TaskDefinition) (string, error) {
+	if len(taskDefinition.ContainerDefinitions) == 0 {
+		return "", fmt.Errorf("container definition could not be empty")
+	}
 	name, tag := parseContainerImage(*taskDefinition.ContainerDefinitions[0].Image)
 	if name == "" {
 		return "", fmt.Errorf("image name could not be empty")
