@@ -48,6 +48,8 @@ const (
 	KindLambdaApp Kind = "LambdaApp"
 	// KindCloudRunApp represents deployment configuration for a CloudRun application.
 	KindCloudRunApp Kind = "CloudRunApp"
+	// KindECSApp represents deployment configuration for an AWS ECS.
+	KindECSApp Kind = "ECSApp"
 	// KindSealedSecret represents a sealed secret.
 	KindSealedSecret Kind = "SealedSecret"
 )
@@ -82,6 +84,7 @@ type Config struct {
 	TerraformDeploymentSpec  *TerraformDeploymentSpec
 	CloudRunDeploymentSpec   *CloudRunDeploymentSpec
 	LambdaDeploymentSpec     *LambdaDeploymentSpec
+	ECSDeploymentSpec        *ECSDeploymentSpec
 
 	PipedSpec            *PipedSpec
 	ControlPlaneSpec     *ControlPlaneSpec
@@ -129,6 +132,14 @@ func (c *Config) init(kind Kind, apiVersion string) error {
 			},
 		}
 		c.spec = c.LambdaDeploymentSpec
+
+	case KindECSApp:
+		c.ECSDeploymentSpec = &ECSDeploymentSpec{
+			Input: ECSDeploymentInput{
+				AutoRollback: true,
+			},
+		}
+		c.spec = c.ECSDeploymentSpec
 
 	case KindPiped:
 		c.PipedSpec = &PipedSpec{}
@@ -246,6 +257,8 @@ func ToApplicationKind(k Kind) (model.ApplicationKind, bool) {
 		return model.ApplicationKind_LAMBDA, true
 	case KindCloudRunApp:
 		return model.ApplicationKind_CLOUDRUN, true
+	case KindECSApp:
+		return model.ApplicationKind_ECS, true
 	}
 	return model.ApplicationKind_KUBERNETES, false
 }
@@ -259,6 +272,8 @@ func (c *Config) GetGenericDeployment() (GenericDeploymentSpec, bool) {
 	case KindCloudRunApp:
 		return c.CloudRunDeploymentSpec.GenericDeploymentSpec, true
 	case KindLambdaApp:
+		return c.LambdaDeploymentSpec.GenericDeploymentSpec, true
+	case KindECSApp:
 		return c.LambdaDeploymentSpec.GenericDeploymentSpec, true
 	}
 	return GenericDeploymentSpec{}, false
