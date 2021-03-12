@@ -28,6 +28,7 @@ import (
 	"github.com/pipe-cd/pipe/pkg/app/ops/firestoreindexensurer"
 	"github.com/pipe-cd/pipe/pkg/app/ops/handler"
 	"github.com/pipe-cd/pipe/pkg/app/ops/insightcollector"
+	"github.com/pipe-cd/pipe/pkg/app/ops/mysqlensurer"
 	"github.com/pipe-cd/pipe/pkg/app/ops/orphancommandcleaner"
 	"github.com/pipe-cd/pipe/pkg/backoff"
 	"github.com/pipe-cd/pipe/pkg/cli"
@@ -77,6 +78,31 @@ func (s *ops) run(ctx context.Context, t cli.Telemetry) error {
 			zap.Error(err),
 		)
 		return err
+	}
+
+	// Prepare sql database.
+	if cfg.Datastore.Type == model.DataStoreMySQL {
+		mysqlEnsurer := mysqlensurer.NewMySQLEnsurer(
+			cfg.Datastore.MySQLConfig.URL,
+			cfg.Datastore.MySQLConfig.Database,
+			cfg.Datastore.MySQLConfig.UsernameFile,
+			cfg.Datastore.MySQLConfig.PasswordFile,
+			t.Logger,
+		)
+		err := mysqlEnsurer.CreateSchema(ctx)
+		if err != nil {
+			t.Logger.Error("failed to prepare sql database", zap.Error(err))
+			return err
+		}
+		// No need to run this create indexes operation in routine because it run asynchronously.
+		// ref: https://dev.mysql.com/doc/refman/8.0/en/innodb-online-ddl-operations.html#online-ddl-index-operations
+		err = mysqlEnsurer.CreateIndexes(ctx)
+		if err != nil {
+			t.Logger.Error("failed to create required indexes on sql database", zap.Error(err))
+			return err
+		}
+		// Close connection held by the client.
+		mysqlEnsurer.Close()
 	}
 
 	// Connect to the data store.

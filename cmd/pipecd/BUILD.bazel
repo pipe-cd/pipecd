@@ -23,6 +23,7 @@ go_library(
         "//pkg/app/ops/firestoreindexensurer:go_default_library",
         "//pkg/app/ops/handler:go_default_library",
         "//pkg/app/ops/insightcollector:go_default_library",
+        "//pkg/app/ops/mysqlensurer:go_default_library",
         "//pkg/app/ops/orphancommandcleaner:go_default_library",
         "//pkg/backoff:go_default_library",
         "//pkg/cache/rediscache:go_default_library",
