@@ -39,8 +39,8 @@ func TestECSDeploymentConfig(t *testing.T) {
 					Timeout: Duration(6 * time.Hour),
 				},
 				Input: ECSDeploymentInput{
-					ServiceDefinitionFile: "path/to/servicedef.yaml",
-					TaskDefinitionFile:    "path/to/taskdef.yaml",
+					ServiceDefinitionFile: "/path/to/servicedef.yaml",
+					TaskDefinitionFile:    "/path/to/taskdef.yaml",
 					AutoRollback:          true,
 				},
 			},
