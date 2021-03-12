@@ -14,35 +14,35 @@
 
 package config
 
-// EcsDeploymentSpec represents a deployment configuration for ECS application.
-type EcsDeploymentSpec struct {
+// ECSDeploymentSpec represents a deployment configuration for ECS application.
+type ECSDeploymentSpec struct {
 	GenericDeploymentSpec
 	// Input for ECS deployment such as where to fetch source code...
-	Input EcsDeploymentInput `json:"input"`
+	Input ECSDeploymentInput `json:"input"`
 	// Configuration for quick sync.
-	QuickSync EcsSyncStageOptions `json:"quickSync"`
+	QuickSync ECSSyncStageOptions `json:"quickSync"`
 }
 
 // Validate returns an error if any wrong configuration value was found.
-func (s *EcsDeploymentSpec) Validate() error {
+func (s *ECSDeploymentSpec) Validate() error {
 	if err := s.GenericDeploymentSpec.Validate(); err != nil {
 		return err
 	}
 	return nil
 }
 
-type EcsDeploymentInput struct {
+type ECSDeploymentInput struct {
 	// The name of service definition file placing in application directory.
 	// Default is servicedef.yaml
-	ServiceDefinition string `json:"serviceDefinition"`
+	ServiceDefinitionFile string `json:"serviceDefinition"`
 	// The name of task definition file placing in application directory.
 	// Default is taskdef.yaml
-	TaskDefinition string `json:"taskDefinition"`
+	TaskDefinitionFile string `json:"taskDefinition"`
 	// Automatically reverts all changes from all stages when one of them failed.
 	// Default is true.
 	AutoRollback bool `json:"autoRollback"`
 }
 
-// EcsSyncStageOptions contains all configurable values for a ECS_SYNC stage.
-type EcsSyncStageOptions struct {
+// ECSSyncStageOptions contains all configurable values for a ECS_SYNC stage.
+type ECSSyncStageOptions struct {
 }

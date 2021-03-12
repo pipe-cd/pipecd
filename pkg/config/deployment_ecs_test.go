@@ -22,7 +22,7 @@ import (
 	"github.com/stretchr/testify/require"
 )
 
-func TestEcsDeploymentConfig(t *testing.T) {
+func TestECSDeploymentConfig(t *testing.T) {
 	testcases := []struct {
 		fileName           string
 		expectedKind       Kind
@@ -32,16 +32,16 @@ func TestEcsDeploymentConfig(t *testing.T) {
 	}{
 		{
 			fileName:           "testdata/application/ecs-app.yaml",
-			expectedKind:       KindEcsApp,
+			expectedKind:       KindECSApp,
 			expectedAPIVersion: "pipecd.dev/v1beta1",
-			expectedSpec: &EcsDeploymentSpec{
+			expectedSpec: &ECSDeploymentSpec{
 				GenericDeploymentSpec: GenericDeploymentSpec{
 					Timeout: Duration(6 * time.Hour),
 				},
-				Input: EcsDeploymentInput{
-					ServiceDefinition: "path/to/servicedef.yaml",
-					TaskDefinition:    "path/to/taskdef.yaml",
-					AutoRollback:      true,
+				Input: ECSDeploymentInput{
+					ServiceDefinitionFile: "path/to/servicedef.yaml",
+					TaskDefinitionFile:    "path/to/taskdef.yaml",
+					AutoRollback:          true,
 				},
 			},
 			expectedError: nil,
