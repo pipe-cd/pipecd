@@ -118,7 +118,7 @@ func (s *ops) run(ctx context.Context, t cli.Telemetry) error {
 
 		c := cron.New(cron.WithLocation(time.UTC))
 		_, err := c.AddFunc(insightCfg.Schedule, func() {
-			s.runDeploymentCollector(ctx, collector, mode, insightCfg, t.Logger)
+			s.runDeploymentCollector(ctx, collector, insightCfg, t.Logger)
 		})
 		if err != nil {
 			t.Logger.Error("failed to configure cron job for collecting insight data about deployment", zap.Error(err))
@@ -179,7 +179,7 @@ func (s *ops) run(ctx context.Context, t cli.Telemetry) error {
 	return nil
 }
 
-func (s *ops) runDeploymentCollector(ctx context.Context, col *insightcollector.InsightCollector, mode insightcollector.CollectorMetrics, cfg config.ControlPlaneInsightCollector, logger *zap.Logger) {
+func (s *ops) runDeploymentCollector(ctx context.Context, col *insightcollector.InsightCollector, cfg config.ControlPlaneInsightCollector, logger *zap.Logger) {
 	var doneNewlyCompleted, doneNewlyCreated bool
 	retry := backoff.NewRetry(
 		cfg.RetryTime,

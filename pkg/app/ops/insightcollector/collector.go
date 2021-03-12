@@ -160,7 +160,7 @@ func (c *InsightCollector) ProcessNewlyCompletedDeployments(ctx context.Context)
 	return nil
 }
 
-func (c *InsightCollector) ProcessApplications(ctx context.Context) error {
+func (c *InsightCollector) ProcessApplications(_ context.Context) error {
 	c.logger.Info("will retrieve all applications to build insight data")
 	if len(c.newlyCreatedDeploymentsHandlers) == 0 {
 		c.logger.Info("skip building insight data for applications because there is no configured handlers")
