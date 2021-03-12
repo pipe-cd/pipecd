@@ -3,11 +3,13 @@ package prometheus
 import (
 	"context"
 	"testing"
+	"time"
 
 	"github.com/prometheus/common/model"
 	"github.com/stretchr/testify/assert"
 	"go.uber.org/zap"
 
+	"github.com/pipe-cd/pipe/pkg/app/piped/analysisprovider/metrics"
 	"github.com/pipe-cd/pipe/pkg/config"
 )
 
@@ -27,14 +29,14 @@ func TestRunQuery(t *testing.T) {
 	cases := []struct {
 		name       string
 		value      model.Value
-		expected   config.AnalysisExpected
+		expected   metrics.Evaluator
 		wantResult bool
 		wantErr    bool
 	}{
 		{
 			name:  "successfully with scalar value",
 			value: newScalar(1),
-			expected: config.AnalysisExpected{
+			expected: &config.AnalysisExpected{
 				Min: float64Pointer(0),
 				Max: float64Pointer(2),
 			},
@@ -44,7 +46,7 @@ func TestRunQuery(t *testing.T) {
 		{
 			name:  "successfully with vector value",
 			value: newVector(1),
-			expected: config.AnalysisExpected{
+			expected: &config.AnalysisExpected{
 				Min: float64Pointer(0),
 				Max: float64Pointer(2),
 			},
@@ -54,7 +56,7 @@ func TestRunQuery(t *testing.T) {
 		{
 			name:  "failure with scalar value",
 			value: newScalar(1),
-			expected: config.AnalysisExpected{
+			expected: &config.AnalysisExpected{
 				Min: float64Pointer(2),
 				Max: float64Pointer(3),
 			},
@@ -64,7 +66,7 @@ func TestRunQuery(t *testing.T) {
 		{
 			name:  "failure with vector value",
 			value: newVector(1),
-			expected: config.AnalysisExpected{
+			expected: &config.AnalysisExpected{
 				Min: float64Pointer(2),
 				Max: float64Pointer(3),
 			},
@@ -82,7 +84,7 @@ func TestRunQuery(t *testing.T) {
 				timeout: defaultTimeout,
 				logger:  zap.NewNop(),
 			}
-			res, err := p.RunQuery(context.Background(), "dummy", tc.expected)
+			res, err := p.RunQuery(context.Background(), "dummy", tc.expected, metrics.QueryRange{From: time.Now()})
 			assert.Equal(t, tc.wantErr, err != nil)
 			assert.Equal(t, res, tc.wantResult)
 		})

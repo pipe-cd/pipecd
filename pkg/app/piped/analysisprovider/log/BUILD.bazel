@@ -5,5 +5,4 @@ go_library(
     srcs = ["provider.go"],
     importpath = "github.com/pipe-cd/pipe/pkg/app/piped/analysisprovider/log",
     visibility = ["//visibility:public"],
-    deps = ["//pkg/app/piped/analysisprovider:go_default_library"],
 )

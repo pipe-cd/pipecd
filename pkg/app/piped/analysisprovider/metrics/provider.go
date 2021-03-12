@@ -17,9 +17,8 @@ package metrics
 import (
 	"context"
 	"errors"
-
-	"github.com/pipe-cd/pipe/pkg/app/piped/analysisprovider"
-	"github.com/pipe-cd/pipe/pkg/config"
+	"fmt"
+	"time"
 )
 
 var (
@@ -28,9 +27,41 @@ var (
 
 // Provider represents a client for metrics provider which provides metrics for analysis.
 type Provider interface {
-	analysisprovider.Provider
+	Type() string
 	// RunQuery runs the given query against the metrics provider,
 	// and then checks if the results are expected or not.
 	// TODO: Give back the reason of the result
-	RunQuery(ctx context.Context, query string, expected config.AnalysisExpected) (result bool, err error)
+	RunQuery(ctx context.Context, query string, evaluator Evaluator, queryRange QueryRange) (result bool, err error)
+}
+
+// Evaluator evaluates the response from the metrics provider.
+type Evaluator interface {
+	// InRange checks if the value is expected one.
+	InRange(value float64) bool
+	// Validates ensures its own configuration has no problem.
+	Validate() error
+}
+
+// QueryRange represents a sliced time range.
+type QueryRange struct {
+	// Required: Start of the queried time period
+	From time.Time
+	// End of the queried time period. Defaults to the current time.
+	To time.Time
+	// Query resolution step width. Defaults to 1m.
+	Step time.Duration
+}
+
+func (q *QueryRange) Validate() error {
+	if q.From.IsZero() {
+		return fmt.Errorf("start of the query range is required")
+	}
+	if q.To.IsZero() {
+		q.To = time.Now()
+	}
+	// TODO: Look into the appropriate default value of a Step
+	if q.Step == 0 {
+		q.Step = time.Minute
+	}
+	return nil
 }
