@@ -33,7 +33,9 @@ func NewProvider(analysisTempCfg *config.TemplatableAnalysisMetrics, providerCfg
 	case model.AnalysisProviderPrometheus:
 		options := []prometheus.Option{
 			prometheus.WithLogger(logger),
-			prometheus.WithTimeout(analysisTempCfg.Timeout.Duration()),
+		}
+		if t := analysisTempCfg.Timeout.Duration(); t > 0 {
+			options = append(options, prometheus.WithTimeout(t))
 		}
 		return prometheus.NewProvider(providerCfg.PrometheusConfig.Address, options...)
 	case model.AnalysisProviderDatadog:
@@ -55,8 +57,13 @@ func NewProvider(analysisTempCfg *config.TemplatableAnalysisMetrics, providerCfg
 		}
 		options := []datadog.Option{
 			datadog.WithAddress(cfg.Address),
-			datadog.WithTimeout(analysisTempCfg.Timeout.Duration()),
 			datadog.WithLogger(logger),
+		}
+		if cfg.Address != "" {
+			options = append(options, datadog.WithAddress(cfg.Address))
+		}
+		if t := analysisTempCfg.Timeout.Duration(); t > 0 {
+			options = append(options, datadog.WithTimeout(t))
 		}
 		return datadog.NewProvider(apiKey, applicationKey, options...)
 	default:

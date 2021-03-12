@@ -77,18 +77,12 @@ func WithAddress(address string) Option {
 }
 
 func WithLogger(logger *zap.Logger) Option {
-	if logger == nil {
-		return func(p *Provider) {}
-	}
 	return func(p *Provider) {
 		p.logger = logger.Named("datadog-provider")
 	}
 }
 
 func WithTimeout(timeout time.Duration) Option {
-	if timeout == 0 {
-		timeout = defaultTimeout
-	}
 	return func(p *Provider) {
 		p.timeout = timeout
 	}
@@ -100,7 +94,7 @@ func (p *Provider) Type() string {
 
 // RunQuery issues an HTTP request to the API named "MetricsApi.QueryMetrics", then evaluate its response.
 // See more: https://docs.datadoghq.com/api/latest/metrics/#query-timeseries-points
-func (p *Provider) RunQuery(ctx context.Context, query string, evaluator metrics.Evaluator, queryRange metrics.QueryRange) (bool, error) {
+func (p *Provider) RunQuery(ctx context.Context, query string, queryRange metrics.QueryRange, evaluator metrics.Evaluator) (bool, error) {
 	if err := queryRange.Validate(); err != nil {
 		return false, err
 	}

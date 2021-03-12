@@ -68,18 +68,12 @@ func NewProvider(address string, opts ...Option) (*Provider, error) {
 type Option func(*Provider)
 
 func WithTimeout(timeout time.Duration) Option {
-	if timeout == 0 {
-		timeout = defaultTimeout
-	}
 	return func(p *Provider) {
 		p.timeout = timeout
 	}
 }
 
 func WithLogger(logger *zap.Logger) Option {
-	if logger == nil {
-		return func(p *Provider) {}
-	}
 	return func(p *Provider) {
 		p.logger = logger.Named("prometheus-provider")
 	}
@@ -89,7 +83,7 @@ func (p *Provider) Type() string {
 	return ProviderType
 }
 
-func (p *Provider) RunQuery(ctx context.Context, query string, evaluator metrics.Evaluator, queryRange metrics.QueryRange) (bool, error) {
+func (p *Provider) RunQuery(ctx context.Context, query string, queryRange metrics.QueryRange, evaluator metrics.Evaluator) (bool, error) {
 	if err := queryRange.Validate(); err != nil {
 		return false, err
 	}

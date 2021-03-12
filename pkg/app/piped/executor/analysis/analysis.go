@@ -206,14 +206,15 @@ func (e *Executor) newAnalyzerForMetrics(i int, templatable *config.TemplatableA
 		return nil, err
 	}
 	id := fmt.Sprintf("metrics-%d", i)
-	return newAnalyzer(id, provider.Type(), func(ctx context.Context) (bool, error) {
+	runner := func(ctx context.Context) (bool, error) {
 		e.LogPersister.Infof("[%s] Run query against %s: %q", id, provider.Type(), cfg.Query)
 		queryRange := metrics.QueryRange{
 			From: time.Now().Add(-cfg.Timeout.Duration()),
 			To:   time.Now(),
 		}
-		return provider.RunQuery(ctx, cfg.Query, &cfg.Expected, queryRange)
-	}, time.Duration(cfg.Interval), cfg.FailureLimit, e.Logger, e.LogPersister), nil
+		return provider.RunQuery(ctx, cfg.Query, queryRange, &cfg.Expected)
+	}
+	return newAnalyzer(id, provider.Type(), runner, time.Duration(cfg.Interval), cfg.FailureLimit, e.Logger, e.LogPersister), nil
 }
 
 func (e *Executor) newAnalyzerForLog(i int, templatable *config.TemplatableAnalysisLog, templateCfg *config.AnalysisTemplateSpec) (*analyzer, error) {
@@ -226,10 +227,11 @@ func (e *Executor) newAnalyzerForLog(i int, templatable *config.TemplatableAnaly
 		return nil, err
 	}
 	id := fmt.Sprintf("log-%d", i)
-	return newAnalyzer(id, provider.Type(), func(ctx context.Context) (bool, error) {
+	runner := func(ctx context.Context) (bool, error) {
 		e.LogPersister.Infof("[%s] Run query against %s: %q", id, provider.Type(), cfg.Query)
 		return provider.RunQuery(ctx, cfg.Query)
-	}, time.Duration(cfg.Interval), cfg.FailureLimit, e.Logger, e.LogPersister), nil
+	}
+	return newAnalyzer(id, provider.Type(), runner, time.Duration(cfg.Interval), cfg.FailureLimit, e.Logger, e.LogPersister), nil
 }
 
 func (e *Executor) newAnalyzerForHTTP(i int, templatable *config.TemplatableAnalysisHTTP, templateCfg *config.AnalysisTemplateSpec) (*analyzer, error) {
@@ -239,10 +241,11 @@ func (e *Executor) newAnalyzerForHTTP(i int, templatable *config.TemplatableAnal
 	}
 	provider := httpprovider.NewProvider(time.Duration(cfg.Timeout))
 	id := fmt.Sprintf("http-%d", i)
-	return newAnalyzer(id, provider.Type(), func(ctx context.Context) (bool, error) {
+	runner := func(ctx context.Context) (bool, error) {
 		e.LogPersister.Infof("[%s] Start running query against %s: %s %s", id, provider.Type(), cfg.Method, cfg.URL)
 		return provider.Run(ctx, cfg)
-	}, time.Duration(cfg.Interval), cfg.FailureLimit, e.Logger, e.LogPersister), nil
+	}
+	return newAnalyzer(id, provider.Type(), runner, time.Duration(cfg.Interval), cfg.FailureLimit, e.Logger, e.LogPersister), nil
 }
 
 func (e *Executor) newMetricsProvider(providerName string, templatable *config.TemplatableAnalysisMetrics) (metrics.Provider, error) {

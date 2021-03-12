@@ -84,7 +84,7 @@ func TestRunQuery(t *testing.T) {
 				timeout: defaultTimeout,
 				logger:  zap.NewNop(),
 			}
-			res, err := p.RunQuery(context.Background(), "dummy", tc.expected, metrics.QueryRange{From: time.Now()})
+			res, err := p.RunQuery(context.Background(), "dummy", metrics.QueryRange{From: time.Now()}, tc.expected)
 			assert.Equal(t, tc.wantErr, err != nil)
 			assert.Equal(t, res, tc.wantResult)
 		})
