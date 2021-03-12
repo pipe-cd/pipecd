@@ -1010,3 +1010,81 @@ func TestInsightCollector_extractDailyInsightDataPoints(t *testing.T) {
 		})
 	}
 }
+
+func TestGroupDeployments(t *testing.T) {
+
+	var (
+		d111 = &model.Deployment{
+			Id:            "deployment-1-1-1",
+			ProjectId:     "project-1",
+			ApplicationId: "application-1-1",
+		}
+		d112 = &model.Deployment{
+			Id:            "deployment-1-1-2",
+			ProjectId:     "project-1",
+			ApplicationId: "application-1-1",
+		}
+		d121 = &model.Deployment{
+			Id:            "deployment-1-2-1",
+			ProjectId:     "project-1",
+			ApplicationId: "application-1-2",
+		}
+		d211 = &model.Deployment{
+			Id:            "deployment-2-1-1",
+			ProjectId:     "project-2",
+			ApplicationId: "application-2-1",
+		}
+	)
+
+	testcases := []struct {
+		name        string
+		deployments []*model.Deployment
+		apps        map[string][]*model.Deployment
+		projects    map[string][]*model.Deployment
+	}{
+		{
+			name:     "no deployment",
+			apps:     map[string][]*model.Deployment{},
+			projects: map[string][]*model.Deployment{},
+		},
+		{
+			name: "multiple deployments",
+			deployments: []*model.Deployment{
+				d111,
+				d112,
+				d121,
+				d211,
+			},
+			apps: map[string][]*model.Deployment{
+				"application-1-1": []*model.Deployment{
+					d111,
+					d112,
+				},
+				"application-1-2": []*model.Deployment{
+					d121,
+				},
+				"application-2-1": []*model.Deployment{
+					d211,
+				},
+			},
+			projects: map[string][]*model.Deployment{
+				"project-1": []*model.Deployment{
+					d111,
+					d112,
+					d121,
+				},
+				"project-2": []*model.Deployment{
+					d211,
+				},
+			},
+		},
+	}
+
+	for _, tc := range testcases {
+		t.Run(tc.name, func(t *testing.T) {
+			apps, projects := groupDeployments(tc.deployments)
+			assert.Equal(t, tc.apps, apps)
+			assert.Equal(t, tc.projects, projects)
+		})
+	}
+}

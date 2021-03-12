@@ -27,6 +27,8 @@ import (
 	"github.com/pipe-cd/pipe/pkg/model"
 )
 
+const listDeploymentsPageSize = 50
+
 func (c *InsightCollector) collectDeploymentChangeFailureRate(ctx context.Context, ds []*model.Deployment, target time.Time) error {
 	apps, projects := groupDeployments(ds)
 
@@ -68,7 +70,6 @@ func (c *InsightCollector) collectDevelopmentFrequency(ctx context.Context, ds [
 }
 
 func (c *InsightCollector) findDeploymentsCreatedInRange(ctx context.Context, from, to int64) ([]*model.Deployment, error) {
-	const pageSize = 50
 	filters := []datastore.ListFilter{
 		{
 			Field:    "CreatedAt",
@@ -81,7 +82,7 @@ func (c *InsightCollector) findDeploymentsCreatedInRange(ctx context.Context, fr
 	maxCreatedAt := to
 	for {
 		d, err := c.deploymentStore.ListDeployments(ctx, datastore.ListOptions{
-			PageSize: pageSize,
+			PageSize: listDeploymentsPageSize,
 			Filters: append(filters, datastore.ListFilter{
 				Field:    "CreatedAt",
 				Operator: "<",
@@ -109,7 +110,6 @@ func (c *InsightCollector) findDeploymentsCreatedInRange(ctx context.Context, fr
 }
 
 func (c *InsightCollector) findDeploymentsCompletedInRange(ctx context.Context, from, to int64) ([]*model.Deployment, error) {
-	const pageSize = 50
 	filters := []datastore.ListFilter{
 		{
 			Field:    "CompletedAt",
@@ -122,7 +122,7 @@ func (c *InsightCollector) findDeploymentsCompletedInRange(ctx context.Context, 
 	maxCompletedAt := to
 	for {
 		d, err := c.deploymentStore.ListDeployments(ctx, datastore.ListOptions{
-			PageSize: pageSize,
+			PageSize: listDeploymentsPageSize,
 			Filters: append(filters, datastore.ListFilter{
 				Field:    "CompletedAt",
 				Operator: "<",
@@ -344,8 +344,8 @@ func groupDeployments(deployments []*model.Deployment) (apps, projects map[strin
 	projects = make(map[string][]*model.Deployment)
 
 	for _, d := range deployments {
-		apps[d.ApplicationId] = append(apps[d.ApplicationName], d)
-		projects[d.ProjectId] = append(projects[d.ApplicationName], d)
+		apps[d.ApplicationId] = append(apps[d.ApplicationId], d)
+		projects[d.ProjectId] = append(projects[d.ProjectId], d)
 	}
 	return
 }
