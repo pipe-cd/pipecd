@@ -74,6 +74,10 @@ const (
 	// StageLambdaPromote prmotes the new version to receive amount of traffic.
 	StageLambdaPromote Stage = "LAMBDA_PROMOTE"
 
+	// StageECSSync does quick sync by rolling out the new version
+	// and switching all traffic to it.
+	StageECSSync Stage = "ECS_SYNC"
+
 	// StageRollback represents a state where
 	// the all temporarily created stages will be reverted to
 	// bring back the pre-deploy stage.
