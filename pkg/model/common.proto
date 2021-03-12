@@ -25,6 +25,7 @@ enum ApplicationKind {
     CROSSPLANE = 2;
     LAMBDA = 3;
     CLOUDRUN = 4;
+    ECS = 5;
 }
 
 message ApplicationGitPath {

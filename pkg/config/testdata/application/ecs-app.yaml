@@ -1,0 +1,6 @@
+apiVersion: pipecd.dev/v1beta1
+kind: EcsApp
+spec:
+  input:
+    serviceDefinition: path/to/servicedef.yaml
+    taskDefinition: path/to/taskdef.yaml

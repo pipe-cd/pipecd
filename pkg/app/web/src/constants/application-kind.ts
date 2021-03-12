@@ -6,4 +6,5 @@ export const APPLICATION_KIND_TEXT: Record<ApplicationKind, string> = {
   [ApplicationKind.CROSSPLANE]: "CROSSPLANE",
   [ApplicationKind.LAMBDA]: "LAMBDA",
   [ApplicationKind.CLOUDRUN]: "CLOUDRUN",
+  [ApplicationKind.ECS]: "ECS",
 };
