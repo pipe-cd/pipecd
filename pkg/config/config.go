@@ -49,7 +49,7 @@ const (
 	// KindCloudRunApp represents deployment configuration for a CloudRun application.
 	KindCloudRunApp Kind = "CloudRunApp"
 	// KindEcsApp represents deployment configuration for an AWS ECS.
-	KindEcsApp Kind = "EcsApp"
+	KindEcsApp Kind = "ECSApp"
 	// KindSealedSecret represents a sealed secret.
 	KindSealedSecret Kind = "SealedSecret"
 )
