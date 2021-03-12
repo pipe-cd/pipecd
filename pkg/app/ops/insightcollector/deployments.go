@@ -16,10 +16,7 @@ package insightcollector
 
 import (
 	"context"
-	"errors"
 	"fmt"
-	"reflect"
-	"runtime"
 	"time"
 
 	"go.uber.org/zap"
@@ -30,93 +27,21 @@ import (
 	"github.com/pipe-cd/pipe/pkg/model"
 )
 
-var (
-	pageSize = 50
-)
+const listDeploymentsPageSize = 50
 
-func (i *InsightCollector) ProcessNewlyCreatedDeployments(ctx context.Context) error {
-	now := time.Now()
-	targetDate := time.Date(now.Year(), now.Month(), now.Day(), 0, 0, 0, 0, time.UTC)
-	m, err := i.insightstore.LoadMilestone(ctx)
-	if err != nil {
-		if !errors.Is(err, filestore.ErrNotFound) {
-			return err
-		}
-		m = &insight.Milestone{}
-	}
-
-	dc, err := i.findDeploymentsCreatedInRange(ctx, m.DeploymentCreatedAtMilestone, targetDate.Unix())
-	if err != nil {
-		return err
-	}
-
-	var updateErr error
-	for _, f := range i.collectFuncs.developmentCollectFns.newlyCreatedDeploymentsFns {
-		if err := f(ctx, dc, targetDate); err != nil {
-			fv := reflect.ValueOf(f)
-			i.logger.Error("failed to execute a collect function",
-				zap.String("function name", runtime.FuncForPC(fv.Pointer()).Name()),
-				zap.Error(err))
-			updateErr = err
-		}
-	}
-
-	if updateErr != nil {
-		return updateErr
-	}
-
-	m.DeploymentCreatedAtMilestone = targetDate.Unix()
-	return i.insightstore.PutMilestone(ctx, m)
-}
-
-func (i *InsightCollector) ProcessNewlyCompletedDeployments(ctx context.Context) error {
-	now := time.Now()
-	targetDate := time.Date(now.Year(), now.Month(), now.Day(), 0, 0, 0, 0, time.UTC)
-	m, err := i.insightstore.LoadMilestone(ctx)
-	if err != nil {
-		if !errors.Is(err, filestore.ErrNotFound) {
-			return err
-		}
-		m = &insight.Milestone{}
-	}
-
-	dc, err := i.findDeploymentsCompletedInRange(ctx, m.DeploymentCompletedAtMilestone, targetDate.Unix())
-	if err != nil {
-		return err
-	}
-
-	var updateErr error
-	for _, f := range i.collectFuncs.developmentCollectFns.newlyCompletedDeploymentsFns {
-		if err := f(ctx, dc, targetDate); err != nil {
-			fv := reflect.ValueOf(f)
-			i.logger.Error("failed to execute a collect function",
-				zap.String("function name", runtime.FuncForPC(fv.Pointer()).Name()),
-				zap.Error(err))
-			updateErr = err
-		}
-	}
-
-	if updateErr != nil {
-		return updateErr
-	}
-
-	m.DeploymentCompletedAtMilestone = targetDate.Unix()
-	return i.insightstore.PutMilestone(ctx, m)
-}
-
-func (i *InsightCollector) collectChangeFailureRate(ctx context.Context, ds []*model.Deployment, target time.Time) error {
-	apps, projects := i.groupDeployments(ds)
+func (c *InsightCollector) collectDeploymentChangeFailureRate(ctx context.Context, ds []*model.Deployment, target time.Time) error {
+	apps, projects := groupDeployments(ds)
 
 	var updateErr error
 	for id, ds := range apps {
-		if err := i.updateApplicationChunks(ctx, ds[0].ProjectId, id, ds, model.InsightMetricsKind_CHANGE_FAILURE_RATE, target); err != nil {
-			i.logger.Error("failed to update application chunks", zap.Error(err))
+		if err := c.updateApplicationChunks(ctx, ds[0].ProjectId, id, ds, model.InsightMetricsKind_CHANGE_FAILURE_RATE, target); err != nil {
+			c.logger.Error("failed to update application chunks", zap.Error(err))
 			updateErr = err
 		}
 	}
 	for id, ds := range projects {
-		if err := i.updateApplicationChunks(ctx, id, ds[0].ApplicationId, ds, model.InsightMetricsKind_CHANGE_FAILURE_RATE, target); err != nil {
-			i.logger.Error("failed to update application chunks", zap.Error(err))
+		if err := c.updateApplicationChunks(ctx, id, ds[0].ApplicationId, ds, model.InsightMetricsKind_CHANGE_FAILURE_RATE, target); err != nil {
+			c.logger.Error("failed to update application chunks", zap.Error(err))
 			updateErr = err
 		}
 	}
@@ -124,35 +49,109 @@ func (i *InsightCollector) collectChangeFailureRate(ctx context.Context, ds []*m
 	return updateErr
 }
 
-func (i *InsightCollector) collectDevelopmentFrequency(ctx context.Context, ds []*model.Deployment, target time.Time) error {
-	apps, projects := i.groupDeployments(ds)
+func (c *InsightCollector) collectDevelopmentFrequency(ctx context.Context, ds []*model.Deployment, target time.Time) error {
+	apps, projects := groupDeployments(ds)
 
 	var updateErr error
 	for id, ds := range apps {
-		if err := i.updateApplicationChunks(ctx, ds[0].ProjectId, id, ds, model.InsightMetricsKind_DEPLOYMENT_FREQUENCY, target); err != nil {
-			i.logger.Error("failed to update application chunks", zap.Error(err))
+		if err := c.updateApplicationChunks(ctx, ds[0].ProjectId, id, ds, model.InsightMetricsKind_DEPLOYMENT_FREQUENCY, target); err != nil {
+			c.logger.Error("failed to update application chunks", zap.Error(err))
 			updateErr = err
 		}
 	}
 	for id, ds := range projects {
-		if err := i.updateApplicationChunks(ctx, id, "", ds, model.InsightMetricsKind_DEPLOYMENT_FREQUENCY, target); err != nil {
-			i.logger.Error("failed to update project chunks", zap.Error(err))
+		if err := c.updateApplicationChunks(ctx, id, ds[0].ApplicationId, ds, model.InsightMetricsKind_DEPLOYMENT_FREQUENCY, target); err != nil {
+			c.logger.Error("failed to update project chunks", zap.Error(err))
 			updateErr = err
 		}
 	}
 
 	return updateErr
+}
+
+func (c *InsightCollector) findDeploymentsCreatedInRange(ctx context.Context, from, to int64) ([]*model.Deployment, error) {
+	filters := []datastore.ListFilter{
+		{
+			Field:    "CreatedAt",
+			Operator: ">=",
+			Value:    from,
+		},
+	}
+
+	var deployments []*model.Deployment
+	maxCreatedAt := to
+	for {
+		d, err := c.deploymentStore.ListDeployments(ctx, datastore.ListOptions{
+			PageSize: listDeploymentsPageSize,
+			Filters: append(filters, datastore.ListFilter{
+				Field:    "CreatedAt",
+				Operator: "<",
+				Value:    maxCreatedAt,
+			}),
+			Orders: []datastore.Order{
+				{
+					Field:     "CreatedAt",
+					Direction: datastore.Desc,
+				},
+			},
+		})
+		if err != nil {
+			return nil, err
+		}
+		if len(d) == 0 {
+			// get all deployments in range
+			break
+		}
+
+		deployments = append(deployments, d...)
+		maxCreatedAt = d[len(d)-1].CreatedAt
+	}
+	return deployments, nil
+}
+
+func (c *InsightCollector) findDeploymentsCompletedInRange(ctx context.Context, from, to int64) ([]*model.Deployment, error) {
+	filters := []datastore.ListFilter{
+		{
+			Field:    "CompletedAt",
+			Operator: ">=",
+			Value:    from,
+		},
+	}
+
+	var deployments []*model.Deployment
+	maxCompletedAt := to
+	for {
+		d, err := c.deploymentStore.ListDeployments(ctx, datastore.ListOptions{
+			PageSize: listDeploymentsPageSize,
+			Filters: append(filters, datastore.ListFilter{
+				Field:    "CompletedAt",
+				Operator: "<",
+				Value:    maxCompletedAt,
+			}),
+			Orders: []datastore.Order{
+				{
+					Field:     "CompletedAt",
+					Direction: datastore.Desc,
+				},
+			},
+		})
+		if err != nil {
+			return nil, err
+		}
+		if len(d) == 0 {
+			// get all deployments in range
+			break
+		}
+
+		deployments = append(deployments, d...)
+		maxCompletedAt = d[len(d)-1].CompletedAt
+	}
+	return deployments, nil
 }
 
 // updateApplicationChunks updates chunk in filestore
-func (i *InsightCollector) updateApplicationChunks(
-	ctx context.Context,
-	projectID, appID string,
-	deployments []*model.Deployment,
-	kind model.InsightMetricsKind,
-	targetDate time.Time,
-) error {
-	chunkFiles, err := i.insightstore.LoadChunks(ctx, projectID, appID, kind, model.InsightStep_MONTHLY, targetDate, 1)
+func (c *InsightCollector) updateApplicationChunks(ctx context.Context, projectID, appID string, deployments []*model.Deployment, kind model.InsightMetricsKind, targetDate time.Time) error {
+	chunkFiles, err := c.insightstore.LoadChunks(ctx, projectID, appID, kind, model.InsightStep_MONTHLY, targetDate, 1)
 	var chunk insight.Chunk
 	if err == filestore.ErrNotFound {
 		chunk = insight.NewChunk(projectID, kind, model.InsightStep_MONTHLY, appID, targetDate)
@@ -162,7 +161,7 @@ func (i *InsightCollector) updateApplicationChunks(
 		chunk = chunkFiles[0]
 	}
 
-	yearsFiles, err := i.insightstore.LoadChunks(ctx, projectID, appID, kind, model.InsightStep_YEARLY, targetDate, 1)
+	yearsFiles, err := c.insightstore.LoadChunks(ctx, projectID, appID, kind, model.InsightStep_YEARLY, targetDate, 1)
 	var years insight.Chunk
 	if err == filestore.ErrNotFound {
 		years = insight.NewChunk(projectID, kind, model.InsightStep_YEARLY, appID, targetDate)
@@ -172,17 +171,17 @@ func (i *InsightCollector) updateApplicationChunks(
 		years = yearsFiles[0]
 	}
 
-	chunk, years, err = i.updateChunk(deployments, chunk, years, kind, targetDate)
+	chunk, years, err = updateChunk(deployments, chunk, years, kind, targetDate)
 	if err != nil {
 		return err
 	}
 
-	err = i.insightstore.PutChunk(ctx, chunk)
+	err = c.insightstore.PutChunk(ctx, chunk)
 	if err != nil {
 		return err
 	}
 
-	err = i.insightstore.PutChunk(ctx, years)
+	err = c.insightstore.PutChunk(ctx, years)
 	if err != nil {
 		return err
 	}
@@ -191,24 +190,19 @@ func (i *InsightCollector) updateApplicationChunks(
 }
 
 // updateChunk updates passed chunk with deployments
-func (i *InsightCollector) updateChunk(
-	deployments []*model.Deployment,
-	chunk, years insight.Chunk,
-	kind model.InsightMetricsKind,
-	targetDate time.Time,
-) (insight.Chunk, insight.Chunk, error) {
+func updateChunk(deployments []*model.Deployment, chunk, years insight.Chunk, kind model.InsightMetricsKind, targetDate time.Time) (insight.Chunk, insight.Chunk, error) {
 	accumulatedTo := time.Unix(chunk.GetAccumulatedTo(), 0).UTC()
 	yearsAccumulatedTo := time.Unix(years.GetAccumulatedTo(), 0).UTC()
 
 	if accumulatedTo != targetDate {
-		updatedps, err := i.extractDailyInsightDataPoints(deployments, kind, accumulatedTo, targetDate)
+		updatedps, err := extractDailyInsightDataPoints(deployments, kind, accumulatedTo, targetDate)
 		if err != nil {
 			return nil, nil, err
 		}
 		for _, s := range model.InsightStep_value {
 			step := model.InsightStep(s)
 			if step != model.InsightStep_YEARLY {
-				chunk, err = i.updateDataPoints(years, step, updatedps, targetDate.Unix())
+				chunk, err = updateDataPoints(years, step, updatedps, targetDate.Unix())
 				if err != nil {
 					return nil, nil, err
 				}
@@ -217,12 +211,12 @@ func (i *InsightCollector) updateChunk(
 	}
 
 	if yearsAccumulatedTo != targetDate {
-		updatedpsForYears, err := i.extractDailyInsightDataPoints(deployments, kind, yearsAccumulatedTo, targetDate)
+		updatedpsForYears, err := extractDailyInsightDataPoints(deployments, kind, yearsAccumulatedTo, targetDate)
 		if err != nil {
 			return nil, nil, err
 		}
 
-		chunk, err = i.updateDataPoints(chunk, model.InsightStep_YEARLY, updatedpsForYears, targetDate.Unix())
+		chunk, err = updateDataPoints(chunk, model.InsightStep_YEARLY, updatedpsForYears, targetDate.Unix())
 		if err != nil {
 			return nil, nil, err
 		}
@@ -232,7 +226,7 @@ func (i *InsightCollector) updateChunk(
 }
 
 // updateDataPoints updates chunk's datapoints with accumuleatedTo and datapoints for update
-func (i *InsightCollector) updateDataPoints(chunk insight.Chunk, step model.InsightStep, updatedps []insight.DataPoint, accumulatedTo int64) (insight.Chunk, error) {
+func updateDataPoints(chunk insight.Chunk, step model.InsightStep, updatedps []insight.DataPoint, accumulatedTo int64) (insight.Chunk, error) {
 	dps, err := chunk.GetDataPoints(step)
 	if err != nil {
 		return nil, err
@@ -256,12 +250,7 @@ func (i *InsightCollector) updateDataPoints(chunk insight.Chunk, step model.Insi
 }
 
 // extractDailyInsightDataPoints extracts the daily datapoints from deployment
-func (i *InsightCollector) extractDailyInsightDataPoints(
-	deployments []*model.Deployment,
-	kind model.InsightMetricsKind,
-	rangeFrom time.Time,
-	rangeTo time.Time,
-) ([]insight.DataPoint, error) {
+func extractDailyInsightDataPoints(deployments []*model.Deployment, kind model.InsightMetricsKind, rangeFrom, rangeTo time.Time) ([]insight.DataPoint, error) {
 	step := model.InsightStep_DAILY
 
 	var movePoint func(time.Time, int) time.Time
@@ -293,109 +282,6 @@ func (i *InsightCollector) extractDailyInsightDataPoints(
 
 	return updatedps, nil
 }
-
-func (i *InsightCollector) findDeploymentsCreatedInRange(
-	ctx context.Context,
-	from, to int64,
-) ([]*model.Deployment, error) {
-
-	filters := []datastore.ListFilter{
-		{
-			Field:    "CreatedAt",
-			Operator: ">=",
-			Value:    from,
-		},
-	}
-
-	var deployments []*model.Deployment
-	maxCreatedAt := to
-	for {
-		d, err := i.deploymentStore.ListDeployments(ctx, datastore.ListOptions{
-			PageSize: pageSize,
-			Filters: append(filters, datastore.ListFilter{
-				Field:    "CreatedAt",
-				Operator: "<",
-				Value:    maxCreatedAt,
-			}),
-			Orders: []datastore.Order{
-				{
-					Field:     "CreatedAt",
-					Direction: datastore.Desc,
-				},
-			},
-		})
-		if err != nil {
-			return nil, err
-		}
-		if len(d) == 0 {
-			// get all deployments in range
-			break
-		}
-
-		deployments = append(deployments, d...)
-		maxCreatedAt = d[len(d)-1].CreatedAt
-	}
-	return deployments, nil
-}
-
-func (i *InsightCollector) findDeploymentsCompletedInRange(
-	ctx context.Context,
-	from, to int64,
-) ([]*model.Deployment, error) {
-
-	filters := []datastore.ListFilter{
-		{
-			Field:    "CompletedAt",
-			Operator: ">=",
-			Value:    from,
-		},
-	}
-
-	var deployments []*model.Deployment
-	maxCompletedAt := to
-	for {
-		d, err := i.deploymentStore.ListDeployments(ctx, datastore.ListOptions{
-			PageSize: pageSize,
-			Filters: append(filters, datastore.ListFilter{
-				Field:    "CompletedAt",
-				Operator: "<",
-				Value:    maxCompletedAt,
-			}),
-			Orders: []datastore.Order{
-				{
-					Field:     "CompletedAt",
-					Direction: datastore.Desc,
-				},
-			},
-		})
-		if err != nil {
-			return nil, err
-		}
-		if len(d) == 0 {
-			// get all deployments in range
-			break
-		}
-
-		deployments = append(deployments, d...)
-		maxCompletedAt = d[len(d)-1].CompletedAt
-	}
-	return deployments, nil
-}
-
-// groupDeployments groups deployments by applicationID and projectID
-func (i *InsightCollector) groupDeployments(deployments []*model.Deployment) (map[string][]*model.Deployment, map[string][]*model.Deployment) {
-	apps := map[string][]*model.Deployment{}
-	projects := map[string][]*model.Deployment{}
-	for _, d := range deployments {
-		apps[d.ApplicationId] = append(apps[d.ApplicationName], d)
-		projects[d.ProjectId] = append(projects[d.ApplicationName], d)
-	}
-	return apps, projects
-}
-
-var (
-	ErrDeploymentNotFound = errors.New("deployments not found")
-)
 
 // extractDeployFrequency extracts deploy frequency from deployments with specified range
 func extractDeployFrequency(deployments []*model.Deployment, from, to int64, targetTimestamp int64) (*insight.DeployFrequency, []*model.Deployment) {
@@ -450,4 +336,16 @@ func extractChangeFailureRate(deployments []*model.Deployment, from, to int64, t
 		SuccessCount: successCount,
 		FailureCount: failureCount,
 	}, rest
+}
+
+// groupDeployments groups deployments by applicationID and projectID
+func groupDeployments(deployments []*model.Deployment) (apps, projects map[string][]*model.Deployment) {
+	apps = make(map[string][]*model.Deployment)
+	projects = make(map[string][]*model.Deployment)
+
+	for _, d := range deployments {
+		apps[d.ApplicationId] = append(apps[d.ApplicationId], d)
+		projects[d.ProjectId] = append(projects[d.ProjectId], d)
+	}
+	return
 }

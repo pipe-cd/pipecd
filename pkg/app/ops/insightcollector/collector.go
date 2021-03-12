@@ -16,12 +16,14 @@ package insightcollector
 
 import (
 	"context"
+	"errors"
 	"time"
 
 	"go.uber.org/zap"
 
 	"github.com/pipe-cd/pipe/pkg/datastore"
 	"github.com/pipe-cd/pipe/pkg/filestore"
+	"github.com/pipe-cd/pipe/pkg/insight"
 	"github.com/pipe-cd/pipe/pkg/insight/insightstore"
 	"github.com/pipe-cd/pipe/pkg/model"
 )
@@ -32,48 +34,138 @@ type InsightCollector struct {
 	applicationStore datastore.ApplicationStore
 	deploymentStore  datastore.DeploymentStore
 	insightstore     insightstore.Store
-	collectFuncs     collectFunctions
-	logger           *zap.Logger
-}
 
-type collectFunctions struct {
-	applicationCollectFns []func(ctx context.Context, applications []*model.Application, target time.Time) error
-	developmentCollectFns developmentCollectFunctions
-}
+	applicationsHandlers              []func(ctx context.Context, applications []*model.Application, target time.Time) error
+	newlyCreatedDeploymentsHandlers   []func(ctx context.Context, developments []*model.Deployment, target time.Time) error
+	newlyCompletedDeploymentsHandlers []func(ctx context.Context, developments []*model.Deployment, target time.Time) error
 
-type developmentCollectFunctions struct {
-	newlyCreatedDeploymentsFns   []func(ctx context.Context, developments []*model.Deployment, target time.Time) error
-	newlyCompletedDeploymentsFns []func(ctx context.Context, developments []*model.Deployment, target time.Time) error
+	logger *zap.Logger
 }
 
 // NewInsightCollector creates a new InsightCollector instance.
-func NewInsightCollector(
-	ds datastore.DataStore,
-	fs filestore.Store,
-	logger *zap.Logger,
-	metrics CollectorMetrics,
-) *InsightCollector {
-	i := &InsightCollector{
+func NewInsightCollector(ds datastore.DataStore, fs filestore.Store, metrics CollectorMetrics, logger *zap.Logger) *InsightCollector {
+	c := &InsightCollector{
 		projectStore:     datastore.NewProjectStore(ds),
 		applicationStore: datastore.NewApplicationStore(ds),
 		deploymentStore:  datastore.NewDeploymentStore(ds),
 		insightstore:     insightstore.NewStore(fs),
 		logger:           logger.Named("insight-collector"),
 	}
-	i.setCollectFunctions(metrics)
-	return i
+	c.setHandlers(metrics)
+
+	return c
 }
 
-func (i *InsightCollector) setCollectFunctions(metrics CollectorMetrics) {
-	cf := collectFunctions{}
+func (c *InsightCollector) setHandlers(metrics CollectorMetrics) {
 	if metrics.IsEnabled(ApplicationCount) {
-		cf.applicationCollectFns = append(cf.applicationCollectFns, i.collectApplicationCount)
+		c.applicationsHandlers = append(c.applicationsHandlers, c.collectApplicationCount)
 	}
 	if metrics.IsEnabled(DevelopmentFrequency) {
-		cf.developmentCollectFns.newlyCreatedDeploymentsFns = append(cf.developmentCollectFns.newlyCreatedDeploymentsFns, i.collectDevelopmentFrequency)
+		c.newlyCreatedDeploymentsHandlers = append(c.newlyCreatedDeploymentsHandlers, c.collectDevelopmentFrequency)
 	}
 	if metrics.IsEnabled(ChangeFailureRate) {
-		cf.developmentCollectFns.newlyCompletedDeploymentsFns = append(cf.developmentCollectFns.newlyCompletedDeploymentsFns, i.collectChangeFailureRate)
+		c.newlyCompletedDeploymentsHandlers = append(c.newlyCompletedDeploymentsHandlers, c.collectDeploymentChangeFailureRate)
 	}
-	i.collectFuncs = cf
+}
+
+func (c *InsightCollector) ProcessNewlyCreatedDeployments(ctx context.Context) error {
+	c.logger.Info("will retrieve newly created deployments to build insight data")
+	if len(c.newlyCreatedDeploymentsHandlers) == 0 {
+		c.logger.Info("skip building insight data for newly created deployments because there is no configured handlers")
+		return nil
+	}
+
+	now := time.Now()
+	targetDate := time.Date(now.Year(), now.Month(), now.Day(), 0, 0, 0, 0, time.UTC)
+	m, err := c.insightstore.LoadMilestone(ctx)
+	if err != nil {
+		if !errors.Is(err, filestore.ErrNotFound) {
+			c.logger.Error("failed to load milestone", zap.Error(err))
+			return err
+		}
+		m = &insight.Milestone{}
+	}
+
+	dc, err := c.findDeploymentsCreatedInRange(ctx, m.DeploymentCreatedAtMilestone, targetDate.Unix())
+	if err != nil {
+		c.logger.Error("failed to find newly created deployment", zap.Error(err))
+		return err
+	}
+
+	var handleErr error
+	for _, handler := range c.newlyCreatedDeploymentsHandlers {
+		if err := handler(ctx, dc, targetDate); err != nil {
+			c.logger.Error("failed to execute a handler for newly created deployments", zap.Error(err))
+			// In order to give all handlers the chance to handle the received data, we do not return here.
+			handleErr = err
+		}
+	}
+
+	if handleErr != nil {
+		return handleErr
+	}
+
+	m.DeploymentCreatedAtMilestone = targetDate.Unix()
+	if err := c.insightstore.PutMilestone(ctx, m); err != nil {
+		c.logger.Error("failed to store milestone", zap.Error(err))
+		return err
+	}
+
+	return nil
+}
+
+func (c *InsightCollector) ProcessNewlyCompletedDeployments(ctx context.Context) error {
+	c.logger.Info("will retrieve newly completed deployments to build insight data")
+	if len(c.newlyCreatedDeploymentsHandlers) == 0 {
+		c.logger.Info("skip building insight data for newly completed deployments because there is no configured handlers")
+		return nil
+	}
+
+	now := time.Now()
+	targetDate := time.Date(now.Year(), now.Month(), now.Day(), 0, 0, 0, 0, time.UTC)
+	m, err := c.insightstore.LoadMilestone(ctx)
+	if err != nil {
+		if !errors.Is(err, filestore.ErrNotFound) {
+			c.logger.Error("failed to load milestone", zap.Error(err))
+			return err
+		}
+		m = &insight.Milestone{}
+	}
+
+	dc, err := c.findDeploymentsCompletedInRange(ctx, m.DeploymentCompletedAtMilestone, targetDate.Unix())
+	if err != nil {
+		c.logger.Error("failed to find newly completed deployment", zap.Error(err))
+		return err
+	}
+
+	var handleErr error
+	for _, handler := range c.newlyCompletedDeploymentsHandlers {
+		if err := handler(ctx, dc, targetDate); err != nil {
+			c.logger.Error("failed to execute a handler for newly completed deployments", zap.Error(err))
+			// In order to give all handlers the chance to handle the received data, we do not return here.
+			handleErr = err
+		}
+	}
+
+	if handleErr != nil {
+		return handleErr
+	}
+
+	m.DeploymentCompletedAtMilestone = targetDate.Unix()
+	if err := c.insightstore.PutMilestone(ctx, m); err != nil {
+		c.logger.Error("failed to store milestone", zap.Error(err))
+		return err
+	}
+
+	return nil
+}
+
+func (c *InsightCollector) ProcessApplications(_ context.Context) error {
+	c.logger.Info("will retrieve all applications to build insight data")
+	if len(c.newlyCreatedDeploymentsHandlers) == 0 {
+		c.logger.Info("skip building insight data for applications because there is no configured handlers")
+		return nil
+	}
+
+	return errors.New("not implemented yet")
 }

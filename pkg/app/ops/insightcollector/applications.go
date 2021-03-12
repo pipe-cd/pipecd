@@ -22,12 +22,7 @@ import (
 	"github.com/pipe-cd/pipe/pkg/model"
 )
 
-// ProcessApplications collects data from applicationstore
-func ProcessApplications(_ context.Context) error {
-	return fmt.Errorf("not implemented yet")
-}
-
 // collectApplicationCount collects application count data.
-func (i *InsightCollector) collectApplicationCount(_ context.Context, _ []*model.Application, _ time.Time) error {
+func (c *InsightCollector) collectApplicationCount(_ context.Context, _ []*model.Application, _ time.Time) error {
 	return fmt.Errorf("not implemented yet")
 }
