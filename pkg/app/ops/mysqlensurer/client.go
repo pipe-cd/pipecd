@@ -22,7 +22,7 @@ import (
 	"github.com/go-sql-driver/mysql"
 	"go.uber.org/zap"
 
-	datastoreMySQL "github.com/pipe-cd/pipe/pkg/datastore/mysql"
+	datastore "github.com/pipe-cd/pipe/pkg/datastore/mysql"
 )
 
 var (
@@ -86,7 +86,7 @@ func (m *mysqlEnsurer) connect() error {
 		return nil
 	}
 
-	dataSourceName, err := datastoreMySQL.BuildDataSourceName(m.url, m.database, m.usernameFile, m.passwordFile)
+	dataSourceName, err := datastore.BuildDataSourceName(m.url, m.database, m.usernameFile, m.passwordFile)
 	if err != nil {
 		return fmt.Errorf("failed to connect to sql database: %w", err)
 	}
