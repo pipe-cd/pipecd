@@ -19,14 +19,14 @@ import (
 )
 
 type IndexEnsurer interface {
-	// CreateIndexes loads indexes defined sql file and apply it to the database.
+	// EnsureIndexes loads indexes defined sql file and applies it to the database.
 	// In case of indexes already existed, no errors will be returned.
-	CreateIndexes(ctx context.Context) error
+	EnsureIndexes(ctx context.Context) error
 }
 
 type SchemaEnsurer interface {
-	// CreateSchema loads schema defined sql file and apply it to the database.
-	CreateSchema(ctx context.Context) error
+	// EnsureSchema loads schema defined sql file and applies it to the database.
+	EnsureSchema(ctx context.Context) error
 }
 
 type SQLEnsurer interface {

@@ -25,7 +25,7 @@ CREATE TABLE IF NOT EXISTS Application (
 ) ENGINE=InnoDB;
 
 --
--- Commad table
+-- Command table
 --
 
 CREATE TABLE IF NOT EXISTS Command (

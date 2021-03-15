@@ -51,7 +51,7 @@ func NewMySQLEnsurer(url, database, usernameFile, passwordFile string, logger *z
 	}
 }
 
-func (m *mysqlEnsurer) CreateIndexes(ctx context.Context) error {
+func (m *mysqlEnsurer) EnsureIndexes(ctx context.Context) error {
 	if err := m.connect(); err != nil {
 		return err
 	}
@@ -66,7 +66,7 @@ func (m *mysqlEnsurer) CreateIndexes(ctx context.Context) error {
 	return nil
 }
 
-func (m *mysqlEnsurer) CreateSchema(ctx context.Context) error {
+func (m *mysqlEnsurer) EnsureSchema(ctx context.Context) error {
 	if err := m.connect(); err != nil {
 		return err
 	}

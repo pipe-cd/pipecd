@@ -89,14 +89,14 @@ func (s *ops) run(ctx context.Context, t cli.Telemetry) error {
 			cfg.Datastore.MySQLConfig.PasswordFile,
 			t.Logger,
 		)
-		err := mysqlEnsurer.CreateSchema(ctx)
+		err := mysqlEnsurer.EnsureSchema(ctx)
 		if err != nil {
 			t.Logger.Error("failed to prepare sql database", zap.Error(err))
 			return err
 		}
-		// No need to run this create indexes operation in routine because it run asynchronously.
+		// No need to run this create indexes operation in routine because it runs asynchronously.
 		// ref: https://dev.mysql.com/doc/refman/8.0/en/innodb-online-ddl-operations.html#online-ddl-index-operations
-		err = mysqlEnsurer.CreateIndexes(ctx)
+		err = mysqlEnsurer.EnsureIndexes(ctx)
 		if err != nil {
 			t.Logger.Error("failed to create required indexes on sql database", zap.Error(err))
 			return err
