@@ -15,6 +15,7 @@ module.exports = {
     ".stories.ts",
     ".d.ts",
   ],
+  testEnvironment: "./custom-jsdom",
   clearMocks: true,
   setupFiles: ["./jest.setup.js"],
   setupFilesAfterEnv: ["./jest.after-env.ts"],

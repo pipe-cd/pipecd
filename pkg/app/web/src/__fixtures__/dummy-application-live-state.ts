@@ -8,7 +8,7 @@ import {
   ApplicationLiveState,
   ApplicationLiveStateSnapshot,
 } from "../modules/applications-live-state";
-import { dummyApplication } from "./dummy-application";
+import { dummyApplication, dummyApps } from "./dummy-application";
 import { dummyEnv } from "./dummy-environment";
 import { dummyPiped } from "./dummy-piped";
 import { createRandTimes, randomUUID } from "./utils";
@@ -70,6 +70,40 @@ export const dummyApplicationLiveState: ApplicationLiveState = {
   lambda: {},
   terraform: {},
   kubernetes: { resourcesList },
+};
+
+export const dummyLiveStates: Record<ApplicationKind, ApplicationLiveState> = {
+  [ApplicationKind.KUBERNETES]: {
+    ...dummyApplicationLiveState,
+    applicationId: dummyApps[ApplicationKind.KUBERNETES].id,
+    kind: ApplicationKind.KUBERNETES,
+    kubernetes: { resourcesList },
+  },
+  [ApplicationKind.TERRAFORM]: {
+    ...dummyApplicationLiveState,
+    applicationId: dummyApps[ApplicationKind.TERRAFORM].id,
+    kind: ApplicationKind.TERRAFORM,
+  },
+  [ApplicationKind.CROSSPLANE]: {
+    ...dummyApplicationLiveState,
+    applicationId: dummyApps[ApplicationKind.CROSSPLANE].id,
+    kind: ApplicationKind.CROSSPLANE,
+  },
+  [ApplicationKind.LAMBDA]: {
+    ...dummyApplicationLiveState,
+    applicationId: dummyApps[ApplicationKind.LAMBDA].id,
+    kind: ApplicationKind.LAMBDA,
+  },
+  [ApplicationKind.CLOUDRUN]: {
+    ...dummyApplicationLiveState,
+    applicationId: dummyApps[ApplicationKind.CLOUDRUN].id,
+    kind: ApplicationKind.CLOUDRUN,
+  },
+  [ApplicationKind.ECS]: {
+    ...dummyApplicationLiveState,
+    applicationId: dummyApps[ApplicationKind.ECS].id,
+    kind: ApplicationKind.ECS,
+  },
 };
 
 function createKubernetesResourceStateFromObject(

@@ -118,6 +118,7 @@ jest_test(
     deps = [
         ":build_api",
         ":build_model",
+        ":custom-jsdom.js",
         ":file-transformer.js",
         ":jest.after-env.ts",
         ":jest.setup.js",
