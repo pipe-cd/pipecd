@@ -89,6 +89,12 @@ func (s *ops) run(ctx context.Context, t cli.Telemetry) error {
 			cfg.Datastore.MySQLConfig.PasswordFile,
 			t.Logger,
 		)
+		defer func() {
+			// Close connection held by the client.
+			if err := mysqlEnsurer.Close(); err != nil {
+				t.Logger.Error("failed to close database ensurer connection", zap.Error(err))
+			}
+		}()
 		err := mysqlEnsurer.EnsureSchema(ctx)
 		if err != nil {
 			t.Logger.Error("failed to prepare sql database", zap.Error(err))
@@ -101,12 +107,6 @@ func (s *ops) run(ctx context.Context, t cli.Telemetry) error {
 			t.Logger.Error("failed to create required indexes on sql database", zap.Error(err))
 			return err
 		}
-		defer func() {
-			// Close connection held by the client.
-			if err := mysqlEnsurer.Close(); err != nil {
-				t.Logger.Error("failed to close database ensurer connection", zap.Error(err))
-			}
-		}()
 	}
 
 	// Connect to the data store.
