@@ -7,7 +7,7 @@ description: >
 ---
 
 
-To enable [Automated deployment analysis](/docs/user-guide/automated-deployment-analysis/) feature, you have to set the information needed to connect from your Piped to the [Analysis Providers](/docs/concepts/#analysis-provider).
+To enable [Automated deployment analysis](/docs/user-guide/automated-deployment-analysis/) feature, you have to set the needed information for Piped to connect to the [Analysis Provider](/docs/concepts/#analysis-provider).
 
 Currently, PipeCD supports the following providers:
 - [Prometheus](https://prometheus.io/)
