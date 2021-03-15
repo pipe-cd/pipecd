@@ -86,6 +86,8 @@ func (p *Planner) Plan(ctx context.Context, in planner.Input) (out planner.Outpu
 		return
 	}
 
+	out.Stages = buildQuickSyncPipeline(cfg.Input.AutoRollback, time.Now())
+	out.Summary = fmt.Sprintf("Quick sync to deploy image %s and configure all traffic to it", out.Version)
 	return
 }
 
