@@ -3,14 +3,17 @@ import {
   DeleteApplicationResponse,
   DisableApplicationResponse,
   EnableApplicationResponse,
+  GetApplicationRequest,
   GetApplicationResponse,
   ListApplicationsResponse,
   SyncApplicationResponse,
   UpdateApplicationResponse,
 } from "pipe/pkg/app/web/api_client/service_pb";
+import { ApplicationKind } from "../../modules/applications";
 import {
   createApplicationFromObject,
   dummyApplication,
+  dummyApps,
 } from "../../__fixtures__/dummy-application";
 import { createHandler } from "../create-handler";
 
@@ -40,13 +43,23 @@ export const applicationHandlers = [
   createHandler<ListApplicationsResponse>("/ListApplications", () => {
     const response = new ListApplicationsResponse();
     response.setApplicationsList([
-      createApplicationFromObject(dummyApplication),
+      createApplicationFromObject(dummyApps[ApplicationKind.KUBERNETES]),
+      createApplicationFromObject(dummyApps[ApplicationKind.TERRAFORM]),
+      createApplicationFromObject(dummyApps[ApplicationKind.LAMBDA]),
+      createApplicationFromObject(dummyApps[ApplicationKind.CLOUDRUN]),
+      createApplicationFromObject(dummyApps[ApplicationKind.ECS]),
     ]);
     return response;
   }),
-  createHandler<GetApplicationResponse>("/GetApplication", () => {
+  createHandler<GetApplicationResponse>("/GetApplication", (requestBody) => {
     const response = new GetApplicationResponse();
-    response.setApplication(createApplicationFromObject(dummyApplication));
+    const params = GetApplicationRequest.deserializeBinary(requestBody);
+    const appId = params.getApplicationId();
+    const findApp = Object.values(dummyApps).find((app) => app.id === appId);
+
+    response.setApplication(
+      createApplicationFromObject(findApp ?? dummyApplication)
+    );
     return response;
   }),
 ];

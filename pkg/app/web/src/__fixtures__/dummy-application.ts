@@ -62,6 +62,45 @@ export const dummyApplication: Application.AsObject = {
   deploying: false,
 };
 
+export const dummyApps: Record<ApplicationKind, Application.AsObject> = {
+  [ApplicationKind.KUBERNETES]: dummyApplication,
+  [ApplicationKind.TERRAFORM]: {
+    ...dummyApplication,
+    id: randomUUID(),
+    name: "Terraform App",
+    kind: ApplicationKind.TERRAFORM,
+    cloudProvider: "terraform-default",
+  },
+  [ApplicationKind.CROSSPLANE]: {
+    ...dummyApplication,
+    id: randomUUID(),
+    name: "Crossplane App",
+    kind: ApplicationKind.CROSSPLANE,
+    cloudProvider: "crossplane-default",
+  },
+  [ApplicationKind.LAMBDA]: {
+    ...dummyApplication,
+    id: randomUUID(),
+    name: "Lambda App",
+    kind: ApplicationKind.LAMBDA,
+    cloudProvider: "lambda-default",
+  },
+  [ApplicationKind.CLOUDRUN]: {
+    ...dummyApplication,
+    id: randomUUID(),
+    name: "CloudRun App",
+    kind: ApplicationKind.CLOUDRUN,
+    cloudProvider: "cloud-run-default",
+  },
+  [ApplicationKind.ECS]: {
+    ...dummyApplication,
+    id: randomUUID(),
+    name: "ECS App",
+    kind: ApplicationKind.ECS,
+    cloudProvider: "ecs-default",
+  },
+};
+
 function createAppSyncStateFromObject(
   o: ApplicationSyncState.AsObject
 ): ApplicationSyncState {
