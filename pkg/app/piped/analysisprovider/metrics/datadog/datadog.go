@@ -68,9 +68,6 @@ func NewProvider(apiKey, applicationKey string, opts ...Option) (*Provider, erro
 type Option func(*Provider)
 
 func WithAddress(address string) Option {
-	if address == "" {
-		address = defaultAddress
-	}
 	return func(p *Provider) {
 		p.address = address
 	}
