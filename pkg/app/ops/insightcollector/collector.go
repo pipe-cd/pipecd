@@ -33,7 +33,7 @@ type InsightCollector struct {
 	projectStore     datastore.ProjectStore
 	applicationStore datastore.ApplicationStore
 	deploymentStore  datastore.DeploymentStore
-	insightstore     insightstore.IStore
+	insightstore     insightstore.Store
 
 	applicationsHandlers              []func(ctx context.Context, applications []*model.Application, target time.Time) error
 	newlyCreatedDeploymentsHandlers   []func(ctx context.Context, developments []*model.Deployment, target time.Time) error
@@ -44,12 +44,11 @@ type InsightCollector struct {
 
 // NewInsightCollector creates a new InsightCollector instance.
 func NewInsightCollector(ds datastore.DataStore, fs filestore.Store, metrics CollectorMetrics, logger *zap.Logger) *InsightCollector {
-	is := insightstore.NewStore(fs)
 	c := &InsightCollector{
 		projectStore:     datastore.NewProjectStore(ds),
 		applicationStore: datastore.NewApplicationStore(ds),
 		deploymentStore:  datastore.NewDeploymentStore(ds),
-		insightstore:     &is,
+		insightstore:     insightstore.NewStore(fs),
 		logger:           logger.Named("insight-collector"),
 	}
 	c.setHandlers(metrics)

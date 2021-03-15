@@ -31,7 +31,6 @@ import (
 func TestGetChunks(t *testing.T) {
 	ctrl := gomock.NewController(t)
 	defer ctrl.Finish()
-	store := filestoretest.NewMockStore(ctrl)
 
 	testcases := []struct {
 		name           string
@@ -113,9 +112,9 @@ func TestGetChunks(t *testing.T) {
 		},
 	}
 
-	fs := Store{
-		filestore: store,
-	}
+	fs := filestoretest.NewMockStore(ctrl)
+	s := &store{filestore: fs}
+
 	for _, tc := range testcases {
 		t.Run(tc.name, func(t *testing.T) {
 			paths := insight.DetermineFilePaths(tc.projectID, tc.appID, tc.kind, tc.step, tc.from, tc.dataPointCount)
@@ -127,11 +126,11 @@ func TestGetChunks(t *testing.T) {
 				obj := filestore.Object{
 					Content: []byte(c),
 				}
-				store.EXPECT().GetObject(context.TODO(), paths[i]).Return(obj, tc.readerErr)
+				fs.EXPECT().GetObject(context.TODO(), paths[i]).Return(obj, tc.readerErr)
 
 			}
 
-			rs, err := fs.LoadChunks(context.Background(), tc.projectID, tc.appID, tc.kind, tc.step, tc.from, tc.dataPointCount)
+			rs, err := s.LoadChunks(context.Background(), tc.projectID, tc.appID, tc.kind, tc.step, tc.from, tc.dataPointCount)
 			if err != nil {
 				if tc.expectedErr == nil {
 					assert.NoError(t, err)
@@ -148,7 +147,6 @@ func TestGetChunks(t *testing.T) {
 func TestGetChunk(t *testing.T) {
 	ctrl := gomock.NewController(t)
 	defer ctrl.Finish()
-	store := filestoretest.NewMockStore(ctrl)
 
 	testcases := []struct {
 		name           string
@@ -347,7 +345,6 @@ func TestGetChunk(t *testing.T) {
 				return chunk
 			}(),
 		},
-
 		{
 			name:           "[change failure rate] success",
 			projectID:      "projectID",
@@ -403,9 +400,9 @@ func TestGetChunk(t *testing.T) {
 		},
 	}
 
-	fs := Store{
-		filestore: store,
-	}
+	fs := filestoretest.NewMockStore(ctrl)
+	s := &store{filestore: fs}
+
 	for _, tc := range testcases {
 		t.Run(tc.name, func(t *testing.T) {
 			path := insight.DetermineFilePaths(tc.projectID, tc.appID, tc.kind, tc.step, tc.from, tc.dataPointCount)
@@ -415,8 +412,8 @@ func TestGetChunk(t *testing.T) {
 			obj := filestore.Object{
 				Content: []byte(tc.content),
 			}
-			store.EXPECT().GetObject(context.TODO(), path[0]).Return(obj, tc.readerErr)
-			idps, err := fs.getChunk(context.Background(), path[0], tc.kind)
+			fs.EXPECT().GetObject(context.TODO(), path[0]).Return(obj, tc.readerErr)
+			idps, err := s.getChunk(context.Background(), path[0], tc.kind)
 			if err != nil {
 				if tc.expectedErr == nil {
 					assert.NoError(t, err)

@@ -27,18 +27,18 @@ import (
 	"github.com/pipe-cd/pipe/pkg/model"
 )
 
-type Store struct {
+type store struct {
 	filestore filestore.Store
 }
 
 func NewStore(fs filestore.Store) Store {
-	return Store{
+	return &store{
 		filestore: fs,
 	}
 }
 
 // LoadChunks returns all needed chunks for the specified kind and time range.
-func (s *Store) LoadChunks(
+func (s *store) LoadChunks(
 	ctx context.Context,
 	projectID, appID string,
 	kind model.InsightMetricsKind,
@@ -61,7 +61,7 @@ func (s *Store) LoadChunks(
 }
 
 // PutChunk creates or updates chunk.
-func (s *Store) PutChunk(ctx context.Context, chunk insight.Chunk) error {
+func (s *store) PutChunk(ctx context.Context, chunk insight.Chunk) error {
 	data, err := json.Marshal(chunk)
 	if err != nil {
 		return err
@@ -103,7 +103,7 @@ func PutChunksToCache(cache cache.Cache, chunks insight.Chunks) error {
 	return err
 }
 
-func (s *Store) getChunk(ctx context.Context, path string, kind model.InsightMetricsKind) (insight.Chunk, error) {
+func (s *store) getChunk(ctx context.Context, path string, kind model.InsightMetricsKind) (insight.Chunk, error) {
 	obj, err := s.filestore.GetObject(ctx, path)
 	if err != nil {
 		return nil, err

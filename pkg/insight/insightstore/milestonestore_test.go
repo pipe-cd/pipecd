@@ -29,7 +29,6 @@ import (
 func TestLoadMilestone(t *testing.T) {
 	ctrl := gomock.NewController(t)
 	defer ctrl.Finish()
-	store := filestoretest.NewMockStore(ctrl)
 
 	testcases := []struct {
 		name    string
@@ -60,16 +59,16 @@ func TestLoadMilestone(t *testing.T) {
 		},
 	}
 
-	fs := Store{
-		filestore: store,
-	}
+	fs := filestoretest.NewMockStore(ctrl)
+	s := &store{filestore: fs}
+
 	for _, tc := range testcases {
 		t.Run(tc.name, func(t *testing.T) {
 			obj := filestore.Object{
 				Content: []byte(tc.content),
 			}
-			store.EXPECT().GetObject(context.TODO(), milestonePath).Return(obj, tc.readerErr)
-			state, err := fs.LoadMilestone(context.TODO())
+			fs.EXPECT().GetObject(context.TODO(), milestonePath).Return(obj, tc.readerErr)
+			state, err := s.LoadMilestone(context.TODO())
 			if err != nil {
 				if tc.expectedErr == nil {
 					assert.NoError(t, err)
