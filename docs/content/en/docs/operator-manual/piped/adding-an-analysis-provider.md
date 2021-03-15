@@ -15,7 +15,7 @@ Currently, PipeCD supports the following providers:
 
 
 ## Prometheus
-Piped queries the [range query endpoint](https://prometheus.io/docs/prometheus/latest/querying/api/#range-queries) to obtain metrics to obtain metrics used to evaluate the deployment.
+Piped queries the [range query endpoint](https://prometheus.io/docs/prometheus/latest/querying/api/#range-queries) to obtain metrics used to evaluate the deployment.
 
 You need to define the Prometheus server address accessible to Piped.
 
