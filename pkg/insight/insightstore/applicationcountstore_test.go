@@ -31,11 +31,9 @@ import (
 func TestStore_LoadApplicationCount(t *testing.T) {
 	ctrl := gomock.NewController(t)
 	defer ctrl.Finish()
-	store := filestoretest.NewMockStore(ctrl)
 
-	fs := Store{
-		filestore: store,
-	}
+	fs := filestoretest.NewMockStore(ctrl)
+	s := &store{filestore: fs}
 
 	tests := []struct {
 		name        string
@@ -103,8 +101,8 @@ func TestStore_LoadApplicationCount(t *testing.T) {
 			obj := filestore.Object{
 				Content: []byte(tc.content),
 			}
-			store.EXPECT().GetObject(context.TODO(), path).Return(obj, tc.readerErr)
-			ac, err := fs.LoadApplicationCount(context.TODO(), tc.projectID)
+			fs.EXPECT().GetObject(context.TODO(), path).Return(obj, tc.readerErr)
+			ac, err := s.LoadApplicationCount(context.TODO(), tc.projectID)
 			if err != nil {
 				if tc.expectedErr == nil {
 					assert.NoError(t, err)

@@ -17,5 +17,7 @@ package insightstoretest
 import (
 	_ "github.com/golang/mock/gomock"
 
+	_ "github.com/pipe-cd/pipe/pkg/insight"
 	_ "github.com/pipe-cd/pipe/pkg/insight/insightstore"
+	_ "github.com/pipe-cd/pipe/pkg/model"
 )
