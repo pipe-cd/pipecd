@@ -28,6 +28,7 @@ import (
 	"github.com/pipe-cd/pipe/pkg/app/ops/firestoreindexensurer"
 	"github.com/pipe-cd/pipe/pkg/app/ops/handler"
 	"github.com/pipe-cd/pipe/pkg/app/ops/insightcollector"
+	"github.com/pipe-cd/pipe/pkg/app/ops/mysqlensurer"
 	"github.com/pipe-cd/pipe/pkg/app/ops/orphancommandcleaner"
 	"github.com/pipe-cd/pipe/pkg/backoff"
 	"github.com/pipe-cd/pipe/pkg/cli"
@@ -79,6 +80,28 @@ func (s *ops) run(ctx context.Context, t cli.Telemetry) error {
 		return err
 	}
 
+	// Prepare sql database.
+	if cfg.Datastore.Type == model.DataStoreMySQL {
+		if err := ensureSQLDatabase(ctx, cfg, t.Logger); err != nil {
+			t.Logger.Error("failed to ensure prepare SQL database", zap.Error(err))
+			return err
+		}
+	}
+
+	if cfg.Datastore.Type == model.DataStoreFirestore {
+		// Create needed composite indexes for Firestore.
+		ensurer := firestoreindexensurer.NewIndexEnsurer(
+			s.gcloudPath,
+			cfg.Datastore.FirestoreConfig.Project,
+			cfg.Datastore.FirestoreConfig.CredentialsFile,
+			cfg.Datastore.FirestoreConfig.CollectionNamePrefix,
+			t.Logger,
+		)
+		group.Go(func() error {
+			return ensurer.CreateIndexes(ctx)
+		})
+	}
+
 	// Connect to the data store.
 	ds, err := createDatastore(ctx, cfg, t.Logger)
 	if err != nil {
@@ -88,7 +111,6 @@ func (s *ops) run(ctx context.Context, t cli.Telemetry) error {
 	defer func() {
 		if err := ds.Close(); err != nil {
 			t.Logger.Error("failed to close datastore client", zap.Error(err))
-
 		}
 	}()
 
@@ -124,20 +146,6 @@ func (s *ops) run(ctx context.Context, t cli.Telemetry) error {
 			t.Logger.Error("failed to configure cron job for collecting insight data about deployment", zap.Error(err))
 		}
 		c.Start()
-	}
-
-	if cfg.Datastore.Type == model.DataStoreFirestore {
-		// Create needed composite indexes for Firestore.
-		ensurer := firestoreindexensurer.NewIndexEnsurer(
-			s.gcloudPath,
-			cfg.Datastore.FirestoreConfig.Project,
-			cfg.Datastore.FirestoreConfig.CredentialsFile,
-			cfg.Datastore.FirestoreConfig.CollectionNamePrefix,
-			t.Logger,
-		)
-		group.Go(func() error {
-			return ensurer.CreateIndexes(ctx)
-		})
 	}
 
 	// Start running HTTP server.
@@ -223,4 +231,40 @@ func loadCollectorMode(cfg config.ControlPlaneInsightCollector) insightcollector
 		metrics.Enable(insightcollector.ChangeFailureRate)
 	}
 	return metrics
+}
+
+func ensureSQLDatabase(ctx context.Context, cfg *config.ControlPlaneSpec, logger *zap.Logger) error {
+	mysqlEnsurer, err := mysqlensurer.NewMySQLEnsurer(
+		cfg.Datastore.MySQLConfig.URL,
+		cfg.Datastore.MySQLConfig.Database,
+		cfg.Datastore.MySQLConfig.UsernameFile,
+		cfg.Datastore.MySQLConfig.PasswordFile,
+		logger,
+	)
+	if err != nil {
+		logger.Error("failed to create SQL ensurer instance", zap.Error(err))
+		return err
+	}
+	defer func() {
+		// Close connection held by the client.
+		if err := mysqlEnsurer.Close(); err != nil {
+			logger.Error("failed to close database ensurer connection", zap.Error(err))
+		}
+	}()
+
+	err = mysqlEnsurer.EnsureSchema(ctx)
+	if err != nil {
+		logger.Error("failed to prepare sql database", zap.Error(err))
+		return err
+	}
+
+	// No need to run this create indexes operation in routine because it runs asynchronously.
+	// ref: https://dev.mysql.com/doc/refman/8.0/en/innodb-online-ddl-operations.html#online-ddl-index-operations
+	err = mysqlEnsurer.EnsureIndexes(ctx)
+	if err != nil {
+		logger.Error("failed to create required indexes on sql database", zap.Error(err))
+		return err
+	}
+
+	return nil
 }

@@ -64,7 +64,7 @@ func NewMySQL(url, database string, opts ...Option) (*MySQL, error) {
 		opt(m)
 	}
 
-	dataSourceName, err := buildDataSourceName(url, database, m.usernameFile, m.passwordFile)
+	dataSourceName, err := BuildDataSourceName(url, database, m.usernameFile, m.passwordFile)
 	if err != nil {
 		return nil, err
 	}
@@ -269,7 +269,8 @@ func (m *MySQL) Close() error {
 	return m.client.Close()
 }
 
-func buildDataSourceName(url, database, usernameFile, passwordFile string) (string, error) {
+// BuildDataSourceName returns source name to make connection to database.
+func BuildDataSourceName(url, database, usernameFile, passwordFile string) (string, error) {
 	if url == "" {
 		return "", fmt.Errorf("url is required field")
 	}
