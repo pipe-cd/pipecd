@@ -112,14 +112,17 @@ func evaluate(evaluator metrics.Evaluator, response model.Value) (bool, error) {
 		return false, err
 	}
 
-	// NOTE: Maybe it's enough to handle only matrix type as long as calling range queries endpoint.
-	switch res := response.(type) {
-	case *model.Scalar:
-		value := float64(res.Value)
+	evaluateValue := func(value float64) (bool, error) {
 		if math.IsNaN(value) {
 			return false, fmt.Errorf("the value is not a number")
 		}
 		return evaluator.InRange(value), nil
+	}
+
+	// NOTE: Maybe it's enough to handle only matrix type as long as calling range queries endpoint.
+	switch res := response.(type) {
+	case *model.Scalar:
+		return evaluateValue(float64(res.Value))
 	case model.Vector:
 		if len(res) == 0 {
 			return false, fmt.Errorf("zero value in instant vector type returned")
@@ -129,11 +132,11 @@ func evaluate(evaluator metrics.Evaluator, response model.Value) (bool, error) {
 			if s == nil {
 				continue
 			}
-			value := float64(s.Value)
-			if math.IsNaN(value) {
-				return false, fmt.Errorf("the returned value is not a number")
+			expected, err := evaluateValue(float64(s.Value))
+			if err != nil {
+				return false, err
 			}
-			if !evaluator.InRange(value) {
+			if !expected {
 				return false, nil
 			}
 		}
@@ -148,11 +151,11 @@ func evaluate(evaluator metrics.Evaluator, response model.Value) (bool, error) {
 				return false, fmt.Errorf("zero value in range vector type returned")
 			}
 			for _, value := range r.Values {
-				v := float64(value.Value)
-				if math.IsNaN(v) {
-					return false, fmt.Errorf("the returned value is not a number")
+				expected, err := evaluateValue(float64(value.Value))
+				if err != nil {
+					return false, err
 				}
-				if !evaluator.InRange(v) {
+				if !expected {
 					return false, nil
 				}
 			}
