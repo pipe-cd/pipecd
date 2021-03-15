@@ -31,7 +31,7 @@ var (
 	mysqlDatabaseIndexes = mysqlProperties_0
 )
 
-const mysqlErrorCodeDeplicateKeyName = 1061
+const mysqlErrorCodeDuplicateKeyName = 1061
 
 type mysqlEnsurer struct {
 	client       *sql.DB
@@ -60,7 +60,7 @@ func (m *mysqlEnsurer) EnsureIndexes(ctx context.Context) error {
 	for _, stmt := range makeCreateIndexStatements(mysqlDatabaseIndexes) {
 		_, err := m.client.ExecContext(ctx, stmt)
 		// Ignore in case error duplicate key name occurred.
-		if mysqlErr, ok := err.(*mysql.MySQLError); ok && mysqlErr.Number == mysqlErrorCodeDeplicateKeyName {
+		if mysqlErr, ok := err.(*mysql.MySQLError); ok && mysqlErr.Number == mysqlErrorCodeDuplicateKeyName {
 			continue
 		}
 		if err != nil {
