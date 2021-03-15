@@ -86,6 +86,12 @@ Must be one of the following objects:
 
 | Field | Type | Description | Required |
 |-|-|-|-|
+| bucket | string | The AWS S3 bucket name. | Yes |
+| region | string | The AWS region name. | Yes |
+| profile | string | The AWS profile name. Default value is `default`. | No |
+| credentialsFile | string | The path to AWS credential file. Requires only if you want to auth by specified credential file, by default PipeCD will use `$HOME/.aws/credentials` file. | No |
+| roleARN | string | The IAM role arn to use when assuming an role. Requires only if you want to auth by `WebIdentity` pattern. | No |
+| tokenFile | string | The path to the WebIdentity token PipeCD should use to assume a role with. Requires only if you want to auth by `WebIdentity` pattern. | No |
 
 ### FileStoreMinioConfig
 
