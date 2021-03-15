@@ -78,7 +78,29 @@ helm install pipecd pipecd/pipecd --version=VERSION --namespace=NAMESPACE \
 
 Currently, besides `Firestore` PipeCD supports other databases as its datastore such as `MongoDB` and `MySQL`. Also as for filestore, PipeCD supports `AWS S3` and `MINIO` either.
 
-You can find required configuration to use them from [ConfigurationReference](/docs/operator-manual/control-plane/configuration-reference/).
+For example, in case of using `MongoDB` as datastore and `MINIO` as filestore, the ControlPlane configuration will be as follow:
+
+```yaml
+apiVersion: "pipecd.dev/v1beta1"
+kind: ControlPlane
+spec:
+  stateKey: {RANDOM_STRING}
+  datastore:
+    type: MONGODB
+    config:
+      url: {YOUR_MONGODB_ADDRESS}
+      database: {YOUR_DATABASE_NAME}
+  filestore:
+    type: MINIO
+    config:
+      endpoint: {YOUR_MINIO_ADDRESS}
+      bucket: {YOUR_BUCKET_NAME}
+      accessKeyFile: /etc/pipecd-secret/minio-access-key
+      secretKeyFile: /etc/pipecd-secret/minio-secret-key
+      autoCreateBucket: true
+```
+
+You can find required configurations to use other datastores and filestores from [ConfigurationReference](/docs/operator-manual/control-plane/configuration-reference/).
 
 ### 4. Accessing the PipeCD web
 
