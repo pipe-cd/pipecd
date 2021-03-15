@@ -42,21 +42,30 @@ type mysqlEnsurer struct {
 	passwordFile string
 }
 
-func NewMySQLEnsurer(url, database, usernameFile, passwordFile string, logger *zap.Logger) SQLEnsurer {
-	return &mysqlEnsurer{
+func NewMySQLEnsurer(url, database, usernameFile, passwordFile string, logger *zap.Logger) (SQLEnsurer, error) {
+	m := &mysqlEnsurer{
 		url:          url,
 		database:     database,
 		usernameFile: usernameFile,
 		passwordFile: passwordFile,
 		logger:       logger.Named("mysql-ensurer"),
 	}
+
+	dataSourceName, err := datastore.BuildDataSourceName(m.url, m.database, m.usernameFile, m.passwordFile)
+	if err != nil {
+		return nil, fmt.Errorf("failed to connect to sql database: %w", err)
+	}
+
+	// Enable run multi statements at once.
+	db, err := sql.Open("mysql", fmt.Sprintf("%s?multiStatements=true", dataSourceName))
+	if err != nil {
+		return nil, fmt.Errorf("failed to connect to sql database: %w", err)
+	}
+	m.client = db
+	return m, nil
 }
 
 func (m *mysqlEnsurer) EnsureIndexes(ctx context.Context) error {
-	if err := m.connect(); err != nil {
-		return err
-	}
-
 	for _, stmt := range makeCreateIndexStatements(mysqlDatabaseIndexes) {
 		_, err := m.client.ExecContext(ctx, stmt)
 		// Ignore in case error duplicate key name occurred.
@@ -71,10 +80,6 @@ func (m *mysqlEnsurer) EnsureIndexes(ctx context.Context) error {
 }
 
 func (m *mysqlEnsurer) EnsureSchema(ctx context.Context) error {
-	if err := m.connect(); err != nil {
-		return err
-	}
-
 	_, err := m.client.ExecContext(ctx, mysqlDatabaseSchema)
 	if err != nil {
 		return err
@@ -83,29 +88,7 @@ func (m *mysqlEnsurer) EnsureSchema(ctx context.Context) error {
 }
 
 func (m *mysqlEnsurer) Close() error {
-	if m.client == nil {
-		return nil
-	}
 	return m.client.Close()
-}
-
-func (m *mysqlEnsurer) connect() error {
-	if m.client != nil {
-		return nil
-	}
-
-	dataSourceName, err := datastore.BuildDataSourceName(m.url, m.database, m.usernameFile, m.passwordFile)
-	if err != nil {
-		return fmt.Errorf("failed to connect to sql database: %w", err)
-	}
-
-	// Enable run multi statements at once.
-	db, err := sql.Open("mysql", fmt.Sprintf("%s?multiStatements=true", dataSourceName))
-	if err != nil {
-		return fmt.Errorf("failed to connect to sql database: %w", err)
-	}
-	m.client = db
-	return nil
 }
 
 func makeCreateIndexStatements(indexesStatements string) []string {

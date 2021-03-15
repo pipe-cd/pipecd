@@ -234,13 +234,17 @@ func loadCollectorMode(cfg config.ControlPlaneInsightCollector) insightcollector
 }
 
 func ensureSQLDatabase(ctx context.Context, cfg *config.ControlPlaneSpec, logger *zap.Logger) error {
-	mysqlEnsurer := mysqlensurer.NewMySQLEnsurer(
+	mysqlEnsurer, err := mysqlensurer.NewMySQLEnsurer(
 		cfg.Datastore.MySQLConfig.URL,
 		cfg.Datastore.MySQLConfig.Database,
 		cfg.Datastore.MySQLConfig.UsernameFile,
 		cfg.Datastore.MySQLConfig.PasswordFile,
 		logger,
 	)
+	if err != nil {
+		logger.Error("failed to create SQL ensurer instance", zap.Error(err))
+		return err
+	}
 	defer func() {
 		// Close connection held by the client.
 		if err := mysqlEnsurer.Close(); err != nil {
@@ -248,7 +252,7 @@ func ensureSQLDatabase(ctx context.Context, cfg *config.ControlPlaneSpec, logger
 		}
 	}()
 
-	err := mysqlEnsurer.EnsureSchema(ctx)
+	err = mysqlEnsurer.EnsureSchema(ctx)
 	if err != nil {
 		logger.Error("failed to prepare sql database", zap.Error(err))
 		return err
