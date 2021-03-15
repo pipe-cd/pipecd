@@ -82,29 +82,8 @@ func (s *ops) run(ctx context.Context, t cli.Telemetry) error {
 
 	// Prepare sql database.
 	if cfg.Datastore.Type == model.DataStoreMySQL {
-		mysqlEnsurer := mysqlensurer.NewMySQLEnsurer(
-			cfg.Datastore.MySQLConfig.URL,
-			cfg.Datastore.MySQLConfig.Database,
-			cfg.Datastore.MySQLConfig.UsernameFile,
-			cfg.Datastore.MySQLConfig.PasswordFile,
-			t.Logger,
-		)
-		defer func() {
-			// Close connection held by the client.
-			if err := mysqlEnsurer.Close(); err != nil {
-				t.Logger.Error("failed to close database ensurer connection", zap.Error(err))
-			}
-		}()
-		err := mysqlEnsurer.EnsureSchema(ctx)
-		if err != nil {
-			t.Logger.Error("failed to prepare sql database", zap.Error(err))
-			return err
-		}
-		// No need to run this create indexes operation in routine because it runs asynchronously.
-		// ref: https://dev.mysql.com/doc/refman/8.0/en/innodb-online-ddl-operations.html#online-ddl-index-operations
-		err = mysqlEnsurer.EnsureIndexes(ctx)
-		if err != nil {
-			t.Logger.Error("failed to create required indexes on sql database", zap.Error(err))
+		if err := ensureSQLDatabase(ctx, cfg, t.Logger); err != nil {
+			t.Logger.Error("failed to ensure prepare SQL database", zap.Error(err))
 			return err
 		}
 	}
@@ -252,4 +231,36 @@ func loadCollectorMode(cfg config.ControlPlaneInsightCollector) insightcollector
 		metrics.Enable(insightcollector.ChangeFailureRate)
 	}
 	return metrics
+}
+
+func ensureSQLDatabase(ctx context.Context, cfg *config.ControlPlaneSpec, logger *zap.Logger) error {
+	mysqlEnsurer := mysqlensurer.NewMySQLEnsurer(
+		cfg.Datastore.MySQLConfig.URL,
+		cfg.Datastore.MySQLConfig.Database,
+		cfg.Datastore.MySQLConfig.UsernameFile,
+		cfg.Datastore.MySQLConfig.PasswordFile,
+		logger,
+	)
+	defer func() {
+		// Close connection held by the client.
+		if err := mysqlEnsurer.Close(); err != nil {
+			logger.Error("failed to close database ensurer connection", zap.Error(err))
+		}
+	}()
+
+	err := mysqlEnsurer.EnsureSchema(ctx)
+	if err != nil {
+		logger.Error("failed to prepare sql database", zap.Error(err))
+		return err
+	}
+
+	// No need to run this create indexes operation in routine because it runs asynchronously.
+	// ref: https://dev.mysql.com/doc/refman/8.0/en/innodb-online-ddl-operations.html#online-ddl-index-operations
+	err = mysqlEnsurer.EnsureIndexes(ctx)
+	if err != nil {
+		logger.Error("failed to create required indexes on sql database", zap.Error(err))
+		return err
+	}
+
+	return nil
 }
