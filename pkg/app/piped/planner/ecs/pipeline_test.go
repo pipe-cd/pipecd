@@ -25,14 +25,14 @@ func TestBuildQuickSyncPipeline(t *testing.T) {
 	}
 	for _, tc := range tests {
 		t.Run(tc.name, func(t *testing.T) {
-			gotStages := buildQuickSyncPipeline(tc.wantAutoRollback, time.Now())
-			var gotAutoRollback bool
-			for _, stage := range gotStages {
+			stages := buildQuickSyncPipeline(tc.wantAutoRollback, time.Now())
+			var autoRollback bool
+			for _, stage := range stages {
 				if stage.Name == string(model.StageRollback) {
-					gotAutoRollback = true
+					autoRollback = true
 				}
 			}
-			assert.Equal(t, tc.wantAutoRollback, gotAutoRollback)
+			assert.Equal(t, tc.wantAutoRollback, autoRollback)
 		})
 	}
 }
