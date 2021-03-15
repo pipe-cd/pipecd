@@ -76,6 +76,5 @@ Cloud Provider defines which cloud and where application should be deployed to.
 Currently, PipeCD is supporting these four cloud providers: `KUBERNETES`, `TERRAFORM`, `CLOUDRUN`, `LAMBDA`.
 
 ### Analysis Provider
-
-PipeCD supports multiple methods to automate the analysis process of the deployment. It can be done by using metrics, logs or by checking the configured http requests.
-Analysis Provider defines where to get those metrics/log data, like `Prometheus`, `Datadog`, `Stackdriver`, `CloudWatch`, and so on.
+An external product that provides metrics/logs to evaluate deployments, such as `Prometheus`, `Datadog`, `Stackdriver`, `CloudWatch` and so on.
+It is mainly used in the [Automated deployment analysis](/docs/user-guide/automated-deployment-analysis/) context.

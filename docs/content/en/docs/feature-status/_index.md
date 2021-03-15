@@ -86,7 +86,7 @@ Please note that the phases (Incubating, Alpha, Beta, and Stable) are applied to
 | [Command-line tool (pipectl) and API for external services](/docs/user-guide/command-line-tool/) | Beta |
 | Support executing custom stage | Incubating |
 | [ADA](/docs/user-guide/automated-deployment-analysis/) (Automated Deployment Analysis) by Prometheus metrics | Alpha |
-| [ADA](/docs/user-guide/automated-deployment-analysis/) by Datadog metrics | Incubating |
+| [ADA](/docs/user-guide/automated-deployment-analysis/) by Datadog metrics | Alpha |
 | [ADA](/docs/user-guide/automated-deployment-analysis/) by Stackdriver metrics | Incubating |
 | [ADA](/docs/user-guide/automated-deployment-analysis/) by Stackdriver log | Incubating |
 | [ADA](/docs/user-guide/automated-deployment-analysis/) by CloudWatch metrics | Incubating |

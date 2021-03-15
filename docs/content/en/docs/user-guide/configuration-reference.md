@@ -287,7 +287,7 @@ spec:
 | interval | duration | Run a query at specified intervals. | Yes |
 | failureLimit | int | Maximum number of failed checks before the query result is considered as failure. For instance, if 1 is set, the analysis will be considered a failure after 2 failures. | No |
 | timeout | duration | How long after which the query times out. | No |
-| template | [AnalysisTemplateRef](/docs/user-guide/configuration-reference/#analysistemplateref) | How long after which the query times out. | No |
+| template | [AnalysisTemplateRef](/docs/user-guide/configuration-reference/#analysistemplateref) | Reference to the template to be used. | No |
 
 ## AnalysisLog
 
