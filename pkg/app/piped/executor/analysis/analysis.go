@@ -117,9 +117,8 @@ func (e *Executor) Execute(sig executor.StopSignal) model.StageStatus {
 	for i := range options.Metrics {
 		analyzer, err := e.newAnalyzerForMetrics(i, &options.Metrics[i], templateCfg)
 		if err != nil {
-			e.LogPersister.Error(err.Error())
-			// TODO: Consider treating it as a failure when unknown analysis provider given
-			continue
+			e.LogPersister.Errorf("failed to spawn analyzer for %s: %v", options.Metrics[i].Provider, err)
+			return model.StageStatus_STAGE_FAILURE
 		}
 		eg.Go(func() error {
 			e.LogPersister.Infof("[%s] Start analysis for %s", analyzer.id, analyzer.providerType)
@@ -130,8 +129,8 @@ func (e *Executor) Execute(sig executor.StopSignal) model.StageStatus {
 	for i := range options.Logs {
 		analyzer, err := e.newAnalyzerForLog(i, &options.Logs[i], templateCfg)
 		if err != nil {
-			e.LogPersister.Error(err.Error())
-			continue
+			e.LogPersister.Errorf("failed to spawn analyzer for %s: %v", options.Logs[i].Provider, err)
+			return model.StageStatus_STAGE_FAILURE
 		}
 		eg.Go(func() error {
 			e.LogPersister.Infof("[%s] Start analysis for %s", analyzer.id, analyzer.providerType)
@@ -142,8 +141,8 @@ func (e *Executor) Execute(sig executor.StopSignal) model.StageStatus {
 	for i := range options.Https {
 		analyzer, err := e.newAnalyzerForHTTP(i, &options.Https[i], templateCfg)
 		if err != nil {
-			e.LogPersister.Error(err.Error())
-			continue
+			e.LogPersister.Errorf("failed to spawn analyzer for HTTP: %v", err)
+			return model.StageStatus_STAGE_FAILURE
 		}
 		eg.Go(func() error {
 			e.LogPersister.Infof("[%s] Start analysis for %s", analyzer.id, analyzer.providerType)
