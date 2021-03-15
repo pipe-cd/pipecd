@@ -1388,3 +1388,48 @@ func (a *WebAPI) GetInsightData(ctx context.Context, req *webservice.GetInsightD
 		},
 	}, nil
 }
+
+func (a *WebAPI) GetInsightApplicationCount(ctx context.Context, req *webservice.GetInsightApplicationCountRequest) (*webservice.GetInsightApplicationCountResponse, error) {
+	_, err := rpcauth.ExtractClaims(ctx)
+	if err != nil {
+		a.logger.Error("failed to authenticate the current user", zap.Error(err))
+		return nil, err
+	}
+
+	// TODO: Fetch application count data from insight store.
+	counts := []*model.InsightApplicationCount{
+		{
+			Labels: map[string]string{
+				model.InsightApplicationCountLabelKey_KIND.String():          model.ApplicationKind_KUBERNETES.String(),
+				model.InsightApplicationCountLabelKey_ACTIVE_STATUS.String(): model.ApplicationActiveStatus_ENABLED.String(),
+			},
+			Count: 123,
+		},
+		{
+			Labels: map[string]string{
+				model.InsightApplicationCountLabelKey_KIND.String():          model.ApplicationKind_KUBERNETES.String(),
+				model.InsightApplicationCountLabelKey_ACTIVE_STATUS.String(): model.ApplicationActiveStatus_DISABLED.String(),
+			},
+			Count: 8,
+		},
+		{
+			Labels: map[string]string{
+				model.InsightApplicationCountLabelKey_KIND.String():          model.ApplicationKind_TERRAFORM.String(),
+				model.InsightApplicationCountLabelKey_ACTIVE_STATUS.String(): model.ApplicationActiveStatus_ENABLED.String(),
+			},
+			Count: 75,
+		},
+		{
+			Labels: map[string]string{
+				model.InsightApplicationCountLabelKey_KIND.String():          model.ApplicationKind_LAMBDA.String(),
+				model.InsightApplicationCountLabelKey_ACTIVE_STATUS.String(): model.ApplicationActiveStatus_DISABLED.String(),
+			},
+			Count: 2,
+		},
+	}
+
+	return &webservice.GetInsightApplicationCountResponse{
+		UpdatedAt: time.Now().Unix(),
+		Counts:    counts,
+	}, nil
+}

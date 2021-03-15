@@ -28,6 +28,12 @@ enum ApplicationKind {
     ECS = 5;
 }
 
+enum ApplicationActiveStatus {
+    ENABLED = 0;
+    DISABLED = 1;
+    DELETED = 2;
+}
+
 message ApplicationGitPath {
     // The repository that was configured at piped.
     ApplicationGitRepository repo = 1 [(validate.rules).message.required = true];
