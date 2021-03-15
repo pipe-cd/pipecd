@@ -1398,28 +1398,28 @@ func (a *WebAPI) GetInsightApplicationCount(ctx context.Context, req *webservice
 
 	// TODO: Fetch application count data from insight store.
 	counts := []*model.InsightApplicationCount{
-		&model.InsightApplicationCount{
+		{
 			Labels: map[string]string{
 				model.InsightApplicationCountLabelKey_KIND.String():          model.ApplicationKind_KUBERNETES.String(),
 				model.InsightApplicationCountLabelKey_ACTIVE_STATUS.String(): model.ApplicationActiveStatus_ENABLED.String(),
 			},
 			Count: 123,
 		},
-		&model.InsightApplicationCount{
+		{
 			Labels: map[string]string{
 				model.InsightApplicationCountLabelKey_KIND.String():          model.ApplicationKind_KUBERNETES.String(),
 				model.InsightApplicationCountLabelKey_ACTIVE_STATUS.String(): model.ApplicationActiveStatus_DISABLED.String(),
 			},
 			Count: 8,
 		},
-		&model.InsightApplicationCount{
+		{
 			Labels: map[string]string{
 				model.InsightApplicationCountLabelKey_KIND.String():          model.ApplicationKind_TERRAFORM.String(),
 				model.InsightApplicationCountLabelKey_ACTIVE_STATUS.String(): model.ApplicationActiveStatus_ENABLED.String(),
 			},
 			Count: 75,
 		},
-		&model.InsightApplicationCount{
+		{
 			Labels: map[string]string{
 				model.InsightApplicationCountLabelKey_KIND.String():          model.ApplicationKind_LAMBDA.String(),
 				model.InsightApplicationCountLabelKey_ACTIVE_STATUS.String(): model.ApplicationActiveStatus_DISABLED.String(),
