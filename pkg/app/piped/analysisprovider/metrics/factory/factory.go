@@ -31,7 +31,13 @@ import (
 func NewProvider(analysisTempCfg *config.TemplatableAnalysisMetrics, providerCfg *config.PipedAnalysisProvider, logger *zap.Logger) (metrics.Provider, error) {
 	switch providerCfg.Type {
 	case model.AnalysisProviderPrometheus:
-		return prometheus.NewProvider(providerCfg.PrometheusConfig.Address, analysisTempCfg.Timeout.Duration(), logger)
+		options := []prometheus.Option{
+			prometheus.WithLogger(logger),
+		}
+		if t := analysisTempCfg.Timeout.Duration(); t > 0 {
+			options = append(options, prometheus.WithTimeout(t))
+		}
+		return prometheus.NewProvider(providerCfg.PrometheusConfig.Address, options...)
 	case model.AnalysisProviderDatadog:
 		var apiKey, applicationKey string
 		cfg := providerCfg.DatadogConfig
@@ -51,10 +57,15 @@ func NewProvider(analysisTempCfg *config.TemplatableAnalysisMetrics, providerCfg
 		}
 		options := []datadog.Option{
 			datadog.WithAddress(cfg.Address),
-			datadog.WithTimeout(analysisTempCfg.Timeout.Duration()),
 			datadog.WithLogger(logger),
 		}
-		return datadog.NewProvider(apiKey, applicationKey, analysisTempCfg.Interval.Duration(), options...)
+		if cfg.Address != "" {
+			options = append(options, datadog.WithAddress(cfg.Address))
+		}
+		if t := analysisTempCfg.Timeout.Duration(); t > 0 {
+			options = append(options, datadog.WithTimeout(t))
+		}
+		return datadog.NewProvider(apiKey, applicationKey, options...)
 	default:
 		return nil, fmt.Errorf("any of providers config not found")
 	}

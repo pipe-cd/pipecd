@@ -24,7 +24,6 @@ import (
 	"go.uber.org/zap"
 
 	"github.com/pipe-cd/pipe/pkg/app/piped/analysisprovider/metrics"
-	"github.com/pipe-cd/pipe/pkg/config"
 )
 
 const (
@@ -40,31 +39,25 @@ type Provider struct {
 	address        string
 	apiKey         string
 	applicationKey string
-	// TODO: Change to give queriedTimePeriod whenever calling RunQuery()
-	queriedTimePeriod int64
-	timeout           time.Duration
-	logger            *zap.Logger
+	timeout        time.Duration
+	logger         *zap.Logger
 }
 
-func NewProvider(apiKey, applicationKey string, queriedTimePeriod time.Duration, opts ...Option) (*Provider, error) {
+func NewProvider(apiKey, applicationKey string, opts ...Option) (*Provider, error) {
 	if apiKey == "" {
 		return nil, fmt.Errorf("api-key is required")
 	}
 	if applicationKey == "" {
 		return nil, fmt.Errorf("application-key is required")
 	}
-	if queriedTimePeriod == 0 {
-		return nil, fmt.Errorf("aggregation period is required")
-	}
 
 	p := &Provider{
-		client:            datadog.NewAPIClient(datadog.NewConfiguration()),
-		address:           defaultAddress,
-		apiKey:            apiKey,
-		applicationKey:    applicationKey,
-		queriedTimePeriod: int64(queriedTimePeriod.Seconds()),
-		timeout:           defaultTimeout,
-		logger:            zap.NewNop(),
+		client:         datadog.NewAPIClient(datadog.NewConfiguration()),
+		address:        defaultAddress,
+		apiKey:         apiKey,
+		applicationKey: applicationKey,
+		timeout:        defaultTimeout,
+		logger:         zap.NewNop(),
 	}
 	for _, opt := range opts {
 		opt(p)
@@ -97,11 +90,12 @@ func (p *Provider) Type() string {
 }
 
 // RunQuery issues an HTTP request to the API named "MetricsApi.QueryMetrics", then evaluate its response.
-// It performs the given query for the period specified by its own queried time period using the current
-// time as the end of the queried time period.
-//
 // See more: https://docs.datadoghq.com/api/latest/metrics/#query-timeseries-points
-func (p *Provider) RunQuery(ctx context.Context, query string, expected config.AnalysisExpected) (bool, error) {
+func (p *Provider) RunQuery(ctx context.Context, query string, queryRange metrics.QueryRange, evaluator metrics.Evaluator) (bool, error) {
+	if err := queryRange.Validate(); err != nil {
+		return false, err
+	}
+
 	ctx, cancel := context.WithTimeout(ctx, p.timeout)
 	defer cancel()
 	ctx = context.WithValue(
@@ -122,10 +116,11 @@ func (p *Provider) RunQuery(ctx context.Context, query string, expected config.A
 		},
 	)
 
-	from := time.Now().Unix() - p.queriedTimePeriod
-	to := time.Now().Unix()
-
-	resp, httpResp, err := p.client.MetricsApi.QueryMetrics(ctx).From(from).To(to).Query(query).Execute()
+	resp, httpResp, err := p.client.MetricsApi.QueryMetrics(ctx).
+		From(queryRange.From.Unix()).
+		To(queryRange.To.Unix()).
+		Query(query).
+		Execute()
 	if err != nil {
 		return false, fmt.Errorf("failed to call \"MetricsApi.QueryMetrics\": %w", err)
 	}
@@ -135,12 +130,12 @@ func (p *Provider) RunQuery(ctx context.Context, query string, expected config.A
 	if resp.Series == nil || len(*resp.Series) == 0 {
 		return false, metrics.ErrNoValuesFound
 	}
-	return p.evaluate(expected, *resp.Series)
+	return evaluate(evaluator, *resp.Series)
 }
 
 // evaluate checks if all data points for all time series are within the expected range.
-func (p *Provider) evaluate(expected config.AnalysisExpected, series []datadog.MetricsQueryMetadata) (bool, error) {
-	if err := expected.Validate(); err != nil {
+func evaluate(evaluator metrics.Evaluator, series []datadog.MetricsQueryMetadata) (bool, error) {
+	if err := evaluator.Validate(); err != nil {
 		return false, err
 	}
 
@@ -155,8 +150,7 @@ func (p *Provider) evaluate(expected config.AnalysisExpected, series []datadog.M
 			}
 			// NOTE: A data point is assumed to be kind of like [unix-time, value].
 			value := point[1]
-			if !expected.InRange(value) {
-				p.logger.Info("the result isn't within the expected range", zap.Float64("value", point[1]))
+			if !evaluator.InRange(value) {
 				return false, nil
 			}
 		}

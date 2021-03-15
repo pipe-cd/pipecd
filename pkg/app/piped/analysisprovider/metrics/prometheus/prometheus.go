@@ -25,7 +25,7 @@ import (
 	"github.com/prometheus/common/model"
 	"go.uber.org/zap"
 
-	"github.com/pipe-cd/pipe/pkg/config"
+	"github.com/pipe-cd/pipe/pkg/app/piped/analysisprovider/metrics"
 )
 
 const (
@@ -43,7 +43,10 @@ type Provider struct {
 	logger  *zap.Logger
 }
 
-func NewProvider(address string, timeout time.Duration, logger *zap.Logger) (*Provider, error) {
+func NewProvider(address string, opts ...Option) (*Provider, error) {
+	if address == "" {
+		return nil, fmt.Errorf("address is required")
+	}
 	client, err := api.NewClient(api.Config{
 		Address: address,
 	})
@@ -51,69 +54,114 @@ func NewProvider(address string, timeout time.Duration, logger *zap.Logger) (*Pr
 		return nil, err
 	}
 
-	if timeout == 0 {
-		timeout = defaultTimeout
-	}
-
-	return &Provider{
+	p := &Provider{
 		api:     v1.NewAPI(client),
-		timeout: timeout,
-		logger:  logger.With(zap.String("analysis-provider", ProviderType)),
-	}, nil
+		timeout: defaultTimeout,
+		logger:  zap.NewNop(),
+	}
+	for _, opt := range opts {
+		opt(p)
+	}
+	return p, nil
+}
+
+type Option func(*Provider)
+
+func WithTimeout(timeout time.Duration) Option {
+	return func(p *Provider) {
+		p.timeout = timeout
+	}
+}
+
+func WithLogger(logger *zap.Logger) Option {
+	return func(p *Provider) {
+		p.logger = logger.Named("prometheus-provider")
+	}
 }
 
 func (p *Provider) Type() string {
 	return ProviderType
 }
 
-func (p *Provider) RunQuery(ctx context.Context, query string, expected config.AnalysisExpected) (bool, error) {
+func (p *Provider) RunQuery(ctx context.Context, query string, queryRange metrics.QueryRange, evaluator metrics.Evaluator) (bool, error) {
+	if err := queryRange.Validate(); err != nil {
+		return false, err
+	}
+
 	ctx, cancel := context.WithTimeout(ctx, p.timeout)
 	defer cancel()
 
 	p.logger.Info("run query", zap.String("query", query))
 	// TODO: Use HTTP Basic Authentication with the username and password when needed.
-	response, warnings, err := p.api.Query(ctx, query, time.Now())
+	response, warnings, err := p.api.QueryRange(ctx, query, v1.Range{
+		Start: queryRange.From,
+		End:   queryRange.To,
+		Step:  queryRange.Step,
+	})
 	if err != nil {
 		return false, err
 	}
 	for _, w := range warnings {
 		p.logger.Warn("non critical error occurred", zap.String("warning", w))
 	}
-	return p.evaluate(expected, response)
+	return evaluate(evaluator, response)
 }
 
-func (p *Provider) evaluate(expected config.AnalysisExpected, response model.Value) (bool, error) {
-	if err := expected.Validate(); err != nil {
+func evaluate(evaluator metrics.Evaluator, response model.Value) (bool, error) {
+	if err := evaluator.Validate(); err != nil {
 		return false, err
 	}
 
-	switch value := response.(type) {
+	evaluateValue := func(value float64) (bool, error) {
+		if math.IsNaN(value) {
+			return false, fmt.Errorf("the value is not a number")
+		}
+		return evaluator.InRange(value), nil
+	}
+
+	// NOTE: Maybe it's enough to handle only matrix type as long as calling range queries endpoint.
+	switch res := response.(type) {
 	case *model.Scalar:
-		result := float64(value.Value)
-		if math.IsNaN(result) {
-			return false, fmt.Errorf("the result %v is not a number", result)
-		}
-		return expected.InRange(result), nil
+		return evaluateValue(float64(res.Value))
 	case model.Vector:
-		lv := len(value)
-		if lv == 0 {
-			return false, fmt.Errorf("zero value returned")
+		if len(res) == 0 {
+			return false, fmt.Errorf("zero value in instant vector type returned")
 		}
-		results := make([]float64, 0, lv)
-		for _, s := range value {
+		// Check if all values are expected value.
+		for _, s := range res {
 			if s == nil {
 				continue
 			}
-			result := float64(s.Value)
-			if math.IsNaN(result) {
-				return false, fmt.Errorf("the result %v is not a number", result)
+			expected, err := evaluateValue(float64(s.Value))
+			if err != nil {
+				return false, err
 			}
-			results = append(results, result)
+			if !expected {
+				return false, nil
+			}
 		}
-		p.logger.Info("vector results found", zap.Float64s("results", results))
-		// TODO: Consider the case of multiple results.
-		return expected.InRange(results[0]), nil
+		return true, nil
+	case model.Matrix:
+		if len(res) == 0 {
+			return false, fmt.Errorf("no time series data points in range vector type")
+		}
+		// Check if all values are expected value.
+		for _, r := range res {
+			if len(r.Values) == 0 {
+				return false, fmt.Errorf("zero value in range vector type returned")
+			}
+			for _, value := range r.Values {
+				expected, err := evaluateValue(float64(value.Value))
+				if err != nil {
+					return false, err
+				}
+				if !expected {
+					return false, nil
+				}
+			}
+		}
+		return true, nil
 	default:
-		return false, fmt.Errorf("unsupported prometheus metrics type")
+		return false, fmt.Errorf("unexpected data type returned")
 	}
 }
