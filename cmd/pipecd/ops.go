@@ -109,6 +109,20 @@ func (s *ops) run(ctx context.Context, t cli.Telemetry) error {
 		}
 	}
 
+	if cfg.Datastore.Type == model.DataStoreFirestore {
+		// Create needed composite indexes for Firestore.
+		ensurer := firestoreindexensurer.NewIndexEnsurer(
+			s.gcloudPath,
+			cfg.Datastore.FirestoreConfig.Project,
+			cfg.Datastore.FirestoreConfig.CredentialsFile,
+			cfg.Datastore.FirestoreConfig.CollectionNamePrefix,
+			t.Logger,
+		)
+		group.Go(func() error {
+			return ensurer.CreateIndexes(ctx)
+		})
+	}
+
 	// Connect to the data store.
 	ds, err := createDatastore(ctx, cfg, t.Logger)
 	if err != nil {
@@ -153,20 +167,6 @@ func (s *ops) run(ctx context.Context, t cli.Telemetry) error {
 			t.Logger.Error("failed to configure cron job for collecting insight data about deployment", zap.Error(err))
 		}
 		c.Start()
-	}
-
-	if cfg.Datastore.Type == model.DataStoreFirestore {
-		// Create needed composite indexes for Firestore.
-		ensurer := firestoreindexensurer.NewIndexEnsurer(
-			s.gcloudPath,
-			cfg.Datastore.FirestoreConfig.Project,
-			cfg.Datastore.FirestoreConfig.CredentialsFile,
-			cfg.Datastore.FirestoreConfig.CollectionNamePrefix,
-			t.Logger,
-		)
-		group.Go(func() error {
-			return ensurer.CreateIndexes(ctx)
-		})
 	}
 
 	// Start running HTTP server.
