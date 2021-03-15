@@ -83,6 +83,9 @@ func (m *mysqlEnsurer) EnsureSchema(ctx context.Context) error {
 }
 
 func (m *mysqlEnsurer) Close() error {
+	if m.client == nil {
+		return nil
+	}
 	return m.client.Close()
 }
 
