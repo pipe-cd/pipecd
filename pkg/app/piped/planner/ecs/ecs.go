@@ -69,14 +69,6 @@ func (p *Planner) Plan(ctx context.Context, in planner.Input) (out planner.Outpu
 		out.Stages = buildQuickSyncPipeline(cfg.Input.AutoRollback, time.Now())
 		out.Summary = fmt.Sprintf("Quick sync to deploy image %s and configure all traffic to it (forced via web)", out.Version)
 		return
-	case model.SyncStrategy_PIPELINE:
-		if cfg.Pipeline == nil {
-			err = fmt.Errorf("unable to force sync with pipeline because no pipeline was specified")
-			return
-		}
-		out.Stages = buildProgressivePipeline(cfg.Pipeline, cfg.Input.AutoRollback, time.Now())
-		out.Summary = fmt.Sprintf("Sync with pipeline to deploy image %s (forced via web)", out.Version)
-		return
 	}
 
 	// If this is the first time to deploy this application or it was unable to retrieve last successful commit,
@@ -94,18 +86,6 @@ func (p *Planner) Plan(ctx context.Context, in planner.Input) (out planner.Outpu
 		return
 	}
 
-	// Load task definition at the last deployed commit to decide running version.
-	ds, err = in.RunningDSP.Get(ctx, ioutil.Discard)
-	if err == nil {
-		if lastVersion, e := determineVersion(ds.AppDir, cfg.Input.TaskDefinitionFile); e == nil {
-			out.Stages = buildProgressivePipeline(cfg.Pipeline, cfg.Input.AutoRollback, time.Now())
-			out.Summary = fmt.Sprintf("Sync with pipeline to update image from %s to %s", lastVersion, out.Version)
-			return
-		}
-	}
-
-	out.Stages = buildProgressivePipeline(cfg.Pipeline, cfg.Input.AutoRollback, time.Now())
-	out.Summary = "Sync with the specified pipeline"
 	return
 }
 
