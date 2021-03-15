@@ -18,6 +18,7 @@ import (
 	"context"
 	"database/sql"
 	"fmt"
+	"strings"
 
 	"github.com/go-sql-driver/mysql"
 	"go.uber.org/zap"
@@ -55,13 +56,16 @@ func (m *mysqlEnsurer) EnsureIndexes(ctx context.Context) error {
 	if err := m.connect(); err != nil {
 		return err
 	}
-	_, err := m.client.ExecContext(ctx, mysqlDatabaseIndexes)
-	// Ignore in case error duplicate key name occurred.
-	if mysqlErr, ok := err.(*mysql.MySQLError); ok && mysqlErr.Number == mysqlErrorCodeDeplicateKeyName {
-		return nil
-	}
-	if err != nil {
-		return err
+
+	for _, stmt := range makeCreateIndexStatements(mysqlDatabaseIndexes) {
+		_, err := m.client.ExecContext(ctx, stmt)
+		// Ignore in case error duplicate key name occurred.
+		if mysqlErr, ok := err.(*mysql.MySQLError); ok && mysqlErr.Number == mysqlErrorCodeDeplicateKeyName {
+			continue
+		}
+		if err != nil {
+			return err
+		}
 	}
 	return nil
 }
@@ -70,6 +74,7 @@ func (m *mysqlEnsurer) EnsureSchema(ctx context.Context) error {
 	if err := m.connect(); err != nil {
 		return err
 	}
+
 	_, err := m.client.ExecContext(ctx, mysqlDatabaseSchema)
 	if err != nil {
 		return err
@@ -98,4 +103,17 @@ func (m *mysqlEnsurer) connect() error {
 	}
 	m.client = db
 	return nil
+}
+
+func makeCreateIndexStatements(indexesStatements string) []string {
+	items := strings.Split(strings.TrimSpace(indexesStatements), ";")
+	statements := make([]string, 0, len(items))
+	for _, item := range items {
+		// Ignore dummy statement.
+		if item == "" {
+			continue
+		}
+		statements = append(statements, strings.TrimSpace(item))
+	}
+	return statements
 }
