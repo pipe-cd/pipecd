@@ -86,6 +86,14 @@ func (s *PipedSpec) Validate() error {
 			return err
 		}
 	}
+	if err := s.EventWatcher.Validate(); err != nil {
+		return err
+	}
+	for _, p := range s.AnalysisProviders {
+		if err := p.Validate(); err != nil {
+			return err
+		}
+	}
 	return nil
 }
 
@@ -367,12 +375,32 @@ func (p *PipedAnalysisProvider) UnmarshalJSON(data []byte) error {
 	return err
 }
 
+func (p *PipedAnalysisProvider) Validate() error {
+	switch p.Type {
+	case model.AnalysisProviderPrometheus:
+		return p.PrometheusConfig.Validate()
+	case model.AnalysisProviderDatadog:
+		return p.DatadogConfig.Validate()
+	case model.AnalysisProviderStackdriver:
+		return p.StackdriverConfig.Validate()
+	default:
+		return fmt.Errorf("unknow provider type: %s", p.Type)
+	}
+}
+
 type AnalysisProviderPrometheusConfig struct {
 	Address string `json:"address"`
 	// The path to the username file.
 	UsernameFile string `json:"usernameFile"`
 	// The path to the password file.
 	PasswordFile string `json:"passwordFile"`
+}
+
+func (a *AnalysisProviderPrometheusConfig) Validate() error {
+	if a.Address == "" {
+		return fmt.Errorf("prometheus analysis provider requires the address")
+	}
+	return nil
 }
 
 type AnalysisProviderDatadogConfig struct {
@@ -386,9 +414,23 @@ type AnalysisProviderDatadogConfig struct {
 	ApplicationKeyFile string `json:"applicationKeyFile"`
 }
 
+func (a *AnalysisProviderDatadogConfig) Validate() error {
+	if a.APIKeyFile == "" {
+		return fmt.Errorf("datadog analysis provider requires the api key file")
+	}
+	if a.ApplicationKeyFile == "" {
+		return fmt.Errorf("datadog analysis provider requires the application key file")
+	}
+	return nil
+}
+
 type AnalysisProviderStackdriverConfig struct {
 	// The path to the service account file.
 	ServiceAccountFile string `json:"serviceAccountFile"`
+}
+
+func (a *AnalysisProviderStackdriverConfig) Validate() error {
+	return nil
 }
 
 type Notifications struct {

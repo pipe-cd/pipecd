@@ -209,7 +209,7 @@ func (e *Executor) newAnalyzerForMetrics(i int, templatable *config.TemplatableA
 	runner := func(ctx context.Context) (bool, error) {
 		e.LogPersister.Infof("[%s] Run query against %s: %q", id, provider.Type(), cfg.Query)
 		queryRange := metrics.QueryRange{
-			From: time.Now().Add(-cfg.Timeout.Duration()),
+			From: time.Now().Add(-cfg.Interval.Duration()),
 			To:   time.Now(),
 		}
 		return provider.RunQuery(ctx, cfg.Query, queryRange, &cfg.Expected)
