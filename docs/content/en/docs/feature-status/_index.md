@@ -106,9 +106,8 @@ Please note that the phases (Incubating, Alpha, Beta, and Stable) are applied to
 | Google SSO | Incubating |
 | Bitbucket SSO | Incubating |
 | Support GCP [Firestore](https://cloud.google.com/firestore) as a data store of the control plane | Beta |
-| Support AWS [DynamoDB](https://aws.amazon.com/dynamodb/) as a data store of the control plane | Incubating |
 | Support [MongoDB](https://www.mongodb.com/) as a data store of the control plane | Alpha |
-| Support [MySQL v8.0](https://www.mysql.com/) database as a data store of the control plane | Incubating |
+| Support [MySQL v8.0](https://www.mysql.com/) database as a data store of the control plane | Alpha |
 | Support GCP [GCS](https://cloud.google.com/storage) as a file store of the control plane | Beta |
 | Support AWS [S3](https://aws.amazon.com/s3/) as a file store of the control plane | Alpha |
 | Support [Minio](https://github.com/minio/minio) as a file store of the control plane | Alpha |
