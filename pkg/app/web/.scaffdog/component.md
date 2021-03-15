@@ -15,7 +15,7 @@ import { makeStyles } from "@material-ui/core";
 
 const useStyles = makeStyles(() => ({}));
 
-interface {{ inputs.name | pascal }}Props {
+export interface {{ inputs.name | pascal }}Props {
 }
 
 export const {{ inputs.name | pascal }}: FC<{{ inputs.name | pascal }}Props> = ({ }) => {
@@ -32,7 +32,8 @@ export const {{ inputs.name | pascal }}: FC<{{ inputs.name | pascal }}Props> = (
 
 ```tsx
 import React from "react";
-import { {{ inputs.name | pascal }}, {{ inputs.name | pascal }}Props } from "./{{ inputs.name }}";
+import { {{ inputs.name | pascal }}, {{ inputs.name | pascal }}Props } from "./";
+import { Story } from "@storybook/react/types-6-0";
 
 export default {
   title: "{{ inputs.name | pascal }}",
