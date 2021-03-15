@@ -1,11 +1,11 @@
 import { Box } from "@material-ui/core";
 import { Story } from "@storybook/react/types-6-0";
 import React from "react";
-import { DeploymentFrequencyChart, DeploymentFrequencyChartProps } from "./";
+import { ChangeFailureRateChart, ChangeFailureRateChartProps } from ".";
 
 export default {
-  title: "insights/DeploymentFrequencyChart",
-  component: DeploymentFrequencyChart,
+  title: "insights/ChangeFailureRateChart",
+  component: ChangeFailureRateChart,
 };
 
 const randData = Array.from(new Array(20)).map((_, v) => ({
@@ -13,14 +13,14 @@ const randData = Array.from(new Array(20)).map((_, v) => ({
   timestamp: new Date(`2020/10/${v + 5}`).getTime(),
 }));
 
-const Template: Story<DeploymentFrequencyChartProps> = (args) => (
+const Template: Story<ChangeFailureRateChartProps> = (args) => (
   <Box width={800}>
-    <DeploymentFrequencyChart data={args.data} />
+    <ChangeFailureRateChart data={args.data} />
   </Box>
 );
 export const Overview = Template.bind({});
 Overview.args = {
-  data: [{ name: "Total Deployments", points: randData }],
+  data: [{ name: "Average Change Failure Rate", points: randData }],
 };
 
 export const NoData = Template.bind({});
