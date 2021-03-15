@@ -24,6 +24,7 @@ go_test(
     name = "go_default_test",
     size = "small",
     srcs = [
+        "applications_test.go",
         "deployments_test.go",
         "metrics_test.go",
     ],
@@ -31,9 +32,11 @@ go_test(
     deps = [
         "//pkg/datastore:go_default_library",
         "//pkg/datastore/datastoretest:go_default_library",
+        "//pkg/filestore:go_default_library",
         "//pkg/filestore/filestoretest:go_default_library",
         "//pkg/insight:go_default_library",
         "//pkg/insight/insightstore:go_default_library",
+        "//pkg/insight/insightstore/insightstoretest:go_default_library",
         "//pkg/model:go_default_library",
         "@com_github_golang_mock//gomock:go_default_library",
         "@com_github_stretchr_testify//assert:go_default_library",

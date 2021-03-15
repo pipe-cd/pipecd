@@ -18,6 +18,8 @@ import (
 	"context"
 	"testing"
 
+	"github.com/pipe-cd/pipe/pkg/model"
+
 	"github.com/golang/mock/gomock"
 	"github.com/stretchr/testify/assert"
 
@@ -59,14 +61,14 @@ func TestStore_LoadApplicationCount(t *testing.T) {
 				"counts": [
 					{
 						"label_set": {
-							"kind": "CLOUDRUN",
+							"kind": 4,
 							"status": "deploying"
 						},
 						"count": 2
 					},
 					{
 						"label_set": {
-							"kind": "CLOUDRUN",
+							"kind": 4,
 							"status": "deleted"
 						},
 						"count": 1
@@ -79,14 +81,14 @@ func TestStore_LoadApplicationCount(t *testing.T) {
 				Counts: []insight.ApplicationCountByLabelSet{
 					{
 						LabelSet: insight.ApplicationCountLabelSet{
-							Kind:   "CLOUDRUN",
+							Kind:   model.ApplicationKind_CLOUDRUN,
 							Status: "deploying",
 						},
 						Count: 2,
 					},
 					{
 						LabelSet: insight.ApplicationCountLabelSet{
-							Kind:   "CLOUDRUN",
+							Kind:   model.ApplicationKind_CLOUDRUN,
 							Status: "deleted",
 						},
 						Count: 1,

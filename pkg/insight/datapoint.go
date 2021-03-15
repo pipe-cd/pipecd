@@ -15,15 +15,10 @@
 package insight
 
 import (
-	"errors"
 	"fmt"
 	"time"
 
 	"github.com/pipe-cd/pipe/pkg/model"
-)
-
-var (
-	ErrNotFound = errors.New("data point not found")
 )
 
 // DeployFrequency represents a data point that shows the deployment frequency metrics.

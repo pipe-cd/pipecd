@@ -635,10 +635,11 @@ func TestInsightCollector_findDeploymentsCreatedInRange(t *testing.T) {
 			mock := datastoretest.NewMockDeploymentStore(ctrl)
 			tt.prepareMockDataStoreFn(mock)
 
+			is := insightstore.NewStore(filestoretest.NewMockStore(ctrl))
 			a := &InsightCollector{
 				applicationStore: nil,
 				deploymentStore:  mock,
-				insightstore:     insightstore.NewStore(filestoretest.NewMockStore(ctrl)),
+				insightstore:     &is,
 				logger:           zap.NewNop(),
 			}
 			got, err := a.findDeploymentsCreatedInRange(context.Background(), tt.args.from, tt.args.to)
@@ -831,10 +832,11 @@ func TestInsightCollector_findDeploymentsCompletedInRange(t *testing.T) {
 			mock := datastoretest.NewMockDeploymentStore(ctrl)
 			tt.prepareMockDataStoreFn(mock)
 
+			is := insightstore.NewStore(filestoretest.NewMockStore(ctrl))
 			a := &InsightCollector{
 				applicationStore: nil,
 				deploymentStore:  mock,
-				insightstore:     insightstore.NewStore(filestoretest.NewMockStore(ctrl)),
+				insightstore:     &is,
 				logger:           zap.NewNop(),
 			}
 			got, err := a.findDeploymentsCompletedInRange(context.Background(), tt.args.from, tt.args.to)

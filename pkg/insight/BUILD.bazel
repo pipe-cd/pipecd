@@ -19,6 +19,7 @@ go_test(
     name = "go_default_test",
     size = "small",
     srcs = [
+        "applicationcount_test.go",
         "chunk_test.go",
         "datapoint_test.go",
         "filepath_test.go",
