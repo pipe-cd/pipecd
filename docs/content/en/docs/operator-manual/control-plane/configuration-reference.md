@@ -48,12 +48,6 @@ Must be one of the following objects:
 | credentialsFile | string | The path to the service account file for accessing Firestores. | No |
 
 
-### DataStoreDynamoDBConfig
-
-| Field | Type | Description | Required |
-|-|-|-|-|
-
-
 ### DataStoreMongoDBConfig
 
 | Field | Type | Description | Required |

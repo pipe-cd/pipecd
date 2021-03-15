@@ -76,43 +76,9 @@ helm install pipecd pipecd/pipecd --version=VERSION --namespace=NAMESPACE \
   --set-file secret.gcsServiceAccount.data=path-to-service-account-file
 ```
 
-#### Using DynamoDB and S3
+Currently, besides `Firestore` PipeCD supports other databases as its datastore such as `MongoDB` and `MySQL`. Also as for filestore, PipeCD supports `AWS S3` and `MINIO` either.
 
-> TBA
-
-#### Using MongoDB and Minio
-
-``` yaml
-apiVersion: "pipecd.dev/v1beta1"
-kind: ControlPlane
-spec:
-  stateKey: {RANDOM_STRING}
-  datastore:
-    type: MONGODB
-    config:
-      url: {YOUR_MONGODB_ADDRESS}
-      database: {YOUR_DATABASE_NAME}
-  filestore:
-    type: MINIO
-    config:
-      endpoint: {YOUR_MINIO_ADDRESS}
-      bucket: {YOUR_BUCKET_NAME}
-      accessKeyFile: /etc/pipecd-secret/minio-access-key
-      secretKeyFile: /etc/pipecd-secret/minio-secret-key
-      autoCreateBucket: true
-```
-
-See [ConfigurationReference](/docs/operator-manual/control-plane/configuration-reference/) for the full configuration.
-
-After all, install the control-plane as bellow:
-
-``` console
-helm install pipecd pipecd/pipecd --version=VERSION --namespace=NAMESPACE \
-  --set-file config.data=path-to-control-plane-configuration-file \
-  --set-file secret.encryptionKey.data=path-to-encryption-key-file \
-  --set-file secret.minioAccessKey.data=path-to-minio-access-key-file \
-  --set-file secret.minioSecretKey.data=path-to-minio-secret-key-file
-```
+You can find required configuration to use them from [ConfigurationReference](/docs/operator-manual/control-plane/configuration-reference/).
 
 ### 4. Accessing the PipeCD web
 
