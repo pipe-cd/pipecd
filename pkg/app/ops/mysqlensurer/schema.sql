@@ -3,11 +3,11 @@
 --
 
 CREATE TABLE IF NOT EXISTS Project (
-  id BINARY(16) PRIMARY KEY,
-  data JSON NOT NULL,
-  created_at INT(11) GENERATED ALWAYS AS (data->>"$.created_at") STORED NOT NULL,
-  updated_at INT(11) GENERATED ALWAYS AS (data->>"$.updated_at") STORED NOT NULL,
-  extra VARCHAR(100) GENERATED ALWAYS AS (data->>"$._extra") STORED UNIQUE
+  Id BINARY(16) PRIMARY KEY,
+  Data JSON NOT NULL,
+  CreatedAt INT(11) GENERATED ALWAYS AS (data->>"$.created_at") STORED NOT NULL,
+  UpdatedAt INT(11) GENERATED ALWAYS AS (data->>"$.updated_at") STORED NOT NULL,
+  Extra VARCHAR(100) GENERATED ALWAYS AS (data->>"$._extra") STORED UNIQUE
 ) ENGINE=InnoDB;
 
 --
@@ -15,13 +15,13 @@ CREATE TABLE IF NOT EXISTS Project (
 --
 
 CREATE TABLE IF NOT EXISTS Application (
-  id BINARY(16) PRIMARY KEY,
-  data JSON NOT NULL,
-  project_id VARCHAR(50) GENERATED ALWAYS AS (data->>"$.project_id") STORED NOT NULL,
-  disabled BOOL GENERATED ALWAYS AS (data->>"$.disabled") STORED NOT NULL,
-  created_at INT(11) GENERATED ALWAYS AS (data->>"$.created_at") STORED NOT NULL,
-  updated_at INT(11) GENERATED ALWAYS AS (data->>"$.updated_at") STORED NOT NULL,
-  extra VARCHAR(100) GENERATED ALWAYS AS (data->>"$._extra") STORED
+  Id BINARY(16) PRIMARY KEY,
+  Data JSON NOT NULL,
+  ProjectId VARCHAR(50) GENERATED ALWAYS AS (data->>"$.project_id") STORED NOT NULL,
+  Disabled BOOL GENERATED ALWAYS AS (data->>"$.disabled") STORED NOT NULL,
+  CreatedAt INT(11) GENERATED ALWAYS AS (data->>"$.created_at") STORED NOT NULL,
+  UpdatedAt INT(11) GENERATED ALWAYS AS (data->>"$.updated_at") STORED NOT NULL,
+  Extra VARCHAR(100) GENERATED ALWAYS AS (data->>"$._extra") STORED
 ) ENGINE=InnoDB;
 
 --
@@ -29,12 +29,12 @@ CREATE TABLE IF NOT EXISTS Application (
 --
 
 CREATE TABLE IF NOT EXISTS Command (
-  id BINARY(16) PRIMARY KEY,
-  data JSON NOT NULL,
-  project_id VARCHAR(50) GENERATED ALWAYS AS (data->>"$.project_id") STORED NOT NULL,
-  created_at INT(11) GENERATED ALWAYS AS (data->>"$.created_at") STORED NOT NULL,
-  updated_at INT(11) GENERATED ALWAYS AS (data->>"$.updated_at") STORED NOT NULL,
-  extra VARCHAR(100) GENERATED ALWAYS AS (data->>"$._extra") STORED
+  Id BINARY(16) PRIMARY KEY,
+  Data JSON NOT NULL,
+  ProjectId VARCHAR(50) GENERATED ALWAYS AS (data->>"$.project_id") STORED NOT NULL,
+  CreatedAt INT(11) GENERATED ALWAYS AS (data->>"$.created_at") STORED NOT NULL,
+  UpdatedAt INT(11) GENERATED ALWAYS AS (data->>"$.updated_at") STORED NOT NULL,
+  Extra VARCHAR(100) GENERATED ALWAYS AS (data->>"$._extra") STORED
 ) ENGINE=InnoDB;
 
 --
@@ -42,12 +42,12 @@ CREATE TABLE IF NOT EXISTS Command (
 --
 
 CREATE TABLE IF NOT EXISTS Deployment (
-  id BINARY(16) PRIMARY KEY,
-  data JSON NOT NULL,
-  project_id VARCHAR(50) GENERATED ALWAYS AS (data->>"$.project_id") STORED NOT NULL,
-  created_at INT(11) GENERATED ALWAYS AS (data->>"$.created_at") STORED NOT NULL,
-  updated_at INT(11) GENERATED ALWAYS AS (data->>"$.updated_at") STORED NOT NULL,
-  extra VARCHAR(100) GENERATED ALWAYS AS (data->>"$._extra") STORED
+  Id BINARY(16) PRIMARY KEY,
+  Data JSON NOT NULL,
+  ProjectId VARCHAR(50) GENERATED ALWAYS AS (data->>"$.project_id") STORED NOT NULL,
+  CreatedAt INT(11) GENERATED ALWAYS AS (data->>"$.created_at") STORED NOT NULL,
+  UpdatedAt INT(11) GENERATED ALWAYS AS (data->>"$.updated_at") STORED NOT NULL,
+  Extra VARCHAR(100) GENERATED ALWAYS AS (data->>"$._extra") STORED
 ) ENGINE=InnoDB;
 
 --
@@ -55,12 +55,12 @@ CREATE TABLE IF NOT EXISTS Deployment (
 --
 
 CREATE TABLE IF NOT EXISTS Environment (
-  id BINARY(16) PRIMARY KEY,
-  data JSON NOT NULL,
-  project_id VARCHAR(50) GENERATED ALWAYS AS (data->>"$.project_id") STORED NOT NULL,
-  created_at INT(11) GENERATED ALWAYS AS (data->>"$.created_at") STORED NOT NULL,
-  updated_at INT(11) GENERATED ALWAYS AS (data->>"$.updated_at") STORED NOT NULL,
-  extra VARCHAR(100) GENERATED ALWAYS AS (data->>"$._extra") STORED
+  Id BINARY(16) PRIMARY KEY,
+  Data JSON NOT NULL,
+  ProjectId VARCHAR(50) GENERATED ALWAYS AS (data->>"$.project_id") STORED NOT NULL,
+  CreatedAt INT(11) GENERATED ALWAYS AS (data->>"$.created_at") STORED NOT NULL,
+  UpdatedAt INT(11) GENERATED ALWAYS AS (data->>"$.updated_at") STORED NOT NULL,
+  Extra VARCHAR(100) GENERATED ALWAYS AS (data->>"$._extra") STORED
 ) ENGINE=InnoDB;
 
 --
@@ -68,13 +68,13 @@ CREATE TABLE IF NOT EXISTS Environment (
 --
 
 CREATE TABLE IF NOT EXISTS Piped (
-  id BINARY(16) PRIMARY KEY,
-  data JSON NOT NULL,
-  project_id VARCHAR(50) GENERATED ALWAYS AS (data->>"$.project_id") STORED NOT NULL,
-  disabled BOOL GENERATED ALWAYS AS (data->>"$.disabled") STORED NOT NULL,
-  created_at INT(11) GENERATED ALWAYS AS (data->>"$.created_at") STORED NOT NULL,
-  updated_at INT(11) GENERATED ALWAYS AS (data->>"$.updated_at") STORED NOT NULL,
-  extra VARCHAR(100) GENERATED ALWAYS AS (data->>"$._extra") STORED
+  Id BINARY(16) PRIMARY KEY,
+  Data JSON NOT NULL,
+  ProjectId VARCHAR(50) GENERATED ALWAYS AS (data->>"$.project_id") STORED NOT NULL,
+  Disabled BOOL GENERATED ALWAYS AS (data->>"$.disabled") STORED NOT NULL,
+  CreatedAt INT(11) GENERATED ALWAYS AS (data->>"$.created_at") STORED NOT NULL,
+  UpdatedAt INT(11) GENERATED ALWAYS AS (data->>"$.updated_at") STORED NOT NULL,
+  Extra VARCHAR(100) GENERATED ALWAYS AS (data->>"$._extra") STORED
 ) ENGINE=InnoDB;
 
 --
@@ -82,13 +82,13 @@ CREATE TABLE IF NOT EXISTS Piped (
 --
 
 CREATE TABLE IF NOT EXISTS APIKey (
-  id BINARY(16) PRIMARY KEY,
-  data JSON NOT NULL,
-  project_id VARCHAR(50) GENERATED ALWAYS AS (data->>"$.project_id") STORED NOT NULL,
-  disabled BOOL GENERATED ALWAYS AS (data->>"$.disabled") STORED NOT NULL,
-  created_at INT(11) GENERATED ALWAYS AS (data->>"$.created_at") STORED NOT NULL,
-  updated_at INT(11) GENERATED ALWAYS AS (data->>"$.updated_at") STORED NOT NULL,
-  extra VARCHAR(100) GENERATED ALWAYS AS (data->>"$._extra") STORED
+  Id BINARY(16) PRIMARY KEY,
+  Data JSON NOT NULL,
+  ProjectId VARCHAR(50) GENERATED ALWAYS AS (data->>"$.project_id") STORED NOT NULL,
+  Disabled BOOL GENERATED ALWAYS AS (data->>"$.disabled") STORED NOT NULL,
+  CreatedAt INT(11) GENERATED ALWAYS AS (data->>"$.created_at") STORED NOT NULL,
+  UpdatedAt INT(11) GENERATED ALWAYS AS (data->>"$.updated_at") STORED NOT NULL,
+  Extra VARCHAR(100) GENERATED ALWAYS AS (data->>"$._extra") STORED
 ) ENGINE=InnoDB;
 
 --
@@ -96,10 +96,10 @@ CREATE TABLE IF NOT EXISTS APIKey (
 --
 
 CREATE TABLE IF NOT EXISTS Event (
-  id BINARY(16) PRIMARY KEY,
-  data JSON NOT NULL,
-  project_id VARCHAR(50) GENERATED ALWAYS AS (data->>"$.project_id") STORED NOT NULL,
-  created_at INT(11) GENERATED ALWAYS AS (data->>"$.created_at") STORED NOT NULL,
-  updated_at INT(11) GENERATED ALWAYS AS (data->>"$.updated_at") STORED NOT NULL,
-  extra VARCHAR(100) GENERATED ALWAYS AS (data->>"$._extra") STORED
+  Id BINARY(16) PRIMARY KEY,
+  Data JSON NOT NULL,
+  ProjectId VARCHAR(50) GENERATED ALWAYS AS (data->>"$.project_id") STORED NOT NULL,
+  CreatedAt INT(11) GENERATED ALWAYS AS (data->>"$.created_at") STORED NOT NULL,
+  UpdatedAt INT(11) GENERATED ALWAYS AS (data->>"$.updated_at") STORED NOT NULL,
+  Extra VARCHAR(100) GENERATED ALWAYS AS (data->>"$._extra") STORED
 ) ENGINE=InnoDB;
