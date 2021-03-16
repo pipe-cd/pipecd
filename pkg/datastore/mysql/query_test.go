@@ -31,7 +31,7 @@ func TestBuildGetQuery(t *testing.T) {
 		{
 			name:          "query for Project kind",
 			kind:          "Project",
-			expectedQuery: "SELECT data FROM Project WHERE id = UUID_TO_BIN(?,true)",
+			expectedQuery: "SELECT Data FROM Project WHERE Id = UUID_TO_BIN(?,true)",
 		},
 	}
 
@@ -52,7 +52,7 @@ func TestBuildUpdateQuery(t *testing.T) {
 		{
 			name:          "query for Project kind",
 			kind:          "Project",
-			expectedQuery: "UPDATE Project SET data = ? WHERE id = UUID_TO_BIN(?,true)",
+			expectedQuery: "UPDATE Project SET Data = ? WHERE Id = UUID_TO_BIN(?,true)",
 		},
 	}
 
@@ -73,7 +73,7 @@ func TestBuildCreateQuery(t *testing.T) {
 		{
 			name:          "query for Project kind",
 			kind:          "Project",
-			expectedQuery: "INSERT INTO Project (id, data) VALUE (UUID_TO_BIN(?,true), ?)",
+			expectedQuery: "INSERT INTO Project (Id, Data) VALUE (UUID_TO_BIN(?,true), ?)",
 		},
 	}
 
@@ -94,7 +94,7 @@ func TestBuildPutQuery(t *testing.T) {
 		{
 			name:          "query for Project kind",
 			kind:          "Project",
-			expectedQuery: "INSERT INTO Project (id, data) VALUE (UUID_TO_BIN(?,true), ?) ON DUPLICATE KEY UPDATE data = ?",
+			expectedQuery: "INSERT INTO Project (Id, Data) VALUE (UUID_TO_BIN(?,true), ?) ON DUPLICATE KEY UPDATE Data = ?",
 		},
 	}
 
@@ -117,7 +117,7 @@ func TestBuildFindQuery(t *testing.T) {
 			name:          "query without filter and order",
 			kind:          "Project",
 			listOptions:   datastore.ListOptions{},
-			expectedQuery: "SELECT data FROM Project",
+			expectedQuery: "SELECT Data FROM Project",
 		},
 		{
 			name: "query with one filter",
@@ -125,13 +125,13 @@ func TestBuildFindQuery(t *testing.T) {
 			listOptions: datastore.ListOptions{
 				Filters: []datastore.ListFilter{
 					{
-						Field:    "extra",
+						Field:    "Extra",
 						Operator: "LIKE",
 						Value:    "app-1%",
 					},
 				},
 			},
-			expectedQuery: "SELECT data FROM Project WHERE extra LIKE ?",
+			expectedQuery: "SELECT Data FROM Project WHERE Extra LIKE ?",
 		},
 		{
 			name: "query with multi filters",
@@ -139,18 +139,18 @@ func TestBuildFindQuery(t *testing.T) {
 			listOptions: datastore.ListOptions{
 				Filters: []datastore.ListFilter{
 					{
-						Field:    "data->>\"$.name\"",
+						Field:    "Data->>\"$.name\"",
 						Operator: "=",
 						Value:    "app-123",
 					},
 					{
-						Field:    "extra",
+						Field:    "Extra",
 						Operator: "LIKE",
 						Value:    "app-1%",
 					},
 				},
 			},
-			expectedQuery: "SELECT data FROM Project WHERE data->>\"$.name\" = ? AND extra LIKE ?",
+			expectedQuery: "SELECT Data FROM Project WHERE Data->>\"$.name\" = ? AND Extra LIKE ?",
 		},
 		{
 			name: "query with one filter and one order by column",
@@ -158,19 +158,19 @@ func TestBuildFindQuery(t *testing.T) {
 			listOptions: datastore.ListOptions{
 				Filters: []datastore.ListFilter{
 					{
-						Field:    "extra",
+						Field:    "Extra",
 						Operator: "LIKE",
 						Value:    "app-1%",
 					},
 				},
 				Orders: []datastore.Order{
 					{
-						Field:     "updated_at",
+						Field:     "UpdatedAt",
 						Direction: datastore.Desc,
 					},
 				},
 			},
-			expectedQuery: "SELECT data FROM Project WHERE extra LIKE ? ORDER BY updated_at DESC",
+			expectedQuery: "SELECT Data FROM Project WHERE Extra LIKE ? ORDER BY UpdatedAt DESC",
 		},
 		{
 			name: "query with one filter and one order by on 2 columns",
@@ -178,23 +178,23 @@ func TestBuildFindQuery(t *testing.T) {
 			listOptions: datastore.ListOptions{
 				Filters: []datastore.ListFilter{
 					{
-						Field:    "extra",
+						Field:    "Extra",
 						Operator: "LIKE",
 						Value:    "app-1%",
 					},
 				},
 				Orders: []datastore.Order{
 					{
-						Field:     "created_at",
+						Field:     "CreatedAt",
 						Direction: datastore.Asc,
 					},
 					{
-						Field:     "updated_at",
+						Field:     "UpdatedAt",
 						Direction: datastore.Desc,
 					},
 				},
 			},
-			expectedQuery: "SELECT data FROM Project WHERE extra LIKE ? ORDER BY created_at ASC, updated_at DESC",
+			expectedQuery: "SELECT Data FROM Project WHERE Extra LIKE ? ORDER BY CreatedAt ASC, UpdatedAt DESC",
 		},
 		{
 			name: "query with limit",
@@ -202,7 +202,7 @@ func TestBuildFindQuery(t *testing.T) {
 			listOptions: datastore.ListOptions{
 				PageSize: 20,
 			},
-			expectedQuery: "SELECT data FROM Project LIMIT 20",
+			expectedQuery: "SELECT Data FROM Project LIMIT 20",
 		},
 		{
 			name: "query with limit offset",
@@ -211,7 +211,7 @@ func TestBuildFindQuery(t *testing.T) {
 				PageSize: 20,
 				Page:     20,
 			},
-			expectedQuery: "SELECT data FROM Project LIMIT 20 OFFSET 400",
+			expectedQuery: "SELECT Data FROM Project LIMIT 20 OFFSET 400",
 		},
 	}
 
