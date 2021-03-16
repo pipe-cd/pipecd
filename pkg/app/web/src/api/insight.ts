@@ -2,6 +2,8 @@ import { apiClient, apiRequest } from "./client";
 import {
   GetInsightDataRequest,
   GetInsightDataResponse,
+  GetInsightApplicationCountRequest,
+  GetInsightApplicationCountResponse,
 } from "pipe/pkg/app/web/api_client/service_pb";
 
 export const getInsightData = ({
@@ -20,4 +22,11 @@ export const getInsightData = ({
   req.setRangeFrom(rangeFrom);
   req.setStep(step);
   return apiRequest(req, apiClient.getInsightData);
+};
+
+export const getApplicationCount = (): Promise<
+  GetInsightApplicationCountResponse.AsObject
+> => {
+  const req = new GetInsightApplicationCountRequest();
+  return apiRequest(req, apiClient.getInsightApplicationCount);
 };
