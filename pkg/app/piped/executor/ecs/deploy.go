@@ -71,6 +71,9 @@ func (e *deployExecutor) Execute(sig executor.StopSignal) model.StageStatus {
 
 func (e *deployExecutor) ensureSync(ctx context.Context) model.StageStatus {
 	taskDefinition, ok := loadTaskDefinition(&e.Input, e.deployCfg.Input.ServiceDefinitionFile, e.deploySource)
+	if !ok {
+		return model.StageStatus_STAGE_FAILURE
+	}
 	servicedefinition, ok := loadServiceDefinition(&e.Input, e.deployCfg.Input.ServiceDefinitionFile, e.deploySource)
 	if !ok {
 		return model.StageStatus_STAGE_FAILURE

@@ -38,12 +38,11 @@ func Register(r registerer) {
 	}
 	r.Register(model.StageECSSync, f)
 
-	// WIP
-	// r.RegisterRollback(model.ApplicationKind_ECS, func(in executor.Input) executor.Executor {
-	// 	return &rollbackExecutor{
-	// 		Input: in,
-	// 	}
-	// })
+	r.RegisterRollback(model.ApplicationKind_ECS, func(in executor.Input) executor.Executor {
+		return &rollbackExecutor{
+			Input: in,
+		}
+	})
 }
 
 func findCloudProvider(in *executor.Input) (name string, cfg *config.CloudProviderECSConfig, found bool) {
@@ -105,7 +104,7 @@ func sync(ctx context.Context, in *executor.Input, cloudProviderName string, clo
 		return false
 	}
 
-	in.LogPersister.Infof("Successfully applied the service definition and the task definition for ECS service and task %s version (v%s)", fm.Spec.Name, version)
+	in.LogPersister.Infof("Successfully applied the service definition and the task definition for ECS service %s and task definition %s", serviceDefinition.ServiceName, taskDefinition.TaskDefinitionArn)
 	return true
 }
 
