@@ -39,7 +39,7 @@ func (e *rollbackExecutor) Execute(sig executor.StopSignal) model.StageStatus {
 	case model.StageRollback:
 		status = e.ensureRollback(ctx)
 	default:
-		e.LogPersister.Errorf("Unsupported stage %s for cloudrun application", e.Stage.Name)
+		e.LogPersister.Errorf("Unsupported stage %s for lambda application", e.Stage.Name)
 		return model.StageStatus_STAGE_FAILURE
 	}
 
