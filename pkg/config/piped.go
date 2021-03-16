@@ -213,6 +213,7 @@ type PipedCloudProvider struct {
 	TerraformConfig  *CloudProviderTerraformConfig
 	CloudRunConfig   *CloudProviderCloudRunConfig
 	LambdaConfig     *CloudProviderLambdaConfig
+	ECSConfig        *CloudProviderECSConfig
 }
 
 type genericPipedCloudProvider struct {
@@ -305,6 +306,23 @@ type CloudProviderCloudRunConfig struct {
 }
 
 type CloudProviderLambdaConfig struct {
+	// The region to send requests to. This parameter is required.
+	// e.g. "us-west-2"
+	// A full list of regions is: https://docs.aws.amazon.com/general/latest/gr/rande.html
+	Region string `json:"region"`
+	// Path to the shared credentials file.
+	CredentialsFile string `json:"credentialsFile"`
+	// The IAM role arn to use when assuming an role.
+	RoleARN string `json:"roleARN"`
+	// Path to the WebIdentity token the SDK should use to assume a role with.
+	TokenFile string `json:"tokenFile"`
+	// AWS Profile to extract credentials from the shared credentials file.
+	// If empty, the environment variable "AWS_PROFILE" is used.
+	// "default" is populated if the environment variable is also not set.
+	Profile string `json:"profile"`
+}
+
+type CloudProviderECSConfig struct {
 	// The region to send requests to. This parameter is required.
 	// e.g. "us-west-2"
 	// A full list of regions is: https://docs.aws.amazon.com/general/latest/gr/rande.html
