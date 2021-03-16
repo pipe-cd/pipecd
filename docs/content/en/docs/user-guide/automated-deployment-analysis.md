@@ -22,30 +22,22 @@ Automatic rollback based on the analysis result
 Before enabling ADA inside the pipeline, all required Analysis Providers must be configured in the Piped Configuration according to [this guide](/docs/operator-manual/piped/adding-an-analysis-provider/).
 
 ### Configuration
-All you have to do is appending one or some `ANALYSIS` stages to your deployment pipeline.
-
-The canonical use case for that stage is to determine if your canary deployment should proceed:
+All you have to do is appending one or some `ANALYSIS` stages to your deployment pipeline:
 ```yaml
 apiVersion: pipecd.dev/v1beta1
 kind: KubernetesApp
 spec:
   pipeline:
     stages:
-      - name: K8S_CANARY_ROLLOUT
-        with:
-          replicas: 10%
       - name: ANALYSIS
         with:
           duration: 30m
           metrics:
             - provider: prometheus-dev
               interval: 5m
-              failureLimit: 1
+              query: grpc_request_error_percentage
               expected:
                 max: 10
-              query: grpc_request_error_percentage
-      - name: K8S_PRIMARY_ROLLOUT
-      - name: K8S_CANARY_CLEAN
 ```
 
 In the `provider` field, put the name of provider you have set to Piped configuration in the [Prerequisites](/docs/user-guide/automated-deployment-analysis/#prerequisites) section.
@@ -53,10 +45,12 @@ In the `provider` field, put the name of provider you have set to Piped configur
 The `ANALYSIS` stage will continue to run for the period specified in the `duration` field.
 In the meantime, Piped sends the given `query` to the Analysis Provider at each specified `interval`.
 
-For each query, it checks if the result is within the expected range. If it's not expected, it considers it a failure.
-When the number of failures exceeds the one specified in the `failureLimit` field, this `ANALYSIS` stage will fail (typically the rollback stage will be started).
+For each query, it checks if the result is within the expected range. If it's not expected, this `ANALYSIS` stage will fail (typically the rollback stage will be started).
+You can change the acceptable number of failures by setting the `failureLimit` field.
 
 The full list of configurable `ANALYSIS` stage fields are [here](/docs/user-guide/configuration-reference/#analysisstageoptions).
+
+The canonical use case for this stage is to determine if your canary deployment should proceed. See more the [example](https://github.com/pipe-cd/examples/blob/master/kubernetes/analysis-by-metrics/.pipe.yaml).
 
 ### [Optional] Analysis Template
 Analysis Templating is a feature that allows you to define some shared analysis configurations to be used by multiple applications. These templates must be placed at the `.pipe` directory at the root of the Git repository. Any application in that Git repository can use to the defined template by specifying the name of the template in the deployment configuration file.
