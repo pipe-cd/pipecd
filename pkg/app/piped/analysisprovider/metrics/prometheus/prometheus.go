@@ -83,9 +83,9 @@ func (p *Provider) Type() string {
 	return ProviderType
 }
 
-func (p *Provider) RunQuery(ctx context.Context, query string, queryRange metrics.QueryRange, evaluator metrics.Evaluator) (bool, error) {
+func (p *Provider) RunQuery(ctx context.Context, query string, queryRange metrics.QueryRange, evaluator metrics.Evaluator) (bool, string, error) {
 	if err := queryRange.Validate(); err != nil {
-		return false, err
+		return false, "", err
 	}
 
 	ctx, cancel := context.WithTimeout(ctx, p.timeout)
@@ -99,7 +99,7 @@ func (p *Provider) RunQuery(ctx context.Context, query string, queryRange metric
 		Step:  queryRange.Step,
 	})
 	if err != nil {
-		return false, err
+		return false, "", err
 	}
 	for _, w := range warnings {
 		p.logger.Warn("non critical error occurred", zap.String("warning", w))
@@ -107,11 +107,8 @@ func (p *Provider) RunQuery(ctx context.Context, query string, queryRange metric
 	return evaluate(evaluator, response)
 }
 
-func evaluate(evaluator metrics.Evaluator, response model.Value) (bool, error) {
-	if err := evaluator.Validate(); err != nil {
-		return false, err
-	}
-
+func evaluate(evaluator metrics.Evaluator, response model.Value) (bool, string, error) {
+	successReason := fmt.Sprintf("all values are within the expected range (%s)", evaluator)
 	evaluateValue := func(value float64) (bool, error) {
 		if math.IsNaN(value) {
 			return false, fmt.Errorf("the value is not a number")
@@ -122,10 +119,18 @@ func evaluate(evaluator metrics.Evaluator, response model.Value) (bool, error) {
 	// NOTE: Maybe it's enough to handle only matrix type as long as calling range queries endpoint.
 	switch res := response.(type) {
 	case *model.Scalar:
-		return evaluateValue(float64(res.Value))
+		expected, err := evaluateValue(float64(res.Value))
+		if err != nil {
+			return false, "", err
+		}
+		if !expected {
+			reason := fmt.Sprintf("found a value (%g) that is out of the expected range (%s)", float64(res.Value), evaluator)
+			return false, reason, nil
+		}
+		return true, successReason, nil
 	case model.Vector:
 		if len(res) == 0 {
-			return false, fmt.Errorf("zero value in instant vector type returned")
+			return false, "", fmt.Errorf("zero value in instant vector type returned")
 		}
 		// Check if all values are expected value.
 		for _, s := range res {
@@ -134,34 +139,36 @@ func evaluate(evaluator metrics.Evaluator, response model.Value) (bool, error) {
 			}
 			expected, err := evaluateValue(float64(s.Value))
 			if err != nil {
-				return false, err
+				return false, "", err
 			}
 			if !expected {
-				return false, nil
+				reason := fmt.Sprintf("found a value (%g) that is out of the expected range (%s)", float64(s.Value), evaluator)
+				return false, reason, nil
 			}
 		}
-		return true, nil
+		return true, successReason, nil
 	case model.Matrix:
 		if len(res) == 0 {
-			return false, fmt.Errorf("no time series data points in range vector type")
+			return false, "", fmt.Errorf("no time series data points in range vector type")
 		}
 		// Check if all values are expected value.
 		for _, r := range res {
 			if len(r.Values) == 0 {
-				return false, fmt.Errorf("zero value in range vector type returned")
+				return false, "", fmt.Errorf("zero value in range vector type returned")
 			}
 			for _, value := range r.Values {
 				expected, err := evaluateValue(float64(value.Value))
 				if err != nil {
-					return false, err
+					return false, "", err
 				}
 				if !expected {
-					return false, nil
+					reason := fmt.Sprintf("found a value (%g) that is out of the expected range (%s)", float64(value.Value), evaluator)
+					return false, reason, nil
 				}
 			}
 		}
-		return true, nil
+		return true, successReason, nil
 	default:
-		return false, fmt.Errorf("unexpected data type returned")
+		return false, "", fmt.Errorf("unexpected data type returned")
 	}
 }

@@ -117,7 +117,7 @@ func (e *Executor) Execute(sig executor.StopSignal) model.StageStatus {
 	for i := range options.Metrics {
 		analyzer, err := e.newAnalyzerForMetrics(i, &options.Metrics[i], templateCfg)
 		if err != nil {
-			e.LogPersister.Errorf("failed to spawn analyzer for %s: %v", options.Metrics[i].Provider, err)
+			e.LogPersister.Errorf("Failed to spawn analyzer for %s: %v", options.Metrics[i].Provider, err)
 			return model.StageStatus_STAGE_FAILURE
 		}
 		eg.Go(func() error {
@@ -129,7 +129,7 @@ func (e *Executor) Execute(sig executor.StopSignal) model.StageStatus {
 	for i := range options.Logs {
 		analyzer, err := e.newAnalyzerForLog(i, &options.Logs[i], templateCfg)
 		if err != nil {
-			e.LogPersister.Errorf("failed to spawn analyzer for %s: %v", options.Logs[i].Provider, err)
+			e.LogPersister.Errorf("Failed to spawn analyzer for %s: %v", options.Logs[i].Provider, err)
 			return model.StageStatus_STAGE_FAILURE
 		}
 		eg.Go(func() error {
@@ -141,7 +141,7 @@ func (e *Executor) Execute(sig executor.StopSignal) model.StageStatus {
 	for i := range options.Https {
 		analyzer, err := e.newAnalyzerForHTTP(i, &options.Https[i], templateCfg)
 		if err != nil {
-			e.LogPersister.Errorf("failed to spawn analyzer for HTTP: %v", err)
+			e.LogPersister.Errorf("Failed to spawn analyzer for HTTP: %v", err)
 			return model.StageStatus_STAGE_FAILURE
 		}
 		eg.Go(func() error {
@@ -205,15 +205,14 @@ func (e *Executor) newAnalyzerForMetrics(i int, templatable *config.TemplatableA
 		return nil, err
 	}
 	id := fmt.Sprintf("metrics-%d", i)
-	runner := func(ctx context.Context) (bool, error) {
-		e.LogPersister.Infof("[%s] Run query against %s: %q", id, provider.Type(), cfg.Query)
+	runner := func(ctx context.Context, query string) (bool, string, error) {
 		queryRange := metrics.QueryRange{
 			From: time.Now().Add(-cfg.Interval.Duration()),
 			To:   time.Now(),
 		}
-		return provider.RunQuery(ctx, cfg.Query, queryRange, &cfg.Expected)
+		return provider.RunQuery(ctx, query, queryRange, &cfg.Expected)
 	}
-	return newAnalyzer(id, provider.Type(), runner, time.Duration(cfg.Interval), cfg.FailureLimit, e.Logger, e.LogPersister), nil
+	return newAnalyzer(id, provider.Type(), cfg.Query, runner, time.Duration(cfg.Interval), cfg.FailureLimit, e.Logger, e.LogPersister), nil
 }
 
 func (e *Executor) newAnalyzerForLog(i int, templatable *config.TemplatableAnalysisLog, templateCfg *config.AnalysisTemplateSpec) (*analyzer, error) {
@@ -226,11 +225,10 @@ func (e *Executor) newAnalyzerForLog(i int, templatable *config.TemplatableAnaly
 		return nil, err
 	}
 	id := fmt.Sprintf("log-%d", i)
-	runner := func(ctx context.Context) (bool, error) {
-		e.LogPersister.Infof("[%s] Run query against %s: %q", id, provider.Type(), cfg.Query)
-		return provider.RunQuery(ctx, cfg.Query)
+	runner := func(ctx context.Context, query string) (bool, string, error) {
+		return provider.RunQuery(ctx, query)
 	}
-	return newAnalyzer(id, provider.Type(), runner, time.Duration(cfg.Interval), cfg.FailureLimit, e.Logger, e.LogPersister), nil
+	return newAnalyzer(id, provider.Type(), cfg.Query, runner, time.Duration(cfg.Interval), cfg.FailureLimit, e.Logger, e.LogPersister), nil
 }
 
 func (e *Executor) newAnalyzerForHTTP(i int, templatable *config.TemplatableAnalysisHTTP, templateCfg *config.AnalysisTemplateSpec) (*analyzer, error) {
@@ -240,11 +238,10 @@ func (e *Executor) newAnalyzerForHTTP(i int, templatable *config.TemplatableAnal
 	}
 	provider := httpprovider.NewProvider(time.Duration(cfg.Timeout))
 	id := fmt.Sprintf("http-%d", i)
-	runner := func(ctx context.Context) (bool, error) {
-		e.LogPersister.Infof("[%s] Start running query against %s: %s %s", id, provider.Type(), cfg.Method, cfg.URL)
+	runner := func(ctx context.Context, query string) (bool, string, error) {
 		return provider.Run(ctx, cfg)
 	}
-	return newAnalyzer(id, provider.Type(), runner, time.Duration(cfg.Interval), cfg.FailureLimit, e.Logger, e.LogPersister), nil
+	return newAnalyzer(id, provider.Type(), "", runner, time.Duration(cfg.Interval), cfg.FailureLimit, e.Logger, e.LogPersister), nil
 }
 
 func (e *Executor) newMetricsProvider(providerName string, templatable *config.TemplatableAnalysisMetrics) (metrics.Provider, error) {
