@@ -61,17 +61,34 @@ func TestMakeFlowControlTagsMap(t *testing.T) {
 			},
 		},
 		{
-			name: "has newly defined tags",
+			name: "has only newly defined tags",
+			remoteTags: map[string]string{
+				"app": "simple",
+			},
+			definedTags: map[string]string{
+				"app":      "simple",
+				"function": "code",
+			},
+			wantedNewDefinedTags: map[string]string{
+				"function": "code",
+			},
+			wantedUpdatedTags: map[string]string{},
+			wantedRemovedTags: map[string]string{},
+		},
+		{
+			name: "complex defined tags",
 			remoteTags: map[string]string{
 				"app":      "simple",
 				"function": "code",
 			},
 			definedTags: map[string]string{
-				"app": "simple-app",
 				"foo": "bar",
+				"app": "simple-app",
+				"bar": "foo",
 			},
 			wantedNewDefinedTags: map[string]string{
 				"foo": "bar",
+				"bar": "foo",
 			},
 			wantedUpdatedTags: map[string]string{
 				"app": "simple-app",
