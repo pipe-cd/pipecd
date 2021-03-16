@@ -1,4 +1,3 @@
-import React, { FC, memo, useState } from "react";
 import {
   Box,
   Card,
@@ -7,8 +6,8 @@ import {
   Popover,
   Typography,
 } from "@material-ui/core";
-import { ApplicationKind } from "../../modules/applications";
-import { APPLICATION_KIND_TEXT } from "../../constants/application-kind";
+import clsx from "clsx";
+import React, { FC, memo, useState } from "react";
 
 const useStyles = makeStyles((theme) => ({
   root: {
@@ -32,12 +31,19 @@ const useStyles = makeStyles((theme) => ({
 export interface ApplicationCountProps {
   totalCount: number;
   disabledCount: number;
-  kind: ApplicationKind;
+  kind: string;
   onClick: () => void;
+  className?: string;
 }
 
 export const ApplicationCount: FC<ApplicationCountProps> = memo(
-  function ApplicationCount({ totalCount, disabledCount, kind, onClick }) {
+  function ApplicationCount({
+    totalCount,
+    disabledCount,
+    kind,
+    onClick,
+    className,
+  }) {
     const classes = useStyles();
 
     const [anchorEl, setAnchorEl] = useState<HTMLButtonElement | null>(null);
@@ -48,7 +54,7 @@ export const ApplicationCount: FC<ApplicationCountProps> = memo(
     };
 
     return (
-      <Card raised className={classes.root}>
+      <Card raised className={clsx(classes.root, className)}>
         <CardActionArea
           className={classes.actionArea}
           onClick={onClick}
@@ -58,7 +64,7 @@ export const ApplicationCount: FC<ApplicationCountProps> = memo(
           onMouseLeave={handlePopoverClose}
         >
           <Typography variant="h6" component="div" color="textSecondary">
-            {APPLICATION_KIND_TEXT[kind]}
+            {kind}
           </Typography>
           <Box display="flex" justifyContent="center" alignItems="baseline">
             <Typography variant="h4" component="span">

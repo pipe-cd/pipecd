@@ -1,4 +1,5 @@
 import {
+  Box,
   Button,
   CircularProgress,
   Divider,
@@ -18,7 +19,7 @@ import { ApplicationList } from "../../components/application-list";
 import { DeploymentConfigForm } from "../../components/deployment-config-form";
 import { EditApplicationDrawer } from "../../components/edit-application-drawer";
 import { AppState } from "../../modules";
-import { fetchApplications } from "../../modules/applications";
+import { ApplicationKind, fetchApplications } from "../../modules/applications";
 import { clearTemplateTarget } from "../../modules/deployment-configs";
 import { AppDispatch } from "../../store";
 import { UI_TEXT_FILTER, UI_TEXT_HIDE_FILTER } from "../../constants/ui-text";
@@ -28,6 +29,8 @@ import {
 } from "../../utils/search-params";
 import { useHistory } from "react-router-dom";
 import { PAGE_PATH_APPLICATIONS } from "../../constants/path";
+import { fetchApplicationCount } from "../../modules/application-counts";
+import { ApplicationCounts } from "../../components/application-counts";
 
 const useStyles = makeStyles((theme) => ({
   main: {
@@ -77,15 +80,32 @@ export const ApplicationIndexPage: FC = memo(function ApplicationIndexPage() {
 
   const handleRefresh = useCallback(() => {
     dispatch(fetchApplications(filterOptions));
+    dispatch(fetchApplicationCount());
   }, [dispatch, filterOptions]);
 
   const handleCloseTemplateForm = (): void => {
     dispatch(clearTemplateTarget());
   };
 
+  const handleApplicationCountClick = useCallback(
+    (kind: ApplicationKind) => {
+      history.replace(
+        `${PAGE_PATH_APPLICATIONS}?${stringifySearchParams({
+          ...filterOptions,
+          kind,
+        })}`
+      );
+    },
+    [history, filterOptions]
+  );
+
   useEffect(() => {
     dispatch(fetchApplications(filterOptions));
   }, [dispatch, filterOptions]);
+
+  useEffect(() => {
+    dispatch(fetchApplicationCount());
+  }, [dispatch]);
 
   return (
     <>
@@ -121,7 +141,10 @@ export const ApplicationIndexPage: FC = memo(function ApplicationIndexPage() {
       <Divider />
 
       <div className={classes.main}>
-        <ApplicationList />
+        <Box display="flex" flexDirection="column" flex={1} p={2}>
+          <ApplicationCounts onClick={handleApplicationCountClick} />
+          <ApplicationList />
+        </Box>
         {openFilter && (
           <ApplicationFilter
             options={filterOptions}

@@ -27,14 +27,9 @@ import { DeleteApplicationDialog } from "../delete-application-dialog";
 import { DisableApplicationDialog } from "../disable-application-dialog";
 import { SealedSecretDialog } from "../sealed-secret-dialog";
 
-const useStyles = makeStyles((theme) => ({
-  root: {
-    padding: theme.spacing(2),
+const useStyles = makeStyles(() => ({
+  container: {
     flex: 1,
-    overflow: "auto",
-  },
-  statusText: {
-    marginLeft: theme.spacing(1),
   },
 }));
 
@@ -127,9 +122,9 @@ export const ApplicationList: FC = memo(function ApplicationList() {
   );
 
   return (
-    <div className={classes.root}>
-      <TableContainer component={Paper}>
-        <Table>
+    <>
+      <TableContainer component={Paper} className={classes.container} square>
+        <Table stickyHeader>
           <TableHead>
             <TableRow>
               <TableCell>Status</TableCell>
@@ -169,7 +164,7 @@ export const ApplicationList: FC = memo(function ApplicationList() {
                 count={applications.length}
                 rowsPerPage={rowsPerPage}
                 page={page}
-                colSpan={8}
+                colSpan={9}
                 onChangePage={(_, newPage) => {
                   setPage(newPage);
                 }}
@@ -197,6 +192,6 @@ export const ApplicationList: FC = memo(function ApplicationList() {
       />
 
       <DeleteApplicationDialog />
-    </div>
+    </>
   );
 });
