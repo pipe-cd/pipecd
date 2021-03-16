@@ -22,7 +22,10 @@ import (
 	"github.com/pipe-cd/pipe/pkg/model"
 )
 
-var defaultWaitApprovalTimeout = Duration(6 * time.Hour)
+const (
+	defaultWaitApprovalTimeout  = Duration(6 * time.Hour)
+	defaultAnalysisQueryTimeout = Duration(30 * time.Second)
+)
 
 type GenericDeploymentSpec struct {
 	// Forcibly use QuickSync or Pipeline when commit message matched the specified pattern.
@@ -42,6 +45,15 @@ type GenericDeploymentSpec struct {
 func (s *GenericDeploymentSpec) Validate() error {
 	if s.Timeout == 0 {
 		s.Timeout = Duration(6 * time.Hour)
+	}
+	if s.Pipeline != nil {
+		for _, stage := range s.Pipeline.Stages {
+			if stage.AnalysisStageOptions != nil {
+				if err := stage.AnalysisStageOptions.Validate(); err != nil {
+					return err
+				}
+			}
+		}
 	}
 	return nil
 }
@@ -154,6 +166,11 @@ func (s *PipelineStage) UnmarshalJSON(data []byte) error {
 		if len(gs.With) > 0 {
 			err = json.Unmarshal(gs.With, s.AnalysisStageOptions)
 		}
+		for i := 0; i < len(s.AnalysisStageOptions.Metrics); i++ {
+			if s.AnalysisStageOptions.Metrics[i].Timeout <= 0 {
+				s.AnalysisStageOptions.Metrics[i].Timeout = defaultAnalysisQueryTimeout
+			}
+		}
 	case model.StageK8sPrimaryRollout:
 		s.K8sPrimaryRolloutStageOptions = &K8sPrimaryRolloutStageOptions{}
 		if len(gs.With) > 0 {
@@ -258,6 +275,27 @@ type AnalysisStageOptions struct {
 	Logs             []TemplatableAnalysisLog     `json:"logs"`
 	Https            []TemplatableAnalysisHTTP    `json:"https"`
 	Dynamic          AnalysisDynamic              `json:"dynamic"`
+}
+
+func (a *AnalysisStageOptions) Validate() error {
+	if a.Duration == 0 {
+		return fmt.Errorf("the ANALYSIS stage requires duration field")
+	}
+	for i, m := range a.Metrics {
+		if m.Provider == "" {
+			return fmt.Errorf("missing metrics[%d].provider in the ANALYSIS stage option", i)
+		}
+		if m.Query == "" {
+			return fmt.Errorf("missing metrics[%d].query in the ANALYSIS stage option", i)
+		}
+		if m.Interval == 0 {
+			return fmt.Errorf("missing metrics[%d].interval in the ANALYSIS stage option", i)
+		}
+		if err := a.Metrics[i].Expected.Validate(); err != nil {
+			return fmt.Errorf("missing metrics[%d].expected in the ANALYSIS stage option: %w", i, err)
+		}
+	}
+	return nil
 }
 
 type AnalysisTemplateRef struct {

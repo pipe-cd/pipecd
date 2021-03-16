@@ -18,15 +18,25 @@ import "fmt"
 
 // AnalysisMetrics contains common configurable values for deployment analysis with metrics.
 type AnalysisMetrics struct {
-	Query    string           `json:"query"`
+	// The unique name of provider defined in the Piped Configuration.
+	// Required field.
+	Provider string `json:"provider"`
+	// A query performed against the Analysis Provider.
+	// Required field.
+	Query string `json:"query"`
+	// The expected query result.
+	// Required field.
 	Expected AnalysisExpected `json:"expected"`
-	Interval Duration         `json:"interval"`
-	// Maximum number of failed checks before the query result is considered as failure.
-	// For instance, If 1 is set, the analysis will be considered a failure after 2 failures.
+	// Run a query at this intervals.
+	// Required field.
+	Interval Duration `json:"interval"`
+	// Acceptable number of failures. For instance, If 1 is set,
+	// the analysis will be considered a failure after 2 failures.
+	// Default is 0.
 	FailureLimit int `json:"failureLimit"`
 	// How long after which the query times out.
-	Timeout  Duration `json:"timeout"`
-	Provider string   `json:"provider"`
+	// Default is 30s.
+	Timeout Duration `json:"timeout"`
 }
 
 // AnalysisExpected defines the range used for metrics analysis.
