@@ -31,7 +31,10 @@ var (
 	mysqlDatabaseIndexes = mysqlProperties_0
 )
 
-const mysqlErrorCodeDuplicateKeyName = 1061
+const (
+	mysqlErrorCodeDuplicateColumnName = 1060
+	mysqlErrorCodeDuplicateKeyName    = 1061
+)
 
 type mysqlEnsurer struct {
 	client       *sql.DB
@@ -68,8 +71,8 @@ func NewMySQLEnsurer(url, database, usernameFile, passwordFile string, logger *z
 func (m *mysqlEnsurer) EnsureIndexes(ctx context.Context) error {
 	for _, stmt := range makeCreateIndexStatements(mysqlDatabaseIndexes) {
 		_, err := m.client.ExecContext(ctx, stmt)
-		// Ignore in case error duplicate key name occurred.
-		if mysqlErr, ok := err.(*mysql.MySQLError); ok && mysqlErr.Number == mysqlErrorCodeDuplicateKeyName {
+		// Ignore in case error duplicate key name or column name occurred.
+		if mysqlErr, ok := err.(*mysql.MySQLError); ok && (mysqlErr.Number == mysqlErrorCodeDuplicateKeyName || mysqlErr.Number == mysqlErrorCodeDuplicateColumnName) {
 			continue
 		}
 		if err != nil {
