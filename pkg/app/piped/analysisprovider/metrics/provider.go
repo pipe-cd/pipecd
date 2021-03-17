@@ -30,16 +30,15 @@ type Provider interface {
 	Type() string
 	// RunQuery runs the given query against the metrics provider,
 	// and then checks if the results are expected or not.
-	// TODO: Give back the reason of the result
-	RunQuery(ctx context.Context, query string, queryRange QueryRange, evaluator Evaluator) (result bool, err error)
+	// Returns the result reason if non-error occurred.
+	RunQuery(ctx context.Context, query string, queryRange QueryRange, evaluator Evaluator) (expected bool, reason string, err error)
 }
 
 // Evaluator evaluates the response from the metrics provider.
 type Evaluator interface {
 	// InRange checks if the value is expected one.
 	InRange(value float64) bool
-	// Validates ensures its own configuration has no problem.
-	Validate() error
+	String() string
 }
 
 // QueryRange represents a sliced time range.

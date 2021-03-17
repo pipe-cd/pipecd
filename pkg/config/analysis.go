@@ -14,7 +14,11 @@
 
 package config
 
-import "fmt"
+import (
+	"fmt"
+	"strconv"
+	"strings"
+)
 
 // AnalysisMetrics contains common configurable values for deployment analysis with metrics.
 type AnalysisMetrics struct {
@@ -54,13 +58,33 @@ func (e *AnalysisExpected) Validate() error {
 
 // InRange returns true if the given value is within the range.
 func (e *AnalysisExpected) InRange(value float64) bool {
-	if min := e.Min; min != nil && *min > value {
+	if e.Min != nil && *e.Min > value {
 		return false
 	}
-	if max := e.Max; max != nil && *max < value {
+	if e.Max != nil && *e.Max < value {
 		return false
 	}
 	return true
+}
+
+func (e *AnalysisExpected) String() string {
+	if e.Min == nil && e.Max == nil {
+		return ""
+	}
+
+	var b strings.Builder
+	if e.Min != nil {
+		min := strconv.FormatFloat(*e.Min, 'f', -1, 64)
+		b.WriteString(min + " ")
+	}
+
+	b.WriteString("<=")
+
+	if e.Max != nil {
+		max := strconv.FormatFloat(*e.Max, 'f', -1, 64)
+		b.WriteString(" " + max)
+	}
+	return b.String()
 }
 
 // AnalysisLog contains common configurable values for deployment analysis with log.
