@@ -18,6 +18,7 @@ import { updateApplicationSlice } from "./update-application";
 import { insightSlice } from "./insight";
 import { deploymentFrequencySlice } from "./deployment-frequency";
 import { deleteApplicationSlice } from "./delete-application";
+import { applicationCountsSlice } from "./application-counts";
 
 export const reducers = combineReducers({
   deployments: deploymentsSlice.reducer,
@@ -38,6 +39,7 @@ export const reducers = combineReducers({
   apiKeys: apiKeysSlice.reducer,
   insight: insightSlice.reducer,
   deploymentFrequency: deploymentFrequencySlice.reducer,
+  applicationCounts: applicationCountsSlice.reducer,
 });
 
 export type AppState = ReturnType<typeof reducers>;

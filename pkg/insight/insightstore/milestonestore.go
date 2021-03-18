@@ -23,7 +23,7 @@ import (
 
 const milestonePath = "insights/milestone.json"
 
-func (s *Store) LoadMilestone(ctx context.Context) (*insight.Milestone, error) {
+func (s *store) LoadMilestone(ctx context.Context) (*insight.Milestone, error) {
 	m := &insight.Milestone{}
 	obj, err := s.filestore.GetObject(ctx, milestonePath)
 	if err != nil {
@@ -37,7 +37,7 @@ func (s *Store) LoadMilestone(ctx context.Context) (*insight.Milestone, error) {
 	return m, nil
 }
 
-func (s *Store) PutMilestone(ctx context.Context, m *insight.Milestone) error {
+func (s *store) PutMilestone(ctx context.Context, m *insight.Milestone) error {
 	data, err := json.Marshal(m)
 	if err != nil {
 		return err

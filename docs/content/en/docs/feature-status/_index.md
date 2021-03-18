@@ -86,7 +86,7 @@ Please note that the phases (Incubating, Alpha, Beta, and Stable) are applied to
 | [Command-line tool (pipectl) and API for external services](/docs/user-guide/command-line-tool/) | Beta |
 | Support executing custom stage | Incubating |
 | [ADA](/docs/user-guide/automated-deployment-analysis/) (Automated Deployment Analysis) by Prometheus metrics | Alpha |
-| [ADA](/docs/user-guide/automated-deployment-analysis/) by Datadog metrics | Incubating |
+| [ADA](/docs/user-guide/automated-deployment-analysis/) by Datadog metrics | Alpha |
 | [ADA](/docs/user-guide/automated-deployment-analysis/) by Stackdriver metrics | Incubating |
 | [ADA](/docs/user-guide/automated-deployment-analysis/) by Stackdriver log | Incubating |
 | [ADA](/docs/user-guide/automated-deployment-analysis/) by CloudWatch metrics | Incubating |
@@ -106,11 +106,10 @@ Please note that the phases (Incubating, Alpha, Beta, and Stable) are applied to
 | Google SSO | Incubating |
 | Bitbucket SSO | Incubating |
 | Support GCP [Firestore](https://cloud.google.com/firestore) as a data store of the control plane | Beta |
-| Support AWS [DynamoDB](https://aws.amazon.com/dynamodb/) as a data store of the control plane | Incubating |
 | Support [MongoDB](https://www.mongodb.com/) as a data store of the control plane | Alpha |
-| Support [MySQL v8.0](https://www.mysql.com/) database as a data store of the control plane | Incubating |
+| Support [MySQL v8.0](https://www.mysql.com/) database as a data store of the control plane | Alpha |
 | Support GCP [GCS](https://cloud.google.com/storage) as a file store of the control plane | Beta |
-| Support AWS [S3](https://aws.amazon.com/s3/) as a file store of the control plane | Incubating |
+| Support AWS [S3](https://aws.amazon.com/s3/) as a file store of the control plane | Alpha |
 | Support [Minio](https://github.com/minio/minio) as a file store of the control plane | Alpha |
 | [Insights](/docs/user-guide/insights/) shows delivery performance | Incubating |
 | Collecting piped's metrics and enabling their dashboards | Incubating |

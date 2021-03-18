@@ -68,6 +68,12 @@ secret:
   awsCredentials:
     fileName: aws-credentials
     data: ""
+  datadogApiKey:
+    fileName: datadog-api-key
+    data: ""
+  datadogApplicationKey:
+    fileName: datadog-application-key
+    data: ""
 
 nodeSelector: {}
 

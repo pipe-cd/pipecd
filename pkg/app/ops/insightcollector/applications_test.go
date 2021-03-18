@@ -197,7 +197,7 @@ func TestInsightCollector_updateApplicationCount(t *testing.T) {
 	}()
 	tests := []struct {
 		name                      string
-		prepareInsightstoreMockFn func(m *insightstoretest.MockIStore)
+		prepareInsightstoreMockFn func(m *insightstoretest.MockStore)
 		apps                      []*model.Application
 		pid                       string
 		target                    time.Time
@@ -205,7 +205,7 @@ func TestInsightCollector_updateApplicationCount(t *testing.T) {
 	}{
 		{
 			name: "success",
-			prepareInsightstoreMockFn: func(m *insightstoretest.MockIStore) {
+			prepareInsightstoreMockFn: func(m *insightstoretest.MockStore) {
 				m.EXPECT().LoadApplicationCount(gomock.Any(), "12").Return(applicationCount, nil)
 				m.EXPECT().PutApplicationCount(gomock.Any(), func() *insight.ApplicationCount {
 					ac := insight.NewApplicationCount()
@@ -266,7 +266,7 @@ func TestInsightCollector_updateApplicationCount(t *testing.T) {
 		},
 		{
 			name: "success even if application count was not found",
-			prepareInsightstoreMockFn: func(m *insightstoretest.MockIStore) {
+			prepareInsightstoreMockFn: func(m *insightstoretest.MockStore) {
 				m.EXPECT().LoadApplicationCount(gomock.Any(), "12").Return(nil, filestore.ErrNotFound)
 				m.EXPECT().PutApplicationCount(gomock.Any(), func() *insight.ApplicationCount {
 					ac := insight.NewApplicationCount()
@@ -328,7 +328,7 @@ func TestInsightCollector_updateApplicationCount(t *testing.T) {
 		},
 		{
 			name: "fail when failed to put application count",
-			prepareInsightstoreMockFn: func(m *insightstoretest.MockIStore) {
+			prepareInsightstoreMockFn: func(m *insightstoretest.MockStore) {
 				m.EXPECT().LoadApplicationCount(gomock.Any(), "12").Return(applicationCount, nil)
 				m.EXPECT().PutApplicationCount(gomock.Any(), func() *insight.ApplicationCount {
 					ac := insight.NewApplicationCount()
@@ -390,7 +390,7 @@ func TestInsightCollector_updateApplicationCount(t *testing.T) {
 		},
 		{
 			name: "fail when failed to get application count",
-			prepareInsightstoreMockFn: func(m *insightstoretest.MockIStore) {
+			prepareInsightstoreMockFn: func(m *insightstoretest.MockStore) {
 				m.EXPECT().LoadApplicationCount(gomock.Any(), "12").Return(nil, errors.New("error"))
 			},
 			pid: "12",
@@ -425,7 +425,7 @@ func TestInsightCollector_updateApplicationCount(t *testing.T) {
 			ctrl := gomock.NewController(t)
 			defer ctrl.Finish()
 
-			mock := insightstoretest.NewMockIStore(ctrl)
+			mock := insightstoretest.NewMockStore(ctrl)
 			tt.prepareInsightstoreMockFn(mock)
 			i := &InsightCollector{
 				insightstore: mock,

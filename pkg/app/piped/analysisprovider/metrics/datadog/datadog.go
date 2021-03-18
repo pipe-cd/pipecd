@@ -91,9 +91,9 @@ func (p *Provider) Type() string {
 
 // RunQuery issues an HTTP request to the API named "MetricsApi.QueryMetrics", then evaluate its response.
 // See more: https://docs.datadoghq.com/api/latest/metrics/#query-timeseries-points
-func (p *Provider) RunQuery(ctx context.Context, query string, queryRange metrics.QueryRange, evaluator metrics.Evaluator) (bool, error) {
+func (p *Provider) RunQuery(ctx context.Context, query string, queryRange metrics.QueryRange, evaluator metrics.Evaluator) (bool, string, error) {
 	if err := queryRange.Validate(); err != nil {
-		return false, err
+		return false, "", err
 	}
 
 	ctx, cancel := context.WithTimeout(ctx, p.timeout)
@@ -122,38 +122,36 @@ func (p *Provider) RunQuery(ctx context.Context, query string, queryRange metric
 		Query(query).
 		Execute()
 	if err != nil {
-		return false, fmt.Errorf("failed to call \"MetricsApi.QueryMetrics\": %w", err)
+		return false, "", fmt.Errorf("failed to call \"MetricsApi.QueryMetrics\": %w", err)
 	}
 	if httpResp.StatusCode != http.StatusOK {
-		return false, fmt.Errorf("unexpected HTTP status code from %s: %d", httpResp.Request.URL, httpResp.StatusCode)
+		return false, "", fmt.Errorf("unexpected HTTP status code from %s: %d", httpResp.Request.URL, httpResp.StatusCode)
 	}
 	if resp.Series == nil || len(*resp.Series) == 0 {
-		return false, metrics.ErrNoValuesFound
+		return false, "", metrics.ErrNoValuesFound
 	}
 	return evaluate(evaluator, *resp.Series)
 }
 
 // evaluate checks if all data points for all time series are within the expected range.
-func evaluate(evaluator metrics.Evaluator, series []datadog.MetricsQueryMetadata) (bool, error) {
-	if err := evaluator.Validate(); err != nil {
-		return false, err
-	}
-
+func evaluate(evaluator metrics.Evaluator, series []datadog.MetricsQueryMetadata) (bool, string, error) {
 	for _, s := range series {
 		points := s.Pointlist
 		if points == nil || len(*points) == 0 {
-			return false, fmt.Errorf("invalid response: no data points of the time series found")
+			return false, "", fmt.Errorf("invalid response: no data points of the time series found")
 		}
 		for _, point := range *points {
 			if len(point) < 2 {
-				return false, fmt.Errorf("invalid response: invalid data point found")
+				return false, "", fmt.Errorf("invalid response: invalid data point found")
 			}
 			// NOTE: A data point is assumed to be kind of like [unix-time, value].
 			value := point[1]
 			if !evaluator.InRange(value) {
-				return false, nil
+				reason := fmt.Sprintf("found a value (%g) that is out of the expected range (%s)", value, evaluator)
+				return false, reason, nil
 			}
 		}
 	}
-	return true, nil
+	reason := fmt.Sprintf("all values are within the expected range (%s)", evaluator)
+	return true, reason, nil
 }

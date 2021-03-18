@@ -14,19 +14,33 @@
 
 package config
 
-import "fmt"
+import (
+	"fmt"
+	"strconv"
+	"strings"
+)
 
 // AnalysisMetrics contains common configurable values for deployment analysis with metrics.
 type AnalysisMetrics struct {
-	Query    string           `json:"query"`
+	// The unique name of provider defined in the Piped Configuration.
+	// Required field.
+	Provider string `json:"provider"`
+	// A query performed against the Analysis Provider.
+	// Required field.
+	Query string `json:"query"`
+	// The expected query result.
+	// Required field.
 	Expected AnalysisExpected `json:"expected"`
-	Interval Duration         `json:"interval"`
-	// Maximum number of failed checks before the query result is considered as failure.
-	// For instance, If 1 is set, the analysis will be considered a failure after 2 failures.
+	// Run a query at this intervals.
+	// Required field.
+	Interval Duration `json:"interval"`
+	// Acceptable number of failures. For instance, If 1 is set,
+	// the analysis will be considered a failure after 2 failures.
+	// Default is 0.
 	FailureLimit int `json:"failureLimit"`
 	// How long after which the query times out.
-	Timeout  Duration `json:"timeout"`
-	Provider string   `json:"provider"`
+	// Default is 30s.
+	Timeout Duration `json:"timeout"`
 }
 
 // AnalysisExpected defines the range used for metrics analysis.
@@ -44,13 +58,33 @@ func (e *AnalysisExpected) Validate() error {
 
 // InRange returns true if the given value is within the range.
 func (e *AnalysisExpected) InRange(value float64) bool {
-	if min := e.Min; min != nil && *min > value {
+	if e.Min != nil && *e.Min > value {
 		return false
 	}
-	if max := e.Max; max != nil && *max < value {
+	if e.Max != nil && *e.Max < value {
 		return false
 	}
 	return true
+}
+
+func (e *AnalysisExpected) String() string {
+	if e.Min == nil && e.Max == nil {
+		return ""
+	}
+
+	var b strings.Builder
+	if e.Min != nil {
+		min := strconv.FormatFloat(*e.Min, 'f', -1, 64)
+		b.WriteString(min + " ")
+	}
+
+	b.WriteString("<=")
+
+	if e.Max != nil {
+		max := strconv.FormatFloat(*e.Max, 'f', -1, 64)
+		b.WriteString(" " + max)
+	}
+	return b.String()
 }
 
 // AnalysisLog contains common configurable values for deployment analysis with log.

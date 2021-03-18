@@ -92,6 +92,7 @@ service WebService {
 
     // Insights
     rpc GetInsightData(GetInsightDataRequest) returns (GetInsightDataResponse) {}
+    rpc GetInsightApplicationCount(GetInsightApplicationCountRequest) returns (GetInsightApplicationCountResponse) {}
 }
 
 message AddEnvironmentResponse {
@@ -456,4 +457,12 @@ message GetInsightDataResponse {
     pipe.model.InsightResultType type = 3;
     repeated model.InsightSample vector = 4;
     repeated model.InsightSampleStream matrix = 5;
+}
+
+message GetInsightApplicationCountRequest {
+}
+
+message GetInsightApplicationCountResponse {
+    int64 updated_at = 1;
+    repeated pipe.model.InsightApplicationCount counts = 2;
 }

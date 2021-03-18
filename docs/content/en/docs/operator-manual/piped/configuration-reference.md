@@ -133,12 +133,18 @@ Must be one of the following structs:
 Must be one of the following structs:
 
 ### AnalysisProviderPrometheusConfig
-
 | Field | Type | Description | Required |
 |-|-|-|-|
 | address | string | The Prometheus server address. | Yes |
 | usernameFile | string | The path to the username file. | No |
 | passwordFile | string | The path to the password file. | No |
+
+### AnalysisProviderDatadogConfig
+| Field | Type | Description | Required |
+|-|-|-|-|
+| address | string | The address of Datadog API server. Only "datadoghq.com", "us3.datadoghq.com", "datadoghq.eu", "ddog-gov.com" are available. Defaults to "datadoghq.com" | No |
+| apiKeyFile | string | The path to the api key file. | Yes |
+| applicationKeyFile | string | The path to the application key file. | Yes |
 
 ## EventWatcher
 

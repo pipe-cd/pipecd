@@ -48,23 +48,23 @@ func NewProvider(timeout time.Duration) *Provider {
 }
 
 // Run sends an HTTP request and then evaluate whether the response is expected one.
-func (p *Provider) Run(ctx context.Context, cfg *config.AnalysisHTTP) (bool, error) {
+func (p *Provider) Run(ctx context.Context, cfg *config.AnalysisHTTP) (bool, string, error) {
 	req, err := p.makeRequest(ctx, cfg)
 	if err != nil {
-		return false, err
+		return false, "", err
 	}
 
 	res, err := p.client.Do(req)
 	if err != nil {
-		return false, err
+		return false, "", err
 	}
 	defer res.Body.Close()
 
 	if res.StatusCode != cfg.ExpectedCode {
-		return false, fmt.Errorf("unexpected status code %d", res.StatusCode)
+		return false, "", fmt.Errorf("unexpected status code %d", res.StatusCode)
 	}
 	// TODO: Decide how to check if the body is expected one.
-	return true, nil
+	return true, "", nil
 }
 
 func (p *Provider) makeRequest(ctx context.Context, cfg *config.AnalysisHTTP) (*http.Request, error) {

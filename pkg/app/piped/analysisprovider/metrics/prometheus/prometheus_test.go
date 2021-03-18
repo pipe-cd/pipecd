@@ -84,7 +84,7 @@ func TestRunQuery(t *testing.T) {
 				timeout: defaultTimeout,
 				logger:  zap.NewNop(),
 			}
-			res, err := p.RunQuery(context.Background(), "dummy", metrics.QueryRange{From: time.Now()}, tc.expected)
+			res, _, err := p.RunQuery(context.Background(), "dummy", metrics.QueryRange{From: time.Now()}, tc.expected)
 			assert.Equal(t, tc.wantErr, err != nil)
 			assert.Equal(t, res, tc.wantResult)
 		})
@@ -121,7 +121,7 @@ func TestEvaluate(t *testing.T) {
 	}
 	for _, tc := range testcases {
 		t.Run(tc.name, func(t *testing.T) {
-			got, err := evaluate(tc.evaluator, tc.response)
+			got, _, err := evaluate(tc.evaluator, tc.response)
 			assert.Equal(t, tc.wantErr, err != nil)
 			assert.Equal(t, tc.want, got)
 		})

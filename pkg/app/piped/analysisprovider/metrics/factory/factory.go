@@ -17,6 +17,7 @@ package factory
 import (
 	"fmt"
 	"io/ioutil"
+	"strings"
 
 	"go.uber.org/zap"
 
@@ -33,9 +34,7 @@ func NewProvider(analysisTempCfg *config.TemplatableAnalysisMetrics, providerCfg
 	case model.AnalysisProviderPrometheus:
 		options := []prometheus.Option{
 			prometheus.WithLogger(logger),
-		}
-		if t := analysisTempCfg.Timeout.Duration(); t > 0 {
-			options = append(options, prometheus.WithTimeout(t))
+			prometheus.WithTimeout(analysisTempCfg.Timeout.Duration()),
 		}
 		return prometheus.NewProvider(providerCfg.PrometheusConfig.Address, options...)
 	case model.AnalysisProviderDatadog:
@@ -46,24 +45,21 @@ func NewProvider(analysisTempCfg *config.TemplatableAnalysisMetrics, providerCfg
 			if err != nil {
 				return nil, fmt.Errorf("failed to read the api-key file: %w", err)
 			}
-			apiKey = string(a)
+			apiKey = strings.TrimSpace(string(a))
 		}
 		if cfg.ApplicationKeyFile != "" {
 			a, err := ioutil.ReadFile(cfg.ApplicationKeyFile)
 			if err != nil {
 				return nil, fmt.Errorf("failed to read the application-key file: %w", err)
 			}
-			applicationKey = string(a)
+			applicationKey = strings.TrimSpace(string(a))
 		}
 		options := []datadog.Option{
-			datadog.WithAddress(cfg.Address),
 			datadog.WithLogger(logger),
+			datadog.WithTimeout(analysisTempCfg.Timeout.Duration()),
 		}
 		if cfg.Address != "" {
 			options = append(options, datadog.WithAddress(cfg.Address))
-		}
-		if t := analysisTempCfg.Timeout.Duration(); t > 0 {
-			options = append(options, datadog.WithTimeout(t))
 		}
 		return datadog.NewProvider(apiKey, applicationKey, options...)
 	default:

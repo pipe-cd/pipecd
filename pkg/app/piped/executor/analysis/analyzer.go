@@ -15,28 +15,40 @@ import (
 type analyzer struct {
 	id           string
 	providerType string
-	runQuery     func(ctx context.Context) (bool, error)
+	runQuery     queryRunner
+	query        string
 	interval     time.Duration
-	// The analysis will fail, ff this value is exceeded,
+	// The analysis will fail, if this value is exceeded,
 	failureLimit int
 
 	logger       *zap.Logger
 	logPersister executor.LogPersister
 }
 
-func newAnalyzer(id string, providerType string, runQuery func(ctx context.Context) (bool, error), interval time.Duration, failureLimit int, logger *zap.Logger, logPersister executor.LogPersister) *analyzer {
-	l := logger.With(
-		zap.String("analyzer-id", id),
-		zap.String("provider-type", providerType),
-	)
+type queryRunner func(ctx context.Context, query string) (expected bool, reason string, err error)
+
+func newAnalyzer(
+	id string,
+	providerType string,
+	query string,
+	runQuery queryRunner,
+	interval time.Duration,
+	failureLimit int,
+	logger *zap.Logger,
+	logPersister executor.LogPersister,
+) *analyzer {
 	return &analyzer{
 		id:           id,
 		providerType: providerType,
 		runQuery:     runQuery,
+		query:        query,
 		interval:     interval,
 		failureLimit: failureLimit,
-		logger:       l,
 		logPersister: logPersister,
+		logger: logger.With(
+			zap.String("analyzer-id", id),
+			zap.String("provider-type", providerType),
+		),
 	}
 }
 
@@ -50,29 +62,21 @@ func (a *analyzer) run(ctx context.Context) error {
 	for {
 		select {
 		case <-ticker.C:
-			reason := ""
-			success, err := a.runQuery(ctx)
+			expected, reason, err := a.runQuery(ctx, a.query)
 			if errors.Is(err, context.DeadlineExceeded) && ctx.Err() == context.DeadlineExceeded {
 				// Ignore parent's context deadline exceeded error, and return immediately.
 				return nil
 			}
 			// TODO: Consider how to handle the case of analysisprovider.ErrNoValuesFound
 			if err != nil {
-				// The failure of the query itself is treated as a failure.
+				// The failure of the query itself is treated as an unexpected result.
 				reason = fmt.Sprintf("failed to run query: %s", err.Error())
-				success = false
 			}
-			if success {
-				a.logPersister.Successf("[%s] The query result is a success.", a.id)
+			if expected {
+				a.logPersister.Successf("[%s] The query result is expected one. Reason: %s. Performed query: %s", a.id, reason, a.query)
 			} else {
 				failureCount++
-				if reason == "" {
-					reason = "the response is not expected value"
-				}
-				a.logPersister.Errorf("[%s] The query result is a failure. Reason: %s",
-					a.id,
-					reason,
-				)
+				a.logPersister.Errorf("[%s] The query result is unexpected. Reason: %s. Performed query: %s", a.id, reason, a.query)
 			}
 
 			if failureCount > a.failureLimit {

@@ -30,7 +30,7 @@ spec:
 
 | Field | Type | Description | Required |
 |-|-|-|-|
-| type | string | Which type of data store should be used. Can be one of the following values<br>`FIRESTORE`, `DYNAMODB`, `MONGODB`. | Yes |
+| type | string | Which type of data store should be used. Can be one of the following values<br>`FIRESTORE`, `MONGODB`, `MYSQL`. | Yes |
 | config | [DataStoreConfig](/docs/operator-manual/control-plane/configuration-reference/#datastoreconfig) | Specific configuration for the datastore type. This must be one of these DataStoreConfig. | Yes |
 
 ## DataStoreConfig
@@ -48,17 +48,21 @@ Must be one of the following objects:
 | credentialsFile | string | The path to the service account file for accessing Firestores. | No |
 
 
-### DataStoreDynamoDBConfig
-
-| Field | Type | Description | Required |
-|-|-|-|-|
-
-
 ### DataStoreMongoDBConfig
 
 | Field | Type | Description | Required |
 |-|-|-|-|
 | url | string | The address to MongoDB server. | Yes |
+| database | string | The name of database. | Yes |
+| usernameFile | string | The path to the username file. | No |
+| passwordFile | string | The path to the password file. | No |
+
+
+### DataStoreMySQLConfig
+
+| Field | Type | Description | Required |
+|-|-|-|-|
+| url | string | The address to MySQL server. Should attach with the database port info as `127.0.0.1:3307` in case you want to use another port than the default value. | Yes |
 | database | string | The name of database. | Yes |
 | usernameFile | string | The path to the username file. | No |
 | passwordFile | string | The path to the password file. | No |
@@ -86,6 +90,12 @@ Must be one of the following objects:
 
 | Field | Type | Description | Required |
 |-|-|-|-|
+| bucket | string | The AWS S3 bucket name. | Yes |
+| region | string | The AWS region name. | Yes |
+| profile | string | The AWS profile name. Default value is `default`. | No |
+| credentialsFile | string | The path to AWS credential file. Requires only if you want to auth by specified credential file, by default PipeCD will use `$HOME/.aws/credentials` file. | No |
+| roleARN | string | The IAM role arn to use when assuming an role. Requires only if you want to auth by `WebIdentity` pattern. | No |
+| tokenFile | string | The path to the WebIdentity token PipeCD should use to assume a role with. Requires only if you want to auth by `WebIdentity` pattern. | No |
 
 ### FileStoreMinioConfig
 

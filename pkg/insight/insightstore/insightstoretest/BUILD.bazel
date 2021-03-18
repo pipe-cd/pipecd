@@ -20,7 +20,7 @@ gomock(
     name = "mock_insightstore",
     out = "insightstore.mock.go",
     interfaces = [
-        "IStore",
+        "Store",
     ],
     library = "//pkg/insight/insightstore:go_default_library",
     package = "insightstoretest",

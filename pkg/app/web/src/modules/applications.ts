@@ -211,4 +211,7 @@ export {
   ApplicationSyncStatus,
   ApplicationDeploymentReference,
 } from "pipe/pkg/app/web/model/application_pb";
-export { ApplicationKind } from "pipe/pkg/app/web/model/common_pb";
+export {
+  ApplicationKind,
+  ApplicationActiveStatus,
+} from "pipe/pkg/app/web/model/common_pb";

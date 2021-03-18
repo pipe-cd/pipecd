@@ -20,28 +20,7 @@ const Template: Story<DeploymentFrequencyChartProps> = (args) => (
 );
 export const Overview = Template.bind({});
 Overview.args = {
-  data: [{ name: "application-1", points: randData }],
-};
-
-export const MultipleApplication = Template.bind({});
-MultipleApplication.args = {
-  data: [
-    { name: "application-1", points: randData },
-    {
-      name: "application-2",
-      points: randData.map((v) => ({
-        ...v,
-        value: Math.floor(Math.random() * 30 + 5),
-      })),
-    },
-    {
-      name: "application-3",
-      points: randData.map((v) => ({
-        ...v,
-        value: Math.floor(Math.random() * 10 + 15),
-      })),
-    },
-  ],
+  data: [{ name: "Total Deployments", points: randData }],
 };
 
 export const NoData = Template.bind({});

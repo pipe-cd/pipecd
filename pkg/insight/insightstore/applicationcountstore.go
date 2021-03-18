@@ -23,7 +23,7 @@ import (
 )
 
 // LoadApplicationCount loads insight.ApplicationCount.
-func (s *Store) LoadApplicationCount(ctx context.Context, projectID string) (*insight.ApplicationCount, error) {
+func (s *store) LoadApplicationCount(ctx context.Context, projectID string) (*insight.ApplicationCount, error) {
 	a := &insight.ApplicationCount{}
 	obj, err := s.filestore.GetObject(ctx, determineFilePath(projectID))
 	if err != nil {
@@ -38,7 +38,7 @@ func (s *Store) LoadApplicationCount(ctx context.Context, projectID string) (*in
 }
 
 // PutApplicationCount creates or updates insight.ApplicationCount.
-func (s *Store) PutApplicationCount(ctx context.Context, ac *insight.ApplicationCount, projectID string) error {
+func (s *store) PutApplicationCount(ctx context.Context, ac *insight.ApplicationCount, projectID string) error {
 	data, err := json.Marshal(ac)
 	if err != nil {
 		return err

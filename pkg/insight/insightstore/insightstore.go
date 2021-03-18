@@ -8,7 +8,7 @@ import (
 	"github.com/pipe-cd/pipe/pkg/model"
 )
 
-type IStore interface {
+type Store interface {
 	LoadChunks(
 		ctx context.Context,
 		projectID, appID string,
@@ -20,6 +20,7 @@ type IStore interface {
 	PutChunk(ctx context.Context, chunk insight.Chunk) error
 	LoadMilestone(ctx context.Context) (*insight.Milestone, error)
 	PutMilestone(ctx context.Context, m *insight.Milestone) error
+
 	LoadApplicationCount(ctx context.Context, projectID string) (*insight.ApplicationCount, error)
 	PutApplicationCount(ctx context.Context, ac *insight.ApplicationCount, projectID string) error
 }

@@ -356,7 +356,7 @@ func makeFlowControlTagsMaps(remoteTags, definedTags map[string]string) (newDefi
 		val, ok := remoteTags[k]
 		if !ok {
 			newDefinedTags[k] = v
-			break
+			continue
 		}
 		if val != v {
 			updatedTags[k] = v

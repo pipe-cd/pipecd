@@ -22,24 +22,24 @@ import (
 )
 
 func buildGetQuery(table string) string {
-	return fmt.Sprintf("SELECT data FROM %s WHERE id = UUID_TO_BIN(?,true)", table)
+	return fmt.Sprintf("SELECT Data FROM %s WHERE Id = UUID_TO_BIN(?,true)", table)
 }
 
 func buildUpdateQuery(table string) string {
-	return fmt.Sprintf("UPDATE %s SET data = ? WHERE id = UUID_TO_BIN(?,true)", table)
+	return fmt.Sprintf("UPDATE %s SET Data = ? WHERE Id = UUID_TO_BIN(?,true)", table)
 }
 
 func buildPutQuery(table string) string {
-	return fmt.Sprintf("INSERT INTO %s (id, data) VALUE (UUID_TO_BIN(?,true), ?) ON DUPLICATE KEY UPDATE data = ?", table)
+	return fmt.Sprintf("INSERT INTO %s (Id, Data) VALUE (UUID_TO_BIN(?,true), ?) ON DUPLICATE KEY UPDATE Data = ?", table)
 }
 
 func buildCreateQuery(table string) string {
-	return fmt.Sprintf("INSERT INTO %s (id, data) VALUE (UUID_TO_BIN(?,true), ?)", table)
+	return fmt.Sprintf("INSERT INTO %s (Id, Data) VALUE (UUID_TO_BIN(?,true), ?)", table)
 }
 
 func buildFindQuery(table string, ops datastore.ListOptions) string {
 	rawQuery := fmt.Sprintf(
-		"SELECT data FROM %s %s %s %s",
+		"SELECT Data FROM %s %s %s %s",
 		table,
 		buildWhereClause(ops.Filters),
 		buildOrderByClause(ops.Orders),
