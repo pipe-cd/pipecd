@@ -252,6 +252,11 @@ func (p *PipedCloudProvider) UnmarshalJSON(data []byte) error {
 		if len(gp.Config) > 0 {
 			err = json.Unmarshal(gp.Config, p.LambdaConfig)
 		}
+	case model.CloudProviderECS:
+		p.ECSConfig = &CloudProviderECSConfig{}
+		if len(gp.Config) > 0 {
+			err = json.Unmarshal(gp.Config, p.ECSConfig)
+		}
 	default:
 		err = fmt.Errorf("unsupported cloud provider type: %s", p.Name)
 	}

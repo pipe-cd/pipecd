@@ -23,6 +23,7 @@ import (
 	"github.com/pipe-cd/pipe/pkg/app/piped/planner/kubernetes"
 	"github.com/pipe-cd/pipe/pkg/app/piped/planner/lambda"
 	"github.com/pipe-cd/pipe/pkg/app/piped/planner/terraform"
+	"github.com/pipe-cd/pipe/pkg/app/piped/planner/ecs"
 	"github.com/pipe-cd/pipe/pkg/model"
 )
 
@@ -71,4 +72,5 @@ func init() {
 	kubernetes.Register(defaultRegistry)
 	lambda.Register(defaultRegistry)
 	terraform.Register(defaultRegistry)
+	ecs.Register(defaultRegistry)
 }
