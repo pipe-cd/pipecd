@@ -60,6 +60,11 @@ export const ApplicationCounts: FC<ApplicationCountsProps> = memo(
                   APPLICATION_ACTIVE_STATUS_NAME[
                     ApplicationActiveStatus.ENABLED
                   ]
+                ] +
+                counts[kindName][
+                  APPLICATION_ACTIVE_STATUS_NAME[
+                    ApplicationActiveStatus.DISABLED
+                  ]
                 ]
               }
               disabledCount={
