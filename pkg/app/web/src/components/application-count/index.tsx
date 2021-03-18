@@ -29,7 +29,7 @@ const useStyles = makeStyles((theme) => ({
 }));
 
 export interface ApplicationCountProps {
-  totalCount: number;
+  enabledCount: number;
   disabledCount: number;
   kindName: string;
   onClick: () => void;
@@ -38,7 +38,7 @@ export interface ApplicationCountProps {
 
 export const ApplicationCount: FC<ApplicationCountProps> = memo(
   function ApplicationCount({
-    totalCount,
+    enabledCount,
     disabledCount,
     kindName,
     onClick,
@@ -68,7 +68,7 @@ export const ApplicationCount: FC<ApplicationCountProps> = memo(
           </Typography>
           <Box display="flex" justifyContent="center" alignItems="baseline">
             <Typography variant="h4" component="span">
-              {totalCount}
+              {enabledCount}
             </Typography>
             {disabledCount > 0 ? (
               <Typography
@@ -110,8 +110,8 @@ export const ApplicationCount: FC<ApplicationCountProps> = memo(
           disableRestoreFocus
         >
           <div>
-            <b>{totalCount}</b>
-            {" total applications"}
+            <b>{enabledCount}</b>
+            {" enabled applications"}
           </div>
           <div>
             <b>{disabledCount}</b>

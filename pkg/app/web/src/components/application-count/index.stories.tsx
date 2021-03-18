@@ -18,7 +18,7 @@ const Template: Story<ApplicationCountProps> = (args) => (
 
 export const Overview = Template.bind({});
 Overview.args = {
-  totalCount: 123,
+  enabledCount: 123,
   disabledCount: 12,
   kindName: "KUBERNETES",
 };

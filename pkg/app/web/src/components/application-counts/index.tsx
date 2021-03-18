@@ -55,15 +55,10 @@ export const ApplicationCounts: FC<ApplicationCountsProps> = memo(
             <ApplicationCount
               key={kindName}
               kindName={kindName}
-              totalCount={
+              enabledCount={
                 counts[kindName][
                   APPLICATION_ACTIVE_STATUS_NAME[
                     ApplicationActiveStatus.ENABLED
-                  ]
-                ] +
-                counts[kindName][
-                  APPLICATION_ACTIVE_STATUS_NAME[
-                    ApplicationActiveStatus.DISABLED
                   ]
                 ]
               }
