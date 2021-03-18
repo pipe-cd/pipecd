@@ -31,7 +31,7 @@ const useStyles = makeStyles((theme) => ({
 export interface ApplicationCountProps {
   totalCount: number;
   disabledCount: number;
-  kind: string;
+  kindName: string;
   onClick: () => void;
   className?: string;
 }
@@ -40,7 +40,7 @@ export const ApplicationCount: FC<ApplicationCountProps> = memo(
   function ApplicationCount({
     totalCount,
     disabledCount,
-    kind,
+    kindName,
     onClick,
     className,
   }) {
@@ -64,7 +64,7 @@ export const ApplicationCount: FC<ApplicationCountProps> = memo(
           onMouseLeave={handlePopoverClose}
         >
           <Typography variant="h6" component="div" color="textSecondary">
-            {kind}
+            {kindName}
           </Typography>
           <Box display="flex" justifyContent="center" alignItems="baseline">
             <Typography variant="h4" component="span">

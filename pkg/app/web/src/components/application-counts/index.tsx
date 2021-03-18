@@ -54,7 +54,7 @@ export const ApplicationCounts: FC<ApplicationCountsProps> = memo(
           return (
             <ApplicationCount
               key={kindName}
-              kind={kindName}
+              kindName={kindName}
               totalCount={
                 counts[kindName][
                   APPLICATION_ACTIVE_STATUS_NAME[

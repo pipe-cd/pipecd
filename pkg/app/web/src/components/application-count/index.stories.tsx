@@ -20,5 +20,5 @@ export const Overview = Template.bind({});
 Overview.args = {
   totalCount: 123,
   disabledCount: 12,
-  kind: "KUBERNETES",
+  kindName: "KUBERNETES",
 };
