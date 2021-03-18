@@ -1,8 +1,6 @@
 apiVersion: pipecd.dev/v1beta1
 kind: KubernetesApp
 spec:
-  quickSync:
-    prune: true
   pipeline:
     stages:
       - name: K8S_CANARY_ROLLOUT
@@ -10,11 +8,15 @@ spec:
           replicas: 20%
       - name: ANALYSIS
         with:
-          duration: 1m
+          duration: 30m
           metrics:
-            - template:
-                name: container_cpu_usage_seconds_total
-                args:
-                  variant: canary
+            - provider: prometheus-dev
+              interval: 5m
+              expected:
+                max: 0.01
+              query: |
+                rate(http_requests_total{status=~"5.*", job="analysis-by-metrics"}[5m])
+                /
+                rate(http_requests_total{job="analysis-by-metrics"}[5m])
       - name: K8S_PRIMARY_ROLLOUT
       - name: K8S_CANARY_CLEAN
