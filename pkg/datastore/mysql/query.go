@@ -53,9 +53,25 @@ func buildWhereClause(filters []datastore.ListFilter) string {
 		return ""
 	}
 
-	conds := make([]string, len(filters))
-	for i, filter := range filters {
-		conds[i] = fmt.Sprintf("%s %s ?", filter.Field, filter.Operator)
+	conds := make([]string, 0, len(filters))
+	for _, filter := range filters {
+		switch filter.Operator {
+		case "==":
+			conds = append(conds, fmt.Sprintf("%s = ?", filter.Field))
+		case "in":
+			conds = append(conds, fmt.Sprintf("%s IN ?", filter.Field))
+		case "not-in":
+			conds = append(conds, fmt.Sprintf("%s NOT IN ?", filter.Field))
+		case "!=", ">", ">=", "<", "<=":
+			conds = append(conds, fmt.Sprintf("%s %s ?", filter.Field, filter.Operator))
+		default:
+			// Skip if unsupported operator is passed.
+			continue
+		}
+	}
+
+	if len(conds) == 0 {
+		return ""
 	}
 	return fmt.Sprintf("WHERE %s", strings.Join(conds[:], " AND "))
 }

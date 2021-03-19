@@ -126,12 +126,12 @@ func TestBuildFindQuery(t *testing.T) {
 				Filters: []datastore.ListFilter{
 					{
 						Field:    "Extra",
-						Operator: "LIKE",
-						Value:    "app-1%",
+						Operator: "==",
+						Value:    "app-1",
 					},
 				},
 			},
-			expectedQuery: "SELECT Data FROM Project WHERE Extra LIKE ?",
+			expectedQuery: "SELECT Data FROM Project WHERE Extra = ?",
 		},
 		{
 			name: "query with multi filters",
@@ -140,17 +140,17 @@ func TestBuildFindQuery(t *testing.T) {
 				Filters: []datastore.ListFilter{
 					{
 						Field:    "Data->>\"$.name\"",
-						Operator: "=",
+						Operator: "==",
 						Value:    "app-123",
 					},
 					{
 						Field:    "Extra",
-						Operator: "LIKE",
-						Value:    "app-1%",
+						Operator: "==",
+						Value:    "app-1",
 					},
 				},
 			},
-			expectedQuery: "SELECT Data FROM Project WHERE Data->>\"$.name\" = ? AND Extra LIKE ?",
+			expectedQuery: "SELECT Data FROM Project WHERE Data->>\"$.name\" = ? AND Extra = ?",
 		},
 		{
 			name: "query with one filter and one order by column",
@@ -159,8 +159,8 @@ func TestBuildFindQuery(t *testing.T) {
 				Filters: []datastore.ListFilter{
 					{
 						Field:    "Extra",
-						Operator: "LIKE",
-						Value:    "app-1%",
+						Operator: "==",
+						Value:    "app-1",
 					},
 				},
 				Orders: []datastore.Order{
@@ -170,7 +170,7 @@ func TestBuildFindQuery(t *testing.T) {
 					},
 				},
 			},
-			expectedQuery: "SELECT Data FROM Project WHERE Extra LIKE ? ORDER BY UpdatedAt DESC",
+			expectedQuery: "SELECT Data FROM Project WHERE Extra = ? ORDER BY UpdatedAt DESC",
 		},
 		{
 			name: "query with one filter and one order by on 2 columns",
@@ -179,8 +179,8 @@ func TestBuildFindQuery(t *testing.T) {
 				Filters: []datastore.ListFilter{
 					{
 						Field:    "Extra",
-						Operator: "LIKE",
-						Value:    "app-1%",
+						Operator: "==",
+						Value:    "app-1",
 					},
 				},
 				Orders: []datastore.Order{
@@ -194,7 +194,7 @@ func TestBuildFindQuery(t *testing.T) {
 					},
 				},
 			},
-			expectedQuery: "SELECT Data FROM Project WHERE Extra LIKE ? ORDER BY CreatedAt ASC, UpdatedAt DESC",
+			expectedQuery: "SELECT Data FROM Project WHERE Extra = ? ORDER BY CreatedAt ASC, UpdatedAt DESC",
 		},
 		{
 			name: "query with limit",
@@ -219,6 +219,73 @@ func TestBuildFindQuery(t *testing.T) {
 		t.Run(tc.name, func(t *testing.T) {
 			query := buildFindQuery(tc.kind, tc.listOptions)
 			assert.Equal(t, tc.expectedQuery, query)
+		})
+	}
+}
+
+func TestBuildWhereClause(t *testing.T) {
+	testcases := []struct {
+		name         string
+		filters      []datastore.ListFilter
+		expectedCond string
+	}{
+		{
+			name: "Equal operator",
+			filters: []datastore.ListFilter{
+				{
+					Field:    "id",
+					Operator: "==",
+				},
+			},
+			expectedCond: "WHERE id = ?",
+		},
+		{
+			name: "Not equal operator",
+			filters: []datastore.ListFilter{
+				{
+					Field:    "id",
+					Operator: "!=",
+				},
+			},
+			expectedCond: "WHERE id != ?",
+		},
+		{
+			name: "In operator",
+			filters: []datastore.ListFilter{
+				{
+					Field:    "id",
+					Operator: "in",
+				},
+			},
+			expectedCond: "WHERE id IN ?",
+		},
+		{
+			name: "Not in operator",
+			filters: []datastore.ListFilter{
+				{
+					Field:    "id",
+					Operator: "not-in",
+				},
+			},
+			expectedCond: "WHERE id NOT IN ?",
+		},
+		{
+			name: "Ignore like operator",
+			filters: []datastore.ListFilter{
+				{
+					Field:    "extra",
+					Operator: "like",
+					Value:    "app-%",
+				},
+			},
+			expectedCond: "",
+		},
+	}
+
+	for _, tc := range testcases {
+		t.Run(tc.name, func(t *testing.T) {
+			cond := buildWhereClause(tc.filters)
+			assert.Equal(t, tc.expectedCond, cond)
 		})
 	}
 }
