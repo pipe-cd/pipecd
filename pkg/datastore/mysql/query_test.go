@@ -112,6 +112,7 @@ func TestBuildFindQuery(t *testing.T) {
 		kind          string
 		listOptions   datastore.ListOptions
 		expectedQuery string
+		wantErr       bool
 	}{
 		{
 			name:          "query without filter and order",
@@ -132,6 +133,20 @@ func TestBuildFindQuery(t *testing.T) {
 				},
 			},
 			expectedQuery: "SELECT Data FROM Project WHERE Extra = ?",
+		},
+		{
+			name: "query with wrapped filter field name in where clause",
+			kind: "Project",
+			listOptions: datastore.ListOptions{
+				Filters: []datastore.ListFilter{
+					{
+						Field:    "SyncState.Status",
+						Operator: "==",
+						Value:    1,
+					},
+				},
+			},
+			expectedQuery: "SELECT Data FROM Project WHERE SyncState = ?",
 		},
 		{
 			name: "query with multi filters",
@@ -171,6 +186,26 @@ func TestBuildFindQuery(t *testing.T) {
 				},
 			},
 			expectedQuery: "SELECT Data FROM Project WHERE Extra = ? ORDER BY UpdatedAt DESC",
+		},
+		{
+			name: "query with wrapped filter field name as order by column",
+			kind: "Project",
+			listOptions: datastore.ListOptions{
+				Filters: []datastore.ListFilter{
+					{
+						Field:    "Extra",
+						Operator: "==",
+						Value:    "app-1",
+					},
+				},
+				Orders: []datastore.Order{
+					{
+						Field:     "SyncState.Status",
+						Direction: datastore.Desc,
+					},
+				},
+			},
+			expectedQuery: "SELECT Data FROM Project WHERE Extra = ? ORDER BY SyncState DESC",
 		},
 		{
 			name: "query with one filter and one order by on 2 columns",
@@ -213,79 +248,27 @@ func TestBuildFindQuery(t *testing.T) {
 			},
 			expectedQuery: "SELECT Data FROM Project LIMIT 20 OFFSET 400",
 		},
+		{
+			name: "query with unsupported operator",
+			kind: "Project",
+			listOptions: datastore.ListOptions{
+				Filters: []datastore.ListFilter{
+					{
+						Field:    "Extra",
+						Operator: "like",
+						Value:    "app-%",
+					},
+				},
+			},
+			wantErr: true,
+		},
 	}
 
 	for _, tc := range testcases {
 		t.Run(tc.name, func(t *testing.T) {
-			query := buildFindQuery(tc.kind, tc.listOptions)
+			query, err := buildFindQuery(tc.kind, tc.listOptions)
 			assert.Equal(t, tc.expectedQuery, query)
-		})
-	}
-}
-
-func TestBuildWhereClause(t *testing.T) {
-	testcases := []struct {
-		name         string
-		filters      []datastore.ListFilter
-		expectedCond string
-	}{
-		{
-			name: "Equal operator",
-			filters: []datastore.ListFilter{
-				{
-					Field:    "id",
-					Operator: "==",
-				},
-			},
-			expectedCond: "WHERE id = ?",
-		},
-		{
-			name: "Not equal operator",
-			filters: []datastore.ListFilter{
-				{
-					Field:    "id",
-					Operator: "!=",
-				},
-			},
-			expectedCond: "WHERE id != ?",
-		},
-		{
-			name: "In operator",
-			filters: []datastore.ListFilter{
-				{
-					Field:    "id",
-					Operator: "in",
-				},
-			},
-			expectedCond: "WHERE id IN ?",
-		},
-		{
-			name: "Not in operator",
-			filters: []datastore.ListFilter{
-				{
-					Field:    "id",
-					Operator: "not-in",
-				},
-			},
-			expectedCond: "WHERE id NOT IN ?",
-		},
-		{
-			name: "Ignore like operator",
-			filters: []datastore.ListFilter{
-				{
-					Field:    "extra",
-					Operator: "like",
-					Value:    "app-%",
-				},
-			},
-			expectedCond: "",
-		},
-	}
-
-	for _, tc := range testcases {
-		t.Run(tc.name, func(t *testing.T) {
-			cond := buildWhereClause(tc.filters)
-			assert.Equal(t, tc.expectedCond, cond)
+			assert.Equal(t, tc.wantErr, err != nil)
 		})
 	}
 }

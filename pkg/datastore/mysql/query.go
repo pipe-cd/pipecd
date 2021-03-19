@@ -37,15 +37,20 @@ func buildCreateQuery(table string) string {
 	return fmt.Sprintf("INSERT INTO %s (Id, Data) VALUE (UUID_TO_BIN(?,true), ?)", table)
 }
 
-func buildFindQuery(table string, ops datastore.ListOptions) string {
+func buildFindQuery(table string, ops datastore.ListOptions) (string, error) {
+	filters, err := refineFiltersOperator(refineFiltersField(ops.Filters))
+	if err != nil {
+		return "", err
+	}
+
 	rawQuery := fmt.Sprintf(
 		"SELECT Data FROM %s %s %s %s",
 		table,
-		buildWhereClause(ops.Filters),
-		buildOrderByClause(ops.Orders),
+		buildWhereClause(filters),
+		buildOrderByClause(refineOrdersField(ops.Orders)),
 		buildPaginationClause(ops.Page, ops.PageSize),
 	)
-	return strings.Join(strings.Fields(rawQuery), " ")
+	return strings.Join(strings.Fields(rawQuery), " "), nil
 }
 
 func buildWhereClause(filters []datastore.ListFilter) string {
@@ -53,25 +58,9 @@ func buildWhereClause(filters []datastore.ListFilter) string {
 		return ""
 	}
 
-	conds := make([]string, 0, len(filters))
-	for _, filter := range filters {
-		switch filter.Operator {
-		case "==":
-			conds = append(conds, fmt.Sprintf("%s = ?", filter.Field))
-		case "in":
-			conds = append(conds, fmt.Sprintf("%s IN ?", filter.Field))
-		case "not-in":
-			conds = append(conds, fmt.Sprintf("%s NOT IN ?", filter.Field))
-		case "!=", ">", ">=", "<", "<=":
-			conds = append(conds, fmt.Sprintf("%s %s ?", filter.Field, filter.Operator))
-		default:
-			// Skip if unsupported operator is passed.
-			continue
-		}
-	}
-
-	if len(conds) == 0 {
-		return ""
+	conds := make([]string, len(filters))
+	for i, filter := range filters {
+		conds[i] = fmt.Sprintf("%s %s ?", filter.Field, filter.Operator)
 	}
 	return fmt.Sprintf("WHERE %s", strings.Join(conds[:], " AND "))
 }
@@ -108,4 +97,48 @@ func toMySQLDirection(d datastore.OrderDirection) string {
 	default:
 		return ""
 	}
+}
+
+func refineOrdersField(orders []datastore.Order) []datastore.Order {
+	for i, order := range orders {
+		switch order.Field {
+		case "SyncState.Status":
+			orders[i].Field = "SyncState"
+		default:
+			continue
+		}
+	}
+	return orders
+}
+
+func refineFiltersField(filters []datastore.ListFilter) []datastore.ListFilter {
+	for i, filter := range filters {
+		switch filter.Field {
+		case "SyncState.Status":
+			filters[i].Field = "SyncState"
+		default:
+			continue
+		}
+	}
+	return filters
+}
+
+func refineFiltersOperator(filters []datastore.ListFilter) ([]datastore.ListFilter, error) {
+	var err error
+	for i, filter := range filters {
+		switch filter.Operator {
+		case "==":
+			filters[i].Operator = "="
+		case "in":
+			filters[i].Operator = "IN"
+		case "not-in":
+			filters[i].Operator = "NOT IN"
+		case "!=", ">", ">=", "<", "<=":
+			continue
+		default:
+			err = fmt.Errorf("unsupported operator %s", filter.Operator)
+			continue
+		}
+	}
+	return filters, err
 }
