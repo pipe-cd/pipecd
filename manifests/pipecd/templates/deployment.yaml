@@ -277,10 +277,8 @@ spec:
           image: mysql:{{ .Values.mysql.imageTag }}
           imagePullPolicy: IfNotPresent
           env:
-            - name: MYSQL_USER
-              value: pipecd
-            - name: MYSQL_PASSWORD
-              value: pipecd
+            - name: MYSQL_ROOT_PASSWORD
+              value: test
             - name: MYSQL_DATABASE
               value: quickstart
           ports:
