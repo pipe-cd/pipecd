@@ -6,9 +6,9 @@ config:
     kind: ControlPlane
     spec:
       datastore:
-        type: MONGODB
+        type: MYSQL
         config:
-          url: mongodb://pipecd-mongodb:27017/quickstart
+          url: pipecd:pipecd@tcp(pipecd-mysql:3306)
           database: quickstart
       filestore:
         type: MINIO
