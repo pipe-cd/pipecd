@@ -38,8 +38,8 @@ ops:
     logEncoding: humanize
   resources: {}
 
-mongodb:
-  imageTag: "4.2"
+mysql:
+  imageTag: "8.0.23"
   resources: {}
 
 minio:
