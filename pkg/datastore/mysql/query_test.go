@@ -112,6 +112,7 @@ func TestBuildFindQuery(t *testing.T) {
 		kind          string
 		listOptions   datastore.ListOptions
 		expectedQuery string
+		wantErr       bool
 	}{
 		{
 			name:          "query without filter and order",
@@ -126,12 +127,26 @@ func TestBuildFindQuery(t *testing.T) {
 				Filters: []datastore.ListFilter{
 					{
 						Field:    "Extra",
-						Operator: "LIKE",
-						Value:    "app-1%",
+						Operator: "==",
+						Value:    "app-1",
 					},
 				},
 			},
-			expectedQuery: "SELECT Data FROM Project WHERE Extra LIKE ?",
+			expectedQuery: "SELECT Data FROM Project WHERE Extra = ?",
+		},
+		{
+			name: "query with wrapped filter field name in where clause",
+			kind: "Project",
+			listOptions: datastore.ListOptions{
+				Filters: []datastore.ListFilter{
+					{
+						Field:    "SyncState.Status",
+						Operator: "==",
+						Value:    1,
+					},
+				},
+			},
+			expectedQuery: "SELECT Data FROM Project WHERE SyncState_Status = ?",
 		},
 		{
 			name: "query with multi filters",
@@ -140,17 +155,17 @@ func TestBuildFindQuery(t *testing.T) {
 				Filters: []datastore.ListFilter{
 					{
 						Field:    "Data->>\"$.name\"",
-						Operator: "=",
+						Operator: "==",
 						Value:    "app-123",
 					},
 					{
 						Field:    "Extra",
-						Operator: "LIKE",
-						Value:    "app-1%",
+						Operator: "==",
+						Value:    "app-1",
 					},
 				},
 			},
-			expectedQuery: "SELECT Data FROM Project WHERE Data->>\"$.name\" = ? AND Extra LIKE ?",
+			expectedQuery: "SELECT Data FROM Project WHERE Data->>\"$.name\" = ? AND Extra = ?",
 		},
 		{
 			name: "query with one filter and one order by column",
@@ -159,8 +174,8 @@ func TestBuildFindQuery(t *testing.T) {
 				Filters: []datastore.ListFilter{
 					{
 						Field:    "Extra",
-						Operator: "LIKE",
-						Value:    "app-1%",
+						Operator: "==",
+						Value:    "app-1",
 					},
 				},
 				Orders: []datastore.Order{
@@ -170,7 +185,27 @@ func TestBuildFindQuery(t *testing.T) {
 					},
 				},
 			},
-			expectedQuery: "SELECT Data FROM Project WHERE Extra LIKE ? ORDER BY UpdatedAt DESC",
+			expectedQuery: "SELECT Data FROM Project WHERE Extra = ? ORDER BY UpdatedAt DESC",
+		},
+		{
+			name: "query with wrapped filter field name as order by column",
+			kind: "Project",
+			listOptions: datastore.ListOptions{
+				Filters: []datastore.ListFilter{
+					{
+						Field:    "Extra",
+						Operator: "==",
+						Value:    "app-1",
+					},
+				},
+				Orders: []datastore.Order{
+					{
+						Field:     "SyncState.Status",
+						Direction: datastore.Desc,
+					},
+				},
+			},
+			expectedQuery: "SELECT Data FROM Project WHERE Extra = ? ORDER BY SyncState_Status DESC",
 		},
 		{
 			name: "query with one filter and one order by on 2 columns",
@@ -179,8 +214,8 @@ func TestBuildFindQuery(t *testing.T) {
 				Filters: []datastore.ListFilter{
 					{
 						Field:    "Extra",
-						Operator: "LIKE",
-						Value:    "app-1%",
+						Operator: "==",
+						Value:    "app-1",
 					},
 				},
 				Orders: []datastore.Order{
@@ -194,7 +229,7 @@ func TestBuildFindQuery(t *testing.T) {
 					},
 				},
 			},
-			expectedQuery: "SELECT Data FROM Project WHERE Extra LIKE ? ORDER BY CreatedAt ASC, UpdatedAt DESC",
+			expectedQuery: "SELECT Data FROM Project WHERE Extra = ? ORDER BY CreatedAt ASC, UpdatedAt DESC",
 		},
 		{
 			name: "query with limit",
@@ -213,12 +248,27 @@ func TestBuildFindQuery(t *testing.T) {
 			},
 			expectedQuery: "SELECT Data FROM Project LIMIT 20 OFFSET 400",
 		},
+		{
+			name: "query with unsupported operator",
+			kind: "Project",
+			listOptions: datastore.ListOptions{
+				Filters: []datastore.ListFilter{
+					{
+						Field:    "Extra",
+						Operator: "like",
+						Value:    "app-%",
+					},
+				},
+			},
+			wantErr: true,
+		},
 	}
 
 	for _, tc := range testcases {
 		t.Run(tc.name, func(t *testing.T) {
-			query := buildFindQuery(tc.kind, tc.listOptions)
+			query, err := buildFindQuery(tc.kind, tc.listOptions)
 			assert.Equal(t, tc.expectedQuery, query)
+			assert.Equal(t, tc.wantErr, err != nil)
 		})
 	}
 }

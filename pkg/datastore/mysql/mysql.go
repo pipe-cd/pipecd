@@ -83,7 +83,17 @@ func (m *MySQL) Find(ctx context.Context, kind string, opts datastore.ListOption
 	for i, filter := range opts.Filters {
 		filterVals[i] = filter.Value
 	}
-	rows, err := m.client.QueryContext(ctx, buildFindQuery(kind, opts), filterVals...)
+
+	query, err := buildFindQuery(kind, opts)
+	if err != nil {
+		m.logger.Error("failed to build find entities query",
+			zap.String("kind", kind),
+			zap.Error(err),
+		)
+		return nil, err
+	}
+
+	rows, err := m.client.QueryContext(ctx, query, filterVals...)
 	if err != nil {
 		m.logger.Error("failed to find entities",
 			zap.String("kind", kind),

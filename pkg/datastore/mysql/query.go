@@ -37,15 +37,20 @@ func buildCreateQuery(table string) string {
 	return fmt.Sprintf("INSERT INTO %s (Id, Data) VALUE (UUID_TO_BIN(?,true), ?)", table)
 }
 
-func buildFindQuery(table string, ops datastore.ListOptions) string {
+func buildFindQuery(table string, ops datastore.ListOptions) (string, error) {
+	filters, err := refineFiltersOperator(refineFiltersField(ops.Filters))
+	if err != nil {
+		return "", err
+	}
+
 	rawQuery := fmt.Sprintf(
 		"SELECT Data FROM %s %s %s %s",
 		table,
-		buildWhereClause(ops.Filters),
-		buildOrderByClause(ops.Orders),
+		buildWhereClause(filters),
+		buildOrderByClause(refineOrdersField(ops.Orders)),
 		buildPaginationClause(ops.Page, ops.PageSize),
 	)
-	return strings.Join(strings.Fields(rawQuery), " ")
+	return strings.Join(strings.Fields(rawQuery), " "), nil
 }
 
 func buildWhereClause(filters []datastore.ListFilter) string {
@@ -92,4 +97,52 @@ func toMySQLDirection(d datastore.OrderDirection) string {
 	default:
 		return ""
 	}
+}
+
+func refineOrdersField(orders []datastore.Order) []datastore.Order {
+	out := make([]datastore.Order, len(orders))
+	for i, order := range orders {
+		switch order.Field {
+		case "SyncState.Status":
+			order.Field = "SyncState_Status"
+		default:
+			break
+		}
+		out[i] = order
+	}
+	return out
+}
+
+func refineFiltersField(filters []datastore.ListFilter) []datastore.ListFilter {
+	out := make([]datastore.ListFilter, len(filters))
+	for i, filter := range filters {
+		switch filter.Field {
+		case "SyncState.Status":
+			filter.Field = "SyncState_Status"
+		default:
+			break
+		}
+		out[i] = filter
+	}
+	return out
+}
+
+func refineFiltersOperator(filters []datastore.ListFilter) ([]datastore.ListFilter, error) {
+	out := make([]datastore.ListFilter, len(filters))
+	for i, filter := range filters {
+		switch filter.Operator {
+		case "==":
+			filter.Operator = "="
+		case "in":
+			filter.Operator = "IN"
+		case "not-in":
+			filter.Operator = "NOT IN"
+		case "!=", ">", ">=", "<", "<=":
+			break
+		default:
+			return nil, fmt.Errorf("unsupported operator %s", filter.Operator)
+		}
+		out[i] = filter
+	}
+	return out, nil
 }
