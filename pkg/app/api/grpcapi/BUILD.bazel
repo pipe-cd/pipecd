@@ -26,6 +26,7 @@ go_library(
         "//pkg/crypto:go_default_library",
         "//pkg/datastore:go_default_library",
         "//pkg/git:go_default_library",
+        "//pkg/insight:go_default_library",
         "//pkg/insight/insightstore:go_default_library",
         "//pkg/model:go_default_library",
         "//pkg/redis:go_default_library",

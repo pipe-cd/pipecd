@@ -38,6 +38,7 @@ import (
 	"github.com/pipe-cd/pipe/pkg/crypto"
 	"github.com/pipe-cd/pipe/pkg/datastore"
 	"github.com/pipe-cd/pipe/pkg/git"
+	"github.com/pipe-cd/pipe/pkg/insight"
 	"github.com/pipe-cd/pipe/pkg/insight/insightstore"
 	"github.com/pipe-cd/pipe/pkg/model"
 	"github.com/pipe-cd/pipe/pkg/redis"
@@ -1389,43 +1390,38 @@ func (a *WebAPI) GetInsightData(ctx context.Context, req *webservice.GetInsightD
 	}, nil
 }
 
-func (a *WebAPI) GetInsightApplicationCount(ctx context.Context, req *webservice.GetInsightApplicationCountRequest) (*webservice.GetInsightApplicationCountResponse, error) {
-	_, err := rpcauth.ExtractClaims(ctx)
+func (a *WebAPI) GetInsightApplicationCount(ctx context.Context, _ *webservice.GetInsightApplicationCountRequest) (*webservice.GetInsightApplicationCountResponse, error) {
+	claims, err := rpcauth.ExtractClaims(ctx)
 	if err != nil {
 		a.logger.Error("failed to authenticate the current user", zap.Error(err))
 		return nil, err
 	}
 
-	// TODO: Fetch application count data from insight store.
-	counts := []*model.InsightApplicationCount{
-		{
+	ac, err := a.insightstore.LoadApplicationCount(ctx, claims.Role.ProjectId)
+	if err != nil {
+		a.logger.Error("failed to authenticate the current user", zap.Error(err))
+		return nil, err
+	}
+
+	counts := make([]*model.InsightApplicationCount, len(ac.Counts))
+	for i, c := range ac.Counts {
+		var status string
+		switch c.LabelSet.Status {
+		case insight.ApplicationStatusEnable:
+			status = model.ApplicationActiveStatus_ENABLED.String()
+		case insight.ApplicationStatusDisable:
+			status = model.ApplicationActiveStatus_DISABLED.String()
+		case insight.ApplicationStatusDeleted:
+			status = model.ApplicationActiveStatus_DELETED.String()
+		}
+		count := &model.InsightApplicationCount{
 			Labels: map[string]string{
-				model.InsightApplicationCountLabelKey_KIND.String():          model.ApplicationKind_KUBERNETES.String(),
-				model.InsightApplicationCountLabelKey_ACTIVE_STATUS.String(): model.ApplicationActiveStatus_ENABLED.String(),
+				model.InsightApplicationCountLabelKey_KIND.String():          c.LabelSet.Kind.String(),
+				model.InsightApplicationCountLabelKey_ACTIVE_STATUS.String(): status,
 			},
-			Count: 123,
-		},
-		{
-			Labels: map[string]string{
-				model.InsightApplicationCountLabelKey_KIND.String():          model.ApplicationKind_KUBERNETES.String(),
-				model.InsightApplicationCountLabelKey_ACTIVE_STATUS.String(): model.ApplicationActiveStatus_DISABLED.String(),
-			},
-			Count: 8,
-		},
-		{
-			Labels: map[string]string{
-				model.InsightApplicationCountLabelKey_KIND.String():          model.ApplicationKind_TERRAFORM.String(),
-				model.InsightApplicationCountLabelKey_ACTIVE_STATUS.String(): model.ApplicationActiveStatus_ENABLED.String(),
-			},
-			Count: 75,
-		},
-		{
-			Labels: map[string]string{
-				model.InsightApplicationCountLabelKey_KIND.String():          model.ApplicationKind_LAMBDA.String(),
-				model.InsightApplicationCountLabelKey_ACTIVE_STATUS.String(): model.ApplicationActiveStatus_DISABLED.String(),
-			},
-			Count: 2,
-		},
+			Count: int32(c.Count),
+		}
+		counts[i] = count
 	}
 
 	return &webservice.GetInsightApplicationCountResponse{
