@@ -23,8 +23,8 @@ ALTER TABLE Application ADD COLUMN Kind INT GENERATED ALWAYS AS (data->>"$.kind"
 CREATE INDEX application_kind_updated_at_desc ON Application (Kind, UpdatedAt DESC);
 
 -- index on `SyncState.Status` ASC and `UpdatedAt` DESC
-ALTER TABLE Application ADD COLUMN SyncState INT GENERATED ALWAYS AS (data->>"$.sync_state.status") VIRTUAL;
-CREATE INDEX application_sync_state_updated_at_desc ON Application (SyncState, UpdatedAt DESC);
+ALTER TABLE Application ADD COLUMN SyncState_Status INT GENERATED ALWAYS AS (data->>"$.sync_state.status") VIRTUAL;
+CREATE INDEX application_sync_state_updated_at_desc ON Application (SyncState_Status, UpdatedAt DESC);
 
 -- index on `ProjectId` ASC and `UpdatedAt` DESC
 CREATE INDEX application_project_id_updated_at_desc ON Application (ProjectId, UpdatedAt DESC);
