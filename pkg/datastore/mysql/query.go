@@ -100,43 +100,49 @@ func toMySQLDirection(d datastore.OrderDirection) string {
 }
 
 func refineOrdersField(orders []datastore.Order) []datastore.Order {
+	out := make([]datastore.Order, len(orders))
 	for i, order := range orders {
 		switch order.Field {
 		case "SyncState.Status":
-			orders[i].Field = "SyncState_Status"
+			order.Field = "SyncState_Status"
 		default:
-			continue
+			break
 		}
+		out[i] = order
 	}
-	return orders
+	return out
 }
 
 func refineFiltersField(filters []datastore.ListFilter) []datastore.ListFilter {
+	out := make([]datastore.ListFilter, len(filters))
 	for i, filter := range filters {
 		switch filter.Field {
 		case "SyncState.Status":
-			filters[i].Field = "SyncState_Status"
+			filter.Field = "SyncState_Status"
 		default:
-			continue
+			break
 		}
+		out[i] = filter
 	}
-	return filters
+	return out
 }
 
 func refineFiltersOperator(filters []datastore.ListFilter) ([]datastore.ListFilter, error) {
+	out := make([]datastore.ListFilter, len(filters))
 	for i, filter := range filters {
 		switch filter.Operator {
 		case "==":
-			filters[i].Operator = "="
+			filter.Operator = "="
 		case "in":
-			filters[i].Operator = "IN"
+			filter.Operator = "IN"
 		case "not-in":
-			filters[i].Operator = "NOT IN"
+			filter.Operator = "NOT IN"
 		case "!=", ">", ">=", "<", "<=":
-			continue
+			break
 		default:
-			return filters, fmt.Errorf("unsupported operator %s", filter.Operator)
+			return nil, fmt.Errorf("unsupported operator %s", filter.Operator)
 		}
+		out[i] = filter
 	}
-	return filters, nil
+	return out, nil
 }
