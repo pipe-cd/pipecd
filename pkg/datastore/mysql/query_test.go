@@ -146,7 +146,7 @@ func TestBuildFindQuery(t *testing.T) {
 					},
 				},
 			},
-			expectedQuery: "SELECT Data FROM Project WHERE SyncState = ?",
+			expectedQuery: "SELECT Data FROM Project WHERE SyncState_Status = ?",
 		},
 		{
 			name: "query with multi filters",
@@ -205,7 +205,7 @@ func TestBuildFindQuery(t *testing.T) {
 					},
 				},
 			},
-			expectedQuery: "SELECT Data FROM Project WHERE Extra = ? ORDER BY SyncState DESC",
+			expectedQuery: "SELECT Data FROM Project WHERE Extra = ? ORDER BY SyncState_Status DESC",
 		},
 		{
 			name: "query with one filter and one order by on 2 columns",

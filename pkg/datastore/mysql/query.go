@@ -103,7 +103,7 @@ func refineOrdersField(orders []datastore.Order) []datastore.Order {
 	for i, order := range orders {
 		switch order.Field {
 		case "SyncState.Status":
-			orders[i].Field = "SyncState"
+			orders[i].Field = "SyncState_Status"
 		default:
 			continue
 		}
@@ -115,7 +115,7 @@ func refineFiltersField(filters []datastore.ListFilter) []datastore.ListFilter {
 	for i, filter := range filters {
 		switch filter.Field {
 		case "SyncState.Status":
-			filters[i].Field = "SyncState"
+			filters[i].Field = "SyncState_Status"
 		default:
 			continue
 		}
@@ -124,7 +124,6 @@ func refineFiltersField(filters []datastore.ListFilter) []datastore.ListFilter {
 }
 
 func refineFiltersOperator(filters []datastore.ListFilter) ([]datastore.ListFilter, error) {
-	var err error
 	for i, filter := range filters {
 		switch filter.Operator {
 		case "==":
@@ -136,9 +135,8 @@ func refineFiltersOperator(filters []datastore.ListFilter) ([]datastore.ListFilt
 		case "!=", ">", ">=", "<", "<=":
 			continue
 		default:
-			err = fmt.Errorf("unsupported operator %s", filter.Operator)
-			continue
+			return filters, fmt.Errorf("unsupported operator %s", filter.Operator)
 		}
 	}
-	return filters, err
+	return filters, nil
 }
