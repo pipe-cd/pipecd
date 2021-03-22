@@ -18,9 +18,9 @@ CREATE TABLE IF NOT EXISTS Application (
   Id BINARY(16) PRIMARY KEY,
   Data JSON NOT NULL,
   ProjectId VARCHAR(50) GENERATED ALWAYS AS (data->>"$.project_id") STORED NOT NULL,
-  Disabled BOOL GENERATED ALWAYS AS (data->>"$.disabled") STORED NOT NULL,
   CreatedAt INT(11) GENERATED ALWAYS AS (data->>"$.created_at") STORED NOT NULL,
   UpdatedAt INT(11) GENERATED ALWAYS AS (data->>"$.updated_at") STORED NOT NULL,
+  Disabled BOOL GENERATED ALWAYS AS (data->>"$.disabled") STORED,
   Extra VARCHAR(100) GENERATED ALWAYS AS (data->>"$._extra") STORED
 ) ENGINE=InnoDB;
 
@@ -71,9 +71,9 @@ CREATE TABLE IF NOT EXISTS Piped (
   Id BINARY(16) PRIMARY KEY,
   Data JSON NOT NULL,
   ProjectId VARCHAR(50) GENERATED ALWAYS AS (data->>"$.project_id") STORED NOT NULL,
-  Disabled BOOL GENERATED ALWAYS AS (data->>"$.disabled") STORED NOT NULL,
   CreatedAt INT(11) GENERATED ALWAYS AS (data->>"$.created_at") STORED NOT NULL,
   UpdatedAt INT(11) GENERATED ALWAYS AS (data->>"$.updated_at") STORED NOT NULL,
+  Disabled BOOL GENERATED ALWAYS AS (data->>"$.disabled") STORED,
   Extra VARCHAR(100) GENERATED ALWAYS AS (data->>"$._extra") STORED
 ) ENGINE=InnoDB;
 
@@ -85,9 +85,9 @@ CREATE TABLE IF NOT EXISTS APIKey (
   Id BINARY(16) PRIMARY KEY,
   Data JSON NOT NULL,
   ProjectId VARCHAR(50) GENERATED ALWAYS AS (data->>"$.project_id") STORED NOT NULL,
-  Disabled BOOL GENERATED ALWAYS AS (data->>"$.disabled") STORED NOT NULL,
   CreatedAt INT(11) GENERATED ALWAYS AS (data->>"$.created_at") STORED NOT NULL,
   UpdatedAt INT(11) GENERATED ALWAYS AS (data->>"$.updated_at") STORED NOT NULL,
+  Disabled BOOL GENERATED ALWAYS AS (data->>"$.disabled") STORED,
   Extra VARCHAR(100) GENERATED ALWAYS AS (data->>"$._extra") STORED
 ) ENGINE=InnoDB;
 

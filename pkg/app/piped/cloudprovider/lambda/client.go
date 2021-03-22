@@ -177,6 +177,7 @@ func (c *client) PublishFunction(ctx context.Context, fm FunctionManifest) (stri
 	return aws.ToString(cfg.Version), nil
 }
 
+// GetTrafficConfig returns lambda provider.ErrNotFound in case remote traffic config is not existed.
 func (c *client) GetTrafficConfig(ctx context.Context, fm FunctionManifest) (routingTrafficCfg RoutingTrafficConfig, err error) {
 	input := &lambda.GetAliasInput{
 		FunctionName: aws.String(fm.Spec.Name),
@@ -185,6 +186,10 @@ func (c *client) GetTrafficConfig(ctx context.Context, fm FunctionManifest) (rou
 
 	cfg, err := c.client.GetAlias(ctx, input)
 	if err != nil {
+		var nfe *types.ResourceNotFoundException
+		if errors.As(err, &nfe) {
+			err = ErrNotFound
+		}
 		return
 	}
 
