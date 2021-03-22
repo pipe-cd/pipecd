@@ -61,14 +61,15 @@ export const SealedSecretDialog: FC<SealedSecretDialogProps> = memo(
     const classes = useStyles();
     const dispatch = useDispatch<AppDispatch>();
 
-    const [application, isLoading, sealedSecret] = useSelector<
-      AppState,
-      [Application.AsObject | undefined, boolean, string | null]
-    >((state) => [
-      applicationId ? selectById(state.applications, applicationId) : undefined,
-      state.sealedSecret.isLoading,
-      state.sealedSecret.data,
-    ]);
+    const application = useSelector<AppState, Application.AsObject | undefined>(
+      (state) =>
+        applicationId
+          ? selectById(state.applications, applicationId)
+          : undefined
+    );
+    const sealedSecret = useSelector<AppState, string | null>(
+      (state) => state.sealedSecret.data
+    );
 
     const formik = useFormik({
       initialValues: {
@@ -95,9 +96,10 @@ export const SealedSecretDialog: FC<SealedSecretDialogProps> = memo(
       formik.resetForm();
     }, [formik]);
 
-    const handleOnExited = useCallback(() => {
+    const handleClose = useCallback(() => {
+      onClose();
       dispatch(clearSealedSecret());
-    }, [dispatch]);
+    }, [dispatch, onClose]);
 
     const handleOnClickCopy = useCallback(() => {
       dispatch(addToast({ message: "Secret copied to clipboard" }));
@@ -108,12 +110,7 @@ export const SealedSecretDialog: FC<SealedSecretDialogProps> = memo(
     }
 
     return (
-      <Dialog
-        open={open}
-        onEnter={handleOnEnter}
-        onExit={handleOnExited}
-        onClose={onClose}
-      >
+      <Dialog open={open} onEnter={handleOnEnter} onClose={handleClose}>
         {sealedSecret ? (
           <>
             <DialogTitle>{DIALOG_TITLE}</DialogTitle>
@@ -128,7 +125,7 @@ export const SealedSecretDialog: FC<SealedSecretDialogProps> = memo(
               />
             </DialogContent>
             <DialogActions>
-              <Button onClick={onClose}>{UI_TEXT_CLOSE}</Button>
+              <Button onClick={handleClose}>{UI_TEXT_CLOSE}</Button>
             </DialogActions>
           </>
         ) : (
@@ -169,13 +166,13 @@ export const SealedSecretDialog: FC<SealedSecretDialogProps> = memo(
               />
             </DialogContent>
             <DialogActions>
-              <Button onClick={onClose} disabled={isLoading}>
+              <Button onClick={onClose} disabled={formik.isSubmitting}>
                 {UI_TEXT_CANCEL}
               </Button>
               <Button
                 color="primary"
                 type="submit"
-                disabled={isLoading || formik.isValid === false}
+                disabled={formik.isSubmitting || formik.isValid === false}
               >
                 Encrypt
               </Button>
