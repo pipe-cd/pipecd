@@ -37,7 +37,7 @@ test-integration:
 
 .PHONY: coverage
 coverage:
-	bazelisk ${BAZEL_FLAGS} coverage ${BAZEL_COMMAND_FLAGS} //pkg/...
+	bazelisk ${BAZEL_FLAGS} coverage ${BAZEL_COMMAND_FLAGS} -- //pkg/... -//pkg/app/web/...
 
 .PHONY: dep
 dep:
