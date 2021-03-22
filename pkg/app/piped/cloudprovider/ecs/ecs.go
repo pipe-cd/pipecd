@@ -18,6 +18,7 @@ import (
 	"context"
 	"path/filepath"
 	"sync"
+	"fmt"
 
 	"github.com/aws/aws-sdk-go-v2/service/ecs/types"
 	"go.uber.org/zap"
@@ -33,7 +34,7 @@ const (
 
 // Client is wrapper of ECS client.
 type Client interface {
-	ServiceExists(ctx context.Context, clusterName string, services []string) (bool, error)
+	ServiceExists(ctx context.Context, clusterName string, services string) (bool, error)
 	CreateService(ctx context.Context, service types.Service) (*types.Service, error)
 	UpdateService(ctx context.Context, service types.Service) (*types.Service, error)
 	RegisterTaskDefinition(ctx context.Context, taskDefinition types.TaskDefinition) (*types.TaskDefinition, error)
@@ -57,11 +58,11 @@ func LoadServiceDefinition(appDir, serviceDefinitionFilename string) (types.Serv
 }
 
 // LoadTaskDefinition returns TaskDefinition object from a given task definition file.
-func LoadTaskDefinition(appDir, serviceDefinitionFilename string) (types.TaskDefinition, error) {
-	if serviceDefinitionFilename == "" {
-		serviceDefinitionFilename = defaultserviceDefinitionFilename
+func LoadTaskDefinition(appDir, taskDefinition string) (types.TaskDefinition, error) {
+	if taskDefinition == "" {
+		taskDefinition = defaultTaskDefinitionFilename
 	}
-	path := filepath.Join(appDir, serviceDefinitionFilename)
+	path := filepath.Join(appDir, taskDefinition)
 	return loadTaskDefinition(path)
 }
 
