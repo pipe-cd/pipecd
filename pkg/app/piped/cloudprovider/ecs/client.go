@@ -174,11 +174,8 @@ func (c *client) ServiceExists(ctx context.Context, clusterName string, serviceN
 		}
 		return false, err
 	}
-	fmt.Println("=====================output.Services=======================")
 	for _, service := range output.Services {
 		if *service.ServiceName == serviceName && *service.Status == "ACTIVE" {
-			fmt.Println(*service.ServiceName)
-			fmt.Println(*service.Status)
 			return true, nil
 		}
 	}
