@@ -67,14 +67,14 @@ func findCloudProvider(in *executor.Input) (name string, cfg *config.CloudProvid
 func loadServiceDefinition(in *executor.Input, serviceDefinitionFile string, ds *deploysource.DeploySource) (types.Service, bool) {
 	in.LogPersister.Infof("Loading service manifest at the %s commit (%s)", ds.RevisionName, ds.RevisionName)
 
-	servicedefinition, err := provider.LoadServiceDefinition(ds.AppDir, serviceDefinitionFile)
+	serviceDefinition, err := provider.LoadServiceDefinition(ds.AppDir, serviceDefinitionFile)
 	if err != nil {
 		in.LogPersister.Errorf("Failed to load ECS service definition (%v)", err)
 		return types.Service{}, false
 	}
 
 	in.LogPersister.Infof("Successfully loaded the ECS service definition at the %s commit", ds.RevisionName)
-	return servicedefinition, true
+	return serviceDefinition, true
 }
 
 func loadTaskDefinition(in *executor.Input, taskDefinitionFile string, ds *deploysource.DeploySource) (types.TaskDefinition, bool) {
@@ -112,31 +112,36 @@ func sync(ctx context.Context, in *executor.Input, cloudProviderName string, clo
 func build(ctx context.Context, in *executor.Input, client provider.Client, taskDefinition types.TaskDefinition, serviceDefinition types.Service) bool {
 	td, err := client.RegisterTaskDefinition(ctx, taskDefinition)
 	if err != nil {
-		in.LogPersister.Errorf("Failed to register ECS task definition %s: %v", td.Family, err)
+		in.LogPersister.Errorf("Failed to register ECS task definition %s: %v", taskDefinition.Family, err)
 		return false
 	}
 
-	found, err := client.ServiceExists(ctx, *serviceDefinition.ClusterArn, []string{*serviceDefinition.ServiceName})
+	found, err := client.ServiceExists(ctx, *serviceDefinition.ClusterArn, *serviceDefinition.ServiceName)
 	if err != nil {
 		in.LogPersister.Errorf("Unable to validate service name %s: %v", serviceDefinition.ServiceName, err)
 		return false
 	}
+	var service *types.Service
 	serviceDefinition.TaskDefinition = td.TaskDefinitionArn
 	if found {
-		if _, err := client.UpdateService(ctx, serviceDefinition); err != nil {
+		service, err = client.UpdateService(ctx, serviceDefinition);
+		if err != nil {
 			in.LogPersister.Errorf("Failed to update ECS service %s: %v", serviceDefinition.ServiceName, err)
 			return false
 		}
 	} else {
-		if _, err := client.CreateService(ctx, serviceDefinition); err != nil {
+		service, err = client.CreateService(ctx, serviceDefinition);
+		if err != nil {
 			in.LogPersister.Errorf("Failed to create ECS service %s: %v", serviceDefinition.ServiceName, err)
 			return false
 		}
 	}
 
-	if _, err := client.CreateTaskSet(ctx, serviceDefinition, taskDefinition); err != nil {
-		in.LogPersister.Errorf("Failed to create ECS task set %s: %v", serviceDefinition.ServiceName, err)
-		return false
+	if !(service.DeploymentController.Type == types.DeploymentControllerTypeCodeDeploy) {
+		if _, err := client.CreateTaskSet(ctx, *service, taskDefinition); err != nil {
+			in.LogPersister.Errorf("Failed to create ECS task set %s: %v", serviceDefinition.ServiceName, err)
+			return false
+		}
 	}
 
 	in.LogPersister.Info("Successfully applied the service definition and the task definition")
