@@ -1,4 +1,24 @@
-import { applicationCountsSlice } from "./application-counts";
+import { configureStore } from "@reduxjs/toolkit";
+import { setupServer } from "msw/node";
+import { getInsightApplicationCountHandler } from "../mocks/services/insight";
+import {
+  applicationCountsSlice,
+  fetchApplicationCount,
+} from "./application-counts";
+
+const server = setupServer();
+
+beforeAll(() => {
+  server.listen();
+});
+
+afterEach(() => {
+  server.resetHandlers();
+});
+
+afterAll(() => {
+  server.close();
+});
 
 describe("applicationCountsSlice reducer", () => {
   it("should return the initial state", () => {
@@ -38,4 +58,40 @@ describe("applicationCountsSlice reducer", () => {
       }
     `);
   });
+});
+
+test("fetchApplicationCount", async () => {
+  server.use(getInsightApplicationCountHandler);
+  const store = configureStore({ reducer: applicationCountsSlice.reducer });
+  await store.dispatch(fetchApplicationCount());
+  expect(store.getState()).toEqual(
+    expect.objectContaining({
+      counts: {
+        CLOUDRUN: {
+          DISABLED: 0,
+          ENABLED: 0,
+        },
+        CROSSPLANE: {
+          DISABLED: 0,
+          ENABLED: 0,
+        },
+        ECS: {
+          DISABLED: 0,
+          ENABLED: 0,
+        },
+        KUBERNETES: {
+          DISABLED: 8,
+          ENABLED: 123,
+        },
+        LAMBDA: {
+          DISABLED: 0,
+          ENABLED: 0,
+        },
+        TERRAFORM: {
+          DISABLED: 2,
+          ENABLED: 75,
+        },
+      },
+    })
+  );
 });
