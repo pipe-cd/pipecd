@@ -9,6 +9,7 @@ go_library(
         "//pkg/app/piped/executor:go_default_library",
         "//pkg/app/piped/executor/analysis:go_default_library",
         "//pkg/app/piped/executor/cloudrun:go_default_library",
+        "//pkg/app/piped/executor/ecs:go_default_library",
         "//pkg/app/piped/executor/kubernetes:go_default_library",
         "//pkg/app/piped/executor/lambda:go_default_library",
         "//pkg/app/piped/executor/terraform:go_default_library",

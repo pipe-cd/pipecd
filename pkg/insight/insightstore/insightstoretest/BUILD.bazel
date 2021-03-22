@@ -9,7 +9,9 @@ go_library(
     importpath = "github.com/pipe-cd/pipe/pkg/insight/insightstore/insightstoretest",
     visibility = ["//visibility:public"],
     deps = [
+        "//pkg/insight:go_default_library",
         "//pkg/insight/insightstore:go_default_library",
+        "//pkg/model:go_default_library",
         "@com_github_golang_mock//gomock:go_default_library",
     ],
 )
