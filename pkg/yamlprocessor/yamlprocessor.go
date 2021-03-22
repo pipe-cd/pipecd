@@ -25,7 +25,7 @@ import (
 )
 
 // GetValue gives back the value placed at a given path. The type of
-// returned value can be string, int64, uint64, float64, bool, and []interface{}.
+// returned value can be string, int64, uint64, float64 and bool.
 //
 // The path requires to start with "$" which represents the root element.
 // Available operators are:
@@ -33,7 +33,6 @@ import (
 // .     : child operator
 // ..    : recursive descent
 // [num] : object/element of array by number
-// [*]   : all objects/elements for array.
 //
 // e.g. "$.foo.bar[0].baz"
 func GetValue(yml []byte, path string) (interface{}, error) {
