@@ -124,13 +124,13 @@ func build(ctx context.Context, in *executor.Input, client provider.Client, task
 	var service *types.Service
 	serviceDefinition.TaskDefinition = td.TaskDefinitionArn
 	if found {
-		service, err = client.UpdateService(ctx, serviceDefinition);
+		service, err = client.UpdateService(ctx, serviceDefinition)
 		if err != nil {
 			in.LogPersister.Errorf("Failed to update ECS service %s: %v", serviceDefinition.ServiceName, err)
 			return false
 		}
 	} else {
-		service, err = client.CreateService(ctx, serviceDefinition);
+		service, err = client.CreateService(ctx, serviceDefinition)
 		if err != nil {
 			in.LogPersister.Errorf("Failed to create ECS service %s: %v", serviceDefinition.ServiceName, err)
 			return false

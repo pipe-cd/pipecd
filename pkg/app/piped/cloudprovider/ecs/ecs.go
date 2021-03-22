@@ -18,7 +18,6 @@ import (
 	"context"
 	"path/filepath"
 	"sync"
-	"fmt"
 
 	"github.com/aws/aws-sdk-go-v2/service/ecs/types"
 	"go.uber.org/zap"
