@@ -96,16 +96,13 @@ func (c *client) CreateService(ctx context.Context, service types.Service) (*typ
 
 func (c *client) UpdateService(ctx context.Context, service types.Service) (*types.Service, error) {
 	input := &ecs.UpdateServiceInput{
-		Service:                       service.ServiceName,
-		Cluster:                       service.ClusterArn,
-		DeploymentConfiguration:       service.DeploymentConfiguration,
-		DesiredCount:                  aws.Int32(service.DesiredCount),
-		HealthCheckGracePeriodSeconds: service.HealthCheckGracePeriodSeconds,
-		NetworkConfiguration:          service.NetworkConfiguration,
-		PlacementConstraints:          service.PlacementConstraints,
-		PlacementStrategy:             service.PlacementStrategy,
-		PlatformVersion:               service.PlatformVersion,
-		TaskDefinition:                service.TaskDefinition,
+		Service:                 service.ServiceName,
+		Cluster:                 service.ClusterArn,
+		DeploymentConfiguration: service.DeploymentConfiguration,
+		DesiredCount:            aws.Int32(service.DesiredCount),
+		NetworkConfiguration:    service.NetworkConfiguration,
+		PlacementConstraints:    service.PlacementConstraints,
+		PlacementStrategy:       service.PlacementStrategy,
 	}
 	output, err := c.client.UpdateService(ctx, input)
 	if err != nil {
@@ -163,12 +160,12 @@ func (c *client) DeleteTaskSet(ctx context.Context, service types.Service, taskS
 	return output.TaskSet, nil
 }
 
-func (c *client) ServiceExists(ctx context.Context, clusterName string, services []string) (bool, error) {
+func (c *client) ServiceExists(ctx context.Context, clusterName string, serviceName string) (bool, error) {
 	input := &ecs.DescribeServicesInput{
 		Cluster:  aws.String(clusterName),
-		Services: services,
+		Services: []string{serviceName},
 	}
-	_, err := c.client.DescribeServices(ctx, input)
+	output, err := c.client.DescribeServices(ctx, input)
 	if err != nil {
 		var nfe *types.ResourceNotFoundException
 		if errors.As(err, &nfe) {
@@ -177,5 +174,13 @@ func (c *client) ServiceExists(ctx context.Context, clusterName string, services
 		}
 		return false, err
 	}
-	return true, nil
+	fmt.Println("=====================output.Services=======================")
+	for _, service := range output.Services {
+		if *service.ServiceName == serviceName && *service.Status == "ACTIVE" {
+			fmt.Println(*service.ServiceName)
+			fmt.Println(*service.Status)
+			return true, nil
+		}
+	}
+	return false, nil
 }
