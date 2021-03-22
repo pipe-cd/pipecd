@@ -83,7 +83,9 @@ func (p *Provider) Type() string {
 	return ProviderType
 }
 
-func (p *Provider) RunQuery(ctx context.Context, query string, queryRange metrics.QueryRange, evaluator metrics.Evaluator) (bool, string, error) {
+// Evaluate queries the range query endpoint and checks if values in all data points are within the expected range.
+// For the range query endpoint, see: https://prometheus.io/docs/prometheus/latest/querying/api/#range-queries
+func (p *Provider) Evaluate(ctx context.Context, query string, queryRange metrics.QueryRange, evaluator metrics.Evaluator) (bool, string, error) {
 	if err := queryRange.Validate(); err != nil {
 		return false, "", err
 	}
@@ -91,12 +93,18 @@ func (p *Provider) RunQuery(ctx context.Context, query string, queryRange metric
 	ctx, cancel := context.WithTimeout(ctx, p.timeout)
 	defer cancel()
 
+	// NOTE: Use 1m as a step but make sure the "step" isn't smaller than the query range.
+	step := time.Minute
+	if diff := queryRange.To.Sub(queryRange.From); diff < step {
+		step = diff
+	}
+
 	p.logger.Info("run query", zap.String("query", query))
 	// TODO: Use HTTP Basic Authentication with the username and password when needed.
 	response, warnings, err := p.api.QueryRange(ctx, query, v1.Range{
 		Start: queryRange.From,
 		End:   queryRange.To,
-		Step:  queryRange.Step,
+		Step:  step,
 	})
 	if err != nil {
 		return false, "", err
@@ -108,7 +116,6 @@ func (p *Provider) RunQuery(ctx context.Context, query string, queryRange metric
 }
 
 func evaluate(evaluator metrics.Evaluator, response model.Value) (bool, string, error) {
-	successReason := fmt.Sprintf("all values are within the expected range (%s)", evaluator)
 	evaluateValue := func(value float64) (bool, error) {
 		if math.IsNaN(value) {
 			return false, fmt.Errorf("the value is not a number")
@@ -127,7 +134,6 @@ func evaluate(evaluator metrics.Evaluator, response model.Value) (bool, string, 
 			reason := fmt.Sprintf("found a value (%g) that is out of the expected range (%s)", float64(res.Value), evaluator)
 			return false, reason, nil
 		}
-		return true, successReason, nil
 	case model.Vector:
 		if len(res) == 0 {
 			return false, "", fmt.Errorf("zero value in instant vector type returned")
@@ -146,7 +152,6 @@ func evaluate(evaluator metrics.Evaluator, response model.Value) (bool, string, 
 				return false, reason, nil
 			}
 		}
-		return true, successReason, nil
 	case model.Matrix:
 		if len(res) == 0 {
 			return false, "", fmt.Errorf("no time series data points in range vector type")
@@ -167,8 +172,10 @@ func evaluate(evaluator metrics.Evaluator, response model.Value) (bool, string, 
 				}
 			}
 		}
-		return true, successReason, nil
 	default:
 		return false, "", fmt.Errorf("unexpected data type returned")
 	}
+
+	reason := fmt.Sprintf("all values are within the expected range (%s)", evaluator)
+	return true, reason, nil
 }

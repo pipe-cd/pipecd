@@ -38,6 +38,6 @@ func (p *Provider) Type() string {
 	return ProviderType
 }
 
-func (p *Provider) RunQuery(ctx context.Context, query string) (bool, string, error) {
+func (p *Provider) Evaluate(ctx context.Context, query string) (bool, string, error) {
 	return false, "", nil
 }
