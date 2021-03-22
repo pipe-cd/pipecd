@@ -1,8 +1,27 @@
+import { configureStore } from "@reduxjs/toolkit";
+import { waitFor } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
+import { setupServer } from "msw/node";
 import React from "react";
 import { render, screen } from "../../../test-utils";
+import { generateApplicationSealedSecretHandler } from "../../mocks/services/piped";
 import { dummyApplication } from "../../__fixtures__/dummy-application";
 import { SealedSecretDialog } from "./";
+import { reducers } from "../../modules";
+
+const server = setupServer();
+
+beforeAll(() => {
+  server.listen();
+});
+
+afterEach(() => {
+  server.resetHandlers();
+});
+
+afterAll(() => {
+  server.close();
+});
 
 test("render", () => {
   render(
@@ -48,4 +67,45 @@ test("cancel", () => {
 
   userEvent.click(screen.getByRole("button", { name: "Cancel" }));
   expect(onClose).toHaveBeenCalled();
+});
+
+test("Generate sealed secret", async () => {
+  const store = configureStore({
+    reducer: reducers,
+    preloadedState: {
+      applications: {
+        entities: {
+          [dummyApplication.id]: dummyApplication,
+        },
+        ids: [dummyApplication.id],
+      },
+    },
+  });
+  server.use(generateApplicationSealedSecretHandler);
+  render(
+    <SealedSecretDialog
+      applicationId={dummyApplication.id}
+      onClose={jest.fn()}
+      open
+    />,
+    {
+      store,
+    }
+  );
+
+  userEvent.type(
+    screen.getByRole("textbox", { name: "Secret Data" }),
+    "secret"
+  );
+  userEvent.click(screen.getByRole("button", { name: "Encrypt" }));
+
+  await waitFor(() =>
+    expect(screen.getByText("Encrypted secret data")).toBeInTheDocument()
+  );
+
+  userEvent.click(screen.getByRole("button", { name: "Close" }));
+
+  await waitFor(() =>
+    expect(screen.queryByText("Encrypted secret data")).not.toBeInTheDocument()
+  );
 });
