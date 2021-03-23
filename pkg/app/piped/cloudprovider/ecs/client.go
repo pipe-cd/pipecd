@@ -174,6 +174,7 @@ func (c *client) ServiceExists(ctx context.Context, clusterName string, serviceN
 		}
 		return false, err
 	}
+	// Note: In case of cluster's existing serviceName is set to inactive status, it's safe to recreate the service with the same serviceName.
 	for _, service := range output.Services {
 		if *service.ServiceName == serviceName && *service.Status == "ACTIVE" {
 			return true, nil
