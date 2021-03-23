@@ -278,9 +278,9 @@ spec:
           imagePullPolicy: IfNotPresent
           env:
             - name: MYSQL_ROOT_PASSWORD
-              value: test
+              value: {{ .Values.mysql.rootPassword }}
             - name: MYSQL_DATABASE
-              value: quickstart
+              value: {{ .Values.mysql.database }}
           ports:
             - name: mysql
               containerPort: 3306
