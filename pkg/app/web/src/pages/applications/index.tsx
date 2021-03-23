@@ -19,7 +19,7 @@ import { ApplicationList } from "../../components/application-list";
 import { DeploymentConfigForm } from "../../components/deployment-config-form";
 import { EditApplicationDrawer } from "../../components/edit-application-drawer";
 import { AppState } from "../../modules";
-import { fetchApplications } from "../../modules/applications";
+import { ApplicationKind, fetchApplications } from "../../modules/applications";
 import { clearTemplateTarget } from "../../modules/deployment-configs";
 import { AppDispatch } from "../../store";
 import { UI_TEXT_FILTER, UI_TEXT_HIDE_FILTER } from "../../constants/ui-text";
@@ -30,6 +30,7 @@ import {
 import { useHistory } from "react-router-dom";
 import { PAGE_PATH_APPLICATIONS } from "../../constants/path";
 import { fetchApplicationCount } from "../../modules/application-counts";
+import { ApplicationCounts } from "../../components/application-counts";
 
 const useStyles = makeStyles((theme) => ({
   main: {
@@ -60,10 +61,10 @@ export const ApplicationIndexPage: FC = memo(function ApplicationIndexPage() {
   const [isLoading, isAdding] = useSelector<AppState, [boolean, boolean]>(
     (state) => [state.applications.loading, state.applications.adding]
   );
-
   const addedApplicationId = useSelector<AppState, string | null>(
     (state) => state.deploymentConfigs.targetApplicationId
   );
+  const showCounts = Boolean(filterOptions.showCounts);
 
   const handleFilterChange = useCallback(
     (options) => {
@@ -74,8 +75,10 @@ export const ApplicationIndexPage: FC = memo(function ApplicationIndexPage() {
     [history]
   );
   const handleFilterClear = useCallback(() => {
-    history.replace(PAGE_PATH_APPLICATIONS);
-  }, [history]);
+    history.replace(
+      `${PAGE_PATH_APPLICATIONS}?${stringifySearchParams({ showCounts })}`
+    );
+  }, [history, showCounts]);
 
   const handleRefresh = useCallback(() => {
     dispatch(fetchApplications(filterOptions));
@@ -86,18 +89,17 @@ export const ApplicationIndexPage: FC = memo(function ApplicationIndexPage() {
     dispatch(clearTemplateTarget());
   };
 
-  // TODO: Uncomment this code after implemented application count API
-  // const handleApplicationCountClick = useCallback(
-  //   (kind: ApplicationKind) => {
-  //     history.replace(
-  //       `${PAGE_PATH_APPLICATIONS}?${stringifySearchParams({
-  //         ...filterOptions,
-  //         kind,
-  //       })}`
-  //     );
-  //   },
-  //   [history, filterOptions]
-  // );
+  const handleApplicationCountClick = useCallback(
+    (kind: ApplicationKind) => {
+      history.replace(
+        `${PAGE_PATH_APPLICATIONS}?${stringifySearchParams({
+          ...filterOptions,
+          kind,
+        })}`
+      );
+    },
+    [history, filterOptions]
+  );
 
   useEffect(() => {
     dispatch(fetchApplications(filterOptions));
@@ -142,7 +144,9 @@ export const ApplicationIndexPage: FC = memo(function ApplicationIndexPage() {
 
       <div className={classes.main}>
         <Box display="flex" flexDirection="column" flex={1} p={2}>
-          {/* <ApplicationCounts onClick={handleApplicationCountClick} /> */}
+          {showCounts && (
+            <ApplicationCounts onClick={handleApplicationCountClick} />
+          )}
           <ApplicationList />
         </Box>
         {openFilter && (
