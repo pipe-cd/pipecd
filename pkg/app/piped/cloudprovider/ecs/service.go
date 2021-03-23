@@ -22,10 +22,6 @@ import (
 	"github.com/aws/aws-sdk-go-v2/service/ecs/types"
 )
 
-type ServiceDefinition struct {
-	Cluster string `json:"cluster"`
-}
-
 func loadServiceDefinition(path string) (types.Service, error) {
 	data, err := ioutil.ReadFile(path)
 	if err != nil {
@@ -53,7 +49,9 @@ func parseServiceDefinition(data []byte) (types.Service, error) {
 }
 
 func parseServiceDefinitionForCluster(data []byte) (string, error) {
-	var obj ServiceDefinition
+	var obj struct {
+		Cluster string `json:"cluster"`
+	}
 	// TODO: Support loading ServiceDefinition file with JSON format
 	if err := yaml.Unmarshal(data, &obj); err != nil {
 		return "", err
