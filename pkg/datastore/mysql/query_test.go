@@ -272,3 +272,46 @@ func TestBuildFindQuery(t *testing.T) {
 		})
 	}
 }
+
+func TestRefineFiltersValue(t *testing.T) {
+	testcases := []struct {
+		name               string
+		filters            []datastore.ListFilter
+		expectedFiltersVal []interface{}
+	}{
+		{
+			name: "mixed types",
+			filters: []datastore.ListFilter{
+				{
+					Value: 1,
+				},
+				{
+					Value: "app-1",
+				},
+				{
+					Value: []string{"app-1", "app-2", "app-3"},
+				},
+				{
+					Value: []int32{1, 2, 3},
+				},
+				{
+					Value: [3]int32{1, 2, 3},
+				},
+			},
+			expectedFiltersVal: []interface{}{
+				1,
+				"app-1",
+				"(app-1,app-2,app-3)",
+				"(1,2,3)",
+				"(1,2,3)",
+			},
+		},
+	}
+
+	for _, tc := range testcases {
+		t.Run(tc.name, func(t *testing.T) {
+			vals := refineFiltersValue(tc.filters)
+			assert.Equal(t, tc.expectedFiltersVal, vals)
+		})
+	}
+}
