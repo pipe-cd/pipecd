@@ -88,10 +88,14 @@ func (m *MySQL) Find(ctx context.Context, kind string, opts datastore.ListOption
 		return nil, err
 	}
 
-	rows, err := m.client.QueryContext(ctx, query, refineFiltersValue(opts.Filters)...)
+	filtersVal := refineFiltersValue(opts.Filters)
+
+	rows, err := m.client.QueryContext(ctx, query, filtersVal...)
 	if err != nil {
 		m.logger.Error("failed to find entities",
 			zap.String("kind", kind),
+			zap.String("query", query),
+			zap.Any("filtersValue", filtersVal),
 			zap.Error(err),
 		)
 		return nil, err

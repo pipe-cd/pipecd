@@ -33,7 +33,7 @@ const (
 
 // Client is wrapper of ECS client.
 type Client interface {
-	ServiceExists(ctx context.Context, clusterName string, services []string) (bool, error)
+	ServiceExists(ctx context.Context, clusterName string, servicesName string) (bool, error)
 	CreateService(ctx context.Context, service types.Service) (*types.Service, error)
 	UpdateService(ctx context.Context, service types.Service) (*types.Service, error)
 	RegisterTaskDefinition(ctx context.Context, taskDefinition types.TaskDefinition) (*types.TaskDefinition, error)
@@ -44,7 +44,7 @@ type Client interface {
 
 // Registry holds a pool of aws client wrappers.
 type Registry interface {
-	Client(name string, cfg *config.CloudProviderLambdaConfig, logger *zap.Logger) (Client, error)
+	Client(name string, cfg *config.CloudProviderECSConfig, logger *zap.Logger) (Client, error)
 }
 
 // LoadServiceDefinition returns ServiceDefinition object from a given service definition file.
@@ -57,11 +57,11 @@ func LoadServiceDefinition(appDir, serviceDefinitionFilename string) (types.Serv
 }
 
 // LoadTaskDefinition returns TaskDefinition object from a given task definition file.
-func LoadTaskDefinition(appDir, serviceDefinitionFilename string) (types.TaskDefinition, error) {
-	if serviceDefinitionFilename == "" {
-		serviceDefinitionFilename = defaultserviceDefinitionFilename
+func LoadTaskDefinition(appDir, taskDefinition string) (types.TaskDefinition, error) {
+	if taskDefinition == "" {
+		taskDefinition = defaultTaskDefinitionFilename
 	}
-	path := filepath.Join(appDir, serviceDefinitionFilename)
+	path := filepath.Join(appDir, taskDefinition)
 	return loadTaskDefinition(path)
 }
 
@@ -71,7 +71,7 @@ type registry struct {
 	newGroup *singleflight.Group
 }
 
-func (r *registry) Client(name string, cfg *config.CloudProviderLambdaConfig, logger *zap.Logger) (Client, error) {
+func (r *registry) Client(name string, cfg *config.CloudProviderECSConfig, logger *zap.Logger) (Client, error) {
 	r.mu.RLock()
 	client, ok := r.clients[name]
 	r.mu.RUnlock()

@@ -1426,6 +1426,13 @@ func (a *WebAPI) GetInsightApplicationCount(ctx context.Context, req *webservice
 			},
 			Count: 2,
 		},
+		{
+			Labels: map[string]string{
+				model.InsightApplicationCountLabelKey_KIND.String():          model.ApplicationKind_CLOUDRUN.String(),
+				model.InsightApplicationCountLabelKey_ACTIVE_STATUS.String(): model.ApplicationActiveStatus_ENABLED.String(),
+			},
+			Count: 15,
+		},
 	}
 
 	return &webservice.GetInsightApplicationCountResponse{

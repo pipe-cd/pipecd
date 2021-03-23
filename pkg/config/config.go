@@ -274,7 +274,7 @@ func (c *Config) GetGenericDeployment() (GenericDeploymentSpec, bool) {
 	case KindLambdaApp:
 		return c.LambdaDeploymentSpec.GenericDeploymentSpec, true
 	case KindECSApp:
-		return c.LambdaDeploymentSpec.GenericDeploymentSpec, true
+		return c.ECSDeploymentSpec.GenericDeploymentSpec, true
 	}
 	return GenericDeploymentSpec{}, false
 }

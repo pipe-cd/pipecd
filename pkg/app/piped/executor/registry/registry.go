@@ -21,6 +21,7 @@ import (
 	"github.com/pipe-cd/pipe/pkg/app/piped/executor"
 	"github.com/pipe-cd/pipe/pkg/app/piped/executor/analysis"
 	"github.com/pipe-cd/pipe/pkg/app/piped/executor/cloudrun"
+	"github.com/pipe-cd/pipe/pkg/app/piped/executor/ecs"
 	"github.com/pipe-cd/pipe/pkg/app/piped/executor/kubernetes"
 	"github.com/pipe-cd/pipe/pkg/app/piped/executor/lambda"
 	"github.com/pipe-cd/pipe/pkg/app/piped/executor/terraform"
@@ -100,6 +101,7 @@ func init() {
 	kubernetes.Register(defaultRegistry)
 	lambda.Register(defaultRegistry)
 	terraform.Register(defaultRegistry)
+	ecs.Register(defaultRegistry)
 	wait.Register(defaultRegistry)
 	waitapproval.Register(defaultRegistry)
 }

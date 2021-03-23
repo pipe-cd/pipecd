@@ -8,6 +8,7 @@ go_library(
     deps = [
         "//pkg/app/piped/planner:go_default_library",
         "//pkg/app/piped/planner/cloudrun:go_default_library",
+        "//pkg/app/piped/planner/ecs:go_default_library",
         "//pkg/app/piped/planner/kubernetes:go_default_library",
         "//pkg/app/piped/planner/lambda:go_default_library",
         "//pkg/app/piped/planner/terraform:go_default_library",
