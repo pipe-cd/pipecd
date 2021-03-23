@@ -33,7 +33,7 @@ const (
 
 // Client is wrapper of ECS client.
 type Client interface {
-	ServiceExists(ctx context.Context, clusterName string, services string) (bool, error)
+	ServiceExists(ctx context.Context, clusterName string, servicesName string) (bool, error)
 	CreateService(ctx context.Context, service types.Service) (*types.Service, error)
 	UpdateService(ctx context.Context, service types.Service) (*types.Service, error)
 	RegisterTaskDefinition(ctx context.Context, taskDefinition types.TaskDefinition) (*types.TaskDefinition, error)
