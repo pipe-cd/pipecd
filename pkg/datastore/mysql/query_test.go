@@ -262,6 +262,20 @@ func TestBuildFindQuery(t *testing.T) {
 			},
 			wantErr: true,
 		},
+		{
+			name: "query with IN operator",
+			kind: "Project",
+			listOptions: datastore.ListOptions{
+				Filters: []datastore.ListFilter{
+					{
+						Field:    "Status",
+						Operator: "in",
+						Value:    []int32{1, 2, 3},
+					},
+				},
+			},
+			expectedQuery: "SELECT Data FROM Project WHERE Status IN (?,?,?)",
+		},
 	}
 
 	for _, tc := range testcases {
@@ -301,9 +315,9 @@ func TestRefineFiltersValue(t *testing.T) {
 			expectedFiltersVal: []interface{}{
 				1,
 				"app-1",
-				"(app-1,app-2,app-3)",
-				"(1,2,3)",
-				"(1,2,3)",
+				"app-1", "app-2", "app-3",
+				int32(1), int32(2), int32(3),
+				int32(1), int32(2), int32(3),
 			},
 		},
 	}
