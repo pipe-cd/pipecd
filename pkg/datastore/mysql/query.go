@@ -16,6 +16,7 @@ package mysql
 
 import (
 	"fmt"
+	"reflect"
 	"strings"
 
 	"github.com/pipe-cd/pipe/pkg/datastore"
@@ -37,15 +38,20 @@ func buildCreateQuery(table string) string {
 	return fmt.Sprintf("INSERT INTO %s (Id, Data) VALUE (UUID_TO_BIN(?,true), ?)", table)
 }
 
-func buildFindQuery(table string, ops datastore.ListOptions) string {
+func buildFindQuery(table string, ops datastore.ListOptions) (string, error) {
+	filters, err := refineFiltersOperator(refineFiltersField(ops.Filters))
+	if err != nil {
+		return "", err
+	}
+
 	rawQuery := fmt.Sprintf(
 		"SELECT Data FROM %s %s %s %s",
 		table,
-		buildWhereClause(ops.Filters),
-		buildOrderByClause(ops.Orders),
+		buildWhereClause(filters),
+		buildOrderByClause(refineOrdersField(ops.Orders)),
 		buildPaginationClause(ops.Page, ops.PageSize),
 	)
-	return strings.Join(strings.Fields(rawQuery), " ")
+	return strings.Join(strings.Fields(rawQuery), " "), nil
 }
 
 func buildWhereClause(filters []datastore.ListFilter) string {
@@ -92,4 +98,70 @@ func toMySQLDirection(d datastore.OrderDirection) string {
 	default:
 		return ""
 	}
+}
+
+func refineOrdersField(orders []datastore.Order) []datastore.Order {
+	out := make([]datastore.Order, len(orders))
+	for i, order := range orders {
+		switch order.Field {
+		case "SyncState.Status":
+			order.Field = "SyncState_Status"
+		default:
+			break
+		}
+		out[i] = order
+	}
+	return out
+}
+
+func refineFiltersField(filters []datastore.ListFilter) []datastore.ListFilter {
+	out := make([]datastore.ListFilter, len(filters))
+	for i, filter := range filters {
+		switch filter.Field {
+		case "SyncState.Status":
+			filter.Field = "SyncState_Status"
+		default:
+			break
+		}
+		out[i] = filter
+	}
+	return out
+}
+
+func refineFiltersOperator(filters []datastore.ListFilter) ([]datastore.ListFilter, error) {
+	out := make([]datastore.ListFilter, len(filters))
+	for i, filter := range filters {
+		switch filter.Operator {
+		case "==":
+			filter.Operator = "="
+		case "in":
+			filter.Operator = "IN"
+		case "not-in":
+			filter.Operator = "NOT IN"
+		case "!=", ">", ">=", "<", "<=":
+			break
+		default:
+			return nil, fmt.Errorf("unsupported operator %s", filter.Operator)
+		}
+		out[i] = filter
+	}
+	return out, nil
+}
+
+func refineFiltersValue(filters []datastore.ListFilter) []interface{} {
+	filtersVals := make([]interface{}, len(filters))
+	for i, filter := range filters {
+		fv := reflect.ValueOf(filter.Value)
+		switch fv.Kind() {
+		case reflect.Slice, reflect.Array:
+			vals := make([]string, fv.Len())
+			for j := 0; j < fv.Len(); j++ {
+				vals[j] = fmt.Sprintf("%v", fv.Index(j))
+			}
+			filtersVals[i] = fmt.Sprintf("(%s)", strings.Join(vals, ","))
+		default:
+			filtersVals[i] = filter.Value
+		}
+	}
+	return filtersVals
 }

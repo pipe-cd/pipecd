@@ -28,10 +28,10 @@ var (
 // Provider represents a client for metrics provider which provides metrics for analysis.
 type Provider interface {
 	Type() string
-	// RunQuery runs the given query against the metrics provider,
+	// Evaluate runs the given query against the metrics provider,
 	// and then checks if the results are expected or not.
 	// Returns the result reason if non-error occurred.
-	RunQuery(ctx context.Context, query string, queryRange QueryRange, evaluator Evaluator) (expected bool, reason string, err error)
+	Evaluate(ctx context.Context, query string, queryRange QueryRange, evaluator Evaluator) (expected bool, reason string, err error)
 }
 
 // Evaluator evaluates the response from the metrics provider.
@@ -47,8 +47,6 @@ type QueryRange struct {
 	From time.Time
 	// End of the queried time period. Defaults to the current time.
 	To time.Time
-	// Query resolution step width. Defaults to 1m.
-	Step time.Duration
 }
 
 func (q *QueryRange) Validate() error {
@@ -58,9 +56,8 @@ func (q *QueryRange) Validate() error {
 	if q.To.IsZero() {
 		q.To = time.Now()
 	}
-	// TODO: Look into the appropriate default value of a Step
-	if q.Step == 0 {
-		q.Step = time.Minute
+	if q.From.After(q.To) {
+		return fmt.Errorf("\"to\" should be after \"from\"")
 	}
 	return nil
 }

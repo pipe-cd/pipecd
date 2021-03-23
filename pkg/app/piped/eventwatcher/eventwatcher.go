@@ -265,7 +265,7 @@ func modifyYAML(path, field, newValue string) ([]byte, bool, error) {
 	}
 	value, err := convertStr(v)
 	if err != nil {
-		return nil, false, fmt.Errorf("a value of unknown type is defined at %s in %s: %w", err, field, path)
+		return nil, false, fmt.Errorf("a value of unknown type is defined at %s in %s: %w", field, path, err)
 	}
 	if newValue == value {
 		// Already up-to-date.

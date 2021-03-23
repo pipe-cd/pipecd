@@ -21,8 +21,8 @@ import (
 // Provider represents a client for log provider which provides logs for analysis.
 type Provider interface {
 	Type() string
-	// RunQuery runs the given query against the log provider,
+	// Evaluate runs the given query against the log provider,
 	// and then checks if there is at least one error log.
 	// Returns the result reason if non-error occurred.
-	RunQuery(ctx context.Context, query string) (result bool, reason string, err error)
+	Evaluate(ctx context.Context, query string) (result bool, reason string, err error)
 }

@@ -25,7 +25,7 @@ func TestType(t *testing.T) {
 	assert.Equal(t, ProviderType, p.Type())
 }
 
-func TestRunQuery(t *testing.T) {
+func TestProviderEvaluate(t *testing.T) {
 	cases := []struct {
 		name       string
 		value      model.Value
@@ -84,7 +84,7 @@ func TestRunQuery(t *testing.T) {
 				timeout: defaultTimeout,
 				logger:  zap.NewNop(),
 			}
-			res, _, err := p.RunQuery(context.Background(), "dummy", metrics.QueryRange{From: time.Now()}, tc.expected)
+			res, _, err := p.Evaluate(context.Background(), "dummy", metrics.QueryRange{From: time.Now()}, tc.expected)
 			assert.Equal(t, tc.wantErr, err != nil)
 			assert.Equal(t, res, tc.wantResult)
 		})

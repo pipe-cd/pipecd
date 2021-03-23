@@ -23,11 +23,15 @@ ALTER TABLE Application ADD COLUMN Kind INT GENERATED ALWAYS AS (data->>"$.kind"
 CREATE INDEX application_kind_updated_at_desc ON Application (Kind, UpdatedAt DESC);
 
 -- index on `SyncState.Status` ASC and `UpdatedAt` DESC
-ALTER TABLE Application ADD COLUMN SyncState INT GENERATED ALWAYS AS (data->>"$.sync_state.status") VIRTUAL;
-CREATE INDEX application_sync_state_updated_at_desc ON Application (SyncState, UpdatedAt DESC);
+ALTER TABLE Application ADD COLUMN SyncState_Status INT GENERATED ALWAYS AS (data->>"$.sync_state.status") VIRTUAL;
+CREATE INDEX application_sync_state_updated_at_desc ON Application (SyncState_Status, UpdatedAt DESC);
 
 -- index on `ProjectId` ASC and `UpdatedAt` DESC
 CREATE INDEX application_project_id_updated_at_desc ON Application (ProjectId, UpdatedAt DESC);
+
+-- index on `PipedId` ASC
+ALTER TABLE Application ADD COLUMN PipedId VARCHAR(32) GENERATED ALWAYS AS (data->>"$.piped_id") VIRTUAL;
+CREATE INDEX application_piped_id ON Application (PipedId);
 
 --
 -- Command table indexes
@@ -36,6 +40,10 @@ CREATE INDEX application_project_id_updated_at_desc ON Application (ProjectId, U
 -- index on `Status` ASC and `CreatedAt` ASC
 ALTER TABLE Command ADD COLUMN Status INT GENERATED ALWAYS AS (data->>"$.status") VIRTUAL;
 CREATE INDEX command_status_created_at_asc ON Command (Status, CreatedAt);
+
+-- index on `PipedId` ASC
+ALTER TABLE Command ADD COLUMN PipedId VARCHAR(32) GENERATED ALWAYS AS (data->>"$.piped_id") VIRTUAL;
+CREATE INDEX command_piped_id ON Command (PipedId);
 
 --
 -- Deployment table indexes
@@ -59,6 +67,10 @@ CREATE INDEX deployment_kind_updated_at_desc ON Deployment (Kind, UpdatedAt DESC
 -- index on `Status` ASC and `UpdatedAt` DESC
 ALTER TABLE Deployment ADD COLUMN Status INT GENERATED ALWAYS AS (data->>"$.status") VIRTUAL;
 CREATE INDEX deployment_status_updated_at_desc ON Deployment (Status, UpdatedAt DESC);
+
+-- index on `PipedId` ASC
+ALTER TABLE Deployment ADD COLUMN PipedId VARCHAR(32) GENERATED ALWAYS AS (data->>"$.piped_id") VIRTUAL;
+CREATE INDEX deployment_piped_id ON Deployment (PipedId);
 
 --
 -- Event table indexes

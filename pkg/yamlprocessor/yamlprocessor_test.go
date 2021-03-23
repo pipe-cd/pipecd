@@ -112,16 +112,6 @@ foo:
 			want:    []interface{}{map[string]interface{}{"bar": uint64(1)}, map[string]interface{}{"baz": uint64(2)}},
 			wantErr: false,
 		},
-		{
-			name: "given an entire array path with wildcard",
-			yml: `
-foo:
-- bar: 1
-- baz: 2`,
-			path:    "$.foo[*]",
-			want:    []interface{}{map[string]interface{}{"bar": uint64(1)}, map[string]interface{}{"baz": uint64(2)}},
-			wantErr: false,
-		},
 	}
 	for _, tc := range testcases {
 		t.Run(tc.name, func(t *testing.T) {
