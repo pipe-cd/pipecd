@@ -101,11 +101,11 @@ func sync(ctx context.Context, in *executor.Input, cloudProviderName string, clo
 	// Build and publish new version of ECS service and task definition.
 	ok := build(ctx, in, client, taskDefinition, serviceDefinition)
 	if !ok {
-		in.LogPersister.Errorf("Failed to build new version for ECS %s", serviceDefinition.ServiceName)
+		in.LogPersister.Errorf("Failed to build new version for ECS %s", *serviceDefinition.ServiceName)
 		return false
 	}
 
-	in.LogPersister.Infof("Successfully applied the service definition and the task definition for ECS service %s and task definition %s", serviceDefinition.ServiceName, taskDefinition.TaskDefinitionArn)
+	in.LogPersister.Infof("Successfully applied the service definition and the task definition for ECS service %s and task definition %s", *serviceDefinition.ServiceName, *taskDefinition.TaskDefinitionArn)
 	return true
 }
 
@@ -118,7 +118,7 @@ func build(ctx context.Context, in *executor.Input, client provider.Client, task
 
 	found, err := client.ServiceExists(ctx, *serviceDefinition.ClusterArn, *serviceDefinition.ServiceName)
 	if err != nil {
-		in.LogPersister.Errorf("Unable to validate service name %s: %v", serviceDefinition.ServiceName, err)
+		in.LogPersister.Errorf("Unable to validate service name %s: %v", *serviceDefinition.ServiceName, err)
 		return false
 	}
 	var service *types.Service
@@ -126,20 +126,20 @@ func build(ctx context.Context, in *executor.Input, client provider.Client, task
 	if found {
 		service, err = client.UpdateService(ctx, serviceDefinition)
 		if err != nil {
-			in.LogPersister.Errorf("Failed to update ECS service %s: %v", serviceDefinition.ServiceName, err)
+			in.LogPersister.Errorf("Failed to update ECS service %s: %v", *serviceDefinition.ServiceName, err)
 			return false
 		}
 	} else {
 		service, err = client.CreateService(ctx, serviceDefinition)
 		if err != nil {
-			in.LogPersister.Errorf("Failed to create ECS service %s: %v", serviceDefinition.ServiceName, err)
+			in.LogPersister.Errorf("Failed to create ECS service %s: %v", *serviceDefinition.ServiceName, err)
 			return false
 		}
 	}
 
 	if !(service.DeploymentController.Type == types.DeploymentControllerTypeCodeDeploy) {
 		if _, err := client.CreateTaskSet(ctx, *service, taskDefinition); err != nil {
-			in.LogPersister.Errorf("Failed to create ECS task set %s: %v", serviceDefinition.ServiceName, err)
+			in.LogPersister.Errorf("Failed to create ECS task set %s: %v", *serviceDefinition.ServiceName, err)
 			return false
 		}
 	}

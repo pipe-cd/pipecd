@@ -97,21 +97,21 @@ func rollback(ctx context.Context, in *executor.Input, cloudProviderName string,
 
 	td, err := client.RegisterTaskDefinition(ctx, taskDefinition)
 	if err != nil {
-		in.LogPersister.Errorf("Failed to register ECS task definition %s: %v", taskDefinition.TaskDefinitionArn, err)
+		in.LogPersister.Errorf("Failed to register ECS task definition %s: %v", *taskDefinition.TaskDefinitionArn, err)
 		return false
 	}
 	serviceDefinition.TaskDefinition = td.TaskDefinitionArn
 	// Rollback ECS service configuration to previous state.
 	if _, err := client.UpdateService(ctx, serviceDefinition); err != nil {
-		in.LogPersister.Errorf("Unable to rollback ECS service %s configuration to previous stage: %w", serviceDefinition.ServiceName, err)
+		in.LogPersister.Errorf("Unable to rollback ECS service %s configuration to previous stage: %w", *serviceDefinition.ServiceName, err)
 		return false
 	}
 
 	if _, err := client.CreateTaskSet(ctx, serviceDefinition, taskDefinition); err != nil {
-		in.LogPersister.Errorf("Failed to create ECS task set %s: %v", serviceDefinition.ServiceName, err)
+		in.LogPersister.Errorf("Failed to create ECS task set %s: %v", *serviceDefinition.ServiceName, err)
 		return false
 	}
 
-	in.LogPersister.Infof("Rolled back the ECS service %s and task definition %s configuration to original stage", serviceDefinition.ServiceName, *taskDefinition.TaskDefinitionArn)
+	in.LogPersister.Infof("Rolled back the ECS service %s and task definition %s configuration to original stage", *serviceDefinition.ServiceName, *taskDefinition.TaskDefinitionArn)
 	return true
 }
