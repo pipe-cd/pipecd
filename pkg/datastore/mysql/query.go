@@ -16,6 +16,7 @@ package mysql
 
 import (
 	"fmt"
+	"reflect"
 	"strings"
 
 	"github.com/pipe-cd/pipe/pkg/datastore"
@@ -145,4 +146,22 @@ func refineFiltersOperator(filters []datastore.ListFilter) ([]datastore.ListFilt
 		out[i] = filter
 	}
 	return out, nil
+}
+
+func refineFiltersValue(filters []datastore.ListFilter) []interface{} {
+	filtersVals := make([]interface{}, len(filters))
+	for i, filter := range filters {
+		fv := reflect.ValueOf(filter.Value)
+		switch fv.Kind() {
+		case reflect.Slice, reflect.Array:
+			vals := make([]string, fv.Len())
+			for j := 0; j < fv.Len(); j++ {
+				vals[j] = fmt.Sprintf("%v", fv.Index(j))
+			}
+			filtersVals[i] = fmt.Sprintf("(%s)", strings.Join(vals, ","))
+		default:
+			filtersVals[i] = filter.Value
+		}
+	}
+	return filtersVals
 }

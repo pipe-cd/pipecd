@@ -79,11 +79,6 @@ func NewMySQL(url, database string, opts ...Option) (*MySQL, error) {
 
 // Find implementation for MySQL
 func (m *MySQL) Find(ctx context.Context, kind string, opts datastore.ListOptions) (datastore.Iterator, error) {
-	filterVals := make([]interface{}, len(opts.Filters))
-	for i, filter := range opts.Filters {
-		filterVals[i] = filter.Value
-	}
-
 	query, err := buildFindQuery(kind, opts)
 	if err != nil {
 		m.logger.Error("failed to build find entities query",
@@ -93,7 +88,7 @@ func (m *MySQL) Find(ctx context.Context, kind string, opts datastore.ListOption
 		return nil, err
 	}
 
-	rows, err := m.client.QueryContext(ctx, query, filterVals...)
+	rows, err := m.client.QueryContext(ctx, query, refineFiltersValue(opts.Filters)...)
 	if err != nil {
 		m.logger.Error("failed to find entities",
 			zap.String("kind", kind),

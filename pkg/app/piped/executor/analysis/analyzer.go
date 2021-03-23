@@ -15,7 +15,7 @@ import (
 type analyzer struct {
 	id           string
 	providerType string
-	runQuery     queryRunner
+	evaluate     evaluator
 	query        string
 	interval     time.Duration
 	// The analysis will fail, if this value is exceeded,
@@ -25,13 +25,13 @@ type analyzer struct {
 	logPersister executor.LogPersister
 }
 
-type queryRunner func(ctx context.Context, query string) (expected bool, reason string, err error)
+type evaluator func(ctx context.Context, query string) (expected bool, reason string, err error)
 
 func newAnalyzer(
 	id string,
 	providerType string,
 	query string,
-	runQuery queryRunner,
+	evaluate evaluator,
 	interval time.Duration,
 	failureLimit int,
 	logger *zap.Logger,
@@ -40,7 +40,7 @@ func newAnalyzer(
 	return &analyzer{
 		id:           id,
 		providerType: providerType,
-		runQuery:     runQuery,
+		evaluate:     evaluate,
 		query:        query,
 		interval:     interval,
 		failureLimit: failureLimit,
@@ -62,7 +62,7 @@ func (a *analyzer) run(ctx context.Context) error {
 	for {
 		select {
 		case <-ticker.C:
-			expected, reason, err := a.runQuery(ctx, a.query)
+			expected, reason, err := a.evaluate(ctx, a.query)
 			if errors.Is(err, context.DeadlineExceeded) && ctx.Err() == context.DeadlineExceeded {
 				// Ignore parent's context deadline exceeded error, and return immediately.
 				return nil
