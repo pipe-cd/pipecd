@@ -32,6 +32,7 @@ Please note that the phases (Incubating, Alpha, Beta, and Stable) are applied to
 | Support Kustomize | Beta |
 | Support Istio Mesh | Beta |
 | Support SMI Mesh | Incubating |
+| Support AWS App Mesh | Incubating |
 
 ### Terraform Deployment
 
@@ -104,12 +105,10 @@ Please note that the phases (Incubating, Alpha, Beta, and Stable) are applied to
 | Authentication by Username/Password for Static Admin | Beta |
 | GitHub & GitHub Enterprise SSO | Beta |
 | Google SSO | Incubating |
-| Bitbucket SSO | Incubating |
-| Support GCP [Firestore](https://cloud.google.com/firestore) as a data store of the control plane | Beta |
-| Support [MongoDB](https://www.mongodb.com/) as a data store of the control plane | Alpha |
-| Support [MySQL v8.0](https://www.mysql.com/) database as a data store of the control plane | Alpha |
-| Support GCP [GCS](https://cloud.google.com/storage) as a file store of the control plane | Beta |
-| Support AWS [S3](https://aws.amazon.com/s3/) as a file store of the control plane | Alpha |
-| Support [Minio](https://github.com/minio/minio) as a file store of the control plane | Alpha |
+| Data Store - Support GCP [Firestore](https://cloud.google.com/firestore) | Beta |
+| Data Store - Support [MySQL v8.0](https://www.mysql.com/) | Alpha |
+| File Store - Support GCP [GCS](https://cloud.google.com/storage) | Beta |
+| File Store - Support AWS [S3](https://aws.amazon.com/s3/) | Alpha |
+| File Store - Support [Minio](https://github.com/minio/minio) | Alpha |
 | [Insights](/docs/user-guide/insights/) shows delivery performance | Incubating |
 | Collecting piped's metrics and enabling their dashboards | Incubating |
