@@ -252,36 +252,42 @@ spec:
 
 {{- if .Values.quickstart}}
 ---
+# MySQL datastore
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  name: {{ include "pipecd.fullname" . }}-mongodb
+  name: {{ include "pipecd.fullname" . }}-mysql
   labels:
     {{- include "pipecd.labels" . | nindent 4 }}
-    app.kubernetes.io/component: mongodb
+    app.kubernetes.io/component: mysql
 spec:
   replicas: 1
   selector:
     matchLabels:
       {{- include "pipecd.selectorLabels" . | nindent 6 }}
-      app.kubernetes.io/component: mongodb
+      app.kubernetes.io/component: mysql
   template:
     metadata:
       labels:
         {{- include "pipecd.selectorLabels" . | nindent 8 }}
-        app.kubernetes.io/component: mongodb
+        app.kubernetes.io/component: mysql
     spec:
       containers:
-        - name: mongodb
-          image: mongo:{{ .Values.mongodb.imageTag }}
+        - name: mysql
+          image: mysql:{{ .Values.mysql.imageTag }}
           imagePullPolicy: IfNotPresent
+          env:
+            - name: MYSQL_ROOT_PASSWORD
+              value: {{ .Values.mysql.rootPassword }}
+            - name: MYSQL_DATABASE
+              value: {{ .Values.mysql.database }}
           ports:
-            - name: mongo
-              containerPort: 27017
+            - name: mysql
+              containerPort: 3306
               protocol: TCP
-{{- if .Values.mongodb.resources }}
+{{- if .Values.mysql.resources }}
           resources:
-            {{- toYaml .Values.mongodb.resources | nindent 12 }}
+            {{- toYaml .Values.mysql.resources | nindent 12 }}
 {{- end }}
 
 ---
