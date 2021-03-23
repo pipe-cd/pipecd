@@ -27,7 +27,16 @@ func loadServiceDefinition(path string) (types.Service, error) {
 	if err != nil {
 		return types.Service{}, err
 	}
-	return parseServiceDefinition(data)
+	serviceDefinition, err := parseServiceDefinition(data)
+	if err != nil {
+		return types.Service{}, err
+	}
+	clusterArn, err := parseServiceDefinitionForCluster(data)
+	if err != nil {
+		return types.Service{}, err
+	}
+	serviceDefinition.ClusterArn = &clusterArn
+	return serviceDefinition, nil
 }
 
 func parseServiceDefinition(data []byte) (types.Service, error) {
@@ -37,4 +46,15 @@ func parseServiceDefinition(data []byte) (types.Service, error) {
 		return types.Service{}, err
 	}
 	return obj, nil
+}
+
+func parseServiceDefinitionForCluster(data []byte) (string, error) {
+	var obj struct {
+		Cluster string `json:"cluster"`
+	}
+	// TODO: Support loading ServiceDefinition file with JSON format
+	if err := yaml.Unmarshal(data, &obj); err != nil {
+		return "", err
+	}
+	return obj.Cluster, nil
 }

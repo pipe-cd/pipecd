@@ -91,8 +91,8 @@ func (p *Planner) Plan(ctx context.Context, in planner.Input) (out planner.Outpu
 	return
 }
 
-func determineVersion(appDir, serviceDefinitonFile string) (string, error) {
-	taskDefinition, err := provider.LoadTaskDefinition(appDir, serviceDefinitonFile)
+func determineVersion(appDir, taskDefinitonFile string) (string, error) {
+	taskDefinition, err := provider.LoadTaskDefinition(appDir, taskDefinitonFile)
 	if err != nil {
 		return "", err
 	}
