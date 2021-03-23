@@ -61,7 +61,14 @@ func buildWhereClause(filters []datastore.ListFilter) string {
 
 	conds := make([]string, len(filters))
 	for i, filter := range filters {
-		conds[i] = fmt.Sprintf("%s %s ?", filter.Field, filter.Operator)
+		switch filter.Operator {
+		case "IN", "NOT IN":
+			// Make string of (?,...) which contains the number of `?` equal to the element number of filter.Value
+			valLength := reflect.ValueOf(filter.Value).Len()
+			conds[i] = fmt.Sprintf("%s %s (?%s)", filter.Field, filter.Operator, strings.Repeat(",?", valLength-1))
+		default:
+			conds[i] = fmt.Sprintf("%s %s ?", filter.Field, filter.Operator)
+		}
 	}
 	return fmt.Sprintf("WHERE %s", strings.Join(conds[:], " AND "))
 }
@@ -148,19 +155,18 @@ func refineFiltersOperator(filters []datastore.ListFilter) ([]datastore.ListFilt
 	return out, nil
 }
 
+// refineFiltersValue destructs all slide/array type values and makes an array of all element values.
 func refineFiltersValue(filters []datastore.ListFilter) []interface{} {
-	filtersVals := make([]interface{}, len(filters))
-	for i, filter := range filters {
+	var filtersVals []interface{}
+	for _, filter := range filters {
 		fv := reflect.ValueOf(filter.Value)
 		switch fv.Kind() {
 		case reflect.Slice, reflect.Array:
-			vals := make([]string, fv.Len())
 			for j := 0; j < fv.Len(); j++ {
-				vals[j] = fmt.Sprintf("%v", fv.Index(j))
+				filtersVals = append(filtersVals, fv.Index(j).Interface())
 			}
-			filtersVals[i] = fmt.Sprintf("(%s)", strings.Join(vals, ","))
 		default:
-			filtersVals[i] = filter.Value
+			filtersVals = append(filtersVals, filter.Value)
 		}
 	}
 	return filtersVals
