@@ -206,11 +206,12 @@ func (e *Executor) newAnalyzerForMetrics(i int, templatable *config.TemplatableA
 	}
 	id := fmt.Sprintf("metrics-%d", i)
 	runner := func(ctx context.Context, query string) (bool, string, error) {
+		now := time.Now()
 		queryRange := metrics.QueryRange{
-			From: time.Now().Add(-cfg.Interval.Duration()),
-			To:   time.Now(),
+			From: now.Add(-cfg.Interval.Duration()),
+			To:   now,
 		}
-		return provider.RunQuery(ctx, query, queryRange, &cfg.Expected)
+		return provider.Evaluate(ctx, query, queryRange, &cfg.Expected)
 	}
 	return newAnalyzer(id, provider.Type(), cfg.Query, runner, time.Duration(cfg.Interval), cfg.FailureLimit, e.Logger, e.LogPersister), nil
 }
@@ -226,7 +227,7 @@ func (e *Executor) newAnalyzerForLog(i int, templatable *config.TemplatableAnaly
 	}
 	id := fmt.Sprintf("log-%d", i)
 	runner := func(ctx context.Context, query string) (bool, string, error) {
-		return provider.RunQuery(ctx, query)
+		return provider.Evaluate(ctx, query)
 	}
 	return newAnalyzer(id, provider.Type(), cfg.Query, runner, time.Duration(cfg.Interval), cfg.FailureLimit, e.Logger, e.LogPersister), nil
 }
