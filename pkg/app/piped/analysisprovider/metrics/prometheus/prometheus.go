@@ -93,7 +93,7 @@ func (p *Provider) Evaluate(ctx context.Context, query string, queryRange metric
 	ctx, cancel := context.WithTimeout(ctx, p.timeout)
 	defer cancel()
 
-	// NOTE: Use 1m as a step but make sure the "step" isn't smaller than the query range.
+	// NOTE: Use 1m as a step but make sure the "step" is smaller than the query range.
 	step := time.Minute
 	if diff := queryRange.To.Sub(queryRange.From); diff < step {
 		step = diff
