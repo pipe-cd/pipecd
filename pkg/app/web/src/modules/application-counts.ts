@@ -10,7 +10,7 @@ import { APPLICATION_KIND_TEXT } from "../constants/application-kind";
 
 const MODULE_NAME = "applicationCounts";
 
-const INSIGHT_APPLICATION_COUNT_LABEL_KEY_TEXT: Record<
+export const INSIGHT_APPLICATION_COUNT_LABEL_KEY_TEXT: Record<
   InsightApplicationCountLabelKey,
   string
 > = {
@@ -91,4 +91,7 @@ export const applicationCountsSlice = createSlice({
   },
 });
 
-export { InsightApplicationCount } from "pipe/pkg/app/web/model/insight_pb";
+export {
+  InsightApplicationCount,
+  InsightApplicationCountLabelKey,
+} from "pipe/pkg/app/web/model/insight_pb";
