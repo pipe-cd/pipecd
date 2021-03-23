@@ -276,6 +276,20 @@ func TestBuildFindQuery(t *testing.T) {
 			},
 			expectedQuery: "SELECT Data FROM Project WHERE Status IN (?,?,?)",
 		},
+		{
+			name: "query with IN operator (one element)",
+			kind: "Project",
+			listOptions: datastore.ListOptions{
+				Filters: []datastore.ListFilter{
+					{
+						Field:    "Status",
+						Operator: "in",
+						Value:    []int32{1},
+					},
+				},
+			},
+			expectedQuery: "SELECT Data FROM Project WHERE Status IN (?)",
+		},
 	}
 
 	for _, tc := range testcases {
