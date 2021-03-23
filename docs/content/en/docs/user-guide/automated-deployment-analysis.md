@@ -66,9 +66,9 @@ spec:
       expected:
         max: 0
       query: |
-        rate(http_requests_total{status=~"5.*", job="{{ .App.Name }}"}[1m])
+        sum without(status) (rate(http_requests_total{status=~"5.*", job="{{ .App.Name }}"}[1m]))
         /
-        rate(http_requests_total{job="{{ .App.Name }}"}[1m])
+        sum without(status) (rate(http_requests_total{job="{{ .App.Name }}"}[1m]))
 ```
 
 
