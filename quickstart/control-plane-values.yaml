@@ -31,3 +31,7 @@ secret:
     data: quickstart-access-key
   minioSecretKey:
     data: quickstart-secret-key
+
+mysql:
+  rootPassword: "test"
+  database: "quickstart"
