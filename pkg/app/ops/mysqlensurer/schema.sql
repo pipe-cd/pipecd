@@ -5,7 +5,7 @@
 CREATE TABLE IF NOT EXISTS Project (
   Id BINARY(16) PRIMARY KEY,
   Data JSON NOT NULL,
-  Extra VARCHAR(100) GENERATED ALWAYS AS (data->>"$._extra") STORED UNIQUE,
+  Extra VARCHAR(100) GENERATED ALWAYS AS (data->>"$._extra") STORED,
   CreatedAt INT(11) GENERATED ALWAYS AS (data->>"$.created_at") STORED NOT NULL,
   UpdatedAt INT(11) GENERATED ALWAYS AS (data->>"$.updated_at") STORED NOT NULL
 ) ENGINE=InnoDB;
