@@ -36,6 +36,18 @@ func NewProvider(analysisTempCfg *config.TemplatableAnalysisMetrics, providerCfg
 			prometheus.WithLogger(logger),
 			prometheus.WithTimeout(analysisTempCfg.Timeout.Duration()),
 		}
+		cfg := providerCfg.PrometheusConfig
+		if cfg.UsernameFile != "" && cfg.PasswordFile != "" {
+			username, err := ioutil.ReadFile(cfg.UsernameFile)
+			if err != nil {
+				return nil, fmt.Errorf("failed to read the username file: %w", err)
+			}
+			password, err := ioutil.ReadFile(cfg.PasswordFile)
+			if err != nil {
+				return nil, fmt.Errorf("failed to read the password file: %w", err)
+			}
+			options = append(options, prometheus.WithBasicAuth(strings.TrimSpace(string(username)), strings.TrimSpace(string(password))))
+		}
 		return prometheus.NewProvider(providerCfg.PrometheusConfig.Address, options...)
 	case model.AnalysisProviderDatadog:
 		var apiKey, applicationKey string
