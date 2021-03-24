@@ -10,7 +10,6 @@ require (
 	github.com/Azure/go-autorest/autorest/adal v0.9.5 // indirect
 	github.com/DataDog/datadog-api-client-go v1.0.0-beta.16
 	github.com/NYTimes/gziphandler v0.0.0-20170623195520-56545f4a5d46
-	github.com/aws/aws-sdk-go v1.36.21 // indirect
 	github.com/aws/aws-sdk-go-v2 v1.2.0
 	github.com/aws/aws-sdk-go-v2/config v1.1.1
 	github.com/aws/aws-sdk-go-v2/credentials v1.1.1
@@ -29,7 +28,6 @@ require (
 	github.com/google/uuid v1.2.0
 	github.com/googleapis/gnostic v0.2.2 // indirect
 	github.com/hashicorp/golang-lru v0.5.3
-	github.com/klauspost/compress v1.10.11 // indirect
 	github.com/minio/minio-go/v7 v7.0.5
 	github.com/prometheus/client_golang v1.6.0
 	github.com/prometheus/client_model v0.2.0
@@ -38,7 +36,6 @@ require (
 	github.com/spf13/cobra v1.0.0
 	github.com/spf13/pflag v1.0.5
 	github.com/stretchr/testify v1.7.0
-	go.mongodb.org/mongo-driver v1.4.0
 	go.uber.org/atomic v1.7.0
 	go.uber.org/multierr v1.2.0 // indirect
 	go.uber.org/zap v1.10.1-0.20190709142728-9a9fa7d4b5f0
