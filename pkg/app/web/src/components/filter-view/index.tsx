@@ -1,6 +1,7 @@
 import React, { FC } from "react";
 import { Box, Button, makeStyles, Paper, Typography } from "@material-ui/core";
 import { FILTER_PAPER_WIDTH } from "../../styles/size";
+import { UI_TEXT_CLEAR } from "../../constants/ui-text";
 
 const useStyles = makeStyles((theme) => ({
   filterPaper: {
@@ -24,7 +25,7 @@ export const FilterView: FC<FilterViewProps> = ({ onClear, children }) => {
           Filters
         </Typography>
         <Button color="primary" onClick={onClear}>
-          Clear
+          {UI_TEXT_CLEAR}
         </Button>
       </Box>
 
