@@ -6,7 +6,7 @@
 CREATE INDEX application_disabled_updated_at_desc ON Application (Disabled, UpdatedAt DESC);
 
 -- index on `EnvId` ASC and `UpdatedAt` DESC
-ALTER TABLE Application ADD COLUMN EnvId VARCHAR(32) GENERATED ALWAYS AS (data->>"$.env_id") VIRTUAL;
+ALTER TABLE Application ADD COLUMN EnvId VARCHAR(36) GENERATED ALWAYS AS (data->>"$.env_id") VIRTUAL;
 CREATE INDEX application_env_id_updated_at_desc ON Application (EnvId, UpdatedAt DESC);
 
 -- index on `Name` ASC and `UpdatedAt` DESC
@@ -30,7 +30,7 @@ CREATE INDEX application_sync_state_updated_at_desc ON Application (SyncState_St
 CREATE INDEX application_project_id_updated_at_desc ON Application (ProjectId, UpdatedAt DESC);
 
 -- index on `PipedId` ASC
-ALTER TABLE Application ADD COLUMN PipedId VARCHAR(32) GENERATED ALWAYS AS (data->>"$.piped_id") VIRTUAL;
+ALTER TABLE Application ADD COLUMN PipedId VARCHAR(36) GENERATED ALWAYS AS (data->>"$.piped_id") VIRTUAL;
 CREATE INDEX application_piped_id ON Application (PipedId);
 
 --
@@ -42,7 +42,7 @@ ALTER TABLE Command ADD COLUMN Status INT GENERATED ALWAYS AS (data->>"$.status"
 CREATE INDEX command_status_created_at_asc ON Command (Status, CreatedAt);
 
 -- index on `PipedId` ASC
-ALTER TABLE Command ADD COLUMN PipedId VARCHAR(32) GENERATED ALWAYS AS (data->>"$.piped_id") VIRTUAL;
+ALTER TABLE Command ADD COLUMN PipedId VARCHAR(36) GENERATED ALWAYS AS (data->>"$.piped_id") VIRTUAL;
 CREATE INDEX command_piped_id ON Command (PipedId);
 
 --
@@ -50,14 +50,14 @@ CREATE INDEX command_piped_id ON Command (PipedId);
 --
 
 -- index on `ApplicationId` ASC and `UpdatedAt` DESC
-ALTER TABLE Deployment ADD COLUMN ApplicationId VARCHAR(32) GENERATED ALWAYS AS (data->>"$.application_id") VIRTUAL;
+ALTER TABLE Deployment ADD COLUMN ApplicationId VARCHAR(36) GENERATED ALWAYS AS (data->>"$.application_id") VIRTUAL;
 CREATE INDEX deployment_application_id_updated_at_desc ON Deployment (ApplicationId, UpdatedAt DESC);
 
 -- index on `ProjectId` ASC and `UpdatedAt` DESC
 CREATE INDEX deployment_project_id_updated_at_desc ON Deployment (ProjectId, UpdatedAt DESC);
 
 -- index on `EnvId` ASC and `UpdatedAt` DESC
-ALTER TABLE Deployment ADD COLUMN EnvId VARCHAR(32) GENERATED ALWAYS AS (data->>"$.env_id") VIRTUAL;
+ALTER TABLE Deployment ADD COLUMN EnvId VARCHAR(36) GENERATED ALWAYS AS (data->>"$.env_id") VIRTUAL;
 CREATE INDEX deployment_env_id_updated_at_desc ON Deployment (EnvId, UpdatedAt DESC);
 
 -- index on `Kind` ASC and `UpdatedAt` DESC
@@ -69,7 +69,7 @@ ALTER TABLE Deployment ADD COLUMN Status INT GENERATED ALWAYS AS (data->>"$.stat
 CREATE INDEX deployment_status_updated_at_desc ON Deployment (Status, UpdatedAt DESC);
 
 -- index on `PipedId` ASC
-ALTER TABLE Deployment ADD COLUMN PipedId VARCHAR(32) GENERATED ALWAYS AS (data->>"$.piped_id") VIRTUAL;
+ALTER TABLE Deployment ADD COLUMN PipedId VARCHAR(36) GENERATED ALWAYS AS (data->>"$.piped_id") VIRTUAL;
 CREATE INDEX deployment_piped_id ON Deployment (PipedId);
 
 --
