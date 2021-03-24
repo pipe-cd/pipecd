@@ -22,6 +22,7 @@ import (
 
 	"github.com/prometheus/client_golang/api"
 	v1 "github.com/prometheus/client_golang/api/prometheus/v1"
+	"github.com/prometheus/common/config"
 	"github.com/prometheus/common/model"
 	"go.uber.org/zap"
 
@@ -35,9 +36,9 @@ const (
 
 // Provider is a client for prometheus.
 type Provider struct {
-	api v1.API
-	//username string
-	//password string
+	api      v1.API
+	username string
+	password string
 
 	timeout time.Duration
 	logger  *zap.Logger
@@ -47,21 +48,26 @@ func NewProvider(address string, opts ...Option) (*Provider, error) {
 	if address == "" {
 		return nil, fmt.Errorf("address is required")
 	}
-	client, err := api.NewClient(api.Config{
-		Address: address,
-	})
-	if err != nil {
-		return nil, err
-	}
 
 	p := &Provider{
-		api:     v1.NewAPI(client),
 		timeout: defaultTimeout,
 		logger:  zap.NewNop(),
 	}
 	for _, opt := range opts {
 		opt(p)
 	}
+
+	cfg := api.Config{
+		Address: address,
+	}
+	if p.username != "" && p.password != "" {
+		cfg.RoundTripper = config.NewBasicAuthRoundTripper(p.username, config.Secret(p.password), "", api.DefaultRoundTripper)
+	}
+	client, err := api.NewClient(cfg)
+	if err != nil {
+		return nil, err
+	}
+	p.api = v1.NewAPI(client)
 	return p, nil
 }
 
@@ -76,6 +82,13 @@ func WithTimeout(timeout time.Duration) Option {
 func WithLogger(logger *zap.Logger) Option {
 	return func(p *Provider) {
 		p.logger = logger.Named("prometheus-provider")
+	}
+}
+
+func WithBasicAuth(username, password string) Option {
+	return func(p *Provider) {
+		p.username = username
+		p.password = password
 	}
 }
 
@@ -100,7 +113,6 @@ func (p *Provider) Evaluate(ctx context.Context, query string, queryRange metric
 	}
 
 	p.logger.Info("run query", zap.String("query", query))
-	// TODO: Use HTTP Basic Authentication with the username and password when needed.
 	response, warnings, err := p.api.QueryRange(ctx, query, v1.Range{
 		Start: queryRange.From,
 		End:   queryRange.To,
