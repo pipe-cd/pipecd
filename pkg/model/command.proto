@@ -61,9 +61,10 @@ message Command {
     string id = 1 [(validate.rules).string.min_len = 1];
     string piped_id = 2 [(validate.rules).string.min_len = 1];
     string application_id = 3;
-    string deployment_id = 4;
-    string stage_id = 5;
-    string commander = 6;
+    string project_id = 4;
+    string deployment_id = 5;
+    string stage_id = 6;
+    string commander = 7;
 
     CommandStatus status = 20;
     map<string,string> metadata = 21;

@@ -9,6 +9,7 @@ export const dummyCommand: Command.AsObject = {
   id: "command-1",
   pipedId: "piped-1",
   applicationId: "app-1",
+  projectId: "project-1",
   deploymentId: "",
   stageId: "",
   commander: "user",
