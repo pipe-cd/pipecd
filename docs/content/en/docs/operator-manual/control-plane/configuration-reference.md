@@ -48,24 +48,14 @@ Must be one of the following objects:
 | credentialsFile | string | The path to the service account file for accessing Firestores. | No |
 
 
-### DataStoreMongoDBConfig
-
-| Field | Type | Description | Required |
-|-|-|-|-|
-| url | string | The address to MongoDB server. | Yes |
-| database | string | The name of database. | Yes |
-| usernameFile | string | The path to the username file. | No |
-| passwordFile | string | The path to the password file. | No |
-
-
 ### DataStoreMySQLConfig
 
 | Field | Type | Description | Required |
 |-|-|-|-|
 | url | string | The address to MySQL server. Should attach with the database port info as `127.0.0.1:3307` in case you want to use another port than the default value. | Yes |
 | database | string | The name of database. | Yes |
-| usernameFile | string | The path to the username file. | No |
-| passwordFile | string | The path to the password file. | No |
+| usernameFile | string | Path to the file containing the username. | No |
+| passwordFile | string | Path to the file containing the password. | No |
 
 
 ## FileStore
