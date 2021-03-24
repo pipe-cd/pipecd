@@ -21,7 +21,7 @@ This service can be easily scaled by updating the pod number.
 
 ##### Cache
 
-`cache` is a single pod service for caching internal data used by `server` service. Currently, this `cache` service is using the `redis` docker image.
+`cache` is a single pod service for caching internal data used by `server` service. Currently, this `cache` service is powered by `redis`.
 You can configure the control plane to use a fully-managed redis cache service instead of launching a cache pod in your cluster.
 
 ##### Ops
@@ -31,10 +31,10 @@ For example, it provides an internal web page for adding and managing projects; 
 
 ##### Data Store
 
-`Data store` is a storage for storing the application, deployment data. This can be a fully-managed service such as GCP [Firestore](https://cloud.google.com/firestore), AWS [DynamoDB](https://aws.amazon.com/dynamodb/), or a self-managed service such as [MongoDB](https://www.mongodb.com/).
+`Data store` is a storage for storing model data such as applications and deployments. This can be a fully-managed service such as GCP [Firestore](https://cloud.google.com/firestore), GCP [Cloud SQL](https://cloud.google.com/sql) or AWS [RDS](https://aws.amazon.com/rds/) (currently we choose [MySQL v8](https://www.mysql.com/) as supported relational data store). You can also configure the control plane to use a self-managed MySQL server.
 When installing the control plane, you have to choose one of the provided data store services.
 
 ##### File Store
 
 `File store` is a storage for storing stage logs, application live states. This can be a fully-managed service such as GCP [GCS](https://cloud.google.com/storage), AWS [S3](https://aws.amazon.com/s3/), or a self-managed service such as [Minio](https://github.com/minio/minio).
-When installing the control plane, you have to choose one of the provided data store services.
+When installing the control plane, you have to choose one of the provided file store services.
