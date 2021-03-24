@@ -632,6 +632,7 @@ func (a *WebAPI) SyncApplication(ctx context.Context, req *webservice.SyncApplic
 		Id:            uuid.New().String(),
 		PipedId:       app.PipedId,
 		ApplicationId: app.Id,
+		ProjectId:     app.ProjectId,
 		Type:          model.Command_SYNC_APPLICATION,
 		Commander:     claims.Subject,
 		SyncApplication: &model.Command_SyncApplication{
@@ -912,6 +913,7 @@ func (a *WebAPI) CancelDeployment(ctx context.Context, req *webservice.CancelDep
 		Id:            uuid.New().String(),
 		PipedId:       deployment.PipedId,
 		ApplicationId: deployment.ApplicationId,
+		ProjectId:     deployment.ProjectId,
 		DeploymentId:  req.DeploymentId,
 		Type:          model.Command_CANCEL_DEPLOYMENT,
 		Commander:     claims.Subject,
@@ -957,6 +959,7 @@ func (a *WebAPI) ApproveStage(ctx context.Context, req *webservice.ApproveStageR
 		Id:            commandID,
 		PipedId:       deployment.PipedId,
 		ApplicationId: deployment.ApplicationId,
+		ProjectId:     deployment.ProjectId,
 		DeploymentId:  req.DeploymentId,
 		StageId:       req.StageId,
 		Type:          model.Command_APPROVE_STAGE,
@@ -1157,12 +1160,21 @@ func (a *WebAPI) GetMe(ctx context.Context, req *webservice.GetMeRequest) (*webs
 }
 
 func (a *WebAPI) GetCommand(ctx context.Context, req *webservice.GetCommandRequest) (*webservice.GetCommandResponse, error) {
+	claims, err := rpcauth.ExtractClaims(ctx)
+	if err != nil {
+		a.logger.Error("failed to authenticate the current user", zap.Error(err))
+		return nil, err
+	}
+
 	cmd, err := getCommand(ctx, a.commandStore, req.CommandId, a.logger)
 	if err != nil {
 		return nil, err
 	}
 
-	// TODO: Add check if requested command belongs to logged-in project, after adding project id field to model.Command.
+	if claims.Role.ProjectId != cmd.ProjectId {
+		return nil, status.Error(codes.InvalidArgument, "Requested command does not belong to your project")
+	}
+
 	return &webservice.GetCommandResponse{
 		Command: cmd,
 	}, nil

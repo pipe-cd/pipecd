@@ -136,6 +136,7 @@ func (a *API) SyncApplication(ctx context.Context, req *apiservice.SyncApplicati
 		Id:            uuid.New().String(),
 		PipedId:       app.PipedId,
 		ApplicationId: app.Id,
+		ProjectId:     app.ProjectId,
 		Type:          model.Command_SYNC_APPLICATION,
 		Commander:     key.Id,
 		SyncApplication: &model.Command_SyncApplication{
