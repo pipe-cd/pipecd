@@ -22,7 +22,7 @@ import (
 )
 
 var (
-	ErrNoValuesFound = errors.New("no values found")
+	ErrNoDataFound = errors.New("no data found")
 )
 
 // Provider represents a client for metrics provider which provides metrics for analysis.
@@ -31,6 +31,7 @@ type Provider interface {
 	// Evaluate runs the given query against the metrics provider,
 	// and then checks if the results are expected or not.
 	// Returns the result reason if non-error occurred.
+	// The first value "expected" must be false if err isn't nil.
 	Evaluate(ctx context.Context, query string, queryRange QueryRange, evaluator Evaluator) (expected bool, reason string, err error)
 }
 

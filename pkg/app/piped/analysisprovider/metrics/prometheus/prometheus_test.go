@@ -2,6 +2,9 @@ package prometheus
 
 import (
 	"context"
+	"errors"
+	"fmt"
+	"math"
 	"testing"
 	"time"
 
@@ -10,68 +13,35 @@ import (
 	"go.uber.org/zap"
 
 	"github.com/pipe-cd/pipe/pkg/app/piped/analysisprovider/metrics"
-	"github.com/pipe-cd/pipe/pkg/config"
 )
 
+type fakeEvaluator struct {
+	expected bool
+}
+
+func (f *fakeEvaluator) InRange(_ float64) bool {
+	return f.expected
+}
+
+func (f *fakeEvaluator) String() string {
+	return ""
+}
+
 func TestType(t *testing.T) {
-	fake := fakeAPI{
-		value: newScalar(10),
-	}
-	p := Provider{
-		api:     fake,
-		timeout: defaultTimeout,
-		logger:  zap.NewNop(),
-	}
+	p := Provider{}
 	assert.Equal(t, ProviderType, p.Type())
 }
 
 func TestProviderEvaluate(t *testing.T) {
 	cases := []struct {
 		name       string
-		value      model.Value
-		expected   metrics.Evaluator
-		wantResult bool
+		queryError error
 		wantErr    bool
 	}{
 		{
-			name:  "successfully with scalar value",
-			value: newScalar(1),
-			expected: &config.AnalysisExpected{
-				Min: float64Pointer(0),
-				Max: float64Pointer(2),
-			},
-			wantResult: true,
-			wantErr:    false,
-		},
-		{
-			name:  "successfully with vector value",
-			value: newVector(1),
-			expected: &config.AnalysisExpected{
-				Min: float64Pointer(0),
-				Max: float64Pointer(2),
-			},
-			wantResult: true,
-			wantErr:    false,
-		},
-		{
-			name:  "failure with scalar value",
-			value: newScalar(1),
-			expected: &config.AnalysisExpected{
-				Min: float64Pointer(2),
-				Max: float64Pointer(3),
-			},
-			wantResult: false,
-			wantErr:    false,
-		},
-		{
-			name:  "failure with vector value",
-			value: newVector(1),
-			expected: &config.AnalysisExpected{
-				Min: float64Pointer(2),
-				Max: float64Pointer(3),
-			},
-			wantResult: false,
-			wantErr:    false,
+			name:       "query error occurred",
+			queryError: fmt.Errorf("error"),
+			wantErr:    true,
 		},
 	}
 
@@ -79,34 +49,16 @@ func TestProviderEvaluate(t *testing.T) {
 		t.Run(tc.name, func(t *testing.T) {
 			p := Provider{
 				api: fakeAPI{
-					value: tc.value,
+					err: tc.queryError,
 				},
 				timeout: defaultTimeout,
 				logger:  zap.NewNop(),
 			}
-			res, _, err := p.Evaluate(context.Background(), "dummy", metrics.QueryRange{From: time.Now()}, tc.expected)
+			_, _, err := p.Evaluate(context.Background(), "query", metrics.QueryRange{From: time.Now()}, &fakeEvaluator{expected: true})
 			assert.Equal(t, tc.wantErr, err != nil)
-			assert.Equal(t, res, tc.wantResult)
 		})
 	}
 
-}
-
-func float64Pointer(i float64) *float64 { return &i }
-
-func newScalar(f float64) model.Value {
-	return &model.Scalar{
-		Value:     model.SampleValue(f),
-		Timestamp: model.Time(0),
-	}
-}
-
-func newVector(f float64) model.Value {
-	return model.Vector{
-		{
-			Value: model.SampleValue(f),
-		},
-	}
 }
 
 func TestEvaluate(t *testing.T) {
@@ -116,14 +68,81 @@ func TestEvaluate(t *testing.T) {
 		response  model.Value
 		want      bool
 		wantErr   bool
+		errNoData bool
 	}{
-		// TODO: Add tests for Prometheus evaluation
+		{
+			name:      "no data points found in the range vector response",
+			evaluator: &fakeEvaluator{},
+			response:  model.Matrix{},
+			want:      false,
+			wantErr:   true,
+			errNoData: true,
+		},
+		{
+			name:      "one of the instant vector within the range vector has no value",
+			evaluator: &fakeEvaluator{},
+			response: model.Matrix([]*model.SampleStream{
+				{
+					Values: nil,
+				},
+			}),
+			want:      false,
+			wantErr:   true,
+			errNoData: true,
+		},
+		{
+			name:      "NaN found in the range vector",
+			evaluator: &fakeEvaluator{expected: false},
+			response: model.Matrix([]*model.SampleStream{
+				{
+					Values: []model.SamplePair{
+						{
+							Value: model.SampleValue(math.NaN()),
+						},
+					},
+				},
+			}),
+			want:      false,
+			wantErr:   true,
+			errNoData: true,
+		},
+		{
+			name:      "value of the type range vector is out of range",
+			evaluator: &fakeEvaluator{expected: false},
+			response: model.Matrix([]*model.SampleStream{
+				{
+					Values: []model.SamplePair{
+						{
+							Value: 1,
+						},
+					},
+				},
+			}),
+			want:    false,
+			wantErr: false,
+		},
+		{
+			name:      "value of the type range vector is within the expected range",
+			evaluator: &fakeEvaluator{expected: true},
+			response: model.Matrix([]*model.SampleStream{
+				{
+					Values: []model.SamplePair{
+						{
+							Value: 1,
+						},
+					},
+				},
+			}),
+			want:    true,
+			wantErr: false,
+		},
 	}
 	for _, tc := range testcases {
 		t.Run(tc.name, func(t *testing.T) {
 			got, _, err := evaluate(tc.evaluator, tc.response)
 			assert.Equal(t, tc.wantErr, err != nil)
 			assert.Equal(t, tc.want, got)
+			assert.Equal(t, tc.errNoData, errors.Is(err, metrics.ErrNoDataFound))
 		})
 	}
 }

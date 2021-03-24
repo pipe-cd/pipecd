@@ -8,6 +8,7 @@ import (
 
 	"go.uber.org/zap"
 
+	"github.com/pipe-cd/pipe/pkg/app/piped/analysisprovider/metrics"
 	"github.com/pipe-cd/pipe/pkg/app/piped/executor"
 )
 
@@ -19,7 +20,8 @@ type analyzer struct {
 	query        string
 	interval     time.Duration
 	// The analysis will fail, if this value is exceeded,
-	failureLimit int
+	failureLimit    int
+	nodataAsSuccess bool
 
 	logger       *zap.Logger
 	logPersister executor.LogPersister
@@ -34,17 +36,19 @@ func newAnalyzer(
 	evaluate evaluator,
 	interval time.Duration,
 	failureLimit int,
+	noDataAsSuccess bool,
 	logger *zap.Logger,
 	logPersister executor.LogPersister,
 ) *analyzer {
 	return &analyzer{
-		id:           id,
-		providerType: providerType,
-		evaluate:     evaluate,
-		query:        query,
-		interval:     interval,
-		failureLimit: failureLimit,
-		logPersister: logPersister,
+		id:              id,
+		providerType:    providerType,
+		evaluate:        evaluate,
+		query:           query,
+		interval:        interval,
+		failureLimit:    failureLimit,
+		nodataAsSuccess: noDataAsSuccess,
+		logPersister:    logPersister,
 		logger: logger.With(
 			zap.String("analyzer-id", id),
 			zap.String("provider-type", providerType),
@@ -63,15 +67,18 @@ func (a *analyzer) run(ctx context.Context) error {
 		select {
 		case <-ticker.C:
 			expected, reason, err := a.evaluate(ctx, a.query)
-			if errors.Is(err, context.DeadlineExceeded) && ctx.Err() == context.DeadlineExceeded {
+			switch {
+			case errors.Is(err, context.DeadlineExceeded) && ctx.Err() == context.DeadlineExceeded:
 				// Ignore parent's context deadline exceeded error, and return immediately.
 				return nil
-			}
-			// TODO: Consider how to handle the case of analysisprovider.ErrNoValuesFound
-			if err != nil {
-				// The failure of the query itself is treated as an unexpected result.
+			case errors.Is(err, metrics.ErrNoDataFound) && a.nodataAsSuccess:
+				reason = "no data returned but \"nodataAsSuccess\" is true"
+				expected = true
+			case err != nil:
 				reason = fmt.Sprintf("failed to run query: %s", err.Error())
+			default:
 			}
+
 			if expected {
 				a.logPersister.Successf("[%s] The query result is expected one. Reason: %s. Performed query: %s", a.id, reason, a.query)
 			} else {

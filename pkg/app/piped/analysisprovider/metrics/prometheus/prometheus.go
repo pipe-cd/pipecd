@@ -130,7 +130,7 @@ func (p *Provider) Evaluate(ctx context.Context, query string, queryRange metric
 func evaluate(evaluator metrics.Evaluator, response model.Value) (bool, string, error) {
 	evaluateValue := func(value float64) (bool, error) {
 		if math.IsNaN(value) {
-			return false, fmt.Errorf("the value is not a number")
+			return false, fmt.Errorf("the value is not a number: %w", metrics.ErrNoDataFound)
 		}
 		return evaluator.InRange(value), nil
 	}
@@ -148,7 +148,7 @@ func evaluate(evaluator metrics.Evaluator, response model.Value) (bool, string, 
 		}
 	case model.Vector:
 		if len(res) == 0 {
-			return false, "", fmt.Errorf("zero value in instant vector type returned")
+			return false, "", fmt.Errorf("zero value in instant vector type returned: %w", metrics.ErrNoDataFound)
 		}
 		// Check if all values are expected value.
 		for _, s := range res {
@@ -166,12 +166,12 @@ func evaluate(evaluator metrics.Evaluator, response model.Value) (bool, string, 
 		}
 	case model.Matrix:
 		if len(res) == 0 {
-			return false, "", fmt.Errorf("no time series data points in range vector type")
+			return false, "", fmt.Errorf("no time series data points in range vector type: %w", metrics.ErrNoDataFound)
 		}
 		// Check if all values are expected value.
 		for _, r := range res {
 			if len(r.Values) == 0 {
-				return false, "", fmt.Errorf("zero value in range vector type returned")
+				return false, "", fmt.Errorf("zero value in range vector type returned: %w", metrics.ErrNoDataFound)
 			}
 			for _, value := range r.Values {
 				expected, err := evaluateValue(float64(value.Value))

@@ -213,7 +213,7 @@ func (e *Executor) newAnalyzerForMetrics(i int, templatable *config.TemplatableA
 		}
 		return provider.Evaluate(ctx, query, queryRange, &cfg.Expected)
 	}
-	return newAnalyzer(id, provider.Type(), cfg.Query, runner, time.Duration(cfg.Interval), cfg.FailureLimit, e.Logger, e.LogPersister), nil
+	return newAnalyzer(id, provider.Type(), cfg.Query, runner, time.Duration(cfg.Interval), cfg.FailureLimit, cfg.NodataAsSuccess, e.Logger, e.LogPersister), nil
 }
 
 func (e *Executor) newAnalyzerForLog(i int, templatable *config.TemplatableAnalysisLog, templateCfg *config.AnalysisTemplateSpec) (*analyzer, error) {
@@ -229,7 +229,7 @@ func (e *Executor) newAnalyzerForLog(i int, templatable *config.TemplatableAnaly
 	runner := func(ctx context.Context, query string) (bool, string, error) {
 		return provider.Evaluate(ctx, query)
 	}
-	return newAnalyzer(id, provider.Type(), cfg.Query, runner, time.Duration(cfg.Interval), cfg.FailureLimit, e.Logger, e.LogPersister), nil
+	return newAnalyzer(id, provider.Type(), cfg.Query, runner, time.Duration(cfg.Interval), cfg.FailureLimit, cfg.NodataAsSuccess, e.Logger, e.LogPersister), nil
 }
 
 func (e *Executor) newAnalyzerForHTTP(i int, templatable *config.TemplatableAnalysisHTTP, templateCfg *config.AnalysisTemplateSpec) (*analyzer, error) {
@@ -242,7 +242,7 @@ func (e *Executor) newAnalyzerForHTTP(i int, templatable *config.TemplatableAnal
 	runner := func(ctx context.Context, query string) (bool, string, error) {
 		return provider.Run(ctx, cfg)
 	}
-	return newAnalyzer(id, provider.Type(), "", runner, time.Duration(cfg.Interval), cfg.FailureLimit, e.Logger, e.LogPersister), nil
+	return newAnalyzer(id, provider.Type(), "", runner, time.Duration(cfg.Interval), cfg.FailureLimit, cfg.NodataAsSuccess, e.Logger, e.LogPersister), nil
 }
 
 func (e *Executor) newMetricsProvider(providerName string, templatable *config.TemplatableAnalysisMetrics) (metrics.Provider, error) {
