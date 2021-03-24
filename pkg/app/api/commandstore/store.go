@@ -93,7 +93,7 @@ func (s *store) GetCommand(ctx context.Context, id string) (*model.Command, erro
 
 	dsResp, err := s.backend.GetCommand(ctx, id)
 	if err != nil {
-		s.logger.Error("failed to get command from filestore", zap.Error(err))
+		s.logger.Error("failed to get command from datastore", zap.Error(err))
 		return nil, err
 	}
 
