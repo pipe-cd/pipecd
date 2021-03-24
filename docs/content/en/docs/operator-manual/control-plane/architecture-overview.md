@@ -31,7 +31,7 @@ For example, it provides an internal web page for adding and managing projects; 
 
 ##### Data Store
 
-`Data store` is a storage for storing model data such as applications and deployments. This can be a fully-managed service such as GCP [Firestore](https://cloud.google.com/firestore), GCP [Cloud SQL](https://cloud.google.com/sql) or AWS [RDS](https://aws.amazon.com/rds/) (currently we choose [MySQL v8](https://www.mysql.com/) as supported relation data store). You can also configure the control plane to use a self-managed MySQL server.
+`Data store` is a storage for storing model data such as applications and deployments. This can be a fully-managed service such as GCP [Firestore](https://cloud.google.com/firestore), GCP [Cloud SQL](https://cloud.google.com/sql) or AWS [RDS](https://aws.amazon.com/rds/) (currently we choose [MySQL v8](https://www.mysql.com/) as supported relational data store). You can also configure the control plane to use a self-managed MySQL server.
 When installing the control plane, you have to choose one of the provided data store services.
 
 ##### File Store

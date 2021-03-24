@@ -100,7 +100,7 @@ spec:
       autoCreateBucket: true
 ```
 
-You can find required configurations to use datastores and filestores from [ConfigurationReference](/docs/operator-manual/control-plane/configuration-reference/).
+You can find required configurations to use others datastores and filestores from [ConfigurationReference](/docs/operator-manual/control-plane/configuration-reference/).
 
 __Caution__: In case of using `MySQL` as control-plane's datastore, please note that the implementation of PipeCD requires some features that only available on [MySQL v8](https://dev.mysql.com/doc/refman/8.0/en/), make sure your MySQL service is satisfied the requirement.
 
