@@ -19,7 +19,7 @@ ALTER TABLE Application ADD COLUMN Deleted BOOL GENERATED ALWAYS AS (IFNULL(data
 CREATE INDEX application_deleted_created_at_asc ON Application (Deleted, CreatedAt);
 
 -- index on `Kind` ASC and `UpdatedAt` DESC
-ALTER TABLE Application ADD COLUMN Kind INT GENERATED ALWAYS AS (data->>"$.kind") VIRTUAL NOT NULL;
+ALTER TABLE Application ADD COLUMN Kind INT GENERATED ALWAYS AS (IFNULL(data->>"$.kind", 0)) VIRTUAL NOT NULL;
 CREATE INDEX application_kind_updated_at_desc ON Application (Kind, UpdatedAt DESC);
 
 -- index on `SyncState.Status` ASC and `UpdatedAt` DESC
@@ -61,7 +61,7 @@ ALTER TABLE Deployment ADD COLUMN EnvId VARCHAR(36) GENERATED ALWAYS AS (data->>
 CREATE INDEX deployment_env_id_updated_at_desc ON Deployment (EnvId, UpdatedAt DESC);
 
 -- index on `Kind` ASC and `UpdatedAt` DESC
-ALTER TABLE Deployment ADD COLUMN Kind INT GENERATED ALWAYS AS (data->>"$.kind") VIRTUAL NOT NULL;
+ALTER TABLE Deployment ADD COLUMN Kind INT GENERATED ALWAYS AS (IFNULL(data->>"$.kind", 0)) VIRTUAL NOT NULL;
 CREATE INDEX deployment_kind_updated_at_desc ON Deployment (Kind, UpdatedAt DESC);
 
 -- index on `Status` ASC and `UpdatedAt` DESC
