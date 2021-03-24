@@ -35,7 +35,7 @@ description: >
     projectID: YOUR_PROJECT_ID
     pipedID: YOUR_PIPED_ID
     pipedKeyFile: /etc/piped-secret/piped-key
-    # Write in a format like "host:443" because the communication is done via gRCP.
+    # Write in a format like "host:443" because the communication is done via gRPC.
     apiAddress: YOUR_CONTROL_PLANE_ADDRESS
     webAddress: http://YOUR_CONTROL_PLANE_ADDRESS
     git:
@@ -53,12 +53,11 @@ description: >
   helm repo update
 
   helm upgrade -i dev-piped pipecd/piped --version=VERSION --namespace=NAMESPACE \
-    --set args.insecure=true \
     --set-file config.data=PATH_TO_PIPED_CONFIG_FILE \
     --set-file secret.pipedKey.data=PATH_TO_PIPED_KEY_FILE \
     --set-file secret.sshKey.data=PATH_TO_PRIVATE_SSH_KEY_FILE
   ```
-Note: Be sure to set `args.insecure=false` if your control-plane is already TLS-enabled.
+Note: Be sure to set `--set args.insecure=true` if your control-plane has not TLS-enabled yet.
 
 ### Installing on single machine
 
@@ -75,7 +74,7 @@ Note: Be sure to set `args.insecure=false` if your control-plane is already TLS-
     projectID: YOUR_PROJECT_ID
     pipedID: YOUR_PIPED_ID
     pipedKeyFile: PATH_TO_PIPED_KEY_FILE
-    # Write in a format like "host:443" because the communication is done via gRCP.
+    # Write in a format like "host:443" because the communication is done via gRPC.
     apiAddress: YOUR_CONTROL_PLANE_ADDRESS
     webAddress: http://YOUR_CONTROL_PLANE_ADDRESS
     git:
