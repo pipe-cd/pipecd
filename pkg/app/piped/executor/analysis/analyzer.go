@@ -20,8 +20,8 @@ type analyzer struct {
 	query        string
 	interval     time.Duration
 	// The analysis will fail, if this value is exceeded,
-	failureLimit    int
-	nodataAsSuccess bool
+	failureLimit int
+	skipNoData   bool
 
 	logger       *zap.Logger
 	logPersister executor.LogPersister
@@ -36,19 +36,19 @@ func newAnalyzer(
 	evaluate evaluator,
 	interval time.Duration,
 	failureLimit int,
-	noDataAsSuccess bool,
+	skipNoData bool,
 	logger *zap.Logger,
 	logPersister executor.LogPersister,
 ) *analyzer {
 	return &analyzer{
-		id:              id,
-		providerType:    providerType,
-		evaluate:        evaluate,
-		query:           query,
-		interval:        interval,
-		failureLimit:    failureLimit,
-		nodataAsSuccess: noDataAsSuccess,
-		logPersister:    logPersister,
+		id:           id,
+		providerType: providerType,
+		evaluate:     evaluate,
+		query:        query,
+		interval:     interval,
+		failureLimit: failureLimit,
+		skipNoData:   skipNoData,
+		logPersister: logPersister,
 		logger: logger.With(
 			zap.String("analyzer-id", id),
 			zap.String("provider-type", providerType),
@@ -67,25 +67,25 @@ func (a *analyzer) run(ctx context.Context) error {
 		select {
 		case <-ticker.C:
 			expected, reason, err := a.evaluate(ctx, a.query)
-			switch {
-			case errors.Is(err, context.DeadlineExceeded) && ctx.Err() == context.DeadlineExceeded:
-				// Ignore parent's context deadline exceeded error, and return immediately.
+			// Ignore parent's context deadline exceeded error, and return immediately.
+			if errors.Is(err, context.DeadlineExceeded) && ctx.Err() == context.DeadlineExceeded {
 				return nil
-			case errors.Is(err, metrics.ErrNoDataFound) && a.nodataAsSuccess:
-				reason = "no data returned but \"nodataAsSuccess\" is true"
-				expected = true
-			case err != nil:
+			}
+			if errors.Is(err, metrics.ErrNoDataFound) && a.skipNoData {
+				a.logPersister.Infof("[%s] The query result evaluation was skipped because \"skipNoData\" is true even though no data returned. Reason: %v. Performed query: %q", a.id, err, a.query)
+				continue
+			}
+			if err != nil {
 				reason = fmt.Sprintf("failed to run query: %s", err.Error())
-			default:
 			}
 
 			if expected {
-				a.logPersister.Successf("[%s] The query result is expected one. Reason: %s. Performed query: %s", a.id, reason, a.query)
-			} else {
-				failureCount++
-				a.logPersister.Errorf("[%s] The query result is unexpected. Reason: %s. Performed query: %s", a.id, reason, a.query)
+				a.logPersister.Successf("[%s] The query result is expected one. Reason: %s. Performed query: %q", a.id, reason, a.query)
+				continue
 			}
 
+			a.logPersister.Errorf("[%s] The query result is unexpected. Reason: %s. Performed query: %q", a.id, reason, a.query)
+			failureCount++
 			if failureCount > a.failureLimit {
 				return fmt.Errorf("anslysis '%s' failed because the failure number exceeded the failure limit (%d)", a.id, a.failureLimit)
 			}
