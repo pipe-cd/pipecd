@@ -349,6 +349,13 @@ func (s *scheduler) Run(ctx context.Context) error {
 			break
 		}
 
+		// The deployment was cancelled at the previous stage and this stage was terminated before run.
+		if result == model.StageStatus_STAGE_NOT_STARTED_YET && cancelCommand != nil {
+			deploymentStatus = model.DeploymentStatus_DEPLOYMENT_CANCELLED
+			statusReason = fmt.Sprintf("Cancelled by %s while executing the previous stage of %s", cancelCommander, ps.Id)
+			break
+		}
+
 		s.logger.Info("stop scheduler because of temination signal", zap.String("stage-id", ps.Id))
 		return nil
 	}
