@@ -20,11 +20,10 @@ module.exports = {
   setupFiles: ["./jest.setup.js"],
   setupFilesAfterEnv: ["./jest.after-env.ts"],
   coverageReporters: ["lcovonly", "text-summary"],
+  maxWorkers: 1,
   globals: {
     "ts-jest": {
-      diagnostics: {
-        warnOnly: true,
-      },
+      isolatedModules: true,
     },
   },
 };
