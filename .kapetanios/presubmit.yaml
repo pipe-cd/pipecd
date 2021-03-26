@@ -73,7 +73,7 @@ spec:
       runner: gcr.io/kapetanios/node:12.13.1
       commands:
         - cd pkg/app/web
-        - yarn install
+        - yarn install --frozen-lockfile
     - description: Save node modules cache
       runner: kapetanios@save-cache
       params:
@@ -92,7 +92,7 @@ spec:
       runner: gcr.io/kapetanios/node:12.13.1
       commands:
         - cd pkg/app/web
-        - yarn test:coverage --coverageDirectory=/artifact
+        - yarn test:coverage --coverageDirectory=/artifact --runInBand
         - yarn typecheck
       requires:
         - generate-client
