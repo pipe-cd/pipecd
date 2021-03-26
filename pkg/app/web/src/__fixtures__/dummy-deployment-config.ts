@@ -19,3 +19,15 @@ export const dummyDeploymentConfigTemplates: DeploymentConfigTemplate.AsObject[]
     fileCreationUrl: "",
   },
 ];
+
+export function deploymentConfigTemplateFromObject(
+  o: DeploymentConfigTemplate.AsObject
+): DeploymentConfigTemplate {
+  const template = new DeploymentConfigTemplate();
+  template.setName(o.name);
+  template.setApplicationKind(o.applicationKind);
+  template.setContent(o.content);
+  template.setFileCreationUrl(o.fileCreationUrl);
+  template.setLabelsList(o.labelsList);
+  return template;
+}

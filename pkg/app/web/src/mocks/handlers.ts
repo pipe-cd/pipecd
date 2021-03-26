@@ -9,6 +9,7 @@ import { liveStateHandlers } from "./services/live-state";
 import { stageLogHandlers } from "./services/stage-log";
 import { apiKeyHandlers } from "./services/api-keys";
 import { insightHandlers } from "./services/insight";
+import { deploymentConfigTemplatesHandlers } from "./services/deployment-config";
 
 export const handlers = [
   ...meHandlers,
@@ -22,4 +23,5 @@ export const handlers = [
   ...stageLogHandlers,
   ...apiKeyHandlers,
   ...insightHandlers,
+  ...deploymentConfigTemplatesHandlers,
 ];

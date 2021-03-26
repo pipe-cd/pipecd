@@ -21,18 +21,12 @@ export const overview: React.FC = () => (
       },
     })}
   >
-    <DeploymentConfigForm
-      applicationId="application-1"
-      onSkip={action("onSkip")}
-    />
+    <DeploymentConfigForm onSkip={action("onSkip")} />
   </Provider>
 );
 
 export const loading: React.FC = () => (
   <Provider store={createStore({})}>
-    <DeploymentConfigForm
-      applicationId="application-1"
-      onSkip={action("onSkip")}
-    />
+    <DeploymentConfigForm onSkip={action("onSkip")} />
   </Provider>
 );

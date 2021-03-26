@@ -12,7 +12,7 @@ import {
 import CopyIcon from "@material-ui/icons/FileCopyOutlined";
 import OpenInNewIcon from "@material-ui/icons/OpenInNew";
 import copy from "copy-to-clipboard";
-import React, { FC, useEffect, useState } from "react";
+import React, { FC, useEffect, useState, memo } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import { AppState } from "../../modules";
 import {
@@ -31,10 +31,6 @@ const useStyles = makeStyles((theme) => ({
     fontFamily: theme.typography.fontFamilyMono,
     color: theme.palette.text.secondary,
   },
-  templateContent: {
-    fontFamily: theme.typography.fontFamilyMono,
-    fontSize: 14,
-  },
   linkIcon: {
     fontSize: 16,
     verticalAlign: "text-bottom",
@@ -51,117 +47,118 @@ const TEXT = {
 };
 
 export interface DeploymentConfigFormProps {
-  applicationId: string;
   onSkip: () => void;
 }
 
-export const DeploymentConfigForm: FC<DeploymentConfigFormProps> = ({
-  applicationId,
-  onSkip,
-}) => {
-  const classes = useStyles();
-  const dispatch = useDispatch();
-  const [templateIndex, setTemplateIndex] = useState(0);
-  const [configValue, setConfigValue] = useState(TEXT.PLACEHOLDER);
-  const templates = useSelector<AppState, DeploymentConfigTemplate.AsObject[]>(
-    (state) => selectTemplatesByAppId(state.deploymentConfigs) || []
-  );
+export const DeploymentConfigForm: FC<DeploymentConfigFormProps> = memo(
+  function DeploymentConfigForm({ onSkip }) {
+    const classes = useStyles();
+    const dispatch = useDispatch();
+    const [templateIndex, setTemplateIndex] = useState(0);
+    const [configValue, setConfigValue] = useState(TEXT.PLACEHOLDER);
+    const templates = useSelector<
+      AppState,
+      DeploymentConfigTemplate.AsObject[]
+    >((state) => selectTemplatesByAppId(state.deploymentConfigs) || []);
 
-  const template = templates[templateIndex];
+    const template = templates[templateIndex];
 
-  const handleOnClickCopy = (): void => {
-    copy(configValue);
-    dispatch(addToast({ message: "Deployment config copied to clipboard" }));
-  };
+    const handleOnClickCopy = (): void => {
+      copy(configValue);
+      dispatch(addToast({ message: "Deployment config copied to clipboard" }));
+    };
 
-  const handleTemplateChange = (
-    e: React.ChangeEvent<HTMLTextAreaElement | HTMLInputElement>
-  ): void => {
-    setTemplateIndex(parseInt(e.target.value, 10));
-  };
+    const handleTemplateChange = (
+      e: React.ChangeEvent<HTMLTextAreaElement | HTMLInputElement>
+    ): void => {
+      setTemplateIndex(parseInt(e.target.value, 10));
+    };
 
-  useEffect(() => {
-    dispatch(fetchTemplateList({ labels: [], applicationId }));
-  }, [dispatch, applicationId]);
+    useEffect(() => {
+      dispatch(fetchTemplateList({ labels: [] }));
+    }, [dispatch]);
 
-  useEffect(() => {
-    if (template) {
-      setConfigValue(template.content);
-    }
-  }, [setConfigValue, template]);
+    useEffect(() => {
+      if (template) {
+        setConfigValue(template.content);
+      }
+    }, [setConfigValue, template]);
 
-  return (
-    <Box width={600} flex={1} display="flex" flexDirection="column">
-      <Typography className={classes.title} variant="h6">
-        {TEXT.TITLE}
-      </Typography>
+    return (
+      <Box width={600} flex={1} display="flex" flexDirection="column">
+        <Typography className={classes.title} variant="h6">
+          {TEXT.TITLE}
+        </Typography>
 
-      <Divider />
+        <Divider />
 
-      <Box p={2}>
-        <TextField
-          fullWidth
-          required
-          select
-          label="Template"
-          variant="outlined"
-          margin="dense"
-          onChange={handleTemplateChange}
-          value={templateIndex}
-          style={{ flex: 1 }}
-          disabled={templates.length === 0}
-        >
-          {templates.map(({ name }, index) => (
-            <MenuItem key={name} value={index}>
-              {name}
-            </MenuItem>
-          ))}
-        </TextField>
+        <Box p={2}>
+          {templates.length === 0 ? null : (
+            <TextField
+              fullWidth
+              required
+              select
+              label="Template"
+              variant="outlined"
+              margin="dense"
+              onChange={handleTemplateChange}
+              value={templateIndex}
+              style={{ flex: 1 }}
+              disabled={templates.length === 0}
+            >
+              {templates.map(({ name }, index) => (
+                <MenuItem key={name} value={index}>
+                  {name}
+                </MenuItem>
+              ))}
+            </TextField>
+          )}
 
-        <Box
-          display="flex"
-          alignItems="flex-end"
-          justifyContent="space-between"
-        >
-          <Typography variant="subtitle1" className={classes.filename}>
-            {TEXT.CONFIGURATION_FILENAME}
-          </Typography>
-          <IconButton
-            size="small"
-            aria-label="Copy deployment config"
-            onClick={handleOnClickCopy}
+          <Box
+            display="flex"
+            alignItems="flex-end"
+            justifyContent="space-between"
           >
-            <CopyIcon fontSize="small" />
-          </IconButton>
-        </Box>
-        <TextField
-          multiline
-          fullWidth
-          variant="outlined"
-          margin="dense"
-          rows={30}
-          rowsMax={30}
-          value={configValue}
-          onChange={(e) => setConfigValue(e.target.value)}
-        />
+            <Typography variant="subtitle1" className={classes.filename}>
+              {TEXT.CONFIGURATION_FILENAME}
+            </Typography>
+            <IconButton
+              size="small"
+              aria-label="Copy deployment config"
+              onClick={handleOnClickCopy}
+            >
+              <CopyIcon fontSize="small" />
+            </IconButton>
+          </Box>
+          <TextField
+            multiline
+            fullWidth
+            variant="outlined"
+            margin="dense"
+            rows={30}
+            rowsMax={30}
+            value={configValue}
+            onChange={(e) => setConfigValue(e.target.value)}
+          />
 
-        {template && (
-          <Link
-            href={template.fileCreationUrl}
-            target="_blank"
-            rel="noreferrer"
-          >
-            {TEXT.CREATE_LINK}
-            <OpenInNewIcon className={classes.linkIcon} />
-          </Link>
-        )}
+          {template && (
+            <Link
+              href={template.fileCreationUrl}
+              target="_blank"
+              rel="noreferrer"
+            >
+              {TEXT.CREATE_LINK}
+              <OpenInNewIcon className={classes.linkIcon} />
+            </Link>
+          )}
 
-        <Box mt={1} textAlign="right">
-          <Button onClick={onSkip} variant="outlined">
-            SKIP
-          </Button>
+          <Box mt={1} textAlign="right">
+            <Button onClick={onSkip} variant="outlined">
+              SKIP
+            </Button>
+          </Box>
         </Box>
       </Box>
-    </Box>
-  );
-};
+    );
+  }
+);

@@ -1,4 +1,4 @@
-import { configureStore } from "@reduxjs/toolkit";
+import { configureStore, getDefaultMiddleware } from "@reduxjs/toolkit";
 import { waitFor } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { setupServer } from "msw/node";
@@ -72,6 +72,10 @@ test("cancel", () => {
 test("Generate sealed secret", async () => {
   const store = configureStore({
     reducer: reducers,
+    middleware: getDefaultMiddleware({
+      immutableCheck: false,
+      serializableCheck: false,
+    }),
     preloadedState: {
       applications: {
         entities: {
