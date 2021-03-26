@@ -92,7 +92,7 @@ func rollback(ctx context.Context, in *executor.Input, cloudProviderName string,
 
 	// Rollback Lambda application configuration to previous state.
 	if err := client.UpdateFunction(ctx, fm); err != nil {
-		in.LogPersister.Errorf("Unable to rollback Lambda function %s configuration to previous stage: %w", fm.Spec.Name, err)
+		in.LogPersister.Errorf("Unable to rollback Lambda function %s configuration to previous stage: %v", fm.Spec.Name, err)
 		return false
 	}
 	in.LogPersister.Infof("Rolled back the lambda function %s configuration to original stage", fm.Spec.Name)
