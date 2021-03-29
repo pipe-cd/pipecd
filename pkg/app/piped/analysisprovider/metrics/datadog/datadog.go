@@ -128,7 +128,7 @@ func (p *Provider) Evaluate(ctx context.Context, query string, queryRange metric
 		return false, "", fmt.Errorf("unexpected HTTP status code from %s: %d", httpResp.Request.URL, httpResp.StatusCode)
 	}
 	if resp.Series == nil || len(*resp.Series) == 0 {
-		return false, "", metrics.ErrNoValuesFound
+		return false, "", fmt.Errorf("no query metadata found: %w", metrics.ErrNoDataFound)
 	}
 	return evaluate(evaluator, *resp.Series)
 }
@@ -138,7 +138,7 @@ func evaluate(evaluator metrics.Evaluator, series []datadog.MetricsQueryMetadata
 	for _, s := range series {
 		points := s.Pointlist
 		if points == nil || len(*points) == 0 {
-			return false, "", fmt.Errorf("invalid response: no data points of the time series found")
+			return false, "", fmt.Errorf("invalid response: no data points found within the queried range: %w", metrics.ErrNoDataFound)
 		}
 		for _, point := range *points {
 			if len(point) < 2 {

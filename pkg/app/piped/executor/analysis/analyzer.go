@@ -8,6 +8,7 @@ import (
 
 	"go.uber.org/zap"
 
+	"github.com/pipe-cd/pipe/pkg/app/piped/analysisprovider/metrics"
 	"github.com/pipe-cd/pipe/pkg/app/piped/executor"
 )
 
@@ -20,6 +21,7 @@ type analyzer struct {
 	interval     time.Duration
 	// The analysis will fail, if this value is exceeded,
 	failureLimit int
+	skipOnNoData bool
 
 	logger       *zap.Logger
 	logPersister executor.LogPersister
@@ -34,6 +36,7 @@ func newAnalyzer(
 	evaluate evaluator,
 	interval time.Duration,
 	failureLimit int,
+	skipOnNodata bool,
 	logger *zap.Logger,
 	logPersister executor.LogPersister,
 ) *analyzer {
@@ -44,6 +47,7 @@ func newAnalyzer(
 		query:        query,
 		interval:     interval,
 		failureLimit: failureLimit,
+		skipOnNoData: skipOnNodata,
 		logPersister: logPersister,
 		logger: logger.With(
 			zap.String("analyzer-id", id),
@@ -63,22 +67,25 @@ func (a *analyzer) run(ctx context.Context) error {
 		select {
 		case <-ticker.C:
 			expected, reason, err := a.evaluate(ctx, a.query)
+			// Ignore parent's context deadline exceeded error, and return immediately.
 			if errors.Is(err, context.DeadlineExceeded) && ctx.Err() == context.DeadlineExceeded {
-				// Ignore parent's context deadline exceeded error, and return immediately.
 				return nil
 			}
-			// TODO: Consider how to handle the case of analysisprovider.ErrNoValuesFound
+			if errors.Is(err, metrics.ErrNoDataFound) && a.skipOnNoData {
+				a.logPersister.Infof("[%s] The query result evaluation was skipped because \"skipOnNoData\" is true even though no data returned. Reason: %v. Performed query: %q", a.id, err, a.query)
+				continue
+			}
 			if err != nil {
-				// The failure of the query itself is treated as an unexpected result.
 				reason = fmt.Sprintf("failed to run query: %s", err.Error())
 			}
+
 			if expected {
-				a.logPersister.Successf("[%s] The query result is expected one. Reason: %s. Performed query: %s", a.id, reason, a.query)
-			} else {
-				failureCount++
-				a.logPersister.Errorf("[%s] The query result is unexpected. Reason: %s. Performed query: %s", a.id, reason, a.query)
+				a.logPersister.Successf("[%s] The query result is expected one. Reason: %s. Performed query: %q", a.id, reason, a.query)
+				continue
 			}
 
+			a.logPersister.Errorf("[%s] The query result is unexpected. Reason: %s. Performed query: %q", a.id, reason, a.query)
+			failureCount++
 			if failureCount > a.failureLimit {
 				return fmt.Errorf("anslysis '%s' failed because the failure number exceeded the failure limit (%d)", a.id, a.failureLimit)
 			}
