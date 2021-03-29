@@ -1,10 +1,8 @@
-import { configureStore, getDefaultMiddleware } from "@reduxjs/toolkit";
 import userEvent from "@testing-library/user-event";
 import { setupServer } from "msw/node";
 import React from "react";
-import { render, screen, waitFor } from "../../../test-utils";
+import { createReduxStore, render, screen, waitFor } from "../../../test-utils";
 import { listDeploymentConfigTemplatesHandler } from "../../mocks/services/deployment-config";
-import { reducers } from "../../modules";
 import { dummyApplication } from "../../__fixtures__/dummy-application";
 import { DeploymentConfigForm } from "./";
 
@@ -30,14 +28,8 @@ const preloadedState = {
 };
 
 test("Change template", async () => {
-  const store = configureStore({
-    reducer: reducers,
-    middleware: getDefaultMiddleware({
-      immutableCheck: false,
-      serializableCheck: false,
-    }),
-    preloadedState,
-  });
+  const store = createReduxStore(preloadedState);
+
   render(<DeploymentConfigForm onSkip={() => null} />, {
     store,
   });
@@ -52,10 +44,7 @@ test("Change template", async () => {
 
 test("Skip", () => {
   const onSkip = jest.fn();
-  const store = configureStore({
-    reducer: reducers,
-    preloadedState,
-  });
+  const store = createReduxStore(preloadedState);
   render(<DeploymentConfigForm onSkip={onSkip} />, {
     store,
   });

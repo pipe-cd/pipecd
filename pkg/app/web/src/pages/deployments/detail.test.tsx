@@ -1,9 +1,7 @@
-import { configureStore, getDefaultMiddleware } from "@reduxjs/toolkit";
 import React from "react";
 import { MemoryRouter, Route } from "react-router-dom";
-import { render, waitFor } from "../../../test-utils";
+import { createReduxStore, render, waitFor } from "../../../test-utils";
 import { server } from "../../mocks/server";
-import { reducers } from "../../modules";
 import { dummyDeployment } from "../../__fixtures__/dummy-deployment";
 import { dummyEnv } from "../../__fixtures__/dummy-environment";
 import { dummyPiped } from "../../__fixtures__/dummy-piped";
@@ -23,21 +21,16 @@ afterAll(() => {
 
 describe("DeploymentDetailPage", () => {
   test("fetch a deployment data and show that data", async () => {
-    const store = configureStore({
-      reducer: reducers,
-      middleware: getDefaultMiddleware({
-        immutableCheck: false,
-        serializableCheck: false,
-      }),
-      preloadedState: {
-        environments: {
-          entities: { [dummyEnv.id]: dummyEnv },
-          ids: [dummyEnv.id],
-        },
-        pipeds: {
-          entities: { [dummyPiped.id]: dummyPiped },
-          ids: [dummyPiped.id],
-        },
+    const store = createReduxStore({
+      environments: {
+        entities: { [dummyEnv.id]: dummyEnv },
+        ids: [dummyEnv.id],
+      },
+      pipeds: {
+        entities: { [dummyPiped.id]: dummyPiped },
+        ids: [dummyPiped.id],
+        registeredPiped: null,
+        updating: false,
       },
     });
 

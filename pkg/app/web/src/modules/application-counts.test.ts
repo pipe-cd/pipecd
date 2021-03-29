@@ -1,5 +1,5 @@
-import { configureStore, getDefaultMiddleware } from "@reduxjs/toolkit";
 import { setupServer } from "msw/node";
+import { createReduxStore } from "../../test-utils";
 import { getInsightApplicationCountHandler } from "../mocks/services/insight";
 import {
   applicationCountsSlice,
@@ -62,15 +62,10 @@ describe("applicationCountsSlice reducer", () => {
 
 test("fetchApplicationCount", async () => {
   server.use(getInsightApplicationCountHandler);
-  const store = configureStore({
-    reducer: applicationCountsSlice.reducer,
-    middleware: getDefaultMiddleware({
-      immutableCheck: false,
-      serializableCheck: false,
-    }),
-  });
+  const store = createReduxStore();
+
   await store.dispatch(fetchApplicationCount());
-  expect(store.getState()).toEqual(
+  expect(store.getState().applicationCounts).toEqual(
     expect.objectContaining({
       counts: {
         CLOUDRUN: {
