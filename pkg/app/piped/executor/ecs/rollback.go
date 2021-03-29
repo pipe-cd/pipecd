@@ -88,7 +88,7 @@ func (e *rollbackExecutor) ensureRollback(ctx context.Context) model.StageStatus
 }
 
 func rollback(ctx context.Context, in *executor.Input, cloudProviderName string, cloudProviderCfg *config.CloudProviderECSConfig, taskDefinition types.TaskDefinition, serviceDefinition types.Service) bool {
-	in.LogPersister.Infof("Start rollback the ECS service and task definition: %s and %s to original stage", serviceDefinition.ServiceName, *taskDefinition.TaskDefinitionArn)
+	in.LogPersister.Infof("Start rollback the ECS service and task definition: %s and %s to original stage", *serviceDefinition.ServiceName, *taskDefinition.TaskDefinitionArn)
 	client, err := provider.DefaultRegistry().Client(cloudProviderName, cloudProviderCfg, in.Logger)
 	if err != nil {
 		in.LogPersister.Errorf("Unable to create ECS client for the provider %s: %v", cloudProviderName, err)
