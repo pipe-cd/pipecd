@@ -96,6 +96,7 @@ webpack(
         "model",
         "webpack.common.js",
         "webpack.config.js",
+        "public/mockServiceWorker.js",
         "@npm//:node_modules",
     ] + glob(["assets/**/*"]),
     output_dir = True,

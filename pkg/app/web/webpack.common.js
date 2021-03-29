@@ -3,6 +3,7 @@
 const HtmlWebpackPlugin = require("html-webpack-plugin");
 const path = require("path");
 const webpack = require("webpack");
+const CopyPlugin = require("copy-webpack-plugin");
 
 module.exports = (_, argv) => {
   return {
@@ -46,6 +47,14 @@ module.exports = (_, argv) => {
           filename: "index.html",
           template: argv.htmlTemplate,
           favicon: path.join(__dirname, "assets/favicon.ico"),
+        }),
+      process.env.ENABLE_MOCK &&
+        new CopyPlugin({
+          patterns: [
+            {
+              from: path.join(__dirname, "public/mockServiceWorker.js"),
+            },
+          ],
         }),
       new webpack.EnvironmentPlugin(["ENABLE_MOCK"]),
     ].filter(Boolean),
