@@ -26,4 +26,5 @@ module.exports = {
       isolatedModules: true,
     },
   },
+  testTimeout: 10000,
 };

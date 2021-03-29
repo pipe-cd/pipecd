@@ -5,6 +5,7 @@ import {
   DeploymentConfigTemplate,
 } from "pipe/pkg/app/web/api_client/service_pb";
 import { addApplication } from "./applications";
+import { AppState } from ".";
 
 export interface DeploymentConfigsState {
   templates: Record<string, DeploymentConfigTemplate.AsObject[]>;
@@ -18,12 +19,18 @@ const initialState: DeploymentConfigsState = {
 
 export const fetchTemplateList = createAsyncThunk<
   DeploymentConfigTemplate.AsObject[],
-  { applicationId: string; labels: DeploymentConfigTemplateLabel[] }
->("deploymentConfigs/fetchTemplates", async ({ labels, applicationId }) => {
+  { labels: DeploymentConfigTemplateLabel[] },
+  { state: AppState }
+>("deploymentConfigs/fetchTemplates", async ({ labels }, thunkAPI) => {
+  const { targetApplicationId } = thunkAPI.getState().deploymentConfigs;
+  if (targetApplicationId === null) {
+    throw new Error("target application is null.");
+  }
+
   const {
     templatesList,
   } = await deploymentConfigAPI.getDeploymentConfigTemplates({
-    applicationId,
+    applicationId: targetApplicationId,
     labelsList: labels,
   });
   return templatesList;
@@ -40,7 +47,9 @@ export const deploymentConfigsSlice = createSlice({
   extraReducers: (builder) => {
     builder
       .addCase(fetchTemplateList.fulfilled, (state, action) => {
-        state.templates[action.meta.arg.applicationId] = action.payload;
+        if (state.targetApplicationId) {
+          state.templates[state.targetApplicationId] = action.payload;
+        }
       })
       .addCase(addApplication.fulfilled, (state, action) => {
         state.targetApplicationId = action.payload;

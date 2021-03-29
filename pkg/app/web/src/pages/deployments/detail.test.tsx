@@ -1,4 +1,4 @@
-import { configureStore } from "@reduxjs/toolkit";
+import { configureStore, getDefaultMiddleware } from "@reduxjs/toolkit";
 import React from "react";
 import { MemoryRouter, Route } from "react-router-dom";
 import { render, waitFor } from "../../../test-utils";
@@ -25,6 +25,10 @@ describe("DeploymentDetailPage", () => {
   test("fetch a deployment data and show that data", async () => {
     const store = configureStore({
       reducer: reducers,
+      middleware: getDefaultMiddleware({
+        immutableCheck: false,
+        serializableCheck: false,
+      }),
       preloadedState: {
         environments: {
           entities: { [dummyEnv.id]: dummyEnv },

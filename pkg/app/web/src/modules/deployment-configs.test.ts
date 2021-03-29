@@ -36,17 +36,15 @@ describe("deploymentConfigsSlice reducer", () => {
   describe("fetchTemplateList", () => {
     it(`should handle ${fetchTemplateList.fulfilled.type}`, () => {
       expect(
-        deploymentConfigsSlice.reducer(initialState, {
-          type: fetchTemplateList.fulfilled.type,
-          meta: {
-            arg: {
-              applicationId: "application-1",
-            },
-          },
-          payload: dummyDeploymentConfigTemplates,
-        })
+        deploymentConfigsSlice.reducer(
+          { templates: {}, targetApplicationId: "application-1" },
+          {
+            type: fetchTemplateList.fulfilled.type,
+            payload: dummyDeploymentConfigTemplates,
+          }
+        )
       ).toEqual({
-        ...initialState,
+        targetApplicationId: "application-1",
         templates: {
           "application-1": dummyDeploymentConfigTemplates,
         },

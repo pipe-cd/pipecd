@@ -171,10 +171,7 @@ export const ApplicationIndexPage: FC = memo(function ApplicationIndexPage() {
         ModalProps={{ disableBackdropClick: isAdding }}
       >
         {addedApplicationId && (
-          <DeploymentConfigForm
-            applicationId={addedApplicationId}
-            onSkip={handleCloseTemplateForm}
-          />
+          <DeploymentConfigForm onSkip={handleCloseTemplateForm} />
         )}
       </Drawer>
     </>
