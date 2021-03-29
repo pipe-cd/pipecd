@@ -43,6 +43,7 @@ import (
 	"github.com/pipe-cd/pipe/pkg/crypto"
 	"github.com/pipe-cd/pipe/pkg/datastore"
 	"github.com/pipe-cd/pipe/pkg/datastore/firestore"
+	"github.com/pipe-cd/pipe/pkg/datastore/mongodb"
 	"github.com/pipe-cd/pipe/pkg/datastore/mysql"
 	"github.com/pipe-cd/pipe/pkg/filestore"
 	"github.com/pipe-cd/pipe/pkg/filestore/gcs"
@@ -412,8 +413,18 @@ func createDatastore(ctx context.Context, cfg *config.ControlPlaneSpec, logger *
 		return nil, errors.New("dynamodb is unimplemented yet")
 
 	case model.DataStoreMongoDB:
-		return nil, errors.New("mongodb is unimplemented yet")
-
+		mdConfig := cfg.Datastore.MongoDBConfig
+		options := []mongodb.Option{
+			mongodb.WithLogger(logger),
+		}
+		if mdConfig.UsernameFile != "" || mdConfig.PasswordFile != "" {
+			options = append(options, mongodb.WithAuthenticationFile(mdConfig.UsernameFile, mdConfig.PasswordFile))
+		}
+		return mongodb.NewMongoDB(
+			ctx,
+			mdConfig.URL,
+			mdConfig.Database,
+			options...)
 	case model.DataStoreMySQL:
 		mqConfig := cfg.Datastore.MySQLConfig
 		options := []mysql.Option{
@@ -423,7 +434,6 @@ func createDatastore(ctx context.Context, cfg *config.ControlPlaneSpec, logger *
 			options = append(options, mysql.WithAuthenticationFile(mqConfig.UsernameFile, mqConfig.PasswordFile))
 		}
 		return mysql.NewMySQL(mqConfig.URL, mqConfig.Database, options...)
-
 	default:
 		return nil, fmt.Errorf("unknown datastore type %q", cfg.Datastore.Type)
 	}
