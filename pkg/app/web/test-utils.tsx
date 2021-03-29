@@ -3,6 +3,7 @@ import {
   AnyAction,
   configureStore,
   DeepPartial,
+  EnhancedStore,
   getDefaultMiddleware,
   Store,
   ThunkDispatch,
@@ -14,12 +15,31 @@ import configureMockStore from "redux-mock-store";
 import { AppState, reducers } from "./src/modules";
 import { theme } from "./src/theme";
 
+const middlewares = getDefaultMiddleware({
+  immutableCheck: false,
+  serializableCheck: false,
+});
+
+export const createReduxStore = (
+  preloadedState?: Partial<AppState>
+): EnhancedStore<AppState, AnyAction, typeof middlewares> => {
+  return configureStore({
+    reducer: reducers,
+    middleware: getDefaultMiddleware({
+      immutableCheck: false,
+      serializableCheck: false,
+    }),
+    preloadedState,
+  });
+};
+
+const store = createReduxStore();
+const baseState = store.getState();
+
 const mockStore = configureMockStore<
   AppState,
   ThunkDispatch<AppState, void, AnyAction>
->(getDefaultMiddleware({ serializableCheck: false, immutableCheck: false }));
-const store = configureStore({ reducer: reducers });
-const baseState = store.getState();
+>(middlewares);
 
 export const createStore = (
   initialState: DeepPartial<AppState> | undefined = {}

@@ -1,13 +1,11 @@
-import { configureStore, getDefaultMiddleware } from "@reduxjs/toolkit";
 import { waitFor } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { setupServer } from "msw/node";
 import React from "react";
-import { render, screen } from "../../../test-utils";
+import { createReduxStore, render, screen } from "../../../test-utils";
 import { generateApplicationSealedSecretHandler } from "../../mocks/services/piped";
 import { dummyApplication } from "../../__fixtures__/dummy-application";
 import { SealedSecretDialog } from "./";
-import { reducers } from "../../modules";
 
 const server = setupServer();
 
@@ -70,21 +68,20 @@ test("cancel", () => {
 });
 
 test("Generate sealed secret", async () => {
-  const store = configureStore({
-    reducer: reducers,
-    middleware: getDefaultMiddleware({
-      immutableCheck: false,
-      serializableCheck: false,
-    }),
-    preloadedState: {
-      applications: {
-        entities: {
-          [dummyApplication.id]: dummyApplication,
-        },
-        ids: [dummyApplication.id],
+  const store = createReduxStore({
+    applications: {
+      entities: {
+        [dummyApplication.id]: dummyApplication,
       },
+      ids: [dummyApplication.id],
+      adding: false,
+      disabling: {},
+      loading: false,
+      syncing: {},
+      fetchApplicationError: null,
     },
   });
+
   server.use(generateApplicationSealedSecretHandler);
   render(
     <SealedSecretDialog
