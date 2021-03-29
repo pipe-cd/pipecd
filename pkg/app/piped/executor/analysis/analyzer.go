@@ -21,7 +21,7 @@ type analyzer struct {
 	interval     time.Duration
 	// The analysis will fail, if this value is exceeded,
 	failureLimit int
-	skipNoData   bool
+	skipOnNoData bool
 
 	logger       *zap.Logger
 	logPersister executor.LogPersister
@@ -36,7 +36,7 @@ func newAnalyzer(
 	evaluate evaluator,
 	interval time.Duration,
 	failureLimit int,
-	skipNoData bool,
+	skipOnNodata bool,
 	logger *zap.Logger,
 	logPersister executor.LogPersister,
 ) *analyzer {
@@ -47,7 +47,7 @@ func newAnalyzer(
 		query:        query,
 		interval:     interval,
 		failureLimit: failureLimit,
-		skipNoData:   skipNoData,
+		skipOnNoData: skipOnNodata,
 		logPersister: logPersister,
 		logger: logger.With(
 			zap.String("analyzer-id", id),
@@ -71,8 +71,8 @@ func (a *analyzer) run(ctx context.Context) error {
 			if errors.Is(err, context.DeadlineExceeded) && ctx.Err() == context.DeadlineExceeded {
 				return nil
 			}
-			if errors.Is(err, metrics.ErrNoDataFound) && a.skipNoData {
-				a.logPersister.Infof("[%s] The query result evaluation was skipped because \"skipNoData\" is true even though no data returned. Reason: %v. Performed query: %q", a.id, err, a.query)
+			if errors.Is(err, metrics.ErrNoDataFound) && a.skipOnNoData {
+				a.logPersister.Infof("[%s] The query result evaluation was skipped because \"skipOnNoData\" is true even though no data returned. Reason: %v. Performed query: %q", a.id, err, a.query)
 				continue
 			}
 			if err != nil {

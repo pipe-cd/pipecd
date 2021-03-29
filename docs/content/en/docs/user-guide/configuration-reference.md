@@ -286,7 +286,7 @@ spec:
 | expected | [AnalysisExpected](/docs/user-guide/configuration-reference/#analysisexpected) | The expected query result. | Yes |
 | interval | duration | Run a query at specified intervals. | Yes |
 | failureLimit | int | Acceptable number of failures. e.g. If 1 is set, the `ANALYSIS` stage will end with failure after two queries results failed. Defaults to 1. | No |
-| skipNoData | bool | If true, it considers as a success when no data returned from the analysis provider. Defaults to false. | No |
+| skipOnNoData | bool | If true, it considers as a success when no data returned from the analysis provider. Defaults to false. | No |
 | timeout | duration | How long after which the query times out. | No |
 | template | [AnalysisTemplateRef](/docs/user-guide/configuration-reference/#analysistemplateref) | Reference to the template to be used. | No |
 

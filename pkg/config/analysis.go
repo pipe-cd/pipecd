@@ -40,7 +40,7 @@ type AnalysisMetrics struct {
 	FailureLimit int `json:"failureLimit"`
 	// If true, it considers as a success when no data returned from the analysis provider.
 	// Default is false.
-	SkipNoData bool `json:"skipNoData"`
+	SkipOnNoData bool `json:"skipOnNoData"`
 	// How long after which the query times out.
 	// Default is 30s.
 	Timeout Duration `json:"timeout"`
@@ -98,7 +98,7 @@ type AnalysisLog struct {
 	FailureLimit int `json:"failureLimit"`
 	// If true, it considers as success when no data returned from the analysis provider.
 	// Default is false.
-	SkipNoData bool `json:"skipNoData"`
+	SkipOnNoData bool `json:"skipOnNoData"`
 	// How long after which the query times out.
 	Timeout  Duration `json:"timeout"`
 	Provider string   `json:"provider"`
@@ -117,8 +117,8 @@ type AnalysisHTTP struct {
 	FailureLimit int `json:"failureLimit"`
 	// If true, it considers as success when no data returned from the analysis provider.
 	// Default is false.
-	SkipNoData bool     `json:"skipNoData"`
-	Timeout    Duration `json:"timeout"`
+	SkipOnNoData bool     `json:"skipOnNoData"`
+	Timeout      Duration `json:"timeout"`
 }
 
 type AnalysisHeader struct {
