@@ -143,7 +143,7 @@ func build(ctx context.Context, in *executor.Input, client provider.Client, task
 	service.LoadBalancers = serviceDefinition.LoadBalancers
 
 	if service.DeploymentController.Type != types.DeploymentControllerTypeCodeDeploy {
-		taskSet, err := client.CreateTaskSet(ctx, *service, taskDefinition)
+		taskSet, err := client.CreateTaskSet(ctx, *service, taskDefinition, 100)
 		if err != nil {
 			in.LogPersister.Errorf("Failed to create ECS task set %s: %v", *serviceDefinition.ServiceName, err)
 			return false

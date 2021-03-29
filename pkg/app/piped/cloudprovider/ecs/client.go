@@ -137,12 +137,12 @@ func (c *client) DeregisterTaskDefinition(ctx context.Context, taskDefinition ty
 	return output.TaskDefinition, nil
 }
 
-func (c *client) CreateTaskSet(ctx context.Context, service types.Service, taskDefinition types.TaskDefinition) (*types.TaskSet, error) {
+func (c *client) CreateTaskSet(ctx context.Context, service types.Service, taskDefinition types.TaskDefinition, percent float64) (*types.TaskSet, error) {
 	input := &ecs.CreateTaskSetInput{
 		Cluster:        service.ClusterArn,
 		Service:        service.ServiceArn,
 		TaskDefinition: taskDefinition.TaskDefinitionArn,
-		Scale:          &types.Scale{Unit: types.ScaleUnitPercent, Value: 100},
+		Scale:          &types.Scale{Unit: types.ScaleUnitPercent, Value: percent},
 	}
 	output, err := c.client.CreateTaskSet(ctx, input)
 	if err != nil {
