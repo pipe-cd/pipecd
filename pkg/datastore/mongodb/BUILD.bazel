@@ -1,0 +1,21 @@
+load("@io_bazel_rules_go//go:def.bzl", "go_library")
+
+go_library(
+    name = "go_default_library",
+    srcs = [
+        "iterator.go",
+        "model_wrapper.go",
+        "mongodb.go",
+        "operator.go",
+    ],
+    importpath = "github.com/pipe-cd/pipe/pkg/datastore/mongodb",
+    visibility = ["//visibility:public"],
+    deps = [
+        "//pkg/datastore:go_default_library",
+        "//pkg/model:go_default_library",
+        "@org_mongodb_go_mongo_driver//bson:go_default_library",
+        "@org_mongodb_go_mongo_driver//mongo:go_default_library",
+        "@org_mongodb_go_mongo_driver//mongo/options:go_default_library",
+        "@org_uber_go_zap//:go_default_library",
+    ],
+)
