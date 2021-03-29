@@ -122,7 +122,9 @@ func build(ctx context.Context, in *executor.Input, client provider.Client, task
 		return false
 	}
 	var service *types.Service
-	serviceDefinition.TaskDefinition = td.TaskDefinitionArn
+	if serviceDefinition.DeploymentController.Type != types.DeploymentControllerTypeExternal {
+		serviceDefinition.TaskDefinition = td.TaskDefinitionArn
+	}
 	if found {
 		service, err = client.UpdateService(ctx, serviceDefinition)
 		if err != nil {
@@ -136,10 +138,19 @@ func build(ctx context.Context, in *executor.Input, client provider.Client, task
 			return false
 		}
 	}
+	service.TaskDefinition = td.TaskDefinitionArn
+	service.LaunchType = serviceDefinition.LaunchType
+	service.LoadBalancers = serviceDefinition.LoadBalancers
 
-	if !(service.DeploymentController.Type == types.DeploymentControllerTypeCodeDeploy) {
-		if _, err := client.CreateTaskSet(ctx, *service, taskDefinition); err != nil {
+	if service.DeploymentController.Type != types.DeploymentControllerTypeCodeDeploy {
+		taskSet, err := client.CreateTaskSet(ctx, *service, taskDefinition, 100)
+		if err != nil {
 			in.LogPersister.Errorf("Failed to create ECS task set %s: %v", *serviceDefinition.ServiceName, err)
+			return false
+		}
+
+		if _, err = client.UpdateServicePrimaryTaskSet(ctx, *service, *taskSet); err != nil {
+			in.LogPersister.Errorf("Failed to update service primary ECS task set %s: %v", *serviceDefinition.ServiceName, err)
 			return false
 		}
 	}

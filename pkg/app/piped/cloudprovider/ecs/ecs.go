@@ -38,8 +38,9 @@ type Client interface {
 	UpdateService(ctx context.Context, service types.Service) (*types.Service, error)
 	RegisterTaskDefinition(ctx context.Context, taskDefinition types.TaskDefinition) (*types.TaskDefinition, error)
 	DeregisterTaskDefinition(ctx context.Context, taskDefinition types.TaskDefinition) (*types.TaskDefinition, error)
-	CreateTaskSet(ctx context.Context, service types.Service, taskDefinition types.TaskDefinition) (*types.TaskSet, error)
+	CreateTaskSet(ctx context.Context, service types.Service, taskDefinition types.TaskDefinition, percent float64) (*types.TaskSet, error)
 	DeleteTaskSet(ctx context.Context, service types.Service, taskSet types.TaskSet) (*types.TaskSet, error)
+	UpdateServicePrimaryTaskSet(ctx context.Context, service types.Service, taskSet types.TaskSet) (*types.TaskSet, error)
 }
 
 // Registry holds a pool of aws client wrappers.

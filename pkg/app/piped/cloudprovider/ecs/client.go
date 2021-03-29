@@ -74,7 +74,6 @@ func (c *client) CreateService(ctx context.Context, service types.Service) (*typ
 		DesiredCount:                  aws.Int32(service.DesiredCount),
 		EnableECSManagedTags:          service.EnableECSManagedTags,
 		HealthCheckGracePeriodSeconds: service.HealthCheckGracePeriodSeconds,
-		LaunchType:                    service.LaunchType,
 		LoadBalancers:                 service.LoadBalancers,
 		NetworkConfiguration:          service.NetworkConfiguration,
 		PlacementConstraints:          service.PlacementConstraints,
@@ -86,6 +85,9 @@ func (c *client) CreateService(ctx context.Context, service types.Service) (*typ
 		ServiceRegistries:             service.ServiceRegistries,
 		Tags:                          service.Tags,
 		TaskDefinition:                service.TaskDefinition,
+	}
+	if service.DeploymentController.Type != types.DeploymentControllerTypeExternal {
+		input.LaunchType = service.LaunchType
 	}
 	output, err := c.client.CreateService(ctx, input)
 	if err != nil {
@@ -103,6 +105,7 @@ func (c *client) UpdateService(ctx context.Context, service types.Service) (*typ
 		NetworkConfiguration:    service.NetworkConfiguration,
 		PlacementConstraints:    service.PlacementConstraints,
 		PlacementStrategy:       service.PlacementStrategy,
+		TaskDefinition:          service.TaskDefinition,
 	}
 	output, err := c.client.UpdateService(ctx, input)
 	if err != nil {
@@ -134,11 +137,12 @@ func (c *client) DeregisterTaskDefinition(ctx context.Context, taskDefinition ty
 	return output.TaskDefinition, nil
 }
 
-func (c *client) CreateTaskSet(ctx context.Context, service types.Service, taskDefinition types.TaskDefinition) (*types.TaskSet, error) {
+func (c *client) CreateTaskSet(ctx context.Context, service types.Service, taskDefinition types.TaskDefinition, percent float64) (*types.TaskSet, error) {
 	input := &ecs.CreateTaskSetInput{
 		Cluster:        service.ClusterArn,
 		Service:        service.ServiceArn,
 		TaskDefinition: taskDefinition.TaskDefinitionArn,
+		Scale:          &types.Scale{Unit: types.ScaleUnitPercent, Value: percent},
 	}
 	output, err := c.client.CreateTaskSet(ctx, input)
 	if err != nil {
@@ -156,6 +160,19 @@ func (c *client) DeleteTaskSet(ctx context.Context, service types.Service, taskS
 	output, err := c.client.DeleteTaskSet(ctx, input)
 	if err != nil {
 		return nil, fmt.Errorf("failed to delete ECS task set %s: %w", *taskSet.TaskSetArn, err)
+	}
+	return output.TaskSet, nil
+}
+
+func (c *client) UpdateServicePrimaryTaskSet(ctx context.Context, service types.Service, taskSet types.TaskSet) (*types.TaskSet, error) {
+	input := &ecs.UpdateServicePrimaryTaskSetInput{
+		Cluster:        service.ClusterArn,
+		Service:        service.ServiceArn,
+		PrimaryTaskSet: taskSet.TaskSetArn,
+	}
+	output, err := c.client.UpdateServicePrimaryTaskSet(ctx, input)
+	if err != nil {
+		return nil, fmt.Errorf("failed to update service primary ECS task set %s: %w", *taskSet.TaskSetArn, err)
 	}
 	return output.TaskSet, nil
 }
