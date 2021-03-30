@@ -23,15 +23,10 @@ import { Drawer } from "@material-ui/core";
 export const EditApplicationDrawer: FC = memo(function EditApplicationDrawer() {
   const dispatch = useDispatch<AppDispatch>();
 
-  const [applicationId] = useSelector<AppState, [string | null, boolean]>(
-    (state) => [
-      state.updateApplication.targetId,
-      state.updateApplication.updating,
-    ]
-  );
-
   const app = useSelector<AppState, Application.AsObject | undefined>((state) =>
-    applicationId ? selectAppById(state.applications, applicationId) : undefined
+    state.updateApplication.targetId
+      ? selectAppById(state.applications, state.updateApplication.targetId)
+      : undefined
   );
 
   const formik = useFormik<ApplicationFormValue>({

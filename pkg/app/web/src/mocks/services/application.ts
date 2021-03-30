@@ -17,6 +17,27 @@ import {
 } from "../../__fixtures__/dummy-application";
 import { createHandler } from "../create-handler";
 
+export const updateApplicationHandler = createHandler<
+  UpdateApplicationResponse
+>("/UpdateApplication", () => {
+  return new UpdateApplicationResponse();
+});
+
+export const listApplicationsHandler = createHandler<ListApplicationsResponse>(
+  "/ListApplications",
+  () => {
+    const response = new ListApplicationsResponse();
+    response.setApplicationsList([
+      createApplicationFromObject(dummyApps[ApplicationKind.KUBERNETES]),
+      createApplicationFromObject(dummyApps[ApplicationKind.TERRAFORM]),
+      createApplicationFromObject(dummyApps[ApplicationKind.LAMBDA]),
+      createApplicationFromObject(dummyApps[ApplicationKind.CLOUDRUN]),
+      createApplicationFromObject(dummyApps[ApplicationKind.ECS]),
+    ]);
+    return response;
+  }
+);
+
 export const applicationHandlers = [
   createHandler<SyncApplicationResponse>("/SyncApplication", () => {
     const response = new SyncApplicationResponse();
@@ -32,6 +53,7 @@ export const applicationHandlers = [
   createHandler<DeleteApplicationResponse>("/DeleteApplication", () => {
     return new DeleteApplicationResponse();
   }),
+  updateApplicationHandler,
   createHandler<AddApplicationResponse>("/AddApplication", () => {
     const response = new AddApplicationResponse();
     response.setApplicationId(dummyApplication.id);
@@ -40,17 +62,7 @@ export const applicationHandlers = [
   createHandler<UpdateApplicationResponse>("/UpdateApplication", () => {
     return new UpdateApplicationResponse();
   }),
-  createHandler<ListApplicationsResponse>("/ListApplications", () => {
-    const response = new ListApplicationsResponse();
-    response.setApplicationsList([
-      createApplicationFromObject(dummyApps[ApplicationKind.KUBERNETES]),
-      createApplicationFromObject(dummyApps[ApplicationKind.TERRAFORM]),
-      createApplicationFromObject(dummyApps[ApplicationKind.LAMBDA]),
-      createApplicationFromObject(dummyApps[ApplicationKind.CLOUDRUN]),
-      createApplicationFromObject(dummyApps[ApplicationKind.ECS]),
-    ]);
-    return response;
-  }),
+  listApplicationsHandler,
   createHandler<GetApplicationResponse>("/GetApplication", (requestBody) => {
     const response = new GetApplicationResponse();
     const params = GetApplicationRequest.deserializeBinary(requestBody);
