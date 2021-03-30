@@ -102,6 +102,7 @@ spec:
         - docker push gcr.io/pipecd/site:$(git describe --tags --always --abbrev=7)
 
   - name: push-play-image
+    timeout: 20m
     branches:
       - master
     dockerAuth:
@@ -111,7 +112,6 @@ spec:
         type: PROJECT
     steps:
       - name: web-build
-        timeout: 20m
         description: Build static files
         runner: gcr.io/pipecd/runner:1.0.0
         commands:
