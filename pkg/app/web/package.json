@@ -21,6 +21,7 @@
     "@storybook/addon-actions": "^6.1.16",
     "@storybook/addon-essentials": "^6.1.16",
     "@storybook/react": "^6.1.16",
+    "@swc/jest": "^0.1.2",
     "@testing-library/dom": "^7.28.1",
     "@testing-library/jest-dom": "^5.11.4",
     "@testing-library/react": "^10.4.3",
