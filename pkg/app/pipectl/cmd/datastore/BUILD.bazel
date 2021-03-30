@@ -12,6 +12,7 @@ go_library(
         "//pkg/app/api/service/apiservice:go_default_library",
         "//pkg/app/pipectl/client:go_default_library",
         "//pkg/cli:go_default_library",
+        "//pkg/datastore:go_default_library",
         "@com_github_spf13_cobra//:go_default_library",
     ],
 )

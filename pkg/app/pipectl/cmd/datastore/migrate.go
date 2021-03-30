@@ -23,23 +23,14 @@ import (
 
 	"github.com/pipe-cd/pipe/pkg/app/api/service/apiservice"
 	"github.com/pipe-cd/pipe/pkg/cli"
+	"github.com/pipe-cd/pipe/pkg/datastore"
 )
-
-var availableModelsStringName = []string{
-	"Project",
-	"Application",
-	"Command",
-	"Deployment",
-	"Environment",
-	"Piped",
-	"APIKey",
-	"Event",
-}
 
 type migrate struct {
 	root *command
 
 	downstreamDataSrc string
+	database          string
 	models            []string
 }
 
@@ -50,14 +41,16 @@ func newMigrateCommand(root *command) *cobra.Command {
 	cmd := &cobra.Command{
 		Use:   "migrate",
 		Short: "Migrate data to MySQL datastore.",
-		Long:  "Migrate data to MySQL datastore.\nBoth upstream (MongoDB/Firestore) and downstream (MySQL) datastore have to available to connect from control-plane to use this command.",
+		Long:  "Migrate data to MySQL datastore.\nDownstream datastore (MySQL) has to available to connect from control-plane to use this command.",
 		RunE:  cli.WithContext(m.run),
 	}
 
-	cmd.Flags().StringVar(&m.downstreamDataSrc, "downstream-data-src", m.downstreamDataSrc, "The URL to connect to downstream datastore (MySQL).\n Format: username:password@tcp(hostname:3306)/database")
-	cmd.Flags().StringSliceVar(&m.models, "models", m.models, fmt.Sprintf("The list of migrating models. If nothing is passed, all models will be migrated.\n (%s)", strings.Join(availableModelsStringName, " | ")))
+	cmd.Flags().StringVar(&m.downstreamDataSrc, "downstream-data-src", m.downstreamDataSrc, "The URL to connect to downstream datastore (MySQL).\n Format: username:password@tcp(hostname:3306)")
+	cmd.Flags().StringVar(&m.database, "database", m.database, "The SQL database name.")
+	cmd.Flags().StringSliceVar(&m.models, "models", m.models, fmt.Sprintf("The list of migrating models. If nothing is passed, all models will be migrated.\n (%s)", strings.Join(datastore.MigratableModelsKind, " | ")))
 
 	cmd.MarkFlagRequired("downstream-data-src")
+	cmd.MarkFlagRequired("database")
 
 	return cmd
 }
@@ -76,6 +69,7 @@ func (m *migrate) run(ctx context.Context, _ cli.Telemetry) error {
 
 	req := &apiservice.MigrateDatastoreRequest{
 		DownstreamDataSrc: m.downstreamDataSrc,
+		Database:          m.database,
 		Models:            modelsNameList,
 	}
 
@@ -87,11 +81,11 @@ func (m *migrate) run(ctx context.Context, _ cli.Telemetry) error {
 
 func makeMigrateModelsList(modelsName []string) ([]string, error) {
 	if len(modelsName) == 0 {
-		return availableModelsStringName, nil
+		return datastore.MigratableModelsKind, nil
 	}
 
 	nameMap := make(map[string]interface{})
-	for _, name := range availableModelsStringName {
+	for _, name := range datastore.MigratableModelsKind {
 		nameMap[name] = nil
 	}
 	// validate

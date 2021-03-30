@@ -108,7 +108,8 @@ message RegisterEventResponse {
 
 message MigrateDatastoreRequest {
     string downstream_data_src = 1 [(validate.rules).string.min_len = 1];
-    repeated string models = 2;
+    string database = 2 [(validate.rules).string.min_len = 1];
+    repeated string models = 3;
 }
 
 message MigrateDatastoreResponse {
