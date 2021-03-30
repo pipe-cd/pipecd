@@ -340,6 +340,10 @@ func (a *API) RegisterEvent(ctx context.Context, req *apiservice.RegisterEventRe
 	return &apiservice.RegisterEventResponse{}, nil
 }
 
+func (a *API) MigrateDatastore(ctx context.Context, req *apiservice.MigrateDatastoreRequest) (*apiservice.MigrateDatastoreResponse, error) {
+	return nil, nil
+}
+
 // requireAPIKey checks the existence of an API key inside the given context
 // and ensures that it has enough permissions for the give role.
 func requireAPIKey(ctx context.Context, role model.APIKey_Role, logger *zap.Logger) (*model.APIKey, error) {
