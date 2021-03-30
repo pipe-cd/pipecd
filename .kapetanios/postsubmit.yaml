@@ -102,6 +102,7 @@ spec:
         - docker push gcr.io/pipecd/site:$(git describe --tags --always --abbrev=7)
 
   - name: push-play-image
+    timeout: 20m
     branches:
       - master
     dockerAuth:
