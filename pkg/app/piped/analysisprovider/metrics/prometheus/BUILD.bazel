@@ -25,7 +25,6 @@ go_test(
     embed = [":go_default_library"],
     deps = [
         "//pkg/app/piped/analysisprovider/metrics:go_default_library",
-        "//pkg/config:go_default_library",
         "@com_github_prometheus_common//model:go_default_library",
         "@com_github_stretchr_testify//assert:go_default_library",
         "@org_uber_go_zap//:go_default_library",
