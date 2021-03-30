@@ -111,6 +111,7 @@ spec:
         type: PROJECT
     steps:
       - name: web-build
+        timeout: 20m
         description: Build static files
         runner: gcr.io/pipecd/runner:1.0.0
         commands:
