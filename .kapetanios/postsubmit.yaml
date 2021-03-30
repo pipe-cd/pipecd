@@ -103,6 +103,8 @@ spec:
 
   - name: push-play-image
     timeout: 20m
+    machine:
+      resource: medium
     branches:
       - master
     dockerAuth:
@@ -116,7 +118,7 @@ spec:
         runner: gcr.io/pipecd/runner:1.0.0
         commands:
           - bazelisk --output_base=/workspace/bazel_out build --config=ci //pkg/app/web:public_files --action_env=ENABLE_MOCK=true
-          - cp -rf $(bazelisk info bazel-bin)/pkg/app/web/public_files ./play/public
+          - cp -rf $(bazelisk info --output_base=/workspace/bazel_out bazel-bin)/pkg/app/web/public_files ./play/public
         secrets:
           - name: bazel_cache_service_account
             type: PROJECT
