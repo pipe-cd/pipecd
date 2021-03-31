@@ -1,0 +1,13 @@
+load("@io_bazel_rules_go//go:def.bzl", "go_library")
+
+go_library(
+    name = "go_default_library",
+    srcs = ["data_transfer.go"],
+    importpath = "github.com/pipe-cd/pipe/pkg/datastore/migration",
+    visibility = ["//visibility:public"],
+    deps = [
+        "//pkg/datastore:go_default_library",
+        "//pkg/model:go_default_library",
+        "@org_golang_x_sync//errgroup:go_default_library",
+    ],
+)

@@ -38,6 +38,18 @@ var (
 	ErrUnimplemented   = errors.New("unimplemented")
 )
 
+// MigratableModelKinds is a slide of models' name which available to migrate.
+var MigratableModelKinds = []string{
+	apiKeyModelKind,
+	applicationModelKind,
+	commandModelKind,
+	deploymentModelKind,
+	environmentModelKind,
+	eventModelKind,
+	pipedModelKind,
+	projectModelKind,
+}
+
 type Factory func() interface{}
 type Updater func(interface{}) error
 

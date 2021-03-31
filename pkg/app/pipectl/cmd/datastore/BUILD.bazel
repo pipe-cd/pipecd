@@ -1,0 +1,19 @@
+load("@io_bazel_rules_go//go:def.bzl", "go_library")
+
+go_library(
+    name = "go_default_library",
+    srcs = [
+        "datastore.go",
+        "migrate.go",
+    ],
+    importpath = "github.com/pipe-cd/pipe/pkg/app/pipectl/cmd/datastore",
+    visibility = ["//visibility:public"],
+    deps = [
+        "//pkg/cli:go_default_library",
+        "//pkg/datastore:go_default_library",
+        "//pkg/datastore/migration:go_default_library",
+        "//pkg/datastore/mongodb:go_default_library",
+        "//pkg/datastore/mysql:go_default_library",
+        "@com_github_spf13_cobra//:go_default_library",
+    ],
+)
