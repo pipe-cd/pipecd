@@ -252,19 +252,11 @@ func ensureSQLDatabase(ctx context.Context, cfg *config.ControlPlaneSpec, logger
 		}
 	}()
 
-	err = mysqlEnsurer.EnsureSchema(ctx)
-	if err != nil {
-		logger.Error("failed to prepare sql database", zap.Error(err))
+	if err = mysqlEnsurer.Run(ctx); err != nil {
+		logger.Error("failed to ensure SQL schema and indexes", zap.Error(err))
 		return err
 	}
 
-	// No need to run this create indexes operation in routine because it runs asynchronously.
-	// ref: https://dev.mysql.com/doc/refman/8.0/en/innodb-online-ddl-operations.html#online-ddl-index-operations
-	err = mysqlEnsurer.EnsureIndexes(ctx)
-	if err != nil {
-		logger.Error("failed to create required indexes on sql database", zap.Error(err))
-		return err
-	}
-
+	logger.Info("prepare SQL schema and indexes successfully")
 	return nil
 }

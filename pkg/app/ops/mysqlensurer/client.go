@@ -16,93 +16,44 @@ package mysqlensurer
 
 import (
 	"context"
-	"database/sql"
 	"fmt"
-	"strings"
 
-	"github.com/go-sql-driver/mysql"
 	"go.uber.org/zap"
 
-	datastore "github.com/pipe-cd/pipe/pkg/datastore/mysql"
-)
-
-var (
-	mysqlDatabaseSchema  = mysqlProperties_1
-	mysqlDatabaseIndexes = mysqlProperties_0
-)
-
-const (
-	mysqlErrorCodeDuplicateColumnName = 1060
-	mysqlErrorCodeDuplicateKeyName    = 1061
+	"github.com/pipe-cd/pipe/pkg/datastore/mysql/ensurer"
 )
 
 type mysqlEnsurer struct {
-	client       *sql.DB
-	logger       *zap.Logger
-	url          string
-	database     string
-	usernameFile string
-	passwordFile string
+	exec ensurer.SQLEnsurer
 }
 
 func NewMySQLEnsurer(url, database, usernameFile, passwordFile string, logger *zap.Logger) (SQLEnsurer, error) {
-	m := &mysqlEnsurer{
-		url:          url,
-		database:     database,
-		usernameFile: usernameFile,
-		passwordFile: passwordFile,
-		logger:       logger.Named("mysql-ensurer"),
+	executor, err := ensurer.NewMySQLEnsurer(url, database, usernameFile, passwordFile, logger.Named("mysql-ensurer"))
+	if err != nil {
+		return nil, fmt.Errorf("failed to create mysql ensurer executor: %w", err)
 	}
 
-	dataSourceName, err := datastore.BuildDataSourceName(m.url, m.database, m.usernameFile, m.passwordFile)
-	if err != nil {
-		return nil, fmt.Errorf("failed to connect to sql database: %w", err)
-	}
-
-	// Enable run multi statements at once.
-	db, err := sql.Open("mysql", fmt.Sprintf("%s?multiStatements=true", dataSourceName))
-	if err != nil {
-		return nil, fmt.Errorf("failed to connect to sql database: %w", err)
-	}
-	m.client = db
-	return m, nil
+	return &mysqlEnsurer{
+		exec: executor,
+	}, nil
 }
 
-func (m *mysqlEnsurer) EnsureIndexes(ctx context.Context) error {
-	for _, stmt := range makeCreateIndexStatements(mysqlDatabaseIndexes) {
-		_, err := m.client.ExecContext(ctx, stmt)
-		// Ignore in case error duplicate key name or column name occurred.
-		if mysqlErr, ok := err.(*mysql.MySQLError); ok && (mysqlErr.Number == mysqlErrorCodeDuplicateKeyName || mysqlErr.Number == mysqlErrorCodeDuplicateColumnName) {
-			continue
-		}
-		if err != nil {
-			return err
-		}
-	}
-	return nil
-}
-
-func (m *mysqlEnsurer) EnsureSchema(ctx context.Context) error {
-	_, err := m.client.ExecContext(ctx, mysqlDatabaseSchema)
+func (m *mysqlEnsurer) Run(ctx context.Context) error {
+	err := m.exec.EnsureSchema(ctx)
 	if err != nil {
-		return err
+		return fmt.Errorf("failed to prepare sql database: %w", err)
 	}
+
+	// No need to run this create indexes operation in routine because it runs asynchronously.
+	// ref: https://dev.mysql.com/doc/refman/8.0/en/innodb-online-ddl-operations.html#online-ddl-index-operations
+	err = m.exec.EnsureIndexes(ctx)
+	if err != nil {
+		return fmt.Errorf("failed to create required indexes on sql database: %w", err)
+	}
+
 	return nil
 }
 
 func (m *mysqlEnsurer) Close() error {
-	return m.client.Close()
-}
-
-func makeCreateIndexStatements(indexesStatements string) []string {
-	items := strings.Split(strings.TrimSpace(indexesStatements), ";")
-	statements := make([]string, 0, len(items))
-	for _, item := range items {
-		// Ignore dummy statement.
-		if item == "" {
-			continue
-		}
-		statements = append(statements, strings.TrimSpace(item))
-	}
-	return statements
+	return m.exec.Close()
 }
