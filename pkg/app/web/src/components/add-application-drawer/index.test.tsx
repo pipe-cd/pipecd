@@ -87,6 +87,10 @@ describe("AddApplicationDrawer", () => {
         ])
       )
     );
+
+    await waitFor(() => {
+      expect(screen.queryByDisplayValue("App")).not.toBeInTheDocument();
+    });
   });
 
   it("should clear depended fields if change environment", async () => {
