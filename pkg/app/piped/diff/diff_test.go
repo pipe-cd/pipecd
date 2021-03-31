@@ -37,7 +37,10 @@ func TestDiff(t *testing.T) {
 		{
 			name:     "no diff",
 			yamlFile: "testdata/no_diff.yaml",
-			diffNum:  0,
+			options: []Option{
+				WithEquateEmpty(),
+			},
+			diffNum: 0,
 		},
 		{
 			name:     "no diff by ignoring all adding map keys",
