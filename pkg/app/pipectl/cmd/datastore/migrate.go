@@ -81,6 +81,7 @@ func (m *migrate) run(ctx context.Context, t cli.Telemetry) error {
 		return fmt.Errorf("failed to migrate datastore: %w", err)
 	}
 
+	fmt.Println("the migration process was completed succesfully.")
 	return nil
 }
 
