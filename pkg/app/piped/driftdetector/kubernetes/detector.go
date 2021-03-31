@@ -193,7 +193,10 @@ func (d *detector) checkApplication(ctx context.Context, app *model.Application,
 	// Now we will go to check the diff intersection group.
 	changes := make(map[provider.Manifest]*diff.Result)
 	for i := 0; i < len(headInters); i++ {
-		result, err := provider.Diff(headInters[i], liveInters[i], diff.WithIgnoreAddingMapKeys())
+		result, err := provider.Diff(headInters[i], liveInters[i],
+			diff.WithEquateEmpty(),
+			diff.WithIgnoreAddingMapKeys(),
+		)
 		if err != nil {
 			d.logger.Error("failed to calculate the diff of manifests", zap.Error(err))
 			return err

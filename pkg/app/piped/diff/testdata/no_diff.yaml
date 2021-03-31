@@ -27,6 +27,9 @@ spec:
         # Zero map and nil map should be equal.
         resources:
           null
+        emptyList:
+          []
+        emptyMap: {}
 ---
 apiVersion: apps/v1
 kind: Foo
@@ -56,3 +59,4 @@ spec:
         - containerPort: 9085
         # Zero map and nil map should be equal.
         resources: {}
+        emptyList2: []

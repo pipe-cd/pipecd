@@ -23,7 +23,9 @@ import (
 
 type differ struct {
 	ignoreAddingMapKeys bool
-	result              *Result
+	equateEmpty         bool
+
+	result *Result
 }
 
 type Option func(*differ)
@@ -33,6 +35,13 @@ type Option func(*differ)
 func WithIgnoreAddingMapKeys() Option {
 	return func(d *differ) {
 		d.ignoreAddingMapKeys = true
+	}
+}
+
+// WithEquateEmpty configures differ to consider all maps/slides with a length of zero and nil to be equal.
+func WithEquateEmpty() Option {
+	return func(d *differ) {
+		d.equateEmpty = true
 	}
 }
 
@@ -58,11 +67,19 @@ func DiffUnstructureds(x, y unstructured.Unstructured, opts ...Option) (*Result,
 
 func (d *differ) diff(path []PathStep, vx, vy reflect.Value) error {
 	if !vx.IsValid() {
+		if d.equateEmpty && isEmptyInterface(vy) {
+			return nil
+		}
+
 		d.result.addNode(path, nil, vy.Type(), vx, vy)
 		return nil
 	}
 
 	if !vy.IsValid() {
+		if d.equateEmpty && isEmptyInterface(vx) {
+			return nil
+		}
+
 		d.result.addNode(path, vx.Type(), nil, vx, vy)
 		return nil
 	}
