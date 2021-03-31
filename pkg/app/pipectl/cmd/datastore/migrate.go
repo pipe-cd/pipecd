@@ -51,7 +51,7 @@ func newMigrateCommand(root *command) *cobra.Command {
 	cmd.Flags().StringVar(&m.upstreamDataSrc, "upstream-data-src", m.upstreamDataSrc, "The URL to connect to upstream datastore (MongoDB).\n Format: mongodb://username:password@hostname:27017/database")
 	cmd.Flags().StringVar(&m.downstreamDataSrc, "downstream-data-src", m.downstreamDataSrc, "The URL to connect to downstream datastore (MySQL).\n Format: username:password@tcp(hostname:3306)")
 	cmd.Flags().StringVar(&m.database, "database", m.database, "The SQL database name.")
-	cmd.Flags().StringSliceVar(&m.models, "models", m.models, fmt.Sprintf("The list of migrating models. If nothing is passed, all models will be migrated.\n (%s)", strings.Join(datastore.MigratableModelsKind, " | ")))
+	cmd.Flags().StringSliceVar(&m.models, "models", m.models, fmt.Sprintf("The list of migrating models. If nothing is passed, all models will be migrated.\n (%s)", strings.Join(datastore.MigratableModelKinds, " | ")))
 
 	cmd.MarkFlagRequired("upstream-data-src")
 	cmd.MarkFlagRequired("downstream-data-src")
@@ -71,25 +71,26 @@ func (m *migrate) run(ctx context.Context, t cli.Telemetry) error {
 		return fmt.Errorf("failed to connect to downstream datastore: %w", err)
 	}
 
-	modelsNameList, err := makeMigrateModelsList(m.models)
+	modelsNameList, err := makeMigrateModelList(m.models)
 	if err != nil {
 		return fmt.Errorf("failed to migrate datastore: %w", err)
 	}
 
-	if err = migration.NewDataTransfer(mongodbDatastore, mysqlDatastore).TransferMulti(ctx, modelsNameList); err != nil {
+	dataTransfer := migration.NewDataTransfer(mongodbDatastore, mysqlDatastore)
+	if err = dataTransfer.TransferMulti(ctx, modelsNameList); err != nil {
 		return fmt.Errorf("failed to migrate datastore: %w", err)
 	}
 
 	return nil
 }
 
-func makeMigrateModelsList(modelsName []string) ([]string, error) {
+func makeMigrateModelList(modelsName []string) ([]string, error) {
 	if len(modelsName) == 0 {
-		return datastore.MigratableModelsKind, nil
+		return datastore.MigratableModelKinds, nil
 	}
 
-	nameMap := make(map[string]struct{}, len(datastore.MigratableModelsKind))
-	for _, name := range datastore.MigratableModelsKind {
+	nameMap := make(map[string]struct{}, len(datastore.MigratableModelKinds))
+	for _, name := range datastore.MigratableModelKinds {
 		nameMap[name] = struct{}{}
 	}
 	// validate

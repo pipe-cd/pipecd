@@ -80,11 +80,7 @@ func (d *dataTransfer) TransferMulti(ctx context.Context, kinds []string) error 
 			return transferOne(ctx, d.source, d.destination, kind)
 		})
 	}
-	if err := eg.Wait(); err != nil {
-		return err
-	}
-
-	return nil
+	return eg.Wait()
 }
 
 type modelData interface {
