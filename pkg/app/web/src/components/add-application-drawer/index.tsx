@@ -42,6 +42,7 @@ export const AddApplicationDrawer: FC<AddApplicationDrawerProps> = memo(
         await dispatch(addApplication(values));
         dispatch(fetchApplications());
         onClose();
+        formik.resetForm();
       },
     });
 
