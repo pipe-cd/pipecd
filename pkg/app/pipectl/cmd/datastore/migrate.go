@@ -28,6 +28,7 @@ import (
 	"github.com/pipe-cd/pipe/pkg/datastore/migration"
 	"github.com/pipe-cd/pipe/pkg/datastore/mongodb"
 	"github.com/pipe-cd/pipe/pkg/datastore/mysql"
+	"github.com/pipe-cd/pipe/pkg/datastore/mysql/ensurer"
 )
 
 type migrate struct {
@@ -65,6 +66,20 @@ func newMigrateCommand(root *command) *cobra.Command {
 }
 
 func (m *migrate) run(ctx context.Context, t cli.Telemetry) error {
+	ensurerExec, err := ensurer.NewMySQLEnsurer(m.downstreamDataSrc, m.database, "", "", t.Logger)
+	if err != nil {
+		return fmt.Errorf("failed to create SQL ensurer instance: %w", err)
+	}
+	defer func() {
+		if err := ensurerExec.Close(); err != nil {
+			fmt.Fprintf(m.stdout, "error occurred while close the ensurer database connection: %v", err)
+		}
+	}()
+	// Ensure SQL schema on the new datastore.
+	if err = ensurerExec.EnsureSchema(ctx); err != nil {
+		return fmt.Errorf("failed to prepare schema on the new datastore: %w", err)
+	}
+
 	mongodbDatastore, err := mongodb.NewMongoDB(ctx, m.upstreamDataSrc, m.database, mongodb.WithLogger(t.Logger))
 	if err != nil {
 		return fmt.Errorf("failed to connect to upstream datastore: %w", err)
