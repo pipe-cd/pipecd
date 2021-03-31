@@ -21,14 +21,17 @@ import (
 
 	"github.com/spf13/cobra"
 
-	"github.com/pipe-cd/pipe/pkg/app/api/service/apiservice"
 	"github.com/pipe-cd/pipe/pkg/cli"
 	"github.com/pipe-cd/pipe/pkg/datastore"
+	"github.com/pipe-cd/pipe/pkg/datastore/migration"
+	"github.com/pipe-cd/pipe/pkg/datastore/mongodb"
+	"github.com/pipe-cd/pipe/pkg/datastore/mysql"
 )
 
 type migrate struct {
 	root *command
 
+	upstreamDataSrc   string
 	downstreamDataSrc string
 	database          string
 	models            []string
@@ -41,41 +44,42 @@ func newMigrateCommand(root *command) *cobra.Command {
 	cmd := &cobra.Command{
 		Use:   "migrate",
 		Short: "Migrate data to MySQL datastore.",
-		Long:  "Migrate data to MySQL datastore.\nDownstream datastore (MySQL) has to available to connect from control-plane to use this command.",
+		Long:  "Migrate data from MongoDB to MySQL datastore.\nBoth upstream (MongoDB) and downstream (MySQL) datastore have to available to use this command.",
 		RunE:  cli.WithContext(m.run),
 	}
 
+	cmd.Flags().StringVar(&m.upstreamDataSrc, "upstream-data-src", m.upstreamDataSrc, "The URL to connect to upstream datastore (MongoDB).\n Format: mongodb://username:password@hostname:27017/database")
 	cmd.Flags().StringVar(&m.downstreamDataSrc, "downstream-data-src", m.downstreamDataSrc, "The URL to connect to downstream datastore (MySQL).\n Format: username:password@tcp(hostname:3306)")
 	cmd.Flags().StringVar(&m.database, "database", m.database, "The SQL database name.")
 	cmd.Flags().StringSliceVar(&m.models, "models", m.models, fmt.Sprintf("The list of migrating models. If nothing is passed, all models will be migrated.\n (%s)", strings.Join(datastore.MigratableModelsKind, " | ")))
 
+	cmd.MarkFlagRequired("upstream-data-src")
 	cmd.MarkFlagRequired("downstream-data-src")
 	cmd.MarkFlagRequired("database")
 
 	return cmd
 }
 
-func (m *migrate) run(ctx context.Context, _ cli.Telemetry) error {
-	cli, err := m.root.clientOptions.NewClient(ctx)
+func (m *migrate) run(ctx context.Context, t cli.Telemetry) error {
+	mongodbDatastore, err := mongodb.NewMongoDB(ctx, m.upstreamDataSrc, m.database, mongodb.WithLogger(t.Logger))
 	if err != nil {
-		return fmt.Errorf("failed to initialize client: %w", err)
+		return fmt.Errorf("failed to connect to upstream datastore: %w", err)
 	}
-	defer cli.Close()
+
+	mysqlDatastore, err := mysql.NewMySQL(m.downstreamDataSrc, m.database, mysql.WithLogger(t.Logger))
+	if err != nil {
+		return fmt.Errorf("failed to connect to downstream datastore: %w", err)
+	}
 
 	modelsNameList, err := makeMigrateModelsList(m.models)
 	if err != nil {
 		return fmt.Errorf("failed to migrate datastore: %w", err)
 	}
 
-	req := &apiservice.MigrateDatastoreRequest{
-		DownstreamDataSrc: m.downstreamDataSrc,
-		Database:          m.database,
-		Models:            modelsNameList,
-	}
-
-	if _, err := cli.MigrateDatastore(ctx, req); err != nil {
+	if err = migration.NewDataTransfer(mongodbDatastore, mysqlDatastore).TransferMulti(ctx, modelsNameList); err != nil {
 		return fmt.Errorf("failed to migrate datastore: %w", err)
 	}
+
 	return nil
 }
 

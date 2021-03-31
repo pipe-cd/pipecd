@@ -28,8 +28,6 @@ import (
 	"github.com/pipe-cd/pipe/pkg/app/api/commandstore"
 	"github.com/pipe-cd/pipe/pkg/app/api/service/apiservice"
 	"github.com/pipe-cd/pipe/pkg/datastore"
-	"github.com/pipe-cd/pipe/pkg/datastore/migration"
-	"github.com/pipe-cd/pipe/pkg/datastore/mysql"
 	"github.com/pipe-cd/pipe/pkg/model"
 	"github.com/pipe-cd/pipe/pkg/rpc/rpcauth"
 )
@@ -342,21 +340,6 @@ func (a *API) RegisterEvent(ctx context.Context, req *apiservice.RegisterEventRe
 	}
 
 	return &apiservice.RegisterEventResponse{}, nil
-}
-
-func (a *API) MigrateDatastore(ctx context.Context, req *apiservice.MigrateDatastoreRequest) (*apiservice.MigrateDatastoreResponse, error) {
-	mysqlDatastore, err := mysql.NewMySQL(req.DownstreamDataSrc, req.Database, mysql.WithLogger(a.logger))
-	if err != nil {
-		a.logger.Error("failed to connect to downstream datastore", zap.Error(err))
-		return nil, status.Error(codes.Internal, "Failed to connect to downstream datastore")
-	}
-
-	if err = migration.NewDataTransfer(a.datastore, mysqlDatastore).TransferMulti(ctx, req.Models); err != nil {
-		a.logger.Error("failed to migrate data to new datastore", zap.Error(err))
-		return nil, status.Error(codes.Internal, "Failed to migrate data to new datastore")
-	}
-
-	return &apiservice.MigrateDatastoreResponse{}, nil
 }
 
 // requireAPIKey checks the existence of an API key inside the given context

@@ -36,8 +36,6 @@ service APIService {
     rpc GetCommand(GetCommandRequest) returns (GetCommandResponse) {}
 
     rpc RegisterEvent(RegisterEventRequest) returns (RegisterEventResponse) {}
-
-    rpc MigrateDatastore(MigrateDatastoreRequest) returns (MigrateDatastoreResponse) {}
 }
 
 message AddApplicationRequest {
@@ -104,13 +102,4 @@ message RegisterEventRequest {
 }
 
 message RegisterEventResponse {
-}
-
-message MigrateDatastoreRequest {
-    string downstream_data_src = 1 [(validate.rules).string.min_len = 1];
-    string database = 2 [(validate.rules).string.min_len = 1];
-    repeated string models = 3;
-}
-
-message MigrateDatastoreResponse {
 }

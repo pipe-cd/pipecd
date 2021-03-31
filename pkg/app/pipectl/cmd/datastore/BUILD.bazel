@@ -9,10 +9,11 @@ go_library(
     importpath = "github.com/pipe-cd/pipe/pkg/app/pipectl/cmd/datastore",
     visibility = ["//visibility:public"],
     deps = [
-        "//pkg/app/api/service/apiservice:go_default_library",
-        "//pkg/app/pipectl/client:go_default_library",
         "//pkg/cli:go_default_library",
         "//pkg/datastore:go_default_library",
+        "//pkg/datastore/migration:go_default_library",
+        "//pkg/datastore/mongodb:go_default_library",
+        "//pkg/datastore/mysql:go_default_library",
         "@com_github_spf13_cobra//:go_default_library",
     ],
 )

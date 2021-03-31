@@ -16,18 +16,13 @@ package datastore
 
 import (
 	"github.com/spf13/cobra"
-
-	"github.com/pipe-cd/pipe/pkg/app/pipectl/client"
 )
 
 type command struct {
-	clientOptions *client.Options
 }
 
 func NewCommand() *cobra.Command {
-	c := &command{
-		clientOptions: &client.Options{},
-	}
+	c := &command{}
 	cmd := &cobra.Command{
 		Use:   "datastore",
 		Short: "Manage control-plane datastore resource.",
@@ -36,8 +31,6 @@ func NewCommand() *cobra.Command {
 	cmd.AddCommand(
 		newMigrateCommand(c),
 	)
-
-	c.clientOptions.RegisterPersistentFlags(cmd)
 
 	return cmd
 }
