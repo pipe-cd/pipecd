@@ -65,7 +65,7 @@ $ pipectl datastore migrate \
 ```
 
 Note:
-- Make sure your `data-src`s value are formatted as sample as the above example.
+- Make sure your `data-src`s value are formatted as same as the above example.
 - If you want to migrate only specific data models (not all at once), use the `--models` flag as follow `--models=Application,Project`. (Use `pipectl datastore migrate -h` to get the list of migratable models)
 
 #### 4. Start PipeCD control-plane with the new configuration
