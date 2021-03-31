@@ -18,8 +18,6 @@ import (
 	"context"
 	"fmt"
 
-	"golang.org/x/sync/errgroup"
-
 	"github.com/pipe-cd/pipe/pkg/datastore"
 	"github.com/pipe-cd/pipe/pkg/model"
 )
@@ -74,13 +72,12 @@ func transferOne(ctx context.Context, source, destination datastore.DataStore, k
 }
 
 func (d *dataTransfer) TransferMulti(ctx context.Context, kinds []string) error {
-	eg, ctx := errgroup.WithContext(ctx)
 	for _, kind := range kinds {
-		eg.Go(func() error {
-			return transferOne(ctx, d.source, d.destination, kind)
-		})
+		if err := transferOne(ctx, d.source, d.destination, kind); err != nil {
+			return err
+		}
 	}
-	return eg.Wait()
+	return nil
 }
 
 type modelData interface {
