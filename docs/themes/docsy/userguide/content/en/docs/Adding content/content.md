@@ -48,19 +48,63 @@ Alternatively, create your own page template for your new section in your projec
 
 You can find out much more about how Hugo page layouts work in [Hugo Templates](https://gohugo.io/templates/). The rest of this page tells you about how to add content and use each of Docsy's templates.
 
+### Alternative site structure
+
+As noted above, by default your site has a home page (using the `_default` layout), a docs section under `/docs/`, a blog section under `/blog/` and a community section under `/community/`.   [The type](https://gohugo.io/content-management/types/) of each section (which determines the layout it uses) matches its directory name.
+
+In some cases, you may want to have a different directory structure, but still make use of Docsy's layouts. A common example is for a "docs site", where most of the pages (including the home page) use the docs layout, or perhaps you'd rather have a `/news/` directory treated with the blog layout.
+
+Since Hugo 0.76, this has become practical without copying layouts to your site, or having to specify `type: blog` on every single page by making use of [target specific cascading front matter](https://gohugo.io/content-management/front-matter/#target-specific-pages).
+
+For example, for the `/news/` section, you can specify the following front matter in the index page which will change the type of the section and everything below it to "blog":
+
+```yaml
+---
+title: "Latest News"
+linkTitle: "News"
+menu:
+  main:
+    weight: 30
+
+cascade:
+- type: "blog"
+---
+```
+
+If you want to create a "docs" site, specifying something like the following in the top level `_index.md` will set all top level sections to be treated as "docs", except for "news":
+
+```yaml
+---
+title: "My Wonderful Site"
+
+cascade:
+- type: "blog"
+  toc_root: true
+  _target:
+    path: "/news/**"
+- type: "docs"
+  _target:
+    path: "/**"
+---
+```
+
+Note the addition of `toc_root` here.  Setting that to true for a section causes it to be treated as a separate part of the site, with its own left hand navigation menu.
+
+An example docs-based site that uses this technique can be found at the [mostly docs](https://github.com/gwatts/mostlydocs/) repo.
+
 ## Page frontmatter
 
 Each page file in a Hugo site has metadata frontmatter that tells Hugo about the page. You specify page frontmatter in TOML, YAML, or JSON (our example site and this site use YAML). Use the frontmatter to specify the page title, description, creation date, link title, template, menu weighting, and even any resources such as images used by the page. You can see a complete list of possible page frontmatter in [Front Matter](https://gohugo.io/content-management/front-matter/).
 
 For example, here's the frontmatter for this page:
 
-```
+```yaml
 ---
 title: "Adding Content"
 linkTitle: "Adding Content"
 weight: 1
 description: >
-  How to add content to your Docsy site.
+  Add different types of content to your Docsy site.
 ---
 ```
 
@@ -196,15 +240,15 @@ Docsy's [default page template](https://github.com/google/docsy/blob/master/layo
 
 ### Customizing the example site pages
 
-If you've copied the example site, you already have a simple site landing page in `content/en/_index.html`. This is made up of Docsy's provided Hugo shortcode [page blocks](/docs/adding-content/shortcodes).
+If you've copied the example site, you already have a simple site landing page in `content/en/_index.html`. This is made up of Docsy's provided Hugo shortcode [page blocks](/docs/adding-content/shortcodes/#shortcode-blocks).
 
-To customize the large landing image, which is in a [cover](#blocks-cover) block, replace the `content/en/featured-background.jpg` file in your project with your own image (it can be called whatever you like as long as it has `background` in the file name). You can remove or add as many blocks as you like, as well as adding your own custom content. 
+To customize the large landing image, which is in a [cover](/docs/adding-content/shortcodes/#blockscover) block, replace the `content/en/featured-background.jpg` file in your project with your own image (it can be called whatever you like as long as it has `background` in the file name). You can remove or add as many blocks as you like, as well as adding your own custom content. 
 
-The example site also has an About page in `content/en/about/_index.html` using the same Docsy template. Again, this is made up of [page blocks](/docs/adding-content/shortcodes), including another background image in `content/en/about/featured-background.jpg`. As with the site landing page, you can replace the image, remove or add blocks, or just add your own content.
+The example site also has an About page in `content/en/about/_index.html` using the same Docsy template. Again, this is made up of [page blocks](/docs/adding-content/shortcodes/#shortcode-blocks), including another background image in `content/en/about/featured-background.jpg`. As with the site landing page, you can replace the image, remove or add blocks, or just add your own content.
 
 ### Building your own landing pages
 
-If you've just used the theme, you can still use all Docsy's provided [page blocks](/docs/adding-content/shortcodes)  (or any other content you want) to build your own landing pages in the same file locations.
+If you've just used the theme, you can still use all Docsy's provided [page blocks](/docs/adding-content/shortcodes/#shortcode-blocks) (or any other content you want) to build your own landing pages in the same file locations.
 
 ## Adding a community page
 
