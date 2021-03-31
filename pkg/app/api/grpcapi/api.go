@@ -41,8 +41,7 @@ type API struct {
 	eventStore       datastore.EventStore
 	commandStore     commandstore.Store
 
-	datastore datastore.DataStore
-	logger    *zap.Logger
+	logger *zap.Logger
 }
 
 // NewAPI creates a new API instance.
@@ -58,7 +57,6 @@ func NewAPI(
 		pipedStore:       datastore.NewPipedStore(ds),
 		eventStore:       datastore.NewEventStore(ds),
 		commandStore:     cmds,
-		datastore:        ds,
 		logger:           logger.Named("api"),
 	}
 	return a
