@@ -18,20 +18,9 @@ import (
 	"context"
 )
 
-type IndexEnsurer interface {
-	// EnsureIndexes loads indexes defined sql file and applies it to the database.
-	// In case of indexes already existed, no errors will be returned.
-	EnsureIndexes(ctx context.Context) error
-}
-
-type SchemaEnsurer interface {
-	// EnsureSchema loads schema defined sql file and applies it to the database.
-	EnsureSchema(ctx context.Context) error
-}
-
 type SQLEnsurer interface {
-	IndexEnsurer
-	SchemaEnsurer
+	// Run calls ensurer package funtions.
+	Run(ctx context.Context) error
 	// Close closes database connection held by client.
 	Close() error
 }
