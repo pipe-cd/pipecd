@@ -84,9 +84,9 @@ func makeMigrateModelsList(modelsName []string) ([]string, error) {
 		return datastore.MigratableModelsKind, nil
 	}
 
-	nameMap := make(map[string]interface{})
+	nameMap := make(map[string]struct{}, len(datastore.MigratableModelsKind))
 	for _, name := range datastore.MigratableModelsKind {
-		nameMap[name] = nil
+		nameMap[name] = struct{}{}
 	}
 	// validate
 	for _, name := range modelsName {

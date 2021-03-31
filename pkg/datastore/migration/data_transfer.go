@@ -17,7 +17,8 @@ package migration
 import (
 	"context"
 	"fmt"
-	"sync"
+
+	"golang.org/x/sync/errgroup"
 
 	"github.com/pipe-cd/pipe/pkg/datastore"
 	"github.com/pipe-cd/pipe/pkg/model"
@@ -59,7 +60,12 @@ func transferOne(ctx context.Context, source, destination datastore.DataStore, k
 			return fmt.Errorf("failed to get data of kind %s from datastore: %w", kind, err)
 		}
 
-		if err = destination.Create(ctx, kind, data.GetId(), data); err != nil {
+		err = destination.Create(ctx, kind, data.GetId(), data)
+		// Ignore ErrAlreadyExists to enable rerun from failed.
+		if err == datastore.ErrAlreadyExists {
+			continue
+		}
+		if err != nil {
 			return fmt.Errorf("failed to insert data of kind %s (id: %s) to new datastore: %w", kind, data.GetId(), err)
 		}
 	}
@@ -68,32 +74,13 @@ func transferOne(ctx context.Context, source, destination datastore.DataStore, k
 }
 
 func (d *dataTransfer) TransferMulti(ctx context.Context, kinds []string) error {
-	worker := func(kind string, errChan chan<- error, wg *sync.WaitGroup) {
-		defer wg.Done()
-		if err := transferOne(ctx, d.source, d.destination, kind); err != nil {
-			errChan <- err
-		}
-	}
-
-	var wg sync.WaitGroup
-	errChan := make(chan error)
-	doneChan := make(chan bool)
-
+	eg, ctx := errgroup.WithContext(ctx)
 	for _, kind := range kinds {
-		wg.Add(1)
-		go worker(kind, errChan, &wg)
+		eg.Go(func() error {
+			return transferOne(ctx, d.source, d.destination, kind)
+		})
 	}
-
-	go func() {
-		wg.Wait()
-		close(doneChan)
-	}()
-
-	select {
-	case <-doneChan:
-		break
-	case err := <-errChan:
-		close(errChan)
+	if err := eg.Wait(); err != nil {
 		return err
 	}
 

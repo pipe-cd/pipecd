@@ -38,7 +38,7 @@ var (
 	ErrUnimplemented   = errors.New("unimplemented")
 )
 
-// MigratableModelsKind is slide of models which available to migrate.
+// MigratableModelsKind is a slide of models' name which available to migrate.
 var MigratableModelsKind = []string{
 	apiKeyModelKind,
 	applicationModelKind,
