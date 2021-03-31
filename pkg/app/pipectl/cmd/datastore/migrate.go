@@ -17,6 +17,8 @@ package datastore
 import (
 	"context"
 	"fmt"
+	"io"
+	"os"
 	"strings"
 
 	"github.com/spf13/cobra"
@@ -35,11 +37,13 @@ type migrate struct {
 	downstreamDataSrc string
 	database          string
 	models            []string
+	stdout            io.Writer
 }
 
 func newMigrateCommand(root *command) *cobra.Command {
 	m := &migrate{
-		root: root,
+		root:   root,
+		stdout: os.Stdout,
 	}
 	cmd := &cobra.Command{
 		Use:   "migrate",
@@ -81,7 +85,7 @@ func (m *migrate) run(ctx context.Context, t cli.Telemetry) error {
 		return fmt.Errorf("failed to migrate datastore: %w", err)
 	}
 
-	fmt.Println("the migration process was completed succesfully.")
+	fmt.Fprintln(m.stdout, "the migration process was completed succesfully.")
 	return nil
 }
 
