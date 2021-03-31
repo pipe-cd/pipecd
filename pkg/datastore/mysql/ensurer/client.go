@@ -17,10 +17,13 @@ package ensurer
 import (
 	"context"
 	"database/sql"
+	"fmt"
 	"strings"
 
 	driver "github.com/go-sql-driver/mysql"
 	"go.uber.org/zap"
+
+	"github.com/pipe-cd/pipe/pkg/datastore/mysql"
 )
 
 var (
@@ -38,9 +41,20 @@ type mysqlEnsurer struct {
 	logger *zap.Logger
 }
 
-func NewMySQLEnsurer(cli *sql.DB, logger *zap.Logger) (SQLEnsurer, error) {
+func NewMySQLEnsurer(url, database, usernameFile, passwordFile string, logger *zap.Logger) (SQLEnsurer, error) {
+	dataSourceName, err := mysql.BuildDataSourceName(url, database, usernameFile, passwordFile)
+	if err != nil {
+		return nil, fmt.Errorf("failed to connect to sql database: %w", err)
+	}
+
+	// Enable run multi statements at once.
+	db, err := sql.Open("mysql", fmt.Sprintf("%s?multiStatements=true", dataSourceName))
+	if err != nil {
+		return nil, fmt.Errorf("failed to connect to sql database: %w", err)
+	}
+
 	return &mysqlEnsurer{
-		client: cli,
+		client: db,
 		logger: logger.Named("mysql-ensurer"),
 	}, nil
 }

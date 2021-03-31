@@ -9,7 +9,6 @@ go_library(
     importpath = "github.com/pipe-cd/pipe/pkg/app/ops/mysqlensurer",
     visibility = ["//visibility:public"],
     deps = [
-        "//pkg/datastore/mysql:go_default_library",
         "//pkg/datastore/mysql/ensurer:go_default_library",
         "@org_uber_go_zap//:go_default_library",
     ],
