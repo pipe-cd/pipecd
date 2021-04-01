@@ -51,6 +51,7 @@ const useStyles = makeStyles((theme) => ({
   },
 }));
 
+// TODO: Remove showCounts parameter after implements showCounts API
 export const ApplicationIndexPage: FC = memo(function ApplicationIndexPage() {
   const classes = useStyles();
   const dispatch = useDispatch<AppDispatch>();
@@ -64,7 +65,9 @@ export const ApplicationIndexPage: FC = memo(function ApplicationIndexPage() {
   const addedApplicationId = useSelector<AppState, string | null>(
     (state) => state.deploymentConfigs.targetApplicationId
   );
-  const showCounts = Boolean(filterOptions.showCounts);
+  const showCounts = filterOptions.showCounts
+    ? Boolean(filterOptions.showCounts)
+    : undefined;
 
   const handleFilterChange = useCallback(
     (options) => {
