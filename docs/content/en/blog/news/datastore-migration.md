@@ -18,7 +18,7 @@ You need to install the latest [pipectl](/docs/user-guide/command-line-tool/#ins
 
 Validate your installed `pipectl` command
 
-```bash
+```console
 $ pipectl datastore -h
 Manage control-plane datastore resource.
 
@@ -42,7 +42,7 @@ The current implementation of `pipectl datastore` subcommand connects directly t
 - Your MySQL instance has to be initialized with the going to be used `database`, make sure you create it before move to the next step.
 
 For example, if you use docker to create your new MySQL instance, the command should be
-```bash
+```console
 $ docker run -d \
     --name test-db \
     -e MYSQL_ROOT_PASSWORD=XXX \
@@ -58,7 +58,7 @@ In case your PipeCD control-plane is installed by `helm`, simply run `helm unins
 
 Migrate using the following command (replace `upstream-data-src`, `downstream-data-src` and `database` with your corresponding values)
 
-```bash
+```console
 $ pipectl datastore migrate \
     --upstream-data-src="mongodb://127.0.0.1:27017/quickstart" \
     --downstream-data-src="root:test@tcp(127.0.0.1:3306)" \
@@ -71,7 +71,7 @@ Note:
 
 #### 4. Start PipeCD control-plane with the new configuration
 
-Your new control-plane's configuration should be updated as follow
+Your new control-plane's configuration should be updated as follow:
 
 ```diff
  apiVersion: "pipecd.dev/v1beta1"
