@@ -86,21 +86,21 @@ type modelData interface {
 
 func makeModelObject(kind string) (modelData, error) {
 	switch kind {
-	case "Project":
+	case datastore.ProjectModelKind:
 		return &model.Project{}, nil
-	case "Application":
+	case datastore.ApplicationModelKind:
 		return &model.Application{}, nil
-	case "Command":
+	case datastore.CommandModelKind:
 		return &model.Command{}, nil
-	case "Deployment":
+	case datastore.DeploymentModelKind:
 		return &model.Deployment{}, nil
-	case "Environment":
+	case datastore.EnvironmentModelKind:
 		return &model.Environment{}, nil
-	case "Piped":
+	case datastore.PipedModelKind:
 		return &model.Piped{}, nil
-	case "APIKey":
+	case datastore.ApiKeyModelKind:
 		return &model.APIKey{}, nil
-	case "Event":
+	case datastore.EventModelKind:
 		return &model.Event{}, nil
 	default:
 		return nil, fmt.Errorf("unsupported kind %s", kind)

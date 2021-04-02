@@ -21,7 +21,7 @@ import (
 	"github.com/pipe-cd/pipe/pkg/model"
 )
 
-const projectModelKind = "Project"
+const ProjectModelKind = "Project"
 
 var projectFactory = func() interface{} {
 	return &model.Project{}
@@ -64,12 +64,12 @@ func (s *projectStore) AddProject(ctx context.Context, proj *model.Project) erro
 	if err := proj.Validate(); err != nil {
 		return err
 	}
-	return s.ds.Create(ctx, projectModelKind, proj.Id, proj)
+	return s.ds.Create(ctx, ProjectModelKind, proj.Id, proj)
 }
 
 func (s *projectStore) UpdateProject(ctx context.Context, id string, updater func(project *model.Project) error) error {
 	now := s.nowFunc().Unix()
-	return s.ds.Update(ctx, projectModelKind, id, projectFactory, func(e interface{}) error {
+	return s.ds.Update(ctx, ProjectModelKind, id, projectFactory, func(e interface{}) error {
 		p := e.(*model.Project)
 		if err := updater(p); err != nil {
 			return err
@@ -126,14 +126,14 @@ func (s *projectStore) UpdateProjectRBACConfig(ctx context.Context, id string, r
 
 func (s *projectStore) GetProject(ctx context.Context, id string) (*model.Project, error) {
 	var entity model.Project
-	if err := s.ds.Get(ctx, projectModelKind, id, &entity); err != nil {
+	if err := s.ds.Get(ctx, ProjectModelKind, id, &entity); err != nil {
 		return nil, err
 	}
 	return &entity, nil
 }
 
 func (s *projectStore) ListProjects(ctx context.Context, opts ListOptions) ([]model.Project, error) {
-	it, err := s.ds.Find(ctx, projectModelKind, opts)
+	it, err := s.ds.Find(ctx, ProjectModelKind, opts)
 	if err != nil {
 		return nil, err
 	}

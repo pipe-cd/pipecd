@@ -21,7 +21,7 @@ import (
 	"github.com/pipe-cd/pipe/pkg/model"
 )
 
-const environmentModelKind = "Environment"
+const EnvironmentModelKind = "Environment"
 
 var environmentFactory = func() interface{} {
 	return &model.Environment{}
@@ -58,19 +58,19 @@ func (s *environmentStore) AddEnvironment(ctx context.Context, env *model.Enviro
 	if err := env.Validate(); err != nil {
 		return err
 	}
-	return s.ds.Create(ctx, environmentModelKind, env.Id, env)
+	return s.ds.Create(ctx, EnvironmentModelKind, env.Id, env)
 }
 
 func (s *environmentStore) GetEnvironment(ctx context.Context, id string) (*model.Environment, error) {
 	var entity model.Environment
-	if err := s.ds.Get(ctx, environmentModelKind, id, &entity); err != nil {
+	if err := s.ds.Get(ctx, EnvironmentModelKind, id, &entity); err != nil {
 		return nil, err
 	}
 	return &entity, nil
 }
 
 func (s *environmentStore) ListEnvironments(ctx context.Context, opts ListOptions) ([]*model.Environment, error) {
-	it, err := s.ds.Find(ctx, environmentModelKind, opts)
+	it, err := s.ds.Find(ctx, EnvironmentModelKind, opts)
 	if err != nil {
 		return nil, err
 	}

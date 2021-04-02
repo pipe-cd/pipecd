@@ -21,7 +21,7 @@ import (
 	"github.com/pipe-cd/pipe/pkg/model"
 )
 
-const commandModelKind = "Command"
+const CommandModelKind = "Command"
 
 var commandFactory = func() interface{} {
 	return &model.Command{}
@@ -70,12 +70,12 @@ func (s *commandStore) AddCommand(ctx context.Context, cmd *model.Command) error
 	if err := cmd.Validate(); err != nil {
 		return err
 	}
-	return s.ds.Create(ctx, commandModelKind, cmd.Id, cmd)
+	return s.ds.Create(ctx, CommandModelKind, cmd.Id, cmd)
 }
 
 func (s *commandStore) UpdateCommand(ctx context.Context, id string, updater func(piped *model.Command) error) error {
 	now := s.nowFunc().Unix()
-	return s.ds.Update(ctx, commandModelKind, id, commandFactory, func(e interface{}) error {
+	return s.ds.Update(ctx, CommandModelKind, id, commandFactory, func(e interface{}) error {
 		p := e.(*model.Command)
 		if err := updater(p); err != nil {
 			return err
@@ -86,7 +86,7 @@ func (s *commandStore) UpdateCommand(ctx context.Context, id string, updater fun
 }
 
 func (s *commandStore) ListCommands(ctx context.Context, opts ListOptions) ([]*model.Command, error) {
-	it, err := s.ds.Find(ctx, commandModelKind, opts)
+	it, err := s.ds.Find(ctx, CommandModelKind, opts)
 	if err != nil {
 		return nil, err
 	}
@@ -107,7 +107,7 @@ func (s *commandStore) ListCommands(ctx context.Context, opts ListOptions) ([]*m
 
 func (s *commandStore) GetCommand(ctx context.Context, id string) (*model.Command, error) {
 	var entity model.Command
-	if err := s.ds.Get(ctx, commandModelKind, id, &entity); err != nil {
+	if err := s.ds.Get(ctx, CommandModelKind, id, &entity); err != nil {
 		return nil, err
 	}
 	return &entity, nil
