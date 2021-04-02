@@ -98,7 +98,7 @@ func makeModelObject(kind string) (modelData, error) {
 		return &model.Environment{}, nil
 	case datastore.PipedModelKind:
 		return &model.Piped{}, nil
-	case datastore.ApiKeyModelKind:
+	case datastore.APIKeyModelKind:
 		return &model.APIKey{}, nil
 	case datastore.EventModelKind:
 		return &model.Event{}, nil

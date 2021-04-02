@@ -40,7 +40,7 @@ var (
 
 // MigratableModelKinds is a slide of models' name which available to migrate.
 var MigratableModelKinds = []string{
-	ApiKeyModelKind,
+	APIKeyModelKind,
 	ApplicationModelKind,
 	CommandModelKind,
 	DeploymentModelKind,
