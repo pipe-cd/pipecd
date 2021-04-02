@@ -21,7 +21,7 @@ import (
 	"github.com/pipe-cd/pipe/pkg/model"
 )
 
-const pipedModelKind = "Piped"
+const PipedModelKind = "Piped"
 
 var (
 	pipedFactory = func() interface{} {
@@ -85,19 +85,19 @@ func (s *pipedStore) AddPiped(ctx context.Context, piped *model.Piped) error {
 	if err := piped.Validate(); err != nil {
 		return err
 	}
-	return s.ds.Create(ctx, pipedModelKind, piped.Id, piped)
+	return s.ds.Create(ctx, PipedModelKind, piped.Id, piped)
 }
 
 func (s *pipedStore) GetPiped(ctx context.Context, id string) (*model.Piped, error) {
 	var entity model.Piped
-	if err := s.ds.Get(ctx, pipedModelKind, id, &entity); err != nil {
+	if err := s.ds.Get(ctx, PipedModelKind, id, &entity); err != nil {
 		return nil, err
 	}
 	return &entity, nil
 }
 
 func (s *pipedStore) ListPipeds(ctx context.Context, opts ListOptions) ([]*model.Piped, error) {
-	it, err := s.ds.Find(ctx, pipedModelKind, opts)
+	it, err := s.ds.Find(ctx, PipedModelKind, opts)
 	if err != nil {
 		return nil, err
 	}
@@ -118,7 +118,7 @@ func (s *pipedStore) ListPipeds(ctx context.Context, opts ListOptions) ([]*model
 
 func (s *pipedStore) UpdatePiped(ctx context.Context, id string, updater func(piped *model.Piped) error) error {
 	now := s.nowFunc().Unix()
-	return s.ds.Update(ctx, pipedModelKind, id, pipedFactory, func(e interface{}) error {
+	return s.ds.Update(ctx, PipedModelKind, id, pipedFactory, func(e interface{}) error {
 		p := e.(*model.Piped)
 		if err := updater(p); err != nil {
 			return err

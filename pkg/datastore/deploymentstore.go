@@ -22,7 +22,7 @@ import (
 	"github.com/pipe-cd/pipe/pkg/model"
 )
 
-const deploymentModelKind = "Deployment"
+const DeploymentModelKind = "Deployment"
 
 var deploymentFactory = func() interface{} {
 	return &model.Deployment{}
@@ -122,12 +122,12 @@ func (s *deploymentStore) AddDeployment(ctx context.Context, d *model.Deployment
 	if err := d.Validate(); err != nil {
 		return err
 	}
-	return s.ds.Create(ctx, deploymentModelKind, d.Id, d)
+	return s.ds.Create(ctx, DeploymentModelKind, d.Id, d)
 }
 
 func (s *deploymentStore) UpdateDeployment(ctx context.Context, id string, updater func(*model.Deployment) error) error {
 	now := s.nowFunc().Unix()
-	return s.ds.Update(ctx, deploymentModelKind, id, deploymentFactory, func(e interface{}) error {
+	return s.ds.Update(ctx, DeploymentModelKind, id, deploymentFactory, func(e interface{}) error {
 		d := e.(*model.Deployment)
 		if err := updater(d); err != nil {
 			return err
@@ -139,7 +139,7 @@ func (s *deploymentStore) UpdateDeployment(ctx context.Context, id string, updat
 
 func (s *deploymentStore) PutDeploymentMetadata(ctx context.Context, id string, metadata map[string]string) error {
 	now := s.nowFunc().Unix()
-	return s.ds.Update(ctx, deploymentModelKind, id, deploymentFactory, func(e interface{}) error {
+	return s.ds.Update(ctx, DeploymentModelKind, id, deploymentFactory, func(e interface{}) error {
 		d := e.(*model.Deployment)
 		d.Metadata = metadata
 		d.UpdatedAt = now
@@ -149,7 +149,7 @@ func (s *deploymentStore) PutDeploymentMetadata(ctx context.Context, id string, 
 
 func (s *deploymentStore) PutDeploymentStageMetadata(ctx context.Context, deploymentID, stageID string, metadata map[string]string) error {
 	now := s.nowFunc().Unix()
-	return s.ds.Update(ctx, deploymentModelKind, deploymentID, deploymentFactory, func(e interface{}) error {
+	return s.ds.Update(ctx, DeploymentModelKind, deploymentID, deploymentFactory, func(e interface{}) error {
 		d := e.(*model.Deployment)
 		for _, stage := range d.Stages {
 			if stage.Id == stageID {
@@ -163,7 +163,7 @@ func (s *deploymentStore) PutDeploymentStageMetadata(ctx context.Context, deploy
 }
 
 func (s *deploymentStore) ListDeployments(ctx context.Context, opts ListOptions) ([]*model.Deployment, error) {
-	it, err := s.ds.Find(ctx, deploymentModelKind, opts)
+	it, err := s.ds.Find(ctx, DeploymentModelKind, opts)
 	if err != nil {
 		return nil, err
 	}
@@ -184,7 +184,7 @@ func (s *deploymentStore) ListDeployments(ctx context.Context, opts ListOptions)
 
 func (s *deploymentStore) GetDeployment(ctx context.Context, id string) (*model.Deployment, error) {
 	var entity model.Deployment
-	if err := s.ds.Get(ctx, deploymentModelKind, id, &entity); err != nil {
+	if err := s.ds.Get(ctx, DeploymentModelKind, id, &entity); err != nil {
 		return nil, err
 	}
 	return &entity, nil

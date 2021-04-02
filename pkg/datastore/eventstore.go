@@ -21,7 +21,7 @@ import (
 	"github.com/pipe-cd/pipe/pkg/model"
 )
 
-const eventModelKind = "Event"
+const EventModelKind = "Event"
 
 var (
 	eventFactory = func() interface{} {
@@ -59,11 +59,11 @@ func (s *eventStore) AddEvent(ctx context.Context, e model.Event) error {
 	if err := e.Validate(); err != nil {
 		return err
 	}
-	return s.ds.Create(ctx, eventModelKind, e.Id, &e)
+	return s.ds.Create(ctx, EventModelKind, e.Id, &e)
 }
 
 func (s *eventStore) ListEvents(ctx context.Context, opts ListOptions) ([]*model.Event, error) {
-	it, err := s.ds.Find(ctx, eventModelKind, opts)
+	it, err := s.ds.Find(ctx, EventModelKind, opts)
 	if err != nil {
 		return nil, err
 	}

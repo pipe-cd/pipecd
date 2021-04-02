@@ -40,14 +40,14 @@ var (
 
 // MigratableModelKinds is a slide of models' name which available to migrate.
 var MigratableModelKinds = []string{
-	apiKeyModelKind,
-	applicationModelKind,
-	commandModelKind,
-	deploymentModelKind,
-	environmentModelKind,
-	eventModelKind,
-	pipedModelKind,
-	projectModelKind,
+	APIKeyModelKind,
+	ApplicationModelKind,
+	CommandModelKind,
+	DeploymentModelKind,
+	EnvironmentModelKind,
+	EventModelKind,
+	PipedModelKind,
+	ProjectModelKind,
 }
 
 type Factory func() interface{}

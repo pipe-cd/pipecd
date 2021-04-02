@@ -21,7 +21,7 @@ import (
 	"github.com/pipe-cd/pipe/pkg/model"
 )
 
-const pipedStatsModelKind = "PipedStats"
+const PipedStatsModelKind = "PipedStats"
 
 var pipedStatsFactory = func() interface{} {
 	return &model.PipedStats{}
@@ -54,11 +54,11 @@ func (s *pipedStatsStore) AddPipedStats(ctx context.Context, ps *model.PipedStat
 	if err := ps.Validate(); err != nil {
 		return err
 	}
-	return s.ds.Create(ctx, pipedStatsModelKind, "", ps)
+	return s.ds.Create(ctx, PipedStatsModelKind, "", ps)
 }
 
 func (s *pipedStatsStore) ListPipedStatss(ctx context.Context, opts ListOptions) ([]model.PipedStats, error) {
-	it, err := s.ds.Find(ctx, pipedStatsModelKind, opts)
+	it, err := s.ds.Find(ctx, PipedStatsModelKind, opts)
 	if err != nil {
 		return nil, err
 	}
