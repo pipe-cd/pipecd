@@ -194,10 +194,6 @@ func (r *reflector) start(ctx context.Context) error {
 		return fmt.Errorf("failed to create dynamic client: %v", err)
 	}
 
-	namespace := r.config.AppStateInformer.Namespace
-	if namespace == "" {
-		namespace = metav1.NamespaceAll
-	}
 	stopCh := make(chan struct{})
 
 	startInformer := func(namespace string, resources []schema.GroupVersionResource) {
@@ -219,11 +215,17 @@ func (r *reflector) start(ctx context.Context) error {
 		}
 	}
 
+	ns := r.config.AppStateInformer.Namespace
+	if ns == "" {
+		ns = metav1.NamespaceAll
+	}
 	r.logger.Info(fmt.Sprintf("start running %d namespaced-resource informers", len(namespacedTargetResources)))
-	startInformer(namespace, namespacedTargetResources)
+	startInformer(ns, namespacedTargetResources)
 
-	r.logger.Info(fmt.Sprintf("start running %d non-namespaced-resource informers", len(targetResources)))
-	startInformer(metav1.NamespaceAll, targetResources)
+	if ns == metav1.NamespaceAll {
+		r.logger.Info(fmt.Sprintf("start running %d non-namespaced-resource informers", len(targetResources)))
+		startInformer(metav1.NamespaceAll, targetResources)
+	}
 
 	r.logger.Info("all informer caches have been synced")
 	return nil
