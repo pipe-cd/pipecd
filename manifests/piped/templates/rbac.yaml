@@ -37,22 +37,7 @@ metadata:
   labels:
     {{- include "piped.labels" . | nindent 4 }}
 rules:
-  {{- if .Values.rbac.rules -}}
-  {{- with .Values.rbac.rules }}
-  {{- toYaml . | nindent 2 }}
-  {{- end }}
-  {{- else }}
-  - apiGroups:
-    - '*'
-    resources:
-    - '*'
-    verbs:
-    - '*'
-  - nonResourceURLs:
-    - '*'
-    verbs:
-    - '*'
-  {{- end }}
+  {{- include "piped.rbacRules" . | nindent 2 }}
 {{- else if eq .Values.rbac.scope "namespace" -}}
 ---
 apiVersion: rbac.authorization.k8s.io/v1
@@ -79,17 +64,6 @@ metadata:
   labels:
     {{- include "piped.labels" . | nindent 4 }}
 rules:
-  {{- if .Values.rbac.rules -}}
-  {{- with .Values.rbac.rules }}
-  {{- toYaml . | nindent 2 }}
-  {{- end }}
-  {{- else }}
-  - apiGroups:
-    - '*'
-    resources:
-    - '*'
-    verbs:
-    - '*'
-  {{- end }}
+  {{- include "piped.rbacRules" . | nindent 2 }}
 {{- end }}
 {{- end }}

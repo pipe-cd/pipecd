@@ -72,3 +72,36 @@ Name of Secret containing sensitive data
 {{- .Values.secret.name }}
 {{- end }}
 {{- end }}
+
+{{/*
+Name of ServiceAccount
+*/}}
+{{- define "piped.serviceAccountName" -}}
+{{- if .Values.serviceAccount.create -}}
+{{ include "piped.fullname" . }}
+{{- else }}
+{{- .Values.serviceAccount.name }}
+{{- end }}
+{{- end }}
+
+{{/*
+A set of permissions Role/ClusterRole will contain
+*/}}
+{{- define "piped.rbacRules" -}}
+{{- if .Values.rbac.rules -}}
+{{- with .Values.rbac.rules }}
+{{- toYaml . | nindent 2 }}
+{{- end }}
+{{- else }}
+- apiGroups:
+  - '*'
+  resources:
+  - '*'
+  verbs:
+  - '*'
+- nonResourceURLs:
+  - '*'
+  verbs:
+  - '*'
+{{- end }}
+{{- end }}
