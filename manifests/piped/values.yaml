@@ -86,3 +86,6 @@ resources: {}
 
 serviceAccount:
   annotations: {}
+
+# Specifies whether to restrict Piped access to within Namespace.
+useClusterRole: true
