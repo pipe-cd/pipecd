@@ -1,3 +1,4 @@
+{{- if .Values.serviceAccount.create -}}
 apiVersion: v1
 kind: ServiceAccount
 metadata:
@@ -8,8 +9,10 @@ metadata:
   annotations:
     {{- toYaml . | nindent 4 }}
   {{- end }}
+{{- end }}
 
-{{- if .Values.useClusterRole -}}
+{{- if .Values.rbac.create -}}
+{{- if eq .Values.rbac.scope "cluster" -}}
 ---
 apiVersion: rbac.authorization.k8s.io/v1
 kind: ClusterRoleBinding
@@ -34,17 +37,23 @@ metadata:
   labels:
     {{- include "piped.labels" . | nindent 4 }}
 rules:
-- apiGroups:
-  - '*'
-  resources:
-  - '*'
-  verbs:
-  - '*'
-- nonResourceURLs:
-  - '*'
-  verbs:
-  - '*'
-{{- else }}
+  {{- if .Values.rbac.rules -}}
+  {{- with .Values.rbac.rules }}
+  {{- toYaml . | nindent 2 }}
+  {{- end }}
+  {{- else }}
+  - apiGroups:
+    - '*'
+    resources:
+    - '*'
+    verbs:
+    - '*'
+  - nonResourceURLs:
+    - '*'
+    verbs:
+    - '*'
+  {{- end }}
+{{- else if eq .Values.rbac.scope "namespace" -}}
 ---
 apiVersion: rbac.authorization.k8s.io/v1
 kind: RoleBinding
@@ -70,12 +79,17 @@ metadata:
   labels:
     {{- include "piped.labels" . | nindent 4 }}
 rules:
-- apiGroups:
-  - '*'
-  resources:
-  - '*'
-  verbs:
-  - '*'
-  verbs:
-  - '*'
+  {{- if .Values.rbac.rules -}}
+  {{- with .Values.rbac.rules }}
+  {{- toYaml . | nindent 2 }}
+  {{- end }}
+  {{- else }}
+  - apiGroups:
+    - '*'
+    resources:
+    - '*'
+    verbs:
+    - '*'
+  {{- end }}
+{{- end }}
 {{- end }}
