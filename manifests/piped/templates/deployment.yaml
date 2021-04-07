@@ -19,7 +19,7 @@ spec:
         sidecar.istio.io/inject: "false"
         rollme: {{ randAlphaNum 5 | quote }}
     spec:
-      serviceAccountName: {{ include "piped.fullname" . }}
+      serviceAccountName: {{ include "piped.serviceAccountName" . }}
       containers:
         - name: piped
           image: "gcr.io/pipecd/piped:{{ .Chart.AppVersion }}"

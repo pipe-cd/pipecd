@@ -85,4 +85,17 @@ affinity: {}
 resources: {}
 
 serviceAccount:
+  # Specifies whether a ServiceAccount to be used by Piped should be created.
+  create: true
+  # The name of existing ServiceAccount to use when create is false.
+  name: ""
   annotations: {}
+
+rbac:
+  # Specifies whether it should create Role/ClusterRole and RoleBinding/ClusterRoleBinding to be attatched to Piped.
+  create: true
+  # Only cluster or namespace can be specified.
+  scope: cluster
+  # A set of permissions Role/ClusterRole will contain.
+  # If empty, all of them will be '*'.
+  rules: []
