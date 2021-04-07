@@ -37,7 +37,7 @@ metadata:
   labels:
     {{- include "piped.labels" . | nindent 4 }}
 rules:
-  {{- include "piped.rbacRules" . | nindent 2 }}
+  {{- include "piped.clusterRoleRules" . | nindent 2 }}
 {{- else if eq .Values.rbac.scope "namespace" -}}
 ---
 apiVersion: rbac.authorization.k8s.io/v1
@@ -65,6 +65,6 @@ metadata:
   labels:
     {{- include "piped.labels" . | nindent 4 }}
 rules:
-  {{- include "piped.rbacRules" . | nindent 2 }}
+  {{- include "piped.roleRules" . | nindent 2 }}
 {{- end }}
 {{- end }}

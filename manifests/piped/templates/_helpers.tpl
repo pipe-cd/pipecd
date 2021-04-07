@@ -85,9 +85,27 @@ Name of ServiceAccount
 {{- end }}
 
 {{/*
-A set of permissions Role/ClusterRole will contain
+A set of permissions Role will contain
 */}}
-{{- define "piped.rbacRules" -}}
+{{- define "piped.roleRules" -}}
+{{- if .Values.rbac.rules -}}
+{{- with .Values.rbac.rules }}
+{{- toYaml . | nindent 2 }}
+{{- end }}
+{{- else }}
+- apiGroups:
+  - '*'
+  resources:
+  - '*'
+  verbs:
+  - '*'
+{{- end }}
+{{- end }}
+
+{{/*
+A set of permissions ClusterRole will contain
+*/}}
+{{- define "piped.clusterRoleRules" -}}
 {{- if .Values.rbac.rules -}}
 {{- with .Values.rbac.rules }}
 {{- toYaml . | nindent 2 }}
