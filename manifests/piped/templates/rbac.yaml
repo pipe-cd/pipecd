@@ -11,9 +11,9 @@ metadata:
   {{- end }}
 {{- end }}
 
+---
 {{- if .Values.rbac.create -}}
 {{- if eq .Values.rbac.scope "cluster" -}}
----
 apiVersion: rbac.authorization.k8s.io/v1
 kind: ClusterRoleBinding
 metadata:
@@ -39,7 +39,6 @@ metadata:
 rules:
   {{- include "piped.clusterRoleRules" . | nindent 2 }}
 {{- else if eq .Values.rbac.scope "namespace" -}}
----
 apiVersion: rbac.authorization.k8s.io/v1
 kind: RoleBinding
 metadata:
