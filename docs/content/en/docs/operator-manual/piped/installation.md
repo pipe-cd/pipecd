@@ -57,7 +57,41 @@ description: >
     --set-file secret.pipedKey.data=PATH_TO_PIPED_KEY_FILE \
     --set-file secret.sshKey.data=PATH_TO_PRIVATE_SSH_KEY_FILE
   ```
+
 Note: Be sure to set `--set args.insecure=true` if your control-plane has not TLS-enabled yet.
+
+See [values.yaml](https://github.com/pipe-cd/manifests/blob/master/manifests/piped/values.yaml) for the full values.
+
+### Installing on Kubernetes cluster in the namespaced mode
+The previous way requires installing cluster-level resources. If you want to restrict Piped's permission within the namespace as the same as Piped, this way is for you.
+Most part is identical to the previous way, but some part is slightly different.
+
+- Adding a new cloud provider like below to the previous piped configuration file:
+
+  ``` yaml
+  apiVersion: pipecd.dev/v1beta1
+  kind: Piped
+  spec:
+    cloudProviders:
+      - name: my-kubernetes
+        type: KUBERNETES
+        config:
+          appStateInformer:
+            namespace: {YOUR_NAMESPACE}
+  ```
+
+- Then installing it with the following options:
+
+  ``` console
+  helm repo update
+
+  helm upgrade -i dev-piped pipecd/piped --version=VERSION --namespace=NAMESPACE \
+    --set-file config.data=PATH_TO_PIPED_CONFIG_FILE \
+    --set-file secret.pipedKey.data=PATH_TO_PIPED_KEY_FILE \
+    --set-file secret.sshKey.data=PATH_TO_PRIVATE_SSH_KEY_FILE \
+    --set args.enableDefaultKubernetesCloudProvider=false \
+    --set rbac.scope=namespace
+  ```
 
 ### Installing on single machine
 
