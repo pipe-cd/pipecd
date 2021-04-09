@@ -1,21 +1,37 @@
+import { setupServer } from "msw/node";
+import { createStore } from "../../test-utils";
+import * as applicationsAPI from "../api/applications";
+import { listApplicationsHandler } from "../mocks/services/application";
 import {
   dummyApplication,
   dummyApplicationSyncState,
 } from "../__fixtures__/dummy-application";
-import { createStore } from "../../test-utils";
 import {
   addApplication,
   Application,
   applicationsSlice,
+  ApplicationsState,
   ApplicationSyncStatus,
   disableApplication,
   fetchApplication,
   fetchApplications,
   syncApplication,
-  ApplicationsState,
 } from "./applications";
 import { Command, CommandStatus, fetchCommand } from "./commands";
-import * as applicationsAPI from "../api/applications";
+
+const server = setupServer(listApplicationsHandler);
+
+beforeAll(() => {
+  server.listen();
+});
+
+afterEach(() => {
+  server.resetHandlers();
+});
+
+afterAll(() => {
+  server.close();
+});
 
 const baseState: ApplicationsState = {
   adding: false,
@@ -35,20 +51,15 @@ describe("fetchApplications", () => {
       fetchApplications({ activeStatus: "enabled", envId: "env-1" })
     );
 
-    expect(store.getActions()).toMatchObject([
-      { type: fetchApplications.pending.type },
-      { type: fetchApplications.fulfilled.type, payload: [dummyApplication] },
-    ]);
-
-    expect(applicationsAPI.getApplications).toHaveBeenCalledWith({
-      options: {
-        enabled: { value: true },
-        envIdsList: ["env-1"],
-        kindsList: [],
-        name: "",
-        syncStatusesList: [],
-      },
-    });
+    expect(store.getActions()).toEqual(
+      expect.arrayContaining([
+        expect.objectContaining({ type: fetchApplications.pending.type }),
+        expect.objectContaining({
+          type: fetchApplications.fulfilled.type,
+          payload: expect.arrayContaining([dummyApplication]),
+        }),
+      ])
+    );
   });
 });
 
