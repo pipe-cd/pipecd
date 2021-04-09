@@ -430,22 +430,7 @@ func (a *WebAPI) AddApplication(ctx context.Context, req *webservice.AddApplicat
 }
 
 func (a *WebAPI) UpdateApplication(ctx context.Context, req *webservice.UpdateApplicationRequest) (*webservice.UpdateApplicationResponse, error) {
-	claims, err := rpcauth.ExtractClaims(ctx)
-	if err != nil {
-		a.logger.Error("failed to authenticate the current user", zap.Error(err))
-		return nil, err
-	}
-
-	piped, err := getPiped(ctx, a.pipedStore, req.PipedId, a.logger)
-	if err != nil {
-		return nil, err
-	}
-
-	if piped.ProjectId != claims.Role.ProjectId {
-		return nil, status.Error(codes.InvalidArgument, "Requested piped does not belong to your project")
-	}
-
-	err = a.applicationStore.UpdateApplication(ctx, req.ApplicationId, func(app *model.Application) error {
+	updater := func(app *model.Application) error {
 		app.Name = req.Name
 		app.EnvId = req.EnvId
 		app.PipedId = req.PipedId
@@ -453,13 +438,52 @@ func (a *WebAPI) UpdateApplication(ctx context.Context, req *webservice.UpdateAp
 		app.CloudProvider = req.CloudProvider
 		app.Description = req.Description
 		return nil
-	})
-	if err != nil {
-		a.logger.Error("failed to update application", zap.Error(err))
-		return nil, status.Error(codes.Internal, "Failed to update application")
 	}
 
+	if err := a.updateApplication(ctx, req.ApplicationId, req.PipedId, updater); err != nil {
+		return nil, err
+	}
 	return &webservice.UpdateApplicationResponse{}, nil
+}
+
+func (a *WebAPI) UpdateApplicationDescription(ctx context.Context, req *webservice.UpdateApplicationDescriptionRequest) (*webservice.UpdateApplicationDescriptionResponse, error) {
+	updater := func(app *model.Application) error {
+		app.Description = req.Description
+		return nil
+	}
+
+	if err := a.updateApplication(ctx, req.ApplicationId, "", updater); err != nil {
+		return nil, err
+	}
+	return &webservice.UpdateApplicationDescriptionResponse{}, nil
+}
+
+func (a *WebAPI) updateApplication(ctx context.Context, id, pipedID string, updater func(app *model.Application) error) error {
+	claims, err := rpcauth.ExtractClaims(ctx)
+	if err != nil {
+		a.logger.Error("failed to authenticate the current user", zap.Error(err))
+		return err
+	}
+
+	// Ensure that the specified piped is assignable for this application.
+	if pipedID != "" {
+		piped, err := getPiped(ctx, a.pipedStore, pipedID, a.logger)
+		if err != nil {
+			return err
+		}
+
+		if piped.ProjectId != claims.Role.ProjectId {
+			return status.Error(codes.InvalidArgument, "Requested piped does not belong to your project")
+		}
+	}
+
+	err = a.applicationStore.UpdateApplication(ctx, id, updater)
+	if err != nil {
+		a.logger.Error("failed to update application", zap.Error(err))
+		return status.Error(codes.Internal, "Failed to update application")
+	}
+
+	return nil
 }
 
 func (a *WebAPI) EnableApplication(ctx context.Context, req *webservice.EnableApplicationRequest) (*webservice.EnableApplicationResponse, error) {
