@@ -16,10 +16,10 @@ afterAll(() => {
 test("getMe() call", async () => {
   await expect(getMe()).resolves.toMatchInlineSnapshot(`
           Object {
-            "avatarUrl": "",
+            "avatarUrl": "avatar-url",
             "projectId": "pipecd",
             "projectRole": 2,
-            "subject": "hello-pipecd",
+            "subject": "userName",
           }
         `);
 });

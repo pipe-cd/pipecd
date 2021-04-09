@@ -1,13 +1,14 @@
 import { GetMeResponse } from "pipe/pkg/app/web/api_client/service_pb";
-import { Role } from "../../modules/me";
+import { dummyMe } from "../../__fixtures__/dummy-me";
 import { createHandler } from "../create-handler";
 
-export const meHandlers = [
-  createHandler<GetMeResponse>("/GetMe", () => {
-    const response = new GetMeResponse();
-    response.setSubject("hello-pipecd");
-    response.setProjectId("pipecd");
-    response.setProjectRole(Role.ProjectRole.ADMIN);
-    return response;
-  }),
-];
+export const getMeHandler = createHandler<GetMeResponse>("/GetMe", () => {
+  const response = new GetMeResponse();
+  response.setSubject(dummyMe.subject);
+  response.setProjectId(dummyMe.projectId);
+  response.setAvatarUrl(dummyMe.avatarUrl);
+  response.setProjectRole(dummyMe.projectRole);
+  return response;
+});
+
+export const meHandlers = [getMeHandler];
