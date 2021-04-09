@@ -1,9 +1,9 @@
 ---
 date: 2021-04-01
-title: "Migrate Control Plane datastore to MySQL"
-linkTitle: "Migrate to MySQL"
+title: "Migrate Control Plane datastore from MongoDB to MySQL"
+linkTitle: "Migrate Control Plane datastore from MongoDB to MySQL"
 weight: 2
-description: "This page describes how to migrate Control Plane' datastore to MySQL."
+description: "This page describes how to migrate Control Plane' datastore from MongoDB to MySQL."
 author: Khanh Tran ([@khanhtc1202](https://twitter.com/khanhtc1202))
 ---
 
@@ -14,7 +14,7 @@ If you are using MongoDB as your PipeCD control-plane datastore, the following g
 
 ### Before start
 
-You need to install the latest [pipectl](/docs/user-guide/command-line-tool/#installation) command-line tool.
+You need to install the [pipectl](/docs/user-guide/command-line-tool/#installation) version [v0.9.10](https://github.com/pipe-cd/pipe/releases/tag/v0.9.10) command-line tool.
 
 Validate your installed `pipectl` command
 
