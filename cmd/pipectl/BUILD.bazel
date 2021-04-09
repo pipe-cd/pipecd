@@ -8,7 +8,6 @@ go_library(
     visibility = ["//visibility:private"],
     deps = [
         "//pkg/app/pipectl/cmd/application:go_default_library",
-        "//pkg/app/pipectl/cmd/datastore:go_default_library",
         "//pkg/app/pipectl/cmd/deployment:go_default_library",
         "//pkg/app/pipectl/cmd/event:go_default_library",
         "//pkg/cli:go_default_library",
