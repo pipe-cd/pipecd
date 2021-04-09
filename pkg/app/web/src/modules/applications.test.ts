@@ -29,11 +29,6 @@ const baseState: ApplicationsState = {
 
 describe("fetchApplications", () => {
   it("should get applications by options", async () => {
-    jest
-      .spyOn(applicationsAPI, "getApplications")
-      .mockImplementation(() =>
-        Promise.resolve({ applicationsList: [dummyApplication] })
-      );
     const store = createStore({});
 
     await store.dispatch(

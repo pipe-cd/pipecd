@@ -1,19 +1,26 @@
+import { setupServer } from "msw/node";
 import { createStore } from "../../test-utils";
-import * as meAPI from "../api/me";
-import { meSlice, fetchMe, Role, selectProjectName } from "./me";
+import { getMeHandler } from "../mocks/services/me";
+import { dummyMe } from "../__fixtures__/dummy-me";
+import { fetchMe, meSlice, Role, selectProjectName } from "./me";
+
+const server = setupServer(getMeHandler);
+
+beforeAll(() => {
+  server.listen();
+});
+
+afterEach(() => {
+  server.resetHandlers();
+});
+
+afterAll(() => {
+  server.close();
+});
 
 describe("fetchMe", () => {
   it(`creates ${fetchMe.fulfilled.type} when fetching me has been done`, async () => {
-    const me = {
-      subject: "userName",
-      avatarUrl: "avatar-url",
-      projectId: "pipecd",
-      projectRole: Role.ProjectRole.ADMIN,
-    };
-    jest.spyOn(meAPI, "getMe").mockImplementation(() => Promise.resolve(me));
-
     const store = createStore();
-
     await store.dispatch(fetchMe());
 
     expect(store.getActions()).toMatchObject([
@@ -23,7 +30,7 @@ describe("fetchMe", () => {
       {
         type: fetchMe.fulfilled.type,
         payload: {
-          ...me,
+          ...dummyMe,
           isLogin: true,
         },
       },
