@@ -19,7 +19,6 @@ import (
 	"os"
 
 	"github.com/pipe-cd/pipe/pkg/app/pipectl/cmd/application"
-	"github.com/pipe-cd/pipe/pkg/app/pipectl/cmd/datastore"
 	"github.com/pipe-cd/pipe/pkg/app/pipectl/cmd/deployment"
 	"github.com/pipe-cd/pipe/pkg/app/pipectl/cmd/event"
 	"github.com/pipe-cd/pipe/pkg/cli"
@@ -35,7 +34,6 @@ func main() {
 		application.NewCommand(),
 		deployment.NewCommand(),
 		event.NewCommand(),
-		datastore.NewCommand(),
 	)
 
 	if err := app.Run(); err != nil {
