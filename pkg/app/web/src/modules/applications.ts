@@ -103,6 +103,7 @@ export const addApplication = createAsyncThunk<
     },
     cloudProvider: props.cloudProvider,
     kind: props.kind,
+    description: "",
   });
 
   return applicationId;

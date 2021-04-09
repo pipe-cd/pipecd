@@ -40,6 +40,8 @@ message Application {
     // The name of cloud provider where to deploy this application.
     // This must be one of the provider names registered in the piped.
     string cloud_provider = 8 [(validate.rules).string.min_len = 1];
+    // Additional description about application.
+    string description = 9;
 
     // Basic information about the most recently successful deployment.
     // This also shows information about current running workloads.
