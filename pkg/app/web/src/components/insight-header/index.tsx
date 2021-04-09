@@ -11,7 +11,7 @@ import {
   MuiPickersUtilsProvider,
 } from "@material-ui/pickers";
 import { MaterialUiPickersDate } from "@material-ui/pickers/typings/date";
-import React, { FC, memo, useCallback, useEffect } from "react";
+import { FC, memo, useCallback, useEffect } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import { INSIGHT_STEP_TEXT } from "../../constants/insight-step-text";
 import { AppState } from "../../modules";

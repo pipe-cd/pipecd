@@ -1,5 +1,4 @@
 import userEvent from "@testing-library/user-event";
-import React from "react";
 import { createStore, render, screen } from "../../../test-utils";
 import { clearActiveStage } from "../../modules/active-stage";
 import { createActiveStageKey, LogSeverity } from "../../modules/stage-logs";

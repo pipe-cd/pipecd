@@ -1,4 +1,4 @@
-import React, { FC } from "react";
+import { FC } from "react";
 import { Box, makeStyles, Typography } from "@material-ui/core";
 import { SyncStatusIcon } from "../sync-status-icon";
 import { APPLICATION_SYNC_STATUS_TEXT } from "../../constants/application-sync-status-text";

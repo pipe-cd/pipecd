@@ -1,4 +1,4 @@
-import React, { FC, memo, useEffect } from "react";
+import { FC, memo, useEffect } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import { useParams } from "react-router-dom";
 import { ApplicationDetail } from "../../components/application-detail";

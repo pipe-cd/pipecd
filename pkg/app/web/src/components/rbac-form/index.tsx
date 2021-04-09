@@ -10,7 +10,8 @@ import {
 } from "@material-ui/core";
 import EditIcon from "@material-ui/icons/Edit";
 import Skeleton from "@material-ui/lab/Skeleton/Skeleton";
-import React, { FC, memo, useState } from "react";
+import { FC, memo, useState } from "react";
+import * as React from "react";
 import { useDispatch, useSelector } from "react-redux";
 import { RBAC_DESCRIPTION } from "../../constants/text";
 import { UPDATE_RBAC_SUCCESS } from "../../constants/toast-text";

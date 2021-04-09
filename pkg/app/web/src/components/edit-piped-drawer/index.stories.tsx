@@ -1,5 +1,5 @@
 import { action } from "@storybook/addon-actions";
-import React from "react";
+import * as React from "react";
 import { createDecoratorRedux } from "../../../.storybook/redux-decorator";
 import { dummyEnv } from "../../__fixtures__/dummy-environment";
 import { dummyPiped } from "../../__fixtures__/dummy-piped";

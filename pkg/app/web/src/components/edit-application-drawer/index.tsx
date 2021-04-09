@@ -1,4 +1,4 @@
-import React, { FC, memo, useCallback } from "react";
+import { FC, memo, useCallback } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import { AppState } from "../../modules";
 import {

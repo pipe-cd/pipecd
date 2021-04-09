@@ -1,4 +1,4 @@
-import React from "react";
+import * as React from "react";
 import { ApplicationFilter } from "./";
 import { action } from "@storybook/addon-actions";
 import { createDecoratorRedux } from "../../../.storybook/redux-decorator";

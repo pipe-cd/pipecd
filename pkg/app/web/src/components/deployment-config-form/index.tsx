@@ -12,7 +12,8 @@ import {
 import CopyIcon from "@material-ui/icons/FileCopyOutlined";
 import OpenInNewIcon from "@material-ui/icons/OpenInNew";
 import copy from "copy-to-clipboard";
-import React, { FC, useEffect, useState, memo } from "react";
+import { FC, useEffect, useState, memo } from "react";
+import * as React from "react";
 import { useDispatch, useSelector } from "react-redux";
 import { AppState } from "../../modules";
 import {

@@ -1,4 +1,3 @@
-import React from "react";
 import { MemoryRouter, Route } from "react-router-dom";
 import { createStore, render } from "../../../test-utils";
 import { PAGE_PATH_APPLICATIONS } from "../../constants/path";

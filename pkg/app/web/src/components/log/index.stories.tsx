@@ -1,4 +1,4 @@
-import React from "react";
+import * as React from "react";
 import { Log } from "./";
 import { LogSeverity } from "../../modules/stage-logs";
 

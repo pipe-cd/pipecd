@@ -12,7 +12,8 @@ import {
   Popper,
 } from "@material-ui/core";
 import ArrowDropDownIcon from "@material-ui/icons/ArrowDropDown";
-import React, { FC, useRef, useState } from "react";
+import { FC, useRef, useState } from "react";
+import * as React from "react";
 
 const useStyles = makeStyles((theme) => ({
   buttonProgress: {

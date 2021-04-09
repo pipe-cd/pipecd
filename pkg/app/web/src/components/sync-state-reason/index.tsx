@@ -1,4 +1,4 @@
-import React, { FC, useState } from "react";
+import { FC, useState } from "react";
 import { makeStyles, Paper, Typography, Button } from "@material-ui/core";
 import { DiffView } from "../diff-view";
 

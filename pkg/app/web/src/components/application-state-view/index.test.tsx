@@ -1,4 +1,3 @@
-import React from "react";
 import { createStore, render, screen } from "../../../test-utils";
 import { ApplicationStateView } from "./";
 import { dummyApplicationLiveState } from "../../__fixtures__/dummy-application-live-state";

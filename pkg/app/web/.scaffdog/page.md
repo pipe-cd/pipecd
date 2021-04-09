@@ -10,7 +10,7 @@ ignore: []
 # `{{ inputs.name }}.tsx`
 
 ```tsx
-import React, { memo, FC, useEffect } from "react";
+import { memo, FC, useEffect } from "react";
 import { useParams } from "react-router-dom";
 
 export const {{ inputs.name | pascal }}Page: FC = memo(() => {

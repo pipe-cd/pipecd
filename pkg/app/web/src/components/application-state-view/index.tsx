@@ -6,7 +6,7 @@ import {
   Typography,
 } from "@material-ui/core";
 import { ApplicationKind } from "pipe/pkg/app/web/model/common_pb";
-import React, { FC, memo } from "react";
+import { FC, memo } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import { UI_TEXT_REFRESH } from "../../constants/ui-text";
 import { AppState } from "../../modules";

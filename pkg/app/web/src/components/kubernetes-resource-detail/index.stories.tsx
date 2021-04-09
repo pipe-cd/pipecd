@@ -1,5 +1,5 @@
 import { action } from "@storybook/addon-actions";
-import React from "react";
+import * as React from "react";
 import { KubernetesResourceDetail } from "./";
 
 export default {

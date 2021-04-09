@@ -1,4 +1,4 @@
-import React from "react";
+import * as React from "react";
 import { ApplicationList } from "./";
 import { createDecoratorRedux } from "../../../.storybook/redux-decorator";
 import { dummyApplication } from "../../__fixtures__/dummy-application";

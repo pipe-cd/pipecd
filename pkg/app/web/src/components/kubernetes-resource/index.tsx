@@ -1,5 +1,5 @@
 import { makeStyles, Paper, Typography } from "@material-ui/core";
-import React, { FC, memo } from "react";
+import { FC, memo } from "react";
 import { KubernetesResourceState } from "../../modules/applications-live-state";
 import { KubernetesResourceHealthStatusIcon } from "../health-status-icon";
 

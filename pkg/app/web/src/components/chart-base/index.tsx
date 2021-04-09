@@ -11,7 +11,7 @@ import {
 import * as echarts from "echarts/core";
 import { CanvasRenderer } from "echarts/renderers";
 import { InsightDataPoint } from "pipe/pkg/app/web/model/insight_pb";
-import React, { FC, useEffect, useState } from "react";
+import { FC, useEffect, useState } from "react";
 
 echarts.use([
   TitleComponent,

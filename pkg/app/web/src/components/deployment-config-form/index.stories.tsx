@@ -1,4 +1,4 @@
-import React from "react";
+import * as React from "react";
 import { DeploymentConfigForm } from "./";
 import { action } from "@storybook/addon-actions";
 import { createStore } from "../../../test-utils";

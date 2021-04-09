@@ -1,4 +1,4 @@
-import React from "react";
+import * as React from "react";
 import { Header } from "./";
 import { createStore } from "../../../test-utils";
 import { Provider } from "react-redux";

@@ -1,4 +1,4 @@
-import React, { FC, memo } from "react";
+import { FC, memo } from "react";
 import { makeStyles, TextField, Button, Typography } from "@material-ui/core";
 import {
   STATIC_LOGIN_ENDPOINT,

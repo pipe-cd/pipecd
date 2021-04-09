@@ -1,4 +1,5 @@
-import React, { FC } from "react";
+import { FC } from "react";
+import * as React from "react";
 import { Box, Button, makeStyles, Paper, Typography } from "@material-ui/core";
 import { FILTER_PAPER_WIDTH } from "../../styles/size";
 import { UI_TEXT_CLEAR } from "../../constants/ui-text";

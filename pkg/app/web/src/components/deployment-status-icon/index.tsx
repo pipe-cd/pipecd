@@ -7,7 +7,7 @@ import {
   Cancel,
 } from "@material-ui/icons";
 import { DeploymentStatus } from "../../modules/deployments";
-import React, { FC } from "react";
+import { FC } from "react";
 import clsx from "clsx";
 
 const useStyles = makeStyles((theme) => ({

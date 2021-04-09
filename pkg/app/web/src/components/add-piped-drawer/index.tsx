@@ -1,6 +1,6 @@
 import { Drawer } from "@material-ui/core";
 import { useFormik } from "formik";
-import React, { FC, memo, useCallback } from "react";
+import { FC, memo, useCallback } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import { ADD_PIPED_SUCCESS } from "../../constants/toast-text";
 import { selectProjectName } from "../../modules/me";

@@ -1,4 +1,4 @@
-import React, { FC, memo } from "react";
+import { FC, memo } from "react";
 import { Box, makeStyles, Typography } from "@material-ui/core";
 import { useSelector } from "react-redux";
 import { AppState } from "../../modules";

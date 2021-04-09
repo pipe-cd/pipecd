@@ -1,4 +1,4 @@
-import React, { FC, memo } from "react";
+import { FC, memo } from "react";
 import { makeStyles } from "@material-ui/core";
 import {
   HealthStatus,

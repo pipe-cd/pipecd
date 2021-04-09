@@ -13,7 +13,7 @@ import {
 import EditIcon from "@material-ui/icons/Edit";
 import Skeleton from "@material-ui/lab/Skeleton/Skeleton";
 import clsx from "clsx";
-import React, { FC, memo, useState } from "react";
+import { FC, memo, useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import { STATIC_ADMIN_DESCRIPTION } from "../../constants/text";
 import { UPDATE_STATIC_ADMIN_INFO_SUCCESS } from "../../constants/toast-text";

@@ -6,7 +6,7 @@ import {
   makeStyles,
   Toolbar,
 } from "@material-ui/core";
-import React, { FC, memo } from "react";
+import { FC, memo } from "react";
 import { NavLink, Redirect, Route, Switch } from "react-router-dom";
 import {
   PAGE_PATH_SETTINGS,

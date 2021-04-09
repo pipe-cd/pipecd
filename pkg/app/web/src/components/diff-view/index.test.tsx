@@ -1,4 +1,3 @@
-import React from "react";
 import { render, screen } from "../../../test-utils";
 import { DiffView } from "./";
 

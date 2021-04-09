@@ -5,7 +5,7 @@ import {
   IconButton,
   Typography,
 } from "@material-ui/core";
-import React, { FC, memo, useCallback, useState } from "react";
+import { FC, memo, useCallback, useState } from "react";
 import { useSelector, useDispatch } from "react-redux";
 import { AppState } from "../../modules";
 import { StageLog, selectStageLogById } from "../../modules/stage-logs";

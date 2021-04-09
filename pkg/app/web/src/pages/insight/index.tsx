@@ -1,5 +1,5 @@
 import { Box } from "@material-ui/core";
-import React, { FC, memo, useEffect } from "react";
+import { FC, memo, useEffect } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import { DeploymentFrequencyChart } from "../../components/deployment-frequency-chart";
 import { InsightHeader } from "../../components/insight-header";

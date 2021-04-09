@@ -11,7 +11,7 @@ import {
   TextField,
 } from "@material-ui/core";
 import { useFormik } from "formik";
-import React, { FC } from "react";
+import { FC } from "react";
 import * as Yup from "yup";
 import { API_KEY_ROLE_TEXT } from "../../constants/api-key-role-text";
 import { APIKey } from "../../modules/api-keys";

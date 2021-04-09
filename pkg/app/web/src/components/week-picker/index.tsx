@@ -3,7 +3,7 @@ import { IconButton, makeStyles } from "@material-ui/core";
 import { DatePicker } from "@material-ui/pickers";
 import { MaterialUiPickersDate } from "@material-ui/pickers/typings/date";
 import clsx from "clsx";
-import React, { FC, memo, useCallback } from "react";
+import { FC, memo, useCallback } from "react";
 
 const useStyles = makeStyles((theme) => ({
   ayWrapper: {

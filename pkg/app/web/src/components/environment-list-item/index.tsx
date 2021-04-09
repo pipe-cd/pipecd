@@ -15,7 +15,8 @@ import {
 } from "@material-ui/core";
 import { MoreVert as MoreVertIcon } from "@material-ui/icons";
 import { EntityId } from "@reduxjs/toolkit";
-import React, { FC, memo, useCallback, useState } from "react";
+import { FC, memo, useCallback, useState } from "react";
+import * as React from "react";
 import { useSelector } from "react-redux";
 import {
   UI_TEXT_CANCEL,

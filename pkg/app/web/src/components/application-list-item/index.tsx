@@ -11,7 +11,7 @@ import {
 import MenuIcon from "@material-ui/icons/MoreVert";
 import clsx from "clsx";
 import dayjs from "dayjs";
-import React, { FC, memo, useState } from "react";
+import { FC, memo, useState } from "react";
 import { useSelector } from "react-redux";
 import { Link as RouterLink } from "react-router-dom";
 import { APPLICATION_KIND_TEXT } from "../../constants/application-kind";

@@ -8,7 +8,7 @@ import {
   Typography,
 } from "@material-ui/core";
 import Alert from "@material-ui/lab/Alert";
-import React, { FC, memo } from "react";
+import { FC, memo } from "react";
 import { useSelector } from "react-redux";
 import { AppState } from "../../modules";
 import { APIKey, selectById } from "../../modules/api-keys";

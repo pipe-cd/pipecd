@@ -7,7 +7,7 @@ import {
   TextField,
 } from "@material-ui/core";
 import Autocomplete from "@material-ui/lab/Autocomplete";
-import React, { FC, memo } from "react";
+import { FC, memo } from "react";
 import { useSelector } from "react-redux";
 import { APPLICATION_KIND_TEXT } from "../../constants/application-kind";
 import { APPLICATION_SYNC_STATUS_TEXT } from "../../constants/application-sync-status-text";

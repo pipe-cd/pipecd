@@ -13,7 +13,7 @@ import {
   Toolbar,
 } from "@material-ui/core";
 import { Add as AddIcon } from "@material-ui/icons";
-import React, { FC, memo, useState } from "react";
+import { FC, memo, useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import { AddEnvForm } from "../../components/add-env-form";
 import { EnvironmentListItem } from "../../components/environment-list-item";

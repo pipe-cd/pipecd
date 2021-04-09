@@ -1,4 +1,4 @@
-import React from "react";
+import * as React from "react";
 import { SplitButton } from "./";
 import CancelIcon from "@material-ui/icons/Cancel";
 import { action } from "@storybook/addon-actions";

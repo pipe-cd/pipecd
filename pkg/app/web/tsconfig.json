@@ -25,7 +25,7 @@
     "skipLibCheck": true,
     "strict": true,
     "target": "ES2019",
-    "jsx": "react",
+    "jsx": "react-jsx",
     "allowJs": true,
     "types": [
       "node",

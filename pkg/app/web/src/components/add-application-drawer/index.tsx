@@ -7,7 +7,7 @@ import {
   Drawer,
 } from "@material-ui/core";
 import { useFormik } from "formik";
-import React, { FC, memo, useCallback, useState } from "react";
+import { FC, memo, useCallback, useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import { UI_TEXT_CANCEL, UI_TEXT_DISCARD } from "../../constants/ui-text";
 import { addApplication, fetchApplications } from "../../modules/applications";
