@@ -1,6 +1,5 @@
 import { setupServer } from "msw/node";
 import { createStore } from "../../test-utils";
-import * as applicationsAPI from "../api/applications";
 import { listApplicationsHandler } from "../mocks/services/application";
 import {
   dummyApplication,
