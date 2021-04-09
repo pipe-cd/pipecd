@@ -24,6 +24,7 @@ export const updateApplication = createAsyncThunk<
     pipedId: string;
     repo: ApplicationGitRepository.AsObject;
     repoPath: string;
+    description: string;
     configPath?: string;
     configFilename?: string;
     kind: ApplicationKind;
@@ -37,6 +38,7 @@ export const updateApplication = createAsyncThunk<
     pipedId: values.pipedId,
     cloudProvider: values.cloudProvider,
     kind: values.kind,
+    description: values.description,
   });
 });
 

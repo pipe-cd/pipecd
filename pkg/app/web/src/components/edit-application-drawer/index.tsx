@@ -49,7 +49,13 @@ export const EditApplicationDrawer: FC = memo(function EditApplicationDrawer() {
       if (!app) {
         return;
       }
-      await dispatch(updateApplication({ ...values, applicationId: app.id }));
+      await dispatch(
+        updateApplication({
+          ...values,
+          applicationId: app.id,
+          description: app.description,
+        })
+      );
       dispatch(fetchApplications());
     },
   });
