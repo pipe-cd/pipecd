@@ -1,6 +1,5 @@
 import { Story } from "@storybook/react/types-6-0";
 import { StageStatus } from "pipe/pkg/app/web/model/deployment_pb";
-import React from "react";
 import { PipelineStage, PipelineStageProps } from "./";
 
 export default {

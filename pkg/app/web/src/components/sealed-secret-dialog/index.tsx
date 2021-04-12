@@ -11,7 +11,7 @@ import {
   Typography,
 } from "@material-ui/core";
 import { useFormik } from "formik";
-import React, { FC, memo, useCallback } from "react";
+import { FC, memo, useCallback } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import * as Yup from "yup";
 import { UI_TEXT_CANCEL, UI_TEXT_CLOSE } from "../../constants/ui-text";

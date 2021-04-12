@@ -1,6 +1,6 @@
 import { Box, ListItem, makeStyles, Typography } from "@material-ui/core";
 import dayjs from "dayjs";
-import React, { FC, memo } from "react";
+import { FC, memo } from "react";
 import { useSelector } from "react-redux";
 import { Link as RouterLink } from "react-router-dom";
 import { APPLICATION_KIND_TEXT } from "../../constants/application-kind";

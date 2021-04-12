@@ -1,5 +1,4 @@
 import { DeepPartial } from "@reduxjs/toolkit";
-import React from "react";
 import { Provider } from "react-redux";
 import { AppState } from "../src/modules";
 import { createStore } from "../test-utils";

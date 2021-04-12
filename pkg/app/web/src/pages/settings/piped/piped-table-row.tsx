@@ -15,7 +15,8 @@ import {
 import clsx from "clsx";
 import copy from "copy-to-clipboard";
 import dayjs from "dayjs";
-import React, { FC, memo, useCallback, useState } from "react";
+import { FC, memo, useCallback, useState } from "react";
+import * as React from "react";
 import { useDispatch, useSelector } from "react-redux";
 import { COPY_PIPED_ID } from "../../../constants/toast-text";
 import {

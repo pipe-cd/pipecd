@@ -1,4 +1,4 @@
-import React from "react";
+import * as React from "react";
 import { createDecoratorRedux } from "../../../.storybook/redux-decorator";
 import { InsightHeader } from "./";
 

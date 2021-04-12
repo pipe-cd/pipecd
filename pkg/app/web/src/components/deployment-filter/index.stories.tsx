@@ -1,4 +1,4 @@
-import React from "react";
+import * as React from "react";
 import { DeploymentFilter } from "./";
 import { createDecoratorRedux } from "../../../.storybook/redux-decorator";
 import { dummyEnv } from "../../__fixtures__/dummy-environment";

@@ -1,4 +1,4 @@
-import React from "react";
+import * as React from "react";
 import { DeploymentItem } from "./";
 import { dummyDeployment } from "../../__fixtures__/dummy-deployment";
 import { dummyApplication } from "../../__fixtures__/dummy-application";

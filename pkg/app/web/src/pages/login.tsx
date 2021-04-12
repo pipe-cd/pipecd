@@ -6,7 +6,8 @@ import {
   Typography,
 } from "@material-ui/core";
 import ArrowRightAltIcon from "@material-ui/icons/ArrowRightAlt";
-import React, { FC, memo, useState } from "react";
+import { FC, memo, useState } from "react";
+import * as React from "react";
 import { useCookies } from "react-cookie";
 import { Link, Redirect, useHistory, useParams } from "react-router-dom";
 import { LoginForm } from "../components/login-form";

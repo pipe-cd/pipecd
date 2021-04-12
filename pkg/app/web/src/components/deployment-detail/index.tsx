@@ -9,7 +9,7 @@ import {
 import CancelIcon from "@material-ui/icons/Cancel";
 import OpenInNewIcon from "@material-ui/icons/OpenInNew";
 import dayjs from "dayjs";
-import React, { FC, memo } from "react";
+import { FC, memo } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import { Link as RouterLink } from "react-router-dom";
 import { DEPLOYMENT_STATE_TEXT } from "../../constants/deployment-status-text";

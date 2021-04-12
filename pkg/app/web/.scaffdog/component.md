@@ -10,7 +10,7 @@ ignore: []
 # `{{ inputs.name }}/index.tsx`
 
 ```tsx
-import React, { FC } from "react";
+import { FC } from "react";
 import { makeStyles } from "@material-ui/core";
 
 const useStyles = makeStyles(() => ({}));
@@ -31,7 +31,6 @@ export const {{ inputs.name | pascal }}: FC<{{ inputs.name | pascal }}Props> = (
 # `{{ inputs.name }}/index.stories.tsx`
 
 ```tsx
-import React from "react";
 import { {{ inputs.name | pascal }}, {{ inputs.name | pascal }}Props } from "./";
 import { Story } from "@storybook/react/types-6-0";
 

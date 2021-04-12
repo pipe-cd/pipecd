@@ -1,4 +1,4 @@
-import React from "react";
+import * as React from "react";
 import { ApplicationStateView } from "./";
 import { createDecoratorRedux } from "../../../.storybook/redux-decorator";
 import { dummyApplicationLiveState } from "../../__fixtures__/dummy-application-live-state";

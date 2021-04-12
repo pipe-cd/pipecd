@@ -1,4 +1,4 @@
-import React from "react";
+import * as React from "react";
 import { KubernetesResource } from "./";
 import { HealthStatus } from "../../modules/applications-live-state";
 import { action } from "@storybook/addon-actions";

@@ -11,7 +11,7 @@ import { Add } from "@material-ui/icons";
 import CloseIcon from "@material-ui/icons/Close";
 import FilterIcon from "@material-ui/icons/FilterList";
 import RefreshIcon from "@material-ui/icons/Refresh";
-import React, { FC, memo, useCallback, useEffect, useState } from "react";
+import { FC, memo, useCallback, useEffect, useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import { ApplicationFilter } from "../../components/application-filter";
 import { AddApplicationDrawer } from "../../components/add-application-drawer";

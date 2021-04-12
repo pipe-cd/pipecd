@@ -1,6 +1,6 @@
 import { makeStyles, Paper, Typography } from "@material-ui/core";
 import WaitIcon from "@material-ui/icons/PauseCircleOutline";
-import React, { FC, memo } from "react";
+import { FC, memo } from "react";
 
 const useStyles = makeStyles((theme) => ({
   root: (props: { active: boolean }) => ({

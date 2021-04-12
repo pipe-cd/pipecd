@@ -1,5 +1,4 @@
 import userEvent from "@testing-library/user-event";
-import React from "react";
 import { act, render, screen } from "../../../test-utils";
 import { SplitButton } from "./";
 

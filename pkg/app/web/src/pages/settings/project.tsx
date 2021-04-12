@@ -1,5 +1,5 @@
 import { makeStyles } from "@material-ui/core";
-import React, { FC, memo, useEffect } from "react";
+import { FC, memo, useEffect } from "react";
 import { useDispatch } from "react-redux";
 import { GithubSSOForm } from "../../components/github-sso-form";
 import { RBACForm } from "../../components/rbac-form";

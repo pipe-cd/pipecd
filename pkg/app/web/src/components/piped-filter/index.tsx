@@ -5,7 +5,7 @@ import {
   MenuItem,
   Select,
 } from "@material-ui/core";
-import React, { FC } from "react";
+import { FC } from "react";
 import { FilterView } from "../filter-view";
 
 const useStyles = makeStyles((theme) => ({

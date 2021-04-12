@@ -11,7 +11,7 @@ import CheckBoxIcon from "@material-ui/icons/CheckBox";
 import CheckBoxOutlineBlankIcon from "@material-ui/icons/CheckBoxOutlineBlank";
 import Autocomplete from "@material-ui/lab/Autocomplete";
 import { FormikProps } from "formik";
-import React, { FC, memo } from "react";
+import { FC, memo } from "react";
 import { useSelector } from "react-redux";
 import * as Yup from "yup";
 import {

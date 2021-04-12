@@ -1,4 +1,4 @@
-import React from "react";
+import * as React from "react";
 import { KubernetesResourceHealthStatusIcon } from "./";
 import { HealthStatus } from "../../modules/applications-live-state";
 

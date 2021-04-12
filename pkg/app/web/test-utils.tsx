@@ -9,7 +9,6 @@ import {
   ThunkDispatch,
 } from "@reduxjs/toolkit";
 import { render, RenderOptions, RenderResult } from "@testing-library/react";
-import React from "react";
 import { Provider } from "react-redux";
 import configureMockStore from "redux-mock-store";
 import { AppState, reducers } from "./src/modules";

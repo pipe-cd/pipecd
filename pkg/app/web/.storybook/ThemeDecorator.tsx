@@ -1,4 +1,3 @@
-import React from "react";
 import { theme } from "../src/theme";
 import CssBaseline from "@material-ui/core/CssBaseline";
 import { makeStyles, ThemeProvider } from "@material-ui/core";

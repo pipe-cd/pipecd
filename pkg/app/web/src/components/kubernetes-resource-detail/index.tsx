@@ -1,6 +1,6 @@
 import { IconButton, makeStyles, Paper, Typography } from "@material-ui/core";
 import CloseIcon from "@material-ui/icons/Close";
-import React, { FC } from "react";
+import { FC } from "react";
 
 const DETAIL_WIDTH = 400;
 

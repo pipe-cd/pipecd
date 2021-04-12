@@ -1,7 +1,7 @@
 import { Box, makeStyles } from "@material-ui/core";
 import clsx from "clsx";
 import dagre from "dagre";
-import React, { FC, useState } from "react";
+import { FC, useState } from "react";
 import { KubernetesResourceState } from "../../modules/applications-live-state";
 import { theme } from "../../theme";
 import { uniqueArray } from "../../utils/unique-array";

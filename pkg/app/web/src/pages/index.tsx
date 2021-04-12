@@ -1,5 +1,5 @@
 import { EntityId } from "@reduxjs/toolkit";
-import React, { FC, memo, useEffect } from "react";
+import { FC, memo, useEffect } from "react";
 import loadable from "@loadable/component";
 import { useDispatch, useSelector } from "react-redux";
 import { Route, Switch, Redirect } from "react-router-dom";

@@ -12,14 +12,7 @@ import CloseIcon from "@material-ui/icons/Close";
 import FilterIcon from "@material-ui/icons/FilterList";
 import RefreshIcon from "@material-ui/icons/Refresh";
 import dayjs from "dayjs";
-import React, {
-  FC,
-  memo,
-  useCallback,
-  useEffect,
-  useState,
-  useRef,
-} from "react";
+import { FC, memo, useCallback, useEffect, useState, useRef } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import { DeploymentFilter } from "../../components/deployment-filter";
 import { DeploymentItem } from "../../components/deployment-item";

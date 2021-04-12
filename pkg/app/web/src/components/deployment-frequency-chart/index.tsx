@@ -1,6 +1,6 @@
 import chartColor from "@material-ui/core/colors/blue";
 import { InsightDataPoint } from "pipe/pkg/app/web/model/insight_pb";
-import React, { FC } from "react";
+import { FC } from "react";
 import { ChartBase } from "../chart-base";
 
 export interface DeploymentFrequencyChartProps {

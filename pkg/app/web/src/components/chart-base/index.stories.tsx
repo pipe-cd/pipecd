@@ -1,4 +1,3 @@
-import React from "react";
 import { ChartBase, ChartBaseProps } from "./";
 import { Story } from "@storybook/react/types-6-0";
 import chartColor from "@material-ui/core/colors/indigo";

@@ -1,4 +1,3 @@
-import React from "react";
 import { MemoryRouter, Route } from "react-router-dom";
 import { createReduxStore, render, waitFor } from "../../../test-utils";
 import { server } from "../../mocks/server";

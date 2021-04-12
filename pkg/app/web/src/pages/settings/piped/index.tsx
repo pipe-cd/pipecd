@@ -22,7 +22,7 @@ import {
   FilterList as FilterIcon,
 } from "@material-ui/icons";
 import { createSelector } from "@reduxjs/toolkit";
-import React, { FC, memo, useCallback, useState } from "react";
+import { FC, memo, useCallback, useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import { AddPipedDrawer } from "../../../components/add-piped-drawer";
 import { EditPipedDrawer } from "../../../components/edit-piped-drawer";

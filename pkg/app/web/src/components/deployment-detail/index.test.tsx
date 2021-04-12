@@ -1,4 +1,3 @@
-import React from "react";
 import { createStore, render, screen } from "../../../test-utils";
 import { DeploymentDetail } from "./";
 import { dummyDeployment } from "../../__fixtures__/dummy-deployment";

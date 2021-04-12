@@ -1,4 +1,3 @@
-import React from "react";
 import { render, screen } from "../../../test-utils";
 import { DeploymentStatus } from "../../modules/deployments";
 import { DeploymentStatusIcon } from "./";

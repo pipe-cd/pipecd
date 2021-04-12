@@ -17,7 +17,8 @@ import {
 } from "@material-ui/core";
 import { Add as AddIcon, MoreVert as MenuIcon } from "@material-ui/icons";
 import Skeleton from "@material-ui/lab/Skeleton";
-import React, { FC, memo, useCallback, useEffect, useState } from "react";
+import { FC, memo, useCallback, useEffect, useState } from "react";
+import * as React from "react";
 import { useDispatch, useSelector } from "react-redux";
 import { DisableAPIKeyConfirmDialog } from "../../components/disable-api-key-confirm-dialog";
 import { GenerateAPIKeyDialog } from "../../components/generate-api-key-dialog";

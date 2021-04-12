@@ -1,4 +1,4 @@
-import React from "react";
+import * as React from "react";
 import { StageStatusIcon } from "./";
 import { StageStatus } from "pipe/pkg/app/web/model/deployment_pb";
 

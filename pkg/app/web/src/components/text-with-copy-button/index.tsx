@@ -1,4 +1,4 @@
-import React, { FC, useCallback } from "react";
+import { FC, useCallback } from "react";
 import { Box, IconButton, makeStyles } from "@material-ui/core";
 import CopyIcon from "@material-ui/icons/FileCopyOutlined";
 import copy from "copy-to-clipboard";

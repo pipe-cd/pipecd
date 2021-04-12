@@ -1,4 +1,4 @@
-import React from "react";
+import * as React from "react";
 import { Provider } from "react-redux";
 import { createStore } from "../../../test-utils";
 import { dummyApplication } from "../../__fixtures__/dummy-application";

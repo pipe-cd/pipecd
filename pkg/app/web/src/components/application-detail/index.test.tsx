@@ -1,6 +1,5 @@
 import { DeepPartial } from "@reduxjs/toolkit";
 import userEvent from "@testing-library/user-event";
-import React from "react";
 import { MemoryRouter } from "react-router-dom";
 import { createStore, render, screen, waitFor } from "../../../test-utils";
 import { server } from "../../mocks/server";

@@ -1,5 +1,4 @@
 import userEvent from "@testing-library/user-event";
-import React from "react";
 import { render, screen } from "../../../test-utils";
 import { UI_TEXT_FILTER } from "../../constants/ui-text";
 import { resourcesList } from "../../__fixtures__/dummy-application-live-state";

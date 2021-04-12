@@ -1,6 +1,5 @@
 import { ThemeProvider } from "@material-ui/core";
 import CssBaseline from "@material-ui/core/CssBaseline";
-import React from "react";
 import { render } from "react-dom";
 import { theme } from "./theme";
 import { Provider } from "react-redux";

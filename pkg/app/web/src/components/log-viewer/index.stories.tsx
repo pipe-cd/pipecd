@@ -1,4 +1,4 @@
-import React from "react";
+import * as React from "react";
 import { LogViewer } from "./";
 import { createDecoratorRedux } from "../../../.storybook/redux-decorator";
 import { LogSeverity, createActiveStageKey } from "../../modules/stage-logs";

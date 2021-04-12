@@ -7,7 +7,7 @@ import {
   Typography,
 } from "@material-ui/core";
 import clsx from "clsx";
-import React, { FC, memo, useState } from "react";
+import { FC, memo, useState } from "react";
 
 const useStyles = makeStyles((theme) => ({
   root: {

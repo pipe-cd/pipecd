@@ -10,7 +10,7 @@ import {
 } from "@material-ui/core";
 import { FormikProps } from "formik";
 import { ApplicationKind } from "pipe/pkg/app/web/model/common_pb";
-import React, { FC, memo, ReactElement } from "react";
+import { FC, memo, ReactElement } from "react";
 import { useSelector } from "react-redux";
 import * as Yup from "yup";
 import { APPLICATION_KIND_TEXT } from "../../constants/application-kind";

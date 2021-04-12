@@ -1,4 +1,4 @@
-import React from "react";
+import * as React from "react";
 import { SyncStatusIcon } from "./";
 import { ApplicationSyncStatus } from "pipe/pkg/app/web/model/application_pb";
 

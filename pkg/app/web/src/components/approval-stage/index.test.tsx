@@ -1,4 +1,3 @@
-import React from "react";
 import { ApprovalStage } from "./";
 import { render, screen } from "../../../test-utils";
 import userEvent from "@testing-library/user-event";

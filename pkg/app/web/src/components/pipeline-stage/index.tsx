@@ -1,6 +1,6 @@
 import { makeStyles, Paper, Typography } from "@material-ui/core";
 import { StageStatus } from "pipe/pkg/app/web/model/deployment_pb";
-import React, { FC, memo } from "react";
+import { FC, memo } from "react";
 import { StageStatusIcon } from "../stage-status-icon";
 import clsx from "clsx";
 
