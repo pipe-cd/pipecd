@@ -8,6 +8,7 @@ import { dummyEnv } from "../../__fixtures__/dummy-environment";
 import { dummyPiped } from "../../__fixtures__/dummy-piped";
 import { ApplicationDetail } from "./";
 import { AppState } from "../../modules";
+import { Story } from "@storybook/react/types-6-0";
 
 const dummyStore: Partial<AppState> = {
   applications: {
@@ -50,13 +51,35 @@ export default {
   component: ApplicationDetail,
 };
 
-export const overview: React.FC = () => (
+export const Overview: Story = () => (
   <Provider store={createStore(dummyStore)}>
     <ApplicationDetail applicationId={dummyApplication.id} />
   </Provider>
 );
 
-export const error: React.FC = () => (
+export const HasDescription: Story = () => (
+  <Provider
+    store={createStore({
+      ...dummyStore,
+      applications: {
+        adding: false,
+        disabling: {},
+        syncing: {},
+        entities: {
+          [dummyApplication.id]: {
+            ...dummyApplication,
+            description: "# Heading\n[document page](https://pipecd.dev)\n",
+          },
+        },
+        ids: [dummyApplication.id],
+      },
+    })}
+  >
+    <ApplicationDetail applicationId={dummyApplication.id} />
+  </Provider>
+);
+
+export const Error: Story = () => (
   <Provider
     store={createStore({
       ...dummyStore,
@@ -85,7 +108,7 @@ export const error: React.FC = () => (
   </Provider>
 );
 
-export const loadingLiveState: React.FC = () => (
+export const LoadingLiveState: Story = () => (
   <Provider
     store={createStore({
       ...dummyStore,
@@ -121,7 +144,7 @@ export const loadingLiveState: React.FC = () => (
   </Provider>
 );
 
-export const notAvailable: React.FC = () => (
+export const NotAvailable: React.FC = () => (
   <Provider
     store={createStore({
       ...dummyStore,

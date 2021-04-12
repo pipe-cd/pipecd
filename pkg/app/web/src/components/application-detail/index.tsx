@@ -34,6 +34,7 @@ import { AppSyncStatus } from "../app-sync-status";
 import { DetailTableRow } from "../detail-table-row";
 import { SplitButton } from "../split-button";
 import { SyncStateReason } from "../sync-state-reason";
+import ReactMarkdown from "react-markdown";
 
 const useStyles = makeStyles((theme) => ({
   root: {
@@ -220,6 +221,12 @@ export const ApplicationDetail: FC<ApplicationDetailProps> = memo(
                   className={classes.appSyncState}
                 />
                 <AppLiveState applicationId={applicationId} />
+              </Box>
+
+              <Box borderLeft="2px solid" borderColor="divider" pl={2}>
+                <ReactMarkdown linkTarget="_blank">
+                  {app.description}
+                </ReactMarkdown>
               </Box>
 
               {app.syncState && (
