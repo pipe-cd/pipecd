@@ -16,3 +16,9 @@ version: {{ .VERSION }}
 # incremented each time you make changes to the application. Versions are not expected to
 # follow Semantic Versioning. They should reflect the version the application is using.
 appVersion: {{ .VERSION }}
+
+dependencies:
+- name: prometheus
+  version: "~v13.6.0"
+  repository: "https://prometheus-community.github.io/helm-charts"
+  condition: monitoring.enabled

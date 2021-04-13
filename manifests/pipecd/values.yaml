@@ -107,3 +107,12 @@ cors:
     - "http://localhost:9090"
 
 quickstart: false
+
+monitoring:
+  enabled: false
+
+# All directives inside this section will be directly sent to the prometheus chart.
+# Head to the below link to see all available values.
+# https://github.com/prometheus-community/helm-charts/blob/main/charts/prometheus/values.yaml
+# TODO: Prepare the default prometheus.yml
+prometheus: {}
