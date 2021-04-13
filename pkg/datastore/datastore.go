@@ -77,7 +77,6 @@ type Order struct {
 }
 
 type ListOptions struct {
-	Page     int
 	PageSize int
 	Filters  []ListFilter
 	Orders   []Order

@@ -127,7 +127,7 @@ func TestListProjects(t *testing.T) {
 	}{
 		{
 			name: "iterator done",
-			opts: ListOptions{Page: 1},
+			opts: ListOptions{},
 			ds: func() DataStore {
 				it := NewMockIterator(ctrl)
 				it.EXPECT().
@@ -136,7 +136,7 @@ func TestListProjects(t *testing.T) {
 
 				ds := NewMockDataStore(ctrl)
 				ds.EXPECT().
-					Find(gomock.Any(), "Project", ListOptions{Page: 1}).
+					Find(gomock.Any(), "Project", ListOptions{}).
 					Return(it, nil)
 				return ds
 			}(),
@@ -144,7 +144,7 @@ func TestListProjects(t *testing.T) {
 		},
 		{
 			name: "unexpected error occurred",
-			opts: ListOptions{Page: 1},
+			opts: ListOptions{},
 			ds: func() DataStore {
 				it := NewMockIterator(ctrl)
 				it.EXPECT().
@@ -153,7 +153,7 @@ func TestListProjects(t *testing.T) {
 
 				ds := NewMockDataStore(ctrl)
 				ds.EXPECT().
-					Find(gomock.Any(), "Project", ListOptions{Page: 1}).
+					Find(gomock.Any(), "Project", ListOptions{}).
 					Return(it, nil)
 				return ds
 			}(),

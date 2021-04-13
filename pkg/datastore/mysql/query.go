@@ -49,7 +49,8 @@ func buildFindQuery(table string, ops datastore.ListOptions) (string, error) {
 		table,
 		buildWhereClause(filters),
 		buildOrderByClause(refineOrdersField(ops.Orders)),
-		buildPaginationClause(ops.Page, ops.PageSize),
+		// TODO: Remove this pagination build function.
+		buildPaginationClause(0, ops.PageSize),
 	)
 	return strings.Join(strings.Fields(rawQuery), " "), nil
 }
