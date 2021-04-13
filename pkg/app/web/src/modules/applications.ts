@@ -17,6 +17,8 @@ import { SyncStrategy } from "./deployments";
 import { fetchCommand, CommandStatus, Command } from "./commands";
 import { AppState } from ".";
 
+const MODULE_NAME = "applications";
+
 export type ApplicationSyncStatusKey = keyof typeof ApplicationSyncStatus;
 export type ApplicationKindKey = keyof typeof ApplicationKind;
 
@@ -38,7 +40,7 @@ export const fetchApplications = createAsyncThunk<
   Application.AsObject[],
   ApplicationsFilterOptions | undefined,
   { state: AppState }
->("applications/fetchList", async (options = {}) => {
+>(`${MODULE_NAME}/fetchList`, async (options = {}) => {
   const { applicationsList } = await applicationsAPI.getApplications({
     options: {
       envIdsList: options.envId ? [options.envId] : [],
@@ -60,7 +62,7 @@ export const fetchApplications = createAsyncThunk<
 export const fetchApplication = createAsyncThunk<
   Application.AsObject | undefined,
   string
->("applications/fetchById", async (applicationId) => {
+>(`${MODULE_NAME}/fetchById`, async (applicationId) => {
   const { application } = await applicationsAPI.getApplication({
     applicationId,
   });
@@ -70,7 +72,7 @@ export const fetchApplication = createAsyncThunk<
 export const syncApplication = createAsyncThunk<
   void,
   { applicationId: string; syncStrategy: SyncStrategy }
->("applications/sync", async (values, thunkAPI) => {
+>(`${MODULE_NAME}/sync`, async (values, thunkAPI) => {
   const { commandId } = await applicationsAPI.syncApplication(values);
 
   await thunkAPI.dispatch(fetchCommand(commandId));
@@ -89,7 +91,7 @@ export const addApplication = createAsyncThunk<
     kind: ApplicationKind;
     cloudProvider: string;
   }
->("applications/add", async (props) => {
+>(`${MODULE_NAME}/add`, async (props) => {
   const { applicationId } = await applicationsAPI.addApplication({
     name: props.name,
     envId: props.env,
@@ -112,15 +114,22 @@ export const addApplication = createAsyncThunk<
 export const disableApplication = createAsyncThunk<
   void,
   { applicationId: string }
->("applications/disable", async (props) => {
+>(`${MODULE_NAME}/disable`, async (props) => {
   await applicationsAPI.disableApplication(props);
 });
 
 export const enableApplication = createAsyncThunk<
   void,
   { applicationId: string }
->("applications/enable", async (props) => {
+>(`${MODULE_NAME}/enable`, async (props) => {
   await applicationsAPI.enableApplication(props);
+});
+
+export const updateDescription = createAsyncThunk<
+  void,
+  { applicationId: string; description: string }
+>(`${MODULE_NAME}/updateDescription`, async (props) => {
+  await applicationsAPI.updateDescription(props);
 });
 
 const initialState = applicationsAdapter.getInitialState<{
@@ -140,7 +149,7 @@ const initialState = applicationsAdapter.getInitialState<{
 export type ApplicationsState = typeof initialState;
 
 export const applicationsSlice = createSlice({
-  name: "applications",
+  name: MODULE_NAME,
   initialState,
   reducers: {},
   extraReducers: (builder) => {
@@ -202,6 +211,14 @@ export const applicationsSlice = createSlice({
       })
       .addCase(disableApplication.rejected, (state, action) => {
         state.disabling[action.meta.arg.applicationId] = false;
+      })
+      .addCase(updateDescription.fulfilled, (state, action) => {
+        applicationsAdapter.updateOne(state, {
+          id: action.meta.arg.applicationId,
+          changes: {
+            description: action.meta.arg.description,
+          },
+        });
       });
   },
 });

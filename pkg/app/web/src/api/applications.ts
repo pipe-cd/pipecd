@@ -18,6 +18,8 @@ import {
   UpdateApplicationResponse,
   DeleteApplicationRequest,
   DeleteApplicationResponse,
+  UpdateApplicationDescriptionRequest,
+  UpdateApplicationDescriptionResponse,
 } from "pipe/pkg/app/web/api_client/service_pb";
 import { ApplicationGitPath } from "pipe/pkg/app/web/model/common_pb";
 import { ApplicationGitRepository } from "pipe/pkg/app/web/model/common_pb";
@@ -157,4 +159,16 @@ export const deleteApplication = async ({
   const req = new DeleteApplicationRequest();
   req.setApplicationId(applicationId);
   return apiRequest(req, apiClient.deleteApplication);
+};
+
+export const updateDescription = async ({
+  applicationId,
+  description,
+}: UpdateApplicationDescriptionRequest.AsObject): Promise<
+  UpdateApplicationDescriptionResponse.AsObject
+> => {
+  const req = new UpdateApplicationDescriptionRequest();
+  req.setApplicationId(applicationId);
+  req.setDescription(description);
+  return apiRequest(req, apiClient.updateApplicationDescription);
 };

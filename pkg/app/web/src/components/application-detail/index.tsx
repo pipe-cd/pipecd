@@ -12,7 +12,7 @@ import Skeleton from "@material-ui/lab/Skeleton/Skeleton";
 import { SerializedError } from "@reduxjs/toolkit";
 import clsx from "clsx";
 import dayjs from "dayjs";
-import { FC, memo } from "react";
+import { FC, memo, useCallback } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import { Link as RouterLink } from "react-router-dom";
 import { APPLICATION_KIND_TEXT } from "../../constants/application-kind";
@@ -25,6 +25,7 @@ import {
   fetchApplication,
   selectById as selectApplicationById,
   syncApplication,
+  updateDescription,
 } from "../../modules/applications";
 import { SyncStrategy } from "../../modules/deployments";
 import { selectEnvById } from "../../modules/environments";
@@ -34,7 +35,7 @@ import { AppSyncStatus } from "../app-sync-status";
 import { DetailTableRow } from "../detail-table-row";
 import { SplitButton } from "../split-button";
 import { SyncStateReason } from "../sync-state-reason";
-import ReactMarkdown from "react-markdown";
+import { ApplicationDescription } from "./components/description";
 
 const useStyles = makeStyles((theme) => ({
   root: {
@@ -158,6 +159,13 @@ export const ApplicationDetail: FC<ApplicationDetailProps> = memo(
     const piped = useSelector(selectPipedById(app?.pipedId));
     const isSyncing = useIsSyncingApplication(app?.id);
 
+    const handleDescriptionEdit = useCallback(
+      async (description: string) => {
+        dispatch(updateDescription({ applicationId, description }));
+      },
+      [dispatch, applicationId]
+    );
+
     const handleSync = (index: number): void => {
       if (app) {
         dispatch(
@@ -223,11 +231,10 @@ export const ApplicationDetail: FC<ApplicationDetailProps> = memo(
                 <AppLiveState applicationId={applicationId} />
               </Box>
 
-              <Box borderLeft="2px solid" borderColor="divider" pl={2}>
-                <ReactMarkdown linkTarget="_blank">
-                  {app.description}
-                </ReactMarkdown>
-              </Box>
+              <ApplicationDescription
+                description={app.description}
+                onUpdate={handleDescriptionEdit}
+              />
 
               {app.syncState && (
                 <SyncStateReason
