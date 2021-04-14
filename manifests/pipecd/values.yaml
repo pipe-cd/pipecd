@@ -109,14 +109,24 @@ cors:
 quickstart: false
 
 monitoring:
+  # If true, prometheus and grafana sub-charts will be installed
   enabled: false
 
 # All directives inside this section will be directly sent to the prometheus chart.
 # Head to the below link to see all available values.
 # https://github.com/prometheus-community/helm-charts/blob/main/charts/prometheus/values.yaml
 prometheus:
+  server:
+    fullnameOverride: pipecd-prometheus-server
   pushgateway:
     enabled: false
+  nodeExporter:
+    enabled: false
+  kubeStateMetrics:
+    enabled: false
+  configmapReload:
+    prometheus:
+      enabled: true
   serverFiles:
     prometheus.yml:
       rule_files:
@@ -133,7 +143,7 @@ prometheus:
           scrape_interval: 2m
           metrics_path: /stats/prometheus
           kubernetes_sd_configs:
-            - role: service
+            - role: endpoints
           relabel_configs:
             - source_labels: [__meta_kubernetes_service_label_app_kubernetes_io_name]
               action: keep
@@ -141,3 +151,6 @@ prometheus:
             - source_labels: [__meta_kubernetes_service_label_app_kubernetes_io_component]
               action: keep
               regex: gateway
+            - source_labels: [__meta_kubernetes_pod_container_port_number]
+              action: keep
+              regex: "9095"
