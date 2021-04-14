@@ -244,17 +244,17 @@ func (s *FireStore) Close() error {
 func processCursorArg(opts datastore.ListOptions) ([]interface{}, error) {
 	// Decode last object of previous page stored as opts.Cursor in json format.
 	var obj struct {
-		Id        string `json:"id"`
+		ID        string `json:"id"`
 		UpdatedAt int64  `json:"updated_at"`
 	}
 	if err := json.Unmarshal([]byte(opts.Cursor), &obj); err != nil {
 		return nil, err
 	}
-	if obj.Id == "" {
-		return nil, errors.New("missing Id value from cursor")
+	if obj.ID == "" {
+		return nil, errors.New("missing id value from cursor")
 	}
 	if obj.UpdatedAt == 0 {
-		return nil, errors.New("missing UpdatedAt value from cursor")
+		return nil, errors.New("missing updated_at value from cursor")
 	}
 
 	var cursorVals []interface{}
@@ -265,14 +265,14 @@ func processCursorArg(opts datastore.ListOptions) ([]interface{}, error) {
 			cursorVals = append(cursorVals, obj.UpdatedAt)
 			containsRequiredOrderFields++
 		case "Id":
-			cursorVals = append(cursorVals, obj.Id)
+			cursorVals = append(cursorVals, obj.ID)
 			containsRequiredOrderFields++
 		default:
 			continue
 		}
 	}
 	if containsRequiredOrderFields != 2 {
-		return nil, errors.New("UpdatedAt and Id are required to enable using cursor for pagination")
+		return nil, errors.New("UpdatedAt and Id are required as ordering fields to enable using cursor for pagination")
 	}
 	return cursorVals, nil
 }
