@@ -1056,24 +1056,24 @@ func TestGroupDeployments(t *testing.T) {
 				d211,
 			},
 			apps: map[string][]*model.Deployment{
-				"application-1-1": []*model.Deployment{
+				"application-1-1": {
 					d111,
 					d112,
 				},
-				"application-1-2": []*model.Deployment{
+				"application-1-2": {
 					d121,
 				},
-				"application-2-1": []*model.Deployment{
+				"application-2-1": {
 					d211,
 				},
 			},
 			projects: map[string][]*model.Deployment{
-				"project-1": []*model.Deployment{
+				"project-1": {
 					d111,
 					d112,
 					d121,
 				},
-				"project-2": []*model.Deployment{
+				"project-2": {
 					d211,
 				},
 			},
