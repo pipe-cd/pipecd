@@ -102,14 +102,13 @@ export const Pages: FC = memo(function Pages() {
       <>
         <Header />
         <Switch>
-          <Route
-            exact
-            path={PAGE_PATH_TOP}
-            component={() => <Redirect to={PAGE_PATH_LOGIN} />}
-          />
           <Route path={`${PAGE_PATH_LOGIN}/:projectName?`}>
             <LoginPage />
           </Route>
+          <Route
+            path={PAGE_PATH_TOP}
+            component={() => <Redirect to={PAGE_PATH_LOGIN} />}
+          />
         </Switch>
       </>
     );
