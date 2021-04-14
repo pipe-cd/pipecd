@@ -138,9 +138,8 @@ prometheus:
           static_configs:
             - targets:
                 - localhost:9090
-
         - job_name: pipecd-gateway
-          scrape_interval: 2m
+          scrape_interval: 1m
           metrics_path: /stats/prometheus
           kubernetes_sd_configs:
             - role: endpoints
@@ -151,6 +150,34 @@ prometheus:
             - source_labels: [__meta_kubernetes_service_label_app_kubernetes_io_component]
               action: keep
               regex: gateway
-            - source_labels: [__meta_kubernetes_pod_container_port_number]
+            - source_labels: [__meta_kubernetes_pod_container_port_name]
               action: keep
-              regex: "9095"
+              regex: "envoy-admin"
+        - job_name: pipecd-server
+          scrape_interval: 1m
+          kubernetes_sd_configs:
+            - role: endpoints
+          relabel_configs:
+            - source_labels: [__meta_kubernetes_service_label_app_kubernetes_io_name]
+              action: keep
+              regex: pipecd
+            - source_labels: [__meta_kubernetes_service_label_app_kubernetes_io_component]
+              action: keep
+              regex: server
+            - source_labels: [__meta_kubernetes_pod_container_port_name]
+              action: keep
+              regex: "admin"
+        - job_name: pipecd-ops
+          scrape_interval: 1m
+          kubernetes_sd_configs:
+            - role: endpoints
+          relabel_configs:
+            - source_labels: [__meta_kubernetes_service_label_app_kubernetes_io_name]
+              action: keep
+              regex: pipecd
+            - source_labels: [__meta_kubernetes_service_label_app_kubernetes_io_component]
+              action: keep
+              regex: ops
+            - source_labels: [__meta_kubernetes_pod_container_port_name]
+              action: keep
+              regex: "admin"
