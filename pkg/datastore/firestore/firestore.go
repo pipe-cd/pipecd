@@ -251,10 +251,10 @@ func processCursorArg(opts datastore.ListOptions) ([]interface{}, error) {
 	}
 
 	var cursorVals []interface{}
-	hasIdFieldInOrdering := false
+	hasIDFieldInOrdering := false
 	for _, o := range opts.Orders {
 		if o.Field == "Id" {
-			hasIdFieldInOrdering = true
+			hasIDFieldInOrdering = true
 		}
 		val, ok := obj[underscore(o.Field)]
 		if !ok {
@@ -262,7 +262,7 @@ func processCursorArg(opts datastore.ListOptions) ([]interface{}, error) {
 		}
 		cursorVals = append(cursorVals, val)
 	}
-	if !hasIdFieldInOrdering {
+	if !hasIDFieldInOrdering {
 		return nil, errors.New("id field is required as ordering field")
 	}
 
