@@ -152,7 +152,7 @@ prometheus:
               regex: gateway
             - source_labels: [__meta_kubernetes_pod_container_port_name]
               action: keep
-              regex: "envoy-admin"
+              regex: envoy-admin
         - job_name: pipecd-server
           scrape_interval: 1m
           kubernetes_sd_configs:
@@ -166,7 +166,7 @@ prometheus:
               regex: server
             - source_labels: [__meta_kubernetes_pod_container_port_name]
               action: keep
-              regex: "admin"
+              regex: admin
         - job_name: pipecd-ops
           scrape_interval: 1m
           kubernetes_sd_configs:
@@ -180,4 +180,4 @@ prometheus:
               regex: ops
             - source_labels: [__meta_kubernetes_pod_container_port_name]
               action: keep
-              regex: "admin"
+              regex: admin
