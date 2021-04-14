@@ -35,7 +35,8 @@ import { ApplicationCounts } from "../../components/application-counts";
 const useStyles = makeStyles((theme) => ({
   main: {
     display: "flex",
-    overflow: "hidden",
+    overflowY: "hidden",
+    overflowX: "auto",
     flex: 1,
   },
   toolbarSpacer: {

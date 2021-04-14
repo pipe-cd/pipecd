@@ -1,12 +1,12 @@
 import { FC } from "react";
 import * as React from "react";
 import { Box, Button, makeStyles, Paper, Typography } from "@material-ui/core";
-import { FILTER_PAPER_WIDTH } from "../../styles/size";
 import { UI_TEXT_CLEAR } from "../../constants/ui-text";
 
 const useStyles = makeStyles((theme) => ({
   filterPaper: {
-    width: FILTER_PAPER_WIDTH,
+    width: 360,
+    minWidth: 280,
     padding: theme.spacing(3),
     height: "100%",
   },
