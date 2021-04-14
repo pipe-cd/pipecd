@@ -16,6 +16,7 @@ package firestore
 
 import (
 	"context"
+	"encoding/json"
 	"errors"
 
 	"cloud.google.com/go/firestore"
@@ -94,10 +95,6 @@ func (s *FireStore) Find(ctx context.Context, kind string, opts datastore.ListOp
 	}
 
 	colName := makeCollectionName(s.collectionNamePrefix, kind)
-	cursorSnapshot, err := s.fetchCursorDocumentSnapshot(ctx, colName, opts)
-	if err != nil {
-		return nil, err
-	}
 
 	q := s.client.Collection(s.namespace).Doc(s.environment).Collection(colName).Query
 	for _, f := range opts.Filters {
@@ -106,12 +103,15 @@ func (s *FireStore) Find(ctx context.Context, kind string, opts datastore.ListOp
 	for _, o := range opts.Orders {
 		q = q.OrderBy(o.Field, convertToDirection(o.Direction))
 	}
-	// Note: opts.Page parameter does not use in Cloud Firestore. Firestore cannot do paging like general NoSQL.
-	// Instead of general paging, it will be a workload like infinite scroll.
+
 	// The pseudo cursor points one behind of the target document.
 	// See more: https://cloud.google.com/firestore/docs/query-data/query-cursors?hl=ja
-	if cursorSnapshot != nil {
-		q = q.StartAfter(cursorSnapshot.Data()[opts.Orders[0].Field])
+	if opts.Cursor != "" {
+		values, err := processCursorArg(opts)
+		if err != nil {
+			return nil, err
+		}
+		q = q.StartAfter(values)
 	}
 
 	if opts.Limit > 0 {
@@ -241,11 +241,40 @@ func (s *FireStore) Close() error {
 	return s.client.Close()
 }
 
-func (s *FireStore) fetchCursorDocumentSnapshot(ctx context.Context, colName string, opts datastore.ListOptions) (*firestore.DocumentSnapshot, error) {
-	if opts.Cursor == "" {
-		return nil, nil
+func processCursorArg(opts datastore.ListOptions) ([]interface{}, error) {
+	// Decode last object of previous page stored as opts.Cursor in json format.
+	var obj struct {
+		Id        string `json:"id"`
+		UpdatedAt int64  `json:"updated_at"`
 	}
-	return s.client.Collection(s.namespace).Doc(s.environment).Collection(colName).Doc(opts.Cursor).Get(ctx)
+	if err := json.Unmarshal([]byte(opts.Cursor), &obj); err != nil {
+		return nil, err
+	}
+	if obj.Id == "" {
+		return nil, errors.New("missing Id value from cursor")
+	}
+	if obj.UpdatedAt == 0 {
+		return nil, errors.New("missing UpdatedAt value from cursor")
+	}
+
+	var cursorVals []interface{}
+	containsRequiredOrderFields := 0
+	for _, o := range opts.Orders {
+		switch o.Field {
+		case "UpdatedAt":
+			cursorVals = append(cursorVals, obj.UpdatedAt)
+			containsRequiredOrderFields++
+		case "Id":
+			cursorVals = append(cursorVals, obj.Id)
+			containsRequiredOrderFields++
+		default:
+			continue
+		}
+	}
+	if containsRequiredOrderFields != 2 {
+		return nil, errors.New("UpdatedAt and Id are required to enable using cursor for pagination")
+	}
+	return cursorVals, nil
 }
 
 func convertToDirection(od datastore.OrderDirection) firestore.Direction {
