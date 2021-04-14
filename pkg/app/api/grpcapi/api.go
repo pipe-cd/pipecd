@@ -217,7 +217,7 @@ func (a *API) ListApplications(ctx context.Context, req *apiservice.ListApplicat
 					Value:    req.EnvName,
 				},
 			},
-			PageSize: limit,
+			Limit: limit,
 		}
 		envs, err := listEnvironments(ctx, a.environmentStore, envListOpts, a.logger)
 		if err != nil {
@@ -265,8 +265,8 @@ func (a *API) ListApplications(ctx context.Context, req *apiservice.ListApplicat
 		})
 	}
 	opts := datastore.ListOptions{
-		Filters:  filters,
-		PageSize: limit,
+		Filters: filters,
+		Limit:   limit,
 	}
 
 	apps, err := listApplications(ctx, a.applicationStore, opts, a.logger)

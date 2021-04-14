@@ -45,7 +45,7 @@ func TestInsightCollector_getApplications(t *testing.T) {
 			to:   time.Date(2020, 1, 1, 1, 0, 0, 0, time.UTC),
 			prepareApplicationStoreMockFn: func(m *datastoretest.MockApplicationStore) {
 				m.EXPECT().ListApplications(gomock.Any(), datastore.ListOptions{
-					PageSize: pageSize,
+					Limit: limit,
 					Filters: []datastore.ListFilter{
 						{
 							Field:    "CreatedAt",
@@ -81,7 +81,7 @@ func TestInsightCollector_getApplications(t *testing.T) {
 			to:   time.Date(2020, 1, 1, 1, 0, 0, 0, time.UTC),
 			prepareApplicationStoreMockFn: func(m *datastoretest.MockApplicationStore) {
 				m.EXPECT().ListApplications(gomock.Any(), datastore.ListOptions{
-					PageSize: pageSize,
+					Limit: limit,
 					Filters: []datastore.ListFilter{
 						{
 							Field:    "CreatedAt",
@@ -103,7 +103,7 @@ func TestInsightCollector_getApplications(t *testing.T) {
 					},
 				}, nil)
 				m.EXPECT().ListApplications(gomock.Any(), datastore.ListOptions{
-					PageSize: pageSize,
+					Limit: limit,
 					Filters: []datastore.ListFilter{
 						{
 							Field:    "CreatedAt",
@@ -135,7 +135,7 @@ func TestInsightCollector_getApplications(t *testing.T) {
 			to:   time.Date(2020, 1, 1, 1, 0, 0, 0, time.UTC),
 			prepareApplicationStoreMockFn: func(m *datastoretest.MockApplicationStore) {
 				m.EXPECT().ListApplications(gomock.Any(), datastore.ListOptions{
-					PageSize: pageSize,
+					Limit: limit,
 					Filters: []datastore.ListFilter{
 						{
 							Field:    "CreatedAt",

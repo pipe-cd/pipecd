@@ -692,7 +692,7 @@ func (a *PipedAPI) GetLatestEvent(ctx context.Context, req *pipedservice.GetLate
 
 	// Try to fetch the most recently registered event that has the given parameters.
 	opts := datastore.ListOptions{
-		PageSize: 1,
+		Limit: 1,
 		Filters: []datastore.ListFilter{
 			{
 				Field:    "ProjectId",
