@@ -44,11 +44,11 @@ func TestProcessCursorArg(t *testing.T) {
 				},
 				Cursor: `{"id": "object-id", "updated_at": 100}`,
 			},
-			expectVals: []interface{}{int64(100), "object-id"},
+			expectVals: []interface{}{float64(100), "object-id"},
 			expectErr:  false,
 		},
 		{
-			name: "missing required fields in ordering options",
+			name: "missing id field in ordering options",
 			opts: datastore.ListOptions{
 				Orders: []datastore.Order{
 					{

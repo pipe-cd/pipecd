@@ -18,6 +18,8 @@ import (
 	"context"
 	"encoding/json"
 	"errors"
+	"regexp"
+	"strings"
 
 	"cloud.google.com/go/firestore"
 	"go.uber.org/zap"
@@ -243,38 +245,43 @@ func (s *FireStore) Close() error {
 
 func processCursorArg(opts datastore.ListOptions) ([]interface{}, error) {
 	// Decode last object of previous page stored as opts.Cursor in json format.
-	var obj struct {
-		ID        string `json:"id"`
-		UpdatedAt int64  `json:"updated_at"`
-	}
+	obj := make(map[string]interface{})
 	if err := json.Unmarshal([]byte(opts.Cursor), &obj); err != nil {
 		return nil, err
 	}
-	if obj.ID == "" {
-		return nil, errors.New("missing id value from cursor")
-	}
-	if obj.UpdatedAt == 0 {
-		return nil, errors.New("missing updated_at value from cursor")
-	}
 
 	var cursorVals []interface{}
-	containsRequiredOrderFields := 0
+	hasIdFieldInOrdering := false
 	for _, o := range opts.Orders {
-		switch o.Field {
-		case "UpdatedAt":
-			cursorVals = append(cursorVals, obj.UpdatedAt)
-			containsRequiredOrderFields++
-		case "Id":
-			cursorVals = append(cursorVals, obj.ID)
-			containsRequiredOrderFields++
-		default:
-			continue
+		if o.Field == "Id" {
+			hasIdFieldInOrdering = true
+		}
+		val, ok := obj[underscore(o.Field)]
+		if !ok {
+			return nil, errors.New("cursor does not contain values that match to ordering field")
+		}
+		cursorVals = append(cursorVals, val)
+	}
+	if !hasIdFieldInOrdering {
+		return nil, errors.New("id field is required as ordering field")
+	}
+
+	return cursorVals, nil
+}
+
+var camel = regexp.MustCompile("(^[^A-Z]*|[A-Z]*)([A-Z][^A-Z]+|$)")
+
+func underscore(s string) string {
+	var a []string
+	for _, sub := range camel.FindAllStringSubmatch(s, -1) {
+		if sub[1] != "" {
+			a = append(a, sub[1])
+		}
+		if sub[2] != "" {
+			a = append(a, sub[2])
 		}
 	}
-	if containsRequiredOrderFields != 2 {
-		return nil, errors.New("UpdatedAt and Id are required as ordering fields to enable using cursor for pagination")
-	}
-	return cursorVals, nil
+	return strings.ToLower(strings.Join(a, "_"))
 }
 
 func convertToDirection(od datastore.OrderDirection) firestore.Direction {
