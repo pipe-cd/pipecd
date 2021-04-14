@@ -105,9 +105,6 @@ func main() {
 	// Package new charts.
 	for _, chart := range charts {
 		chartPath := filepath.Join(manifestsDir, chart)
-		if err := downloadDependencies(ctx, chartPath); err != nil {
-			log.Fatalf("Unable to download charts %s dependes on: %v", chart, err)
-		}
 		if err := packageHelmChart(ctx, chartPath, workingDir); err != nil {
 			log.Fatalf("Unable to package chart %s: %v", chart, err)
 		}
@@ -149,19 +146,8 @@ func main() {
 	log.Printf("Successfully stored all packages and index file")
 }
 
-func downloadDependencies(ctx context.Context, chartPath string) error {
-	args := []string{"dependency", "build", chartPath}
-	cmd := exec.CommandContext(ctx, "helm", args...)
-
-	out, err := cmd.CombinedOutput()
-	if err != nil {
-		return fmt.Errorf("failed to package: %s (%w)", string(out), err)
-	}
-	return nil
-}
-
 func packageHelmChart(ctx context.Context, chartPath, dest string) error {
-	args := []string{"package", chartPath, "--destination", dest}
+	args := []string{"package", chartPath, "--destination", dest, "--dependency-update"}
 	cmd := exec.CommandContext(ctx, "helm", args...)
 
 	out, err := cmd.CombinedOutput()
