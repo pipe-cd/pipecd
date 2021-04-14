@@ -109,10 +109,75 @@ cors:
 quickstart: false
 
 monitoring:
+  # If true, prometheus and grafana sub-charts will be installed
   enabled: false
 
 # All directives inside this section will be directly sent to the prometheus chart.
 # Head to the below link to see all available values.
 # https://github.com/prometheus-community/helm-charts/blob/main/charts/prometheus/values.yaml
-# TODO: Prepare the default prometheus.yml
-prometheus: {}
+prometheus:
+  server:
+    fullnameOverride: pipecd-prometheus-server
+  pushgateway:
+    enabled: false
+  nodeExporter:
+    enabled: false
+  kubeStateMetrics:
+    enabled: false
+  configmapReload:
+    prometheus:
+      enabled: true
+  serverFiles:
+    prometheus.yml:
+      rule_files:
+        - /etc/config/recording_rules.yml
+        - /etc/config/alerting_rules.yml
+
+      scrape_configs:
+        - job_name: prometheus
+          static_configs:
+            - targets:
+                - localhost:9090
+        - job_name: pipecd-gateway
+          scrape_interval: 1m
+          metrics_path: /stats/prometheus
+          kubernetes_sd_configs:
+            - role: endpoints
+          relabel_configs:
+            - source_labels: [__meta_kubernetes_service_label_app_kubernetes_io_name]
+              action: keep
+              regex: pipecd
+            - source_labels: [__meta_kubernetes_service_label_app_kubernetes_io_component]
+              action: keep
+              regex: gateway
+            - source_labels: [__meta_kubernetes_pod_container_port_name]
+              action: keep
+              regex: envoy-admin
+        - job_name: pipecd-server
+          scrape_interval: 1m
+          kubernetes_sd_configs:
+            - role: endpoints
+          relabel_configs:
+            - source_labels: [__meta_kubernetes_service_label_app_kubernetes_io_name]
+              action: keep
+              regex: pipecd
+            - source_labels: [__meta_kubernetes_service_label_app_kubernetes_io_component]
+              action: keep
+              regex: server
+            - source_labels: [__meta_kubernetes_pod_container_port_name]
+              action: keep
+              regex: admin
+        - job_name: pipecd-ops
+          scrape_interval: 1m
+          kubernetes_sd_configs:
+            - role: endpoints
+          relabel_configs:
+            - source_labels: [__meta_kubernetes_service_label_app_kubernetes_io_name]
+              action: keep
+              regex: pipecd
+            - source_labels: [__meta_kubernetes_service_label_app_kubernetes_io_component]
+              action: keep
+              regex: ops
+            - source_labels: [__meta_kubernetes_pod_container_port_name]
+              action: keep
+              regex: admin
