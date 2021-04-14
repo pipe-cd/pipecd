@@ -147,7 +147,7 @@ func main() {
 }
 
 func packageHelmChart(ctx context.Context, chartPath, dest string) error {
-	args := []string{"package", chartPath, "--destination", dest}
+	args := []string{"package", chartPath, "--destination", dest, "--dependency-update"}
 	cmd := exec.CommandContext(ctx, "helm", args...)
 
 	out, err := cmd.CombinedOutput()
