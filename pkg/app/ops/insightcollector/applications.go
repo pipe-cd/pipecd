@@ -70,7 +70,7 @@ func (i *InsightCollector) getApplications(ctx context.Context, to time.Time) ([
 	maxCreatedAt := to.Unix()
 	for {
 		apps, err := i.applicationStore.ListApplications(ctx, datastore.ListOptions{
-			PageSize: pageSize,
+			Limit: limit,
 			Filters: []datastore.ListFilter{
 				{
 					Field:    "CreatedAt",
@@ -91,7 +91,7 @@ func (i *InsightCollector) getApplications(ctx context.Context, to time.Time) ([
 		}
 
 		applications = append(applications, apps...)
-		if len(apps) < pageSize {
+		if len(apps) < limit {
 			break
 		}
 		maxCreatedAt = apps[len(apps)-1].CreatedAt

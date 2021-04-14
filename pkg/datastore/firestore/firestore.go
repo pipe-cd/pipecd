@@ -114,8 +114,8 @@ func (s *FireStore) Find(ctx context.Context, kind string, opts datastore.ListOp
 		q = q.StartAfter(cursorSnapshot.Data()[opts.Orders[0].Field])
 	}
 
-	if opts.PageSize > 0 {
-		q = q.Limit(opts.PageSize)
+	if opts.Limit > 0 {
+		q = q.Limit(opts.Limit)
 	}
 	return &Iterator{
 		it: q.Documents(ctx),

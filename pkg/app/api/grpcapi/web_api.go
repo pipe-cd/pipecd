@@ -831,9 +831,9 @@ func (a *WebAPI) ListDeployments(ctx context.Context, req *webservice.ListDeploy
 	}
 
 	deployments, err := a.deploymentStore.ListDeployments(ctx, datastore.ListOptions{
-		Filters:  filters,
-		Orders:   orders,
-		PageSize: int(req.PageSize),
+		Filters: filters,
+		Orders:  orders,
+		Limit:   int(req.PageSize),
 	})
 	if err != nil {
 		a.logger.Error("failed to get deployments", zap.Error(err))

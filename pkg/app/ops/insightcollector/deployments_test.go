@@ -478,7 +478,7 @@ func TestInsightCollector_findDeploymentsCreatedInRange(t *testing.T) {
 			},
 			prepareMockDataStoreFn: func(m *datastoretest.MockDeploymentStore) {
 				m.EXPECT().ListDeployments(gomock.Any(), datastore.ListOptions{
-					PageSize: 50,
+					Limit: 50,
 					Filters: []datastore.ListFilter{
 						{
 							Field:    "CreatedAt",
@@ -512,7 +512,7 @@ func TestInsightCollector_findDeploymentsCreatedInRange(t *testing.T) {
 					},
 				}, nil)
 				m.EXPECT().ListDeployments(gomock.Any(), datastore.ListOptions{
-					PageSize: 50,
+					Limit: 50,
 					Filters: []datastore.ListFilter{
 						{
 							Field:    "CreatedAt",
@@ -546,7 +546,7 @@ func TestInsightCollector_findDeploymentsCreatedInRange(t *testing.T) {
 					},
 				}, nil)
 				m.EXPECT().ListDeployments(gomock.Any(), datastore.ListOptions{
-					PageSize: 50,
+					Limit: 50,
 					Filters: []datastore.ListFilter{
 						{
 							Field:    "CreatedAt",
@@ -603,7 +603,7 @@ func TestInsightCollector_findDeploymentsCreatedInRange(t *testing.T) {
 			},
 			prepareMockDataStoreFn: func(m *datastoretest.MockDeploymentStore) {
 				m.EXPECT().ListDeployments(gomock.Any(), datastore.ListOptions{
-					PageSize: 50,
+					Limit: 50,
 					Filters: []datastore.ListFilter{
 						{
 							Field:    "CreatedAt",
@@ -674,7 +674,7 @@ func TestInsightCollector_findDeploymentsCompletedInRange(t *testing.T) {
 			},
 			prepareMockDataStoreFn: func(m *datastoretest.MockDeploymentStore) {
 				m.EXPECT().ListDeployments(gomock.Any(), datastore.ListOptions{
-					PageSize: 50,
+					Limit: 50,
 					Filters: []datastore.ListFilter{
 						{
 							Field:    "CompletedAt",
@@ -708,7 +708,7 @@ func TestInsightCollector_findDeploymentsCompletedInRange(t *testing.T) {
 					},
 				}, nil)
 				m.EXPECT().ListDeployments(gomock.Any(), datastore.ListOptions{
-					PageSize: 50,
+					Limit: 50,
 					Filters: []datastore.ListFilter{
 						{
 							Field:    "CompletedAt",
@@ -742,7 +742,7 @@ func TestInsightCollector_findDeploymentsCompletedInRange(t *testing.T) {
 					},
 				}, nil)
 				m.EXPECT().ListDeployments(gomock.Any(), datastore.ListOptions{
-					PageSize: 50,
+					Limit: 50,
 					Filters: []datastore.ListFilter{
 						{
 							Field:    "CompletedAt",
@@ -799,7 +799,7 @@ func TestInsightCollector_findDeploymentsCompletedInRange(t *testing.T) {
 			},
 			prepareMockDataStoreFn: func(m *datastoretest.MockDeploymentStore) {
 				m.EXPECT().ListDeployments(gomock.Any(), datastore.ListOptions{
-					PageSize: 50,
+					Limit: 50,
 					Filters: []datastore.ListFilter{
 						{
 							Field:    "CompletedAt",
@@ -1056,24 +1056,24 @@ func TestGroupDeployments(t *testing.T) {
 				d211,
 			},
 			apps: map[string][]*model.Deployment{
-				"application-1-1": []*model.Deployment{
+				"application-1-1": {
 					d111,
 					d112,
 				},
-				"application-1-2": []*model.Deployment{
+				"application-1-2": {
 					d121,
 				},
-				"application-2-1": []*model.Deployment{
+				"application-2-1": {
 					d211,
 				},
 			},
 			projects: map[string][]*model.Deployment{
-				"project-1": []*model.Deployment{
+				"project-1": {
 					d111,
 					d112,
 					d121,
 				},
-				"project-2": []*model.Deployment{
+				"project-2": {
 					d211,
 				},
 			},

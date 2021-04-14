@@ -235,7 +235,7 @@ func TestBuildFindQuery(t *testing.T) {
 			name: "query with limit",
 			kind: "Project",
 			listOptions: datastore.ListOptions{
-				PageSize: 20,
+				Limit: 20,
 			},
 			expectedQuery: "SELECT Data FROM Project LIMIT 20",
 		},
@@ -243,7 +243,7 @@ func TestBuildFindQuery(t *testing.T) {
 			name: "query with limit offset",
 			kind: "Project",
 			listOptions: datastore.ListOptions{
-				PageSize: 20,
+				Limit: 20,
 			},
 			expectedQuery: "SELECT Data FROM Project LIMIT 20",
 		},

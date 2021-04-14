@@ -77,10 +77,10 @@ type Order struct {
 }
 
 type ListOptions struct {
-	PageSize int
-	Filters  []ListFilter
-	Orders   []Order
-	Cursor   string
+	Limit   int
+	Filters []ListFilter
+	Orders  []Order
+	Cursor  string
 }
 
 type backend struct {
