@@ -83,7 +83,7 @@ func TestListAPIKeys(t *testing.T) {
 	}{
 		{
 			name: "iterator done",
-			opts: ListOptions{Page: 1},
+			opts: ListOptions{},
 			ds: func() DataStore {
 				it := NewMockIterator(ctrl)
 				it.EXPECT().
@@ -92,7 +92,7 @@ func TestListAPIKeys(t *testing.T) {
 
 				ds := NewMockDataStore(ctrl)
 				ds.EXPECT().
-					Find(gomock.Any(), "APIKey", ListOptions{Page: 1}).
+					Find(gomock.Any(), "APIKey", ListOptions{}).
 					Return(it, nil)
 				return ds
 			}(),
@@ -100,7 +100,7 @@ func TestListAPIKeys(t *testing.T) {
 		},
 		{
 			name: "unexpected error occurred",
-			opts: ListOptions{Page: 1},
+			opts: ListOptions{},
 			ds: func() DataStore {
 				it := NewMockIterator(ctrl)
 				it.EXPECT().
@@ -109,7 +109,7 @@ func TestListAPIKeys(t *testing.T) {
 
 				ds := NewMockDataStore(ctrl)
 				ds.EXPECT().
-					Find(gomock.Any(), "APIKey", ListOptions{Page: 1}).
+					Find(gomock.Any(), "APIKey", ListOptions{}).
 					Return(it, nil)
 				return ds
 			}(),

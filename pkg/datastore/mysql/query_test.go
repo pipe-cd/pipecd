@@ -244,9 +244,8 @@ func TestBuildFindQuery(t *testing.T) {
 			kind: "Project",
 			listOptions: datastore.ListOptions{
 				PageSize: 20,
-				Page:     20,
 			},
-			expectedQuery: "SELECT Data FROM Project LIMIT 20 OFFSET 400",
+			expectedQuery: "SELECT Data FROM Project LIMIT 20",
 		},
 		{
 			name: "query with unsupported operator",
