@@ -18,8 +18,6 @@ import (
 	"context"
 	"encoding/json"
 	"errors"
-	"regexp"
-	"strings"
 
 	"cloud.google.com/go/firestore"
 	"go.uber.org/zap"
@@ -120,7 +118,8 @@ func (s *FireStore) Find(ctx context.Context, kind string, opts datastore.ListOp
 		q = q.Limit(opts.Limit)
 	}
 	return &Iterator{
-		it: q.Documents(ctx),
+		it:     q.Documents(ctx),
+		orders: opts.Orders,
 	}, nil
 }
 
@@ -256,7 +255,7 @@ func makeCursorValues(opts datastore.ListOptions) ([]interface{}, error) {
 		if o.Field == "Id" {
 			hasIDFieldInOrdering = true
 		}
-		val, ok := obj[underscore(o.Field)]
+		val, ok := obj[o.Field]
 		if !ok {
 			return nil, errors.New("cursor does not contain values that match to ordering field")
 		}
@@ -273,21 +272,6 @@ func makeCursorValues(opts datastore.ListOptions) ([]interface{}, error) {
 	}
 
 	return cursorVals, nil
-}
-
-var camel = regexp.MustCompile("(^[^A-Z]*|[A-Z]*)([A-Z][^A-Z]+|$)")
-
-func underscore(s string) string {
-	var a []string
-	for _, sub := range camel.FindAllStringSubmatch(s, -1) {
-		if sub[1] != "" {
-			a = append(a, sub[1])
-		}
-		if sub[2] != "" {
-			a = append(a, sub[2])
-		}
-	}
-	return strings.ToLower(strings.Join(a, "_"))
 }
 
 func convertToDirection(od datastore.OrderDirection) firestore.Direction {

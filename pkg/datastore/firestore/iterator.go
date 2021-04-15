@@ -24,8 +24,9 @@ import (
 )
 
 type Iterator struct {
-	it   *firestore.DocumentIterator
-	last interface{}
+	it     *firestore.DocumentIterator
+	orders []datastore.Order
+	last   *firestore.DocumentSnapshot
 }
 
 func (it *Iterator) Next(dst interface{}) error {
@@ -43,16 +44,25 @@ func (it *Iterator) Next(dst interface{}) error {
 	return doc.DataTo(dst)
 }
 
+// Cursor builds a string (in map[string]interface{} format).
+// The cursor contains only values attached with the fields used
+// as ordering fields.
 func (it *Iterator) Cursor() (string, error) {
 	if it.last == nil {
 		return "", datastore.ErrInvalidCursor
 	}
 
-	cursorVal, err := json.Marshal(it.last)
-	if err != nil {
-		return "", err
+	lastObjData := it.last.Data()
+
+	cursor := make(map[string]interface{})
+	for _, o := range it.orders {
+		val, ok := lastObjData[o.Field]
+		if !ok {
+			return "", datastore.ErrInvalidCursor
+		}
+		cursor[o.Field] = val
 	}
 
-	// TODO: Encrypt cursor string value before pass it to the caller.
-	return string(cursorVal), nil
+	b, _ := json.Marshal(cursor)
+	return string(b), nil
 }
