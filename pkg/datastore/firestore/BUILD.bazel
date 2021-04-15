@@ -21,6 +21,7 @@ go_library(
 
 go_test(
     name = "go_default_test",
+    size = "small",
     srcs = [
         "firestore_test.go",
         "iterator_test.go",
