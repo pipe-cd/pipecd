@@ -80,7 +80,7 @@ func TestProcessCursorArg(t *testing.T) {
 	}
 	for _, tc := range testcases {
 		t.Run(tc.name, func(t *testing.T) {
-			vals, err := processCursorArg(tc.opts)
+			vals, err := makeCursorValues(tc.opts)
 			assert.Equal(t, tc.expectErr, err != nil)
 			assert.Equal(t, tc.expectVals, vals)
 		})

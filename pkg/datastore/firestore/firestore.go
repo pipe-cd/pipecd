@@ -109,7 +109,7 @@ func (s *FireStore) Find(ctx context.Context, kind string, opts datastore.ListOp
 	// The pseudo cursor points one behind of the target document.
 	// See more: https://cloud.google.com/firestore/docs/query-data/query-cursors?hl=ja
 	if opts.Cursor != "" {
-		values, err := processCursorArg(opts)
+		values, err := makeCursorValues(opts)
 		if err != nil {
 			return nil, err
 		}
@@ -243,7 +243,7 @@ func (s *FireStore) Close() error {
 	return s.client.Close()
 }
 
-func processCursorArg(opts datastore.ListOptions) ([]interface{}, error) {
+func makeCursorValues(opts datastore.ListOptions) ([]interface{}, error) {
 	// Decode last object of previous page stored as opts.Cursor in json format.
 	obj := make(map[string]interface{})
 	if err := json.Unmarshal([]byte(opts.Cursor), &obj); err != nil {
@@ -265,7 +265,7 @@ func processCursorArg(opts datastore.ListOptions) ([]interface{}, error) {
 	// The Id field is a required field to keep the sorted query result stable.
 	// We also do not use `id => snapshot doc => snapshot doc value` pattern since the snapshot here is not
 	// real snapshot (stable, unchanged on query) but just a single query to get one document by id, which could
-	// leads us to unstable/unpredictable results if the value of that "snapshot" doc is changed since previous
+	// lead us to unstable/unpredictable results if the value of that "snapshot" doc is changed since previous
 	// query.
 	// Read more: https://cloud.google.com/firestore/docs/query-data/query-cursors#set_cursor_based_on_multiple_fields
 	if !hasIDFieldInOrdering {
