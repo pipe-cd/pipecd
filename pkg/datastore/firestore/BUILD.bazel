@@ -21,7 +21,10 @@ go_library(
 
 go_test(
     name = "go_default_test",
-    srcs = ["firestore_test.go"],
+    srcs = [
+        "firestore_test.go",
+        "iterator_test.go",
+    ],
     embed = [":go_default_library"],
     deps = [
         "//pkg/datastore:go_default_library",

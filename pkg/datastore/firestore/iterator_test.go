@@ -1,4 +1,4 @@
-// Copyright 2021 The PipeCD Authors.
+// Copyright 2020 The PipeCD Authors.
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -23,52 +23,37 @@ import (
 	"github.com/pipe-cd/pipe/pkg/datastore"
 )
 
-func TestProcessCursorArg(t *testing.T) {
+type dummyDoc struct {
+	val map[string]interface{}
+}
+
+func (d *dummyDoc) Data() map[string]interface{} {
+	return d.val
+}
+
+func TestCursor(t *testing.T) {
 	testcases := []struct {
-		name       string
-		opts       datastore.ListOptions
-		expectVals []interface{}
-		expectErr  bool
+		name         string
+		iter         Iterator
+		expectCursor string
+		expectErr    bool
 	}{
 		{
-			name: "contains required fields",
-			opts: datastore.ListOptions{
-				Orders: []datastore.Order{
-					{
-						Field:     "UpdatedAt",
-						Direction: datastore.Desc,
-					},
-					{
-						Field:     "Id",
-						Direction: datastore.Asc,
-					},
-				},
-				Cursor: func() string {
-					return base64.StdEncoding.EncodeToString([]byte(`{"UpdatedAt":100,"Id":"object-id"}`))
-				}(),
-			},
-			expectVals: []interface{}{float64(100), "object-id"},
-			expectErr:  false,
-		},
-		{
-			name: "missing id field in ordering options",
-			opts: datastore.ListOptions{
-				Orders: []datastore.Order{
-					{
-						Field:     "UpdatedAt",
-						Direction: datastore.Desc,
-					},
-				},
-				Cursor: func() string {
-					return base64.StdEncoding.EncodeToString([]byte(`{"UpdatedAt":100,"Id":"object-id"}`))
-				}(),
-			},
+			name:      "invalid cursor error returns on last is nil",
+			iter:      Iterator{},
 			expectErr: true,
 		},
 		{
-			name: "invalid cursor: does not contain fields from ordering list",
-			opts: datastore.ListOptions{
-				Orders: []datastore.Order{
+			name: "valid last cursor",
+			iter: Iterator{
+				last: &dummyDoc{
+					val: map[string]interface{}{
+						"Id":        "object-id",
+						"CreatedAt": 100,
+						"UpdatedAt": 100,
+					},
+				},
+				orders: []datastore.Order{
 					{
 						Field:     "UpdatedAt",
 						Direction: datastore.Desc,
@@ -78,18 +63,42 @@ func TestProcessCursorArg(t *testing.T) {
 						Direction: datastore.Asc,
 					},
 				},
-				Cursor: func() string {
-					return base64.StdEncoding.EncodeToString([]byte(`{"Id":"object-id"}`))
-				}(),
+			},
+			expectCursor: func() string {
+				return base64.StdEncoding.EncodeToString([]byte(`{"Id":"object-id","UpdatedAt":100}`))
+			}(),
+			expectErr: false,
+		},
+		{
+			name: "invalid last cursor: field name of cursor data in snake_case",
+			iter: Iterator{
+				last: &dummyDoc{
+					val: map[string]interface{}{
+						"id":         "object-id",
+						"created_at": 100,
+						"updated_at": 100,
+					},
+				},
+				orders: []datastore.Order{
+					{
+						Field:     "UpdatedAt",
+						Direction: datastore.Desc,
+					},
+					{
+						Field:     "Id",
+						Direction: datastore.Asc,
+					},
+				},
 			},
 			expectErr: true,
 		},
 	}
+
 	for _, tc := range testcases {
 		t.Run(tc.name, func(t *testing.T) {
-			vals, err := makeCursorValues(tc.opts)
+			cursor, err := tc.iter.Cursor()
+			assert.Equal(t, tc.expectCursor, cursor)
 			assert.Equal(t, tc.expectErr, err != nil)
-			assert.Equal(t, tc.expectVals, vals)
 		})
 	}
 }

@@ -16,6 +16,7 @@ package firestore
 
 import (
 	"context"
+	"encoding/base64"
 	"encoding/json"
 	"errors"
 
@@ -243,9 +244,14 @@ func (s *FireStore) Close() error {
 }
 
 func makeCursorValues(opts datastore.ListOptions) ([]interface{}, error) {
-	// Decode last object of previous page stored as opts.Cursor in json format.
+	// Decode last object of previous page stored as opts.Cursor to string.
+	data, err := base64.StdEncoding.DecodeString(opts.Cursor)
+	if err != nil {
+		return nil, err
+	}
+	// Encode cursor data string to map[string]interface{} format for futher process.
 	obj := make(map[string]interface{})
-	if err := json.Unmarshal([]byte(opts.Cursor), &obj); err != nil {
+	if err := json.Unmarshal(data, &obj); err != nil {
 		return nil, err
 	}
 
