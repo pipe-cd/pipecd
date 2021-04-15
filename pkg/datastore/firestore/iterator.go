@@ -15,6 +15,8 @@
 package firestore
 
 import (
+	"encoding/json"
+
 	"cloud.google.com/go/firestore"
 	"google.golang.org/api/iterator"
 
@@ -22,7 +24,8 @@ import (
 )
 
 type Iterator struct {
-	it *firestore.DocumentIterator
+	it   *firestore.DocumentIterator
+	last interface{}
 }
 
 func (it *Iterator) Next(dst interface{}) error {
@@ -33,10 +36,23 @@ func (it *Iterator) Next(dst interface{}) error {
 		}
 		return err
 	}
+
+	// Update last iterated item as last read doc.
+	it.last = doc
+
 	return doc.DataTo(dst)
 }
 
 func (it *Iterator) Cursor() (string, error) {
-	// Note: Cursor function is not needed in Cloud Firestore.
-	return "", datastore.ErrUnimplemented
+	if it.last == nil {
+		return "", datastore.ErrInvalidCursor
+	}
+
+	cursorVal, err := json.Marshal(it.last)
+	if err != nil {
+		return "", err
+	}
+
+	// TODO: Encrypt cursor string value before pass it to the caller.
+	return string(cursorVal), nil
 }
