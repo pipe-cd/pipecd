@@ -117,6 +117,7 @@ monitoring:
 # https://github.com/prometheus-community/helm-charts/blob/main/charts/prometheus/values.yaml
 prometheus:
   server:
+    # Must be fixed so that Grafana can find out statically.
     fullnameOverride: pipecd-prometheus-server
   pushgateway:
     enabled: false
@@ -181,3 +182,25 @@ prometheus:
             - source_labels: [__meta_kubernetes_pod_container_port_name]
               action: keep
               regex: admin
+
+# All directives inside this section will be directly sent to the grafana chart.
+# Head to the below link to see all available values.
+# https://github.com/grafana/helm-charts/tree/main/charts/grafana
+grafana:
+  adminPassword: admin
+  sidecar:
+    datasources:
+      enabled: true
+    dashboards:
+      enabled: true
+      # Label that the configmaps with dashboards are marked with
+      label: grafana_dashboard
+  datasources:
+    datasources.yaml:
+      apiVersion: 1
+      datasources:
+        - name: Prometheus
+          type: prometheus
+          url: http://pipecd-prometheus-server
+          access: proxy
+          version: 1

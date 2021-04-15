@@ -19,6 +19,10 @@ appVersion: {{ .VERSION }}
 
 dependencies:
 - name: prometheus
-  version: "~v13.6.0"
+  version: "~v13.7"
   repository: "https://prometheus-community.github.io/helm-charts"
+  condition: monitoring.enabled
+- name: grafana
+  version: "~6.7"
+  repository: "https://grafana.github.io/helm-charts"
   condition: monitoring.enabled
