@@ -15,14 +15,23 @@
 package firestore
 
 import (
+	"encoding/base64"
+	"encoding/json"
+
 	"cloud.google.com/go/firestore"
 	"google.golang.org/api/iterator"
 
 	"github.com/pipe-cd/pipe/pkg/datastore"
 )
 
+type DataConverter interface {
+	Data() map[string]interface{}
+}
+
 type Iterator struct {
-	it *firestore.DocumentIterator
+	it     *firestore.DocumentIterator
+	orders []datastore.Order
+	last   DataConverter
 }
 
 func (it *Iterator) Next(dst interface{}) error {
@@ -33,10 +42,33 @@ func (it *Iterator) Next(dst interface{}) error {
 		}
 		return err
 	}
+
+	// Update last iterated item as last read doc.
+	it.last = doc
+
 	return doc.DataTo(dst)
 }
 
+// Cursor builds a base 64 string (encode from string in map[string]interface{} format).
+// The cursor contains only values attached with the fields used
+// as ordering fields.
 func (it *Iterator) Cursor() (string, error) {
-	// Note: Cursor function is not needed in Cloud Firestore.
-	return "", datastore.ErrUnimplemented
+	if it.last == nil {
+		return "", datastore.ErrInvalidCursor
+	}
+
+	lastObjData := it.last.Data()
+
+	cursor := make(map[string]interface{})
+	for _, o := range it.orders {
+		val, ok := lastObjData[o.Field]
+		if !ok {
+			return "", datastore.ErrInvalidCursor
+		}
+		// TODO: Support build cursor from nested Ordering field.
+		cursor[o.Field] = val
+	}
+
+	b, _ := json.Marshal(cursor)
+	return base64.StdEncoding.EncodeToString(b), nil
 }

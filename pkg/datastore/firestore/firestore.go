@@ -16,6 +16,8 @@ package firestore
 
 import (
 	"context"
+	"encoding/base64"
+	"encoding/json"
 	"errors"
 
 	"cloud.google.com/go/firestore"
@@ -94,10 +96,6 @@ func (s *FireStore) Find(ctx context.Context, kind string, opts datastore.ListOp
 	}
 
 	colName := makeCollectionName(s.collectionNamePrefix, kind)
-	cursorSnapshot, err := s.fetchCursorDocumentSnapshot(ctx, colName, opts)
-	if err != nil {
-		return nil, err
-	}
 
 	q := s.client.Collection(s.namespace).Doc(s.environment).Collection(colName).Query
 	for _, f := range opts.Filters {
@@ -106,19 +104,23 @@ func (s *FireStore) Find(ctx context.Context, kind string, opts datastore.ListOp
 	for _, o := range opts.Orders {
 		q = q.OrderBy(o.Field, convertToDirection(o.Direction))
 	}
-	// Note: opts.Page parameter does not use in Cloud Firestore. Firestore cannot do paging like general NoSQL.
-	// Instead of general paging, it will be a workload like infinite scroll.
+
 	// The pseudo cursor points one behind of the target document.
 	// See more: https://cloud.google.com/firestore/docs/query-data/query-cursors?hl=ja
-	if cursorSnapshot != nil {
-		q = q.StartAfter(cursorSnapshot.Data()[opts.Orders[0].Field])
+	if opts.Cursor != "" {
+		values, err := makeCursorValues(opts)
+		if err != nil {
+			return nil, err
+		}
+		q = q.StartAfter(values)
 	}
 
 	if opts.Limit > 0 {
 		q = q.Limit(opts.Limit)
 	}
 	return &Iterator{
-		it: q.Documents(ctx),
+		it:     q.Documents(ctx),
+		orders: opts.Orders,
 	}, nil
 }
 
@@ -241,11 +243,41 @@ func (s *FireStore) Close() error {
 	return s.client.Close()
 }
 
-func (s *FireStore) fetchCursorDocumentSnapshot(ctx context.Context, colName string, opts datastore.ListOptions) (*firestore.DocumentSnapshot, error) {
-	if opts.Cursor == "" {
-		return nil, nil
+func makeCursorValues(opts datastore.ListOptions) ([]interface{}, error) {
+	// Decode last object of previous page stored as opts.Cursor to string.
+	data, err := base64.StdEncoding.DecodeString(opts.Cursor)
+	if err != nil {
+		return nil, err
 	}
-	return s.client.Collection(s.namespace).Doc(s.environment).Collection(colName).Doc(opts.Cursor).Get(ctx)
+	// Encode cursor data string to map[string]interface{} format for futher process.
+	obj := make(map[string]interface{})
+	if err := json.Unmarshal(data, &obj); err != nil {
+		return nil, err
+	}
+
+	cursorVals := make([]interface{}, 0, len(opts.Orders))
+	hasIDFieldInOrdering := false
+	for _, o := range opts.Orders {
+		if o.Field == "Id" {
+			hasIDFieldInOrdering = true
+		}
+		val, ok := obj[o.Field]
+		if !ok {
+			return nil, errors.New("cursor does not contain values that match to ordering field")
+		}
+		cursorVals = append(cursorVals, val)
+	}
+	// The Id field is a required field to keep the sorted query result stable.
+	// We also do not use `id => snapshot doc => snapshot doc value` pattern since the snapshot here is not
+	// real snapshot (stable, unchanged on query) but just a single query to get one document by id, which could
+	// lead us to unstable/unpredictable results if the value of that "snapshot" doc is changed since previous
+	// query.
+	// Read more: https://cloud.google.com/firestore/docs/query-data/query-cursors#set_cursor_based_on_multiple_fields
+	if !hasIDFieldInOrdering {
+		return nil, errors.New("id field is required as ordering field")
+	}
+
+	return cursorVals, nil
 }
 
 func convertToDirection(od datastore.OrderDirection) firestore.Direction {
