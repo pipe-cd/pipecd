@@ -250,7 +250,7 @@ func processCursorArg(opts datastore.ListOptions) ([]interface{}, error) {
 		return nil, err
 	}
 
-	var cursorVals []interface{}
+	cursorVals := make([]interface{}, 0, len(opts.Orders))
 	hasIDFieldInOrdering := false
 	for _, o := range opts.Orders {
 		if o.Field == "Id" {
@@ -262,6 +262,12 @@ func processCursorArg(opts datastore.ListOptions) ([]interface{}, error) {
 		}
 		cursorVals = append(cursorVals, val)
 	}
+	// The Id field is a required field to keep the sorted query result stable.
+	// We also do not use `id => snapshot doc => snapshot doc value` pattern since the snapshot here is not
+	// real snapshot (stable, unchanged on query) but just a single query to get one document by id, which could
+	// leads us to unstable/unpredictable results if the value of that "snapshot" doc is changed since previous
+	// query.
+	// Read more: https://cloud.google.com/firestore/docs/query-data/query-cursors#set_cursor_based_on_multiple_fields
 	if !hasIDFieldInOrdering {
 		return nil, errors.New("id field is required as ordering field")
 	}
