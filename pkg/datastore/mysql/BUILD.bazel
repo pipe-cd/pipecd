@@ -23,6 +23,7 @@ go_test(
     name = "go_default_test",
     size = "small",
     srcs = [
+        "iterator_test.go",
         "mysql_test.go",
         "query_test.go",
     ],

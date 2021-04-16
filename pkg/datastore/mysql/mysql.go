@@ -106,7 +106,8 @@ func (m *MySQL) Find(ctx context.Context, kind string, opts datastore.ListOption
 		return nil, err
 	}
 	return &Iterator{
-		rows: rows,
+		rows:   rows,
+		orders: opts.Orders,
 	}, nil
 }
 
