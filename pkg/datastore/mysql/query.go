@@ -15,6 +15,8 @@
 package mysql
 
 import (
+	"encoding/base64"
+	"encoding/json"
 	"fmt"
 	"reflect"
 	"strings"
@@ -44,13 +46,22 @@ func buildFindQuery(table string, ops datastore.ListOptions) (string, error) {
 		return "", err
 	}
 
+	cursor, err := decodeCursor(ops.Cursor)
+	if err != nil {
+		return "", err
+	}
+	paginationCond, err := buildPaginationCondition(ops.Orders, cursor)
+	if err != nil {
+		return "", err
+	}
+
 	rawQuery := fmt.Sprintf(
-		"SELECT Data FROM %s %s %s %s",
+		"SELECT Data FROM %s %s %s %s %s",
 		table,
 		buildWhereClause(filters),
+		paginationCond,
 		buildOrderByClause(refineOrdersField(ops.Orders)),
-		// TODO: Remove this pagination build function.
-		buildPaginationClause(0, ops.Limit),
+		buildLimitClause(ops.Limit),
 	)
 	return strings.Join(strings.Fields(rawQuery), " "), nil
 }
@@ -74,6 +85,48 @@ func buildWhereClause(filters []datastore.ListFilter) string {
 	return fmt.Sprintf("WHERE %s", strings.Join(conds[:], " AND "))
 }
 
+func decodeCursor(cursor string) (map[string]interface{}, error) {
+	// Skip pagination on cursor is empty.
+	if len(cursor) == 0 {
+		return nil, nil
+	}
+
+	// Decode last object of previous page stored as opts.Cursor to string.
+	data, err := base64.StdEncoding.DecodeString(cursor)
+	if err != nil {
+		return nil, err
+	}
+	// Encode cursor data string to map[string]interface{} format for futher process.
+	obj := make(map[string]interface{})
+	if err := json.Unmarshal(data, &obj); err != nil {
+		return nil, err
+	}
+
+	// TODO: Convert cursor object key from snake_case to CamelCase.
+	return obj, nil
+}
+
+func buildPaginationCondition(orders []datastore.Order, cursor map[string]interface{}) (string, error) {
+	// Skip on no cursor.
+	if cursor == nil {
+		return "", nil
+	}
+
+	hasIDFieldInOrdering := false
+	conds := make([]string, len(orders))
+	for i, o := range orders {
+		if o.Field == "Id" {
+			hasIDFieldInOrdering = true
+		}
+		conds[i] = fmt.Sprintf("%s < ?", o.Field)
+	}
+	if !hasIDFieldInOrdering {
+		return "", fmt.Errorf("id field is required as ordering field")
+	}
+
+	return fmt.Sprintf("AND %s", strings.Join(conds[:], " AND ")), nil
+}
+
 func buildOrderByClause(orders []datastore.Order) string {
 	if len(orders) == 0 {
 		return ""
@@ -86,13 +139,10 @@ func buildOrderByClause(orders []datastore.Order) string {
 	return fmt.Sprintf("ORDER BY %s", strings.Join(conds[:], ", "))
 }
 
-func buildPaginationClause(page, pageSize int) string {
+func buildLimitClause(limit int) string {
 	var clause string
-	if pageSize > 0 {
-		clause = fmt.Sprintf("LIMIT %d ", pageSize)
-		if page > 0 {
-			clause = fmt.Sprintf("%sOFFSET %d", clause, pageSize*page)
-		}
+	if limit > 0 {
+		clause = fmt.Sprintf("LIMIT %d ", limit)
 	}
 	return clause
 }
