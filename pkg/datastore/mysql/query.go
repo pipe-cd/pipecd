@@ -89,7 +89,11 @@ func buildPaginationCondition(opts datastore.ListOptions) string {
 
 	conds := make([]string, len(opts.Orders))
 	for i, o := range opts.Orders {
-		conds[i] = fmt.Sprintf("%s %s ?", o.Field, makePaginationConditionOperator(o))
+		if o.Field == "Id" {
+			conds[i] = fmt.Sprintf("%s %s UUID_TO_BIN(?,true)", o.Field, makePaginationConditionOperator(o))
+		} else {
+			conds[i] = fmt.Sprintf("%s %s ?", o.Field, makePaginationConditionOperator(o))
+		}
 	}
 
 	// If there is no filter, mean pagination condition should be treated as the only where condition.
