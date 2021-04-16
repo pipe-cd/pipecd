@@ -57,7 +57,6 @@ func buildFindQuery(table string, ops datastore.ListOptions) (string, error) {
 		buildWhereClause(filters),
 		buildPaginationCondition(ops),
 		orderByClause,
-		// buildOrderByClause(refineOrdersField(ops.Orders)),
 		buildLimitClause(ops.Limit),
 	)
 	return strings.Join(strings.Fields(rawQuery), " "), nil
@@ -80,27 +79,6 @@ func buildWhereClause(filters []datastore.ListFilter) string {
 		}
 	}
 	return fmt.Sprintf("WHERE %s", strings.Join(conds[:], " AND "))
-}
-
-func decodeCursor(cursor string) (map[string]interface{}, error) {
-	// Skip pagination on cursor is empty.
-	if len(cursor) == 0 {
-		return nil, nil
-	}
-
-	// Decode last object of previous page stored as opts.Cursor to string.
-	data, err := base64.StdEncoding.DecodeString(cursor)
-	if err != nil {
-		return nil, err
-	}
-	// Encode cursor data string to map[string]interface{} format for futher process.
-	obj := make(map[string]interface{})
-	if err := json.Unmarshal(data, &obj); err != nil {
-		return nil, err
-	}
-
-	// TODO: Convert cursor object key from snake_case to CamelCase.
-	return obj, nil
 }
 
 func buildPaginationCondition(opts datastore.ListOptions) string {
@@ -243,4 +221,34 @@ func refineFiltersValue(filters []datastore.ListFilter) []interface{} {
 		}
 	}
 	return filtersVals
+}
+
+// makePaginationCursorValues builds array of element values used on pagination condition check.
+func makePaginationCursorValues(opts datastore.ListOptions) ([]interface{}, error) {
+	// Skip pagination on cursor is empty.
+	if len(opts.Cursor) == 0 {
+		return nil, nil
+	}
+
+	// Decode last object of previous page stored as opts.Cursor to string.
+	data, err := base64.StdEncoding.DecodeString(opts.Cursor)
+	if err != nil {
+		return nil, err
+	}
+	// Encode cursor data string to map[string]interface{} format for futher process.
+	obj := make(map[string]interface{})
+	if err := json.Unmarshal(data, &obj); err != nil {
+		return nil, err
+	}
+
+	cursorVals := make([]interface{}, 0, len(opts.Orders))
+	for _, o := range opts.Orders {
+		val, ok := obj[o.Field]
+		if !ok {
+			return nil, fmt.Errorf("cursor does not contain values that match to ordering field %s", o.Field)
+		}
+		cursorVals = append(cursorVals, val)
+	}
+
+	return cursorVals, nil
 }

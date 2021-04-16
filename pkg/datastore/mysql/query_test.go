@@ -444,3 +444,81 @@ func TestMakePaginationConditionOperator(t *testing.T) {
 		})
 	}
 }
+
+func TestMakePaginationCursorValues(t *testing.T) {
+	testcases := []struct {
+		name               string
+		opts               datastore.ListOptions
+		expectedCursorVals []interface{}
+		wantErr            bool
+	}{
+		{
+			name: "valid cursor with CamelCase key",
+			opts: datastore.ListOptions{
+				Orders: []datastore.Order{
+					{
+						Field:     "UpdatedAt",
+						Direction: datastore.Desc,
+					},
+					{
+						Field:     "Id",
+						Direction: datastore.Asc,
+					},
+				},
+				Cursor: func() string {
+					return base64.StdEncoding.EncodeToString([]byte(`{"Id":"object-id","UpdatedAt":100}`))
+				}(),
+			},
+			expectedCursorVals: []interface{}{
+				float64(100),
+				"object-id",
+			},
+		},
+		{
+			name: "invalid cursor with snake_case key",
+			opts: datastore.ListOptions{
+				Orders: []datastore.Order{
+					{
+						Field:     "UpdatedAt",
+						Direction: datastore.Desc,
+					},
+					{
+						Field:     "Id",
+						Direction: datastore.Asc,
+					},
+				},
+				Cursor: func() string {
+					return base64.StdEncoding.EncodeToString([]byte(`{"id":"object-id","updated_at":100}`))
+				}(),
+			},
+			wantErr: true,
+		},
+		{
+			name: "invalid cursor missing ordering field value",
+			opts: datastore.ListOptions{
+				Orders: []datastore.Order{
+					{
+						Field:     "UpdatedAt",
+						Direction: datastore.Desc,
+					},
+					{
+						Field:     "Id",
+						Direction: datastore.Asc,
+					},
+				},
+				Cursor: func() string {
+					return base64.StdEncoding.EncodeToString([]byte(`{"Id":"object-id"}`))
+				}(),
+			},
+			wantErr: true,
+		},
+	}
+
+	for _, tc := range testcases {
+		t.Run(tc.name, func(t *testing.T) {
+			vals, err := makePaginationCursorValues(tc.opts)
+			assert.Equal(t, tc.expectedCursorVals, vals)
+			assert.Equal(t, tc.wantErr, err != nil)
+		})
+	}
+}
