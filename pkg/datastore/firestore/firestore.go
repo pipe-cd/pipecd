@@ -112,7 +112,13 @@ func (s *FireStore) Find(ctx context.Context, kind string, opts datastore.ListOp
 		if err != nil {
 			return nil, err
 		}
-		q = q.StartAfter(values)
+		// Using the first order direction as pagination direction.
+		// Suppose all ordering fields have the same direction.
+		if opts.Orders[0].Direction == datastore.Asc {
+			q = q.StartAfter(values)
+		} else {
+			q = q.EndBefore(values)
+		}
 	}
 
 	if opts.Limit > 0 {
