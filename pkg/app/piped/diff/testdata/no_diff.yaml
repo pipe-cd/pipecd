@@ -30,6 +30,13 @@ spec:
         emptyList:
           []
         emptyMap: {}
+        resources:
+          limits:
+            cpu: 1
+            memory: 1Gi
+          requests:
+            cpu: 1
+            memory: 1Gi
 ---
 apiVersion: apps/v1
 kind: Foo
@@ -60,3 +67,10 @@ spec:
         # Zero map and nil map should be equal.
         resources: {}
         emptyList2: []
+        resources:
+          limits:
+            cpu: "1"
+            memory: 1Gi
+          requests:
+            cpu: "1"
+            memory: 1Gi
