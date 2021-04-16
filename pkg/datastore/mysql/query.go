@@ -46,11 +46,7 @@ func buildFindQuery(table string, ops datastore.ListOptions) (string, error) {
 		return "", err
 	}
 
-	cursor, err := decodeCursor(ops.Cursor)
-	if err != nil {
-		return "", err
-	}
-	paginationCond, err := buildPaginationCondition(ops.Orders, cursor)
+	orderByClause, err := buildOrderByClause(refineOrdersField(ops.Orders))
 	if err != nil {
 		return "", err
 	}
@@ -59,8 +55,9 @@ func buildFindQuery(table string, ops datastore.ListOptions) (string, error) {
 		"SELECT Data FROM %s %s %s %s %s",
 		table,
 		buildWhereClause(filters),
-		paginationCond,
-		buildOrderByClause(refineOrdersField(ops.Orders)),
+		buildPaginationCondition(ops),
+		orderByClause,
+		// buildOrderByClause(refineOrdersField(ops.Orders)),
 		buildLimitClause(ops.Limit),
 	)
 	return strings.Join(strings.Fields(rawQuery), " "), nil
@@ -106,37 +103,62 @@ func decodeCursor(cursor string) (map[string]interface{}, error) {
 	return obj, nil
 }
 
-func buildPaginationCondition(orders []datastore.Order, cursor map[string]interface{}) (string, error) {
+func buildPaginationCondition(opts datastore.ListOptions) string {
 	// Skip on no cursor.
-	if cursor == nil {
+	if len(opts.Cursor) == 0 {
+		return ""
+	}
+
+	conds := make([]string, len(opts.Orders))
+	for i, o := range opts.Orders {
+		conds[i] = fmt.Sprintf("%s %s ?", o.Field, makePaginationConditionOperator(o))
+	}
+
+	// If there is no filter, mean pagination condition should be treated as the only where condition.
+	if len(opts.Filters) == 0 {
+		return fmt.Sprintf("WHERE %s", strings.Join(conds[:], " AND "))
+	}
+	return fmt.Sprintf("AND %s", strings.Join(conds[:], " AND "))
+}
+
+func makePaginationConditionOperator(order datastore.Order) string {
+	var ope string
+	// Only the Id field should be used strict with greater/lower than operators.
+	if order.Field == "Id" {
+		if order.Direction == datastore.Asc {
+			ope = ">"
+		} else {
+			ope = "<"
+		}
+	} else {
+		if order.Direction == datastore.Asc {
+			ope = ">="
+		} else {
+			ope = "<="
+		}
+	}
+	return ope
+}
+
+func buildOrderByClause(orders []datastore.Order) (string, error) {
+	if len(orders) == 0 {
 		return "", nil
 	}
 
-	hasIDFieldInOrdering := false
 	conds := make([]string, len(orders))
-	for i, o := range orders {
-		if o.Field == "Id" {
+	hasIDFieldInOrdering := false
+	for i, ord := range orders {
+		if ord.Field == "Id" {
 			hasIDFieldInOrdering = true
 		}
-		conds[i] = fmt.Sprintf("%s < ?", o.Field)
+		conds[i] = fmt.Sprintf("%s %s", ord.Field, toMySQLDirection(ord.Direction))
 	}
+
 	if !hasIDFieldInOrdering {
 		return "", fmt.Errorf("id field is required as ordering field")
 	}
 
-	return fmt.Sprintf("AND %s", strings.Join(conds[:], " AND ")), nil
-}
-
-func buildOrderByClause(orders []datastore.Order) string {
-	if len(orders) == 0 {
-		return ""
-	}
-
-	conds := make([]string, len(orders))
-	for i, ord := range orders {
-		conds[i] = fmt.Sprintf("%s %s", ord.Field, toMySQLDirection(ord.Direction))
-	}
-	return fmt.Sprintf("ORDER BY %s", strings.Join(conds[:], ", "))
+	return fmt.Sprintf("ORDER BY %s", strings.Join(conds[:], ", ")), nil
 }
 
 func buildLimitClause(limit int) string {
