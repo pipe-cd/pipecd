@@ -196,6 +196,7 @@ func (d *detector) checkApplication(ctx context.Context, app *model.Application,
 		result, err := provider.Diff(headInters[i], liveInters[i],
 			diff.WithEquateEmpty(),
 			diff.WithIgnoreAddingMapKeys(),
+			diff.WithCompareNumberAndNumericString(),
 		)
 		if err != nil {
 			d.logger.Error("failed to calculate the diff of manifests", zap.Error(err))

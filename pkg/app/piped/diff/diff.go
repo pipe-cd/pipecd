@@ -17,13 +17,15 @@ package diff
 import (
 	"fmt"
 	"reflect"
+	"strconv"
 
 	"k8s.io/apimachinery/pkg/apis/meta/v1/unstructured"
 )
 
 type differ struct {
-	ignoreAddingMapKeys bool
-	equateEmpty         bool
+	ignoreAddingMapKeys           bool
+	equateEmpty                   bool
+	compareNumberAndNumericString bool
 
 	result *Result
 }
@@ -42,6 +44,15 @@ func WithIgnoreAddingMapKeys() Option {
 func WithEquateEmpty() Option {
 	return func(d *differ) {
 		d.equateEmpty = true
+	}
+}
+
+// WithCompareNumberAndNumericString configures differ to compare a number with a numeric string.
+// Differ parses the string to number before comparing their values.
+// e.g. 1.5 == "1.5"
+func WithCompareNumberAndNumericString() Option {
+	return func(d *differ) {
+		d.compareNumberAndNumericString = true
 	}
 }
 
@@ -86,6 +97,20 @@ func (d *differ) diff(path []PathStep, vx, vy reflect.Value) error {
 
 	if isNumberValue(vx) && isNumberValue(vy) {
 		return d.diffNumber(path, vx, vy)
+	}
+
+	if d.compareNumberAndNumericString {
+		if isNumberValue(vx) {
+			if y, ok := convertToNumber(vy); ok {
+				return d.diffNumber(path, vx, y)
+			}
+		}
+
+		if isNumberValue(vy) {
+			if x, ok := convertToNumber(vx); ok {
+				return d.diffNumber(path, x, vy)
+			}
+		}
 	}
 
 	if vx.Type() != vy.Type() {
@@ -255,6 +280,20 @@ func isNumberValue(v reflect.Value) bool {
 		return true
 	default:
 		return false
+	}
+}
+
+func convertToNumber(v reflect.Value) (reflect.Value, bool) {
+	switch v.Kind() {
+	case reflect.Int, reflect.Int8, reflect.Int16, reflect.Int32, reflect.Int64, reflect.Float32, reflect.Float64:
+		return v, true
+	case reflect.String:
+		if n, err := strconv.ParseFloat(v.String(), 64); err == nil {
+			return reflect.ValueOf(n), true
+		}
+		return v, false
+	default:
+		return v, false
 	}
 }
 

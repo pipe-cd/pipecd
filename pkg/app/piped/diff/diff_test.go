@@ -39,6 +39,8 @@ func TestDiff(t *testing.T) {
 			yamlFile: "testdata/no_diff.yaml",
 			options: []Option{
 				WithEquateEmpty(),
+				WithIgnoreAddingMapKeys(),
+				WithCompareNumberAndNumericString(),
 			},
 			diffNum: 0,
 		},
