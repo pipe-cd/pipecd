@@ -231,11 +231,6 @@ export const ApplicationDetail: FC<ApplicationDetailProps> = memo(
                 <AppLiveState applicationId={applicationId} />
               </Box>
 
-              <ApplicationDescription
-                description={app.description}
-                onUpdate={handleDescriptionEdit}
-              />
-
               {app.syncState && (
                 <SyncStateReason
                   summary={app.syncState.shortReason}
@@ -291,6 +286,13 @@ export const ApplicationDetail: FC<ApplicationDetailProps> = memo(
             />
           </div>
         </Box>
+
+        {app && (
+          <ApplicationDescription
+            description={app.description}
+            onUpdate={handleDescriptionEdit}
+          />
+        )}
 
         <Box top={0} right={0} pr={2} pt={2} position="absolute">
           <SplitButton
