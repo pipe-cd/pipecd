@@ -17,6 +17,7 @@ version: {{ .VERSION }}
 # follow Semantic Versioning. They should reflect the version the application is using.
 appVersion: {{ .VERSION }}
 
+# If you want to update the version of any child charts, bump the version to an arbitrary one.
 dependencies:
 - name: prometheus
   version: "~v13.7"
