@@ -75,6 +75,11 @@ secret:
     fileName: datadog-application-key
     data: ""
 
+securityContext:
+  runAsNonRoot: true
+  runAsUser: 1000
+  fsGroup: 1000
+
 nodeSelector: {}
 
 tolerations: []
