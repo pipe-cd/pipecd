@@ -61,10 +61,10 @@ spec:
         - name: piped-config
           configMap:
             name: {{ include "piped.configMapName" . }}
+      {{- with .Values.securityContext }}
       securityContext:
-        runAsNonRoot: true
-        runAsUser: 1000
-        fsGroup: 1000
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
       {{- with .Values.nodeSelector }}
       nodeSelector:
         {{- toYaml . | nindent 8 }}
