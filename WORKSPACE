@@ -129,8 +129,7 @@ load(
 
 container_pull(
     name = "piped-base",
-    # FIXME: Populate the hash
-    digest = "",
+    digest = "sha256:792ac87ea71cc12d3213f669717d045cd4a0db2a2d8b512ab1450c8301eae475",
     registry = "gcr.io",
     repository = "pipecd/piped-base",
     tag = "0.2.0",
