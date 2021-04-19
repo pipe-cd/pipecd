@@ -23,11 +23,15 @@ import (
 	"github.com/pipe-cd/pipe/pkg/datastore"
 )
 
+type dataConverter interface {
+	Data() map[string]interface{}
+}
+
 // Iterator for MySQL result set
 type Iterator struct {
 	rows   *sql.Rows
 	orders []datastore.Order
-	last   DataConverter
+	last   dataConverter
 }
 
 // Next implementation for MySQL Iterator
@@ -47,7 +51,7 @@ func (it *Iterator) Next(dst interface{}) error {
 	return decodeJSONValue(val, dst)
 }
 
-// Cursor builds a base 64 string (encode from string in map[string]interface{} format).
+// Cursor builds a base64 string (encode from string in map[string]interface{} format).
 // The cursor contains only values attached with the fields used
 // as ordering fields.
 func (it *Iterator) Cursor() (string, error) {
@@ -69,10 +73,6 @@ func (it *Iterator) Cursor() (string, error) {
 
 	b, _ := json.Marshal(cursor)
 	return base64.StdEncoding.EncodeToString(b), nil
-}
-
-type DataConverter interface {
-	Data() map[string]interface{}
 }
 
 type rowDataConverter struct {

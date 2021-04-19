@@ -59,7 +59,7 @@ func (it *Iterator) Cursor() (string, error) {
 
 	lastObjData := it.last.Data()
 
-	cursor := make(map[string]interface{}, len(it.orders))
+	cursor := make(map[string]interface{})
 	for _, o := range it.orders {
 		val, ok := lastObjData[o.Field]
 		if !ok {

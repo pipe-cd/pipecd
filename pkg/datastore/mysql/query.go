@@ -104,22 +104,18 @@ func buildPaginationCondition(opts datastore.ListOptions) string {
 }
 
 func makePaginationConditionOperator(order datastore.Order) string {
-	var ope string
 	// Only the Id field should be used strict with greater/lower than operators.
 	if order.Field == "Id" {
 		if order.Direction == datastore.Asc {
-			ope = ">"
-		} else {
-			ope = "<"
+			return ">"
 		}
-	} else {
-		if order.Direction == datastore.Asc {
-			ope = ">="
-		} else {
-			ope = "<="
-		}
+		return "<"
 	}
-	return ope
+
+	if order.Direction == datastore.Asc {
+		return ">="
+	}
+	return "<="
 }
 
 func buildOrderByClause(orders []datastore.Order) (string, error) {
