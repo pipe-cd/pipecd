@@ -24,14 +24,14 @@ import (
 	"github.com/pipe-cd/pipe/pkg/datastore"
 )
 
-type DataConverter interface {
+type dataConverter interface {
 	Data() map[string]interface{}
 }
 
 type Iterator struct {
 	it     *firestore.DocumentIterator
 	orders []datastore.Order
-	last   DataConverter
+	last   dataConverter
 }
 
 func (it *Iterator) Next(dst interface{}) error {
@@ -59,7 +59,7 @@ func (it *Iterator) Cursor() (string, error) {
 
 	lastObjData := it.last.Data()
 
-	cursor := make(map[string]interface{})
+	cursor := make(map[string]interface{}, len(it.orders))
 	for _, o := range it.orders {
 		val, ok := lastObjData[o.Field]
 		if !ok {
