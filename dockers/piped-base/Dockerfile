@@ -19,7 +19,7 @@ RUN \
         bash && \
     update-ca-certificates && \
     mkdir ${PIPED_TOOLS_DIR} && \
-    chmod 777 /etc/ssh/ssh_config && \
+    chmod 776 /etc/ssh/ssh_config && \
     # Pre-install the default version of helm.
     /installer/install-helm.sh && \
     # Pre-install the default version of kubectl.
