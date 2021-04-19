@@ -15,6 +15,7 @@
 package mysql
 
 import (
+	"encoding/base64"
 	"testing"
 
 	"github.com/stretchr/testify/assert"
@@ -183,9 +184,13 @@ func TestBuildFindQuery(t *testing.T) {
 						Field:     "UpdatedAt",
 						Direction: datastore.Desc,
 					},
+					{
+						Field:     "Id",
+						Direction: datastore.Asc,
+					},
 				},
 			},
-			expectedQuery: "SELECT Data FROM Project WHERE Extra = ? ORDER BY UpdatedAt DESC",
+			expectedQuery: "SELECT Data FROM Project WHERE Extra = ? ORDER BY UpdatedAt DESC, Id ASC",
 		},
 		{
 			name: "query with wrapped filter field name as order by column",
@@ -203,9 +208,13 @@ func TestBuildFindQuery(t *testing.T) {
 						Field:     "SyncState.Status",
 						Direction: datastore.Desc,
 					},
+					{
+						Field:     "Id",
+						Direction: datastore.Asc,
+					},
 				},
 			},
-			expectedQuery: "SELECT Data FROM Project WHERE Extra = ? ORDER BY SyncState_Status DESC",
+			expectedQuery: "SELECT Data FROM Project WHERE Extra = ? ORDER BY SyncState_Status DESC, Id ASC",
 		},
 		{
 			name: "query with one filter and one order by on 2 columns",
@@ -227,25 +236,13 @@ func TestBuildFindQuery(t *testing.T) {
 						Field:     "UpdatedAt",
 						Direction: datastore.Desc,
 					},
+					{
+						Field:     "Id",
+						Direction: datastore.Asc,
+					},
 				},
 			},
-			expectedQuery: "SELECT Data FROM Project WHERE Extra = ? ORDER BY CreatedAt ASC, UpdatedAt DESC",
-		},
-		{
-			name: "query with limit",
-			kind: "Project",
-			listOptions: datastore.ListOptions{
-				Limit: 20,
-			},
-			expectedQuery: "SELECT Data FROM Project LIMIT 20",
-		},
-		{
-			name: "query with limit offset",
-			kind: "Project",
-			listOptions: datastore.ListOptions{
-				Limit: 20,
-			},
-			expectedQuery: "SELECT Data FROM Project LIMIT 20",
+			expectedQuery: "SELECT Data FROM Project WHERE Extra = ? ORDER BY CreatedAt ASC, UpdatedAt DESC, Id ASC",
 		},
 		{
 			name: "query with unsupported operator",
@@ -288,6 +285,79 @@ func TestBuildFindQuery(t *testing.T) {
 				},
 			},
 			expectedQuery: "SELECT Data FROM Project WHERE Status IN (?)",
+		},
+		{
+			name: "query with limit",
+			kind: "Project",
+			listOptions: datastore.ListOptions{
+				Limit: 20,
+			},
+			expectedQuery: "SELECT Data FROM Project LIMIT 20",
+		},
+		{
+			name: "query with pagination cursor",
+			kind: "Application",
+			listOptions: datastore.ListOptions{
+				Filters: []datastore.ListFilter{
+					{
+						Field:    "ProjectId",
+						Operator: "==",
+					},
+				},
+				Orders: []datastore.Order{
+					{
+						Field:     "UpdatedAt",
+						Direction: datastore.Desc,
+					},
+					{
+						Field:     "Id",
+						Direction: datastore.Asc,
+					},
+				},
+				Limit: 20,
+				Cursor: func() string {
+					return base64.StdEncoding.EncodeToString([]byte(`{"Id":"object-id","UpdatedAt":100}`))
+				}(),
+			},
+			expectedQuery: "SELECT Data FROM Application WHERE ProjectId = ? AND UpdatedAt <= ? AND Id > UUID_TO_BIN(?,true) ORDER BY UpdatedAt DESC, Id ASC LIMIT 20",
+			wantErr:       false,
+		},
+		{
+			name: "query with pagination cursor: no filter",
+			kind: "Application",
+			listOptions: datastore.ListOptions{
+				Orders: []datastore.Order{
+					{
+						Field:     "UpdatedAt",
+						Direction: datastore.Desc,
+					},
+					{
+						Field:     "Id",
+						Direction: datastore.Asc,
+					},
+				},
+				Cursor: func() string {
+					return base64.StdEncoding.EncodeToString([]byte(`{"Id":"object-id","UpdatedAt":100}`))
+				}(),
+			},
+			expectedQuery: "SELECT Data FROM Application WHERE UpdatedAt <= ? AND Id > UUID_TO_BIN(?,true) ORDER BY UpdatedAt DESC, Id ASC",
+			wantErr:       false,
+		},
+		{
+			name: "query with cursor: missing Id from ordering fields",
+			kind: "Project",
+			listOptions: datastore.ListOptions{
+				Orders: []datastore.Order{
+					{
+						Field:     "UpdatedAt",
+						Direction: datastore.Desc,
+					},
+				},
+				Cursor: func() string {
+					return base64.StdEncoding.EncodeToString([]byte(`{"UpdatedAt":100}`))
+				}(),
+			},
+			wantErr: true,
 		},
 	}
 
@@ -339,6 +409,116 @@ func TestRefineFiltersValue(t *testing.T) {
 		t.Run(tc.name, func(t *testing.T) {
 			vals := refineFiltersValue(tc.filters)
 			assert.Equal(t, tc.expectedFiltersVal, vals)
+		})
+	}
+}
+
+func TestMakePaginationConditionOperator(t *testing.T) {
+	testcases := []struct {
+		name      string
+		order     datastore.Order
+		expectOpe string
+	}{
+		{
+			name: "Id field as ordering field",
+			order: datastore.Order{
+				Field:     "Id",
+				Direction: datastore.Asc,
+			},
+			expectOpe: ">",
+		},
+		{
+			name: "Not id field as ordering field",
+			order: datastore.Order{
+				Field:     "UpdatedAt",
+				Direction: datastore.Desc,
+			},
+			expectOpe: "<=",
+		},
+	}
+
+	for _, tc := range testcases {
+		t.Run(tc.name, func(t *testing.T) {
+			ope := makePaginationConditionOperator(tc.order)
+			assert.Equal(t, tc.expectOpe, ope)
+		})
+	}
+}
+
+func TestMakePaginationCursorValues(t *testing.T) {
+	testcases := []struct {
+		name               string
+		opts               datastore.ListOptions
+		expectedCursorVals []interface{}
+		wantErr            bool
+	}{
+		{
+			name: "valid cursor with CamelCase key",
+			opts: datastore.ListOptions{
+				Orders: []datastore.Order{
+					{
+						Field:     "UpdatedAt",
+						Direction: datastore.Desc,
+					},
+					{
+						Field:     "Id",
+						Direction: datastore.Asc,
+					},
+				},
+				Cursor: func() string {
+					return base64.StdEncoding.EncodeToString([]byte(`{"Id":"object-id","UpdatedAt":100}`))
+				}(),
+			},
+			expectedCursorVals: []interface{}{
+				float64(100),
+				"object-id",
+			},
+		},
+		{
+			name: "invalid cursor with snake_case key",
+			opts: datastore.ListOptions{
+				Orders: []datastore.Order{
+					{
+						Field:     "UpdatedAt",
+						Direction: datastore.Desc,
+					},
+					{
+						Field:     "Id",
+						Direction: datastore.Asc,
+					},
+				},
+				Cursor: func() string {
+					return base64.StdEncoding.EncodeToString([]byte(`{"id":"object-id","updated_at":100}`))
+				}(),
+			},
+			wantErr: true,
+		},
+		{
+			name: "invalid cursor missing ordering field value",
+			opts: datastore.ListOptions{
+				Orders: []datastore.Order{
+					{
+						Field:     "UpdatedAt",
+						Direction: datastore.Desc,
+					},
+					{
+						Field:     "Id",
+						Direction: datastore.Asc,
+					},
+				},
+				Cursor: func() string {
+					return base64.StdEncoding.EncodeToString([]byte(`{"Id":"object-id"}`))
+				}(),
+			},
+			wantErr: true,
+		},
+	}
+
+	for _, tc := range testcases {
+		t.Run(tc.name, func(t *testing.T) {
+			vals, err := makePaginationCursorValues(tc.opts)
+			assert.Equal(t, tc.expectedCursorVals, vals)
+			assert.Equal(t, tc.wantErr, err != nil)
 		})
 	}
 }

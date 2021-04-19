@@ -15,6 +15,8 @@
 package mysql
 
 import (
+	"encoding/base64"
+	"encoding/json"
 	"fmt"
 	"reflect"
 	"strings"
@@ -44,13 +46,18 @@ func buildFindQuery(table string, ops datastore.ListOptions) (string, error) {
 		return "", err
 	}
 
+	orderByClause, err := buildOrderByClause(refineOrdersField(ops.Orders))
+	if err != nil {
+		return "", err
+	}
+
 	rawQuery := fmt.Sprintf(
-		"SELECT Data FROM %s %s %s %s",
+		"SELECT Data FROM %s %s %s %s %s",
 		table,
 		buildWhereClause(filters),
-		buildOrderByClause(refineOrdersField(ops.Orders)),
-		// TODO: Remove this pagination build function.
-		buildPaginationClause(0, ops.Limit),
+		buildPaginationCondition(ops),
+		orderByClause,
+		buildLimitClause(ops.Limit),
 	)
 	return strings.Join(strings.Fields(rawQuery), " "), nil
 }
@@ -74,25 +81,68 @@ func buildWhereClause(filters []datastore.ListFilter) string {
 	return fmt.Sprintf("WHERE %s", strings.Join(conds[:], " AND "))
 }
 
-func buildOrderByClause(orders []datastore.Order) string {
-	if len(orders) == 0 {
+func buildPaginationCondition(opts datastore.ListOptions) string {
+	// Skip on no cursor.
+	if len(opts.Cursor) == 0 {
 		return ""
 	}
 
-	conds := make([]string, len(orders))
-	for i, ord := range orders {
-		conds[i] = fmt.Sprintf("%s %s", ord.Field, toMySQLDirection(ord.Direction))
+	conds := make([]string, len(opts.Orders))
+	for i, o := range opts.Orders {
+		if o.Field == "Id" {
+			conds[i] = fmt.Sprintf("%s %s UUID_TO_BIN(?,true)", o.Field, makePaginationConditionOperator(o))
+		} else {
+			conds[i] = fmt.Sprintf("%s %s ?", o.Field, makePaginationConditionOperator(o))
+		}
 	}
-	return fmt.Sprintf("ORDER BY %s", strings.Join(conds[:], ", "))
+
+	// If there is no filter, mean pagination condition should be treated as the only where condition.
+	if len(opts.Filters) == 0 {
+		return fmt.Sprintf("WHERE %s", strings.Join(conds[:], " AND "))
+	}
+	return fmt.Sprintf("AND %s", strings.Join(conds[:], " AND "))
 }
 
-func buildPaginationClause(page, pageSize int) string {
-	var clause string
-	if pageSize > 0 {
-		clause = fmt.Sprintf("LIMIT %d ", pageSize)
-		if page > 0 {
-			clause = fmt.Sprintf("%sOFFSET %d", clause, pageSize*page)
+func makePaginationConditionOperator(order datastore.Order) string {
+	// Only the Id field should be used strict with greater/lower than operators.
+	if order.Field == "Id" {
+		if order.Direction == datastore.Asc {
+			return ">"
 		}
+		return "<"
+	}
+
+	if order.Direction == datastore.Asc {
+		return ">="
+	}
+	return "<="
+}
+
+func buildOrderByClause(orders []datastore.Order) (string, error) {
+	if len(orders) == 0 {
+		return "", nil
+	}
+
+	conds := make([]string, len(orders))
+	hasIDFieldInOrdering := false
+	for i, ord := range orders {
+		if ord.Field == "Id" {
+			hasIDFieldInOrdering = true
+		}
+		conds[i] = fmt.Sprintf("%s %s", ord.Field, toMySQLDirection(ord.Direction))
+	}
+
+	if !hasIDFieldInOrdering {
+		return "", fmt.Errorf("id field is required as ordering field")
+	}
+
+	return fmt.Sprintf("ORDER BY %s", strings.Join(conds[:], ", ")), nil
+}
+
+func buildLimitClause(limit int) string {
+	var clause string
+	if limit > 0 {
+		clause = fmt.Sprintf("LIMIT %d ", limit)
 	}
 	return clause
 }
@@ -171,4 +221,34 @@ func refineFiltersValue(filters []datastore.ListFilter) []interface{} {
 		}
 	}
 	return filtersVals
+}
+
+// makePaginationCursorValues builds array of element values used on pagination condition check.
+func makePaginationCursorValues(opts datastore.ListOptions) ([]interface{}, error) {
+	// Skip pagination on cursor is empty.
+	if len(opts.Cursor) == 0 {
+		return nil, nil
+	}
+
+	// Decode last object of previous page stored as opts.Cursor to string.
+	data, err := base64.StdEncoding.DecodeString(opts.Cursor)
+	if err != nil {
+		return nil, err
+	}
+	// Encode cursor data string to map[string]interface{} format for futher process.
+	obj := make(map[string]interface{})
+	if err := json.Unmarshal(data, &obj); err != nil {
+		return nil, err
+	}
+
+	cursorVals := make([]interface{}, 0, len(opts.Orders))
+	for _, o := range opts.Orders {
+		val, ok := obj[o.Field]
+		if !ok {
+			return nil, fmt.Errorf("cursor does not contain values that match to ordering field %s", o.Field)
+		}
+		cursorVals = append(cursorVals, val)
+	}
+
+	return cursorVals, nil
 }

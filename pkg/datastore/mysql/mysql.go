@@ -88,20 +88,26 @@ func (m *MySQL) Find(ctx context.Context, kind string, opts datastore.ListOption
 		return nil, err
 	}
 
-	filtersVal := refineFiltersValue(opts.Filters)
+	whereConditionVals := refineFiltersValue(opts.Filters)
+	cursorVals, err := makePaginationCursorValues(opts)
+	if err != nil {
+		return nil, err
+	}
+	whereConditionVals = append(whereConditionVals, cursorVals...)
 
-	rows, err := m.client.QueryContext(ctx, query, filtersVal...)
+	rows, err := m.client.QueryContext(ctx, query, whereConditionVals...)
 	if err != nil {
 		m.logger.Error("failed to find entities",
 			zap.String("kind", kind),
 			zap.String("query", query),
-			zap.Any("filtersValue", filtersVal),
+			zap.Any("whereConditionValues", whereConditionVals),
 			zap.Error(err),
 		)
 		return nil, err
 	}
 	return &Iterator{
-		rows: rows,
+		rows:   rows,
+		orders: opts.Orders,
 	}, nil
 }
 
