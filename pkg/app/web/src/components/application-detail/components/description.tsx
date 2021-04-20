@@ -36,7 +36,9 @@ export const ApplicationDescription: FC<ApplicationDescriptionProps> = memo(
       return (
         <form onSubmit={formik.handleSubmit} className={classes.form}>
           <TextField
+            id="description"
             name="description"
+            label="Description"
             multiline
             variant="outlined"
             value={formik.values.description}
