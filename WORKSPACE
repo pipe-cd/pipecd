@@ -129,10 +129,11 @@ load(
 
 container_pull(
     name = "piped-base",
-    digest = "sha256:41175b8a7cf8acf425808f6770cabcc43fef423a31b647957341ac2de4161a9e",
+    # FIXME: Put the digest
+    digest = "",
     registry = "gcr.io",
     repository = "pipecd/piped-base",
-    tag = "0.2.1",
+    tag = "0.2.2",
 )
 
 container_pull(
