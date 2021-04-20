@@ -1,8 +1,8 @@
 import userEvent from "@testing-library/user-event";
-import { act, render, screen } from "../../../test-utils";
+import { render, screen } from "../../../test-utils";
 import { SplitButton } from "./";
 
-it("calls onClick handler with option's index if clicked", () => {
+it("calls onClick handler with option's index if clicked", async () => {
   const onClick = jest.fn();
   render(
     <SplitButton
@@ -19,9 +19,7 @@ it("calls onClick handler with option's index if clicked", () => {
 
   expect(onClick).toHaveBeenCalledWith(0);
 
-  act(() => {
-    userEvent.click(screen.getByRole("button", { name: "select option" }));
-  });
+  userEvent.click(screen.getByRole("button", { name: "select option" }));
   userEvent.click(screen.getByRole("menuitem", { name: "option2" }));
   userEvent.click(screen.getByRole("button", { name: "option2" }));
 
