@@ -13,46 +13,43 @@ description: >
 - [pkg/app/web](https://github.com/pipe-cd/pipe/tree/master/pkg/app/web): contains source code for control-plane web.
 - [pkg](https://github.com/pipe-cd/pipe/tree/master/pkg): contains shared source code for all components of both `piped` and `control-plane`.
 
-## How to run server locally
+## How to run control-plane locally
 
-### Running up server
+### Prerequisites
+- Installing [kind](https://kind.sigs.k8s.io/docs/user/quick-start/#installation)
+- Running a local Kubernetes cluster by `make kind-up`. (Cluster that is no longer used can be deleted by `make kind-down`.)
 
-Prepare a ControlPlane configuration file as described at [Installation](https://pipecd.dev/docs/operator-manual/control-plane/installation/) and start running by the following command:
+### Pushing the images to local container registry
 
 ``` console
-bazelisk run //cmd/pipecd:pipecd -- server \
---config-file=absolute-path-to-control-plane-config.yaml \
---encryption-key-file=absolute-path-to-a-random-key-file
+make push
 ```
 
-Because we are using **grpc-web** for communicating between web-client and server, so we may need a **local Envoy instance**.
+This command compiles the local source code to build the docker images for `pipecd`, `piped` and then pushes them to the local container registery which was enabled by `make kind-up`.
 
-### Integrating with Envoy
+### Rendering the local manifests
 
-You can install [Envoy](https://www.envoyproxy.io/docs/envoy/latest/start/install) locally or running it on [Docker](https://docs.docker.com/get-docker/).
+Because the `manifests` directory at [pipe-cd/pipe](https://github.com/pipe-cd/pipe) are just containing the manifest templates, they can not be used to install directly. The following command helps rendering those templates locally. The installable manifests will be stored at `.rendered-manifests` directory.
 
-We already prepared `local/envoy-config.yaml` **but syntax is running on _Envoy_ version _1.10.0_**
-
-_At root of repository:_
-
-#### Running local Envoy
-
-```
-envoy -c local/envoy-config.yaml 
+``` console
+make render-manifests
 ```
 
-#### Running Envoy on Docker
+#### Installing control-plane into the local cluster
 
-1. Run Docker command build for `local/Dockerfile`
+Now, you can use the rendered manifests at `.rendered-manifests` to install control-plane to the local cluster.
 
-```
-docker build -t web-envoy:v1 ./local
-```
+Here is the command to install [quickstart](/docs/quickstart/)'s control-plane:
 
-3. And now you can execute it with:
-
-```
-docker run -d --net="host" --name web-envoy -p 9095:9095 -p 9090:9090 web-envoy:1.0
+``` console
+helm -n pipecd upgrade -i pipecd .rendered-manifests/pipecd --create-namespace --values ./quickstart/control-plane-values.yaml
 ```
 
-Then go to `http://localhost:9090` on your browser to access PipeCD's web.
+Once all components are running up, use `kubectl port-forward` to expose the installed control-plane on your localhost:
+
+``` console
+kubectl -n pipecd port-forward svc/pipecd 8080
+```
+
+Point your web browser to [http://localhost:8080](http://localhost:8080) to login with the configured static admin account: project = `quickstart`,
+username = `hello-pipecd`, password = `hello-pipecd`.

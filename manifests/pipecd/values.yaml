@@ -19,6 +19,8 @@ gateway:
     enabled: false
 
 server:
+  image:
+    repository: gcr.io/pipecd/pipecd
   replicasCount: 1
   args:
     cacheAddress: ""
@@ -34,6 +36,8 @@ cache:
   resources: {}
 
 ops:
+  image:
+    repository: gcr.io/pipecd/pipecd
   args:
     logEncoding: humanize
   resources: {}

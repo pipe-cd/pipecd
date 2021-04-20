@@ -1,3 +1,6 @@
+image:
+  repository: gcr.io/pipecd/piped
+
 args:
   metrics: true
   useFakeAPI: false

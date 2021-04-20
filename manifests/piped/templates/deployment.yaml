@@ -22,7 +22,7 @@ spec:
       serviceAccountName: {{ include "piped.serviceAccountName" . }}
       containers:
         - name: piped
-          image: "gcr.io/pipecd/piped:{{ .Chart.AppVersion }}"
+          image: "{{ .Values.image.repository }}:{{ .Chart.AppVersion }}"
           imagePullPolicy: IfNotPresent
           args:
           - piped

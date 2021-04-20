@@ -23,6 +23,15 @@ endif
 build:
 	bazelisk ${BAZEL_FLAGS} build ${BAZEL_COMMAND_FLAGS} -- //...
 
+.PHONY: push
+push:
+	bazelisk ${BAZEL_FLAGS} run ${BAZEL_COMMAND_FLAGS} --config=linux --config=stamping -- //cmd/pipecd:push
+	bazelisk ${BAZEL_FLAGS} run ${BAZEL_COMMAND_FLAGS} --config=linux --config=stamping -- //cmd/piped:push
+
+.PHONY: render-manifests
+render-manifests:
+	./hack/render-manifests.sh $(VERSION)
+
 .PHONY: test
 test:
 	bazelisk ${BAZEL_FLAGS} test ${BAZEL_COMMAND_FLAGS} -- //pkg/...
@@ -80,3 +89,11 @@ generate-test-tls:
 		-out pkg/rpc/testdata/tls.crt \
 		-subj "/CN=localhost" \
 		-config pkg/rpc/testdata/tls.config
+
+.PHONY: kind-up
+kind-up:
+	./hack/create-kind-cluster.sh pipecd
+
+.PHONY: kind-down
+kind-down:
+	kind delete cluster --name pipecd
