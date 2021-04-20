@@ -1,6 +1,7 @@
 FROM alpine:3.12.1
 
-ENV PIPED_TOOLS_DIR=/tools
+ENV PIPED_SHARED_HOME=/etc/pipecd
+ENV PIPED_TOOLS_DIR="${PIPED_SHARED_HOME}/tools"
 ENV PATH="${PIPED_TOOLS_DIR}:${PATH}"
 
 COPY install-helm.sh /installer/install-helm.sh
@@ -18,8 +19,7 @@ RUN \
         curl \
         bash && \
     update-ca-certificates && \
-    mkdir ${PIPED_TOOLS_DIR} && \
-    chmod 776 /etc/ssh/ssh_config && \
+    mkdir -p ${PIPED_TOOLS_DIR} && \
     # Pre-install the default version of helm.
     /installer/install-helm.sh && \
     # Pre-install the default version of kubectl.
@@ -28,9 +28,10 @@ RUN \
     /installer/install-kustomize.sh && \
     # Pre-install the default version of terraform.
     /installer/install-terraform.sh && \
-    chmod 775 ${PIPED_TOOLS_DIR}/* && \
     # Delete installer directory.
     rm -rf /installer && \
-    rm -f /var/cache/apk/*
+    rm -f /var/cache/apk/* && \
+    chown -hR pipecd:pipecd ${PIPED_SHARED_HOME} && \
+    chmod 770 -R ${PIPED_SHARED_HOME}
 
 USER pipecd

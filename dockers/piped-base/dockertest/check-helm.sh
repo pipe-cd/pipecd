@@ -16,7 +16,7 @@
 
 declare -A pathcases
 #pathcases["helm-2.16.7"]="/tools/helm-2.16.7"
-pathcases["helm"]="/tools/helm"
+pathcases["helm"]="/etc/pipecd/tools/helm"
 
 for h in "${!pathcases[@]}"
 do
