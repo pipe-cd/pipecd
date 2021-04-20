@@ -12,7 +12,7 @@ import {
   Popper,
 } from "@material-ui/core";
 import ArrowDropDownIcon from "@material-ui/icons/ArrowDropDown";
-import { FC, useRef, useState } from "react";
+import { FC, useRef, useState, MouseEvent } from "react";
 import * as React from "react";
 
 const useStyles = makeStyles((theme) => ({
@@ -48,9 +48,17 @@ export const SplitButton: FC<SplitButtonProps> = ({
   label,
 }) => {
   const classes = useStyles();
-  const anchorRef = useRef(null);
-  const [openCancelMenu, setOpenCancelMenu] = useState(false);
+  const anchorRef = useRef<HTMLDivElement | null>(null);
+  const [open, setOpen] = useState(false);
   const [selectedCancelOption, setSelectedCancelOption] = useState(0);
+
+  const handleClose = (event: MouseEvent<Document>): void => {
+    if (anchorRef.current && anchorRef.current.contains(event.target as Node)) {
+      return;
+    }
+
+    setOpen(false);
+  };
 
   return (
     <div className={className}>
@@ -72,17 +80,17 @@ export const SplitButton: FC<SplitButtonProps> = ({
         </Button>
         <Button
           size="small"
-          aria-controls={openCancelMenu ? "split-button-menu" : undefined}
-          aria-expanded={openCancelMenu ? "true" : undefined}
+          aria-controls={open ? "split-button-menu" : undefined}
+          aria-expanded={open ? "true" : undefined}
           aria-label={label}
           aria-haspopup="menu"
-          onClick={() => setOpenCancelMenu(!openCancelMenu)}
+          onClick={() => setOpen(!open)}
         >
           <ArrowDropDownIcon />
         </Button>
       </ButtonGroup>
       <Popper
-        open={openCancelMenu}
+        open={open}
         anchorEl={anchorRef.current}
         role={undefined}
         transition
@@ -97,7 +105,7 @@ export const SplitButton: FC<SplitButtonProps> = ({
             }}
           >
             <Paper>
-              <ClickAwayListener onClickAway={() => setOpenCancelMenu(false)}>
+              <ClickAwayListener onClickAway={handleClose}>
                 <MenuList id="split-button-menu">
                   {options.map((option, index) => (
                     <MenuItem
@@ -105,7 +113,7 @@ export const SplitButton: FC<SplitButtonProps> = ({
                       selected={index === selectedCancelOption}
                       onClick={() => {
                         setSelectedCancelOption(index);
-                        setOpenCancelMenu(false);
+                        setOpen(false);
                       }}
                     >
                       {option}
