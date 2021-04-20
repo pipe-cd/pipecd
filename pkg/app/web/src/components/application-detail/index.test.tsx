@@ -1,7 +1,12 @@
-import { DeepPartial } from "@reduxjs/toolkit";
 import userEvent from "@testing-library/user-event";
 import { MemoryRouter } from "react-router-dom";
-import { createStore, render, screen, waitFor } from "../../../test-utils";
+import {
+  createStore,
+  render,
+  screen,
+  waitFor,
+  createReduxStore,
+} from "../../../test-utils";
 import { server } from "../../mocks/server";
 import { AppState } from "../../modules";
 import {
@@ -41,7 +46,7 @@ const deployingApp: Application.AsObject = {
   },
 };
 
-const baseState: DeepPartial<AppState> = {
+const baseState: Partial<AppState> = {
   applications: {
     ids: [dummyApplication.id, deployingApp.id],
     entities: {
@@ -52,6 +57,7 @@ const baseState: DeepPartial<AppState> = {
     disabling: {},
     loading: false,
     syncing: {},
+    fetchApplicationError: null,
   },
   applicationLiveState: {
     ids: [dummyApplicationLiveState.applicationId],
@@ -72,6 +78,8 @@ const baseState: DeepPartial<AppState> = {
       [dummyPiped.id]: dummyPiped,
     },
     ids: [dummyPiped.id],
+    registeredPiped: null,
+    updating: false,
   },
 };
 
@@ -169,5 +177,28 @@ describe("ApplicationDetail", () => {
         ])
       );
     });
+  });
+
+  test("edit description", async () => {
+    const store = createReduxStore(baseState);
+    render(
+      <MemoryRouter>
+        <ApplicationDetail applicationId={dummyApplication.id} />
+      </MemoryRouter>,
+      {
+        store,
+      }
+    );
+
+    userEvent.click(screen.getByRole("button", { name: /edit description/i }));
+    userEvent.type(
+      screen.getByRole("textbox", { name: /Description/i }),
+      "# Awesome application"
+    );
+    userEvent.click(screen.getByRole("button", { name: /Save description/i }));
+
+    await waitFor(() =>
+      expect(screen.getByText("Awesome application")).toBeInTheDocument()
+    );
   });
 });
