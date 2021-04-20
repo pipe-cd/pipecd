@@ -86,7 +86,7 @@ func (c *list) run(ctx context.Context, _ cli.Telemetry) error {
 		return fmt.Errorf("failed to list application: %w", err)
 	}
 
-	bytes, err := json.Marshal(resp.Applications)
+	bytes, err := json.Marshal(resp)
 	if err != nil {
 		return fmt.Errorf("failed to marshal applications: %w", err)
 	}

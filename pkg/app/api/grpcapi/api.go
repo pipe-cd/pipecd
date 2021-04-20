@@ -182,6 +182,16 @@ func (a *API) ListApplications(ctx context.Context, req *apiservice.ListApplicat
 	}
 
 	const limit = 10
+	orders := []datastore.Order{
+		{
+			Field:     "UpdatedAt",
+			Direction: datastore.Desc,
+		},
+		{
+			Field:     "Id",
+			Direction: datastore.Asc,
+		},
+	}
 	filters := []datastore.ListFilter{
 		{
 			Field:    "ProjectId",
@@ -265,6 +275,7 @@ func (a *API) ListApplications(ctx context.Context, req *apiservice.ListApplicat
 		})
 	}
 	opts := datastore.ListOptions{
+		Orders:  orders,
 		Filters: filters,
 		Limit:   limit,
 	}
