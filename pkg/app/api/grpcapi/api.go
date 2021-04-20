@@ -269,13 +269,14 @@ func (a *API) ListApplications(ctx context.Context, req *apiservice.ListApplicat
 		Limit:   limit,
 	}
 
-	apps, err := listApplications(ctx, a.applicationStore, opts, a.logger)
+	apps, cursor, err := listApplications(ctx, a.applicationStore, opts, a.logger)
 	if err != nil {
 		return nil, err
 	}
 
 	return &apiservice.ListApplicationsResponse{
 		Applications: apps,
+		Cursor:       cursor,
 	}, nil
 }
 
