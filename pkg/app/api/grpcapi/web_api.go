@@ -623,7 +623,7 @@ func (a *WebAPI) ListApplications(ctx context.Context, req *webservice.ListAppli
 		}
 	}
 
-	apps, err := a.applicationStore.ListApplications(ctx, datastore.ListOptions{
+	apps, _, err := a.applicationStore.ListApplications(ctx, datastore.ListOptions{
 		Filters: filters,
 		Orders:  orders,
 	})

@@ -34,7 +34,7 @@ type ApplicationStore interface {
 	DisableApplication(ctx context.Context, id string) error
 	DeleteApplication(ctx context.Context, id string) error
 	GetApplication(ctx context.Context, id string) (*model.Application, error)
-	ListApplications(ctx context.Context, opts ListOptions) ([]*model.Application, error)
+	ListApplications(ctx context.Context, opts ListOptions) ([]*model.Application, string, error)
 	UpdateApplication(ctx context.Context, id string, updater func(*model.Application) error) error
 	PutApplicationSyncState(ctx context.Context, id string, syncState *model.ApplicationSyncState) error
 	PutApplicationMostRecentDeployment(ctx context.Context, id string, status model.DeploymentStatus, deployment *model.ApplicationDeploymentReference) error
@@ -112,10 +112,10 @@ func (s *applicationStore) GetApplication(ctx context.Context, id string) (*mode
 	return &entity, nil
 }
 
-func (s *applicationStore) ListApplications(ctx context.Context, opts ListOptions) ([]*model.Application, error) {
+func (s *applicationStore) ListApplications(ctx context.Context, opts ListOptions) ([]*model.Application, string, error) {
 	it, err := s.ds.Find(ctx, ApplicationModelKind, opts)
 	if err != nil {
-		return nil, err
+		return nil, "", err
 	}
 	apps := make([]*model.Application, 0)
 	for {
@@ -125,11 +125,20 @@ func (s *applicationStore) ListApplications(ctx context.Context, opts ListOption
 			break
 		}
 		if err != nil {
-			return nil, err
+			return nil, "", err
 		}
 		apps = append(apps, &app)
 	}
-	return apps, nil
+
+	// In case there is no more elements found, cursor should be set to empty too.
+	if len(apps) == 0 {
+		return apps, "", nil
+	}
+	cursor, err := it.Cursor()
+	if err != nil {
+		return nil, "", err
+	}
+	return apps, cursor, nil
 }
 
 func (s *applicationStore) UpdateApplication(ctx context.Context, id string, updater func(*model.Application) error) error {

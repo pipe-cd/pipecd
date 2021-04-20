@@ -65,7 +65,7 @@ func TestInsightCollector_getApplications(t *testing.T) {
 					{
 						Id: "2",
 					},
-				}, nil)
+				}, "", nil)
 			},
 			want: []*model.Application{
 				{
@@ -101,7 +101,7 @@ func TestInsightCollector_getApplications(t *testing.T) {
 					{
 						CreatedAt: time.Date(2020, 1, 1, 0, 0, 0, 0, time.UTC).Unix(),
 					},
-				}, nil)
+				}, "", nil)
 				m.EXPECT().ListApplications(gomock.Any(), datastore.ListOptions{
 					Limit: limit,
 					Filters: []datastore.ListFilter{
@@ -118,7 +118,7 @@ func TestInsightCollector_getApplications(t *testing.T) {
 						},
 					}}).Return([]*model.Application{
 					{}, {}, {}, {}, {}, {}, {}, {}, {}, {}, {}, {}, {}, {}, {}, {}, {}, {}, {}, {}, {}, {}, {}, {}, {},
-				}, nil)
+				}, "", nil)
 			},
 			want: []*model.Application{
 				{}, {}, {}, {}, {}, {}, {}, {}, {}, {}, {}, {}, {}, {}, {}, {}, {}, {}, {}, {}, {}, {}, {}, {}, {},
@@ -148,7 +148,7 @@ func TestInsightCollector_getApplications(t *testing.T) {
 							Field:     "CreatedAt",
 							Direction: datastore.Desc,
 						},
-					}}).Return(nil, errors.New("error"))
+					}}).Return(nil, "", errors.New("error"))
 			},
 			wantErr: true,
 		},

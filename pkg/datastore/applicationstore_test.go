@@ -171,7 +171,7 @@ func TestListApplications(t *testing.T) {
 	for _, tc := range testcases {
 		t.Run(tc.name, func(t *testing.T) {
 			s := NewApplicationStore(tc.ds)
-			_, err := s.ListApplications(context.Background(), tc.opts)
+			_, _, err := s.ListApplications(context.Background(), tc.opts)
 			assert.Equal(t, tc.wantErr, err != nil)
 		})
 	}

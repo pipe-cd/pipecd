@@ -69,7 +69,7 @@ func (i *InsightCollector) getApplications(ctx context.Context, to time.Time) ([
 	var applications []*model.Application
 	maxCreatedAt := to.Unix()
 	for {
-		apps, err := i.applicationStore.ListApplications(ctx, datastore.ListOptions{
+		apps, _, err := i.applicationStore.ListApplications(ctx, datastore.ListOptions{
 			Limit: limit,
 			Filters: []datastore.ListFilter{
 				{

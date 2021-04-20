@@ -55,7 +55,7 @@ func getApplication(ctx context.Context, store datastore.ApplicationStore, id st
 }
 
 func listApplications(ctx context.Context, store datastore.ApplicationStore, opts datastore.ListOptions, logger *zap.Logger) ([]*model.Application, error) {
-	apps, err := store.ListApplications(ctx, opts)
+	apps, _, err := store.ListApplications(ctx, opts)
 	if err != nil {
 		logger.Error("failed to list applications", zap.Error(err))
 		return nil, status.Error(codes.Internal, "Failed to list applications")
