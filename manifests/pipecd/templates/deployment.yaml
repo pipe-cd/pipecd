@@ -86,7 +86,7 @@ spec:
     spec:
       containers:
         - name: server
-          image: "gcr.io/pipecd/pipecd:{{ .Chart.AppVersion }}"
+          image: "{{ .Values.server.image.repository }}:{{ .Chart.AppVersion }}"
           imagePullPolicy: IfNotPresent
           args:
           - server
@@ -210,7 +210,7 @@ spec:
     spec:
       containers:
         - name: ops
-          image: "gcr.io/pipecd/pipecd:{{ .Chart.AppVersion }}"
+          image: "{{ .Values.ops.image.repository }}:{{ .Chart.AppVersion }}"
           imagePullPolicy: IfNotPresent
           args:
           - ops
