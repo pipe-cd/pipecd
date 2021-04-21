@@ -25,7 +25,7 @@ import (
 )
 
 const (
-	defaultSSHConfigFilePath = "/etc/pipecd/ssh_config"
+	defaultSSHConfigFilePath = "/etc/piped/ssh_config"
 	defaultHost              = "github.com"
 
 	sshConfigTemplate = `

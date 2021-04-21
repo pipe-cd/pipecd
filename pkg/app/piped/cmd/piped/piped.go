@@ -75,7 +75,7 @@ type piped struct {
 func NewCommand() *cobra.Command {
 	p := &piped{
 		adminPort:   9085,
-		toolsDir:    "/etc/pipecd/tools",
+		toolsDir:    "/etc/piped/tools",
 		gracePeriod: 30 * time.Second,
 	}
 	cmd := &cobra.Command{

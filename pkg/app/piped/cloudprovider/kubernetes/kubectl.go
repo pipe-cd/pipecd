@@ -24,6 +24,8 @@ import (
 	"k8s.io/client-go/rest"
 )
 
+const defaultCacheDir = "/etc/piped/.kube/cache"
+
 type Kubectl struct {
 	version  string
 	execPath string
@@ -47,9 +49,9 @@ func (c *Kubectl) Apply(ctx context.Context, namespace string, manifest Manifest
 		return err
 	}
 
-	args := make([]string, 0, 5)
+	args := make([]string, 0, 7)
 	if namespace != "" {
-		args = append(args, "-n", namespace)
+		args = append(args, "-n", namespace, "--cache-dir", defaultCacheDir)
 	}
 	args = append(args, "apply", "-f", "-")
 
@@ -69,9 +71,9 @@ func (c *Kubectl) Delete(ctx context.Context, namespace string, r ResourceKey) (
 		metricsKubectlCalled(c.version, "delete", err == nil)
 	}()
 
-	args := make([]string, 0, 5)
+	args := make([]string, 0, 7)
 	if namespace != "" {
-		args = append(args, "-n", namespace)
+		args = append(args, "-n", namespace, "--cache-dir", defaultCacheDir)
 	}
 	args = append(args, "delete", r.Kind, r.Name)
 
