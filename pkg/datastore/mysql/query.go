@@ -106,7 +106,7 @@ func buildPaginationCondition(opts datastore.ListOptions) string {
 	subSetConds := make([]string, len(opts.Orders))
 	for i, o := range opts.Orders {
 		if o.Field == "Id" {
-			subSetConds[i] = fmt.Sprintf("%s %s UUID_TO_BIN(?, true)", o.Field, makeCompareOperatorForSubSet(o.Direction))
+			subSetConds[i] = fmt.Sprintf("%s %s UUID_TO_BIN(?,true)", o.Field, makeCompareOperatorForSubSet(o.Direction))
 		} else {
 			subSetConds[i] = fmt.Sprintf("%s = ?", o.Field)
 		}

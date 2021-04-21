@@ -319,7 +319,7 @@ func TestBuildFindQuery(t *testing.T) {
 					return base64.StdEncoding.EncodeToString([]byte(`{"Id":"object-id","UpdatedAt":100}`))
 				}(),
 			},
-			expectedQuery: "SELECT Data FROM Application WHERE ProjectId = ? AND UpdatedAt <= ? AND NOT (UpdatedAt = ? AND Id <= UUID_TO_BIN(?, true)) ORDER BY UpdatedAt DESC, Id ASC LIMIT 20",
+			expectedQuery: "SELECT Data FROM Application WHERE ProjectId = ? AND UpdatedAt <= ? AND NOT (UpdatedAt = ? AND Id <= UUID_TO_BIN(?,true)) ORDER BY UpdatedAt DESC, Id ASC LIMIT 20",
 			wantErr:       false,
 		},
 		{
@@ -340,7 +340,7 @@ func TestBuildFindQuery(t *testing.T) {
 					return base64.StdEncoding.EncodeToString([]byte(`{"Id":"object-id","UpdatedAt":100}`))
 				}(),
 			},
-			expectedQuery: "SELECT Data FROM Application WHERE UpdatedAt <= ? AND NOT (UpdatedAt = ? AND Id <= UUID_TO_BIN(?, true)) ORDER BY UpdatedAt DESC, Id ASC",
+			expectedQuery: "SELECT Data FROM Application WHERE UpdatedAt <= ? AND NOT (UpdatedAt = ? AND Id <= UUID_TO_BIN(?,true)) ORDER BY UpdatedAt DESC, Id ASC",
 			wantErr:       false,
 		},
 		{
