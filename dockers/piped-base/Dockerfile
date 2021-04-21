@@ -1,7 +1,7 @@
 FROM alpine:3.12.1
 
-ENV PIPED_SHARED_HOME=/etc/pipecd
-ENV PIPED_TOOLS_DIR="${PIPED_SHARED_HOME}/tools"
+ENV PIPED_DIR=/etc/piped
+ENV PIPED_TOOLS_DIR="${PIPED_DIR}/tools"
 ENV PATH="${PIPED_TOOLS_DIR}:${PATH}"
 
 COPY install-helm.sh /installer/install-helm.sh
@@ -31,7 +31,7 @@ RUN \
     # Delete installer directory.
     rm -rf /installer && \
     rm -f /var/cache/apk/* && \
-    chown -hR pipecd:pipecd ${PIPED_SHARED_HOME} && \
-    chmod 770 -R ${PIPED_SHARED_HOME}
+    chown -hR pipecd:pipecd ${PIPED_DIR} && \
+    chmod 770 -R ${PIPED_DIR}
 
 USER pipecd
