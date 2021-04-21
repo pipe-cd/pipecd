@@ -3,6 +3,10 @@ FROM alpine:3.12.1
 ENV PIPED_DIR=/etc/piped
 ENV PIPED_TOOLS_DIR="${PIPED_DIR}/tools"
 ENV PATH="${PIPED_TOOLS_DIR}:${PATH}"
+ENV HELM_CACHE_HOME="${PIPED_DIR}/.cache/helm"
+ENV HELM_CONFIG_HOME="${PIPED_DIR}/.config/helm"
+ENV HELM_DATA_HOME="${PIPED_DIR}/.local/share/helm"
+ENV KUBECONFIG="${PIPED_DIR}/.kube/config"
 
 COPY install-helm.sh /installer/install-helm.sh
 COPY install-kubectl.sh /installer/install-kubectl.sh
