@@ -26,10 +26,12 @@ bazelisk run --run_under="cd $PWD && " //cmd/piped:piped -- piped \
 --config-file=piped-config.yaml
 ```
 
-## How to load piped image into the local Docker client
+## How to run it locally as docker container
 
-``` console
+``` bash
+# Compile the current source code to build a new Docker image
+# and then load it into the local docker client as bazel/cmd/piped:image.
 make load-piped-image
-```
 
-This compiles the current source code to build a new Docker image for `piped` and then loads it into the local Docker client as `bazel/cmd/piped:image`.
+docker run bazel/cmd/piped:image --help
+```
