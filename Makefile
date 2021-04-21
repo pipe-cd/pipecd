@@ -23,6 +23,10 @@ endif
 build:
 	bazelisk ${BAZEL_FLAGS} build ${BAZEL_COMMAND_FLAGS} -- //...
 
+.PHONY: build-images
+build-images:
+	bazelisk ${BAZEL_FLAGS} build ${BAZEL_COMMAND_FLAGS} --config=linux --config=stamping -- //cmd/...
+
 .PHONY: push
 push:
 	bazelisk ${BAZEL_FLAGS} run ${BAZEL_COMMAND_FLAGS} --config=linux --config=stamping -- //cmd/pipecd:push
@@ -31,6 +35,10 @@ push:
 .PHONY: render-manifests
 render-manifests:
 	./hack/render-manifests.sh $(VERSION)
+
+.PHONY: load-piped-image
+load-piped-image:
+	bazelisk ${BAZEL_FLAGS} run ${BAZEL_COMMAND_FLAGS} --config=linux --config=stamping -- //cmd/piped:image --norun
 
 .PHONY: test
 test:
