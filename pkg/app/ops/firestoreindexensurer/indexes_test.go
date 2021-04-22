@@ -287,6 +287,11 @@ func TestParseIndexes(t *testing.T) {
 					Order:       "ASCENDING",
 					ArrayConfig: "",
 				},
+				{
+					FieldPath:   "Id",
+					Order:       "ASCENDING",
+					ArrayConfig: "",
+				},
 			},
 		},
 		{
