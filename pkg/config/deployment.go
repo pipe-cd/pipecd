@@ -281,20 +281,6 @@ func (a *AnalysisStageOptions) Validate() error {
 	if a.Duration == 0 {
 		return fmt.Errorf("the ANALYSIS stage requires duration field")
 	}
-	for i, m := range a.Metrics {
-		if m.Provider == "" {
-			return fmt.Errorf("missing metrics[%d].provider in the ANALYSIS stage option", i)
-		}
-		if m.Query == "" {
-			return fmt.Errorf("missing metrics[%d].query in the ANALYSIS stage option", i)
-		}
-		if m.Interval == 0 {
-			return fmt.Errorf("missing metrics[%d].interval in the ANALYSIS stage option", i)
-		}
-		if err := a.Metrics[i].Expected.Validate(); err != nil {
-			return fmt.Errorf("missing metrics[%d].expected in the ANALYSIS stage option: %w", i, err)
-		}
-	}
 	return nil
 }
 

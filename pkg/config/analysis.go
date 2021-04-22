@@ -46,6 +46,22 @@ type AnalysisMetrics struct {
 	Timeout Duration `json:"timeout"`
 }
 
+func (m *AnalysisMetrics) Validate() error {
+	if m.Provider == "" {
+		return fmt.Errorf("missing \"provider\" field")
+	}
+	if m.Query == "" {
+		return fmt.Errorf("missing \"query\" field")
+	}
+	if m.Interval == 0 {
+		return fmt.Errorf("missing \"interval\" field")
+	}
+	if err := m.Expected.Validate(); err != nil {
+		return err
+	}
+	return nil
+}
+
 // AnalysisExpected defines the range used for metrics analysis.
 type AnalysisExpected struct {
 	Min *float64 `json:"min"`
