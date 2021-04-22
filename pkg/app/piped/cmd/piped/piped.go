@@ -20,6 +20,8 @@ import (
 	"fmt"
 	"io/ioutil"
 	"net/http"
+	"os"
+	"path"
 	"time"
 
 	"github.com/spf13/cobra"
@@ -73,9 +75,13 @@ type piped struct {
 }
 
 func NewCommand() *cobra.Command {
+	home, err := os.UserHomeDir()
+	if err != nil {
+		panic(fmt.Sprintf("failed to detect the current user's home directory: %v", err))
+	}
 	p := &piped{
 		adminPort:   9085,
-		toolsDir:    "/tools",
+		toolsDir:    path.Join(home, ".piped", "tools"),
 		gracePeriod: 30 * time.Second,
 	}
 	cmd := &cobra.Command{

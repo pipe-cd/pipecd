@@ -18,6 +18,7 @@ import (
 	"bytes"
 	"fmt"
 	"os"
+	"path"
 	"path/filepath"
 	"text/template"
 
@@ -25,8 +26,7 @@ import (
 )
 
 const (
-	defaultSSHConfigFilePath = "/etc/ssh/ssh_config"
-	defaultHost              = "github.com"
+	defaultHost = "github.com"
 
 	sshConfigTemplate = `
 Host {{ .Host }}
@@ -59,24 +59,28 @@ func AddSSHConfig(cfg config.PipedGit) error {
 		return err
 	}
 
-	path := cfg.SSHConfigFilePath
-	if path == "" {
-		path = defaultSSHConfigFilePath
+	cfgPath := cfg.SSHConfigFilePath
+	if cfgPath == "" {
+		home, err := os.UserHomeDir()
+		if err != nil {
+			return fmt.Errorf("failed to detect the current user's home directory: %w", err)
+		}
+		cfgPath = path.Join(home, ".ssh", "config")
 	}
-	dir := filepath.Dir(path)
+	dir := filepath.Dir(cfgPath)
 
 	if err := os.MkdirAll(dir, 0700); err != nil {
 		return fmt.Errorf("failed to create a directory %s: %v", dir, err)
 	}
 
-	f, err := os.OpenFile(path, os.O_APPEND|os.O_CREATE|os.O_WRONLY, 0644)
+	f, err := os.OpenFile(cfgPath, os.O_APPEND|os.O_CREATE|os.O_WRONLY, 0644)
 	if err != nil {
-		return fmt.Errorf("could not create/append to %s: %v", path, err)
+		return fmt.Errorf("could not create/append to %s: %v", cfgPath, err)
 	}
 	defer f.Close()
 
 	if _, err := f.Write([]byte(configData)); err != nil {
-		return fmt.Errorf("failed to write sshConfig to %s: %v", path, err)
+		return fmt.Errorf("failed to write sshConfig to %s: %v", cfgPath, err)
 	}
 
 	return nil
