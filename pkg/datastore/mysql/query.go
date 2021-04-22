@@ -87,35 +87,50 @@ func buildPaginationCondition(opts datastore.ListOptions) string {
 		return ""
 	}
 
-	conds := make([]string, len(opts.Orders))
+	// Build outer set condition. The outer set condition should be
+	// in format:
+	//   X < Vx AND Y < Vy AND ...
+	// with x, y, etc is not Id field.
+	outerSetConds := make([]string, len(opts.Orders)-1)
 	for i, o := range opts.Orders {
 		if o.Field == "Id" {
-			conds[i] = fmt.Sprintf("%s %s UUID_TO_BIN(?,true)", o.Field, makePaginationConditionOperator(o))
+			continue
+		}
+		outerSetConds[i] = fmt.Sprintf("%s %s ?", o.Field, makeCompareOperatorForOuterSet(o.Direction))
+	}
+
+	// Build sub set condition. The sub set condition should be
+	// in format:
+	//   X = Vx AND Y = Vy AND ... AND Id <= last_iterated_id
+	// with last_iterated_id from the given cursor.
+	subSetConds := make([]string, len(opts.Orders))
+	for i, o := range opts.Orders {
+		if o.Field == "Id" {
+			subSetConds[i] = fmt.Sprintf("%s %s UUID_TO_BIN(?,true)", o.Field, makeCompareOperatorForSubSet(o.Direction))
 		} else {
-			conds[i] = fmt.Sprintf("%s %s ?", o.Field, makePaginationConditionOperator(o))
+			subSetConds[i] = fmt.Sprintf("%s = ?", o.Field)
 		}
 	}
 
 	// If there is no filter, mean pagination condition should be treated as the only where condition.
 	if len(opts.Filters) == 0 {
-		return fmt.Sprintf("WHERE %s", strings.Join(conds[:], " AND "))
+		return fmt.Sprintf("WHERE %s AND NOT (%s)", strings.Join(outerSetConds, " AND "), strings.Join(subSetConds, " AND "))
 	}
-	return fmt.Sprintf("AND %s", strings.Join(conds[:], " AND "))
+	return fmt.Sprintf("AND %s AND NOT (%s)", strings.Join(outerSetConds, " AND "), strings.Join(subSetConds, " AND "))
 }
 
-func makePaginationConditionOperator(order datastore.Order) string {
-	// Only the Id field should be used strict with greater/lower than operators.
-	if order.Field == "Id" {
-		if order.Direction == datastore.Asc {
-			return ">"
-		}
-		return "<"
-	}
-
-	if order.Direction == datastore.Asc {
+func makeCompareOperatorForOuterSet(direction datastore.OrderDirection) string {
+	if direction == datastore.Asc {
 		return ">="
 	}
 	return "<="
+}
+
+func makeCompareOperatorForSubSet(direction datastore.OrderDirection) string {
+	if direction == datastore.Asc {
+		return "<="
+	}
+	return ">="
 }
 
 func buildOrderByClause(orders []datastore.Order) (string, error) {

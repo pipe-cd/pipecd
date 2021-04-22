@@ -319,7 +319,7 @@ func TestBuildFindQuery(t *testing.T) {
 					return base64.StdEncoding.EncodeToString([]byte(`{"Id":"object-id","UpdatedAt":100}`))
 				}(),
 			},
-			expectedQuery: "SELECT Data FROM Application WHERE ProjectId = ? AND UpdatedAt <= ? AND Id > UUID_TO_BIN(?,true) ORDER BY UpdatedAt DESC, Id ASC LIMIT 20",
+			expectedQuery: "SELECT Data FROM Application WHERE ProjectId = ? AND UpdatedAt <= ? AND NOT (UpdatedAt = ? AND Id <= UUID_TO_BIN(?,true)) ORDER BY UpdatedAt DESC, Id ASC LIMIT 20",
 			wantErr:       false,
 		},
 		{
@@ -340,7 +340,32 @@ func TestBuildFindQuery(t *testing.T) {
 					return base64.StdEncoding.EncodeToString([]byte(`{"Id":"object-id","UpdatedAt":100}`))
 				}(),
 			},
-			expectedQuery: "SELECT Data FROM Application WHERE UpdatedAt <= ? AND Id > UUID_TO_BIN(?,true) ORDER BY UpdatedAt DESC, Id ASC",
+			expectedQuery: "SELECT Data FROM Application WHERE UpdatedAt <= ? AND NOT (UpdatedAt = ? AND Id <= UUID_TO_BIN(?,true)) ORDER BY UpdatedAt DESC, Id ASC",
+			wantErr:       false,
+		},
+		{
+			name: "query with pagination cursor: more than 2 ordering fields",
+			kind: "Application",
+			listOptions: datastore.ListOptions{
+				Orders: []datastore.Order{
+					{
+						Field:     "UpdatedAt",
+						Direction: datastore.Desc,
+					},
+					{
+						Field:     "CreatedAt",
+						Direction: datastore.Desc,
+					},
+					{
+						Field:     "Id",
+						Direction: datastore.Asc,
+					},
+				},
+				Cursor: func() string {
+					return base64.StdEncoding.EncodeToString([]byte(`{"Id":"object-id","UpdatedAt":100,"CreatedAt":100}`))
+				}(),
+			},
+			expectedQuery: "SELECT Data FROM Application WHERE UpdatedAt <= ? AND CreatedAt <= ? AND NOT (UpdatedAt = ? AND CreatedAt = ? AND Id <= UUID_TO_BIN(?,true)) ORDER BY UpdatedAt DESC, CreatedAt DESC, Id ASC",
 			wantErr:       false,
 		},
 		{
@@ -413,33 +438,53 @@ func TestRefineFiltersValue(t *testing.T) {
 	}
 }
 
-func TestMakePaginationConditionOperator(t *testing.T) {
+func TestMakeCompareOperatorForOuterSet(t *testing.T) {
 	testcases := []struct {
 		name      string
-		order     datastore.Order
+		direction datastore.OrderDirection
 		expectOpe string
 	}{
 		{
-			name: "Id field as ordering field",
-			order: datastore.Order{
-				Field:     "Id",
-				Direction: datastore.Asc,
-			},
-			expectOpe: ">",
+			name:      "should return ope same direction with order direction: asc",
+			direction: datastore.Asc,
+			expectOpe: ">=",
 		},
 		{
-			name: "Not id field as ordering field",
-			order: datastore.Order{
-				Field:     "UpdatedAt",
-				Direction: datastore.Desc,
-			},
+			name:      "should return ope same direction with order direction: desc",
+			direction: datastore.Desc,
 			expectOpe: "<=",
 		},
 	}
 
 	for _, tc := range testcases {
 		t.Run(tc.name, func(t *testing.T) {
-			ope := makePaginationConditionOperator(tc.order)
+			ope := makeCompareOperatorForOuterSet(tc.direction)
+			assert.Equal(t, tc.expectOpe, ope)
+		})
+	}
+}
+
+func TestMakeCompareOperatorForSubSet(t *testing.T) {
+	testcases := []struct {
+		name      string
+		direction datastore.OrderDirection
+		expectOpe string
+	}{
+		{
+			name:      "should return ope in revert direction with order direction: asc",
+			direction: datastore.Asc,
+			expectOpe: "<=",
+		},
+		{
+			name:      "should return ope in revert direction with order direction: desc",
+			direction: datastore.Desc,
+			expectOpe: ">=",
+		},
+	}
+
+	for _, tc := range testcases {
+		t.Run(tc.name, func(t *testing.T) {
+			ope := makeCompareOperatorForSubSet(tc.direction)
 			assert.Equal(t, tc.expectOpe, ope)
 		})
 	}
