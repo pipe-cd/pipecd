@@ -262,6 +262,11 @@
         "fieldPath": "CreatedAt",
         "order": "ASCENDING",
         "arrayConfig": ""
+      },
+      {
+        "fieldPath": "Id",
+        "order": "ASCENDING",
+        "arrayConfig": ""
       }
     ]
   },
