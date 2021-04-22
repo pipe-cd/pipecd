@@ -168,7 +168,7 @@ func (a *PipedAPI) ListApplications(ctx context.Context, req *pipedservice.ListA
 		},
 	}
 	// TODO: Support pagination in ListApplications
-	apps, err := a.applicationStore.ListApplications(ctx, opts)
+	apps, _, err := a.applicationStore.ListApplications(ctx, opts)
 	if err != nil {
 		a.logger.Error("failed to fetch applications", zap.Error(err))
 		return nil, status.Error(codes.Internal, "failed to fetch applications")
@@ -715,6 +715,10 @@ func (a *PipedAPI) GetLatestEvent(ctx context.Context, req *pipedservice.GetLate
 				Field:     "CreatedAt",
 				Direction: datastore.Desc,
 			},
+			{
+				Field:     "Id",
+				Direction: datastore.Asc,
+			},
 		},
 	}
 	events, err := a.eventStore.ListEvents(ctx, opts)
@@ -769,12 +773,20 @@ func (a *PipedAPI) ListEvents(ctx context.Context, req *pipedservice.ListEventsR
 				Field:     "CreatedAt",
 				Direction: datastore.Asc,
 			},
+			{
+				Field:     "Id",
+				Direction: datastore.Asc,
+			},
 		}
 	case pipedservice.ListOrder_DESC:
 		opts.Orders = []datastore.Order{
 			{
 				Field:     "CreatedAt",
 				Direction: datastore.Desc,
+			},
+			{
+				Field:     "Id",
+				Direction: datastore.Asc,
 			},
 		}
 	}

@@ -575,6 +575,10 @@ func (a *WebAPI) ListApplications(ctx context.Context, req *webservice.ListAppli
 			Field:     "UpdatedAt",
 			Direction: datastore.Desc,
 		},
+		{
+			Field:     "Id",
+			Direction: datastore.Asc,
+		},
 	}
 	filters := []datastore.ListFilter{
 		{
@@ -623,7 +627,7 @@ func (a *WebAPI) ListApplications(ctx context.Context, req *webservice.ListAppli
 		}
 	}
 
-	apps, err := a.applicationStore.ListApplications(ctx, datastore.ListOptions{
+	apps, _, err := a.applicationStore.ListApplications(ctx, datastore.ListOptions{
 		Filters: filters,
 		Orders:  orders,
 	})
@@ -781,6 +785,10 @@ func (a *WebAPI) ListDeployments(ctx context.Context, req *webservice.ListDeploy
 		{
 			Field:     "UpdatedAt",
 			Direction: datastore.Desc,
+		},
+		{
+			Field:     "Id",
+			Direction: datastore.Asc,
 		},
 	}
 	filters := []datastore.ListFilter{
