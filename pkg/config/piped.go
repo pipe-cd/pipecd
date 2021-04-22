@@ -172,7 +172,7 @@ type PipedGit struct {
 	// Default is "pipecd.dev@gmail.com".
 	Email string `json:"email"`
 	// Where to write ssh config file.
-	// Default is "/etc/ssh/ssh_config".
+	// Default is "$HOME/.ssh/config".
 	SSHConfigFilePath string `json:"sshConfigFilePath"`
 	// The host name.
 	// e.g. github.com, gitlab.com
