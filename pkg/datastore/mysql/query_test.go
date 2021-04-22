@@ -344,6 +344,31 @@ func TestBuildFindQuery(t *testing.T) {
 			wantErr:       false,
 		},
 		{
+			name: "query with pagination cursor: more than 2 ordering fields",
+			kind: "Application",
+			listOptions: datastore.ListOptions{
+				Orders: []datastore.Order{
+					{
+						Field:     "UpdatedAt",
+						Direction: datastore.Desc,
+					},
+					{
+						Field:     "CreatedAt",
+						Direction: datastore.Desc,
+					},
+					{
+						Field:     "Id",
+						Direction: datastore.Asc,
+					},
+				},
+				Cursor: func() string {
+					return base64.StdEncoding.EncodeToString([]byte(`{"Id":"object-id","UpdatedAt":100,"CreatedAt":100}`))
+				}(),
+			},
+			expectedQuery: "SELECT Data FROM Application WHERE UpdatedAt <= ? AND CreatedAt <= ? AND NOT (UpdatedAt = ? AND CreatedAt = ? AND Id <= UUID_TO_BIN(?,true)) ORDER BY UpdatedAt DESC, CreatedAt DESC, Id ASC",
+			wantErr:       false,
+		},
+		{
 			name: "query with cursor: missing Id from ordering fields",
 			kind: "Project",
 			listOptions: datastore.ListOptions{

@@ -114,9 +114,9 @@ func buildPaginationCondition(opts datastore.ListOptions) string {
 
 	// If there is no filter, mean pagination condition should be treated as the only where condition.
 	if len(opts.Filters) == 0 {
-		return fmt.Sprintf("WHERE %s AND NOT (%s)", strings.Join(outerSetConds[:], " AND "), strings.Join(subSetConds[:], " AND "))
+		return fmt.Sprintf("WHERE %s AND NOT (%s)", strings.Join(outerSetConds, " AND "), strings.Join(subSetConds, " AND "))
 	}
-	return fmt.Sprintf("AND %s AND NOT (%s)", strings.Join(outerSetConds[:], " AND "), strings.Join(subSetConds[:], " AND "))
+	return fmt.Sprintf("AND %s AND NOT (%s)", strings.Join(outerSetConds, " AND "), strings.Join(subSetConds, " AND "))
 }
 
 func makeCompareOperatorForOuterSet(direction datastore.OrderDirection) string {
