@@ -112,7 +112,7 @@ func (s *FireStore) Find(ctx context.Context, kind string, opts datastore.ListOp
 		if err != nil {
 			return nil, err
 		}
-		q = q.StartAfter(values)
+		q = q.StartAfter(values...)
 	}
 
 	if opts.Limit > 0 {
