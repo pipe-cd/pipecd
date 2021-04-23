@@ -73,6 +73,7 @@ message ListApplicationsRequest {
     string env_id = 3;
     bool disabled = 4;
     string env_name = 5;
+    string cursor = 10;
 }
 
 message ListApplicationsResponse {

@@ -37,6 +37,7 @@ type list struct {
 	envName  string
 	appKind  string
 	disabled bool
+	cursor   string
 	stdout   io.Writer
 }
 
@@ -56,6 +57,7 @@ func newListCommand(root *command) *cobra.Command {
 	cmd.Flags().StringVar(&c.envName, "env-name", c.envName, "The environment name.")
 	cmd.Flags().StringVar(&c.appKind, "app-kind", c.appKind, fmt.Sprintf("The kind of application. (%s)", strings.Join(model.ApplicationKindStrings(), "|")))
 	cmd.Flags().BoolVar(&c.disabled, "disabled", c.disabled, "True to show only disabled applications.")
+	cmd.Flags().StringVar(&c.cursor, "cursor", c.cursor, "The cursor which returned by the previous request applications list.")
 
 	return cmd
 }
@@ -79,6 +81,7 @@ func (c *list) run(ctx context.Context, _ cli.Telemetry) error {
 		EnvName:  c.envName,
 		Kind:     c.appKind,
 		Disabled: c.disabled,
+		Cursor:   c.cursor,
 	}
 
 	resp, err := cli.ListApplications(ctx, req)
