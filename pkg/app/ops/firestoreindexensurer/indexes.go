@@ -52,7 +52,7 @@ func (idx *index) validate() error {
 }
 
 // id builds a unique string based on its fields.
-func (idx index) id() string {
+func (idx *index) id() string {
 	var b strings.Builder
 	b.WriteString(fmt.Sprintf("%s/%s", idx.CollectionGroup, idx.QueryScope))
 
