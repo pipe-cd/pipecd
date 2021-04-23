@@ -37,7 +37,7 @@ test("delete", () => {
   const store = createStore(state);
   render(
     <MemoryRouter>
-      <ApplicationList />
+      <ApplicationList currentPage={1} onPageChange={() => null} />
     </MemoryRouter>,
     {
       store,
@@ -57,11 +57,37 @@ test("delete", () => {
   );
 });
 
+test("show specific page", async () => {
+  const apps = [...new Array(30)].map((_, i) => ({
+    ...dummyApplication,
+    id: `${dummyApplication.id}${i}`,
+  }));
+  const store = createStore({
+    applications: {
+      entities: apps.reduce((prev, current) => {
+        return { ...prev, [current.id]: current };
+      }, {}),
+      ids: apps.map((app) => app.id),
+    },
+  });
+  render(
+    <MemoryRouter>
+      <ApplicationList currentPage={2} onPageChange={() => null} />
+    </MemoryRouter>,
+    {
+      store,
+    }
+  );
+
+  const items = await screen.findAllByText(dummyApplication.name);
+  expect(items).toHaveLength(10);
+});
+
 test("edit", () => {
   const store = createStore(state);
   render(
     <MemoryRouter>
-      <ApplicationList />
+      <ApplicationList currentPage={1} onPageChange={() => null} />
     </MemoryRouter>,
     {
       store,
@@ -85,7 +111,7 @@ test("disable", async () => {
   const store = createStore(state);
   render(
     <MemoryRouter>
-      <ApplicationList />
+      <ApplicationList currentPage={1} onPageChange={() => null} />
     </MemoryRouter>,
     {
       store,
@@ -130,7 +156,7 @@ test("enable", async () => {
   });
   render(
     <MemoryRouter>
-      <ApplicationList />
+      <ApplicationList currentPage={1} onPageChange={() => null} />
     </MemoryRouter>,
     {
       store,
@@ -160,7 +186,7 @@ test("Encrypt Secret", async () => {
   const store = createStore(state);
   render(
     <MemoryRouter>
-      <ApplicationList />
+      <ApplicationList currentPage={1} onPageChange={() => null} />
     </MemoryRouter>,
     {
       store,

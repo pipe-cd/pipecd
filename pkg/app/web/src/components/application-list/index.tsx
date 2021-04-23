@@ -36,163 +36,170 @@ const useStyles = makeStyles(() => ({
 
 const PAGER_ROWS_PER_PAGE = [20, 50, { label: "All", value: -1 }];
 
-export const ApplicationList: FC = memo(function ApplicationList() {
-  const classes = useStyles();
-  const dispatch = useDispatch<AppDispatch>();
-  const [actionTarget, setActionTarget] = useState<string | null>(null);
-  const [dialogState, setDialogState] = useState({
-    disabling: false,
-    generateSecret: false,
-  });
-  const [page, setPage] = React.useState(0);
-  const [rowsPerPage, setRowsPerPage] = React.useState(20);
+export interface ApplicationListProps {
+  currentPage: number;
+  onPageChange: (page: number) => void;
+}
 
-  const applications = useSelector<AppState, Application.AsObject[]>((state) =>
-    selectAll(state.applications)
-  );
-
-  const closeMenu = useCallback(() => {
-    setActionTarget(null);
-  }, []);
-
-  const handleOnCloseGenerateDialog = (): void => {
-    closeMenu();
-    setDialogState({
-      ...dialogState,
+export const ApplicationList: FC<ApplicationListProps> = memo(
+  function ApplicationList({ currentPage, onPageChange }) {
+    const classes = useStyles();
+    const dispatch = useDispatch<AppDispatch>();
+    const [actionTarget, setActionTarget] = useState<string | null>(null);
+    const [dialogState, setDialogState] = useState({
+      disabling: false,
       generateSecret: false,
     });
-  };
+    const [rowsPerPage, setRowsPerPage] = React.useState(20);
+    const page = currentPage - 1;
 
-  const handleCloseDialog = (): void => {
-    closeMenu();
-    setDialogState({
-      ...dialogState,
-      disabling: false,
-    });
-    dispatch(fetchApplications());
-  };
+    const applications = useSelector<AppState, Application.AsObject[]>(
+      (state) => selectAll(state.applications)
+    );
 
-  // Menu item event handler
+    const closeMenu = useCallback(() => {
+      setActionTarget(null);
+    }, []);
 
-  const handleEditClick = useCallback(
-    (id: string) => {
+    const handleOnCloseGenerateDialog = (): void => {
       closeMenu();
-      dispatch(setUpdateTargetId(id));
-    },
-    [dispatch, closeMenu]
-  );
-
-  const handleDisableClick = useCallback(
-    (id: string) => {
-      setActionTarget(id);
       setDialogState({
         ...dialogState,
-        disabling: true,
+        generateSecret: false,
       });
-    },
-    [dialogState]
-  );
+    };
 
-  const handleEnableClick = useCallback(
-    (id: string) => {
-      dispatch(enableApplication({ applicationId: id })).then(() => {
-        dispatch(fetchApplications());
-      });
+    const handleCloseDialog = (): void => {
       closeMenu();
-    },
-    [dispatch, closeMenu]
-  );
-
-  const handleDeleteClick = useCallback(
-    (id: string) => {
-      dispatch(setDeletingAppId(id));
-      closeMenu();
-    },
-    [dispatch, closeMenu]
-  );
-
-  const handleEncryptSecretClick = useCallback(
-    (id: string) => {
-      setActionTarget(id);
       setDialogState({
         ...dialogState,
-        generateSecret: true,
+        disabling: false,
       });
-    },
-    [dialogState]
-  );
+      dispatch(fetchApplications());
+    };
 
-  return (
-    <>
-      <TableContainer component={Paper} className={classes.container} square>
-        <Table stickyHeader>
-          <TableHead>
-            <TableRow>
-              <TableCell>Status</TableCell>
-              <TableCell>Name</TableCell>
-              <TableCell>Kind</TableCell>
-              <TableCell>Environment</TableCell>
-              <TableCell>Running Version</TableCell>
-              <TableCell>Running Commit</TableCell>
-              <TableCell>Deployed By</TableCell>
-              <TableCell>Deployed At</TableCell>
-              <TableCell />
-            </TableRow>
-          </TableHead>
-          <TableBody>
-            {(rowsPerPage > 0
-              ? applications.slice(
-                  page * rowsPerPage,
-                  page * rowsPerPage + rowsPerPage
-                )
-              : applications
-            ).map((app) => (
-              <ApplicationListItem
-                key={`app-${app.id}`}
-                applicationId={app.id}
-                onEdit={handleEditClick}
-                onDisable={handleDisableClick}
-                onEnable={handleEnableClick}
-                onDelete={handleDeleteClick}
-                onEncryptSecret={handleEncryptSecretClick}
-              />
-            ))}
-          </TableBody>
-          <TableFooter>
-            <TableRow>
-              <TablePagination
-                rowsPerPageOptions={PAGER_ROWS_PER_PAGE}
-                count={applications.length}
-                rowsPerPage={rowsPerPage}
-                page={page}
-                colSpan={9}
-                onChangePage={(_, newPage) => {
-                  setPage(newPage);
-                }}
-                onChangeRowsPerPage={(e) => {
-                  setRowsPerPage(parseInt(e.target.value, 10));
-                  setPage(0);
-                }}
-              />
-            </TableRow>
-          </TableFooter>
-        </Table>
-      </TableContainer>
+    // Menu item event handler
 
-      <DisableApplicationDialog
-        open={dialogState.disabling}
-        applicationId={actionTarget}
-        onDisable={handleCloseDialog}
-        onCancel={handleCloseDialog}
-      />
+    const handleEditClick = useCallback(
+      (id: string) => {
+        closeMenu();
+        dispatch(setUpdateTargetId(id));
+      },
+      [dispatch, closeMenu]
+    );
 
-      <SealedSecretDialog
-        open={Boolean(actionTarget) && dialogState.generateSecret}
-        applicationId={actionTarget}
-        onClose={handleOnCloseGenerateDialog}
-      />
+    const handleDisableClick = useCallback(
+      (id: string) => {
+        setActionTarget(id);
+        setDialogState({
+          ...dialogState,
+          disabling: true,
+        });
+      },
+      [dialogState]
+    );
 
-      <DeleteApplicationDialog />
-    </>
-  );
-});
+    const handleEnableClick = useCallback(
+      (id: string) => {
+        dispatch(enableApplication({ applicationId: id })).then(() => {
+          dispatch(fetchApplications());
+        });
+        closeMenu();
+      },
+      [dispatch, closeMenu]
+    );
+
+    const handleDeleteClick = useCallback(
+      (id: string) => {
+        dispatch(setDeletingAppId(id));
+        closeMenu();
+      },
+      [dispatch, closeMenu]
+    );
+
+    const handleEncryptSecretClick = useCallback(
+      (id: string) => {
+        setActionTarget(id);
+        setDialogState({
+          ...dialogState,
+          generateSecret: true,
+        });
+      },
+      [dialogState]
+    );
+
+    return (
+      <>
+        <TableContainer component={Paper} className={classes.container} square>
+          <Table stickyHeader>
+            <TableHead>
+              <TableRow>
+                <TableCell>Status</TableCell>
+                <TableCell>Name</TableCell>
+                <TableCell>Kind</TableCell>
+                <TableCell>Environment</TableCell>
+                <TableCell>Running Version</TableCell>
+                <TableCell>Running Commit</TableCell>
+                <TableCell>Deployed By</TableCell>
+                <TableCell>Deployed At</TableCell>
+                <TableCell />
+              </TableRow>
+            </TableHead>
+            <TableBody>
+              {(rowsPerPage > 0
+                ? applications.slice(
+                    page * rowsPerPage,
+                    page * rowsPerPage + rowsPerPage
+                  )
+                : applications
+              ).map((app) => (
+                <ApplicationListItem
+                  key={`app-${app.id}`}
+                  applicationId={app.id}
+                  onEdit={handleEditClick}
+                  onDisable={handleDisableClick}
+                  onEnable={handleEnableClick}
+                  onDelete={handleDeleteClick}
+                  onEncryptSecret={handleEncryptSecretClick}
+                />
+              ))}
+            </TableBody>
+            <TableFooter>
+              <TableRow>
+                <TablePagination
+                  rowsPerPageOptions={PAGER_ROWS_PER_PAGE}
+                  count={applications.length}
+                  rowsPerPage={rowsPerPage}
+                  page={page}
+                  colSpan={9}
+                  onChangePage={(_, newPage) => {
+                    onPageChange(newPage + 1);
+                  }}
+                  onChangeRowsPerPage={(e) => {
+                    setRowsPerPage(parseInt(e.target.value, 10));
+                    onPageChange(1);
+                  }}
+                />
+              </TableRow>
+            </TableFooter>
+          </Table>
+        </TableContainer>
+
+        <DisableApplicationDialog
+          open={dialogState.disabling}
+          applicationId={actionTarget}
+          onDisable={handleCloseDialog}
+          onCancel={handleCloseDialog}
+        />
+
+        <SealedSecretDialog
+          open={Boolean(actionTarget) && dialogState.generateSecret}
+          applicationId={actionTarget}
+          onClose={handleOnCloseGenerateDialog}
+        />
+
+        <DeleteApplicationDialog />
+      </>
+    );
+  }
+);

@@ -69,20 +69,31 @@ export const ApplicationIndexPage: FC = memo(function ApplicationIndexPage() {
   const showCounts = filterOptions.showCounts
     ? Boolean(filterOptions.showCounts)
     : undefined;
+  const currentPage =
+    typeof filterOptions.page === "string"
+      ? parseInt(filterOptions.page, 10)
+      : 1;
 
-  const handleFilterChange = useCallback(
-    (options) => {
+  const updateURL = useCallback(
+    (options: Record<string, string | number | boolean | undefined>) => {
       history.replace(
-        `${PAGE_PATH_APPLICATIONS}?${stringifySearchParams(options)}`
+        `${PAGE_PATH_APPLICATIONS}?${stringifySearchParams({
+          ...options,
+        })}`
       );
     },
     [history]
   );
+
+  const handleFilterChange = useCallback(
+    (options) => {
+      updateURL({ ...options, page: 1 });
+    },
+    [updateURL]
+  );
   const handleFilterClear = useCallback(() => {
-    history.replace(
-      `${PAGE_PATH_APPLICATIONS}?${stringifySearchParams({ showCounts })}`
-    );
-  }, [history, showCounts]);
+    updateURL({ showCounts, page: currentPage });
+  }, [updateURL, showCounts, currentPage]);
 
   const handleRefresh = useCallback(() => {
     dispatch(fetchApplications(filterOptions));
@@ -95,14 +106,16 @@ export const ApplicationIndexPage: FC = memo(function ApplicationIndexPage() {
 
   const handleApplicationCountClick = useCallback(
     (kind: ApplicationKind) => {
-      history.replace(
-        `${PAGE_PATH_APPLICATIONS}?${stringifySearchParams({
-          ...filterOptions,
-          kind,
-        })}`
-      );
+      updateURL({ ...filterOptions, kind });
     },
-    [history, filterOptions]
+    [updateURL, filterOptions]
+  );
+
+  const handlePageChange = useCallback(
+    (page: number) => {
+      updateURL({ ...filterOptions, page });
+    },
+    [updateURL, filterOptions]
   );
 
   useEffect(() => {
@@ -151,7 +164,10 @@ export const ApplicationIndexPage: FC = memo(function ApplicationIndexPage() {
           {showCounts && (
             <ApplicationCounts onClick={handleApplicationCountClick} />
           )}
-          <ApplicationList />
+          <ApplicationList
+            currentPage={currentPage}
+            onPageChange={handlePageChange}
+          />
         </Box>
         {openFilter && (
           <ApplicationFilter
