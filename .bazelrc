@@ -25,6 +25,10 @@ build --define DOCKER_REGISTRY=localhost:5000
 # https://github.com/bazelbuild/rules_docker/issues/842
 build --host_force_python=PY2
 
+# TODO: Remove the workaround flag after bumping Bazel to greater than 4.0.0
+# Workaround for this: https://github.com/bazelbuild/bazel/issues/12905
+build --features=-debug_prefix_map_pwd_is_dot
+
 # CI configurations
 build:ci --define DOCKER_REGISTRY=gcr.io/pipecd
 build:ci --remote_http_cache=https://storage.googleapis.com/pipecd-bazel-cache
