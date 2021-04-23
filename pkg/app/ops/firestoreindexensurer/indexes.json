@@ -108,22 +108,6 @@
         "fieldPath": "UpdatedAt",
         "order": "DESCENDING",
         "arrayConfig": ""
-      }
-    ]
-  },
-  {
-    "collectionGroup": "Application",
-    "queryScope": "COLLECTION",
-    "fields": [
-      {
-        "fieldPath": "ProjectId",
-        "order": "ASCENDING",
-        "arrayConfig": ""
-      },
-      {
-        "fieldPath": "UpdatedAt",
-        "order": "DESCENDING",
-        "arrayConfig": ""
       },
       {
         "fieldPath": "Id",
@@ -154,22 +138,6 @@
     "fields": [
       {
         "fieldPath": "ApplicationId",
-        "order": "ASCENDING",
-        "arrayConfig": ""
-      },
-      {
-        "fieldPath": "UpdatedAt",
-        "order": "DESCENDING",
-        "arrayConfig": ""
-      }
-    ]
-  },
-  {
-    "collectionGroup": "Deployment",
-    "queryScope": "COLLECTION",
-    "fields": [
-      {
-        "fieldPath": "ProjectId",
         "order": "ASCENDING",
         "arrayConfig": ""
       },
