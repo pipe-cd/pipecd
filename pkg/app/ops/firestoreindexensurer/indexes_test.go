@@ -28,6 +28,27 @@ func TestParseIndexes(t *testing.T) {
 			QueryScope:      "COLLECTION",
 			Fields: []field{
 				{
+					FieldPath:   "Deleted",
+					Order:       "ASCENDING",
+					ArrayConfig: "",
+				},
+				{
+					FieldPath:   "CreatedAt",
+					Order:       "ASCENDING",
+					ArrayConfig: "",
+				},
+				{
+					FieldPath:   "Id",
+					Order:       "ASCENDING",
+					ArrayConfig: "",
+				},
+			},
+		},
+		{
+			CollectionGroup: "Application",
+			QueryScope:      "COLLECTION",
+			Fields: []field{
+				{
 					FieldPath:   "Disabled",
 					Order:       "ASCENDING",
 					ArrayConfig: "",
@@ -35,6 +56,11 @@ func TestParseIndexes(t *testing.T) {
 				{
 					FieldPath:   "UpdatedAt",
 					Order:       "DESCENDING",
+					ArrayConfig: "",
+				},
+				{
+					FieldPath:   "Id",
+					Order:       "ASCENDING",
 					ArrayConfig: "",
 				},
 			},
@@ -53,6 +79,11 @@ func TestParseIndexes(t *testing.T) {
 					Order:       "DESCENDING",
 					ArrayConfig: "",
 				},
+				{
+					FieldPath:   "Id",
+					Order:       "ASCENDING",
+					ArrayConfig: "",
+				},
 			},
 		},
 		{
@@ -69,19 +100,8 @@ func TestParseIndexes(t *testing.T) {
 					Order:       "DESCENDING",
 					ArrayConfig: "",
 				},
-			},
-		},
-		{
-			CollectionGroup: "Application",
-			QueryScope:      "COLLECTION",
-			Fields: []field{
 				{
-					FieldPath:   "Deleted",
-					Order:       "ASCENDING",
-					ArrayConfig: "",
-				},
-				{
-					FieldPath:   "CreatedAt",
+					FieldPath:   "Id",
 					Order:       "ASCENDING",
 					ArrayConfig: "",
 				},
@@ -101,6 +121,11 @@ func TestParseIndexes(t *testing.T) {
 					Order:       "DESCENDING",
 					ArrayConfig: "",
 				},
+				{
+					FieldPath:   "Id",
+					Order:       "ASCENDING",
+					ArrayConfig: "",
+				},
 			},
 		},
 		{
@@ -115,6 +140,11 @@ func TestParseIndexes(t *testing.T) {
 				{
 					FieldPath:   "UpdatedAt",
 					Order:       "DESCENDING",
+					ArrayConfig: "",
+				},
+				{
+					FieldPath:   "Id",
+					Order:       "ASCENDING",
 					ArrayConfig: "",
 				},
 			},

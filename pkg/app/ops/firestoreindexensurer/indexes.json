@@ -4,6 +4,27 @@
     "queryScope": "COLLECTION",
     "fields": [
       {
+        "fieldPath": "Deleted",
+        "order": "ASCENDING",
+        "arrayConfig": ""
+      },
+      {
+        "fieldPath": "CreatedAt",
+        "order": "ASCENDING",
+        "arrayConfig": ""
+      },
+      {
+        "fieldPath": "Id",
+        "order": "ASCENDING",
+        "arrayConfig": ""
+      }
+    ]
+  },
+  {
+    "collectionGroup": "Application",
+    "queryScope": "COLLECTION",
+    "fields": [
+      {
         "fieldPath": "Disabled",
         "order": "ASCENDING",
         "arrayConfig": ""
@@ -11,6 +32,11 @@
       {
         "fieldPath": "UpdatedAt",
         "order": "DESCENDING",
+        "arrayConfig": ""
+      },
+      {
+        "fieldPath": "Id",
+        "order": "ASCENDING",
         "arrayConfig": ""
       }
     ]
@@ -28,6 +54,11 @@
         "fieldPath": "UpdatedAt",
         "order": "DESCENDING",
         "arrayConfig": ""
+      },
+      {
+        "fieldPath": "Id",
+        "order": "ASCENDING",
+        "arrayConfig": ""
       }
     ]
   },
@@ -44,20 +75,9 @@
         "fieldPath": "UpdatedAt",
         "order": "DESCENDING",
         "arrayConfig": ""
-      }
-    ]
-  },
-  {
-    "collectionGroup": "Application",
-    "queryScope": "COLLECTION",
-    "fields": [
-      {
-        "fieldPath": "Deleted",
-        "order": "ASCENDING",
-        "arrayConfig": ""
       },
       {
-        "fieldPath": "CreatedAt",
+        "fieldPath": "Id",
         "order": "ASCENDING",
         "arrayConfig": ""
       }
@@ -76,6 +96,11 @@
         "fieldPath": "UpdatedAt",
         "order": "DESCENDING",
         "arrayConfig": ""
+      },
+      {
+        "fieldPath": "Id",
+        "order": "ASCENDING",
+        "arrayConfig": ""
       }
     ]
   },
@@ -91,6 +116,11 @@
       {
         "fieldPath": "UpdatedAt",
         "order": "DESCENDING",
+        "arrayConfig": ""
+      },
+      {
+        "fieldPath": "Id",
+        "order": "ASCENDING",
         "arrayConfig": ""
       }
     ]
