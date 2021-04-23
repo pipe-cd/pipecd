@@ -390,6 +390,57 @@ func TestFilterIndexes(t *testing.T) {
 			},
 			want: []index{},
 		},
+		{
+			name: "no exclude a composite index in case the fields order is changed",
+			indexes: []index{
+				{
+					CollectionGroup: "collection-group",
+					QueryScope:      "COLLECTION",
+					Fields: []field{
+						{
+							FieldPath: "field-path-1",
+							Order:     "ASCENDING",
+						},
+						{
+							FieldPath: "field-path-2",
+							Order:     "ASCENDING",
+						},
+					},
+				},
+			},
+			excludes: []index{
+				{
+					CollectionGroup: "collection-group",
+					QueryScope:      "COLLECTION",
+					Fields: []field{
+						{
+							FieldPath: "field-path-2",
+							Order:     "ASCENDING",
+						},
+						{
+							FieldPath: "field-path-1",
+							Order:     "ASCENDING",
+						},
+					},
+				},
+			},
+			want: []index{
+				{
+					CollectionGroup: "collection-group",
+					QueryScope:      "COLLECTION",
+					Fields: []field{
+						{
+							FieldPath: "field-path-1",
+							Order:     "ASCENDING",
+						},
+						{
+							FieldPath: "field-path-2",
+							Order:     "ASCENDING",
+						},
+					},
+				},
+			},
+		},
 	}
 	for _, tc := range testcases {
 		t.Run(tc.name, func(t *testing.T) {
@@ -420,25 +471,7 @@ func TestIndexID(t *testing.T) {
 			want: "collection-group/COLLECTION/field-path:field-path/order:ASCENDING",
 		},
 		{
-			name: "two fields",
-			idx: index{
-				CollectionGroup: "collection-group",
-				QueryScope:      "COLLECTION",
-				Fields: []field{
-					{
-						FieldPath:   "field-path2",
-						ArrayConfig: "contains",
-					},
-					{
-						FieldPath: "field-path1",
-						Order:     "ASCENDING",
-					},
-				},
-			},
-			want: "collection-group/COLLECTION/field-path:field-path1/order:ASCENDING/field-path:field-path2/array-config:contains",
-		},
-		{
-			name: "ensure it's always sorted",
+			name: "ensure the fields order is not changed",
 			idx: index{
 				CollectionGroup: "collection-group",
 				QueryScope:      "COLLECTION",
@@ -457,7 +490,7 @@ func TestIndexID(t *testing.T) {
 					},
 				},
 			},
-			want: "collection-group/COLLECTION/field-path:field-path1/order:ASCENDING/field-path:field-path2/array-config:contains/field-path:field-path3/order:ASCENDING",
+			want: "collection-group/COLLECTION/field-path:field-path2/array-config:contains/field-path:field-path3/order:ASCENDING/field-path:field-path1/order:ASCENDING",
 		},
 	}
 	for _, tc := range testcases {
