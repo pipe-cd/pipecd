@@ -278,6 +278,7 @@ func (a *API) ListApplications(ctx context.Context, req *apiservice.ListApplicat
 		Orders:  orders,
 		Filters: filters,
 		Limit:   limit,
+		Cursor:  req.Cursor,
 	}
 
 	apps, cursor, err := listApplications(ctx, a.applicationStore, opts, a.logger)
