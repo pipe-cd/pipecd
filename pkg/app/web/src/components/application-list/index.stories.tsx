@@ -1,12 +1,17 @@
-import * as React from "react";
-import { ApplicationList } from "./";
+import { ApplicationList, ApplicationListProps } from "./";
 import { createDecoratorRedux } from "../../../.storybook/redux-decorator";
 import { dummyApplication } from "../../__fixtures__/dummy-application";
 import { dummyEnv } from "../../__fixtures__/dummy-environment";
+import { Story } from "@storybook/react/types-6-0";
 
 export default {
   title: "APPLICATION/ApplicationList",
   component: ApplicationList,
+  argTypes: {
+    onPageChange: {
+      actions: "onPageChange",
+    },
+  },
   decorators: [
     createDecoratorRedux({
       applications: {
@@ -28,4 +33,11 @@ export default {
   ],
 };
 
-export const overview: React.FC = () => <ApplicationList />;
+const Template: Story<ApplicationListProps> = (args) => (
+  <ApplicationList {...args} />
+);
+
+export const Overview = Template.bind({});
+Overview.args = {
+  currentPage: 1,
+};
