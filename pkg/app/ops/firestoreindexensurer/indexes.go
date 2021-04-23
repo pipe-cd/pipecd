@@ -17,7 +17,6 @@ package firestoreindexensurer
 import (
 	"encoding/json"
 	"fmt"
-	"sort"
 	"strings"
 )
 
@@ -53,20 +52,11 @@ func (idx *index) validate() error {
 }
 
 // id builds a unique string based on its fields.
-func (idx *index) id() string {
+func (idx index) id() string {
 	var b strings.Builder
 	b.WriteString(fmt.Sprintf("%s/%s", idx.CollectionGroup, idx.QueryScope))
 
 	fields := idx.Fields
-	sort.Slice(fields, func(i, j int) bool {
-		if fields[i].FieldPath != fields[j].FieldPath {
-			return fields[i].FieldPath < fields[j].FieldPath
-		}
-		if fields[i].Order != fields[j].Order {
-			return fields[i].Order < fields[j].Order
-		}
-		return fields[i].ArrayConfig < fields[j].ArrayConfig
-	})
 	for _, f := range fields {
 		b.WriteString(fmt.Sprintf("/field-path:%s", f.FieldPath))
 		if f.Order != "" {
