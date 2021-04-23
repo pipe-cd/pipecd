@@ -175,6 +175,11 @@
         "fieldPath": "UpdatedAt",
         "order": "DESCENDING",
         "arrayConfig": ""
+      },
+      {
+        "fieldPath": "Id",
+        "order": "ASCENDING",
+        "arrayConfig": ""
       }
     ]
   },
@@ -190,6 +195,11 @@
       {
         "fieldPath": "UpdatedAt",
         "order": "DESCENDING",
+        "arrayConfig": ""
+      },
+      {
+        "fieldPath": "Id",
+        "order": "ASCENDING",
         "arrayConfig": ""
       }
     ]
@@ -207,6 +217,11 @@
         "fieldPath": "UpdatedAt",
         "order": "DESCENDING",
         "arrayConfig": ""
+      },
+      {
+        "fieldPath": "Id",
+        "order": "ASCENDING",
+        "arrayConfig": ""
       }
     ]
   },
@@ -222,6 +237,11 @@
       {
         "fieldPath": "UpdatedAt",
         "order": "DESCENDING",
+        "arrayConfig": ""
+      },
+      {
+        "fieldPath": "Id",
+        "order": "ASCENDING",
         "arrayConfig": ""
       }
     ]
