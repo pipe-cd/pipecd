@@ -174,7 +174,9 @@ func (a *API) GetApplication(ctx context.Context, req *apiservice.GetApplication
 }
 
 // ListApplications returns the application list of the project where the caller belongs to.
-// Currently, the maximum number of returned applications is 10.
+// Currently, the maximum number of returned applications per request is set to 10.
+// The response contains a "cursor" value, which should be passed in the next request in order to get
+// the next 10 applications. If the cursor is not provided in the request, only 10 latest applications will be returned.
 func (a *API) ListApplications(ctx context.Context, req *apiservice.ListApplicationsRequest) (*apiservice.ListApplicationsResponse, error) {
 	key, err := requireAPIKey(ctx, model.APIKey_READ_ONLY, a.logger)
 	if err != nil {
