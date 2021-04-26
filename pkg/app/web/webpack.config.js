@@ -1,22 +1,23 @@
 /* eslint @typescript-eslint/no-var-requires: 0 */
 "use strict";
 const commonConfig = require("./webpack.common");
-const mergeConfig = require("webpack-merge");
+const { merge } = require("webpack-merge");
 const path = require("path");
 
-module.exports = (env, argv) => {
-  return mergeConfig(commonConfig(env, argv), {
+module.exports = (env) => {
+  return merge(commonConfig(env), {
     resolve: {
       extensions: [".mjs", ".js", ".jsx"],
       alias: {
-        pipe: path.resolve(argv.bazelBinPath),
+        pipe: path.resolve(env.bazelBinPath),
       },
     },
     module: {
       rules: [
         {
           type: "javascript/auto",
-          test: /\.mjs$/,
+          test: /\.m?js$/,
+          resolve: { fullySpecified: false },
           use: [],
         },
       ],

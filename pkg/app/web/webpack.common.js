@@ -5,7 +5,7 @@ const path = require("path");
 const webpack = require("webpack");
 const CopyPlugin = require("copy-webpack-plugin");
 
-module.exports = (_, argv) => {
+module.exports = (env) => {
   return {
     output: {
       filename: "assets/[name].[contenthash:9].js",
@@ -41,11 +41,16 @@ module.exports = (_, argv) => {
         },
       ],
     },
+    resolve: {
+      fallback: {
+        path: require.resolve("path-browserify"),
+      },
+    },
     plugins: [
-      argv.htmlTemplate &&
+      env.htmlTemplate &&
         new HtmlWebpackPlugin({
           filename: "index.html",
-          template: argv.htmlTemplate,
+          template: env.htmlTemplate,
           favicon: path.join(__dirname, "assets/favicon.ico"),
         }),
       process.env.ENABLE_MOCK &&
@@ -56,7 +61,9 @@ module.exports = (_, argv) => {
             },
           ],
         }),
-      new webpack.EnvironmentPlugin(["ENABLE_MOCK"]),
+      new webpack.EnvironmentPlugin({
+        ENABLE_MOCK: process.env.ENABLE_MOCK || null,
+      }),
     ].filter(Boolean),
   };
 };
