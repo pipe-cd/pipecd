@@ -506,16 +506,23 @@ func TestMakePaginationCursorValues(t *testing.T) {
 						Direction: datastore.Desc,
 					},
 					{
+						Field:     "CreatedAt",
+						Direction: datastore.Desc,
+					},
+					{
 						Field:     "Id",
 						Direction: datastore.Asc,
 					},
 				},
 				Cursor: func() string {
-					return base64.StdEncoding.EncodeToString([]byte(`{"Id":"object-id","UpdatedAt":100}`))
+					return base64.StdEncoding.EncodeToString([]byte(`{"Id":"object-id","UpdatedAt":100,"CreatedAt":99}`))
 				}(),
 			},
 			expectedCursorVals: []interface{}{
 				float64(100),
+				float64(99),
+				float64(100),
+				float64(99),
 				"object-id",
 			},
 		},
