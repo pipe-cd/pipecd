@@ -4,11 +4,11 @@ require("dotenv").config();
 const path = require("path");
 const webpack = require("webpack");
 const ForkTsCheckerWebpackPlugin = require("fork-ts-checker-webpack-plugin");
-const mergeConfig = require("webpack-merge");
+const { merge } = require("webpack-merge");
 const webpackBaseConfig = require("./webpack.common");
 
-module.exports = (env, argv) =>
-  mergeConfig(webpackBaseConfig(env, argv), {
+module.exports = (env) =>
+  merge(webpackBaseConfig(env), {
     mode: process.env.NODE_ENV === "production" ? "production" : "development",
     devtool: "inline-source-map",
     entry: {
@@ -53,8 +53,8 @@ module.exports = (env, argv) =>
         },
         {
           type: "javascript/auto",
-          test: /\.mjs$/,
-          use: [],
+          test: /\.m?js$/,
+          resolve: { fullySpecified: false },
         },
       ],
     },
