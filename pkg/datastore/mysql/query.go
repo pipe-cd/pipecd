@@ -256,14 +256,30 @@ func makePaginationCursorValues(opts datastore.ListOptions) ([]interface{}, erro
 		return nil, err
 	}
 
-	cursorVals := make([]interface{}, 0, len(opts.Orders))
+	// The cursorVals contains values used for pagination condition.
+	// For each field except Id, it should be duplicated as for using in outer set and subset.
+	// The Id field value should be one, and it's the last value in this list.
+	cursorVals := make([]interface{}, 0, 2*len(opts.Orders)-1)
 	for _, o := range opts.Orders {
+		// Skip the Id field value to add it at last.
+		if o.Field == "Id" {
+			continue
+		}
 		val, ok := obj[o.Field]
 		if !ok {
 			return nil, fmt.Errorf("cursor does not contain values that match to ordering field %s", o.Field)
 		}
 		cursorVals = append(cursorVals, val)
 	}
+	// Duplicate all values in added order.
+	cursorVals = append(cursorVals, cursorVals...)
+
+	// Add Id value at last.
+	id, ok := obj["Id"]
+	if !ok {
+		return nil, fmt.Errorf("cursor does not contain required value Id")
+	}
+	cursorVals = append(cursorVals, id)
 
 	return cursorVals, nil
 }
