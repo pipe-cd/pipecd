@@ -842,6 +842,7 @@ func (a *WebAPI) ListDeployments(ctx context.Context, req *webservice.ListDeploy
 		Filters: filters,
 		Orders:  orders,
 		Limit:   int(req.PageSize),
+		Cursor:  req.Cursor,
 	})
 	if err != nil {
 		a.logger.Error("failed to get deployments", zap.Error(err))
