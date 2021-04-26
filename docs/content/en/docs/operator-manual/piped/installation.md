@@ -105,28 +105,24 @@ Most part is identical to the previous way, but some part is slightly different.
   apiVersion: pipecd.dev/v1beta1
   kind: Piped
   spec:
-    projectID: YOUR_PROJECT_ID
-    pipedID: YOUR_PIPED_ID
-    pipedKeyFile: PATH_TO_PIPED_KEY_FILE
+    projectID: {YOUR_PROJECT_ID}
+    pipedID: {YOUR_PIPED_ID}
+    pipedKeyFile: {PATH_TO_PIPED_KEY_FILE}
     # Write in a format like "host:443" because the communication is done via gRPC.
-    apiAddress: YOUR_CONTROL_PLANE_ADDRESS
-    webAddress: http://YOUR_CONTROL_PLANE_ADDRESS
+    apiAddress: {YOUR_CONTROL_PLANE_ADDRESS}
+    webAddress: http://{YOUR_CONTROL_PLANE_ADDRESS}
     git:
-      sshKeyFile: PATH_TO_SSH_KEY_FILE
-      sshConfigFilePath: PATH_TO_SSH_CONFIG_FILE
+      sshKeyFile: {PATH_TO_SSH_KEY_FILE}
     repositories:
-      - repoId: REPO_ID_OR_NAME
-        remote: git@github.com:YOUR_GIT_ORG/YOUR_GIT_REPO.git
-        branch: master
+      - repoId: {REPO_ID_OR_NAME}
+        remote: git@github.com:{YOUR_GIT_ORG}/{YOUR_GIT_REPO}.git
+        branch: {YOUR_GIT_BRANCH}
     syncInterval: 1m
   ```
 
 - Start running the `piped`
 
   ``` console
-  ./piped piped \
-  --config-file=PATH_TO_PIPED_CONFIG_FILE \
-  --tools-dir=PATH_TO_TOOLS_DIR
+  ./piped piped --config-file=PATH_TO_PIPED_CONFIG_FILE
   ```
 
-Note that the `TOOLS_DIR` must be the directory to which `piped` has write permission because `piped` installs the tools to deploy applications underneath it.
