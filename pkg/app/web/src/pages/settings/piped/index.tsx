@@ -13,7 +13,6 @@ import {
   TableContainer,
   TableHead,
   TableRow,
-  TextField,
   Toolbar,
 } from "@material-ui/core";
 import {
@@ -27,6 +26,7 @@ import { useDispatch, useSelector } from "react-redux";
 import { AddPipedDrawer } from "../../../components/add-piped-drawer";
 import { EditPipedDrawer } from "../../../components/edit-piped-drawer";
 import { FilterValues, PipedFilter } from "../../../components/piped-filter";
+import { TextWithCopyButton } from "../../../components/text-with-copy-button";
 import {
   UI_TEXT_ADD,
   UI_TEXT_CLOSE,
@@ -189,22 +189,18 @@ export const SettingsPipedPage: FC = memo(function SettingsPipedPage() {
       <AddPipedDrawer open={isOpenForm} onClose={handleClose} />
       <EditPipedDrawer pipedId={editPipedId} onClose={handleEditClose} />
 
-      <Dialog open={Boolean(registeredPiped)}>
+      <Dialog fullWidth open={Boolean(registeredPiped)}>
         <DialogTitle>Piped registered</DialogTitle>
         <DialogContent>
-          <TextField
-            label="id"
-            variant="outlined"
+          <TextWithCopyButton
+            name="Piped Id"
+            label="Copy piped id"
             value={registeredPiped?.id || ""}
-            fullWidth
-            margin="dense"
           />
-          <TextField
-            label="secret key"
-            variant="outlined"
+          <TextWithCopyButton
+            name="Secret Key"
+            label="Copy secret key"
             value={registeredPiped?.key || ""}
-            fullWidth
-            margin="dense"
           />
           <Box display="flex" justifyContent="flex-end" m={1} mt={2}>
             <Button color="primary" onClick={handleClosePipedInfo}>

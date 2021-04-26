@@ -21,7 +21,6 @@ import {
   clearSealedSecret,
   generateSealedSecret,
 } from "../../modules/sealed-secret";
-import { addToast } from "../../modules/toasts";
 import { AppDispatch } from "../../store";
 import { TextWithCopyButton } from "../text-with-copy-button";
 
@@ -101,10 +100,6 @@ export const SealedSecretDialog: FC<SealedSecretDialogProps> = memo(
       dispatch(clearSealedSecret());
     }, [dispatch, onClose]);
 
-    const handleOnClickCopy = useCallback(() => {
-      dispatch(addToast({ message: "Secret copied to clipboard" }));
-    }, [dispatch]);
-
     if (!application) {
       return null;
     }
@@ -119,9 +114,9 @@ export const SealedSecretDialog: FC<SealedSecretDialogProps> = memo(
                 Encrypted secret data
               </Typography>
               <TextWithCopyButton
+                name="Encrypted secret"
                 label="Copy secret"
                 value={sealedSecret}
-                onCopy={handleOnClickCopy}
               />
             </DialogContent>
             <DialogActions>

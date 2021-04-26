@@ -1,17 +1,15 @@
-import { FC, useCallback, memo } from "react";
 import {
+  Button,
   Dialog,
   DialogActions,
-  DialogTitle,
   DialogContent,
+  DialogTitle,
   Typography,
-  Button,
 } from "@material-ui/core";
-import { addToast } from "../../modules/toasts";
+import { FC, memo, useCallback } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import { AppState } from "../../modules";
 import { clearGeneratedKey } from "../../modules/api-keys";
-import { COPY_API_KEY } from "../../constants/toast-text";
 import { TextWithCopyButton } from "../text-with-copy-button";
 
 const DIALOG_TITLE = "Generated API Key";
@@ -24,10 +22,6 @@ export const GeneratedAPIKeyDialog: FC = memo(function GeneratedAPIKeyDialog() {
   );
   const open = Boolean(generatedKey);
 
-  const handleOnClickCopy = useCallback((): void => {
-    dispatch(addToast({ message: COPY_API_KEY }));
-  }, [dispatch]);
-
   const handleClose = useCallback(() => {
     dispatch(clearGeneratedKey());
   }, [dispatch]);
@@ -39,9 +33,9 @@ export const GeneratedAPIKeyDialog: FC = memo(function GeneratedAPIKeyDialog() {
         <Typography variant="caption">{VALUE_CAPTION}</Typography>
         {generatedKey ? (
           <TextWithCopyButton
+            name="API Key"
             label="Copy API Key"
             value={generatedKey}
-            onCopy={handleOnClickCopy}
           />
         ) : null}
       </DialogContent>

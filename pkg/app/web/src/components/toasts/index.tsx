@@ -1,6 +1,6 @@
-import { Button, Snackbar } from "@material-ui/core";
+import { Button, Snackbar, SnackbarCloseReason } from "@material-ui/core";
 import MuiAlert from "@material-ui/lab/Alert";
-import { FC } from "react";
+import { FC, memo, SyntheticEvent } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import { Link as RouterLink } from "react-router-dom";
 import { AppState } from "../../modules";
@@ -8,7 +8,7 @@ import { IToast, removeToast, selectAll } from "../../modules/toasts";
 
 const AUTO_HIDE_DURATION = 5000;
 
-export const Toasts: FC = () => {
+export const Toasts: FC = memo(function Toasts() {
   const dispatch = useDispatch();
   const toasts = useSelector<AppState, IToast[]>((state) =>
     selectAll(state.toasts)
@@ -17,7 +17,13 @@ export const Toasts: FC = () => {
   return (
     <>
       {toasts.map((item) => {
-        const handleClose = (): void => {
+        const handleClose = (
+          _: SyntheticEvent<unknown, Event>,
+          reason?: SnackbarCloseReason
+        ): void => {
+          if (reason === "clickaway") {
+            return;
+          }
           dispatch(removeToast({ id: item.id }));
         };
         return (
@@ -59,4 +65,4 @@ export const Toasts: FC = () => {
       })}
     </>
   );
-};
+});

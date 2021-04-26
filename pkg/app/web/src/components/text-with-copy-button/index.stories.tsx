@@ -1,16 +1,16 @@
-import { action } from "@storybook/addon-actions";
-import * as React from "react";
-import { TextWithCopyButton } from "./";
+import { Story } from "@storybook/react/types-6-0";
+import { createDecoratorRedux } from "../../../.storybook/redux-decorator";
+import { TextWithCopyButton, TextWithCopyButtonProps } from "./";
 
 export default {
   title: "TextWithCopyButton",
   component: TextWithCopyButton,
+  decorators: [createDecoratorRedux({})],
 };
 
-export const overview: React.FC = () => (
-  <TextWithCopyButton
-    value="hello"
-    onCopy={action("onCopy")}
-    label="Copy text"
-  />
+const Template: Story<TextWithCopyButtonProps> = (args) => (
+  <TextWithCopyButton {...args} />
 );
+
+export const Overview = Template.bind({});
+Overview.args = { name: "Value", label: "Copy value", value: "value" };
