@@ -124,6 +124,7 @@ export const fetchDeployments = createAsyncThunk<
   const { deploymentsList } = await deploymentsApi.getDeployments({
     options: convertFilterOptions({ ...options, maxUpdatedAt: 0 }),
     pageSize: ITEMS_PER_PAGE,
+    cursor: "",
   });
   return (deploymentsList as Deployment.AsObject[]) || [];
 });
@@ -143,6 +144,8 @@ export const fetchMoreDeployments = createAsyncThunk<
   const { deploymentsList } = await deploymentsApi.getDeployments({
     options: convertFilterOptions({ ...options, maxUpdatedAt }),
     pageSize: FETCH_MORE_ITEMS_PER_PAGE,
+    // TODO: Support cursor passed from frontend.
+    cursor: "",
   });
   return (deploymentsList as Deployment.AsObject[]) || [];
 });
