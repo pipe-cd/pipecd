@@ -64,6 +64,9 @@ module.exports = (env) => {
       new webpack.EnvironmentPlugin({
         ENABLE_MOCK: process.env.ENABLE_MOCK || null,
       }),
+      new webpack.ProvidePlugin({
+        process: "process/browser",
+      }),
     ].filter(Boolean),
   };
 };
