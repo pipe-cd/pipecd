@@ -325,7 +325,7 @@ func (a *PipedAPI) ListNotCompletedDeployments(ctx context.Context, req *pipedse
 	}
 
 	// TODO: Support pagination in ListNotCompletedDeployments
-	deployments, err := a.deploymentStore.ListDeployments(ctx, opts)
+	deployments, _, err := a.deploymentStore.ListDeployments(ctx, opts)
 	if err != nil {
 		a.logger.Error("failed to fetch deployments", zap.Error(err))
 		return nil, status.Error(codes.Internal, "failed to fetch deployments")

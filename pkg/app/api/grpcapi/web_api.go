@@ -838,7 +838,7 @@ func (a *WebAPI) ListDeployments(ctx context.Context, req *webservice.ListDeploy
 		}
 	}
 
-	deployments, err := a.deploymentStore.ListDeployments(ctx, datastore.ListOptions{
+	deployments, cursor, err := a.deploymentStore.ListDeployments(ctx, datastore.ListOptions{
 		Filters: filters,
 		Orders:  orders,
 		Limit:   int(req.PageSize),
@@ -850,6 +850,7 @@ func (a *WebAPI) ListDeployments(ctx context.Context, req *webservice.ListDeploy
 	}
 	return &webservice.ListDeploymentsResponse{
 		Deployments: deployments,
+		Cursor:      cursor,
 	}, nil
 }
 

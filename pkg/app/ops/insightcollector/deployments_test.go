@@ -510,7 +510,7 @@ func TestInsightCollector_findDeploymentsCreatedInRange(t *testing.T) {
 						Id:        "6",
 						CreatedAt: time.Date(2020, 1, 3, 10, 0, 0, 0, time.UTC).Unix(),
 					},
-				}, nil)
+				}, "", nil)
 				m.EXPECT().ListDeployments(gomock.Any(), datastore.ListOptions{
 					Limit: 50,
 					Filters: []datastore.ListFilter{
@@ -544,7 +544,7 @@ func TestInsightCollector_findDeploymentsCreatedInRange(t *testing.T) {
 						Id:        "3",
 						CreatedAt: time.Date(2020, 1, 3, 5, 0, 0, 0, time.UTC).Unix(),
 					},
-				}, nil)
+				}, "", nil)
 				m.EXPECT().ListDeployments(gomock.Any(), datastore.ListOptions{
 					Limit: 50,
 					Filters: []datastore.ListFilter{
@@ -566,7 +566,7 @@ func TestInsightCollector_findDeploymentsCreatedInRange(t *testing.T) {
 						},
 					},
 					Cursor: "",
-				}).Return([]*model.Deployment{}, nil)
+				}).Return([]*model.Deployment{}, "", nil)
 			},
 			want: []*model.Deployment{
 				{
@@ -622,7 +622,7 @@ func TestInsightCollector_findDeploymentsCreatedInRange(t *testing.T) {
 							Direction: datastore.Desc,
 						},
 					},
-				}).Return([]*model.Deployment{}, fmt.Errorf("something wrong happens in ListDeployments"))
+				}).Return([]*model.Deployment{}, "", fmt.Errorf("something wrong happens in ListDeployments"))
 			},
 			wantErr: true,
 		},
@@ -706,7 +706,7 @@ func TestInsightCollector_findDeploymentsCompletedInRange(t *testing.T) {
 						Id:          "6",
 						CompletedAt: time.Date(2020, 1, 3, 10, 0, 0, 0, time.UTC).Unix(),
 					},
-				}, nil)
+				}, "", nil)
 				m.EXPECT().ListDeployments(gomock.Any(), datastore.ListOptions{
 					Limit: 50,
 					Filters: []datastore.ListFilter{
@@ -740,7 +740,7 @@ func TestInsightCollector_findDeploymentsCompletedInRange(t *testing.T) {
 						Id:          "3",
 						CompletedAt: time.Date(2020, 1, 3, 5, 0, 0, 0, time.UTC).Unix(),
 					},
-				}, nil)
+				}, "", nil)
 				m.EXPECT().ListDeployments(gomock.Any(), datastore.ListOptions{
 					Limit: 50,
 					Filters: []datastore.ListFilter{
@@ -762,7 +762,7 @@ func TestInsightCollector_findDeploymentsCompletedInRange(t *testing.T) {
 						},
 					},
 					Cursor: "",
-				}).Return([]*model.Deployment{}, nil)
+				}).Return([]*model.Deployment{}, "", nil)
 			},
 			want: []*model.Deployment{
 				{
@@ -818,7 +818,7 @@ func TestInsightCollector_findDeploymentsCompletedInRange(t *testing.T) {
 							Direction: datastore.Desc,
 						},
 					},
-				}).Return([]*model.Deployment{}, fmt.Errorf("something wrong happens in ListDeployments"))
+				}).Return([]*model.Deployment{}, "", fmt.Errorf("something wrong happens in ListDeployments"))
 			},
 			wantErr: true,
 		},
