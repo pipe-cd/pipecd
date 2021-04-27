@@ -93,7 +93,7 @@ type DeploymentStore interface {
 	UpdateDeployment(ctx context.Context, id string, updater func(*model.Deployment) error) error
 	PutDeploymentMetadata(ctx context.Context, id string, metadata map[string]string) error
 	PutDeploymentStageMetadata(ctx context.Context, deploymentID, stageID string, metadata map[string]string) error
-	ListDeployments(ctx context.Context, opts ListOptions) ([]*model.Deployment, error)
+	ListDeployments(ctx context.Context, opts ListOptions) ([]*model.Deployment, string, error)
 	GetDeployment(ctx context.Context, id string) (*model.Deployment, error)
 }
 
@@ -162,10 +162,10 @@ func (s *deploymentStore) PutDeploymentStageMetadata(ctx context.Context, deploy
 	})
 }
 
-func (s *deploymentStore) ListDeployments(ctx context.Context, opts ListOptions) ([]*model.Deployment, error) {
+func (s *deploymentStore) ListDeployments(ctx context.Context, opts ListOptions) ([]*model.Deployment, string, error) {
 	it, err := s.ds.Find(ctx, DeploymentModelKind, opts)
 	if err != nil {
-		return nil, err
+		return nil, "", err
 	}
 	ds := make([]*model.Deployment, 0)
 	for {
@@ -175,11 +175,20 @@ func (s *deploymentStore) ListDeployments(ctx context.Context, opts ListOptions)
 			break
 		}
 		if err != nil {
-			return nil, err
+			return nil, "", err
 		}
 		ds = append(ds, &d)
 	}
-	return ds, nil
+
+	// In case there is no more elements found, cursor should be set to empty too.
+	if len(ds) == 0 {
+		return ds, "", nil
+	}
+	cursor, err := it.Cursor()
+	if err != nil {
+		return nil, "", err
+	}
+	return ds, cursor, nil
 }
 
 func (s *deploymentStore) GetDeployment(ctx context.Context, id string) (*model.Deployment, error) {
