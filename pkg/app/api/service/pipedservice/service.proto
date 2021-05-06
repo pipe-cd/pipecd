@@ -220,6 +220,7 @@ message ListNotCompletedDeploymentsRequest {
 
 message ListNotCompletedDeploymentsResponse {
     repeated pipe.model.Deployment deployments = 1;
+    string cursor = 2;
 }
 
 message CreateDeploymentRequest {
