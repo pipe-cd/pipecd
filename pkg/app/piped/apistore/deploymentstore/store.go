@@ -109,6 +109,7 @@ func (s *store) sync(ctx context.Context) error {
 		return err
 	}
 
+	// TODO: Call ListNotCompletedDeployments itervally until all required deployments are fetched.
 	var pendings, planneds, runnings []*model.Deployment
 	for _, d := range resp.Deployments {
 		switch d.Status {
