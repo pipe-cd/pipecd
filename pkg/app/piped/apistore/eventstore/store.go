@@ -157,7 +157,7 @@ func (s *store) GetLatest(ctx context.Context, name string, labels map[string]st
 		Labels: labels,
 	})
 	if status.Code(err) == codes.NotFound {
-		s.logger.Warn("given event not found",
+		s.logger.Info("event not found in control-plane",
 			zap.String("event-name", name),
 			zap.Any("labels", labels),
 		)
