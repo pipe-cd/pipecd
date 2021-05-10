@@ -44,6 +44,7 @@ service WebService {
     rpc RegisterPiped(RegisterPipedRequest) returns (RegisterPipedResponse) {}
     rpc UpdatePiped(UpdatePipedRequest) returns (UpdatePipedResponse) {}
     rpc RecreatePipedKey(RecreatePipedKeyRequest) returns (RecreatePipedKeyResponse) {}
+    rpc DeleteOldPipedKeys(DeleteOldPipedKeysRequest) returns (DeleteOldPipedKeysResponse) {}
     rpc EnablePiped(EnablePipedRequest) returns (EnablePipedResponse) {}
     rpc DisablePiped(DisablePipedRequest) returns (DisablePipedResponse) {}
     rpc ListPipeds(ListPipedsRequest) returns (ListPipedsResponse) {}
@@ -139,6 +140,13 @@ message RecreatePipedKeyRequest {
 
 message RecreatePipedKeyResponse {
     string key = 1;
+}
+
+message DeleteOldPipedKeysRequest {
+    string piped_id = 1 [(validate.rules).string.min_len = 1];
+}
+
+message DeleteOldPipedKeysResponse {
 }
 
 message EnablePipedRequest {

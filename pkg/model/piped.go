@@ -101,6 +101,24 @@ func (p *Piped) AddKey(hash, creator string, createdAt time.Time) {
 	p.Keys = keys
 }
 
+// DeleteOldPipedKeys removes all old keys to keep only the latest one.
+func (p *Piped) DeleteOldPipedKeys() {
+	// This field was deprecated so we reset it too.
+	p.KeyHash = ""
+
+	if len(p.Keys) < 2 {
+		return
+	}
+
+	var latest *PipedKey
+	for i := range p.Keys {
+		if latest == nil || latest.CreatedAt < p.Keys[i].CreatedAt {
+			latest = p.Keys[i]
+		}
+	}
+	p.Keys = []*PipedKey{latest}
+}
+
 func (p *Piped) RedactSensitiveData() {
 	p.KeyHash = redactedMessage
 	for i := range p.Keys {

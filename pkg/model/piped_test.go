@@ -106,6 +106,89 @@ func TestAddKey(t *testing.T) {
 	}, p.Keys)
 }
 
+func TestPipedDeleteOldPipedKeys(t *testing.T) {
+	testcases := []struct {
+		name     string
+		piped    Piped
+		expected Piped
+	}{
+		{
+			name: "no key",
+			piped: Piped{
+				KeyHash: "hash-key",
+				Keys:    []*PipedKey{},
+			},
+			expected: Piped{
+				KeyHash: "",
+				Keys:    []*PipedKey{},
+			},
+		},
+		{
+			name: "has 1 key",
+			piped: Piped{
+				KeyHash: "hash-key",
+				Keys: []*PipedKey{
+					{
+						Hash:      "hash-1",
+						Creator:   "user-1",
+						CreatedAt: 1,
+					},
+				},
+			},
+			expected: Piped{
+				KeyHash: "",
+				Keys: []*PipedKey{
+					{
+						Hash:      "hash-1",
+						Creator:   "user-1",
+						CreatedAt: 1,
+					},
+				},
+			},
+		},
+		{
+			name: "has multiple keys",
+			piped: Piped{
+				KeyHash: "hash-key",
+				Keys: []*PipedKey{
+					{
+						Hash:      "hash-1",
+						Creator:   "user-1",
+						CreatedAt: 1,
+					},
+					{
+						Hash:      "hash-3",
+						Creator:   "user-3",
+						CreatedAt: 3,
+					},
+					{
+						Hash:      "hash-2",
+						Creator:   "user-2",
+						CreatedAt: 2,
+					},
+				},
+			},
+			expected: Piped{
+				KeyHash: "",
+				Keys: []*PipedKey{
+					{
+						Hash:      "hash-3",
+						Creator:   "user-3",
+						CreatedAt: 3,
+					},
+				},
+			},
+		},
+	}
+
+	for _, tc := range testcases {
+		t.Run(tc.name, func(t *testing.T) {
+			tc.piped.DeleteOldPipedKeys()
+			assert.Equal(t, tc.expected, tc.piped)
+		})
+	}
+}
+
 func TestPipedRedactSensitiveData(t *testing.T) {
 	testcases := []struct {
 		name     string
@@ -158,7 +241,9 @@ func TestPipedRedactSensitiveData(t *testing.T) {
 	}
 
 	for _, tc := range testcases {
-		tc.piped.RedactSensitiveData()
-		assert.Equal(t, tc.expected, tc.piped)
+		t.Run(tc.name, func(t *testing.T) {
+			tc.piped.RedactSensitiveData()
+			assert.Equal(t, tc.expected, tc.piped)
+		})
 	}
 }
