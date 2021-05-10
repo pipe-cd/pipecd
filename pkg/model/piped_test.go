@@ -15,6 +15,7 @@
 package model
 
 import (
+	"errors"
 	"testing"
 	"time"
 
@@ -27,6 +28,11 @@ func TestGeneratePipedKey(t *testing.T) {
 	assert.NoError(t, err)
 	assert.True(t, len(key) > 0)
 	assert.True(t, len(hash) > 0)
+}
+
+func TestPipedCheckKey(t *testing.T) {
+	key, hash, err := GeneratePipedKey()
+	require.NoError(t, err)
 
 	p := &Piped{}
 	p.AddKey(hash, "user", time.Now())
@@ -36,6 +42,10 @@ func TestGeneratePipedKey(t *testing.T) {
 
 	err = p.CheckKey("invalid")
 	assert.Error(t, err)
+
+	noKeyPiped := &Piped{}
+	err = noKeyPiped.CheckKey(key)
+	assert.Equal(t, errors.New("piped does not contain any key"), err)
 }
 
 func TestAddKey(t *testing.T) {
