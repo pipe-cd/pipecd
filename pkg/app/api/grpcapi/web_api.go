@@ -244,6 +244,22 @@ func (a *WebAPI) RecreatePipedKey(ctx context.Context, req *webservice.RecreateP
 	}, nil
 }
 
+func (a *WebAPI) DeleteOldPipedKeys(ctx context.Context, req *webservice.DeleteOldPipedKeysRequest) (*webservice.DeleteOldPipedKeysResponse, error) {
+	if _, err := rpcauth.ExtractClaims(ctx); err != nil {
+		a.logger.Error("failed to authenticate the current user", zap.Error(err))
+		return nil, err
+	}
+
+	updater := func(ctx context.Context, pipedID string) error {
+		return a.pipedStore.DeleteOldKeys(ctx, pipedID)
+	}
+	if err := a.updatePiped(ctx, req.PipedId, updater); err != nil {
+		return nil, err
+	}
+
+	return &webservice.DeleteOldPipedKeysResponse{}, nil
+}
+
 func (a *WebAPI) EnablePiped(ctx context.Context, req *webservice.EnablePipedRequest) (*webservice.EnablePipedResponse, error) {
 	if err := a.updatePiped(ctx, req.PipedId, a.pipedStore.EnablePiped); err != nil {
 		return nil, err
