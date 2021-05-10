@@ -23,6 +23,8 @@ import {
 import { createSelector } from "@reduxjs/toolkit";
 import { FC, memo, useCallback, useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
+import { DELETE_OLD_PIPED_KEYS_SUCCESS } from "../../../constants/toast-text";
+import { addToast } from "../../../modules/toasts";
 import { AddPipedDrawer } from "../../../components/add-piped-drawer";
 import { EditPipedDrawer } from "../../../components/edit-piped-drawer";
 import { FilterValues, PipedFilter } from "../../../components/piped-filter";
@@ -36,11 +38,12 @@ import {
 import { AppState } from "../../../modules";
 import {
   clearRegisteredPipedInfo,
+  deleteOldPipedKeys,
   disablePiped,
   enablePiped,
   fetchPipeds,
   Piped,
-  recreatePipedKey,
+  addPipedKey,
   RegisteredPiped,
   selectAllPipeds,
 } from "../../../modules/pipeds";
@@ -108,9 +111,9 @@ export const SettingsPipedPage: FC = memo(function SettingsPipedPage() {
     [dispatch]
   );
 
-  const handleRecreate = useCallback(
+  const handleAddKey = useCallback(
     (id: string) => {
-      dispatch(recreatePipedKey({ pipedId: id }));
+      dispatch(addPipedKey({ pipedId: id }));
     },
     [dispatch]
   );
@@ -127,6 +130,20 @@ export const SettingsPipedPage: FC = memo(function SettingsPipedPage() {
     dispatch(clearRegisteredPipedInfo());
     dispatch(fetchPipeds(true));
   }, [dispatch]);
+
+  const handleDeleteOldKeys = useCallback(
+    (id: string) => {
+      dispatch(deleteOldPipedKeys({ pipedId: id })).then(() => {
+        dispatch(
+          addToast({
+            message: DELETE_OLD_PIPED_KEYS_SUCCESS,
+            severity: "success",
+          })
+        );
+      });
+    },
+    [dispatch]
+  );
 
   const handleEditClose = useCallback(() => {
     setEditPipedId(null);
@@ -172,9 +189,10 @@ export const SettingsPipedPage: FC = memo(function SettingsPipedPage() {
                   key={piped.id}
                   pipedId={piped.id}
                   onEdit={handleEdit}
-                  onRecreateKey={handleRecreate}
+                  onAddKey={handleAddKey}
                   onDisable={handleDisable}
                   onEnable={handleEnable}
+                  onDeleteOldKeys={handleDeleteOldKeys}
                 />
               ))}
             </TableBody>

@@ -14,6 +14,8 @@ import {
   GenerateApplicationSealedSecretResponse,
   UpdatePipedRequest,
   UpdatePipedResponse,
+  DeleteOldPipedKeysRequest,
+  DeleteOldPipedKeysResponse,
 } from "pipe/pkg/app/web/api_client/service_pb";
 
 export const getPipeds = ({
@@ -88,4 +90,14 @@ export const updatePiped = ({
   req.setDesc(desc);
   req.setEnvIdsList(envIdsList);
   return apiRequest(req, apiClient.updatePiped);
+};
+
+export const deleteOldPipedKeys = ({
+  pipedId,
+}: DeleteOldPipedKeysRequest.AsObject): Promise<
+  DeleteOldPipedKeysResponse.AsObject
+> => {
+  const req = new DeleteOldPipedKeysRequest();
+  req.setPipedId(pipedId);
+  return apiRequest(req, apiClient.deleteOldPipedKeys);
 };

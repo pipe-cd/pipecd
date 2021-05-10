@@ -23,7 +23,8 @@ import {
   UI_TEXT_DISABLE,
   UI_TEXT_EDIT,
   UI_TEXT_ENABLE,
-  UI_TEXT_RECREATE_KEY,
+  UI_TEXT_ADD_NEW_KEY,
+  UI_TEXT_DELETE_OLD_KEYS,
 } from "../../../constants/ui-text";
 import { selectPipedById } from "../../../modules/pipeds";
 import { addToast } from "../../../modules/toasts";
@@ -44,9 +45,10 @@ const useStyles = makeStyles((theme) => ({
 interface Props {
   pipedId: string;
   onEdit: (id: string) => void;
-  onRecreateKey: (id: string) => void;
+  onAddKey: (id: string) => void;
   onDisable: (id: string) => void;
   onEnable: (id: string) => void;
+  onDeleteOldKeys: (id: string) => void;
 }
 
 const ITEM_HEIGHT = 48;
@@ -62,7 +64,8 @@ export const PipedTableRow: FC<Props> = memo(function PipedTableRow({
   onEnable,
   onDisable,
   onEdit,
-  onRecreateKey,
+  onAddKey,
+  onDeleteOldKeys,
 }) {
   const classes = useStyles();
   const piped = useSelector(selectPipedById(pipedId));
@@ -85,10 +88,10 @@ export const PipedTableRow: FC<Props> = memo(function PipedTableRow({
     onEdit(pipedId);
   }, [pipedId, onEdit]);
 
-  const handleRecreate = useCallback(() => {
+  const handleAddKey = useCallback(() => {
     setAnchorEl(null);
-    onRecreateKey(pipedId);
-  }, [pipedId, onRecreateKey]);
+    onAddKey(pipedId);
+  }, [pipedId, onAddKey]);
 
   const handleEnable = useCallback(() => {
     setAnchorEl(null);
@@ -106,6 +109,11 @@ export const PipedTableRow: FC<Props> = memo(function PipedTableRow({
       dispatch(addToast({ message: COPY_PIPED_ID }));
     }
   }, [dispatch, piped]);
+
+  const handleDeleteOldKeys = useCallback(() => {
+    setAnchorEl(null);
+    onDeleteOldKeys(pipedId);
+  }, [onDeleteOldKeys, pipedId]);
 
   if (!piped) {
     return null;
@@ -169,8 +177,14 @@ export const PipedTableRow: FC<Props> = memo(function PipedTableRow({
             <MenuItem key="piped-menu-edit" onClick={handleEdit}>
               {UI_TEXT_EDIT}
             </MenuItem>,
-            <MenuItem key="piped-menu-recreate" onClick={handleRecreate}>
-              {UI_TEXT_RECREATE_KEY}
+            <MenuItem key="piped-menu-add-new-key" onClick={handleAddKey}>
+              {UI_TEXT_ADD_NEW_KEY}
+            </MenuItem>,
+            <MenuItem
+              key="piped-menu-delete-old-keys"
+              onClick={handleDeleteOldKeys}
+            >
+              {UI_TEXT_DELETE_OLD_KEYS}
             </MenuItem>,
             <MenuItem key="piped-menu-disable" onClick={handleDisable}>
               {UI_TEXT_DISABLE}

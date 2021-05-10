@@ -64,13 +64,21 @@ export const enablePiped = createAsyncThunk<void, { pipedId: string }>(
   }
 );
 
-export const recreatePipedKey = createAsyncThunk<string, { pipedId: string }>(
-  `${MODULE_NAME}/recreateKey`,
+export const addPipedKey = createAsyncThunk<string, { pipedId: string }>(
+  `${MODULE_NAME}/addKey`,
   async ({ pipedId }) => {
     const { key } = await pipedsApi.recreatePipedKey({ id: pipedId });
     return key;
   }
 );
+
+export const deleteOldPipedKeys = createAsyncThunk<void, { pipedId: string }>(
+  `${MODULE_NAME}/deleteOldKeys`,
+  async (props) => {
+    await pipedsApi.deleteOldPipedKeys(props);
+  }
+);
+
 export const editPiped = createAsyncThunk<
   void,
   { pipedId: string; name: string; desc: string; envIds: string[] }
@@ -106,7 +114,7 @@ export const pipedsSlice = createSlice({
         pipedsAdapter.removeAll(state);
         pipedsAdapter.addMany(state, action.payload);
       })
-      .addCase(recreatePipedKey.fulfilled, (state, action) => {
+      .addCase(addPipedKey.fulfilled, (state, action) => {
         state.registeredPiped = {
           id: action.meta.arg.pipedId,
           key: action.payload,
