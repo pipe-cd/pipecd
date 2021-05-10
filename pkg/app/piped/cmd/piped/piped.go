@@ -72,6 +72,7 @@ type piped struct {
 	enableDefaultKubernetesCloudProvider bool
 	useFakeAPIClient                     bool
 	gracePeriod                          time.Duration
+	addLoginUserToPasswd                 bool
 }
 
 func NewCommand() *cobra.Command {
@@ -99,6 +100,7 @@ func NewCommand() *cobra.Command {
 	cmd.Flags().StringVar(&p.toolsDir, "tools-dir", p.toolsDir, "The path to directory where to install needed tools such as kubectl, helm, kustomize.")
 	cmd.Flags().BoolVar(&p.useFakeAPIClient, "use-fake-api-client", p.useFakeAPIClient, "Whether the fake api client should be used instead of the real one or not.")
 	cmd.Flags().BoolVar(&p.enableDefaultKubernetesCloudProvider, "enable-default-kubernetes-cloud-provider", p.enableDefaultKubernetesCloudProvider, "Whether the default kubernetes provider is enabled or not.")
+	cmd.Flags().BoolVar(&p.addLoginUserToPasswd, "add-login-user-to-passwd", p.addLoginUserToPasswd, "Whether to add login user to /etc/passwd")
 	cmd.Flags().DurationVar(&p.gracePeriod, "grace-period", p.gracePeriod, "How long to wait for graceful shutdown.")
 
 	cmd.MarkFlagRequired("config-file")
@@ -108,6 +110,11 @@ func NewCommand() *cobra.Command {
 
 func (p *piped) run(ctx context.Context, t cli.Telemetry) (runErr error) {
 	group, ctx := errgroup.WithContext(ctx)
+	if p.addLoginUserToPasswd {
+		if err := p.insertLoginUserToPasswd(ctx); err != nil {
+			return err
+		}
+	}
 
 	// Load piped configuration from specified file.
 	cfg, err := p.loadConfig()
@@ -514,4 +521,18 @@ func (p *piped) sendPipedMeta(ctx context.Context, client pipedservice.Client, c
 	}
 
 	return err
+}
+
+func (p *piped) insertLoginUserToPasswd(ctx context.Context) error {
+	// FIXME: Run with Go code
+	const addLoginUserToPasswdscript = `
+# Add login user to $HOME/passwd
+export USER_ID=$(id -u)
+export GROUP_ID=$(id -g)
+grep -v -e ^default -e ^$USER_ID /etc/passwd > "$HOME/passwd"
+echo "default:x:${USER_ID}:${GROUP_ID}:Piped User:${HOME}:/sbin/nologin" >> "$HOME/passwd"
+export NSS_WRAPPER_PASSWD=${HOME}/passwd
+export NSS_WRAPPER_GROUP=/etc/group
+`
+	return nil
 }

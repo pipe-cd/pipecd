@@ -32,6 +32,7 @@ spec:
           - --enable-default-kubernetes-cloud-provider={{ .Values.args.enableDefaultKubernetesCloudProvider }}
           - --insecure={{ .Values.args.insecure }}
           - --log-encoding={{ .Values.args.logEncoding }}
+          - --add-login-user-to-passwd={{ .Values.args.addLoginUserToPasswd }}
           ports:
             - name: admin
               containerPort: 9085

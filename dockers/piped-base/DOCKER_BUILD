@@ -1,2 +1,2 @@
-version: 0.2.2
+version: 0.2.3
 registry: gcr.io/pipecd/piped-base
