@@ -15,6 +15,7 @@
 package model
 
 import (
+	"errors"
 	"sort"
 	"time"
 
@@ -65,12 +66,17 @@ func (p *Piped) CheckKey(key string) (err error) {
 		}
 	}
 
+	if len(p.Keys) == 0 {
+		return errors.New("piped does not contain any key")
+	}
+
 	for _, k := range p.Keys {
 		err = bcrypt.CompareHashAndPassword([]byte(k.Hash), []byte(key))
 		if err == nil {
 			return nil
 		}
 	}
+
 	return
 }
 
