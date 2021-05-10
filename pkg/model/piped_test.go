@@ -105,3 +105,60 @@ func TestAddKey(t *testing.T) {
 		},
 	}, p.Keys)
 }
+
+func TestPipedRedactSensitiveData(t *testing.T) {
+	testcases := []struct {
+		name     string
+		piped    Piped
+		expected Piped
+	}{
+		{
+			name: "contains both KeyHash and Keys",
+			piped: Piped{
+				KeyHash: "hash-key",
+				Keys: []*PipedKey{
+					{
+						Hash:      "hash-1",
+						Creator:   "user-1",
+						CreatedAt: 1,
+					},
+					{
+						Hash:      "hash-2",
+						Creator:   "user-2",
+						CreatedAt: 2,
+					},
+					{
+						Hash:      "hash-3",
+						Creator:   "user-3",
+						CreatedAt: 3,
+					},
+				},
+			},
+			expected: Piped{
+				KeyHash: "redacted",
+				Keys: []*PipedKey{
+					{
+						Hash:      "redacted",
+						Creator:   "user-1",
+						CreatedAt: 1,
+					},
+					{
+						Hash:      "redacted",
+						Creator:   "user-2",
+						CreatedAt: 2,
+					},
+					{
+						Hash:      "redacted",
+						Creator:   "user-3",
+						CreatedAt: 3,
+					},
+				},
+			},
+		},
+	}
+
+	for _, tc := range testcases {
+		tc.piped.RedactSensitiveData()
+		assert.Equal(t, tc.expected, tc.piped)
+	}
+}

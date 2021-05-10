@@ -103,4 +103,7 @@ func (p *Piped) AddKey(hash, creator string, createdAt time.Time) {
 
 func (p *Piped) RedactSensitiveData() {
 	p.KeyHash = redactedMessage
+	for i := range p.Keys {
+		p.Keys[i].Hash = redactedMessage
+	}
 }
