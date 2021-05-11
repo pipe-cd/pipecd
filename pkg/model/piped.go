@@ -16,14 +16,14 @@ package model
 
 import (
 	"errors"
-	"sort"
+	"fmt"
 	"time"
 
 	"golang.org/x/crypto/bcrypt"
 )
 
 const (
-	pipedMaxKeyNum  = 3
+	pipedMaxKeyNum  = 2
 	pipedKeyLength  = 50
 	redactedMessage = "redacted"
 )
@@ -81,30 +81,24 @@ func (p *Piped) CheckKey(key string) (err error) {
 }
 
 // AddKey adds a new key to the list.
-// If the piped is already having "pipedMaxKeyNum" number of keys
-// the oldest one will be removed before adding.
-func (p *Piped) AddKey(hash, creator string, createdAt time.Time) {
-	key := &PipedKey{
+// A piped can hold a maximum of "pipedMaxKeyNum" keys.
+func (p *Piped) AddKey(hash, creator string, createdAt time.Time) error {
+	if len(p.Keys) == pipedMaxKeyNum {
+		return fmt.Errorf("number of keys for each piped must be less than or equal to %d, you may need to delete the old keys before adding a new one", pipedMaxKeyNum)
+	}
+
+	k := &PipedKey{
 		Hash:      hash,
 		Creator:   creator,
 		CreatedAt: createdAt.Unix(),
 	}
-	if len(p.Keys) == 0 {
-		p.Keys = []*PipedKey{key}
-		return
-	}
 
-	sort.Slice(p.Keys, func(i, j int) bool {
-		return p.Keys[i].CreatedAt > p.Keys[j].CreatedAt
-	})
-	if len(p.Keys) >= pipedMaxKeyNum {
-		p.Keys = p.Keys[:pipedMaxKeyNum-1]
-	}
 	keys := make([]*PipedKey, 0, len(p.Keys)+1)
-	keys = append(keys, key)
+	keys = append(keys, k)
 	keys = append(keys, p.Keys...)
-
 	p.Keys = keys
+
+	return nil
 }
 
 // DeleteOldPipedKeys removes all old keys to keep only the latest one.
