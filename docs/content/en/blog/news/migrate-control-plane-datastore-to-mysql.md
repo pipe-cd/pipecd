@@ -14,7 +14,7 @@ If you are using MongoDB as your PipeCD control-plane datastore, the following g
 
 ### Before start
 
-You need to install the [pipectl](/docs/user-guide/command-line-tool/#installation) version [v0.9.10](https://github.com/pipe-cd/pipe/releases/tag/v0.9.10) command-line tool.
+You need to install the [pipectl](/docs/user-guide/command-line-tool/#installation) version [v0.9.10-1-8609c84](https://github.com/pipe-cd/pipe/releases/tag/v0.9.10-1-v0.9.10-1-8609c84) command-line tool.
 
 Validate your installed `pipectl` command
 
