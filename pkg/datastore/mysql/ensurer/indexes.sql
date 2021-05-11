@@ -15,7 +15,7 @@ CREATE INDEX application_name_updated_at_desc ON Application (Name, UpdatedAt DE
 
 -- index on `Deleted` and `CreatedAt` ASC
 -- TODO: Reconsider make this Deleted column as STORED GENERATED COLUMN
-ALTER TABLE Application ADD COLUMN Deleted BOOL GENERATED ALWAYS AS (IFNULL(data->>"$.deleted", False)) VIRTUAL NOT NULL;
+ALTER TABLE Application ADD COLUMN Deleted BOOL GENERATED ALWAYS AS (IF(data->>"$.deleted" = 'true', True, False)) VIRTUAL NOT NULL;
 CREATE INDEX application_deleted_created_at_asc ON Application (Deleted, CreatedAt);
 
 -- index on `Kind` ASC and `UpdatedAt` DESC
