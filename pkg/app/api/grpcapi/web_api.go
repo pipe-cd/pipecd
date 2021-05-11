@@ -187,7 +187,9 @@ func (a *WebAPI) RegisterPiped(ctx context.Context, req *webservice.RegisterPipe
 		EnvIds:    req.EnvIds,
 		Status:    model.Piped_OFFLINE,
 	}
-	piped.AddKey(keyHash, claims.Subject, time.Now())
+	if err := piped.AddKey(keyHash, claims.Subject, time.Now()); err != nil {
+		return nil, status.Error(codes.FailedPrecondition, fmt.Sprintf("Failed to create key: %v", err))
+	}
 
 	err = a.pipedStore.AddPiped(ctx, &piped)
 	if errors.Is(err, datastore.ErrAlreadyExists) {
@@ -296,7 +298,9 @@ func (a *WebAPI) updatePiped(ctx context.Context, pipedID string, updater func(c
 				zap.String("piped-id", pipedID),
 				zap.Error(err),
 			)
-			return status.Error(codes.Internal, "Failed to update the piped ")
+			// TODO: Improve error handling, instead of considering all as Internal error like this
+			// we should check the error type to decide to pass its message to the web client or just a generic message.
+			return status.Error(codes.Internal, "Failed to update the piped")
 		}
 	}
 	return nil

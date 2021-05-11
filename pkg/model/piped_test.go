@@ -54,7 +54,8 @@ func TestAddKey(t *testing.T) {
 
 	now := time.Now()
 
-	p.AddKey("hash-1", "user-1", now)
+	err := p.AddKey("hash-1", "user-1", now)
+	assert.NoError(t, err)
 	require.Equal(t, []*PipedKey{
 		{
 			Hash:      "hash-1",
@@ -63,7 +64,8 @@ func TestAddKey(t *testing.T) {
 		},
 	}, p.Keys)
 
-	p.AddKey("hash-2", "user-1", now.Add(time.Second))
+	err = p.AddKey("hash-2", "user-1", now.Add(time.Second))
+	assert.NoError(t, err)
 	require.Equal(t, []*PipedKey{
 		{
 			Hash:      "hash-2",
@@ -77,13 +79,9 @@ func TestAddKey(t *testing.T) {
 		},
 	}, p.Keys)
 
-	p.AddKey("hash-3", "user-3", now.Add(2*time.Second))
+	err = p.AddKey("hash-3", "user-3", now.Add(2*time.Second))
+	assert.Equal(t, errors.New("number of keys for each piped must be less than or equal to 2, you may need to delete the old keys before adding a new one"), err)
 	require.Equal(t, []*PipedKey{
-		{
-			Hash:      "hash-3",
-			Creator:   "user-3",
-			CreatedAt: now.Unix() + 2,
-		},
 		{
 			Hash:      "hash-2",
 			Creator:   "user-1",
@@ -93,25 +91,6 @@ func TestAddKey(t *testing.T) {
 			Hash:      "hash-1",
 			Creator:   "user-1",
 			CreatedAt: now.Unix(),
-		},
-	}, p.Keys)
-
-	p.AddKey("hash-4", "user-1", now.Add(3*time.Second))
-	require.Equal(t, []*PipedKey{
-		{
-			Hash:      "hash-4",
-			Creator:   "user-1",
-			CreatedAt: now.Unix() + 3,
-		},
-		{
-			Hash:      "hash-3",
-			Creator:   "user-3",
-			CreatedAt: now.Unix() + 2,
-		},
-		{
-			Hash:      "hash-2",
-			Creator:   "user-1",
-			CreatedAt: now.Unix() + 1,
 		},
 	}, p.Keys)
 }
