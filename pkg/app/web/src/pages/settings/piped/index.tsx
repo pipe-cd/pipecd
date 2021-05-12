@@ -196,12 +196,10 @@ export const SettingsPipedPage: FC = memo(function SettingsPipedPage() {
         <DialogContent>
           <TextWithCopyButton
             name="Piped Id"
-            label="Copy piped id"
             value={registeredPiped?.id || ""}
           />
           <TextWithCopyButton
             name="Piped Key"
-            label="Copy piped key"
             value={registeredPiped?.key || ""}
           />
           <Box display="flex" justifyContent="flex-end" m={1} mt={2}>

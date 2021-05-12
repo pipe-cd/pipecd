@@ -32,11 +32,7 @@ export const GeneratedAPIKeyDialog: FC = memo(function GeneratedAPIKeyDialog() {
       <DialogContent>
         <Typography variant="caption">{VALUE_CAPTION}</Typography>
         {generatedKey ? (
-          <TextWithCopyButton
-            name="API Key"
-            label="Copy API Key"
-            value={generatedKey}
-          />
+          <TextWithCopyButton name="API Key" value={generatedKey} />
         ) : null}
       </DialogContent>
       <DialogActions>

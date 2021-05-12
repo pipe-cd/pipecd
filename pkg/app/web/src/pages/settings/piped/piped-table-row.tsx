@@ -14,21 +14,14 @@ import {
   Button,
   DialogContentText,
 } from "@material-ui/core";
-import {
-  FileCopyOutlined as CopyIcon,
-  MoreVert as MoreVertIcon,
-} from "@material-ui/icons";
+import { MoreVert as MoreVertIcon } from "@material-ui/icons";
 import clsx from "clsx";
-import copy from "copy-to-clipboard";
 import dayjs from "dayjs";
 import * as React from "react";
 import { FC, memo, useCallback, useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import { AppDispatch } from "../../../store";
-import {
-  COPY_PIPED_ID,
-  DELETE_OLD_PIPED_KEY_SUCCESS,
-} from "../../../constants/toast-text";
+import { DELETE_OLD_PIPED_KEY_SUCCESS } from "../../../constants/toast-text";
 import {
   UI_TEXT_ADD_NEW_KEY,
   UI_TEXT_DELETE_OLD_KEY,
@@ -43,15 +36,17 @@ import {
   selectPipedById,
 } from "../../../modules/pipeds";
 import { addToast } from "../../../modules/toasts";
+import { CopyIconButton } from "../../../components/copy-icon-button";
 
 const useStyles = makeStyles((theme) => ({
   disabledItem: {
     background: theme.palette.grey[200],
   },
-  copyButton: {
-    marginLeft: theme.spacing(1),
-    visibility: "hidden",
-    "tr:hover &": {
+  idCell: {
+    "& button": {
+      visibility: "hidden",
+    },
+    "&:hover button": {
       visibility: "visible",
     },
   },
@@ -137,13 +132,6 @@ export const PipedTableRow: FC<Props> = memo(function PipedTableRow({
     onDisable(pipedId);
   }, [pipedId, onDisable]);
 
-  const handleCopy = useCallback(() => {
-    if (piped) {
-      copy(piped.id);
-      dispatch(addToast({ message: COPY_PIPED_ID }));
-    }
-  }, [dispatch, piped]);
-
   if (!piped) {
     return null;
   }
@@ -157,16 +145,10 @@ export const PipedTableRow: FC<Props> = memo(function PipedTableRow({
         <TableCell>
           <Typography variant="subtitle2">{piped.name}</Typography>
         </TableCell>
-        <TableCell title={piped.id}>
+        <TableCell title={piped.id} className={classes.idCell}>
           <Box display="flex" alignItems="center" fontFamily="fontFamilyMono">
             {piped.id}
-            <IconButton
-              className={classes.copyButton}
-              aria-label="Copy piped id"
-              onClick={handleCopy}
-            >
-              <CopyIcon />
-            </IconButton>
+            <CopyIconButton name="Piped ID" value={piped.id} />
           </Box>
         </TableCell>
         <TableCell>{piped.version}</TableCell>

@@ -115,7 +115,6 @@ export const SealedSecretDialog: FC<SealedSecretDialogProps> = memo(
               </Typography>
               <TextWithCopyButton
                 name="Encrypted secret"
-                label="Copy secret"
                 value={sealedSecret}
               />
             </DialogContent>
