@@ -26,7 +26,8 @@ RUN \
     rm -rf /installer && \
     rm -f /var/cache/apk/* && \
     chown -R $PIPED_USER:$PIPED_GID $HOME && \
-    chmod 770 -R $HOME
+    chmod 770 -R $HOME && \
+    grep -v -e ^default /etc/passwd > $HOME/passwd
 
 ENV LD_PRELOAD=/usr/local/lib64/libnss_wrapper.so
 ENV NSS_WRAPPER_PASSWD=${HOME}/passwd
