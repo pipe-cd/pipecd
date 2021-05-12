@@ -12,6 +12,7 @@ import * as pipedsApi from "../api/piped";
 export interface RegisteredPiped {
   id: string;
   key: string;
+  isNewKey: boolean;
 }
 
 const MODULE_NAME = "pipeds";
@@ -47,7 +48,7 @@ export const addPiped = createAsyncThunk<
     envIdsList: props.envIds,
     name: props.name,
   });
-  return res;
+  return { ...res, isNewKey: false };
 });
 
 export const disablePiped = createAsyncThunk<void, { pipedId: string }>(
@@ -64,13 +65,21 @@ export const enablePiped = createAsyncThunk<void, { pipedId: string }>(
   }
 );
 
-export const recreatePipedKey = createAsyncThunk<string, { pipedId: string }>(
-  `${MODULE_NAME}/recreateKey`,
+export const addNewPipedKey = createAsyncThunk<string, { pipedId: string }>(
+  `${MODULE_NAME}/addNewKey`,
   async ({ pipedId }) => {
     const { key } = await pipedsApi.recreatePipedKey({ id: pipedId });
     return key;
   }
 );
+
+export const deleteOldKey = createAsyncThunk<void, { pipedId: string }>(
+  `${MODULE_NAME}/deleteOldKey`,
+  async ({ pipedId }) => {
+    await pipedsApi.deleteOldPipedKey({ pipedId });
+  }
+);
+
 export const editPiped = createAsyncThunk<
   void,
   { pipedId: string; name: string; desc: string; envIds: string[] }
@@ -106,10 +115,11 @@ export const pipedsSlice = createSlice({
         pipedsAdapter.removeAll(state);
         pipedsAdapter.addMany(state, action.payload);
       })
-      .addCase(recreatePipedKey.fulfilled, (state, action) => {
+      .addCase(addNewPipedKey.fulfilled, (state, action) => {
         state.registeredPiped = {
           id: action.meta.arg.pipedId,
           key: action.payload,
+          isNewKey: true,
         };
       })
       .addCase(editPiped.pending, (state) => {
@@ -134,4 +144,4 @@ export const selectPipedsByEnv = (
 };
 
 export const { clearRegisteredPipedInfo } = pipedsSlice.actions;
-export { Piped } from "pipe/pkg/app/web/model/piped_pb";
+export { Piped, PipedKey } from "pipe/pkg/app/web/model/piped_pb";
