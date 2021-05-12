@@ -15,13 +15,17 @@
 package piped
 
 import (
+	"bytes"
 	"context"
 	"crypto/tls"
 	"fmt"
 	"io/ioutil"
 	"net/http"
 	"os"
+	"os/exec"
 	"path"
+	"path/filepath"
+	"strings"
 	"time"
 
 	"github.com/spf13/cobra"
@@ -72,6 +76,7 @@ type piped struct {
 	enableDefaultKubernetesCloudProvider bool
 	useFakeAPIClient                     bool
 	gracePeriod                          time.Duration
+	addLoginUserToPasswd                 bool
 }
 
 func NewCommand() *cobra.Command {
@@ -99,6 +104,7 @@ func NewCommand() *cobra.Command {
 	cmd.Flags().StringVar(&p.toolsDir, "tools-dir", p.toolsDir, "The path to directory where to install needed tools such as kubectl, helm, kustomize.")
 	cmd.Flags().BoolVar(&p.useFakeAPIClient, "use-fake-api-client", p.useFakeAPIClient, "Whether the fake api client should be used instead of the real one or not.")
 	cmd.Flags().BoolVar(&p.enableDefaultKubernetesCloudProvider, "enable-default-kubernetes-cloud-provider", p.enableDefaultKubernetesCloudProvider, "Whether the default kubernetes provider is enabled or not.")
+	cmd.Flags().BoolVar(&p.addLoginUserToPasswd, "add-login-user-to-passwd", p.addLoginUserToPasswd, "Whether to add login user to /etc/passwd. This is typically for applications running as a random user ID.")
 	cmd.Flags().DurationVar(&p.gracePeriod, "grace-period", p.gracePeriod, "How long to wait for graceful shutdown.")
 
 	cmd.MarkFlagRequired("config-file")
@@ -108,6 +114,11 @@ func NewCommand() *cobra.Command {
 
 func (p *piped) run(ctx context.Context, t cli.Telemetry) (runErr error) {
 	group, ctx := errgroup.WithContext(ctx)
+	if p.addLoginUserToPasswd {
+		if err := p.insertLoginUserToPasswd(ctx); err != nil {
+			return fmt.Errorf("failed to insert logged-in user to passwd: %w", err)
+		}
+	}
 
 	// Load piped configuration from specified file.
 	cfg, err := p.loadConfig()
@@ -514,4 +525,53 @@ func (p *piped) sendPipedMeta(ctx context.Context, client pipedservice.Client, c
 	}
 
 	return err
+}
+
+// insertLoginUserToPasswd adds the logged-in user to /etc/passwd.
+// It requires nss_wrapper (https://cwrap.org/nss_wrapper.html)
+// to get the operation done.
+//
+// This is a workaround to deal with OpenShift less than 4.2
+// See more: https://github.com/pipe-cd/pipe/issues/1905
+func (p *piped) insertLoginUserToPasswd(ctx context.Context) error {
+	var stdout, stderr bytes.Buffer
+
+	// Use the id command so that it gets proper ids even in pure Go.
+	cmd := exec.CommandContext(ctx, "id", "-u")
+	cmd.Stdout = &stdout
+	cmd.Stderr = &stderr
+	if err := cmd.Run(); err != nil {
+		return fmt.Errorf("failed to get uid: %s", &stderr)
+	}
+	uid := strings.TrimSpace(stdout.String())
+
+	stdout.Reset()
+	stderr.Reset()
+
+	cmd = exec.CommandContext(ctx, "id", "-g")
+	cmd.Stdout = &stdout
+	cmd.Stderr = &stderr
+	if err := cmd.Run(); err != nil {
+		return fmt.Errorf("failed to get gid: %s", &stderr)
+	}
+	gid := strings.TrimSpace(stdout.String())
+
+	home, err := os.UserHomeDir()
+	if err != nil {
+		return fmt.Errorf("failed to detect the current user's home directory: %w", err)
+	}
+
+	// echo "default:x:${USER_ID}:${GROUP_ID}:Dynamically created user:${HOME}:/sbin/nologin" >> "$HOME/passwd"
+	entry := fmt.Sprintf("\ndefault:x:%s:%s:Dynamically created user:%s:/sbin/nologin", uid, gid, home)
+	nssPasswdPath := filepath.Join(home, "passwd")
+	f, err := os.OpenFile(nssPasswdPath, os.O_APPEND|os.O_CREATE|os.O_WRONLY, 0664)
+	if err != nil {
+		return fmt.Errorf("failed to open file %q: %w", nssPasswdPath, err)
+	}
+	defer f.Close()
+	if _, err := f.WriteString(entry); err != nil {
+		return fmt.Errorf("failed to append entry to %q: %w", nssPasswdPath, err)
+	}
+
+	return nil
 }
