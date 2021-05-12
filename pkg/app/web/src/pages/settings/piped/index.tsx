@@ -75,7 +75,7 @@ const selectFilteredPipeds = createSelector<
 );
 
 const OLD_KEY_ALERT_MESSAGE =
-  "The old key is still there.\nTo add a new key, you need to delete the old one first.";
+  "The old key is still there.\nDo not forget to delete it once you update your Piped to use this new key.";
 
 export const SettingsPipedPage: FC = memo(function SettingsPipedPage() {
   const classes = useStyles();
@@ -200,8 +200,8 @@ export const SettingsPipedPage: FC = memo(function SettingsPipedPage() {
             value={registeredPiped?.id || ""}
           />
           <TextWithCopyButton
-            name="Secret Key"
-            label="Copy secret key"
+            name="Piped Key"
+            label="Copy piped key"
             value={registeredPiped?.key || ""}
           />
           <Box display="flex" justifyContent="flex-end" m={1} mt={2}>

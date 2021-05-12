@@ -224,7 +224,7 @@ export const PipedTableRow: FC<Props> = memo(function PipedTableRow({
       </Menu>
 
       <Dialog open={openOldKeyAlert} onClose={handleAlertClose}>
-        <DialogTitle>An old key exists</DialogTitle>
+        <DialogTitle>There are already 2 keys for this piped</DialogTitle>
         <DialogContent>
           <DialogContentText>
             Before adding a new key, you need to delete the old one. <br />
