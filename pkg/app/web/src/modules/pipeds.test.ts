@@ -4,7 +4,7 @@ import {
   clearRegisteredPipedInfo,
   addPiped,
   fetchPipeds,
-  recreatePipedKey,
+  addNewPipedKey,
   selectPipedsByEnv,
   Piped,
   editPiped,
@@ -55,6 +55,7 @@ describe("pipedsSlice reducer", () => {
           registeredPiped: {
             id: "piped-1",
             key: "piped-key",
+            isNewKey: false,
           },
         },
         {
@@ -72,6 +73,7 @@ describe("pipedsSlice reducer", () => {
           payload: {
             id: "piped-1",
             key: "piped-key",
+            isNewKey: false,
           },
         })
       ).toEqual({
@@ -79,6 +81,7 @@ describe("pipedsSlice reducer", () => {
         registeredPiped: {
           id: "piped-1",
           key: "piped-key",
+          isNewKey: false,
         },
       });
     });
@@ -100,11 +103,11 @@ describe("pipedsSlice reducer", () => {
   });
 
   describe("recreatePipedKey", () => {
-    it(`should handle ${recreatePipedKey.fulfilled.type}`, () => {
+    it(`should handle ${addNewPipedKey.fulfilled.type}`, () => {
       expect(
         pipedsSlice.reducer(baseState, {
-          type: recreatePipedKey.fulfilled.type,
-          payload: "recreated-piped-key",
+          type: addNewPipedKey.fulfilled.type,
+          payload: "add-new-piped-key",
           meta: {
             arg: {
               pipedId: "piped-1",
@@ -115,7 +118,8 @@ describe("pipedsSlice reducer", () => {
         ...baseState,
         registeredPiped: {
           id: "piped-1",
-          key: "recreated-piped-key",
+          key: "add-new-piped-key",
+          isNewKey: true,
         },
       });
     });

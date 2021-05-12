@@ -3,6 +3,7 @@ import {
   ListPipedsResponse,
   RecreatePipedKeyResponse,
   RegisterPipedResponse,
+  DeleteOldPipedKeysResponse,
 } from "pipe/pkg/app/web/api_client/service_pb";
 import {
   createPipedFromObject,
@@ -29,6 +30,10 @@ export const pipedHandlers = [
   createHandler<RecreatePipedKeyResponse>("/RecreatePipedKey", () => {
     const response = new RecreatePipedKeyResponse();
     response.setKey(randomKeyHash());
+    return response;
+  }),
+  createHandler<DeleteOldPipedKeysResponse>("/DeleteOldPipedKeys", () => {
+    const response = new DeleteOldPipedKeysResponse();
     return response;
   }),
   generateApplicationSealedSecretHandler,

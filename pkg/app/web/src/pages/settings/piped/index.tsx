@@ -20,6 +20,7 @@ import {
   Close as CloseIcon,
   FilterList as FilterIcon,
 } from "@material-ui/icons";
+import Alert from "@material-ui/lab/Alert";
 import { createSelector } from "@reduxjs/toolkit";
 import { FC, memo, useCallback, useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
@@ -40,7 +41,6 @@ import {
   enablePiped,
   fetchPipeds,
   Piped,
-  recreatePipedKey,
   RegisteredPiped,
   selectAllPipeds,
 } from "../../../modules/pipeds";
@@ -74,6 +74,9 @@ const selectFilteredPipeds = createSelector<
   }
 );
 
+const OLD_KEY_ALERT_MESSAGE =
+  "The old key is still there.\nTo add a new key, you need to delete the old one first.";
+
 export const SettingsPipedPage: FC = memo(function SettingsPipedPage() {
   const classes = useStyles();
   const [openFilter, setOpenFilter] = useState(false);
@@ -104,13 +107,6 @@ export const SettingsPipedPage: FC = memo(function SettingsPipedPage() {
       dispatch(enablePiped({ pipedId: id })).then(() => {
         dispatch(fetchPipeds(true));
       });
-    },
-    [dispatch]
-  );
-
-  const handleRecreate = useCallback(
-    (id: string) => {
-      dispatch(recreatePipedKey({ pipedId: id }));
     },
     [dispatch]
   );
@@ -172,7 +168,6 @@ export const SettingsPipedPage: FC = memo(function SettingsPipedPage() {
                   key={piped.id}
                   pipedId={piped.id}
                   onEdit={handleEdit}
-                  onRecreateKey={handleRecreate}
                   onDisable={handleDisable}
                   onEnable={handleEnable}
                 />
@@ -190,7 +185,14 @@ export const SettingsPipedPage: FC = memo(function SettingsPipedPage() {
       <EditPipedDrawer pipedId={editPipedId} onClose={handleEditClose} />
 
       <Dialog fullWidth open={Boolean(registeredPiped)}>
-        <DialogTitle>Piped registered</DialogTitle>
+        <DialogTitle>
+          {registeredPiped?.isNewKey
+            ? "Added a new piped key"
+            : "Piped registered"}
+        </DialogTitle>
+        {registeredPiped?.isNewKey ? (
+          <Alert severity="info">{OLD_KEY_ALERT_MESSAGE}</Alert>
+        ) : null}
         <DialogContent>
           <TextWithCopyButton
             name="Piped Id"

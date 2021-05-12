@@ -1,4 +1,4 @@
-import { Piped } from "../modules/pipeds";
+import { Piped, PipedKey } from "../modules/pipeds";
 import { dummyEnv } from "./dummy-environment";
 import { createApplicationGitRepository, dummyRepo } from "./dummy-repo";
 import { createRandTimes, randomText, randomUUID } from "./utils";
@@ -29,7 +29,10 @@ export const dummyPiped: Piped.AsObject = {
   version: "v0.1",
   status: Piped.ConnectionStatus.ONLINE,
   keyHash: "12345",
-  keysList: [],
+  keysList: [
+    { hash: "key-1", creator: "user", createdAt: createdAt.unix() },
+    { hash: "key-2", creator: "user", createdAt: createdAt.unix() },
+  ],
   envIdsList: [dummyEnv.id],
   sealedSecretEncryption: {
     encryptServiceAccount: "",
@@ -45,6 +48,14 @@ function createCloudProviderFromObject(
   cp.setName(o.name);
   cp.setType(o.type);
   return cp;
+}
+
+function createPipedKeyFromObject(o: PipedKey.AsObject): PipedKey {
+  const key = new PipedKey();
+  key.setHash(o.hash);
+  key.setCreator(o.creator);
+  key.setCreatedAt(o.createdAt);
+  return key;
 }
 
 export function createPipedFromObject(o: Piped.AsObject): Piped {
@@ -65,5 +76,6 @@ export function createPipedFromObject(o: Piped.AsObject): Piped {
   piped.setCloudProvidersList(
     o.cloudProvidersList.map(createCloudProviderFromObject)
   );
+  piped.setKeysList(o.keysList.map(createPipedKeyFromObject));
   return piped;
 }

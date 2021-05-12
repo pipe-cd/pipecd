@@ -1,5 +1,8 @@
 import {
   Box,
+  Dialog,
+  DialogContent,
+  DialogTitle,
   IconButton,
   makeStyles,
   Menu,
@@ -7,6 +10,9 @@ import {
   TableCell,
   TableRow,
   Typography,
+  DialogActions,
+  Button,
+  DialogContentText,
 } from "@material-ui/core";
 import {
   FileCopyOutlined as CopyIcon,
@@ -15,17 +21,27 @@ import {
 import clsx from "clsx";
 import copy from "copy-to-clipboard";
 import dayjs from "dayjs";
-import { FC, memo, useCallback, useState } from "react";
 import * as React from "react";
+import { FC, memo, useCallback, useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
-import { COPY_PIPED_ID } from "../../../constants/toast-text";
+import { AppDispatch } from "../../../store";
 import {
+  COPY_PIPED_ID,
+  DELETE_OLD_PIPED_KEY_SUCCESS,
+} from "../../../constants/toast-text";
+import {
+  UI_TEXT_ADD_NEW_KEY,
+  UI_TEXT_DELETE_OLD_KEY,
   UI_TEXT_DISABLE,
   UI_TEXT_EDIT,
   UI_TEXT_ENABLE,
-  UI_TEXT_RECREATE_KEY,
 } from "../../../constants/ui-text";
-import { selectPipedById } from "../../../modules/pipeds";
+import {
+  addNewPipedKey,
+  deleteOldKey,
+  fetchPipeds,
+  selectPipedById,
+} from "../../../modules/pipeds";
 import { addToast } from "../../../modules/toasts";
 
 const useStyles = makeStyles((theme) => ({
@@ -44,7 +60,6 @@ const useStyles = makeStyles((theme) => ({
 interface Props {
   pipedId: string;
   onEdit: (id: string) => void;
-  onRecreateKey: (id: string) => void;
   onDisable: (id: string) => void;
   onEnable: (id: string) => void;
 }
@@ -62,12 +77,13 @@ export const PipedTableRow: FC<Props> = memo(function PipedTableRow({
   onEnable,
   onDisable,
   onEdit,
-  onRecreateKey,
 }) {
   const classes = useStyles();
   const piped = useSelector(selectPipedById(pipedId));
-  const dispatch = useDispatch();
+  const dispatch = useDispatch<AppDispatch>();
   const [anchorEl, setAnchorEl] = useState<HTMLButtonElement | null>(null);
+  const hasOldKey = piped ? piped.keysList.length > 1 : false;
+  const [openOldKeyAlert, setOpenOldKeyAlert] = useState(false);
 
   const handleMenuOpen = useCallback(
     (event: React.MouseEvent<HTMLButtonElement>) => {
@@ -80,15 +96,36 @@ export const PipedTableRow: FC<Props> = memo(function PipedTableRow({
     setAnchorEl(null);
   }, []);
 
+  const handleAlertClose = useCallback(() => {
+    setOpenOldKeyAlert(false);
+  }, []);
+
   const handleEdit = useCallback(() => {
     setAnchorEl(null);
     onEdit(pipedId);
   }, [pipedId, onEdit]);
 
-  const handleRecreate = useCallback(() => {
+  const handleAddNewKey = useCallback(() => {
     setAnchorEl(null);
-    onRecreateKey(pipedId);
-  }, [pipedId, onRecreateKey]);
+    if (hasOldKey) {
+      setOpenOldKeyAlert(true);
+    } else {
+      dispatch(addNewPipedKey({ pipedId }));
+    }
+  }, [dispatch, pipedId, hasOldKey]);
+
+  const handleDeleteOldKey = useCallback(() => {
+    setAnchorEl(null);
+    dispatch(deleteOldKey({ pipedId })).then(() => {
+      dispatch(fetchPipeds(true));
+      dispatch(
+        addToast({
+          message: DELETE_OLD_PIPED_KEY_SUCCESS,
+          severity: "success",
+        })
+      );
+    });
+  }, [pipedId, dispatch]);
 
   const handleEnable = useCallback(() => {
     setAnchorEl(null);
@@ -169,8 +206,15 @@ export const PipedTableRow: FC<Props> = memo(function PipedTableRow({
             <MenuItem key="piped-menu-edit" onClick={handleEdit}>
               {UI_TEXT_EDIT}
             </MenuItem>,
-            <MenuItem key="piped-menu-recreate" onClick={handleRecreate}>
-              {UI_TEXT_RECREATE_KEY}
+            <MenuItem key="piped-menu-add-new-key" onClick={handleAddNewKey}>
+              {UI_TEXT_ADD_NEW_KEY}
+            </MenuItem>,
+            <MenuItem
+              disabled={hasOldKey === false}
+              key="piped-menu-delete-old-key"
+              onClick={handleDeleteOldKey}
+            >
+              {UI_TEXT_DELETE_OLD_KEY}
             </MenuItem>,
             <MenuItem key="piped-menu-disable" onClick={handleDisable}>
               {UI_TEXT_DISABLE}
@@ -178,6 +222,20 @@ export const PipedTableRow: FC<Props> = memo(function PipedTableRow({
           ]
         )}
       </Menu>
+
+      <Dialog open={openOldKeyAlert} onClose={handleAlertClose}>
+        <DialogTitle>An old key exists</DialogTitle>
+        <DialogContent>
+          <DialogContentText>
+            Before adding a new key, you need to delete the old one. <br />
+          </DialogContentText>
+        </DialogContent>
+        <DialogActions>
+          <Button color="primary" autoFocus onClick={handleAlertClose}>
+            OK
+          </Button>
+        </DialogActions>
+      </Dialog>
     </>
   );
 });
