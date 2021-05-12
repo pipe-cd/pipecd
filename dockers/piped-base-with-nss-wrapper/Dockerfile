@@ -1,5 +1,6 @@
 FROM gcr.io/pipecd/piped-base:0.2.2
 
+ARG PIPED_UID=1000
 ARG PIPED_GID=0
 
 USER root
@@ -25,9 +26,9 @@ RUN \
     # Delete installer directory.
     rm -rf /installer && \
     rm -f /var/cache/apk/* && \
-    chown -R $PIPED_USER:$PIPED_GID $HOME && \
-    chmod 770 -R $HOME && \
-    grep -v -e ^default /etc/passwd > $HOME/passwd
+    grep -v -e ^default /etc/passwd > $HOME/passwd && \
+    chown -R $PIPED_UID:$PIPED_GID $HOME && \
+    chmod 770 -R $HOME
 
 ENV LD_PRELOAD=/usr/local/lib64/libnss_wrapper.so
 ENV NSS_WRAPPER_PASSWD=${HOME}/passwd
