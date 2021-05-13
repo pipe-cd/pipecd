@@ -29,7 +29,7 @@ app_image(
 app_image(
     name = "piped_okd_app",
     base = "@piped-base-okd//image",
-    binary = "//cmd/piped:piped",
+    binary = ":piped",
     repository = "piped-okd",
     visibility = ["//visibility:public"],
 )
