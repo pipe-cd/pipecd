@@ -29,4 +29,6 @@ mkdir build
 cd build
 cmake -D CMAKE_INSTALL_PREFIX=/usr/local -D CMAKE_BUILD_TYPE=Release ..
 make install
+cd ../..
+rm -rf nss_wrapper-${VERSION}
 echo "Successfully installed nss_wrapper-${VERSION}"

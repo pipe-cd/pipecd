@@ -1,7 +1,8 @@
 FROM gcr.io/pipecd/piped-base:0.2.2
 
 ARG PIPED_UID=1000
-ARG PIPED_GID=0
+ARG ROOT_GID=0
+ARG PIPED_HOME=$HOME
 
 USER root
 
@@ -21,17 +22,19 @@ RUN \
     apk add glibc-2.33-r0.apk && \
 
     # Install nss_wrapper to add an random UID to "passwd" at runtime without having to directly modify /etc/passwd.
-    # This is for those whose Piped's user isn't in /etc/passwd
     /installer/install-nss-wrapper.sh && \
-    # Delete installer directory.
+    # Remove what were used for installation.
     rm -rf /installer && \
     rm -f /var/cache/apk/* && \
-    grep -v -e ^default /etc/passwd > $HOME/passwd && \
-    chown -R $PIPED_UID:$PIPED_GID $HOME && \
-    chmod 770 -R $HOME
+    rm /glibc-2.33-r0.apk && \
+    # Create the modifiable passwd file.
+    grep -v -e ^default /etc/passwd > $PIPED_HOME/passwd && \
+    # Grant access to the root group because all containers running on OKD belong to it.
+    chown -R $PIPED_UID:$ROOT_GID $PIPED_HOME && \
+    chmod 770 -R $PIPED_HOME
 
 ENV LD_PRELOAD=/usr/local/lib64/libnss_wrapper.so
-ENV NSS_WRAPPER_PASSWD=${HOME}/passwd
+ENV NSS_WRAPPER_PASSWD=$PIPED_HOME/passwd
 ENV NSS_WRAPPER_GROUP=/etc/group
 
-USER $PIPED_USER
+USER $PIPED_UID
