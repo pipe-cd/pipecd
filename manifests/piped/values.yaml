@@ -78,6 +78,8 @@ secret:
     fileName: datadog-application-key
     data: ""
 
+envs: []
+
 securityContext:
   runAsNonRoot: true
   runAsUser: 1000

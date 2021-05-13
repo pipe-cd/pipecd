@@ -53,6 +53,10 @@ spec:
               readOnly: true
           resources:
             {{- toYaml .Values.resources | nindent 12 }}
+          {{- with .Values.envs }}
+          env:
+            {{- toYaml . | nindent 12 }}
+          {{- end }}
       volumes:
         - name: piped-secret
           secret:
