@@ -1,14 +1,14 @@
 def all_images():
-    cmds = {
-        "piped": "piped",
-        "pipecd": "pipecd",
-        "pipectl": "pipectl",
-        "helloworld": "helloworld",
+    targets = {
+        "//cmd/piped:piped_app_image": "piped",
+        "//cmd/piped:piped_okd_app_image": "piped_okd",
+        "//cmd/pipecd:pipecd_app_image": "pipecd",
+        "//cmd/pipectl:pipectl_app_image": "pipectl",
+        "//cmd/helloworld:helloworld_app_image": "helloworld",
     }
     images = {}
 
-    for cmd, repo in cmds.items():
-        images["$(DOCKER_REGISTRY)/%s:{STABLE_VERSION}" % repo] = "//cmd/%s:%s_app_image" % (cmd, repo)
+    for target, repo in targets.items():
+        images["$(DOCKER_REGISTRY)/%s:{STABLE_VERSION}" % repo] = target
 
-    images["$(DOCKER_REGISTRY)/piped_okd:{STABLE_VERSION}"] = "//cmd/piped:piped_okd_app_image"
     return images
