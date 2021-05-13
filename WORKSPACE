@@ -136,6 +136,14 @@ container_pull(
 )
 
 container_pull(
+    name = "piped-base-okd",
+    digest = "sha256:54f11a2701a5ad8c9d9fbf1f1c3232fa02f30c4fa399c98e7c2df1640fdb4f0d",
+    registry = "gcr.io",
+    repository = "pipecd/piped-base-okd",
+    tag = "0.1.0",
+)
+
+container_pull(
     name = "debug-base",
     digest = "sha256:b0ec52fbde95be09074badc8298b6e94d61a9066e9637d75610267f1646fb0a1",
     registry = "gcr.io",
