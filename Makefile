@@ -29,8 +29,8 @@ build-images:
 
 .PHONY: push
 push:
-	bazelisk ${BAZEL_FLAGS} run ${BAZEL_COMMAND_FLAGS} --config=linux --config=stamping -- //cmd/pipecd:push
-	bazelisk ${BAZEL_FLAGS} run ${BAZEL_COMMAND_FLAGS} --config=linux --config=stamping -- //cmd/piped:push
+	bazelisk ${BAZEL_FLAGS} run ${BAZEL_COMMAND_FLAGS} --config=linux --config=stamping -- //cmd/pipecd:pipecd_app_push
+	bazelisk ${BAZEL_FLAGS} run ${BAZEL_COMMAND_FLAGS} --config=linux --config=stamping -- //cmd/piped:piped_app_push
 
 .PHONY: render-manifests
 render-manifests:
@@ -38,7 +38,7 @@ render-manifests:
 
 .PHONY: load-piped-image
 load-piped-image:
-	bazelisk ${BAZEL_FLAGS} run ${BAZEL_COMMAND_FLAGS} --config=linux --config=stamping -- //cmd/piped:image --norun
+	bazelisk ${BAZEL_FLAGS} run ${BAZEL_COMMAND_FLAGS} --config=linux --config=stamping -- //cmd/piped:piped_app_image --norun
 
 .PHONY: test
 test:
