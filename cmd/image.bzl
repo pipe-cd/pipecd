@@ -8,6 +8,6 @@ def all_images():
     images = {}
 
     for cmd, repo in cmds.items():
-        images["$(DOCKER_REGISTRY)/%s:{STABLE_VERSION}" % repo] = "//cmd/%s:%s_app_image" % (cmd, cmd)
+        images["$(DOCKER_REGISTRY)/%s:{STABLE_VERSION}" % repo] = "//cmd/%s:%s_app_image" % (cmd, repo)
 
     return images
