@@ -77,6 +77,7 @@ secret:
   datadogApplicationKey:
     fileName: datadog-application-key
     data: ""
+  kubeConfigs: []
 
 securityContext:
   runAsNonRoot: true
