@@ -18,22 +18,21 @@ load("@io_bazel_rules_docker//contrib:push-all.bzl", "docker_push")
 
 def app_image(name, binary, repository, base = None, **kwargs):
     go_image(
-        name = "image",
+        name = "%s_image" % name,
         binary = binary,
         base = base,
         **kwargs
     )
 
     container_bundle(
-        name = "bundle",
+        name = "%s_bundle" % name,
         images = {
-            "$(DOCKER_REGISTRY)/%s:{STABLE_VERSION}" % repository: ":image",
-            "$(DOCKER_REGISTRY)/%s:{STABLE_GIT_COMMIT}" % repository: ":image",
+            "$(DOCKER_REGISTRY)/%s:{STABLE_VERSION}" % repository: ":%s_image" % name,
         },
     )
 
     docker_push(
-        name = "push",
-        bundle = ":bundle",
+        name = "%s_push" % name,
+        bundle = ":%s_bundle" % name,
         **kwargs
     )
