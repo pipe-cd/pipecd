@@ -53,7 +53,7 @@ spec:
               readOnly: true
           resources:
             {{- toYaml .Values.resources | nindent 12 }}
-          {{- with .Values.containerEnv }}
+          {{- with .Values.envs }}
           env:
             {{- toYaml . | nindent 12 }}
           {{- end }}

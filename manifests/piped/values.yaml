@@ -78,7 +78,7 @@ secret:
     fileName: datadog-application-key
     data: ""
 
-containerEnv: {}
+envs: []
 
 securityContext:
   runAsNonRoot: true
