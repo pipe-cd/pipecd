@@ -1,4 +1,5 @@
 import {
+  Box,
   Button,
   Dialog,
   DialogActions,
@@ -24,10 +25,19 @@ import {
   UI_TEXT_SAVE,
 } from "../../constants/ui-text";
 import { selectEnvById } from "../../modules/environments";
+import { CopyIconButton } from "../copy-icon-button";
 
 const useStyles = makeStyles((theme) => ({
   item: {
     backgroundColor: theme.palette.background.paper,
+  },
+  idCell: {
+    "& button": {
+      visibility: "hidden",
+    },
+    "&:hover button": {
+      visibility: "visible",
+    },
   },
 }));
 
@@ -85,7 +95,12 @@ export const EnvironmentListItem: FC<EnvironmentListItemProps> = memo(
             </Typography>
           </TableCell>
           <TableCell colSpan={2}>{env.desc || TEXT_NO_DESCRIPTION}</TableCell>
-          <TableCell>{env.id}</TableCell>
+          <TableCell className={classes.idCell}>
+            <Box display="flex" alignItems="center" fontFamily="fontFamilyMono">
+              {env.id}
+              <CopyIconButton name="Environment ID" value={env.id} />
+            </Box>
+          </TableCell>
           <TableCell align="right" style={{ height: 61 }}>
             <IconButton
               edge="end"

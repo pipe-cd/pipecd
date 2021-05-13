@@ -2,18 +2,14 @@ import {
   Box,
   Button,
   Divider,
-  IconButton,
   Link,
   makeStyles,
   MenuItem,
   TextField,
   Typography,
 } from "@material-ui/core";
-import CopyIcon from "@material-ui/icons/FileCopyOutlined";
 import OpenInNewIcon from "@material-ui/icons/OpenInNew";
-import copy from "copy-to-clipboard";
-import { FC, useEffect, useState, memo } from "react";
-import * as React from "react";
+import { FC, memo, useEffect, useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import { AppState } from "../../modules";
 import {
@@ -21,7 +17,7 @@ import {
   fetchTemplateList,
   selectTemplatesByAppId,
 } from "../../modules/deployment-configs";
-import { addToast } from "../../modules/toasts";
+import { CopyIconButton } from "../copy-icon-button";
 
 const useStyles = makeStyles((theme) => ({
   title: {
@@ -63,11 +59,6 @@ export const DeploymentConfigForm: FC<DeploymentConfigFormProps> = memo(
     >((state) => selectTemplatesByAppId(state.deploymentConfigs) || []);
 
     const template = templates[templateIndex];
-
-    const handleOnClickCopy = (): void => {
-      copy(configValue);
-      dispatch(addToast({ message: "Deployment config copied to clipboard" }));
-    };
 
     const handleTemplateChange = (
       e: React.ChangeEvent<HTMLTextAreaElement | HTMLInputElement>
@@ -123,13 +114,11 @@ export const DeploymentConfigForm: FC<DeploymentConfigFormProps> = memo(
             <Typography variant="subtitle1" className={classes.filename}>
               {TEXT.CONFIGURATION_FILENAME}
             </Typography>
-            <IconButton
+            <CopyIconButton
+              name="Deployment config"
               size="small"
-              aria-label="Copy deployment config"
-              onClick={handleOnClickCopy}
-            >
-              <CopyIcon fontSize="small" />
-            </IconButton>
+              value={configValue}
+            />
           </Box>
           <TextField
             multiline

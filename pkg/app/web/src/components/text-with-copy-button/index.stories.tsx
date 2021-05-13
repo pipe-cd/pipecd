@@ -3,7 +3,7 @@ import { createDecoratorRedux } from "../../../.storybook/redux-decorator";
 import { TextWithCopyButton, TextWithCopyButtonProps } from "./";
 
 export default {
-  title: "TextWithCopyButton",
+  title: "COMMON/TextWithCopyButton",
   component: TextWithCopyButton,
   decorators: [createDecoratorRedux({})],
 };
@@ -13,4 +13,4 @@ const Template: Story<TextWithCopyButtonProps> = (args) => (
 );
 
 export const Overview = Template.bind({});
-Overview.args = { name: "Value", label: "Copy value", value: "value" };
+Overview.args = { name: "Value", value: "value" };

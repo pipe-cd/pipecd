@@ -1,9 +1,6 @@
-import { FC, memo, useCallback } from "react";
-import { IconButton, makeStyles } from "@material-ui/core";
-import CopyIcon from "@material-ui/icons/FileCopyOutlined";
-import copy from "copy-to-clipboard";
-import { useDispatch } from "react-redux";
-import { addToast } from "../../modules/toasts";
+import { makeStyles } from "@material-ui/core";
+import { FC, memo } from "react";
+import { CopyIconButton } from "../copy-icon-button";
 
 const useStyles = makeStyles((theme) => ({
   root: {
@@ -23,35 +20,30 @@ const useStyles = makeStyles((theme) => ({
     textOverflow: "ellipsis",
     paddingLeft: theme.spacing(1),
   },
+  copyButton: {
+    marginLeft: theme.spacing(2),
+  },
 }));
 
 export interface TextWithCopyButtonProps {
   name: string;
-  label: string;
   value: string;
 }
 
 export const TextWithCopyButton: FC<TextWithCopyButtonProps> = memo(
-  function TextWithCopyButton({ name, label, value }) {
+  function TextWithCopyButton({ name, value }) {
     const classes = useStyles();
-    const dispatch = useDispatch();
-    const handleCopy = useCallback(() => {
-      copy(value);
-      dispatch(addToast({ message: `${name} copied to clipboard.` }));
-    }, [value, name, dispatch]);
     return (
       <fieldset className={classes.root}>
         <input readOnly value={value} className={classes.input} />
         <legend>{name}</legend>
         <div>
-          <IconButton
+          <CopyIconButton
+            name={name}
+            value={value}
             size="small"
-            style={{ marginLeft: 8 }}
-            aria-label={label}
-            onClick={handleCopy}
-          >
-            <CopyIcon style={{ fontSize: 20 }} />
-          </IconButton>
+            className={classes.copyButton}
+          />
         </div>
       </fieldset>
     );
