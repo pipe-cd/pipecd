@@ -108,20 +108,25 @@ Most parts are identical to the previous way, but some are slightly different.
   ```
 
 #### In case on OpenShift less than 4.2
-Containers on OpenShift run using arbitrary Linux users. What we don't know the UID in advance causes a couple of problems.
-To prevent you from such problems, you should set additional options to the previous `helm upgrade` command.
-
+OpenShift uses an arbitrarily assigned user ID when it starts a container.
+Starting from OpenShift 4.2, it also inserts that user into /etc/passwd for using by the application inside the container,
+but before that version, the assigned user is missing in that file. That blocks workloads of gcr.io/pipecd/piped image.
+Therefore if you are running on OpenShift with a version before 4.2, please use gcr.io/pipecd/piped-okd image with the following command:
 
 ``` console
-  --set args.addLoginUserToPasswd=true \
-  --set securityContext.runAsNonRoot=true \
-  --set securityContext.runAsUser=YOUR_UID \
-  --set securityContext.fsGroup=YOUR_FS_GROUP \
-  --set securityContext.runAsGroup=0 \
-  --set image.repository="gcr.io/pipecd/piped-okd"
+  helm upgrade -i dev-piped pipecd/piped --version=VERSION --namespace=NAMESPACE \
+    --set-file config.data=PATH_TO_PIPED_CONFIG_FILE \
+    --set-file secret.pipedKey.data=PATH_TO_PIPED_KEY_FILE \
+    --set-file secret.sshKey.data=PATH_TO_PRIVATE_SSH_KEY_FILE \
+    --set args.enableDefaultKubernetesCloudProvider=false \
+    --set rbac.scope=namespace
+    --set args.addLoginUserToPasswd=true \
+    --set securityContext.runAsNonRoot=true \
+    --set securityContext.runAsUser=YOUR_UID \
+    --set securityContext.fsGroup=YOUR_FS_GROUP \
+    --set securityContext.runAsGroup=0 \
+    --set image.repository="gcr.io/pipecd/piped-okd"
 ```
-
-Keep in mind OpenShift 4.2 onward doesn't have kind of like this concern.
 
 ## Installing on single machine
 
