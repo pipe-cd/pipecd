@@ -7,6 +7,7 @@ import (
 	"k8s.io/apimachinery/pkg/apis/meta/v1/unstructured"
 
 	provider "github.com/pipe-cd/pipe/pkg/app/piped/cloudprovider/kubernetes"
+	"github.com/pipe-cd/pipe/pkg/config"
 )
 
 func TestDecideStrategy(t *testing.T) {
@@ -14,16 +15,18 @@ func TestDecideStrategy(t *testing.T) {
 		name            string
 		olds            []provider.Manifest
 		news            []provider.Manifest
+		workloadRefs    []config.K8sResourceReference
 		wantProgressive bool
 		wantDesc        string
 	}{
 		{
-			name: "no running workloads found",
-			olds: []provider.Manifest{
+			name: "no workload in the old commit",
+			news: []provider.Manifest{
 				{
 					Key: provider.ResourceKey{
-						APIVersion: "v1",
-						Kind:       provider.KindService,
+						APIVersion: "apps/v1",
+						Kind:       provider.KindDeployment,
+						Name:       "name",
 					},
 				},
 			},
@@ -31,12 +34,13 @@ func TestDecideStrategy(t *testing.T) {
 			wantDesc:        "Quick sync by applying all manifests because it was unable to find the currently running workloads",
 		},
 		{
-			name: "no workloads found in the new manifests",
+			name: "no workload in the new commit",
 			olds: []provider.Manifest{
 				{
 					Key: provider.ResourceKey{
 						APIVersion: "apps/v1",
 						Kind:       provider.KindDeployment,
+						Name:       "name",
 					},
 				},
 			},
@@ -57,6 +61,7 @@ func TestDecideStrategy(t *testing.T) {
 				m := provider.MakeManifest(provider.ResourceKey{
 					APIVersion: "apps/v1",
 					Kind:       provider.KindDeployment,
+					Name:       "name",
 				}, &unstructured.Unstructured{
 					Object: map[string]interface{}{"spec": map[string]interface{}{"template": "foo"}}},
 				)
@@ -74,6 +79,172 @@ func TestDecideStrategy(t *testing.T) {
 			}(),
 			wantProgressive: true,
 			wantDesc:        "Sync progressively because pod template of workload name was changed",
+		},
+		{
+			name: "mutilple workloads: pod template was changed",
+			olds: func() []provider.Manifest {
+				m1 := provider.MakeManifest(provider.ResourceKey{
+					APIVersion: "apps/v1",
+					Kind:       provider.KindDeployment,
+					Name:       "name-1",
+				}, &unstructured.Unstructured{
+					Object: map[string]interface{}{"spec": map[string]interface{}{"template": "foo-1"}}},
+				)
+				m2 := provider.MakeManifest(provider.ResourceKey{
+					APIVersion: "apps/v1",
+					Kind:       provider.KindDeployment,
+					Name:       "name-2",
+				}, &unstructured.Unstructured{
+					Object: map[string]interface{}{"spec": map[string]interface{}{"template": "foo-2"}}},
+				)
+				return []provider.Manifest{m1, m2}
+			}(),
+			news: func() []provider.Manifest {
+				m1 := provider.MakeManifest(provider.ResourceKey{
+					APIVersion: "apps/v1",
+					Kind:       provider.KindDeployment,
+					Name:       "name-1",
+				}, &unstructured.Unstructured{
+					Object: map[string]interface{}{"spec": map[string]interface{}{"template": "foo-1"}}},
+				)
+				m2 := provider.MakeManifest(provider.ResourceKey{
+					APIVersion: "apps/v1",
+					Kind:       provider.KindDeployment,
+					Name:       "name-2",
+				}, &unstructured.Unstructured{
+					Object: map[string]interface{}{"spec": map[string]interface{}{"template": "bar-2"}}},
+				)
+				return []provider.Manifest{m1, m2}
+			}(),
+			wantProgressive: true,
+			wantDesc:        "Sync progressively because pod template of workload name-2 was changed",
+		},
+		{
+			name: "changed deployment was not the target",
+			olds: func() []provider.Manifest {
+				m1 := provider.MakeManifest(provider.ResourceKey{
+					APIVersion: "apps/v1",
+					Kind:       provider.KindDeployment,
+					Name:       "name-1",
+				}, &unstructured.Unstructured{
+					Object: map[string]interface{}{"spec": map[string]interface{}{"template": "foo-1"}}},
+				)
+				m2 := provider.MakeManifest(provider.ResourceKey{
+					APIVersion: "apps/v1",
+					Kind:       provider.KindDeployment,
+					Name:       "name-2",
+				}, &unstructured.Unstructured{
+					Object: map[string]interface{}{"spec": map[string]interface{}{"template": "foo-2"}}},
+				)
+				return []provider.Manifest{m1, m2}
+			}(),
+			news: func() []provider.Manifest {
+				m1 := provider.MakeManifest(provider.ResourceKey{
+					APIVersion: "apps/v1",
+					Kind:       provider.KindDeployment,
+					Name:       "name-1",
+				}, &unstructured.Unstructured{
+					Object: map[string]interface{}{"spec": map[string]interface{}{"template": "foo-1"}}},
+				)
+				m2 := provider.MakeManifest(provider.ResourceKey{
+					APIVersion: "apps/v1",
+					Kind:       provider.KindDeployment,
+					Name:       "name-2",
+				}, &unstructured.Unstructured{
+					Object: map[string]interface{}{"spec": map[string]interface{}{"template": "bar-2"}}},
+				)
+				return []provider.Manifest{m1, m2}
+			}(),
+			workloadRefs: []config.K8sResourceReference{
+				{
+					Kind: provider.KindDeployment,
+					Name: "name-1",
+				},
+			},
+			wantProgressive: false,
+			wantDesc:        "Quick sync by applying all manifests",
+		},
+		{
+			name: "scale one deployment",
+			olds: func() []provider.Manifest {
+				m := provider.MakeManifest(provider.ResourceKey{
+					APIVersion: "apps/v1",
+					Kind:       provider.KindDeployment,
+					Name:       "name",
+				}, &unstructured.Unstructured{
+					Object: map[string]interface{}{"spec": map[string]interface{}{
+						"template": "foo",
+						"replicas": 1,
+					}}},
+				)
+				return []provider.Manifest{m}
+			}(),
+			news: func() []provider.Manifest {
+				m := provider.MakeManifest(provider.ResourceKey{
+					APIVersion: "apps/v1",
+					Kind:       provider.KindDeployment,
+					Name:       "name",
+				}, &unstructured.Unstructured{
+					Object: map[string]interface{}{"spec": map[string]interface{}{
+						"template": "foo",
+						"replicas": 2,
+					}}},
+				)
+				return []provider.Manifest{m}
+			}(),
+			wantProgressive: false,
+			wantDesc:        "Quick sync to scale Deployment/name from 1 to 2",
+		},
+		{
+			name: "scale multiple deployments",
+			olds: func() []provider.Manifest {
+				m1 := provider.MakeManifest(provider.ResourceKey{
+					APIVersion: "apps/v1",
+					Kind:       provider.KindDeployment,
+					Name:       "name-1",
+				}, &unstructured.Unstructured{
+					Object: map[string]interface{}{"spec": map[string]interface{}{
+						"template": "foo",
+						"replicas": 1,
+					}}},
+				)
+				m2 := provider.MakeManifest(provider.ResourceKey{
+					APIVersion: "apps/v1",
+					Kind:       provider.KindDeployment,
+					Name:       "name-2",
+				}, &unstructured.Unstructured{
+					Object: map[string]interface{}{"spec": map[string]interface{}{
+						"template": "bar",
+						"replicas": 20,
+					}}},
+				)
+				return []provider.Manifest{m1, m2}
+			}(),
+			news: func() []provider.Manifest {
+				m1 := provider.MakeManifest(provider.ResourceKey{
+					APIVersion: "apps/v1",
+					Kind:       provider.KindDeployment,
+					Name:       "name-1",
+				}, &unstructured.Unstructured{
+					Object: map[string]interface{}{"spec": map[string]interface{}{
+						"template": "foo",
+						"replicas": 5,
+					}}},
+				)
+				m2 := provider.MakeManifest(provider.ResourceKey{
+					APIVersion: "apps/v1",
+					Kind:       provider.KindDeployment,
+					Name:       "name-2",
+				}, &unstructured.Unstructured{
+					Object: map[string]interface{}{"spec": map[string]interface{}{
+						"template": "bar",
+						"replicas": 10,
+					}}},
+				)
+				return []provider.Manifest{m1, m2}
+			}(),
+			wantProgressive: false,
+			wantDesc:        "Quick sync to scale Deployment/name-1 from 1 to 5, Deployment/name-2 from 20 to 10",
 		},
 		{
 			name: "configmap deleted",
@@ -218,7 +389,7 @@ func TestDecideStrategy(t *testing.T) {
 	}
 	for _, tc := range tests {
 		t.Run(tc.name, func(t *testing.T) {
-			gotProgressive, gotDesc := decideStrategy(tc.olds, tc.news)
+			gotProgressive, gotDesc := decideStrategy(tc.olds, tc.news, tc.workloadRefs)
 			assert.Equal(t, tc.wantProgressive, gotProgressive)
 			assert.Equal(t, tc.wantDesc, gotDesc)
 		})
