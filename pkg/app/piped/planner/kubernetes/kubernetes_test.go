@@ -156,7 +156,7 @@ func TestDecideStrategy(t *testing.T) {
 				return []provider.Manifest{m1, m2}
 			}(),
 			workloadRefs: []config.K8sResourceReference{
-				config.K8sResourceReference{
+				{
 					Kind: provider.KindDeployment,
 					Name: "name-1",
 				},
