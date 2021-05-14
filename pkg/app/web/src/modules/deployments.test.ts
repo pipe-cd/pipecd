@@ -20,6 +20,7 @@ const initialState = {
   ids: [],
   status: "idle" as LoadingStatus,
   loading: {},
+  cursor: "",
 };
 
 test("isDeploymentRunning", () => {
@@ -66,11 +67,7 @@ describe("deploymentsSlice reducer", () => {
           },
         })
       ).toEqual({
-        canceling: {},
-        entities: {},
-        hasMore: true,
-        ids: [],
-        status: "idle",
+        ...initialState,
         loading: {
           "deployment-1": true,
         },
@@ -167,7 +164,7 @@ describe("deploymentsSlice reducer", () => {
           },
           {
             type: fetchDeployments.fulfilled.type,
-            payload: [dummyDeployment],
+            payload: { deployments: [dummyDeployment], cursor: "next cursor" },
           }
         )
       ).toEqual({
@@ -176,6 +173,7 @@ describe("deploymentsSlice reducer", () => {
         hasMore: false,
         ids: [dummyDeployment.id],
         status: "succeeded",
+        cursor: "next cursor",
       });
     });
   });
@@ -206,7 +204,7 @@ describe("deploymentsSlice reducer", () => {
           { ...initialState, status: "loading" },
           {
             type: fetchMoreDeployments.fulfilled.type,
-            payload: [dummyDeployment],
+            payload: { deployments: [dummyDeployment], cursor: "next cursor" },
           }
         )
       ).toEqual({
@@ -215,6 +213,7 @@ describe("deploymentsSlice reducer", () => {
         ids: [dummyDeployment.id],
         entities: { [dummyDeployment.id]: dummyDeployment },
         status: "succeeded",
+        cursor: "next cursor",
       });
     });
   });
