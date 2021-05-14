@@ -80,17 +80,6 @@ const initialState = deploymentsAdapter.getInitialState<{
   cursor: "",
 });
 
-const selectLastItem = (
-  state: typeof initialState
-): Deployment.AsObject | undefined => {
-  if (state.ids.length === 0) {
-    return undefined;
-  }
-  const lastId = state.ids[state.ids.length - 1];
-
-  return state.entities[lastId];
-};
-
 export const fetchDeploymentById = createAsyncThunk<
   Deployment.AsObject,
   string
