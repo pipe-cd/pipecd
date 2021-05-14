@@ -71,23 +71,14 @@ const initialState = deploymentsAdapter.getInitialState<{
   loading: Record<string, boolean>;
   canceling: Record<string, boolean>;
   hasMore: boolean;
+  cursor: string;
 }>({
   status: "idle",
   loading: {},
   canceling: {},
   hasMore: true,
+  cursor: "",
 });
-
-const selectLastItem = (
-  state: typeof initialState
-): Deployment.AsObject | undefined => {
-  if (state.ids.length === 0) {
-    return undefined;
-  }
-  const lastId = state.ids[state.ids.length - 1];
-
-  return state.entities[lastId];
-};
 
 export const fetchDeploymentById = createAsyncThunk<
   Deployment.AsObject,
@@ -98,7 +89,7 @@ export const fetchDeploymentById = createAsyncThunk<
 });
 
 const convertFilterOptions = (
-  options: DeploymentFilterOptions & { maxUpdatedAt: number }
+  options: DeploymentFilterOptions
 ): ListDeploymentsRequest.Options.AsObject => {
   return {
     applicationIdsList: options.applicationId ? [options.applicationId] : [],
@@ -109,7 +100,9 @@ const convertFilterOptions = (
     statusesList: options.status
       ? [parseInt(options.status, 10) as DeploymentStatus]
       : [],
-    maxUpdatedAt: options.maxUpdatedAt,
+    // NOTE: Now that we're using `cursor`, we don't need this field anymore, so we'll pass 0.
+    // This field will be supported by the filter and may be used in the future.
+    maxUpdatedAt: 0,
   };
 };
 
@@ -117,37 +110,41 @@ const convertFilterOptions = (
  * This action will clear old items and add items.
  */
 export const fetchDeployments = createAsyncThunk<
-  Deployment.AsObject[],
+  { deployments: Deployment.AsObject[]; cursor: string },
   DeploymentFilterOptions,
   { state: AppState }
 >("deployments/fetchList", async (options) => {
-  const { deploymentsList } = await deploymentsApi.getDeployments({
-    options: convertFilterOptions({ ...options, maxUpdatedAt: 0 }),
+  const { deploymentsList, cursor } = await deploymentsApi.getDeployments({
+    options: convertFilterOptions({ ...options }),
     pageSize: ITEMS_PER_PAGE,
     cursor: "",
   });
-  return (deploymentsList as Deployment.AsObject[]) || [];
+
+  return {
+    deployments: (deploymentsList as Deployment.AsObject[]) || [],
+    cursor,
+  };
 });
 
 /**
  * This action will add items to current state.
  */
 export const fetchMoreDeployments = createAsyncThunk<
-  Deployment.AsObject[],
+  { deployments: Deployment.AsObject[]; cursor: string },
   DeploymentFilterOptions,
   { state: AppState }
 >("deployments/fetchMoreList", async (options, thunkAPI) => {
   const { deployments } = thunkAPI.getState();
-  const lastItem = selectLastItem(deployments);
-  const maxUpdatedAt = lastItem ? lastItem.updatedAt : 0;
-
-  const { deploymentsList } = await deploymentsApi.getDeployments({
-    options: convertFilterOptions({ ...options, maxUpdatedAt }),
+  const { deploymentsList, cursor } = await deploymentsApi.getDeployments({
+    options: convertFilterOptions({ ...options }),
     pageSize: FETCH_MORE_ITEMS_PER_PAGE,
-    // TODO: Support cursor passed from frontend.
-    cursor: "",
+    cursor: deployments.cursor,
   });
-  return (deploymentsList as Deployment.AsObject[]) || [];
+
+  return {
+    deployments: (deploymentsList as Deployment.AsObject[]) || [],
+    cursor,
+  };
 });
 
 export const approveStage = createAsyncThunk<
@@ -199,16 +196,18 @@ export const deploymentsSlice = createSlice({
       .addCase(fetchDeployments.pending, (state) => {
         state.status = "loading";
         state.hasMore = true;
+        state.cursor = "";
       })
       .addCase(fetchDeployments.fulfilled, (state, action) => {
         state.status = "succeeded";
         deploymentsAdapter.removeAll(state);
-        if (action.payload.length > 0) {
-          deploymentsAdapter.upsertMany(state, action.payload);
+        if (action.payload.deployments.length > 0) {
+          deploymentsAdapter.upsertMany(state, action.payload.deployments);
         }
-        if (action.payload.length < ITEMS_PER_PAGE) {
+        if (action.payload.deployments.length < ITEMS_PER_PAGE) {
           state.hasMore = false;
         }
+        state.cursor = action.payload.cursor;
       })
       .addCase(fetchDeployments.rejected, (state) => {
         state.status = "failed";
@@ -218,10 +217,11 @@ export const deploymentsSlice = createSlice({
       })
       .addCase(fetchMoreDeployments.fulfilled, (state, action) => {
         state.status = "succeeded";
-        deploymentsAdapter.upsertMany(state, action.payload);
-        if (action.payload.length < FETCH_MORE_ITEMS_PER_PAGE) {
+        deploymentsAdapter.upsertMany(state, action.payload.deployments);
+        if (action.payload.deployments.length < FETCH_MORE_ITEMS_PER_PAGE) {
           state.hasMore = false;
         }
+        state.cursor = action.payload.cursor;
       })
       .addCase(fetchMoreDeployments.rejected, (state) => {
         state.status = "failed";
