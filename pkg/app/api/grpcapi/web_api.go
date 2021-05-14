@@ -849,13 +849,6 @@ func (a *WebAPI) ListDeployments(ctx context.Context, req *webservice.ListDeploy
 				Value:    o.EnvIds[0],
 			})
 		}
-		if o.MaxUpdatedAt != 0 {
-			filters = append(filters, datastore.ListFilter{
-				Field:    "UpdatedAt",
-				Operator: "<=",
-				Value:    o.MaxUpdatedAt,
-			})
-		}
 	}
 
 	deployments, cursor, err := a.deploymentStore.ListDeployments(ctx, datastore.ListOptions{
