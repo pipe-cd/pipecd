@@ -29,6 +29,7 @@ import (
 	"github.com/pipe-cd/pipe/pkg/app/piped/deploysource"
 	"github.com/pipe-cd/pipe/pkg/app/piped/diff"
 	"github.com/pipe-cd/pipe/pkg/app/piped/planner"
+	"github.com/pipe-cd/pipe/pkg/config"
 	"github.com/pipe-cd/pipe/pkg/model"
 )
 
@@ -172,7 +173,7 @@ func (p *Planner) Plan(ctx context.Context, in planner.Input) (out planner.Outpu
 		manifestCache.Put(in.MostRecentSuccessfulCommitHash, oldManifests)
 	}
 
-	progressive, desc := decideStrategy(oldManifests, newManifests)
+	progressive, desc := decideStrategy(oldManifests, newManifests, cfg.Workloads)
 	out.Summary = desc
 
 	if progressive {
@@ -186,39 +187,45 @@ func (p *Planner) Plan(ctx context.Context, in planner.Input) (out planner.Outpu
 
 // First up, checks to see if the workload's `spec.template` has been changed,
 // and then checks if the configmap/secret's data.
-func decideStrategy(olds, news []provider.Manifest) (progressive bool, desc string) {
-	oldWorkload, ok := findWorkload(olds)
-	if !ok {
+func decideStrategy(olds, news []provider.Manifest, workloadRefs []config.K8sResourceReference) (progressive bool, desc string) {
+	oldWorkloads := findWorkloadManifests(olds, workloadRefs)
+	if len(oldWorkloads) == 0 {
 		desc = "Quick sync by applying all manifests because it was unable to find the currently running workloads"
 		return
 	}
-	newWorkload, ok := findWorkload(news)
-	if !ok {
+	newWorkloads := findWorkloadManifests(news, workloadRefs)
+	if len(newWorkloads) == 0 {
 		desc = "Quick sync by applying all manifests because it was unable to find workloads in the new manifests"
 		return
 	}
 
-	// If the workload's pod template was touched
-	// do progressive deployment with the specified pipeline.
-	diffResult, err := provider.Diff(oldWorkload, newWorkload)
-	if err != nil {
-		progressive = true
-		desc = fmt.Sprintf("Sync progressively due to an error while calculating the diff (%v)", err)
-		return
-	}
-	diffNodes := diffResult.Nodes()
+	workloads := findUpdatedWorkloads(oldWorkloads, newWorkloads)
+	diffs := make(map[provider.ResourceKey]diff.Nodes, len(workloads))
 
-	templateDiffs := diffNodes.FindByPrefix("spec.template")
-	if len(templateDiffs) > 0 {
-		progressive = true
-
-		if msg, changed := checkImageChange(templateDiffs); changed {
-			desc = msg
+	for _, w := range workloads {
+		// If the workload's pod template was touched
+		// do progressive deployment with the specified pipeline.
+		diffResult, err := provider.Diff(w.old, w.new)
+		if err != nil {
+			progressive = true
+			desc = fmt.Sprintf("Sync progressively due to an error while calculating the diff (%v)", err)
 			return
 		}
+		diffNodes := diffResult.Nodes()
+		diffs[w.new.Key] = diffNodes
 
-		desc = fmt.Sprintf("Sync progressively because pod template of workload %s was changed", newWorkload.Key.Name)
-		return
+		templateDiffs := diffNodes.FindByPrefix("spec.template")
+		if len(templateDiffs) > 0 {
+			progressive = true
+
+			if msg, changed := checkImageChange(templateDiffs); changed {
+				desc = msg
+				return
+			}
+
+			desc = fmt.Sprintf("Sync progressively because pod template of workload %s was changed", w.new.Key.Name)
+			return
+		}
 	}
 
 	// If the config/secret was touched, we also need to do progressive
@@ -256,8 +263,15 @@ func decideStrategy(olds, news []provider.Manifest) (progressive bool, desc stri
 	}
 
 	// Check if this is a scaling commit.
-	if msg, changed := checkReplicasChange(diffNodes); changed {
-		desc = msg
+	scales := make([]string, 0, len(diffs))
+	for k, d := range diffs {
+		if before, after, changed := checkReplicasChange(d); changed {
+			scales = append(scales, fmt.Sprintf("%s/%s from %s to %s", k.Kind, k.Name, before, after))
+		}
+
+	}
+	if len(scales) > 0 {
+		desc = fmt.Sprintf("Quick sync to scale %s", strings.Join(scales, ", "))
 		return
 	}
 
@@ -265,15 +279,67 @@ func decideStrategy(olds, news []provider.Manifest) (progressive bool, desc stri
 	return
 }
 
-// The assumption that an application has only one workload.
-func findWorkload(manifests []provider.Manifest) (provider.Manifest, bool) {
+func findWorkloadManifests(manifests []provider.Manifest, refs []config.K8sResourceReference) []provider.Manifest {
+	if len(refs) == 0 {
+		return findManifests(provider.KindDeployment, "", manifests)
+	}
+
+	workloads := make([]provider.Manifest, 0)
+	for _, ref := range refs {
+		kind := provider.KindDeployment
+		if ref.Kind != "" {
+			kind = ref.Kind
+		}
+		ms := findManifests(kind, ref.Name, manifests)
+		workloads = append(workloads, ms...)
+	}
+	return workloads
+}
+
+func findManifests(kind, name string, manifests []provider.Manifest) []provider.Manifest {
+	var out []provider.Manifest
 	for _, m := range manifests {
-		if !m.Key.IsDeployment() {
+		if m.Key.Kind != kind {
 			continue
 		}
-		return m, true
+		if name != "" && m.Key.Name != name {
+			continue
+		}
+		out = append(out, m)
 	}
-	return provider.Manifest{}, false
+	return out
+}
+
+type workloadPair struct {
+	old provider.Manifest
+	new provider.Manifest
+}
+
+func findUpdatedWorkloads(olds, news []provider.Manifest) []workloadPair {
+	pairs := make([]workloadPair, 0)
+	oldMap := make(map[provider.ResourceKey]provider.Manifest, len(olds))
+	nomalizeKey := func(k provider.ResourceKey) provider.ResourceKey {
+		// Ignoring APIVersion because user can upgrade to the new APIVersion for the same workload.
+		k.APIVersion = ""
+		if k.Namespace == provider.DefaultNamespace {
+			k.Namespace = ""
+		}
+		return k
+	}
+	for _, m := range olds {
+		key := nomalizeKey(m.Key)
+		oldMap[key] = m
+	}
+	for _, n := range news {
+		key := nomalizeKey(n.Key)
+		if o, ok := oldMap[key]; ok {
+			pairs = append(pairs, workloadPair{
+				old: o,
+				new: n,
+			})
+		}
+	}
+	return pairs
 }
 
 func findConfigs(manifests []provider.Manifest) map[provider.ResourceKey]provider.Manifest {
@@ -311,15 +377,17 @@ func checkImageChange(ns diff.Nodes) (string, bool) {
 	return desc, true
 }
 
-func checkReplicasChange(ns diff.Nodes) (string, bool) {
+func checkReplicasChange(ns diff.Nodes) (before, after string, changed bool) {
 	const replicasQuery = `^spec\.replicas$`
 	node, err := ns.FindOne(replicasQuery)
 	if err != nil {
-		return "", false
+		return
 	}
 
-	desc := fmt.Sprintf("Scale workload from %s to %s.", node.StringX(), node.StringY())
-	return desc, true
+	before = node.StringX()
+	after = node.StringY()
+	changed = true
+	return
 }
 
 func parseContainerImage(image string) (name, tag string) {
