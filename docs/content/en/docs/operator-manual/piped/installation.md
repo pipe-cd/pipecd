@@ -107,56 +107,21 @@ Most parts are identical to the previous way, but some are slightly different.
     --set rbac.scope=namespace
   ```
 
-### Install on OpenShift less than 4.2
-Containers on OpenShift run using arbitrary users. What we don't know the UID in advance causes a couple of problems.
-To prevent you from such problems, you should take additional steps. Keep in mind OpenShift 4.2 onward doesn't have kind of like this concern.
+#### In case on OpenShift less than 4.2
+Containers on OpenShift run using arbitrary Linux users. What we don't know the UID in advance causes a couple of problems.
+To prevent you from such problems, you should set additional options to the previous `helm upgrade` command.
 
-- Adding a new cloud provider as same as the namespaced mode:
 
-  ``` yaml
-  apiVersion: pipecd.dev/v1beta1
-  kind: Piped
-  spec:
-    projectID: YOUR_PROJECT_ID
-    pipedID: YOUR_PIPED_ID
-    pipedKeyFile: /etc/piped-secret/piped-key
-    # Write in a format like "host:443" because the communication is done via gRPC.
-    apiAddress: YOUR_CONTROL_PLANE_ADDRESS
-    webAddress: http://YOUR_CONTROL_PLANE_ADDRESS
-    git:
-      sshKeyFile: /etc/piped-secret/ssh-key
-    repositories:
-      - repoId: REPO_ID_OR_NAME
-        remote: git@github.com:YOUR_GIT_ORG/YOUR_GIT_REPO.git
-        branch: master
-    syncInterval: 1m
-    # This is needed to restrict to limit the access range to within a namespace.
-    cloudProviders:
-      - name: my-kubernetes
-        type: KUBERNETES
-        config:
-          appStateInformer:
-            namespace: {YOUR_NAMESPACE}
-  ```
+``` console
+  --set args.addLoginUserToPasswd=true \
+  --set securityContext.runAsNonRoot=true \
+  --set securityContext.runAsUser=YOUR_UID \
+  --set securityContext.fsGroup=YOUR_FS_GROUP \
+  --set securityContext.runAsGroup=0 \
+  --set image.repository="gcr.io/pipecd/piped-okd"
+```
 
-- Then installing it with the following options:
-
-  ``` console
-  helm repo update
-
-  helm upgrade -i dev-piped pipecd/piped --version=VERSION --namespace=NAMESPACE \
-    --set-file config.data=PATH_TO_PIPED_CONFIG_FILE \
-    --set-file secret.pipedKey.data=PATH_TO_PIPED_KEY_FILE \
-    --set-file secret.sshKey.data=PATH_TO_PRIVATE_SSH_KEY_FILE \
-    --set args.enableDefaultKubernetesCloudProvider=false \
-    --set rbac.scope=namespace \
-    --set args.addLoginUserToPasswd=true \
-    --set securityContext.runAsNonRoot=true \
-    --set securityContext.runAsUser=YOUR_UID \
-    --set securityContext.fsGroup=YOUR_FS_GROUP \
-    --set securityContext.runAsGroup=0 \
-    --set image.repository="gcr.io/pipecd/piped-okd"
-  ```
+Keep in mind OpenShift 4.2 onward doesn't have kind of like this concern.
 
 ## Installing on single machine
 
