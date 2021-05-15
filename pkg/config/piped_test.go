@@ -70,6 +70,7 @@ func TestPipedConfig(t *testing.T) {
 						Address:  "https://private-charts.com",
 						Username: "basic-username",
 						Password: "basic-password",
+						Insecure: true,
 					},
 				},
 				CloudProviders: []PipedCloudProvider{

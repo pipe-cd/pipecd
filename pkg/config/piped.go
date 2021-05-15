@@ -211,6 +211,8 @@ type HelmChartRepository struct {
 	Username string `json:"username"`
 	// Password used for the repository backed by HTTP basic authentication.
 	Password string `json:"password"`
+	// Insecure specifies whether to verify the repository certificate.
+	Insecure bool `json:"insecure"`
 }
 
 type PipedCloudProvider struct {
