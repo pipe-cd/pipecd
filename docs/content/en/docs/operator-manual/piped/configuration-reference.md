@@ -60,7 +60,7 @@ spec:
 | address | string | The address to the Helm chart repository. | Yes |
 | username | string | Username used for the repository backed by HTTP basic authentication. | No |
 | password | string | Password used for the repository backed by HTTP basic authentication. | No |
-| insecure | bool | Insecure specifies whether to verify the repository certificate. | No |
+| insecure | bool | Whether to skip TLS certificate checks for the repository or not. | No |
 
 ## CLoudProvider
 

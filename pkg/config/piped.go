@@ -211,7 +211,7 @@ type HelmChartRepository struct {
 	Username string `json:"username"`
 	// Password used for the repository backed by HTTP basic authentication.
 	Password string `json:"password"`
-	// Insecure specifies whether to verify the repository certificate.
+	// Whether to skip TLS certificate checks for the repository or not.
 	Insecure bool `json:"insecure"`
 }
 
