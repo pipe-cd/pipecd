@@ -100,9 +100,6 @@ const convertFilterOptions = (
     statusesList: options.status
       ? [parseInt(options.status, 10) as DeploymentStatus]
       : [],
-    // NOTE: Now that we're using `cursor`, we don't need this field anymore, so we'll pass 0.
-    // This field will be supported by the filter and may be used in the future.
-    maxUpdatedAt: 0,
   };
 };
 
