@@ -42,11 +42,11 @@ You can use pipectl to add and sync applications, wait for a deployment status.
     ```
 
 ### Docker
-
-We are storing every version of docker image for pipectl on Google Cloud Container Registry. You can use it with the following address:
+We are storing every version of docker image for pipectl on Google Cloud Container Registry.
+Available versions are [here](https://github.com/pipe-cd/pipe/releases).
 
 ```
-gcr.io/pipecd/pipectl:VERSION
+docker run --rm gcr.io/pipecd/pipectl:VERSION -h
 ```
 
 ## Authentication
