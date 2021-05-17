@@ -57,6 +57,11 @@ secret:
     fileName: ssh-key
     # Configuration data when create is true.
     data: ""
+  kubeConfig:
+    # The name of the kubeconfig file.
+    fileName: kubeconfig
+    # Configuration data when create is true.
+    data: ""
   sealedSecretSealingKey:
     publicKey:
       fileName: sealed-secret-sealingkey-public-key
