@@ -73,12 +73,12 @@ Open [`./quickstart/piped-values.yaml`](https://github.com/pipe-cd/manifests/blo
 - replace `FORKED_REPO_URL` with forked repository of [Examples](https://github.com/pipe-cd/examples), such as `https://github.com/YOUR_ORG/examples.git`
 - replace `YOUR_PIPED_ID` with the piped-id you have copied before
 
-You can complete the installation by running the following after replacing `YOUR_PIPED_SECRET_KEY` with what you just got:
+You can complete the installation by running the following after replacing `{YOUR_PIPED_SECRET_KEY}` with what you just got:
 
 ``` console
 helm -n pipecd install piped ./manifests/piped \
   --values ./quickstart/piped-values.yaml \
-  --set secret.pipedKey.data=YOUR_PIPED_SECRET_KEY
+  --set secret.pipedKey.data={YOUR_PIPED_SECRET_KEY}
 ```
 
 ### 6. Configuring a kubernetes application

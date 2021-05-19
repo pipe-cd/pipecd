@@ -51,7 +51,7 @@ The full list of configurable fields are [here](/docs/operator-manual/piped/conf
 If you choose `Helm` as the installation method, we recommend using `--set-file` to mount the key files while performing the [upgrading process](/docs/operator-manual/piped/installation/#installing-on-kubernetes-cluster):
 
 ```
---set-file secret.datadogApiKey.data=PATH_TO_API_KEY_FILE \
---set-file secret.datadogApplicationKey.data=PATH_TO_APPLICATION_KEY_FILE
+--set-file secret.datadogApiKey.data={PATH_TO_API_KEY_FILE} \
+--set-file secret.datadogApplicationKey.data={PATH_TO_APPLICATION_KEY_FILE}
 ```
 

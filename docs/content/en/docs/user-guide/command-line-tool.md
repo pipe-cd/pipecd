@@ -16,11 +16,11 @@ You can use pipectl to add and sync applications, wait for a deployment status.
 1. Download the appropriate version for your platform from [PipeCD Releases](https://github.com/pipe-cd/pipe/releases).
 
     We recommend using the latest version of pipectl to avoid unforeseen issues.
-    Please set `${VERSION}` to the same format like `v0.9.5`.
-    And `${OS}` can be replaced with either `linux` or `darwin`.
+    Please set `{VERSION}` to the same format like `v0.9.15`.
+    And `{OS}` can be replaced with either `linux` or `darwin`.
 
     ``` console
-    curl -Lo ./pipectl https://github.com/pipe-cd/pipe/releases/download/${VERSION}/pipectl_${VERSION}_${OS}_amd64
+    curl -Lo ./pipectl https://github.com/pipe-cd/pipe/releases/download/{VERSION}/pipectl_{VERSION}_{OS}_amd64
     ```
 
 2. Make the pipectl binary executable.
@@ -46,7 +46,7 @@ We are storing every version of docker image for pipectl on Google Cloud Contain
 Available versions are [here](https://github.com/pipe-cd/pipe/releases).
 
 ```
-docker run --rm gcr.io/pipecd/pipectl:VERSION -h
+docker run --rm gcr.io/pipecd/pipectl:{VERSION} -h
 ```
 
 ## Authentication
@@ -136,18 +136,18 @@ Global Flags:
 
 ``` console
 pipectl application sync \
-    --address=CONTROL_PLANE_API_ADDRESS \
-    --api-key=API_KEY \
-    --app-id=APPLICATION_ID
+    --address={CONTROL_PLANE_API_ADDRESS} \
+    --api-key={API_KEY} \
+    --app-id={APPLICATION_ID}
 ```
 
 - Send a request to sync an application and wait until the triggered deployment reaches one of the specified statuses:
 
 ``` console
 pipectl application sync \
-    --address=CONTROL_PLANE_API_ADDRESS \
-    --api-key=API_KEY \
-    --app-id=APPLICATION_ID \
+    --address={CONTROL_PLANE_API_ADDRESS} \
+    --api-key={API_KEY} \
+    --app-id={APPLICATION_ID} \
     --wait-status=DEPLOYMENT_SUCCESS,DEPLOYMENT_FAILURE
 ```
 
@@ -157,9 +157,9 @@ pipectl application sync \
 
 ``` console
 pipectl application get \
-    --address=CONTROL_PLANE_API_ADDRESS \
-    --api-key=API_KEY \
-    --app-id=APPLICATION_ID
+    --address={CONTROL_PLANE_API_ADDRESS} \
+    --api-key={API_KEY} \
+    --app-id={APPLICATION_ID}
 ```
 
 ### Listing applications
@@ -168,9 +168,9 @@ pipectl application get \
 
 ``` console
 pipectl application list \
-    --address=CONTROL_PLANE_API_ADDRESS \
-    --api-key=API_KEY \
-    --app-name=APPLICATION_NAME \
+    --address={CONTROL_PLANE_API_ADDRESS} \
+    --api-key={API_KEY} \
+    --app-name={APPLICATION_NAME} \
     --app-kind=KUBERNETES \
     --env-id=dev
 ```
@@ -181,9 +181,9 @@ Wait until a given deployment reaches one of the specified statuses:
 
 ``` console
 pipectl deployment wait-status \
-    --address=CONTROL_PLANE_API_ADDRESS \
-    --api-key=API_KEY \
-    --deployment-id=DEPLOYMENT_ID \
+    --address={CONTROL_PLANE_API_ADDRESS} \
+    --api-key={API_KEY} \
+    --deployment-id={DEPLOYMENT_ID} \
     --status=DEPLOYMENT_SUCCESS
 ```
 
@@ -193,8 +193,8 @@ Register an event that can be used by EventWatcher.
 
 ``` console
 pipectl event register \
-    --address=CONTROL_PLANE_API_ADDRESS \
-    --api-key=API_KEY \
+    --address={CONTROL_PLANE_API_ADDRESS} \
+    --api-key={API_KEY} \
     --name=example-image-pushed \
     --data=gcr.io/pipecd/example:v0.1.0
 ```
