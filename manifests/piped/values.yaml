@@ -80,6 +80,9 @@ secret:
   datadogApplicationKey:
     fileName: datadog-application-key
     data: ""
+  # The list of kubeConfig should be embedded in the Secret to be used by Piped.
+  # Each item of this list has 2 fields "fileName" and "data".
+  kubeConfigs: []
 
 envs: []
 
