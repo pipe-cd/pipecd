@@ -11,6 +11,7 @@ import { UI_TEXT_NOT_AVAILABLE_TEXT } from "../../constants/ui-text";
 const useStyles = makeStyles((theme) => ({
   statusText: {
     marginLeft: theme.spacing(0.5),
+    whiteSpace: "nowrap",
   },
 }));
 
@@ -28,7 +29,7 @@ export const AppSyncStatus: FC<AppSyncStatusProps> = ({
   size = "medium",
 }) => {
   const classes = useStyles();
-  const fontVariant = size === "medium" ? "body1" : "h6";
+  const fontVariant = size === "medium" ? "body2" : "h6";
 
   if (deploying) {
     return (

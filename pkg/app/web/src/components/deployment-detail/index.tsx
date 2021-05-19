@@ -181,20 +181,23 @@ export const DeploymentDetail: FC<DeploymentDetailProps> = memo(
                         <Box display="flex">
                           <Typography variant="body2">
                             {deployment.trigger.commit.message}
+                            <span className={classes.textMargin}>
+                              (
+                              <Link
+                                variant="body2"
+                                href={deployment.trigger.commit.url}
+                                target="_blank"
+                                rel="noreferrer"
+                              >
+                                {`${deployment.trigger.commit.hash.slice(
+                                  0,
+                                  7
+                                )}`}
+                                <OpenInNewIcon className={classes.linkIcon} />
+                              </Link>
+                              )
+                            </span>
                           </Typography>
-                          <span className={classes.textMargin}>
-                            (
-                            <Link
-                              variant="body2"
-                              href={deployment.trigger.commit.url}
-                              target="_blank"
-                              rel="noreferrer"
-                            >
-                              {`${deployment.trigger.commit.hash.slice(0, 7)}`}
-                              <OpenInNewIcon className={classes.linkIcon} />
-                            </Link>
-                            )
-                          </span>
                         </Box>
                       }
                     />

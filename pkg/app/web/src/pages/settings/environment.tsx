@@ -1,5 +1,4 @@
 import {
-  Box,
   Button,
   Divider,
   Drawer,
@@ -56,29 +55,27 @@ export const SettingsEnvironmentPage: FC = memo(
         </Toolbar>
         <Divider />
 
-        <Box display="flex" height="100%">
-          <TableContainer component={Paper} square>
-            <Table aria-label="environment list" size="small" stickyHeader>
-              <TableHead>
-                <TableRow>
-                  <TableCell>Name</TableCell>
-                  <TableCell colSpan={2}>Description</TableCell>
-                  <TableCell>ID</TableCell>
-                  <TableCell align="right" />
-                </TableRow>
-              </TableHead>
+        <TableContainer component={Paper} square>
+          <Table aria-label="environment list" size="small" stickyHeader>
+            <TableHead>
+              <TableRow>
+                <TableCell>Name</TableCell>
+                <TableCell colSpan={2}>Description</TableCell>
+                <TableCell>ID</TableCell>
+                <TableCell align="right" />
+              </TableRow>
+            </TableHead>
 
-              <TableBody>
-                {envIds.map((envId) => (
-                  <EnvironmentListItem
-                    id={envId}
-                    key={`env-list-item-${envId}`}
-                  />
-                ))}
-              </TableBody>
-            </Table>
-          </TableContainer>
-        </Box>
+            <TableBody>
+              {envIds.map((envId) => (
+                <EnvironmentListItem
+                  id={envId}
+                  key={`env-list-item-${envId}`}
+                />
+              ))}
+            </TableBody>
+          </Table>
+        </TableContainer>
 
         <Drawer anchor="right" open={isOpenForm} onClose={handleClose}>
           <AddEnvForm
