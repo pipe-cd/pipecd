@@ -61,8 +61,8 @@ Once you're all set up, pushing a new Event to the control-plane by the followin
 
 ```bash
 pipectl event register \
-    --address=CONTROL_PLANE_API_ADDRESS \
-    --api-key=API_KEY \
+    --address={CONTROL_PLANE_API_ADDRESS} \
+    --api-key={API_KEY} \
     --name=helloworld-image-update \
     --data=gcr.io/pipecd/helloworld:v0.2.0
 ```

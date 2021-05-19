@@ -32,17 +32,17 @@ This way requires installing cluster-level resources. Piped installed with this 
   apiVersion: pipecd.dev/v1beta1
   kind: Piped
   spec:
-    projectID: YOUR_PROJECT_ID
-    pipedID: YOUR_PIPED_ID
+    projectID: {YOUR_PROJECT_ID}
+    pipedID: {YOUR_PIPED_ID}
     pipedKeyFile: /etc/piped-secret/piped-key
     # Write in a format like "host:443" because the communication is done via gRPC.
-    apiAddress: YOUR_CONTROL_PLANE_ADDRESS
-    webAddress: http://YOUR_CONTROL_PLANE_ADDRESS
+    apiAddress: {YOUR_CONTROL_PLANE_ADDRESS}
+    webAddress: http://{YOUR_CONTROL_PLANE_ADDRESS}
     git:
       sshKeyFile: /etc/piped-secret/ssh-key
     repositories:
-      - repoId: REPO_ID_OR_NAME
-        remote: git@github.com:YOUR_GIT_ORG/YOUR_GIT_REPO.git
+      - repoId: {REPO_ID_OR_NAME}
+        remote: git@github.com:{YOUR_GIT_ORG}/{YOUR_GIT_REPO}.git
         branch: master
     syncInterval: 1m
   ```
@@ -52,10 +52,10 @@ This way requires installing cluster-level resources. Piped installed with this 
   ``` console
   helm repo update
 
-  helm upgrade -i dev-piped pipecd/piped --version=VERSION --namespace=NAMESPACE \
-    --set-file config.data=PATH_TO_PIPED_CONFIG_FILE \
-    --set-file secret.pipedKey.data=PATH_TO_PIPED_KEY_FILE \
-    --set-file secret.sshKey.data=PATH_TO_PRIVATE_SSH_KEY_FILE
+  helm upgrade -i dev-piped pipecd/piped --version={VERSION} --namespace={NAMESPACE} \
+    --set-file config.data={PATH_TO_PIPED_CONFIG_FILE} \
+    --set-file secret.pipedKey.data={PATH_TO_PIPED_KEY_FILE} \
+    --set-file secret.sshKey.data={PATH_TO_PRIVATE_SSH_KEY_FILE}
   ```
 
 Note: Be sure to set `--set args.insecure=true` if your control-plane has not TLS-enabled yet.
@@ -72,17 +72,17 @@ Most parts are identical to the previous way, but some are slightly different.
   apiVersion: pipecd.dev/v1beta1
   kind: Piped
   spec:
-    projectID: YOUR_PROJECT_ID
-    pipedID: YOUR_PIPED_ID
+    projectID: {YOUR_PROJECT_ID}
+    pipedID: {YOUR_PIPED_ID}
     pipedKeyFile: /etc/piped-secret/piped-key
     # Write in a format like "host:443" because the communication is done via gRPC.
-    apiAddress: YOUR_CONTROL_PLANE_ADDRESS
-    webAddress: http://YOUR_CONTROL_PLANE_ADDRESS
+    apiAddress: {YOUR_CONTROL_PLANE_ADDRESS}
+    webAddress: http://{YOUR_CONTROL_PLANE_ADDRESS}
     git:
       sshKeyFile: /etc/piped-secret/ssh-key
     repositories:
       - repoId: REPO_ID_OR_NAME
-        remote: git@github.com:YOUR_GIT_ORG/YOUR_GIT_REPO.git
+        remote: git@github.com:{YOUR_GIT_ORG}/{YOUR_GIT_REPO}.git
         branch: master
     syncInterval: 1m
     # This is needed to restrict to limit the access range to within a namespace.
@@ -99,10 +99,10 @@ Most parts are identical to the previous way, but some are slightly different.
   ``` console
   helm repo update
 
-  helm upgrade -i dev-piped pipecd/piped --version=VERSION --namespace=NAMESPACE \
-    --set-file config.data=PATH_TO_PIPED_CONFIG_FILE \
-    --set-file secret.pipedKey.data=PATH_TO_PIPED_KEY_FILE \
-    --set-file secret.sshKey.data=PATH_TO_PRIVATE_SSH_KEY_FILE \
+  helm upgrade -i dev-piped pipecd/piped --version={VERSION} --namespace={NAMESPACE} \
+    --set-file config.data={PATH_TO_PIPED_CONFIG_FILE} \
+    --set-file secret.pipedKey.data={PATH_TO_PIPED_KEY_FILE} \
+    --set-file secret.sshKey.data={PATH_TO_PRIVATE_SSH_KEY_FILE} \
     --set args.enableDefaultKubernetesCloudProvider=false \
     --set rbac.scope=namespace
   ```
@@ -114,16 +114,16 @@ but before that version, the assigned user is missing in that file. That blocks 
 Therefore if you are running on OpenShift with a version before 4.2, please use gcr.io/pipecd/piped-okd image with the following command:
 
 ``` console
-  helm upgrade -i dev-piped pipecd/piped --version=VERSION --namespace=NAMESPACE \
-    --set-file config.data=PATH_TO_PIPED_CONFIG_FILE \
-    --set-file secret.pipedKey.data=PATH_TO_PIPED_KEY_FILE \
-    --set-file secret.sshKey.data=PATH_TO_PRIVATE_SSH_KEY_FILE \
+  helm upgrade -i dev-piped pipecd/piped --version={VERSION} --namespace={NAMESPACE} \
+    --set-file config.data={PATH_TO_PIPED_CONFIG_FILE} \
+    --set-file secret.pipedKey.data={PATH_TO_PIPED_KEY_FILE} \
+    --set-file secret.sshKey.data={PATH_TO_PRIVATE_SSH_KEY_FILE} \
     --set args.enableDefaultKubernetesCloudProvider=false \
     --set rbac.scope=namespace
     --set args.addLoginUserToPasswd=true \
     --set securityContext.runAsNonRoot=true \
-    --set securityContext.runAsUser=YOUR_UID \
-    --set securityContext.fsGroup=YOUR_FS_GROUP \
+    --set securityContext.runAsUser={YOUR_UID} \
+    --set securityContext.fsGroup={YOUR_FS_GROUP} \
     --set securityContext.runAsGroup=0 \
     --set image.repository="gcr.io/pipecd/piped-okd"
 ```
@@ -158,6 +158,6 @@ Therefore if you are running on OpenShift with a version before 4.2, please use 
 - Start running the `piped`
 
   ``` console
-  ./piped piped --config-file=PATH_TO_PIPED_CONFIG_FILE
+  ./piped piped --config-file={PATH_TO_PIPED_CONFIG_FILE}
   ```
 

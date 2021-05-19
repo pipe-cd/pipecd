@@ -30,10 +30,10 @@ spec:
 In most of the cases, we want to deal with private Git repositories. For accessing those private repositories, `piped` needs a private SSH key, which can be configured while [installing](/docs/operator-manual/piped/installation/#installing-on-a-kubernetes-cluster) with `secret.sshKey` in the Helm chart.
 
 ``` console
-helm install dev-piped pipecd/piped --version=VERSION \
-  --set-file config.data=PATH_TO_PIPED_CONFIG_FILE \
-  --set-file secret.pipedKey.data=PATH_TO_PIPED_KEY_FILE \
-  --set-file secret.sshKey.data=PATH_TO_PRIVATE_SSH_KEY_FILE
+helm install dev-piped pipecd/piped --version={VERSION} \
+  --set-file config.data={PATH_TO_PIPED_CONFIG_FILE} \
+  --set-file secret.pipedKey.data={PATH_TO_PIPED_KEY_FILE} \
+  --set-file secret.sshKey.data={PATH_TO_PRIVATE_SSH_KEY_FILE}
 ```
 
 You can see this [configuration reference](/docs/operator-manual/piped/configuration-reference/#git) for more configurable fields about Git commands.
