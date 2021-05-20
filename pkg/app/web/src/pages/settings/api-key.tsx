@@ -132,38 +132,36 @@ export const APIKeyPage: FC = memo(function APIKeyPage() {
       </Toolbar>
       <Divider />
 
-      <Box display="flex" height="100%">
-        <TableContainer component={Paper} square>
-          <Table size="small" stickyHeader>
-            <TableHead>
-              <TableRow>
-                <TableCell colSpan={2}>Name</TableCell>
-                <TableCell>Role</TableCell>
-                <TableCell align="right" />
-              </TableRow>
-            </TableHead>
-            <TableBody>
-              {loading ? (
-                <LoadingSkelton />
-              ) : keys.length === 0 ? (
-                <EmptyTableContent />
-              ) : (
-                keys.map((key) => (
-                  <TableRow key={key.id}>
-                    <TableCell colSpan={2}>{key.name}</TableCell>
-                    <TableCell>{API_KEY_ROLE_TEXT[key.role]}</TableCell>
-                    <TableCell align="right">
-                      <IconButton data-id={key.id} onClick={handleOpenMenu}>
-                        <MenuIcon />
-                      </IconButton>
-                    </TableCell>
-                  </TableRow>
-                ))
-              )}
-            </TableBody>
-          </Table>
-        </TableContainer>
-      </Box>
+      <TableContainer component={Paper} square>
+        <Table size="small" stickyHeader>
+          <TableHead>
+            <TableRow>
+              <TableCell colSpan={2}>Name</TableCell>
+              <TableCell>Role</TableCell>
+              <TableCell align="right" />
+            </TableRow>
+          </TableHead>
+          <TableBody>
+            {loading ? (
+              <LoadingSkelton />
+            ) : keys.length === 0 ? (
+              <EmptyTableContent />
+            ) : (
+              keys.map((key) => (
+                <TableRow key={key.id}>
+                  <TableCell colSpan={2}>{key.name}</TableCell>
+                  <TableCell>{API_KEY_ROLE_TEXT[key.role]}</TableCell>
+                  <TableCell align="right">
+                    <IconButton data-id={key.id} onClick={handleOpenMenu}>
+                      <MenuIcon />
+                    </IconButton>
+                  </TableCell>
+                </TableRow>
+              ))
+            )}
+          </TableBody>
+        </Table>
+      </TableContainer>
 
       <Menu
         id="api-key-menu"

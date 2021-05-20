@@ -5,6 +5,8 @@ import { makeStyles, Typography } from "@material-ui/core";
 const useStyles = makeStyles((theme) => ({
   head: {
     textAlign: "left",
+    whiteSpace: "nowrap",
+    display: "block",
   },
   value: {
     marginLeft: theme.spacing(1),

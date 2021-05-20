@@ -45,6 +45,7 @@ import {
   selectAllPipeds,
 } from "../../../modules/pipeds";
 import { AppDispatch } from "../../../store";
+import { useSettingsStyles } from "../styles";
 import { PipedTableRow } from "./piped-table-row";
 
 const useStyles = makeStyles(() => ({
@@ -79,6 +80,7 @@ const OLD_KEY_ALERT_MESSAGE =
 
 export const SettingsPipedPage: FC = memo(function SettingsPipedPage() {
   const classes = useStyles();
+  const settingsClasses = useSettingsStyles();
   const [openFilter, setOpenFilter] = useState(false);
   const [isOpenForm, setIsOpenForm] = useState(false);
   const [editPipedId, setEditPipedId] = useState<string | null>(null);
@@ -149,16 +151,24 @@ export const SettingsPipedPage: FC = memo(function SettingsPipedPage() {
       </Toolbar>
       <Divider />
 
-      <Box display="flex" height="100%">
+      <Box display="flex" flex={1} overflow="hidden">
         <TableContainer component={Paper} square>
           <Table aria-label="piped list" size="small" stickyHeader>
             <TableHead>
               <TableRow>
-                <TableCell>Name</TableCell>
-                <TableCell>ID</TableCell>
-                <TableCell>Version</TableCell>
-                <TableCell>Description</TableCell>
-                <TableCell>Started At</TableCell>
+                <TableCell className={settingsClasses.tableCell}>
+                  Name
+                </TableCell>
+                <TableCell className={settingsClasses.tableCell}>ID</TableCell>
+                <TableCell className={settingsClasses.tableCell}>
+                  Version
+                </TableCell>
+                <TableCell className={settingsClasses.tableCell}>
+                  Description
+                </TableCell>
+                <TableCell className={settingsClasses.tableCell}>
+                  Started At
+                </TableCell>
                 <TableCell align="right" />
               </TableRow>
             </TableHead>
