@@ -17,10 +17,14 @@ package insightcollector
 import (
 	"context"
 	"errors"
+	"fmt"
 	"time"
 
+	"github.com/robfig/cron/v3"
 	"go.uber.org/zap"
 
+	"github.com/pipe-cd/pipe/pkg/backoff"
+	"github.com/pipe-cd/pipe/pkg/config"
 	"github.com/pipe-cd/pipe/pkg/datastore"
 	"github.com/pipe-cd/pipe/pkg/filestore"
 	"github.com/pipe-cd/pipe/pkg/insight"
@@ -28,8 +32,7 @@ import (
 	"github.com/pipe-cd/pipe/pkg/model"
 )
 
-// InsightCollector implements the behaviors for the gRPC definitions of InsightCollector.
-type InsightCollector struct {
+type Collector struct {
 	projectStore     datastore.ProjectStore
 	applicationStore datastore.ApplicationStore
 	deploymentStore  datastore.DeploymentStore
@@ -39,44 +42,130 @@ type InsightCollector struct {
 	newlyCreatedDeploymentsHandlers   []func(ctx context.Context, developments []*model.Deployment, target time.Time) error
 	newlyCompletedDeploymentsHandlers []func(ctx context.Context, developments []*model.Deployment, target time.Time) error
 
+	config config.ControlPlaneInsightCollector
 	logger *zap.Logger
 }
 
-// NewInsightCollector creates a new InsightCollector instance.
-func NewInsightCollector(ds datastore.DataStore, fs filestore.Store, metrics CollectorMetrics, logger *zap.Logger) *InsightCollector {
-	c := &InsightCollector{
+func NewCollector(ds datastore.DataStore, fs filestore.Store, cfg config.ControlPlaneInsightCollector, logger *zap.Logger) *Collector {
+	c := &Collector{
 		projectStore:     datastore.NewProjectStore(ds),
 		applicationStore: datastore.NewApplicationStore(ds),
 		deploymentStore:  datastore.NewDeploymentStore(ds),
 		insightstore:     insightstore.NewStore(fs),
 		logger:           logger.Named("insight-collector"),
 	}
-	c.setHandlers(metrics)
+
+	if cfg.Application.Enabled {
+		c.applicationsHandlers = append(c.applicationsHandlers, c.collectApplicationCount)
+	}
+	if cfg.Deployment.Enabled {
+		c.newlyCreatedDeploymentsHandlers = append(c.newlyCreatedDeploymentsHandlers, c.collectDevelopmentFrequency)
+		c.newlyCompletedDeploymentsHandlers = append(c.newlyCompletedDeploymentsHandlers, c.collectDeploymentChangeFailureRate)
+	}
 
 	return c
 }
 
-func (c *InsightCollector) setHandlers(metrics CollectorMetrics) {
-	if metrics.IsEnabled(ApplicationCount) {
-		c.applicationsHandlers = append(c.applicationsHandlers, c.collectApplicationCount)
+func (c *Collector) Run(ctx context.Context) error {
+	cr := cron.New(cron.WithLocation(time.UTC))
+
+	_, err := cr.AddFunc(c.config.Application.Schedule, func() {
+		c.collectApplicationMetrics(ctx)
+	})
+	if err != nil {
+		c.logger.Error("failed to configure cron job for collecting application metrics", zap.Error(err))
+		return err
 	}
-	if metrics.IsEnabled(DevelopmentFrequency) {
-		c.newlyCreatedDeploymentsHandlers = append(c.newlyCreatedDeploymentsHandlers, c.collectDevelopmentFrequency)
+
+	_, err = cr.AddFunc(c.config.Deployment.Schedule, func() {
+		c.collectDeploymentMetrics(ctx)
+	})
+	if err != nil {
+		c.logger.Error("failed to configure cron job for collecting deployment metrics", zap.Error(err))
+		return err
 	}
-	if metrics.IsEnabled(ChangeFailureRate) {
-		c.newlyCompletedDeploymentsHandlers = append(c.newlyCompletedDeploymentsHandlers, c.collectDeploymentChangeFailureRate)
+
+	cr.Start()
+	<-ctx.Done()
+	cr.Stop()
+	return nil
+}
+
+func (c *Collector) collectApplicationMetrics(ctx context.Context) {
+	if !c.config.Application.Enabled {
+		c.logger.Info("do not collecting application metrics because it was not enabled")
+		return
+	}
+
+	start := time.Now()
+	c.logger.Info("will retrieve all applications to build insight data")
+
+	apps, err := c.listApplications(ctx, start)
+	if err != nil {
+		c.logger.Error("failed to list applications", zap.Error(err))
+		return
+	}
+	c.logger.Info(fmt.Sprintf("there are %d applications to build insight data", len(apps)),
+		zap.Duration("duration", time.Since(start)),
+	)
+
+	for _, handler := range c.applicationsHandlers {
+		if err := handler(ctx, apps, start); err != nil {
+			c.logger.Error("failed to execute a handler for applications", zap.Error(err))
+			// In order to give all handlers the chance to handle the received data, we do not return here.
+		}
+	}
+	return
+}
+
+func (c *Collector) collectDeploymentMetrics(ctx context.Context) {
+	if !c.config.Deployment.Enabled {
+		c.logger.Info("do not collecting deployment metrics because it was not enabled")
+		return
+	}
+
+	cfg := c.config.Deployment
+	retry := backoff.NewRetry(cfg.Retries, backoff.NewConstant(cfg.RetryInterval.Duration()))
+
+	var doneNewlyCompleted, doneNewlyCreated bool
+
+	for retry.WaitNext(ctx) {
+		if !doneNewlyCompleted {
+			start := time.Now()
+			if err := c.processNewlyCompletedDeployments(ctx); err != nil {
+				c.logger.Error("failed to process the newly completed deployments", zap.Error(err))
+			} else {
+				c.logger.Info("successfully processed the newly completed deployments",
+					zap.Duration("duration", time.Since(start)),
+				)
+				doneNewlyCompleted = true
+			}
+		}
+
+		if !doneNewlyCreated {
+			start := time.Now()
+			if err := c.processNewlyCreatedDeployments(ctx); err != nil {
+				c.logger.Error("failed to process the newly created deployments", zap.Error(err))
+			} else {
+				c.logger.Info("successfully processed the newly created deployments",
+					zap.Duration("duration", time.Since(start)),
+				)
+				doneNewlyCreated = true
+			}
+		}
+
+		if doneNewlyCompleted && doneNewlyCreated {
+			return
+		}
+		c.logger.Info("will do another try to collect insight data")
 	}
 }
 
-func (c *InsightCollector) ProcessNewlyCreatedDeployments(ctx context.Context) error {
+func (c *Collector) processNewlyCreatedDeployments(ctx context.Context) error {
 	c.logger.Info("will retrieve newly created deployments to build insight data")
-	if len(c.newlyCreatedDeploymentsHandlers) == 0 {
-		c.logger.Info("skip building insight data for newly created deployments because there is no configured handlers")
-		return nil
-	}
-
 	now := time.Now()
 	targetDate := time.Date(now.Year(), now.Month(), now.Day(), 0, 0, 0, 0, time.UTC)
+
 	m, err := c.insightstore.LoadMilestone(ctx)
 	if err != nil {
 		if !errors.Is(err, filestore.ErrNotFound) {
@@ -114,15 +203,11 @@ func (c *InsightCollector) ProcessNewlyCreatedDeployments(ctx context.Context) e
 	return nil
 }
 
-func (c *InsightCollector) ProcessNewlyCompletedDeployments(ctx context.Context) error {
+func (c *Collector) processNewlyCompletedDeployments(ctx context.Context) error {
 	c.logger.Info("will retrieve newly completed deployments to build insight data")
-	if len(c.newlyCreatedDeploymentsHandlers) == 0 {
-		c.logger.Info("skip building insight data for newly completed deployments because there is no configured handlers")
-		return nil
-	}
-
 	now := time.Now()
 	targetDate := time.Date(now.Year(), now.Month(), now.Day(), 0, 0, 0, 0, time.UTC)
+
 	m, err := c.insightstore.LoadMilestone(ctx)
 	if err != nil {
 		if !errors.Is(err, filestore.ErrNotFound) {
@@ -158,30 +243,4 @@ func (c *InsightCollector) ProcessNewlyCompletedDeployments(ctx context.Context)
 	}
 
 	return nil
-}
-
-func (c *InsightCollector) ProcessApplications(ctx context.Context) error {
-	c.logger.Info("will retrieve all applications to build insight data")
-	if len(c.newlyCreatedDeploymentsHandlers) == 0 {
-		c.logger.Info("skip building insight data for applications because there is no configured handlers")
-		return nil
-	}
-
-	now := time.Now()
-	targetDate := time.Date(now.Year(), now.Month(), now.Day(), 0, 0, 0, 0, time.UTC)
-	apps, err := c.getApplications(ctx, targetDate)
-	if err != nil {
-		c.logger.Error("failed to get applications", zap.Error(err))
-		return err
-	}
-
-	var handleErr error
-	for _, handler := range c.applicationsHandlers {
-		if err := handler(ctx, apps, targetDate); err != nil {
-			c.logger.Error("failed to execute a handler for applications", zap.Error(err))
-			// In order to give all handlers the chance to handle the received data, we do not return here.
-			handleErr = err
-		}
-	}
-	return handleErr
 }

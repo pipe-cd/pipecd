@@ -32,7 +32,7 @@ import (
 	"github.com/pipe-cd/pipe/pkg/model"
 )
 
-func TestInsightCollector_updateDataPoints(t *testing.T) {
+func TestUpdateDataPoints(t *testing.T) {
 	type args struct {
 		chunk         insight.Chunk
 		step          model.InsightStep
@@ -458,7 +458,7 @@ func TestInsightCollector_updateDataPoints(t *testing.T) {
 		})
 	}
 }
-func TestInsightCollector_findDeploymentsCreatedInRange(t *testing.T) {
+func TestFindDeploymentsCreatedInRange(t *testing.T) {
 	type args struct {
 		from int64
 		to   int64
@@ -635,7 +635,7 @@ func TestInsightCollector_findDeploymentsCreatedInRange(t *testing.T) {
 			mock := datastoretest.NewMockDeploymentStore(ctrl)
 			tt.prepareMockDataStoreFn(mock)
 
-			a := &InsightCollector{
+			a := &Collector{
 				applicationStore: nil,
 				deploymentStore:  mock,
 				insightstore:     insightstore.NewStore(filestoretest.NewMockStore(ctrl)),
@@ -654,7 +654,7 @@ func TestInsightCollector_findDeploymentsCreatedInRange(t *testing.T) {
 		})
 	}
 }
-func TestInsightCollector_findDeploymentsCompletedInRange(t *testing.T) {
+func TestFindDeploymentsCompletedInRange(t *testing.T) {
 	type args struct {
 		from int64
 		to   int64
@@ -831,7 +831,7 @@ func TestInsightCollector_findDeploymentsCompletedInRange(t *testing.T) {
 			mock := datastoretest.NewMockDeploymentStore(ctrl)
 			tt.prepareMockDataStoreFn(mock)
 
-			a := &InsightCollector{
+			a := &Collector{
 				applicationStore: nil,
 				deploymentStore:  mock,
 				insightstore:     insightstore.NewStore(filestoretest.NewMockStore(ctrl)),
@@ -851,7 +851,7 @@ func TestInsightCollector_findDeploymentsCompletedInRange(t *testing.T) {
 	}
 }
 
-func TestInsightCollector_extractDailyInsightDataPoints(t *testing.T) {
+func TestExtractDailyInsightDataPoints(t *testing.T) {
 	type args struct {
 		kind        model.InsightMetricsKind
 		deployments []*model.Deployment

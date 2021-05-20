@@ -28,7 +28,7 @@ import (
 	"github.com/pipe-cd/pipe/pkg/insight"
 )
 
-func TestStore_LoadApplicationCount(t *testing.T) {
+func TestLoadApplicationCounts(t *testing.T) {
 	ctrl := gomock.NewController(t)
 	defer ctrl.Finish()
 
@@ -36,62 +36,59 @@ func TestStore_LoadApplicationCount(t *testing.T) {
 	s := &store{filestore: fs}
 
 	tests := []struct {
-		name        string
-		projectID   string
-		content     string
-		readerErr   error
-		want        *insight.ApplicationCount
-		expectedErr error
+		name      string
+		projectID string
+		content   string
+		readerErr error
+
+		expectedCounts *insight.ApplicationCounts
+		expectedErr    error
 	}{
 		{
-			name:        "file not found in filestore",
+			name:        "not found in filestore",
 			projectID:   "pid1",
 			content:     "",
 			readerErr:   filestore.ErrNotFound,
 			expectedErr: filestore.ErrNotFound,
 		},
 		{
-			name:      "success",
+			name:      "successfully loaded from filestore",
 			projectID: "pid1",
 			content: `{
 				"accumulated_to": 1609459200,
-				"accumulated_from": 1609459100,
 				"counts": [
 					{
-						"label_set": {
-							"kind": 4,
-							"status": "deploying"
+						"labels": {
+							"key1": "value1",
+							"key2": "value2"
 						},
 						"count": 2
 					},
 					{
-						"label_set": {
-							"kind": 4,
-							"status": "deleted"
+						"labels": {
+							"key3": "value3"
 						},
 						"count": 1
 					}
 				]
 			}`,
-			want: &insight.ApplicationCount{
-				AccumulatedTo:   1609459200,
-				AccumulatedFrom: 1609459100,
-				Counts: []insight.ApplicationCountByLabelSet{
+			expectedCounts: &insight.ApplicationCounts{
+				Counts: []model.InsightApplicationCount{
 					{
-						LabelSet: insight.ApplicationCountLabelSet{
-							Kind:   model.ApplicationKind_CLOUDRUN,
-							Status: "deploying",
+						Labels: map[string]string{
+							"key1": "value1",
+							"key2": "value2",
 						},
 						Count: 2,
 					},
 					{
-						LabelSet: insight.ApplicationCountLabelSet{
-							Kind:   model.ApplicationKind_CLOUDRUN,
-							Status: "deleted",
+						Labels: map[string]string{
+							"key3": "value3",
 						},
 						Count: 1,
 					},
 				},
+				AccumulatedTo: 1609459200,
 			},
 		},
 	}
@@ -102,16 +99,10 @@ func TestStore_LoadApplicationCount(t *testing.T) {
 				Content: []byte(tc.content),
 			}
 			fs.EXPECT().GetObject(context.TODO(), path).Return(obj, tc.readerErr)
-			ac, err := s.LoadApplicationCount(context.TODO(), tc.projectID)
-			if err != nil {
-				if tc.expectedErr == nil {
-					assert.NoError(t, err)
-					return
-				}
-				assert.Error(t, err, tc.expectedErr)
-				return
-			}
-			assert.Equal(t, tc.want, ac)
+
+			counts, err := s.LoadApplicationCounts(context.TODO(), tc.projectID)
+			assert.Equal(t, tc.expectedErr, err)
+			assert.Equal(t, tc.expectedCounts, counts)
 		})
 	}
 }

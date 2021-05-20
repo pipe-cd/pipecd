@@ -19,7 +19,6 @@ import (
 	"net/http"
 	"time"
 
-	"github.com/robfig/cron/v3"
 	"github.com/spf13/cobra"
 	"go.uber.org/zap"
 	"golang.org/x/sync/errgroup"
@@ -30,7 +29,6 @@ import (
 	"github.com/pipe-cd/pipe/pkg/app/ops/insightcollector"
 	"github.com/pipe-cd/pipe/pkg/app/ops/mysqlensurer"
 	"github.com/pipe-cd/pipe/pkg/app/ops/orphancommandcleaner"
-	"github.com/pipe-cd/pipe/pkg/backoff"
 	"github.com/pipe-cd/pipe/pkg/cli"
 	"github.com/pipe-cd/pipe/pkg/config"
 	"github.com/pipe-cd/pipe/pkg/datastore"
@@ -61,7 +59,6 @@ func NewOpsCommand() *cobra.Command {
 	cmd.Flags().IntVar(&s.httpPort, "http-port", s.httpPort, "The port number used to run http server.")
 	cmd.Flags().IntVar(&s.adminPort, "admin-port", s.adminPort, "The port number used to run a HTTP server for admin tasks such as metrics, healthz.")
 	cmd.Flags().DurationVar(&s.gracePeriod, "grace-period", s.gracePeriod, "How long to wait for graceful shutdown.")
-	cmd.Flags().BoolVar(&s.enableInsightCollector, "enableInsightCollector-insight-collector", s.enableInsightCollector, "Enable insight collector.")
 	cmd.Flags().StringVar(&s.configFile, "config-file", s.configFile, "The path to the configuration file.")
 	cmd.Flags().StringVar(&s.gcloudPath, "gcloud-path", s.gcloudPath, "The path to the gcloud command executable.")
 	return cmd
@@ -126,27 +123,17 @@ func (s *ops) run(ctx context.Context, t cli.Telemetry) error {
 		}
 	}()
 
-	// Starting orphan commands cleaner
+	// Start running command cleaner.
 	cleaner := orphancommandcleaner.NewOrphanCommandCleaner(ds, t.Logger)
 	group.Go(func() error {
 		return cleaner.Run(ctx)
 	})
 
-	// Starting a cron job for insight collector.
-	if s.enableInsightCollector {
-		insightCfg := cfg.InsightCollector
-		mode := loadCollectorMode(insightCfg)
-		collector := insightcollector.NewInsightCollector(ds, fs, mode, t.Logger)
-
-		c := cron.New(cron.WithLocation(time.UTC))
-		_, err := c.AddFunc(insightCfg.Schedule, func() {
-			s.runDeploymentCollector(ctx, collector, insightCfg, t.Logger)
-		})
-		if err != nil {
-			t.Logger.Error("failed to configure cron job for collecting insight data about deployment", zap.Error(err))
-		}
-		c.Start()
-	}
+	// Start running insight collector.
+	ic := insightcollector.NewCollector(ds, fs, cfg.InsightCollector, t.Logger)
+	group.Go(func() error {
+		return ic.Run(ctx)
+	})
 
 	// Start running HTTP server.
 	{
@@ -185,52 +172,6 @@ func (s *ops) run(ctx context.Context, t cli.Telemetry) error {
 		return err
 	}
 	return nil
-}
-
-func (s *ops) runDeploymentCollector(ctx context.Context, col *insightcollector.InsightCollector, cfg config.ControlPlaneInsightCollector, logger *zap.Logger) {
-	var doneNewlyCompleted, doneNewlyCreated bool
-	retry := backoff.NewRetry(
-		cfg.RetryTime,
-		backoff.NewConstant(time.Duration(cfg.RetryIntervalHour)*time.Hour),
-	)
-
-	for retry.WaitNext(ctx) {
-		if !doneNewlyCompleted {
-			start := time.Now()
-			if err := col.ProcessNewlyCompletedDeployments(ctx); err != nil {
-				logger.Error("failed to process the newly completed deployments while accumulating insight data", zap.Error(err))
-			} else {
-				logger.Info("successfully processed the newly completed deployments while accumulating insight data", zap.Duration("duration", time.Since(start)))
-				doneNewlyCompleted = true
-			}
-		}
-
-		if !doneNewlyCreated {
-			start := time.Now()
-			if err := col.ProcessNewlyCreatedDeployments(ctx); err != nil {
-				logger.Error("failed to process the newly created deployments while accumulating insight data", zap.Error(err))
-			} else {
-				logger.Info("successfully processed the newly created deployments while accumulating insight data", zap.Duration("duration", time.Since(start)))
-				doneNewlyCreated = true
-			}
-		}
-
-		if doneNewlyCompleted && doneNewlyCreated {
-			return
-		}
-		logger.Info("will do another try to collect insight data")
-	}
-}
-
-func loadCollectorMode(cfg config.ControlPlaneInsightCollector) insightcollector.CollectorMetrics {
-	metrics := insightcollector.NewCollectorMetrics()
-	if !cfg.DisabledMetrics.DeploymentFrequency {
-		metrics.Enable(insightcollector.DevelopmentFrequency)
-	}
-	if !cfg.DisabledMetrics.ChangeFailureRate {
-		metrics.Enable(insightcollector.ChangeFailureRate)
-	}
-	return metrics
 }
 
 func ensureSQLDatabase(ctx context.Context, cfg *config.ControlPlaneSpec, logger *zap.Logger) error {

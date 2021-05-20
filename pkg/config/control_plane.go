@@ -38,6 +38,7 @@ type ControlPlaneSpec struct {
 	// The configuration of cache for control plane.
 	Cache ControlPlaneCache `json:"cache"`
 	// The configuration of insight collector.
+	// TODO: Enable collecting insight by default once this feature reached Beta.
 	InsightCollector ControlPlaneInsightCollector `json:"insightCollector"`
 	// List of debugging/quickstart projects defined in Control Plane configuration.
 	// Please note that do not use this to configure the projects running in the production.
@@ -193,42 +194,41 @@ type ControlPlaneCache struct {
 }
 
 type ControlPlaneInsightCollector struct {
-	Schedule          string                          `json:"schedule"`
-	RetryTime         int                             `json:"retryTime"`
-	RetryIntervalHour int                             `json:"retryIntervalHour"`
-	DisabledMetrics   InsightCollectorDisabledMetrics `json:"disabledMetrics"`
+	Application InsightCollectorApplication `json:"application"`
+	Deployment  InsightCollectorDeployment  `json:"deployment"`
 }
 
-type InsightCollectorDisabledMetrics struct {
-	DeploymentFrequency bool `json:"deploymentFrequency"`
-	ChangeFailureRate   bool `json:"changeFailureRate"`
+type InsightCollectorApplication struct {
+	Enabled  bool   `json:"enabled"`
+	Schedule string `json:"schedule"`
 }
 
-var (
-	defaultSchedule          = "0 0 * * *"
-	defaultRetryTime         = 3
-	defaultRetryIntervalHour = 1
-)
+type InsightCollectorDeployment struct {
+	Enabled       bool     `json:"enabled"`
+	Schedule      string   `json:"schedule"`
+	Retries       int      `json:"retries"`
+	RetryInterval Duration `json:"retryInterval"`
+}
 
 func (d *ControlPlaneInsightCollector) UnmarshalJSON(data []byte) error {
-	if d.Schedule == "" {
-		d.Schedule = defaultSchedule
-	}
-	if d.RetryTime == 0 {
-		d.RetryTime = defaultRetryTime
-	}
-
-	if d.RetryIntervalHour == 0 {
-		d.RetryIntervalHour = defaultRetryIntervalHour
-	}
-	type Alias ControlPlaneInsightCollector
-	ic := &struct {
-		*Alias
-	}{
-		Alias: (*Alias)(d),
+	type alias ControlPlaneInsightCollector
+	a := &alias{
+		Application: InsightCollectorApplication{
+			Schedule: "0 0 * * * *", // Every hour.
+		},
+		Deployment: InsightCollectorDeployment{
+			Schedule:      "0 30 0,12 * * *", // Every day at 0:30 or 12:30.
+			Retries:       3,
+			RetryInterval: Duration(time.Hour),
+		},
 	}
 
-	return json.Unmarshal(data, &ic)
+	if err := json.Unmarshal(data, a); err != nil {
+		return err
+	}
+
+	*d = ControlPlaneInsightCollector(*a)
+	return nil
 }
 
 func (c ControlPlaneCache) TTLDuration() time.Duration {
