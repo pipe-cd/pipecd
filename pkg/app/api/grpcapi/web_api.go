@@ -1255,6 +1255,8 @@ func (a *WebAPI) ListDeploymentConfigTemplates(ctx context.Context, req *webserv
 		templates = lambdaDeploymentConfigTemplates
 	case model.ApplicationKind_CLOUDRUN:
 		templates = cloudrunDeploymentConfigTemplates
+	case model.ApplicationKind_ECS:
+		templates = ecsDeploymentConfigTemplates
 	default:
 		return nil, status.Error(codes.InvalidArgument, fmt.Sprintf("Unknown application kind %v", app.Kind))
 	}
