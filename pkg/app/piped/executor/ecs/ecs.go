@@ -152,18 +152,18 @@ func build(ctx context.Context, in *executor.Input, client provider.Client, task
 	// This is used when a service uses the EXTERNAL deployment controller type.
 	// For more information, see Amazon ECS Deployment Types
 	// https://docs.aws.amazon.com/AmazonECS/latest/developerguide/deployment-types.html
-	// if service.DeploymentController.Type == types.DeploymentControllerTypeExternal {
-	// 	taskSet, err := client.CreateTaskSet(ctx, *service, *td, 100)
-	// 	if err != nil {
-	// 		in.LogPersister.Errorf("Failed to create ECS task set %s: %v", *serviceDefinition.ServiceName, err)
-	// 		return false
-	// 	}
+	if service.DeploymentController.Type == types.DeploymentControllerTypeExternal {
+		taskSet, err := client.CreateTaskSet(ctx, *service, *td, 100)
+		if err != nil {
+			in.LogPersister.Errorf("Failed to create ECS task set %s: %v", *serviceDefinition.ServiceName, err)
+			return false
+		}
 
-	// 	if _, err = client.UpdateServicePrimaryTaskSet(ctx, *service, *taskSet); err != nil {
-	// 		in.LogPersister.Errorf("Failed to update service primary ECS task set %s: %v", *serviceDefinition.ServiceName, err)
-	// 		return false
-	// 	}
-	// }
+		if _, err = client.UpdateServicePrimaryTaskSet(ctx, *service, *taskSet); err != nil {
+			in.LogPersister.Errorf("Failed to update service primary ECS task set %s: %v", *serviceDefinition.ServiceName, err)
+			return false
+		}
+	}
 
 	in.LogPersister.Info("Successfully applied the service definition and the task definition")
 	return true
