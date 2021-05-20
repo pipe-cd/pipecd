@@ -103,7 +103,7 @@ func rollback(ctx context.Context, in *executor.Input, cloudProviderName string,
 	serviceDefinition.TaskDefinition = td.TaskDefinitionArn
 	// Rollback ECS service configuration to previous state.
 	if _, err := client.UpdateService(ctx, serviceDefinition); err != nil {
-		in.LogPersister.Errorf("Unable to rollback ECS service %s configuration to previous stage: %w", *serviceDefinition.ServiceName, err)
+		in.LogPersister.Errorf("Unable to rollback ECS service %s configuration to previous stage: %v", *serviceDefinition.ServiceName, err)
 		return false
 	}
 

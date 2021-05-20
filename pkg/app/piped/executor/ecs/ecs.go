@@ -105,14 +105,14 @@ func sync(ctx context.Context, in *executor.Input, cloudProviderName string, clo
 		return false
 	}
 
-	in.LogPersister.Infof("Successfully applied the service definition and the task definition for ECS service %s and task definition %s", *serviceDefinition.ServiceName, *taskDefinition.TaskDefinitionArn)
+	in.LogPersister.Infof("Successfully applied the service definition and the task definition for ECS service %s and task definition of family %s", *serviceDefinition.ServiceName, *taskDefinition.Family)
 	return true
 }
 
 func build(ctx context.Context, in *executor.Input, client provider.Client, taskDefinition types.TaskDefinition, serviceDefinition types.Service) bool {
 	td, err := client.RegisterTaskDefinition(ctx, taskDefinition)
 	if err != nil {
-		in.LogPersister.Errorf("Failed to register ECS task definition %s: %v", taskDefinition.Family, err)
+		in.LogPersister.Errorf("Failed to register ECS task definition of family %s: %v", *taskDefinition.Family, err)
 		return false
 	}
 
@@ -122,7 +122,13 @@ func build(ctx context.Context, in *executor.Input, client provider.Client, task
 		return false
 	}
 	var service *types.Service
-	if serviceDefinition.DeploymentController.Type != types.DeploymentControllerTypeExternal {
+	// if serviceDefinition.DeploymentController.Type != types.DeploymentControllerTypeExternal {
+	// 	serviceDefinition.TaskDefinition = td.TaskDefinitionArn
+	// }
+
+	// If the task definition is specificed in service definition, should use that sepecificed version.
+	// Consider check this before register new task definition revision.
+	if serviceDefinition.TaskDefinition == nil {
 		serviceDefinition.TaskDefinition = td.TaskDefinitionArn
 	}
 	if found {
@@ -138,22 +144,26 @@ func build(ctx context.Context, in *executor.Input, client provider.Client, task
 			return false
 		}
 	}
-	service.TaskDefinition = td.TaskDefinitionArn
-	service.LaunchType = serviceDefinition.LaunchType
-	service.LoadBalancers = serviceDefinition.LoadBalancers
+	// service.TaskDefinition = td.TaskDefinitionArn
+	// service.LaunchType = serviceDefinition.LaunchType
+	// service.LoadBalancers = serviceDefinition.LoadBalancers
 
-	if service.DeploymentController.Type != types.DeploymentControllerTypeCodeDeploy {
-		taskSet, err := client.CreateTaskSet(ctx, *service, taskDefinition, 100)
-		if err != nil {
-			in.LogPersister.Errorf("Failed to create ECS task set %s: %v", *serviceDefinition.ServiceName, err)
-			return false
-		}
+	// Create a task set in the specified cluster and service and routing traffic to that task set.
+	// This is used when a service uses the EXTERNAL deployment controller type.
+	// For more information, see Amazon ECS Deployment Types
+	// https://docs.aws.amazon.com/AmazonECS/latest/developerguide/deployment-types.html
+	// if service.DeploymentController.Type == types.DeploymentControllerTypeExternal {
+	// 	taskSet, err := client.CreateTaskSet(ctx, *service, *td, 100)
+	// 	if err != nil {
+	// 		in.LogPersister.Errorf("Failed to create ECS task set %s: %v", *serviceDefinition.ServiceName, err)
+	// 		return false
+	// 	}
 
-		if _, err = client.UpdateServicePrimaryTaskSet(ctx, *service, *taskSet); err != nil {
-			in.LogPersister.Errorf("Failed to update service primary ECS task set %s: %v", *serviceDefinition.ServiceName, err)
-			return false
-		}
-	}
+	// 	if _, err = client.UpdateServicePrimaryTaskSet(ctx, *service, *taskSet); err != nil {
+	// 		in.LogPersister.Errorf("Failed to update service primary ECS task set %s: %v", *serviceDefinition.ServiceName, err)
+	// 		return false
+	// 	}
+	// }
 
 	in.LogPersister.Info("Successfully applied the service definition and the task definition")
 	return true
