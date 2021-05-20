@@ -12,8 +12,6 @@ import {
 } from "@material-ui/core";
 import { FC, memo, useCallback, useState } from "react";
 import * as React from "react";
-import { useDispatch, useSelector } from "react-redux";
-import { AppState } from "../../modules";
 import {
   Application,
   enableApplication,
@@ -22,11 +20,11 @@ import {
 } from "../../modules/applications";
 import { setDeletingAppId } from "../../modules/delete-application";
 import { setUpdateTargetId } from "../../modules/update-application";
-import { AppDispatch } from "../../store";
 import { ApplicationListItem } from "../application-list-item";
 import { DeleteApplicationDialog } from "../delete-application-dialog";
 import { DisableApplicationDialog } from "../disable-application-dialog";
 import { SealedSecretDialog } from "../sealed-secret-dialog";
+import { useAppSelector, useAppDispatch } from "../../hooks/redux";
 
 const useStyles = makeStyles(() => ({
   container: {
@@ -44,7 +42,7 @@ export interface ApplicationListProps {
 export const ApplicationList: FC<ApplicationListProps> = memo(
   function ApplicationList({ currentPage, onPageChange }) {
     const classes = useStyles();
-    const dispatch = useDispatch<AppDispatch>();
+    const dispatch = useAppDispatch();
     const [actionTarget, setActionTarget] = useState<string | null>(null);
     const [dialogState, setDialogState] = useState({
       disabling: false,
@@ -53,8 +51,8 @@ export const ApplicationList: FC<ApplicationListProps> = memo(
     const [rowsPerPage, setRowsPerPage] = React.useState(20);
     const page = currentPage - 1;
 
-    const applications = useSelector<AppState, Application.AsObject[]>(
-      (state) => selectAll(state.applications)
+    const applications = useAppSelector<Application.AsObject[]>((state) =>
+      selectAll(state.applications)
     );
 
     const closeMenu = useCallback(() => {

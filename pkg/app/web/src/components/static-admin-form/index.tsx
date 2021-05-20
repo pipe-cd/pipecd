@@ -13,23 +13,21 @@ import {
 import EditIcon from "@material-ui/icons/Edit";
 import Skeleton from "@material-ui/lab/Skeleton/Skeleton";
 import clsx from "clsx";
+import { useFormik } from "formik";
 import { FC, memo, useState } from "react";
-import { useDispatch, useSelector } from "react-redux";
+import * as Yup from "yup";
 import { STATIC_ADMIN_DESCRIPTION } from "../../constants/text";
 import { UPDATE_STATIC_ADMIN_INFO_SUCCESS } from "../../constants/toast-text";
 import { UI_TEXT_CANCEL, UI_TEXT_SAVE } from "../../constants/ui-text";
-import { AppState } from "../../modules";
+import { useAppDispatch, useAppSelector } from "../../hooks/redux";
 import {
   fetchProject,
   toggleAvailability,
   updateStaticAdmin,
 } from "../../modules/project";
 import { addToast } from "../../modules/toasts";
-import { AppDispatch } from "../../store";
 import { useProjectSettingStyles } from "../../styles/project-setting";
 import { ProjectSettingLabeledText } from "../project-setting-labeled-text";
-import { useFormik } from "formik";
-import * as Yup from "yup";
 
 const useStyles = makeStyles(() => ({
   disabled: {
@@ -118,14 +116,13 @@ const StaticAdminDialog: FC<{
 export const StaticAdminForm: FC = memo(function StaticAdminForm() {
   const classes = useStyles();
   const projectSettingClasses = useProjectSettingStyles();
-  const dispatch = useDispatch<AppDispatch>();
-  const [isEnabled, currentUsername] = useSelector<
-    AppState,
-    [boolean, string | null]
-  >((state) => [
-    state.project.staticAdminDisabled === false,
-    state.project.username,
-  ]);
+  const dispatch = useAppDispatch();
+  const [isEnabled, currentUsername] = useAppSelector<[boolean, string | null]>(
+    (state) => [
+      state.project.staticAdminDisabled === false,
+      state.project.username,
+    ]
+  );
   const [isEdit, setIsEdit] = useState(false);
 
   const handleSubmit = (values: {

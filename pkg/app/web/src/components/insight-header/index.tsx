@@ -12,9 +12,8 @@ import {
 } from "@material-ui/pickers";
 import { MaterialUiPickersDate } from "@material-ui/pickers/typings/date";
 import { FC, memo, useCallback, useEffect } from "react";
-import { useDispatch, useSelector } from "react-redux";
 import { INSIGHT_STEP_TEXT } from "../../constants/insight-step-text";
-import { AppState } from "../../modules";
+import { useAppSelector, useAppDispatch } from "../../hooks/redux";
 import { Application, selectAll, selectById } from "../../modules/applications";
 import { fetchDeploymentFrequency } from "../../modules/deployment-frequency";
 import {
@@ -44,10 +43,9 @@ const viewsMap: Record<InsightStep, DatePickerView[]> = {
 
 export const InsightHeader: FC = memo(function InsightHeader() {
   const classes = useStyles();
-  const dispatch = useDispatch();
+  const dispatch = useAppDispatch();
 
-  const [applicationId, step, rangeFrom, rangeTo] = useSelector<
-    AppState,
+  const [applicationId, step, rangeFrom, rangeTo] = useAppSelector<
     [string, InsightStep, number, number]
   >((state) => [
     state.insight.applicationId,
@@ -56,10 +54,10 @@ export const InsightHeader: FC = memo(function InsightHeader() {
     state.insight.rangeTo,
   ]);
 
-  const selectedApp = useSelector<AppState, Application.AsObject | null>(
+  const selectedApp = useAppSelector<Application.AsObject | null>(
     (state) => selectById(state.applications, applicationId) || null
   );
-  const applications = useSelector<AppState, Application.AsObject[]>((state) =>
+  const applications = useAppSelector<Application.AsObject[]>((state) =>
     selectAll(state.applications)
   );
 

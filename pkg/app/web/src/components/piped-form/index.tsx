@@ -12,8 +12,8 @@ import CheckBoxOutlineBlankIcon from "@material-ui/icons/CheckBoxOutlineBlank";
 import Autocomplete from "@material-ui/lab/Autocomplete";
 import { FormikProps } from "formik";
 import { FC, memo } from "react";
-import { useSelector } from "react-redux";
 import * as Yup from "yup";
+import { useAppSelector } from "../../hooks/redux";
 import {
   Environment,
   selectAllEnvs,
@@ -57,8 +57,8 @@ export const PipedForm: FC<PipedFormProps> = memo(function PipedForm({
   isSubmitting,
 }) {
   const classes = useStyles();
-  const envs = useSelector(selectAllEnvs);
-  const entities = useSelector(selectEnvEntities);
+  const envs = useAppSelector(selectAllEnvs);
+  const entities = useAppSelector(selectEnvEntities);
 
   return (
     <Box width={600}>

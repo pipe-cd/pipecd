@@ -8,10 +8,9 @@ import {
 } from "@material-ui/core";
 import Autocomplete from "@material-ui/lab/Autocomplete";
 import { FC, memo } from "react";
-import { useSelector } from "react-redux";
 import { APPLICATION_KIND_TEXT } from "../../constants/application-kind";
 import { APPLICATION_SYNC_STATUS_TEXT } from "../../constants/application-sync-status-text";
-import { AppState } from "../../modules";
+import { useAppSelector } from "../../hooks/redux";
 import {
   ApplicationKind,
   ApplicationKindKey,
@@ -48,8 +47,8 @@ const ALL_VALUE = "ALL";
 export const ApplicationFilter: FC<ApplicationFilterProps> = memo(
   function ApplicationFilter({ options, onChange, onClear }) {
     const classes = useStyles();
-    const envs = useSelector(selectAllEnvs);
-    const applications = useSelector<AppState, string[]>((state) =>
+    const envs = useAppSelector(selectAllEnvs);
+    const applications = useAppSelector<string[]>((state) =>
       uniqueArray(
         selectAllApplications(state.applications).map((app) => app.name)
       )

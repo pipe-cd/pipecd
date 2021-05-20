@@ -8,11 +8,10 @@ import {
 } from "@material-ui/core";
 import { useFormik } from "formik";
 import { FC, memo, useCallback, useState } from "react";
-import { useDispatch, useSelector } from "react-redux";
 import { UI_TEXT_CANCEL, UI_TEXT_DISCARD } from "../../constants/ui-text";
+import { useAppDispatch, useAppSelector } from "../../hooks/redux";
 import { addApplication, fetchApplications } from "../../modules/applications";
 import { selectProjectName } from "../../modules/me";
-import { AppDispatch } from "../../store";
 import {
   ApplicationForm,
   ApplicationFormValue,
@@ -31,7 +30,7 @@ const CONFIRM_DIALOG_DESCRIPTION =
 
 export const AddApplicationDrawer: FC<AddApplicationDrawerProps> = memo(
   function AddApplicationDrawer({ open, onClose }) {
-    const dispatch = useDispatch<AppDispatch>();
+    const dispatch = useAppDispatch();
     const [showConfirm, setShowConfirm] = useState(false);
     const formik = useFormik<ApplicationFormValue>({
       initialValues: emptyFormValues,
@@ -46,7 +45,7 @@ export const AddApplicationDrawer: FC<AddApplicationDrawerProps> = memo(
       },
     });
 
-    const projectName = useSelector(selectProjectName);
+    const projectName = useAppSelector(selectProjectName);
 
     const handleClose = useCallback(() => {
       if (formik.dirty) {

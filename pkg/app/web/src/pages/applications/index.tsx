@@ -12,25 +12,23 @@ import CloseIcon from "@material-ui/icons/Close";
 import FilterIcon from "@material-ui/icons/FilterList";
 import RefreshIcon from "@material-ui/icons/Refresh";
 import { FC, memo, useCallback, useEffect, useState } from "react";
-import { useDispatch, useSelector } from "react-redux";
-import { ApplicationFilter } from "../../components/application-filter";
+import { useHistory } from "react-router-dom";
 import { AddApplicationDrawer } from "../../components/add-application-drawer";
+import { ApplicationCounts } from "../../components/application-counts";
+import { ApplicationFilter } from "../../components/application-filter";
 import { ApplicationList } from "../../components/application-list";
 import { DeploymentConfigForm } from "../../components/deployment-config-form";
 import { EditApplicationDrawer } from "../../components/edit-application-drawer";
-import { AppState } from "../../modules";
+import { PAGE_PATH_APPLICATIONS } from "../../constants/path";
+import { UI_TEXT_FILTER, UI_TEXT_HIDE_FILTER } from "../../constants/ui-text";
+import { useAppSelector, useAppDispatch } from "../../hooks/redux";
+import { fetchApplicationCount } from "../../modules/application-counts";
 import { ApplicationKind, fetchApplications } from "../../modules/applications";
 import { clearTemplateTarget } from "../../modules/deployment-configs";
-import { AppDispatch } from "../../store";
-import { UI_TEXT_FILTER, UI_TEXT_HIDE_FILTER } from "../../constants/ui-text";
 import {
   stringifySearchParams,
   useSearchParams,
 } from "../../utils/search-params";
-import { useHistory } from "react-router-dom";
-import { PAGE_PATH_APPLICATIONS } from "../../constants/path";
-import { fetchApplicationCount } from "../../modules/application-counts";
-import { ApplicationCounts } from "../../components/application-counts";
 
 const useStyles = makeStyles((theme) => ({
   main: {
@@ -55,15 +53,16 @@ const useStyles = makeStyles((theme) => ({
 // TODO: Remove showCounts parameter after implements showCounts API
 export const ApplicationIndexPage: FC = memo(function ApplicationIndexPage() {
   const classes = useStyles();
-  const dispatch = useDispatch<AppDispatch>();
+  const dispatch = useAppDispatch();
   const history = useHistory();
   const filterOptions = useSearchParams();
   const [openAddForm, setOpenAddForm] = useState(false);
   const [openFilter, setOpenFilter] = useState(true);
-  const [isLoading, isAdding] = useSelector<AppState, [boolean, boolean]>(
-    (state) => [state.applications.loading, state.applications.adding]
-  );
-  const addedApplicationId = useSelector<AppState, string | null>(
+  const [isLoading, isAdding] = useAppSelector<[boolean, boolean]>((state) => [
+    state.applications.loading,
+    state.applications.adding,
+  ]);
+  const addedApplicationId = useAppSelector<string | null>(
     (state) => state.deploymentConfigs.targetApplicationId
   );
   const showCounts = filterOptions.showCounts

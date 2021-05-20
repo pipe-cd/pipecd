@@ -1,19 +1,18 @@
 import { Box, makeStyles } from "@material-ui/core";
 import { FC, memo, useEffect } from "react";
-import { useDispatch, useSelector } from "react-redux";
 import { useParams } from "react-router-dom";
 import { DeploymentDetail } from "../../components/deployment-detail";
 import { LogViewer } from "../../components/log-viewer";
 import { Pipeline } from "../../components/pipeline";
-import { AppState } from "../../modules";
+import { useAppSelector, useAppDispatch } from "../../hooks/redux";
+import { useInterval } from "../../hooks/use-interval";
+import { clearActiveStage } from "../../modules/active-stage";
 import {
   Deployment,
   fetchDeploymentById,
   isDeploymentRunning,
   selectById as selectDeploymentById,
 } from "../../modules/deployments";
-import { useInterval } from "../../hooks/use-interval";
-import { clearActiveStage } from "../../modules/active-stage";
 
 const FETCH_INTERVAL = 4000;
 
@@ -28,10 +27,10 @@ const useStyles = makeStyles({
 
 export const DeploymentDetailPage: FC = memo(function DeploymentDetailPage() {
   const classes = useStyles();
-  const dispatch = useDispatch();
+  const dispatch = useAppDispatch();
   const { deploymentId } = useParams<{ deploymentId: string }>();
-  const deployment = useSelector<AppState, Deployment.AsObject | undefined>(
-    (state) => selectDeploymentById(state.deployments, deploymentId)
+  const deployment = useAppSelector<Deployment.AsObject | undefined>((state) =>
+    selectDeploymentById(state.deployments, deploymentId)
   );
 
   const fetchData = (): void => {

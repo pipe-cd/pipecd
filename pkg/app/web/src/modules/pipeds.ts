@@ -6,7 +6,7 @@ import {
   EntityId,
 } from "@reduxjs/toolkit";
 import { Piped } from "pipe/pkg/app/web/model/piped_pb";
-import { AppState } from ".";
+import type { AppState } from "../store";
 import * as pipedsApi from "../api/piped";
 
 export interface RegisteredPiped {

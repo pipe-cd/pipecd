@@ -11,11 +11,10 @@ import {
 import { FormikProps } from "formik";
 import { ApplicationKind } from "pipe/pkg/app/web/model/common_pb";
 import { FC, memo, ReactElement } from "react";
-import { useSelector } from "react-redux";
 import * as Yup from "yup";
 import { APPLICATION_KIND_TEXT } from "../../constants/application-kind";
 import { UI_TEXT_CANCEL, UI_TEXT_SAVE } from "../../constants/ui-text";
-import { AppState } from "../../modules";
+import { useAppSelector } from "../../hooks/redux";
 import { selectAllEnvs } from "../../modules/environments";
 import {
   Piped,
@@ -178,13 +177,13 @@ export const ApplicationForm: FC<ApplicationFormProps> = memo(
   }) {
     const classes = useStyles();
 
-    const environments = useSelector(selectAllEnvs);
+    const environments = useAppSelector(selectAllEnvs);
 
-    const pipeds = useSelector<AppState, Piped.AsObject[]>((state) =>
+    const pipeds = useAppSelector<Piped.AsObject[]>((state) =>
       values.env !== "" ? selectPipedsByEnv(state.pipeds, values.env) : []
     );
 
-    const selectedPiped = useSelector(selectPipedById(values.pipedId));
+    const selectedPiped = useAppSelector(selectPipedById(values.pipedId));
 
     const cloudProviders = createCloudProviderListFromPiped({
       piped: selectedPiped,

@@ -8,10 +8,9 @@ import {
 } from "@material-ui/core";
 import Autocomplete from "@material-ui/lab/Autocomplete";
 import { FC, memo, useCallback } from "react";
-import { useSelector } from "react-redux";
 import { APPLICATION_KIND_TEXT } from "../../constants/application-kind";
 import { DEPLOYMENT_STATE_TEXT } from "../../constants/deployment-status-text";
-import { AppState } from "../../modules";
+import { useAppSelector } from "../../hooks/redux";
 import {
   Application,
   ApplicationKind,
@@ -20,9 +19,9 @@ import {
   selectById as selectApplicationById,
 } from "../../modules/applications";
 import {
+  DeploymentFilterOptions,
   DeploymentStatus,
   DeploymentStatusKey,
-  DeploymentFilterOptions,
 } from "../../modules/deployments";
 import { selectAllEnvs } from "../../modules/environments";
 import { FilterView } from "../filter-view";
@@ -48,11 +47,11 @@ export interface DeploymentFilterProps {
 export const DeploymentFilter: FC<DeploymentFilterProps> = memo(
   function DeploymentFilter({ options, onChange, onClear }) {
     const classes = useStyles();
-    const envs = useSelector(selectAllEnvs);
-    const applications = useSelector<AppState, Application.AsObject[]>(
-      (state) => selectAllApplications(state.applications)
+    const envs = useAppSelector(selectAllEnvs);
+    const applications = useAppSelector<Application.AsObject[]>((state) =>
+      selectAllApplications(state.applications)
     );
-    const selectedApp = useSelector<AppState, Application.AsObject | undefined>(
+    const selectedApp = useAppSelector<Application.AsObject | undefined>(
       (state) =>
         options.applicationId
           ? selectApplicationById(state.applications, options.applicationId)

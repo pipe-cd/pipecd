@@ -11,7 +11,8 @@ import {
 import { render, RenderOptions, RenderResult } from "@testing-library/react";
 import { Provider } from "react-redux";
 import configureMockStore from "redux-mock-store";
-import { AppState, reducers } from "./src/modules";
+import { reducers } from "./src/modules";
+import type { AppState } from "./src/store";
 import { theme } from "./src/theme";
 
 const middlewares = getDefaultMiddleware({

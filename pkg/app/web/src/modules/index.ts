@@ -1,24 +1,23 @@
-import { AnyAction, combineReducers } from "redux";
-import { ThunkAction } from "redux-thunk";
+import { combineReducers } from "redux";
 import { activeStageSlice } from "./active-stage";
+import { apiKeysSlice } from "./api-keys";
+import { applicationCountsSlice } from "./application-counts";
 import { applicationsSlice } from "./applications";
 import { applicationLiveStateSlice } from "./applications-live-state";
+import { commandsSlice } from "./commands";
+import { deleteApplicationSlice } from "./delete-application";
+import { deploymentConfigsSlice } from "./deployment-configs";
+import { deploymentFrequencySlice } from "./deployment-frequency";
 import { deploymentsSlice } from "./deployments";
 import { environmentsSlice } from "./environments";
+import { insightSlice } from "./insight";
+import { meSlice } from "./me";
 import { pipedsSlice } from "./pipeds";
+import { projectSlice } from "./project";
+import { sealedSecretSlice } from "./sealed-secret";
 import { stageLogsSlice } from "./stage-logs";
 import { toastsSlice } from "./toasts";
-import { commandsSlice } from "./commands";
-import { meSlice } from "./me";
-import { projectSlice } from "./project";
-import { deploymentConfigsSlice } from "./deployment-configs";
-import { sealedSecretSlice } from "./sealed-secret";
-import { apiKeysSlice } from "./api-keys";
 import { updateApplicationSlice } from "./update-application";
-import { insightSlice } from "./insight";
-import { deploymentFrequencySlice } from "./deployment-frequency";
-import { deleteApplicationSlice } from "./delete-application";
-import { applicationCountsSlice } from "./application-counts";
 
 export const reducers = combineReducers({
   deployments: deploymentsSlice.reducer,
@@ -41,11 +40,3 @@ export const reducers = combineReducers({
   deploymentFrequency: deploymentFrequencySlice.reducer,
   applicationCounts: applicationCountsSlice.reducer,
 });
-
-export type AppState = ReturnType<typeof reducers>;
-export type AppThunk = ThunkAction<
-  Promise<unknown>,
-  AppState,
-  unknown,
-  AnyAction
->;

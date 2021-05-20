@@ -1,8 +1,7 @@
+import loadable from "@loadable/component";
 import { EntityId } from "@reduxjs/toolkit";
 import { FC, memo, useEffect } from "react";
-import loadable from "@loadable/component";
-import { useDispatch, useSelector } from "react-redux";
-import { Route, Switch, Redirect } from "react-router-dom";
+import { Redirect, Route, Switch } from "react-router-dom";
 import { Header } from "../components/header";
 import { Toasts } from "../components/toasts";
 import {
@@ -13,7 +12,8 @@ import {
   PAGE_PATH_SETTINGS,
   PAGE_PATH_TOP,
 } from "../constants/path";
-import { AppState } from "../modules";
+import { useAppSelector, useAppDispatch } from "../hooks/redux";
+import { useInterval } from "../hooks/use-interval";
 import {
   fetchCommand,
   selectIds as selectCommandIds,
@@ -21,7 +21,6 @@ import {
 import { fetchEnvironments } from "../modules/environments";
 import { useMe } from "../modules/me";
 import { fetchPipeds } from "../modules/pipeds";
-import { useInterval } from "../hooks/use-interval";
 import { ApplicationIndexPage } from "./applications/index";
 import { DeploymentIndexPage } from "./deployments/index";
 import { LoginPage } from "./login";
@@ -61,8 +60,8 @@ const ApplicationDetailPage = loadable(
 // Fetch commands detail periodically
 const FETCH_COMMANDS_INTERVAL = 3000;
 const useCommandsStatusChecking = (): void => {
-  const dispatch = useDispatch();
-  const commandIds = useSelector<AppState, EntityId[]>((state) =>
+  const dispatch = useAppDispatch();
+  const commandIds = useAppSelector<EntityId[]>((state) =>
     selectCommandIds(state.commands)
   );
 
@@ -79,7 +78,7 @@ const useCommandsStatusChecking = (): void => {
 };
 
 export const Pages: FC = memo(function Pages() {
-  const dispatch = useDispatch();
+  const dispatch = useAppDispatch();
   const me = useMe();
   useEffect(() => {
     if (me?.isLogin) {

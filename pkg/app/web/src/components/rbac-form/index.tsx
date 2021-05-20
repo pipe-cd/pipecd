@@ -10,16 +10,14 @@ import {
 } from "@material-ui/core";
 import EditIcon from "@material-ui/icons/Edit";
 import Skeleton from "@material-ui/lab/Skeleton/Skeleton";
-import { FC, memo, useState } from "react";
 import * as React from "react";
-import { useDispatch, useSelector } from "react-redux";
+import { FC, memo, useState } from "react";
 import { RBAC_DESCRIPTION } from "../../constants/text";
 import { UPDATE_RBAC_SUCCESS } from "../../constants/toast-text";
 import { UI_TEXT_CANCEL, UI_TEXT_SAVE } from "../../constants/ui-text";
-import { AppState } from "../../modules";
+import { useAppSelector, useAppDispatch } from "../../hooks/redux";
 import { fetchProject, Teams, updateRBAC } from "../../modules/project";
 import { addToast } from "../../modules/toasts";
-import { AppDispatch } from "../../store";
 import { useProjectSettingStyles } from "../../styles/project-setting";
 import { ProjectSettingLabeledText } from "../project-setting-labeled-text";
 
@@ -33,10 +31,10 @@ const TEAM_LABELS = {
 
 export const RBACForm: FC = memo(function RBACForm() {
   const projectSettingClasses = useProjectSettingStyles();
-  const teams = useSelector<AppState, Teams | null | undefined>(
+  const teams = useAppSelector<Teams | null | undefined>(
     (state) => state.project.teams
   );
-  const dispatch = useDispatch<AppDispatch>();
+  const dispatch = useAppDispatch();
   const [isEdit, setIsEdit] = useState(false);
   const [admin, setAdmin] = useState("");
   const [editor, setEditor] = useState("");

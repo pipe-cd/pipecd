@@ -1,22 +1,20 @@
-import { FC, memo } from "react";
 import {
-  makeStyles,
-  Dialog,
-  DialogTitle,
-  DialogContent,
-  DialogActions,
   Button,
+  Dialog,
+  DialogActions,
+  DialogContent,
+  DialogTitle,
+  makeStyles,
   Typography,
 } from "@material-ui/core";
-import { useSelector, useDispatch } from "react-redux";
+import Alert from "@material-ui/lab/Alert";
+import { FC, memo } from "react";
+import { useAppSelector, useAppDispatch } from "../../hooks/redux";
 import {
-  selectById,
   Application,
   disableApplication,
+  selectById,
 } from "../../modules/applications";
-import { AppState } from "../../modules";
-import Alert from "@material-ui/lab/Alert";
-import { AppDispatch } from "../../store";
 
 const useStyles = makeStyles((theme) => ({
   disableTargetName: {
@@ -43,9 +41,9 @@ export const DisableApplicationDialog: FC<DisableApplicationDialogProps> = memo(
     onCancel,
   }) {
     const classes = useStyles();
-    const dispatch = useDispatch<AppDispatch>();
+    const dispatch = useAppDispatch();
 
-    const application = useSelector<AppState, Application.AsObject | undefined>(
+    const application = useAppSelector<Application.AsObject | undefined>(
       (state) =>
         applicationId
           ? selectById(state.applications, applicationId)
