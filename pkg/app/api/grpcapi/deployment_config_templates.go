@@ -51,4 +51,5 @@ var (
 	crossplaneDeploymentConfigTemplates = []*webservice.DeploymentConfigTemplate{}
 	lambdaDeploymentConfigTemplates     = []*webservice.DeploymentConfigTemplate{}
 	cloudrunDeploymentConfigTemplates   = []*webservice.DeploymentConfigTemplate{}
+	ecsDeploymentConfigTemplates        = []*webservice.DeploymentConfigTemplate{}
 )
