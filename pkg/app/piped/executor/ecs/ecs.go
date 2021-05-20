@@ -152,7 +152,9 @@ func build(ctx context.Context, in *executor.Input, client provider.Client, task
 	// This is used when a service uses the EXTERNAL deployment controller type.
 	// For more information, see Amazon ECS Deployment Types
 	// https://docs.aws.amazon.com/AmazonECS/latest/developerguide/deployment-types.html
-	if service.DeploymentController.Type == types.DeploymentControllerTypeExternal {
+	// Note: The deployment controller type can also get from types.Service but this field is omitted if the service is using the ECS
+	// deployment controller type, so that we should use serviceDefinition.DeploymentController instead.
+	if serviceDefinition.DeploymentController.Type == types.DeploymentControllerTypeExternal {
 		taskSet, err := client.CreateTaskSet(ctx, *service, *td, 100)
 		if err != nil {
 			in.LogPersister.Errorf("Failed to create ECS task set %s: %v", *serviceDefinition.ServiceName, err)
