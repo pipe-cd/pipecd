@@ -164,6 +164,15 @@ func (s *PipedSpec) GetAnalysisProvider(name string) (PipedAnalysisProvider, boo
 	return PipedAnalysisProvider{}, false
 }
 
+func (s *PipedSpec) IsInsecureChartRepository(name string) bool {
+	for _, cr := range s.ChartRepositories {
+		if cr.Name == name {
+			return cr.Insecure
+		}
+	}
+	return false
+}
+
 type PipedGit struct {
 	// The username that will be configured for `git` user.
 	// Default is "piped".

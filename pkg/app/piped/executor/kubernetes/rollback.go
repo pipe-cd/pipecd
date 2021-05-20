@@ -67,6 +67,11 @@ func (e *rollbackExecutor) ensureRollback(ctx context.Context) model.StageStatus
 		return model.StageStatus_STAGE_FAILURE
 	}
 
+	chartRepoName := deployCfg.Input.HelmChart.Repository
+	if chartRepoName != "" {
+		deployCfg.Input.HelmChart.Insecure = ds.DeploymentConfig.PipedSpec.IsInsecureChartRepository(chartRepoName)
+	}
+
 	p := provider.NewProvider(e.Deployment.ApplicationName, ds.AppDir, ds.RepoDir, e.Deployment.GitPath.ConfigFilename, deployCfg.Input, e.Logger)
 	e.Logger.Info("start executing kubernetes stage",
 		zap.String("stage-name", e.Stage.Name),

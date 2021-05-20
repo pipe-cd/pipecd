@@ -85,6 +85,9 @@ type InputHelmChart struct {
 	Repository string `json:"repository"`
 	Name       string `json:"name"`
 	Version    string `json:"version"`
+	// Whether to skip TLS certificate checks for the repository or not.
+	// This option will automatically set the value of HelmChartRepository.Insecure.
+	Insecure bool `json:"-"`
 }
 
 type InputHelmOptions struct {

@@ -88,6 +88,11 @@ func (e *deployExecutor) Execute(sig executor.StopSignal) model.StageStatus {
 		return model.StageStatus_STAGE_FAILURE
 	}
 
+	chartRepoName := e.deployCfg.Input.HelmChart.Repository
+	if chartRepoName != "" {
+		e.deployCfg.Input.HelmChart.Insecure = ds.DeploymentConfig.PipedSpec.IsInsecureChartRepository(chartRepoName)
+	}
+
 	e.provider = provider.NewProvider(e.Deployment.ApplicationName, ds.AppDir, ds.RepoDir, e.Deployment.GitPath.ConfigFilename, e.deployCfg.Input, e.Logger)
 	e.Logger.Info("start executing kubernetes stage",
 		zap.String("stage-name", e.Stage.Name),

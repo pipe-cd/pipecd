@@ -121,6 +121,7 @@ type helmRemoteChart struct {
 	Repository string
 	Name       string
 	Version    string
+	Insecure   bool
 }
 
 func (c *Helm) TemplateRemoteChart(ctx context.Context, appName, appDir, namespace string, chart helmRemoteChart, opts *config.InputHelmOptions) (string, error) {
@@ -135,6 +136,10 @@ func (c *Helm) TemplateRemoteChart(ctx context.Context, appName, appDir, namespa
 		releaseName,
 		fmt.Sprintf("%s/%s", chart.Repository, chart.Name),
 		fmt.Sprintf("--version=%s", chart.Version),
+	}
+
+	if chart.Insecure {
+		args = append(args, "--insecure-skip-tls-verify")
 	}
 
 	if namespace != "" {
