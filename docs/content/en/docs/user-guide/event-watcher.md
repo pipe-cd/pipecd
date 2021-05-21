@@ -158,3 +158,6 @@ spec:
 
 See [here](https://github.com/pipe-cd/examples/tree/master/.pipe) for more examples.
 
+## Github Actions
+If you're using Github Actions in your CI workflow, [actions-event-register](https://github.com/marketplace/actions/pipecd-register-event) is for you!
+With it, you can easily register events without any installation.
