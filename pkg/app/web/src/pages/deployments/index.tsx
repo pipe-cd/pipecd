@@ -12,30 +12,29 @@ import CloseIcon from "@material-ui/icons/Close";
 import FilterIcon from "@material-ui/icons/FilterList";
 import RefreshIcon from "@material-ui/icons/Refresh";
 import dayjs from "dayjs";
-import { FC, memo, useCallback, useEffect, useState, useRef } from "react";
-import { useDispatch, useSelector } from "react-redux";
+import { FC, memo, useCallback, useEffect, useRef, useState } from "react";
+import { useInView } from "react-intersection-observer";
+import { useHistory } from "react-router-dom";
 import { DeploymentFilter } from "../../components/deployment-filter";
 import { DeploymentItem } from "../../components/deployment-item";
-import { AppState } from "../../modules";
-import { fetchApplications } from "../../modules/applications";
-import {
-  Deployment,
-  fetchDeployments,
-  selectIds as selectDeploymentIds,
-  selectById as selectDeploymentById,
-  fetchMoreDeployments,
-  DeploymentFilterOptions,
-} from "../../modules/deployments";
-import { useInView } from "react-intersection-observer";
-import { LoadingStatus } from "../../types/module";
+import { PAGE_PATH_DEPLOYMENTS } from "../../constants/path";
 import {
   UI_TEXT_FILTER,
   UI_TEXT_HIDE_FILTER,
   UI_TEXT_REFRESH,
 } from "../../constants/ui-text";
+import { useAppSelector, useAppDispatch } from "../../hooks/redux";
+import { fetchApplications } from "../../modules/applications";
+import {
+  Deployment,
+  DeploymentFilterOptions,
+  fetchDeployments,
+  fetchMoreDeployments,
+  selectById as selectDeploymentById,
+  selectIds as selectDeploymentIds,
+} from "../../modules/deployments";
 import { useStyles as useButtonStyles } from "../../styles/button";
-import { useHistory } from "react-router-dom";
-import { PAGE_PATH_DEPLOYMENTS } from "../../constants/path";
+import { LoadingStatus } from "../../types/module";
 import {
   stringifySearchParams,
   useSearchParams,
@@ -69,8 +68,7 @@ const useGroupedDeployments = (): [
   boolean,
   Record<string, Deployment.AsObject[]>
 ] => {
-  const [status, hasMore, deployments] = useSelector<
-    AppState,
+  const [status, hasMore, deployments] = useAppSelector<
     [LoadingStatus, boolean, Deployment.AsObject[]]
   >((state) => [
     state.deployments.status,
@@ -97,7 +95,7 @@ export const DeploymentIndexPage: FC = memo(function DeploymentIndexPage() {
   const classes = useStyles();
   const buttonClasses = useButtonStyles();
   const history = useHistory();
-  const dispatch = useDispatch();
+  const dispatch = useAppDispatch();
   const listRef = useRef(null);
   const [status, hasMore, groupedDeployments] = useGroupedDeployments();
   const filterOptions = useSearchParams();

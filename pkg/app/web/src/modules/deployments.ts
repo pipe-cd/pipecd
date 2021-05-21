@@ -12,7 +12,7 @@ import {
 } from "pipe/pkg/app/web/model/deployment_pb";
 import * as deploymentsApi from "../api/deployments";
 import { fetchCommand, Command, CommandStatus } from "./commands";
-import { AppState } from ".";
+import type { AppState } from "../store";
 import { LoadingStatus } from "../types/module";
 import { ListDeploymentsRequest } from "pipe/pkg/app/web/api_client/service_pb";
 import { ApplicationKind } from "./applications";

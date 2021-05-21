@@ -1,29 +1,27 @@
+import { Drawer } from "@material-ui/core";
+import { useFormik } from "formik";
 import { FC, memo, useCallback } from "react";
-import { useDispatch, useSelector } from "react-redux";
-import { AppState } from "../../modules";
-import {
-  clearUpdateTarget,
-  updateApplication,
-} from "../../modules/update-application";
+import { useAppSelector, useAppDispatch } from "../../hooks/redux";
 import {
   Application,
   fetchApplications,
   selectById as selectAppById,
 } from "../../modules/applications";
 import {
+  clearUpdateTarget,
+  updateApplication,
+} from "../../modules/update-application";
+import {
   ApplicationForm,
-  validationSchema,
   ApplicationFormValue,
   emptyFormValues,
+  validationSchema,
 } from "../application-form";
-import { AppDispatch } from "../../store";
-import { useFormik } from "formik";
-import { Drawer } from "@material-ui/core";
 
 export const EditApplicationDrawer: FC = memo(function EditApplicationDrawer() {
-  const dispatch = useDispatch<AppDispatch>();
+  const dispatch = useAppDispatch();
 
-  const app = useSelector<AppState, Application.AsObject | undefined>((state) =>
+  const app = useAppSelector<Application.AsObject | undefined>((state) =>
     state.updateApplication.targetId
       ? selectAppById(state.applications, state.updateApplication.targetId)
       : undefined

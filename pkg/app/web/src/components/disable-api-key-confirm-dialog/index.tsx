@@ -9,8 +9,7 @@ import {
 } from "@material-ui/core";
 import Alert from "@material-ui/lab/Alert";
 import { FC, memo } from "react";
-import { useSelector } from "react-redux";
-import { AppState } from "../../modules";
+import { useAppSelector } from "../../hooks/redux";
 import { APIKey, selectById } from "../../modules/api-keys";
 
 const useStyles = makeStyles((theme) => ({
@@ -35,7 +34,7 @@ const DESCRIPTION = "Are you sure you want to disable the API key?";
 export const DisableAPIKeyConfirmDialog: FC<DisableAPIKeyConfirmDialogProps> = memo(
   function DisableAPIKeyConfirmDialog({ apiKeyId, onDisable, onCancel }) {
     const classes = useStyles();
-    const apiKey = useSelector<AppState, APIKey.AsObject | undefined>((state) =>
+    const apiKey = useAppSelector<APIKey.AsObject | undefined>((state) =>
       apiKeyId ? selectById(state.apiKeys, apiKeyId) : undefined
     );
     const open = Boolean(apiKey);

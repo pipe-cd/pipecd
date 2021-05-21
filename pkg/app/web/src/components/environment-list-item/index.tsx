@@ -18,7 +18,6 @@ import { MoreVert as MoreVertIcon } from "@material-ui/icons";
 import { EntityId } from "@reduxjs/toolkit";
 import { FC, memo, useCallback, useState } from "react";
 import * as React from "react";
-import { useSelector } from "react-redux";
 import {
   UI_TEXT_CANCEL,
   UI_TEXT_EDIT,
@@ -26,6 +25,7 @@ import {
 } from "../../constants/ui-text";
 import { selectEnvById } from "../../modules/environments";
 import { CopyIconButton } from "../copy-icon-button";
+import { useAppSelector } from "../../hooks/redux";
 
 const useStyles = makeStyles((theme) => ({
   item: {
@@ -55,7 +55,7 @@ export const EnvironmentListItem: FC<EnvironmentListItemProps> = memo(
     const [anchorEl, setAnchorEl] = useState<HTMLButtonElement | null>(null);
     const [isEdit, setIsEdit] = useState(false);
     const [desc, setDesc] = useState("");
-    const env = useSelector(selectEnvById(id));
+    const env = useAppSelector(selectEnvById(id));
 
     // menu event handler
     const handleClickMenu = useCallback(

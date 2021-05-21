@@ -1,11 +1,10 @@
 import { Drawer } from "@material-ui/core";
 import { useFormik } from "formik";
 import { FC, memo, useCallback } from "react";
-import { useDispatch, useSelector } from "react-redux";
 import { UPDATE_PIPED_SUCCESS } from "../../constants/toast-text";
+import { useAppDispatch, useAppSelector } from "../../hooks/redux";
 import { editPiped, fetchPipeds, selectPipedById } from "../../modules/pipeds";
 import { addToast } from "../../modules/toasts";
-import { AppDispatch } from "../../store";
 import { PipedForm, PipedFormValues, validationSchema } from "../piped-form";
 
 export interface EditPipedDrawerProps {
@@ -15,8 +14,8 @@ export interface EditPipedDrawerProps {
 
 export const EditPipedDrawer: FC<EditPipedDrawerProps> = memo(
   function EditPipedDrawer({ pipedId, onClose }) {
-    const dispatch = useDispatch<AppDispatch>();
-    const piped = useSelector(selectPipedById(pipedId));
+    const dispatch = useAppDispatch();
+    const piped = useAppSelector(selectPipedById(pipedId));
 
     const formik = useFormik<PipedFormValues>({
       initialValues: {

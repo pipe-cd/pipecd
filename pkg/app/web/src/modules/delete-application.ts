@@ -1,5 +1,5 @@
 import { createAsyncThunk, createSlice, PayloadAction } from "@reduxjs/toolkit";
-import { AppState } from ".";
+import type { AppState } from "../store";
 import * as applicationsAPI from "../api/applications";
 
 export interface DeleteApplicationState {

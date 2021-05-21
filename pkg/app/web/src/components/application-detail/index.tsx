@@ -13,12 +13,11 @@ import { SerializedError } from "@reduxjs/toolkit";
 import clsx from "clsx";
 import dayjs from "dayjs";
 import { FC, memo, useCallback } from "react";
-import { useDispatch, useSelector } from "react-redux";
 import { Link as RouterLink } from "react-router-dom";
 import { APPLICATION_KIND_TEXT } from "../../constants/application-kind";
 import { PAGE_PATH_DEPLOYMENTS } from "../../constants/path";
 import { UI_TEXT_REFRESH } from "../../constants/ui-text";
-import { AppState } from "../../modules";
+import { useAppSelector, useAppDispatch } from "../../hooks/redux";
 import {
   Application,
   ApplicationDeploymentReference,
@@ -86,7 +85,7 @@ export interface ApplicationDetailProps {
 const useIsSyncingApplication = (
   applicationId: string | undefined
 ): boolean => {
-  return useSelector<AppState, boolean>((state) => {
+  return useAppSelector<boolean>((state) => {
     if (!applicationId) {
       return false;
     }
@@ -145,18 +144,17 @@ const syncStrategyByIndex: SyncStrategy[] = [
 export const ApplicationDetail: FC<ApplicationDetailProps> = memo(
   function ApplicationDetail({ applicationId }) {
     const classes = useStyles();
-    const dispatch = useDispatch();
+    const dispatch = useAppDispatch();
 
-    const [app, fetchApplicationError] = useSelector<
-      AppState,
+    const [app, fetchApplicationError] = useAppSelector<
       [Application.AsObject | undefined, SerializedError | null]
     >((state) => [
       selectApplicationById(state.applications, applicationId),
       state.applications.fetchApplicationError,
     ]);
 
-    const env = useSelector(selectEnvById(app?.envId));
-    const piped = useSelector(selectPipedById(app?.pipedId));
+    const env = useAppSelector(selectEnvById(app?.envId));
+    const piped = useAppSelector(selectPipedById(app?.pipedId));
     const isSyncing = useIsSyncingApplication(app?.id);
 
     const handleDescriptionEdit = useCallback(

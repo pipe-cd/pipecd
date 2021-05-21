@@ -7,9 +7,8 @@ import {
 } from "@material-ui/core";
 import { ApplicationKind } from "pipe/pkg/app/web/model/common_pb";
 import { FC, memo } from "react";
-import { useDispatch, useSelector } from "react-redux";
 import { UI_TEXT_REFRESH } from "../../constants/ui-text";
-import { AppState } from "../../modules";
+import { useAppSelector, useAppDispatch } from "../../hooks/redux";
 import {
   Application,
   selectById as selectAppById,
@@ -42,9 +41,8 @@ const useStyles = makeStyles(() => ({
 export const ApplicationStateView: FC<ApplicationStateViewProps> = memo(
   function ApplicationStateView({ applicationId }) {
     const classes = useStyles();
-    const dispatch = useDispatch();
-    const [hasError, liveState, app] = useSelector<
-      AppState,
+    const dispatch = useAppDispatch();
+    const [hasError, liveState, app] = useAppSelector<
       [
         boolean,
         ApplicationLiveState | undefined,

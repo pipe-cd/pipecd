@@ -10,8 +10,7 @@ import {
 } from "@material-ui/core";
 import OpenInNewIcon from "@material-ui/icons/OpenInNew";
 import { FC, memo, useEffect, useState } from "react";
-import { useDispatch, useSelector } from "react-redux";
-import { AppState } from "../../modules";
+import { useAppSelector, useAppDispatch } from "../../hooks/redux";
 import {
   DeploymentConfigTemplate,
   fetchTemplateList,
@@ -50,13 +49,12 @@ export interface DeploymentConfigFormProps {
 export const DeploymentConfigForm: FC<DeploymentConfigFormProps> = memo(
   function DeploymentConfigForm({ onSkip }) {
     const classes = useStyles();
-    const dispatch = useDispatch();
+    const dispatch = useAppDispatch();
     const [templateIndex, setTemplateIndex] = useState(0);
     const [configValue, setConfigValue] = useState(TEXT.PLACEHOLDER);
-    const templates = useSelector<
-      AppState,
-      DeploymentConfigTemplate.AsObject[]
-    >((state) => selectTemplatesByAppId(state.deploymentConfigs) || []);
+    const templates = useAppSelector<DeploymentConfigTemplate.AsObject[]>(
+      (state) => selectTemplatesByAppId(state.deploymentConfigs) || []
+    );
 
     const template = templates[templateIndex];
 

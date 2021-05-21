@@ -1,20 +1,20 @@
 import userEvent from "@testing-library/user-event";
 import { MemoryRouter } from "react-router-dom";
 import {
+  createReduxStore,
   createStore,
   render,
   screen,
   waitFor,
-  createReduxStore,
 } from "../../../test-utils";
 import { server } from "../../mocks/server";
-import { AppState } from "../../modules";
 import {
   Application,
-  syncApplication,
   ApplicationSyncStatus,
+  syncApplication,
 } from "../../modules/applications";
 import { SyncStrategy } from "../../modules/deployments";
+import type { AppState } from "../../store";
 import { dummyApplication } from "../../__fixtures__/dummy-application";
 import { dummyApplicationLiveState } from "../../__fixtures__/dummy-application-live-state";
 import { dummyEnv } from "../../__fixtures__/dummy-environment";

@@ -10,20 +10,18 @@ import {
 } from "@material-ui/core";
 import EditIcon from "@material-ui/icons/Edit";
 import Skeleton from "@material-ui/lab/Skeleton/Skeleton";
-import { FC, memo, useState } from "react";
 import * as React from "react";
-import { useDispatch, useSelector } from "react-redux";
+import { FC, memo, useState } from "react";
 import { SSO_DESCRIPTION } from "../../constants/text";
 import { UPDATE_SSO_SUCCESS } from "../../constants/toast-text";
 import { UI_TEXT_CANCEL, UI_TEXT_SAVE } from "../../constants/ui-text";
-import { AppState } from "../../modules";
+import { useAppDispatch, useAppSelector } from "../../hooks/redux";
 import {
   fetchProject,
   GitHubSSO,
   updateGitHubSSO,
 } from "../../modules/project";
 import { addToast } from "../../modules/toasts";
-import { AppDispatch } from "../../store";
 import { useProjectSettingStyles } from "../../styles/project-setting";
 import { ProjectSettingLabeledText } from "../project-setting-labeled-text";
 export interface GitHubSSOFormParams {
@@ -42,14 +40,13 @@ const DIALOG_TITLE = `Edit ${SECTION_TITLE}`;
 
 export const GithubSSOForm: FC = memo(function GithubSSOForm() {
   const projectSettingStyles = useProjectSettingStyles();
-  const dispatch = useDispatch<AppDispatch>();
+  const dispatch = useAppDispatch();
   const [isEdit, setIsEdit] = useState(false);
   const [clientId, setClientID] = useState("");
   const [clientSecret, setClientSecret] = useState("");
   const [baseUrl, setBaseUrl] = useState("");
   const [uploadUrl, setUploadUrl] = useState("");
-  const [sso, sharedSSO] = useSelector<
-    AppState,
+  const [sso, sharedSSO] = useAppSelector<
     [GitHubSSO | null | undefined, string | null | undefined]
   >((state) => [state.project.github, state.project.sharedSSO]);
 

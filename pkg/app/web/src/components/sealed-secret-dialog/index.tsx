@@ -12,16 +12,14 @@ import {
 } from "@material-ui/core";
 import { useFormik } from "formik";
 import { FC, memo, useCallback } from "react";
-import { useDispatch, useSelector } from "react-redux";
 import * as Yup from "yup";
 import { UI_TEXT_CANCEL, UI_TEXT_CLOSE } from "../../constants/ui-text";
-import { AppState } from "../../modules";
+import { useAppDispatch, useAppSelector } from "../../hooks/redux";
 import { Application, selectById } from "../../modules/applications";
 import {
   clearSealedSecret,
   generateSealedSecret,
 } from "../../modules/sealed-secret";
-import { AppDispatch } from "../../store";
 import { TextWithCopyButton } from "../text-with-copy-button";
 
 const useStyles = makeStyles((theme) => ({
@@ -58,15 +56,15 @@ const validationSchema = Yup.object({
 export const SealedSecretDialog: FC<SealedSecretDialogProps> = memo(
   function SealedSecretDialog({ open, applicationId, onClose }) {
     const classes = useStyles();
-    const dispatch = useDispatch<AppDispatch>();
+    const dispatch = useAppDispatch();
 
-    const application = useSelector<AppState, Application.AsObject | undefined>(
+    const application = useAppSelector<Application.AsObject | undefined>(
       (state) =>
         applicationId
           ? selectById(state.applications, applicationId)
           : undefined
     );
-    const sealedSecret = useSelector<AppState, string | null>(
+    const sealedSecret = useAppSelector<string | null>(
       (state) => state.sealedSecret.data
     );
 

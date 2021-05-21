@@ -19,8 +19,6 @@ import clsx from "clsx";
 import dayjs from "dayjs";
 import * as React from "react";
 import { FC, memo, useCallback, useState } from "react";
-import { useDispatch, useSelector } from "react-redux";
-import { AppDispatch } from "../../../store";
 import { DELETE_OLD_PIPED_KEY_SUCCESS } from "../../../constants/toast-text";
 import {
   UI_TEXT_ADD_NEW_KEY,
@@ -37,6 +35,7 @@ import {
 } from "../../../modules/pipeds";
 import { addToast } from "../../../modules/toasts";
 import { CopyIconButton } from "../../../components/copy-icon-button";
+import { useAppDispatch, useAppSelector } from "../../../hooks/redux";
 
 const useStyles = makeStyles((theme) => ({
   disabledItem: {
@@ -74,8 +73,8 @@ export const PipedTableRow: FC<Props> = memo(function PipedTableRow({
   onEdit,
 }) {
   const classes = useStyles();
-  const piped = useSelector(selectPipedById(pipedId));
-  const dispatch = useDispatch<AppDispatch>();
+  const piped = useAppSelector(selectPipedById(pipedId));
+  const dispatch = useAppDispatch();
   const [anchorEl, setAnchorEl] = useState<HTMLButtonElement | null>(null);
   const hasOldKey = piped ? piped.keysList.length > 1 : false;
   const [openOldKeyAlert, setOpenOldKeyAlert] = useState(false);

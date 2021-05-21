@@ -1,9 +1,9 @@
 import { createSlice, createAsyncThunk } from "@reduxjs/toolkit";
 import { LogBlock } from "pipe/pkg/app/web/model/logblock_pb";
-import { AppState } from ".";
 import { DeploymentStatus } from "pipe/pkg/app/web/model/deployment_pb";
 import { getStageLog } from "../api/stage-log";
 import { selectById as selectDeploymentById } from "./deployments";
+import { AppState } from "../store";
 
 export { LogSeverity } from "pipe/pkg/app/web/model/logblock_pb";
 

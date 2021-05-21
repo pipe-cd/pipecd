@@ -1,6 +1,6 @@
 import { configureStore, getDefaultMiddleware } from "@reduxjs/toolkit";
-import { reducers } from "./modules";
 import { thunkErrorHandler } from "./middlewares/thunk-error-handler";
+import { reducers } from "./modules";
 
 export const store = configureStore({
   reducer: reducers,
@@ -12,4 +12,5 @@ export const store = configureStore({
   ] as const,
 });
 
+export type AppState = ReturnType<typeof store.getState>;
 export type AppDispatch = typeof store.dispatch;

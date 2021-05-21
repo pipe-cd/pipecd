@@ -6,7 +6,7 @@ import {
   EntityId,
 } from "@reduxjs/toolkit";
 import { Environment } from "pipe/pkg/app/web/model/environment_pb";
-import { AppState } from ".";
+import type { AppState } from "../store";
 import * as envsApi from "../api/environments";
 
 export const environmentsAdapter = createEntityAdapter<Environment.AsObject>(

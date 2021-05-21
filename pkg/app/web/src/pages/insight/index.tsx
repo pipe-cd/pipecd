@@ -1,20 +1,18 @@
 import { Box } from "@material-ui/core";
 import { FC, memo, useEffect } from "react";
-import { useDispatch, useSelector } from "react-redux";
 import { DeploymentFrequencyChart } from "../../components/deployment-frequency-chart";
 import { InsightHeader } from "../../components/insight-header";
-import { AppState } from "../../modules";
+import { useAppSelector, useAppDispatch } from "../../hooks/redux";
 import { fetchApplications, selectById } from "../../modules/applications";
 import { InsightDataPoint } from "../../modules/insight";
 
 export const InsightIndexPage: FC = memo(function InsightIndexPage() {
-  const dispatch = useDispatch();
+  const dispatch = useAppDispatch();
 
-  const deploymentFrequency = useSelector<
-    AppState,
-    InsightDataPoint.AsObject[]
-  >((state) => state.deploymentFrequency.data);
-  const selectedAppName = useSelector<AppState, string | undefined>((state) =>
+  const deploymentFrequency = useAppSelector<InsightDataPoint.AsObject[]>(
+    (state) => state.deploymentFrequency.data
+  );
+  const selectedAppName = useAppSelector<string | undefined>((state) =>
     state.insight.applicationId
       ? selectById(state.applications, state.insight.applicationId)?.name
       : undefined

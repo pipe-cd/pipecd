@@ -1,18 +1,15 @@
 import { Button, Snackbar, SnackbarCloseReason } from "@material-ui/core";
 import MuiAlert from "@material-ui/lab/Alert";
 import { FC, memo, SyntheticEvent } from "react";
-import { useDispatch, useSelector } from "react-redux";
 import { Link as RouterLink } from "react-router-dom";
-import { AppState } from "../../modules";
+import { useAppSelector, useAppDispatch } from "../../hooks/redux";
 import { IToast, removeToast, selectAll } from "../../modules/toasts";
 
 const AUTO_HIDE_DURATION = 5000;
 
 export const Toasts: FC = memo(function Toasts() {
-  const dispatch = useDispatch();
-  const toasts = useSelector<AppState, IToast[]>((state) =>
-    selectAll(state.toasts)
-  );
+  const dispatch = useAppDispatch();
+  const toasts = useAppSelector<IToast[]>((state) => selectAll(state.toasts));
 
   return (
     <>
