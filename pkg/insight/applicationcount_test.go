@@ -15,6 +15,8 @@
 package insight
 
 import (
+	"fmt"
+	"sort"
 	"testing"
 	"time"
 
@@ -93,6 +95,13 @@ func TestMakeApplicationCounts(t *testing.T) {
 
 	for _, tc := range testcases {
 		c := MakeApplicationCounts(tc.apps, now)
+		// We can use fmt to sort by Labels because maps are printed in key-sorted order.
+		sort.Slice(c.Counts, func(i, j int) bool {
+			return fmt.Sprint(c.Counts[i].Labels) > fmt.Sprint(c.Counts[j].Labels)
+		})
+		sort.Slice(tc.expected.Counts, func(i, j int) bool {
+			return fmt.Sprint(tc.expected.Counts[i].Labels) > fmt.Sprint(tc.expected.Counts[j].Labels)
+		})
 		assert.Equal(t, tc.expected, c)
 	}
 }
