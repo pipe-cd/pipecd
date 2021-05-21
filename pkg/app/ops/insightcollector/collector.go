@@ -69,20 +69,24 @@ func NewCollector(ds datastore.DataStore, fs filestore.Store, cfg config.Control
 func (c *Collector) Run(ctx context.Context) error {
 	cr := cron.New(cron.WithLocation(time.UTC))
 
-	_, err := cr.AddFunc(c.config.Application.Schedule, func() {
-		c.collectApplicationMetrics(ctx)
-	})
-	if err != nil {
-		c.logger.Error("failed to configure cron job for collecting application metrics", zap.Error(err))
-		return err
+	if c.config.Application.Enabled {
+		_, err := cr.AddFunc(c.config.Application.Schedule, func() {
+			c.collectApplicationMetrics(ctx)
+		})
+		if err != nil {
+			c.logger.Error("failed to configure cron job for collecting application metrics", zap.Error(err))
+			return err
+		}
 	}
 
-	_, err = cr.AddFunc(c.config.Deployment.Schedule, func() {
-		c.collectDeploymentMetrics(ctx)
-	})
-	if err != nil {
-		c.logger.Error("failed to configure cron job for collecting deployment metrics", zap.Error(err))
-		return err
+	if c.config.Deployment.Enabled {
+		_, err := cr.AddFunc(c.config.Deployment.Schedule, func() {
+			c.collectDeploymentMetrics(ctx)
+		})
+		if err != nil {
+			c.logger.Error("failed to configure cron job for collecting deployment metrics", zap.Error(err))
+			return err
+		}
 	}
 
 	cr.Start()
