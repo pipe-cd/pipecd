@@ -67,6 +67,7 @@ func NewCollector(ds datastore.DataStore, fs filestore.Store, cfg config.Control
 }
 
 func (c *Collector) Run(ctx context.Context) error {
+	c.logger.Info("start running insight collector", zap.Any("config", c.config))
 	cr := cron.New(cron.WithLocation(time.UTC))
 
 	if c.config.Application.Enabled {
@@ -77,6 +78,7 @@ func (c *Collector) Run(ctx context.Context) error {
 			c.logger.Error("failed to configure cron job for collecting application metrics", zap.Error(err))
 			return err
 		}
+		c.logger.Info("added a cron job for collecting application metrics")
 	}
 
 	if c.config.Deployment.Enabled {
@@ -87,11 +89,13 @@ func (c *Collector) Run(ctx context.Context) error {
 			c.logger.Error("failed to configure cron job for collecting deployment metrics", zap.Error(err))
 			return err
 		}
+		c.logger.Info("added a cron job for collecting deployment metrics")
 	}
 
 	cr.Start()
 	<-ctx.Done()
 	cr.Stop()
+	c.logger.Info("insight collector has been stopped")
 	return nil
 }
 
