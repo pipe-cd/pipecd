@@ -83,11 +83,11 @@ func TestControlPlaneConfig(t *testing.T) {
 				InsightCollector: ControlPlaneInsightCollector{
 					Application: InsightCollectorApplication{
 						Enabled:  true,
-						Schedule: "0 0 * * * *",
+						Schedule: "0 * * * *",
 					},
 					Deployment: InsightCollectorDeployment{
 						Enabled:       true,
-						Schedule:      "0 0 10 * * *",
+						Schedule:      "0 10 * * *",
 						Retries:       3,
 						RetryInterval: Duration(time.Hour),
 					},

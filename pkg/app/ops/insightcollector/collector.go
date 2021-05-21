@@ -52,6 +52,7 @@ func NewCollector(ds datastore.DataStore, fs filestore.Store, cfg config.Control
 		applicationStore: datastore.NewApplicationStore(ds),
 		deploymentStore:  datastore.NewDeploymentStore(ds),
 		insightstore:     insightstore.NewStore(fs),
+		config:           cfg,
 		logger:           logger.Named("insight-collector"),
 	}
 

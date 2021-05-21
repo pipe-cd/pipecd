@@ -214,10 +214,10 @@ func (d *ControlPlaneInsightCollector) UnmarshalJSON(data []byte) error {
 	type alias ControlPlaneInsightCollector
 	a := &alias{
 		Application: InsightCollectorApplication{
-			Schedule: "0 0 * * * *", // Every hour.
+			Schedule: "0 * * * *", // Every hour.
 		},
 		Deployment: InsightCollectorDeployment{
-			Schedule:      "0 30 0,12 * * *", // Every day at 0:30 or 12:30.
+			Schedule:      "30 0,12 * * *", // Every day at 0:30 or 12:30.
 			Retries:       3,
 			RetryInterval: Duration(time.Hour),
 		},
