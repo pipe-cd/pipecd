@@ -38,7 +38,7 @@ func (s *store) LoadApplicationCounts(ctx context.Context, projectID string) (*i
 }
 
 // PutApplicationCounts saves the ApplicationCounts data for a specific project into file store.
-func (s *store) PutApplicationCounts(ctx context.Context, projectID string, counts *insight.ApplicationCounts) error {
+func (s *store) PutApplicationCounts(ctx context.Context, projectID string, counts insight.ApplicationCounts) error {
 	data, err := json.Marshal(counts)
 	if err != nil {
 		return err

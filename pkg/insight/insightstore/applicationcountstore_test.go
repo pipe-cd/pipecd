@@ -55,7 +55,7 @@ func TestLoadApplicationCounts(t *testing.T) {
 			name:      "successfully loaded from filestore",
 			projectID: "pid1",
 			content: `{
-				"accumulated_to": 1609459200,
+				"updated_at": 1609459200,
 				"counts": [
 					{
 						"labels": {
@@ -88,7 +88,7 @@ func TestLoadApplicationCounts(t *testing.T) {
 						Count: 1,
 					},
 				},
-				AccumulatedTo: 1609459200,
+				UpdatedAt: 1609459200,
 			},
 		},
 	}

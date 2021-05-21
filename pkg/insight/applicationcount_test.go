@@ -16,7 +16,83 @@ package insight
 
 import (
 	"testing"
+	"time"
+
+	"github.com/stretchr/testify/assert"
+
+	"github.com/pipe-cd/pipe/pkg/model"
 )
 
 func TestMakeApplicationCounts(t *testing.T) {
+	now := time.Now()
+
+	testcases := []struct {
+		name     string
+		apps     []*model.Application
+		expected ApplicationCounts
+	}{
+		{
+			name: "empty",
+			apps: nil,
+			expected: ApplicationCounts{
+				UpdatedAt: now.Unix(),
+			},
+		},
+		{
+			name: "multiple applications",
+			apps: []*model.Application{
+				{
+					Id:       "1",
+					Kind:     model.ApplicationKind_KUBERNETES,
+					Disabled: false,
+				},
+				{
+					Id:       "2",
+					Kind:     model.ApplicationKind_KUBERNETES,
+					Disabled: false,
+				},
+				{
+					Id:       "3",
+					Kind:     model.ApplicationKind_KUBERNETES,
+					Disabled: true,
+				},
+				{
+					Id:       "4",
+					Kind:     model.ApplicationKind_CLOUDRUN,
+					Disabled: true,
+				},
+			},
+			expected: ApplicationCounts{
+				Counts: []model.InsightApplicationCount{
+					{
+						Labels: map[string]string{
+							"KIND":          "KUBERNETES",
+							"ACTIVE_STATUS": "ENABLED",
+						},
+						Count: 2,
+					},
+					{
+						Labels: map[string]string{
+							"KIND":          "KUBERNETES",
+							"ACTIVE_STATUS": "DISABLED",
+						},
+						Count: 1,
+					},
+					{
+						Labels: map[string]string{
+							"KIND":          "CLOUDRUN",
+							"ACTIVE_STATUS": "DISABLED",
+						},
+						Count: 1,
+					},
+				},
+				UpdatedAt: now.Unix(),
+			},
+		},
+	}
+
+	for _, tc := range testcases {
+		c := MakeApplicationCounts(tc.apps, now)
+		assert.Equal(t, tc.expected, c)
+	}
 }
