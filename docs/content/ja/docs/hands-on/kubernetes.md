@@ -47,7 +47,7 @@ PipeCDにおけるデプロイフローは、PipedがConfig-repoを監視する�
 そのためにもまずは、PipedがConfig-repoにアクセス出来るように設定しておく必要があります。
 
 - SSHキーペアを作成してください
-- 公開鍵をConfig-repoにデプロイキーとして登録してください
+- 公開鍵をConfig-repoに登録してください（Githubをお使いの場合は、[デプロイキー](https://docs.github.com/en/developers/overview/managing-deploy-keys)として登録することが出来ます）
 - 秘密鍵は後ほど利用するので控えておいてください
 
 ### クラスタへPipedをインストールする
