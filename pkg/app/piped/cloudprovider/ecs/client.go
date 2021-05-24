@@ -75,6 +75,7 @@ func (c *client) CreateService(ctx context.Context, service types.Service) (*typ
 		EnableECSManagedTags:          service.EnableECSManagedTags,
 		HealthCheckGracePeriodSeconds: service.HealthCheckGracePeriodSeconds,
 		LoadBalancers:                 service.LoadBalancers,
+		LaunchType:                    service.LaunchType,
 		NetworkConfiguration:          service.NetworkConfiguration,
 		PlacementConstraints:          service.PlacementConstraints,
 		PlacementStrategy:             service.PlacementStrategy,
@@ -132,27 +133,22 @@ func (c *client) RegisterTaskDefinition(ctx context.Context, taskDefinition type
 	return output.TaskDefinition, nil
 }
 
-func (c *client) DeregisterTaskDefinition(ctx context.Context, taskDefinition types.TaskDefinition) (*types.TaskDefinition, error) {
-	input := &ecs.DeregisterTaskDefinitionInput{
-		TaskDefinition: taskDefinition.TaskDefinitionArn,
-	}
-	output, err := c.client.DeregisterTaskDefinition(ctx, input)
-	if err != nil {
-		return nil, fmt.Errorf("failed to deregister ECS task definition %s: %w", *taskDefinition.TaskDefinitionArn, err)
-	}
-	return output.TaskDefinition, nil
-}
-
 func (c *client) CreateTaskSet(ctx context.Context, service types.Service, taskDefinition types.TaskDefinition, percent float64) (*types.TaskSet, error) {
 	input := &ecs.CreateTaskSetInput{
 		Cluster:        service.ClusterArn,
 		Service:        service.ServiceArn,
-		TaskDefinition: taskDefinition.TaskDefinitionArn,
+		TaskDefinition: service.TaskDefinition,
 		Scale:          &types.Scale{Unit: types.ScaleUnitPercent, Value: percent},
 	}
+
+	// If both taskDefinition and service provide TaskDefinitionArn, the TaskDefinitionArn of taskDefinition should has a higher priority.
+	if taskDefinition.TaskDefinitionArn != nil {
+		input.TaskDefinition = taskDefinition.TaskDefinitionArn
+	}
+
 	output, err := c.client.CreateTaskSet(ctx, input)
 	if err != nil {
-		return nil, fmt.Errorf("failed to create ECS task set %s: %w", *taskDefinition.TaskDefinitionArn, err)
+		return nil, fmt.Errorf("failed to create ECS task set %s: %w", *service.TaskDefinition, err)
 	}
 	return output.TaskSet, nil
 }

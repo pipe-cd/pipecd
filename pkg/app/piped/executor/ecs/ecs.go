@@ -122,9 +122,6 @@ func build(ctx context.Context, in *executor.Input, client provider.Client, task
 		return false
 	}
 	var service *types.Service
-	// if serviceDefinition.DeploymentController.Type != types.DeploymentControllerTypeExternal {
-	// 	serviceDefinition.TaskDefinition = td.TaskDefinitionArn
-	// }
 
 	// If the task definition is specificed in service definition, should use that sepecificed version.
 	// Consider check this before register new task definition revision.
@@ -144,9 +141,6 @@ func build(ctx context.Context, in *executor.Input, client provider.Client, task
 			return false
 		}
 	}
-	// service.TaskDefinition = td.TaskDefinitionArn
-	// service.LaunchType = serviceDefinition.LaunchType
-	// service.LoadBalancers = serviceDefinition.LoadBalancers
 
 	// Create a task set in the specified cluster and service and routing traffic to that task set.
 	// This is used when a service uses the EXTERNAL deployment controller type.
