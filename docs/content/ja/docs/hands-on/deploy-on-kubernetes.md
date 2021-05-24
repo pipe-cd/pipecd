@@ -1,6 +1,6 @@
 ---
-title: "Kubernetes"
-linkTitle: "Kubernetes"
+title: "Kubernetesへのデプロイ"
+linkTitle: "Kubernetesへのデプロイ"
 weight: 3
 description: >
   Kubernetesクラスタの上に最初のアプリケーションをデプロイします
