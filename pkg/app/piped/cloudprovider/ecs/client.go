@@ -76,7 +76,6 @@ func (c *client) CreateService(ctx context.Context, service types.Service) (*typ
 		HealthCheckGracePeriodSeconds: service.HealthCheckGracePeriodSeconds,
 		LoadBalancers:                 service.LoadBalancers,
 		LaunchType:                    service.LaunchType,
-		NetworkConfiguration:          service.NetworkConfiguration,
 		PlacementConstraints:          service.PlacementConstraints,
 		PlacementStrategy:             service.PlacementStrategy,
 		PlatformVersion:               service.PlatformVersion,
@@ -85,11 +84,17 @@ func (c *client) CreateService(ctx context.Context, service types.Service) (*typ
 		SchedulingStrategy:            service.SchedulingStrategy,
 		ServiceRegistries:             service.ServiceRegistries,
 		Tags:                          service.Tags,
-		TaskDefinition:                service.TaskDefinition,
 	}
+
+	// In case deployment controller of type EXTERNAL is used
+	//  - TaskDefinitionArn
+	//  - NetworkConfiguration
+	// must be blank.
 	if service.DeploymentController.Type != types.DeploymentControllerTypeExternal {
-		input.LaunchType = service.LaunchType
+		input.TaskDefinition = service.TaskDefinition
+		input.NetworkConfiguration = service.NetworkConfiguration
 	}
+
 	output, err := c.client.CreateService(ctx, input)
 	if err != nil {
 		return nil, fmt.Errorf("failed to create ECS service %s: %w", *service.ServiceName, err)
@@ -134,21 +139,23 @@ func (c *client) RegisterTaskDefinition(ctx context.Context, taskDefinition type
 }
 
 func (c *client) CreateTaskSet(ctx context.Context, service types.Service, taskDefinition types.TaskDefinition, percent float64) (*types.TaskSet, error) {
-	input := &ecs.CreateTaskSetInput{
-		Cluster:        service.ClusterArn,
-		Service:        service.ServiceArn,
-		TaskDefinition: service.TaskDefinition,
-		Scale:          &types.Scale{Unit: types.ScaleUnitPercent, Value: percent},
-	}
-
+	taskDefinitionArn := service.TaskDefinition
 	// If both taskDefinition and service provide TaskDefinitionArn, the TaskDefinitionArn of taskDefinition should has a higher priority.
 	if taskDefinition.TaskDefinitionArn != nil {
-		input.TaskDefinition = taskDefinition.TaskDefinitionArn
+		taskDefinitionArn = taskDefinition.TaskDefinitionArn
+	}
+
+	input := &ecs.CreateTaskSetInput{
+		Cluster:              service.ClusterArn,
+		Service:              service.ServiceArn,
+		TaskDefinition:       taskDefinitionArn,
+		NetworkConfiguration: service.NetworkConfiguration,
+		Scale:                &types.Scale{Unit: types.ScaleUnitPercent, Value: percent},
 	}
 
 	output, err := c.client.CreateTaskSet(ctx, input)
 	if err != nil {
-		return nil, fmt.Errorf("failed to create ECS task set %s: %w", *service.TaskDefinition, err)
+		return nil, fmt.Errorf("failed to create ECS task set for task definition %s: %w", *taskDefinitionArn, err)
 	}
 	return output.TaskSet, nil
 }

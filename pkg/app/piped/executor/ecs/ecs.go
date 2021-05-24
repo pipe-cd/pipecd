@@ -149,6 +149,10 @@ func build(ctx context.Context, in *executor.Input, client provider.Client, task
 	// Note: The deployment controller type can also get from types.Service but this field is omitted if the service is using the ECS
 	// deployment controller type, so that we should use serviceDefinition.DeploymentController instead.
 	if serviceDefinition.DeploymentController.Type == types.DeploymentControllerTypeExternal {
+		if service.NetworkConfiguration == nil {
+			service.NetworkConfiguration = serviceDefinition.NetworkConfiguration
+		}
+
 		taskSet, err := client.CreateTaskSet(ctx, *service, *td, 100)
 		if err != nil {
 			in.LogPersister.Errorf("Failed to create ECS task set %s: %v", *serviceDefinition.ServiceName, err)
