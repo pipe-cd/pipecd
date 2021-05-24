@@ -120,9 +120,6 @@ monitoring:
 # Head to the below link to see all available values.
 # https://github.com/prometheus-community/helm-charts/blob/main/charts/prometheus/values.yaml
 prometheus:
-  server:
-    # Must be fixed so that Grafana can find out statically.
-    fullnameOverride: pipecd-prometheus-server
   pushgateway:
     enabled: false
   nodeExporter:
@@ -132,6 +129,18 @@ prometheus:
   configmapReload:
     prometheus:
       enabled: true
+  alertmanager:
+    enabled: true
+    useClusterRole: true
+  alertmanagerFiles:
+    alertmanager.yml:
+      # The root node of the routing tree.
+      route: {}
+      # A list of notification receivers.
+      receivers: []
+  server:
+    # Must be fixed so that Grafana can find out statically.
+    fullnameOverride: pipecd-prometheus-server
   serverFiles:
     prometheus.yml:
       rule_files:
@@ -187,6 +196,19 @@ prometheus:
               action: keep
               regex: admin
 
+    # TODO: Add Aleting rules
+    alerting_rules.yml:
+      groups:
+        - name: Instances
+          rules:
+            - alert: InstanceDown
+              expr: up == 0
+              for: 5m
+              labels:
+                severity: page
+              annotations:
+                description: '{{ $labels.instance }} of job {{ $labels.job }} has been down for more than 5 minutes.'
+                summary: 'Instance {{ $labels.instance }} down'
 # All directives inside this section will be directly sent to the grafana chart.
 # Head to the below link to see all available values.
 # https://github.com/grafana/helm-charts/tree/main/charts/grafana
