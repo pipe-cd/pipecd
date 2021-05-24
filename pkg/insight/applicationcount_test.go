@@ -15,8 +15,93 @@
 package insight
 
 import (
+	"fmt"
+	"sort"
 	"testing"
+	"time"
+
+	"github.com/stretchr/testify/assert"
+
+	"github.com/pipe-cd/pipe/pkg/model"
 )
 
 func TestMakeApplicationCounts(t *testing.T) {
+	now := time.Now()
+
+	testcases := []struct {
+		name     string
+		apps     []*model.Application
+		expected ApplicationCounts
+	}{
+		{
+			name: "empty",
+			apps: nil,
+			expected: ApplicationCounts{
+				UpdatedAt: now.Unix(),
+			},
+		},
+		{
+			name: "multiple applications",
+			apps: []*model.Application{
+				{
+					Id:       "1",
+					Kind:     model.ApplicationKind_KUBERNETES,
+					Disabled: false,
+				},
+				{
+					Id:       "2",
+					Kind:     model.ApplicationKind_KUBERNETES,
+					Disabled: false,
+				},
+				{
+					Id:       "3",
+					Kind:     model.ApplicationKind_KUBERNETES,
+					Disabled: true,
+				},
+				{
+					Id:       "4",
+					Kind:     model.ApplicationKind_CLOUDRUN,
+					Disabled: true,
+				},
+			},
+			expected: ApplicationCounts{
+				Counts: []model.InsightApplicationCount{
+					{
+						Labels: map[string]string{
+							"KIND":          "KUBERNETES",
+							"ACTIVE_STATUS": "ENABLED",
+						},
+						Count: 2,
+					},
+					{
+						Labels: map[string]string{
+							"KIND":          "KUBERNETES",
+							"ACTIVE_STATUS": "DISABLED",
+						},
+						Count: 1,
+					},
+					{
+						Labels: map[string]string{
+							"KIND":          "CLOUDRUN",
+							"ACTIVE_STATUS": "DISABLED",
+						},
+						Count: 1,
+					},
+				},
+				UpdatedAt: now.Unix(),
+			},
+		},
+	}
+
+	for _, tc := range testcases {
+		c := MakeApplicationCounts(tc.apps, now)
+		// We can use fmt to sort by Labels because maps are printed in key-sorted order.
+		sort.Slice(c.Counts, func(i, j int) bool {
+			return fmt.Sprint(c.Counts[i].Labels) > fmt.Sprint(c.Counts[j].Labels)
+		})
+		sort.Slice(tc.expected.Counts, func(i, j int) bool {
+			return fmt.Sprint(tc.expected.Counts[i].Labels) > fmt.Sprint(tc.expected.Counts[j].Labels)
+		})
+		assert.Equal(t, tc.expected, c)
+	}
 }

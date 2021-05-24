@@ -44,10 +44,7 @@ func (c *Collector) collectApplicationCount(ctx context.Context, apps []*model.A
 }
 
 func (c *Collector) updateApplicationCounts(ctx context.Context, projectID string, apps []*model.Application, target time.Time) error {
-	counts, err := insight.MakeApplicationCounts(apps, target)
-	if err != nil {
-		return fmt.Errorf("failed to make application counts: %w", err)
-	}
+	counts := insight.MakeApplicationCounts(apps, target)
 
 	if err := c.insightstore.PutApplicationCounts(ctx, projectID, counts); err != nil {
 		return fmt.Errorf("failed to put application counts: %w", err)
@@ -73,7 +70,7 @@ func (c *Collector) listApplications(ctx context.Context, to time.Time) ([]*mode
 			Orders: []datastore.Order{
 				{
 					Field:     "CreatedAt",
-					Direction: datastore.Desc,
+					Direction: datastore.Asc,
 				},
 				{
 					Field:     "Id",
