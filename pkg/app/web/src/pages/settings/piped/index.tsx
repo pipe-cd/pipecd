@@ -23,7 +23,6 @@ import {
 import Alert from "@material-ui/lab/Alert";
 import { createSelector } from "@reduxjs/toolkit";
 import { FC, memo, useCallback, useState } from "react";
-import { useDispatch, useSelector } from "react-redux";
 import { AddPipedDrawer } from "../../../components/add-piped-drawer";
 import { EditPipedDrawer } from "../../../components/edit-piped-drawer";
 import { FilterValues, PipedFilter } from "../../../components/piped-filter";
@@ -34,7 +33,7 @@ import {
   UI_TEXT_FILTER,
   UI_TEXT_HIDE_FILTER,
 } from "../../../constants/ui-text";
-import { AppState } from "../../../modules";
+import { useAppDispatch, useAppSelector } from "../../../hooks/redux";
 import {
   clearRegisteredPipedInfo,
   disablePiped,
@@ -44,7 +43,7 @@ import {
   RegisteredPiped,
   selectAllPipeds,
 } from "../../../modules/pipeds";
-import { AppDispatch } from "../../../store";
+import { AppState } from "../../../store";
 import { useSettingsStyles } from "../styles";
 import { PipedTableRow } from "./piped-table-row";
 
@@ -87,12 +86,12 @@ export const SettingsPipedPage: FC = memo(function SettingsPipedPage() {
   const [filterValues, setFilterValues] = useState<FilterValues>({
     enabled: true,
   });
-  const dispatch = useDispatch<AppDispatch>();
-  const pipeds = useSelector((state: AppState) =>
+  const dispatch = useAppDispatch();
+  const pipeds = useAppSelector((state) =>
     selectFilteredPipeds(state, filterValues.enabled)
   );
 
-  const registeredPiped = useSelector<AppState, RegisteredPiped | null>(
+  const registeredPiped = useAppSelector<RegisteredPiped | null>(
     (state) => state.pipeds.registeredPiped
   );
 

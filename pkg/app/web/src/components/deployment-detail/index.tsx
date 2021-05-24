@@ -10,12 +10,11 @@ import CancelIcon from "@material-ui/icons/Cancel";
 import OpenInNewIcon from "@material-ui/icons/OpenInNew";
 import dayjs from "dayjs";
 import { FC, memo } from "react";
-import { useDispatch, useSelector } from "react-redux";
 import { Link as RouterLink } from "react-router-dom";
 import { DEPLOYMENT_STATE_TEXT } from "../../constants/deployment-status-text";
 import { PAGE_PATH_APPLICATIONS } from "../../constants/path";
+import { useAppDispatch, useAppSelector } from "../../hooks/redux";
 import { useInterval } from "../../hooks/use-interval";
-import { AppState } from "../../modules";
 import { ActiveStage } from "../../modules/active-stage";
 import {
   cancelDeployment,
@@ -81,19 +80,20 @@ const LOG_FETCH_INTERVAL = 2000;
 export const DeploymentDetail: FC<DeploymentDetailProps> = memo(
   function DeploymentDetail({ deploymentId }) {
     const classes = useStyles();
-    const dispatch = useDispatch();
+    const dispatch = useAppDispatch();
 
-    const [deployment, activeStage] = useSelector<
-      AppState,
+    const [deployment, activeStage] = useAppSelector<
       [Deployment.AsObject | undefined, ActiveStage | null]
     >((state) => [
       selectDeploymentById(state.deployments, deploymentId),
       state.activeStage,
     ]);
 
-    const env = useSelector(selectEnvById(deployment?.envId));
-    const piped = useSelector(selectPipedById(deployment?.pipedId));
-    const isCanceling = useSelector(selectDeploymentIsCanceling(deploymentId));
+    const env = useAppSelector(selectEnvById(deployment?.envId));
+    const piped = useAppSelector(selectPipedById(deployment?.pipedId));
+    const isCanceling = useAppSelector(
+      selectDeploymentIsCanceling(deploymentId)
+    );
 
     useInterval(
       () => {

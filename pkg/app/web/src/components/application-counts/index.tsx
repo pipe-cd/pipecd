@@ -1,14 +1,13 @@
-import { FC, memo } from "react";
 import { makeStyles } from "@material-ui/core";
-import { useSelector } from "react-redux";
-import { AppState } from "../../modules";
-import { ApplicationCount } from "../application-count";
+import { FC, memo } from "react";
+import { APPLICATION_ACTIVE_STATUS_NAME } from "../../constants/application-active-status";
+import { APPLICATION_KIND_BY_NAME } from "../../constants/application-kind";
+import { useAppSelector } from "../../hooks/redux";
 import {
   ApplicationActiveStatus,
   ApplicationKind,
 } from "../../modules/applications";
-import { APPLICATION_ACTIVE_STATUS_NAME } from "../../constants/application-active-status";
-import { APPLICATION_KIND_BY_NAME } from "../../constants/application-kind";
+import { ApplicationCount } from "../application-count";
 
 const useStyles = makeStyles((theme) => ({
   root: {
@@ -32,10 +31,9 @@ interface ApplicationCountsProps {
 export const ApplicationCounts: FC<ApplicationCountsProps> = memo(
   function ApplicationCounts({ onClick }) {
     const classes = useStyles();
-    const counts = useSelector<
-      AppState,
-      Record<string, Record<string, number>>
-    >((state) => state.applicationCounts.counts);
+    const counts = useAppSelector<Record<string, Record<string, number>>>(
+      (state) => state.applicationCounts.counts
+    );
 
     return (
       <div className={classes.root}>

@@ -1,30 +1,29 @@
-import { FC, memo, useCallback, useEffect, useState } from "react";
 import {
-  makeStyles,
-  Dialog,
-  DialogTitle,
-  DialogContent,
-  DialogActions,
-  DialogContentText,
-  Button,
   Box,
+  Button,
+  Dialog,
+  DialogActions,
+  DialogContent,
+  DialogContentText,
+  DialogTitle,
+  makeStyles,
 } from "@material-ui/core";
-import { PipelineStage } from "../pipeline-stage";
-import { useSelector, useDispatch } from "react-redux";
-import { AppState } from "../../modules";
-import {
-  selectById,
-  Deployment,
-  Stage,
-  approveStage,
-  isDeploymentRunning,
-} from "../../modules/deployments";
-import { fetchStageLog } from "../../modules/stage-logs";
-import { updateActiveStage, ActiveStage } from "../../modules/active-stage";
-import { ApprovalStage } from "../approval-stage";
 import clsx from "clsx";
 import { StageStatus } from "pipe/pkg/app/web/model/deployment_pb";
+import { FC, memo, useCallback, useEffect, useState } from "react";
 import { METADATA_APPROVED_BY } from "../../constants/metadata-keys";
+import { useAppSelector, useAppDispatch } from "../../hooks/redux";
+import { ActiveStage, updateActiveStage } from "../../modules/active-stage";
+import {
+  approveStage,
+  Deployment,
+  isDeploymentRunning,
+  selectById,
+  Stage,
+} from "../../modules/deployments";
+import { fetchStageLog } from "../../modules/stage-logs";
+import { ApprovalStage } from "../approval-stage";
+import { PipelineStage } from "../pipeline-stage";
 
 const WAIT_APPROVAL_NAME = "WAIT_APPROVAL";
 const STAGE_HEIGHT = 56;
@@ -47,8 +46,8 @@ const useDeploymentStage = (
   deploymentId: string
 ): [boolean, Stage[][], Stage | null] => {
   const stages: Stage[][] = [];
-  const deployment = useSelector<AppState, Deployment.AsObject | undefined>(
-    (state) => selectById(state.deployments, deploymentId)
+  const deployment = useAppSelector<Deployment.AsObject | undefined>((state) =>
+    selectById(state.deployments, deploymentId)
   );
 
   if (!deployment) {
@@ -146,15 +145,13 @@ export const Pipeline: FC<PipelineProps> = memo(function Pipeline({
   deploymentId,
 }) {
   const classes = useStyles();
-  const dispatch = useDispatch();
+  const dispatch = useAppDispatch();
   const [approveTargetId, setApproveTargetId] = useState<string | null>(null);
   const isOpenApproveDialog = Boolean(approveTargetId);
   const [isRunning, stages, defaultActiveStage] = useDeploymentStage(
     deploymentId
   );
-  const activeStage = useSelector<AppState, ActiveStage>(
-    (state) => state.activeStage
-  );
+  const activeStage = useAppSelector<ActiveStage>((state) => state.activeStage);
 
   useEffect(() => {
     if (defaultActiveStage) {

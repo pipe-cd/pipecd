@@ -13,24 +13,23 @@ import {
 } from "@material-ui/core";
 import { Add as AddIcon } from "@material-ui/icons";
 import { FC, memo, useState } from "react";
-import { useDispatch, useSelector } from "react-redux";
 import { AddEnvForm } from "../../components/add-env-form";
 import { EnvironmentListItem } from "../../components/environment-list-item";
 import { UI_TEXT_ADD } from "../../constants/ui-text";
+import { useAppDispatch, useAppSelector } from "../../hooks/redux";
 import {
   addEnvironment,
   fetchEnvironments,
   selectEnvIds,
 } from "../../modules/environments";
 import { selectProjectName } from "../../modules/me";
-import { AppDispatch } from "../../store";
 
 export const SettingsEnvironmentPage: FC = memo(
   function SettingsEnvironmentPage() {
-    const dispatch = useDispatch<AppDispatch>();
+    const dispatch = useAppDispatch();
     const [isOpenForm, setIsOpenForm] = useState(false);
-    const projectName = useSelector(selectProjectName);
-    const envIds = useSelector(selectEnvIds);
+    const projectName = useAppSelector(selectProjectName);
+    const envIds = useAppSelector(selectEnvIds);
 
     const handleClose = (): void => {
       setIsOpenForm(false);

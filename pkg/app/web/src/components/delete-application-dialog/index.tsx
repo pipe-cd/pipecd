@@ -1,33 +1,32 @@
-import { FC, memo, useCallback } from "react";
 import {
-  makeStyles,
-  Dialog,
-  DialogTitle,
-  DialogContent,
-  DialogActions,
   Button,
-  Typography,
   CircularProgress,
+  Dialog,
+  DialogActions,
+  DialogContent,
+  DialogTitle,
+  makeStyles,
+  Typography,
 } from "@material-ui/core";
-import { useSelector, useDispatch, shallowEqual } from "react-redux";
+import { red } from "@material-ui/core/colors";
+import { Skeleton } from "@material-ui/lab";
+import Alert from "@material-ui/lab/Alert";
+import { FC, memo, useCallback } from "react";
+import { shallowEqual } from "react-redux";
+import { DELETE_APPLICATION_SUCCESS } from "../../constants/toast-text";
+import { UI_TEXT_CANCEL, UI_TEXT_DELETE } from "../../constants/ui-text";
+import { useAppSelector, useAppDispatch } from "../../hooks/redux";
 import {
-  selectById,
   Application,
   fetchApplications,
+  selectById,
 } from "../../modules/applications";
 import {
   clearDeletingApp,
   deleteApplication,
 } from "../../modules/delete-application";
-import { AppState } from "../../modules";
-import Alert from "@material-ui/lab/Alert";
-import { AppDispatch } from "../../store";
-import { red } from "@material-ui/core/colors";
-import { UI_TEXT_CANCEL, UI_TEXT_DELETE } from "../../constants/ui-text";
-import { useStyles as useButtonStyles } from "../../styles/button";
-import { Skeleton } from "@material-ui/lab";
 import { addToast } from "../../modules/toasts";
-import { DELETE_APPLICATION_SUCCESS } from "../../constants/toast-text";
+import { useStyles as useButtonStyles } from "../../styles/button";
 
 const useStyles = makeStyles((theme) => ({
   applicationName: {
@@ -53,10 +52,9 @@ export const DeleteApplicationDialog: FC = memo(
   function DeleteApplicationDialog() {
     const classes = useStyles();
     const buttonClasses = useButtonStyles();
-    const dispatch = useDispatch<AppDispatch>();
+    const dispatch = useAppDispatch();
 
-    const [application, isDeleting] = useSelector<
-      AppState,
+    const [application, isDeleting] = useAppSelector<
       [Application.AsObject | undefined, boolean]
     >(
       (state) => [

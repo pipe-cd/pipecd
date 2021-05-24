@@ -1,9 +1,8 @@
 import { Middleware, AnyAction, MiddlewareAPI } from "redux";
-import { AppThunk } from "../modules";
 import { addToast } from "../modules/toasts";
 import { AppDispatch } from "../store";
 
-function isPlainAction(action: AppThunk | AnyAction): action is AnyAction {
+function isPlainAction(action: AnyAction): action is AnyAction {
   return typeof action !== "function";
 }
 

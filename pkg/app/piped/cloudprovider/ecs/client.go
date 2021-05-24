@@ -116,12 +116,18 @@ func (c *client) UpdateService(ctx context.Context, service types.Service) (*typ
 
 func (c *client) RegisterTaskDefinition(ctx context.Context, taskDefinition types.TaskDefinition) (*types.TaskDefinition, error) {
 	input := &ecs.RegisterTaskDefinitionInput{
-		ContainerDefinitions: taskDefinition.ContainerDefinitions,
-		Family:               taskDefinition.Family,
+		Family:                  taskDefinition.Family,
+		ContainerDefinitions:    taskDefinition.ContainerDefinitions,
+		RequiresCompatibilities: taskDefinition.RequiresCompatibilities,
+		ExecutionRoleArn:        taskDefinition.ExecutionRoleArn,
+		NetworkMode:             taskDefinition.NetworkMode,
+		// Requires defined at task level in case Fargate is used.
+		Cpu:    taskDefinition.Cpu,
+		Memory: taskDefinition.Memory,
 	}
 	output, err := c.client.RegisterTaskDefinition(ctx, input)
 	if err != nil {
-		return nil, fmt.Errorf("failed to register ECS task definition %s: %w", *taskDefinition.TaskDefinitionArn, err)
+		return nil, fmt.Errorf("failed to register ECS task definition of family %s: %w", *taskDefinition.Family, err)
 	}
 	return output.TaskDefinition, nil
 }

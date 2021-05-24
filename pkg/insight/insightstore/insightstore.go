@@ -21,6 +21,6 @@ type Store interface {
 	LoadMilestone(ctx context.Context) (*insight.Milestone, error)
 	PutMilestone(ctx context.Context, m *insight.Milestone) error
 
-	LoadApplicationCount(ctx context.Context, projectID string) (*insight.ApplicationCount, error)
-	PutApplicationCount(ctx context.Context, ac *insight.ApplicationCount, projectID string) error
+	LoadApplicationCounts(ctx context.Context, projectID string) (*insight.ApplicationCounts, error)
+	PutApplicationCounts(ctx context.Context, projectID string, counts insight.ApplicationCounts) error
 }

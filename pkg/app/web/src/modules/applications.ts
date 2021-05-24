@@ -15,7 +15,7 @@ import {
 } from "pipe/pkg/app/web/model/common_pb";
 import { SyncStrategy } from "./deployments";
 import { fetchCommand, CommandStatus, Command } from "./commands";
-import { AppState } from ".";
+import type { AppState } from "../store";
 
 const MODULE_NAME = "applications";
 

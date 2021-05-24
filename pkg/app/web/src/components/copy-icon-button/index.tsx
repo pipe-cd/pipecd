@@ -1,7 +1,7 @@
 import { IconButton } from "@material-ui/core";
 import { FileCopyOutlined as CopyIcon } from "@material-ui/icons";
 import { FC, useCallback, memo } from "react";
-import { useDispatch } from "react-redux";
+import { useAppDispatch } from "../../hooks/redux";
 import { addToast } from "../../modules/toasts";
 
 export interface CopyIconButtonProps {
@@ -13,7 +13,7 @@ export interface CopyIconButtonProps {
 
 export const CopyIconButton: FC<CopyIconButtonProps> = memo(
   function CopyIconButton({ name, value, className, size }) {
-    const dispatch = useDispatch();
+    const dispatch = useAppDispatch();
     const handleCopy = useCallback(() => {
       navigator.clipboard.writeText(value).then(() => {
         dispatch(addToast({ message: `${name} copied to clipboard.` }));

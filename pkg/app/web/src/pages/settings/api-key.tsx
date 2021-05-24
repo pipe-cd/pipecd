@@ -19,7 +19,6 @@ import { Add as AddIcon, MoreVert as MenuIcon } from "@material-ui/icons";
 import Skeleton from "@material-ui/lab/Skeleton";
 import { FC, memo, useCallback, useEffect, useState } from "react";
 import * as React from "react";
-import { useDispatch, useSelector } from "react-redux";
 import { DisableAPIKeyConfirmDialog } from "../../components/disable-api-key-confirm-dialog";
 import { GenerateAPIKeyDialog } from "../../components/generate-api-key-dialog";
 import { GeneratedAPIKeyDialog } from "../../components/generated-api-key-dialog";
@@ -28,7 +27,6 @@ import {
   DISABLE_API_KEY_SUCCESS,
   GENERATE_API_KEY_SUCCESS,
 } from "../../constants/toast-text";
-import { AppState } from "../../modules";
 import {
   APIKey,
   generateAPIKey,
@@ -37,7 +35,7 @@ import {
   disableAPIKey,
 } from "../../modules/api-keys";
 import { addToast } from "../../modules/toasts";
-import { AppDispatch } from "../../store";
+import { useAppSelector, useAppDispatch } from "../../hooks/redux";
 
 const LoadingSkelton = memo(function LoadingSkelton() {
   return (
@@ -69,8 +67,8 @@ const EmptyTableContent = memo(function EmptyTableContent() {
 });
 
 export const APIKeyPage: FC = memo(function APIKeyPage() {
-  const dispatch = useDispatch<AppDispatch>();
-  const [loading, keys] = useSelector<AppState, [boolean, APIKey.AsObject[]]>(
+  const dispatch = useAppDispatch();
+  const [loading, keys] = useAppSelector<[boolean, APIKey.AsObject[]]>(
     (state) => [state.apiKeys.loading, selectAPIKeys(state.apiKeys)]
   );
   const [isOpenAddForm, setIsOpenAddForm] = useState(false);

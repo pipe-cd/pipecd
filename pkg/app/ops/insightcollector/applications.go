@@ -22,86 +22,80 @@ import (
 	"go.uber.org/zap"
 
 	"github.com/pipe-cd/pipe/pkg/datastore"
-	"github.com/pipe-cd/pipe/pkg/filestore"
 	"github.com/pipe-cd/pipe/pkg/insight"
 	"github.com/pipe-cd/pipe/pkg/model"
 )
 
 // collectApplicationCount collects application count data.
-func (i *InsightCollector) collectApplicationCount(ctx context.Context, apps []*model.Application, target time.Time) error {
+func (c *Collector) collectApplicationCount(ctx context.Context, apps []*model.Application, target time.Time) error {
+	var lastErr error
 	appmap := groupApplicationsByProjectID(apps)
-	var updateErr error
+
 	for pid, apps := range appmap {
-		if err := i.updateApplicationCount(ctx, apps, pid, target); err != nil {
-			updateErr = err
+		if err := c.updateApplicationCounts(ctx, pid, apps, target); err != nil {
+			c.logger.Error("failed to update ApplicationCounts data",
+				zap.String("project", pid),
+				zap.Error(err),
+			)
+			lastErr = err
 		}
 	}
-	return updateErr
+	return lastErr
 }
 
-func (i *InsightCollector) updateApplicationCount(ctx context.Context, apps []*model.Application, pid string, target time.Time) error {
-	a, err := i.insightstore.LoadApplicationCount(ctx, pid)
-	if err != nil {
-		if err == filestore.ErrNotFound {
-			a = insight.NewApplicationCount()
-			oldestApp := findOldestApplication(apps)
-			a.AccumulatedFrom = oldestApp.CreatedAt
-		} else {
-			return fmt.Errorf("load application count: %w", err)
-		}
-	}
+func (c *Collector) updateApplicationCounts(ctx context.Context, projectID string, apps []*model.Application, target time.Time) error {
+	counts := insight.MakeApplicationCounts(apps, target)
 
-	a.MigrateApplicationCount()
-
-	// update application count
-	a.UpdateCount(apps)
-
-	a.AccumulatedTo = target.Unix()
-
-	if err := i.insightstore.PutApplicationCount(ctx, a, pid); err != nil {
-		return fmt.Errorf("put application count: %w", err)
+	if err := c.insightstore.PutApplicationCounts(ctx, projectID, counts); err != nil {
+		return fmt.Errorf("failed to put application counts: %w", err)
 	}
 
 	return nil
 }
 
-func (i *InsightCollector) getApplications(ctx context.Context, to time.Time) ([]*model.Application, error) {
+func (c *Collector) listApplications(ctx context.Context, to time.Time) ([]*model.Application, error) {
+	const limit = 100
+	var cursor string
 	var applications []*model.Application
-	maxCreatedAt := to.Unix()
+
 	for {
-		apps, _, err := i.applicationStore.ListApplications(ctx, datastore.ListOptions{
-			Limit: limit,
+		apps, next, err := c.applicationStore.ListApplications(ctx, datastore.ListOptions{
 			Filters: []datastore.ListFilter{
 				{
-					Field:    "CreatedAt",
-					Operator: "<",
-					Value:    maxCreatedAt,
+					Field:    "Deleted",
+					Operator: "==",
+					Value:    false,
 				},
 			},
 			Orders: []datastore.Order{
 				{
 					Field:     "CreatedAt",
-					Direction: datastore.Desc,
+					Direction: datastore.Asc,
+				},
+				{
+					Field:     "Id",
+					Direction: datastore.Asc,
 				},
 			},
+			Cursor: cursor,
+			Limit:  limit,
 		})
 		if err != nil {
-			i.logger.Error("failed to fetch applications", zap.Error(err))
 			return nil, err
 		}
 
 		applications = append(applications, apps...)
-		if len(apps) < limit {
+		if next == "" {
 			break
 		}
-		maxCreatedAt = apps[len(apps)-1].CreatedAt
+		cursor = next
 	}
 	return applications, nil
 }
 
 // groupApplicationsByProjectID groups applications by projectID
 func groupApplicationsByProjectID(applications []*model.Application) map[string][]*model.Application {
-	apps := map[string][]*model.Application{}
+	apps := make(map[string][]*model.Application)
 	for _, a := range applications {
 		apps[a.ProjectId] = append(apps[a.ProjectId], a)
 	}

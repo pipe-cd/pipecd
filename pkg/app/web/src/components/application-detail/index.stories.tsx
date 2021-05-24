@@ -7,8 +7,8 @@ import { dummyApplicationLiveState } from "../../__fixtures__/dummy-application-
 import { dummyEnv } from "../../__fixtures__/dummy-environment";
 import { dummyPiped } from "../../__fixtures__/dummy-piped";
 import { ApplicationDetail } from "./";
-import { AppState } from "../../modules";
-import { Story } from "@storybook/react/types-6-0";
+import type { AppState } from "../../store";
+import type { Story } from "@storybook/react/types-6-0";
 
 const dummyStore: Partial<AppState> = {
   applications: {

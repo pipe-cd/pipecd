@@ -34,8 +34,8 @@ spec:
     ttl: 5m
 
   insightCollector:
-    schedule: "0 0 * * *"
-    retryIntervalHour: 3
-    disabledMetrics:
-      deploymentFrequency: true
-      changeFailureRate: true
+    application:
+      enabled: true
+    deployment:
+      enabled: true
+      schedule: "0 10 * * *"

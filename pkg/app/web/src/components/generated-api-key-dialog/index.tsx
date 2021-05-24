@@ -7,8 +7,7 @@ import {
   Typography,
 } from "@material-ui/core";
 import { FC, memo, useCallback } from "react";
-import { useDispatch, useSelector } from "react-redux";
-import { AppState } from "../../modules";
+import { useAppSelector, useAppDispatch } from "../../hooks/redux";
 import { clearGeneratedKey } from "../../modules/api-keys";
 import { TextWithCopyButton } from "../text-with-copy-button";
 
@@ -16,8 +15,8 @@ const DIALOG_TITLE = "Generated API Key";
 const VALUE_CAPTION = "API Key";
 
 export const GeneratedAPIKeyDialog: FC = memo(function GeneratedAPIKeyDialog() {
-  const dispatch = useDispatch();
-  const generatedKey = useSelector<AppState, string | null>(
+  const dispatch = useAppDispatch();
+  const generatedKey = useAppSelector<string | null>(
     (state) => state.apiKeys.generatedKey
   );
   const open = Boolean(generatedKey);

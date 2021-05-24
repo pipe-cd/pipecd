@@ -1,5 +1,5 @@
 import { createAsyncThunk, createSlice } from "@reduxjs/toolkit";
-import { AppState } from ".";
+import type { AppState } from "../store";
 import { InsightMetricsKind, InsightDataPoint } from "./insight";
 import dayjs from "dayjs";
 import * as InsightAPI from "../api/insight";

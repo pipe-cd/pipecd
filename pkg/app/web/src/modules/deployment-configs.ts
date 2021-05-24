@@ -5,7 +5,7 @@ import {
   DeploymentConfigTemplate,
 } from "pipe/pkg/app/web/api_client/service_pb";
 import { addApplication } from "./applications";
-import { AppState } from ".";
+import type { AppState } from "../store";
 
 export interface DeploymentConfigsState {
   templates: Record<string, DeploymentConfigTemplate.AsObject[]>;

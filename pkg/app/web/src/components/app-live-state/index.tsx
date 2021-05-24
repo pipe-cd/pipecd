@@ -1,7 +1,5 @@
 import { FC, memo } from "react";
 import { Box, makeStyles, Typography } from "@material-ui/core";
-import { useSelector } from "react-redux";
-import { AppState } from "../../modules";
 import {
   ApplicationLiveState,
   selectById,
@@ -11,6 +9,7 @@ import Skeleton from "@material-ui/lab/Skeleton";
 import { ApplicationHealthStatusIcon } from "../health-status-icon";
 import { APPLICATION_HEALTH_STATUS_TEXT } from "../../constants/health-status-text";
 import { UI_TEXT_NOT_AVAILABLE_TEXT } from "../../constants/ui-text";
+import { useAppSelector } from "../../hooks/redux";
 
 const useStyles = makeStyles((theme) => ({
   liveStateText: {
@@ -26,8 +25,7 @@ export const AppLiveState: FC<AppLiveStateProps> = memo(function AppLiveState({
   applicationId,
 }) {
   const classes = useStyles();
-  const [liveState, liveStateLoading] = useSelector<
-    AppState,
+  const [liveState, liveStateLoading] = useAppSelector<
     [ApplicationLiveState | undefined, boolean]
   >((state) => [
     selectById(state.applicationLiveState, applicationId),

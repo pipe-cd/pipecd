@@ -29,7 +29,7 @@ import (
 
 const limit = 50
 
-func (c *InsightCollector) collectDeploymentChangeFailureRate(ctx context.Context, ds []*model.Deployment, target time.Time) error {
+func (c *Collector) collectDeploymentChangeFailureRate(ctx context.Context, ds []*model.Deployment, target time.Time) error {
 	apps, projects := groupDeployments(ds)
 
 	var updateErr error
@@ -49,7 +49,7 @@ func (c *InsightCollector) collectDeploymentChangeFailureRate(ctx context.Contex
 	return updateErr
 }
 
-func (c *InsightCollector) collectDevelopmentFrequency(ctx context.Context, ds []*model.Deployment, target time.Time) error {
+func (c *Collector) collectDevelopmentFrequency(ctx context.Context, ds []*model.Deployment, target time.Time) error {
 	apps, projects := groupDeployments(ds)
 
 	var updateErr error
@@ -69,7 +69,7 @@ func (c *InsightCollector) collectDevelopmentFrequency(ctx context.Context, ds [
 	return updateErr
 }
 
-func (c *InsightCollector) findDeploymentsCreatedInRange(ctx context.Context, from, to int64) ([]*model.Deployment, error) {
+func (c *Collector) findDeploymentsCreatedInRange(ctx context.Context, from, to int64) ([]*model.Deployment, error) {
 	filters := []datastore.ListFilter{
 		{
 			Field:    "CreatedAt",
@@ -109,7 +109,7 @@ func (c *InsightCollector) findDeploymentsCreatedInRange(ctx context.Context, fr
 	return deployments, nil
 }
 
-func (c *InsightCollector) findDeploymentsCompletedInRange(ctx context.Context, from, to int64) ([]*model.Deployment, error) {
+func (c *Collector) findDeploymentsCompletedInRange(ctx context.Context, from, to int64) ([]*model.Deployment, error) {
 	filters := []datastore.ListFilter{
 		{
 			Field:    "CompletedAt",
@@ -150,7 +150,7 @@ func (c *InsightCollector) findDeploymentsCompletedInRange(ctx context.Context, 
 }
 
 // updateApplicationChunks updates chunk in filestore
-func (c *InsightCollector) updateApplicationChunks(ctx context.Context, projectID, appID string, deployments []*model.Deployment, kind model.InsightMetricsKind, targetDate time.Time) error {
+func (c *Collector) updateApplicationChunks(ctx context.Context, projectID, appID string, deployments []*model.Deployment, kind model.InsightMetricsKind, targetDate time.Time) error {
 	chunkFiles, err := c.insightstore.LoadChunks(ctx, projectID, appID, kind, model.InsightStep_MONTHLY, targetDate, 1)
 	var chunk insight.Chunk
 	if err == filestore.ErrNotFound {

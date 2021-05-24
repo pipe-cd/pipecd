@@ -22,44 +22,37 @@ import (
 	"github.com/pipe-cd/pipe/pkg/insight"
 )
 
-// LoadApplicationCount loads insight.ApplicationCount.
-func (s *store) LoadApplicationCount(ctx context.Context, projectID string) (*insight.ApplicationCount, error) {
-	a := &insight.ApplicationCount{}
+// LoadApplicationCounts loads ApplicationCounts data for a specific project from file store.
+func (s *store) LoadApplicationCounts(ctx context.Context, projectID string) (*insight.ApplicationCounts, error) {
 	obj, err := s.filestore.GetObject(ctx, determineFilePath(projectID))
 	if err != nil {
 		return nil, err
 	}
-	err = json.Unmarshal(obj.Content, a)
-	if err != nil {
+
+	counts := &insight.ApplicationCounts{}
+	if err := json.Unmarshal(obj.Content, counts); err != nil {
 		return nil, err
 	}
 
-	return a, nil
+	return counts, nil
 }
 
-// PutApplicationCount creates or updates insight.ApplicationCount.
-func (s *store) PutApplicationCount(ctx context.Context, ac *insight.ApplicationCount, projectID string) error {
-	data, err := json.Marshal(ac)
+// PutApplicationCounts saves the ApplicationCounts data for a specific project into file store.
+func (s *store) PutApplicationCounts(ctx context.Context, projectID string, counts insight.ApplicationCounts) error {
+	data, err := json.Marshal(counts)
 	if err != nil {
 		return err
 	}
 	return s.filestore.PutObject(ctx, determineFilePath(projectID), data)
 }
 
-// File paths according to the following format.
+// File paths will be decided as below:
 //
 // insights
-//  ├─ projects  # aggregated application counts in all projects
-//    ├─ applications-count
-//       ├─ applications-count.json
 //  ├─ project-id
 //    ├─ applications-count
-//       ├─ applications-count.json
+//       ├─ applications-counts.json
 func determineFilePath(projectID string) string {
-	const applicationsCountFilePathFormat = "insights/%s/applications-count/applications-count.json"
-
-	if projectID == "" {
-		projectID = "projects"
-	}
-	return fmt.Sprintf(applicationsCountFilePathFormat, projectID)
+	const path = "insights/%s/applications-count/applications-counts.json"
+	return fmt.Sprintf(path, projectID)
 }

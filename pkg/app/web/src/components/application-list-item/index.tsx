@@ -12,12 +12,11 @@ import MenuIcon from "@material-ui/icons/MoreVert";
 import clsx from "clsx";
 import dayjs from "dayjs";
 import { FC, memo, useState } from "react";
-import { useSelector } from "react-redux";
 import { Link as RouterLink } from "react-router-dom";
 import { APPLICATION_KIND_TEXT } from "../../constants/application-kind";
 import { PAGE_PATH_APPLICATIONS } from "../../constants/path";
 import { UI_TEXT_NOT_AVAILABLE_TEXT } from "../../constants/ui-text";
-import { AppState } from "../../modules";
+import { useAppSelector } from "../../hooks/redux";
 import { Application, selectById } from "../../modules/applications";
 import { selectEnvById } from "../../modules/environments";
 import { AppSyncStatus } from "../app-sync-status";
@@ -62,10 +61,10 @@ export const ApplicationListItem: FC<ApplicationListItemProps> = memo(
   }) {
     const classes = useStyles();
     const [anchorEl, setAnchorEl] = useState<HTMLButtonElement | null>(null);
-    const app = useSelector<AppState, Application.AsObject | undefined>(
-      (state) => selectById(state.applications, applicationId)
+    const app = useAppSelector<Application.AsObject | undefined>((state) =>
+      selectById(state.applications, applicationId)
     );
-    const env = useSelector(selectEnvById(app?.envId));
+    const env = useAppSelector(selectEnvById(app?.envId));
 
     const handleEdit = (): void => {
       setAnchorEl(null);

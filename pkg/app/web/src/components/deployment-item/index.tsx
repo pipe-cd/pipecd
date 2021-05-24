@@ -1,12 +1,11 @@
 import { Box, ListItem, makeStyles, Typography } from "@material-ui/core";
 import dayjs from "dayjs";
 import { FC, memo } from "react";
-import { useSelector } from "react-redux";
 import { Link as RouterLink } from "react-router-dom";
 import { APPLICATION_KIND_TEXT } from "../../constants/application-kind";
 import { DEPLOYMENT_STATE_TEXT } from "../../constants/deployment-status-text";
 import { PAGE_PATH_DEPLOYMENTS } from "../../constants/path";
-import { AppState } from "../../modules";
+import { useAppSelector } from "../../hooks/redux";
 import {
   Deployment,
   selectById as selectDeploymentById,
@@ -48,10 +47,10 @@ const NO_DESCRIPTION = "No description.";
 export const DeploymentItem: FC<DeploymentItemProps> = memo(
   function DeploymentItem({ id }) {
     const classes = useStyles();
-    const deployment = useSelector<AppState, Deployment.AsObject | undefined>(
+    const deployment = useAppSelector<Deployment.AsObject | undefined>(
       (state) => selectDeploymentById(state.deployments, id)
     );
-    const env = useSelector(selectEnvById(deployment?.envId));
+    const env = useAppSelector(selectEnvById(deployment?.envId));
 
     if (!deployment || !env) {
       return null;

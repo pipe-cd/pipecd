@@ -37,6 +37,7 @@ import (
 	"github.com/pipe-cd/pipe/pkg/config"
 	"github.com/pipe-cd/pipe/pkg/crypto"
 	"github.com/pipe-cd/pipe/pkg/datastore"
+	"github.com/pipe-cd/pipe/pkg/filestore"
 	"github.com/pipe-cd/pipe/pkg/git"
 	"github.com/pipe-cd/pipe/pkg/insight/insightstore"
 	"github.com/pipe-cd/pipe/pkg/model"
@@ -60,6 +61,7 @@ type WebAPI struct {
 	applicationLiveStateStore applicationlivestatestore.Store
 	insightstore              insightstore.Store
 	commandStore              commandstore.Store
+	insightStore              insightstore.Store
 	encrypter                 encrypter
 
 	appProjectCache        cache.Cache
@@ -75,6 +77,7 @@ type WebAPI struct {
 func NewWebAPI(
 	ctx context.Context,
 	ds datastore.DataStore,
+	fs filestore.Store,
 	sls stagelogstore.Store,
 	alss applicationlivestatestore.Store,
 	cmds commandstore.Store,
@@ -94,6 +97,7 @@ func NewWebAPI(
 		insightstore:              is,
 		applicationLiveStateStore: alss,
 		commandStore:              cmds,
+		insightStore:              insightstore.NewStore(fs),
 		projectsInConfig:          projs,
 		encrypter:                 encrypter,
 		appProjectCache:           memorycache.NewTTLCache(ctx, 24*time.Hour, 3*time.Hour),
@@ -1452,53 +1456,29 @@ func (a *WebAPI) GetInsightData(ctx context.Context, req *webservice.GetInsightD
 }
 
 func (a *WebAPI) GetInsightApplicationCount(ctx context.Context, req *webservice.GetInsightApplicationCountRequest) (*webservice.GetInsightApplicationCountResponse, error) {
-	_, err := rpcauth.ExtractClaims(ctx)
+	claims, err := rpcauth.ExtractClaims(ctx)
 	if err != nil {
 		a.logger.Error("failed to authenticate the current user", zap.Error(err))
 		return nil, err
 	}
 
-	// TODO: Fetch application count data from insight store.
-	counts := []*model.InsightApplicationCount{
-		{
-			Labels: map[string]string{
-				model.InsightApplicationCountLabelKey_KIND.String():          model.ApplicationKind_KUBERNETES.String(),
-				model.InsightApplicationCountLabelKey_ACTIVE_STATUS.String(): model.ApplicationActiveStatus_ENABLED.String(),
-			},
-			Count: 123,
-		},
-		{
-			Labels: map[string]string{
-				model.InsightApplicationCountLabelKey_KIND.String():          model.ApplicationKind_KUBERNETES.String(),
-				model.InsightApplicationCountLabelKey_ACTIVE_STATUS.String(): model.ApplicationActiveStatus_DISABLED.String(),
-			},
-			Count: 8,
-		},
-		{
-			Labels: map[string]string{
-				model.InsightApplicationCountLabelKey_KIND.String():          model.ApplicationKind_TERRAFORM.String(),
-				model.InsightApplicationCountLabelKey_ACTIVE_STATUS.String(): model.ApplicationActiveStatus_ENABLED.String(),
-			},
-			Count: 75,
-		},
-		{
-			Labels: map[string]string{
-				model.InsightApplicationCountLabelKey_KIND.String():          model.ApplicationKind_LAMBDA.String(),
-				model.InsightApplicationCountLabelKey_ACTIVE_STATUS.String(): model.ApplicationActiveStatus_DISABLED.String(),
-			},
-			Count: 2,
-		},
-		{
-			Labels: map[string]string{
-				model.InsightApplicationCountLabelKey_KIND.String():          model.ApplicationKind_CLOUDRUN.String(),
-				model.InsightApplicationCountLabelKey_ACTIVE_STATUS.String(): model.ApplicationActiveStatus_ENABLED.String(),
-			},
-			Count: 15,
-		},
+	// TODO: Cache application counts in the cache service.
+	c, err := a.insightStore.LoadApplicationCounts(ctx, claims.Role.ProjectId)
+	if err != nil {
+		if err == filestore.ErrNotFound {
+			return nil, status.Error(codes.NotFound, "Not found")
+		}
+		a.logger.Error("failed to load application counts", zap.Error(err))
+		return nil, status.Error(codes.Internal, "failed to load application counts")
+	}
+
+	counts := make([]*model.InsightApplicationCount, 0, len(c.Counts))
+	for i := range c.Counts {
+		counts = append(counts, &c.Counts[i])
 	}
 
 	return &webservice.GetInsightApplicationCountResponse{
-		UpdatedAt: time.Now().Unix(),
 		Counts:    counts,
+		UpdatedAt: c.UpdatedAt,
 	}, nil
 }

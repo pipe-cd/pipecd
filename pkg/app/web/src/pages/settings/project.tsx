@@ -1,11 +1,10 @@
 import { makeStyles } from "@material-ui/core";
 import { FC, memo, useEffect } from "react";
-import { useDispatch } from "react-redux";
 import { GithubSSOForm } from "../../components/github-sso-form";
 import { RBACForm } from "../../components/rbac-form";
 import { StaticAdminForm } from "../../components/static-admin-form";
+import { useAppDispatch } from "../../hooks/redux";
 import { fetchProject } from "../../modules/project";
-import { AppDispatch } from "../../store";
 
 const useStyles = makeStyles((theme) => ({
   main: {
@@ -18,7 +17,7 @@ const useStyles = makeStyles((theme) => ({
 
 export const SettingsProjectPage: FC = memo(function SettingsProjectPage() {
   const classes = useStyles();
-  const dispatch = useDispatch<AppDispatch>();
+  const dispatch = useAppDispatch();
 
   useEffect(() => {
     dispatch(fetchProject());

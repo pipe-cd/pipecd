@@ -1,27 +1,26 @@
 import {
   Divider,
+  IconButton,
   makeStyles,
   Toolbar,
-  IconButton,
   Typography,
 } from "@material-ui/core";
-import { FC, memo, useCallback, useState } from "react";
-import { useSelector, useDispatch } from "react-redux";
-import { AppState } from "../../modules";
-import { StageLog, selectStageLogById } from "../../modules/stage-logs";
-import { Log } from "../log";
 import { Close } from "@material-ui/icons";
-import { clearActiveStage } from "../../modules/active-stage";
-import { selectById, Stage, isStageRunning } from "../../modules/deployments";
-import Draggable from "react-draggable";
 import clsx from "clsx";
+import { FC, memo, useCallback, useState } from "react";
+import Draggable from "react-draggable";
+import { useAppSelector, useAppDispatch } from "../../hooks/redux";
+import { clearActiveStage } from "../../modules/active-stage";
+import { isStageRunning, selectById, Stage } from "../../modules/deployments";
+import { selectStageLogById, StageLog } from "../../modules/stage-logs";
 import { APP_HEADER_HEIGHT } from "../header";
+import { Log } from "../log";
 
 const INITIAL_HEIGHT = 400;
 const TOOLBAR_HEIGHT = 48;
 
 function useActiveStageLog(): [Stage | null, StageLog | null] {
-  return useSelector<AppState, [Stage | null, StageLog | null]>((state) => {
+  return useAppSelector<[Stage | null, StageLog | null]>((state) => {
     if (!state.activeStage) {
       return [null, null];
     }
@@ -94,7 +93,7 @@ export const LogViewer: FC = memo(function LogViewer() {
     document.body.clientHeight - APP_HEADER_HEIGHT - TOOLBAR_HEIGHT;
   const classes = useStyles();
   const [activeStage, stageLog] = useActiveStageLog();
-  const dispatch = useDispatch();
+  const dispatch = useAppDispatch();
   const [handlePosY, setHandlePosY] = useState(maxHandlePosY - INITIAL_HEIGHT);
   const logViewHeight = maxHandlePosY - handlePosY;
 

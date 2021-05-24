@@ -15,6 +15,8 @@
 package insight
 
 import (
+	"fmt"
+	"sort"
 	"testing"
 	"time"
 
@@ -23,295 +25,83 @@ import (
 	"github.com/pipe-cd/pipe/pkg/model"
 )
 
-func TestApplicationCount_Find(t *testing.T) {
-	applicationCount := &ApplicationCount{
-		Counts: []ApplicationCountByLabelSet{
-			{
-				LabelSet: ApplicationCountLabelSet{
-					Kind:   model.ApplicationKind_CLOUDRUN,
-					Status: ApplicationStatusEnable,
-				},
-				Count: 1,
-			},
-		},
-	}
-	tests := []struct {
-		name     string
-		ac       *ApplicationCount
-		labelSet ApplicationCountLabelSet
-		want     ApplicationCountByLabelSet
-		wantErr  bool
-	}{
-		{
-			name: "success",
-			ac:   applicationCount,
-			labelSet: ApplicationCountLabelSet{
-				Kind:   model.ApplicationKind_CLOUDRUN,
-				Status: ApplicationStatusEnable,
-			},
-			want: ApplicationCountByLabelSet{
-				LabelSet: ApplicationCountLabelSet{
-					Kind:   model.ApplicationKind_CLOUDRUN,
-					Status: ApplicationStatusEnable,
-				},
-				Count: 1,
-			},
-		},
-		{
-			name: "not found",
-			ac:   applicationCount,
-			labelSet: ApplicationCountLabelSet{
-				Kind:   model.ApplicationKind_CLOUDRUN,
-				Status: ApplicationStatusDisable,
-			},
-			wantErr: true,
-		},
-	}
-	for _, tt := range tests {
-		t.Run(tt.name, func(t *testing.T) {
-			got, err := tt.ac.Find(tt.labelSet)
-			if (err != nil) != tt.wantErr {
-				if !tt.wantErr {
-					assert.NoError(t, err)
-					return
-				}
-				assert.Error(t, err, tt.wantErr)
-				return
-			}
-			assert.Equal(t, tt.want, got)
-		})
-	}
-}
+func TestMakeApplicationCounts(t *testing.T) {
+	now := time.Now()
 
-func TestApplicationCount_MigrateApplicationCount(t *testing.T) {
-	applicationCount := &ApplicationCount{
-		Counts: []ApplicationCountByLabelSet{
-			{
-				LabelSet: ApplicationCountLabelSet{
-					Kind:   model.ApplicationKind_CLOUDRUN,
-					Status: ApplicationStatusEnable,
-				},
-				Count: 1,
-			},
-		},
-	}
-	tests := []struct {
-		name string
-		ac   *ApplicationCount
-		want *ApplicationCount
+	testcases := []struct {
+		name     string
+		apps     []*model.Application
+		expected ApplicationCounts
 	}{
 		{
-			name: "success",
-			ac:   applicationCount,
-			want: &ApplicationCount{
-				Counts: []ApplicationCountByLabelSet{
+			name: "empty",
+			apps: nil,
+			expected: ApplicationCounts{
+				UpdatedAt: now.Unix(),
+			},
+		},
+		{
+			name: "multiple applications",
+			apps: []*model.Application{
+				{
+					Id:       "1",
+					Kind:     model.ApplicationKind_KUBERNETES,
+					Disabled: false,
+				},
+				{
+					Id:       "2",
+					Kind:     model.ApplicationKind_KUBERNETES,
+					Disabled: false,
+				},
+				{
+					Id:       "3",
+					Kind:     model.ApplicationKind_KUBERNETES,
+					Disabled: true,
+				},
+				{
+					Id:       "4",
+					Kind:     model.ApplicationKind_CLOUDRUN,
+					Disabled: true,
+				},
+			},
+			expected: ApplicationCounts{
+				Counts: []model.InsightApplicationCount{
 					{
-						LabelSet: ApplicationCountLabelSet{
-							Kind:   model.ApplicationKind_CLOUDRUN,
-							Status: ApplicationStatusEnable,
+						Labels: map[string]string{
+							"KIND":          "KUBERNETES",
+							"ACTIVE_STATUS": "ENABLED",
+						},
+						Count: 2,
+					},
+					{
+						Labels: map[string]string{
+							"KIND":          "KUBERNETES",
+							"ACTIVE_STATUS": "DISABLED",
 						},
 						Count: 1,
 					},
 					{
-						LabelSet: ApplicationCountLabelSet{
-							Kind:   model.ApplicationKind_KUBERNETES,
-							Status: ApplicationStatusEnable,
+						Labels: map[string]string{
+							"KIND":          "CLOUDRUN",
+							"ACTIVE_STATUS": "DISABLED",
 						},
-					},
-					{
-						LabelSet: ApplicationCountLabelSet{
-							Kind:   model.ApplicationKind_KUBERNETES,
-							Status: ApplicationStatusDisable,
-						},
-					},
-					{
-						LabelSet: ApplicationCountLabelSet{
-							Kind:   model.ApplicationKind_KUBERNETES,
-							Status: ApplicationStatusDeleted,
-						},
-					},
-					{
-						LabelSet: ApplicationCountLabelSet{
-							Kind:   model.ApplicationKind_TERRAFORM,
-							Status: ApplicationStatusEnable,
-						},
-					},
-					{
-						LabelSet: ApplicationCountLabelSet{
-							Kind:   model.ApplicationKind_TERRAFORM,
-							Status: ApplicationStatusDisable,
-						},
-					},
-					{
-						LabelSet: ApplicationCountLabelSet{
-							Kind:   model.ApplicationKind_TERRAFORM,
-							Status: ApplicationStatusDeleted,
-						},
-					},
-					{
-						LabelSet: ApplicationCountLabelSet{
-							Kind:   model.ApplicationKind_CROSSPLANE,
-							Status: ApplicationStatusEnable,
-						},
-					},
-					{
-						LabelSet: ApplicationCountLabelSet{
-							Kind:   model.ApplicationKind_CROSSPLANE,
-							Status: ApplicationStatusDisable,
-						},
-					},
-					{
-						LabelSet: ApplicationCountLabelSet{
-							Kind:   model.ApplicationKind_CROSSPLANE,
-							Status: ApplicationStatusDeleted,
-						},
-					},
-					{
-						LabelSet: ApplicationCountLabelSet{
-							Kind:   model.ApplicationKind_LAMBDA,
-							Status: ApplicationStatusEnable,
-						},
-					},
-					{
-						LabelSet: ApplicationCountLabelSet{
-							Kind:   model.ApplicationKind_LAMBDA,
-							Status: ApplicationStatusDisable,
-						},
-					},
-					{
-						LabelSet: ApplicationCountLabelSet{
-							Kind:   model.ApplicationKind_LAMBDA,
-							Status: ApplicationStatusDeleted,
-						},
-					},
-					{
-						LabelSet: ApplicationCountLabelSet{
-							Kind:   model.ApplicationKind_CLOUDRUN,
-							Status: ApplicationStatusDisable,
-						},
-					},
-					{
-						LabelSet: ApplicationCountLabelSet{
-							Kind:   model.ApplicationKind_CLOUDRUN,
-							Status: ApplicationStatusDeleted,
-						},
-					},
-					{
-						LabelSet: ApplicationCountLabelSet{
-							Kind:   model.ApplicationKind_ECS,
-							Status: ApplicationStatusEnable,
-						},
-					},
-					{
-						LabelSet: ApplicationCountLabelSet{
-							Kind:   model.ApplicationKind_ECS,
-							Status: ApplicationStatusDisable,
-						},
-					},
-					{
-						LabelSet: ApplicationCountLabelSet{
-							Kind:   model.ApplicationKind_ECS,
-							Status: ApplicationStatusDeleted,
-						},
+						Count: 1,
 					},
 				},
+				UpdatedAt: now.Unix(),
 			},
 		},
 	}
-	for _, tt := range tests {
-		t.Run(tt.name, func(t *testing.T) {
-			ac := tt.ac
-			ac.MigrateApplicationCount()
-			assert.Equal(t, tt.want, ac)
+
+	for _, tc := range testcases {
+		c := MakeApplicationCounts(tc.apps, now)
+		// We can use fmt to sort by Labels because maps are printed in key-sorted order.
+		sort.Slice(c.Counts, func(i, j int) bool {
+			return fmt.Sprint(c.Counts[i].Labels) > fmt.Sprint(c.Counts[j].Labels)
 		})
-	}
-}
-
-func TestApplicationCount_UpdateCount(t *testing.T) {
-	applicationCount := func() *ApplicationCount {
-		// init application count
-		ac := NewApplicationCount()
-
-		for i := 0; i < len(ac.Counts); i++ {
-			c := &ac.Counts[i]
-			enable := ApplicationCountLabelSet{
-				Kind:   model.ApplicationKind_CLOUDRUN,
-				Status: ApplicationStatusEnable,
-			}
-			if c.LabelSet == enable {
-				c.Count = 1
-			}
-		}
-		return ac
-	}()
-	tests := []struct {
-		name    string
-		ac      *ApplicationCount
-		apps    []*model.Application
-		want    *ApplicationCount
-		wantErr bool
-	}{
-		{
-			name: "success",
-			ac:   applicationCount,
-			apps: []*model.Application{
-				{
-					Kind:      model.ApplicationKind_CLOUDRUN,
-					Disabled:  true,
-					CreatedAt: time.Date(2020, 1, 1, 1, 0, 0, 0, time.UTC).Unix(),
-				},
-				{
-					Kind:      model.ApplicationKind_CLOUDRUN,
-					Deploying: true,
-					CreatedAt: time.Date(2020, 1, 1, 2, 0, 0, 0, time.UTC).Unix(),
-				},
-				{
-					Kind:      model.ApplicationKind_CLOUDRUN,
-					Deleted:   true,
-					CreatedAt: time.Date(2020, 1, 1, 2, 0, 0, 0, time.UTC).Unix(),
-				},
-				{
-					Kind:      model.ApplicationKind_CLOUDRUN,
-					Deploying: true,
-					CreatedAt: time.Date(2020, 1, 1, 3, 0, 0, 0, time.UTC).Unix(),
-				},
-			},
-			want: func() *ApplicationCount {
-				ac := NewApplicationCount()
-				for i := 0; i < len(ac.Counts); i++ {
-					c := &ac.Counts[i]
-					enable := ApplicationCountLabelSet{
-						Kind:   model.ApplicationKind_CLOUDRUN,
-						Status: ApplicationStatusEnable,
-					}
-					delete := ApplicationCountLabelSet{
-						Kind:   model.ApplicationKind_CLOUDRUN,
-						Status: ApplicationStatusDeleted,
-					}
-					disable := ApplicationCountLabelSet{
-						Kind:   model.ApplicationKind_CLOUDRUN,
-						Status: ApplicationStatusDisable,
-					}
-					if c.LabelSet == enable {
-						c.Count = 2
-					}
-					if c.LabelSet == delete {
-						c.Count = 1
-					}
-					if c.LabelSet == disable {
-						c.Count = 1
-					}
-				}
-
-				return ac
-			}(),
-		},
-	}
-	for _, tt := range tests {
-		t.Run(tt.name, func(t *testing.T) {
-			ac := tt.ac
-			ac.UpdateCount(tt.apps)
-			assert.Equal(t, tt.want, ac)
+		sort.Slice(tc.expected.Counts, func(i, j int) bool {
+			return fmt.Sprint(tc.expected.Counts[i].Labels) > fmt.Sprint(tc.expected.Counts[j].Labels)
 		})
+		assert.Equal(t, tc.expected, c)
 	}
 }
