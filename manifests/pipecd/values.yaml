@@ -129,11 +129,14 @@ prometheus:
   configmapReload:
     prometheus:
       enabled: true
-      extraConfigmapMounts:
-        - name: rules
-          mountPath: /etc/rules
-          readOnly: true
-          configMap: pipecd-prometheus-server-rules
+      # TODO: Ensure to reload alerting_rules when changed.
+      #extraVolumeDirs:
+      #  - /etc/rules
+      #extraConfigmapMounts:
+      #  - name: rules
+      #    mountPath: /etc/rules
+      #    readOnly: true
+      #    configMap: pipecd-prometheus-server-rules
     alertmanager:
       enabled: true
   alertmanager:
@@ -148,6 +151,11 @@ prometheus:
   server:
     # Must be fixed so that Grafana can find out statically.
     fullnameOverride: pipecd-prometheus-server
+    extraConfigmapMounts:
+      - name: rules
+        mountPath: /etc/rules
+        readOnly: true
+        configMap: pipecd-prometheus-server-rules
   serverFiles:
     prometheus.yml:
       rule_files:
