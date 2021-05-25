@@ -28,7 +28,6 @@ import (
 )
 
 type client struct {
-	region string
 	client *ecs.Client
 	logger *zap.Logger
 }
@@ -132,17 +131,6 @@ func (c *client) RegisterTaskDefinition(ctx context.Context, taskDefinition type
 	return output.TaskDefinition, nil
 }
 
-func (c *client) DeregisterTaskDefinition(ctx context.Context, taskDefinition types.TaskDefinition) (*types.TaskDefinition, error) {
-	input := &ecs.DeregisterTaskDefinitionInput{
-		TaskDefinition: taskDefinition.TaskDefinitionArn,
-	}
-	output, err := c.client.DeregisterTaskDefinition(ctx, input)
-	if err != nil {
-		return nil, fmt.Errorf("failed to deregister ECS task definition %s: %w", *taskDefinition.TaskDefinitionArn, err)
-	}
-	return output.TaskDefinition, nil
-}
-
 func (c *client) CreateTaskSet(ctx context.Context, service types.Service, taskDefinition types.TaskDefinition, percent float64) (*types.TaskSet, error) {
 	input := &ecs.CreateTaskSetInput{
 		Cluster:        service.ClusterArn,
@@ -153,19 +141,6 @@ func (c *client) CreateTaskSet(ctx context.Context, service types.Service, taskD
 	output, err := c.client.CreateTaskSet(ctx, input)
 	if err != nil {
 		return nil, fmt.Errorf("failed to create ECS task set %s: %w", *taskDefinition.TaskDefinitionArn, err)
-	}
-	return output.TaskSet, nil
-}
-
-func (c *client) DeleteTaskSet(ctx context.Context, service types.Service, taskSet types.TaskSet) (*types.TaskSet, error) {
-	input := &ecs.DeleteTaskSetInput{
-		Cluster: service.ClusterArn,
-		Service: service.ServiceArn,
-		TaskSet: taskSet.TaskSetArn,
-	}
-	output, err := c.client.DeleteTaskSet(ctx, input)
-	if err != nil {
-		return nil, fmt.Errorf("failed to delete ECS task set %s: %w", *taskSet.TaskSetArn, err)
 	}
 	return output.TaskSet, nil
 }
