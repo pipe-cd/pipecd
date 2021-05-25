@@ -51,9 +51,10 @@ spec:
     name: Sample
     serviceDefinition: path/to/servicedef.yaml
     taskDefinition: path/to/taskdef.yaml
-    loadBalancerInfo:
-        containerName: sample-app
-        containerPort: 80
+    loadBalancers:
+        - targetGroupArn: {PRIMARY_TARGET_GROUP_ARN}
+          containerName: sample-app
+          containerPort: 80
   pipeline:
     stages:
       # Deploy workloads of the new version.
@@ -70,7 +71,7 @@ spec:
       # a rollback process to the previous version will be executed.
       - name: ANALYSIS
       # Change the traffic routing state where
-      # thre new version will receive 100% of the traffic.
+      # the new version will receive 100% of the traffic.
       - name: ECS_TRAFFIC_ROUTING
         with:
           canary: 100
