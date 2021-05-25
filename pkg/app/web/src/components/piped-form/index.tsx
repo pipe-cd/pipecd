@@ -12,7 +12,7 @@ import CheckBoxOutlineBlankIcon from "@material-ui/icons/CheckBoxOutlineBlank";
 import Autocomplete from "@material-ui/lab/Autocomplete";
 import { FormikProps } from "formik";
 import { FC, memo } from "react";
-import * as Yup from "yup";
+import * as yup from "yup";
 import { useAppSelector } from "../../hooks/redux";
 import {
   Environment,
@@ -29,10 +29,10 @@ const useStyles = makeStyles((theme) => ({
   },
 }));
 
-export const validationSchema = Yup.object().shape({
-  name: Yup.string().required(),
-  desc: Yup.string().required(),
-  envIds: Yup.array().required(),
+export const validationSchema = yup.object().shape({
+  name: yup.string().required(),
+  desc: yup.string().required(),
+  envIds: yup.array().required().min(1),
 });
 
 export interface PipedFormValues {

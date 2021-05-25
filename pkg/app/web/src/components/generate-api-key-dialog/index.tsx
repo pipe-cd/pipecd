@@ -12,7 +12,7 @@ import {
 } from "@material-ui/core";
 import { useFormik } from "formik";
 import { FC } from "react";
-import * as Yup from "yup";
+import * as yup from "yup";
 import { API_KEY_ROLE_TEXT } from "../../constants/api-key-role-text";
 import { APIKey } from "../../modules/api-keys";
 export interface GenerateAPIKeyDialogProps {
@@ -21,9 +21,9 @@ export interface GenerateAPIKeyDialogProps {
   onSubmit: (values: { name: string; role: APIKey.Role }) => void;
 }
 
-const validationSchema = Yup.object({
-  name: Yup.string().min(1).required(),
-  role: Yup.number().required(),
+const validationSchema = yup.object({
+  name: yup.string().min(1).required(),
+  role: yup.number().required(),
 });
 
 export const GenerateAPIKeyDialog: FC<GenerateAPIKeyDialogProps> = ({

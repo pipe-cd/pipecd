@@ -8,7 +8,7 @@ import {
   Box,
 } from "@material-ui/core";
 import { useFormik } from "formik";
-import * as Yup from "yup";
+import * as yup from "yup";
 
 const useStyles = makeStyles((theme) => ({
   title: {
@@ -19,9 +19,9 @@ const useStyles = makeStyles((theme) => ({
   },
 }));
 
-const validationSchema = Yup.object({
-  name: Yup.string().required("Required"),
-  desc: Yup.string().required("Required"),
+const validationSchema = yup.object({
+  name: yup.string().required("Required"),
+  desc: yup.string().required("Required"),
 });
 
 export interface AddEnvFormProps {

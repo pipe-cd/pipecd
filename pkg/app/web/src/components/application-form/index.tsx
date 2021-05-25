@@ -11,7 +11,7 @@ import {
 import { FormikProps } from "formik";
 import { ApplicationKind } from "pipe/pkg/app/web/model/common_pb";
 import { FC, memo, ReactElement } from "react";
-import * as Yup from "yup";
+import * as yup from "yup";
 import { APPLICATION_KIND_TEXT } from "../../constants/application-kind";
 import { UI_TEXT_CANCEL, UI_TEXT_SAVE } from "../../constants/ui-text";
 import { useAppSelector } from "../../hooks/redux";
@@ -112,18 +112,20 @@ function FormSelectInput<T extends { name: string; value: string }>({
   );
 }
 
-export const validationSchema = Yup.object().shape({
-  name: Yup.string().required(),
-  kind: Yup.number().required(),
-  env: Yup.string().required(),
-  pipedId: Yup.string().required(),
-  repo: Yup.object({
-    id: Yup.string().required(),
-    remote: Yup.string().required(),
-    branch: Yup.string().required(),
-  }).required(),
-  repoPath: Yup.string().required(),
-  cloudProvider: Yup.string().required(),
+export const validationSchema = yup.object().shape({
+  name: yup.string().required(),
+  kind: yup.number().required(),
+  env: yup.string().required(),
+  pipedId: yup.string().required(),
+  repo: yup
+    .object({
+      id: yup.string().required(),
+      remote: yup.string().required(),
+      branch: yup.string().required(),
+    })
+    .required(),
+  repoPath: yup.string().required(),
+  cloudProvider: yup.string().required(),
 });
 
 export interface ApplicationFormValue {

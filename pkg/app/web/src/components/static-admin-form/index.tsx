@@ -15,7 +15,7 @@ import Skeleton from "@material-ui/lab/Skeleton/Skeleton";
 import clsx from "clsx";
 import { useFormik } from "formik";
 import { FC, memo, useState } from "react";
-import * as Yup from "yup";
+import * as yup from "yup";
 import { STATIC_ADMIN_DESCRIPTION } from "../../constants/text";
 import { UPDATE_STATIC_ADMIN_INFO_SUCCESS } from "../../constants/toast-text";
 import { UI_TEXT_CANCEL, UI_TEXT_SAVE } from "../../constants/ui-text";
@@ -38,9 +38,9 @@ const useStyles = makeStyles(() => ({
 const SECTION_TITLE = "Static Admin";
 const DIALOG_TITLE = `Edit ${SECTION_TITLE}`;
 
-const validationSchema = Yup.object().shape({
-  username: Yup.string().min(1).required(),
-  password: Yup.string().min(1).required(),
+const validationSchema = yup.object().shape({
+  username: yup.string().min(1).required(),
+  password: yup.string().min(1).required(),
 });
 
 const StaticAdminDialog: FC<{
