@@ -76,7 +76,7 @@
     "@primer/octicons-react": "^10.0.0",
     "@reduxjs/toolkit": "^1.3.6",
     "@types/dagre": "^0.7.44",
-    "@types/yup": "^0.29.9",
+    "@types/yup": "^0.29.11",
     "clsx": "^1.1.1",
     "dagre": "^0.8.5",
     "dayjs": "^1.8.28",
@@ -97,6 +97,6 @@
     "react-redux": "^7.2.0",
     "react-router-dom": "^5.2.0",
     "redux": "^4.0.5",
-    "yup": "^0.29.3"
+    "yup": "^0.32.9"
   }
 }

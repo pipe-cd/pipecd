@@ -12,7 +12,7 @@ import {
 } from "@material-ui/core";
 import { useFormik } from "formik";
 import { FC, memo, useCallback } from "react";
-import * as Yup from "yup";
+import * as yup from "yup";
 import { UI_TEXT_CANCEL, UI_TEXT_CLOSE } from "../../constants/ui-text";
 import { useAppDispatch, useAppSelector } from "../../hooks/redux";
 import { Application, selectById } from "../../modules/applications";
@@ -48,9 +48,9 @@ const DIALOG_TITLE = "Encrypting secret data for application";
 const BASE64_CHECKBOX_LABEL =
   "Use base64 encoding before encrypting the secret";
 
-const validationSchema = Yup.object({
-  secretData: Yup.string().required(),
-  base64: Yup.bool(),
+const validationSchema = yup.object({
+  secretData: yup.string().required(),
+  base64: yup.bool(),
 });
 
 export const SealedSecretDialog: FC<SealedSecretDialogProps> = memo(
