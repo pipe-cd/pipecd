@@ -25,4 +25,16 @@ data:
   {{ trimPrefix "grafana-dashboards/" $path | nindent 2 }}: |-
     {{ $.Files.Get $path | nindent 4 }}
 {{ end }}
+---
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: pipecd-prometheus-server-rules
+  labels:
+    {{- include "pipecd.labels" . | nindent 4 }}
+data:
+{{ range $path, $_ :=  .Files.Glob  "prom-rules/**.yml" }}
+  {{ trimPrefix "prom-rules/" $path | nindent 2 }}: |-
+    {{ $.Files.Get $path | nindent 4 }}
+{{ end }}
 {{- end }}

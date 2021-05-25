@@ -129,6 +129,13 @@ prometheus:
   configmapReload:
     prometheus:
       enabled: true
+      extraConfigmapMounts:
+        - name: rules
+          mountPath: /etc/rules
+          readOnly: true
+          configMap: pipecd-prometheus-server-rules
+    alertmanager:
+      enabled: true
   alertmanager:
     enabled: true
     useClusterRole: true
@@ -145,7 +152,7 @@ prometheus:
     prometheus.yml:
       rule_files:
         - /etc/config/recording_rules.yml
-        - /etc/config/alerting_rules.yml
+        - /etc/rules/alerting_rules.yml
 
       scrape_configs:
         - job_name: prometheus
@@ -196,19 +203,6 @@ prometheus:
               action: keep
               regex: admin
 
-    # TODO: Add Aleting rules
-    alerting_rules.yml:
-      groups:
-        - name: Instances
-          rules:
-            - alert: InstanceDown
-              expr: up == 0
-              for: 5m
-              labels:
-                severity: page
-              annotations:
-                description: '{{ $labels.instance }} of job {{ $labels.job }} has been down for more than 5 minutes.'
-                summary: 'Instance {{ $labels.instance }} down'
 # All directives inside this section will be directly sent to the grafana chart.
 # Head to the below link to see all available values.
 # https://github.com/grafana/helm-charts/tree/main/charts/grafana
