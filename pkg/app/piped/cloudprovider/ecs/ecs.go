@@ -37,7 +37,9 @@ type Client interface {
 	CreateService(ctx context.Context, service types.Service) (*types.Service, error)
 	UpdateService(ctx context.Context, service types.Service) (*types.Service, error)
 	RegisterTaskDefinition(ctx context.Context, taskDefinition types.TaskDefinition) (*types.TaskDefinition, error)
-	CreateTaskSet(ctx context.Context, service types.Service, taskDefinition types.TaskDefinition, percent float64) (*types.TaskSet, error)
+	GetPrimaryTaskSet(ctx context.Context, service types.Service) (*types.TaskSet, error)
+	CreateTaskSet(ctx context.Context, service types.Service, taskDefinition types.TaskDefinition) (*types.TaskSet, error)
+	DeleteTaskSet(ctx context.Context, service types.Service, taskSet types.TaskSet) error
 	UpdateServicePrimaryTaskSet(ctx context.Context, service types.Service, taskSet types.TaskSet) (*types.TaskSet, error)
 }
 

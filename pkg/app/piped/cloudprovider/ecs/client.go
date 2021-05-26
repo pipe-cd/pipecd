@@ -85,9 +85,6 @@ func (c *client) CreateService(ctx context.Context, service types.Service) (*typ
 		SchedulingStrategy:            service.SchedulingStrategy,
 		ServiceRegistries:             service.ServiceRegistries,
 		Tags:                          service.Tags,
-		LaunchType:                    service.LaunchType,
-		// TaskDefinition:                service.TaskDefinition,
-		// NetworkConfiguration:          service.NetworkConfiguration,
 	}
 
 	output, err := c.client.CreateService(ctx, input)
@@ -135,7 +132,7 @@ func (c *client) RegisterTaskDefinition(ctx context.Context, taskDefinition type
 	return output.TaskDefinition, nil
 }
 
-func (c *client) CreateTaskSet(ctx context.Context, service types.Service, taskDefinition types.TaskDefinition, percent float64) (*types.TaskSet, error) {
+func (c *client) CreateTaskSet(ctx context.Context, service types.Service, taskDefinition types.TaskDefinition) (*types.TaskSet, error) {
 	if taskDefinition.TaskDefinitionArn == nil {
 		return nil, fmt.Errorf("failed to create task set of task family %s: no task definition provided", *taskDefinition.Family)
 	}
@@ -143,7 +140,8 @@ func (c *client) CreateTaskSet(ctx context.Context, service types.Service, taskD
 		Cluster:        service.ClusterArn,
 		Service:        service.ServiceArn,
 		TaskDefinition: taskDefinition.TaskDefinitionArn,
-		Scale:          &types.Scale{Unit: types.ScaleUnitPercent, Value: percent},
+		// Always create a new taskSet which has as many tasks as desiredCount number set by service.
+		Scale: &types.Scale{Unit: types.ScaleUnitPercent, Value: float64(100)},
 		// If you specify the awsvpc network mode, the task is allocated an elastic network interface,
 		// and you must specify a NetworkConfiguration when run a task with the task definition.
 		// TODO: Find better way to get those 2 values instead of set it via service def.
@@ -155,6 +153,38 @@ func (c *client) CreateTaskSet(ctx context.Context, service types.Service, taskD
 		return nil, fmt.Errorf("failed to create ECS task set %s: %w", *taskDefinition.TaskDefinitionArn, err)
 	}
 	return output.TaskSet, nil
+}
+
+func (c *client) GetPrimaryTaskSet(ctx context.Context, service types.Service) (*types.TaskSet, error) {
+	input := &ecs.DescribeServicesInput{
+		Cluster: service.ClusterArn,
+		Services: []string{
+			*service.ServiceArn,
+		},
+	}
+	output, err := c.client.DescribeServices(ctx, input)
+	if err != nil {
+		return nil, fmt.Errorf("failed to get primary task set of service %s: %w", *service.ServiceName, err)
+	}
+	taskSets := output.Services[0].TaskSets
+	for _, taskSet := range taskSets {
+		if aws.ToString(taskSet.Status) == "PRIMARY" {
+			return &taskSet, nil
+		}
+	}
+	return nil, nil
+}
+
+func (c *client) DeleteTaskSet(ctx context.Context, service types.Service, taskSet types.TaskSet) error {
+	input := &ecs.DeleteTaskSetInput{
+		Cluster: service.ClusterArn,
+		Service: service.ServiceArn,
+		TaskSet: taskSet.TaskSetArn,
+	}
+	if _, err := c.client.DeleteTaskSet(ctx, input); err != nil {
+		return fmt.Errorf("failed to delete ECS task set %s: %w", *taskSet.TaskSetArn, err)
+	}
+	return nil
 }
 
 func (c *client) UpdateServicePrimaryTaskSet(ctx context.Context, service types.Service, taskSet types.TaskSet) (*types.TaskSet, error) {

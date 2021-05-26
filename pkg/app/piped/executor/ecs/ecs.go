@@ -137,23 +137,35 @@ func build(ctx context.Context, in *executor.Input, client provider.Client, task
 		}
 	}
 
-	// service.TaskDefinition = td.TaskDefinitionArn
-	// service.LoadBalancers = serviceDefinition.LoadBalancers
-
 	// hack: Set this two value to enable create TaskSet (those values are ignored on Update/Create Service).
 	service.LaunchType = serviceDefinition.LaunchType
 	service.NetworkConfiguration = serviceDefinition.NetworkConfiguration
 
-	// Create a task set in the specified cluster and service and routing traffic to that task set.
-	taskSet, err := client.CreateTaskSet(ctx, *service, *td, 100)
+	// Get current PRIMARY task set.
+	prevPrimaryTaskSet, err := client.GetPrimaryTaskSet(ctx, *service)
+	if err != nil {
+		in.LogPersister.Errorf("Failed to create ECS task set %s: %v", *serviceDefinition.ServiceName, err)
+	}
+
+	// Create a task set in the specified cluster and service.
+	taskSet, err := client.CreateTaskSet(ctx, *service, *td)
 	if err != nil {
 		in.LogPersister.Errorf("Failed to create ECS task set %s: %v", *serviceDefinition.ServiceName, err)
 		return false
 	}
 
+	// Make new taskSet as PRIMARY task set, so that it will handle production service.
 	if _, err = client.UpdateServicePrimaryTaskSet(ctx, *service, *taskSet); err != nil {
 		in.LogPersister.Errorf("Failed to update service primary ECS task set %s: %v", *serviceDefinition.ServiceName, err)
 		return false
+	}
+
+	// Remove old taskSet if existed.
+	if prevPrimaryTaskSet != nil {
+		if err = client.DeleteTaskSet(ctx, *service, *prevPrimaryTaskSet); err != nil {
+			in.LogPersister.Errorf("Faield to remove unused taskSet %s: %v", *prevPrimaryTaskSet.TaskSetArn, err)
+			return false
+		}
 	}
 
 	in.LogPersister.Info("Successfully applied the service definition and the task definition")

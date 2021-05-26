@@ -107,7 +107,7 @@ func rollback(ctx context.Context, in *executor.Input, cloudProviderName string,
 		return false
 	}
 
-	if _, err := client.CreateTaskSet(ctx, serviceDefinition, taskDefinition, 100); err != nil {
+	if _, err := client.CreateTaskSet(ctx, serviceDefinition, taskDefinition); err != nil {
 		in.LogPersister.Errorf("Failed to create ECS task set %s: %v", *serviceDefinition.ServiceName, err)
 		return false
 	}
