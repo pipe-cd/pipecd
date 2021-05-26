@@ -50,7 +50,6 @@ const useStyles = makeStyles((theme) => ({
   },
 }));
 
-// TODO: Remove showCounts parameter after implements showCounts API
 export const ApplicationIndexPage: FC = memo(function ApplicationIndexPage() {
   const classes = useStyles();
   const dispatch = useAppDispatch();
@@ -65,9 +64,6 @@ export const ApplicationIndexPage: FC = memo(function ApplicationIndexPage() {
   const addedApplicationId = useAppSelector<string | null>(
     (state) => state.deploymentConfigs.targetApplicationId
   );
-  const showCounts = filterOptions.showCounts
-    ? Boolean(filterOptions.showCounts)
-    : undefined;
   const currentPage =
     typeof filterOptions.page === "string"
       ? parseInt(filterOptions.page, 10)
@@ -91,8 +87,8 @@ export const ApplicationIndexPage: FC = memo(function ApplicationIndexPage() {
     [updateURL]
   );
   const handleFilterClear = useCallback(() => {
-    updateURL({ showCounts, page: currentPage });
-  }, [updateURL, showCounts, currentPage]);
+    updateURL({ page: currentPage });
+  }, [updateURL, currentPage]);
 
   const handleRefresh = useCallback(() => {
     dispatch(fetchApplications(filterOptions));
@@ -160,9 +156,7 @@ export const ApplicationIndexPage: FC = memo(function ApplicationIndexPage() {
 
       <div className={classes.main}>
         <Box display="flex" flexDirection="column" flex={1} p={2}>
-          {showCounts && (
-            <ApplicationCounts onClick={handleApplicationCountClick} />
-          )}
+          <ApplicationCounts onClick={handleApplicationCountClick} />
           <ApplicationList
             currentPage={currentPage}
             onPageChange={handlePageChange}

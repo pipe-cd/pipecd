@@ -1,4 +1,5 @@
 import { createAsyncThunk, createSlice } from "@reduxjs/toolkit";
+import { StatusCode } from "grpc-web";
 import {
   ApplicationActiveStatus,
   ApplicationKind,
@@ -45,7 +46,17 @@ const initialState: ApplicationCounts = {
 export const fetchApplicationCount = createAsyncThunk(
   `${MODULE_NAME}/fetch`,
   async (): Promise<ApplicationCounts> => {
-    const res = await getApplicationCount();
+    const res = await getApplicationCount().catch((e: { code: number }) => {
+      // NOT_FOUND is the initial normal state, so it is excluded from error handling.
+      if (e.code !== StatusCode.NOT_FOUND) {
+        throw e;
+      }
+    });
+
+    if (!res) {
+      // Handling of errors with code NOT_FOUND.
+      return initialState;
+    }
 
     const counts: Record<
       string,
@@ -85,7 +96,7 @@ export const applicationCountsSlice = createSlice({
   initialState,
   reducers: {},
   extraReducers: (builder) => {
-    builder.addCase(fetchApplicationCount.fulfilled, (state, action) => {
+    builder.addCase(fetchApplicationCount.fulfilled, (_, action) => {
       return action.payload;
     });
   },
