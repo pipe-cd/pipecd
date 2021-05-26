@@ -29,3 +29,20 @@ export function createHandler<T extends { serializeBinary(): Uint8Array }>(
     }
   );
 }
+
+export function createHandlerWithError(
+  serviceName: string,
+  statusCode: number
+): HandlerType {
+  return rest.post(createMask(serviceName), (_, res, ctx) => {
+    return res(
+      ctx.status(200),
+      ctx.set({
+        "content-length": "0",
+        "content-type": "application/grpc-web+proto",
+        "grpc-message": "Error Message",
+        "grpc-status": `${statusCode}`,
+      })
+    );
+  });
+}
