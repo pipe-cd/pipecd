@@ -1,4 +1,3 @@
-import { StatusCode } from "grpc-web";
 import {
   GetInsightDataResponse,
   GetInsightApplicationCountResponse,
