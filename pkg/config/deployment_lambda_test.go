@@ -39,7 +39,8 @@ func TestLambdaDeploymentConfig(t *testing.T) {
 					Timeout: Duration(6 * time.Hour),
 				},
 				Input: LambdaDeploymentInput{
-					AutoRollback: true,
+					FunctionManifestFile: "function.yaml",
+					AutoRollback:         true,
 				},
 			},
 			expectedError: nil,

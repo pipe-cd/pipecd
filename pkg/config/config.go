@@ -21,6 +21,7 @@ import (
 	"fmt"
 	"io/ioutil"
 
+	"github.com/creasty/defaults"
 	"sigs.k8s.io/yaml"
 
 	"github.com/pipe-cd/pipe/pkg/model"
@@ -79,7 +80,6 @@ type Config struct {
 	APIVersion string
 	spec       interface{}
 
-	// Deployment specs.
 	KubernetesDeploymentSpec *KubernetesDeploymentSpec
 	TerraformDeploymentSpec  *TerraformDeploymentSpec
 	CloudRunDeploymentSpec   *CloudRunDeploymentSpec
@@ -106,11 +106,7 @@ func (c *Config) init(kind Kind, apiVersion string) error {
 
 	switch kind {
 	case KindKubernetesApp:
-		c.KubernetesDeploymentSpec = &KubernetesDeploymentSpec{
-			Input: KubernetesDeploymentInput{
-				AutoRollback: true,
-			},
-		}
+		c.KubernetesDeploymentSpec = &KubernetesDeploymentSpec{}
 		c.spec = c.KubernetesDeploymentSpec
 
 	case KindTerraformApp:
@@ -118,27 +114,15 @@ func (c *Config) init(kind Kind, apiVersion string) error {
 		c.spec = c.TerraformDeploymentSpec
 
 	case KindCloudRunApp:
-		c.CloudRunDeploymentSpec = &CloudRunDeploymentSpec{
-			Input: CloudRunDeploymentInput{
-				AutoRollback: true,
-			},
-		}
+		c.CloudRunDeploymentSpec = &CloudRunDeploymentSpec{}
 		c.spec = c.CloudRunDeploymentSpec
 
 	case KindLambdaApp:
-		c.LambdaDeploymentSpec = &LambdaDeploymentSpec{
-			Input: LambdaDeploymentInput{
-				AutoRollback: true,
-			},
-		}
+		c.LambdaDeploymentSpec = &LambdaDeploymentSpec{}
 		c.spec = c.LambdaDeploymentSpec
 
 	case KindECSApp:
-		c.ECSDeploymentSpec = &ECSDeploymentSpec{
-			Input: ECSDeploymentInput{
-				AutoRollback: true,
-			},
-		}
+		c.ECSDeploymentSpec = &ECSDeploymentSpec{}
 		c.spec = c.ECSDeploymentSpec
 
 	case KindPiped:
@@ -236,6 +220,9 @@ func DecodeYAML(data []byte) (*Config, error) {
 	}
 	c := &Config{}
 	if err := json.Unmarshal(js, c); err != nil {
+		return nil, err
+	}
+	if err := defaults.Set(c); err != nil {
 		return nil, err
 	}
 	if err := c.Validate(); err != nil {

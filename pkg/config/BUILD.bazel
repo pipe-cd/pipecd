@@ -23,6 +23,7 @@ go_library(
     visibility = ["//visibility:public"],
     deps = [
         "//pkg/model:go_default_library",
+        "@com_github_creasty_defaults//:go_default_library",
         "@com_github_golang_protobuf//jsonpb:go_default_library_gen",
         "@io_k8s_sigs_yaml//:go_default_library",
     ],

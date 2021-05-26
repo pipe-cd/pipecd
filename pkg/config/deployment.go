@@ -39,13 +39,10 @@ type GenericDeploymentSpec struct {
 	TriggerPaths []string `json:"triggerPaths,omitempty"`
 	// The maximum length of time to execute deployment before giving up.
 	// Default is 6h.
-	Timeout Duration `json:"timeout,omitempty"`
+	Timeout Duration `json:"timeout,omitempty" default:"6h"`
 }
 
 func (s *GenericDeploymentSpec) Validate() error {
-	if s.Timeout == 0 {
-		s.Timeout = Duration(6 * time.Hour)
-	}
 	if s.Pipeline != nil {
 		for _, stage := range s.Pipeline.Stages {
 			if stage.AnalysisStageOptions != nil {
