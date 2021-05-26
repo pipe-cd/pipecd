@@ -40,7 +40,7 @@ type ECSDeploymentInput struct {
 	TaskDefinitionFile string `json:"taskDefinitionFile"`
 	// Automatically reverts all changes from all stages when one of them failed.
 	// Default is true.
-	AutoRollback bool `json:"autoRollback"`
+	AutoRollback bool `json:"autoRollback" default:"true"`
 }
 
 // ECSSyncStageOptions contains all configurable values for a ECS_SYNC stage.

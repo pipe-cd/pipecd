@@ -25,8 +25,6 @@ import (
 	"github.com/pipe-cd/pipe/pkg/config"
 )
 
-const defaultFunctionManifestFilename = "function.yaml"
-
 // Client is wrapper of AWS client.
 type Client interface {
 	IsFunctionExist(ctx context.Context, name string) (bool, error)
@@ -45,9 +43,6 @@ type Registry interface {
 
 // LoadFunctionManifest returns FunctionManifest object from a given Function config manifest file.
 func LoadFunctionManifest(appDir, functionManifestFilename string) (FunctionManifest, error) {
-	if functionManifestFilename == "" {
-		functionManifestFilename = defaultFunctionManifestFilename
-	}
 	path := filepath.Join(appDir, functionManifestFilename)
 	return loadFunctionManifest(path)
 }

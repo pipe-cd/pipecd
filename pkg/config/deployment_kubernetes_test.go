@@ -73,7 +73,9 @@ func TestKubernetesDeploymentConfig(t *testing.T) {
 					},
 					Timeout: Duration(6 * time.Hour),
 				},
-				Input: KubernetesDeploymentInput{AutoRollback: true},
+				Input: KubernetesDeploymentInput{
+					AutoRollback: true,
+				},
 				TrafficRouting: &KubernetesTrafficRouting{
 					Method: KubernetesTrafficRoutingMethodPodSelector,
 				},

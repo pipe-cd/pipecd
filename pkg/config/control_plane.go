@@ -200,35 +200,14 @@ type ControlPlaneInsightCollector struct {
 
 type InsightCollectorApplication struct {
 	Enabled  bool   `json:"enabled"`
-	Schedule string `json:"schedule"`
+	Schedule string `json:"schedule" default:"0 * * * *"`
 }
 
 type InsightCollectorDeployment struct {
 	Enabled       bool     `json:"enabled"`
-	Schedule      string   `json:"schedule"`
-	Retries       int      `json:"retries"`
-	RetryInterval Duration `json:"retryInterval"`
-}
-
-func (d *ControlPlaneInsightCollector) UnmarshalJSON(data []byte) error {
-	type alias ControlPlaneInsightCollector
-	a := &alias{
-		Application: InsightCollectorApplication{
-			Schedule: "0 * * * *", // Every hour.
-		},
-		Deployment: InsightCollectorDeployment{
-			Schedule:      "30 0,12 * * *", // Every day at 0:30 or 12:30.
-			Retries:       3,
-			RetryInterval: Duration(time.Hour),
-		},
-	}
-
-	if err := json.Unmarshal(data, a); err != nil {
-		return err
-	}
-
-	*d = ControlPlaneInsightCollector(*a)
-	return nil
+	Schedule      string   `json:"schedule" default:"30 0,12 * * *"`
+	Retries       int      `json:"retries" default:"3"`
+	RetryInterval Duration `json:"retryInterval" default:"1h"`
 }
 
 func (c ControlPlaneCache) TTLDuration() time.Duration {

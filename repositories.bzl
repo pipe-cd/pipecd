@@ -275,6 +275,13 @@ def go_repositories():
         version = "v1.1.9",
     )
     go_repository(
+        name = "com_github_creasty_defaults",
+        importpath = "github.com/creasty/defaults",
+        sum = "h1:j8WexcS3d/t4ZmllX4GEkl4wIB/trOr035ajcLHCISM=",
+        version = "v1.5.1",
+    )
+
+    go_repository(
         name = "com_github_cucumber_gherkin_go_v13",
         importpath = "github.com/cucumber/gherkin-go/v13",
         sum = "h1:d09AwPZldyOFlCADAIZQMt7T+VHCrGdp5106+BCIfZU=",

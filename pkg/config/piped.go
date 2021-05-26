@@ -16,8 +16,8 @@ package config
 
 import (
 	"encoding/json"
+	"errors"
 	"fmt"
-	"time"
 
 	"github.com/pipe-cd/pipe/pkg/model"
 )
@@ -42,7 +42,7 @@ type PipedSpec struct {
 	WebAddress string `json:"webAddress"`
 	// How often to check whether an application should be synced.
 	// Default is 1m.
-	SyncInterval Duration `json:"syncInterval"`
+	SyncInterval Duration `json:"syncInterval" default:"1m"`
 	// Git configuration needed for git commands.
 	Git PipedGit `json:"git"`
 	// List of git repositories this piped will handle.
@@ -64,22 +64,22 @@ type PipedSpec struct {
 // Validate validates configured data of all fields.
 func (s *PipedSpec) Validate() error {
 	if s.ProjectID == "" {
-		return fmt.Errorf("projectID must be set")
+		return errors.New("projectID must be set")
 	}
 	if s.PipedID == "" {
-		return fmt.Errorf("pipedID must be set")
+		return errors.New("pipedID must be set")
 	}
 	if s.PipedKeyFile == "" {
-		return fmt.Errorf("pipedKeyFile must be set")
+		return errors.New("pipedKeyFile must be set")
 	}
 	if s.APIAddress == "" {
-		return fmt.Errorf("apiAddress must be set")
+		return errors.New("apiAddress must be set")
 	}
 	if s.WebAddress == "" {
-		return fmt.Errorf("webAddress must be set")
+		return errors.New("webAddress must be set")
 	}
 	if s.SyncInterval < 0 {
-		s.SyncInterval = Duration(time.Minute)
+		return errors.New("syncInterval must be greater than or equal to 0")
 	}
 	if s.SealedSecretManagement != nil {
 		if err := s.SealedSecretManagement.Validate(); err != nil {

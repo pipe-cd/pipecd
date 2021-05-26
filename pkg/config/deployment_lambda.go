@@ -34,10 +34,10 @@ func (s *LambdaDeploymentSpec) Validate() error {
 type LambdaDeploymentInput struct {
 	// The name of service manifest file placing in application directory.
 	// Default is function.yaml
-	FunctionManifestFile string `json:"functionManifestFile"`
+	FunctionManifestFile string `json:"functionManifestFile" default:"function.yaml"`
 	// Automatically reverts all changes from all stages when one of them failed.
 	// Default is true.
-	AutoRollback bool `json:"autoRollback"`
+	AutoRollback bool `json:"autoRollback" default:"true"`
 }
 
 // LambdaSyncStageOptions contains all configurable values for a LAMBDA_SYNC stage.

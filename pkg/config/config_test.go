@@ -41,8 +41,7 @@ func TestUnmarshalConfig(t *testing.T) {
 }`,
 			wantSpec: &KubernetesDeploymentSpec{
 				Input: KubernetesDeploymentInput{
-					AutoRollback: true,
-					Namespace:    "default",
+					Namespace: "default",
 				},
 			},
 			wantErr: false,
@@ -61,8 +60,7 @@ func TestUnmarshalConfig(t *testing.T) {
 }`,
 			wantSpec: &KubernetesDeploymentSpec{
 				Input: KubernetesDeploymentInput{
-					AutoRollback: true,
-					Namespace:    "default",
+					Namespace: "default",
 				},
 			},
 			wantErr: true,
