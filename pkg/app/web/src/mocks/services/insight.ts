@@ -16,7 +16,7 @@ import {
   dummyDataPointsList,
 } from "../../__fixtures__/dummy-insight";
 import { createRandTime } from "../../__fixtures__/utils";
-import { createHandler, createHandlerWithError } from "../create-handler";
+import { createHandler } from "../create-handler";
 
 export const getInsightApplicationCountHandler = createHandler<
   GetInsightApplicationCountResponse
@@ -28,11 +28,6 @@ export const getInsightApplicationCountHandler = createHandler<
   );
   return response;
 });
-
-export const getInsightApplicationCountNotFound = createHandlerWithError(
-  "/GetInsightApplicationCount",
-  StatusCode.NOT_FOUND
-);
 
 export const insightHandlers = [
   getInsightApplicationCountHandler,
