@@ -199,7 +199,7 @@ type ControlPlaneInsightCollector struct {
 }
 
 type InsightCollectorApplication struct {
-	Enabled  bool   `json:"enabled"`
+	Enabled  bool   `json:"enabled" default:"true"`
 	Schedule string `json:"schedule" default:"0 * * * *"`
 }
 

@@ -34,8 +34,6 @@ spec:
     ttl: 5m
 
   insightCollector:
-    application:
-      enabled: true
     deployment:
       enabled: true
       schedule: "0 10 * * *"
