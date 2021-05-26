@@ -65,16 +65,18 @@ func newClient(region, profile, credentialsFile, roleARN, tokenPath string, logg
 }
 
 func (c *client) CreateService(ctx context.Context, service types.Service) (*types.Service, error) {
+	if service.DeploymentController == nil || service.DeploymentController.Type != types.DeploymentControllerTypeExternal {
+		return nil, fmt.Errorf("failed to create ECS service %s: deployment controller of type EXTERNAL is required", *service.ServiceName)
+	}
 	input := &ecs.CreateServiceInput{
-		ServiceName:                   service.ServiceName,
 		Cluster:                       service.ClusterArn,
-		DeploymentConfiguration:       service.DeploymentConfiguration,
-		DeploymentController:          service.DeploymentController,
+		ServiceName:                   service.ServiceName,
 		DesiredCount:                  aws.Int32(service.DesiredCount),
+		DeploymentController:          service.DeploymentController,
+		DeploymentConfiguration:       service.DeploymentConfiguration,
 		EnableECSManagedTags:          service.EnableECSManagedTags,
 		HealthCheckGracePeriodSeconds: service.HealthCheckGracePeriodSeconds,
 		LoadBalancers:                 service.LoadBalancers,
-		NetworkConfiguration:          service.NetworkConfiguration,
 		PlacementConstraints:          service.PlacementConstraints,
 		PlacementStrategy:             service.PlacementStrategy,
 		PlatformVersion:               service.PlatformVersion,
@@ -83,11 +85,11 @@ func (c *client) CreateService(ctx context.Context, service types.Service) (*typ
 		SchedulingStrategy:            service.SchedulingStrategy,
 		ServiceRegistries:             service.ServiceRegistries,
 		Tags:                          service.Tags,
-		TaskDefinition:                service.TaskDefinition,
+		LaunchType:                    service.LaunchType,
+		// TaskDefinition:                service.TaskDefinition,
+		// NetworkConfiguration:          service.NetworkConfiguration,
 	}
-	if service.DeploymentController.Type != types.DeploymentControllerTypeExternal {
-		input.LaunchType = service.LaunchType
-	}
+
 	output, err := c.client.CreateService(ctx, input)
 	if err != nil {
 		return nil, fmt.Errorf("failed to create ECS service %s: %w", *service.ServiceName, err)
@@ -97,14 +99,14 @@ func (c *client) CreateService(ctx context.Context, service types.Service) (*typ
 
 func (c *client) UpdateService(ctx context.Context, service types.Service) (*types.Service, error) {
 	input := &ecs.UpdateServiceInput{
-		Service:                 service.ServiceName,
-		Cluster:                 service.ClusterArn,
-		DeploymentConfiguration: service.DeploymentConfiguration,
-		DesiredCount:            aws.Int32(service.DesiredCount),
-		NetworkConfiguration:    service.NetworkConfiguration,
-		PlacementConstraints:    service.PlacementConstraints,
-		PlacementStrategy:       service.PlacementStrategy,
-		TaskDefinition:          service.TaskDefinition,
+		Cluster:           service.ClusterArn,
+		Service:           service.ServiceName,
+		DesiredCount:      aws.Int32(service.DesiredCount),
+		PlacementStrategy: service.PlacementStrategy,
+		// TODO: Support update other properties of service.
+		// DeploymentConfiguration: service.DeploymentConfiguration,
+		// NetworkConfiguration:    service.NetworkConfiguration,
+		// PlacementConstraints:    service.PlacementConstraints,
 	}
 	output, err := c.client.UpdateService(ctx, input)
 	if err != nil {
@@ -120,9 +122,11 @@ func (c *client) RegisterTaskDefinition(ctx context.Context, taskDefinition type
 		RequiresCompatibilities: taskDefinition.RequiresCompatibilities,
 		ExecutionRoleArn:        taskDefinition.ExecutionRoleArn,
 		NetworkMode:             taskDefinition.NetworkMode,
+		Volumes:                 taskDefinition.Volumes,
 		// Requires defined at task level in case Fargate is used.
 		Cpu:    taskDefinition.Cpu,
 		Memory: taskDefinition.Memory,
+		// TODO: Support tags for registering task definition.
 	}
 	output, err := c.client.RegisterTaskDefinition(ctx, input)
 	if err != nil {
@@ -132,11 +136,19 @@ func (c *client) RegisterTaskDefinition(ctx context.Context, taskDefinition type
 }
 
 func (c *client) CreateTaskSet(ctx context.Context, service types.Service, taskDefinition types.TaskDefinition, percent float64) (*types.TaskSet, error) {
+	if taskDefinition.TaskDefinitionArn == nil {
+		return nil, fmt.Errorf("failed to create task set of task family %s: no task definition provided", *taskDefinition.Family)
+	}
 	input := &ecs.CreateTaskSetInput{
 		Cluster:        service.ClusterArn,
 		Service:        service.ServiceArn,
 		TaskDefinition: taskDefinition.TaskDefinitionArn,
 		Scale:          &types.Scale{Unit: types.ScaleUnitPercent, Value: percent},
+		// If you specify the awsvpc network mode, the task is allocated an elastic network interface,
+		// and you must specify a NetworkConfiguration when run a task with the task definition.
+		// TODO: Find better way to get those 2 values instead of set it via service def.
+		NetworkConfiguration: service.NetworkConfiguration,
+		LaunchType:           service.LaunchType,
 	}
 	output, err := c.client.CreateTaskSet(ctx, input)
 	if err != nil {

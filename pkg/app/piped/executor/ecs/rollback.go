@@ -88,7 +88,7 @@ func (e *rollbackExecutor) ensureRollback(ctx context.Context) model.StageStatus
 }
 
 func rollback(ctx context.Context, in *executor.Input, cloudProviderName string, cloudProviderCfg *config.CloudProviderECSConfig, taskDefinition types.TaskDefinition, serviceDefinition types.Service) bool {
-	in.LogPersister.Infof("Start rollback the ECS service and task definition: %s and %s to original stage", *serviceDefinition.ServiceName, *taskDefinition.TaskDefinitionArn)
+	in.LogPersister.Infof("Start rollback the ECS service and task family: %s and %s to original stage", *serviceDefinition.ServiceName, *taskDefinition.Family)
 	client, err := provider.DefaultRegistry().Client(cloudProviderName, cloudProviderCfg, in.Logger)
 	if err != nil {
 		in.LogPersister.Errorf("Unable to create ECS client for the provider %s: %v", cloudProviderName, err)
@@ -97,7 +97,7 @@ func rollback(ctx context.Context, in *executor.Input, cloudProviderName string,
 
 	td, err := client.RegisterTaskDefinition(ctx, taskDefinition)
 	if err != nil {
-		in.LogPersister.Errorf("Failed to register ECS task definition %s: %v", *taskDefinition.TaskDefinitionArn, err)
+		in.LogPersister.Errorf("Failed to register new revision of ECS task definition %s: %v", *taskDefinition.Family, err)
 		return false
 	}
 	serviceDefinition.TaskDefinition = td.TaskDefinitionArn
@@ -112,6 +112,6 @@ func rollback(ctx context.Context, in *executor.Input, cloudProviderName string,
 		return false
 	}
 
-	in.LogPersister.Infof("Rolled back the ECS service %s and task definition %s configuration to original stage", *serviceDefinition.ServiceName, *taskDefinition.TaskDefinitionArn)
+	in.LogPersister.Infof("Rolled back the ECS service %s and task definition %s configuration to original stage", *serviceDefinition.ServiceName, *taskDefinition.Family)
 	return true
 }
