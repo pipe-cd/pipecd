@@ -166,6 +166,9 @@ func (c *client) GetPrimaryTaskSet(ctx context.Context, service types.Service) (
 	if err != nil {
 		return nil, fmt.Errorf("failed to get primary task set of service %s: %w", *service.ServiceName, err)
 	}
+	if len(output.Services) == 0 {
+		return nil, fmt.Errorf("failed to get primary task set of service %s: services not found", *service.ServiceName)
+	}
 	taskSets := output.Services[0].TaskSets
 	for _, taskSet := range taskSets {
 		if aws.ToString(taskSet.Status) == "PRIMARY" {
