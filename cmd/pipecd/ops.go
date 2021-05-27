@@ -32,6 +32,7 @@ import (
 	"github.com/pipe-cd/pipe/pkg/cli"
 	"github.com/pipe-cd/pipe/pkg/config"
 	"github.com/pipe-cd/pipe/pkg/datastore"
+	"github.com/pipe-cd/pipe/pkg/insight/insightstore"
 	"github.com/pipe-cd/pipe/pkg/model"
 	"github.com/pipe-cd/pipe/pkg/version"
 )
@@ -137,7 +138,7 @@ func (s *ops) run(ctx context.Context, t cli.Telemetry) error {
 
 	// Start running HTTP server.
 	{
-		handler := handler.NewHandler(s.httpPort, datastore.NewProjectStore(ds), cfg.SharedSSOConfigs, s.gracePeriod, t.Logger)
+		handler := handler.NewHandler(s.httpPort, datastore.NewProjectStore(ds), insightstore.NewStore(fs), cfg.SharedSSOConfigs, s.gracePeriod, t.Logger)
 		group.Go(func() error {
 			return handler.Run(ctx)
 		})

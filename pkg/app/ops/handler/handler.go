@@ -26,14 +26,16 @@ import (
 
 	"github.com/pipe-cd/pipe/pkg/config"
 	"github.com/pipe-cd/pipe/pkg/datastore"
+	"github.com/pipe-cd/pipe/pkg/insight/insightstore"
 	"github.com/pipe-cd/pipe/pkg/model"
 )
 
 var (
-	topPageTmpl      = template.Must(template.New("Top").Parse(Templates["Top"]))
-	listProjectsTmpl = template.Must(template.New("ListProjects").Parse(Templates["ListProjects"]))
-	addProjectTmpl   = template.Must(template.New("AddProject").Parse(Templates["AddProject"]))
-	addedProjectTmpl = template.Must(template.New("AddedProject").Parse(Templates["AddedProject"]))
+	topPageTmpl           = template.Must(template.New("Top").Parse(Templates["Top"]))
+	listProjectsTmpl      = template.Must(template.New("ListProjects").Parse(Templates["ListProjects"]))
+	applicationCountsTmpl = template.Must(template.New("ApplicationCounts").Parse(Templates["ApplicationCounts"]))
+	addProjectTmpl        = template.Must(template.New("AddProject").Parse(Templates["AddProject"]))
+	addedProjectTmpl      = template.Must(template.New("AddedProject").Parse(Templates["AddedProject"]))
 )
 
 type projectStore interface {
@@ -44,16 +46,18 @@ type projectStore interface {
 type Handler struct {
 	port             int
 	projectStore     projectStore
+	insightStore     insightstore.Store
 	sharedSSOConfigs []config.SharedSSOConfig
 	server           *http.Server
 	gracePeriod      time.Duration
 	logger           *zap.Logger
 }
 
-func NewHandler(port int, ps projectStore, sharedSSOConfigs []config.SharedSSOConfig, gracePeriod time.Duration, logger *zap.Logger) *Handler {
+func NewHandler(port int, ps projectStore, is insightstore.Store, sharedSSOConfigs []config.SharedSSOConfig, gracePeriod time.Duration, logger *zap.Logger) *Handler {
 	mux := http.NewServeMux()
 	h := &Handler{
 		projectStore:     ps,
+		insightStore:     is,
 		sharedSSOConfigs: sharedSSOConfigs,
 		server: &http.Server{
 			Addr:    fmt.Sprintf(":%d", port),
@@ -66,6 +70,7 @@ func NewHandler(port int, ps projectStore, sharedSSOConfigs []config.SharedSSOCo
 	mux.HandleFunc("/", h.handleTop)
 	mux.HandleFunc("/projects", h.handleListProjects)
 	mux.HandleFunc("/projects/add", h.handleAddProject)
+	mux.HandleFunc("/applicationcounts", h.handleApplicationCounts)
 
 	return h
 }
@@ -223,4 +228,53 @@ func (h *Handler) handleAddProject(w http.ResponseWriter, r *http.Request) {
 	if err := addedProjectTmpl.Execute(w, data); err != nil {
 		h.logger.Error("failed to render AddedProject page template", zap.Error(err))
 	}
+}
+
+func (h *Handler) handleApplicationCounts(w http.ResponseWriter, r *http.Request) {
+	if r.Method != http.MethodGet {
+		http.Error(w, "not found", http.StatusNotFound)
+		return
+	}
+
+	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
+	defer cancel()
+
+	projects, err := h.projectStore.ListProjects(ctx, datastore.ListOptions{})
+	if err != nil {
+		h.logger.Error("failed to retrieve the list of projects", zap.Error(err))
+		http.Error(w, "Unable to retrieve projects", http.StatusInternalServerError)
+		return
+	}
+
+	data := make([]map[string]interface{}, 0, len(projects))
+	for i := range projects {
+		counts, err := h.insightStore.LoadApplicationCounts(ctx, projects[i].Id)
+		if err != nil {
+			data = append(data, map[string]interface{}{
+				"Project": projects[i].Id,
+				"Error":   err.Error(),
+			})
+			continue
+		}
+		total, groups := groupApplicationCounts(counts.Counts)
+		data = append(data, map[string]interface{}{
+			"Project": projects[i].Id,
+			"Total":   total,
+			"Counts":  groups,
+		})
+	}
+
+	if err := applicationCountsTmpl.Execute(w, data); err != nil {
+		h.logger.Error("failed to render ApplicationCounts page template", zap.Error(err))
+	}
+}
+
+func groupApplicationCounts(counts []model.InsightApplicationCount) (total int, groups map[string]int) {
+	groups = make(map[string]int)
+	for _, c := range counts {
+		total += int(c.Count)
+		kind := c.Labels[model.InsightApplicationCountLabelKey_KIND.String()]
+		groups[kind] = groups[kind] + int(c.Count)
+	}
+	return
 }

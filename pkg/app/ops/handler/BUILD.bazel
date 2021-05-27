@@ -1,4 +1,4 @@
-load("@io_bazel_rules_go//go:def.bzl", "go_library")
+load("@io_bazel_rules_go//go:def.bzl", "go_library", "go_test")
 
 go_library(
     name = "go_default_library",
@@ -11,6 +11,7 @@ go_library(
     deps = [
         "//pkg/config:go_default_library",
         "//pkg/datastore:go_default_library",
+        "//pkg/insight/insightstore:go_default_library",
         "//pkg/model:go_default_library",
         "@org_uber_go_zap//:go_default_library",
     ],
@@ -26,4 +27,15 @@ go_embed_data(
     string = True,
     var = "Templates",
     visibility = ["//visibility:public"],
+)
+
+go_test(
+    name = "go_default_test",
+    size = "small",
+    srcs = ["handler_test.go"],
+    embed = [":go_default_library"],
+    deps = [
+        "//pkg/model:go_default_library",
+        "@com_github_stretchr_testify//assert:go_default_library",
+    ],
 )
