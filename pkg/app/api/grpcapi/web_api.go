@@ -59,7 +59,6 @@ type WebAPI struct {
 	apiKeyStore               datastore.APIKeyStore
 	stageLogStore             stagelogstore.Store
 	applicationLiveStateStore applicationlivestatestore.Store
-	insightstore              insightstore.Store
 	commandStore              commandstore.Store
 	insightStore              insightstore.Store
 	encrypter                 encrypter
@@ -94,10 +93,9 @@ func NewWebAPI(
 		projectStore:              datastore.NewProjectStore(ds),
 		apiKeyStore:               datastore.NewAPIKeyStore(ds),
 		stageLogStore:             sls,
-		insightstore:              is,
 		applicationLiveStateStore: alss,
 		commandStore:              cmds,
-		insightStore:              insightstore.NewStore(fs),
+		insightStore:              is,
 		projectsInConfig:          projs,
 		encrypter:                 encrypter,
 		appProjectCache:           memorycache.NewTTLCache(ctx, 24*time.Hour, 3*time.Hour),
@@ -1420,7 +1418,7 @@ func (a *WebAPI) GetInsightData(ctx context.Context, req *webservice.GetInsightD
 	if err != nil {
 		a.logger.Error("failed to load chunks from cache", zap.Error(err))
 
-		chunks, err = a.insightstore.LoadChunks(ctx, claims.Role.ProjectId, req.ApplicationId, req.MetricsKind, req.Step, from, count)
+		chunks, err = a.insightStore.LoadChunks(ctx, claims.Role.ProjectId, req.ApplicationId, req.MetricsKind, req.Step, from, count)
 		if err != nil {
 			a.logger.Error("failed to load chunks from insightstore", zap.Error(err))
 			return nil, err
