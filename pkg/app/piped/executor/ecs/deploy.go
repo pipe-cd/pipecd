@@ -78,8 +78,12 @@ func (e *deployExecutor) ensureSync(ctx context.Context) model.StageStatus {
 	if !ok {
 		return model.StageStatus_STAGE_FAILURE
 	}
+	taskSetDefinition, ok := loadTaskSetDefinition(&e.Input, e.deployCfg.Input.TaskSetDefinitionFile, e.deploySource)
+	if !ok {
+		return model.StageStatus_STAGE_FAILURE
+	}
 
-	if !sync(ctx, &e.Input, e.cloudProviderName, e.cloudProviderCfg, taskDefinition, servicedefinition) {
+	if !sync(ctx, &e.Input, e.cloudProviderName, e.cloudProviderCfg, taskDefinition, taskSetDefinition, servicedefinition) {
 		return model.StageStatus_STAGE_FAILURE
 	}
 

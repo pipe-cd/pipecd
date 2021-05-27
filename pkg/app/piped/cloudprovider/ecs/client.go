@@ -78,7 +78,6 @@ func (c *client) CreateService(ctx context.Context, service types.Service) (*typ
 		DeploymentConfiguration:       service.DeploymentConfiguration,
 		EnableECSManagedTags:          service.EnableECSManagedTags,
 		HealthCheckGracePeriodSeconds: service.HealthCheckGracePeriodSeconds,
-		LoadBalancers:                 service.LoadBalancers,
 		PlacementConstraints:          service.PlacementConstraints,
 		PlacementStrategy:             service.PlacementStrategy,
 		PlatformVersion:               service.PlatformVersion,
@@ -134,7 +133,7 @@ func (c *client) RegisterTaskDefinition(ctx context.Context, taskDefinition type
 	return output.TaskDefinition, nil
 }
 
-func (c *client) CreateTaskSet(ctx context.Context, service types.Service, taskDefinition types.TaskDefinition) (*types.TaskSet, error) {
+func (c *client) CreateTaskSet(ctx context.Context, service types.Service, taskDefinition types.TaskDefinition, taskSet types.TaskSet) (*types.TaskSet, error) {
 	if taskDefinition.TaskDefinitionArn == nil {
 		return nil, fmt.Errorf("failed to create task set of task family %s: no task definition provided", *taskDefinition.Family)
 	}
@@ -146,9 +145,9 @@ func (c *client) CreateTaskSet(ctx context.Context, service types.Service, taskD
 		Scale: &types.Scale{Unit: types.ScaleUnitPercent, Value: float64(100)},
 		// If you specify the awsvpc network mode, the task is allocated an elastic network interface,
 		// and you must specify a NetworkConfiguration when run a task with the task definition.
-		// TODO: Find better way to get those 2 values instead of set it via service def.
-		NetworkConfiguration: service.NetworkConfiguration,
-		LaunchType:           service.LaunchType,
+		NetworkConfiguration: taskSet.NetworkConfiguration,
+		LaunchType:           taskSet.LaunchType,
+		LoadBalancers:        taskSet.LoadBalancers,
 	}
 	output, err := c.client.CreateTaskSet(ctx, input)
 	if err != nil {

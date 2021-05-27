@@ -79,15 +79,19 @@ func (e *rollbackExecutor) ensureRollback(ctx context.Context) model.StageStatus
 	if !ok {
 		return model.StageStatus_STAGE_FAILURE
 	}
+	taskSetDefinition, ok := loadTaskSetDefinition(&e.Input, deployCfg.Input.TaskSetDefinitionFile, runningDS)
+	if !ok {
+		return model.StageStatus_STAGE_FAILURE
+	}
 
-	if !rollback(ctx, &e.Input, cloudProviderName, cloudProviderCfg, taskDefinition, serviceDefinition) {
+	if !rollback(ctx, &e.Input, cloudProviderName, cloudProviderCfg, taskDefinition, serviceDefinition, taskSetDefinition) {
 		return model.StageStatus_STAGE_FAILURE
 	}
 
 	return model.StageStatus_STAGE_SUCCESS
 }
 
-func rollback(ctx context.Context, in *executor.Input, cloudProviderName string, cloudProviderCfg *config.CloudProviderECSConfig, taskDefinition types.TaskDefinition, serviceDefinition types.Service) bool {
+func rollback(ctx context.Context, in *executor.Input, cloudProviderName string, cloudProviderCfg *config.CloudProviderECSConfig, taskDefinition types.TaskDefinition, serviceDefinition types.Service, taskSetDefinition types.TaskSet) bool {
 	in.LogPersister.Infof("Start rollback the ECS service and task family: %s and %s to original stage", *serviceDefinition.ServiceName, *taskDefinition.Family)
 	client, err := provider.DefaultRegistry().Client(cloudProviderName, cloudProviderCfg, in.Logger)
 	if err != nil {
@@ -107,7 +111,7 @@ func rollback(ctx context.Context, in *executor.Input, cloudProviderName string,
 		return false
 	}
 
-	if _, err := client.CreateTaskSet(ctx, serviceDefinition, taskDefinition); err != nil {
+	if _, err := client.CreateTaskSet(ctx, serviceDefinition, taskDefinition, taskSetDefinition); err != nil {
 		in.LogPersister.Errorf("Failed to create ECS task set %s: %v", *serviceDefinition.ServiceName, err)
 		return false
 	}

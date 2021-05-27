@@ -80,19 +80,32 @@ func loadServiceDefinition(in *executor.Input, serviceDefinitionFile string, ds 
 }
 
 func loadTaskDefinition(in *executor.Input, taskDefinitionFile string, ds *deploysource.DeploySource) (types.TaskDefinition, bool) {
-	in.LogPersister.Infof("Loading service manifest at the %s commit (%s)", ds.RevisionName, ds.RevisionName)
+	in.LogPersister.Infof("Loading task definition manifest at the %s commit (%s)", ds.RevisionName, ds.RevisionName)
 
 	taskDefinition, err := provider.LoadTaskDefinition(ds.AppDir, taskDefinitionFile)
 	if err != nil {
-		in.LogPersister.Errorf("Failed to load ECS service definition (%v)", err)
+		in.LogPersister.Errorf("Failed to load ECS task definition (%v)", err)
 		return types.TaskDefinition{}, false
 	}
 
-	in.LogPersister.Infof("Successfully loaded the ECS service definition at the %s commit", ds.RevisionName)
+	in.LogPersister.Infof("Successfully loaded the ECS task definition at the %s commit", ds.RevisionName)
 	return taskDefinition, true
 }
 
-func sync(ctx context.Context, in *executor.Input, cloudProviderName string, cloudProviderCfg *config.CloudProviderECSConfig, taskDefinition types.TaskDefinition, serviceDefinition types.Service) bool {
+func loadTaskSetDefinition(in *executor.Input, taskSetDefinitionFile string, ds *deploysource.DeploySource) (types.TaskSet, bool) {
+	in.LogPersister.Infof("Loading task set definition manifest at the %s commit (%s)", ds.RevisionName, ds.RevisionName)
+
+	taskSetDefinition, err := provider.LoadTaskSetDefinition(ds.AppDir, taskSetDefinitionFile)
+	if err != nil {
+		in.LogPersister.Errorf("Failed to load task set definition (%v)", err)
+		return types.TaskSet{}, false
+	}
+
+	in.LogPersister.Infof("Successfully loaded the ECS task set definition at the %s commit", ds.RevisionName)
+	return taskSetDefinition, true
+}
+
+func sync(ctx context.Context, in *executor.Input, cloudProviderName string, cloudProviderCfg *config.CloudProviderECSConfig, taskDefinition types.TaskDefinition, taskSetDefinition types.TaskSet, serviceDefinition types.Service) bool {
 	in.LogPersister.Infof("Start applying the ECS task definition")
 	client, err := provider.DefaultRegistry().Client(cloudProviderName, cloudProviderCfg, in.Logger)
 	if err != nil {
@@ -101,7 +114,7 @@ func sync(ctx context.Context, in *executor.Input, cloudProviderName string, clo
 	}
 
 	// Build and publish new version of ECS service and task definition.
-	ok := build(ctx, in, client, taskDefinition, serviceDefinition)
+	ok := build(ctx, in, client, taskDefinition, taskSetDefinition, serviceDefinition)
 	if !ok {
 		in.LogPersister.Errorf("Failed to build new version for ECS %s", *serviceDefinition.ServiceName)
 		return false
@@ -111,7 +124,7 @@ func sync(ctx context.Context, in *executor.Input, cloudProviderName string, clo
 	return true
 }
 
-func build(ctx context.Context, in *executor.Input, client provider.Client, taskDefinition types.TaskDefinition, serviceDefinition types.Service) bool {
+func build(ctx context.Context, in *executor.Input, client provider.Client, taskDefinition types.TaskDefinition, taskSetDefinition types.TaskSet, serviceDefinition types.Service) bool {
 	td, err := client.RegisterTaskDefinition(ctx, taskDefinition)
 	if err != nil {
 		in.LogPersister.Errorf("Failed to register ECS task definition of family %s: %v", *taskDefinition.Family, err)
@@ -139,10 +152,6 @@ func build(ctx context.Context, in *executor.Input, client provider.Client, task
 		}
 	}
 
-	// hack: Set this two value to enable create TaskSet (those values are ignored on Update/Create Service).
-	service.LaunchType = serviceDefinition.LaunchType
-	service.NetworkConfiguration = serviceDefinition.NetworkConfiguration
-
 	// Get current PRIMARY task set.
 	prevPrimaryTaskSet, err := client.GetPrimaryTaskSet(ctx, *service)
 	// Ignore error in case it's not found error, the prevPrimaryTaskSet doesn't exist for newly created Service.
@@ -152,7 +161,7 @@ func build(ctx context.Context, in *executor.Input, client provider.Client, task
 	}
 
 	// Create a task set in the specified cluster and service.
-	taskSet, err := client.CreateTaskSet(ctx, *service, *td)
+	taskSet, err := client.CreateTaskSet(ctx, *service, *td, taskSetDefinition)
 	if err != nil {
 		in.LogPersister.Errorf("Failed to create ECS task set %s: %v", *serviceDefinition.ServiceName, err)
 		return false
