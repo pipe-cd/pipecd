@@ -11,6 +11,7 @@ go_library(
     importpath = "github.com/pipe-cd/pipe/pkg/app/piped/cloudprovider/ecs",
     visibility = ["//visibility:public"],
     deps = [
+        "//pkg/app/piped/cloudprovider:go_default_library",
         "//pkg/config:go_default_library",
         "@com_github_aws_aws_sdk_go_v2//aws:go_default_library",
         "@com_github_aws_aws_sdk_go_v2_config//:go_default_library",

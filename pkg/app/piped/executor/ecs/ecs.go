@@ -16,9 +16,11 @@ package ecs
 
 import (
 	"context"
+	"errors"
 
 	"github.com/aws/aws-sdk-go-v2/service/ecs/types"
 
+	"github.com/pipe-cd/pipe/pkg/app/piped/cloudprovider"
 	provider "github.com/pipe-cd/pipe/pkg/app/piped/cloudprovider/ecs"
 	"github.com/pipe-cd/pipe/pkg/app/piped/deploysource"
 	"github.com/pipe-cd/pipe/pkg/app/piped/executor"
@@ -143,7 +145,8 @@ func build(ctx context.Context, in *executor.Input, client provider.Client, task
 
 	// Get current PRIMARY task set.
 	prevPrimaryTaskSet, err := client.GetPrimaryTaskSet(ctx, *service)
-	if err != nil {
+	// Ignore error in case it's not found error, the prevPrimaryTaskSet doesn't exist for newly created Service.
+	if err != nil && !errors.Is(err, cloudprovider.ErrNotFound) {
 		in.LogPersister.Errorf("Failed to create ECS task set %s: %v", *serviceDefinition.ServiceName, err)
 		return false
 	}

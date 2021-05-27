@@ -25,6 +25,8 @@ import (
 	"github.com/aws/aws-sdk-go-v2/service/ecs"
 	"github.com/aws/aws-sdk-go-v2/service/ecs/types"
 	"go.uber.org/zap"
+
+	"github.com/pipe-cd/pipe/pkg/app/piped/cloudprovider"
 )
 
 type client struct {
@@ -167,7 +169,7 @@ func (c *client) GetPrimaryTaskSet(ctx context.Context, service types.Service) (
 		return nil, fmt.Errorf("failed to get primary task set of service %s: %w", *service.ServiceName, err)
 	}
 	if len(output.Services) == 0 {
-		return nil, fmt.Errorf("failed to get primary task set of service %s: services not found", *service.ServiceName)
+		return nil, fmt.Errorf("failed to get primary task set of service %s: services empty", *service.ServiceName)
 	}
 	taskSets := output.Services[0].TaskSets
 	for _, taskSet := range taskSets {
@@ -175,7 +177,7 @@ func (c *client) GetPrimaryTaskSet(ctx context.Context, service types.Service) (
 			return &taskSet, nil
 		}
 	}
-	return nil, nil
+	return nil, cloudprovider.ErrNotFound
 }
 
 func (c *client) DeleteTaskSet(ctx context.Context, service types.Service, taskSet types.TaskSet) error {
