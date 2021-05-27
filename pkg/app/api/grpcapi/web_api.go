@@ -234,7 +234,7 @@ func (a *WebAPI) updateEnvironmentEnable(ctx context.Context, envID string, enab
 	if err := updater(ctx, envID); err != nil {
 		switch err {
 		case datastore.ErrNotFound:
-			return status.Error(codes.InvalidArgument, "The environment is not found")
+			return status.Error(codes.NotFound, "The environment is not found")
 		case datastore.ErrInvalidArgument:
 			return status.Error(codes.InvalidArgument, "Invalid value for update")
 		default:
@@ -253,7 +253,7 @@ func (a *WebAPI) updateEnvironmentEnable(ctx context.Context, envID string, enab
 func (a *WebAPI) validateEnvBelongsToProject(ctx context.Context, envID, projectID string) error {
 	eid, err := a.envProjectCache.Get(envID)
 	if err == nil {
-		if eid != projectID {
+		if projectID != eid {
 			return status.Error(codes.PermissionDenied, "Requested environment doesn't belong to the project you logged in")
 		}
 		return nil
@@ -265,7 +265,7 @@ func (a *WebAPI) validateEnvBelongsToProject(ctx context.Context, envID, project
 	}
 	a.envProjectCache.Put(envID, env.ProjectId)
 
-	if env.ProjectId != projectID {
+	if projectID != env.ProjectId {
 		return status.Error(codes.PermissionDenied, "Requested environment doesn't belong to the project you logged in")
 	}
 	return nil
@@ -674,7 +674,7 @@ func (a *WebAPI) updateApplicationEnable(ctx context.Context, appID string, enab
 	if err := updater(ctx, appID); err != nil {
 		switch err {
 		case datastore.ErrNotFound:
-			return status.Error(codes.InvalidArgument, "The application is not found")
+			return status.Error(codes.NotFound, "The application is not found")
 		case datastore.ErrInvalidArgument:
 			return status.Error(codes.InvalidArgument, "Invalid value for update")
 		default:
