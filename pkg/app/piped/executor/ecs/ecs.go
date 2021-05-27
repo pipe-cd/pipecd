@@ -16,9 +16,11 @@ package ecs
 
 import (
 	"context"
+	"errors"
 
 	"github.com/aws/aws-sdk-go-v2/service/ecs/types"
 
+	"github.com/pipe-cd/pipe/pkg/app/piped/cloudprovider"
 	provider "github.com/pipe-cd/pipe/pkg/app/piped/cloudprovider/ecs"
 	"github.com/pipe-cd/pipe/pkg/app/piped/deploysource"
 	"github.com/pipe-cd/pipe/pkg/app/piped/executor"
@@ -121,16 +123,8 @@ func build(ctx context.Context, in *executor.Input, client provider.Client, task
 		in.LogPersister.Errorf("Unable to validate service name %s: %v", *serviceDefinition.ServiceName, err)
 		return false
 	}
-	var service *types.Service
-	// if serviceDefinition.DeploymentController.Type != types.DeploymentControllerTypeExternal {
-	// 	serviceDefinition.TaskDefinition = td.TaskDefinitionArn
-	// }
 
-	// If the task definition is specificed in service definition, should use that sepecificed version.
-	// Consider check this before register new task definition revision.
-	if serviceDefinition.TaskDefinition == nil {
-		serviceDefinition.TaskDefinition = td.TaskDefinitionArn
-	}
+	var service *types.Service
 	if found {
 		service, err = client.UpdateService(ctx, serviceDefinition)
 		if err != nil {
@@ -144,25 +138,36 @@ func build(ctx context.Context, in *executor.Input, client provider.Client, task
 			return false
 		}
 	}
-	// service.TaskDefinition = td.TaskDefinitionArn
-	// service.LaunchType = serviceDefinition.LaunchType
-	// service.LoadBalancers = serviceDefinition.LoadBalancers
 
-	// Create a task set in the specified cluster and service and routing traffic to that task set.
-	// This is used when a service uses the EXTERNAL deployment controller type.
-	// For more information, see Amazon ECS Deployment Types
-	// https://docs.aws.amazon.com/AmazonECS/latest/developerguide/deployment-types.html
-	// Note: The deployment controller type can also get from types.Service but this field is omitted if the service is using the ECS
-	// deployment controller type, so that we should use serviceDefinition.DeploymentController instead.
-	if serviceDefinition.DeploymentController.Type == types.DeploymentControllerTypeExternal {
-		taskSet, err := client.CreateTaskSet(ctx, *service, *td, 100)
-		if err != nil {
-			in.LogPersister.Errorf("Failed to create ECS task set %s: %v", *serviceDefinition.ServiceName, err)
-			return false
-		}
+	// hack: Set this two value to enable create TaskSet (those values are ignored on Update/Create Service).
+	service.LaunchType = serviceDefinition.LaunchType
+	service.NetworkConfiguration = serviceDefinition.NetworkConfiguration
 
-		if _, err = client.UpdateServicePrimaryTaskSet(ctx, *service, *taskSet); err != nil {
-			in.LogPersister.Errorf("Failed to update service primary ECS task set %s: %v", *serviceDefinition.ServiceName, err)
+	// Get current PRIMARY task set.
+	prevPrimaryTaskSet, err := client.GetPrimaryTaskSet(ctx, *service)
+	// Ignore error in case it's not found error, the prevPrimaryTaskSet doesn't exist for newly created Service.
+	if err != nil && !errors.Is(err, cloudprovider.ErrNotFound) {
+		in.LogPersister.Errorf("Failed to create ECS task set %s: %v", *serviceDefinition.ServiceName, err)
+		return false
+	}
+
+	// Create a task set in the specified cluster and service.
+	taskSet, err := client.CreateTaskSet(ctx, *service, *td)
+	if err != nil {
+		in.LogPersister.Errorf("Failed to create ECS task set %s: %v", *serviceDefinition.ServiceName, err)
+		return false
+	}
+
+	// Make new taskSet as PRIMARY task set, so that it will handle production service.
+	if _, err = client.UpdateServicePrimaryTaskSet(ctx, *service, *taskSet); err != nil {
+		in.LogPersister.Errorf("Failed to update service primary ECS task set %s: %v", *serviceDefinition.ServiceName, err)
+		return false
+	}
+
+	// Remove old taskSet if existed.
+	if prevPrimaryTaskSet != nil {
+		if err = client.DeleteTaskSet(ctx, *service, *prevPrimaryTaskSet); err != nil {
+			in.LogPersister.Errorf("Faield to remove unused taskSet %s: %v", *prevPrimaryTaskSet.TaskSetArn, err)
 			return false
 		}
 	}

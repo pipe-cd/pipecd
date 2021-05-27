@@ -10,6 +10,7 @@ go_library(
     importpath = "github.com/pipe-cd/pipe/pkg/app/piped/executor/ecs",
     visibility = ["//visibility:public"],
     deps = [
+        "//pkg/app/piped/cloudprovider:go_default_library",
         "//pkg/app/piped/cloudprovider/ecs:go_default_library",
         "//pkg/app/piped/deploysource:go_default_library",
         "//pkg/app/piped/executor:go_default_library",
