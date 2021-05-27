@@ -21,6 +21,7 @@ spec:
           - manifests/RELEASE
         ignoreRenderings:
           - manifests/*/templates/**
+          - manifests/*/prom-rules/**
       - inputs:
           - manifests/RELEASE
         pathReplacers:
