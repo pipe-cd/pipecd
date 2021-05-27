@@ -39,6 +39,9 @@ service WebService {
     rpc AddEnvironment(AddEnvironmentRequest) returns (AddEnvironmentResponse) {}
     rpc UpdateEnvironmentDesc(UpdateEnvironmentDescRequest) returns (UpdateEnvironmentDescResponse) {}
     rpc ListEnvironments(ListEnvironmentsRequest) returns (ListEnvironmentsResponse) {}
+    rpc EnableEnvironment(EnableEnvironmentRequest) returns (EnableEnvironmentResponse) {}
+    rpc DisableEnvironment(DisableEnvironmentRequest) returns (DisableEnvironmentResponse) {}
+    rpc DeleteEnvironment(DeleteEnvironmentRequest) returns (DeleteEnvironmentResponse) {}
 
     // Piped
     rpc RegisterPiped(RegisterPipedRequest) returns (RegisterPipedResponse) {}
@@ -111,6 +114,27 @@ message ListEnvironmentsRequest {
 
 message ListEnvironmentsResponse {
     repeated pipe.model.Environment environments = 1;
+}
+
+message EnableEnvironmentRequest {
+    string environment_id = 1 [(validate.rules).string.min_len = 1];
+}
+
+message EnableEnvironmentResponse {
+}
+
+message DisableEnvironmentRequest {
+    string environment_id = 1 [(validate.rules).string.min_len = 1];
+}
+
+message DisableEnvironmentResponse {
+}
+
+message DeleteEnvironmentRequest {
+    string environment_id = 1 [(validate.rules).string.min_len = 1];
+}
+
+message DeleteEnvironmentResponse {
 }
 
 message RegisterPipedRequest {
