@@ -120,9 +120,6 @@ monitoring:
 # Head to the below link to see all available values.
 # https://github.com/prometheus-community/helm-charts/blob/main/charts/prometheus/values.yaml
 prometheus:
-  server:
-    # Must be fixed so that Grafana can find out statically.
-    fullnameOverride: pipecd-prometheus-server
   pushgateway:
     enabled: false
   nodeExporter:
@@ -132,11 +129,38 @@ prometheus:
   configmapReload:
     prometheus:
       enabled: true
+      # TODO: Ensure to reload alerting_rules when changed.
+      #extraVolumeDirs:
+      #  - /etc/rules
+      #extraConfigmapMounts:
+      #  - name: rules
+      #    mountPath: /etc/rules
+      #    readOnly: true
+      #    configMap: pipecd-prometheus-server-rules
+    alertmanager:
+      enabled: true
+  alertmanager:
+    enabled: true
+    useClusterRole: true
+  alertmanagerFiles:
+    alertmanager.yml:
+      # The root node of the routing tree.
+      route: {}
+      # A list of notification receivers.
+      receivers: []
+  server:
+    # Must be fixed so that Grafana can find out statically.
+    fullnameOverride: pipecd-prometheus-server
+    extraConfigmapMounts:
+      - name: rules
+        mountPath: /etc/rules
+        readOnly: true
+        configMap: pipecd-prometheus-server-rules
   serverFiles:
     prometheus.yml:
       rule_files:
         - /etc/config/recording_rules.yml
-        - /etc/config/alerting_rules.yml
+        - /etc/rules/alerting_rules.yml
 
       scrape_configs:
         - job_name: prometheus
