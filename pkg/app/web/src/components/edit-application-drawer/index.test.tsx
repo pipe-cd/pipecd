@@ -58,7 +58,7 @@ const initialState = {
 
 test("Show target application info ", () => {
   const store = createReduxStore(initialState);
-  render(<EditApplicationDrawer />, {
+  render(<EditApplicationDrawer onUpdated={() => null} />, {
     store,
   });
 
@@ -71,7 +71,7 @@ test("Show target application info ", () => {
 
 test("Edit an application ", async () => {
   const store = createReduxStore(initialState);
-  render(<EditApplicationDrawer />, {
+  render(<EditApplicationDrawer onUpdated={() => null} />, {
     store,
   });
 

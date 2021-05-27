@@ -10,7 +10,7 @@ import { useFormik } from "formik";
 import { FC, memo, useCallback, useState } from "react";
 import { UI_TEXT_CANCEL, UI_TEXT_DISCARD } from "../../constants/ui-text";
 import { useAppDispatch, useAppSelector } from "../../hooks/redux";
-import { addApplication, fetchApplications } from "../../modules/applications";
+import { addApplication } from "../../modules/applications";
 import { selectProjectName } from "../../modules/me";
 import {
   ApplicationForm,
@@ -22,6 +22,7 @@ import {
 export interface AddApplicationDrawerProps {
   open: boolean;
   onClose: () => void;
+  onAdded: () => void;
 }
 
 const CONFIRM_DIALOG_TITLE = "Quit adding application?";
@@ -29,7 +30,7 @@ const CONFIRM_DIALOG_DESCRIPTION =
   "Form values inputs so far will not be saved.";
 
 export const AddApplicationDrawer: FC<AddApplicationDrawerProps> = memo(
-  function AddApplicationDrawer({ open, onClose }) {
+  function AddApplicationDrawer({ open, onClose, onAdded }) {
     const dispatch = useAppDispatch();
     const [showConfirm, setShowConfirm] = useState(false);
     const formik = useFormik<ApplicationFormValue>({
@@ -39,7 +40,7 @@ export const AddApplicationDrawer: FC<AddApplicationDrawerProps> = memo(
       enableReinitialize: true,
       async onSubmit(values) {
         await dispatch(addApplication(values));
-        dispatch(fetchApplications());
+        onAdded();
         onClose();
         formik.resetForm();
       },

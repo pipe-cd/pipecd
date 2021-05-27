@@ -90,7 +90,7 @@ export const ApplicationIndexPage: FC = memo(function ApplicationIndexPage() {
     updateURL({ page: currentPage });
   }, [updateURL, currentPage]);
 
-  const handleRefresh = useCallback(() => {
+  const fetchApplicationsWithOptions = useCallback(() => {
     dispatch(fetchApplications(filterOptions));
     dispatch(fetchApplicationCount());
   }, [dispatch, filterOptions]);
@@ -114,12 +114,8 @@ export const ApplicationIndexPage: FC = memo(function ApplicationIndexPage() {
   );
 
   useEffect(() => {
-    dispatch(fetchApplications(filterOptions));
-  }, [dispatch, filterOptions]);
-
-  useEffect(() => {
-    dispatch(fetchApplicationCount());
-  }, [dispatch]);
+    fetchApplicationsWithOptions();
+  }, [fetchApplicationsWithOptions]);
 
   return (
     <>
@@ -135,7 +131,7 @@ export const ApplicationIndexPage: FC = memo(function ApplicationIndexPage() {
         <Button
           color="primary"
           startIcon={<RefreshIcon />}
-          onClick={handleRefresh}
+          onClick={fetchApplicationsWithOptions}
           disabled={isLoading}
         >
           {"REFRESH"}
@@ -160,6 +156,7 @@ export const ApplicationIndexPage: FC = memo(function ApplicationIndexPage() {
           <ApplicationList
             currentPage={currentPage}
             onPageChange={handlePageChange}
+            onRefresh={fetchApplicationsWithOptions}
           />
         </Box>
         {openFilter && (
@@ -174,8 +171,9 @@ export const ApplicationIndexPage: FC = memo(function ApplicationIndexPage() {
       <AddApplicationDrawer
         open={openAddForm}
         onClose={() => setOpenAddForm(false)}
+        onAdded={fetchApplicationsWithOptions}
       />
-      <EditApplicationDrawer />
+      <EditApplicationDrawer onUpdated={fetchApplicationsWithOptions} />
 
       <Drawer
         anchor="right"

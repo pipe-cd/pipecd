@@ -1,9 +1,9 @@
-import * as React from "react";
+import { Story } from "@storybook/react/types-6-0";
 import { createDecoratorRedux } from "../../../.storybook/redux-decorator";
 import { dummyApplication } from "../../__fixtures__/dummy-application";
 import { dummyEnv } from "../../__fixtures__/dummy-environment";
 import { dummyPiped } from "../../__fixtures__/dummy-piped";
-import { EditApplicationDrawer } from "./";
+import { EditApplicationDrawer, EditApplicationDrawerProps } from "./";
 
 export default {
   title: "APPLICATION/EditApplicationDrawer",
@@ -33,6 +33,15 @@ export default {
       },
     }),
   ],
+  argTypes: {
+    onUpdated: {
+      action: "onUpdated",
+    },
+  },
 };
 
-export const overview: React.FC = () => <EditApplicationDrawer />;
+const Template: Story<EditApplicationDrawerProps> = (args) => (
+  <EditApplicationDrawer {...args} />
+);
+
+export const Overview = Template.bind({});

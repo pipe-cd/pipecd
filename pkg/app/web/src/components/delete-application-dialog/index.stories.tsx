@@ -1,7 +1,7 @@
-import * as React from "react";
+import { Story } from "@storybook/react/types-6-0";
 import { createDecoratorRedux } from "../../../.storybook/redux-decorator";
 import { dummyApplication } from "../../__fixtures__/dummy-application";
-import { DeleteApplicationDialog } from "./";
+import { DeleteApplicationDialog, DeleteApplicationDialogProps } from "./";
 
 export default {
   title: "DeleteApplicationDialog",
@@ -20,6 +20,16 @@ export default {
       },
     }),
   ],
+  argTypes: {
+    onDeleted: {
+      action: "onDeleted",
+    },
+  },
 };
 
-export const overview: React.FC = () => <DeleteApplicationDialog />;
+const Template: Story<DeleteApplicationDialogProps> = (args) => (
+  <DeleteApplicationDialog {...args} />
+);
+
+export const Overview = Template.bind({});
+Overview.args = {};

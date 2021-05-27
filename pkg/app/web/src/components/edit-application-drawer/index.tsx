@@ -4,7 +4,6 @@ import { FC, memo, useCallback } from "react";
 import { useAppSelector, useAppDispatch } from "../../hooks/redux";
 import {
   Application,
-  fetchApplications,
   selectById as selectAppById,
 } from "../../modules/applications";
 import {
@@ -18,57 +17,63 @@ import {
   validationSchema,
 } from "../application-form";
 
-export const EditApplicationDrawer: FC = memo(function EditApplicationDrawer() {
-  const dispatch = useAppDispatch();
+export interface EditApplicationDrawerProps {
+  onUpdated: () => void;
+}
 
-  const app = useAppSelector<Application.AsObject | undefined>((state) =>
-    state.updateApplication.targetId
-      ? selectAppById(state.applications, state.updateApplication.targetId)
-      : undefined
-  );
+export const EditApplicationDrawer: FC<EditApplicationDrawerProps> = memo(
+  function EditApplicationDrawer({ onUpdated }) {
+    const dispatch = useAppDispatch();
 
-  const formik = useFormik<ApplicationFormValue>({
-    initialValues: app
-      ? {
-          name: app.name,
-          env: app.envId,
-          kind: app.kind,
-          pipedId: app.pipedId,
-          repoPath: app.gitPath?.path || "",
-          repo: app.gitPath?.repo || { id: "", remote: "", branch: "" },
-          configFilename: app.gitPath?.configFilename || "",
-          cloudProvider: app.cloudProvider,
+    const app = useAppSelector<Application.AsObject | undefined>((state) =>
+      state.updateApplication.targetId
+        ? selectAppById(state.applications, state.updateApplication.targetId)
+        : undefined
+    );
+
+    const formik = useFormik<ApplicationFormValue>({
+      initialValues: app
+        ? {
+            name: app.name,
+            env: app.envId,
+            kind: app.kind,
+            pipedId: app.pipedId,
+            repoPath: app.gitPath?.path || "",
+            repo: app.gitPath?.repo || { id: "", remote: "", branch: "" },
+            configFilename: app.gitPath?.configFilename || "",
+            cloudProvider: app.cloudProvider,
+          }
+        : emptyFormValues,
+      validateOnMount: true,
+      validationSchema,
+      enableReinitialize: true,
+      async onSubmit(values) {
+        if (!app) {
+          return;
         }
-      : emptyFormValues,
-    validateOnMount: true,
-    validationSchema,
-    enableReinitialize: true,
-    async onSubmit(values) {
-      if (!app) {
-        return;
-      }
-      await dispatch(updateApplication({ ...values, applicationId: app.id }));
-      dispatch(fetchApplications());
-    },
-  });
+        await dispatch(updateApplication({ ...values, applicationId: app.id }));
+        onUpdated();
+      },
+    });
 
-  const handleClose = useCallback(() => {
-    dispatch(clearUpdateTarget());
-  }, [dispatch]);
+    const handleClose = useCallback(() => {
+      dispatch(clearUpdateTarget());
+    }, [dispatch]);
 
-  return (
-    <Drawer
-      anchor="right"
-      open={Boolean(app)}
-      onClose={handleClose}
-      ModalProps={{ disableBackdropClick: formik.isSubmitting }}
-    >
-      <ApplicationForm
-        {...formik}
-        title={`Edit "${app?.name}"`}
+    return (
+      <Drawer
+        anchor="right"
+        open={Boolean(app)}
         onClose={handleClose}
-        disableGitPath
-      />
-    </Drawer>
-  );
-});
+        ModalProps={{ disableBackdropClick: formik.isSubmitting }}
+      >
+        <ApplicationForm
+          {...formik}
+          title={`Edit "${app?.name}"`}
+          onClose={handleClose}
+          disableGitPath
+        />
+      </Drawer>
+    );
+  }
+);

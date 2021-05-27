@@ -16,11 +16,7 @@ import { shallowEqual } from "react-redux";
 import { DELETE_APPLICATION_SUCCESS } from "../../constants/toast-text";
 import { UI_TEXT_CANCEL, UI_TEXT_DELETE } from "../../constants/ui-text";
 import { useAppSelector, useAppDispatch } from "../../hooks/redux";
-import {
-  Application,
-  fetchApplications,
-  selectById,
-} from "../../modules/applications";
+import { Application, selectById } from "../../modules/applications";
 import {
   clearDeletingApp,
   deleteApplication,
@@ -48,8 +44,12 @@ const useStyles = makeStyles((theme) => ({
 const TITLE = "Delete Application";
 const ALERT_TEXT = "Are you sure you want to delete the application?";
 
-export const DeleteApplicationDialog: FC = memo(
-  function DeleteApplicationDialog() {
+export interface DeleteApplicationDialogProps {
+  onDeleted: () => void;
+}
+
+export const DeleteApplicationDialog: FC<DeleteApplicationDialogProps> = memo(
+  function DeleteApplicationDialog({ onDeleted }) {
     const classes = useStyles();
     const buttonClasses = useButtonStyles();
     const dispatch = useAppDispatch();
@@ -71,12 +71,12 @@ export const DeleteApplicationDialog: FC = memo(
 
     const handleDelete = useCallback(() => {
       dispatch(deleteApplication()).then(() => {
-        dispatch(fetchApplications());
+        onDeleted();
         dispatch(
           addToast({ severity: "success", message: DELETE_APPLICATION_SUCCESS })
         );
       });
-    }, [dispatch]);
+    }, [dispatch, onDeleted]);
 
     const handleCancel = useCallback(() => {
       dispatch(clearDeletingApp());
