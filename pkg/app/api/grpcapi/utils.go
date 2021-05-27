@@ -134,3 +134,16 @@ func listEnvironments(ctx context.Context, store datastore.EnvironmentStore, opt
 
 	return envs, nil
 }
+
+func getEnvironment(ctx context.Context, store datastore.EnvironmentStore, id string, logger *zap.Logger) (*model.Environment, error) {
+	env, err := store.GetEnvironment(ctx, id)
+	if errors.Is(err, datastore.ErrNotFound) {
+		return nil, status.Error(codes.NotFound, "Environment is not found")
+	}
+	if err != nil {
+		logger.Error("failed to get environment", zap.Error(err))
+		return nil, status.Error(codes.Internal, "Failed to get environment")
+	}
+
+	return env, nil
+}

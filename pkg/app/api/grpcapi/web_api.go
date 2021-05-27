@@ -66,6 +66,7 @@ type WebAPI struct {
 	appProjectCache        cache.Cache
 	deploymentProjectCache cache.Cache
 	pipedProjectCache      cache.Cache
+	envProjectCache        cache.Cache
 	insightCache           cache.Cache
 
 	projectsInConfig map[string]config.ControlPlaneProject
@@ -101,6 +102,7 @@ func NewWebAPI(
 		appProjectCache:           memorycache.NewTTLCache(ctx, 24*time.Hour, 3*time.Hour),
 		deploymentProjectCache:    memorycache.NewTTLCache(ctx, 24*time.Hour, 3*time.Hour),
 		pipedProjectCache:         memorycache.NewTTLCache(ctx, 24*time.Hour, 3*time.Hour),
+		envProjectCache:           memorycache.NewTTLCache(ctx, 24*time.Hour, 3*time.Hour),
 		insightCache:              rediscache.NewTTLCache(rd, 3*time.Hour),
 		logger:                    logger.Named("web-api"),
 	}
@@ -166,6 +168,107 @@ func (a *WebAPI) ListEnvironments(ctx context.Context, req *webservice.ListEnvir
 	return &webservice.ListEnvironmentsResponse{
 		Environments: envs,
 	}, nil
+}
+
+func (a *WebAPI) EnableEnvironment(ctx context.Context, req *webservice.EnableEnvironmentRequest) (*webservice.EnableEnvironmentResponse, error) {
+	if err := a.updateEnvironmentEnable(ctx, req.EnvironmentId, true); err != nil {
+		return nil, err
+	}
+	return &webservice.EnableEnvironmentResponse{}, nil
+}
+
+func (a *WebAPI) DisableEnvironment(ctx context.Context, req *webservice.DisableEnvironmentRequest) (*webservice.DisableEnvironmentResponse, error) {
+	if err := a.updateEnvironmentEnable(ctx, req.EnvironmentId, false); err != nil {
+		return nil, err
+	}
+	return &webservice.DisableEnvironmentResponse{}, nil
+}
+
+func (a *WebAPI) DeleteEnvironment(ctx context.Context, req *webservice.DeleteEnvironmentRequest) (*webservice.DeleteEnvironmentResponse, error) {
+	claims, err := rpcauth.ExtractClaims(ctx)
+	if err != nil {
+		a.logger.Error("failed to authenticate the current user", zap.Error(err))
+		return nil, err
+	}
+
+	if err := a.validateEnvBelongsToProject(ctx, req.EnvironmentId, claims.Role.ProjectId); err != nil {
+		return nil, err
+	}
+
+	if err := a.environmentStore.DeleteEnvironment(ctx, req.EnvironmentId); err != nil {
+		switch err {
+		case datastore.ErrNotFound:
+			return nil, status.Error(codes.NotFound, "The environment is not found")
+		case datastore.ErrInvalidArgument:
+			return nil, status.Error(codes.InvalidArgument, "Invalid value to delete")
+		default:
+			a.logger.Error("failed to delete the environment",
+				zap.String("env-id", req.EnvironmentId),
+				zap.Error(err),
+			)
+			return nil, status.Error(codes.Internal, "Failed to delete the environment")
+		}
+	}
+
+	return &webservice.DeleteEnvironmentResponse{}, nil
+}
+
+func (a *WebAPI) updateEnvironmentEnable(ctx context.Context, envID string, enable bool) error {
+	claims, err := rpcauth.ExtractClaims(ctx)
+	if err != nil {
+		a.logger.Error("failed to authenticate the current user", zap.Error(err))
+		return err
+	}
+
+	if err := a.validateEnvBelongsToProject(ctx, envID, claims.Role.ProjectId); err != nil {
+		return err
+	}
+
+	var updater func(context.Context, string) error
+	if enable {
+		updater = a.environmentStore.EnableEnvironment
+	} else {
+		updater = a.environmentStore.DisableEnvironment
+	}
+
+	if err := updater(ctx, envID); err != nil {
+		switch err {
+		case datastore.ErrNotFound:
+			return status.Error(codes.NotFound, "The environment is not found")
+		case datastore.ErrInvalidArgument:
+			return status.Error(codes.InvalidArgument, "Invalid value for update")
+		default:
+			a.logger.Error("failed to update the environment",
+				zap.String("env-id", envID),
+				zap.Error(err),
+			)
+			return status.Error(codes.Internal, "Failed to update the environment")
+		}
+	}
+	return nil
+}
+
+// validateEnvBelongsToProject checks if the given piped belongs to the given project.
+// It gives back error unless the env belongs to the project.
+func (a *WebAPI) validateEnvBelongsToProject(ctx context.Context, envID, projectID string) error {
+	eid, err := a.envProjectCache.Get(envID)
+	if err == nil {
+		if projectID != eid {
+			return status.Error(codes.PermissionDenied, "Requested environment doesn't belong to the project you logged in")
+		}
+		return nil
+	}
+
+	env, err := getEnvironment(ctx, a.environmentStore, envID, a.logger)
+	if err != nil {
+		return err
+	}
+	a.envProjectCache.Put(envID, env.ProjectId)
+
+	if projectID != env.ProjectId {
+		return status.Error(codes.PermissionDenied, "Requested environment doesn't belong to the project you logged in")
+	}
+	return nil
 }
 
 func (a *WebAPI) RegisterPiped(ctx context.Context, req *webservice.RegisterPipedRequest) (*webservice.RegisterPipedResponse, error) {
@@ -571,7 +674,7 @@ func (a *WebAPI) updateApplicationEnable(ctx context.Context, appID string, enab
 	if err := updater(ctx, appID); err != nil {
 		switch err {
 		case datastore.ErrNotFound:
-			return status.Error(codes.InvalidArgument, "The application is not found")
+			return status.Error(codes.NotFound, "The application is not found")
 		case datastore.ErrInvalidArgument:
 			return status.Error(codes.InvalidArgument, "Invalid value for update")
 		default:

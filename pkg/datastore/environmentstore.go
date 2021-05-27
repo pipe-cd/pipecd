@@ -16,6 +16,7 @@ package datastore
 
 import (
 	"context"
+	"errors"
 	"time"
 
 	"github.com/pipe-cd/pipe/pkg/model"
@@ -29,6 +30,9 @@ var environmentFactory = func() interface{} {
 
 type EnvironmentStore interface {
 	AddEnvironment(ctx context.Context, env *model.Environment) error
+	EnableEnvironment(ctx context.Context, id string) error
+	DisableEnvironment(ctx context.Context, id string) error
+	DeleteEnvironment(ctx context.Context, id string) error
 	GetEnvironment(ctx context.Context, id string) (*model.Environment, error)
 	ListEnvironments(ctx context.Context, opts ListOptions) ([]*model.Environment, error)
 }
@@ -59,6 +63,42 @@ func (s *environmentStore) AddEnvironment(ctx context.Context, env *model.Enviro
 		return err
 	}
 	return s.ds.Create(ctx, EnvironmentModelKind, env.Id, env)
+}
+
+func (s *environmentStore) EnableEnvironment(ctx context.Context, id string) error {
+	return s.ds.Update(ctx, EnvironmentModelKind, id, environmentFactory, func(e interface{}) error {
+		env := e.(*model.Environment)
+		if env.Deleted {
+			return errors.New("unable to enable a deleted environment")
+		}
+		env.Disabled = false
+		env.UpdatedAt = s.nowFunc().Unix()
+		return nil
+	})
+}
+
+func (s *environmentStore) DisableEnvironment(ctx context.Context, id string) error {
+	return s.ds.Update(ctx, EnvironmentModelKind, id, environmentFactory, func(e interface{}) error {
+		env := e.(*model.Environment)
+		if env.Deleted {
+			return errors.New("unable to disable a deleted environment")
+		}
+		env.Disabled = true
+		env.UpdatedAt = s.nowFunc().Unix()
+		return nil
+	})
+}
+
+func (s *environmentStore) DeleteEnvironment(ctx context.Context, id string) error {
+	return s.ds.Update(ctx, EnvironmentModelKind, id, environmentFactory, func(e interface{}) error {
+		now := s.nowFunc().Unix()
+		env := e.(*model.Environment)
+		env.Deleted = true
+		env.Disabled = true
+		env.DeletedAt = now
+		env.UpdatedAt = now
+		return nil
+	})
 }
 
 func (s *environmentStore) GetEnvironment(ctx context.Context, id string) (*model.Environment, error) {

@@ -29,6 +29,13 @@ message Environment {
     string desc = 3;
     // The ID of the project this environment belongs to.
     string project_id = 4 [(validate.rules).string.min_len = 1];
+
+    // Unix time when the environment was deleted.
+    int64 deleted_at = 11 [(validate.rules).int64.gte = 0];
+    // Whether the environment is deleted or not.
+    bool deleted = 12;
+    // Whether the environment is disabled or not.
+    bool disabled = 13;
     // Unix time when the environment is created.
     int64 created_at = 14 [(validate.rules).int64.gt = 0];
     // Unix time of the last time when the environment is updated.
