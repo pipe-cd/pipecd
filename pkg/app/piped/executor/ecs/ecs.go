@@ -145,6 +145,7 @@ func build(ctx context.Context, in *executor.Input, client provider.Client, task
 	prevPrimaryTaskSet, err := client.GetPrimaryTaskSet(ctx, *service)
 	if err != nil {
 		in.LogPersister.Errorf("Failed to create ECS task set %s: %v", *serviceDefinition.ServiceName, err)
+		return false
 	}
 
 	// Create a task set in the specified cluster and service.
