@@ -18,8 +18,9 @@ import (
 	"bytes"
 	"testing"
 
-	"github.com/pipe-cd/pipe/pkg/model"
 	"github.com/stretchr/testify/assert"
+
+	"github.com/pipe-cd/pipe/pkg/model"
 )
 
 func TestMakeApplicationCounts(t *testing.T) {
