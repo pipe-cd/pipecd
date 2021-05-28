@@ -15,7 +15,6 @@ import * as React from "react";
 import {
   Application,
   enableApplication,
-  fetchApplications,
   selectAll,
 } from "../../modules/applications";
 import { setDeletingAppId } from "../../modules/delete-application";
@@ -36,11 +35,16 @@ const PAGER_ROWS_PER_PAGE = [20, 50, { label: "All", value: -1 }];
 
 export interface ApplicationListProps {
   currentPage: number;
-  onPageChange: (page: number) => void;
+  onPageChange?: (page: number) => void;
+  onRefresh?: () => void;
 }
 
 export const ApplicationList: FC<ApplicationListProps> = memo(
-  function ApplicationList({ currentPage, onPageChange }) {
+  function ApplicationList({
+    currentPage,
+    onPageChange = () => null,
+    onRefresh = () => null,
+  }) {
     const classes = useStyles();
     const dispatch = useAppDispatch();
     const [actionTarget, setActionTarget] = useState<string | null>(null);
@@ -73,7 +77,7 @@ export const ApplicationList: FC<ApplicationListProps> = memo(
         ...dialogState,
         disabling: false,
       });
-      dispatch(fetchApplications());
+      onRefresh();
     };
 
     // Menu item event handler
@@ -98,13 +102,12 @@ export const ApplicationList: FC<ApplicationListProps> = memo(
     );
 
     const handleEnableClick = useCallback(
-      (id: string) => {
-        dispatch(enableApplication({ applicationId: id })).then(() => {
-          dispatch(fetchApplications());
-        });
+      async (id: string) => {
+        await dispatch(enableApplication({ applicationId: id }));
+        onRefresh();
         closeMenu();
       },
-      [dispatch, closeMenu]
+      [dispatch, closeMenu, onRefresh]
     );
 
     const handleDeleteClick = useCallback(
@@ -196,7 +199,7 @@ export const ApplicationList: FC<ApplicationListProps> = memo(
           onClose={handleOnCloseGenerateDialog}
         />
 
-        <DeleteApplicationDialog />
+        <DeleteApplicationDialog onDeleted={onRefresh} />
       </>
     );
   }

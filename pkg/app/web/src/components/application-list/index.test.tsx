@@ -37,7 +37,7 @@ test("delete", () => {
   const store = createStore(state);
   render(
     <MemoryRouter>
-      <ApplicationList currentPage={1} onPageChange={() => null} />
+      <ApplicationList currentPage={1} />
     </MemoryRouter>,
     {
       store,
@@ -72,7 +72,7 @@ test("show specific page", async () => {
   });
   render(
     <MemoryRouter>
-      <ApplicationList currentPage={2} onPageChange={() => null} />
+      <ApplicationList currentPage={2} />
     </MemoryRouter>,
     {
       store,
@@ -87,7 +87,7 @@ test("edit", () => {
   const store = createStore(state);
   render(
     <MemoryRouter>
-      <ApplicationList currentPage={1} onPageChange={() => null} />
+      <ApplicationList currentPage={1} />
     </MemoryRouter>,
     {
       store,
@@ -111,7 +111,7 @@ test("disable", async () => {
   const store = createStore(state);
   render(
     <MemoryRouter>
-      <ApplicationList currentPage={1} onPageChange={() => null} />
+      <ApplicationList currentPage={1} />
     </MemoryRouter>,
     {
       store,
@@ -156,7 +156,7 @@ test("enable", async () => {
   });
   render(
     <MemoryRouter>
-      <ApplicationList currentPage={1} onPageChange={() => null} />
+      <ApplicationList currentPage={1} />
     </MemoryRouter>,
     {
       store,
@@ -186,7 +186,7 @@ test("Encrypt Secret", async () => {
   const store = createStore(state);
   render(
     <MemoryRouter>
-      <ApplicationList currentPage={1} onPageChange={() => null} />
+      <ApplicationList currentPage={1} />
     </MemoryRouter>,
     {
       store,

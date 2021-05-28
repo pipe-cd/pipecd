@@ -94,7 +94,7 @@ describe("AddApplicationDrawer", () => {
 
   it("should clear depended fields if change environment", async () => {
     const altEnv = { ...dummyEnv, id: "env-2", name: "env-2" };
-    render(<AddApplicationDrawer open onClose={() => null} />, {
+    render(<AddApplicationDrawer open />, {
       initialState: {
         pipeds: {
           entities: { [dummyPiped.id]: dummyPiped },
