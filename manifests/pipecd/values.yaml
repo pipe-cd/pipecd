@@ -129,14 +129,13 @@ prometheus:
   configmapReload:
     prometheus:
       enabled: true
-      # TODO: Ensure to reload alerting_rules when changed.
-      #extraVolumeDirs:
-      #  - /etc/rules
-      #extraConfigmapMounts:
-      #  - name: rules
-      #    mountPath: /etc/rules
-      #    readOnly: true
-      #    configMap: pipecd-prometheus-server-rules
+      extraVolumeDirs:
+        - /etc/rules
+      extraConfigmapMounts:
+        - name: rules
+          mountPath: /etc/rules
+          readOnly: true
+          configMap: pipecd-prometheus-server-rules
     alertmanager:
       enabled: true
   alertmanager:
