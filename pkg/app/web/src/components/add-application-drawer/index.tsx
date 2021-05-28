@@ -21,8 +21,8 @@ import {
 
 export interface AddApplicationDrawerProps {
   open: boolean;
-  onClose: () => void;
-  onAdded: () => void;
+  onClose?: () => void;
+  onAdded?: () => void;
 }
 
 const CONFIRM_DIALOG_TITLE = "Quit adding application?";
@@ -30,7 +30,11 @@ const CONFIRM_DIALOG_DESCRIPTION =
   "Form values inputs so far will not be saved.";
 
 export const AddApplicationDrawer: FC<AddApplicationDrawerProps> = memo(
-  function AddApplicationDrawer({ open, onClose, onAdded }) {
+  function AddApplicationDrawer({
+    open,
+    onClose = () => null,
+    onAdded = () => null,
+  }) {
     const dispatch = useAppDispatch();
     const [showConfirm, setShowConfirm] = useState(false);
     const formik = useFormik<ApplicationFormValue>({

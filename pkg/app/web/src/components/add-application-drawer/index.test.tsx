@@ -32,12 +32,9 @@ describe("AddApplicationDrawer", () => {
         ids: [dummyEnv.id],
       },
     });
-    render(
-      <AddApplicationDrawer open onClose={jest.fn()} onAdded={() => null} />,
-      {
-        store,
-      }
-    );
+    render(<AddApplicationDrawer open onClose={jest.fn()} />, {
+      store,
+    });
 
     userEvent.type(screen.getByRole("textbox", { name: "Name" }), "App");
 
@@ -97,21 +94,18 @@ describe("AddApplicationDrawer", () => {
 
   it("should clear depended fields if change environment", async () => {
     const altEnv = { ...dummyEnv, id: "env-2", name: "env-2" };
-    render(
-      <AddApplicationDrawer open onClose={() => null} onAdded={() => null} />,
-      {
-        initialState: {
-          pipeds: {
-            entities: { [dummyPiped.id]: dummyPiped },
-            ids: [dummyPiped.id],
-          },
-          environments: {
-            entities: { [dummyEnv.id]: dummyEnv, [altEnv.id]: altEnv },
-            ids: [dummyEnv.id, altEnv.id],
-          },
+    render(<AddApplicationDrawer open />, {
+      initialState: {
+        pipeds: {
+          entities: { [dummyPiped.id]: dummyPiped },
+          ids: [dummyPiped.id],
         },
-      }
-    );
+        environments: {
+          entities: { [dummyEnv.id]: dummyEnv, [altEnv.id]: altEnv },
+          ids: [dummyEnv.id, altEnv.id],
+        },
+      },
+    });
 
     await waitFor(() =>
       expect(screen.getByRole("button", { name: UI_TEXT_SAVE })).toBeDisabled()
@@ -163,10 +157,7 @@ describe("AddApplicationDrawer", () => {
 
   it("should calls onClose handler if clicked CANCEL button", () => {
     const onClose = jest.fn();
-    render(
-      <AddApplicationDrawer open onClose={onClose} onAdded={() => null} />,
-      {}
-    );
+    render(<AddApplicationDrawer open onClose={onClose} />, {});
 
     userEvent.click(screen.getByRole("button", { name: UI_TEXT_CANCEL }));
 

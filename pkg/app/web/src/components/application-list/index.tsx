@@ -35,12 +35,16 @@ const PAGER_ROWS_PER_PAGE = [20, 50, { label: "All", value: -1 }];
 
 export interface ApplicationListProps {
   currentPage: number;
-  onPageChange: (page: number) => void;
-  onRefresh: () => void;
+  onPageChange?: (page: number) => void;
+  onRefresh?: () => void;
 }
 
 export const ApplicationList: FC<ApplicationListProps> = memo(
-  function ApplicationList({ currentPage, onPageChange, onRefresh }) {
+  function ApplicationList({
+    currentPage,
+    onPageChange = () => null,
+    onRefresh = () => null,
+  }) {
     const classes = useStyles();
     const dispatch = useAppDispatch();
     const [actionTarget, setActionTarget] = useState<string | null>(null);

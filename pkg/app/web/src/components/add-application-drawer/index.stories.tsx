@@ -27,5 +27,5 @@ export default {
 };
 
 export const overview: React.FC = () => (
-  <AddApplicationDrawer open onClose={action("onClose")} onAdded={() => null} />
+  <AddApplicationDrawer open onClose={action("onClose")} />
 );
