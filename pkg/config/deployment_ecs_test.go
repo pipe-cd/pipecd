@@ -41,6 +41,7 @@ func TestECSDeploymentConfig(t *testing.T) {
 				Input: ECSDeploymentInput{
 					ServiceDefinitionFile: "/path/to/servicedef.yaml",
 					TaskDefinitionFile:    "/path/to/taskdef.yaml",
+					TaskSetDefinitionFile: "/path/to/tasksetdef.yaml",
 					AutoRollback:          true,
 				},
 			},

@@ -4,3 +4,4 @@ spec:
   input:
     serviceDefinitionFile: /path/to/servicedef.yaml
     taskDefinitionFile: /path/to/taskdef.yaml
+    taskSetDefinitionFile: /path/to/tasksetdef.yaml

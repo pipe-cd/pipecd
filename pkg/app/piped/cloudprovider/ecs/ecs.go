@@ -26,11 +26,6 @@ import (
 	"github.com/pipe-cd/pipe/pkg/config"
 )
 
-const (
-	defaultTaskDefinitionFilename    = "taskdef.yaml"
-	defaultserviceDefinitionFilename = "servicedef.yaml"
-)
-
 // Client is wrapper of ECS client.
 type Client interface {
 	ServiceExists(ctx context.Context, clusterName string, servicesName string) (bool, error)
@@ -38,7 +33,7 @@ type Client interface {
 	UpdateService(ctx context.Context, service types.Service) (*types.Service, error)
 	RegisterTaskDefinition(ctx context.Context, taskDefinition types.TaskDefinition) (*types.TaskDefinition, error)
 	GetPrimaryTaskSet(ctx context.Context, service types.Service) (*types.TaskSet, error)
-	CreateTaskSet(ctx context.Context, service types.Service, taskDefinition types.TaskDefinition) (*types.TaskSet, error)
+	CreateTaskSet(ctx context.Context, service types.Service, taskDefinition types.TaskDefinition, taskSet types.TaskSet) (*types.TaskSet, error)
 	DeleteTaskSet(ctx context.Context, service types.Service, taskSet types.TaskSet) error
 	UpdateServicePrimaryTaskSet(ctx context.Context, service types.Service, taskSet types.TaskSet) (*types.TaskSet, error)
 }
@@ -50,20 +45,20 @@ type Registry interface {
 
 // LoadServiceDefinition returns ServiceDefinition object from a given service definition file.
 func LoadServiceDefinition(appDir, serviceDefinitionFilename string) (types.Service, error) {
-	if serviceDefinitionFilename == "" {
-		serviceDefinitionFilename = defaultserviceDefinitionFilename
-	}
 	path := filepath.Join(appDir, serviceDefinitionFilename)
 	return loadServiceDefinition(path)
 }
 
 // LoadTaskDefinition returns TaskDefinition object from a given task definition file.
 func LoadTaskDefinition(appDir, taskDefinition string) (types.TaskDefinition, error) {
-	if taskDefinition == "" {
-		taskDefinition = defaultTaskDefinitionFilename
-	}
 	path := filepath.Join(appDir, taskDefinition)
 	return loadTaskDefinition(path)
+}
+
+// LoadTaskSetDefinition returns TaskSetDefinition object from a given task set definition file.
+func LoadTaskSetDefinition(appDir, taskSetDefinition string) (types.TaskSet, error) {
+	path := filepath.Join(appDir, taskSetDefinition)
+	return loadTaskSetDefinition(path)
 }
 
 type registry struct {
