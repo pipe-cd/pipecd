@@ -16,9 +16,11 @@ package ecs
 
 import (
 	"context"
+	"errors"
 
 	"github.com/aws/aws-sdk-go-v2/service/ecs/types"
 
+	"github.com/pipe-cd/pipe/pkg/app/piped/cloudprovider"
 	provider "github.com/pipe-cd/pipe/pkg/app/piped/cloudprovider/ecs"
 	"github.com/pipe-cd/pipe/pkg/app/piped/executor"
 	"github.com/pipe-cd/pipe/pkg/config"
@@ -99,21 +101,48 @@ func rollback(ctx context.Context, in *executor.Input, cloudProviderName string,
 		return false
 	}
 
+	// Re-register TaskDef to get TaskDefArn.
+	// Consider using DescribeServices and get services[0].taskSets[0].taskDefinition (taskDefinition of PRIMARY taskSet)
+	// then store it in metadata store and use for rollback instead.
 	td, err := client.RegisterTaskDefinition(ctx, taskDefinition)
 	if err != nil {
 		in.LogPersister.Errorf("Failed to register new revision of ECS task definition %s: %v", *taskDefinition.Family, err)
 		return false
 	}
-	serviceDefinition.TaskDefinition = td.TaskDefinitionArn
+
 	// Rollback ECS service configuration to previous state.
-	if _, err := client.UpdateService(ctx, serviceDefinition); err != nil {
+	service, err := client.UpdateService(ctx, serviceDefinition)
+	if err != nil {
 		in.LogPersister.Errorf("Unable to rollback ECS service %s configuration to previous stage: %v", *serviceDefinition.ServiceName, err)
 		return false
 	}
 
-	if _, err := client.CreateTaskSet(ctx, serviceDefinition, taskDefinition, taskSetDefinition); err != nil {
+	// Get current PRIMARY task set.
+	prevPrimaryTaskSet, err := client.GetPrimaryTaskSet(ctx, *service)
+	// Ignore error in case it's not found error, the prevPrimaryTaskSet doesn't exist for newly created Service.
+	if err != nil && !errors.Is(err, cloudprovider.ErrNotFound) {
+		in.LogPersister.Errorf("Failed to create ECS task set %s for rollback: %v", *serviceDefinition.ServiceName, err)
+		return false
+	}
+
+	taskSet, err := client.CreateTaskSet(ctx, *service, *td, taskSetDefinition)
+	if err != nil {
 		in.LogPersister.Errorf("Failed to create ECS task set %s: %v", *serviceDefinition.ServiceName, err)
 		return false
+	}
+
+	// Make new taskSet as PRIMARY task set, so that it will handle production service.
+	if _, err = client.UpdateServicePrimaryTaskSet(ctx, *service, *taskSet); err != nil {
+		in.LogPersister.Errorf("Failed to update service primary ECS task set %s: %v", *serviceDefinition.ServiceName, err)
+		return false
+	}
+
+	// Remove old taskSet if existed.
+	if prevPrimaryTaskSet != nil {
+		if err = client.DeleteTaskSet(ctx, *service, *prevPrimaryTaskSet); err != nil {
+			in.LogPersister.Errorf("Faield to remove unused taskSet %s: %v", *prevPrimaryTaskSet.TaskSetArn, err)
+			return false
+		}
 	}
 
 	in.LogPersister.Infof("Rolled back the ECS service %s and task definition %s configuration to original stage", *serviceDefinition.ServiceName, *taskDefinition.Family)
