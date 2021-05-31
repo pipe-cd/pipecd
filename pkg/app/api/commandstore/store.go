@@ -53,12 +53,12 @@ func (s *store) ListUnhandledCommands(ctx context.Context, pipedID string) ([]*m
 		Filters: []datastore.ListFilter{
 			{
 				Field:    "PipedId",
-				Operator: "==",
+				Operator: datastore.OperatorEqual,
 				Value:    pipedID,
 			},
 			{
 				Field:    "Status",
-				Operator: "==",
+				Operator: datastore.OperatorEqual,
 				Value:    model.CommandStatus_COMMAND_NOT_HANDLED_YET,
 			},
 		},

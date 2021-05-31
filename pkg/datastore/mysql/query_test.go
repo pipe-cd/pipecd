@@ -128,7 +128,7 @@ func TestBuildFindQuery(t *testing.T) {
 				Filters: []datastore.ListFilter{
 					{
 						Field:    "Extra",
-						Operator: "==",
+						Operator: datastore.OperatorEqual,
 						Value:    "app-1",
 					},
 				},
@@ -142,7 +142,7 @@ func TestBuildFindQuery(t *testing.T) {
 				Filters: []datastore.ListFilter{
 					{
 						Field:    "SyncState.Status",
-						Operator: "==",
+						Operator: datastore.OperatorEqual,
 						Value:    1,
 					},
 				},
@@ -156,12 +156,12 @@ func TestBuildFindQuery(t *testing.T) {
 				Filters: []datastore.ListFilter{
 					{
 						Field:    "Data->>\"$.name\"",
-						Operator: "==",
+						Operator: datastore.OperatorEqual,
 						Value:    "app-123",
 					},
 					{
 						Field:    "Extra",
-						Operator: "==",
+						Operator: datastore.OperatorEqual,
 						Value:    "app-1",
 					},
 				},
@@ -175,7 +175,7 @@ func TestBuildFindQuery(t *testing.T) {
 				Filters: []datastore.ListFilter{
 					{
 						Field:    "Extra",
-						Operator: "==",
+						Operator: datastore.OperatorEqual,
 						Value:    "app-1",
 					},
 				},
@@ -199,7 +199,7 @@ func TestBuildFindQuery(t *testing.T) {
 				Filters: []datastore.ListFilter{
 					{
 						Field:    "Extra",
-						Operator: "==",
+						Operator: datastore.OperatorEqual,
 						Value:    "app-1",
 					},
 				},
@@ -223,7 +223,7 @@ func TestBuildFindQuery(t *testing.T) {
 				Filters: []datastore.ListFilter{
 					{
 						Field:    "Extra",
-						Operator: "==",
+						Operator: datastore.OperatorEqual,
 						Value:    "app-1",
 					},
 				},
@@ -265,7 +265,7 @@ func TestBuildFindQuery(t *testing.T) {
 				Filters: []datastore.ListFilter{
 					{
 						Field:    "Status",
-						Operator: "in",
+						Operator: datastore.OperatorIn,
 						Value:    []int32{1, 2, 3},
 					},
 				},
@@ -279,7 +279,7 @@ func TestBuildFindQuery(t *testing.T) {
 				Filters: []datastore.ListFilter{
 					{
 						Field:    "Status",
-						Operator: "in",
+						Operator: datastore.OperatorIn,
 						Value:    []int32{1},
 					},
 				},
@@ -301,7 +301,7 @@ func TestBuildFindQuery(t *testing.T) {
 				Filters: []datastore.ListFilter{
 					{
 						Field:    "ProjectId",
-						Operator: "==",
+						Operator: datastore.OperatorEqual,
 					},
 				},
 				Orders: []datastore.Order{

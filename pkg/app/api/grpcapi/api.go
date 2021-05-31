@@ -197,12 +197,12 @@ func (a *API) ListApplications(ctx context.Context, req *apiservice.ListApplicat
 	filters := []datastore.ListFilter{
 		{
 			Field:    "ProjectId",
-			Operator: "==",
+			Operator: datastore.OperatorEqual,
 			Value:    key.ProjectId,
 		},
 		{
 			Field:    "Disabled",
-			Operator: "==",
+			Operator: datastore.OperatorEqual,
 			Value:    req.Disabled,
 		},
 	}
@@ -210,7 +210,7 @@ func (a *API) ListApplications(ctx context.Context, req *apiservice.ListApplicat
 	if req.EnvId != "" {
 		filters = append(filters, datastore.ListFilter{
 			Field:    "EnvId",
-			Operator: "==",
+			Operator: datastore.OperatorEqual,
 			Value:    req.EnvId,
 		})
 	}
@@ -220,12 +220,12 @@ func (a *API) ListApplications(ctx context.Context, req *apiservice.ListApplicat
 			Filters: []datastore.ListFilter{
 				{
 					Field:    "ProjectId",
-					Operator: "==",
+					Operator: datastore.OperatorEqual,
 					Value:    key.ProjectId,
 				},
 				{
 					Field:    "Name",
-					Operator: "==",
+					Operator: datastore.OperatorEqual,
 					Value:    req.EnvName,
 				},
 			},
@@ -242,7 +242,7 @@ func (a *API) ListApplications(ctx context.Context, req *apiservice.ListApplicat
 		case 1:
 			filters = append(filters, datastore.ListFilter{
 				Field:    "EnvId",
-				Operator: "==",
+				Operator: datastore.OperatorEqual,
 				Value:    envs[0].Id,
 			})
 		default:
@@ -252,7 +252,7 @@ func (a *API) ListApplications(ctx context.Context, req *apiservice.ListApplicat
 			}
 			filters = append(filters, datastore.ListFilter{
 				Field:    "EnvId",
-				Operator: "in",
+				Operator: datastore.OperatorIn,
 				Value:    envsID,
 			})
 		}
@@ -261,7 +261,7 @@ func (a *API) ListApplications(ctx context.Context, req *apiservice.ListApplicat
 	if req.Name != "" {
 		filters = append(filters, datastore.ListFilter{
 			Field:    "Name",
-			Operator: "==",
+			Operator: datastore.OperatorEqual,
 			Value:    req.Name,
 		})
 	}
@@ -272,7 +272,7 @@ func (a *API) ListApplications(ctx context.Context, req *apiservice.ListApplicat
 		}
 		filters = append(filters, datastore.ListFilter{
 			Field:    "Kind",
-			Operator: "==",
+			Operator: datastore.OperatorEqual,
 			Value:    model.ApplicationKind(kind),
 		})
 	}

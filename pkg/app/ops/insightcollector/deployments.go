@@ -73,7 +73,7 @@ func (c *Collector) findDeploymentsCreatedInRange(ctx context.Context, from, to 
 	filters := []datastore.ListFilter{
 		{
 			Field:    "CreatedAt",
-			Operator: ">=",
+			Operator: datastore.OperatorGreaterThanOrEqual,
 			Value:    from,
 		},
 	}
@@ -85,7 +85,7 @@ func (c *Collector) findDeploymentsCreatedInRange(ctx context.Context, from, to 
 			Limit: limit,
 			Filters: append(filters, datastore.ListFilter{
 				Field:    "CreatedAt",
-				Operator: "<",
+				Operator: datastore.OperatorLessThan,
 				Value:    maxCreatedAt,
 			}),
 			Orders: []datastore.Order{
@@ -113,7 +113,7 @@ func (c *Collector) findDeploymentsCompletedInRange(ctx context.Context, from, t
 	filters := []datastore.ListFilter{
 		{
 			Field:    "CompletedAt",
-			Operator: ">=",
+			Operator: datastore.OperatorGreaterThanOrEqual,
 			Value:    from,
 		},
 	}
@@ -125,7 +125,7 @@ func (c *Collector) findDeploymentsCompletedInRange(ctx context.Context, from, t
 			Limit: limit,
 			Filters: append(filters, datastore.ListFilter{
 				Field:    "CompletedAt",
-				Operator: "<",
+				Operator: datastore.OperatorLessThan,
 				Value:    maxCompletedAt,
 			}),
 			Orders: []datastore.Order{

@@ -154,7 +154,7 @@ func (a *WebAPI) ListEnvironments(ctx context.Context, req *webservice.ListEnvir
 		Filters: []datastore.ListFilter{
 			{
 				Field:    "ProjectId",
-				Operator: "==",
+				Operator: datastore.OperatorEqual,
 				Value:    claims.Role.ProjectId,
 			},
 		},
@@ -423,7 +423,7 @@ func (a *WebAPI) ListPipeds(ctx context.Context, req *webservice.ListPipedsReque
 		Filters: []datastore.ListFilter{
 			{
 				Field:    "ProjectId",
-				Operator: "==",
+				Operator: datastore.OperatorEqual,
 				Value:    claims.Role.ProjectId,
 			},
 		},
@@ -433,7 +433,7 @@ func (a *WebAPI) ListPipeds(ctx context.Context, req *webservice.ListPipedsReque
 		if req.Options.Enabled != nil {
 			opts.Filters = append(opts.Filters, datastore.ListFilter{
 				Field:    "Disabled",
-				Operator: "==",
+				Operator: datastore.OperatorEqual,
 				Value:    !req.Options.Enabled.GetValue(),
 			})
 		}
@@ -708,7 +708,7 @@ func (a *WebAPI) ListApplications(ctx context.Context, req *webservice.ListAppli
 	filters := []datastore.ListFilter{
 		{
 			Field:    "ProjectId",
-			Operator: "==",
+			Operator: datastore.OperatorEqual,
 			Value:    claims.Role.ProjectId,
 		},
 	}
@@ -716,7 +716,7 @@ func (a *WebAPI) ListApplications(ctx context.Context, req *webservice.ListAppli
 		if o.Enabled != nil {
 			filters = append(filters, datastore.ListFilter{
 				Field:    "Disabled",
-				Operator: "==",
+				Operator: datastore.OperatorEqual,
 				Value:    !o.Enabled.GetValue(),
 			})
 		}
@@ -725,28 +725,28 @@ func (a *WebAPI) ListApplications(ctx context.Context, req *webservice.ListAppli
 		if len(o.Kinds) > 0 {
 			filters = append(filters, datastore.ListFilter{
 				Field:    "Kind",
-				Operator: "==",
+				Operator: datastore.OperatorEqual,
 				Value:    o.Kinds[0],
 			})
 		}
 		if len(o.SyncStatuses) > 0 {
 			filters = append(filters, datastore.ListFilter{
 				Field:    "SyncState.Status",
-				Operator: "==",
+				Operator: datastore.OperatorEqual,
 				Value:    o.SyncStatuses[0],
 			})
 		}
 		if len(o.EnvIds) > 0 {
 			filters = append(filters, datastore.ListFilter{
 				Field:    "EnvId",
-				Operator: "==",
+				Operator: datastore.OperatorEqual,
 				Value:    o.EnvIds[0],
 			})
 		}
 		if o.Name != "" {
 			filters = append(filters, datastore.ListFilter{
 				Field:    "Name",
-				Operator: "==",
+				Operator: datastore.OperatorEqual,
 				Value:    o.Name,
 			})
 		}
@@ -919,7 +919,7 @@ func (a *WebAPI) ListDeployments(ctx context.Context, req *webservice.ListDeploy
 	filters := []datastore.ListFilter{
 		{
 			Field:    "ProjectId",
-			Operator: "==",
+			Operator: datastore.OperatorEqual,
 			Value:    claims.Role.ProjectId,
 		},
 	}
@@ -929,28 +929,28 @@ func (a *WebAPI) ListDeployments(ctx context.Context, req *webservice.ListDeploy
 		if len(o.Statuses) > 0 {
 			filters = append(filters, datastore.ListFilter{
 				Field:    "Status",
-				Operator: "==",
+				Operator: datastore.OperatorEqual,
 				Value:    o.Statuses[0],
 			})
 		}
 		if len(o.Kinds) > 0 {
 			filters = append(filters, datastore.ListFilter{
 				Field:    "Kind",
-				Operator: "==",
+				Operator: datastore.OperatorEqual,
 				Value:    o.Kinds[0],
 			})
 		}
 		if len(o.ApplicationIds) > 0 {
 			filters = append(filters, datastore.ListFilter{
 				Field:    "ApplicationId",
-				Operator: "==",
+				Operator: datastore.OperatorEqual,
 				Value:    o.ApplicationIds[0],
 			})
 		}
 		if len(o.EnvIds) > 0 {
 			filters = append(filters, datastore.ListFilter{
 				Field:    "EnvId",
-				Operator: "==",
+				Operator: datastore.OperatorEqual,
 				Value:    o.EnvIds[0],
 			})
 		}
@@ -1474,7 +1474,7 @@ func (a *WebAPI) ListAPIKeys(ctx context.Context, req *webservice.ListAPIKeysReq
 		Filters: []datastore.ListFilter{
 			{
 				Field:    "ProjectId",
-				Operator: "==",
+				Operator: datastore.OperatorEqual,
 				Value:    claims.Role.ProjectId,
 			},
 		},
@@ -1484,7 +1484,7 @@ func (a *WebAPI) ListAPIKeys(ctx context.Context, req *webservice.ListAPIKeysReq
 		if req.Options.Enabled != nil {
 			opts.Filters = append(opts.Filters, datastore.ListFilter{
 				Field:    "Disabled",
-				Operator: "==",
+				Operator: datastore.OperatorEqual,
 				Value:    !req.Options.Enabled.GetValue(),
 			})
 		}

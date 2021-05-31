@@ -113,7 +113,7 @@ func TestFind(t *testing.T) {
 				Filters: []datastore.ListFilter{
 					{
 						Field:    "Name",
-						Operator: "==",
+						Operator: datastore.OperatorEqual,
 						Value:    "name-1",
 					},
 				},

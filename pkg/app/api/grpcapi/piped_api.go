@@ -152,17 +152,17 @@ func (a *PipedAPI) ListApplications(ctx context.Context, req *pipedservice.ListA
 		Filters: []datastore.ListFilter{
 			{
 				Field:    "ProjectId",
-				Operator: "==",
+				Operator: datastore.OperatorEqual,
 				Value:    projectID,
 			},
 			{
 				Field:    "PipedId",
-				Operator: "==",
+				Operator: datastore.OperatorEqual,
 				Value:    pipedID,
 			},
 			{
 				Field:    "Disabled",
-				Operator: "==",
+				Operator: datastore.OperatorEqual,
 				Value:    false,
 			},
 		},
@@ -310,7 +310,7 @@ func (a *PipedAPI) ListNotCompletedDeployments(ctx context.Context, req *pipedse
 		Filters: []datastore.ListFilter{
 			{
 				Field:    "PipedId",
-				Operator: "==",
+				Operator: datastore.OperatorEqual,
 				Value:    pipedID,
 			},
 			// TODO: Change to simple conditional clause without using OR clause for portability
@@ -318,7 +318,7 @@ func (a *PipedAPI) ListNotCompletedDeployments(ctx context.Context, req *pipedse
 			// See more: https://firebase.google.com/docs/firestore/query-data/queries?hl=en
 			{
 				Field:    "Status",
-				Operator: "in",
+				Operator: datastore.OperatorIn,
 				Value:    model.GetNotCompletedDeploymentStatuses(),
 			},
 		},
@@ -696,17 +696,17 @@ func (a *PipedAPI) GetLatestEvent(ctx context.Context, req *pipedservice.GetLate
 		Filters: []datastore.ListFilter{
 			{
 				Field:    "ProjectId",
-				Operator: "==",
+				Operator: datastore.OperatorEqual,
 				Value:    projectID,
 			},
 			{
 				Field:    "Name",
-				Operator: "==",
+				Operator: datastore.OperatorEqual,
 				Value:    req.Name,
 			},
 			{
 				Field:    "EventKey",
-				Operator: "==",
+				Operator: datastore.OperatorEqual,
 				Value:    model.MakeEventKey(req.Name, req.Labels),
 			},
 		},
@@ -747,7 +747,7 @@ func (a *PipedAPI) ListEvents(ctx context.Context, req *pipedservice.ListEventsR
 		Filters: []datastore.ListFilter{
 			{
 				Field:    "ProjectId",
-				Operator: "==",
+				Operator: datastore.OperatorEqual,
 				Value:    projectID,
 			},
 		},
@@ -755,14 +755,14 @@ func (a *PipedAPI) ListEvents(ctx context.Context, req *pipedservice.ListEventsR
 	if req.From > 0 {
 		opts.Filters = append(opts.Filters, datastore.ListFilter{
 			Field:    "CreatedAt",
-			Operator: ">=",
+			Operator: datastore.OperatorGreaterThanOrEqual,
 			Value:    req.From,
 		})
 	}
 	if req.To > 0 {
 		opts.Filters = append(opts.Filters, datastore.ListFilter{
 			Field:    "CreatedAt",
-			Operator: "<",
+			Operator: datastore.OperatorLessThan,
 			Value:    req.To,
 		})
 	}

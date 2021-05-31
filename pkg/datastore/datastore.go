@@ -20,12 +20,22 @@ import (
 )
 
 type OrderDirection int
+type Operator string
 
 const (
 	// Asc sorts results from smallest to largest.
 	Asc OrderDirection = iota + 1
 	// Desc sorts results from largest to smallest.
 	Desc
+
+	OperatorEqual              Operator = "=="
+	OperatorNotEqual           Operator = "!="
+	OperatorIn                 Operator = "in"
+	OperatorNotIn              Operator = "not-in"
+	OperatorGreaterThan        Operator = ">"
+	OperatorGreaterThanOrEqual Operator = ">="
+	OperatorLessThan           Operator = "<"
+	OperatorLessThanOrEqual    Operator = "<="
 )
 
 var (
@@ -67,7 +77,7 @@ type Iterator interface {
 
 type ListFilter struct {
 	Field    string
-	Operator string
+	Operator Operator
 	Value    interface{}
 }
 

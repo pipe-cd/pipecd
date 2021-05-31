@@ -201,17 +201,22 @@ func refineFiltersField(filters []datastore.ListFilter) []datastore.ListFilter {
 	return out
 }
 
+// refineFiltersOperator converts operators unified within this project into one dedicated to MySQL.
 func refineFiltersOperator(filters []datastore.ListFilter) ([]datastore.ListFilter, error) {
 	out := make([]datastore.ListFilter, len(filters))
 	for i, filter := range filters {
 		switch filter.Operator {
-		case "==":
+		case datastore.OperatorEqual:
 			filter.Operator = "="
-		case "in":
+		case datastore.OperatorIn:
 			filter.Operator = "IN"
-		case "not-in":
+		case datastore.OperatorNotIn:
 			filter.Operator = "NOT IN"
-		case "!=", ">", ">=", "<", "<=":
+		case datastore.OperatorNotEqual,
+			datastore.OperatorGreaterThan,
+			datastore.OperatorGreaterThanOrEqual,
+			datastore.OperatorLessThan,
+			datastore.OperatorLessThanOrEqual:
 			break
 		default:
 			return nil, fmt.Errorf("unsupported operator %s", filter.Operator)
