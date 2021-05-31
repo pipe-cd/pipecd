@@ -19,6 +19,7 @@ import (
 	"encoding/base64"
 	"errors"
 	"fmt"
+	"strings"
 	"time"
 
 	"github.com/google/uuid"
@@ -184,6 +185,8 @@ func (a *WebAPI) DisableEnvironment(ctx context.Context, req *webservice.Disable
 	return &webservice.DisableEnvironmentResponse{}, nil
 }
 
+// DeleteEnvironment deletes the given environment and all applications that belongs to it.
+// It returns a FailedPrecondition error if Any Piped has permission to that environment.
 func (a *WebAPI) DeleteEnvironment(ctx context.Context, req *webservice.DeleteEnvironmentRequest) (*webservice.DeleteEnvironmentResponse, error) {
 	claims, err := rpcauth.ExtractClaims(ctx)
 	if err != nil {
@@ -193,6 +196,73 @@ func (a *WebAPI) DeleteEnvironment(ctx context.Context, req *webservice.DeleteEn
 
 	if err := a.validateEnvBelongsToProject(ctx, req.EnvironmentId, claims.Role.ProjectId); err != nil {
 		return nil, err
+	}
+	// Check if no Piped has permission to the given environment.
+	pipeds, err := a.pipedStore.ListPipeds(ctx, datastore.ListOptions{
+		Filters: []datastore.ListFilter{
+			{
+				Field:    "EnvIds",
+				Operator: datastore.OperatorIn,
+				Value:    req.EnvironmentId,
+			},
+		},
+	})
+	if err != nil {
+		a.logger.Error("failed to fetch Pipeds linked to the given environment",
+			zap.String("env-id", req.EnvironmentId),
+			zap.Error(err),
+		)
+		return nil, status.Error(codes.Internal, "Failed to validate the deletion operation")
+	}
+	if len(pipeds) > 0 {
+		var pipedNames strings.Builder
+		for _, p := range pipeds {
+			pipedNames.WriteString(fmt.Sprintf("%q", p.Name))
+		}
+		return nil, status.Errorf(
+			codes.FailedPrecondition,
+			"Found Pipeds linked the environment to be deleted. Please remove this environment from all Pipeds (%s) on the Piped settings page",
+			pipedNames,
+		)
+	}
+
+	// Delete all applications that belongs to the given env.
+	apps, _, err := a.applicationStore.ListApplications(ctx, datastore.ListOptions{
+		Filters: []datastore.ListFilter{
+			{
+				Field:    "EnvId",
+				Operator: datastore.OperatorEqual,
+				Value:    req.EnvironmentId,
+			},
+		},
+	})
+	if err != nil {
+		a.logger.Error("failed to fetch applications that belongs to the given environment",
+			zap.String("env-id", req.EnvironmentId),
+			zap.Error(err),
+		)
+		return nil, status.Error(codes.Internal, "Failed to fetch applications that belongs to the given environment")
+	}
+	for _, app := range apps {
+		if err := a.validateAppBelongsToProject(ctx, app.Id, claims.Role.ProjectId); err != nil {
+			return nil, err
+		}
+		err := a.applicationStore.DeleteApplication(ctx, app.Id)
+		if err == nil {
+			continue
+		}
+		switch err {
+		case datastore.ErrNotFound:
+			return nil, status.Error(codes.Internal, "The application is not found")
+		case datastore.ErrInvalidArgument:
+			return nil, status.Error(codes.InvalidArgument, "Invalid value to delete")
+		default:
+			a.logger.Error("failed to delete the application",
+				zap.String("application-id", app.Id),
+				zap.Error(err),
+			)
+			return nil, status.Error(codes.Internal, "Failed to delete the application")
+		}
 	}
 
 	if err := a.environmentStore.DeleteEnvironment(ctx, req.EnvironmentId); err != nil {
