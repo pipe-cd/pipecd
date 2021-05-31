@@ -482,12 +482,12 @@ func TestFindDeploymentsCreatedInRange(t *testing.T) {
 					Filters: []datastore.ListFilter{
 						{
 							Field:    "CreatedAt",
-							Operator: ">=",
+							Operator: datastore.OperatorGreaterThanOrEqual,
 							Value:    time.Date(2020, 1, 1, 0, 0, 0, 0, time.UTC).Unix(),
 						},
 						{
 							Field:    "CreatedAt",
-							Operator: "<",
+							Operator: datastore.OperatorLessThan,
 							Value:    time.Date(2020, 1, 4, 0, 0, 0, 0, time.UTC).Unix(),
 						},
 					},
@@ -516,12 +516,12 @@ func TestFindDeploymentsCreatedInRange(t *testing.T) {
 					Filters: []datastore.ListFilter{
 						{
 							Field:    "CreatedAt",
-							Operator: ">=",
+							Operator: datastore.OperatorGreaterThanOrEqual,
 							Value:    time.Date(2020, 1, 1, 0, 0, 0, 0, time.UTC).Unix(),
 						},
 						{
 							Field:    "CreatedAt",
-							Operator: "<",
+							Operator: datastore.OperatorLessThan,
 							Value:    time.Date(2020, 1, 3, 10, 0, 0, 0, time.UTC).Unix(),
 						},
 					},
@@ -550,12 +550,12 @@ func TestFindDeploymentsCreatedInRange(t *testing.T) {
 					Filters: []datastore.ListFilter{
 						{
 							Field:    "CreatedAt",
-							Operator: ">=",
+							Operator: datastore.OperatorGreaterThanOrEqual,
 							Value:    time.Date(2020, 1, 1, 0, 0, 0, 0, time.UTC).Unix(),
 						},
 						{
 							Field:    "CreatedAt",
-							Operator: "<",
+							Operator: datastore.OperatorLessThan,
 							Value:    time.Date(2020, 1, 3, 5, 0, 0, 0, time.UTC).Unix(),
 						},
 					},
@@ -607,12 +607,12 @@ func TestFindDeploymentsCreatedInRange(t *testing.T) {
 					Filters: []datastore.ListFilter{
 						{
 							Field:    "CreatedAt",
-							Operator: ">=",
+							Operator: datastore.OperatorGreaterThanOrEqual,
 							Value:    time.Date(2020, 1, 1, 0, 0, 0, 0, time.UTC).Unix(),
 						},
 						{
 							Field:    "CreatedAt",
-							Operator: "<",
+							Operator: datastore.OperatorLessThan,
 							Value:    time.Date(2020, 1, 4, 0, 0, 0, 0, time.UTC).Unix(),
 						},
 					},
@@ -678,12 +678,12 @@ func TestFindDeploymentsCompletedInRange(t *testing.T) {
 					Filters: []datastore.ListFilter{
 						{
 							Field:    "CompletedAt",
-							Operator: ">=",
+							Operator: datastore.OperatorGreaterThanOrEqual,
 							Value:    time.Date(2020, 1, 1, 0, 0, 0, 0, time.UTC).Unix(),
 						},
 						{
 							Field:    "CompletedAt",
-							Operator: "<",
+							Operator: datastore.OperatorLessThan,
 							Value:    time.Date(2020, 1, 4, 0, 0, 0, 0, time.UTC).Unix(),
 						},
 					},
@@ -712,12 +712,12 @@ func TestFindDeploymentsCompletedInRange(t *testing.T) {
 					Filters: []datastore.ListFilter{
 						{
 							Field:    "CompletedAt",
-							Operator: ">=",
+							Operator: datastore.OperatorGreaterThanOrEqual,
 							Value:    time.Date(2020, 1, 1, 0, 0, 0, 0, time.UTC).Unix(),
 						},
 						{
 							Field:    "CompletedAt",
-							Operator: "<",
+							Operator: datastore.OperatorLessThan,
 							Value:    time.Date(2020, 1, 3, 10, 0, 0, 0, time.UTC).Unix(),
 						},
 					},
@@ -746,12 +746,12 @@ func TestFindDeploymentsCompletedInRange(t *testing.T) {
 					Filters: []datastore.ListFilter{
 						{
 							Field:    "CompletedAt",
-							Operator: ">=",
+							Operator: datastore.OperatorGreaterThanOrEqual,
 							Value:    time.Date(2020, 1, 1, 0, 0, 0, 0, time.UTC).Unix(),
 						},
 						{
 							Field:    "CompletedAt",
-							Operator: "<",
+							Operator: datastore.OperatorLessThan,
 							Value:    time.Date(2020, 1, 3, 5, 0, 0, 0, time.UTC).Unix(),
 						},
 					},
@@ -803,12 +803,12 @@ func TestFindDeploymentsCompletedInRange(t *testing.T) {
 					Filters: []datastore.ListFilter{
 						{
 							Field:    "CompletedAt",
-							Operator: ">=",
+							Operator: datastore.OperatorGreaterThanOrEqual,
 							Value:    time.Date(2020, 1, 1, 0, 0, 0, 0, time.UTC).Unix(),
 						},
 						{
 							Field:    "CompletedAt",
-							Operator: "<",
+							Operator: datastore.OperatorLessThan,
 							Value:    time.Date(2020, 1, 4, 0, 0, 0, 0, time.UTC).Unix(),
 						},
 					},

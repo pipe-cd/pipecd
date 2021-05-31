@@ -99,7 +99,7 @@ func (s *FireStore) Find(ctx context.Context, kind string, opts datastore.ListOp
 
 	q := s.client.Collection(s.namespace).Doc(s.environment).Collection(colName).Query
 	for _, f := range opts.Filters {
-		q = q.Where(f.Field, f.Operator, f.Value)
+		q = q.Where(f.Field, string(f.Operator), f.Value)
 	}
 	for _, o := range opts.Orders {
 		q = q.OrderBy(o.Field, convertToDirection(o.Direction))

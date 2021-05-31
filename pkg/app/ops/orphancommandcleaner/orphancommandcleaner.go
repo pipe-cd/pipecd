@@ -58,12 +58,12 @@ func (c *OrphanCommandCleaner) updateOrphanCommandsStatus(ctx context.Context) e
 		Filters: []datastore.ListFilter{
 			{
 				Field:    "Status",
-				Operator: "==",
+				Operator: datastore.OperatorEqual,
 				Value:    model.CommandStatus_COMMAND_NOT_HANDLED_YET,
 			},
 			{
 				Field:    "CreatedAt",
-				Operator: "<=",
+				Operator: datastore.OperatorLessThanOrEqual,
 				Value:    timeout,
 			},
 		},

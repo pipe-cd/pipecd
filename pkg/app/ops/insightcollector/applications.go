@@ -63,7 +63,7 @@ func (c *Collector) listApplications(ctx context.Context, to time.Time) ([]*mode
 			Filters: []datastore.ListFilter{
 				{
 					Field:    "Deleted",
-					Operator: "==",
+					Operator: datastore.OperatorEqual,
 					Value:    false,
 				},
 			},
