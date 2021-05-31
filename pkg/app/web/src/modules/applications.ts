@@ -3,6 +3,7 @@ import {
   createEntityAdapter,
   createAsyncThunk,
   SerializedError,
+  isFulfilled,
 } from "@reduxjs/toolkit";
 import {
   Application,
@@ -54,6 +55,21 @@ export const fetchApplications = createAsyncThunk<
       enabled: options.activeStatus
         ? { value: options.activeStatus === "enabled" }
         : undefined,
+    },
+  });
+  return applicationsList as Application.AsObject[];
+});
+
+export const fetchApplicationsByEnv = createAsyncThunk<
+  Application.AsObject[],
+  { envId: string }
+>(`${MODULE_NAME}/fetchListByEnv`, async ({ envId }) => {
+  const { applicationsList } = await applicationsAPI.getApplications({
+    options: {
+      envIdsList: [envId],
+      kindsList: [],
+      name: "",
+      syncStatusesList: [],
     },
   });
   return applicationsList as Application.AsObject[];
@@ -157,14 +173,6 @@ export const applicationsSlice = createSlice({
       .addCase(fetchApplications.pending, (state) => {
         state.loading = true;
       })
-      .addCase(fetchApplications.fulfilled, (state, action) => {
-        applicationsAdapter.removeAll(state);
-        applicationsAdapter.upsertMany(
-          state,
-          action.payload.filter((app) => app.deleted === false)
-        );
-        state.loading = false;
-      })
       .addCase(fetchApplications.rejected, (state) => {
         state.loading = false;
       })
@@ -219,9 +227,26 @@ export const applicationsSlice = createSlice({
             description: action.meta.arg.description,
           },
         });
-      });
+      })
+      .addMatcher(
+        isFulfilled(fetchApplications, fetchApplicationsByEnv),
+        (state, action) => {
+          applicationsAdapter.removeAll(state);
+          applicationsAdapter.upsertMany(
+            state,
+            action.payload.filter((app) => app.deleted === false)
+          );
+          state.loading = false;
+        }
+      );
   },
 });
+
+export const selectApplicationsByEnvId = (envId: string) => (
+  state: AppState
+): Application.AsObject[] => {
+  return selectAll(state.applications).filter((app) => app.envId === envId);
+};
 
 export {
   Application,

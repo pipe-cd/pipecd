@@ -6,6 +6,7 @@ import { applicationsSlice } from "./applications";
 import { applicationLiveStateSlice } from "./applications-live-state";
 import { commandsSlice } from "./commands";
 import { deleteApplicationSlice } from "./delete-application";
+import { deletingEnvSlice } from "./deleting-env";
 import { deploymentConfigsSlice } from "./deployment-configs";
 import { deploymentFrequencySlice } from "./deployment-frequency";
 import { deploymentsSlice } from "./deployments";
@@ -39,4 +40,5 @@ export const reducers = combineReducers({
   insight: insightSlice.reducer,
   deploymentFrequency: deploymentFrequencySlice.reducer,
   applicationCounts: applicationCountsSlice.reducer,
+  deletingEnv: deletingEnvSlice.reducer,
 });

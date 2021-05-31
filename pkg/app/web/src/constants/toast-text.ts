@@ -15,3 +15,6 @@ export const DELETE_OLD_PIPED_KEY_SUCCESS =
 
 // Application
 export const DELETE_APPLICATION_SUCCESS = "Successfully deleted Application.";
+
+// Environment
+export const DELETE_ENVIRONMENT_SUCCESS = "Successfully deleted Environment.";

@@ -34,9 +34,9 @@ const useStyles = makeStyles((theme) => ({
   },
   deleteButton: {
     color: theme.palette.getContrastText(red[400]),
-    backgroundColor: red[700],
+    backgroundColor: red[800],
     "&:hover": {
-      backgroundColor: red[700],
+      backgroundColor: red[800],
     },
   },
 }));

@@ -12,17 +12,21 @@ import {
   Toolbar,
 } from "@material-ui/core";
 import { Add as AddIcon } from "@material-ui/icons";
-import { FC, memo, useState } from "react";
-import { AddEnvForm } from "../../components/add-env-form";
-import { EnvironmentListItem } from "../../components/environment-list-item";
-import { UI_TEXT_ADD } from "../../constants/ui-text";
-import { useAppDispatch, useAppSelector } from "../../hooks/redux";
+import { FC, memo, useCallback, useState } from "react";
+import { AddEnvForm } from "../../../components/add-env-form";
+import { EnvironmentListItem } from "../../../components/environment-list-item";
+import { DELETE_ENVIRONMENT_SUCCESS } from "../../../constants/toast-text";
+import { UI_TEXT_ADD } from "../../../constants/ui-text";
+import { useAppDispatch, useAppSelector } from "../../../hooks/redux";
 import {
   addEnvironment,
+  deleteEnvironment,
   fetchEnvironments,
   selectEnvIds,
-} from "../../modules/environments";
-import { selectProjectName } from "../../modules/me";
+} from "../../../modules/environments";
+import { selectProjectName } from "../../../modules/me";
+import { addToast } from "../../../modules/toasts";
+import { DeleteEnvironmentDialog } from "./components/delete-confirm-dialog";
 
 export const SettingsEnvironmentPage: FC = memo(
   function SettingsEnvironmentPage() {
@@ -41,6 +45,17 @@ export const SettingsEnvironmentPage: FC = memo(
         dispatch(fetchEnvironments());
       });
     };
+
+    const handleDelete = useCallback(
+      async (environmentId: string) => {
+        await dispatch(deleteEnvironment({ environmentId }));
+        dispatch(
+          addToast({ message: DELETE_ENVIRONMENT_SUCCESS, severity: "success" })
+        );
+      },
+      [dispatch]
+    );
+
     return (
       <>
         <Toolbar variant="dense">
@@ -75,6 +90,8 @@ export const SettingsEnvironmentPage: FC = memo(
             </TableBody>
           </Table>
         </TableContainer>
+
+        <DeleteEnvironmentDialog onDelete={handleDelete} />
 
         <Drawer anchor="right" open={isOpenForm} onClose={handleClose}>
           <AddEnvForm
