@@ -255,7 +255,7 @@ func (a *WebAPI) DeleteEnvironment(ctx context.Context, req *webservice.DeleteEn
 	}
 	for _, app := range apps {
 		if app.ProjectId != claims.Role.ProjectId {
-			return nil, status.Errorf(codes.PermissionDenied, "application %q doesn't belong to the project you logged in", app.Name)
+			continue
 		}
 		err := a.applicationStore.DeleteApplication(ctx, app.Id)
 		if err == nil {
