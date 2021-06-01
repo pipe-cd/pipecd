@@ -185,7 +185,7 @@ func (a *WebAPI) DisableEnvironment(ctx context.Context, req *webservice.Disable
 	return &webservice.DisableEnvironmentResponse{}, nil
 }
 
-// DeleteEnvironment deletes the given environment and all applications that belongs to it.
+// DeleteEnvironment deletes the given environment and all applications that belong to it.
 // It returns a FailedPrecondition error if any Piped is still using that environment.
 func (a *WebAPI) DeleteEnvironment(ctx context.Context, req *webservice.DeleteEnvironmentRequest) (*webservice.DeleteEnvironmentResponse, error) {
 	claims, err := rpcauth.ExtractClaims(ctx)
@@ -220,14 +220,14 @@ func (a *WebAPI) DeleteEnvironment(ctx context.Context, req *webservice.DeleteEn
 		return nil, status.Error(codes.Internal, "Failed to validate the deletion operation")
 	}
 	if len(pipeds) > 0 {
-		var pipedNames strings.Builder
+		pipedNames := make([]string, 0, len(pipeds))
 		for _, p := range pipeds {
-			pipedNames.WriteString(fmt.Sprintf("%q", p.Name))
+			pipedNames = append(pipedNames, p.Name)
 		}
 		return nil, status.Errorf(
 			codes.FailedPrecondition,
 			"Found Pipeds linked the environment to be deleted. Please remove this environment from all Pipeds (%s) on the Piped settings page",
-			pipedNames,
+			strings.Join(pipedNames, ","),
 		)
 	}
 
