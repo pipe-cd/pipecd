@@ -205,6 +205,11 @@ func (a *WebAPI) DeleteEnvironment(ctx context.Context, req *webservice.DeleteEn
 				Operator: datastore.OperatorIn,
 				Value:    req.EnvironmentId,
 			},
+			{
+				Field:    "ProjectId",
+				Operator: datastore.OperatorEqual,
+				Value:    claims.Role.ProjectId,
+			},
 		},
 	})
 	if err != nil {
@@ -233,6 +238,11 @@ func (a *WebAPI) DeleteEnvironment(ctx context.Context, req *webservice.DeleteEn
 				Field:    "EnvId",
 				Operator: datastore.OperatorEqual,
 				Value:    req.EnvironmentId,
+			},
+			{
+				Field:    "ProjectId",
+				Operator: datastore.OperatorEqual,
+				Value:    claims.Role.ProjectId,
 			},
 		},
 	})
