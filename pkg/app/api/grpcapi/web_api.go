@@ -186,7 +186,7 @@ func (a *WebAPI) DisableEnvironment(ctx context.Context, req *webservice.Disable
 }
 
 // DeleteEnvironment deletes the given environment and all applications that belongs to it.
-// It returns a FailedPrecondition error if Any Piped has permission to that environment.
+// It returns a FailedPrecondition error if any Piped is still using that environment.
 func (a *WebAPI) DeleteEnvironment(ctx context.Context, req *webservice.DeleteEnvironmentRequest) (*webservice.DeleteEnvironmentResponse, error) {
 	claims, err := rpcauth.ExtractClaims(ctx)
 	if err != nil {
@@ -244,8 +244,8 @@ func (a *WebAPI) DeleteEnvironment(ctx context.Context, req *webservice.DeleteEn
 		return nil, status.Error(codes.Internal, "Failed to fetch applications that belongs to the given environment")
 	}
 	for _, app := range apps {
-		if err := a.validateAppBelongsToProject(ctx, app.Id, claims.Role.ProjectId); err != nil {
-			return nil, err
+		if app.ProjectId != claims.Role.ProjectId {
+			return nil, status.Errorf(codes.PermissionDenied, "application %q doesn't belong to the project you logged in", app.Name)
 		}
 		err := a.applicationStore.DeleteApplication(ctx, app.Id)
 		if err == nil {
