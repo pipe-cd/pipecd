@@ -202,7 +202,7 @@ func (a *WebAPI) DeleteEnvironment(ctx context.Context, req *webservice.DeleteEn
 		Filters: []datastore.ListFilter{
 			{
 				Field:    "EnvIds",
-				Operator: datastore.OperatorIn,
+				Operator: datastore.OperatorContains,
 				Value:    req.EnvironmentId,
 			},
 			{

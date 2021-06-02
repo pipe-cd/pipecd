@@ -212,6 +212,8 @@ func refineFiltersOperator(filters []datastore.ListFilter) ([]datastore.ListFilt
 			filter.Operator = "IN"
 		case datastore.OperatorNotIn:
 			filter.Operator = "NOT IN"
+		case datastore.OperatorContains:
+			// FIXME: Convert contains operator into one dedicated to MySQL
 		case datastore.OperatorNotEqual,
 			datastore.OperatorGreaterThan,
 			datastore.OperatorGreaterThanOrEqual,
