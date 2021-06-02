@@ -1,31 +1,23 @@
 import {
   Box,
-  Button,
-  Dialog,
-  DialogActions,
-  DialogContent,
-  DialogTitle,
   IconButton,
   makeStyles,
   Menu,
   MenuItem,
   TableCell,
   TableRow,
-  TextField,
   Typography,
 } from "@material-ui/core";
 import { MoreVert as MoreVertIcon } from "@material-ui/icons";
 import { EntityId } from "@reduxjs/toolkit";
-import { FC, memo, useCallback, useState } from "react";
 import * as React from "react";
-import {
-  UI_TEXT_CANCEL,
-  UI_TEXT_EDIT,
-  UI_TEXT_SAVE,
-} from "../../constants/ui-text";
+import { FC, memo, useCallback, useState } from "react";
+import { UI_TEXT_DELETE, UI_TEXT_EDIT } from "../../constants/ui-text";
+import { useAppDispatch, useAppSelector } from "../../hooks/redux";
 import { selectEnvById } from "../../modules/environments";
+import { setTargetEnv } from "../../modules/deleting-env";
 import { CopyIconButton } from "../copy-icon-button";
-import { useAppSelector } from "../../hooks/redux";
+import { EditEnvironmentDialog } from "./edit-dialog";
 
 const useStyles = makeStyles((theme) => ({
   item: {
@@ -43,7 +35,6 @@ const useStyles = makeStyles((theme) => ({
 
 const ITEM_HEIGHT = 48;
 const TEXT_NO_DESCRIPTION = "No description";
-const DIALOG_TITLE = "Edit Environment description";
 
 export interface EnvironmentListItemProps {
   id: EntityId;
@@ -54,19 +45,19 @@ export const EnvironmentListItem: FC<EnvironmentListItemProps> = memo(
     const classes = useStyles();
     const [anchorEl, setAnchorEl] = useState<HTMLButtonElement | null>(null);
     const [isEdit, setIsEdit] = useState(false);
-    const [desc, setDesc] = useState("");
     const env = useAppSelector(selectEnvById(id));
+    const dispatch = useAppDispatch();
 
     // menu event handler
     const handleClickMenu = useCallback(
       (e: React.MouseEvent<HTMLButtonElement>) => {
         setAnchorEl(e.currentTarget);
       },
-      [setAnchorEl]
+      []
     );
-    const handleCloseMenu = useCallback(() => {
+    const closeMenu = useCallback(() => {
       setAnchorEl(null);
-    }, [setAnchorEl]);
+    }, []);
 
     // edit event handler
     const handleEdit = useCallback(() => {
@@ -76,11 +67,15 @@ export const EnvironmentListItem: FC<EnvironmentListItemProps> = memo(
     const handleCloseEdit = useCallback(() => {
       setIsEdit(false);
     }, [setIsEdit]);
-    const handleSave = useCallback(() => {
-      // not implemented yet
-    }, []);
 
-    if (!env) {
+    const handleDeleteClick = useCallback(() => {
+      closeMenu();
+      if (env) {
+        dispatch(setTargetEnv({ id: env.id, name: env.name }));
+      }
+    }, [dispatch, env, closeMenu]);
+
+    if (!env || env.deleted) {
       return null;
     }
 
@@ -106,7 +101,6 @@ export const EnvironmentListItem: FC<EnvironmentListItemProps> = memo(
               edge="end"
               aria-label="open menu"
               onClick={handleClickMenu}
-              style={{ display: "none" }}
             >
               <MoreVertIcon />
             </IconButton>
@@ -117,7 +111,7 @@ export const EnvironmentListItem: FC<EnvironmentListItemProps> = memo(
           id="env-menu"
           anchorEl={anchorEl}
           open={isOpenMenu}
-          onClose={handleCloseMenu}
+          onClose={closeMenu}
           PaperProps={{
             style: {
               maxHeight: ITEM_HEIGHT * 4.5,
@@ -125,45 +119,23 @@ export const EnvironmentListItem: FC<EnvironmentListItemProps> = memo(
             },
           }}
         >
-          <MenuItem key="env-menu-edit" onClick={handleEdit}>
+          <MenuItem
+            key="env-menu-edit"
+            onClick={handleEdit}
+            style={{ display: "none" }}
+          >
             {UI_TEXT_EDIT}
+          </MenuItem>
+          <MenuItem key="env-menu-delete" onClick={handleDeleteClick}>
+            {UI_TEXT_DELETE}
           </MenuItem>
         </Menu>
 
-        <Dialog
+        <EditEnvironmentDialog
+          description={env.desc}
           open={isEdit}
-          onEnter={() => {
-            setDesc(env.desc);
-          }}
           onClose={handleCloseEdit}
-          fullWidth
-        >
-          <form onSubmit={handleSave}>
-            <DialogTitle>{DIALOG_TITLE}</DialogTitle>
-            <DialogContent>
-              <TextField
-                value={desc}
-                variant="outlined"
-                margin="dense"
-                label="Description"
-                fullWidth
-                required
-                autoFocus
-                onChange={(e) => setDesc(e.currentTarget.value)}
-              />
-            </DialogContent>
-            <DialogActions>
-              <Button onClick={handleCloseEdit}>{UI_TEXT_CANCEL}</Button>
-              <Button
-                type="submit"
-                color="primary"
-                disabled={desc === "" || desc === env.desc}
-              >
-                {UI_TEXT_SAVE}
-              </Button>
-            </DialogActions>
-          </form>
-        </Dialog>
+        />
       </>
     );
   }

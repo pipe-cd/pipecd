@@ -6,6 +6,8 @@ import {
   AddEnvironmentResponse,
   UpdateEnvironmentDescRequest,
   UpdateEnvironmentDescResponse,
+  DeleteEnvironmentRequest,
+  DeleteEnvironmentResponse,
 } from "pipe/pkg/app/web/api_client/service_pb";
 
 export const getEnvironments = (): Promise<
@@ -15,7 +17,7 @@ export const getEnvironments = (): Promise<
   return apiRequest(req, apiClient.listEnvironments);
 };
 
-export const AddEnvironment = ({
+export const addEnvironment = ({
   name,
   desc,
 }: AddEnvironmentRequest.AsObject): Promise<
@@ -32,4 +34,12 @@ export const updateEnvironmentDesc = (
 ): Promise<UpdateEnvironmentDescResponse.AsObject> => {
   const req = new UpdateEnvironmentDescRequest();
   return apiRequest(req, apiClient.updateEnvironmentDesc);
+};
+
+export const deleteEnvironment = ({
+  environmentId,
+}: DeleteEnvironmentRequest.AsObject): DeleteEnvironmentResponse.AsObject => {
+  const req = new DeleteEnvironmentRequest();
+  req.setEnvironmentId(environmentId);
+  return apiRequest(req, apiClient.deleteEnvironment);
 };

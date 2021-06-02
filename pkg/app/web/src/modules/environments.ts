@@ -9,6 +9,8 @@ import { Environment } from "pipe/pkg/app/web/model/environment_pb";
 import type { AppState } from "../store";
 import * as envsApi from "../api/environments";
 
+const MODULE_NAME = "environments";
+
 export const environmentsAdapter = createEntityAdapter<Environment.AsObject>(
   {}
 );
@@ -43,18 +45,35 @@ export const fetchEnvironments = createAsyncThunk<Environment.AsObject[], void>(
 export const addEnvironment = createAsyncThunk<
   void,
   { name: string; desc: string }
->("environments/fetchList", async (props) => {
-  await envsApi.AddEnvironment(props);
+>(`${MODULE_NAME}/add`, async (props) => {
+  await envsApi.addEnvironment(props);
+});
+
+export const deleteEnvironment = createAsyncThunk<
+  void,
+  { environmentId: string }
+>(`${MODULE_NAME}/delete`, async (props) => {
+  await envsApi.deleteEnvironment(props);
 });
 
 export const environmentsSlice = createSlice({
-  name: "environments",
+  name: MODULE_NAME,
   initialState: environmentsAdapter.getInitialState(),
   reducers: {},
   extraReducers: (builder) => {
-    builder.addCase(fetchEnvironments.fulfilled, (state, action) => {
-      environmentsAdapter.addMany(state, action.payload);
-    });
+    builder
+      .addCase(fetchEnvironments.fulfilled, (state, action) => {
+        environmentsAdapter.addMany(state, action.payload);
+      })
+      .addCase(deleteEnvironment.fulfilled, (state, action) => {
+        environmentsAdapter.updateOne(state, {
+          id: action.meta.arg.environmentId,
+          changes: {
+            deleted: true,
+            disabled: true,
+          },
+        });
+      });
   },
 });
 
