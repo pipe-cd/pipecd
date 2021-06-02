@@ -4,9 +4,11 @@ import {
   DialogActions,
   DialogContent,
   DialogTitle,
+  Link,
   makeStyles,
   Typography,
 } from "@material-ui/core";
+import { Link as RouterLink } from "react-router-dom";
 import { Alert } from "@material-ui/lab";
 import { FC, memo, useCallback } from "react";
 import { UI_TEXT_CANCEL, UI_TEXT_DELETE } from "../../../../constants/ui-text";
@@ -83,11 +85,23 @@ export const DeleteEnvironmentDialog: FC<Props> = memo(
             {DESCRIPTION}
           </Alert>
           <DialogContent>
-            <Typography variant="caption">Delete Applications</Typography>
-            <Typography variant="body1" className={classes.targetName}>
-              {apps.length > 0 ? apps.map((app) => app.name).join(", ") : "-"}
-            </Typography>
-            <Typography variant="caption">Delete Environment</Typography>
+            {apps.length > 0 ? (
+              <>
+                <Typography variant="caption">
+                  Applications to be deleted
+                </Typography>
+                <Typography variant="body1" className={classes.targetName}>
+                  <Link
+                    onClick={handleClose}
+                    component={RouterLink}
+                    to={`/applications?envId=${env?.id}`}
+                  >
+                    View applications
+                  </Link>
+                </Typography>
+              </>
+            ) : null}
+            <Typography variant="caption">Environment to be deleted</Typography>
             <Typography variant="body1" className={classes.targetName}>
               {env ? env.name : ""}
             </Typography>
