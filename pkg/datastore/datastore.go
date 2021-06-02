@@ -36,7 +36,7 @@ const (
 	OperatorGreaterThanOrEqual Operator = ">="
 	OperatorLessThan           Operator = "<"
 	OperatorLessThanOrEqual    Operator = "<="
-	OperatorContains           Operator = "array-contains-any"
+	OperatorContains           Operator = "array-contains"
 )
 
 var (
