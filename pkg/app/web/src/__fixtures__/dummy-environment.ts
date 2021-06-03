@@ -10,6 +10,8 @@ export const createEnvFromObject = (o: Environment.AsObject): Environment => {
   env.setUpdatedAt(o.updatedAt);
   env.setDeletedAt(o.deletedAt);
   env.setId(o.id);
+  env.setDeleted(o.deleted);
+  env.setDisabled(o.disabled);
   return env;
 };
 
@@ -25,4 +27,11 @@ export const dummyEnv: Environment.AsObject = {
   deletedAt: deletedAt.unix(),
   updatedAt: updatedAt.unix(),
   createdAt: createdAt.unix(),
+};
+
+export const deletedDummyEnv: Environment.AsObject = {
+  ...dummyEnv,
+  id: randomUUID(),
+  deleted: true,
+  disabled: true,
 };
