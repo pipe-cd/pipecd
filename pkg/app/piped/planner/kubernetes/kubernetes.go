@@ -19,6 +19,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"io/ioutil"
+	"sort"
 	"strings"
 	"time"
 
@@ -270,6 +271,7 @@ func decideStrategy(olds, news []provider.Manifest, workloadRefs []config.K8sRes
 		}
 
 	}
+	sort.Strings(scales)
 	if len(scales) > 0 {
 		desc = fmt.Sprintf("Quick sync to scale %s", strings.Join(scales, ", "))
 		return
