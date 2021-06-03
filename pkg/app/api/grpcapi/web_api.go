@@ -158,6 +158,11 @@ func (a *WebAPI) ListEnvironments(ctx context.Context, req *webservice.ListEnvir
 				Operator: datastore.OperatorEqual,
 				Value:    claims.Role.ProjectId,
 			},
+			{
+				Field:    "Deleted",
+				Operator: datastore.OperatorEqual,
+				Value:    false,
+			},
 		},
 	}
 	envs, err := a.environmentStore.ListEnvironments(ctx, opts)
@@ -201,14 +206,19 @@ func (a *WebAPI) DeleteEnvironment(ctx context.Context, req *webservice.DeleteEn
 	pipeds, err := a.pipedStore.ListPipeds(ctx, datastore.ListOptions{
 		Filters: []datastore.ListFilter{
 			{
+				Field:    "ProjectId",
+				Operator: datastore.OperatorEqual,
+				Value:    claims.Role.ProjectId,
+			},
+			{
 				Field:    "EnvIds",
 				Operator: datastore.OperatorContains,
 				Value:    req.EnvironmentId,
 			},
 			{
-				Field:    "ProjectId",
+				Field:    "Disabled",
 				Operator: datastore.OperatorEqual,
-				Value:    claims.Role.ProjectId,
+				Value:    false,
 			},
 		},
 	})
@@ -235,14 +245,19 @@ func (a *WebAPI) DeleteEnvironment(ctx context.Context, req *webservice.DeleteEn
 	apps, _, err := a.applicationStore.ListApplications(ctx, datastore.ListOptions{
 		Filters: []datastore.ListFilter{
 			{
+				Field:    "ProjectId",
+				Operator: datastore.OperatorEqual,
+				Value:    claims.Role.ProjectId,
+			},
+			{
 				Field:    "EnvId",
 				Operator: datastore.OperatorEqual,
 				Value:    req.EnvironmentId,
 			},
 			{
-				Field:    "ProjectId",
+				Field:    "Deleted",
 				Operator: datastore.OperatorEqual,
-				Value:    claims.Role.ProjectId,
+				Value:    false,
 			},
 		},
 	})
