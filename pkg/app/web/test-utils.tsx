@@ -16,20 +16,17 @@ import type { AppState } from "./src/store";
 import { theme } from "./src/theme";
 import { thunkErrorHandler } from "./src/middlewares/thunk-error-handler";
 
-const middlewares = [
-  ...getDefaultMiddleware({
-    immutableCheck: false,
-    serializableCheck: false,
-  }),
-  thunkErrorHandler,
-];
+const middlewares = getDefaultMiddleware({
+  immutableCheck: false,
+  serializableCheck: false,
+});
 
 export const createReduxStore = (
   preloadedState?: Partial<AppState>
 ): EnhancedStore<AppState, AnyAction, typeof middlewares> => {
   return configureStore({
     reducer: reducers,
-    middleware: middlewares,
+    middleware: [...middlewares, thunkErrorHandler],
     preloadedState,
   });
 };
