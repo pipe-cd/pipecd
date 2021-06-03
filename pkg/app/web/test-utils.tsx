@@ -14,21 +14,22 @@ import configureMockStore from "redux-mock-store";
 import { reducers } from "./src/modules";
 import type { AppState } from "./src/store";
 import { theme } from "./src/theme";
+import { thunkErrorHandler } from "./src/middlewares/thunk-error-handler";
 
-const middlewares = getDefaultMiddleware({
-  immutableCheck: false,
-  serializableCheck: false,
-});
+const middlewares = [
+  ...getDefaultMiddleware({
+    immutableCheck: false,
+    serializableCheck: false,
+  }),
+  thunkErrorHandler,
+];
 
 export const createReduxStore = (
   preloadedState?: Partial<AppState>
 ): EnhancedStore<AppState, AnyAction, typeof middlewares> => {
   return configureStore({
     reducer: reducers,
-    middleware: getDefaultMiddleware({
-      immutableCheck: false,
-      serializableCheck: false,
-    }),
+    middleware: middlewares,
     preloadedState,
   });
 };

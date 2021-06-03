@@ -12,6 +12,8 @@ import {
   Toolbar,
 } from "@material-ui/core";
 import { Add as AddIcon } from "@material-ui/icons";
+import { unwrapResult } from "@reduxjs/toolkit";
+import { useEffect } from "react";
 import { FC, memo, useCallback, useState } from "react";
 import { AddEnvForm } from "../../../components/add-env-form";
 import { EnvironmentListItem } from "../../../components/environment-list-item";
@@ -48,13 +50,24 @@ export const SettingsEnvironmentPage: FC = memo(
 
     const handleDelete = useCallback(
       async (environmentId: string) => {
-        await dispatch(deleteEnvironment({ environmentId }));
-        dispatch(
-          addToast({ message: DELETE_ENVIRONMENT_SUCCESS, severity: "success" })
-        );
+        dispatch(deleteEnvironment({ environmentId }))
+          .then(unwrapResult)
+          .then(() => {
+            dispatch(
+              addToast({
+                message: DELETE_ENVIRONMENT_SUCCESS,
+                severity: "success",
+              })
+            );
+          })
+          .catch(() => null);
       },
       [dispatch]
     );
+
+    useEffect(() => {
+      dispatch(fetchEnvironments());
+    }, [dispatch]);
 
     return (
       <>
