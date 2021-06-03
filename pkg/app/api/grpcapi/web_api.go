@@ -158,11 +158,6 @@ func (a *WebAPI) ListEnvironments(ctx context.Context, req *webservice.ListEnvir
 				Operator: datastore.OperatorEqual,
 				Value:    claims.Role.ProjectId,
 			},
-			{
-				Field:    "Deleted",
-				Operator: datastore.OperatorEqual,
-				Value:    false,
-			},
 		},
 	}
 	envs, err := a.environmentStore.ListEnvironments(ctx, opts)
@@ -253,11 +248,6 @@ func (a *WebAPI) DeleteEnvironment(ctx context.Context, req *webservice.DeleteEn
 				Field:    "EnvId",
 				Operator: datastore.OperatorEqual,
 				Value:    req.EnvironmentId,
-			},
-			{
-				Field:    "Deleted",
-				Operator: datastore.OperatorEqual,
-				Value:    false,
 			},
 		},
 	})
