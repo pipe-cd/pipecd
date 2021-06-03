@@ -257,6 +257,12 @@ func isEmptyInterface(v reflect.Value) bool {
 	}
 
 	e := v.Elem()
+
+	// When the value that the interface v contains is a zero value (false boolean, zero number, empty string...).
+	if e.IsZero() {
+		return true
+	}
+
 	switch e.Kind() {
 	case reflect.Array, reflect.Slice, reflect.Map:
 		return e.Len() == 0

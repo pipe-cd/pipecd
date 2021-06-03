@@ -5,6 +5,10 @@ metadata:
   labels:
     app: simple
     pipecd.dev/managed-by: piped
+    zeroBool1: false
+    zeroString1: ""
+    zeroInt1: 0
+    zeroFloat1: 0.0
 spec:
   replicas: 2
   number: 1
@@ -45,6 +49,10 @@ metadata:
   labels:
     pipecd.dev/managed-by: piped
     app: simple
+    zeroBool2: false
+    zeroString2: ""
+    zeroInt2: 0
+    zeroFloat2: 0.0
 spec:
   replicas: 2
   number: 1.0
