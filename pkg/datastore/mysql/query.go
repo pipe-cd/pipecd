@@ -74,6 +74,8 @@ func buildWhereClause(filters []datastore.ListFilter) string {
 			// Make string of (?,...) which contains the number of `?` equal to the element number of filter.Value
 			valLength := reflect.ValueOf(filter.Value).Len()
 			conds[i] = fmt.Sprintf("%s %s (?%s)", filter.Field, filter.Operator, strings.Repeat(",?", valLength-1))
+		case "JSON_CONTAINS":
+			conds[i] = fmt.Sprintf("%s(%s, '%q', '$')", filter.Operator, filter.Field, filter.Value)
 		default:
 			conds[i] = fmt.Sprintf("%s %s ?", filter.Field, filter.Operator)
 		}
@@ -213,8 +215,7 @@ func refineFiltersOperator(filters []datastore.ListFilter) ([]datastore.ListFilt
 		case datastore.OperatorNotIn:
 			filter.Operator = "NOT IN"
 		case datastore.OperatorContains:
-			// FIXME: Convert contains operator into one dedicated to MySQL
-			return nil, fmt.Errorf("unsupported operator %s", filter.Operator)
+			filter.Operator = "JSON_CONTAINS"
 		case datastore.OperatorNotEqual,
 			datastore.OperatorGreaterThan,
 			datastore.OperatorGreaterThanOrEqual,

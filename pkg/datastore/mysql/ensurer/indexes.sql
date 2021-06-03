@@ -82,3 +82,11 @@ CREATE INDEX event_project_id_created_at_asc ON Event (ProjectId, CreatedAt);
 -- index on `EventKey` ASC, `Name` ASC, `ProjectId` ASC and `CreatedAt` DESC
 ALTER TABLE Event ADD COLUMN EventKey VARCHAR(64) GENERATED ALWAYS AS (data->>"$.event_key") VIRTUAL NOT NULL, ADD COLUMN Name VARCHAR(50) GENERATED ALWAYS AS (data->>"$.name") VIRTUAL NOT NULL;
 CREATE INDEX event_key_name_project_id_created_at_desc ON Event (EventKey, Name, ProjectId, CreatedAt DESC);
+
+--
+-- Piped table indexes
+--
+
+-- index on `EnvIds` ASC
+ALTER TABLE Piped ADD COLUMN EnvIds JSON GENERATED ALWAYS AS (IFNULL(data ->> "$.env_ids", '[]')) VIRTUAL NOT NULL;
+CREATE INDEX piped_project_id_env_ids_asc ON Piped (ProjectId, EnvIds);
