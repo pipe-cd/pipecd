@@ -63,16 +63,13 @@ export const environmentsSlice = createSlice({
   extraReducers: (builder) => {
     builder
       .addCase(fetchEnvironments.fulfilled, (state, action) => {
-        environmentsAdapter.addMany(state, action.payload);
+        environmentsAdapter.addMany(
+          state,
+          action.payload.filter((env) => env.deleted === false)
+        );
       })
       .addCase(deleteEnvironment.fulfilled, (state, action) => {
-        environmentsAdapter.updateOne(state, {
-          id: action.meta.arg.environmentId,
-          changes: {
-            deleted: true,
-            disabled: true,
-          },
-        });
+        environmentsAdapter.removeOne(state, action.meta.arg.environmentId);
       });
   },
 });

@@ -75,7 +75,7 @@ export const EnvironmentListItem: FC<EnvironmentListItemProps> = memo(
       }
     }, [dispatch, env, closeMenu]);
 
-    if (!env || env.deleted) {
+    if (!env) {
       return null;
     }
 

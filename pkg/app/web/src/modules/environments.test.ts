@@ -1,18 +1,16 @@
-import {
-  ListEnvironmentsResponse,
-  AddEnvironmentResponse,
-} from "pipe/pkg/app/web/api_client/service_pb";
-import { createStore } from "../../test-utils";
-import { createHandler } from "../mocks/create-handler";
+import { createReduxStore, createStore } from "../../test-utils";
 import { server } from "../mocks/server";
 import {
-  createEnvFromObject,
-  dummyEnv,
-} from "../__fixtures__/dummy-environment";
+  addEnvironmentHandler,
+  deleteEnvironmentHandler,
+  listEnvironmentHandler,
+} from "../mocks/services/environment";
+import { dummyEnv } from "../__fixtures__/dummy-environment";
 import {
   environmentsSlice,
   fetchEnvironments,
   addEnvironment,
+  deleteEnvironment,
 } from "./environments";
 
 beforeAll(() => {
@@ -56,36 +54,21 @@ describe("environmentsSlice reducer", () => {
 
 describe("async actions", () => {
   test("fetchEnvironments", async () => {
-    const store = createStore();
+    const store = createReduxStore();
 
-    server.use(
-      createHandler<ListEnvironmentsResponse>("/ListEnvironments", () => {
-        const res = new ListEnvironmentsResponse();
-        res.setEnvironmentsList([createEnvFromObject(dummyEnv)]);
-        return res;
-      })
-    );
+    server.use(listEnvironmentHandler);
 
     await store.dispatch(fetchEnvironments());
-    expect(store.getActions()).toEqual(
-      expect.arrayContaining([
-        expect.objectContaining({ type: fetchEnvironments.pending.type }),
-        expect.objectContaining({
-          type: fetchEnvironments.fulfilled.type,
-          payload: [dummyEnv],
-        }),
-      ])
-    );
+    expect(store.getState().environments).toEqual({
+      entities: { [dummyEnv.id]: dummyEnv },
+      ids: [dummyEnv.id],
+    });
   });
 
   test("addEnvironment", async () => {
     const store = createStore();
 
-    server.use(
-      createHandler<AddEnvironmentResponse>("/AddEnvironment", () => {
-        return new AddEnvironmentResponse();
-      })
-    );
+    server.use(addEnvironmentHandler);
 
     await store.dispatch(addEnvironment({ name: "env", desc: "description" }));
     expect(store.getActions()).toEqual(
@@ -96,5 +79,19 @@ describe("async actions", () => {
         }),
       ])
     );
+  });
+
+  test("deleteEnvironment", async () => {
+    const store = createReduxStore({
+      environments: {
+        entities: { [dummyEnv.id]: dummyEnv },
+        ids: [dummyEnv.id],
+      },
+    });
+
+    server.use(deleteEnvironmentHandler);
+
+    await store.dispatch(deleteEnvironment({ environmentId: dummyEnv.id }));
+    expect(store.getState().environments).toEqual({ entities: {}, ids: [] });
   });
 });
