@@ -14,6 +14,7 @@ import configureMockStore from "redux-mock-store";
 import { reducers } from "./src/modules";
 import type { AppState } from "./src/store";
 import { theme } from "./src/theme";
+import { thunkErrorHandler } from "./src/middlewares/thunk-error-handler";
 
 const middlewares = getDefaultMiddleware({
   immutableCheck: false,
@@ -25,10 +26,7 @@ export const createReduxStore = (
 ): EnhancedStore<AppState, AnyAction, typeof middlewares> => {
   return configureStore({
     reducer: reducers,
-    middleware: getDefaultMiddleware({
-      immutableCheck: false,
-      serializableCheck: false,
-    }),
+    middleware: [...middlewares, thunkErrorHandler],
     preloadedState,
   });
 };

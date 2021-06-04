@@ -11,16 +11,19 @@ import {
 import { Link as RouterLink } from "react-router-dom";
 import { Alert } from "@material-ui/lab";
 import { FC, memo, useCallback } from "react";
-import { UI_TEXT_CANCEL, UI_TEXT_DELETE } from "../../../../constants/ui-text";
+import {
+  UI_TEXT_CANCEL,
+  UI_TEXT_DELETE,
+} from "../../../../../constants/ui-text";
 import { red } from "@material-ui/core/colors";
 import { shallowEqual } from "react-redux";
 import { useEffect } from "react";
 import {
   fetchApplicationsByEnv,
   selectApplicationsByEnvId,
-} from "../../../../modules/applications";
-import { useAppDispatch, useAppSelector } from "../../../../hooks/redux";
-import { clearTargetEnv } from "../../../../modules/deleting-env";
+} from "../../../../../modules/applications";
+import { useAppDispatch, useAppSelector } from "../../../../../hooks/redux";
+import { clearTargetEnv } from "../../../../../modules/deleting-env";
 
 const useStyles = makeStyles((theme) => ({
   targetName: {
