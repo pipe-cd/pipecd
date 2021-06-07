@@ -75,7 +75,7 @@ func buildWhereClause(filters []datastore.ListFilter) string {
 			valLength := reflect.ValueOf(filter.Value).Len()
 			conds[i] = fmt.Sprintf("%s %s (?%s)", filter.Field, filter.Operator, strings.Repeat(",?", valLength-1))
 		case "JSON_CONTAINS":
-			conds[i] = fmt.Sprintf("%s(%s, '%q', '$')", filter.Operator, filter.Field, filter.Value)
+			conds[i] = fmt.Sprintf("%s(%s, ?, '$')", filter.Operator, filter.Field)
 		default:
 			conds[i] = fmt.Sprintf("%s %s ?", filter.Field, filter.Operator)
 		}

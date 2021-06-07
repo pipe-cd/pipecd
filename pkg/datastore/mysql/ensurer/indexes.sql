@@ -87,6 +87,7 @@ CREATE INDEX event_key_name_project_id_created_at_desc ON Event (EventKey, Name,
 -- Piped table indexes
 --
 
--- index on `EnvIds` ASC
+-- index on `ProjectId` ASC and `EnvIds` ASC
 ALTER TABLE Piped ADD COLUMN EnvIds JSON GENERATED ALWAYS AS (IFNULL(data ->> "$.env_ids", '[]')) VIRTUAL NOT NULL;
-CREATE INDEX piped_project_id_env_ids_asc ON Piped (ProjectId, EnvIds);
+-- TODO: Create index on ProjectId and EnvIds
+-- CREATE INDEX piped_project_id_env_ids_asc ON Piped (ProjectId, (CAST(EnvIds->'$' AS BINARY(16) ARRAY)));
