@@ -1,10 +1,10 @@
-import * as React from "react";
 import { createDecoratorRedux } from "../../../.storybook/redux-decorator";
-import { Pipeline } from "./";
+import { Pipeline, PipelineProps } from "./";
 import { Deployment } from "../../modules/deployments";
 import { createPipelineStage } from "../../__fixtures__/dummy-pipeline";
 import { METADATA_APPROVED_BY } from "../../constants/metadata-keys";
 import { SyncStrategy } from "pipe/pkg/app/web/model/deployment_pb";
+import { Story } from "@storybook/react";
 
 const DEPLOYMENT_ID = "debug-deployment-id-01";
 const fakeDeployment: Deployment.AsObject = {
@@ -134,6 +134,6 @@ export default {
   ],
 };
 
-export const overview: React.FC = () => (
-  <Pipeline deploymentId={DEPLOYMENT_ID} />
-);
+const Template: Story<PipelineProps> = (args) => <Pipeline {...args} />;
+export const Overview = Template.bind({});
+Overview.args = { deploymentId: DEPLOYMENT_ID };

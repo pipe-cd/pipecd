@@ -1,7 +1,7 @@
-import * as React from "react";
-import { ApplicationStateView } from "./";
+import { Story } from "@storybook/react";
 import { createDecoratorRedux } from "../../../.storybook/redux-decorator";
 import { dummyApplicationLiveState } from "../../__fixtures__/dummy-application-live-state";
+import { ApplicationStateView, ApplicationStateViewProps } from "./";
 
 export default {
   title: "APPLICATION/ApplicationStateView",
@@ -18,6 +18,8 @@ export default {
   ],
 };
 
-export const overview: React.FC = () => (
-  <ApplicationStateView applicationId="application-1" />
+const Template: Story<ApplicationStateViewProps> = (args) => (
+  <ApplicationStateView {...args} />
 );
+export const Overview = Template.bind({});
+Overview.args = { applicationId: dummyApplicationLiveState.applicationId };

@@ -1,14 +1,14 @@
-import * as React from "react";
 import { RBACForm } from "./";
 import { Provider } from "react-redux";
 import { createStore } from "../../../test-utils";
+import { Story } from "@storybook/react";
 
 export default {
   title: "RBACForm",
   component: RBACForm,
 };
 
-export const overview: React.FC = () => (
+export const Overview: Story = () => (
   <Provider
     store={createStore({
       project: {
@@ -20,7 +20,7 @@ export const overview: React.FC = () => (
   </Provider>
 );
 
-export const notConfigured: React.FC = () => (
+export const NotConfigured: Story = () => (
   <Provider
     store={createStore({
       project: {

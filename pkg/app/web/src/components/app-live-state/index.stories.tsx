@@ -1,4 +1,4 @@
-import * as React from "react";
+import { Story } from "@storybook/react";
 import { Provider } from "react-redux";
 import { createStore } from "../../../test-utils";
 import { dummyApplication } from "../../__fixtures__/dummy-application";
@@ -10,7 +10,7 @@ export default {
   component: AppLiveState,
 };
 
-export const overview: React.FC = () => (
+export const Overview: Story = () => (
   <Provider
     store={createStore({
       applicationLiveState: {
@@ -27,7 +27,7 @@ export const overview: React.FC = () => (
   </Provider>
 );
 
-export const loading: React.FC = () => (
+export const loading: Story = () => (
   <Provider
     store={createStore({
       applicationLiveState: {
@@ -44,7 +44,7 @@ export const loading: React.FC = () => (
   </Provider>
 );
 
-export const refresh: React.FC = () => (
+export const refresh: Story = () => (
   <Provider
     store={createStore({
       applicationLiveState: {
@@ -63,7 +63,7 @@ export const refresh: React.FC = () => (
   </Provider>
 );
 
-export const notAvailable: React.FC = () => (
+export const notAvailable: Story = () => (
   <Provider
     store={createStore({
       applicationLiveState: {

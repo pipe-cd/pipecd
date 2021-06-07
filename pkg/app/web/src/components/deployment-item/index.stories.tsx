@@ -1,17 +1,17 @@
-import * as React from "react";
 import { DeploymentItem } from "./";
 import { dummyDeployment } from "../../__fixtures__/dummy-deployment";
 import { dummyApplication } from "../../__fixtures__/dummy-application";
 import { dummyEnv } from "../../__fixtures__/dummy-environment";
 import { Provider } from "react-redux";
 import { createStore } from "../../../test-utils";
+import { Story } from "@storybook/react";
 
 export default {
   title: "DEPLOYMENT/DeploymentItem",
   component: DeploymentItem,
 };
 
-export const overview: React.FC = () => (
+export const Overview: Story = () => (
   <Provider
     store={createStore({
       deployments: {
@@ -38,7 +38,7 @@ export const overview: React.FC = () => (
   </Provider>
 );
 
-export const noDescription: React.FC = () => (
+export const noDescription: Story = () => (
   <Provider
     store={createStore({
       deployments: {

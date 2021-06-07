@@ -1,9 +1,8 @@
-import * as React from "react";
-import { DeploymentFilter } from "./";
+import { DeploymentFilter, DeploymentFilterProps } from "./";
 import { createDecoratorRedux } from "../../../.storybook/redux-decorator";
 import { dummyEnv } from "../../__fixtures__/dummy-environment";
 import { dummyApplication } from "../../__fixtures__/dummy-application";
-import { action } from "@storybook/addon-actions";
+import { Story } from "@storybook/react";
 
 export default {
   title: "DEPLOYMENT/DeploymentFilter",
@@ -25,17 +24,25 @@ export default {
       },
     }),
   ],
+  argTypes: {
+    onChange: {
+      action: "onChange",
+    },
+    onClear: {
+      action: "onClear",
+    },
+  },
 };
 
-export const overview: React.FC = () => (
-  <DeploymentFilter
-    onChange={action("onChange")}
-    onClear={action("onClear")}
-    options={{
-      applicationId: undefined,
-      envId: undefined,
-      kind: undefined,
-      status: undefined,
-    }}
-  />
+const Template: Story<DeploymentFilterProps> = (args) => (
+  <DeploymentFilter {...args} />
 );
+export const Overview = Template.bind({});
+Overview.args = {
+  options: {
+    applicationId: undefined,
+    envId: undefined,
+    kind: undefined,
+    status: undefined,
+  },
+};

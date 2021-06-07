@@ -1,15 +1,18 @@
-import { action } from "@storybook/addon-actions";
-import * as React from "react";
-import { ResourceFilterPopover } from "./";
+import { Story } from "@storybook/react";
+import { ResourceFilterPopover, ResourceFilterPopoverProps } from "./";
 
 export default {
   title: "ResourceFilterPopover",
   component: ResourceFilterPopover,
+  argTypes: {
+    onChange: {
+      action: "onChange",
+    },
+  },
 };
 
-export const overview: React.FC = () => (
-  <ResourceFilterPopover
-    enables={{ Pod: true, ReplicaSet: false }}
-    onChange={action("onChange")}
-  />
+const Template: Story<ResourceFilterPopoverProps> = (args) => (
+  <ResourceFilterPopover {...args} />
 );
+export const Overview = Template.bind({});
+Overview.args = { enables: { Pod: true, ReplicaSet: false } };

@@ -1,12 +1,20 @@
-import { action } from "@storybook/addon-actions";
-import * as React from "react";
-import { PipedFilter } from "./";
+import { Story } from "@storybook/react";
+import { PipedFilter, PipedFilterProps } from "./";
 
 export default {
-  title: "SETTINGS/Piped/PipedFilter",
+  title: "Setting/Piped/PipedFilter",
   component: PipedFilter,
+  argTypes: {
+    onChange: {
+      action: "onChange",
+    },
+  },
 };
 
-export const overview: React.FC = () => (
-  <PipedFilter values={{ enabled: false }} onChange={action("onChange")} />
-);
+const Template: Story<PipedFilterProps> = (args) => <PipedFilter {...args} />;
+export const Overview = Template.bind({});
+Overview.args = {
+  values: {
+    enabled: false,
+  },
+};

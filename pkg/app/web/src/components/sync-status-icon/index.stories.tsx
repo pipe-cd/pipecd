@@ -1,17 +1,32 @@
-import * as React from "react";
-import { SyncStatusIcon } from "./";
+import { SyncStatusIcon, SyncStatusIconProps } from "./";
 import { ApplicationSyncStatus } from "pipe/pkg/app/web/model/application_pb";
+import { Story } from "@storybook/react";
 
 export default {
   title: "APPLICATION/SyncStatusIcon",
   component: SyncStatusIcon,
 };
 
-export const overview: React.FC = () => (
-  <>
-    <SyncStatusIcon status={ApplicationSyncStatus.UNKNOWN} />
-    <SyncStatusIcon status={ApplicationSyncStatus.SYNCED} />
-    <SyncStatusIcon status={ApplicationSyncStatus.DEPLOYING} />
-    <SyncStatusIcon status={ApplicationSyncStatus.OUT_OF_SYNC} />
-  </>
+const Template: Story<SyncStatusIconProps> = (args) => (
+  <SyncStatusIcon {...args} />
 );
+
+export const Unknown = Template.bind({});
+Unknown.args = {
+  status: ApplicationSyncStatus.UNKNOWN,
+};
+
+export const Synced = Template.bind({});
+Synced.args = {
+  status: ApplicationSyncStatus.SYNCED,
+};
+
+export const Deploying = Template.bind({});
+Deploying.args = {
+  status: ApplicationSyncStatus.DEPLOYING,
+};
+
+export const OutOfSync = Template.bind({});
+OutOfSync.args = {
+  status: ApplicationSyncStatus.OUT_OF_SYNC,
+};

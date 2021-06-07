@@ -1,7 +1,7 @@
-import * as React from "react";
-import { EnvironmentListItem } from "./";
+import { EnvironmentListItem, EnvironmentListItemProps } from "./";
 import { createDecoratorRedux } from "../../../.storybook/redux-decorator";
 import { dummyEnv } from "../../__fixtures__/dummy-environment";
+import { Story } from "@storybook/react";
 
 export default {
   title: "EnvironmentListItem",
@@ -16,8 +16,10 @@ export default {
   ],
 };
 
-export const overview: React.FC = () => (
+const Template: Story<EnvironmentListItemProps> = (args) => (
   <ul style={{ listStyle: "none" }}>
-    <EnvironmentListItem id={dummyEnv.id} />
+    <EnvironmentListItem {...args} />
   </ul>
 );
+export const Overview = Template.bind({});
+Overview.args = { id: dummyEnv.id };

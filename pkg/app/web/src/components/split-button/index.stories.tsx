@@ -1,31 +1,30 @@
-import * as React from "react";
-import { SplitButton } from "./";
+import { SplitButton, SplitButtonProps } from "./";
 import CancelIcon from "@material-ui/icons/Cancel";
-import { action } from "@storybook/addon-actions";
+import { Story } from "@storybook/react";
 
 export default {
   title: "COMMON/SplitButton",
   component: SplitButton,
+  argTypes: {
+    onClick: { action: "onClick" },
+  },
 };
 
-export const overview: React.FC = () => (
-  <SplitButton
-    label="select option"
-    startIcon={<CancelIcon />}
-    options={["Cancel", "Cancel Without Rollback"]}
-    onClick={action("onClick")}
-    disabled={false}
-    loading={false}
-  />
-);
+const Template: Story<SplitButtonProps> = (args) => <SplitButton {...args} />;
+export const Overview = Template.bind({});
+Overview.args = {
+  label: "select option",
+  startIcon: <CancelIcon />,
+  options: ["Cancel", "Cancel Without Rollback"],
+  disabled: false,
+  loading: false,
+};
 
-export const loading: React.FC = () => (
-  <SplitButton
-    label="select option"
-    startIcon={<CancelIcon />}
-    options={["Cancel", "Cancel Without Rollback"]}
-    onClick={action("onClick")}
-    loading
-    disabled
-  />
-);
+export const Loading = Template.bind({});
+Loading.args = {
+  label: "select option",
+  startIcon: <CancelIcon />,
+  options: ["Cancel", "Cancel Without Rollback"],
+  disabled: true,
+  loading: true,
+};

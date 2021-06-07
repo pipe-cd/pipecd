@@ -1,9 +1,9 @@
-import * as React from "react";
+import { Story } from "@storybook/react";
 import { createDecoratorRedux } from "../../../.storybook/redux-decorator";
 import { StaticAdminForm } from "./";
 
 export default {
-  title: "SETTINGS/StaticAdminForm",
+  title: "Setting/StaticAdminForm",
   component: StaticAdminForm,
   decorators: [
     createDecoratorRedux({
@@ -15,4 +15,6 @@ export default {
   ],
 };
 
-export const overview: React.FC = () => <StaticAdminForm />;
+const Template: Story = (args) => <StaticAdminForm {...args} />;
+export const Overview = Template.bind({});
+Overview.args = {};

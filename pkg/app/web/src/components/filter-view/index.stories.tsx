@@ -1,12 +1,16 @@
-import { action } from "@storybook/addon-actions";
-import * as React from "react";
-import { FilterView } from "./";
+import { Story } from "@storybook/react";
+import { FilterView, FilterViewProps } from "./";
 
 export default {
   title: "FilterView",
   component: FilterView,
+  argTypes: {
+    onClear: {
+      action: "onClear",
+    },
+  },
 };
 
-export const overview: React.FC = () => (
-  <FilterView onClear={action("onClear")}>filter</FilterView>
-);
+const Template: Story<FilterViewProps> = (args) => <FilterView {...args} />;
+export const Overview = Template.bind({});
+Overview.args = {};

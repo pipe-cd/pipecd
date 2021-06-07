@@ -32,7 +32,7 @@ export const {{ inputs.name | pascal }}: FC<{{ inputs.name | pascal }}Props> = (
 
 ```tsx
 import { {{ inputs.name | pascal }}, {{ inputs.name | pascal }}Props } from "./";
-import { Story } from "@storybook/react/types-6-0";
+import { Story } from "@storybook/react";
 
 export default {
   title: "{{ inputs.name | pascal }}",

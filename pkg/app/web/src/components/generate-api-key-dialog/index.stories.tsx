@@ -1,16 +1,21 @@
-import { action } from "@storybook/addon-actions";
-import * as React from "react";
-import { GenerateAPIKeyDialog } from "./";
+import { Story } from "@storybook/react";
+import { GenerateAPIKeyDialog, GenerateAPIKeyDialogProps } from "./";
 
 export default {
-  title: "SETTINGS/APIKey/GenerateAPIKeyDialog",
+  title: "Setting/APIKey/GenerateAPIKeyDialog",
   component: GenerateAPIKeyDialog,
+  argTypes: {
+    onClose: {
+      action: "onClose",
+    },
+    onSubmit: {
+      action: "onSubmit",
+    },
+  },
 };
 
-export const overview: React.FC = () => (
-  <GenerateAPIKeyDialog
-    open
-    onClose={action("onClose")}
-    onSubmit={action("onSubmit")}
-  />
+const Template: Story<GenerateAPIKeyDialogProps> = (args) => (
+  <GenerateAPIKeyDialog {...args} />
 );
+export const Overview = Template.bind({});
+Overview.args = { open: true };

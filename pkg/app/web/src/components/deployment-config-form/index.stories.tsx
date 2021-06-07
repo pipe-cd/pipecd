@@ -1,16 +1,16 @@
-import * as React from "react";
 import { DeploymentConfigForm } from "./";
 import { action } from "@storybook/addon-actions";
 import { createStore } from "../../../test-utils";
 import { Provider } from "react-redux";
 import { dummyDeploymentConfigTemplates } from "../../__fixtures__/dummy-deployment-config";
+import { Story } from "@storybook/react";
 
 export default {
   title: "DEPLOYMENT/DeploymentConfigForm",
   component: DeploymentConfigForm,
 };
 
-export const overview: React.FC = () => (
+export const Overview: Story = () => (
   <Provider
     store={createStore({
       deploymentConfigs: {
@@ -25,7 +25,7 @@ export const overview: React.FC = () => (
   </Provider>
 );
 
-export const loading: React.FC = () => (
+export const loading: Story = () => (
   <Provider store={createStore({})}>
     <DeploymentConfigForm onSkip={action("onSkip")} />
   </Provider>

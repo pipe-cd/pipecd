@@ -1,4 +1,4 @@
-import { Story } from "@storybook/react/types-6-0";
+import { Story } from "@storybook/react";
 import { createDecoratorRedux } from "../../../.storybook/redux-decorator";
 import { dummyApplication } from "../../__fixtures__/dummy-application";
 import { DeleteApplicationDialog, DeleteApplicationDialogProps } from "./";

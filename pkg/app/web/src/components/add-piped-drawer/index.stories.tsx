@@ -1,13 +1,12 @@
-import { action } from "@storybook/addon-actions";
-import * as React from "react";
+import { Story } from "@storybook/react";
 import { createDecoratorRedux } from "../../../.storybook/redux-decorator";
 import { dummyEnv } from "../../__fixtures__/dummy-environment";
-import { AddPipedDrawer } from "./";
+import { AddPipedDrawer, AddPipedDrawerProps } from "./";
 
 const env2 = { ...dummyEnv, id: "env-2", name: "development" };
 
 export default {
-  title: "SETTINGS/Piped/AddPipedDrawer",
+  title: "Setting/Piped/AddPipedDrawer",
   component: AddPipedDrawer,
   decorators: [
     createDecoratorRedux({
@@ -20,8 +19,15 @@ export default {
       },
     }),
   ],
+  argTypes: {
+    onClose: {
+      action: "onClose",
+    },
+  },
 };
 
-export const overview: React.FC = () => (
-  <AddPipedDrawer open onClose={action("onClose")} />
+const Template: Story<AddPipedDrawerProps> = (args) => (
+  <AddPipedDrawer {...args} />
 );
+export const Overview = Template.bind({});
+Overview.args = { open: true };
