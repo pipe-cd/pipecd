@@ -273,6 +273,20 @@ func TestBuildFindQuery(t *testing.T) {
 			expectedQuery: "SELECT Data FROM Project WHERE Status IN (?,?,?)",
 		},
 		{
+			name: "query with MEMBER OF operator",
+			kind: "Piped",
+			listOptions: datastore.ListOptions{
+				Filters: []datastore.ListFilter{
+					{
+						Field:    "EnvIds",
+						Operator: datastore.OperatorContains,
+						Value:    "xxx",
+					},
+				},
+			},
+			expectedQuery: "SELECT Data FROM Piped WHERE ? MEMBER OF (EnvIds)",
+		},
+		{
 			name: "query with IN operator (one element)",
 			kind: "Project",
 			listOptions: datastore.ListOptions{
