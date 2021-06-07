@@ -25,11 +25,13 @@ description: >
 make push
 ```
 
+**NOTE: Since it uses the commit hash as an image tag, you need to make a new commit whenever you change the source code.**
+
 This command compiles the local source code to build the docker images for `pipecd`, `piped` and then pushes them to the local container registery which was enabled by `make kind-up`.
 
 ### Rendering the local manifests
 
-Because the `manifests` directory at [pipe-cd/pipe](https://github.com/pipe-cd/pipe) are just containing the manifest templates, they can not be used to install directly. The following command helps rendering those templates locally. The installable manifests will be stored at `.rendered-manifests` directory.
+Because the `manifests` directory at [pipe-cd/pipe](https://github.com/pipe-cd/pipe) are just containing the manifest templates, they cannot be used to install directly. The following command helps rendering those templates locally. The installable manifests will be stored at `.rendered-manifests` directory.
 
 ``` console
 make render-manifests
