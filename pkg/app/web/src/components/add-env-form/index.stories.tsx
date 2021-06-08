@@ -1,16 +1,22 @@
-import * as React from "react";
-import { AddEnvForm } from "./";
-import { action } from "@storybook/addon-actions";
+import { Story } from "@storybook/react";
+import { AddEnvForm, AddEnvFormProps } from "./";
 
 export default {
-  title: "SETTINGS/AddEnvForm",
+  title: "Setting/AddEnvForm",
   component: AddEnvForm,
+  argTypes: {
+    onCancel: {
+      action: "onCancel",
+    },
+    onSubmit: {
+      action: "onSubmit",
+    },
+  },
 };
 
-export const overview: React.FC = () => (
-  <AddEnvForm
-    onCancel={action("onCancel")}
-    onSubmit={action("onSubmit")}
-    projectName="project-name"
-  />
-);
+const Template: Story<AddEnvFormProps> = (args) => <AddEnvForm {...args} />;
+
+export const Overview = Template.bind({});
+Overview.args = {
+  projectName: "project-name",
+};

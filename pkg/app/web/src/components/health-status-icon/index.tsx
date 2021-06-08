@@ -20,30 +20,38 @@ const useStyles = makeStyles((theme) => ({
   },
 }));
 
-export const KubernetesResourceHealthStatusIcon: FC<{
+export interface KubernetesResourceHealthStatusIconProps {
   health: HealthStatus;
-}> = memo(function HealthStatusIcon({ health }) {
-  const classes = useStyles();
-  switch (health) {
-    case HealthStatus.UNKNOWN:
-      return <UnknownIcon fontSize="small" className={classes.unknown} />;
-    case HealthStatus.HEALTHY:
-      return <FavoriteIcon fontSize="small" className={classes.healthy} />;
-    case HealthStatus.OTHER:
-      return <OtherIcon fontSize="small" className={classes.other} />;
-  }
-});
+}
 
-export const ApplicationHealthStatusIcon: FC<{
-  health: ApplicationLiveStateSnapshot.Status;
-}> = memo(function HealthStatusIcon({ health }) {
-  const classes = useStyles();
-  switch (health) {
-    case ApplicationLiveStateSnapshot.Status.UNKNOWN:
-      return <UnknownIcon className={classes.unknown} />;
-    case ApplicationLiveStateSnapshot.Status.HEALTHY:
-      return <FavoriteIcon className={classes.healthy} />;
-    case ApplicationLiveStateSnapshot.Status.OTHER:
-      return <OtherIcon className={classes.other} />;
+export const KubernetesResourceHealthStatusIcon: FC<KubernetesResourceHealthStatusIconProps> = memo(
+  function HealthStatusIcon({ health }) {
+    const classes = useStyles();
+    switch (health) {
+      case HealthStatus.UNKNOWN:
+        return <UnknownIcon fontSize="small" className={classes.unknown} />;
+      case HealthStatus.HEALTHY:
+        return <FavoriteIcon fontSize="small" className={classes.healthy} />;
+      case HealthStatus.OTHER:
+        return <OtherIcon fontSize="small" className={classes.other} />;
+    }
   }
-});
+);
+
+export interface ApplicationHealthStatusIconProps {
+  health: ApplicationLiveStateSnapshot.Status;
+}
+
+export const ApplicationHealthStatusIcon: FC<ApplicationHealthStatusIconProps> = memo(
+  function HealthStatusIcon({ health }) {
+    const classes = useStyles();
+    switch (health) {
+      case ApplicationLiveStateSnapshot.Status.UNKNOWN:
+        return <UnknownIcon className={classes.unknown} />;
+      case ApplicationLiveStateSnapshot.Status.HEALTHY:
+        return <FavoriteIcon className={classes.healthy} />;
+      case ApplicationLiveStateSnapshot.Status.OTHER:
+        return <OtherIcon className={classes.other} />;
+    }
+  }
+);

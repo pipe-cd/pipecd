@@ -58,11 +58,13 @@ const useStyles = makeStyles((theme) => ({
   },
 }));
 
-interface Props {
+export interface LoginFormProps {
   projectName: string;
 }
 
-export const LoginForm: FC<Props> = memo(function LoginForm({ projectName }) {
+export const LoginForm: FC<LoginFormProps> = memo(function LoginForm({
+  projectName,
+}) {
   const classes = useStyles();
 
   return (

@@ -1,12 +1,14 @@
-import * as React from "react";
+import { Story } from "@storybook/react";
 import { resourcesList } from "../../__fixtures__/dummy-application-live-state";
-import { KubernetesStateView } from "./";
+import { KubernetesStateView, KubernetesStateViewProps } from "./";
 
 export default {
   title: "APPLICATION/KubernetesStateView",
   component: KubernetesStateView,
 };
 
-export const overview: React.FC = () => (
-  <KubernetesStateView resources={resourcesList} />
+const Template: Story<KubernetesStateViewProps> = (args) => (
+  <KubernetesStateView {...args} />
 );
+export const Overview = Template.bind({});
+Overview.args = { resources: resourcesList };

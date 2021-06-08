@@ -1,11 +1,13 @@
-import * as React from "react";
-import { ProjectSettingLabeledText } from "./";
+import { Story } from "@storybook/react";
+import { ProjectSettingLabeledText, ProjectSettingLabeledTextProps } from "./";
 
 export default {
   title: "ProjectSettingLabeledText",
   component: ProjectSettingLabeledText,
 };
 
-export const overview: React.FC = () => (
-  <ProjectSettingLabeledText label="Label" value="value" />
+const Template: Story<ProjectSettingLabeledTextProps> = (args) => (
+  <ProjectSettingLabeledText {...args} />
 );
+export const Overview = Template.bind({});
+Overview.args = { label: "label", value: "value" };

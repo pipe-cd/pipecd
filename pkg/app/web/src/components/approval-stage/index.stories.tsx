@@ -1,17 +1,16 @@
-import { action } from "@storybook/addon-actions";
-import * as React from "react";
-import { ApprovalStage } from "./";
+import { Story } from "@storybook/react";
+import { ApprovalStage, ApprovalStageProps } from "./";
 
 export default {
   title: "DEPLOYMENT/Pipeline/ApprovalStage",
   component: ApprovalStage,
+  argTypes: {
+    onClick: { action: "onClick" },
+  },
 };
 
-export const overview: React.FC = () => (
-  <ApprovalStage
-    id="stage-1"
-    name="K8S_CANARY_ROLLOUT"
-    onClick={action("onClick")}
-    active={false}
-  />
+const Template: Story<ApprovalStageProps> = (args) => (
+  <ApprovalStage {...args} />
 );
+export const Overview = Template.bind({});
+Overview.args = { id: "stage-1", name: "K8S_CANARY_ROLLOUT", active: false };

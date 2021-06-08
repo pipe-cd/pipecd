@@ -1,4 +1,3 @@
-import * as React from "react";
 import { Provider } from "react-redux";
 import { ApplicationSyncStatus } from "pipe/pkg/app/web/model/application_pb";
 import { createStore } from "../../../test-utils";
@@ -8,7 +7,7 @@ import { dummyEnv } from "../../__fixtures__/dummy-environment";
 import { dummyPiped } from "../../__fixtures__/dummy-piped";
 import { ApplicationDetail } from "./";
 import type { AppState } from "../../store";
-import type { Story } from "@storybook/react/types-6-0";
+import { Story } from "@storybook/react";
 
 const dummyStore: Partial<AppState> = {
   applications: {
@@ -144,7 +143,7 @@ export const LoadingLiveState: Story = () => (
   </Provider>
 );
 
-export const NotAvailable: React.FC = () => (
+export const NotAvailable: Story = () => (
   <Provider
     store={createStore({
       ...dummyStore,

@@ -1,6 +1,6 @@
-import * as React from "react";
-import { LoginForm } from "./";
+import { LoginForm, LoginFormProps } from "./";
 import { createDecoratorRedux } from "../../../.storybook/redux-decorator";
+import { Story } from "@storybook/react";
 
 export default {
   title: "LOGIN/LoginForm",
@@ -8,4 +8,8 @@ export default {
   decorators: [createDecoratorRedux({})],
 };
 
-export const overview: React.FC = () => <LoginForm projectName="pipecd" />;
+const Template: Story<LoginFormProps> = (args) => <LoginForm {...args} />;
+export const Overview = Template.bind({});
+Overview.args = {
+  projectName: "PipeCD",
+};

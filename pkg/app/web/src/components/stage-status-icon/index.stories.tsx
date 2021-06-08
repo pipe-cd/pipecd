@@ -1,18 +1,27 @@
-import * as React from "react";
-import { StageStatusIcon } from "./";
+import { StageStatusIcon, StageStatusIconProps } from "./";
 import { StageStatus } from "pipe/pkg/app/web/model/deployment_pb";
+import { Story } from "@storybook/react";
 
 export default {
   title: "DEPLOYMENT/StageStatusIcon",
   component: StageStatusIcon,
 };
 
-export const overview: React.FC = () => (
-  <>
-    <StageStatusIcon status={StageStatus.STAGE_CANCELLED} />
-    <StageStatusIcon status={StageStatus.STAGE_FAILURE} />
-    <StageStatusIcon status={StageStatus.STAGE_NOT_STARTED_YET} />
-    <StageStatusIcon status={StageStatus.STAGE_RUNNING} />
-    <StageStatusIcon status={StageStatus.STAGE_SUCCESS} />
-  </>
+const Template: Story<StageStatusIconProps> = (args) => (
+  <StageStatusIcon {...args} />
 );
+
+export const Cancelled = Template.bind({});
+Cancelled.args = { status: StageStatus.STAGE_CANCELLED };
+
+export const Failure = Template.bind({});
+Failure.args = { status: StageStatus.STAGE_FAILURE };
+
+export const NotStartedYet = Template.bind({});
+NotStartedYet.args = { status: StageStatus.STAGE_NOT_STARTED_YET };
+
+export const Running = Template.bind({});
+Running.args = { status: StageStatus.STAGE_RUNNING };
+
+export const Success = Template.bind({});
+Success.args = { status: StageStatus.STAGE_SUCCESS };

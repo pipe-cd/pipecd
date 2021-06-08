@@ -1,19 +1,30 @@
-import * as React from "react";
-import { DeploymentStatusIcon } from "./";
-import { DeploymentStatus } from "pipe/pkg/app/web/model/deployment_pb";
+import { DeploymentStatusIcon, DeploymentStatusIconProps } from "./";
+import { Story } from "@storybook/react";
+import { DeploymentStatus } from "../../modules/deployments";
 
 export default {
   title: "DEPLOYMENT/StatusIcon",
   component: DeploymentStatusIcon,
 };
 
-export const overview: React.FC = () => (
-  <>
-    <DeploymentStatusIcon status={DeploymentStatus.DEPLOYMENT_SUCCESS} />
-    <DeploymentStatusIcon status={DeploymentStatus.DEPLOYMENT_FAILURE} />
-    <DeploymentStatusIcon status={DeploymentStatus.DEPLOYMENT_CANCELLED} />
-    <DeploymentStatusIcon status={DeploymentStatus.DEPLOYMENT_PENDING} />
-    <DeploymentStatusIcon status={DeploymentStatus.DEPLOYMENT_PLANNED} />
-    <DeploymentStatusIcon status={DeploymentStatus.DEPLOYMENT_RUNNING} />
-  </>
+const Template: Story<DeploymentStatusIconProps> = (args) => (
+  <DeploymentStatusIcon {...args} />
 );
+
+export const Success = Template.bind({});
+Success.args = { status: DeploymentStatus.DEPLOYMENT_SUCCESS };
+
+export const Failure = Template.bind({});
+Failure.args = { status: DeploymentStatus.DEPLOYMENT_FAILURE };
+
+export const Cancelled = Template.bind({});
+Cancelled.args = { status: DeploymentStatus.DEPLOYMENT_CANCELLED };
+
+export const Pending = Template.bind({});
+Pending.args = { status: DeploymentStatus.DEPLOYMENT_PENDING };
+
+export const Planned = Template.bind({});
+Planned.args = { status: DeploymentStatus.DEPLOYMENT_PLANNED };
+
+export const Running = Template.bind({});
+Running.args = { status: DeploymentStatus.DEPLOYMENT_RUNNING };

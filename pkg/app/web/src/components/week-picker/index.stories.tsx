@@ -1,16 +1,17 @@
-import { action } from "@storybook/addon-actions";
-import * as React from "react";
-import { WeekPicker } from "./";
+import { Story } from "@storybook/react";
+import { WeekPicker, WeekPickerProps } from "./";
 
 export default {
   title: "COMMON/WeekPicker",
   component: WeekPicker,
+  argTypes: {
+    onChange: { action: "onChange" },
+  },
 };
 
-export const overview: React.FC = () => (
-  <WeekPicker
-    value={new Date()}
-    label="Week Picker"
-    onChange={action("onChange")}
-  />
-);
+const Template: Story<WeekPickerProps> = (args) => <WeekPicker {...args} />;
+export const Overview = Template.bind({});
+Overview.args = {
+  value: new Date(),
+  label: "Week Picker",
+};

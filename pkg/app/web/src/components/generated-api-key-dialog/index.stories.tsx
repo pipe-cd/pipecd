@@ -1,9 +1,9 @@
-import * as React from "react";
+import { Story } from "@storybook/react";
 import { createDecoratorRedux } from "../../../.storybook/redux-decorator";
 import { GeneratedAPIKeyDialog } from "./";
 
 export default {
-  title: "SETTINGS/APIKey/GeneratedAPIKeyDialog",
+  title: "Setting/APIKey/GeneratedAPIKeyDialog",
   component: GeneratedAPIKeyDialog,
   decorators: [
     createDecoratorRedux({
@@ -21,4 +21,6 @@ export default {
   ],
 };
 
-export const overview: React.FC = () => <GeneratedAPIKeyDialog />;
+const Template: Story = (args) => <GeneratedAPIKeyDialog {...args} />;
+export const Overview = Template.bind({});
+Overview.args = {};

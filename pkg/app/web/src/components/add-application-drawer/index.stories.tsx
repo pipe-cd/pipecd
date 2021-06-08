@@ -1,9 +1,8 @@
-import * as React from "react";
-import { AddApplicationDrawer } from "./";
-import { action } from "@storybook/addon-actions";
+import { AddApplicationDrawer, AddApplicationDrawerProps } from "./";
 import { createDecoratorRedux } from "../../../.storybook/redux-decorator";
 import { dummyEnv } from "../../__fixtures__/dummy-environment";
 import { dummyPiped } from "../../__fixtures__/dummy-piped";
+import { Story } from "@storybook/react";
 
 export default {
   title: "APPLICATION/AddApplicationDrawer",
@@ -24,8 +23,18 @@ export default {
       },
     }),
   ],
+  argTypes: {
+    onClose: {
+      action: "onClose",
+    },
+  },
 };
 
-export const overview: React.FC = () => (
-  <AddApplicationDrawer open onClose={action("onClose")} />
+const Template: Story<AddApplicationDrawerProps> = (args) => (
+  <AddApplicationDrawer {...args} />
 );
+
+export const Overview = Template.bind({});
+Overview.args = {
+  open: true,
+};

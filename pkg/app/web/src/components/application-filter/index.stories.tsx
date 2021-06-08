@@ -1,7 +1,6 @@
-import * as React from "react";
-import { ApplicationFilter } from "./";
-import { action } from "@storybook/addon-actions";
+import { ApplicationFilter, ApplicationFilterProps } from "./";
 import { createDecoratorRedux } from "../../../.storybook/redux-decorator";
+import { Story } from "@storybook/react";
 
 export default {
   title: "APPLICATION/ApplicationFilter",
@@ -26,12 +25,14 @@ export default {
       },
     }),
   ],
+  argTypes: {
+    onChange: { action: "onChange" },
+    onClear: { action: "onClear" },
+  },
 };
 
-export const overview: React.FC = () => (
-  <ApplicationFilter
-    options={{}}
-    onChange={action("onChange")}
-    onClear={action("onClear")}
-  />
+const Template: Story<ApplicationFilterProps> = (args) => (
+  <ApplicationFilter {...args} />
 );
+export const Overview = Template.bind({});
+Overview.args = { options: {} };

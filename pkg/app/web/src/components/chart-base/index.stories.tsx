@@ -1,5 +1,5 @@
 import { ChartBase, ChartBaseProps } from "./";
-import { Story } from "@storybook/react/types-6-0";
+import { Story } from "@storybook/react";
 import chartColor from "@material-ui/core/colors/indigo";
 
 export default {

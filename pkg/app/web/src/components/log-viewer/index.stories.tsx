@@ -1,9 +1,9 @@
-import * as React from "react";
 import { LogViewer } from "./";
 import { createDecoratorRedux } from "../../../.storybook/redux-decorator";
 import { LogSeverity, createActiveStageKey } from "../../modules/stage-logs";
 import { dummyDeployment } from "../../__fixtures__/dummy-deployment";
 import { dummyPipelineStage } from "../../__fixtures__/dummy-pipeline";
+import { Story } from "@storybook/react";
 
 export default {
   title: "DEPLOYMENT/LogViewer",
@@ -55,8 +55,10 @@ export default {
   ],
 };
 
-export const overview: React.FC = () => (
+const Template: Story = (args) => (
   <div style={{ position: "relative", height: "100vh" }}>
-    <LogViewer />
+    <LogViewer {...args} />
   </div>
 );
+export const Overview = Template.bind({});
+Overview.args = {};

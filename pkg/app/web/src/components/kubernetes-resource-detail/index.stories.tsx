@@ -1,21 +1,26 @@
-import { action } from "@storybook/addon-actions";
-import * as React from "react";
-import { KubernetesResourceDetail } from "./";
+import { Story } from "@storybook/react";
+import { KubernetesResourceDetail, KubernetesResourceDetailProps } from "./";
 
 export default {
   title: "KubernetesResourceDetail",
   component: KubernetesResourceDetail,
+  argTypes: {
+    onClose: {
+      action: "onClose",
+    },
+  },
 };
 
-export const overview: React.FC = () => (
-  <KubernetesResourceDetail
-    resource={{
-      name: "demo-application-9504e8601a",
-      namespace: "default",
-      apiVersion: "apps/v1",
-      healthDescription: "Unimplemented or unknown resource",
-      kind: "Pod",
-    }}
-    onClose={action("onClose")}
-  />
+const Template: Story<KubernetesResourceDetailProps> = (args) => (
+  <KubernetesResourceDetail {...args} />
 );
+export const Overview = Template.bind({});
+Overview.args = {
+  resource: {
+    name: "demo-application-9504e8601a",
+    namespace: "default",
+    apiVersion: "apps/v1",
+    healthDescription: "Unimplemented or unknown resource",
+    kind: "Pod",
+  },
+};

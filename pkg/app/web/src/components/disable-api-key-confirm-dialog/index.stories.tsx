@@ -1,11 +1,13 @@
-import { action } from "@storybook/addon-actions";
-import * as React from "react";
+import { Story } from "@storybook/react";
 import { createDecoratorRedux } from "../../../.storybook/redux-decorator";
 import { dummyAPIKey } from "../../__fixtures__/dummy-api-key";
-import { DisableAPIKeyConfirmDialog } from "./";
+import {
+  DisableAPIKeyConfirmDialog,
+  DisableAPIKeyConfirmDialogProps,
+} from "./";
 
 export default {
-  title: "SETTINGS/APIKey/DisableAPIKeyConfirmDialog",
+  title: "Setting/APIKey/DisableAPIKeyConfirmDialog",
   component: DisableAPIKeyConfirmDialog,
   decorators: [
     createDecoratorRedux({
@@ -15,12 +17,20 @@ export default {
       },
     }),
   ],
+  argTypes: {
+    onCancel: {
+      action: "onCancel",
+    },
+    onDisable: {
+      action: "onDisable",
+    },
+  },
 };
 
-export const overview: React.FC = () => (
-  <DisableAPIKeyConfirmDialog
-    apiKeyId={dummyAPIKey.id}
-    onCancel={action("onCancel")}
-    onDisable={action("onDisable")}
-  />
+const Template: Story<DisableAPIKeyConfirmDialogProps> = (args) => (
+  <DisableAPIKeyConfirmDialog {...args} />
 );
+export const Overview = Template.bind({});
+Overview.args = {
+  apiKeyId: dummyAPIKey.id,
+};

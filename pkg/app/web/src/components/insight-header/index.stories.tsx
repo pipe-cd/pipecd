@@ -1,4 +1,4 @@
-import * as React from "react";
+import { Story } from "@storybook/react";
 import { createDecoratorRedux } from "../../../.storybook/redux-decorator";
 import { InsightHeader } from "./";
 
@@ -8,4 +8,6 @@ export default {
   decorators: [createDecoratorRedux({})],
 };
 
-export const overview: React.FC = () => <InsightHeader />;
+const Template: Story = (args) => <InsightHeader {...args} />;
+export const Overview = Template.bind({});
+Overview.args = {};

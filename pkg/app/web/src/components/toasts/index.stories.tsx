@@ -1,14 +1,14 @@
-import * as React from "react";
 import { Toasts } from "./";
 import { Provider } from "react-redux";
 import { createStore } from "../../../test-utils";
+import { Story } from "@storybook/react";
 
 export default {
   title: "COMMON/Toasts",
   component: Toasts,
 };
 
-export const overview: React.FC = () => (
+export const Overview: Story = () => (
   <Provider
     store={createStore({
       toasts: {
@@ -27,7 +27,7 @@ export const overview: React.FC = () => (
   </Provider>
 );
 
-export const url: React.FC = () => (
+export const Url: Story = () => (
   <Provider
     store={createStore({
       toasts: {

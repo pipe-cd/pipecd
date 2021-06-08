@@ -1,5 +1,5 @@
-import * as React from "react";
-import { DiffView } from "./";
+import { Story } from "@storybook/react";
+import { DiffView, DiffViewProps } from "./";
 
 export default {
   title: "DiffView",
@@ -13,4 +13,6 @@ normal
   indent
 `;
 
-export const overview: React.FC = () => <DiffView content={content} />;
+const Template: Story<DiffViewProps> = (args) => <DiffView {...args} />;
+export const Overview = Template.bind({});
+Overview.args = { content };
