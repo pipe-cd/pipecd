@@ -64,7 +64,9 @@ func (e *deployExecutor) Execute(sig executor.StopSignal) model.StageStatus {
 	case model.StageECSTrafficRouting:
 		status = e.ensureTrafficRouting(ctx)
 	case model.StageECSCanaryRollout:
-		status = e.ensureRollout(ctx)
+		status = e.ensureCanaryRollout(ctx)
+	case model.StageECSPrimaryRollout:
+		status = e.ensurePrimaryRollout(ctx)
 	default:
 		e.LogPersister.Errorf("Unsupported stage %s for ECS application", e.Stage.Name)
 		return model.StageStatus_STAGE_FAILURE
@@ -100,7 +102,12 @@ func (e *deployExecutor) ensureTrafficRouting(ctx context.Context) model.StageSt
 	return model.StageStatus_STAGE_FAILURE
 }
 
-func (e *deployExecutor) ensureRollout(ctx context.Context) model.StageStatus {
+func (e *deployExecutor) ensurePrimaryRollout(ctx context.Context) model.StageStatus {
+	// TODO Implement
+	return model.StageStatus_STAGE_FAILURE
+}
+
+func (e *deployExecutor) ensureCanaryRollout(ctx context.Context) model.StageStatus {
 	taskDefinition, ok := loadTaskDefinition(&e.Input, e.deployCfg.Input.TaskDefinitionFile, e.deploySource)
 	if !ok {
 		return model.StageStatus_STAGE_FAILURE

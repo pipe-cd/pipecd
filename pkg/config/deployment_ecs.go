@@ -60,6 +60,10 @@ type ECSSyncStageOptions struct {
 type ECSCanaryRolloutStageOptions struct {
 }
 
+// ECSPrimaryRolloutStageOptions contains all configurable values for a ECS_PRIMARY_ROLLOUT stage.
+type ECSPrimaryRolloutStageOptions struct {
+}
+
 // ECSTrafficRoutingStageOptions contains all configurable values for a ECS_TRAFFIC_ROUTING stage.
 type ECSTrafficRoutingStageOptions struct {
 	// Percentage of traffic should be routed to the new version.
