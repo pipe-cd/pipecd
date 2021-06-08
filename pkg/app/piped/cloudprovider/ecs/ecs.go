@@ -33,7 +33,7 @@ type Client interface {
 	UpdateService(ctx context.Context, service types.Service) (*types.Service, error)
 	RegisterTaskDefinition(ctx context.Context, taskDefinition types.TaskDefinition) (*types.TaskDefinition, error)
 	GetPrimaryTaskSet(ctx context.Context, service types.Service) (*types.TaskSet, error)
-	CreateTaskSet(ctx context.Context, service types.Service, taskDefinition types.TaskDefinition, taskSet types.TaskSet) (*types.TaskSet, error)
+	CreateTaskSet(ctx context.Context, service types.Service, taskDefinition types.TaskDefinition, targetGroup types.LoadBalancer) (*types.TaskSet, error)
 	DeleteTaskSet(ctx context.Context, service types.Service, taskSet types.TaskSet) error
 	UpdateServicePrimaryTaskSet(ctx context.Context, service types.Service, taskSet types.TaskSet) (*types.TaskSet, error)
 }
@@ -55,10 +55,9 @@ func LoadTaskDefinition(appDir, taskDefinition string) (types.TaskDefinition, er
 	return loadTaskDefinition(path)
 }
 
-// LoadTaskSetDefinition returns TaskSetDefinition object from a given task set definition file.
-func LoadTaskSetDefinition(appDir, taskSetDefinition string) (types.TaskSet, error) {
-	path := filepath.Join(appDir, taskSetDefinition)
-	return loadTaskSetDefinition(path)
+// LoadTargetGroups returns primary & canary target groups according to the defined in pipe definition file.
+func LoadTargetGroups(targetGroups config.ECSTargetGroups) (*types.LoadBalancer, *types.LoadBalancer, error) {
+	return loadTargetGroups(targetGroups)
 }
 
 type registry struct {

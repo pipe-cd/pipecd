@@ -14,6 +14,8 @@
 
 package config
 
+import "encoding/json"
+
 // ECSDeploymentSpec represents a deployment configuration for ECS application.
 type ECSDeploymentSpec struct {
 	GenericDeploymentSpec
@@ -38,14 +40,28 @@ type ECSDeploymentInput struct {
 	// The name of task definition file placing in application directory.
 	// Default is taskdef.yaml
 	TaskDefinitionFile string `json:"taskDefinitionFile" default:"taskdef.yaml"`
-	// The name of task set definition file placing in application directory.
-	// Default is tasksetdef.yaml
-	TaskSetDefinitionFile string `json:"taskSetDefinitionFile" default:"tasksetdef.yaml"`
+	// ECSTargetGroups
+	TargetGroups ECSTargetGroups `json:"targetGroups"`
 	// Automatically reverts all changes from all stages when one of them failed.
 	// Default is true.
 	AutoRollback bool `json:"autoRollback" default:"true"`
 }
 
+type ECSTargetGroups struct {
+	Primary json.RawMessage `json:"primary"`
+	Canary  json.RawMessage `json:"canary"`
+}
+
 // ECSSyncStageOptions contains all configurable values for a ECS_SYNC stage.
 type ECSSyncStageOptions struct {
+}
+
+// ECSCanaryRolloutStageOptions contains all configurable values for a ECS_CANARY_ROLLOUT stage.
+type ECSCanaryRolloutStageOptions struct {
+}
+
+// ECSTrafficRoutingStageOptions contains all configurable values for a ECS_TRAFFIC_ROUTING stage.
+type ECSTrafficRoutingStageOptions struct {
+	// Percentage of traffic should be routed to the new version.
+	Percent int `json:"percent"`
 }

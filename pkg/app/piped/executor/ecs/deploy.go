@@ -61,6 +61,10 @@ func (e *deployExecutor) Execute(sig executor.StopSignal) model.StageStatus {
 	switch model.Stage(e.Stage.Name) {
 	case model.StageECSSync:
 		status = e.ensureSync(ctx)
+	case model.StageECSTrafficRouting:
+		status = e.ensureTrafficRouting(ctx)
+	case model.StageECSCanaryRollout:
+		status = e.ensureRollout(ctx)
 	default:
 		e.LogPersister.Errorf("Unsupported stage %s for ECS application", e.Stage.Name)
 		return model.StageStatus_STAGE_FAILURE
@@ -78,14 +82,41 @@ func (e *deployExecutor) ensureSync(ctx context.Context) model.StageStatus {
 	if !ok {
 		return model.StageStatus_STAGE_FAILURE
 	}
-	taskSetDefinition, ok := loadTaskSetDefinition(&e.Input, e.deployCfg.Input.TaskSetDefinitionFile, e.deploySource)
+
+	primary, _, ok := loadTargetGroups(&e.Input, e.deployCfg, e.deploySource)
 	if !ok {
 		return model.StageStatus_STAGE_FAILURE
 	}
 
-	if !sync(ctx, &e.Input, e.cloudProviderName, e.cloudProviderCfg, taskDefinition, taskSetDefinition, servicedefinition) {
+	if !sync(ctx, &e.Input, e.cloudProviderName, e.cloudProviderCfg, taskDefinition, servicedefinition, *primary) {
 		return model.StageStatus_STAGE_FAILURE
 	}
 
+	return model.StageStatus_STAGE_SUCCESS
+}
+
+func (e *deployExecutor) ensureTrafficRouting(ctx context.Context) model.StageStatus {
+	// TODO Implement
+	return model.StageStatus_STAGE_FAILURE
+}
+
+func (e *deployExecutor) ensureRollout(ctx context.Context) model.StageStatus {
+	taskDefinition, ok := loadTaskDefinition(&e.Input, e.deployCfg.Input.TaskDefinitionFile, e.deploySource)
+	if !ok {
+		return model.StageStatus_STAGE_FAILURE
+	}
+	servicedefinition, ok := loadServiceDefinition(&e.Input, e.deployCfg.Input.ServiceDefinitionFile, e.deploySource)
+	if !ok {
+		return model.StageStatus_STAGE_FAILURE
+	}
+
+	_, canary, ok := loadTargetGroups(&e.Input, e.deployCfg, e.deploySource)
+	if !ok {
+		return model.StageStatus_STAGE_FAILURE
+	}
+
+	if !rollout(ctx, &e.Input, e.cloudProviderName, e.cloudProviderCfg, taskDefinition, servicedefinition, *canary) {
+		return model.StageStatus_STAGE_FAILURE
+	}
 	return model.StageStatus_STAGE_SUCCESS
 }

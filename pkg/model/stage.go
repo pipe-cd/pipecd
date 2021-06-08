@@ -77,6 +77,13 @@ const (
 	// StageECSSync does quick sync by rolling out the new version
 	// and switching all traffic to it.
 	StageECSSync Stage = "ECS_SYNC"
+	// StageECSCanaryRollout represents the stage where
+	// the CANARY variant resource have been rolled out with the new version/configuration.
+	// The CANARY variant is still receiving no traffic.
+	StageECSCanaryRollout Stage = "ECS_CANARY_ROLLOUT"
+	// StageECSTrafficRouting change the traffic routing state where
+	// the new version will receive the specified percentage of traffic.
+	StageECSTrafficRouting Stage = "ECS_TRAFFIC_ROUTING"
 
 	// StageRollback represents a state where
 	// the all temporarily created stages will be reverted to

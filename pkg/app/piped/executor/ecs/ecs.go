@@ -40,6 +40,8 @@ func Register(r registerer) {
 		}
 	}
 	r.Register(model.StageECSSync, f)
+	r.Register(model.StageECSCanaryRollout, f)
+	r.Register(model.StageECSTrafficRouting, f)
 
 	r.RegisterRollback(model.ApplicationKind_ECS, func(in executor.Input) executor.Executor {
 		return &rollbackExecutor{
@@ -92,45 +94,34 @@ func loadTaskDefinition(in *executor.Input, taskDefinitionFile string, ds *deplo
 	return taskDefinition, true
 }
 
-func loadTaskSetDefinition(in *executor.Input, taskSetDefinitionFile string, ds *deploysource.DeploySource) (types.TaskSet, bool) {
-	in.LogPersister.Infof("Loading task set definition manifest at the %s commit (%s)", ds.RevisionName, ds.RevisionName)
+func loadTargetGroups(in *executor.Input, deployCfg *config.ECSDeploymentSpec, ds *deploysource.DeploySource) (*types.LoadBalancer, *types.LoadBalancer, bool) {
+	in.LogPersister.Infof("Loading target groups config at the %s commit (%s)", ds.RevisionName, ds.RevisionName)
 
-	taskSetDefinition, err := provider.LoadTaskSetDefinition(ds.AppDir, taskSetDefinitionFile)
+	primary, canary, err := provider.LoadTargetGroups(deployCfg.Input.TargetGroups)
 	if err != nil {
-		in.LogPersister.Errorf("Failed to load task set definition (%v)", err)
-		return types.TaskSet{}, false
+		in.LogPersister.Errorf("Failed to load TargetGroups (%v)", err)
+		return nil, nil, false
 	}
 
-	in.LogPersister.Infof("Successfully loaded the ECS task set definition at the %s commit", ds.RevisionName)
-	return taskSetDefinition, true
+	in.LogPersister.Infof("Successfully loaded the ECS target groups at the %s commit", ds.RevisionName)
+	return primary, canary, true
 }
 
-func sync(ctx context.Context, in *executor.Input, cloudProviderName string, cloudProviderCfg *config.CloudProviderECSConfig, taskDefinition types.TaskDefinition, taskSetDefinition types.TaskSet, serviceDefinition types.Service) bool {
-	in.LogPersister.Infof("Start applying the ECS task definition")
+func sync(ctx context.Context, in *executor.Input, cloudProviderName string, cloudProviderCfg *config.CloudProviderECSConfig, taskDefinition types.TaskDefinition, serviceDefinition types.Service, targetGroup types.LoadBalancer) bool {
 	client, err := provider.DefaultRegistry().Client(cloudProviderName, cloudProviderCfg, in.Logger)
 	if err != nil {
 		in.LogPersister.Errorf("Unable to create ECS client for the provider %s: %v", cloudProviderName, err)
 		return false
 	}
 
-	// Build and publish new version of ECS service and task definition.
-	ok := build(ctx, in, client, taskDefinition, taskSetDefinition, serviceDefinition)
-	if !ok {
-		in.LogPersister.Errorf("Failed to build new version for ECS %s", *serviceDefinition.ServiceName)
-		return false
-	}
-
-	in.LogPersister.Infof("Successfully applied the service definition and the task definition for ECS service %s and task definition of family %s", *serviceDefinition.ServiceName, *taskDefinition.Family)
-	return true
-}
-
-func build(ctx context.Context, in *executor.Input, client provider.Client, taskDefinition types.TaskDefinition, taskSetDefinition types.TaskSet, serviceDefinition types.Service) bool {
+	in.LogPersister.Infof("Start applying the ECS task definition")
 	td, err := client.RegisterTaskDefinition(ctx, taskDefinition)
 	if err != nil {
 		in.LogPersister.Errorf("Failed to register ECS task definition of family %s: %v", *taskDefinition.Family, err)
 		return false
 	}
 
+	in.LogPersister.Infof("Start applying the ECS service definition")
 	found, err := client.ServiceExists(ctx, *serviceDefinition.ClusterArn, *serviceDefinition.ServiceName)
 	if err != nil {
 		in.LogPersister.Errorf("Unable to validate service name %s: %v", *serviceDefinition.ServiceName, err)
@@ -161,7 +152,7 @@ func build(ctx context.Context, in *executor.Input, client provider.Client, task
 	}
 
 	// Create a task set in the specified cluster and service.
-	taskSet, err := client.CreateTaskSet(ctx, *service, *td, taskSetDefinition)
+	taskSet, err := client.CreateTaskSet(ctx, *service, *td, targetGroup)
 	if err != nil {
 		in.LogPersister.Errorf("Failed to create ECS task set %s: %v", *serviceDefinition.ServiceName, err)
 		return false
@@ -181,6 +172,54 @@ func build(ctx context.Context, in *executor.Input, client provider.Client, task
 		}
 	}
 
-	in.LogPersister.Info("Successfully applied the service definition and the task definition")
+	in.LogPersister.Infof("Successfully applied the service definition and the task definition for ECS service %s and task definition of family %s", *serviceDefinition.ServiceName, *taskDefinition.Family)
+	return true
+}
+
+func rollout(ctx context.Context, in *executor.Input, cloudProviderName string, cloudProviderCfg *config.CloudProviderECSConfig, taskDefinition types.TaskDefinition, serviceDefinition types.Service, targetGroup types.LoadBalancer) bool {
+	client, err := provider.DefaultRegistry().Client(cloudProviderName, cloudProviderCfg, in.Logger)
+	if err != nil {
+		in.LogPersister.Errorf("Unable to create ECS client for the provider %s: %v", cloudProviderName, err)
+		return false
+	}
+
+	in.LogPersister.Infof("Start applying the ECS task definition")
+	td, err := client.RegisterTaskDefinition(ctx, taskDefinition)
+	if err != nil {
+		in.LogPersister.Errorf("Failed to register ECS task definition of family %s: %v", *taskDefinition.Family, err)
+		return false
+	}
+
+	in.LogPersister.Infof("Start applying the ECS service definition")
+	found, err := client.ServiceExists(ctx, *serviceDefinition.ClusterArn, *serviceDefinition.ServiceName)
+	if err != nil {
+		in.LogPersister.Errorf("Unable to validate service name %s: %v", *serviceDefinition.ServiceName, err)
+		return false
+	}
+
+	var service *types.Service
+	if found {
+		service, err = client.UpdateService(ctx, serviceDefinition)
+		if err != nil {
+			in.LogPersister.Errorf("Failed to update ECS service %s: %v", *serviceDefinition.ServiceName, err)
+			return false
+		}
+	} else {
+		service, err = client.CreateService(ctx, serviceDefinition)
+		if err != nil {
+			in.LogPersister.Errorf("Failed to create ECS service %s: %v", *serviceDefinition.ServiceName, err)
+			return false
+		}
+	}
+
+	// Create a task set in the specified cluster and service.
+	_, err = client.CreateTaskSet(ctx, *service, *td, targetGroup)
+	if err != nil {
+		in.LogPersister.Errorf("Failed to create ECS task set %s: %v", *serviceDefinition.ServiceName, err)
+		return false
+	}
+	// TODO: Save created taskSet to Metadata store.
+
+	in.LogPersister.Infof("Successfully applied the service definition and the task definition for ECS service %s and task definition of family %s", *serviceDefinition.ServiceName, *taskDefinition.Family)
 	return true
 }
