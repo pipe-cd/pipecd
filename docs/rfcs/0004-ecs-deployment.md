@@ -73,7 +73,7 @@ spec:
         containerName: service
         containerPort: 80
       canary:
-        targetGroupArn: {PRIMARY_TARGET_GROUP_ARN}
+        targetGroupArn: {CANARY_TARGET_GROUP_ARN}
         containerName: service
         containerPort: 80
   pipeline:
@@ -118,7 +118,7 @@ spec:
         containerName: service
         containerPort: 80
       canary:
-        targetGroupArn: {PRIMARY_TARGET_GROUP_ARN}
+        targetGroupArn: {CANARY_TARGET_GROUP_ARN}
         containerName: service
         containerPort: 80
   pipeline:
