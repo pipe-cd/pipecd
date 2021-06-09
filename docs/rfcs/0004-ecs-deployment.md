@@ -49,9 +49,13 @@ apiVersion: pipecd.dev/v1beta1
 kind: ECSApp
 spec:
   input:
-    name: Sample
     serviceDefinition: path/to/servicedef.yaml
     taskDefinition: path/to/taskdef.yaml
+    targetGroups:
+      primary:
+        targetGroupArn: {PRIMARY_TARGET_GROUP_ARN}
+        containerName: service
+        containerPort: 80
 ```
 
 In case of canary release strategy
@@ -61,20 +65,24 @@ apiVersion: pipecd.dev/v1beta1
 kind: ECSApp
 spec:
   input:
-    name: Sample
     serviceDefinition: path/to/servicedef.json
     taskDefinition: path/to/taskdef.json
-    loadBalancers:
-      - targetGroupArn: {PRIMARY_TARGET_GROUP_ARN}
-        containerName: sample-app
+    targetGroups:
+      primary:
+        targetGroupArn: {PRIMARY_TARGET_GROUP_ARN}
+        containerName: service
+        containerPort: 80
+      canary:
+        targetGroupArn: {CANARY_TARGET_GROUP_ARN}
+        containerName: service
         containerPort: 80
   pipeline:
     stages:
-      # Deploy workloads of the new version.
+      # Deploy the workloads of CANARY variant.
       # But this is still receiving no traffic.
       - name: ECS_CANARY_ROLLOUT
       # Change the traffic routing state where
-      # the new version will receive the specified percentage of traffic.
+      # the CANARY workloads will receive the specified percentage of traffic.
       # This is known as multi-phase canary strategy.
       - name: ECS_TRAFFIC_ROUTING
         with:
@@ -84,12 +92,15 @@ spec:
       # a rollback process to the previous version will be executed.
       - name: ANALYSIS
       # Change the traffic routing state where
-      # the new version will receive 100% of the traffic.
+      # the CANARY workloads will receive 100% of the traffic.
       - name: ECS_TRAFFIC_ROUTING
         with:
           canary: 100
-      # Remove old version workloads.
-      - name: ECS_CLEAN
+      # Update the workload of PRIMARY variant to the new version.
+      # the PRIMARY workloads will receive 100% of the traffic.
+      - name: ECS_PRIMARY_ROLLOUT
+      # Destroy all workloads of CANARY variant.
+      - name: ECS_CANARY_CLEAN
 ```
 
 In case of blue/green release strategy
@@ -99,20 +110,24 @@ apiVersion: pipecd.dev/v1beta1
 kind: ECSApp
 spec:
   input:
-    name: Sample
     serviceDefinition: path/to/servicedef.json
     taskDefinition: path/to/taskdef.json
-    loadBalancers:
-      - targetGroupArn: {PRIMARY_TARGET_GROUP_ARN}
-        containerName: sample-app
+    targetGroups:
+      primary:
+        targetGroupArn: {PRIMARY_TARGET_GROUP_ARN}
+        containerName: service
+        containerPort: 80
+      canary:
+        targetGroupArn: {CANARY_TARGET_GROUP_ARN}
+        containerName: service
         containerPort: 80
   pipeline:
     stages:
-      # Deploy workloads of the new version.
+      # Deploy the workloads of CANARY variant.
       # But this is still receiving no traffic.
       - name: ECS_CANARY_ROLLOUT
       # Change the traffic routing state where
-      # the new version will receive 100% of the traffic.
+      # the CANARY workloads will receive 100% of the traffic.
       - name: ECS_TRAFFIC_ROUTING
         with:
           canary: 100
@@ -120,8 +135,11 @@ spec:
       # If this stage finds any not good metrics of the new version,
       # a rollback process to the previous version will be executed.
       - name: ANALYSIS
-      # Remove old version workloads.
-      - name: ECS_CLEAN
+      # Update the workload of PRIMARY variant to the new version.
+      # the PRIMARY workloads will receive 100% of the traffic.
+      - name: ECS_PRIMARY_ROLLOUT
+      # Destroy all workloads of CANARY variant.
+      - name: ECS_CANARY_CLEAN
 ```
 
 # Unresolved questions
