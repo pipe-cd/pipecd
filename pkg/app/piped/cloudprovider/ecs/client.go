@@ -92,6 +92,13 @@ func (c *client) CreateService(ctx context.Context, service types.Service) (*typ
 	if err != nil {
 		return nil, fmt.Errorf("failed to create ECS service %s: %w", *service.ServiceName, err)
 	}
+
+	// Hack: Since we use EXTERNAL deployment controller, the below configurations are not allowed to be passed
+	// in CreateService step, but it required in further step (CreateTaskSet step). We reassign those values
+	// as part of service definition for that purpose.
+	output.Service.LaunchType = service.LaunchType
+	output.Service.NetworkConfiguration = service.NetworkConfiguration
+
 	return output.Service, nil
 }
 
@@ -102,14 +109,19 @@ func (c *client) UpdateService(ctx context.Context, service types.Service) (*typ
 		DesiredCount:      aws.Int32(service.DesiredCount),
 		PlacementStrategy: service.PlacementStrategy,
 		// TODO: Support update other properties of service.
-		// DeploymentConfiguration: service.DeploymentConfiguration,
-		// NetworkConfiguration:    service.NetworkConfiguration,
 		// PlacementConstraints:    service.PlacementConstraints,
 	}
 	output, err := c.client.UpdateService(ctx, input)
 	if err != nil {
 		return nil, fmt.Errorf("failed to update ECS service %s: %w", *service.ServiceName, err)
 	}
+
+	// Hack: Since we use EXTERNAL deployment controller, the below configurations are not allowed to be passed
+	// in UpdateService step, but it required in further step (CreateTaskSet step). We reassign those values
+	// as part of service definition for that purpose.
+	output.Service.LaunchType = service.LaunchType
+	output.Service.NetworkConfiguration = service.NetworkConfiguration
+
 	return output.Service, nil
 }
 
@@ -133,7 +145,7 @@ func (c *client) RegisterTaskDefinition(ctx context.Context, taskDefinition type
 	return output.TaskDefinition, nil
 }
 
-func (c *client) CreateTaskSet(ctx context.Context, service types.Service, taskDefinition types.TaskDefinition, taskSet types.TaskSet) (*types.TaskSet, error) {
+func (c *client) CreateTaskSet(ctx context.Context, service types.Service, taskDefinition types.TaskDefinition, targetGroup types.LoadBalancer) (*types.TaskSet, error) {
 	if taskDefinition.TaskDefinitionArn == nil {
 		return nil, fmt.Errorf("failed to create task set of task family %s: no task definition provided", *taskDefinition.Family)
 	}
@@ -145,9 +157,9 @@ func (c *client) CreateTaskSet(ctx context.Context, service types.Service, taskD
 		Scale: &types.Scale{Unit: types.ScaleUnitPercent, Value: float64(100)},
 		// If you specify the awsvpc network mode, the task is allocated an elastic network interface,
 		// and you must specify a NetworkConfiguration when run a task with the task definition.
-		NetworkConfiguration: taskSet.NetworkConfiguration,
-		LaunchType:           taskSet.LaunchType,
-		LoadBalancers:        taskSet.LoadBalancers,
+		NetworkConfiguration: service.NetworkConfiguration,
+		LaunchType:           service.LaunchType,
+		LoadBalancers:        []types.LoadBalancer{targetGroup},
 	}
 	output, err := c.client.CreateTaskSet(ctx, input)
 	if err != nil {

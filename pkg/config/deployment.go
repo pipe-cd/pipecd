@@ -123,6 +123,11 @@ type PipelineStage struct {
 	LambdaSyncStageOptions          *LambdaSyncStageOptions
 	LambdaCanaryRolloutStageOptions *LambdaCanaryRolloutStageOptions
 	LambdaPromoteStageOptions       *LambdaPromoteStageOptions
+
+	ECSSyncStageOptions           *ECSSyncStageOptions
+	ECSCanaryRolloutStageOptions  *ECSCanaryRolloutStageOptions
+	ECSPrimaryRolloutStageOptions *ECSPrimaryRolloutStageOptions
+	ECSTrafficRoutingStageOptions *ECSTrafficRoutingStageOptions
 }
 
 type genericPipelineStage struct {
@@ -240,6 +245,27 @@ func (s *PipelineStage) UnmarshalJSON(data []byte) error {
 		s.LambdaCanaryRolloutStageOptions = &LambdaCanaryRolloutStageOptions{}
 		if len(gs.With) > 0 {
 			err = json.Unmarshal(gs.With, s.LambdaCanaryRolloutStageOptions)
+		}
+
+	case model.StageECSSync:
+		s.ECSSyncStageOptions = &ECSSyncStageOptions{}
+		if len(gs.With) > 0 {
+			err = json.Unmarshal(gs.With, s.ECSSyncStageOptions)
+		}
+	case model.StageECSCanaryRollout:
+		s.ECSCanaryRolloutStageOptions = &ECSCanaryRolloutStageOptions{}
+		if len(gs.With) > 0 {
+			err = json.Unmarshal(gs.With, s.ECSCanaryRolloutStageOptions)
+		}
+	case model.StageECSPrimaryRollout:
+		s.ECSPrimaryRolloutStageOptions = &ECSPrimaryRolloutStageOptions{}
+		if len(gs.With) > 0 {
+			err = json.Unmarshal(gs.With, s.ECSPrimaryRolloutStageOptions)
+		}
+	case model.StageECSTrafficRouting:
+		s.ECSTrafficRoutingStageOptions = &ECSTrafficRoutingStageOptions{}
+		if len(gs.With) > 0 {
+			err = json.Unmarshal(gs.With, s.ECSTrafficRoutingStageOptions)
 		}
 
 	default:

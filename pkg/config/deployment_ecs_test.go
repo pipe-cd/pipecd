@@ -15,6 +15,7 @@
 package config
 
 import (
+	"encoding/json"
 	"testing"
 	"time"
 
@@ -41,8 +42,11 @@ func TestECSDeploymentConfig(t *testing.T) {
 				Input: ECSDeploymentInput{
 					ServiceDefinitionFile: "/path/to/servicedef.yaml",
 					TaskDefinitionFile:    "/path/to/taskdef.yaml",
-					TaskSetDefinitionFile: "/path/to/tasksetdef.yaml",
-					AutoRollback:          true,
+					TargetGroups: ECSTargetGroups{
+						Primary: json.RawMessage(`{"containerName":"web","containerPort":80,"targetGroupArn":"arn:aws:elasticloadbalancing:xyz"}`),
+						Canary:  nil,
+					},
+					AutoRollback: true,
 				},
 			},
 			expectedError: nil,

@@ -4,4 +4,8 @@ spec:
   input:
     serviceDefinitionFile: /path/to/servicedef.yaml
     taskDefinitionFile: /path/to/taskdef.yaml
-    taskSetDefinitionFile: /path/to/tasksetdef.yaml
+    targetGroups:
+      primary:
+        targetGroupArn: arn:aws:elasticloadbalancing:xyz
+        containerName: web
+        containerPort: 80
