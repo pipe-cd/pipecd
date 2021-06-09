@@ -58,6 +58,7 @@ type ECSSyncStageOptions struct {
 
 // ECSCanaryRolloutStageOptions contains all configurable values for a ECS_CANARY_ROLLOUT stage.
 type ECSCanaryRolloutStageOptions struct {
+	Traffic int `json:"traffic"`
 }
 
 // ECSPrimaryRolloutStageOptions contains all configurable values for a ECS_PRIMARY_ROLLOUT stage.
@@ -66,10 +67,4 @@ type ECSPrimaryRolloutStageOptions struct {
 
 // ECSCanaryCleanStageOptions contains all configurable values for a ECS_CANARY_CLEAN stage.
 type ECSCanaryCleanStageOptions struct {
-}
-
-// ECSTrafficRoutingStageOptions contains all configurable values for a ECS_TRAFFIC_ROUTING stage.
-type ECSTrafficRoutingStageOptions struct {
-	// The percentage of traffic should be routed to CANARY variant.
-	Canary int `json:"canary"`
 }

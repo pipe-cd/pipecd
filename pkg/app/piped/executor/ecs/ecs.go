@@ -42,7 +42,6 @@ func Register(r registerer) {
 	}
 	r.Register(model.StageECSSync, f)
 	r.Register(model.StageECSCanaryRollout, f)
-	r.Register(model.StageECSTrafficRouting, f)
 	r.Register(model.StageECSPrimaryRollout, f)
 	r.Register(model.StageECSCanaryClean, f)
 
@@ -140,6 +139,35 @@ func applyServiceDefinition(ctx context.Context, cli provider.Client, serviceDef
 	return service, nil
 }
 
+func createPrimaryTaskSet(ctx context.Context, client provider.Client, service types.Service, taskDef types.TaskDefinition, targetGroup types.LoadBalancer) error {
+	// Get current PRIMARY task set.
+	prevPrimaryTaskSet, err := client.GetPrimaryTaskSet(ctx, service)
+	// Ignore error in case it's not found error, the prevPrimaryTaskSet doesn't exist for newly created Service.
+	if err != nil && !errors.Is(err, cloudprovider.ErrNotFound) {
+		return err
+	}
+
+	// Create a task set in the specified cluster and service.
+	taskSet, err := client.CreateTaskSet(ctx, service, taskDef, targetGroup)
+	if err != nil {
+		return err
+	}
+
+	// Make new taskSet as PRIMARY task set, so that it will handle production service.
+	if _, err = client.UpdateServicePrimaryTaskSet(ctx, service, *taskSet); err != nil {
+		return err
+	}
+
+	// Remove old taskSet if existed.
+	if prevPrimaryTaskSet != nil {
+		if err = client.DeleteTaskSet(ctx, service, *prevPrimaryTaskSet); err != nil {
+			return err
+		}
+	}
+
+	return nil
+}
+
 func sync(ctx context.Context, in *executor.Input, cloudProviderName string, cloudProviderCfg *config.CloudProviderECSConfig, taskDefinition types.TaskDefinition, serviceDefinition types.Service, targetGroup types.LoadBalancer) bool {
 	client, err := provider.DefaultRegistry().Client(cloudProviderName, cloudProviderCfg, in.Logger)
 	if err != nil {
@@ -161,34 +189,10 @@ func sync(ctx context.Context, in *executor.Input, cloudProviderName string, clo
 		return false
 	}
 
-	// Get current PRIMARY task set.
-	prevPrimaryTaskSet, err := client.GetPrimaryTaskSet(ctx, *service)
-	// Ignore error in case it's not found error, the prevPrimaryTaskSet doesn't exist for newly created Service.
-	if err != nil && !errors.Is(err, cloudprovider.ErrNotFound) {
-		in.LogPersister.Errorf("Failed to create ECS task set %s: %v", *serviceDefinition.ServiceName, err)
-		return false
-	}
-
-	// Create a task set in the specified cluster and service.
 	in.LogPersister.Infof("Start rolling out ECS task set")
-	taskSet, err := client.CreateTaskSet(ctx, *service, *td, targetGroup)
-	if err != nil {
-		in.LogPersister.Errorf("Failed to create ECS task set %s: %v", *serviceDefinition.ServiceName, err)
+	if err := createPrimaryTaskSet(ctx, client, *service, *td, targetGroup); err != nil {
+		in.LogPersister.Errorf("Failed to rolling out ECS task set %s: %v", *serviceDefinition.ServiceName, err)
 		return false
-	}
-
-	// Make new taskSet as PRIMARY task set, so that it will handle production service.
-	if _, err = client.UpdateServicePrimaryTaskSet(ctx, *service, *taskSet); err != nil {
-		in.LogPersister.Errorf("Failed to update service primary ECS task set %s: %v", *serviceDefinition.ServiceName, err)
-		return false
-	}
-
-	// Remove old taskSet if existed.
-	if prevPrimaryTaskSet != nil {
-		if err = client.DeleteTaskSet(ctx, *service, *prevPrimaryTaskSet); err != nil {
-			in.LogPersister.Errorf("Faield to remove unused taskSet %s: %v", *prevPrimaryTaskSet.TaskSetArn, err)
-			return false
-		}
 	}
 
 	in.LogPersister.Infof("Successfully applied the service definition and the task definition for ECS service %s and task definition of family %s", *serviceDefinition.ServiceName, *taskDefinition.Family)
@@ -218,12 +222,19 @@ func rollout(ctx context.Context, in *executor.Input, cloudProviderName string, 
 
 	// Create a task set in the specified cluster and service.
 	in.LogPersister.Infof("Start rolling out ECS task set")
-	_, err = client.CreateTaskSet(ctx, *service, *td, targetGroup)
-	if err != nil {
-		in.LogPersister.Errorf("Failed to create ECS task set %s: %v", *serviceDefinition.ServiceName, err)
-		return false
+	if in.StageConfig.Name == model.StageECSPrimaryRollout {
+		// Create PRIMARY task set in case of Primary rollout.
+		if err := createPrimaryTaskSet(ctx, client, *service, *td, targetGroup); err != nil {
+			in.LogPersister.Errorf("Failed to rolling out ECS task set %s: %v", *serviceDefinition.ServiceName, err)
+			return false
+		}
+	} else {
+		// Create ACTIVE task set in case of Canary rollout.
+		if _, err := client.CreateTaskSet(ctx, *service, *td, targetGroup); err != nil {
+			in.LogPersister.Errorf("Failed to create ECS task set %s: %v", *serviceDefinition.ServiceName, err)
+			return false
+		}
 	}
-	// TODO: Save created taskSet to Metadata store.
 
 	in.LogPersister.Infof("Successfully applied the service definition and the task definition for ECS service %s and task definition of family %s", *serviceDefinition.ServiceName, *taskDefinition.Family)
 	return true
@@ -236,20 +247,19 @@ func routing(ctx context.Context, in *executor.Input, cloudProviderName string, 
 		return false
 	}
 
-	options := in.StageConfig.ECSTrafficRoutingStageOptions
-	if options == nil {
+	primary, canary, err := determineTrafficAmount(in.StageConfig)
+	if err != nil {
 		in.LogPersister.Errorf("Malformed configuration for stage %s", in.Stage.Name)
 		return false
 	}
-
 	routingTrafficCfg := provider.RoutingTrafficConfig{
 		{
 			TargetGroupArn: *primaryTargetGroup.TargetGroupArn,
-			Weight:         100 - options.Canary,
+			Weight:         primary,
 		},
 		{
 			TargetGroupArn: *canaryTargetGroup.TargetGroupArn,
-			Weight:         options.Canary,
+			Weight:         canary,
 		},
 	}
 
@@ -265,4 +275,26 @@ func routing(ctx context.Context, in *executor.Input, cloudProviderName string, 
 	}
 
 	return true
+}
+
+func determineTrafficAmount(stageCfg config.PipelineStage) (primary int, canary int, err error) {
+	switch stageCfg.Name {
+	case model.StageECSCanaryRollout:
+		options := stageCfg.ECSCanaryRolloutStageOptions
+		if options == nil {
+			err = fmt.Errorf("traffic configuration is missing")
+			return
+		}
+		// TODO: Validate Traffic config is lower than 100.
+		canary = options.Traffic
+		primary = 100 - canary
+		return
+	case model.StageECSPrimaryRollout:
+		primary = 100
+		canary = 0
+		return
+	default:
+		err = fmt.Errorf("unexpected stage given")
+		return
+	}
 }
