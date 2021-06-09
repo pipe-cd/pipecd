@@ -10,10 +10,12 @@ require (
 	github.com/Azure/go-autorest/autorest/adal v0.9.5 // indirect
 	github.com/DataDog/datadog-api-client-go v1.0.0-beta.16
 	github.com/NYTimes/gziphandler v0.0.0-20170623195520-56545f4a5d46
-	github.com/aws/aws-sdk-go-v2 v1.2.0
+	github.com/aws/aws-sdk-go-v2 v1.6.0
 	github.com/aws/aws-sdk-go-v2/config v1.1.1
 	github.com/aws/aws-sdk-go-v2/credentials v1.1.1
+	github.com/aws/aws-sdk-go-v2/internal/ini v1.0.0 // indirect
 	github.com/aws/aws-sdk-go-v2/service/ecs v1.1.1
+	github.com/aws/aws-sdk-go-v2/service/elasticloadbalancingv2 v1.3.1
 	github.com/aws/aws-sdk-go-v2/service/lambda v1.1.1
 	github.com/aws/aws-sdk-go-v2/service/s3 v1.2.0
 	github.com/creasty/defaults v1.5.1

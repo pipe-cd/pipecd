@@ -88,6 +88,9 @@ const (
 	// StageECSTrafficRouting change the traffic routing state where
 	// the new version will receive the specified percentage of traffic.
 	StageECSTrafficRouting Stage = "ECS_TRAFFIC_ROUTING"
+	// StageECSCanaryClean represents the stage where
+	// the CANARY variant resources has been cleaned.
+	StageECSCanaryClean Stage = "ECS_CANARY_CLEAN"
 
 	// StageRollback represents a state where
 	// the all temporarily created stages will be reverted to

@@ -42,6 +42,8 @@ func Register(r registerer) {
 	r.Register(model.StageECSSync, f)
 	r.Register(model.StageECSCanaryRollout, f)
 	r.Register(model.StageECSTrafficRouting, f)
+	r.Register(model.StageECSPrimaryRollout, f)
+	r.Register(model.StageECSCanaryClean, f)
 
 	r.RegisterRollback(model.ApplicationKind_ECS, func(in executor.Input) executor.Executor {
 		return &rollbackExecutor{
@@ -221,5 +223,43 @@ func rollout(ctx context.Context, in *executor.Input, cloudProviderName string, 
 	// TODO: Save created taskSet to Metadata store.
 
 	in.LogPersister.Infof("Successfully applied the service definition and the task definition for ECS service %s and task definition of family %s", *serviceDefinition.ServiceName, *taskDefinition.Family)
+	return true
+}
+
+func routing(ctx context.Context, in *executor.Input, cloudProviderName string, cloudProviderCfg *config.CloudProviderECSConfig, primaryTargetGroup types.LoadBalancer, canaryTargetGroup types.LoadBalancer) bool {
+	client, err := provider.DefaultRegistry().Client(cloudProviderName, cloudProviderCfg, in.Logger)
+	if err != nil {
+		in.LogPersister.Errorf("Unable to create ECS client for the provider %s: %v", cloudProviderName, err)
+		return false
+	}
+
+	options := in.StageConfig.ECSTrafficRoutingStageOptions
+	if options == nil {
+		in.LogPersister.Errorf("Malformed configuration for stage %s", in.Stage.Name)
+		return false
+	}
+
+	routingTrafficCfg := provider.RoutingTrafficConfig{
+		{
+			TargetGroupArn: *primaryTargetGroup.TargetGroupArn,
+			Weight:         100 - options.Canary,
+		},
+		{
+			TargetGroupArn: *canaryTargetGroup.TargetGroupArn,
+			Weight:         options.Canary,
+		},
+	}
+
+	currListenerArn, err := client.GetListener(ctx, primaryTargetGroup)
+	if err != nil {
+		in.LogPersister.Errorf("Failed to get current active listener: %v", err)
+		return false
+	}
+
+	if err := client.ModifyListener(ctx, currListenerArn, routingTrafficCfg); err != nil {
+		in.LogPersister.Errorf("Failed to routing traffic to canary variant: %v", err)
+		return false
+	}
+
 	return true
 }

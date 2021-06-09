@@ -24,14 +24,17 @@ import (
 	"github.com/aws/aws-sdk-go-v2/credentials/stscreds"
 	"github.com/aws/aws-sdk-go-v2/service/ecs"
 	"github.com/aws/aws-sdk-go-v2/service/ecs/types"
+	"github.com/aws/aws-sdk-go-v2/service/elasticloadbalancingv2"
+	elbtypes "github.com/aws/aws-sdk-go-v2/service/elasticloadbalancingv2/types"
 	"go.uber.org/zap"
 
 	"github.com/pipe-cd/pipe/pkg/app/piped/cloudprovider"
 )
 
 type client struct {
-	client *ecs.Client
-	logger *zap.Logger
+	ecsClient *ecs.Client
+	elbClient *elasticloadbalancingv2.Client
+	logger    *zap.Logger
 }
 
 func newClient(region, profile, credentialsFile, roleARN, tokenPath string, logger *zap.Logger) (Client, error) {
@@ -61,7 +64,8 @@ func newClient(region, profile, credentialsFile, roleARN, tokenPath string, logg
 	if err != nil {
 		return nil, fmt.Errorf("failed to load config to create ecs client: %w", err)
 	}
-	c.client = ecs.NewFromConfig(cfg)
+	c.ecsClient = ecs.NewFromConfig(cfg)
+	c.elbClient = elasticloadbalancingv2.NewFromConfig(cfg)
 
 	return c, nil
 }
@@ -88,7 +92,7 @@ func (c *client) CreateService(ctx context.Context, service types.Service) (*typ
 		Tags:                          service.Tags,
 	}
 
-	output, err := c.client.CreateService(ctx, input)
+	output, err := c.ecsClient.CreateService(ctx, input)
 	if err != nil {
 		return nil, fmt.Errorf("failed to create ECS service %s: %w", *service.ServiceName, err)
 	}
@@ -111,7 +115,7 @@ func (c *client) UpdateService(ctx context.Context, service types.Service) (*typ
 		// TODO: Support update other properties of service.
 		// PlacementConstraints:    service.PlacementConstraints,
 	}
-	output, err := c.client.UpdateService(ctx, input)
+	output, err := c.ecsClient.UpdateService(ctx, input)
 	if err != nil {
 		return nil, fmt.Errorf("failed to update ECS service %s: %w", *service.ServiceName, err)
 	}
@@ -138,7 +142,7 @@ func (c *client) RegisterTaskDefinition(ctx context.Context, taskDefinition type
 		Memory: taskDefinition.Memory,
 		// TODO: Support tags for registering task definition.
 	}
-	output, err := c.client.RegisterTaskDefinition(ctx, input)
+	output, err := c.ecsClient.RegisterTaskDefinition(ctx, input)
 	if err != nil {
 		return nil, fmt.Errorf("failed to register ECS task definition of family %s: %w", *taskDefinition.Family, err)
 	}
@@ -161,7 +165,7 @@ func (c *client) CreateTaskSet(ctx context.Context, service types.Service, taskD
 		LaunchType:           service.LaunchType,
 		LoadBalancers:        []types.LoadBalancer{targetGroup},
 	}
-	output, err := c.client.CreateTaskSet(ctx, input)
+	output, err := c.ecsClient.CreateTaskSet(ctx, input)
 	if err != nil {
 		return nil, fmt.Errorf("failed to create ECS task set %s: %w", *taskDefinition.TaskDefinitionArn, err)
 	}
@@ -175,7 +179,7 @@ func (c *client) GetPrimaryTaskSet(ctx context.Context, service types.Service) (
 			*service.ServiceArn,
 		},
 	}
-	output, err := c.client.DescribeServices(ctx, input)
+	output, err := c.ecsClient.DescribeServices(ctx, input)
 	if err != nil {
 		return nil, fmt.Errorf("failed to get primary task set of service %s: %w", *service.ServiceName, err)
 	}
@@ -197,7 +201,7 @@ func (c *client) DeleteTaskSet(ctx context.Context, service types.Service, taskS
 		Service: service.ServiceArn,
 		TaskSet: taskSet.TaskSetArn,
 	}
-	if _, err := c.client.DeleteTaskSet(ctx, input); err != nil {
+	if _, err := c.ecsClient.DeleteTaskSet(ctx, input); err != nil {
 		return fmt.Errorf("failed to delete ECS task set %s: %w", *taskSet.TaskSetArn, err)
 	}
 	return nil
@@ -209,7 +213,7 @@ func (c *client) UpdateServicePrimaryTaskSet(ctx context.Context, service types.
 		Service:        service.ServiceArn,
 		PrimaryTaskSet: taskSet.TaskSetArn,
 	}
-	output, err := c.client.UpdateServicePrimaryTaskSet(ctx, input)
+	output, err := c.ecsClient.UpdateServicePrimaryTaskSet(ctx, input)
 	if err != nil {
 		return nil, fmt.Errorf("failed to update service primary ECS task set %s: %w", *taskSet.TaskSetArn, err)
 	}
@@ -221,7 +225,7 @@ func (c *client) ServiceExists(ctx context.Context, clusterName string, serviceN
 		Cluster:  aws.String(clusterName),
 		Services: []string{serviceName},
 	}
-	output, err := c.client.DescribeServices(ctx, input)
+	output, err := c.ecsClient.DescribeServices(ctx, input)
 	if err != nil {
 		var nfe *types.ResourceNotFoundException
 		if errors.As(err, &nfe) {
@@ -237,4 +241,72 @@ func (c *client) ServiceExists(ctx context.Context, clusterName string, serviceN
 		}
 	}
 	return false, nil
+}
+
+func (c *client) GetListener(ctx context.Context, targetGroup types.LoadBalancer) (string, error) {
+	loadBalancerArn, err := c.getLoadBalancerArn(ctx, *targetGroup.TargetGroupArn)
+	if err != nil {
+		return "", err
+	}
+
+	input := &elasticloadbalancingv2.DescribeListenersInput{
+		LoadBalancerArn: aws.String(loadBalancerArn),
+	}
+	output, err := c.elbClient.DescribeListeners(ctx, input)
+	if err != nil {
+		return "", err
+	}
+	if len(output.Listeners) == 0 {
+		return "", cloudprovider.ErrNotFound
+	}
+	// Note: Suppose the load balancer only have one listener.
+	// TODO: Support multi listeners pattern.
+	if len(output.Listeners) > 1 {
+		return "", fmt.Errorf("invalid listener configuration pointed to %s target group", *targetGroup.TargetGroupArn)
+	}
+
+	return *output.Listeners[0].ListenerArn, nil
+}
+
+func (c *client) getLoadBalancerArn(ctx context.Context, targetGroupArn string) (string, error) {
+	input := &elasticloadbalancingv2.DescribeTargetGroupsInput{
+		TargetGroupArns: []string{targetGroupArn},
+	}
+	output, err := c.elbClient.DescribeTargetGroups(ctx, input)
+	if err != nil {
+		return "", err
+	}
+	if len(output.TargetGroups) == 0 {
+		return "", cloudprovider.ErrNotFound
+	}
+	// Note: Currently, only support TargetGroup which serves traffic from one Load Balancer.
+	return output.TargetGroups[0].LoadBalancerArns[0], nil
+}
+
+func (c *client) ModifyListener(ctx context.Context, listenerArn string, routingTrafficCfg RoutingTrafficConfig) error {
+	if len(routingTrafficCfg) != 2 {
+		return fmt.Errorf("invalid listener configuration: requires 2 target groups")
+	}
+	input := &elasticloadbalancingv2.ModifyListenerInput{
+		ListenerArn: aws.String(listenerArn),
+		DefaultActions: []elbtypes.Action{
+			{
+				Type: elbtypes.ActionTypeEnumForward,
+				ForwardConfig: &elbtypes.ForwardActionConfig{
+					TargetGroups: []elbtypes.TargetGroupTuple{
+						{
+							TargetGroupArn: aws.String(routingTrafficCfg[0].TargetGroupArn),
+							Weight:         aws.Int32(int32(routingTrafficCfg[0].Weight)),
+						},
+						{
+							TargetGroupArn: aws.String(routingTrafficCfg[1].TargetGroupArn),
+							Weight:         aws.Int32(int32(routingTrafficCfg[1].Weight)),
+						},
+					},
+				},
+			},
+		},
+	}
+	_, err := c.elbClient.ModifyListener(ctx, input)
+	return err
 }
