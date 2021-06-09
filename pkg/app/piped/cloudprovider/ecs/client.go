@@ -195,14 +195,14 @@ func (c *client) GetPrimaryTaskSet(ctx context.Context, service types.Service) (
 	return nil, cloudprovider.ErrNotFound
 }
 
-func (c *client) DeleteTaskSet(ctx context.Context, service types.Service, taskSet types.TaskSet) error {
+func (c *client) DeleteTaskSet(ctx context.Context, service types.Service, taskSetArn string) error {
 	input := &ecs.DeleteTaskSetInput{
 		Cluster: service.ClusterArn,
 		Service: service.ServiceArn,
-		TaskSet: taskSet.TaskSetArn,
+		TaskSet: aws.String(taskSetArn),
 	}
 	if _, err := c.ecsClient.DeleteTaskSet(ctx, input); err != nil {
-		return fmt.Errorf("failed to delete ECS task set %s: %w", *taskSet.TaskSetArn, err)
+		return fmt.Errorf("failed to delete ECS task set %s: %w", taskSetArn, err)
 	}
 	return nil
 }

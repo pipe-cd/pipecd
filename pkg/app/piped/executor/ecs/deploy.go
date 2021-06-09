@@ -156,6 +156,14 @@ func (e *deployExecutor) ensureCanaryRollout(ctx context.Context) model.StageSta
 }
 
 func (e *deployExecutor) ensureCanaryClean(ctx context.Context) model.StageStatus {
-	// TODO Implement
-	return model.StageStatus_STAGE_FAILURE
+	servicedefinition, ok := loadServiceDefinition(&e.Input, e.deployCfg.Input.ServiceDefinitionFile, e.deploySource)
+	if !ok {
+		return model.StageStatus_STAGE_FAILURE
+	}
+
+	if !clean(ctx, &e.Input, e.cloudProviderName, e.cloudProviderCfg, servicedefinition) {
+		return model.StageStatus_STAGE_FAILURE
+	}
+
+	return model.StageStatus_STAGE_SUCCESS
 }

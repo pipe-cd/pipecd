@@ -29,6 +29,8 @@ import (
 	"github.com/pipe-cd/pipe/pkg/model"
 )
 
+const canaryTaskSetARNKeyName = "canary-taskset-arn"
+
 type registerer interface {
 	Register(stage model.Stage, f executor.Factory) error
 	RegisterRollback(kind model.ApplicationKind, f executor.Factory) error
@@ -160,7 +162,7 @@ func createPrimaryTaskSet(ctx context.Context, client provider.Client, service t
 
 	// Remove old taskSet if existed.
 	if prevPrimaryTaskSet != nil {
-		if err = client.DeleteTaskSet(ctx, service, *prevPrimaryTaskSet); err != nil {
+		if err = client.DeleteTaskSet(ctx, service, *prevPrimaryTaskSet.TaskSetArn); err != nil {
 			return err
 		}
 	}
@@ -230,13 +232,40 @@ func rollout(ctx context.Context, in *executor.Input, cloudProviderName string, 
 		}
 	} else {
 		// Create ACTIVE task set in case of Canary rollout.
-		if _, err := client.CreateTaskSet(ctx, *service, *td, targetGroup); err != nil {
+		taskSet, err := client.CreateTaskSet(ctx, *service, *td, targetGroup)
+		if err != nil {
 			in.LogPersister.Errorf("Failed to create ECS task set %s: %v", *serviceDefinition.ServiceName, err)
+			return false
+		}
+		// Store created ACTIVE TaskSet (CANARY variant) to delete later.
+		if err := in.MetadataStore.Set(ctx, canaryTaskSetARNKeyName, *taskSet.TaskSetArn); err != nil {
+			in.LogPersister.Errorf("Unable to store created active taskSet to metadata store: %v", err)
 			return false
 		}
 	}
 
 	in.LogPersister.Infof("Successfully applied the service definition and the task definition for ECS service %s and task definition of family %s", *serviceDefinition.ServiceName, *taskDefinition.Family)
+	return true
+}
+
+func clean(ctx context.Context, in *executor.Input, cloudProviderName string, cloudProviderCfg *config.CloudProviderECSConfig, service types.Service) bool {
+	client, err := provider.DefaultRegistry().Client(cloudProviderName, cloudProviderCfg, in.Logger)
+	if err != nil {
+		in.LogPersister.Errorf("Unable to create ECS client for the provider %s: %v", cloudProviderName, err)
+		return false
+	}
+
+	taskSetArn, ok := in.MetadataStore.Get(canaryTaskSetARNKeyName)
+	if !ok {
+		in.LogPersister.Errorf("Unable to restore CANARY task set to clean: Not found")
+		return false
+	}
+
+	if err := client.DeleteTaskSet(ctx, service, taskSetArn); err != nil {
+		in.LogPersister.Errorf("Failed to clean CANARY task set %s: %v", taskSetArn, err)
+		return false
+	}
+
 	return true
 }
 
