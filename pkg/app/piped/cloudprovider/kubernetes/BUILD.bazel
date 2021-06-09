@@ -4,6 +4,8 @@ go_library(
     name = "go_default_library",
     srcs = [
         "cache.go",
+        "deployment.go",
+        "hasher.go",
         "helm.go",
         "kubectl.go",
         "kubernetes.go",
@@ -40,6 +42,8 @@ go_test(
     name = "go_default_test",
     size = "small",
     srcs = [
+        "deployment_test.go",
+        "hasher_test.go",
         "helm_test.go",
         "kubernetes_test.go",
         "kustomize_test.go",
@@ -50,6 +54,7 @@ go_test(
         "//pkg/app/piped/toolregistry:go_default_library",
         "@com_github_stretchr_testify//assert:go_default_library",
         "@com_github_stretchr_testify//require:go_default_library",
+        "@io_k8s_api//apps/v1:go_default_library",
         "@org_uber_go_zap//:go_default_library",
     ],
 )

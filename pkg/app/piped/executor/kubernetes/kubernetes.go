@@ -466,3 +466,100 @@ func makeSuffixedName(name, suffix string) string {
 	}
 	return name
 }
+
+// annotateConfigHash appends a hash annotation into the workload manifests.
+// The hash value is calculated by hashing the content of all configmaps/secrets
+// that are referenced by the workload.
+// This appending ensures that the workload should be restarted when
+// one of its configurations changed.
+func annotateConfigHash(manifests []provider.Manifest) error {
+	if len(manifests) == 0 {
+		return nil
+	}
+
+	configMaps := make(map[string]provider.Manifest)
+	secrets := make(map[string]provider.Manifest)
+	for _, m := range manifests {
+		if m.Key.IsConfigMap() {
+			configMaps[m.Key.Name] = m
+			continue
+		}
+		if m.Key.IsSecret() {
+			secrets[m.Key.Name] = m
+		}
+	}
+
+	// This application is not containing any config manifests
+	// so nothing to do.
+	if len(configMaps)+len(secrets) == 0 {
+		return nil
+	}
+
+	for _, m := range manifests {
+		if m.Key.IsDeployment() {
+			if err := annotateConfigHashToDeployment(m, configMaps, secrets); err != nil {
+				return err
+			}
+		}
+
+		// TODO: Anotate config hash into other workload kinds such as DaemonSet, StatefulSet...
+	}
+
+	return nil
+}
+
+func annotateConfigHashToDeployment(m provider.Manifest, managedConfigMaps, managedSecrets map[string]provider.Manifest) error {
+	d := &appsv1.Deployment{}
+	if err := m.ConvertToStructuredObject(d); err != nil {
+		return err
+	}
+
+	configMaps := provider.FindReferencingConfigMapsInDeployment(d)
+	secrets := provider.FindReferencingSecretsInDeployment(d)
+
+	// The deployment is not referencing any config resources.
+	if len(configMaps)+len(secrets) == 0 {
+		return nil
+	}
+
+	cfgs := make([]provider.Manifest, 0, len(configMaps)+len(secrets))
+	for _, cm := range configMaps {
+		m, ok := managedConfigMaps[cm]
+		if !ok {
+			// We do not return error here because the deployment may use
+			// a config resource that is not managed by PipeCD.
+			continue
+		}
+		cfgs = append(cfgs, m)
+	}
+	for _, s := range secrets {
+		m, ok := managedSecrets[s]
+		if !ok {
+			// We do not return error here because the deployment may use
+			// a config resource that is not managed by PipeCD.
+			continue
+		}
+		cfgs = append(cfgs, m)
+	}
+
+	if len(cfgs) == 0 {
+		return nil
+	}
+
+	hash, err := provider.HashManifests(cfgs)
+	if err != nil {
+		fmt.Println(err)
+		return err
+	}
+
+	m.AddStringMapValues(
+		map[string]string{
+			provider.AnnotationConfigHash: hash,
+		},
+		"spec",
+		"template",
+		"metadata",
+		"annotations",
+	)
+	return nil
+}

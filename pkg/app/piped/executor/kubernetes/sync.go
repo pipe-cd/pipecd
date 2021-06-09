@@ -64,6 +64,12 @@ func (e *deployExecutor) ensureSync(ctx context.Context) model.StageStatus {
 		e.Deployment.ApplicationId,
 	)
 
+	// Add config-hash annotation to the workloads.
+	if err := annotateConfigHash(manifests); err != nil {
+		e.LogPersister.Errorf("Unable to set %q annotation into the workload manifest (%v)", provider.AnnotationConfigHash, err)
+		return model.StageStatus_STAGE_FAILURE
+	}
+
 	// Start applying all manifests to add or update running resources.
 	if err := applyManifests(ctx, e.provider, manifests, e.deployCfg.Input.Namespace, e.LogPersister); err != nil {
 		return model.StageStatus_STAGE_FAILURE

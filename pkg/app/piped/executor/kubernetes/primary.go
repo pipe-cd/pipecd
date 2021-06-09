@@ -124,6 +124,12 @@ func (e *deployExecutor) ensurePrimaryRollout(ctx context.Context) model.StageSt
 		e.Deployment.ApplicationId,
 	)
 
+	// Add config-hash annotation to the workloads.
+	if err := annotateConfigHash(primaryManifests); err != nil {
+		e.LogPersister.Errorf("Unable to set %q annotation into the workload manifest (%v)", provider.AnnotationConfigHash, err)
+		return model.StageStatus_STAGE_FAILURE
+	}
+
 	// Start applying all manifests to add or update running resources.
 	e.LogPersister.Info("Start rolling out PRIMARY variant...")
 	if err := applyManifests(ctx, e.provider, primaryManifests, e.deployCfg.Input.Namespace, e.LogPersister); err != nil {

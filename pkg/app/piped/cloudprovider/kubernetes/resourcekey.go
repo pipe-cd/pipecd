@@ -270,5 +270,7 @@ func DecodeResourceKey(key string) (ResourceKey, error) {
 
 func IsKubernetesBuiltInResource(apiVersion string) bool {
 	_, ok := builtInApiVersions[apiVersion]
+	// TODO: Change the way to detect whether an APIVersion is built-in or not
+	// rather than depending on this fixed list.
 	return ok
 }
