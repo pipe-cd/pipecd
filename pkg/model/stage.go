@@ -79,7 +79,7 @@ const (
 	StageECSSync Stage = "ECS_SYNC"
 	// StageECSCanaryRollout represents the stage where
 	// the CANARY variant resource have been rolled out with the new version/configuration.
-	// The CANARY variant is still receiving no traffic.
+	// The CANARY variant will serve amount of traffic set in this stage option.
 	StageECSCanaryRollout Stage = "ECS_CANARY_ROLLOUT"
 	// StageECSPrimaryRollout represents the stage where
 	// the PRIMARY variant resource have been rolled out with the new version/configuration.

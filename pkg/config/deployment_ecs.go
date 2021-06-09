@@ -58,6 +58,7 @@ type ECSSyncStageOptions struct {
 
 // ECSCanaryRolloutStageOptions contains all configurable values for a ECS_CANARY_ROLLOUT stage.
 type ECSCanaryRolloutStageOptions struct {
+	// Traffic represents the amount of traffic that the rolled out CANARY variant will serve.
 	Traffic int `json:"traffic"`
 }
 
