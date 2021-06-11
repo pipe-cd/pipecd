@@ -78,8 +78,8 @@ spec:
         containerPort: 80
   pipeline:
     stages:
-      # Deploy the workloads of CANARY variant, the number of CANARY workload
-      # equal to PRIMARY workload * 10%.
+      # Deploy the workloads of CANARY variant, the number of workload
+      # for CANARY variant is equal to 10% of PRIMARY's workload.
       # But this is still receiving no traffic.
       - name: ECS_CANARY_ROLLOUT
         with:
@@ -126,7 +126,7 @@ spec:
   pipeline:
     stages:
       # Deploy the workloads of CANARY variant with the number of
-      # workload of CANARY variant is the same with PRIMARY variant.
+      # workload for CANARY variant is the same as PRIMARY variant.
       # But this is still receiving no traffic.
       - name: ECS_CANARY_ROLLOUT
         with:
