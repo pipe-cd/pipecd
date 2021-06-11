@@ -356,6 +356,14 @@ func (d *detector) loadDeploymentConfiguration(repoPath string, app *model.Appli
 	if appKind, ok := config.ToApplicationKind(cfg.Kind); !ok || appKind != app.Kind {
 		return nil, fmt.Errorf("application in deployment configuration file is not match, got: %s, expected: %s", appKind, app.Kind)
 	}
+
+	if cfg.KubernetesDeploymentSpec != nil && cfg.KubernetesDeploymentSpec.Input.HelmChart != nil {
+		chartRepoName := cfg.KubernetesDeploymentSpec.Input.HelmChart.Repository
+		if chartRepoName != "" {
+			cfg.KubernetesDeploymentSpec.Input.HelmChart.Insecure = d.config.IsInsecureChartRepository(chartRepoName)
+		}
+	}
+
 	return cfg, nil
 }
 
