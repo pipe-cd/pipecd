@@ -78,27 +78,29 @@ spec:
         containerPort: 80
   pipeline:
     stages:
-      # Deploy the workloads of CANARY variant.
+      # Deploy the workloads of CANARY variant, the number of workload
+      # for CANARY variant is equal to 10% of PRIMARY's workload.
       # But this is still receiving no traffic.
       - name: ECS_CANARY_ROLLOUT
+        with:
+          scale: 10%
       # Change the traffic routing state where
       # the CANARY workloads will receive the specified percentage of traffic.
       # This is known as multi-phase canary strategy.
       - name: ECS_TRAFFIC_ROUTING
         with:
-          canary: 10
+          canary: 20
       # Optional: We can also add an ANALYSIS stage to verify the new version.
       # If this stage finds any not good metrics of the new version,
       # a rollback process to the previous version will be executed.
       - name: ANALYSIS
+      # Update the workload of PRIMARY variant to the new version.
+      - name: ECS_PRIMARY_ROLLOUT
       # Change the traffic routing state where
-      # the CANARY workloads will receive 100% of the traffic.
+      # the PRIMARY workloads will receive 100% of the traffic.
       - name: ECS_TRAFFIC_ROUTING
         with:
-          canary: 100
-      # Update the workload of PRIMARY variant to the new version.
-      # the PRIMARY workloads will receive 100% of the traffic.
-      - name: ECS_PRIMARY_ROLLOUT
+          primary: 100
       # Destroy all workloads of CANARY variant.
       - name: ECS_CANARY_CLEAN
 ```
@@ -123,9 +125,12 @@ spec:
         containerPort: 80
   pipeline:
     stages:
-      # Deploy the workloads of CANARY variant.
+      # Deploy the workloads of CANARY variant with the number of
+      # workload for CANARY variant is the same as PRIMARY variant.
       # But this is still receiving no traffic.
       - name: ECS_CANARY_ROLLOUT
+        with:
+          scale: 100%
       # Change the traffic routing state where
       # the CANARY workloads will receive 100% of the traffic.
       - name: ECS_TRAFFIC_ROUTING
@@ -136,8 +141,12 @@ spec:
       # a rollback process to the previous version will be executed.
       - name: ANALYSIS
       # Update the workload of PRIMARY variant to the new version.
-      # the PRIMARY workloads will receive 100% of the traffic.
       - name: ECS_PRIMARY_ROLLOUT
+      # Change the traffic routing state where
+      # the PRIMARY workloads will receive 100% of the traffic.
+      - name: ECS_TRAFFIC_ROUTING
+        with:
+          primary: 100
       # Destroy all workloads of CANARY variant.
       - name: ECS_CANARY_CLEAN
 ```
