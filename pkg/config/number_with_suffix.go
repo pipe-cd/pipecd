@@ -72,12 +72,12 @@ func (r *NumberWithSuffix) UnmarshalJSON(b []byte) error {
 		}
 		value, err := strconv.ParseInt(raw, 10, 64)
 		if err != nil {
-			return fmt.Errorf("invalid replicas: %v", err)
+			return fmt.Errorf("invalid number given: %v", err)
 		}
 		replicas.Number = int(value)
 		*r = replicas
 		return nil
 	default:
-		return fmt.Errorf("invalid replicas: %v", string(b))
+		return fmt.Errorf("invalid number given: %v", string(b))
 	}
 }
