@@ -16,7 +16,9 @@ package ecs
 
 import (
 	"context"
+	"encoding/json"
 	"errors"
+	"fmt"
 
 	"github.com/aws/aws-sdk-go-v2/service/ecs/types"
 
@@ -26,6 +28,11 @@ import (
 	"github.com/pipe-cd/pipe/pkg/app/piped/executor"
 	"github.com/pipe-cd/pipe/pkg/config"
 	"github.com/pipe-cd/pipe/pkg/model"
+)
+
+const (
+	canaryTaskSetARNKeyName = "canary-taskset-arn"
+	canaryServiceKeyName    = "canary-service-object"
 )
 
 type registerer interface {
@@ -41,7 +48,8 @@ func Register(r registerer) {
 	}
 	r.Register(model.StageECSSync, f)
 	r.Register(model.StageECSCanaryRollout, f)
-	r.Register(model.StageECSTrafficRouting, f)
+	r.Register(model.StageECSPrimaryRollout, f)
+	r.Register(model.StageECSCanaryClean, f)
 
 	r.RegisterRollback(model.ApplicationKind_ECS, func(in executor.Input) executor.Executor {
 		return &rollbackExecutor{
@@ -107,6 +115,65 @@ func loadTargetGroups(in *executor.Input, deployCfg *config.ECSDeploymentSpec, d
 	return primary, canary, true
 }
 
+func applyTaskDefinition(ctx context.Context, cli provider.Client, taskDefinition types.TaskDefinition) (*types.TaskDefinition, error) {
+	td, err := cli.RegisterTaskDefinition(ctx, taskDefinition)
+	if err != nil {
+		return nil, err
+	}
+	return td, nil
+}
+
+func applyServiceDefinition(ctx context.Context, cli provider.Client, serviceDefinition types.Service) (*types.Service, error) {
+	found, err := cli.ServiceExists(ctx, *serviceDefinition.ClusterArn, *serviceDefinition.ServiceName)
+	if err != nil {
+		return nil, fmt.Errorf("unable to validate service name %s: %v", *serviceDefinition.ServiceName, err)
+	}
+
+	var service *types.Service
+	if found {
+		service, err = cli.UpdateService(ctx, serviceDefinition)
+		if err != nil {
+			return nil, fmt.Errorf("failed to update ECS service %s: %v", *serviceDefinition.ServiceName, err)
+		}
+	} else {
+		service, err = cli.CreateService(ctx, serviceDefinition)
+		if err != nil {
+			return nil, fmt.Errorf("failed to create ECS service %s: %v", *serviceDefinition.ServiceName, err)
+		}
+	}
+
+	return service, nil
+}
+
+func createPrimaryTaskSet(ctx context.Context, client provider.Client, service types.Service, taskDef types.TaskDefinition, targetGroup types.LoadBalancer) error {
+	// Get current PRIMARY task set.
+	prevPrimaryTaskSet, err := client.GetPrimaryTaskSet(ctx, service)
+	// Ignore error in case it's not found error, the prevPrimaryTaskSet doesn't exist for newly created Service.
+	if err != nil && !errors.Is(err, cloudprovider.ErrNotFound) {
+		return err
+	}
+
+	// Create a task set in the specified cluster and service.
+	taskSet, err := client.CreateTaskSet(ctx, service, taskDef, targetGroup)
+	if err != nil {
+		return err
+	}
+
+	// Make new taskSet as PRIMARY task set, so that it will handle production service.
+	if _, err = client.UpdateServicePrimaryTaskSet(ctx, service, *taskSet); err != nil {
+		return err
+	}
+
+	// Remove old taskSet if existed.
+	if prevPrimaryTaskSet != nil {
+		if err = client.DeleteTaskSet(ctx, service, *prevPrimaryTaskSet.TaskSetArn); err != nil {
+			return err
+		}
+	}
+
+	return nil
+}
+
 func sync(ctx context.Context, in *executor.Input, cloudProviderName string, cloudProviderCfg *config.CloudProviderECSConfig, taskDefinition types.TaskDefinition, serviceDefinition types.Service, targetGroup types.LoadBalancer) bool {
 	client, err := provider.DefaultRegistry().Client(cloudProviderName, cloudProviderCfg, in.Logger)
 	if err != nil {
@@ -115,61 +182,23 @@ func sync(ctx context.Context, in *executor.Input, cloudProviderName string, clo
 	}
 
 	in.LogPersister.Infof("Start applying the ECS task definition")
-	td, err := client.RegisterTaskDefinition(ctx, taskDefinition)
+	td, err := applyTaskDefinition(ctx, client, taskDefinition)
 	if err != nil {
 		in.LogPersister.Errorf("Failed to register ECS task definition of family %s: %v", *taskDefinition.Family, err)
 		return false
 	}
 
 	in.LogPersister.Infof("Start applying the ECS service definition")
-	found, err := client.ServiceExists(ctx, *serviceDefinition.ClusterArn, *serviceDefinition.ServiceName)
+	service, err := applyServiceDefinition(ctx, client, serviceDefinition)
 	if err != nil {
-		in.LogPersister.Errorf("Unable to validate service name %s: %v", *serviceDefinition.ServiceName, err)
+		in.LogPersister.Errorf("Failed to apply service %s: %v", *serviceDefinition.ServiceName, err)
 		return false
 	}
 
-	var service *types.Service
-	if found {
-		service, err = client.UpdateService(ctx, serviceDefinition)
-		if err != nil {
-			in.LogPersister.Errorf("Failed to update ECS service %s: %v", *serviceDefinition.ServiceName, err)
-			return false
-		}
-	} else {
-		service, err = client.CreateService(ctx, serviceDefinition)
-		if err != nil {
-			in.LogPersister.Errorf("Failed to create ECS service %s: %v", *serviceDefinition.ServiceName, err)
-			return false
-		}
-	}
-
-	// Get current PRIMARY task set.
-	prevPrimaryTaskSet, err := client.GetPrimaryTaskSet(ctx, *service)
-	// Ignore error in case it's not found error, the prevPrimaryTaskSet doesn't exist for newly created Service.
-	if err != nil && !errors.Is(err, cloudprovider.ErrNotFound) {
-		in.LogPersister.Errorf("Failed to create ECS task set %s: %v", *serviceDefinition.ServiceName, err)
+	in.LogPersister.Infof("Start rolling out ECS task set")
+	if err := createPrimaryTaskSet(ctx, client, *service, *td, targetGroup); err != nil {
+		in.LogPersister.Errorf("Failed to rolling out ECS task set %s: %v", *serviceDefinition.ServiceName, err)
 		return false
-	}
-
-	// Create a task set in the specified cluster and service.
-	taskSet, err := client.CreateTaskSet(ctx, *service, *td, targetGroup)
-	if err != nil {
-		in.LogPersister.Errorf("Failed to create ECS task set %s: %v", *serviceDefinition.ServiceName, err)
-		return false
-	}
-
-	// Make new taskSet as PRIMARY task set, so that it will handle production service.
-	if _, err = client.UpdateServicePrimaryTaskSet(ctx, *service, *taskSet); err != nil {
-		in.LogPersister.Errorf("Failed to update service primary ECS task set %s: %v", *serviceDefinition.ServiceName, err)
-		return false
-	}
-
-	// Remove old taskSet if existed.
-	if prevPrimaryTaskSet != nil {
-		if err = client.DeleteTaskSet(ctx, *service, *prevPrimaryTaskSet); err != nil {
-			in.LogPersister.Errorf("Faield to remove unused taskSet %s: %v", *prevPrimaryTaskSet.TaskSetArn, err)
-			return false
-		}
 	}
 
 	in.LogPersister.Infof("Successfully applied the service definition and the task definition for ECS service %s and task definition of family %s", *serviceDefinition.ServiceName, *taskDefinition.Family)
@@ -184,42 +213,141 @@ func rollout(ctx context.Context, in *executor.Input, cloudProviderName string, 
 	}
 
 	in.LogPersister.Infof("Start applying the ECS task definition")
-	td, err := client.RegisterTaskDefinition(ctx, taskDefinition)
+	td, err := applyTaskDefinition(ctx, client, taskDefinition)
 	if err != nil {
 		in.LogPersister.Errorf("Failed to register ECS task definition of family %s: %v", *taskDefinition.Family, err)
 		return false
 	}
 
 	in.LogPersister.Infof("Start applying the ECS service definition")
-	found, err := client.ServiceExists(ctx, *serviceDefinition.ClusterArn, *serviceDefinition.ServiceName)
+	service, err := applyServiceDefinition(ctx, client, serviceDefinition)
 	if err != nil {
-		in.LogPersister.Errorf("Unable to validate service name %s: %v", *serviceDefinition.ServiceName, err)
+		in.LogPersister.Errorf("Failed to apply service %s: %v", *serviceDefinition.ServiceName, err)
 		return false
-	}
-
-	var service *types.Service
-	if found {
-		service, err = client.UpdateService(ctx, serviceDefinition)
-		if err != nil {
-			in.LogPersister.Errorf("Failed to update ECS service %s: %v", *serviceDefinition.ServiceName, err)
-			return false
-		}
-	} else {
-		service, err = client.CreateService(ctx, serviceDefinition)
-		if err != nil {
-			in.LogPersister.Errorf("Failed to create ECS service %s: %v", *serviceDefinition.ServiceName, err)
-			return false
-		}
 	}
 
 	// Create a task set in the specified cluster and service.
-	_, err = client.CreateTaskSet(ctx, *service, *td, targetGroup)
-	if err != nil {
-		in.LogPersister.Errorf("Failed to create ECS task set %s: %v", *serviceDefinition.ServiceName, err)
-		return false
+	in.LogPersister.Infof("Start rolling out ECS task set")
+	if in.StageConfig.Name == model.StageECSPrimaryRollout {
+		// Create PRIMARY task set in case of Primary rollout.
+		if err := createPrimaryTaskSet(ctx, client, *service, *td, targetGroup); err != nil {
+			in.LogPersister.Errorf("Failed to rolling out ECS task set %s: %v", *serviceDefinition.ServiceName, err)
+			return false
+		}
+	} else {
+		// Create ACTIVE task set in case of Canary rollout.
+		taskSet, err := client.CreateTaskSet(ctx, *service, *td, targetGroup)
+		if err != nil {
+			in.LogPersister.Errorf("Failed to create ECS task set %s: %v", *serviceDefinition.ServiceName, err)
+			return false
+		}
+		// Store created ACTIVE TaskSet (CANARY variant) to delete later.
+		if err := in.MetadataStore.Set(ctx, canaryTaskSetARNKeyName, *taskSet.TaskSetArn); err != nil {
+			in.LogPersister.Errorf("Unable to store created active taskSet to metadata store: %v", err)
+			return false
+		}
+		// Store applied Service (CANARY variant) to delete its TaskSet later.
+		serviceObjData, err := json.Marshal(service)
+		if err != nil {
+			in.LogPersister.Errorf("Unable to store applied service to metadata store: %v", err)
+			return false
+		}
+		if err := in.MetadataStore.Set(ctx, canaryServiceKeyName, string(serviceObjData)); err != nil {
+			in.LogPersister.Errorf("Unable to store applied service to metadata store: %v", err)
+			return false
+		}
 	}
-	// TODO: Save created taskSet to Metadata store.
 
 	in.LogPersister.Infof("Successfully applied the service definition and the task definition for ECS service %s and task definition of family %s", *serviceDefinition.ServiceName, *taskDefinition.Family)
 	return true
+}
+
+func clean(ctx context.Context, in *executor.Input, cloudProviderName string, cloudProviderCfg *config.CloudProviderECSConfig) bool {
+	client, err := provider.DefaultRegistry().Client(cloudProviderName, cloudProviderCfg, in.Logger)
+	if err != nil {
+		in.LogPersister.Errorf("Unable to create ECS client for the provider %s: %v", cloudProviderName, err)
+		return false
+	}
+
+	taskSetArn, ok := in.MetadataStore.Get(canaryTaskSetARNKeyName)
+	if !ok {
+		in.LogPersister.Errorf("Unable to restore CANARY task set to clean: Not found")
+		return false
+	}
+	serviceObjData, ok := in.MetadataStore.Get(canaryServiceKeyName)
+	if !ok {
+		in.LogPersister.Errorf("Unable to restore CANARY service to clean: Not found")
+		return false
+	}
+	service := &types.Service{}
+	if err := json.Unmarshal([]byte(serviceObjData), service); err != nil {
+		in.LogPersister.Errorf("Unable to restore CANARY service to clean: %v", err)
+		return false
+	}
+
+	if err := client.DeleteTaskSet(ctx, *service, taskSetArn); err != nil {
+		in.LogPersister.Errorf("Failed to clean CANARY task set %s: %v", taskSetArn, err)
+		return false
+	}
+
+	return true
+}
+
+func routing(ctx context.Context, in *executor.Input, cloudProviderName string, cloudProviderCfg *config.CloudProviderECSConfig, primaryTargetGroup types.LoadBalancer, canaryTargetGroup types.LoadBalancer) bool {
+	client, err := provider.DefaultRegistry().Client(cloudProviderName, cloudProviderCfg, in.Logger)
+	if err != nil {
+		in.LogPersister.Errorf("Unable to create ECS client for the provider %s: %v", cloudProviderName, err)
+		return false
+	}
+
+	primary, canary, err := determineTrafficAmount(in.StageConfig)
+	if err != nil {
+		in.LogPersister.Errorf("Malformed configuration for stage %s", in.Stage.Name)
+		return false
+	}
+	routingTrafficCfg := provider.RoutingTrafficConfig{
+		{
+			TargetGroupArn: *primaryTargetGroup.TargetGroupArn,
+			Weight:         primary,
+		},
+		{
+			TargetGroupArn: *canaryTargetGroup.TargetGroupArn,
+			Weight:         canary,
+		},
+	}
+
+	currListenerArn, err := client.GetListener(ctx, primaryTargetGroup)
+	if err != nil {
+		in.LogPersister.Errorf("Failed to get current active listener: %v", err)
+		return false
+	}
+
+	if err := client.ModifyListener(ctx, currListenerArn, routingTrafficCfg); err != nil {
+		in.LogPersister.Errorf("Failed to routing traffic to canary variant: %v", err)
+		return false
+	}
+
+	return true
+}
+
+func determineTrafficAmount(stageCfg config.PipelineStage) (primary int, canary int, err error) {
+	switch stageCfg.Name {
+	case model.StageECSCanaryRollout:
+		options := stageCfg.ECSCanaryRolloutStageOptions
+		if options == nil {
+			err = fmt.Errorf("traffic configuration is missing")
+			return
+		}
+		// TODO: Validate Traffic config is lower than 100.
+		canary = options.Traffic
+		primary = 100 - canary
+		return
+	case model.StageECSPrimaryRollout:
+		primary = 100
+		canary = 0
+		return
+	default:
+		err = fmt.Errorf("unexpected stage given")
+		return
+	}
 }

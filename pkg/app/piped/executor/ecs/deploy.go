@@ -61,12 +61,12 @@ func (e *deployExecutor) Execute(sig executor.StopSignal) model.StageStatus {
 	switch model.Stage(e.Stage.Name) {
 	case model.StageECSSync:
 		status = e.ensureSync(ctx)
-	case model.StageECSTrafficRouting:
-		status = e.ensureTrafficRouting(ctx)
 	case model.StageECSCanaryRollout:
 		status = e.ensureCanaryRollout(ctx)
 	case model.StageECSPrimaryRollout:
 		status = e.ensurePrimaryRollout(ctx)
+	case model.StageECSCanaryClean:
+		status = e.ensureCanaryClean(ctx)
 	default:
 		e.LogPersister.Errorf("Unsupported stage %s for ECS application", e.Stage.Name)
 		return model.StageStatus_STAGE_FAILURE
@@ -97,14 +97,33 @@ func (e *deployExecutor) ensureSync(ctx context.Context) model.StageStatus {
 	return model.StageStatus_STAGE_SUCCESS
 }
 
-func (e *deployExecutor) ensureTrafficRouting(ctx context.Context) model.StageStatus {
-	// TODO Implement
-	return model.StageStatus_STAGE_FAILURE
-}
-
 func (e *deployExecutor) ensurePrimaryRollout(ctx context.Context) model.StageStatus {
-	// TODO Implement
-	return model.StageStatus_STAGE_FAILURE
+	taskDefinition, ok := loadTaskDefinition(&e.Input, e.deployCfg.Input.TaskDefinitionFile, e.deploySource)
+	if !ok {
+		return model.StageStatus_STAGE_FAILURE
+	}
+	servicedefinition, ok := loadServiceDefinition(&e.Input, e.deployCfg.Input.ServiceDefinitionFile, e.deploySource)
+	if !ok {
+		return model.StageStatus_STAGE_FAILURE
+	}
+
+	primary, canary, ok := loadTargetGroups(&e.Input, e.deployCfg, e.deploySource)
+	if !ok {
+		return model.StageStatus_STAGE_FAILURE
+	}
+	if canary == nil {
+		e.LogPersister.Error("Canary target group is required to enable traffic routing")
+		return model.StageStatus_STAGE_FAILURE
+	}
+
+	if !rollout(ctx, &e.Input, e.cloudProviderName, e.cloudProviderCfg, taskDefinition, servicedefinition, *primary) {
+		return model.StageStatus_STAGE_FAILURE
+	}
+
+	if !routing(ctx, &e.Input, e.cloudProviderName, e.cloudProviderCfg, *primary, *canary) {
+		return model.StageStatus_STAGE_FAILURE
+	}
+	return model.StageStatus_STAGE_SUCCESS
 }
 
 func (e *deployExecutor) ensureCanaryRollout(ctx context.Context) model.StageStatus {
@@ -117,13 +136,29 @@ func (e *deployExecutor) ensureCanaryRollout(ctx context.Context) model.StageSta
 		return model.StageStatus_STAGE_FAILURE
 	}
 
-	_, canary, ok := loadTargetGroups(&e.Input, e.deployCfg, e.deploySource)
+	primary, canary, ok := loadTargetGroups(&e.Input, e.deployCfg, e.deploySource)
 	if !ok {
+		return model.StageStatus_STAGE_FAILURE
+	}
+	if canary == nil {
+		e.LogPersister.Error("Canary target group is required to enable traffic routing")
 		return model.StageStatus_STAGE_FAILURE
 	}
 
 	if !rollout(ctx, &e.Input, e.cloudProviderName, e.cloudProviderCfg, taskDefinition, servicedefinition, *canary) {
 		return model.StageStatus_STAGE_FAILURE
 	}
+
+	if !routing(ctx, &e.Input, e.cloudProviderName, e.cloudProviderCfg, *primary, *canary) {
+		return model.StageStatus_STAGE_FAILURE
+	}
+	return model.StageStatus_STAGE_SUCCESS
+}
+
+func (e *deployExecutor) ensureCanaryClean(ctx context.Context) model.StageStatus {
+	if !clean(ctx, &e.Input, e.cloudProviderName, e.cloudProviderCfg) {
+		return model.StageStatus_STAGE_FAILURE
+	}
+
 	return model.StageStatus_STAGE_SUCCESS
 }

@@ -127,7 +127,7 @@ type PipelineStage struct {
 	ECSSyncStageOptions           *ECSSyncStageOptions
 	ECSCanaryRolloutStageOptions  *ECSCanaryRolloutStageOptions
 	ECSPrimaryRolloutStageOptions *ECSPrimaryRolloutStageOptions
-	ECSTrafficRoutingStageOptions *ECSTrafficRoutingStageOptions
+	ECSCanaryCleanStageOptions    *ECSCanaryCleanStageOptions
 }
 
 type genericPipelineStage struct {
@@ -262,10 +262,10 @@ func (s *PipelineStage) UnmarshalJSON(data []byte) error {
 		if len(gs.With) > 0 {
 			err = json.Unmarshal(gs.With, s.ECSPrimaryRolloutStageOptions)
 		}
-	case model.StageECSTrafficRouting:
-		s.ECSTrafficRoutingStageOptions = &ECSTrafficRoutingStageOptions{}
+	case model.StageECSCanaryClean:
+		s.ECSCanaryCleanStageOptions = &ECSCanaryCleanStageOptions{}
 		if len(gs.With) > 0 {
-			err = json.Unmarshal(gs.With, s.ECSTrafficRoutingStageOptions)
+			err = json.Unmarshal(gs.With, s.ECSCanaryCleanStageOptions)
 		}
 
 	default:

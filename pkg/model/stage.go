@@ -79,15 +79,15 @@ const (
 	StageECSSync Stage = "ECS_SYNC"
 	// StageECSCanaryRollout represents the stage where
 	// the CANARY variant resource have been rolled out with the new version/configuration.
-	// The CANARY variant is still receiving no traffic.
+	// The CANARY variant will serve amount of traffic set in this stage option.
 	StageECSCanaryRollout Stage = "ECS_CANARY_ROLLOUT"
 	// StageECSPrimaryRollout represents the stage where
 	// the PRIMARY variant resource have been rolled out with the new version/configuration.
 	// The PRIMARY variant will serve 100% traffic after it's rolled out.
 	StageECSPrimaryRollout Stage = "ECS_PRIMARY_ROLLOUT"
-	// StageECSTrafficRouting change the traffic routing state where
-	// the new version will receive the specified percentage of traffic.
-	StageECSTrafficRouting Stage = "ECS_TRAFFIC_ROUTING"
+	// StageECSCanaryClean represents the stage where
+	// the CANARY variant resources has been cleaned.
+	StageECSCanaryClean Stage = "ECS_CANARY_CLEAN"
 
 	// StageRollback represents a state where
 	// the all temporarily created stages will be reverted to

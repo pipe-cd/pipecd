@@ -140,8 +140,8 @@ func rollback(ctx context.Context, in *executor.Input, cloudProviderName string,
 
 	// Remove old taskSet if existed.
 	if prevPrimaryTaskSet != nil {
-		if err = client.DeleteTaskSet(ctx, *service, *prevPrimaryTaskSet); err != nil {
-			in.LogPersister.Errorf("Faield to remove unused taskSet %s: %v", *prevPrimaryTaskSet.TaskSetArn, err)
+		if err = client.DeleteTaskSet(ctx, *service, *prevPrimaryTaskSet.TaskSetArn); err != nil {
+			in.LogPersister.Errorf("Failed to remove unused taskSet %s: %v", *prevPrimaryTaskSet.TaskSetArn, err)
 			return false
 		}
 	}

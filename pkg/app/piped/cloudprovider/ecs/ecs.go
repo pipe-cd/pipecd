@@ -1,4 +1,4 @@
-// Copyright 2020 The PipeCD Authors.
+// Copyright 2021 The PipeCD Authors.
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -28,14 +28,24 @@ import (
 
 // Client is wrapper of ECS client.
 type Client interface {
+	ECS
+	ELB
+}
+
+type ECS interface {
 	ServiceExists(ctx context.Context, clusterName string, servicesName string) (bool, error)
 	CreateService(ctx context.Context, service types.Service) (*types.Service, error)
 	UpdateService(ctx context.Context, service types.Service) (*types.Service, error)
 	RegisterTaskDefinition(ctx context.Context, taskDefinition types.TaskDefinition) (*types.TaskDefinition, error)
 	GetPrimaryTaskSet(ctx context.Context, service types.Service) (*types.TaskSet, error)
 	CreateTaskSet(ctx context.Context, service types.Service, taskDefinition types.TaskDefinition, targetGroup types.LoadBalancer) (*types.TaskSet, error)
-	DeleteTaskSet(ctx context.Context, service types.Service, taskSet types.TaskSet) error
+	DeleteTaskSet(ctx context.Context, service types.Service, taskSetArn string) error
 	UpdateServicePrimaryTaskSet(ctx context.Context, service types.Service, taskSet types.TaskSet) (*types.TaskSet, error)
+}
+
+type ELB interface {
+	GetListener(ctx context.Context, targetGroup types.LoadBalancer) (string, error)
+	ModifyListener(ctx context.Context, listenerArn string, routingTrafficCfg RoutingTrafficConfig) error
 }
 
 // Registry holds a pool of aws client wrappers.

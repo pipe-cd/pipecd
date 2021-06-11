@@ -36,8 +36,8 @@ def go_repositories():
     go_repository(
         name = "com_github_aws_aws_sdk_go_v2",
         importpath = "github.com/aws/aws-sdk-go-v2",
-        sum = "h1:BS+UYpbsElC82gB+2E2jiCBg36i8HlubTB/dO/moQ9c=",
-        version = "v1.2.0",
+        sum = "h1:r20hdhm8wZmKkClREfacXrKfX0Y7/s0aOoeraFbf/sY=",
+        version = "v1.6.0",
     )
     go_repository(
         name = "com_github_aws_aws_sdk_go_v2_config",
@@ -58,10 +58,23 @@ def go_repositories():
         version = "v1.0.2",
     )
     go_repository(
+        name = "com_github_aws_aws_sdk_go_v2_internal_ini",
+        importpath = "github.com/aws/aws-sdk-go-v2/internal/ini",
+        sum = "h1:k7I9E6tyVWBo7H9ffpnxDWudtjau6Qt9rnOYgV+ciEQ=",
+        version = "v1.0.0",
+    )
+
+    go_repository(
         name = "com_github_aws_aws_sdk_go_v2_service_ecs",
         importpath = "github.com/aws/aws-sdk-go-v2/service/ecs",
         sum = "h1:McBGvH3M7n8s6SGuS+UNm8+q5BEmE30cNH/81qy0B4Q=",
         version = "v1.1.1",
+    )
+    go_repository(
+        name = "com_github_aws_aws_sdk_go_v2_service_elasticloadbalancingv2",
+        importpath = "github.com/aws/aws-sdk-go-v2/service/elasticloadbalancingv2",
+        sum = "h1:Eq7KaAm8s05QmEemIES0uvni7ZDK6wh2lFXNOkE+17M=",
+        version = "v1.3.1",
     )
 
     go_repository(
@@ -110,8 +123,8 @@ def go_repositories():
     go_repository(
         name = "com_github_aws_smithy_go",
         importpath = "github.com/aws/smithy-go",
-        sum = "h1:D6CSsM3gdxaGaqXnPgOBCeL6Mophqzu7KJOu7zW78sU=",
-        version = "v1.1.0",
+        sum = "h1:3rsQpgRe+OoQgJhEwGNpIkosl0fJLdmQqF4gSFRjg+4=",
+        version = "v1.4.0",
     )
 
     go_repository(
