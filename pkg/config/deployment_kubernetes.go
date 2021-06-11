@@ -166,7 +166,7 @@ type K8sCanaryRolloutStageOptions struct {
 	// An integer value can be specified to indicate an absolute value of pod number.
 	// Or a string suffixed by "%" to indicate an percentage value compared to the pod number of PRIMARY.
 	// Default is 1 pod.
-	Replicas Replicas `json:"replicas"`
+	Replicas NumberWithSuffix `json:"replicas"`
 	// Suffix that should be used when naming the CANARY variant's resources.
 	// Default is "canary".
 	Suffix string `json:"suffix"`
@@ -184,7 +184,7 @@ type K8sBaselineRolloutStageOptions struct {
 	// An integer value can be specified to indicate an absolute value of pod number.
 	// Or a string suffixed by "%" to indicate an percentage value compared to the pod number of PRIMARY.
 	// Default is 1 pod.
-	Replicas Replicas `json:"replicas"`
+	Replicas NumberWithSuffix `json:"replicas"`
 	// Suffix that should be used when naming the BASELINE variant's resources.
 	// Default is "baseline".
 	Suffix string `json:"suffix"`

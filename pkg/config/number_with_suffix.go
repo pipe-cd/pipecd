@@ -1,4 +1,4 @@
-// Copyright 2020 The PipeCD Authors.
+// Copyright 2021 The PipeCD Authors.
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -22,12 +22,12 @@ import (
 	"strings"
 )
 
-type Replicas struct {
+type NumberWithSuffix struct {
 	Number       int
 	IsPercentage bool
 }
 
-func (r Replicas) String() string {
+func (r NumberWithSuffix) String() string {
 	s := strconv.FormatInt(int64(r.Number), 10)
 	if r.IsPercentage {
 		return s + "%"
@@ -35,7 +35,7 @@ func (r Replicas) String() string {
 	return s
 }
 
-func (r Replicas) Calculate(total, defaultValue int) int {
+func (r NumberWithSuffix) Calculate(total, defaultValue int) int {
 	if r.Number == 0 {
 		return defaultValue
 	}
@@ -46,24 +46,24 @@ func (r Replicas) Calculate(total, defaultValue int) int {
 	return int(math.Ceil(num))
 }
 
-func (r Replicas) MarshalJSON() ([]byte, error) {
+func (r NumberWithSuffix) MarshalJSON() ([]byte, error) {
 	return json.Marshal(r.String())
 }
 
-func (r *Replicas) UnmarshalJSON(b []byte) error {
+func (r *NumberWithSuffix) UnmarshalJSON(b []byte) error {
 	var v interface{}
 	if err := json.Unmarshal(b, &v); err != nil {
 		return err
 	}
 	switch raw := v.(type) {
 	case float64:
-		*r = Replicas{
+		*r = NumberWithSuffix{
 			Number:       int(raw),
 			IsPercentage: false,
 		}
 		return nil
 	case string:
-		replicas := Replicas{
+		replicas := NumberWithSuffix{
 			IsPercentage: false,
 		}
 		if strings.HasSuffix(raw, "%") {

@@ -43,7 +43,7 @@ func TestKubernetesDeploymentConfig(t *testing.T) {
 							{
 								Name: model.StageK8sCanaryRollout,
 								K8sCanaryRolloutStageOptions: &K8sCanaryRolloutStageOptions{
-									Replicas: Replicas{
+									Replicas: NumberWithSuffix{
 										Number:       100,
 										IsPercentage: true,
 									},

@@ -1,4 +1,4 @@
-// Copyright 2020 The PipeCD Authors.
+// Copyright 2021 The PipeCD Authors.
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -25,7 +25,7 @@ import (
 
 func TestReplicasMarshal(t *testing.T) {
 	type wrapper struct {
-		Replicas Replicas
+		Replicas NumberWithSuffix
 	}
 
 	testcases := []struct {
@@ -36,7 +36,7 @@ func TestReplicasMarshal(t *testing.T) {
 		{
 			name: "normal number",
 			input: wrapper{
-				Replicas{
+				NumberWithSuffix{
 					Number:       1,
 					IsPercentage: false,
 				},
@@ -46,7 +46,7 @@ func TestReplicasMarshal(t *testing.T) {
 		{
 			name: "percentage number",
 			input: wrapper{
-				Replicas{
+				NumberWithSuffix{
 					Number:       1,
 					IsPercentage: true,
 				},
@@ -65,7 +65,7 @@ func TestReplicasMarshal(t *testing.T) {
 
 func TestReplicasUnmarshal(t *testing.T) {
 	type wrapper struct {
-		Replicas Replicas
+		Replicas NumberWithSuffix
 	}
 
 	testcases := []struct {
@@ -78,7 +78,7 @@ func TestReplicasUnmarshal(t *testing.T) {
 			name:  "normal number",
 			input: "{\"Replicas\": 1}",
 			expected: &wrapper{
-				Replicas{
+				NumberWithSuffix{
 					Number:       1,
 					IsPercentage: false,
 				},
@@ -89,7 +89,7 @@ func TestReplicasUnmarshal(t *testing.T) {
 			name:  "normal number by string",
 			input: "{\"Replicas\":\"1\"}",
 			expected: &wrapper{
-				Replicas{
+				NumberWithSuffix{
 					Number:       1,
 					IsPercentage: false,
 				},
@@ -100,7 +100,7 @@ func TestReplicasUnmarshal(t *testing.T) {
 			name:  "percentage number",
 			input: "{\"Replicas\":\"1%\"}",
 			expected: &wrapper{
-				Replicas{
+				NumberWithSuffix{
 					Number:       1,
 					IsPercentage: true,
 				},
