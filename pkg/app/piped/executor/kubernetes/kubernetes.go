@@ -90,7 +90,7 @@ func (e *deployExecutor) Execute(sig executor.StopSignal) model.StageStatus {
 
 	chartRepoName := e.deployCfg.Input.HelmChart.Repository
 	if chartRepoName != "" {
-		e.deployCfg.Input.HelmChart.Insecure = ds.DeploymentConfig.PipedSpec.IsInsecureChartRepository(chartRepoName)
+		e.deployCfg.Input.HelmChart.Insecure = e.PipedConfig.IsInsecureChartRepository(chartRepoName)
 	}
 
 	e.provider = provider.NewProvider(e.Deployment.ApplicationName, ds.AppDir, ds.RepoDir, e.Deployment.GitPath.ConfigFilename, e.deployCfg.Input, e.Logger)

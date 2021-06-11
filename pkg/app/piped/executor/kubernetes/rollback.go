@@ -69,7 +69,7 @@ func (e *rollbackExecutor) ensureRollback(ctx context.Context) model.StageStatus
 
 	chartRepoName := deployCfg.Input.HelmChart.Repository
 	if chartRepoName != "" {
-		deployCfg.Input.HelmChart.Insecure = ds.DeploymentConfig.PipedSpec.IsInsecureChartRepository(chartRepoName)
+		deployCfg.Input.HelmChart.Insecure = e.PipedConfig.IsInsecureChartRepository(chartRepoName)
 	}
 
 	p := provider.NewProvider(e.Deployment.ApplicationName, ds.AppDir, ds.RepoDir, e.Deployment.GitPath.ConfigFilename, deployCfg.Input, e.Logger)
