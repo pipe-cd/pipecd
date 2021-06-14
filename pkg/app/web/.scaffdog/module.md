@@ -7,7 +7,7 @@ output: "**/*"
 ignore: []
 ---
 
-# `{{ inputs.name }}.ts`
+# `{{ inputs.name }}/index.ts`
 
 ```ts
 import { createSlice } from "@reduxjs/toolkit";
@@ -23,10 +23,10 @@ export const {{ inputs.name | camel }}Slice = createSlice({
 });
 ```
 
-# `{{ inputs.name }}.test.ts`
+# `{{ inputs.name }}/index.test.ts`
 
 ```ts
-import { {{ inputs.name | camel }}Slice } from "./{{ inputs.name }}";
+import { {{ inputs.name | camel }}Slice } from "./";
 
 describe("{{ inputs.name | camel }}Slice reducer", () => {
   it("should return the initial state", () => {
