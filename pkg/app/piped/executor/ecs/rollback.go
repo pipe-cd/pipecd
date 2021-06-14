@@ -126,7 +126,8 @@ func rollback(ctx context.Context, in *executor.Input, cloudProviderName string,
 		return false
 	}
 
-	taskSet, err := client.CreateTaskSet(ctx, *service, *td, targetGroup)
+	// On rolling back, the scale of desired tasks will be set to 100 (same as the original state).
+	taskSet, err := client.CreateTaskSet(ctx, *service, *td, targetGroup, 100)
 	if err != nil {
 		in.LogPersister.Errorf("Failed to create ECS task set %s: %v", *serviceDefinition.ServiceName, err)
 		return false
