@@ -149,7 +149,7 @@ func (c *client) RegisterTaskDefinition(ctx context.Context, taskDefinition type
 	return output.TaskDefinition, nil
 }
 
-func (c *client) CreateTaskSet(ctx context.Context, service types.Service, taskDefinition types.TaskDefinition, targetGroup types.LoadBalancer) (*types.TaskSet, error) {
+func (c *client) CreateTaskSet(ctx context.Context, service types.Service, taskDefinition types.TaskDefinition, targetGroup types.LoadBalancer, scale int) (*types.TaskSet, error) {
 	if taskDefinition.TaskDefinitionArn == nil {
 		return nil, fmt.Errorf("failed to create task set of task family %s: no task definition provided", *taskDefinition.Family)
 	}
@@ -157,8 +157,7 @@ func (c *client) CreateTaskSet(ctx context.Context, service types.Service, taskD
 		Cluster:        service.ClusterArn,
 		Service:        service.ServiceArn,
 		TaskDefinition: taskDefinition.TaskDefinitionArn,
-		// Always create a new taskSet which has as many tasks as desiredCount number set by service.
-		Scale: &types.Scale{Unit: types.ScaleUnitPercent, Value: float64(100)},
+		Scale:          &types.Scale{Unit: types.ScaleUnitPercent, Value: float64(scale)},
 		// If you specify the awsvpc network mode, the task is allocated an elastic network interface,
 		// and you must specify a NetworkConfiguration when run a task with the task definition.
 		NetworkConfiguration: service.NetworkConfiguration,

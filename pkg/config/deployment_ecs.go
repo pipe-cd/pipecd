@@ -58,8 +58,9 @@ type ECSSyncStageOptions struct {
 
 // ECSCanaryRolloutStageOptions contains all configurable values for a ECS_CANARY_ROLLOUT stage.
 type ECSCanaryRolloutStageOptions struct {
-	// Traffic represents the amount of traffic that the rolled out CANARY variant will serve.
-	Traffic int `json:"traffic"`
+	// TODO: Using other risk defined type instead of primitive int.
+	// Scale represents the amount of desired task that should be rolled out as CANARY variant workload.
+	Scale int `json:"scale"`
 }
 
 // ECSPrimaryRolloutStageOptions contains all configurable values for a ECS_PRIMARY_ROLLOUT stage.
@@ -68,4 +69,29 @@ type ECSPrimaryRolloutStageOptions struct {
 
 // ECSCanaryCleanStageOptions contains all configurable values for a ECS_CANARY_CLEAN stage.
 type ECSCanaryCleanStageOptions struct {
+}
+
+// ECSTrafficRoutingStageOptions contains all configurable values for ECS_TRAFFIC_ROUTING stage.
+type ECSTrafficRoutingStageOptions struct {
+	// Canary represents the amount of traffic that the rolled out CANARY variant will serve.
+	Canary int `json:"canary"`
+	// Primary represents the amount of traffic that the rolled out CANARY variant will serve.
+	Primary int `json:"primary"`
+}
+
+func (opts ECSTrafficRoutingStageOptions) Percentage() (primary, canary int) {
+	if opts.Primary > 0 && opts.Primary < 100 {
+		primary = opts.Primary
+		canary = 100 - primary
+		return
+	}
+	if opts.Canary > 0 && opts.Canary < 100 {
+		canary = opts.Canary
+		primary = 100 - canary
+		return
+	}
+	// As default, Primary variant will receive 100% of traffic.
+	primary = 100
+	canary = 0
+	return
 }

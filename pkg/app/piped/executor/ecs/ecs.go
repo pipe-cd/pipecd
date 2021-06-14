@@ -50,6 +50,7 @@ func Register(r registerer) {
 	r.Register(model.StageECSCanaryRollout, f)
 	r.Register(model.StageECSPrimaryRollout, f)
 	r.Register(model.StageECSCanaryClean, f)
+	r.Register(model.StageECSTrafficRouting, f)
 
 	r.RegisterRollback(model.ApplicationKind_ECS, func(in executor.Input) executor.Executor {
 		return &rollbackExecutor{
@@ -154,7 +155,9 @@ func createPrimaryTaskSet(ctx context.Context, client provider.Client, service t
 	}
 
 	// Create a task set in the specified cluster and service.
-	taskSet, err := client.CreateTaskSet(ctx, service, taskDef, targetGroup)
+	// In case of creating Primary taskset, the number of desired tasks scale is always set to 100
+	// which means we create as many tasks as the current primary taskset has.
+	taskSet, err := client.CreateTaskSet(ctx, service, taskDef, targetGroup, 100)
 	if err != nil {
 		return err
 	}
@@ -235,8 +238,14 @@ func rollout(ctx context.Context, in *executor.Input, cloudProviderName string, 
 			return false
 		}
 	} else {
+		// Load Canary rollout stage options to get scale configuration.
+		options := in.StageConfig.ECSCanaryRolloutStageOptions
+		if options == nil {
+			in.LogPersister.Errorf("Malformed configuration for stage %s", in.Stage.Name)
+			return false
+		}
 		// Create ACTIVE task set in case of Canary rollout.
-		taskSet, err := client.CreateTaskSet(ctx, *service, *td, targetGroup)
+		taskSet, err := client.CreateTaskSet(ctx, *service, *td, targetGroup, options.Scale)
 		if err != nil {
 			in.LogPersister.Errorf("Failed to create ECS task set %s: %v", *serviceDefinition.ServiceName, err)
 			return false
@@ -300,11 +309,12 @@ func routing(ctx context.Context, in *executor.Input, cloudProviderName string, 
 		return false
 	}
 
-	primary, canary, err := determineTrafficAmount(in.StageConfig)
-	if err != nil {
+	options := in.StageConfig.ECSTrafficRoutingStageOptions
+	if options == nil {
 		in.LogPersister.Errorf("Malformed configuration for stage %s", in.Stage.Name)
 		return false
 	}
+	primary, canary := options.Percentage()
 	routingTrafficCfg := provider.RoutingTrafficConfig{
 		{
 			TargetGroupArn: *primaryTargetGroup.TargetGroupArn,
@@ -328,26 +338,4 @@ func routing(ctx context.Context, in *executor.Input, cloudProviderName string, 
 	}
 
 	return true
-}
-
-func determineTrafficAmount(stageCfg config.PipelineStage) (primary int, canary int, err error) {
-	switch stageCfg.Name {
-	case model.StageECSCanaryRollout:
-		options := stageCfg.ECSCanaryRolloutStageOptions
-		if options == nil {
-			err = fmt.Errorf("traffic configuration is missing")
-			return
-		}
-		// TODO: Validate Traffic config is lower than 100.
-		canary = options.Traffic
-		primary = 100 - canary
-		return
-	case model.StageECSPrimaryRollout:
-		primary = 100
-		canary = 0
-		return
-	default:
-		err = fmt.Errorf("unexpected stage given")
-		return
-	}
 }

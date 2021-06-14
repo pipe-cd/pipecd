@@ -85,6 +85,9 @@ const (
 	// the PRIMARY variant resource have been rolled out with the new version/configuration.
 	// The PRIMARY variant will serve 100% traffic after it's rolled out.
 	StageECSPrimaryRollout Stage = "ECS_PRIMARY_ROLLOUT"
+	// StageECSTrafficRouting represents the state where the traffic to application
+	// should be splitted as the specified percentage to PRIMARY/CANARY variants.
+	StageECSTrafficRouting Stage = "ECS_TRAFFIC_ROUTING"
 	// StageECSCanaryClean represents the stage where
 	// the CANARY variant resources has been cleaned.
 	StageECSCanaryClean Stage = "ECS_CANARY_CLEAN"
