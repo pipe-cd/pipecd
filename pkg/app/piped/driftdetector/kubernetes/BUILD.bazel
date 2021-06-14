@@ -7,10 +7,10 @@ go_library(
     visibility = ["//visibility:public"],
     deps = [
         "//pkg/app/piped/cloudprovider/kubernetes:go_default_library",
-        "//pkg/app/piped/diff:go_default_library",
         "//pkg/app/piped/livestatestore/kubernetes:go_default_library",
         "//pkg/cache:go_default_library",
         "//pkg/config:go_default_library",
+        "//pkg/diff:go_default_library",
         "//pkg/git:go_default_library",
         "//pkg/model:go_default_library",
         "@org_uber_go_zap//:go_default_library",

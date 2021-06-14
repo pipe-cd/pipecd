@@ -28,9 +28,9 @@ import (
 	provider "github.com/pipe-cd/pipe/pkg/app/piped/cloudprovider/kubernetes"
 	"github.com/pipe-cd/pipe/pkg/app/piped/cloudprovider/kubernetes/resource"
 	"github.com/pipe-cd/pipe/pkg/app/piped/deploysource"
-	"github.com/pipe-cd/pipe/pkg/app/piped/diff"
 	"github.com/pipe-cd/pipe/pkg/app/piped/planner"
 	"github.com/pipe-cd/pipe/pkg/config"
+	"github.com/pipe-cd/pipe/pkg/diff"
 	"github.com/pipe-cd/pipe/pkg/model"
 )
 
