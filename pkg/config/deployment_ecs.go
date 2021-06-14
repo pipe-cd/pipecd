@@ -80,12 +80,12 @@ type ECSTrafficRoutingStageOptions struct {
 }
 
 func (opts ECSTrafficRoutingStageOptions) Percentage() (primary, canary int) {
-	if opts.Primary > 0 && opts.Primary < 100 {
+	if opts.Primary > 0 && opts.Primary <= 100 {
 		primary = opts.Primary
 		canary = 100 - primary
 		return
 	}
-	if opts.Canary > 0 && opts.Canary < 100 {
+	if opts.Canary > 0 && opts.Canary <= 100 {
 		canary = opts.Canary
 		primary = 100 - canary
 		return
