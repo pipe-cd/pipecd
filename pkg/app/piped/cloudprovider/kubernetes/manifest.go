@@ -25,7 +25,7 @@ import (
 	"k8s.io/apimachinery/pkg/apis/meta/v1/unstructured"
 	"sigs.k8s.io/yaml"
 
-	"github.com/pipe-cd/pipe/pkg/app/piped/diff"
+	"github.com/pipe-cd/pipe/pkg/diff"
 	"github.com/pipe-cd/pipe/pkg/model"
 )
 

@@ -27,10 +27,10 @@ import (
 	"go.uber.org/zap"
 
 	provider "github.com/pipe-cd/pipe/pkg/app/piped/cloudprovider/kubernetes"
-	"github.com/pipe-cd/pipe/pkg/app/piped/diff"
 	"github.com/pipe-cd/pipe/pkg/app/piped/livestatestore/kubernetes"
 	"github.com/pipe-cd/pipe/pkg/cache"
 	"github.com/pipe-cd/pipe/pkg/config"
+	"github.com/pipe-cd/pipe/pkg/diff"
 	"github.com/pipe-cd/pipe/pkg/git"
 	"github.com/pipe-cd/pipe/pkg/model"
 )
