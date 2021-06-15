@@ -10,7 +10,7 @@ PipeCD supports multiple clouds and multiple application kinds.
 Cloud provider defines which cloud and where the application should be deployed to.
 So while registering a new application, the name of a configured cloud provider is required.
 
-Currently, PipeCD is supporting these four kinds of cloud providers: `KUBERNETES`, `TERRAFORM`, `CLOUDRUN`, `LAMBDA`.
+Currently, PipeCD is supporting these five kinds of cloud providers: `KUBERNETES`, `ECS`, `TERRAFORM`, `CLOUDRUN`, `LAMBDA`.
 A new cloud provider can be enabled by adding a [CloudProvider](/docs/operator-manual/piped/configuration-reference/#cloudprovider) struct to the piped configuration file.
 A piped can have one or multiple cloud provider instances from the same or different cloud provider kind.
 
@@ -103,3 +103,30 @@ It attempts to retrieve credentials in the following order:
 Therefore, you don't have to set credentialsFile if you use the environment variables or the EC2 Instance Role. Keep in mind the IAM role/user that you use with your Piped must possess the IAM policy permission for at least `Lambda.Function` and `Lambda.Alias` resources controll (list/read/write).
 
 See [ConfigurationReference](/docs/operator-manual/piped/configuration-reference/#cloudproviderlambdaconfig) for the full configuration.
+
+### Configuring ECS cloud provider
+
+Adding a ECS provider requires the region name where ECS cluster is running.
+
+```yaml
+apiVersion: pipecd.dev/v1beta1
+kind: Piped
+spec:
+  ...
+  cloudProviders:
+    - name: ecs-dev
+      type: ECS
+      config:
+        region: {ECS_CLUSTER_REGION}
+        profile: default
+        credentialsFile: {PATH_TO_THE_CREDENTIAL_FILE}
+```
+
+Just same as Lambda applications' credentials methods, there are several ways to authorize Piped agent to enable it performs deployment jobs.
+It attempts to retrieve credentials in the following order:
+1. From the environment variables. Available environment variables are `AWS_ACCESS_KEY_ID` or `AWS_ACCESS_KEY` and `AWS_SECRET_ACCESS_KEY` or `AWS_SECRET_KEY`.
+2. From the given credentials file. (the `credentialsFile field in above sample`)
+3. From the pod running in EKS cluster via STS (SecurityTokenService).
+4. From the EC2 Instance Role.
+
+See [ConfigurationReference](/docs/operator-manual/piped/configuration-reference/#cloudproviderecsconfig) for the full configuration.

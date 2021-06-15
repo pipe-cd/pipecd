@@ -10,9 +10,9 @@ If you have any other questions, please feel free to create the issue in the [pi
 
 ### 1. What kind of application (cloud provider) will be supported?
 
-Currently, PipeCD can be used to deploy `Kubernetes`, `Terraform`, `CloudRun`, `Lambda` applications.
+Currently, PipeCD can be used to deploy `Kubernetes`, `ECS`, `Terraform`, `CloudRun`, `Lambda` applications.
 
-In the near future we also want to support `ECS`, `Crossplane`...
+In the near future we also want to support `Crossplane`...
 
 ### 2. What kind of templating methods for Kubernetes application will be supported?
 
@@ -38,7 +38,7 @@ Yes, you can use PipeCD for both mesh (Istio, SMI) applications and non-mesh app
 
 ### 5. What are the differences between PipeCD and ArgoCD?
 
-- Not just Kubernetes applications, PipeCD also provides a unified interface for other cloud services (CloudRun, AWS Lamda...) and Terraform
+- Not just Kubernetes applications, PipeCD also provides a unified interface for other cloud services (GCP CloudRun, AWS Lamda...) and Terraform
 - One tool for both GitOps sync and progressive deployment
 - Don't need another CRD or changing the existing manifests for doing Canary/BlueGreen. PipeCD just uses the standard Kubernetes deployment object
 - Easier and safer to operate multi-tenancy, multi-cluster for multiple teams (even some teams are running in a private/restricted network)

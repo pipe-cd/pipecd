@@ -31,7 +31,7 @@ There are three types of project roles:
 ### Application
 
 A collect of resources (containers, services, infrastructure components...) and configurations that are managed together.
-PipeCD supports multiple kinds of applications such as `KUBERNETES`, `TERRAFORM`, `CLOUDRUN`, `LAMBDA`...
+PipeCD supports multiple kinds of applications such as `KUBERNETES`, `TERRAFORM`, `ECS`, `CLOUDRUN`, `LAMBDA`...
 
 ### Environment
 
@@ -73,7 +73,7 @@ A temporary middle state between current state and desired state of a deployment
 PipeCD supports multiple clouds and multiple kinds of applications.
 Cloud Provider defines which cloud and where application should be deployed to.
 
-Currently, PipeCD is supporting these four cloud providers: `KUBERNETES`, `TERRAFORM`, `CLOUDRUN`, `LAMBDA`.
+Currently, PipeCD is supporting these five cloud providers: `KUBERNETES`, `ECS`, `TERRAFORM`, `CLOUDRUN`, `LAMBDA`.
 
 ### Analysis Provider
 An external product that provides metrics/logs to evaluate deployments, such as `Prometheus`, `Datadog`, `Stackdriver`, `CloudWatch` and so on.

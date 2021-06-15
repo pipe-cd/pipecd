@@ -16,6 +16,7 @@ An application must belong to exactly one environment and can be handled by one 
 - Terraform application
 - CloudRun application
 - Lambda application
+- ECS application
 
 ## Registering a new application from Web UI
 
@@ -35,7 +36,7 @@ Here are the list of fields in the register form:
 | Field | Description | Required |
 |-|-|-|-|
 | Name | The application name | Yes |
-| Kind | The application kind. Select one of these values: `Kubernetes`, `Terraform`, `CloudRun`, `Lambda` | Yes |
+| Kind | The application kind. Select one of these values: `Kubernetes`, `Terraform`, `CloudRun`, `Lambda` and `ECS`. | Yes |
 | Env | The environment this application should belongs to. Select one of the registered environments at `Settings/Environment` page.  | Yes |
 | Piped | The piped that handles this application. Select one of the registered `piped`s at `Settings/Piped` page. | Yes |
 | Repository | The Git repository contains application configuration and deployment configuration. Select one of the registered repositories in `piped` configuration. | Yes |
@@ -57,7 +58,7 @@ spec:
   ...
 ```
 
-- `kind` is the application kind. As explained before, supporting kinds of application are: `Kubernetes`, `Terrform`, `CloudRun`, `Lambda`.
+- `kind` is the application kind. As explained before, supporting kinds of application are: `Kubernetes`, `Terrform`, `CloudRun`, `Lambda` and `ECS`.
 - `spec` is the specific configuration for each application kind.
 
 After clicking on the `Save` button at the previous step, the popup will be changed to allow you to fill your deployment configuration. You can also choose one of the prepared templates.
