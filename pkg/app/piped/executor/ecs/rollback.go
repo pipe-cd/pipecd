@@ -122,7 +122,7 @@ func rollback(ctx context.Context, in *executor.Input, cloudProviderName string,
 	prevPrimaryTaskSet, err := client.GetPrimaryTaskSet(ctx, *service)
 	// Ignore error in case it's not found error, the prevPrimaryTaskSet doesn't exist for newly created Service.
 	if err != nil && !errors.Is(err, cloudprovider.ErrNotFound) {
-		in.LogPersister.Errorf("Failed to create ECS task set %s for rollback: %v", *serviceDefinition.ServiceName, err)
+		in.LogPersister.Errorf("Failed to determine current ECS PRIMARY taskSet of service %s for rollback: %v", *serviceDefinition.ServiceName, err)
 		return false
 	}
 
@@ -135,14 +135,14 @@ func rollback(ctx context.Context, in *executor.Input, cloudProviderName string,
 
 	// Make new taskSet as PRIMARY task set, so that it will handle production service.
 	if _, err = client.UpdateServicePrimaryTaskSet(ctx, *service, *taskSet); err != nil {
-		in.LogPersister.Errorf("Failed to update service primary ECS task set %s: %v", *serviceDefinition.ServiceName, err)
+		in.LogPersister.Errorf("Failed to update PRIMARY ECS taskSet for service %s: %v", *serviceDefinition.ServiceName, err)
 		return false
 	}
 
 	// Remove old taskSet if existed.
 	if prevPrimaryTaskSet != nil {
 		if err = client.DeleteTaskSet(ctx, *service, *prevPrimaryTaskSet.TaskSetArn); err != nil {
-			in.LogPersister.Errorf("Failed to remove unused taskSet %s: %v", *prevPrimaryTaskSet.TaskSetArn, err)
+			in.LogPersister.Errorf("Failed to remove unused previous PRIMARY taskSet %s: %v", *prevPrimaryTaskSet.TaskSetArn, err)
 			return false
 		}
 	}

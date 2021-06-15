@@ -136,7 +136,7 @@ func (e *deployExecutor) ensureCanaryRollout(ctx context.Context) model.StageSta
 		return model.StageStatus_STAGE_FAILURE
 	}
 	if canary == nil {
-		e.LogPersister.Error("Canary target group is required to enable traffic routing")
+		e.LogPersister.Error("Canary target group is required to enable rolling out CANARY variant")
 		return model.StageStatus_STAGE_FAILURE
 	}
 

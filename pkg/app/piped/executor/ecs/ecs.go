@@ -207,7 +207,7 @@ func sync(ctx context.Context, in *executor.Input, cloudProviderName string, clo
 
 	in.LogPersister.Infof("Start rolling out ECS task set")
 	if err := createPrimaryTaskSet(ctx, client, *service, *td, targetGroup); err != nil {
-		in.LogPersister.Errorf("Failed to rolling out ECS task set %s: %v", *serviceDefinition.ServiceName, err)
+		in.LogPersister.Errorf("Failed to rolling out ECS task set for service %s: %v", *serviceDefinition.ServiceName, err)
 		return false
 	}
 
@@ -241,7 +241,7 @@ func rollout(ctx context.Context, in *executor.Input, cloudProviderName string, 
 	if in.StageConfig.Name == model.StageECSPrimaryRollout {
 		// Create PRIMARY task set in case of Primary rollout.
 		if err := createPrimaryTaskSet(ctx, client, *service, *td, targetGroup); err != nil {
-			in.LogPersister.Errorf("Failed to rolling out ECS task set %s: %v", *serviceDefinition.ServiceName, err)
+			in.LogPersister.Errorf("Failed to rolling out ECS task set for service %s: %v", *serviceDefinition.ServiceName, err)
 			return false
 		}
 	} else {
@@ -262,7 +262,7 @@ func rollout(ctx context.Context, in *executor.Input, cloudProviderName string, 
 		// Create ACTIVE task set in case of Canary rollout.
 		taskSet, err := client.CreateTaskSet(ctx, *service, *td, targetGroup, options.Scale)
 		if err != nil {
-			in.LogPersister.Errorf("Failed to create ECS task set %s: %v", *serviceDefinition.ServiceName, err)
+			in.LogPersister.Errorf("Failed to create ECS task set for service %s: %v", *serviceDefinition.ServiceName, err)
 			return false
 		}
 		// Store created ACTIVE TaskSet (CANARY variant) to delete later.
@@ -356,7 +356,7 @@ func routing(ctx context.Context, in *executor.Input, cloudProviderName string, 
 	}
 
 	if err := client.ModifyListener(ctx, currListenerArn, routingTrafficCfg); err != nil {
-		in.LogPersister.Errorf("Failed to routing traffic to canary variant: %v", err)
+		in.LogPersister.Errorf("Failed to routing traffic to CANARY variant: %v", err)
 		return false
 	}
 
