@@ -40,6 +40,7 @@ type Input struct {
 	// Readonly deployment model.
 	Deployment                     *model.Deployment
 	MostRecentSuccessfulCommitHash string
+	PipedConfig                    *config.PipedSpec
 	TargetDSP                      deploysource.Provider
 	RunningDSP                     deploysource.Provider
 	AppManifestsCache              cache.Cache

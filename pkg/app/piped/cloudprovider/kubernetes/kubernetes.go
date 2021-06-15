@@ -181,6 +181,7 @@ func (p *provider) LoadManifests(ctx context.Context) (manifests []Manifest, err
 				Repository: p.input.HelmChart.Repository,
 				Name:       p.input.HelmChart.Name,
 				Version:    p.input.HelmChart.Version,
+				Insecure:   p.input.HelmChart.Insecure,
 			}
 			data, err = p.helm.TemplateRemoteChart(ctx,
 				p.appName,

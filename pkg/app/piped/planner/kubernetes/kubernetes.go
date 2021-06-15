@@ -64,6 +64,13 @@ func (p *Planner) Plan(ctx context.Context, in planner.Input) (out planner.Outpu
 		return
 	}
 
+	if cfg.Input.HelmChart != nil {
+		chartRepoName := cfg.Input.HelmChart.Repository
+		if chartRepoName != "" {
+			cfg.Input.HelmChart.Insecure = in.PipedConfig.IsInsecureChartRepository(chartRepoName)
+		}
+	}
+
 	manifestCache := provider.AppManifestsCache{
 		AppID:  in.Deployment.ApplicationId,
 		Cache:  in.AppManifestsCache,

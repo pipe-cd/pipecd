@@ -164,6 +164,7 @@ func (p *planner) Run(ctx context.Context) error {
 	in := pln.Input{
 		Deployment:                     p.deployment,
 		MostRecentSuccessfulCommitHash: p.lastSuccessfulCommitHash,
+		PipedConfig:                    p.pipedConfig,
 		AppManifestsCache:              p.appManifestsCache,
 		RegexPool:                      regexpool.DefaultPool(),
 		Logger:                         p.logger,

@@ -28,6 +28,7 @@ spec:
       address: https://private-charts.com
       username: basic-username
       password: basic-password
+      insecure: true
 
   cloudProviders:
     - name: kubernetes-default

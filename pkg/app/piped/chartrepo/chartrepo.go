@@ -44,6 +44,9 @@ func Add(ctx context.Context, repos []config.HelmChartRepository, reg registry, 
 
 	for _, repo := range repos {
 		args := []string{"repo", "add", repo.Name, repo.Address}
+		if repo.Insecure {
+			args = append(args, "--insecure-skip-tls-verify")
+		}
 		if repo.Username != "" || repo.Password != "" {
 			args = append(args, "--username", repo.Username, "--password", repo.Password)
 		}

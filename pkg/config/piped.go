@@ -164,6 +164,15 @@ func (s *PipedSpec) GetAnalysisProvider(name string) (PipedAnalysisProvider, boo
 	return PipedAnalysisProvider{}, false
 }
 
+func (s *PipedSpec) IsInsecureChartRepository(name string) bool {
+	for _, cr := range s.ChartRepositories {
+		if cr.Name == name {
+			return cr.Insecure
+		}
+	}
+	return false
+}
+
 type PipedGit struct {
 	// The username that will be configured for `git` user.
 	// Default is "piped".
@@ -211,6 +220,8 @@ type HelmChartRepository struct {
 	Username string `json:"username"`
 	// Password used for the repository backed by HTTP basic authentication.
 	Password string `json:"password"`
+	// Whether to skip TLS certificate checks for the repository or not.
+	Insecure bool `json:"insecure"`
 }
 
 type PipedCloudProvider struct {
