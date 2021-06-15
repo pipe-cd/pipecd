@@ -17,5 +17,6 @@ go_library(
         "//pkg/config:go_default_library",
         "//pkg/model:go_default_library",
         "@com_github_aws_aws_sdk_go_v2_service_ecs//types:go_default_library",
+        "@org_uber_go_zap//:go_default_library",
     ],
 )
