@@ -26,7 +26,6 @@ export default {
           deploymentId: dummyDeployment.id,
           stageId: dummyPipelineStage.id,
         })]: {
-          completed: true,
           deploymentId: dummyDeployment.id,
           logBlocks: [
             {
