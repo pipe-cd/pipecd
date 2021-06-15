@@ -19,6 +19,7 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
+	"strconv"
 
 	"github.com/aws/aws-sdk-go-v2/service/ecs/types"
 
@@ -28,11 +29,17 @@ import (
 	"github.com/pipe-cd/pipe/pkg/app/piped/executor"
 	"github.com/pipe-cd/pipe/pkg/config"
 	"github.com/pipe-cd/pipe/pkg/model"
+
+	"go.uber.org/zap"
 )
 
 const (
 	canaryTaskSetARNKeyName = "canary-taskset-arn"
 	canaryServiceKeyName    = "canary-service-object"
+	// Stage metadata keys.
+	trafficRoutePrimaryMetadataKey = "primary-traffic"
+	trafficRouteCanaryMetadataKey  = "canary-traffic"
+	canaryScaleMetadataKey         = "canary-scale"
 )
 
 type registerer interface {
@@ -244,6 +251,14 @@ func rollout(ctx context.Context, in *executor.Input, cloudProviderName string, 
 			in.LogPersister.Errorf("Malformed configuration for stage %s", in.Stage.Name)
 			return false
 		}
+
+		metadata := map[string]string{
+			canaryScaleMetadataKey: strconv.FormatInt(int64(options.Scale), 10),
+		}
+		if err := in.MetadataStore.SetStageMetadata(ctx, in.StageConfig.Id, metadata); err != nil {
+			in.Logger.Error("Failed to store canary scale infor to metadata store", zap.Error(err))
+		}
+
 		// Create ACTIVE task set in case of Canary rollout.
 		taskSet, err := client.CreateTaskSet(ctx, *service, *td, targetGroup, options.Scale)
 		if err != nil {
@@ -324,6 +339,14 @@ func routing(ctx context.Context, in *executor.Input, cloudProviderName string, 
 			TargetGroupArn: *canaryTargetGroup.TargetGroupArn,
 			Weight:         canary,
 		},
+	}
+
+	metadata := map[string]string{
+		trafficRoutePrimaryMetadataKey: strconv.FormatInt(int64(primary), 10),
+		trafficRouteCanaryMetadataKey:  strconv.FormatInt(int64(canary), 10),
+	}
+	if err := in.MetadataStore.SetStageMetadata(ctx, in.StageConfig.Id, metadata); err != nil {
+		in.Logger.Error("Failed to store traffic routing config to metadata store", zap.Error(err))
 	}
 
 	currListenerArn, err := client.GetListener(ctx, primaryTargetGroup)
