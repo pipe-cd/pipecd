@@ -23,11 +23,11 @@ spec:
     stages:
       # Rollout CANARY variant's workload.
       # scale represents the percentage of workload will be rolled out,
-      # in this case 10% of the current PRIMARY variant's workload is set.
+      # in this case 30% of the current PRIMARY variant's workload is set.
       # Note: Rolled out variant serves no traffic at this time.
       - name: ECS_CANARY_ROLLOUT
         with:
-          scale: 10
+          scale: 30
       # Change the traffic routing state where
       # the CANARY workloads will receive the specified percentage of traffic
       # (20% in this case). This is known as multi-phase canary strategy.
