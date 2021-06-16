@@ -68,7 +68,7 @@ spec:
     - name: cloudrun-dev
       type: CLOUDRUN
       config:
-        project: gcp-project
+        project: {GCP_PROJECT}
         region: {CLOUDRUN_REGION}
         credentialsFile: {PATH_TO_THE_SERVICE_ACCOUNT_FILE}
 ```
