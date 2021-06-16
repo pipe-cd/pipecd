@@ -88,6 +88,24 @@ spec:
 | sealedSecrets | [][SealedSecretMapping](/docs/user-guide/configuration-reference/#sealedsecretmapping) | The list of sealed secrets should be decrypted. | No |
 | timeout | duration | The maximum length of time to execute deployment before giving up. Default is 6h. | No |
 
+## ECS application
+
+``` yaml
+apiVersion: pipecd.dev/v1beta1
+kind: ECSApp
+spec:
+  pipeline:
+  ...
+```
+
+| Field | Type | Description | Required |
+|-|-|-|-|
+| quickSync | [ECSQuickSync](/docs/user-guide/configuration-reference/#ecsquicksync) | Configuration for quick sync. | No |
+| pipeline | [Pipeline](/docs/user-guide/configuration-reference/#pipeline) | Pipeline for deploying progressively. | No |
+| triggerPaths | []string | List of directories or files where their changes will trigger the deployment. Regular expression can be used. | No |
+| sealedSecrets | [][SealedSecretMapping](/docs/user-guide/configuration-reference/#sealedsecretmapping) | The list of sealed secrets should be decrypted. | No |
+| timeout | duration | The maximum length of time to execute deployment before giving up. Default is 6h. | No |
+
 ## Analysis Template Configuration
 
 ``` yaml
@@ -277,6 +295,11 @@ spec:
 | Field | Type | Description | Required |
 |-|-|-|-|
 
+## ECSQuickSync
+
+| Field | Type | Description | Required |
+|-|-|-|-|
+
 ## AnalysisMetrics
 
 | Field | Type | Description | Required |
@@ -393,6 +416,26 @@ Therefore, note that all traffic will be routed to the primary if the the primar
 | Field | Type | Description | Required |
 |-|-|-|-|
 | percent | int | Percentage of traffic should be routed to the new version. | No |
+
+### ECSPrimaryRolloutStageOptions
+
+| Field | Type | Description | Required |
+|-|-|-|-|
+
+### ECSCanaryRolloutStageOptions
+
+| Field | Type | Description | Required |
+|-|-|-|-|
+| scale | int | The percentage of workloads should be rolled out as CANARY variant's workload. | Yes |
+
+### ECSTrafficRoutingStageOptions
+
+| Field | Type | Description | Required |
+|-|-|-|-|
+| primary | int | The percentage of traffic should be routed to PRIMARY variant. | No |
+| canary | int | The percentage of traffic should be routed to CANARY variant. | No |
+
+Note: By default, the sum of traffic is rounded to 100. If both `primary` and `canary` numbers are not set, the PRIMARY variant will receive 100% while the CANARY variant will receive 0% of the traffic.
 
 ### AnalysisStageOptions
 
