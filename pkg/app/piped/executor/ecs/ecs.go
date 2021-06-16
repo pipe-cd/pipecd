@@ -255,7 +255,7 @@ func rollout(ctx context.Context, in *executor.Input, cloudProviderName string, 
 		metadata := map[string]string{
 			canaryScaleMetadataKey: strconv.FormatInt(int64(options.Scale), 10),
 		}
-		if err := in.MetadataStore.SetStageMetadata(ctx, in.StageConfig.Id, metadata); err != nil {
+		if err := in.MetadataStore.SetStageMetadata(ctx, in.Stage.Id, metadata); err != nil {
 			in.Logger.Error("Failed to store canary scale infor to metadata store", zap.Error(err))
 		}
 
@@ -345,7 +345,7 @@ func routing(ctx context.Context, in *executor.Input, cloudProviderName string, 
 		trafficRoutePrimaryMetadataKey: strconv.FormatInt(int64(primary), 10),
 		trafficRouteCanaryMetadataKey:  strconv.FormatInt(int64(canary), 10),
 	}
-	if err := in.MetadataStore.SetStageMetadata(ctx, in.StageConfig.Id, metadata); err != nil {
+	if err := in.MetadataStore.SetStageMetadata(ctx, in.Stage.Id, metadata); err != nil {
 		in.Logger.Error("Failed to store traffic routing config to metadata store", zap.Error(err))
 	}
 
