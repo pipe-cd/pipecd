@@ -32,11 +32,11 @@ type SecretManagementType string
 
 const (
 	SecretManagementTypeNone SecretManagementType = "NONE"
-	// This type is equal to SEALING_KEY.
+	// SecretManagementTypeKeyPair is equal to SecretManagementTypeSealingKey.
 	// We added this new type because of removing "sealed" prefix.
 	SecretManagementTypeKeyPair SecretManagementType = "KEY_PAIR"
+	// SecretManagementTypeSealingKey is deprecated for a while before being removed completely.
 	// Deprecated
-	// SEALING_KEY is deprecated for a while before being removed completely.
 	SecretManagementTypeSealingKey SecretManagementType = "SEALING_KEY"
 	SecretManagementTypeGCPKMS     SecretManagementType = "GCP_KMS"
 	SecretManagementTypeAWSKMS     SecretManagementType = "AWS_KMS"

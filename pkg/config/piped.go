@@ -519,14 +519,14 @@ type SecretManagement struct {
 	GCPKMS  *SecretManagementGCPKMS
 }
 
-func (m *SecretManagement) Validate() error {
-	switch m.Type {
+func (s *SecretManagement) Validate() error {
+	switch s.Type {
 	case model.SecretManagementTypeKeyPair:
-		return m.KeyPair.Validate()
+		return s.KeyPair.Validate()
 	case model.SecretManagementTypeGCPKMS:
-		return m.GCPKMS.Validate()
+		return s.GCPKMS.Validate()
 	default:
-		return fmt.Errorf("unsupported sealed secret management type: %s", m.Type)
+		return fmt.Errorf("unsupported sealed secret management type: %s", s.Type)
 	}
 }
 
@@ -538,11 +538,11 @@ type SecretManagementKeyPair struct {
 	PublicKeyFile string `json:"publicKeyFile"`
 }
 
-func (m *SecretManagementKeyPair) Validate() error {
-	if m.PrivateKeyFile == "" {
+func (s *SecretManagementKeyPair) Validate() error {
+	if s.PrivateKeyFile == "" {
 		return fmt.Errorf("privateKeyFile must be set")
 	}
-	if m.PublicKeyFile == "" {
+	if s.PublicKeyFile == "" {
 		return fmt.Errorf("publicKeyFile must be set")
 	}
 	return nil
@@ -558,14 +558,14 @@ type SecretManagementGCPKMS struct {
 	EncryptServiceAccountFile string `json:"encryptServiceAccountFile"`
 }
 
-func (m *SecretManagementGCPKMS) Validate() error {
-	if m.KeyName == "" {
+func (s *SecretManagementGCPKMS) Validate() error {
+	if s.KeyName == "" {
 		return fmt.Errorf("keyName must be set")
 	}
-	if m.DecryptServiceAccountFile == "" {
+	if s.DecryptServiceAccountFile == "" {
 		return fmt.Errorf("decryptServiceAccountFile must be set")
 	}
-	if m.EncryptServiceAccountFile == "" {
+	if s.EncryptServiceAccountFile == "" {
 		return fmt.Errorf("encryptServiceAccountFile must be set")
 	}
 	return nil
@@ -576,7 +576,7 @@ type genericSecretManagement struct {
 	Config json.RawMessage            `json:"config"`
 }
 
-func (p *SecretManagement) UnmarshalJSON(data []byte) error {
+func (s *SecretManagement) UnmarshalJSON(data []byte) error {
 	var err error
 	g := genericSecretManagement{}
 	if err = json.Unmarshal(data, &g); err != nil {
@@ -587,19 +587,19 @@ func (p *SecretManagement) UnmarshalJSON(data []byte) error {
 	case model.SecretManagementTypeSealingKey:
 		fallthrough
 	case model.SecretManagementTypeKeyPair:
-		p.Type = model.SecretManagementTypeKeyPair
-		p.KeyPair = &SecretManagementKeyPair{}
+		s.Type = model.SecretManagementTypeKeyPair
+		s.KeyPair = &SecretManagementKeyPair{}
 		if len(g.Config) > 0 {
-			err = json.Unmarshal(g.Config, p.KeyPair)
+			err = json.Unmarshal(g.Config, s.KeyPair)
 		}
 	case model.SecretManagementTypeGCPKMS:
-		p.Type = model.SecretManagementTypeGCPKMS
-		p.GCPKMS = &SecretManagementGCPKMS{}
+		s.Type = model.SecretManagementTypeGCPKMS
+		s.GCPKMS = &SecretManagementGCPKMS{}
 		if len(g.Config) > 0 {
-			err = json.Unmarshal(g.Config, p.GCPKMS)
+			err = json.Unmarshal(g.Config, s.GCPKMS)
 		}
 	default:
-		err = fmt.Errorf("unsupported secret management type: %s", g.Type)
+		err = fmt.Errorf("unsupported secret management type: %s", s.Type)
 	}
 	return err
 }
