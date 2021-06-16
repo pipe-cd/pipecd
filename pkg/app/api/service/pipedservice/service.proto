@@ -160,7 +160,7 @@ message ReportPipedMetaRequest {
     string version = 1;
     repeated pipe.model.Piped.CloudProvider cloud_providers = 2;
     repeated pipe.model.ApplicationGitRepository repositories = 3;
-    pipe.model.Piped.SealedSecretEncryption sealed_secret_encryption = 4;
+    pipe.model.Piped.SecretEncryption secret_encryption = 4;
 }
 
 message ReportPipedMetaResponse {

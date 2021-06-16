@@ -88,7 +88,7 @@ type notifier interface {
 	Notify(event model.NotificationEvent)
 }
 
-type sealedSecretDecrypter interface {
+type secretDecrypter interface {
 	Decrypt(string) (string, error)
 }
 
@@ -102,18 +102,18 @@ var (
 )
 
 type controller struct {
-	apiClient             apiClient
-	gitClient             gitClient
-	deploymentLister      deploymentLister
-	commandLister         commandLister
-	applicationLister     applicationLister
-	environmentLister     environmentLister
-	liveResourceLister    liveResourceLister
-	notifier              notifier
-	sealedSecretDecrypter sealedSecretDecrypter
-	pipedConfig           *config.PipedSpec
-	appManifestsCache     cache.Cache
-	logPersister          logpersister.Persister
+	apiClient          apiClient
+	gitClient          gitClient
+	deploymentLister   deploymentLister
+	commandLister      commandLister
+	applicationLister  applicationLister
+	environmentLister  environmentLister
+	liveResourceLister liveResourceLister
+	notifier           notifier
+	secretDecrypter    secretDecrypter
+	pipedConfig        *config.PipedSpec
+	appManifestsCache  cache.Cache
+	logPersister       logpersister.Persister
 
 	// Map from application ID to the planner
 	// of a pending deployment of that application.
@@ -150,7 +150,7 @@ func NewController(
 	environmentLister environmentLister,
 	liveResourceLister liveResourceLister,
 	notifier notifier,
-	ssd sealedSecretDecrypter,
+	sd secretDecrypter,
 	pipedConfig *config.PipedSpec,
 	appManifestsCache cache.Cache,
 	gracePeriod time.Duration,
@@ -162,18 +162,18 @@ func NewController(
 		lg = logger.Named("controller")
 	)
 	return &controller{
-		apiClient:             apiClient,
-		gitClient:             gitClient,
-		deploymentLister:      deploymentLister,
-		commandLister:         commandLister,
-		applicationLister:     applicationLister,
-		environmentLister:     environmentLister,
-		liveResourceLister:    liveResourceLister,
-		notifier:              notifier,
-		sealedSecretDecrypter: ssd,
-		appManifestsCache:     appManifestsCache,
-		pipedConfig:           pipedConfig,
-		logPersister:          lp,
+		apiClient:          apiClient,
+		gitClient:          gitClient,
+		deploymentLister:   deploymentLister,
+		commandLister:      commandLister,
+		applicationLister:  applicationLister,
+		environmentLister:  environmentLister,
+		liveResourceLister: liveResourceLister,
+		notifier:           notifier,
+		secretDecrypter:    sd,
+		appManifestsCache:  appManifestsCache,
+		pipedConfig:        pipedConfig,
+		logPersister:       lp,
 
 		planners:                      make(map[string]*planner),
 		donePlanners:                  make(map[string]time.Time),
@@ -418,7 +418,7 @@ func (c *controller) startNewPlanner(ctx context.Context, d *model.Deployment) (
 		c.apiClient,
 		c.gitClient,
 		c.notifier,
-		c.sealedSecretDecrypter,
+		c.secretDecrypter,
 		c.pipedConfig,
 		c.appManifestsCache,
 		c.logger,
@@ -568,7 +568,7 @@ func (c *controller) startNewScheduler(ctx context.Context, d *model.Deployment)
 		c.liveResourceLister,
 		c.logPersister,
 		c.notifier,
-		c.sealedSecretDecrypter,
+		c.secretDecrypter,
 		c.pipedConfig,
 		c.appManifestsCache,
 		c.logger,

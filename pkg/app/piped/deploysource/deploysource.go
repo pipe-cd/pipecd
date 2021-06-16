@@ -47,18 +47,18 @@ type gitClient interface {
 	Clone(ctx context.Context, repoID, remote, branch, destination string) (git.Repo, error)
 }
 
-type sealedSecretDecrypter interface {
+type secretDecrypter interface {
 	Decrypt(string) (string, error)
 }
 
 type provider struct {
-	workingDir            string
-	repoConfig            config.PipedRepository
-	revisionName          string
-	revision              string
-	gitClient             gitClient
-	appGitPath            *model.ApplicationGitPath
-	sealedSecretDecrypter sealedSecretDecrypter
+	workingDir      string
+	repoConfig      config.PipedRepository
+	revisionName    string
+	revision        string
+	gitClient       gitClient
+	appGitPath      *model.ApplicationGitPath
+	secretDecrypter secretDecrypter
 
 	done    bool
 	source  *DeploySource
@@ -74,16 +74,16 @@ func NewProvider(
 	revision string,
 	gitClient gitClient,
 	appGitPath *model.ApplicationGitPath,
-	ssd sealedSecretDecrypter,
+	sd secretDecrypter,
 ) Provider {
 	return &provider{
-		workingDir:            workingDir,
-		repoConfig:            repoConfig,
-		revisionName:          revisionName,
-		revision:              revision,
-		gitClient:             gitClient,
-		appGitPath:            appGitPath,
-		sealedSecretDecrypter: ssd,
+		workingDir:      workingDir,
+		repoConfig:      repoConfig,
+		revisionName:    revisionName,
+		revision:        revision,
+		gitClient:       gitClient,
+		appGitPath:      appGitPath,
+		secretDecrypter: sd,
 	}
 }
 
@@ -176,9 +176,9 @@ func (p *provider) prepare(ctx context.Context, lw io.Writer) (*DeploySource, er
 	writeLog(lw, "Successfully loaded the deployment configuration file")
 
 	// Decrypt the sealed secrets if needed.
-	if len(gdc.SealedSecrets) > 0 && p.sealedSecretDecrypter != nil {
+	if len(gdc.SealedSecrets) > 0 && p.secretDecrypter != nil {
 		for _, s := range gdc.SealedSecrets {
-			if err := decryptSealedSecret(appDir, s, p.sealedSecretDecrypter); err != nil {
+			if err := decryptSecret(appDir, s, p.secretDecrypter); err != nil {
 				writeLog(lw, "Unable to decrypt the sealed secret %s (%v)", s.Path, err)
 				return nil, err
 			}
@@ -217,7 +217,7 @@ func (p *provider) copy(lw io.Writer) (*DeploySource, error) {
 	}, nil
 }
 
-func decryptSealedSecret(appDir string, secret config.SealedSecretMapping, dcr sealedSecretDecrypter) error {
+func decryptSecret(appDir string, secret config.SealedSecretMapping, dcr secretDecrypter) error {
 	secretPath := filepath.Join(appDir, secret.Path)
 	cfg, err := config.LoadFromYAML(secretPath)
 	if err != nil {

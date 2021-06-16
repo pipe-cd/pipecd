@@ -924,8 +924,11 @@ func (a *WebAPI) GenerateApplicationSealedSecret(ctx context.Context, req *webse
 		return nil, err
 	}
 
-	sse := piped.SealedSecretEncryption
-	if sse == nil {
+	se := piped.SecretEncryption
+	if se == nil {
+		se = piped.SealedSecretEncryption
+	}
+	if se == nil {
 		return nil, status.Error(codes.FailedPrecondition, "The piped does not contain the encryption configuration")
 	}
 
@@ -935,12 +938,14 @@ func (a *WebAPI) GenerateApplicationSealedSecret(ctx context.Context, req *webse
 	}
 
 	var enc encrypter
-	switch model.SealedSecretManagementType(sse.Type) {
-	case model.SealedSecretManagementSealingKey:
-		if sse.PublicKey == "" {
+	switch model.SecretManagementType(se.Type) {
+	case model.SecretManagementTypeSealingKey:
+		fallthrough
+	case model.SecretManagementTypeKeyPair:
+		if se.PublicKey == "" {
 			return nil, status.Error(codes.FailedPrecondition, "The piped does not contain a public key")
 		}
-		enc, err = crypto.NewHybridEncrypter(sse.PublicKey)
+		enc, err = crypto.NewHybridEncrypter(se.PublicKey)
 		if err != nil {
 			a.logger.Error("failed to initialize the crypter", zap.Error(err))
 			return nil, status.Error(codes.FailedPrecondition, "Failed to initialize the encrypter")

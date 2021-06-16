@@ -28,16 +28,21 @@ const (
 	redactedMessage = "redacted"
 )
 
-type SealedSecretManagementType string
+type SecretManagementType string
 
 const (
-	SealedSecretManagementNone       SealedSecretManagementType = "NONE"
-	SealedSecretManagementSealingKey SealedSecretManagementType = "SEALING_KEY"
-	SealedSecretManagementGCPKMS     SealedSecretManagementType = "GCP_KMS"
-	SealedSecretManagementAWSKMS     SealedSecretManagementType = "AWS_KMS"
+	SecretManagementTypeNone SecretManagementType = "NONE"
+	// This type is equal to SEALING_KEY.
+	// We added this new type because of removing "sealed" prefix.
+	SecretManagementTypeKeyPair SecretManagementType = "KEY_PAIR"
+	// Deprecated
+	// SEALING_KEY is deprecated for a while before being removed completely.
+	SecretManagementTypeSealingKey SecretManagementType = "SEALING_KEY"
+	SecretManagementTypeGCPKMS     SecretManagementType = "GCP_KMS"
+	SecretManagementTypeAWSKMS     SecretManagementType = "AWS_KMS"
 )
 
-func (t SealedSecretManagementType) String() string {
+func (t SecretManagementType) String() string {
 	return string(t)
 }
 

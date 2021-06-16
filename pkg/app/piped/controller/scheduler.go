@@ -38,22 +38,22 @@ import (
 // scheduler is a dedicated object for a specific deployment of a single application.
 type scheduler struct {
 	// Readonly deployment model.
-	deployment            *model.Deployment
-	envName               string
-	workingDir            string
-	executorRegistry      registry.Registry
-	apiClient             apiClient
-	gitClient             gitClient
-	commandLister         commandLister
-	applicationLister     applicationLister
-	liveResourceLister    liveResourceLister
-	logPersister          logpersister.Persister
-	metadataStore         *metadataStore
-	notifier              notifier
-	sealedSecretDecrypter sealedSecretDecrypter
-	pipedConfig           *config.PipedSpec
-	appManifestsCache     cache.Cache
-	logger                *zap.Logger
+	deployment         *model.Deployment
+	envName            string
+	workingDir         string
+	executorRegistry   registry.Registry
+	apiClient          apiClient
+	gitClient          gitClient
+	commandLister      commandLister
+	applicationLister  applicationLister
+	liveResourceLister liveResourceLister
+	logPersister       logpersister.Persister
+	metadataStore      *metadataStore
+	notifier           notifier
+	secretDecrypter    secretDecrypter
+	pipedConfig        *config.PipedSpec
+	appManifestsCache  cache.Cache
+	logger             *zap.Logger
 
 	targetDSP  deploysource.Provider
 	runningDSP deploysource.Provider
@@ -86,7 +86,7 @@ func newScheduler(
 	liveResourceLister liveResourceLister,
 	lp logpersister.Persister,
 	notifier notifier,
-	ssd sealedSecretDecrypter,
+	sd secretDecrypter,
 	pipedConfig *config.PipedSpec,
 	appManifestsCache cache.Cache,
 	logger *zap.Logger,
@@ -102,25 +102,25 @@ func newScheduler(
 	)
 
 	s := &scheduler{
-		deployment:            d,
-		envName:               envName,
-		workingDir:            workingDir,
-		executorRegistry:      registry.DefaultRegistry(),
-		apiClient:             apiClient,
-		gitClient:             gitClient,
-		commandLister:         commandLister,
-		applicationLister:     applicationLister,
-		liveResourceLister:    liveResourceLister,
-		logPersister:          lp,
-		metadataStore:         NewMetadataStore(apiClient, d),
-		notifier:              notifier,
-		sealedSecretDecrypter: ssd,
-		pipedConfig:           pipedConfig,
-		appManifestsCache:     appManifestsCache,
-		doneDeploymentStatus:  d.Status,
-		cancelledCh:           make(chan *model.ReportableCommand, 1),
-		logger:                logger,
-		nowFunc:               time.Now,
+		deployment:           d,
+		envName:              envName,
+		workingDir:           workingDir,
+		executorRegistry:     registry.DefaultRegistry(),
+		apiClient:            apiClient,
+		gitClient:            gitClient,
+		commandLister:        commandLister,
+		applicationLister:    applicationLister,
+		liveResourceLister:   liveResourceLister,
+		logPersister:         lp,
+		metadataStore:        NewMetadataStore(apiClient, d),
+		notifier:             notifier,
+		secretDecrypter:      sd,
+		pipedConfig:          pipedConfig,
+		appManifestsCache:    appManifestsCache,
+		doneDeploymentStatus: d.Status,
+		cancelledCh:          make(chan *model.ReportableCommand, 1),
+		logger:               logger,
+		nowFunc:              time.Now,
 	}
 
 	// Initialize the map of current status of all stages.
@@ -228,7 +228,7 @@ func (s *scheduler) Run(ctx context.Context) error {
 		s.deployment.Trigger.Commit.Hash,
 		s.gitClient,
 		s.deployment.GitPath,
-		s.sealedSecretDecrypter,
+		s.secretDecrypter,
 	)
 
 	if s.deployment.RunningCommitHash != "" {
@@ -239,12 +239,12 @@ func (s *scheduler) Run(ctx context.Context) error {
 			s.deployment.RunningCommitHash,
 			s.gitClient,
 			s.deployment.GitPath,
-			s.sealedSecretDecrypter,
+			s.secretDecrypter,
 		)
 	}
 
 	// We use another deploy source provider to load the deployment configuration at the target commit.
-	// This provider is configured with a nil sealedSecretDecrypter
+	// This provider is configured with a nil secretDecrypter
 	// because decrypting the sealed secrets is not required.
 	// We need only the deployment configuration spec.
 	configDSP := deploysource.NewProvider(
