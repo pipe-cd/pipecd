@@ -28,6 +28,8 @@ These are the provided stages for ECS application you can use to build your pipe
   - deploy workloads of the new version as PRIMARY variant, but it is still receiving no traffic.
 - `ECS_TRAFFIC_ROUTING`
   - routing traffic to the specified variants.
+- `ECS_CANARY_CLEAN`
+  - destroy all workloads of CANARY variant.
 
 and other common stages:
 - `WAIT`
