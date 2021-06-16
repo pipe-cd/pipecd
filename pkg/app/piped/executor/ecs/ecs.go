@@ -37,8 +37,8 @@ const (
 	canaryTaskSetARNKeyName = "canary-taskset-arn"
 	canaryServiceKeyName    = "canary-service-object"
 	// Stage metadata keys.
-	trafficRoutePrimaryMetadataKey = "primary-traffic"
-	trafficRouteCanaryMetadataKey  = "canary-traffic"
+	trafficRoutePrimaryMetadataKey = "primary-percentage"
+	trafficRouteCanaryMetadataKey  = "canary-percentage"
 	canaryScaleMetadataKey         = "canary-scale"
 )
 
