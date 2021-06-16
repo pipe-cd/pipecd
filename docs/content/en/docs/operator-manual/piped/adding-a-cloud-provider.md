@@ -122,7 +122,7 @@ spec:
         credentialsFile: {PATH_TO_THE_CREDENTIAL_FILE}
 ```
 
-Just same as Lambda applications' credentials methods, there are several ways to authorize Piped agent to enable it performs deployment jobs.
+Just same as Lambda cloud provider, there are several ways to authorize Piped agent to enable it performs deployment jobs.
 It attempts to retrieve credentials in the following order:
 1. From the environment variables. Available environment variables are `AWS_ACCESS_KEY_ID` or `AWS_ACCESS_KEY` and `AWS_SECRET_ACCESS_KEY` or `AWS_SECRET_KEY`.
 2. From the given credentials file. (the `credentialsFile field in above sample`)

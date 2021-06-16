@@ -6,14 +6,14 @@ description: >
   Specific guide for configuring Amazon ECS deployment.
 ---
 
-Deploying a Amazon ECS application requires `taskdef.yaml` and `servicedef.yaml` file placing inside the application directory. Those files contain all configuration for [ECS TaskDefinition](https://docs.aws.amazon.com/AmazonECS/latest/developerguide/task_definitions.html) object and [ECS Service](https://docs.aws.amazon.com/AmazonECS/latest/developerguide/ecs_services.html) object, and will be used by Piped agent while deploy your application/service to ECS cluster.
+Deploying an Amazon ECS application requires `taskdef.yaml` and `servicedef.yaml` file placing inside the application directory. Those files contain all configuration for [ECS TaskDefinition](https://docs.aws.amazon.com/AmazonECS/latest/developerguide/task_definitions.html) object and [ECS Service](https://docs.aws.amazon.com/AmazonECS/latest/developerguide/ecs_services.html) object, and will be used by Piped agent while deploy your application/service to ECS cluster.
 
 If you're not familiar with ECS, you can get examples for those files from [here](/docs/examples/#ecs-applications).
 
 ## Quick sync
 
 By default, when the [pipeline](/docs/user-guide/configuration-reference/#ecs-application) was not specified, PipeCD triggers a quick sync deployment for the merged pull request.
-Quick sync for a ECS deployment will roll out the new version and switch all traffic to it.
+Quick sync for an ECS deployment will roll out the new version and switch all traffic to it immediately.
 
 ## Sync with the specified pipeline
 
@@ -45,11 +45,11 @@ spec:
   pipeline:
     stages:
       # Deploy the workloads of CANARY variant, the number of workload
-      # for CANARY variant is equal to 10% of PRIMARY's workload.
+      # for CANARY variant is equal to 30% of PRIMARY's workload.
       # But this is still receiving no traffic.
       - name: ECS_CANARY_ROLLOUT
         with:
-          scale: 10
+          scale: 30
       # Change the traffic routing state where
       # the CANARY workloads will receive the specified percentage of traffic.
       # This is known as multi-phase canary strategy.
