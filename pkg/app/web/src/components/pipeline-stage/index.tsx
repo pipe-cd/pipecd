@@ -85,18 +85,24 @@ const createTrafficPercentageText = (meta: [string, string][]): string => {
     return prev;
   }, {});
 
-  // If the primary exists, other params also exist.
-  if (map[TRAFFIC_PERCENTAGE_META_KEY.PRIMARY]) {
-    return `${map[TRAFFIC_PERCENTAGE_META_KEY.PRIMARY]}, ${
-      map[TRAFFIC_PERCENTAGE_META_KEY.CANARY]
-    }, ${map[TRAFFIC_PERCENTAGE_META_KEY.BASELINE]}`;
-  }
-
+  // Serverless promote stage detail.
   if (map[TRAFFIC_PERCENTAGE_META_KEY.PROMOTE]) {
     return `${map[TRAFFIC_PERCENTAGE_META_KEY.PROMOTE]}`;
   }
 
-  return "";
+  // Traffic routing stage detail.
+  let detail = "";
+  if (map[TRAFFIC_PERCENTAGE_META_KEY.PRIMARY]) {
+    detail += `${map[TRAFFIC_PERCENTAGE_META_KEY.PRIMARY]}`
+  }
+  if (map[TRAFFIC_PERCENTAGE_META_KEY.CANARY]) {
+    detail += `, ${map[TRAFFIC_PERCENTAGE_META_KEY.CANARY]}`
+  }
+  if (map[TRAFFIC_PERCENTAGE_META_KEY.BASELINE]) {
+    detail += `, ${map[TRAFFIC_PERCENTAGE_META_KEY.BASELINE]}`
+  }
+
+  return detail;
 };
 
 export const PipelineStage: FC<PipelineStageProps> = memo(
