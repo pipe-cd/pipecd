@@ -68,9 +68,9 @@ spec:
     - name: cloudrun-dev
       type: CLOUDRUN
       config:
-        project: gcp-project
-        region: cloudrun-region
-        credentialsFile: path-to-the-service-account-file
+        project: {GCP_PROJECT}
+        region: {CLOUDRUN_REGION}
+        credentialsFile: {PATH_TO_THE_SERVICE_ACCOUNT_FILE}
 ```
 
 See [ConfigurationReference](/docs/operator-manual/piped/configuration-reference/#cloudprovidercloudrunconfig) for the full configuration.
@@ -88,9 +88,9 @@ spec:
     - name: lambda-dev
       type: LAMBDA
       config:
-        region: lambda-region
+        region: {LAMBDA_REGION}
         profile: default
-        credentialsFile: path-to-the-credential-file
+        credentialsFile: {PATH_TO_THE_CREDENTIAL_FILE}
 ```
 
 You will generally need your AWS credentials to authenticate with Lambda. Piped provides multiple methods of loading these credentials.
