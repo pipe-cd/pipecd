@@ -34,7 +34,7 @@ func (p Percentage) String() string {
 	return s
 }
 
-func (p Percentage) Value() int {
+func (p Percentage) Int() int {
 	return p.Number
 }
 
