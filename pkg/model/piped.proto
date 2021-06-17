@@ -64,7 +64,7 @@ message Piped {
     // The public key/service account for encrypting the secret data.
     // Deprecated.
     // TODO: Remove sealed_secret_encryption field in the future.
-    SecretEncryption sealed_secret_encryption = 12;
+    SecretEncryption sealed_secret_encryption = 12 [deprecated = true];
     SecretEncryption secret_encryption = 21;
 
     // The list keys can be used to authenticate.
