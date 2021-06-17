@@ -114,6 +114,11 @@ spec:
     #   keyName: key-name
     #   decryptServiceAccountFile: /etc/piped-secret/decrypt-service-account.json 
     #   encryptServiceAccountFile: /etc/piped-secret/encrypt-service-account.json
+  secretManagement:
+    type: KEY_PAIR
+    config:
+      privateKeyFile: /etc/piped-secret/pair-private-key
+      publicKeyFile: /etc/piped-secret/pair-public-key
 
   eventWatcher:
     checkInterval: 10m

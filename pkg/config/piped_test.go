@@ -188,11 +188,18 @@ func TestPipedConfig(t *testing.T) {
 						},
 					},
 				},
-				SealedSecretManagement: &SealedSecretManagement{
-					Type: model.SealedSecretManagementSealingKey,
-					SealingKeyConfig: &SealedSecretManagementSealingKey{
+				SealedSecretManagement: &SecretManagement{
+					Type: model.SecretManagementTypeKeyPair,
+					KeyPair: &SecretManagementKeyPair{
 						PrivateKeyFile: "/etc/piped-secret/sealing-private-key",
 						PublicKeyFile:  "/etc/piped-secret/sealing-public-key",
+					},
+				},
+				SecretManagement: &SecretManagement{
+					Type: model.SecretManagementTypeKeyPair,
+					KeyPair: &SecretManagementKeyPair{
+						PrivateKeyFile: "/etc/piped-secret/pair-private-key",
+						PublicKeyFile:  "/etc/piped-secret/pair-public-key",
 					},
 				},
 				EventWatcher: PipedEventWatcher{
