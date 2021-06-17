@@ -205,11 +205,11 @@ type K8sTrafficRoutingStageOptions struct {
 	// "primary" or "canary" or "baseline" can be populated.
 	All string `json:"all"`
 	// The percentage of traffic should be routed to PRIMARY variant.
-	Primary int `json:"primary"`
+	Primary Percentage `json:"primary"`
 	// The percentage of traffic should be routed to CANARY variant.
-	Canary int `json:"canary"`
+	Canary Percentage `json:"canary"`
 	// The percentage of traffic should be routed to BASELINE variant.
-	Baseline int `json:"baseline"`
+	Baseline Percentage `json:"baseline"`
 }
 
 func (opts K8sTrafficRoutingStageOptions) Percentages() (primary, canary, baseline int) {
@@ -224,5 +224,5 @@ func (opts K8sTrafficRoutingStageOptions) Percentages() (primary, canary, baseli
 		baseline = 100
 		return
 	}
-	return opts.Primary, opts.Canary, opts.Baseline
+	return opts.Primary.Int(), opts.Canary.Int(), opts.Baseline.Int()
 }

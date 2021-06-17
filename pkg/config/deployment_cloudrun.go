@@ -47,5 +47,5 @@ type CloudRunSyncStageOptions struct {
 // CloudRunPromoteStageOptions contains all configurable values for a CLOUDRUN_PROMOTE stage.
 type CloudRunPromoteStageOptions struct {
 	// Percentage of traffic should be routed to the new version.
-	Percent int `json:"percent"`
+	Percent Percentage `json:"percent"`
 }

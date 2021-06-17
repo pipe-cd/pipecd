@@ -203,7 +203,7 @@ func promote(ctx context.Context, in *executor.Input, cloudProviderName string, 
 	trafficCfg, err := client.GetTrafficConfig(ctx, fm)
 	// Create Alias on not yet existed.
 	if errors.Is(err, provider.ErrNotFound) {
-		if options.Percent != 100 {
+		if options.Percent.Int() != 100 {
 			in.LogPersister.Errorf("Not previous version available to handle traffic, new version has to get 100 percent of traffic")
 			return false
 		}
@@ -220,7 +220,7 @@ func promote(ctx context.Context, in *executor.Input, cloudProviderName string, 
 	}
 
 	// Update traffic to the new lambda version.
-	if !configureTrafficRouting(trafficCfg, version, options.Percent) {
+	if !configureTrafficRouting(trafficCfg, version, options.Percent.Int()) {
 		in.LogPersister.Errorf("Failed to prepare traffic routing for Lambda function %s", fm.Spec.Name)
 		return false
 	}

@@ -52,7 +52,9 @@ func TestKubernetesDeploymentConfig(t *testing.T) {
 							{
 								Name: model.StageK8sTrafficRouting,
 								K8sTrafficRoutingStageOptions: &K8sTrafficRoutingStageOptions{
-									Canary: 100,
+									Canary: Percentage{
+										Number: 100,
+									},
 								},
 							},
 							{
@@ -62,7 +64,9 @@ func TestKubernetesDeploymentConfig(t *testing.T) {
 							{
 								Name: model.StageK8sTrafficRouting,
 								K8sTrafficRoutingStageOptions: &K8sTrafficRoutingStageOptions{
-									Primary: 100,
+									Primary: Percentage{
+										Number: 100,
+									},
 								},
 							},
 							{
