@@ -60,18 +60,6 @@ func (a *authorizer) Authorize(method string, r model.Role) bool {
 		return isAdmin(r)
 	case "/pipe.api.service.webservice.WebService/DisablePiped":
 		return isAdmin(r)
-	case "/pipe.api.service.webservice.WebService/AddApplication":
-		return isAdmin(r)
-	case "/pipe.api.service.webservice.WebService/UpdateApplication":
-		return isAdmin(r)
-	case "/pipe.api.service.webservice.WebService/UpdateApplicationDescription":
-		return isAdmin(r)
-	case "/pipe.api.service.webservice.WebService/EnableApplication":
-		return isAdmin(r)
-	case "/pipe.api.service.webservice.WebService/DisableApplication":
-		return isAdmin(r)
-	case "/pipe.api.service.webservice.WebService/DeleteApplication":
-		return isAdmin(r)
 	case "/pipe.api.service.webservice.WebService/UpdateProjectStaticAdmin":
 		return isAdmin(r)
 	case "/pipe.api.service.webservice.WebService/EnableStaticAdmin":
@@ -89,6 +77,18 @@ func (a *authorizer) Authorize(method string, r model.Role) bool {
 	case "/pipe.api.service.webservice.WebService/ListAPIKeys":
 		return isAdmin(r)
 
+	case "/pipe.api.service.webservice.WebService/AddApplication":
+		return isAdmin(r) || isEditor(r)
+	case "/pipe.api.service.webservice.WebService/UpdateApplication":
+		return isAdmin(r) || isEditor(r)
+	case "/pipe.api.service.webservice.WebService/UpdateApplicationDescription":
+		return isAdmin(r) || isEditor(r)
+	case "/pipe.api.service.webservice.WebService/EnableApplication":
+		return isAdmin(r) || isEditor(r)
+	case "/pipe.api.service.webservice.WebService/DisableApplication":
+		return isAdmin(r) || isEditor(r)
+	case "/pipe.api.service.webservice.WebService/DeleteApplication":
+		return isAdmin(r) || isEditor(r)
 	case "/pipe.api.service.webservice.WebService/SyncApplication":
 		return isAdmin(r) || isEditor(r)
 	case "/pipe.api.service.webservice.WebService/CancelDeployment":
@@ -129,5 +129,6 @@ func (a *authorizer) Authorize(method string, r model.Role) bool {
 	case "/pipe.api.service.webservice.WebService/GetInsightApplicationCount":
 		return isAdmin(r) || isEditor(r) || isViewer(r)
 	}
+
 	return false
 }
