@@ -1,7 +1,7 @@
 import { waitFor } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { setupServer } from "msw/node";
-import { createReduxStore, render, screen } from "../../../test-utils";
+import { createReduxStore, render, screen } from "test-utils";
 import { generateApplicationSealedSecretHandler } from "../../mocks/services/piped";
 import { dummyApplication } from "../../__fixtures__/dummy-application";
 import { SealedSecretDialog } from "./";

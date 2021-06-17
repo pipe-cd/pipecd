@@ -6,7 +6,7 @@ import {
   render,
   screen,
   waitFor,
-} from "../../../test-utils";
+} from "test-utils";
 import { server } from "../../mocks/server";
 import {
   Application,

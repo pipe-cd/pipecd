@@ -1,5 +1,5 @@
 import userEvent from "@testing-library/user-event";
-import { render, screen } from "../../../test-utils";
+import { render, screen } from "test-utils";
 import { UI_TEXT_CLEAR } from "../../constants/ui-text";
 import {
   ApplicationKind,

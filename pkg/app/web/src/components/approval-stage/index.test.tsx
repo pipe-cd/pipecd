@@ -1,5 +1,5 @@
 import { ApprovalStage } from "./";
-import { render, screen } from "../../../test-utils";
+import { render, screen } from "test-utils";
 import userEvent from "@testing-library/user-event";
 
 it("shows stage name", () => {

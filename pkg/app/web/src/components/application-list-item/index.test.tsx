@@ -1,6 +1,6 @@
 import userEvent from "@testing-library/user-event";
 import { MemoryRouter } from "react-router-dom";
-import { createStore, render, screen } from "../../../test-utils";
+import { createStore, render, screen } from "test-utils";
 import { dummyApplication } from "../../__fixtures__/dummy-application";
 import { ApplicationListItem } from "./";
 
