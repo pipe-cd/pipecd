@@ -182,6 +182,13 @@ func (s *PipedSpec) IsInsecureChartRepository(name string) bool {
 	return false
 }
 
+func (s *PipedSpec) GetSecretManagement() *SecretManagement {
+	if s.SealedSecretManagement != nil {
+		return s.SealedSecretManagement
+	}
+	return s.SecretManagement
+}
+
 type PipedGit struct {
 	// The username that will be configured for `git` user.
 	// Default is "piped".

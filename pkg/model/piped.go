@@ -46,6 +46,13 @@ func (t SecretManagementType) String() string {
 	return string(t)
 }
 
+func GetSecretEncryptionInPiped(p *Piped) *Piped_SecretEncryption {
+	if p.SealedSecretEncryption != nil {
+		return p.SealedSecretEncryption
+	}
+	return p.SecretEncryption
+}
+
 // GeneratePipedKey generates a new key for piped.
 // This returns raw key value for used by piped and
 // a hash value of the key for storing in datastore.

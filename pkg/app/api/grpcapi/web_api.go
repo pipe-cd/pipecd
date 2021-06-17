@@ -924,10 +924,7 @@ func (a *WebAPI) GenerateApplicationSealedSecret(ctx context.Context, req *webse
 		return nil, err
 	}
 
-	se := piped.SecretEncryption
-	if se == nil {
-		se = piped.SealedSecretEncryption
-	}
+	se := model.GetSecretEncryptionInPiped(piped)
 	if se == nil {
 		return nil, status.Error(codes.FailedPrecondition, "The piped does not contain the encryption configuration")
 	}
