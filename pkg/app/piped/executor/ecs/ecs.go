@@ -253,14 +253,14 @@ func rollout(ctx context.Context, in *executor.Input, cloudProviderName string, 
 		}
 
 		metadata := map[string]string{
-			canaryScaleMetadataKey: strconv.FormatInt(int64(options.Scale), 10),
+			canaryScaleMetadataKey: strconv.FormatInt(int64(options.Scale.Value()), 10),
 		}
 		if err := in.MetadataStore.SetStageMetadata(ctx, in.Stage.Id, metadata); err != nil {
 			in.Logger.Error("Failed to store canary scale infor to metadata store", zap.Error(err))
 		}
 
 		// Create ACTIVE task set in case of Canary rollout.
-		taskSet, err := client.CreateTaskSet(ctx, *service, *td, targetGroup, options.Scale)
+		taskSet, err := client.CreateTaskSet(ctx, *service, *td, targetGroup, options.Scale.Value())
 		if err != nil {
 			in.LogPersister.Errorf("Failed to create ECS task set for service %s: %v", *serviceDefinition.ServiceName, err)
 			return false
