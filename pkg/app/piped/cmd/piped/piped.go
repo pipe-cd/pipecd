@@ -291,9 +291,9 @@ func (p *piped) run(ctx context.Context, t cli.Telemetry) (runErr error) {
 		})
 	}
 
-	decrypter, err := p.initializeSealedSecretDecrypter(cfg)
+	decrypter, err := p.initializeSecretDecrypter(cfg)
 	if err != nil {
-		t.Logger.Error("failed to initialize sealed secret decrypter", zap.Error(err))
+		t.Logger.Error("failed to initialize secret decrypter", zap.Error(err))
 		return err
 	}
 
@@ -436,33 +436,36 @@ func (p *piped) loadConfig() (*config.PipedSpec, error) {
 	return cfg.PipedSpec, nil
 }
 
-func (p *piped) initializeSealedSecretDecrypter(cfg *config.PipedSpec) (crypto.Decrypter, error) {
-	ssm := cfg.SealedSecretManagement
-	if ssm == nil {
+func (p *piped) initializeSecretDecrypter(cfg *config.PipedSpec) (crypto.Decrypter, error) {
+	sm := cfg.GetSecretManagement()
+	if sm == nil {
 		return nil, nil
 	}
 
-	switch ssm.Type {
-	case model.SealedSecretManagementNone:
+	switch sm.Type {
+	case model.SecretManagementTypeNone:
 		return nil, nil
 
-	case model.SealedSecretManagementSealingKey:
-		if ssm.SealingKeyConfig.PrivateKeyFile == "" {
-			return nil, fmt.Errorf("sealedSecretManagement.privateKeyFile must be set")
+	case model.SecretManagementTypeSealingKey:
+		fallthrough
+	case model.SecretManagementTypeKeyPair:
+		if sm.KeyPair.PrivateKeyFile == "" {
+			return nil, fmt.Errorf("secretManagement.privateKeyFile must be set")
 		}
-		decrypter, err := crypto.NewHybridDecrypter(ssm.SealingKeyConfig.PrivateKeyFile)
+		decrypter, err := crypto.NewHybridDecrypter(sm.KeyPair.PrivateKeyFile)
 		if err != nil {
 			return nil, fmt.Errorf("failed to initialize decrypter (%w)", err)
 		}
 		return decrypter, nil
-	case model.SealedSecretManagementGCPKMS:
-		return nil, fmt.Errorf("type %q is not implemented yet", ssm.Type.String())
 
-	case model.SealedSecretManagementAWSKMS:
-		return nil, fmt.Errorf("type %q is not implemented yet", ssm.Type.String())
+	case model.SecretManagementTypeGCPKMS:
+		return nil, fmt.Errorf("type %q is not implemented yet", sm.Type.String())
+
+	case model.SecretManagementTypeAWSKMS:
+		return nil, fmt.Errorf("type %q is not implemented yet", sm.Type.String())
 
 	default:
-		return nil, fmt.Errorf("unsupported sealed secret management type: %s", ssm.Type.String())
+		return nil, fmt.Errorf("unsupported secret management type: %s", sm.Type.String())
 	}
 }
 
@@ -494,23 +497,25 @@ func (p *piped) sendPipedMeta(ctx context.Context, client pipedservice.Client, c
 		})
 	}
 
-	// Configure sealed secret management.
-	if sm := cfg.SealedSecretManagement; sm != nil {
+	// Configure secret management.
+	if sm := cfg.GetSecretManagement(); sm != nil {
 		switch sm.Type {
-		case model.SealedSecretManagementSealingKey:
-			publicKey, err := ioutil.ReadFile(sm.SealingKeyConfig.PublicKeyFile)
+		case model.SecretManagementTypeSealingKey:
+			fallthrough
+		case model.SecretManagementTypeKeyPair:
+			publicKey, err := ioutil.ReadFile(sm.KeyPair.PublicKeyFile)
 			if err != nil {
-				return fmt.Errorf("failed to read public key for sealed secret management (%w)", err)
+				return fmt.Errorf("failed to read public key for secret management (%w)", err)
 			}
-			req.SealedSecretEncryption = &model.Piped_SealedSecretEncryption{
+			req.SecretEncryption = &model.Piped_SecretEncryption{
 				Type:      sm.Type.String(),
 				PublicKey: string(publicKey),
 			}
 		}
 	}
-	if req.SealedSecretEncryption == nil {
-		req.SealedSecretEncryption = &model.Piped_SealedSecretEncryption{
-			Type: model.SealedSecretManagementNone.String(),
+	if req.SecretEncryption == nil {
+		req.SecretEncryption = &model.Piped_SecretEncryption{
+			Type: model.SecretManagementTypeNone.String(),
 		}
 	}
 

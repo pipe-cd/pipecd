@@ -43,7 +43,7 @@ type gitClient interface {
 	Clone(ctx context.Context, repoID, remote, branch, destination string) (git.Repo, error)
 }
 
-type sealedSecretDecrypter interface {
+type secretDecrypter interface {
 	Decrypt(string) (string, error)
 }
 
@@ -52,16 +52,16 @@ type reporter interface {
 }
 
 type detector struct {
-	provider              config.PipedCloudProvider
-	appLister             applicationLister
-	gitClient             gitClient
-	stateGetter           kubernetes.Getter
-	reporter              reporter
-	appManifestsCache     cache.Cache
-	interval              time.Duration
-	config                *config.PipedSpec
-	sealedSecretDecrypter sealedSecretDecrypter
-	logger                *zap.Logger
+	provider          config.PipedCloudProvider
+	appLister         applicationLister
+	gitClient         gitClient
+	stateGetter       kubernetes.Getter
+	reporter          reporter
+	appManifestsCache cache.Cache
+	interval          time.Duration
+	config            *config.PipedSpec
+	secretDecrypter   secretDecrypter
+	logger            *zap.Logger
 
 	gitRepos   map[string]git.Repo
 	syncStates map[string]model.ApplicationSyncState
@@ -75,7 +75,7 @@ func NewDetector(
 	reporter reporter,
 	appManifestsCache cache.Cache,
 	cfg *config.PipedSpec,
-	ssd sealedSecretDecrypter,
+	sd secretDecrypter,
 	logger *zap.Logger,
 ) *detector {
 
@@ -83,18 +83,18 @@ func NewDetector(
 		zap.String("cloud-provider", cp.Name),
 	)
 	return &detector{
-		provider:              cp,
-		appLister:             appLister,
-		gitClient:             gitClient,
-		stateGetter:           stateGetter,
-		reporter:              reporter,
-		appManifestsCache:     appManifestsCache,
-		interval:              time.Minute,
-		config:                cfg,
-		sealedSecretDecrypter: ssd,
-		gitRepos:              make(map[string]git.Repo),
-		syncStates:            make(map[string]model.ApplicationSyncState),
-		logger:                logger,
+		provider:          cp,
+		appLister:         appLister,
+		gitClient:         gitClient,
+		stateGetter:       stateGetter,
+		reporter:          reporter,
+		appManifestsCache: appManifestsCache,
+		interval:          time.Minute,
+		config:            cfg,
+		secretDecrypter:   sd,
+		gitRepos:          make(map[string]git.Repo),
+		syncStates:        make(map[string]model.ApplicationSyncState),
+		logger:            logger,
 	}
 }
 
@@ -242,7 +242,7 @@ func (d *detector) loadHeadManifests(ctx context.Context, app *model.Application
 			return nil, fmt.Errorf("unsupport application kind %s", cfg.Kind)
 		}
 
-		if d.sealedSecretDecrypter != nil && len(gds.SealedSecrets) > 0 {
+		if d.secretDecrypter != nil && len(gds.SealedSecrets) > 0 {
 			// We have to copy repository into another directory because
 			// decrypting the sealed secrets might change the git repository.
 			dir, err := ioutil.TempDir("", "detector-git-decrypt")
@@ -258,7 +258,7 @@ func (d *detector) loadHeadManifests(ctx context.Context, app *model.Application
 			repoDir = repo.GetPath()
 			appDir = filepath.Join(repoDir, app.GitPath.Path)
 
-			if err := decryptSealedSecrets(appDir, gds.SealedSecrets, d.sealedSecretDecrypter); err != nil {
+			if err := decryptSecrets(appDir, gds.SealedSecrets, d.secretDecrypter); err != nil {
 				return nil, fmt.Errorf("failed to decrypt sealed secrets (%w)", err)
 			}
 		}
@@ -291,7 +291,7 @@ func (d *detector) loadHeadManifests(ctx context.Context, app *model.Application
 	return filtered, nil
 }
 
-func decryptSealedSecrets(appDir string, secrets []config.SealedSecretMapping, dcr sealedSecretDecrypter) error {
+func decryptSecrets(appDir string, secrets []config.SealedSecretMapping, dcr secretDecrypter) error {
 	for _, s := range secrets {
 		secretPath := filepath.Join(appDir, s.Path)
 		cfg, err := config.LoadFromYAML(secretPath)

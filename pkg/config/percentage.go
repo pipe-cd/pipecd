@@ -43,33 +43,19 @@ func (p Percentage) MarshalJSON() ([]byte, error) {
 }
 
 func (p *Percentage) UnmarshalJSON(b []byte) error {
-	var v interface{}
-	if err := json.Unmarshal(b, &v); err != nil {
-		return err
+	raw := strings.Trim(string(b), `"`)
+	percentage := Percentage{
+		HasSuffix: false,
 	}
-	switch raw := v.(type) {
-	case float64:
-		*p = Percentage{
-			Number:    int(raw),
-			HasSuffix: false,
-		}
-		return nil
-	case string:
-		percentage := Percentage{
-			HasSuffix: false,
-		}
-		if strings.HasSuffix(raw, "%") {
-			percentage.HasSuffix = true
-			raw = strings.TrimSuffix(raw, "%")
-		}
-		value, err := strconv.ParseInt(raw, 10, 64)
-		if err != nil {
-			return fmt.Errorf("invalid percentage: %v", err)
-		}
-		percentage.Number = int(value)
-		*p = percentage
-		return nil
-	default:
-		return fmt.Errorf("invalid percentage: %v", string(b))
+	if strings.HasSuffix(raw, "%") {
+		percentage.HasSuffix = true
+		raw = strings.TrimSuffix(raw, "%")
 	}
+	value, err := strconv.ParseInt(raw, 10, 64)
+	if err != nil {
+		return fmt.Errorf("invalid percentage: %w", err)
+	}
+	percentage.Number = int(value)
+	*p = percentage
+	return nil
 }

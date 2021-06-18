@@ -121,16 +121,16 @@ func TestGroupManifests(t *testing.T) {
 	}
 }
 
-type testSealedSecretDecrypter struct {
+type testSecretDecrypter struct {
 	prefix string
 }
 
-func (d testSealedSecretDecrypter) Decrypt(text string) (string, error) {
+func (d testSecretDecrypter) Decrypt(text string) (string, error) {
 	return d.prefix + text, nil
 }
 
-func TestDecryptSealedSecrets(t *testing.T) {
-	dir, err := ioutil.TempDir("", "test-decrypting-sealed-secrets")
+func TestDecryptSecrets(t *testing.T) {
+	dir, err := ioutil.TempDir("", "test-decrypting-secrets")
 	require.NoError(t, err)
 
 	defer os.RemoveAll(dir)
@@ -180,11 +180,11 @@ spec:
 			OutDir: ".credentials",
 		},
 	}
-	dcr := testSealedSecretDecrypter{
+	dcr := testSecretDecrypter{
 		prefix: "decrypted-",
 	}
 
-	err = decryptSealedSecrets(dir, secrets, dcr)
+	err = decryptSecrets(dir, secrets, dcr)
 	require.NoError(t, err)
 
 	data, err := ioutil.ReadFile(filepath.Join(dir, "replacing.yaml"))

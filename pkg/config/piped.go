@@ -56,7 +56,11 @@ type PipedSpec struct {
 	// Sending notification to Slack, Webhook…
 	Notifications Notifications `json:"notifications"`
 	// How the sealed secret should be managed.
-	SealedSecretManagement *SealedSecretManagement `json:"sealedSecretManagement"`
+	// Deprecated.
+	// TODO: Remove sealedSecretManagement field in the future.
+	SealedSecretManagement *SecretManagement `json:"sealedSecretManagement"`
+	// What secret management method should be used.
+	SecretManagement *SecretManagement `json:"secretManagement"`
 	// Optional settings for event watcher.
 	EventWatcher PipedEventWatcher `json:"eventWatcher"`
 }
@@ -83,6 +87,11 @@ func (s *PipedSpec) Validate() error {
 	}
 	if s.SealedSecretManagement != nil {
 		if err := s.SealedSecretManagement.Validate(); err != nil {
+			return err
+		}
+	}
+	if s.SecretManagement != nil {
+		if err := s.SecretManagement.Validate(); err != nil {
 			return err
 		}
 	}
@@ -171,6 +180,13 @@ func (s *PipedSpec) IsInsecureChartRepository(name string) bool {
 		}
 	}
 	return false
+}
+
+func (s *PipedSpec) GetSecretManagement() *SecretManagement {
+	if s.SealedSecretManagement != nil {
+		return s.SealedSecretManagement
+	}
+	return s.SecretManagement
 }
 
 type PipedGit struct {
@@ -501,27 +517,27 @@ type NotificationReceiverWebhook struct {
 	URL string `json:"url"`
 }
 
-type SealedSecretManagement struct {
+type SecretManagement struct {
 	// Which management service should be used.
-	// Available values: SEALING_KEY, GCP_KMS, AWS_KMS
-	Type model.SealedSecretManagementType `json:"type"`
+	// Available values: KEY_PAIR, SEALING_KEY, GCP_KMS, AWS_KMS
+	Type model.SecretManagementType `json:"type"`
 
-	SealingKeyConfig *SealedSecretManagementSealingKey
-	GCPKMSConfig     *SealedSecretManagementGCPKMS
+	KeyPair *SecretManagementKeyPair
+	GCPKMS  *SecretManagementGCPKMS
 }
 
-func (m *SealedSecretManagement) Validate() error {
-	switch m.Type {
-	case model.SealedSecretManagementSealingKey:
-		return m.SealingKeyConfig.Validate()
-	case model.SealedSecretManagementGCPKMS:
-		return m.GCPKMSConfig.Validate()
+func (s *SecretManagement) Validate() error {
+	switch s.Type {
+	case model.SecretManagementTypeKeyPair:
+		return s.KeyPair.Validate()
+	case model.SecretManagementTypeGCPKMS:
+		return s.GCPKMS.Validate()
 	default:
-		return fmt.Errorf("unsupported sealed secret management type: %s", m.Type)
+		return fmt.Errorf("unsupported sealed secret management type: %s", s.Type)
 	}
 }
 
-type SealedSecretManagementSealingKey struct {
+type SecretManagementKeyPair struct {
 	// Configurable fields for SEALING_KEY.
 	// The path to the private RSA key file.
 	PrivateKeyFile string `json:"privateKeyFile"`
@@ -529,17 +545,17 @@ type SealedSecretManagementSealingKey struct {
 	PublicKeyFile string `json:"publicKeyFile"`
 }
 
-func (m *SealedSecretManagementSealingKey) Validate() error {
-	if m.PrivateKeyFile == "" {
+func (s *SecretManagementKeyPair) Validate() error {
+	if s.PrivateKeyFile == "" {
 		return fmt.Errorf("privateKeyFile must be set")
 	}
-	if m.PublicKeyFile == "" {
+	if s.PublicKeyFile == "" {
 		return fmt.Errorf("publicKeyFile must be set")
 	}
 	return nil
 }
 
-type SealedSecretManagementGCPKMS struct {
+type SecretManagementGCPKMS struct {
 	// Configurable fields when using Google Cloud KMS.
 	// The key name used for decrypting the sealed secret.
 	KeyName string `json:"keyName"`
@@ -549,45 +565,48 @@ type SealedSecretManagementGCPKMS struct {
 	EncryptServiceAccountFile string `json:"encryptServiceAccountFile"`
 }
 
-func (m *SealedSecretManagementGCPKMS) Validate() error {
-	if m.KeyName == "" {
+func (s *SecretManagementGCPKMS) Validate() error {
+	if s.KeyName == "" {
 		return fmt.Errorf("keyName must be set")
 	}
-	if m.DecryptServiceAccountFile == "" {
+	if s.DecryptServiceAccountFile == "" {
 		return fmt.Errorf("decryptServiceAccountFile must be set")
 	}
-	if m.EncryptServiceAccountFile == "" {
+	if s.EncryptServiceAccountFile == "" {
 		return fmt.Errorf("encryptServiceAccountFile must be set")
 	}
 	return nil
 }
 
-type genericSealedSecretManagement struct {
-	Type   model.SealedSecretManagementType `json:"type"`
-	Config json.RawMessage                  `json:"config"`
+type genericSecretManagement struct {
+	Type   model.SecretManagementType `json:"type"`
+	Config json.RawMessage            `json:"config"`
 }
 
-func (p *SealedSecretManagement) UnmarshalJSON(data []byte) error {
+func (s *SecretManagement) UnmarshalJSON(data []byte) error {
 	var err error
-	g := genericSealedSecretManagement{}
+	g := genericSecretManagement{}
 	if err = json.Unmarshal(data, &g); err != nil {
 		return err
 	}
-	p.Type = g.Type
 
-	switch p.Type {
-	case model.SealedSecretManagementSealingKey:
-		p.SealingKeyConfig = &SealedSecretManagementSealingKey{}
+	switch g.Type {
+	case model.SecretManagementTypeSealingKey:
+		fallthrough
+	case model.SecretManagementTypeKeyPair:
+		s.Type = model.SecretManagementTypeKeyPair
+		s.KeyPair = &SecretManagementKeyPair{}
 		if len(g.Config) > 0 {
-			err = json.Unmarshal(g.Config, p.SealingKeyConfig)
+			err = json.Unmarshal(g.Config, s.KeyPair)
 		}
-	case model.SealedSecretManagementGCPKMS:
-		p.GCPKMSConfig = &SealedSecretManagementGCPKMS{}
+	case model.SecretManagementTypeGCPKMS:
+		s.Type = model.SecretManagementTypeGCPKMS
+		s.GCPKMS = &SecretManagementGCPKMS{}
 		if len(g.Config) > 0 {
-			err = json.Unmarshal(g.Config, p.GCPKMSConfig)
+			err = json.Unmarshal(g.Config, s.GCPKMS)
 		}
 	default:
-		err = fmt.Errorf("unsupported sealed secret management type: %s", p.Type)
+		err = fmt.Errorf("unsupported secret management type: %s", s.Type)
 	}
 	return err
 }

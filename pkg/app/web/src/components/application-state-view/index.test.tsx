@@ -1,4 +1,4 @@
-import { createStore, render, screen } from "../../../test-utils";
+import { createStore, render, screen } from "test-utils";
 import { ApplicationStateView } from "./";
 import { dummyApplicationLiveState } from "../../__fixtures__/dummy-application-live-state";
 import { fetchApplicationStateById } from "../../modules/applications-live-state";

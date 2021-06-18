@@ -16,7 +16,6 @@ package config
 
 import (
 	"encoding/json"
-	"fmt"
 	"testing"
 
 	"github.com/stretchr/testify/assert"
@@ -72,7 +71,7 @@ func TestPercentageUnmarshal(t *testing.T) {
 		name        string
 		input       string
 		expected    *wrapper
-		expectedErr error
+		expectedErr bool
 	}{
 		{
 			name:  "normal number",
@@ -82,7 +81,6 @@ func TestPercentageUnmarshal(t *testing.T) {
 					Number: 10,
 				},
 			},
-			expectedErr: nil,
 		},
 		{
 			name:  "normal number by string",
@@ -92,7 +90,6 @@ func TestPercentageUnmarshal(t *testing.T) {
 					Number: 10,
 				},
 			},
-			expectedErr: nil,
 		},
 		{
 			name:  "percentage number",
@@ -103,20 +100,19 @@ func TestPercentageUnmarshal(t *testing.T) {
 					HasSuffix: true,
 				},
 			},
-			expectedErr: nil,
 		},
 		{
 			name:        "wrong string format",
 			input:       `{"Percentage": "1a%"}`,
 			expected:    nil,
-			expectedErr: fmt.Errorf("invalid percentage: strconv.ParseInt: parsing \"1a\": invalid syntax"),
+			expectedErr: true,
 		},
 	}
 	for _, tc := range testcases {
 		t.Run(tc.name, func(t *testing.T) {
 			got := &wrapper{}
 			err := json.Unmarshal([]byte(tc.input), got)
-			assert.Equal(t, tc.expectedErr, err)
+			assert.Equal(t, tc.expectedErr, err != nil)
 			if tc.expected != nil {
 				assert.Equal(t, tc.expected, got)
 			}

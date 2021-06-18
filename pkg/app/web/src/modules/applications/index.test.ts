@@ -1,5 +1,5 @@
 import { setupServer } from "msw/node";
-import { createStore } from "../../../test-utils";
+import { createStore } from "test-utils";
 import { listApplicationsHandler } from "../../mocks/services/application";
 import {
   dummyApplication,

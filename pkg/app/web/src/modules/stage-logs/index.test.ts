@@ -6,7 +6,7 @@ import {
   LogSeverity,
 } from "./";
 import { setupServer } from "msw/node";
-import { createReduxStore } from "../../../test-utils";
+import { createReduxStore } from "test-utils";
 import { dummyDeployment } from "../../__fixtures__/dummy-deployment";
 import {
   getStageLogHandler,

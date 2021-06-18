@@ -52,7 +52,7 @@ type apiClient interface {
 	ReportApplicationSyncState(ctx context.Context, req *pipedservice.ReportApplicationSyncStateRequest, opts ...grpc.CallOption) (*pipedservice.ReportApplicationSyncStateResponse, error)
 }
 
-type sealedSecretDecrypter interface {
+type secretDecrypter interface {
 	Decrypt(string) (string, error)
 }
 
@@ -80,7 +80,7 @@ func NewDetector(
 	apiClient apiClient,
 	appManifestsCache cache.Cache,
 	cfg *config.PipedSpec,
-	ssd sealedSecretDecrypter,
+	sd secretDecrypter,
 	logger *zap.Logger,
 ) *detector {
 
@@ -107,7 +107,7 @@ func NewDetector(
 				d,
 				appManifestsCache,
 				cfg,
-				ssd,
+				sd,
 				logger,
 			))
 

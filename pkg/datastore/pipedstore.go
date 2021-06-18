@@ -31,7 +31,7 @@ var (
 		cloudProviders []*model.Piped_CloudProvider,
 		repos []*model.ApplicationGitRepository,
 		status model.Piped_ConnectionStatus,
-		sse *model.Piped_SealedSecretEncryption,
+		se *model.Piped_SecretEncryption,
 		version string,
 		startedAt int64,
 	) func(piped *model.Piped) error {
@@ -40,9 +40,11 @@ var (
 			piped.CloudProviders = cloudProviders
 			piped.Repositories = repos
 			piped.Status = status
-			if sse != nil {
-				piped.SealedSecretEncryption = sse
-			}
+
+			piped.SecretEncryption = se
+			// Remove the legacy data.
+			piped.SealedSecretEncryption = nil
+
 			piped.Version = version
 			piped.StartedAt = startedAt
 			return nil

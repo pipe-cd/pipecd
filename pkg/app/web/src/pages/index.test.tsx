@@ -1,5 +1,5 @@
 import { MemoryRouter } from "react-router-dom";
-import { render, screen } from "../../test-utils";
+import { render, screen } from "test-utils";
 import { Pages } from "./index";
 import { setupServer } from "msw/node";
 import { GetMeResponse } from "pipe/pkg/app/web/api_client/service_pb";

@@ -7,6 +7,7 @@ module.exports = {
   },
   moduleNameMapper: {
     "^pipe/(.*)$": "<rootDir>/../../../bazel-bin/$1",
+    "^test-utils$": "<rootDir>/test-utils",
   },
   moduleDirectories: ["<rootDir>/node_modules", "__fixtures__"],
   coveragePathIgnorePatterns: [

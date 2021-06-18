@@ -26,16 +26,16 @@ import (
 	"github.com/pipe-cd/pipe/pkg/config"
 )
 
-type testSealedSecretDecrypter struct {
+type testSecretDecrypter struct {
 	prefix string
 }
 
-func (d testSealedSecretDecrypter) Decrypt(text string) (string, error) {
+func (d testSecretDecrypter) Decrypt(text string) (string, error) {
 	return d.prefix + text, nil
 }
 
-func TestDecryptSealedSecrets(t *testing.T) {
-	dir, err := ioutil.TempDir("", "test-decrypting-sealed-secrets")
+func TestDecryptSecrets(t *testing.T) {
+	dir, err := ioutil.TempDir("", "test-decrypting-secrets")
 	require.NoError(t, err)
 
 	defer os.RemoveAll(dir)
@@ -85,12 +85,12 @@ spec:
 			OutDir: ".credentials",
 		},
 	}
-	dcr := testSealedSecretDecrypter{
+	dcr := testSecretDecrypter{
 		prefix: "decrypted-",
 	}
 
 	for _, s := range secrets {
-		err = decryptSealedSecret(dir, s, dcr)
+		err = decryptSecret(dir, s, dcr)
 		require.NoError(t, err)
 	}
 

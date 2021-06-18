@@ -1,5 +1,5 @@
 import { setupServer } from "msw/node";
-import { createStore } from "../../../test-utils";
+import { createStore } from "test-utils";
 import { getMeHandler } from "../../mocks/services/me";
 import { dummyMe } from "../../__fixtures__/dummy-me";
 import { fetchMe, meSlice, Role, selectProjectName } from "./";

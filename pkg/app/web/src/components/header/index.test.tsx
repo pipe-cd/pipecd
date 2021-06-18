@@ -1,6 +1,6 @@
 import userEvent from "@testing-library/user-event";
 import { MemoryRouter } from "react-router-dom";
-import { render, screen } from "../../../test-utils";
+import { render, screen } from "test-utils";
 import { Role } from "../../modules/me";
 import { Header } from "./";
 

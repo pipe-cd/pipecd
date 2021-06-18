@@ -1,6 +1,6 @@
 import { Provider } from "react-redux";
 import { ApplicationSyncStatus } from "pipe/pkg/app/web/model/application_pb";
-import { createStore } from "../../../test-utils";
+import { createStore } from "test-utils";
 import { dummyApplication } from "../../__fixtures__/dummy-application";
 import { dummyApplicationLiveState } from "../../__fixtures__/dummy-application-live-state";
 import { dummyEnv } from "../../__fixtures__/dummy-environment";

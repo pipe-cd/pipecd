@@ -48,7 +48,7 @@ type planner struct {
 	apiClient                apiClient
 	gitClient                gitClient
 	notifier                 notifier
-	sealedSecretDecrypter    sealedSecretDecrypter
+	secretDecrypter          secretDecrypter
 	plannerRegistry          registry.Registry
 	pipedConfig              *config.PipedSpec
 	appManifestsCache        cache.Cache
@@ -71,7 +71,7 @@ func newPlanner(
 	apiClient apiClient,
 	gitClient gitClient,
 	notifier notifier,
-	ssd sealedSecretDecrypter,
+	sd secretDecrypter,
 	pipedConfig *config.PipedSpec,
 	appManifestsCache cache.Cache,
 	logger *zap.Logger,
@@ -94,7 +94,7 @@ func newPlanner(
 		apiClient:                apiClient,
 		gitClient:                gitClient,
 		notifier:                 notifier,
-		sealedSecretDecrypter:    ssd,
+		secretDecrypter:          sd,
 		pipedConfig:              pipedConfig,
 		plannerRegistry:          registry.DefaultRegistry(),
 		appManifestsCache:        appManifestsCache,
@@ -177,7 +177,7 @@ func (p *planner) Run(ctx context.Context) error {
 		p.deployment.Trigger.Commit.Hash,
 		p.gitClient,
 		p.deployment.GitPath,
-		p.sealedSecretDecrypter,
+		p.secretDecrypter,
 	)
 
 	if p.lastSuccessfulCommitHash != "" {
@@ -188,7 +188,7 @@ func (p *planner) Run(ctx context.Context) error {
 			p.lastSuccessfulCommitHash,
 			p.gitClient,
 			p.deployment.GitPath,
-			p.sealedSecretDecrypter,
+			p.secretDecrypter,
 		)
 	}
 
