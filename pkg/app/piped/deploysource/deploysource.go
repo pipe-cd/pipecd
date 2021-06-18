@@ -24,6 +24,7 @@ import (
 	"path/filepath"
 	"sync"
 
+	"github.com/pipe-cd/pipe/pkg/app/piped/sourcedecrypter"
 	"github.com/pipe-cd/pipe/pkg/config"
 	"github.com/pipe-cd/pipe/pkg/git"
 	"github.com/pipe-cd/pipe/pkg/model"
@@ -177,13 +178,18 @@ func (p *provider) prepare(ctx context.Context, lw io.Writer) (*DeploySource, er
 
 	// Decrypt the sealed secrets if needed.
 	if len(gdc.SealedSecrets) > 0 && p.secretDecrypter != nil {
-		for _, s := range gdc.SealedSecrets {
-			if err := decryptSecret(appDir, s, p.secretDecrypter); err != nil {
-				writeLog(lw, "Unable to decrypt the sealed secret %s (%v)", s.Path, err)
-				return nil, err
-			}
+		if err := sourcedecrypter.DecryptSealedSecrets(appDir, gdc.SealedSecrets, p.secretDecrypter); err != nil {
+			writeLog(lw, "Unable to decrypt the sealed secrets (%v)", err)
+			return nil, err
 		}
 		writeLog(lw, "Successfully decrypted %d sealed secrets", len(gdc.SealedSecrets))
+	}
+	if gdc.Encryption != nil && p.secretDecrypter != nil {
+		if err := sourcedecrypter.DecryptSecrets(appDir, *gdc.Encryption, p.secretDecrypter); err != nil {
+			writeLog(lw, "Unable to decrypt the secrets (%v)", err)
+			return nil, err
+		}
+		writeLog(lw, "Successfully decrypted secrets: %v", gdc.Encryption.DecryptionTargets)
 	}
 
 	return &DeploySource{
@@ -215,42 +221,6 @@ func (p *provider) copy(lw io.Writer) (*DeploySource, error) {
 		DeploymentConfig:        p.source.DeploymentConfig,
 		GenericDeploymentConfig: p.source.GenericDeploymentConfig,
 	}, nil
-}
-
-func decryptSecret(appDir string, secret config.SealedSecretMapping, dcr secretDecrypter) error {
-	secretPath := filepath.Join(appDir, secret.Path)
-	cfg, err := config.LoadFromYAML(secretPath)
-	if err != nil {
-		return fmt.Errorf("unable to read sealed secret file %s (%w)", secret.Path, err)
-	}
-	if cfg.Kind != config.KindSealedSecret {
-		return fmt.Errorf("unexpected kind in sealed secret file %s, want %q but got %q", secret.Path, config.KindSealedSecret, cfg.Kind)
-	}
-
-	content, err := cfg.SealedSecretSpec.RenderOriginalContent(dcr)
-	if err != nil {
-		return fmt.Errorf("unable to render the original content of the sealed secret file %s (%w)", secret.Path, err)
-	}
-
-	outDir, outFile := filepath.Split(secret.Path)
-	if secret.OutFilename != "" {
-		outFile = secret.OutFilename
-	}
-	if secret.OutDir != "" {
-		outDir = secret.OutDir
-	}
-	// TODO: Ensure that the output directory must be inside the application directory.
-	if outDir != "" {
-		if err := os.MkdirAll(filepath.Join(appDir, outDir), 0700); err != nil {
-			return fmt.Errorf("unable to write decrypted content of sealed secret file %s to directory %s (%w)", secret.Path, outDir, err)
-		}
-	}
-	outPath := filepath.Join(appDir, outDir, outFile)
-
-	if err := ioutil.WriteFile(outPath, content, 0644); err != nil {
-		return fmt.Errorf("unable to write decrypted content of sealed secret file %s (%w)", secret.Path, err)
-	}
-	return nil
 }
 
 func writeLog(w io.Writer, format string, a ...interface{}) {

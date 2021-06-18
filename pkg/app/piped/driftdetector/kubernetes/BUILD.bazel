@@ -8,6 +8,7 @@ go_library(
     deps = [
         "//pkg/app/piped/cloudprovider/kubernetes:go_default_library",
         "//pkg/app/piped/livestatestore/kubernetes:go_default_library",
+        "//pkg/app/piped/sourcedecrypter:go_default_library",
         "//pkg/cache:go_default_library",
         "//pkg/config:go_default_library",
         "//pkg/diff:go_default_library",
@@ -24,8 +25,6 @@ go_test(
     embed = [":go_default_library"],
     deps = [
         "//pkg/app/piped/cloudprovider/kubernetes:go_default_library",
-        "//pkg/config:go_default_library",
         "@com_github_stretchr_testify//assert:go_default_library",
-        "@com_github_stretchr_testify//require:go_default_library",
     ],
 )

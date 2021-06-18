@@ -6,6 +6,7 @@ go_library(
     importpath = "github.com/pipe-cd/pipe/pkg/app/piped/deploysource",
     visibility = ["//visibility:public"],
     deps = [
+        "//pkg/app/piped/sourcedecrypter:go_default_library",
         "//pkg/config:go_default_library",
         "//pkg/git:go_default_library",
         "//pkg/model:go_default_library",
@@ -17,9 +18,4 @@ go_test(
     size = "small",
     srcs = ["deploysource_test.go"],
     embed = [":go_default_library"],
-    deps = [
-        "//pkg/config:go_default_library",
-        "@com_github_stretchr_testify//assert:go_default_library",
-        "@com_github_stretchr_testify//require:go_default_library",
-    ],
 )
