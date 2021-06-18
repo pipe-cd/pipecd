@@ -1,5 +1,5 @@
 import userEvent from "@testing-library/user-event";
-import { render, screen, createReduxStore } from "../../../../test-utils";
+import { render, screen, createReduxStore } from "test-utils";
 import { SettingsEnvironmentPage } from "./index";
 import { setupServer } from "msw/node";
 import {

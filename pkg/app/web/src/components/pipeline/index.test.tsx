@@ -1,4 +1,4 @@
-import { createStore, render } from "../../../test-utils";
+import { createStore, render } from "test-utils";
 import { updateActiveStage } from "../../modules/active-stage";
 import { dummyDeployment } from "../../__fixtures__/dummy-deployment";
 

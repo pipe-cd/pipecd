@@ -1,6 +1,6 @@
 import { RBACForm } from "./";
 import { Provider } from "react-redux";
-import { createStore } from "../../../test-utils";
+import { createStore } from "test-utils";
 import { Story } from "@storybook/react";
 
 export default {

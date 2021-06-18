@@ -7,6 +7,7 @@ module.exports = {
   },
   moduleNameMapper: {
     "^pipe/(.*)$": "<rootDir>/../../../$1",
+    "^test-utils$": "<rootDir>/test-utils",
   },
   moduleDirectories: ["node_modules", "__fixtures__"],
   coveragePathIgnorePatterns: [

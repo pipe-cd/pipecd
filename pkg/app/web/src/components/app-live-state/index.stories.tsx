@@ -1,6 +1,6 @@
 import { Story } from "@storybook/react";
 import { Provider } from "react-redux";
-import { createStore } from "../../../test-utils";
+import { createStore } from "test-utils";
 import { dummyApplication } from "../../__fixtures__/dummy-application";
 import { dummyApplicationLiveState } from "../../__fixtures__/dummy-application-live-state";
 import { AppLiveState } from "./";

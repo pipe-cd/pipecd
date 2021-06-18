@@ -6,7 +6,7 @@ import {
   act,
   waitForElementToBeRemoved,
   waitFor,
-} from "../../../test-utils";
+} from "test-utils";
 import { server } from "../../mocks/server";
 import { updateStaticAdmin } from "../../modules/project";
 import { StaticAdminForm } from "./";

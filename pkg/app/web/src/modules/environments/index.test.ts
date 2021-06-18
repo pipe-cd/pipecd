@@ -1,4 +1,4 @@
-import { createReduxStore, createStore } from "../../../test-utils";
+import { createReduxStore, createStore } from "test-utils";
 import { server } from "../../mocks/server";
 import {
   addEnvironmentHandler,

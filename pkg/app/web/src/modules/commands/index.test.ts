@@ -1,4 +1,4 @@
-import { createStore } from "../../../test-utils";
+import { createStore } from "test-utils";
 import { server } from "../../mocks/server";
 import {
   dummyCommand,
