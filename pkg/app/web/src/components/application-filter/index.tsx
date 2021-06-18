@@ -8,9 +8,9 @@ import {
 } from "@material-ui/core";
 import Autocomplete from "@material-ui/lab/Autocomplete";
 import { FC, memo } from "react";
-import { APPLICATION_KIND_TEXT } from "../../constants/application-kind";
-import { APPLICATION_SYNC_STATUS_TEXT } from "../../constants/application-sync-status-text";
-import { useAppSelector } from "../../hooks/redux";
+import { APPLICATION_KIND_TEXT } from "~/constants/application-kind";
+import { APPLICATION_SYNC_STATUS_TEXT } from "~/constants/application-sync-status-text";
+import { useAppSelector } from "~/hooks/redux";
 import {
   ApplicationKind,
   ApplicationKindKey,
@@ -18,9 +18,9 @@ import {
   ApplicationSyncStatus,
   ApplicationSyncStatusKey,
   selectAll as selectAllApplications,
-} from "../../modules/applications";
-import { selectAllEnvs } from "../../modules/environments";
-import { uniqueArray } from "../../utils/unique-array";
+} from "~/modules/applications";
+import { selectAllEnvs } from "~/modules/environments";
+import { uniqueArray } from "~/utils/unique-array";
 import { FilterView } from "../filter-view";
 
 const useStyles = makeStyles((theme) => ({

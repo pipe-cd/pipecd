@@ -1,8 +1,8 @@
 import { MemoryRouter, Route } from "react-router-dom";
-import { createStore, render } from "test-utils";
-import { PAGE_PATH_APPLICATIONS } from "../../constants/path";
-import { fetchApplication } from "../../modules/applications";
-import { fetchApplicationStateById } from "../../modules/applications-live-state";
+import { createStore, render } from "~~/test-utils";
+import { PAGE_PATH_APPLICATIONS } from "~/constants/path";
+import { fetchApplication } from "~/modules/applications";
+import { fetchApplicationStateById } from "~/modules/applications-live-state";
 import { ApplicationDetailPage } from "./detail";
 
 describe("ApplicationDetailPage", () => {

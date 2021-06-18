@@ -6,7 +6,7 @@ import {
   createLiveStateSnapshotFromObject,
   dummyApplicationLiveState,
   dummyLiveStates,
-} from "../../__fixtures__/dummy-application-live-state";
+} from "~/__fixtures__/dummy-application-live-state";
 import { createHandler } from "../create-handler";
 
 export const liveStateHandlers = [

@@ -1,4 +1,4 @@
-import { Environment } from "../modules/environments";
+import { Environment } from "~/modules/environments";
 import { createRandTimes, randomUUID, randomWords } from "./utils";
 
 export const createEnvFromObject = (o: Environment.AsObject): Environment => {

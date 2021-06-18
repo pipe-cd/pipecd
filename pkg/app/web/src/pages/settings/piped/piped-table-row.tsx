@@ -1,7 +1,10 @@
 import {
   Box,
+  Button,
   Dialog,
+  DialogActions,
   DialogContent,
+  DialogContentText,
   DialogTitle,
   IconButton,
   makeStyles,
@@ -10,32 +13,29 @@ import {
   TableCell,
   TableRow,
   Typography,
-  DialogActions,
-  Button,
-  DialogContentText,
 } from "@material-ui/core";
 import { MoreVert as MoreVertIcon } from "@material-ui/icons";
 import clsx from "clsx";
 import dayjs from "dayjs";
 import * as React from "react";
 import { FC, memo, useCallback, useState } from "react";
-import { DELETE_OLD_PIPED_KEY_SUCCESS } from "../../../constants/toast-text";
+import { CopyIconButton } from "~/components/copy-icon-button";
+import { DELETE_OLD_PIPED_KEY_SUCCESS } from "~/constants/toast-text";
 import {
   UI_TEXT_ADD_NEW_KEY,
   UI_TEXT_DELETE_OLD_KEY,
   UI_TEXT_DISABLE,
   UI_TEXT_EDIT,
   UI_TEXT_ENABLE,
-} from "../../../constants/ui-text";
+} from "~/constants/ui-text";
+import { useAppDispatch, useAppSelector } from "~/hooks/redux";
 import {
   addNewPipedKey,
   deleteOldKey,
   fetchPipeds,
   selectPipedById,
-} from "../../../modules/pipeds";
-import { addToast } from "../../../modules/toasts";
-import { CopyIconButton } from "../../../components/copy-icon-button";
-import { useAppDispatch, useAppSelector } from "../../../hooks/redux";
+} from "~/modules/pipeds";
+import { addToast } from "~/modules/toasts";
 
 const useStyles = makeStyles((theme) => ({
   disabledItem: {

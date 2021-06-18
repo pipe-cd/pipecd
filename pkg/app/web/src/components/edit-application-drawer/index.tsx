@@ -1,15 +1,15 @@
 import { Drawer } from "@material-ui/core";
 import { useFormik } from "formik";
 import { FC, memo, useCallback } from "react";
-import { useAppSelector, useAppDispatch } from "../../hooks/redux";
+import { useAppSelector, useAppDispatch } from "~/hooks/redux";
 import {
   Application,
   selectById as selectAppById,
-} from "../../modules/applications";
+} from "~/modules/applications";
 import {
   clearUpdateTarget,
   updateApplication,
-} from "../../modules/update-application";
+} from "~/modules/update-application";
 import {
   ApplicationForm,
   ApplicationFormValue,

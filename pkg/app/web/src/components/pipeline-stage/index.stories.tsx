@@ -1,5 +1,5 @@
 import { Story } from "@storybook/react";
-import { StageStatus } from "pipe/pkg/app/web/model/deployment_pb";
+import { StageStatus } from "~/modules/deployments";
 import { PipelineStage, PipelineStageProps } from "./";
 
 export default {

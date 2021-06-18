@@ -5,7 +5,7 @@ import {
 import {
   createDeploymentFromObject,
   dummyDeployment,
-} from "../../__fixtures__/dummy-deployment";
+} from "~/__fixtures__/dummy-deployment";
 import { createHandler } from "../create-handler";
 
 export const deploymentHandlers = [

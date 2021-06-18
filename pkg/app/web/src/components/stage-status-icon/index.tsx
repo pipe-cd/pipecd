@@ -1,13 +1,13 @@
-import { FC } from "react";
 import { makeStyles } from "@material-ui/core";
 import {
+  Cached,
   CheckCircle,
   Error,
-  Cached,
-  Stop,
   IndeterminateCheckBox,
+  Stop,
 } from "@material-ui/icons";
-import { StageStatus } from "pipe/pkg/app/web/model/deployment_pb";
+import { FC } from "react";
+import { StageStatus } from "~/modules/deployments";
 
 const useStyles = makeStyles((theme) => ({
   [StageStatus.STAGE_SUCCESS]: {

@@ -1,7 +1,7 @@
 import { AddApplicationDrawer, AddApplicationDrawerProps } from "./";
-import { createDecoratorRedux } from "../../../.storybook/redux-decorator";
-import { dummyEnv } from "../../__fixtures__/dummy-environment";
-import { dummyPiped } from "../../__fixtures__/dummy-piped";
+import { createDecoratorRedux } from "~~/.storybook/redux-decorator";
+import { dummyEnv } from "~/__fixtures__/dummy-environment";
+import { dummyPiped } from "~/__fixtures__/dummy-piped";
 import { Story } from "@storybook/react";
 
 export default {

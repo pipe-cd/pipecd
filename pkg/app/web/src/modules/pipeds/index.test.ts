@@ -1,4 +1,4 @@
-import { dummyPiped } from "../../__fixtures__/dummy-piped";
+import { dummyPiped } from "~/__fixtures__/dummy-piped";
 import {
   pipedsSlice,
   clearRegisteredPipedInfo,

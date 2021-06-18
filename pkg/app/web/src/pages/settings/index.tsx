@@ -14,7 +14,7 @@ import {
   PAGE_PATH_SETTINGS_ENV,
   PAGE_PATH_SETTINGS_PROJECT,
   PAGE_PATH_SETTINGS_API_KEY,
-} from "../../constants/path";
+} from "~/constants/path";
 import { SettingsPipedPage } from "./piped";
 import { SettingsEnvironmentPage } from "./environment";
 import { SettingsProjectPage } from "./project";

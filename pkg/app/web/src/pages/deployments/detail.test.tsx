@@ -1,9 +1,9 @@
 import { MemoryRouter, Route } from "react-router-dom";
-import { createReduxStore, render, waitFor } from "test-utils";
-import { server } from "../../mocks/server";
-import { dummyDeployment } from "../../__fixtures__/dummy-deployment";
-import { dummyEnv } from "../../__fixtures__/dummy-environment";
-import { dummyPiped } from "../../__fixtures__/dummy-piped";
+import { createReduxStore, render, waitFor } from "~~/test-utils";
+import { server } from "~/mocks/server";
+import { dummyDeployment } from "~/__fixtures__/dummy-deployment";
+import { dummyEnv } from "~/__fixtures__/dummy-environment";
+import { dummyPiped } from "~/__fixtures__/dummy-piped";
 import { DeploymentDetailPage } from "./detail";
 
 beforeAll(() => {

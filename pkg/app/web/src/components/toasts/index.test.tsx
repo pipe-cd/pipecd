@@ -1,6 +1,6 @@
 import userEvent from "@testing-library/user-event";
-import { render, screen, createStore } from "test-utils";
-import { IToast, removeToast } from "../../modules/toasts";
+import { render, screen, createStore } from "~~/test-utils";
+import { IToast, removeToast } from "~/modules/toasts";
 import { Toasts } from "./";
 
 beforeAll(() => {

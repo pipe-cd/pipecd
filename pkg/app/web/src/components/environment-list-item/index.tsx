@@ -12,10 +12,10 @@ import { MoreVert as MoreVertIcon } from "@material-ui/icons";
 import { EntityId } from "@reduxjs/toolkit";
 import * as React from "react";
 import { FC, memo, useCallback, useState } from "react";
-import { UI_TEXT_DELETE, UI_TEXT_EDIT } from "../../constants/ui-text";
-import { useAppDispatch, useAppSelector } from "../../hooks/redux";
-import { selectEnvById } from "../../modules/environments";
-import { setTargetEnv } from "../../modules/deleting-env";
+import { UI_TEXT_DELETE, UI_TEXT_EDIT } from "~/constants/ui-text";
+import { useAppDispatch, useAppSelector } from "~/hooks/redux";
+import { selectEnvById } from "~/modules/environments";
+import { setTargetEnv } from "~/modules/deleting-env";
 import { CopyIconButton } from "../copy-icon-button";
 import { EditEnvironmentDialog } from "./edit-dialog";
 

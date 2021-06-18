@@ -1,7 +1,7 @@
 import { ApplicationList, ApplicationListProps } from "./";
-import { createDecoratorRedux } from "../../../.storybook/redux-decorator";
-import { dummyApplication } from "../../__fixtures__/dummy-application";
-import { dummyEnv } from "../../__fixtures__/dummy-environment";
+import { createDecoratorRedux } from "~~/.storybook/redux-decorator";
+import { dummyApplication } from "~/__fixtures__/dummy-application";
+import { dummyEnv } from "~/__fixtures__/dummy-environment";
 import { Story } from "@storybook/react";
 
 export default {

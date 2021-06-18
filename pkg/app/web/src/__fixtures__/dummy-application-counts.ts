@@ -1,15 +1,15 @@
-import { APPLICATION_ACTIVE_STATUS_NAME } from "../constants/application-active-status";
 import * as jspb from "google-protobuf";
-import { APPLICATION_KIND_TEXT } from "../constants/application-kind";
+import { APPLICATION_ACTIVE_STATUS_NAME } from "~/constants/application-active-status";
+import { APPLICATION_KIND_TEXT } from "~/constants/application-kind";
 import {
   InsightApplicationCount,
   InsightApplicationCountLabelKey,
   INSIGHT_APPLICATION_COUNT_LABEL_KEY_TEXT,
-} from "../modules/application-counts";
+} from "~/modules/application-counts";
 import {
   ApplicationActiveStatus,
   ApplicationKind,
-} from "../modules/applications";
+} from "~/modules/applications";
 
 export const dummyApplicationCounts: InsightApplicationCount.AsObject[] = [
   {

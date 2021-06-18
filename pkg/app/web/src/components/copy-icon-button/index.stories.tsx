@@ -1,6 +1,6 @@
 import { CopyIconButton, CopyIconButtonProps } from "./";
 import { Story } from "@storybook/react";
-import { createDecoratorRedux } from "../../../.storybook/redux-decorator";
+import { createDecoratorRedux } from "~~/.storybook/redux-decorator";
 
 export default {
   title: "COMMON/CopyIconButton",

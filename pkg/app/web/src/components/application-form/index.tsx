@@ -9,18 +9,14 @@ import {
   Typography,
 } from "@material-ui/core";
 import { FormikProps } from "formik";
-import { ApplicationKind } from "pipe/pkg/app/web/model/common_pb";
 import { FC, memo, ReactElement } from "react";
 import * as yup from "yup";
-import { APPLICATION_KIND_TEXT } from "../../constants/application-kind";
-import { UI_TEXT_CANCEL, UI_TEXT_SAVE } from "../../constants/ui-text";
-import { useAppSelector } from "../../hooks/redux";
-import { selectAllEnvs } from "../../modules/environments";
-import {
-  Piped,
-  selectPipedById,
-  selectPipedsByEnv,
-} from "../../modules/pipeds";
+import { APPLICATION_KIND_TEXT } from "~/constants/application-kind";
+import { UI_TEXT_CANCEL, UI_TEXT_SAVE } from "~/constants/ui-text";
+import { useAppSelector } from "~/hooks/redux";
+import { ApplicationKind } from "~/modules/applications";
+import { selectAllEnvs } from "~/modules/environments";
+import { Piped, selectPipedById, selectPipedsByEnv } from "~/modules/pipeds";
 
 const emptyItems = [{ name: "None", value: "" }];
 const createCloudProviderListFromPiped = ({

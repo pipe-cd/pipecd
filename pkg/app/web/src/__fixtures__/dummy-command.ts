@@ -1,5 +1,5 @@
 import { SyncStrategy } from "pipe/pkg/app/web/model/deployment_pb";
-import { Command, CommandStatus } from "../modules/commands";
+import { Command, CommandStatus } from "~/modules/commands";
 import { dummyDeployment } from "./dummy-deployment";
 import { createRandTimes } from "./utils";
 

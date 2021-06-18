@@ -1,10 +1,10 @@
-import { createStore } from "test-utils";
-import { server } from "../../mocks/server";
+import { createStore } from "~~/test-utils";
+import { server } from "~/mocks/server";
 import {
   dummyCommand,
   dummySyncSucceededCommand,
-} from "../../__fixtures__/dummy-command";
-import { dummyDeployment } from "../../__fixtures__/dummy-deployment";
+} from "~/__fixtures__/dummy-command";
+import { dummyDeployment } from "~/__fixtures__/dummy-deployment";
 import { commandsSlice, CommandStatus, fetchCommand } from "./";
 import { addToast } from "../toasts";
 

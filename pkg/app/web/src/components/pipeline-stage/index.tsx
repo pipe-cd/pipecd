@@ -1,8 +1,8 @@
 import { makeStyles, Paper, Typography } from "@material-ui/core";
-import { StageStatus } from "pipe/pkg/app/web/model/deployment_pb";
-import { FC, memo } from "react";
-import { StageStatusIcon } from "../stage-status-icon";
 import clsx from "clsx";
+import { FC, memo } from "react";
+import { StageStatus } from "~/modules/deployments";
+import { StageStatusIcon } from "../stage-status-icon";
 
 const useStyles = makeStyles((theme) => ({
   root: {
@@ -93,13 +93,13 @@ const createTrafficPercentageText = (meta: [string, string][]): string => {
   // Traffic routing stage detail.
   let detail = "";
   if (map[TRAFFIC_PERCENTAGE_META_KEY.PRIMARY]) {
-    detail += `${map[TRAFFIC_PERCENTAGE_META_KEY.PRIMARY]}`
+    detail += `${map[TRAFFIC_PERCENTAGE_META_KEY.PRIMARY]}`;
   }
   if (map[TRAFFIC_PERCENTAGE_META_KEY.CANARY]) {
-    detail += `, ${map[TRAFFIC_PERCENTAGE_META_KEY.CANARY]}`
+    detail += `, ${map[TRAFFIC_PERCENTAGE_META_KEY.CANARY]}`;
   }
   if (map[TRAFFIC_PERCENTAGE_META_KEY.BASELINE]) {
-    detail += `, ${map[TRAFFIC_PERCENTAGE_META_KEY.BASELINE]}`
+    detail += `, ${map[TRAFFIC_PERCENTAGE_META_KEY.BASELINE]}`;
   }
 
   return detail;

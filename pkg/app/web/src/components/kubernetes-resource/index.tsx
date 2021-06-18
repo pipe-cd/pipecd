@@ -1,6 +1,6 @@
 import { makeStyles, Paper, Typography } from "@material-ui/core";
 import { FC, memo } from "react";
-import { KubernetesResourceState } from "../../modules/applications-live-state";
+import { KubernetesResourceState } from "~/modules/applications-live-state";
 import { KubernetesResourceHealthStatusIcon } from "../health-status-icon";
 
 const useStyles = makeStyles((theme) => ({

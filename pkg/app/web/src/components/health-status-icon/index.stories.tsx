@@ -2,7 +2,7 @@ import {
   KubernetesResourceHealthStatusIcon,
   KubernetesResourceHealthStatusIconProps,
 } from "./";
-import { HealthStatus } from "../../modules/applications-live-state";
+import { HealthStatus } from "~/modules/applications-live-state";
 import { Story } from "@storybook/react";
 
 export default {

@@ -1,7 +1,7 @@
 import { waitFor } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
-import { render, screen, createStore } from "test-utils";
-import { addToast } from "../../modules/toasts";
+import { render, screen, createStore } from "~~/test-utils";
+import { addToast } from "~/modules/toasts";
 import { CopyIconButton } from "./";
 
 test("copy text", async () => {

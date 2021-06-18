@@ -13,12 +13,12 @@ import clsx from "clsx";
 import dayjs from "dayjs";
 import { FC, memo, useState } from "react";
 import { Link as RouterLink } from "react-router-dom";
-import { APPLICATION_KIND_TEXT } from "../../constants/application-kind";
-import { PAGE_PATH_APPLICATIONS } from "../../constants/path";
-import { UI_TEXT_NOT_AVAILABLE_TEXT } from "../../constants/ui-text";
-import { useAppSelector } from "../../hooks/redux";
-import { Application, selectById } from "../../modules/applications";
-import { selectEnvById } from "../../modules/environments";
+import { APPLICATION_KIND_TEXT } from "~/constants/application-kind";
+import { PAGE_PATH_APPLICATIONS } from "~/constants/path";
+import { UI_TEXT_NOT_AVAILABLE_TEXT } from "~/constants/ui-text";
+import { useAppSelector } from "~/hooks/redux";
+import { Application, selectById } from "~/modules/applications";
+import { selectEnvById } from "~/modules/environments";
 import { AppSyncStatus } from "../app-sync-status";
 
 const useStyles = makeStyles((theme) => ({

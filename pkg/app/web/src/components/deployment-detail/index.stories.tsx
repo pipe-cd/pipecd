@@ -1,9 +1,9 @@
-import { createDecoratorRedux } from "../../../.storybook/redux-decorator";
-import { dummyDeployment } from "../../__fixtures__/dummy-deployment";
+import { createDecoratorRedux } from "~~/.storybook/redux-decorator";
+import { dummyDeployment } from "~/__fixtures__/dummy-deployment";
 import { DeploymentDetail, DeploymentDetailProps } from "./";
-import { dummyEnv } from "../../__fixtures__/dummy-environment";
-import { dummyPiped } from "../../__fixtures__/dummy-piped";
-import { DeploymentStatus } from "../../modules/deployments";
+import { dummyEnv } from "~/__fixtures__/dummy-environment";
+import { dummyPiped } from "~/__fixtures__/dummy-piped";
+import { DeploymentStatus } from "~/modules/deployments";
 import { Story } from "@storybook/react";
 
 export default {

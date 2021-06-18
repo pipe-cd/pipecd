@@ -1,6 +1,6 @@
 import { DeploymentStatusIcon, DeploymentStatusIconProps } from "./";
 import { Story } from "@storybook/react";
-import { DeploymentStatus } from "../../modules/deployments";
+import { DeploymentStatus } from "~/modules/deployments";
 
 export default {
   title: "DEPLOYMENT/StatusIcon",

@@ -4,9 +4,9 @@ import {
   createSlice,
 } from "@reduxjs/toolkit";
 import { Command, CommandStatus } from "pipe/pkg/app/web/model/command_pb";
-import { getCommand } from "../../api/commands";
-import { PAGE_PATH_DEPLOYMENTS } from "../../constants/path";
-import { findMetadataByKey } from "../../utils/find-metadata-by-key";
+import { getCommand } from "~/api/commands";
+import { PAGE_PATH_DEPLOYMENTS } from "~/constants/path";
+import { findMetadataByKey } from "~/utils/find-metadata-by-key";
 import { addToast } from "../toasts";
 
 const METADATA_KEY = {

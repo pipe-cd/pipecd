@@ -6,8 +6,8 @@ import {
   EntityId,
 } from "@reduxjs/toolkit";
 import { Environment } from "pipe/pkg/app/web/model/environment_pb";
-import type { AppState } from "../../store";
-import * as envsApi from "../../api/environments";
+import type { AppState } from "~/store";
+import * as envsApi from "~/api/environments";
 
 const MODULE_NAME = "environments";
 

@@ -5,7 +5,7 @@ import {
   fetchTemplateList,
   selectTemplatesByAppId,
 } from "./";
-import { dummyDeploymentConfigTemplates } from "../../__fixtures__/dummy-deployment-config";
+import { dummyDeploymentConfigTemplates } from "~/__fixtures__/dummy-deployment-config";
 import { addApplication } from "../applications";
 
 const initialState: DeploymentConfigsState = {

@@ -1,4 +1,4 @@
-import { PipelineStage, StageStatus } from "../modules/deployments";
+import { PipelineStage, StageStatus } from "~/modules/deployments";
 import * as jspb from "google-protobuf";
 import { createRandTimes, randomUUID, randomWords } from "./utils";
 

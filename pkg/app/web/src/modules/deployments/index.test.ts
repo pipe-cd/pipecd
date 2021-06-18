@@ -1,5 +1,5 @@
-import { LoadingStatus } from "../../types/module";
-import { dummyDeployment } from "../../__fixtures__/dummy-deployment";
+import { LoadingStatus } from "~/types/module";
+import { dummyDeployment } from "~/__fixtures__/dummy-deployment";
 import { Command, fetchCommand, CommandStatus } from "../commands";
 import {
   deploymentsSlice,

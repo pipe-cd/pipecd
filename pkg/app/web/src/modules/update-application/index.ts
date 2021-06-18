@@ -1,6 +1,6 @@
 import { createAsyncThunk, createSlice, PayloadAction } from "@reduxjs/toolkit";
 import { ApplicationGitRepository } from "pipe/pkg/app/web/model/common_pb";
-import * as applicationAPI from "../../api/applications";
+import * as applicationAPI from "~/api/applications";
 import { ApplicationKind } from "../applications";
 
 const MODULE_NAME = "updateApplication";

@@ -10,12 +10,12 @@ import {
 import {
   dummyApplicationCounts,
   createInsightApplicationCountFromObject,
-} from "../../__fixtures__/dummy-application-counts";
+} from "~/__fixtures__/dummy-application-counts";
 import {
   createDataPointsListFromObject,
   dummyDataPointsList,
-} from "../../__fixtures__/dummy-insight";
-import { createRandTime } from "../../__fixtures__/utils";
+} from "~/__fixtures__/dummy-insight";
+import { createRandTime } from "~/__fixtures__/utils";
 import { createHandler, createHandlerWithError } from "../create-handler";
 
 export const getInsightApplicationCountHandler = createHandler<

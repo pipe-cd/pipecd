@@ -1,4 +1,4 @@
-import { ApplicationLiveStateSnapshot } from "../modules/applications-live-state";
+import { ApplicationLiveStateSnapshot } from "~/modules/applications-live-state";
 
 export const APPLICATION_HEALTH_STATUS_TEXT: Record<
   ApplicationLiveStateSnapshot.Status,

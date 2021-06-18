@@ -6,14 +6,14 @@ import {
   Typography,
 } from "@material-ui/core";
 import ArrowRightAltIcon from "@material-ui/icons/ArrowRightAlt";
-import { FC, memo, useState } from "react";
+import MuiAlert from "@material-ui/lab/Alert";
 import * as React from "react";
+import { FC, memo, useState } from "react";
 import { useCookies } from "react-cookie";
 import { Link, Redirect, useHistory, useParams } from "react-router-dom";
-import { LoginForm } from "../components/login-form";
-import { PAGE_PATH_APPLICATIONS, PAGE_PATH_LOGIN } from "../constants/path";
-import { useMe } from "../modules/me";
-import MuiAlert from "@material-ui/lab/Alert";
+import { LoginForm } from "~/components/login-form";
+import { PAGE_PATH_APPLICATIONS, PAGE_PATH_LOGIN } from "~/constants/path";
+import { useMe } from "~/modules/me";
 
 const CONTENT_WIDTH = 500;
 

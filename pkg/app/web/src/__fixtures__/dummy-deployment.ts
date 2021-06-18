@@ -1,5 +1,5 @@
 import { ApplicationKind } from "pipe/pkg/app/web/model/common_pb";
-import { Deployment, DeploymentStatus } from "../modules/deployments";
+import { Deployment, DeploymentStatus } from "~/modules/deployments";
 import { createGitPathFromObject } from "./common";
 import { dummyApplication } from "./dummy-application";
 import { dummyEnv } from "./dummy-environment";

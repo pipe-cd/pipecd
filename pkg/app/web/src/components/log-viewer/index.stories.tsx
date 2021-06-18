@@ -1,8 +1,8 @@
 import { LogViewer } from "./";
-import { createDecoratorRedux } from "../../../.storybook/redux-decorator";
-import { LogSeverity, createActiveStageKey } from "../../modules/stage-logs";
-import { dummyDeployment } from "../../__fixtures__/dummy-deployment";
-import { dummyPipelineStage } from "../../__fixtures__/dummy-pipeline";
+import { createDecoratorRedux } from "~~/.storybook/redux-decorator";
+import { LogSeverity, createActiveStageKey } from "~/modules/stage-logs";
+import { dummyDeployment } from "~/__fixtures__/dummy-deployment";
+import { dummyPipelineStage } from "~/__fixtures__/dummy-pipeline";
 import { Story } from "@storybook/react";
 
 export default {

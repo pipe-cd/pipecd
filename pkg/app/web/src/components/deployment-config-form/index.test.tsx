@@ -1,8 +1,8 @@
 import userEvent from "@testing-library/user-event";
 import { setupServer } from "msw/node";
-import { createReduxStore, render, screen, waitFor } from "test-utils";
-import { listDeploymentConfigTemplatesHandler } from "../../mocks/services/deployment-config";
-import { dummyApplication } from "../../__fixtures__/dummy-application";
+import { createReduxStore, render, screen, waitFor } from "~~/test-utils";
+import { listDeploymentConfigTemplatesHandler } from "~/mocks/services/deployment-config";
+import { dummyApplication } from "~/__fixtures__/dummy-application";
 import { DeploymentConfigForm } from "./";
 
 const server = setupServer(listDeploymentConfigTemplatesHandler);

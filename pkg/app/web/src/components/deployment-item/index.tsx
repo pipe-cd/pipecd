@@ -3,16 +3,16 @@ import Skeleton from "@material-ui/lab/Skeleton/Skeleton";
 import dayjs from "dayjs";
 import { FC, memo } from "react";
 import { Link as RouterLink } from "react-router-dom";
-import { APPLICATION_KIND_TEXT } from "../../constants/application-kind";
-import { DEPLOYMENT_STATE_TEXT } from "../../constants/deployment-status-text";
-import { PAGE_PATH_DEPLOYMENTS } from "../../constants/path";
-import { useAppSelector } from "../../hooks/redux";
+import { APPLICATION_KIND_TEXT } from "~/constants/application-kind";
+import { DEPLOYMENT_STATE_TEXT } from "~/constants/deployment-status-text";
+import { PAGE_PATH_DEPLOYMENTS } from "~/constants/path";
+import { useAppSelector } from "~/hooks/redux";
 import {
   Deployment,
   selectById as selectDeploymentById,
-} from "../../modules/deployments";
-import { selectEnvById } from "../../modules/environments";
-import { ellipsis } from "../../styles/text";
+} from "~/modules/deployments";
+import { selectEnvById } from "~/modules/environments";
+import { ellipsis } from "~/styles/text";
 import { DeploymentStatusIcon } from "../deployment-status-icon";
 
 const useStyles = makeStyles((theme) => ({

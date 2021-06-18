@@ -1,18 +1,18 @@
+import { waitFor } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
-import { render, screen, createReduxStore } from "test-utils";
-import { SettingsEnvironmentPage } from "./index";
 import { setupServer } from "msw/node";
+import { MemoryRouter } from "react-router-dom";
+import { createReduxStore, render, screen } from "~~/test-utils";
+import { Toasts } from "~/components/toasts";
+import { DELETE_ENVIRONMENT_SUCCESS } from "~/constants/toast-text";
+import { listApplicationsHandler } from "~/mocks/services/application";
 import {
+  deleteEnvironmentFailedHandler,
   deleteEnvironmentHandler,
   listEnvironmentHandler,
-  deleteEnvironmentFailedHandler,
-} from "../../../mocks/services/environment";
-import { waitFor } from "@testing-library/react";
-import { listApplicationsHandler } from "../../../mocks/services/application";
-import { MemoryRouter } from "react-router-dom";
-import { dummyEnv } from "../../../__fixtures__/dummy-environment";
-import { Toasts } from "../../../components/toasts";
-import { DELETE_ENVIRONMENT_SUCCESS } from "../../../constants/toast-text";
+} from "~/mocks/services/environment";
+import { dummyEnv } from "~/__fixtures__/dummy-environment";
+import { SettingsEnvironmentPage } from "./index";
 const server = setupServer();
 
 beforeAll(() => {

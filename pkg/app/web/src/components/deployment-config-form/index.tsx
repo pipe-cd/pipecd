@@ -10,12 +10,12 @@ import {
 } from "@material-ui/core";
 import OpenInNewIcon from "@material-ui/icons/OpenInNew";
 import { FC, memo, useEffect, useState } from "react";
-import { useAppSelector, useAppDispatch } from "../../hooks/redux";
+import { useAppSelector, useAppDispatch } from "~/hooks/redux";
 import {
   DeploymentConfigTemplate,
   fetchTemplateList,
   selectTemplatesByAppId,
-} from "../../modules/deployment-configs";
+} from "~/modules/deployment-configs";
 import { CopyIconButton } from "../copy-icon-button";
 
 const useStyles = makeStyles((theme) => ({

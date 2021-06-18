@@ -1,7 +1,7 @@
 import { createAsyncThunk, createSlice } from "@reduxjs/toolkit";
 import { Role } from "pipe/pkg/app/web/model/role_pb";
-import { getMe } from "../../api/me";
-import { useAppSelector } from "../../hooks/redux";
+import { getMe } from "~/api/me";
+import { useAppSelector } from "~/hooks/redux";
 
 interface Me {
   subject: string;

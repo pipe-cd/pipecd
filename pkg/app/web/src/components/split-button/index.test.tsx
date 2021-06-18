@@ -1,5 +1,5 @@
 import userEvent from "@testing-library/user-event";
-import { render, screen } from "test-utils";
+import { render, screen } from "~~/test-utils";
 import { SplitButton } from "./";
 
 it("calls onClick handler with option's index if clicked", async () => {

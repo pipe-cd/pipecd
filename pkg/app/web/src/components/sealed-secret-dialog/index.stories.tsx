@@ -1,8 +1,8 @@
 import { action } from "@storybook/addon-actions";
-import { dummyApplication } from "../../__fixtures__/dummy-application";
+import { dummyApplication } from "~/__fixtures__/dummy-application";
 import { SealedSecretDialog } from "./";
 import { Provider } from "react-redux";
-import { createStore } from "test-utils";
+import { createStore } from "~~/test-utils";
 import { Story } from "@storybook/react";
 
 export default {

@@ -11,10 +11,10 @@ import {
 import { render, RenderOptions, RenderResult } from "@testing-library/react";
 import { Provider } from "react-redux";
 import configureMockStore from "redux-mock-store";
-import { reducers } from "../src/modules";
-import type { AppState } from "../src/store";
-import { theme } from "../src/theme";
-import { thunkErrorHandler } from "../src/middlewares/thunk-error-handler";
+import { reducers } from "~/modules";
+import type { AppState } from "~/store";
+import { theme } from "~/theme";
+import { thunkErrorHandler } from "~/middlewares/thunk-error-handler";
 
 const middlewares = getDefaultMiddleware({
   immutableCheck: false,

@@ -1,4 +1,4 @@
-import { InsightStep } from "../modules/insight";
+import { InsightStep } from "~/modules/insight";
 
 export const INSIGHT_STEP_TEXT: Record<InsightStep, string> = {
   [InsightStep.DAILY]: "DAILY",

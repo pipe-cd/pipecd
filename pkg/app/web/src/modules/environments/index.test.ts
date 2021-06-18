@@ -1,11 +1,11 @@
-import { createReduxStore, createStore } from "test-utils";
-import { server } from "../../mocks/server";
+import { createReduxStore, createStore } from "~~/test-utils";
+import { server } from "~/mocks/server";
 import {
   addEnvironmentHandler,
   deleteEnvironmentHandler,
   listEnvironmentHandler,
-} from "../../mocks/services/environment";
-import { dummyEnv } from "../../__fixtures__/dummy-environment";
+} from "~/mocks/services/environment";
+import { dummyEnv } from "~/__fixtures__/dummy-environment";
 import {
   environmentsSlice,
   fetchEnvironments,

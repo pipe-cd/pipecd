@@ -1,4 +1,4 @@
-import { server } from "../mocks/server";
+import { server } from "~/mocks/server";
 import { getMe } from "./me";
 
 beforeAll(() => {

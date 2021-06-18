@@ -18,12 +18,12 @@ import {
   PAGE_PATH_LOGIN,
   LOGOUT_ENDPOINT,
   PAGE_PATH_TOP,
-} from "../../constants/path";
-import { APP_NAME } from "../../constants/common";
+} from "~/constants/path";
+import { APP_NAME } from "~/constants/common";
 import { NavLink as RouterLink } from "react-router-dom";
-import { useMe } from "../../modules/me";
+import { useMe } from "~/modules/me";
 import ArrowDownIcon from "@material-ui/icons/ArrowDropDown";
-import logo from "../../../assets/logo.svg";
+import logo from "~~/assets/logo.svg";
 
 export const APP_HEADER_HEIGHT = 56;
 

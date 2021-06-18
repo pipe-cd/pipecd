@@ -1,8 +1,11 @@
 {
   "compilerOptions": {
     "paths": {
-      "test-utils": [
-        "./test-utils"
+      "~/*": [
+        "./src/*"
+      ],
+      "~~/*": [
+        "./*"
       ],
       "pipe/*": [
         "../../../bazel-out/darwin-fastbuild/bin/*",

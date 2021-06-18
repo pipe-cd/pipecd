@@ -1,5 +1,5 @@
 import dayjs from "dayjs";
-import { InsightDataPoint } from "../modules/insight";
+import { InsightDataPoint } from "~/modules/insight";
 import { randomNumber } from "./utils";
 
 const today = dayjs();

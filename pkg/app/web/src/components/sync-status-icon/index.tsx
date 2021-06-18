@@ -1,7 +1,7 @@
 import { makeStyles } from "@material-ui/core";
 import { Cached, CheckCircle, Error, Info } from "@material-ui/icons";
-import { ApplicationSyncStatus } from "pipe/pkg/app/web/model/application_pb";
 import { FC } from "react";
+import { ApplicationSyncStatus } from "~/modules/applications";
 
 const useStyles = makeStyles((theme) => ({
   [ApplicationSyncStatus.UNKNOWN]: {

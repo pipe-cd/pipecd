@@ -1,11 +1,11 @@
 import { createSlice, createAsyncThunk } from "@reduxjs/toolkit";
 import { LogBlock } from "pipe/pkg/app/web/model/logblock_pb";
-import { getStageLog } from "../../api/stage-log";
+import { getStageLog } from "~/api/stage-log";
 import {
   selectById as selectDeploymentById,
   StageStatus,
 } from "../deployments";
-import { AppState } from "../../store";
+import { AppState } from "~/store";
 import { StatusCode } from "grpc-web";
 
 export type StageLog = {

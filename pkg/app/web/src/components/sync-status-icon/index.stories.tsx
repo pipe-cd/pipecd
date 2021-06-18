@@ -1,6 +1,6 @@
-import { SyncStatusIcon, SyncStatusIconProps } from "./";
-import { ApplicationSyncStatus } from "pipe/pkg/app/web/model/application_pb";
 import { Story } from "@storybook/react";
+import { ApplicationSyncStatus } from "~/modules/applications";
+import { SyncStatusIcon, SyncStatusIconProps } from "./";
 
 export default {
   title: "APPLICATION/SyncStatusIcon",

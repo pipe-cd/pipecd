@@ -13,16 +13,16 @@ import { Skeleton } from "@material-ui/lab";
 import Alert from "@material-ui/lab/Alert";
 import { FC, memo, useCallback } from "react";
 import { shallowEqual } from "react-redux";
-import { DELETE_APPLICATION_SUCCESS } from "../../constants/toast-text";
-import { UI_TEXT_CANCEL, UI_TEXT_DELETE } from "../../constants/ui-text";
-import { useAppSelector, useAppDispatch } from "../../hooks/redux";
-import { Application, selectById } from "../../modules/applications";
+import { DELETE_APPLICATION_SUCCESS } from "~/constants/toast-text";
+import { UI_TEXT_CANCEL, UI_TEXT_DELETE } from "~/constants/ui-text";
+import { useAppSelector, useAppDispatch } from "~/hooks/redux";
+import { Application, selectById } from "~/modules/applications";
 import {
   clearDeletingApp,
   deleteApplication,
-} from "../../modules/delete-application";
-import { addToast } from "../../modules/toasts";
-import { useStyles as useButtonStyles } from "../../styles/button";
+} from "~/modules/delete-application";
+import { addToast } from "~/modules/toasts";
+import { useStyles as useButtonStyles } from "~/styles/button";
 
 const useStyles = makeStyles((theme) => ({
   applicationName: {

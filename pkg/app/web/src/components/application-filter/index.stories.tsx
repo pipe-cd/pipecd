@@ -1,5 +1,5 @@
 import { ApplicationFilter, ApplicationFilterProps } from "./";
-import { createDecoratorRedux } from "../../../.storybook/redux-decorator";
+import { createDecoratorRedux } from "~~/.storybook/redux-decorator";
 import { Story } from "@storybook/react";
 
 export default {

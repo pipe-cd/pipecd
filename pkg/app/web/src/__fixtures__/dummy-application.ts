@@ -4,7 +4,7 @@ import {
   ApplicationDeploymentReference,
   ApplicationSyncState,
   ApplicationSyncStatus,
-} from "../modules/applications";
+} from "~/modules/applications";
 import { createGitPathFromObject } from "./common";
 import { dummyEnv } from "./dummy-environment";
 import { dummyPiped } from "./dummy-piped";

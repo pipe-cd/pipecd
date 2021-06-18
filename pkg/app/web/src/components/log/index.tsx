@@ -1,8 +1,8 @@
 import { FC, memo } from "react";
 import { makeStyles, CircularProgress, Box } from "@material-ui/core";
 import { LogLine } from "../log-line";
-import { DEFAULT_BACKGROUND_COLOR } from "../../constants/term-colors";
-import { LogBlock } from "../../modules/stage-logs";
+import { DEFAULT_BACKGROUND_COLOR } from "~/constants/term-colors";
+import { LogBlock } from "~/modules/stage-logs";
 
 const useStyles = makeStyles((theme) => ({
   container: {

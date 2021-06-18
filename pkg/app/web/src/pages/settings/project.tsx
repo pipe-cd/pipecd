@@ -1,10 +1,10 @@
 import { makeStyles } from "@material-ui/core";
 import { FC, memo, useEffect } from "react";
-import { GithubSSOForm } from "../../components/github-sso-form";
-import { RBACForm } from "../../components/rbac-form";
-import { StaticAdminForm } from "../../components/static-admin-form";
-import { useAppDispatch } from "../../hooks/redux";
-import { fetchProject } from "../../modules/project";
+import { GithubSSOForm } from "~/components/github-sso-form";
+import { RBACForm } from "~/components/rbac-form";
+import { StaticAdminForm } from "~/components/static-admin-form";
+import { useAppDispatch } from "~/hooks/redux";
+import { fetchProject } from "~/modules/project";
 
 const useStyles = makeStyles((theme) => ({
   main: {

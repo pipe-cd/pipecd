@@ -1,4 +1,4 @@
-import { Role } from "../modules/me";
+import { Role } from "~/modules/me";
 
 export const dummyMe = {
   subject: "userName",

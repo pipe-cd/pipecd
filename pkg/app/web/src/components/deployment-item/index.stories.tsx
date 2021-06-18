@@ -1,9 +1,9 @@
 import { DeploymentItem } from "./";
-import { dummyDeployment } from "../../__fixtures__/dummy-deployment";
-import { dummyApplication } from "../../__fixtures__/dummy-application";
-import { dummyEnv } from "../../__fixtures__/dummy-environment";
+import { dummyDeployment } from "~/__fixtures__/dummy-deployment";
+import { dummyApplication } from "~/__fixtures__/dummy-application";
+import { dummyEnv } from "~/__fixtures__/dummy-environment";
 import { Provider } from "react-redux";
-import { createStore } from "test-utils";
+import { createStore } from "~~/test-utils";
 import { Story } from "@storybook/react";
 
 export default {

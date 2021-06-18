@@ -1,4 +1,4 @@
-import { dummyAPIKey } from "../../__fixtures__/dummy-api-key";
+import { dummyAPIKey } from "~/__fixtures__/dummy-api-key";
 import {
   APIKey,
   apiKeysSlice,

@@ -19,23 +19,23 @@ import { Add as AddIcon, MoreVert as MenuIcon } from "@material-ui/icons";
 import Skeleton from "@material-ui/lab/Skeleton";
 import { FC, memo, useCallback, useEffect, useState } from "react";
 import * as React from "react";
-import { DisableAPIKeyConfirmDialog } from "../../components/disable-api-key-confirm-dialog";
-import { GenerateAPIKeyDialog } from "../../components/generate-api-key-dialog";
-import { GeneratedAPIKeyDialog } from "../../components/generated-api-key-dialog";
-import { API_KEY_ROLE_TEXT } from "../../constants/api-key-role-text";
+import { DisableAPIKeyConfirmDialog } from "~/components/disable-api-key-confirm-dialog";
+import { GenerateAPIKeyDialog } from "~/components/generate-api-key-dialog";
+import { GeneratedAPIKeyDialog } from "~/components/generated-api-key-dialog";
+import { API_KEY_ROLE_TEXT } from "~/constants/api-key-role-text";
 import {
   DISABLE_API_KEY_SUCCESS,
   GENERATE_API_KEY_SUCCESS,
-} from "../../constants/toast-text";
+} from "~/constants/toast-text";
 import {
   APIKey,
   generateAPIKey,
   fetchAPIKeys,
   selectAll as selectAPIKeys,
   disableAPIKey,
-} from "../../modules/api-keys";
-import { addToast } from "../../modules/toasts";
-import { useAppSelector, useAppDispatch } from "../../hooks/redux";
+} from "~/modules/api-keys";
+import { addToast } from "~/modules/toasts";
+import { useAppSelector, useAppDispatch } from "~/hooks/redux";
 
 const LoadingSkelton = memo(function LoadingSkelton() {
   return (

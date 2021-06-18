@@ -1,8 +1,8 @@
 import userEvent from "@testing-library/user-event";
-import { createStore, render, screen } from "test-utils";
-import { clearActiveStage } from "../../modules/active-stage";
-import { createActiveStageKey, LogSeverity } from "../../modules/stage-logs";
-import { dummyDeployment } from "../../__fixtures__/dummy-deployment";
+import { createStore, render, screen } from "~~/test-utils";
+import { clearActiveStage } from "~/modules/active-stage";
+import { createActiveStageKey, LogSeverity } from "~/modules/stage-logs";
+import { dummyDeployment } from "~/__fixtures__/dummy-deployment";
 import { LogViewer } from "./";
 
 const activeStageId = createActiveStageKey({

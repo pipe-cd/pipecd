@@ -9,14 +9,14 @@ import {
   Application,
   ApplicationSyncStatus,
 } from "pipe/pkg/app/web/model/application_pb";
-import * as applicationsAPI from "../../api/applications";
+import * as applicationsAPI from "~/api/applications";
 import {
   ApplicationGitRepository,
   ApplicationKind,
 } from "pipe/pkg/app/web/model/common_pb";
 import { SyncStrategy } from "../deployments";
 import { fetchCommand, CommandStatus, Command } from "../commands";
-import type { AppState } from "../../store";
+import type { AppState } from "~/store";
 
 const MODULE_NAME = "applications";
 

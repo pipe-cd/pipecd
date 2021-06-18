@@ -11,21 +11,21 @@ import OpenInNewIcon from "@material-ui/icons/OpenInNew";
 import dayjs from "dayjs";
 import { FC, memo } from "react";
 import { Link as RouterLink } from "react-router-dom";
-import { DEPLOYMENT_STATE_TEXT } from "../../constants/deployment-status-text";
-import { PAGE_PATH_APPLICATIONS } from "../../constants/path";
-import { useAppDispatch, useAppSelector } from "../../hooks/redux";
-import { useInterval } from "../../hooks/use-interval";
-import { ActiveStage } from "../../modules/active-stage";
+import { DEPLOYMENT_STATE_TEXT } from "~/constants/deployment-status-text";
+import { PAGE_PATH_APPLICATIONS } from "~/constants/path";
+import { useAppDispatch, useAppSelector } from "~/hooks/redux";
+import { useInterval } from "~/hooks/use-interval";
+import { ActiveStage } from "~/modules/active-stage";
 import {
   cancelDeployment,
   Deployment,
   isDeploymentRunning,
   selectById as selectDeploymentById,
   selectDeploymentIsCanceling,
-} from "../../modules/deployments";
-import { selectEnvById } from "../../modules/environments";
-import { selectPipedById } from "../../modules/pipeds";
-import { fetchStageLog } from "../../modules/stage-logs";
+} from "~/modules/deployments";
+import { selectEnvById } from "~/modules/environments";
+import { selectPipedById } from "~/modules/pipeds";
+import { fetchStageLog } from "~/modules/stage-logs";
 import { DeploymentStatusIcon } from "../deployment-status-icon";
 import { DetailTableRow } from "../detail-table-row";
 import { SplitButton } from "../split-button";

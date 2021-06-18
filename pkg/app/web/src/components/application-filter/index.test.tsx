@@ -1,12 +1,9 @@
 import userEvent from "@testing-library/user-event";
-import { render, screen } from "test-utils";
-import { UI_TEXT_CLEAR } from "../../constants/ui-text";
-import {
-  ApplicationKind,
-  ApplicationSyncStatus,
-} from "../../modules/applications";
-import { dummyApplication } from "../../__fixtures__/dummy-application";
-import { dummyEnv } from "../../__fixtures__/dummy-environment";
+import { render, screen } from "~~/test-utils";
+import { UI_TEXT_CLEAR } from "~/constants/ui-text";
+import { ApplicationKind, ApplicationSyncStatus } from "~/modules/applications";
+import { dummyApplication } from "~/__fixtures__/dummy-application";
+import { dummyEnv } from "~/__fixtures__/dummy-environment";
 import { ApplicationFilter } from "./";
 
 const initialState = {

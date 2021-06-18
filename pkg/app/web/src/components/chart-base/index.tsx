@@ -10,8 +10,8 @@ import {
 } from "echarts/components";
 import * as echarts from "echarts/core";
 import { CanvasRenderer } from "echarts/renderers";
-import { InsightDataPoint } from "pipe/pkg/app/web/model/insight_pb";
 import { FC, useEffect, useState } from "react";
+import { InsightDataPoint } from "~/modules/insight";
 
 echarts.use([
   TitleComponent,

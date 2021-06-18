@@ -5,7 +5,7 @@ import {
 import {
   createProjectFromObject,
   dummyProject,
-} from "../../__fixtures__/dummy-project";
+} from "~/__fixtures__/dummy-project";
 import { createHandler } from "../create-handler";
 
 export const projectHandlers = [
