@@ -27,24 +27,33 @@ func loadServiceDefinition(path string) (types.Service, error) {
 	if err != nil {
 		return types.Service{}, err
 	}
-	serviceDefinition, err := parseServiceDefinition(data)
-	if err != nil {
-		return types.Service{}, err
-	}
-	clusterArn, err := parseServiceDefinitionForCluster(data)
-	if err != nil {
-		return types.Service{}, err
-	}
-	serviceDefinition.ClusterArn = &clusterArn
-	return serviceDefinition, nil
+	return parseServiceDefinition(data)
 }
 
 func parseServiceDefinition(data []byte) (types.Service, error) {
 	var obj types.Service
-	// TODO: Support loading ServiceDefinition file with JSON format
 	if err := yaml.Unmarshal(data, &obj); err != nil {
 		return types.Service{}, err
 	}
+
+	if obj.ClusterArn == nil {
+		// Rename cluster field to clusterArn if exist
+		clusterArn, err := parseServiceDefinitionForCluster(data)
+		if err != nil {
+			return types.Service{}, err
+		}
+		obj.ClusterArn = &clusterArn
+	}
+
+	if obj.RoleArn == nil {
+		// Rename role field to roleArn if exist
+		roleArn, err := parseServiceDefinitionForRole(data)
+		if err != nil {
+			return types.Service{}, err
+		}
+		obj.RoleArn = &roleArn
+	}
+
 	return obj, nil
 }
 
@@ -52,9 +61,18 @@ func parseServiceDefinitionForCluster(data []byte) (string, error) {
 	var obj struct {
 		Cluster string `json:"cluster"`
 	}
-	// TODO: Support loading ServiceDefinition file with JSON format
 	if err := yaml.Unmarshal(data, &obj); err != nil {
 		return "", err
 	}
 	return obj.Cluster, nil
+}
+
+func parseServiceDefinitionForRole(data []byte) (string, error) {
+	var obj struct {
+		Role string `json:"role"`
+	}
+	if err := yaml.Unmarshal(data, &obj); err != nil {
+		return "", err
+	}
+	return obj.Role, nil
 }
