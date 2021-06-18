@@ -175,7 +175,6 @@ export const PipedTableRow: FC<Props> = memo(function PipedTableRow({
       <Menu
         id="piped-menu"
         anchorEl={anchorEl}
-        keepMounted
         open={Boolean(anchorEl)}
         onClose={handleMenuClose}
         PaperProps={menuStyle}
