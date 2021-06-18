@@ -58,9 +58,8 @@ type ECSSyncStageOptions struct {
 
 // ECSCanaryRolloutStageOptions contains all configurable values for a ECS_CANARY_ROLLOUT stage.
 type ECSCanaryRolloutStageOptions struct {
-	// TODO: Using other risk defined type instead of primitive int.
 	// Scale represents the amount of desired task that should be rolled out as CANARY variant workload.
-	Scale int `json:"scale"`
+	Scale Percentage `json:"scale"`
 }
 
 // ECSPrimaryRolloutStageOptions contains all configurable values for a ECS_PRIMARY_ROLLOUT stage.
