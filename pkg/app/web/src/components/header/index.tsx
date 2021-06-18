@@ -160,7 +160,6 @@ export const Header: FC = memo(function Header() {
       <Menu
         id="user-menu"
         anchorEl={anchorEl}
-        keepMounted
         open={Boolean(anchorEl)}
         onClose={handleClose}
       >

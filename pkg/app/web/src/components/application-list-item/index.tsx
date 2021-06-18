@@ -152,7 +152,6 @@ export const ApplicationListItem: FC<ApplicationListItemProps> = memo(
         <Menu
           id="application-menu"
           anchorEl={anchorEl}
-          keepMounted
           open={Boolean(anchorEl)}
           onClose={() => setAnchorEl(null)}
           PaperProps={{
