@@ -13,13 +13,13 @@ import {
 import { useFormik } from "formik";
 import { FC, memo, useCallback } from "react";
 import * as yup from "yup";
-import { UI_TEXT_CANCEL, UI_TEXT_CLOSE } from "../../constants/ui-text";
-import { useAppDispatch, useAppSelector } from "../../hooks/redux";
-import { Application, selectById } from "../../modules/applications";
+import { UI_TEXT_CANCEL, UI_TEXT_CLOSE } from "~/constants/ui-text";
+import { useAppDispatch, useAppSelector } from "~/hooks/redux";
+import { Application, selectById } from "~/modules/applications";
 import {
   clearSealedSecret,
   generateSealedSecret,
-} from "../../modules/sealed-secret";
+} from "~/modules/sealed-secret";
 import { TextWithCopyButton } from "../text-with-copy-button";
 
 const useStyles = makeStyles((theme) => ({

@@ -9,12 +9,12 @@ import {
 } from "@material-ui/core";
 import Alert from "@material-ui/lab/Alert";
 import { FC, memo } from "react";
-import { useAppSelector, useAppDispatch } from "../../hooks/redux";
+import { useAppSelector, useAppDispatch } from "~/hooks/redux";
 import {
   Application,
   disableApplication,
   selectById,
-} from "../../modules/applications";
+} from "~/modules/applications";
 
 const useStyles = makeStyles((theme) => ({
   disableTargetName: {

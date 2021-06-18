@@ -12,17 +12,13 @@ import EditIcon from "@material-ui/icons/Edit";
 import Skeleton from "@material-ui/lab/Skeleton/Skeleton";
 import * as React from "react";
 import { FC, memo, useState } from "react";
-import { SSO_DESCRIPTION } from "../../constants/text";
-import { UPDATE_SSO_SUCCESS } from "../../constants/toast-text";
-import { UI_TEXT_CANCEL, UI_TEXT_SAVE } from "../../constants/ui-text";
-import { useAppDispatch, useAppSelector } from "../../hooks/redux";
-import {
-  fetchProject,
-  GitHubSSO,
-  updateGitHubSSO,
-} from "../../modules/project";
-import { addToast } from "../../modules/toasts";
-import { useProjectSettingStyles } from "../../styles/project-setting";
+import { SSO_DESCRIPTION } from "~/constants/text";
+import { UPDATE_SSO_SUCCESS } from "~/constants/toast-text";
+import { UI_TEXT_CANCEL, UI_TEXT_SAVE } from "~/constants/ui-text";
+import { useAppDispatch, useAppSelector } from "~/hooks/redux";
+import { fetchProject, GitHubSSO, updateGitHubSSO } from "~/modules/project";
+import { addToast } from "~/modules/toasts";
+import { useProjectSettingStyles } from "~/styles/project-setting";
 import { ProjectSettingLabeledText } from "../project-setting-labeled-text";
 export interface GitHubSSOFormParams {
   clientId: string;

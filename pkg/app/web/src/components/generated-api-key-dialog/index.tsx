@@ -7,8 +7,8 @@ import {
   Typography,
 } from "@material-ui/core";
 import { FC, memo, useCallback } from "react";
-import { useAppSelector, useAppDispatch } from "../../hooks/redux";
-import { clearGeneratedKey } from "../../modules/api-keys";
+import { useAppSelector, useAppDispatch } from "~/hooks/redux";
+import { clearGeneratedKey } from "~/modules/api-keys";
 import { TextWithCopyButton } from "../text-with-copy-button";
 
 const DIALOG_TITLE = "Generated API Key";

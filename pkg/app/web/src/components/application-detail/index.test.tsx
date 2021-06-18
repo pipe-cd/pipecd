@@ -6,19 +6,19 @@ import {
   render,
   screen,
   waitFor,
-} from "test-utils";
-import { server } from "../../mocks/server";
+} from "~~/test-utils";
+import { server } from "~/mocks/server";
 import {
   Application,
   ApplicationSyncStatus,
   syncApplication,
-} from "../../modules/applications";
-import { SyncStrategy } from "../../modules/deployments";
-import type { AppState } from "../../store";
-import { dummyApplication } from "../../__fixtures__/dummy-application";
-import { dummyApplicationLiveState } from "../../__fixtures__/dummy-application-live-state";
-import { dummyEnv } from "../../__fixtures__/dummy-environment";
-import { dummyPiped } from "../../__fixtures__/dummy-piped";
+} from "~/modules/applications";
+import { SyncStrategy } from "~/modules/deployments";
+import type { AppState } from "~/store";
+import { dummyApplication } from "~/__fixtures__/dummy-application";
+import { dummyApplicationLiveState } from "~/__fixtures__/dummy-application-live-state";
+import { dummyEnv } from "~/__fixtures__/dummy-environment";
+import { dummyPiped } from "~/__fixtures__/dummy-piped";
 import { ApplicationDetail } from "./";
 
 beforeAll(() => {

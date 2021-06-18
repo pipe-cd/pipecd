@@ -1,5 +1,5 @@
 import { Story } from "@storybook/react";
-import { resourcesList } from "../../__fixtures__/dummy-application-live-state";
+import { resourcesList } from "~/__fixtures__/dummy-application-live-state";
 import { KubernetesStateView, KubernetesStateViewProps } from "./";
 
 export default {

@@ -12,17 +12,17 @@ import {
 } from "@material-ui/pickers";
 import { MaterialUiPickersDate } from "@material-ui/pickers/typings/date";
 import { FC, memo, useCallback, useEffect } from "react";
-import { INSIGHT_STEP_TEXT } from "../../constants/insight-step-text";
-import { useAppSelector, useAppDispatch } from "../../hooks/redux";
-import { Application, selectAll, selectById } from "../../modules/applications";
-import { fetchDeploymentFrequency } from "../../modules/deployment-frequency";
+import { INSIGHT_STEP_TEXT } from "~/constants/insight-step-text";
+import { useAppSelector, useAppDispatch } from "~/hooks/redux";
+import { Application, selectAll, selectById } from "~/modules/applications";
+import { fetchDeploymentFrequency } from "~/modules/deployment-frequency";
 import {
   changeApplication,
   changeRangeFrom,
   changeRangeTo,
   changeStep,
   InsightStep,
-} from "../../modules/insight";
+} from "~/modules/insight";
 import { WeekPicker } from "../week-picker";
 
 const useStyles = makeStyles((theme) => ({

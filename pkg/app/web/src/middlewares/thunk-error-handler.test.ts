@@ -1,6 +1,6 @@
 import configureMockStore from "redux-mock-store";
 import thunk from "redux-thunk";
-import type { AppState, AppDispatch } from "../store";
+import type { AppState, AppDispatch } from "~/store";
 import { thunkErrorHandler } from "./thunk-error-handler";
 
 const middlewares = [thunkErrorHandler, thunk];

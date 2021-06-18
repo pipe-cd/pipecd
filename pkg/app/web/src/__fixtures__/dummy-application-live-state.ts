@@ -7,7 +7,7 @@ import {
 import {
   ApplicationLiveState,
   ApplicationLiveStateSnapshot,
-} from "../modules/applications-live-state";
+} from "~/modules/applications-live-state";
 import { dummyApplication, dummyApps } from "./dummy-application";
 import { dummyEnv } from "./dummy-environment";
 import { dummyPiped } from "./dummy-piped";

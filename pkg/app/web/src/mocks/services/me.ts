@@ -1,5 +1,5 @@
 import { GetMeResponse } from "pipe/pkg/app/web/api_client/service_pb";
-import { dummyMe } from "../../__fixtures__/dummy-me";
+import { dummyMe } from "~/__fixtures__/dummy-me";
 import { createHandler } from "../create-handler";
 
 export const getMeHandler = createHandler<GetMeResponse>("/GetMe", () => {

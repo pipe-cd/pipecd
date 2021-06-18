@@ -15,16 +15,16 @@ import dayjs from "dayjs";
 import { FC, memo, useCallback, useEffect, useRef, useState } from "react";
 import { useInView } from "react-intersection-observer";
 import { useHistory } from "react-router-dom";
-import { DeploymentFilter } from "../../components/deployment-filter";
-import { DeploymentItem } from "../../components/deployment-item";
-import { PAGE_PATH_DEPLOYMENTS } from "../../constants/path";
+import { DeploymentFilter } from "~/components/deployment-filter";
+import { DeploymentItem } from "~/components/deployment-item";
+import { PAGE_PATH_DEPLOYMENTS } from "~/constants/path";
 import {
   UI_TEXT_FILTER,
   UI_TEXT_HIDE_FILTER,
   UI_TEXT_REFRESH,
-} from "../../constants/ui-text";
-import { useAppSelector, useAppDispatch } from "../../hooks/redux";
-import { fetchApplications } from "../../modules/applications";
+} from "~/constants/ui-text";
+import { useAppSelector, useAppDispatch } from "~/hooks/redux";
+import { fetchApplications } from "~/modules/applications";
 import {
   Deployment,
   DeploymentFilterOptions,
@@ -32,13 +32,10 @@ import {
   fetchMoreDeployments,
   selectById as selectDeploymentById,
   selectIds as selectDeploymentIds,
-} from "../../modules/deployments";
-import { useStyles as useButtonStyles } from "../../styles/button";
-import { LoadingStatus } from "../../types/module";
-import {
-  stringifySearchParams,
-  useSearchParams,
-} from "../../utils/search-params";
+} from "~/modules/deployments";
+import { useStyles as useButtonStyles } from "~/styles/button";
+import { LoadingStatus } from "~/types/module";
+import { stringifySearchParams, useSearchParams } from "~/utils/search-params";
 
 const useStyles = makeStyles((theme) => ({
   deploymentLists: {

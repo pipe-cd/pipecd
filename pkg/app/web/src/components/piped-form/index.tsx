@@ -13,12 +13,12 @@ import Autocomplete from "@material-ui/lab/Autocomplete";
 import { FormikProps } from "formik";
 import { FC, memo } from "react";
 import * as yup from "yup";
-import { useAppSelector } from "../../hooks/redux";
+import { useAppSelector } from "~/hooks/redux";
 import {
   Environment,
   selectAllEnvs,
   selectEnvEntities,
-} from "../../modules/environments";
+} from "~/modules/environments";
 
 const useStyles = makeStyles((theme) => ({
   title: {

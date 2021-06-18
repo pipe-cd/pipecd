@@ -1,5 +1,5 @@
 import { Story } from "@storybook/react";
-import { dummyApplicationSyncState } from "../../__fixtures__/dummy-application";
+import { dummyApplicationSyncState } from "~/__fixtures__/dummy-application";
 
 import { AppSyncStatus, AppSyncStatusProps } from "./";
 

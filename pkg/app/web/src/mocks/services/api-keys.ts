@@ -5,7 +5,7 @@ import {
 import {
   createAPIKeyFromObject,
   dummyAPIKey,
-} from "../../__fixtures__/dummy-api-key";
+} from "~/__fixtures__/dummy-api-key";
 import { createHandler } from "../create-handler";
 
 export const apiKeyHandlers = [

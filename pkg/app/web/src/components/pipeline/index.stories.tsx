@@ -1,10 +1,9 @@
-import { createDecoratorRedux } from "../../../.storybook/redux-decorator";
-import { Pipeline, PipelineProps } from "./";
-import { Deployment } from "../../modules/deployments";
-import { createPipelineStage } from "../../__fixtures__/dummy-pipeline";
-import { METADATA_APPROVED_BY } from "../../constants/metadata-keys";
-import { SyncStrategy } from "pipe/pkg/app/web/model/deployment_pb";
+import { createDecoratorRedux } from "~~/.storybook/redux-decorator";
 import { Story } from "@storybook/react";
+import { METADATA_APPROVED_BY } from "~/constants/metadata-keys";
+import { Deployment, SyncStrategy } from "~/modules/deployments";
+import { createPipelineStage } from "~/__fixtures__/dummy-pipeline";
+import { Pipeline, PipelineProps } from "./";
 
 const DEPLOYMENT_ID = "debug-deployment-id-01";
 const fakeDeployment: Deployment.AsObject = {

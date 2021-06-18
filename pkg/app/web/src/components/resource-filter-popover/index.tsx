@@ -7,7 +7,7 @@ import {
   Popover,
 } from "@material-ui/core";
 import FilterListIcon from "@material-ui/icons/FilterList";
-import { UI_TEXT_FILTER, UI_TEXT_FILTERED } from "../../constants/ui-text";
+import { UI_TEXT_FILTER, UI_TEXT_FILTERED } from "~/constants/ui-text";
 
 export interface ResourceFilterPopoverProps {
   enables: Record<string, boolean>;

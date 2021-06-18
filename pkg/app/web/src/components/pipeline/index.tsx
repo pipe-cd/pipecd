@@ -9,19 +9,19 @@ import {
   makeStyles,
 } from "@material-ui/core";
 import clsx from "clsx";
-import { StageStatus } from "pipe/pkg/app/web/model/deployment_pb";
 import { FC, memo, useCallback, useEffect, useState } from "react";
-import { METADATA_APPROVED_BY } from "../../constants/metadata-keys";
-import { useAppSelector, useAppDispatch } from "../../hooks/redux";
-import { ActiveStage, updateActiveStage } from "../../modules/active-stage";
+import { METADATA_APPROVED_BY } from "~/constants/metadata-keys";
+import { useAppDispatch, useAppSelector } from "~/hooks/redux";
+import { ActiveStage, updateActiveStage } from "~/modules/active-stage";
 import {
   approveStage,
   Deployment,
   isDeploymentRunning,
   selectById,
   Stage,
-} from "../../modules/deployments";
-import { fetchStageLog } from "../../modules/stage-logs";
+  StageStatus,
+} from "~/modules/deployments";
+import { fetchStageLog } from "~/modules/stage-logs";
 import { ApprovalStage } from "../approval-stage";
 import { PipelineStage } from "../pipeline-stage";
 

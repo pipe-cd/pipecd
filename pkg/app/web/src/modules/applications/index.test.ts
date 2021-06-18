@@ -1,10 +1,10 @@
 import { setupServer } from "msw/node";
-import { createStore } from "test-utils";
-import { listApplicationsHandler } from "../../mocks/services/application";
+import { createStore } from "~~/test-utils";
+import { listApplicationsHandler } from "~/mocks/services/application";
 import {
   dummyApplication,
   dummyApplicationSyncState,
-} from "../../__fixtures__/dummy-application";
+} from "~/__fixtures__/dummy-application";
 import {
   addApplication,
   Application,

@@ -3,7 +3,7 @@ import { makeStyles } from "@material-ui/core";
 import {
   HealthStatus,
   ApplicationLiveStateSnapshot,
-} from "../../modules/applications-live-state";
+} from "~/modules/applications-live-state";
 import FavoriteIcon from "@material-ui/icons/Favorite";
 import OtherIcon from "@material-ui/icons/HelpOutline";
 import UnknownIcon from "@material-ui/icons/ErrorOutline";

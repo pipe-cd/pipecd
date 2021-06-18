@@ -10,6 +10,8 @@ module.exports = (env) => {
       extensions: [".mjs", ".js", ".jsx"],
       alias: {
         pipe: path.resolve(env.bazelBinPath),
+        "~": path.resolve(env.bazelBinPath, "pkg/app/web/src"),
+        "~~": path.resolve(env.bazelBinPath, "pkg/app/web"),
       },
     },
     module: {

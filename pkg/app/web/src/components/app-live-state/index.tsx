@@ -4,12 +4,12 @@ import {
   ApplicationLiveState,
   selectById,
   selectLoadingById,
-} from "../../modules/applications-live-state";
+} from "~/modules/applications-live-state";
 import Skeleton from "@material-ui/lab/Skeleton";
 import { ApplicationHealthStatusIcon } from "../health-status-icon";
-import { APPLICATION_HEALTH_STATUS_TEXT } from "../../constants/health-status-text";
-import { UI_TEXT_NOT_AVAILABLE_TEXT } from "../../constants/ui-text";
-import { useAppSelector } from "../../hooks/redux";
+import { APPLICATION_HEALTH_STATUS_TEXT } from "~/constants/health-status-text";
+import { UI_TEXT_NOT_AVAILABLE_TEXT } from "~/constants/ui-text";
+import { useAppSelector } from "~/hooks/redux";
 
 const useStyles = makeStyles((theme) => ({
   liveStateText: {

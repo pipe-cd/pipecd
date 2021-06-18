@@ -14,10 +14,10 @@ import clsx from "clsx";
 import dayjs from "dayjs";
 import { FC, memo, useCallback } from "react";
 import { Link as RouterLink } from "react-router-dom";
-import { APPLICATION_KIND_TEXT } from "../../constants/application-kind";
-import { PAGE_PATH_DEPLOYMENTS } from "../../constants/path";
-import { UI_TEXT_REFRESH } from "../../constants/ui-text";
-import { useAppSelector, useAppDispatch } from "../../hooks/redux";
+import { APPLICATION_KIND_TEXT } from "~/constants/application-kind";
+import { PAGE_PATH_DEPLOYMENTS } from "~/constants/path";
+import { UI_TEXT_REFRESH } from "~/constants/ui-text";
+import { useAppSelector, useAppDispatch } from "~/hooks/redux";
 import {
   Application,
   ApplicationDeploymentReference,
@@ -25,10 +25,10 @@ import {
   selectById as selectApplicationById,
   syncApplication,
   updateDescription,
-} from "../../modules/applications";
-import { SyncStrategy } from "../../modules/deployments";
-import { selectEnvById } from "../../modules/environments";
-import { selectPipedById } from "../../modules/pipeds";
+} from "~/modules/applications";
+import { SyncStrategy } from "~/modules/deployments";
+import { selectEnvById } from "~/modules/environments";
+import { selectPipedById } from "~/modules/pipeds";
 import { AppLiveState } from "../app-live-state";
 import { AppSyncStatus } from "../app-sync-status";
 import { DetailTableRow } from "../detail-table-row";

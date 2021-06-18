@@ -5,7 +5,7 @@ import {
   createEntityAdapter,
 } from "@reduxjs/toolkit";
 import { APIKey } from "pipe/pkg/app/web/model/apikey_pb";
-import * as APIKeysAPI from "../../api/api-keys";
+import * as APIKeysAPI from "~/api/api-keys";
 
 const MODULE_NAME = "apiKeys";
 

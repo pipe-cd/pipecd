@@ -3,8 +3,8 @@ import {
   ProjectRBACConfig,
   ProjectSSOConfig,
 } from "pipe/pkg/app/web/model/project_pb";
-import * as projectAPI from "../../api/project";
-import type { AppState } from "../../store";
+import * as projectAPI from "~/api/project";
+import type { AppState } from "~/store";
 
 export type GitHubSSO = ProjectSSOConfig.GitHub.AsObject;
 export type Teams = ProjectRBACConfig.AsObject;

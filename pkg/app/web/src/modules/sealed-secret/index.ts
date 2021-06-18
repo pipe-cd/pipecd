@@ -1,5 +1,5 @@
 import { createAsyncThunk, createSlice } from "@reduxjs/toolkit";
-import { generateApplicationSealedSecret } from "../../api/piped";
+import { generateApplicationSealedSecret } from "~/api/piped";
 
 export interface SealedSecretState {
   isLoading: boolean;

@@ -1,5 +1,5 @@
 import { Story } from "@storybook/react";
-import { createDecoratorRedux } from "../../../.storybook/redux-decorator";
+import { createDecoratorRedux } from "~~/.storybook/redux-decorator";
 import { GithubSSOForm } from "./";
 
 export default {

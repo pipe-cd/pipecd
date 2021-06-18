@@ -8,7 +8,7 @@ import {
   createEnvFromObject,
   deletedDummyEnv,
   dummyEnv,
-} from "../../__fixtures__/dummy-environment";
+} from "~/__fixtures__/dummy-environment";
 import { createHandler, createHandlerWithError } from "../create-handler";
 
 export const listEnvironmentHandler = createHandler<ListEnvironmentsResponse>(

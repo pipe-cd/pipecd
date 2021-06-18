@@ -1,18 +1,18 @@
 import { Box, makeStyles } from "@material-ui/core";
 import { FC, memo, useEffect } from "react";
 import { useParams } from "react-router-dom";
-import { DeploymentDetail } from "../../components/deployment-detail";
-import { LogViewer } from "../../components/log-viewer";
-import { Pipeline } from "../../components/pipeline";
-import { useAppSelector, useAppDispatch } from "../../hooks/redux";
-import { useInterval } from "../../hooks/use-interval";
-import { clearActiveStage } from "../../modules/active-stage";
+import { DeploymentDetail } from "~/components/deployment-detail";
+import { LogViewer } from "~/components/log-viewer";
+import { Pipeline } from "~/components/pipeline";
+import { useAppSelector, useAppDispatch } from "~/hooks/redux";
+import { useInterval } from "~/hooks/use-interval";
+import { clearActiveStage } from "~/modules/active-stage";
 import {
   Deployment,
   fetchDeploymentById,
   isDeploymentRunning,
   selectById as selectDeploymentById,
-} from "../../modules/deployments";
+} from "~/modules/deployments";
 
 const FETCH_INTERVAL = 4000;
 

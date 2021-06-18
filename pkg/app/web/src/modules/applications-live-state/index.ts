@@ -7,7 +7,7 @@ import {
   ApplicationLiveStateSnapshot,
   KubernetesResourceState,
 } from "pipe/pkg/app/web/model/application_live_state_pb";
-import { getApplicationLiveState } from "../../api/applications";
+import { getApplicationLiveState } from "~/api/applications";
 
 export type ApplicationLiveState = Required<
   ApplicationLiveStateSnapshot.AsObject

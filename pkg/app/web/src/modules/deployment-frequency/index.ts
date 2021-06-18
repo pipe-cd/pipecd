@@ -1,10 +1,10 @@
 import { createAsyncThunk, createSlice } from "@reduxjs/toolkit";
-import type { AppState } from "../../store";
+import type { AppState } from "~/store";
 import { InsightMetricsKind, InsightDataPoint } from "../insight";
 import dayjs from "dayjs";
-import * as InsightAPI from "../../api/insight";
+import * as InsightAPI from "~/api/insight";
 import { InsightStep } from "pipe/pkg/app/web/model/insight_pb";
-import { LoadingStatus } from "../../types/module";
+import { LoadingStatus } from "~/types/module";
 
 const MODULE_NAME = "deploymentFrequency";
 

@@ -7,7 +7,7 @@ import {
   TextField,
 } from "@material-ui/core";
 import { FC, useState } from "react";
-import { UI_TEXT_CANCEL, UI_TEXT_SAVE } from "../../constants/ui-text";
+import { UI_TEXT_CANCEL, UI_TEXT_SAVE } from "~/constants/ui-text";
 
 const DIALOG_TITLE = "Edit Environment description";
 

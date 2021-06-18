@@ -1,8 +1,8 @@
 import { DeploymentConfigForm } from "./";
 import { action } from "@storybook/addon-actions";
-import { createStore } from "test-utils";
+import { createStore } from "~~/test-utils";
 import { Provider } from "react-redux";
-import { dummyDeploymentConfigTemplates } from "../../__fixtures__/dummy-deployment-config";
+import { dummyDeploymentConfigTemplates } from "~/__fixtures__/dummy-deployment-config";
 import { Story } from "@storybook/react";
 
 export default {

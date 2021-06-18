@@ -1,5 +1,5 @@
 import { Log, LogProps } from "./";
-import { LogSeverity } from "../../modules/stage-logs";
+import { LogSeverity } from "~/modules/stage-logs";
 import { Story } from "@storybook/react";
 
 export default {

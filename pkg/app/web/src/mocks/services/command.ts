@@ -2,11 +2,11 @@ import {
   GetCommandRequest,
   GetCommandResponse,
 } from "pipe/pkg/app/web/api_client/service_pb";
-import { Command } from "../../modules/commands";
+import { Command } from "~/modules/commands";
 import {
   dummyCommand,
   dummySyncSucceededCommand,
-} from "../../__fixtures__/dummy-command";
+} from "~/__fixtures__/dummy-command";
 import { createHandler } from "../create-handler";
 
 const createCommandModel = (commandObj: Command.AsObject): Command => {

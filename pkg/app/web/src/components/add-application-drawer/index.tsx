@@ -8,10 +8,10 @@ import {
 } from "@material-ui/core";
 import { useFormik } from "formik";
 import { FC, memo, useCallback, useState } from "react";
-import { UI_TEXT_CANCEL, UI_TEXT_DISCARD } from "../../constants/ui-text";
-import { useAppDispatch, useAppSelector } from "../../hooks/redux";
-import { addApplication } from "../../modules/applications";
-import { selectProjectName } from "../../modules/me";
+import { UI_TEXT_CANCEL, UI_TEXT_DISCARD } from "~/constants/ui-text";
+import { useAppDispatch, useAppSelector } from "~/hooks/redux";
+import { addApplication } from "~/modules/applications";
+import { selectProjectName } from "~/modules/me";
 import {
   ApplicationForm,
   ApplicationFormValue,

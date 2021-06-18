@@ -6,14 +6,14 @@ import {
   LogSeverity,
 } from "./";
 import { setupServer } from "msw/node";
-import { createReduxStore } from "test-utils";
-import { dummyDeployment } from "../../__fixtures__/dummy-deployment";
+import { createReduxStore } from "~~/test-utils";
+import { dummyDeployment } from "~/__fixtures__/dummy-deployment";
 import {
   getStageLogHandler,
   getStageLogNotFoundHandler,
   getStageLogInternalErrorHandler,
-} from "../../mocks/services/stage-log";
-import { dummyLogBlocks } from "../../__fixtures__/dummy-stage-log";
+} from "~/mocks/services/stage-log";
+import { dummyLogBlocks } from "~/__fixtures__/dummy-stage-log";
 import { StageStatus } from "../deployments";
 
 const server = setupServer();

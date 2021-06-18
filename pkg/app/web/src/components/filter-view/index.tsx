@@ -1,7 +1,7 @@
 import { FC } from "react";
 import * as React from "react";
 import { Box, Button, makeStyles, Paper, Typography } from "@material-ui/core";
-import { UI_TEXT_CLEAR } from "../../constants/ui-text";
+import { UI_TEXT_CLEAR } from "~/constants/ui-text";
 
 const useStyles = makeStyles((theme) => ({
   filterPaper: {

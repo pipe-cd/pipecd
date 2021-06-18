@@ -1,14 +1,14 @@
 import { FC, memo, useEffect } from "react";
 import { useParams } from "react-router-dom";
-import { ApplicationDetail } from "../../components/application-detail";
-import { ApplicationStateView } from "../../components/application-state-view";
-import { useAppSelector, useAppDispatch } from "../../hooks/redux";
-import { useInterval } from "../../hooks/use-interval";
-import { fetchApplication } from "../../modules/applications";
+import { ApplicationDetail } from "~/components/application-detail";
+import { ApplicationStateView } from "~/components/application-state-view";
+import { useAppSelector, useAppDispatch } from "~/hooks/redux";
+import { useInterval } from "~/hooks/use-interval";
+import { fetchApplication } from "~/modules/applications";
 import {
   fetchApplicationStateById,
   selectHasError,
-} from "../../modules/applications-live-state";
+} from "~/modules/applications-live-state";
 
 const FETCH_INTERVAL = 4000;
 

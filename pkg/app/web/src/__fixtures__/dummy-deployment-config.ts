@@ -1,5 +1,5 @@
-import { ApplicationKind } from "../modules/applications";
-import { DeploymentConfigTemplate } from "../modules/deployment-configs";
+import { ApplicationKind } from "~/modules/applications";
+import { DeploymentConfigTemplate } from "~/modules/deployment-configs";
 
 export const dummyDeploymentConfigTemplates: DeploymentConfigTemplate.AsObject[] = [
   {

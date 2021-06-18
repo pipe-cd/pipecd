@@ -1,8 +1,8 @@
 import { Header } from "./";
-import { createStore } from "test-utils";
+import { createStore } from "~~/test-utils";
 import { Provider } from "react-redux";
-import { Role } from "../../../../../../bazel-bin/pkg/app/web/model/role_pb";
 import { Story } from "@storybook/react";
+import { Role } from "~/modules/me";
 
 export default {
   title: "COMMON/Header",

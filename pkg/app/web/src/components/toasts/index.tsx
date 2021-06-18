@@ -2,8 +2,8 @@ import { Button, Snackbar, SnackbarCloseReason } from "@material-ui/core";
 import MuiAlert from "@material-ui/lab/Alert";
 import { FC, memo, SyntheticEvent } from "react";
 import { Link as RouterLink } from "react-router-dom";
-import { useAppSelector, useAppDispatch } from "../../hooks/redux";
-import { IToast, removeToast, selectAll } from "../../modules/toasts";
+import { useAppSelector, useAppDispatch } from "~/hooks/redux";
+import { IToast, removeToast, selectAll } from "~/modules/toasts";
 
 const AUTO_HIDE_DURATION = 5000;
 

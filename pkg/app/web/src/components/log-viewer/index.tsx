@@ -9,10 +9,10 @@ import { Close } from "@material-ui/icons";
 import clsx from "clsx";
 import { FC, memo, useCallback, useState } from "react";
 import Draggable from "react-draggable";
-import { useAppSelector, useAppDispatch } from "../../hooks/redux";
-import { clearActiveStage } from "../../modules/active-stage";
-import { isStageRunning, selectById, Stage } from "../../modules/deployments";
-import { selectStageLogById, StageLog } from "../../modules/stage-logs";
+import { useAppSelector, useAppDispatch } from "~/hooks/redux";
+import { clearActiveStage } from "~/modules/active-stage";
+import { isStageRunning, selectById, Stage } from "~/modules/deployments";
+import { selectStageLogById, StageLog } from "~/modules/stage-logs";
 import { APP_HEADER_HEIGHT } from "../header";
 import { Log } from "../log";
 

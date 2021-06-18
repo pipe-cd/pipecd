@@ -1,4 +1,4 @@
-import { APIKey } from "../modules/api-keys";
+import { APIKey } from "~/modules/api-keys";
 import { createRandTime, randomKeyHash, randomUUID } from "./utils";
 
 const createdAt = createRandTime();

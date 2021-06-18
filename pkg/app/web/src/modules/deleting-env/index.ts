@@ -1,6 +1,6 @@
 import { createAsyncThunk, createSlice, PayloadAction } from "@reduxjs/toolkit";
-import type { AppState } from "../../store";
-import * as applicationsAPI from "../../api/applications";
+import type { AppState } from "~/store";
+import * as applicationsAPI from "~/api/applications";
 import { fetchApplicationsByEnv } from "../applications";
 import { deleteEnvironment } from "../environments";
 

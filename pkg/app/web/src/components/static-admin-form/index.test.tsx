@@ -6,9 +6,9 @@ import {
   act,
   waitForElementToBeRemoved,
   waitFor,
-} from "test-utils";
-import { server } from "../../mocks/server";
-import { updateStaticAdmin } from "../../modules/project";
+} from "~~/test-utils";
+import { server } from "~/mocks/server";
+import { updateStaticAdmin } from "~/modules/project";
 import { StaticAdminForm } from "./";
 
 beforeAll(() => {

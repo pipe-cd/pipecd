@@ -1,4 +1,4 @@
-import { dummyApplicationLiveState } from "../../__fixtures__/dummy-application-live-state";
+import { dummyApplicationLiveState } from "~/__fixtures__/dummy-application-live-state";
 import {
   applicationLiveStateSlice,
   ApplicationLiveStateState,

@@ -5,9 +5,9 @@ import {
   ApplicationKind,
 } from "pipe/pkg/app/web/model/common_pb";
 import { InsightApplicationCountLabelKey } from "pipe/pkg/app/web/model/insight_pb";
-import { getApplicationCount } from "../../api/insight";
-import { APPLICATION_ACTIVE_STATUS_NAME } from "../../constants/application-active-status";
-import { APPLICATION_KIND_TEXT } from "../../constants/application-kind";
+import { getApplicationCount } from "~/api/insight";
+import { APPLICATION_ACTIVE_STATUS_NAME } from "~/constants/application-active-status";
+import { APPLICATION_KIND_TEXT } from "~/constants/application-kind";
 
 const MODULE_NAME = "applicationCounts";
 

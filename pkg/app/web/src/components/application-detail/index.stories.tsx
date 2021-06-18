@@ -1,13 +1,13 @@
 import { Provider } from "react-redux";
-import { ApplicationSyncStatus } from "pipe/pkg/app/web/model/application_pb";
-import { createStore } from "test-utils";
-import { dummyApplication } from "../../__fixtures__/dummy-application";
-import { dummyApplicationLiveState } from "../../__fixtures__/dummy-application-live-state";
-import { dummyEnv } from "../../__fixtures__/dummy-environment";
-import { dummyPiped } from "../../__fixtures__/dummy-piped";
+import { createStore } from "~~/test-utils";
+import { dummyApplication } from "~/__fixtures__/dummy-application";
+import { dummyApplicationLiveState } from "~/__fixtures__/dummy-application-live-state";
+import { dummyEnv } from "~/__fixtures__/dummy-environment";
+import { dummyPiped } from "~/__fixtures__/dummy-piped";
 import { ApplicationDetail } from "./";
-import type { AppState } from "../../store";
+import type { AppState } from "~/store";
 import { Story } from "@storybook/react";
+import { ApplicationSyncStatus } from "~/modules/applications";
 
 const dummyStore: Partial<AppState> = {
   applications: {

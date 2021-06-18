@@ -1,11 +1,11 @@
 import { createSlice, createAsyncThunk } from "@reduxjs/toolkit";
-import * as deploymentConfigAPI from "../../api/deployment-config";
+import * as deploymentConfigAPI from "~/api/deployment-config";
 import {
   DeploymentConfigTemplateLabel,
   DeploymentConfigTemplate,
 } from "pipe/pkg/app/web/api_client/service_pb";
 import { addApplication } from "../applications";
-import type { AppState } from "../../store";
+import type { AppState } from "~/store";
 
 export interface DeploymentConfigsState {
   templates: Record<string, DeploymentConfigTemplate.AsObject[]>;

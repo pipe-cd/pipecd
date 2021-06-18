@@ -1,6 +1,6 @@
 import { Story } from "@storybook/react";
-import { createDecoratorRedux } from "../../../.storybook/redux-decorator";
-import { dummyApplicationLiveState } from "../../__fixtures__/dummy-application-live-state";
+import { createDecoratorRedux } from "~~/.storybook/redux-decorator";
+import { dummyApplicationLiveState } from "~/__fixtures__/dummy-application-live-state";
 import { ApplicationStateView, ApplicationStateViewProps } from "./";
 
 export default {

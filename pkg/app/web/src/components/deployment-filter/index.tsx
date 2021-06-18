@@ -8,22 +8,22 @@ import {
 } from "@material-ui/core";
 import Autocomplete from "@material-ui/lab/Autocomplete";
 import { FC, memo, useCallback } from "react";
-import { APPLICATION_KIND_TEXT } from "../../constants/application-kind";
-import { DEPLOYMENT_STATE_TEXT } from "../../constants/deployment-status-text";
-import { useAppSelector } from "../../hooks/redux";
+import { APPLICATION_KIND_TEXT } from "~/constants/application-kind";
+import { DEPLOYMENT_STATE_TEXT } from "~/constants/deployment-status-text";
+import { useAppSelector } from "~/hooks/redux";
 import {
   Application,
   ApplicationKind,
   ApplicationKindKey,
   selectAll as selectAllApplications,
   selectById as selectApplicationById,
-} from "../../modules/applications";
+} from "~/modules/applications";
 import {
   DeploymentFilterOptions,
   DeploymentStatus,
   DeploymentStatusKey,
-} from "../../modules/deployments";
-import { selectAllEnvs } from "../../modules/environments";
+} from "~/modules/deployments";
+import { selectAllEnvs } from "~/modules/environments";
 import { FilterView } from "../filter-view";
 
 const useStyles = makeStyles((theme) => ({

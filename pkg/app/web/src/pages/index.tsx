@@ -2,8 +2,8 @@ import loadable from "@loadable/component";
 import { EntityId } from "@reduxjs/toolkit";
 import { FC, memo, useEffect } from "react";
 import { Redirect, Route, Switch } from "react-router-dom";
-import { Header } from "../components/header";
-import { Toasts } from "../components/toasts";
+import { Header } from "~/components/header";
+import { Toasts } from "~/components/toasts";
 import {
   PAGE_PATH_APPLICATIONS,
   PAGE_PATH_DEPLOYMENTS,
@@ -11,16 +11,16 @@ import {
   PAGE_PATH_LOGIN,
   PAGE_PATH_SETTINGS,
   PAGE_PATH_TOP,
-} from "../constants/path";
-import { useAppSelector, useAppDispatch } from "../hooks/redux";
-import { useInterval } from "../hooks/use-interval";
+} from "~/constants/path";
+import { useAppDispatch, useAppSelector } from "~/hooks/redux";
+import { useInterval } from "~/hooks/use-interval";
 import {
   fetchCommand,
   selectIds as selectCommandIds,
-} from "../modules/commands";
-import { fetchEnvironments } from "../modules/environments";
-import { useMe } from "../modules/me";
-import { fetchPipeds } from "../modules/pipeds";
+} from "~/modules/commands";
+import { fetchEnvironments } from "~/modules/environments";
+import { useMe } from "~/modules/me";
+import { fetchPipeds } from "~/modules/pipeds";
 import { ApplicationIndexPage } from "./applications/index";
 import { DeploymentIndexPage } from "./deployments/index";
 import { LoginPage } from "./login";

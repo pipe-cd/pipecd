@@ -1,15 +1,15 @@
 import { waitFor } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { setupServer } from "msw/node";
-import { createReduxStore, render, screen } from "test-utils";
-import { UI_TEXT_SAVE } from "../../constants/ui-text";
+import { createReduxStore, render, screen } from "~~/test-utils";
+import { UI_TEXT_SAVE } from "~/constants/ui-text";
 import {
   updateApplicationHandler,
   listApplicationsHandler,
-} from "../../mocks/services/application";
-import { dummyApplication } from "../../__fixtures__/dummy-application";
-import { dummyEnv } from "../../__fixtures__/dummy-environment";
-import { dummyPiped } from "../../__fixtures__/dummy-piped";
+} from "~/mocks/services/application";
+import { dummyApplication } from "~/__fixtures__/dummy-application";
+import { dummyEnv } from "~/__fixtures__/dummy-environment";
+import { dummyPiped } from "~/__fixtures__/dummy-piped";
 import { EditApplicationDrawer } from "./";
 
 const server = setupServer(updateApplicationHandler, listApplicationsHandler);

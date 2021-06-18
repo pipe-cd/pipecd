@@ -16,14 +16,14 @@ import {
   Application,
   enableApplication,
   selectAll,
-} from "../../modules/applications";
-import { setDeletingAppId } from "../../modules/delete-application";
-import { setUpdateTargetId } from "../../modules/update-application";
+} from "~/modules/applications";
+import { setDeletingAppId } from "~/modules/delete-application";
+import { setUpdateTargetId } from "~/modules/update-application";
 import { ApplicationListItem } from "../application-list-item";
 import { DeleteApplicationDialog } from "../delete-application-dialog";
 import { DisableApplicationDialog } from "../disable-application-dialog";
 import { SealedSecretDialog } from "../sealed-secret-dialog";
-import { useAppSelector, useAppDispatch } from "../../hooks/redux";
+import { useAppSelector, useAppDispatch } from "~/hooks/redux";
 
 const useStyles = makeStyles(() => ({
   container: {

@@ -16,17 +16,17 @@ import clsx from "clsx";
 import { useFormik } from "formik";
 import { FC, memo, useState } from "react";
 import * as yup from "yup";
-import { STATIC_ADMIN_DESCRIPTION } from "../../constants/text";
-import { UPDATE_STATIC_ADMIN_INFO_SUCCESS } from "../../constants/toast-text";
-import { UI_TEXT_CANCEL, UI_TEXT_SAVE } from "../../constants/ui-text";
-import { useAppDispatch, useAppSelector } from "../../hooks/redux";
+import { STATIC_ADMIN_DESCRIPTION } from "~/constants/text";
+import { UPDATE_STATIC_ADMIN_INFO_SUCCESS } from "~/constants/toast-text";
+import { UI_TEXT_CANCEL, UI_TEXT_SAVE } from "~/constants/ui-text";
+import { useAppDispatch, useAppSelector } from "~/hooks/redux";
 import {
   fetchProject,
   toggleAvailability,
   updateStaticAdmin,
-} from "../../modules/project";
-import { addToast } from "../../modules/toasts";
-import { useProjectSettingStyles } from "../../styles/project-setting";
+} from "~/modules/project";
+import { addToast } from "~/modules/toasts";
+import { useProjectSettingStyles } from "~/styles/project-setting";
 import { ProjectSettingLabeledText } from "../project-setting-labeled-text";
 
 const useStyles = makeStyles(() => ({

@@ -1,4 +1,4 @@
-import { render, screen } from "test-utils";
+import { render, screen } from "~~/test-utils";
 import { ApplicationCounts } from "./index";
 
 test("displaying application counts", () => {

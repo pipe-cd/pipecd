@@ -1,10 +1,10 @@
 import { Box } from "@material-ui/core";
 import { FC, memo, useEffect } from "react";
-import { DeploymentFrequencyChart } from "../../components/deployment-frequency-chart";
-import { InsightHeader } from "../../components/insight-header";
-import { useAppSelector, useAppDispatch } from "../../hooks/redux";
-import { fetchApplications, selectById } from "../../modules/applications";
-import { InsightDataPoint } from "../../modules/insight";
+import { DeploymentFrequencyChart } from "~/components/deployment-frequency-chart";
+import { InsightHeader } from "~/components/insight-header";
+import { useAppSelector, useAppDispatch } from "~/hooks/redux";
+import { fetchApplications, selectById } from "~/modules/applications";
+import { InsightDataPoint } from "~/modules/insight";
 
 export const InsightIndexPage: FC = memo(function InsightIndexPage() {
   const dispatch = useAppDispatch();

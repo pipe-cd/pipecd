@@ -1,6 +1,6 @@
 import { EnvironmentListItem, EnvironmentListItemProps } from "./";
-import { createDecoratorRedux } from "../../../.storybook/redux-decorator";
-import { dummyEnv } from "../../__fixtures__/dummy-environment";
+import { createDecoratorRedux } from "~~/.storybook/redux-decorator";
+import { dummyEnv } from "~/__fixtures__/dummy-environment";
 import { Story } from "@storybook/react";
 
 export default {

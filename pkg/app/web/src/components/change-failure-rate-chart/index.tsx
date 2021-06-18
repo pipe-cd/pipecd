@@ -1,6 +1,6 @@
 import chartColor from "@material-ui/core/colors/deepPurple";
-import { InsightDataPoint } from "pipe/pkg/app/web/model/insight_pb";
 import { FC } from "react";
+import { InsightDataPoint } from "~/modules/insight";
 import { ChartBase } from "../chart-base";
 
 export interface ChangeFailureRateChartProps {

@@ -1,9 +1,9 @@
 import { setupServer } from "msw/node";
-import { createReduxStore, createStore } from "test-utils";
+import { createReduxStore, createStore } from "~~/test-utils";
 import {
   getInsightApplicationCountHandler,
   getInsightApplicationCountNotFound,
-} from "../../mocks/services/insight";
+} from "~/mocks/services/insight";
 import { applicationCountsSlice, fetchApplicationCount } from "./";
 
 const server = setupServer();

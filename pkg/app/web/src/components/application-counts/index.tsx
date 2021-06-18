@@ -1,12 +1,12 @@
 import { makeStyles } from "@material-ui/core";
 import { FC, memo } from "react";
-import { APPLICATION_ACTIVE_STATUS_NAME } from "../../constants/application-active-status";
-import { APPLICATION_KIND_BY_NAME } from "../../constants/application-kind";
-import { useAppSelector } from "../../hooks/redux";
+import { APPLICATION_ACTIVE_STATUS_NAME } from "~/constants/application-active-status";
+import { APPLICATION_KIND_BY_NAME } from "~/constants/application-kind";
+import { useAppSelector } from "~/hooks/redux";
 import {
   ApplicationActiveStatus,
   ApplicationKind,
-} from "../../modules/applications";
+} from "~/modules/applications";
 import { ApplicationCount } from "../application-count";
 
 const useStyles = makeStyles((theme) => ({

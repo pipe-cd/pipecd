@@ -1,6 +1,6 @@
-import { StageStatusIcon, StageStatusIconProps } from "./";
-import { StageStatus } from "pipe/pkg/app/web/model/deployment_pb";
 import { Story } from "@storybook/react";
+import { StageStatus } from "~/modules/deployments";
+import { StageStatusIcon, StageStatusIconProps } from "./";
 
 export default {
   title: "DEPLOYMENT/StageStatusIcon",

@@ -1,8 +1,8 @@
 import { IconButton } from "@material-ui/core";
 import { FileCopyOutlined as CopyIcon } from "@material-ui/icons";
 import { FC, useCallback, memo } from "react";
-import { useAppDispatch } from "../../hooks/redux";
-import { addToast } from "../../modules/toasts";
+import { useAppDispatch } from "~/hooks/redux";
+import { addToast } from "~/modules/toasts";
 
 export interface CopyIconButtonProps {
   name: string;

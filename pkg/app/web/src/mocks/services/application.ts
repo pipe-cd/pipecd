@@ -10,12 +10,12 @@ import {
   UpdateApplicationDescriptionResponse,
   UpdateApplicationResponse,
 } from "pipe/pkg/app/web/api_client/service_pb";
-import { ApplicationKind } from "../../modules/applications";
+import { ApplicationKind } from "~/modules/applications";
 import {
   createApplicationFromObject,
   dummyApplication,
   dummyApps,
-} from "../../__fixtures__/dummy-application";
+} from "~/__fixtures__/dummy-application";
 import { createHandler } from "../create-handler";
 
 export const updateApplicationHandler = createHandler<

@@ -1,11 +1,11 @@
 import { Drawer } from "@material-ui/core";
 import { useFormik } from "formik";
 import { FC, memo, useCallback } from "react";
-import { ADD_PIPED_SUCCESS } from "../../constants/toast-text";
-import { useAppSelector, useAppDispatch } from "../../hooks/redux";
-import { selectProjectName } from "../../modules/me";
-import { addPiped } from "../../modules/pipeds";
-import { addToast } from "../../modules/toasts";
+import { ADD_PIPED_SUCCESS } from "~/constants/toast-text";
+import { useAppSelector, useAppDispatch } from "~/hooks/redux";
+import { selectProjectName } from "~/modules/me";
+import { addPiped } from "~/modules/pipeds";
+import { addToast } from "~/modules/toasts";
 import { PipedForm, PipedFormValues, validationSchema } from "../piped-form";
 
 export interface AddPipedDrawerProps {

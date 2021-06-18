@@ -5,20 +5,20 @@ import {
   makeStyles,
   Typography,
 } from "@material-ui/core";
-import { ApplicationKind } from "pipe/pkg/app/web/model/common_pb";
 import { FC, memo } from "react";
-import { UI_TEXT_REFRESH } from "../../constants/ui-text";
-import { useAppSelector, useAppDispatch } from "../../hooks/redux";
+import { UI_TEXT_REFRESH } from "~/constants/ui-text";
+import { useAppSelector, useAppDispatch } from "~/hooks/redux";
 import {
   Application,
+  ApplicationKind,
   selectById as selectAppById,
-} from "../../modules/applications";
+} from "~/modules/applications";
 import {
   ApplicationLiveState,
   fetchApplicationStateById,
   selectById as selectLiveStateById,
   selectHasError,
-} from "../../modules/applications-live-state";
+} from "~/modules/applications-live-state";
 import { KubernetesStateView } from "../kubernetes-state-view";
 
 export interface ApplicationStateViewProps {

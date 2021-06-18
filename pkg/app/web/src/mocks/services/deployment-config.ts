@@ -2,7 +2,7 @@ import { ListDeploymentConfigTemplatesResponse } from "pipe/pkg/app/web/api_clie
 import {
   dummyDeploymentConfigTemplates,
   deploymentConfigTemplateFromObject,
-} from "../../__fixtures__/dummy-deployment-config";
+} from "~/__fixtures__/dummy-deployment-config";
 import { createHandler } from "../create-handler";
 
 export const listDeploymentConfigTemplatesHandler = createHandler<

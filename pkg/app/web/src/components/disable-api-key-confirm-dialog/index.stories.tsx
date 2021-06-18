@@ -1,6 +1,6 @@
 import { Story } from "@storybook/react";
-import { createDecoratorRedux } from "../../../.storybook/redux-decorator";
-import { dummyAPIKey } from "../../__fixtures__/dummy-api-key";
+import { createDecoratorRedux } from "~~/.storybook/redux-decorator";
+import { dummyAPIKey } from "~/__fixtures__/dummy-api-key";
 import {
   DisableAPIKeyConfirmDialog,
   DisableAPIKeyConfirmDialogProps,

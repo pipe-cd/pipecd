@@ -1,6 +1,6 @@
 import { Story } from "@storybook/react";
-import { createDecoratorRedux } from "../../../.storybook/redux-decorator";
-import { dummyEnv } from "../../__fixtures__/dummy-environment";
+import { createDecoratorRedux } from "~~/.storybook/redux-decorator";
+import { dummyEnv } from "~/__fixtures__/dummy-environment";
 import { AddPipedDrawer, AddPipedDrawerProps } from "./";
 
 const env2 = { ...dummyEnv, id: "env-2", name: "development" };

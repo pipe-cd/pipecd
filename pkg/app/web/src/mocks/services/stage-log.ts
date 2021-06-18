@@ -3,7 +3,7 @@ import { GetStageLogResponse } from "pipe/pkg/app/web/api_client/service_pb";
 import {
   createLogBlockFromObject,
   dummyLogBlocks,
-} from "../../__fixtures__/dummy-stage-log";
+} from "~/__fixtures__/dummy-stage-log";
 import { createHandler, createHandlerWithError } from "../create-handler";
 
 export const getStageLogHandler = createHandler<GetStageLogResponse>(
