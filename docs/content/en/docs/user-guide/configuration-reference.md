@@ -93,6 +93,7 @@ spec:
 ``` yaml
 apiVersion: pipecd.dev/v1beta1
 kind: ECSApp
+input:
 spec:
   pipeline:
   ...
@@ -100,6 +101,7 @@ spec:
 
 | Field | Type | Description | Required |
 |-|-|-|-|
+| input | [ECSDeploymentInput](#ecsdeploymentinput) | Input for ECS deployment such as TaskDefinition, Service... | Yes |
 | quickSync | [ECSQuickSync](/docs/user-guide/configuration-reference/#ecsquicksync) | Configuration for quick sync. | No |
 | pipeline | [Pipeline](/docs/user-guide/configuration-reference/#pipeline) | Pipeline for deploying progressively. | No |
 | triggerPaths | []string | List of directories or files where their changes will trigger the deployment. Regular expression can be used. | No |
@@ -294,6 +296,23 @@ spec:
 
 | Field | Type | Description | Required |
 |-|-|-|-|
+
+## ECSDeploymentInput
+
+| Field | Type | Description | Required |
+|-|-|-|-|
+| serviceDefinitionFile | string | The path ECS Service configuration file. Allow file in both `yaml` and `json` format. The default value is `servicedef.json`. | No |
+| taskDefinitionFile | string | The path to ECS TaskDefinition configuration file. Allow file in both `yaml` and `json` format. The default value is `taskdef.json`. | No |
+| targetGroups | [ECSTargetGroupInput](#ecstargetgroupinput) | The target groups configuration, will be used to routing traffic to created task sets. | Yes |
+
+### ECSTargetGroupInput
+
+| Field | Type | Description | Required |
+|-|-|-|-|
+| primary | ECSTargetGroupObject | The PRIMARY target group, will be used to register the PRIMARY ECS task set. | Yes |
+| canary | ECSTargetGroupObject | The CANARY target group, will be used to register the CANARY ECS task set if exist. It's required to enable PipeCD to perform the multi-stage deployment. | No |
+
+Note: You can get examples for those object from [here](/docs/examples/#ecs-applications).
 
 ## ECSQuickSync
 
