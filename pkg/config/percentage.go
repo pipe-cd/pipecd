@@ -53,7 +53,7 @@ func (p *Percentage) UnmarshalJSON(b []byte) error {
 	}
 	value, err := strconv.ParseInt(raw, 10, 64)
 	if err != nil {
-		return fmt.Errorf("invalid percentage: %v", err)
+		return fmt.Errorf("invalid percentage: %w", err)
 	}
 	percentage.Number = int(value)
 	*p = percentage
