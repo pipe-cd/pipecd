@@ -43,7 +43,7 @@ func (p Percentage) MarshalJSON() ([]byte, error) {
 }
 
 func (p *Percentage) UnmarshalJSON(b []byte) error {
-	raw := strings.Trim(string(b), "\"")
+	raw := strings.Trim(string(b), `"`)
 	percentage := Percentage{
 		HasSuffix: false,
 	}
