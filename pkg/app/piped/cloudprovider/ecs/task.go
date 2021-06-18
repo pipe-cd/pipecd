@@ -34,7 +34,6 @@ func loadTaskDefinition(path string) (types.TaskDefinition, error) {
 
 func parseTaskDefinition(data []byte) (types.TaskDefinition, error) {
 	var obj types.TaskDefinition
-	// TODO: Support loading TaskDefinition file with JSON format
 	if err := yaml.Unmarshal(data, &obj); err != nil {
 		return types.TaskDefinition{}, err
 	}
