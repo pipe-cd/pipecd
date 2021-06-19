@@ -46,7 +46,7 @@ kind: ECSApp
 spec:
   input:
     # Path to Service configuration file in Yaml/JSON format.
-    # Default is `servicedef.json`
+    # Default is `service.json`
     serviceDefinitionFile: servicedef.yaml
     # Path to TaskDefinition configuration file in Yaml/JSON format.
     # Default is `taskdef.json`

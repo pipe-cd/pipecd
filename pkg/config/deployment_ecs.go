@@ -35,8 +35,8 @@ func (s *ECSDeploymentSpec) Validate() error {
 
 type ECSDeploymentInput struct {
 	// The name of service definition file placing in application directory.
-	// Default is servicedef.json
-	ServiceDefinitionFile string `json:"serviceDefinitionFile" default:"servicedef.json"`
+	// Default is service.json
+	ServiceDefinitionFile string `json:"serviceDefinitionFile" default:"service.json"`
 	// The name of task definition file placing in application directory.
 	// Default is taskdef.json
 	TaskDefinitionFile string `json:"taskDefinitionFile" default:"taskdef.json"`
