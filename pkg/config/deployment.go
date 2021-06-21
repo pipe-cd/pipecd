@@ -40,6 +40,8 @@ type GenericDeploymentSpec struct {
 	// The maximum length of time to execute deployment before giving up.
 	// Default is 6h.
 	Timeout Duration `json:"timeout,omitempty" default:"6h"`
+	// List of encrypted secrets and targets that should be decoded before using.
+	Encryption *SecretEncryption `json:"encryption"`
 }
 
 func (s *GenericDeploymentSpec) Validate() error {
@@ -52,6 +54,13 @@ func (s *GenericDeploymentSpec) Validate() error {
 			}
 		}
 	}
+
+	if e := s.Encryption; e != nil {
+		if err := e.Validate(); err != nil {
+			return err
+		}
+	}
+
 	return nil
 }
 
@@ -345,4 +354,23 @@ type SealedSecretMapping struct {
 	// The directory name where to put the decrypted secret.
 	// Empty means the same directory with the sealed secret file.
 	OutDir string `json:"outDir"`
+}
+
+type SecretEncryption struct {
+	// List of encrypted secrets.
+	EncryptedSecrets map[string]string `json:"encryptedSecrets"`
+	// List of files to be decrypted before using.
+	DecryptionTargets []string `json:"decryptionTargets"`
+}
+
+func (e *SecretEncryption) Validate() error {
+	for k, v := range e.EncryptedSecrets {
+		if k == "" {
+			return fmt.Errorf("key field in encryptedSecrets must not be empty")
+		}
+		if v == "" {
+			return fmt.Errorf("value field of %s in encryptedSecrets must not be empty", k)
+		}
+	}
+	return nil
 }

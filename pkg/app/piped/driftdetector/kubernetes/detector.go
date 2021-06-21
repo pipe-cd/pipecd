@@ -28,6 +28,7 @@ import (
 
 	provider "github.com/pipe-cd/pipe/pkg/app/piped/cloudprovider/kubernetes"
 	"github.com/pipe-cd/pipe/pkg/app/piped/livestatestore/kubernetes"
+	"github.com/pipe-cd/pipe/pkg/app/piped/sourcedecrypter"
 	"github.com/pipe-cd/pipe/pkg/cache"
 	"github.com/pipe-cd/pipe/pkg/config"
 	"github.com/pipe-cd/pipe/pkg/diff"
@@ -242,7 +243,12 @@ func (d *detector) loadHeadManifests(ctx context.Context, app *model.Application
 			return nil, fmt.Errorf("unsupport application kind %s", cfg.Kind)
 		}
 
-		if d.secretDecrypter != nil && len(gds.SealedSecrets) > 0 {
+		var (
+			shouldDecryptSealedSecrets = d.secretDecrypter != nil && len(gds.SealedSecrets) > 0
+			shouldDecryptSecrets       = d.secretDecrypter != nil && gds.Encryption != nil
+		)
+
+		if shouldDecryptSealedSecrets || shouldDecryptSecrets {
 			// We have to copy repository into another directory because
 			// decrypting the sealed secrets might change the git repository.
 			dir, err := ioutil.TempDir("", "detector-git-decrypt")
@@ -258,8 +264,15 @@ func (d *detector) loadHeadManifests(ctx context.Context, app *model.Application
 			repoDir = repo.GetPath()
 			appDir = filepath.Join(repoDir, app.GitPath.Path)
 
-			if err := decryptSecrets(appDir, gds.SealedSecrets, d.secretDecrypter); err != nil {
-				return nil, fmt.Errorf("failed to decrypt sealed secrets (%w)", err)
+			if shouldDecryptSealedSecrets {
+				if err := sourcedecrypter.DecryptSealedSecrets(appDir, gds.SealedSecrets, d.secretDecrypter); err != nil {
+					return nil, fmt.Errorf("failed to decrypt sealed secrets (%w)", err)
+				}
+			}
+			if shouldDecryptSecrets {
+				if err := sourcedecrypter.DecryptSecrets(appDir, *gds.Encryption, d.secretDecrypter); err != nil {
+					return nil, fmt.Errorf("failed to decrypt secrets (%w)", err)
+				}
 			}
 		}
 
@@ -289,44 +302,6 @@ func (d *detector) loadHeadManifests(ctx context.Context, app *model.Application
 	}
 
 	return filtered, nil
-}
-
-func decryptSecrets(appDir string, secrets []config.SealedSecretMapping, dcr secretDecrypter) error {
-	for _, s := range secrets {
-		secretPath := filepath.Join(appDir, s.Path)
-		cfg, err := config.LoadFromYAML(secretPath)
-		if err != nil {
-			return fmt.Errorf("unable to read sealed secret file %s (%w)", s.Path, err)
-		}
-		if cfg.Kind != config.KindSealedSecret {
-			return fmt.Errorf("unexpected kind in sealed secret file %s, want %q but got %q", s.Path, config.KindSealedSecret, cfg.Kind)
-		}
-
-		content, err := cfg.SealedSecretSpec.RenderOriginalContent(dcr)
-		if err != nil {
-			return fmt.Errorf("unable to render the original content of the sealed secret file %s (%w)", s.Path, err)
-		}
-
-		outDir, outFile := filepath.Split(s.Path)
-		if s.OutFilename != "" {
-			outFile = s.OutFilename
-		}
-		if s.OutDir != "" {
-			outDir = s.OutDir
-		}
-		// TODO: Ensure that the output directory must be inside the application directory.
-		if outDir != "" {
-			if err := os.MkdirAll(filepath.Join(appDir, outDir), 0700); err != nil {
-				return fmt.Errorf("unable to write decrypted content of sealed secret file %s to directory %s (%w)", s.Path, outDir, err)
-			}
-		}
-		outPath := filepath.Join(appDir, outDir, outFile)
-
-		if err := ioutil.WriteFile(outPath, content, 0644); err != nil {
-			return fmt.Errorf("unable to write decrypted content of sealed secret file %s (%w)", s.Path, err)
-		}
-	}
-	return nil
 }
 
 // listGroupedApplication retrieves all applications those should be handled by this director
