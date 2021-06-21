@@ -184,7 +184,7 @@ func (p *provider) prepare(ctx context.Context, lw io.Writer) (*DeploySource, er
 		}
 		writeLog(lw, "Successfully decrypted %d sealed secrets", len(gdc.SealedSecrets))
 	}
-	if gdc.Encryption != nil && p.secretDecrypter != nil {
+	if gdc.Encryption != nil && p.secretDecrypter != nil && len(gdc.Encryption.DecryptionTargets) > 0 {
 		if err := sourcedecrypter.DecryptSecrets(appDir, *gdc.Encryption, p.secretDecrypter); err != nil {
 			writeLog(lw, "Unable to decrypt the secrets (%v)", err)
 			return nil, err
