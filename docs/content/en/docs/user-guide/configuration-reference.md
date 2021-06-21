@@ -93,8 +93,8 @@ spec:
 ``` yaml
 apiVersion: pipecd.dev/v1beta1
 kind: ECSApp
-input:
 spec:
+  input:
   pipeline:
   ...
 ```
