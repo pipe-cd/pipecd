@@ -57,4 +57,12 @@ A repository contains some examples for PipeCD.
 | [analysis](https://github.com/pipe-cd/examples/tree/master/lambda/analysis) | Deployment pipeline that contains an analysis stage. |
 | [remote-git](https://github.com/pipe-cd/examples/tree/master/lambda/remote-git) | Deploy the lambda code sourced from another Git repository. |
 
+### ECS Applications
+
+| Name                                                                        | Description |
+|-----------------------------------------------------------------------------|-------------|
+| [simple](https://github.com/pipe-cd/examples/tree/master/ecs/simple) | Quick sync by rolling out the new version and switching all traffic to it. |
+| [canary](https://github.com/pipe-cd/examples/tree/master/ecs/canary) | Deployment pipeline with canary strategy. |
+| [bluegreen](https://github.com/pipe-cd/examples/tree/master/ecs/bluegreen) | Deployment pipeline with blue-green strategy. |
+
 **Note** that the `.kapetanios` directory is for our CI configurations. It has nothing to do with PipeCD.
