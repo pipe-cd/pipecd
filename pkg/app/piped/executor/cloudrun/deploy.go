@@ -114,7 +114,7 @@ func (e *deployExecutor) ensurePromote(ctx context.Context) model.StageStatus {
 		return model.StageStatus_STAGE_FAILURE
 	}
 	metadata := map[string]string{
-		promotePercentageMetadataKey: strconv.FormatInt(int64(options.Percent), 10),
+		promotePercentageMetadataKey: strconv.FormatInt(int64(options.Percent.Int()), 10),
 	}
 	if err := e.MetadataStore.SetStageMetadata(ctx, e.Stage.Id, metadata); err != nil {
 		e.Logger.Error("failed to save routing percentages to metadata", zap.Error(err))
@@ -162,11 +162,11 @@ func (e *deployExecutor) ensurePromote(ctx context.Context) model.StageStatus {
 	traffics := []provider.RevisionTraffic{
 		{
 			RevisionName: revision,
-			Percent:      options.Percent,
+			Percent:      options.Percent.Int(),
 		},
 		{
 			RevisionName: lastDeployedRevision,
-			Percent:      100 - options.Percent,
+			Percent:      100 - options.Percent.Int(),
 		},
 	}
 	if !configureServiceManifest(&e.Input, sm, revision, traffics) {

@@ -385,9 +385,9 @@ Therefore, note that all traffic will be routed to the primary if the the primar
 | Field | Type | Description | Required |
 |-|-|-|-|
 | all | string | Which variant should receive all traffic. Available values are "primary", "canary", "baseline". Default is `primary`. | No |
-| primary | int | The percentage of traffic should be routed to PRIMARY variant. | No |
-| canary | int | The percentage of traffic should be routed to CANARY variant. | No |
-| baseline | int | The percentage of traffic should be routed to BASELINE variant. | No |
+| primary | [Percentage](#percentage) | The percentage of traffic should be routed to PRIMARY variant. | No |
+| canary | [Percentage](#percentage) | The percentage of traffic should be routed to CANARY variant. | No |
+| baseline | [Percentage](#percentage) | The percentage of traffic should be routed to BASELINE variant. | No |
 
 ### TerraformPlanStageOptions
 
@@ -404,7 +404,7 @@ Therefore, note that all traffic will be routed to the primary if the the primar
 
 | Field | Type | Description | Required |
 |-|-|-|-|
-| percent | int | Percentage of traffic should be routed to the new version. | No |
+| percent | [Percentage](#percentage) | Percentage of traffic should be routed to the new version. | No |
 
 ### LambdaCanaryRolloutStageOptions
 
@@ -415,7 +415,7 @@ Therefore, note that all traffic will be routed to the primary if the the primar
 
 | Field | Type | Description | Required |
 |-|-|-|-|
-| percent | int | Percentage of traffic should be routed to the new version. | No |
+| percent | [Percentage](#percentage) | Percentage of traffic should be routed to the new version. | No |
 
 ### ECSPrimaryRolloutStageOptions
 
@@ -426,14 +426,14 @@ Therefore, note that all traffic will be routed to the primary if the the primar
 
 | Field | Type | Description | Required |
 |-|-|-|-|
-| scale | int | The percentage of workloads should be rolled out as CANARY variant's workload. | Yes |
+| scale | [Percentage](#percentage) | The percentage of workloads should be rolled out as CANARY variant's workload. | Yes |
 
 ### ECSTrafficRoutingStageOptions
 
 | Field | Type | Description | Required |
 |-|-|-|-|
-| primary | int | The percentage of traffic should be routed to PRIMARY variant. | No |
-| canary | int | The percentage of traffic should be routed to CANARY variant. | No |
+| primary | [Percentage](#percentage) | The percentage of traffic should be routed to PRIMARY variant. | No |
+| canary | [Percentage](#percentage) | The percentage of traffic should be routed to CANARY variant. | No |
 
 Note: By default, the sum of traffic is rounded to 100. If both `primary` and `canary` numbers are not set, the PRIMARY variant will receive 100% while the CANARY variant will receive 0% of the traffic.
 
@@ -444,3 +444,7 @@ Note: By default, the sum of traffic is rounded to 100. If both `primary` and `c
 | duration | duration | Maximum time to perform the analysis. | Yes |
 | metrics | [][AnalysisMetrics](/docs/user-guide/configuration-reference/#analysismetrics) | Configuration for analysis by metrics. | No |
 
+## PipeCD rich defined types
+
+### Percentage
+A wrapper of type `int` to represent percentage data. Basically, you can pass `10` or `"10"` or `10%` and they will be treated as `10%` in PipeCD.

@@ -73,19 +73,20 @@ type ECSCanaryCleanStageOptions struct {
 // ECSTrafficRoutingStageOptions contains all configurable values for ECS_TRAFFIC_ROUTING stage.
 type ECSTrafficRoutingStageOptions struct {
 	// Canary represents the amount of traffic that the rolled out CANARY variant will serve.
-	Canary int `json:"canary"`
+	Canary Percentage `json:"canary"`
 	// Primary represents the amount of traffic that the rolled out CANARY variant will serve.
-	Primary int `json:"primary"`
+	Primary Percentage `json:"primary"`
 }
 
 func (opts ECSTrafficRoutingStageOptions) Percentage() (primary, canary int) {
-	if opts.Primary > 0 && opts.Primary <= 100 {
-		primary = opts.Primary
+	primary = opts.Primary.Int()
+	if primary > 0 && primary <= 100 {
 		canary = 100 - primary
 		return
 	}
-	if opts.Canary > 0 && opts.Canary <= 100 {
-		canary = opts.Canary
+
+	canary = opts.Canary.Int()
+	if canary > 0 && canary <= 100 {
 		primary = 100 - canary
 		return
 	}
