@@ -6,7 +6,7 @@ description: >
   Specific guide for configuring Amazon ECS deployment.
 ---
 
-Deploying an Amazon ECS application requires `taskdef.yaml` and `servicedef.yaml` file placing inside the application directory. Those files contain all configuration for [ECS TaskDefinition](https://docs.aws.amazon.com/AmazonECS/latest/developerguide/task_definitions.html) object and [ECS Service](https://docs.aws.amazon.com/AmazonECS/latest/developerguide/ecs_services.html) object, and will be used by Piped agent while deploy your application/service to ECS cluster.
+Deploying an Amazon ECS application requires `TaskDefinition` and `Service` configuration files placing inside the application directory. Those files contain all configuration for [ECS TaskDefinition](https://docs.aws.amazon.com/AmazonECS/latest/developerguide/task_definitions.html) object and [ECS Service](https://docs.aws.amazon.com/AmazonECS/latest/developerguide/ecs_services.html) object, and will be used by Piped agent while deploy your application/service to ECS cluster.
 
 If you're not familiar with ECS, you can get examples for those files from [here](/docs/examples/#ecs-applications).
 
@@ -44,6 +44,22 @@ Here is an example that rolls out the new version gradually:
 apiVersion: pipecd.dev/v1beta1
 kind: ECSApp
 spec:
+  input:
+    # Path to Service configuration file in Yaml/JSON format.
+    # Default is `service.json`
+    serviceDefinitionFile: servicedef.yaml
+    # Path to TaskDefinition configuration file in Yaml/JSON format.
+    # Default is `taskdef.json`
+    taskDefinitionFile: taskdef.yaml
+    targetGroups:
+      primary:
+        targetGroupArn: arn:aws:elasticloadbalancing:ap-northeast-1:XXXX:targetgroup/ecs-canary-blue/YYYY
+        containerName: web
+        containerPort: 80
+      canary:
+        targetGroupArn: arn:aws:elasticloadbalancing:ap-northeast-1:XXXX:targetgroup/ecs-canary-green/YYYY
+        containerName: web
+        containerPort: 80
   pipeline:
     stages:
       # Deploy the workloads of CANARY variant, the number of workload
