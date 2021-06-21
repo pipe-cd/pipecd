@@ -1,10 +1,13 @@
 ---
 title: "Sealed Secrets"
 linkTitle: "Sealed Secrets"
-weight: 11
+weight: 1
 description: >
   Storing secrets safely in the Git repository.
 ---
+
+> NOTE: This feature is deprecated. It can still be used, but expected to be removed entirely sometime in the future.
+> Instead, please use [Secret Management](/docs/user-guide/secret-management).
 
 When doing GitOps, users want to use Git as a single source of truth. But storing credentials like Kubernetes Secret or Terraform's credentials in Git is not safe.
 This feature helps you store those secret data safely in Git, right next to your application manifests.
