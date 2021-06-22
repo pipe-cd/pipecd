@@ -19,6 +19,7 @@ option go_package = "github.com/pipe-cd/pipe/pkg/model";
 
 import "validate/validate.proto";
 import "pkg/model/deployment.proto";
+import "pkg/model/common.proto";
 
 enum CommandStatus {
     COMMAND_NOT_HANDLED_YET = 0;
@@ -33,11 +34,12 @@ message Command {
         UPDATE_APPLICATION_CONFIG = 1;
         CANCEL_DEPLOYMENT = 2;
         APPROVE_STAGE = 3;
+        BUILD_PLAN_PREVIEW = 4;
     }
 
     message SyncApplication {
         string application_id = 1 [(validate.rules).string.min_len = 1];
-        model.SyncStrategy sync_strategy = 2;
+        SyncStrategy sync_strategy = 2;
     }
 
     message UpdateApplicationConfig {
@@ -55,6 +57,12 @@ message Command {
     message ApproveStage {
         string deployment_id = 1 [(validate.rules).string.min_len = 1];
         string stage_id = 2 [(validate.rules).string.min_len = 1];
+    }
+
+    message BuildPlanPreview {
+        string repository_id = 1 [(validate.rules).string.min_len = 1];
+        string branch = 2 [(validate.rules).string.min_len = 1];
+        string commit = 3 [(validate.rules).string.min_len = 1];
     }
 
     // The generated unique identifier.
@@ -75,6 +83,7 @@ message Command {
     UpdateApplicationConfig update_application_config = 32;
     CancelDeployment cancel_deployment = 33;
     ApproveStage approve_stage = 34;
+    BuildPlanPreview build_plan_preview = 35;
 
     int64 created_at = 100 [(validate.rules).int64.gt = 0];
     int64 updated_at = 101 [(validate.rules).int64.gt = 0];

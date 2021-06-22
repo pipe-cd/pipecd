@@ -249,10 +249,11 @@ export const selectDeploymentIsCanceling = (id: EntityId) => (
   state: AppState
 ): boolean => (id ? state.deployments.canceling[id] : false);
 
+export { SyncStrategy } from "pipe/pkg/app/web/model/common_pb";
+
 export {
   Deployment,
   DeploymentStatus,
   StageStatus,
-  SyncStrategy,
   PipelineStage,
 } from "pipe/pkg/app/web/model/deployment_pb";

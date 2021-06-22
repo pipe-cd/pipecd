@@ -355,6 +355,40 @@ func (a *API) RegisterEvent(ctx context.Context, req *apiservice.RegisterEventRe
 	return &apiservice.RegisterEventResponse{}, nil
 }
 
+func (a *API) RequestPlanPreview(ctx context.Context, req *apiservice.RequestPlanPreviewRequest) (*apiservice.RequestPlanPreviewResponse, error) {
+	_, err := requireAPIKey(ctx, model.APIKey_READ_WRITE, a.logger)
+	if err != nil {
+		return nil, err
+	}
+
+	// TODO: Implement RequestPlanPreview RPC.
+
+	// 1. List all pipeds that belong to the project
+	// 2. Filter piped that contains the source repository
+	// 3. Add commands for all matched pipeds
+
+	return &apiservice.RequestPlanPreviewResponse{
+		Commands: []string{
+			"command-id-1",
+			"command-id-2",
+		},
+	}, nil
+}
+
+func (a *API) GetPlanPreviewResults(ctx context.Context, req *apiservice.GetPlanPreviewResultsRequest) (*apiservice.GetPlanPreviewResultsResponse, error) {
+	_, err := requireAPIKey(ctx, model.APIKey_READ_WRITE, a.logger)
+	if err != nil {
+		return nil, err
+	}
+
+	// TODO: Implement GetPlanPreviewResults RPC.
+
+	// 1. Check whether the command is handled or not.
+	// 2. Retrieve command data from filestore.
+
+	return &apiservice.GetPlanPreviewResultsResponse{}, nil
+}
+
 // requireAPIKey checks the existence of an API key inside the given context
 // and ensures that it has enough permissions for the give role.
 func requireAPIKey(ctx context.Context, role model.APIKey_Role, logger *zap.Logger) (*model.APIKey, error) {
