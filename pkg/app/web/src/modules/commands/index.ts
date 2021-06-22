@@ -18,6 +18,7 @@ export const COMMAND_TYPE_TEXT: Record<Command.Type, string> = {
   [Command.Type.CANCEL_DEPLOYMENT]: "Cancel Deployment",
   [Command.Type.SYNC_APPLICATION]: "Sync Application",
   [Command.Type.UPDATE_APPLICATION_CONFIG]: "Update Application Config",
+  [Command.Type.BUILD_PLAN_PREVIEW]: "Build Plan Preview",
 };
 
 const commandsAdapter = createEntityAdapter<Command.AsObject>();

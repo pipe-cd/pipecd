@@ -48,3 +48,9 @@ message ApplicationGitRepository {
     string remote = 2;
     string branch = 3;
 }
+
+enum SyncStrategy {
+    AUTO = 0;
+    QUICK_SYNC = 1;
+    PIPELINE = 2;
+}

@@ -616,6 +616,8 @@ func (a *PipedAPI) ReportCommandHandled(ctx context.Context, req *pipedservice.R
 		return nil, status.Error(codes.PermissionDenied, "The current piped does not have requested command")
 	}
 
+	// TODO: Store the additional data of command into the filestore before marking the command as handled.
+
 	err = a.commandStore.UpdateCommandHandled(ctx, req.CommandId, req.Status, req.Metadata, req.HandledAt)
 	if err != nil {
 		switch err {

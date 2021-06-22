@@ -1,0 +1,9 @@
+load("@io_bazel_rules_go//go:def.bzl", "go_library")
+
+go_library(
+    name = "go_default_library",
+    srcs = ["planpreview.go"],
+    importpath = "github.com/pipe-cd/pipe/pkg/app/piped/planpreview",
+    visibility = ["//visibility:public"],
+    deps = ["//pkg/model:go_default_library"],
+)

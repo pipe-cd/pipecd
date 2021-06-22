@@ -22,6 +22,7 @@ import "pkg/model/common.proto";
 import "pkg/model/application.proto";
 import "pkg/model/deployment.proto";
 import "pkg/model/command.proto";
+import "pkg/model/planpreview.proto";
 
 // APIService contains all RPC definitions for external service, pipectl.
 // All of these RPCs are authenticated by using API key.
@@ -36,6 +37,9 @@ service APIService {
     rpc GetCommand(GetCommandRequest) returns (GetCommandResponse) {}
 
     rpc RegisterEvent(RegisterEventRequest) returns (RegisterEventResponse) {}
+
+    rpc RequestPlanPreview(RequestPlanPreviewRequest) returns (RequestPlanPreviewResponse) {}
+    rpc GetPlanPreviewResults(GetPlanPreviewResultsRequest) returns (GetPlanPreviewResultsResponse) {}
 }
 
 message AddApplicationRequest {
@@ -104,4 +108,22 @@ message RegisterEventRequest {
 }
 
 message RegisterEventResponse {
+}
+
+message RequestPlanPreviewRequest {
+    string repo_remote_url = 1 [(validate.rules).string.min_len = 1];
+    string branch = 2 [(validate.rules).string.min_len = 1];
+    string head_commit = 3 [(validate.rules).string.min_len = 1];
+}
+
+message RequestPlanPreviewResponse {
+    repeated string commands = 1;
+}
+
+message GetPlanPreviewResultsRequest {
+    repeated string commands = 1;
+}
+
+message GetPlanPreviewResultsResponse {
+    repeated pipe.model.ApplicationPlanPreviewResult results = 1;
 }
