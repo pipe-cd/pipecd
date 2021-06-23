@@ -15,6 +15,7 @@
   "editable": true,
   "gnetId": null,
   "graphTooltip": 0,
+  "id": 2,
   "links": [],
   "panels": [
     {
@@ -91,7 +92,6 @@
       },
       "yaxes": [
         {
-          "$$hashKey": "object:78",
           "format": "short",
           "label": null,
           "logBase": 1,
@@ -100,7 +100,6 @@
           "show": true
         },
         {
-          "$$hashKey": "object:79",
           "format": "short",
           "label": null,
           "logBase": 1,
@@ -188,7 +187,6 @@
       },
       "yaxes": [
         {
-          "$$hashKey": "object:60",
           "format": "short",
           "label": null,
           "logBase": 1,
@@ -197,7 +195,6 @@
           "show": true
         },
         {
-          "$$hashKey": "object:61",
           "format": "short",
           "label": null,
           "logBase": 1,
@@ -258,7 +255,7 @@
       "targets": [
         {
           "exemplar": true,
-          "expr": "sum without(instance,job) (rate(envoy_cluster_upstream_rq_time_sum[5m]))",
+          "expr": "histogram_quantile(\n  0.99,\n  sum without(instance, job)(rate(envoy_cluster_upstream_rq_time_bucket[5m]))\n)",
           "interval": "",
           "legendFormat": "",
           "queryType": "randomWalk",
@@ -269,7 +266,7 @@
       "timeFrom": null,
       "timeRegions": [],
       "timeShift": null,
-      "title": "API Duration Rate (ms)",
+      "title": "API Duration 99th Quantile",
       "tooltip": {
         "shared": true,
         "sort": 0,
@@ -285,7 +282,6 @@
       },
       "yaxes": [
         {
-          "$$hashKey": "object:732",
           "format": "short",
           "label": null,
           "logBase": 1,
@@ -294,7 +290,6 @@
           "show": true
         },
         {
-          "$$hashKey": "object:733",
           "format": "short",
           "label": null,
           "logBase": 1,
@@ -322,6 +317,6 @@
   "timepicker": {},
   "timezone": "",
   "title": "Main",
-  "uid": "qubEFcXMk",
-  "version": 1
+  "uid": "3jeba3R7z",
+  "version": 3
 }
