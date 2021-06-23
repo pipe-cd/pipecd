@@ -98,6 +98,7 @@ spec:
           - --enable-grpc-reflection={{ .Values.server.args.enableGRPCReflection }}
           - --encryption-key-file={{ .Values.secret.mountPath }}/{{ .Values.secret.encryptionKey.fileName }}
           - --log-encoding={{ .Values.server.args.logEncoding }}
+          - --metrics={{ .Values.server.args.metrics }}
           ports:
             - name: piped-api
               containerPort: 9080
