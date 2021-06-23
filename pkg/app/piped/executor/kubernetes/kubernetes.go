@@ -370,6 +370,37 @@ func generateVariantWorkloadManifests(workloads, configmaps, secrets []provider.
 		secretNames[secrets[i].Key.Name] = struct{}{}
 	}
 
+	updateContainers := func(containers []corev1.Container) {
+		for _, container := range containers {
+			for _, env := range container.Env {
+				if v := env.ValueFrom; v != nil {
+					if ref := v.ConfigMapKeyRef; ref != nil {
+						if _, ok := cmNames[ref.Name]; ok {
+							ref.Name = makeSuffixedName(ref.Name, nameSuffix)
+						}
+					}
+					if ref := v.SecretKeyRef; ref != nil {
+						if _, ok := secretNames[ref.Name]; ok {
+							ref.Name = makeSuffixedName(ref.Name, nameSuffix)
+						}
+					}
+				}
+			}
+			for _, envFrom := range container.EnvFrom {
+				if ref := envFrom.ConfigMapRef; ref != nil {
+					if _, ok := cmNames[ref.Name]; ok {
+						ref.Name = makeSuffixedName(ref.Name, nameSuffix)
+					}
+				}
+				if ref := envFrom.SecretRef; ref != nil {
+					if _, ok := secretNames[ref.Name]; ok {
+						ref.Name = makeSuffixedName(ref.Name, nameSuffix)
+					}
+				}
+			}
+		}
+	}
+
 	updatePod := func(pod *corev1.PodTemplateSpec) {
 		// Add variant labels.
 		if pod.Labels == nil {
@@ -390,6 +421,10 @@ func generateVariantWorkloadManifests(workloads, configmaps, secrets []provider.
 				}
 			}
 		}
+
+		// Update ENV references in containers.
+		updateContainers(pod.Spec.InitContainers)
+		updateContainers(pod.Spec.Containers)
 	}
 
 	updateDeployment := func(d *appsv1.Deployment) {
