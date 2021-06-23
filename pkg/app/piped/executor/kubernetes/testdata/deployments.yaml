@@ -21,6 +21,18 @@ spec:
         ports:
         - containerPort: 9085
           protocol: TCP
+        # TODO: Update the references in ENV list.
+        # env:
+        # - name: CONFIG_ENV
+        #   valueFrom:
+        #     configMapKeyRef:
+        #       key: key
+        #       name: configmap-name-2
+        # - name: SECRET_ENV
+        #   valueFrom:
+        #     secretKeyRef:
+        #       key: key
+        #       name: secret-name-1
       volumes:
       - name: secret-1
         secret:

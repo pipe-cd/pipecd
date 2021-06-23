@@ -71,7 +71,7 @@ func TestGenerateServiceManifests(t *testing.T) {
 	}
 }
 
-func TestGenerateWorkloadManifests(t *testing.T) {
+func TestGenerateVariantWorkloadManifests(t *testing.T) {
 	testcases := []struct {
 		name           string
 		manifestsFile  string
