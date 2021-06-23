@@ -99,7 +99,6 @@ spec:
           - --encryption-key-file={{ .Values.secret.mountPath }}/{{ .Values.secret.encryptionKey.fileName }}
           - --log-encoding={{ .Values.server.args.logEncoding }}
           - --metrics={{ .Values.server.args.metrics }}
-{{- end }}
           ports:
             - name: piped-api
               containerPort: 9080
