@@ -12,6 +12,28 @@ spec:
       labels:
         app: simple
     spec:
+      initContainers:
+      - image: gcr.io/pipecd/init:v0.1.0
+        name: helloworld
+        ports:
+        - containerPort: 9085
+          protocol: TCP
+        env:
+        - name: CONFIG_ENV
+          valueFrom:
+            configMapKeyRef:
+              key: key
+              name: configmap-name-2
+        - name: SECRET_ENV
+          valueFrom:
+            secretKeyRef:
+              key: key
+              name: secret-name-1
+        envFrom:
+        - configMapRef:
+            name: configmap-name-2
+        - secretRef:
+            name: secret-name-1
       containers:
       - args:
         - server
@@ -21,18 +43,26 @@ spec:
         ports:
         - containerPort: 9085
           protocol: TCP
-        # TODO: Update the references in ENV list.
-        # env:
-        # - name: CONFIG_ENV
-        #   valueFrom:
-        #     configMapKeyRef:
-        #       key: key
-        #       name: configmap-name-2
-        # - name: SECRET_ENV
-        #   valueFrom:
-        #     secretKeyRef:
-        #       key: key
-        #       name: secret-name-1
+        env:
+        - name: CONFIG_ENV
+          valueFrom:
+            configMapKeyRef:
+              key: key
+              name: configmap-name-2
+            configMapKeyRef:
+              key: key2
+              name: not-managed-config-map
+        - name: SECRET_ENV
+          valueFrom:
+            secretKeyRef:
+              key: key
+              name: secret-name-1
+        envFrom:
+        - configMapRef:
+            name: configmap-name-2
+        - secretRef:
+            name: secret-name-1
+        resources: {}
       volumes:
       - name: secret-1
         secret:
@@ -70,6 +100,29 @@ spec:
         app: simple
         pipecd.dev/variant: canary-variant
     spec:
+      initContainers:
+      - image: gcr.io/pipecd/init:v0.1.0
+        name: helloworld
+        ports:
+        - containerPort: 9085
+          protocol: TCP
+        env:
+        - name: CONFIG_ENV
+          valueFrom:
+            configMapKeyRef:
+              key: key
+              name: configmap-name-2-canary
+        - name: SECRET_ENV
+          valueFrom:
+            secretKeyRef:
+              key: key
+              name: secret-name-1-canary
+        envFrom:
+        - configMapRef:
+            name: configmap-name-2-canary
+        - secretRef:
+            name: secret-name-1-canary
+        resources: {}
       containers:
       - args:
         - server
@@ -79,6 +132,25 @@ spec:
         ports:
         - containerPort: 9085
           protocol: TCP
+        env:
+        - name: CONFIG_ENV
+          valueFrom:
+            configMapKeyRef:
+              key: key
+              name: configmap-name-2-canary
+            configMapKeyRef:
+              key: key2
+              name: not-managed-config-map
+        - name: SECRET_ENV
+          valueFrom:
+            secretKeyRef:
+              key: key
+              name: secret-name-1-canary
+        envFrom:
+        - configMapRef:
+            name: configmap-name-2-canary
+        - secretRef:
+            name: secret-name-1-canary
         resources: {}
       volumes:
       - name: secret-1
