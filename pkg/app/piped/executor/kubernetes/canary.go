@@ -144,13 +144,13 @@ func (e *deployExecutor) generateCanaryManifests(manifests []provider.Manifest, 
 
 	// Find config map manifests and duplicate them for CANARY variant.
 	configMaps := findConfigMapManifests(manifests)
-	configMaps = duplicateManifests(configMaps, suffix)
-	canaryManifests = append(canaryManifests, configMaps...)
+	canaryConfigMaps := duplicateManifests(configMaps, suffix)
+	canaryManifests = append(canaryManifests, canaryConfigMaps...)
 
 	// Find secret manifests and duplicate them for CANARY variant.
 	secrets := findSecretManifests(manifests)
-	secrets = duplicateManifests(secrets, suffix)
-	canaryManifests = append(canaryManifests, secrets...)
+	canarySecrets := duplicateManifests(secrets, suffix)
+	canaryManifests = append(canaryManifests, canarySecrets...)
 
 	// Generate new workload manifests for CANARY variant.
 	// The generated ones will mount to the new ConfigMaps and Secrets.
