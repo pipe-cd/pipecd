@@ -10,8 +10,13 @@ import {
 } from "echarts/components";
 import * as echarts from "echarts/core";
 import { CanvasRenderer } from "echarts/renderers";
+import { useCallback } from "react";
+import { useRef } from "react";
 import { FC, useEffect, useState } from "react";
 import { InsightDataPoint } from "~/modules/insight";
+import { dummyDataPointsList } from "../../__fixtures__/dummy-insight";
+
+const placeholderData = [{ name: "All", points: dummyDataPointsList }];
 
 echarts.use([
   TitleComponent,
@@ -25,6 +30,7 @@ echarts.use([
 const useStyles = makeStyles((theme) => ({
   root: {
     minWidth: 600,
+    position: "relative",
   },
   noDataMessage: {
     display: "flex",
@@ -66,18 +72,20 @@ export const ChartBase: FC<ChartBaseProps> = ({
 }) => {
   const classes = useStyles();
   const [chart, setChart] = useState<echarts.ECharts | null>(null);
+  const chartElm = useRef<HTMLDivElement | null>(null);
+  const _data = data.length === 0 ? placeholderData : data;
 
   useEffect(() => {
-    if (chart && data.length !== 0) {
+    if (chart && _data.length !== 0) {
       chart.setOption({
-        legend: { data: data.map((v) => v.name) },
+        legend: { data: _data.map((v) => v.name) },
         xAxis: {
           type: "category",
           name: xName,
           nameLocation: "center",
           nameGap: 32,
           boundaryGap: false,
-          data: data[0].points.map((data) => labelFormatter(data.timestamp)),
+          data: _data[0].points.map((v) => labelFormatter(v.timestamp)),
         },
         yAxis: {
           type: "value",
@@ -86,7 +94,7 @@ export const ChartBase: FC<ChartBaseProps> = ({
           nameGap: 32,
         },
         tooltip,
-        series: data.map((v) => ({
+        series: _data.map((v) => ({
           name: v.name,
           type: "line",
           stack: title,
@@ -106,19 +114,43 @@ export const ChartBase: FC<ChartBaseProps> = ({
         })),
       });
     }
-  }, [chart, data, lineColor, areaColor, xName, yName, title]);
+  }, [chart, _data, lineColor, areaColor, xName, yName, title]);
+
+  useEffect(() => {
+    if (chartElm.current) {
+      setChart(echarts.init(chartElm.current));
+    }
+  }, [chartElm]);
+
+  const handleResize = useCallback(() => {
+    if (chart) {
+      chart.resize();
+    }
+  }, [chart]);
+
+  useEffect(() => {
+    window.addEventListener("resize", handleResize);
+    return () => window.removeEventListener("resize", handleResize);
+  }, [handleResize]);
 
   return (
     <Paper elevation={1} className={classes.root}>
       <Typography variant="h6" component="div" className={classes.title}>
         {title}
       </Typography>
+
+      <div style={{ width: "100%", height: 400 }} ref={chartElm} />
       {data.length === 0 ? (
         <Box
+          width="100%"
+          height="100%"
           display="flex"
           alignItems="center"
           justifyContent="center"
-          height={420}
+          position="absolute"
+          top={0}
+          left={0}
+          bgcolor="#fafafabb"
         >
           <Typography
             variant="body1"
@@ -129,16 +161,7 @@ export const ChartBase: FC<ChartBaseProps> = ({
             {NO_DATA_TEXT}
           </Typography>
         </Box>
-      ) : (
-        <div
-          style={{ width: "100%", height: 400 }}
-          ref={(ref) => {
-            if (ref) {
-              setChart(echarts.init(ref));
-            }
-          }}
-        />
-      )}
+      ) : null}
     </Paper>
   );
 };

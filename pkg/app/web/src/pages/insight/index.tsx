@@ -1,6 +1,9 @@
 import { Box } from "@material-ui/core";
 import { FC, memo, useEffect } from "react";
-import { DeploymentFrequencyChart } from "~/components/deployment-frequency-chart";
+import { ChangeFailureRateChart } from "./components/change-failure-rate-chart";
+import { DeploymentFrequencyChart } from "./components/deployment-frequency-chart";
+import { LeadTimeForChangesChart } from "./components/lead-time-for-changes-chart";
+import { MeanTimeToRestoreChart } from "./components/mean-time-to-restore-chart";
 import { InsightHeader } from "~/components/insight-header";
 import { useAppSelector, useAppDispatch } from "~/hooks/redux";
 import { fetchApplications, selectById } from "~/modules/applications";
@@ -29,7 +32,7 @@ export const InsightIndexPage: FC = memo(function InsightIndexPage() {
   }, [dispatch]);
 
   return (
-    <Box flex={1} p={2}>
+    <Box flex={1} p={2} overflow="auto">
       <InsightHeader />
       <Box
         display="grid"
@@ -38,6 +41,9 @@ export const InsightIndexPage: FC = memo(function InsightIndexPage() {
         mt={2}
       >
         <DeploymentFrequencyChart data={data} />
+        <ChangeFailureRateChart data={[]} />
+        <LeadTimeForChangesChart data={[]} />
+        <MeanTimeToRestoreChart data={[]} />
       </Box>
     </Box>
   );
