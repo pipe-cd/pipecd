@@ -1,7 +1,7 @@
 import chartColor from "@material-ui/core/colors/blue";
 import { FC } from "react";
 import { InsightDataPoint } from "~/modules/insight";
-import { ChartBase } from "../chart-base";
+import { ChartBase } from "~/components/chart-base";
 
 export interface DeploymentFrequencyChartProps {
   data: { name: string; points: InsightDataPoint.AsObject[] }[];
