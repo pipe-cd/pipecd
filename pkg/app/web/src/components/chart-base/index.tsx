@@ -15,6 +15,7 @@ import { useRef } from "react";
 import { FC, useEffect, useState } from "react";
 import { InsightDataPoint } from "~/modules/insight";
 import { dummyDataPointsList } from "../../__fixtures__/dummy-insight";
+import grey from "@material-ui/core/colors/grey";
 
 const placeholderData = [{ name: "All", points: dummyDataPointsList }];
 
@@ -73,7 +74,8 @@ export const ChartBase: FC<ChartBaseProps> = ({
   const classes = useStyles();
   const [chart, setChart] = useState<echarts.ECharts | null>(null);
   const chartElm = useRef<HTMLDivElement | null>(null);
-  const _data = data.length === 0 ? placeholderData : data;
+  const isNoData = data.length === 0;
+  const _data = isNoData ? placeholderData : data;
 
   useEffect(() => {
     if (chart && _data.length !== 0) {
@@ -103,18 +105,18 @@ export const ChartBase: FC<ChartBaseProps> = ({
             focus: "series",
           },
           itemStyle: {
-            color: lineColor,
+            color: isNoData ? grey[300] : lineColor,
           },
           lineStyle: {
-            color: lineColor,
+            color: isNoData ? grey[300] : lineColor,
           },
           areaStyle: {
-            color: areaColor,
+            color: isNoData ? grey[300] : areaColor,
           },
         })),
       });
     }
-  }, [chart, _data, lineColor, areaColor, xName, yName, title]);
+  }, [chart, _data, lineColor, areaColor, xName, yName, title, isNoData]);
 
   useEffect(() => {
     if (chartElm.current) {
