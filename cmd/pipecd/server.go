@@ -32,6 +32,7 @@ import (
 	"github.com/pipe-cd/pipe/pkg/app/api/apikeyverifier"
 	"github.com/pipe-cd/pipe/pkg/app/api/applicationlivestatestore"
 	"github.com/pipe-cd/pipe/pkg/app/api/authhandler"
+	"github.com/pipe-cd/pipe/pkg/app/api/commandoutputstore"
 	"github.com/pipe-cd/pipe/pkg/app/api/commandstore"
 	"github.com/pipe-cd/pipe/pkg/app/api/grpcapi"
 	"github.com/pipe-cd/pipe/pkg/app/api/pipedverifier"
@@ -178,6 +179,7 @@ func (s *server) run(ctx context.Context, t cli.Telemetry) error {
 	alss := applicationlivestatestore.NewStore(fs, cache, t.Logger)
 	cmds := commandstore.NewStore(ds, cache, t.Logger)
 	is := insightstore.NewStore(fs)
+	cmdOutputStore := commandoutputstore.NewStore(fs, t.Logger)
 
 	// Start a gRPC server for handling PipedAPI requests.
 	{
@@ -189,7 +191,7 @@ func (s *server) run(ctx context.Context, t cli.Telemetry) error {
 				datastore.NewPipedStore(ds),
 				t.Logger,
 			)
-			service = grpcapi.NewPipedAPI(ctx, ds, sls, alss, cmds, t.Logger)
+			service = grpcapi.NewPipedAPI(ctx, ds, sls, alss, cmds, cmdOutputStore, t.Logger)
 			opts    = []rpc.Option{
 				rpc.WithPort(s.pipedAPIPort),
 				rpc.WithGracePeriod(s.gracePeriod),
@@ -220,7 +222,7 @@ func (s *server) run(ctx context.Context, t cli.Telemetry) error {
 				datastore.NewAPIKeyStore(ds),
 				t.Logger,
 			)
-			service = grpcapi.NewAPI(ds, cmds, t.Logger)
+			service = grpcapi.NewAPI(ds, cmds, cmdOutputStore, t.Logger)
 			opts    = []rpc.Option{
 				rpc.WithPort(s.apiPort),
 				rpc.WithGracePeriod(s.gracePeriod),

@@ -16,8 +16,10 @@ package grpcapi
 
 import (
 	"context"
+	"encoding/json"
 	"errors"
 	"fmt"
+	"time"
 
 	"github.com/google/uuid"
 	"go.uber.org/zap"
@@ -34,12 +36,13 @@ import (
 
 // API implements the behaviors for the gRPC definitions of API.
 type API struct {
-	applicationStore datastore.ApplicationStore
-	environmentStore datastore.EnvironmentStore
-	deploymentStore  datastore.DeploymentStore
-	pipedStore       datastore.PipedStore
-	eventStore       datastore.EventStore
-	commandStore     commandstore.Store
+	applicationStore    datastore.ApplicationStore
+	environmentStore    datastore.EnvironmentStore
+	deploymentStore     datastore.DeploymentStore
+	pipedStore          datastore.PipedStore
+	eventStore          datastore.EventStore
+	commandStore        commandstore.Store
+	commandOutputGetter commandOutputGetter
 
 	logger *zap.Logger
 }
@@ -48,16 +51,18 @@ type API struct {
 func NewAPI(
 	ds datastore.DataStore,
 	cmds commandstore.Store,
+	cog commandOutputGetter,
 	logger *zap.Logger,
 ) *API {
 	a := &API{
-		applicationStore: datastore.NewApplicationStore(ds),
-		environmentStore: datastore.NewEnvironmentStore(ds),
-		deploymentStore:  datastore.NewDeploymentStore(ds),
-		pipedStore:       datastore.NewPipedStore(ds),
-		eventStore:       datastore.NewEventStore(ds),
-		commandStore:     cmds,
-		logger:           logger.Named("api"),
+		applicationStore:    datastore.NewApplicationStore(ds),
+		environmentStore:    datastore.NewEnvironmentStore(ds),
+		deploymentStore:     datastore.NewDeploymentStore(ds),
+		pipedStore:          datastore.NewPipedStore(ds),
+		eventStore:          datastore.NewEventStore(ds),
+		commandStore:        cmds,
+		commandOutputGetter: cog,
+		logger:              logger.Named("api"),
 	}
 	return a
 }
@@ -376,17 +381,62 @@ func (a *API) RequestPlanPreview(ctx context.Context, req *apiservice.RequestPla
 }
 
 func (a *API) GetPlanPreviewResults(ctx context.Context, req *apiservice.GetPlanPreviewResultsRequest) (*apiservice.GetPlanPreviewResultsResponse, error) {
-	_, err := requireAPIKey(ctx, model.APIKey_READ_WRITE, a.logger)
+	key, err := requireAPIKey(ctx, model.APIKey_READ_WRITE, a.logger)
 	if err != nil {
 		return nil, err
 	}
 
-	// TODO: Implement GetPlanPreviewResults RPC.
+	const freshDuration = 24 * time.Hour
 
-	// 1. Check whether the command is handled or not.
-	// 2. Retrieve command data from filestore.
+	// Validate based on command model stored in datastore.
+	for _, commandID := range req.Commands {
+		cmd, err := getCommand(ctx, a.commandStore, commandID, a.logger)
+		if err != nil {
+			return nil, err
+		}
+		if cmd.ProjectId != key.ProjectId {
+			a.logger.Warn("detected a request to get planpreview result of an unowned command",
+				zap.String("command", commandID),
+				zap.String("command-project-id", cmd.ProjectId),
+				zap.String("request-project-id", key.ProjectId),
+			)
+			return nil, status.Error(codes.PermissionDenied, fmt.Sprintf("The requested command %s does not belong to your project", commandID))
+		}
+		if cmd.Type != model.Command_BUILD_PLAN_PREVIEW {
+			return nil, status.Error(codes.FailedPrecondition, fmt.Sprint("Command %s is not a plan preview command", commandID))
+		}
+		if !cmd.IsHandled() {
+			return nil, status.Error(codes.FailedPrecondition, fmt.Sprintf("Command %s is not completed yet", commandID))
+		}
+		// There is no reason to fetch output data of command that has been completed a long time ago.
+		// So in order to prevent unintended actions, we disallow that ability.
+		if time.Since(time.Unix(cmd.HandledAt, 0)) > freshDuration {
+			return nil, status.Error(codes.FailedPrecondition, fmt.Sprintf("The output data for command %s is too old for access", commandID))
+		}
+	}
 
-	return &apiservice.GetPlanPreviewResultsResponse{}, nil
+	results := make([]*model.ApplicationPlanPreviewResult, 0, len(req.Commands))
+
+	// Fetch ouput data to build results.
+	for _, commandID := range req.Commands {
+		data, err := a.commandOutputGetter.Get(ctx, commandID)
+		if err != nil {
+			return nil, status.Error(codes.Internal, fmt.Sprintf("Failed to retrieve output data of command %s", commandID))
+		}
+		var result model.ApplicationPlanPreviewResult
+		if err := json.Unmarshal(data, &result); err != nil {
+			a.logger.Error("failed to unmarshal applicaiton plan preview result",
+				zap.String("command", commandID),
+				zap.Error(err),
+			)
+			return nil, status.Error(codes.Internal, fmt.Sprintf("Failed to decode output data of command %s", commandID))
+		}
+		results = append(results, &result)
+	}
+
+	return &apiservice.GetPlanPreviewResultsResponse{
+		Results: results,
+	}, nil
 }
 
 // requireAPIKey checks the existence of an API key inside the given context

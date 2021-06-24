@@ -15,6 +15,7 @@ go_library(
         "//pkg/app/api/apikeyverifier:go_default_library",
         "//pkg/app/api/applicationlivestatestore:go_default_library",
         "//pkg/app/api/authhandler:go_default_library",
+        "//pkg/app/api/commandoutputstore:go_default_library",
         "//pkg/app/api/commandstore:go_default_library",
         "//pkg/app/api/grpcapi:go_default_library",
         "//pkg/app/api/pipedverifier:go_default_library",

@@ -1,4 +1,4 @@
-// Copyright 2020 The PipeCD Authors.
+// Copyright 2021 The PipeCD Authors.
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -27,6 +27,14 @@ import (
 	"github.com/pipe-cd/pipe/pkg/git"
 	"github.com/pipe-cd/pipe/pkg/model"
 )
+
+type commandOutputGetter interface {
+	Get(ctx context.Context, commandID string) ([]byte, error)
+}
+
+type commandOutputPutter interface {
+	Put(ctx context.Context, commandID string, data []byte) error
+}
 
 func getPiped(ctx context.Context, store datastore.PipedStore, id string, logger *zap.Logger) (*model.Piped, error) {
 	piped, err := store.GetPiped(ctx, id)

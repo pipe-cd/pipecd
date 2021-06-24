@@ -47,6 +47,7 @@ type PipedAPI struct {
 	stageLogStore             stagelogstore.Store
 	applicationLiveStateStore applicationlivestatestore.Store
 	commandStore              commandstore.Store
+	commandOutputPutter       commandOutputPutter
 
 	appPipedCache        cache.Cache
 	deploymentPipedCache cache.Cache
@@ -56,7 +57,7 @@ type PipedAPI struct {
 }
 
 // NewPipedAPI creates a new PipedAPI instance.
-func NewPipedAPI(ctx context.Context, ds datastore.DataStore, sls stagelogstore.Store, alss applicationlivestatestore.Store, cs commandstore.Store, logger *zap.Logger) *PipedAPI {
+func NewPipedAPI(ctx context.Context, ds datastore.DataStore, sls stagelogstore.Store, alss applicationlivestatestore.Store, cs commandstore.Store, cop commandOutputPutter, logger *zap.Logger) *PipedAPI {
 	a := &PipedAPI{
 		applicationStore:          datastore.NewApplicationStore(ds),
 		deploymentStore:           datastore.NewDeploymentStore(ds),
@@ -68,6 +69,7 @@ func NewPipedAPI(ctx context.Context, ds datastore.DataStore, sls stagelogstore.
 		stageLogStore:             sls,
 		applicationLiveStateStore: alss,
 		commandStore:              cs,
+		commandOutputPutter:       cop,
 		appPipedCache:             memorycache.NewTTLCache(ctx, 24*time.Hour, 3*time.Hour),
 		deploymentPipedCache:      memorycache.NewTTLCache(ctx, 24*time.Hour, 3*time.Hour),
 		envProjectCache:           memorycache.NewTTLCache(ctx, 24*time.Hour, 3*time.Hour),
@@ -616,7 +618,15 @@ func (a *PipedAPI) ReportCommandHandled(ctx context.Context, req *pipedservice.R
 		return nil, status.Error(codes.PermissionDenied, "The current piped does not have requested command")
 	}
 
-	// TODO: Store the additional data of command into the filestore before marking the command as handled.
+	if len(req.Output) > 0 {
+		if err := a.commandOutputPutter.Put(ctx, req.CommandId, req.Output); err != nil {
+			a.logger.Error("failed to store output of command",
+				zap.String("command_id", req.CommandId),
+				zap.Error(err),
+			)
+			return nil, status.Error(codes.Internal, "Failed to store output of command")
+		}
+	}
 
 	err = a.commandStore.UpdateCommandHandled(ctx, req.CommandId, req.Status, req.Metadata, req.HandledAt)
 	if err != nil {

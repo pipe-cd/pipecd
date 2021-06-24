@@ -340,8 +340,8 @@ message ReportCommandHandledRequest {
     pipe.model.CommandStatus status = 2 [(validate.rules).enum.defined_only = true];
     map<string,string> metadata = 3;
     int64 handled_at = 4 [(validate.rules).int64.gt = 0];
-    // Additional data to be stored in filestore.
-    bytes data = 5;
+    // Additional output data to be stored in filestore.
+    bytes output = 5;
 }
 
 message ReportCommandHandledResponse {
