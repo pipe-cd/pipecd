@@ -130,10 +130,6 @@ func filterEventWatcherFiles(files, includePatterns, excludePatterns []string) (
 	}
 
 	// Use exclude patterns
-	blackList := make(map[string]struct{}, len(excludePatterns))
-	for _, e := range excludePatterns {
-		blackList[e] = struct{}{}
-	}
 L:
 	for _, f := range files {
 		for _, p := range excludePatterns {
