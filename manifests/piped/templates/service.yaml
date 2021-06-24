@@ -5,6 +5,9 @@ metadata:
   name: {{ include "piped.fullname" . }}
   labels:
     {{- include "piped.labels" . | nindent 4 }}
+    {{- if .Values.service.additionalLabels }}
+    {{ toYaml .Values.service.additionalLabels | nindent 4 }}
+    {{- end }}
 spec:
   type: {{ .Values.service.type }}
   ports:

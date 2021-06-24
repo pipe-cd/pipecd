@@ -15,6 +15,8 @@ service:
   enabled: true
   type: ClusterIP
   port: 9085
+  # Optional additional labels to add to the Service
+  # additionalLabels: {}
 
 config:
   # Specifies whether a ConfigMap for piped configuration should be created.
