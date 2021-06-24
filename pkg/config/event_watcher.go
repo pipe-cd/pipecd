@@ -17,9 +17,10 @@ package config
 import (
 	"fmt"
 	"os"
-	"path"
 	"path/filepath"
 	"strings"
+
+	"github.com/pipe-cd/pipe/pkg/filematcher"
 )
 
 type EventWatcherSpec struct {
@@ -111,35 +112,29 @@ func filterEventWatcherFiles(files, includePatterns, excludePatterns []string) (
 	}
 
 	filtered := make([]string, 0, len(files))
+
 	// Use include patterns
 	if len(includePatterns) != 0 && len(excludePatterns) == 0 {
+		matcher, err := filematcher.NewPatternMatcher(includePatterns)
+		if err != nil {
+			return nil, fmt.Errorf("failed to create a matcher object: %w", err)
+		}
 		for _, f := range files {
-			// TODO: Cache match results so that it doesn't have to compare include/exclude patterns each time.
-			for _, p := range includePatterns {
-				matched, err := path.Match(p, f)
-				if err != nil {
-					return nil, fmt.Errorf("failed to check if file name metches the given include pattern: %w", err)
-				}
-				if matched {
-					filtered = append(filtered, f)
-					break
-				}
+			if matcher.Matches(f) {
+				filtered = append(filtered, f)
 			}
 		}
 		return filtered, nil
 	}
 
 	// Use exclude patterns
-L:
+	matcher, err := filematcher.NewPatternMatcher(excludePatterns)
+	if err != nil {
+		return nil, fmt.Errorf("failed to create a matcher object: %w", err)
+	}
 	for _, f := range files {
-		for _, p := range excludePatterns {
-			matched, err := path.Match(p, f)
-			if err != nil {
-				return nil, fmt.Errorf("failed to check if file name metches the given exclude pattern: %w", err)
-			}
-			if matched {
-				continue L
-			}
+		if matcher.Matches(f) {
+			continue
 		}
 		filtered = append(filtered, f)
 	}
