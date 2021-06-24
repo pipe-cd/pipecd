@@ -361,22 +361,72 @@ func (a *API) RegisterEvent(ctx context.Context, req *apiservice.RegisterEventRe
 }
 
 func (a *API) RequestPlanPreview(ctx context.Context, req *apiservice.RequestPlanPreviewRequest) (*apiservice.RequestPlanPreviewResponse, error) {
-	_, err := requireAPIKey(ctx, model.APIKey_READ_WRITE, a.logger)
+	key, err := requireAPIKey(ctx, model.APIKey_READ_WRITE, a.logger)
 	if err != nil {
 		return nil, err
 	}
 
-	// TODO: Implement RequestPlanPreview RPC.
+	// TODO: We may need to cache the list of pipeds to reduce load on database.
+	// Adding the cache after understanding the real situation from our metrics data.
+	pipeds, err := a.pipedStore.ListPipeds(ctx, datastore.ListOptions{
+		Filters: []datastore.ListFilter{
+			{
+				Field:    "ProjectId",
+				Operator: datastore.OperatorEqual,
+				Value:    key.ProjectId,
+			},
+			{
+				Field:    "Disabled",
+				Operator: datastore.OperatorEqual,
+				Value:    false,
+			},
+		},
+	})
+	if err != nil {
+		a.logger.Error("failed to list pipeds to request planpreview",
+			zap.String("project", key.ProjectId),
+			zap.Error(err),
+		)
+		return nil, status.Error(codes.Internal, "Failed to list pipeds")
+	}
 
-	// 1. List all pipeds that belong to the project
-	// 2. Filter piped that contains the source repository
-	// 3. Add commands for all matched pipeds
+	repositories := make(map[string]string, len(pipeds))
+	for _, p := range pipeds {
+		for _, r := range p.Repositories {
+			if r.Remote == req.RepoRemoteUrl {
+				repositories[p.Id] = r.Id
+				break
+			}
+		}
+	}
+	if len(repositories) == 0 {
+		return &apiservice.RequestPlanPreviewResponse{}, nil
+	}
+
+	const commander = "pipectl"
+	commands := make([]string, 0, len(repositories))
+
+	for pipedID, repositoryID := range repositories {
+		cmd := model.Command{
+			Id:        uuid.New().String(),
+			PipedId:   pipedID,
+			ProjectId: key.ProjectId,
+			Type:      model.Command_BUILD_PLAN_PREVIEW,
+			Commander: commander,
+			BuildPlanPreview: &model.Command_BuildPlanPreview{
+				RepositoryId: repositoryID,
+				Branch:       req.Branch,
+				HeadCommit:   req.HeadCommit,
+			},
+		}
+		if err := addCommand(ctx, a.commandStore, &cmd, a.logger); err != nil {
+			return nil, err
+		}
+		commands = append(commands, cmd.Id)
+	}
 
 	return &apiservice.RequestPlanPreviewResponse{
-		Commands: []string{
-			"command-id-1",
-			"command-id-2",
-		},
+		Commands: commands,
 	}, nil
 }
 
