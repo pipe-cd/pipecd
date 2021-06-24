@@ -5,8 +5,8 @@ go_library(
     srcs = [
         "api.go",
         "deployment_config_templates.go",
+        "grpcapi.go",
         "piped_api.go",
-        "utils.go",
         "web_api.go",
         ":deployment_config_templates.embed",  #keep
     ],
