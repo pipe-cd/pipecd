@@ -116,7 +116,6 @@ func filterEventWatcherFiles(files, includePatterns, excludePatterns []string) (
 		for _, f := range files {
 			// TODO: Cache match results so that it doesn't have to compare include/exclude patterns each time.
 			for _, p := range includePatterns {
-				fmt.Println("pattern:", p, "file:", f) // FIXME: REMOVE
 				matched, err := path.Match(p, f)
 				if err != nil {
 					return nil, fmt.Errorf("failed to check if file name metches the given include pattern: %w", err)
