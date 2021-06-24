@@ -170,8 +170,8 @@ Must be one of the following structs:
 |-|-|-|-|
 | repoId | string | Id of the git repository. This must be unique within the repos' elements. | Yes |
 | commitMessage | string | The commit message used to push after replacing values. Default message is used if not given. | No |
-| includes | []string | The paths to EventWatcher files to be included. | No |
-| excludes | []string | The paths to EventWatcher files to be excluded. This is prioritized if both includes and this are given. | No |
+| includes | []string | The paths to EventWatcher files to be included. Patterns can be used like `foo/*.yaml`. | No |
+| excludes | []string | The paths to EventWatcher files to be excluded. Patterns can be used like `foo/*.yaml`. This is prioritized if both includes and this are given. | No |
 
 ## Notifications
 
