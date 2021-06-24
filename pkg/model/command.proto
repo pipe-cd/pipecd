@@ -62,7 +62,7 @@ message Command {
     message BuildPlanPreview {
         string repository_id = 1 [(validate.rules).string.min_len = 1];
         string branch = 2 [(validate.rules).string.min_len = 1];
-        string commit = 3 [(validate.rules).string.min_len = 1];
+        string head_commit = 3 [(validate.rules).string.min_len = 1];
     }
 
     // The generated unique identifier.
