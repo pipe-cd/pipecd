@@ -15,9 +15,7 @@
 package config
 
 import (
-	"os"
 	"testing"
-	"time"
 
 	"github.com/stretchr/testify/assert"
 )
@@ -48,7 +46,7 @@ func TestLoadEventWatcher(t *testing.T) {
 	}}
 
 	t.Run("valid config files given", func(t *testing.T) {
-		got, err := LoadEventWatcher("testdata", nil, []string{"README.md"})
+		got, err := LoadEventWatcher("testdata", []string{"event-watcher.yaml"}, nil)
 		assert.NoError(t, err)
 		assert.Equal(t, want, got)
 	})
@@ -194,98 +192,56 @@ func TestEventWatcherValidate(t *testing.T) {
 	}
 }
 
-type fakeFileInfo struct {
-	name string
-}
-
-func (f *fakeFileInfo) Name() string { return f.name }
-
-// Below methods are required to meet the interface.
-func (f *fakeFileInfo) Size() int64        { return 0 }
-func (f *fakeFileInfo) Mode() os.FileMode  { return 0 }
-func (f *fakeFileInfo) ModTime() time.Time { return time.Now() }
-func (f *fakeFileInfo) IsDir() bool        { return false }
-func (f *fakeFileInfo) Sys() interface{}   { return nil }
-
 func TestFilterEventWatcherFiles(t *testing.T) {
 	testcases := []struct {
 		name     string
-		files    []os.FileInfo
+		files    []string
 		includes []string
 		excludes []string
-		want     []os.FileInfo
+		want     []string
 		wantErr  bool
 	}{
 		{
-			name: "both includes and excludes aren't given",
-			files: []os.FileInfo{
-				&fakeFileInfo{
-					name: "file-1",
-				},
-			},
-			want: []os.FileInfo{
-				&fakeFileInfo{
-					name: "file-1",
-				},
-			},
+			name:    "both includes and excludes aren't given",
+			files:   []string{"file-1"},
+			want:    []string{"file-1"},
 			wantErr: false,
 		},
 		{
-			name: "both includes and excludes are given",
-			files: []os.FileInfo{
-				&fakeFileInfo{
-					name: "file-1",
-				},
-			},
-			want:     []os.FileInfo{},
+			name:     "both includes and excludes are given",
+			files:    []string{"file-1"},
+			want:     []string{},
 			includes: []string{"file-1"},
 			excludes: []string{"file-1"},
 			wantErr:  false,
 		},
 		{
-			name: "includes given",
-			files: []os.FileInfo{
-				&fakeFileInfo{
-					name: "file-1",
-				},
-				&fakeFileInfo{
-					name: "file-2",
-				},
-				&fakeFileInfo{
-					name: "file-3",
-				},
-			},
+			name:     "includes given",
+			files:    []string{"file-1", "file-2", "file-3"},
 			includes: []string{"file-1", "file-3"},
-			want: []os.FileInfo{
-				&fakeFileInfo{
-					name: "file-1",
-				},
-				&fakeFileInfo{
-					name: "file-3",
-				},
-			},
-			wantErr: false,
+			want:     []string{"file-1", "file-3"},
+			wantErr:  false,
 		},
 		{
-			name: "excludes given",
-			files: []os.FileInfo{
-				&fakeFileInfo{
-					name: "file-1",
-				},
-				&fakeFileInfo{
-					name: "file-2",
-				},
-				&fakeFileInfo{
-					name: "file-3",
-				},
-			},
+			name:     "excludes given",
+			files:    []string{"file-1", "file-2", "file-3"},
 			excludes: []string{"file-1", "file-3"},
-			want: []os.FileInfo{
-				&fakeFileInfo{
-					name: "file-2",
-				},
-			},
-			wantErr: false,
+			want:     []string{"file-2"},
+			wantErr:  false,
+		},
+		{
+			name:     "includes with pattern given",
+			files:    []string{"dir/file-1.yaml", "dir/file-2.yaml", "dir/file-3.yaml"},
+			includes: []string{"dir/*.yaml"},
+			want:     []string{"dir/file-1.yaml", "dir/file-2.yaml", "dir/file-3.yaml"},
+			wantErr:  false,
+		},
+		{
+			name:     "excludes with pattern given",
+			files:    []string{"dir/file-1.yaml", "dir/file-2.yaml", "dir/file-3.yaml", "dir-2/file-1.yaml"},
+			excludes: []string{"dir/*.yaml"},
+			want:     []string{"dir-2/file-1.yaml"},
+			wantErr:  false,
 		},
 	}
 	for _, tc := range testcases {

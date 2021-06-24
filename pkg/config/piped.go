@@ -641,9 +641,11 @@ type PipedEventWatcherGitRepo struct {
 	// The commit message used to push after replacing values.
 	// Default message is used if not given.
 	CommitMessage string `json:"commitMessage"`
-	// The paths to files to be included.
+	// The file path patterns to be included.
+	// Patterns can be used like "foo/*.yaml".
 	Includes []string `json:"includes"`
-	// The paths to files to be excluded.
+	// The file path patterns to be excluded.
+	// Patterns can be used like "foo/*.yaml".
 	// This is prioritized if both includes and this one are given.
 	Excludes []string `json:"excludes"`
 }

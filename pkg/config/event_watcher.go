@@ -16,9 +16,11 @@ package config
 
 import (
 	"fmt"
-	"io/ioutil"
 	"os"
 	"path/filepath"
+	"strings"
+
+	"github.com/pipe-cd/pipe/pkg/filematcher"
 )
 
 type EventWatcherSpec struct {
@@ -53,9 +55,22 @@ type EventWatcherReplacement struct {
 // LoadEventWatcher gives back parsed EventWatcher config after merging config files placed under
 // the .pipe directory. With "includes" and "excludes", you can filter the files included the result.
 // "excludes" are prioritized if both "excludes" and "includes" are given. ErrNotFound is returned if not found.
-func LoadEventWatcher(repoRoot string, includes, excludes []string) (*EventWatcherSpec, error) {
+func LoadEventWatcher(repoRoot string, includePatterns, excludePatterns []string) (*EventWatcherSpec, error) {
 	dir := filepath.Join(repoRoot, SharedConfigurationDirName)
-	files, err := ioutil.ReadDir(dir)
+
+	// Collect file paths recursively.
+	files := make([]string, 0)
+	err := filepath.Walk(dir,
+		func(path string, info os.FileInfo, err error) error {
+			if err != nil {
+				return err
+			}
+			if !info.IsDir() {
+				files = append(files, strings.TrimPrefix(path, dir+"/"))
+			}
+			return nil
+		},
+	)
 	if os.IsNotExist(err) {
 		return nil, ErrNotFound
 	}
@@ -67,15 +82,12 @@ func LoadEventWatcher(repoRoot string, includes, excludes []string) (*EventWatch
 	spec := &EventWatcherSpec{
 		Events: make([]EventWatcherEvent, 0),
 	}
-	filtered, err := filterEventWatcherFiles(files, includes, excludes)
+	filtered, err := filterEventWatcherFiles(files, includePatterns, excludePatterns)
 	if err != nil {
 		return nil, fmt.Errorf("failed to filter event watcher files at %s: %w", dir, err)
 	}
 	for _, f := range filtered {
-		if f.IsDir() {
-			continue
-		}
-		path := filepath.Join(dir, f.Name())
+		path := filepath.Join(dir, f)
 		cfg, err := LoadFromYAML(path)
 		if err != nil {
 			return nil, fmt.Errorf("failed to load config file %s: %w", path, err)
@@ -94,34 +106,37 @@ func LoadEventWatcher(repoRoot string, includes, excludes []string) (*EventWatch
 
 // filterEventWatcherFiles filters the given files based on the given Includes and Excludes.
 // Excludes are prioritized if both Excludes and Includes are given.
-func filterEventWatcherFiles(files []os.FileInfo, includes, excludes []string) ([]os.FileInfo, error) {
-	if len(includes) == 0 && len(excludes) == 0 {
+func filterEventWatcherFiles(files, includePatterns, excludePatterns []string) ([]string, error) {
+	if len(includePatterns) == 0 && len(excludePatterns) == 0 {
 		return files, nil
 	}
 
-	filtered := make([]os.FileInfo, 0, len(files))
-	useWhitelist := len(includes) != 0 && len(excludes) == 0
-	if useWhitelist {
-		whiteList := make(map[string]struct{}, len(includes))
-		for _, i := range includes {
-			whiteList[i] = struct{}{}
+	filtered := make([]string, 0, len(files))
+
+	// Use include patterns
+	if len(includePatterns) != 0 && len(excludePatterns) == 0 {
+		matcher, err := filematcher.NewPatternMatcher(includePatterns)
+		if err != nil {
+			return nil, fmt.Errorf("failed to create a matcher object: %w", err)
 		}
 		for _, f := range files {
-			if _, ok := whiteList[f.Name()]; ok {
+			if matcher.Matches(f) {
 				filtered = append(filtered, f)
 			}
 		}
 		return filtered, nil
 	}
 
-	blackList := make(map[string]struct{}, len(excludes))
-	for _, e := range excludes {
-		blackList[e] = struct{}{}
+	// Use exclude patterns
+	matcher, err := filematcher.NewPatternMatcher(excludePatterns)
+	if err != nil {
+		return nil, fmt.Errorf("failed to create a matcher object: %w", err)
 	}
 	for _, f := range files {
-		if _, ok := blackList[f.Name()]; !ok {
-			filtered = append(filtered, f)
+		if matcher.Matches(f) {
+			continue
 		}
+		filtered = append(filtered, f)
 	}
 	return filtered, nil
 }
