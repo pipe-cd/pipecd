@@ -93,7 +93,7 @@ func (w *watcher) Run(ctx context.Context) error {
 		defer os.RemoveAll(repo.GetPath())
 
 		w.wg.Add(1)
-		go w.run(ctx, repo, &repoCfg)
+		go w.run(ctx, repo, repoCfg)
 	}
 
 	w.wg.Wait()
@@ -102,7 +102,7 @@ func (w *watcher) Run(ctx context.Context) error {
 
 // run works against a single git repo. It periodically compares the value in the given
 // git repository and one in the control-plane. And then pushes those with differences.
-func (w *watcher) run(ctx context.Context, repo git.Repo, repoCfg *config.PipedRepository) {
+func (w *watcher) run(ctx context.Context, repo git.Repo, repoCfg config.PipedRepository) {
 	defer w.wg.Done()
 
 	var (
