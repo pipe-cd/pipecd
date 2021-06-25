@@ -4,7 +4,7 @@ import { render } from "react-dom";
 import { theme } from "./theme";
 import { Provider } from "react-redux";
 import { store } from "./store";
-import { Pages as App } from "./pages/index";
+import { Routes } from "./routes";
 import { Router } from "react-router-dom";
 import { history } from "./history";
 import { setupDayjs } from "./utils/setup-dayjs";
@@ -28,7 +28,7 @@ async function run(): Promise<void> {
       <ThemeProvider theme={theme}>
         <Router history={history}>
           <CssBaseline />
-          <App />
+          <Routes />
         </Router>
       </ThemeProvider>
     </Provider>,

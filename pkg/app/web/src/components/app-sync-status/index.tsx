@@ -1,12 +1,12 @@
-import { FC } from "react";
 import { Box, makeStyles, Typography } from "@material-ui/core";
-import { SyncStatusIcon } from "../sync-status-icon";
+import { FC } from "react";
 import { APPLICATION_SYNC_STATUS_TEXT } from "~/constants/application-sync-status-text";
+import { UI_TEXT_NOT_AVAILABLE_TEXT } from "~/constants/ui-text";
 import {
   ApplicationSyncState,
   ApplicationSyncStatus,
 } from "~/modules/applications";
-import { UI_TEXT_NOT_AVAILABLE_TEXT } from "~/constants/ui-text";
+import { SyncStatusIcon } from "./sync-status-icon";
 
 const useStyles = makeStyles((theme) => ({
   statusText: {
