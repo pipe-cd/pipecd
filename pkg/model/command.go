@@ -18,7 +18,7 @@ import "context"
 
 type ReportableCommand struct {
 	*Command
-	Report func(ctx context.Context, status CommandStatus, metadata map[string]string) error
+	Report func(ctx context.Context, status CommandStatus, metadata map[string]string, output []byte) error
 }
 
 func (c *Command) IsHandled() bool {

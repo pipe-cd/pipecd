@@ -202,13 +202,13 @@ func (s *store) ListStageCommands(deploymentID, stageID string) []model.Reportab
 func (s *store) makeReportableCommand(c *model.Command) model.ReportableCommand {
 	return model.ReportableCommand{
 		Command: c,
-		Report: func(ctx context.Context, status model.CommandStatus, metadata map[string]string) error {
-			return s.reportCommandHandled(ctx, c, status, metadata)
+		Report: func(ctx context.Context, status model.CommandStatus, metadata map[string]string, output []byte) error {
+			return s.reportCommandHandled(ctx, c, status, metadata, output)
 		},
 	}
 }
 
-func (s *store) reportCommandHandled(ctx context.Context, c *model.Command, status model.CommandStatus, metadata map[string]string) error {
+func (s *store) reportCommandHandled(ctx context.Context, c *model.Command, status model.CommandStatus, metadata map[string]string, output []byte) error {
 	now := time.Now()
 
 	s.mu.Lock()
@@ -220,6 +220,7 @@ func (s *store) reportCommandHandled(ctx context.Context, c *model.Command, stat
 		Status:    status,
 		Metadata:  metadata,
 		HandledAt: now.Unix(),
+		Output:    output,
 	})
 	return err
 }

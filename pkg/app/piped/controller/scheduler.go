@@ -404,7 +404,7 @@ func (s *scheduler) Run(ctx context.Context) error {
 	}
 
 	if cancelCommand != nil {
-		if err := cancelCommand.Report(ctx, model.CommandStatus_COMMAND_SUCCEEDED, nil); err != nil {
+		if err := cancelCommand.Report(ctx, model.CommandStatus_COMMAND_SUCCEEDED, nil, nil); err != nil {
 			s.logger.Error("failed to report command status", zap.Error(err))
 		}
 	}
