@@ -62,13 +62,13 @@ spec:
 | password | string | Password used for the repository backed by HTTP basic authentication. | No |
 | insecure | bool | Whether to skip TLS certificate checks for the repository or not. | No |
 
-## CLoudProvider
+## CloudProvider
 
 | Field | Type | Description | Required |
 |-|-|-|-|
 | name | string | The name of the cloud provider. | Yes |
 | type | string | The cloud provider type. Must be one of the following values:<br>`KUBERNETES`, `TERRAFORM`, `CLOUDRUN`, `LAMBDA`. | Yes |
-| config | [CloudProviderConfig](/docs/operator-manual/piped/configuration-reference/#cloudproviderconfig) | Specific configuration for the specified type of cloud provider. | Yes |
+| config | [CloudProviderConfig](/docs/operator-manual/piped/configuration-reference/#cloudproviderconfig) | Specific configuration for the specified type of cloud provider. | No |
 
 ## CloudProviderConfig
 

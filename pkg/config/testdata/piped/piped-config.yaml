@@ -43,6 +43,9 @@ spec:
             - apiVersion: v1
               kind: Endpoints
 
+    - name: kubernetes-dev
+      type: KUBERNETES
+
     - name: terraform
       type: TERRAFORM
       config:
