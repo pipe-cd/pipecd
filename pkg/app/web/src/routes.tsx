@@ -2,7 +2,10 @@ import loadable from "@loadable/component";
 import { EntityId } from "@reduxjs/toolkit";
 import { FC, memo, useEffect } from "react";
 import { Redirect, Route, Switch } from "react-router-dom";
+import { ApplicationIndexPage } from "~/components/applications-page";
+import { DeploymentIndexPage } from "~/components/deployments-page";
 import { Header } from "~/components/header";
+import { LoginPage } from "~/components/login-page";
 import { Toasts } from "~/components/toasts";
 import {
   PAGE_PATH_APPLICATIONS,
@@ -21,19 +24,16 @@ import {
 import { fetchEnvironments } from "~/modules/environments";
 import { useMe } from "~/modules/me";
 import { fetchPipeds } from "~/modules/pipeds";
-import { ApplicationIndexPage } from "./applications";
-import { DeploymentIndexPage } from "./deployments";
-import { LoginPage } from "./login";
 
 const SettingsIndexPage = loadable(
-  () => import(/* webpackChunkName: "settings" */ "./settings"),
+  () => import(/* webpackChunkName: "settings" */ "~/components/settings-page"),
   {
     resolveComponent: (components) => components.SettingsIndexPage,
   }
 );
 
 const InsightIndexPage = loadable(
-  () => import(/* webpackChunkName: "insight" */ "./insight"),
+  () => import(/* webpackChunkName: "insight" */ "~/components/insight-page"),
   {
     resolveComponent: (components) => components.InsightIndexPage,
   }
@@ -41,7 +41,9 @@ const InsightIndexPage = loadable(
 
 const DeploymentDetailPage = loadable(
   () =>
-    import(/* webpackChunkName: "deployments-detail" */ "./deployments/detail"),
+    import(
+      /* webpackChunkName: "deployments-detail" */ "~/components/deployments-detail-page"
+    ),
   {
     resolveComponent: (components) => components.DeploymentDetailPage,
   }
@@ -50,7 +52,7 @@ const DeploymentDetailPage = loadable(
 const ApplicationDetailPage = loadable(
   () =>
     import(
-      /* webpackChunkName: "applications-detail" */ "./applications/detail"
+      /* webpackChunkName: "applications-detail" */ "~/components/application-detail-page"
     ),
   {
     resolveComponent: (components) => components.ApplicationDetailPage,
@@ -77,7 +79,7 @@ const useCommandsStatusChecking = (): void => {
   );
 };
 
-export const Pages: FC = memo(function Pages() {
+export const Routes: FC = memo(function Routes() {
   const dispatch = useAppDispatch();
   const me = useMe();
   useEffect(() => {

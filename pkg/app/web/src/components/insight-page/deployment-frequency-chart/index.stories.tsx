@@ -1,6 +1,6 @@
 import { Box } from "@material-ui/core";
 import { Story } from "@storybook/react";
-import { DeploymentFrequencyChart, DeploymentFrequencyChartProps } from "./";
+import { DeploymentFrequencyChart, DeploymentFrequencyChartProps } from ".";
 
 export default {
   title: "insights/DeploymentFrequencyChart",

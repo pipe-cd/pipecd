@@ -3,11 +3,11 @@ import { FC, memo, useEffect } from "react";
 import { useAppDispatch, useAppSelector } from "~/hooks/redux";
 import { fetchApplications, selectById } from "~/modules/applications";
 import { InsightDataPoint } from "~/modules/insight";
-import { ChangeFailureRateChart } from "./components/change-failure-rate-chart";
-import { DeploymentFrequencyChart } from "./components/deployment-frequency-chart";
-import { InsightHeader } from "./components/insight-header";
-import { LeadTimeForChangesChart } from "./components/lead-time-for-changes-chart";
-import { MeanTimeToRestoreChart } from "./components/mean-time-to-restore-chart";
+import { ChangeFailureRateChart } from "./change-failure-rate-chart";
+import { DeploymentFrequencyChart } from "./deployment-frequency-chart";
+import { InsightHeader } from "./insight-header";
+import { LeadTimeForChangesChart } from "./lead-time-for-changes-chart";
+import { MeanTimeToRestoreChart } from "./mean-time-to-restore-chart";
 
 export const InsightIndexPage: FC = memo(function InsightIndexPage() {
   const dispatch = useAppDispatch();

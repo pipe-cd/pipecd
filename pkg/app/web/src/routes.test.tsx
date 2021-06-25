@@ -1,10 +1,10 @@
-import { MemoryRouter } from "react-router-dom";
-import { render, screen } from "~~/test-utils";
-import { Pages } from "./index";
+import { waitFor } from "@testing-library/react";
 import { setupServer } from "msw/node";
 import { GetMeResponse } from "pipe/pkg/app/web/api_client/service_pb";
+import { MemoryRouter } from "react-router-dom";
 import { createHandler } from "~/mocks/create-handler";
-import { waitFor } from "@testing-library/react";
+import { render, screen } from "~~/test-utils";
+import { Routes } from "./routes";
 
 const server = setupServer(
   createHandler<GetMeResponse>("/GetMe", () => {
@@ -29,7 +29,7 @@ describe("Pages", () => {
   test("redirect to login page", async () => {
     render(
       <MemoryRouter initialEntries={["/"]} initialIndex={0}>
-        <Pages />
+        <Routes />
       </MemoryRouter>,
       { initialState: { me: { isLogin: false } } }
     );

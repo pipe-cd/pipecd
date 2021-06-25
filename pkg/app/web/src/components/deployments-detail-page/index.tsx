@@ -10,9 +10,9 @@ import {
   isDeploymentRunning,
   selectById as selectDeploymentById,
 } from "~/modules/deployments";
-import { DeploymentDetail } from "./components/deployment-detail";
-import { LogViewer } from "./components/log-viewer";
-import { Pipeline } from "./components/pipeline";
+import { DeploymentDetail } from "./deployment-detail";
+import { LogViewer } from "./log-viewer";
+import { Pipeline } from "./pipeline";
 
 const FETCH_INTERVAL = 4000;
 

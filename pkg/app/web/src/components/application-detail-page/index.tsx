@@ -7,8 +7,8 @@ import {
   fetchApplicationStateById,
   selectHasError,
 } from "~/modules/applications-live-state";
-import { ApplicationDetail } from "./components/application-detail";
-import { ApplicationStateView } from "./components/application-state-view";
+import { ApplicationDetail } from "./application-detail";
+import { ApplicationStateView } from "./application-state-view";
 
 const FETCH_INTERVAL = 4000;
 

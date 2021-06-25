@@ -13,7 +13,7 @@ import { useCookies } from "react-cookie";
 import { Link, Redirect, useHistory, useParams } from "react-router-dom";
 import { PAGE_PATH_APPLICATIONS, PAGE_PATH_LOGIN } from "~/constants/path";
 import { useMe } from "~/modules/me";
-import { LoginForm } from "./components/login-form";
+import { LoginForm } from "./login-form";
 
 const CONTENT_WIDTH = 500;
 

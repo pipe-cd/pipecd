@@ -27,16 +27,9 @@ src
 │  └── module-name
 │     ├── index.ts
 │     └── index.test.ts
-├── pages # page components
-│  └── page-name
-│     ├── components # page's components
-│     ├── nested-page-name
-│     ├── index.tsx
-│     └── index.test.ts
 ├── styles # shared styles
 ├── types # application types
-└── utils
-└── __snapshots__
+└── utils # utils files
 ```
 
 ## Development

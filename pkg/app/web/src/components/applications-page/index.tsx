@@ -19,13 +19,13 @@ import { useAppDispatch, useAppSelector } from "~/hooks/redux";
 import { fetchApplicationCount } from "~/modules/application-counts";
 import { ApplicationKind, fetchApplications } from "~/modules/applications";
 import { clearTemplateTarget } from "~/modules/deployment-configs";
-import { DeploymentConfigForm } from "~/pages/applications/components/deployment-config-form";
 import { stringifySearchParams, useSearchParams } from "~/utils/search-params";
-import { AddApplicationDrawer } from "./components/add-application-drawer";
-import { ApplicationCounts } from "./components/application-counts";
-import { ApplicationFilter } from "./components/application-filter";
-import { ApplicationList } from "./components/application-list";
-import { EditApplicationDrawer } from "./components/edit-application-drawer";
+import { AddApplicationDrawer } from "./add-application-drawer";
+import { ApplicationCounts } from "./application-counts";
+import { ApplicationFilter } from "./application-filter";
+import { ApplicationList } from "./application-list";
+import { DeploymentConfigForm } from "./deployment-config-form";
+import { EditApplicationDrawer } from "./edit-application-drawer";
 
 const useStyles = makeStyles((theme) => ({
   main: {

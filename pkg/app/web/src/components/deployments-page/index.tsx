@@ -34,8 +34,8 @@ import {
 import { useStyles as useButtonStyles } from "~/styles/button";
 import { LoadingStatus } from "~/types/module";
 import { stringifySearchParams, useSearchParams } from "~/utils/search-params";
-import { DeploymentFilter } from "./components/deployment-filter";
-import { DeploymentItem } from "./components/deployment-item";
+import { DeploymentFilter } from "./deployment-filter";
+import { DeploymentItem } from "./deployment-item";
 
 const useStyles = makeStyles((theme) => ({
   deploymentLists: {

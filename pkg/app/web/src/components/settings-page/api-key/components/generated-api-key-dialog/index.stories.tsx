@@ -1,6 +1,6 @@
 import { Story } from "@storybook/react";
 import { createDecoratorRedux } from "~~/.storybook/redux-decorator";
-import { GeneratedAPIKeyDialog } from "./";
+import { GeneratedAPIKeyDialog } from ".";
 
 export default {
   title: "Setting/APIKey/GeneratedAPIKeyDialog",

@@ -4,7 +4,7 @@ import { dummyApplication } from "~/__fixtures__/dummy-application";
 import { dummyDeployment } from "~/__fixtures__/dummy-deployment";
 import { dummyEnv } from "~/__fixtures__/dummy-environment";
 import { createStore } from "~~/test-utils";
-import { DeploymentItem } from "./";
+import { DeploymentItem } from ".";
 
 export default {
   title: "DEPLOYMENT/DeploymentItem",
