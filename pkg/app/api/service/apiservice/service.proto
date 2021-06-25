@@ -112,8 +112,9 @@ message RegisterEventResponse {
 
 message RequestPlanPreviewRequest {
     string repo_remote_url = 1 [(validate.rules).string.min_len = 1];
-    string branch = 2 [(validate.rules).string.min_len = 1];
+    string head_branch = 2 [(validate.rules).string.min_len = 1];
     string head_commit = 3 [(validate.rules).string.min_len = 1];
+    string base_branch = 4 [(validate.rules).string.min_len = 1];
 }
 
 message RequestPlanPreviewResponse {

@@ -32,8 +32,9 @@ import (
 
 type command struct {
 	repoRemoteURL string
-	branch        string
+	headBranch    string
 	headCommit    string
+	baseBranch    string
 	timeout       time.Duration
 	checkInterval time.Duration
 
@@ -56,12 +57,14 @@ func NewCommand() *cobra.Command {
 	c.clientOptions.RegisterPersistentFlags(cmd)
 
 	cmd.Flags().StringVar(&c.repoRemoteURL, "repo-remote-url", c.repoRemoteURL, "The remote URL of Git repository.")
-	cmd.Flags().StringVar(&c.branch, "branch", c.branch, "The branch of the target commit.")
+	cmd.Flags().StringVar(&c.headBranch, "head-branch", c.headBranch, "The head branch of the change.")
 	cmd.Flags().StringVar(&c.headCommit, "head-commit", c.headCommit, "The SHA of the head commit.")
+	cmd.Flags().StringVar(&c.baseBranch, "base-branch", c.baseBranch, "The base branch of the change.")
 
 	cmd.MarkFlagRequired("repo-remote-url")
-	cmd.MarkFlagRequired("branch")
+	cmd.MarkFlagRequired("head-branch")
 	cmd.MarkFlagRequired("head-commit")
+	cmd.MarkFlagRequired("base-branch")
 
 	return cmd
 }
@@ -78,8 +81,9 @@ func (c *command) run(ctx context.Context, _ cli.Telemetry) error {
 
 	req := &apiservice.RequestPlanPreviewRequest{
 		RepoRemoteUrl: c.repoRemoteURL,
-		Branch:        c.branch,
+		HeadBranch:    c.headBranch,
 		HeadCommit:    c.headCommit,
+		BaseBranch:    c.baseBranch,
 	}
 
 	resp, err := cli.RequestPlanPreview(ctx, req)
