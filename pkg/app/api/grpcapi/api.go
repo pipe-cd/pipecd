@@ -393,7 +393,7 @@ func (a *API) RequestPlanPreview(ctx context.Context, req *apiservice.RequestPla
 	repositories := make(map[string]string, len(pipeds))
 	for _, p := range pipeds {
 		for _, r := range p.Repositories {
-			if r.Remote == req.RepoRemoteUrl {
+			if r.Remote == req.RepoRemoteUrl && r.Branch == req.BaseBranch {
 				repositories[p.Id] = r.Id
 				break
 			}
@@ -415,8 +415,9 @@ func (a *API) RequestPlanPreview(ctx context.Context, req *apiservice.RequestPla
 			Commander: commander,
 			BuildPlanPreview: &model.Command_BuildPlanPreview{
 				RepositoryId: repositoryID,
-				Branch:       req.Branch,
+				HeadBranch:   req.HeadBranch,
 				HeadCommit:   req.HeadCommit,
+				BaseBranch:   req.BaseBranch,
 			},
 		}
 		if err := addCommand(ctx, a.commandStore, &cmd, a.logger); err != nil {
