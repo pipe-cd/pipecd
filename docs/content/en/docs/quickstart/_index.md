@@ -26,7 +26,7 @@ cd manifests
 ### 2. Installing control plane
 
 ``` console
-helm -n pipecd install pipecd ./manifests/pipecd --create-namespace \
+helm -n pipecd install pipecd ./manifests/pipecd --dependency-update --create-namespace \
   --values ./quickstart/control-plane-values.yaml
 ```
 
