@@ -6,6 +6,39 @@
 bazelisk build //pkg/app/web:build_api //pkg/app/web:build_model # generate models and API client from proto files. Also will install dependencies by yarn
 ```
 
+## Directory structure
+
+```bash
+src
+├── __fixtures__ # dummy models
+├── api # API clients
+├── components # shared components
+│  └── comp-name
+│     ├── comp-name # component's components
+│     ├── index.tsx
+│     ├── index.test.ts
+│     └── index.stories.ts
+├── constants # shared constants
+├── hooks # shared hooks
+├── middlewares # redux middlewares
+├── mocks # API mock files
+│  └── services
+├── modules # redux modules
+│  └── module-name
+│     ├── index.ts
+│     └── index.test.ts
+├── pages # page components
+│  └── page-name
+│     ├── components # page's components
+│     ├── nested-page-name
+│     ├── index.tsx
+│     └── index.test.ts
+├── styles # shared styles
+├── types # application types
+└── utils
+└── __snapshots__
+```
+
 ## Development
 
 ### Running with Mocks(msw)
