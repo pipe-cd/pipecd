@@ -98,6 +98,11 @@ func TestPipedConfig(t *testing.T) {
 						},
 					},
 					{
+						Name:             "kubernetes-dev",
+						Type:             model.CloudProviderKubernetes,
+						KubernetesConfig: &CloudProviderKubernetesConfig{},
+					},
+					{
 						Name: "terraform",
 						Type: model.CloudProviderTerraform,
 						TerraformConfig: &CloudProviderTerraformConfig{
