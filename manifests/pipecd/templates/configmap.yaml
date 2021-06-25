@@ -10,7 +10,7 @@ data:
 {{ tpl .Values.config.data . | indent 4 }}
 {{- end }}
 
-{{- if .Values.monitoring.enabled -}}
+{{- if .Values.monitoring.enabled }}
 ---
 apiVersion: v1
 kind: ConfigMap
