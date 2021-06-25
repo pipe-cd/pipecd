@@ -109,7 +109,7 @@ func (e *Executor) checkApproval(ctx context.Context) (string, bool) {
 		return "", false
 	}
 
-	if err := approveCmd.Report(ctx, model.CommandStatus_COMMAND_SUCCEEDED, nil); err != nil {
+	if err := approveCmd.Report(ctx, model.CommandStatus_COMMAND_SUCCEEDED, nil, nil); err != nil {
 		e.Logger.Error("failed to report handled command", zap.Error(err))
 	}
 	return approveCmd.Commander, true

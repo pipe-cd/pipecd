@@ -201,7 +201,7 @@ func (p *planner) Run(ctx context.Context) error {
 			p.doneDeploymentStatus = model.DeploymentStatus_DEPLOYMENT_CANCELLED
 			desc := fmt.Sprintf("Deployment was cancelled by %s while planning", cmd.Commander)
 			p.reportDeploymentCancelled(ctx, cmd.Commander, desc)
-			return cmd.Report(ctx, model.CommandStatus_COMMAND_SUCCEEDED, nil)
+			return cmd.Report(ctx, model.CommandStatus_COMMAND_SUCCEEDED, nil, nil)
 		}
 	default:
 	}

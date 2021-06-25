@@ -179,7 +179,7 @@ func (t *Trigger) checkCommand(ctx context.Context) error {
 				zap.String("app-id", app.Id),
 				zap.Error(err),
 			)
-			if err := cmd.Report(ctx, model.CommandStatus_COMMAND_FAILED, nil); err != nil {
+			if err := cmd.Report(ctx, model.CommandStatus_COMMAND_FAILED, nil, nil); err != nil {
 				t.logger.Error("failed to report command status", zap.Error(err))
 			}
 			continue
@@ -188,7 +188,7 @@ func (t *Trigger) checkCommand(ctx context.Context) error {
 		metadata := map[string]string{
 			triggeredDeploymentIDKey: d.Id,
 		}
-		if err := cmd.Report(ctx, model.CommandStatus_COMMAND_SUCCEEDED, metadata); err != nil {
+		if err := cmd.Report(ctx, model.CommandStatus_COMMAND_SUCCEEDED, metadata, nil); err != nil {
 			t.logger.Error("failed to report command status", zap.Error(err))
 		}
 	}
