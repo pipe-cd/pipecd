@@ -23,9 +23,6 @@ import {
 import Alert from "@material-ui/lab/Alert";
 import { createSelector } from "@reduxjs/toolkit";
 import { FC, memo, useCallback, useState } from "react";
-import { AddPipedDrawer } from "~/components/add-piped-drawer";
-import { EditPipedDrawer } from "~/components/edit-piped-drawer";
-import { FilterValues, PipedFilter } from "~/components/piped-filter";
 import { TextWithCopyButton } from "~/components/text-with-copy-button";
 import {
   UI_TEXT_ADD,
@@ -45,7 +42,10 @@ import {
 } from "~/modules/pipeds";
 import { AppState } from "~/store";
 import { useSettingsStyles } from "../styles";
-import { PipedTableRow } from "./piped-table-row";
+import { AddPipedDrawer } from "./components/add-piped-drawer";
+import { EditPipedDrawer } from "./components/edit-piped-drawer";
+import { FilterValues, PipedFilter } from "./components/piped-filter";
+import { PipedTableRow } from "./components/piped-table-row";
 
 const useStyles = makeStyles(() => ({
   toolbarSpacer: {

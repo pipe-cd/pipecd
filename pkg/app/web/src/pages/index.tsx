@@ -21,8 +21,8 @@ import {
 import { fetchEnvironments } from "~/modules/environments";
 import { useMe } from "~/modules/me";
 import { fetchPipeds } from "~/modules/pipeds";
-import { ApplicationIndexPage } from "./applications/index";
-import { DeploymentIndexPage } from "./deployments/index";
+import { ApplicationIndexPage } from "./applications";
+import { DeploymentIndexPage } from "./deployments";
 import { LoginPage } from "./login";
 
 const SettingsIndexPage = loadable(

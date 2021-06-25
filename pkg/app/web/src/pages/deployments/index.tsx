@@ -15,15 +15,13 @@ import dayjs from "dayjs";
 import { FC, memo, useCallback, useEffect, useRef, useState } from "react";
 import { useInView } from "react-intersection-observer";
 import { useHistory } from "react-router-dom";
-import { DeploymentFilter } from "~/components/deployment-filter";
-import { DeploymentItem } from "~/components/deployment-item";
 import { PAGE_PATH_DEPLOYMENTS } from "~/constants/path";
 import {
   UI_TEXT_FILTER,
   UI_TEXT_HIDE_FILTER,
   UI_TEXT_REFRESH,
 } from "~/constants/ui-text";
-import { useAppSelector, useAppDispatch } from "~/hooks/redux";
+import { useAppDispatch, useAppSelector } from "~/hooks/redux";
 import { fetchApplications } from "~/modules/applications";
 import {
   Deployment,
@@ -36,6 +34,8 @@ import {
 import { useStyles as useButtonStyles } from "~/styles/button";
 import { LoadingStatus } from "~/types/module";
 import { stringifySearchParams, useSearchParams } from "~/utils/search-params";
+import { DeploymentFilter } from "./components/deployment-filter";
+import { DeploymentItem } from "./components/deployment-item";
 
 const useStyles = makeStyles((theme) => ({
   deploymentLists: {

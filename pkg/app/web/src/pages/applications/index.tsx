@@ -13,19 +13,19 @@ import FilterIcon from "@material-ui/icons/FilterList";
 import RefreshIcon from "@material-ui/icons/Refresh";
 import { FC, memo, useCallback, useEffect, useState } from "react";
 import { useHistory } from "react-router-dom";
-import { AddApplicationDrawer } from "~/components/add-application-drawer";
-import { ApplicationCounts } from "~/components/application-counts";
-import { ApplicationFilter } from "~/components/application-filter";
-import { ApplicationList } from "~/components/application-list";
-import { DeploymentConfigForm } from "~/components/deployment-config-form";
-import { EditApplicationDrawer } from "~/components/edit-application-drawer";
 import { PAGE_PATH_APPLICATIONS } from "~/constants/path";
 import { UI_TEXT_FILTER, UI_TEXT_HIDE_FILTER } from "~/constants/ui-text";
-import { useAppSelector, useAppDispatch } from "~/hooks/redux";
+import { useAppDispatch, useAppSelector } from "~/hooks/redux";
 import { fetchApplicationCount } from "~/modules/application-counts";
 import { ApplicationKind, fetchApplications } from "~/modules/applications";
 import { clearTemplateTarget } from "~/modules/deployment-configs";
+import { DeploymentConfigForm } from "~/pages/applications/components/deployment-config-form";
 import { stringifySearchParams, useSearchParams } from "~/utils/search-params";
+import { AddApplicationDrawer } from "./components/add-application-drawer";
+import { ApplicationCounts } from "./components/application-counts";
+import { ApplicationFilter } from "./components/application-filter";
+import { ApplicationList } from "./components/application-list";
+import { EditApplicationDrawer } from "./components/edit-application-drawer";
 
 const useStyles = makeStyles((theme) => ({
   main: {

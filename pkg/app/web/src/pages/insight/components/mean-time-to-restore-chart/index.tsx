@@ -1,7 +1,7 @@
 import chartColor from "@material-ui/core/colors/yellow";
 import { FC } from "react";
 import { InsightDataPoint } from "~/modules/insight";
-import { ChartBase } from "~/components/chart-base";
+import { ChartBase } from "../chart-base";
 
 export interface MeanTimeToRestoreChartProps {
   data: { name: string; points: InsightDataPoint.AsObject[] }[];

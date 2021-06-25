@@ -14,8 +14,6 @@ import {
 import { Add as AddIcon } from "@material-ui/icons";
 import { unwrapResult } from "@reduxjs/toolkit";
 import { FC, memo, useCallback, useEffect, useState } from "react";
-import { AddEnvForm } from "~/components/add-env-form";
-import { EnvironmentListItem } from "~/components/environment-list-item";
 import { DELETE_ENVIRONMENT_SUCCESS } from "~/constants/toast-text";
 import { UI_TEXT_ADD } from "~/constants/ui-text";
 import { useAppDispatch, useAppSelector } from "~/hooks/redux";
@@ -27,7 +25,9 @@ import {
 } from "~/modules/environments";
 import { selectProjectName } from "~/modules/me";
 import { addToast } from "~/modules/toasts";
+import { AddEnvForm } from "./components/add-env-form";
 import { DeleteEnvironmentDialog } from "./components/delete-confirm-dialog";
+import { EnvironmentListItem } from "./components/environment-list-item";
 
 export const SettingsEnvironmentPage: FC = memo(
   function SettingsEnvironmentPage() {

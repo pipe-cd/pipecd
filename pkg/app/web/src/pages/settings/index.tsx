@@ -10,15 +10,15 @@ import { FC, memo } from "react";
 import { NavLink, Redirect, Route, Switch } from "react-router-dom";
 import {
   PAGE_PATH_SETTINGS,
-  PAGE_PATH_SETTINGS_PIPED,
-  PAGE_PATH_SETTINGS_ENV,
-  PAGE_PATH_SETTINGS_PROJECT,
   PAGE_PATH_SETTINGS_API_KEY,
+  PAGE_PATH_SETTINGS_ENV,
+  PAGE_PATH_SETTINGS_PIPED,
+  PAGE_PATH_SETTINGS_PROJECT,
 } from "~/constants/path";
-import { SettingsPipedPage } from "./piped";
-import { SettingsEnvironmentPage } from "./environment";
-import { SettingsProjectPage } from "./project";
 import { APIKeyPage } from "./api-key";
+import { SettingsEnvironmentPage } from "./environment";
+import { SettingsPipedPage } from "./piped";
+import { SettingsProjectPage } from "./project";
 
 const drawerWidth = 240;
 
