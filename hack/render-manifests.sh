@@ -39,14 +39,14 @@ echo "Copying manifests to ${OUT}..."
 cp -rf manifests ${OUT}
 
 echo "Updating version to ${VERSION}..."
-sed -i '' -e 's/{{ .VERSION }}/'"${VERSION}"'/g' ${OUT}/pipecd/Chart.yaml
-sed -i '' -e 's/{{ .VERSION }}/'"${VERSION}"'/g' ${OUT}/piped/Chart.yaml
+sed -i'' -e 's/{{ .VERSION }}/'"${VERSION}"'/g' ${OUT}/pipecd/Chart.yaml
+sed -i'' -e 's/{{ .VERSION }}/'"${VERSION}"'/g' ${OUT}/piped/Chart.yaml
 
 if [ ! -z "${REGISTRY}" ]
 then
   echo "Updating image registry to ${REGISTRY}..."
-  sed -i '' -e 's/gcr.io\/pipecd/'"${REGISTRY}"'/g' ${OUT}/pipecd/values.yaml
-  sed -i '' -e 's/gcr.io\/pipecd/'"${REGISTRY}"'/g' ${OUT}/piped/values.yaml
+  sed -i'' -e 's/gcr.io\/pipecd/'"${REGISTRY}"'/g' ${OUT}/pipecd/values.yaml
+  sed -i'' -e 's/gcr.io\/pipecd/'"${REGISTRY}"'/g' ${OUT}/piped/values.yaml
 fi
 
 echo "Updating dependencies..."
