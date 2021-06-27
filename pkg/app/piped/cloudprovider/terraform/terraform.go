@@ -64,7 +64,6 @@ func (t *Terraform) Init(ctx context.Context, w io.Writer) error {
 	for _, f := range t.varFiles {
 		args = append(args, fmt.Sprintf("-var-file=%s", f))
 	}
-	args = append(args, "-lock=false", ".")
 
 	cmd := exec.CommandContext(ctx, t.execPath, args...)
 	cmd.Dir = t.dir
@@ -80,7 +79,6 @@ func (t *Terraform) SelectWorkspace(ctx context.Context, workspace string) error
 		"workspace",
 		"select",
 		workspace,
-		".",
 	}
 	cmd := exec.CommandContext(ctx, t.execPath, args...)
 	cmd.Dir = t.dir
@@ -115,7 +113,6 @@ func (t *Terraform) Plan(ctx context.Context, w io.Writer) (PlanResult, error) {
 	for _, f := range t.varFiles {
 		args = append(args, fmt.Sprintf("-var-file=%s", f))
 	}
-	args = append(args, "-lock=false", ".")
 
 	var buf bytes.Buffer
 	stdout := io.MultiWriter(w, &buf)
@@ -185,7 +182,6 @@ func (t *Terraform) Apply(ctx context.Context, w io.Writer) error {
 	for _, f := range t.varFiles {
 		args = append(args, fmt.Sprintf("-var-file=%s", f))
 	}
-	args = append(args, ".")
 
 	cmd := exec.CommandContext(ctx, t.execPath, args...)
 	cmd.Dir = t.dir
