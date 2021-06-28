@@ -87,7 +87,7 @@ Please note that the phases (Incubating, Alpha, Beta, and Stable) are applied to
 | [Wait Manual Approval Stage](/docs/user-guide/adding-a-manual-approval/) | Beta |
 | [Notification](/docs/operator-manual/piped/configuring-notifications/) to Slack | Beta |
 | [Notification](/docs/operator-manual/piped/configuring-notifications/) to Webhook | Incubating |
-| [Secrets Management](/docs/user-guide/sealed-secrets/) | Beta |
+| [Secrets Management](/docs/user-guide/secret-management/) | Beta |
 | [Event Watcher](/docs/user-guide/event-watcher/) | Alpha |
 | [Command-line tool (pipectl) and API for external services](/docs/user-guide/command-line-tool/) | Beta |
 | Support executing custom stage | Incubating |
