@@ -21,6 +21,12 @@ option go_package = "github.com/pipe-cd/pipe/pkg/model";
 import "validate/validate.proto";
 import "pkg/model/common.proto";
 
+message PlanPreviewCommandResult {
+    string command_id = 1 [(validate.rules).string.min_len = 1];
+    repeated ApplicationPlanPreviewResult results = 2;
+    string error = 3;
+}
+
 message ApplicationPlanPreviewResult {
     // Application information.
     string application_id = 1;

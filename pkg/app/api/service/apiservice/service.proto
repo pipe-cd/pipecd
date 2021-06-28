@@ -126,5 +126,5 @@ message GetPlanPreviewResultsRequest {
 }
 
 message GetPlanPreviewResultsResponse {
-    repeated pipe.model.ApplicationPlanPreviewResult results = 1;
+    repeated pipe.model.PlanPreviewCommandResult results = 1;
 }

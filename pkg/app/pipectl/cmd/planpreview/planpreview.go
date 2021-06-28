@@ -17,7 +17,6 @@ package planpreview
 import (
 	"context"
 	"fmt"
-	"io"
 	"time"
 
 	"github.com/spf13/cobra"
@@ -35,11 +34,11 @@ type command struct {
 	headBranch    string
 	headCommit    string
 	baseBranch    string
+	out           string
 	timeout       time.Duration
 	checkInterval time.Duration
 
 	clientOptions *client.Options
-	stdout        io.Writer
 }
 
 func NewCommand() *cobra.Command {
@@ -60,11 +59,13 @@ func NewCommand() *cobra.Command {
 	cmd.Flags().StringVar(&c.headBranch, "head-branch", c.headBranch, "The head branch of the change.")
 	cmd.Flags().StringVar(&c.headCommit, "head-commit", c.headCommit, "The SHA of the head commit.")
 	cmd.Flags().StringVar(&c.baseBranch, "base-branch", c.baseBranch, "The base branch of the change.")
+	cmd.Flags().StringVar(&c.out, "out", c.out, "Write planpreview result to the given path.")
 
 	cmd.MarkFlagRequired("repo-remote-url")
 	cmd.MarkFlagRequired("head-branch")
 	cmd.MarkFlagRequired("head-commit")
 	cmd.MarkFlagRequired("base-branch")
+	cmd.MarkFlagRequired("out")
 
 	return cmd
 }
@@ -88,18 +89,18 @@ func (c *command) run(ctx context.Context, _ cli.Telemetry) error {
 
 	resp, err := cli.RequestPlanPreview(ctx, req)
 	if err != nil {
-		fmt.Fprintf(c.stdout, "Failed to request plan preview: %v", err)
+		fmt.Printf("Failed to request plan preview: %v\n", err)
 		return err
 	}
 
-	getResults := func(commands []string) ([]*model.ApplicationPlanPreviewResult, error) {
+	getResults := func(commands []string) ([]*model.PlanPreviewCommandResult, error) {
 		req := &apiservice.GetPlanPreviewResultsRequest{
 			Commands: commands,
 		}
 
 		resp, err := cli.GetPlanPreviewResults(ctx, req)
 		if err != nil {
-			fmt.Fprintf(c.stdout, "Failed to get plan preview results: %v", err)
+			fmt.Printf("Failed to get plan preview results: %v", err)
 			return nil, err
 		}
 
@@ -129,7 +130,8 @@ func (c *command) run(ctx context.Context, _ cli.Telemetry) error {
 	return nil
 }
 
-func (c *command) printResults(results []*model.ApplicationPlanPreviewResult) error {
+func (c *command) printResults(results []*model.PlanPreviewCommandResult) error {
 	// TODO: Format preview results and support writing the result into file.
+	fmt.Println(results)
 	return nil
 }
