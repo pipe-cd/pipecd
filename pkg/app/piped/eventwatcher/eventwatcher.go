@@ -86,7 +86,7 @@ func (w *watcher) Run(ctx context.Context) error {
 		if err != nil {
 			return err
 		}
-		defer os.RemoveAll(repo.GetPath())
+		defer repo.Clean()
 
 		w.wg.Add(1)
 		go w.run(ctx, repo, repoCfg)
@@ -134,7 +134,7 @@ func (w *watcher) run(ctx context.Context, repo git.Repo, repoCfg config.PipedRe
 					zap.String("branch", repo.GetClonedBranch()),
 					zap.Error(err),
 				)
-				if err := os.RemoveAll(repo.GetPath()); err != nil {
+				if err := repo.Clean(); err != nil {
 					w.logger.Error("failed to remove repo directory",
 						zap.String("path", repo.GetPath()),
 						zap.Error(err),
