@@ -82,13 +82,9 @@ func (w *watcher) Run(ctx context.Context) error {
 	w.logger.Info("start running event watcher")
 
 	for _, repoCfg := range w.config.Repositories {
-		repo, err := w.gitClient.Clone(ctx, repoCfg.RepoID, repoCfg.Remote, repoCfg.Branch, "")
+		repo, err := w.cloneRepo(ctx, repoCfg)
 		if err != nil {
-			w.logger.Error("failed to clone repository",
-				zap.String("repo-id", repoCfg.RepoID),
-				zap.Error(err),
-			)
-			return fmt.Errorf("failed to clone repository %s: %w", repoCfg.RepoID, err)
+			return err
 		}
 		defer os.RemoveAll(repo.GetPath())
 
@@ -138,6 +134,16 @@ func (w *watcher) run(ctx context.Context, repo git.Repo, repoCfg config.PipedRe
 					zap.String("branch", repo.GetClonedBranch()),
 					zap.Error(err),
 				)
+				if err := os.RemoveAll(repo.GetPath()); err != nil {
+					w.logger.Error("failed to remove repo directory",
+						zap.String("path", repo.GetPath()),
+						zap.Error(err),
+					)
+				}
+				w.logger.Info("Try to re-clone because it's more likely to be unable to pull the next time too",
+					zap.String("repo-id", repoCfg.RepoID),
+				)
+				repo, _ = w.cloneRepo(ctx, repoCfg)
 				continue
 			}
 			cfg, err := config.LoadEventWatcher(repo.GetPath(), includedCfgs, excludedCfgs)
@@ -165,9 +171,21 @@ func (w *watcher) run(ctx context.Context, repo git.Repo, repoCfg config.PipedRe
 	}
 }
 
+func (w *watcher) cloneRepo(ctx context.Context, repoCfg config.PipedRepository) (git.Repo, error) {
+	repo, err := w.gitClient.Clone(ctx, repoCfg.RepoID, repoCfg.Remote, repoCfg.Branch, "")
+	if err != nil {
+		w.logger.Error("failed to clone repository",
+			zap.String("repo-id", repoCfg.RepoID),
+			zap.Error(err),
+		)
+		return nil, fmt.Errorf("failed to clone repository %s: %w", repoCfg.RepoID, err)
+	}
+	return repo, nil
+}
+
 // updateValues inspects all Event-definition and pushes the changes to git repo if there is.
 func (w *watcher) updateValues(ctx context.Context, repo git.Repo, events []config.EventWatcherEvent, commitMsg string) error {
-	// Copy the repo to another directory to avoid pull failure in the future.
+	// Copy the repo to another directory to modify local file to avoid reverting previous changes.
 	tmpDir, err := ioutil.TempDir("", "event-watcher")
 	if err != nil {
 		return fmt.Errorf("failed to create a new temporary directory: %w", err)
@@ -184,7 +202,7 @@ func (w *watcher) updateValues(ctx context.Context, repo git.Repo, events []conf
 		if !ok {
 			continue
 		}
-		c, err := w.modifyFiles(latestEvent, &e, tmpRepo, commitMsg)
+		c, err := w.modifyFiles(latestEvent, &e, tmpRepo.GetPath(), commitMsg)
 		if err != nil {
 			w.logger.Error("failed to modify outdated files", zap.Error(err))
 			continue
@@ -199,21 +217,21 @@ func (w *watcher) updateValues(ctx context.Context, repo git.Repo, events []conf
 
 	w.logger.Info(fmt.Sprintf("event watcher will update %d outdated values", len(commits)))
 	for _, c := range commits {
-		if err := tmpRepo.CommitChanges(ctx, tmpRepo.GetClonedBranch(), c.message, false, c.changes); err != nil {
+		if err := repo.CommitChanges(ctx, repo.GetClonedBranch(), c.message, false, c.changes); err != nil {
 			return fmt.Errorf("failed to perform git commit: %w", err)
 		}
 	}
-	return tmpRepo.Push(ctx, tmpRepo.GetClonedBranch())
+	return repo.Push(ctx, repo.GetClonedBranch())
 }
 
 // modifyFiles modifies files defined in a given Event if any deviation exists between the value in
 // the git repository and one in the control-plane. And gives back a change contents.
-func (w *watcher) modifyFiles(latestEvent *model.Event, eventCfg *config.EventWatcherEvent, repo git.Repo, commitMsg string) (*commit, error) {
+func (w *watcher) modifyFiles(latestEvent *model.Event, eventCfg *config.EventWatcherEvent, repoPath string, commitMsg string) (*commit, error) {
 	// Determine files to be changed.
 	changes := make(map[string][]byte, 0)
 	for _, r := range eventCfg.Replacements {
 		var (
-			path       = filepath.Join(repo.GetPath(), r.File)
+			path       = filepath.Join(repoPath, r.File)
 			newContent []byte
 			upToDate   bool
 			err        error
@@ -232,7 +250,7 @@ func (w *watcher) modifyFiles(latestEvent *model.Event, eventCfg *config.EventWa
 		if upToDate {
 			continue
 		}
-		// To avoid being conflict, we have to update the local file.
+		// To avoid reverting previous changes, we have to update the local file.
 		if err := ioutil.WriteFile(path, newContent, os.ModePerm); err != nil {
 			return nil, fmt.Errorf("failed to write file: %w", err)
 		}
