@@ -17,7 +17,7 @@
   "gnetId": null,
   "graphTooltip": 0,
   "id": 2,
-  "iteration": 1624872441420,
+  "iteration": 1624876467533,
   "links": [],
   "panels": [
     {
@@ -67,7 +67,9 @@
       "targets": [
         {
           "exemplar": true,
-          "expr": "sum without(envoy_response_code,instance,job) (rate(envoy_cluster_upstream_rq{envoy_response_code=~\"2.*\", job=\"pipecd-gateway\", envoy_cluster_name=~\"$api\"}[5m]))\n/\nsum without(envoy_response_code,instance,job) (rate(envoy_cluster_upstream_rq{job=\"pipecd-gateway\", envoy_cluster_name=~\"$api\"}[5m]))",
+          "expr": "sum without(envoy_response_code,instance,job) (rate(envoy_cluster_upstream_rq{envoy_response_code=~\"5.*\", job=\"pipecd-gateway\", envoy_cluster_name=~\"$api\"}[5m]))\n/\nsum without(envoy_response_code,instance,job) (rate(envoy_cluster_upstream_rq{job=\"pipecd-gateway\", envoy_cluster_name=~\"$api\"}[5m]))\n* 100",
+          "format": "time_series",
+          "instant": false,
           "interval": "",
           "legendFormat": "",
           "queryType": "randomWalk",
@@ -78,7 +80,7 @@
       "timeFrom": null,
       "timeRegions": [],
       "timeShift": null,
-      "title": "API Success Rate",
+      "title": "API - 5xx Error Percentage",
       "tooltip": {
         "shared": true,
         "sort": 0,
@@ -94,8 +96,8 @@
       },
       "yaxes": [
         {
-          "format": "short",
-          "label": null,
+          "format": "percent",
+          "label": "",
           "logBase": 1,
           "max": null,
           "min": null,
@@ -103,7 +105,7 @@
         },
         {
           "format": "short",
-          "label": null,
+          "label": "",
           "logBase": 1,
           "max": null,
           "min": null,
@@ -173,7 +175,7 @@
       "timeFrom": null,
       "timeRegions": [],
       "timeShift": null,
-      "title": "API Request Rate",
+      "title": "API - Request Rate",
       "tooltip": {
         "shared": true,
         "sort": 0,
@@ -268,7 +270,7 @@
       "timeFrom": null,
       "timeRegions": [],
       "timeShift": null,
-      "title": "API Duration 99th Quantile",
+      "title": "API - Duration 99th Quantile",
       "tooltip": {
         "shared": true,
         "sort": 0,
@@ -284,7 +286,7 @@
       },
       "yaxes": [
         {
-          "format": "short",
+          "format": "ms",
           "label": null,
           "logBase": 1,
           "max": null,
@@ -314,7 +316,7 @@
       {
         "allValue": null,
         "current": {
-          "selected": true,
+          "selected": false,
           "text": "server-piped-api",
           "value": "server-piped-api"
         },
