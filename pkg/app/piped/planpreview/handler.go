@@ -27,6 +27,13 @@ import (
 	"github.com/pipe-cd/pipe/pkg/model"
 )
 
+const (
+	defaultWorkerNum              = 3
+	defaultCommandQueueBufferSize = 10
+	defaultCommandCheckInterval   = 5 * time.Second
+	defaultCommandHandleTimeout   = 5 * time.Minute
+)
+
 type options struct {
 	workerNum              int
 	commandQueueBufferSize int
@@ -93,10 +100,10 @@ type Handler struct {
 
 func NewHandler(gc gitClient, cl commandLister, al applicationLister, cfg *config.PipedSpec, opts ...Option) *Handler {
 	opt := &options{
-		workerNum:              3,
-		commandQueueBufferSize: 10,
-		commandCheckInterval:   5 * time.Second,
-		commandHandleTimeout:   5 * time.Minute,
+		workerNum:              defaultWorkerNum,
+		commandQueueBufferSize: defaultCommandQueueBufferSize,
+		commandCheckInterval:   defaultCommandCheckInterval,
+		commandHandleTimeout:   defaultCommandHandleTimeout,
 		logger:                 zap.NewNop(),
 	}
 	for _, o := range opts {
