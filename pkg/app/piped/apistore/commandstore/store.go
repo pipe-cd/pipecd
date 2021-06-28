@@ -42,6 +42,7 @@ type Lister interface {
 	ListApplicationCommands() []model.ReportableCommand
 	ListDeploymentCommands() []model.ReportableCommand
 	ListStageCommands(deploymentID, stageID string) []model.ReportableCommand
+	ListBuildPlanPreviewCommands() []model.ReportableCommand
 }
 
 type store struct {
@@ -52,6 +53,7 @@ type store struct {
 	applicationCommands []model.ReportableCommand
 	deploymentCommands  []model.ReportableCommand
 	stageCommands       []model.ReportableCommand
+	planPreviewCommands []model.ReportableCommand
 	handledCommands     map[string]time.Time
 	mu                  sync.RWMutex
 	gracePeriod         time.Duration
@@ -116,6 +118,7 @@ func (s *store) sync(ctx context.Context) error {
 		applicationCommands = make([]model.ReportableCommand, 0)
 		deploymentCommands  = make([]model.ReportableCommand, 0)
 		stageCommands       = make([]model.ReportableCommand, 0)
+		planPreviewCommands = make([]model.ReportableCommand, 0)
 	)
 	for _, cmd := range resp.Commands {
 		switch cmd.Type {
@@ -125,6 +128,8 @@ func (s *store) sync(ctx context.Context) error {
 			deploymentCommands = append(deploymentCommands, s.makeReportableCommand(cmd))
 		case model.Command_APPROVE_STAGE:
 			stageCommands = append(stageCommands, s.makeReportableCommand(cmd))
+		case model.Command_BUILD_PLAN_PREVIEW:
+			planPreviewCommands = append(planPreviewCommands, s.makeReportableCommand(cmd))
 		}
 	}
 
@@ -132,6 +137,7 @@ func (s *store) sync(ctx context.Context) error {
 	s.applicationCommands = applicationCommands
 	s.deploymentCommands = deploymentCommands
 	s.stageCommands = stageCommands
+	s.planPreviewCommands = planPreviewCommands
 	s.mu.Unlock()
 
 	return nil
@@ -192,6 +198,20 @@ func (s *store) ListStageCommands(deploymentID, stageID string) []model.Reportab
 			continue
 		}
 		if cmd.StageId != stageID {
+			continue
+		}
+		commands = append(commands, cmd)
+	}
+	return commands
+}
+
+func (s *store) ListBuildPlanPreviewCommands() []model.ReportableCommand {
+	s.mu.RLock()
+	defer s.mu.RUnlock()
+
+	commands := make([]model.ReportableCommand, 0, len(s.planPreviewCommands))
+	for _, cmd := range s.planPreviewCommands {
+		if _, ok := s.handledCommands[cmd.Id]; ok {
 			continue
 		}
 		commands = append(commands, cmd)

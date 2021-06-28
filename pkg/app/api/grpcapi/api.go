@@ -466,7 +466,7 @@ func (a *API) GetPlanPreviewResults(ctx context.Context, req *apiservice.GetPlan
 		}
 	}
 
-	results := make([]*model.ApplicationPlanPreviewResult, 0, len(req.Commands))
+	results := make([]*model.PlanPreviewCommandResult, 0, len(req.Commands))
 
 	// Fetch ouput data to build results.
 	for _, commandID := range req.Commands {
@@ -474,9 +474,9 @@ func (a *API) GetPlanPreviewResults(ctx context.Context, req *apiservice.GetPlan
 		if err != nil {
 			return nil, status.Error(codes.Internal, fmt.Sprintf("Failed to retrieve output data of command %s", commandID))
 		}
-		var result model.ApplicationPlanPreviewResult
+		var result model.PlanPreviewCommandResult
 		if err := json.Unmarshal(data, &result); err != nil {
-			a.logger.Error("failed to unmarshal applicaiton plan preview result",
+			a.logger.Error("failed to unmarshal planpreview command result",
 				zap.String("command", commandID),
 				zap.Error(err),
 			)
