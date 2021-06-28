@@ -37,6 +37,22 @@
     padding: 4px;
 }
 
+.bolder {
+    font-weight: 600;
+}
+
+.release-panel {
+    padding: 0 1.5rem;
+    display: inline-block;
+    line-height: 4.25rem;
+    text-align: center;
+    min-width: 4.5rem;
+    border-radius: .5rem;
+    background-color: #ffffff;
+    color: #290b53;
+    margin-left: -1rem;
+}
+
 
 @include media-breakpoint-down(md) {
     .value-title {
