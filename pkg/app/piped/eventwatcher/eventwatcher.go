@@ -190,48 +190,32 @@ func (w *watcher) updateValues(ctx context.Context, repo git.Repo, events []conf
 	if err != nil {
 		return fmt.Errorf("failed to create a new temporary directory: %w", err)
 	}
-	defer os.RemoveAll(tmpDir)
 	tmpRepo, err := repo.Copy(filepath.Join(tmpDir, "tmp-repo"))
 	if err != nil {
 		return fmt.Errorf("failed to copy the repository to the temporary directory: %w", err)
 	}
+	defer tmpRepo.Clean()
 
-	commits := make([]*commit, 0)
 	for _, e := range events {
-		latestEvent, ok := w.eventGetter.GetLatest(ctx, e.Name, e.Labels)
-		if !ok {
+		if err := w.commitFiles(ctx, &e, tmpRepo, commitMsg); err != nil {
+			w.logger.Error("failed to commit outdated files", zap.Error(err))
 			continue
 		}
-		c, err := w.modifyFiles(latestEvent, &e, tmpRepo.GetPath(), commitMsg)
-		if err != nil {
-			w.logger.Error("failed to modify outdated files", zap.Error(err))
-			continue
-		}
-		if c != nil {
-			commits = append(commits, c)
-		}
 	}
-	if len(commits) == 0 {
-		return nil
-	}
-
-	w.logger.Info(fmt.Sprintf("event watcher will update %d outdated values", len(commits)))
-	for _, c := range commits {
-		if err := repo.CommitChanges(ctx, repo.GetClonedBranch(), c.message, false, c.changes); err != nil {
-			return fmt.Errorf("failed to perform git commit: %w", err)
-		}
-	}
-	return repo.Push(ctx, repo.GetClonedBranch())
+	return tmpRepo.Push(ctx, tmpRepo.GetClonedBranch())
 }
 
-// modifyFiles modifies files defined in a given Event if any deviation exists between the value in
-// the git repository and one in the control-plane. And gives back a change contents.
-func (w *watcher) modifyFiles(latestEvent *model.Event, eventCfg *config.EventWatcherEvent, repoPath string, commitMsg string) (*commit, error) {
-	// Determine files to be changed.
-	changes := make(map[string][]byte, 0)
+// commitFiles commits changes if the data in Git is different from the latest event.
+func (w *watcher) commitFiles(ctx context.Context, eventCfg *config.EventWatcherEvent, repo git.Repo, commitMsg string) error {
+	latestEvent, ok := w.eventGetter.GetLatest(ctx, eventCfg.Name, eventCfg.Labels)
+	if !ok {
+		return nil
+	}
+	// Determine files to be changed by comparing with the latest event.
+	changes := make(map[string][]byte, len(eventCfg.Replacements))
 	for _, r := range eventCfg.Replacements {
 		var (
-			path       = filepath.Join(repoPath, r.File)
+			path       = filepath.Join(repo.GetPath(), r.File)
 			newContent []byte
 			upToDate   bool
 			err        error
@@ -245,29 +229,29 @@ func (w *watcher) modifyFiles(latestEvent *model.Event, eventCfg *config.EventWa
 			// TODO: Empower Event watcher to parse HCL format
 		}
 		if err != nil {
-			return nil, err
+			return err
 		}
 		if upToDate {
 			continue
 		}
-		// To avoid reverting previous changes, we have to update the local file.
+
 		if err := ioutil.WriteFile(path, newContent, os.ModePerm); err != nil {
-			return nil, fmt.Errorf("failed to write file: %w", err)
+			return fmt.Errorf("failed to write file: %w", err)
 		}
 		changes[r.File] = newContent
 	}
-
 	if len(changes) == 0 {
-		return nil, nil
+		return nil
 	}
 
 	if commitMsg == "" {
 		commitMsg = fmt.Sprintf(defaultCommitMessageFormat, latestEvent.Data, eventCfg.Name)
 	}
-	return &commit{
-		changes: changes,
-		message: commitMsg,
-	}, nil
+	if err := repo.CommitChanges(ctx, repo.GetClonedBranch(), commitMsg, false, changes); err != nil {
+		return fmt.Errorf("failed to perform git commit: %w", err)
+	}
+	w.logger.Info(fmt.Sprintf("event watcher will update values of Event %q", eventCfg.Name))
+	return nil
 }
 
 // modifyYAML returns a new YAML content as a first returned value if the value of given
