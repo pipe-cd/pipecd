@@ -148,7 +148,13 @@ func (w *watcher) run(ctx context.Context, repo git.Repo, repoCfg config.PipedRe
 				w.logger.Info("Try to re-clone because it's more likely to be unable to pull the next time too",
 					zap.String("repo-id", repoCfg.RepoID),
 				)
-				repo, _ = w.cloneRepo(ctx, repoCfg)
+				repo, err = w.cloneRepo(ctx, repoCfg)
+				if err != nil {
+					w.logger.Error("failed to re-clone repository",
+						zap.String("repo-id", repoCfg.RepoID),
+						zap.Error(err),
+					)
+				}
 				continue
 			}
 			cfg, err := config.LoadEventWatcher(repo.GetPath(), includedCfgs, excludedCfgs)
@@ -184,10 +190,6 @@ func (w *watcher) cloneRepo(ctx context.Context, repoCfg config.PipedRepository)
 	}
 	repo, err := w.gitClient.Clone(ctx, repoCfg.RepoID, repoCfg.Remote, repoCfg.Branch, dst)
 	if err != nil {
-		w.logger.Error("failed to clone repository",
-			zap.String("repo-id", repoCfg.RepoID),
-			zap.Error(err),
-		)
 		return nil, fmt.Errorf("failed to clone repository %s: %w", repoCfg.RepoID, err)
 	}
 	return repo, nil
@@ -207,7 +209,7 @@ func (w *watcher) updateValues(ctx context.Context, repo git.Repo, events []conf
 	defer tmpRepo.Clean()
 
 	for _, e := range events {
-		if err := w.commitFiles(ctx, &e, tmpRepo, commitMsg); err != nil {
+		if err := w.commitFiles(ctx, e, tmpRepo, commitMsg); err != nil {
 			w.logger.Error("failed to commit outdated files", zap.Error(err))
 			continue
 		}
@@ -216,7 +218,7 @@ func (w *watcher) updateValues(ctx context.Context, repo git.Repo, events []conf
 }
 
 // commitFiles commits changes if the data in Git is different from the latest event.
-func (w *watcher) commitFiles(ctx context.Context, eventCfg *config.EventWatcherEvent, repo git.Repo, commitMsg string) error {
+func (w *watcher) commitFiles(ctx context.Context, eventCfg config.EventWatcherEvent, repo git.Repo, commitMsg string) error {
 	latestEvent, ok := w.eventGetter.GetLatest(ctx, eventCfg.Name, eventCfg.Labels)
 	if !ok {
 		return nil
