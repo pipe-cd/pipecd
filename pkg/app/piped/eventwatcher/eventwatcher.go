@@ -54,17 +54,15 @@ type gitClient interface {
 	Clone(ctx context.Context, repoID, remote, branch, destination string) (git.Repo, error)
 }
 
-type commit struct {
-	changes map[string][]byte
-	message string
-}
-
 type watcher struct {
 	config      *config.PipedSpec
 	eventGetter eventGetter
 	gitClient   gitClient
 	logger      *zap.Logger
 	wg          sync.WaitGroup
+
+	// All cloned repository will be placed under this.
+	workingDir string
 }
 
 func NewWatcher(cfg *config.PipedSpec, eventGetter eventGetter, gitClient gitClient, logger *zap.Logger) Watcher {
@@ -80,6 +78,13 @@ func NewWatcher(cfg *config.PipedSpec, eventGetter eventGetter, gitClient gitCli
 // from the control-plane to compare the value with one in the git repository.
 func (w *watcher) Run(ctx context.Context) error {
 	w.logger.Info("start running event watcher")
+
+	workingDir, err := ioutil.TempDir("", "event-watcher")
+	if err != nil {
+		return fmt.Errorf("failed to create the working directory: %w", err)
+	}
+	defer os.RemoveAll(workingDir)
+	w.workingDir = workingDir
 
 	for _, repoCfg := range w.config.Repositories {
 		repo, err := w.cloneRepo(ctx, repoCfg)
@@ -171,8 +176,9 @@ func (w *watcher) run(ctx context.Context, repo git.Repo, repoCfg config.PipedRe
 	}
 }
 
+// cloneRepo clones the git repository under the working directory.
 func (w *watcher) cloneRepo(ctx context.Context, repoCfg config.PipedRepository) (git.Repo, error) {
-	repo, err := w.gitClient.Clone(ctx, repoCfg.RepoID, repoCfg.Remote, repoCfg.Branch, "")
+	repo, err := w.gitClient.Clone(ctx, repoCfg.RepoID, repoCfg.Remote, repoCfg.Branch, filepath.Join(w.workingDir, repoCfg.RepoID))
 	if err != nil {
 		w.logger.Error("failed to clone repository",
 			zap.String("repo-id", repoCfg.RepoID),
@@ -186,7 +192,7 @@ func (w *watcher) cloneRepo(ctx context.Context, repoCfg config.PipedRepository)
 // updateValues inspects all Event-definition and pushes the changes to git repo if there is.
 func (w *watcher) updateValues(ctx context.Context, repo git.Repo, events []config.EventWatcherEvent, commitMsg string) error {
 	// Copy the repo to another directory to modify local file to avoid reverting previous changes.
-	tmpDir, err := ioutil.TempDir("", "event-watcher")
+	tmpDir, err := ioutil.TempDir(w.workingDir, "repo")
 	if err != nil {
 		return fmt.Errorf("failed to create a new temporary directory: %w", err)
 	}
