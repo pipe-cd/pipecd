@@ -178,7 +178,11 @@ func (w *watcher) run(ctx context.Context, repo git.Repo, repoCfg config.PipedRe
 
 // cloneRepo clones the git repository under the working directory.
 func (w *watcher) cloneRepo(ctx context.Context, repoCfg config.PipedRepository) (git.Repo, error) {
-	repo, err := w.gitClient.Clone(ctx, repoCfg.RepoID, repoCfg.Remote, repoCfg.Branch, filepath.Join(w.workingDir, repoCfg.RepoID))
+	dst, err := ioutil.TempDir(w.workingDir, repoCfg.RepoID)
+	if err != nil {
+		return nil, fmt.Errorf("failed to create a new temporary directory: %w", err)
+	}
+	repo, err := w.gitClient.Clone(ctx, repoCfg.RepoID, repoCfg.Remote, repoCfg.Branch, dst)
 	if err != nil {
 		w.logger.Error("failed to clone repository",
 			zap.String("repo-id", repoCfg.RepoID),
