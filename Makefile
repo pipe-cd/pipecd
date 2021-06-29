@@ -80,7 +80,7 @@ expose-generated-go:
 
 .PHONY: site
 site:
-	hugo server --source=docs
+	env RELEASE=$(shell cut -c10- release/RELEASE) hugo server --source=docs
 
 .PHONY: web-dep
 web-dep:
