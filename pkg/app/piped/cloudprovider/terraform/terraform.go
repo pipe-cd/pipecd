@@ -64,7 +64,6 @@ func (t *Terraform) Init(ctx context.Context, w io.Writer) error {
 	for _, f := range t.varFiles {
 		args = append(args, fmt.Sprintf("-var-file=%s", f))
 	}
-	args = append(args, "-lock=false", ".")
 
 	cmd := exec.CommandContext(ctx, t.execPath, args...)
 	cmd.Dir = t.dir
@@ -80,7 +79,6 @@ func (t *Terraform) SelectWorkspace(ctx context.Context, workspace string) error
 		"workspace",
 		"select",
 		workspace,
-		".",
 	}
 	cmd := exec.CommandContext(ctx, t.execPath, args...)
 	cmd.Dir = t.dir
@@ -103,11 +101,23 @@ func (r PlanResult) NoChanges() bool {
 	return r.Adds == 0 && r.Changes == 0 && r.Destroys == 0
 }
 
+func GetExitCode(err error) int {
+	if err == nil {
+		return 0
+	}
+	if exitErr, ok := err.(*exec.ExitError); ok {
+		return exitErr.ExitCode()
+	}
+	return 1
+}
+
 func (t *Terraform) Plan(ctx context.Context, w io.Writer) (PlanResult, error) {
 	args := []string{
 		"plan",
 		// TODO: Remove this -no-color flag after parsePlanResult supports parsing the message containing color codes.
 		"-no-color",
+		"-lock=false",
+		"-detailed-exitcode",
 	}
 	for _, v := range t.vars {
 		args = append(args, fmt.Sprintf("-var=%s", v))
@@ -115,7 +125,6 @@ func (t *Terraform) Plan(ctx context.Context, w io.Writer) (PlanResult, error) {
 	for _, f := range t.varFiles {
 		args = append(args, fmt.Sprintf("-var-file=%s", f))
 	}
-	args = append(args, "-lock=false", ".")
 
 	var buf bytes.Buffer
 	stdout := io.MultiWriter(w, &buf)
@@ -126,11 +135,15 @@ func (t *Terraform) Plan(ctx context.Context, w io.Writer) (PlanResult, error) {
 	cmd.Stderr = stdout
 
 	io.WriteString(w, fmt.Sprintf("terraform %s", strings.Join(args, " ")))
-	if err := cmd.Run(); err != nil {
+	err := cmd.Run()
+	switch GetExitCode(err) {
+	case 0:
+		return PlanResult{}, nil
+	case 2:
+		return parsePlanResult(buf.String())
+	default:
 		return PlanResult{}, err
 	}
-
-	return parsePlanResult(buf.String())
 }
 
 var (
@@ -185,7 +198,6 @@ func (t *Terraform) Apply(ctx context.Context, w io.Writer) error {
 	for _, f := range t.varFiles {
 		args = append(args, fmt.Sprintf("-var-file=%s", f))
 	}
-	args = append(args, ".")
 
 	cmd := exec.CommandContext(ctx, t.execPath, args...)
 	cmd.Dir = t.dir
