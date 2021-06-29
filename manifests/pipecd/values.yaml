@@ -215,7 +215,7 @@ prometheus:
               regex: admin
 
         # Scrape config for API servers.
-        - job_name: 'kubernetes-apiservers'
+        - job_name: kubernetes-apiservers
           kubernetes_sd_configs:
             - role: endpoints
           scheme: https
@@ -228,7 +228,7 @@ prometheus:
               action: keep
               regex: default;kubernetes;https
 
-        - job_name: 'kubernetes-nodes'
+        - job_name: kubernetes-nodes
           kubernetes_sd_configs:
             - role: node
           scheme: https
@@ -246,7 +246,7 @@ prometheus:
               target_label: __metrics_path__
               replacement: /api/v1/nodes/$1/proxy/metrics
 
-        - job_name: 'kubernetes-nodes-cadvisor'
+        - job_name: kubernetes-nodes-cadvisor
           kubernetes_sd_configs:
             - role: node
           scheme: https
