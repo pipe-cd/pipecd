@@ -167,6 +167,7 @@ prometheus:
           static_configs:
             - targets:
                 - localhost:9090
+
         - job_name: pipecd-gateway
           scrape_interval: 1m
           metrics_path: /stats/prometheus
@@ -182,6 +183,7 @@ prometheus:
             - source_labels: [__meta_kubernetes_pod_container_port_name]
               action: keep
               regex: envoy-admin
+
         - job_name: pipecd-server
           scrape_interval: 1m
           kubernetes_sd_configs:
@@ -196,6 +198,7 @@ prometheus:
             - source_labels: [__meta_kubernetes_pod_container_port_name]
               action: keep
               regex: admin
+
         - job_name: pipecd-ops
           scrape_interval: 1m
           kubernetes_sd_configs:
@@ -210,6 +213,56 @@ prometheus:
             - source_labels: [__meta_kubernetes_pod_container_port_name]
               action: keep
               regex: admin
+
+        # Scrape config for API servers.
+        - job_name: kubernetes-apiservers
+          kubernetes_sd_configs:
+            - role: endpoints
+          scheme: https
+          tls_config:
+            ca_file: /var/run/secrets/kubernetes.io/serviceaccount/ca.crt
+            insecure_skip_verify: true
+          bearer_token_file: /var/run/secrets/kubernetes.io/serviceaccount/token
+          relabel_configs:
+            - source_labels: [__meta_kubernetes_namespace, __meta_kubernetes_service_name, __meta_kubernetes_endpoint_port_name]
+              action: keep
+              regex: default;kubernetes;https
+
+        - job_name: kubernetes-nodes
+          kubernetes_sd_configs:
+            - role: node
+          scheme: https
+          tls_config:
+            ca_file: /var/run/secrets/kubernetes.io/serviceaccount/ca.crt
+            insecure_skip_verify: true
+          bearer_token_file: /var/run/secrets/kubernetes.io/serviceaccount/token
+          relabel_configs:
+            - action: labelmap
+              regex: __meta_kubernetes_node_label_(.+)
+            - target_label: __address__
+              replacement: kubernetes.default.svc:443
+            - source_labels: [__meta_kubernetes_node_name]
+              regex: (.+)
+              target_label: __metrics_path__
+              replacement: /api/v1/nodes/$1/proxy/metrics
+
+        - job_name: kubernetes-nodes-cadvisor
+          kubernetes_sd_configs:
+            - role: node
+          scheme: https
+          tls_config:
+            ca_file: /var/run/secrets/kubernetes.io/serviceaccount/ca.crt
+            insecure_skip_verify: true
+          bearer_token_file: /var/run/secrets/kubernetes.io/serviceaccount/token
+          relabel_configs:
+            - action: labelmap
+              regex: __meta_kubernetes_node_label_(.+)
+            - target_label: __address__
+              replacement: kubernetes.default.svc:443
+            - source_labels: [__meta_kubernetes_node_name]
+              regex: (.+)
+              target_label: __metrics_path__
+              replacement: /api/v1/nodes/$1/proxy/metrics/cadvisor
 
 # All directives inside this section will be directly sent to the grafana chart.
 # Head to the below link to see all available values.
