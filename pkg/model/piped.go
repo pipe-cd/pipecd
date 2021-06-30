@@ -17,6 +17,7 @@ package model
 import (
 	"errors"
 	"fmt"
+	"path"
 	"time"
 
 	"golang.org/x/crypto/bcrypt"
@@ -136,4 +137,8 @@ func (p *Piped) RedactSensitiveData() {
 	for i := range p.Keys {
 		p.Keys[i].Hash = redactedMessage
 	}
+}
+
+func MakePipedURL(baseURL, pipedID string) string {
+	return path.Join(baseURL, "settings", "piped")
 }

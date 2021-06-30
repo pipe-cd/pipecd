@@ -45,6 +45,8 @@ func newBuilder(gc gitClient, al applicationLister, cfg *config.PipedSpec, logge
 }
 
 func (b *builder) Build(ctx context.Context, id string, cmd model.Command_BuildPlanPreview) ([]*model.ApplicationPlanPreviewResult, error) {
+	b.logger.Info(fmt.Sprintf("start building planpreview result for command %s", id))
+
 	repoCfg, ok := b.config.GetRepository(cmd.RepositoryId)
 	if !ok {
 		return nil, fmt.Errorf("repository %s was not found in Piped config", cmd.RepositoryId)
