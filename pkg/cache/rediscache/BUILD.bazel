@@ -7,6 +7,7 @@ go_library(
     visibility = ["//visibility:public"],
     deps = [
         "//pkg/cache:go_default_library",
+        "//pkg/cache/cachemetrics:go_default_library",
         "//pkg/redis:go_default_library",
         "@com_github_gomodule_redigo//redis:go_default_library",
     ],
