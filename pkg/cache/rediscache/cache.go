@@ -49,8 +49,8 @@ func (c *RedisCache) Get(k interface{}) (interface{}, error) {
 	if err != nil {
 		if err == redigo.ErrNil {
 			cachemetrics.IncGetOperationCounter(
-				cachemetrics.LabelStatusMiss,
 				cachemetrics.LabelSourceRedis,
+				cachemetrics.LabelStatusMiss,
 			)
 			return nil, cache.ErrNotFound
 		}
@@ -58,21 +58,21 @@ func (c *RedisCache) Get(k interface{}) (interface{}, error) {
 	}
 	if reply == nil {
 		cachemetrics.IncGetOperationCounter(
-			cachemetrics.LabelStatusMiss,
 			cachemetrics.LabelSourceRedis,
+			cachemetrics.LabelStatusMiss,
 		)
 		return nil, cache.ErrNotFound
 	}
 	if err, ok := reply.(redigo.Error); ok {
 		cachemetrics.IncGetOperationCounter(
-			cachemetrics.LabelStatusMiss,
 			cachemetrics.LabelSourceRedis,
+			cachemetrics.LabelStatusMiss,
 		)
 		return nil, err
 	}
 	cachemetrics.IncGetOperationCounter(
-		cachemetrics.LabelStatusHit,
 		cachemetrics.LabelSourceRedis,
+		cachemetrics.LabelStatusHit,
 	)
 	return reply, nil
 }
