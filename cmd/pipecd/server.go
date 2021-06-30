@@ -24,6 +24,7 @@ import (
 
 	"github.com/NYTimes/gziphandler"
 	jwtgo "github.com/dgrijalva/jwt-go"
+	"github.com/prometheus/client_golang/prometheus"
 	"github.com/spf13/cobra"
 	"go.uber.org/zap"
 	"golang.org/x/sync/errgroup"
@@ -38,6 +39,7 @@ import (
 	"github.com/pipe-cd/pipe/pkg/app/api/pipedverifier"
 	"github.com/pipe-cd/pipe/pkg/app/api/service/webservice"
 	"github.com/pipe-cd/pipe/pkg/app/api/stagelogstore"
+	"github.com/pipe-cd/pipe/pkg/cache/cachemetrics"
 	"github.com/pipe-cd/pipe/pkg/cache/rediscache"
 	"github.com/pipe-cd/pipe/pkg/cli"
 	"github.com/pipe-cd/pipe/pkg/config"
@@ -130,6 +132,9 @@ func NewServerCommand() *cobra.Command {
 }
 
 func (s *server) run(ctx context.Context, t cli.Telemetry) error {
+	// Register all metrics.
+	registerMetrics()
+
 	group, ctx := errgroup.WithContext(ctx)
 
 	// Load control plane configuration from the specified file.
@@ -477,4 +482,9 @@ func createFilestore(ctx context.Context, cfg *config.ControlPlaneSpec, logger *
 	default:
 		return nil, fmt.Errorf("unknown filestore type %q", cfg.Filestore.Type)
 	}
+}
+
+func registerMetrics() {
+	r := prometheus.DefaultRegisterer
+	cachemetrics.Register(r)
 }

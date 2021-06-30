@@ -20,6 +20,7 @@ import (
 	redigo "github.com/gomodule/redigo/redis"
 
 	"github.com/pipe-cd/pipe/pkg/cache"
+	"github.com/pipe-cd/pipe/pkg/cache/cachemetrics"
 	"github.com/pipe-cd/pipe/pkg/redis"
 )
 
@@ -47,16 +48,32 @@ func (c *RedisCache) Get(k interface{}) (interface{}, error) {
 	reply, err := conn.Do("GET", k)
 	if err != nil {
 		if err == redigo.ErrNil {
+			cachemetrics.IncGetOperationCounter(
+				cachemetrics.LabelStatusMiss,
+				cachemetrics.LabelSourceRedis,
+			)
 			return nil, cache.ErrNotFound
 		}
 		return nil, err
 	}
 	if reply == nil {
+		cachemetrics.IncGetOperationCounter(
+			cachemetrics.LabelStatusMiss,
+			cachemetrics.LabelSourceRedis,
+		)
 		return nil, cache.ErrNotFound
 	}
 	if err, ok := reply.(redigo.Error); ok {
+		cachemetrics.IncGetOperationCounter(
+			cachemetrics.LabelStatusMiss,
+			cachemetrics.LabelSourceRedis,
+		)
 		return nil, err
 	}
+	cachemetrics.IncGetOperationCounter(
+		cachemetrics.LabelStatusHit,
+		cachemetrics.LabelSourceRedis,
+	)
 	return reply, nil
 }
 

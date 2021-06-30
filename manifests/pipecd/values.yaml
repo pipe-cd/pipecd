@@ -27,7 +27,7 @@ server:
     enableGRPCReflection: false
     secureCookie: false
     logEncoding: humanize
-    metrics: false
+    metrics: true
   resources: {}
   env: []
 
