@@ -482,6 +482,7 @@ func (a *API) GetPlanPreviewResults(ctx context.Context, req *apiservice.GetPlan
 				PipedId:   cmd.PipedId,
 				Error:     fmt.Sprintf("Timed out, maybe the Piped is offline currently."),
 			})
+			continue
 		}
 
 		// There is no reason to fetch output data of command that has been completed a long time ago.
