@@ -39,12 +39,12 @@ There are no applications to build plan-preview
 		{
 			name: "there is only a plannable application",
 			results: []*model.PlanPreviewCommandResult{
-				&model.PlanPreviewCommandResult{
+				{
 					CommandId: "command-2",
 					PipedId:   "piped-2",
 					PipedUrl:  "https://pipecd.dev/piped-2",
 					Results: []*model.ApplicationPlanPreviewResult{
-						&model.ApplicationPlanPreviewResult{
+						{
 							ApplicationId:   "app-1",
 							ApplicationName: "app-1",
 							ApplicationUrl:  "https://pipecd.dev/app-1",
@@ -67,12 +67,12 @@ Here are plan-preview for 1 application:
 		{
 			name: "there is only a failure application",
 			results: []*model.PlanPreviewCommandResult{
-				&model.PlanPreviewCommandResult{
+				{
 					CommandId: "command-2",
 					PipedId:   "piped-2",
 					PipedUrl:  "https://pipecd.dev/piped-2",
 					Results: []*model.ApplicationPlanPreviewResult{
-						&model.ApplicationPlanPreviewResult{
+						{
 							ApplicationId:   "app-2",
 							ApplicationName: "app-2",
 							ApplicationUrl:  "https://pipecd.dev/app-2",
@@ -93,7 +93,7 @@ NOTE: An error occurred while building plan-preview for the following applicatio
 		{
 			name: "there is only a failure piped",
 			results: []*model.PlanPreviewCommandResult{
-				&model.PlanPreviewCommandResult{
+				{
 					CommandId: "command-1",
 					PipedId:   "piped-1",
 					PipedUrl:  "https://pipecd.dev/piped-1",
@@ -110,18 +110,18 @@ NOTE: An error occurred while building plan-preview for applications of the foll
 		{
 			name: "all kinds",
 			results: []*model.PlanPreviewCommandResult{
-				&model.PlanPreviewCommandResult{
+				{
 					CommandId: "command-1",
 					PipedId:   "piped-1",
 					PipedUrl:  "https://pipecd.dev/piped-1",
 					Error:     "failed to clone",
 				},
-				&model.PlanPreviewCommandResult{
+				{
 					CommandId: "command-2",
 					PipedId:   "piped-2",
 					PipedUrl:  "https://pipecd.dev/piped-2",
 					Results: []*model.ApplicationPlanPreviewResult{
-						&model.ApplicationPlanPreviewResult{
+						{
 							ApplicationId:   "app-1",
 							ApplicationName: "app-1",
 							ApplicationUrl:  "https://pipecd.dev/app-1",
@@ -130,7 +130,7 @@ NOTE: An error occurred while building plan-preview for applications of the foll
 							SyncStrategy:    model.SyncStrategy_QUICK_SYNC,
 							Changes:         []byte("changes-1"),
 						},
-						&model.ApplicationPlanPreviewResult{
+						{
 							ApplicationId:   "app-2",
 							ApplicationName: "app-2",
 							ApplicationUrl:  "https://pipecd.dev/app-2",
@@ -139,7 +139,7 @@ NOTE: An error occurred while building plan-preview for applications of the foll
 							SyncStrategy:    model.SyncStrategy_PIPELINE,
 							Changes:         []byte("changes-2"),
 						},
-						&model.ApplicationPlanPreviewResult{
+						{
 							ApplicationId:   "app-3",
 							ApplicationName: "app-3",
 							ApplicationUrl:  "https://pipecd.dev/app-3",
@@ -147,7 +147,7 @@ NOTE: An error occurred while building plan-preview for applications of the foll
 							EnvName:         "env-3",
 							Error:           "wrong application configuration",
 						},
-						&model.ApplicationPlanPreviewResult{
+						{
 							ApplicationId:   "app-4",
 							ApplicationName: "app-4",
 							ApplicationUrl:  "https://pipecd.dev/app-4",
@@ -157,7 +157,7 @@ NOTE: An error occurred while building plan-preview for applications of the foll
 						},
 					},
 				},
-				&model.PlanPreviewCommandResult{
+				{
 					CommandId: "command-3",
 					PipedId:   "piped-3",
 					PipedUrl:  "https://pipecd.dev/piped-3",
