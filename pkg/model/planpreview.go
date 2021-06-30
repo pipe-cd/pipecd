@@ -14,10 +14,30 @@
 
 package model
 
+import "time"
+
 func (r *PlanPreviewCommandResult) FillURLs(baseURL string) {
 	r.PipedUrl = MakePipedURL(baseURL, r.PipedId)
 	for _, ar := range r.Results {
 		ar.ApplicationUrl = MakeApplicationURL(baseURL, ar.ApplicationId)
 		ar.EnvUrl = MakeEnvironmentURL(baseURL, ar.EnvId)
 	}
+}
+
+func MakeApplicationPlanPreviewResult(app Application, env *Environment) *ApplicationPlanPreviewResult {
+	r := &ApplicationPlanPreviewResult{
+		ApplicationId:        app.Id,
+		ApplicationName:      app.Name,
+		ApplicationKind:      app.Kind,
+		ApplicationDirectory: app.GitPath.Path,
+		EnvId:                app.EnvId,
+		EnvName:              env.Name,
+		PipedId:              app.PipedId,
+		ProjectId:            app.ProjectId,
+		CreatedAt:            time.Now().Unix(),
+	}
+	if env != nil {
+		r.EnvName = env.Name
+	}
+	return r
 }

@@ -20,9 +20,15 @@ import (
 
 	"go.uber.org/zap"
 
+	"github.com/pipe-cd/pipe/pkg/app/piped/trigger"
 	"github.com/pipe-cd/pipe/pkg/config"
+	"github.com/pipe-cd/pipe/pkg/git"
 	"github.com/pipe-cd/pipe/pkg/model"
 )
+
+type lastTriggeredCommitGetter interface {
+	Get(ctx context.Context, applicationID string) (string, error)
+}
 
 type Builder interface {
 	Build(ctx context.Context, id string, cmd model.Command_BuildPlanPreview) ([]*model.ApplicationPlanPreviewResult, error)
@@ -31,14 +37,18 @@ type Builder interface {
 type builder struct {
 	gitClient         gitClient
 	applicationLister applicationLister
+	environmentGetter environmentGetter
+	commitGetter      lastTriggeredCommitGetter
 	config            *config.PipedSpec
 	logger            *zap.Logger
 }
 
-func newBuilder(gc gitClient, al applicationLister, cfg *config.PipedSpec, logger *zap.Logger) *builder {
+func newBuilder(gc gitClient, al applicationLister, eg environmentGetter, cg lastTriggeredCommitGetter, cfg *config.PipedSpec, logger *zap.Logger) *builder {
 	return &builder{
 		gitClient:         gc,
 		applicationLister: al,
+		environmentGetter: eg,
+		commitGetter:      cg,
 		config:            cfg,
 		logger:            logger.Named("planpreview-builder"),
 	}
@@ -47,35 +57,89 @@ func newBuilder(gc gitClient, al applicationLister, cfg *config.PipedSpec, logge
 func (b *builder) Build(ctx context.Context, id string, cmd model.Command_BuildPlanPreview) ([]*model.ApplicationPlanPreviewResult, error) {
 	b.logger.Info(fmt.Sprintf("start building planpreview result for command %s", id))
 
+	// Find the registered repository in Piped config and validate the command's payload against it.
 	repoCfg, ok := b.config.GetRepository(cmd.RepositoryId)
 	if !ok {
 		return nil, fmt.Errorf("repository %s was not found in Piped config", cmd.RepositoryId)
 	}
 	if repoCfg.Branch != cmd.BaseBranch {
-		return nil, fmt.Errorf("base branch repository %s was not correct, requested %s, expected %s", cmd.RepositoryId, cmd.BaseBranch, repoCfg.Branch)
+		return nil, fmt.Errorf("base branch repository %s was not match, requested %s, expected %s", cmd.RepositoryId, cmd.BaseBranch, repoCfg.Branch)
 	}
 
+	// List all applications that belong to this Piped
+	// and are placed in the given repository.
 	apps := b.listApplications(repoCfg)
 	if len(apps) == 0 {
 		return nil, nil
 	}
 
+	// Clone the source code and checkout to the given branch, commit.
 	repo, err := b.gitClient.Clone(ctx, repoCfg.RepoID, repoCfg.Remote, repoCfg.Branch, "")
 	if err != nil {
 		return nil, fmt.Errorf("failed to clone git repository %s", cmd.RepositoryId)
 	}
 	defer repo.Clean()
 
-	// TODO: Implement planpreview builder.
-	// 1. Fetch the source code at the head commit.
-	// 2. Determine the list of applications that will be triggered.
-	//    - Based on the changed files between 2 commits: head commit and mostRecentlyTriggeredCommit
-	// 3. For each application:
-	//    3.1. Start a builder to check what/why strategy will be used
-	//    3.2. Check what resources should be added, deleted and modified
-	//         - Terraform app: used terraform plan command
-	//         - Kubernetes app: calculate the diff of resources at head commit and mostRecentlySuccessfulCommit
-	return nil, fmt.Errorf("Not Implemented")
+	if err := repo.Checkout(ctx, cmd.HeadCommit); err != nil {
+		return nil, fmt.Errorf("failed to checkout the head commit %s: %w", cmd.HeadCommit, err)
+	}
+
+	// Compared to the total number of applications,
+	// the number of applications that should be triggered will be very smaller
+	// therefore we do not explicitly specify the capacity for these slices.
+	triggerApps := make([]*model.Application, 0)
+	results := make([]*model.ApplicationPlanPreviewResult, 0)
+
+	d := trigger.NewDeterminer(repo, cmd.HeadCommit, b.commitGetter, b.logger)
+
+	for _, app := range apps {
+		shouldTrigger, err := d.ShouldTrigger(ctx, app)
+		if err != nil {
+			// We only need the environment name
+			// so the returned error can be ignorable.
+			env, _ := b.environmentGetter.Get(ctx, app.EnvId)
+
+			r := model.MakeApplicationPlanPreviewResult(*app, env)
+			r.Error = fmt.Sprintf("Failed while determining the application should be triggered or not, %v", err)
+			results = append(results, r)
+			continue
+		}
+
+		if shouldTrigger {
+			triggerApps = append(triggerApps, app)
+		}
+	}
+
+	// All triggered applications will be passed to plan.
+	for _, app := range triggerApps {
+		// We only need the environment name
+		// so the returned error can be ignorable.
+		env, _ := b.environmentGetter.Get(ctx, app.EnvId)
+
+		r := model.MakeApplicationPlanPreviewResult(*app, env)
+		results = append(results, r)
+
+		strategy, changes, err := b.plan(repo, app, cmd)
+		if err != nil {
+			r.Error = fmt.Sprintf("Failed while planning, %v", err)
+			continue
+		}
+
+		r.SyncStrategy = strategy
+		r.Changes = changes
+	}
+
+	return results, nil
+}
+
+func (b *builder) plan(repo git.Repo, app *model.Application, cmd model.Command_BuildPlanPreview) (model.SyncStrategy, []byte, error) {
+	// TODO: Implement planpreview plan.
+	// 1. Start a planner to check what/why strategy will be used
+	// 2. Check what resources should be added, deleted and modified
+	//    - Terraform app: used terraform plan command
+	//    - Kubernetes app: calculate the diff of resources at head commit and mostRecentlySuccessfulCommit
+
+	return model.SyncStrategy_QUICK_SYNC, []byte("NOT IMPLEMENTED"), nil
 }
 
 func (b *builder) listApplications(repo config.PipedRepository) []*model.Application {
