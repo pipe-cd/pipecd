@@ -266,6 +266,11 @@ prometheus:
               regex: (.+)
               target_label: __metrics_path__
               replacement: /api/v1/nodes/$1/proxy/metrics/cadvisor
+          metric_relabel_configs:
+            - source_labels: [pod]
+              target_label: service
+              regex: (.+)-[0-9a-zA-Z]+(-[0-9a-zA-Z]+)$
+              replacement: $1
 
         # Scrape config for services that has "prometheus.io/scrape: true"
         - job_name: kubernetes-service-endpoints
