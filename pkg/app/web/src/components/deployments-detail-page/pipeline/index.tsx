@@ -30,7 +30,18 @@ const STAGE_HEIGHT = 56;
 const APPROVED_STAGE_HEIGHT = 66;
 
 // Find stage that is running or latest
-const findDefaultActiveStage = (stages: Stage[]): Stage => {
+const findDefaultActiveStage = (
+  deployment: Deployment.AsObject | undefined
+): Stage | null => {
+  if (!deployment) {
+    return null;
+  }
+
+  const stages = deployment.stagesList.filter(
+    (stage) =>
+      stage.visible && stage.status !== StageStatus.STAGE_NOT_STARTED_YET
+  );
+
   const runningStage = stages.find(
     (stage) => stage.status === StageStatus.STAGE_RUNNING
   );
@@ -42,20 +53,15 @@ const findDefaultActiveStage = (stages: Stage[]): Stage => {
   return stages[stages.length - 1];
 };
 
-const useDeploymentStage = (
-  deploymentId: string
-): [boolean, Stage[][], Stage | null] => {
-  const stages: Stage[][] = [];
-  const deployment = useAppSelector<Deployment.AsObject | undefined>((state) =>
-    selectById(state.deployments, deploymentId)
-  );
-
+const createStagesForRendering = (
+  deployment: Deployment.AsObject | undefined
+): Stage[][] => {
   if (!deployment) {
-    return [false, stages, null];
+    return [];
   }
 
+  const stages: Stage[][] = [];
   const visibleStages = deployment.stagesList.filter((stage) => stage.visible);
-  const isRunning = isDeploymentRunning(deployment.status);
 
   stages[0] = visibleStages.filter((stage) => stage.requiresList.length === 0);
 
@@ -67,7 +73,7 @@ const useDeploymentStage = (
       stage.requiresList.some((id) => previousIds.includes(id))
     );
   }
-  return [isRunning, stages, findDefaultActiveStage(visibleStages)];
+  return stages;
 };
 
 const LARGE_STAGE_NAMES = ["WAIT_APPROVAL", "K8S_TRAFFIC_ROUTING"];
@@ -146,11 +152,16 @@ export const Pipeline: FC<PipelineProps> = memo(function Pipeline({
 }) {
   const classes = useStyles();
   const dispatch = useAppDispatch();
+  const deployment = useAppSelector<Deployment.AsObject | undefined>((state) =>
+    selectById(state.deployments, deploymentId)
+  );
   const [approveTargetId, setApproveTargetId] = useState<string | null>(null);
   const isOpenApproveDialog = Boolean(approveTargetId);
-  const [isRunning, stages, defaultActiveStage] = useDeploymentStage(
-    deploymentId
-  );
+
+  const defaultActiveStage = findDefaultActiveStage(deployment);
+  const stages = createStagesForRendering(deployment);
+  const isRunning = isDeploymentRunning(deployment?.status);
+
   const activeStage = useAppSelector<ActiveStage>((state) => state.activeStage);
 
   useEffect(() => {
