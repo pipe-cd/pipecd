@@ -40,7 +40,7 @@ const (
 var (
 	getCounter = prometheus.NewCounterVec(
 		prometheus.CounterOpts{
-			Name: "controlplane_cache_get_operation_total",
+			Name: "pipecd_cache_get_operation_total",
 			Help: "Number of cache get operation while processing",
 		},
 		[]string{
@@ -54,7 +54,7 @@ func Register(r prometheus.Registerer) {
 	r.MustRegister(getCounter)
 }
 
-func IncGetOperationCounter(status StatusLabel, source SourceLabel) {
+func IncGetOperationCounter(source SourceLabel, status StatusLabel) {
 	getCounter.With(prometheus.Labels{
 		statusKey: string(status),
 		sourceKey: string(source),
