@@ -123,6 +123,7 @@ message RequestPlanPreviewResponse {
 
 message GetPlanPreviewResultsRequest {
     repeated string commands = 1;
+    int64 command_handle_timeout = 2;
 }
 
 message GetPlanPreviewResultsResponse {

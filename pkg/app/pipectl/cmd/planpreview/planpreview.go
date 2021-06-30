@@ -34,23 +34,31 @@ import (
 	"github.com/pipe-cd/pipe/pkg/model"
 )
 
+const (
+	defaultTimeout            = 10 * time.Minute
+	defaultPipedHandleTimeout = 5 * time.Minute
+	defaultCheckInterval      = 10 * time.Second
+)
+
 type command struct {
-	repoRemoteURL string
-	headBranch    string
-	headCommit    string
-	baseBranch    string
-	out           string
-	timeout       time.Duration
-	checkInterval time.Duration
+	repoRemoteURL      string
+	headBranch         string
+	headCommit         string
+	baseBranch         string
+	out                string
+	timeout            time.Duration
+	pipedHandleTimeout time.Duration
+	checkInterval      time.Duration
 
 	clientOptions *client.Options
 }
 
 func NewCommand() *cobra.Command {
 	c := &command{
-		clientOptions: &client.Options{},
-		timeout:       10 * time.Minute,
-		checkInterval: 10 * time.Second,
+		clientOptions:      &client.Options{},
+		pipedHandleTimeout: defaultPipedHandleTimeout,
+		timeout:            defaultTimeout,
+		checkInterval:      defaultCheckInterval,
 	}
 	cmd := &cobra.Command{
 		Use:   "plan-preview",
@@ -65,6 +73,8 @@ func NewCommand() *cobra.Command {
 	cmd.Flags().StringVar(&c.headCommit, "head-commit", c.headCommit, "The SHA of the head commit.")
 	cmd.Flags().StringVar(&c.baseBranch, "base-branch", c.baseBranch, "The base branch of the change.")
 	cmd.Flags().StringVar(&c.out, "out", c.out, "Write planpreview result to the given path.")
+	cmd.Flags().DurationVar(&c.timeout, "timeout", c.timeout, "Maximum amount of time this command has to complete. Default is 10m.")
+	cmd.Flags().DurationVar(&c.pipedHandleTimeout, "piped-handle-timeout", c.pipedHandleTimeout, "Maximum amount of time that a Piped can take to handle. Default is 5m.")
 
 	cmd.MarkFlagRequired("repo-remote-url")
 	cmd.MarkFlagRequired("head-branch")
@@ -104,7 +114,8 @@ func (c *command) run(ctx context.Context, _ cli.Telemetry) error {
 
 	getResults := func(commands []string) ([]*model.PlanPreviewCommandResult, error) {
 		req := &apiservice.GetPlanPreviewResultsRequest{
-			Commands: commands,
+			Commands:             commands,
+			CommandHandleTimeout: int64(c.pipedHandleTimeout.Seconds()),
 		}
 
 		resp, err := cli.GetPlanPreviewResults(ctx, req)

@@ -440,7 +440,20 @@ func (a *API) GetPlanPreviewResults(ctx context.Context, req *apiservice.GetPlan
 		return nil, err
 	}
 
-	const freshDuration = 24 * time.Hour
+	const (
+		freshDuration               = 24 * time.Hour
+		defaultCommandHandleTimeout = 5 * time.Minute
+	)
+
+	var (
+		handledCommands = make([]string, 0, len(req.Commands))
+		results         = make([]*model.PlanPreviewCommandResult, 0, len(req.Commands))
+	)
+
+	commandHandleTimeout := time.Duration(req.CommandHandleTimeout) * time.Second
+	if commandHandleTimeout == 0 {
+		commandHandleTimeout = defaultCommandHandleTimeout
+	}
 
 	// Validate based on command model stored in datastore.
 	for _, commandID := range req.Commands {
@@ -459,20 +472,29 @@ func (a *API) GetPlanPreviewResults(ctx context.Context, req *apiservice.GetPlan
 		if cmd.Type != model.Command_BUILD_PLAN_PREVIEW {
 			return nil, status.Error(codes.FailedPrecondition, fmt.Sprint("Command %s is not a plan preview command", commandID))
 		}
+
 		if !cmd.IsHandled() {
-			return nil, status.Error(codes.NotFound, fmt.Sprintf("No command ouput for command %d because it is not completed yet", commandID))
+			if time.Since(time.Unix(cmd.CreatedAt, 0)) <= commandHandleTimeout {
+				return nil, status.Error(codes.NotFound, fmt.Sprintf("No command ouput for command %d because it is not completed yet", commandID))
+			}
+			results = append(results, &model.PlanPreviewCommandResult{
+				CommandId: cmd.Id,
+				PipedId:   cmd.PipedId,
+				Error:     fmt.Sprintf("Timed out, maybe the Piped is offline currently."),
+			})
 		}
+
 		// There is no reason to fetch output data of command that has been completed a long time ago.
 		// So in order to prevent unintended actions, we disallow that ability.
 		if time.Since(time.Unix(cmd.HandledAt, 0)) > freshDuration {
 			return nil, status.Error(codes.FailedPrecondition, fmt.Sprintf("The output data for command %s is too old for access", commandID))
 		}
+
+		handledCommands = append(handledCommands, commandID)
 	}
 
-	results := make([]*model.PlanPreviewCommandResult, 0, len(req.Commands))
-
 	// Fetch ouput data to build results.
-	for _, commandID := range req.Commands {
+	for _, commandID := range handledCommands {
 		data, err := a.commandOutputGetter.Get(ctx, commandID)
 		if err != nil {
 			return nil, status.Error(codes.Internal, fmt.Sprintf("Failed to retrieve output data of command %s", commandID))
@@ -487,11 +509,13 @@ func (a *API) GetPlanPreviewResults(ctx context.Context, req *apiservice.GetPlan
 			return nil, status.Error(codes.Internal, fmt.Sprintf("Failed to decode output data of command %s", commandID))
 		}
 
-		// All URL fields inside the result model are empty.
-		// So we fill them before sending to the client.
-		result.FillURLs(a.webBaseURL)
-
 		results = append(results, &result)
+	}
+
+	// All URL fields inside the result model are empty.
+	// So we fill them before sending to the client.
+	for _, r := range results {
+		r.FillURLs(a.webBaseURL)
 	}
 
 	return &apiservice.GetPlanPreviewResultsResponse{
