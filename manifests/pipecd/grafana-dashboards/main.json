@@ -17,7 +17,7 @@
   "gnetId": null,
   "graphTooltip": 0,
   "id": 2,
-  "iteration": 1624876467533,
+  "iteration": 1625016800293,
   "links": [],
   "panels": [
     {
@@ -34,7 +34,7 @@
       "fillGradient": 0,
       "gridPos": {
         "h": 9,
-        "w": 12,
+        "w": 24,
         "x": 0,
         "y": 0
       },
@@ -118,6 +118,113 @@
       }
     },
     {
+      "datasource": null,
+      "gridPos": {
+        "h": 1,
+        "w": 24,
+        "x": 0,
+        "y": 9
+      },
+      "id": 10,
+      "title": "Row title",
+      "type": "row"
+    },
+    {
+      "aliasColors": {},
+      "bars": false,
+      "dashLength": 10,
+      "dashes": false,
+      "datasource": "Prometheus",
+      "fieldConfig": {
+        "defaults": {},
+        "overrides": []
+      },
+      "fill": 1,
+      "fillGradient": 0,
+      "gridPos": {
+        "h": 8,
+        "w": 12,
+        "x": 0,
+        "y": 10
+      },
+      "hiddenSeries": false,
+      "id": 6,
+      "legend": {
+        "avg": false,
+        "current": false,
+        "max": false,
+        "min": false,
+        "show": true,
+        "total": false,
+        "values": false
+      },
+      "lines": true,
+      "linewidth": 1,
+      "nullPointMode": "null",
+      "options": {
+        "alertThreshold": true
+      },
+      "percentage": false,
+      "pluginVersion": "7.5.3",
+      "pointradius": 2,
+      "points": false,
+      "renderer": "flot",
+      "seriesOverrides": [],
+      "spaceLength": 10,
+      "stack": false,
+      "steppedLine": false,
+      "targets": [
+        {
+          "exemplar": true,
+          "expr": "histogram_quantile(\n  0.99,\n  sum without(instance, job)(rate(envoy_cluster_upstream_rq_time_bucket{envoy_cluster_name=~\"$api\"}[5m]))\n)",
+          "interval": "",
+          "legendFormat": "",
+          "queryType": "randomWalk",
+          "refId": "A"
+        }
+      ],
+      "thresholds": [],
+      "timeFrom": null,
+      "timeRegions": [],
+      "timeShift": null,
+      "title": "API - Duration 99th Quantile",
+      "tooltip": {
+        "shared": true,
+        "sort": 0,
+        "value_type": "individual"
+      },
+      "type": "graph",
+      "xaxis": {
+        "buckets": null,
+        "mode": "time",
+        "name": null,
+        "show": true,
+        "values": []
+      },
+      "yaxes": [
+        {
+          "format": "ms",
+          "label": null,
+          "logBase": 1,
+          "max": null,
+          "min": null,
+          "show": true
+        },
+        {
+          "format": "short",
+          "label": null,
+          "logBase": 1,
+          "max": null,
+          "min": null,
+          "show": true
+        }
+      ],
+      "yaxis": {
+        "align": false,
+        "alignLevel": null
+      }
+    },
+    {
       "aliasColors": {},
       "bars": false,
       "dashLength": 10,
@@ -133,7 +240,7 @@
         "h": 8,
         "w": 12,
         "x": 12,
-        "y": 0
+        "y": 10
       },
       "hiddenSeries": false,
       "id": 4,
@@ -228,10 +335,10 @@
         "h": 8,
         "w": 12,
         "x": 0,
-        "y": 9
+        "y": 18
       },
       "hiddenSeries": false,
-      "id": 6,
+      "id": 8,
       "legend": {
         "avg": false,
         "current": false,
@@ -259,7 +366,7 @@
       "targets": [
         {
           "exemplar": true,
-          "expr": "histogram_quantile(\n  0.99,\n  sum without(instance, job)(rate(envoy_cluster_upstream_rq_time_bucket{envoy_cluster_name=~\"$api\"}[5m]))\n)",
+          "expr": "sum by(instance) (\n  rate(container_cpu_usage_seconds_total{\n    pod=~\"pipecd-server-[0-9a-zA-Z]+(-[0-9a-zA-Z]+)\"\n  }[5m])\n)",
           "interval": "",
           "legendFormat": "",
           "queryType": "randomWalk",
@@ -270,7 +377,7 @@
       "timeFrom": null,
       "timeRegions": [],
       "timeShift": null,
-      "title": "API - Duration 99th Quantile",
+      "title": "Pod - CPU Usage Rate",
       "tooltip": {
         "shared": true,
         "sort": 0,
@@ -286,7 +393,102 @@
       },
       "yaxes": [
         {
-          "format": "ms",
+          "format": "short",
+          "label": null,
+          "logBase": 1,
+          "max": null,
+          "min": null,
+          "show": true
+        },
+        {
+          "format": "short",
+          "label": null,
+          "logBase": 1,
+          "max": null,
+          "min": null,
+          "show": true
+        }
+      ],
+      "yaxis": {
+        "align": false,
+        "alignLevel": null
+      }
+    },
+    {
+      "aliasColors": {},
+      "bars": false,
+      "dashLength": 10,
+      "dashes": false,
+      "datasource": "Prometheus",
+      "fieldConfig": {
+        "defaults": {},
+        "overrides": []
+      },
+      "fill": 1,
+      "fillGradient": 0,
+      "gridPos": {
+        "h": 8,
+        "w": 12,
+        "x": 12,
+        "y": 18
+      },
+      "hiddenSeries": false,
+      "id": 12,
+      "legend": {
+        "avg": false,
+        "current": false,
+        "max": false,
+        "min": false,
+        "show": true,
+        "total": false,
+        "values": false
+      },
+      "lines": true,
+      "linewidth": 1,
+      "nullPointMode": "null",
+      "options": {
+        "alertThreshold": true
+      },
+      "percentage": false,
+      "pluginVersion": "7.5.3",
+      "pointradius": 2,
+      "points": false,
+      "renderer": "flot",
+      "seriesOverrides": [],
+      "spaceLength": 10,
+      "stack": false,
+      "steppedLine": false,
+      "targets": [
+        {
+          "exemplar": true,
+          "expr": "sum by(instance) (\n  container_memory_usage_bytes{\n    pod=~\"pipecd-server-[0-9a-zA-Z]+(-[0-9a-zA-Z]+)\"\n  }\n)",
+          "interval": "",
+          "legendFormat": "",
+          "queryType": "randomWalk",
+          "refId": "A"
+        }
+      ],
+      "thresholds": [],
+      "timeFrom": null,
+      "timeRegions": [],
+      "timeShift": null,
+      "title": "Pod - Memory Usage",
+      "tooltip": {
+        "shared": true,
+        "sort": 0,
+        "value_type": "individual"
+      },
+      "type": "graph",
+      "xaxis": {
+        "buckets": null,
+        "mode": "time",
+        "name": null,
+        "show": true,
+        "values": []
+      },
+      "yaxes": [
+        {
+          "format": "short",
           "label": null,
           "logBase": 1,
           "max": null,
@@ -354,5 +556,5 @@
   "timezone": "",
   "title": "Main",
   "uid": "3jeba3R7z",
-  "version": 1
+  "version": 12
 }
