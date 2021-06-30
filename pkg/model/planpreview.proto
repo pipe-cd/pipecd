@@ -23,25 +23,46 @@ import "pkg/model/common.proto";
 
 message PlanPreviewCommandResult {
     string command_id = 1 [(validate.rules).string.min_len = 1];
-    repeated ApplicationPlanPreviewResult results = 2;
-    string error = 3;
+    // The Piped that handles command.
+    string piped_id = 2 [(validate.rules).string.min_len = 1];
+    // Web URL to the piped page.
+    // This is only filled before returning to the client.
+    string piped_url = 3;
+
+    repeated ApplicationPlanPreviewResult results = 4;
+    // Error while handling command.
+    string error = 5;
 }
 
 message ApplicationPlanPreviewResult {
     // Application information.
-    string application_id = 1;
-    string env_id = 2;
-    string piped_id = 3;
-    string project_id = 4;
-    ApplicationKind kind = 6 [(validate.rules).enum.defined_only = true];
+    string application_id = 1 [(validate.rules).string.min_len = 1];
+    string application_name = 2 [(validate.rules).string.min_len = 1];
+    // Web URL to the application page.
+    // This is only filled before returning to the client.
+    string application_url = 3;
+    ApplicationKind application_kind = 4 [(validate.rules).enum.defined_only = true];
+    string application_directory = 5 [(validate.rules).string.min_len = 1];
+
+    string env_id = 6 [(validate.rules).string.min_len = 1];
+    string env_name = 7 [(validate.rules).string.min_len = 1];
+    // Web URL to the environment page.
+    // This is only filled before returning to the client.
+    string env_url = 8;
+
+    string piped_id = 9 [(validate.rules).string.min_len = 1];
+    string project_id = 10 [(validate.rules).string.min_len = 1];
 
     // Target commit information.
-    string target_branch = 10;
-    string target_head_commit = 11;
+    string target_branch = 20 [(validate.rules).string.min_len = 1];
+    string target_head_commit = 21 [(validate.rules).string.min_len = 1];
 
-    // Plan preview result.
-    SyncStrategy sync_strategy = 13;
-    bytes changes = 14;
+    // Planpreview result.
+    SyncStrategy sync_strategy = 30;
+    bytes changes = 31;
 
-    int64 created_at = 15;
+    // Error while building planpreview result.
+    string error = 40;
+
+    int64 created_at = 90 [(validate.rules).int64.gt = 0];
 }

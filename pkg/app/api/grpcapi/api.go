@@ -44,7 +44,8 @@ type API struct {
 	commandStore        commandstore.Store
 	commandOutputGetter commandOutputGetter
 
-	logger *zap.Logger
+	webBaseURL string
+	logger     *zap.Logger
 }
 
 // NewAPI creates a new API instance.
@@ -52,6 +53,7 @@ func NewAPI(
 	ds datastore.DataStore,
 	cmds commandstore.Store,
 	cog commandOutputGetter,
+	webBaseURL string,
 	logger *zap.Logger,
 ) *API {
 	a := &API{
@@ -62,6 +64,7 @@ func NewAPI(
 		eventStore:          datastore.NewEventStore(ds),
 		commandStore:        cmds,
 		commandOutputGetter: cog,
+		webBaseURL:          webBaseURL,
 		logger:              logger.Named("api"),
 	}
 	return a
@@ -457,7 +460,7 @@ func (a *API) GetPlanPreviewResults(ctx context.Context, req *apiservice.GetPlan
 			return nil, status.Error(codes.FailedPrecondition, fmt.Sprint("Command %s is not a plan preview command", commandID))
 		}
 		if !cmd.IsHandled() {
-			return nil, status.Error(codes.FailedPrecondition, fmt.Sprintf("Command %s is not completed yet", commandID))
+			return nil, status.Error(codes.NotFound, fmt.Sprintf("No command ouput for command %d because it is not completed yet", commandID))
 		}
 		// There is no reason to fetch output data of command that has been completed a long time ago.
 		// So in order to prevent unintended actions, we disallow that ability.
@@ -474,6 +477,7 @@ func (a *API) GetPlanPreviewResults(ctx context.Context, req *apiservice.GetPlan
 		if err != nil {
 			return nil, status.Error(codes.Internal, fmt.Sprintf("Failed to retrieve output data of command %s", commandID))
 		}
+
 		var result model.PlanPreviewCommandResult
 		if err := json.Unmarshal(data, &result); err != nil {
 			a.logger.Error("failed to unmarshal planpreview command result",
@@ -482,6 +486,11 @@ func (a *API) GetPlanPreviewResults(ctx context.Context, req *apiservice.GetPlan
 			)
 			return nil, status.Error(codes.Internal, fmt.Sprintf("Failed to decode output data of command %s", commandID))
 		}
+
+		// All URL fields inside the result model are empty.
+		// So we fill them before sending to the client.
+		result.FillURLs(a.webBaseURL)
+
 		results = append(results, &result)
 	}
 

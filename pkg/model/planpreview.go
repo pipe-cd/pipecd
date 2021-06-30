@@ -1,4 +1,4 @@
-// Copyright 2020 The PipeCD Authors.
+// Copyright 2021 The PipeCD Authors.
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -14,8 +14,10 @@
 
 package model
 
-import "path"
-
-func MakeEnvironmentURL(baseURL, environmentID string) string {
-	return path.Join(baseURL, "settings", "environment")
+func (r *PlanPreviewCommandResult) FillURLs(baseURL string) {
+	r.PipedUrl = MakePipedURL(baseURL, r.PipedId)
+	for _, ar := range r.Results {
+		ar.ApplicationUrl = MakeApplicationURL(baseURL, ar.ApplicationId)
+		ar.EnvUrl = MakeEnvironmentURL(baseURL, ar.EnvId)
+	}
 }

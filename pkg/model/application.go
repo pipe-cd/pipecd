@@ -15,6 +15,7 @@
 package model
 
 import (
+	"path"
 	"path/filepath"
 )
 
@@ -42,4 +43,8 @@ func (s ApplicationSyncState) HasChanged(next ApplicationSyncState) bool {
 		return true
 	}
 	return false
+}
+
+func MakeApplicationURL(baseURL, applicationID string) string {
+	return path.Join(baseURL, "applications", applicationID)
 }
