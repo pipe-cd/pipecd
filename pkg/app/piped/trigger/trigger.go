@@ -64,7 +64,7 @@ type commandLister interface {
 }
 
 type environmentLister interface {
-	Get(id string) (*model.Environment, bool)
+	Get(ctx context.Context, id string) (*model.Environment, error)
 }
 
 type notifier interface {

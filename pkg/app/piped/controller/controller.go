@@ -77,7 +77,7 @@ type applicationLister interface {
 }
 
 type environmentLister interface {
-	Get(id string) (*model.Environment, bool)
+	Get(ctx context.Context, id string) (*model.Environment, error)
 }
 
 type liveResourceLister interface {
@@ -405,14 +405,14 @@ func (c *controller) startNewPlanner(ctx context.Context, d *model.Deployment) (
 		}
 	}
 
-	var envName string
-	if env, ok := c.environmentLister.Get(d.EnvId); ok {
-		envName = env.Name
+	env, err := c.environmentLister.Get(ctx, d.EnvId)
+	if err != nil {
+		return nil, err
 	}
 
 	planner := newPlanner(
 		d,
-		envName,
+		env.Name,
 		commit,
 		workingDir,
 		c.apiClient,
@@ -551,15 +551,15 @@ func (c *controller) startNewScheduler(ctx context.Context, d *model.Deployment)
 	}
 	logger.Info("created working directory for scheduler", zap.String("working-dir", workingDir))
 
-	var envName string
-	if env, ok := c.environmentLister.Get(d.EnvId); ok {
-		envName = env.Name
+	env, err := c.environmentLister.Get(ctx, d.EnvId)
+	if err != nil {
+		return nil, err
 	}
 
 	// Create a new scheduler and append to the list for tracking.
 	scheduler := newScheduler(
 		d,
-		envName,
+		env.Name,
 		workingDir,
 		c.apiClient,
 		c.gitClient,
