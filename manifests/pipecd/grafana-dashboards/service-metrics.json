@@ -17,7 +17,7 @@
   "gnetId": null,
   "graphTooltip": 0,
   "id": 2,
-  "iteration": 1625104834336,
+  "iteration": 1625109245456,
   "links": [],
   "panels": [
     {
@@ -318,8 +318,8 @@
         "allValue": null,
         "current": {
           "selected": false,
-          "text": "server-api",
-          "value": "server-api"
+          "text": "server-piped-api",
+          "value": "server-piped-api"
         },
         "datasource": "Prometheus",
         "definition": "label_values(envoy_cluster_name)",
@@ -353,7 +353,7 @@
   },
   "timepicker": {},
   "timezone": "",
-  "title": "Service Metrics",
+  "title": "PipeCD Service Metrics",
   "uid": "3jeba3R7z",
-  "version": 20
+  "version": 22
 }
