@@ -17,7 +17,7 @@
   "gnetId": null,
   "graphTooltip": 0,
   "id": 2,
-  "iteration": 1625040982195,
+  "iteration": 1625104834336,
   "links": [],
   "panels": [
     {
@@ -67,7 +67,7 @@
       "targets": [
         {
           "exemplar": true,
-          "expr": "sum without(envoy_response_code,instance,job) (rate(envoy_cluster_upstream_rq{envoy_response_code=~\"5.*\", job=\"pipecd-gateway\", envoy_cluster_name=~\"$api\"}[5m]))\n/\nsum without(envoy_response_code,instance,job) (rate(envoy_cluster_upstream_rq{job=\"pipecd-gateway\", envoy_cluster_name=~\"$api\"}[5m]))\n* 100",
+          "expr": "sum without(envoy_response_code,instance,job) (rate(envoy_cluster_upstream_rq{envoy_response_code=~\"5.*\", job=\"pipecd-gateway\", envoy_cluster_name=\"$api\"}[5m]))\n/\nsum without(envoy_response_code,instance,job) (rate(envoy_cluster_upstream_rq{job=\"pipecd-gateway\", envoy_cluster_name=\"$api\"}[5m]))\n* 100",
           "format": "time_series",
           "instant": false,
           "interval": "",
@@ -164,7 +164,7 @@
       "targets": [
         {
           "exemplar": true,
-          "expr": "histogram_quantile(\n  0.99,\n  sum without(instance, job)(rate(envoy_cluster_upstream_rq_time_bucket{envoy_cluster_name=~\"$api\"}[5m]))\n)",
+          "expr": "histogram_quantile(\n  0.99,\n  sum without(instance, job)(rate(envoy_cluster_upstream_rq_time_bucket{envoy_cluster_name=\"$api\"}[5m]))\n)",
           "interval": "",
           "legendFormat": "",
           "queryType": "randomWalk",
@@ -259,7 +259,7 @@
       "targets": [
         {
           "exemplar": true,
-          "expr": "sum without(envoy_response_code,instance,job) (rate(envoy_cluster_upstream_rq_total{ envoy_cluster_name=~\"$api\"}[5m]))",
+          "expr": "sum without(envoy_response_code,instance,job) (rate(envoy_cluster_upstream_rq_total{ envoy_cluster_name=\"$api\"}[5m]))",
           "interval": "",
           "legendFormat": "",
           "queryType": "randomWalk",
@@ -318,8 +318,8 @@
         "allValue": null,
         "current": {
           "selected": false,
-          "text": "server-piped-api",
-          "value": "server-piped-api"
+          "text": "server-api",
+          "value": "server-api"
         },
         "datasource": "Prometheus",
         "definition": "label_values(envoy_cluster_name)",
@@ -355,5 +355,5 @@
   "timezone": "",
   "title": "Service Metrics",
   "uid": "3jeba3R7z",
-  "version": 1
+  "version": 20
 }
