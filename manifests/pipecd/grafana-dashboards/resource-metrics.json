@@ -17,7 +17,7 @@
   "gnetId": null,
   "graphTooltip": 0,
   "id": 3,
-  "iteration": 1625109120162,
+  "iteration": 1625118048403,
   "links": [],
   "panels": [
     {
@@ -162,7 +162,7 @@
       "targets": [
         {
           "exemplar": true,
-          "expr": "sum by(service) (\n  container_memory_usage_bytes{\n    service=\"$service\"\n  }\n)",
+          "expr": "sum by(service) (\n  container_memory_usage_bytes{\n    service=\"$service\"\n  } / (1024 * 1024)\n)",
           "interval": "",
           "legendFormat": "",
           "queryType": "randomWalk",
@@ -189,7 +189,7 @@
       },
       "yaxes": [
         {
-          "format": "short",
+          "format": "decmbytes",
           "label": null,
           "logBase": 1,
           "max": null,
@@ -257,7 +257,7 @@
       "targets": [
         {
           "exemplar": true,
-          "expr": "avg by(kubernetes_node) (rate(node_cpu_seconds_total[5m]))",
+          "expr": "avg by(kubernetes_node) (rate(node_cpu_seconds_total{mode!=\"idle\"}[5m]))",
           "interval": "",
           "legendFormat": "",
           "queryType": "randomWalk",
@@ -352,7 +352,7 @@
       "targets": [
         {
           "exemplar": true,
-          "expr": "sum by(kubernetes_node) (node_memory_MemAvailable_bytes)",
+          "expr": "sum by(kubernetes_node) (node_memory_MemTotal_bytes - node_memory_MemAvailable_bytes) / (1024 * 1024 * 1024)",
           "interval": "",
           "legendFormat": "",
           "queryType": "randomWalk",
@@ -363,7 +363,7 @@
       "timeFrom": null,
       "timeRegions": [],
       "timeShift": null,
-      "title": "Memory Available Bytes per Node",
+      "title": "Memory Usage per Node",
       "tooltip": {
         "shared": true,
         "sort": 0,
@@ -379,7 +379,7 @@
       },
       "yaxes": [
         {
-          "format": "short",
+          "format": "decgbytes",
           "label": null,
           "logBase": 1,
           "max": null,
@@ -447,7 +447,7 @@
       "targets": [
         {
           "exemplar": true,
-          "expr": "sum by (job) (go_memstats_heap_alloc_bytes{job=\"$service\"})",
+          "expr": "sum by (job) (go_memstats_heap_alloc_bytes{job=\"$service\"} / (1024 * 1024))",
           "interval": "",
           "legendFormat": "",
           "queryType": "randomWalk",
@@ -474,7 +474,7 @@
       },
       "yaxes": [
         {
-          "format": "short",
+          "format": "decmbytes",
           "label": null,
           "logBase": 1,
           "max": null,
@@ -704,5 +704,5 @@
   "timezone": "",
   "title": "PipeCD Resource Metrics",
   "uid": "4MJR80z7z",
-  "version": 7
+  "version": 8
 }
