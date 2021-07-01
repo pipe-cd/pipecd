@@ -102,8 +102,6 @@ data:
                   socket_address:
                     address: {{ include "pipecd.fullname" . }}-server
                     port_value: 9080
-        track_cluster_stats:
-          request_response_sizes: true
       - name: server-web-api
         http2_protocol_options: {}
         connect_timeout: 0.25s
@@ -118,8 +116,6 @@ data:
                   socket_address:
                     address: {{ include "pipecd.fullname" . }}-server
                     port_value: 9081
-        track_cluster_stats:
-          request_response_sizes: true
       - name: server-api
         http2_protocol_options: {}
         connect_timeout: 0.25s
@@ -134,8 +130,6 @@ data:
                   socket_address:
                     address: {{ include "pipecd.fullname" . }}-server
                     port_value: 9083
-        track_cluster_stats:
-          request_response_sizes: true
       - name: server-http
         #http2_protocol_options: {}
         connect_timeout: 0.25s
@@ -150,5 +144,3 @@ data:
                   socket_address:
                     address: {{ include "pipecd.fullname" . }}-server
                     port_value: 9082
-        track_cluster_stats:
-          request_response_sizes: true
