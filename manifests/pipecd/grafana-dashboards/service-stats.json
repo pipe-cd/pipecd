@@ -17,7 +17,7 @@
   "gnetId": null,
   "graphTooltip": 0,
   "id": 2,
-  "iteration": 1625133315933,
+  "iteration": 1625146174294,
   "links": [],
   "panels": [
     {
@@ -277,7 +277,7 @@
       "targets": [
         {
           "exemplar": true,
-          "expr": "sum without(envoy_response_code,instance,job) (rate(envoy_cluster_upstream_rq_total{ envoy_cluster_name=\"$api\"}[5m]))",
+          "expr": "sum without(envoy_response_code,instance,job) (rate(envoy_cluster_upstream_rq_total{envoy_cluster_name=\"$api\"}[5m]))",
           "interval": "",
           "legendFormat": "$api",
           "queryType": "randomWalk",
@@ -288,7 +288,7 @@
       "timeFrom": null,
       "timeRegions": [],
       "timeShift": null,
-      "title": "API - Request Rate",
+      "title": "Requests/sec [rate-5m]",
       "tooltip": {
         "shared": true,
         "sort": 0,
@@ -561,7 +561,7 @@
   },
   "timepicker": {},
   "timezone": "",
-  "title": "PipeCD Service Metrics",
+  "title": "PipeCD Service Stats",
   "uid": "3jeba3R7z",
-  "version": 26
+  "version": 29
 }

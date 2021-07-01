@@ -232,7 +232,7 @@
       "timeFrom": null,
       "timeRegions": [],
       "timeShift": null,
-      "title": "99th Quantile of HTTP Duration [rate-5m]",
+      "title": "99th Quantile of HTTP Duration",
       "tooltip": {
         "shared": true,
         "sort": 0,
@@ -248,7 +248,7 @@
       },
       "yaxes": [
         {
-          "format": "short",
+          "format": "s",
           "label": null,
           "logBase": 1,
           "max": null,
@@ -426,16 +426,32 @@
           "exemplar": true,
           "expr": "go_memstats_heap_alloc_bytes{job=\"prometheus\"} / (1024 * 1024)",
           "interval": "",
-          "legendFormat": "prometheus",
+          "legendFormat": "alloc",
           "queryType": "randomWalk",
           "refId": "A"
+        },
+        {
+          "exemplar": true,
+          "expr": "go_memstats_heap_inuse_bytes{job=\"prometheus\"} / (1024 * 1024)",
+          "hide": false,
+          "interval": "",
+          "legendFormat": "inuse",
+          "refId": "B"
+        },
+        {
+          "exemplar": true,
+          "expr": "go_memstats_heap_idle_bytes{job=\"prometheus\"} / (1024 * 1024)",
+          "hide": false,
+          "interval": "",
+          "legendFormat": "idle",
+          "refId": "C"
         }
       ],
       "thresholds": [],
       "timeFrom": null,
       "timeRegions": [],
       "timeShift": null,
-      "title": "Allocated Memory Usage",
+      "title": "Heap Stats",
       "tooltip": {
         "shared": true,
         "sort": 0,
@@ -583,5 +599,5 @@
   "timezone": "",
   "title": "Prometheus Stats",
   "uid": "7RpHmaz7k",
-  "version": 12
+  "version": 14
 }
