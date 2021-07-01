@@ -39,7 +39,6 @@ export const AddApplicationDrawer: FC<AddApplicationDrawerProps> = memo(
     const [showConfirm, setShowConfirm] = useState(false);
     const formik = useFormik<ApplicationFormValue>({
       initialValues: emptyFormValues,
-      validateOnMount: true,
       validationSchema,
       enableReinitialize: true,
       async onSubmit(values) {

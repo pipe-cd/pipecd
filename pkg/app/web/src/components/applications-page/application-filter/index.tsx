@@ -4,9 +4,7 @@ import {
   makeStyles,
   MenuItem,
   Select,
-  TextField,
 } from "@material-ui/core";
-import Autocomplete from "@material-ui/lab/Autocomplete";
 import { FC, memo } from "react";
 import { FilterView } from "~/components/filter-view";
 import { APPLICATION_KIND_TEXT } from "~/constants/application-kind";
@@ -18,10 +16,9 @@ import {
   ApplicationsFilterOptions,
   ApplicationSyncStatus,
   ApplicationSyncStatusKey,
-  selectAll as selectAllApplications,
 } from "~/modules/applications";
 import { selectAllEnvs } from "~/modules/environments";
-import { uniqueArray } from "~/utils/unique-array";
+import { ApplicationAutocomplete } from "./application-autocomplete";
 
 const useStyles = makeStyles((theme) => ({
   toolbarSpacer: {
@@ -48,11 +45,6 @@ export const ApplicationFilter: FC<ApplicationFilterProps> = memo(
   function ApplicationFilter({ options, onChange, onClear }) {
     const classes = useStyles();
     const envs = useAppSelector(selectAllEnvs);
-    const applications = useAppSelector<string[]>((state) =>
-      uniqueArray(
-        selectAllApplications(state.applications).map((app) => app.name)
-      )
-    );
 
     const handleUpdateFilterValue = (
       optionPart: Partial<ApplicationsFilterOptions>
@@ -67,18 +59,9 @@ export const ApplicationFilter: FC<ApplicationFilterProps> = memo(
         }}
       >
         <div className={classes.formItem}>
-          <Autocomplete
-            id="name"
-            options={applications}
+          <ApplicationAutocomplete
             value={options.name ?? null}
-            onChange={(_, value) => {
-              handleUpdateFilterValue({
-                name: value || "",
-              });
-            }}
-            renderInput={(params) => (
-              <TextField {...params} label="Name" variant="outlined" />
-            )}
+            onChange={(value) => handleUpdateFilterValue({ name: value })}
           />
         </div>
 

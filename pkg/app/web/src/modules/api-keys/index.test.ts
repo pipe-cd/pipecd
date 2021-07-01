@@ -6,7 +6,7 @@ import {
   generateAPIKey,
   fetchAPIKeys,
   clearGeneratedKey,
-} from "./";
+} from ".";
 
 const baseState = {
   error: null,

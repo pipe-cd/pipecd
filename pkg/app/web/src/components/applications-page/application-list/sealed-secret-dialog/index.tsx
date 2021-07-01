@@ -74,7 +74,6 @@ export const SealedSecretDialog: FC<SealedSecretDialogProps> = memo(
         base64: false,
       },
       validationSchema,
-      validateOnMount: true,
       async onSubmit(values) {
         if (!application) {
           return;
@@ -164,7 +163,11 @@ export const SealedSecretDialog: FC<SealedSecretDialogProps> = memo(
               <Button
                 color="primary"
                 type="submit"
-                disabled={formik.isSubmitting || formik.isValid === false}
+                disabled={
+                  formik.isSubmitting ||
+                  formik.isValid === false ||
+                  formik.dirty === false
+                }
               >
                 Encrypt
               </Button>

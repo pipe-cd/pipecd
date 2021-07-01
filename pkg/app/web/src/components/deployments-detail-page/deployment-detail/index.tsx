@@ -18,7 +18,6 @@ import { DEPLOYMENT_STATE_TEXT } from "~/constants/deployment-status-text";
 import { PAGE_PATH_APPLICATIONS } from "~/constants/path";
 import { useAppDispatch, useAppSelector } from "~/hooks/redux";
 import { useInterval } from "~/hooks/use-interval";
-import { ActiveStage } from "~/modules/active-stage";
 import {
   cancelDeployment,
   Deployment,
@@ -82,13 +81,10 @@ export const DeploymentDetail: FC<DeploymentDetailProps> = memo(
     const classes = useStyles();
     const dispatch = useAppDispatch();
 
-    const [deployment, activeStage] = useAppSelector<
-      [Deployment.AsObject | undefined, ActiveStage | null]
-    >((state) => [
-      selectDeploymentById(state.deployments, deploymentId),
-      state.activeStage,
-    ]);
-
+    const deployment = useAppSelector<Deployment.AsObject | undefined>(
+      (state) => selectDeploymentById(state.deployments, deploymentId)
+    );
+    const activeStage = useAppSelector((state) => state.activeStage);
     const env = useAppSelector(selectEnvById(deployment?.envId));
     const piped = useAppSelector(selectPipedById(deployment?.pipedId));
     const isCanceling = useAppSelector(

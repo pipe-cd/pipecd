@@ -21,9 +21,9 @@ import {
 } from "~/constants/path";
 import { APP_NAME } from "~/constants/common";
 import { NavLink as RouterLink } from "react-router-dom";
-import { useMe } from "~/modules/me";
 import ArrowDownIcon from "@material-ui/icons/ArrowDropDown";
 import logo from "~~/assets/logo.svg";
+import { useAppSelector } from "~/hooks/redux";
 
 export const APP_HEADER_HEIGHT = 56;
 
@@ -76,7 +76,7 @@ const useStyles = makeStyles((theme) => ({
 
 export const Header: FC = memo(function Header() {
   const classes = useStyles();
-  const me = useMe();
+  const me = useAppSelector((state) => state.me);
   const [anchorEl, setAnchorEl] = useState<HTMLButtonElement | null>(null);
 
   const handleClose = (): void => {
