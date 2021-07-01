@@ -17,6 +17,7 @@
   "gnetId": null,
   "graphTooltip": 0,
   "id": 3,
+  "iteration": 1625106265192,
   "links": [],
   "panels": [
     {
@@ -66,7 +67,7 @@
       "targets": [
         {
           "exemplar": true,
-          "expr": "sum by(instance) (\n  rate(container_cpu_usage_seconds_total{\n    pod=~\"pipecd-server-[0-9a-zA-Z]+(-[0-9a-zA-Z]+)\"\n  }[5m])\n)",
+          "expr": "sum by(service) (\n  rate(container_cpu_usage_seconds_total{\n    service=\"$service\"\n  }[5m])\n)",
           "interval": "",
           "legendFormat": "",
           "queryType": "randomWalk",
@@ -161,7 +162,7 @@
       "targets": [
         {
           "exemplar": true,
-          "expr": "sum by(pod) (\n  container_memory_usage_bytes{\n    pod=~\"pipecd-server-[0-9a-zA-Z]+(-[0-9a-zA-Z]+)\"\n  }\n)",
+          "expr": "sum by(service) (\n  container_memory_usage_bytes{\n    service=\"$service\"\n  }\n)",
           "interval": "",
           "legendFormat": "",
           "queryType": "randomWalk",
@@ -405,7 +406,105 @@
   "style": "dark",
   "tags": [],
   "templating": {
-    "list": []
+    "list": [
+      {
+        "allValue": null,
+        "current": {
+          "selected": true,
+          "text": "pipecd-server",
+          "value": "pipecd-server"
+        },
+        "datasource": "Prometheus",
+        "definition": "label_values(service)",
+        "description": null,
+        "error": null,
+        "hide": 0,
+        "includeAll": false,
+        "label": null,
+        "multi": false,
+        "name": "service",
+        "options": [
+          {
+            "selected": false,
+            "text": "pipecd",
+            "value": "pipecd"
+          },
+          {
+            "selected": true,
+            "text": "pipecd-cache",
+            "value": "pipecd-cache"
+          },
+          {
+            "selected": false,
+            "text": "pipecd-gateway",
+            "value": "pipecd-gateway"
+          },
+          {
+            "selected": false,
+            "text": "pipecd-grafana",
+            "value": "pipecd-grafana"
+          },
+          {
+            "selected": false,
+            "text": "pipecd-kube-state-metrics",
+            "value": "pipecd-kube-state-metrics"
+          },
+          {
+            "selected": false,
+            "text": "pipecd-minio",
+            "value": "pipecd-minio"
+          },
+          {
+            "selected": false,
+            "text": "pipecd-mysql",
+            "value": "pipecd-mysql"
+          },
+          {
+            "selected": false,
+            "text": "pipecd-ops",
+            "value": "pipecd-ops"
+          },
+          {
+            "selected": false,
+            "text": "pipecd-prometheus-alertmanager",
+            "value": "pipecd-prometheus-alertmanager"
+          },
+          {
+            "selected": false,
+            "text": "pipecd-prometheus-node",
+            "value": "pipecd-prometheus-node"
+          },
+          {
+            "selected": false,
+            "text": "pipecd-prometheus-node-exporter",
+            "value": "pipecd-prometheus-node-exporter"
+          },
+          {
+            "selected": false,
+            "text": "pipecd-prometheus-server",
+            "value": "pipecd-prometheus-server"
+          },
+          {
+            "selected": false,
+            "text": "pipecd-server",
+            "value": "pipecd-server"
+          }
+        ],
+        "query": {
+          "query": "label_values(service)",
+          "refId": "StandardVariableQuery"
+        },
+        "refresh": 0,
+        "regex": "",
+        "skipUrlSync": false,
+        "sort": 0,
+        "tagValuesQuery": "",
+        "tags": [],
+        "tagsQuery": "",
+        "type": "query",
+        "useTags": false
+      }
+    ]
   },
   "time": {
     "from": "now-6h",
@@ -415,5 +514,5 @@
   "timezone": "",
   "title": "Resource Metrics",
   "uid": "4MJR80z7z",
-  "version": 2
+  "version": 5
 }
