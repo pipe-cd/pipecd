@@ -16,14 +16,20 @@ package environmentstore
 
 import (
 	"context"
+	"fmt"
 	"time"
 
 	"go.uber.org/zap"
+	"golang.org/x/sync/singleflight"
 	"google.golang.org/grpc"
 
 	"github.com/pipe-cd/pipe/pkg/app/api/service/pipedservice"
 	"github.com/pipe-cd/pipe/pkg/cache"
 	"github.com/pipe-cd/pipe/pkg/model"
+)
+
+const (
+	defaultAPITimeout = time.Minute
 )
 
 type apiClient interface {
@@ -33,48 +39,58 @@ type apiClient interface {
 // Lister helps list and get Environment.
 // All objects returned here must be treated as read-only.
 type Lister interface {
-	// Get retrieves a specifiec Environment for the given id.
-	Get(id string) (*model.Environment, bool)
+	Get(ctx context.Context, id string) (*model.Environment, error)
 }
 
 type Store struct {
-	apiClient  apiClient
-	cache      cache.Cache
-	apiTimeout time.Duration
-	logger     *zap.Logger
+	apiClient apiClient
+	cache     cache.Cache
+	callGroup *singleflight.Group
+	logger    *zap.Logger
 }
 
 func NewStore(apiClient apiClient, cache cache.Cache, logger *zap.Logger) *Store {
 	return &Store{
-		apiClient:  apiClient,
-		cache:      cache,
-		apiTimeout: 10 * time.Second,
-		logger:     logger.Named("environmentstore"),
+		apiClient: apiClient,
+		cache:     cache,
+		callGroup: &singleflight.Group{},
+		logger:    logger.Named("environmentstore"),
 	}
 }
 
-func (s *Store) Get(id string) (*model.Environment, bool) {
+func (s *Store) Get(ctx context.Context, id string) (*model.Environment, error) {
 	env, err := s.cache.Get(id)
 	if err == nil {
-		return env.(*model.Environment), true
+		return env.(*model.Environment), nil
 	}
 
-	ctx, cancel := context.WithTimeout(context.Background(), s.apiTimeout)
+	// Ensure that timeout is configured.
+	ctx, cancel := context.WithTimeout(ctx, defaultAPITimeout)
 	defer cancel()
 
-	resp, err := s.apiClient.GetEnvironment(ctx, &pipedservice.GetEnvironmentRequest{
-		Id: id,
-	})
-	if err != nil {
-		s.logger.Warn("unable to get environment from control plane",
-			zap.String("env", id),
-			zap.Error(err),
-		)
-		return nil, false
-	}
+	// Ensure that only one RPC call is executed for the given key at a time
+	// and the newest data is stored in the cache.
+	data, err, _ := s.callGroup.Do(id, func() (interface{}, error) {
+		req := &pipedservice.GetEnvironmentRequest{
+			Id: id,
+		}
+		resp, err := s.apiClient.GetEnvironment(ctx, req)
+		if err != nil {
+			s.logger.Warn("failed to get environment from control plane",
+				zap.String("env", id),
+				zap.Error(err),
+			)
+			return nil, fmt.Errorf("failed to get environment %s, %w", id, err)
+		}
 
-	if err := s.cache.Put(id, resp.Environment); err != nil {
-		s.logger.Warn("unable to put environment to cache", zap.Error(err))
+		if err := s.cache.Put(id, resp.Environment); err != nil {
+			s.logger.Warn("failed to put environment to cache", zap.Error(err))
+		}
+		return resp.Environment, nil
+	})
+
+	if err != nil {
+		return nil, err
 	}
-	return resp.Environment, true
+	return data.(*model.Environment), nil
 }

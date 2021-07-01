@@ -44,15 +44,15 @@ func (t *Trigger) triggerDeployment(
 		if err != nil {
 			return
 		}
-		var envName string
-		if env, ok := t.environmentLister.Get(deployment.EnvId); ok {
-			envName = env.Name
+		env, err := t.environmentLister.Get(ctx, deployment.EnvId)
+		if err != nil {
+			return
 		}
 		t.notifier.Notify(model.NotificationEvent{
 			Type: model.NotificationEventType_EVENT_DEPLOYMENT_TRIGGERED,
 			Metadata: &model.NotificationEventDeploymentTriggered{
 				Deployment: deployment,
-				EnvName:    envName,
+				EnvName:    env.Name,
 			},
 		})
 	}()
