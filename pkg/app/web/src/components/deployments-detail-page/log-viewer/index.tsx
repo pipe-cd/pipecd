@@ -10,7 +10,7 @@ import clsx from "clsx";
 import { FC, memo, useCallback, useState } from "react";
 import Draggable from "react-draggable";
 import { APP_HEADER_HEIGHT } from "~/components/header";
-import { useAppDispatch, useAppSelector } from "~/hooks/redux";
+import { useAppDispatch, useShallowEqualSelector } from "~/hooks/redux";
 import { clearActiveStage } from "~/modules/active-stage";
 import { isStageRunning, selectById, Stage } from "~/modules/deployments";
 import { selectStageLogById, StageLog } from "~/modules/stage-logs";
@@ -20,7 +20,7 @@ const INITIAL_HEIGHT = 400;
 const TOOLBAR_HEIGHT = 48;
 
 function useActiveStageLog(): [Stage | null, StageLog | null] {
-  return useAppSelector<[Stage | null, StageLog | null]>((state) => {
+  return useShallowEqualSelector<[Stage | null, StageLog | null]>((state) => {
     if (!state.activeStage) {
       return [null, null];
     }

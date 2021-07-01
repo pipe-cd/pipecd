@@ -1,7 +1,6 @@
 import { createAsyncThunk, createSlice } from "@reduxjs/toolkit";
 import { Role } from "pipe/pkg/app/web/model/role_pb";
 import { getMe } from "~/api/me";
-import { useAppSelector } from "~/hooks/redux";
 
 interface Me {
   subject: string;
@@ -40,8 +39,5 @@ export const selectProjectName = (state: { me: MeState }): string => {
 
   return "";
 };
-
-export const useMe = (): MeState =>
-  useAppSelector<MeState>((state) => state.me);
 
 export { Role } from "pipe/pkg/app/web/model/role_pb";

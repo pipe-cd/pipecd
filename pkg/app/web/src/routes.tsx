@@ -1,6 +1,6 @@
 import loadable from "@loadable/component";
 import { EntityId } from "@reduxjs/toolkit";
-import { FC, memo, useEffect } from "react";
+import { FC, useEffect } from "react";
 import { Redirect, Route, Switch } from "react-router-dom";
 import { ApplicationIndexPage } from "~/components/applications-page";
 import { DeploymentIndexPage } from "~/components/deployments-page";
@@ -22,7 +22,6 @@ import {
   selectIds as selectCommandIds,
 } from "~/modules/commands";
 import { fetchEnvironments } from "~/modules/environments";
-import { useMe } from "~/modules/me";
 import { fetchPipeds } from "~/modules/pipeds";
 
 const SettingsIndexPage = loadable(
@@ -79,9 +78,9 @@ const useCommandsStatusChecking = (): void => {
   );
 };
 
-export const Routes: FC = memo(function Routes() {
+export const Routes: FC = () => {
   const dispatch = useAppDispatch();
-  const me = useMe();
+  const me = useAppSelector((state) => state.me);
   useEffect(() => {
     if (me?.isLogin) {
       dispatch(fetchEnvironments());
@@ -154,4 +153,4 @@ export const Routes: FC = memo(function Routes() {
       <Toasts />
     </>
   );
-});
+};

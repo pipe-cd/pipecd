@@ -11,10 +11,15 @@ import { Add } from "@material-ui/icons";
 import CloseIcon from "@material-ui/icons/Close";
 import FilterIcon from "@material-ui/icons/FilterList";
 import RefreshIcon from "@material-ui/icons/Refresh";
-import { FC, memo, useCallback, useEffect, useState } from "react";
+import { FC, useCallback, useEffect, useState } from "react";
 import { useHistory } from "react-router-dom";
 import { PAGE_PATH_APPLICATIONS } from "~/constants/path";
-import { UI_TEXT_FILTER, UI_TEXT_HIDE_FILTER } from "~/constants/ui-text";
+import {
+  UI_TEXT_ADD,
+  UI_TEXT_FILTER,
+  UI_TEXT_HIDE_FILTER,
+  UI_TEXT_REFRESH,
+} from "~/constants/ui-text";
 import { useAppDispatch, useAppSelector } from "~/hooks/redux";
 import { fetchApplicationCount } from "~/modules/application-counts";
 import { ApplicationKind, fetchApplications } from "~/modules/applications";
@@ -47,20 +52,23 @@ const useStyles = makeStyles((theme) => ({
   },
 }));
 
-export const ApplicationIndexPage: FC = memo(function ApplicationIndexPage() {
+export const ApplicationIndexPage: FC = () => {
   const classes = useStyles();
   const dispatch = useAppDispatch();
   const history = useHistory();
   const filterOptions = useSearchParams();
   const [openAddForm, setOpenAddForm] = useState(false);
   const [openFilter, setOpenFilter] = useState(true);
-  const [isLoading, isAdding] = useAppSelector<[boolean, boolean]>((state) => [
-    state.applications.loading,
-    state.applications.adding,
-  ]);
+  const isAdding = useAppSelector<boolean>(
+    (state) => state.applications.adding
+  );
+  const isLoading = useAppSelector<boolean>(
+    (state) => state.applications.loading
+  );
   const addedApplicationId = useAppSelector<string | null>(
     (state) => state.deploymentConfigs.targetApplicationId
   );
+
   const currentPage =
     typeof filterOptions.page === "string"
       ? parseInt(filterOptions.page, 10)
@@ -122,7 +130,7 @@ export const ApplicationIndexPage: FC = memo(function ApplicationIndexPage() {
           startIcon={<Add />}
           onClick={() => setOpenAddForm(true)}
         >
-          ADD
+          {UI_TEXT_ADD}
         </Button>
         <div className={classes.toolbarSpacer} />
         <Button
@@ -131,7 +139,7 @@ export const ApplicationIndexPage: FC = memo(function ApplicationIndexPage() {
           onClick={fetchApplicationsWithOptions}
           disabled={isLoading}
         >
-          {"REFRESH"}
+          {UI_TEXT_REFRESH}
           {isLoading && (
             <CircularProgress size={24} className={classes.buttonProgress} />
           )}
@@ -184,4 +192,4 @@ export const ApplicationIndexPage: FC = memo(function ApplicationIndexPage() {
       </Drawer>
     </>
   );
-});
+};

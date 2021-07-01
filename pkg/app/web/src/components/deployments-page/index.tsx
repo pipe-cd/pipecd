@@ -12,7 +12,7 @@ import CloseIcon from "@material-ui/icons/Close";
 import FilterIcon from "@material-ui/icons/FilterList";
 import RefreshIcon from "@material-ui/icons/Refresh";
 import dayjs from "dayjs";
-import { FC, memo, useCallback, useEffect, useRef, useState } from "react";
+import { FC, useCallback, useEffect, useRef, useState } from "react";
 import { useInView } from "react-intersection-observer";
 import { useHistory } from "react-router-dom";
 import { PAGE_PATH_DEPLOYMENTS } from "~/constants/path";
@@ -21,7 +21,11 @@ import {
   UI_TEXT_HIDE_FILTER,
   UI_TEXT_REFRESH,
 } from "~/constants/ui-text";
-import { useAppDispatch, useAppSelector } from "~/hooks/redux";
+import {
+  useAppDispatch,
+  useAppSelector,
+  useShallowEqualSelector,
+} from "~/hooks/redux";
 import { fetchApplications } from "~/modules/applications";
 import {
   Deployment,
@@ -32,7 +36,6 @@ import {
   selectIds as selectDeploymentIds,
 } from "~/modules/deployments";
 import { useStyles as useButtonStyles } from "~/styles/button";
-import { LoadingStatus } from "~/types/module";
 import { stringifySearchParams, useSearchParams } from "~/utils/search-params";
 import { DeploymentFilter } from "./deployment-filter";
 import { DeploymentItem } from "./deployment-item";
@@ -60,20 +63,12 @@ function filterUndefined<TValue>(value: TValue | undefined): value is TValue {
   return value !== undefined;
 }
 
-const useGroupedDeployments = (): [
-  LoadingStatus,
-  boolean,
-  Record<string, Deployment.AsObject[]>
-] => {
-  const [status, hasMore, deployments] = useAppSelector<
-    [LoadingStatus, boolean, Deployment.AsObject[]]
-  >((state) => [
-    state.deployments.status,
-    state.deployments.hasMore,
+const useGroupedDeployments = (): Record<string, Deployment.AsObject[]> => {
+  const deployments = useShallowEqualSelector<Deployment.AsObject[]>((state) =>
     selectDeploymentIds(state.deployments)
       .map((id) => selectDeploymentById(state.deployments, id))
-      .filter(filterUndefined),
-  ]);
+      .filter(filterUndefined)
+  );
 
   const result: Record<string, Deployment.AsObject[]> = {};
 
@@ -85,16 +80,18 @@ const useGroupedDeployments = (): [
     result[dateStr].push(deployment);
   });
 
-  return [status, hasMore, result];
+  return result;
 };
 
-export const DeploymentIndexPage: FC = memo(function DeploymentIndexPage() {
+export const DeploymentIndexPage: FC = () => {
   const classes = useStyles();
   const buttonClasses = useButtonStyles();
   const history = useHistory();
   const dispatch = useAppDispatch();
   const listRef = useRef(null);
-  const [status, hasMore, groupedDeployments] = useGroupedDeployments();
+  const status = useAppSelector((state) => state.deployments.status);
+  const hasMore = useAppSelector((state) => state.deployments.hasMore);
+  const groupedDeployments = useGroupedDeployments();
   const filterOptions = useSearchParams();
   const [openFilter, setOpenFilter] = useState(true);
   const [ref, inView] = useInView({
@@ -203,4 +200,4 @@ export const DeploymentIndexPage: FC = memo(function DeploymentIndexPage() {
       </Box>
     </Box>
   );
-});
+};

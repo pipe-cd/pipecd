@@ -168,6 +168,7 @@ export const ApplicationForm: FC<ApplicationFormProps> = memo(
     handleChange,
     isSubmitting,
     isValid,
+    dirty,
     setFieldValue,
     setValues,
     onClose,
@@ -332,7 +333,7 @@ export const ApplicationForm: FC<ApplicationFormProps> = memo(
           <Button
             color="primary"
             type="submit"
-            disabled={isValid === false || isSubmitting}
+            disabled={isValid === false || isSubmitting || dirty === false}
           >
             {UI_TEXT_SAVE}
             {isSubmitting && (

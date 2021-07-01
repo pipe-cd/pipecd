@@ -12,7 +12,7 @@ import { FC, memo, useState } from "react";
 import { useCookies } from "react-cookie";
 import { Link, Redirect, useHistory, useParams } from "react-router-dom";
 import { PAGE_PATH_APPLICATIONS, PAGE_PATH_LOGIN } from "~/constants/path";
-import { useMe } from "~/modules/me";
+import { useAppSelector } from "~/hooks/redux";
 import { LoginForm } from "./login-form";
 
 const CONTENT_WIDTH = 500;
@@ -51,7 +51,7 @@ const useStyles = makeStyles((theme) => ({
 
 export const LoginPage: FC = memo(function LoginPage() {
   const classes = useStyles();
-  const me = useMe();
+  const me = useAppSelector((state) => state.me);
   const [name, setName] = useState<string>("");
   const [cookies, , removeCookie] = useCookies(["error"]);
   const { projectName } = useParams<{ projectName?: string }>();

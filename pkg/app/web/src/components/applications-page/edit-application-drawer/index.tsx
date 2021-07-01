@@ -44,7 +44,6 @@ export const EditApplicationDrawer: FC<EditApplicationDrawerProps> = memo(
             cloudProvider: app.cloudProvider,
           }
         : emptyFormValues,
-      validateOnMount: true,
       validationSchema,
       enableReinitialize: true,
       async onSubmit(values) {
