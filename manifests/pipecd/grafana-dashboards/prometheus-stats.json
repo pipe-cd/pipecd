@@ -45,12 +45,8 @@
             "mode": "absolute",
             "steps": [
               {
-                "color": "green",
+                "color": "rgba(255, 255, 255, 0.79)",
                 "value": null
-              },
-              {
-                "color": "red",
-                "value": 80
               }
             ]
           }
@@ -105,7 +101,7 @@
             "mode": "absolute",
             "steps": [
               {
-                "color": "green",
+                "color": "rgba(255, 255, 255, 0.82)",
                 "value": null
               }
             ]
@@ -587,5 +583,5 @@
   "timezone": "",
   "title": "Prometheus Stats",
   "uid": "7RpHmaz7k",
-  "version": 10
+  "version": 12
 }
