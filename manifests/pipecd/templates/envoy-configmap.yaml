@@ -8,7 +8,6 @@ metadata:
 data:
   envoy-config.yaml: |-
     admin:
-      access_log_path: /dev/stdout
       address:
         socket_address:
           address: 0.0.0.0
@@ -23,33 +22,32 @@ data:
             port_value: 9090
         filter_chains:
         - filters:
-          - name: envoy.http_connection_manager
-            config:
-              access_log:
-                name: envoy.file_access_log
-                config:
-                  path: /dev/stdout
-                filter:
-                  not_health_check_filter: {}
-              codec_type: auto
-              idle_timeout: 600s
+          - name: envoy.filters.network.http_connection_manager
+            typed_config:
+              "@type": type.googleapis.com/envoy.extensions.filters.network.http_connection_manager.v3.HttpConnectionManager
+              codec_type: AUTO
               stat_prefix: ingress_http
+              access_log:
+              - name: envoy.access_loggers.stdout
+                typed_config:
+                  "@type": type.googleapis.com/envoy.extensions.access_loggers.stream.v3.StdoutAccessLog
               http_filters:
-              - name: envoy.grpc_web
+              - name: envoy.filters.http.grpc_web
 {{- if .Values.cors.enabled }}
-              - name: envoy.cors
+              - name: envoy.filters.http.cors
 {{- end }}
-              - name: envoy.router
+              - name: envoy.filters.http.router
               route_config:
+                name: local_route
                 virtual_hosts:
                 - name: envoy
                   domains:
                     - '*'
 {{- if .Values.cors.enabled }}
                   cors:
-                    allow_origin:
+                    allow_origin_string_match:
                     {{- range .Values.cors.allowOrigins }}
-                      - {{ . }}
+                      - extract: {{ . }}
                     {{- end }}
                     allow_methods: GET, PUT, DELETE, POST, OPTIONS
                     allow_headers: keep-alive,user-agent,cache-control,content-type,content-transfer-encoding,custom-header-1,x-accept-content-transfer-encoding,x-accept-response-streaming,x-user-agent,x-grpc-web,grpc-timeout,authorization
@@ -78,21 +76,24 @@ data:
                       route:
                         cluster: server-http
 {{- if .Values.gateway.internalTLS.enabled }}
-          tls_context:
-            common_tls_context:
-              tls_certificates:
-              - certificate_chain:
-                  filename: {{ .Values.secret.mountPath }}/{{ .Values.secret.internalTLSCert.fileName }}
-                private_key:
-                  filename: {{ .Values.secret.mountPath }}/{{ .Values.secret.internalTLSKey.fileName }}
-              alpn_protocols: h2
+          trasport_socket:
+            name: envoy.transport_socket.tls
+            typed_config:
+              "@type": type.googleapis.com/envoy.extensions.transport_sockets.tls.v3.DownstreamTlsContext
+              common_tls_context:
+                tls_certificates:
+                - certificate_chain:
+                    filename: {{ .Values.secret.mountPath }}/{{ .Values.secret.internalTLSCert.fileName }}
+                  private_key:
+                    filename: {{ .Values.secret.mountPath }}/{{ .Values.secret.internalTLSKey.fileName }}
+                alpn_protocols: h2
 {{- end }}
       clusters:
       - name: server-piped-api
         http2_protocol_options: {}
         connect_timeout: 0.25s
-        type: strict_dns
-        lb_policy: round_robin
+        type: STRICT_DNS
+        lb_policy: ROUND_ROBIN
         load_assignment:
           cluster_name: server-piped-api
           endpoints:
@@ -105,8 +106,8 @@ data:
       - name: server-web-api
         http2_protocol_options: {}
         connect_timeout: 0.25s
-        type: strict_dns
-        lb_policy: round_robin
+        type: STRICT_DNS
+        lb_policy: ROUND_ROBIN
         load_assignment:
           cluster_name: server-web-api
           endpoints:
@@ -119,8 +120,8 @@ data:
       - name: server-api
         http2_protocol_options: {}
         connect_timeout: 0.25s
-        type: strict_dns
-        lb_policy: round_robin
+        type: STRICT_DNS
+        lb_policy: ROUND_ROBIN
         load_assignment:
           cluster_name: server-api
           endpoints:
@@ -131,10 +132,9 @@ data:
                     address: {{ include "pipecd.fullname" . }}-server
                     port_value: 9083
       - name: server-http
-        #http2_protocol_options: {}
         connect_timeout: 0.25s
-        type: strict_dns
-        lb_policy: round_robin
+        type: STRICT_DNS
+        lb_policy: ROUND_ROBIN
         load_assignment:
           cluster_name: server-http
           endpoints:
