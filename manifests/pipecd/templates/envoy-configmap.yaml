@@ -47,7 +47,7 @@ data:
                   cors:
                     allow_origin_string_match:
                     {{- range .Values.cors.allowOrigins }}
-                      - extract: {{ . }}
+                      - exact: {{ . }}
                     {{- end }}
                     allow_methods: GET, PUT, DELETE, POST, OPTIONS
                     allow_headers: keep-alive,user-agent,cache-control,content-type,content-transfer-encoding,custom-header-1,x-accept-content-transfer-encoding,x-accept-response-streaming,x-user-agent,x-grpc-web,grpc-timeout,authorization
