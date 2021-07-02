@@ -49,9 +49,10 @@ type Input struct {
 }
 
 type Output struct {
-	Version string
-	Stages  []*model.PipelineStage
-	Summary string
+	Version      string
+	SyncStrategy model.SyncStrategy
+	Summary      string
+	Stages       []*model.PipelineStage
 }
 
 // MakeInitialStageMetadata makes the initial metadata for the given state configuration.

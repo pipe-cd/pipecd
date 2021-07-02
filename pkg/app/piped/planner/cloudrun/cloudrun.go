@@ -66,6 +66,7 @@ func (p *Planner) Plan(ctx context.Context, in planner.Input) (out planner.Outpu
 	// we rely on the user's decision.
 	switch in.Deployment.Trigger.SyncStrategy {
 	case model.SyncStrategy_QUICK_SYNC:
+		out.SyncStrategy = model.SyncStrategy_QUICK_SYNC
 		out.Stages = buildQuickSyncPipeline(cfg.Input.AutoRollback, time.Now())
 		out.Summary = fmt.Sprintf("Quick sync to deploy image %s and configure all traffic to it (forced via web)", out.Version)
 		return
@@ -74,6 +75,7 @@ func (p *Planner) Plan(ctx context.Context, in planner.Input) (out planner.Outpu
 			err = fmt.Errorf("unable to force sync with pipeline because no pipeline was specified")
 			return
 		}
+		out.SyncStrategy = model.SyncStrategy_PIPELINE
 		out.Stages = buildProgressivePipeline(cfg.Pipeline, cfg.Input.AutoRollback, time.Now())
 		out.Summary = fmt.Sprintf("Sync with pipeline to deploy image %s (forced via web)", out.Version)
 		return
@@ -82,6 +84,7 @@ func (p *Planner) Plan(ctx context.Context, in planner.Input) (out planner.Outpu
 	// This is the first time to deploy this application or it was unable to retrieve that value.
 	// We just do the quick sync.
 	if in.MostRecentSuccessfulCommitHash == "" {
+		out.SyncStrategy = model.SyncStrategy_QUICK_SYNC
 		out.Stages = buildQuickSyncPipeline(cfg.Input.AutoRollback, time.Now())
 		out.Summary = fmt.Sprintf("Quick sync to deploy image %s and configure all traffic to it (it seems this is the first deployment)", out.Version)
 		return
@@ -89,6 +92,7 @@ func (p *Planner) Plan(ctx context.Context, in planner.Input) (out planner.Outpu
 
 	// When no pipeline was configured, do the quick sync.
 	if cfg.Pipeline == nil || len(cfg.Pipeline.Stages) == 0 {
+		out.SyncStrategy = model.SyncStrategy_QUICK_SYNC
 		out.Stages = buildQuickSyncPipeline(cfg.Input.AutoRollback, time.Now())
 		out.Summary = fmt.Sprintf("Quick sync to deploy image %s and configure all traffic to it (pipeline was not configured)", out.Version)
 		return
@@ -98,12 +102,14 @@ func (p *Planner) Plan(ctx context.Context, in planner.Input) (out planner.Outpu
 	ds, err = in.RunningDSP.Get(ctx, ioutil.Discard)
 	if err == nil {
 		if lastVersion, e := p.determineVersion(ds.AppDir, cfg.Input.ServiceManifestFile); e == nil {
+			out.SyncStrategy = model.SyncStrategy_PIPELINE
 			out.Stages = buildProgressivePipeline(cfg.Pipeline, cfg.Input.AutoRollback, time.Now())
 			out.Summary = fmt.Sprintf("Sync with pipeline to update image from %s to %s", lastVersion, out.Version)
 			return
 		}
 	}
 
+	out.SyncStrategy = model.SyncStrategy_PIPELINE
 	out.Stages = buildProgressivePipeline(cfg.Pipeline, cfg.Input.AutoRollback, time.Now())
 	out.Summary = "Sync with the specified pipeline"
 	return
