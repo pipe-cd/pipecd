@@ -341,8 +341,9 @@ func (p *piped) run(ctx context.Context, t cli.Telemetry) (runErr error) {
 	}
 
 	// Start running deployment trigger.
+	var lastTriggeredCommitGetter trigger.LastTriggeredCommitGetter
 	{
-		t := trigger.NewTrigger(
+		tr, err := trigger.NewTrigger(
 			apiClient,
 			gitClient,
 			applicationLister,
@@ -353,30 +354,38 @@ func (p *piped) run(ctx context.Context, t cli.Telemetry) (runErr error) {
 			p.gracePeriod,
 			t.Logger,
 		)
+		if err != nil {
+			t.Logger.Error("failed to initialize trigger", zap.Error(err))
+			return err
+		}
+		lastTriggeredCommitGetter = tr.GetLastTriggeredCommitGetter()
+
 		group.Go(func() error {
-			return t.Run(ctx)
+			return tr.Run(ctx)
 		})
 	}
 
+	// Start running event watcher.
 	{
-		// Start running event watcher.
-		t := eventwatcher.NewWatcher(
+		w := eventwatcher.NewWatcher(
 			cfg,
 			eventGetter,
 			gitClient,
 			t.Logger,
 		)
 		group.Go(func() error {
-			return t.Run(ctx)
+			return w.Run(ctx)
 		})
 	}
 
+	// Start running planpreview handler.
 	if p.enablePlanPreview {
-		// Start running planpreview handler.
 		h := planpreview.NewHandler(
 			gitClient,
 			commandLister,
 			applicationLister,
+			environmentStore,
+			lastTriggeredCommitGetter,
 			cfg,
 			planpreview.WithLogger(t.Logger),
 		)

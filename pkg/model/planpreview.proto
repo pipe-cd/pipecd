@@ -45,7 +45,7 @@ message ApplicationPlanPreviewResult {
     string application_directory = 5 [(validate.rules).string.min_len = 1];
 
     string env_id = 6 [(validate.rules).string.min_len = 1];
-    string env_name = 7 [(validate.rules).string.min_len = 1];
+    string env_name = 7;
     // Web URL to the environment page.
     // This is only filled before returning to the client.
     string env_url = 8;
@@ -54,8 +54,8 @@ message ApplicationPlanPreviewResult {
     string project_id = 10 [(validate.rules).string.min_len = 1];
 
     // Target commit information.
-    string target_branch = 20 [(validate.rules).string.min_len = 1];
-    string target_head_commit = 21 [(validate.rules).string.min_len = 1];
+    string head_branch = 20 [(validate.rules).string.min_len = 1];
+    string head_commit = 21 [(validate.rules).string.min_len = 1];
 
     // Planpreview result.
     SyncStrategy sync_strategy = 30;

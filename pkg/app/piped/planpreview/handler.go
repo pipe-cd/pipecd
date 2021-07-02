@@ -82,6 +82,10 @@ type applicationLister interface {
 	List() []*model.Application
 }
 
+type environmentGetter interface {
+	Get(ctx context.Context, id string) (*model.Environment, error)
+}
+
 type commandLister interface {
 	ListBuildPlanPreviewCommands() []model.ReportableCommand
 }
@@ -98,7 +102,7 @@ type Handler struct {
 	logger         *zap.Logger
 }
 
-func NewHandler(gc gitClient, cl commandLister, al applicationLister, cfg *config.PipedSpec, opts ...Option) *Handler {
+func NewHandler(gc gitClient, cl commandLister, al applicationLister, eg environmentGetter, cg lastTriggeredCommitGetter, cfg *config.PipedSpec, opts ...Option) *Handler {
 	opt := &options{
 		workerNum:              defaultWorkerNum,
 		commandQueueBufferSize: defaultCommandQueueBufferSize,
@@ -118,7 +122,7 @@ func NewHandler(gc gitClient, cl commandLister, al applicationLister, cfg *confi
 		logger:        opt.logger.Named("planpreview-handler"),
 	}
 	h.builderFactory = func() Builder {
-		return newBuilder(gc, al, cfg, h.logger)
+		return newBuilder(gc, al, eg, cg, cfg, h.logger)
 	}
 
 	return h
@@ -197,6 +201,7 @@ func (h *Handler) enqueueNewCommands(ctx context.Context) {
 func (h *Handler) handleCommand(ctx context.Context, cmd model.ReportableCommand) {
 	result := &model.PlanPreviewCommandResult{
 		CommandId: cmd.Id,
+		PipedId:   cmd.PipedId,
 	}
 
 	reportError := func(err error) {
