@@ -13,7 +13,7 @@ ingress:
 # Workloads.
 gateway:
   replicasCount: 1
-  imageTag: v1.10.0
+  imageTag: v1.18.3
   resources: {}
   internalTLS:
     enabled: false
