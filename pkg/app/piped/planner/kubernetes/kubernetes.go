@@ -101,6 +101,7 @@ func (p *Planner) Plan(ctx context.Context, in planner.Input) (out planner.Outpu
 	// we rely on the user's decision.
 	switch in.Deployment.Trigger.SyncStrategy {
 	case model.SyncStrategy_QUICK_SYNC:
+		out.SyncStrategy = model.SyncStrategy_QUICK_SYNC
 		out.Stages = buildQuickSyncPipeline(cfg.Input.AutoRollback, time.Now())
 		out.Summary = "Quick sync by applying all manifests (forced via web)"
 		return
@@ -109,6 +110,7 @@ func (p *Planner) Plan(ctx context.Context, in planner.Input) (out planner.Outpu
 			err = fmt.Errorf("unable to force sync with pipeline because no pipeline was specified")
 			return
 		}
+		out.SyncStrategy = model.SyncStrategy_PIPELINE
 		out.Stages = buildProgressivePipeline(cfg.Pipeline, cfg.Input.AutoRollback, time.Now())
 		out.Summary = "Sync with the specified pipeline (forced via web)"
 		return
@@ -117,6 +119,7 @@ func (p *Planner) Plan(ctx context.Context, in planner.Input) (out planner.Outpu
 	// If the progressive pipeline was not configured
 	// we have only one choise to do is applying all manifestt.
 	if cfg.Pipeline == nil || len(cfg.Pipeline.Stages) == 0 {
+		out.SyncStrategy = model.SyncStrategy_QUICK_SYNC
 		out.Stages = buildQuickSyncPipeline(cfg.Input.AutoRollback, time.Now())
 		out.Summary = "Quick sync by applying all manifests (no pipeline was configured)"
 		return
@@ -131,6 +134,7 @@ func (p *Planner) Plan(ctx context.Context, in planner.Input) (out planner.Outpu
 			return out, err
 		}
 		if pipelineRegex.MatchString(in.Deployment.Trigger.Commit.Message) {
+			out.SyncStrategy = model.SyncStrategy_PIPELINE
 			out.Stages = buildProgressivePipeline(cfg.Pipeline, cfg.Input.AutoRollback, time.Now())
 			out.Summary = fmt.Sprintf("Sync progressively because the commit message was matching %q", p)
 			return out, err
@@ -146,6 +150,7 @@ func (p *Planner) Plan(ctx context.Context, in planner.Input) (out planner.Outpu
 			return out, err
 		}
 		if syncRegex.MatchString(in.Deployment.Trigger.Commit.Message) {
+			out.SyncStrategy = model.SyncStrategy_QUICK_SYNC
 			out.Stages = buildQuickSyncPipeline(cfg.Input.AutoRollback, time.Now())
 			out.Summary = fmt.Sprintf("Quick sync by applying all manifests because the commit message was matching %q", s)
 			return out, err
@@ -156,6 +161,7 @@ func (p *Planner) Plan(ctx context.Context, in planner.Input) (out planner.Outpu
 	// or it was unable to retrieve that value.
 	// We just apply all manifests.
 	if in.MostRecentSuccessfulCommitHash == "" {
+		out.SyncStrategy = model.SyncStrategy_QUICK_SYNC
 		out.Stages = buildQuickSyncPipeline(cfg.Input.AutoRollback, time.Now())
 		out.Summary = "Quick sync by applying all manifests because it seems this is the first deployment"
 		return
@@ -185,10 +191,12 @@ func (p *Planner) Plan(ctx context.Context, in planner.Input) (out planner.Outpu
 	out.Summary = desc
 
 	if progressive {
+		out.SyncStrategy = model.SyncStrategy_PIPELINE
 		out.Stages = buildProgressivePipeline(cfg.Pipeline, cfg.Input.AutoRollback, time.Now())
 		return
 	}
 
+	out.SyncStrategy = model.SyncStrategy_QUICK_SYNC
 	out.Stages = buildQuickSyncPipeline(cfg.Input.AutoRollback, time.Now())
 	return
 }
