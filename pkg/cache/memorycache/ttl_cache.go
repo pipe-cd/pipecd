@@ -20,6 +20,7 @@ import (
 	"time"
 
 	"github.com/pipe-cd/pipe/pkg/cache"
+	"github.com/pipe-cd/pipe/pkg/cache/cachemetrics"
 )
 
 type entry struct {
@@ -70,8 +71,16 @@ func (c *TTLCache) evictExpired(t time.Time) {
 func (c *TTLCache) Get(key interface{}) (interface{}, error) {
 	item, ok := c.entries.Load(key)
 	if !ok {
+		cachemetrics.IncGetOperationCounter(
+			cachemetrics.LabelSourceInmemory,
+			cachemetrics.LabelStatusMiss,
+		)
 		return nil, cache.ErrNotFound
 	}
+	cachemetrics.IncGetOperationCounter(
+		cachemetrics.LabelSourceInmemory,
+		cachemetrics.LabelStatusHit,
+	)
 	return item.(*entry).value, nil
 }
 

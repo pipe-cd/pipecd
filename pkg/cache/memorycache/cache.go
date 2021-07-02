@@ -18,6 +18,7 @@ import (
 	"sync"
 
 	"github.com/pipe-cd/pipe/pkg/cache"
+	"github.com/pipe-cd/pipe/pkg/cache/cachemetrics"
 )
 
 type Cache struct {
@@ -31,8 +32,16 @@ func NewCache() *Cache {
 func (c *Cache) Get(key interface{}) (interface{}, error) {
 	item, ok := c.values.Load(key)
 	if !ok {
+		cachemetrics.IncGetOperationCounter(
+			cachemetrics.LabelSourceInmemory,
+			cachemetrics.LabelStatusMiss,
+		)
 		return nil, cache.ErrNotFound
 	}
+	cachemetrics.IncGetOperationCounter(
+		cachemetrics.LabelSourceInmemory,
+		cachemetrics.LabelStatusHit,
+	)
 	return item, nil
 }
 

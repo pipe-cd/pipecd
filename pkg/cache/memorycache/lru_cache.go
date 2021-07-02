@@ -18,6 +18,7 @@ import (
 	lru "github.com/hashicorp/golang-lru"
 
 	"github.com/pipe-cd/pipe/pkg/cache"
+	"github.com/pipe-cd/pipe/pkg/cache/cachemetrics"
 )
 
 type LRUCache struct {
@@ -37,8 +38,16 @@ func NewLRUCache(size int) (*LRUCache, error) {
 func (c *LRUCache) Get(key interface{}) (interface{}, error) {
 	item, ok := c.cache.Get(key)
 	if !ok {
+		cachemetrics.IncGetOperationCounter(
+			cachemetrics.LabelSourceInmemory,
+			cachemetrics.LabelStatusMiss,
+		)
 		return nil, cache.ErrNotFound
 	}
+	cachemetrics.IncGetOperationCounter(
+		cachemetrics.LabelSourceInmemory,
+		cachemetrics.LabelStatusHit,
+	)
 	return item, nil
 }
 
