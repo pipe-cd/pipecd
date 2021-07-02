@@ -24,20 +24,17 @@ func (r *PlanPreviewCommandResult) FillURLs(baseURL string) {
 	}
 }
 
-func MakeApplicationPlanPreviewResult(app Application, env *Environment) *ApplicationPlanPreviewResult {
+func MakeApplicationPlanPreviewResult(app Application, envName string) *ApplicationPlanPreviewResult {
 	r := &ApplicationPlanPreviewResult{
 		ApplicationId:        app.Id,
 		ApplicationName:      app.Name,
 		ApplicationKind:      app.Kind,
 		ApplicationDirectory: app.GitPath.Path,
 		EnvId:                app.EnvId,
-		EnvName:              env.Name,
+		EnvName:              envName,
 		PipedId:              app.PipedId,
 		ProjectId:            app.ProjectId,
 		CreatedAt:            time.Now().Unix(),
-	}
-	if env != nil {
-		r.EnvName = env.Name
 	}
 	return r
 }

@@ -61,8 +61,12 @@ func (d *Determiner) ShouldTrigger(ctx context.Context, app *model.Application) 
 		logger.Error("failed to get last triggered commit", zap.Error(err))
 		return false, err
 	}
+
+	// There is no previous deployment so we don't need to check anymore.
+	// Just do it.
 	if preCommit == "" {
 		logger.Info("no previously triggered deployment was found")
+		return true, nil
 	}
 
 	// Check whether the most recently applied one is the target commit or not.
@@ -70,12 +74,6 @@ func (d *Determiner) ShouldTrigger(ctx context.Context, app *model.Application) 
 	if preCommit == d.targetCommit {
 		logger.Info(fmt.Sprintf("no update to sync for application, hash: %s", d.targetCommit))
 		return false, nil
-	}
-
-	// There is no previous deployment so we don't need to check anymore.
-	// Just do it.
-	if preCommit == "" {
-		return true, nil
 	}
 
 	// List the changed files between those two commits and

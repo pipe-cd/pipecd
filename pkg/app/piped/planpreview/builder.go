@@ -63,7 +63,7 @@ func (b *builder) Build(ctx context.Context, id string, cmd model.Command_BuildP
 		return nil, fmt.Errorf("repository %s was not found in Piped config", cmd.RepositoryId)
 	}
 	if repoCfg.Branch != cmd.BaseBranch {
-		return nil, fmt.Errorf("base branch repository %s was not match, requested %s, expected %s", cmd.RepositoryId, cmd.BaseBranch, repoCfg.Branch)
+		return nil, fmt.Errorf("base branch repository %s was not matched, requested %s, expected %s", cmd.RepositoryId, cmd.BaseBranch, repoCfg.Branch)
 	}
 
 	// List all applications that belong to this Piped
@@ -97,9 +97,12 @@ func (b *builder) Build(ctx context.Context, id string, cmd model.Command_BuildP
 		if err != nil {
 			// We only need the environment name
 			// so the returned error can be ignorable.
-			env, _ := b.environmentGetter.Get(ctx, app.EnvId)
+			var envName string
+			if env, err := b.environmentGetter.Get(ctx, app.EnvId); err == nil {
+				envName = env.Name
+			}
 
-			r := model.MakeApplicationPlanPreviewResult(*app, env)
+			r := model.MakeApplicationPlanPreviewResult(*app, envName)
 			r.Error = fmt.Sprintf("Failed while determining the application should be triggered or not, %v", err)
 			results = append(results, r)
 			continue
@@ -114,9 +117,12 @@ func (b *builder) Build(ctx context.Context, id string, cmd model.Command_BuildP
 	for _, app := range triggerApps {
 		// We only need the environment name
 		// so the returned error can be ignorable.
-		env, _ := b.environmentGetter.Get(ctx, app.EnvId)
+		var envName string
+		if env, err := b.environmentGetter.Get(ctx, app.EnvId); err == nil {
+			envName = env.Name
+		}
 
-		r := model.MakeApplicationPlanPreviewResult(*app, env)
+		r := model.MakeApplicationPlanPreviewResult(*app, envName)
 		results = append(results, r)
 
 		strategy, changes, err := b.plan(repo, app, cmd)
