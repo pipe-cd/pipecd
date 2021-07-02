@@ -76,7 +76,7 @@ data:
                       route:
                         cluster: server-http
 {{- if .Values.gateway.internalTLS.enabled }}
-          trasport_socket:
+          transport_socket:
             name: envoy.transport_socket.tls
             typed_config:
               "@type": type.googleapis.com/envoy.extensions.transport_sockets.tls.v3.DownstreamTlsContext
