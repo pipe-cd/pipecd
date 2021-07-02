@@ -304,6 +304,11 @@ prometheus:
             - source_labels: [__meta_kubernetes_pod_node_name]
               action: replace
               target_label: kubernetes_node
+          metric_relabel_configs:
+            - source_labels: [pod]
+              target_label: service
+              regex: (.+)-[0-9a-zA-Z]+(-[0-9a-zA-Z]+)$
+              replacement: $1
 
         # Scrape config for pods that has "prometheus.io/scrape: true"
         - job_name: kubernetes-pods
