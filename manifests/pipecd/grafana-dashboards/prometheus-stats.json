@@ -328,7 +328,7 @@
       "timeFrom": null,
       "timeRegions": [],
       "timeShift": null,
-      "title": "Ingested samples [rate-5m]",
+      "title": "Ingested Samples/sec [rate-5m]",
       "tooltip": {
         "shared": true,
         "sort": 0,
@@ -599,5 +599,5 @@
   "timezone": "",
   "title": "Prometheus Stats",
   "uid": "7RpHmaz7k",
-  "version": 14
+  "version": 15
 }

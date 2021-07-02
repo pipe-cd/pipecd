@@ -17,7 +17,7 @@
   "gnetId": null,
   "graphTooltip": 0,
   "id": 3,
-  "iteration": 1625131987042,
+  "iteration": 1625185632623,
   "links": [],
   "panels": [
     {
@@ -38,6 +38,7 @@
       "dashLength": 10,
       "dashes": false,
       "datasource": "Prometheus",
+      "description": "CPU usage per Pod",
       "fieldConfig": {
         "defaults": {},
         "overrides": []
@@ -79,7 +80,7 @@
       "targets": [
         {
           "exemplar": true,
-          "expr": "sum by(service) (\n  rate(container_cpu_usage_seconds_total{\n    service=\"$service\"\n  }[5m])\n)",
+          "expr": "sum by(service) (\n  rate(container_cpu_usage_seconds_total{\n    service=\"$service\"\n  }[5m]) * 100\n)",
           "interval": "",
           "legendFormat": "",
           "queryType": "randomWalk",
@@ -90,7 +91,7 @@
       "timeFrom": null,
       "timeRegions": [],
       "timeShift": null,
-      "title": "CPU Usage Rate per Pod [rate-5m]",
+      "title": "CPU Usage of $service Pod [rate-5m]",
       "tooltip": {
         "shared": true,
         "sort": 0,
@@ -106,7 +107,7 @@
       },
       "yaxes": [
         {
-          "format": "short",
+          "format": "percent",
           "label": null,
           "logBase": 1,
           "max": null,
@@ -185,7 +186,7 @@
       "timeFrom": null,
       "timeRegions": [],
       "timeShift": null,
-      "title": "Memory Usage per Pod",
+      "title": "Memory Usage of $service Pod",
       "tooltip": {
         "shared": true,
         "sort": 0,
@@ -519,7 +520,7 @@
       "targets": [
         {
           "exemplar": true,
-          "expr": "avg by(kubernetes_node) (rate(node_cpu_seconds_total{mode!=\"idle\",mode!=\"iowait\"}[5m]))",
+          "expr": "sum by (kubernetes_node) (rate(node_cpu_seconds_total{mode!=\"idle\",mode!=\"iowait\"}[5m])) * 100",
           "interval": "",
           "legendFormat": "",
           "queryType": "randomWalk",
@@ -530,7 +531,7 @@
       "timeFrom": null,
       "timeRegions": [],
       "timeShift": null,
-      "title": "CPU Usage Rate per Node [rate-5m]",
+      "title": "Node - CPU Usage Rate [rate-5m]",
       "tooltip": {
         "shared": true,
         "sort": 0,
@@ -546,7 +547,7 @@
       },
       "yaxes": [
         {
-          "format": "short",
+          "format": "percent",
           "label": null,
           "logBase": 1,
           "max": null,
@@ -625,7 +626,7 @@
       "timeFrom": null,
       "timeRegions": [],
       "timeShift": null,
-      "title": "Memory Usage per Node",
+      "title": "Node - Memory Usage",
       "tooltip": {
         "shared": true,
         "sort": 0,
@@ -751,7 +752,7 @@
       "timeFrom": null,
       "timeRegions": [],
       "timeShift": null,
-      "title": "Heap Stats",
+      "title": "Heap Stats of $service",
       "tooltip": {
         "shared": true,
         "sort": 0,
@@ -848,7 +849,7 @@
       "timeFrom": null,
       "timeRegions": [],
       "timeShift": null,
-      "title": "Number of Goroutines per Service",
+      "title": "Number of Goroutines of $service",
       "tooltip": {
         "shared": true,
         "sort": 0,
@@ -999,5 +1000,5 @@
   "timezone": "",
   "title": "PipeCD Resource Stats",
   "uid": "4MJR80z7z",
-  "version": 14
+  "version": 16
 }
