@@ -22,6 +22,7 @@ go_library(
         "//pkg/app/piped/executor/registry:go_default_library",
         "//pkg/app/piped/livestatereporter:go_default_library",
         "//pkg/app/piped/livestatestore:go_default_library",
+        "//pkg/app/piped/livestatestore/kubernetes/kubernetesmetrics:go_default_library",
         "//pkg/app/piped/notifier:go_default_library",
         "//pkg/app/piped/planner/registry:go_default_library",
         "//pkg/app/piped/planpreview:go_default_library",

@@ -49,6 +49,7 @@ import (
 	"github.com/pipe-cd/pipe/pkg/app/piped/eventwatcher"
 	"github.com/pipe-cd/pipe/pkg/app/piped/livestatereporter"
 	"github.com/pipe-cd/pipe/pkg/app/piped/livestatestore"
+	k8slivestatestoremetrics "github.com/pipe-cd/pipe/pkg/app/piped/livestatestore/kubernetes/kubernetesmetrics"
 	"github.com/pipe-cd/pipe/pkg/app/piped/notifier"
 	"github.com/pipe-cd/pipe/pkg/app/piped/planpreview"
 	"github.com/pipe-cd/pipe/pkg/app/piped/statsreporter"
@@ -615,4 +616,5 @@ func (p *piped) insertLoginUserToPasswd(ctx context.Context) error {
 func registerMetrics() {
 	r := prometheus.DefaultRegisterer
 	k8scloudprovidermetrics.Register(r)
+	k8slivestatestoremetrics.Register(r)
 }
