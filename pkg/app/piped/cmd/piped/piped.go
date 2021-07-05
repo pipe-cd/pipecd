@@ -43,7 +43,7 @@ import (
 	"github.com/pipe-cd/pipe/pkg/app/piped/apistore/environmentstore"
 	"github.com/pipe-cd/pipe/pkg/app/piped/apistore/eventstore"
 	"github.com/pipe-cd/pipe/pkg/app/piped/chartrepo"
-	"github.com/pipe-cd/pipe/pkg/app/piped/cloudprovider/kubernetes/kubernetesmetrics"
+	k8scloudprovidermetrics "github.com/pipe-cd/pipe/pkg/app/piped/cloudprovider/kubernetes/kubernetesmetrics"
 	"github.com/pipe-cd/pipe/pkg/app/piped/controller"
 	"github.com/pipe-cd/pipe/pkg/app/piped/driftdetector"
 	"github.com/pipe-cd/pipe/pkg/app/piped/eventwatcher"
@@ -614,5 +614,5 @@ func (p *piped) insertLoginUserToPasswd(ctx context.Context) error {
 
 func registerMetrics() {
 	r := prometheus.DefaultRegisterer
-	kubernetesmetrics.Register(r)
+	k8scloudprovidermetrics.Register(r)
 }

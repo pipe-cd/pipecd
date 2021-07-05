@@ -19,10 +19,10 @@ import (
 )
 
 const (
-	metricsLabelTool    = "tool"
-	metricsLabelVersion = "version"
-	metricsLabelCommand = "command"
-	metricsLabelStatus  = "status"
+	toolKey          = "tool"
+	versionKey       = "version"
+	toolCommandKey   = "command"
+	commandOutputKey = "status"
 )
 
 type Tool string
@@ -52,10 +52,10 @@ var (
 			Help: "Number of calls made to run the tool like kubectl, kustomize.",
 		},
 		[]string{
-			metricsLabelTool,
-			metricsLabelVersion,
-			metricsLabelCommand,
-			metricsLabelStatus,
+			toolKey,
+			versionKey,
+			toolCommandKey,
+			commandOutputKey,
 		},
 	)
 )
@@ -66,10 +66,10 @@ func IncKubectlCallsCounter(version string, command ToolCommand, success bool) {
 		status = LabelOutputFailre
 	}
 	toolCallsCounter.With(prometheus.Labels{
-		metricsLabelTool:    string(LabelToolKubectl),
-		metricsLabelVersion: version,
-		metricsLabelCommand: string(command),
-		metricsLabelStatus:  string(status),
+		toolKey:          string(LabelToolKubectl),
+		versionKey:       version,
+		toolCommandKey:   string(command),
+		commandOutputKey: string(status),
 	}).Inc()
 }
 
