@@ -17,7 +17,7 @@
   "gnetId": null,
   "graphTooltip": 0,
   "id": 2,
-  "iteration": 1625464657260,
+  "iteration": 1625475954182,
   "links": [],
   "panels": [
     {
@@ -162,7 +162,7 @@
       "targets": [
         {
           "exemplar": true,
-          "expr": "sum by(envoy_cluster_name) (rate(envoy_cluster_upstream_rq{envoy_response_code=~\"5.*\", job=\"pipecd-gateway\", envoy_cluster_name=\"$api\"}[5m]))\n/\nsum by(envoy_cluster_name) (rate(envoy_cluster_upstream_rq{job=\"pipecd-gateway\", envoy_cluster_name=\"$api\"}[5m]))\n* 100 or on() vector(0)",
+          "expr": "sum by(envoy_cluster_name) (rate(envoy_cluster_upstream_rq_xx{envoy_response_code_class=~\"5\", job=\"pipecd-gateway\", envoy_cluster_name=\"$api\"}[5m]))\n/\nsum by(envoy_cluster_name) (rate(envoy_cluster_upstream_rq_xx{job=\"pipecd-gateway\", envoy_cluster_name=\"$api\"}[5m]))\n* 100",
           "format": "time_series",
           "instant": false,
           "interval": "",
@@ -259,7 +259,7 @@
       "targets": [
         {
           "exemplar": true,
-          "expr": "sum by(envoy_cluster_name) (rate(envoy_cluster_upstream_rq{envoy_response_code=~\"4.*\", job=\"pipecd-gateway\", envoy_cluster_name=\"$api\"}[5m]))\n/\nsum by(envoy_cluster_name) (rate(envoy_cluster_upstream_rq{job=\"pipecd-gateway\", envoy_cluster_name=\"$api\"}[5m]))\n* 100 or on() vector(0)",
+          "expr": "sum by(envoy_cluster_name) (rate(envoy_cluster_upstream_rq_xx{envoy_response_code_class=~\"4\", job=\"pipecd-gateway\", envoy_cluster_name=\"$api\"}[5m]))\n/\nsum by(envoy_cluster_name) (rate(envoy_cluster_upstream_rq_xx{job=\"pipecd-gateway\", envoy_cluster_name=\"$api\"}[5m]))\n* 100 or on() vector(0)",
           "interval": "",
           "legendFormat": "$api",
           "queryType": "randomWalk",
@@ -425,7 +425,7 @@
       "bars": false,
       "dashLength": 10,
       "dashes": false,
-      "datasource": null,
+      "datasource": "Prometheus",
       "description": "Average of request duration by path",
       "fieldConfig": {
         "defaults": {},
@@ -467,6 +467,10 @@
       "steppedLine": false,
       "targets": [
         {
+          "exemplar": true,
+          "expr": "envoy_cluster_upstream_rq_time_sum{envoy_cluster_name=\"$api\"}\n/\nenvoy_cluster_upstream_rq_time_count{envoy_cluster_name=\"$api\"}",
+          "interval": "",
+          "legendFormat": "$api",
           "queryType": "randomWalk",
           "refId": "A"
         }
@@ -491,7 +495,7 @@
       },
       "yaxes": [
         {
-          "format": "short",
+          "format": "ms",
           "label": null,
           "logBase": 1,
           "max": null,
@@ -559,7 +563,7 @@
       "targets": [
         {
           "exemplar": true,
-          "expr": "histogram_quantile(\n  0.99,\n  sum without(instance, job)(rate(envoy_cluster_upstream_rq_body_size_bucket{envoy_cluster_name=\"$api\"}[5m]))\n)",
+          "expr": "histogram_quantile(\n  0.99,\n  sum without(instance, job)(rate(envoy_cluster_upstream_rq_body_size_bucket{envoy_cluster_name=\"$api\"}[5m]))\n) * (1024 * 1024)",
           "interval": "",
           "legendFormat": "0.99",
           "queryType": "randomWalk",
@@ -567,7 +571,7 @@
         },
         {
           "exemplar": true,
-          "expr": "histogram_quantile(\n  0.95,\n  sum without(instance, job)(rate(envoy_cluster_upstream_rq_body_size_bucket{envoy_cluster_name=\"$api\"}[5m]))\n)",
+          "expr": "histogram_quantile(\n  0.95,\n  sum without(instance, job)(rate(envoy_cluster_upstream_rq_body_size_bucket{envoy_cluster_name=\"$api\"}[5m]))\n) * (1024 * 1024)",
           "hide": false,
           "interval": "",
           "legendFormat": "0.99",
@@ -575,7 +579,7 @@
         },
         {
           "exemplar": true,
-          "expr": "histogram_quantile(\n  0.90,\n  sum without(instance, job)(rate(envoy_cluster_upstream_rq_body_size_bucket{envoy_cluster_name=\"$api\"}[5m]))\n)",
+          "expr": "histogram_quantile(\n  0.90,\n  sum without(instance, job)(rate(envoy_cluster_upstream_rq_body_size_bucket{envoy_cluster_name=\"$api\"}[5m]))\n) * (1024 * 1024)",
           "hide": false,
           "interval": "",
           "legendFormat": "0.90",
@@ -602,11 +606,11 @@
       },
       "yaxes": [
         {
-          "format": "short",
+          "format": "decmbytes",
           "label": null,
           "logBase": 1,
           "max": null,
-          "min": null,
+          "min": "0",
           "show": true
         },
         {
@@ -670,7 +674,7 @@
       "targets": [
         {
           "exemplar": true,
-          "expr": "histogram_quantile(\n  0.99,\n  sum without(instance, job)(rate(envoy_cluster_upstream_rs_body_size_bucket{envoy_cluster_name=\"$api\"}[5m]))\n)",
+          "expr": "histogram_quantile(\n  0.99,\n  sum without(instance, job)(rate(envoy_cluster_upstream_rs_body_size_bucket{envoy_cluster_name=\"$api\"}[5m]))\n) * (1024 * 1024)",
           "interval": "",
           "legendFormat": "0.99",
           "queryType": "randomWalk",
@@ -678,7 +682,7 @@
         },
         {
           "exemplar": true,
-          "expr": "histogram_quantile(\n  0.95,\n  sum without(instance, job)(rate(envoy_cluster_upstream_rs_body_size_bucket{envoy_cluster_name=\"$api\"}[5m]))\n)",
+          "expr": "histogram_quantile(\n  0.95,\n  sum without(instance, job)(rate(envoy_cluster_upstream_rs_body_size_bucket{envoy_cluster_name=\"$api\"}[5m]))\n) * (1024 * 1024)",
           "hide": false,
           "interval": "",
           "legendFormat": "0.99",
@@ -686,7 +690,7 @@
         },
         {
           "exemplar": true,
-          "expr": "histogram_quantile(\n  0.90,\n  sum without(instance, job)(rate(envoy_cluster_upstream_rs_body_size_bucket{envoy_cluster_name=\"$api\"}[5m]))\n)",
+          "expr": "histogram_quantile(\n  0.90,\n  sum without(instance, job)(rate(envoy_cluster_upstream_rs_body_size_bucket{envoy_cluster_name=\"$api\"}[5m]))\n) * (1024 * 1024)",
           "hide": false,
           "interval": "",
           "legendFormat": "0.90",
@@ -713,11 +717,11 @@
       },
       "yaxes": [
         {
-          "format": "short",
+          "format": "decmbytes",
           "label": null,
           "logBase": 1,
           "max": null,
-          "min": null,
+          "min": "0",
           "show": true
         },
         {
@@ -745,8 +749,8 @@
         "allValue": null,
         "current": {
           "selected": false,
-          "text": "server-web-api",
-          "value": "server-web-api"
+          "text": "server-piped-api",
+          "value": "server-piped-api"
         },
         "datasource": "Prometheus",
         "definition": "label_values(envoy_cluster_name)",
@@ -782,5 +786,5 @@
   "timezone": "",
   "title": "PipeCD Service Stats",
   "uid": "3jeba3R7z",
-  "version": 38
+  "version": 42
 }

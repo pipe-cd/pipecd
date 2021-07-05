@@ -86,7 +86,7 @@
           "refId": "A"
         }
       ],
-      "title": "Time Series",
+      "title": "Number of samples",
       "type": "stat"
     },
     {
@@ -599,5 +599,5 @@
   "timezone": "",
   "title": "Prometheus Stats",
   "uid": "7RpHmaz7k",
-  "version": 15
+  "version": 16
 }
