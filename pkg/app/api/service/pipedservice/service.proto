@@ -34,7 +34,14 @@ import "pkg/model/event.proto";
 service PipedService {
     // Ping is periodically sent to report its realtime status/stats to control-plane.
     // The received stats will be pushed to the metrics collector.
-    rpc Ping(PingRequest) returns (PingResponse) {}
+    // Note: This service is deprecated, use ReportStat instead.
+    rpc Ping(PingRequest) returns (PingResponse) {
+        option deprecated = true;
+    }
+
+    // ReportStat is periodically sent to report its realtime status/stats to control-plane.
+    // The received stats will be pushed to the metrics collector.
+    rpc ReportStat(ReportStatRequest) returns (ReportStatResponse) {}
 
     // ReportPipedMeta is sent while starting up to report its metadata
     // such as configured cloud providers.
@@ -149,10 +156,18 @@ enum ListOrder {
 }
 
 message PingRequest {
-    pipe.model.PipedStats piped_stats = 1 [(validate.rules).message.required = true];
+    pipe.model.PipedStats piped_stats = 1 [(validate.rules).message.required = true, deprecated = true];
 }
 
 message PingResponse {
+    int64 ping_interval = 1 [deprecated = true];
+}
+
+message ReportStatRequest {
+    bytes piped_stats = 1 [(validate.rules).bytes.min_len = 1];
+}
+
+message ReportStatResponse {
     int64 ping_interval = 1;
 }
 

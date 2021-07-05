@@ -34,6 +34,7 @@ import (
 
 type apiClient interface {
 	Ping(ctx context.Context, req *pipedservice.PingRequest, opts ...grpc.CallOption) (*pipedservice.PingResponse, error)
+	ReportStat(ctx context.Context, req *pipedservice.ReportStatRequest, opts ...grpc.CallOption) (*pipedservice.ReportStatResponse, error)
 }
 
 type Reporter interface {
