@@ -13,22 +13,3 @@
 // limitations under the License.
 
 package statsreporter
-
-import (
-	"os"
-	"testing"
-
-	"github.com/stretchr/testify/assert"
-	"github.com/stretchr/testify/require"
-)
-
-func TestParsePrometheusMetrics(t *testing.T) {
-	f, err := os.Open("testdata/metrics.txt")
-	require.NoError(t, err)
-	defer f.Close()
-
-	metrics, err := parsePrometheusMetrics(f)
-	require.NoError(t, err)
-
-	assert.Equal(t, 30, len(metrics))
-}

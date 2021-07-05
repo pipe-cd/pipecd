@@ -618,6 +618,7 @@ func (p *piped) insertLoginUserToPasswd(ctx context.Context) error {
 
 func registerMetrics(pipedID string) {
 	r := prometheus.DefaultRegisterer
+	// TODO: Add piped version as label.
 	prometheus.WrapRegistererWith(
 		prometheus.Labels{"piped": pipedID},
 		r,
