@@ -182,7 +182,7 @@ func (b *builder) Build(ctx context.Context, id string, cmd model.Command_BuildP
 			summary, err = b.terraformDiff(ctx, app, cmd, &buf)
 		default:
 			// TODO: Calculating planpreview's diff for other application kinds.
-			err = fmt.Errorf("calculating diff for %s application is not implemented yet (coming soon)\n", app.Kind.String())
+			err = fmt.Errorf("%s application is not implemented yet (coming soon)", app.Kind.String())
 		}
 
 		r.PlanSummary = []byte(summary)
