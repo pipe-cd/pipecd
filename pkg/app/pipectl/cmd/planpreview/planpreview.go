@@ -199,13 +199,15 @@ func convert(results []*model.PlanPreviewCommandResult) ReadableResult {
 				out.FailureApplications = append(out.FailureApplications, FailureApplication{
 					ApplicationInfo: appInfo,
 					Reason:          a.Error,
+					PlanDetails:     string(a.PlanDetails),
 				})
 				continue
 			}
 			out.Applications = append(out.Applications, ApplicationResult{
 				ApplicationInfo: appInfo,
 				SyncStrategy:    a.SyncStrategy.String(),
-				Changes:         string(a.Changes),
+				PlanSummary:     string(a.PlanSummary),
+				PlanDetails:     string(a.PlanDetails),
 			})
 		}
 	}
@@ -222,7 +224,8 @@ type ReadableResult struct {
 type ApplicationResult struct {
 	ApplicationInfo
 	SyncStrategy string // QUICK_SYNC, PIPELINE
-	Changes      string
+	PlanSummary  string
+	PlanDetails  string
 }
 
 type FailurePiped struct {
@@ -232,7 +235,8 @@ type FailurePiped struct {
 
 type FailureApplication struct {
 	ApplicationInfo
-	Reason string
+	Reason      string
+	PlanDetails string
 }
 
 type PipedInfo struct {
@@ -267,7 +271,8 @@ func (r ReadableResult) String() string {
 		for i, app := range r.Applications {
 			fmt.Fprintf(&b, "\n%d. app: %s, env: %s, kind: %s\n", i+1, app.ApplicationName, app.EnvName, app.ApplicationKind)
 			fmt.Fprintf(&b, "  sync strategy: %s\n", app.SyncStrategy)
-			fmt.Fprintf(&b, "  changes: %s\n", app.Changes)
+			fmt.Fprintf(&b, "  summary: %s\n", app.PlanSummary)
+			fmt.Fprintf(&b, "  details:\n\n  ---DETAILS_BEGIN---\n%s\n  ---DETAILS_END---\n", app.PlanDetails)
 		}
 	}
 
@@ -280,6 +285,9 @@ func (r ReadableResult) String() string {
 		for i, app := range r.FailureApplications {
 			fmt.Fprintf(&b, "\n%d. app: %s, env: %s, kind: %s\n", i+1, app.ApplicationName, app.EnvName, app.ApplicationKind)
 			fmt.Fprintf(&b, "  reason: %s\n", app.Reason)
+			if len(app.PlanDetails) > 0 {
+				fmt.Fprintf(&b, "  details:\n\n  ---DETAILS_BEGIN---\n%s\n  ---DETAILS_END---\n", app.PlanDetails)
+			}
 		}
 	}
 

@@ -1,0 +1,121 @@
+// Copyright 2021 The PipeCD Authors.
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//     http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+package planpreview
+
+import (
+	"bytes"
+	"context"
+	"fmt"
+	"io"
+
+	terraformprovider "github.com/pipe-cd/pipe/pkg/app/piped/cloudprovider/terraform"
+	"github.com/pipe-cd/pipe/pkg/app/piped/deploysource"
+	"github.com/pipe-cd/pipe/pkg/app/piped/toolregistry"
+	"github.com/pipe-cd/pipe/pkg/config"
+	"github.com/pipe-cd/pipe/pkg/model"
+)
+
+func (b *builder) terraformDiff(
+	ctx context.Context,
+	app *model.Application,
+	cmd model.Command_BuildPlanPreview,
+	buf *bytes.Buffer,
+) (string, error) {
+
+	cp, ok := b.pipedCfg.FindCloudProvider(app.CloudProvider, model.CloudProviderTerraform)
+	if !ok {
+		err := fmt.Errorf("cloud provider %s was not found in Piped config", app.CloudProvider)
+		fmt.Fprintln(buf, err.Error())
+		return "", err
+	}
+	cpCfg := cp.TerraformConfig
+
+	repoCfg := config.PipedRepository{
+		RepoID: b.repoCfg.RepoID,
+		Remote: b.repoCfg.Remote,
+		Branch: cmd.HeadBranch,
+	}
+
+	targetDSP := deploysource.NewProvider(
+		b.workingDir,
+		repoCfg,
+		"target",
+		cmd.HeadCommit,
+		b.gitClient,
+		app.GitPath,
+		b.secretDecrypter,
+	)
+
+	ds, err := targetDSP.Get(ctx, io.Discard)
+	if err != nil {
+		fmt.Fprintf(buf, "failed to prepare deploy source data at the head commit (%v)\n", err)
+		return "", err
+	}
+
+	deployCfg := ds.DeploymentConfig.TerraformDeploymentSpec
+	if deployCfg == nil {
+		err := fmt.Errorf("missing Terraform spec field in deployment configuration")
+		fmt.Fprintln(buf, err.Error())
+		return "", err
+	}
+
+	version := deployCfg.Input.TerraformVersion
+	terraformPath, installed, err := toolregistry.DefaultRegistry().Terraform(ctx, version)
+	if err != nil {
+		fmt.Fprintf(buf, "unable to find the specified terraform version %q (%v)\n", version, err)
+		return "", err
+	}
+	if installed {
+		b.logger.Info(fmt.Sprintf("terraform %q has just been installed to %q because of no pre-installed binary for that version", version, terraformPath))
+	}
+
+	vars := make([]string, 0, len(cpCfg.Vars)+len(deployCfg.Input.Vars))
+	vars = append(vars, cpCfg.Vars...)
+	vars = append(vars, deployCfg.Input.Vars...)
+
+	executor := terraformprovider.NewTerraform(terraformPath, ds.AppDir, vars, deployCfg.Input.VarFiles)
+
+	if err := executor.Init(ctx, buf); err != nil {
+		fmt.Fprintf(buf, "failed while executing terraform init (%v)\n", err)
+		return "", err
+	}
+
+	if ws := deployCfg.Input.Workspace; ws != "" {
+		if err := executor.SelectWorkspace(ctx, ws); err != nil {
+			fmt.Fprintf(buf, "failed to select workspace %q (%v). You might need to create the workspace before using by command %q\n",
+				ws,
+				err,
+				"terraform workspace new "+ws,
+			)
+			return "", err
+		}
+		fmt.Fprintf(buf, "selected workspace %q\n", ws)
+	}
+
+	result, err := executor.Plan(ctx, buf)
+	if err != nil {
+		fmt.Fprintf(buf, "failed while executing terraform plan (%v)\n", err)
+		return "", err
+	}
+
+	if result.NoChanges() {
+		fmt.Fprintln(buf, "No changes were detected")
+		return "No changes were detected", nil
+	}
+
+	summary := fmt.Sprintf("%d to add, %d to change, %d to destroy", result.Adds, result.Changes, result.Destroys)
+	fmt.Fprintln(buf, summary)
+	return summary, nil
+}

@@ -72,21 +72,21 @@ func (p *Planner) Plan(ctx context.Context, in planner.Input) (out planner.Outpu
 	}
 
 	manifestCache := provider.AppManifestsCache{
-		AppID:  in.Deployment.ApplicationId,
+		AppID:  in.ApplicationID,
 		Cache:  in.AppManifestsCache,
 		Logger: in.Logger,
 	}
 
 	// Load previous deployed manifests and new manifests to compare.
-	newManifests, ok := manifestCache.Get(in.Deployment.Trigger.Commit.Hash)
+	newManifests, ok := manifestCache.Get(in.Trigger.Commit.Hash)
 	if !ok {
 		// When the manifests were not in the cache we have to load them.
-		loader := provider.NewManifestLoader(in.Deployment.ApplicationName, ds.AppDir, ds.RepoDir, in.Deployment.GitPath.ConfigFilename, cfg.Input, in.Logger)
+		loader := provider.NewManifestLoader(in.ApplicationName, ds.AppDir, ds.RepoDir, in.GitPath.ConfigFilename, cfg.Input, in.Logger)
 		newManifests, err = loader.LoadManifests(ctx)
 		if err != nil {
 			return
 		}
-		manifestCache.Put(in.Deployment.Trigger.Commit.Hash, newManifests)
+		manifestCache.Put(in.Trigger.Commit.Hash, newManifests)
 	}
 
 	// Determine application version from the manifests.
@@ -99,7 +99,7 @@ func (p *Planner) Plan(ctx context.Context, in planner.Input) (out planner.Outpu
 
 	// If the deployment was triggered by forcing via web UI,
 	// we rely on the user's decision.
-	switch in.Deployment.Trigger.SyncStrategy {
+	switch in.Trigger.SyncStrategy {
 	case model.SyncStrategy_QUICK_SYNC:
 		out.SyncStrategy = model.SyncStrategy_QUICK_SYNC
 		out.Stages = buildQuickSyncPipeline(cfg.Input.AutoRollback, time.Now())
@@ -127,13 +127,13 @@ func (p *Planner) Plan(ctx context.Context, in planner.Input) (out planner.Outpu
 
 	// This deployment is triggered by a commit with the intent to perform pipeline.
 	// Commit Matcher will be ignored when triggered by a command.
-	if p := cfg.CommitMatcher.Pipeline; p != "" && in.Deployment.Trigger.Commander == "" {
+	if p := cfg.CommitMatcher.Pipeline; p != "" && in.Trigger.Commander == "" {
 		pipelineRegex, err := in.RegexPool.Get(p)
 		if err != nil {
 			err = fmt.Errorf("failed to compile commitMatcher.pipeline(%s): %w", p, err)
 			return out, err
 		}
-		if pipelineRegex.MatchString(in.Deployment.Trigger.Commit.Message) {
+		if pipelineRegex.MatchString(in.Trigger.Commit.Message) {
 			out.SyncStrategy = model.SyncStrategy_PIPELINE
 			out.Stages = buildProgressivePipeline(cfg.Pipeline, cfg.Input.AutoRollback, time.Now())
 			out.Summary = fmt.Sprintf("Sync progressively because the commit message was matching %q", p)
@@ -143,13 +143,13 @@ func (p *Planner) Plan(ctx context.Context, in planner.Input) (out planner.Outpu
 
 	// This deployment is triggered by a commit with the intent to synchronize.
 	// Commit Matcher will be ignored when triggered by a command.
-	if s := cfg.CommitMatcher.QuickSync; s != "" && in.Deployment.Trigger.Commander == "" {
+	if s := cfg.CommitMatcher.QuickSync; s != "" && in.Trigger.Commander == "" {
 		syncRegex, err := in.RegexPool.Get(s)
 		if err != nil {
 			err = fmt.Errorf("failed to compile commitMatcher.sync(%s): %w", s, err)
 			return out, err
 		}
-		if syncRegex.MatchString(in.Deployment.Trigger.Commit.Message) {
+		if syncRegex.MatchString(in.Trigger.Commit.Message) {
 			out.SyncStrategy = model.SyncStrategy_QUICK_SYNC
 			out.Stages = buildQuickSyncPipeline(cfg.Input.AutoRollback, time.Now())
 			out.Summary = fmt.Sprintf("Quick sync by applying all manifests because the commit message was matching %q", s)
@@ -178,7 +178,7 @@ func (p *Planner) Plan(ctx context.Context, in planner.Input) (out planner.Outpu
 			return
 		}
 
-		loader := provider.NewManifestLoader(in.Deployment.ApplicationName, runningDs.AppDir, runningDs.RepoDir, in.Deployment.GitPath.ConfigFilename, cfg.Input, in.Logger)
+		loader := provider.NewManifestLoader(in.ApplicationName, runningDs.AppDir, runningDs.RepoDir, in.GitPath.ConfigFilename, cfg.Input, in.Logger)
 		oldManifests, err = loader.LoadManifests(ctx)
 		if err != nil {
 			err = fmt.Errorf("failed to load previously deployed manifests: %w", err)

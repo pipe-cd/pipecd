@@ -21,10 +21,14 @@ import (
 	"time"
 
 	"go.uber.org/zap"
+	"google.golang.org/grpc"
 
+	"github.com/pipe-cd/pipe/pkg/app/api/service/pipedservice"
+	"github.com/pipe-cd/pipe/pkg/cache"
 	"github.com/pipe-cd/pipe/pkg/config"
 	"github.com/pipe-cd/pipe/pkg/git"
 	"github.com/pipe-cd/pipe/pkg/model"
+	"github.com/pipe-cd/pipe/pkg/regexpool"
 )
 
 const (
@@ -78,6 +82,10 @@ type gitClient interface {
 	Clone(ctx context.Context, repoID, remote, branch, destination string) (git.Repo, error)
 }
 
+type apiClient interface {
+	GetApplicationMostRecentDeployment(ctx context.Context, req *pipedservice.GetApplicationMostRecentDeploymentRequest, opts ...grpc.CallOption) (*pipedservice.GetApplicationMostRecentDeploymentResponse, error)
+}
+
 type applicationLister interface {
 	List() []*model.Application
 }
@@ -88,6 +96,10 @@ type environmentGetter interface {
 
 type commandLister interface {
 	ListBuildPlanPreviewCommands() []model.ReportableCommand
+}
+
+type secretDecrypter interface {
+	Decrypt(string) (string, error)
 }
 
 type Handler struct {
@@ -102,7 +114,19 @@ type Handler struct {
 	logger         *zap.Logger
 }
 
-func NewHandler(gc gitClient, cl commandLister, al applicationLister, eg environmentGetter, cg lastTriggeredCommitGetter, cfg *config.PipedSpec, opts ...Option) *Handler {
+func NewHandler(
+	gc gitClient,
+	ac apiClient,
+	cl commandLister,
+	al applicationLister,
+	eg environmentGetter,
+	cg lastTriggeredCommitGetter,
+	sd secretDecrypter,
+	appManifestsCache cache.Cache,
+	cfg *config.PipedSpec,
+	opts ...Option,
+) *Handler {
+
 	opt := &options{
 		workerNum:              defaultWorkerNum,
 		commandQueueBufferSize: defaultCommandQueueBufferSize,
@@ -113,16 +137,19 @@ func NewHandler(gc gitClient, cl commandLister, al applicationLister, eg environ
 	for _, o := range opts {
 		o(opt)
 	}
+
 	h := &Handler{
 		gitClient:     gc,
 		commandLister: cl,
 		commandCh:     make(chan model.ReportableCommand, opt.commandQueueBufferSize),
 		prevCommands:  map[string]struct{}{},
 		options:       opt,
-		logger:        opt.logger.Named("planpreview-handler"),
+		logger:        opt.logger.Named("plan-preview-handler"),
 	}
+
+	regexPool := regexpool.DefaultPool()
 	h.builderFactory = func() Builder {
-		return newBuilder(gc, al, eg, cg, cfg, h.logger)
+		return newBuilder(gc, ac, al, eg, cg, sd, appManifestsCache, regexPool, cfg, h.logger)
 	}
 
 	return h

@@ -51,7 +51,8 @@ There are no applications to build plan-preview
 							ApplicationKind: model.ApplicationKind_KUBERNETES,
 							EnvName:         "env-1",
 							SyncStrategy:    model.SyncStrategy_QUICK_SYNC,
-							Changes:         []byte("changes-1"),
+							PlanSummary:     []byte("2 manifests will be added, 1 manifest will be deleted and 5 manifests will be changed"),
+							PlanDetails:     []byte("changes-1"),
 						},
 					},
 				},
@@ -61,7 +62,12 @@ Here are plan-preview for 1 application:
 
 1. app: app-1, env: env-1, kind: KUBERNETES
   sync strategy: QUICK_SYNC
-  changes: changes-1
+  summary: 2 manifests will be added, 1 manifest will be deleted and 5 manifests will be changed
+  details:
+
+  ---DETAILS_BEGIN---
+changes-1
+  ---DETAILS_END---
 `,
 		},
 		{
@@ -128,7 +134,8 @@ NOTE: An error occurred while building plan-preview for applications of the foll
 							ApplicationKind: model.ApplicationKind_KUBERNETES,
 							EnvName:         "env-1",
 							SyncStrategy:    model.SyncStrategy_QUICK_SYNC,
-							Changes:         []byte("changes-1"),
+							PlanSummary:     []byte("2 manifests will be added, 1 manifest will be deleted and 5 manifests will be changed"),
+							PlanDetails:     []byte("changes-1"),
 						},
 						{
 							ApplicationId:   "app-2",
@@ -137,7 +144,8 @@ NOTE: An error occurred while building plan-preview for applications of the foll
 							ApplicationKind: model.ApplicationKind_TERRAFORM,
 							EnvName:         "env-2",
 							SyncStrategy:    model.SyncStrategy_PIPELINE,
-							Changes:         []byte("changes-2"),
+							PlanSummary:     []byte("1 to add, 2 to change, 0 to destroy"),
+							PlanDetails:     []byte("changes-2"),
 						},
 						{
 							ApplicationId:   "app-3",
@@ -169,11 +177,21 @@ Here are plan-preview for 2 applications:
 
 1. app: app-1, env: env-1, kind: KUBERNETES
   sync strategy: QUICK_SYNC
-  changes: changes-1
+  summary: 2 manifests will be added, 1 manifest will be deleted and 5 manifests will be changed
+  details:
+
+  ---DETAILS_BEGIN---
+changes-1
+  ---DETAILS_END---
 
 2. app: app-2, env: env-2, kind: TERRAFORM
   sync strategy: PIPELINE
-  changes: changes-2
+  summary: 1 to add, 2 to change, 0 to destroy
+  details:
+
+  ---DETAILS_BEGIN---
+changes-2
+  ---DETAILS_END---
 
 NOTE: An error occurred while building plan-preview for the following 2 applications:
 
