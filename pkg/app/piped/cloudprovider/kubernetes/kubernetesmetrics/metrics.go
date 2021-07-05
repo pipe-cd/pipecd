@@ -1,4 +1,4 @@
-// Copyright 2020 The PipeCD Authors.
+// Copyright 2021 The PipeCD Authors.
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -12,7 +12,7 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-package kubernetes
+package kubernetesmetrics
 
 import (
 	"github.com/prometheus/client_golang/prometheus"
@@ -23,16 +23,32 @@ const (
 	metricsLabelVersion = "version"
 	metricsLabelCommand = "command"
 	metricsLabelStatus  = "status"
+)
 
-	metricsValueKubectl = "kubectl"
-	metricsValueSuccess = "success"
-	metricsValueFailure = "failure"
+type Tool string
+
+const (
+	LabelToolKubectl Tool = "kubectl"
+)
+
+type ToolCommand string
+
+const (
+	LabelApplyCommand  ToolCommand = "apply"
+	LabelDeleteCommand ToolCommand = "delete"
+)
+
+type CommandOutput string
+
+const (
+	LabelOutputSuccess CommandOutput = "success"
+	LabelOutputFailre  CommandOutput = "failure"
 )
 
 var (
-	metricsToolCalls = prometheus.NewCounterVec(
+	toolCallsCounter = prometheus.NewCounterVec(
 		prometheus.CounterOpts{
-			Name: "cloudprovider_kubernetes_tool_calls_total",
+			Name: "piped_cloudprovider_kubernetes_tool_calls_total",
 			Help: "Number of calls made to run the tool like kubectl, kustomize.",
 		},
 		[]string{
@@ -44,19 +60,19 @@ var (
 	)
 )
 
-func metricsKubectlCalled(version, command string, success bool) {
-	status := metricsValueSuccess
+func IncKubectlCallsCounter(version string, command ToolCommand, success bool) {
+	status := LabelOutputSuccess
 	if !success {
-		status = metricsValueFailure
+		status = LabelOutputFailre
 	}
-	metricsToolCalls.With(prometheus.Labels{
-		metricsLabelTool:    metricsValueKubectl,
+	toolCallsCounter.With(prometheus.Labels{
+		metricsLabelTool:    string(LabelToolKubectl),
 		metricsLabelVersion: version,
-		metricsLabelCommand: command,
-		metricsLabelStatus:  status,
+		metricsLabelCommand: string(command),
+		metricsLabelStatus:  string(status),
 	}).Inc()
 }
 
-func registerMetrics() {
-	prometheus.MustRegister(metricsToolCalls)
+func Register(r prometheus.Registerer) {
+	r.MustRegister(toolCallsCounter)
 }
