@@ -77,6 +77,7 @@ func NewProvider(
 	appGitPath *model.ApplicationGitPath,
 	sd secretDecrypter,
 ) Provider {
+
 	return &provider{
 		workingDir:      workingDir,
 		repoConfig:      repoConfig,
@@ -89,7 +90,7 @@ func NewProvider(
 }
 
 func (p *provider) Get(ctx context.Context, lw io.Writer) (*DeploySource, error) {
-	writeLog(lw, "Preparing deploy source at %s commit (%s)", p.revisionName, p.revision)
+	fmt.Fprintf(lw, "Preparing deploy source at %s commit (%s)\n", p.revisionName, p.revision)
 
 	p.mu.Lock()
 	defer p.mu.Unlock()
@@ -108,12 +109,12 @@ func (p *provider) Get(ctx context.Context, lw io.Writer) (*DeploySource, error)
 		return nil, err
 	}
 
-	writeLog(lw, "Successfully prepared deploy source at %s commit (%s)", p.revisionName, p.revision)
+	fmt.Fprintf(lw, "Successfully prepared deploy source at %s commit (%s)\n", p.revisionName, p.revision)
 	return ds, nil
 }
 
 func (p *provider) GetReadOnly(ctx context.Context, lw io.Writer) (*DeploySource, error) {
-	writeLog(lw, "Preparing deploy source at %s commit (%s)", p.revisionName, p.revision)
+	fmt.Fprintf(lw, "Preparing deploy source at %s commit (%s)\n", p.revisionName, p.revision)
 
 	p.mu.Lock()
 	defer p.mu.Unlock()
@@ -127,21 +128,21 @@ func (p *provider) GetReadOnly(ctx context.Context, lw io.Writer) (*DeploySource
 		return nil, p.err
 	}
 
-	writeLog(lw, "Successfully prepared deploy source at %s commit (%s)", p.revisionName, p.revision)
+	fmt.Fprintf(lw, "Successfully prepared deploy source at %s commit (%s)\n", p.revisionName, p.revision)
 	return p.source, nil
 }
 
 func (p *provider) prepare(ctx context.Context, lw io.Writer) (*DeploySource, error) {
 	// Ensure the existence of the working directory.
 	if err := os.MkdirAll(p.workingDir, 0700); err != nil {
-		writeLog(lw, "Unable to create the working directory to store deploy source (%v)", err)
+		fmt.Fprintf(lw, "Unable to create the working directory to store deploy source (%v)\n", err)
 		return nil, err
 	}
 
 	// Create a temporary directory for storing the source.
 	dir, err := ioutil.TempDir(p.workingDir, "deploysource")
 	if err != nil {
-		writeLog(lw, "Unable to create a temp directory to store the deploy source (%v)", err)
+		fmt.Fprintf(lw, "Unable to create a temp directory to store the deploy source (%v)\n", err)
 		return nil, err
 	}
 
@@ -151,45 +152,45 @@ func (p *provider) prepare(ctx context.Context, lw io.Writer) (*DeploySource, er
 	// Clone the specified revision of the repository.
 	gitRepo, err := p.gitClient.Clone(ctx, p.repoConfig.RepoID, p.repoConfig.Remote, p.repoConfig.Branch, repoDir)
 	if err != nil {
-		writeLog(lw, "Unable to clone the branch %s of the repository %s (%v)", p.repoConfig.Branch, p.repoConfig.RepoID, err)
+		fmt.Fprintf(lw, "Unable to clone the branch %s of the repository %s (%v)\n", p.repoConfig.Branch, p.repoConfig.RepoID, err)
 		return nil, err
 	}
 	if err := gitRepo.Checkout(ctx, p.revision); err != nil {
-		writeLog(lw, "Unable to checkout the %s commit %s (%v)", p.revisionName, p.revision, err)
+		fmt.Fprintf(lw, "Unable to checkout the %s commit %s (%v)\n", p.revisionName, p.revision, err)
 		return nil, err
 	}
-	writeLog(lw, "Successfully cloned the %s commit %s of the repository %s", p.revisionName, p.revision, p.repoConfig.RepoID)
+	fmt.Fprintf(lw, "Successfully cloned the %s commit %s of the repository %s\n", p.revisionName, p.revision, p.repoConfig.RepoID)
 
 	// Load the deployment configuration file.
 	configFileRelativePath := p.appGitPath.GetDeploymentConfigFilePath()
 	configFilePath := filepath.Join(repoDir, configFileRelativePath)
 	cfg, err := config.LoadFromYAML(configFilePath)
 	if err != nil {
-		writeLog(lw, "Unable to load the deployment configuration file at %s (%v)", configFileRelativePath, err)
+		fmt.Fprintf(lw, "Unable to load the deployment configuration file at %s (%v)\n", configFileRelativePath, err)
 		return nil, err
 	}
 
 	gdc, ok := cfg.GetGenericDeployment()
 	if !ok {
-		writeLog(lw, "Invalid application kind %s", cfg.Kind)
+		fmt.Fprintf(lw, "Invalid application kind %s\n", cfg.Kind)
 		return nil, fmt.Errorf("unsupport application kind %s", cfg.Kind)
 	}
-	writeLog(lw, "Successfully loaded the deployment configuration file")
+	fmt.Fprintln(lw, "Successfully loaded the deployment configuration file")
 
 	// Decrypt the sealed secrets if needed.
 	if len(gdc.SealedSecrets) > 0 && p.secretDecrypter != nil {
 		if err := sourcedecrypter.DecryptSealedSecrets(appDir, gdc.SealedSecrets, p.secretDecrypter); err != nil {
-			writeLog(lw, "Unable to decrypt the sealed secrets (%v)", err)
+			fmt.Fprintf(lw, "Unable to decrypt the sealed secrets (%v)\n", err)
 			return nil, err
 		}
-		writeLog(lw, "Successfully decrypted %d sealed secrets", len(gdc.SealedSecrets))
+		fmt.Fprintf(lw, "Successfully decrypted %d sealed secrets\n", len(gdc.SealedSecrets))
 	}
 	if gdc.Encryption != nil && p.secretDecrypter != nil && len(gdc.Encryption.DecryptionTargets) > 0 {
 		if err := sourcedecrypter.DecryptSecrets(appDir, *gdc.Encryption, p.secretDecrypter); err != nil {
-			writeLog(lw, "Unable to decrypt the secrets (%v)", err)
+			fmt.Fprintf(lw, "Unable to decrypt the secrets (%v)\n", err)
 			return nil, err
 		}
-		writeLog(lw, "Successfully decrypted secrets: %v", gdc.Encryption.DecryptionTargets)
+		fmt.Fprintf(lw, "Successfully decrypted secrets: %v\n", gdc.Encryption.DecryptionTargets)
 	}
 
 	return &DeploySource{
@@ -209,7 +210,7 @@ func (p *provider) copy(lw io.Writer) (*DeploySource, error) {
 	cmd := exec.Command("cp", "-rf", p.source.RepoDir, dest)
 	out, err := cmd.CombinedOutput()
 	if err != nil {
-		writeLog(lw, "Unable to copy deploy source data (%v, %s)", err, string(out))
+		fmt.Fprintf(lw, "Unable to copy deploy source data (%v, %s)\n", err, string(out))
 		return nil, err
 	}
 
@@ -221,8 +222,4 @@ func (p *provider) copy(lw io.Writer) (*DeploySource, error) {
 		DeploymentConfig:        p.source.DeploymentConfig,
 		GenericDeploymentConfig: p.source.GenericDeploymentConfig,
 	}, nil
-}
-
-func writeLog(w io.Writer, format string, a ...interface{}) {
-	io.WriteString(w, fmt.Sprintf(format, a...))
 }
