@@ -22,6 +22,8 @@ import (
 	"strings"
 
 	"k8s.io/client-go/rest"
+
+	"github.com/pipe-cd/pipe/pkg/app/piped/cloudprovider/kubernetes/kubernetesmetrics"
 )
 
 type Kubectl struct {
@@ -39,7 +41,11 @@ func NewKubectl(version, path string) *Kubectl {
 
 func (c *Kubectl) Apply(ctx context.Context, namespace string, manifest Manifest) (err error) {
 	defer func() {
-		metricsKubectlCalled(c.version, "apply", err == nil)
+		kubernetesmetrics.IncKubectlCallsCounter(
+			c.version,
+			kubernetesmetrics.LabelApplyCommand,
+			err == nil,
+		)
 	}()
 
 	data, err := manifest.YamlBytes()
@@ -66,7 +72,11 @@ func (c *Kubectl) Apply(ctx context.Context, namespace string, manifest Manifest
 
 func (c *Kubectl) Delete(ctx context.Context, namespace string, r ResourceKey) (err error) {
 	defer func() {
-		metricsKubectlCalled(c.version, "delete", err == nil)
+		kubernetesmetrics.IncKubectlCallsCounter(
+			c.version,
+			kubernetesmetrics.LabelDeleteCommand,
+			err == nil,
+		)
 	}()
 
 	args := make([]string, 0, 5)

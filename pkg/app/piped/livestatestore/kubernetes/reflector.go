@@ -30,6 +30,7 @@ import (
 	"k8s.io/client-go/tools/cache"
 
 	provider "github.com/pipe-cd/pipe/pkg/app/piped/cloudprovider/kubernetes"
+	"github.com/pipe-cd/pipe/pkg/app/piped/livestatestore/kubernetes/kubernetesmetrics"
 	"github.com/pipe-cd/pipe/pkg/config"
 )
 
@@ -237,20 +238,29 @@ func (r *reflector) onObjectAdd(obj interface{}) {
 
 	// Ignore all predefined ones.
 	if _, ok := ignoreResourceKeys[key.String()]; ok {
-		incrementResourceEventCounter("add", false)
+		kubernetesmetrics.IncResourceEventsCounter(
+			kubernetesmetrics.LabelEventAdd,
+			kubernetesmetrics.LabelEventNotYetHandled,
+		)
 		return
 	}
 
 	// Ignore all objects that are not handled by this piped.
 	pipedID := u.GetAnnotations()[provider.LabelPiped]
 	if pipedID != "" && pipedID != r.pipedConfig.PipedID {
-		incrementResourceEventCounter("add", false)
+		kubernetesmetrics.IncResourceEventsCounter(
+			kubernetesmetrics.LabelEventAdd,
+			kubernetesmetrics.LabelEventNotYetHandled,
+		)
 		return
 	}
 
 	r.logger.Debug(fmt.Sprintf("received add event for %s", key.String()))
 	r.onAdd(u)
-	incrementResourceEventCounter("add", true)
+	kubernetesmetrics.IncResourceEventsCounter(
+		kubernetesmetrics.LabelEventAdd,
+		kubernetesmetrics.LabelEventHandled,
+	)
 }
 
 func (r *reflector) onObjectUpdate(oldObj, obj interface{}) {
@@ -260,20 +270,29 @@ func (r *reflector) onObjectUpdate(oldObj, obj interface{}) {
 	// Ignore all predefined ones.
 	key := provider.MakeResourceKey(u)
 	if _, ok := ignoreResourceKeys[key.String()]; ok {
-		incrementResourceEventCounter("update", false)
+		kubernetesmetrics.IncResourceEventsCounter(
+			kubernetesmetrics.LabelEventUpdate,
+			kubernetesmetrics.LabelEventNotYetHandled,
+		)
 		return
 	}
 
 	// Ignore all objects that are not handled by this piped.
 	pipedID := u.GetAnnotations()[provider.LabelPiped]
 	if pipedID != "" && pipedID != r.pipedConfig.PipedID {
-		incrementResourceEventCounter("update", false)
+		kubernetesmetrics.IncResourceEventsCounter(
+			kubernetesmetrics.LabelEventUpdate,
+			kubernetesmetrics.LabelEventNotYetHandled,
+		)
 		return
 	}
 
 	r.logger.Debug(fmt.Sprintf("received update event for %s", key.String()))
 	r.onUpdate(oldU, u)
-	incrementResourceEventCounter("update", true)
+	kubernetesmetrics.IncResourceEventsCounter(
+		kubernetesmetrics.LabelEventUpdate,
+		kubernetesmetrics.LabelEventHandled,
+	)
 }
 
 func (r *reflector) onObjectDelete(obj interface{}) {
@@ -282,20 +301,29 @@ func (r *reflector) onObjectDelete(obj interface{}) {
 
 	// Ignore all predefined ones.
 	if _, ok := ignoreResourceKeys[key.String()]; ok {
-		incrementResourceEventCounter("delete", false)
+		kubernetesmetrics.IncResourceEventsCounter(
+			kubernetesmetrics.LabelEventDelete,
+			kubernetesmetrics.LabelEventNotYetHandled,
+		)
 		return
 	}
 
 	// Ignore all objects that are not handled by this piped.
 	pipedID := u.GetAnnotations()[provider.LabelPiped]
 	if pipedID != "" && pipedID != r.pipedConfig.PipedID {
-		incrementResourceEventCounter("delete", false)
+		kubernetesmetrics.IncResourceEventsCounter(
+			kubernetesmetrics.LabelEventDelete,
+			kubernetesmetrics.LabelEventNotYetHandled,
+		)
 		return
 	}
 
 	r.logger.Debug(fmt.Sprintf("received delete event for %s", key.String()))
 	r.onDelete(u)
-	incrementResourceEventCounter("delete", true)
+	kubernetesmetrics.IncResourceEventsCounter(
+		kubernetesmetrics.LabelEventDelete,
+		kubernetesmetrics.LabelEventHandled,
+	)
 }
 
 func isSupportedWatch(r metav1.APIResource) bool {

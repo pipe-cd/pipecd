@@ -28,6 +28,7 @@ import (
 	"strings"
 	"time"
 
+	"github.com/prometheus/client_golang/prometheus"
 	"github.com/spf13/cobra"
 	"go.uber.org/zap"
 	"golang.org/x/sync/errgroup"
@@ -42,11 +43,13 @@ import (
 	"github.com/pipe-cd/pipe/pkg/app/piped/apistore/environmentstore"
 	"github.com/pipe-cd/pipe/pkg/app/piped/apistore/eventstore"
 	"github.com/pipe-cd/pipe/pkg/app/piped/chartrepo"
+	k8scloudprovidermetrics "github.com/pipe-cd/pipe/pkg/app/piped/cloudprovider/kubernetes/kubernetesmetrics"
 	"github.com/pipe-cd/pipe/pkg/app/piped/controller"
 	"github.com/pipe-cd/pipe/pkg/app/piped/driftdetector"
 	"github.com/pipe-cd/pipe/pkg/app/piped/eventwatcher"
 	"github.com/pipe-cd/pipe/pkg/app/piped/livestatereporter"
 	"github.com/pipe-cd/pipe/pkg/app/piped/livestatestore"
+	k8slivestatestoremetrics "github.com/pipe-cd/pipe/pkg/app/piped/livestatestore/kubernetes/kubernetesmetrics"
 	"github.com/pipe-cd/pipe/pkg/app/piped/notifier"
 	"github.com/pipe-cd/pipe/pkg/app/piped/planpreview"
 	"github.com/pipe-cd/pipe/pkg/app/piped/statsreporter"
@@ -116,6 +119,9 @@ func NewCommand() *cobra.Command {
 }
 
 func (p *piped) run(ctx context.Context, t cli.Telemetry) (runErr error) {
+	// Register all metrics.
+	registerMetrics()
+
 	group, ctx := errgroup.WithContext(ctx)
 	if p.addLoginUserToPasswd {
 		if err := p.insertLoginUserToPasswd(ctx); err != nil {
@@ -608,4 +614,10 @@ func (p *piped) insertLoginUserToPasswd(ctx context.Context) error {
 	}
 
 	return nil
+}
+
+func registerMetrics() {
+	r := prometheus.DefaultRegisterer
+	k8scloudprovidermetrics.Register(r)
+	k8slivestatestoremetrics.Register(r)
 }

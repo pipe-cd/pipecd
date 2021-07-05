@@ -101,10 +101,6 @@ type provider struct {
 	initErr          error
 }
 
-func init() {
-	registerMetrics()
-}
-
 func initSharedGitClient(logger *zap.Logger) error {
 	var err error
 	initSharedGitClientOnce.Do(func() {
