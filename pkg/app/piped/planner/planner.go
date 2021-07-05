@@ -37,8 +37,10 @@ type Planner interface {
 }
 
 type Input struct {
-	// Readonly deployment model.
-	Deployment                     *model.Deployment
+	ApplicationID                  string
+	ApplicationName                string
+	GitPath                        model.ApplicationGitPath
+	Trigger                        model.DeploymentTrigger
 	MostRecentSuccessfulCommitHash string
 	PipedConfig                    *config.PipedSpec
 	TargetDSP                      deploysource.Provider

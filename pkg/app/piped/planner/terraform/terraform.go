@@ -53,8 +53,9 @@ func (p *Planner) Plan(ctx context.Context, in planner.Input) (out planner.Outpu
 
 	// If the deployment was triggered by forcing via web UI,
 	// we rely on the user's decision.
-	switch in.Deployment.Trigger.SyncStrategy {
+	switch in.Trigger.SyncStrategy {
 	case model.SyncStrategy_QUICK_SYNC:
+		out.SyncStrategy = model.SyncStrategy_QUICK_SYNC
 		out.Stages = buildQuickSyncPipeline(cfg.Input.AutoRollback, time.Now())
 		out.Summary = "Quick sync by automatically applying any detected changes because no pipeline was configured (forced via web)"
 		return
@@ -63,6 +64,7 @@ func (p *Planner) Plan(ctx context.Context, in planner.Input) (out planner.Outpu
 			err = fmt.Errorf("unable to force sync with pipeline because no pipeline was specified")
 			return
 		}
+		out.SyncStrategy = model.SyncStrategy_PIPELINE
 		out.Stages = buildProgressivePipeline(cfg.Pipeline, cfg.Input.AutoRollback, time.Now())
 		out.Summary = "Sync with the specified progressive pipeline (forced via web)"
 		return
@@ -72,11 +74,13 @@ func (p *Planner) Plan(ctx context.Context, in planner.Input) (out planner.Outpu
 	out.Version = "N/A"
 
 	if cfg.Pipeline == nil || len(cfg.Pipeline.Stages) == 0 {
+		out.SyncStrategy = model.SyncStrategy_QUICK_SYNC
 		out.Stages = buildQuickSyncPipeline(cfg.Input.AutoRollback, now)
 		out.Summary = "Quick sync by automatically applying any detected changes because no pipeline was configured"
 		return
 	}
 
+	out.SyncStrategy = model.SyncStrategy_PIPELINE
 	out.Stages = buildProgressivePipeline(cfg.Pipeline, cfg.Input.AutoRollback, now)
 	out.Summary = "Sync with the specified progressive pipeline"
 	return

@@ -64,7 +64,7 @@ func (p *Planner) Plan(ctx context.Context, in planner.Input) (out planner.Outpu
 
 	// If the deployment was triggered by forcing via web UI,
 	// we rely on the user's decision.
-	switch in.Deployment.Trigger.SyncStrategy {
+	switch in.Trigger.SyncStrategy {
 	case model.SyncStrategy_QUICK_SYNC:
 		out.SyncStrategy = model.SyncStrategy_QUICK_SYNC
 		out.Stages = buildQuickSyncPipeline(cfg.Input.AutoRollback, time.Now())

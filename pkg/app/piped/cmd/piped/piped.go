@@ -382,10 +382,13 @@ func (p *piped) run(ctx context.Context, t cli.Telemetry) (runErr error) {
 	if p.enablePlanPreview {
 		h := planpreview.NewHandler(
 			gitClient,
+			apiClient,
 			commandLister,
 			applicationLister,
 			environmentStore,
 			lastTriggeredCommitGetter,
+			decrypter,
+			appManifestsCache,
 			cfg,
 			planpreview.WithLogger(t.Logger),
 		)
