@@ -17,7 +17,7 @@ package model
 import (
 	"errors"
 	"fmt"
-	"path"
+	"strings"
 	"time"
 
 	"golang.org/x/crypto/bcrypt"
@@ -140,5 +140,5 @@ func (p *Piped) RedactSensitiveData() {
 }
 
 func MakePipedURL(baseURL, pipedID string) string {
-	return path.Join(baseURL, "settings", "piped")
+	return fmt.Sprintf("%s/settings/piped", strings.TrimSuffix(baseURL, "/"))
 }
