@@ -85,7 +85,7 @@ func (a *PipedAPI) Register(server *grpc.Server) {
 
 // Ping is periodically sent to report its realtime status/stats to control-plane.
 // The received stats will be pushed to the metrics collector.
-// Note: This service is deprecated, use ReportStat instead.
+// Note: This rpc is deprecated, use ReportStat instead.
 func (a *PipedAPI) Ping(ctx context.Context, req *pipedservice.PingRequest) (*pipedservice.PingResponse, error) {
 	return &pipedservice.PingResponse{}, nil
 	// return nil, status.Error(codes.Unimplemented, "")

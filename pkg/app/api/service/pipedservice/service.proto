@@ -34,7 +34,7 @@ import "pkg/model/event.proto";
 service PipedService {
     // Ping is periodically sent to report its realtime status/stats to control-plane.
     // The received stats will be pushed to the metrics collector.
-    // Note: This service is deprecated, use ReportStat instead.
+    // Note: This rpc is deprecated, use ReportStat instead.
     rpc Ping(PingRequest) returns (PingResponse) {
         option deprecated = true;
     }
