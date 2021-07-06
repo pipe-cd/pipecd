@@ -152,3 +152,10 @@ data:
                     port_value: 9082
         track_cluster_stats:
           request_response_sizes: true
+
+      extensions:
+        filters:
+          http:
+            grpc_stats:
+              stats_for_all_methods: true
+              enable_upstream_stats: true
