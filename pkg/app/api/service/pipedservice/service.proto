@@ -164,11 +164,12 @@ message PingResponse {
 }
 
 message ReportStatRequest {
+    // Metrics byte sequence in OpenMetrics format.
     bytes piped_stats = 1 [(validate.rules).bytes.min_len = 1];
 }
 
 message ReportStatResponse {
-    int64 ping_interval = 1;
+    int64 report_interval = 1;
 }
 
 message ReportPipedMetaRequest {
