@@ -625,6 +625,8 @@ func registerMetrics(pipedID string) *prometheus.Registry {
 		},
 		r,
 	)
+	wrapped.Register(prometheus.NewGoCollector())
+	wrapped.Register(prometheus.NewProcessCollector(prometheus.ProcessCollectorOpts{}))
 
 	k8scloudprovidermetrics.Register(wrapped)
 	k8slivestatestoremetrics.Register(wrapped)
