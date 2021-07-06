@@ -15,8 +15,9 @@
 package model
 
 import (
-	"path"
+	"fmt"
 	"path/filepath"
+	"strings"
 )
 
 const DefaultDeploymentConfigFileName = ".pipe.yaml"
@@ -46,5 +47,5 @@ func (s ApplicationSyncState) HasChanged(next ApplicationSyncState) bool {
 }
 
 func MakeApplicationURL(baseURL, applicationID string) string {
-	return path.Join(baseURL, "applications", applicationID)
+	return fmt.Sprintf("%s/applications/%s", strings.TrimSuffix(baseURL, "/"), applicationID)
 }

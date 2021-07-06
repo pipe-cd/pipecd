@@ -236,3 +236,31 @@ func TestPipedRedactSensitiveData(t *testing.T) {
 		})
 	}
 }
+
+func TestMakePipedURL(t *testing.T) {
+	testcases := []struct {
+		name     string
+		baseURL  string
+		pipedID  string
+		expected string
+	}{
+		{
+			name:     "baseURL has no suffix",
+			baseURL:  "https://pipecd.dev",
+			pipedID:  "piped-id",
+			expected: "https://pipecd.dev/settings/piped",
+		},
+		{
+			name:     "baseURL suffixed by /",
+			baseURL:  "https://pipecd.dev/",
+			pipedID:  "piped-id",
+			expected: "https://pipecd.dev/settings/piped",
+		},
+	}
+	for _, tc := range testcases {
+		t.Run(tc.name, func(t *testing.T) {
+			got := MakePipedURL(tc.baseURL, tc.pipedID)
+			assert.Equal(t, tc.expected, got)
+		})
+	}
+}

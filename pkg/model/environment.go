@@ -14,8 +14,11 @@
 
 package model
 
-import "path"
+import (
+	"fmt"
+	"strings"
+)
 
 func MakeEnvironmentURL(baseURL, environmentID string) string {
-	return path.Join(baseURL, "settings", "environment")
+	return fmt.Sprintf("%s/settings/environment", strings.TrimSuffix(baseURL, "/"))
 }
