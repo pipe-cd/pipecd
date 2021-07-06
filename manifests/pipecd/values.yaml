@@ -194,7 +194,7 @@ prometheus:
             - source_labels: [__name__]
               target_label: __name__
               regex: envoy_cluster_grpc_(.+)_(.+)_(.+)_(.+)_upstream_rq_time_bucket$
-              replacement: pipecd_requests_duration_bucket
+              replacement: pipecd_gateway_requests_duration_bucket
             - source_labels: [__name__]
               target_label: method
               regex: envoy_cluster_grpc_(.+)_(.+)_(.+)_(.+)_upstream_rq_time_sum$
@@ -202,7 +202,7 @@ prometheus:
             - source_labels: [__name__]
               target_label: __name__
               regex: envoy_cluster_grpc_(.+)_(.+)_(.+)_(.+)_upstream_rq_time_sum$
-              replacement: pipecd_requests_duration_sum
+              replacement: pipecd_gateway_requests_duration_sum
             - source_labels: [__name__]
               target_label: method
               regex: envoy_cluster_grpc_(.+)_(.+)_(.+)_(.+)_upstream_rq_time_count$
@@ -210,7 +210,7 @@ prometheus:
             - source_labels: [__name__]
               target_label: __name__
               regex: envoy_cluster_grpc_(.+)_(.+)_(.+)_(.+)_upstream_rq_time_count$
-              replacement: pipecd_requests_duration_count
+              replacement: pipecd_gateway_requests_duration_count
 
         - job_name: pipecd-server
           scrape_interval: 1m
