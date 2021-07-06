@@ -19,12 +19,14 @@ import (
 )
 
 var (
-	ErrNotFound = errors.New("not found")
+	ErrNotFound      = errors.New("not found")
+	ErrUnimplemented = errors.New("unimplemented")
 )
 
 // Getter wraps a method to read from cache.
 type Getter interface {
 	Get(key interface{}) (interface{}, error)
+	GetAll() ([]interface{}, error)
 }
 
 // Putter wraps a method to write to cache.
@@ -81,4 +83,8 @@ func (mg *multiGetter) Get(key interface{}) (interface{}, error) {
 		}
 	}
 	return nil, firstErr
+}
+
+func (mg *multiGetter) GetAll() ([]interface{}, error) {
+	return nil, ErrUnimplemented
 }

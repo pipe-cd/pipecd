@@ -60,3 +60,7 @@ func (c *LRUCache) Delete(key interface{}) error {
 	c.cache.Remove(key)
 	return nil
 }
+
+func (c *LRUCache) GetAll() ([]interface{}, error) {
+	return nil, cache.ErrUnimplemented
+}

@@ -27,6 +27,10 @@ func (f getterFunc) Get(key interface{}) (interface{}, error) {
 	return f(key)
 }
 
+func (f getterFunc) GetAll() ([]interface{}, error) {
+	return nil, ErrUnimplemented
+}
+
 func TestMultiGetter(t *testing.T) {
 	value := "ok"
 	err := errors.New("err")
