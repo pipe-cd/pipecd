@@ -85,7 +85,13 @@ func (b *builder) terraformDiff(
 	vars = append(vars, cpCfg.Vars...)
 	vars = append(vars, deployCfg.Input.Vars...)
 
-	executor := terraformprovider.NewTerraform(terraformPath, ds.AppDir, vars, deployCfg.Input.VarFiles)
+	executor := terraformprovider.NewTerraform(
+		terraformPath,
+		ds.AppDir,
+		terraformprovider.WithoutColor(),
+		terraformprovider.WithVars(vars),
+		terraformprovider.WithVarFiles(deployCfg.Input.VarFiles),
+	)
 
 	if err := executor.Init(ctx, buf); err != nil {
 		fmt.Fprintf(buf, "failed while executing terraform init (%v)\n", err)
