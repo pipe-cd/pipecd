@@ -95,7 +95,7 @@ func (b *builder) kubernetesDiff(
 	}
 
 	summary := fmt.Sprintf("%d added manifests, %d changed manifests, %d deleted manifests", len(result.Adds), len(result.Changes), len(result.Deletes))
-	fmt.Fprintf(buf, "---Head Commit\n+++Last Deploy\n\n%s\n", result.DiffString())
+	fmt.Fprintf(buf, "--- Last Deploy\n+++ Head Commit\n\n%s\n", result.DiffString())
 
 	return summary, nil
 }
