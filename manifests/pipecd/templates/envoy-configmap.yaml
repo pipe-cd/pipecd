@@ -36,6 +36,11 @@ data:
 {{- if .Values.cors.enabled }}
               - name: envoy.filters.http.cors
 {{- end }}
+              - name: envoy.filters.http.grpc_stats
+                typed_config:
+                  "@type": type.googleapis.com/envoy.extensions.filters.http.grpc_stats.v3.FilterConfig
+                  stats_for_all_methods: true
+                  enable_upstream_stats: true
               - name: envoy.filters.http.router
               route_config:
                 name: local_route
@@ -152,10 +157,3 @@ data:
                     port_value: 9082
         track_cluster_stats:
           request_response_sizes: true
-
-      extensions:
-        filters:
-          http:
-            grpc_stats:
-              stats_for_all_methods: true
-              enable_upstream_stats: true
