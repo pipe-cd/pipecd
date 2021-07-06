@@ -134,7 +134,7 @@ func (p *piped) run(ctx context.Context, t cli.Telemetry) (runErr error) {
 	}
 
 	// Register all metrics.
-	registerMetrics(cfg.PipedID)
+	registry := registerMetrics(cfg.PipedID)
 
 	// Initialize notifier and add piped events.
 	notifier, err := notifier.NewNotifier(cfg, t.Logger)
@@ -202,7 +202,7 @@ func (p *piped) run(ctx context.Context, t cli.Telemetry) (runErr error) {
 		admin.HandleFunc("/healthz", func(w http.ResponseWriter, r *http.Request) {
 			w.Write([]byte("ok"))
 		})
-		admin.Handle("/metrics", t.PrometheusMetricsHandler())
+		admin.Handle("/metrics", t.PrometheusMetricsHandlerFor(registry))
 
 		group.Go(func() error {
 			return admin.Run(ctx)
@@ -616,14 +616,20 @@ func (p *piped) insertLoginUserToPasswd(ctx context.Context) error {
 	return nil
 }
 
-func registerMetrics(pipedID string) {
-	r := prometheus.DefaultRegisterer
-	// TODO: Add piped version as label.
+func registerMetrics(pipedID string) *prometheus.Registry {
+	r := prometheus.NewRegistry()
 	wrapped := prometheus.WrapRegistererWith(
-		prometheus.Labels{"piped": pipedID},
+		prometheus.Labels{
+			"piped":         pipedID,
+			"piped_version": version.Get().Version,
+		},
 		r,
 	)
+	wrapped.Register(prometheus.NewGoCollector())
+	wrapped.Register(prometheus.NewProcessCollector(prometheus.ProcessCollectorOpts{}))
 
 	k8scloudprovidermetrics.Register(wrapped)
 	k8slivestatestoremetrics.Register(wrapped)
+
+	return r
 }

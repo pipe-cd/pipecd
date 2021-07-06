@@ -23,6 +23,7 @@ import (
 	"syscall"
 
 	"cloud.google.com/go/profiler"
+	"github.com/prometheus/client_golang/prometheus"
 	"github.com/prometheus/client_golang/prometheus/promhttp"
 	"github.com/spf13/cobra"
 	"go.uber.org/zap"
@@ -119,6 +120,16 @@ func startProfiler(service, version, credentialsFile string, debugLogging bool, 
 func (t Telemetry) PrometheusMetricsHandler() http.Handler {
 	if t.Flags.Metrics {
 		return promhttp.Handler()
+	}
+	var empty http.HandlerFunc = func(w http.ResponseWriter, r *http.Request) {
+		w.Write([]byte(""))
+	}
+	return empty
+}
+
+func (t Telemetry) PrometheusMetricsHandlerFor(r *prometheus.Registry) http.Handler {
+	if t.Flags.Metrics {
+		return promhttp.HandlerFor(r, promhttp.HandlerOpts{})
 	}
 	var empty http.HandlerFunc = func(w http.ResponseWriter, r *http.Request) {
 		w.Write([]byte(""))
