@@ -96,7 +96,7 @@ func (r *DiffListResult) DiffString() string {
 		renderer := diff.NewRenderer(opts...)
 
 		index++
-		b.WriteString(fmt.Sprintf("* %d. %s\n\n", index, key.ReadableString()))
+		b.WriteString(fmt.Sprintf("# %d. %s\n\n", index, key.ReadableString()))
 		b.WriteString(renderer.Render(change.Diff.Nodes()))
 		b.WriteString("\n")
 

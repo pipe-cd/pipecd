@@ -33,7 +33,7 @@ func TestReadableResultString(t *testing.T) {
 			name:    "empty",
 			results: []*model.PlanPreviewCommandResult{},
 			expected: `
-There are no applications to build plan-preview
+There are no updated applications. It means no deployment will be triggered once this pull request got merged.
 `,
 		},
 		{

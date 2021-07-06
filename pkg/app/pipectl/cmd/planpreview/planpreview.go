@@ -258,7 +258,7 @@ type ApplicationInfo struct {
 func (r ReadableResult) String() string {
 	var b strings.Builder
 	if len(r.Applications)+len(r.FailureApplications)+len(r.FailurePipeds) == 0 {
-		fmt.Fprintf(&b, "\nThere are no applications to build plan-preview\n")
+		fmt.Fprintf(&b, "\nThere are no updated applications. It means no deployment will be triggered once this pull request got merged.\n")
 		return b.String()
 	}
 
