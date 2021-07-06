@@ -2,7 +2,10 @@ load("@io_bazel_rules_go//go:def.bzl", "go_library")
 
 go_library(
     name = "go_default_library",
-    srcs = ["cache.go"],
+    srcs = [
+        "cache.go",
+        "hashcache.go",
+    ],
     importpath = "github.com/pipe-cd/pipe/pkg/cache/rediscache",
     visibility = ["//visibility:public"],
     deps = [
