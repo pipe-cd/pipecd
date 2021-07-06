@@ -119,9 +119,6 @@ func NewCommand() *cobra.Command {
 }
 
 func (p *piped) run(ctx context.Context, t cli.Telemetry) (runErr error) {
-	// Register all metrics.
-	registerMetrics()
-
 	group, ctx := errgroup.WithContext(ctx)
 	if p.addLoginUserToPasswd {
 		if err := p.insertLoginUserToPasswd(ctx); err != nil {
@@ -135,6 +132,9 @@ func (p *piped) run(ctx context.Context, t cli.Telemetry) (runErr error) {
 		t.Logger.Error("failed to load piped configuration", zap.Error(err))
 		return err
 	}
+
+	// Register all metrics.
+	registerMetrics(cfg.PipedID)
 
 	// Initialize notifier and add piped events.
 	notifier, err := notifier.NewNotifier(cfg, t.Logger)
@@ -616,8 +616,14 @@ func (p *piped) insertLoginUserToPasswd(ctx context.Context) error {
 	return nil
 }
 
-func registerMetrics() {
+func registerMetrics(pipedID string) {
 	r := prometheus.DefaultRegisterer
-	k8scloudprovidermetrics.Register(r)
-	k8slivestatestoremetrics.Register(r)
+	// TODO: Add piped version as label.
+	wrapped := prometheus.WrapRegistererWith(
+		prometheus.Labels{"piped": pipedID},
+		r,
+	)
+
+	k8scloudprovidermetrics.Register(wrapped)
+	k8slivestatestoremetrics.Register(wrapped)
 }

@@ -107,6 +107,13 @@ func (c *fakeClient) Ping(ctx context.Context, req *pipedservice.PingRequest, op
 	return &pipedservice.PingResponse{}, nil
 }
 
+// ReportStat is periodically sent to report its realtime status/stats to control-plane.
+// The received stats will be pushed to the metrics collector.
+func (c *fakeClient) ReportStat(ctx context.Context, req *pipedservice.ReportStatRequest, opts ...grpc.CallOption) (*pipedservice.ReportStatResponse, error) {
+	c.logger.Info("fake client received ReportStat rpc", zap.Any("request", req))
+	return &pipedservice.ReportStatResponse{}, nil
+}
+
 // ReportPipedMeta is sent by piped while starting up to report its metadata
 // such as configured cloud providers.
 func (c *fakeClient) ReportPipedMeta(ctx context.Context, req *pipedservice.ReportPipedMetaRequest, opts ...grpc.CallOption) (*pipedservice.ReportPipedMetaResponse, error) {
