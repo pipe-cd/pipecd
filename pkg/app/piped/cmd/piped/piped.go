@@ -227,9 +227,9 @@ func (p *piped) run(ctx context.Context, t cli.Telemetry) (runErr error) {
 	defer func() {
 		if err := gitClient.Clean(); err != nil {
 			t.Logger.Error("had an error while cleaning gitClient", zap.Error(err))
-		} else {
-			t.Logger.Info("successfully cleaned gitClient")
+			return
 		}
+		t.Logger.Info("successfully cleaned gitClient")
 	}()
 
 	// Initialize environment store.
@@ -396,9 +396,9 @@ func (p *piped) run(ctx context.Context, t cli.Telemetry) (runErr error) {
 		defer func() {
 			if err := gc.Clean(); err != nil {
 				t.Logger.Error("had an error while cleaning gitClient for plan-preview", zap.Error(err))
-			} else {
-				t.Logger.Info("successfully cleaned gitClient for plan-preview")
+				return
 			}
+			t.Logger.Info("successfully cleaned gitClient for plan-preview")
 		}()
 
 		h := planpreview.NewHandler(
