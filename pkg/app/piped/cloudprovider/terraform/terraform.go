@@ -25,19 +25,49 @@ import (
 	"strings"
 )
 
-type Terraform struct {
-	execPath string
-	dir      string
+type options struct {
+	noColor  bool
 	vars     []string
 	varFiles []string
 }
 
-func NewTerraform(execPath, dir string, vars, varFiles []string) *Terraform {
+type Option func(*options)
+
+func WithoutColor() Option {
+	return func(opts *options) {
+		opts.noColor = true
+	}
+}
+
+func WithVars(vars []string) Option {
+	return func(opts *options) {
+		opts.vars = vars
+	}
+}
+
+func WithVarFiles(files []string) Option {
+	return func(opts *options) {
+		opts.varFiles = files
+	}
+}
+
+type Terraform struct {
+	execPath string
+	dir      string
+
+	options options
+}
+
+func NewTerraform(execPath, dir string, opts ...Option) *Terraform {
+	opt := options{}
+	for _, o := range opts {
+		o(&opt)
+	}
+
 	return &Terraform{
 		execPath: execPath,
 		dir:      dir,
-		vars:     vars,
-		varFiles: varFiles,
+		options:  opt,
 	}
 }
 
@@ -58,12 +88,7 @@ func (t *Terraform) Init(ctx context.Context, w io.Writer) error {
 	args := []string{
 		"init",
 	}
-	for _, v := range t.vars {
-		args = append(args, fmt.Sprintf("-var=%s", v))
-	}
-	for _, f := range t.varFiles {
-		args = append(args, fmt.Sprintf("-var-file=%s", f))
-	}
+	args = append(args, t.makeCommonCommandArgs()...)
 
 	cmd := exec.CommandContext(ctx, t.execPath, args...)
 	cmd.Dir = t.dir
@@ -114,17 +139,10 @@ func GetExitCode(err error) int {
 func (t *Terraform) Plan(ctx context.Context, w io.Writer) (PlanResult, error) {
 	args := []string{
 		"plan",
-		// TODO: Remove this -no-color flag after parsePlanResult supports parsing the message containing color codes.
-		"-no-color",
 		"-lock=false",
 		"-detailed-exitcode",
 	}
-	for _, v := range t.vars {
-		args = append(args, fmt.Sprintf("-var=%s", v))
-	}
-	for _, f := range t.varFiles {
-		args = append(args, fmt.Sprintf("-var-file=%s", f))
-	}
+	args = append(args, t.makeCommonCommandArgs()...)
 
 	var buf bytes.Buffer
 	stdout := io.MultiWriter(w, &buf)
@@ -140,10 +158,23 @@ func (t *Terraform) Plan(ctx context.Context, w io.Writer) (PlanResult, error) {
 	case 0:
 		return PlanResult{}, nil
 	case 2:
-		return parsePlanResult(buf.String())
+		return parsePlanResult(buf.String(), !t.options.noColor)
 	default:
 		return PlanResult{}, err
 	}
+}
+
+func (t *Terraform) makeCommonCommandArgs() (args []string) {
+	if t.options.noColor {
+		args = append(args, "-no-color")
+	}
+	for _, v := range t.options.vars {
+		args = append(args, fmt.Sprintf("-var=%s", v))
+	}
+	for _, f := range t.options.varFiles {
+		args = append(args, fmt.Sprintf("-var-file=%s", f))
+	}
+	return
 }
 
 var (
@@ -151,7 +182,16 @@ var (
 	planNoChangesRegex = regexp.MustCompile(`(?m)^No changes. Infrastructure is up-to-date.$`)
 )
 
-func parsePlanResult(out string) (PlanResult, error) {
+// Borrowed from https://github.com/acarl005/stripansi
+const ansi = "[\u001B\u009B][[\\]()#;?]*(?:(?:(?:[a-zA-Z\\d]*(?:;[a-zA-Z\\d]*)*)?\u0007)|(?:(?:\\d{1,4}(?:;\\d{0,4})*)?[\\dA-PRZcf-ntqry=><~]))"
+
+var ansiRegex = regexp.MustCompile(ansi)
+
+func stripAnsiCodes(str string) string {
+	return ansiRegex.ReplaceAllString(str, "")
+}
+
+func parsePlanResult(out string, ansiIncluded bool) (PlanResult, error) {
 	parseNums := func(add, change, destroy string) (adds int, changes int, destroys int, err error) {
 		adds, err = strconv.Atoi(add)
 		if err != nil {
@@ -166,6 +206,10 @@ func parsePlanResult(out string) (PlanResult, error) {
 			return
 		}
 		return
+	}
+
+	if ansiIncluded {
+		out = stripAnsiCodes(out)
 	}
 
 	if s := planHasChangeRegex.FindStringSubmatch(out); len(s) == 4 {
@@ -192,12 +236,7 @@ func (t *Terraform) Apply(ctx context.Context, w io.Writer) error {
 		"-auto-approve",
 		"-input=false",
 	}
-	for _, v := range t.vars {
-		args = append(args, fmt.Sprintf("-var=%s", v))
-	}
-	for _, f := range t.varFiles {
-		args = append(args, fmt.Sprintf("-var-file=%s", f))
-	}
+	args = append(args, t.makeCommonCommandArgs()...)
 
 	cmd := exec.CommandContext(ctx, t.execPath, args...)
 	cmd.Dir = t.dir

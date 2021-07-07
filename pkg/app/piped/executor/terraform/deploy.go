@@ -89,7 +89,12 @@ func (e *deployExecutor) Execute(sig executor.StopSignal) model.StageStatus {
 }
 
 func (e *deployExecutor) ensureSync(ctx context.Context) model.StageStatus {
-	cmd := provider.NewTerraform(e.terraformPath, e.appDir, e.vars, e.deployCfg.Input.VarFiles)
+	cmd := provider.NewTerraform(
+		e.terraformPath,
+		e.appDir,
+		provider.WithVars(e.vars),
+		provider.WithVarFiles(e.deployCfg.Input.VarFiles),
+	)
 
 	if ok := showUsingVersion(ctx, cmd, e.LogPersister); !ok {
 		return model.StageStatus_STAGE_FAILURE
@@ -127,7 +132,12 @@ func (e *deployExecutor) ensureSync(ctx context.Context) model.StageStatus {
 }
 
 func (e *deployExecutor) ensurePlan(ctx context.Context) model.StageStatus {
-	cmd := provider.NewTerraform(e.terraformPath, e.appDir, e.vars, e.deployCfg.Input.VarFiles)
+	cmd := provider.NewTerraform(
+		e.terraformPath,
+		e.appDir,
+		provider.WithVars(e.vars),
+		provider.WithVarFiles(e.deployCfg.Input.VarFiles),
+	)
 
 	if ok := showUsingVersion(ctx, cmd, e.LogPersister); !ok {
 		return model.StageStatus_STAGE_FAILURE
@@ -158,7 +168,12 @@ func (e *deployExecutor) ensurePlan(ctx context.Context) model.StageStatus {
 }
 
 func (e *deployExecutor) ensureApply(ctx context.Context) model.StageStatus {
-	cmd := provider.NewTerraform(e.terraformPath, e.appDir, e.vars, e.deployCfg.Input.VarFiles)
+	cmd := provider.NewTerraform(
+		e.terraformPath,
+		e.appDir,
+		provider.WithVars(e.vars),
+		provider.WithVarFiles(e.deployCfg.Input.VarFiles),
+	)
 
 	if ok := showUsingVersion(ctx, cmd, e.LogPersister); !ok {
 		return model.StageStatus_STAGE_FAILURE
