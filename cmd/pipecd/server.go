@@ -36,7 +36,6 @@ import (
 	"github.com/pipe-cd/pipe/pkg/app/api/commandoutputstore"
 	"github.com/pipe-cd/pipe/pkg/app/api/commandstore"
 	"github.com/pipe-cd/pipe/pkg/app/api/grpcapi"
-	"github.com/pipe-cd/pipe/pkg/app/api/pipedstatstore"
 	"github.com/pipe-cd/pipe/pkg/app/api/pipedverifier"
 	"github.com/pipe-cd/pipe/pkg/app/api/service/webservice"
 	"github.com/pipe-cd/pipe/pkg/app/api/stagelogstore"
@@ -191,7 +190,6 @@ func (s *server) run(ctx context.Context, t cli.Telemetry) error {
 	is := insightstore.NewStore(fs)
 	cmdOutputStore := commandoutputstore.NewStore(fs, t.Logger)
 	hcache := rediscache.NewTTLHashCache(rd, cfg.Cache.TTLDuration(), defaultPipedStatHashKey)
-	pdss := pipedstatstore.NewStore(hcache, t.Logger)
 
 	// Start a gRPC server for handling PipedAPI requests.
 	{
@@ -203,7 +201,7 @@ func (s *server) run(ctx context.Context, t cli.Telemetry) error {
 				datastore.NewPipedStore(ds),
 				t.Logger,
 			)
-			service = grpcapi.NewPipedAPI(ctx, ds, sls, alss, cmds, pdss, cmdOutputStore, t.Logger)
+			service = grpcapi.NewPipedAPI(ctx, ds, sls, alss, cmds, hcache, cmdOutputStore, t.Logger)
 			opts    = []rpc.Option{
 				rpc.WithPort(s.pipedAPIPort),
 				rpc.WithGracePeriod(s.gracePeriod),

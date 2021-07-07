@@ -26,7 +26,6 @@ import (
 
 	"github.com/pipe-cd/pipe/pkg/app/api/applicationlivestatestore"
 	"github.com/pipe-cd/pipe/pkg/app/api/commandstore"
-	"github.com/pipe-cd/pipe/pkg/app/api/pipedstatstore"
 	"github.com/pipe-cd/pipe/pkg/app/api/service/pipedservice"
 	"github.com/pipe-cd/pipe/pkg/app/api/stagelogstore"
 	"github.com/pipe-cd/pipe/pkg/cache"
@@ -47,18 +46,18 @@ type PipedAPI struct {
 	stageLogStore             stagelogstore.Store
 	applicationLiveStateStore applicationlivestatestore.Store
 	commandStore              commandstore.Store
-	pipedStatStore            pipedstatstore.Store
 	commandOutputPutter       commandOutputPutter
 
 	appPipedCache        cache.Cache
 	deploymentPipedCache cache.Cache
 	envProjectCache      cache.Cache
+	pipedStatCache       cache.Cache
 
 	logger *zap.Logger
 }
 
 // NewPipedAPI creates a new PipedAPI instance.
-func NewPipedAPI(ctx context.Context, ds datastore.DataStore, sls stagelogstore.Store, alss applicationlivestatestore.Store, cs commandstore.Store, pdss pipedstatstore.Store, cop commandOutputPutter, logger *zap.Logger) *PipedAPI {
+func NewPipedAPI(ctx context.Context, ds datastore.DataStore, sls stagelogstore.Store, alss applicationlivestatestore.Store, cs commandstore.Store, hc cache.Cache, cop commandOutputPutter, logger *zap.Logger) *PipedAPI {
 	a := &PipedAPI{
 		applicationStore:          datastore.NewApplicationStore(ds),
 		deploymentStore:           datastore.NewDeploymentStore(ds),
@@ -69,11 +68,11 @@ func NewPipedAPI(ctx context.Context, ds datastore.DataStore, sls stagelogstore.
 		stageLogStore:             sls,
 		applicationLiveStateStore: alss,
 		commandStore:              cs,
-		pipedStatStore:            pdss,
 		commandOutputPutter:       cop,
 		appPipedCache:             memorycache.NewTTLCache(ctx, 24*time.Hour, 3*time.Hour),
 		deploymentPipedCache:      memorycache.NewTTLCache(ctx, 24*time.Hour, 3*time.Hour),
 		envProjectCache:           memorycache.NewTTLCache(ctx, 24*time.Hour, 3*time.Hour),
+		pipedStatCache:            hc,
 		logger:                    logger.Named("piped-api"),
 	}
 	return a
@@ -99,7 +98,7 @@ func (a *PipedAPI) ReportStat(ctx context.Context, req *pipedservice.ReportStatR
 	if err != nil {
 		return nil, err
 	}
-	if err := a.pipedStatStore.PutPipedStat(pipedID, req.PipedStats); err != nil {
+	if err := a.pipedStatCache.PutHash(pipedID, req.PipedStats); err != nil {
 		a.logger.Error("failed to store the reported piped stat",
 			zap.String("piped-id", pipedID),
 			zap.Error(err),
