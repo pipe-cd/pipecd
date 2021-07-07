@@ -88,15 +88,7 @@ func (t *Terraform) Init(ctx context.Context, w io.Writer) error {
 	args := []string{
 		"init",
 	}
-	if t.options.noColor {
-		args = append(args, "-no-color")
-	}
-	for _, v := range t.options.vars {
-		args = append(args, fmt.Sprintf("-var=%s", v))
-	}
-	for _, f := range t.options.varFiles {
-		args = append(args, fmt.Sprintf("-var-file=%s", f))
-	}
+	args = append(args, t.makeCommonCommandArgs()...)
 
 	cmd := exec.CommandContext(ctx, t.execPath, args...)
 	cmd.Dir = t.dir
@@ -150,16 +142,7 @@ func (t *Terraform) Plan(ctx context.Context, w io.Writer) (PlanResult, error) {
 		"-lock=false",
 		"-detailed-exitcode",
 	}
-
-	if t.options.noColor {
-		args = append(args, "-no-color")
-	}
-	for _, v := range t.options.vars {
-		args = append(args, fmt.Sprintf("-var=%s", v))
-	}
-	for _, f := range t.options.varFiles {
-		args = append(args, fmt.Sprintf("-var-file=%s", f))
-	}
+	args = append(args, t.makeCommonCommandArgs()...)
 
 	var buf bytes.Buffer
 	stdout := io.MultiWriter(w, &buf)
@@ -179,6 +162,19 @@ func (t *Terraform) Plan(ctx context.Context, w io.Writer) (PlanResult, error) {
 	default:
 		return PlanResult{}, err
 	}
+}
+
+func (t *Terraform) makeCommonCommandArgs() (args []string) {
+	if t.options.noColor {
+		args = append(args, "-no-color")
+	}
+	for _, v := range t.options.vars {
+		args = append(args, fmt.Sprintf("-var=%s", v))
+	}
+	for _, f := range t.options.varFiles {
+		args = append(args, fmt.Sprintf("-var-file=%s", f))
+	}
+	return
 }
 
 var (
@@ -240,15 +236,7 @@ func (t *Terraform) Apply(ctx context.Context, w io.Writer) error {
 		"-auto-approve",
 		"-input=false",
 	}
-	if t.options.noColor {
-		args = append(args, "-no-color")
-	}
-	for _, v := range t.options.vars {
-		args = append(args, fmt.Sprintf("-var=%s", v))
-	}
-	for _, f := range t.options.varFiles {
-		args = append(args, fmt.Sprintf("-var-file=%s", f))
-	}
+	args = append(args, t.makeCommonCommandArgs()...)
 
 	cmd := exec.CommandContext(ctx, t.execPath, args...)
 	cmd.Dir = t.dir
