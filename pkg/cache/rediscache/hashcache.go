@@ -15,6 +15,7 @@
 package rediscache
 
 import (
+	"errors"
 	"time"
 
 	redigo "github.com/gomodule/redigo/redis"
@@ -83,7 +84,7 @@ func (r *RedisHashCache) Delete(k interface{}) error {
 func (r *RedisHashCache) GetAll() (map[interface{}]interface{}, error) {
 	conn := r.redis.Get()
 	defer conn.Close()
-	reply, err := redigo.StringMap(conn.Do("HGETALL", r.key))
+	reply, err := redigo.Values(conn.Do("HGETALL", r.key))
 	if err != nil {
 		if err == redigo.ErrNil {
 			return nil, cache.ErrNotFound
@@ -93,10 +94,17 @@ func (r *RedisHashCache) GetAll() (map[interface{}]interface{}, error) {
 	if len(reply) == 0 {
 		return nil, cache.ErrNotFound
 	}
+	if len(reply)%2 != 0 {
+		return nil, errors.New("invalid key-value pair contained")
+	}
 
-	out := make(map[interface{}]interface{}, len(reply))
-	for k, v := range reply {
-		out[k] = v
+	out := make(map[interface{}]interface{}, len(reply)/2)
+	for i := 0; i < len(reply); i += 2 {
+		key, okKey := reply[i].([]byte)
+		if !okKey {
+			return nil, errors.New("error key not a bulk string value")
+		}
+		out[string(key)] = reply[i+1]
 	}
 
 	return out, nil
