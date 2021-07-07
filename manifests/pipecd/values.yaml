@@ -377,22 +377,22 @@ grafana:
     dashboardproviders.yaml:
       apiVersion: 1
       providers:
-        - name: 'Cluster-Stats'
+        - name: 'Cluster'
           orgId: 1
-          folder: 'Cluster-Stats'
+          folder: 'Cluster'
           type: file
           disableDeletion: false
           editable: false
           options:
-            path: /tmp/dashboards/cluster-stats
-        - name: 'Control-Plane-Stats'
+            path: /tmp/dashboards/cluster
+        - name: 'Control-Plane'
           orgId: 1
-          folder: 'Control-Plane-Stats'
+          folder: 'Control-Plane'
           type: file
           disableDeletion: false
           editable: false
           options:
-            path: /tmp/dashboards/control-plane-stats
+            path: /tmp/dashboards/control-plane
   sidecar:
     datasources:
       enabled: true
