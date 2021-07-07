@@ -26,6 +26,7 @@ import (
 
 	"github.com/pipe-cd/pipe/pkg/app/api/applicationlivestatestore"
 	"github.com/pipe-cd/pipe/pkg/app/api/commandstore"
+	"github.com/pipe-cd/pipe/pkg/app/api/pipedstatstore"
 	"github.com/pipe-cd/pipe/pkg/app/api/service/pipedservice"
 	"github.com/pipe-cd/pipe/pkg/app/api/stagelogstore"
 	"github.com/pipe-cd/pipe/pkg/cache"
@@ -40,13 +41,13 @@ type PipedAPI struct {
 	applicationStore          datastore.ApplicationStore
 	deploymentStore           datastore.DeploymentStore
 	environmentStore          datastore.EnvironmentStore
-	pipedStatsStore           datastore.PipedStatsStore
 	pipedStore                datastore.PipedStore
 	projectStore              datastore.ProjectStore
 	eventStore                datastore.EventStore
 	stageLogStore             stagelogstore.Store
 	applicationLiveStateStore applicationlivestatestore.Store
 	commandStore              commandstore.Store
+	pipedStatStore            pipedstatstore.Store
 	commandOutputPutter       commandOutputPutter
 
 	appPipedCache        cache.Cache
@@ -57,18 +58,18 @@ type PipedAPI struct {
 }
 
 // NewPipedAPI creates a new PipedAPI instance.
-func NewPipedAPI(ctx context.Context, ds datastore.DataStore, sls stagelogstore.Store, alss applicationlivestatestore.Store, cs commandstore.Store, cop commandOutputPutter, logger *zap.Logger) *PipedAPI {
+func NewPipedAPI(ctx context.Context, ds datastore.DataStore, sls stagelogstore.Store, alss applicationlivestatestore.Store, cs commandstore.Store, pdss pipedstatstore.Store, cop commandOutputPutter, logger *zap.Logger) *PipedAPI {
 	a := &PipedAPI{
 		applicationStore:          datastore.NewApplicationStore(ds),
 		deploymentStore:           datastore.NewDeploymentStore(ds),
 		environmentStore:          datastore.NewEnvironmentStore(ds),
-		pipedStatsStore:           datastore.NewPipedStatsStore(ds),
 		pipedStore:                datastore.NewPipedStore(ds),
 		projectStore:              datastore.NewProjectStore(ds),
 		eventStore:                datastore.NewEventStore(ds),
 		stageLogStore:             sls,
 		applicationLiveStateStore: alss,
 		commandStore:              cs,
+		pipedStatStore:            pdss,
 		commandOutputPutter:       cop,
 		appPipedCache:             memorycache.NewTTLCache(ctx, 24*time.Hour, 3*time.Hour),
 		deploymentPipedCache:      memorycache.NewTTLCache(ctx, 24*time.Hour, 3*time.Hour),
@@ -94,8 +95,18 @@ func (a *PipedAPI) Ping(ctx context.Context, req *pipedservice.PingRequest) (*pi
 // ReportStat is periodically sent to report its realtime status/stats to control-plane.
 // The received stats will be pushed to the metrics collector.
 func (a *PipedAPI) ReportStat(ctx context.Context, req *pipedservice.ReportStatRequest) (*pipedservice.ReportStatResponse, error) {
+	_, pipedID, _, err := rpcauth.ExtractPipedToken(ctx)
+	if err != nil {
+		return nil, err
+	}
+	if err := a.pipedStatStore.PutPipedStat(pipedID, req.PipedStats); err != nil {
+		a.logger.Error("failed to store the reported piped stat",
+			zap.String("piped-id", pipedID),
+			zap.Error(err),
+		)
+		return nil, status.Error(codes.Internal, "failed to store the reported piped stat")
+	}
 	return &pipedservice.ReportStatResponse{}, nil
-	// return nil, status.Error(codes.Unimplemented, "")
 }
 
 // ReportPipedMeta is sent by piped while starting up to report its metadata

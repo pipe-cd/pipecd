@@ -28,7 +28,7 @@ type RedisHashCache struct {
 	key string
 }
 
-func NewHashCache(redis redis.Redis, ttl time.Duration, key string) *RedisHashCache {
+func NewHashCache(redis redis.Redis, key string) *RedisHashCache {
 	return &RedisHashCache{
 		RedisCache: RedisCache{
 			redis: redis,
