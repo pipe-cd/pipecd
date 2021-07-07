@@ -13,9 +13,9 @@ PipeCD provides a way to preview the deployment plan of all updated applications
 
 Here are what will be included currently in the result of plan-preview process:
 
-- what application will be deployed once the pull request got merged
-- what deployment strategy (QUICK_SYNC or PIPELINE_SYNC) will be used
-- what resources will be added, deleted, or modified
+- which application will be deployed once the pull request got merged
+- which deployment strategy (QUICK_SYNC or PIPELINE_SYNC) will be used
+- which resources will be added, deleted, or modified
 
 This feature will available for all application kinds: KUBERNETES, TERRAFORM, CLOUD_RUN, LAMBDA and Amazon ECS.
 
@@ -26,7 +26,7 @@ PlanPreview with GitHub actions <a href="https://github.com/pipe-cd/actions-plan
 
 ## Prerequisites
 
-- Your Pipeds are running at least version `v0.11.0`.
+- Ensure the version of your Piped is at least `v0.11.0`.
 - Having an API key that has `READ_WRITE` role to authenticate with PipeCD's control-plane. A new key can be generated from `settings/api-key` page of your PipeCD web.
 
 ## Usage
