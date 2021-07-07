@@ -68,7 +68,7 @@ func (c *TTLCache) evictExpired(t time.Time) {
 	})
 }
 
-func (c *TTLCache) Get(key interface{}) (interface{}, error) {
+func (c *TTLCache) Get(key string) (interface{}, error) {
 	item, ok := c.entries.Load(key)
 	if !ok {
 		cachemetrics.IncGetOperationCounter(
@@ -84,7 +84,7 @@ func (c *TTLCache) Get(key interface{}) (interface{}, error) {
 	return item.(*entry).value, nil
 }
 
-func (c *TTLCache) Put(key interface{}, value interface{}) error {
+func (c *TTLCache) Put(key string, value interface{}) error {
 	e := &entry{
 		value:      value,
 		expiration: time.Now().Add(c.ttl),
@@ -93,11 +93,11 @@ func (c *TTLCache) Put(key interface{}, value interface{}) error {
 	return nil
 }
 
-func (c *TTLCache) Delete(key interface{}) error {
+func (c *TTLCache) Delete(key string) error {
 	c.entries.Delete(key)
 	return nil
 }
 
-func (c *TTLCache) GetAll() (map[interface{}]interface{}, error) {
+func (c *TTLCache) GetAll() (map[string]interface{}, error) {
 	return nil, cache.ErrUnimplemented
 }

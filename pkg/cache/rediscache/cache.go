@@ -42,7 +42,7 @@ func NewTTLCache(redis redis.Redis, ttl time.Duration) *RedisCache {
 	}
 }
 
-func (c *RedisCache) Get(k interface{}) (interface{}, error) {
+func (c *RedisCache) Get(k string) (interface{}, error) {
 	conn := c.redis.Get()
 	defer conn.Close()
 	reply, err := conn.Do("GET", k)
@@ -77,7 +77,7 @@ func (c *RedisCache) Get(k interface{}) (interface{}, error) {
 	return reply, nil
 }
 
-func (c *RedisCache) Put(k interface{}, v interface{}) error {
+func (c *RedisCache) Put(k string, v interface{}) error {
 	conn := c.redis.Get()
 	defer conn.Close()
 	var err error
@@ -89,13 +89,13 @@ func (c *RedisCache) Put(k interface{}, v interface{}) error {
 	return err
 }
 
-func (c *RedisCache) Delete(k interface{}) error {
+func (c *RedisCache) Delete(k string) error {
 	conn := c.redis.Get()
 	defer conn.Close()
 	_, err := conn.Do("DEL", k)
 	return err
 }
 
-func (c *RedisCache) GetAll() (map[interface{}]interface{}, error) {
+func (c *RedisCache) GetAll() (map[string]interface{}, error) {
 	return nil, cache.ErrUnimplemented
 }
