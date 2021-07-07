@@ -15,6 +15,8 @@
 package rediscache
 
 import (
+	"time"
+
 	redigo "github.com/gomodule/redigo/redis"
 
 	"github.com/pipe-cd/pipe/pkg/cache"
@@ -26,10 +28,20 @@ type RedisHashCache struct {
 	key string
 }
 
-func NewRedisHashCache(redis redis.Redis, key string) *RedisHashCache {
+func NewHashCache(redis redis.Redis, ttl time.Duration, key string) *RedisHashCache {
 	return &RedisHashCache{
 		RedisCache: RedisCache{
 			redis: redis,
+		},
+		key: key,
+	}
+}
+
+func NewTTLHashCache(redis redis.Redis, ttl time.Duration, key string) *RedisHashCache {
+	return &RedisHashCache{
+		RedisCache: RedisCache{
+			redis: redis,
+			ttl:   uint(ttl.Seconds()),
 		},
 		key: key,
 	}
@@ -39,6 +51,9 @@ func (r *RedisHashCache) Put(k interface{}, v interface{}) error {
 	conn := r.redis.Get()
 	defer conn.Close()
 	_, err := conn.Do("HSET", r.key, k, v)
+	if r.ttl != 0 {
+		_, err = conn.Do("EXPIRE", r.key, r.ttl)
+	}
 	return err
 }
 
@@ -52,11 +67,11 @@ func (r *RedisHashCache) GetAll() ([]interface{}, error) {
 		}
 		return nil, err
 	}
-	if reply == nil {
+	if len(reply) == 0 {
 		return nil, cache.ErrNotFound
 	}
 
-	out := make([]interface{}, len(reply))
+	out := make([]interface{}, 0, len(reply))
 	for _, v := range reply {
 		out = append(out, v)
 	}
