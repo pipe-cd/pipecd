@@ -21,13 +21,13 @@ import (
 	"github.com/stretchr/testify/assert"
 )
 
-type getterFunc func(key interface{}) (interface{}, error)
+type getterFunc func(key string) (interface{}, error)
 
-func (f getterFunc) Get(key interface{}) (interface{}, error) {
+func (f getterFunc) Get(key string) (interface{}, error) {
 	return f(key)
 }
 
-func (f getterFunc) GetAll() (map[interface{}]interface{}, error) {
+func (f getterFunc) GetAll() (map[string]interface{}, error) {
 	return nil, ErrUnimplemented
 }
 
@@ -36,11 +36,11 @@ func TestMultiGetter(t *testing.T) {
 	err := errors.New("err")
 	var calls int
 
-	successGetter := getterFunc(func(key interface{}) (interface{}, error) {
+	successGetter := getterFunc(func(key string) (interface{}, error) {
 		calls++
 		return value, nil
 	})
-	failureGetter := getterFunc(func(key interface{}) (interface{}, error) {
+	failureGetter := getterFunc(func(key string) (interface{}, error) {
 		calls++
 		return nil, err
 	})

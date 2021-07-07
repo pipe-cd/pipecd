@@ -45,7 +45,7 @@ func NewTTLHashCache(redis redis.Redis, ttl time.Duration, key string) *RedisHas
 	}
 }
 
-func (r *RedisHashCache) Get(k interface{}) (interface{}, error) {
+func (r *RedisHashCache) Get(k string) (interface{}, error) {
 	conn := r.redis.Get()
 	defer conn.Close()
 	reply, err := conn.Do("HGET", r.key, k)
@@ -64,7 +64,7 @@ func (r *RedisHashCache) Get(k interface{}) (interface{}, error) {
 	return reply, nil
 }
 
-func (r *RedisHashCache) Put(k interface{}, v interface{}) error {
+func (r *RedisHashCache) Put(k string, v interface{}) error {
 	conn := r.redis.Get()
 	defer conn.Close()
 	_, err := conn.Do("HSET", r.key, k, v)
@@ -74,14 +74,14 @@ func (r *RedisHashCache) Put(k interface{}, v interface{}) error {
 	return err
 }
 
-func (r *RedisHashCache) Delete(k interface{}) error {
+func (r *RedisHashCache) Delete(k string) error {
 	conn := r.redis.Get()
 	defer conn.Close()
 	_, err := conn.Do("HDEL", r.key, k)
 	return err
 }
 
-func (r *RedisHashCache) GetAll() (map[interface{}]interface{}, error) {
+func (r *RedisHashCache) GetAll() (map[string]interface{}, error) {
 	conn := r.redis.Get()
 	defer conn.Close()
 	reply, err := redigo.Values(conn.Do("HGETALL", r.key))
@@ -98,7 +98,7 @@ func (r *RedisHashCache) GetAll() (map[interface{}]interface{}, error) {
 		return nil, errors.New("invalid key-value pair contained")
 	}
 
-	out := make(map[interface{}]interface{}, len(reply)/2)
+	out := make(map[string]interface{}, len(reply)/2)
 	for i := 0; i < len(reply); i += 2 {
 		key, okKey := reply[i].([]byte)
 		if !okKey {

@@ -35,7 +35,7 @@ func NewLRUCache(size int) (*LRUCache, error) {
 	}, nil
 }
 
-func (c *LRUCache) Get(key interface{}) (interface{}, error) {
+func (c *LRUCache) Get(key string) (interface{}, error) {
 	item, ok := c.cache.Get(key)
 	if !ok {
 		cachemetrics.IncGetOperationCounter(
@@ -51,16 +51,16 @@ func (c *LRUCache) Get(key interface{}) (interface{}, error) {
 	return item, nil
 }
 
-func (c *LRUCache) Put(key interface{}, value interface{}) error {
+func (c *LRUCache) Put(key string, value interface{}) error {
 	c.cache.Add(key, value)
 	return nil
 }
 
-func (c *LRUCache) Delete(key interface{}) error {
+func (c *LRUCache) Delete(key string) error {
 	c.cache.Remove(key)
 	return nil
 }
 
-func (c *LRUCache) GetAll() (map[interface{}]interface{}, error) {
+func (c *LRUCache) GetAll() (map[string]interface{}, error) {
 	return nil, cache.ErrUnimplemented
 }
