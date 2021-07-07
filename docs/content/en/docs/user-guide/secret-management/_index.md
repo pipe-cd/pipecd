@@ -1,6 +1,6 @@
 ---
-title: "Secret Management"
-linkTitle: "Secret Management"
+title: "Secret management"
+linkTitle: "Secret management"
 weight: 11
 description: >
   Storing secrets safely in the Git repository.
