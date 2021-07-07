@@ -79,9 +79,10 @@ func (b *builder) kubernetesDiff(
 		}
 	}
 
-	result, err := provider.DiffList(oldManifests, newManifests,
+	result, err := provider.DiffList(
+		oldManifests,
+		newManifests,
 		diff.WithEquateEmpty(),
-		diff.WithIgnoreAddingMapKeys(),
 		diff.WithCompareNumberAndNumericString(),
 	)
 	if err != nil {

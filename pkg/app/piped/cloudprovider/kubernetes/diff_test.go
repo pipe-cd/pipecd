@@ -23,8 +23,8 @@ import (
 func TestGroupManifests(t *testing.T) {
 	testcases := []struct {
 		name               string
-		news               []Manifest
 		olds               []Manifest
+		news               []Manifest
 		expectedAdds       []Manifest
 		expectedDeletes    []Manifest
 		expectedNewChanges []Manifest
@@ -35,7 +35,7 @@ func TestGroupManifests(t *testing.T) {
 		},
 		{
 			name: "only adds",
-			olds: []Manifest{
+			news: []Manifest{
 				{Key: ResourceKey{Name: "b"}},
 				{Key: ResourceKey{Name: "a"}},
 			},
@@ -46,7 +46,7 @@ func TestGroupManifests(t *testing.T) {
 		},
 		{
 			name: "only deletes",
-			news: []Manifest{
+			olds: []Manifest{
 				{Key: ResourceKey{Name: "b"}},
 				{Key: ResourceKey{Name: "a"}},
 			},
@@ -57,11 +57,11 @@ func TestGroupManifests(t *testing.T) {
 		},
 		{
 			name: "only inters",
-			news: []Manifest{
+			olds: []Manifest{
 				{Key: ResourceKey{Name: "b"}},
 				{Key: ResourceKey{Name: "a"}},
 			},
-			olds: []Manifest{
+			news: []Manifest{
 				{Key: ResourceKey{Name: "a"}},
 				{Key: ResourceKey{Name: "b"}},
 			},
@@ -76,12 +76,12 @@ func TestGroupManifests(t *testing.T) {
 		},
 		{
 			name: "all kinds",
-			news: []Manifest{
+			olds: []Manifest{
 				{Key: ResourceKey{Name: "b"}},
 				{Key: ResourceKey{Name: "a"}},
 				{Key: ResourceKey{Name: "c"}},
 			},
-			olds: []Manifest{
+			news: []Manifest{
 				{Key: ResourceKey{Name: "a"}},
 				{Key: ResourceKey{Name: "d"}},
 				{Key: ResourceKey{Name: "b"}},
