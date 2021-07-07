@@ -101,7 +101,3 @@ func (c *TTLCache) Delete(key interface{}) error {
 func (c *TTLCache) GetAll() ([]interface{}, error) {
 	return nil, cache.ErrUnimplemented
 }
-
-func (c *TTLCache) PutHash(k interface{}, v interface{}) error {
-	return cache.ErrUnimplemented
-}

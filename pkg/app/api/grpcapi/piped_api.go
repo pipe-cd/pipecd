@@ -98,7 +98,7 @@ func (a *PipedAPI) ReportStat(ctx context.Context, req *pipedservice.ReportStatR
 	if err != nil {
 		return nil, err
 	}
-	if err := a.pipedStatCache.PutHash(pipedID, req.PipedStats); err != nil {
+	if err := a.pipedStatCache.Put(pipedID, req.PipedStats); err != nil {
 		a.logger.Error("failed to store the reported piped stat",
 			zap.String("piped-id", pipedID),
 			zap.Error(err),

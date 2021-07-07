@@ -24,36 +24,59 @@ import (
 )
 
 type RedisHashCache struct {
-	RedisCache
-	key string
+	redis redis.Redis
+	ttl   uint
+	key   string
 }
 
 func NewHashCache(redis redis.Redis, key string) *RedisHashCache {
 	return &RedisHashCache{
-		RedisCache: RedisCache{
-			redis: redis,
-		},
-		key: key,
+		redis: redis,
+		key:   key,
 	}
 }
 
 func NewTTLHashCache(redis redis.Redis, ttl time.Duration, key string) *RedisHashCache {
 	return &RedisHashCache{
-		RedisCache: RedisCache{
-			redis: redis,
-			ttl:   uint(ttl.Seconds()),
-		},
-		key: key,
+		redis: redis,
+		ttl:   uint(ttl.Seconds()),
+		key:   key,
 	}
 }
 
-func (r *RedisHashCache) PutHash(k interface{}, v interface{}) error {
+func (r *RedisHashCache) Get(k interface{}) (interface{}, error) {
+	conn := r.redis.Get()
+	defer conn.Close()
+	reply, err := conn.Do("HGET", r.key, k)
+	if err != nil {
+		if err == redigo.ErrNil {
+			return nil, cache.ErrNotFound
+		}
+		return nil, err
+	}
+	if reply == nil {
+		return nil, cache.ErrNotFound
+	}
+	if err, ok := reply.(redigo.Error); ok {
+		return nil, err
+	}
+	return reply, nil
+}
+
+func (r *RedisHashCache) Put(k interface{}, v interface{}) error {
 	conn := r.redis.Get()
 	defer conn.Close()
 	_, err := conn.Do("HSET", r.key, k, v)
 	if r.ttl != 0 {
 		_, err = conn.Do("EXPIRE", r.key, r.ttl)
 	}
+	return err
+}
+
+func (r *RedisHashCache) Delete(k interface{}) error {
+	conn := r.redis.Get()
+	defer conn.Close()
+	_, err := conn.Do("HDEL", r.key, k)
 	return err
 }
 

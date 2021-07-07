@@ -189,7 +189,7 @@ func (s *server) run(ctx context.Context, t cli.Telemetry) error {
 	cmds := commandstore.NewStore(ds, cache, t.Logger)
 	is := insightstore.NewStore(fs)
 	cmdOutputStore := commandoutputstore.NewStore(fs, t.Logger)
-	hcache := rediscache.NewTTLHashCache(rd, cfg.Cache.TTLDuration(), defaultPipedStatHashKey)
+	statCache := rediscache.NewTTLHashCache(rd, cfg.Cache.TTLDuration(), defaultPipedStatHashKey)
 
 	// Start a gRPC server for handling PipedAPI requests.
 	{
@@ -201,7 +201,7 @@ func (s *server) run(ctx context.Context, t cli.Telemetry) error {
 				datastore.NewPipedStore(ds),
 				t.Logger,
 			)
-			service = grpcapi.NewPipedAPI(ctx, ds, sls, alss, cmds, hcache, cmdOutputStore, t.Logger)
+			service = grpcapi.NewPipedAPI(ctx, ds, sls, alss, cmds, statCache, cmdOutputStore, t.Logger)
 			opts    = []rpc.Option{
 				rpc.WithPort(s.pipedAPIPort),
 				rpc.WithGracePeriod(s.gracePeriod),

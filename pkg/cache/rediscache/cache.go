@@ -99,7 +99,3 @@ func (c *RedisCache) Delete(k interface{}) error {
 func (c *RedisCache) GetAll() ([]interface{}, error) {
 	return nil, cache.ErrUnimplemented
 }
-
-func (c *RedisCache) PutHash(k interface{}, v interface{}) error {
-	return cache.ErrUnimplemented
-}
