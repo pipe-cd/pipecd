@@ -47,7 +47,7 @@ func NewTTLHashCache(redis redis.Redis, ttl time.Duration, key string) *RedisHas
 	}
 }
 
-func (r *RedisHashCache) Put(k interface{}, v interface{}) error {
+func (r *RedisHashCache) PutHash(k interface{}, v interface{}) error {
 	conn := r.redis.Get()
 	defer conn.Close()
 	_, err := conn.Do("HSET", r.key, k, v)

@@ -64,3 +64,7 @@ func (c *LRUCache) Delete(key interface{}) error {
 func (c *LRUCache) GetAll() ([]interface{}, error) {
 	return nil, cache.ErrUnimplemented
 }
+
+func (c *LRUCache) PutHash(k interface{}, v interface{}) error {
+	return cache.ErrUnimplemented
+}

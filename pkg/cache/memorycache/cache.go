@@ -58,3 +58,7 @@ func (c *Cache) Delete(key interface{}) error {
 func (c *Cache) GetAll() ([]interface{}, error) {
 	return nil, cache.ErrUnimplemented
 }
+
+func (c *Cache) PutHash(k interface{}, v interface{}) error {
+	return cache.ErrUnimplemented
+}
