@@ -33,7 +33,7 @@ Please note that the phases (Incubating, Alpha, Beta, and Stable) are applied to
 | Support Istio Mesh | Beta |
 | Support SMI Mesh | Incubating |
 | Support AWS App Mesh | Incubating |
-| [Plan Preview](https://github.com/pipe-cd/pipe/blob/master/docs/rfcs/0005-plan-preview.md) | Incubating |
+| [Plan Preview](/docs/user-guide/plan-preview) | Alpha |
 
 ### Terraform Deployment
 
@@ -44,7 +44,7 @@ Please note that the phases (Incubating, Alpha, Beta, and Stable) are applied to
 | Automated Rollback | Beta |
 | [Automated Configuration Drift Detection](/docs/user-guide/configuration-drift-detection/) | Incubating |
 | [Application Live State](/docs/user-guide/application-live-state/) | Incubating |
-| [Plan Preview](https://github.com/pipe-cd/pipe/blob/master/docs/rfcs/0005-plan-preview.md) | Incubating |
+| [Plan Preview](/docs/user-guide/plan-preview) | Alpha |
 
 ### CloudRun Deployment
 
@@ -55,7 +55,7 @@ Please note that the phases (Incubating, Alpha, Beta, and Stable) are applied to
 | Automated Rollback | Beta |
 | [Automated Configuration Drift Detection](/docs/user-guide/configuration-drift-detection/) | Incubating |
 | [Application Live State](/docs/user-guide/application-live-state/) | Incubating |
-| [Plan Preview](https://github.com/pipe-cd/pipe/blob/master/docs/rfcs/0005-plan-preview.md) | Incubating |
+| [Plan Preview](/docs/user-guide/plan-preview) | Alpha |
 
 ### Lambda Deployment
 
@@ -66,7 +66,7 @@ Please note that the phases (Incubating, Alpha, Beta, and Stable) are applied to
 | Automated Rollback | Alpha |
 | [Automated Configuration Drift Detection](/docs/user-guide/configuration-drift-detection/) | Incubating |
 | [Application Live State](/docs/user-guide/application-live-state/) | Incubating |
-| [Plan Preview](https://github.com/pipe-cd/pipe/blob/master/docs/rfcs/0005-plan-preview.md) | Incubating |
+| [Plan Preview](/docs/user-guide/plan-preview) | Alpha |
 
 ### Amazon ECS Deployment
 
@@ -77,7 +77,7 @@ Please note that the phases (Incubating, Alpha, Beta, and Stable) are applied to
 | Automated Rollback | Alpha |
 | [Automated Configuration Drift Detection](/docs/user-guide/configuration-drift-detection/) | Incubating |
 | [Application Live State](/docs/user-guide/application-live-state/) | Incubating |
-| [Plan Preview](https://github.com/pipe-cd/pipe/blob/master/docs/rfcs/0005-plan-preview.md) | Incubating |
+| [Plan Preview](/docs/user-guide/plan-preview) | Alpha |
 
 ### Piped's Core
 
