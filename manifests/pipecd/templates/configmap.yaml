@@ -12,20 +12,39 @@ data:
 
 {{- if .Values.monitoring.enabled }}
 ---
+
 apiVersion: v1
 kind: ConfigMap
 metadata:
-  name: {{ include "pipecd.fullname" . }}-grafana-dashboards
+  name: {{ include "pipecd.fullname" . }}-grafana-dashboards-cluster-stats
   labels:
     {{- include "pipecd.labels" . | nindent 4 }}
     grafana_dashboard: "1"
+  annotations:
+    k8s-sidecar-target-directory: "/tmp/dashboards/cluster-stats"
 data:
-  # TODO: Make dashboard for application metrics
-{{ range $path, $_ :=  .Files.Glob  "grafana-dashboards/**.json" }}
-  {{ trimPrefix "grafana-dashboards/" $path | nindent 2 }}: |-
+{{ range $path, $_ :=  .Files.Glob  "grafana-dashboards/cluster-stats/**.json" }}
+  {{ trimPrefix "grafana-dashboards/cluster-stats/" $path | nindent 2 }}: |-
     {{ $.Files.Get $path | nindent 4 }}
 {{ end }}
 ---
+
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: {{ include "pipecd.fullname" . }}-grafana-dashboards-control-plane-stats
+  labels:
+    {{- include "pipecd.labels" . | nindent 4 }}
+    grafana_dashboard: "1"
+  annotations:
+    k8s-sidecar-target-directory: "/tmp/dashboards/control-plane-stats"
+data:
+{{ range $path, $_ :=  .Files.Glob  "grafana-dashboards/control-plane-stats/**.json" }}
+  {{ trimPrefix "grafana-dashboards/control-plane-stats/" $path | nindent 2 }}: |-
+    {{ $.Files.Get $path | nindent 4 }}
+{{ end }}
+---
+
 apiVersion: v1
 kind: ConfigMap
 metadata:
