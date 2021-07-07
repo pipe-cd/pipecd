@@ -46,6 +46,6 @@ func (s *store) PutPipedStat(pipedID string, stat []byte) error {
 }
 
 // TODO: Implement GetCurrentStats so that ops can use it to expose pipeds' stat to prometheus.
-func (c *store) GetCurrentStats() ([]byte, error) {
+func (s *store) GetCurrentStats() ([]byte, error) {
 	return []byte(""), nil
 }
