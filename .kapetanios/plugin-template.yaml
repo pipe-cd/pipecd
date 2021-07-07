@@ -22,6 +22,7 @@ spec:
         ignoreRenderings:
           - manifests/*/templates/**
           - manifests/*/prom-rules/**
+          - manifests/*/grafana-dashboards/**
       - inputs:
           - manifests/RELEASE
         pathReplacers:
