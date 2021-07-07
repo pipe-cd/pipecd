@@ -1,6 +1,6 @@
 ---
-title: "Sealed Secrets"
-linkTitle: "Sealed Secrets"
+title: "Sealed secrets"
+linkTitle: "Sealed secrets"
 weight: 1
 description: >
   Storing secrets safely in the Git repository.
