@@ -98,6 +98,6 @@ func (c *TTLCache) Delete(key interface{}) error {
 	return nil
 }
 
-func (c *TTLCache) GetAll() ([]interface{}, error) {
+func (c *TTLCache) GetAll() (map[interface{}]interface{}, error) {
 	return nil, cache.ErrUnimplemented
 }

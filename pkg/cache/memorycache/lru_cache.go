@@ -61,6 +61,6 @@ func (c *LRUCache) Delete(key interface{}) error {
 	return nil
 }
 
-func (c *LRUCache) GetAll() ([]interface{}, error) {
+func (c *LRUCache) GetAll() (map[interface{}]interface{}, error) {
 	return nil, cache.ErrUnimplemented
 }

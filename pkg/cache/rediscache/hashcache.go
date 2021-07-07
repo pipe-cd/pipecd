@@ -80,7 +80,7 @@ func (r *RedisHashCache) Delete(k interface{}) error {
 	return err
 }
 
-func (r *RedisHashCache) GetAll() ([]interface{}, error) {
+func (r *RedisHashCache) GetAll() (map[interface{}]interface{}, error) {
 	conn := r.redis.Get()
 	defer conn.Close()
 	reply, err := redigo.StringMap(conn.Do("HGETALL", r.key))
@@ -94,9 +94,10 @@ func (r *RedisHashCache) GetAll() ([]interface{}, error) {
 		return nil, cache.ErrNotFound
 	}
 
-	out := make([]interface{}, 0, len(reply))
-	for _, v := range reply {
-		out = append(out, v)
+	out := make(map[interface{}]interface{}, len(reply))
+	for k, v := range reply {
+		out[k] = v
 	}
+
 	return out, nil
 }

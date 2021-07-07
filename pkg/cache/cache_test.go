@@ -27,7 +27,7 @@ func (f getterFunc) Get(key interface{}) (interface{}, error) {
 	return f(key)
 }
 
-func (f getterFunc) GetAll() ([]interface{}, error) {
+func (f getterFunc) GetAll() (map[interface{}]interface{}, error) {
 	return nil, ErrUnimplemented
 }
 

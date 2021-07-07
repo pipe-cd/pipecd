@@ -96,6 +96,6 @@ func (c *RedisCache) Delete(k interface{}) error {
 	return err
 }
 
-func (c *RedisCache) GetAll() ([]interface{}, error) {
+func (c *RedisCache) GetAll() (map[interface{}]interface{}, error) {
 	return nil, cache.ErrUnimplemented
 }

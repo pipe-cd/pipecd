@@ -26,7 +26,7 @@ var (
 // Getter wraps a method to read from cache.
 type Getter interface {
 	Get(key interface{}) (interface{}, error)
-	GetAll() ([]interface{}, error)
+	GetAll() (map[interface{}]interface{}, error)
 }
 
 // Putter wraps a method to write to cache.
@@ -85,6 +85,6 @@ func (mg *multiGetter) Get(key interface{}) (interface{}, error) {
 	return nil, firstErr
 }
 
-func (mg *multiGetter) GetAll() ([]interface{}, error) {
+func (mg *multiGetter) GetAll() (map[interface{}]interface{}, error) {
 	return nil, ErrUnimplemented
 }

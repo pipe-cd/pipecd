@@ -55,6 +55,6 @@ func (c *Cache) Delete(key interface{}) error {
 	return nil
 }
 
-func (c *Cache) GetAll() ([]interface{}, error) {
+func (c *Cache) GetAll() (map[interface{}]interface{}, error) {
 	return nil, cache.ErrUnimplemented
 }
