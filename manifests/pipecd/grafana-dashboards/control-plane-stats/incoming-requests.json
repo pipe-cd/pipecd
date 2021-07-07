@@ -17,7 +17,7 @@
   "gnetId": null,
   "graphTooltip": 0,
   "id": 2,
-  "iteration": 1625475954182,
+  "iteration": 1625625005978,
   "links": [],
   "panels": [
     {
@@ -33,7 +33,7 @@
       "fill": 1,
       "fillGradient": 0,
       "gridPos": {
-        "h": 8,
+        "h": 10,
         "w": 24,
         "x": 0,
         "y": 0
@@ -121,6 +121,7 @@
       "dashLength": 10,
       "dashes": false,
       "datasource": "Prometheus",
+      "description": "Non-4xx Error Percentage  for each gRPC method",
       "fieldConfig": {
         "defaults": {},
         "overrides": []
@@ -128,10 +129,10 @@
       "fill": 1,
       "fillGradient": 0,
       "gridPos": {
-        "h": 9,
+        "h": 8,
         "w": 12,
         "x": 0,
-        "y": 8
+        "y": 10
       },
       "hiddenSeries": false,
       "id": 2,
@@ -162,7 +163,7 @@
       "targets": [
         {
           "exemplar": true,
-          "expr": "sum by(envoy_cluster_name) (rate(envoy_cluster_upstream_rq_xx{envoy_response_code_class=~\"5\", job=\"pipecd-gateway\", envoy_cluster_name=\"$api\"}[5m]))\n/\nsum by(envoy_cluster_name) (rate(envoy_cluster_upstream_rq_xx{job=\"pipecd-gateway\", envoy_cluster_name=\"$api\"}[5m]))\n* 100",
+          "expr": "sum by(envoy_cluster_name) (rate(envoy_cluster_upstream_rq_xx{envoy_response_code_class=~\"5\", job=\"pipecd-gateway\", envoy_cluster_name=\"$api\"}[5m]))\n/\nsum by(envoy_cluster_name) (rate(envoy_cluster_upstream_rq_xx{job=\"pipecd-gateway\", envoy_cluster_name=\"$api\"}[5m]))\n* 100 or on() vector(0)",
           "format": "time_series",
           "instant": false,
           "interval": "",
@@ -175,7 +176,7 @@
       "timeFrom": null,
       "timeRegions": [],
       "timeShift": null,
-      "title": "5xx Error Percentage",
+      "title": "Non-4xx Error Percentage",
       "tooltip": {
         "shared": true,
         "sort": 0,
@@ -218,215 +219,7 @@
       "dashLength": 10,
       "dashes": false,
       "datasource": "Prometheus",
-      "fieldConfig": {
-        "defaults": {},
-        "overrides": []
-      },
-      "fill": 1,
-      "fillGradient": 0,
-      "gridPos": {
-        "h": 9,
-        "w": 12,
-        "x": 12,
-        "y": 8
-      },
-      "hiddenSeries": false,
-      "id": 12,
-      "legend": {
-        "avg": false,
-        "current": false,
-        "max": false,
-        "min": false,
-        "show": true,
-        "total": false,
-        "values": false
-      },
-      "lines": true,
-      "linewidth": 1,
-      "nullPointMode": "null",
-      "options": {
-        "alertThreshold": true
-      },
-      "percentage": false,
-      "pluginVersion": "7.5.3",
-      "pointradius": 2,
-      "points": false,
-      "renderer": "flot",
-      "seriesOverrides": [],
-      "spaceLength": 10,
-      "stack": false,
-      "steppedLine": false,
-      "targets": [
-        {
-          "exemplar": true,
-          "expr": "sum by(envoy_cluster_name) (rate(envoy_cluster_upstream_rq_xx{envoy_response_code_class=~\"4\", job=\"pipecd-gateway\", envoy_cluster_name=\"$api\"}[5m]))\n/\nsum by(envoy_cluster_name) (rate(envoy_cluster_upstream_rq_xx{job=\"pipecd-gateway\", envoy_cluster_name=\"$api\"}[5m]))\n* 100 or on() vector(0)",
-          "interval": "",
-          "legendFormat": "$api",
-          "queryType": "randomWalk",
-          "refId": "A"
-        }
-      ],
-      "thresholds": [],
-      "timeFrom": null,
-      "timeRegions": [],
-      "timeShift": null,
-      "title": "4xx Error Percentage",
-      "tooltip": {
-        "shared": true,
-        "sort": 0,
-        "value_type": "individual"
-      },
-      "type": "graph",
-      "xaxis": {
-        "buckets": null,
-        "mode": "time",
-        "name": null,
-        "show": true,
-        "values": []
-      },
-      "yaxes": [
-        {
-          "format": "percent",
-          "label": null,
-          "logBase": 1,
-          "max": null,
-          "min": "0",
-          "show": true
-        },
-        {
-          "format": "short",
-          "label": null,
-          "logBase": 1,
-          "max": null,
-          "min": null,
-          "show": true
-        }
-      ],
-      "yaxis": {
-        "align": false,
-        "alignLevel": null
-      }
-    },
-    {
-      "aliasColors": {},
-      "bars": false,
-      "dashLength": 10,
-      "dashes": false,
-      "datasource": "Prometheus",
-      "fieldConfig": {
-        "defaults": {
-          "unit": "ms"
-        },
-        "overrides": []
-      },
-      "fill": 1,
-      "fillGradient": 0,
-      "gridPos": {
-        "h": 8,
-        "w": 12,
-        "x": 0,
-        "y": 17
-      },
-      "hiddenSeries": false,
-      "id": 6,
-      "legend": {
-        "avg": false,
-        "current": false,
-        "max": false,
-        "min": false,
-        "show": true,
-        "total": false,
-        "values": false
-      },
-      "lines": true,
-      "linewidth": 1,
-      "nullPointMode": "null",
-      "options": {
-        "alertThreshold": true
-      },
-      "percentage": false,
-      "pluginVersion": "7.5.3",
-      "pointradius": 2,
-      "points": false,
-      "renderer": "flot",
-      "seriesOverrides": [],
-      "spaceLength": 10,
-      "stack": false,
-      "steppedLine": false,
-      "targets": [
-        {
-          "exemplar": true,
-          "expr": "histogram_quantile(\n  0.99,\n  sum without(instance, job)(rate(envoy_cluster_upstream_rq_time_bucket{envoy_cluster_name=\"$api\"}[5m]))\n)",
-          "interval": "",
-          "legendFormat": "0.99",
-          "queryType": "randomWalk",
-          "refId": "A"
-        },
-        {
-          "exemplar": true,
-          "expr": "histogram_quantile(\n  0.95,\n  sum without(instance, job)(rate(envoy_cluster_upstream_rq_time_bucket{envoy_cluster_name=\"$api\"}[5m]))\n)",
-          "hide": false,
-          "interval": "",
-          "legendFormat": "0.95",
-          "refId": "B"
-        },
-        {
-          "exemplar": true,
-          "expr": "histogram_quantile(\n  0.90,\n  sum without(instance, job)(rate(envoy_cluster_upstream_rq_time_bucket{envoy_cluster_name=\"$api\"}[5m]))\n)",
-          "hide": false,
-          "interval": "",
-          "legendFormat": "0.90",
-          "refId": "C"
-        }
-      ],
-      "thresholds": [],
-      "timeFrom": null,
-      "timeRegions": [],
-      "timeShift": null,
-      "title": "Request Duration Quantiles",
-      "tooltip": {
-        "shared": true,
-        "sort": 0,
-        "value_type": "individual"
-      },
-      "type": "graph",
-      "xaxis": {
-        "buckets": null,
-        "mode": "time",
-        "name": null,
-        "show": true,
-        "values": []
-      },
-      "yaxes": [
-        {
-          "format": "ms",
-          "label": null,
-          "logBase": 1,
-          "max": null,
-          "min": null,
-          "show": true
-        },
-        {
-          "format": "short",
-          "label": null,
-          "logBase": 1,
-          "max": null,
-          "min": null,
-          "show": true
-        }
-      ],
-      "yaxis": {
-        "align": false,
-        "alignLevel": null
-      }
-    },
-    {
-      "aliasColors": {},
-      "bars": false,
-      "dashLength": 10,
-      "dashes": false,
-      "datasource": "Prometheus",
-      "description": "Average of request duration by path",
+      "description": "99th Quantile of Request Duration for each gRPC method",
       "fieldConfig": {
         "defaults": {},
         "overrides": []
@@ -437,7 +230,7 @@
         "h": 8,
         "w": 12,
         "x": 12,
-        "y": 17
+        "y": 10
       },
       "hiddenSeries": false,
       "id": 14,
@@ -468,9 +261,9 @@
       "targets": [
         {
           "exemplar": true,
-          "expr": "envoy_cluster_upstream_rq_time_sum{envoy_cluster_name=\"$api\"}\n/\nenvoy_cluster_upstream_rq_time_count{envoy_cluster_name=\"$api\"}",
+          "expr": "histogram_quantile(\n  0.99,\n  sum without(instance, job)(rate(pipecd_gateway_requests_duration_bucket{envoy_cluster_name=\"$api\"}[5m]))\n)",
           "interval": "",
-          "legendFormat": "$api",
+          "legendFormat": "{{method}}",
           "queryType": "randomWalk",
           "refId": "A"
         }
@@ -479,7 +272,7 @@
       "timeFrom": null,
       "timeRegions": [],
       "timeShift": null,
-      "title": "Request Duration Average",
+      "title": "99th Quantile of Request Duration",
       "tooltip": {
         "shared": true,
         "sort": 0,
@@ -522,6 +315,7 @@
       "dashLength": 10,
       "dashes": false,
       "datasource": "Prometheus",
+      "description": "99th quantile of request size per gRPC method",
       "fieldConfig": {
         "defaults": {},
         "overrides": []
@@ -532,7 +326,7 @@
         "h": 8,
         "w": 12,
         "x": 0,
-        "y": 25
+        "y": 18
       },
       "hiddenSeries": false,
       "id": 8,
@@ -565,32 +359,16 @@
           "exemplar": true,
           "expr": "histogram_quantile(\n  0.99,\n  sum without(instance, job)(rate(envoy_cluster_upstream_rq_body_size_bucket{envoy_cluster_name=\"$api\"}[5m]))\n) * (1024 * 1024)",
           "interval": "",
-          "legendFormat": "0.99",
+          "legendFormat": "{{method}}",
           "queryType": "randomWalk",
           "refId": "A"
-        },
-        {
-          "exemplar": true,
-          "expr": "histogram_quantile(\n  0.95,\n  sum without(instance, job)(rate(envoy_cluster_upstream_rq_body_size_bucket{envoy_cluster_name=\"$api\"}[5m]))\n) * (1024 * 1024)",
-          "hide": false,
-          "interval": "",
-          "legendFormat": "0.99",
-          "refId": "B"
-        },
-        {
-          "exemplar": true,
-          "expr": "histogram_quantile(\n  0.90,\n  sum without(instance, job)(rate(envoy_cluster_upstream_rq_body_size_bucket{envoy_cluster_name=\"$api\"}[5m]))\n) * (1024 * 1024)",
-          "hide": false,
-          "interval": "",
-          "legendFormat": "0.90",
-          "refId": "C"
         }
       ],
       "thresholds": [],
       "timeFrom": null,
       "timeRegions": [],
       "timeShift": null,
-      "title": "Request Size Quantiles",
+      "title": "99th Quantile of Request Size",
       "tooltip": {
         "shared": true,
         "sort": 0,
@@ -633,6 +411,7 @@
       "dashLength": 10,
       "dashes": false,
       "datasource": "Prometheus",
+      "description": "99th quantile of response size per gRPC method",
       "fieldConfig": {
         "defaults": {},
         "overrides": []
@@ -643,7 +422,7 @@
         "h": 8,
         "w": 12,
         "x": 12,
-        "y": 25
+        "y": 18
       },
       "hiddenSeries": false,
       "id": 15,
@@ -676,32 +455,16 @@
           "exemplar": true,
           "expr": "histogram_quantile(\n  0.99,\n  sum without(instance, job)(rate(envoy_cluster_upstream_rs_body_size_bucket{envoy_cluster_name=\"$api\"}[5m]))\n) * (1024 * 1024)",
           "interval": "",
-          "legendFormat": "0.99",
+          "legendFormat": "{{method}}",
           "queryType": "randomWalk",
           "refId": "A"
-        },
-        {
-          "exemplar": true,
-          "expr": "histogram_quantile(\n  0.95,\n  sum without(instance, job)(rate(envoy_cluster_upstream_rs_body_size_bucket{envoy_cluster_name=\"$api\"}[5m]))\n) * (1024 * 1024)",
-          "hide": false,
-          "interval": "",
-          "legendFormat": "0.99",
-          "refId": "B"
-        },
-        {
-          "exemplar": true,
-          "expr": "histogram_quantile(\n  0.90,\n  sum without(instance, job)(rate(envoy_cluster_upstream_rs_body_size_bucket{envoy_cluster_name=\"$api\"}[5m]))\n) * (1024 * 1024)",
-          "hide": false,
-          "interval": "",
-          "legendFormat": "0.90",
-          "refId": "C"
         }
       ],
       "thresholds": [],
       "timeFrom": null,
       "timeRegions": [],
       "timeShift": null,
-      "title": "Response Size Quantiles",
+      "title": "99th Quantile of Response Size",
       "tooltip": {
         "shared": true,
         "sort": 0,
@@ -749,8 +512,8 @@
         "allValue": null,
         "current": {
           "selected": false,
-          "text": "server-piped-api",
-          "value": "server-piped-api"
+          "text": "server-api",
+          "value": "server-api"
         },
         "datasource": "Prometheus",
         "definition": "label_values(envoy_cluster_name)",
@@ -784,7 +547,7 @@
   },
   "timepicker": {},
   "timezone": "",
-  "title": "PipeCD Service Stats",
+  "title": "Incoming Requests",
   "uid": "3jeba3R7z",
-  "version": 42
+  "version": 48
 }
