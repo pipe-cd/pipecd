@@ -373,6 +373,26 @@ prometheus:
 # https://github.com/grafana/helm-charts/tree/main/charts/grafana
 grafana:
   adminPassword: admin
+  dashboardProviders:
+    dashboardproviders.yaml:
+      apiVersion: 1
+      providers:
+        - name: 'Cluster'
+          orgId: 1
+          folder: 'Cluster'
+          type: file
+          disableDeletion: false
+          editable: false
+          options:
+            path: /tmp/dashboards/cluster
+        - name: 'Control-Plane'
+          orgId: 1
+          folder: 'Control-Plane'
+          type: file
+          disableDeletion: false
+          editable: false
+          options:
+            path: /tmp/dashboards/control-plane
   sidecar:
     datasources:
       enabled: true
@@ -380,6 +400,8 @@ grafana:
       enabled: true
       # Label that the configmaps with dashboards are marked with
       label: grafana_dashboard
+      provider:
+        foldersFromFilesStructure: true
   datasources:
     datasources.yaml:
       apiVersion: 1
