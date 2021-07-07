@@ -89,3 +89,7 @@ func (mg *multiGetter) Get(key interface{}) (interface{}, error) {
 func (mg *multiGetter) GetAll() ([]interface{}, error) {
 	return nil, ErrUnimplemented
 }
+
+func (mg *multiGetter) PutHash(k interface{}, v interface{}) error {
+	return ErrUnimplemented
+}
