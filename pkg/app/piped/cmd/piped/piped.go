@@ -79,7 +79,6 @@ type piped struct {
 	toolsDir                             string
 	enableDefaultKubernetesCloudProvider bool
 	useFakeAPIClient                     bool
-	enablePlanPreview                    bool
 	gracePeriod                          time.Duration
 	addLoginUserToPasswd                 bool
 }
@@ -110,7 +109,6 @@ func NewCommand() *cobra.Command {
 	cmd.Flags().BoolVar(&p.useFakeAPIClient, "use-fake-api-client", p.useFakeAPIClient, "Whether the fake api client should be used instead of the real one or not.")
 	cmd.Flags().BoolVar(&p.enableDefaultKubernetesCloudProvider, "enable-default-kubernetes-cloud-provider", p.enableDefaultKubernetesCloudProvider, "Whether the default kubernetes provider is enabled or not.")
 	cmd.Flags().BoolVar(&p.addLoginUserToPasswd, "add-login-user-to-passwd", p.addLoginUserToPasswd, "Whether to add login user to $HOME/passwd. This is typically for applications running as a random user ID.")
-	cmd.Flags().BoolVar(&p.enablePlanPreview, "enable-plan-preview", p.enablePlanPreview, "A temporary flag to enable planpreview feature.")
 	cmd.Flags().DurationVar(&p.gracePeriod, "grace-period", p.gracePeriod, "How long to wait for graceful shutdown.")
 
 	cmd.MarkFlagRequired("config-file")
@@ -385,7 +383,7 @@ func (p *piped) run(ctx context.Context, t cli.Telemetry) (runErr error) {
 	}
 
 	// Start running planpreview handler.
-	if p.enablePlanPreview {
+	{
 		// Initialize a dedicated git client for plan-preview feature.
 		// Basically, this feature is an utility so it should not share any resource with the main components of piped.
 		gc, err := git.NewClient(cfg.Git.Username, cfg.Git.Email, t.Logger)
