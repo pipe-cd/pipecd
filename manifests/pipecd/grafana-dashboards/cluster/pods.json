@@ -16,8 +16,7 @@
   "editable": true,
   "gnetId": null,
   "graphTooltip": 0,
-  "id": 16,
-  "iteration": 1625624931831,
+  "iteration": 1625634242562,
   "links": [],
   "panels": [
     {
@@ -613,7 +612,7 @@
   },
   "timepicker": {},
   "timezone": "",
-  "title": "Pods",
+  "title": "Pod",
   "uid": "MMo5vRi7k",
-  "version": 2
+  "version": 1
 }

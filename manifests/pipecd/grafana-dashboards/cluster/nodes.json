@@ -16,7 +16,6 @@
   "editable": true,
   "gnetId": null,
   "graphTooltip": 0,
-  "id": 14,
   "links": [],
   "panels": [
     {
@@ -583,7 +582,7 @@
   },
   "timepicker": {},
   "timezone": "",
-  "title": "Nodes",
+  "title": "Node",
   "uid": "o1M4vRmnk",
-  "version": 4
+  "version": 1
 }
