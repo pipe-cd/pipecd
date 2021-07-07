@@ -134,22 +134,22 @@ func groupManifests(olds, news []Manifest) (adds, deletes, newChanges, oldChange
 			o++
 			continue
 		}
-		// Has in new but not in old so this should be a deleted one.
+		// Has in news but not in olds so this should be a added one.
 		if news[n].Key.IsLessWithIgnoringNamespace(olds[o].Key) {
-			deletes = append(deletes, news[n])
+			adds = append(adds, news[n])
 			n++
 			continue
 		}
-		// Has in old but not in new so this should be an added one.
-		adds = append(adds, olds[o])
+		// Has in olds but not in news so this should be an deleted one.
+		deletes = append(deletes, olds[o])
 		o++
 	}
 
 	if len(news) > n {
-		deletes = append(deletes, news[n:]...)
+		adds = append(adds, news[n:]...)
 	}
 	if len(olds) > o {
-		adds = append(adds, olds[o:]...)
+		deletes = append(deletes, olds[o:]...)
 	}
 	return
 }

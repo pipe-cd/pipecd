@@ -187,7 +187,9 @@ func (d *detector) checkApplication(ctx context.Context, app *model.Application,
 	liveManifests = filterIgnoringManifests(liveManifests)
 	d.logger.Info(fmt.Sprintf("application %s has %d live manifests", app.Id, len(liveManifests)))
 
-	result, err := provider.DiffList(liveManifests, headManifests,
+	result, err := provider.DiffList(
+		headManifests,
+		liveManifests,
 		diff.WithEquateEmpty(),
 		diff.WithIgnoreAddingMapKeys(),
 		diff.WithCompareNumberAndNumericString(),
@@ -360,8 +362,8 @@ func makeSyncState(r *provider.DiffListResult, commit string) model.ApplicationS
 	}
 
 	var b strings.Builder
-	b.WriteString(fmt.Sprintf("Diff between the running resources and the definitions in Git at commit %q:\n", commit))
-	b.WriteString("--- Git\n+++ Cluster\n\n")
+	b.WriteString(fmt.Sprintf("Diff between the defined state in Git at commit %s and actual state in cluster:\n\n", commit))
+	b.WriteString("--- Expected\n+++ Actual\n\n")
 	b.WriteString(r.DiffString())
 
 	return model.ApplicationSyncState{
