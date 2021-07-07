@@ -97,3 +97,7 @@ func (c *TTLCache) Delete(key interface{}) error {
 	c.entries.Delete(key)
 	return nil
 }
+
+func (c *TTLCache) GetAll() (map[interface{}]interface{}, error) {
+	return nil, cache.ErrUnimplemented
+}
