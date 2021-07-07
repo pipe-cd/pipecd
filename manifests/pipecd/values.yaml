@@ -382,7 +382,9 @@ grafana:
           folder: 'Cluster'
           type: file
           disableDeletion: false
-          editable: false
+          # TODO: Disallow to update Grafana UI from the web once got fixed
+          # The following Control-Plane's one should be reverted as well.
+          allowUiUpdates: true
           options:
             path: /tmp/dashboards/cluster
         - name: 'Control-Plane'
@@ -390,7 +392,7 @@ grafana:
           folder: 'Control-Plane'
           type: file
           disableDeletion: false
-          editable: false
+          allowUiUpdates: true
           options:
             path: /tmp/dashboards/control-plane
   sidecar:
