@@ -16,7 +16,7 @@ package pipedstatsbuilder
 
 import (
 	"io"
-	"io/ioutil"
+	"os"
 	"strings"
 	"testing"
 
@@ -43,7 +43,7 @@ func newMockBuilderBackend() *mockBuilderBackend {
 func (m *mockBuilderBackend) GetAll() (map[string]interface{}, error) {
 	out := make(map[string]interface{}, len(m.srcs))
 	for _, file := range m.srcs {
-		data, err := ioutil.ReadFile(file)
+		data, err := os.ReadFile(file)
 		if err != nil {
 			return nil, err
 		}
@@ -60,6 +60,6 @@ func TestBuildPipedStat(t *testing.T) {
 	buf := new(strings.Builder)
 	_, err = io.Copy(buf, rc)
 	assert.NoError(t, err)
-	data, _ := ioutil.ReadFile("./testdata/expected")
+	data, _ := os.ReadFile("./testdata/expected")
 	assert.Equal(t, string(data), buf.String())
 }
