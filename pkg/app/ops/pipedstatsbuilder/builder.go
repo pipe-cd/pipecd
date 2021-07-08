@@ -36,7 +36,7 @@ func NewPipedStatsBuilder(c cache.Cache, logger *zap.Logger) *PipedStatsBuilder 
 	}
 }
 
-func (b *PipedStatsBuilder) Build() (io.ReadCloser, error) {
+func (b *PipedStatsBuilder) Build() (io.Reader, error) {
 	res, err := b.backend.GetAll()
 	if err != nil {
 		b.logger.Error("failed to fetch piped stats from cache", zap.Error(err))
@@ -52,5 +52,5 @@ func (b *PipedStatsBuilder) Build() (io.ReadCloser, error) {
 		}
 		data = append(data, value)
 	}
-	return io.NopCloser(bytes.NewReader(bytes.Join(data, []byte("\n")))), nil
+	return bytes.NewReader(bytes.Join(data, []byte("\n"))), nil
 }

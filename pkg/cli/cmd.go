@@ -139,7 +139,7 @@ func (t Telemetry) PrometheusMetricsHandlerFor(r *prometheus.Registry) http.Hand
 }
 
 type MetricsBuilder interface {
-	Build() (io.ReadCloser, error)
+	Build() (io.Reader, error)
 }
 
 func (t Telemetry) CustomMetricsHandlerFor(mb MetricsBuilder) http.Handler {
@@ -149,7 +149,6 @@ func (t Telemetry) CustomMetricsHandlerFor(mb MetricsBuilder) http.Handler {
 			if err != nil {
 				http.Error(w, err.Error(), http.StatusInternalServerError)
 			}
-			defer rc.Close()
 
 			_, err = io.Copy(w, rc)
 			if err != nil {
