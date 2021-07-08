@@ -52,5 +52,5 @@ func (b *PipedStatsBuilder) Build() (io.Reader, error) {
 		}
 		data = append(data, value)
 	}
-	return bytes.NewReader(bytes.Join(data, []byte("\n"))), nil
+	return bytes.NewReader(bytes.Join(data, []byte(""))), nil
 }
