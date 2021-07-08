@@ -18,7 +18,6 @@ import (
 	"bytes"
 	"errors"
 	"io"
-	"io/ioutil"
 
 	"go.uber.org/zap"
 
@@ -53,5 +52,5 @@ func (b *PipedStatsBuilder) Build() (io.ReadCloser, error) {
 		}
 		data = append(data, value)
 	}
-	return ioutil.NopCloser(bytes.NewReader(bytes.Join(data, []byte("\n")))), nil
+	return io.NopCloser(bytes.NewReader(bytes.Join(data, []byte("\n")))), nil
 }
