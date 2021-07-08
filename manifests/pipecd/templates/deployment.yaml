@@ -218,6 +218,7 @@ spec:
           - --cache-address={{ .Values.ops.args.cacheAddress | default (printf "%s-cache:6379" (include "pipecd.fullname" .)) }}
           - --config-file=/etc/pipecd-config/{{ .Values.config.fileName }}
           - --log-encoding={{ .Values.ops.args.logEncoding }}
+          - --metrics={{ .Values.ops.args.metrics }}
           ports:
             - name: http
               containerPort: 9082
