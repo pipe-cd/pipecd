@@ -34,8 +34,8 @@ type mockBuilderBackend struct {
 func newMockBuilderBackend() *mockBuilderBackend {
 	return &mockBuilderBackend{
 		srcs: []string{
-			"./metricsdata/piped_stat_1",
-			"./metricsdata/piped_stat_2",
+			"./testdata/piped_stat_1",
+			"./testdata/piped_stat_2",
 		},
 	}
 }
@@ -60,6 +60,6 @@ func TestBuildPipedStat(t *testing.T) {
 	buf := new(strings.Builder)
 	_, err = io.Copy(buf, rc)
 	assert.NoError(t, err)
-	data, _ := ioutil.ReadFile("./metricsdata/expected")
+	data, _ := ioutil.ReadFile("./testdata/expected")
 	assert.Equal(t, string(data), buf.String())
 }

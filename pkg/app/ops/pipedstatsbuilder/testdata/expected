@@ -88,6 +88,7 @@ go_memstats_sys_bytes{piped="763a5051-f1a2-4160-bfdf-6b0070d3cb2a",piped_version
 # HELP go_threads Number of OS threads created.
 # TYPE go_threads gauge
 go_threads{piped="763a5051-f1a2-4160-bfdf-6b0070d3cb2a",piped_version="unspecified"} 23
+
 # HELP go_gc_duration_seconds A summary of the pause duration of garbage collection cycles.
 # TYPE go_gc_duration_seconds summary
 go_gc_duration_seconds{piped="763a5051-f1a2-4160-bfdf-6b0070d3cb1b",piped_version="unspecified",quantile="0"} 8.3886e-05

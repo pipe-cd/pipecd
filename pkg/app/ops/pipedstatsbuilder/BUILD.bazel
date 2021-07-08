@@ -15,10 +15,11 @@ go_test(
     name = "go_default_test",
     size = "small",
     srcs = ["builder_test.go"],
-    data = glob(["metricsdata/**"]),
+    data = glob(["testdata/**"]),
     embed = [":go_default_library"],
     deps = [
         "//pkg/cache:go_default_library",
         "@com_github_stretchr_testify//assert:go_default_library",
+        "@org_uber_go_zap//:go_default_library",
     ],
 )
