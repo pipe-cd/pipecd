@@ -21,6 +21,7 @@ import (
 	"testing"
 
 	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/require"
 	"go.uber.org/zap"
 
 	"github.com/pipe-cd/pipe/pkg/cache"
@@ -55,11 +56,10 @@ func (m *mockBuilderBackend) GetAll() (map[string]interface{}, error) {
 func TestBuildPipedStat(t *testing.T) {
 	builder := NewPipedStatsBuilder(newMockBuilderBackend(), zap.NewNop())
 	rc, err := builder.Build()
-	assert.NoError(t, err)
-	assert.NotNil(t, rc)
+	require.NoError(t, err)
+	require.NotNil(t, rc)
 	buf := new(strings.Builder)
-	_, err = io.Copy(buf, rc)
-	assert.NoError(t, err)
+	io.Copy(buf, rc)
 	data, _ := os.ReadFile("./testdata/expected")
 	assert.Equal(t, string(data), buf.String())
 }
