@@ -29,11 +29,14 @@ import (
 	"github.com/pipe-cd/pipe/pkg/app/ops/insightcollector"
 	"github.com/pipe-cd/pipe/pkg/app/ops/mysqlensurer"
 	"github.com/pipe-cd/pipe/pkg/app/ops/orphancommandcleaner"
+	"github.com/pipe-cd/pipe/pkg/app/ops/pipedstatsbuilder"
+	"github.com/pipe-cd/pipe/pkg/cache/rediscache"
 	"github.com/pipe-cd/pipe/pkg/cli"
 	"github.com/pipe-cd/pipe/pkg/config"
 	"github.com/pipe-cd/pipe/pkg/datastore"
 	"github.com/pipe-cd/pipe/pkg/insight/insightstore"
 	"github.com/pipe-cd/pipe/pkg/model"
+	"github.com/pipe-cd/pipe/pkg/redis"
 	"github.com/pipe-cd/pipe/pkg/version"
 )
 
@@ -44,13 +47,15 @@ type ops struct {
 	enableInsightCollector bool
 	configFile             string
 	gcloudPath             string
+	cacheAddress           string
 }
 
 func NewOpsCommand() *cobra.Command {
 	s := &ops{
-		httpPort:    9082,
-		adminPort:   9085,
-		gracePeriod: 15 * time.Second,
+		httpPort:     9082,
+		adminPort:    9085,
+		cacheAddress: "cache:6379",
+		gracePeriod:  15 * time.Second,
 	}
 	cmd := &cobra.Command{
 		Use:   "ops",
@@ -62,6 +67,7 @@ func NewOpsCommand() *cobra.Command {
 	cmd.Flags().DurationVar(&s.gracePeriod, "grace-period", s.gracePeriod, "How long to wait for graceful shutdown.")
 	cmd.Flags().StringVar(&s.configFile, "config-file", s.configFile, "The path to the configuration file.")
 	cmd.Flags().StringVar(&s.gcloudPath, "gcloud-path", s.gcloudPath, "The path to the gcloud command executable.")
+	cmd.Flags().StringVar(&s.cacheAddress, "cache-address", s.cacheAddress, "The address to cache service.")
 	return cmd
 }
 
@@ -144,6 +150,10 @@ func (s *ops) run(ctx context.Context, t cli.Telemetry) error {
 		})
 	}
 
+	rd := redis.NewRedis(s.cacheAddress, "")
+	statCache := rediscache.NewTTLHashCache(rd, cfg.Cache.TTLDuration(), defaultPipedStatHashKey)
+	psb := pipedstatsbuilder.NewPipedStatsBuilder(statCache)
+
 	// Start running admin server.
 	{
 		var (
@@ -157,7 +167,7 @@ func (s *ops) run(ctx context.Context, t cli.Telemetry) error {
 		admin.HandleFunc("/healthz", func(w http.ResponseWriter, r *http.Request) {
 			w.Write([]byte("ok"))
 		})
-		admin.Handle("/metrics", t.PrometheusMetricsHandler())
+		admin.Handle("/metrics", t.CustomedMetricsHandlerFor(psb))
 
 		group.Go(func() error {
 			return admin.Run(ctx)

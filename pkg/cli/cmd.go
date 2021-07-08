@@ -16,6 +16,7 @@ package cli
 
 import (
 	"context"
+	"io"
 	"net/http"
 	"os"
 	"os/signal"
@@ -130,6 +131,29 @@ func (t Telemetry) PrometheusMetricsHandler() http.Handler {
 func (t Telemetry) PrometheusMetricsHandlerFor(r *prometheus.Registry) http.Handler {
 	if t.Flags.Metrics {
 		return promhttp.HandlerFor(r, promhttp.HandlerOpts{})
+	}
+	var empty http.HandlerFunc = func(w http.ResponseWriter, r *http.Request) {
+		w.Write([]byte(""))
+	}
+	return empty
+}
+
+type MetricsBuilder interface {
+	Build() (io.ReadCloser, error)
+}
+
+func (t Telemetry) CustomedMetricsHandlerFor(mb MetricsBuilder) http.Handler {
+	if t.Flags.Metrics {
+		return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+			rc, err := mb.Build()
+			if err != nil {
+				http.NotFound(w, r)
+			}
+			_, err = io.Copy(w, rc)
+			if err != nil {
+				http.Error(w, err.Error(), http.StatusInternalServerError)
+			}
+		})
 	}
 	var empty http.HandlerFunc = func(w http.ResponseWriter, r *http.Request) {
 		w.Write([]byte(""))
