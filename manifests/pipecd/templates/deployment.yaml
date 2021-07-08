@@ -215,6 +215,7 @@ spec:
           imagePullPolicy: IfNotPresent
           args:
           - ops
+          - --cache-address={{ .Values.ops.args.cacheAddress | default (printf "%s-cache:6379" (include "pipecd.fullname" .)) }}
           - --config-file=/etc/pipecd-config/{{ .Values.config.fileName }}
           - --log-encoding={{ .Values.ops.args.logEncoding }}
           ports:
