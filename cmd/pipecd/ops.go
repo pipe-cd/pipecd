@@ -167,7 +167,7 @@ func (s *ops) run(ctx context.Context, t cli.Telemetry) error {
 		admin.HandleFunc("/healthz", func(w http.ResponseWriter, r *http.Request) {
 			w.Write([]byte("ok"))
 		})
-		admin.Handle("/metrics", t.CustomedMetricsHandlerFor(psb))
+		admin.Handle("/metrics", t.CustomMetricsHandlerFor(psb))
 
 		group.Go(func() error {
 			return admin.Run(ctx)

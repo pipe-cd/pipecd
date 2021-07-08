@@ -142,7 +142,7 @@ type MetricsBuilder interface {
 	Build() (io.ReadCloser, error)
 }
 
-func (t Telemetry) CustomedMetricsHandlerFor(mb MetricsBuilder) http.Handler {
+func (t Telemetry) CustomMetricsHandlerFor(mb MetricsBuilder) http.Handler {
 	if t.Flags.Metrics {
 		return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 			rc, err := mb.Build()
