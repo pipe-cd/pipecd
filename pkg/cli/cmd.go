@@ -147,8 +147,10 @@ func (t Telemetry) CustomedMetricsHandlerFor(mb MetricsBuilder) http.Handler {
 		return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 			rc, err := mb.Build()
 			if err != nil {
-				http.NotFound(w, r)
+				http.Error(w, err.Error(), http.StatusInternalServerError)
 			}
+			defer rc.Close()
+
 			_, err = io.Copy(w, rc)
 			if err != nil {
 				http.Error(w, err.Error(), http.StatusInternalServerError)

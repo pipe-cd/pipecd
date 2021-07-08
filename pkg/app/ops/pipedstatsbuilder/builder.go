@@ -15,19 +15,43 @@
 package pipedstatsbuilder
 
 import (
+	"bytes"
+	"errors"
 	"io"
+	"io/ioutil"
+
+	"go.uber.org/zap"
 
 	"github.com/pipe-cd/pipe/pkg/cache"
 )
 
 type PipedStatsBuilder struct {
+	backend cache.Cache
+	logger  *zap.Logger
 }
 
-func NewPipedStatsBuilder(_ cache.Cache) *PipedStatsBuilder {
-	return &PipedStatsBuilder{}
+func NewPipedStatsBuilder(c cache.Cache, logger *zap.Logger) *PipedStatsBuilder {
+	return &PipedStatsBuilder{
+		backend: c,
+		logger:  logger.Named("piped-metrics-builder"),
+	}
 }
 
-// TODO: Implement builder to gather piped stats metrics in redis.
 func (b *PipedStatsBuilder) Build() (io.ReadCloser, error) {
-	return nil, nil
+	res, err := b.backend.GetAll()
+	if err != nil {
+		b.logger.Error("failed to fetch piped stats from cache", zap.Error(err))
+		return nil, err
+	}
+	data := make([][]byte, 0, len(res))
+	for _, v := range res {
+		value, okValue := v.([]byte)
+		if !okValue {
+			err = errors.New("error value not a bulk of string value")
+			b.logger.Error("failed to marshal piped stat data", zap.Error(err))
+			return nil, err
+		}
+		data = append(data, value)
+	}
+	return ioutil.NopCloser(bytes.NewReader(bytes.Join(data, []byte("\n")))), nil
 }
