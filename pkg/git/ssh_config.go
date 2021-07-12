@@ -17,7 +17,6 @@ package git
 import (
 	"bytes"
 	"fmt"
-	"io/ioutil"
 	"os"
 	"path"
 	"path/filepath"
@@ -66,7 +65,7 @@ func AddSSHConfig(cfg config.PipedGit) error {
 
 	var sshKeyFile string
 	if cfg.SSHKeyFile != "" {
-		f, err := ioutil.TempFile(sshDir, "piped-ssh-key-*")
+		f, err := os.CreateTemp(sshDir, "piped-ssh-key-*")
 		if err != nil {
 			return err
 		}
