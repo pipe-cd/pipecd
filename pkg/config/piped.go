@@ -194,6 +194,9 @@ func (s *PipedSpec) GetSecretManagement() *SecretManagement {
 }
 
 func (s *PipedSpec) LoadPipedKey() ([]byte, error) {
+	if s.PipedKeyData != "" && s.PipedKeyFile != "" {
+		return nil, errors.New("only either pipedKeyFile or pipedKeyData can be set")
+	}
 	if s.PipedKeyData != "" {
 		return base64.StdEncoding.DecodeString(s.PipedKeyData)
 	}
@@ -233,6 +236,9 @@ func (g PipedGit) ShouldConfigureSSHConfig() bool {
 }
 
 func (g PipedGit) LoadSSHKey() ([]byte, error) {
+	if g.SSHKeyData != "" && g.SSHKeyFile != "" {
+		return nil, errors.New("only either sshKeyFile or sshKeyData can be set")
+	}
 	if g.SSHKeyData != "" {
 		return base64.StdEncoding.DecodeString(g.SSHKeyData)
 	}
