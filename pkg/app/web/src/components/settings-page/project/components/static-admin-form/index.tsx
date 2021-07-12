@@ -102,8 +102,7 @@ const StaticAdminDialog: FC<{
             type="submit"
             color="primary"
             disabled={
-              formik.isValid === false ||
-              formik.values.username === ""
+              formik.isValid === false
             }
           >
             {UI_TEXT_SAVE}
