@@ -24,6 +24,7 @@ import (
 	"google.golang.org/grpc"
 
 	"github.com/pipe-cd/pipe/pkg/app/api/service/pipedservice"
+	metrics "github.com/pipe-cd/pipe/pkg/app/piped/planpreview/planpreviewmetrics"
 	"github.com/pipe-cd/pipe/pkg/cache"
 	"github.com/pipe-cd/pipe/pkg/config"
 	"github.com/pipe-cd/pipe/pkg/git"
@@ -168,6 +169,7 @@ func (h *Handler) Run(ctx context.Context) error {
 				h.handleCommand(childCtx, cmd)
 
 			case <-ctx.Done():
+				h.logger.Info("a worker has been stopped")
 				return
 			}
 		}
@@ -226,6 +228,7 @@ func (h *Handler) enqueueNewCommands(ctx context.Context) {
 	}
 
 	h.prevCommands = cmds
+	metrics.ReceivedCommands(len(news))
 	h.logger.Info(fmt.Sprintf("will enqueue %d new commands", len(news)))
 
 	for _, cmd := range news {
@@ -240,6 +243,7 @@ func (h *Handler) enqueueNewCommands(ctx context.Context) {
 }
 
 func (h *Handler) handleCommand(ctx context.Context, cmd model.ReportableCommand) {
+	start := time.Now()
 	logger := h.logger.With(
 		zap.String("command", cmd.Id),
 	)
@@ -251,6 +255,8 @@ func (h *Handler) handleCommand(ctx context.Context, cmd model.ReportableCommand
 	}
 
 	reportError := func(err error) {
+		metrics.HandledCommand(metrics.StatusFailure, time.Since(start))
+
 		result.Error = err.Error()
 		output, err := json.Marshal(result)
 		if err != nil {
@@ -283,9 +289,11 @@ func (h *Handler) handleCommand(ctx context.Context, cmd model.ReportableCommand
 	}
 
 	if err := cmd.Report(ctx, model.CommandStatus_COMMAND_SUCCEEDED, nil, output); err != nil {
+		metrics.HandledCommand(metrics.StatusFailure, time.Since(start))
 		logger.Error("failed to report command status", zap.Error(err))
 		return
 	}
 
+	metrics.HandledCommand(metrics.StatusSuccess, time.Since(start))
 	logger.Info("successfully reported a success command")
 }

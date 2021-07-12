@@ -52,6 +52,7 @@ import (
 	k8slivestatestoremetrics "github.com/pipe-cd/pipe/pkg/app/piped/livestatestore/kubernetes/kubernetesmetrics"
 	"github.com/pipe-cd/pipe/pkg/app/piped/notifier"
 	"github.com/pipe-cd/pipe/pkg/app/piped/planpreview"
+	"github.com/pipe-cd/pipe/pkg/app/piped/planpreview/planpreviewmetrics"
 	"github.com/pipe-cd/pipe/pkg/app/piped/statsreporter"
 	"github.com/pipe-cd/pipe/pkg/app/piped/toolregistry"
 	"github.com/pipe-cd/pipe/pkg/app/piped/trigger"
@@ -643,6 +644,7 @@ func registerMetrics(pipedID string) *prometheus.Registry {
 
 	k8scloudprovidermetrics.Register(wrapped)
 	k8slivestatestoremetrics.Register(wrapped)
+	planpreviewmetrics.Register(wrapped)
 
 	return r
 }
