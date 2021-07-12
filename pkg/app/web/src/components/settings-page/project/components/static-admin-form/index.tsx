@@ -73,6 +73,7 @@ const StaticAdminDialog: FC<{
             id="username"
             name="username"
             value={formik.values.username}
+            defaultValue={formik.values.username}
             variant="outlined"
             margin="dense"
             label="Username"
@@ -101,8 +102,7 @@ const StaticAdminDialog: FC<{
             type="submit"
             color="primary"
             disabled={
-              formik.isValid === false ||
-              formik.values.username === currentUsername
+              formik.isValid === false
             }
           >
             {UI_TEXT_SAVE}
