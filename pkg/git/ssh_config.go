@@ -17,6 +17,7 @@ package git
 import (
 	"bytes"
 	"fmt"
+	"io/ioutil"
 	"os"
 	"path"
 	"path/filepath"
@@ -49,16 +50,6 @@ type sshConfig struct {
 }
 
 func AddSSHConfig(cfg config.PipedGit) error {
-	// Check the existence of the specified private SSH key file.
-	if _, err := os.Stat(cfg.SSHKeyFile); os.IsNotExist(err) {
-		return fmt.Errorf("the specified private SSH key at %s was not found", cfg.SSHKeyFile)
-	}
-
-	configData, err := generateSSHConfig(cfg)
-	if err != nil {
-		return err
-	}
-
 	cfgPath := cfg.SSHConfigFilePath
 	if cfgPath == "" {
 		home, err := os.UserHomeDir()
@@ -67,10 +58,31 @@ func AddSSHConfig(cfg config.PipedGit) error {
 		}
 		cfgPath = path.Join(home, ".ssh", "config")
 	}
-	dir := filepath.Dir(cfgPath)
+	sshDir := filepath.Dir(cfgPath)
 
-	if err := os.MkdirAll(dir, 0700); err != nil {
-		return fmt.Errorf("failed to create a directory %s: %v", dir, err)
+	if err := os.MkdirAll(sshDir, 0700); err != nil {
+		return fmt.Errorf("failed to create a directory %s: %v", sshDir, err)
+	}
+
+	var sshKeyFile string
+	if cfg.SSHKeyFile != "" {
+		f, err := ioutil.TempFile(sshDir, "piped-ssh-key-*")
+		if err != nil {
+			return err
+		}
+		key, err := os.ReadFile(cfg.SSHKeyFile)
+		if err != nil {
+			return err
+		}
+		if _, err := f.Write(key); err != nil {
+			return err
+		}
+		sshKeyFile = f.Name()
+	}
+
+	configData, err := generateSSHConfig(cfg, sshKeyFile)
+	if err != nil {
+		return err
 	}
 
 	f, err := os.OpenFile(cfgPath, os.O_APPEND|os.O_CREATE|os.O_WRONLY, 0644)
@@ -86,12 +98,12 @@ func AddSSHConfig(cfg config.PipedGit) error {
 	return nil
 }
 
-func generateSSHConfig(cfg config.PipedGit) (string, error) {
+func generateSSHConfig(cfg config.PipedGit, sshKeyFile string) (string, error) {
 	var (
 		buffer bytes.Buffer
 		data   = sshConfig{
 			Host:         defaultHost,
-			IdentityFile: cfg.SSHKeyFile,
+			IdentityFile: sshKeyFile,
 		}
 	)
 
