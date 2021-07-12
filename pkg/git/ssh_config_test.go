@@ -32,7 +32,7 @@ func TestGenerateSSHConfig(t *testing.T) {
 		{
 			name: "default",
 			cfg: config.PipedGit{
-				SSHKeyFile: "/etc/piped-secret/ssh-key",
+				SSHKeyFile: "/tmp/piped-secret/ssh-key",
 			},
 			expected: `
 Host github.com
@@ -48,7 +48,7 @@ Host github.com
 			name: "host is configured",
 			cfg: config.PipedGit{
 				Host:       "gitlab.com",
-				SSHKeyFile: "/etc/piped-secret/ssh-key",
+				SSHKeyFile: "/tmp/piped-secret/ssh-key",
 			},
 			expected: `
 Host gitlab.com
@@ -65,7 +65,7 @@ Host gitlab.com
 			cfg: config.PipedGit{
 				Host:       "gitlab.com",
 				HostName:   "gitlab.com",
-				SSHKeyFile: "/etc/piped-secret/ssh-key",
+				SSHKeyFile: "/tmp/piped-secret/ssh-key",
 			},
 			expected: `
 Host gitlab.com
@@ -81,7 +81,8 @@ Host gitlab.com
 
 	for _, tc := range testcases {
 		t.Run(tc.name, func(t *testing.T) {
-			got, err := generateSSHConfig(tc.cfg)
+			sshKeyFile := "/etc/piped-secret/ssh-key"
+			got, err := generateSSHConfig(tc.cfg, sshKeyFile)
 			assert.Equal(t, tc.expected, got)
 			assert.Equal(t, tc.expectedErr, err)
 		})
