@@ -6,7 +6,6 @@ sig-backend:
 
 sig-frontend:
   users:
-    - cakecatz
     - khanhtc1202
     - nghialv
 
@@ -18,4 +17,3 @@ sig-build:
 sig-release:
   users:
     - nghialv
-    - stormcat24
