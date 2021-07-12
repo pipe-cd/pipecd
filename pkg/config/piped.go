@@ -15,9 +15,11 @@
 package config
 
 import (
+	"encoding/base64"
 	"encoding/json"
 	"errors"
 	"fmt"
+	"os"
 
 	"github.com/pipe-cd/pipe/pkg/model"
 )
@@ -36,6 +38,8 @@ type PipedSpec struct {
 	PipedID string
 	// The path to the file containing the generated Key string for this piped.
 	PipedKeyFile string
+	// Base64 encoded string of Piped key.
+	PipedKeyData string
 	// The address used to connect to the control-plane's API.
 	APIAddress string `json:"apiAddress"`
 	// The address to the control-plane's Web.
@@ -189,6 +193,16 @@ func (s *PipedSpec) GetSecretManagement() *SecretManagement {
 	return s.SecretManagement
 }
 
+func (s *PipedSpec) LoadPipedKey() ([]byte, error) {
+	if s.PipedKeyData != "" {
+		return base64.StdEncoding.DecodeString(s.PipedKeyData)
+	}
+	if s.PipedKeyFile != "" {
+		return os.ReadFile(s.PipedKeyFile)
+	}
+	return nil, errors.New("either pipedKeyFile or pipedKeyData must be set")
+}
+
 type PipedGit struct {
 	// The username that will be configured for `git` user.
 	// Default is "piped".
@@ -210,10 +224,22 @@ type PipedGit struct {
 	// The path to the private ssh key file.
 	// This will be used to clone the source code of the specified git repositories.
 	SSHKeyFile string `json:"sshKeyFile"`
+	// Base64 encoded string of ssh-key.
+	SSHKeyData string `json:"sshKeyData"`
 }
 
 func (g PipedGit) ShouldConfigureSSHConfig() bool {
-	return g.SSHKeyFile != ""
+	return g.SSHKeyData != "" || g.SSHKeyFile != ""
+}
+
+func (g PipedGit) LoadSSHKey() ([]byte, error) {
+	if g.SSHKeyData != "" {
+		return base64.StdEncoding.DecodeString(g.SSHKeyData)
+	}
+	if g.SSHKeyFile != "" {
+		return os.ReadFile(g.SSHKeyFile)
+	}
+	return nil, errors.New("either sshKeyFile or sshKeyData must be set")
 }
 
 type PipedRepository struct {
