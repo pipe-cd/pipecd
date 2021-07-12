@@ -77,8 +77,11 @@ func (s *PipedSpec) Validate() error {
 	if s.PipedID == "" {
 		return errors.New("pipedID must be set")
 	}
-	if s.PipedKeyFile == "" {
-		return errors.New("pipedKeyFile must be set")
+	if s.PipedKeyData == "" && s.PipedKeyFile == "" {
+		return errors.New("either pipedKeyFile or pipedKeyData must be set")
+	}
+	if s.PipedKeyData != "" && s.PipedKeyFile != "" {
+		return errors.New("only pipedKeyFile or pipedKeyData can be set")
 	}
 	if s.APIAddress == "" {
 		return errors.New("apiAddress must be set")
@@ -194,9 +197,6 @@ func (s *PipedSpec) GetSecretManagement() *SecretManagement {
 }
 
 func (s *PipedSpec) LoadPipedKey() ([]byte, error) {
-	if s.PipedKeyData != "" && s.PipedKeyFile != "" {
-		return nil, errors.New("only either pipedKeyFile or pipedKeyData can be set")
-	}
 	if s.PipedKeyData != "" {
 		return base64.StdEncoding.DecodeString(s.PipedKeyData)
 	}
