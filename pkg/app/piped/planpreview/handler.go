@@ -160,6 +160,7 @@ func (h *Handler) Run(ctx context.Context) error {
 	h.logger.Info("start running planpreview handler")
 
 	startWorker := func(ctx context.Context, cmdCh <-chan model.ReportableCommand) {
+		h.logger.Info("started a worker for handling plan-preview command")
 		for {
 			select {
 			case cmd := <-cmdCh:
@@ -200,25 +201,38 @@ func (h *Handler) enqueueNewCommands(ctx context.Context) {
 
 	commands := h.commandLister.ListBuildPlanPreviewCommands()
 	if len(commands) == 0 {
-		h.logger.Info("there is no new command to enqueue")
+		h.logger.Info("there is no command to enqueue")
 		return
 	}
 
 	news := make([]model.ReportableCommand, 0, len(commands))
-	prevCommands := make(map[string]struct{}, len(commands))
+	cmds := make(map[string]struct{}, len(commands))
 	for _, cmd := range commands {
-		prevCommands[cmd.Id] = struct{}{}
+		cmds[cmd.Id] = struct{}{}
 		if _, ok := h.prevCommands[cmd.Id]; !ok {
 			news = append(news, cmd)
 		}
 	}
 
-	h.prevCommands = prevCommands
+	h.logger.Info("fetched unhandled commands to enqueue",
+		zap.Any("pre-commands", h.prevCommands),
+		zap.Any("commands", cmds),
+		zap.Int("news", len(news)),
+	)
+
+	if len(news) == 0 {
+		h.logger.Info("there is no new command to enqueue")
+		return
+	}
+
+	h.prevCommands = cmds
 	h.logger.Info(fmt.Sprintf("will enqueue %d new commands", len(news)))
 
 	for _, cmd := range news {
 		select {
 		case h.commandCh <- cmd:
+			h.logger.Info("queued a new new command", zap.String("command", cmd.Id))
+
 		case <-ctx.Done():
 			return
 		}
@@ -226,6 +240,11 @@ func (h *Handler) enqueueNewCommands(ctx context.Context) {
 }
 
 func (h *Handler) handleCommand(ctx context.Context, cmd model.ReportableCommand) {
+	logger := h.logger.With(
+		zap.String("command", cmd.Id),
+	)
+	logger.Info("received a plan-preview command to handle")
+
 	result := &model.PlanPreviewCommandResult{
 		CommandId: cmd.Id,
 		PipedId:   cmd.PipedId,
@@ -235,11 +254,13 @@ func (h *Handler) handleCommand(ctx context.Context, cmd model.ReportableCommand
 		result.Error = err.Error()
 		output, err := json.Marshal(result)
 		if err != nil {
-			h.logger.Error("failed to marshal command result", zap.Error(err))
+			logger.Error("failed to marshal command result", zap.Error(err))
 		}
 		if err := cmd.Report(ctx, model.CommandStatus_COMMAND_FAILED, nil, output); err != nil {
-			h.logger.Error("failed to report command status", zap.Error(err))
+			logger.Error("failed to report command status", zap.Error(err))
+			return
 		}
+		logger.Info("successfully reported a failure command")
 	}
 
 	if cmd.BuildPlanPreview == nil {
@@ -262,6 +283,7 @@ func (h *Handler) handleCommand(ctx context.Context, cmd model.ReportableCommand
 	}
 
 	if err := cmd.Report(ctx, model.CommandStatus_COMMAND_SUCCEEDED, nil, output); err != nil {
-		h.logger.Error("failed to report command status", zap.Error(err))
+		logger.Error("failed to report command status", zap.Error(err))
 	}
+	logger.Info("successfully reported a success command")
 }
