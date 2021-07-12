@@ -164,8 +164,8 @@ func (h *Handler) Run(ctx context.Context) error {
 		for {
 			select {
 			case cmd := <-cmdCh:
-				ctx, _ = context.WithTimeout(ctx, h.options.commandHandleTimeout)
-				h.handleCommand(ctx, cmd)
+				childCtx, _ := context.WithTimeout(ctx, h.options.commandHandleTimeout)
+				h.handleCommand(childCtx, cmd)
 
 			case <-ctx.Done():
 				return
@@ -284,6 +284,8 @@ func (h *Handler) handleCommand(ctx context.Context, cmd model.ReportableCommand
 
 	if err := cmd.Report(ctx, model.CommandStatus_COMMAND_SUCCEEDED, nil, output); err != nil {
 		logger.Error("failed to report command status", zap.Error(err))
+		return
 	}
+
 	logger.Info("successfully reported a success command")
 }
