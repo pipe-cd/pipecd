@@ -81,7 +81,7 @@ func (s *PipedSpec) Validate() error {
 		return errors.New("either pipedKeyFile or pipedKeyData must be set")
 	}
 	if s.PipedKeyData != "" && s.PipedKeyFile != "" {
-		return errors.New("only either pipedKeyFile or pipedKeyData can be set")
+		return errors.New("only pipedKeyFile or pipedKeyData can be set")
 	}
 	if s.APIAddress == "" {
 		return errors.New("apiAddress must be set")
