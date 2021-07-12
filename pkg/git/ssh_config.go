@@ -73,6 +73,7 @@ func AddSSHConfig(cfg config.PipedGit) error {
 		if err != nil {
 			return err
 		}
+		// TODO: Remove this key file when Piped terminating.
 		if _, err := f.Write(key); err != nil {
 			return err
 		}
