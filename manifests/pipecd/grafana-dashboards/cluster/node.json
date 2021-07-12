@@ -16,6 +16,7 @@
   "editable": true,
   "gnetId": null,
   "graphTooltip": 0,
+  "id": 3,
   "links": [],
   "panels": [
     {
@@ -65,7 +66,7 @@
       "targets": [
         {
           "exemplar": true,
-          "expr": "avg by(job) (node_time_seconds{job=\"kubernetes-service-endpoints\"}) \n-\navg by(job) (node_boot_time_seconds{job=\"kubernetes-service-endpoints\"})",
+          "expr": "avg by(job) (node_time_seconds{job=\"node-exporter\"}) \n-\navg by(job) (node_boot_time_seconds{job=\"node-exporter\"})",
           "interval": "",
           "legendFormat": "",
           "queryType": "randomWalk",
@@ -201,7 +202,7 @@
       "targets": [
         {
           "exemplar": true,
-          "expr": "100 - (\n(avg by (instance) (node_memory_MemAvailable_bytes{job=\"kubernetes-service-endpoints\"}) * 100)\n/\n(avg by (instance) (node_memory_MemTotal_bytes{job=\"kubernetes-service-endpoints\"})))",
+          "expr": "100 - (\n(avg by (instance) (node_memory_MemAvailable_bytes) * 100)\n/\n(avg by (instance) (node_memory_MemTotal_bytes)))",
           "interval": "",
           "legendFormat": "{{instance}}",
           "queryType": "randomWalk",
@@ -354,7 +355,7 @@
       "targets": [
         {
           "exemplar": true,
-          "expr": "sum by (instance) (node_load5{job=\"kubernetes-service-endpoints\"})\n/\ncount(node_cpu_seconds_total{mode=\"system\"}) by (instance) * 100",
+          "expr": "sum by (instance) (node_load5)\n/\ncount(node_cpu_seconds_total{mode=\"system\"}) by (instance) * 100",
           "interval": "",
           "legendFormat": "{{instance}}",
           "queryType": "randomWalk",
@@ -463,7 +464,7 @@
       "targets": [
         {
           "exemplar": true,
-          "expr": "sum by (job) (node_memory_MemTotal_bytes{job=\"kubernetes-service-endpoints\"})",
+          "expr": "sum by (job) (node_memory_MemTotal_bytes{job=\"node-exporter\"})",
           "interval": "",
           "legendFormat": "",
           "queryType": "randomWalk",
@@ -584,5 +585,5 @@
   "timezone": "",
   "title": "Node",
   "uid": "o1M4vRmnk",
-  "version": 1
+  "version": 4
 }

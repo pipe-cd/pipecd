@@ -16,7 +16,7 @@
   "editable": true,
   "gnetId": null,
   "graphTooltip": 0,
-  "id": 6,
+  "id": 3,
   "links": [],
   "panels": [
     {
@@ -287,9 +287,9 @@
       "targets": [
         {
           "exemplar": true,
-          "expr": "kubelet_volume_stats_used_bytes{persistentvolumeclaim=\"pipecd-prometheus-server\"}",
+          "expr": "sum by (persistentvolumeclaim) (kubelet_volume_stats_used_bytes{persistentvolumeclaim=\"pipecd-prometheus-server\"})",
           "interval": "",
-          "legendFormat": "",
+          "legendFormat": "{{instance}}",
           "queryType": "randomWalk",
           "refId": "A"
         }
@@ -1072,5 +1072,5 @@
   "timezone": "",
   "title": "Prometheus",
   "uid": "7RpHmaz7k",
-  "version": 13
+  "version": 5
 }

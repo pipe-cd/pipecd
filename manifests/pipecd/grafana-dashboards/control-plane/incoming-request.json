@@ -16,7 +16,8 @@
   "editable": true,
   "gnetId": null,
   "graphTooltip": 0,
-  "iteration": 1625634320370,
+  "id": 8,
+  "iteration": 1625820028090,
   "links": [],
   "panels": [
     {
@@ -97,7 +98,7 @@
           "label": null,
           "logBase": 1,
           "max": null,
-          "min": null,
+          "min": "0",
           "show": true
         },
         {
@@ -244,7 +245,7 @@
       },
       "lines": true,
       "linewidth": 1,
-      "nullPointMode": "null",
+      "nullPointMode": "null as zero",
       "options": {
         "alertThreshold": true
       },
@@ -291,7 +292,7 @@
           "label": null,
           "logBase": 1,
           "max": null,
-          "min": null,
+          "min": "0",
           "show": true
         },
         {
@@ -546,7 +547,7 @@
   },
   "timepicker": {},
   "timezone": "",
-  "title": "Incoming Request",
+  "title": "gRPC Incoming Request",
   "uid": "3jeba3R7z",
-  "version": 1
+  "version": 4
 }
