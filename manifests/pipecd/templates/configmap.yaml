@@ -11,9 +11,9 @@ data:
 {{- end }}
 
 {{- if .Values.monitoring.enabled }}
+{{- if .Values.monitoring.clusterStats }}
 ---
 
-{{- if .Values.monitoring.clusterStats }}
 apiVersion: v1
 kind: ConfigMap
 metadata:
@@ -28,8 +28,8 @@ data:
   {{ trimPrefix "grafana-dashboards/cluster/" $path | nindent 2 }}: |-
     {{ $.Files.Get $path | nindent 4 }}
 {{ end }}
----
 {{- end }}
+---
 
 apiVersion: v1
 kind: ConfigMap
