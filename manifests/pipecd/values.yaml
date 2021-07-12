@@ -276,6 +276,7 @@ prometheus:
               target_label: __metrics_path__
               replacement: /api/v1/nodes/$1/proxy/metrics
 
+        # Container stats for PipeCD services
         - job_name: kubernetes-nodes-cadvisor
           kubernetes_sd_configs:
             - role: node
@@ -299,11 +300,14 @@ prometheus:
               regex: (.+)-[0-9a-zA-Z]+(-[0-9a-zA-Z]+)$
               replacement: $1
 
-        # Scrape config for services that has "prometheus.io/scrape: true"
-        - job_name: kubernetes-service-endpoints
+        # Cluster stats for PipeCD services
+        - job_name: kube-state-metrics
           kubernetes_sd_configs:
             - role: endpoints
           relabel_configs:
+            - source_labels: [__meta_kubernetes_service_label_app_kubernetes_io_name]
+              action: keep
+              regex: kube-state-metrics
             - source_labels: [__meta_kubernetes_service_annotation_prometheus_io_scrape]
               action: keep
               regex: true
@@ -337,38 +341,40 @@ prometheus:
               regex: (.+)-[0-9a-zA-Z]+(-[0-9a-zA-Z]+)$
               replacement: $1
 
-        # Scrape config for pods that has "prometheus.io/scrape: true"
-        - job_name: kubernetes-pods
+        - job_name: node-exporter
           kubernetes_sd_configs:
-            - role: pod
+            - role: endpoints
           relabel_configs:
-            - source_labels: [__meta_kubernetes_pod_annotation_prometheus_io_scrape]
+            - source_labels: [__meta_kubernetes_service_label_component]
+              action: keep
+              regex: node-exporter
+            - source_labels: [__meta_kubernetes_service_annotation_prometheus_io_scrape]
               action: keep
               regex: true
-            - source_labels: [__meta_kubernetes_pod_annotation_prometheus_io_scheme]
+            - source_labels: [__meta_kubernetes_service_annotation_prometheus_io_scheme]
               action: replace
-              regex: (https?)
               target_label: __scheme__
-            - source_labels: [__meta_kubernetes_pod_annotation_prometheus_io_path]
+              regex: (https?)
+            - source_labels: [__meta_kubernetes_service_annotation_prometheus_io_path]
               action: replace
               target_label: __metrics_path__
               regex: (.+)
-            - source_labels: [__address__, __meta_kubernetes_pod_annotation_prometheus_io_port]
+            - source_labels: [__address__, __meta_kubernetes_service_annotation_prometheus_io_port]
               action: replace
+              target_label: __address__
               regex: ([^:]+)(?::\d+)?;(\d+)
               replacement: $1:$2
-              target_label: __address__
             - action: labelmap
-              regex: __meta_kubernetes_pod_label_(.+)
+              regex: __meta_kubernetes_service_label_(.+)
             - source_labels: [__meta_kubernetes_namespace]
               action: replace
               target_label: kubernetes_namespace
-            - source_labels: [__meta_kubernetes_pod_name]
+            - source_labels: [__meta_kubernetes_service_name]
               action: replace
-              target_label: kubernetes_pod_name
-            - source_labels: [__meta_kubernetes_pod_phase]
-              regex: Pending|Succeeded|Failed
-              action: drop
+              target_label: kubernetes_name
+            - source_labels: [__meta_kubernetes_pod_node_name]
+              action: replace
+              target_label: kubernetes_node
 
 # All directives inside this section will be directly sent to the grafana chart.
 # Head to the below link to see all available values.
