@@ -63,24 +63,22 @@ func AddSSHConfig(cfg config.PipedGit) error {
 		return fmt.Errorf("failed to create a directory %s: %v", sshDir, err)
 	}
 
-	var sshKeyFile string
-	if cfg.SSHKeyFile != "" {
-		f, err := os.CreateTemp(sshDir, "piped-ssh-key-*")
-		if err != nil {
-			return err
-		}
-		key, err := os.ReadFile(cfg.SSHKeyFile)
-		if err != nil {
-			return err
-		}
-		// TODO: Remove this key file when Piped terminating.
-		if _, err := f.Write(key); err != nil {
-			return err
-		}
-		sshKeyFile = f.Name()
+	sshKey, err := cfg.LoadSSHKey()
+	if err != nil {
+		return err
 	}
 
-	configData, err := generateSSHConfig(cfg, sshKeyFile)
+	sshKeyFile, err := os.CreateTemp(sshDir, "piped-ssh-key-*")
+	if err != nil {
+		return err
+	}
+
+	// TODO: Remove this key file when Piped terminating.
+	if _, err := sshKeyFile.Write(sshKey); err != nil {
+		return err
+	}
+
+	configData, err := generateSSHConfig(cfg, sshKeyFile.Name())
 	if err != nil {
 		return err
 	}

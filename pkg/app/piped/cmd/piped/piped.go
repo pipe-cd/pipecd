@@ -174,8 +174,14 @@ func (p *piped) run(ctx context.Context, t cli.Telemetry) (runErr error) {
 		}
 	}
 
+	pipedKey, err := cfg.LoadPipedKey()
+	if err != nil {
+		t.Logger.Error("failed to load piped key", zap.Error(err))
+		return err
+	}
+
 	// Make gRPC client and connect to the API.
-	apiClient, err := p.createAPIClient(ctx, cfg.APIAddress, cfg.ProjectID, cfg.PipedID, cfg.PipedKeyFile, t.Logger)
+	apiClient, err := p.createAPIClient(ctx, cfg.APIAddress, cfg.ProjectID, cfg.PipedID, pipedKey, t.Logger)
 	if err != nil {
 		t.Logger.Error("failed to create gRPC client to control plane", zap.Error(err))
 		return err
@@ -428,18 +434,12 @@ func (p *piped) run(ctx context.Context, t cli.Telemetry) (runErr error) {
 }
 
 // createAPIClient makes a gRPC client to connect to the API.
-func (p *piped) createAPIClient(ctx context.Context, address, projectID, pipedID, pipedKeyFile string, logger *zap.Logger) (pipedservice.Client, error) {
+func (p *piped) createAPIClient(ctx context.Context, address, projectID, pipedID string, pipedKey []byte, logger *zap.Logger) (pipedservice.Client, error) {
 	if p.useFakeAPIClient {
 		return pipedclientfake.NewClient(logger), nil
 	}
 	ctx, cancel := context.WithTimeout(ctx, 15*time.Second)
 	defer cancel()
-
-	pipedKey, err := ioutil.ReadFile(pipedKeyFile)
-	if err != nil {
-		logger.Error("failed to read piped key file", zap.Error(err))
-		return nil, err
-	}
 
 	var (
 		token   = rpcauth.MakePipedToken(projectID, pipedID, string(pipedKey))

@@ -22,6 +22,7 @@ spec:
 | projectID | string | The identifier of the PipeCD project where this piped belongs to. | Yes |
 | pipedID | string | The generated ID for this piped. | Yes |
 | pipedKeyFile | string | The path to the file containing the generated key string for this piped. | Yes |
+| pipedKeyData | string | Base64 encoded string of Piped key. Either pipedKeyFile or pipedKeyData must be set. | Yes |
 | apiAddress | string | The address used to connect to the control-plane's API. | Yes |
 | webAddress | string | The address to the control-plane's Web. | No |
 | syncInterval | duration | How often to check whether an application should be synced. Default is `1m`. | No |
@@ -43,6 +44,7 @@ spec:
 | host | string | The host name. Default is `github.com`. | No |
 | hostName | string | The hostname or IP address of the remote git server. Default is the same value with Host. | No |
 | sshKeyFile | string | The path to the private ssh key file. This will be used to clone the source code of the specified git repositories. | No |
+| sshKeyData | string | Base64 encoded string of SSH key. | No |
 
 ## GitRepository
 
