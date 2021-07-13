@@ -197,3 +197,11 @@ grafana:
           allowUiUpdates: true
           options:
             path: /tmp/dashboards/control-plane
+        - name: 'Piped'
+          orgId: 1
+          folder: 'Piped'
+          type: file
+          disableDeletion: false
+          allowUiUpdates: true
+          options:
+            path: /tmp/dashboards/piped
