@@ -65,6 +65,7 @@ var (
 
 const (
 	defaultPipedStatHashKey = "HASHKEY:PIPED:STATS"
+	defaultPipedStatTTL     = 2 * time.Minute
 )
 
 type httpHandler interface {
@@ -189,7 +190,7 @@ func (s *server) run(ctx context.Context, t cli.Telemetry) error {
 	cmds := commandstore.NewStore(ds, cache, t.Logger)
 	is := insightstore.NewStore(fs)
 	cmdOutputStore := commandoutputstore.NewStore(fs, t.Logger)
-	statCache := rediscache.NewTTLHashCache(rd, cfg.Cache.TTLDuration(), defaultPipedStatHashKey)
+	statCache := rediscache.NewTTLHashCache(rd, defaultPipedStatTTL, defaultPipedStatHashKey)
 
 	// Start a gRPC server for handling PipedAPI requests.
 	{
