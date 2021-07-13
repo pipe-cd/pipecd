@@ -50,6 +50,29 @@ data:
 apiVersion: v1
 kind: ConfigMap
 metadata:
+{{- range .Values.grafana.extraConfigmapMounts }}
+{{- if eq .name "datasources" }}
+  name: {{ .configMap }}
+{{- end }}
+{{- end }}
+  labels:
+    {{- include "pipecd.labels" . | nindent 4 }}
+    grafana_datasources: "1"
+data:
+  datasources.yaml: |-
+    apiVersion: 1
+    datasources:
+      - name: Prometheus
+        type: prometheus
+        url: http://{{ include "pipecd.fullname" . }}-prometheus-server
+        access: proxy
+        version: 1
+        isDefault: true
+---
+
+apiVersion: v1
+kind: ConfigMap
+metadata:
   name: {{ include "pipecd.fullname" . }}-{{ .Values.prometheus.server.configMapOverrideName }}
   labels:
     {{- include "pipecd.labels" . | nindent 4 }}
