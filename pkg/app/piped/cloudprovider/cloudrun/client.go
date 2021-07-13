@@ -62,8 +62,31 @@ func newClient(ctx context.Context, projectID, region, credentialsFile string, l
 	return c, nil
 }
 
-func (c *client) Apply(ctx context.Context, sm ServiceManifest) (*Service, error) {
-	service, err := manifestToRunService(sm)
+func (c *client) Create(ctx context.Context, sm ServiceManifest) (*Service, error) {
+	svcCfg, err := manifestToRunService(sm)
+	if err != nil {
+		return nil, err
+	}
+
+	var (
+		svc    = run.NewNamespacesServicesService(c.client)
+		parent = makeCloudRunParent(c.projectID)
+		call   = svc.Create(parent, svcCfg)
+	)
+	call.Context(ctx)
+
+	service, err := call.Do()
+	if err != nil {
+		if e, ok := err.(*googleapi.Error); ok && e.Code == http.StatusNotFound {
+			return nil, fmt.Errorf("failed to create service: code=%d, message=%s, details=%s", e.Code, e.Message, e.Details)
+		}
+		return nil, err
+	}
+	return (*Service)(service), nil
+}
+
+func (c *client) Update(ctx context.Context, sm ServiceManifest) (*Service, error) {
+	svcCfg, err := manifestToRunService(sm)
 	if err != nil {
 		return nil, err
 	}
@@ -71,18 +94,71 @@ func (c *client) Apply(ctx context.Context, sm ServiceManifest) (*Service, error
 	var (
 		svc  = run.NewNamespacesServicesService(c.client)
 		name = makeCloudRunServiceName(c.projectID, sm.Name)
-		call = svc.ReplaceService(name, service)
+		call = svc.ReplaceService(name, svcCfg)
 	)
 	call.Context(ctx)
-	updatedService, err := call.Do()
+
+	service, err := call.Do()
 	if err != nil {
 		if e, ok := err.(*googleapi.Error); ok && e.Code == http.StatusNotFound {
-			return nil, fmt.Errorf("service %s was not found (%w), the service must be registered from Google CloudRun page", name, ErrServiceNotFound)
+			return nil, ErrServiceNotFound
 		}
 		return nil, err
 	}
+	return (*Service)(service), nil
+}
 
-	return (*Service)(updatedService), nil
+func (c *client) Apply(ctx context.Context, sm ServiceManifest) (*Service, error) {
+	svcCfg, err := manifestToRunService(sm)
+	if err != nil {
+		return nil, err
+	}
+
+	var notFound bool
+	update := func() (*Service, error) {
+		var (
+			svc  = run.NewNamespacesServicesService(c.client)
+			name = makeCloudRunServiceName(c.projectID, sm.Name)
+			call = svc.ReplaceService(name, svcCfg)
+		)
+		call.Context(ctx)
+
+		service, err := call.Do()
+		if err != nil {
+			if e, ok := err.(*googleapi.Error); ok && e.Code == http.StatusNotFound {
+				notFound = true
+				return nil, fmt.Errorf("service %s was not found (%w), the service must be registered from Google CloudRun page", name, ErrServiceNotFound)
+			}
+			return nil, err
+		}
+		return (*Service)(service), nil
+	}
+
+	svc, err := update()
+	if err == nil {
+		return svc, nil
+	}
+
+	if err != nil && !notFound {
+		return nil, err
+	}
+
+	create := func() (*Service, error) {
+		var (
+			svc  = run.NewNamespacesServicesService(c.client)
+			name = makeCloudRunServiceName(c.projectID, sm.Name)
+			call = svc.Create(name, svcCfg)
+		)
+		call.Context(ctx)
+
+		service, err := call.Do()
+		if err != nil {
+			return nil, err
+		}
+		return (*Service)(service), nil
+	}
+
+	return create()
 }
 
 func (c *client) List(ctx context.Context) error {
@@ -93,6 +169,7 @@ func (c *client) List(ctx context.Context) error {
 	)
 
 	call.Context(ctx)
+
 	resp, err := call.Do()
 	if err != nil {
 		return err

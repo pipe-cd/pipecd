@@ -33,7 +33,6 @@ require (
 	github.com/hashicorp/golang-lru v0.5.3
 	github.com/minio/minio-go/v7 v7.0.5
 	github.com/prometheus/client_golang v1.6.0
-	github.com/prometheus/client_model v0.2.0
 	github.com/prometheus/common v0.9.1
 	github.com/robfig/cron/v3 v3.0.1
 	github.com/spf13/cobra v1.0.0

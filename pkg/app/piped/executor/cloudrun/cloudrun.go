@@ -115,11 +115,24 @@ func apply(ctx context.Context, in *executor.Input, cloudProviderName string, cl
 		return false
 	}
 
-	if _, err := client.Apply(ctx, sm); err != nil {
-		in.LogPersister.Errorf("Failed to apply the service manifest (%v)", err)
+	_, err = client.Update(ctx, sm)
+	if err == nil {
+		in.LogPersister.Infof("Successfully updated the service %s", sm.Name)
+		return true
+	}
+
+	if err != provider.ErrServiceNotFound {
+		in.LogPersister.Errorf("Failed to update the service %s (%v)", sm.Name, err)
 		return false
 	}
 
-	in.LogPersister.Info("Successfully applied the service manifest")
+	in.LogPersister.Infof("Service %s was not found, a new service will be created", sm.Name)
+
+	if _, err := client.Create(ctx, sm); err != nil {
+		in.LogPersister.Errorf("Failed to create the service %s (%v)", sm.Name, err)
+		return false
+	}
+
+	in.LogPersister.Infof("Successfully created the service %s", sm.Name)
 	return true
 }
