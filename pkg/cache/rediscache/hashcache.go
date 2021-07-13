@@ -68,7 +68,22 @@ func (r *RedisHashCache) Put(k string, v interface{}) error {
 	conn := r.redis.Get()
 	defer conn.Close()
 	_, err := conn.Do("HSET", r.key, k, v)
-	if r.ttl != 0 {
+	if err != nil {
+		return err
+	}
+
+	// Skip set TTL if unnecessary.
+	if r.ttl == 0 {
+		return nil
+	}
+
+	rep, err := redigo.Int(conn.Do("TTL", r.key))
+	if err != nil {
+		return err
+	}
+	// Only set TTL for hashkey in case TTL command return key has no TTL.
+	// ref: https://redis.io/commands/TTL
+	if rep < 0 {
 		_, err = conn.Do("EXPIRE", r.key, r.ttl)
 	}
 	return err
