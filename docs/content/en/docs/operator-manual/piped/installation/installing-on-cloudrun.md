@@ -73,7 +73,7 @@ description: >
 
   Prepare a CloudRun service manifest file as below.
 
-  Note: Fields which set to '1' are strict to be set with that value to ensure piped work correctly.
+  **Note**: Fields which set to '1' are strict to be set with that value to ensure piped work correctly.
 
   ``` yaml
   apiVersion: serving.knative.dev/v1
