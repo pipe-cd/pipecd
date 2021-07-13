@@ -15,7 +15,6 @@
 package crypto
 
 import (
-	"bytes"
 	"crypto/aes"
 	"crypto/cipher"
 	"crypto/rand"
@@ -35,7 +34,7 @@ type HybridEncrypter struct {
 }
 
 func NewHybridEncrypter(key []byte) (*HybridEncrypter, error) {
-	k, err := ParseRSAPublicKeyFromPem(bytes.TrimSpace(key))
+	k, err := ParseRSAPublicKeyFromPem(key)
 	if err != nil {
 		return nil, err
 	}
@@ -93,7 +92,7 @@ type HybridDecrypter struct {
 }
 
 func NewHybridDecrypter(key []byte) (*HybridDecrypter, error) {
-	k, err := ParseRSAPrivateKeyFromPem(bytes.TrimSpace(key))
+	k, err := ParseRSAPrivateKeyFromPem(key)
 	if err != nil {
 		return nil, err
 	}
