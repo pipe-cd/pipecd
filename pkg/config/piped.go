@@ -573,18 +573,48 @@ type SecretManagementKeyPair struct {
 	// Configurable fields for SEALING_KEY.
 	// The path to the private RSA key file.
 	PrivateKeyFile string `json:"privateKeyFile"`
+	// Base64 encoded string of private key.
+	PrivateKeyData string `json:"privateKeyData"`
 	// The path to the public RSA key file.
 	PublicKeyFile string `json:"publicKeyFile"`
+	// Base64 encoded string of public key.
+	PublicKeyData string `json:"publicKeyData"`
 }
 
 func (s *SecretManagementKeyPair) Validate() error {
-	if s.PrivateKeyFile == "" {
-		return fmt.Errorf("privateKeyFile must be set")
+	if s.PrivateKeyFile == "" && s.PrivateKeyData == "" {
+		return errors.New("either privateKeyFile or privateKeyData must be set")
 	}
-	if s.PublicKeyFile == "" {
-		return fmt.Errorf("publicKeyFile must be set")
+	if s.PrivateKeyFile != "" && s.PrivateKeyData != "" {
+		return errors.New("only privateKeyFile or privateKeyData can be set")
+	}
+	if s.PublicKeyFile == "" && s.PublicKeyData == "" {
+		return errors.New("either publicKeyFile or publicKeyData must be set")
+	}
+	if s.PublicKeyFile != "" && s.PublicKeyData != "" {
+		return errors.New("only publicKeyFile or publicKeyData can be set")
 	}
 	return nil
+}
+
+func (s *SecretManagementKeyPair) LoadPrivateKey() ([]byte, error) {
+	if s.PrivateKeyData != "" {
+		return base64.StdEncoding.DecodeString(s.PrivateKeyData)
+	}
+	if s.PrivateKeyFile != "" {
+		return os.ReadFile(s.PrivateKeyFile)
+	}
+	return nil, errors.New("either privateKeyFile or privateKeyData must be set")
+}
+
+func (s *SecretManagementKeyPair) LoadPublicKey() ([]byte, error) {
+	if s.PublicKeyData != "" {
+		return base64.StdEncoding.DecodeString(s.PublicKeyData)
+	}
+	if s.PublicKeyFile != "" {
+		return os.ReadFile(s.PublicKeyFile)
+	}
+	return nil, errors.New("either publicKeyFile or publicKeyData must be set")
 }
 
 type SecretManagementGCPKMS struct {

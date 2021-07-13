@@ -19,7 +19,6 @@ import (
 	"context"
 	"crypto/tls"
 	"fmt"
-	"io/ioutil"
 	"net/http"
 	"os"
 	"os/exec"
@@ -498,10 +497,11 @@ func (p *piped) initializeSecretDecrypter(cfg *config.PipedSpec) (crypto.Decrypt
 	case model.SecretManagementTypeSealingKey:
 		fallthrough
 	case model.SecretManagementTypeKeyPair:
-		if sm.KeyPair.PrivateKeyFile == "" {
-			return nil, fmt.Errorf("secretManagement.privateKeyFile must be set")
+		key, err := sm.KeyPair.LoadPrivateKey()
+		if err != nil {
+			return nil, err
 		}
-		decrypter, err := crypto.NewHybridDecrypter(sm.KeyPair.PrivateKeyFile)
+		decrypter, err := crypto.NewHybridDecrypter(key)
 		if err != nil {
 			return nil, fmt.Errorf("failed to initialize decrypter (%w)", err)
 		}
@@ -552,7 +552,7 @@ func (p *piped) sendPipedMeta(ctx context.Context, client pipedservice.Client, c
 		case model.SecretManagementTypeSealingKey:
 			fallthrough
 		case model.SecretManagementTypeKeyPair:
-			publicKey, err := ioutil.ReadFile(sm.KeyPair.PublicKeyFile)
+			publicKey, err := sm.KeyPair.LoadPublicKey()
 			if err != nil {
 				return fmt.Errorf("failed to read public key for secret management (%w)", err)
 			}

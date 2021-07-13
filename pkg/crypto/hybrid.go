@@ -33,8 +33,8 @@ type HybridEncrypter struct {
 	key *rsa.PublicKey
 }
 
-func NewHybridEncrypter(key string) (*HybridEncrypter, error) {
-	k, err := ParseRSAPublicKeyFromPem([]byte(key))
+func NewHybridEncrypter(key []byte) (*HybridEncrypter, error) {
+	k, err := ParseRSAPublicKeyFromPem(key)
 	if err != nil {
 		return nil, err
 	}
@@ -91,13 +91,13 @@ type HybridDecrypter struct {
 	key *rsa.PrivateKey
 }
 
-func NewHybridDecrypter(keyFile string) (*HybridDecrypter, error) {
-	key, err := LoadRSAPrivateKey(keyFile)
+func NewHybridDecrypter(key []byte) (*HybridDecrypter, error) {
+	k, err := ParseRSAPrivateKeyFromPem(key)
 	if err != nil {
 		return nil, err
 	}
 	return &HybridDecrypter{
-		key: key,
+		key: k,
 	}, nil
 }
 

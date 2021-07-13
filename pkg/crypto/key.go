@@ -20,8 +20,7 @@ import (
 	"crypto/rsa"
 	"crypto/x509"
 	"encoding/pem"
-	"fmt"
-	"io/ioutil"
+	"errors"
 )
 
 const DefauleRSAKeySize = 2048
@@ -62,17 +61,9 @@ func GenerateRSAPems(size int) (private, public []byte, err error) {
 	return
 }
 
-func LoadRSAPublicKey(path string) (*rsa.PublicKey, error) {
-	data, err := ioutil.ReadFile(path)
-	if err != nil {
-		return nil, err
-	}
-	data = bytes.TrimSpace(data)
-	return ParseRSAPublicKeyFromPem(data)
-}
-
 func ParseRSAPublicKeyFromPem(data []byte) (*rsa.PublicKey, error) {
 	var err error
+	data = bytes.TrimSpace(data)
 	block, _ := pem.Decode(data)
 	bytes := block.Bytes
 
@@ -91,20 +82,12 @@ func ParseRSAPublicKeyFromPem(data []byte) (*rsa.PublicKey, error) {
 	if k, ok := key.(*rsa.PublicKey); ok {
 		return k, nil
 	}
-	return nil, fmt.Errorf("invalid key format, it must be a public RSA key")
-}
-
-func LoadRSAPrivateKey(path string) (*rsa.PrivateKey, error) {
-	data, err := ioutil.ReadFile(path)
-	if err != nil {
-		return nil, err
-	}
-	data = bytes.TrimSpace(data)
-	return ParseRSAPrivateKeyFromPem(data)
+	return nil, errors.New("invalid key format, it must be a public RSA key")
 }
 
 func ParseRSAPrivateKeyFromPem(data []byte) (*rsa.PrivateKey, error) {
 	var err error
+	data = bytes.TrimSpace(data)
 	block, _ := pem.Decode(data)
 	bytes := block.Bytes
 
@@ -123,5 +106,5 @@ func ParseRSAPrivateKeyFromPem(data []byte) (*rsa.PrivateKey, error) {
 	if k, ok := key.(*rsa.PrivateKey); ok {
 		return k, nil
 	}
-	return nil, fmt.Errorf("invalid key format, it must be a private RSA key")
+	return nil, errors.New("invalid key format, it must be a private RSA key")
 }

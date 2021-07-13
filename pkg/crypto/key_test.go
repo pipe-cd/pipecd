@@ -16,6 +16,7 @@ package crypto
 
 import (
 	"bytes"
+	"os"
 	"strings"
 	"testing"
 
@@ -46,12 +47,18 @@ func TestGenerateRSAPems(t *testing.T) {
 	assert.NotNil(t, publicKey)
 }
 
-func TestLoadRSAKey(t *testing.T) {
-	privateKey, err := LoadRSAPrivateKey("testdata/private-rsa-pem")
+func TestParseRSAKey(t *testing.T) {
+	data, err := os.ReadFile("testdata/private-rsa-pem")
+	require.NoError(t, err)
+
+	privateKey, err := ParseRSAPrivateKeyFromPem(data)
 	require.NoError(t, err)
 	assert.NotNil(t, privateKey)
 
-	publicKey, err := LoadRSAPublicKey("testdata/public-rsa-pem")
+	data, err = os.ReadFile("testdata/public-rsa-pem")
+	require.NoError(t, err)
+
+	publicKey, err := ParseRSAPublicKeyFromPem(data)
 	require.NoError(t, err)
 	assert.NotNil(t, publicKey)
 }

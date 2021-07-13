@@ -15,7 +15,7 @@
 package crypto
 
 import (
-	"io/ioutil"
+	"os"
 	"testing"
 
 	"github.com/stretchr/testify/assert"
@@ -23,10 +23,10 @@ import (
 )
 
 func TestHybridEncryptDecrypt(t *testing.T) {
-	data, err := ioutil.ReadFile("testdata/public-rsa-pem")
+	data, err := os.ReadFile("testdata/public-rsa-pem")
 	require.NoError(t, err)
 
-	encrypter, err := NewHybridEncrypter(string(data))
+	encrypter, err := NewHybridEncrypter(data)
 	require.NoError(t, err)
 
 	text := `
@@ -45,7 +45,10 @@ data:
 	require.NoError(t, err)
 	assert.True(t, len(encryptedText) > 0)
 
-	decrypter, err := NewHybridDecrypter("testdata/private-rsa-pem")
+	data, err = os.ReadFile("testdata/private-rsa-pem")
+	require.NoError(t, err)
+
+	decrypter, err := NewHybridDecrypter(data)
 	require.NoError(t, err)
 
 	decryptedText, err := decrypter.Decrypt(encryptedText)

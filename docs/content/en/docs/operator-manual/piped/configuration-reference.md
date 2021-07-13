@@ -31,7 +31,8 @@ spec:
 | chartRepositories | [][ChartRepository](/docs/operator-manual/piped/configuration-reference/#chartrepository) | List of Helm chart repositories that should be added while starting up. | No |
 | cloudProviders | [][CloudProvider](/docs/operator-manual/piped/configuration-reference/#cloudprovider) | List of cloud providers can be used by this piped. | No |
 | analysisProviders | [][AnalysisProvider](/docs/operator-manual/piped/configuration-reference/#analysisprovider) | List of analysis providers can be used by this piped. | No |
-| eventWatcher | [EventWatcher](/docs/operator-manual/piped/configuration-reference/#eventwatcher) | Optional Event watcher settings | No |
+| eventWatcher | [EventWatcher](/docs/operator-manual/piped/configuration-reference/#eventwatcher) | Optional Event watcher settings. | No |
+| secretManagement | [SecretManagement](/docs/operator-manual/piped/configuration-reference/#secretmanagement) | The using secret management method. | No |
 | notifications | [Notifications](/docs/operator-manual/piped/configuration-reference/#notifications) | Sending notifications to Slack, Webhook... | No |
 
 ## Git
@@ -174,6 +175,30 @@ Must be one of the following structs:
 | commitMessage | string | The commit message used to push after replacing values. Default message is used if not given. | No |
 | includes | []string | The paths to EventWatcher files to be included. Patterns can be used like `foo/*.yaml`. | No |
 | excludes | []string | The paths to EventWatcher files to be excluded. Patterns can be used like `foo/*.yaml`. This is prioritized if both includes and this are given. | No |
+
+## SecretManagement
+
+| Field | Type | Description | Required |
+|-|-|-|-|
+| type | string | Which management method should be used. Default is `KEY_PAIR`. | Yes |
+| config | [SecretManagementConfig](/docs/operator-manual/piped/configuration-reference/#secretmanagementconfig) | Configration for using secret management method. | Yes |
+
+## SecretManagementConfig
+
+Must be one of the following structs:
+
+### SecretManagementKeyPair
+
+| Field | Type | Description | Required |
+|-|-|-|-|
+| privateKeyFile | string | Path to the private RSA key file. | Yes |
+| privateKeyData | string | Base64 encoded string of private RSA key. Either privateKeyFile or privateKeyData must be set. | No |
+| publicKeyFile | string | Path to the public RSA key file. | Yes |
+| publicKeyData | string | Base64 encoded string of public RSA key. Either publicKeyFile or publicKeyData must be set. | No |
+
+### SecretManagementGCPKMS
+
+> WIP
 
 ## Notifications
 
