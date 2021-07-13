@@ -183,7 +183,7 @@ func makeCommentBody(event *githubEvent, r *PlanPreviewResult) string {
 			fmt.Fprintf(&b, "## app: [%s](%s), env: [%s](%s), kind: %s\n", app.ApplicationName, app.ApplicationURL, app.EnvName, app.EnvURL, strings.ToLower(app.ApplicationKind))
 			fmt.Fprintf(&b, "Reason: %s\n\n", app.Reason)
 
-			var lang string = "diff"
+			var lang = "diff"
 			if app.ApplicationKind == "TERRAFORM" {
 				lang = "hcl"
 			}
