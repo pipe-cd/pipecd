@@ -598,6 +598,7 @@
       }
     }
   ],
+  "refresh": "1m",
   "schemaVersion": 27,
   "style": "dark",
   "tags": [],
@@ -612,5 +613,5 @@
   "timezone": "",
   "title": "Go",
   "uid": "dTmyAomnk",
-  "version": 1
+  "version": 2
 }

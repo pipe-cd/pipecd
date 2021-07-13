@@ -219,7 +219,7 @@
       "targets": [
         {
           "exemplar": true,
-          "expr": "rate(process_cpu_seconds_total{job=\"pipecd-ops\"}[5m]) * 100",
+          "expr": "sum by (piped)(rate(process_cpu_seconds_total{job=\"pipecd-ops\"}[5m])* 100)",
           "interval": "",
           "legendFormat": "{{piped}}",
           "queryType": "randomWalk",
@@ -364,6 +364,7 @@
       }
     }
   ],
+  "refresh": "1m",
   "schemaVersion": 27,
   "style": "dark",
   "tags": [],
@@ -371,12 +372,12 @@
     "list": []
   },
   "time": {
-    "from": "now-5m",
+    "from": "now-6h",
     "to": "now"
   },
   "timepicker": {},
   "timezone": "",
   "title": "Instance",
   "uid": "n4vx3oi7k",
-  "version": 3
+  "version": 5
 }
