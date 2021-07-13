@@ -50,6 +50,22 @@ data:
 apiVersion: v1
 kind: ConfigMap
 metadata:
+  name: {{ include "pipecd.fullname" . }}-grafana-dashboards-piped
+  labels:
+    {{- include "pipecd.labels" . | nindent 4 }}
+    grafana_dashboard: "1"
+  annotations:
+    k8s-sidecar-target-directory: "/tmp/dashboards/piped"
+data:
+{{ range $path, $_ :=  .Files.Glob  "grafana-dashboards/piped/**.json" }}
+  {{ trimPrefix "grafana-dashboards/piped/" $path | nindent 2 }}: |-
+    {{ $.Files.Get $path | nindent 4 }}
+{{ end }}
+---
+
+apiVersion: v1
+kind: ConfigMap
+metadata:
 {{- range .Values.grafana.extraConfigmapMounts }}
 {{- if eq .name "datasources" }}
   name: {{ .configMap }}
