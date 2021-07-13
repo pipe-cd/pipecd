@@ -16,8 +16,8 @@
   "editable": true,
   "gnetId": null,
   "graphTooltip": 0,
-  "id": 5,
-  "iteration": 1625721182124,
+  "id": 4,
+  "iteration": 1626081212240,
   "links": [],
   "panels": [
     {
@@ -83,14 +83,14 @@
       "targets": [
         {
           "exemplar": true,
-          "expr": "sum by (deployment) (kube_deployment_status_replicas_available{deployment=\"$replicaset\"})",
+          "expr": "sum by (deployment) (kube_deployment_status_replicas_available{deployment=\"$service\"})",
           "interval": "",
           "legendFormat": "Available",
           "queryType": "randomWalk",
           "refId": "A"
         }
       ],
-      "title": "Available Number of $replicaset Pods",
+      "title": "Available Number of $service Pods",
       "type": "stat"
     },
     {
@@ -144,14 +144,14 @@
       "targets": [
         {
           "exemplar": true,
-          "expr": "sum by (deployment) (kube_deployment_status_replicas_unavailable{deployment=\"$replicaset\"})",
+          "expr": "sum by (deployment) (kube_deployment_status_replicas_unavailable{deployment=\"$service\"})",
           "interval": "",
           "legendFormat": "Available",
           "queryType": "randomWalk",
           "refId": "A"
         }
       ],
-      "title": "Unavailable Number of $replicaset Pods",
+      "title": "Unavailable Number of $service Pods",
       "type": "stat"
     },
     {
@@ -201,9 +201,9 @@
       "targets": [
         {
           "exemplar": true,
-          "expr": "sum by (service) (rate(kube_pod_container_status_restarts_total{service=\"$replicaset\"}[5m]))",
+          "expr": "sum by (kubernetes_node) (rate(kube_pod_container_status_restarts_total{service=\"$service\"}[5m]))",
           "interval": "",
-          "legendFormat": "$replicaset",
+          "legendFormat": "{{kubernetes_node}}",
           "queryType": "randomWalk",
           "refId": "A"
         }
@@ -232,7 +232,7 @@
           "label": null,
           "logBase": 1,
           "max": null,
-          "min": null,
+          "min": "0",
           "show": true
         },
         {
@@ -311,9 +311,9 @@
       "targets": [
         {
           "exemplar": true,
-          "expr": "sum by(service) (\n  rate(container_cpu_usage_seconds_total{\n    service=\"$replicaset\"\n  }[5m]) * 100\n)",
+          "expr": "sum by(instance) (\n  rate(container_cpu_usage_seconds_total{\n    service=\"$service\"\n  }[5m]) * 100\n)",
           "interval": "",
-          "legendFormat": "$replicaset",
+          "legendFormat": "{{instance}}",
           "queryType": "randomWalk",
           "refId": "A"
         }
@@ -406,9 +406,9 @@
       "targets": [
         {
           "exemplar": true,
-          "expr": "sum by(service) (\n  container_memory_usage_bytes{\n    service=\"$replicaset\"\n  } / (1024 * 1024)\n)",
+          "expr": "sum by(instance) (\n  container_memory_usage_bytes{\n    service=\"$service\"\n  } / (1024 * 1024)\n)",
           "interval": "",
-          "legendFormat": "$replicaset",
+          "legendFormat": "{{instance}}",
           "queryType": "randomWalk",
           "refId": "A"
         }
@@ -476,7 +476,7 @@
         "includeAll": false,
         "label": null,
         "multi": false,
-        "name": "replicaset",
+        "name": "service",
         "options": [
           {
             "selected": false,
@@ -537,11 +537,6 @@
             "selected": false,
             "text": "default-http-backend",
             "value": "default-http-backend"
-          },
-          {
-            "selected": false,
-            "text": "demo-grafana",
-            "value": "demo-grafana"
           },
           {
             "selected": false,
@@ -715,11 +710,6 @@
           },
           {
             "selected": false,
-            "text": "prometheus-to",
-            "value": "prometheus-to"
-          },
-          {
-            "selected": false,
             "text": "simple",
             "value": "simple"
           },
@@ -763,5 +753,5 @@
   "timezone": "",
   "title": "Pod",
   "uid": "MMo5vRi7k",
-  "version": 4
+  "version": 6
 }
