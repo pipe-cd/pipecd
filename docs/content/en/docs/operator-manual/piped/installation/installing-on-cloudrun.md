@@ -65,53 +65,57 @@ description: >
 
 - Creating a new secret in [SecretManager](https://cloud.google.com/secret-manager/docs/creating-and-accessing-secrets) to store above configuration data securely
 
-``` console
-gcloud secrets create cloudrun-piped-config --data-file={PATH_TO_CONFIG_FILE}
-```
+  ``` console
+  gcloud secrets create cloudrun-piped-config --data-file={PATH_TO_CONFIG_FILE}
+  ```
 
 - Running Piped in CloudRun
 
-``` yaml
-apiVersion: serving.knative.dev/v1
-kind: Service
-metadata:
-  name: piped
-spec:
-  template:
-    metadata:
-      annotations:
-        autoscaling.knative.dev/maxScale: '1' # This must be 1.
-        autoscaling.knative.dev/minScale: '1' # This must be 1.
-        run.googleapis.com/ingress: internal
-        run.googleapis.com/ingress-status: internal
-    spec:
-      containerConcurrency: 1 # This must be 1.
-      containers:
-        - image: gcr.io/pipecd/piped:v0.11.1
-          args:
-            - piped
-            - --metrics=true
-            - --config-file=/etc/piped-config/config.yaml
-          ports:
-            - containerPort: 9085
-          volumeMounts:
-            - mountPath: /etc/piped-config
-              name: piped-config
-          resources:
-            limits:
-              cpu: 1000m
-              memory: 512Mi
-      volumes:
-        - name: piped-config
-          secret:
-            secretName: cloudrun-piped-config
-            items:
-              - path: config.yaml
-                key: latest
-```
+  Prepare a CloudRun service manifest file as below.
 
-``` console
-gcloud beta run services replace cloudrun-piped-service.yaml
-```
+  Note: Fields which set to '1' are strict to be set with that value to ensure piped work correctly.
 
-NOTE: Make sure that the created secret is accessible from this Piped service. See more [here](https://cloud.google.com/run/docs/configuring/secrets#access-secret).
+  ``` yaml
+  apiVersion: serving.knative.dev/v1
+  kind: Service
+  metadata:
+    name: piped
+  spec:
+    template:
+      metadata:
+        annotations:
+          autoscaling.knative.dev/maxScale: '1' # This must be 1.
+          autoscaling.knative.dev/minScale: '1' # This must be 1.
+          run.googleapis.com/ingress: internal
+          run.googleapis.com/ingress-status: internal
+      spec:
+        containerConcurrency: 1 # This must be 1.
+        containers:
+          - image: gcr.io/pipecd/piped:v0.11.1
+            args:
+              - piped
+              - --metrics=true
+              - --config-file=/etc/piped-config/config.yaml
+            ports:
+              - containerPort: 9085
+            volumeMounts:
+              - mountPath: /etc/piped-config
+                name: piped-config
+            resources:
+              limits:
+                cpu: 1000m
+                memory: 512Mi
+        volumes:
+          - name: piped-config
+            secret:
+              secretName: cloudrun-piped-config
+              items:
+                - path: config.yaml
+                  key: latest
+  ```
+
+  ``` console
+  gcloud beta run services replace cloudrun-piped-service.yaml
+  ```
+
+  Note: Make sure that the created secret is accessible from this Piped service. See more [here](https://cloud.google.com/run/docs/configuring/secrets#access-secret).
