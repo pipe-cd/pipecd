@@ -150,9 +150,6 @@ prometheus:
       # A list of notification receivers.
       receivers: []
   server:
-    # Must be fixed so that Grafana can find out statically.
-    # FIXME: Make Prometheus service name changeable as well as Grafana datasource URL
-    fullnameOverride: pipecd-prometheus-server
     configMapOverrideName: prometheus-server
 
 # All directives inside this section will be directly sent to the grafana chart.
@@ -160,6 +157,24 @@ prometheus:
 # https://github.com/grafana/helm-charts/tree/main/charts/grafana
 grafana:
   adminPassword: admin
+  sidecar:
+    datasources:
+      enabled: true
+      # Label that the configmaps with datasources are marked with
+      label: grafana_datasource
+    dashboards:
+      enabled: true
+      # Label that the configmaps with dashboards are marked with
+      label: grafana_dashboard
+      provider:
+        foldersFromFilesStructure: true
+  extraConfigmapMounts:
+    - name: datasources
+      configMap: pipecd-grafana-datasources
+      mountPath: "/etc/grafana/provisioning/datasources/datasources.yaml"
+      subPath: datasources.yaml
+      readOnly: true
+  # TODO: Manage Grafana dashboard providers as a ConfigMap
   dashboardProviders:
     dashboardproviders.yaml:
       apiVersion: 1
@@ -182,21 +197,3 @@ grafana:
           allowUiUpdates: true
           options:
             path: /tmp/dashboards/control-plane
-  sidecar:
-    datasources:
-      enabled: true
-    dashboards:
-      enabled: true
-      # Label that the configmaps with dashboards are marked with
-      label: grafana_dashboard
-      provider:
-        foldersFromFilesStructure: true
-  datasources:
-    datasources.yaml:
-      apiVersion: 1
-      datasources:
-        - name: Prometheus
-          type: prometheus
-          url: http://pipecd-prometheus-server
-          access: proxy
-          version: 1
