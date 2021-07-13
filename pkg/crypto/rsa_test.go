@@ -15,8 +15,7 @@
 package crypto
 
 import (
-	"fmt"
-	"io/ioutil"
+	"os"
 	"testing"
 
 	"github.com/stretchr/testify/assert"
@@ -24,10 +23,10 @@ import (
 )
 
 func TestRSAEncryptDecrypt(t *testing.T) {
-	data, err := ioutil.ReadFile("testdata/public-rsa-pem")
+	data, err := os.ReadFile("testdata/public-rsa-pem")
 	require.NoError(t, err)
 
-	encrypter, err := NewRSAEncrypter(string(data))
+	encrypter, err := NewRSAEncrypter(data)
 	require.NoError(t, err)
 
 	text := "short-text"
@@ -36,8 +35,10 @@ func TestRSAEncryptDecrypt(t *testing.T) {
 	require.NoError(t, err)
 	assert.True(t, len(encryptedText) > 0)
 
-	fmt.Println(encryptedText)
-	decrypter, err := NewRSADecrypter("testdata/private-rsa-pem")
+	data, err = os.ReadFile("testdata/private-rsa-pem")
+	require.NoError(t, err)
+
+	decrypter, err := NewRSADecrypter(data)
 	require.NoError(t, err)
 
 	decryptedText, err := decrypter.Decrypt(encryptedText)

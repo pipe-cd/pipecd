@@ -15,6 +15,7 @@
 package crypto
 
 import (
+	"bytes"
 	"crypto/rand"
 	"crypto/rsa"
 	"crypto/sha512"
@@ -25,8 +26,8 @@ type RSAEncrypter struct {
 	key *rsa.PublicKey
 }
 
-func NewRSAEncrypter(key string) (*RSAEncrypter, error) {
-	k, err := ParseRSAPublicKeyFromPem([]byte(key))
+func NewRSAEncrypter(key []byte) (*RSAEncrypter, error) {
+	k, err := ParseRSAPublicKeyFromPem(bytes.TrimSpace(key))
 	if err != nil {
 		return nil, err
 	}
@@ -54,13 +55,13 @@ type RSADecrypter struct {
 	key *rsa.PrivateKey
 }
 
-func NewRSADecrypter(keyFile string) (*RSADecrypter, error) {
-	key, err := LoadRSAPrivateKey(keyFile)
+func NewRSADecrypter(key []byte) (*RSADecrypter, error) {
+	k, err := ParseRSAPrivateKeyFromPem(bytes.TrimSpace(key))
 	if err != nil {
 		return nil, err
 	}
 	return &RSADecrypter{
-		key: key,
+		key: k,
 	}, nil
 }
 

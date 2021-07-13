@@ -15,13 +15,11 @@
 package crypto
 
 import (
-	"bytes"
 	"crypto/rand"
 	"crypto/rsa"
 	"crypto/x509"
 	"encoding/pem"
 	"fmt"
-	"io/ioutil"
 )
 
 const DefauleRSAKeySize = 2048
@@ -62,15 +60,6 @@ func GenerateRSAPems(size int) (private, public []byte, err error) {
 	return
 }
 
-func LoadRSAPublicKey(path string) (*rsa.PublicKey, error) {
-	data, err := ioutil.ReadFile(path)
-	if err != nil {
-		return nil, err
-	}
-	data = bytes.TrimSpace(data)
-	return ParseRSAPublicKeyFromPem(data)
-}
-
 func ParseRSAPublicKeyFromPem(data []byte) (*rsa.PublicKey, error) {
 	var err error
 	block, _ := pem.Decode(data)
@@ -92,15 +81,6 @@ func ParseRSAPublicKeyFromPem(data []byte) (*rsa.PublicKey, error) {
 		return k, nil
 	}
 	return nil, fmt.Errorf("invalid key format, it must be a public RSA key")
-}
-
-func LoadRSAPrivateKey(path string) (*rsa.PrivateKey, error) {
-	data, err := ioutil.ReadFile(path)
-	if err != nil {
-		return nil, err
-	}
-	data = bytes.TrimSpace(data)
-	return ParseRSAPrivateKeyFromPem(data)
 }
 
 func ParseRSAPrivateKeyFromPem(data []byte) (*rsa.PrivateKey, error) {

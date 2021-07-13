@@ -942,7 +942,7 @@ func (a *WebAPI) GenerateApplicationSealedSecret(ctx context.Context, req *webse
 		if se.PublicKey == "" {
 			return nil, status.Error(codes.FailedPrecondition, "The piped does not contain a public key")
 		}
-		enc, err = crypto.NewHybridEncrypter(se.PublicKey)
+		enc, err = crypto.NewHybridEncrypter([]byte(se.PublicKey))
 		if err != nil {
 			a.logger.Error("failed to initialize the crypter", zap.Error(err))
 			return nil, status.Error(codes.FailedPrecondition, "Failed to initialize the encrypter")
