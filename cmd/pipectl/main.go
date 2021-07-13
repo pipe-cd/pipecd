@@ -21,6 +21,7 @@ import (
 	"github.com/pipe-cd/pipe/pkg/app/pipectl/cmd/application"
 	"github.com/pipe-cd/pipe/pkg/app/pipectl/cmd/deployment"
 	"github.com/pipe-cd/pipe/pkg/app/pipectl/cmd/event"
+	"github.com/pipe-cd/pipe/pkg/app/pipectl/cmd/piped"
 	"github.com/pipe-cd/pipe/pkg/app/pipectl/cmd/planpreview"
 	"github.com/pipe-cd/pipe/pkg/cli"
 )
@@ -36,6 +37,7 @@ func main() {
 		deployment.NewCommand(),
 		event.NewCommand(),
 		planpreview.NewCommand(),
+		piped.NewCommand(),
 	)
 
 	if err := app.Run(); err != nil {

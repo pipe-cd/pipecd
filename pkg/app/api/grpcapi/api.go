@@ -338,6 +338,52 @@ func (a *API) GetCommand(ctx context.Context, req *apiservice.GetCommandRequest)
 	}, nil
 }
 
+func (a *API) EnablePiped(ctx context.Context, req *apiservice.EnablePipedRequest) (*apiservice.EnablePipedResponse, error) {
+	if err := a.updatePiped(ctx, req.PipedId, a.pipedStore.EnablePiped); err != nil {
+		return nil, err
+	}
+	return &apiservice.EnablePipedResponse{}, nil
+}
+
+func (a *API) DisablePiped(ctx context.Context, req *apiservice.DisablePipedRequest) (*apiservice.DisablePipedResponse, error) {
+	if err := a.updatePiped(ctx, req.PipedId, a.pipedStore.DisablePiped); err != nil {
+		return nil, err
+	}
+	return &apiservice.DisablePipedResponse{}, nil
+}
+
+func (a *API) updatePiped(ctx context.Context, pipedID string, updater func(context.Context, string) error) error {
+	key, err := requireAPIKey(ctx, model.APIKey_READ_WRITE, a.logger)
+	if err != nil {
+		return err
+	}
+
+	piped, err := getPiped(ctx, a.pipedStore, pipedID, a.logger)
+	if err != nil {
+		return err
+	}
+
+	if key.ProjectId != piped.ProjectId {
+		return status.Error(codes.PermissionDenied, "Requested piped doesn't belong to your project")
+	}
+
+	if err := updater(ctx, pipedID); err != nil {
+		switch err {
+		case datastore.ErrNotFound:
+			return status.Error(codes.InvalidArgument, "The piped is not found")
+		case datastore.ErrInvalidArgument:
+			return status.Error(codes.InvalidArgument, "Invalid value for update")
+		default:
+			a.logger.Error("failed to update the piped",
+				zap.String("piped-id", pipedID),
+				zap.Error(err),
+			)
+			return status.Error(codes.Internal, "Failed to update the piped")
+		}
+	}
+	return nil
+}
+
 func (a *API) RegisterEvent(ctx context.Context, req *apiservice.RegisterEventRequest) (*apiservice.RegisterEventResponse, error) {
 	key, err := requireAPIKey(ctx, model.APIKey_READ_WRITE, a.logger)
 	if err != nil {
