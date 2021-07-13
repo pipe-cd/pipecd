@@ -38,8 +38,8 @@ var (
 type Service run.Service
 
 type Client interface {
-	Apply(ctx context.Context, sm ServiceManifest) (*Service, error)
-	List(ctx context.Context) error
+	Create(ctx context.Context, sm ServiceManifest) (*Service, error)
+	Update(ctx context.Context, sm ServiceManifest) (*Service, error)
 }
 
 type Registry interface {
