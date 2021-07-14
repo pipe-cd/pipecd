@@ -27,10 +27,12 @@ import (
 	"strings"
 	"time"
 
+	secretmanager "cloud.google.com/go/secretmanager/apiv1"
 	"github.com/prometheus/client_golang/prometheus"
 	"github.com/spf13/cobra"
 	"go.uber.org/zap"
 	"golang.org/x/sync/errgroup"
+	secretmanagerpb "google.golang.org/genproto/googleapis/cloud/secretmanager/v1"
 	"google.golang.org/grpc/credentials"
 
 	"github.com/pipe-cd/pipe/pkg/admin"
@@ -72,7 +74,9 @@ import (
 )
 
 type piped struct {
-	configFile                           string
+	configFile               string
+	configInGCPSecretManager string
+
 	insecure                             bool
 	certFile                             string
 	adminPort                            int
@@ -100,6 +104,7 @@ func NewCommand() *cobra.Command {
 	}
 
 	cmd.Flags().StringVar(&p.configFile, "config-file", p.configFile, "The path to the configuration file.")
+	cmd.Flags().StringVar(&p.configInGCPSecretManager, "config-in-gcp-secret-manager", p.configInGCPSecretManager, "The resource ID of secret that contains Piped config and be stored in GCP SecretManager.")
 
 	cmd.Flags().BoolVar(&p.insecure, "insecure", p.insecure, "Whether disabling transport security while connecting to control-plane.")
 	cmd.Flags().StringVar(&p.certFile, "cert-file", p.certFile, "The path to the TLS certificate file.")
@@ -110,8 +115,6 @@ func NewCommand() *cobra.Command {
 	cmd.Flags().BoolVar(&p.enableDefaultKubernetesCloudProvider, "enable-default-kubernetes-cloud-provider", p.enableDefaultKubernetesCloudProvider, "Whether the default kubernetes provider is enabled or not.")
 	cmd.Flags().BoolVar(&p.addLoginUserToPasswd, "add-login-user-to-passwd", p.addLoginUserToPasswd, "Whether to add login user to $HOME/passwd. This is typically for applications running as a random user ID.")
 	cmd.Flags().DurationVar(&p.gracePeriod, "grace-period", p.gracePeriod, "How long to wait for graceful shutdown.")
-
-	cmd.MarkFlagRequired("config-file")
 
 	return cmd
 }
@@ -125,7 +128,7 @@ func (p *piped) run(ctx context.Context, t cli.Telemetry) (runErr error) {
 	}
 
 	// Load piped configuration from specified file.
-	cfg, err := p.loadConfig()
+	cfg, err := p.loadConfig(ctx)
 	if err != nil {
 		t.Logger.Error("failed to load piped configuration", zap.Error(err))
 		return err
@@ -470,18 +473,38 @@ func (p *piped) createAPIClient(ctx context.Context, address, projectID, pipedID
 }
 
 // loadConfig reads the Piped configuration data from the specified file.
-func (p *piped) loadConfig() (*config.PipedSpec, error) {
-	cfg, err := config.LoadFromYAML(p.configFile)
-	if err != nil {
-		return nil, err
+func (p *piped) loadConfig(ctx context.Context) (*config.PipedSpec, error) {
+	extract := func(cfg *config.Config) (*config.PipedSpec, error) {
+		if cfg.Kind != config.KindPiped {
+			return nil, fmt.Errorf("wrong configuration kind for piped: %v", cfg.Kind)
+		}
+		if p.enableDefaultKubernetesCloudProvider {
+			cfg.PipedSpec.EnableDefaultKubernetesCloudProvider()
+		}
+		return cfg.PipedSpec, nil
 	}
-	if cfg.Kind != config.KindPiped {
-		return nil, fmt.Errorf("wrong configuration kind for piped: %v", cfg.Kind)
+
+	if p.configFile != "" {
+		cfg, err := config.LoadFromYAML(p.configFile)
+		if err != nil {
+			return nil, err
+		}
+		return extract(cfg)
 	}
-	if p.enableDefaultKubernetesCloudProvider {
-		cfg.PipedSpec.EnableDefaultKubernetesCloudProvider()
+
+	if p.configInGCPSecretManager != "" {
+		data, err := p.getConfigDataFromSecretManager(ctx)
+		if err != nil {
+			return nil, fmt.Errorf("failed to load config from SecretManager (%w)", err)
+		}
+		cfg, err := config.DecodeYAML(data)
+		if err != nil {
+			return nil, err
+		}
+		return extract(cfg)
 	}
-	return cfg.PipedSpec, nil
+
+	return nil, fmt.Errorf("either config-file or config-from-secret-manager must be set")
 }
 
 func (p *piped) initializeSecretDecrypter(cfg *config.PipedSpec) (crypto.Decrypter, error) {
@@ -628,6 +651,25 @@ func (p *piped) insertLoginUserToPasswd(ctx context.Context) error {
 	}
 
 	return nil
+}
+
+func (p *piped) getConfigDataFromSecretManager(ctx context.Context) ([]byte, error) {
+	client, err := secretmanager.NewClient(ctx)
+	if err != nil {
+		return nil, err
+	}
+	defer client.Close()
+
+	req := &secretmanagerpb.AccessSecretVersionRequest{
+		Name: p.configInGCPSecretManager,
+	}
+
+	resp, err := client.AccessSecretVersion(ctx, req)
+	if err != nil {
+		return nil, err
+	}
+
+	return resp.Payload.Data, nil
 }
 
 func registerMetrics(pipedID string) *prometheus.Registry {
