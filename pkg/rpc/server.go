@@ -20,7 +20,7 @@ import (
 	"net"
 	"time"
 
-	"github.com/grpc-ecosystem/go-grpc-prometheus"
+	grpc_prometheus "github.com/grpc-ecosystem/go-grpc-prometheus"
 	"go.uber.org/zap"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/credentials"
@@ -216,6 +216,9 @@ func (s *Server) init() error {
 	}
 	if s.requestValidationUnaryInterceptor != nil {
 		unaryInterceptors = append(unaryInterceptors, s.requestValidationUnaryInterceptor)
+	}
+	if s.prometheusUnaryInterceptor != nil {
+		unaryInterceptors = append(unaryInterceptors, s.prometheusUnaryInterceptor)
 	}
 	if len(unaryInterceptors) > 0 {
 		c := ChainUnaryServerInterceptors(unaryInterceptors...)
