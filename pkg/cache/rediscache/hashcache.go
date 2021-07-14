@@ -64,11 +64,31 @@ func (r *RedisHashCache) Get(k string) (interface{}, error) {
 	return reply, nil
 }
 
+// Put implementation for Putter interface.
+// For TTLHashCache, Put acts mostly as normal Cache except it will
+// check if the TTL for hashkey (not the key k), in case the TTL for
+// hashkey is not yet existed or unset, EXPIRE will be called and set
+// TTL time for the whole hashkey.
 func (r *RedisHashCache) Put(k string, v interface{}) error {
 	conn := r.redis.Get()
 	defer conn.Close()
 	_, err := conn.Do("HSET", r.key, k, v)
-	if r.ttl != 0 {
+	if err != nil {
+		return err
+	}
+
+	// Skip set TTL if unnecessary.
+	if r.ttl == 0 {
+		return nil
+	}
+
+	rep, err := redigo.Int(conn.Do("TTL", r.key))
+	if err != nil {
+		return err
+	}
+	// Only set TTL for hashkey in case TTL command return key has no TTL.
+	// ref: https://redis.io/commands/TTL
+	if rep < 0 {
 		_, err = conn.Do("EXPIRE", r.key, r.ttl)
 	}
 	return err
