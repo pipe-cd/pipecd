@@ -15,7 +15,9 @@
 package rediscache
 
 import (
+	"encoding/json"
 	"errors"
+	"fmt"
 	"time"
 
 	redigo "github.com/gomodule/redigo/redis"
@@ -45,6 +47,11 @@ func NewTTLHashCache(redis redis.Redis, ttl time.Duration, key string) *RedisHas
 	}
 }
 
+type valueWithTimestamp struct {
+	Value interface{}
+	Ts    int64
+}
+
 func (r *RedisHashCache) Get(k string) (interface{}, error) {
 	conn := r.redis.Get()
 	defer conn.Close()
@@ -61,35 +68,34 @@ func (r *RedisHashCache) Get(k string) (interface{}, error) {
 	if err, ok := reply.(redigo.Error); ok {
 		return nil, err
 	}
-	return reply, nil
+
+	if r.ttl == 0 {
+		return reply, nil
+	}
+
+	v := valueWithTimestamp{}
+	if err := json.Unmarshal(reply.([]byte), &v); err != nil {
+		return nil, err
+	}
+	outdated, err := r.expireOutDateKey(k, v)
+	if err != nil {
+		return nil, errors.New("unable to expire outdated key")
+	}
+	if outdated {
+		return nil, cache.ErrNotFound
+	}
+	return v.Value, nil
 }
 
-// Put implementation for Putter interface.
-// For TTLHashCache, Put acts mostly as normal Cache except it will
-// check if the TTL for hashkey (not the key k), in case the TTL for
-// hashkey is not yet existed or unset, EXPIRE will be called and set
-// TTL time for the whole hashkey.
 func (r *RedisHashCache) Put(k string, v interface{}) error {
 	conn := r.redis.Get()
 	defer conn.Close()
-	_, err := conn.Do("HSET", r.key, k, v)
-	if err != nil {
-		return err
-	}
 
-	// Skip set TTL if unnecessary.
+	var err error
 	if r.ttl == 0 {
-		return nil
-	}
-
-	rep, err := redigo.Int(conn.Do("TTL", r.key))
-	if err != nil {
-		return err
-	}
-	// Only set TTL for hashkey in case TTL command return key has no TTL.
-	// ref: https://redis.io/commands/TTL
-	if rep < 0 {
-		_, err = conn.Do("EXPIRE", r.key, r.ttl)
+		_, err = conn.Do("HSET", r.key, k, v)
+	} else {
+		_, err = conn.Do("HSET", r.key, k, valueWithTimestamp{Value: v, Ts: time.Now().Unix()})
 	}
 	return err
 }
@@ -124,8 +130,34 @@ func (r *RedisHashCache) GetAll() (map[string]interface{}, error) {
 		if !okKey {
 			return nil, errors.New("error key not a bulk string value")
 		}
-		out[string(key)] = reply[i+1]
+		if r.ttl == 0 {
+			out[string(key)] = reply[i+1]
+			continue
+		}
+
+		val := valueWithTimestamp{}
+		if err := json.Unmarshal(reply[i+1].([]byte), &val); err != nil {
+			return nil, err
+		}
+		fmt.Println(val)
+		outdated, err := r.expireOutDateKey(string(key), val)
+		if err != nil {
+			return nil, errors.New("unable to expire outdated key")
+		}
+		if !outdated {
+			out[string(key)] = val.Value
+		}
 	}
 
 	return out, nil
+}
+
+func (r *RedisHashCache) expireOutDateKey(k string, v valueWithTimestamp) (bool, error) {
+	if r.ttl == 0 {
+		return false, nil
+	}
+	if time.Now().Unix()-v.Ts >= int64(r.ttl) {
+		return true, r.Delete(k)
+	}
+	return false, nil
 }
