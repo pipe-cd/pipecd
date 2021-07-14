@@ -65,25 +65,44 @@ description: >
 
 - Creating a new secret in [SecretManager](https://cloud.google.com/secret-manager/docs/creating-and-accessing-secrets) to store above configuration data securely
 
-  ``` console
+  ``` shell
   gcloud secrets create vm-piped-config --data-file={PATH_TO_CONFIG_FILE}
   ```
 
-- Creating a new Service Account for Piped and giving it the ability to access the above secret
+- Creating a new Service Account for Piped and giving it needed roles
 
-  ``` console
+  ``` shell
   gcloud iam service-accounts create vm-piped \
     --description="Using by Piped running on Google Cloud VM" \
     --display-name="vm-piped"
 
+  # Allow Piped to access the created secret.
   gcloud secrets add-iam-policy-binding vm-piped-config \
     --member="serviceAccount:vm-piped@{GCP_PROJECT_ID}.iam.gserviceaccount.com" \
     --role="roles/secretmanager.secretAccessor"
+
+  # Allow Piped to write its log messages to Google Cloud Logging service.
+  gcloud projects add-iam-policy-binding {GCP_PROJECT_ID} \
+    --member="serviceAccount:vm-piped@{GCP_PROJECT_ID}.iam.gserviceaccount.com" \
+    --role="roles/logging.logWriter"
+
+  # Optional
+  # If you want to use this Piped to handle CloudRun application
+  # run the following command to give it the needed roles.
+  # https://cloud.google.com/run/docs/reference/iam/roles#additional-configuration
+  #
+  # gcloud projects add-iam-policy-binding {GCP_PROJECT_ID} \
+  #   --member="serviceAccount:vm-piped@{GCP_PROJECT_ID}.iam.gserviceaccount.com" \
+  #   --role="roles/run.developer"
+  #
+  # gcloud iam service-accounts add-iam-policy-binding {GCP_PROJECT_NUMBER}-compute@developer.gserviceaccount.com \
+  #   --member="serviceAccount:vm-piped@{GCP_PROJECT_ID}.iam.gserviceaccount.com" \
+  #   --role="roles/iam.serviceAccountUser"
   ```
 
 - Running Piped on a Google Cloud VM
 
-  ``` console
+  ``` shell
   gcloud compute instances create-with-container vm-piped \
     --container-image="gcr.io/pipecd/piped:{{< blocks/latest_version >}}" \
     --container-arg="piped" \
@@ -91,7 +110,7 @@ description: >
     --container-arg="--config-gcp-secret=projects/{GCP_PROJECT_ID}/secrets/vm-piped-config/versions/{SECRET_VERSION}" \
     --network="{VPC_NETWORK}" \
     --subnet="{VPC_SUBNET}" \
-    --scopes="https://www.googleapis.com/auth/cloud-platform" \
+    --scopes="cloud-platform" \
     --service-account="vm-piped@{GCP_PROJECT_ID}.iam.gserviceaccount.com"
   ```
 
