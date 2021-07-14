@@ -30,6 +30,7 @@ require (
 	github.com/google/go-github/v29 v29.0.3
 	github.com/google/uuid v1.2.0
 	github.com/googleapis/gnostic v0.2.2 // indirect
+	github.com/grpc-ecosystem/go-grpc-prometheus v1.2.0
 	github.com/hashicorp/golang-lru v0.5.3
 	github.com/minio/minio-go/v7 v7.0.5
 	github.com/prometheus/client_golang v1.6.0

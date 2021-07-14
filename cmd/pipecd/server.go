@@ -218,6 +218,9 @@ func (s *server) run(ctx context.Context, t cli.Telemetry) error {
 		if s.enableGRPCReflection {
 			opts = append(opts, rpc.WithGRPCReflection())
 		}
+		if t.Flags.Metrics {
+			opts = append(opts, rpc.WithPrometheusUnaryInterceptor())
+		}
 
 		server := rpc.NewServer(service, opts...)
 		group.Go(func() error {
@@ -245,6 +248,9 @@ func (s *server) run(ctx context.Context, t cli.Telemetry) error {
 		)
 		if s.tls {
 			opts = append(opts, rpc.WithTLS(s.certFile, s.keyFile))
+		}
+		if t.Flags.Metrics {
+			opts = append(opts, rpc.WithPrometheusUnaryInterceptor())
 		}
 
 		server := rpc.NewServer(service, opts...)
@@ -280,6 +286,9 @@ func (s *server) run(ctx context.Context, t cli.Telemetry) error {
 		}
 		if s.enableGRPCReflection {
 			opts = append(opts, rpc.WithGRPCReflection())
+		}
+		if t.Flags.Metrics {
+			opts = append(opts, rpc.WithPrometheusUnaryInterceptor())
 		}
 
 		server := rpc.NewServer(service, opts...)
