@@ -20,6 +20,7 @@ import (
 	"net"
 	"time"
 
+	grpc_prometheus "github.com/grpc-ecosystem/go-grpc-prometheus"
 	"go.uber.org/zap"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/credentials"
@@ -52,6 +53,7 @@ type Server struct {
 	jwtAuthUnaryInterceptor           grpc.UnaryServerInterceptor
 	requestValidationUnaryInterceptor grpc.UnaryServerInterceptor
 	logUnaryInterceptor               grpc.UnaryServerInterceptor
+	prometheusUnaryInterceptor        grpc.UnaryServerInterceptor
 }
 
 // Option defines a function to set configurable field of Server.
@@ -103,6 +105,13 @@ func WithRequestValidationUnaryInterceptor() Option {
 func WithLogUnaryInterceptor(logger *zap.Logger) Option {
 	return func(s *Server) {
 		s.logUnaryInterceptor = LogUnaryServerInterceptor(logger.Named("rpc-server"))
+	}
+}
+
+// WithPrometheusUnaryInterceptor sets an interceptor for Prometheus monitoring.
+func WithPrometheusUnaryInterceptor() Option {
+	return func(s *Server) {
+		s.prometheusUnaryInterceptor = grpc_prometheus.UnaryServerInterceptor
 	}
 }
 
@@ -208,6 +217,9 @@ func (s *Server) init() error {
 	if s.requestValidationUnaryInterceptor != nil {
 		unaryInterceptors = append(unaryInterceptors, s.requestValidationUnaryInterceptor)
 	}
+	if s.prometheusUnaryInterceptor != nil {
+		unaryInterceptors = append(unaryInterceptors, s.prometheusUnaryInterceptor)
+	}
 	if len(unaryInterceptors) > 0 {
 		c := ChainUnaryServerInterceptors(unaryInterceptors...)
 		opts = append(opts, grpc.UnaryInterceptor(c))
@@ -223,6 +235,10 @@ func (s *Server) init() error {
 	}
 	if s.enabelGRPCReflection {
 		reflection.Register(s.grpcServer)
+	}
+	// NOTE: This should be registered after all services have been registered.
+	if s.prometheusUnaryInterceptor != nil {
+		grpc_prometheus.Register(s.grpcServer)
 	}
 
 	return nil
