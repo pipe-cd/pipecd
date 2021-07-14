@@ -74,8 +74,8 @@ import (
 )
 
 type piped struct {
-	configFile               string
-	configInGCPSecretManager string
+	configFile      string
+	configGCPSecret string
 
 	insecure                             bool
 	certFile                             string
@@ -104,7 +104,7 @@ func NewCommand() *cobra.Command {
 	}
 
 	cmd.Flags().StringVar(&p.configFile, "config-file", p.configFile, "The path to the configuration file.")
-	cmd.Flags().StringVar(&p.configInGCPSecretManager, "config-in-gcp-secret-manager", p.configInGCPSecretManager, "The resource ID of secret that contains Piped config and be stored in GCP SecretManager.")
+	cmd.Flags().StringVar(&p.configGCPSecret, "config-gcp-secret", p.configGCPSecret, "The resource ID of secret that contains Piped config and be stored in GCP SecretManager.")
 
 	cmd.Flags().BoolVar(&p.insecure, "insecure", p.insecure, "Whether disabling transport security while connecting to control-plane.")
 	cmd.Flags().StringVar(&p.certFile, "cert-file", p.certFile, "The path to the TLS certificate file.")
@@ -472,8 +472,12 @@ func (p *piped) createAPIClient(ctx context.Context, address, projectID, pipedID
 	return client, nil
 }
 
-// loadConfig reads the Piped configuration data from the specified file.
+// loadConfig reads the Piped configuration data from the specified source.
 func (p *piped) loadConfig(ctx context.Context) (*config.PipedSpec, error) {
+	if p.configFile != "" && p.configGCPSecret != "" {
+		return nil, fmt.Errorf("only config-file or config-gcp-secret could be set")
+	}
+
 	extract := func(cfg *config.Config) (*config.PipedSpec, error) {
 		if cfg.Kind != config.KindPiped {
 			return nil, fmt.Errorf("wrong configuration kind for piped: %v", cfg.Kind)
@@ -492,7 +496,7 @@ func (p *piped) loadConfig(ctx context.Context) (*config.PipedSpec, error) {
 		return extract(cfg)
 	}
 
-	if p.configInGCPSecretManager != "" {
+	if p.configGCPSecret != "" {
 		data, err := p.getConfigDataFromSecretManager(ctx)
 		if err != nil {
 			return nil, fmt.Errorf("failed to load config from SecretManager (%w)", err)
@@ -504,7 +508,7 @@ func (p *piped) loadConfig(ctx context.Context) (*config.PipedSpec, error) {
 		return extract(cfg)
 	}
 
-	return nil, fmt.Errorf("either config-file or config-from-secret-manager must be set")
+	return nil, fmt.Errorf("either config-file or config-gcp-secret must be set")
 }
 
 func (p *piped) initializeSecretDecrypter(cfg *config.PipedSpec) (crypto.Decrypter, error) {
@@ -661,7 +665,7 @@ func (p *piped) getConfigDataFromSecretManager(ctx context.Context) ([]byte, err
 	defer client.Close()
 
 	req := &secretmanagerpb.AccessSecretVersionRequest{
-		Name: p.configInGCPSecretManager,
+		Name: p.configGCPSecret,
 	}
 
 	resp, err := client.AccessSecretVersion(ctx, req)
