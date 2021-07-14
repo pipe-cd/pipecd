@@ -1,7 +1,7 @@
 ---
 title: "Installing on a single machine"
 linkTitle: "Installing on a single machine"
-weight: 3
+weight: 4
 description: >
   This page describes how to install a Piped on a single machine.
 ---

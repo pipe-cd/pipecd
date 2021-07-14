@@ -1,9 +1,9 @@
 ---
-title: "Installing on CloudRun"
-linkTitle: "Installing on CloudRun"
-weight: 3
+title: "Installing on Google Cloud VM"
+linkTitle: "Installing on Google Cloud VM"
+weight: 2
 description: >
-  This page describes how to install Piped on CloudRun.
+  This page describes how to install Piped on Google Cloud VM.
 ---
 
 ## Prerequisites
@@ -40,13 +40,13 @@ description: >
         branch: {GIT_BRANCH}
 
     # Optional
-    # Enable this Piped to handle CLOUD_RUN application.
-    cloudProviders:
-      - name: cloudrun-in-project
-        type: CLOUDRUN
-        config:
-          project: {GCP_PROJECT_ID}
-          region: {GCP_PROJECT_REGION}
+    # Uncomment this if you want to enable this Piped to handle CloudRun application.
+    # cloudProviders:
+    #  - name: cloudrun-in-project
+    #    type: CLOUDRUN
+    #    config:
+    #      project: {GCP_PROJECT_ID}
+    #      region: {GCP_PROJECT_REGION}
 
     # Optional
     # Uncomment this if you want to enable this Piped to handle Terraform application.
@@ -66,58 +66,33 @@ description: >
 - Creating a new secret in [SecretManager](https://cloud.google.com/secret-manager/docs/creating-and-accessing-secrets) to store above configuration data securely
 
   ``` console
-  gcloud secrets create cloudrun-piped-config --data-file={PATH_TO_CONFIG_FILE}
+  gcloud secrets create vm-piped-config --data-file={PATH_TO_CONFIG_FILE}
   ```
 
-- Running Piped in CloudRun
-
-  Prepare a CloudRun service manifest file as below.
-
-  **Note**: Fields which set to `1` are strict to be set with that value to ensure piped work correctly.
-
-  ``` yaml
-  apiVersion: serving.knative.dev/v1
-  kind: Service
-  metadata:
-    name: piped
-  spec:
-    template:
-      metadata:
-        annotations:
-          autoscaling.knative.dev/maxScale: '1' # This must be 1.
-          autoscaling.knative.dev/minScale: '1' # This must be 1.
-          run.googleapis.com/ingress: internal
-          run.googleapis.com/ingress-status: internal
-      spec:
-        containerConcurrency: 1 # This must be 1.
-        containers:
-          - image: gcr.io/pipecd/piped:{{< blocks/latest_version >}}
-            args:
-              - piped
-              - --metrics=true
-              - --config-file=/etc/piped-config/config.yaml
-            ports:
-              - containerPort: 9085
-            volumeMounts:
-              - mountPath: /etc/piped-config
-                name: piped-config
-            resources:
-              limits:
-                cpu: 1000m
-                memory: 512Mi
-        volumes:
-          - name: piped-config
-            secret:
-              secretName: cloudrun-piped-config
-              items:
-                - path: config.yaml
-                  key: latest
-  ```
-
-  Create Piped service on CloudRun with:
+- Creating a new Service Account for Piped and giving it the ability to access above secret
 
   ``` console
-  gcloud beta run services replace cloudrun-piped-service.yaml
+  gcloud iam service-accounts create vm-piped \
+    --description="Using by Piped running on Google Cloud VM" \
+    --display-name="vm-piped"
+
+  gcloud secrets add-iam-policy-binding vm-piped-config \
+    --member="serviceAccount:vm-piped@{GCP_PROJECT_ID}.iam.gserviceaccount.com" \
+    --role="roles/secretmanager.secretAccessor"
   ```
 
-  Note: Make sure that the created secret is accessible from this Piped service. See more [here](https://cloud.google.com/run/docs/configuring/secrets#access-secret).
+- Running Piped on a Google Cloud VM
+
+  ``` console
+  gcloud compute instances create-with-container vm-piped \
+    --container-image="gcr.io/pipecd/piped:{{< blocks/latest_version >}}" \
+    --container-arg="piped" \
+    --container-arg="--config-gcp-secret=projects/{GCP_PROJECT_NUMBER}/secrets/vm-piped-config/versions/{SECRET_VERSION}" \
+    --network="{VPC_NETWORK}" \
+    --subnet="{VPC_SUBNET}" \
+    --scopes="https://www.googleapis.com/auth/cloud-platform" \
+    --service-account="vm-piped@{GCP_PROJECT_ID}.iam.gserviceaccount.com"
+  ```
+
+After that, you can see on PipeCD web at `Settings` page that Piped is connecting to control-plane.
+You can also view Piped log as described [here](https://cloud.google.com/compute/docs/containers/deploying-containers#viewing_logs).
