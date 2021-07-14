@@ -73,7 +73,8 @@ To make encrypted secrets available to an application, they must be specified in
 
 ``` yaml
 apiVersion: pipecd.dev/v1beta1
-kind: Piped
+# One of Piped defined app kind such as: KubernetesApp
+kind: {APPLICATION_KIND}
 spec:
   encryption:
     encryptedSecrets:
