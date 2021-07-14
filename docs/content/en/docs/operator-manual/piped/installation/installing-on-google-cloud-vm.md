@@ -69,7 +69,7 @@ description: >
   gcloud secrets create vm-piped-config --data-file={PATH_TO_CONFIG_FILE}
   ```
 
-- Creating a new Service Account for Piped and giving it the ability to access above secret
+- Creating a new Service Account for Piped and giving it the ability to access the above secret
 
   ``` console
   gcloud iam service-accounts create vm-piped \
