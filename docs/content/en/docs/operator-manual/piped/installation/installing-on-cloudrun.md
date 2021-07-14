@@ -73,7 +73,7 @@ description: >
 
   Prepare a CloudRun service manifest file as below.
 
-  **Note**: Fields which set to '1' are strict to be set with that value to ensure piped work correctly.
+  **Note**: Fields which set to `1` are strict to be set with that value to ensure piped work correctly.
 
   ``` yaml
   apiVersion: serving.knative.dev/v1
@@ -91,7 +91,7 @@ description: >
       spec:
         containerConcurrency: 1 # This must be 1.
         containers:
-          - image: gcr.io/pipecd/piped:v0.11.1
+          - image: gcr.io/pipecd/piped:{{< blocks/latest_version >}}
             args:
               - piped
               - --metrics=true
