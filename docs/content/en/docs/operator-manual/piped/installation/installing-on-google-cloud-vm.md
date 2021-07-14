@@ -9,7 +9,7 @@ description: >
 ## Prerequisites
 
 ##### Having piped's ID and Key strings
-- Ensure that the `piped` has been registered and you are having its PIPED_ID and PIPED_KEY strings.
+- Ensure that the `piped` has been registered and you are having its `PIPED_ID` and `PIPED_KEY` strings.
 - If you are not having them, this [page](/docs/operator-manual/control-plane/registering-a-piped/) guides you how to register a new one.
 
 ##### Preparing SSH key
