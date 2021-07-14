@@ -1,7 +1,7 @@
 ---
 title: "Installing on CloudRun"
 linkTitle: "Installing on CloudRun"
-weight: 2
+weight: 3
 description: >
   This page describes how to install Piped on CloudRun.
 ---
