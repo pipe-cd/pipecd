@@ -45,12 +45,12 @@ spec:
   selector:
     matchLabels:
       app: helloworld
-      pipecd.dev/variant: primary    # This is required.
+      pipecd.dev/variant: primary
   template:
     metadata:
       labels:
         app: helloworld
-        pipecd.dev/variant: primary  # This is required.
+        pipecd.dev/variant: primary
     spec:
       containers:
       - name: helloworld
