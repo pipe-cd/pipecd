@@ -96,7 +96,7 @@ kind: Secret
 metadata:
   name: simple-sealed-secret
 data:
-  password: {{ .encryptedSecrets.password }}
+  password: "{{ .encryptedSecrets.password }}"
 ```
 
 - Configuring ENV variable of a Lambda function to use a encrypted secret
@@ -107,7 +107,7 @@ apiVersion: pipecd.dev/v1beta1
   spec:
     name: HelloFunction
     environments:
-      KEY: {{ .encryptedSecrets.key }}
+      KEY: "{{ .encryptedSecrets.key }}"
 ```
 
 In all cases, `Piped` will decrypt the encrypted secrets and render the decryption target files before using to handle any deployment tasks.
