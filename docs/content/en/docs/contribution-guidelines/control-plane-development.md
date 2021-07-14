@@ -44,7 +44,7 @@ Now, you can use the rendered manifests at `.rendered-manifests` to install cont
 Here is the command to install [quickstart](/docs/quickstart/)'s control-plane:
 
 ``` console
-helm -n pipecd upgrade -i pipecd .rendered-manifests/pipecd --create-namespace --values ./quickstart/control-plane-values.yaml
+helm -n pipecd install pipecd .rendered-manifests/pipecd --dependency-update --create-namespace --values ./quickstart/control-plane-values.yaml
 ```
 
 Once all components are running up, use `kubectl port-forward` to expose the installed control-plane on your localhost:
