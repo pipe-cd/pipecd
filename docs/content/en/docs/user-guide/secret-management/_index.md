@@ -119,3 +119,4 @@ In all cases, `Piped` will decrypt the encrypted secrets and render the decrypti
 - [examples/cloudrun/secret-management](https://github.com/pipe-cd/examples/tree/master/cloudrun/secret-management)
 - [examples/lambda/secret-management](https://github.com/pipe-cd/examples/tree/master/lambda/secret-management)
 - [examples/terraform/secret-management](https://github.com/pipe-cd/examples/tree/master/terraform/secret-management)
+- [examples/ecs/secret-management](https://github.com/pipe-cd/examples/tree/master/ecs/secret-management)
