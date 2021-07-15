@@ -77,7 +77,7 @@ Please note that the phases (Incubating, Alpha, Beta, and Stable) are applied to
 | Automated Rollback | Alpha |
 | [Automated Configuration Drift Detection](/docs/user-guide/configuration-drift-detection/) | Incubating |
 | [Application Live State](/docs/user-guide/application-live-state/) | Incubating |
-| Support AWS App Mesh | Incubating |
+| Support [AWS App Mesh](https://aws.amazon.com/app-mesh/) | Incubating |
 | [Plan Preview](/docs/user-guide/plan-preview) | Alpha |
 
 ### Piped's Core
