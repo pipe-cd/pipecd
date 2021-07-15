@@ -679,7 +679,7 @@ func (p *piped) getConfigDataFromSecretManager(ctx context.Context) ([]byte, err
 func registerMetrics(pipedID string) *prometheus.Registry {
 	r := prometheus.NewRegistry()
 	wrapped := prometheus.WrapRegistererWithPrefix(
-		"pipecd",
+		"piped",
 		prometheus.WrapRegistererWith(
 			prometheus.Labels{
 				"piped":         pipedID,
