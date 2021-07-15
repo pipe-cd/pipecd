@@ -1,0 +1,8 @@
+apiVersion: pipecd.dev/v1beta1
+kind: LambdaApp
+spec:
+  encryption:
+    encryptedSecrets:
+      key: {ENCRYPTED_DATA_GENERATED_FROM_WEB}
+    decryptionTargets:
+      - function.yaml

@@ -1,0 +1,27 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: secret-management
+  labels:
+    app: secret-management
+spec:
+  replicas: 2
+  selector:
+    matchLabels:
+      app: secret-management
+      pipecd.dev/variant: primary
+  template:
+    metadata:
+      labels:
+        app: secret-management
+        pipecd.dev/variant: primary
+      annotations:
+        sidecar.istio.io/inject: "false"
+    spec:
+      containers:
+      - name: helloworld
+        image: gcr.io/pipecd/helloworld:v0.5.0
+        args:
+          - server
+        ports:
+        - containerPort: 9085

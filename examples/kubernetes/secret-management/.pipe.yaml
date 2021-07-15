@@ -1,0 +1,12 @@
+apiVersion: pipecd.dev/v1beta1
+kind: KubernetesApp
+spec:
+  input:
+    manifests:
+      - deployment.yaml
+      - secret.yaml
+  encryption:
+    encryptedSecrets:
+      password: {ENCRYPTED_DATA_GENERATED_FROM_WEB}
+    decryptionTargets:
+      - secret.yaml
