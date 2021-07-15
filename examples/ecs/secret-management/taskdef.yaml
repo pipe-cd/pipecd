@@ -1,0 +1,20 @@
+family: nginx-service-fam
+executionRoleArn: arn:aws:iam::XXXX:role/ecsTaskExecutionRole
+containerDefinitions:
+  - command: null
+    cpu: 100
+    image: XXXX.dkr.ecr.ap-northeast-1.amazonaws.com/nginx:1
+    memory: 100
+    mountPoints: []
+    name: web
+    portMappings:
+      - containerPort: 80
+compatibilities:
+  - FARGATE
+requiresCompatibilities:
+  - FARGATE
+networkMode: awsvpc
+memory: 512
+cpu: 256
+pidMode: ""
+volumes: []

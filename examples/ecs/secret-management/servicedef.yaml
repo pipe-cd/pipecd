@@ -1,0 +1,25 @@
+cluster: arn:aws:ecs:ap-northeast-1:XXXX:cluster/test-cluster
+serviceName: nginx-service
+desiredCount: 2
+deploymentConfiguration:
+  maximumPercent: 200
+  minimumHealthyPercent: 0
+schedulingStrategy: REPLICA
+# CAUTION: To enable PipeCD controls the deployment
+# DeploymentController of type EXTERNAL is required.
+deploymentController:
+  type: EXTERNAL
+enableECSManagedTags: true
+propagateTags: SERVICE
+launchType: FARGATE
+networkConfiguration:
+  awsvpcConfiguration:
+    assignPublicIp: ENABLED
+    securityGroups:
+      - sg-YYYY
+    subnets:
+      - subnet-YYYY
+      - subnet-YYYY
+tags:
+  - key: FOO
+    value: "{{ .encryptedSecrets.foo }}"
