@@ -32,7 +32,7 @@ Please note that the phases (Incubating, Alpha, Beta, and Stable) are applied to
 | Support Kustomize | Beta |
 | Support Istio Mesh | Beta |
 | Support SMI Mesh | Incubating |
-| Support AWS App Mesh | Incubating |
+| Support [AWS App Mesh](https://aws.amazon.com/app-mesh/) | Incubating |
 | [Plan Preview](/docs/user-guide/plan-preview) | Alpha |
 
 ### Terraform Deployment
