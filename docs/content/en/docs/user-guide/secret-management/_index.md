@@ -112,3 +112,10 @@ apiVersion: pipecd.dev/v1beta1
 ```
 
 In all cases, `Piped` will decrypt the encrypted secrets and render the decryption target files before using to handle any deployment tasks.
+
+## Examples
+
+- [examples/kubernetes/secret-management](https://github.com/pipe-cd/examples/tree/master/kubernetes/secret-management)
+- [examples/cloudrun/secret-management](https://github.com/pipe-cd/examples/tree/master/cloudrun/secret-management)
+- [examples/lambda/secret-management](https://github.com/pipe-cd/examples/tree/master/lambda/secret-management)
+- [examples/terraform/secret-management](https://github.com/pipe-cd/examples/tree/master/terraform/secret-management)

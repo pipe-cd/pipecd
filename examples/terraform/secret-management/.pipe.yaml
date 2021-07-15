@@ -1,0 +1,8 @@
+apiVersion: pipecd.dev/v1beta1
+kind: TerraformApp
+spec:
+  encryption:
+    encryptedSecrets:
+      serviceAccount: {ENCRYPTED_DATA_GENERATED_FROM_WEB}
+    decryptionTargets:
+      - .credentials/service-account.yaml
