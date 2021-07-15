@@ -40,7 +40,7 @@ const (
 var (
 	getCounter = prometheus.NewCounterVec(
 		prometheus.CounterOpts{
-			Name: "pipecd_cache_get_operation_total",
+			Name: "cache_get_operation_total",
 			Help: "Number of cache get operation while processing",
 		},
 		[]string{

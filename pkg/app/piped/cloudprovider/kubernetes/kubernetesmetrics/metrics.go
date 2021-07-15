@@ -48,7 +48,7 @@ const (
 var (
 	toolCallsCounter = prometheus.NewCounterVec(
 		prometheus.CounterOpts{
-			Name: "piped_cloudprovider_kubernetes_tool_calls_total",
+			Name: "cloudprovider_kubernetes_tool_calls_total",
 			Help: "Number of calls made to run the tool like kubectl, kustomize.",
 		},
 		[]string{

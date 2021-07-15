@@ -678,12 +678,15 @@ func (p *piped) getConfigDataFromSecretManager(ctx context.Context) ([]byte, err
 
 func registerMetrics(pipedID string) *prometheus.Registry {
 	r := prometheus.NewRegistry()
-	wrapped := prometheus.WrapRegistererWith(
-		prometheus.Labels{
-			"piped":         pipedID,
-			"piped_version": version.Get().Version,
-		},
-		r,
+	wrapped := prometheus.WrapRegistererWithPrefix(
+		"pipecd",
+		prometheus.WrapRegistererWith(
+			prometheus.Labels{
+				"piped":         pipedID,
+				"piped_version": version.Get().Version,
+			},
+			r,
+		),
 	)
 	wrapped.Register(prometheus.NewGoCollector())
 	wrapped.Register(prometheus.NewProcessCollector(prometheus.ProcessCollectorOpts{}))

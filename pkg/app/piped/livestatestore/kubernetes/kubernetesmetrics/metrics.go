@@ -45,7 +45,7 @@ const (
 var (
 	apiRequestsCounter = prometheus.NewCounterVec(
 		prometheus.CounterOpts{
-			Name: "piped_livestatestore_kubernetes_api_requests_total",
+			Name: "livestatestore_kubernetes_api_requests_total",
 			Help: "Number of requests sent to kubernetes api server.",
 		},
 		[]string{
@@ -56,7 +56,7 @@ var (
 	)
 	resourceEventsCounter = prometheus.NewCounterVec(
 		prometheus.CounterOpts{
-			Name: "piped_livestatestore_kubernetes_resource_events_total",
+			Name: "livestatestore_kubernetes_resource_events_total",
 			Help: "Number of resource events received from kubernetes server.",
 		},
 		[]string{
