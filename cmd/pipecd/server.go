@@ -500,6 +500,6 @@ func createFilestore(ctx context.Context, cfg *config.ControlPlaneSpec, logger *
 }
 
 func registerMetrics() {
-	r := prometheus.DefaultRegisterer
+	r := prometheus.WrapRegistererWithPrefix("pipecd", prometheus.DefaultRegisterer)
 	cachemetrics.Register(r)
 }
