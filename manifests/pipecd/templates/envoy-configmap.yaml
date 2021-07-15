@@ -65,17 +65,17 @@ data:
                         prefix: /pipe.api.service.pipedservice.PipedService/
                         grpc:
                       route:
-                        cluster: server-piped-api
+                        cluster: grpc-piped-service
                     - match:
                         prefix: /pipe.api.service.webservice.WebService/
                         grpc:
                       route:
-                        cluster: server-web-api
+                        cluster: grpc-web-service
                     - match:
                         prefix: /pipe.api.service.apiservice.APIService/
                         grpc:
                       route:
-                        cluster: server-api
+                        cluster: grpc-api-service
                     - match:
                         prefix: /
                       route:
@@ -94,13 +94,13 @@ data:
                 alpn_protocols: h2
 {{- end }}
       clusters:
-      - name: server-piped-api
+      - name: grpc-piped-service
         http2_protocol_options: {}
         connect_timeout: 0.25s
         type: STRICT_DNS
         lb_policy: ROUND_ROBIN
         load_assignment:
-          cluster_name: server-piped-api
+          cluster_name: grpc-piped-service
           endpoints:
           - lb_endpoints:
             - endpoint:
@@ -110,13 +110,13 @@ data:
                     port_value: 9080
         track_cluster_stats:
           request_response_sizes: true
-      - name: server-web-api
+      - name: grpc-web-service
         http2_protocol_options: {}
         connect_timeout: 0.25s
         type: STRICT_DNS
         lb_policy: ROUND_ROBIN
         load_assignment:
-          cluster_name: server-web-api
+          cluster_name: grpc-web-service
           endpoints:
           - lb_endpoints:
             - endpoint:
@@ -126,13 +126,13 @@ data:
                     port_value: 9081
         track_cluster_stats:
           request_response_sizes: true
-      - name: server-api
+      - name: grpc-api-service
         http2_protocol_options: {}
         connect_timeout: 0.25s
         type: STRICT_DNS
         lb_policy: ROUND_ROBIN
         load_assignment:
-          cluster_name: server-api
+          cluster_name: grpc-api-service
           endpoints:
           - lb_endpoints:
             - endpoint:

@@ -148,6 +148,10 @@ data:
             target_label: __name__
             regex: envoy_cluster_grpc_(.+)_(.+)_(.+)_(.+)_upstream_rq_time_count$
             replacement: pipecd_gateway_requests_duration_count
+          - source_labels: [envoy_cluster_name]
+            target_label: pipecd_grpc_service
+            regex: grpc-(.+)-service
+            replacement: $1
 
       - job_name: pipecd-server
         scrape_interval: 1m
@@ -163,6 +167,11 @@ data:
           - source_labels: [__meta_kubernetes_pod_container_port_name]
             action: keep
             regex: admin
+        metric_relabel_configs:
+          - source_labels: [grpc_service]
+            target_label: pipecd_grpc_service
+            regex: pipe.api.service.(.+)service.(.+)
+            replacement: $1
 
       - job_name: pipecd-ops
         scrape_interval: 1m
