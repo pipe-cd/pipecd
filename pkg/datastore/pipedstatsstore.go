@@ -27,6 +27,7 @@ var pipedStatsFactory = func() interface{} {
 	return &model.PipedStats{}
 }
 
+// Deprecated: PipedStats model is deprecated, along with its store interface.
 type PipedStatsStore interface {
 	AddPipedStats(ctx context.Context, ps *model.PipedStats) error
 	ListPipedStatss(ctx context.Context, opts ListOptions) ([]model.PipedStats, error)
@@ -37,6 +38,7 @@ type pipedStatsStore struct {
 	nowFunc func() time.Time
 }
 
+// Deprecated: PipedStats model is deprecated, along with its store interface.
 func NewPipedStatsStore(ds DataStore) PipedStatsStore {
 	return &pipedStatsStore{
 		backend: backend{

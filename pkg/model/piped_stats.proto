@@ -39,6 +39,7 @@ message PrometheusMetrics {
 }
 
 message PipedStats {
+    option deprecated = true;
     string version = 1 [(validate.rules).string.min_len = 1];
     int64 timestamp = 2 [(validate.rules).int64.gt = 0];
     repeated PrometheusMetrics prometheus_metrics = 3;
