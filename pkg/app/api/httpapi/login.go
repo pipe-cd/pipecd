@@ -12,7 +12,7 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-package authhandler
+package httpapi
 
 import (
 	"context"
@@ -29,7 +29,7 @@ import (
 )
 
 // handleSSOLogin is called when an user requested to login via SSO.
-func (h *Handler) handleSSOLogin(w http.ResponseWriter, r *http.Request) {
+func (h *authHandler) handleSSOLogin(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Content-Type", "text/html")
 
 	// Validate request's payload.
@@ -80,7 +80,7 @@ func (h *Handler) handleSSOLogin(w http.ResponseWriter, r *http.Request) {
 }
 
 // handleStaticAdminLogin is called when an user requested to login as a static admin.
-func (h *Handler) handleStaticAdminLogin(w http.ResponseWriter, r *http.Request) {
+func (h *authHandler) handleStaticAdminLogin(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Content-Type", "text/html")
 
 	// Validate request's payload.

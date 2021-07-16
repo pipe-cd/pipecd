@@ -19,10 +19,8 @@ import (
 	"errors"
 	"fmt"
 	"net/http"
-	"path/filepath"
 	"time"
 
-	"github.com/NYTimes/gziphandler"
 	jwtgo "github.com/dgrijalva/jwt-go"
 	"github.com/prometheus/client_golang/prometheus"
 	"github.com/spf13/cobra"
@@ -32,10 +30,11 @@ import (
 	"github.com/pipe-cd/pipe/pkg/admin"
 	"github.com/pipe-cd/pipe/pkg/app/api/apikeyverifier"
 	"github.com/pipe-cd/pipe/pkg/app/api/applicationlivestatestore"
-	"github.com/pipe-cd/pipe/pkg/app/api/authhandler"
 	"github.com/pipe-cd/pipe/pkg/app/api/commandoutputstore"
 	"github.com/pipe-cd/pipe/pkg/app/api/commandstore"
 	"github.com/pipe-cd/pipe/pkg/app/api/grpcapi"
+	"github.com/pipe-cd/pipe/pkg/app/api/httpapi"
+	"github.com/pipe-cd/pipe/pkg/app/api/httpapi/metricsmiddleware"
 	"github.com/pipe-cd/pipe/pkg/app/api/pipedverifier"
 	"github.com/pipe-cd/pipe/pkg/app/api/service/webservice"
 	"github.com/pipe-cd/pipe/pkg/app/api/stagelogstore"
@@ -67,10 +66,6 @@ const (
 	defaultPipedStatHashKey = "HASHKEY:PIPED:STATS"
 	pipedStatTTL            = 2 * time.Minute
 )
-
-type httpHandler interface {
-	Register(func(pattern string, handler func(http.ResponseWriter, *http.Request)))
-}
 
 type server struct {
 	pipedAPIPort int
@@ -307,43 +302,22 @@ func (s *server) run(ctx context.Context, t cli.Telemetry) error {
 			return err
 		}
 
-		mux := http.NewServeMux()
+		h := httpapi.NewHandler(
+			signer,
+			s.staticDir,
+			encryptDecrypter,
+			cfg.Address,
+			cfg.StateKey,
+			cfg.ProjectMap(),
+			cfg.SharedSSOConfigMap(),
+			datastore.NewProjectStore(ds),
+			!s.insecureCookie,
+			t.Logger,
+		)
 		httpServer := &http.Server{
 			Addr:    fmt.Sprintf(":%d", s.httpPort),
-			Handler: mux,
+			Handler: h,
 		}
-
-		handlers := []httpHandler{
-			authhandler.NewHandler(
-				signer,
-				encryptDecrypter,
-				cfg.Address,
-				cfg.StateKey,
-				cfg.ProjectMap(),
-				cfg.SharedSSOConfigMap(),
-				datastore.NewProjectStore(ds),
-				!s.insecureCookie,
-				t.Logger,
-			),
-		}
-
-		for _, h := range handlers {
-			h.Register(mux.HandleFunc)
-		}
-
-		fs := http.FileServer(http.Dir(filepath.Join(s.staticDir, "assets")))
-		assetsHandler := http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-			w.Header().Set("Cache-Control", "public, max-age=31536000")
-			http.StripPrefix("/assets/", fs).ServeHTTP(w, r)
-		})
-
-		mux.Handle("/assets/", gziphandler.GzipHandler(assetsHandler))
-		mux.HandleFunc("/favicon.ico", func(w http.ResponseWriter, r *http.Request) {
-			http.ServeFile(w, r, filepath.Join(s.staticDir, "favicon.ico"))
-		})
-		mux.HandleFunc("/", func(w http.ResponseWriter, r *http.Request) {
-			http.ServeFile(w, r, filepath.Join(s.staticDir, "/index.html"))
-		})
 
 		group.Go(func() error {
 			return runHTTPServer(ctx, httpServer, s.gracePeriod, t.Logger)
@@ -500,6 +474,7 @@ func createFilestore(ctx context.Context, cfg *config.ControlPlaneSpec, logger *
 }
 
 func registerMetrics() {
-	r := prometheus.WrapRegistererWithPrefix("pipecd", prometheus.DefaultRegisterer)
+	r := prometheus.WrapRegistererWithPrefix("pipecd_", prometheus.DefaultRegisterer)
 	cachemetrics.Register(r)
+	metricsmiddleware.Register(r)
 }

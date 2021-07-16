@@ -12,7 +12,7 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-package authhandler
+package httpapi
 
 import (
 	"context"
@@ -30,7 +30,7 @@ import (
 	"github.com/pipe-cd/pipe/pkg/oauth/github"
 )
 
-func (h *Handler) handleCallback(w http.ResponseWriter, r *http.Request) {
+func (h *authHandler) handleCallback(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Content-Type", "text/html")
 
 	// Validate request's payload.
