@@ -219,6 +219,6 @@ func ensureSQLDatabase(ctx context.Context, cfg *config.ControlPlaneSpec, logger
 }
 
 func registerOpsMetrics(col ...prometheus.Collector) {
-	r := prometheus.DefaultRegisterer
+	r := prometheus.WrapRegistererWithPrefix("pipecd_ops_", prometheus.DefaultRegisterer)
 	r.MustRegister(col...)
 }

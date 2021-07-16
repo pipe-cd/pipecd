@@ -16,6 +16,7 @@ package insightmetrics
 
 import (
 	"context"
+	"time"
 
 	"github.com/prometheus/client_golang/prometheus"
 
@@ -74,7 +75,9 @@ func (i *insightMetricsCollector) Collect(ch chan<- prometheus.Metric) {
 
 // collectApplicationCount returns a map like map[projectID]map[kind](number-of-applications).
 func (i *insightMetricsCollector) collectApplicationCount() (map[string]map[string]int, error) {
-	ctx := context.Background()
+	ctx, cancel := context.WithTimeout(context.Background(), 1*time.Minute)
+	defer cancel()
+
 	projects, err := i.projectStore.ListProjects(ctx, datastore.ListOptions{})
 	if err != nil {
 		return nil, err
