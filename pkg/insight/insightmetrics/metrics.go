@@ -72,6 +72,7 @@ func (i *insightMetricsCollector) Collect(ch chan<- prometheus.Metric) {
 	}
 }
 
+// collectApplicationCount returns a map like map[projectID]map[kind](number-of-applications).
 func (i *insightMetricsCollector) collectApplicationCount() (map[string]map[string]int, error) {
 	ctx := context.Background()
 	projects, err := i.projectStore.ListProjects(ctx, datastore.ListOptions{})
@@ -88,12 +89,13 @@ func (i *insightMetricsCollector) collectApplicationCount() (map[string]map[stri
 	}
 	return data, nil
 }
-// groupApplicationCounts groups the number of applications by kind
+
+// groupApplicationCounts groups the number of applications by kind.
 func groupApplicationCounts(counts []model.InsightApplicationCount) map[string]int {
-	groups := make(map[string]int, len(counts)
+	groups := make(map[string]int, len(counts))
 	for _, c := range counts {
 		kind := c.Labels[model.InsightApplicationCountLabelKey_KIND.String()]
 		groups[kind] = groups[kind] + int(c.Count)
 	}
-	return
+	return groups
 }
