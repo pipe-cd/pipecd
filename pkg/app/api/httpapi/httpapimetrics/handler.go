@@ -25,7 +25,7 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-package metricsmiddleware
+package httpapimetrics
 
 import (
 	"net/http"
@@ -55,7 +55,7 @@ var (
 		prometheus.HistogramOpts{
 			Name:    "http_request_duration_milliseconds",
 			Help:    "Histogram of request latencies in milliseconds.",
-			Buckets: []float64{0.0001, 0.025, 0.1, 1, 25, 100},
+			Buckets: prometheus.ExponentialBuckets(0.0001, 500, 5),
 		},
 		[]string{codeLabel, methodLabel, pathLabel},
 	)
@@ -68,7 +68,7 @@ func Register(r prometheus.Registerer) {
 	)
 }
 
-func InstrumentHandler(path string, next http.Handler) http.Handler {
+func Handler(path string, next http.Handler) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		start := time.Now()
 		d := newDelegator(w, nil)

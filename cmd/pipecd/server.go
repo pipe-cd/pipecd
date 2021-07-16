@@ -34,7 +34,7 @@ import (
 	"github.com/pipe-cd/pipe/pkg/app/api/commandstore"
 	"github.com/pipe-cd/pipe/pkg/app/api/grpcapi"
 	"github.com/pipe-cd/pipe/pkg/app/api/httpapi"
-	"github.com/pipe-cd/pipe/pkg/app/api/httpapi/metricsmiddleware"
+	"github.com/pipe-cd/pipe/pkg/app/api/httpapi/httpapimetrics"
 	"github.com/pipe-cd/pipe/pkg/app/api/pipedverifier"
 	"github.com/pipe-cd/pipe/pkg/app/api/service/webservice"
 	"github.com/pipe-cd/pipe/pkg/app/api/stagelogstore"
@@ -474,7 +474,7 @@ func createFilestore(ctx context.Context, cfg *config.ControlPlaneSpec, logger *
 }
 
 func registerMetrics() {
-	r := prometheus.WrapRegistererWithPrefix("pipecd_", prometheus.DefaultRegisterer)
+	r := prometheus.WrapRegistererWithPrefix("pipecd_server_", prometheus.DefaultRegisterer)
 	cachemetrics.Register(r)
-	metricsmiddleware.Register(r)
+	httpapimetrics.Register(r)
 }

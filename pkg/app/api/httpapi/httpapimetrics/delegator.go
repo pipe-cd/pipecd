@@ -27,7 +27,7 @@
 
 // NOTE: This file is entirely borrowed from: https://github.com/prometheus/client_golang/blob/v1.6.0/prometheus/promhttp/delegator.go
 
-package metricsmiddleware
+package httpapimetrics
 
 import (
 	"bufio"

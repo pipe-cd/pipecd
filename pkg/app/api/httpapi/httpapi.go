@@ -1,4 +1,4 @@
-// Copyright 2020 The PipeCD Authors.
+// Copyright 2021 The PipeCD Authors.
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -21,7 +21,7 @@ import (
 	"github.com/NYTimes/gziphandler"
 	"go.uber.org/zap"
 
-	"github.com/pipe-cd/pipe/pkg/app/api/httpapi/metricsmiddleware"
+	"github.com/pipe-cd/pipe/pkg/app/api/httpapi/httpapimetrics"
 	"github.com/pipe-cd/pipe/pkg/config"
 	"github.com/pipe-cd/pipe/pkg/jwt"
 	"github.com/pipe-cd/pipe/pkg/model"
@@ -64,15 +64,17 @@ func NewHandler(
 		http.ServeFile(w, r, filepath.Join(staticDir, "favicon.ico"))
 	})
 
-	rootHandler := http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		http.ServeFile(w, r, filepath.Join(staticDir, "/index.html"))
-	})
-	mux.Handle(rootPath, metricsmiddleware.InstrumentHandler(rootPath, rootHandler))
+	register := func(path string, handler http.Handler) {
+		mux.Handle(path, httpapimetrics.Handler(path, handler))
+	}
 
-	mux.Handle(loginPath, metricsmiddleware.InstrumentHandler(loginPath, http.HandlerFunc(a.handleSSOLogin)))
-	mux.Handle(staticLoginPath, metricsmiddleware.InstrumentHandler(staticLoginPath, http.HandlerFunc(a.handleStaticAdminLogin)))
-	mux.Handle(callbackPath, metricsmiddleware.InstrumentHandler(callbackPath, http.HandlerFunc(a.handleCallback)))
-	mux.Handle(logoutPath, metricsmiddleware.InstrumentHandler(logoutPath, http.HandlerFunc(a.handleLogout)))
+	register(rootPath, http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		http.ServeFile(w, r, filepath.Join(staticDir, "/index.html"))
+	}))
+	register(loginPath, http.HandlerFunc(a.handleSSOLogin))
+	register(staticLoginPath, http.HandlerFunc(a.handleStaticAdminLogin))
+	register(callbackPath, http.HandlerFunc(a.handleCallback))
+	register(logoutPath, http.HandlerFunc(a.handleLogout))
 
 	return mux
 }

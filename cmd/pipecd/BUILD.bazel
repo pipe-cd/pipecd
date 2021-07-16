@@ -18,7 +18,7 @@ go_library(
         "//pkg/app/api/commandstore:go_default_library",
         "//pkg/app/api/grpcapi:go_default_library",
         "//pkg/app/api/httpapi:go_default_library",
-        "//pkg/app/api/httpapi/metricsmiddleware:go_default_library",
+        "//pkg/app/api/httpapi/httpapimetrics:go_default_library",
         "//pkg/app/api/pipedverifier:go_default_library",
         "//pkg/app/api/service/webservice:go_default_library",
         "//pkg/app/api/stagelogstore:go_default_library",
