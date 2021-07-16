@@ -16,6 +16,7 @@ package grpcapi
 
 import (
 	"context"
+	"encoding/json"
 	"errors"
 	"time"
 
@@ -98,7 +99,18 @@ func (a *PipedAPI) ReportStat(ctx context.Context, req *pipedservice.ReportStatR
 	if err != nil {
 		return nil, err
 	}
-	if err := a.pipedStatCache.Put(pipedID, req.PipedStats); err != nil {
+
+	now := time.Now().Unix()
+	val, err := json.Marshal(model.PipedStat{Timestamp: now, Stats: req.PipedStats})
+	if err != nil {
+		a.logger.Error("failed to store the reported piped stat",
+			zap.String("piped-id", pipedID),
+			zap.Error(err),
+		)
+		return nil, status.Error(codes.Internal, "failed to encode the reported piped stat")
+	}
+
+	if err := a.pipedStatCache.Put(pipedID, val); err != nil {
 		a.logger.Error("failed to store the reported piped stat",
 			zap.String("piped-id", pipedID),
 			zap.Error(err),
