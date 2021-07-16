@@ -12,7 +12,7 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-package authhandler
+package httpapi
 
 import (
 	"context"
@@ -62,8 +62,8 @@ type decrypter interface {
 	Decrypt(encryptedText string) (string, error)
 }
 
-// Handler handles all imcoming requests about authentication.
-type Handler struct {
+// authHandler handles all imcoming requests about authentication.
+type authHandler struct {
 	signer           jwt.Signer
 	decrypter        decrypter
 	callbackURL      string
@@ -75,8 +75,8 @@ type Handler struct {
 	logger           *zap.Logger
 }
 
-// NewHandler returns a handler that will used for authentication.
-func NewHandler(
+// newHandler returns a handler that will used for authentication.
+func newAuthHandler(
 	signer jwt.Signer,
 	decrypter decrypter,
 	address string,
@@ -86,8 +86,8 @@ func NewHandler(
 	projectGetter projectGetter,
 	secureCookie bool,
 	logger *zap.Logger,
-) *Handler {
-	return &Handler{
+) *authHandler {
+	return &authHandler{
 		signer:           signer,
 		decrypter:        decrypter,
 		callbackURL:      strings.TrimSuffix(address, "/") + callbackPath,
@@ -100,16 +100,8 @@ func NewHandler(
 	}
 }
 
-// Register registers all handler into the specified registry.
-func (h *Handler) Register(r func(string, func(http.ResponseWriter, *http.Request))) {
-	r(loginPath, h.handleSSOLogin)
-	r(staticLoginPath, h.handleStaticAdminLogin)
-	r(callbackPath, h.handleCallback)
-	r(logoutPath, h.handleLogout)
-}
-
 // handleLogout cleans current cookies and redirects to login page.
-func (h *Handler) handleLogout(w http.ResponseWriter, r *http.Request) {
+func (h *authHandler) handleLogout(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Content-Type", "text/html")
 
 	http.SetCookie(w, makeExpiredTokenCookie(h.secureCookie))
@@ -118,7 +110,7 @@ func (h *Handler) handleLogout(w http.ResponseWriter, r *http.Request) {
 	http.Redirect(w, r, rootPath, http.StatusFound)
 }
 
-func (h *Handler) findSSOConfig(p *model.Project) (sso *model.ProjectSSOConfig, shared bool, err error) {
+func (h *authHandler) findSSOConfig(p *model.Project) (sso *model.ProjectSSOConfig, shared bool, err error) {
 	if p.SharedSsoName == "" {
 		if p.Sso == nil {
 			return nil, false, fmt.Errorf("missing SSO configuration in project data")
@@ -135,7 +127,7 @@ func (h *Handler) findSSOConfig(p *model.Project) (sso *model.ProjectSSOConfig, 
 
 // handleError redirects to the root path and saves the error message to the cookie.
 // Web will use that cookie data to handle auth error.
-func (h *Handler) handleError(w http.ResponseWriter, r *http.Request, responseMessage string, err error) {
+func (h *authHandler) handleError(w http.ResponseWriter, r *http.Request, responseMessage string, err error) {
 	if err != nil {
 		h.logger.Error(fmt.Sprintf("auth-handler: %s", responseMessage), zap.Error(err))
 	} else {

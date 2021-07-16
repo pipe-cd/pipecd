@@ -10,3 +10,8 @@ This product contains a modified part of sealed-secrets, distributed by bitnami-
 
   * License: https://github.com/bitnami-labs/sealed-secrets/blob/master/LICENSE (Apache License v2.0)
   * Homepage: https://github.com/bitnami-labs/sealed-secrets
+
+This product contains a modified part of client_golang, distributed by prometheus:
+
+  * License: https://github.com/prometheus/client_golang/blob/master/LICENSE (Apache License v2.0)
+  * Homepage: https://github.com/prometheus/client_golang
