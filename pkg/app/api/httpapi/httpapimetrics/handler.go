@@ -55,7 +55,7 @@ var (
 		prometheus.HistogramOpts{
 			Name:    "http_request_duration_milliseconds",
 			Help:    "Histogram of request latencies in milliseconds.",
-			Buckets: prometheus.ExponentialBuckets(0.0001, 500, 5),
+			Buckets: prometheus.ExponentialBuckets(1, 5, 7),
 		},
 		[]string{codeLabel, methodLabel, pathLabel},
 	)
