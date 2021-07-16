@@ -19,6 +19,7 @@ import (
 	"net/http"
 	"time"
 
+	"github.com/prometheus/client_golang/prometheus"
 	"github.com/spf13/cobra"
 	"go.uber.org/zap"
 	"golang.org/x/sync/errgroup"
@@ -34,6 +35,7 @@ import (
 	"github.com/pipe-cd/pipe/pkg/cli"
 	"github.com/pipe-cd/pipe/pkg/config"
 	"github.com/pipe-cd/pipe/pkg/datastore"
+	"github.com/pipe-cd/pipe/pkg/insight/insightmetrics"
 	"github.com/pipe-cd/pipe/pkg/insight/insightstore"
 	"github.com/pipe-cd/pipe/pkg/model"
 	"github.com/pipe-cd/pipe/pkg/redis"
@@ -141,6 +143,8 @@ func (s *ops) run(ctx context.Context, t cli.Telemetry) error {
 	group.Go(func() error {
 		return ic.Run(ctx)
 	})
+	insightMetricsCollector := insightmetrics.NewInsightMetricsCollector(insightstore.NewStore(fs), datastore.NewProjectStore(ds))
+	registerOpsMetrics(insightMetricsCollector)
 
 	// Start running HTTP server.
 	{
@@ -167,6 +171,7 @@ func (s *ops) run(ctx context.Context, t cli.Telemetry) error {
 		admin.HandleFunc("/healthz", func(w http.ResponseWriter, r *http.Request) {
 			w.Write([]byte("ok"))
 		})
+		// TODO: Using PrometheusMetricsHandlerFor or PrometheusMetricsHandler.
 		admin.Handle("/metrics", t.CustomMetricsHandlerFor(psb))
 
 		group.Go(func() error {
@@ -211,4 +216,9 @@ func ensureSQLDatabase(ctx context.Context, cfg *config.ControlPlaneSpec, logger
 
 	logger.Info("prepare SQL schema and indexes successfully")
 	return nil
+}
+
+func registerOpsMetrics(col ...prometheus.Collector) {
+	r := prometheus.DefaultRegisterer
+	r.MustRegister(col...)
 }
