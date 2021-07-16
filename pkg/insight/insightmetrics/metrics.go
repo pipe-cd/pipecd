@@ -88,7 +88,7 @@ func (i *insightMetricsCollector) collectApplicationCount() (map[string]map[stri
 	}
 	return data, nil
 }
-
+// groupApplicationCounts groups the number of applications by kind
 func groupApplicationCounts(counts []model.InsightApplicationCount) map[string]int {
 	groups := make(map[string]int, len(counts)
 	for _, c := range counts {
