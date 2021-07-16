@@ -78,7 +78,7 @@ func (i *insightMetricsCollector) collectApplicationCount() (map[string]map[stri
 	if err != nil {
 		return nil, err
 	}
-	data := make(map[string]map[string]int)
+	data := make(map[string]map[string]int, len(projects))
 	for idx := range projects {
 		counts, err := i.insightStore.LoadApplicationCounts(ctx, projects[idx].Id)
 		if err != nil {
