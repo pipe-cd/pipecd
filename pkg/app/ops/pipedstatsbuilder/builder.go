@@ -16,12 +16,14 @@ package pipedstatsbuilder
 
 import (
 	"bytes"
+	"encoding/json"
 	"errors"
 	"io"
 
 	"go.uber.org/zap"
 
 	"github.com/pipe-cd/pipe/pkg/cache"
+	"github.com/pipe-cd/pipe/pkg/model"
 )
 
 type PipedStatsBuilder struct {
@@ -47,10 +49,15 @@ func (b *PipedStatsBuilder) Build() (io.Reader, error) {
 		value, okValue := v.([]byte)
 		if !okValue {
 			err = errors.New("error value not a bulk of string value")
-			b.logger.Error("failed to marshal piped stat data", zap.Error(err))
+			b.logger.Error("failed to unmarshal piped stat data", zap.Error(err))
 			return nil, err
 		}
-		data = append(data, value)
+		ps := model.PipedStat{}
+		if err = json.Unmarshal(value, &ps); err != nil {
+			b.logger.Error("failed to unmarshal piped stat data", zap.Error(err))
+			return nil, err
+		}
+		data = append(data, ps.Stats)
 	}
 	return bytes.NewReader(bytes.Join(data, []byte("\n"))), nil
 }

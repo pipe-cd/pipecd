@@ -15,16 +15,19 @@
 package pipedstatsbuilder
 
 import (
+	"encoding/json"
 	"io"
 	"os"
 	"strings"
 	"testing"
+	"time"
 
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 	"go.uber.org/zap"
 
 	"github.com/pipe-cd/pipe/pkg/cache"
+	"github.com/pipe-cd/pipe/pkg/model"
 )
 
 type mockBuilderBackend struct {
@@ -48,7 +51,8 @@ func (m *mockBuilderBackend) GetAll() (map[string]interface{}, error) {
 		if err != nil {
 			return nil, err
 		}
-		out[file] = data
+		val, _ := json.Marshal(model.PipedStat{Stats: data, Timestamp: time.Now().Unix()})
+		out[file] = val
 	}
 	return out, nil
 }
