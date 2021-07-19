@@ -78,7 +78,7 @@ func main() {
 	}
 
 	if !event.PRMergeable {
-		doComment(failureBadgeURL + "It was unable to run plan-preview for an un-mergeable pull request. Please resolve the conficts and try again.")
+		doComment(failureBadgeURL + "Unable to run plan-preview for an un-mergeable pull request. Please resolve the conficts and try again.")
 		return
 	}
 
