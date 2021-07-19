@@ -73,7 +73,7 @@ func main() {
 	}
 
 	if event.PRClosed {
-		doComment(failureBadgeURL + "It was unable to run plan-preview for a closed pull request.")
+		doComment(failureBadgeURL + "Unable to run plan-preview for a closed pull request.")
 		return
 	}
 
