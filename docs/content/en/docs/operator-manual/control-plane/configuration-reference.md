@@ -30,7 +30,7 @@ spec:
 
 | Field | Type | Description | Required |
 |-|-|-|-|
-| type | string | Which type of data store should be used. Can be one of the following values<br>`FIRESTORE`, `MONGODB`, `MYSQL`. | Yes |
+| type | string | Which type of data store should be used. Can be one of the following values<br>`FIRESTORE`, `MYSQL`. | Yes |
 | config | [DataStoreConfig](/docs/operator-manual/control-plane/configuration-reference/#datastoreconfig) | Specific configuration for the datastore type. This must be one of these DataStoreConfig. | Yes |
 
 ## DataStoreConfig
@@ -56,18 +56,6 @@ Must be one of the following objects:
 | database | string | The name of database. | Yes |
 | usernameFile | string | Path to the file containing the username. | No |
 | passwordFile | string | Path to the file containing the password. | No |
-
-
-### DataStoreMongoDBConfig
-
-> Note: `deprecated` feature (please use `Firestore` or `MySQL` instead)
-
-| Field | Type | Description | Required |
-|-|-|-|-|
-| url | string | The address to MongoDB server. | Yes |
-| database | string | The name of database. | Yes |
-| usernameFile | string | The path to the username file. | No |
-| passwordFile | string | The path to the password file. | No |
 
 
 ## FileStore
