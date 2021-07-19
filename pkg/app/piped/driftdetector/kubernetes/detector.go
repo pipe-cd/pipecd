@@ -369,9 +369,9 @@ func makeSyncState(r *provider.DiffListResult, commit string) model.ApplicationS
 		MaskSecret:          true,
 		MaskConfigMap:       true,
 		MaxChangedManifests: 3,
-		// Currrently, we do not use use diff command to render the result
-		// because Kubernetes is adding a large number of default values into the running manifest
-		// that causes a wrong diff text.
+		// Currently, we do not use the diff command to render the result
+		// because Kubernetes adds a large number of default values to the
+		// running manifest that causes a wrong diff text.
 		UseDiffCommand: false,
 	})
 	b.WriteString(details)
