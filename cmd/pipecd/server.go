@@ -16,7 +16,6 @@ package main
 
 import (
 	"context"
-	"errors"
 	"fmt"
 	"net/http"
 	"time"
@@ -402,12 +401,6 @@ func createDatastore(ctx context.Context, cfg *config.ControlPlaneSpec, logger *
 			options = append(options, firestore.WithCollectionNamePrefix(p))
 		}
 		return firestore.NewFireStore(ctx, fsConfig.Project, fsConfig.Namespace, fsConfig.Environment, options...)
-
-	case model.DataStoreDynamoDB:
-		return nil, errors.New("dynamodb is unimplemented yet")
-
-	case model.DataStoreMongoDB:
-		return nil, errors.New("mongodb is deprecated")
 
 	case model.DataStoreMySQL:
 		mqConfig := cfg.Datastore.MySQLConfig
