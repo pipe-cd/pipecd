@@ -137,7 +137,9 @@ func (c *command) run(ctx context.Context, _ cli.Telemetry) error {
 		case <-ticker.C:
 			results, err := getResults(resp.Commands)
 			if err != nil {
-				if status.Code(err) == codes.NotFound {
+				s := status.Convert(err)
+				if s.Code() == codes.NotFound {
+					fmt.Println(s.Message())
 					fmt.Println("waiting...")
 					break
 				}
