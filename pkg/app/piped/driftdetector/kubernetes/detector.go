@@ -364,7 +364,17 @@ func makeSyncState(r *provider.DiffListResult, commit string) model.ApplicationS
 	var b strings.Builder
 	b.WriteString(fmt.Sprintf("Diff between the defined state in Git at commit %s and actual state in cluster:\n\n", commit))
 	b.WriteString("--- Expected\n+++ Actual\n\n")
-	b.WriteString(r.DiffString())
+
+	details := r.Render(provider.DiffRenderOptions{
+		MaskSecret:          true,
+		MaskConfigMap:       true,
+		MaxChangedManifests: 3,
+		// Currrently, we do not use use diff command to render the result
+		// because Kubernetes is adding a large number of default values into the running manifest
+		// that causes a wrong diff text.
+		UseDiffCommand: false,
+	})
+	b.WriteString(details)
 
 	return model.ApplicationSyncState{
 		Status:      model.ApplicationSyncStatus_OUT_OF_SYNC,

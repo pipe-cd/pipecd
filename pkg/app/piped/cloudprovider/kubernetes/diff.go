@@ -15,7 +15,10 @@
 package kubernetes
 
 import (
+	"bytes"
 	"fmt"
+	"os"
+	"os/exec"
 	"sort"
 	"strings"
 
@@ -68,7 +71,17 @@ func DiffList(olds, news []Manifest, opts ...diff.Option) (*DiffListResult, erro
 	return cr, nil
 }
 
-func (r *DiffListResult) DiffString() string {
+type DiffRenderOptions struct {
+	MaskSecret    bool
+	MaskConfigMap bool
+	// Maximum number of changed manifests should be shown.
+	// Zero means rendering all.
+	MaxChangedManifests int
+	// If true, use "diff" command to render.
+	UseDiffCommand bool
+}
+
+func (r *DiffListResult) Render(opt DiffRenderOptions) string {
 	var b strings.Builder
 	index := 0
 	for _, delete := range r.Deletes {
@@ -80,24 +93,37 @@ func (r *DiffListResult) DiffString() string {
 		b.WriteString(fmt.Sprintf("+ %d. %s\n\n", index, add.Key.ReadableString()))
 	}
 
-	const maxPrintDiffs = 3
+	maxPrintDiffs := len(r.Changes)
+	if opt.MaxChangedManifests != 0 && opt.MaxChangedManifests < maxPrintDiffs {
+		maxPrintDiffs = opt.MaxChangedManifests
+	}
+
 	var prints = 0
 	for _, change := range r.Changes {
 		key := change.Old.Key
 		opts := []diff.RenderOption{
 			diff.WithLeftPadding(1),
 		}
-		switch {
-		case key.IsSecret():
+		if opt.MaskSecret && key.IsSecret() {
 			opts = append(opts, diff.WithMaskPath("data"))
-		case key.IsConfigMap():
+		} else if opt.MaskConfigMap && key.IsConfigMap() {
 			opts = append(opts, diff.WithMaskPath("data"))
 		}
 		renderer := diff.NewRenderer(opts...)
 
 		index++
 		b.WriteString(fmt.Sprintf("# %d. %s\n\n", index, key.ReadableString()))
-		b.WriteString(renderer.Render(change.Diff.Nodes()))
+
+		if opt.UseDiffCommand {
+			d, err := diffByCommand(change.Old, change.New)
+			if err != nil {
+				b.WriteString(fmt.Sprintf("An error occurred while rendering diff (%v)", err))
+			} else {
+				b.Write(d)
+			}
+		} else {
+			b.WriteString(renderer.Render(change.Diff.Nodes()))
+		}
 		b.WriteString("\n")
 
 		prints++
@@ -111,6 +137,56 @@ func (r *DiffListResult) DiffString() string {
 	}
 
 	return b.String()
+}
+
+func diffByCommand(old, new Manifest) ([]byte, error) {
+	oldBytes, err := old.YamlBytes()
+	if err != nil {
+		return nil, err
+	}
+
+	newBytes, err := new.YamlBytes()
+	if err != nil {
+		return nil, err
+	}
+
+	oldFile, err := os.CreateTemp("", "old")
+	if err != nil {
+		return nil, err
+	}
+	defer os.Remove(oldFile.Name())
+	if _, err := oldFile.Write(oldBytes); err != nil {
+		return nil, err
+	}
+
+	newFile, err := os.CreateTemp("", "new")
+	if err != nil {
+		return nil, err
+	}
+	defer os.Remove(newFile.Name())
+	if _, err := newFile.Write(newBytes); err != nil {
+		return nil, err
+	}
+
+	cmd := "diff"
+	data, err := exec.Command(cmd, "-u", "-N", oldFile.Name(), newFile.Name()).CombinedOutput()
+	if len(data) > 0 {
+		// diff exits with a non-zero status when the files don't match.
+		// Ignore that failure as long as we get output.
+		err = nil
+	}
+	if err != nil {
+		return nil, err
+	}
+
+	// Remote two-line header from output.
+	endLineMark := []byte("\n")
+	data = bytes.TrimPrefix(data, endLineMark)
+	rows := bytes.SplitN(data, endLineMark, 3)
+	if len(rows) == 3 {
+		return rows[2], nil
+	}
+	return data, nil
 }
 
 func groupManifests(olds, news []Manifest) (adds, deletes, newChanges, oldChanges []Manifest) {
