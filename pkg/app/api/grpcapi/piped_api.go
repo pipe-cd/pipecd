@@ -101,7 +101,7 @@ func (a *PipedAPI) ReportStat(ctx context.Context, req *pipedservice.ReportStatR
 	}
 
 	now := time.Now().Unix()
-	val, err := json.Marshal(model.PipedStat{Timestamp: now, Stats: req.PipedStats})
+	val, err := json.Marshal(model.PipedStat{PipedId: pipedID, Metrics: req.PipedStats, Timestamp: now})
 	if err != nil {
 		a.logger.Error("failed to store the reported piped stat",
 			zap.String("piped-id", pipedID),

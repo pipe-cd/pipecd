@@ -57,7 +57,8 @@ func (b *PipedStatsBuilder) Build() (io.Reader, error) {
 			b.logger.Error("failed to unmarshal piped stat data", zap.Error(err))
 			return nil, err
 		}
-		data = append(data, ps.Stats)
+		// TODO: Filter returning piped metrics by value timestamp.
+		data = append(data, ps.Metrics)
 	}
 	return bytes.NewReader(bytes.Join(data, []byte("\n"))), nil
 }

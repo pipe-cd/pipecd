@@ -51,7 +51,7 @@ func (m *mockBuilderBackend) GetAll() (map[string]interface{}, error) {
 		if err != nil {
 			return nil, err
 		}
-		val, _ := json.Marshal(model.PipedStat{Stats: data, Timestamp: time.Now().Unix()})
+		val, _ := json.Marshal(model.PipedStat{Metrics: data, Timestamp: time.Now().Unix()})
 		out[file] = val
 	}
 	return out, nil

@@ -20,6 +20,7 @@ option go_package = "github.com/pipe-cd/pipe/pkg/model";
 import "validate/validate.proto";
 
 message PipedStat {
-    int64 timestamp = 1 [(validate.rules).int64.gt = 0];
-    bytes stats = 2;
+    string piped_id = 1 [(validate.rules).string.min_len = 1];
+    bytes metrics = 2;
+    int64 timestamp = 10 [(validate.rules).int64.gt = 0];
 }
