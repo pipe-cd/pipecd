@@ -144,7 +144,7 @@ func (b *builder) build(ctx context.Context, id string, cmd model.Command_BuildP
 
 	// Plan the trigger applications for more detailed feedback.
 	for _, app := range triggerApps {
-		b.logger.Info("will decide sync strategy for a application",
+		b.logger.Info("will decide sync strategy for an application",
 			zap.String("id", app.Id),
 			zap.String("name", app.Name),
 			zap.String("kind", app.Kind.String()),
