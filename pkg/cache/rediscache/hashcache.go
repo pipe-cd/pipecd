@@ -16,7 +16,6 @@ package rediscache
 
 import (
 	"errors"
-	"time"
 
 	redigo "github.com/gomodule/redigo/redis"
 
@@ -33,14 +32,6 @@ type RedisHashCache struct {
 func NewHashCache(redis redis.Redis, key string) *RedisHashCache {
 	return &RedisHashCache{
 		redis: redis,
-		key:   key,
-	}
-}
-
-func NewTTLHashCache(redis redis.Redis, ttl time.Duration, key string) *RedisHashCache {
-	return &RedisHashCache{
-		redis: redis,
-		ttl:   uint(ttl.Seconds()),
 		key:   key,
 	}
 }

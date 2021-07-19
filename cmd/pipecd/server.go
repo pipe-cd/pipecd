@@ -64,7 +64,6 @@ var (
 
 const (
 	defaultPipedStatHashKey = "HASHKEY:PIPED:STATS"
-	pipedStatTTL            = 2 * time.Minute
 )
 
 type server struct {
@@ -185,7 +184,7 @@ func (s *server) run(ctx context.Context, t cli.Telemetry) error {
 	cmds := commandstore.NewStore(ds, cache, t.Logger)
 	is := insightstore.NewStore(fs)
 	cmdOutputStore := commandoutputstore.NewStore(fs, t.Logger)
-	statCache := rediscache.NewTTLHashCache(rd, pipedStatTTL, defaultPipedStatHashKey)
+	statCache := rediscache.NewHashCache(rd, defaultPipedStatHashKey)
 
 	// Start a gRPC server for handling PipedAPI requests.
 	{

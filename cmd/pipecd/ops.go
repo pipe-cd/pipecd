@@ -155,7 +155,7 @@ func (s *ops) run(ctx context.Context, t cli.Telemetry) error {
 	}
 
 	rd := redis.NewRedis(s.cacheAddress, "")
-	statCache := rediscache.NewTTLHashCache(rd, pipedStatTTL, defaultPipedStatHashKey)
+	statCache := rediscache.NewHashCache(rd, defaultPipedStatHashKey)
 	psb := pipedstatsbuilder.NewPipedStatsBuilder(statCache, t.Logger)
 
 	// Start running admin server.
