@@ -56,6 +56,32 @@ func main() {
 	}
 	log.Printf("Successfully parsed GitHub event\n\tbase-branch %s\n\thead-branch %s\n\thead-commit %s\n", event.BaseBranch, event.HeadBranch, event.HeadCommit)
 
+	doComment := func(body string) {
+		comment, err := sendComment(
+			ctx,
+			ghClient,
+			event.Owner,
+			event.Repo,
+			event.PRNumber,
+			body,
+		)
+		if err != nil {
+			log.Fatal(err)
+		}
+
+		log.Printf("Successfully commented plan-preview result on pull request\n%s\n", *comment.HTMLURL)
+	}
+
+	if event.PRClosed {
+		doComment(failureBadgeURL + "It was unable to run plan-preview for a closed pull request.")
+		return
+	}
+
+	if !event.PRMergeable {
+		doComment(failureBadgeURL + "It was unable to run plan-preview for an un-mergeable pull request. Please resolve the conficts and try again.")
+		return
+	}
+
 	result, err := retrievePlanPreview(
 		ctx,
 		event.RepoRemote,
@@ -71,20 +97,20 @@ func main() {
 	}
 	log.Println("Successfully retrieved plan-preview result")
 
-	body := makeCommentBody(event, result)
-	comment, err := sendComment(
-		ctx,
-		ghClient,
-		event.Owner,
-		event.Repo,
-		event.PRNumber,
-		body,
-	)
-	if err != nil {
-		log.Fatal(err)
+	// Maybe the PR is already closed so Piped could not clone the source code.
+	if result.HasError() {
+		pr, err := getPullRequest(ctx, ghClient, event.Owner, event.Repo, event.PRNumber)
+		if err != nil {
+			log.Fatal(err)
+		}
+		if !pr.GetClosedAt().IsZero() {
+			doComment(failureBadgeURL + "It was unable to run plan-preview for a closed pull request.")
+			return
+		}
 	}
 
-	log.Printf("Successfully commented plan-preview result on pull request\n%s\n", *comment.HTMLURL)
+	body := makeCommentBody(event, result)
+	doComment(body)
 }
 
 type arguments struct {
