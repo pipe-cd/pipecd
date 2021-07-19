@@ -18,8 +18,6 @@ type DataStoreType string
 
 const (
 	DataStoreFirestore DataStoreType = "FIRESTORE"
-	DataStoreDynamoDB  DataStoreType = "DYNAMODB"
-	DataStoreMongoDB   DataStoreType = "MONGODB"
 	DataStoreMySQL     DataStoreType = "MYSQL"
 )
 

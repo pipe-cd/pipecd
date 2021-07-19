@@ -112,7 +112,6 @@ Please note that the phases (Incubating, Alpha, Beta, and Stable) are applied to
 | GitHub & GitHub Enterprise SSO | Beta |
 | Google SSO | Incubating |
 | Data Store - Support GCP [Firestore](https://cloud.google.com/firestore) | Beta |
-| Data Store - Support [MongoDB](https://www.mongodb.com/) | Alpha ([deprecated](/blog/2021/04/01/migrate-control-plane-datastore-to-mysql/)) |
 | Data Store - Support [MySQL v8.0](https://www.mysql.com/) | Alpha |
 | File Store - Support GCP [GCS](https://cloud.google.com/storage) | Beta |
 | File Store - Support AWS [S3](https://aws.amazon.com/s3/) | Alpha |
