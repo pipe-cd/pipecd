@@ -95,7 +95,18 @@ func newBuilder(
 	}
 }
 
-func (b *builder) Build(ctx context.Context, id string, cmd model.Command_BuildPlanPreview) ([]*model.ApplicationPlanPreviewResult, error) {
+func (b *builder) Build(ctx context.Context, id string, cmd model.Command_BuildPlanPreview) (results []*model.ApplicationPlanPreviewResult, err error) {
+	defer func() {
+		if r := recover(); r != nil {
+			err = fmt.Errorf("an unexpected panic occurred (%w)", r)
+			b.logger.Error("unexpected panic", zap.Error(err))
+		}
+	}()
+
+	return b.build(ctx, id, cmd)
+}
+
+func (b *builder) build(ctx context.Context, id string, cmd model.Command_BuildPlanPreview) ([]*model.ApplicationPlanPreviewResult, error) {
 	b.logger.Info(fmt.Sprintf("start building planpreview result for command %s", id))
 
 	// Ensure the existence of the working directory.
@@ -133,6 +144,12 @@ func (b *builder) Build(ctx context.Context, id string, cmd model.Command_BuildP
 
 	// Plan the trigger applications for more detailed feedback.
 	for _, app := range triggerApps {
+		b.logger.Info("will decide sync strategy for an application",
+			zap.String("id", app.Id),
+			zap.String("name", app.Name),
+			zap.String("kind", app.Kind.String()),
+		)
+
 		// We only need the environment name
 		// so the returned error can be ignorable.
 		var envName string
@@ -151,12 +168,6 @@ func (b *builder) Build(ctx context.Context, id string, cmd model.Command_BuildP
 			r.Error = fmt.Sprintf("failed while finding the last successful deployment (%w)", err)
 			continue
 		}
-
-		b.logger.Info("will decide sync strategy for a application",
-			zap.String("id", app.Id),
-			zap.String("name", app.Name),
-			zap.String("kind", app.Kind.String()),
-		)
 
 		strategy, err := b.plan(ctx, app, cmd, preCommit)
 		if err != nil {
