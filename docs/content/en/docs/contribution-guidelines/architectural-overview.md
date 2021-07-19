@@ -26,8 +26,8 @@ Control Plane contains the following components:
 - `server`: a service to provide api for piped, web and serve static assets for web.
 - `cache`: a redis cache service for caching internal data.
 - `datastore`: data storage for storing deployment, application data
-  - this can be a fully-managed service such as `Firestore`, `DynamoDB`...
-  - or a self-managed such as `MongoDB`
+  - this can be a fully-managed service such as `Firestore`, `Cloud SQL`...
+  - or a self-managed such as `MySQL`
 - `filestore`: file storage for storing logs, application states
   - this can a fully-managed service such as `GCS`, `S3`...
   - or a self-managed service such as `Minio`
