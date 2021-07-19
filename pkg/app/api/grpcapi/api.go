@@ -521,7 +521,7 @@ func (a *API) GetPlanPreviewResults(ctx context.Context, req *apiservice.GetPlan
 
 		if !cmd.IsHandled() {
 			if time.Since(time.Unix(cmd.CreatedAt, 0)) <= commandHandleTimeout {
-				return nil, status.Error(codes.NotFound, fmt.Sprintf("No command ouput for command %d because it is not completed yet", commandID))
+				return nil, status.Error(codes.NotFound, fmt.Sprintf("Waiting for result of command %s from piped %s", commandID, cmd.PipedId))
 			}
 			results = append(results, &model.PlanPreviewCommandResult{
 				CommandId: cmd.Id,
