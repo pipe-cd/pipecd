@@ -137,8 +137,8 @@ func (b *builder) build(ctx context.Context, id string, cmd model.Command_BuildP
 	}
 
 	// Prepare source code at the head commit.
-	// This clones the base branch and merges head banch into it for correct data.
-	// Because new changes were added into base branch after head branch was checked out.
+	// This clones the base branch and merges the head branch into it for correct data.
+	// Because new changes might be added into the base branch after the head branch had checked out.
 	repo, err := b.cloneHeadCommit(ctx, cmd.HeadBranch, cmd.HeadCommit)
 	if err != nil {
 		return nil, err
