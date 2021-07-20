@@ -180,9 +180,8 @@ func diffByCommand(old, new Manifest) ([]byte, error) {
 	}
 
 	// Remote two-line header from output.
-	endLineMark := []byte("\n")
-	data = bytes.TrimPrefix(data, endLineMark)
-	rows := bytes.SplitN(data, endLineMark, 3)
+	data = bytes.TrimSpace(data)
+	rows := bytes.SplitN(data, []byte("\n"), 3)
 	if len(rows) == 3 {
 		return rows[2], nil
 	}

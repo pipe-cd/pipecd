@@ -153,8 +153,7 @@ func TestDiffByCommand(t *testing.T) {
 -        - yy
          - zz
          image: gcr.io/pipecd/second:v1.0.0
-         name: second
-`,
+         name: second`,
 		},
 	}
 
