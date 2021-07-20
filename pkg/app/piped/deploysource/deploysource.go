@@ -18,7 +18,6 @@ import (
 	"context"
 	"fmt"
 	"io"
-	"io/ioutil"
 	"os"
 	"os/exec"
 	"path/filepath"
@@ -26,26 +25,21 @@ import (
 
 	"github.com/pipe-cd/pipe/pkg/app/piped/sourcedecrypter"
 	"github.com/pipe-cd/pipe/pkg/config"
-	"github.com/pipe-cd/pipe/pkg/git"
 	"github.com/pipe-cd/pipe/pkg/model"
 )
 
 type DeploySource struct {
 	RepoDir                 string
 	AppDir                  string
-	RevisionName            string
 	Revision                string
 	DeploymentConfig        *config.Config
 	GenericDeploymentConfig config.GenericDeploymentSpec
 }
 
 type Provider interface {
+	Revision() string
 	Get(ctx context.Context, logWriter io.Writer) (*DeploySource, error)
 	GetReadOnly(ctx context.Context, logWriter io.Writer) (*DeploySource, error)
-}
-
-type gitClient interface {
-	Clone(ctx context.Context, repoID, remote, branch, destination string) (git.Repo, error)
 }
 
 type secretDecrypter interface {
@@ -54,11 +48,10 @@ type secretDecrypter interface {
 
 type provider struct {
 	workingDir      string
-	repoConfig      config.PipedRepository
+	cloner          SourceCloner
 	revisionName    string
 	revision        string
-	gitClient       gitClient
-	appGitPath      *model.ApplicationGitPath
+	appGitPath      model.ApplicationGitPath
 	secretDecrypter secretDecrypter
 
 	done    bool
@@ -70,23 +63,23 @@ type provider struct {
 
 func NewProvider(
 	workingDir string,
-	repoConfig config.PipedRepository,
-	revisionName string,
-	revision string,
-	gitClient gitClient,
-	appGitPath *model.ApplicationGitPath,
+	cloner SourceCloner,
+	appGitPath model.ApplicationGitPath,
 	sd secretDecrypter,
 ) Provider {
 
 	return &provider{
 		workingDir:      workingDir,
-		repoConfig:      repoConfig,
-		revisionName:    revisionName,
-		revision:        revision,
-		gitClient:       gitClient,
+		cloner:          cloner,
+		revisionName:    cloner.RevisionName(),
+		revision:        cloner.Revision(),
 		appGitPath:      appGitPath,
 		secretDecrypter: sd,
 	}
+}
+
+func (p *provider) Revision() string {
+	return p.cloner.Revision()
 }
 
 func (p *provider) Get(ctx context.Context, lw io.Writer) (*DeploySource, error) {
@@ -140,7 +133,7 @@ func (p *provider) prepare(ctx context.Context, lw io.Writer) (*DeploySource, er
 	}
 
 	// Create a temporary directory for storing the source.
-	dir, err := ioutil.TempDir(p.workingDir, "deploysource")
+	dir, err := os.MkdirTemp(p.workingDir, "deploysource")
 	if err != nil {
 		fmt.Fprintf(lw, "Unable to create a temp directory to store the deploy source (%v)\n", err)
 		return nil, err
@@ -150,16 +143,11 @@ func (p *provider) prepare(ctx context.Context, lw io.Writer) (*DeploySource, er
 	appDir := filepath.Join(repoDir, p.appGitPath.Path)
 
 	// Clone the specified revision of the repository.
-	gitRepo, err := p.gitClient.Clone(ctx, p.repoConfig.RepoID, p.repoConfig.Remote, p.repoConfig.Branch, repoDir)
-	if err != nil {
-		fmt.Fprintf(lw, "Unable to clone the branch %s of the repository %s (%v)\n", p.repoConfig.Branch, p.repoConfig.RepoID, err)
+	if err := p.cloner.Clone(ctx, repoDir); err != nil {
+		fmt.Fprintf(lw, "Unable to clone the %s commit (%v)\n", p.revisionName, err)
 		return nil, err
 	}
-	if err := gitRepo.Checkout(ctx, p.revision); err != nil {
-		fmt.Fprintf(lw, "Unable to checkout the %s commit %s (%v)\n", p.revisionName, p.revision, err)
-		return nil, err
-	}
-	fmt.Fprintf(lw, "Successfully cloned the %s commit %s of the repository %s\n", p.revisionName, p.revision, p.repoConfig.RepoID)
+	fmt.Fprintf(lw, "Successfully cloned the %s commit\n", p.revisionName)
 
 	// Load the deployment configuration file.
 	configFileRelativePath := p.appGitPath.GetDeploymentConfigFilePath()
@@ -196,7 +184,6 @@ func (p *provider) prepare(ctx context.Context, lw io.Writer) (*DeploySource, er
 	return &DeploySource{
 		RepoDir:                 repoDir,
 		AppDir:                  appDir,
-		RevisionName:            p.revisionName,
 		Revision:                p.revision,
 		DeploymentConfig:        cfg,
 		GenericDeploymentConfig: gdc,
@@ -217,7 +204,6 @@ func (p *provider) copy(lw io.Writer) (*DeploySource, error) {
 	return &DeploySource{
 		RepoDir:                 dest,
 		AppDir:                  filepath.Join(dest, p.appGitPath.Path),
-		RevisionName:            p.revisionName,
 		Revision:                p.revision,
 		DeploymentConfig:        p.source.DeploymentConfig,
 		GenericDeploymentConfig: p.source.GenericDeploymentConfig,

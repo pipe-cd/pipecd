@@ -44,6 +44,7 @@ type Repo interface {
 	Clean() error
 
 	Pull(ctx context.Context, branch string) error
+	MergeRemoteBranch(ctx context.Context, branch, commit, mergeCommitMessage string) error
 	Push(ctx context.Context, branch string) error
 	CommitChanges(ctx context.Context, branch, message string, newBranch bool, changes map[string][]byte) error
 }
@@ -179,6 +180,21 @@ func (r *repo) CheckoutPullRequest(ctx context.Context, number int, branch strin
 // Pull fetches from and integrate with a local branch.
 func (r *repo) Pull(ctx context.Context, branch string) error {
 	out, err := r.runGitCommand(ctx, "pull", r.remote, branch)
+	if err != nil {
+		return formatCommandError(err, out)
+	}
+	return nil
+}
+
+// MergeRemoteBranch merges all commits until the given one
+// from a remote branch to current local branch.
+// This always adds a new merge commit into tree.
+func (r *repo) MergeRemoteBranch(ctx context.Context, branch, commit, mergeCommitMessage string) error {
+	out, err := r.runGitCommand(ctx, "fetch", r.remote, branch)
+	if err != nil {
+		return formatCommandError(err, out)
+	}
+	out, err = r.runGitCommand(ctx, "merge", "-q", "--no-ff", "-m", mergeCommitMessage, commit)
 	if err != nil {
 		return formatCommandError(err, out)
 	}

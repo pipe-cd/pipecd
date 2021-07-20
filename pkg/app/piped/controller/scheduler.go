@@ -223,22 +223,16 @@ func (s *scheduler) Run(ctx context.Context) error {
 
 	s.targetDSP = deploysource.NewProvider(
 		filepath.Join(s.workingDir, "target-deploysource"),
-		repoCfg,
-		"target",
-		s.deployment.Trigger.Commit.Hash,
-		s.gitClient,
-		s.deployment.GitPath,
+		deploysource.NewGitSourceCloner(s.gitClient, repoCfg, "target", s.deployment.Trigger.Commit.Hash),
+		*s.deployment.GitPath,
 		s.secretDecrypter,
 	)
 
 	if s.deployment.RunningCommitHash != "" {
 		s.runningDSP = deploysource.NewProvider(
 			filepath.Join(s.workingDir, "running-deploysource"),
-			repoCfg,
-			"running",
-			s.deployment.RunningCommitHash,
-			s.gitClient,
-			s.deployment.GitPath,
+			deploysource.NewGitSourceCloner(s.gitClient, repoCfg, "running", s.deployment.RunningCommitHash),
+			*s.deployment.GitPath,
 			s.secretDecrypter,
 		)
 	}
@@ -249,11 +243,8 @@ func (s *scheduler) Run(ctx context.Context) error {
 	// We need only the deployment configuration spec.
 	configDSP := deploysource.NewProvider(
 		filepath.Join(s.workingDir, "target-config"),
-		repoCfg,
-		"target",
-		s.deployment.Trigger.Commit.Hash,
-		s.gitClient,
-		s.deployment.GitPath,
+		deploysource.NewGitSourceCloner(s.gitClient, repoCfg, "target", s.deployment.Trigger.Commit.Hash),
+		*s.deployment.GitPath,
 		nil,
 	)
 	ds, err := configDSP.GetReadOnly(ctx, ioutil.Discard)

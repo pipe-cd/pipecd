@@ -2,7 +2,10 @@ load("@io_bazel_rules_go//go:def.bzl", "go_library", "go_test")
 
 go_library(
     name = "go_default_library",
-    srcs = ["deploysource.go"],
+    srcs = [
+        "deploysource.go",
+        "sourcecloner.go",
+    ],
     importpath = "github.com/pipe-cd/pipe/pkg/app/piped/deploysource",
     visibility = ["//visibility:public"],
     deps = [

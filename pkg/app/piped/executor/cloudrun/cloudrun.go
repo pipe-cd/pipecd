@@ -46,7 +46,7 @@ func Register(r registerer) {
 }
 
 func loadServiceManifest(in *executor.Input, serviceManifestFile string, ds *deploysource.DeploySource) (provider.ServiceManifest, bool) {
-	in.LogPersister.Infof("Loading service manifest at the %s commit (%s)", ds.RevisionName, ds.Revision)
+	in.LogPersister.Infof("Loading service manifest at commit %s", ds.Revision)
 
 	sm, err := provider.LoadServiceManifest(ds.AppDir, serviceManifestFile)
 	if err != nil {
@@ -54,7 +54,7 @@ func loadServiceManifest(in *executor.Input, serviceManifestFile string, ds *dep
 		return provider.ServiceManifest{}, false
 	}
 
-	in.LogPersister.Infof("Successfully loaded the service manifest at the %s commit", ds.RevisionName)
+	in.LogPersister.Infof("Successfully loaded the service manifest at commit %s", ds.Revision)
 	return sm, true
 }
 

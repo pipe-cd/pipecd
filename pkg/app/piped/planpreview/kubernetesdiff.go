@@ -25,7 +25,6 @@ import (
 	provider "github.com/pipe-cd/pipe/pkg/app/piped/cloudprovider/kubernetes"
 	"github.com/pipe-cd/pipe/pkg/app/piped/deploysource"
 	"github.com/pipe-cd/pipe/pkg/cache"
-	"github.com/pipe-cd/pipe/pkg/config"
 	"github.com/pipe-cd/pipe/pkg/diff"
 	"github.com/pipe-cd/pipe/pkg/model"
 )
@@ -33,7 +32,7 @@ import (
 func (b *builder) kubernetesDiff(
 	ctx context.Context,
 	app *model.Application,
-	cmd model.Command_BuildPlanPreview,
+	targetDSP deploysource.Provider,
 	lastSuccessfulCommit string,
 	buf *bytes.Buffer,
 ) (string, error) {
@@ -41,22 +40,7 @@ func (b *builder) kubernetesDiff(
 	var oldManifests, newManifests []provider.Manifest
 	var err error
 
-	repoCfg := config.PipedRepository{
-		RepoID: b.repoCfg.RepoID,
-		Remote: b.repoCfg.Remote,
-		Branch: cmd.HeadBranch,
-	}
-
-	targetDSP := deploysource.NewProvider(
-		b.workingDir,
-		repoCfg,
-		"target",
-		cmd.HeadCommit,
-		b.gitClient,
-		app.GitPath,
-		b.secretDecrypter,
-	)
-	newManifests, err = loadKubernetesManifests(ctx, *app, cmd.HeadCommit, targetDSP, b.appManifestsCache, b.logger)
+	newManifests, err = loadKubernetesManifests(ctx, *app, targetDSP, b.appManifestsCache, b.logger)
 	if err != nil {
 		fmt.Fprintf(buf, "failed to load kubernetes manifests at the head commit (%v)\n", err)
 		return "", err
@@ -65,14 +49,11 @@ func (b *builder) kubernetesDiff(
 	if lastSuccessfulCommit != "" {
 		runningDSP := deploysource.NewProvider(
 			b.workingDir,
-			repoCfg,
-			"running",
-			lastSuccessfulCommit,
-			b.gitClient,
-			app.GitPath,
+			deploysource.NewGitSourceCloner(b.gitClient, b.repoCfg, "running", lastSuccessfulCommit),
+			*app.GitPath,
 			b.secretDecrypter,
 		)
-		oldManifests, err = loadKubernetesManifests(ctx, *app, lastSuccessfulCommit, runningDSP, b.appManifestsCache, b.logger)
+		oldManifests, err = loadKubernetesManifests(ctx, *app, runningDSP, b.appManifestsCache, b.logger)
 		if err != nil {
 			fmt.Fprintf(buf, "failed to load kubernetes manifests at the running commit (%v)\n", err)
 			return "", err
@@ -106,12 +87,14 @@ func (b *builder) kubernetesDiff(
 	return summary, nil
 }
 
-func loadKubernetesManifests(ctx context.Context, app model.Application, commit string, dsp deploysource.Provider, manifestsCache cache.Cache, logger *zap.Logger) (manifests []provider.Manifest, err error) {
+func loadKubernetesManifests(ctx context.Context, app model.Application, dsp deploysource.Provider, manifestsCache cache.Cache, logger *zap.Logger) (manifests []provider.Manifest, err error) {
+	commit := dsp.Revision()
 	cache := provider.AppManifestsCache{
 		AppID:  app.Id,
 		Cache:  manifestsCache,
 		Logger: logger,
 	}
+
 	manifests, ok := cache.Get(commit)
 	if ok {
 		return manifests, nil
