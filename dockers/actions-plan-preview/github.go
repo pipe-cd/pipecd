@@ -28,7 +28,7 @@ type githubEvent struct {
 	Repo        string
 	RepoRemote  string
 	PRNumber    int
-	*PRMergeable bool
+	PRMergeable *bool
 	PRClosed    bool
 	HeadBranch  string
 	HeadCommit  string
