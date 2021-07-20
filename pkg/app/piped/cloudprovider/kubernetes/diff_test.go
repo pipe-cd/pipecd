@@ -18,6 +18,7 @@ import (
 	"testing"
 
 	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/require"
 )
 
 func TestGroupManifests(t *testing.T) {
@@ -110,6 +111,76 @@ func TestGroupManifests(t *testing.T) {
 			assert.Equal(t, tc.expectedDeletes, deletes)
 			assert.Equal(t, tc.expectedNewChanges, newChanges)
 			assert.Equal(t, tc.expectedOldChanges, oldChanges)
+		})
+	}
+}
+
+func TestDiffByCommand(t *testing.T) {
+	testcases := []struct {
+		name        string
+		command     string
+		manifests   string
+		expected    string
+		expectedErr bool
+	}{
+		{
+			name:        "no command",
+			command:     "non-existent-diff",
+			manifests:   "testdata/diff_by_command_no_change.yaml",
+			expected:    "",
+			expectedErr: true,
+		},
+		{
+			name:      "no diff",
+			command:   diffCommand,
+			manifests: "testdata/diff_by_command_no_change.yaml",
+			expected:  "",
+		},
+		{
+			name:      "has diff",
+			command:   diffCommand,
+			manifests: "testdata/diff_by_command.yaml",
+			expected: `@@ -6,7 +6,7 @@
+     pipecd.dev/managed-by: piped
+   name: simple
+ spec:
+-  replicas: 2
++  replicas: 3
+   selector:
+     matchLabels:
+       app: simple
+@@ -18,6 +18,7 @@
+       containers:
+       - args:
+         - a
++        - d
+         - b
+         - c
+         image: gcr.io/pipecd/first:v1.0.0
+@@ -26,7 +27,6 @@
+         - containerPort: 9085
+       - args:
+         - xx
+-        - yy
+         - zz
+         image: gcr.io/pipecd/second:v1.0.0
+         name: second`,
+		},
+	}
+
+	for _, tc := range testcases {
+		t.Run(tc.name, func(t *testing.T) {
+			manifests, err := LoadManifestsFromYAMLFile(tc.manifests)
+			require.NoError(t, err)
+			require.Equal(t, 2, len(manifests))
+
+			got, err := diffByCommand(tc.command, manifests[0], manifests[1])
+			if tc.expectedErr {
+				assert.Error(t, err)
+			} else {
+				assert.NoError(t, err)
+			}
+			assert.Equal(t, tc.expected, string(got))
 		})
 	}
 }
