@@ -104,7 +104,7 @@ func main() {
 			log.Fatal(err)
 		}
 		if !pr.GetClosedAt().IsZero() {
-			doComment(failureBadgeURL + "It was unable to run plan-preview for a closed pull request.")
+			doComment(failureBadgeURL + "Unable to run plan-preview for a closed pull request.")
 			return
 		}
 	}
