@@ -117,17 +117,28 @@ func TestGroupManifests(t *testing.T) {
 
 func TestDiffByCommand(t *testing.T) {
 	testcases := []struct {
-		name      string
-		manifests string
-		expected  string
+		name        string
+		command     string
+		manifests   string
+		expected    string
+		expectedErr bool
 	}{
 		{
+			name:        "no command",
+			command:     "non-existent-diff",
+			manifests:   "testdata/diff_by_command_no_change.yaml",
+			expected:    "",
+			expectedErr: true,
+		},
+		{
 			name:      "no diff",
+			command:   diffCommand,
 			manifests: "testdata/diff_by_command_no_change.yaml",
 			expected:  "",
 		},
 		{
 			name:      "has diff",
+			command:   diffCommand,
 			manifests: "testdata/diff_by_command.yaml",
 			expected: `@@ -6,7 +6,7 @@
      pipecd.dev/managed-by: piped
@@ -163,8 +174,12 @@ func TestDiffByCommand(t *testing.T) {
 			require.NoError(t, err)
 			require.Equal(t, 2, len(manifests))
 
-			got, err := diffByCommand(manifests[0], manifests[1])
-			require.NoError(t, err)
+			got, err := diffByCommand(tc.command, manifests[0], manifests[1])
+			if tc.expectedErr {
+				assert.Error(t, err)
+			} else {
+				assert.NoError(t, err)
+			}
 			assert.Equal(t, tc.expected, string(got))
 		})
 	}

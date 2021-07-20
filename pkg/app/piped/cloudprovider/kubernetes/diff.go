@@ -25,6 +25,10 @@ import (
 	"github.com/pipe-cd/pipe/pkg/diff"
 )
 
+const (
+	diffCommand = "diff"
+)
+
 type DiffListResult struct {
 	Adds    []Manifest
 	Deletes []Manifest
@@ -115,7 +119,7 @@ func (r *DiffListResult) Render(opt DiffRenderOptions) string {
 		b.WriteString(fmt.Sprintf("# %d. %s\n\n", index, key.ReadableString()))
 
 		if opt.UseDiffCommand {
-			d, err := diffByCommand(change.Old, change.New)
+			d, err := diffByCommand(diffCommand, change.Old, change.New)
 			if err != nil {
 				b.WriteString(fmt.Sprintf("An error occurred while rendering diff (%v)", err))
 			} else {
@@ -139,7 +143,7 @@ func (r *DiffListResult) Render(opt DiffRenderOptions) string {
 	return b.String()
 }
 
-func diffByCommand(old, new Manifest) ([]byte, error) {
+func diffByCommand(command string, old, new Manifest) ([]byte, error) {
 	oldBytes, err := old.YamlBytes()
 	if err != nil {
 		return nil, err
@@ -168,19 +172,22 @@ func diffByCommand(old, new Manifest) ([]byte, error) {
 		return nil, err
 	}
 
-	cmd := "diff"
-	data, err := exec.Command(cmd, "-u", "-N", oldFile.Name(), newFile.Name()).CombinedOutput()
-	if len(data) > 0 {
+	var stdout, stderr bytes.Buffer
+	cmd := exec.Command(command, "-u", "-N", oldFile.Name(), newFile.Name())
+	cmd.Stdout = &stdout
+	cmd.Stderr = &stderr
+	err = cmd.Run()
+	if stdout.Len() > 0 {
 		// diff exits with a non-zero status when the files don't match.
 		// Ignore that failure as long as we get output.
 		err = nil
 	}
 	if err != nil {
-		return nil, err
+		return nil, fmt.Errorf("failed to run diff, err = %w, %s", err, stderr.String())
 	}
 
 	// Remote two-line header from output.
-	data = bytes.TrimSpace(data)
+	data := bytes.TrimSpace(stdout.Bytes())
 	rows := bytes.SplitN(data, []byte("\n"), 3)
 	if len(rows) == 3 {
 		return rows[2], nil
