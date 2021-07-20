@@ -28,7 +28,7 @@ type githubEvent struct {
 	Repo        string
 	RepoRemote  string
 	PRNumber    int
-	PRMergeable bool
+	PRMergeable *bool
 	PRClosed    bool
 	HeadBranch  string
 	HeadCommit  string
@@ -74,7 +74,7 @@ func parseGitHubEvent(ctx context.Context, client *github.Client) (*githubEvent,
 			Repo:        e.Repo.GetName(),
 			RepoRemote:  e.Repo.GetSSHURL(),
 			PRNumber:    e.GetNumber(),
-			PRMergeable: e.PullRequest.GetMergeable(),
+			PRMergeable: e.PullRequest.Mergeable,
 			PRClosed:    !e.PullRequest.GetClosedAt().IsZero(),
 			HeadBranch:  e.PullRequest.Head.GetRef(),
 			HeadCommit:  e.PullRequest.Head.GetSHA(),
@@ -98,7 +98,7 @@ func parseGitHubEvent(ctx context.Context, client *github.Client) (*githubEvent,
 			Repo:        repo,
 			RepoRemote:  e.Repo.GetSSHURL(),
 			PRNumber:    prNum,
-			PRMergeable: pr.GetMergeable(),
+			PRMergeable: pr.Mergeable,
 			PRClosed:    !pr.GetClosedAt().IsZero(),
 			HeadBranch:  pr.Head.GetRef(),
 			HeadCommit:  pr.Head.GetSHA(),
