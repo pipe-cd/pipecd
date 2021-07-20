@@ -175,22 +175,16 @@ func (p *planner) Run(ctx context.Context) error {
 
 	in.TargetDSP = deploysource.NewProvider(
 		filepath.Join(p.workingDir, "target-deploysource"),
-		repoCfg,
-		"target",
-		p.deployment.Trigger.Commit.Hash,
-		p.gitClient,
-		p.deployment.GitPath,
+		deploysource.NewGitSourceCloner(p.gitClient, repoCfg, "target", p.deployment.Trigger.Commit.Hash),
+		*p.deployment.GitPath,
 		p.secretDecrypter,
 	)
 
 	if p.lastSuccessfulCommitHash != "" {
 		in.RunningDSP = deploysource.NewProvider(
 			filepath.Join(p.workingDir, "running-deploysource"),
-			repoCfg,
-			"running",
-			p.lastSuccessfulCommitHash,
-			p.gitClient,
-			p.deployment.GitPath,
+			deploysource.NewGitSourceCloner(p.gitClient, repoCfg, "running", p.lastSuccessfulCommitHash),
+			*p.deployment.GitPath,
 			p.secretDecrypter,
 		)
 	}

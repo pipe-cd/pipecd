@@ -69,7 +69,7 @@ func findCloudProvider(in *executor.Input) (name string, cfg *config.CloudProvid
 }
 
 func loadFunctionManifest(in *executor.Input, functionManifestFile string, ds *deploysource.DeploySource) (provider.FunctionManifest, bool) {
-	in.LogPersister.Infof("Loading service manifest at the %s commit (%s)", ds.RevisionName, ds.RevisionName)
+	in.LogPersister.Infof("Loading service manifest at commit %s", ds.Revision)
 
 	fm, err := provider.LoadFunctionManifest(ds.AppDir, functionManifestFile)
 	if err != nil {
@@ -77,7 +77,7 @@ func loadFunctionManifest(in *executor.Input, functionManifestFile string, ds *d
 		return provider.FunctionManifest{}, false
 	}
 
-	in.LogPersister.Infof("Successfully loaded the lambda function manifest at the %s commit", ds.RevisionName)
+	in.LogPersister.Infof("Successfully loaded the lambda function manifest at commit %s", ds.Revision)
 	return fm, true
 }
 

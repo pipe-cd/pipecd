@@ -23,14 +23,13 @@ import (
 	terraformprovider "github.com/pipe-cd/pipe/pkg/app/piped/cloudprovider/terraform"
 	"github.com/pipe-cd/pipe/pkg/app/piped/deploysource"
 	"github.com/pipe-cd/pipe/pkg/app/piped/toolregistry"
-	"github.com/pipe-cd/pipe/pkg/config"
 	"github.com/pipe-cd/pipe/pkg/model"
 )
 
 func (b *builder) terraformDiff(
 	ctx context.Context,
 	app *model.Application,
-	cmd model.Command_BuildPlanPreview,
+	targetDSP deploysource.Provider,
 	buf *bytes.Buffer,
 ) (string, error) {
 
@@ -41,22 +40,6 @@ func (b *builder) terraformDiff(
 		return "", err
 	}
 	cpCfg := cp.TerraformConfig
-
-	repoCfg := config.PipedRepository{
-		RepoID: b.repoCfg.RepoID,
-		Remote: b.repoCfg.Remote,
-		Branch: cmd.HeadBranch,
-	}
-
-	targetDSP := deploysource.NewProvider(
-		b.workingDir,
-		repoCfg,
-		"target",
-		cmd.HeadCommit,
-		b.gitClient,
-		app.GitPath,
-		b.secretDecrypter,
-	)
 
 	ds, err := targetDSP.Get(ctx, io.Discard)
 	if err != nil {

@@ -85,7 +85,7 @@ func findCloudProvider(in *executor.Input) (name string, cfg *config.CloudProvid
 }
 
 func loadServiceDefinition(in *executor.Input, serviceDefinitionFile string, ds *deploysource.DeploySource) (types.Service, bool) {
-	in.LogPersister.Infof("Loading service manifest at the %s commit (%s)", ds.RevisionName, ds.RevisionName)
+	in.LogPersister.Infof("Loading service manifest at commit %s", ds.Revision)
 
 	serviceDefinition, err := provider.LoadServiceDefinition(ds.AppDir, serviceDefinitionFile)
 	if err != nil {
@@ -93,12 +93,12 @@ func loadServiceDefinition(in *executor.Input, serviceDefinitionFile string, ds 
 		return types.Service{}, false
 	}
 
-	in.LogPersister.Infof("Successfully loaded the ECS service definition at the %s commit", ds.RevisionName)
+	in.LogPersister.Infof("Successfully loaded the ECS service definition at commit %s", ds.Revision)
 	return serviceDefinition, true
 }
 
 func loadTaskDefinition(in *executor.Input, taskDefinitionFile string, ds *deploysource.DeploySource) (types.TaskDefinition, bool) {
-	in.LogPersister.Infof("Loading task definition manifest at the %s commit (%s)", ds.RevisionName, ds.RevisionName)
+	in.LogPersister.Infof("Loading task definition manifest at commit %s", ds.Revision)
 
 	taskDefinition, err := provider.LoadTaskDefinition(ds.AppDir, taskDefinitionFile)
 	if err != nil {
@@ -106,12 +106,12 @@ func loadTaskDefinition(in *executor.Input, taskDefinitionFile string, ds *deplo
 		return types.TaskDefinition{}, false
 	}
 
-	in.LogPersister.Infof("Successfully loaded the ECS task definition at the %s commit", ds.RevisionName)
+	in.LogPersister.Infof("Successfully loaded the ECS task definition at commit %s", ds.Revision)
 	return taskDefinition, true
 }
 
 func loadTargetGroups(in *executor.Input, deployCfg *config.ECSDeploymentSpec, ds *deploysource.DeploySource) (*types.LoadBalancer, *types.LoadBalancer, bool) {
-	in.LogPersister.Infof("Loading target groups config at the %s commit (%s)", ds.RevisionName, ds.RevisionName)
+	in.LogPersister.Infof("Loading target groups config at the commit %s", ds.Revision)
 
 	primary, canary, err := provider.LoadTargetGroups(deployCfg.Input.TargetGroups)
 	if err != nil {
@@ -119,7 +119,7 @@ func loadTargetGroups(in *executor.Input, deployCfg *config.ECSDeploymentSpec, d
 		return nil, nil, false
 	}
 
-	in.LogPersister.Infof("Successfully loaded the ECS target groups at the %s commit", ds.RevisionName)
+	in.LogPersister.Infof("Successfully loaded the ECS target groups at commit %s", ds.Revision)
 	return primary, canary, true
 }
 

@@ -32,6 +32,7 @@ import (
 	"github.com/pipe-cd/pipe/pkg/app/piped/trigger"
 	"github.com/pipe-cd/pipe/pkg/cache"
 	"github.com/pipe-cd/pipe/pkg/config"
+	"github.com/pipe-cd/pipe/pkg/git"
 	"github.com/pipe-cd/pipe/pkg/model"
 	"github.com/pipe-cd/pipe/pkg/regexpool"
 )
@@ -135,8 +136,22 @@ func (b *builder) build(ctx context.Context, id string, cmd model.Command_BuildP
 		return nil, nil
 	}
 
+	// Prepare source code at the head commit.
+	// This clones the base branch and merges head banch into it for correct data.
+	// Because new changes were added into base branch after head branch was checked out.
+	repo, err := b.cloneHeadCommit(ctx, cmd.HeadBranch, cmd.HeadCommit)
+	if err != nil {
+		return nil, err
+	}
+
+	// We added a merge commit so the commit ID was changed.
+	mergedCommit, err := repo.GetLatestCommit(ctx)
+	if err != nil {
+		return nil, err
+	}
+
 	// Find all applications that should be triggered.
-	triggerApps, failedResults, err := b.findTriggerApps(ctx, apps, cmd)
+	triggerApps, failedResults, err := b.findTriggerApps(ctx, repo, apps, mergedCommit.Hash)
 	if err != nil {
 		return nil, err
 	}
@@ -169,7 +184,14 @@ func (b *builder) build(ctx context.Context, id string, cmd model.Command_BuildP
 			continue
 		}
 
-		strategy, err := b.plan(ctx, app, cmd, preCommit)
+		targetDSP := deploysource.NewProvider(
+			b.workingDir,
+			deploysource.NewLocalSourceCloner(repo, "target", mergedCommit.Hash),
+			*app.GitPath,
+			b.secretDecrypter,
+		)
+
+		strategy, err := b.plan(ctx, app, targetDSP, preCommit)
 		if err != nil {
 			r.Error = fmt.Sprintf("failed while planning, %v", err)
 			continue
@@ -188,9 +210,9 @@ func (b *builder) build(ctx context.Context, id string, cmd model.Command_BuildP
 
 		switch app.Kind {
 		case model.ApplicationKind_KUBERNETES:
-			summary, err = b.kubernetesDiff(ctx, app, cmd, preCommit, &buf)
+			summary, err = b.kubernetesDiff(ctx, app, targetDSP, preCommit, &buf)
 		case model.ApplicationKind_TERRAFORM:
-			summary, err = b.terraformDiff(ctx, app, cmd, &buf)
+			summary, err = b.terraformDiff(ctx, app, targetDSP, &buf)
 		default:
 			// TODO: Calculating planpreview's diff for other application kinds.
 			err = fmt.Errorf("%s application is not implemented yet (coming soon)", app.Kind.String())
@@ -207,27 +229,31 @@ func (b *builder) build(ctx context.Context, id string, cmd model.Command_BuildP
 	return results, nil
 }
 
-func (b *builder) findTriggerApps(ctx context.Context, apps []*model.Application, cmd model.Command_BuildPlanPreview) (triggerApps []*model.Application, failedResults []*model.ApplicationPlanPreviewResult, err error) {
-	// Clone the source code and checkout to the given branch, commit.
+func (b *builder) cloneHeadCommit(ctx context.Context, headBranch, headCommit string) (git.Repo, error) {
 	dir, err := ioutil.TempDir(b.workingDir, "")
 	if err != nil {
-		err = fmt.Errorf("failed to create temporary directory %w", err)
-		return
-	}
-	repo, err := b.gitClient.Clone(ctx, b.repoCfg.RepoID, b.repoCfg.Remote, cmd.HeadBranch, dir)
-	if err != nil {
-		err = fmt.Errorf("failed to clone git repository %s", cmd.RepositoryId)
-		return
-	}
-	defer repo.Clean()
-
-	err = repo.Checkout(ctx, cmd.HeadCommit)
-	if err != nil {
-		err = fmt.Errorf("failed to checkout the head commit %s: %w", cmd.HeadCommit, err)
-		return
+		return nil, fmt.Errorf("failed to create temporary directory %w", err)
 	}
 
-	d := trigger.NewDeterminer(repo, cmd.HeadCommit, b.commitGetter, b.logger)
+	var (
+		remote     = b.repoCfg.Remote
+		baseBranch = b.repoCfg.Branch
+	)
+	repo, err := b.gitClient.Clone(ctx, b.repoCfg.RepoID, remote, baseBranch, dir)
+	if err != nil {
+		return nil, fmt.Errorf("failed to clone git repository %s at branch %s", b.repoCfg.RepoID, baseBranch)
+	}
+
+	mergeCommitMessage := fmt.Sprintf("Plan-preview: merged %s commit from %s branch into %s base branch", headCommit, headBranch, baseBranch)
+	if err := repo.MergeRemoteBranch(ctx, headBranch, headCommit, mergeCommitMessage); err != nil {
+		return nil, fmt.Errorf("detected conflicts between commit %s at %s branch and the base branch %s (%w)", headCommit, headBranch, baseBranch, err)
+	}
+
+	return repo, nil
+}
+
+func (b *builder) findTriggerApps(ctx context.Context, repo git.Repo, apps []*model.Application, headCommit string) (triggerApps []*model.Application, failedResults []*model.ApplicationPlanPreviewResult, err error) {
+	d := trigger.NewDeterminer(repo, headCommit, b.commitGetter, b.logger)
 	for _, app := range apps {
 		shouldTrigger, err := d.ShouldTrigger(ctx, app)
 		if err != nil {
@@ -251,7 +277,7 @@ func (b *builder) findTriggerApps(ctx context.Context, apps []*model.Application
 	return
 }
 
-func (b *builder) plan(ctx context.Context, app *model.Application, cmd model.Command_BuildPlanPreview, lastSuccessfulCommit string) (strategy model.SyncStrategy, err error) {
+func (b *builder) plan(ctx context.Context, app *model.Application, targetDSP deploysource.Provider, lastSuccessfulCommit string) (strategy model.SyncStrategy, err error) {
 	p, ok := defaultPlannerRegistry.Planner(app.Kind)
 	if !ok {
 		err = fmt.Errorf("application kind %s is not supported yet", app.Kind.String())
@@ -264,11 +290,12 @@ func (b *builder) plan(ctx context.Context, app *model.Application, cmd model.Co
 		GitPath:         *app.GitPath,
 		Trigger: model.DeploymentTrigger{
 			Commit: &model.Commit{
-				Branch: cmd.HeadBranch,
-				Hash:   cmd.HeadCommit,
+				Branch: b.repoCfg.Branch,
+				Hash:   targetDSP.Revision(),
 			},
 			Commander: "pipectl",
 		},
+		TargetDSP:                      targetDSP,
 		MostRecentSuccessfulCommitHash: lastSuccessfulCommit,
 		PipedConfig:                    b.pipedCfg,
 		AppManifestsCache:              b.appManifestsCache,
@@ -276,27 +303,11 @@ func (b *builder) plan(ctx context.Context, app *model.Application, cmd model.Co
 		Logger:                         b.logger,
 	}
 
-	repoCfg := b.repoCfg
-	repoCfg.Branch = cmd.HeadBranch
-
-	in.TargetDSP = deploysource.NewProvider(
-		b.workingDir,
-		repoCfg,
-		"target",
-		cmd.HeadCommit,
-		b.gitClient,
-		app.GitPath,
-		b.secretDecrypter,
-	)
-
 	if lastSuccessfulCommit != "" {
 		in.RunningDSP = deploysource.NewProvider(
 			b.workingDir,
-			repoCfg,
-			"running",
-			lastSuccessfulCommit,
-			b.gitClient,
-			app.GitPath,
+			deploysource.NewGitSourceCloner(b.gitClient, b.repoCfg, "running", lastSuccessfulCommit),
+			*app.GitPath,
 			b.secretDecrypter,
 		)
 	}
