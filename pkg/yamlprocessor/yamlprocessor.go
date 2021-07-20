@@ -71,7 +71,7 @@ func ReplaceValue(yml []byte, path string, value string) ([]byte, error) {
 	if err != nil {
 		return nil, err
 	}
-	file, err := parser.ParseBytes(yml, 0)
+	file, err := parser.ParseBytes(yml, parser.ParseComments)
 	if err != nil {
 		return nil, err
 	}

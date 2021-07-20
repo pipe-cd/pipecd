@@ -23,7 +23,7 @@ require (
 	github.com/envoyproxy/protoc-gen-validate v0.1.0
 	github.com/fsouza/fake-gcs-server v1.21.0
 	github.com/go-sql-driver/mysql v1.5.0
-	github.com/goccy/go-yaml v1.8.8
+	github.com/goccy/go-yaml v1.9.0
 	github.com/golang/mock v1.4.4
 	github.com/golang/protobuf v1.4.2
 	github.com/gomodule/redigo v2.0.0+incompatible

@@ -176,6 +176,16 @@ func TestReplaceValue(t *testing.T) {
 			wantErr: false,
 		},
 		{
+			name: "valid value with comment given",
+			yml: `# comments
+foo: bar`,
+			path:  "$.foo",
+			value: "new-text",
+			want: []byte(`# comments
+foo: new-text`),
+			wantErr: false,
+		},
+		{
 			name: "array in block style",
 			yml: `foo:
   - bar
