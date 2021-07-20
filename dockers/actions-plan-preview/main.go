@@ -77,7 +77,7 @@ func main() {
 		return
 	}
 
-	if event.PRMergeable != nil && *event.PRMergaeable == false {
+	if event.PRMergeable != nil && *event.PRMergeable == false {
 		doComment(failureBadgeURL + "Unable to run plan-preview for an un-mergeable pull request. Please resolve the conficts and try again.")
 		return
 	}
