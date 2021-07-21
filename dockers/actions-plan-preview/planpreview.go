@@ -180,7 +180,7 @@ func makeCommentBody(event *githubEvent, r *PlanPreviewResult) string {
 		fmt.Fprintf(&b, "**An error occurred while building plan-preview for the following applications**\n")
 
 		for _, app := range r.FailureApplications {
-			fmt.Fprintf(&b, "## app: [%s](%s), env: [%s](%s), kind: %s\n", app.ApplicationName, app.ApplicationURL, app.EnvName, app.EnvURL, strings.ToLower(app.ApplicationKind))
+			fmt.Fprintf(&b, "\n## app: [%s](%s), env: [%s](%s), kind: %s\n", app.ApplicationName, app.ApplicationURL, app.EnvName, app.EnvURL, strings.ToLower(app.ApplicationKind))
 			fmt.Fprintf(&b, "Reason: %s\n\n", app.Reason)
 
 			var lang = "diff"
@@ -195,7 +195,7 @@ func makeCommentBody(event *githubEvent, r *PlanPreviewResult) string {
 		fmt.Fprintf(&b, "**An error occurred while building plan-preview for applications of the following Pipeds**\n")
 
 		for _, piped := range r.FailurePipeds {
-			fmt.Fprintf(&b, "## piped: [%s](%s)\n", piped.PipedID, piped.PipedURL)
+			fmt.Fprintf(&b, "\n## piped: [%s](%s)\n", piped.PipedID, piped.PipedURL)
 			fmt.Fprintf(&b, "Reason: %s\n\n", piped.Reason)
 		}
 	}
