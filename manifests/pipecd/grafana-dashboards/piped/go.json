@@ -80,7 +80,7 @@
       "targets": [
         {
           "exemplar": true,
-          "expr": "sum by (piped)(go_threads{job=\"pipecd-ops\"})",
+          "expr": "sum by (piped)(piped_go_threads{job=\"pipecd-ops\"})",
           "interval": "",
           "legendFormat": "{{piped}}",
           "queryType": "randomWalk",
@@ -178,7 +178,7 @@
       "targets": [
         {
           "exemplar": true,
-          "expr": "sum by (piped)(go_goroutines{job=\"pipecd-ops\"})",
+          "expr": "sum by (piped)(piped_go_goroutines{job=\"pipecd-ops\"})",
           "interval": "",
           "legendFormat": "{{piped}}",
           "queryType": "randomWalk",
@@ -290,7 +290,7 @@
       "targets": [
         {
           "exemplar": true,
-          "expr": "sum by (piped) (go_memstats_heap_alloc_bytes{job=\"pipecd-ops\"} / (1024 * 1024))",
+          "expr": "sum by (piped) (piped_go_memstats_heap_alloc_bytes{job=\"pipecd-ops\"} / (1024 * 1024))",
           "interval": "",
           "legendFormat": "{{piped}}",
           "queryType": "randomWalk",
@@ -388,7 +388,7 @@
       "targets": [
         {
           "exemplar": true,
-          "expr": "sum by (piped) (go_memstats_heap_inuse_bytes{job=\"pipecd-ops\"} / (1024 * 1024))",
+          "expr": "sum by (piped) (piped_go_memstats_heap_inuse_bytes{job=\"pipecd-ops\"} / (1024 * 1024))",
           "interval": "",
           "legendFormat": "{{piped}}",
           "queryType": "randomWalk",
@@ -452,5 +452,5 @@
   "timezone": "",
   "title": "Go",
   "uid": "dTmyAomnk",
-  "version": 2
+  "version": 6
 }

@@ -80,7 +80,7 @@
       "targets": [
         {
           "exemplar": true,
-          "expr": "sum (go_info{job=\"pipecd-ops\"})",
+          "expr": "sum (piped_go_info{job=\"pipecd-ops\"})",
           "interval": "",
           "legendFormat": "",
           "refId": "A"
@@ -145,7 +145,7 @@
       "targets": [
         {
           "exemplar": true,
-          "expr": "sum by (piped_version)(go_info{job=\"pipecd-ops\"})",
+          "expr": "sum by (piped_version)(piped_go_info{job=\"pipecd-ops\"})",
           "interval": "",
           "legendFormat": "{{piped_version}}",
           "refId": "A"
@@ -170,5 +170,5 @@
   "timezone": "",
   "title": "Overview",
   "uid": "wJCVABm7k",
-  "version": 1
+  "version": 5
 }
