@@ -146,12 +146,6 @@ type MetricsBuilder interface {
 func (t Telemetry) CustomMetricsHandlerFor(reg *prometheus.Registry, mb MetricsBuilder) http.Handler {
 	if t.Flags.Metrics {
 		return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-			rc, err := mb.Build()
-			if err != nil {
-				http.Error(w, err.Error(), http.StatusInternalServerError)
-				return
-			}
-
 			mfs, err := reg.Gather()
 			if err != nil {
 				http.Error(w, err.Error(), http.StatusInternalServerError)
@@ -173,6 +167,12 @@ func (t Telemetry) CustomMetricsHandlerFor(reg *prometheus.Registry, mb MetricsB
 					http.Error(w, err.Error(), http.StatusInternalServerError)
 					return
 				}
+			}
+
+			rc, err := mb.Build()
+			if err != nil {
+				http.Error(w, err.Error(), http.StatusInternalServerError)
+				return
 			}
 
 			_, err = io.Copy(w, rc)
