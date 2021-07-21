@@ -13,6 +13,7 @@ go_library(
         "//pkg/version:go_default_library",
         "@com_github_prometheus_client_golang//prometheus:go_default_library",
         "@com_github_prometheus_client_golang//prometheus/promhttp:go_default_library",
+        "@com_github_prometheus_common//expfmt:go_default_library",
         "@com_github_spf13_cobra//:go_default_library",
         "@com_github_spf13_pflag//:go_default_library",
         "@com_google_cloud_go//profiler:go_default_library",

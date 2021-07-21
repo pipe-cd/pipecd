@@ -158,7 +158,7 @@ func (s *ops) run(ctx context.Context, t cli.Telemetry) error {
 	psb := pipedstatsbuilder.NewPipedStatsBuilder(statCache, t.Logger)
 
 	// Register all pipecd ops metrics collectors.
-	registerOpsMetrics(insightMetricsCollector)
+	reg := registerOpsMetrics(insightMetricsCollector)
 	// Start running admin server.
 	{
 		var (
@@ -172,8 +172,7 @@ func (s *ops) run(ctx context.Context, t cli.Telemetry) error {
 		admin.HandleFunc("/healthz", func(w http.ResponseWriter, r *http.Request) {
 			w.Write([]byte("ok"))
 		})
-		// TODO: Using PrometheusMetricsHandlerFor or PrometheusMetricsHandler.
-		admin.Handle("/metrics", t.CustomMetricsHandlerFor(psb))
+		admin.Handle("/metrics", t.CustomMetricsHandlerFor(reg, psb))
 
 		group.Go(func() error {
 			return admin.Run(ctx)
