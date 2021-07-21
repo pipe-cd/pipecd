@@ -155,6 +155,11 @@ func (s *ops) run(ctx context.Context, t cli.Telemetry) error {
 	}
 
 	rd := redis.NewRedis(s.cacheAddress, "")
+	defer func() {
+		if err := rd.Close(); err != nil {
+			t.Logger.Error("failed to close redis client", zap.Error(err))
+		}
+	}()
 	statCache := rediscache.NewHashCache(rd, defaultPipedStatHashKey)
 	psb := pipedstatsbuilder.NewPipedStatsBuilder(statCache, t.Logger)
 
