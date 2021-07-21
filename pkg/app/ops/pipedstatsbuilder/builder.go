@@ -62,8 +62,8 @@ func (b *PipedStatsBuilder) Build() (io.Reader, error) {
 			b.logger.Error("failed to unmarshal piped stat data", zap.Error(err))
 			return nil, err
 		}
-		// Ignore piped stat metrics with passed time from committed timestamp
-		// longer than limit live state check.
+		// Ignore piped stat metrics if passed time from its last committed
+		// timestamp longer than limit live state check.
 		if time.Since(time.Unix(ps.Timestamp, 0)) > liveStateExceedDuration {
 			continue
 		}
