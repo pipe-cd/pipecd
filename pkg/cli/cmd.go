@@ -145,52 +145,53 @@ type MetricsBuilder interface {
 	Build() (io.Reader, error)
 }
 
-func (t Telemetry) CustomMetricsHandlerFor(reg *prometheus.Registry, mb MetricsBuilder) http.Handler {
-	if t.Flags.Metrics {
-		return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-			mfs, err := reg.Gather()
-			if err != nil {
+func (t Telemetry) CustomMetricsHandlerFor(reg prometheus.Gatherer, mb MetricsBuilder) http.Handler {
+	if !t.Flags.Metrics {
+		var empty http.HandlerFunc = func(w http.ResponseWriter, r *http.Request) {
+			w.Write([]byte(""))
+		}
+		return empty
+	}
+	h := http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		mfs, err := reg.Gather()
+		if err != nil {
+			http.Error(w, err.Error(), http.StatusInternalServerError)
+			return
+		}
+
+		// Currently, use the encoder with default format expfmt.FmtText as of
+		// the prometheous exporter handler will returns that format in case
+		// no specific format type is set.
+		enc := expfmt.NewEncoder(w, expfmt.FmtText)
+		for _, mf := range mfs {
+			if err := enc.Encode(mf); err != nil {
 				http.Error(w, err.Error(), http.StatusInternalServerError)
 				return
 			}
-
-			// Currently, use the encoder with default format expfmt.FmtText as of
-			// the prometheous exporter handler will returns that format in case
-			// no specific format type is set.
-			enc := expfmt.NewEncoder(w, expfmt.FmtText)
-			for _, mf := range mfs {
-				if err := enc.Encode(mf); err != nil {
-					http.Error(w, err.Error(), http.StatusInternalServerError)
-					return
-				}
-			}
-			if closer, ok := enc.(expfmt.Closer); ok {
-				if err := closer.Close(); err != nil {
-					http.Error(w, err.Error(), http.StatusInternalServerError)
-					return
-				}
-			}
-
-			rc, err := mb.Build()
-			if err != nil {
-				// Only show error in case it's not cache not found error.
-				if !errors.Is(err, cache.ErrNotFound) {
-					http.Error(w, err.Error(), http.StatusInternalServerError)
-				}
-				return
-			}
-
-			_, err = io.Copy(w, rc)
-			if err != nil {
+		}
+		if closer, ok := enc.(expfmt.Closer); ok {
+			if err := closer.Close(); err != nil {
 				http.Error(w, err.Error(), http.StatusInternalServerError)
 				return
 			}
-		})
-	}
-	var empty http.HandlerFunc = func(w http.ResponseWriter, r *http.Request) {
-		w.Write([]byte(""))
-	}
-	return empty
+		}
+
+		rc, err := mb.Build()
+		if err != nil {
+			// Only show error in case it's not cache not found error.
+			if !errors.Is(err, cache.ErrNotFound) {
+				http.Error(w, err.Error(), http.StatusInternalServerError)
+			}
+			return
+		}
+
+		_, err = io.Copy(w, rc)
+		if err != nil {
+			http.Error(w, err.Error(), http.StatusInternalServerError)
+			return
+		}
+	})
+	return h
 }
 
 func extractServiceName(cmd *cobra.Command) string {
