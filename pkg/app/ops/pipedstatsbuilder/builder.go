@@ -28,7 +28,7 @@ import (
 )
 
 const (
-	liveStateExceedDuration = 2 * time.Minute
+	pipedStatsRetention = 2 * time.Minute
 )
 
 type PipedStatsBuilder struct {
@@ -64,7 +64,7 @@ func (b *PipedStatsBuilder) Build() (io.Reader, error) {
 		}
 		// Ignore piped stat metrics if passed time from its last committed
 		// timestamp longer than limit live state check.
-		if time.Since(time.Unix(ps.Timestamp, 0)) > liveStateExceedDuration {
+		if time.Since(time.Unix(ps.Timestamp, 0)) > pipedStatsRetention {
 			continue
 		}
 		data = append(data, ps.Metrics)
