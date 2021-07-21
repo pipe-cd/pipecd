@@ -144,7 +144,6 @@ func (s *ops) run(ctx context.Context, t cli.Telemetry) error {
 		return ic.Run(ctx)
 	})
 	insightMetricsCollector := insightmetrics.NewInsightMetricsCollector(insightstore.NewStore(fs), datastore.NewProjectStore(ds))
-	registerOpsMetrics(insightMetricsCollector)
 
 	// Start running HTTP server.
 	{
@@ -163,6 +162,8 @@ func (s *ops) run(ctx context.Context, t cli.Telemetry) error {
 	statCache := rediscache.NewHashCache(rd, defaultPipedStatHashKey)
 	psb := pipedstatsbuilder.NewPipedStatsBuilder(statCache, t.Logger)
 
+	// Register all pipecd ops metrics collectors.
+	reg := registerOpsMetrics(insightMetricsCollector)
 	// Start running admin server.
 	{
 		var (
@@ -176,8 +177,7 @@ func (s *ops) run(ctx context.Context, t cli.Telemetry) error {
 		admin.HandleFunc("/healthz", func(w http.ResponseWriter, r *http.Request) {
 			w.Write([]byte("ok"))
 		})
-		// TODO: Using PrometheusMetricsHandlerFor or PrometheusMetricsHandler.
-		admin.Handle("/metrics", t.CustomMetricsHandlerFor(psb))
+		admin.Handle("/metrics", t.CustomMetricsHandlerFor(reg, psb))
 
 		group.Go(func() error {
 			return admin.Run(ctx)
@@ -223,7 +223,13 @@ func ensureSQLDatabase(ctx context.Context, cfg *config.ControlPlaneSpec, logger
 	return nil
 }
 
-func registerOpsMetrics(col ...prometheus.Collector) {
-	r := prometheus.WrapRegistererWithPrefix("pipecd_ops_", prometheus.DefaultRegisterer)
-	r.MustRegister(col...)
+func registerOpsMetrics(col ...prometheus.Collector) *prometheus.Registry {
+	r := prometheus.NewRegistry()
+	wrapped := prometheus.WrapRegistererWithPrefix("pipecd_ops_", r)
+
+	wrapped.Register(prometheus.NewGoCollector())
+	wrapped.Register(prometheus.NewProcessCollector(prometheus.ProcessCollectorOpts{}))
+	wrapped.MustRegister(col...)
+
+	return r
 }
