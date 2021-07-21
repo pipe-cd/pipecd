@@ -19,11 +19,16 @@ import (
 	"encoding/json"
 	"errors"
 	"io"
+	"time"
 
 	"go.uber.org/zap"
 
 	"github.com/pipe-cd/pipe/pkg/cache"
 	"github.com/pipe-cd/pipe/pkg/model"
+)
+
+const (
+	liveStateExceedDuration = 2 * time.Minute
 )
 
 type PipedStatsBuilder struct {
@@ -57,7 +62,11 @@ func (b *PipedStatsBuilder) Build() (io.Reader, error) {
 			b.logger.Error("failed to unmarshal piped stat data", zap.Error(err))
 			return nil, err
 		}
-		// TODO: Filter returning piped metrics by value timestamp.
+		// Ignore piped stat metrics with passed time from committed timestamp
+		// longer than limit live state check.
+		if time.Since(time.Unix(ps.Timestamp, 0)) > liveStateExceedDuration {
+			continue
+		}
 		data = append(data, ps.Metrics)
 	}
 	return bytes.NewReader(bytes.Join(data, []byte("\n"))), nil
