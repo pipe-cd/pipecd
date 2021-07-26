@@ -11,12 +11,14 @@
 // WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 // See the License for the specific language governing permissions and
 // limitations under the License.
+
 package staledpipedstatcleaner
 
 import (
 	"context"
 	"encoding/json"
 	"errors"
+	"fmt"
 	"time"
 
 	"go.uber.org/zap"
@@ -54,14 +56,14 @@ func (s *StaledPipedStatCleaner) Run(ctx context.Context) error {
 
 		case <-t.C:
 			start := time.Now()
-			if err := s.flushStaledPipedsStat(ctx); err == nil {
+			if err := s.flushStaledPipedsStat(); err == nil {
 				s.logger.Info("successfully cleaned staled pipeds stat", zap.Duration("duration", time.Since(start)))
 			}
 		}
 	}
 }
 
-func (s *StaledPipedStatCleaner) flushStaledPipedsStat(ctx context.Context) error {
+func (s *StaledPipedStatCleaner) flushStaledPipedsStat() error {
 	res, err := s.backend.GetAll()
 	if err != nil {
 		// Ignore cache not found error since there are no stats found in cache
@@ -91,6 +93,7 @@ func (s *StaledPipedStatCleaner) flushStaledPipedsStat(ctx context.Context) erro
 		}
 	}
 
+	s.logger.Info(fmt.Sprintf("there are %d staled pipeds stat to clean", len(staled)))
 	// No staled pipeds' stat found.
 	if len(staled) == 0 {
 		return nil
