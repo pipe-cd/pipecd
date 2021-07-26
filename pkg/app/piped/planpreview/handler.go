@@ -165,8 +165,7 @@ func (h *Handler) Run(ctx context.Context) error {
 		for {
 			select {
 			case cmd := <-cmdCh:
-				childCtx, _ := context.WithTimeout(ctx, h.options.commandHandleTimeout)
-				h.handleCommand(childCtx, cmd)
+				h.handleCommand(ctx, cmd)
 
 			case <-ctx.Done():
 				h.logger.Info("a worker has been stopped")
@@ -262,6 +261,7 @@ func (h *Handler) handleCommand(ctx context.Context, cmd model.ReportableCommand
 		if err != nil {
 			logger.Error("failed to marshal command result", zap.Error(err))
 		}
+
 		if err := cmd.Report(ctx, model.CommandStatus_COMMAND_FAILED, nil, output); err != nil {
 			logger.Error("failed to report command status", zap.Error(err))
 			return
@@ -274,8 +274,11 @@ func (h *Handler) handleCommand(ctx context.Context, cmd model.ReportableCommand
 		return
 	}
 
+	buildCtx, cancel := context.WithTimeout(ctx, h.options.commandHandleTimeout)
+	defer cancel()
+
 	b := h.builderFactory()
-	appResults, err := b.Build(ctx, cmd.Id, *cmd.BuildPlanPreview)
+	appResults, err := b.Build(buildCtx, cmd.Id, *cmd.BuildPlanPreview)
 	if err != nil {
 		reportError(err)
 		return
