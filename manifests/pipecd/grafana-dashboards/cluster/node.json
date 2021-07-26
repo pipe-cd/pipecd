@@ -16,66 +16,9 @@
   "editable": true,
   "gnetId": null,
   "graphTooltip": 0,
-  "id": 3,
+  "id": 9,
   "links": [],
   "panels": [
-    {
-      "datasource": "Prometheus",
-      "fieldConfig": {
-        "defaults": {
-          "color": {
-            "mode": "thresholds"
-          },
-          "mappings": [],
-          "thresholds": {
-            "mode": "absolute",
-            "steps": [
-              {
-                "color": "rgb(255, 255, 255)",
-                "value": null
-              }
-            ]
-          },
-          "unit": "s"
-        },
-        "overrides": []
-      },
-      "gridPos": {
-        "h": 3,
-        "w": 4,
-        "x": 0,
-        "y": 0
-      },
-      "id": 32,
-      "options": {
-        "colorMode": "value",
-        "graphMode": "none",
-        "justifyMode": "auto",
-        "orientation": "auto",
-        "reduceOptions": {
-          "calcs": [
-            "lastNotNull"
-          ],
-          "fields": "",
-          "values": false
-        },
-        "text": {},
-        "textMode": "auto"
-      },
-      "pluginVersion": "7.5.3",
-      "targets": [
-        {
-          "exemplar": true,
-          "expr": "avg by(job) (node_time_seconds{job=\"node-exporter\"}) \n-\navg by(job) (node_boot_time_seconds{job=\"node-exporter\"})",
-          "interval": "",
-          "legendFormat": "",
-          "queryType": "randomWalk",
-          "refId": "A"
-        }
-      ],
-      "title": "Uptime",
-      "type": "stat"
-    },
     {
       "collapsed": false,
       "datasource": null,
@@ -83,7 +26,7 @@
         "h": 1,
         "w": 24,
         "x": 0,
-        "y": 3
+        "y": 0
       },
       "id": 30,
       "panels": [],
@@ -114,7 +57,7 @@
         "h": 5,
         "w": 4,
         "x": 0,
-        "y": 4
+        "y": 1
       },
       "id": 40,
       "options": {
@@ -150,7 +93,7 @@
     },
     {
       "datasource": "Prometheus",
-      "description": "Non available RAM memory",
+      "description": "Busy state of all CPU cores together",
       "fieldConfig": {
         "defaults": {
           "color": {
@@ -183,9 +126,9 @@
         "h": 5,
         "w": 20,
         "x": 4,
-        "y": 4
+        "y": 1
       },
-      "id": 34,
+      "id": 47,
       "options": {
         "reduceOptions": {
           "calcs": [
@@ -202,14 +145,14 @@
       "targets": [
         {
           "exemplar": true,
-          "expr": "100 - (\n(avg by (instance) (node_memory_MemAvailable_bytes) * 100)\n/\n(avg by (instance) (node_memory_MemTotal_bytes)))",
+          "expr": "sum by (instance) (rate(node_cpu_seconds_total{mode!=\"idle\"}[5m])) * 100",
           "interval": "",
           "legendFormat": "{{instance}}",
           "queryType": "randomWalk",
           "refId": "A"
         }
       ],
-      "title": "RAM Used",
+      "title": "CPU Busy",
       "type": "gauge"
     },
     {
@@ -228,7 +171,7 @@
         "h": 8,
         "w": 12,
         "x": 0,
-        "y": 9
+        "y": 6
       },
       "hiddenSeries": false,
       "id": 18,
@@ -324,7 +267,7 @@
         "h": 8,
         "w": 12,
         "x": 12,
-        "y": 9
+        "y": 6
       },
       "hiddenSeries": false,
       "id": 44,
@@ -366,7 +309,7 @@
       "timeFrom": null,
       "timeRegions": [],
       "timeShift": null,
-      "title": "CPU Load Average [5m]",
+      "title": "CPU Load Average [rate-5m]",
       "tooltip": {
         "shared": true,
         "sort": 0,
@@ -410,7 +353,7 @@
         "h": 1,
         "w": 24,
         "x": 0,
-        "y": 17
+        "y": 14
       },
       "id": 46,
       "panels": [],
@@ -439,10 +382,10 @@
         "overrides": []
       },
       "gridPos": {
-        "h": 3,
+        "h": 5,
         "w": 4,
         "x": 0,
-        "y": 18
+        "y": 15
       },
       "id": 38,
       "options": {
@@ -475,6 +418,70 @@
       "type": "stat"
     },
     {
+      "datasource": "Prometheus",
+      "description": "Non available RAM memory",
+      "fieldConfig": {
+        "defaults": {
+          "color": {
+            "mode": "thresholds"
+          },
+          "mappings": [],
+          "max": 100,
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "green",
+                "value": null
+              },
+              {
+                "color": "yellow",
+                "value": 50
+              },
+              {
+                "color": "red",
+                "value": 90
+              }
+            ]
+          },
+          "unit": "percent"
+        },
+        "overrides": []
+      },
+      "gridPos": {
+        "h": 5,
+        "w": 20,
+        "x": 4,
+        "y": 15
+      },
+      "id": 34,
+      "options": {
+        "reduceOptions": {
+          "calcs": [
+            "lastNotNull"
+          ],
+          "fields": "",
+          "values": false
+        },
+        "showThresholdLabels": false,
+        "showThresholdMarkers": true,
+        "text": {}
+      },
+      "pluginVersion": "7.5.3",
+      "targets": [
+        {
+          "exemplar": true,
+          "expr": "100 - (\n(avg by (instance) (node_memory_MemAvailable_bytes) * 100)\n/\n(avg by (instance) (node_memory_MemTotal_bytes)))",
+          "interval": "",
+          "legendFormat": "{{instance}}",
+          "queryType": "randomWalk",
+          "refId": "A"
+        }
+      ],
+      "title": "RAM Used",
+      "type": "gauge"
+    },
+    {
       "aliasColors": {},
       "bars": false,
       "dashLength": 10,
@@ -490,7 +497,7 @@
         "h": 8,
         "w": 12,
         "x": 0,
-        "y": 21
+        "y": 20
       },
       "hiddenSeries": false,
       "id": 20,
@@ -568,6 +575,102 @@
         "align": false,
         "alignLevel": null
       }
+    },
+    {
+      "aliasColors": {},
+      "bars": false,
+      "dashLength": 10,
+      "dashes": false,
+      "datasource": "Prometheus",
+      "description": "To measure saturation of memory",
+      "fieldConfig": {
+        "defaults": {},
+        "overrides": []
+      },
+      "fill": 1,
+      "fillGradient": 0,
+      "gridPos": {
+        "h": 8,
+        "w": 12,
+        "x": 12,
+        "y": 20
+      },
+      "hiddenSeries": false,
+      "id": 48,
+      "legend": {
+        "avg": false,
+        "current": false,
+        "max": false,
+        "min": false,
+        "show": true,
+        "total": false,
+        "values": false
+      },
+      "lines": true,
+      "linewidth": 1,
+      "nullPointMode": "null as zero",
+      "options": {
+        "alertThreshold": true
+      },
+      "percentage": false,
+      "pluginVersion": "7.5.3",
+      "pointradius": 2,
+      "points": false,
+      "renderer": "flot",
+      "seriesOverrides": [],
+      "spaceLength": 10,
+      "stack": false,
+      "steppedLine": false,
+      "targets": [
+        {
+          "exemplar": true,
+          "expr": "((node_memory_SwapTotal_bytes - node_memory_SwapFree_bytes)\n/\n(node_memory_SwapTotal_bytes)) * 100",
+          "interval": "",
+          "legendFormat": "{{instance}}",
+          "queryType": "randomWalk",
+          "refId": "A"
+        }
+      ],
+      "thresholds": [],
+      "timeFrom": null,
+      "timeRegions": [],
+      "timeShift": null,
+      "title": "Swap Used",
+      "tooltip": {
+        "shared": true,
+        "sort": 0,
+        "value_type": "individual"
+      },
+      "type": "graph",
+      "xaxis": {
+        "buckets": null,
+        "mode": "time",
+        "name": null,
+        "show": true,
+        "values": []
+      },
+      "yaxes": [
+        {
+          "format": "percent",
+          "label": null,
+          "logBase": 1,
+          "max": "100",
+          "min": "0",
+          "show": true
+        },
+        {
+          "format": "short",
+          "label": null,
+          "logBase": 1,
+          "max": null,
+          "min": null,
+          "show": true
+        }
+      ],
+      "yaxis": {
+        "align": false,
+        "alignLevel": null
+      }
     }
   ],
   "refresh": "10s",
@@ -585,5 +688,5 @@
   "timezone": "",
   "title": "Node",
   "uid": "o1M4vRmnk",
-  "version": 4
+  "version": 8
 }
