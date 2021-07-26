@@ -217,13 +217,13 @@ func (b *builder) build(ctx context.Context, id string, cmd model.Command_BuildP
 		default:
 			// TODO: Calculating planpreview's diff for other application kinds.
 			dr = &diffResult{
-				Summary: fmt.Sprintf("%s application is not implemented yet (coming soon)", app.Kind.String()),
+				summary: fmt.Sprintf("%s application is not implemented yet (coming soon)", app.Kind.String()),
 			}
 		}
 
 		if dr != nil {
-			r.PlanSummary = []byte(dr.Summary)
-			r.NoChange = dr.NoChange
+			r.PlanSummary = []byte(dr.summary)
+			r.NoChange = dr.noChange
 		}
 		r.PlanDetails = buf.Bytes()
 
@@ -237,8 +237,8 @@ func (b *builder) build(ctx context.Context, id string, cmd model.Command_BuildP
 }
 
 type diffResult struct {
-	Summary  string
-	NoChange bool
+	summary  string
+	noChange bool
 }
 
 func (b *builder) cloneHeadCommit(ctx context.Context, headBranch, headCommit string) (git.Repo, error) {

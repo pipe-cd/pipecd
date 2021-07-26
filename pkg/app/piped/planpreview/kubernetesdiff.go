@@ -74,8 +74,8 @@ func (b *builder) kubernetesDiff(
 	if result.NoChange() {
 		fmt.Fprintln(buf, "No changes were detected")
 		return &diffResult{
-			Summary:  "No changes were detected",
-			NoChange: true,
+			summary:  "No changes were detected",
+			noChange: true,
 		}, nil
 	}
 
@@ -87,7 +87,7 @@ func (b *builder) kubernetesDiff(
 	fmt.Fprintf(buf, "--- Last Deploy\n+++ Head Commit\n\n%s\n", details)
 
 	return &diffResult{
-		Summary: summary,
+		summary: summary,
 	}, nil
 }
 

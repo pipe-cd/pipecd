@@ -102,14 +102,14 @@ func (b *builder) terraformDiff(
 	if result.NoChanges() {
 		fmt.Fprintln(buf, "No changes were detected")
 		return &diffResult{
-			Summary:  "No changes were detected",
-			NoChange: true,
+			summary:  "No changes were detected",
+			noChange: true,
 		}, nil
 	}
 
 	summary := fmt.Sprintf("%d to add, %d to change, %d to destroy", result.Adds, result.Changes, result.Destroys)
 	fmt.Fprintln(buf, summary)
 	return &diffResult{
-		Summary: summary,
+		summary: summary,
 	}, nil
 }
