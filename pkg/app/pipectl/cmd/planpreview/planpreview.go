@@ -211,6 +211,7 @@ func convert(results []*model.PlanPreviewCommandResult) ReadableResult {
 				SyncStrategy:    a.SyncStrategy.String(),
 				PlanSummary:     string(a.PlanSummary),
 				PlanDetails:     string(a.PlanDetails),
+				NoChange:        a.NoChange,
 			})
 		}
 	}
@@ -229,6 +230,7 @@ type ApplicationResult struct {
 	SyncStrategy string // QUICK_SYNC, PIPELINE
 	PlanSummary  string
 	PlanDetails  string
+	NoChange     bool
 }
 
 type FailurePiped struct {
