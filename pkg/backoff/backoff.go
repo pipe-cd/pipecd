@@ -19,6 +19,22 @@ import (
 	"time"
 )
 
+type Error struct {
+	Err       error
+	Retriable bool
+}
+
+func NewError(err error, retriable bool) *Error {
+	return &Error{
+		Err:       err,
+		Retriable: retriable,
+	}
+}
+
+func (e *Error) Error() string {
+	return e.Err.Error()
+}
+
 type Backoff interface {
 	Next() time.Duration
 	Calls() int
@@ -27,6 +43,7 @@ type Backoff interface {
 }
 
 type Retry interface {
+	Do(ctx context.Context, operation func() (interface{}, error)) (interface{}, error)
 	WaitNext(ctx context.Context) bool
 	Calls() int
 }
@@ -45,6 +62,7 @@ type retry struct {
 	backoff Backoff
 }
 
+// TODO: Find all using of WaitNext and replace by Do to avoid panic.
 func (r *retry) WaitNext(ctx context.Context) bool {
 	defer func() {
 		r.calls++
@@ -71,6 +89,30 @@ func (r *retry) WaitNext(ctx context.Context) bool {
 	case <-t.C:
 		return true
 	}
+}
+
+func (r *retry) Do(ctx context.Context, operation func() (interface{}, error)) (interface{}, error) {
+	var err error
+
+	for r.WaitNext(ctx) {
+		var data interface{}
+		data, err = operation()
+		if err == nil {
+			return data, nil
+		}
+		if e, ok := err.(*Error); ok {
+			err = e.Err
+			if !e.Retriable {
+				return nil, err
+			}
+		}
+	}
+	if err != nil {
+		return nil, err
+	}
+
+	// Operation was not executed due to context error.
+	return nil, ctx.Err()
 }
 
 func (r *retry) Calls() int {

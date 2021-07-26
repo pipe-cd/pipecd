@@ -30,6 +30,7 @@ import (
 	"github.com/pipe-cd/pipe/pkg/app/piped/planner"
 	"github.com/pipe-cd/pipe/pkg/app/piped/planner/registry"
 	"github.com/pipe-cd/pipe/pkg/app/piped/trigger"
+	"github.com/pipe-cd/pipe/pkg/backoff"
 	"github.com/pipe-cd/pipe/pkg/cache"
 	"github.com/pipe-cd/pipe/pkg/config"
 	"github.com/pipe-cd/pipe/pkg/git"
@@ -342,23 +343,21 @@ func (b *builder) listApplications(repo config.PipedRepository) []*model.Applica
 }
 
 func (b *builder) getMostRecentlySuccessfulDeployment(ctx context.Context, applicationID string) (*model.ApplicationDeploymentReference, error) {
-	var (
-		err   error
-		resp  *pipedservice.GetApplicationMostRecentDeploymentResponse
-		retry = pipedservice.NewRetry(3)
-		req   = &pipedservice.GetApplicationMostRecentDeploymentRequest{
+	retry := pipedservice.NewRetry(3)
+
+	deploy, err := retry.Do(ctx, func() (interface{}, error) {
+		resp, err := b.apiClient.GetApplicationMostRecentDeployment(ctx, &pipedservice.GetApplicationMostRecentDeploymentRequest{
 			ApplicationId: applicationID,
 			Status:        model.DeploymentStatus_DEPLOYMENT_SUCCESS,
-		}
-	)
-
-	for retry.WaitNext(ctx) {
-		if resp, err = b.apiClient.GetApplicationMostRecentDeployment(ctx, req); err == nil {
+		})
+		if err == nil {
 			return resp.Deployment, nil
 		}
-		if !pipedservice.Retriable(err) {
-			return nil, err
-		}
+		return nil, backoff.NewError(err, pipedservice.Retriable(err))
+	})
+	if err != nil {
+		return nil, err
 	}
-	return nil, err
+
+	return deploy.(*model.ApplicationDeploymentReference), nil
 }
