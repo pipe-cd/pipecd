@@ -467,6 +467,7 @@ func (a *API) RequestPlanPreview(ctx context.Context, req *apiservice.RequestPla
 				HeadBranch:   req.HeadBranch,
 				HeadCommit:   req.HeadCommit,
 				BaseBranch:   req.BaseBranch,
+				Timeout:      req.Timeout,
 			},
 		}
 		if err := addCommand(ctx, a.commandStore, &cmd, a.logger); err != nil {

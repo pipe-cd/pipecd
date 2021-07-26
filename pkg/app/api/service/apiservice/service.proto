@@ -131,6 +131,8 @@ message RequestPlanPreviewRequest {
     string head_branch = 2 [(validate.rules).string.min_len = 1];
     string head_commit = 3 [(validate.rules).string.min_len = 1];
     string base_branch = 4 [(validate.rules).string.min_len = 1];
+    // Maximum number of seconds a Piped can take to handle a command.
+    int64 timeout = 5 [(validate.rules).int64.gte = 0];
 }
 
 message RequestPlanPreviewResponse {
