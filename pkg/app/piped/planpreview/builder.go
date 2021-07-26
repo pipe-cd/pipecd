@@ -350,10 +350,10 @@ func (b *builder) getMostRecentlySuccessfulDeployment(ctx context.Context, appli
 			ApplicationId: applicationID,
 			Status:        model.DeploymentStatus_DEPLOYMENT_SUCCESS,
 		})
-		if err == nil {
-			return resp.Deployment, nil
+		if err != nil {
+			return nil, backoff.NewError(err, pipedservice.Retriable(err))
 		}
-		return nil, backoff.NewError(err, pipedservice.Retriable(err))
+		return resp.Deployment, nil
 	})
 	if err != nil {
 		return nil, err
