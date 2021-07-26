@@ -207,20 +207,26 @@ func (b *builder) build(ctx context.Context, id string, cmd model.Command_BuildP
 		)
 
 		var buf bytes.Buffer
-		var summary string
+		var dr *diffResult
 
 		switch app.Kind {
 		case model.ApplicationKind_KUBERNETES:
-			summary, err = b.kubernetesDiff(ctx, app, targetDSP, preCommit, &buf)
+			dr, err = b.kubernetesDiff(ctx, app, targetDSP, preCommit, &buf)
 		case model.ApplicationKind_TERRAFORM:
-			summary, err = b.terraformDiff(ctx, app, targetDSP, &buf)
+			dr, err = b.terraformDiff(ctx, app, targetDSP, &buf)
 		default:
 			// TODO: Calculating planpreview's diff for other application kinds.
-			summary = fmt.Sprintf("%s application is not implemented yet (coming soon)", app.Kind.String())
+			dr = &diffResult{
+				Summary: fmt.Sprintf("%s application is not implemented yet (coming soon)", app.Kind.String()),
+			}
 		}
 
-		r.PlanSummary = []byte(summary)
+		if dr != nil {
+			r.PlanSummary = []byte(dr.Summary)
+			r.NoChange = dr.NoChange
+		}
 		r.PlanDetails = buf.Bytes()
+
 		if err != nil {
 			r.Error = fmt.Sprintf("failed while calculating diff, %v", err)
 			continue
@@ -228,6 +234,11 @@ func (b *builder) build(ctx context.Context, id string, cmd model.Command_BuildP
 	}
 
 	return results, nil
+}
+
+type diffResult struct {
+	Summary  string
+	NoChange bool
 }
 
 func (b *builder) cloneHeadCommit(ctx context.Context, headBranch, headCommit string) (git.Repo, error) {

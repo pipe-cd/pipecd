@@ -35,7 +35,7 @@ func (b *builder) kubernetesDiff(
 	targetDSP deploysource.Provider,
 	lastSuccessfulCommit string,
 	buf *bytes.Buffer,
-) (string, error) {
+) (*diffResult, error) {
 
 	var oldManifests, newManifests []provider.Manifest
 	var err error
@@ -43,7 +43,7 @@ func (b *builder) kubernetesDiff(
 	newManifests, err = loadKubernetesManifests(ctx, *app, targetDSP, b.appManifestsCache, b.logger)
 	if err != nil {
 		fmt.Fprintf(buf, "failed to load kubernetes manifests at the head commit (%v)\n", err)
-		return "", err
+		return nil, err
 	}
 
 	if lastSuccessfulCommit != "" {
@@ -56,7 +56,7 @@ func (b *builder) kubernetesDiff(
 		oldManifests, err = loadKubernetesManifests(ctx, *app, runningDSP, b.appManifestsCache, b.logger)
 		if err != nil {
 			fmt.Fprintf(buf, "failed to load kubernetes manifests at the running commit (%v)\n", err)
-			return "", err
+			return nil, err
 		}
 	}
 
@@ -68,12 +68,15 @@ func (b *builder) kubernetesDiff(
 	)
 	if err != nil {
 		fmt.Fprintf(buf, "failed to compare manifests (%v)\n", err)
-		return "", err
+		return nil, err
 	}
 
 	if result.NoChange() {
 		fmt.Fprintln(buf, "No changes were detected")
-		return "No changes were detected", nil
+		return &diffResult{
+			Summary:  "No changes were detected",
+			NoChange: true,
+		}, nil
 	}
 
 	summary := fmt.Sprintf("%d added manifests, %d changed manifests, %d deleted manifests", len(result.Adds), len(result.Changes), len(result.Deletes))
@@ -83,7 +86,9 @@ func (b *builder) kubernetesDiff(
 	})
 	fmt.Fprintf(buf, "--- Last Deploy\n+++ Head Commit\n\n%s\n", details)
 
-	return summary, nil
+	return &diffResult{
+		Summary: summary,
+	}, nil
 }
 
 func loadKubernetesManifests(ctx context.Context, app model.Application, dsp deploysource.Provider, manifestsCache cache.Cache, logger *zap.Logger) (manifests []provider.Manifest, err error) {

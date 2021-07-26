@@ -31,34 +31,34 @@ func (b *builder) terraformDiff(
 	app *model.Application,
 	targetDSP deploysource.Provider,
 	buf *bytes.Buffer,
-) (string, error) {
+) (*diffResult, error) {
 
 	cp, ok := b.pipedCfg.FindCloudProvider(app.CloudProvider, model.CloudProviderTerraform)
 	if !ok {
 		err := fmt.Errorf("cloud provider %s was not found in Piped config", app.CloudProvider)
 		fmt.Fprintln(buf, err.Error())
-		return "", err
+		return nil, err
 	}
 	cpCfg := cp.TerraformConfig
 
 	ds, err := targetDSP.Get(ctx, io.Discard)
 	if err != nil {
 		fmt.Fprintf(buf, "failed to prepare deploy source data at the head commit (%v)\n", err)
-		return "", err
+		return nil, err
 	}
 
 	deployCfg := ds.DeploymentConfig.TerraformDeploymentSpec
 	if deployCfg == nil {
 		err := fmt.Errorf("missing Terraform spec field in deployment configuration")
 		fmt.Fprintln(buf, err.Error())
-		return "", err
+		return nil, err
 	}
 
 	version := deployCfg.Input.TerraformVersion
 	terraformPath, installed, err := toolregistry.DefaultRegistry().Terraform(ctx, version)
 	if err != nil {
 		fmt.Fprintf(buf, "unable to find the specified terraform version %q (%v)\n", version, err)
-		return "", err
+		return nil, err
 	}
 	if installed {
 		b.logger.Info(fmt.Sprintf("terraform %q has just been installed to %q because of no pre-installed binary for that version", version, terraformPath))
@@ -78,7 +78,7 @@ func (b *builder) terraformDiff(
 
 	if err := executor.Init(ctx, buf); err != nil {
 		fmt.Fprintf(buf, "failed while executing terraform init (%v)\n", err)
-		return "", err
+		return nil, err
 	}
 
 	if ws := deployCfg.Input.Workspace; ws != "" {
@@ -88,7 +88,7 @@ func (b *builder) terraformDiff(
 				err,
 				"terraform workspace new "+ws,
 			)
-			return "", err
+			return nil, err
 		}
 		fmt.Fprintf(buf, "selected workspace %q\n", ws)
 	}
@@ -96,15 +96,20 @@ func (b *builder) terraformDiff(
 	result, err := executor.Plan(ctx, buf)
 	if err != nil {
 		fmt.Fprintf(buf, "failed while executing terraform plan (%v)\n", err)
-		return "", err
+		return nil, err
 	}
 
 	if result.NoChanges() {
 		fmt.Fprintln(buf, "No changes were detected")
-		return "No changes were detected", nil
+		return &diffResult{
+			Summary:  "No changes were detected",
+			NoChange: true,
+		}, nil
 	}
 
 	summary := fmt.Sprintf("%d to add, %d to change, %d to destroy", result.Adds, result.Changes, result.Destroys)
 	fmt.Fprintln(buf, summary)
-	return summary, nil
+	return &diffResult{
+		Summary: summary,
+	}, nil
 }

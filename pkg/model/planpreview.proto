@@ -61,6 +61,8 @@ message ApplicationPlanPreviewResult {
     SyncStrategy sync_strategy = 30;
     bytes plan_summary = 31;
     bytes plan_details = 32;
+    // Mark if no change were detected.
+    bool no_change = 33;
 
     // Error while building planpreview result.
     string error = 40;
