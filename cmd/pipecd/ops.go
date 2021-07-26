@@ -31,6 +31,7 @@ import (
 	"github.com/pipe-cd/pipe/pkg/app/ops/mysqlensurer"
 	"github.com/pipe-cd/pipe/pkg/app/ops/orphancommandcleaner"
 	"github.com/pipe-cd/pipe/pkg/app/ops/pipedstatsbuilder"
+	"github.com/pipe-cd/pipe/pkg/app/ops/staledpipedstatcleaner"
 	"github.com/pipe-cd/pipe/pkg/cache/rediscache"
 	"github.com/pipe-cd/pipe/pkg/cli"
 	"github.com/pipe-cd/pipe/pkg/config"
@@ -132,6 +133,21 @@ func (s *ops) run(ctx context.Context, t cli.Telemetry) error {
 		}
 	}()
 
+	// Connect to the cache.
+	rd := redis.NewRedis(s.cacheAddress, "")
+	defer func() {
+		if err := rd.Close(); err != nil {
+			t.Logger.Error("failed to close redis client", zap.Error(err))
+		}
+	}()
+	statCache := rediscache.NewHashCache(rd, defaultPipedStatHashKey)
+
+	// Start running staled piped stat cleaner.
+	pipedStatCleaner := staledpipedstatcleaner.NewStaledPipedStatCleaner(statCache, t.Logger)
+	group.Go(func() error {
+		return pipedStatCleaner.Run(ctx)
+	})
+
 	// Start running command cleaner.
 	cleaner := orphancommandcleaner.NewOrphanCommandCleaner(ds, t.Logger)
 	group.Go(func() error {
@@ -153,13 +169,6 @@ func (s *ops) run(ctx context.Context, t cli.Telemetry) error {
 		})
 	}
 
-	rd := redis.NewRedis(s.cacheAddress, "")
-	defer func() {
-		if err := rd.Close(); err != nil {
-			t.Logger.Error("failed to close redis client", zap.Error(err))
-		}
-	}()
-	statCache := rediscache.NewHashCache(rd, defaultPipedStatHashKey)
 	psb := pipedstatsbuilder.NewPipedStatsBuilder(statCache, t.Logger)
 
 	// Register all pipecd ops metrics collectors.
