@@ -274,7 +274,11 @@ func (h *Handler) handleCommand(ctx context.Context, cmd model.ReportableCommand
 		return
 	}
 
-	buildCtx, cancel := context.WithTimeout(ctx, h.options.commandHandleTimeout)
+	timeout := time.Duration(cmd.BuildPlanPreview.Timeout) * time.Second
+	if timeout == 0 {
+		timeout = h.options.commandHandleTimeout
+	}
+	buildCtx, cancel := context.WithTimeout(ctx, timeout)
 	defer cancel()
 
 	b := h.builderFactory()

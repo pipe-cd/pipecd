@@ -99,6 +99,7 @@ func (c *command) run(ctx context.Context, _ cli.Telemetry) error {
 		HeadBranch:    c.headBranch,
 		HeadCommit:    c.headCommit,
 		BaseBranch:    c.baseBranch,
+		Timeout:       int64(c.pipedHandleTimeout.Seconds()),
 	}
 
 	resp, err := cli.RequestPlanPreview(ctx, req)
