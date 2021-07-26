@@ -91,6 +91,10 @@ func (r *retry) WaitNext(ctx context.Context) bool {
 	}
 }
 
+// Do executes and returns the results of the given operation.
+// It automatically retries if the operation returns an error.
+// To control which error should be retriable or not,
+// you can wrap the error from operation with NewError function.
 func (r *retry) Do(ctx context.Context, operation func() (interface{}, error)) (interface{}, error) {
 	var err error
 
