@@ -66,9 +66,9 @@
       "targets": [
         {
           "exemplar": true,
-          "expr": "sum by(source) (rate(pipecd_cache_get_operation_total{status=\"hit\"}[5m]))\n/\nsum by(source) (rate(pipecd_cache_get_operation_total[5m])\n)\n* 100",
+          "expr": "sum by(source) (rate(pipecd_server_cache_get_operation_total{status=\"hit\"}[5m]))\n/\nsum by(source) (rate(pipecd_server_cache_get_operation_total[5m])\n)\n* 100",
           "interval": "",
-          "legendFormat": "",
+          "legendFormat": "{{source}}",
           "queryType": "randomWalk",
           "refId": "A"
         }
@@ -130,5 +130,5 @@
   "timezone": "",
   "title": "Cache",
   "uid": "PbavQbknz",
-  "version": 3
+  "version": 5
 }
