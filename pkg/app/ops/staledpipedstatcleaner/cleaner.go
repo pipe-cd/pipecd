@@ -56,14 +56,14 @@ func (s *StaledPipedStatCleaner) Run(ctx context.Context) error {
 
 		case <-t.C:
 			start := time.Now()
-			if err := s.flushStaledPipedsStat(); err == nil {
+			if err := s.flushStaledPipedStat(); err == nil {
 				s.logger.Info("successfully cleaned staled pipeds stat", zap.Duration("duration", time.Since(start)))
 			}
 		}
 	}
 }
 
-func (s *StaledPipedStatCleaner) flushStaledPipedsStat() error {
+func (s *StaledPipedStatCleaner) flushStaledPipedStat() error {
 	res, err := s.backend.GetAll()
 	if err != nil {
 		// Ignore cache not found error since there are no stats found in cache
