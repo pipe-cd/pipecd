@@ -27,7 +27,7 @@ import (
 	"github.com/pipe-cd/pipe/pkg/model"
 )
 
-var (
+const (
 	pipedStatStaledTimeout = 24 * time.Hour
 	interval               = 24 * time.Hour
 )
