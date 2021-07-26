@@ -56,9 +56,11 @@ func (s *StaledPipedStatCleaner) Run(ctx context.Context) error {
 
 		case <-t.C:
 			start := time.Now()
-			if err := s.flushStaledPipedStat(); err == nil {
-				s.logger.Info("successfully cleaned staled pipeds stat", zap.Duration("duration", time.Since(start)))
+			if err := s.flushStaledPipedStat(); err != nil {
+				s.logger.Error("failed to flush staled pipeds stat", zap.Error(err))
+				continue
 			}
+			s.logger.Info("successfully cleaned staled pipeds stat", zap.Duration("duration", time.Since(start)))
 		}
 	}
 }
@@ -69,8 +71,7 @@ func (s *StaledPipedStatCleaner) flushStaledPipedStat() error {
 		// Ignore cache not found error since there are no stats found in cache
 		// means no need to flush anything.
 		if !errors.Is(err, cache.ErrNotFound) {
-			s.logger.Error("failed to fetch piped stats from cache", zap.Error(err))
-			return err
+			return fmt.Errorf("failed to fetch piped stats from cache: %w", err)
 		}
 		return nil
 	}
@@ -80,13 +81,11 @@ func (s *StaledPipedStatCleaner) flushStaledPipedStat() error {
 		value, okValue := v.([]byte)
 		if !okValue {
 			err = errors.New("error value not a bulk of string value")
-			s.logger.Error("failed to unmarshal piped stat data", zap.Error(err))
-			return err
+			return fmt.Errorf("failed to unmarshal piped stat data: %w", err)
 		}
 		ps := model.PipedStat{}
 		if err = json.Unmarshal(value, &ps); err != nil {
-			s.logger.Error("failed to unmarshal piped stat data", zap.Error(err))
-			return err
+			return fmt.Errorf("failed to unmarshal piped stat data: %w", err)
 		}
 		if time.Since(time.Unix(ps.Timestamp, 0)) > pipedStatStaledTimeout {
 			staled = append(staled, k)
@@ -101,8 +100,7 @@ func (s *StaledPipedStatCleaner) flushStaledPipedStat() error {
 
 	for _, id := range staled {
 		if err = s.backend.Delete(id); err != nil {
-			s.logger.Error("failed to remove staled piped stat data", zap.String("pipedID", id), zap.Error(err))
-			return err
+			return fmt.Errorf("failed to remove staled piped stat data for pipedID (%s): %w", id, err)
 		}
 	}
 
