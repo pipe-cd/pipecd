@@ -17,6 +17,7 @@ package trigger
 import (
 	"context"
 	"fmt"
+	"os"
 	"path/filepath"
 	"strings"
 
@@ -102,9 +103,16 @@ func (d *Determiner) ShouldTrigger(ctx context.Context, app *model.Application) 
 }
 
 func loadDeploymentConfiguration(repoPath string, app *model.Application) (*config.GenericDeploymentSpec, error) {
-	path := filepath.Join(repoPath, app.GitPath.GetDeploymentConfigFilePath())
-	cfg, err := config.LoadFromYAML(path)
+	var (
+		relPath = app.GitPath.GetDeploymentConfigFilePath()
+		absPath = filepath.Join(repoPath, relPath)
+	)
+
+	cfg, err := config.LoadFromYAML(absPath)
 	if err != nil {
+		if os.IsNotExist(err) {
+			return nil, fmt.Errorf("deployment config file %s was not found", relPath)
+		}
 		return nil, err
 	}
 	if appKind, ok := config.ToApplicationKind(cfg.Kind); !ok || appKind != app.Kind {

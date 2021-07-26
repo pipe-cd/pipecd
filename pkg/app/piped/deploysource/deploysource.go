@@ -150,11 +150,17 @@ func (p *provider) prepare(ctx context.Context, lw io.Writer) (*DeploySource, er
 	fmt.Fprintf(lw, "Successfully cloned the %s commit\n", p.revisionName)
 
 	// Load the deployment configuration file.
-	configFileRelativePath := p.appGitPath.GetDeploymentConfigFilePath()
-	configFilePath := filepath.Join(repoDir, configFileRelativePath)
-	cfg, err := config.LoadFromYAML(configFilePath)
+	var (
+		cfgFileRelPath = p.appGitPath.GetDeploymentConfigFilePath()
+		cfgFileAbsPath = filepath.Join(repoDir, cfgFileRelPath)
+	)
+	cfg, err := config.LoadFromYAML(cfgFileAbsPath)
 	if err != nil {
-		fmt.Fprintf(lw, "Unable to load the deployment configuration file at %s (%v)\n", configFileRelativePath, err)
+		fmt.Fprintf(lw, "Unable to load the deployment configuration file at %s (%v)\n", cfgFileRelPath, err)
+
+		if os.IsNotExist(err) {
+			return nil, fmt.Errorf("deployment config file %s was not found", cfgFileRelPath)
+		}
 		return nil, err
 	}
 
