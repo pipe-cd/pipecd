@@ -39,7 +39,8 @@ import (
 )
 
 const (
-	workspacePattern = "plan-preview-builder-*"
+	workspacePattern    = "plan-preview-builder-*"
+	defaultAppWorkerNum = 3
 )
 
 var (
@@ -109,7 +110,8 @@ func (b *builder) Build(ctx context.Context, id string, cmd model.Command_BuildP
 }
 
 func (b *builder) build(ctx context.Context, id string, cmd model.Command_BuildPlanPreview) ([]*model.ApplicationPlanPreviewResult, error) {
-	b.logger.Info(fmt.Sprintf("start building planpreview result for command %s", id))
+	logger := b.logger.With(zap.String("command", id))
+	logger.Info(fmt.Sprintf("start building planpreview result for command %s", id))
 
 	// Ensure the existence of the working directory.
 	workingDir, err := ioutil.TempDir("", workspacePattern)
@@ -133,7 +135,7 @@ func (b *builder) build(ctx context.Context, id string, cmd model.Command_BuildP
 	// and are placed in the given repository.
 	apps := b.listApplications(repoCfg)
 	if len(apps) == 0 {
-		b.logger.Info(fmt.Sprintf("there is no target application for command %s", id))
+		logger.Info(fmt.Sprintf("there is no target application for command %s", id))
 		return nil, nil
 	}
 
@@ -158,82 +160,121 @@ func (b *builder) build(ctx context.Context, id string, cmd model.Command_BuildP
 	}
 	results := failedResults
 
+	if len(triggerApps) == 0 {
+		return results, nil
+	}
+
 	// Plan the trigger applications for more detailed feedback.
-	for _, app := range triggerApps {
-		b.logger.Info("will decide sync strategy for an application",
-			zap.String("id", app.Id),
-			zap.String("name", app.Name),
-			zap.String("kind", app.Kind.String()),
-		)
+	var (
+		numApps  = len(triggerApps)
+		appCh    = make(chan *model.Application, numApps)
+		resultCh = make(chan *model.ApplicationPlanPreviewResult, numApps)
+	)
+	numWorkers := defaultAppWorkerNum
+	if numWorkers > numApps {
+		numWorkers = numApps
+	}
 
-		// We only need the environment name
-		// so the returned error can be ignorable.
-		var envName string
-		if env, err := b.environmentGetter.Get(ctx, app.EnvId); err == nil {
-			envName = env.Name
-		}
-
-		r := model.MakeApplicationPlanPreviewResult(*app, envName)
-		results = append(results, r)
-
-		var preCommit string
-		// Find the commit of the last successful deployment.
-		if deploy, err := b.getMostRecentlySuccessfulDeployment(ctx, app.Id); err == nil {
-			preCommit = deploy.Trigger.Commit.Hash
-		} else if status.Code(err) != codes.NotFound {
-			r.Error = fmt.Sprintf("failed while finding the last successful deployment (%w)", err)
-			continue
-		}
-
-		targetDSP := deploysource.NewProvider(
-			b.workingDir,
-			deploysource.NewLocalSourceCloner(repo, "target", mergedCommit.Hash),
-			*app.GitPath,
-			b.secretDecrypter,
-		)
-
-		strategy, err := b.plan(ctx, app, targetDSP, preCommit)
-		if err != nil {
-			r.Error = fmt.Sprintf("failed while planning, %v", err)
-			continue
-		}
-		r.SyncStrategy = strategy
-
-		b.logger.Info("successfully decided sync strategy for a application",
-			zap.String("id", app.Id),
-			zap.String("name", app.Name),
-			zap.String("strategy", strategy.String()),
-			zap.String("kind", app.Kind.String()),
-		)
-
-		var buf bytes.Buffer
-		var dr *diffResult
-
-		switch app.Kind {
-		case model.ApplicationKind_KUBERNETES:
-			dr, err = b.kubernetesDiff(ctx, app, targetDSP, preCommit, &buf)
-		case model.ApplicationKind_TERRAFORM:
-			dr, err = b.terraformDiff(ctx, app, targetDSP, &buf)
-		default:
-			// TODO: Calculating planpreview's diff for other application kinds.
-			dr = &diffResult{
-				summary: fmt.Sprintf("%s application is not implemented yet (coming soon)", app.Kind.String()),
+	// Start some workers to speed up building time.
+	logger.Info(fmt.Sprintf("start %d workers for building plan-preview results for %d applications", numWorkers, numApps))
+	for w := 0; w < numWorkers; w++ {
+		go func(wid int) {
+			logger.Info("app worker for plan-preview started", zap.Int("worker", wid))
+			for app := range appCh {
+				resultCh <- b.buildApp(ctx, wid, id, app, repo, mergedCommit.Hash)
 			}
-		}
+			logger.Info("app worker for plan-preview stopped", zap.Int("worker", wid))
+		}(w)
+	}
 
-		if dr != nil {
-			r.PlanSummary = []byte(dr.summary)
-			r.NoChange = dr.noChange
-		}
-		r.PlanDetails = buf.Bytes()
+	// Add all applications into the channel for start handling.
+	for i := 0; i < numApps; i++ {
+		appCh <- triggerApps[i]
+	}
+	close(appCh)
 
-		if err != nil {
-			r.Error = fmt.Sprintf("failed while calculating diff, %v", err)
-			continue
+	// Wait and collect all results.
+	for i := 0; i < numApps; i++ {
+		r := <-resultCh
+		results = append(results, r)
+	}
+
+	logger.Info("successfully collected plan-preview results of all applications")
+	return results, nil
+}
+
+func (b *builder) buildApp(ctx context.Context, worker int, command string, app *model.Application, repo git.Repo, mergedCommit string) *model.ApplicationPlanPreviewResult {
+	logger := b.logger.With(
+		zap.Int("worker", worker),
+		zap.String("command", command),
+		zap.String("app-id", app.Id),
+		zap.String("app-name", app.Name),
+		zap.String("app-kind", app.Kind.String()),
+	)
+
+	logger.Info("will decide sync strategy for an application")
+
+	// We only need the environment name
+	// so the returned error can be ignorable.
+	var envName string
+	if env, err := b.environmentGetter.Get(ctx, app.EnvId); err == nil {
+		envName = env.Name
+	}
+
+	r := model.MakeApplicationPlanPreviewResult(*app, envName)
+
+	var preCommit string
+	// Find the commit of the last successful deployment.
+	if deploy, err := b.getMostRecentlySuccessfulDeployment(ctx, app.Id); err == nil {
+		preCommit = deploy.Trigger.Commit.Hash
+	} else if status.Code(err) != codes.NotFound {
+		r.Error = fmt.Sprintf("failed while finding the last successful deployment (%w)", err)
+		return r
+	}
+
+	targetDSP := deploysource.NewProvider(
+		b.workingDir,
+		deploysource.NewLocalSourceCloner(repo, "target", mergedCommit),
+		*app.GitPath,
+		b.secretDecrypter,
+	)
+
+	strategy, err := b.plan(ctx, app, targetDSP, preCommit)
+	if err != nil {
+		r.Error = fmt.Sprintf("failed while planning, %v", err)
+		return r
+	}
+	r.SyncStrategy = strategy
+
+	logger.Info("successfully decided sync strategy for a application", zap.String("strategy", strategy.String()))
+
+	var buf bytes.Buffer
+	var dr *diffResult
+
+	switch app.Kind {
+	case model.ApplicationKind_KUBERNETES:
+		dr, err = b.kubernetesDiff(ctx, app, targetDSP, preCommit, &buf)
+	case model.ApplicationKind_TERRAFORM:
+		dr, err = b.terraformDiff(ctx, app, targetDSP, &buf)
+	default:
+		// TODO: Calculating planpreview's diff for other application kinds.
+		dr = &diffResult{
+			summary: fmt.Sprintf("%s application is not implemented yet (coming soon)", app.Kind.String()),
 		}
 	}
 
-	return results, nil
+	if dr != nil {
+		r.PlanSummary = []byte(dr.summary)
+		r.NoChange = dr.noChange
+	}
+	r.PlanDetails = buf.Bytes()
+
+	if err != nil {
+		r.Error = fmt.Sprintf("failed while calculating diff, %v", err)
+		return r
+	}
+
+	return r
 }
 
 type diffResult struct {
