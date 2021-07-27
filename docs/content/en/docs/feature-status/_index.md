@@ -117,4 +117,5 @@ Please note that the phases (Incubating, Alpha, Beta, and Stable) are applied to
 | File Store - Support AWS [S3](https://aws.amazon.com/s3/) | Alpha |
 | File Store - Support [Minio](https://github.com/minio/minio) | Alpha |
 | [Insights](/docs/user-guide/insights/) shows delivery performance | Incubating |
+| Deployment Chain - Allow rolling out to multiple clusters gradually or promoting across environments | Incubating |
 | Collecting piped's metrics and enabling their dashboards | Incubating |
