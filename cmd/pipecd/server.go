@@ -131,7 +131,7 @@ func NewServerCommand() *cobra.Command {
 
 func (s *server) run(ctx context.Context, t cli.Telemetry) error {
 	// Register all metrics.
-	registerMetrics()
+	reg := registerMetrics()
 
 	group, ctx := errgroup.WithContext(ctx)
 
@@ -335,7 +335,7 @@ func (s *server) run(ctx context.Context, t cli.Telemetry) error {
 		admin.HandleFunc("/healthz", func(w http.ResponseWriter, r *http.Request) {
 			w.Write([]byte("ok"))
 		})
-		admin.Handle("/metrics", t.PrometheusMetricsHandler())
+		admin.Handle("/metrics", t.PrometheusMetricsHandlerFor(reg))
 
 		group.Go(func() error {
 			return admin.Run(ctx)
@@ -465,8 +465,16 @@ func createFilestore(ctx context.Context, cfg *config.ControlPlaneSpec, logger *
 	}
 }
 
-func registerMetrics() {
-	r := prometheus.WrapRegistererWithPrefix("pipecd_server_", prometheus.DefaultRegisterer)
+func registerMetrics() *prometheus.Registry {
+	r := prometheus.NewRegistry()
+	wrapped := prometheus.WrapRegistererWith(map[string]string{
+		"pipecd_component": "server",
+	}, r)
+
+	wrapped.Register(prometheus.NewGoCollector())
+	wrapped.Register(prometheus.NewProcessCollector(prometheus.ProcessCollectorOpts{}))
+
 	cachemetrics.Register(r)
 	httpapimetrics.Register(r)
+	return r
 }
