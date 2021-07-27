@@ -176,7 +176,7 @@ func (b *builder) build(ctx context.Context, id string, cmd model.Command_BuildP
 	}
 
 	// Start some workers to speed up building time.
-	b.logger.Info(fmt.Sprintf("start %d workers for building plan-preview results for %d applications", numWorkers, numApps))
+	logger.Info(fmt.Sprintf("start %d workers for building plan-preview results for %d applications", numWorkers, numApps))
 	for w := 0; w < numWorkers; w++ {
 		go func(wid int) {
 			logger.Info("app worker for plan-preview started", zap.Int("worker", wid))
