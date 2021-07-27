@@ -474,7 +474,7 @@ func registerMetrics() *prometheus.Registry {
 	wrapped.Register(prometheus.NewGoCollector())
 	wrapped.Register(prometheus.NewProcessCollector(prometheus.ProcessCollectorOpts{}))
 
-	cachemetrics.Register(r)
-	httpapimetrics.Register(r)
+	cachemetrics.Register(wrapped)
+	httpapimetrics.Register(wrapped)
 	return r
 }
