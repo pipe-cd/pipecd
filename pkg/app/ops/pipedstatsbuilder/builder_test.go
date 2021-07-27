@@ -62,8 +62,14 @@ func TestBuildPipedStat(t *testing.T) {
 	rc, err := builder.Build()
 	require.NoError(t, err)
 	require.NotNil(t, rc)
+
 	buf := new(strings.Builder)
 	io.Copy(buf, rc)
+	actOutElements := strings.Split(strings.TrimSuffix(buf.String(), "\n"), "\n\n")
+
 	data, _ := os.ReadFile("./testdata/expected")
-	assert.Equal(t, string(data), buf.String())
+	expOutElements := strings.Split(strings.TrimSuffix(string(data), "\n"), "\n\n")
+
+	require.Equal(t, len(expOutElements), len(actOutElements))
+	assert.ElementsMatch(t, expOutElements, actOutElements)
 }
