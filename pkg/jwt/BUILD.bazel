@@ -11,7 +11,7 @@ go_library(
     visibility = ["//visibility:public"],
     deps = [
         "//pkg/model:go_default_library",
-        "@com_github_dgrijalva_jwt_go//:go_default_library",
+        "@com_github_golang_jwt_jwt//:go_default_library",
     ],
 )
 
@@ -26,7 +26,7 @@ go_test(
     embed = [":go_default_library"],
     deps = [
         "//pkg/model:go_default_library",
-        "@com_github_dgrijalva_jwt_go//:go_default_library",
+        "@com_github_golang_jwt_jwt//:go_default_library",
         "@com_github_stretchr_testify//assert:go_default_library",
         "@com_github_stretchr_testify//require:go_default_library",
     ],

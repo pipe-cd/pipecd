@@ -19,7 +19,7 @@ import (
 	"io/ioutil"
 	"time"
 
-	jwtgo "github.com/dgrijalva/jwt-go"
+	jwtgo "github.com/golang-jwt/jwt"
 
 	"github.com/pipe-cd/pipe/pkg/model"
 )

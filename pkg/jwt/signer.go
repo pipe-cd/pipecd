@@ -17,7 +17,7 @@ package jwt
 import (
 	"fmt"
 
-	jwtgo "github.com/dgrijalva/jwt-go"
+	jwtgo "github.com/golang-jwt/jwt"
 )
 
 type Signer interface {
