@@ -45,6 +45,7 @@ type ApplicationResult struct {
 	SyncStrategy string // QUICK_SYNC, PIPELINE
 	PlanSummary  string
 	PlanDetails  string
+	NoChange     bool
 }
 
 type FailurePiped struct {
@@ -158,7 +159,9 @@ func makeCommentBody(event *githubEvent, r *PlanPreviewResult) string {
 
 	b.WriteString(fmt.Sprintf(hasChangeTitleFormat, event.HeadCommit, len(r.Applications)))
 
-	for _, app := range r.Applications {
+	changedApps, pipelineApps, quickSyncApps := groupApplicationResults(r.Applications)
+
+	for _, app := range changedApps {
 		fmt.Fprintf(&b, "\n## app: [%s](%s), env: [%s](%s), kind: %s\n", app.ApplicationName, app.ApplicationURL, app.EnvName, app.EnvURL, strings.ToLower(app.ApplicationKind))
 		fmt.Fprintf(&b, "Sync strategy: %s\n", app.SyncStrategy)
 		fmt.Fprintf(&b, "Summary: %s\n\n", app.PlanSummary)
@@ -168,6 +171,24 @@ func makeCommentBody(event *githubEvent, r *PlanPreviewResult) string {
 			lang = "hcl"
 		}
 		fmt.Fprintf(&b, detailsFormat, lang, app.PlanDetails)
+	}
+
+	if len(pipelineApps)+len(quickSyncApps) > 0 {
+		b.WriteString("\n## No resource changes were detected but the following apps will also be triggered\n")
+
+		if len(pipelineApps) > 0 {
+			b.WriteString("\n### `PIPELINE`\n")
+			for _, app := range pipelineApps {
+				fmt.Fprintf(&b, "\n- app: [%s](%s), env: [%s](%s), kind: %s\n", app.ApplicationName, app.ApplicationURL, app.EnvName, app.EnvURL, strings.ToLower(app.ApplicationKind))
+			}
+		}
+
+		if len(quickSyncApps) > 0 {
+			b.WriteString("\n### `QUICK_SYNC`\n")
+			for _, app := range quickSyncApps {
+				fmt.Fprintf(&b, "\n- app: [%s](%s), env: [%s](%s), kind: %s\n", app.ApplicationName, app.ApplicationURL, app.EnvName, app.EnvURL, strings.ToLower(app.ApplicationKind))
+			}
+		}
 	}
 
 	if !r.HasError() {
@@ -201,4 +222,19 @@ func makeCommentBody(event *githubEvent, r *PlanPreviewResult) string {
 	}
 
 	return b.String()
+}
+
+func groupApplicationResults(apps []ApplicationResult) (changes, pipelines, quicks []ApplicationResult) {
+	for _, app := range apps {
+		if !app.NoChange {
+			changes = append(changes, app)
+			continue
+		}
+		if app.SyncStrategy == "PIPELINE" {
+			pipelines = append(pipelines, app)
+			continue
+		}
+		quicks = append(quicks, app)
+	}
+	return
 }

@@ -1,0 +1,28 @@
+<!-- pipecd-plan-preview-->
+[![PLAN_PREVIEW](https://img.shields.io/static/v1?label=PipeCD&message=Plan_Preview&color=success&style=flat)](https://pipecd.dev/docs/user-guide/plan-preview/)
+
+Ran plan-preview against head commit abc of this pull request. PipeCD detected `3` updated applications and here are their plan results. Once this pull request got merged their deployments will be triggered to run as these estimations.
+
+## app: [app-name-1](app-url-1), env: [](env-url-1), kind: app-kind-1
+Sync strategy: PIPELINE
+Summary: plan-summary-1
+
+<details>
+<summary>Details (Click me)</summary>
+<p>
+
+``` diff
+plan-details-1
+```
+</p>
+</details>
+
+## No resource changes were detected but the following apps will also be triggered
+
+### `PIPELINE`
+
+- app: [app-name-3](app-url-3), env: [](env-url-3), kind: app-kind-3
+
+### `QUICK_SYNC`
+
+- app: [app-name-2](app-url-2), env: [](env-url-2), kind: app-kind-2
