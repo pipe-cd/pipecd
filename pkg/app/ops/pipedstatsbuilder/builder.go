@@ -46,8 +46,12 @@ func NewPipedStatsBuilder(c cache.Cache, logger *zap.Logger) *PipedStatsBuilder 
 func (b *PipedStatsBuilder) Build() (io.Reader, error) {
 	res, err := b.backend.GetAll()
 	if err != nil {
-		b.logger.Error("failed to fetch piped stats from cache", zap.Error(err))
-		return nil, err
+		// Only show error in case it's not cache not found error.
+		if !errors.Is(err, cache.ErrNotFound) {
+			b.logger.Error("failed to fetch piped stats from cache", zap.Error(err))
+			return nil, err
+		}
+		return bytes.NewReader([]byte("")), nil
 	}
 	data := make([][]byte, 0, len(res))
 	for _, v := range res {
