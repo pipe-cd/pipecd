@@ -16,7 +16,6 @@ package cli
 
 import (
 	"context"
-	"errors"
 	"io"
 	"net/http"
 	"os"
@@ -32,7 +31,6 @@ import (
 	"go.uber.org/zap"
 	"google.golang.org/api/option"
 
-	"github.com/pipe-cd/pipe/pkg/cache"
 	"github.com/pipe-cd/pipe/pkg/log"
 	"github.com/pipe-cd/pipe/pkg/version"
 )
@@ -178,10 +176,7 @@ func (t Telemetry) CustomMetricsHandlerFor(reg prometheus.Gatherer, mb MetricsBu
 
 		rc, err := mb.Build()
 		if err != nil {
-			// Only show error in case it's not cache not found error.
-			if !errors.Is(err, cache.ErrNotFound) {
-				http.Error(w, err.Error(), http.StatusInternalServerError)
-			}
+			http.Error(w, err.Error(), http.StatusInternalServerError)
 			return
 		}
 
