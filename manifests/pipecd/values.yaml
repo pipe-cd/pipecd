@@ -160,6 +160,10 @@ prometheus:
 # https://github.com/grafana/helm-charts/tree/main/charts/grafana
 grafana:
   adminPassword: admin
+  ingress:
+    enabled: false
+    hosts: []
+    path: /*
   sidecar:
     datasources:
       enabled: true

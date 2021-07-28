@@ -8,4 +8,18 @@ spec:
     enabled: {{ .Values.backendConfig.iap.enabled }}
     oauthclientCredentials:
       secretName: {{ .Values.backendConfig.iap.secretName }}
+
+
+{{- if .Values.grafana.ingress.enabled -}}
+---
+apiVersion: cloud.google.com/v1beta1
+kind: BackendConfig
+metadata:
+  name: {{ include "pipecd.fullname" . }}-grafana
+spec:
+  iap:
+    enabled: {{ .Values.backendConfig.iap.enabled }}
+    oauthclientCredentials:
+      secretName: {{ .Values.backendConfig.iap.secretName }}
+{{- end }}
 {{- end }}
