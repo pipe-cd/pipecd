@@ -1070,7 +1070,7 @@
           "exemplar": true,
           "expr": "go_goroutines{job=\"prometheus\"}",
           "interval": "",
-          "legendFormat": "prometheus",
+          "legendFormat": "{{instance}}",
           "queryType": "randomWalk",
           "refId": "A"
         }
@@ -1132,5 +1132,5 @@
   "timezone": "",
   "title": "Prometheus",
   "uid": "7RpHmaz7k",
-  "version": 5
+  "version": 8
 }
