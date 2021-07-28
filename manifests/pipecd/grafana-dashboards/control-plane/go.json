@@ -17,7 +17,7 @@
   "gnetId": null,
   "graphTooltip": 0,
   "id": 5,
-  "iteration": 1626663961048,
+  "iteration": 1627373618542,
   "links": [],
   "panels": [
     {
@@ -76,14 +76,14 @@
       "targets": [
         {
           "exemplar": true,
-          "expr": "sum without (instance) (go_info{job=\"$service\"})",
+          "expr": "sum without (instance) (go_info{pipecd_component=\"$component\"})",
           "interval": "",
           "legendFormat": "{{version}}",
           "queryType": "randomWalk",
           "refId": "A"
         }
       ],
-      "title": "Go version of $service",
+      "title": "Go version of $component",
       "type": "stat"
     },
     {
@@ -91,15 +91,19 @@
       "fieldConfig": {
         "defaults": {
           "color": {
-            "mode": "thresholds"
+            "mode": "fixed"
           },
           "mappings": [],
           "thresholds": {
             "mode": "absolute",
             "steps": [
               {
-                "color": "rgba(255, 255, 255, 0.89)",
+                "color": "green",
                 "value": null
+              },
+              {
+                "color": "red",
+                "value": 80
               }
             ]
           }
@@ -113,10 +117,10 @@
         "y": 0
       },
       "id": 31,
+      "interval": null,
+      "maxDataPoints": null,
       "options": {
-        "colorMode": "value",
-        "graphMode": "none",
-        "justifyMode": "auto",
+        "displayMode": "gradient",
         "orientation": "auto",
         "reduceOptions": {
           "calcs": [
@@ -125,24 +129,28 @@
           "fields": "",
           "values": false
         },
+        "showUnfilled": true,
         "text": {
-          "valueSize": 70
-        },
-        "textMode": "auto"
+          "valueSize": 80
+        }
       },
       "pluginVersion": "7.5.3",
+      "repeat": null,
       "targets": [
         {
           "exemplar": true,
-          "expr": "go_threads{job=\"$service\"}",
+          "expr": "go_threads{pipecd_component=\"$component\"}",
           "interval": "",
           "legendFormat": "{{instance}}",
           "queryType": "randomWalk",
           "refId": "A"
         }
       ],
-      "title": "OS Thread of $service",
-      "type": "stat"
+      "timeFrom": "1m",
+      "timeShift": null,
+      "title": "OS Thread of $component",
+      "transformations": [],
+      "type": "bargauge"
     },
     {
       "aliasColors": {},
@@ -192,7 +200,7 @@
       "targets": [
         {
           "exemplar": true,
-          "expr": "sum by (job) (go_memstats_heap_alloc_bytes{job=\"$service\"} / (1024 * 1024))",
+          "expr": "sum by (pipecd_component) (go_memstats_heap_alloc_bytes{pipecd_component=\"$component\"} / (1024 * 1024))",
           "interval": "",
           "legendFormat": "alloc",
           "queryType": "randomWalk",
@@ -200,7 +208,7 @@
         },
         {
           "exemplar": true,
-          "expr": "sum by (job) (go_memstats_heap_inuse_bytes{job=\"$service\"} / (1024 * 1024))",
+          "expr": "sum by (pipecd_component) (go_memstats_heap_inuse_bytes{pipecd_component=\"$component\"} / (1024 * 1024))",
           "hide": false,
           "interval": "",
           "legendFormat": "inuse",
@@ -208,7 +216,7 @@
         },
         {
           "exemplar": true,
-          "expr": "sum by (job) (go_memstats_heap_idle_bytes{job=\"$service\"} / (1024 * 1024))",
+          "expr": "sum by (pipecd_component) (go_memstats_heap_idle_bytes{pipecd_component=\"$component\"} / (1024 * 1024))",
           "hide": false,
           "interval": "",
           "legendFormat": "idle",
@@ -219,7 +227,7 @@
       "timeFrom": null,
       "timeRegions": [],
       "timeShift": null,
-      "title": "Heap Stats of $service",
+      "title": "Heap Stats of $component",
       "tooltip": {
         "shared": true,
         "sort": 0,
@@ -239,7 +247,7 @@
           "label": null,
           "logBase": 1,
           "max": null,
-          "min": null,
+          "min": "0",
           "show": true
         },
         {
@@ -303,7 +311,7 @@
       "targets": [
         {
           "exemplar": true,
-          "expr": "rate(go_gc_duration_seconds_sum{job=\"$service\"}[5m])\n/\nrate(go_gc_duration_seconds_count{job=\"$service\"}[5m])",
+          "expr": "rate(go_gc_duration_seconds_sum{pipecd_component=\"$component\"}[5m])\n/\nrate(go_gc_duration_seconds_count{pipecd_component=\"$component\"}[5m])",
           "interval": "",
           "legendFormat": "{{instance}}",
           "queryType": "randomWalk",
@@ -314,7 +322,7 @@
       "timeFrom": null,
       "timeRegions": [],
       "timeShift": null,
-      "title": "GC Duration Average of $service",
+      "title": "GC Duration Average of $component",
       "tooltip": {
         "shared": true,
         "sort": 0,
@@ -400,7 +408,7 @@
       "targets": [
         {
           "exemplar": true,
-          "expr": "go_goroutines{job=\"$service\"}",
+          "expr": "go_goroutines{pipecd_component=\"$component\"}",
           "interval": "",
           "legendFormat": "{{instance}}",
           "queryType": "randomWalk",
@@ -411,7 +419,7 @@
       "timeFrom": null,
       "timeRegions": [],
       "timeShift": null,
-      "title": "Number of Goroutines of $service",
+      "title": "Number of Goroutines of $component",
       "tooltip": {
         "shared": true,
         "sort": 0,
@@ -459,293 +467,32 @@
         "allValue": null,
         "current": {
           "selected": true,
-          "text": "pipecd-server",
-          "value": "pipecd-server"
+          "text": "server",
+          "value": "server"
         },
-        "datasource": "Prometheus",
-        "definition": "label_values(service)",
         "description": null,
         "error": null,
         "hide": 0,
         "includeAll": false,
         "label": null,
         "multi": false,
-        "name": "service",
+        "name": "component",
         "options": [
           {
-            "selected": false,
-            "text": "artifact-monitor",
-            "value": "artifact-monitor"
-          },
-          {
-            "selected": false,
-            "text": "bluegreen",
-            "value": "bluegreen"
-          },
-          {
-            "selected": false,
-            "text": "bluegreen-canary",
-            "value": "bluegreen-canary"
-          },
-          {
-            "selected": false,
-            "text": "calico",
-            "value": "calico"
-          },
-          {
-            "selected": false,
-            "text": "calico-node-vertical-autoscaler",
-            "value": "calico-node-vertical-autoscaler"
-          },
-          {
-            "selected": false,
-            "text": "calico-typha",
-            "value": "calico-typha"
-          },
-          {
-            "selected": false,
-            "text": "calico-typha-horizontal-autoscaler",
-            "value": "calico-typha-horizontal-autoscaler"
-          },
-          {
-            "selected": false,
-            "text": "calico-typha-vertical-autoscaler",
-            "value": "calico-typha-vertical-autoscaler"
-          },
-          {
-            "selected": false,
-            "text": "canary",
-            "value": "canary"
-          },
-          {
-            "selected": false,
-            "text": "canary-by-config-change",
-            "value": "canary-by-config-change"
-          },
-          {
-            "selected": false,
-            "text": "canary-secondary",
-            "value": "canary-secondary"
-          },
-          {
-            "selected": false,
-            "text": "default-http-backend",
-            "value": "default-http-backend"
-          },
-          {
-            "selected": false,
-            "text": "demo-grafana",
-            "value": "demo-grafana"
-          },
-          {
-            "selected": false,
-            "text": "event-exporter-gke",
-            "value": "event-exporter-gke"
-          },
-          {
-            "selected": false,
-            "text": "fluentbit",
-            "value": "fluentbit"
-          },
-          {
-            "selected": false,
-            "text": "gke-metrics",
-            "value": "gke-metrics"
-          },
-          {
-            "selected": false,
-            "text": "helm-local-chart",
-            "value": "helm-local-chart"
-          },
-          {
-            "selected": false,
-            "text": "helm-remote-chart-helloworld",
-            "value": "helm-remote-chart-helloworld"
-          },
-          {
-            "selected": false,
-            "text": "helm-remote-git-chart-helloworld",
-            "value": "helm-remote-git-chart-helloworld"
-          },
-          {
-            "selected": false,
-            "text": "ip-masq",
-            "value": "ip-masq"
-          },
-          {
-            "selected": false,
-            "text": "kube-dns",
-            "value": "kube-dns"
-          },
-          {
-            "selected": false,
-            "text": "kube-dns-autoscaler",
-            "value": "kube-dns-autoscaler"
-          },
-          {
-            "selected": false,
-            "text": "kube-proxy-gke-pipecd-dev-primary-nodepool",
-            "value": "kube-proxy-gke-pipecd-dev-primary-nodepool"
-          },
-          {
-            "selected": false,
-            "text": "kubernetes",
-            "value": "kubernetes"
-          },
-          {
-            "selected": false,
-            "text": "kustomize-local-base",
-            "value": "kustomize-local-base"
-          },
-          {
-            "selected": false,
-            "text": "kustomize-remote-base-helloworld",
-            "value": "kustomize-remote-base-helloworld"
-          },
-          {
-            "selected": false,
-            "text": "l7-default-backend",
-            "value": "l7-default-backend"
-          },
-          {
-            "selected": false,
-            "text": "master-piped",
-            "value": "master-piped"
-          },
-          {
-            "selected": false,
-            "text": "mesh-istio-bluegreen",
-            "value": "mesh-istio-bluegreen"
-          },
-          {
-            "selected": false,
-            "text": "mesh-istio-bluegreen-canary",
-            "value": "mesh-istio-bluegreen-canary"
-          },
-          {
-            "selected": false,
-            "text": "mesh-istio-canary",
-            "value": "mesh-istio-canary"
-          },
-          {
-            "selected": false,
-            "text": "metrics-server",
-            "value": "metrics-server"
-          },
-          {
-            "selected": false,
-            "text": "metrics-server-v0.3.6",
-            "value": "metrics-server-v0.3.6"
-          },
-          {
-            "selected": false,
-            "text": "pipecd",
-            "value": "pipecd"
-          },
-          {
-            "selected": false,
-            "text": "pipecd-cache",
-            "value": "pipecd-cache"
-          },
-          {
-            "selected": false,
-            "text": "pipecd-gateway",
-            "value": "pipecd-gateway"
-          },
-          {
-            "selected": false,
-            "text": "pipecd-grafana",
-            "value": "pipecd-grafana"
-          },
-          {
-            "selected": false,
-            "text": "pipecd-kube-state-metrics",
-            "value": "pipecd-kube-state-metrics"
-          },
-          {
-            "selected": false,
-            "text": "pipecd-minio",
-            "value": "pipecd-minio"
-          },
-          {
-            "selected": false,
-            "text": "pipecd-mysql",
-            "value": "pipecd-mysql"
-          },
-          {
-            "selected": false,
-            "text": "pipecd-ops",
-            "value": "pipecd-ops"
-          },
-          {
-            "selected": false,
-            "text": "pipecd-prometheus-alertmanager",
-            "value": "pipecd-prometheus-alertmanager"
-          },
-          {
-            "selected": false,
-            "text": "pipecd-prometheus-node",
-            "value": "pipecd-prometheus-node"
-          },
-          {
-            "selected": false,
-            "text": "pipecd-prometheus-node-exporter",
-            "value": "pipecd-prometheus-node-exporter"
-          },
-          {
-            "selected": false,
-            "text": "pipecd-prometheus-server",
-            "value": "pipecd-prometheus-server"
-          },
-          {
             "selected": true,
-            "text": "pipecd-server",
-            "value": "pipecd-server"
+            "text": "server",
+            "value": "server"
           },
           {
             "selected": false,
-            "text": "piped",
-            "value": "piped"
-          },
-          {
-            "selected": false,
-            "text": "prometheus-to",
-            "value": "prometheus-to"
-          },
-          {
-            "selected": false,
-            "text": "simple",
-            "value": "simple"
-          },
-          {
-            "selected": false,
-            "text": "simple-sealed-secret",
-            "value": "simple-sealed-secret"
-          },
-          {
-            "selected": false,
-            "text": "site",
-            "value": "site"
-          },
-          {
-            "selected": false,
-            "text": "stackdriver-metadata-agent-cluster-level",
-            "value": "stackdriver-metadata-agent-cluster-level"
+            "text": "ops",
+            "value": "ops"
           }
         ],
-        "query": {
-          "query": "label_values(service)",
-          "refId": "StandardVariableQuery"
-        },
-        "refresh": 0,
-        "regex": "",
+        "query": "server,ops",
+        "queryValue": "",
         "skipUrlSync": false,
-        "sort": 0,
-        "tagValuesQuery": "",
-        "tags": [],
-        "tagsQuery": "",
-        "type": "query",
-        "useTags": false
+        "type": "custom"
       }
     ]
   },
@@ -757,5 +504,5 @@
   "timezone": "",
   "title": "Go",
   "uid": "jeq-vRi7z",
-  "version": 4
+  "version": 10
 }

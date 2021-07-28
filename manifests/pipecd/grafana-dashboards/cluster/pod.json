@@ -17,7 +17,7 @@
   "gnetId": null,
   "graphTooltip": 0,
   "id": 10,
-  "iteration": 1626687664904,
+  "iteration": 1627285073084,
   "links": [],
   "panels": [
     {
@@ -92,7 +92,7 @@
     },
     {
       "datasource": "Prometheus",
-      "description": "",
+      "description": "Note: Once Grafana v8.1 got released, we can use the new feature that allows us to leverage query result as a threshold: https://github.com/pipe-cd/pipe/issues/2263",
       "fieldConfig": {
         "defaults": {
           "color": {
@@ -948,5 +948,5 @@
   "timezone": "",
   "title": "Pod",
   "uid": "MMo5vRi7k",
-  "version": 10
+  "version": 14
 }

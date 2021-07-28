@@ -256,7 +256,7 @@
       "dashLength": 10,
       "dashes": false,
       "datasource": "Prometheus",
-      "description": "Normalized by the number of CPUs\n",
+      "description": "Note: Normalized by the number of CPUs\n\nPurpose: To know the saturation of CPU cores.\n",
       "fieldConfig": {
         "defaults": {},
         "overrides": []
@@ -419,7 +419,7 @@
     },
     {
       "datasource": "Prometheus",
-      "description": "Non available RAM memory",
+      "description": "Note: Non available RAM memory",
       "fieldConfig": {
         "defaults": {
           "color": {
@@ -582,7 +582,7 @@
       "dashLength": 10,
       "dashes": false,
       "datasource": "Prometheus",
-      "description": "To measure saturation of memory",
+      "description": "Purpose: To know the saturation of memory.",
       "fieldConfig": {
         "defaults": {},
         "overrides": []
@@ -688,5 +688,5 @@
   "timezone": "",
   "title": "Node",
   "uid": "o1M4vRmnk",
-  "version": 8
+  "version": 12
 }
