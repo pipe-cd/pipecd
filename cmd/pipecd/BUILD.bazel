@@ -48,7 +48,7 @@ go_library(
         "//pkg/redis:go_default_library",
         "//pkg/rpc:go_default_library",
         "//pkg/version:go_default_library",
-        "@com_github_dgrijalva_jwt_go//:go_default_library",
+        "@com_github_golang_jwt_jwt//:go_default_library",
         "@com_github_prometheus_client_golang//prometheus:go_default_library",
         "@com_github_spf13_cobra//:go_default_library",
         "@org_golang_x_sync//errgroup:go_default_library",

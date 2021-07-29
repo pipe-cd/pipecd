@@ -18,7 +18,7 @@ import (
 	"testing"
 	"time"
 
-	jwtgo "github.com/dgrijalva/jwt-go"
+	jwtgo "github.com/golang-jwt/jwt"
 	"github.com/stretchr/testify/require"
 
 	"github.com/pipe-cd/pipe/pkg/model"
