@@ -5,4 +5,4 @@ spec:
     encryptedSecrets:
       serviceAccount: {ENCRYPTED_DATA_GENERATED_FROM_WEB}
     decryptionTargets:
-      - .credentials/service-account.yaml
+      - .credentials/service-account.json
