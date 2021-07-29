@@ -23,6 +23,8 @@ import (
 	appsv1 "k8s.io/api/apps/v1"
 	batchv1 "k8s.io/api/batch/v1"
 	corev1 "k8s.io/api/core/v1"
+	extensionsv1beta1 "k8s.io/api/extensions/v1beta1"
+	networkingv1 "k8s.io/api/networking/v1"
 	networkingv1beta1 "k8s.io/api/networking/v1beta1"
 	"k8s.io/apimachinery/pkg/apis/meta/v1/unstructured"
 	"k8s.io/client-go/kubernetes/scheme"
@@ -412,21 +414,43 @@ func determinePodHealth(obj *unstructured.Unstructured) (status model.Kubernetes
 }
 
 func determineIngressHealth(obj *unstructured.Unstructured) (status model.KubernetesResourceState_HealthStatus, desc string) {
-	i := &networkingv1beta1.Ingress{}
-	err := scheme.Scheme.Convert(obj, i, nil)
-	if err != nil {
-		status = model.KubernetesResourceState_OTHER
-		desc = fmt.Sprintf("Unexpected error while calculating: unable to convert %T to %T: %v", obj, i, err)
+	check := func(ingressList []corev1.LoadBalancerIngress) {
+		if len(ingressList) == 0 {
+			status = model.KubernetesResourceState_OTHER
+			desc = "Ingress points for the load-balancer are in progress"
+			return
+		}
+		status = model.KubernetesResourceState_HEALTHY
+		return
+	}
+
+	v1Ingress := &networkingv1.Ingress{}
+	err := scheme.Scheme.Convert(obj, v1Ingress, nil)
+	if err == nil {
+		check(v1Ingress.Status.LoadBalancer.Ingress)
+		return
+	}
+
+	// PipeCD keeps supporting Kubernetes < v1.22 for the meantime so checks deprecated versions as well.
+
+	betaIngress := &networkingv1beta1.Ingress{}
+	err = scheme.Scheme.Convert(obj, betaIngress, nil)
+	if err == nil {
+		check(betaIngress.Status.LoadBalancer.Ingress)
+		return
+	}
+
+	extensionIngress := &extensionsv1beta1.Ingress{}
+	err = scheme.Scheme.Convert(obj, extensionIngress, nil)
+	if err == nil {
+		check(extensionIngress.Status.LoadBalancer.Ingress)
 		return
 	}
 
 	status = model.KubernetesResourceState_OTHER
-	if len(i.Status.LoadBalancer.Ingress) == 0 {
-		desc = "Ingress points for the load-balancer are in progress"
-		return
-	}
-	status = model.KubernetesResourceState_HEALTHY
+	desc = fmt.Sprintf("Unexpected error while calculating: unable to convert %T to neither %T, %T, nor %T: %v", obj, v1Ingress, betaIngress, extensionIngress, err)
 	return
+
 }
 
 func determineServiceHealth(obj *unstructured.Unstructured) (status model.KubernetesResourceState_HealthStatus, desc string) {
