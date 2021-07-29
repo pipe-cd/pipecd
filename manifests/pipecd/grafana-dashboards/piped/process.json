@@ -79,7 +79,7 @@
       "targets": [
         {
           "exemplar": true,
-          "expr": "sum by (piped)(rate(piped_process_cpu_seconds_total{job=\"pipecd-ops\"}[5m])* 100)",
+          "expr": "sum by (piped)(rate(process_cpu_seconds_total{job=\"pipecd-ops\", pipecd_component=\"piped\"}[5m])* 100)",
           "interval": "",
           "legendFormat": "{{piped}}",
           "queryType": "randomWalk",
@@ -176,7 +176,7 @@
       "targets": [
         {
           "exemplar": true,
-          "expr": "sum by (piped)(piped_process_virtual_memory_bytes{job=\"pipecd-ops\"} / (1024 * 1024))",
+          "expr": "sum by (piped)(process_virtual_memory_bytes{job=\"pipecd-ops\", pipecd_component=\"piped\"} / (1024 * 1024))",
           "interval": "",
           "legendFormat": "{{piped}}",
           "queryType": "randomWalk",
@@ -240,5 +240,5 @@
   "timezone": "",
   "title": "Process",
   "uid": "n4vx3oi7k",
-  "version": 4
+  "version": 6
 }
