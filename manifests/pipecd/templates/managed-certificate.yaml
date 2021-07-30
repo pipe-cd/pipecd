@@ -9,3 +9,16 @@ spec:
   - {{ . }}
   {{- end }}
 {{- end }}
+
+{{- if .Values.monitoring.managedCertificate.enabled -}}
+---
+apiVersion: networking.gke.io/v1beta2
+kind: ManagedCertificate
+metadata:
+  name: {{ include "pipecd.fullname" . }}-grafana
+spec:
+  domains:
+  {{- range .Values.monitoring.managedCertificate.domains }}
+  - {{ . }}
+  {{- end }}
+{{- end }}
