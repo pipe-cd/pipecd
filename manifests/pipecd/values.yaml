@@ -126,7 +126,7 @@ monitoring:
     enabled: false
     iap:
       enabled: false
-      secretName: pipecd-grafana-iap
+      secretName: pipecd-monitoring-iap
 
 # All directives inside this section will be directly sent to the prometheus chart.
 # Head to the below link to see all available values.
