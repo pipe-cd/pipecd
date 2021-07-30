@@ -121,6 +121,12 @@ monitoring:
   # If true, cluster stats will be collected and shown on the dashboard.
   # It includes stats for Nodes, Pods and so on.
   clusterStats: false
+  # Optional configuration for GKE.
+  backendConfig:
+    enabled: false
+    iap:
+      enabled: false
+      secretName: pipecd-grafana-iap
 
 # All directives inside this section will be directly sent to the prometheus chart.
 # Head to the below link to see all available values.
@@ -160,6 +166,10 @@ prometheus:
 # https://github.com/grafana/helm-charts/tree/main/charts/grafana
 grafana:
   adminPassword: admin
+  ingress:
+    enabled: false
+    hosts: []
+    path: /*
   sidecar:
     datasources:
       enabled: true
