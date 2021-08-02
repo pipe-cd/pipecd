@@ -21,6 +21,7 @@ import (
 	"time"
 
 	jwtgo "github.com/golang-jwt/jwt"
+	grpc_prometheus "github.com/grpc-ecosystem/go-grpc-prometheus"
 	"github.com/prometheus/client_golang/prometheus"
 	"github.com/spf13/cobra"
 	"go.uber.org/zap"
@@ -473,6 +474,7 @@ func registerMetrics() *prometheus.Registry {
 
 	wrapped.Register(prometheus.NewGoCollector())
 	wrapped.Register(prometheus.NewProcessCollector(prometheus.ProcessCollectorOpts{}))
+	wrapped.Register(grpc_prometheus.DefaultServerMetrics)
 
 	cachemetrics.Register(wrapped)
 	httpapimetrics.Register(wrapped)
