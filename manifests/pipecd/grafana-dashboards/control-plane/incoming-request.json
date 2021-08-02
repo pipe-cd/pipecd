@@ -17,7 +17,7 @@
   "gnetId": null,
   "graphTooltip": 0,
   "id": 7,
-  "iteration": 1627367191912,
+  "iteration": 1627869678503,
   "links": [],
   "panels": [
     {
@@ -80,7 +80,7 @@
       "targets": [
         {
           "exemplar": true,
-          "expr": "sum by (grpc_method) (\n  rate(grpc_server_handled_total{job=\"pipecd-server\", pipecd_grpc_service=\"$api\"}[5m])\n)",
+          "expr": "sum by (grpc_method) (\n  rate(grpc_server_handled_total{pipecd_component=\"server\", pipecd_grpc_service=\"$api\"}[5m])\n)",
           "interval": "",
           "legendFormat": "{{method}}",
           "queryType": "randomWalk",
@@ -274,7 +274,7 @@
       "targets": [
         {
           "exemplar": true,
-          "expr": "sum by (grpc_method) (\n  rate(grpc_server_handled_total{job=\"pipecd-server\", pipecd_grpc_service=\"$api\", grpc_code!=\"OK\", grpc_code!=\"NotFound\"}[5m])\n)\n/\nsum by (grpc_method) (\n  rate(grpc_server_handled_total{job=\"pipecd-server\", pipecd_grpc_service=\"$api\"}[5m])\n) * 100\n",
+          "expr": "sum by (grpc_method) (\n  rate(grpc_server_handled_total{pipecd_component=\"server\", pipecd_grpc_service=\"$api\", grpc_code!=\"OK\", grpc_code!=\"NotFound\"}[5m])\n)\n/\nsum by (grpc_method) (\n  rate(grpc_server_handled_total{pipecd_component=\"server\", pipecd_grpc_service=\"$api\"}[5m])\n) * 100\n",
           "format": "time_series",
           "instant": false,
           "interval": "",
@@ -373,7 +373,7 @@
       "targets": [
         {
           "exemplar": true,
-          "expr": "sum by (grpc_code) (\n  rate(grpc_server_handled_total{job=\"pipecd-server\", pipecd_grpc_service=\"$api\", grpc_code!=\"OK\", grpc_code!=\"NotFound\"}[5m])\n)\n/\nsum by (grpc_code) (\n  rate(grpc_server_handled_total{job=\"pipecd-server\", pipecd_grpc_service=\"$api\"}[5m])\n) * 100\n",
+          "expr": "sum by (grpc_code) (\n  rate(grpc_server_handled_total{pipecd_component=\"server\", pipecd_grpc_service=\"$api\", grpc_code!=\"OK\", grpc_code!=\"NotFound\"}[5m])\n)\n/\nsum by (grpc_code) (\n  rate(grpc_server_handled_total{pipecd_component=\"server\", pipecd_grpc_service=\"$api\"}[5m])\n) * 100\n",
           "format": "time_series",
           "instant": false,
           "interval": "",
@@ -485,7 +485,7 @@
       "targets": [
         {
           "exemplar": true,
-          "expr": "sum by (path) (\n  rate(pipecd_server_http_requests_total{job=\"pipecd-server\"}[5m])\n)",
+          "expr": "sum by (path) (\n  rate(http_requests_total{pipecd_component=\"server\"}[5m])\n)",
           "interval": "",
           "legendFormat": "{{path}}",
           "queryType": "randomWalk",
@@ -582,7 +582,7 @@
       "targets": [
         {
           "exemplar": true,
-          "expr": "sum by (path) (\n  rate(pipecd_server_http_requests_total{job=\"pipecd-server\", code=~\"5.*\"}[5m])\n)\n/\nsum by (path) (\n  rate(pipecd_server_http_requests_total{job=\"pipecd-server\"}[5m])\n) * 100\n",
+          "expr": "sum by (path) (\n  rate(http_requests_total{pipecd_component=\"server\", code=~\"5.*\"}[5m])\n)\n/\nsum by (path) (\n  rate(http_requests_total{pipecd_component=\"server\"}[5m])\n) * 100\n",
           "format": "time_series",
           "instant": false,
           "interval": "",
@@ -681,9 +681,9 @@
       "targets": [
         {
           "exemplar": true,
-          "expr": "histogram_quantile(\n  0.99,\n  sum without(instance, job)(rate(pipecd_server_http_request_duration_milliseconds_bucket[5m]))\n)",
+          "expr": "histogram_quantile(\n  0.99,\n  sum without(instance, job)(rate(http_request_duration_milliseconds_bucket{pipecd_component=\"server\"}[5m]))\n)",
           "interval": "",
-          "legendFormat": "{{path}}",
+          "legendFormat": "{{path}}: {{code}}",
           "queryType": "randomWalk",
           "refId": "A"
         }
@@ -777,5 +777,5 @@
   "timezone": "",
   "title": "Incoming Request",
   "uid": "3jeba3R7z",
-  "version": 16
+  "version": 4
 }
