@@ -73,7 +73,7 @@ func (s *applicationStore) EnableApplication(ctx context.Context, id string) err
 	return s.ds.Update(ctx, ApplicationModelKind, id, applicationFactory, func(e interface{}) error {
 		app := e.(*model.Application)
 		if app.Deleted {
-			return errors.New("unable to enable a deleted application")
+			return fmt.Errorf("can't enable a deleted application: %w", ErrInvalidArgument)
 		}
 		app.Disabled = false
 		app.UpdatedAt = s.nowFunc().Unix()
@@ -85,7 +85,7 @@ func (s *applicationStore) DisableApplication(ctx context.Context, id string) er
 	return s.ds.Update(ctx, ApplicationModelKind, id, applicationFactory, func(e interface{}) error {
 		app := e.(*model.Application)
 		if app.Deleted {
-			return errors.New("unable to disable a deleted application")
+			return fmt.Errorf("can't disable a deleted application: %w", ErrInvalidArgument)
 		}
 		app.Disabled = true
 		app.UpdatedAt = s.nowFunc().Unix()
