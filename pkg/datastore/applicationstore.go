@@ -16,7 +16,6 @@ package datastore
 
 import (
 	"context"
-	"errors"
 	"fmt"
 	"time"
 
