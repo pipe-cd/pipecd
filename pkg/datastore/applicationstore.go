@@ -17,6 +17,7 @@ package datastore
 import (
 	"context"
 	"errors"
+	"fmt"
 	"time"
 
 	"github.com/pipe-cd/pipe/pkg/model"
@@ -146,7 +147,7 @@ func (s *applicationStore) UpdateApplication(ctx context.Context, id string, upd
 	return s.ds.Update(ctx, ApplicationModelKind, id, applicationFactory, func(e interface{}) error {
 		a := e.(*model.Application)
 		if a.Deleted {
-			return errors.New("unable to update a deleted application")
+			return fmt.Errorf("can't update a deleted application: %w", ErrInvalidArgument)
 		}
 		if err := updater(a); err != nil {
 			return err
