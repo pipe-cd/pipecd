@@ -15,7 +15,7 @@
   "editable": true,
   "gnetId": null,
   "graphTooltip": 0,
-  "id": 4,
+  "id": 12,
   "links": [],
   "panels": [
     {
@@ -80,7 +80,7 @@
       "targets": [
         {
           "exemplar": true,
-          "expr": "sum by (piped)(go_threads{job=\"pipecd-ops\", pipecd_component=\"piped\"})",
+          "expr": "sum by (piped)(go_threads{job=\"pipecd-ops\", pipecd_component=\"piped\", piped=~\"$piped\"})",
           "interval": "",
           "legendFormat": "{{piped}}",
           "queryType": "randomWalk",
@@ -178,7 +178,7 @@
       "targets": [
         {
           "exemplar": true,
-          "expr": "sum by (piped)(go_goroutines{job=\"pipecd-ops\", pipecd_component=\"piped\"})",
+          "expr": "sum by (piped)(go_goroutines{job=\"pipecd-ops\", pipecd_component=\"piped\", piped=~\"$piped\"})",
           "interval": "",
           "legendFormat": "{{piped}}",
           "queryType": "randomWalk",
@@ -290,7 +290,7 @@
       "targets": [
         {
           "exemplar": true,
-          "expr": "sum by (piped) (go_memstats_heap_alloc_bytes{job=\"pipecd-ops\", pipecd_component=\"piped\"} / (1024 * 1024))",
+          "expr": "sum by (piped) (go_memstats_heap_alloc_bytes{job=\"pipecd-ops\", pipecd_component=\"piped\", piped=~\"$piped\"} / (1024 * 1024))",
           "interval": "",
           "legendFormat": "{{piped}}",
           "queryType": "randomWalk",
@@ -388,7 +388,7 @@
       "targets": [
         {
           "exemplar": true,
-          "expr": "sum by (piped) (go_memstats_heap_inuse_bytes{job=\"pipecd-ops\", pipecd_component=\"piped\"} / (1024 * 1024))",
+          "expr": "sum by (piped) (go_memstats_heap_inuse_bytes{job=\"pipecd-ops\", pipecd_component=\"piped\", piped=~\"$piped\"} / (1024 * 1024))",
           "interval": "",
           "legendFormat": "{{piped}}",
           "queryType": "randomWalk",
@@ -442,7 +442,39 @@
   "style": "dark",
   "tags": [],
   "templating": {
-    "list": []
+    "list": [
+      {
+        "allValue": null,
+        "current": {
+          "selected": true,
+          "text": "All",
+          "value": "$__all"
+        },
+        "datasource": null,
+        "definition": "label_values(go_info{pipecd_component=\"piped\"}, piped)",
+        "description": null,
+        "error": null,
+        "hide": 0,
+        "includeAll": true,
+        "label": null,
+        "multi": false,
+        "name": "piped",
+        "options": [],
+        "query": {
+          "query": "label_values(go_info{pipecd_component=\"piped\"}, piped)",
+          "refId": "StandardVariableQuery"
+        },
+        "refresh": 2,
+        "regex": "",
+        "skipUrlSync": false,
+        "sort": 0,
+        "tagValuesQuery": "",
+        "tags": [],
+        "tagsQuery": "",
+        "type": "query",
+        "useTags": false
+      }
+    ]
   },
   "time": {
     "from": "now-1h",
@@ -452,5 +484,5 @@
   "timezone": "",
   "title": "Go",
   "uid": "dTmyAomnk",
-  "version": 8
+  "version": 10
 }

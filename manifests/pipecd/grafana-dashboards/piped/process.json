@@ -15,7 +15,7 @@
   "editable": true,
   "gnetId": null,
   "graphTooltip": 0,
-  "id": 6,
+  "id": 10,
   "links": [],
   "panels": [
     {
@@ -79,7 +79,7 @@
       "targets": [
         {
           "exemplar": true,
-          "expr": "sum by (piped)(rate(process_cpu_seconds_total{job=\"pipecd-ops\", pipecd_component=\"piped\"}[5m])* 100)",
+          "expr": "sum by (piped)(rate(process_cpu_seconds_total{job=\"pipecd-ops\", pipecd_component=\"piped\", piped=~\"$piped\"}[5m])* 100)",
           "interval": "",
           "legendFormat": "{{piped}}",
           "queryType": "randomWalk",
@@ -176,7 +176,7 @@
       "targets": [
         {
           "exemplar": true,
-          "expr": "sum by (piped)(process_virtual_memory_bytes{job=\"pipecd-ops\", pipecd_component=\"piped\"} / (1024 * 1024))",
+          "expr": "sum by (piped)(process_virtual_memory_bytes{job=\"pipecd-ops\", pipecd_component=\"piped\", piped=~\"$piped\"} / (1024 * 1024))",
           "interval": "",
           "legendFormat": "{{piped}}",
           "queryType": "randomWalk",
@@ -230,7 +230,39 @@
   "style": "dark",
   "tags": [],
   "templating": {
-    "list": []
+    "list": [
+      {
+        "allValue": null,
+        "current": {
+          "selected": false,
+          "text": "All",
+          "value": "$__all"
+        },
+        "datasource": null,
+        "definition": "label_values(go_info{pipecd_component=\"piped\"}, piped)",
+        "description": null,
+        "error": null,
+        "hide": 0,
+        "includeAll": true,
+        "label": null,
+        "multi": false,
+        "name": "piped",
+        "options": [],
+        "query": {
+          "query": "label_values(go_info{pipecd_component=\"piped\"}, piped)",
+          "refId": "StandardVariableQuery"
+        },
+        "refresh": 2,
+        "regex": "",
+        "skipUrlSync": false,
+        "sort": 0,
+        "tagValuesQuery": "",
+        "tags": [],
+        "tagsQuery": "",
+        "type": "query",
+        "useTags": false
+      }
+    ]
   },
   "time": {
     "from": "now-6h",
@@ -240,5 +272,5 @@
   "timezone": "",
   "title": "Process",
   "uid": "n4vx3oi7k",
-  "version": 6
+  "version": 10
 }
