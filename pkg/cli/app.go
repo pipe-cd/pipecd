@@ -72,6 +72,7 @@ type TelemetryFlags struct {
 var defaultTelemetryFlags = TelemetryFlags{
 	LogLevel:    string(log.DefaultLevel),
 	LogEncoding: string(log.DefaultEncoding),
+	Metrics:     true,
 }
 
 func (a *App) setGlobalFlags() {
