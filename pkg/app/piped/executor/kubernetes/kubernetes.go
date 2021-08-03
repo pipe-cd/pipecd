@@ -681,6 +681,8 @@ func patchManifest(m provider.Manifest, patch config.K8sResourcePatch) (*provide
 		return &manifests[0], nil
 	}
 
+	// When the target is the whole manifest,
+	// just pass full bytes to process and build a new manfiest based on the returned data.
 	if patch.Target.Field == "" {
 		out, err := process(fullBytes)
 		if err != nil {
@@ -689,6 +691,8 @@ func patchManifest(m provider.Manifest, patch config.K8sResourcePatch) (*provide
 		return buildManifest(out)
 	}
 
+	// When the target is a single string field
+	// we have to extract the field value as a string data firstly.
 	p, err := yamlprocessor.NewProcessor(fullBytes)
 	if err != nil {
 		return nil, err
@@ -703,11 +707,13 @@ func patchManifest(m provider.Manifest, patch config.K8sResourcePatch) (*provide
 		return nil, fmt.Errorf("the value for the specified field %s must be a string", patch.Target.Field)
 	}
 
+	// And process that field data.
 	out, err := process([]byte(sv))
 	if err != nil {
 		return nil, err
 	}
 
+	// Then rewrite the new data into the specified field.
 	if err := p.ReplaceString(patch.Target.Field, string(out)); err != nil {
 		return nil, err
 	}
