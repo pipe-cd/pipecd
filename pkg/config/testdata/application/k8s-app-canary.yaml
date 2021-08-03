@@ -271,9 +271,11 @@ spec:
               name: envoy-config
               field: $.data.envoy-config
             yamlOps:
-            - path: $.resources[0].virtual_hosts[0].routes[0].route.weighted_clusters.clusters[0].weight
+            - op: replace
+              path: $.resources[0].virtual_hosts[0].routes[0].route.weighted_clusters.clusters[0].weight
               value: 50
-            - path: $.resources[0].virtual_hosts[0].routes[0].route.weighted_clusters.clusters[1].weight
+            - op: replace
+              path: $.resources[0].virtual_hosts[0].routes[0].route.weighted_clusters.clusters[1].weight
               value: 50
 
       - name: K8S_CANARY_ROLLOUT
@@ -285,9 +287,11 @@ spec:
               name: envoy-config
               field: $.data.envoy-config
             yamlOps:
-            - path: $.resources[0].virtual_hosts[0].routes[0].route.weighted_clusters.clusters[0].weight
+            - op: replace
+              path: $.resources[0].virtual_hosts[0].routes[0].route.weighted_clusters.clusters[0].weight
               value: 10
-            - path: $.resources[0].virtual_hosts[0].routes[0].route.weighted_clusters.clusters[1].weight
+            - op: replace
+              path: $.resources[0].virtual_hosts[0].routes[0].route.weighted_clusters.clusters[1].weight
               value: 90
 
       - name: K8S_PRIMARY_ROLLOUT
