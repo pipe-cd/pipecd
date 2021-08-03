@@ -618,7 +618,7 @@ func patchManifests(manifests []provider.Manifest, patches []config.K8sResourceP
 	copy(out, manifests)
 
 	for _, p := range patches {
-		var target = -1
+		target := -1
 		for i, m := range out {
 			if m.Key.Kind != p.Target.Kind {
 				continue
@@ -659,11 +659,19 @@ func patchManifest(m provider.Manifest, patch config.K8sResourcePatch) (*provide
 		}
 
 		for _, o := range patch.YamlOps {
-			if o.Op != "replace" {
+			switch o.Op {
+			case "replace":
+				if err := p.ReplaceString(o.Path, o.Value); err != nil {
+					return nil, err
+				}
+			case "add":
+				// TODO: Support add operation for canary patch
 				return nil, fmt.Errorf("%s operation is not supported currently", o.Op)
-			}
-			if err := p.ReplaceString(o.Path, o.Value); err != nil {
-				return nil, err
+			case "remove":
+				// TODO: Support remove operation for canary patch
+				return nil, fmt.Errorf("%s operation is not supported currently", o.Op)
+			default:
+				return nil, fmt.Errorf("unexpected operation %s given", o.Op)
 			}
 		}
 
@@ -682,7 +690,7 @@ func patchManifest(m provider.Manifest, patch config.K8sResourcePatch) (*provide
 	}
 
 	// When the target is the whole manifest,
-	// just pass full bytes to process and build a new manfiest based on the returned data.
+	// just pass full bytes to process and build a new manifest based on the returned data.
 	if patch.Target.Field == "" {
 		out, err := process(fullBytes)
 		if err != nil {

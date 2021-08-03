@@ -75,7 +75,7 @@ func (p *Processor) GetValue(path string) (interface{}, error) {
 }
 
 // ReplaceString replaces the value placed at a given path with
-// a given string value, and then gives back the new yaml bytes.
+// a given string value.
 func (p *Processor) ReplaceString(path, value string) error {
 	if path == "" {
 		return errors.New("no path given")
@@ -83,7 +83,7 @@ func (p *Processor) ReplaceString(path, value string) error {
 
 	yamlPath, err := goyaml.PathString(path)
 	if err != nil {
-		return fmt.Errorf("failed to parse path %s: %v", path, err)
+		return fmt.Errorf("failed to parse path %s: %w", path, err)
 	}
 
 	// Retrieve the current node placed at the specified path.
