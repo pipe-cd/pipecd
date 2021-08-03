@@ -124,6 +124,7 @@ message RegisterEventRequest {
 }
 
 message RegisterEventResponse {
+    string event_id = 1 [(validate.rules).string.min_len = 1];
 }
 
 message RequestPlanPreviewRequest {
