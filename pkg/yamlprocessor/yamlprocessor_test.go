@@ -154,3 +154,109 @@ foo:
 		})
 	}
 }
+
+func TestReplaceString(t *testing.T) {
+	testcases := []struct {
+		name    string
+		yml     string
+		path    string
+		value   string
+		want    []byte
+		wantErr bool
+	}{
+		{
+			name:    "empty yaml given",
+			yml:     "",
+			path:    "$.foo",
+			value:   "new-text",
+			wantErr: true,
+		},
+		{
+			name:    "empty path given",
+			yml:     "foo: bar",
+			path:    "",
+			value:   "new-text",
+			wantErr: true,
+		},
+		{
+			name:    "wrong path given",
+			yml:     "foo: bar",
+			path:    "wrong",
+			value:   "new-text",
+			wantErr: true,
+		},
+		{
+			name:    "empty value given",
+			yml:     "foo: bar",
+			path:    "$.foo",
+			value:   "",
+			want:    []byte("foo: "),
+			wantErr: false,
+		},
+		{
+			name:    "valid value given",
+			yml:     "foo: bar",
+			path:    "$.foo",
+			value:   "new-text",
+			want:    []byte("foo: new-text"),
+			wantErr: false,
+		},
+		{
+			name: "valid value with comment given",
+			yml: `# comments
+foo: bar`,
+			path:  "$.foo",
+			value: "new-text",
+			want: []byte(`# comments
+foo: new-text`),
+			wantErr: false,
+		},
+		{
+			name: "array in block style",
+			yml: `foo:
+  - bar
+  - baz`,
+			path:  "$.foo[0]",
+			value: "new-text",
+			want: []byte(`foo:
+  - new-text
+  - baz`),
+			wantErr: false,
+		},
+		{
+			name:    "array in flow style",
+			yml:     `foo: [bar, baz]`,
+			path:    "$.foo[0]",
+			value:   "new-text",
+			want:    []byte(`foo: [new-text, baz]`),
+			wantErr: false,
+		},
+		{
+			name: "there is an useless blank line",
+			yml: `
+foo:
+  - bar
+  - baz`,
+			path:  "$.foo[0]",
+			value: "new-text",
+			want: []byte(`foo:
+  - new-text
+  - baz`),
+			wantErr: false,
+		},
+	}
+	for _, tc := range testcases {
+		t.Run(tc.name, func(t *testing.T) {
+			p, err := NewProcessor([]byte(tc.yml))
+			require.NotNil(t, p)
+			require.NoError(t, err)
+
+			rerr := p.ReplaceString(tc.path, tc.value)
+			got, err := p.Bytes()
+			assert.Equal(t, tc.wantErr, err != nil || rerr != nil)
+			if !tc.wantErr {
+				assert.Equal(t, tc.want, got)
+			}
+		})
+	}
+}
