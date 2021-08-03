@@ -679,7 +679,7 @@ func TestPatchManifests(t *testing.T) {
 		{
 			name: "no patches",
 			input: []provider.Manifest{
-				provider.Manifest{
+				{
 					Key: provider.ResourceKey{
 						Kind: "Deployment",
 						Name: "deployment-1",
@@ -687,7 +687,7 @@ func TestPatchManifests(t *testing.T) {
 				},
 			},
 			expected: []provider.Manifest{
-				provider.Manifest{
+				{
 					Key: provider.ResourceKey{
 						Kind: "Deployment",
 						Name: "deployment-1",
@@ -698,7 +698,7 @@ func TestPatchManifests(t *testing.T) {
 		{
 			name: "no manifest for the given patch",
 			input: []provider.Manifest{
-				provider.Manifest{
+				{
 					Key: provider.ResourceKey{
 						Kind: "Deployment",
 						Name: "deployment-1",
@@ -706,7 +706,7 @@ func TestPatchManifests(t *testing.T) {
 				},
 			},
 			patches: []config.K8sResourcePatch{
-				config.K8sResourcePatch{
+				{
 					Target: config.K8sResourcePatchTarget{
 						K8sResourceReference: config.K8sResourceReference{
 							Kind: "Deployment",
@@ -720,19 +720,19 @@ func TestPatchManifests(t *testing.T) {
 		{
 			name: "multiple patches",
 			input: []provider.Manifest{
-				provider.Manifest{
+				{
 					Key: provider.ResourceKey{
 						Kind: "Deployment",
 						Name: "deployment-1",
 					},
 				},
-				provider.Manifest{
+				{
 					Key: provider.ResourceKey{
 						Kind: "Deployment",
 						Name: "deployment-2",
 					},
 				},
-				provider.Manifest{
+				{
 					Key: provider.ResourceKey{
 						Kind: "ConfigMap",
 						Name: "configmap-1",
@@ -740,7 +740,7 @@ func TestPatchManifests(t *testing.T) {
 				},
 			},
 			patches: []config.K8sResourcePatch{
-				config.K8sResourcePatch{
+				{
 					Target: config.K8sResourcePatchTarget{
 						K8sResourceReference: config.K8sResourceReference{
 							Kind: "ConfigMap",
@@ -748,7 +748,7 @@ func TestPatchManifests(t *testing.T) {
 						},
 					},
 				},
-				config.K8sResourcePatch{
+				{
 					Target: config.K8sResourcePatchTarget{
 						K8sResourceReference: config.K8sResourceReference{
 							Kind: "Deployment",
@@ -756,7 +756,7 @@ func TestPatchManifests(t *testing.T) {
 						},
 					},
 				},
-				config.K8sResourcePatch{
+				{
 					Target: config.K8sResourcePatchTarget{
 						K8sResourceReference: config.K8sResourceReference{
 							Kind: "ConfigMap",
@@ -766,20 +766,20 @@ func TestPatchManifests(t *testing.T) {
 				},
 			},
 			expected: []provider.Manifest{
-				provider.Manifest{
+				{
 					Key: provider.ResourceKey{
 						Kind:      "Deployment",
 						Name:      "deployment-1",
 						Namespace: "+",
 					},
 				},
-				provider.Manifest{
+				{
 					Key: provider.ResourceKey{
 						Kind: "Deployment",
 						Name: "deployment-2",
 					},
 				},
-				provider.Manifest{
+				{
 					Key: provider.ResourceKey{
 						Kind:      "ConfigMap",
 						Name:      "configmap-1",
