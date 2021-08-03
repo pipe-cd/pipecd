@@ -474,7 +474,7 @@ A wrapper of type `int` to represent percentage data. Basically, you can pass `1
 | Field | Type | Description | Required |
 |-|-|-|-|
 | target | [KubernetesResourcePatchTarget](/docs/user-guide/configuration-reference/#kubernetesresourcepatchtarget) | Which manifest, which field will be the target of patch operations. | Yes |
-| yamlOps | [][KubernetesResourcePatchYAMLOp](/docs/user-guide/configuration-reference/#kubernetesresourcepatchyamlop) | List of yaml operations should be applied to the above target. | No |
+| ops | [][KubernetesResourcePatchOp](/docs/user-guide/configuration-reference/#kubernetesresourcepatchop) | List of operations should be applied to the above target. | No |
 
 ### KubernetesResourcePatchTarget
 
@@ -482,12 +482,13 @@ A wrapper of type `int` to represent percentage data. Basically, you can pass `1
 |-|-|-|-|
 | kind | string | The resource kind. e.g. `ConfigMap` | Yes |
 | name | string | The resource name. e.g. `config-map-name` | Yes |
-| field | string | A string field whose content will be the target of patch operations. Empty means the whole manifest will be the target. e.g. `$.data.envoy-config` | No |
+| documentRoot | string | In case you want to manipulate the YAML or JSON data specified in a field of the manfiest, specify this to that field. The string value of that field will be used as input for the patch operations. Otherwise, the whole manifest will be the target of patch operations.
+whole manifest will be the target. e.g. `$.data.envoy-config` | No |
 
-### KubernetesResourcePatchYAMLOp
+### KubernetesResourcePatchOp
 
 | Field | Type | Description | Required |
 |-|-|-|-|
-| op | string | The operation type. This must be one of `replace`, `add`, `remove`. Default is `replace`. | No |
-| path | string | The path string pointing to the manipulated field. e.g. `$.foo.array[0].bar` | Yes |
+| op | string | The operation type. This must be one of `yaml-replace`, `yaml-add`, `yaml-remove`, `json-replace`, `text-regex`. Default is `yaml-replace`. | No |
+| path | string | The path string pointing to the manipulated field. For yaml operations it looks like `$.foo.array[0].bar`. | No |
 | value | string | The value string whose content will be used as new value for the field. | No |

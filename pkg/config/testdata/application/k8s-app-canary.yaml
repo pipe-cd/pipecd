@@ -269,7 +269,7 @@ spec:
           - target:
               kind: ConfigMap
               name: envoy-config
-              field: $.data.envoy-config
+              documentRoot: $.data.envoy-config
             yamlOps:
             - op: replace
               path: $.resources[0].virtual_hosts[0].routes[0].route.weighted_clusters.clusters[0].weight
@@ -285,7 +285,7 @@ spec:
           - target:
               kind: ConfigMap
               name: envoy-config
-              field: $.data.envoy-config
+              documentRoot: $.data.envoy-config
             yamlOps:
             - op: replace
               path: $.resources[0].virtual_hosts[0].routes[0].route.weighted_clusters.clusters[0].weight

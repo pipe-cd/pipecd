@@ -634,7 +634,7 @@ func patchManifests(manifests []provider.Manifest, patches []config.K8sResourceP
 		}
 		patched, err := patcher(out[target], p)
 		if err != nil {
-			return nil, err
+			return nil, fmt.Errorf("failed to patch manifest: %s, error: %v", out[target].Key, err)
 		}
 		out[target] = *patched
 	}
@@ -643,7 +643,7 @@ func patchManifests(manifests []provider.Manifest, patches []config.K8sResourceP
 }
 
 func patchManifest(m provider.Manifest, patch config.K8sResourcePatch) (*provider.Manifest, error) {
-	if len(patch.YamlOps) == 0 {
+	if len(patch.Ops) == 0 {
 		return &m, nil
 	}
 
@@ -658,20 +658,15 @@ func patchManifest(m provider.Manifest, patch config.K8sResourcePatch) (*provide
 			return nil, err
 		}
 
-		for _, o := range patch.YamlOps {
+		for _, o := range patch.Ops {
 			switch o.Op {
-			case "replace":
+			case config.K8sResourcePatchOpYAMLReplace:
 				if err := p.ReplaceString(o.Path, o.Value); err != nil {
-					return nil, err
+					return nil, fmt.Errorf("failed to replace value at path: %s, error: %v", o.Path, err)
 				}
-			case "add":
-				// TODO: Support add operation for canary patch
-				return nil, fmt.Errorf("%s operation is not supported currently", o.Op)
-			case "remove":
-				// TODO: Support remove operation for canary patch
-				return nil, fmt.Errorf("%s operation is not supported currently", o.Op)
 			default:
-				return nil, fmt.Errorf("unexpected operation %s given", o.Op)
+				// TODO: Support more patch operation for K8sCanaryRolloutStageOptions.
+				return nil, fmt.Errorf("%s operation is not supported currently", o.Op)
 			}
 		}
 
@@ -691,7 +686,8 @@ func patchManifest(m provider.Manifest, patch config.K8sResourcePatch) (*provide
 
 	// When the target is the whole manifest,
 	// just pass full bytes to process and build a new manifest based on the returned data.
-	if patch.Target.Field == "" {
+	root := patch.Target.DocumentRoot
+	if root == "" {
 		out, err := process(fullBytes)
 		if err != nil {
 			return nil, err
@@ -706,13 +702,13 @@ func patchManifest(m provider.Manifest, patch config.K8sResourcePatch) (*provide
 		return nil, err
 	}
 
-	v, err := p.GetValue(patch.Target.Field)
+	v, err := p.GetValue(root)
 	if err != nil {
 		return nil, err
 	}
 	sv, ok := v.(string)
 	if !ok {
-		return nil, fmt.Errorf("the value for the specified field %s must be a string", patch.Target.Field)
+		return nil, fmt.Errorf("the value for the specified root %s must be a string", root)
 	}
 
 	// And process that field data.
@@ -721,8 +717,8 @@ func patchManifest(m provider.Manifest, patch config.K8sResourcePatch) (*provide
 		return nil, err
 	}
 
-	// Then rewrite the new data into the specified field.
-	if err := p.ReplaceString(patch.Target.Field, string(out)); err != nil {
+	// Then rewrite the new data into the specified root.
+	if err := p.ReplaceString(root, string(out)); err != nil {
 		return nil, err
 	}
 

@@ -180,22 +180,30 @@ type K8sCanaryRolloutStageOptions struct {
 }
 
 type K8sResourcePatch struct {
-	Target  K8sResourcePatchTarget   `json:"target"`
-	YamlOps []K8sResourcePatchYAMLOp `json:"yamlOps"`
+	Target K8sResourcePatchTarget `json:"target"`
+	Ops    []K8sResourcePatchOp   `json:"ops"`
 }
 
 type K8sResourcePatchTarget struct {
 	K8sResourceReference
-	// A string field whose content will be the target of patch operations.
-	// Empty means the whole manifest will be the target.
-	Field string `json:"field"`
+	// In case you want to manipulate the YAML or JSON data specified in a field
+	// of the manfiest, specify this to that field. The string value of that field
+	// will be used as input for the patch operations.
+	// Otherwise, the whole manifest will be the target of patch operations.
+	DocumentRoot string `json:"documentRoot"`
 }
 
-type K8sResourcePatchYAMLOp struct {
+type K8sResourcePatchOpName string
+
+const (
+	K8sResourcePatchOpYAMLReplace = "yaml-replace"
+)
+
+type K8sResourcePatchOp struct {
 	// The operation type.
-	// This must be one of "replace", "add", "remove".
-	// Default is "replace".
-	Op string `json:"op" default:"replace"`
+	// This must be one of "yaml-replace", "yaml-add", "yaml-remove", "json-replace" or "text-regex".
+	// Default is "yaml-replace".
+	Op K8sResourcePatchOpName `json:"op" default:"yaml-replace"`
 	// The path string pointing to the manipulated field.
 	// E.g. "$.spec.foos[0].bar"
 	Path string `json:"path"`

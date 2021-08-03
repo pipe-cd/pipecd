@@ -570,9 +570,9 @@ func TestPatchManifest(t *testing.T) {
 			name:      "one op",
 			manifests: "testdata/patch_configmap.yaml",
 			patch: config.K8sResourcePatch{
-				YamlOps: []config.K8sResourcePatchYAMLOp{
+				Ops: []config.K8sResourcePatchOp{
 					{
-						Op:    "replace",
+						Op:    config.K8sResourcePatchOpYAMLReplace,
 						Path:  "$.data.key1",
 						Value: "value-1",
 					},
@@ -583,14 +583,14 @@ func TestPatchManifest(t *testing.T) {
 			name:      "multi ops",
 			manifests: "testdata/patch_configmap_multi_ops.yaml",
 			patch: config.K8sResourcePatch{
-				YamlOps: []config.K8sResourcePatchYAMLOp{
+				Ops: []config.K8sResourcePatchOp{
 					{
-						Op:    "replace",
+						Op:    config.K8sResourcePatchOpYAMLReplace,
 						Path:  "$.data.key1",
 						Value: "value-1",
 					},
 					{
-						Op:    "replace",
+						Op:    config.K8sResourcePatchOpYAMLReplace,
 						Path:  "$.data.key2",
 						Value: "value-2",
 					},
@@ -602,11 +602,11 @@ func TestPatchManifest(t *testing.T) {
 			manifests: "testdata/patch_configmap_field.yaml",
 			patch: config.K8sResourcePatch{
 				Target: config.K8sResourcePatchTarget{
-					Field: "$.data.envoy-config",
+					DocumentRoot: "$.data.envoy-config",
 				},
-				YamlOps: []config.K8sResourcePatchYAMLOp{
+				Ops: []config.K8sResourcePatchOp{
 					{
-						Op:    "replace",
+						Op:    config.K8sResourcePatchOpYAMLReplace,
 						Path:  "$.admin.address.socket_address.port_value",
 						Value: "9096",
 					},
@@ -618,21 +618,21 @@ func TestPatchManifest(t *testing.T) {
 			manifests: "testdata/patch_configmap_field_multi_ops.yaml",
 			patch: config.K8sResourcePatch{
 				Target: config.K8sResourcePatchTarget{
-					Field: "$.data.envoy-config",
+					DocumentRoot: "$.data.envoy-config",
 				},
-				YamlOps: []config.K8sResourcePatchYAMLOp{
+				Ops: []config.K8sResourcePatchOp{
 					{
-						Op:    "replace",
+						Op:    config.K8sResourcePatchOpYAMLReplace,
 						Path:  "$.admin.address.socket_address.port_value",
 						Value: "19095",
 					},
 					{
-						Op:    "replace",
+						Op:    config.K8sResourcePatchOpYAMLReplace,
 						Path:  "$.static_resources.clusters[1].load_assignment.endpoints[0].lb_endpoints[0].endpoint.address.socket_address.port_value",
 						Value: "19081",
 					},
 					{
-						Op:    "replace",
+						Op:    config.K8sResourcePatchOpYAMLReplace,
 						Path:  "$.static_resources.clusters[1].type",
 						Value: "DNS",
 					},
