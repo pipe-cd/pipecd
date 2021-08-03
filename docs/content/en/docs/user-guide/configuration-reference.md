@@ -474,7 +474,7 @@ A wrapper of type `int` to represent percentage data. Basically, you can pass `1
 | Field | Type | Description | Required |
 |-|-|-|-|
 | target | [KubernetesResourcePatchTarget](/docs/user-guide/configuration-reference/#kubernetesresourcepatchtarget) | Which manifest, which field will be the target of patch operations. | Yes |
-| yamlOps | [][KubernetesResourcePatchYAMLOp](/docs/user-guide/configuration-reference/#kubernetesresourcepatchyamlop) | List of yaml operations should be applied to the above target. | Yes |
+| yamlOps | [][KubernetesResourcePatchYAMLOp](/docs/user-guide/configuration-reference/#kubernetesresourcepatchyamlop) | List of yaml operations should be applied to the above target. | No |
 
 ### KubernetesResourcePatchTarget
 
