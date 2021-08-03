@@ -389,9 +389,10 @@ func (a *API) RegisterEvent(ctx context.Context, req *apiservice.RegisterEventRe
 	if err != nil {
 		return nil, err
 	}
+	id := uuid.New().String()
 
 	err = a.eventStore.AddEvent(ctx, model.Event{
-		Id:        uuid.New().String(),
+		Id:        id,
 		Name:      req.Name,
 		Data:      req.Data,
 		Labels:    req.Labels,
@@ -406,7 +407,9 @@ func (a *API) RegisterEvent(ctx context.Context, req *apiservice.RegisterEventRe
 		return nil, status.Error(codes.Internal, "Failed to register event")
 	}
 
-	return &apiservice.RegisterEventResponse{}, nil
+	return &apiservice.RegisterEventResponse{
+		EventId: id,
+	}, nil
 }
 
 func (a *API) RequestPlanPreview(ctx context.Context, req *apiservice.RequestPlanPreviewRequest) (*apiservice.RequestPlanPreviewResponse, error) {

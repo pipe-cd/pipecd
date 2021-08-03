@@ -19,6 +19,7 @@ import (
 	"fmt"
 
 	"github.com/spf13/cobra"
+	"go.uber.org/zap"
 
 	"github.com/pipe-cd/pipe/pkg/app/api/service/apiservice"
 	"github.com/pipe-cd/pipe/pkg/cli"
@@ -65,10 +66,13 @@ func (r *register) run(ctx context.Context, t cli.Telemetry) error {
 		Labels: r.labels,
 	}
 
-	if _, err := cli.RegisterEvent(ctx, req); err != nil {
+	res, err := cli.RegisterEvent(ctx, req)
+	if err != nil {
 		return fmt.Errorf("failed to register event: %w", err)
 	}
 
-	t.Logger.Info("Successfully registered event")
+	t.Logger.Info("Successfully registered event",
+		zap.String("id", res.EventId),
+	)
 	return nil
 }
