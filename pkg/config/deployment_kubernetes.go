@@ -175,6 +175,32 @@ type K8sCanaryRolloutStageOptions struct {
 	Suffix string `json:"suffix"`
 	// Whether the CANARY service should be created.
 	CreateService bool `json:"createService"`
+	// List of patches used to customize manifests for CANARY variant.
+	Patches []K8sResourcePatch
+}
+
+type K8sResourcePatch struct {
+	Target  K8sResourcePatchTarget   `json:"target"`
+	YamlOps []K8sResourcePatchYAMLOp `json:"yamlOps"`
+}
+
+type K8sResourcePatchTarget struct {
+	K8sResourceReference
+	// A string field whose content will be the target of patch operations.
+	// Empty means the whole manifest will be the target.
+	Field string `json:"field"`
+}
+
+type K8sResourcePatchYAMLOp struct {
+	// The operation type.
+	// This must be one of "replace", "add", "remove".
+	// Default is "replace".
+	Op string `json:"op" default:"replace"`
+	// The path string pointing to the manipulated field.
+	// E.g. "$.spec.foos[0].bar"
+	Path string `json:"path"`
+	// The value string whose content will be used as new value for the field.
+	Value string `json:"value"`
 }
 
 // K8sCanaryCleanStageOptions contains all configurable values for a K8S_CANARY_CLEAN stage.

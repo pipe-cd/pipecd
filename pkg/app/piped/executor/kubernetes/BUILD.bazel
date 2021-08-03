@@ -19,6 +19,7 @@ go_library(
         "//pkg/cache:go_default_library",
         "//pkg/config:go_default_library",
         "//pkg/model:go_default_library",
+        "//pkg/yamlprocessor:go_default_library",
         "@io_istio_api//networking/v1alpha3:go_default_library",
         "@io_istio_api//networking/v1beta1:go_default_library",
         "@io_k8s_api//apps/v1:go_default_library",

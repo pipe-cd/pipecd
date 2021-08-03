@@ -273,7 +273,13 @@ func modifyYAML(path, field, newValue string) ([]byte, bool, error) {
 	if err != nil {
 		return nil, false, fmt.Errorf("failed to read file: %w", err)
 	}
-	v, err := yamlprocessor.GetValue(yml, field)
+
+	processor, err := yamlprocessor.NewProcessor(yml)
+	if err != nil {
+		return nil, false, fmt.Errorf("failed to parse yaml file: %w", err)
+	}
+
+	v, err := processor.GetValue(field)
 	if err != nil {
 		return nil, false, fmt.Errorf("failed to get value at %s in %s: %w", field, path, err)
 	}
@@ -287,10 +293,15 @@ func modifyYAML(path, field, newValue string) ([]byte, bool, error) {
 	}
 
 	// Modify the local file and put it into the change list.
-	newYml, err := yamlprocessor.ReplaceValue(yml, field, newValue)
-	if err != nil {
+	if err := processor.ReplaceString(field, newValue); err != nil {
 		return nil, false, fmt.Errorf("failed to replace value at %s with %s: %w", field, newValue, err)
 	}
+
+	newYml, err := processor.Bytes()
+	if err != nil {
+		return nil, false, fmt.Errorf("failed to generate new yaml data: %w", err)
+	}
+
 	return newYml, false, nil
 }
 

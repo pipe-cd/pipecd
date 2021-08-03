@@ -30,6 +30,7 @@ import (
 	"github.com/pipe-cd/pipe/pkg/cache"
 	"github.com/pipe-cd/pipe/pkg/config"
 	"github.com/pipe-cd/pipe/pkg/model"
+	"github.com/pipe-cd/pipe/pkg/yamlprocessor"
 )
 
 const (
@@ -604,4 +605,117 @@ func annotateConfigHashToDeployment(m provider.Manifest, managedConfigMaps, mana
 		"annotations",
 	)
 	return nil
+}
+
+type patcher func(m provider.Manifest, cfg config.K8sResourcePatch) (*provider.Manifest, error)
+
+func patchManifests(manifests []provider.Manifest, patches []config.K8sResourcePatch, patcher patcher) ([]provider.Manifest, error) {
+	if len(patches) == 0 {
+		return manifests, nil
+	}
+
+	out := make([]provider.Manifest, len(manifests))
+	copy(out, manifests)
+
+	for _, p := range patches {
+		var target = -1
+		for i, m := range out {
+			if m.Key.Kind != p.Target.Kind {
+				continue
+			}
+			if m.Key.Name != p.Target.Name {
+				continue
+			}
+			target = i
+			break
+		}
+		if target < 0 {
+			return nil, fmt.Errorf("no manifest matches the given patch: kind=%s, name=%s", p.Target.Kind, p.Target.Name)
+		}
+		patched, err := patcher(out[target], p)
+		if err != nil {
+			return nil, err
+		}
+		out[target] = *patched
+	}
+
+	return out, nil
+}
+
+func patchManifest(m provider.Manifest, patch config.K8sResourcePatch) (*provider.Manifest, error) {
+	if len(patch.YamlOps) == 0 {
+		return &m, nil
+	}
+
+	fullBytes, err := m.YamlBytes()
+	if err != nil {
+		return nil, err
+	}
+
+	process := func(bytes []byte) ([]byte, error) {
+		p, err := yamlprocessor.NewProcessor(bytes)
+		if err != nil {
+			return nil, err
+		}
+
+		for _, o := range patch.YamlOps {
+			if o.Op != "replace" {
+				return nil, fmt.Errorf("%s operation is not supported currently", o.Op)
+			}
+			if err := p.ReplaceString(o.Path, o.Value); err != nil {
+				return nil, err
+			}
+		}
+
+		return p.Bytes()
+	}
+
+	buildManifest := func(bytes []byte) (*provider.Manifest, error) {
+		manifests, err := provider.ParseManifests(string(bytes))
+		if err != nil {
+			return nil, err
+		}
+		if len(manifests) != 1 {
+			return nil, fmt.Errorf("unexpected number of manifests, expected 1, got %d", len(manifests))
+		}
+		return &manifests[0], nil
+	}
+
+	if patch.Target.Field == "" {
+		out, err := process(fullBytes)
+		if err != nil {
+			return nil, err
+		}
+		return buildManifest(out)
+	}
+
+	p, err := yamlprocessor.NewProcessor(fullBytes)
+	if err != nil {
+		return nil, err
+	}
+
+	v, err := p.GetValue(patch.Target.Field)
+	if err != nil {
+		return nil, err
+	}
+	sv, ok := v.(string)
+	if !ok {
+		return nil, fmt.Errorf("the value for the specified field %s must be a string", patch.Target.Field)
+	}
+
+	out, err := process([]byte(sv))
+	if err != nil {
+		return nil, err
+	}
+
+	if err := p.ReplaceString(patch.Target.Field, string(out)); err != nil {
+		return nil, err
+	}
+
+	out, err = p.Bytes()
+	if err != nil {
+		return nil, err
+	}
+
+	return buildManifest(out)
 }
