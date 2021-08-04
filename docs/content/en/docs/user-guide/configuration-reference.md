@@ -482,7 +482,7 @@ A wrapper of type `int` to represent percentage data. Basically, you can pass `1
 |-|-|-|-|
 | kind | string | The resource kind. e.g. `ConfigMap` | Yes |
 | name | string | The resource name. e.g. `config-map-name` | Yes |
-| documentRoot | string | In case you want to manipulate the YAML or JSON data specified in a field of the manfiest, specify this to that field. The string value of that field will be used as input for the patch operations. Otherwise, the whole manifest will be the target of patch operations. e.g. `$.data.envoy-config` | No |
+| documentRoot | string | In case you want to manipulate the YAML or JSON data specified in a field of the manfiest, specify that field's path. The string value of that field will be used as input for the patch operations. Otherwise, the whole manifest will be the target of patch operations. e.g. `$.data.envoy-config` | No |
 
 ### KubernetesResourcePatchOp
 
