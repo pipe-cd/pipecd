@@ -695,8 +695,8 @@ func patchManifest(m provider.Manifest, patch config.K8sResourcePatch) (*provide
 		return buildManifest(out)
 	}
 
-	// When the target is a single string field
-	// we have to extract the field value as a string data firstly.
+	// When the target is a manifest field specified by documentRoot,
+	// we have to extract that field value as a string.
 	p, err := yamlprocessor.NewProcessor(fullBytes)
 	if err != nil {
 		return nil, err
