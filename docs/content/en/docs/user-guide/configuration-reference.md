@@ -375,6 +375,7 @@ Note: You can get examples for those object from [here](/docs/examples/#ecs-appl
 | replicas | int | How many pods for CANARY workloads. Default is `1` pod. Alternatively, can be specified a string suffixed by "%" to indicate a percentage value compared to the pod number of PRIMARY | No |
 | suffix | string | Suffix that should be used when naming the CANARY variant's resources. Default is `canary`. | No |
 | createService | bool | Whether the CANARY service should be created. Default is `false`. | No |
+| patches | [][KubernetesResourcePatch](/docs/user-guide/configuration-reference/#kubernetesresourcepatch) | List of patches used to customize manifests for CANARY variant. | No |
 
 ### KubernetesCanaryCleanStageOptions
 
@@ -467,3 +468,26 @@ Note: By default, the sum of traffic is rounded to 100. If both `primary` and `c
 
 ### Percentage
 A wrapper of type `int` to represent percentage data. Basically, you can pass `10` or `"10"` or `10%` and they will be treated as `10%` in PipeCD.
+
+### KubernetesResourcePatch
+
+| Field | Type | Description | Required |
+|-|-|-|-|
+| target | [KubernetesResourcePatchTarget](/docs/user-guide/configuration-reference/#kubernetesresourcepatchtarget) | Which manifest, which field will be the target of patch operations. | Yes |
+| ops | [][KubernetesResourcePatchOp](/docs/user-guide/configuration-reference/#kubernetesresourcepatchop) | List of operations should be applied to the above target. | No |
+
+### KubernetesResourcePatchTarget
+
+| Field | Type | Description | Required |
+|-|-|-|-|
+| kind | string | The resource kind. e.g. `ConfigMap` | Yes |
+| name | string | The resource name. e.g. `config-map-name` | Yes |
+| documentRoot | string | In case you want to manipulate the YAML or JSON data specified in a field of the manfiest, specify that field's path. The string value of that field will be used as input for the patch operations. Otherwise, the whole manifest will be the target of patch operations. e.g. `$.data.envoy-config` | No |
+
+### KubernetesResourcePatchOp
+
+| Field | Type | Description | Required |
+|-|-|-|-|
+| op | string | The operation type. This must be one of `yaml-replace`, `yaml-add`, `yaml-remove`, `json-replace`, `text-regex`. Default is `yaml-replace`. | No |
+| path | string | The path string pointing to the manipulated field. For yaml operations it looks like `$.foo.array[0].bar`. | No |
+| value | string | The value string whose content will be used as new value for the field. | No |

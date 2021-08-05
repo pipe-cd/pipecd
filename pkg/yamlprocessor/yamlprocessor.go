@@ -15,14 +15,28 @@
 package yamlprocessor
 
 import (
-	"bytes"
+	"errors"
 	"fmt"
-	"io"
 
 	goyaml "github.com/goccy/go-yaml"
 	"github.com/goccy/go-yaml/ast"
 	"github.com/goccy/go-yaml/parser"
 )
+
+type Processor struct {
+	file *ast.File
+}
+
+func NewProcessor(data []byte) (*Processor, error) {
+	f, err := parser.ParseBytes(data, parser.ParseComments)
+	if err != nil {
+		return nil, err
+	}
+
+	return &Processor{
+		file: f,
+	}, nil
+}
 
 // GetValue gives back the value placed at a given path. The type of
 // returned value can be string, int64, uint64, float64 and bool.
@@ -35,63 +49,56 @@ import (
 // [num] : object/element of array by number
 //
 // e.g. "$.foo.bar[0].baz"
-func GetValue(yml []byte, path string) (interface{}, error) {
-	if len(yml) == 0 {
-		return nil, fmt.Errorf("empty yaml given")
-	}
+func (p *Processor) GetValue(path string) (interface{}, error) {
 	if path == "" {
 		return nil, fmt.Errorf("no path given")
 	}
 
-	p, err := goyaml.PathString(path)
+	yamlPath, err := goyaml.PathString(path)
+	if err != nil {
+		return nil, fmt.Errorf("failed to parse path %s: %w", path, err)
+	}
+
+	node, err := yamlPath.FilterFile(p.file)
 	if err != nil {
 		return nil, err
 	}
 
 	var value interface{}
-	if err := p.Read(bytes.NewReader(yml), &value); err != nil {
+	if err := goyaml.Unmarshal([]byte(node.String()), &value); err != nil {
 		return nil, err
 	}
+
 	return value, nil
 }
 
-// ReplaceValue replaces the value placed at a given path with
-// a given value, and then gives back the new yaml bytes.
-//
-// For available operators for the path, see GetValue().
-func ReplaceValue(yml []byte, path string, value string) ([]byte, error) {
-	if len(yml) == 0 {
-		return nil, fmt.Errorf("empty yaml given")
-	}
+// ReplaceString replaces the value placed at a given path with
+// a given string value.
+func (p *Processor) ReplaceString(path, value string) error {
 	if path == "" {
-		return nil, fmt.Errorf("no path given")
+		return errors.New("no path given")
 	}
 
-	p, err := goyaml.PathString(path)
+	yamlPath, err := goyaml.PathString(path)
 	if err != nil {
-		return nil, err
-	}
-	file, err := parser.ParseBytes(yml, parser.ParseComments)
-	if err != nil {
-		return nil, err
+		return fmt.Errorf("failed to parse path %s: %w", path, err)
 	}
 
 	// Retrieve the current node placed at the specified path.
-	oldNode, err := p.FilterFile(file)
+	oldNode, err := yamlPath.FilterFile(p.file)
 	if err != nil {
-		return nil, err
+		return err
 	}
+
 	newNode := &ast.StringNode{
 		BaseNode: &ast.BaseNode{},
 		Token:    oldNode.GetToken(),
 		Value:    value,
 	}
 
-	err = p.ReplaceWithNode(file, newNode)
-	if err != nil {
-		return nil, err
-	}
-	buf := new(bytes.Buffer)
-	_, err = io.Copy(buf, file)
-	return buf.Bytes(), err
+	return yamlPath.ReplaceWithNode(p.file, newNode)
+}
+
+func (p *Processor) Bytes() []byte {
+	return []byte(p.file.String())
 }

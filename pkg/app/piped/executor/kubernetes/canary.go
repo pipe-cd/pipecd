@@ -58,6 +58,16 @@ func (e *deployExecutor) ensureCanaryRollout(ctx context.Context) model.StageSta
 		return model.StageStatus_STAGE_FAILURE
 	}
 
+	// Patches the manifests if needed.
+	if len(options.Patches) > 0 {
+		e.LogPersister.Info("Patching manifests before generating for CANARY variant")
+		manifests, err = patchManifests(manifests, options.Patches, patchManifest)
+		if err != nil {
+			e.LogPersister.Errorf("Failed while patching manifests (%v)", err)
+			return model.StageStatus_STAGE_FAILURE
+		}
+	}
+
 	// Find and generate workload & service manifests for CANARY variant.
 	canaryManifests, err := e.generateCanaryManifests(manifests, *options)
 	if err != nil {

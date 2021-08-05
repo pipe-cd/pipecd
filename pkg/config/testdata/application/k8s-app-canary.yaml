@@ -254,3 +254,45 @@ spec:
 #         commit: Update demo app service in prod
 #         desc: |
 #           Update demoapp service to {{ .App.Input.Version }}
+
+---
+# Progressive delivery with canary strategy.
+apiVersion: pipecd.dev/v1beta1
+kind: KubernetesApp
+spec:
+  pipeline:
+    stages:
+      - name: K8S_CANARY_ROLLOUT
+        with:
+          replicas: 10%
+          patches:
+          - target:
+              kind: ConfigMap
+              name: envoy-config
+              documentRoot: $.data.envoy-config
+            yamlOps:
+            - op: replace
+              path: $.resources[0].virtual_hosts[0].routes[0].route.weighted_clusters.clusters[0].weight
+              value: 50
+            - op: replace
+              path: $.resources[0].virtual_hosts[0].routes[0].route.weighted_clusters.clusters[1].weight
+              value: 50
+
+      - name: K8S_CANARY_ROLLOUT
+        with:
+          replicas: 10%
+          patches:
+          - target:
+              kind: ConfigMap
+              name: envoy-config
+              documentRoot: $.data.envoy-config
+            yamlOps:
+            - op: replace
+              path: $.resources[0].virtual_hosts[0].routes[0].route.weighted_clusters.clusters[0].weight
+              value: 10
+            - op: replace
+              path: $.resources[0].virtual_hosts[0].routes[0].route.weighted_clusters.clusters[1].weight
+              value: 90
+
+      - name: K8S_PRIMARY_ROLLOUT
+      - name: K8S_CANARY_CLEAN

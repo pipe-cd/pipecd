@@ -18,7 +18,47 @@ import (
 	"testing"
 
 	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/require"
 )
+
+func TestNewProcessor(t *testing.T) {
+	testcases := []struct {
+		name    string
+		yml     string
+		wantErr bool
+	}{
+		{
+			name: "empty",
+			yml:  "",
+		},
+		{
+			name:    "invalid",
+			yml:     "::",
+			wantErr: true,
+		},
+		{
+			name: "single line",
+			yml:  "foo: bar",
+		},
+		{
+			name: "multi lines",
+			yml: `
+a: av
+b: bv
+c:
+- 1
+- 2
+			`,
+		},
+	}
+	for _, tc := range testcases {
+		t.Run(tc.name, func(t *testing.T) {
+			p, err := NewProcessor([]byte(tc.yml))
+			assert.Equal(t, tc.wantErr, err != nil)
+			assert.Equal(t, !tc.wantErr, p != nil)
+		})
+	}
+}
 
 func TestGetValue(t *testing.T) {
 	testcases := []struct {
@@ -29,12 +69,6 @@ func TestGetValue(t *testing.T) {
 		wantErr bool
 	}{
 		{
-			name:    "empty yaml given",
-			yml:     "",
-			path:    "$.foo",
-			wantErr: true,
-		},
-		{
 			name:    "empty path given",
 			yml:     "foo: bar",
 			path:    "",
@@ -44,12 +78,6 @@ func TestGetValue(t *testing.T) {
 			name:    "wrong path given",
 			yml:     "foo: bar",
 			path:    "wrong",
-			wantErr: true,
-		},
-		{
-			name:    "wrong yaml given",
-			yml:     "::",
-			path:    "$.foo",
 			wantErr: true,
 		},
 		{
@@ -113,16 +141,21 @@ foo:
 			wantErr: false,
 		},
 	}
+
 	for _, tc := range testcases {
 		t.Run(tc.name, func(t *testing.T) {
-			got, err := GetValue([]byte(tc.yml), tc.path)
+			p, err := NewProcessor([]byte(tc.yml))
+			require.NotNil(t, p)
+			require.NoError(t, err)
+
+			got, err := p.GetValue(tc.path)
 			assert.Equal(t, tc.wantErr, err != nil)
 			assert.Equal(t, tc.want, got)
 		})
 	}
 }
 
-func TestReplaceValue(t *testing.T) {
+func TestReplaceString(t *testing.T) {
 	testcases := []struct {
 		name    string
 		yml     string
@@ -149,13 +182,6 @@ func TestReplaceValue(t *testing.T) {
 			name:    "wrong path given",
 			yml:     "foo: bar",
 			path:    "wrong",
-			value:   "new-text",
-			wantErr: true,
-		},
-		{
-			name:    "wrong yaml given",
-			yml:     "::",
-			path:    "$.foo",
 			value:   "new-text",
 			wantErr: true,
 		},
@@ -221,9 +247,16 @@ foo:
 	}
 	for _, tc := range testcases {
 		t.Run(tc.name, func(t *testing.T) {
-			got, err := ReplaceValue([]byte(tc.yml), tc.path, tc.value)
+			p, err := NewProcessor([]byte(tc.yml))
+			require.NotNil(t, p)
+			require.NoError(t, err)
+
+			err = p.ReplaceString(tc.path, tc.value)
+			got := p.Bytes()
 			assert.Equal(t, tc.wantErr, err != nil)
-			assert.Equal(t, tc.want, got)
+			if !tc.wantErr {
+				assert.Equal(t, tc.want, got)
+			}
 		})
 	}
 }

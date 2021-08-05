@@ -16,6 +16,7 @@ package kubernetes
 
 import (
 	"context"
+	"errors"
 	"fmt"
 	"testing"
 
@@ -25,6 +26,7 @@ import (
 
 	provider "github.com/pipe-cd/pipe/pkg/app/piped/cloudprovider/kubernetes"
 	"github.com/pipe-cd/pipe/pkg/app/piped/cloudprovider/kubernetes/providertest"
+	"github.com/pipe-cd/pipe/pkg/config"
 )
 
 type fakeLogPersister struct{}
@@ -553,6 +555,252 @@ data:
 			err = annotateConfigHash(manifests)
 			assert.Equal(t, expected, manifests)
 			assert.Equal(t, tc.expectedError, err)
+		})
+	}
+}
+
+func TestPatchManifest(t *testing.T) {
+	testcases := []struct {
+		name          string
+		manifests     string
+		patch         config.K8sResourcePatch
+		expectedError error
+	}{
+		{
+			name:      "one op",
+			manifests: "testdata/patch_configmap.yaml",
+			patch: config.K8sResourcePatch{
+				Ops: []config.K8sResourcePatchOp{
+					{
+						Op:    config.K8sResourcePatchOpYAMLReplace,
+						Path:  "$.data.key1",
+						Value: "value-1",
+					},
+				},
+			},
+		},
+		{
+			name:      "multi ops",
+			manifests: "testdata/patch_configmap_multi_ops.yaml",
+			patch: config.K8sResourcePatch{
+				Ops: []config.K8sResourcePatchOp{
+					{
+						Op:    config.K8sResourcePatchOpYAMLReplace,
+						Path:  "$.data.key1",
+						Value: "value-1",
+					},
+					{
+						Op:    config.K8sResourcePatchOpYAMLReplace,
+						Path:  "$.data.key2",
+						Value: "value-2",
+					},
+				},
+			},
+		},
+		{
+			name:      "one op with a given field",
+			manifests: "testdata/patch_configmap_field.yaml",
+			patch: config.K8sResourcePatch{
+				Target: config.K8sResourcePatchTarget{
+					DocumentRoot: "$.data.envoy-config",
+				},
+				Ops: []config.K8sResourcePatchOp{
+					{
+						Op:    config.K8sResourcePatchOpYAMLReplace,
+						Path:  "$.admin.address.socket_address.port_value",
+						Value: "9096",
+					},
+				},
+			},
+		},
+		{
+			name:      "multi ops with a given field",
+			manifests: "testdata/patch_configmap_field_multi_ops.yaml",
+			patch: config.K8sResourcePatch{
+				Target: config.K8sResourcePatchTarget{
+					DocumentRoot: "$.data.envoy-config",
+				},
+				Ops: []config.K8sResourcePatchOp{
+					{
+						Op:    config.K8sResourcePatchOpYAMLReplace,
+						Path:  "$.admin.address.socket_address.port_value",
+						Value: "19095",
+					},
+					{
+						Op:    config.K8sResourcePatchOpYAMLReplace,
+						Path:  "$.static_resources.clusters[1].load_assignment.endpoints[0].lb_endpoints[0].endpoint.address.socket_address.port_value",
+						Value: "19081",
+					},
+					{
+						Op:    config.K8sResourcePatchOpYAMLReplace,
+						Path:  "$.static_resources.clusters[1].type",
+						Value: "DNS",
+					},
+				},
+			},
+		},
+	}
+
+	for _, tc := range testcases {
+		t.Run(tc.name, func(t *testing.T) {
+			manifests, err := provider.LoadManifestsFromYAMLFile(tc.manifests)
+			require.NoError(t, err)
+
+			if tc.expectedError == nil {
+				require.Equal(t, 2, len(manifests))
+			} else {
+				require.Equal(t, 1, len(manifests))
+			}
+
+			got, err := patchManifest(manifests[0], tc.patch)
+			require.Equal(t, tc.expectedError, err)
+
+			expectedBytes, err := manifests[1].YamlBytes()
+			require.NoError(t, err)
+
+			gotBytes, err := got.YamlBytes()
+			require.NoError(t, err)
+
+			if tc.expectedError == nil {
+				assert.Equal(t, string(expectedBytes), string(gotBytes))
+			}
+		})
+	}
+}
+
+func TestPatchManifests(t *testing.T) {
+	testcases := []struct {
+		name        string
+		input       []provider.Manifest
+		patches     []config.K8sResourcePatch
+		expected    []provider.Manifest
+		expectedErr error
+	}{
+		{
+			name: "no patches",
+			input: []provider.Manifest{
+				{
+					Key: provider.ResourceKey{
+						Kind: "Deployment",
+						Name: "deployment-1",
+					},
+				},
+			},
+			expected: []provider.Manifest{
+				{
+					Key: provider.ResourceKey{
+						Kind: "Deployment",
+						Name: "deployment-1",
+					},
+				},
+			},
+		},
+		{
+			name: "no manifest for the given patch",
+			input: []provider.Manifest{
+				{
+					Key: provider.ResourceKey{
+						Kind: "Deployment",
+						Name: "deployment-1",
+					},
+				},
+			},
+			patches: []config.K8sResourcePatch{
+				{
+					Target: config.K8sResourcePatchTarget{
+						K8sResourceReference: config.K8sResourceReference{
+							Kind: "Deployment",
+							Name: "deployment-2",
+						},
+					},
+				},
+			},
+			expectedErr: errors.New("no manifest matches the given patch: kind=Deployment, name=deployment-2"),
+		},
+		{
+			name: "multiple patches",
+			input: []provider.Manifest{
+				{
+					Key: provider.ResourceKey{
+						Kind: "Deployment",
+						Name: "deployment-1",
+					},
+				},
+				{
+					Key: provider.ResourceKey{
+						Kind: "Deployment",
+						Name: "deployment-2",
+					},
+				},
+				{
+					Key: provider.ResourceKey{
+						Kind: "ConfigMap",
+						Name: "configmap-1",
+					},
+				},
+			},
+			patches: []config.K8sResourcePatch{
+				{
+					Target: config.K8sResourcePatchTarget{
+						K8sResourceReference: config.K8sResourceReference{
+							Kind: "ConfigMap",
+							Name: "configmap-1",
+						},
+					},
+				},
+				{
+					Target: config.K8sResourcePatchTarget{
+						K8sResourceReference: config.K8sResourceReference{
+							Kind: "Deployment",
+							Name: "deployment-1",
+						},
+					},
+				},
+				{
+					Target: config.K8sResourcePatchTarget{
+						K8sResourceReference: config.K8sResourceReference{
+							Kind: "ConfigMap",
+							Name: "configmap-1",
+						},
+					},
+				},
+			},
+			expected: []provider.Manifest{
+				{
+					Key: provider.ResourceKey{
+						Kind:      "Deployment",
+						Name:      "deployment-1",
+						Namespace: "+",
+					},
+				},
+				{
+					Key: provider.ResourceKey{
+						Kind: "Deployment",
+						Name: "deployment-2",
+					},
+				},
+				{
+					Key: provider.ResourceKey{
+						Kind:      "ConfigMap",
+						Name:      "configmap-1",
+						Namespace: "++",
+					},
+				},
+			},
+		},
+	}
+
+	patcher := func(m provider.Manifest, cfg config.K8sResourcePatch) (*provider.Manifest, error) {
+		out := m
+		out.Key.Namespace = out.Key.Namespace + "+"
+		return &out, nil
+	}
+
+	for _, tc := range testcases {
+		t.Run(tc.name, func(t *testing.T) {
+			got, err := patchManifests(tc.input, tc.patches, patcher)
+			assert.Equal(t, tc.expectedErr, err)
+			assert.Equal(t, tc.expected, got)
 		})
 	}
 }
