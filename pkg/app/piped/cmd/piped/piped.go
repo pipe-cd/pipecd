@@ -29,6 +29,7 @@ import (
 
 	secretmanager "cloud.google.com/go/secretmanager/apiv1"
 	"github.com/prometheus/client_golang/prometheus"
+	"github.com/prometheus/client_golang/prometheus/collectors"
 	"github.com/spf13/cobra"
 	"go.uber.org/zap"
 	"golang.org/x/sync/errgroup"
@@ -683,8 +684,8 @@ func registerMetrics(pipedID string) *prometheus.Registry {
 		"piped":            pipedID,
 		"piped_version":    version.Get().Version,
 	}, r)
-	wrapped.Register(prometheus.NewGoCollector())
-	wrapped.Register(prometheus.NewProcessCollector(prometheus.ProcessCollectorOpts{}))
+	wrapped.Register(collectors.NewGoCollector())
+	wrapped.Register(collectors.NewProcessCollector(collectors.ProcessCollectorOpts{}))
 
 	k8scloudprovidermetrics.Register(wrapped)
 	k8slivestatestoremetrics.Register(wrapped)
