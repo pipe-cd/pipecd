@@ -47,7 +47,6 @@ data:
                               weight: 0
       clusters:
       - name: primary-cluster
-        http2_protocol_options: {}
         connect_timeout: 0.25s
         type: STRICT_DNS
         lb_policy: ROUND_ROBIN
@@ -63,7 +62,6 @@ data:
         track_cluster_stats:
           request_response_sizes: true
       - name: canary-cluster
-        http2_protocol_options: {}
         connect_timeout: 0.25s
         type: STRICT_DNS
         lb_policy: ROUND_ROBIN
