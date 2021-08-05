@@ -1,0 +1,16 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: canary-patch
+spec:
+  selector:
+    app: canary-patch
+  ports:
+    - name: ingress
+      protocol: TCP
+      port: 9095
+      targetPort: 9095
+    - name: http
+      protocol: TCP
+      port: 9085
+      targetPort: 9085

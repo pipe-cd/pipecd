@@ -1,0 +1,32 @@
+apiVersion: pipecd.dev/v1beta1
+kind: KubernetesApp
+spec:
+  pipeline:
+    stages:
+      # Deploy the workloads of CANARY variant. In this case, the number of
+      # workload replicas of CANARY variant is equal to the replicas number of PRIMARY variant.
+      # And the content of configmap used for CANARY variant is also changed.
+      - name: K8S_CANARY_ROLLOUT
+        with:
+          replicas: 100%
+          patches:
+          - target:
+              kind: ConfigMap
+              name: canary-patch-envoy-config
+              documentRoot: $.data.envoy-config
+            ops:
+            - op: yaml-replace
+              path: $.static_resources.listeners[0].filter_chains[0].filters[0].typed_config.route_config.virtual_hosts[0].routes[0].route.weighted_clusters.clusters[0].weight
+              value: "90"
+            - op: yaml-replace
+              path: $.static_resources.listeners[0].filter_chains[0].filters[0].typed_config.route_config.virtual_hosts[0].routes[0].route.weighted_clusters.clusters[1].weight
+              value: "10"
+
+      # Wait until got an approval.
+      - name: WAIT_APPROVAL
+
+      # Update the workload of PRIMARY variant to the new version.
+      - name: K8S_PRIMARY_ROLLOUT
+
+      # Destroy all workloads of CANARY variant.
+      - name: K8S_CANARY_CLEAN
