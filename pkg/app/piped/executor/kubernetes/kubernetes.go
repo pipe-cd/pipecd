@@ -634,7 +634,7 @@ func patchManifests(manifests []provider.Manifest, patches []config.K8sResourceP
 		}
 		patched, err := patcher(out[target], p)
 		if err != nil {
-			return nil, fmt.Errorf("failed to patch manifest: %s, error: %v", out[target].Key, err)
+			return nil, fmt.Errorf("failed to patch manifest: %s, error: %w", out[target].Key, err)
 		}
 		out[target] = *patched
 	}
@@ -662,7 +662,7 @@ func patchManifest(m provider.Manifest, patch config.K8sResourcePatch) (*provide
 			switch o.Op {
 			case config.K8sResourcePatchOpYAMLReplace:
 				if err := p.ReplaceString(o.Path, o.Value); err != nil {
-					return nil, fmt.Errorf("failed to replace value at path: %s, error: %v", o.Path, err)
+					return nil, fmt.Errorf("failed to replace value at path: %s, error: %w", o.Path, err)
 				}
 			default:
 				// TODO: Support more patch operation for K8sCanaryRolloutStageOptions.
@@ -670,7 +670,7 @@ func patchManifest(m provider.Manifest, patch config.K8sResourcePatch) (*provide
 			}
 		}
 
-		return p.Bytes()
+		return p.Bytes(), nil
 	}
 
 	buildManifest := func(bytes []byte) (*provider.Manifest, error) {
@@ -722,10 +722,5 @@ func patchManifest(m provider.Manifest, patch config.K8sResourcePatch) (*provide
 		return nil, err
 	}
 
-	out, err = p.Bytes()
-	if err != nil {
-		return nil, err
-	}
-
-	return buildManifest(out)
+	return buildManifest(p.Bytes())
 }

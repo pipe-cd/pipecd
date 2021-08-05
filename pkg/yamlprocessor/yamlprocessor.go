@@ -15,10 +15,8 @@
 package yamlprocessor
 
 import (
-	"bytes"
 	"errors"
 	"fmt"
-	"io"
 
 	goyaml "github.com/goccy/go-yaml"
 	"github.com/goccy/go-yaml/ast"
@@ -58,7 +56,7 @@ func (p *Processor) GetValue(path string) (interface{}, error) {
 
 	yamlPath, err := goyaml.PathString(path)
 	if err != nil {
-		return nil, fmt.Errorf("failed to parse path %s: %v", path, err)
+		return nil, fmt.Errorf("failed to parse path %s: %w", path, err)
 	}
 
 	node, err := yamlPath.FilterFile(p.file)
@@ -101,12 +99,6 @@ func (p *Processor) ReplaceString(path, value string) error {
 	return yamlPath.ReplaceWithNode(p.file, newNode)
 }
 
-func (p *Processor) Bytes() ([]byte, error) {
-	buf := new(bytes.Buffer)
-	_, err := io.Copy(buf, p.file)
-	if err != nil {
-		return nil, err
-	}
-
-	return buf.Bytes(), nil
+func (p *Processor) Bytes() []byte {
+	return []byte(p.file.String())
 }

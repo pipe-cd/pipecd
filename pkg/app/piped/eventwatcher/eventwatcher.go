@@ -297,12 +297,7 @@ func modifyYAML(path, field, newValue string) ([]byte, bool, error) {
 		return nil, false, fmt.Errorf("failed to replace value at %s with %s: %w", field, newValue, err)
 	}
 
-	newYml, err := processor.Bytes()
-	if err != nil {
-		return nil, false, fmt.Errorf("failed to generate new yaml data: %w", err)
-	}
-
-	return newYml, false, nil
+	return processor.Bytes(), false, nil
 }
 
 // convertStr converts a given value into a string.

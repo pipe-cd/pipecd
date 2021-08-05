@@ -251,9 +251,9 @@ foo:
 			require.NotNil(t, p)
 			require.NoError(t, err)
 
-			rerr := p.ReplaceString(tc.path, tc.value)
-			got, err := p.Bytes()
-			assert.Equal(t, tc.wantErr, err != nil || rerr != nil)
+			err = p.ReplaceString(tc.path, tc.value)
+			got := p.Bytes()
+			assert.Equal(t, tc.wantErr, err != nil)
 			if !tc.wantErr {
 				assert.Equal(t, tc.want, got)
 			}
