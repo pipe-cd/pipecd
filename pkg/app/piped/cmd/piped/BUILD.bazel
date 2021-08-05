@@ -40,6 +40,7 @@ go_library(
         "//pkg/rpc/rpcclient:go_default_library",
         "//pkg/version:go_default_library",
         "@com_github_prometheus_client_golang//prometheus:go_default_library",
+        "@com_github_prometheus_client_golang//prometheus/collectors:go_default_library",
         "@com_github_spf13_cobra//:go_default_library",
         "@com_google_cloud_go//secretmanager/apiv1:go_default_library",
         "@go_googleapis//google/cloud/secretmanager/v1:secretmanager_go_proto",

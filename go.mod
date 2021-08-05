@@ -23,15 +23,15 @@ require (
 	github.com/goccy/go-yaml v1.9.0
 	github.com/golang-jwt/jwt v3.2.1+incompatible
 	github.com/golang/mock v1.4.4
-	github.com/golang/protobuf v1.4.3
+	github.com/golang/protobuf v1.5.0
 	github.com/gomodule/redigo v2.0.0+incompatible
 	github.com/google/go-github/v29 v29.0.3
 	github.com/google/uuid v1.2.0
 	github.com/grpc-ecosystem/go-grpc-prometheus v1.2.0
 	github.com/hashicorp/golang-lru v0.5.3
 	github.com/minio/minio-go/v7 v7.0.5
-	github.com/prometheus/client_golang v1.6.0
-	github.com/prometheus/common v0.9.1
+	github.com/prometheus/client_golang v1.11.0
+	github.com/prometheus/common v0.26.0
 	github.com/robfig/cron/v3 v3.0.1
 	github.com/spf13/cobra v1.0.0
 	github.com/spf13/pflag v1.0.5
@@ -46,7 +46,7 @@ require (
 	google.golang.org/api v0.31.0
 	google.golang.org/genproto v0.0.0-20200831141814-d751682dd103
 	google.golang.org/grpc v1.31.1
-	google.golang.org/protobuf v1.25.0
+	google.golang.org/protobuf v1.27.1
 	istio.io/api v0.0.0-20200710191538-00b73d23c685
 	k8s.io/api v0.19.13
 	k8s.io/apimachinery v0.19.13

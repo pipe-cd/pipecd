@@ -23,6 +23,7 @@ import (
 	jwtgo "github.com/golang-jwt/jwt"
 	grpc_prometheus "github.com/grpc-ecosystem/go-grpc-prometheus"
 	"github.com/prometheus/client_golang/prometheus"
+	"github.com/prometheus/client_golang/prometheus/collectors"
 	"github.com/spf13/cobra"
 	"go.uber.org/zap"
 	"golang.org/x/sync/errgroup"
@@ -472,8 +473,8 @@ func registerMetrics() *prometheus.Registry {
 		"pipecd_component": "server",
 	}, r)
 
-	wrapped.Register(prometheus.NewGoCollector())
-	wrapped.Register(prometheus.NewProcessCollector(prometheus.ProcessCollectorOpts{}))
+	wrapped.Register(collectors.NewGoCollector())
+	wrapped.Register(collectors.NewProcessCollector(collectors.ProcessCollectorOpts{}))
 	wrapped.Register(grpc_prometheus.DefaultServerMetrics)
 
 	cachemetrics.Register(wrapped)
