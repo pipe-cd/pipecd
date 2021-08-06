@@ -4,11 +4,11 @@ spec:
   pipeline:
     stages:
       # Deploy the workloads of CANARY variant. In this case, the replicas number
-      # of CANARY variant is equal to the replicas number of PRIMARY variant.
+      # of CANARY variant is around 30% of PRIMARY variant.
       # And the content of configmap used for CANARY variant is also changed.
       - name: K8S_CANARY_ROLLOUT
         with:
-          replicas: 100%
+          replicas: 30%
           patches:
           - target:
               kind: ConfigMap
