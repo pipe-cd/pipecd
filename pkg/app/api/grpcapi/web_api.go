@@ -1230,6 +1230,9 @@ func (a *WebAPI) GetApplicationLiveState(ctx context.Context, req *webservice.Ge
 	}
 
 	snapshot, err := a.applicationLiveStateStore.GetStateSnapshot(ctx, req.ApplicationId)
+	if errors.Is(err, filestore.ErrNotFound) {
+		return nil, status.Error(codes.NotFound, "Application live state not found")
+	}
 	if err != nil {
 		a.logger.Error("failed to get application live state", zap.Error(err))
 		return nil, status.Error(codes.Internal, "Failed to get application live state")
