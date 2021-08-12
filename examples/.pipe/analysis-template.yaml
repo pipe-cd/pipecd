@@ -8,57 +8,31 @@ spec:
       expected:
         max: 0
       query: |
-        sum without(status) (rate(http_requests_total{status=~"5.*", job="{{ .App.Name }}"}[1m]))
+        sum by (job) (rate(http_requests_total{status=~"5.*", job="{{ .App.Name }}"}[1m]))
         /
-        sum without(status) (rate(http_requests_total{job="{{ .App.Name }}"}[1m]))
+        sum by (job) (rate(http_requests_total{job="{{ .App.Name }}"}[1m]))
 
-    http_request_duration_seconds_average:
+    http_request_duration_99th_quantile:
       interval: 1m
       provider: prometheus-dev
       expected:
         max: 0.5
       query: |
-        rate(http_request_duration_seconds_sum{job="{{ .App.Name }}"}[1m])
-        /
-        rate(http_request_duration_seconds_count{job="{{ .App.Name }}"}[1m])
-
-    grpc_error_rate_percentage:
-      interval: 1m
-      provider: prometheus-dev
-      failureLimit: 1
-      expected:
-        max: 10
-      query: |
-        100 - sum(
-            rate(
-                grpc_server_handled_total{
-                  grpc_code!="OK",
-                  kubernetes_namespace="{{ .K8s.Namespace }}",
-                  kubernetes_pod_name=~"{{ .App.Name }}-[0-9a-zA-Z]+(-[0-9a-zA-Z]+)"
-                }[{{ .Args.interval }}]
-            )
+        histogram_quantile(
+          0.99,
+          sum without (instance, job) (rate(http_request_duration_seconds_bucket{job="{{ .App.Name }}"}[1m]))
         )
-        /
-        sum(
-            rate(
-                grpc_server_started_total{
-                  kubernetes_namespace="{{ .K8s.Namespace }}",
-                  kubernetes_pod_name=~"{{ .App.Name }}-[0-9a-zA-Z]+(-[0-9a-zA-Z]+)"
-                }[{{ .Args.interval }}]
-            )
-        ) * 100
 
     container_cpu_usage_seconds_total:
       interval: 1m
       provider: prometheus-dev
       failureLimit: 2
       expected:
-        max: 0.2
+        max: 20
       query: |
-        sum(
-          max(kube_pod_labels{label_app=~"{{ .App.Name }}", label_pipecd_dev_variant=~"{{ .Args.variant }}"}) by (label_app, label_pipecd_dev_variant, pod_name)
-          *
-          on(pod_name)
-          group_right(label_app, label_pipecd_dev_variant)
-          rate(container_cpu_usage_seconds_total{namespace="{{ .K8s.Namespace }}"}[1m])
-        ) by (label_app, label_pipecd_dev_variant)
+        sum by (job) (
+          rate(container_cpu_usage_seconds_total{
+            namespace="{{ .K8s.Namespace }}",
+            pod="{{ .App.Name }}-[0-9a-zA-Z]+(-[0-9a-zA-Z]+)"
+          }[5m]) * 100
+        )
