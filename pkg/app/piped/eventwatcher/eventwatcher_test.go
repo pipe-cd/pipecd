@@ -18,6 +18,8 @@ import (
 	"testing"
 
 	"github.com/stretchr/testify/assert"
+
+	"github.com/pipe-cd/pipe/pkg/config"
 )
 
 func TestConvertStr(t *testing.T) {
@@ -113,6 +115,71 @@ func TestModifyYAML(t *testing.T) {
 			gotNewYml, gotUpToDate, err := modifyYAML(tc.path, tc.field, tc.newValue)
 			assert.Equal(t, tc.wantErr, err != nil)
 			assert.Equal(t, tc.wantNewYml, gotNewYml)
+			assert.Equal(t, tc.wantUpToDate, gotUpToDate)
+		})
+	}
+}
+
+func TestModifyText(t *testing.T) {
+	testcases := []struct {
+		name         string
+		path         string
+		textField    config.EventWatcherReplacementTextField
+		newValue     string
+		want         []byte
+		wantUpToDate bool
+		wantErr      bool
+	}{
+		{
+			name: "different between defined one and given one",
+			path: "testdata/invalid.yaml",
+			textField: config.EventWatcherReplacementTextField{
+				LineRegex:    "image: gcr.io/pipecd/foo:(.+)",
+				ReplaceRegex: "v[0-9].[0-9].[0-9]",
+			},
+			newValue: "v0.2.0",
+			want: []byte(`apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: foo
+spec:
+  template:
+    spec:
+      containers:
+      - name: foo
+        image: gcr.io/pipecd/foo:v0.2.0
+        ports:
+        - containerPort: 9085
+        env:
+        - name: FOO
+          value: {{ .encryptedSecrets.foo }}
+
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: bar
+spec:
+  template:
+    spec:
+      containers:
+      - name: bar
+        image: gcr.io/pipecd/bar:v0.1.0
+        ports:
+        - containerPort: 9085
+        env:
+        - name: BAR
+          value: {{ .encryptedSecrets.bar }}
+`),
+			wantUpToDate: false,
+			wantErr:      false,
+		},
+	}
+	for _, tc := range testcases {
+		t.Run(tc.name, func(t *testing.T) {
+			got, gotUpToDate, err := modifyText(tc.path, tc.textField, tc.newValue)
+			assert.Equal(t, tc.wantErr, err != nil)
+			assert.Equal(t, tc.want, got)
 			assert.Equal(t, tc.wantUpToDate, gotUpToDate)
 		})
 	}

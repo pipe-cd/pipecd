@@ -49,7 +49,18 @@ type EventWatcherReplacement struct {
 	// The JSON path to the field to be updated.
 	JSONField string `json:"jsonField"`
 	// The HCL path to the field to be updated.
-	HCLField string `json:"HCLField"`
+	HCLField  string                           `json:"HCLField"`
+	TextField EventWatcherReplacementTextField `json:"textField"`
+}
+
+type EventWatcherReplacementTextField struct {
+	LineRegex string `json:"lineRegex"`
+	// TODO: Support the "line" field that specifies tha line number staticaly
+	ReplaceRegex string `json:"replaceRegex"`
+}
+
+func (e *EventWatcherReplacementTextField) Filled() bool {
+	return e.LineRegex != "" && e.ReplaceRegex != ""
 }
 
 // LoadEventWatcher gives back parsed EventWatcher config after merging config files placed under
@@ -170,6 +181,9 @@ func (e *EventWatcherEvent) Validate() error {
 			count++
 		}
 		if r.HCLField != "" {
+			count++
+		}
+		if r.TextField.Filled() {
 			count++
 		}
 		if count == 0 {

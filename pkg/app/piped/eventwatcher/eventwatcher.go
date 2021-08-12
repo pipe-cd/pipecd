@@ -33,6 +33,7 @@ import (
 	"github.com/pipe-cd/pipe/pkg/config"
 	"github.com/pipe-cd/pipe/pkg/git"
 	"github.com/pipe-cd/pipe/pkg/model"
+	"github.com/pipe-cd/pipe/pkg/regexpool"
 	"github.com/pipe-cd/pipe/pkg/yamlprocessor"
 )
 
@@ -239,6 +240,8 @@ func (w *watcher) commitFiles(ctx context.Context, eventCfg config.EventWatcherE
 			// TODO: Empower Event watcher to parse JSON format
 		case r.HCLField != "":
 			// TODO: Empower Event watcher to parse HCL format
+		case r.TextField.Filled():
+			newContent, upToDate, err = modifyText(path, r.TextField, latestEvent.Data)
 		}
 		if err != nil {
 			return err
@@ -269,7 +272,7 @@ func (w *watcher) commitFiles(ctx context.Context, eventCfg config.EventWatcherE
 // modifyYAML returns a new YAML content as a first returned value if the value of given
 // field was outdated. True as a second returned value means it's already up-to-date.
 func modifyYAML(path, field, newValue string) ([]byte, bool, error) {
-	yml, err := ioutil.ReadFile(path)
+	yml, err := os.ReadFile(path)
 	if err != nil {
 		return nil, false, fmt.Errorf("failed to read file: %w", err)
 	}
@@ -319,4 +322,36 @@ func convertStr(value interface{}) (out string, err error) {
 		err = fmt.Errorf("failed to convert %T into string", v)
 	}
 	return
+}
+
+// FIXME: Remove:
+// e.g.)
+// textField.Regex = "(image: gcr.io/foo/bar):(.+)"
+// textField.Template = "$1:%s\n"
+func modifyText(path string, textField config.EventWatcherReplacementTextField, newValue string) ([]byte, bool, error) {
+	text, err := os.ReadFile(path)
+	if err != nil {
+		return nil, false, fmt.Errorf("failed to read file: %w", err)
+	}
+
+	pool := regexpool.DefaultPool()
+	lineRegex, err := pool.Get(textField.LineRegex)
+	if err != nil {
+		return nil, false, fmt.Errorf("failed to compile line regex: %w", err)
+	}
+	replaceRegex, err := pool.Get(textField.ReplaceRegex)
+	if err != nil {
+		return nil, false, fmt.Errorf("failed to compile replace regex: %w", err)
+	}
+
+	touched := false
+	newText := lineRegex.ReplaceAllFunc(text, func(match []byte) []byte {
+		touched = true
+		return replaceRegex.ReplaceAll(match, []byte(newValue))
+	})
+	if !touched {
+		return nil, true, nil
+	}
+
+	return newText, false, nil
 }
