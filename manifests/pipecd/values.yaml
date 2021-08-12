@@ -163,6 +163,8 @@ prometheus:
     retention: 7d
     persistentVolume:
       size: 4Gi
+    strategy:
+      type: Recreate
 
 # All directives inside this section will be directly sent to the grafana chart.
 # Head to the below link to see all available values.
