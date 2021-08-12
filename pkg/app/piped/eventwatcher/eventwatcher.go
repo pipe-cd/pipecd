@@ -324,10 +324,6 @@ func convertStr(value interface{}) (out string, err error) {
 	return
 }
 
-// FIXME: Remove:
-// e.g.)
-// textField.Regex = "(image: gcr.io/foo/bar):(.+)"
-// textField.Template = "$1:%s\n"
 func modifyText(path string, textField config.EventWatcherReplacementTextField, newValue string) ([]byte, bool, error) {
 	text, err := os.ReadFile(path)
 	if err != nil {

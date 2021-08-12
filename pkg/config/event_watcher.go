@@ -54,8 +54,11 @@ type EventWatcherReplacement struct {
 }
 
 type EventWatcherReplacementTextField struct {
+	// The pattern to detect lines that should be updated by Event watcher.
 	LineRegex string `json:"lineRegex"`
 	// TODO: Support the "line" field that specifies tha line number staticaly
+
+	// The pattern to decide which part in the line should be updated.
 	ReplaceRegex string `json:"replaceRegex"`
 }
 
