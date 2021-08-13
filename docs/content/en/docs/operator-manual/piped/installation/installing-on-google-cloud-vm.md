@@ -106,7 +106,6 @@ description: >
   gcloud compute instances create-with-container vm-piped \
     --container-image="gcr.io/pipecd/piped:{{< blocks/latest_version >}}" \
     --container-arg="piped" \
-    --container-arg="--metrics=true" \
     --container-arg="--config-gcp-secret=projects/{GCP_PROJECT_ID}/secrets/vm-piped-config/versions/{SECRET_VERSION}" \
     --network="{VPC_NETWORK}" \
     --subnet="{VPC_SUBNET}" \
