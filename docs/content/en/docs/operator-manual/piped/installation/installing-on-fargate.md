@@ -85,7 +85,7 @@ A sample TaskDefinition for Piped as following.
       "name": "piped",
       "image": "gcr.io/pipecd/piped:{{< blocks/latest_version >}}",
       "command": [
-        "echo $configData > /etc/piped/config.yaml; piped --config-file=/etc/piped/config.yaml --metrics=true"
+        "echo $configData > /etc/piped/config.yaml; piped --config-file=/etc/piped/config.yaml"
       ],
       "secrets": [
         {
