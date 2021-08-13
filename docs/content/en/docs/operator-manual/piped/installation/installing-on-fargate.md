@@ -132,7 +132,7 @@ A sample Service definition to control piped task deployment.
   "launchType": "FARGATE",
   "networkConfiguration": {
     "awsvpcConfiguration": {
-      "assignPublicIp": "ENABLED", # This is need to enable ECS deployment pull piped container image.
+      "assignPublicIp": "ENABLED", # This is need to enable ECS deployment to pull piped container images.
       ...
     }
   }
