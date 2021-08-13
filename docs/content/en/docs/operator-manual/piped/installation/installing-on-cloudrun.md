@@ -94,7 +94,6 @@ description: >
           - image: gcr.io/pipecd/piped:{{< blocks/latest_version >}}
             args:
               - piped
-              - --metrics=true
               - --config-file=/etc/piped-config/config.yaml
             ports:
               - containerPort: 9085
