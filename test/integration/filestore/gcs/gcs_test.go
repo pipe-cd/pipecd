@@ -26,13 +26,15 @@ import (
 	"github.com/pipe-cd/pipe/pkg/filestore/gcs"
 )
 
-func newEmulator(bucket string, objects map[string]string) (*fakestorage.Server, error) {
+func newEmulator(bucket string, objects map[string]string, now time.Time) (*fakestorage.Server, error) {
 	initialObjects := make([]fakestorage.Object, 0, len(objects))
 	for k, v := range objects {
 		initialObjects = append(initialObjects, fakestorage.Object{
 			BucketName: bucket,
 			Name:       k,
 			Content:    []byte(v),
+			Created:    now,
+			Updated:    now,
 		})
 	}
 	return fakestorage.NewServerWithOptions(fakestorage.Options{
@@ -47,9 +49,13 @@ func TestGet(t *testing.T) {
 	defer cancel()
 
 	bucket := "test"
-	server, err := newEmulator(bucket, map[string]string{
-		"path/to/file.txt": "foo",
-	})
+	server, err := newEmulator(
+		bucket,
+		map[string]string{
+			"path/to/file.txt": "foo",
+		},
+		time.Now(),
+	)
 	assert.Nil(t, err)
 	defer server.Stop()
 
@@ -92,9 +98,13 @@ func TestPut(t *testing.T) {
 	defer cancel()
 
 	bucket := "test"
-	server, err := newEmulator(bucket, map[string]string{
-		"path/to/fileA.txt": "foo",
-	})
+	server, err := newEmulator(
+		bucket,
+		map[string]string{
+			"path/to/fileA.txt": "foo",
+		},
+		time.Now(),
+	)
 	assert.Nil(t, err)
 	defer server.Stop()
 
@@ -146,10 +156,14 @@ func TestList(t *testing.T) {
 	defer cancel()
 
 	bucket := "test"
-	server, err := newEmulator(bucket, map[string]string{
-		"path/to/fileA.txt": "foo",
-		"path/to/fileB.txt": "bar",
-	})
+	now := time.Now()
+	server, err := newEmulator(
+		bucket, map[string]string{
+			"path/to/fileA.txt": "foo",
+			"path/to/fileB.txt": "hello",
+		},
+		now,
+	)
 	assert.Nil(t, err)
 	defer server.Stop()
 
@@ -159,20 +173,22 @@ func TestList(t *testing.T) {
 	tests := []struct {
 		name    string
 		prefix  string
-		want    []filestore.Object
+		want    []filestore.ObjectAttrs
 		wantErr bool
 	}{
 		{
 			name:   "found contents",
 			prefix: "path/to",
-			want: []filestore.Object{
+			want: []filestore.ObjectAttrs{
 				{
-					Path:    "path/to/fileA.txt",
-					Content: []byte{},
+					Path:      "path/to/fileA.txt",
+					Size:      3,
+					UpdatedAt: now.Unix(),
 				},
 				{
-					Path:    "path/to/fileB.txt",
-					Content: []byte{},
+					Path:      "path/to/fileB.txt",
+					Size:      5,
+					UpdatedAt: now.Unix(),
 				},
 			},
 			wantErr: false,
@@ -198,7 +214,7 @@ func TestClose(t *testing.T) {
 	defer cancel()
 
 	bucket := "test"
-	server, err := newEmulator(bucket, map[string]string{})
+	server, err := newEmulator(bucket, map[string]string{}, time.Now())
 	assert.Nil(t, err)
 	defer server.Stop()
 
