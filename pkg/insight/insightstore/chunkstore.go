@@ -104,11 +104,6 @@ func PutChunksToCache(cache cache.Cache, chunks insight.Chunks) error {
 }
 
 func (s *store) getChunk(ctx context.Context, path string, kind model.InsightMetricsKind) (insight.Chunk, error) {
-	obj, err := s.filestore.Get(ctx, path)
-	if err != nil {
-		return nil, err
-	}
-
 	var c interface{}
 	switch kind {
 	case model.InsightMetricsKind_DEPLOYMENT_FREQUENCY:
@@ -117,6 +112,11 @@ func (s *store) getChunk(ctx context.Context, path string, kind model.InsightMet
 		c = &insight.ChangeFailureRateChunk{}
 	default:
 		return nil, fmt.Errorf("unimpremented insight kind: %s", kind)
+	}
+
+	obj, err := s.filestore.Get(ctx, path)
+	if err != nil {
+		return nil, err
 	}
 
 	err = json.Unmarshal(obj.Content, c)
