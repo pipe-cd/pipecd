@@ -30,12 +30,12 @@ type applicationLiveStateFileStore struct {
 func (f *applicationLiveStateFileStore) Get(ctx context.Context, applicationID string) (*model.ApplicationLiveStateSnapshot, error) {
 	path := applicationLiveStatePath(applicationID)
 
-	obj, err := f.backend.Get(ctx, path)
+	content, err := f.backend.Get(ctx, path)
 	if err != nil {
 		return nil, err
 	}
 	var s model.ApplicationLiveStateSnapshot
-	if err := json.Unmarshal(obj.Content, &s); err != nil {
+	if err := json.Unmarshal(content, &s); err != nil {
 		return nil, err
 	}
 	return &s, nil

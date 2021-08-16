@@ -24,13 +24,13 @@ import (
 
 // LoadApplicationCounts loads ApplicationCounts data for a specific project from file store.
 func (s *store) LoadApplicationCounts(ctx context.Context, projectID string) (*insight.ApplicationCounts, error) {
-	obj, err := s.filestore.Get(ctx, determineFilePath(projectID))
+	content, err := s.filestore.Get(ctx, determineFilePath(projectID))
 	if err != nil {
 		return nil, err
 	}
 
 	counts := &insight.ApplicationCounts{}
-	if err := json.Unmarshal(obj.Content, counts); err != nil {
+	if err := json.Unmarshal(content, counts); err != nil {
 		return nil, err
 	}
 

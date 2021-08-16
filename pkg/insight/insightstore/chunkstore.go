@@ -114,12 +114,12 @@ func (s *store) getChunk(ctx context.Context, path string, kind model.InsightMet
 		return nil, fmt.Errorf("unimpremented insight kind: %s", kind)
 	}
 
-	obj, err := s.filestore.Get(ctx, path)
+	content, err := s.filestore.Get(ctx, path)
 	if err != nil {
 		return nil, err
 	}
 
-	err = json.Unmarshal(obj.Content, c)
+	err = json.Unmarshal(content, c)
 	if err != nil {
 		return nil, err
 	}

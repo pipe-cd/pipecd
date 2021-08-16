@@ -65,22 +65,19 @@ func TestGet(t *testing.T) {
 	tests := []struct {
 		name    string
 		path    string
-		want    filestore.Object
+		want    []byte
 		wantErr error
 	}{
 		{
-			name: "found content",
-			path: "path/to/file.txt",
-			want: filestore.Object{
-				Path:    "path/to/file.txt",
-				Content: []byte("foo"),
-			},
+			name:    "found content",
+			path:    "path/to/file.txt",
+			want:    []byte("foo"),
 			wantErr: nil,
 		},
 		{
 			name:    "not found",
 			path:    "path/to/wrong.txt",
-			want:    filestore.Object{},
+			want:    nil,
 			wantErr: filestore.ErrNotFound,
 		},
 	}
@@ -115,27 +112,18 @@ func TestPut(t *testing.T) {
 		name    string
 		path    string
 		content string
-		want    filestore.Object
 		wantErr bool
 	}{
 		{
 			name:    "write new content",
 			path:    "path/to/fileB.txt",
 			content: "foo",
-			want: filestore.Object{
-				Path:    "path/to/fileB.txt",
-				Content: []byte("foo"),
-			},
 			wantErr: false,
 		},
 		{
 			name:    "overwrite content",
 			path:    "path/to/fileA.txt",
 			content: "bar",
-			want: filestore.Object{
-				Path:    "path/to/fileA.txt",
-				Content: []byte("bar"),
-			},
 			wantErr: false,
 		},
 	}
@@ -146,7 +134,7 @@ func TestPut(t *testing.T) {
 
 			got, err := store.Get(ctx, tt.path)
 			assert.Equal(t, tt.wantErr, err != nil)
-			assert.Equal(t, tt.want, got)
+			assert.Equal(t, []byte(tt.content), got)
 		})
 	}
 }

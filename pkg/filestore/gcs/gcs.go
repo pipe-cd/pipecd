@@ -94,10 +94,10 @@ func (s *Store) NewReader(ctx context.Context, path string) (rc io.ReadCloser, e
 	return
 }
 
-func (s *Store) Get(ctx context.Context, path string) (object filestore.Object, err error) {
+func (s *Store) Get(ctx context.Context, path string) ([]byte, error) {
 	rc, err := s.NewReader(ctx, path)
 	if err != nil {
-		return
+		return nil, err
 	}
 	defer func() {
 		if err := rc.Close(); err != nil {
@@ -105,14 +105,7 @@ func (s *Store) Get(ctx context.Context, path string) (object filestore.Object, 
 		}
 	}()
 
-	content, err := ioutil.ReadAll(rc)
-	if err != nil {
-		return
-	}
-
-	object.Path = path
-	object.Content = content
-	return
+	return ioutil.ReadAll(rc)
 }
 
 func (s *Store) Put(ctx context.Context, path string, content []byte) error {

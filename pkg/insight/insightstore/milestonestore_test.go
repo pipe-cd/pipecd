@@ -64,9 +64,7 @@ func TestLoadMilestone(t *testing.T) {
 
 	for _, tc := range testcases {
 		t.Run(tc.name, func(t *testing.T) {
-			obj := filestore.Object{
-				Content: []byte(tc.content),
-			}
+			obj := []byte(tc.content)
 			fs.EXPECT().Get(context.TODO(), milestonePath).Return(obj, tc.readerErr)
 			state, err := s.LoadMilestone(context.TODO())
 			if err != nil {

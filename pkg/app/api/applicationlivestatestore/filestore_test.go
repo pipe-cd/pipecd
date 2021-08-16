@@ -129,10 +129,9 @@ func TestFileStoreGet(t *testing.T) {
 	for _, tc := range testcases {
 		t.Run(tc.name, func(t *testing.T) {
 			path := applicationLiveStatePath(tc.applicationID)
-			obj := filestore.Object{
-				Content: []byte(tc.content),
-			}
-			store.EXPECT().Get(context.TODO(), path).Return(obj, tc.readerErr)
+			content := []byte(tc.content)
+
+			store.EXPECT().Get(context.TODO(), path).Return(content, tc.readerErr)
 			state, err := fs.Get(context.TODO(), tc.applicationID)
 			if err != nil {
 				if tc.expectedErr == nil {

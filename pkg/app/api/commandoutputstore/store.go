@@ -47,7 +47,7 @@ func NewStore(fs filestore.Store, logger *zap.Logger) Store {
 
 func (s *store) Get(ctx context.Context, commandID string) ([]byte, error) {
 	path := dataPath(commandID)
-	obj, err := s.backend.Get(ctx, path)
+	content, err := s.backend.Get(ctx, path)
 	if err != nil {
 		if err == filestore.ErrNotFound {
 			return nil, ErrNotFound
@@ -58,7 +58,7 @@ func (s *store) Get(ctx context.Context, commandID string) ([]byte, error) {
 		)
 		return nil, err
 	}
-	return obj.Content, nil
+	return content, nil
 }
 
 func (s *store) Put(ctx context.Context, commandID string, data []byte) error {

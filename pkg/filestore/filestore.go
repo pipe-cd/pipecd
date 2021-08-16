@@ -24,11 +24,6 @@ var (
 	ErrNotFound = errors.New("not found")
 )
 
-type Object struct {
-	Path    string
-	Content []byte
-}
-
 type ObjectAttrs struct {
 	Path      string
 	Size      int64
@@ -37,7 +32,7 @@ type ObjectAttrs struct {
 
 type Getter interface {
 	// Get retrieves a file object at the given path.
-	Get(ctx context.Context, path string) (Object, error)
+	Get(ctx context.Context, path string) ([]byte, error)
 }
 
 type Putter interface {

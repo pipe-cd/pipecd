@@ -95,9 +95,8 @@ func TestLoadApplicationCounts(t *testing.T) {
 	for _, tc := range tests {
 		t.Run(tc.name, func(t *testing.T) {
 			path := determineFilePath(tc.projectID)
-			obj := filestore.Object{
-				Content: []byte(tc.content),
-			}
+			obj := []byte(tc.content)
+
 			fs.EXPECT().Get(context.TODO(), path).Return(obj, tc.readerErr)
 
 			counts, err := s.LoadApplicationCounts(context.TODO(), tc.projectID)
