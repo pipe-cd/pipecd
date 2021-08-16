@@ -41,12 +41,12 @@ type Getter interface {
 }
 
 type Putter interface {
-	// Put uploads a file object to storage at the given path.
+	// Put uploads a file object to store at the given path.
 	Put(ctx context.Context, path string, content []byte) error
 }
 
 type Lister interface {
-	// List finds all object attributes in storage where its path contains the given prefix.
+	// List finds all object attributes in store where its path contains the given prefix.
 	// The returned results contains only object attributes without its content.
 	List(ctx context.Context, prefix string) ([]ObjectAttrs, error)
 }
