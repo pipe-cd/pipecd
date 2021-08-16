@@ -70,7 +70,7 @@ func (s *store) PutChunk(ctx context.Context, chunk insight.Chunk) error {
 	if path == "" {
 		return fmt.Errorf("filepath not found on chunk struct")
 	}
-	return s.filestore.PutObject(ctx, path, data)
+	return s.filestore.Put(ctx, path, data)
 }
 
 func LoadChunksFromCache(cache cache.Cache, projectID, appID string, kind model.InsightMetricsKind, step model.InsightStep, from time.Time, count int) (insight.Chunks, error) {
@@ -104,11 +104,6 @@ func PutChunksToCache(cache cache.Cache, chunks insight.Chunks) error {
 }
 
 func (s *store) getChunk(ctx context.Context, path string, kind model.InsightMetricsKind) (insight.Chunk, error) {
-	obj, err := s.filestore.GetObject(ctx, path)
-	if err != nil {
-		return nil, err
-	}
-
 	var c interface{}
 	switch kind {
 	case model.InsightMetricsKind_DEPLOYMENT_FREQUENCY:
@@ -119,7 +114,12 @@ func (s *store) getChunk(ctx context.Context, path string, kind model.InsightMet
 		return nil, fmt.Errorf("unimpremented insight kind: %s", kind)
 	}
 
-	err = json.Unmarshal(obj.Content, c)
+	content, err := s.filestore.Get(ctx, path)
+	if err != nil {
+		return nil, err
+	}
+
+	err = json.Unmarshal(content, c)
 	if err != nil {
 		return nil, err
 	}

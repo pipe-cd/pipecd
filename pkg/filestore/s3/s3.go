@@ -116,7 +116,7 @@ func NewStore(ctx context.Context, region, bucket string, opts ...Option) (*Stor
 	return s, nil
 }
 
-func (s *Store) NewReader(ctx context.Context, path string) (io.ReadCloser, error) {
+func (s *Store) GetReader(ctx context.Context, path string) (io.ReadCloser, error) {
 	input := &s3.GetObjectInput{
 		Bucket: aws.String(s.bucket),
 		Key:    aws.String(path),
@@ -132,10 +132,10 @@ func (s *Store) NewReader(ctx context.Context, path string) (io.ReadCloser, erro
 	return out.Body, nil
 }
 
-func (s *Store) GetObject(ctx context.Context, path string) (object filestore.Object, err error) {
-	rc, err := s.NewReader(ctx, path)
+func (s *Store) Get(ctx context.Context, path string) ([]byte, error) {
+	rc, err := s.GetReader(ctx, path)
 	if err != nil {
-		return
+		return nil, err
 	}
 	defer func() {
 		if err := rc.Close(); err != nil {
@@ -143,18 +143,10 @@ func (s *Store) GetObject(ctx context.Context, path string) (object filestore.Ob
 		}
 	}()
 
-	content, err := ioutil.ReadAll(rc)
-	if err != nil {
-		return
-	}
-
-	object.Path = path
-	object.Content = content
-	object.Size = int64(len(content))
-	return
+	return ioutil.ReadAll(rc)
 }
 
-func (s *Store) PutObject(ctx context.Context, path string, content []byte) error {
+func (s *Store) Put(ctx context.Context, path string, content []byte) error {
 	input := &s3.PutObjectInput{
 		Body:   bytes.NewReader(content),
 		Bucket: aws.String(s.bucket),
@@ -167,8 +159,17 @@ func (s *Store) PutObject(ctx context.Context, path string, content []byte) erro
 	return nil
 }
 
-func (s *Store) ListObjects(ctx context.Context, prefix string) ([]filestore.Object, error) {
-	var objects []filestore.Object
+func (s *Store) Delete(ctx context.Context, path string) error {
+	input := &s3.DeleteObjectInput{
+		Bucket: aws.String(s.bucket),
+		Key:    aws.String(path),
+	}
+	_, err := s.client.DeleteObject(ctx, input)
+	return err
+}
+
+func (s *Store) List(ctx context.Context, prefix string) ([]filestore.ObjectAttrs, error) {
+	var objects []filestore.ObjectAttrs
 	input := &s3.ListObjectsV2Input{
 		Bucket: aws.String(s.bucket),
 		Prefix: aws.String(prefix),
@@ -181,10 +182,10 @@ func (s *Store) ListObjects(ctx context.Context, prefix string) ([]filestore.Obj
 			return nil, fmt.Errorf("failed to get list objects: %w", err)
 		}
 		for _, obj := range page.Contents {
-			objects = append(objects, filestore.Object{
-				Path:    aws.ToString(obj.Key),
-				Size:    obj.Size,
-				Content: []byte{},
+			objects = append(objects, filestore.ObjectAttrs{
+				Path:      aws.ToString(obj.Key),
+				Size:      obj.Size,
+				UpdatedAt: aws.ToTime(obj.LastModified).Unix(),
 			})
 		}
 	}

@@ -80,7 +80,7 @@ func NewStore(ctx context.Context, bucket string, opts ...Option) (*Store, error
 	return s, nil
 }
 
-func (s *Store) NewReader(ctx context.Context, path string) (rc io.ReadCloser, err error) {
+func (s *Store) GetReader(ctx context.Context, path string) (rc io.ReadCloser, err error) {
 	rc, err = s.client.Bucket(s.bucket).Object(path).NewReader(ctx)
 	switch err {
 	case nil:
@@ -94,10 +94,10 @@ func (s *Store) NewReader(ctx context.Context, path string) (rc io.ReadCloser, e
 	return
 }
 
-func (s *Store) GetObject(ctx context.Context, path string) (object filestore.Object, err error) {
-	rc, err := s.NewReader(ctx, path)
+func (s *Store) Get(ctx context.Context, path string) ([]byte, error) {
+	rc, err := s.GetReader(ctx, path)
 	if err != nil {
-		return
+		return nil, err
 	}
 	defer func() {
 		if err := rc.Close(); err != nil {
@@ -105,18 +105,10 @@ func (s *Store) GetObject(ctx context.Context, path string) (object filestore.Ob
 		}
 	}()
 
-	content, err := ioutil.ReadAll(rc)
-	if err != nil {
-		return
-	}
-
-	object.Path = path
-	object.Content = content
-	object.Size = int64(len(content))
-	return
+	return ioutil.ReadAll(rc)
 }
 
-func (s *Store) PutObject(ctx context.Context, path string, content []byte) error {
+func (s *Store) Put(ctx context.Context, path string, content []byte) error {
 	wc := s.client.Bucket(s.bucket).Object(path).NewWriter(ctx)
 	if _, err := wc.Write(content); err != nil {
 		wc.Close()
@@ -128,8 +120,12 @@ func (s *Store) PutObject(ctx context.Context, path string, content []byte) erro
 	return nil
 }
 
-func (s *Store) ListObjects(ctx context.Context, prefix string) ([]filestore.Object, error) {
-	var objects []filestore.Object
+func (s *Store) Delete(ctx context.Context, path string) error {
+	return s.client.Bucket(s.bucket).Object(path).Delete(ctx)
+}
+
+func (s *Store) List(ctx context.Context, prefix string) ([]filestore.ObjectAttrs, error) {
+	var objects []filestore.ObjectAttrs
 	query := &storage.Query{
 		Prefix: prefix,
 	}
@@ -146,10 +142,10 @@ func (s *Store) ListObjects(ctx context.Context, prefix string) ([]filestore.Obj
 			)
 			return nil, err
 		}
-		object := filestore.Object{
-			Path:    attrs.Name,
-			Size:    attrs.Size,
-			Content: []byte{},
+		object := filestore.ObjectAttrs{
+			Path:      attrs.Name,
+			Size:      attrs.Size,
+			UpdatedAt: attrs.Updated.Unix(),
 		}
 		objects = append(objects, object)
 	}

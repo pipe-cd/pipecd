@@ -24,26 +24,35 @@ var (
 	ErrNotFound = errors.New("not found")
 )
 
-type Object struct {
-	Path    string
-	Size    int64
-	Content []byte
+type ObjectAttrs struct {
+	Path      string
+	Size      int64
+	UpdatedAt int64
 }
 
 type Getter interface {
-	// GetObject retrieves the content of a specific object in file storage bucket at path.
-	GetObject(ctx context.Context, path string) (Object, error)
+	// Get returns bytes content of file object at the given path.
+	Get(ctx context.Context, path string) ([]byte, error)
+
+	// GetReader returns a new Reader to read the contents of the object.
+	// The caller must call Close on the returned Reader when done reading.
+	GetReader(ctx context.Context, path string) (io.ReadCloser, error)
 }
 
 type Putter interface {
-	// PutObject upload an object content to file storage at path.
-	PutObject(ctx context.Context, path string, content []byte) error
+	// Put uploads a file object to store at the given path.
+	Put(ctx context.Context, path string, content []byte) error
 }
 
 type Lister interface {
-	// ListObjects list all objects in file storage bucket at prefix.
-	// The returned objects only contain the path to the object without object content.
-	ListObjects(ctx context.Context, prefix string) ([]Object, error)
+	// List finds all objects in storage where its path starts with the given prefix
+	// and returns objects' attributes (without content).
+	List(ctx context.Context, prefix string) ([]ObjectAttrs, error)
+}
+
+type Deleter interface {
+	// Delete deletes a file object at the given path.
+	Delete(ctx context.Context, path string) error
 }
 
 type Closer interface {
@@ -53,7 +62,7 @@ type Closer interface {
 type Store interface {
 	Getter
 	Putter
+	Deleter
 	Lister
 	Closer
-	NewReader(ctx context.Context, path string) (io.ReadCloser, error)
 }

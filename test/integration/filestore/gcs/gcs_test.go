@@ -26,13 +26,15 @@ import (
 	"github.com/pipe-cd/pipe/pkg/filestore/gcs"
 )
 
-func newEmulator(bucket string, objects map[string]string) (*fakestorage.Server, error) {
+func newEmulator(bucket string, objects map[string]string, now time.Time) (*fakestorage.Server, error) {
 	initialObjects := make([]fakestorage.Object, 0, len(objects))
 	for k, v := range objects {
 		initialObjects = append(initialObjects, fakestorage.Object{
 			BucketName: bucket,
 			Name:       k,
 			Content:    []byte(v),
+			Created:    now,
+			Updated:    now,
 		})
 	}
 	return fakestorage.NewServerWithOptions(fakestorage.Options{
@@ -42,14 +44,18 @@ func newEmulator(bucket string, objects map[string]string) (*fakestorage.Server,
 	})
 }
 
-func TestGetObject(t *testing.T) {
+func TestGet(t *testing.T) {
 	ctx, cancel := context.WithTimeout(context.Background(), 1*time.Minute)
 	defer cancel()
 
 	bucket := "test"
-	server, err := newEmulator(bucket, map[string]string{
-		"path/to/file.txt": "foo",
-	})
+	server, err := newEmulator(
+		bucket,
+		map[string]string{
+			"path/to/file.txt": "foo",
+		},
+		time.Now(),
+	)
 	assert.Nil(t, err)
 	defer server.Stop()
 
@@ -59,43 +65,43 @@ func TestGetObject(t *testing.T) {
 	tests := []struct {
 		name    string
 		path    string
-		want    filestore.Object
+		want    []byte
 		wantErr error
 	}{
 		{
-			name: "found content",
-			path: "path/to/file.txt",
-			want: filestore.Object{
-				Path:    "path/to/file.txt",
-				Content: []byte("foo"),
-				Size:    3,
-			},
+			name:    "found content",
+			path:    "path/to/file.txt",
+			want:    []byte("foo"),
 			wantErr: nil,
 		},
 		{
 			name:    "not found",
 			path:    "path/to/wrong.txt",
-			want:    filestore.Object{},
+			want:    nil,
 			wantErr: filestore.ErrNotFound,
 		},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			got, err := store.GetObject(ctx, tt.path)
+			got, err := store.Get(ctx, tt.path)
 			assert.Equal(t, tt.wantErr, err)
 			assert.Equal(t, tt.want, got)
 		})
 	}
 }
 
-func TestPutObject(t *testing.T) {
+func TestPut(t *testing.T) {
 	ctx, cancel := context.WithTimeout(context.Background(), 1*time.Minute)
 	defer cancel()
 
 	bucket := "test"
-	server, err := newEmulator(bucket, map[string]string{
-		"path/to/fileA.txt": "foo",
-	})
+	server, err := newEmulator(
+		bucket,
+		map[string]string{
+			"path/to/fileA.txt": "foo",
+		},
+		time.Now(),
+	)
 	assert.Nil(t, err)
 	defer server.Stop()
 
@@ -106,53 +112,46 @@ func TestPutObject(t *testing.T) {
 		name    string
 		path    string
 		content string
-		want    filestore.Object
 		wantErr bool
 	}{
 		{
 			name:    "write new content",
 			path:    "path/to/fileB.txt",
 			content: "foo",
-			want: filestore.Object{
-				Path:    "path/to/fileB.txt",
-				Content: []byte("foo"),
-				Size:    3,
-			},
 			wantErr: false,
 		},
 		{
 			name:    "overwrite content",
 			path:    "path/to/fileA.txt",
 			content: "bar",
-			want: filestore.Object{
-				Path:    "path/to/fileA.txt",
-				Content: []byte("bar"),
-				Size:    3,
-			},
 			wantErr: false,
 		},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			err := store.PutObject(ctx, tt.path, []byte(tt.content))
+			err := store.Put(ctx, tt.path, []byte(tt.content))
 			assert.Equal(t, tt.wantErr, err != nil)
 
-			got, err := store.GetObject(ctx, tt.path)
+			got, err := store.Get(ctx, tt.path)
 			assert.Equal(t, tt.wantErr, err != nil)
-			assert.Equal(t, tt.want, got)
+			assert.Equal(t, []byte(tt.content), got)
 		})
 	}
 }
 
-func TestListObjects(t *testing.T) {
+func TestList(t *testing.T) {
 	ctx, cancel := context.WithTimeout(context.Background(), 1*time.Minute)
 	defer cancel()
 
 	bucket := "test"
-	server, err := newEmulator(bucket, map[string]string{
-		"path/to/fileA.txt": "foo",
-		"path/to/fileB.txt": "bar",
-	})
+	now := time.Now()
+	server, err := newEmulator(
+		bucket, map[string]string{
+			"path/to/fileA.txt": "foo",
+			"path/to/fileB.txt": "hello",
+		},
+		now,
+	)
 	assert.Nil(t, err)
 	defer server.Stop()
 
@@ -162,22 +161,22 @@ func TestListObjects(t *testing.T) {
 	tests := []struct {
 		name    string
 		prefix  string
-		want    []filestore.Object
+		want    []filestore.ObjectAttrs
 		wantErr bool
 	}{
 		{
 			name:   "found contents",
 			prefix: "path/to",
-			want: []filestore.Object{
+			want: []filestore.ObjectAttrs{
 				{
-					Path:    "path/to/fileA.txt",
-					Content: []byte{},
-					Size:    3,
+					Path:      "path/to/fileA.txt",
+					Size:      3,
+					UpdatedAt: now.Unix(),
 				},
 				{
-					Path:    "path/to/fileB.txt",
-					Content: []byte{},
-					Size:    3,
+					Path:      "path/to/fileB.txt",
+					Size:      5,
+					UpdatedAt: now.Unix(),
 				},
 			},
 			wantErr: false,
@@ -190,7 +189,7 @@ func TestListObjects(t *testing.T) {
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			got, err := store.ListObjects(ctx, tt.prefix)
+			got, err := store.List(ctx, tt.prefix)
 			assert.Equal(t, tt.wantErr, err != nil)
 			assert.Equal(t, tt.want, got)
 		})
@@ -203,7 +202,7 @@ func TestClose(t *testing.T) {
 	defer cancel()
 
 	bucket := "test"
-	server, err := newEmulator(bucket, map[string]string{})
+	server, err := newEmulator(bucket, map[string]string{}, time.Now())
 	assert.Nil(t, err)
 	defer server.Stop()
 
@@ -213,6 +212,6 @@ func TestClose(t *testing.T) {
 	err = store.Close()
 	assert.Equal(t, false, err != nil)
 	assert.Panics(t, func() {
-		_, _ = store.GetObject(ctx, "path/to/fileA.txt")
+		_, _ = store.Get(ctx, "path/to/fileA.txt")
 	})
 }

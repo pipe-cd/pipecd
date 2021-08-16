@@ -123,11 +123,8 @@ func TestGetChunks(t *testing.T) {
 			}
 
 			for i, c := range tc.contents {
-				obj := filestore.Object{
-					Content: []byte(c),
-				}
-				fs.EXPECT().GetObject(context.TODO(), paths[i]).Return(obj, tc.readerErr)
-
+				obj := []byte(c)
+				fs.EXPECT().Get(context.TODO(), paths[i]).Return(obj, tc.readerErr)
 			}
 
 			rs, err := s.LoadChunks(context.Background(), tc.projectID, tc.appID, tc.kind, tc.step, tc.from, tc.dataPointCount)
@@ -409,10 +406,8 @@ func TestGetChunk(t *testing.T) {
 			if len(path) != 1 {
 				t.Fatalf("the count of path must be 1, but, %d", len(path))
 			}
-			obj := filestore.Object{
-				Content: []byte(tc.content),
-			}
-			fs.EXPECT().GetObject(context.TODO(), path[0]).Return(obj, tc.readerErr)
+			obj := []byte(tc.content)
+			fs.EXPECT().Get(context.TODO(), path[0]).Return(obj, tc.readerErr)
 			idps, err := s.getChunk(context.Background(), path[0], tc.kind)
 			if err != nil {
 				if tc.expectedErr == nil {

@@ -36,10 +36,12 @@ type stageLogFileStore struct {
 func (f *stageLogFileStore) Get(ctx context.Context, deploymentID, stageID string, retriedCount int32) (logFragment, error) {
 	path := stageLogPath(deploymentID, stageID, retriedCount)
 	lf := logFragment{}
-	reader, err := f.filestore.NewReader(ctx, path)
+	reader, err := f.filestore.GetReader(ctx, path)
 	if err != nil {
 		return lf, err
 	}
+	defer reader.Close()
+
 	blocks := make([]*model.LogBlock, 0)
 	scanner := bufio.NewScanner(reader)
 
@@ -81,7 +83,7 @@ func (f *stageLogFileStore) Put(ctx context.Context, deploymentID, stageID strin
 	if lf.Completed {
 		buf.Write(eol)
 	}
-	return f.filestore.PutObject(ctx, path, buf.Bytes())
+	return f.filestore.Put(ctx, path, buf.Bytes())
 }
 
 func stageLogPath(deploymentID, stageID string, retriedCount int32) string {
