@@ -30,17 +30,20 @@ const (
 	prefix    = "command-output/"
 )
 
-type Cleaner struct {
-	lister  filestore.Lister
-	deleter filestore.Deleter
-	logger  *zap.Logger
+type store interface {
+	filestore.Lister
+	filestore.Deleter
 }
 
-func NewCleaner(l filestore.Lister, d filestore.Deleter, logger *zap.Logger) *Cleaner {
+type Cleaner struct {
+	store  store
+	logger *zap.Logger
+}
+
+func NewCleaner(s store, logger *zap.Logger) *Cleaner {
 	return &Cleaner{
-		lister:  l,
-		deleter: d,
-		logger:  logger.Named("planpreview-output-cleaner"),
+		store:  s,
+		logger: logger.Named("planpreview-output-cleaner"),
 	}
 }
 
@@ -63,7 +66,7 @@ func (c *Cleaner) Run(ctx context.Context) error {
 }
 
 func (c *Cleaner) clean(ctx context.Context, now time.Time) error {
-	objects, err := c.lister.List(ctx, prefix)
+	objects, err := c.store.List(ctx, prefix)
 	if err != nil {
 		c.logger.Error("failed to list planpreview output objects",
 			zap.String("prefix", prefix),
@@ -79,7 +82,7 @@ func (c *Cleaner) clean(ctx context.Context, now time.Time) error {
 		if float64(now.Unix()-obj.UpdatedAt) <= ttl {
 			continue
 		}
-		if err := c.deleter.Delete(ctx, obj.Path); err != nil {
+		if err := c.store.Delete(ctx, obj.Path); err != nil {
 			c.logger.Error("failed to delete planpreview output object",
 				zap.String("path", obj.Path),
 				zap.Error(err),

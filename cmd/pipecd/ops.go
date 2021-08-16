@@ -162,7 +162,7 @@ func (s *ops) run(ctx context.Context, t cli.Telemetry) error {
 
 	// Start running planpreview output cleaner.
 	{
-		cleaner := planpreviewoutputcleaner.NewCleaner(fs, fs, t.Logger)
+		cleaner := planpreviewoutputcleaner.NewCleaner(fs, t.Logger)
 		group.Go(func() error {
 			return cleaner.Run(ctx)
 		})
