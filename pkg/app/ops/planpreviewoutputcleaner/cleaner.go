@@ -56,8 +56,8 @@ func (c *Cleaner) Run(ctx context.Context) error {
 		case <-ctx.Done():
 			break
 
-		case t := <-t.C:
-			c.clean(ctx, t)
+		case <-t.C:
+			c.clean(ctx)
 		}
 	}
 
@@ -65,7 +65,7 @@ func (c *Cleaner) Run(ctx context.Context) error {
 	return nil
 }
 
-func (c *Cleaner) clean(ctx context.Context, now time.Time) error {
+func (c *Cleaner) clean(ctx context.Context) error {
 	objects, err := c.store.List(ctx, prefix)
 	if err != nil {
 		c.logger.Error("failed to list planpreview output objects",
@@ -76,6 +76,7 @@ func (c *Cleaner) clean(ctx context.Context, now time.Time) error {
 	}
 
 	ttl := outputTTL.Seconds()
+	now := time.Now()
 	deletes := 0
 
 	for _, obj := range objects {
