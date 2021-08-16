@@ -26,24 +26,34 @@ var (
 
 type Object struct {
 	Path    string
-	Size    int64
 	Content []byte
 }
 
+type ObjectAttrs struct {
+	Path      string
+	Size      int64
+	UpdatedAt int64
+}
+
 type Getter interface {
-	// GetObject retrieves the content of a specific object in file storage bucket at path.
-	GetObject(ctx context.Context, path string) (Object, error)
+	// Get retrieves a file object at the given path.
+	Get(ctx context.Context, path string) (Object, error)
 }
 
 type Putter interface {
-	// PutObject upload an object content to file storage at path.
-	PutObject(ctx context.Context, path string, content []byte) error
+	// Put uploads a file object to storage at the given path.
+	Put(ctx context.Context, path string, content []byte) error
 }
 
 type Lister interface {
-	// ListObjects list all objects in file storage bucket at prefix.
-	// The returned objects only contain the path to the object without object content.
-	ListObjects(ctx context.Context, prefix string) ([]Object, error)
+	// List finds all object attributes in storage where its path contains the given prefix.
+	// The returned results contains only object attributes without its content.
+	List(ctx context.Context, prefix string) ([]ObjectAttrs, error)
+}
+
+type Deleter interface {
+	// Delete deletes a file object at the given path.
+	Delete(ctx context.Context, path string) error
 }
 
 type Closer interface {
@@ -53,6 +63,7 @@ type Closer interface {
 type Store interface {
 	Getter
 	Putter
+	Deleter
 	Lister
 	Closer
 	NewReader(ctx context.Context, path string) (io.ReadCloser, error)

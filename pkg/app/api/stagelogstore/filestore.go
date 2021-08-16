@@ -81,7 +81,7 @@ func (f *stageLogFileStore) Put(ctx context.Context, deploymentID, stageID strin
 	if lf.Completed {
 		buf.Write(eol)
 	}
-	return f.filestore.PutObject(ctx, path, buf.Bytes())
+	return f.filestore.Put(ctx, path, buf.Bytes())
 }
 
 func stageLogPath(deploymentID, stageID string, retriedCount int32) string {

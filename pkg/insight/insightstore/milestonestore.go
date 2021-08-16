@@ -25,7 +25,7 @@ const milestonePath = "insights/milestone.json"
 
 func (s *store) LoadMilestone(ctx context.Context) (*insight.Milestone, error) {
 	m := &insight.Milestone{}
-	obj, err := s.filestore.GetObject(ctx, milestonePath)
+	obj, err := s.filestore.Get(ctx, milestonePath)
 	if err != nil {
 		return nil, err
 	}
@@ -42,5 +42,5 @@ func (s *store) PutMilestone(ctx context.Context, m *insight.Milestone) error {
 	if err != nil {
 		return err
 	}
-	return s.filestore.PutObject(ctx, milestonePath, data)
+	return s.filestore.Put(ctx, milestonePath, data)
 }

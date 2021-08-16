@@ -24,7 +24,7 @@ import (
 
 // LoadApplicationCounts loads ApplicationCounts data for a specific project from file store.
 func (s *store) LoadApplicationCounts(ctx context.Context, projectID string) (*insight.ApplicationCounts, error) {
-	obj, err := s.filestore.GetObject(ctx, determineFilePath(projectID))
+	obj, err := s.filestore.Get(ctx, determineFilePath(projectID))
 	if err != nil {
 		return nil, err
 	}
@@ -43,7 +43,7 @@ func (s *store) PutApplicationCounts(ctx context.Context, projectID string, coun
 	if err != nil {
 		return err
 	}
-	return s.filestore.PutObject(ctx, determineFilePath(projectID), data)
+	return s.filestore.Put(ctx, determineFilePath(projectID), data)
 }
 
 // File paths will be decided as below:

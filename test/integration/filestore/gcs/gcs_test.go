@@ -42,7 +42,7 @@ func newEmulator(bucket string, objects map[string]string) (*fakestorage.Server,
 	})
 }
 
-func TestGetObject(t *testing.T) {
+func TestGet(t *testing.T) {
 	ctx, cancel := context.WithTimeout(context.Background(), 1*time.Minute)
 	defer cancel()
 
@@ -68,7 +68,6 @@ func TestGetObject(t *testing.T) {
 			want: filestore.Object{
 				Path:    "path/to/file.txt",
 				Content: []byte("foo"),
-				Size:    3,
 			},
 			wantErr: nil,
 		},
@@ -81,14 +80,14 @@ func TestGetObject(t *testing.T) {
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			got, err := store.GetObject(ctx, tt.path)
+			got, err := store.Get(ctx, tt.path)
 			assert.Equal(t, tt.wantErr, err)
 			assert.Equal(t, tt.want, got)
 		})
 	}
 }
 
-func TestPutObject(t *testing.T) {
+func TestPut(t *testing.T) {
 	ctx, cancel := context.WithTimeout(context.Background(), 1*time.Minute)
 	defer cancel()
 
@@ -116,7 +115,6 @@ func TestPutObject(t *testing.T) {
 			want: filestore.Object{
 				Path:    "path/to/fileB.txt",
 				Content: []byte("foo"),
-				Size:    3,
 			},
 			wantErr: false,
 		},
@@ -127,24 +125,23 @@ func TestPutObject(t *testing.T) {
 			want: filestore.Object{
 				Path:    "path/to/fileA.txt",
 				Content: []byte("bar"),
-				Size:    3,
 			},
 			wantErr: false,
 		},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			err := store.PutObject(ctx, tt.path, []byte(tt.content))
+			err := store.Put(ctx, tt.path, []byte(tt.content))
 			assert.Equal(t, tt.wantErr, err != nil)
 
-			got, err := store.GetObject(ctx, tt.path)
+			got, err := store.Get(ctx, tt.path)
 			assert.Equal(t, tt.wantErr, err != nil)
 			assert.Equal(t, tt.want, got)
 		})
 	}
 }
 
-func TestListObjects(t *testing.T) {
+func TestList(t *testing.T) {
 	ctx, cancel := context.WithTimeout(context.Background(), 1*time.Minute)
 	defer cancel()
 
@@ -172,12 +169,10 @@ func TestListObjects(t *testing.T) {
 				{
 					Path:    "path/to/fileA.txt",
 					Content: []byte{},
-					Size:    3,
 				},
 				{
 					Path:    "path/to/fileB.txt",
 					Content: []byte{},
-					Size:    3,
 				},
 			},
 			wantErr: false,
@@ -190,7 +185,7 @@ func TestListObjects(t *testing.T) {
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			got, err := store.ListObjects(ctx, tt.prefix)
+			got, err := store.List(ctx, tt.prefix)
 			assert.Equal(t, tt.wantErr, err != nil)
 			assert.Equal(t, tt.want, got)
 		})
@@ -213,6 +208,6 @@ func TestClose(t *testing.T) {
 	err = store.Close()
 	assert.Equal(t, false, err != nil)
 	assert.Panics(t, func() {
-		_, _ = store.GetObject(ctx, "path/to/fileA.txt")
+		_, _ = store.Get(ctx, "path/to/fileA.txt")
 	})
 }

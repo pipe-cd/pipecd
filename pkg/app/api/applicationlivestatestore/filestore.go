@@ -30,7 +30,7 @@ type applicationLiveStateFileStore struct {
 func (f *applicationLiveStateFileStore) Get(ctx context.Context, applicationID string) (*model.ApplicationLiveStateSnapshot, error) {
 	path := applicationLiveStatePath(applicationID)
 
-	obj, err := f.backend.GetObject(ctx, path)
+	obj, err := f.backend.Get(ctx, path)
 	if err != nil {
 		return nil, err
 	}
@@ -47,7 +47,7 @@ func (f *applicationLiveStateFileStore) Put(ctx context.Context, applicationID s
 	if err != nil {
 		return err
 	}
-	return f.backend.PutObject(ctx, path, data)
+	return f.backend.Put(ctx, path, data)
 }
 
 func applicationLiveStatePath(applicationID string) string {

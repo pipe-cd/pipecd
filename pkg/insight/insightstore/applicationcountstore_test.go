@@ -98,7 +98,7 @@ func TestLoadApplicationCounts(t *testing.T) {
 			obj := filestore.Object{
 				Content: []byte(tc.content),
 			}
-			fs.EXPECT().GetObject(context.TODO(), path).Return(obj, tc.readerErr)
+			fs.EXPECT().Get(context.TODO(), path).Return(obj, tc.readerErr)
 
 			counts, err := s.LoadApplicationCounts(context.TODO(), tc.projectID)
 			assert.Equal(t, tc.expectedErr, err)

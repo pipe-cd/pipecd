@@ -115,7 +115,7 @@ func (s *Store) NewReader(ctx context.Context, path string) (rc io.ReadCloser, e
 	return s.client.GetObject(ctx, s.bucket, path, minio.GetObjectOptions{})
 }
 
-func (s *Store) GetObject(ctx context.Context, path string) (object filestore.Object, err error) {
+func (s *Store) Get(ctx context.Context, path string) (object filestore.Object, err error) {
 	rc, err := s.NewReader(ctx, path)
 	if err != nil {
 		return
@@ -132,11 +132,10 @@ func (s *Store) GetObject(ctx context.Context, path string) (object filestore.Ob
 	}
 	object.Path = path
 	object.Content = content
-	object.Size = int64(len(content))
 	return
 }
 
-func (s *Store) PutObject(ctx context.Context, path string, content []byte) error {
+func (s *Store) Put(ctx context.Context, path string, content []byte) error {
 	opts := minio.PutObjectOptions{}
 	if opts.ContentType = mime.TypeByExtension(filepath.Ext(path)); opts.ContentType == "" {
 		opts.ContentType = "application/octet-stream"
@@ -147,16 +146,21 @@ func (s *Store) PutObject(ctx context.Context, path string, content []byte) erro
 	return err
 }
 
-func (s *Store) ListObjects(ctx context.Context, prefix string) ([]filestore.Object, error) {
+func (s *Store) Delete(ctx context.Context, path string) error {
+	return s.client.RemoveObject(ctx, s.bucket, path, minio.RemoveObjectOptions{})
+}
+
+func (s *Store) List(ctx context.Context, prefix string) ([]filestore.ObjectAttrs, error) {
 	objectCh := s.client.ListObjects(ctx, s.bucket, minio.ListObjectsOptions{Prefix: prefix, Recursive: true})
-	objects := make([]filestore.Object, 0, len(objectCh))
+	objects := make([]filestore.ObjectAttrs, 0, len(objectCh))
 	for o := range objectCh {
 		if o.Err != nil {
 			return nil, fmt.Errorf("invalid object %q found: %w", o.Key, o.Err)
 		}
-		objects = append(objects, filestore.Object{
-			Path: o.Key,
-			Size: o.Size,
+		objects = append(objects, filestore.ObjectAttrs{
+			Path:      o.Key,
+			Size:      o.Size,
+			UpdatedAt: o.LastModified.Unix(),
 		})
 	}
 	return objects, nil

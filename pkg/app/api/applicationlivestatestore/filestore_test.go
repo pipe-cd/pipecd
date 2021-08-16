@@ -132,7 +132,7 @@ func TestFileStoreGet(t *testing.T) {
 			obj := filestore.Object{
 				Content: []byte(tc.content),
 			}
-			store.EXPECT().GetObject(context.TODO(), path).Return(obj, tc.readerErr)
+			store.EXPECT().Get(context.TODO(), path).Return(obj, tc.readerErr)
 			state, err := fs.Get(context.TODO(), tc.applicationID)
 			if err != nil {
 				if tc.expectedErr == nil {

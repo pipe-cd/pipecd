@@ -126,7 +126,7 @@ func TestGetChunks(t *testing.T) {
 				obj := filestore.Object{
 					Content: []byte(c),
 				}
-				fs.EXPECT().GetObject(context.TODO(), paths[i]).Return(obj, tc.readerErr)
+				fs.EXPECT().Get(context.TODO(), paths[i]).Return(obj, tc.readerErr)
 
 			}
 
@@ -412,7 +412,7 @@ func TestGetChunk(t *testing.T) {
 			obj := filestore.Object{
 				Content: []byte(tc.content),
 			}
-			fs.EXPECT().GetObject(context.TODO(), path[0]).Return(obj, tc.readerErr)
+			fs.EXPECT().Get(context.TODO(), path[0]).Return(obj, tc.readerErr)
 			idps, err := s.getChunk(context.Background(), path[0], tc.kind)
 			if err != nil {
 				if tc.expectedErr == nil {
