@@ -341,7 +341,7 @@ func modifyText(path, regexText, newValue string) ([]byte, bool, error) {
 	firstGroup := ""
 	re, err := syntax.Parse(regexText, syntax.Perl)
 	if err != nil {
-		return nil, false, fmt.Errorf("failed to parse the first capturing group regex")
+		return nil, false, fmt.Errorf("failed to parse the first capturing group regex: %w", err)
 	}
 	for _, s := range re.Sub {
 		if s.Op == syntax.OpCapture {
@@ -354,7 +354,7 @@ func modifyText(path, regexText, newValue string) ([]byte, bool, error) {
 	}
 	subRegex, err := pool.Get(firstGroup)
 	if err != nil {
-		return nil, false, fmt.Errorf("failed to compile the first capturing group")
+		return nil, false, fmt.Errorf("failed to compile the first capturing group: %w", err)
 	}
 
 	var touched, outDated bool
