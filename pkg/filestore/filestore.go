@@ -46,8 +46,8 @@ type Putter interface {
 }
 
 type Lister interface {
-	// List finds all object attributes in store where its path contains the given prefix.
-	// The returned results contains only object attributes without its content.
+	// List finds all objects in storage where its path starts with the given prefix
+	// and returns objects' attributes (without content).
 	List(ctx context.Context, prefix string) ([]ObjectAttrs, error)
 }
 
