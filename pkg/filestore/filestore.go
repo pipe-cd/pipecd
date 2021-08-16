@@ -31,8 +31,12 @@ type ObjectAttrs struct {
 }
 
 type Getter interface {
-	// Get retrieves a file object at the given path.
+	// Get returns bytes content of file object at the given path.
 	Get(ctx context.Context, path string) ([]byte, error)
+
+	// GetReader returns a new Reader to read the contents of the object.
+	// The caller must call Close on the returned Reader when done reading.
+	GetReader(ctx context.Context, path string) (io.ReadCloser, error)
 }
 
 type Putter interface {
@@ -61,5 +65,4 @@ type Store interface {
 	Deleter
 	Lister
 	Closer
-	NewReader(ctx context.Context, path string) (io.ReadCloser, error)
 }

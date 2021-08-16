@@ -100,7 +100,7 @@ func (s *Store) EnsureBucket(ctx context.Context) error {
 	return s.client.MakeBucket(ctx, s.bucket, minio.MakeBucketOptions{})
 }
 
-func (s *Store) NewReader(ctx context.Context, path string) (rc io.ReadCloser, err error) {
+func (s *Store) GetReader(ctx context.Context, path string) (rc io.ReadCloser, err error) {
 	if _, err = s.client.StatObject(ctx, s.bucket, path, minio.GetObjectOptions{}); err != nil {
 		e := minio.ToErrorResponse(err)
 		if e.StatusCode == http.StatusNotFound {
@@ -116,7 +116,7 @@ func (s *Store) NewReader(ctx context.Context, path string) (rc io.ReadCloser, e
 }
 
 func (s *Store) Get(ctx context.Context, path string) ([]byte, error) {
-	rc, err := s.NewReader(ctx, path)
+	rc, err := s.GetReader(ctx, path)
 	if err != nil {
 		return nil, err
 	}

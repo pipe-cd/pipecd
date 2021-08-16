@@ -106,7 +106,7 @@ EOL`,
 		t.Run(tc.name, func(t *testing.T) {
 			path := stageLogPath(tc.deploymentID, tc.stageID, tc.retriedCount)
 			reader := ioutil.NopCloser(strings.NewReader(tc.content))
-			store.EXPECT().NewReader(context.TODO(), path).Return(reader, tc.readerErr)
+			store.EXPECT().GetReader(context.TODO(), path).Return(reader, tc.readerErr)
 			lf, err := fs.Get(context.TODO(), tc.deploymentID, tc.stageID, tc.retriedCount)
 			if err != nil {
 				if tc.expectedErr == nil {

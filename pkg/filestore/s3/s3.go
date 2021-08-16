@@ -116,7 +116,7 @@ func NewStore(ctx context.Context, region, bucket string, opts ...Option) (*Stor
 	return s, nil
 }
 
-func (s *Store) NewReader(ctx context.Context, path string) (io.ReadCloser, error) {
+func (s *Store) GetReader(ctx context.Context, path string) (io.ReadCloser, error) {
 	input := &s3.GetObjectInput{
 		Bucket: aws.String(s.bucket),
 		Key:    aws.String(path),
@@ -133,7 +133,7 @@ func (s *Store) NewReader(ctx context.Context, path string) (io.ReadCloser, erro
 }
 
 func (s *Store) Get(ctx context.Context, path string) ([]byte, error) {
-	rc, err := s.NewReader(ctx, path)
+	rc, err := s.GetReader(ctx, path)
 	if err != nil {
 		return nil, err
 	}

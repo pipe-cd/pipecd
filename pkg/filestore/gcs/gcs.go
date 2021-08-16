@@ -80,7 +80,7 @@ func NewStore(ctx context.Context, bucket string, opts ...Option) (*Store, error
 	return s, nil
 }
 
-func (s *Store) NewReader(ctx context.Context, path string) (rc io.ReadCloser, err error) {
+func (s *Store) GetReader(ctx context.Context, path string) (rc io.ReadCloser, err error) {
 	rc, err = s.client.Bucket(s.bucket).Object(path).NewReader(ctx)
 	switch err {
 	case nil:
@@ -95,7 +95,7 @@ func (s *Store) NewReader(ctx context.Context, path string) (rc io.ReadCloser, e
 }
 
 func (s *Store) Get(ctx context.Context, path string) ([]byte, error) {
-	rc, err := s.NewReader(ctx, path)
+	rc, err := s.GetReader(ctx, path)
 	if err != nil {
 		return nil, err
 	}
