@@ -49,21 +49,11 @@ type EventWatcherReplacement struct {
 	// The JSON path to the field to be updated.
 	JSONField string `json:"jsonField"`
 	// The HCL path to the field to be updated.
-	HCLField  string                           `json:"HCLField"`
-	TextField EventWatcherReplacementTextField `json:"textField"`
-}
-
-type EventWatcherReplacementTextField struct {
-	// The pattern to detect lines that should be updated by Event watcher.
-	LineRegex string `json:"lineRegex"`
-	// TODO: Support the "line" field that specifies tha line number staticaly
-
-	// The pattern to decide which part in the line should be updated.
-	ReplaceRegex string `json:"replaceRegex"`
-}
-
-func (e *EventWatcherReplacementTextField) Filled() bool {
-	return e.LineRegex != "" && e.ReplaceRegex != ""
+	HCLField string `json:"HCLField"`
+	// The regex string that specify what should be replaced.
+	// The only first capturing group enclosed by `()` will be replaced with the new value.
+	// e.g. "host.xz/foo/bar:(v[0-9].[0-9].[0-9])"
+	Regex string `json:"regex"`
 }
 
 // LoadEventWatcher gives back parsed EventWatcher config after merging config files placed under
@@ -186,7 +176,7 @@ func (e *EventWatcherEvent) Validate() error {
 		if r.HCLField != "" {
 			count++
 		}
-		if r.TextField.Filled() {
+		if r.Regex != "" {
 			count++
 		}
 		if count == 0 {

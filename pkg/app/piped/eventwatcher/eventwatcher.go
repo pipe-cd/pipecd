@@ -24,6 +24,7 @@ import (
 	"io/ioutil"
 	"os"
 	"path/filepath"
+	"regexp/syntax"
 	"strconv"
 	"sync"
 	"time"
@@ -240,8 +241,8 @@ func (w *watcher) commitFiles(ctx context.Context, eventCfg config.EventWatcherE
 			// TODO: Empower Event watcher to parse JSON format
 		case r.HCLField != "":
 			// TODO: Empower Event watcher to parse HCL format
-		case r.TextField.Filled():
-			newContent, upToDate, err = modifyText(path, r.TextField, latestEvent.Data)
+		case r.Regex != "":
+			newContent, upToDate, err = modifyText(path, r.Regex, latestEvent.Data)
 		}
 		if err != nil {
 			return err
@@ -324,28 +325,48 @@ func convertStr(value interface{}) (out string, err error) {
 	return
 }
 
-func modifyText(path string, textField config.EventWatcherReplacementTextField, newValue string) ([]byte, bool, error) {
-	text, err := os.ReadFile(path)
+func modifyText(path, regexText, newValue string) ([]byte, bool, error) {
+	content, err := os.ReadFile(path)
 	if err != nil {
 		return nil, false, fmt.Errorf("failed to read file: %w", err)
 	}
 
 	pool := regexpool.DefaultPool()
-	lineRegex, err := pool.Get(textField.LineRegex)
+	regex, err := pool.Get(regexText)
 	if err != nil {
-		return nil, false, fmt.Errorf("failed to compile line regex: %w", err)
-	}
-	replaceRegex, err := pool.Get(textField.ReplaceRegex)
-	if err != nil {
-		return nil, false, fmt.Errorf("failed to compile replace regex: %w", err)
+		return nil, false, fmt.Errorf("failed to compile regex text (%s): %w", regexText, err)
 	}
 
-	touched := false
-	newText := lineRegex.ReplaceAllFunc(text, func(match []byte) []byte {
+	// Extract the first capturing group.
+	firstGroup := ""
+	re, err := syntax.Parse(regexText, syntax.Perl)
+	if err != nil {
+		return nil, false, fmt.Errorf("failed to parse the first capturing group regex")
+	}
+	for _, s := range re.Sub {
+		if s.Op == syntax.OpCapture {
+			firstGroup = s.String()
+			break
+		}
+	}
+	if firstGroup == "" {
+		return nil, false, fmt.Errorf("capturing group not found in the given regex")
+	}
+	subRegex, err := pool.Get(firstGroup)
+	if err != nil {
+		return nil, false, fmt.Errorf("failed to compile the first capturing group")
+	}
+
+	var touched, outDated bool
+	newText := regex.ReplaceAllFunc(content, func(match []byte) []byte {
 		touched = true
-		return replaceRegex.ReplaceAll(match, []byte(newValue))
+		outDated = string(subRegex.Find(match)) != newValue
+		return subRegex.ReplaceAll(match, []byte(newValue))
 	})
 	if !touched {
+		return nil, false, fmt.Errorf("the content of %s doesn't match %s", path, regexText)
+	}
+	if !outDated {
 		return nil, true, nil
 	}
 
