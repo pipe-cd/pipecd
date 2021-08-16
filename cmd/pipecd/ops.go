@@ -32,6 +32,7 @@ import (
 	"github.com/pipe-cd/pipe/pkg/app/ops/mysqlensurer"
 	"github.com/pipe-cd/pipe/pkg/app/ops/orphancommandcleaner"
 	"github.com/pipe-cd/pipe/pkg/app/ops/pipedstatsbuilder"
+	"github.com/pipe-cd/pipe/pkg/app/ops/planpreviewoutputcleaner"
 	"github.com/pipe-cd/pipe/pkg/app/ops/staledpipedstatcleaner"
 	"github.com/pipe-cd/pipe/pkg/cache/rediscache"
 	"github.com/pipe-cd/pipe/pkg/cli"
@@ -144,16 +145,28 @@ func (s *ops) run(ctx context.Context, t cli.Telemetry) error {
 	statCache := rediscache.NewHashCache(rd, defaultPipedStatHashKey)
 
 	// Start running staled piped stat cleaner.
-	pipedStatCleaner := staledpipedstatcleaner.NewStaledPipedStatCleaner(statCache, t.Logger)
-	group.Go(func() error {
-		return pipedStatCleaner.Run(ctx)
-	})
+	{
+		cleaner := staledpipedstatcleaner.NewStaledPipedStatCleaner(statCache, t.Logger)
+		group.Go(func() error {
+			return cleaner.Run(ctx)
+		})
+	}
 
 	// Start running command cleaner.
-	cleaner := orphancommandcleaner.NewOrphanCommandCleaner(ds, t.Logger)
-	group.Go(func() error {
-		return cleaner.Run(ctx)
-	})
+	{
+		cleaner := orphancommandcleaner.NewOrphanCommandCleaner(ds, t.Logger)
+		group.Go(func() error {
+			return cleaner.Run(ctx)
+		})
+	}
+
+	// Start running planpreview output cleaner.
+	{
+		cleaner := planpreviewoutputcleaner.NewCleaner(fs, fs, t.Logger)
+		group.Go(func() error {
+			return cleaner.Run(ctx)
+		})
+	}
 
 	// Start running insight collector.
 	ic := insightcollector.NewCollector(ds, fs, cfg.InsightCollector, t.Logger)
