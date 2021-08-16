@@ -61,9 +61,9 @@ Please note that the phases (Incubating, Alpha, Beta, and Stable) are applied to
 
 | Feature | Phase |
 |-|-|
-| Quick Sync Deployment | Alpha |
-| Deployment with the Specified Pipeline | Alpha |
-| Automated Rollback | Alpha |
+| Quick Sync Deployment | Beta |
+| Deployment with the Specified Pipeline | Beta |
+| Automated Rollback | Beta |
 | [Automated Configuration Drift Detection](/docs/user-guide/configuration-drift-detection/) | Incubating |
 | [Application Live State](/docs/user-guide/application-live-state/) | Incubating |
 | [Plan Preview](/docs/user-guide/plan-preview) | Alpha |
