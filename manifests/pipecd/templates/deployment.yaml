@@ -85,6 +85,24 @@ spec:
         app.kubernetes.io/component: server
     spec:
       containers:
+{{- if .Value.cloudSQLProxy.enabled }}
+        - name: cloud-sql-proxy
+          image: "gcr.io/cloudsql-docker/gce-proxy:{{ .Values.cloudSQLProxy.version }}"
+          command:
+            - "/cloud_sql_proxy"
+            - "-instances={{ .Values.cloudSQLProxy.args.instanceConnectionName }}=tcp:{{ .Values.cloudSQLProxy.args.port }}"
+            - "-credential_file={{ .Values.secret.mountPath }}/service_account.json"
+          securityContext:
+            runAsNonRoot: true
+          volumeMounts:
+            - name: pipecd-secret
+              mountPath: {{ .Values.secret.mountPath }}
+              readOnly: true
+{{- if .Values.cloudSQLProxy.resources }}
+          resources:
+            {{- toYaml .Values.cloudSQLProxy.resources | nindent 12 }}
+{{- end }}
+{{- end }}
         - name: server
           image: "{{ .Values.server.image.repository }}:{{ .Chart.AppVersion }}"
           imagePullPolicy: IfNotPresent
@@ -210,6 +228,20 @@ spec:
         app.kubernetes.io/component: ops
     spec:
       containers:
+{{- if .Value.cloudSQLProxy.enabled }}
+        - name: cloud-sql-proxy
+          image: "gcr.io/cloudsql-docker/gce-proxy:{{ .Values.cloudSQLProxy.version }}"
+          command:
+            - "/cloud_sql_proxy"
+            - "-instances={{ .Values.cloudSQLProxy.args.instanceConnectionName }}=tcp:{{ .Values.cloudSQLProxy.args.port }}"
+            - "-credential_file={{ .Values.secret.mountPath }}/service_account.json"
+          securityContext:
+            runAsNonRoot: true
+          volumeMounts:
+            - name: pipecd-secret
+              mountPath: {{ .Values.secret.mountPath }}
+              readOnly: true
+{{- end }}
         - name: ops
           image: "{{ .Values.ops.image.repository }}:{{ .Chart.AppVersion }}"
           imagePullPolicy: IfNotPresent
