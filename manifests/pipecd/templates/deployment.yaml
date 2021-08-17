@@ -91,7 +91,7 @@ spec:
           command:
             - "/cloud_sql_proxy"
             - "-instances={{ .Values.cloudSQLProxy.args.instanceConnectionName }}=tcp:{{ .Values.cloudSQLProxy.args.port }}"
-            - "-credential_file={{ .Values.secret.mountPath }}/service_account.json"
+            - "-credential_file={{ .Values.secret.mountPath }}/cloud-sql-service-account"
           securityContext:
             runAsNonRoot: true
           volumeMounts:
@@ -234,7 +234,7 @@ spec:
           command:
             - "/cloud_sql_proxy"
             - "-instances={{ .Values.cloudSQLProxy.args.instanceConnectionName }}=tcp:{{ .Values.cloudSQLProxy.args.port }}"
-            - "-credential_file={{ .Values.secret.mountPath }}/service_account.json"
+            - "-credential_file={{ .Values.secret.mountPath }}/cloud-sql-service-account"
           securityContext:
             runAsNonRoot: true
           volumeMounts:
