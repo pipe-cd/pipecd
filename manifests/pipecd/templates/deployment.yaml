@@ -85,7 +85,7 @@ spec:
         app.kubernetes.io/component: server
     spec:
       containers:
-{{- if .Value.cloudSQLProxy.enabled }}
+{{- if .Values.cloudSQLProxy.enabled }}
         - name: cloud-sql-proxy
           image: "gcr.io/cloudsql-docker/gce-proxy:{{ .Values.cloudSQLProxy.version }}"
           command:
@@ -228,7 +228,7 @@ spec:
         app.kubernetes.io/component: ops
     spec:
       containers:
-{{- if .Value.cloudSQLProxy.enabled }}
+{{- if .Values.cloudSQLProxy.enabled }}
         - name: cloud-sql-proxy
           image: "gcr.io/cloudsql-docker/gce-proxy:{{ .Values.cloudSQLProxy.version }}"
           command:
