@@ -325,6 +325,9 @@ func convertStr(value interface{}) (out string, err error) {
 	return
 }
 
+// modifyText returns a new text replacing all matches of the given regex with the newValue.
+// The only first capturing group enclosed by `()` will be replaced.
+// True as a second returned value means it's already up-to-date.
 func modifyText(path, regexText, newValue string) ([]byte, bool, error) {
 	content, err := os.ReadFile(path)
 	if err != nil {
@@ -361,6 +364,7 @@ func modifyText(path, regexText, newValue string) ([]byte, bool, error) {
 	newText := regex.ReplaceAllFunc(content, func(match []byte) []byte {
 		touched = true
 		outDated = string(subRegex.Find(match)) != newValue
+		// Return text replacing the only first capturing group with the newValue.
 		return subRegex.ReplaceAll(match, []byte(newValue))
 	})
 	if !touched {

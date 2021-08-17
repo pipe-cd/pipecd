@@ -130,7 +130,7 @@ func TestModifyText(t *testing.T) {
 	}{
 		{
 			name:         "invalid regex given",
-			path:         "testdata/invalid.yaml",
+			path:         "testdata/with-template.yaml",
 			regex:        "[",
 			newValue:     "v0.2.0",
 			want:         nil,
@@ -139,7 +139,7 @@ func TestModifyText(t *testing.T) {
 		},
 		{
 			name:         "no capturing group given",
-			path:         "testdata/invalid.yaml",
+			path:         "testdata/with-template.yaml",
 			regex:        "image: gcr.io/pipecd/foo:v[0-9].[0-9].[0-9]",
 			newValue:     "v0.2.0",
 			want:         nil,
@@ -148,7 +148,7 @@ func TestModifyText(t *testing.T) {
 		},
 		{
 			name:         "invalid capturing group given",
-			path:         "testdata/invalid.yaml",
+			path:         "testdata/with-template.yaml",
 			regex:        "image: gcr.io/pipecd/foo:([)",
 			newValue:     "v0.2.0",
 			want:         nil,
@@ -157,7 +157,7 @@ func TestModifyText(t *testing.T) {
 		},
 		{
 			name:         "the file doesn't match regex",
-			path:         "testdata/invalid.yaml",
+			path:         "testdata/with-template.yaml",
 			regex:        "abcdefg",
 			newValue:     "v0.1.0",
 			want:         nil,
@@ -166,7 +166,7 @@ func TestModifyText(t *testing.T) {
 		},
 		{
 			name:         "the file is up-to-date",
-			path:         "testdata/invalid.yaml",
+			path:         "testdata/with-template.yaml",
 			regex:        "image: gcr.io/pipecd/foo:(v[0-9].[0-9].[0-9])",
 			newValue:     "v0.1.0",
 			want:         nil,
@@ -174,8 +174,8 @@ func TestModifyText(t *testing.T) {
 			wantErr:      false,
 		},
 		{
-			name:     "different between defined one and given one",
-			path:     "testdata/invalid.yaml",
+			name:     "replace a part of text",
+			path:     "testdata/with-template.yaml",
 			regex:    "image: gcr.io/pipecd/foo:(v[0-9].[0-9].[0-9])",
 			newValue: "v0.2.0",
 			want: []byte(`apiVersion: apps/v1
@@ -210,6 +210,18 @@ spec:
         env:
         - name: BAR
           value: {{ .encryptedSecrets.bar }}
+`),
+			wantUpToDate: false,
+			wantErr:      false,
+		},
+		{
+			name:     "replace text",
+			path:     "testdata/kustomization.yaml",
+			regex:    "newTag: (v[0-9].[0-9].[0-9])",
+			newValue: "v0.2.0",
+			want: []byte(`images:
+- name: gcr.io/pipecd/foo
+  newTag: v0.2.0
 `),
 			wantUpToDate: false,
 			wantErr:      false,
