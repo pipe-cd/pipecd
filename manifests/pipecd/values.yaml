@@ -46,7 +46,7 @@ ops:
   resources: {}
 
 cloudSQLProxy:
-  enable: false
+  enabled: false
   version: 1.17
   args:
     instanceConnectionName: ""
