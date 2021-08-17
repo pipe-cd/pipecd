@@ -83,8 +83,8 @@ secret:
   gcsServiceAccount:
     fileName: "gcs-service-account"
     data: ""
-  sqlServiceAccount:
-    fileName: "sql-service-account"
+  cloudSQLServiceAccount:
+    fileName: "cloud-sql-service-account"
     data: ""
   minioAccessKey:
     fileName: "minio-access-key"
