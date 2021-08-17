@@ -87,7 +87,7 @@ func (a *analyzer) run(ctx context.Context) error {
 			a.logPersister.Errorf("[%s] The query result is unexpected. Reason: %s. Performed query: %q", a.id, reason, a.query)
 			failureCount++
 			if failureCount > a.failureLimit {
-				return fmt.Errorf("anslysis '%s' failed because the failure number exceeded the failure limit (%d)", a.id, a.failureLimit)
+				return fmt.Errorf("analysis '%s' failed because the failure number exceeded the failure limit (%d)", a.id, a.failureLimit)
 			}
 		case <-ctx.Done():
 			return nil
