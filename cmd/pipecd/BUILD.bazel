@@ -28,6 +28,7 @@ go_library(
         "//pkg/app/ops/mysqlensurer:go_default_library",
         "//pkg/app/ops/orphancommandcleaner:go_default_library",
         "//pkg/app/ops/pipedstatsbuilder:go_default_library",
+        "//pkg/app/ops/planpreviewoutputcleaner:go_default_library",
         "//pkg/app/ops/staledpipedstatcleaner:go_default_library",
         "//pkg/cache/cachemetrics:go_default_library",
         "//pkg/cache/rediscache:go_default_library",

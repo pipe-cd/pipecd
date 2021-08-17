@@ -1,0 +1,12 @@
+load("@io_bazel_rules_go//go:def.bzl", "go_library")
+
+go_library(
+    name = "go_default_library",
+    srcs = ["cleaner.go"],
+    importpath = "github.com/pipe-cd/pipe/pkg/app/ops/planpreviewoutputcleaner",
+    visibility = ["//visibility:public"],
+    deps = [
+        "//pkg/filestore:go_default_library",
+        "@org_uber_go_zap//:go_default_library",
+    ],
+)
