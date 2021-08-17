@@ -24,6 +24,7 @@ import (
 	"io/ioutil"
 	"os"
 	"path/filepath"
+	"regexp/syntax"
 	"strconv"
 	"sync"
 	"time"
@@ -33,6 +34,7 @@ import (
 	"github.com/pipe-cd/pipe/pkg/config"
 	"github.com/pipe-cd/pipe/pkg/git"
 	"github.com/pipe-cd/pipe/pkg/model"
+	"github.com/pipe-cd/pipe/pkg/regexpool"
 	"github.com/pipe-cd/pipe/pkg/yamlprocessor"
 )
 
@@ -239,6 +241,8 @@ func (w *watcher) commitFiles(ctx context.Context, eventCfg config.EventWatcherE
 			// TODO: Empower Event watcher to parse JSON format
 		case r.HCLField != "":
 			// TODO: Empower Event watcher to parse HCL format
+		case r.Regex != "":
+			newContent, upToDate, err = modifyText(path, r.Regex, latestEvent.Data)
 		}
 		if err != nil {
 			return err
@@ -269,7 +273,7 @@ func (w *watcher) commitFiles(ctx context.Context, eventCfg config.EventWatcherE
 // modifyYAML returns a new YAML content as a first returned value if the value of given
 // field was outdated. True as a second returned value means it's already up-to-date.
 func modifyYAML(path, field, newValue string) ([]byte, bool, error) {
-	yml, err := ioutil.ReadFile(path)
+	yml, err := os.ReadFile(path)
 	if err != nil {
 		return nil, false, fmt.Errorf("failed to read file: %w", err)
 	}
@@ -319,4 +323,56 @@ func convertStr(value interface{}) (out string, err error) {
 		err = fmt.Errorf("failed to convert %T into string", v)
 	}
 	return
+}
+
+// modifyText returns a new text replacing all matches of the given regex with the newValue.
+// The only first capturing group enclosed by `()` will be replaced.
+// True as a second returned value means it's already up-to-date.
+func modifyText(path, regexText, newValue string) ([]byte, bool, error) {
+	content, err := os.ReadFile(path)
+	if err != nil {
+		return nil, false, fmt.Errorf("failed to read file: %w", err)
+	}
+
+	pool := regexpool.DefaultPool()
+	regex, err := pool.Get(regexText)
+	if err != nil {
+		return nil, false, fmt.Errorf("failed to compile regex text (%s): %w", regexText, err)
+	}
+
+	// Extract the first capturing group.
+	firstGroup := ""
+	re, err := syntax.Parse(regexText, syntax.Perl)
+	if err != nil {
+		return nil, false, fmt.Errorf("failed to parse the first capturing group regex: %w", err)
+	}
+	for _, s := range re.Sub {
+		if s.Op == syntax.OpCapture {
+			firstGroup = s.String()
+			break
+		}
+	}
+	if firstGroup == "" {
+		return nil, false, fmt.Errorf("capturing group not found in the given regex")
+	}
+	subRegex, err := pool.Get(firstGroup)
+	if err != nil {
+		return nil, false, fmt.Errorf("failed to compile the first capturing group: %w", err)
+	}
+
+	var touched, outDated bool
+	newText := regex.ReplaceAllFunc(content, func(match []byte) []byte {
+		touched = true
+		outDated = string(subRegex.Find(match)) != newValue
+		// Return text replacing the only first capturing group with the newValue.
+		return subRegex.ReplaceAll(match, []byte(newValue))
+	})
+	if !touched {
+		return nil, false, fmt.Errorf("the content of %s doesn't match %s", path, regexText)
+	}
+	if !outDated {
+		return nil, true, nil
+	}
+
+	return newText, false, nil
 }

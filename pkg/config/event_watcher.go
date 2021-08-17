@@ -50,6 +50,10 @@ type EventWatcherReplacement struct {
 	JSONField string `json:"jsonField"`
 	// The HCL path to the field to be updated.
 	HCLField string `json:"HCLField"`
+	// The regex string specifying what should be replaced.
+	// Only the first capturing group enclosed by `()` will be replaced with the new value.
+	// e.g. "host.xz/foo/bar:(v[0-9].[0-9].[0-9])"
+	Regex string `json:"regex"`
 }
 
 // LoadEventWatcher gives back parsed EventWatcher config after merging config files placed under
@@ -170,6 +174,9 @@ func (e *EventWatcherEvent) Validate() error {
 			count++
 		}
 		if r.HCLField != "" {
+			count++
+		}
+		if r.Regex != "" {
 			count++
 		}
 		if count == 0 {

@@ -117,3 +117,122 @@ func TestModifyYAML(t *testing.T) {
 		})
 	}
 }
+
+func TestModifyText(t *testing.T) {
+	testcases := []struct {
+		name         string
+		path         string
+		regex        string
+		newValue     string
+		want         []byte
+		wantUpToDate bool
+		wantErr      bool
+	}{
+		{
+			name:         "invalid regex given",
+			path:         "testdata/with-template.yaml",
+			regex:        "[",
+			newValue:     "v0.2.0",
+			want:         nil,
+			wantUpToDate: false,
+			wantErr:      true,
+		},
+		{
+			name:         "no capturing group given",
+			path:         "testdata/with-template.yaml",
+			regex:        "image: gcr.io/pipecd/foo:v[0-9].[0-9].[0-9]",
+			newValue:     "v0.2.0",
+			want:         nil,
+			wantUpToDate: false,
+			wantErr:      true,
+		},
+		{
+			name:         "invalid capturing group given",
+			path:         "testdata/with-template.yaml",
+			regex:        "image: gcr.io/pipecd/foo:([)",
+			newValue:     "v0.2.0",
+			want:         nil,
+			wantUpToDate: false,
+			wantErr:      true,
+		},
+		{
+			name:         "the file doesn't match regex",
+			path:         "testdata/with-template.yaml",
+			regex:        "abcdefg",
+			newValue:     "v0.1.0",
+			want:         nil,
+			wantUpToDate: false,
+			wantErr:      true,
+		},
+		{
+			name:         "the file is up-to-date",
+			path:         "testdata/with-template.yaml",
+			regex:        "image: gcr.io/pipecd/foo:(v[0-9].[0-9].[0-9])",
+			newValue:     "v0.1.0",
+			want:         nil,
+			wantUpToDate: true,
+			wantErr:      false,
+		},
+		{
+			name:     "replace a part of text",
+			path:     "testdata/with-template.yaml",
+			regex:    "image: gcr.io/pipecd/foo:(v[0-9].[0-9].[0-9])",
+			newValue: "v0.2.0",
+			want: []byte(`apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: foo
+spec:
+  template:
+    spec:
+      containers:
+      - name: foo
+        image: gcr.io/pipecd/foo:v0.2.0
+        ports:
+        - containerPort: 9085
+        env:
+        - name: FOO
+          value: {{ .encryptedSecrets.foo }}
+
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: bar
+spec:
+  template:
+    spec:
+      containers:
+      - name: bar
+        image: gcr.io/pipecd/bar:v0.1.0
+        ports:
+        - containerPort: 9085
+        env:
+        - name: BAR
+          value: {{ .encryptedSecrets.bar }}
+`),
+			wantUpToDate: false,
+			wantErr:      false,
+		},
+		{
+			name:     "replace text",
+			path:     "testdata/kustomization.yaml",
+			regex:    "newTag: (v[0-9].[0-9].[0-9])",
+			newValue: "v0.2.0",
+			want: []byte(`images:
+- name: gcr.io/pipecd/foo
+  newTag: v0.2.0
+`),
+			wantUpToDate: false,
+			wantErr:      false,
+		},
+	}
+	for _, tc := range testcases {
+		t.Run(tc.name, func(t *testing.T) {
+			got, gotUpToDate, err := modifyText(tc.path, tc.regex, tc.newValue)
+			assert.Equal(t, tc.wantErr, err != nil)
+			assert.Equal(t, tc.want, got)
+			assert.Equal(t, tc.wantUpToDate, gotUpToDate)
+		})
+	}
+}
