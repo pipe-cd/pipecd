@@ -1,12 +1,17 @@
 # TODO: Add Aleting rules
 groups:
-  - name: Instances
+  - name: IncomingRequests
     rules:
-      - alert: InstanceDown
-        expr: up == 0
-        for: 5m
+      - alert: gRPCErrorRate
+        expr: |
+          (
+            sum by (pipecd_grpc_service) (rate(grpc_server_handled_total{pipecd_component="server", grpc_code!="OK", grpc_code!="NotFound"}[5m]))
+            /
+            sum by (pipecd_grpc_service) (rate(grpc_server_handled_total{pipecd_component="server"}[5m]))
+          ) > 0.05
+        for: 0s
         labels:
-          severity: page
+          severity: critical
         annotations:
-          description: '{{ $labels.instance }} of job {{ $labels.job }} has been down for more than 5 minutes.'
-          summary: 'Instance {{ $labels.instance }} down'
+          description: 'The error rate of {{ $labels.pipecd_grpc_service }} API exceeded 5%.'
+          summary: 'The error rate of {{ $labels.pipecd_grpc_service }} API is getting higher.'
