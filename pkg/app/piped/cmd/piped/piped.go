@@ -136,7 +136,7 @@ func (p *piped) run(ctx context.Context, t cli.Telemetry) (runErr error) {
 	}
 
 	// Register all metrics.
-	registry := registerMetrics(cfg.PipedID)
+	registry := registerMetrics(cfg.PipedID, cfg.ProjectID)
 
 	// Initialize notifier and add piped events.
 	notifier, err := notifier.NewNotifier(cfg, t.Logger)
@@ -677,13 +677,17 @@ func (p *piped) getConfigDataFromSecretManager(ctx context.Context) ([]byte, err
 	return resp.Payload.Data, nil
 }
 
-func registerMetrics(pipedID string) *prometheus.Registry {
+func registerMetrics(pipedID, projectID string) *prometheus.Registry {
 	r := prometheus.NewRegistry()
-	wrapped := prometheus.WrapRegistererWith(map[string]string{
-		"pipecd_component": "piped",
-		"piped":            pipedID,
-		"piped_version":    version.Get().Version,
-	}, r)
+	wrapped := prometheus.WrapRegistererWith(
+		map[string]string{
+			"pipecd_component": "piped",
+			"piped":            pipedID,
+			"piped_version":    version.Get().Version,
+			"project":          projectID,
+		},
+		r,
+	)
 	wrapped.Register(collectors.NewGoCollector())
 	wrapped.Register(collectors.NewProcessCollector(collectors.ProcessCollectorOpts{}))
 
