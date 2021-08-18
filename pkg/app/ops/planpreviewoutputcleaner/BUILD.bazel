@@ -7,6 +7,7 @@ go_library(
     visibility = ["//visibility:public"],
     deps = [
         "//pkg/filestore:go_default_library",
+        "@com_github_robfig_cron_v3//:go_default_library",
         "@org_uber_go_zap//:go_default_library",
     ],
 )

@@ -19,15 +19,17 @@ import (
 	"fmt"
 	"time"
 
+	"github.com/robfig/cron/v3"
 	"go.uber.org/zap"
 
 	"github.com/pipe-cd/pipe/pkg/filestore"
 )
 
 const (
-	outputTTL = 48 * time.Hour
-	interval  = 24 * time.Hour
-	prefix    = "command-output/"
+	outputTTL    = 48 * time.Hour
+	cronSchedule = "0 9 * * *" // Run at 09:00 every day.
+	interval     = 24 * time.Hour
+	prefix       = "command-output/"
 )
 
 type store interface {
@@ -50,22 +52,22 @@ func NewCleaner(s store, logger *zap.Logger) *Cleaner {
 func (c *Cleaner) Run(ctx context.Context) error {
 	c.logger.Info("start running planpreview ouput cleaner")
 
-	t := time.NewTicker(interval)
-	for {
-		select {
-		case <-ctx.Done():
-			break
-
-		case <-t.C:
-			c.clean(ctx)
-		}
+	cr := cron.New()
+	if _, err := cr.AddFunc(cronSchedule, func() { c.clean(ctx) }); err != nil {
+		return err
 	}
+
+	cr.Start()
+	<-ctx.Done()
+	cr.Stop()
 
 	c.logger.Info("planpreview output cleaner has been stopped")
 	return nil
 }
 
 func (c *Cleaner) clean(ctx context.Context) error {
+	c.logger.Info("will find stale planpreview outputs to delete")
+
 	objects, err := c.store.List(ctx, prefix)
 	if err != nil {
 		c.logger.Error("failed to list planpreview output objects",
