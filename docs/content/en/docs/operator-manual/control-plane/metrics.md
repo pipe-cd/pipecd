@@ -27,7 +27,7 @@ kubectl port-forward -n {NAMESPACE} svc/{PIPECD_RELEASE_NAME}-grafana 3000:80
 
 #### Control-plane dashboards
 There are three dashboards related to Control-plane:
-- Overview - usage stats of PipeCD.
+- Overview - usage stats of PipeCD
 - Incoming Requests - gRPC and HTTP requests stats to check for any negative impact on users
 - Go - processes stats of PipeCD components
 
