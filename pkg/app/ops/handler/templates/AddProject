@@ -22,6 +22,8 @@ label {
     <input type="text" name="Description"><br><br>
     <label>Shared SSO</label>
     <input type="text" name="SharedSSO"><br><br>
+    <input type="checkbox" id="auto-assign" name="ViewerRoleAsDefault">
+    <label for="auto-assign">Auto assign viewer role</label><br><br>
     <input type="submit">
 </form>
 

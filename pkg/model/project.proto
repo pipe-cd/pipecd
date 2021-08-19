@@ -94,4 +94,6 @@ message ProjectRBACConfig {
     string admin = 1 [(validate.rules).string.min_len = 1];
     string editor = 2;
     string viewer = 3;
+
+    bool viewer_role_as_default = 10;
 }

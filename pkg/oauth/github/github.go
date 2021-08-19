@@ -35,6 +35,8 @@ type OAuthClient struct {
 	adminTeam  string
 	editorTeam string
 	viewerTeam string
+
+	viewerRoleAsDefault bool
 }
 
 // NewOAuthClient creates a new oauth client for GitHub.
@@ -44,10 +46,11 @@ func NewOAuthClient(ctx context.Context,
 	projectID, code string,
 ) (*OAuthClient, error) {
 	c := &OAuthClient{
-		projectID:  projectID,
-		adminTeam:  rbac.Admin,
-		editorTeam: rbac.Editor,
-		viewerTeam: rbac.Viewer,
+		projectID:           projectID,
+		adminTeam:           rbac.Admin,
+		editorTeam:          rbac.Editor,
+		viewerTeam:          rbac.Viewer,
+		viewerRoleAsDefault: rbac.ViewerRoleAsDefault,
 	}
 	cfg := oauth2.Config{
 		ClientID:     sso.ClientId,
@@ -148,6 +151,14 @@ func (c *OAuthClient) decideRole(user string, teams []*github.Team) (role model.
 	}
 
 	if found {
+		return
+	}
+
+	// In case the current user does not belong to any registered
+	// teams, if ViewerRoleAsDefault option is set, assign Viewer role
+	// as user's role.
+	if c.viewerRoleAsDefault {
+		role = model.Role_VIEWER
 		return
 	}
 

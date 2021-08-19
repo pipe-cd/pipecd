@@ -164,9 +164,10 @@ func (h *Handler) handleAddProject(w http.ResponseWriter, r *http.Request) {
 	}
 
 	var (
-		id            = r.FormValue("ID")
-		description   = r.FormValue("Description")
-		sharedSSOName = r.FormValue("SharedSSO")
+		id                  = r.FormValue("ID")
+		description         = r.FormValue("Description")
+		sharedSSOName       = r.FormValue("SharedSSO")
+		viewerRoleAsDefault = r.FormValue("ViewerRoleAsDefault") == "true"
 	)
 	if id == "" {
 		http.Error(w, "invalid id", http.StatusBadRequest)
@@ -191,6 +192,9 @@ func (h *Handler) handleAddProject(w http.ResponseWriter, r *http.Request) {
 			Id:            id,
 			Desc:          description,
 			SharedSsoName: sharedSSOName,
+			Rbac: &model.ProjectRBACConfig{
+				ViewerRoleAsDefault: viewerRoleAsDefault,
+			},
 		}
 		username = model.GenerateRandomString(10)
 		password = model.GenerateRandomString(30)

@@ -23,6 +23,7 @@ export const dummyProject: Project.AsObject = {
     admin: "admin-team",
     editor: "editor-team",
     viewer: "viewer-team",
+    viewerRoleAsDefault: false,
   },
   staticAdmin: {
     username: "static-admin-user",
@@ -43,6 +44,7 @@ export function createProjectFromObject(o: Project.AsObject): Project {
     rbac.setAdmin(o.rbac.admin);
     rbac.setEditor(o.rbac.editor);
     rbac.setViewer(o.rbac.viewer);
+    rbac.setViewerRoleAsDefault(o.rbac.viewerRoleAsDefault);
     project.setRbac(rbac);
   }
   if (o.staticAdmin) {
