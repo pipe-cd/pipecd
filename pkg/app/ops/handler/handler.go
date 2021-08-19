@@ -164,10 +164,10 @@ func (h *Handler) handleAddProject(w http.ResponseWriter, r *http.Request) {
 	}
 
 	var (
-		id                  = r.FormValue("ID")
-		description         = r.FormValue("Description")
-		sharedSSOName       = r.FormValue("SharedSSO")
-		viewerRoleAsDefault = r.FormValue("ViewerRoleAsDefault") == "on"
+		id                 = r.FormValue("ID")
+		description        = r.FormValue("Description")
+		sharedSSOName      = r.FormValue("SharedSSO")
+		allowStrayAsViewer = r.FormValue("AllowStrayAsViewer") == "on"
 	)
 	if id == "" {
 		http.Error(w, "invalid id", http.StatusBadRequest)
@@ -192,7 +192,7 @@ func (h *Handler) handleAddProject(w http.ResponseWriter, r *http.Request) {
 			Id:                 id,
 			Desc:               description,
 			SharedSsoName:      sharedSSOName,
-			AllowStrayAsViewer: viewerRoleAsDefault,
+			AllowStrayAsViewer: allowStrayAsViewer,
 		}
 		username = model.GenerateRandomString(10)
 		password = model.GenerateRandomString(30)
