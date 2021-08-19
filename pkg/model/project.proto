@@ -95,7 +95,7 @@ message ProjectRBACConfig {
     string editor = 2;
     string viewer = 3;
 
-    // (Optional) Enable this field will allow users not belonging
+    // Enable this field will allow users not belonging
     // to any registered teams to log in with Viewer role.
     bool viewer_role_as_default = 10;
 }
