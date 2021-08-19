@@ -167,7 +167,7 @@ func (h *Handler) handleAddProject(w http.ResponseWriter, r *http.Request) {
 		id                  = r.FormValue("ID")
 		description         = r.FormValue("Description")
 		sharedSSOName       = r.FormValue("SharedSSO")
-		viewerRoleAsDefault = r.FormValue("ViewerRoleAsDefault") == "true"
+		viewerRoleAsDefault = r.FormValue("ViewerRoleAsDefault") == "on"
 	)
 	if id == "" {
 		http.Error(w, "invalid id", http.StatusBadRequest)
