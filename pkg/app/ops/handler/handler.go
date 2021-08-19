@@ -189,12 +189,10 @@ func (h *Handler) handleAddProject(w http.ResponseWriter, r *http.Request) {
 
 	var (
 		project = &model.Project{
-			Id:            id,
-			Desc:          description,
-			SharedSsoName: sharedSSOName,
-			Rbac: &model.ProjectRBACConfig{
-				ViewerRoleAsDefault: viewerRoleAsDefault,
-			},
+			Id:                 id,
+			Desc:               description,
+			SharedSsoName:      sharedSSOName,
+			AllowStrayAsViewer: viewerRoleAsDefault,
 		}
 		username = model.GenerateRandomString(10)
 		password = model.GenerateRandomString(30)

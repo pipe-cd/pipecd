@@ -31,26 +31,25 @@ import (
 type OAuthClient struct {
 	*github.Client
 
-	projectID  string
+	project *model.Project
+
 	adminTeam  string
 	editorTeam string
 	viewerTeam string
-
-	viewerRoleAsDefault bool
 }
 
 // NewOAuthClient creates a new oauth client for GitHub.
 func NewOAuthClient(ctx context.Context,
 	sso *model.ProjectSSOConfig_GitHub,
 	rbac *model.ProjectRBACConfig,
-	projectID, code string,
+	project *model.Project,
+	code string,
 ) (*OAuthClient, error) {
 	c := &OAuthClient{
-		projectID:           projectID,
-		adminTeam:           rbac.Admin,
-		editorTeam:          rbac.Editor,
-		viewerTeam:          rbac.Viewer,
-		viewerRoleAsDefault: rbac.ViewerRoleAsDefault,
+		project:    project,
+		adminTeam:  rbac.Admin,
+		editorTeam: rbac.Editor,
+		viewerTeam: rbac.Viewer,
 	}
 	cfg := oauth2.Config{
 		ClientID:     sso.ClientId,
@@ -118,7 +117,7 @@ func (c *OAuthClient) GetUser(ctx context.Context) (*model.User, error) {
 		Username:  user.GetLogin(),
 		AvatarUrl: user.GetAvatarURL(),
 		Role: &model.Role{
-			ProjectId:   c.projectID,
+			ProjectId:   c.project.Id,
 			ProjectRole: role,
 		},
 	}, nil
@@ -154,10 +153,10 @@ func (c *OAuthClient) decideRole(user string, teams []*github.Team) (role model.
 		return
 	}
 
-	// In case the current user does not belong to any registered
-	// teams, if ViewerRoleAsDefault option is set, assign Viewer role
+	// In case thea current user does not belong to any registered
+	// teams, if AllowStrayAsViewer option is set, assign Viewer role
 	// as user's role.
-	if c.viewerRoleAsDefault {
+	if c.project.AllowStrayAsViewer {
 		role = model.Role_VIEWER
 		return
 	}

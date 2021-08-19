@@ -41,6 +41,9 @@ func TestDecideRole(t *testing.T) {
 				adminTeam:  "org/team-admin",
 				editorTeam: "org/team-editor",
 				viewerTeam: "org/team-viewer",
+				project: &model.Project{
+					AllowStrayAsViewer: false,
+				},
 			},
 			teams: []*github.Team{
 				{
@@ -54,10 +57,12 @@ func TestDecideRole(t *testing.T) {
 			name:     "viewer as default",
 			username: "foo",
 			oc: &OAuthClient{
-				adminTeam:           "org/team-admin",
-				editorTeam:          "org/team-editor",
-				viewerTeam:          "org/team-viewer",
-				viewerRoleAsDefault: true,
+				adminTeam:  "org/team-admin",
+				editorTeam: "org/team-editor",
+				viewerTeam: "org/team-viewer",
+				project: &model.Project{
+					AllowStrayAsViewer: true,
+				},
 			},
 			teams: []*github.Team{
 				{

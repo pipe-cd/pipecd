@@ -12,7 +12,7 @@ export const Overview: Story = () => (
   <Provider
     store={createStore({
       project: {
-        teams: { admin: "admin", editor: "editor", viewer: "viewer", viewerRoleAsDefault: false },
+        teams: { admin: "admin", editor: "editor", viewer: "viewer" },
       },
     })}
   >

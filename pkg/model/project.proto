@@ -42,6 +42,10 @@ message Project {
     // It will be enabled when this parameter has no empty value.
     string shared_sso_name = 7;
 
+    // Enable this field will allow users not belonging
+    // to any registered teams to log in with Viewer role.
+    bool allow_stray_as_viewer = 8;
+
     // Unix time when the project is created.
     int64 created_at = 14 [(validate.rules).int64.gt = 0];
     // Unix time of the last time when the project is updated.
@@ -94,8 +98,4 @@ message ProjectRBACConfig {
     string admin = 1 [(validate.rules).string.min_len = 1];
     string editor = 2;
     string viewer = 3;
-
-    // Enable this field will allow users not belonging
-    // to any registered teams to log in with Viewer role.
-    bool viewer_role_as_default = 10;
 }
