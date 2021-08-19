@@ -153,7 +153,7 @@ func (c *OAuthClient) decideRole(user string, teams []*github.Team) (role model.
 		return
 	}
 
-	// In case thea current user does not belong to any registered
+	// In case the current user does not belong to any registered
 	// teams, if AllowStrayAsViewer option is set, assign Viewer role
 	// as user's role.
 	if c.project.AllowStrayAsViewer {
