@@ -19,6 +19,7 @@ export const dummyProject: Project.AsObject = {
   createdAt: createdAt.unix(),
   updatedAt: updatedAt.unix(),
   staticAdminDisabled: false,
+  allowStrayAsViewer: false,
   rbac: {
     admin: "admin-team",
     editor: "editor-team",
@@ -38,6 +39,7 @@ export function createProjectFromObject(o: Project.AsObject): Project {
   project.setCreatedAt(o.createdAt);
   project.setUpdatedAt(o.updatedAt);
   project.setStaticAdminDisabled(o.staticAdminDisabled);
+  project.setAllowStrayAsViewer(o.allowStrayAsViewer);
   if (o.rbac) {
     const rbac = new ProjectRBACConfig();
     rbac.setAdmin(o.rbac.admin);

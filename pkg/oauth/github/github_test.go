@@ -29,6 +29,7 @@ func TestDecideRole(t *testing.T) {
 	cases := []struct {
 		name     string
 		username string
+		oc       *OAuthClient
 		teams    []*github.Team
 		role     model.Role_ProjectRole
 		wantErr  bool
@@ -36,6 +37,14 @@ func TestDecideRole(t *testing.T) {
 		{
 			name:     "nothing",
 			username: "foo",
+			oc: &OAuthClient{
+				adminTeam:  "org/team-admin",
+				editorTeam: "org/team-editor",
+				viewerTeam: "org/team-viewer",
+				project: &model.Project{
+					AllowStrayAsViewer: false,
+				},
+			},
 			teams: []*github.Team{
 				{
 					Organization: &github.Organization{Login: stringPointer("org")},
@@ -45,8 +54,33 @@ func TestDecideRole(t *testing.T) {
 			wantErr: true,
 		},
 		{
+			name:     "viewer as default",
+			username: "foo",
+			oc: &OAuthClient{
+				adminTeam:  "org/team-admin",
+				editorTeam: "org/team-editor",
+				viewerTeam: "org/team-viewer",
+				project: &model.Project{
+					AllowStrayAsViewer: true,
+				},
+			},
+			teams: []*github.Team{
+				{
+					Organization: &github.Organization{Login: stringPointer("org")},
+					Slug:         stringPointer("team1"),
+				},
+			},
+			role:    model.Role_VIEWER,
+			wantErr: false,
+		},
+		{
 			name:     "admin",
 			username: "foo",
+			oc: &OAuthClient{
+				adminTeam:  "org/team-admin",
+				editorTeam: "org/team-editor",
+				viewerTeam: "org/team-viewer",
+			},
 			teams: []*github.Team{
 				{
 					Organization: &github.Organization{Login: stringPointer("org")},
@@ -66,6 +100,11 @@ func TestDecideRole(t *testing.T) {
 		{
 			name:     "editor",
 			username: "foo",
+			oc: &OAuthClient{
+				adminTeam:  "org/team-admin",
+				editorTeam: "org/team-editor",
+				viewerTeam: "org/team-viewer",
+			},
 			teams: []*github.Team{
 				{
 					Organization: &github.Organization{Login: stringPointer("org")},
@@ -85,6 +124,11 @@ func TestDecideRole(t *testing.T) {
 		{
 			name:     "viewer",
 			username: "foo",
+			oc: &OAuthClient{
+				adminTeam:  "org/team-admin",
+				editorTeam: "org/team-editor",
+				viewerTeam: "org/team-viewer",
+			},
 			teams: []*github.Team{
 				{
 					Organization: &github.Organization{Login: stringPointer("org")},
@@ -103,14 +147,9 @@ func TestDecideRole(t *testing.T) {
 		},
 	}
 
-	oc := &OAuthClient{
-		adminTeam:  "org/team-admin",
-		editorTeam: "org/team-editor",
-		viewerTeam: "org/team-viewer",
-	}
 	for _, tc := range cases {
 		t.Run(tc.name, func(t *testing.T) {
-			role, err := oc.decideRole(tc.username, tc.teams)
+			role, err := tc.oc.decideRole(tc.username, tc.teams)
 			assert.Equal(t, tc.wantErr, err != nil)
 			if err == nil {
 				assert.Equal(t, tc.role, role)

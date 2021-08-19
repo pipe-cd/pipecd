@@ -22,6 +22,8 @@ label {
     <input type="text" name="Description"><br><br>
     <label>Shared SSO</label>
     <input type="text" name="SharedSSO"><br><br>
+    <input type="checkbox" id="allow-stray" name="AllowStrayAsViewer">
+    <label for="allow-stray">Allow stray as viewer</label><br><br>
     <input type="submit">
 </form>
 
