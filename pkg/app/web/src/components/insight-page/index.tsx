@@ -1,9 +1,10 @@
 import { Box } from "@material-ui/core";
 import { FC, memo, useEffect, useCallback } from "react";
-import { useAppDispatch, useAppSelector } from "~/hooks/redux";
-import { ApplicationKind, fetchApplications, selectById } from "~/modules/applications";
 import { useHistory } from "react-router-dom";
+import { useAppDispatch, useAppSelector } from "~/hooks/redux";
 import { PAGE_PATH_APPLICATIONS } from "~/constants/path";
+import { ApplicationKind, fetchApplications, selectById } from "~/modules/applications";
+import { fetchApplicationCount } from "~/modules/application-counts";
 import { InsightDataPoint } from "~/modules/insight";
 import { ApplicationCounts } from "./application-counts";
 import { ChangeFailureRateChart } from "./change-failure-rate-chart";
@@ -33,6 +34,7 @@ export const InsightIndexPage: FC = memo(function InsightIndexPage() {
 
   useEffect(() => {
     dispatch(fetchApplications());
+    dispatch(fetchApplicationCount());
   }, [dispatch]);
 
   const updateURL = useCallback((kind: ApplicationKind) => {
