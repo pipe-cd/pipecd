@@ -18,6 +18,7 @@ import {
   PAGE_PATH_LOGIN,
   LOGOUT_ENDPOINT,
   PAGE_PATH_TOP,
+  PAGE_PATH_INSIGHTS,
 } from "~/constants/path";
 import { APP_NAME } from "~/constants/common";
 import { NavLink as RouterLink } from "react-router-dom";
@@ -125,7 +126,15 @@ export const Header: FC = memo(function Header() {
               >
                 Deployments
               </Link>
-              {/** TODO: Restore a link to the insights in the v1 release */}
+              <Link
+                component={RouterLink}
+                className={classes.link}
+                activeClassName={classes.activeLink}
+                color="inherit"
+                to={PAGE_PATH_INSIGHTS}
+              >
+                Insights
+              </Link>
               <Link
                 component={RouterLink}
                 className={classes.link}
