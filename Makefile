@@ -90,6 +90,10 @@ web-dep:
 web-dev:
 	cd pkg/app/web; yarn dev
 
+.PHONY: web-test
+web-test:
+	cd pkg/app/web; yarn test:coverage --runInBand
+
 .PHONY: generate-test-tls
 generate-test-tls:
 	openssl req -x509 -nodes -days 3650 -newkey rsa:2048 \
