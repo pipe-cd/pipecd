@@ -42,8 +42,8 @@ test("displaying application counts", () => {
   expect(screen.queryByText("TERRAFORM")).toBeInTheDocument();
   expect(screen.queryByText("75")).toBeInTheDocument();
   expect(screen.queryByText("/2")).toBeInTheDocument();
-  expect(screen.queryByText("CROSSPLANE")).not.toBeInTheDocument();
-  expect(screen.queryByText("LAMBDA")).not.toBeInTheDocument();
-  expect(screen.queryByText("CLOUDRUN")).not.toBeInTheDocument();
-  expect(screen.queryByText("ECS")).not.toBeInTheDocument();
+  expect(screen.queryByText("CROSSPLANE")).toBeInTheDocument();
+  expect(screen.queryByText("LAMBDA")).toBeInTheDocument();
+  expect(screen.queryByText("CLOUDRUN")).toBeInTheDocument();
+  expect(screen.queryByText("ECS")).toBeInTheDocument();
 });

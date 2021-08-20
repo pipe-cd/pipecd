@@ -21,12 +21,10 @@ import {
   UI_TEXT_REFRESH,
 } from "~/constants/ui-text";
 import { useAppDispatch, useAppSelector } from "~/hooks/redux";
-import { fetchApplicationCount } from "~/modules/application-counts";
-import { ApplicationKind, fetchApplications } from "~/modules/applications";
+import { fetchApplications } from "~/modules/applications";
 import { clearTemplateTarget } from "~/modules/deployment-configs";
 import { stringifySearchParams, useSearchParams } from "~/utils/search-params";
 import { AddApplicationDrawer } from "./add-application-drawer";
-import { ApplicationCounts } from "./application-counts";
 import { ApplicationFilter } from "./application-filter";
 import { ApplicationList } from "./application-list";
 import { DeploymentConfigForm } from "./deployment-config-form";
@@ -97,19 +95,11 @@ export const ApplicationIndexPage: FC = () => {
 
   const fetchApplicationsWithOptions = useCallback(() => {
     dispatch(fetchApplications(filterOptions));
-    dispatch(fetchApplicationCount());
   }, [dispatch, filterOptions]);
 
   const handleCloseTemplateForm = (): void => {
     dispatch(clearTemplateTarget());
   };
-
-  const handleApplicationCountClick = useCallback(
-    (kind: ApplicationKind) => {
-      updateURL({ ...filterOptions, kind });
-    },
-    [updateURL, filterOptions]
-  );
 
   const handlePageChange = useCallback(
     (page: number) => {
@@ -157,7 +147,6 @@ export const ApplicationIndexPage: FC = () => {
 
       <div className={classes.main}>
         <Box display="flex" flexDirection="column" flex={1} p={2}>
-          <ApplicationCounts onClick={handleApplicationCountClick} />
           <ApplicationList
             currentPage={currentPage}
             onPageChange={handlePageChange}

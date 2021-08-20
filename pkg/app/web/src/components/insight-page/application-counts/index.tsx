@@ -38,17 +38,6 @@ export const ApplicationCounts: FC<ApplicationCountsProps> = memo(
     return (
       <div className={classes.root}>
         {Object.keys(counts).map((kindName) => {
-          if (
-            counts[kindName][
-              APPLICATION_ACTIVE_STATUS_NAME[ApplicationActiveStatus.ENABLED]
-            ] === 0 &&
-            counts[kindName][
-              APPLICATION_ACTIVE_STATUS_NAME[ApplicationActiveStatus.DISABLED]
-            ] === 0
-          ) {
-            return null;
-          }
-
           return (
             <ApplicationCount
               key={kindName}
