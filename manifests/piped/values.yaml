@@ -42,6 +42,7 @@ config:
   #         branch: master
   #     syncInterval: 1m
 
+# TODO: Allow adding arbitrary secret files instead of fixing them as currently.
 secret:
   # Specifies whether a Secret for storing sensitive data should be created.
   create: true
@@ -80,6 +81,9 @@ secret:
     privateKey:
       fileName: secret-management-private-key
       data: ""
+  cloudRunCredentials:
+    fileName: cloudrun-credentials
+    data: ""
   awsCredentials:
     fileName: aws-credentials
     data: ""
