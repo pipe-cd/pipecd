@@ -43,7 +43,11 @@ test("displaying application counts", () => {
   expect(screen.queryByText("75")).toBeInTheDocument();
   expect(screen.queryByText("/2")).toBeInTheDocument();
   expect(screen.queryByText("CROSSPLANE")).not.toBeInTheDocument();
+  expect(screen.queryByText("0")).toBeInTheDocument();
   expect(screen.queryByText("LAMBDA")).not.toBeInTheDocument();
+  expect(screen.queryByText("0")).toBeInTheDocument();
   expect(screen.queryByText("CLOUDRUN")).not.toBeInTheDocument();
+  expect(screen.queryByText("0")).toBeInTheDocument();
   expect(screen.queryByText("ECS")).not.toBeInTheDocument();
+  expect(screen.queryByText("0")).toBeInTheDocument();
 });
