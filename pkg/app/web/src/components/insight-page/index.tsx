@@ -1,8 +1,11 @@
 import { Box } from "@material-ui/core";
-import { FC, memo, useEffect } from "react";
+import { FC, memo, useEffect, useCallback } from "react";
 import { useAppDispatch, useAppSelector } from "~/hooks/redux";
-import { fetchApplications, selectById } from "~/modules/applications";
+import { ApplicationKind, fetchApplications, selectById } from "~/modules/applications";
+import { useHistory } from "react-router-dom";
+import { PAGE_PATH_APPLICATIONS } from "~/constants/path";
 import { InsightDataPoint } from "~/modules/insight";
+import { ApplicationCounts } from "./application-counts";
 import { ChangeFailureRateChart } from "./change-failure-rate-chart";
 import { DeploymentFrequencyChart } from "./deployment-frequency-chart";
 import { InsightHeader } from "./insight-header";
@@ -11,6 +14,7 @@ import { MeanTimeToRestoreChart } from "./mean-time-to-restore-chart";
 
 export const InsightIndexPage: FC = memo(function InsightIndexPage() {
   const dispatch = useAppDispatch();
+  const history = useHistory();
 
   const deploymentFrequency = useAppSelector<InsightDataPoint.AsObject[]>(
     (state) => state.deploymentFrequency.data
@@ -31,8 +35,26 @@ export const InsightIndexPage: FC = memo(function InsightIndexPage() {
     dispatch(fetchApplications());
   }, [dispatch]);
 
+  const updateURL = useCallback((kind: ApplicationKind) => {
+      history.replace(
+        `${PAGE_PATH_APPLICATIONS}?kind=${kind}`
+      );
+    },
+    [history]
+  );
+
+  const handleApplicationCountClick = useCallback(
+    (kind: ApplicationKind) => {
+      updateURL(kind);
+    },
+    [updateURL]
+  );
+
   return (
     <Box flex={1} p={2} overflow="auto">
+      <Box display="flex" flexDirection="column" flex={1} p={2}>
+        <ApplicationCounts onClick={handleApplicationCountClick} />
+      </Box>
       <InsightHeader />
       <Box
         display="grid"
