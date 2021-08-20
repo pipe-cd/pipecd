@@ -1,0 +1,9 @@
+apiVersion: pipecd.dev/v1beta1
+kind: EventWatcher
+spec:
+  events:
+    # For those who want to update a file using regex
+    - name: image-update-with-regex
+      replacements:
+        - file: kubernetes/simple/deployment.yaml
+          regex: "image: gcr.io/pipecd/helloworld:(v[0-9].[0-9].[0-9])"
