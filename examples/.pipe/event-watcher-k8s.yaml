@@ -1,0 +1,17 @@
+apiVersion: pipecd.dev/v1beta1
+kind: EventWatcher
+spec:
+  events:
+    # For those who want to update the manifest file when a new docker image was pushed.
+    - name: image-update
+      replacements:
+        - file: kubernetes/simple/deployment.yaml
+          yamlField: $.spec.template.spec.containers[0].image
+    # For those who want to identify Events using labels.
+    - name: image-update
+      labels:
+        repoId: repo-1
+        appName: simple
+      replacements:
+        - file: kubernetes/simple/deployment.yaml
+          yamlField: $.spec.template.spec.containers[0].image

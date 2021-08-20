@@ -156,7 +156,7 @@ spec:
 +     version: 0.2.0
 ```
 
-See [here](https://github.com/pipe-cd/examples/blob/master/.pipe/event-watcher.yaml) for more examples.
+See [here](https://github.com/pipe-cd/examples/blob/master/.pipe) for more examples.
 
 ## Github Actions
 If you're using Github Actions in your CI workflow, [actions-event-register](https://github.com/marketplace/actions/pipecd-register-event) is for you!
