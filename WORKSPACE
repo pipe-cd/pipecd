@@ -15,10 +15,10 @@ load(
 ### Rules_go and gazelle
 http_archive(
     name = "io_bazel_rules_go",
-    sha256 = "e0015762cdeb5a2a9c48f96fb079c6a98e001d44ec23ad4fa2ca27208c5be4fb",
+    sha256 = "8e968b5fcea1d2d64071872b12737bbb5514524ee5f0a4f54f5920266c261acb",
     urls = [
-        "https://mirror.bazel.build/github.com/bazelbuild/rules_go/releases/download/v0.24.14/rules_go-v0.24.14.tar.gz",
-        "https://github.com/bazelbuild/rules_go/releases/download/v0.24.14/rules_go-v0.24.14.tar.gz",
+        "https://mirror.bazel.build/github.com/bazelbuild/rules_go/releases/download/v0.28.0/rules_go-v0.28.0.zip",
+        "https://github.com/bazelbuild/rules_go/releases/download/v0.28.0/rules_go-v0.28.0.zip",
     ],
 )
 
@@ -31,7 +31,7 @@ load(
 go_rules_dependencies()
 
 go_register_toolchains(
-    go_version = "1.16.2",
+    go_version = "1.16.5",
 )
 
 load(
@@ -185,8 +185,8 @@ container_pull(
 
 http_archive(
     name = "build_bazel_rules_nodejs",
-    sha256 = "55a25a762fcf9c9b88ab54436581e671bc9f4f523cb5a1bd32459ebec7be68a8",
-    urls = ["https://github.com/bazelbuild/rules_nodejs/releases/download/3.2.2/rules_nodejs-3.2.2.tar.gz"],
+    sha256 = "e79c08a488cc5ac40981987d862c7320cee8741122a2649e9b08e850b6f20442",
+    urls = ["https://github.com/bazelbuild/rules_nodejs/releases/download/3.8.0/rules_nodejs-3.8.0.tar.gz"],
 )
 
 load(
@@ -195,9 +195,9 @@ load(
     "yarn_install",
 )
 
-### https://bazelbuild.github.io/rules_nodejs/Built-ins.html#usage
+# M1 Macs require Node 16+
 node_repositories(
-    node_version = "12.13.0",
+    node_version = "16.6.2",
     package_json = ["//pkg/app/web:package.json"],
     yarn_version = "1.22.4",
 )

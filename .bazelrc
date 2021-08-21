@@ -33,4 +33,5 @@ build:ci --google_credentials=/secrets/bazel_cache_service_account
 # Platform configurations
 build:linux --platforms=@io_bazel_rules_go//go/toolchain:linux_amd64
 build:darwin --platforms=@io_bazel_rules_go//go/toolchain:darwin_amd64
+build:darwin --platforms=@io_bazel_rules_go//go/toolchain:darwin_arm64
 build:windows --platforms=@io_bazel_rules_go//go/toolchain:windows_amd64
