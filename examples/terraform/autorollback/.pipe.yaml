@@ -4,3 +4,8 @@ kind: TerraformApp
 spec:
   input:
     autoRollback: true
+  encryption:
+    encryptedSecrets:
+      serviceAccount: {ENCRYPTED_DATA_GENERATED_FROM_WEB}
+    decryptionTargets:
+      - .credentials/service-account.json

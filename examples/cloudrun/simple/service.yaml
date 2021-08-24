@@ -6,7 +6,7 @@ spec:
   template:
     metadata:
       annotations:
-        autoscaling.knative.dev/maxScale: '10'
+        autoscaling.knative.dev/maxScale: '2'
     spec:
       containerConcurrency: 80
       containers:

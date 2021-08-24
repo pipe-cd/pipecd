@@ -1,5 +1,5 @@
 bases:
-- ../../local/kustomization-bases/helloworld
+- ../../local-modules/kustomize-bases/helloworld
 
 nameSuffix: -local-base
 
@@ -8,4 +8,4 @@ commonLabels:
 
 images:
 - name: gcr.io/pipecd/helloworld
-  newTag: v0.1.0-73-ge191187
+  newTag: v0.5.0

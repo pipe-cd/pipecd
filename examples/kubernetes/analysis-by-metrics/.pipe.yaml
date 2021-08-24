@@ -15,8 +15,8 @@ spec:
               expected:
                 max: 0.01
               query: |
-                sum by (job) (rate(http_requests_total{status=~"5.*", job="analysis-by-metrics"}[5m]))
+                sum by (job) (rate(http_requests_total{status=~"5.*", job="analysis"}[5m]))
                 /
-                sum by (job) (rate(http_requests_total{job="analysis-by-metrics"}[5m]))
+                sum by (job) (rate(http_requests_total{job="analysis"}[5m]))
       - name: K8S_PRIMARY_ROLLOUT
       - name: K8S_CANARY_CLEAN
