@@ -11,6 +11,17 @@ spec:
       # If this stage finds any not good metrics of the new version,
       # a rollback process to the previous version will be executed.
       - name: ANALYSIS
+        with:
+          duration: 10m
+          metrics:
+            - provider: prometheus-dev
+              interval: 2m
+              expected:
+                max: 0.01
+              query: |
+                sum by (job) (rate(http_requests_total{status=~"5.*", job="analysis-by-metrics"}[5m]))
+                /
+                sum by (job) (rate(http_requests_total{job="analysis-by-metrics"}[5m]))
       # Promote new version to receive all traffic.
       - name: CLOUDRUN_PROMOTE
         with:

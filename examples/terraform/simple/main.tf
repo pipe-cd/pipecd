@@ -2,14 +2,14 @@ variable "project" {}
 
 provider "google" {
   project     = var.project
-  credentials = ".terraform-credentials/terraform-examples-service-account.json"
+  credentials = ".credentials/service-account.json"
 }
 
 terraform {
   backend "gcs" {
     bucket      = "pipecd-terraform-examples"
     prefix      = "tfstates/simple"
-    credentials = ".terraform-credentials/terraform-examples-service-account.json"
+    credentials = ".credentials/service-account.json"
   }
 }
 

@@ -3,5 +3,7 @@
 apiVersion: pipecd.dev/v1beta1
 kind: KubernetesApp
 spec:
+  triggerPaths:
+    - local-modules/kustomize-bases/helloworld/*
   input:
     kustomizeVersion: 3.5.5

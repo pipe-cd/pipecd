@@ -5,7 +5,7 @@ metadata:
   labels:
     app: mesh-istio-canary
 spec:
-  replicas: 1
+  replicas: 2
   selector:
     matchLabels:
       app: mesh-istio-canary

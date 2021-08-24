@@ -6,4 +6,4 @@ metadata:
     app: canary-by-config-change
 data:
   config.yaml: |-
-    desc: Hello PipeCD
+    desc: Hi PipeCD

@@ -8,7 +8,7 @@ provider "google" {
 terraform {
   backend "gcs" {
     bucket      = "pipecd-terraform-examples"
-    prefix      = "tfstates/simple"
+    prefix      = "tfstates/secret-management"
     credentials = ".credentials/service-account.json"
   }
 }
@@ -16,7 +16,7 @@ terraform {
 variable "content" {}
 
 resource "google_storage_bucket_object" "object" {
-  name    = "examples/simple/${terraform.workspace}.txt"
+  name    = "examples/secret-management/${terraform.workspace}.txt"
   bucket  = "pipecd-terraform-examples"
   content = var.content
 }

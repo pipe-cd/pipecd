@@ -10,3 +10,8 @@ spec:
       - name: TERRAFORM_PLAN
       - name: WAIT_APPROVAL
       - name: TERRAFORM_APPLY
+  encryption:
+    encryptedSecrets:
+      serviceAccount: {ENCRYPTED_DATA_GENERATED_FROM_WEB}
+    decryptionTargets:
+      - .credentials/service-account.json

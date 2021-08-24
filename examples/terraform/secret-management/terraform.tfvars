@@ -1,1 +1,1 @@
-content = "hello-simple-example"
+content = "hello-secret-management-example"

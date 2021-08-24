@@ -6,13 +6,13 @@ spec:
   template:
     metadata:
       annotations:
-        autoscaling.knative.dev/maxScale: '10'
+        autoscaling.knative.dev/maxScale: '2'
     spec:
       containerConcurrency: 80
       containers:
       - args:
         - server
-        image: gcr.io/pipecd/helloworld:v0.3.0
+        image: gcr.io/pipecd/helloworld:v0.5.0
         ports:
         - containerPort: 9085
         resources:
