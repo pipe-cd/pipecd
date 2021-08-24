@@ -95,15 +95,12 @@ A sample TaskDefinition for Piped as following.
       ]
     }
   ],
-  "compatibilities": [
-    "FARGATE"
-  ],
   "requiresCompatibilities": [
     "FARGATE"
   ],
   "networkMode": "awsvpc",
-  "memory": 512,
-  "cpu": 256,
+  "memory": "512",
+  "cpu": "256"
 }
 ```
 
