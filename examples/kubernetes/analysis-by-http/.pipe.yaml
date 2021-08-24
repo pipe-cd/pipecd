@@ -11,7 +11,7 @@ spec:
           duration: 10m
           threshold: 2
           https:
-            - url: https://canary-endpoint.dev
+            - url: https://canary-endpoint.pipecd.dev
               method: GET
               expected: 200
               interval: 1m

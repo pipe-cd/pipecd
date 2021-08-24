@@ -13,15 +13,12 @@ spec:
       - name: ANALYSIS
         with:
           duration: 10m
-          metrics:
-            - provider: prometheus-dev
-              interval: 2m
-              expected:
-                max: 0.01
-              query: |
-                sum by (job) (rate(http_requests_total{status=~"5.*", job="analysis-by-metrics"}[5m]))
-                /
-                sum by (job) (rate(http_requests_total{job="analysis-by-metrics"}[5m]))
+          threshold: 2
+          https:
+            - url: https://canary-endpoint.pipecd.dev
+              method: GET
+              expected: 200
+              interval: 1m
       # Promote new version to receive all traffic.
       - name: CLOUDRUN_PROMOTE
         with:
