@@ -5,12 +5,13 @@
 This RFC proposes supporting a new approach of Automated Deployment Analysis using dynamic data.
 
 # Motivation
-The current ADA supports only the solution based on static rules.
+The current version of ADA supports only the solution based on static rules.
 However, it is a bit tough to use when those thresholds change dynamically depending on the time of year or time of day.
 Therefore, it's nice to analyze by comparing it with the metrics of currently running or from previous deployments, without specifying threshold.
 
 # Detailed design
-This proposal only focuses on analysis by metrics. Analysis by others like logs, https can be totally distinguished.
+This proposal only focuses on analysis by metrics. We can think analysises by others like logs, https separately because we use different configuration fields for them.
+This section covers what to compare and how to compare them.
 
 ### What to compare
 There are two types of strategies:
