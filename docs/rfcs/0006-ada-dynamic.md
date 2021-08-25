@@ -126,8 +126,8 @@ spec:
 | Field | Type | Description | Required |
 |-|-|-|-|
 | template | string | The name of Analysis Template | Yes |
-| baselineArgs | map[string][string] | The arguments populated for the Baseline query | No |
-| canaryArgs | map[string][string] | The arguments populated for the Canary query | No |
+| baselineArgs | map[string][string] | The arguments to be populated for the Baseline query | No |
+| canaryArgs | map[string][string] | The arguments to be populated for the Canary query | No |
 
 # Unresolved questions
 There are a couple of unresolved questions.
@@ -136,7 +136,8 @@ There are a couple of unresolved questions.
 Is Filestore really the best place to store? No considerations on storing Users metrics in Control-plane?
 
 ### About query templating
-Alternatively, if we provide just `{{ .Variant }}` variable, the ANALYSIS configuration may be more simple.
+Alternatively, if we provide just `{{ .Variant }}` variable like Harness CV, the ANALYSIS configuration may be more simple.
+Users have to prepare just one query for each metric like:
 
 ```yaml
 apiVersion: pipecd.dev/v1beta1
@@ -172,4 +173,8 @@ For example, for Prometheus, some kind of relabel_configs is needed like:
             action: keep
             regex: variant
 ```
+
+### About static ADA
+Does it need to still have the static ADA feature?
+If Previous Analysis goes well, it could be fine to make it deprecated because the Previous Analysis is a high level feature that wraps the static ADA.
 
