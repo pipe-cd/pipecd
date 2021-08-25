@@ -126,8 +126,8 @@ spec:
 | Field | Type | Description | Required |
 |-|-|-|-|
 | template | string | The name of Analysis Template | Yes |
-| baselineArgs | map[string][string] | The arguments populated for the Baseline query | Yes |
-| canaryArgs | map[string][string] | The arguments populated for the Canary query | Yes |
+| baselineArgs | map[string][string] | The arguments populated for the Baseline query | No |
+| canaryArgs | map[string][string] | The arguments populated for the Canary query | No |
 
 # Unresolved questions
 There are a couple of unresolved questions.
