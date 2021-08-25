@@ -26,6 +26,7 @@ server:
     cacheAddress: ""
     enableGRPCReflection: false
     secureCookie: false
+    # One of "humanize", "json", or "console" is available.
     logEncoding: humanize
     metrics: true
   resources: {}
@@ -41,6 +42,7 @@ ops:
     repository: gcr.io/pipecd/pipecd
   args:
     cacheAddress: ""
+    # One of "humanize", "json", or "console" is available.
     logEncoding: humanize
     metrics: true
   resources: {}
