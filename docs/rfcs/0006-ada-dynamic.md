@@ -32,9 +32,11 @@ NOTE: Although we can compare Canary with Primary, we recommend comparing with B
 
 In Previous Analysis, it compares the metrics of the previous Primary deployment with the metrics of the current Primary.
 This is quite useful if you can't prepare the Canary variant for some reasons.
-To do that, it needs to save the previous metrics in Filestore.
+To do that, it needs to save the start time of the ANALYSIS stage. It fetches the previous metrics using it.
 
 ![](assets/0006-previous-analysis.jpeg)
+
+For those whose monitoring system's retension is short, in the future, it's good to store metrics during the the previous analysis in Filestore.
 
 ### How to compare
 PipeCD uses [Mann–Whitney U test](https://en.wikipedia.org/wiki/Mann%E2%80%93Whitney_U_test), a nonparametric statistical test to check for a significant difference between the metrics.
@@ -42,9 +44,9 @@ For each interval, it computes the score and ends with failure immediately if th
 
 **How to implement Mann–Whitney U test**
 
-We can implement it in Go based on [the Kayent implementation](https://github.com/spinnaker/kayenta/blob/master/kayenta-judge/src/main/scala/com/netflix/kayenta/judge/classifiers/metric/MannWhitneyClassifier.scala#L33-L55) because that algorithm is relatevely simple.
+We can implement it in Go based on [the Kayenta implementation](https://github.com/spinnaker/kayenta/blob/master/kayenta-judge/src/main/scala/com/netflix/kayenta/judge/classifiers/metric/MannWhitneyClassifier.scala#L33-L55) because that algorithm is relatevely simple.
 [Kayenta](https://github.com/spinnaker/kayenta) is an independent component of Spinnaker. But it requires JVM and Redis to run.
-If we embed Kayenta into Piped image, the image size can be quite huge. And it's tedious that Piped depends on Redis.
+If we embed Kayenta into Piped image, the image size will become larger. And we want to keep Piped run as a stateless component instead of depending on any external database like Redis.
 
 ### Configuration
 For instance, we can configure the dynamic ANALYSIS stage like:
@@ -65,6 +67,7 @@ spec:
         with:
           duration: 30m
           dynamic:
+            strategy: CanaryWithBaseline
             metrics:
               - template: http_error_rate
                 baselineArgs:
@@ -95,11 +98,7 @@ spec:
         sum without(status) (rate(http_requests_total{job="{{ .Args.job }}"}[10m]))
 ```
 
-- If both Canary and Baseline are launched, it tries to compare Baseline with Canary **(Canary Analysis)**.
-- If only Canary is launched, it tries to compare Primary and Canary **(Canary Analysis)**.
-- If neither Canary nor Baseline are launched, it tries to compare Primary and previous Primary **(Previous Analysis)**.
-
-Therefore, with the above configuration, it performs Canary Analysis. If you want to perform the previous analysis, just have:
+Another example that performs Previous Analysis is:
 
 ```yaml
 apiVersion: pipecd.dev/v1beta1
@@ -107,17 +106,17 @@ kind: KubernetesApp
 spec:
   pipeline:
     stages:
+      - name: K8S_PRIMARY_ROLLOUT
       - name: ANALYSIS
         with:
           duration: 30m
           dynamic:
+            strategy: Previous
             metrics:
               - template: http_error_rate
                 primaryArgs:
                   job: foo
-      - name: K8S_PRIMARY_ROLLOUT
 ```
-
 
 **AnalysisMetricsDynamic**
 
@@ -133,6 +132,8 @@ There are a couple of unresolved questions.
 
 ### About how to store previous deployment metrics
 Is Filestore really the best place to store? No considerations on storing Users metrics in Control-plane?
+
+(8/26 updates) For now we settled on not supporting to store metrics. In the future, we plan to do it for those whose monitoring system's retension is short.
 
 ### About query templating
 Alternatively, if we provide just `{{ .Variant }}` variable like Harness CV, the ANALYSIS configuration may be more simple.
@@ -177,3 +178,4 @@ For example, for Prometheus, some kind of relabel_configs is needed like:
 Does it need to still have the static ADA feature?
 If Previous Analysis goes well, it could be fine to make it deprecated because the Previous Analysis is a high level feature that wraps the static ADA.
 
+(8/26 updates) static ADA is needed for some users who want to evaluate Canary but don't want to launch Baseline. The strategy `CanaryWithPrimary` sometimes makes wrong result due to the amount of traffic, etc.
