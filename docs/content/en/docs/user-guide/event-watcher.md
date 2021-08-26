@@ -20,7 +20,7 @@ While it empowers you to build pretty versatile workflows, the canonical use cas
 This guide walks you through configuring Event watcher and how to push an Event.
 
 ## Prerequisites
-Before we get into configuring EventWatcher, be sure to grant write permission to the SSH key used by Piped. See [here](/docs/operator-manual/piped/configuring-event-watcher/) for more details.
+Before we get into configuring EventWatcher, be sure to grant write permission to the SSH key used by Piped. In case of multiple Pipeds watching a same repository, configure to avoid write collision between them is required. See [here](/docs/operator-manual/piped/configuring-event-watcher/) for more details.
 
 ## Usage
 File updating can be done by registering the latest value corresponding to the Event in the control-plane and comparing it with the current value.
@@ -45,8 +45,6 @@ spec:
         - file: helloworld/deployment.yaml
           yamlField: $.spec.template.spec.containers[0].image
 ```
-
-By default, Piped(s) that watching your repository will automatically load all defined events in case you don't explicitly configure your Pipeds' behavior. For detailed configuration to avoid collision between multiple Pipeds, you can refer to using `includes/excludes` as stated in [piped settings for watcher](/docs/operator-manual/piped/configuring-event-watcher/#optional-settings-for-watcher).
 
 The full list of configurable `EventWatcher` fields are [here](/docs/user-guide/configuration-reference/#event-watcher-configuration).
 
