@@ -113,10 +113,8 @@ spec:
           dynamic:
             metrics:
               - template: http_error_rate
-                baselineArgs:
+                primaryArgs:
                   job: foo
-                canaryArgs:
-                  job: foo-canary
       - name: K8S_PRIMARY_ROLLOUT
 ```
 
@@ -128,6 +126,7 @@ spec:
 | template | string | The name of Analysis Template | Yes |
 | baselineArgs | map[string][string] | The arguments to be populated for the Baseline query | No |
 | canaryArgs | map[string][string] | The arguments to be populated for the Canary query | No |
+| primaryArgs | map[string][string] | The arguments to be populated for the Primary query | No |
 
 # Unresolved questions
 There are a couple of unresolved questions.
