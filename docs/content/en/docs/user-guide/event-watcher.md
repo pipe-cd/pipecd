@@ -46,6 +46,8 @@ spec:
           yamlField: $.spec.template.spec.containers[0].image
 ```
 
+By default, Piped(s) that watching your repository will automatically load all defined events in case you don't explicitly configure your Pipeds' behavior. For detailed configuration to avoid collision between multiple Pipeds, you can refer to using `includes/excludes` as stated in [piped settings for watcher](/docs/operator-manual/piped/configuring-event-watcher/#optional-settings-for-watcher).
+
 The full list of configurable `EventWatcher` fields are [here](/docs/user-guide/configuration-reference/#event-watcher-configuration).
 
 ### 2. Pushing an Event with `pipectl`
