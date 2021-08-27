@@ -76,6 +76,7 @@ import (
 
 type piped struct {
 	configFile      string
+	configData      string
 	configGCPSecret string
 
 	insecure                             bool
@@ -105,6 +106,7 @@ func NewCommand() *cobra.Command {
 	}
 
 	cmd.Flags().StringVar(&p.configFile, "config-file", p.configFile, "The path to the configuration file.")
+	cmd.Flags().StringVar(&p.configData, "config-data", p.configData, "The configuration data in YAML/JSON format.")
 	cmd.Flags().StringVar(&p.configGCPSecret, "config-gcp-secret", p.configGCPSecret, "The resource ID of secret that contains Piped config and be stored in GCP SecretManager.")
 
 	cmd.Flags().BoolVar(&p.insecure, "insecure", p.insecure, "Whether disabling transport security while connecting to control-plane.")
@@ -491,6 +493,14 @@ func (p *piped) loadConfig(ctx context.Context) (*config.PipedSpec, error) {
 
 	if p.configFile != "" {
 		cfg, err := config.LoadFromYAML(p.configFile)
+		if err != nil {
+			return nil, err
+		}
+		return extract(cfg)
+	}
+
+	if p.configData != "" {
+		cfg, err := config.DecodeYAML([]byte(p.configData))
 		if err != nil {
 			return nil, err
 		}
