@@ -34,9 +34,13 @@ const (
 	defaultTimeout = 30 * time.Second
 )
 
+type client interface {
+	QueryRange(ctx context.Context, query string, r v1.Range) (model.Value, v1.Warnings, error)
+}
+
 // Provider is a client for prometheus.
 type Provider struct {
-	api      v1.API
+	api      client
 	username string
 	password string
 
@@ -190,4 +194,88 @@ func evaluate(evaluator metrics.Evaluator, response model.Value) (bool, string, 
 
 	reason := fmt.Sprintf("all values are within the expected range (%s)", evaluator)
 	return true, reason, nil
+}
+
+func (p *Provider) SelectPoints(ctx context.Context, query string, queryRange metrics.QueryRange) ([]metrics.DataPoint, error) {
+	ctx, cancel := context.WithTimeout(ctx, p.timeout)
+	defer cancel()
+
+	if err := queryRange.Validate(); err != nil {
+		return nil, err
+	}
+	// NOTE: Use 1m as a step but make sure the "step" is smaller than the query range.
+	step := time.Minute
+	if diff := queryRange.To.Sub(queryRange.From); diff < step {
+		step = diff
+	}
+
+	p.logger.Info("run query", zap.String("query", query))
+	response, warnings, err := p.api.QueryRange(ctx, query, v1.Range{
+		Start: queryRange.From,
+		End:   queryRange.To,
+		Step:  step,
+	})
+	if err != nil {
+		return nil, fmt.Errorf("failed to run query for %s", ProviderType)
+	}
+	for _, w := range warnings {
+		p.logger.Warn("non critical error occurred", zap.String("warning", w))
+	}
+
+	// Collect data points given by the provider.
+	// NOTE: Possibly, it's enough to handle only matrix type as long as calling range queries endpoint.
+	switch res := response.(type) {
+	case *model.Scalar:
+		if math.IsNaN(float64(res.Value)) {
+			return nil, fmt.Errorf("the value is not a number: %w", metrics.ErrNoDataFound)
+		}
+		return []metrics.DataPoint{
+			{Timestamp: int64(res.Timestamp), Value: float64(res.Value)},
+		}, nil
+	case model.Vector:
+		if len(res) == 0 {
+			return nil, fmt.Errorf("zero value in instant vector type returned: %w", metrics.ErrNoDataFound)
+		}
+		points := make([]metrics.DataPoint, 0, len(res))
+		for _, s := range res {
+			if s == nil {
+				continue
+			}
+			if math.IsNaN(float64(s.Value)) {
+				return nil, fmt.Errorf("the value is not a number: %w", metrics.ErrNoDataFound)
+			}
+			points = append(points, metrics.DataPoint{
+				Timestamp: int64(s.Timestamp),
+				Value:     float64(s.Value),
+			})
+		}
+		return points, nil
+	case model.Matrix:
+		if len(res) == 0 {
+			return nil, fmt.Errorf("no time series data points in range vector type: %w", metrics.ErrNoDataFound)
+		}
+
+		var size int
+		for _, r := range res {
+			size += len(r.Values)
+		}
+		points := make([]metrics.DataPoint, 0, size)
+		for _, r := range res {
+			if len(r.Values) == 0 {
+				return nil, fmt.Errorf("zero value in range vector type returned: %w", metrics.ErrNoDataFound)
+			}
+			for _, point := range r.Values {
+				if math.IsNaN(float64(point.Value)) {
+					return nil, fmt.Errorf("the value is not a number: %w", metrics.ErrNoDataFound)
+				}
+				points = append(points, metrics.DataPoint{
+					Timestamp: int64(point.Timestamp),
+					Value:     float64(point.Value),
+				})
+			}
+		}
+		return points, nil
+	default:
+		return nil, fmt.Errorf("unexpected data type returned")
+	}
 }

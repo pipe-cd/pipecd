@@ -21,5 +21,6 @@ go_test(
         "//pkg/app/piped/analysisprovider/metrics:go_default_library",
         "@com_github_datadog_datadog_api_client_go//api/v1/datadog:go_default_library",
         "@com_github_stretchr_testify//assert:go_default_library",
+        "@org_uber_go_zap//:go_default_library",
     ],
 )
