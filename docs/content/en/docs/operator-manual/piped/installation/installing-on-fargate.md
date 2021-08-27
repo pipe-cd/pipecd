@@ -67,10 +67,10 @@ spec:
 ```console
 aws secretsmanager create-secret --name PipedConfig \
   --description "Configuration of piped running as ECS Fargate task" \
-  --secret-string file://piped-config.yaml
+  --secret-string `base64 piped-config.yaml`
 ```
 
-Note: Make sure your account has permission to execute CreateSecret operation or you may get `AccessDeniedException` error from AWS Api. In that case, you can try creating secret via AWS Web console.
+Note: The YAML configuration for Piped has been encoded by the base64 command to ensure when we retrieve it from SecretsManager, it still has a valid YAML format.
 
 - Prepare task definition for your piped task. Basically, you can just define your piped TaskDefinition as normal TaskDefinition, the only thing that needs to be beware is, to enable your piped accesses it's configuration we created as a secret on above, you need to add `secretsmanager:GetSecretValue` policy to your piped task `executionRole`. Read more in [Required IAM permissions for Amazon ECS secrets](https://docs.aws.amazon.com/AmazonECS/latest/developerguide/specifying-sensitive-data-secrets.html).
 
@@ -82,15 +82,48 @@ A sample TaskDefinition for Piped as following.
   "executionRoleArn": "{PIPED_TASK_EXECUTION_ROLE_ARN}",
   "containerDefinitions": [
     {
-      "name": "piped",
-      "image": "gcr.io/pipecd/piped:{{< blocks/latest_version >}}",
+      "name": "config",
+      "essential": false,
+      "image": "alpine",
+      "entryPoint": [
+        "sh",
+        "-c"
+      ],
       "command": [
-        "echo $configData > /etc/piped/config.yaml; piped --config-file=/etc/piped/config.yaml"
+        "echo $CONFIG_DATA | base64 -d > /etc/piped/config.yaml",
       ],
       "secrets": [
         {
           "valueFrom": "{PIPED_SECRET_MANAGER_ARN}",
-          "name": "configData"
+          "name": "CONFIG_DATA"
+        }
+      ],
+      "mountPoints": [
+        {
+          "containerPath": "/etc/piped",
+          "sourceVolume": "config"
+        }
+      ]
+    },
+    {
+      "name": "piped",
+      "essential": true,
+      "image": "gcr.io/pipecd/piped:{{< blocks/latest_version >}}",
+      "command": [
+        "piped",
+        "--config-file=/etc/piped/config.yaml"
+      ],
+      "mountPoints": [
+        {
+          "readOnly": true,
+          "containerPath": "/etc/piped",
+          "sourceVolume": "config"
+        }
+      ],
+      "dependsOn": [
+        {
+          "containerName": "config",
+          "condition": "SUCCESS"
         }
       ]
     }
@@ -122,8 +155,8 @@ A sample Service definition to control piped task deployment.
   "desiredCount": 1, # This must be 1.
   "taskDefinition": "{PIPED_TASK_DEFINITION_ARN}",
   "deploymentConfiguration": {
-    "maximumPercent": 100,
-    "minimumHealthyPercent": 100
+    "minimumHealthyPercent": 100,
+    "maximumPercent": 110
   },
   "schedulingStrategy": "REPLICA",
   "launchType": "FARGATE",
