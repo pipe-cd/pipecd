@@ -90,12 +90,12 @@ A sample TaskDefinition for Piped as following.
         "-c"
       ],
       "command": [
-        "echo $configData | base64 -d > /etc/piped/config.yaml",
+        "echo $CONFIG_DATA | base64 -d > /etc/piped/config.yaml",
       ],
       "secrets": [
         {
           "valueFrom": "{PIPED_SECRET_MANAGER_ARN}",
-          "name": "configData"
+          "name": "CONFIG_DATA"
         }
       ],
       "mountPoints": [
