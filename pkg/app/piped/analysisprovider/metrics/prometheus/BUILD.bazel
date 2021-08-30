@@ -3,7 +3,7 @@ load("@io_bazel_rules_go//go:def.bzl", "go_library", "go_test")
 go_library(
     name = "go_default_library",
     srcs = [
-        "fake_api.go",
+        "fake_client.go",
         "prometheus.go",
     ],
     importpath = "github.com/pipe-cd/pipe/pkg/app/piped/analysisprovider/metrics/prometheus",
