@@ -196,7 +196,7 @@ func evaluate(evaluator metrics.Evaluator, response model.Value) (bool, string, 
 	return true, reason, nil
 }
 
-func (p *Provider) SelectPoints(ctx context.Context, query string, queryRange metrics.QueryRange) ([]metrics.DataPoint, error) {
+func (p *Provider) QueryPoints(ctx context.Context, query string, queryRange metrics.QueryRange) ([]metrics.DataPoint, error) {
 	ctx, cancel := context.WithTimeout(ctx, p.timeout)
 	defer cancel()
 

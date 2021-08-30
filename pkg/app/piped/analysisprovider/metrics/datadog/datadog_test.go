@@ -112,7 +112,7 @@ func TestEvaluate(t *testing.T) {
 	}
 }
 
-func TestProviderSelectPoints(t *testing.T) {
+func TestProviderQueryPoints(t *testing.T) {
 	toInt64Pointer := func(i int64) *int64 { return &i }
 	type queryResponse struct {
 		res        datadog.MetricsQueryResponse
@@ -191,7 +191,7 @@ func TestProviderSelectPoints(t *testing.T) {
 				timeout: defaultTimeout,
 				logger:  zap.NewNop(),
 			}
-			got, err := provider.SelectPoints(context.Background(), tc.query, tc.queryRange)
+			got, err := provider.QueryPoints(context.Background(), tc.query, tc.queryRange)
 			assert.Equal(t, tc.wantErr, err != nil)
 			assert.Equal(t, tc.want, got)
 		})
