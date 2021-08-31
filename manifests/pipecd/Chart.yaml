@@ -20,10 +20,10 @@ appVersion: {{ .VERSION }}
 # If you want to update the version of any child charts, bump the version to an arbitrary one.
 dependencies:
 - name: prometheus
-  version: "v13.7.0"
+  version: "v14.6.0"
   repository: "https://prometheus-community.github.io/helm-charts"
   condition: monitoring.enabled
 - name: grafana
-  version: "6.7.4"
+  version: "6.16.2"
   repository: "https://grafana.github.io/helm-charts"
   condition: monitoring.enabled
