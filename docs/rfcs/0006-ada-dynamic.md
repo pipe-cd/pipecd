@@ -13,12 +13,12 @@ Therefore, it's nice to analyze by comparing it with the metrics of currently ru
 This proposal only focuses on analysis by metrics. We can think analysises by others like logs, https separately because we use different configuration fields for them.
 This section covers what to compare and how to compare them.
 
-### What to compare
+## What to compare
 There are two types of strategies:
 - Canary Analysis
 - Previous Analysis
 
-**Canary Analysis**
+### Canary Analysis
 
 In Canary Analysis, it compares Canary and Baseline (or Primary if Baseline isn't be launched).
 The user needs to prepare a query for Canary and a query for Baseline.
@@ -28,7 +28,7 @@ For how to generate the queries, we discuss later.
 
 NOTE: Although we can compare Canary with Primary, we recommend comparing with Baseline. We have to mention that on our documentation.
 
-**Previous Analysis**
+### Previous Analysis
 
 In Previous Analysis, it compares the metrics of the previous Primary deployment with the metrics of the current Primary.
 This is quite useful if you can't prepare the Canary variant for some reasons.
@@ -38,18 +38,99 @@ To do that, it needs to save the start time of the ANALYSIS stage. It fetches th
 
 For those whose monitoring system's retension is short, in the future, it's good to store metrics during the the previous analysis in Filestore.
 
-### How to compare
+## How to compare
 PipeCD uses [Mann–Whitney U test](https://en.wikipedia.org/wiki/Mann%E2%80%93Whitney_U_test), a nonparametric statistical test to check for a significant difference between the metrics.
 For each interval, it computes the score and ends with failure immediately if the result was out of the marginal range.
 
-**How to implement Mann–Whitney U test**
+### How to implement Mann–Whitney U test
 
 We can implement it in Go based on [the Kayenta implementation](https://github.com/spinnaker/kayenta/blob/master/kayenta-judge/src/main/scala/com/netflix/kayenta/judge/classifiers/metric/MannWhitneyClassifier.scala#L33-L55) because that algorithm is relatevely simple.
 [Kayenta](https://github.com/spinnaker/kayenta) is an independent component of Spinnaker. But it requires JVM and Redis to run.
 If we embed Kayenta into Piped image, the image size will become larger. And we want to keep Piped run as a stateless component instead of depending on any external database like Redis.
 
-### Configuration
-For instance, we can configure the dynamic ANALYSIS stage like:
+## Strategies
+From this version, we look to add four strategies.
+
+- `THRESHOLD`: The static analysis strategy that we have used so far.
+- `PREVIOUS`: The newly added strategy that compares the current version of Primary and the previous Primary.
+- `CANARY_BASELINE`: The newly added strategy that compares the running Canary variant and the Baseline variant.
+- `CANARY_PRIMARY`(not recommended): The newly added strategy that compares the running Canary variant and the Primary variant.
+
+`THRESHOLD` only checks if the query result falls within the statically specified range, whereas others compare the two collections of time-series data then check for deviation.
+Therefore, the those configuration fields are slightly different each other.
+
+## Configuration
+The newly added configuration fields are the following. All are optional, so no breaking change happen for those who use static ADA already.
+
+| Field | Type | Description | Required |
+|-|-|-|-|
+| strategy | string | The strategy name. One of `THRESHOLD` or `PREVIOUS` or `CANARY_BASELINE` or `CANARY_PRIMARY` is available. Defaults to `THRESHOLD`. | No |
+| deviation | string | The stage fails on deviation in the specified direction. One of `LOW` or `HIGH` or `EITHER` is available. This can be used only for `PREVIOUS`, `CANARY_BASELINE` or `CANARY_PRIMARY`. Defaults to `EITHER`. | No |
+| baselineArgs | map[string][string] | The custom arguments to be populated for the Baseline query. They can be reffered as `{{ .Args.xxx }}`. | No |
+| canaryArgs | map[string][string] | The custom arguments to be populated for the Canary query. They can be reffered as `{{ .Args.xxx }}`. | No |
+| primaryArgs | map[string][string] | The custom arguments to be populated for the Primary query. They can be reffered as `{{ .Args.xxx }}`. | No |
+
+### Args
+To generate queries for the specific variants, we offer the two types of args that are passed into a query, built-in and custom args.
+
+**Built-in args**
+
+One of the most useful build-in arg is `{{ .Variant }}`. With it, we can easily distinguish variants like `foo{variant="{{ .Variant }}"}`
+
+**Custom args**
+
+Other than built-in args, we can set custom one. With `baselineArgs` and `canaryArgs` etc, we can feel free to set args. You can see the examples on the next section.
+
+### Examples
+This section shows some examples for each strategies.
+
+**The `THRESHOLD` strategy:**
+
+```yaml
+apiVersion: pipecd.dev/v1beta1
+kind: KubernetesApp
+spec:
+  pipeline:
+    stages:
+      - name: K8S_PRIMARY_ROLLOUT
+      - name: ANALYSIS
+        with:
+          duration: 30m
+          metrics:
+            - provider: my-prometheus
+              interval: 10m
+              expected:
+                max: 0.1
+              query: rate(cpu_usage_total{app="foo"}[10m])
+```
+
+We can configure it as usual. No additional configuration needed.
+
+Note that the `expected` field can be used only for this `THRESHOLD` strategy.
+
+**The `PREVIOUS` strategy:**
+
+```yaml
+apiVersion: pipecd.dev/v1beta1
+kind: KubernetesApp
+spec:
+  pipeline:
+    stages:
+      - name: K8S_PRIMARY_ROLLOUT
+      - name: ANALYSIS
+        with:
+          duration: 30m
+          metrics:
+            - strategy: PREVIOUS
+              provider: my-prometheus
+              interval: 10m
+              deviation: HIGH
+              query: rate(cpu_usage_total{app="foo"}[10m])
+```
+
+**The `CANARY_BASELINE` strategy:**
+
+`CANARY_PRIMARY` will look almost the same.
 
 ```yaml
 apiVersion: pipecd.dev/v1beta1
@@ -66,66 +147,36 @@ spec:
       - name: ANALYSIS
         with:
           duration: 30m
-          dynamic:
-            strategy: CanaryWithBaseline
-            metrics:
-              - template: http_error_rate
-                baselineArgs:
-                  job: foo
-                canaryArgs:
-                  job: foo-canary
+          metrics:
+            - strategy: CANARY_BASELINE
+              provider: my-prometheus
+              interval: 10m
+              deviation: HIGH
+              query: rate(cpu_usage_total{app="foo", variant="{{ .Variant }}"}[10m])
       - name: K8S_PRIMARY_ROLLOUT
       - name: K8S_CANARY_CLEAN
       - name: K8S_BASELINE_CLEAN
 ```
 
-To generate queries for each variant, Canary and Baseline, it uses [Analysis Template](https://pipecd.dev/docs/user-guide/automated-deployment-analysis/#optional-analysis-template).
-So we need to prepare the Analysis Template configuration like:
+**The pattern of using custom args:**
+
+You can reffer the defined custom args by using `{{ .Args.xxx }}`.
 
 ```yaml
-apiVersion: pipecd.dev/v1beta1
-kind: AnalysisTemplate
-spec:
-  metrics:
-    http_error_rate:
-      interval: 10m
-      provider: prometheus-dev
-      expected:
-        max: 0.1
-      query: |
-        sum without(status) (rate(http_requests_total{status=~"5.*", job="{{ .Args.job }}"}[10m]))
-        /
-        sum without(status) (rate(http_requests_total{job="{{ .Args.job }}"}[10m]))
-```
-
-Another example that performs Previous Analysis is:
-
-```yaml
-apiVersion: pipecd.dev/v1beta1
-kind: KubernetesApp
-spec:
-  pipeline:
-    stages:
-      - name: K8S_PRIMARY_ROLLOUT
       - name: ANALYSIS
         with:
           duration: 30m
-          dynamic:
-            strategy: Previous
-            metrics:
-              - template: http_error_rate
-                primaryArgs:
-                  job: foo
+          metrics:
+            - strategy: CANARY_BASELINE
+              provider: my-prometheus
+              interval: 10m
+              deviation: HIGH
+              query: rate(cpu_usage_total{app="foo", bar="{{ .Args.bar }}"}[10m])
+              baselineArgs:
+                bar: 1
+              canaryArgs: 
+                bar: 2
 ```
-
-**AnalysisMetricsDynamic**
-
-| Field | Type | Description | Required |
-|-|-|-|-|
-| template | string | The name of Analysis Template | Yes |
-| baselineArgs | map[string][string] | The arguments to be populated for the Baseline query | No |
-| canaryArgs | map[string][string] | The arguments to be populated for the Canary query | No |
-| primaryArgs | map[string][string] | The arguments to be populated for the Primary query | No |
 
 # Unresolved questions
 There are a couple of unresolved questions.
@@ -173,6 +224,8 @@ For example, for Prometheus, some kind of relabel_configs is needed like:
             action: keep
             regex: variant
 ```
+
+(8/30 updates) we settled on offering both built-in args (like `{{ .Variant }}`) and custom args (like `{{ .Args.foo }}`).
 
 ### About static ADA
 Does it need to still have the static ADA feature?
