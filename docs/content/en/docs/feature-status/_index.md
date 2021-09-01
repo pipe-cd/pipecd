@@ -33,7 +33,7 @@ Please note that the phases (Incubating, Alpha, Beta, and Stable) are applied to
 | Support Istio Mesh | Beta |
 | Support SMI Mesh | Incubating |
 | Support [AWS App Mesh](https://aws.amazon.com/app-mesh/) | Incubating |
-| [Plan Preview](/docs/user-guide/plan-preview) | Alpha |
+| [Plan Preview](/docs/user-guide/plan-preview) | Beta |
 
 ### Terraform Deployment
 
@@ -44,7 +44,7 @@ Please note that the phases (Incubating, Alpha, Beta, and Stable) are applied to
 | Automated Rollback | Beta |
 | [Automated Configuration Drift Detection](/docs/user-guide/configuration-drift-detection/) | Incubating |
 | [Application Live State](/docs/user-guide/application-live-state/) | Incubating |
-| [Plan Preview](/docs/user-guide/plan-preview) | Alpha |
+| [Plan Preview](/docs/user-guide/plan-preview) | Beta |
 
 ### CloudRun Deployment
 
