@@ -112,10 +112,10 @@ Please note that the phases (Incubating, Alpha, Beta, and Stable) are applied to
 | GitHub & GitHub Enterprise SSO | Beta |
 | Google SSO | Incubating |
 | Data Store - Support GCP [Firestore](https://cloud.google.com/firestore) | Beta |
-| Data Store - Support [MySQL v8.0](https://www.mysql.com/) | Alpha |
+| Data Store - Support [MySQL v8.0](https://www.mysql.com/) | Beta |
 | File Store - Support GCP [GCS](https://cloud.google.com/storage) | Beta |
-| File Store - Support AWS [S3](https://aws.amazon.com/s3/) | Alpha |
-| File Store - Support [Minio](https://github.com/minio/minio) | Alpha |
+| File Store - Support AWS [S3](https://aws.amazon.com/s3/) | Beta |
+| File Store - Support [Minio](https://github.com/minio/minio) | Beta |
 | [Insights](/docs/user-guide/insights/) shows delivery performance | Incubating |
 | Deployment Chain - Allow rolling out to multiple clusters gradually or promoting across environments | Incubating |
 | Collecting piped's metrics and enabling their dashboards | Incubating |
