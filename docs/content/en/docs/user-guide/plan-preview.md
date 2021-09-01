@@ -6,8 +6,6 @@ description: >
   Enables the ability to preview the deployment plan against a given commit before merging.
 ---
 
-> NOTE: This feature is currently under Alpha status.
-
 In order to help developers review the pull request with a better experience and more confidence to approve it to trigger the actual deployments,
 PipeCD provides a way to preview the deployment plan of all updated applications by that pull request.
 
