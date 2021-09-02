@@ -290,7 +290,7 @@ export const ApplicationForm: FC<ApplicationFormProps> = memo(
             <TextField
               id="repoPath"
               label="Path"
-              placeholder="Path (use ./ as repo root)"
+              helperText="./ means repository root"
               variant="outlined"
               margin="dense"
               disabled={

@@ -40,7 +40,7 @@ Here are the list of fields in the register form:
 | Env | The environment this application should belongs to. Select one of the registered environments at `Settings/Environment` page.  | Yes |
 | Piped | The piped that handles this application. Select one of the registered `piped`s at `Settings/Piped` page. | Yes |
 | Repository | The Git repository contains application configuration and deployment configuration. Select one of the registered repositories in `piped` configuration. | Yes |
-| Path | The relative path from the root of the Git repository to the directory containing application configuration and deployment configuration. | Yes |
+| Path | The relative path from the root of the Git repository to the directory containing application configuration and deployment configuration. Use `./` means repository root. | Yes |
 | Config Filename | The name of deployment configuration file. Default is `.pipe.yaml`. | No |
 | Cloud Provider | Where the application will be deployed to. Select one of the registered cloud providers in `piped` configuration. | Yes |
 
