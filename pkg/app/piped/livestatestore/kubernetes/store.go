@@ -70,7 +70,7 @@ func (s *store) initialize() {
 		}
 
 		// Ignore in case appNodes with appID not existed in store.
-		if node, found := s.apps[appID]; !found || node == nil {
+		if s.apps[appID] == nil {
 			continue
 		}
 
