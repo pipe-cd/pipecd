@@ -69,6 +69,11 @@ func (s *store) initialize() {
 			continue
 		}
 
+		// Ignore in case appNodes with appID not existed in store.
+		if node, found := s.apps[appID]; !found || node == nil {
+			continue
+		}
+
 		// Add the missing resource into the dependedResources of the app.
 		key := provider.MakeResourceKey(an.resource)
 		s.apps[appID].addDependedResource(uid, key, an.resource, now)
