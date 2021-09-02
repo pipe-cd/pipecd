@@ -290,6 +290,7 @@ export const ApplicationForm: FC<ApplicationFormProps> = memo(
             <TextField
               id="repoPath"
               label="Path"
+              placeholder="Relative path to app directory"
               variant="outlined"
               margin="dense"
               disabled={
