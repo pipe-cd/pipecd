@@ -69,18 +69,24 @@ export const LogLine: FC<LogLineProps> = ({
       )}]`}</span>
       <Box pr={2} flex={1} style={{ wordBreak: "break-all" }}>
         {parseLog(body).map((cell, i) => (
-          <span
-            key={`log-cell-${i}`}
-            style={{
-              color: TERM_COLORS[cell.fg],
-              backgroundColor: cell.bg !== 0 ? TERM_COLORS[cell.bg] : undefined,
-              fontWeight: cell.bold ? "bold" : undefined,
-              textDecoration: cell.underline ? "underline" : undefined,
-              whiteSpace: "pre-wrap",
-            }}
-          >
-            {cell.content.split("\\n").join("\n")}
-          </span>
+          <>
+            {!cell.content.trim() ? (
+              <br/>
+            ) : (
+              <span
+                key={`log-cell-${i}`}
+                style={{
+                  color: TERM_COLORS[cell.fg],
+                  backgroundColor: cell.bg !== 0 ? TERM_COLORS[cell.bg] : undefined,
+                  fontWeight: cell.bold ? "bold" : undefined,
+                  textDecoration: cell.underline ? "underline" : undefined,
+                  whiteSpace: "pre-wrap",
+                }}
+              >
+                {cell.content.split("\\n").join("\n")}
+              </span>
+            )}
+          </>
         ))}
       </Box>
     </div>
