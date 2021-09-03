@@ -18,6 +18,7 @@ import (
 	"sync"
 	"time"
 
+	"go.uber.org/zap"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/apis/meta/v1/unstructured"
 
@@ -45,6 +46,8 @@ type store struct {
 	iterators      map[int]int
 	nextIteratorID int
 	eventMu        sync.Mutex
+
+	logger *zap.Logger
 }
 
 type appResource struct {
@@ -69,15 +72,19 @@ func (s *store) initialize() {
 			continue
 		}
 
+		// Add the missing resource into the dependedResources of the app.
+		key := provider.MakeResourceKey(an.resource)
+
 		// Ignore in case appNodes with appID not existed in store.
 		if s.apps[appID] == nil {
+			s.logger.Info("detected an unexpected missing resource",
+				zap.String("app", appID),
+				zap.Any("key", key),
+			)
 			continue
 		}
 
-		// Add the missing resource into the dependedResources of the app.
-		key := provider.MakeResourceKey(an.resource)
 		s.apps[appID].addDependedResource(uid, key, an.resource, now)
-
 		an.appID = appID
 		s.resources[uid] = an
 	}
