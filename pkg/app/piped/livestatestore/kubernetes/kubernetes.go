@@ -76,6 +76,7 @@ func NewStore(cfg *config.CloudProviderKubernetesConfig, pipedConfig *config.Pip
 			apps:        make(map[string]*appNodes),
 			resources:   make(map[string]appResource),
 			iterators:   make(map[int]int, 1),
+			logger:      logger.Named("store"),
 		},
 		firstSyncedCh: make(chan error, 1),
 		logger:        logger,
