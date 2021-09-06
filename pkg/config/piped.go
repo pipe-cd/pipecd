@@ -676,7 +676,8 @@ func (s *SecretManagement) UnmarshalJSON(data []byte) error {
 type PipedEventWatcher struct {
 	// Interval to fetch the latest event and compare it with one defined in EventWatcher config files
 	CheckInterval Duration `json:"checkInterval"`
-	// The list of git repositories to be observed.
+	// The configuration list of git repositories to be observed.
+	// Only the repositories in this list will be observed by Piped.
 	GitRepos []PipedEventWatcherGitRepo `json:"gitRepos"`
 }
 
