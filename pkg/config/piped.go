@@ -677,6 +677,8 @@ type PipedEventWatcher struct {
 	// Interval to fetch the latest event and compare it with one defined in EventWatcher config files
 	CheckInterval Duration `json:"checkInterval"`
 	// Settings for each git repository.
+	// Required field if you want to enable Event watcher
+	// because only the specified repos will be observed.
 	GitRepos []PipedEventWatcherGitRepo `json:"gitRepos"`
 }
 

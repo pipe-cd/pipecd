@@ -88,15 +88,20 @@ func (w *watcher) Run(ctx context.Context) error {
 	defer os.RemoveAll(workingDir)
 	w.workingDir = workingDir
 
-	for _, repoCfg := range w.config.Repositories {
-		repo, err := w.cloneRepo(ctx, repoCfg)
+	repoCfgs := make(map[string]config.PipedRepository, len(w.config.Repositories))
+	for _, repo := range w.config.Repositories {
+		repoCfgs[repo.RepoID] = repo
+	}
+	for _, r := range w.config.EventWatcher.GitRepos {
+		cfg := repoCfgs[r.RepoID]
+		repo, err := w.cloneRepo(ctx, cfg)
 		if err != nil {
 			return err
 		}
 		defer repo.Clean()
 
 		w.wg.Add(1)
-		go w.run(ctx, repo, repoCfg)
+		go w.run(ctx, repo, cfg)
 	}
 
 	w.wg.Wait()
