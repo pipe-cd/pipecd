@@ -93,7 +93,10 @@ func (w *watcher) Run(ctx context.Context) error {
 		repoCfgs[repo.RepoID] = repo
 	}
 	for _, r := range w.config.EventWatcher.GitRepos {
-		cfg := repoCfgs[r.RepoID]
+		cfg, ok := repoCfgs[r.RepoID]
+		if !ok {
+			return fmt.Errorf("repo id %q doesn't exist in the Piped repositories list", r.RepoID)
+		}
 		repo, err := w.cloneRepo(ctx, cfg)
 		if err != nil {
 			return err
