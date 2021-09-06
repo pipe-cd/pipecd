@@ -111,6 +111,6 @@ kind-down:
 	kind delete cluster --name pipecd
 
 
-.PHONY: release-note
-release-note:
-	./hack/render-release-note.sh $(version)
+.PHONY: prepare-release
+prepare-release:
+	./hack/prepare-release.sh $(version)
