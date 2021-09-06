@@ -108,25 +108,33 @@ func (r *DiffListResult) Render(opt DiffRenderOptions) string {
 		opts := []diff.RenderOption{
 			diff.WithLeftPadding(1),
 		}
+
+		needMaskValue := false
 		if opt.MaskSecret && key.IsSecret() {
 			opts = append(opts, diff.WithMaskPath("data"))
+			needMaskValue = true
 		} else if opt.MaskConfigMap && key.IsConfigMap() {
 			opts = append(opts, diff.WithMaskPath("data"))
+			needMaskValue = true
 		}
 		renderer := diff.NewRenderer(opts...)
 
 		index++
 		b.WriteString(fmt.Sprintf("# %d. %s\n\n", index, key.ReadableString()))
 
-		if opt.UseDiffCommand {
+		// Use our diff check in one of the following cases:
+		// - not explicit set useDiffCommand option.
+		// - requires masking secret or configmap value.
+		if !opt.UseDiffCommand || needMaskValue {
+			b.WriteString(renderer.Render(change.Diff.Nodes()))
+		} else {
+			// TODO: Find a way to mask values in case of using unix `diff` command.
 			d, err := diffByCommand(diffCommand, change.Old, change.New)
 			if err != nil {
 				b.WriteString(fmt.Sprintf("An error occurred while rendering diff (%v)", err))
 			} else {
 				b.Write(d)
 			}
-		} else {
-			b.WriteString(renderer.Render(change.Diff.Nodes()))
 		}
 		b.WriteString("\n")
 
