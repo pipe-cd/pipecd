@@ -88,20 +88,15 @@ func (w *watcher) Run(ctx context.Context) error {
 	defer os.RemoveAll(workingDir)
 	w.workingDir = workingDir
 
-	repoCfgs := w.config.GetRepositoryMap()
-	for _, r := range w.config.EventWatcher.GitRepos {
-		cfg, ok := repoCfgs[r.RepoID]
-		if !ok {
-			return fmt.Errorf("repo id %q doesn't exist in the Piped repositories list", r.RepoID)
-		}
-		repo, err := w.cloneRepo(ctx, cfg)
+	for _, repoCfg := range w.config.Repositories {
+		repo, err := w.cloneRepo(ctx, repoCfg)
 		if err != nil {
 			return err
 		}
 		defer repo.Clean()
 
 		w.wg.Add(1)
-		go w.run(ctx, repo, cfg)
+		go w.run(ctx, repo, repoCfg)
 	}
 
 	w.wg.Wait()
@@ -132,7 +127,6 @@ func (w *watcher) run(ctx context.Context, repo git.Repo, repoCfg config.PipedRe
 		checkInterval = defaultCheckInterval
 	}
 
-	w.logger.Info("start watching events", zap.String("repo", repoCfg.RepoID))
 	ticker := time.NewTicker(checkInterval)
 	defer ticker.Stop()
 	for {
