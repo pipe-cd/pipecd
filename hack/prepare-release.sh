@@ -21,7 +21,7 @@ do
     exit 1
 done
 
-echo "Prepare release note of version $1"
+echo "Prepare release for version $1"
 
 # render release note template
 TEMP="---\ntitle: \"Release $1\"\nlinkTitle: \"Release $1\"\ndate: $(date +"%Y-%m-%d")\ndescription: >\n Release $1\n---\n\n"
