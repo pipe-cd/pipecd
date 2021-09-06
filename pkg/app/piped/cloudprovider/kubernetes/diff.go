@@ -118,7 +118,7 @@ func (r *DiffListResult) Render(opt DiffRenderOptions) string {
 		index++
 		b.WriteString(fmt.Sprintf("# %d. %s\n\n", index, key.ReadableString()))
 
-		// Use our diff check in the following cases:
+		// Use our diff check in one of the following cases:
 		// - not explicit set useDiffCommand option.
 		// - requires masking secret or configmap value.
 		if !opt.UseDiffCommand || opt.MaskSecret || opt.MaskConfigMap {
