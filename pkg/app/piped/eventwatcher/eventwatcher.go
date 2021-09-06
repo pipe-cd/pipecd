@@ -132,6 +132,7 @@ func (w *watcher) run(ctx context.Context, repo git.Repo, repoCfg config.PipedRe
 		checkInterval = defaultCheckInterval
 	}
 
+	w.logger.Info("start watching events", zap.String("repo", repoCfg.RepoID))
 	ticker := time.NewTicker(checkInterval)
 	defer ticker.Stop()
 	for {
