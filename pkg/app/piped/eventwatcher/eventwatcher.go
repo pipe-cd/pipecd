@@ -88,10 +88,7 @@ func (w *watcher) Run(ctx context.Context) error {
 	defer os.RemoveAll(workingDir)
 	w.workingDir = workingDir
 
-	repoCfgs := make(map[string]config.PipedRepository, len(w.config.Repositories))
-	for _, repo := range w.config.Repositories {
-		repoCfgs[repo.RepoID] = repo
-	}
+	repoCfgs := w.config.GetRepositoryMap()
 	for _, r := range w.config.EventWatcher.GitRepos {
 		cfg, ok := repoCfgs[r.RepoID]
 		if !ok {
