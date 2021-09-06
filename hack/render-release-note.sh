@@ -30,4 +30,4 @@ echo -e $TEMP > $OUTPUT_FILE
 RELEASE_FILE=release/RELEASE
 echo -e "version: $1" > $RELEASE_FILE
 
-echo "Your new release note is located on $OUTPUT_FILE"
+echo "Your new release note is located at $OUTPUT_FILE"
