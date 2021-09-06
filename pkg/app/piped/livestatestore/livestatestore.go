@@ -40,6 +40,7 @@ type applicationLister interface {
 
 type Getter interface {
 	CloudRunGetter(cloudProvider string) (cloudrun.Getter, bool)
+	ECSRunGetter(cloudProvider string) (cloudrun.Getter, bool)
 	KubernetesGetter(cloudProvider string) (kubernetes.Getter, bool)
 	LambdaGetter(cloudProvider string) (lambda.Getter, bool)
 	TerraformGetter(cloudProvider string) (terraform.Getter, bool)
@@ -67,6 +68,10 @@ type lambdaStore interface {
 	Run(ctx context.Context) error
 }
 
+type ecsStore interface {
+	Run(ctx context.Context) error
+}
+
 // store manages a list of particular stores for all cloud providers.
 type store struct {
 	// Map thats contains a list of kubernetesStore where key is the cloud provider name.
@@ -77,6 +82,8 @@ type store struct {
 	cloudrunStores map[string]cloudRunStore
 	// Map thats contains a list of lambdaStore where key is the cloud provider name.
 	lambdaStores map[string]lambdaStore
+	// Map thats contains a list of ecsStore where key is the cloud provider name.
+	ecsStores map[string]ecsStore
 
 	gracePeriod time.Duration
 	logger      *zap.Logger
@@ -145,6 +152,12 @@ func (s *store) Run(ctx context.Context) error {
 		})
 	}
 
+	for i := range s.ecsStores {
+		group.Go(func() error {
+			return s.ecsStores[i].Run(ctx)
+		})
+	}
+
 	err := group.Wait()
 	if err == nil {
 		s.logger.Info("all state stores have been stopped")
@@ -160,6 +173,11 @@ func (s *store) Getter() Getter {
 
 func (s *store) CloudRunGetter(cloudProvider string) (cloudrun.Getter, bool) {
 	ks, ok := s.cloudrunStores[cloudProvider]
+	return ks, ok
+}
+
+func (s *store) ECSRunGetter(cloudProvider string) (cloudrun.Getter, bool) {
+	ks, ok := s.ecsStores[cloudProvider]
 	return ks, ok
 }
 

@@ -1,0 +1,13 @@
+load("@io_bazel_rules_go//go:def.bzl", "go_library")
+
+go_library(
+    name = "go_default_library",
+    srcs = ["store.go"],
+    importpath = "github.com/pipe-cd/pipe/pkg/app/piped/livestatestore/ecs",
+    visibility = ["//visibility:public"],
+    deps = [
+        "//pkg/config:go_default_library",
+        "//pkg/model:go_default_library",
+        "@org_uber_go_zap//:go_default_library",
+    ],
+)
