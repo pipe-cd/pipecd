@@ -21,6 +21,8 @@ do
     exit 1
 done
 
+echo "Prepare release note of version $1"
+
 # render release note template
 TEMP="---\ntitle: \"Release $1\"\nlinkTitle: \"Release $1\"\ndate: $(date +"%Y-%m-%d")\ndescription: >\n Release $1\n---\n\n"
 OUTPUT_FILE=docs/content/en/blog/releases/$1.md
