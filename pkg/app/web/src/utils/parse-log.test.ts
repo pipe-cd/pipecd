@@ -38,3 +38,11 @@ test("parse bright colors", () => {
     expect(parseLog(str)).toMatchSnapshot();
   });
 });
+
+test("multi lines contained in a single log block", () => {
+  [
+    "\n\u001b[1m BOLD \u001b[0m\u001b[4m Underline \n\u001b[0m\u001b[7m Reversed \u001b[0m",
+  ].forEach((str) => {
+    expect(parseLog(str)).toMatchSnapshot();
+  });
+});

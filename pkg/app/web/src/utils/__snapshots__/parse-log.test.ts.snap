@@ -1,5 +1,38 @@
 // Jest Snapshot v1, https://goo.gl/fbAQLP
 
+exports[`multi lines contained in a single log block 1`] = `
+Array [
+  Object {
+    "bg": 0,
+    "bold": false,
+    "content": "\\\\n",
+    "fg": 7,
+    "underline": false,
+  },
+  Object {
+    "bg": 0,
+    "bold": true,
+    "content": " BOLD ",
+    "fg": 7,
+    "underline": false,
+  },
+  Object {
+    "bg": 0,
+    "bold": false,
+    "content": " Underline \\\\n",
+    "fg": 7,
+    "underline": true,
+  },
+  Object {
+    "bg": 7,
+    "bold": false,
+    "content": " Reversed ",
+    "fg": 0,
+    "underline": false,
+  },
+]
+`;
+
 exports[`parse bright colors 1`] = `
 Array [
   Object {
