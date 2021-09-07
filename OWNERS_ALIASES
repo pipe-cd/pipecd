@@ -3,6 +3,7 @@ sig-backend:
     - nghialv
     - nakabonne
     - khanhtc1202
+    - ono-max
 
 sig-frontend:
   users:
