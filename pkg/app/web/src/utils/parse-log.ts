@@ -90,7 +90,7 @@ export function parseLog(logStr: string): Cell[] {
   const pushToCells = (content: string): void => {
     if (content.length > 0) {
       cells.push({
-        content: content.replace(/\s/g, NON_BREAK_SPACE),
+        content: content.replace(/\n/g, '\\n').replace(/\s/g, NON_BREAK_SPACE),
         fg,
         bg,
         bold,

@@ -76,10 +76,10 @@ export const LogLine: FC<LogLineProps> = ({
               backgroundColor: cell.bg !== 0 ? TERM_COLORS[cell.bg] : undefined,
               fontWeight: cell.bold ? "bold" : undefined,
               textDecoration: cell.underline ? "underline" : undefined,
-              whiteSpace: "pre-wrap",
+              whiteSpace: i !== 0 ? "pre-wrap" : "normal",
             }}
           >
-            {cell.content.split("\\n").join("<br/>")}
+            {cell.content.split("\\n").join("\n")}
           </span>
         ))}
       </Box>
