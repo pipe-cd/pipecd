@@ -79,7 +79,7 @@ export const LogLine: FC<LogLineProps> = ({
               whiteSpace: "pre-wrap",
             }}
           >
-            {cell.content.split("\\n").join("\n")}
+            {cell.content.split("\\n").join("<br/>")}
           </span>
         ))}
       </Box>
