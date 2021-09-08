@@ -258,8 +258,8 @@ func (c *controller) checkCommands() {
 			handled = true
 			planner.Cancel(cmd)
 			c.logger.Info("a command CancelDeployment was forwarded to its planner",
-				zap.String("app-id", cmd.ApplicationId),
-				zap.String("deployment-id", cmd.DeploymentId),
+				zap.String("app", cmd.ApplicationId),
+				zap.String("deployment", cmd.DeploymentId),
 			)
 		}
 
@@ -267,15 +267,15 @@ func (c *controller) checkCommands() {
 			handled = true
 			scheduler.Cancel(cmd)
 			c.logger.Info("a command CancelDeployment was forwarded to its scheduler",
-				zap.String("app-id", cmd.ApplicationId),
-				zap.String("deployment-id", cmd.DeploymentId),
+				zap.String("app", cmd.ApplicationId),
+				zap.String("deployment", cmd.DeploymentId),
 			)
 		}
 
 		if !handled {
 			c.logger.Info("a command CancelDeployment is still not handled",
-				zap.String("app-id", cmd.ApplicationId),
-				zap.String("deployment-id", cmd.DeploymentId),
+				zap.String("app", cmd.ApplicationId),
+				zap.String("deployment", cmd.DeploymentId),
 			)
 		}
 	}
@@ -296,8 +296,8 @@ func (c *controller) syncPlanners(ctx context.Context) error {
 			continue
 		}
 		c.logger.Info("deleted done planner",
-			zap.String("deployment-id", p.ID()),
-			zap.String("app-id", id),
+			zap.String("deployment", p.ID()),
+			zap.String("app", id),
 			zap.Int("count", len(c.planners)),
 		)
 		c.donePlanners[p.ID()] = p.DoneTimestamp()
@@ -307,8 +307,8 @@ func (c *controller) syncPlanners(ctx context.Context) error {
 		if model.IsCompletedDeployment(p.DoneDeploymentStatus()) {
 			if err := reportApplicationDeployingStatus(ctx, c.apiClient, id, false); err != nil {
 				c.logger.Error("failed to mark application as NOT deploying",
-					zap.String("deployment-id", p.ID()),
-					zap.String("app-id", id),
+					zap.String("deployment", p.ID()),
+					zap.String("app", id),
 					zap.Error(err),
 				)
 			}
@@ -330,14 +330,28 @@ func (c *controller) syncPlanners(ctx context.Context) error {
 		appID := d.ApplicationId
 		// Ignore already processed one.
 		if _, ok := c.donePlanners[d.Id]; ok {
+			c.logger.Info("ignore planning because it was already processed",
+				zap.String("deployment", d.Id),
+				zap.String("app", d.ApplicationId),
+			)
 			continue
 		}
 		// For each application, only one deployment can be planned at the same time.
-		if _, ok := c.planners[appID]; ok {
+		if p, ok := c.planners[appID]; ok {
+			c.logger.Info("temporarily skip planning because another deployment is planning",
+				zap.String("deployment", d.Id),
+				zap.String("app", d.ApplicationId),
+				zap.String("executing-deployment", p.deployment.Id),
+			)
 			continue
 		}
 		// If this application is deploying, no other deployments can be added to plan.
-		if _, ok := c.schedulers[appID]; ok {
+		if s, ok := c.schedulers[appID]; ok {
+			c.logger.Info("temporarily skip planning because another deployment is running",
+				zap.String("deployment", d.Id),
+				zap.String("app", d.ApplicationId),
+				zap.String("handling-deployment", s.deployment.Id),
+			)
 			continue
 		}
 		// Choose the oldest PENDING deployment of the application to plan.
@@ -351,8 +365,8 @@ func (c *controller) syncPlanners(ctx context.Context) error {
 		planner, err := c.startNewPlanner(ctx, d)
 		if err != nil {
 			c.logger.Error("failed to start a new planner",
-				zap.String("deployment-id", d.Id),
-				zap.String("app-id", d.ApplicationId),
+				zap.String("deployment", d.Id),
+				zap.String("app", d.ApplicationId),
 				zap.Error(err),
 			)
 			continue
@@ -362,8 +376,8 @@ func (c *controller) syncPlanners(ctx context.Context) error {
 		// Application will be marked as DEPLOYING after its planner was successfully created.
 		if err := reportApplicationDeployingStatus(ctx, c.apiClient, d.ApplicationId, true); err != nil {
 			c.logger.Error("failed to mark application as deploying",
-				zap.String("deployment-id", d.Id),
-				zap.String("app-id", d.ApplicationId),
+				zap.String("deployment", d.Id),
+				zap.String("app", d.ApplicationId),
 				zap.Error(err),
 			)
 		}
@@ -374,8 +388,8 @@ func (c *controller) syncPlanners(ctx context.Context) error {
 
 func (c *controller) startNewPlanner(ctx context.Context, d *model.Deployment) (*planner, error) {
 	logger := c.logger.With(
-		zap.String("deployment-id", d.Id),
-		zap.String("app-id", d.ApplicationId),
+		zap.String("deployment", d.Id),
+		zap.String("app", d.ApplicationId),
 	)
 	logger.Info("a new planner will be started")
 
@@ -470,8 +484,8 @@ func (c *controller) syncSchedulers(ctx context.Context) error {
 			continue
 		}
 		c.logger.Info("deleted done scheduler",
-			zap.String("deployment-id", s.ID()),
-			zap.String("app-id", id),
+			zap.String("deployment", s.ID()),
+			zap.String("app", id),
 			zap.Int("count", len(c.schedulers)),
 		)
 		c.doneSchedulers[s.ID()] = s.DoneTimestamp()
@@ -481,8 +495,8 @@ func (c *controller) syncSchedulers(ctx context.Context) error {
 		if model.IsCompletedDeployment(s.DoneDeploymentStatus()) {
 			if err := reportApplicationDeployingStatus(ctx, c.apiClient, id, false); err != nil {
 				c.logger.Error("failed to mark application as NOT deploying",
-					zap.String("deployment-id", s.ID()),
-					zap.String("app-id", id),
+					zap.String("deployment", s.ID()),
+					zap.String("app", id),
 					zap.Error(err),
 				)
 			}
@@ -510,9 +524,9 @@ func (c *controller) syncSchedulers(ctx context.Context) error {
 		if s, ok := c.schedulers[d.ApplicationId]; ok {
 			if s.ID() != d.Id {
 				c.logger.Warn("detected an application that has more than one running deployments",
-					zap.String("app-id", d.ApplicationId),
-					zap.String("handling-deployment-id", s.ID()),
-					zap.String("deployment-id", d.Id),
+					zap.String("app", d.ApplicationId),
+					zap.String("handling-deployment", s.ID()),
+					zap.String("deployment", d.Id),
 				)
 			}
 			continue
@@ -523,8 +537,8 @@ func (c *controller) syncSchedulers(ctx context.Context) error {
 		}
 		c.schedulers[d.ApplicationId] = s
 		c.logger.Info("added a new scheduler",
-			zap.String("deployment-id", d.Id),
-			zap.String("app-id", d.ApplicationId),
+			zap.String("deployment", d.Id),
+			zap.String("app", d.ApplicationId),
 			zap.Int("count", len(c.schedulers)),
 		)
 	}
@@ -538,8 +552,8 @@ func (c *controller) syncSchedulers(ctx context.Context) error {
 // for tracking its lifetime periodically later.
 func (c *controller) startNewScheduler(ctx context.Context, d *model.Deployment) (*scheduler, error) {
 	logger := c.logger.With(
-		zap.String("deployment-id", d.Id),
-		zap.String("app-id", d.ApplicationId),
+		zap.String("deployment", d.Id),
+		zap.String("app", d.ApplicationId),
 	)
 	logger.Info("will add a new scheduler")
 
