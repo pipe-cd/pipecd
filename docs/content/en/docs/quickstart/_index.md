@@ -54,6 +54,7 @@ Then you give the environment name and its description as shown below:
 
 ![](/images/quickstart-adding-environment.png)
 
+After filling out the form, click on the `Save` button.
 
 ### 5. Installing a `piped`
 Before running a piped, you have to register it on the web and take the generated ID and Key strings.
