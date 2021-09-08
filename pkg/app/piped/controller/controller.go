@@ -338,7 +338,7 @@ func (c *controller) syncPlanners(ctx context.Context) error {
 		}
 		// For each application, only one deployment can be planned at the same time.
 		if p, ok := c.planners[appID]; ok {
-			c.logger.Info("temporarily skip planning because other deployment is planning",
+			c.logger.Info("temporarily skip planning because another deployment is planning",
 				zap.String("deployment", d.Id),
 				zap.String("app", d.ApplicationId),
 				zap.String("executing-deployment", p.deployment.Id),
@@ -347,7 +347,7 @@ func (c *controller) syncPlanners(ctx context.Context) error {
 		}
 		// If this application is deploying, no other deployments can be added to plan.
 		if s, ok := c.schedulers[appID]; ok {
-			c.logger.Info("temporarily skip planning because other deployment is running",
+			c.logger.Info("temporarily skip planning because another deployment is running",
 				zap.String("deployment", d.Id),
 				zap.String("app", d.ApplicationId),
 				zap.String("handling-deployment", s.deployment.Id),
