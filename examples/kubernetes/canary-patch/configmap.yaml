@@ -3,7 +3,7 @@ kind: ConfigMap
 metadata:
   name: canary-patch-envoy-config
 data:
-  envoy-config: |-
+  envoy-config.yaml: |-
     admin:
       address:
         socket_address:
