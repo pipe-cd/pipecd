@@ -28,10 +28,10 @@ spec:
         image: envoyproxy/envoy-alpine:v1.18.3
         imagePullPolicy: IfNotPresent
         command:
-          - /bin/sh
+          - envoy
         args:
           - -c
-          - envoy --config-yaml "$(cat /etc/envoy/envoy-config)"
+          - /etc/envoy/envoy-config.yaml
         ports:
           - containerPort: 9090
           - containerPort: 9095

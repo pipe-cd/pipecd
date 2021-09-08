@@ -13,7 +13,8 @@ spec:
           - target:
               kind: ConfigMap
               name: canary-patch-envoy-config
-              documentRoot: $.data.envoy-config
+              # Because '.' is a reserved character so we have to enclose the last path component in single quotes.
+              documentRoot: $.data.'envoy-config.yaml'
             ops:
             - op: yaml-replace
               path: $.static_resources.listeners[0].filter_chains[0].filters[0].typed_config.route_config.virtual_hosts[0].routes[0].route.weighted_clusters.clusters[0].weight
