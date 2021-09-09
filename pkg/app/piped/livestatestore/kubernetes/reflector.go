@@ -82,6 +82,7 @@ var (
 		"PodDisruptionBudget":      {},
 		"PodSecurityPolicy":        {},
 		"IngressClass":             {},
+		"Namespace":                {},
 	}
 	ignoreResourceKeys = map[string]struct{}{
 		"v1:Service:default:kubernetes":               {},
