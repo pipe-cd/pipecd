@@ -197,7 +197,7 @@
             "properties": [
               {
                 "id": "displayName",
-                "value": "go version"
+                "value": "go_version"
               }
             ]
           },
