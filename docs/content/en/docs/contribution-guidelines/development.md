@@ -16,6 +16,11 @@ You can install `bazelisk` by `go get` as the following:
 go get github.com/bazelbuild/bazelisk
 ```
 
+Then Add it to your PATH
+```
+export PATH=$PATH:$(go env GOPATH)/bin
+```
+
 or directly install its [binary](https://github.com/bazelbuild/bazelisk/releases) from the release page.
 
 ## Repositories
