@@ -81,6 +81,7 @@ var (
 		"CustomResourceDefinition": {},
 		"PodDisruptionBudget":      {},
 		"PodSecurityPolicy":        {},
+		"ResourceQuota":            {},
 		"PodTemplate":              {},
 		"IngressClass":             {},
 		"Namespace":                {},
