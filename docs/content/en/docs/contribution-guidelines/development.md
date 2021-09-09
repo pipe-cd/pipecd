@@ -17,6 +17,7 @@ go get github.com/bazelbuild/bazelisk
 ```
 
 or directly install its [binary](https://github.com/bazelbuild/bazelisk/releases) from the release page.
+For more information, you might want to read the [installation notes of `bazelisk`](https://github.com/bazelbuild/bazelisk#requirements).
 
 ## Repositories
 - [pipe](https://github.com/pipe-cd/pipe): contains all source code and documentation of PipeCD project.
