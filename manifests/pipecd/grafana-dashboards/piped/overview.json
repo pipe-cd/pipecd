@@ -8,6 +8,12 @@
         "hide": true,
         "iconColor": "rgba(0, 211, 255, 1)",
         "name": "Annotations & Alerts",
+        "target": {
+          "limit": 100,
+          "matchAny": false,
+          "tags": [],
+          "type": "dashboard"
+        },
         "type": "dashboard"
       }
     ]
@@ -15,11 +21,15 @@
   "editable": true,
   "gnetId": null,
   "graphTooltip": 0,
-  "id": 12,
+  "id": 11,
   "links": [],
   "panels": [
     {
       "datasource": null,
+      "fieldConfig": {
+        "defaults": {},
+        "overrides": []
+      },
       "gridPos": {
         "h": 1,
         "w": 24,
@@ -76,7 +86,7 @@
         "text": {},
         "textMode": "auto"
       },
-      "pluginVersion": "7.5.3",
+      "pluginVersion": "8.1.2",
       "targets": [
         {
           "exemplar": true,
@@ -96,20 +106,14 @@
           "color": {
             "mode": "palette-classic"
           },
-          "mappings": [],
-          "thresholds": {
-            "mode": "absolute",
-            "steps": [
-              {
-                "color": "green",
-                "value": null
-              },
-              {
-                "color": "red",
-                "value": 80
-              }
-            ]
-          }
+          "custom": {
+            "hideFrom": {
+              "legend": false,
+              "tooltip": false,
+              "viz": false
+            }
+          },
+          "mappings": []
         },
         "overrides": []
       },
@@ -139,7 +143,10 @@
           "fields": "",
           "values": false
         },
-        "text": {}
+        "text": {},
+        "tooltip": {
+          "mode": "single"
+        }
       },
       "pluginVersion": "7.5.3",
       "targets": [
@@ -153,10 +160,119 @@
       ],
       "title": "Running versions",
       "type": "piechart"
+    },
+    {
+      "datasource": null,
+      "description": "List all activated pipeds",
+      "fieldConfig": {
+        "defaults": {
+          "color": {
+            "mode": "thresholds"
+          },
+          "custom": {
+            "align": "auto",
+            "displayMode": "auto"
+          },
+          "mappings": [],
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "green",
+                "value": null
+              },
+              {
+                "color": "red",
+                "value": 80
+              }
+            ]
+          }
+        },
+        "overrides": [
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "version"
+            },
+            "properties": [
+              {
+                "id": "displayName",
+                "value": "go version"
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "Value"
+            },
+            "properties": [
+              {
+                "id": "displayName",
+                "value": "count"
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "project"
+            },
+            "properties": [
+              {
+                "id": "mappings",
+                "value": [
+                  {
+                    "options": {
+                      "match": "empty",
+                      "result": {
+                        "index": 0,
+                        "text": "-"
+                      }
+                    },
+                    "type": "special"
+                  }
+                ]
+              }
+            ]
+          }
+        ]
+      },
+      "gridPos": {
+        "h": 14,
+        "w": 24,
+        "x": 0,
+        "y": 9
+      },
+      "id": 8,
+      "options": {
+        "frameIndex": 6,
+        "showHeader": true,
+        "sortBy": [
+          {
+            "desc": false,
+            "displayName": "project"
+          }
+        ]
+      },
+      "pluginVersion": "8.1.2",
+      "targets": [
+        {
+          "exemplar": true,
+          "expr": "sum without (instance, job, pipecd_component) (go_info{job=\"pipecd-ops\", pipecd_component=\"piped\"})",
+          "format": "table",
+          "instant": true,
+          "interval": "",
+          "legendFormat": "",
+          "refId": "A"
+        }
+      ],
+      "title": "Piped list",
+      "type": "table"
     }
   ],
   "refresh": "1m",
-  "schemaVersion": 27,
+  "schemaVersion": 30,
   "style": "dark",
   "tags": [],
   "templating": {
@@ -170,5 +286,5 @@
   "timezone": "",
   "title": "Overview",
   "uid": "wJCVABm7k",
-  "version": 7
+  "version": 2
 }
