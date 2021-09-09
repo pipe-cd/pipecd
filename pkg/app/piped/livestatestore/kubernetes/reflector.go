@@ -81,6 +81,7 @@ var (
 		"CustomResourceDefinition": {},
 		"PodDisruptionBudget":      {},
 		"PodSecurityPolicy":        {},
+		"PodTemplate":              {},
 		"IngressClass":             {},
 	}
 	ignoreResourceKeys = map[string]struct{}{
