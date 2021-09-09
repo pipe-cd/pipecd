@@ -48,6 +48,7 @@ var (
 		"apiextensions.k8s.io":      {},
 		"rbac.authorization.k8s.io": {},
 		"policy":                    {},
+		"apiregistration.k8s.io":    {},
 	}
 	versionWhitelist = map[string]struct{}{
 		"v1":      {},
@@ -81,6 +82,7 @@ var (
 		"CustomResourceDefinition": {},
 		"PodDisruptionBudget":      {},
 		"PodSecurityPolicy":        {},
+		"APIService":               {},
 	}
 	ignoreResourceKeys = map[string]struct{}{
 		"v1:Service:default:kubernetes":               {},
