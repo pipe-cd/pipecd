@@ -200,8 +200,8 @@ func TestRender(t *testing.T) {
 
   data:
     #data.service-account.json
--   service-account.json: ***** (before)
-+   service-account.json: ***** (after)
+-   service-account.json: *****
++   service-account.json: *****
 
 
 `,
@@ -212,10 +212,14 @@ func TestRender(t *testing.T) {
 			useDiffCommand: true,
 			expected: `# 1. name="pipecd-secrets", kind="Secret", namespace="default", apiVersion="v1"
 
-  data:
-    #data.service-account.json
--   service-account.json: ***** (before)
-+   service-account.json: ***** (after)
+@@ -1,6 +1,6 @@
+ apiVersion: v1
+ data:
+- service-account.json: ***** (before)
++ service-account.json: ***** (after)
+ kind: Secret
+ metadata:
+   name: pipecd-secrets
 `,
 		},
 	}

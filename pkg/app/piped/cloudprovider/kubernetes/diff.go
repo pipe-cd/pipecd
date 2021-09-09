@@ -105,30 +105,33 @@ func (r *DiffListResult) Render(opt DiffRenderOptions) string {
 	var prints = 0
 	for _, change := range r.Changes {
 		key := change.Old.Key
-		opts := []diff.RenderOption{
-			diff.WithLeftPadding(1),
-		}
-
-		if opt.MaskSecret && key.IsSecret() {
-			opts = append(opts, diff.WithMaskPath("data"))
-		} else if opt.MaskConfigMap && key.IsConfigMap() {
-			opts = append(opts, diff.WithMaskPath("data"))
-		}
-		renderer := diff.NewRenderer(opts...)
-
 		index++
 		b.WriteString(fmt.Sprintf("# %d. %s\n\n", index, key.ReadableString()))
 
+		needMaskingData := (opt.MaskSecret && key.IsSecret()) || (opt.MaskConfigMap && key.IsConfigMap())
+
 		if opt.UseDiffCommand {
-			d, err := diffByCommand(diffCommand, change.Old, change.New)
+			old, new := change.Old, change.New
+			if needMaskingData {
+				old, new = maskSensitiveValues(old, new)
+			}
+			d, err := diffByCommand(diffCommand, old, new)
 			if err != nil {
 				b.WriteString(fmt.Sprintf("An error occurred while rendering diff (%v)", err))
 			} else {
 				b.Write(d)
 			}
 		} else {
+			opts := []diff.RenderOption{
+				diff.WithLeftPadding(1),
+			}
+			if needMaskingData {
+				opts = append(opts, diff.WithMaskPath("data"))
+			}
+			renderer := diff.NewRenderer(opts...)
 			b.WriteString(renderer.Render(change.Diff.Nodes()))
 		}
+
 		b.WriteString("\n")
 
 		prints++
@@ -142,6 +145,11 @@ func (r *DiffListResult) Render(opt DiffRenderOptions) string {
 	}
 
 	return b.String()
+}
+
+// TODO: Implement this.
+func maskSensitiveValues(old, new Manifest) (Manifest, Manifest) {
+	return old, new
 }
 
 func diffByCommand(command string, old, new Manifest) ([]byte, error) {
