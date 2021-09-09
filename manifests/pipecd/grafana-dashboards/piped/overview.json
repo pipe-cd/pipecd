@@ -192,6 +192,18 @@
           {
             "matcher": {
               "id": "byName",
+              "options": "piped"
+            },
+            "properties": [
+              {
+                "id": "displayName",
+                "value": "id"
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
               "options": "version"
             },
             "properties": [
