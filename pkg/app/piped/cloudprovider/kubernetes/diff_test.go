@@ -184,3 +184,55 @@ func TestDiffByCommand(t *testing.T) {
 		})
 	}
 }
+
+func TestRender(t *testing.T) {
+	testcases := []struct {
+		name           string
+		manifests      string
+		useDiffCommand bool
+		expected       string
+	}{
+		{
+			name:           "mask secret on change secret in case not using unix diff command",
+			manifests:      "testdata/diff_redact.yaml",
+			useDiffCommand: false,
+			expected: `# 1. name="pipecd-secrets", kind="Secret", namespace="default", apiVersion="v1"
+
+  data:
+    #data.service-account.json
+-   service-account.json: ***** (before)
++   service-account.json: ***** (after)
+
+
+`,
+		},
+		{
+			name:           "mask secret on change secret in case using unix diff command",
+			manifests:      "testdata/diff_redact.yaml",
+			useDiffCommand: true,
+			expected: `# 1. name="pipecd-secrets", kind="Secret", namespace="default", apiVersion="v1"
+
+  data:
+    #data.service-account.json
+-   service-account.json: ***** (before)
++   service-account.json: ***** (after)
+`,
+		},
+	}
+
+	for _, tc := range testcases {
+		t.Run(tc.name, func(t *testing.T) {
+			manifests, err := LoadManifestsFromYAMLFile(tc.manifests)
+			require.NoError(t, err)
+			require.Equal(t, 2, len(manifests))
+
+			res, _ := DiffList([]Manifest{manifests[0]}, []Manifest{manifests[1]})
+			details := res.Render(DiffRenderOptions{
+				MaskSecret:     true,
+				UseDiffCommand: tc.useDiffCommand,
+			})
+
+			assert.Equal(t, tc.expected, details)
+		})
+	}
+}
