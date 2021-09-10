@@ -563,6 +563,7 @@ func (s *scheduler) reportDeploymentStatusChanged(ctx context.Context, status mo
 		}
 		err = fmt.Errorf("failed to report deployment status to control-plane: %v", err)
 	}
+
 	return err
 }
 
@@ -648,6 +649,7 @@ func (s *scheduler) reportMostRecentlySuccessfulDeployment(ctx context.Context) 
 		}
 		err = fmt.Errorf("failed to report most recent successful deployment: %w", err)
 	}
+
 	return err
 }
 
