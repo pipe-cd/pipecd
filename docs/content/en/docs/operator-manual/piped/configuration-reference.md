@@ -164,8 +164,8 @@ Must be one of the following structs:
 
 | Field | Type | Description | Required |
 |-|-|-|-|
-| checkInterval | duration | Interval to fetch the latest event and compare it with one defined in EventWatcher config files. Defaults to `5m`. | No |
-| gitRepos | [][EventWatcherGitRepo](/docs/operator-manual/piped/configuration-reference/#eventwatchergitrepo) | List of settings for each git repository | No |
+| checkInterval | duration | Interval to fetch the latest event and compare it with one defined in EventWatcher config files. Defaults to `1m`. | No |
+| gitRepos | [][EventWatcherGitRepo](/docs/operator-manual/piped/configuration-reference/#eventwatchergitrepo) | The configuration list of git repositories to be observed. Only the repositories in this list will be observed by Piped. | No |
 
 ### EventWatcherGitRepo
 
