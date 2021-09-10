@@ -1,4 +1,40 @@
 {
+  "__inputs": [
+    {
+      "name": "DS_PROMETHEUS",
+      "label": "Prometheus",
+      "description": "",
+      "type": "datasource",
+      "pluginId": "prometheus",
+      "pluginName": "Prometheus"
+    }
+  ],
+  "__requires": [
+    {
+      "type": "grafana",
+      "id": "grafana",
+      "name": "Grafana",
+      "version": "8.1.2"
+    },
+    {
+      "type": "panel",
+      "id": "graph",
+      "name": "Graph (old)",
+      "version": ""
+    },
+    {
+      "type": "datasource",
+      "id": "prometheus",
+      "name": "Prometheus",
+      "version": "1.0.0"
+    },
+    {
+      "type": "panel",
+      "id": "stat",
+      "name": "Stat",
+      "version": ""
+    }
+  ],
   "annotations": {
     "list": [
       {
@@ -8,6 +44,12 @@
         "hide": true,
         "iconColor": "rgba(0, 211, 255, 1)",
         "name": "Annotations & Alerts",
+        "target": {
+          "limit": 100,
+          "matchAny": false,
+          "tags": [],
+          "type": "dashboard"
+        },
         "type": "dashboard"
       }
     ]
@@ -16,12 +58,16 @@
   "editable": true,
   "gnetId": null,
   "graphTooltip": 0,
-  "id": 10,
-  "iteration": 1627285073084,
+  "id": null,
+  "iteration": 1631263133313,
   "links": [],
   "panels": [
     {
       "datasource": null,
+      "fieldConfig": {
+        "defaults": {},
+        "overrides": []
+      },
       "gridPos": {
         "h": 1,
         "w": 24,
@@ -76,7 +122,7 @@
         "text": {},
         "textMode": "auto"
       },
-      "pluginVersion": "7.5.3",
+      "pluginVersion": "8.1.2",
       "targets": [
         {
           "exemplar": true,
@@ -91,7 +137,7 @@
       "type": "stat"
     },
     {
-      "datasource": "Prometheus",
+      "datasource": "${DS_PROMETHEUS}",
       "description": "Note: Once Grafana v8.1 got released, we can use the new feature that allows us to leverage query result as a threshold: https://github.com/pipe-cd/pipe/issues/2263",
       "fieldConfig": {
         "defaults": {
@@ -137,7 +183,7 @@
         "text": {},
         "textMode": "auto"
       },
-      "pluginVersion": "7.5.3",
+      "pluginVersion": "8.1.2",
       "targets": [
         {
           "exemplar": true,
@@ -164,11 +210,7 @@
       "bars": false,
       "dashLength": 10,
       "dashes": false,
-      "datasource": "Prometheus",
-      "fieldConfig": {
-        "defaults": {},
-        "overrides": []
-      },
+      "datasource": "${DS_PROMETHEUS}",
       "fill": 1,
       "fillGradient": 0,
       "gridPos": {
@@ -195,7 +237,7 @@
         "alertThreshold": true
       },
       "percentage": false,
-      "pluginVersion": "7.5.3",
+      "pluginVersion": "8.1.2",
       "pointradius": 2,
       "points": false,
       "renderer": "flot",
@@ -257,6 +299,10 @@
     {
       "collapsed": false,
       "datasource": null,
+      "fieldConfig": {
+        "defaults": {},
+        "overrides": []
+      },
       "gridPos": {
         "h": 1,
         "w": 24,
@@ -273,12 +319,8 @@
       "bars": false,
       "dashLength": 10,
       "dashes": false,
-      "datasource": "Prometheus",
+      "datasource": "${DS_PROMETHEUS}",
       "description": "CPU usage per Pod",
-      "fieldConfig": {
-        "defaults": {},
-        "overrides": []
-      },
       "fill": 1,
       "fillGradient": 0,
       "gridPos": {
@@ -305,7 +347,7 @@
         "alertThreshold": true
       },
       "percentage": false,
-      "pluginVersion": "7.5.3",
+      "pluginVersion": "8.1.2",
       "pointradius": 2,
       "points": false,
       "renderer": "flot",
@@ -369,11 +411,7 @@
       "bars": false,
       "dashLength": 10,
       "dashes": false,
-      "datasource": "Prometheus",
-      "fieldConfig": {
-        "defaults": {},
-        "overrides": []
-      },
+      "datasource": "${DS_PROMETHEUS}",
       "fill": 1,
       "fillGradient": 0,
       "gridPos": {
@@ -400,7 +438,7 @@
         "alertThreshold": true
       },
       "percentage": false,
-      "pluginVersion": "7.5.3",
+      "pluginVersion": "8.1.2",
       "pointradius": 2,
       "points": false,
       "renderer": "flot",
@@ -466,10 +504,6 @@
       "dashes": false,
       "datasource": null,
       "description": "Number of open file descriptors for the container.",
-      "fieldConfig": {
-        "defaults": {},
-        "overrides": []
-      },
       "fill": 1,
       "fillGradient": 0,
       "gridPos": {
@@ -496,7 +530,7 @@
         "alertThreshold": true
       },
       "percentage": false,
-      "pluginVersion": "7.5.3",
+      "pluginVersion": "8.1.2",
       "pointradius": 2,
       "points": false,
       "renderer": "flot",
@@ -561,10 +595,6 @@
       "dashes": false,
       "datasource": null,
       "description": "Number of bytes that are consumed by the container on this filesystem.",
-      "fieldConfig": {
-        "defaults": {},
-        "overrides": []
-      },
       "fill": 1,
       "fillGradient": 0,
       "gridPos": {
@@ -591,7 +621,7 @@
         "alertThreshold": true
       },
       "percentage": false,
-      "pluginVersion": "7.5.3",
+      "pluginVersion": "8.1.2",
       "pointradius": 2,
       "points": false,
       "renderer": "flot",
@@ -651,19 +681,15 @@
     }
   ],
   "refresh": "10s",
-  "schemaVersion": 27,
+  "schemaVersion": 30,
   "style": "dark",
   "tags": [],
   "templating": {
     "list": [
       {
         "allValue": null,
-        "current": {
-          "selected": false,
-          "text": "pipecd-server",
-          "value": "pipecd-server"
-        },
-        "datasource": "Prometheus",
+        "current": {},
+        "datasource": "${DS_PROMETHEUS}",
         "definition": "label_values(service)",
         "description": null,
         "error": null,
@@ -672,268 +698,16 @@
         "label": null,
         "multi": false,
         "name": "service",
-        "options": [
-          {
-            "selected": false,
-            "text": "artifact-monitor",
-            "value": "artifact-monitor"
-          },
-          {
-            "selected": false,
-            "text": "bluegreen",
-            "value": "bluegreen"
-          },
-          {
-            "selected": false,
-            "text": "bluegreen-canary",
-            "value": "bluegreen-canary"
-          },
-          {
-            "selected": false,
-            "text": "calico",
-            "value": "calico"
-          },
-          {
-            "selected": false,
-            "text": "calico-node-vertical-autoscaler",
-            "value": "calico-node-vertical-autoscaler"
-          },
-          {
-            "selected": false,
-            "text": "calico-typha",
-            "value": "calico-typha"
-          },
-          {
-            "selected": false,
-            "text": "calico-typha-horizontal-autoscaler",
-            "value": "calico-typha-horizontal-autoscaler"
-          },
-          {
-            "selected": false,
-            "text": "calico-typha-vertical-autoscaler",
-            "value": "calico-typha-vertical-autoscaler"
-          },
-          {
-            "selected": false,
-            "text": "canary",
-            "value": "canary"
-          },
-          {
-            "selected": false,
-            "text": "canary-by-config-change",
-            "value": "canary-by-config-change"
-          },
-          {
-            "selected": false,
-            "text": "canary-secondary",
-            "value": "canary-secondary"
-          },
-          {
-            "selected": false,
-            "text": "default-http-backend",
-            "value": "default-http-backend"
-          },
-          {
-            "selected": false,
-            "text": "event-exporter-gke",
-            "value": "event-exporter-gke"
-          },
-          {
-            "selected": false,
-            "text": "fluentbit",
-            "value": "fluentbit"
-          },
-          {
-            "selected": false,
-            "text": "gke-metrics",
-            "value": "gke-metrics"
-          },
-          {
-            "selected": false,
-            "text": "helm-local-chart",
-            "value": "helm-local-chart"
-          },
-          {
-            "selected": false,
-            "text": "helm-remote-chart-helloworld",
-            "value": "helm-remote-chart-helloworld"
-          },
-          {
-            "selected": false,
-            "text": "helm-remote-git-chart-helloworld",
-            "value": "helm-remote-git-chart-helloworld"
-          },
-          {
-            "selected": false,
-            "text": "ip-masq",
-            "value": "ip-masq"
-          },
-          {
-            "selected": false,
-            "text": "kube-dns",
-            "value": "kube-dns"
-          },
-          {
-            "selected": false,
-            "text": "kube-dns-autoscaler",
-            "value": "kube-dns-autoscaler"
-          },
-          {
-            "selected": false,
-            "text": "kube-proxy-gke-pipecd-dev-primary-nodepool",
-            "value": "kube-proxy-gke-pipecd-dev-primary-nodepool"
-          },
-          {
-            "selected": false,
-            "text": "kubernetes",
-            "value": "kubernetes"
-          },
-          {
-            "selected": false,
-            "text": "kustomize-local-base",
-            "value": "kustomize-local-base"
-          },
-          {
-            "selected": false,
-            "text": "kustomize-remote-base-helloworld",
-            "value": "kustomize-remote-base-helloworld"
-          },
-          {
-            "selected": false,
-            "text": "l7-default-backend",
-            "value": "l7-default-backend"
-          },
-          {
-            "selected": false,
-            "text": "master-piped",
-            "value": "master-piped"
-          },
-          {
-            "selected": false,
-            "text": "mesh-istio-bluegreen",
-            "value": "mesh-istio-bluegreen"
-          },
-          {
-            "selected": false,
-            "text": "mesh-istio-bluegreen-canary",
-            "value": "mesh-istio-bluegreen-canary"
-          },
-          {
-            "selected": false,
-            "text": "mesh-istio-canary",
-            "value": "mesh-istio-canary"
-          },
-          {
-            "selected": false,
-            "text": "metrics-server",
-            "value": "metrics-server"
-          },
-          {
-            "selected": false,
-            "text": "metrics-server-v0.3.6",
-            "value": "metrics-server-v0.3.6"
-          },
-          {
-            "selected": false,
-            "text": "pipecd",
-            "value": "pipecd"
-          },
-          {
-            "selected": false,
-            "text": "pipecd-cache",
-            "value": "pipecd-cache"
-          },
-          {
-            "selected": false,
-            "text": "pipecd-gateway",
-            "value": "pipecd-gateway"
-          },
-          {
-            "selected": false,
-            "text": "pipecd-grafana",
-            "value": "pipecd-grafana"
-          },
-          {
-            "selected": false,
-            "text": "pipecd-kube-state-metrics",
-            "value": "pipecd-kube-state-metrics"
-          },
-          {
-            "selected": false,
-            "text": "pipecd-minio",
-            "value": "pipecd-minio"
-          },
-          {
-            "selected": false,
-            "text": "pipecd-mysql",
-            "value": "pipecd-mysql"
-          },
-          {
-            "selected": false,
-            "text": "pipecd-ops",
-            "value": "pipecd-ops"
-          },
-          {
-            "selected": false,
-            "text": "pipecd-prometheus-alertmanager",
-            "value": "pipecd-prometheus-alertmanager"
-          },
-          {
-            "selected": false,
-            "text": "pipecd-prometheus-node",
-            "value": "pipecd-prometheus-node"
-          },
-          {
-            "selected": false,
-            "text": "pipecd-prometheus-node-exporter",
-            "value": "pipecd-prometheus-node-exporter"
-          },
-          {
-            "selected": false,
-            "text": "pipecd-prometheus-server",
-            "value": "pipecd-prometheus-server"
-          },
-          {
-            "selected": true,
-            "text": "pipecd-server",
-            "value": "pipecd-server"
-          },
-          {
-            "selected": false,
-            "text": "piped",
-            "value": "piped"
-          },
-          {
-            "selected": false,
-            "text": "simple",
-            "value": "simple"
-          },
-          {
-            "selected": false,
-            "text": "simple-sealed-secret",
-            "value": "simple-sealed-secret"
-          },
-          {
-            "selected": false,
-            "text": "site",
-            "value": "site"
-          },
-          {
-            "selected": false,
-            "text": "stackdriver-metadata-agent-cluster-level",
-            "value": "stackdriver-metadata-agent-cluster-level"
-          }
-        ],
+        "options": [],
         "query": {
           "query": "label_values(service)",
           "refId": "StandardVariableQuery"
         },
-        "refresh": 0,
+        "refresh": 1,
         "regex": "",
         "skipUrlSync": false,
         "sort": 0,
         "tagValuesQuery": "",
-        "tags": [],
         "tagsQuery": "",
         "type": "query",
         "useTags": false
@@ -948,5 +722,5 @@
   "timezone": "",
   "title": "Pod",
   "uid": "MMo5vRi7k",
-  "version": 14
+  "version": 2
 }
