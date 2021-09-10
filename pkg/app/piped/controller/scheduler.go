@@ -563,6 +563,7 @@ func (s *scheduler) reportDeploymentStatusChanged(ctx context.Context, status mo
 		}
 		err = fmt.Errorf("failed to report deployment status to control-plane: %v", err)
 	}
+
 	return err
 }
 
@@ -642,12 +643,14 @@ func (s *scheduler) reportMostRecentlySuccessfulDeployment(ctx context.Context) 
 		retry = pipedservice.NewRetry(10)
 	)
 
+	// Update deployment status on remote.
 	for retry.WaitNext(ctx) {
 		if _, err = s.apiClient.ReportApplicationMostRecentDeployment(ctx, req); err == nil {
 			return nil
 		}
 		err = fmt.Errorf("failed to report most recent successful deployment: %w", err)
 	}
+
 	return err
 }
 
