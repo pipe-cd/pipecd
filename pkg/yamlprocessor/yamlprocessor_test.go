@@ -212,6 +212,15 @@ foo: new-text`),
 			wantErr: false,
 		},
 		{
+			name: "valid value with comment at the same line",
+			yml: `foo: bar # comments
+			`,
+			path:    "$.foo",
+			value:   "new-text",
+			want:    []byte("foo: new-text # comments"),
+			wantErr: false,
+		},
+		{
 			name: "array in block style",
 			yml: `foo:
   - bar

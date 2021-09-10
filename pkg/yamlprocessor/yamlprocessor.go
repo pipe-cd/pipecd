@@ -96,6 +96,10 @@ func (p *Processor) ReplaceString(path, value string) error {
 		Value:    value,
 	}
 
+	if c := oldNode.GetComment(); c != nil {
+		newNode.SetComment(c)
+	}
+
 	return yamlPath.ReplaceWithNode(p.file, newNode)
 }
 
