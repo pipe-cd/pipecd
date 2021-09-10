@@ -249,7 +249,7 @@ message CreateDeploymentResponse {
 message ReportDeploymentPlannedRequest {
     string deployment_id = 1 [(validate.rules).string.min_len = 1];
     // Simple description about what this deployment does.
-    // Empty means nothing has changed complared to when the deployment was created.
+    // Empty means nothing has changed compared to when the deployment was created.
     string summary = 2;
     // The human-readable description why the deployment is at current status.
     string status_reason = 3;
@@ -258,7 +258,7 @@ message ReportDeploymentPlannedRequest {
     // The application version this deployment is trying to deploy.
     string version = 5;
     // The planned stages.
-    // Empty means nothing has changed complared to when the deployment was created.
+    // Empty means nothing has changed compared to when the deployment was created.
     repeated pipe.model.PipelineStage stages = 6;
 }
 
