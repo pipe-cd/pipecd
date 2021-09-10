@@ -82,7 +82,10 @@ var (
 		"CustomResourceDefinition":       {},
 		"PodDisruptionBudget":            {},
 		"PodSecurityPolicy":              {},
+		"ResourceQuota":                  {},
+		"PodTemplate":                    {},
 		"IngressClass":                   {},
+		"Namespace":                      {},
 		"MutatingWebhookConfiguration":   {},
 		"ValidatingWebhookConfiguration": {},
 	}
