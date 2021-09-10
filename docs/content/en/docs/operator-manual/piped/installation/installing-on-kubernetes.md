@@ -51,7 +51,7 @@ This way requires installing cluster-level resources. Piped installed with this 
   ``` console
   helm repo update
 
-  helm upgrade -i dev-piped pipecd/piped --version={VERSION} --namespace={NAMESPACE} \
+  helm upgrade -i dev-piped pipecd/piped --version={{< blocks/latest_version >}} --namespace={NAMESPACE} \
     --set-file config.data={PATH_TO_PIPED_CONFIG_FILE} \
     --set-file secret.pipedKey.data={PATH_TO_PIPED_KEY_FILE} \
     --set-file secret.sshKey.data={PATH_TO_PRIVATE_SSH_KEY_FILE}
@@ -98,7 +98,7 @@ Most parts are identical to the previous way, but some are slightly different.
   ``` console
   helm repo update
 
-  helm upgrade -i dev-piped pipecd/piped --version={VERSION} --namespace={NAMESPACE} \
+  helm upgrade -i dev-piped pipecd/piped --version={{< blocks/latest_version >}} --namespace={NAMESPACE} \
     --set-file config.data={PATH_TO_PIPED_CONFIG_FILE} \
     --set-file secret.pipedKey.data={PATH_TO_PIPED_KEY_FILE} \
     --set-file secret.sshKey.data={PATH_TO_PRIVATE_SSH_KEY_FILE} \
@@ -113,7 +113,7 @@ but before that version, the assigned user is missing in that file. That blocks 
 Therefore if you are running on OpenShift with a version before 4.2, please use gcr.io/pipecd/piped-okd image with the following command:
 
 ``` console
-  helm upgrade -i dev-piped pipecd/piped --version={VERSION} --namespace={NAMESPACE} \
+  helm upgrade -i dev-piped pipecd/piped --version={{< blocks/latest_version >}} --namespace={NAMESPACE} \
     --set-file config.data={PATH_TO_PIPED_CONFIG_FILE} \
     --set-file secret.pipedKey.data={PATH_TO_PIPED_KEY_FILE} \
     --set-file secret.sshKey.data={PATH_TO_PRIVATE_SSH_KEY_FILE} \
