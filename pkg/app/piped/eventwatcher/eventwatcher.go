@@ -41,7 +41,7 @@ import (
 const (
 	// The latest value and Event name are supposed.
 	defaultCommitMessageFormat = "Replace values with %q set by Event %q"
-	defaultCheckInterval       = 5 * time.Minute
+	defaultCheckInterval       = time.Minute
 )
 
 type Watcher interface {
