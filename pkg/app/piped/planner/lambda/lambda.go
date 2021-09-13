@@ -81,8 +81,16 @@ func (p *Planner) Plan(ctx context.Context, in planner.Input) (out planner.Outpu
 		return
 	}
 
+	// When no pipeline was configured, perform the quick sync.
+	if cfg.Pipeline == nil || len(cfg.Pipeline.Stages) == 0 {
+		out.SyncStrategy = model.SyncStrategy_QUICK_SYNC
+		out.Stages = buildQuickSyncPipeline(cfg.Input.AutoRollback, time.Now())
+		out.Summary = fmt.Sprintf("Quick sync to deploy image %s and configure all traffic to it (pipeline was not configured)", out.Version)
+		return
+	}
+
 	// Force to use pipeline when the alwaysUsePipeline field was configured.
-	if cfg.Planner.AlwaysUsePipeline && cfg.Pipeline != nil {
+	if cfg.Planner.AlwaysUsePipeline {
 		out.SyncStrategy = model.SyncStrategy_PIPELINE
 		out.Stages = buildProgressivePipeline(cfg.Pipeline, cfg.Input.AutoRollback, time.Now())
 		out.Summary = "Sync with the specified pipeline (alwaysUsePipeline was set)"
@@ -95,14 +103,6 @@ func (p *Planner) Plan(ctx context.Context, in planner.Input) (out planner.Outpu
 		out.SyncStrategy = model.SyncStrategy_QUICK_SYNC
 		out.Stages = buildQuickSyncPipeline(cfg.Input.AutoRollback, time.Now())
 		out.Summary = fmt.Sprintf("Quick sync to deploy image %s and configure all traffic to it (it seems this is the first deployment)", out.Version)
-		return
-	}
-
-	// When no pipeline was configured, perform the quick sync.
-	if cfg.Pipeline == nil || len(cfg.Pipeline.Stages) == 0 {
-		out.SyncStrategy = model.SyncStrategy_QUICK_SYNC
-		out.Stages = buildQuickSyncPipeline(cfg.Input.AutoRollback, time.Now())
-		out.Summary = fmt.Sprintf("Quick sync to deploy image %s and configure all traffic to it (pipeline was not configured)", out.Version)
 		return
 	}
 
