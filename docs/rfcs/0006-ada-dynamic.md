@@ -20,7 +20,7 @@ There are two types of strategies:
 
 ### Canary Analysis
 
-In Canary Analysis, it compares Canary and Baseline (or Primary if Baseline isn't be launched).
+In Canary Analysis, it compares Canary and Baseline (or Primary if Baseline isn't launched).
 The user needs to prepare a query for Canary and a query for Baseline.
 For how to generate the queries, we discuss later.
 
