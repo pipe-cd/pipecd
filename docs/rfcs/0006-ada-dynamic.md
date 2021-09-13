@@ -75,11 +75,14 @@ To generate queries for the specific variants, we offer the two types of args th
 
 **Built-in args**
 
-One of the most useful build-in arg is `{{ .Variant }}`. With it, we can easily distinguish variants like `foo{variant="{{ .Variant }}"}`
+One of the most useful built-in arg is `{{ .Variant.Name }}`. With it, we can easily distinguish variants like `foo{variant="{{ .Variant.Name }}"}`
+
+In the future, we plan to add more built-in args like `{{ .Variant.K8s.PodName }}` and `{{ .Variant.K8s.ServiceName }}` and so on.
 
 **Custom args**
 
-Other than built-in args, we can set custom one. With `baselineArgs` and `canaryArgs` etc, we can feel free to set args. You can see the examples on the next section.
+Other than built-in args, we can set custom one. With `baselineArgs` and `canaryArgs` etc, we can feel free to set args, and they can be reffered as `{{ .Variant.CustomArgs }}`.
+You can see the examples on the next section.
 
 ### Examples
 This section shows some examples for each strategies.
@@ -152,7 +155,7 @@ spec:
               provider: my-prometheus
               interval: 10m
               deviation: HIGH
-              query: rate(cpu_usage_total{app="foo", variant="{{ .Variant }}"}[10m])
+              query: rate(cpu_usage_total{app="foo", variant="{{ .Variant.Name }}"}[10m])
       - name: K8S_PRIMARY_ROLLOUT
       - name: K8S_CANARY_CLEAN
       - name: K8S_BASELINE_CLEAN
@@ -177,6 +180,31 @@ You can reffer the defined custom args by using `{{ .Args.xxx }}`.
               canaryArgs: 
                 bar: 2
 ```
+
+**The pattern of using custom args in AnalysisTemplate:**
+
+```yaml
+apiVersion: pipecd.dev/v1beta1
+kind: AnalysisTemplate
+spec:
+  metrics:
+    http_error_rate:
+      strategy: CANARY_BASELINE
+      provider: my-prometheus
+      interval: 10m
+      deviation: HIGH
+      query: |
+        sum without(status) (rate(http_requests_total{status=~"5.*", job="{{ .App.Name }}", bar="{{ .Variant.CustomArgs.bar }}"}[10m]))
+        /
+        sum without(status) (rate(http_requests_total{job="{{ .App.Name }}, bar="{{ .Variant.CustomArgs.bar }}"}[10m]))
+      baselineArgs:
+        bar: baz
+      canaryArgs:
+        bar: quz
+```
+
+Originally, AnalysisTemplate was made for commonalizing ADA settings between applications. However this time, we're attempting to add a brand new template to commonalize ADA settings between variants.
+In order to prevent users from being confused, we put all variables for variants under `{{ .Variant. }}`.
 
 # Unresolved questions
 There are a couple of unresolved questions.
@@ -225,7 +253,7 @@ For example, for Prometheus, some kind of relabel_configs is needed like:
             regex: variant
 ```
 
-(8/30 updates) we settled on offering both built-in args (like `{{ .Variant }}`) and custom args (like `{{ .Args.foo }}`).
+(8/30 updates) we settled on offering both built-in args (like `{{ .Variant }}`) and custom args (like `{{ .Variant.CustomArgs }}`).
 
 ### About static ADA
 Does it need to still have the static ADA feature?
