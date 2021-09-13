@@ -82,7 +82,7 @@ func (p *Planner) Plan(ctx context.Context, in planner.Input) (out planner.Outpu
 	}
 
 	// Force to use pipeline when the alwaysUsePipeline field was configured.
-	if cfg.Planner.AlwaysUsePipeline && cfg.Pipeline == nil {
+	if cfg.Planner.AlwaysUsePipeline && cfg.Pipeline != nil {
 		out.SyncStrategy = model.SyncStrategy_PIPELINE
 		out.Stages = buildProgressivePipeline(cfg.Pipeline, cfg.Input.AutoRollback, time.Now())
 		out.Summary = "Sync with the specified pipeline (alwaysUsePipeline was set)"
