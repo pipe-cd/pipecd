@@ -81,6 +81,14 @@ func (p *Planner) Plan(ctx context.Context, in planner.Input) (out planner.Outpu
 		return
 	}
 
+	// Force to use pipeline when the alwaysUsePipeline field was configured.
+	if cfg.Planner.AlwaysUsePipeline && cfg.Pipeline != nil {
+		out.SyncStrategy = model.SyncStrategy_PIPELINE
+		out.Stages = buildProgressivePipeline(cfg.Pipeline, cfg.Input.AutoRollback, time.Now())
+		out.Summary = "Sync with the specified pipeline (alwaysUsePipeline was set)"
+		return
+	}
+
 	// If this is the first time to deploy this application or it was unable to retrieve last successful commit,
 	// we perform the quick sync strategy.
 	if in.MostRecentSuccessfulCommitHash == "" {
@@ -95,14 +103,6 @@ func (p *Planner) Plan(ctx context.Context, in planner.Input) (out planner.Outpu
 		out.SyncStrategy = model.SyncStrategy_QUICK_SYNC
 		out.Stages = buildQuickSyncPipeline(cfg.Input.AutoRollback, time.Now())
 		out.Summary = fmt.Sprintf("Quick sync to deploy image %s and configure all traffic to it (pipeline was not configured)", out.Version)
-		return
-	}
-
-	// Force to use pipeline when the alwaysUsePipeline field was configured.
-	if cfg.Planner.AlwaysUsePipeline {
-		out.SyncStrategy = model.SyncStrategy_PIPELINE
-		out.Stages = buildProgressivePipeline(cfg.Pipeline, cfg.Input.AutoRollback, time.Now())
-		out.Summary = "Sync with the specified pipeline (alwaysUsePipeline was set)"
 		return
 	}
 
