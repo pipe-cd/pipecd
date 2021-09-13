@@ -66,9 +66,9 @@ The newly added configuration fields are the following. All are optional, so no 
 |-|-|-|-|
 | strategy | string | The strategy name. One of `THRESHOLD` or `PREVIOUS` or `CANARY_BASELINE` or `CANARY_PRIMARY` is available. Defaults to `THRESHOLD`. | No |
 | deviation | string | The stage fails on deviation in the specified direction. One of `LOW` or `HIGH` or `EITHER` is available. This can be used only for `PREVIOUS`, `CANARY_BASELINE` or `CANARY_PRIMARY`. Defaults to `EITHER`. | No |
-| baselineArgs | map[string][string] | The custom arguments to be populated for the Baseline query. They can be reffered as `{{ .Variant.CustomArgs.xxx }}`. | No |
-| canaryArgs | map[string][string] | The custom arguments to be populated for the Canary query. They can be reffered as `{{ .Variant.CustomArgs.xxx }}`. | No |
-| primaryArgs | map[string][string] | The custom arguments to be populated for the Primary query. They can be reffered as `{{ .Variant.CustomArgs.xxx }}`. | No |
+| baselineArgs | map[string][string] | The custom arguments to be populated for the Baseline query. They can be reffered as `{{ .VariantArgs.xxx }}`. | No |
+| canaryArgs | map[string][string] | The custom arguments to be populated for the Canary query. They can be reffered as `{{ .VariantArgs.xxx }}`. | No |
+| primaryArgs | map[string][string] | The custom arguments to be populated for the Primary query. They can be reffered as `{{ .VariantArgs.xxx }}`. | No |
 
 ### Args
 To generate queries for the specific variants, we offer the two types of args that are passed into a query, built-in and custom args.
@@ -81,7 +81,7 @@ In the future, we plan to add more built-in args like `{{ .Variant.K8s.PodName }
 
 **Custom args**
 
-Other than built-in args, we can set custom one. With `baselineArgs` and `canaryArgs` etc, we can feel free to set args, and they can be reffered as `{{ .Variant.CustomArgs }}`.
+Other than built-in args, we can set custom one. With `baselineArgs` and `canaryArgs` etc, we can feel free to set args, and they can be reffered as `{{ .VariantArgs }}`.
 You can see the examples on the next section.
 
 ### Examples
@@ -155,7 +155,7 @@ spec:
               provider: my-prometheus
               interval: 10m
               deviation: HIGH
-              query: rate(cpu_usage_total{app="foo", variant="{{ .Variant.Name }}"}[10m])
+              query: rate(cpu_usage_total{app="foo", variant="{{ .BuiltInArgs.Variant.Name }}"}[10m])
       - name: K8S_PRIMARY_ROLLOUT
       - name: K8S_CANARY_CLEAN
       - name: K8S_BASELINE_CLEAN
@@ -163,7 +163,7 @@ spec:
 
 **The pattern of using custom args:**
 
-You can reffer the defined custom args by using `{{ .Variant.CustomArgs.xxx }}`.
+You can reffer the defined custom args by using `{{ .VariantArgs.xxx }}`.
 
 ```yaml
       - name: ANALYSIS
@@ -174,7 +174,7 @@ You can reffer the defined custom args by using `{{ .Variant.CustomArgs.xxx }}`.
               provider: my-prometheus
               interval: 10m
               deviation: HIGH
-              query: rate(cpu_usage_total{app="foo", bar="{{ .Variant.CustomArgs.bar }}"}[10m])
+              query: rate(cpu_usage_total{app="foo", bar="{{ .VariantArgs.bar }}"}[10m])
               baselineArgs:
                 bar: 1
               canaryArgs: 
@@ -194,9 +194,9 @@ spec:
       interval: 10m
       deviation: HIGH
       query: |
-        sum without(status) (rate(http_requests_total{status=~"5.*", job="{{ .App.Name }}", bar="{{ .Variant.CustomArgs.bar }}"}[10m]))
+        sum without(status) (rate(http_requests_total{status=~"5.*", job="{{ .AppArgs.Name }}", bar="{{ .VariantArgs.bar }}"}[10m]))
         /
-        sum without(status) (rate(http_requests_total{job="{{ .App.Name }}, bar="{{ .Variant.CustomArgs.bar }}"}[10m]))
+        sum without(status) (rate(http_requests_total{job="{{ .AppArgs.Name }}, bar="{{ .VariantArgs.bar }}"}[10m]))
       baselineArgs:
         bar: baz
       canaryArgs:
@@ -204,7 +204,7 @@ spec:
 ```
 
 Originally, AnalysisTemplate was made for commonalizing ADA settings between applications. However this time, we're attempting to add a brand new template to commonalize ADA settings between variants.
-In order to prevent users from being confused, we put all variables for variants under `{{ .Variant. }}`.
+In order to prevent users from being confused, we add new variable groups `{{ .BuiltInArgs }}`, `{{ .VariantArgs }}`, and `{{ .AppArgs }}` (former `{{ .App }}`).
 
 # Unresolved questions
 There are a couple of unresolved questions.
