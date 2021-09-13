@@ -60,7 +60,7 @@ From this version, we look to add four strategies.
 Therefore, the those configuration fields are slightly different each other.
 
 ## Configuration
-The newly added configuration fields are the following. All are optional, so no breaking change happen for those who use static ADA already.
+The newly added configuration fields are the following. All are optional, so no breaking change happens for those who use static ADA already.
 
 | Field | Type | Description | Required |
 |-|-|-|-|
