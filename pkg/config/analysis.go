@@ -20,6 +20,17 @@ import (
 	"strings"
 )
 
+const (
+	StrategyThreshold      = "THRESHOLD"
+	StrategyPrevious       = "PREVIOUS"
+	StrategyCanaryBaseline = "CANARY_BASELINE"
+	StrategyCanaryPrimary  = "CANARY_PRIMARY"
+
+	DeviationEither = "EITHER"
+	DeviationHigh   = "HIGH"
+	DeviationLow    = "LOW"
+)
+
 // AnalysisMetrics contains common configurable values for deployment analysis with metrics.
 type AnalysisMetrics struct {
 	// The unique name of provider defined in the Piped Configuration.
@@ -44,6 +55,22 @@ type AnalysisMetrics struct {
 	// How long after which the query times out.
 	// Default is 30s.
 	Timeout Duration `json:"timeout"`
+
+	// The strategy name. One of THRESHOLD or PREVIOUS or CANARY_BASELINE or CANARY_PRIMARY is available.
+	// Defaults to THRESHOLD.
+	Strategy string `json:"strategy" default:"THRESHOLD"`
+	// The stage fails on deviation in the specified direction. One of LOW or HIGH or EITHER is available.
+	// This can be used only for PREVIOUS, CANARY_BASELINE or CANARY_PRIMARY. Defaults to EITHER.
+	Deviation string `json:"deviation" default:"EITHER"`
+	// The custom arguments to be populated for the Canary query.
+	// They can be reffered as {{ .VariantArgs.xxx }}.
+	CanaryArgs map[string]string `json:"canaryArgs"`
+	// The custom arguments to be populated for the Baseline query.
+	// They can be reffered as {{ .VariantArgs.xxx }}.
+	BaselineArgs map[string]string `json:"baselineArgs"`
+	// The custom arguments to be populated for the Primary query.
+	// They can be reffered as {{ .VariantArgs.xxx }}.
+	PrimaryArgs map[string]string `json:"primaryArgs"`
 }
 
 func (m *AnalysisMetrics) Validate() error {
@@ -140,19 +167,6 @@ type AnalysisHTTP struct {
 type AnalysisHeader struct {
 	Key   string `json:"key"`
 	Value string `json:"value"`
-}
-
-// AnalysisDynamic contains settings for analysis by comparing  with dynamic data.
-type AnalysisDynamic struct {
-	Metrics []AnalysisDynamicMetrics `json:"metrics"`
-	Logs    []AnalysisDynamicLog     `json:"logs"`
-	Https   []AnalysisDynamicHTTP    `json:"https"`
-}
-
-type AnalysisDynamicMetrics struct {
-	Query    string   `json:"query"`
-	Provider string   `json:"provider"`
-	Timeout  Duration `json:"timeout"`
 }
 
 type AnalysisDynamicLog struct {

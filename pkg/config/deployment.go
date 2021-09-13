@@ -320,7 +320,6 @@ type AnalysisStageOptions struct {
 	Metrics          []TemplatableAnalysisMetrics `json:"metrics"`
 	Logs             []TemplatableAnalysisLog     `json:"logs"`
 	Https            []TemplatableAnalysisHTTP    `json:"https"`
-	Dynamic          AnalysisDynamic              `json:"dynamic"`
 }
 
 func (a *AnalysisStageOptions) Validate() error {
