@@ -98,6 +98,14 @@ func (p *Planner) Plan(ctx context.Context, in planner.Input) (out planner.Outpu
 		return
 	}
 
+	// Force to use pipeline when the alwaysUsePipeline field was configured.
+	if cfg.Planner.AlwaysUsePipeline {
+		out.SyncStrategy = model.SyncStrategy_PIPELINE
+		out.Stages = buildProgressivePipeline(cfg.Pipeline, cfg.Input.AutoRollback, time.Now())
+		out.Summary = "Sync with the specified pipeline (alwaysUsePipeline was set)"
+		return
+	}
+
 	// Load service manifest at the last deployed commit to decide running version.
 	ds, err = in.RunningDSP.Get(ctx, ioutil.Discard)
 	if err == nil {
