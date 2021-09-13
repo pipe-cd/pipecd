@@ -206,6 +206,21 @@ spec:
 Originally, AnalysisTemplate was made for commonalizing ADA settings between applications. However this time, we're attempting to add a brand new template to commonalize ADA settings between variants.
 In order to prevent users from being confused, we add new variable groups `{{ .BuiltInArgs }}`, `{{ .VariantArgs }}`, and `{{ .AppArgs }}` (former `{{ .App }}`).
 
+**Breaking changes**
+
+For those who are using AnalysisTemplate, a couple of breaking changes will happen.
+
+- `{{ .App.Name }}` will be `{{ .BuiltInArgs.App.Name }}`
+- `{{ .K8s.Namespace }}` will be `{{ .BuiltInArgs.App.K8s.Namespace }}`
+- The name of the configuration field that specify args will be changed as:
+
+```yaml
+- template: 
+     name: http_error_rate
+     appArgs: # former "args"
+       foo: bar
+```
+
 # Unresolved questions
 There are a couple of unresolved questions.
 
