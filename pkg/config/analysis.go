@@ -83,9 +83,6 @@ func (m *AnalysisMetrics) Validate() error {
 	if m.Interval == 0 {
 		return fmt.Errorf("missing \"interval\" field")
 	}
-	if err := m.Expected.Validate(); err != nil {
-		return err
-	}
 	return nil
 }
 

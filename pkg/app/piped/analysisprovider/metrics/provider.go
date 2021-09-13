@@ -46,6 +46,10 @@ type DataPoint struct {
 	Value     float64
 }
 
+func (d *DataPoint) String() string {
+	return fmt.Sprintf("timestamp: %v, value: %g", time.Unix(d.Timestamp, 0), d.Value)
+}
+
 // Evaluator evaluates the response from the metrics provider.
 type Evaluator interface {
 	// InRange checks if the value is expected one.
