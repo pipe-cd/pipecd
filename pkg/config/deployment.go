@@ -28,6 +28,8 @@ const (
 )
 
 type GenericDeploymentSpec struct {
+	// Configuration used while planning deployment.
+	Planner DeploymentPlanner `json:"planner"`
 	// Forcibly use QuickSync or Pipeline when commit message matched the specified pattern.
 	CommitMatcher DeploymentCommitMatcher `json:"commitMatcher"`
 	// Pipeline for deploying progressively.
@@ -42,6 +44,12 @@ type GenericDeploymentSpec struct {
 	Timeout Duration `json:"timeout,omitempty" default:"6h"`
 	// List of encrypted secrets and targets that should be decoded before using.
 	Encryption *SecretEncryption `json:"encryption"`
+}
+
+type DeploymentPlanner struct {
+	// Disable auto-detecting to use QUICK_SYNC or PROGRESSIVE_SYNC.
+	// Always use the speficied pipeline for all deployments.
+	AlwaysUsePipeline bool `json:"alwaysUsePipeline"`
 }
 
 func (s *GenericDeploymentSpec) Validate() error {

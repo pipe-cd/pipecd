@@ -125,6 +125,14 @@ func (p *Planner) Plan(ctx context.Context, in planner.Input) (out planner.Outpu
 		return
 	}
 
+	// Force to use pipeline when the alwaysUsePipeline field was configured.
+	if cfg.Planner.AlwaysUsePipeline {
+		out.SyncStrategy = model.SyncStrategy_PIPELINE
+		out.Stages = buildProgressivePipeline(cfg.Pipeline, cfg.Input.AutoRollback, time.Now())
+		out.Summary = "Sync with the specified pipeline (alwaysUsePipeline was set)"
+		return
+	}
+
 	// This deployment is triggered by a commit with the intent to perform pipeline.
 	// Commit Matcher will be ignored when triggered by a command.
 	if p := cfg.CommitMatcher.Pipeline; p != "" && in.Trigger.Commander == "" {
