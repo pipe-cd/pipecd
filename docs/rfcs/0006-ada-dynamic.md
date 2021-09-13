@@ -66,9 +66,9 @@ The newly added configuration fields are the following. All are optional, so no 
 |-|-|-|-|
 | strategy | string | The strategy name. One of `THRESHOLD` or `PREVIOUS` or `CANARY_BASELINE` or `CANARY_PRIMARY` is available. Defaults to `THRESHOLD`. | No |
 | deviation | string | The stage fails on deviation in the specified direction. One of `LOW` or `HIGH` or `EITHER` is available. This can be used only for `PREVIOUS`, `CANARY_BASELINE` or `CANARY_PRIMARY`. Defaults to `EITHER`. | No |
-| baselineArgs | map[string][string] | The custom arguments to be populated for the Baseline query. They can be reffered as `{{ .Args.xxx }}`. | No |
-| canaryArgs | map[string][string] | The custom arguments to be populated for the Canary query. They can be reffered as `{{ .Args.xxx }}`. | No |
-| primaryArgs | map[string][string] | The custom arguments to be populated for the Primary query. They can be reffered as `{{ .Args.xxx }}`. | No |
+| baselineArgs | map[string][string] | The custom arguments to be populated for the Baseline query. They can be reffered as `{{ .Variant.CustomArgs.xxx }}`. | No |
+| canaryArgs | map[string][string] | The custom arguments to be populated for the Canary query. They can be reffered as `{{ .Variant.CustomArgs.xxx }}`. | No |
+| primaryArgs | map[string][string] | The custom arguments to be populated for the Primary query. They can be reffered as `{{ .Variant.CustomArgs.xxx }}`. | No |
 
 ### Args
 To generate queries for the specific variants, we offer the two types of args that are passed into a query, built-in and custom args.
@@ -163,7 +163,7 @@ spec:
 
 **The pattern of using custom args:**
 
-You can reffer the defined custom args by using `{{ .Args.xxx }}`.
+You can reffer the defined custom args by using `{{ .Variant.CustomArgs.xxx }}`.
 
 ```yaml
       - name: ANALYSIS
@@ -174,7 +174,7 @@ You can reffer the defined custom args by using `{{ .Args.xxx }}`.
               provider: my-prometheus
               interval: 10m
               deviation: HIGH
-              query: rate(cpu_usage_total{app="foo", bar="{{ .Args.bar }}"}[10m])
+              query: rate(cpu_usage_total{app="foo", bar="{{ .Variant.CustomArgs.bar }}"}[10m])
               baselineArgs:
                 bar: 1
               canaryArgs: 
