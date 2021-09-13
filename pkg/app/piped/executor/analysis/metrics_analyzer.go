@@ -49,11 +49,11 @@ func (a *metricsAnalyzer) run(ctx context.Context) error {
 			)
 			// FIXME: Implement ADA strategies other than THRESHOLD
 			switch a.cfg.Strategy {
-			case config.StrategyThreshold:
+			case config.AnalysisStrategyThreshold:
 				expected, err = a.analyzeWithThreshold(ctx)
-			case config.StrategyPrevious:
-			case config.StrategyCanaryBaseline:
-			case config.StrategyCanaryPrimary:
+			case config.AnalysisStrategyPrevious:
+			case config.AnalysisStrategyCanaryBaseline:
+			case config.AnalysisStrategyCanaryPrimary:
 			default:
 				return fmt.Errorf("unknown strategy %q given", a.cfg.Strategy)
 			}

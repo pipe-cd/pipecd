@@ -18,10 +18,10 @@ type fakeMetricsProvider struct {
 }
 
 func (f *fakeMetricsProvider) Type() string { return "" }
-func (f *fakeMetricsProvider) Evaluate(ctx context.Context, query string, queryRange metrics.QueryRange, evaluator metrics.Evaluator) (expected bool, reason string, err error) {
-	return false, "", nil
+func (f *fakeMetricsProvider) Evaluate(_ context.Context, _ string, _ metrics.QueryRange, _ metrics.Evaluator) (expected bool, reason string, err error) {
+	return
 }
-func (f *fakeMetricsProvider) QueryPoints(ctx context.Context, query string, queryRange metrics.QueryRange) (points []metrics.DataPoint, err error) {
+func (f *fakeMetricsProvider) QueryPoints(_ context.Context, _ string, _ metrics.QueryRange) ([]metrics.DataPoint, error) {
 	return f.points, f.err
 }
 

@@ -21,14 +21,14 @@ import (
 )
 
 const (
-	StrategyThreshold      = "THRESHOLD"
-	StrategyPrevious       = "PREVIOUS"
-	StrategyCanaryBaseline = "CANARY_BASELINE"
-	StrategyCanaryPrimary  = "CANARY_PRIMARY"
+	AnalysisStrategyThreshold      = "THRESHOLD"
+	AnalysisStrategyPrevious       = "PREVIOUS"
+	AnalysisStrategyCanaryBaseline = "CANARY_BASELINE"
+	AnalysisStrategyCanaryPrimary  = "CANARY_PRIMARY"
 
-	DeviationEither = "EITHER"
-	DeviationHigh   = "HIGH"
-	DeviationLow    = "LOW"
+	AnalysisDeviationEither = "EITHER"
+	AnalysisDeviationHigh   = "HIGH"
+	AnalysisDeviationLow    = "LOW"
 )
 
 // AnalysisMetrics contains common configurable values for deployment analysis with metrics.
