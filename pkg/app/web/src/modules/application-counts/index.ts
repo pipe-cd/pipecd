@@ -32,7 +32,6 @@ const createInitialCount = (): Record<string, number> => ({
 const createInitialCounts = (): Record<string, Record<string, number>> => ({
   [APPLICATION_KIND_TEXT[ApplicationKind.KUBERNETES]]: createInitialCount(),
   [APPLICATION_KIND_TEXT[ApplicationKind.TERRAFORM]]: createInitialCount(),
-  [APPLICATION_KIND_TEXT[ApplicationKind.CROSSPLANE]]: createInitialCount(),
   [APPLICATION_KIND_TEXT[ApplicationKind.LAMBDA]]: createInitialCount(),
   [APPLICATION_KIND_TEXT[ApplicationKind.CLOUDRUN]]: createInitialCount(),
   [APPLICATION_KIND_TEXT[ApplicationKind.ECS]]: createInitialCount(),

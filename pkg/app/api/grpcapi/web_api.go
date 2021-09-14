@@ -1444,8 +1444,6 @@ func (a *WebAPI) ListDeploymentConfigTemplates(ctx context.Context, req *webserv
 		templates = k8sDeploymentConfigTemplates
 	case model.ApplicationKind_TERRAFORM:
 		templates = terraformDeploymentConfigTemplates
-	case model.ApplicationKind_CROSSPLANE:
-		templates = crossplaneDeploymentConfigTemplates
 	case model.ApplicationKind_LAMBDA:
 		templates = lambdaDeploymentConfigTemplates
 	case model.ApplicationKind_CLOUDRUN:
