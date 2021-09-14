@@ -180,7 +180,7 @@ One of `yamlField` or `regex` is required.
 
 | Field | Type | Description | Required |
 |-|-|-|-|
-| alwaysUsePipeline | bool | Always use the specified pipeline for all deployments. Default is `false`. | No |
+| alwaysUsePipeline | bool | Always use the defined pipeline to deploy the application in all deployments. Default is `false`. | No |
 
 ## Pipeline
 
