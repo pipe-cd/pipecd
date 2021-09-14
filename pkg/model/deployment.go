@@ -154,6 +154,8 @@ func (d *Deployment) CloudProviderType() CloudProviderType {
 		return CloudProviderCloudRun
 	case ApplicationKind_LAMBDA:
 		return CloudProviderLambda
+	case ApplicationKind_ECS:
+		return CloudProviderECS
 	default:
 		return CloudProviderType(d.Kind.String())
 	}
