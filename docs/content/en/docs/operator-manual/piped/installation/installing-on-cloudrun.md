@@ -113,10 +113,10 @@ description: >
                   key: latest
   ```
 
-  Create Piped service on CloudRun with:
+  Create Piped service on CloudRun with the following command. Please note to use `no-cpu-throttling` flag to disable CPU throttling on its container.
 
   ``` console
-  gcloud beta run services replace cloudrun-piped-service.yaml
+  gcloud beta run services replace cloudrun-piped-service.yaml --no-cpu-throttling
   ```
 
   Note: Make sure that the created secret is accessible from this Piped service. See more [here](https://cloud.google.com/run/docs/configuring/secrets#access-secret).
