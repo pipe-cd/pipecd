@@ -32,14 +32,19 @@ const (
 )
 
 var (
-	ErrServiceNotFound = errors.New("not found")
+	ErrServiceNotFound  = errors.New("not found")
+	ErrRevisionNotFound = errors.New("not found")
 )
 
-type Service run.Service
+type (
+	Service  run.Service
+	Revision run.Revision
+)
 
 type Client interface {
 	Create(ctx context.Context, sm ServiceManifest) (*Service, error)
 	Update(ctx context.Context, sm ServiceManifest) (*Service, error)
+	GetRevision(ctx context.Context, name string) (*Revision, error)
 }
 
 type Registry interface {

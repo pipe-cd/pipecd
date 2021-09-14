@@ -89,9 +89,11 @@ func decideRevisionName(in *executor.Input, sm provider.ServiceManifest, commit 
 }
 
 func configureServiceManifest(in *executor.Input, sm provider.ServiceManifest, revision string, traffics []provider.RevisionTraffic) bool {
-	if err := sm.SetRevision(revision); err != nil {
-		in.LogPersister.Errorf("Unable to set revision name to service manifest (%v)", err)
-		return false
+	if revision != "" {
+		if err := sm.SetRevision(revision); err != nil {
+			in.LogPersister.Errorf("Unable to set revision name to service manifest (%v)", err)
+			return false
+		}
 	}
 
 	if err := sm.UpdateTraffic(traffics); err != nil {
@@ -99,7 +101,7 @@ func configureServiceManifest(in *executor.Input, sm provider.ServiceManifest, r
 		return false
 	}
 
-	in.LogPersister.Info("Successfully configured revision and traffic percentages to the service manifest")
+	in.LogPersister.Info("Successfully prepared service manifest with traffic percentages as below:")
 	for _, t := range traffics {
 		in.LogPersister.Infof("  %s: %d", t.RevisionName, t.Percent)
 	}
@@ -107,15 +109,11 @@ func configureServiceManifest(in *executor.Input, sm provider.ServiceManifest, r
 	return true
 }
 
-func apply(ctx context.Context, in *executor.Input, cloudProviderName string, cloudProviderCfg *config.CloudProviderCloudRunConfig, sm provider.ServiceManifest) bool {
+// TODO: Replace all executor.Input arguments by LogPersister.
+func apply(ctx context.Context, in *executor.Input, client provider.Client, sm provider.ServiceManifest) bool {
 	in.LogPersister.Info("Start applying the service manifest")
-	client, err := provider.DefaultRegistry().Client(ctx, cloudProviderName, cloudProviderCfg, in.Logger)
-	if err != nil {
-		in.LogPersister.Errorf("Unable to create ClourRun client for the provider (%v)", err)
-		return false
-	}
 
-	_, err = client.Update(ctx, sm)
+	_, err := client.Update(ctx, sm)
 	if err == nil {
 		in.LogPersister.Infof("Successfully updated the service %s", sm.Name)
 		return true
@@ -135,4 +133,18 @@ func apply(ctx context.Context, in *executor.Input, cloudProviderName string, cl
 
 	in.LogPersister.Infof("Successfully created the service %s", sm.Name)
 	return true
+}
+
+func revisionExists(ctx context.Context, in *executor.Input, client provider.Client, revisionName string) (bool, error) {
+	_, err := client.GetRevision(ctx, revisionName)
+	if err == nil {
+		return true, nil
+	}
+
+	if err == provider.ErrRevisionNotFound {
+		return false, nil
+	}
+
+	in.LogPersister.Errorf("Failed while checking the existence of revision %s", revisionName)
+	return false, err
 }

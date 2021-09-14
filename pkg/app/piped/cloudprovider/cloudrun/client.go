@@ -108,22 +108,22 @@ func (c *client) Update(ctx context.Context, sm ServiceManifest) (*Service, erro
 	return (*Service)(service), nil
 }
 
-func (c *client) List(ctx context.Context) error {
+func (c *client) GetRevision(ctx context.Context, name string) (*Revision, error) {
 	var (
-		svc    = run.NewNamespacesServicesService(c.client)
-		parent = makeCloudRunParent(c.projectID)
-		call   = svc.List(parent)
+		svc  = run.NewNamespacesRevisionsService(c.client)
+		id   = makeCloudRunRevisionName(c.projectID, name)
+		call = svc.Get(id)
 	)
-
 	call.Context(ctx)
 
-	resp, err := call.Do()
+	revision, err := call.Do()
 	if err != nil {
-		return err
+		if e, ok := err.(*googleapi.Error); ok && e.Code == http.StatusNotFound {
+			return nil, ErrRevisionNotFound
+		}
+		return nil, err
 	}
-
-	fmt.Println(resp)
-	return nil
+	return (*Revision)(revision), nil
 }
 
 func makeCloudRunParent(projectID string) string {
@@ -132,6 +132,10 @@ func makeCloudRunParent(projectID string) string {
 
 func makeCloudRunServiceName(projectID, serviceID string) string {
 	return fmt.Sprintf("namespaces/%s/services/%s", projectID, serviceID)
+}
+
+func makeCloudRunRevisionName(projectID, revisionID string) string {
+	return fmt.Sprintf("namespaces/%s/revisions/%s", projectID, revisionID)
 }
 
 func manifestToRunService(sm ServiceManifest) (*run.Service, error) {
