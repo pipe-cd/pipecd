@@ -20,6 +20,7 @@ spec:
 | Field | Type | Description | Required |
 |-|-|-|-|
 | input | [KubernetesDeploymentInput](/docs/user-guide/configuration-reference/#kubernetesdeploymentinput) | Input for Kubernetes deployment such as kubectl version, helm version, manifests filter... | No |
+| planner | [DeploymentPlanner](/docs/user-guide/configuration-reference/#deploymentplanner) | Configuration for planner used while planning deployment. | No |
 | commitMatcher | [CommitMatcher](/docs/user-guide/configuration-reference/#commitmatcher) | Forcibly use QuickSync or Pipeline when commit message matched the specified pattern. | No |
 | quickSync | [KubernetesQuickSync](/docs/user-guide/configuration-reference/#kubernetesquicksync) | Configuration for quick sync. | No |
 | pipeline | [Pipeline](/docs/user-guide/configuration-reference/#pipeline) | Pipeline for deploying progressively. | No |
@@ -44,6 +45,7 @@ spec:
 | Field | Type | Description | Required |
 |-|-|-|-|
 | input | [TerraformDeploymentInput](/docs/user-guide/configuration-reference/#terraformdeploymentinput) | Input for Terraform deployment such as terraform version, workspace... | No |
+| planner | [DeploymentPlanner](/docs/user-guide/configuration-reference/#deploymentplanner) | Configuration for planner used while planning deployment. | No |
 | quickSync | [TerraformQuickSync](/docs/user-guide/configuration-reference/#terraformquicksync) | Configuration for quick sync. | No |
 | pipeline | [Pipeline](/docs/user-guide/configuration-reference/#pipeline) | Pipeline for deploying progressively. | No |
 | sealedSecrets | [][SealedSecretMapping](/docs/user-guide/configuration-reference/#sealedsecretmapping) | The list of sealed secrets should be decrypted. | No |
@@ -64,6 +66,7 @@ spec:
 | Field | Type | Description | Required |
 |-|-|-|-|
 | input | [CloudRunDeploymentInput](/docs/user-guide/configuration-reference/#cloudrundeploymentinput) | Input for CloudRun deployment such as docker image... | No |
+| planner | [DeploymentPlanner](/docs/user-guide/configuration-reference/#deploymentplanner) | Configuration for planner used while planning deployment. | No |
 | quickSync | [CloudRunQuickSync](/docs/user-guide/configuration-reference/#cloudrunquicksync) | Configuration for quick sync. | No |
 | pipeline | [Pipeline](/docs/user-guide/configuration-reference/#pipeline) | Pipeline for deploying progressively. | No |
 | triggerPaths | []string | List of directories or files where their changes will trigger the deployment. Regular expression can be used. | No |
@@ -82,6 +85,7 @@ spec:
 
 | Field | Type | Description | Required |
 |-|-|-|-|
+| planner | [DeploymentPlanner](/docs/user-guide/configuration-reference/#deploymentplanner) | Configuration for planner used while planning deployment. | No |
 | quickSync | [LambdaQuickSync](/docs/user-guide/configuration-reference/#lambdaquicksync) | Configuration for quick sync. | No |
 | pipeline | [Pipeline](/docs/user-guide/configuration-reference/#pipeline) | Pipeline for deploying progressively. | No |
 | triggerPaths | []string | List of directories or files where their changes will trigger the deployment. Regular expression can be used. | No |
@@ -102,6 +106,7 @@ spec:
 | Field | Type | Description | Required |
 |-|-|-|-|
 | input | [ECSDeploymentInput](#ecsdeploymentinput) | Input for ECS deployment such as TaskDefinition, Service... | Yes |
+| planner | [DeploymentPlanner](/docs/user-guide/configuration-reference/#deploymentplanner) | Configuration for planner used while planning deployment. | No |
 | quickSync | [ECSQuickSync](/docs/user-guide/configuration-reference/#ecsquicksync) | Configuration for quick sync. | No |
 | pipeline | [Pipeline](/docs/user-guide/configuration-reference/#pipeline) | Pipeline for deploying progressively. | No |
 | triggerPaths | []string | List of directories or files where their changes will trigger the deployment. Regular expression can be used. | No |
@@ -170,6 +175,12 @@ One of `yamlField` or `regex` is required.
 | path | string | Relative path from the application directory to the sealed secret file. | Yes |
 | outFilename | string | The filename for the decrypted secret. Empty means the same name with the sealed secret file. | No |
 | outDir | string | The directory name where to put the decrypted secret. Empty means the same directory with the sealed secret file. | No |
+
+## DeploymentPlanner
+
+| Field | Type | Description | Required |
+|-|-|-|-|
+| alwaysUsePipeline | bool | Always use the specified pipeline for all deployments. Default is `false`. | No |
 
 ## Pipeline
 
