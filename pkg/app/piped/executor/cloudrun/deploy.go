@@ -89,7 +89,7 @@ func (e *deployExecutor) ensureSync(ctx context.Context) model.StageStatus {
 		return model.StageStatus_STAGE_FAILURE
 	}
 
-	revision, ok := decideRevisionName(&e.Input, sm, e.Deployment.Trigger.Commit.Hash)
+	revision, ok := decideRevisionName(sm, e.Deployment.Trigger.Commit.Hash, e.LogPersister)
 	if !ok {
 		return model.StageStatus_STAGE_FAILURE
 	}
@@ -100,11 +100,11 @@ func (e *deployExecutor) ensureSync(ctx context.Context) model.StageStatus {
 			Percent:      100,
 		},
 	}
-	if !configureServiceManifest(&e.Input, sm, revision, traffics) {
+	if !configureServiceManifest(sm, revision, traffics, e.LogPersister) {
 		return model.StageStatus_STAGE_FAILURE
 	}
 
-	if !apply(ctx, &e.Input, e.client, sm) {
+	if !apply(ctx, e.client, sm, e.LogPersister) {
 		return model.StageStatus_STAGE_FAILURE
 	}
 
@@ -147,7 +147,7 @@ func (e *deployExecutor) ensurePromote(ctx context.Context) model.StageStatus {
 		return model.StageStatus_STAGE_FAILURE
 	}
 
-	lastDeployedRevision, ok := decideRevisionName(&e.Input, lastDeployedSM, e.Deployment.RunningCommitHash)
+	lastDeployedRevision, ok := decideRevisionName(lastDeployedSM, e.Deployment.RunningCommitHash, e.LogPersister)
 	if !ok {
 		return model.StageStatus_STAGE_FAILURE
 	}
@@ -158,7 +158,7 @@ func (e *deployExecutor) ensurePromote(ctx context.Context) model.StageStatus {
 		return model.StageStatus_STAGE_FAILURE
 	}
 
-	revision, ok := decideRevisionName(&e.Input, sm, e.Deployment.Trigger.Commit.Hash)
+	revision, ok := decideRevisionName(sm, e.Deployment.Trigger.Commit.Hash, e.LogPersister)
 	if !ok {
 		return model.StageStatus_STAGE_FAILURE
 	}
@@ -174,7 +174,7 @@ func (e *deployExecutor) ensurePromote(ctx context.Context) model.StageStatus {
 		},
 	}
 
-	exist, err := revisionExists(ctx, &e.Input, e.client, revision)
+	exist, err := revisionExists(ctx, e.client, revision, e.LogPersister)
 	if err != nil {
 		return model.StageStatus_STAGE_FAILURE
 	}
@@ -185,11 +185,11 @@ func (e *deployExecutor) ensurePromote(ctx context.Context) model.StageStatus {
 		e.LogPersister.Infof("Revision %s was already registered", revision)
 	}
 
-	if !configureServiceManifest(&e.Input, sm, newRevision, traffics) {
+	if !configureServiceManifest(sm, newRevision, traffics, e.LogPersister) {
 		return model.StageStatus_STAGE_FAILURE
 	}
 
-	if !apply(ctx, &e.Input, e.client, sm) {
+	if !apply(ctx, e.client, sm, e.LogPersister) {
 		return model.StageStatus_STAGE_FAILURE
 	}
 

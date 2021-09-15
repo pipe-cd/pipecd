@@ -82,7 +82,7 @@ func (e *rollbackExecutor) ensureRollback(ctx context.Context) model.StageStatus
 		return model.StageStatus_STAGE_FAILURE
 	}
 
-	revision, ok := decideRevisionName(&e.Input, sm, e.Deployment.RunningCommitHash)
+	revision, ok := decideRevisionName(sm, e.Deployment.RunningCommitHash, e.LogPersister)
 	if !ok {
 		return model.StageStatus_STAGE_FAILURE
 	}
@@ -93,11 +93,11 @@ func (e *rollbackExecutor) ensureRollback(ctx context.Context) model.StageStatus
 			Percent:      100,
 		},
 	}
-	if !configureServiceManifest(&e.Input, sm, revision, traffics) {
+	if !configureServiceManifest(sm, revision, traffics, e.LogPersister) {
 		return model.StageStatus_STAGE_FAILURE
 	}
 
-	if !apply(ctx, &e.Input, e.client, sm) {
+	if !apply(ctx, e.client, sm, e.LogPersister) {
 		return model.StageStatus_STAGE_FAILURE
 	}
 
