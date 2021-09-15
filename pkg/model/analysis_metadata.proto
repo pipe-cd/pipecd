@@ -21,7 +21,4 @@ import "validate/validate.proto";
 
 message AnalysisMetadata {
     int64 startTime  = 1 [(validate.rules).int64.gt = 0];
-    int64 duration  = 2 [(validate.rules).int64.gt = 0];
-    int64 interval = 3 [(validate.rules).int64.gt = 0];
-    string query = 4 [(validate.rules).string.min_len = 1];
 }

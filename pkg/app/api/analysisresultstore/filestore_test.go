@@ -53,17 +53,11 @@ func TestFileStoreGet(t *testing.T) {
 			applicationID: "application-id",
 
 			content: `{
-				"startTime": 1590000000,
-				"duration": 3600,
-				"interval": 300,
-				"query": "foo"
+				"startTime": 1590000000
 			}`,
 
 			expected: &model.AnalysisMetadata{
 				StartTime: 1590000000,
-				Duration:  3600,
-				Interval:  300,
-				Query:     "foo",
 			},
 		},
 	}
