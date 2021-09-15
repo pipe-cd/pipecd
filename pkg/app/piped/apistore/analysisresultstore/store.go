@@ -12,7 +12,7 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-package analysismetadatastore
+package analysisresultstore
 
 import (
 	"context"
@@ -42,7 +42,7 @@ type store struct {
 func NewStore(apiClient apiClient, logger *zap.Logger) Store {
 	return &store{
 		apiClient: apiClient,
-		logger:    logger.Named("analysis-metadata-store"),
+		logger:    logger.Named("analysis-result-store"),
 	}
 }
 

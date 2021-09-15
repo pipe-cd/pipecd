@@ -12,7 +12,7 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-package latestanalysisstore
+package analysisresultstore
 
 import (
 	"testing"
@@ -55,10 +55,10 @@ func TestCacheGet(t *testing.T) {
 			name:          "successfully getting from cache",
 			applicationID: "application-id",
 			returnData: `{
-				"start_time": 1590000000,
+				"startTime": 1590000000,
 				"duration": 3600,
 				"interval": 300,
-				"query": "foo",
+				"query": "foo"
 			}`,
 
 			expected: &model.AnalysisMetadata{

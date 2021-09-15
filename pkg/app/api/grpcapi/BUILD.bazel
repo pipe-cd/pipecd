@@ -13,9 +13,9 @@ go_library(
     importpath = "github.com/pipe-cd/pipe/pkg/app/api/grpcapi",
     visibility = ["//visibility:public"],
     deps = [
+        "//pkg/app/api/analysisresultstore:go_default_library",
         "//pkg/app/api/applicationlivestatestore:go_default_library",
         "//pkg/app/api/commandstore:go_default_library",
-        "//pkg/app/api/latestanalysisstore:go_default_library",
         "//pkg/app/api/service/apiservice:go_default_library",
         "//pkg/app/api/service/pipedservice:go_default_library",
         "//pkg/app/api/service/webservice:go_default_library",

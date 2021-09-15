@@ -12,6 +12,7 @@ go_library(
     visibility = ["//visibility:private"],
     deps = [
         "//pkg/admin:go_default_library",
+        "//pkg/app/api/analysisresultstore:go_default_library",
         "//pkg/app/api/apikeyverifier:go_default_library",
         "//pkg/app/api/applicationlivestatestore:go_default_library",
         "//pkg/app/api/commandoutputstore:go_default_library",
@@ -19,7 +20,6 @@ go_library(
         "//pkg/app/api/grpcapi:go_default_library",
         "//pkg/app/api/httpapi:go_default_library",
         "//pkg/app/api/httpapi/httpapimetrics:go_default_library",
-        "//pkg/app/api/latestanalysisstore:go_default_library",
         "//pkg/app/api/pipedverifier:go_default_library",
         "//pkg/app/api/service/webservice:go_default_library",
         "//pkg/app/api/stagelogstore:go_default_library",

@@ -12,42 +12,44 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-package latestanalysisstore
+package analysisresultstore
 
 import (
+	"context"
 	"encoding/json"
 	"fmt"
 
-	"github.com/pipe-cd/pipe/pkg/cache"
+	"github.com/pipe-cd/pipe/pkg/filestore"
 	"github.com/pipe-cd/pipe/pkg/model"
 )
 
-type analysisCache struct {
-	backend cache.Cache
+type analysisFileStore struct {
+	backend filestore.Store
 }
 
-func (c *analysisCache) Get(applicationID string) (*model.AnalysisMetadata, error) {
-	key := cacheKey(applicationID)
-	item, err := c.backend.Get(key)
+func (f *analysisFileStore) Get(ctx context.Context, applicationID string) (*model.AnalysisMetadata, error) {
+	path := buildPath(applicationID)
+
+	content, err := f.backend.Get(ctx, path)
 	if err != nil {
 		return nil, err
 	}
 	var a model.AnalysisMetadata
-	if err := json.Unmarshal(item.([]byte), &a); err != nil {
+	if err := json.Unmarshal(content, &a); err != nil {
 		return nil, err
 	}
 	return &a, nil
 }
 
-func (c *analysisCache) Put(applicationID string, analysisMetadata *model.AnalysisMetadata) error {
-	key := cacheKey(applicationID)
+func (f *analysisFileStore) Put(ctx context.Context, applicationID string, analysisMetadata *model.AnalysisMetadata) error {
+	path := buildPath(applicationID)
 	data, err := json.Marshal(analysisMetadata)
 	if err != nil {
 		return err
 	}
-	return c.backend.Put(key, data)
+	return f.backend.Put(ctx, path, data)
 }
 
-func cacheKey(applicationID string) string {
-	return fmt.Sprintf("most-recent-successful-analysis:%s", applicationID)
+func buildPath(applicationID string) string {
+	return fmt.Sprintf("most-recent-successful-analysis/%s.json", applicationID)
 }

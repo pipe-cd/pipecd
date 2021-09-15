@@ -29,6 +29,7 @@ import (
 	"golang.org/x/sync/errgroup"
 
 	"github.com/pipe-cd/pipe/pkg/admin"
+	"github.com/pipe-cd/pipe/pkg/app/api/analysisresultstore"
 	"github.com/pipe-cd/pipe/pkg/app/api/apikeyverifier"
 	"github.com/pipe-cd/pipe/pkg/app/api/applicationlivestatestore"
 	"github.com/pipe-cd/pipe/pkg/app/api/commandoutputstore"
@@ -36,7 +37,6 @@ import (
 	"github.com/pipe-cd/pipe/pkg/app/api/grpcapi"
 	"github.com/pipe-cd/pipe/pkg/app/api/httpapi"
 	"github.com/pipe-cd/pipe/pkg/app/api/httpapi/httpapimetrics"
-	"github.com/pipe-cd/pipe/pkg/app/api/latestanalysisstore"
 	"github.com/pipe-cd/pipe/pkg/app/api/pipedverifier"
 	"github.com/pipe-cd/pipe/pkg/app/api/service/webservice"
 	"github.com/pipe-cd/pipe/pkg/app/api/stagelogstore"
@@ -183,7 +183,7 @@ func (s *server) run(ctx context.Context, t cli.Telemetry) error {
 	cache := rediscache.NewTTLCache(rd, cfg.Cache.TTLDuration())
 	sls := stagelogstore.NewStore(fs, cache, t.Logger)
 	alss := applicationlivestatestore.NewStore(fs, cache, t.Logger)
-	las := latestanalysisstore.NewStore(fs, cache, t.Logger)
+	las := analysisresultstore.NewStore(fs, cache, t.Logger)
 	cmds := commandstore.NewStore(ds, cache, t.Logger)
 	is := insightstore.NewStore(fs)
 	cmdOutputStore := commandoutputstore.NewStore(fs, t.Logger)

@@ -38,23 +38,23 @@ import (
 // scheduler is a dedicated object for a specific deployment of a single application.
 type scheduler struct {
 	// Readonly deployment model.
-	deployment            *model.Deployment
-	envName               string
-	workingDir            string
-	executorRegistry      registry.Registry
-	apiClient             apiClient
-	gitClient             gitClient
-	commandLister         commandLister
-	applicationLister     applicationLister
-	liveResourceLister    liveResourceLister
-	analysisMetadataStore analysisMetadataStore
-	logPersister          logpersister.Persister
-	metadataStore         *metadataStore
-	notifier              notifier
-	secretDecrypter       secretDecrypter
-	pipedConfig           *config.PipedSpec
-	appManifestsCache     cache.Cache
-	logger                *zap.Logger
+	deployment          *model.Deployment
+	envName             string
+	workingDir          string
+	executorRegistry    registry.Registry
+	apiClient           apiClient
+	gitClient           gitClient
+	commandLister       commandLister
+	applicationLister   applicationLister
+	liveResourceLister  liveResourceLister
+	analysisResultStore analysisResultStore
+	logPersister        logpersister.Persister
+	metadataStore       *metadataStore
+	notifier            notifier
+	secretDecrypter     secretDecrypter
+	pipedConfig         *config.PipedSpec
+	appManifestsCache   cache.Cache
+	logger              *zap.Logger
 
 	targetDSP  deploysource.Provider
 	runningDSP deploysource.Provider
@@ -85,7 +85,7 @@ func newScheduler(
 	commandLister commandLister,
 	applicationLister applicationLister,
 	liveResourceLister liveResourceLister,
-	analysisMetadataStore analysisMetadataStore,
+	analysisResultStore analysisResultStore,
 	lp logpersister.Persister,
 	notifier notifier,
 	sd secretDecrypter,
@@ -104,26 +104,26 @@ func newScheduler(
 	)
 
 	s := &scheduler{
-		deployment:            d,
-		envName:               envName,
-		workingDir:            workingDir,
-		executorRegistry:      registry.DefaultRegistry(),
-		apiClient:             apiClient,
-		gitClient:             gitClient,
-		commandLister:         commandLister,
-		applicationLister:     applicationLister,
-		liveResourceLister:    liveResourceLister,
-		analysisMetadataStore: analysisMetadataStore,
-		logPersister:          lp,
-		metadataStore:         NewMetadataStore(apiClient, d),
-		notifier:              notifier,
-		secretDecrypter:       sd,
-		pipedConfig:           pipedConfig,
-		appManifestsCache:     appManifestsCache,
-		doneDeploymentStatus:  d.Status,
-		cancelledCh:           make(chan *model.ReportableCommand, 1),
-		logger:                logger,
-		nowFunc:               time.Now,
+		deployment:           d,
+		envName:              envName,
+		workingDir:           workingDir,
+		executorRegistry:     registry.DefaultRegistry(),
+		apiClient:            apiClient,
+		gitClient:            gitClient,
+		commandLister:        commandLister,
+		applicationLister:    applicationLister,
+		liveResourceLister:   liveResourceLister,
+		analysisResultStore:  analysisResultStore,
+		logPersister:         lp,
+		metadataStore:        NewMetadataStore(apiClient, d),
+		notifier:             notifier,
+		secretDecrypter:      sd,
+		pipedConfig:          pipedConfig,
+		appManifestsCache:    appManifestsCache,
+		doneDeploymentStatus: d.Status,
+		cancelledCh:          make(chan *model.ReportableCommand, 1),
+		logger:               logger,
+		nowFunc:              time.Now,
 	}
 
 	// Initialize the map of current status of all stages.
@@ -486,7 +486,7 @@ func (s *scheduler) executeStage(sig executor.StopSignal, ps model.PipelineStage
 		MetadataStore:         s.metadataStore,
 		AppManifestsCache:     s.appManifestsCache,
 		AppLiveResourceLister: alrLister,
-		LatestAnalysisStore:   s.analysisMetadataStore,
+		AnalysisResultStore:   s.analysisResultStore,
 		Logger:                s.logger,
 	}
 

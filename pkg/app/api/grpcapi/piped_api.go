@@ -25,9 +25,9 @@ import (
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
 
+	"github.com/pipe-cd/pipe/pkg/app/api/analysisresultstore"
 	"github.com/pipe-cd/pipe/pkg/app/api/applicationlivestatestore"
 	"github.com/pipe-cd/pipe/pkg/app/api/commandstore"
-	"github.com/pipe-cd/pipe/pkg/app/api/latestanalysisstore"
 	"github.com/pipe-cd/pipe/pkg/app/api/service/pipedservice"
 	"github.com/pipe-cd/pipe/pkg/app/api/stagelogstore"
 	"github.com/pipe-cd/pipe/pkg/cache"
@@ -48,7 +48,7 @@ type PipedAPI struct {
 	eventStore                datastore.EventStore
 	stageLogStore             stagelogstore.Store
 	applicationLiveStateStore applicationlivestatestore.Store
-	latestAnalysisStore       latestanalysisstore.Store
+	analysisResultStore       analysisresultstore.Store
 	commandStore              commandstore.Store
 	commandOutputPutter       commandOutputPutter
 
@@ -61,7 +61,7 @@ type PipedAPI struct {
 }
 
 // NewPipedAPI creates a new PipedAPI instance.
-func NewPipedAPI(ctx context.Context, ds datastore.DataStore, sls stagelogstore.Store, alss applicationlivestatestore.Store, las latestanalysisstore.Store, cs commandstore.Store, hc cache.Cache, cop commandOutputPutter, logger *zap.Logger) *PipedAPI {
+func NewPipedAPI(ctx context.Context, ds datastore.DataStore, sls stagelogstore.Store, alss applicationlivestatestore.Store, las analysisresultstore.Store, cs commandstore.Store, hc cache.Cache, cop commandOutputPutter, logger *zap.Logger) *PipedAPI {
 	a := &PipedAPI{
 		applicationStore:          datastore.NewApplicationStore(ds),
 		deploymentStore:           datastore.NewDeploymentStore(ds),
@@ -71,7 +71,7 @@ func NewPipedAPI(ctx context.Context, ds datastore.DataStore, sls stagelogstore.
 		eventStore:                datastore.NewEventStore(ds),
 		stageLogStore:             sls,
 		applicationLiveStateStore: alss,
-		latestAnalysisStore:       las,
+		analysisResultStore:       las,
 		commandStore:              cs,
 		commandOutputPutter:       cop,
 		appPipedCache:             memorycache.NewTTLCache(ctx, 24*time.Hour, 3*time.Hour),
@@ -856,7 +856,7 @@ func (a *PipedAPI) GetMostRecentSuccessfulAnalysisMetadata(ctx context.Context, 
 		return nil, err
 	}
 
-	metadata, err := a.latestAnalysisStore.GetMostRecentSuccessfulAnalysisMetadata(ctx, req.ApplicationId)
+	metadata, err := a.analysisResultStore.GetMostRecentSuccessfulAnalysisMetadata(ctx, req.ApplicationId)
 	if errors.Is(err, filestore.ErrNotFound) {
 		return nil, status.Error(codes.NotFound, "the most recent analysis metadata is not found")
 	}
@@ -878,7 +878,7 @@ func (a *PipedAPI) PutMostRecentSuccessfulAnalysisMetadata(ctx context.Context, 
 		return nil, err
 	}
 
-	err = a.latestAnalysisStore.PutMostRecentSuccessfulAnalysisMetadata(ctx, req.ApplicationId, req.AnalysisMetadata)
+	err = a.analysisResultStore.PutMostRecentSuccessfulAnalysisMetadata(ctx, req.ApplicationId, req.AnalysisMetadata)
 	if err != nil {
 		a.logger.Error("failed to put the most recent analysis metadata", zap.Error(err))
 		return nil, status.Error(codes.Internal, "failed to put the most recent analysis metadata")

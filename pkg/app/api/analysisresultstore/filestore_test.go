@@ -12,7 +12,7 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-package latestanalysisstore
+package analysisresultstore
 
 import (
 	"context"
@@ -53,10 +53,10 @@ func TestFileStoreGet(t *testing.T) {
 			applicationID: "application-id",
 
 			content: `{
-				"start_time": 1590000000,
+				"startTime": 1590000000,
 				"duration": 3600,
 				"interval": 300,
-				"query": "foo",
+				"query": "foo"
 			}`,
 
 			expected: &model.AnalysisMetadata{
