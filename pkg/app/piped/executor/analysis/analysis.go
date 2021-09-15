@@ -115,6 +115,7 @@ func (e *Executor) Execute(sig executor.StopSignal) model.StageStatus {
 
 	// Run analyses with metrics providers.
 	for i := range options.Metrics {
+		// FIXME: Use metrics analyzer
 		analyzer, err := e.newAnalyzerForMetrics(i, &options.Metrics[i], templateCfg)
 		if err != nil {
 			e.LogPersister.Errorf("Failed to spawn analyzer for %s: %v", options.Metrics[i].Provider, err)
@@ -337,6 +338,7 @@ func (e *Executor) getHTTPConfig(templatableCfg *config.TemplatableAnalysisHTTP,
 }
 
 // render returns a new AnalysisTemplateSpec, where deployment-specific arguments populated.
+// FIXME: Make it possible to render template for each variant
 func (e *Executor) render(templateCfg config.AnalysisTemplateSpec, customArgs map[string]string) (*config.AnalysisTemplateSpec, error) {
 	args := templateArgs{
 		Args: customArgs,
