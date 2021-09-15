@@ -86,7 +86,7 @@ type liveResourceLister interface {
 
 type analysisResultStore interface {
 	GetMostRecentSuccessfulAnalysisMetadata(ctx context.Context, applicationID string) (*model.AnalysisMetadata, error)
-	PutMostRecentSuccessfulAnalysisMetadata(ctx context.Context, applicationID string, snapshot *model.AnalysisMetadata) error
+	PutMostRecentSuccessfulAnalysisMetadata(ctx context.Context, applicationID string, analysisMetadata *model.AnalysisMetadata) error
 }
 
 type notifier interface {

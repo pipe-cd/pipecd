@@ -473,6 +473,10 @@ func (s *scheduler) executeStage(sig executor.StopSignal, ps model.PipelineStage
 		cloudProvider: app.CloudProvider,
 		appID:         app.Id,
 	}
+	aStore := appAnalysisResultStore{
+		store:         s.analysisResultStore,
+		applicationID: app.Id,
+	}
 	input := executor.Input{
 		Stage:                 &ps,
 		StageConfig:           stageConfig,
@@ -486,7 +490,7 @@ func (s *scheduler) executeStage(sig executor.StopSignal, ps model.PipelineStage
 		MetadataStore:         s.metadataStore,
 		AppManifestsCache:     s.appManifestsCache,
 		AppLiveResourceLister: alrLister,
-		AnalysisResultStore:   s.analysisResultStore,
+		AnalysisResultStore:   aStore,
 		Logger:                s.logger,
 	}
 
@@ -665,4 +669,17 @@ type stageCommandLister struct {
 
 func (s stageCommandLister) ListCommands() []model.ReportableCommand {
 	return s.lister.ListStageCommands(s.deploymentID, s.stageID)
+}
+
+type appAnalysisResultStore struct {
+	store         analysisResultStore
+	applicationID string
+}
+
+func (a appAnalysisResultStore) GetMostRecentSuccessfulAnalysisMetadata(ctx context.Context) (*model.AnalysisMetadata, error) {
+	return a.store.GetMostRecentSuccessfulAnalysisMetadata(ctx, a.applicationID)
+}
+
+func (a appAnalysisResultStore) PutMostRecentSuccessfulAnalysisMetadata(ctx context.Context, analysisMetadata *model.AnalysisMetadata) error {
+	return a.store.PutMostRecentSuccessfulAnalysisMetadata(ctx, a.applicationID, analysisMetadata)
 }
