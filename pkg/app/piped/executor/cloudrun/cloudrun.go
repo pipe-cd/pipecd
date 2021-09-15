@@ -145,6 +145,6 @@ func revisionExists(ctx context.Context, in *executor.Input, client provider.Cli
 		return false, nil
 	}
 
-	in.LogPersister.Errorf("Failed while checking the existence of revision %s", revisionName)
+	in.LogPersister.Errorf("Failed while checking the existence of revision %s (%v)", revisionName, err)
 	return false, err
 }
