@@ -84,11 +84,6 @@ export const dummyLiveStates: Record<ApplicationKind, ApplicationLiveState> = {
     applicationId: dummyApps[ApplicationKind.TERRAFORM].id,
     kind: ApplicationKind.TERRAFORM,
   },
-  [ApplicationKind.CROSSPLANE]: {
-    ...dummyApplicationLiveState,
-    applicationId: dummyApps[ApplicationKind.CROSSPLANE].id,
-    kind: ApplicationKind.CROSSPLANE,
-  },
   [ApplicationKind.LAMBDA]: {
     ...dummyApplicationLiveState,
     applicationId: dummyApps[ApplicationKind.LAMBDA].id,
