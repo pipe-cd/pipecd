@@ -60,6 +60,11 @@ type AppLiveResourceLister interface {
 	ListKubernetesResources() ([]provider.Manifest, bool)
 }
 
+type LatestAnalysisStore interface {
+	GetMostRecentSuccessfulAnalysisMetadata(ctx context.Context, applicationID string) (*model.AnalysisMetadata, error)
+	PutMostRecentSuccessfulAnalysisMetadata(ctx context.Context, applicationID string, analysisMetadata *model.AnalysisMetadata) error
+}
+
 type Input struct {
 	Stage       *model.PipelineStage
 	StageConfig config.PipelineStage
@@ -74,6 +79,7 @@ type Input struct {
 	MetadataStore         MetadataStore
 	AppManifestsCache     cache.Cache
 	AppLiveResourceLister AppLiveResourceLister
+	LatestAnalysisStore   LatestAnalysisStore
 	Logger                *zap.Logger
 }
 

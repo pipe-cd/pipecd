@@ -84,6 +84,11 @@ type liveResourceLister interface {
 	ListKubernetesAppLiveResources(cloudProvider, appID string) ([]provider.Manifest, bool)
 }
 
+type analysisMetadataStore interface {
+	GetMostRecentSuccessfulAnalysisMetadata(ctx context.Context, applicationID string) (*model.AnalysisMetadata, error)
+	PutMostRecentSuccessfulAnalysisMetadata(ctx context.Context, applicationID string, snapshot *model.AnalysisMetadata) error
+}
+
 type notifier interface {
 	Notify(event model.NotificationEvent)
 }
@@ -102,18 +107,19 @@ var (
 )
 
 type controller struct {
-	apiClient          apiClient
-	gitClient          gitClient
-	deploymentLister   deploymentLister
-	commandLister      commandLister
-	applicationLister  applicationLister
-	environmentLister  environmentLister
-	liveResourceLister liveResourceLister
-	notifier           notifier
-	secretDecrypter    secretDecrypter
-	pipedConfig        *config.PipedSpec
-	appManifestsCache  cache.Cache
-	logPersister       logpersister.Persister
+	apiClient             apiClient
+	gitClient             gitClient
+	deploymentLister      deploymentLister
+	commandLister         commandLister
+	applicationLister     applicationLister
+	environmentLister     environmentLister
+	liveResourceLister    liveResourceLister
+	analysisMetadataStore analysisMetadataStore
+	notifier              notifier
+	secretDecrypter       secretDecrypter
+	pipedConfig           *config.PipedSpec
+	appManifestsCache     cache.Cache
+	logPersister          logpersister.Persister
 
 	// Map from application ID to the planner
 	// of a pending deployment of that application.
@@ -149,6 +155,7 @@ func NewController(
 	applicationLister applicationLister,
 	environmentLister environmentLister,
 	liveResourceLister liveResourceLister,
+	analysisMetadataStore analysisMetadataStore,
 	notifier notifier,
 	sd secretDecrypter,
 	pipedConfig *config.PipedSpec,
@@ -162,18 +169,19 @@ func NewController(
 		lg = logger.Named("controller")
 	)
 	return &controller{
-		apiClient:          apiClient,
-		gitClient:          gitClient,
-		deploymentLister:   deploymentLister,
-		commandLister:      commandLister,
-		applicationLister:  applicationLister,
-		environmentLister:  environmentLister,
-		liveResourceLister: liveResourceLister,
-		notifier:           notifier,
-		secretDecrypter:    sd,
-		appManifestsCache:  appManifestsCache,
-		pipedConfig:        pipedConfig,
-		logPersister:       lp,
+		apiClient:             apiClient,
+		gitClient:             gitClient,
+		deploymentLister:      deploymentLister,
+		commandLister:         commandLister,
+		applicationLister:     applicationLister,
+		environmentLister:     environmentLister,
+		liveResourceLister:    liveResourceLister,
+		analysisMetadataStore: analysisMetadataStore,
+		notifier:              notifier,
+		secretDecrypter:       sd,
+		appManifestsCache:     appManifestsCache,
+		pipedConfig:           pipedConfig,
+		logPersister:          lp,
 
 		planners:                      make(map[string]*planner),
 		donePlanners:                  make(map[string]time.Time),
@@ -580,6 +588,7 @@ func (c *controller) startNewScheduler(ctx context.Context, d *model.Deployment)
 		c.commandLister,
 		c.applicationLister,
 		c.liveResourceLister,
+		c.analysisMetadataStore,
 		c.logPersister,
 		c.notifier,
 		c.secretDecrypter,

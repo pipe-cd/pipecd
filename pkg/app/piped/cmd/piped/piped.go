@@ -39,6 +39,7 @@ import (
 	"github.com/pipe-cd/pipe/pkg/admin"
 	"github.com/pipe-cd/pipe/pkg/app/api/service/pipedservice"
 	"github.com/pipe-cd/pipe/pkg/app/api/service/pipedservice/pipedclientfake"
+	"github.com/pipe-cd/pipe/pkg/app/piped/apistore/analysismetadatastore"
 	"github.com/pipe-cd/pipe/pkg/app/piped/apistore/applicationstore"
 	"github.com/pipe-cd/pipe/pkg/app/piped/apistore/commandstore"
 	"github.com/pipe-cd/pipe/pkg/app/piped/apistore/deploymentstore"
@@ -289,6 +290,8 @@ func (p *piped) run(ctx context.Context, t cli.Telemetry) (runErr error) {
 		eventGetter = store.Getter()
 	}
 
+	analysisMetadataStore := analysismetadatastore.NewStore(apiClient, t.Logger)
+
 	// Create memory caches.
 	appManifestsCache := memorycache.NewTTLCache(ctx, time.Hour, time.Minute)
 
@@ -343,6 +346,7 @@ func (p *piped) run(ctx context.Context, t cli.Telemetry) (runErr error) {
 			applicationLister,
 			environmentStore,
 			livestatestore.LiveResourceLister{Getter: liveStateGetter},
+			analysisMetadataStore,
 			notifier,
 			decrypter,
 			cfg,

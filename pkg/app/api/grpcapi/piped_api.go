@@ -27,11 +27,13 @@ import (
 
 	"github.com/pipe-cd/pipe/pkg/app/api/applicationlivestatestore"
 	"github.com/pipe-cd/pipe/pkg/app/api/commandstore"
+	"github.com/pipe-cd/pipe/pkg/app/api/latestanalysisstore"
 	"github.com/pipe-cd/pipe/pkg/app/api/service/pipedservice"
 	"github.com/pipe-cd/pipe/pkg/app/api/stagelogstore"
 	"github.com/pipe-cd/pipe/pkg/cache"
 	"github.com/pipe-cd/pipe/pkg/cache/memorycache"
 	"github.com/pipe-cd/pipe/pkg/datastore"
+	"github.com/pipe-cd/pipe/pkg/filestore"
 	"github.com/pipe-cd/pipe/pkg/model"
 	"github.com/pipe-cd/pipe/pkg/rpc/rpcauth"
 )
@@ -46,6 +48,7 @@ type PipedAPI struct {
 	eventStore                datastore.EventStore
 	stageLogStore             stagelogstore.Store
 	applicationLiveStateStore applicationlivestatestore.Store
+	latestAnalysisStore       latestanalysisstore.Store
 	commandStore              commandstore.Store
 	commandOutputPutter       commandOutputPutter
 
@@ -58,7 +61,7 @@ type PipedAPI struct {
 }
 
 // NewPipedAPI creates a new PipedAPI instance.
-func NewPipedAPI(ctx context.Context, ds datastore.DataStore, sls stagelogstore.Store, alss applicationlivestatestore.Store, cs commandstore.Store, hc cache.Cache, cop commandOutputPutter, logger *zap.Logger) *PipedAPI {
+func NewPipedAPI(ctx context.Context, ds datastore.DataStore, sls stagelogstore.Store, alss applicationlivestatestore.Store, las latestanalysisstore.Store, cs commandstore.Store, hc cache.Cache, cop commandOutputPutter, logger *zap.Logger) *PipedAPI {
 	a := &PipedAPI{
 		applicationStore:          datastore.NewApplicationStore(ds),
 		deploymentStore:           datastore.NewDeploymentStore(ds),
@@ -68,6 +71,7 @@ func NewPipedAPI(ctx context.Context, ds datastore.DataStore, sls stagelogstore.
 		eventStore:                datastore.NewEventStore(ds),
 		stageLogStore:             sls,
 		applicationLiveStateStore: alss,
+		latestAnalysisStore:       las,
 		commandStore:              cs,
 		commandOutputPutter:       cop,
 		appPipedCache:             memorycache.NewTTLCache(ctx, 24*time.Hour, 3*time.Hour),
@@ -841,6 +845,45 @@ func (a *PipedAPI) ListEvents(ctx context.Context, req *pipedservice.ListEventsR
 	return &pipedservice.ListEventsResponse{
 		Events: events,
 	}, nil
+}
+
+func (a *PipedAPI) GetMostRecentSuccessfulAnalysisMetadata(ctx context.Context, req *pipedservice.GetMostRecentSuccessfulAnalysisMetadataRequest) (*pipedservice.GetMostRecentSuccessfulAnalysisMetadataResponse, error) {
+	projectID, _, _, err := rpcauth.ExtractPipedToken(ctx)
+	if err != nil {
+		return nil, err
+	}
+	if err := a.validateAppBelongsToPiped(ctx, req.ApplicationId, projectID); err != nil {
+		return nil, err
+	}
+
+	metadata, err := a.latestAnalysisStore.GetMostRecentSuccessfulAnalysisMetadata(ctx, req.ApplicationId)
+	if errors.Is(err, filestore.ErrNotFound) {
+		return nil, status.Error(codes.NotFound, "the most recent analysis metadata is not found")
+	}
+	if err != nil {
+		a.logger.Error("failed to get the most recent analysis metadata", zap.Error(err))
+		return nil, status.Error(codes.Internal, "failed to get the most recent analysis metadata")
+	}
+	return &pipedservice.GetMostRecentSuccessfulAnalysisMetadataResponse{
+		AnalysisMetadata: metadata,
+	}, nil
+}
+
+func (a *PipedAPI) PutMostRecentSuccessfulAnalysisMetadata(ctx context.Context, req *pipedservice.PutMostRecentSuccessfulAnalysisMetadataRequest) (*pipedservice.PutMostRecentSuccessfulAnalysisMetadataResponse, error) {
+	projectID, _, _, err := rpcauth.ExtractPipedToken(ctx)
+	if err != nil {
+		return nil, err
+	}
+	if err := a.validateAppBelongsToPiped(ctx, req.ApplicationId, projectID); err != nil {
+		return nil, err
+	}
+
+	err = a.latestAnalysisStore.PutMostRecentSuccessfulAnalysisMetadata(ctx, req.ApplicationId, req.AnalysisMetadata)
+	if err != nil {
+		a.logger.Error("failed to put the most recent analysis metadata", zap.Error(err))
+		return nil, status.Error(codes.Internal, "failed to put the most recent analysis metadata")
+	}
+	return &pipedservice.PutMostRecentSuccessfulAnalysisMetadataResponse{}, nil
 }
 
 // validateAppBelongsToPiped checks if the given application belongs to the given piped.

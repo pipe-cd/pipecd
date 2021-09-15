@@ -486,4 +486,14 @@ func (c *fakeClient) ListEvents(ctx context.Context, req *pipedservice.ListEvent
 	return &pipedservice.ListEventsResponse{}, nil
 }
 
+func (a *fakeClient) GetMostRecentSuccessfulAnalysisMetadata(ctx context.Context, req *pipedservice.GetMostRecentSuccessfulAnalysisMetadataRequest, opts ...grpc.CallOption) (*pipedservice.GetMostRecentSuccessfulAnalysisMetadataResponse, error) {
+	a.logger.Info("fake client received GetMostSuccessfulAnalysisMetadata rpc", zap.Any("request", req))
+	return &pipedservice.GetMostRecentSuccessfulAnalysisMetadataResponse{}, nil
+}
+
+func (a *fakeClient) PutMostRecentSuccessfulAnalysisMetadata(ctx context.Context, req *pipedservice.PutMostRecentSuccessfulAnalysisMetadataRequest, opts ...grpc.CallOption) (*pipedservice.PutMostRecentSuccessfulAnalysisMetadataResponse, error) {
+	a.logger.Info("fake client received PutMostSuccessfulAnalysisMetadata rpc", zap.Any("request", req))
+	return &pipedservice.PutMostRecentSuccessfulAnalysisMetadataResponse{}, nil
+}
+
 var _ pipedservice.PipedServiceClient = (*fakeClient)(nil)
