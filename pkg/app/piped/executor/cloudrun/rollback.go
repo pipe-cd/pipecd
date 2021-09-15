@@ -24,6 +24,7 @@ import (
 
 type rollbackExecutor struct {
 	executor.Input
+	client provider.Client
 }
 
 func (e *rollbackExecutor) Execute(sig executor.StopSignal) model.StageStatus {
@@ -32,6 +33,18 @@ func (e *rollbackExecutor) Execute(sig executor.StopSignal) model.StageStatus {
 		originalStatus = e.Stage.Status
 		status         model.StageStatus
 	)
+
+	cpName, cpCfg, found := findCloudProvider(&e.Input)
+	if !found {
+		return model.StageStatus_STAGE_FAILURE
+	}
+
+	var err error
+	e.client, err = provider.DefaultRegistry().Client(ctx, cpName, cpCfg, e.Logger)
+	if err != nil {
+		e.LogPersister.Errorf("Unable to create ClourRun client for the provider (%v)", err)
+		return model.StageStatus_STAGE_FAILURE
+	}
 
 	switch model.Stage(e.Stage.Name) {
 	case model.StageRollback:
@@ -64,11 +77,6 @@ func (e *rollbackExecutor) ensureRollback(ctx context.Context) model.StageStatus
 		return model.StageStatus_STAGE_FAILURE
 	}
 
-	cloudProviderName, cloudProviderCfg, found := findCloudProvider(&e.Input)
-	if !found {
-		return model.StageStatus_STAGE_FAILURE
-	}
-
 	sm, ok := loadServiceManifest(&e.Input, deployCfg.Input.ServiceManifestFile, runningDS)
 	if !ok {
 		return model.StageStatus_STAGE_FAILURE
@@ -89,7 +97,7 @@ func (e *rollbackExecutor) ensureRollback(ctx context.Context) model.StageStatus
 		return model.StageStatus_STAGE_FAILURE
 	}
 
-	if !apply(ctx, &e.Input, cloudProviderName, cloudProviderCfg, sm) {
+	if !apply(ctx, &e.Input, e.client, sm) {
 		return model.StageStatus_STAGE_FAILURE
 	}
 
