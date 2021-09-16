@@ -62,12 +62,12 @@ export const ApplicationStateView: FC<ApplicationStateViewProps> = memo(
 
     useInterval(
       () => {
-        // Only fetch kubernest application.
+        // Only fetch kubernetes application.
         if (app && app.kind === ApplicationKind.KUBERNETES) {
           dispatch(fetchApplicationStateById(app.id));
         }
       },
-      // Only fetch kubernest application.
+      // Only fetch kubernetes application.
       app && app.kind === ApplicationKind.KUBERNETES && hasError === false ? FETCH_INTERVAL : null
     );
 
