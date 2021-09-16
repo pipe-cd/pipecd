@@ -1,5 +1,6 @@
 import {
   Box,
+  Link,
   Button,
   CircularProgress,
   makeStyles,
@@ -8,6 +9,7 @@ import {
 import { FC, memo } from "react";
 import { UI_TEXT_REFRESH } from "~/constants/ui-text";
 import { useAppDispatch, useAppSelector } from "~/hooks/redux";
+import { useInterval } from "~/hooks/use-interval";
 import {
   Application,
   ApplicationKind,
@@ -21,11 +23,15 @@ import {
 } from "~/modules/applications-live-state";
 import { KubernetesStateView } from "./kubernetes-state-view";
 
+const FETCH_INTERVAL = 4000;
+
 export interface ApplicationStateViewProps {
   applicationId: string;
 }
 
 const ERROR_MESSAGE = "It was unable to fetch the latest state of application.";
+const COMING_SOON_MESSAGE = "Live state for this kind of application is not yet available.";
+const FEATURE_STATUS_INTRO = "PipeCD feature status"
 const DISABLED_APPLICATION_MESSAGE =
   "This application is currently disabled. You can enable it from the application list page.";
 
@@ -42,17 +48,30 @@ export const ApplicationStateView: FC<ApplicationStateViewProps> = memo(
   function ApplicationStateView({ applicationId }) {
     const classes = useStyles();
     const dispatch = useAppDispatch();
-    const [hasError, liveState, app] = useAppSelector<
+    const [hasError, hasLiveStateError, liveState, app] = useAppSelector<
       [
+        boolean,
         boolean,
         ApplicationLiveState | undefined,
         Application.AsObject | undefined
       ]
     >((state) => [
       selectHasError(state.applicationLiveState, applicationId),
+      selectHasError(state.applicationLiveState, applicationId),
       selectLiveStateById(state.applicationLiveState, applicationId),
       selectAppById(state.applications, applicationId),
     ]);
+
+    useInterval(
+      () => {
+        // Only fetch kubernest application.
+        if (app && app.kind === ApplicationKind.KUBERNETES) {
+          dispatch(fetchApplicationStateById(app.id));
+        }
+      },
+      // Only fetch kubernest application.
+      app && app.kind === ApplicationKind.KUBERNETES && hasLiveStateError === false ? FETCH_INTERVAL : null
+    );
 
     if (app?.disabled) {
       return (
@@ -87,9 +106,24 @@ export const ApplicationStateView: FC<ApplicationStateViewProps> = memo(
 
     if (!liveState) {
       return (
-        <div className={classes.container}>
-          <CircularProgress />
-        </div>
+        <>
+          {app?.kind === ApplicationKind.KUBERNETES ? (
+            <div className={classes.container}>
+              <CircularProgress />
+            </div>
+          ) : (
+            <Box className={classes.container} flexDirection="column">
+              <Typography variant="body1">{COMING_SOON_MESSAGE}</Typography>
+              <Link
+                href="https://pipecd.dev/docs/feature-status/"
+                target="_blank"
+                rel="noreferrer"
+              >
+                {FEATURE_STATUS_INTRO}
+              </Link>
+            </Box>
+          )}
+        </>
       );
     }
 
