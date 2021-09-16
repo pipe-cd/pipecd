@@ -1,7 +1,6 @@
 import { MemoryRouter, Route } from "react-router-dom";
 import { PAGE_PATH_APPLICATIONS } from "~/constants/path";
 import { fetchApplication } from "~/modules/applications";
-import { fetchApplicationStateById } from "~/modules/applications-live-state";
 import { createStore, render } from "~~/test-utils";
 import { ApplicationDetailPage } from ".";
 
@@ -23,7 +22,6 @@ describe("ApplicationDetailPage", () => {
     );
 
     expect(store.getActions()).toMatchObject([
-      { type: fetchApplicationStateById.pending.type },
       { type: fetchApplication.pending.type },
     ]);
   });
