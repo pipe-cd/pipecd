@@ -103,7 +103,7 @@ description: >
             resources:
               limits:
                 cpu: 1000m
-                memory: 512Mi
+                memory: 2Gi
         volumes:
           - name: piped-config
             secret:
