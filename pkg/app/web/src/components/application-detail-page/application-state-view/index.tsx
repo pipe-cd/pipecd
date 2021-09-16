@@ -48,15 +48,13 @@ export const ApplicationStateView: FC<ApplicationStateViewProps> = memo(
   function ApplicationStateView({ applicationId }) {
     const classes = useStyles();
     const dispatch = useAppDispatch();
-    const [hasError, hasLiveStateError, liveState, app] = useAppSelector<
+    const [hasError, liveState, app] = useAppSelector<
       [
-        boolean,
         boolean,
         ApplicationLiveState | undefined,
         Application.AsObject | undefined
       ]
     >((state) => [
-      selectHasError(state.applicationLiveState, applicationId),
       selectHasError(state.applicationLiveState, applicationId),
       selectLiveStateById(state.applicationLiveState, applicationId),
       selectAppById(state.applications, applicationId),
@@ -70,7 +68,7 @@ export const ApplicationStateView: FC<ApplicationStateViewProps> = memo(
         }
       },
       // Only fetch kubernest application.
-      app && app.kind === ApplicationKind.KUBERNETES && hasLiveStateError === false ? FETCH_INTERVAL : null
+      app && app.kind === ApplicationKind.KUBERNETES && hasError === false ? FETCH_INTERVAL : null
     );
 
     if (app?.disabled) {
