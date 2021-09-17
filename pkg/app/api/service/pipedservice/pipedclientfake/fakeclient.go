@@ -486,4 +486,14 @@ func (c *fakeClient) ListEvents(ctx context.Context, req *pipedservice.ListEvent
 	return &pipedservice.ListEventsResponse{}, nil
 }
 
+func (a *fakeClient) GetLatestAnalysisResult(ctx context.Context, req *pipedservice.GetLatestAnalysisResultRequest, opts ...grpc.CallOption) (*pipedservice.GetLatestAnalysisResultResponse, error) {
+	a.logger.Info("fake client received GetLatestAnalysisResult rpc", zap.Any("request", req))
+	return &pipedservice.GetLatestAnalysisResultResponse{}, nil
+}
+
+func (a *fakeClient) PutLatestAnalysisResult(ctx context.Context, req *pipedservice.PutLatestAnalysisResultRequest, opts ...grpc.CallOption) (*pipedservice.PutLatestAnalysisResultResponse, error) {
+	a.logger.Info("fake client received PutLatestAnalysisResult rpc", zap.Any("request", req))
+	return &pipedservice.PutLatestAnalysisResultResponse{}, nil
+}
+
 var _ pipedservice.PipedServiceClient = (*fakeClient)(nil)

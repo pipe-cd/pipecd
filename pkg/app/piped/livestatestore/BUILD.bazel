@@ -8,7 +8,6 @@ go_library(
     deps = [
         "//pkg/app/piped/cloudprovider/kubernetes:go_default_library",
         "//pkg/app/piped/livestatestore/cloudrun:go_default_library",
-        "//pkg/app/piped/livestatestore/ecs:go_default_library",
         "//pkg/app/piped/livestatestore/kubernetes:go_default_library",
         "//pkg/app/piped/livestatestore/lambda:go_default_library",
         "//pkg/app/piped/livestatestore/terraform:go_default_library",

@@ -25,6 +25,7 @@ import (
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
 
+	"github.com/pipe-cd/pipe/pkg/app/api/analysisresultstore"
 	"github.com/pipe-cd/pipe/pkg/app/api/applicationlivestatestore"
 	"github.com/pipe-cd/pipe/pkg/app/api/commandstore"
 	"github.com/pipe-cd/pipe/pkg/app/api/service/pipedservice"
@@ -32,6 +33,7 @@ import (
 	"github.com/pipe-cd/pipe/pkg/cache"
 	"github.com/pipe-cd/pipe/pkg/cache/memorycache"
 	"github.com/pipe-cd/pipe/pkg/datastore"
+	"github.com/pipe-cd/pipe/pkg/filestore"
 	"github.com/pipe-cd/pipe/pkg/model"
 	"github.com/pipe-cd/pipe/pkg/rpc/rpcauth"
 )
@@ -46,6 +48,7 @@ type PipedAPI struct {
 	eventStore                datastore.EventStore
 	stageLogStore             stagelogstore.Store
 	applicationLiveStateStore applicationlivestatestore.Store
+	analysisResultStore       analysisresultstore.Store
 	commandStore              commandstore.Store
 	commandOutputPutter       commandOutputPutter
 
@@ -58,7 +61,7 @@ type PipedAPI struct {
 }
 
 // NewPipedAPI creates a new PipedAPI instance.
-func NewPipedAPI(ctx context.Context, ds datastore.DataStore, sls stagelogstore.Store, alss applicationlivestatestore.Store, cs commandstore.Store, hc cache.Cache, cop commandOutputPutter, logger *zap.Logger) *PipedAPI {
+func NewPipedAPI(ctx context.Context, ds datastore.DataStore, sls stagelogstore.Store, alss applicationlivestatestore.Store, las analysisresultstore.Store, cs commandstore.Store, hc cache.Cache, cop commandOutputPutter, logger *zap.Logger) *PipedAPI {
 	a := &PipedAPI{
 		applicationStore:          datastore.NewApplicationStore(ds),
 		deploymentStore:           datastore.NewDeploymentStore(ds),
@@ -68,6 +71,7 @@ func NewPipedAPI(ctx context.Context, ds datastore.DataStore, sls stagelogstore.
 		eventStore:                datastore.NewEventStore(ds),
 		stageLogStore:             sls,
 		applicationLiveStateStore: alss,
+		analysisResultStore:       las,
 		commandStore:              cs,
 		commandOutputPutter:       cop,
 		appPipedCache:             memorycache.NewTTLCache(ctx, 24*time.Hour, 3*time.Hour),
@@ -841,6 +845,45 @@ func (a *PipedAPI) ListEvents(ctx context.Context, req *pipedservice.ListEventsR
 	return &pipedservice.ListEventsResponse{
 		Events: events,
 	}, nil
+}
+
+func (a *PipedAPI) GetLatestAnalysisResult(ctx context.Context, req *pipedservice.GetLatestAnalysisResultRequest) (*pipedservice.GetLatestAnalysisResultResponse, error) {
+	projectID, _, _, err := rpcauth.ExtractPipedToken(ctx)
+	if err != nil {
+		return nil, err
+	}
+	if err := a.validateAppBelongsToPiped(ctx, req.ApplicationId, projectID); err != nil {
+		return nil, err
+	}
+
+	result, err := a.analysisResultStore.GetLatestAnalysisResult(ctx, req.ApplicationId)
+	if errors.Is(err, filestore.ErrNotFound) {
+		return nil, status.Error(codes.NotFound, "the most recent analysis result is not found")
+	}
+	if err != nil {
+		a.logger.Error("failed to get the most recent analysis result", zap.Error(err))
+		return nil, status.Error(codes.Internal, "failed to get the most recent analysis result")
+	}
+	return &pipedservice.GetLatestAnalysisResultResponse{
+		AnalysisResult: result,
+	}, nil
+}
+
+func (a *PipedAPI) PutLatestAnalysisResult(ctx context.Context, req *pipedservice.PutLatestAnalysisResultRequest) (*pipedservice.PutLatestAnalysisResultResponse, error) {
+	projectID, _, _, err := rpcauth.ExtractPipedToken(ctx)
+	if err != nil {
+		return nil, err
+	}
+	if err := a.validateAppBelongsToPiped(ctx, req.ApplicationId, projectID); err != nil {
+		return nil, err
+	}
+
+	err = a.analysisResultStore.PutLatestAnalysisResult(ctx, req.ApplicationId, req.AnalysisResult)
+	if err != nil {
+		a.logger.Error("failed to put the most recent analysis result", zap.Error(err))
+		return nil, status.Error(codes.Internal, "failed to put the most recent analysis result")
+	}
+	return &pipedservice.PutLatestAnalysisResultResponse{}, nil
 }
 
 // validateAppBelongsToPiped checks if the given application belongs to the given piped.

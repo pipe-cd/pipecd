@@ -28,6 +28,7 @@ import "pkg/model/logblock.proto";
 import "pkg/model/piped.proto";
 import "pkg/model/piped_stats.proto";
 import "pkg/model/event.proto";
+import "pkg/model/analysis_result.proto";
 
 // PipedService contains all RPC definitions for piped.
 // All of these RPCs are only called by piped and authenticated by using PIPED_TOKEN.
@@ -147,6 +148,12 @@ service PipedService {
 
     // ListEvents returns a list of Events inside the given range.
     rpc ListEvents(ListEventsRequest) returns (ListEventsResponse) {}
+
+    // GetLatestAnalysisResult returns the most successful analysis result.
+    rpc GetLatestAnalysisResult(GetLatestAnalysisResultRequest) returns (GetLatestAnalysisResultResponse) {}
+
+    // GetLatestAnalysisResult updates the most successful analysis result.
+    rpc PutLatestAnalysisResult(PutLatestAnalysisResultRequest) returns (PutLatestAnalysisResultResponse) {}
 }
 
 enum ListOrder {
@@ -396,4 +403,20 @@ message ListEventsRequest {
 
 message ListEventsResponse {
     repeated pipe.model.Event events = 1;
+}
+
+message GetLatestAnalysisResultRequest {
+    string application_id = 1 [(validate.rules).string.min_len = 1];
+}
+
+message GetLatestAnalysisResultResponse {
+    pipe.model.AnalysisResult analysis_result = 1 [(validate.rules).message.required = true];
+}
+
+message PutLatestAnalysisResultRequest {
+    string application_id = 1 [(validate.rules).string.min_len = 1];
+    pipe.model.AnalysisResult analysis_result = 2 [(validate.rules).message.required = true];
+}
+
+message PutLatestAnalysisResultResponse {
 }

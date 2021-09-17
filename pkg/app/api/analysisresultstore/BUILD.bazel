@@ -1,0 +1,35 @@
+load("@io_bazel_rules_go//go:def.bzl", "go_library", "go_test")
+
+go_library(
+    name = "go_default_library",
+    srcs = [
+        "filestore.go",
+        "store.go",
+    ],
+    importpath = "github.com/pipe-cd/pipe/pkg/app/api/analysisresultstore",
+    visibility = ["//visibility:public"],
+    deps = [
+        "//pkg/cache:go_default_library",
+        "//pkg/filestore:go_default_library",
+        "//pkg/model:go_default_library",
+        "@org_uber_go_zap//:go_default_library",
+    ],
+)
+
+go_test(
+    name = "go_default_test",
+    size = "small",
+    srcs = [
+        "filestore_test.go",
+        "store_test.go",
+    ],
+    embed = [":go_default_library"],
+    deps = [
+        "//pkg/filestore:go_default_library",
+        "//pkg/filestore/filestoretest:go_default_library",
+        "//pkg/model:go_default_library",
+        "@com_github_golang_mock//gomock:go_default_library",
+        "@com_github_stretchr_testify//assert:go_default_library",
+        "@com_github_stretchr_testify//require:go_default_library",
+    ],
+)
