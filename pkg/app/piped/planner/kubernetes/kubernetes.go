@@ -389,13 +389,13 @@ func checkImageChange(ns diff.Nodes) (string, bool) {
 
 	images := make([]string, 0, len(ns))
 	for _, n := range ns {
-		beforeName, beforeTag := parseContainerImage(n.StringX())
-		afterName, afterTag := parseContainerImage(n.StringY())
+		beforeImg := parseContainerImage(n.StringX())
+		afterImg := parseContainerImage(n.StringY())
 
-		if beforeName == afterName {
-			images = append(images, fmt.Sprintf("image %s from %s to %s", beforeName, beforeTag, afterTag))
+		if beforeImg.name == afterImg.name {
+			images = append(images, fmt.Sprintf("image %s from %s to %s", beforeImg.name, beforeImg.tag, afterImg.tag))
 		} else {
-			images = append(images, fmt.Sprintf("image %s:%s to %s:%s", beforeName, beforeTag, afterName, afterTag))
+			images = append(images, fmt.Sprintf("image %s:%s to %s:%s", beforeImg.name, beforeImg.tag, afterImg.name, afterImg.tag))
 		}
 	}
 	desc := fmt.Sprintf("Sync progressively because of updating %s", strings.Join(images, ", "))
@@ -415,18 +415,29 @@ func checkReplicasChange(ns diff.Nodes) (before, after string, changed bool) {
 	return
 }
 
-func parseContainerImage(image string) (name, tag string) {
+type containerImage struct {
+	name string
+	tag  string
+}
+
+func parseContainerImage(image string) (img containerImage) {
 	parts := strings.Split(image, ":")
 	if len(parts) == 2 {
-		tag = parts[1]
+		img.tag = parts[1]
 	}
 	paths := strings.Split(parts[0], "/")
-	name = paths[len(paths)-1]
+	img.name = paths[len(paths)-1]
 	return
 }
 
+// determineVersion decides running version of an application based on its manifests.
+// Currently, this shows the tag values of using container images.
+// In case only one container is used, its tag value will be returned.
+//
 // TODO: Add ability to configure how to determine application version.
 func determineVersion(manifests []provider.Manifest) (string, error) {
+	images := make([]containerImage, 0)
+
 	for _, m := range manifests {
 		if !m.Key.IsDeployment() {
 			continue
@@ -441,11 +452,29 @@ func determineVersion(manifests []provider.Manifest) (string, error) {
 		}
 
 		containers := d.Spec.Template.Spec.Containers
-		if len(containers) == 0 {
-			return versionUnknown, nil
+		for _, c := range containers {
+			images = append(images, parseContainerImage(c.Image))
 		}
-		_, tag := parseContainerImage(containers[0].Image)
-		return tag, nil
 	}
-	return versionUnknown, nil
+
+	if len(images) == 0 {
+		return versionUnknown, nil
+	}
+
+	// In case the workload is containing only one container
+	// return only the tag name.
+	if len(images) == 1 {
+		return images[0].tag, nil
+	}
+
+	// In case multiple containers are used
+	// return version in format: "name-1: tag-1, name-2: tag-2"
+	var b strings.Builder
+	b.WriteString(fmt.Sprintf("%s: %s", images[0].name, images[0].tag))
+
+	for _, img := range images[1:] {
+		b.WriteString(fmt.Sprintf(", %s: %s", img.name, img.tag))
+	}
+
+	return b.String(), nil
 }
