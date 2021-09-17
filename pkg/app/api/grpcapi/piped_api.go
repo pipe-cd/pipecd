@@ -847,7 +847,7 @@ func (a *PipedAPI) ListEvents(ctx context.Context, req *pipedservice.ListEventsR
 	}, nil
 }
 
-func (a *PipedAPI) GetMostRecentSuccessfulAnalysisMetadata(ctx context.Context, req *pipedservice.GetMostRecentSuccessfulAnalysisMetadataRequest) (*pipedservice.GetMostRecentSuccessfulAnalysisMetadataResponse, error) {
+func (a *PipedAPI) GetLatestAnalysisResult(ctx context.Context, req *pipedservice.GetLatestAnalysisResultRequest) (*pipedservice.GetLatestAnalysisResultResponse, error) {
 	projectID, _, _, err := rpcauth.ExtractPipedToken(ctx)
 	if err != nil {
 		return nil, err
@@ -856,7 +856,7 @@ func (a *PipedAPI) GetMostRecentSuccessfulAnalysisMetadata(ctx context.Context, 
 		return nil, err
 	}
 
-	metadata, err := a.analysisResultStore.GetMostRecentSuccessfulAnalysisMetadata(ctx, req.ApplicationId)
+	metadata, err := a.analysisResultStore.GetLatestAnalysisResult(ctx, req.ApplicationId)
 	if errors.Is(err, filestore.ErrNotFound) {
 		return nil, status.Error(codes.NotFound, "the most recent analysis metadata is not found")
 	}
@@ -864,12 +864,12 @@ func (a *PipedAPI) GetMostRecentSuccessfulAnalysisMetadata(ctx context.Context, 
 		a.logger.Error("failed to get the most recent analysis metadata", zap.Error(err))
 		return nil, status.Error(codes.Internal, "failed to get the most recent analysis metadata")
 	}
-	return &pipedservice.GetMostRecentSuccessfulAnalysisMetadataResponse{
-		AnalysisMetadata: metadata,
+	return &pipedservice.GetLatestAnalysisResultResponse{
+		AnalysisResult: metadata,
 	}, nil
 }
 
-func (a *PipedAPI) PutMostRecentSuccessfulAnalysisMetadata(ctx context.Context, req *pipedservice.PutMostRecentSuccessfulAnalysisMetadataRequest) (*pipedservice.PutMostRecentSuccessfulAnalysisMetadataResponse, error) {
+func (a *PipedAPI) PutLatestAnalysisResult(ctx context.Context, req *pipedservice.PutLatestAnalysisResultRequest) (*pipedservice.PutLatestAnalysisResultResponse, error) {
 	projectID, _, _, err := rpcauth.ExtractPipedToken(ctx)
 	if err != nil {
 		return nil, err
@@ -878,12 +878,12 @@ func (a *PipedAPI) PutMostRecentSuccessfulAnalysisMetadata(ctx context.Context, 
 		return nil, err
 	}
 
-	err = a.analysisResultStore.PutMostRecentSuccessfulAnalysisMetadata(ctx, req.ApplicationId, req.AnalysisMetadata)
+	err = a.analysisResultStore.PutLatestAnalysisResult(ctx, req.ApplicationId, req.AnalysisResult)
 	if err != nil {
 		a.logger.Error("failed to put the most recent analysis metadata", zap.Error(err))
 		return nil, status.Error(codes.Internal, "failed to put the most recent analysis metadata")
 	}
-	return &pipedservice.PutMostRecentSuccessfulAnalysisMetadataResponse{}, nil
+	return &pipedservice.PutLatestAnalysisResultResponse{}, nil
 }
 
 // validateAppBelongsToPiped checks if the given application belongs to the given piped.

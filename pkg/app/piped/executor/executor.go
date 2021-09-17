@@ -61,8 +61,8 @@ type AppLiveResourceLister interface {
 }
 
 type AnalysisResultStore interface {
-	GetMostRecentSuccessfulAnalysisMetadata(ctx context.Context) (*model.AnalysisMetadata, error)
-	PutMostRecentSuccessfulAnalysisMetadata(ctx context.Context, analysisMetadata *model.AnalysisMetadata) error
+	GetLatestAnalysisResult(ctx context.Context) (*model.AnalysisResult, error)
+	PutLatestAnalysisResult(ctx context.Context, analysisResult *model.AnalysisResult) error
 }
 
 type Input struct {

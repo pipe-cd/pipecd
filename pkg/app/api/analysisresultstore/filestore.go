@@ -27,23 +27,23 @@ type analysisFileStore struct {
 	backend filestore.Store
 }
 
-func (f *analysisFileStore) Get(ctx context.Context, applicationID string) (*model.AnalysisMetadata, error) {
+func (f *analysisFileStore) Get(ctx context.Context, applicationID string) (*model.AnalysisResult, error) {
 	path := buildPath(applicationID)
 
 	content, err := f.backend.Get(ctx, path)
 	if err != nil {
 		return nil, err
 	}
-	var a model.AnalysisMetadata
+	var a model.AnalysisResult
 	if err := json.Unmarshal(content, &a); err != nil {
 		return nil, err
 	}
 	return &a, nil
 }
 
-func (f *analysisFileStore) Put(ctx context.Context, applicationID string, analysisMetadata *model.AnalysisMetadata) error {
+func (f *analysisFileStore) Put(ctx context.Context, applicationID string, analysisResult *model.AnalysisResult) error {
 	path := buildPath(applicationID)
-	data, err := json.Marshal(analysisMetadata)
+	data, err := json.Marshal(analysisResult)
 	if err != nil {
 		return err
 	}
@@ -51,5 +51,5 @@ func (f *analysisFileStore) Put(ctx context.Context, applicationID string, analy
 }
 
 func buildPath(applicationID string) string {
-	return fmt.Sprintf("most-recent-successful-analysis/%s.json", applicationID)
+	return fmt.Sprintf("latest-analysis-result/%s.json", applicationID)
 }

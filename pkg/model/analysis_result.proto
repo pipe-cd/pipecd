@@ -19,6 +19,21 @@ option go_package = "github.com/pipe-cd/pipe/pkg/model";
 
 import "validate/validate.proto";
 
-message AnalysisMetadata {
-    int64 startTime  = 1 [(validate.rules).int64.gt = 0];
+/*
+enum AnalysisDataSourceType {
+    EXTERNAL = 0;
+    IN_FILE = 1;
+}
+
+message DataPoint {
+    int64 timestamp = 1 [(validate.rules).int64.gt = 0];
+    float value = 2;
+}
+*/
+
+message AnalysisResult {
+    int64 start_time  = 1 [(validate.rules).int64.gt = 0];
+    // TODO: Support previous analysis by saving the latest successful metrics
+    //AnalysisDataSourceType data_source_type = 2 [(validate.rules).enum.defined_only = true];
+    //map<string, DataPoint> metrics = 3;
 }

@@ -486,14 +486,14 @@ func (c *fakeClient) ListEvents(ctx context.Context, req *pipedservice.ListEvent
 	return &pipedservice.ListEventsResponse{}, nil
 }
 
-func (a *fakeClient) GetMostRecentSuccessfulAnalysisMetadata(ctx context.Context, req *pipedservice.GetMostRecentSuccessfulAnalysisMetadataRequest, opts ...grpc.CallOption) (*pipedservice.GetMostRecentSuccessfulAnalysisMetadataResponse, error) {
-	a.logger.Info("fake client received GetMostSuccessfulAnalysisMetadata rpc", zap.Any("request", req))
-	return &pipedservice.GetMostRecentSuccessfulAnalysisMetadataResponse{}, nil
+func (a *fakeClient) GetLatestAnalysisResult(ctx context.Context, req *pipedservice.GetLatestAnalysisResultRequest, opts ...grpc.CallOption) (*pipedservice.GetLatestAnalysisResultResponse, error) {
+	a.logger.Info("fake client received GetLatestAnalysisResult rpc", zap.Any("request", req))
+	return &pipedservice.GetLatestAnalysisResultResponse{}, nil
 }
 
-func (a *fakeClient) PutMostRecentSuccessfulAnalysisMetadata(ctx context.Context, req *pipedservice.PutMostRecentSuccessfulAnalysisMetadataRequest, opts ...grpc.CallOption) (*pipedservice.PutMostRecentSuccessfulAnalysisMetadataResponse, error) {
-	a.logger.Info("fake client received PutMostSuccessfulAnalysisMetadata rpc", zap.Any("request", req))
-	return &pipedservice.PutMostRecentSuccessfulAnalysisMetadataResponse{}, nil
+func (a *fakeClient) PutLatestAnalysisResult(ctx context.Context, req *pipedservice.PutLatestAnalysisResultRequest, opts ...grpc.CallOption) (*pipedservice.PutLatestAnalysisResultResponse, error) {
+	a.logger.Info("fake client received PutLatestAnalysisResult rpc", zap.Any("request", req))
+	return &pipedservice.PutLatestAnalysisResultResponse{}, nil
 }
 
 var _ pipedservice.PipedServiceClient = (*fakeClient)(nil)

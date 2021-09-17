@@ -28,7 +28,7 @@ import "pkg/model/logblock.proto";
 import "pkg/model/piped.proto";
 import "pkg/model/piped_stats.proto";
 import "pkg/model/event.proto";
-import "pkg/model/analysis_metadata.proto";
+import "pkg/model/analysis_result.proto";
 
 // PipedService contains all RPC definitions for piped.
 // All of these RPCs are only called by piped and authenticated by using PIPED_TOKEN.
@@ -149,11 +149,11 @@ service PipedService {
     // ListEvents returns a list of Events inside the given range.
     rpc ListEvents(ListEventsRequest) returns (ListEventsResponse) {}
 
-    // GetMostRecentSuccessfulAnalysisMetadata returns the most successful analysis metadata.
-    rpc GetMostRecentSuccessfulAnalysisMetadata(GetMostRecentSuccessfulAnalysisMetadataRequest) returns (GetMostRecentSuccessfulAnalysisMetadataResponse) {}
+    // GetLatestAnalysisResult returns the most successful analysis metadata.
+    rpc GetLatestAnalysisResult(GetLatestAnalysisResultRequest) returns (GetLatestAnalysisResultResponse) {}
 
-    // GetMostRecentSuccessfulAnalysisMetadata updates the most successful analysis metadata.
-    rpc PutMostRecentSuccessfulAnalysisMetadata(PutMostRecentSuccessfulAnalysisMetadataRequest) returns (PutMostRecentSuccessfulAnalysisMetadataResponse) {}
+    // GetLatestAnalysisResult updates the most successful analysis metadata.
+    rpc PutLatestAnalysisResult(PutLatestAnalysisResultRequest) returns (PutLatestAnalysisResultResponse) {}
 }
 
 enum ListOrder {
@@ -405,18 +405,18 @@ message ListEventsResponse {
     repeated pipe.model.Event events = 1;
 }
 
-message GetMostRecentSuccessfulAnalysisMetadataRequest {
+message GetLatestAnalysisResultRequest {
     string application_id = 1 [(validate.rules).string.min_len = 1];
 }
 
-message GetMostRecentSuccessfulAnalysisMetadataResponse {
-    pipe.model.AnalysisMetadata analysisMetadata = 1 [(validate.rules).message.required = true];
+message GetLatestAnalysisResultResponse {
+    pipe.model.AnalysisResult analysis_result = 1 [(validate.rules).message.required = true];
 }
 
-message PutMostRecentSuccessfulAnalysisMetadataRequest {
+message PutLatestAnalysisResultRequest {
     string application_id = 1 [(validate.rules).string.min_len = 1];
-    pipe.model.AnalysisMetadata analysisMetadata = 2 [(validate.rules).message.required = true];
+    pipe.model.AnalysisResult analysis_result = 2 [(validate.rules).message.required = true];
 }
 
-message PutMostRecentSuccessfulAnalysisMetadataResponse {
+message PutLatestAnalysisResultResponse {
 }

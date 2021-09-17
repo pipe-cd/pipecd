@@ -4,7 +4,7 @@ load("@io_bazel_rules_go//go:def.bzl", "go_library", "go_test")
 proto_library(
     name = "model_proto",
     srcs = [
-        "analysis_metadata.proto",
+        "analysis_result.proto",
         "apikey.proto",
         "application.proto",
         "application_live_state.proto",

@@ -183,7 +183,7 @@ func (s *server) run(ctx context.Context, t cli.Telemetry) error {
 	cache := rediscache.NewTTLCache(rd, cfg.Cache.TTLDuration())
 	sls := stagelogstore.NewStore(fs, cache, t.Logger)
 	alss := applicationlivestatestore.NewStore(fs, cache, t.Logger)
-	las := analysisresultstore.NewStore(fs, cache, t.Logger)
+	las := analysisresultstore.NewStore(fs, t.Logger)
 	cmds := commandstore.NewStore(ds, cache, t.Logger)
 	is := insightstore.NewStore(fs)
 	cmdOutputStore := commandoutputstore.NewStore(fs, t.Logger)

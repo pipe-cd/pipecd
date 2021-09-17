@@ -38,7 +38,7 @@ func TestFileStoreGet(t *testing.T) {
 		content       string
 		readerErr     error
 
-		expected    *model.AnalysisMetadata
+		expected    *model.AnalysisResult
 		expectedErr error
 	}{
 		{
@@ -56,7 +56,7 @@ func TestFileStoreGet(t *testing.T) {
 				"startTime": 1590000000
 			}`,
 
-			expected: &model.AnalysisMetadata{
+			expected: &model.AnalysisResult{
 				StartTime: 1590000000,
 			},
 		},

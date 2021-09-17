@@ -676,10 +676,10 @@ type appAnalysisResultStore struct {
 	applicationID string
 }
 
-func (a appAnalysisResultStore) GetMostRecentSuccessfulAnalysisMetadata(ctx context.Context) (*model.AnalysisMetadata, error) {
-	return a.store.GetMostRecentSuccessfulAnalysisMetadata(ctx, a.applicationID)
+func (a appAnalysisResultStore) GetLatestAnalysisResult(ctx context.Context) (*model.AnalysisResult, error) {
+	return a.store.GetLatestAnalysisResult(ctx, a.applicationID)
 }
 
-func (a appAnalysisResultStore) PutMostRecentSuccessfulAnalysisMetadata(ctx context.Context, analysisMetadata *model.AnalysisMetadata) error {
-	return a.store.PutMostRecentSuccessfulAnalysisMetadata(ctx, a.applicationID, analysisMetadata)
+func (a appAnalysisResultStore) PutLatestAnalysisResult(ctx context.Context, analysisResult *model.AnalysisResult) error {
+	return a.store.PutLatestAnalysisResult(ctx, a.applicationID, analysisResult)
 }

@@ -25,13 +25,13 @@ import (
 )
 
 type apiClient interface {
-	GetMostRecentSuccessfulAnalysisMetadata(ctx context.Context, req *pipedservice.GetMostRecentSuccessfulAnalysisMetadataRequest, opts ...grpc.CallOption) (*pipedservice.GetMostRecentSuccessfulAnalysisMetadataResponse, error)
-	PutMostRecentSuccessfulAnalysisMetadata(ctx context.Context, req *pipedservice.PutMostRecentSuccessfulAnalysisMetadataRequest, opts ...grpc.CallOption) (*pipedservice.PutMostRecentSuccessfulAnalysisMetadataResponse, error)
+	GetLatestAnalysisResult(ctx context.Context, req *pipedservice.GetLatestAnalysisResultRequest, opts ...grpc.CallOption) (*pipedservice.GetLatestAnalysisResultResponse, error)
+	PutLatestAnalysisResult(ctx context.Context, req *pipedservice.PutLatestAnalysisResultRequest, opts ...grpc.CallOption) (*pipedservice.PutLatestAnalysisResultResponse, error)
 }
 
 type Store interface {
-	GetMostRecentSuccessfulAnalysisMetadata(ctx context.Context, applicationID string) (*model.AnalysisMetadata, error)
-	PutMostRecentSuccessfulAnalysisMetadata(ctx context.Context, applicationID string, analysisMetadata *model.AnalysisMetadata) error
+	GetLatestAnalysisResult(ctx context.Context, applicationID string) (*model.AnalysisResult, error)
+	PutLatestAnalysisResult(ctx context.Context, applicationID string, analysisResult *model.AnalysisResult) error
 }
 
 type store struct {
@@ -46,19 +46,19 @@ func NewStore(apiClient apiClient, logger *zap.Logger) Store {
 	}
 }
 
-func (s *store) GetMostRecentSuccessfulAnalysisMetadata(ctx context.Context, applicationID string) (*model.AnalysisMetadata, error) {
-	resp, err := s.apiClient.GetMostRecentSuccessfulAnalysisMetadata(ctx, &pipedservice.GetMostRecentSuccessfulAnalysisMetadataRequest{ApplicationId: applicationID})
+func (s *store) GetLatestAnalysisResult(ctx context.Context, applicationID string) (*model.AnalysisResult, error) {
+	resp, err := s.apiClient.GetLatestAnalysisResult(ctx, &pipedservice.GetLatestAnalysisResultRequest{ApplicationId: applicationID})
 	if err != nil {
 		s.logger.Error("failed to get the most recent analysis metadata", zap.Error(err))
 		return nil, err
 	}
-	return resp.AnalysisMetadata, nil
+	return resp.AnalysisResult, nil
 }
 
-func (s *store) PutMostRecentSuccessfulAnalysisMetadata(ctx context.Context, applicationID string, analysisMetadata *model.AnalysisMetadata) error {
-	_, err := s.apiClient.PutMostRecentSuccessfulAnalysisMetadata(ctx, &pipedservice.PutMostRecentSuccessfulAnalysisMetadataRequest{
-		ApplicationId:    applicationID,
-		AnalysisMetadata: analysisMetadata,
+func (s *store) PutLatestAnalysisResult(ctx context.Context, applicationID string, analysisResult *model.AnalysisResult) error {
+	_, err := s.apiClient.PutLatestAnalysisResult(ctx, &pipedservice.PutLatestAnalysisResultRequest{
+		ApplicationId:  applicationID,
+		AnalysisResult: analysisResult,
 	})
 	if err != nil {
 		s.logger.Error("failed to put the most recent analysis metadata", zap.Error(err))
