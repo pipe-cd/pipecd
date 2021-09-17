@@ -6,7 +6,7 @@ import {
   makeStyles,
   Typography,
 } from "@material-ui/core";
-import { FC, memo } from "react";
+import { FC, memo, useEffect } from "react";
 import { UI_TEXT_REFRESH } from "~/constants/ui-text";
 import { useAppDispatch, useAppSelector } from "~/hooks/redux";
 import { useInterval } from "~/hooks/use-interval";
@@ -59,6 +59,12 @@ export const ApplicationStateView: FC<ApplicationStateViewProps> = memo(
       selectLiveStateById(state.applicationLiveState, applicationId),
       selectAppById(state.applications, applicationId),
     ]);
+
+    useEffect(() => {
+      if (app?.kind === ApplicationKind.KUBERNETES) {
+        dispatch(fetchApplicationStateById(app.id));
+      }
+    }, [app, dispatch]);
 
     useInterval(
       () => {
