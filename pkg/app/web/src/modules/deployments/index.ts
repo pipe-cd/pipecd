@@ -92,7 +92,7 @@ export const fetchDeploymentById = createAsyncThunk<
 const convertFilterOptions = (
   options: DeploymentFilterOptions
 ): ListDeploymentsRequest.Options.AsObject => {
-  const ops = {
+  return {
     applicationName: options.applicationName ?? "",
     applicationIdsList: options.applicationId ? [options.applicationId] : [],
     envIdsList: options.envId ? [options.envId] : [],
@@ -103,8 +103,6 @@ const convertFilterOptions = (
       ? [parseInt(options.status, 10) as DeploymentStatus]
       : [],
   };
-  console.warn("OPS", ops);
-  return ops;
 };
 
 /**
