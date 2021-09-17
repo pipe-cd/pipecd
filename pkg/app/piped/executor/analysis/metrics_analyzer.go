@@ -77,7 +77,6 @@ func (a *metricsAnalyzer) run(ctx context.Context) error {
 			case config.AnalysisStrategyThreshold:
 				expected, err = a.analyzeWithThreshold(ctx)
 			case config.AnalysisStrategyPrevious:
-				// FIXME: Measure elapsed time and give it.
 				expected, err = a.analyzeWithPrevious(ctx)
 			case config.AnalysisStrategyCanaryBaseline:
 				expected, err = a.analyzeWithCanaryBaseline(ctx)
