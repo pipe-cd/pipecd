@@ -4,6 +4,7 @@ import (
 	"testing"
 
 	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/require"
 	"k8s.io/apimachinery/pkg/apis/meta/v1/unstructured"
 
 	provider "github.com/pipe-cd/pipe/pkg/app/piped/cloudprovider/kubernetes"
@@ -392,6 +393,47 @@ func TestDecideStrategy(t *testing.T) {
 			gotProgressive, gotDesc := decideStrategy(tc.olds, tc.news, tc.workloadRefs)
 			assert.Equal(t, tc.wantProgressive, gotProgressive)
 			assert.Equal(t, tc.wantDesc, gotDesc)
+		})
+	}
+}
+
+func TestDetermineVersion(t *testing.T) {
+	testcases := []struct {
+		name          string
+		manifests     string
+		expected      string
+		expectedError error
+	}{
+		{
+			name:      "no workload",
+			manifests: "testdata/version_no_workload.yaml",
+			expected:  "unknown",
+		},
+		{
+			name:      "single container",
+			manifests: "testdata/version_single_container.yaml",
+			expected:  "v1.0.0",
+		},
+		{
+			name:      "multiple containers",
+			manifests: "testdata/version_multi_containers.yaml",
+			expected:  "helloworld: v1.0.0, my-service: v0.6.0",
+		},
+		{
+			name:      "multiple workloads",
+			manifests: "testdata/version_multi_workloads.yaml",
+			expected:  "helloworld: v1.0.0, my-service: v0.5.0",
+		},
+	}
+
+	for _, tc := range testcases {
+		t.Run(tc.name, func(t *testing.T) {
+			manifests, err := provider.LoadManifestsFromYAMLFile(tc.manifests)
+			require.NoError(t, err)
+
+			version, err := determineVersion(manifests)
+			assert.Equal(t, tc.expected, version)
+			assert.Equal(t, tc.expectedError, err)
 		})
 	}
 }
