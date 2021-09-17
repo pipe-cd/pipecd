@@ -404,21 +404,21 @@ func TestDetermineVersion(t *testing.T) {
 		expected      string
 		expectedError error
 	}{
-		// {
-		// 	name:      "no workload",
-		// 	manifests: "testdata/version_no_workload.yaml",
-		// 	expected:  "unknown",
-		// },
-		// {
-		// 	name:      "single container",
-		// 	manifests: "testdata/version_single_container.yaml",
-		// 	expected:  "v1.0.0",
-		// },
-		// {
-		// 	name:      "multiple containers",
-		// 	manifests: "testdata/version_multi_containers.yaml",
-		// 	expected:  "helloworld: v1.0.0, my-service: v0.6.0",
-		// },
+		{
+			name:      "no workload",
+			manifests: "testdata/version_no_workload.yaml",
+			expected:  "unknown",
+		},
+		{
+			name:      "single container",
+			manifests: "testdata/version_single_container.yaml",
+			expected:  "v1.0.0",
+		},
+		{
+			name:      "multiple containers",
+			manifests: "testdata/version_multi_containers.yaml",
+			expected:  "helloworld: v1.0.0, my-service: v0.6.0",
+		},
 		{
 			name:      "multiple workloads",
 			manifests: "testdata/version_multi_workloads.yaml",
