@@ -417,12 +417,12 @@ func TestDetermineVersion(t *testing.T) {
 		{
 			name:      "multiple containers",
 			manifests: "testdata/version_multi_containers.yaml",
-			expected:  "helloworld: v1.0.0, my-service: v0.6.0",
+			expected:  "v1.0.0 (helloworld), v0.6.0 (my-service)",
 		},
 		{
 			name:      "multiple workloads",
 			manifests: "testdata/version_multi_workloads.yaml",
-			expected:  "helloworld: v1.0.0, my-service: v0.5.0",
+			expected:  "v1.0.0 (helloworld), v0.5.0 (my-service)",
 		},
 	}
 
