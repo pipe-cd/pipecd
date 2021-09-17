@@ -115,7 +115,7 @@ func (e *Executor) Execute(sig executor.StopSignal) model.StageStatus {
 
 	// Run analyses with metrics providers.
 	for i := range options.Metrics {
-		// FIXME: Use metrics analyzer
+		// TODO: Use metrics analyzer to perform ADA for each strategy
 		analyzer, err := e.newAnalyzerForMetrics(i, &options.Metrics[i], templateCfg)
 		if err != nil {
 			e.LogPersister.Errorf("Failed to spawn analyzer for %s: %v", options.Metrics[i].Provider, err)
@@ -157,8 +157,16 @@ func (e *Executor) Execute(sig executor.StopSignal) model.StageStatus {
 	}
 
 	status := executor.DetermineStageStatus(sig.Signal(), e.Stage.Status, model.StageStatus_STAGE_SUCCESS)
-	if status == model.StageStatus_STAGE_SUCCESS {
-		e.LogPersister.Success("All analyses were successful.")
+	if status != model.StageStatus_STAGE_SUCCESS {
+		return status
+	}
+
+	e.LogPersister.Success("All analyses were successful.")
+	err = e.AnalysisResultStore.PutLatestAnalysisResult(ctx, &model.AnalysisResult{
+		StartTime: e.startTime.Unix(),
+	})
+	if err != nil {
+		e.Logger.Error("failed to send the analysis metadata")
 	}
 	return status
 }
@@ -338,7 +346,10 @@ func (e *Executor) getHTTPConfig(templatableCfg *config.TemplatableAnalysisHTTP,
 }
 
 // render returns a new AnalysisTemplateSpec, where deployment-specific arguments populated.
-// FIXME: Make it possible to render template for each variant
+//
+// TODO: Change Template Args reference name
+//   Use .BuiltInArgs.App.Name instead of .App.Name
+//   Besides, we'd prefer to keep the variables for variant as is.
 func (e *Executor) render(templateCfg config.AnalysisTemplateSpec, customArgs map[string]string) (*config.AnalysisTemplateSpec, error) {
 	args := templateArgs{
 		Args: customArgs,

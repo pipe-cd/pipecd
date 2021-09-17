@@ -33,6 +33,9 @@ const (
 
 // AnalysisMetrics contains common configurable values for deployment analysis with metrics.
 type AnalysisMetrics struct {
+	// The strategy name. One of THRESHOLD or PREVIOUS or CANARY_BASELINE or CANARY_PRIMARY is available.
+	// Defaults to THRESHOLD.
+	Strategy string `json:"strategy" default:"THRESHOLD"`
 	// The unique name of provider defined in the Piped Configuration.
 	// Required field.
 	Provider string `json:"provider"`
@@ -40,7 +43,7 @@ type AnalysisMetrics struct {
 	// Required field.
 	Query string `json:"query"`
 	// The expected query result.
-	// Required field.
+	// Required field for the THRESHOLD strategy.
 	Expected AnalysisExpected `json:"expected"`
 	// Run a query at this intervals.
 	// Required field.
@@ -56,9 +59,6 @@ type AnalysisMetrics struct {
 	// Default is 30s.
 	Timeout Duration `json:"timeout"`
 
-	// The strategy name. One of THRESHOLD or PREVIOUS or CANARY_BASELINE or CANARY_PRIMARY is available.
-	// Defaults to THRESHOLD.
-	Strategy string `json:"strategy" default:"THRESHOLD"`
 	// The stage fails on deviation in the specified direction. One of LOW or HIGH or EITHER is available.
 	// This can be used only for PREVIOUS, CANARY_BASELINE or CANARY_PRIMARY. Defaults to EITHER.
 	Deviation string `json:"deviation" default:"EITHER"`
@@ -82,6 +82,9 @@ func (m *AnalysisMetrics) Validate() error {
 	}
 	if m.Interval == 0 {
 		return fmt.Errorf("missing \"interval\" field")
+	}
+	if m.Deviation != AnalysisDeviationEither && m.Deviation != AnalysisDeviationHigh && m.Deviation != AnalysisDeviationLow {
+		return fmt.Errorf("\"deviation\" have to be one of %s, %s or %s", AnalysisDeviationEither, AnalysisDeviationHigh, AnalysisDeviationLow)
 	}
 	return nil
 }
