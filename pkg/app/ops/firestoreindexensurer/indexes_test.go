@@ -212,6 +212,27 @@ func TestParseIndexes(t *testing.T) {
 			QueryScope:      "COLLECTION",
 			Fields: []field{
 				{
+					FieldPath:   "ApplicationName",
+					Order:       "ASCENDING",
+					ArrayConfig: "",
+				},
+				{
+					FieldPath:   "UpdatedAt",
+					Order:       "DESCENDING",
+					ArrayConfig: "",
+				},
+				{
+					FieldPath:   "Id",
+					Order:       "ASCENDING",
+					ArrayConfig: "",
+				},
+			},
+		},
+		{
+			CollectionGroup: "Deployment",
+			QueryScope:      "COLLECTION",
+			Fields: []field{
+				{
 					FieldPath:   "EnvId",
 					Order:       "ASCENDING",
 					ArrayConfig: "",
