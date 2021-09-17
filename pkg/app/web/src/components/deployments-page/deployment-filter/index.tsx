@@ -25,6 +25,7 @@ import {
   DeploymentStatusKey,
 } from "~/modules/deployments";
 import { selectAllEnvs } from "~/modules/environments";
+import { ApplicationAutocomplete } from "../../applications-page/application-filter/application-autocomplete";
 
 const useStyles = makeStyles((theme) => ({
   formItem: {
@@ -70,6 +71,13 @@ export const DeploymentFilter: FC<DeploymentFilterProps> = memo(
           onClear();
         }}
       >
+        <div className={classes.formItem}>
+          <ApplicationAutocomplete
+            value={options.applicationName ?? null}
+            onChange={(value) => handleUpdateFilterValue({ applicationName: value })}
+          />
+        </div>
+
         <FormControl className={classes.formItem} variant="outlined">
           <InputLabel id="filter-env">Environment</InputLabel>
           <Select
@@ -138,8 +146,8 @@ export const DeploymentFilter: FC<DeploymentFilterProps> = memo(
           <Autocomplete
             id="application-select"
             options={applications}
-            getOptionLabel={(option) => option.name}
-            renderOption={(option) => <span>{option.name}</span>}
+            getOptionLabel={(option) => option.id}
+            renderOption={(option) => <span>{option.id}</span>}
             value={selectedApp || null}
             onChange={(_, value) => {
               handleUpdateFilterValue({
@@ -149,7 +157,7 @@ export const DeploymentFilter: FC<DeploymentFilterProps> = memo(
             renderInput={(params) => (
               <TextField
                 {...params}
-                label="Application"
+                label="Application Id"
                 variant="outlined"
                 inputProps={{
                   ...params.inputProps,
