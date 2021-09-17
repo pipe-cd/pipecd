@@ -1041,6 +1041,13 @@ func (a *WebAPI) ListDeployments(ctx context.Context, req *webservice.ListDeploy
 				Value:    o.EnvIds[0],
 			})
 		}
+		if o.ApplicationName != "" {
+			filters = append(filters, datastore.ListFilter{
+				Field:    "ApplicationName",
+				Operator: datastore.OperatorEqual,
+				Value:    o.ApplicationName,
+			})
+		}
 	}
 
 	deployments, cursor, err := a.deploymentStore.ListDeployments(ctx, datastore.ListOptions{

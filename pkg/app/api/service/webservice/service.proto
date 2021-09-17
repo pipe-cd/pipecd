@@ -317,6 +317,7 @@ message ListDeploymentsRequest {
         repeated model.ApplicationKind kinds = 2;
         repeated string application_ids = 3;
         repeated string env_ids = 4;
+        string application_name = 5;
     }
     Options options = 1;
     int32 page_size = 2;
