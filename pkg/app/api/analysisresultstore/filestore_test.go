@@ -53,7 +53,7 @@ func TestFileStoreGet(t *testing.T) {
 			applicationID: "application-id",
 
 			content: `{
-				"startTime": 1590000000
+				"start_time": 1590000000
 			}`,
 
 			expected: &model.AnalysisResult{
