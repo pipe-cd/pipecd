@@ -30,7 +30,6 @@ spec:
           - piped
           - --config-file=/etc/piped-config/{{ .Values.config.fileName }}
           - --metrics={{ .Values.args.metrics }}
-          - --use-fake-api-client={{ .Values.args.useFakeAPI }}
           - --enable-default-kubernetes-cloud-provider={{ .Values.args.enableDefaultKubernetesCloudProvider }}
           - --insecure={{ .Values.args.insecure }}
           - --log-encoding={{ .Values.args.logEncoding }}
