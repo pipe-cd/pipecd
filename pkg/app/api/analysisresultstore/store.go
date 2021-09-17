@@ -24,9 +24,9 @@ import (
 )
 
 type Store interface {
-	// GetLatestAnalysisResult gives back the most recent successful analysis metadata of the specified application.
+	// GetLatestAnalysisResult gives back the most recent successful analysis result of the specified application.
 	GetLatestAnalysisResult(ctx context.Context, applicationID string) (*model.AnalysisResult, error)
-	// PutStateSnapshot updates the most recent successful analysis metadata of the specified application.
+	// PutStateSnapshot updates the most recent successful analysis result of the specified application.
 	PutLatestAnalysisResult(ctx context.Context, applicationID string, snapshot *model.AnalysisResult) error
 }
 
@@ -47,7 +47,7 @@ func NewStore(fs filestore.Store, logger *zap.Logger) Store {
 func (s *store) GetLatestAnalysisResult(ctx context.Context, applicationID string) (*model.AnalysisResult, error) {
 	resp, err := s.backend.Get(ctx, applicationID)
 	if err != nil {
-		s.logger.Error("failed to get the most recent successful analysis metadata from filestore", zap.Error(err))
+		s.logger.Error("failed to get the most recent successful analysis result from filestore", zap.Error(err))
 		return nil, err
 	}
 
@@ -56,7 +56,7 @@ func (s *store) GetLatestAnalysisResult(ctx context.Context, applicationID strin
 
 func (s *store) PutLatestAnalysisResult(ctx context.Context, applicationID string, snapshot *model.AnalysisResult) error {
 	if err := s.backend.Put(ctx, applicationID, snapshot); err != nil {
-		s.logger.Error("failed to put the most recent successful analysis metadata to filestore", zap.Error(err))
+		s.logger.Error("failed to put the most recent successful analysis result to filestore", zap.Error(err))
 		return err
 	}
 	return nil

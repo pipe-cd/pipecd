@@ -856,16 +856,16 @@ func (a *PipedAPI) GetLatestAnalysisResult(ctx context.Context, req *pipedservic
 		return nil, err
 	}
 
-	metadata, err := a.analysisResultStore.GetLatestAnalysisResult(ctx, req.ApplicationId)
+	result, err := a.analysisResultStore.GetLatestAnalysisResult(ctx, req.ApplicationId)
 	if errors.Is(err, filestore.ErrNotFound) {
-		return nil, status.Error(codes.NotFound, "the most recent analysis metadata is not found")
+		return nil, status.Error(codes.NotFound, "the most recent analysis result is not found")
 	}
 	if err != nil {
-		a.logger.Error("failed to get the most recent analysis metadata", zap.Error(err))
-		return nil, status.Error(codes.Internal, "failed to get the most recent analysis metadata")
+		a.logger.Error("failed to get the most recent analysis result", zap.Error(err))
+		return nil, status.Error(codes.Internal, "failed to get the most recent analysis result")
 	}
 	return &pipedservice.GetLatestAnalysisResultResponse{
-		AnalysisResult: metadata,
+		AnalysisResult: result,
 	}, nil
 }
 
@@ -880,8 +880,8 @@ func (a *PipedAPI) PutLatestAnalysisResult(ctx context.Context, req *pipedservic
 
 	err = a.analysisResultStore.PutLatestAnalysisResult(ctx, req.ApplicationId, req.AnalysisResult)
 	if err != nil {
-		a.logger.Error("failed to put the most recent analysis metadata", zap.Error(err))
-		return nil, status.Error(codes.Internal, "failed to put the most recent analysis metadata")
+		a.logger.Error("failed to put the most recent analysis result", zap.Error(err))
+		return nil, status.Error(codes.Internal, "failed to put the most recent analysis result")
 	}
 	return &pipedservice.PutLatestAnalysisResultResponse{}, nil
 }

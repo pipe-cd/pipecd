@@ -149,10 +149,10 @@ service PipedService {
     // ListEvents returns a list of Events inside the given range.
     rpc ListEvents(ListEventsRequest) returns (ListEventsResponse) {}
 
-    // GetLatestAnalysisResult returns the most successful analysis metadata.
+    // GetLatestAnalysisResult returns the most successful analysis result.
     rpc GetLatestAnalysisResult(GetLatestAnalysisResultRequest) returns (GetLatestAnalysisResultResponse) {}
 
-    // GetLatestAnalysisResult updates the most successful analysis metadata.
+    // GetLatestAnalysisResult updates the most successful analysis result.
     rpc PutLatestAnalysisResult(PutLatestAnalysisResultRequest) returns (PutLatestAnalysisResultResponse) {}
 }
 
