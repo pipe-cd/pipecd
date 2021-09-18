@@ -7,7 +7,7 @@ import {
   TextField,
 } from "@material-ui/core";
 import Autocomplete from "@material-ui/lab/Autocomplete";
-import { FC, memo, useCallback } from "react";
+import { FC, memo, useCallback, useState, useEffect } from "react";
 import { FilterView } from "~/components/filter-view";
 import { APPLICATION_KIND_TEXT } from "~/constants/application-kind";
 import { DEPLOYMENT_STATE_TEXT } from "~/constants/deployment-status-text";
@@ -49,6 +49,7 @@ export const DeploymentFilter: FC<DeploymentFilterProps> = memo(
   function DeploymentFilter({ options, onChange, onClear }) {
     const classes = useStyles();
     const envs = useAppSelector(selectAllEnvs);
+    const [localApplications, setLocalApplications] = useState<Application.AsObject[]>([]);
     const applications = useAppSelector<Application.AsObject[]>((state) =>
       selectAllApplications(state.applications)
     );
@@ -64,6 +65,14 @@ export const DeploymentFilter: FC<DeploymentFilterProps> = memo(
       },
       [options, onChange]
     );
+
+    useEffect(() => {
+      if (options.applicationName) {
+        setLocalApplications(applications.filter(app => app.name === options.applicationName));
+      } else {
+        setLocalApplications(applications);
+      }
+    }, [applications, options]);
 
     return (
       <FilterView
@@ -145,9 +154,9 @@ export const DeploymentFilter: FC<DeploymentFilterProps> = memo(
         <div className={classes.formItem}>
           <Autocomplete
             id="application-select"
-            options={applications}
+            options={localApplications}
             getOptionLabel={(option) => option.id}
-            renderOption={(option) => <span>{option.id}</span>}
+            renderOption={(option) => <span>{option.name} ({option.id})</span>}
             value={selectedApp || null}
             onChange={(_, value) => {
               handleUpdateFilterValue({
