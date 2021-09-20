@@ -27,7 +27,7 @@ test("Change filter values", () => {
   );
 
   userEvent.type(
-    screen.getByRole("textbox", { name: "Name" }),
+    screen.getByRole("textbox", { name: "Application Name" }),
     dummyApplication.name
   );
   userEvent.click(screen.getByRole("option", { name: dummyApplication.name }));
