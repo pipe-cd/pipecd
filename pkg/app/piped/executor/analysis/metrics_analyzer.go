@@ -36,10 +36,6 @@ const (
 	primaryVariantName  = "primary"
 )
 
-var (
-	errShouldEndWithSuccess = errors.New("it should immediately end with success")
-)
-
 type metricsAnalyzer struct {
 	id                  string
 	cfg                 config.AnalysisMetrics
@@ -82,7 +78,12 @@ func (a *metricsAnalyzer) run(ctx context.Context) error {
 			case config.AnalysisStrategyThreshold:
 				expected, err = a.analyzeWithThreshold(ctx)
 			case config.AnalysisStrategyPrevious:
-				expected, err = a.analyzeWithPrevious(ctx)
+				var firstDeploy bool
+				expected, firstDeploy, err = a.analyzeWithPrevious(ctx)
+				if firstDeploy {
+					a.logPersister.Info("[%s] PreviousAnalysis cannot be executed because this seems to be the first deployment, so it is considered as a success")
+					return nil
+				}
 			case config.AnalysisStrategyCanaryBaseline:
 				expected, err = a.analyzeWithCanaryBaseline(ctx)
 			case config.AnalysisStrategyCanaryPrimary:
@@ -92,10 +93,6 @@ func (a *metricsAnalyzer) run(ctx context.Context) error {
 			}
 			// Ignore parent's context deadline exceeded error, and return immediately.
 			if errors.Is(err, context.DeadlineExceeded) && ctx.Err() == context.DeadlineExceeded {
-				return nil
-			}
-			if errors.Is(err, errShouldEndWithSuccess) {
-				a.logPersister.Infof("[%s] Success because %v", err)
 				return nil
 			}
 			if errors.Is(err, metrics.ErrNoDataFound) && a.cfg.SkipOnNoData {
@@ -157,7 +154,7 @@ func (a *metricsAnalyzer) analyzeWithThreshold(ctx context.Context) (bool, error
 // analyzeWithPrevious returns false if primary deviates in the specified direction compared to the previous deployment.
 // Return an error if the evaluation could not be executed normally.
 // elapsedTime is used to compare metrics at the same point in time after the analysis has started.
-func (a *metricsAnalyzer) analyzeWithPrevious(ctx context.Context) (bool, error) {
+func (a *metricsAnalyzer) analyzeWithPrevious(ctx context.Context) (expected, firstDeploy bool, err error) {
 	now := time.Now()
 	queryRange := metrics.QueryRange{
 		From: now.Add(-a.cfg.Interval.Duration()),
@@ -165,15 +162,15 @@ func (a *metricsAnalyzer) analyzeWithPrevious(ctx context.Context) (bool, error)
 	}
 	points, err := a.provider.QueryPoints(ctx, a.cfg.Query, queryRange)
 	if err != nil {
-		return false, fmt.Errorf("failed to run query: %w", err)
+		return false, false, fmt.Errorf("failed to run query: %w", err)
 	}
 
 	prevMetadata, err := a.analysisResultStore.GetLatestAnalysisResult(ctx)
 	if errors.Is(err, analysisresultstore.ErrNotFound) {
-		return false, fmt.Errorf("seems like this is the first deployment: %w", errShouldEndWithSuccess)
+		return false, true, nil
 	}
 	if err != nil {
-		return false, fmt.Errorf("failed to fetch the most recent successful analysis metadata: %w", err)
+		return false, false, fmt.Errorf("failed to fetch the most recent successful analysis metadata: %w", err)
 	}
 	// Compare it with the previous metrics when the same amount of time as now has passed since the start of the stage.
 	elapsedTime := time.Since(a.stageStartTime)
@@ -184,13 +181,13 @@ func (a *metricsAnalyzer) analyzeWithPrevious(ctx context.Context) (bool, error)
 	}
 	prevPoints, err := a.provider.QueryPoints(ctx, a.cfg.Query, prevQueryRange)
 	if err != nil {
-		return false, fmt.Errorf("failed to run query to fetch metrics for the previous deployment: %w", err)
+		return false, false, fmt.Errorf("failed to run query to fetch metrics for the previous deployment: %w", err)
 	}
 	if err := mannWhitneyUTest(points, prevPoints, a.cfg.Deviation); err != nil {
 		a.logPersister.Errorf("[%s] Failed because %v. Performed query: %q", a.id, err, a.cfg.Query)
-		return false, nil
+		return false, false, err
 	}
-	return true, nil
+	return true, false, nil
 }
 
 // analyzeWithCanaryBaseline returns false if canary deviates in the specified direction compared to baseline.
