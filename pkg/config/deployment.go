@@ -34,6 +34,7 @@ type GenericDeploymentSpec struct {
 	CommitMatcher DeploymentCommitMatcher `json:"commitMatcher"`
 	// Pipeline for deploying progressively.
 	Pipeline *DeploymentPipeline `json:"pipeline"`
+	Notification *DeploymentNotification `json:"notification"`
 	// The list of sealed secrets that should be decrypted.
 	SealedSecrets []SealedSecretMapping `json:"sealedSecrets"`
 	// List of directories or files where their changes will trigger the deployment.
@@ -368,6 +369,18 @@ type SecretEncryption struct {
 	EncryptedSecrets map[string]string `json:"encryptedSecrets"`
 	// List of files to be decrypted before using.
 	DecryptionTargets []string `json:"decryptionTargets"`
+}
+
+type DeploymentNotification struct {
+	Mentions []NotificationMention `json:"mentions"`
+}
+
+type NotificationMention struct {
+	Id string
+	Event model.Stage
+
+	Slack []string
+	// todo: email
 }
 
 func (e *SecretEncryption) Validate() error {

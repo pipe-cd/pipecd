@@ -60,6 +60,10 @@ type AppLiveResourceLister interface {
 	ListKubernetesResources() ([]provider.Manifest, bool)
 }
 
+type Notifier interface {
+	Notify(event model.NotificationEvent)
+}
+
 type Input struct {
 	Stage       *model.PipelineStage
 	StageConfig config.PipelineStage
@@ -75,6 +79,8 @@ type Input struct {
 	AppManifestsCache     cache.Cache
 	AppLiveResourceLister AppLiveResourceLister
 	Logger                *zap.Logger
+	Notifier              Notifier
+	EnvName               string
 }
 
 func DetermineStageStatus(sig StopSignalType, ori, got model.StageStatus) model.StageStatus {

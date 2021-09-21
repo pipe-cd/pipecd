@@ -6,6 +6,9 @@ go_library(
     importpath = "github.com/pipe-cd/pipe/pkg/app/piped/executor/waitapproval",
     visibility = ["//visibility:public"],
     deps = [
+        "//pkg/app/api/service/pipedservice:go_default_library",
+        "//pkg/app/piped/notifier:go_default_library",
+        "//pkg/config:go_default_library",
         "//pkg/app/piped/executor:go_default_library",
         "//pkg/model:go_default_library",
         "@org_uber_go_zap//:go_default_library",
