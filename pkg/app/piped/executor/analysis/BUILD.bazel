@@ -15,6 +15,7 @@ go_library(
         "//pkg/app/piped/analysisprovider/log/factory:go_default_library",
         "//pkg/app/piped/analysisprovider/metrics:go_default_library",
         "//pkg/app/piped/analysisprovider/metrics/factory:go_default_library",
+        "//pkg/app/piped/apistore/analysisresultstore:go_default_library",
         "//pkg/app/piped/executor:go_default_library",
         "//pkg/config:go_default_library",
         "//pkg/model:go_default_library",

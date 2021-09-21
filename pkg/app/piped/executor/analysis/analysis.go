@@ -161,7 +161,7 @@ func (e *Executor) Execute(sig executor.StopSignal) model.StageStatus {
 		return status
 	}
 
-	e.LogPersister.Success("All analyses were successful.")
+	e.LogPersister.Success("All analyses were successful")
 	err = e.AnalysisResultStore.PutLatestAnalysisResult(ctx, &model.AnalysisResult{
 		StartTime: e.startTime.Unix(),
 	})

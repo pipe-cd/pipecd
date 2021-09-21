@@ -25,6 +25,7 @@ import (
 	"go.uber.org/zap"
 
 	"github.com/pipe-cd/pipe/pkg/app/piped/analysisprovider/metrics"
+	"github.com/pipe-cd/pipe/pkg/app/piped/apistore/analysisresultstore"
 	"github.com/pipe-cd/pipe/pkg/app/piped/executor"
 	"github.com/pipe-cd/pipe/pkg/config"
 )
@@ -33,6 +34,10 @@ const (
 	canaryVariantName   = "canary"
 	baselineVariantName = "baseline"
 	primaryVariantName  = "primary"
+)
+
+var (
+	errShouldEndWithSuccess = errors.New("it should immediately end with success")
 )
 
 type metricsAnalyzer struct {
@@ -89,6 +94,10 @@ func (a *metricsAnalyzer) run(ctx context.Context) error {
 			if errors.Is(err, context.DeadlineExceeded) && ctx.Err() == context.DeadlineExceeded {
 				return nil
 			}
+			if errors.Is(err, errShouldEndWithSuccess) {
+				a.logPersister.Infof("[%s] Success because %v", err)
+				return nil
+			}
 			if errors.Is(err, metrics.ErrNoDataFound) && a.cfg.SkipOnNoData {
 				a.logPersister.Infof("[%s] The query result evaluation was skipped because \"skipOnNoData\" is true even though no data returned. Reason: %v. Performed query: %q", a.id, err, a.cfg.Query)
 				continue
@@ -110,7 +119,7 @@ func (a *metricsAnalyzer) run(ctx context.Context) error {
 	}
 }
 
-// Return false if any data point is out of the prediction range.
+// analyzeWithThreshold returns false if any data point is out of the prediction range.
 // Return an error if the evaluation could not be executed normally.
 func (a *metricsAnalyzer) analyzeWithThreshold(ctx context.Context) (bool, error) {
 	if err := a.cfg.Expected.Validate(); err != nil {
@@ -145,7 +154,7 @@ func (a *metricsAnalyzer) analyzeWithThreshold(ctx context.Context) (bool, error
 	return true, nil
 }
 
-// Return false if primary deviates in the specified direction compared to the previous deployment.
+// analyzeWithPrevious returns false if primary deviates in the specified direction compared to the previous deployment.
 // Return an error if the evaluation could not be executed normally.
 // elapsedTime is used to compare metrics at the same point in time after the analysis has started.
 func (a *metricsAnalyzer) analyzeWithPrevious(ctx context.Context) (bool, error) {
@@ -160,6 +169,9 @@ func (a *metricsAnalyzer) analyzeWithPrevious(ctx context.Context) (bool, error)
 	}
 
 	prevMetadata, err := a.analysisResultStore.GetLatestAnalysisResult(ctx)
+	if errors.Is(err, analysisresultstore.ErrNotFound) {
+		return false, fmt.Errorf("seems like this is the first deployment: %w", errShouldEndWithSuccess)
+	}
 	if err != nil {
 		return false, fmt.Errorf("failed to fetch the most recent successful analysis metadata: %w", err)
 	}
@@ -181,7 +193,7 @@ func (a *metricsAnalyzer) analyzeWithPrevious(ctx context.Context) (bool, error)
 	return true, nil
 }
 
-// Return false if canary deviates in the specified direction compared to baseline.
+// analyzeWithCanaryBaseline returns false if canary deviates in the specified direction compared to baseline.
 // Return an error if the evaluation could not be executed normally.
 func (a *metricsAnalyzer) analyzeWithCanaryBaseline(ctx context.Context) (bool, error) {
 	now := time.Now()
@@ -214,7 +226,7 @@ func (a *metricsAnalyzer) analyzeWithCanaryBaseline(ctx context.Context) (bool, 
 	return true, nil
 }
 
-// Return false if canary deviates in the specified direction compared to primary.
+// analyzeWithCanaryPrimary returns false if canary deviates in the specified direction compared to primary.
 // Return an error if the evaluation could not be executed normally.
 func (a *metricsAnalyzer) analyzeWithCanaryPrimary(ctx context.Context) (bool, error) {
 	now := time.Now()

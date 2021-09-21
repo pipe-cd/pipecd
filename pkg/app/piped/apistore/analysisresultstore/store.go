@@ -16,12 +16,19 @@ package analysisresultstore
 
 import (
 	"context"
+	"errors"
 
 	"go.uber.org/zap"
 	"google.golang.org/grpc"
+	"google.golang.org/grpc/codes"
+	"google.golang.org/grpc/status"
 
 	"github.com/pipe-cd/pipe/pkg/app/api/service/pipedservice"
 	"github.com/pipe-cd/pipe/pkg/model"
+)
+
+var (
+	ErrNotFound = errors.New("not found")
 )
 
 type apiClient interface {
@@ -48,6 +55,10 @@ func NewStore(apiClient apiClient, logger *zap.Logger) Store {
 
 func (s *store) GetLatestAnalysisResult(ctx context.Context, applicationID string) (*model.AnalysisResult, error) {
 	resp, err := s.apiClient.GetLatestAnalysisResult(ctx, &pipedservice.GetLatestAnalysisResultRequest{ApplicationId: applicationID})
+	if status.Code(err) == codes.NotFound {
+		s.logger.Info("analysis result is not found")
+		return nil, ErrNotFound
+	}
 	if err != nil {
 		s.logger.Error("failed to get the most recent analysis result", zap.Error(err))
 		return nil, err
