@@ -106,8 +106,8 @@ Please note that the phases (Incubating, Alpha, Beta, and Stable) are applied to
 |-|-|
 | Project/Environment/Piped/Application/Deployment management | Beta |
 | Rendering deployment pipeline in realtime | Beta |
-| Canceling a deployment from web | Beta |
-| Triggering a deployment manually from web | Beta |
+| Canceling a deployment from console | Beta |
+| Triggering a deployment manually from console | Beta |
 | Authentication by username/password for static admin | Beta |
 | GitHub & GitHub Enterprise SSO | Beta |
 | Google SSO | Incubating |
