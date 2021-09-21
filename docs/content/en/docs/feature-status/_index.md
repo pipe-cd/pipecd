@@ -14,7 +14,7 @@ Please note that the phases (Incubating, Alpha, Beta, and Stable) are applied to
 |-|-|
 | Incubating | Under planning/developing the prototype and still not ready to be used. |
 | Alpha | Demo-able, works end-to-end but has limitations. No guarantees on backward compatibility. |
-| Beta | Usable in production. Documented. |
+| Beta | **Usable in production**. Documented. |
 | Stable | Production hardened. Backward compatibility. Documented. |
 
 ## PipeCD Features
@@ -23,75 +23,75 @@ Please note that the phases (Incubating, Alpha, Beta, and Stable) are applied to
 
 | Feature | Phase |
 |-|-|
-| Quick Sync Deployment | Beta |
-| Deployment with the Specified Pipeline (canary, bluegreen...) | Beta |
-| Automated Rollback | Beta |
-| [Automated Configuration Drift Detection](/docs/user-guide/configuration-drift-detection/) | Beta |
-| [Application Live State](/docs/user-guide/application-live-state/) | Beta |
+| Quick sync deployment | Beta |
+| Deployment with a defined pipeline (e.g. canary, analysis) | Beta |
+| [Automated rollback](/docs/user-guide/rolling-back-a-deployment/) | Beta |
+| [Automated configuration drift detection](/docs/user-guide/configuration-drift-detection/) | Beta |
+| [Application live state](/docs/user-guide/application-live-state/) | Beta |
 | Support Helm | Beta |
 | Support Kustomize | Beta |
-| Support Istio Mesh | Beta |
-| Support SMI Mesh | Incubating |
+| Support Istio service mesh | Beta |
+| Support SMI service mesh | Incubating |
 | Support [AWS App Mesh](https://aws.amazon.com/app-mesh/) | Incubating |
-| [Plan Preview](/docs/user-guide/plan-preview) | Beta |
+| [Plan preview](/docs/user-guide/plan-preview) | Beta |
 
 ### Terraform Deployment
 
 | Feature | Phase |
 |-|-|
-| Quick Sync Deployment | Beta |
-| Deployment with the Specified Pipeline | Beta |
-| Automated Rollback | Beta |
-| [Automated Configuration Drift Detection](/docs/user-guide/configuration-drift-detection/) | Incubating |
-| [Application Live State](/docs/user-guide/application-live-state/) | Incubating |
-| [Plan Preview](/docs/user-guide/plan-preview) | Beta |
+| Quick sync deployment | Beta |
+| Deployment with a defined pipeline (e.g. manual-approval) | Beta |
+| [Automated rollback](/docs/user-guide/rolling-back-a-deployment/) | Beta |
+| [Automated configuration drift detection](/docs/user-guide/configuration-drift-detection/) | Incubating |
+| [Application live state](/docs/user-guide/application-live-state/) | Incubating |
+| [Plan preview](/docs/user-guide/plan-preview) | Beta |
 
 ### CloudRun Deployment
 
 | Feature | Phase |
 |-|-|
-| Quick Sync Deployment | Beta |
-| Deployment with the Specified Pipeline | Beta |
-| Automated Rollback | Beta |
-| [Automated Configuration Drift Detection](/docs/user-guide/configuration-drift-detection/) | Incubating |
-| [Application Live State](/docs/user-guide/application-live-state/) | Incubating |
-| [Plan Preview](/docs/user-guide/plan-preview) | Alpha |
+| Quick sync deployment | Beta |
+| Deployment with a defined pipeline (e.g. canary, analysis) | Beta |
+| [Automated rollback](/docs/user-guide/rolling-back-a-deployment/) | Beta |
+| [Automated configuration drift detection](/docs/user-guide/configuration-drift-detection/) | Incubating |
+| [Application live state](/docs/user-guide/application-live-state/) | Incubating |
+| [Plan preview](/docs/user-guide/plan-preview) | Alpha |
 
 ### Lambda Deployment
 
 | Feature | Phase |
 |-|-|
-| Quick Sync Deployment | Beta |
-| Deployment with the Specified Pipeline | Beta |
-| Automated Rollback | Beta |
-| [Automated Configuration Drift Detection](/docs/user-guide/configuration-drift-detection/) | Incubating |
-| [Application Live State](/docs/user-guide/application-live-state/) | Incubating |
-| [Plan Preview](/docs/user-guide/plan-preview) | Alpha |
+| Quick sync deployment | Beta |
+| Deployment with a defined pipeline (e.g. canary, analysis) | Beta |
+| [Automated rollback](/docs/user-guide/rolling-back-a-deployment/) | Beta |
+| [Automated configuration drift detection](/docs/user-guide/configuration-drift-detection/) | Incubating |
+| [Application live state](/docs/user-guide/application-live-state/) | Incubating |
+| [Plan preview](/docs/user-guide/plan-preview) | Alpha |
 
 ### Amazon ECS Deployment
 
 | Feature | Phase |
 |-|-|
-| Quick Sync Deployment | Alpha |
-| Deployment with the Specified Pipeline | Alpha |
-| Automated Rollback | Alpha |
-| [Automated Configuration Drift Detection](/docs/user-guide/configuration-drift-detection/) | Incubating |
-| [Application Live State](/docs/user-guide/application-live-state/) | Incubating |
+| Quick sync deployment | Alpha |
+| Deployment with a defined pipeline (e.g. canary, analysis) | Alpha |
+| [Automated rollback](/docs/user-guide/rolling-back-a-deployment/) | Beta |
+| [Automated configuration drift detection](/docs/user-guide/configuration-drift-detection/) | Incubating |
+| [Application live state](/docs/user-guide/application-live-state/) | Incubating |
 | Support [AWS App Mesh](https://aws.amazon.com/app-mesh/) | Incubating |
-| [Plan Preview](/docs/user-guide/plan-preview) | Alpha |
+| [Plan preview](/docs/user-guide/plan-preview) | Alpha |
 
 ### Piped's Core
 
 | Feature | Phase |
 |-|-|
-| [Wait Stage](/docs/user-guide/adding-a-wait-stage/) | Beta |
-| [Wait Manual Approval Stage](/docs/user-guide/adding-a-manual-approval/) | Beta |
+| [Deployment wait stage](/docs/user-guide/adding-a-wait-stage/) | Beta |
+| [Deployment manual approval stage](/docs/user-guide/adding-a-manual-approval/) | Beta |
 | [Notification](/docs/operator-manual/piped/configuring-notifications/) to Slack | Beta |
-| [Notification](/docs/operator-manual/piped/configuring-notifications/) to Webhook | Incubating |
-| [Secrets Management](/docs/user-guide/secret-management/) | Beta |
-| [Event Watcher](/docs/user-guide/event-watcher/) | Alpha |
-| [Command-line tool (pipectl) and API for external services](/docs/user-guide/command-line-tool/) | Beta |
-| Support executing custom stage | Incubating |
+| [Notification](/docs/operator-manual/piped/configuring-notifications/) to external service via webhook | Incubating |
+| [Secrets management](/docs/user-guide/secret-management/) - Storing secrets safely in the Git repository | Beta |
+| [Event watcher](/docs/user-guide/event-watcher/) - Updating files in Git automatically for given events | Alpha |
+| [Pipectl](/docs/user-guide/command-line-tool/) - Command-line tool for interacting with control-plane | Beta |
+| Deployment plugin - Allow executing user-created deployment plugin | Incubating |
 | [ADA](/docs/user-guide/automated-deployment-analysis/) (Automated Deployment Analysis) by Prometheus metrics | Alpha |
 | [ADA](/docs/user-guide/automated-deployment-analysis/) by Datadog metrics | Alpha |
 | [ADA](/docs/user-guide/automated-deployment-analysis/) by Stackdriver metrics | Incubating |
@@ -104,18 +104,18 @@ Please note that the phases (Incubating, Alpha, Beta, and Stable) are applied to
 
 | Feature | Phase |
 |-|-|
-| Project/Environment/Piped/Application/Deployment Management | Beta |
-| Rendering Deployment Pipeline in Realtime | Beta |
-| Canceling a Deployment from Web | Beta |
-| Triggering a Sync/Deployment from Web | Beta |
-| Authentication by Username/Password for Static Admin | Beta |
+| Project/Environment/Piped/Application/Deployment management | Beta |
+| Rendering deployment pipeline in realtime | Beta |
+| Canceling a deployment from console | Beta |
+| Triggering a deployment manually from console | Beta |
+| Authentication by username/password for static admin | Beta |
 | GitHub & GitHub Enterprise SSO | Beta |
 | Google SSO | Incubating |
-| Data Store - Support GCP [Firestore](https://cloud.google.com/firestore) | Beta |
-| Data Store - Support [MySQL v8.0](https://www.mysql.com/) | Beta |
-| File Store - Support GCP [GCS](https://cloud.google.com/storage) | Beta |
-| File Store - Support AWS [S3](https://aws.amazon.com/s3/) | Beta |
-| File Store - Support [Minio](https://github.com/minio/minio) | Beta |
-| [Insights](/docs/user-guide/insights/) shows delivery performance | Incubating |
+| Support GCP [Firestore](https://cloud.google.com/firestore) as data store | Beta |
+| Support [MySQL v8.0](https://www.mysql.com/) as data store | Beta |
+| Support GCP [GCS](https://cloud.google.com/storage) as file store | Beta |
+| Support AWS [S3](https://aws.amazon.com/s3/) as file store | Beta |
+| Support [Minio](https://github.com/minio/minio) as file store | Beta |
+| [Insights](/docs/user-guide/insights/) - Show the delivery performance of a team or an application | Incubating |
 | Deployment Chain - Allow rolling out to multiple clusters gradually or promoting across environments | Incubating |
-| Collecting piped's metrics and enabling their dashboards | Incubating |
+| [Metrics](/docs/operator-manual/control-plane/metrics/) - Dashboards for PipeCD and Piped metrics | Beta |
