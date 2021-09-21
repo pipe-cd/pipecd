@@ -71,8 +71,8 @@ def _gomock_source_impl(ctx):
         ),
     )
 
-_gomock_source = go_rule(
-    _gomock_source_impl,
+_gomock_source = rule(
+    implementation = _gomock_source_impl,
     attrs = {
         "library": attr.label(
             doc = "The target the Go library is at to look for the interfaces in. When this is set and source is not set, mockgen will use its reflect code to generate the mocks. If source is set, its dependencies will be included in the GOPATH that mockgen will be run in.",
@@ -185,8 +185,8 @@ def _gomock_prog_gen_impl(ctx):
         ),
     )
 
-_gomock_prog_gen = go_rule(
-    _gomock_prog_gen_impl,
+_gomock_prog_gen = rule(
+    implementation = _gomock_prog_gen_impl,
     attrs = {
         "library": attr.label(
             doc = "The target the Go library is at to look for the interfaces in. When this is set and source is not set, mockgen will use its reflect code to generate the mocks.",
@@ -242,8 +242,8 @@ def _gomock_prog_exec_impl(ctx):
         },
     )
 
-_gomock_prog_exec = go_rule(
-    _gomock_prog_exec_impl,
+_gomock_prog_exec = rule(
+    implementation = _gomock_prog_exec_impl,
     attrs = {
         "library": attr.label(
             doc = "The target the Go library is at to look for the interfaces in. When this is set and source is not set, mockgen will use its reflect code to generate the mocks. If source is set, its dependencies will be included in the GOPATH that mockgen will be run in.",
