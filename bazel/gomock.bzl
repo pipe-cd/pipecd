@@ -33,7 +33,7 @@
 # OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 # THE SOFTWARE.
 
-load("@io_bazel_rules_go//go:def.bzl", "go_binary", "go_context", "go_rule")
+load("@io_bazel_rules_go//go:def.bzl", "go_binary", "go_context")
 load("@io_bazel_rules_go//go/private:providers.bzl", "GoLibrary")
 
 _MOCKGEN_TOOL = "@com_github_golang_mock//mockgen"
