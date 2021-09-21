@@ -84,8 +84,8 @@ Please note that the phases (Incubating, Alpha, Beta, and Stable) are applied to
 
 | Feature | Phase |
 |-|-|
-| [Wait stage](/docs/user-guide/adding-a-wait-stage/) | Beta |
-| [Wait manual approval stage](/docs/user-guide/adding-a-manual-approval/) | Beta |
+| [Deployment wait stage](/docs/user-guide/adding-a-wait-stage/) | Beta |
+| [Deployment manual approval stage](/docs/user-guide/adding-a-manual-approval/) | Beta |
 | [Notification](/docs/operator-manual/piped/configuring-notifications/) to Slack | Beta |
 | [Notification](/docs/operator-manual/piped/configuring-notifications/) to external service via webhook | Incubating |
 | [Secrets management](/docs/user-guide/secret-management/) - Storing secrets safely in the Git repository | Beta |
