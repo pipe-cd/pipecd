@@ -15,3 +15,8 @@ This product contains a modified part of client_golang, distributed by prometheu
 
   * License: https://github.com/prometheus/client_golang/blob/master/LICENSE (Apache License v2.0)
   * Homepage: https://github.com/prometheus/client_golang
+
+This product contains a modified part of perf, distributed by golang:
+
+  * License: https://github.com/golang/perf/blob/master/LICENSE
+  * Homepage: https://github.com/golang/perf
