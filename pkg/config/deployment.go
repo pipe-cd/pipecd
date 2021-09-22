@@ -44,7 +44,7 @@ type GenericDeploymentSpec struct {
 	Timeout Duration `json:"timeout,omitempty" default:"6h"`
 	// List of encrypted secrets and targets that should be decoded before using.
 	Encryption *SecretEncryption `json:"encryption"`
-	// Notification to be sent to users via Slack or email
+	// Additional configuration used while sending notification to external services.
 	DeploymentNotification *DeploymentNotification `json:"notification"`
 }
 
@@ -391,11 +391,11 @@ type DeploymentNotification struct {
 }
 
 type NotificationMention struct {
-	// The event to be notified to users
+	// The event to be notified to users.
 	Event string `json:"event"`
-	// The user name for mentioning in Slack
+	// The user name for mentioning in Slack.
 	Slack []string `json:"slack"`
-	// The email for notification
+	// The email for notification.
 	Email []string `json:"email"`
 }
 
