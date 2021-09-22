@@ -199,11 +199,11 @@ func (a *metricsAnalyzer) analyzeWithCanaryBaseline(ctx context.Context) (bool, 
 		From: now.Add(-a.cfg.Interval.Duration()),
 		To:   now,
 	}
-	canaryQuery, err := a.render(a.cfg.Query, a.cfg.CanaryArgs, canaryVariantName)
+	canaryQuery, err := a.renderQuery(a.cfg.Query, a.cfg.CanaryArgs, canaryVariantName)
 	if err != nil {
 		return false, fmt.Errorf("failed to render query template for Canary: %w", err)
 	}
-	baselineQuery, err := a.render(a.cfg.Query, a.cfg.BaselineArgs, baselineVariantName)
+	baselineQuery, err := a.renderQuery(a.cfg.Query, a.cfg.BaselineArgs, baselineVariantName)
 	if err != nil {
 		return false, fmt.Errorf("failed to render query template for Baseline: %w", err)
 	}
@@ -232,11 +232,11 @@ func (a *metricsAnalyzer) analyzeWithCanaryPrimary(ctx context.Context) (bool, e
 		From: now.Add(-a.cfg.Interval.Duration()),
 		To:   now,
 	}
-	canaryQuery, err := a.render(a.cfg.Query, a.cfg.CanaryArgs, canaryVariantName)
+	canaryQuery, err := a.renderQuery(a.cfg.Query, a.cfg.CanaryArgs, canaryVariantName)
 	if err != nil {
 		return false, fmt.Errorf("failed to render query template for Canary: %w", err)
 	}
-	primaryQuery, err := a.render(a.cfg.Query, a.cfg.PrimaryArgs, primaryVariantName)
+	primaryQuery, err := a.renderQuery(a.cfg.Query, a.cfg.PrimaryArgs, primaryVariantName)
 	if err != nil {
 		return false, fmt.Errorf("failed to render query template for Primary: %w", err)
 	}
@@ -268,8 +268,8 @@ type builtInArgs struct {
 	}
 }
 
-// render applies the given variant args to the query template.
-func (a *metricsAnalyzer) render(queryTemplate string, variantArgs map[string]string, variant string) (string, error) {
+// renderQuery applies the given variant args to the query template.
+func (a *metricsAnalyzer) renderQuery(queryTemplate string, variantArgs map[string]string, variant string) (string, error) {
 	args := argsForTemplate{
 		BuiltInArgs: builtInArgs{Variant: struct{ Name string }{Name: variant}},
 		VariantArgs: variantArgs,
