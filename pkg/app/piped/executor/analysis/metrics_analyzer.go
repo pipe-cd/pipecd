@@ -27,6 +27,7 @@ import (
 	"github.com/pipe-cd/pipe/pkg/app/piped/analysisprovider/metrics"
 	"github.com/pipe-cd/pipe/pkg/app/piped/apistore/analysisresultstore"
 	"github.com/pipe-cd/pipe/pkg/app/piped/executor"
+	"github.com/pipe-cd/pipe/pkg/app/piped/executor/analysis/mannwhitney"
 	"github.com/pipe-cd/pipe/pkg/config"
 )
 
@@ -164,6 +165,10 @@ func (a *metricsAnalyzer) analyzeWithPrevious(ctx context.Context) (expected, fi
 	if err != nil {
 		return false, false, fmt.Errorf("failed to run query: %w", err)
 	}
+	values := make([]float64, 0, len(points))
+	for i := range points {
+		values = append(values, points[i].Value)
+	}
 
 	prevMetadata, err := a.analysisResultStore.GetLatestAnalysisResult(ctx)
 	if errors.Is(err, analysisresultstore.ErrNotFound) {
@@ -184,7 +189,11 @@ func (a *metricsAnalyzer) analyzeWithPrevious(ctx context.Context) (expected, fi
 	if err != nil {
 		return false, false, fmt.Errorf("failed to run query to fetch metrics for the previous deployment: %w", err)
 	}
-	if err := mannWhitneyUTest(points, prevPoints, a.cfg.Deviation); err != nil {
+	prevValues := make([]float64, 0, len(prevPoints))
+	for i := range prevPoints {
+		prevValues = append(prevValues, prevPoints[i].Value)
+	}
+	if err := compare(values, prevValues, a.cfg.Deviation); err != nil {
 		a.logPersister.Errorf("[%s] Failed because %v. Performed query: %q", a.id, err, a.cfg.Query)
 		return false, false, err
 	}
@@ -212,12 +221,20 @@ func (a *metricsAnalyzer) analyzeWithCanaryBaseline(ctx context.Context) (bool, 
 	if err != nil {
 		return false, fmt.Errorf("failed to run query to fetch metrics for the Canary variant: %w", err)
 	}
+	canaryValues := make([]float64, 0, len(canaryPoints))
+	for i := range canaryPoints {
+		canaryValues = append(canaryValues, canaryPoints[i].Value)
+	}
 	baselinePoints, err := a.provider.QueryPoints(ctx, baselineQuery, queryRange)
 	if err != nil {
 		return false, fmt.Errorf("failed to run query to fetch metrics for the Baseline variant: %w", err)
 	}
+	baselineValues := make([]float64, 0, len(baselinePoints))
+	for i := range baselinePoints {
+		baselineValues = append(baselineValues, baselinePoints[i].Value)
+	}
 
-	if err := mannWhitneyUTest(canaryPoints, baselinePoints, a.cfg.Deviation); err != nil {
+	if err := compare(canaryValues, baselineValues, a.cfg.Deviation); err != nil {
 		a.logPersister.Errorf("[%s] Failed because %v. Performed query for canary: %q. Performed query for baseline: %q", a.id, err, canaryQuery, baselineQuery)
 		return false, nil
 	}
@@ -245,11 +262,19 @@ func (a *metricsAnalyzer) analyzeWithCanaryPrimary(ctx context.Context) (bool, e
 	if err != nil {
 		return false, fmt.Errorf("failed to run query to fetch metrics for the Canary variant: %w", err)
 	}
+	canaryValues := make([]float64, 0, len(canaryPoints))
+	for i := range canaryPoints {
+		canaryValues = append(canaryValues, canaryPoints[i].Value)
+	}
 	primaryPoints, err := a.provider.QueryPoints(ctx, primaryQuery, queryRange)
 	if err != nil {
 		return false, fmt.Errorf("failed to run query to fetch metrics for the Primary variant: %w", err)
 	}
-	if err := mannWhitneyUTest(canaryPoints, primaryPoints, a.cfg.Deviation); err != nil {
+	primaryValues := make([]float64, 0, len(primaryPoints))
+	for i := range primaryPoints {
+		primaryValues = append(primaryValues, primaryPoints[i].Value)
+	}
+	if err := compare(canaryValues, primaryValues, a.cfg.Deviation); err != nil {
 		a.logPersister.Errorf("[%s] Failed because %v. Performed query for canary: %q. Performed query for primary: %q", a.id, err, canaryQuery, primaryQuery)
 		return false, nil
 	}
@@ -287,14 +312,39 @@ func (a *metricsAnalyzer) renderQuery(queryTemplate string, variantArgs map[stri
 	return b.String(), err
 }
 
+// compare compares the given two samples using Mann-Whitney U test.
+// Considered as failure if it deviates in the specified direction as the third argument.
 // No error means that the result is expected.
-func mannWhitneyUTest(target, base []metrics.DataPoint, deviation string) (err error) {
-	if len(target) == 0 {
-		return fmt.Errorf("no data points for target found")
+func compare(experiment, control []float64, deviation string) (err error) {
+	if len(experiment) == 0 {
+		return fmt.Errorf("no data points of Experiment found")
 	}
-	if len(base) == 0 {
-		return fmt.Errorf("no data points for base found")
+	if len(control) == 0 {
+		return fmt.Errorf("no data points of Control found")
 	}
-	// TODO: Implement mannWhitneyUTest
-	return fmt.Errorf("mannWhitneyUTest isn't implemented yet")
+	var alternativeHypothesis mannwhitney.LocationHypothesis
+	switch deviation {
+	case config.AnalysisDeviationEither:
+		alternativeHypothesis = mannwhitney.LocationDiffers
+	case config.AnalysisDeviationLow:
+		alternativeHypothesis = mannwhitney.LocationLess
+	case config.AnalysisDeviationHigh:
+		alternativeHypothesis = mannwhitney.LocationGreater
+	default:
+		return fmt.Errorf("unknown deviation %q given", deviation)
+	}
+	res, err := mannwhitney.MannWhitneyUTest(experiment, control, alternativeHypothesis)
+	if err != nil {
+		return fmt.Errorf("failed to perform the Mann-Whitney U test: %w", err)
+	}
+
+	// alpha is the significance level. Typically 5% is used.
+	const alpha = 0.05
+	// If the p-value is greater than the significance level,
+	// we cannot say that the distributions in the two groups differed significantly.
+	// See: https://support.minitab.com/en-us/minitab-express/1/help-and-how-to/basic-statistics/inference/how-to/two-samples/mann-whitney-test/interpret-the-results/key-results/
+	if res.P > alpha {
+		return nil
+	}
+	return fmt.Errorf("the difference between the medians is statistically significant")
 }

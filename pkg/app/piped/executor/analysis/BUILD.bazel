@@ -17,6 +17,7 @@ go_library(
         "//pkg/app/piped/analysisprovider/metrics/factory:go_default_library",
         "//pkg/app/piped/apistore/analysisresultstore:go_default_library",
         "//pkg/app/piped/executor:go_default_library",
+        "//pkg/app/piped/executor/analysis/mannwhitney:go_default_library",
         "//pkg/config:go_default_library",
         "//pkg/model:go_default_library",
         "@org_golang_x_sync//errgroup:go_default_library",
