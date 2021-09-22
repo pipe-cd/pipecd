@@ -44,6 +44,8 @@ type GenericDeploymentSpec struct {
 	Timeout Duration `json:"timeout,omitempty" default:"6h"`
 	// List of encrypted secrets and targets that should be decoded before using.
 	Encryption *SecretEncryption `json:"encryption"`
+	// Additional configuration used while sending notification to external services.
+	DeploymentNotification *DeploymentNotification `json:"notification"`
 }
 
 type DeploymentPlanner struct {
@@ -380,4 +382,28 @@ func (e *SecretEncryption) Validate() error {
 		}
 	}
 	return nil
+}
+
+// DeploymentNotification represents the way to send to users.
+type DeploymentNotification struct {
+	// List of users to be notified for each event.
+	Mentions []NotificationMention `json:"mentions"`
+}
+
+type NotificationMention struct {
+	// The event to be notified to users.
+	Event string `json:"event"`
+	// The user name for mentioning in Slack.
+	Slack []string `json:"slack"`
+	// The email for notification.
+	Email []string `json:"email"`
+}
+
+func (n *NotificationMention) Validate() error {
+	for k := range model.NotificationEventType_value {
+		if n.Event == k {
+			return nil
+		}
+	}
+	return fmt.Errorf("event %q is incorrect as NotificationEventType", n.Event)
 }
