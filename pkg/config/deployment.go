@@ -392,9 +392,18 @@ type Notification struct {
 
 type NotificationMention struct {
 	// The event to be notified to users
-	Event model.Stage `json:"event"`
+	Event string `json:"event"`
 	// The user name for mentioning in Slack
 	Slack []string `json:"slack"`
 	// The email for notification
 	Email []string `json:"email"`
+}
+
+func (n *NotificationMention) Validate() error {
+	for k := range model.NotificationEventType_value {
+		if n.Event == k {
+			return nil
+		}
+	}
+	return fmt.Errorf("the field name %s must be NotificationEventType", n.Event)
 }
