@@ -16,11 +16,14 @@ package waitapproval
 
 import (
 	"context"
+	"os"
+	"path/filepath"
 	"time"
 
 	"go.uber.org/zap"
 
 	"github.com/pipe-cd/pipe/pkg/app/piped/executor"
+	"github.com/pipe-cd/pipe/pkg/config"
 	"github.com/pipe-cd/pipe/pkg/model"
 )
 
@@ -57,6 +60,7 @@ func (e *Executor) Execute(sig executor.StopSignal) model.StageStatus {
 	timeout := e.StageConfig.WaitApprovalStageOptions.Timeout.Duration()
 	timer := time.NewTimer(timeout)
 
+	e.reportDeploymentApproved(ctx)
 	e.LogPersister.Info("Waiting for an approval...")
 	for {
 		select {
@@ -113,4 +117,41 @@ func (e *Executor) checkApproval(ctx context.Context) (string, bool) {
 		e.Logger.Error("failed to report handled command", zap.Error(err))
 	}
 	return approveCmd.Commander, true
+}
+
+func (e *Executor) reportDeploymentApproved(ctx context.Context) {
+	ds, err := e.TargetDSP.Get(ctx, e.LogPersister)
+	if err != nil {
+		e.LogPersister.Errorf("Failed to prepare running deploy source data (%v)", err)
+	}
+	
+	var (
+		approver []string
+
+		relPath = e.Application.GitPath.GetDeploymentConfigFilePath()
+		repoPath = ds.RepoDir
+		absPath = filepath.Join(repoPath, relPath)
+	)
+
+	cfg, err := config.LoadFromYAML(absPath)
+	if err != nil {
+		if os.IsNotExist(err) {
+			e.LogPersister.Errorf("deployment config file %s was not found", relPath)
+		}
+	}
+
+	for _, v := range cfg.KubernetesDeploymentSpec.GenericDeploymentSpec.Notification.Mentions {
+		if v.Event == "WATING_APPROVAL" {
+			approver = v.Slack
+		}
+	}
+
+	e.Notifier.Notify(model.NotificationEvent{
+		Type: model.NotificationEventType_EVENT_DEPLOYMENT_WAIT_APPROVAL,
+		Metadata: &model.NotificationEventDeploymentWaitApproval{
+			Deployment: e.Deployment,
+			EnvName:    e.EnvName,
+			Approver:   approver,
+		},
+	})
 }

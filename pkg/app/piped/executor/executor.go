@@ -65,6 +65,10 @@ type AnalysisResultStore interface {
 	PutLatestAnalysisResult(ctx context.Context, analysisResult *model.AnalysisResult) error
 }
 
+type Notifier interface {
+	Notify(event model.NotificationEvent)
+}
+
 type Input struct {
 	Stage       *model.PipelineStage
 	StageConfig config.PipelineStage
@@ -81,6 +85,8 @@ type Input struct {
 	AppLiveResourceLister AppLiveResourceLister
 	AnalysisResultStore   AnalysisResultStore
 	Logger                *zap.Logger
+	Notifier              Notifier
+	EnvName               string
 }
 
 func DetermineStageStatus(sig StopSignalType, ori, got model.StageStatus) model.StageStatus {
