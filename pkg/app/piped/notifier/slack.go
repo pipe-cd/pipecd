@@ -169,6 +169,16 @@ func (s *slack) buildSlackMessage(event model.NotificationEvent, webURL string) 
 		title = fmt.Sprintf("Deployment for %q was planned", md.Deployment.ApplicationName)
 		text = md.Summary
 		generateDeploymentEventData(md.Deployment, md.EnvName)
+	
+	case model.NotificationEventType_EVENT_DEPLOYMENT_WAIT_APPROVAL:
+		md := event.Metadata.(*model.NotificationEventDeploymentWaitApproval)
+		title = fmt.Sprintf("Deployment for %q is waiting approve", md.Deployment.ApplicationName)
+		approvers := ""
+		for _, v := range md.Approver {
+			approvers += " <@" + v + ">"
+		}
+		text = fmt.Sprintf("Approval is required from %s", approvers)
+		generateDeploymentEventData(md.Deployment, md.EnvName)
 
 	case model.NotificationEventType_EVENT_DEPLOYMENT_SUCCEEDED:
 		md := event.Metadata.(*model.NotificationEventDeploymentSucceeded)
