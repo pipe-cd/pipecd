@@ -45,7 +45,7 @@ type GenericDeploymentSpec struct {
 	// List of encrypted secrets and targets that should be decoded before using.
 	Encryption *SecretEncryption `json:"encryption"`
 	// Notification to be sent to users via Slack or email
-	Notification *Notification `json:"notification"`
+	DeploymentNotification *DeploymentNotification `json:"notification"`
 }
 
 type DeploymentPlanner struct {
@@ -384,8 +384,8 @@ func (e *SecretEncryption) Validate() error {
 	return nil
 }
 
-// Notification represents the way to send to users.
-type Notification struct {
+// DeploymentNotification represents the way to send to users.
+type DeploymentNotification struct {
 	// List of users to be notified for each event.
 	Mentions []NotificationMention `json:"mentions"`
 }
