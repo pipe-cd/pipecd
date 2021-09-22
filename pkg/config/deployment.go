@@ -405,5 +405,5 @@ func (n *NotificationMention) Validate() error {
 			return nil
 		}
 	}
-	return fmt.Errorf("the field name %s must be NotificationEventType", n.Event)
+	return fmt.Errorf("event %q is incorrect as NotificationEventType", n.Event)
 }
