@@ -332,7 +332,8 @@ func (a *AnalysisStageOptions) Validate() error {
 }
 
 type AnalysisTemplateRef struct {
-	Name string            `json:"name"`
+	Name string `json:"name"`
+	// TODO: Rename args to appArgs
 	Args map[string]string `json:"args"`
 }
 
