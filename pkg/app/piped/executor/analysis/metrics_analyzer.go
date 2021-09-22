@@ -173,11 +173,12 @@ func (a *metricsAnalyzer) analyzeWithPrevious(ctx context.Context) (expected, fi
 		return false, false, fmt.Errorf("failed to fetch the most recent successful analysis metadata: %w", err)
 	}
 	// Compare it with the previous metrics when the same amount of time as now has passed since the start of the stage.
-	elapsedTime := time.Since(a.stageStartTime)
-	prevNow := time.Unix(prevMetadata.StartTime, 0).Add(elapsedTime)
+	elapsedTime := now.Sub(a.stageStartTime)
+	prevTo := time.Unix(prevMetadata.StartTime, 0).Add(elapsedTime)
+	prevFrom := prevTo.Add(-a.cfg.Interval.Duration())
 	prevQueryRange := metrics.QueryRange{
-		From: prevNow.Add(-a.cfg.Interval.Duration()),
-		To:   prevNow,
+		From: prevFrom,
+		To:   prevTo,
 	}
 	prevPoints, err := a.provider.QueryPoints(ctx, a.cfg.Query, prevQueryRange)
 	if err != nil {
