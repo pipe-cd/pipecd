@@ -97,6 +97,7 @@ export const ApplicationIndexPage: FC = () => {
     dispatch(fetchApplications(filterOptions));
   }, [dispatch, filterOptions]);
 
+  // TODO: Remove this handler.
   const handleCloseTemplateForm = (): void => {
     dispatch(clearTemplateTarget());
   };
