@@ -1,0 +1,10 @@
+# Deployment pipeline that contains a manual approval stage.
+apiVersion: pipecd.dev/v1beta1
+kind: CloudRunApp
+spec:
+  notification:
+    mentions:
+      - event: DEPLOYMENT_WAIT_APPROVAL
+        slack:
+          - U024BE7LH # nghialv
+          - U025BE7LK # nakabonne

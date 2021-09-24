@@ -15,3 +15,9 @@ spec:
       serviceAccount: {ENCRYPTED_DATA_GENERATED_FROM_WEB}
     decryptionTargets:
       - .credentials/service-account.json
+  notification:
+    mentions:
+      - event: DEPLOYMENT_WAIT_APPROVAL
+        slack:
+          - U024BE7LH # nghialv
+          - U025BE7LK # nakabonne

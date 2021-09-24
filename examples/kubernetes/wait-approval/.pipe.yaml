@@ -14,3 +14,9 @@ spec:
             - nghialv
       - name: K8S_PRIMARY_ROLLOUT
       - name: K8S_CANARY_CLEAN
+    notification:
+      mentions:
+        - event: DEPLOYMENT_WAIT_APPROVAL
+          slack:
+            - U024BE7LH # nghialv
+            - U025BE7LK # nakabonne
