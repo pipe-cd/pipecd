@@ -88,6 +88,7 @@ service WebService {
     rpc GetCommand(GetCommandRequest) returns (GetCommandResponse) {}
 
     // Deployment Config Template
+    // TODO: Remove this RPC because templating feature was removed.
     rpc ListDeploymentConfigTemplates(ListDeploymentConfigTemplatesRequest) returns (ListDeploymentConfigTemplatesResponse) {}
 
     // API Key
