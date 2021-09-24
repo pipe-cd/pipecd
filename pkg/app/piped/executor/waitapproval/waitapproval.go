@@ -120,6 +120,7 @@ func (e *Executor) reportRequiringApproval(ctx context.Context) {
 	ds, err := e.TargetDSP.GetReadOnly(ctx, e.LogPersister)
 	if err != nil {
 		e.LogPersister.Errorf("Failed to prepare running deploy source data (%v)", err)
+		return
 	}
 
 	var approvers []string
