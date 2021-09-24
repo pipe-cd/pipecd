@@ -60,7 +60,7 @@ func (e *Executor) Execute(sig executor.StopSignal) model.StageStatus {
 	timeout := e.StageConfig.WaitApprovalStageOptions.Timeout.Duration()
 	timer := time.NewTimer(timeout)
 
-	e.reportDeploymentApproved(ctx)
+	e.reportRequiringApproval(ctx)
 	e.LogPersister.Info("Waiting for an approval...")
 	for {
 		select {
@@ -119,7 +119,7 @@ func (e *Executor) checkApproval(ctx context.Context) (string, bool) {
 	return approveCmd.Commander, true
 }
 
-func (e *Executor) reportDeploymentApproved(ctx context.Context) {
+func (e *Executor) reportRequiringApproval(ctx context.Context) {
 	ds, err := e.TargetDSP.Get(ctx, e.LogPersister)
 	if err != nil {
 		e.LogPersister.Errorf("Failed to prepare running deploy source data (%v)", err)
