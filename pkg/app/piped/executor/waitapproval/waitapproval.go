@@ -124,13 +124,13 @@ func (e *Executor) reportDeploymentApproved(ctx context.Context) {
 	if err != nil {
 		e.LogPersister.Errorf("Failed to prepare running deploy source data (%v)", err)
 	}
-	
+
 	var (
 		approver []string
 
-		relPath = e.Application.GitPath.GetDeploymentConfigFilePath()
+		relPath  = e.Application.GitPath.GetDeploymentConfigFilePath()
 		repoPath = ds.RepoDir
-		absPath = filepath.Join(repoPath, relPath)
+		absPath  = filepath.Join(repoPath, relPath)
 	)
 
 	cfg, err := config.LoadFromYAML(absPath)
