@@ -126,7 +126,7 @@ func (e *Executor) reportDeploymentApproved(ctx context.Context) {
 	}
 
 	var (
-		approver []string
+		approvers []string
 
 		relPath  = e.Application.GitPath.GetDeploymentConfigFilePath()
 		repoPath = ds.RepoDir
@@ -142,7 +142,7 @@ func (e *Executor) reportDeploymentApproved(ctx context.Context) {
 
 	for _, v := range cfg.KubernetesDeploymentSpec.GenericDeploymentSpec.Notification.Mentions {
 		if v.Event == "WATING_APPROVAL" {
-			approver = v.Slack
+			approvers = v.Slack
 		}
 	}
 
@@ -151,7 +151,7 @@ func (e *Executor) reportDeploymentApproved(ctx context.Context) {
 		Metadata: &model.NotificationEventDeploymentWaitApproval{
 			Deployment: e.Deployment,
 			EnvName:    e.EnvName,
-			Approver:   approver,
+			Approvers:   approvers,
 		},
 	})
 }
