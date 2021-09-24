@@ -92,7 +92,7 @@ message NotificationEventDeploymentCancelled {
 message NotificationEventDeploymentWaitApproval {
     Deployment deployment = 1 [(validate.rules).message.required = true];
     string env_name = 2 [(validate.rules).string.min_len = 1];
-    repeated string approver = 3;
+    repeated string approvers = 3;
 }
 
 message NotificationEventApplicationSynced {
