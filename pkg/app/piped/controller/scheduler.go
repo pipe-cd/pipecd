@@ -492,6 +492,8 @@ func (s *scheduler) executeStage(sig executor.StopSignal, ps model.PipelineStage
 		AppLiveResourceLister: alrLister,
 		AnalysisResultStore:   aStore,
 		Logger:                s.logger,
+		Notifier:              s.notifier,
+		EnvName:               s.envName,
 	}
 
 	// Find the executor for this stage.
