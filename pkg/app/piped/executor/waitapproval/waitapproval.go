@@ -16,14 +16,11 @@ package waitapproval
 
 import (
 	"context"
-	"os"
-	"path/filepath"
 	"time"
 
 	"go.uber.org/zap"
 
 	"github.com/pipe-cd/pipe/pkg/app/piped/executor"
-	"github.com/pipe-cd/pipe/pkg/config"
 	"github.com/pipe-cd/pipe/pkg/model"
 )
 
@@ -125,22 +122,9 @@ func (e *Executor) reportRequiringApproval(ctx context.Context) {
 		e.LogPersister.Errorf("Failed to prepare running deploy source data (%v)", err)
 	}
 
-	var (
-		approvers []string
+	var approvers []string
 
-		relPath  = e.Application.GitPath.GetDeploymentConfigFilePath()
-		repoPath = ds.RepoDir
-		absPath  = filepath.Join(repoPath, relPath)
-	)
-
-	cfg, err := config.LoadFromYAML(absPath)
-	if err != nil {
-		if os.IsNotExist(err) {
-			e.LogPersister.Errorf("deployment config file %s was not found", relPath)
-		}
-	}
-
-	for _, v := range cfg.KubernetesDeploymentSpec.GenericDeploymentSpec.Notification.Mentions {
+	for _, v := range ds.GenericDeploymentConfig.DeploymentNotification.Mentions {
 		if v.Event == "WATING_APPROVAL" {
 			approvers = v.Slack
 		}
@@ -151,7 +135,7 @@ func (e *Executor) reportRequiringApproval(ctx context.Context) {
 		Metadata: &model.NotificationEventDeploymentWaitApproval{
 			Deployment: e.Deployment,
 			EnvName:    e.EnvName,
-			Approvers:   approvers,
+			Approvers:  approvers,
 		},
 	})
 }
