@@ -1,5 +1,3 @@
-# This deployment has an Approval stage to wait until got
-# an approval from one of the specified approvers.
 apiVersion: pipecd.dev/v1beta1
 kind: KubernetesApp
 spec:
@@ -14,3 +12,9 @@ spec:
             - nghialv
       - name: K8S_PRIMARY_ROLLOUT
       - name: K8S_CANARY_CLEAN
+  notification:
+    mentions:
+      - event: DEPLOYMENT_WAIT_APPROVAL
+        slack:
+          - U024BE7LH # nghia
+          - U025BE7LK # nakabonne
