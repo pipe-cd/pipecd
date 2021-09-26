@@ -2,6 +2,23 @@
 apiVersion: pipecd.dev/v1beta1
 kind: LambdaApp
 spec:
+  pipeline:
+    stages:
+      # Deploy workloads of the new version.
+      # But this is still receiving no traffic.
+      - name: LAMBDA_CANARY_ROLLOUT
+      # Promote new version to receive amount of traffic.
+      - name: LAMBDA_PROMOTE
+        with:
+          percent: 10
+      - name: LAMBDA_PROMOTE
+        with:
+          percent: 50
+      - name: WAIT_APPROVAL
+      # Promote new version to receive all traffic.
+      - name: LAMBDA_PROMOTE
+        with:
+          percent: 100
   notification:
     mentions:
       - event: DEPLOYMENT_WAIT_APPROVAL
