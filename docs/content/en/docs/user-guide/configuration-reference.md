@@ -30,6 +30,7 @@ spec:
 | sealedSecrets | [][SealedSecretMapping](/docs/user-guide/configuration-reference/#sealedsecretmapping) | The list of sealed secrets should be decrypted. | No |
 | triggerPaths | []string | List of directories or files where their changes will trigger the deployment. Regular expression can be used. | No |
 | timeout | duration | The maximum length of time to execute deployment before giving up. Default is 6h. | No |
+| notification | [DeploymentNotification](/docs/user-guide/configuration-reference/#deploymentnotification) | Additional configuration used while sending notification to external services. | No |
 
 ## Terraform application
 
@@ -51,6 +52,7 @@ spec:
 | sealedSecrets | [][SealedSecretMapping](/docs/user-guide/configuration-reference/#sealedsecretmapping) | The list of sealed secrets should be decrypted. | No |
 | triggerPaths | []string | List of directories or files where their changes will trigger the deployment. Regular expression can be used. | No |
 | timeout | duration | The maximum length of time to execute deployment before giving up. Default is 6h. | No |
+| notification | [DeploymentNotification](/docs/user-guide/configuration-reference/#deploymentnotification) | Additional configuration used while sending notification to external services. | No |
 
 ## CloudRun application
 
@@ -72,6 +74,7 @@ spec:
 | triggerPaths | []string | List of directories or files where their changes will trigger the deployment. Regular expression can be used. | No |
 | sealedSecrets | [][SealedSecretMapping](/docs/user-guide/configuration-reference/#sealedsecretmapping) | The list of sealed secrets should be decrypted. | No |
 | timeout | duration | The maximum length of time to execute deployment before giving up. Default is 6h. | No |
+| notification | [DeploymentNotification](/docs/user-guide/configuration-reference/#deploymentnotification) | Additional configuration used while sending notification to external services. | No |
 
 ## Lambda application
 
@@ -91,6 +94,7 @@ spec:
 | triggerPaths | []string | List of directories or files where their changes will trigger the deployment. Regular expression can be used. | No |
 | sealedSecrets | [][SealedSecretMapping](/docs/user-guide/configuration-reference/#sealedsecretmapping) | The list of sealed secrets should be decrypted. | No |
 | timeout | duration | The maximum length of time to execute deployment before giving up. Default is 6h. | No |
+| notification | [DeploymentNotification](/docs/user-guide/configuration-reference/#deploymentnotification) | Additional configuration used while sending notification to external services. | No |
 
 ## ECS application
 
@@ -112,6 +116,7 @@ spec:
 | triggerPaths | []string | List of directories or files where their changes will trigger the deployment. Regular expression can be used. | No |
 | sealedSecrets | [][SealedSecretMapping](/docs/user-guide/configuration-reference/#sealedsecretmapping) | The list of sealed secrets should be decrypted. | No |
 | timeout | duration | The maximum length of time to execute deployment before giving up. Default is 6h. | No |
+| notification | [DeploymentNotification](/docs/user-guide/configuration-reference/#deploymentnotification) | Additional configuration used while sending notification to external services. | No |
 
 ## Analysis Template Configuration
 
@@ -197,6 +202,19 @@ One of `yamlField` or `regex` is required.
 | desc | string | The description about the stage. | No |
 | timeout | duration | The maximum time the stage can be taken to run. | No |
 | with | [StageOptions](/docs/user-guide/configuration-reference/#stageoptions) | Specific configuration for the stage. This must be one of these [StageOptions](/docs/user-guide/configuration-reference/#stageoptions). | No |
+
+## DeploymentNotification
+
+| Field | Type | Description | Required |
+|-|-|-|-|
+| mentions | [][NotificationMention](/docs/user-guide/configuration-reference/#notificationmention) | List of users to be notified for each event. | No |
+
+## NotificationMention
+
+| Field | Type | Description | Required |
+|-|-|-|-|
+| event | []string | The event to be notified to users. | Yes |
+| slack | []string | The user name for mentioning in Slack. | Yes |
 
 ## KubernetesDeploymentInput
 
