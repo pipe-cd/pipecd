@@ -396,6 +396,7 @@ type NotificationMention struct {
 	Event string `json:"event"`
 	// The user name for mentioning in Slack.
 	Slack []string `json:"slack"`
+	// TODO: Support for email notification
 	// The email for notification.
 	Email []string `json:"email"`
 }
