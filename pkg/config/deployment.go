@@ -394,7 +394,7 @@ type DeploymentNotification struct {
 type NotificationMention struct {
 	// The event to be notified to users.
 	Event string `json:"event"`
-	// The user name for mentioning in Slack.
+	// The user id for mentioning in Slack.
 	Slack []string `json:"slack"`
 	// TODO: Support for email notification
 	// The email for notification.
