@@ -99,6 +99,8 @@ Please note that the phases (Incubating, Alpha, Beta, and Stable) are applied to
 | [ADA](/docs/user-guide/automated-deployment-analysis/) by CloudWatch metrics | Incubating |
 | [ADA](/docs/user-guide/automated-deployment-analysis/) by CloudWatch log | Incubating |
 | [ADA](/docs/user-guide/automated-deployment-analysis/) by HTTP request (smoke test...) | Incubating |
+| Remote upgrade - Ability to upgrade Piped from the web console | Incubating |
+| Remote config - Watch and reload configuration from a remote location such as Git | Incubating |
 
 ### ControlPlane's Core
 
