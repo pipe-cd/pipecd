@@ -2,8 +2,7 @@
 apiVersion: pipecd.dev/v1beta1
 kind: CloudRunApp
 spec:
-  notification:
-    pipeline:
+  pipeline:
     stages:
       # Promote new version to receive amount of traffic.
       - name: CLOUDRUN_PROMOTE
@@ -14,6 +13,7 @@ spec:
       - name: CLOUDRUN_PROMOTE
         with:
           percent: 100
+  notification:
     mentions:
       - event: DEPLOYMENT_WAIT_APPROVAL
         slack:
