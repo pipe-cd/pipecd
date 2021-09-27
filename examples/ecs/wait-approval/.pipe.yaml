@@ -3,30 +3,30 @@ apiVersion: pipecd.dev/v1beta1
 kind: ECSApp
 spec:
   pipeline:
-      stages:
-        # Rollout CANARY variant's workload.
-        # scale represents the percentage of workload will be rolled out,
-        # in this case 30% of the current PRIMARY variant's workload is set.
-        # Note: Rolled out variant serves no traffic at this time.
-        - name: ECS_CANARY_ROLLOUT
-          with:
-            scale: 30
-        # Change the traffic routing state where
-        # the CANARY workloads will receive the specified percentage of traffic
-        # (20% in this case). This is known as multi-phase canary strategy.
-        - name: ECS_TRAFFIC_ROUTING
-          with:
-            canary: 20
-        - name: WAIT_APPROVAL
-        # Update the workload of PRIMARY variant to the new version.
-        - name: ECS_PRIMARY_ROLLOUT
-        # Change the traffic routing state where
-        # the PRIMARY workloads will receive 100% of the traffic.
-        - name: ECS_TRAFFIC_ROUTING
-          with:
-            primary: 100
-        # Destroy all workloads of CANARY variant.
-        - name: ECS_CANARY_CLEAN
+    stages:
+      # Rollout CANARY variant's workload.
+      # scale represents the percentage of workload will be rolled out,
+      # in this case 30% of the current PRIMARY variant's workload is set.
+      # Note: Rolled out variant serves no traffic at this time.
+      - name: ECS_CANARY_ROLLOUT
+        with:
+          scale: 30
+      # Change the traffic routing state where
+      # the CANARY workloads will receive the specified percentage of traffic
+      # (20% in this case). This is known as multi-phase canary strategy.
+      - name: ECS_TRAFFIC_ROUTING
+        with:
+          canary: 20
+      - name: WAIT_APPROVAL
+      # Update the workload of PRIMARY variant to the new version.
+      - name: ECS_PRIMARY_ROLLOUT
+      # Change the traffic routing state where
+      # the PRIMARY workloads will receive 100% of the traffic.
+      - name: ECS_TRAFFIC_ROUTING
+        with:
+          primary: 100
+      # Destroy all workloads of CANARY variant.
+      - name: ECS_CANARY_CLEAN
   notification:
     mentions:
       - event: DEPLOYMENT_WAIT_APPROVAL
