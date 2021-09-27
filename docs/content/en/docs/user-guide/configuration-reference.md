@@ -213,8 +213,8 @@ One of `yamlField` or `regex` is required.
 
 | Field | Type | Description | Required |
 |-|-|-|-|
-| event | []string | The event to be notified to users. | Yes |
-| slack | []string | The user id for mentioning in Slack. | Yes |
+| event | []string | The event to be notified to users. | No |
+| slack | []string | The user id for mentioning in Slack. | No |
 
 ## KubernetesDeploymentInput
 
