@@ -61,13 +61,6 @@ spec:
 - `kind` is the application kind. As explained before, supporting kinds of application are: `Kubernetes`, `Terrform`, `CloudRun`, `Lambda` and `ECS`.
 - `spec` is the specific configuration for each application kind.
 
-After clicking on the `Save` button at the previous step, the popup will be changed to allow you to fill your deployment configuration. You can also choose one of the prepared templates.
-
-![](/images/adding-deployment-configuration-file.png)
-<p style="text-align: center;">
-Popup for registering a new application from Web UI
-</p>
-
-<br/>
+Please refer [pipecd/examples](https://pipecd.dev/docs/user-guide/examples/) for the deployments being supported.
 
 The [next section](/docs/user-guide/configuring-deployment/) guides you how to configure the deployment for each specific application kinds.
