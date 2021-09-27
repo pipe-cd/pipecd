@@ -11,9 +11,6 @@ spec:
       - name: LAMBDA_PROMOTE
         with:
           percent: 10
-      - name: LAMBDA_PROMOTE
-        with:
-          percent: 50
       - name: WAIT_APPROVAL
       # Promote new version to receive all traffic.
       - name: LAMBDA_PROMOTE

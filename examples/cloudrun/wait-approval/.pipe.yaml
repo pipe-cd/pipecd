@@ -10,11 +10,6 @@ spec:
         with:
           percent: 10
       - name: WAIT_APPOVAL
-      # Promote new version to receive amount of traffic.
-      - name: CLOUDRUN_PROMOTE
-        with:
-          percent: 50
-      - name: WAIT_APPOVAL
       # Promote new version to receive all traffic.
       - name: CLOUDRUN_PROMOTE
         with:
