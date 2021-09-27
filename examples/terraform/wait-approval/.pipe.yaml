@@ -15,3 +15,9 @@ spec:
       serviceAccount: {ENCRYPTED_DATA_GENERATED_FROM_WEB}
     decryptionTargets:
       - .credentials/service-account.json
+  notification:
+    mentions:
+      - event: DEPLOYMENT_WAIT_APPROVAL
+        slack:
+          - slack-user-id-1  # slack-user-name-1
+          - slack-user-id-2  # slack-user-name-2
