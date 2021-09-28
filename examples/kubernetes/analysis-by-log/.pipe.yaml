@@ -9,7 +9,6 @@ spec:
       - name: ANALYSIS
         with:
           duration: 10m
-          threshold: 2
           logs:
             - query: 'logName = "projects/demo/logs/error'
               interval: 1m

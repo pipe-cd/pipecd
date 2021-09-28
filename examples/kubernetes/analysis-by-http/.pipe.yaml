@@ -9,11 +9,11 @@ spec:
       - name: ANALYSIS
         with:
           duration: 10m
-          threshold: 2
           https:
             - url: https://canary-endpoint.pipecd.dev
               method: GET
-              expected: 200
+              expectedCode: 200
+              failureLimit: 1
               interval: 1m
       - name: K8S_PRIMARY_ROLLOUT
       - name: K8S_CANARY_CLEAN
