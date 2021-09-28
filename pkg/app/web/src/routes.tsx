@@ -1,7 +1,7 @@
 import loadable from "@loadable/component";
 import { EntityId } from "@reduxjs/toolkit";
 import { FC, useEffect } from "react";
-import { Redirect, Route, Switch } from "react-router-dom";
+import { Redirect, Route, Switch, useLocation } from "react-router-dom";
 import { ApplicationIndexPage } from "~/components/applications-page";
 import { DeploymentIndexPage } from "~/components/deployments-page";
 import { Header } from "~/components/header";
@@ -23,6 +23,7 @@ import {
 } from "~/modules/commands";
 import { fetchEnvironments } from "~/modules/environments";
 import { fetchPipeds } from "~/modules/pipeds";
+import useQueryString from "./hooks/use-query-string";
 
 const SettingsIndexPage = loadable(
   () => import(/* webpackChunkName: "settings" */ "~/components/settings-page"),
@@ -88,6 +89,14 @@ export const Routes: FC = () => {
     }
   }, [dispatch, me]);
   useCommandsStatusChecking();
+
+  const location = useLocation();
+  const [_, onLoadProject] = useQueryString("project", "");
+  useEffect(() => {
+    if (me?.isLogin) {
+      onLoadProject(me.projectId);
+    }
+  }, [location]);
 
   if (me === null) {
     return (
