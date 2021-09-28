@@ -16,7 +16,6 @@ package datadog
 
 import (
 	"context"
-	"errors"
 	"fmt"
 	"net/http"
 	"testing"
@@ -28,89 +27,6 @@ import (
 
 	"github.com/pipe-cd/pipe/pkg/app/piped/analysisprovider/metrics"
 )
-
-type fakeEvaluator struct {
-	expected bool
-}
-
-func (f *fakeEvaluator) InRange(_ float64) bool {
-	return f.expected
-}
-
-func (f *fakeEvaluator) String() string {
-	return ""
-}
-
-func TestEvaluate(t *testing.T) {
-	testcases := []struct {
-		name      string
-		evaluator metrics.Evaluator
-		series    []datadog.MetricsQueryMetadata
-		want      bool
-		wantErr   bool
-		errNoData bool
-	}{
-		{
-			name:      "no data points found",
-			evaluator: &fakeEvaluator{},
-			series: []datadog.MetricsQueryMetadata{
-				{
-					Pointlist: nil,
-				},
-			},
-			want:      false,
-			wantErr:   true,
-			errNoData: true,
-		},
-		{
-			name:      "invalid data point format",
-			evaluator: &fakeEvaluator{},
-			series: []datadog.MetricsQueryMetadata{
-				{
-					Pointlist: &[][]float64{
-						{0},
-					},
-				},
-			},
-			want:    false,
-			wantErr: true,
-		},
-		{
-			name:      "out of range",
-			evaluator: &fakeEvaluator{expected: false},
-			series: []datadog.MetricsQueryMetadata{
-				{
-					Pointlist: &[][]float64{
-						{0, 1},
-					},
-				},
-			},
-			want:    false,
-			wantErr: false,
-		},
-		{
-			name:      "within the range",
-			evaluator: &fakeEvaluator{expected: true},
-			series: []datadog.MetricsQueryMetadata{
-				{
-					Pointlist: &[][]float64{
-						{0, 1},
-					},
-				},
-			},
-			want:    true,
-			wantErr: false,
-		},
-	}
-	for _, tc := range testcases {
-		t.Run(tc.name, func(t *testing.T) {
-			got, _, err := evaluate(tc.evaluator, tc.series)
-			assert.Equal(t, tc.wantErr, err != nil)
-			assert.Equal(t, tc.want, got)
-			assert.Equal(t, tc.errNoData, errors.Is(err, metrics.ErrNoDataFound))
-		})
-	}
-}
 
 func TestProviderQueryPoints(t *testing.T) {
 	toInt64Pointer := func(i int64) *int64 { return &i }
