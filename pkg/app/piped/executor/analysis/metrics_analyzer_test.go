@@ -32,9 +32,6 @@ type fakeMetricsProvider struct {
 }
 
 func (f *fakeMetricsProvider) Type() string { return "" }
-func (f *fakeMetricsProvider) Evaluate(_ context.Context, _ string, _ metrics.QueryRange, _ metrics.Evaluator) (expected bool, reason string, err error) {
-	return
-}
 func (f *fakeMetricsProvider) QueryPoints(_ context.Context, _ string, _ metrics.QueryRange) ([]metrics.DataPoint, error) {
 	return f.points, f.err
 }
