@@ -73,7 +73,7 @@ type templateArgs struct {
 }
 
 // Execute spawns and runs multiple analyzer that run a query at the regular time.
-// Any on of those fail then the stage ends with failure.
+// Any of those fail then the stage ends with failure.
 func (e *Executor) Execute(sig executor.StopSignal) model.StageStatus {
 	e.startTime = time.Now()
 	ctx := sig.Context()
@@ -115,14 +115,20 @@ func (e *Executor) Execute(sig executor.StopSignal) model.StageStatus {
 
 	// Run analyses with metrics providers.
 	for i := range options.Metrics {
-		// TODO: Use metrics analyzer to perform ADA for each strategy
-		analyzer, err := e.newAnalyzerForMetrics(i, &options.Metrics[i], templateCfg)
+		cfg, err := e.getMetricsConfig(options.Metrics[i], templateCfg, options.Metrics[i].Template.Args)
 		if err != nil {
-			e.LogPersister.Errorf("Failed to spawn analyzer for %s: %v", options.Metrics[i].Provider, err)
+			e.LogPersister.Errorf("Failed to get metrics config: %v", err)
 			return model.StageStatus_STAGE_FAILURE
 		}
+		provider, err := e.newMetricsProvider(cfg.Provider, options.Metrics[i])
+		if err != nil {
+			e.LogPersister.Errorf("Failed to generate metrics provider: %v", err)
+			return model.StageStatus_STAGE_FAILURE
+		}
+		id := fmt.Sprintf("metrics-%d", i)
+		analyzer := newMetricsAnalyzer(id, *cfg, e.startTime, provider, e.AnalysisResultStore, e.Logger, e.LogPersister)
 		eg.Go(func() error {
-			e.LogPersister.Infof("[%s] Start analysis for %s", analyzer.id, analyzer.providerType)
+			e.LogPersister.Infof("[%s] Start analysis", analyzer.id)
 			return analyzer.run(ctx)
 		})
 	}
@@ -204,27 +210,6 @@ func (e *Executor) retrievePreviousElapsedTime() time.Duration {
 	return et
 }
 
-func (e *Executor) newAnalyzerForMetrics(i int, templatable *config.TemplatableAnalysisMetrics, templateCfg *config.AnalysisTemplateSpec) (*analyzer, error) {
-	cfg, err := e.getMetricsConfig(templatable, templateCfg, templatable.Template.Args)
-	if err != nil {
-		return nil, err
-	}
-	provider, err := e.newMetricsProvider(cfg.Provider, templatable)
-	if err != nil {
-		return nil, err
-	}
-	id := fmt.Sprintf("metrics-%d", i)
-	runner := func(ctx context.Context, query string) (bool, string, error) {
-		now := time.Now()
-		queryRange := metrics.QueryRange{
-			From: now.Add(-cfg.Interval.Duration()),
-			To:   now,
-		}
-		return provider.Evaluate(ctx, query, queryRange, &cfg.Expected)
-	}
-	return newAnalyzer(id, provider.Type(), cfg.Query, runner, time.Duration(cfg.Interval), cfg.FailureLimit, cfg.SkipOnNoData, e.Logger, e.LogPersister), nil
-}
-
 func (e *Executor) newAnalyzerForLog(i int, templatable *config.TemplatableAnalysisLog, templateCfg *config.AnalysisTemplateSpec) (*analyzer, error) {
 	cfg, err := e.getLogConfig(templatable, templateCfg, templatable.Template.Args)
 	if err != nil {
@@ -254,12 +239,12 @@ func (e *Executor) newAnalyzerForHTTP(i int, templatable *config.TemplatableAnal
 	return newAnalyzer(id, provider.Type(), "", runner, time.Duration(cfg.Interval), cfg.FailureLimit, cfg.SkipOnNoData, e.Logger, e.LogPersister), nil
 }
 
-func (e *Executor) newMetricsProvider(providerName string, templatable *config.TemplatableAnalysisMetrics) (metrics.Provider, error) {
+func (e *Executor) newMetricsProvider(providerName string, templatable config.TemplatableAnalysisMetrics) (metrics.Provider, error) {
 	cfg, ok := e.PipedConfig.GetAnalysisProvider(providerName)
 	if !ok {
 		return nil, fmt.Errorf("unknown provider name %s", providerName)
 	}
-	provider, err := metricsfactory.NewProvider(templatable, &cfg, e.Logger)
+	provider, err := metricsfactory.NewProvider(&templatable, &cfg, e.Logger)
 	if err != nil {
 		return nil, err
 	}
@@ -280,7 +265,7 @@ func (e *Executor) newLogProvider(providerName string) (log.Provider, error) {
 
 // getMetricsConfig renders the given template and returns the metrics config.
 // Just returns metrics config if no template specified.
-func (e *Executor) getMetricsConfig(templatableCfg *config.TemplatableAnalysisMetrics, templateCfg *config.AnalysisTemplateSpec, args map[string]string) (*config.AnalysisMetrics, error) {
+func (e *Executor) getMetricsConfig(templatableCfg config.TemplatableAnalysisMetrics, templateCfg *config.AnalysisTemplateSpec, args map[string]string) (*config.AnalysisMetrics, error) {
 	name := templatableCfg.Template.Name
 	if name == "" {
 		cfg := &templatableCfg.AnalysisMetrics

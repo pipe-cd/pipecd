@@ -145,7 +145,7 @@ func (a *metricsAnalyzer) analyzeWithThreshold(ctx context.Context) (bool, error
 		break
 	}
 	if !expected {
-		a.logPersister.Errorf("[%s] Failed because it found a data point (%s) that is outside the expected range (%s). Performed query: %q", a.id, outiler, a.cfg.Expected, a.cfg.Query)
+		a.logPersister.Errorf("[%s] Failed because it found a data point (%s) that is outside the expected range (%s). Performed query: %q", a.id, &outiler, &a.cfg.Expected, a.cfg.Query)
 		return false, nil
 	}
 

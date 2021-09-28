@@ -216,7 +216,7 @@ func (p *Provider) QueryPoints(ctx context.Context, query string, queryRange met
 		Step:  step,
 	})
 	if err != nil {
-		return nil, fmt.Errorf("failed to run query for %s", ProviderType)
+		return nil, fmt.Errorf("failed to run query for %s: %w", ProviderType, err)
 	}
 	for _, w := range warnings {
 		p.logger.Warn("non critical error occurred", zap.String("warning", w))
@@ -269,7 +269,7 @@ func (p *Provider) QueryPoints(ctx context.Context, query string, queryRange met
 					return nil, fmt.Errorf("the value is not a number: %w", metrics.ErrNoDataFound)
 				}
 				points = append(points, metrics.DataPoint{
-					Timestamp: int64(point.Timestamp),
+					Timestamp: point.Timestamp.Unix(),
 					Value:     float64(point.Value),
 				})
 			}
