@@ -17,13 +17,13 @@ import {
 } from "~/constants/path";
 import { useAppDispatch, useAppSelector } from "~/hooks/redux";
 import { useInterval } from "~/hooks/use-interval";
+import useQueryString from "./hooks/use-query-string";
 import {
   fetchCommand,
   selectIds as selectCommandIds,
 } from "~/modules/commands";
 import { fetchEnvironments } from "~/modules/environments";
 import { fetchPipeds } from "~/modules/pipeds";
-import useQueryString from "./hooks/use-query-string";
 
 const SettingsIndexPage = loadable(
   () => import(/* webpackChunkName: "settings" */ "~/components/settings-page"),
