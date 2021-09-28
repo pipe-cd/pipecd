@@ -179,7 +179,7 @@ func TestProviderQueryPoints(t *testing.T) {
 				To:   time.Date(2009, time.January, 1, 0, 5, 0, 0, time.UTC),
 			},
 			want: []metrics.DataPoint{
-				{Timestamp: 1600000000, Value: 0.1},
+				{Timestamp: 1600000, Value: 0.1},
 			},
 		},
 		{
@@ -191,7 +191,7 @@ func TestProviderQueryPoints(t *testing.T) {
 						Value:     model.SampleValue(0.1),
 					},
 					{
-						Timestamp: model.Time(1600000001),
+						Timestamp: model.Time(1600001000),
 						Value:     model.SampleValue(0.2),
 					},
 				}),
@@ -202,8 +202,8 @@ func TestProviderQueryPoints(t *testing.T) {
 				To:   time.Date(2009, time.January, 1, 0, 5, 0, 0, time.UTC),
 			},
 			want: []metrics.DataPoint{
-				{Timestamp: 1600000000, Value: 0.1},
-				{Timestamp: 1600000001, Value: 0.2},
+				{Timestamp: 1600000, Value: 0.1},
+				{Timestamp: 1600001, Value: 0.2},
 			},
 		},
 		{
@@ -217,7 +217,7 @@ func TestProviderQueryPoints(t *testing.T) {
 								Value:     model.SampleValue(0.1),
 							},
 							{
-								Timestamp: model.Time(1600000001),
+								Timestamp: model.Time(1600001000),
 								Value:     model.SampleValue(0.2),
 							},
 						},
@@ -230,8 +230,8 @@ func TestProviderQueryPoints(t *testing.T) {
 				To:   time.Date(2009, time.January, 1, 0, 5, 0, 0, time.UTC),
 			},
 			want: []metrics.DataPoint{
-				{Timestamp: 1600000000, Value: 0.1},
-				{Timestamp: 1600000001, Value: 0.2},
+				{Timestamp: 1600000, Value: 0.1},
+				{Timestamp: 1600001, Value: 0.2},
 			},
 		},
 	}

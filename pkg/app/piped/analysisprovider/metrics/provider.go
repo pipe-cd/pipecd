@@ -42,12 +42,13 @@ type Provider interface {
 }
 
 type DataPoint struct {
+	// Unix timestamp in seconds.
 	Timestamp int64
 	Value     float64
 }
 
 func (d *DataPoint) String() string {
-	return fmt.Sprintf("timestamp: %v, value: %g", time.Unix(d.Timestamp, 0), d.Value)
+	return fmt.Sprintf("timestamp: %q, value: %g", time.Unix(d.Timestamp, 0), d.Value)
 }
 
 // Evaluator evaluates the response from the metrics provider.
