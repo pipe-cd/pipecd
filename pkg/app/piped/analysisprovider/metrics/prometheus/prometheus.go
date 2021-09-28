@@ -230,7 +230,7 @@ func (p *Provider) QueryPoints(ctx context.Context, query string, queryRange met
 			return nil, fmt.Errorf("the value is not a number: %w", metrics.ErrNoDataFound)
 		}
 		return []metrics.DataPoint{
-			{Timestamp: int64(res.Timestamp), Value: float64(res.Value)},
+			{Timestamp: res.Timestamp.Unix(), Value: float64(res.Value)},
 		}, nil
 	case model.Vector:
 		if len(res) == 0 {
@@ -245,7 +245,7 @@ func (p *Provider) QueryPoints(ctx context.Context, query string, queryRange met
 				return nil, fmt.Errorf("the value is not a number: %w", metrics.ErrNoDataFound)
 			}
 			points = append(points, metrics.DataPoint{
-				Timestamp: int64(s.Timestamp),
+				Timestamp: s.Timestamp.Unix(),
 				Value:     float64(s.Value),
 			})
 		}
