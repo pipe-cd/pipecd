@@ -149,7 +149,19 @@ func (a *PipedAPI) ReportPipedMeta(ctx context.Context, req *pipedservice.Report
 			return nil, status.Error(codes.Internal, "failed to update the piped metadata")
 		}
 	}
-	return &pipedservice.ReportPipedMetaResponse{}, nil
+
+	var piped *model.Piped
+	piped, err = a.pipedStore.GetPiped(ctx, pipedID)
+	if err != nil {
+		a.logger.Error("unable to find piped from datastore",
+							zap.String("piped-id", pipedID),
+							zap.Error(err),
+					  )
+		return nil, status.Error(codes.Internal, "unable to find piped from datastore")
+	}
+	return &pipedservice.ReportPipedMetaResponse{
+		Name: piped.Name,
+	}, nil
 }
 
 // GetEnvironment finds and returns the environment for the specified ID.
