@@ -27,6 +27,7 @@ export const dummyPiped: Piped.AsObject = {
   startedAt: startedAt.unix(),
   updatedAt: updatedAt.unix(),
   version: "v0.1",
+  desiredVersion: "v1.0.0",
   status: Piped.ConnectionStatus.ONLINE,
   keyHash: "12345",
   keysList: [

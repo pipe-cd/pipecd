@@ -70,6 +70,11 @@ message Piped {
     // The list keys can be used to authenticate.
     repeated PipedKey keys = 20;
 
+    // The desired version of Piped that should be run.
+    // Launcher uses this value to compare with the currently running version
+    // to determine whether Piped should be restarted with another version or not.
+    string desired_version = 30;
+
     // Whether the piped is disabled or not.
     bool disabled = 13;
     // Unix time when the piped is created.
