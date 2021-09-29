@@ -886,6 +886,20 @@ func (a *PipedAPI) PutLatestAnalysisResult(ctx context.Context, req *pipedservic
 	return &pipedservice.PutLatestAnalysisResultResponse{}, nil
 }
 
+func (a *PipedAPI) GetDesiredVersion(ctx context.Context, req *pipedservice.GetDesiredVersionRequest) (*pipedservice.GetDesiredVersionResponse, error) {
+	_, pipedID, _, err := rpcauth.ExtractPipedToken(ctx)
+	if err != nil {
+		return nil, err
+	}
+	piped, err := getPiped(ctx, a.pipedStore, pipedID, a.logger)
+	if err != nil {
+		return nil, err
+	}
+	return &pipedservice.GetDesiredVersionResponse{
+		Version: piped.DesiredVersion,
+	}, nil
+}
+
 // validateAppBelongsToPiped checks if the given application belongs to the given piped.
 // It gives back an error unless the application belongs to the piped.
 func (a *PipedAPI) validateAppBelongsToPiped(ctx context.Context, appID, pipedID string) error {

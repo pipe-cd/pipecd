@@ -154,6 +154,9 @@ service PipedService {
 
     // GetLatestAnalysisResult updates the most successful analysis result.
     rpc PutLatestAnalysisResult(PutLatestAnalysisResultRequest) returns (PutLatestAnalysisResultResponse) {}
+
+    // GetDesiredVersion returns the desired version of the given Piped.
+    rpc GetDesiredVersion(GetDesiredVersionRequest) returns (GetDesiredVersionResponse) {}
 }
 
 enum ListOrder {
@@ -419,4 +422,11 @@ message PutLatestAnalysisResultRequest {
 }
 
 message PutLatestAnalysisResultResponse {
+}
+
+message GetDesiredVersionRequest {
+}
+
+message GetDesiredVersionResponse {
+    string version = 1;
 }
