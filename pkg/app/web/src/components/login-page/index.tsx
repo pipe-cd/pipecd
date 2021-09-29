@@ -7,11 +7,11 @@ import {
 } from "@material-ui/core";
 import ArrowRightAltIcon from "@material-ui/icons/ArrowRightAlt";
 import MuiAlert from "@material-ui/lab/Alert";
-import * as React from "react";
 import { FC, memo, useState } from "react";
 import { useCookies } from "react-cookie";
-import { Link, Redirect, useHistory, useParams } from "react-router-dom";
+import { Redirect } from "react-router-dom";
 import { PAGE_PATH_APPLICATIONS, PAGE_PATH_LOGIN } from "~/constants/path";
+import { getQueryStringValue } from "~/hooks/use-query-string";
 import { useAppSelector } from "~/hooks/redux";
 import { LoginForm } from "./login-form";
 
@@ -54,16 +54,14 @@ export const LoginPage: FC = memo(function LoginPage() {
   const me = useAppSelector((state) => state.me);
   const [name, setName] = useState<string>("");
   const [cookies, , removeCookie] = useCookies(["error"]);
-  const { projectName } = useParams<{ projectName?: string }>();
-  const history = useHistory();
+  const project = getQueryStringValue("project") as string;
 
   const handleCloseErrorAlert = (): void => {
     removeCookie("error");
   };
 
-  const handleOnContinue = (e: React.FormEvent<HTMLFormElement>): void => {
-    e.preventDefault();
-    history.push(`${PAGE_PATH_LOGIN}/${name}`);
+  const handleOnContinue = (): void => {
+    window.location.href = `${PAGE_PATH_LOGIN}?project=${name}`;
   };
 
   return (
@@ -79,10 +77,10 @@ export const LoginPage: FC = memo(function LoginPage() {
         </MuiAlert>
       )}
       <Card className={classes.content}>
-        {projectName ? (
-          <LoginForm projectName={projectName} />
+        {project ? (
+          <LoginForm projectName={project} />
         ) : (
-          <form onSubmit={handleOnContinue}>
+          <div>
             <Typography variant="h4">Sign in to your project</Typography>
             <div className={classes.fields}>
               <TextField
@@ -102,14 +100,13 @@ export const LoginPage: FC = memo(function LoginPage() {
                 color="primary"
                 variant="contained"
                 endIcon={<ArrowRightAltIcon />}
-                component={Link}
                 disabled={name === ""}
-                to={`${PAGE_PATH_LOGIN}/${name}`}
+                onClick={handleOnContinue}
               >
                 CONTINUE
               </Button>
             </div>
-          </form>
+          </div>
         )}
       </Card>
     </div>

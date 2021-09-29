@@ -1,7 +1,7 @@
 import { useState, useCallback } from "react";
 import { parse, stringify } from "query-string";
 
-const getQueryStringValue = ( 
+export const getQueryStringValue = ( 
   key: string, 
   queryString = window.location.search
 ) => { 
