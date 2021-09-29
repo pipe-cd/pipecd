@@ -150,10 +150,10 @@ func (s *slack) buildSlackMessage(event model.NotificationEvent, webURL string) 
 			{"Started At", makeSlackDate(d.CreatedAt), true},
 		}
 	}
-	generatePipedEventData := func(id, version string) {
+	generatePipedEventData := func(name, version string) {
 		link = webURL + "/settings/piped"
 		fields = []slackField{
-			{"Id", id, true},
+			{"Name", name, true},
 			{"Version", version, true},
 		}
 	}
