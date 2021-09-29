@@ -605,7 +605,8 @@ func (p *piped) sendPipedMeta(ctx context.Context, client pipedservice.Client, c
 	}
 
 	for retry.WaitNext(ctx) {
-		if _, err = client.ReportPipedMeta(ctx, req); err == nil {
+		if res, err := client.ReportPipedMeta(ctx, req); err == nil {
+			cfg.Name = res.Name
 			return nil
 		}
 		logger.Warn("failed to report piped meta to control-plane, wait to the next retry",

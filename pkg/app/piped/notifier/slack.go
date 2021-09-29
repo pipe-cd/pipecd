@@ -206,12 +206,12 @@ func (s *slack) buildSlackMessage(event model.NotificationEvent, webURL string) 
 	case model.NotificationEventType_EVENT_PIPED_STARTED:
 		md := event.Metadata.(*model.NotificationEventPipedStarted)
 		title = "A piped has been started"
-		generatePipedEventData(md.Id, md.Version)
+		generatePipedEventData(md.Name, md.Version)
 
 	case model.NotificationEventType_EVENT_PIPED_STOPPED:
 		md := event.Metadata.(*model.NotificationEventPipedStopped)
 		title = "A piped has been stopped"
-		generatePipedEventData(md.Id, md.Version)
+		generatePipedEventData(md.Name, md.Version)
 
 	// TODO: Support application type of notification event.
 	default:
