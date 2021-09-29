@@ -86,7 +86,10 @@ var (
 		"SelfSubjectAccessReview":  {},
 		"SelfSubjectRulesReview":   {},
 		"SubjectAccessReview":      {},
+		"ResourceQuota":            {},
+		"PodTemplate":              {},
 		"IngressClass":             {},
+		"Namespace":                {},
 	}
 	ignoreResourceKeys = map[string]struct{}{
 		"v1:Service:default:kubernetes":               {},

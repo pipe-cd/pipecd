@@ -27,7 +27,7 @@ import { stringifySearchParams, useSearchParams } from "~/utils/search-params";
 import { AddApplicationDrawer } from "./add-application-drawer";
 import { ApplicationFilter } from "./application-filter";
 import { ApplicationList } from "./application-list";
-import { DeploymentConfigForm } from "./deployment-config-form";
+import { ApplicationAddedView } from "./application-added-view";
 import { EditApplicationDrawer } from "./edit-application-drawer";
 
 const useStyles = makeStyles((theme) => ({
@@ -97,6 +97,7 @@ export const ApplicationIndexPage: FC = () => {
     dispatch(fetchApplications(filterOptions));
   }, [dispatch, filterOptions]);
 
+  // TODO: Remove this handler.
   const handleCloseTemplateForm = (): void => {
     dispatch(clearTemplateTarget());
   };
@@ -176,7 +177,7 @@ export const ApplicationIndexPage: FC = () => {
         ModalProps={{ disableBackdropClick: isAdding }}
       >
         {addedApplicationId && (
-          <DeploymentConfigForm onSkip={handleCloseTemplateForm} />
+          <ApplicationAddedView onClose={handleCloseTemplateForm} />
         )}
       </Drawer>
     </>

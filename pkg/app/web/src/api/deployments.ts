@@ -32,6 +32,7 @@ export const getDeployments = ({
     opts.setApplicationIdsList(options.applicationIdsList);
     opts.setKindsList(options.kindsList);
     opts.setStatusesList(options.statusesList);
+    opts.setApplicationName(options.applicationName);
     req.setOptions(opts);
     req.setPageSize(pageSize);
     req.setCursor(cursor);

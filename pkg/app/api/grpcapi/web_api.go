@@ -1041,6 +1041,13 @@ func (a *WebAPI) ListDeployments(ctx context.Context, req *webservice.ListDeploy
 				Value:    o.EnvIds[0],
 			})
 		}
+		if o.ApplicationName != "" {
+			filters = append(filters, datastore.ListFilter{
+				Field:    "ApplicationName",
+				Operator: datastore.OperatorEqual,
+				Value:    o.ApplicationName,
+			})
+		}
 	}
 
 	deployments, cursor, err := a.deploymentStore.ListDeployments(ctx, datastore.ListOptions{
@@ -1444,8 +1451,6 @@ func (a *WebAPI) ListDeploymentConfigTemplates(ctx context.Context, req *webserv
 		templates = k8sDeploymentConfigTemplates
 	case model.ApplicationKind_TERRAFORM:
 		templates = terraformDeploymentConfigTemplates
-	case model.ApplicationKind_CROSSPLANE:
-		templates = crossplaneDeploymentConfigTemplates
 	case model.ApplicationKind_LAMBDA:
 		templates = lambdaDeploymentConfigTemplates
 	case model.ApplicationKind_CLOUDRUN:

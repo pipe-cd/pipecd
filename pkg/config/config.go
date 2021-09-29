@@ -43,8 +43,6 @@ const (
 	// KindTerraformApp represents deployment configuration for a Terraform application.
 	// This application contains a single workspace of a terraform root module.
 	KindTerraformApp Kind = "TerraformApp"
-	// KindCrossplaneApp represents deployment configuration for a Crossplane application.
-	KindCrossplaneApp Kind = "CrossplaneApp"
 	// KindLambdaApp represents deployment configuration for an AWS Lambda application.
 	KindLambdaApp Kind = "LambdaApp"
 	// KindCloudRunApp represents deployment configuration for a CloudRun application.
@@ -238,8 +236,6 @@ func ToApplicationKind(k Kind) (model.ApplicationKind, bool) {
 		return model.ApplicationKind_KUBERNETES, true
 	case KindTerraformApp:
 		return model.ApplicationKind_TERRAFORM, true
-	case KindCrossplaneApp:
-		return model.ApplicationKind_CROSSPLANE, true
 	case KindLambdaApp:
 		return model.ApplicationKind_LAMBDA, true
 	case KindCloudRunApp:

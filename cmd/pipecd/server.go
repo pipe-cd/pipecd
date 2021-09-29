@@ -29,6 +29,7 @@ import (
 	"golang.org/x/sync/errgroup"
 
 	"github.com/pipe-cd/pipe/pkg/admin"
+	"github.com/pipe-cd/pipe/pkg/app/api/analysisresultstore"
 	"github.com/pipe-cd/pipe/pkg/app/api/apikeyverifier"
 	"github.com/pipe-cd/pipe/pkg/app/api/applicationlivestatestore"
 	"github.com/pipe-cd/pipe/pkg/app/api/commandoutputstore"
@@ -182,6 +183,7 @@ func (s *server) run(ctx context.Context, t cli.Telemetry) error {
 	cache := rediscache.NewTTLCache(rd, cfg.Cache.TTLDuration())
 	sls := stagelogstore.NewStore(fs, cache, t.Logger)
 	alss := applicationlivestatestore.NewStore(fs, cache, t.Logger)
+	las := analysisresultstore.NewStore(fs, t.Logger)
 	cmds := commandstore.NewStore(ds, cache, t.Logger)
 	is := insightstore.NewStore(fs)
 	cmdOutputStore := commandoutputstore.NewStore(fs, t.Logger)
@@ -197,7 +199,7 @@ func (s *server) run(ctx context.Context, t cli.Telemetry) error {
 				datastore.NewPipedStore(ds),
 				t.Logger,
 			)
-			service = grpcapi.NewPipedAPI(ctx, ds, sls, alss, cmds, statCache, cmdOutputStore, t.Logger)
+			service = grpcapi.NewPipedAPI(ctx, ds, sls, alss, las, cmds, statCache, cmdOutputStore, t.Logger)
 			opts    = []rpc.Option{
 				rpc.WithPort(s.pipedAPIPort),
 				rpc.WithGracePeriod(s.gracePeriod),
@@ -273,6 +275,7 @@ func (s *server) run(ctx context.Context, t cli.Telemetry) error {
 			rpc.WithPort(s.webAPIPort),
 			rpc.WithGracePeriod(s.gracePeriod),
 			rpc.WithLogger(t.Logger),
+			rpc.WithLogUnaryInterceptor(t.Logger),
 			rpc.WithJWTAuthUnaryInterceptor(verifier, webservice.NewRBACAuthorizer(), t.Logger),
 			rpc.WithRequestValidationUnaryInterceptor(),
 		}

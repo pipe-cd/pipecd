@@ -76,11 +76,11 @@ func findCloudProvider(in *executor.Input) (name string, cfg *config.CloudProvid
 	return
 }
 
-func decideRevisionName(in *executor.Input, sm provider.ServiceManifest, commit string) (revision string, ok bool) {
+func decideRevisionName(sm provider.ServiceManifest, commit string, lp executor.LogPersister) (revision string, ok bool) {
 	var err error
 	revision, err = provider.DecideRevisionName(sm, commit)
 	if err != nil {
-		in.LogPersister.Errorf("Unable to decide revision name for the commit %s (%v)", commit, err)
+		lp.Errorf("Unable to decide revision name for the commit %s (%v)", commit, err)
 		return
 	}
 
@@ -88,51 +88,62 @@ func decideRevisionName(in *executor.Input, sm provider.ServiceManifest, commit 
 	return
 }
 
-func configureServiceManifest(in *executor.Input, sm provider.ServiceManifest, revision string, traffics []provider.RevisionTraffic) bool {
-	if err := sm.SetRevision(revision); err != nil {
-		in.LogPersister.Errorf("Unable to set revision name to service manifest (%v)", err)
-		return false
+func configureServiceManifest(sm provider.ServiceManifest, revision string, traffics []provider.RevisionTraffic, lp executor.LogPersister) bool {
+	if revision != "" {
+		if err := sm.SetRevision(revision); err != nil {
+			lp.Errorf("Unable to set revision name to service manifest (%v)", err)
+			return false
+		}
 	}
 
 	if err := sm.UpdateTraffic(traffics); err != nil {
-		in.LogPersister.Errorf("Unable to configure traffic percentages to service manifest (%v)", err)
+		lp.Errorf("Unable to configure traffic percentages to service manifest (%v)", err)
 		return false
 	}
 
-	in.LogPersister.Info("Successfully configured revision and traffic percentages to the service manifest")
+	lp.Info("Successfully prepared service manifest with traffic percentages as below:")
 	for _, t := range traffics {
-		in.LogPersister.Infof("  %s: %d", t.RevisionName, t.Percent)
+		lp.Infof("  %s: %d", t.RevisionName, t.Percent)
 	}
 
 	return true
 }
 
-func apply(ctx context.Context, in *executor.Input, cloudProviderName string, cloudProviderCfg *config.CloudProviderCloudRunConfig, sm provider.ServiceManifest) bool {
-	in.LogPersister.Info("Start applying the service manifest")
-	client, err := provider.DefaultRegistry().Client(ctx, cloudProviderName, cloudProviderCfg, in.Logger)
-	if err != nil {
-		in.LogPersister.Errorf("Unable to create ClourRun client for the provider (%v)", err)
-		return false
-	}
+func apply(ctx context.Context, client provider.Client, sm provider.ServiceManifest, lp executor.LogPersister) bool {
+	lp.Info("Start applying the service manifest")
 
-	_, err = client.Update(ctx, sm)
+	_, err := client.Update(ctx, sm)
 	if err == nil {
-		in.LogPersister.Infof("Successfully updated the service %s", sm.Name)
+		lp.Infof("Successfully updated the service %s", sm.Name)
 		return true
 	}
 
 	if err != provider.ErrServiceNotFound {
-		in.LogPersister.Errorf("Failed to update the service %s (%v)", sm.Name, err)
+		lp.Errorf("Failed to update the service %s (%v)", sm.Name, err)
 		return false
 	}
 
-	in.LogPersister.Infof("Service %s was not found, a new service will be created", sm.Name)
+	lp.Infof("Service %s was not found, a new service will be created", sm.Name)
 
 	if _, err := client.Create(ctx, sm); err != nil {
-		in.LogPersister.Errorf("Failed to create the service %s (%v)", sm.Name, err)
+		lp.Errorf("Failed to create the service %s (%v)", sm.Name, err)
 		return false
 	}
 
-	in.LogPersister.Infof("Successfully created the service %s", sm.Name)
+	lp.Infof("Successfully created the service %s", sm.Name)
 	return true
+}
+
+func revisionExists(ctx context.Context, client provider.Client, revisionName string, lp executor.LogPersister) (bool, error) {
+	_, err := client.GetRevision(ctx, revisionName)
+	if err == nil {
+		return true, nil
+	}
+
+	if err == provider.ErrRevisionNotFound {
+		return false, nil
+	}
+
+	lp.Errorf("Failed while checking the existence of revision %s (%v)", revisionName, err)
+	return false, err
 }

@@ -3,7 +3,6 @@ image:
 
 args:
   metrics: true
-  useFakeAPI: false
   enableDefaultKubernetesCloudProvider: true
   insecure: false
   # One of "humanize", "json", or "console" is available.

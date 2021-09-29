@@ -3,6 +3,8 @@
 apiVersion: pipecd.dev/v1beta1
 kind: KubernetesApp
 spec:
+  planner:
+    alwaysUsePipeline: true
   pipeline:
     stages:
       - name: K8S_CANARY_ROLLOUT
