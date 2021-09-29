@@ -154,9 +154,9 @@ func (a *PipedAPI) ReportPipedMeta(ctx context.Context, req *pipedservice.Report
 	piped, err = a.pipedStore.GetPiped(ctx, pipedID)
 	if err != nil {
 		a.logger.Error("unable to find piped from datastore",
-							zap.String("piped-id", pipedID),
-							zap.Error(err),
-					  )
+			zap.String("piped-id", pipedID),
+			zap.Error(err),
+		)
 		return nil, status.Error(codes.Internal, "unable to find piped from datastore")
 	}
 	return &pipedservice.ReportPipedMetaResponse{
