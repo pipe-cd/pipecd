@@ -150,14 +150,9 @@ func (a *PipedAPI) ReportPipedMeta(ctx context.Context, req *pipedservice.Report
 		}
 	}
 
-	var piped *model.Piped
-	piped, err = a.pipedStore.GetPiped(ctx, pipedID)
+	piped, err := getPiped(ctx, a.pipedStore, pipedID, a.logger)
 	if err != nil {
-		a.logger.Error("unable to find piped from datastore",
-			zap.String("piped-id", pipedID),
-			zap.Error(err),
-		)
-		return nil, status.Error(codes.Internal, "unable to find piped from datastore")
+		return nil, err
 	}
 	return &pipedservice.ReportPipedMetaResponse{
 		Name: piped.Name,
