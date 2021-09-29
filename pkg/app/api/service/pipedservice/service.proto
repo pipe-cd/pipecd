@@ -190,6 +190,7 @@ message ReportPipedMetaRequest {
 }
 
 message ReportPipedMetaResponse {
+    string name = 1 [(validate.rules).string.min_len = 1];
 }
 
 message GetEnvironmentRequest {

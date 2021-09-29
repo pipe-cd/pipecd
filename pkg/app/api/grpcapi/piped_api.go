@@ -149,7 +149,14 @@ func (a *PipedAPI) ReportPipedMeta(ctx context.Context, req *pipedservice.Report
 			return nil, status.Error(codes.Internal, "failed to update the piped metadata")
 		}
 	}
-	return &pipedservice.ReportPipedMetaResponse{}, nil
+
+	piped, err := getPiped(ctx, a.pipedStore, pipedID, a.logger)
+	if err != nil {
+		return nil, err
+	}
+	return &pipedservice.ReportPipedMetaResponse{
+		Name: piped.Name,
+	}, nil
 }
 
 // GetEnvironment finds and returns the environment for the specified ID.
