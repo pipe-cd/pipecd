@@ -651,12 +651,11 @@ func (s *scheduler) reportDeploymentCompleted(ctx context.Context, status model.
 }
 
 func (s *scheduler) getMentionedAccounts(ctx context.Context, event model.NotificationEventType) ([]string, error) {
-	dsp := s.targetDSP
-	if dsp == nil {
+	if s.targetDSP == nil {
 		return nil, fmt.Errorf("targetDSP is not configured")
 	}
 
-	ds, err := dsp.GetReadOnly(ctx, ioutil.Discard)
+	ds, err := s.targetDSP.GetReadOnly(ctx, ioutil.Discard)
 	if err != nil {
 		err = fmt.Errorf("failed to prepare running deploy source data (%w)", err)
 		return nil, err
