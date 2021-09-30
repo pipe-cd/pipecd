@@ -102,6 +102,7 @@ func (n *Notifier) Run(ctx context.Context) error {
 	n.Notify(model.NotificationEvent{
 		Type: model.NotificationEventType_EVENT_PIPED_STARTED,
 		Metadata: &model.NotificationEventPipedStarted{
+			Id:      n.config.PipedID,
 			Name:    n.config.Name,
 			Version: version.Get().Version,
 		},
@@ -117,6 +118,7 @@ func (n *Notifier) Run(ctx context.Context) error {
 	n.Notify(model.NotificationEvent{
 		Type: model.NotificationEventType_EVENT_PIPED_STOPPED,
 		Metadata: &model.NotificationEventPipedStopped{
+			Id:      n.config.PipedID,
 			Name:    n.config.Name,
 			Version: version.Get().Version,
 		},
