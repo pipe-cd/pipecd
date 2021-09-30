@@ -75,24 +75,27 @@ message NotificationEventDeploymentRollingBack {
 message NotificationEventDeploymentSucceeded {
     Deployment deployment = 1 [(validate.rules).message.required = true];
     string env_name = 2 [(validate.rules).string.min_len = 1];
+    repeated string mentioned_accounts = 3;
 }
 
 message NotificationEventDeploymentFailed {
     Deployment deployment = 1 [(validate.rules).message.required = true];
     string env_name = 2 [(validate.rules).string.min_len = 1];
     string reason = 3;
+    repeated string mentioned_accounts = 4;
 }
 
 message NotificationEventDeploymentCancelled {
     Deployment deployment = 1 [(validate.rules).message.required = true];
     string env_name = 2 [(validate.rules).string.min_len = 1];
     string commander = 3;
+    repeated string mentioned_accounts = 4;
 }
 
 message NotificationEventDeploymentWaitApproval {
     Deployment deployment = 1 [(validate.rules).message.required = true];
     string env_name = 2 [(validate.rules).string.min_len = 1];
-    repeated string approvers = 3;
+    repeated string mentioned_accounts = 3;
 }
 
 message NotificationEventApplicationSynced {

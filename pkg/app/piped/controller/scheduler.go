@@ -591,14 +591,20 @@ func (s *scheduler) reportDeploymentCompleted(ctx context.Context, status model.
 		retry = pipedservice.NewRetry(10)
 	)
 
+	accounts, err := s.getMentionedAccounts(ctx, status)
+	if err != nil {
+		return err
+	}
+
 	defer func() {
 		switch status {
 		case model.DeploymentStatus_DEPLOYMENT_SUCCESS:
 			s.notifier.Notify(model.NotificationEvent{
 				Type: model.NotificationEventType_EVENT_DEPLOYMENT_SUCCEEDED,
 				Metadata: &model.NotificationEventDeploymentSucceeded{
-					Deployment: s.deployment,
-					EnvName:    s.envName,
+					Deployment:        s.deployment,
+					EnvName:           s.envName,
+					MentionedAccounts: accounts,
 				},
 			})
 
@@ -606,9 +612,10 @@ func (s *scheduler) reportDeploymentCompleted(ctx context.Context, status model.
 			s.notifier.Notify(model.NotificationEvent{
 				Type: model.NotificationEventType_EVENT_DEPLOYMENT_FAILED,
 				Metadata: &model.NotificationEventDeploymentFailed{
-					Deployment: s.deployment,
-					EnvName:    s.envName,
-					Reason:     desc,
+					Deployment:        s.deployment,
+					EnvName:           s.envName,
+					Reason:            desc,
+					MentionedAccounts: accounts,
 				},
 			})
 
@@ -616,9 +623,10 @@ func (s *scheduler) reportDeploymentCompleted(ctx context.Context, status model.
 			s.notifier.Notify(model.NotificationEvent{
 				Type: model.NotificationEventType_EVENT_DEPLOYMENT_CANCELLED,
 				Metadata: &model.NotificationEventDeploymentCancelled{
-					Deployment: s.deployment,
-					EnvName:    s.envName,
-					Commander:  cancelCommander,
+					Deployment:        s.deployment,
+					EnvName:           s.envName,
+					Commander:         cancelCommander,
+					MentionedAccounts: accounts,
 				},
 			})
 		}
@@ -633,6 +641,21 @@ func (s *scheduler) reportDeploymentCompleted(ctx context.Context, status model.
 	}
 
 	return err
+}
+
+func (s *scheduler) getMentionedAccounts(ctx context.Context, status model.DeploymentStatus) ([]string, error) {
+	ds, err := s.targetDSP.GetReadOnly(ctx, ioutil.Discard)
+	if err != nil {
+		err = fmt.Errorf("Failed to prepare running deploy source data (%v)", err)
+		return nil, err
+	}
+
+	for _, v := range ds.GenericDeploymentConfig.DeploymentNotification.Mentions {
+		if event := "EVENT_" + v.Event; event == model.NotificationEventType_name[int32(status.Number())] {
+			return v.Slack, nil
+		}
+	}
+	return nil, nil
 }
 
 func (s *scheduler) reportMostRecentlySuccessfulDeployment(ctx context.Context) error {
