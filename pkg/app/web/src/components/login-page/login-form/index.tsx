@@ -67,6 +67,10 @@ export const LoginForm: FC<LoginFormProps> = memo(function LoginForm({
 }) {
   const classes = useStyles();
 
+  const handleOnBack = (): void => {
+    window.location.href = PAGE_PATH_LOGIN;
+  };
+
   return (
     <div className={classes.root}>
       <Typography variant="h4">Sign in to {projectName}</Typography>
@@ -127,8 +131,7 @@ export const LoginForm: FC<LoginFormProps> = memo(function LoginForm({
             <Button
               type="reset"
               color="primary"
-              component={Link}
-              to={PAGE_PATH_LOGIN}
+              onClick={handleOnBack}
             >
               back
             </Button>
