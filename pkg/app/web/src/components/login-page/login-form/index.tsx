@@ -6,7 +6,6 @@ import {
   PAGE_PATH_LOGIN,
 } from "~/constants/path";
 import { MarkGithubIcon } from "@primer/octicons-react";
-import { Link } from "react-router-dom";
 
 const useStyles = makeStyles((theme) => ({
   root: {
