@@ -147,15 +147,19 @@ type AnalysisLog struct {
 	Provider string   `json:"provider"`
 }
 
+func (a *AnalysisLog) Validate() error {
+	return nil
+}
+
 // AnalysisHTTP contains common configurable values for deployment analysis with http.
 type AnalysisHTTP struct {
 	URL    string `json:"url"`
 	Method string `json:"method"`
 	// Custom headers to set in the request. HTTP allows repeated headers.
-	Headers          []AnalysisHeader `json:"headers"`
-	ExpectedCode     int              `json:"expectedCode"`
-	ExpectedResponse string           `json:"expectedResponse"`
-	Interval         Duration         `json:"interval"`
+	Headers          []AnalysisHTTPHeader `json:"headers"`
+	ExpectedCode     int                  `json:"expectedCode"`
+	ExpectedResponse string               `json:"expectedResponse"`
+	Interval         Duration             `json:"interval"`
 	// Maximum number of failed checks before the response is considered as failure.
 	FailureLimit int `json:"failureLimit"`
 	// If true, it considers as success when no data returned from the analysis provider.
@@ -164,23 +168,11 @@ type AnalysisHTTP struct {
 	Timeout      Duration `json:"timeout"`
 }
 
-type AnalysisHeader struct {
+func (a *AnalysisHTTP) Validate() error {
+	return nil
+}
+
+type AnalysisHTTPHeader struct {
 	Key   string `json:"key"`
 	Value string `json:"value"`
-}
-
-type AnalysisDynamicLog struct {
-	Query    string   `json:"query"`
-	Provider string   `json:"provider"`
-	Timeout  Duration `json:"timeout"`
-}
-
-type AnalysisDynamicHTTP struct {
-	URL              string           `json:"url"`
-	Method           string           `json:"method"`
-	Headers          []AnalysisHeader `json:"headers"`
-	ExpectedCode     int              `json:"expectedCode"`
-	ExpectedResponse string           `json:"expectedResponse"`
-	Interval         Duration         `json:"interval"`
-	Timeout          Duration         `json:"timeout"`
 }

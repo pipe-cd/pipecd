@@ -268,11 +268,7 @@ func (e *Executor) newLogProvider(providerName string) (log.Provider, error) {
 func (e *Executor) getMetricsConfig(templatableCfg config.TemplatableAnalysisMetrics, templateCfg *config.AnalysisTemplateSpec, args map[string]string) (*config.AnalysisMetrics, error) {
 	name := templatableCfg.Template.Name
 	if name == "" {
-		cfg := &templatableCfg.AnalysisMetrics
-		if err := cfg.Validate(); err != nil {
-			return nil, fmt.Errorf("invalid metrics configuration: %w", err)
-		}
-		return cfg, nil
+		return &templatableCfg.AnalysisMetrics, nil
 	}
 
 	var err error
@@ -283,9 +279,6 @@ func (e *Executor) getMetricsConfig(templatableCfg config.TemplatableAnalysisMet
 	cfg, ok := templateCfg.Metrics[name]
 	if !ok {
 		return nil, fmt.Errorf("analysis template %s not found despite template specified", name)
-	}
-	if err := cfg.Validate(); err != nil {
-		return nil, fmt.Errorf("invalid metrics configuration: %w", err)
 	}
 	return &cfg, nil
 }

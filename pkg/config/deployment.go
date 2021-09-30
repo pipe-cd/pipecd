@@ -328,6 +328,21 @@ func (a *AnalysisStageOptions) Validate() error {
 	if a.Duration == 0 {
 		return fmt.Errorf("the ANALYSIS stage requires duration field")
 	}
+	for _, m := range a.Metrics {
+		if err := m.Validate(); err != nil {
+			return fmt.Errorf("one of metrics configurations is invalid: %w", err)
+		}
+	}
+	for _, l := range a.Logs {
+		if err := l.Validate(); err != nil {
+			return fmt.Errorf("one of log configurations is invalid: %w", err)
+		}
+	}
+	for _, h := range a.Https {
+		if err := h.Validate(); err != nil {
+			return fmt.Errorf("one of http configurations is invalid: %w", err)
+		}
+	}
 	return nil
 }
 
