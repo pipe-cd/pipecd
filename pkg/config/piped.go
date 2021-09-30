@@ -40,6 +40,8 @@ type PipedSpec struct {
 	PipedKeyFile string
 	// Base64 encoded string of Piped key.
 	PipedKeyData string
+	// The name of this piped.
+	Name string
 	// The address used to connect to the control-plane's API.
 	APIAddress string `json:"apiAddress"`
 	// The address to the control-plane's Web.

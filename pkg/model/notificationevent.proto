@@ -109,10 +109,12 @@ message NotificationEventApplicationOutOfSync {
 
 message NotificationEventPipedStarted {
     string id = 1 [(validate.rules).string.min_len = 1];
-    string version = 2;
+    string name = 2 [(validate.rules).string.min_len = 1];
+    string version = 3;
 }
 
 message NotificationEventPipedStopped {
     string id = 1 [(validate.rules).string.min_len = 1];
-    string version = 2;
+    string name = 2 [(validate.rules).string.min_len = 1];
+    string version = 3;
 }
