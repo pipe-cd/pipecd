@@ -270,7 +270,7 @@ func makeSlackMessage(title, titleLink, text, color string, timestamp int64, fie
 
 func addAccountsToText(text string, accounts []string) string {
 	if len(accounts) == 0 {
-		return text		
+		return text
 	}
 	formattedAccounts := make([]string, 0, len(accounts))
 	for _, a := range accounts {
