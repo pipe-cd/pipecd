@@ -276,6 +276,5 @@ func addAccountsToText(text string, accounts []string) string {
 	for _, a := range accounts {
 		formattedAccounts = append(formattedAccounts, fmt.Sprintf("<@%s>", a))
 	}
-	newText := fmt.Sprintf("%s %s", strings.Join(formattedAccounts, " "), text)
-	return newText
+	return fmt.Sprintf("%s %s", strings.Join(formattedAccounts, " "), text)
 }
