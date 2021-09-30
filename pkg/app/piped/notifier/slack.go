@@ -269,13 +269,13 @@ func makeSlackMessage(title, titleLink, text, color string, timestamp int64, fie
 }
 
 func addAccountsToText(text string, accounts []string) string {
-	if len(accounts) > 0 {
-		approvers := make([]string, 0, len(accounts))
-		for _, a := range accounts {
-			approvers = append(approvers, fmt.Sprintf("<@%s>", a))
-		}
-		newText := fmt.Sprintf("%s %s", strings.Join(approvers, " "), text)
-		return newText
+	if len(accounts) == 0 {
+		return text		
 	}
-	return text
+	approvers := make([]string, 0, len(accounts))
+	for _, a := range accounts {
+		approvers = append(approvers, fmt.Sprintf("<@%s>", a))
+	}
+	newText := fmt.Sprintf("%s %s", strings.Join(approvers, " "), text)
+	return newText
 }
