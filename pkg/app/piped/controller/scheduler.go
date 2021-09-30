@@ -646,7 +646,7 @@ func (s *scheduler) reportDeploymentCompleted(ctx context.Context, status model.
 func (s *scheduler) getMentionedAccounts(ctx context.Context, status model.DeploymentStatus) ([]string, error) {
 	ds, err := s.targetDSP.GetReadOnly(ctx, ioutil.Discard)
 	if err != nil {
-		err = fmt.Errorf("Failed to prepare running deploy source data (%v)", err)
+		err = fmt.Errorf("failed to prepare running deploy source data (%v)", err)
 		return nil, err
 	}
 
