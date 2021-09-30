@@ -111,7 +111,7 @@ export const Routes: FC = () => {
       <>
         <Header />
         <Switch>
-          <Route path={PAGE_PATH_LOGIN}>
+          <Route exact path={PAGE_PATH_LOGIN}>
             <LoginPage />
           </Route>
           <Route
@@ -127,15 +127,6 @@ export const Routes: FC = () => {
     <>
       <Header />
       <Switch>
-        <Route
-          exact
-          path={PAGE_PATH_TOP}
-          component={() => <Redirect to={PAGE_PATH_APPLICATIONS} />}
-        />
-        <Route
-          path={PAGE_PATH_LOGIN}
-          component={() => <Redirect to={PAGE_PATH_APPLICATIONS} />}
-        />
         <Route
           exact
           path={PAGE_PATH_APPLICATIONS}
@@ -158,6 +149,10 @@ export const Routes: FC = () => {
         />
         <Route path={PAGE_PATH_SETTINGS} component={SettingsIndexPage} />
         <Route path={PAGE_PATH_INSIGHTS} component={InsightIndexPage} />
+        <Route
+          path={PAGE_PATH_TOP}
+          component={() => <Redirect to={PAGE_PATH_APPLICATIONS} />}
+        />
       </Switch>
       <Toasts />
     </>
