@@ -591,14 +591,13 @@ func (s *scheduler) reportDeploymentCompleted(ctx context.Context, status model.
 		retry = pipedservice.NewRetry(10)
 	)
 
-	accounts, err := s.getMentionedAccounts(ctx, status)
-	if err != nil {
-		return err
-	}
-
 	defer func() {
 		switch status {
 		case model.DeploymentStatus_DEPLOYMENT_SUCCESS:
+			accounts, err := s.getMentionedAccounts(ctx, model.NotificationEventType_EVENT_DEPLOYMENT_SUCCEEDED)
+			if err != nil {
+				s.logger.Error("failed to get the list of accounts", zap.Error(err))
+			}
 			s.notifier.Notify(model.NotificationEvent{
 				Type: model.NotificationEventType_EVENT_DEPLOYMENT_SUCCEEDED,
 				Metadata: &model.NotificationEventDeploymentSucceeded{
@@ -609,6 +608,10 @@ func (s *scheduler) reportDeploymentCompleted(ctx context.Context, status model.
 			})
 
 		case model.DeploymentStatus_DEPLOYMENT_FAILURE:
+			accounts, err := s.getMentionedAccounts(ctx, model.NotificationEventType_EVENT_DEPLOYMENT_FAILED)
+			if err != nil {
+				s.logger.Error("failed to get the list of accounts", zap.Error(err))
+			}
 			s.notifier.Notify(model.NotificationEvent{
 				Type: model.NotificationEventType_EVENT_DEPLOYMENT_FAILED,
 				Metadata: &model.NotificationEventDeploymentFailed{
@@ -620,6 +623,10 @@ func (s *scheduler) reportDeploymentCompleted(ctx context.Context, status model.
 			})
 
 		case model.DeploymentStatus_DEPLOYMENT_CANCELLED:
+			accounts, err := s.getMentionedAccounts(ctx, model.NotificationEventType_EVENT_DEPLOYMENT_CANCELLED)
+			if err != nil {
+				s.logger.Error("failed to get the list of accounts", zap.Error(err))
+			}
 			s.notifier.Notify(model.NotificationEvent{
 				Type: model.NotificationEventType_EVENT_DEPLOYMENT_CANCELLED,
 				Metadata: &model.NotificationEventDeploymentCancelled{
@@ -643,7 +650,7 @@ func (s *scheduler) reportDeploymentCompleted(ctx context.Context, status model.
 	return err
 }
 
-func (s *scheduler) getMentionedAccounts(ctx context.Context, status model.DeploymentStatus) ([]string, error) {
+func (s *scheduler) getMentionedAccounts(ctx context.Context, event model.NotificationEventType) ([]string, error) {
 	ds, err := s.targetDSP.GetReadOnly(ctx, ioutil.Discard)
 	if err != nil {
 		err = fmt.Errorf("failed to prepare running deploy source data (%w)", err)
@@ -651,7 +658,7 @@ func (s *scheduler) getMentionedAccounts(ctx context.Context, status model.Deplo
 	}
 
 	for _, v := range ds.GenericDeploymentConfig.DeploymentNotification.Mentions {
-		if event := "EVENT_" + v.Event; event == model.NotificationEventType_name[int32(status.Number())] {
+		if e := "EVENT_" + v.Event; e == event.String() {
 			return v.Slack, nil
 		}
 	}
