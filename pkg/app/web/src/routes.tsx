@@ -111,7 +111,7 @@ export const Routes: FC = () => {
       <>
         <Header />
         <Switch>
-          <Route path={`${PAGE_PATH_LOGIN}/:projectName?`}>
+          <Route path={PAGE_PATH_LOGIN}>
             <LoginPage />
           </Route>
           <Route
