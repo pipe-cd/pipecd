@@ -276,7 +276,6 @@ func addAccountsToText(text string, accounts []string) string {
 		}
 		Newtext := fmt.Sprintf("%s %s", strings.Join(approvers, " "), text)
 		return Newtext
-	} else {
-		return text
 	}
+	return text
 }
