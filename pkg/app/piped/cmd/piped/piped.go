@@ -138,16 +138,6 @@ func (p *piped) run(ctx context.Context, t cli.Telemetry) (runErr error) {
 	// Register all metrics.
 	registry := registerMetrics(cfg.PipedID, cfg.ProjectID)
 
-	// Initialize notifier and add piped events.
-	notifier, err := notifier.NewNotifier(cfg, t.Logger)
-	if err != nil {
-		t.Logger.Error("failed to initialize notifier", zap.Error(err))
-		return err
-	}
-	group.Go(func() error {
-		return notifier.Run(ctx)
-	})
-
 	// Configure SSH config if needed.
 	if cfg.Git.ShouldConfigureSSHConfig() {
 		if err := git.AddSSHConfig(cfg.Git); err != nil {
@@ -196,6 +186,16 @@ func (p *piped) run(ctx context.Context, t cli.Telemetry) (runErr error) {
 		t.Logger.Error("failed to report piped meta to control-plane", zap.Error(err))
 		return err
 	}
+
+	// Initialize notifier and add piped events.
+	notifier, err := notifier.NewNotifier(cfg, t.Logger)
+	if err != nil {
+		t.Logger.Error("failed to initialize notifier", zap.Error(err))
+		return err
+	}
+	group.Go(func() error {
+		return notifier.Run(ctx)
+	})
 
 	// Start running admin server.
 	{
