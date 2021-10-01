@@ -209,3 +209,70 @@ func Test_compare(t *testing.T) {
 		})
 	}
 }
+
+func Test_metricsAnalyzer_renderQuery(t *testing.T) {
+	type args struct {
+		queryTemplate     string
+		variantCustomArgs map[string]string
+		variant           string
+	}
+	testcases := []struct {
+		name            string
+		metricsAnalyzer *metricsAnalyzer
+		args            args
+		want            string
+		wantErr         bool
+	}{
+		{
+			name: "using only variant built in args",
+			args: args{
+				queryTemplate: `variant="{{ .VariantArgs.BuiltIn.Variant }}"`,
+				variant:       "canary",
+			},
+			metricsAnalyzer: &metricsAnalyzer{},
+			want:            `variant="canary"`,
+			wantErr:         false,
+		},
+		{
+			name: "using variant and app built in args",
+			args: args{
+				queryTemplate: `variant="{{ .VariantArgs.BuiltIn.Variant }}", app="{{ .AppArgs.BuiltIn.Name }}"`,
+				variant:       "canary",
+			},
+			metricsAnalyzer: &metricsAnalyzer{
+				appTemplateArgs: appArgs{
+					BuiltIn: appBuiltInArgs{
+						Name: "app-1",
+					},
+				},
+			},
+			want:    `variant="canary", app="app-1"`,
+			wantErr: false,
+		},
+		{
+			name: "using variant and app built in and custom args",
+			args: args{
+				queryTemplate:     `variant="{{ .VariantArgs.BuiltIn.Variant }}", app="{{ .AppArgs.BuiltIn.Name }}", pod="{{ .VariantArgs.Custom.pod }}", id="{{ .AppArgs.Custom.id }}"`,
+				variantCustomArgs: map[string]string{"pod": "1234"},
+				variant:           "canary",
+			},
+			metricsAnalyzer: &metricsAnalyzer{
+				appTemplateArgs: appArgs{
+					BuiltIn: appBuiltInArgs{
+						Name: "app-1",
+					},
+					Custom: map[string]string{"id": "xxxx"},
+				},
+			},
+			want:    `variant="canary", app="app-1", pod="1234", id="xxxx"`,
+			wantErr: false,
+		},
+	}
+	for _, tc := range testcases {
+		t.Run(tc.name, func(t *testing.T) {
+			got, err := tc.metricsAnalyzer.renderQuery(tc.args.queryTemplate, tc.args.variantCustomArgs, tc.args.variant)
+			assert.Equal(t, tc.wantErr, err != nil)
+			assert.Equal(t, tc.want, got)
+		})
+	}
+}
